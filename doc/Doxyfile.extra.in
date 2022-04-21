@@ -1,0 +1,30 @@
+
+INPUT                   = @CMAKE_SOURCE_DIR@/doc \
+                          @CMAKE_SOURCE_DIR@/include
+
+RECURSIVE               = YES
+
+FILE_PATTERNS           = *.cc *.cpp *.h *.hpp *.hh *.dox *.md *.py
+
+SORT_MEMBER_DOCS        = YES
+SORT_BRIEF_DOCS         = YES
+
+EXTRACT_STATIC          = YES
+
+ENABLE_PREPROCESSING    = YES
+MACRO_EXPANSION         = YES
+EXPAND_ONLY_PREDEF      = YES
+PREDEFINED              += EIGEN_MAKE_ALIGNED_OPERATOR_NEW \
+                           PROXNLP_FUNCTOR_TYPEDEFS \
+                           PROXNLP_DYNAMIC_TYPEDEFS
+
+INCLUDE_PATH            = @PROJECT_SOURCE_DIR@/include
+
+EXAMPLE_PATH            = @PROJECT_SOURCE_DIR@/examples
+
+FORMULA_MACROFILE       = @CMAKE_SOURCE_DIR@/doc/macros.inc
+
+GENERATE_TREEVIEW       = YES
+HTML_EXTRA_STYLESHEET   = @PROJECT_SOURCE_DIR@/doc/doxygen-awesome.css
+
+MATHJAX_FORMAT          = SVG

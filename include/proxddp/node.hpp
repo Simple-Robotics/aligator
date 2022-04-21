@@ -5,6 +5,8 @@
 
 #include "proxnlp/manifold-base.hpp"
 
+#include <memory>
+
 
 namespace proxddp
 {
@@ -20,6 +22,12 @@ namespace proxddp
     using Manifold = ManifoldAbstractTpl<Scalar>;
 
     std::unique_ptr<Manifold> man;
+
+    
+
+    NodeTpl(const Manifold& man)
+      : man(std::unique_ptr<Manifold>(man))
+      {}
 
   };
 
