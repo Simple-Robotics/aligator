@@ -1,0 +1,22 @@
+@unpublished{jalletConstrainedDifferentialDynamic2022,
+  title = {Constrained {{Differential Dynamic Programming}}: {{A}} Primal-Dual Augmented {{Lagrangian}} Approach},
+  shorttitle = {Constrained {{Differential Dynamic Programming}}},
+  author = {Jallet, Wilson and Bambade, Antoine and Mansard, Nicolas and Carpentier, Justin},
+  year = {2022},
+  month = mar,
+  abstract = {Trajectory optimization is an efficient approach for solving optimal control problems for complex robotic systems. It relies on two key components: first the transcription into a sparse nonlinear program, and second the corresponding solver to iteratively compute its solution. On one hand, differential dynamic programming (DDP) provides an efficient approach to transcribe the optimal control problem into a finite-dimensional problem while optimally exploiting the sparsity induced by time. On the other hand, augmented Lagrangian methods make it possible to formulate efficient algorithms with advanced constraint-satisfaction strategies. In this paper, we propose to combine these two approaches into an efficient optimal control algorithm accepting both equality and inequality constraints. Based on the augmented Lagrangian literature, we first derive a generic primal-dual augmented Lagrangian strategy for nonlinear problems with equality and inequality constraints. We then apply it to the dynamic programming principle to solve the value-greedy optimization problems inherent to the backward pass of DDP, which we combine with a dedicated globalization strategy, resulting in a Newton-like algorithm for solving constrained trajectory optimization problems. Contrary to previous attempts of formulating an augmented Lagrangian version of DDP, our approach exhibits adequate convergence properties without any switch in strategies. We empirically demonstrate its interest with several case-studies from the robotics literature.},
+  keywords = {Optimal control,Robotics and automation,Trajectory optimization}
+}
+
+@inproceedings{jalletImplicitDifferentialDynamic2022,
+  title = {Implicit {{Differential Dynamic Programming}}},
+  booktitle = {International {{Conference}} on {{Robotics}} and {{Automation}} ({{ICRA}} 2022)},
+  author = {Jallet, Wilson and Mansard, Nicolas and Carpentier, Justin},
+  year = {2022},
+  month = may,
+  publisher = {{IEEE Robotics and Automation Society}},
+  address = {{Philadelphia, United States}},
+  abstract = {Over the past decade, the Differential Dynamic Programming (DDP) method has gained in maturity and popularity within the robotics community. Several recent contributions have led to the integration of constraints within the original DDP formulation, hence enlarging its domain of application while making it a strong and easy-to-implement competitor against alternative methods of the state of the art such as collocation or multiple-shooting approaches. Yet, and similarly to its competitors, DDP remains unable to cope with high-dimensional dynamics within a receding horizon fashion, such as in the case of online generation of athletic motion on humanoid robots. In this paper, we propose to make a step toward this objective by reformulating classic DDP as an implicit optimal control problem, allowing the use of more advanced integration schemes such as implicit or variational integrators. To that end, we introduce a primal-dual proximal Lagrangian approach capable of handling dynamic and path constraints in a unified manner, while taking advantage of the time sparsity inherent to optimal control problems. We show that his reformulation enables us to relax the dynamics along the optimization process by solving it inexactly: far from the optimality conditions, the dynamics are only partially fulfilled, but continuously enforced as the solver get closer to the local optimal solution. This inexactness enables our approach to robustly handle large time steps (100 ms or more), unlike other DDP solvers of the state of the art, as experimentally validated through different robotic scenarios.}
+}
+
+

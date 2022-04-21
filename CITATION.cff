@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+title: proxddp
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - given-names: Wilson
+    family-names: Jallet
+    email: wilson.jallet@m4x.org
+    orcid: 'https://orcid.org/0000-0001-8222-2739'
+    affiliation: LAAS-CNRS & INRIA
+  - given-names: Carpentier
+    family-names: Justin
+    email: justin.carpentier@inria.fr
+    affiliation: INRIA
+    orcid: 'https://orcid.org/0000-0001-6585-2894'
+  - given-names: Mansard
+    family-names: Nicolas
+    email: nmansard@laas.fr
+    affiliation: LAAS-CNRS
+    orcid: 'https://orcid.org/0000-0002-8090-0601'
+url: "https://github.com/Simple-Robotics/proxddp"
