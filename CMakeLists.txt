@@ -93,7 +93,7 @@ if(BUILD_PYTHON_INTERFACE)
   set(PY_NAME "py${PROJECT_NAME}")
   set(${PY_NAME}_INSTALL_DIR ${PYTHON_SITELIB}/${PROJECT_NAME})
   SEARCH_FOR_BOOST_PYTHON(REQUIRED)
-  ADD_PROJECT_DEPENDENCY(eigenpy 2.7.1 REQUIRED)
+  ADD_PROJECT_DEPENDENCY(eigenpy 2.7.2 REQUIRED)
 
   execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import platform; print(platform.python_implementation())"
     OUTPUT_VARIABLE _python_implementation_value
@@ -110,19 +110,30 @@ file(GLOB_RECURSE LIB_HEADERS
      ${PROJECT_SOURCE_DIR}/include/proxddp/*.hxx
      )
 
-add_library(${PROJECT_NAME} SHARED ${LIB_HEADERS})
-set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
-if(BUILD_LIBRARY_WITH_VERSION_SUFFIX)
-  TAG_LIBRARY_VERSION(${PROJECT_NAME})
-endif()
-if(BUILD_WITH_PINOCCHIO_SUPPORT)
-  add_definitions(-DWITH_PINOCCHIO_SUPPORT)
-  target_link_libraries(${PROJECT_NAME} PUBLIC pinocchio::pinocchio)
-endif(BUILD_WITH_PINOCCHIO_SUPPORT)
-target_link_libraries(${PROJECT_NAME} PUBLIC proxnlp::proxnlp)
-target_link_libraries(${PROJECT_NAME} PUBLIC Boost::filesystem Boost::system Boost::serialization)
-target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
-target_include_directories(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:include>)
+function(create_library)
+  add_library(${PROJECT_NAME} SHARED ${LIB_HEADERS})
+  set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+
+  if(BUILD_LIBRARY_WITH_VERSION_SUFFIX)
+    TAG_LIBRARY_VERSION(${PROJECT_NAME})
+  endif()
+
+  if(BUILD_WITH_PINOCCHIO_SUPPORT)
+    add_definitions(-DWITH_PINOCCHIO_SUPPORT)
+    target_link_libraries(${PROJECT_NAME} PUBLIC pinocchio::pinocchio)
+  endif(BUILD_WITH_PINOCCHIO_SUPPORT)
+  target_link_libraries(${PROJECT_NAME} PUBLIC proxnlp::proxnlp)
+  target_link_libraries(${PROJECT_NAME} PUBLIC Boost::filesystem Boost::system Boost::serialization)
+  target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
+  target_include_directories(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:include>)
+
+  install(FILES ${LIB_HEADERS}
+          DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}/
+          PERMISSIONS OWNER_READ GROUP_READ WORLD_READ OWNER_WRITE)
+
+endfunction()
+
+create_library()
 
 ADD_HEADER_GROUP(LIB_HEADERS)
 
