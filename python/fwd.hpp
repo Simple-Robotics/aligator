@@ -1,12 +1,14 @@
 #pragma once
 
-#include "proxddp/fwd.hpp"
+#include "proxddp/python/context.hpp"
 
+#include <eigenpy/eigenpy.hpp>
 
 namespace proxddp
 {
 namespace python
 {
+  namespace bp = boost::python;
   
   void exposeNode();
 

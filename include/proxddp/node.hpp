@@ -1,8 +1,9 @@
 #pragma once
 
+#include "proxddp/fwd.hpp"
+
 #include "proxnlp/function-base.hpp"
 #include "proxnlp/cost-function.hpp"
-
 #include "proxnlp/manifold-base.hpp"
 
 #include <memory>
@@ -14,20 +15,19 @@ namespace proxddp
   /** @brief    A node in the control problem.
    */
   template<typename _Scalar>
-  struct NodeTpl
+  struct StageModelTpl
   {
     using Scalar = _Scalar;
     PROXNLP_FUNCTOR_TYPEDEFS(Scalar)
 
     using Manifold = ManifoldAbstractTpl<Scalar>;
 
-    std::unique_ptr<Manifold> man;
+    shared_ptr<Manifold> space;
 
+    StageModelTpl(const shared_ptr<Manifold>& space)
+      : space(space)
+        {}
     
-
-    NodeTpl(const Manifold& man)
-      : man(std::unique_ptr<Manifold>(man))
-      {}
 
   };
 
