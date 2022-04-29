@@ -15,8 +15,10 @@ ENABLE_PREPROCESSING    = YES
 MACRO_EXPANSION         = YES
 EXPAND_ONLY_PREDEF      = YES
 PREDEFINED              += EIGEN_MAKE_ALIGNED_OPERATOR_NEW \
-                           PROXNLP_FUNCTOR_TYPEDEFS \
+                           PROXNLP_FUNCTION_TYPEDEFS \
                            PROXNLP_DYNAMIC_TYPEDEFS
+
+EXCLUDE_SYMBOLS         = *::internal, internal::*, *::internal::*
 
 INCLUDE_PATH            = @PROJECT_SOURCE_DIR@/include
 
@@ -25,6 +27,9 @@ EXAMPLE_PATH            = @PROJECT_SOURCE_DIR@/examples
 FORMULA_MACROFILE       = @CMAKE_SOURCE_DIR@/doc/macros.inc
 
 GENERATE_TREEVIEW       = YES
+
+HTML_HEADER             = @PROJECT_SOURCE_DIR@/doc/header.html
 HTML_EXTRA_STYLESHEET   = @PROJECT_SOURCE_DIR@/doc/doxygen-awesome.css
+HTML_EXTRA_FILES        = @PROJECT_SOURCE_DIR@/doc/doxygen-awesome-darkmode-toggle.js
 
 MATHJAX_FORMAT          = SVG

@@ -16,7 +16,7 @@ This package provides
 * [proxnlp](https://github.com/Simple-Robotics/proxnlp.git)
 * Eigen3 >= 3.4.0
 * Boost >= 1.71.0
-* Eigenpy >= 2.7.1
+* Eigenpy >= 2.7.2
 
 ### Build from source
 
