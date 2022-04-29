@@ -1,4 +1,5 @@
 #include "proxddp/python/fwd.hpp"
+#include "proxddp/python/util.hpp"
 
 
 
@@ -21,6 +22,7 @@ BOOST_PYTHON_MODULE(pyproxddp)
 
   bp::import("warnings");
 
+  exposeFunctions();
   exposeNode();
 
 }

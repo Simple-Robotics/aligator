@@ -43,7 +43,7 @@ macro(add_proxddp_test name)
 endmacro(add_proxddp_test)
 
 set(TEST_NAMES
-    node)
+    stage-model)
 
 foreach(test_name ${TEST_NAMES})
   add_proxddp_test(${test_name})
