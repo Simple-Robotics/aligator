@@ -36,6 +36,7 @@ macro(add_proxddp_test name)
   ADD_TEST_CFLAGS(${test_name} "-DBOOST_TEST_MODULE=${MODULE_NAME}")
 
   target_link_libraries(${test_name} ${PROJECT_NAME})
+  target_link_libraries(${test_name} proxnlp::proxnlp)
   target_link_libraries(${test_name} fmt::fmt)
   target_link_libraries(${test_name} Boost::unit_test_framework)
 
