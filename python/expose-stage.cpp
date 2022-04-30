@@ -12,9 +12,9 @@ namespace python
     using context::Scalar;
     using context::Manifold;
     using context::DynamicsModel;
-    using StageType = StageModelTpl<Scalar>;
+    using StageModel = StageModelTpl<Scalar>;
 
-    bp::class_<StageType>(
+    bp::class_<StageModel>(
       "StageModel", "A stage of the control problem. Holds costs, dynamics, and constraints.",
       bp::init<const Manifold&,
                const int,
@@ -26,18 +26,20 @@ namespace python
                     const int,
                     const DynamicsModel&
                     >(bp::args("self", "space", "nu", "dyn_model")))
-      .def("add_constraint", (void(StageType::*)(const StageType::ConstraintPtr&))&StageType::addConstraint)
-      .def("create_data", &StageType::createData, "Create the data object.")
+      .def("add_constraint", (void(StageModel::*)(const StageModel::ConstraintPtr&))&StageModel::addConstraint)
+      .def("createData", &StageModel::createData, "Create the data object.")
       // .def_readonly("space1", &StageModelTpl<Scalar>::xspace1_)
-      .def_readonly("uspace", &StageType::uspace)
-      .add_property("nu", &StageType::nu, "Control space dimension.")
+      .def_readonly("uspace", &StageModel::uspace)
+      .add_property("ndx1", &StageModel::ndx1)
+      .add_property("ndx2", &StageModel::ndx2)
+      .add_property("nu", &StageModel::nu, "Control space dimension.")
     ;
 
-
-    using StageData = StageType::Data;
+    using StageData = StageModel::Data;
+    bp::register_ptr_to_python<shared_ptr<StageData>>();
     bp::class_<StageData>(
       "StageData", "Data struct for StageModel objects.",
-      bp::init<const StageType&>()
+      bp::init<const StageModel&>()
     )
       .def_readonly("dyn_data", &StageData::dyn_data)
       .def_readonly("constraint_data", &StageData::constraint_data)

@@ -20,6 +20,7 @@ namespace proxddp
     /// Expose ternary functions
     void exposeFunctions();
     void exposeNode();
+    void exposeProblem();
     void exposeIntegrators();
 
   } // namespace python

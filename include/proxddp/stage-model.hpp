@@ -55,6 +55,7 @@ namespace proxddp
 
     inline int ndx1() const { return xspace1_.ndx(); }
     inline int nu()   const { return uspace.ndx(); }
+    inline int ndx2() const { return xspace2_.ndx(); }
 
     inline std::size_t numConstraints() const { return constraints_.size(); }
 
@@ -138,9 +139,9 @@ namespace proxddp
     explicit StageDataTpl(const StageModel& stage_model)
       : dyn_data(std::move(stage_model.dyn_model_.createData()))
     {
-      const auto& nc = stage_model.numConstraints();
+      const std::size_t nc = stage_model.numConstraints();
       constraint_data.reserve(nc);
-      for (auto i = 0; i < nc; i++)
+      for (std::size_t i = 0; i < nc; i++)
       {
         const auto& func = stage_model.constraints_[i]->func_;
         constraint_data.emplace_back(std::move(func.createData()));

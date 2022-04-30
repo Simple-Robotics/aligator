@@ -66,7 +66,7 @@ namespace proxddp
       )
         .def("forward", &ContinuousBase::forward)
         .def("dForward", &ContinuousBase::dForward)
-        .def("create_data", &ContinuousBase::createData, "Instantiate a data holder.")
+        .def("createData", &ContinuousBase::createData, "Instantiate a data holder.")
       ;
 
       {

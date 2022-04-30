@@ -22,6 +22,8 @@ namespace proxddp
 
       using DynamicsModel = DynamicsModelTpl<Scalar>;      
 
+      using ShootingProblem = ShootingProblemTpl<Scalar>;
+
     } // namespace context
 
   } // namespace python

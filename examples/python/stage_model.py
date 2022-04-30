@@ -15,8 +15,7 @@ class TwistModel(proxddp.DynamicsModel):
 
     def evaluate(self, x, u, y, data: proxddp.FunctionData):
         data.value[:] = space.difference(
-            space.integrate(x, self.B @ u),
-            y)
+            y, space.integrate(x, self.B @ u))
 
     def computeJacobians(self, x, u, y, data: proxddp.FunctionData):
         v_ = self.B @ u
@@ -31,8 +30,8 @@ class TwistModel(proxddp.DynamicsModel):
 
         Jres_xnext = np.eye(space.ndx)
         Jres_y = np.eye(space.ndx)
-        Jres_xnext = space.Jdifference(xnext, y, 0)
-        Jres_y = space.Jdifference(xnext, y, 1)
+        Jres_xnext = space.Jdifference(y, xnext, 0)
+        Jres_y = space.Jdifference(y, xnext, 1)
 
         data.Jx[:, :] = Jres_xnext @ Jxnext_x
         data.Ju[:, :] = Jres_xnext @ Jxnext_v @ Jv_u
@@ -48,3 +47,10 @@ x1 = space.rand()
 
 dynmodel.evaluate(x0, u0, x1, data)
 dynmodel.computeJacobians(x0, u0, x1, data)
+
+
+stage_model = proxddp.StageModel(space, nu, dynmodel)
+stage_data = stage_model.createData()
+
+shooting_problem = proxddp.ShootingProblem()
+shooting_problem.add_stage(stage_model)
