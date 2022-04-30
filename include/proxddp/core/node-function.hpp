@@ -6,7 +6,7 @@
 namespace proxddp
 {
 
-  /** @brief    A ternary function model, taking inputs \f$(x,u,x')\f$.
+  /** @brief    Class representing ternary functions \f$f(x,u,x')\f$.
    */
   template<typename _Scalar>
   struct StageFunctionTpl
@@ -33,12 +33,22 @@ namespace proxddp
       : StageFunctionTpl(ndx, nu, ndx, nr) {}
 
     /// @brief    Evaluate this node function.
+    ///
+    /// @param data  Data holding struct.
     virtual void evaluate(const ConstVectorRef& x,
                           const ConstVectorRef& u,
                           const ConstVectorRef& y,
                           Data& data) const = 0;
     
-    /// @brief    Compute Jacobians of this function.
+    /** @brief    Compute Jacobians of this function.
+     *
+     * @details   This computes the Jacobians
+     * \f[
+     *   \frac{\partial f}{\partial x},
+     *   \frac{\partial f}{\partial u},
+     *   \frac{\partial f}{\partial x'}
+     * \f]
+     */
     virtual void computeJacobians(const ConstVectorRef& x,
                                   const ConstVectorRef& u,
                                   const ConstVectorRef& y,
@@ -47,7 +57,7 @@ namespace proxddp
     /// @brief    Compute the vector-hessian products of this function.
     ///
     /// @param lbda Multiplier estimate.
-    /// @param data Function data struct.
+    /// @param data  Data holding struct.
     virtual void computeVectorHessianProducts(const ConstVectorRef&,
                                               const ConstVectorRef&,
                                               const ConstVectorRef&,

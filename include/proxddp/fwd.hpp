@@ -7,48 +7,59 @@
 namespace proxddp
 {
 
-// Use the shared_ptr used in proxnlp.
-using proxnlp::shared_ptr;
+  // Use the shared_ptr used in proxnlp.
+  using proxnlp::shared_ptr;
 
-using proxnlp::math_types;
-using proxnlp::ManifoldAbstractTpl;
+  using proxnlp::math_types;
+  using proxnlp::ManifoldAbstractTpl;
 
-// Using the constraint set from proxnlp
-using proxnlp::ConstraintSetBase;
+  // Using the constraint set from proxnlp
+  using proxnlp::ConstraintSetBase;
 
-// fwd StageFunctionTpl
-template<typename Scalar>
-struct StageFunctionTpl;
+  // fwd StageFunctionTpl
+  template<typename Scalar>
+  struct StageFunctionTpl;
 
-// fwd FunctionDataTpl
-template<typename Scalar>
-struct FunctionDataTpl;
+  // fwd FunctionDataTpl
+  template<typename Scalar>
+  struct FunctionDataTpl;
 
-// fwd DynamicsModelTpl
-template<typename Scalar>
-struct DynamicsModelTpl;
+  // fwd StageCostTpl
+  template<typename Scalar>
+  struct StageCostTpl;
 
-// fwd StageConstraintTpl
-template<typename Scalar>
-struct StageConstraintTpl;
+  // fwd DynamicsModelTpl
+  template<typename Scalar>
+  struct DynamicsModelTpl;
 
-
-/* Stage models */
-
-// fwd StageModelTpl
-template<typename Scalar>
-struct StageModelTpl;
+  // fwd StageConstraintTpl
+  template<typename Scalar>
+  struct StageConstraintTpl;
 
 
-template<typename Scalar>
-struct StageDataTpl;
+  /* Stage models */
+
+  // fwd StageModelTpl
+  template<typename Scalar>
+  class StageModelTpl;
 
 
-/// Math utilities
-namespace math
-{
-  using namespace proxnlp::math;
-} // namespace math
+  template<typename Scalar>
+  struct StageDataTpl;
+
+
+  /* Shooting problem */
+
+  // fwd ShootingProblemTpl
+  template<typename _Scalar>
+  struct ShootingProblemTpl;
+
+
+  /// Math utilities
+  namespace math
+  {
+    using namespace proxnlp::math;
+  } // namespace math
 
 } // namespace proxddp
 
