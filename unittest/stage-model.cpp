@@ -26,7 +26,7 @@ struct ConstantModel : DynamicsModelTpl<double>
     data.value_ = y - x;
   }
 
-  void computeJacobians(const ConstVectorRef& x, const ConstVectorRef&, const ConstVectorRef& y, Data& data) const
+  void computeJacobians(const ConstVectorRef&, const ConstVectorRef&, const ConstVectorRef&, Data& data) const
   {
     data.Jx_.setIdentity();
     data.Jx_ *= -1.;
