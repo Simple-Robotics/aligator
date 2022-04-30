@@ -8,6 +8,14 @@
 namespace proxddp
 {
 
+  /** @brief  Base class for stage-wise constraint objects.
+   * 
+   * This class packs a StageFunctionTpl and ConstraintSetBase together.
+   * It models stage-wise constraints of the form
+   * \f[
+   *        c(x, u, x') \in \mathcal{C}.
+   * \f]
+   */
   template<typename _Scalar>
   struct StageConstraintTpl
   {
