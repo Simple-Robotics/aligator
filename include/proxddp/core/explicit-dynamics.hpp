@@ -13,11 +13,12 @@ namespace proxddp
   template<typename _Scalar>
   struct ExplicitDynamicsDataTpl;
 
-  /** @brief Explicit forward dynamics model.
+  /** @brief Explicit forward dynamics model \f$ x_{k+1} = f(x_k, u_k) \f$.
    * 
    * 
-   *  @details    The forward dynamics are assumed to be of the format
-   *              \f$ f(x, u) \ominus x' \f$.
+   *  @details    Forward dynamics \f$ x_{k+1} = f(x_k, u_k) \f$.
+   *              The corresponding residuals for multiple-shooting formulations are
+   *              \f$ f(x_k, u_k) \ominus x_{k+1} \f$.
    */
   template<typename _Scalar>
   struct ExplicitDynamicsModelTpl : DynamicsModelTpl<_Scalar>
@@ -41,11 +42,12 @@ namespace proxddp
                              const int nu)
       : ExplicitDynamicsModelTpl(space.ndx(), nu, space) {}
 
-    /// Evaluate the forward dynamics.
+    /// @brief Evaluate the forward discrete dynamics.
     void virtual forward(const ConstVectorRef& x,
                          const ConstVectorRef& u,
                          VectorRef out) const = 0;
 
+    /// @brief Compute the Jacobians of the forward dynamics.
     void virtual dForward(const ConstVectorRef& x,
                           const ConstVectorRef& u,
                           MatrixRef Jx,
@@ -89,7 +91,7 @@ namespace proxddp
     const Manifold& space2_;
   };
 
-  /// @brief    Specific data struct for explicit dynamics.
+  /// @brief    Specific data struct for explicit dynamics ExplicitDynamicsModelTpl.
   template<typename _Scalar>
   struct ExplicitDynamicsDataTpl : FunctionDataTpl<_Scalar>
   {
@@ -107,6 +109,9 @@ namespace proxddp
       this->Jy_ = -MatrixXs::Identity(ndx2);
     }
     
+    ExplicitDynamicsDataTpl(const int ndx, const int nu)
+      : ExplicitDynamicsDataTpl(ndx, nu, ndx) {}
+
   };
   
 } // namespace proxddp

@@ -8,6 +8,7 @@
 #include <proxnlp/modelling/spaces/cartesian-product.hpp>
 #include <proxnlp/modelling/spaces/vector-space.hpp>
 
+#include "proxddp/core/costs.hpp"
 #include "proxddp/core/dynamics.hpp"
 #include "proxddp/core/constraint.hpp"
 
@@ -29,8 +30,9 @@ namespace proxddp
    *            and constraint models.
    */
   template<typename _Scalar>
-  struct StageModelTpl
+  class StageModelTpl
   {
+  public:
     using Scalar = _Scalar;
     PROXNLP_FUNCTION_TYPEDEFS(Scalar)
 
@@ -54,7 +56,7 @@ namespace proxddp
     inline int ndx1() const { return xspace1_.ndx(); }
     inline int nu()   const { return uspace.ndx(); }
 
-    inline const std::size_t& numConstraints() const { constraints_.size(); }
+    inline std::size_t numConstraints() const { return constraints_.size(); }
 
     StageModelTpl(const Manifold& space1,
                   const int nu,
