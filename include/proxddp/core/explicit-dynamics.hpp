@@ -31,12 +31,14 @@ namespace proxddp
     using SpecificData = ExplicitDynamicsDataTpl<Scalar>;
     using Manifold = ManifoldAbstractTpl<Scalar>;
 
+    const Manifold& out_space_;
+
     /// The constructor requires providing the next state's manifold.
     ExplicitDynamicsModelTpl(const int ndx1,
                              const int nu,
                              const Manifold& space2)
       : DynamicsModelTpl<Scalar>(ndx1, nu, space2.ndx())
-      , space2_(space2) {}
+      , out_space_(space2) {}
 
     ExplicitDynamicsModelTpl(const Manifold& space,
                              const int nu)
@@ -62,7 +64,7 @@ namespace proxddp
       // value to the difference between y and the xout_.
       auto d = static_cast<SpecificData&>(data);
       this->forward(x, u, d.xout_);
-      space2_.difference(y, d.xout_, d.value_);
+      out_space_.difference(y, d.xout_, d.value_);
     }
 
     void computeJacobians(const ConstVectorRef& x,
@@ -74,11 +76,11 @@ namespace proxddp
       this->dForward(x, u, d.Jx_, d.Ju_); // dxnext_(x,u)
       // compose by jacobians of log (xout - y)
       MatrixXs Jtemp(this->ndx2, this->ndx2);
-      space2_.Jdifference(y, d.xout_, Jtemp, 0);
+      out_space_.Jdifference(y, d.xout_, Jtemp, 0);
       d.Jx_ = Jtemp * d.Jx_;
-      space2_.Jdifference(y, d.xout_, Jtemp, 1);
+      out_space_.Jdifference(y, d.xout_, Jtemp, 1);
       d.Ju_ = Jtemp * d.Ju_;
-      d.Jy_ = -MatrixXs::Identity(this->ndx2);
+      d.Jy_ = -MatrixXs::Identity(this->ndx2, this->ndx2);
     }
 
 
@@ -87,8 +89,6 @@ namespace proxddp
       return std::make_shared<SpecificData>(this->ndx1, this->nu, this->ndx2);
     }
 
-  protected:
-    const Manifold& space2_;
   };
 
   /// @brief    Specific data struct for explicit dynamics ExplicitDynamicsModelTpl.
@@ -106,7 +106,7 @@ namespace proxddp
       , xout_(ndx2)
     {
       xout_.setZero();
-      this->Jy_ = -MatrixXs::Identity(ndx2);
+      this->Jy_ = -MatrixXs::Identity(ndx2, ndx2);
     }
     
     ExplicitDynamicsDataTpl(const int ndx, const int nu)

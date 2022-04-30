@@ -1,4 +1,5 @@
 #include "proxddp/core/stage-model.hpp"
+#include "proxddp/utils.hpp"
 
 #include "proxnlp/modelling/spaces/vector-space.hpp"
 
@@ -15,23 +16,21 @@ using namespace proxddp;
 
 using Scalar = double;
 
-/// @brief    Constant dynamics.
-/// @details  It maps \f$(x,u)\f$ to \f$ x \f$ itself.
-struct ConstantModel : DynamicsModelTpl<double>
+/// @brief    Addition dynamics.
+/// @details  It maps \f$(x,u)\f$ to \f$ x + u \f$.
+struct AddModel : ExplicitDynamicsModelTpl<double>
 {
-  ConstantModel(const int ndx, const int nu)
-    : DynamicsModelTpl<double>(ndx, nu) {}  
-  void evaluate(const ConstVectorRef& x, const ConstVectorRef&, const ConstVectorRef& y, Data& data) const
+  AddModel(const Manifold& space, const int nu)
+    : ExplicitDynamicsModelTpl<double>(space, nu) {}  
+  void forward(const ConstVectorRef& x, const ConstVectorRef& u, VectorRef out) const
   {
-    data.value_ = y - x;
+    out_space_.integrate(x, u, out);
   }
 
-  void computeJacobians(const ConstVectorRef&, const ConstVectorRef&, const ConstVectorRef&, Data& data) const
+  void dForward(const ConstVectorRef& x, const ConstVectorRef& u, MatrixRef Jx, MatrixRef Ju) const
   {
-    data.Jx_.setIdentity();
-    data.Jx_ *= -1.;
-    data.Ju_.setZero();
-    data.Jy_.setIdentity();
+    out_space_.Jintegrate(x, u, Jx, 0);
+    out_space_.Jintegrate(x, u, Ju, 1);
   }
 };
 
@@ -42,13 +41,25 @@ BOOST_AUTO_TEST_CASE(test_node1)
   using Stage = StageModelTpl<Scalar>;
 
   constexpr int NX = 4;
-  constexpr int NU = 2;
+  constexpr int NU = NX;
 
   Manifold space(NX);
-  ConstantModel dynModel(space.ndx(), NU);
-  Stage node(space, NU, dynModel);
+  AddModel dyn_model(space, NU);
+  Stage stage(space, NU, dyn_model);
 
-  fmt::print("Node: {}", node);
+  fmt::print("Node: {}\n", stage);
+
+  Eigen::VectorXd u0(NU);
+  u0.setZero();
+  auto x0 = space.rand();
+  constexpr int nsteps = 20;
+  std::vector<Eigen::VectorXd> us(nsteps, u0);
+
+  auto xs = rollout(dyn_model, x0, us);
+  for (std::size_t i = 0; i < xs.size(); i++)
+  {
+    BOOST_CHECK(x0.isApprox(xs[i]));
+  }
 
 }
 
