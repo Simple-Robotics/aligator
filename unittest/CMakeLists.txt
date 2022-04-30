@@ -1,4 +1,4 @@
-# Copyright (C) 2022 LAAS-CNRS / INRIA
+# Copyright (C) 2022 LAAS-CNRS, INRIA
 
 set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
