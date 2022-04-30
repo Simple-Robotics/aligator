@@ -1,4 +1,4 @@
-#include "proxddp/stage-model.hpp"
+#include "proxddp/core/stage-model.hpp"
 
 #include "proxnlp/modelling/spaces/vector-space.hpp"
 

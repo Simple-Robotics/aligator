@@ -107,11 +107,22 @@ namespace proxddp
 
     friend std::ostream& operator<<(std::ostream& oss, const StageModelTpl& stage)
     {
-      oss << "StageModel("
-          << "ndx1=" << stage.ndx1()
-          << ", nu=" << stage.nu();
+      oss << "StageModel(";
+      if (stage.ndx1() == stage.ndx2())
+      {
+        oss << "ndx=" << stage.ndx1()
+            << ", nu=" << stage.nu();
+      } else {
+        oss << "ndx1=" << stage.ndx1() << ", "
+            << "nu=" << stage.nu() << ", "
+            << "ndx2=" << stage.ndx2();
+      }
+
       if (stage.numConstraints() > 0)
-          oss << ", nc=" << stage.numConstraints();
+      {
+        oss << ", ";
+        oss << "nc=" << stage.numConstraints();
+      }
       
       oss << ")";
       return oss;

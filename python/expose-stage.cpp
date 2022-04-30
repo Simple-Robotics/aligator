@@ -1,6 +1,6 @@
 #include "proxddp/python/fwd.hpp"
 
-#include "proxddp/stage-model.hpp"
+#include "proxddp/core/stage-model.hpp"
 
 
 namespace proxddp
