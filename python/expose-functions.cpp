@@ -45,25 +45,24 @@ namespace proxddp
           bp::args("self", "ndx1", "nu", "ndx2", "nr")
         )
       )
-        .def_readonly("value", &context::FunctionData::value_,
-                      "Function value.")
-        .def_readonly("Jx", &context::FunctionData::Jx_,
+        .def_readwrite("value", &context::FunctionData::value_, "Function value.")
+        .add_property("Jx",  bp::make_getter(&context::FunctionData::Jx_, bp::return_value_policy<bp::return_by_value>()),
                       "Jacobian with respect to $x$.")
-        .def_readonly("Ju", &context::FunctionData::Ju_,
+        .add_property("Ju",  bp::make_getter(&context::FunctionData::Ju_, bp::return_value_policy<bp::return_by_value>()),
                       "Jacobian with respect to $u$.")
-        .def_readonly("Jy", &context::FunctionData::Jy_,
+        .add_property("Jy",  bp::make_getter(&context::FunctionData::Jy_, bp::return_value_policy<bp::return_by_value>()),
                       "Jacobian with respect to $y$.")
-        .def_readonly("Hxx", &context::FunctionData::Hxx_,
+        .add_property("Hxx", bp::make_getter(&context::FunctionData::Hxx_, bp::return_value_policy<bp::return_by_value>()),
                       "Hessian with respect to $(x, x)$.")
-        .def_readonly("Hxu", &context::FunctionData::Hxu_,
+        .add_property("Hxu", bp::make_getter(&context::FunctionData::Hxu_, bp::return_value_policy<bp::return_by_value>()),
                       "Hessian with respect to $(x, u)$.")
-        .def_readonly("Hxy", &context::FunctionData::Hxy_,
+        .add_property("Hxy", bp::make_getter(&context::FunctionData::Hxy_, bp::return_value_policy<bp::return_by_value>()),
                       "Hessian with respect to $(x, y)$.")
-        .def_readonly("Huu", &context::FunctionData::Huu_,
+        .add_property("Huu", bp::make_getter(&context::FunctionData::Huu_, bp::return_value_policy<bp::return_by_value>()),
                       "Hessian with respect to $(u, u)$.")
-        .def_readonly("Huy", &context::FunctionData::Huy_,
+        .add_property("Huy", bp::make_getter(&context::FunctionData::Huy_, bp::return_value_policy<bp::return_by_value>()),
                       "Hessian with respect to $(x, y)$.")
-        .def_readonly("Hyy", &context::FunctionData::Hyy_,
+        .add_property("Hyy", bp::make_getter(&context::FunctionData::Hyy_, bp::return_value_policy<bp::return_by_value>()),
                       "Hessian with respect to $(y, y)$.")
       ;
 

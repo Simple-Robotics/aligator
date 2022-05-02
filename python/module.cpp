@@ -51,6 +51,7 @@ BOOST_PYTHON_MODULE(pyproxddp)
   bp::import("warnings");
 
   exposeFunctions();
+  exposeCosts();
   exposeNode();
   exposeProblem();
   {

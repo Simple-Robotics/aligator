@@ -8,6 +8,7 @@ namespace proxddp
 } // namespace proxddp
 
 #include "proxddp/python/context.hpp"
+#include "proxddp/python/macros.hpp"
 
 #include <eigenpy/eigenpy.hpp>
 
@@ -19,6 +20,7 @@ namespace proxddp
     
     /// Expose ternary functions
     void exposeFunctions();
+    void exposeCosts();
     void exposeNode();
     void exposeProblem();
 
