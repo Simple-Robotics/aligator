@@ -1,7 +1,7 @@
 ///   Defines the constraint object for this library.
 #pragma once
 
-#include "proxddp/core/node-function.hpp"
+#include "proxddp/core/function.hpp"
 
 
 namespace proxddp

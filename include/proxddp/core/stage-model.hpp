@@ -1,7 +1,7 @@
 #pragma once
 
 #include "proxddp/fwd.hpp"
-#include "proxddp/core/node-function.hpp"
+#include "proxddp/core/function.hpp"
 
 #include <proxnlp/manifold-base.hpp>
 

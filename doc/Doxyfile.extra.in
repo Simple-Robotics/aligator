@@ -6,9 +6,12 @@ RECURSIVE               = YES
 
 FILE_PATTERNS           = *.cc *.cpp *.h *.hpp *.hh *.dox *.md *.py
 
-SORT_MEMBER_DOCS        = YES
+# Document members in declaration order
+SORT_MEMBER_DOCS        = NO
 SORT_BRIEF_DOCS         = YES
+SORT_MEMBER_CTORS_1ST   = YES
 
+GENERATE_TESTLIST       = YES
 EXTRACT_STATIC          = YES
 
 ENABLE_PREPROCESSING    = YES
