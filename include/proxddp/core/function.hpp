@@ -1,3 +1,5 @@
+/// @file function.hpp
+/// @brief  Base definitions for ternary functions.
 #pragma once
 
 #include "proxddp/fwd.hpp"
@@ -6,8 +8,7 @@
 namespace proxddp
 {
 
-  /** @brief    Class representing ternary functions \f$f(x,u,x')\f$.
-   */
+  /// @brief    Class representing ternary functions \f$f(x,u,x')\f$.
   template<typename _Scalar>
   struct StageFunctionTpl
   {
@@ -16,9 +17,13 @@ namespace proxddp
     PROXNLP_FUNCTION_TYPEDEFS(Scalar)
     using Data = FunctionDataTpl<Scalar>;
 
+    /// @brief Current state dimension
     const int ndx1;
+    /// @brief Control dimension
     const int nu;
+    /// @brief Next state dimension
     const int ndx2;
+    /// @brief Function codimension
     const int nr;
     const int nvar = ndx1 + nu + ndx2;
 
@@ -43,11 +48,11 @@ namespace proxddp
     /** @brief    Compute Jacobians of this function.
      *
      * @details   This computes the Jacobians
-     * \f[
-     *   \frac{\partial f}{\partial x},
+     * \f$
+     *   (\frac{\partial f}{\partial x},
      *   \frac{\partial f}{\partial u},
-     *   \frac{\partial f}{\partial x'}
-     * \f]
+     *   \frac{\partial f}{\partial x'})
+     * \f$
      */
     virtual void computeJacobians(const ConstVectorRef& x,
                                   const ConstVectorRef& u,
@@ -67,10 +72,9 @@ namespace proxddp
       data.vhp_buffer_.setZero();
     }
 
-    // Default destructor.
     virtual ~StageFunctionTpl() = default;
 
-    /// Instantiate a Data object.
+    /// @brief Instantiate a Data object.
     virtual std::shared_ptr<Data> createData() const
     {
       return std::make_shared<Data>(ndx1, nu, ndx2, nr);
