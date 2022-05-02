@@ -1,7 +1,7 @@
 from proxnlp import manifolds
 import proxddp
 import numpy as np
-from examples.python import utils
+from . import utils
 
 import matplotlib.pyplot as plt
 
@@ -80,7 +80,8 @@ class TwistModelExplicit(proxddp.ExplicitDynamicsModel):
 
 
 us_ = [u0] * 20
-expdyn = TwistModelExplicit(dt=0.05)
+print("const control u0:", u0)
+expdyn = TwistModelExplicit(dt=0.1)
 xs_out = proxddp.rollout(expdyn, x0, us_).tolist()
 
 fig, ax = plt.subplots()
@@ -90,6 +91,8 @@ cols_ = cmap(np.linspace(0, 1, len(xs_out)))
 
 for i, q in enumerate(xs_out):
     utils.plot_se2_pose(q, ax, alpha=0.2, fc=cols_[i])
+ax.autoscale_view()
+ax.set_title("Motion in $\\mathrm{SE}(2)$")
 
 ax.set_aspect("equal")
 plt.show()

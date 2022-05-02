@@ -9,7 +9,6 @@ from matplotlib import transforms
 def plot_se2_pose(q: np.ndarray, ax: plt.Axes, alpha=0.5, fc='tab:blue'):
     w = 1.
     h = 0.4
-    print(q)
     center = (q[0] - .5 * w, q[1] - 0.5 * h)
     rect = plt.Rectangle(center, w, h, fc=fc, alpha=alpha)
     theta = np.arctan2(q[3], q[2])
