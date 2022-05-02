@@ -24,9 +24,12 @@ namespace proxddp
   template<typename Scalar>
   struct FunctionDataTpl;
 
-  // fwd StageCostTpl
+  // fwd CostBaseTpl
   template<typename Scalar>
-  struct StageCostTpl;
+  struct CostBaseTpl;
+
+  template<typename Scalar>
+  struct CostDataTpl;
 
   // fwd DynamicsModelTpl
   template<typename Scalar>
@@ -42,7 +45,6 @@ namespace proxddp
   // fwd StageModelTpl
   template<typename Scalar>
   class StageModelTpl;
-
 
   template<typename Scalar>
   struct StageDataTpl;
