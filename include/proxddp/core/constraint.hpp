@@ -1,7 +1,6 @@
-/// @file   Defines the constraint object for this library.
+///   Defines the constraint object for this library.
 #pragma once
 
-#include "proxddp/fwd.hpp"
 #include "proxddp/core/node-function.hpp"
 
 

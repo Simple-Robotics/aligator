@@ -141,4 +141,4 @@ namespace proxddp
 
 } // namespace proxddp
 
-#include "proxddp/core/node-function.hxx"
+#include "proxddp/core/function.hxx"

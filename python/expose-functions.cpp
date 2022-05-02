@@ -1,10 +1,5 @@
 #include "proxddp/python/fwd.hpp"
 
-#include "proxddp/core/node-function.hpp"
-#include "proxddp/core/dynamics.hpp"
-#include "proxddp/core/explicit-dynamics.hpp"
-
-
 #include "proxddp/python/functions.hpp"
 
 
@@ -19,6 +14,8 @@ namespace proxddp
       using context::DynamicsModel;
       using context::StageFunction;
       using internal::PyStageFunction;
+
+      bp::register_ptr_to_python<shared_ptr<StageFunction>>();
 
       bp::class_<StageFunction, PyStageFunction<>, boost::noncopyable>(
         "StageFunction",
@@ -71,10 +68,11 @@ namespace proxddp
       ;
 
       /** DYNAMICS **/
+      using PyDynModel = internal::PyStageFunction<DynamicsModel>;
 
       bp::class_<DynamicsModel,
                  bp::bases<StageFunction>,
-                 PyStageFunction<DynamicsModel>,
+                 PyDynModel,
                  boost::noncopyable>(
         "DynamicsModel",
         "Dynamics models are specific ternary functions f(x,u,x') which map "
@@ -88,9 +86,26 @@ namespace proxddp
           ))
       ;
 
-      // bp::class_<internal::PyExplicitDynamicalModel,
-      //            bp::bases<internal::PyDynWrap>, boost::noncopyable>
-      // ("ExplicitDynamicsModel", "Explicit dynamics.", bp::no_init);
+      using ExplicitDynamics = ExplicitDynamicsModelTpl<Scalar>;
+      bp::class_<internal::PyExplicitDynamicsModel,
+                 bp::bases<DynamicsModel>,
+                 boost::noncopyable>
+      (
+        "ExplicitDynamicsModel", "Explicit dynamics.",
+        bp::init<const int, const int, const context::Manifold&>(
+          bp::args("self", "ndx1", "nu", "out_space")
+        )
+      )
+        .def(bp::init<const context::Manifold&, const int>(
+          bp::args("self", "out_space", "nu")
+        ))
+        .def("forward", bp::pure_virtual(&ExplicitDynamics::forward),
+              bp::args("self", "x", "u", "out"),
+              "Call for forward discrete dynamics.")
+        .def("forward", bp::pure_virtual(&ExplicitDynamics::dForward),
+              bp::args("self", "x", "u", "Jx", "Ju"),
+              "Compute the derivatives of forward discrete dynamics.")
+        ;
 
     }
 

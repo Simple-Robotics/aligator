@@ -44,6 +44,7 @@ macro(add_proxddp_test name)
 endmacro(add_proxddp_test)
 
 set(TEST_NAMES
+    integrators
     stage-model)
 
 foreach(test_name ${TEST_NAMES})

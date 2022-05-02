@@ -1,3 +1,5 @@
+#pragma once
+
 #include "proxddp/python/fwd.hpp"
 
 #include "proxddp/core/node-function.hpp"
@@ -32,20 +34,20 @@ namespace proxddp
         void evaluate(const ConstVectorRef& x,
                       const ConstVectorRef& u,
                       const ConstVectorRef& y,
-                      Data& data) const
+                      Data& data) const override
         { get_override("evaluate")(x, u, y, data); }
 
         void computeJacobians(const ConstVectorRef& x,
                               const ConstVectorRef& u,
                               const ConstVectorRef& y,
-                              Data& data) const
+                              Data& data) const override
         { get_override("computeJacobians")(x, u, y, data); }
         
         void computeVectorHessianProducts(const ConstVectorRef& x,
                                           const ConstVectorRef& u,
                                           const ConstVectorRef& y,
                                           const ConstVectorRef& lbda,
-                                          Data& data) const
+                                          Data& data) const override
         {
           if (bp::override f = get_override("computeVectorHessianProducts"))
           {
@@ -55,7 +57,7 @@ namespace proxddp
           }
         }
 
-        shared_ptr<Data> createData() const
+        shared_ptr<Data> createData() const override
         {
           if (bp::override f = get_override("createData"))
           {
@@ -67,22 +69,26 @@ namespace proxddp
 
       };
 
-      struct PyExplicitDynamicalModel :
+      struct PyExplicitDynamicsModel :
         ExplicitDynamicsModelTpl<context::Scalar>,
         bp::wrapper<ExplicitDynamicsModelTpl<context::Scalar>>
       {
         using Scalar = context::Scalar;
         PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
 
+        template<typename... Args>
+        PyExplicitDynamicsModel(Args&&... args)
+          : ExplicitDynamicsModelTpl<Scalar>(std::forward<Args>(args)...) {}
+
         void forward(const ConstVectorRef& x,
                      const ConstVectorRef& u,
-                     VectorRef out) const
+                     VectorRef out) const override
         { get_override("forward")(x, u, out); }
 
         void dForward(const ConstVectorRef& x,
                       const ConstVectorRef& u,
                       MatrixRef Jx,
-                      MatrixRef Ju) const
+                      MatrixRef Ju) const override
         { get_override("dForward")(x, u, Jx, Ju); }
 
       };

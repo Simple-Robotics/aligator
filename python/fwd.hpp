@@ -21,6 +21,8 @@ namespace proxddp
     void exposeFunctions();
     void exposeNode();
     void exposeProblem();
+
+    void exposeDynamics();
     void exposeIntegrators();
 
   } // namespace python

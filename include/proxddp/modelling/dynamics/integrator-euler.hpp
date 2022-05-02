@@ -1,4 +1,5 @@
 #pragma once
+///   Define the explicit Euler integrator.
 
 #include "proxddp/modelling/dynamics/integrator-base.hpp"
 
@@ -14,7 +15,7 @@ namespace proxddp
       using Scalar = _Scalar;
       PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
       using Base = ExplicitIntegratorTpl<Scalar>;
-      using Data = typename Base::Data;
+      using Data = ExplicitIntegratorDataTpl<Scalar>;
 
       /// Integration time step \f$h\f$.
       Scalar timestep_;

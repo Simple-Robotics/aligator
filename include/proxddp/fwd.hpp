@@ -1,4 +1,4 @@
-/// @file   Forward declarations.
+///   Forward declarations.
 #pragma once
 
 #include "proxnlp/fwd.hpp"

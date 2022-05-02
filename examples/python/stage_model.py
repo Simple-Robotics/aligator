@@ -1,6 +1,9 @@
 from proxnlp import manifolds
 import proxddp
 import numpy as np
+from examples.python import utils
+
+import matplotlib.pyplot as plt
 
 space = manifolds.SE2()
 nu = space.ndx
@@ -54,3 +57,39 @@ stage_data = stage_model.createData()
 
 shooting_problem = proxddp.ShootingProblem()
 shooting_problem.add_stage(stage_model)
+
+
+class TwistModelExplicit(proxddp.ExplicitDynamicsModel):
+    def __init__(self, dt: float, B: np.ndarray = None):
+        if B is None:
+            B = np.eye(nu)
+        self.B = B
+        self.dt = dt
+        super().__init__(space, nu)
+
+    def forward(self, x, u, out):
+        out[:] = space.integrate(x, self.dt * self.B @ u)
+
+    def dForward(self, x, u, Jx, Ju):
+        v_ = self.dt * self.B @ u
+        dv_du = self.dt * self.B
+
+        space.Jintegrate(x, v_, Jx, 0)
+        Jxnext_dv = space.Jintegrate(x, v_, 1)
+        Ju[:, :] = Jxnext_dv @ dv_du
+
+
+us_ = [u0] * 20
+expdyn = TwistModelExplicit(dt=0.05)
+xs_out = proxddp.rollout(expdyn, x0, us_).tolist()
+
+fig, ax = plt.subplots()
+ax: plt.Axes
+cmap = plt.get_cmap("viridis")
+cols_ = cmap(np.linspace(0, 1, len(xs_out)))
+
+for i, q in enumerate(xs_out):
+    utils.plot_se2_pose(q, ax, alpha=0.2, fc=cols_[i])
+
+ax.set_aspect("equal")
+plt.show()

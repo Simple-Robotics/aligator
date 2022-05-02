@@ -1,6 +1,5 @@
 #pragma once
 
-#include "proxddp/fwd.hpp"
 #include "proxddp/core/dynamics.hpp"
 
 
@@ -20,9 +19,11 @@ namespace proxddp
     struct ContinuousDynamicsDataTpl;
 
     // fwd ODEBaseTpl
-    /// @todo define this
     template<typename _Scalar>
     struct ODEBaseTpl;
+
+    template<typename _Scalar>
+    struct ODEDataTpl;
 
     //// INTEGRATORS
 

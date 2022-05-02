@@ -1,4 +1,5 @@
-#include "proxddp/modelling/dynamics/euler.hpp"
+#include "proxddp/modelling/dynamics/integrator-euler.hpp"
+#include "proxddp/modelling/dynamics/integrator-rk2.hpp"
 
 #include <proxnlp/modelling/spaces/vector-space.hpp>
 
@@ -16,5 +17,12 @@ BOOST_AUTO_TEST_CASE(euler)
 
 }
 
+BOOST_AUTO_TEST_CASE(rk2)
+{
+  using Manifold = proxnlp::VectorSpaceTpl<double>;
+  constexpr int NX = 3;
+  Manifold space(NX);
+
+}
 
 BOOST_AUTO_TEST_SUITE_END()

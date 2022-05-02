@@ -1,4 +1,6 @@
 #pragma once
+/// @file continuous-base.hpp
+/// @brief Base definitions for continuous dynamics.
 
 #include "proxddp/modelling/dynamics/fwd.hpp"
 
@@ -8,7 +10,8 @@ namespace proxddp
 namespace dynamics
 {
 
-  /** @brief Continuous dynamics described by differential-algebraic equations (DAEs).
+  /** @brief Continuous dynamics described by differential-algebraic equations (DAEs)
+   *         \f$F(\dot{x}, x, u) = 0\f$.
    * 
    * @details Continuous dynamics described as \f$ f(x, u, \dot{x}) = 0 \f$.
    *          The codimension of this function is the same as that of \f$x\f$.
@@ -19,19 +22,18 @@ namespace dynamics
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
     using Manifold = ManifoldAbstractTpl<Scalar>;
+    using Data = ContinuousDynamicsDataTpl<Scalar>;
+
     /// State space.
     const Manifold& space_;
-    /// State space dimension.
-    const int ndx_;
     /// Control space dimension.
     const int nu_;
 
-    inline int ndx() const { return ndx_; }
+    inline int ndx() const { return space_.ndx(); }
     inline int nu()  const { return nu_; }
 
-    ContinuousDynamicsTpl(const Manifold& manifold, const int nu)
-      : space_(manifold)
-      , ndx_(manifold.ndx())
+    ContinuousDynamicsTpl(const Manifold& space, const int nu)
+      : space_(space)
       , nu_(nu)
       {}
 
@@ -40,21 +42,27 @@ namespace dynamics
     /// @brief   Evaluate the vector field at a point \f$(x, u)\f$.
     /// @param   x The input state variable.
     /// @param   u The input control variable.
-    /// @param[out] out The output vector.
-    virtual void forward(const ConstVectorRef& x, const ConstVectorRef& u, const ConstVectorRef& xdot, VectorRef out) const = 0;
-
-    /// @brief  Differentiate the vector field.
-    virtual void dForward(const ConstVectorRef& x,
+    /// @param   xdot Derivative of the state.
+    /// @param[out] data The output data object.
+    virtual void evaluate(const ConstVectorRef& x,
                           const ConstVectorRef& u,
                           const ConstVectorRef& xdot,
-                          MatrixRef Jx,
-                          MatrixRef Ju) const = 0;
+                          Data& data) const = 0;
 
-    using Data = ContinuousDynamicsDataTpl<Scalar>;
+    /// @brief  Differentiate the vector field.
+    /// @param   x The input state variable.
+    /// @param   u The input control variable.
+    /// @param   xdot Derivative of the state.
+    /// @param[out] data The output data object.
+    virtual void computeJacobians(const ConstVectorRef& x,
+                                  const ConstVectorRef& u,
+                                  const ConstVectorRef& xdot,
+                                  Data& data) const = 0;
+
     /// @brief  Create a data holder instance.
-    shared_ptr<Data> createData() const
+    virtual shared_ptr<Data> createData() const
     {
-      return std::make_shared<Data>(ndx_, nu_);
+      return std::make_shared<Data>(ndx(), nu());
     }
 
   };
@@ -66,18 +74,19 @@ namespace dynamics
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
 
-    VectorXs value_;
+    /// Residual value \f$e = f(x,u,\dot{x})\f$
+    VectorXs error_;
     MatrixXs Jx_;
     MatrixXs Ju_;
     MatrixXs Jxdot_;
 
     ContinuousDynamicsDataTpl(const int ndx, const int nu)
-      : value_(ndx)
+      : error_(ndx)
       , Jx_(ndx, ndx)
       , Ju_(ndx, nu)
       , Jxdot_(ndx, ndx)
     {
-      value_.setZero();
+      error_.setZero();
       Jx_.setZero();
       Ju_.setZero();
       Jxdot_.setZero();
