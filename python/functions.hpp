@@ -2,7 +2,7 @@
 
 #include "proxddp/python/fwd.hpp"
 
-#include "proxddp/core/node-function.hpp"
+#include "proxddp/core/function.hpp"
 #include "proxddp/core/dynamics.hpp"
 #include "proxddp/core/explicit-dynamics.hpp"
 
@@ -35,37 +35,23 @@ namespace proxddp
                       const ConstVectorRef& u,
                       const ConstVectorRef& y,
                       Data& data) const override
-        { get_override("evaluate")(x, u, y, data); }
+        { PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeJacobians", x, u, y, data); }
 
         void computeJacobians(const ConstVectorRef& x,
                               const ConstVectorRef& u,
                               const ConstVectorRef& y,
                               Data& data) const override
-        { get_override("computeJacobians")(x, u, y, data); }
+        { PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeJacobians", x, u, y, data); }
         
         void computeVectorHessianProducts(const ConstVectorRef& x,
                                           const ConstVectorRef& u,
                                           const ConstVectorRef& y,
                                           const ConstVectorRef& lbda,
                                           Data& data) const override
-        {
-          if (bp::override f = get_override("computeVectorHessianProducts"))
-          {
-            f(x, u, y, lbda, data);
-          } else {
-            FunctionBase::computeVectorHessianProducts(x, u, y, lbda, data);
-          }
-        }
+        { PROXDDP_PYTHON_OVERRIDE(void, FunctionBase, computeVectorHessianProducts, x, u, y, lbda, data); }
 
         shared_ptr<Data> createData() const override
-        {
-          if (bp::override f = get_override("createData"))
-          {
-            return f();
-          } else {
-            return FunctionBase::createData();
-          }
-        }
+        { PROXDDP_PYTHON_OVERRIDE(shared_ptr<Data>, FunctionBase, createData,); }
 
       };
 
@@ -83,13 +69,13 @@ namespace proxddp
         void forward(const ConstVectorRef& x,
                      const ConstVectorRef& u,
                      VectorRef out) const override
-        { get_override("forward")(x, u, out); }
+        { PROXDDP_PYTHON_OVERRIDE_PURE(void, "forward", x, u, out) }
 
         void dForward(const ConstVectorRef& x,
                       const ConstVectorRef& u,
                       MatrixRef Jx,
                       MatrixRef Ju) const override
-        { get_override("dForward")(x, u, Jx, Ju); }
+        { PROXDDP_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, Jx, Ju) }
 
       };
       
