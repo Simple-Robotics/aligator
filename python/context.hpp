@@ -20,6 +20,8 @@ namespace proxddp
       using StageFunction = StageFunctionTpl<Scalar>;
       using FunctionData = FunctionDataTpl<Scalar>;
 
+      using CostBase = CostBaseTpl<Scalar>;
+
       using DynamicsModel = DynamicsModelTpl<Scalar>;      
 
       using ShootingProblem = ShootingProblemTpl<Scalar>;
