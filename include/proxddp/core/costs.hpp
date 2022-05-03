@@ -1,4 +1,7 @@
 #pragma once
+/// @file costs.hpp
+/// @brief Define cost functions.
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
 #include "proxddp/fwd.hpp"
 #include "proxddp/core/function.hpp"
@@ -53,6 +56,7 @@ namespace proxddp
       return std::make_shared<CostData>(ndx_, nu_);
     }
 
+    virtual ~CostBaseTpl() = default;
   };
   
   /// @brief  Data struct for CostBaseTpl
@@ -62,10 +66,10 @@ namespace proxddp
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
 
-    Scalar value;
+    Scalar value_;
 
     VectorXs grad_;
-    VectorXs hess_;
+    MatrixXs hess_;
 
     /// @brief Gradient \f$\ell_x\f$
     VectorRef Lx_;

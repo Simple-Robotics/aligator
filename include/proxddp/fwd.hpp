@@ -7,14 +7,17 @@
 namespace proxddp
 {
 
+  /// TYPEDEFS FROM PROXNLP
+
   // Use the shared_ptr used in proxnlp.
   using proxnlp::shared_ptr;
-
   using proxnlp::math_types;
   using proxnlp::ManifoldAbstractTpl;
-
   // Using the constraint set from proxnlp
   using proxnlp::ConstraintSetBase;
+
+
+  /// 1 BASE TYPES
 
   // fwd StageFunctionTpl
   template<typename Scalar>
@@ -39,8 +42,16 @@ namespace proxddp
   template<typename Scalar>
   struct StageConstraintTpl;
 
+  // fwd ExplicitDynamicsModelTpl
+  template<typename Scalar>
+  struct ExplicitDynamicsModelTpl;
 
-  /* Stage models */
+  // fwd declaration of ExplicitDynamicsDataTpl
+  template<typename _Scalar>
+  struct ExplicitDynamicsDataTpl;
+
+
+  /// STAGE MODEL
 
   // fwd StageModelTpl
   template<typename Scalar>
@@ -50,7 +61,7 @@ namespace proxddp
   struct StageDataTpl;
 
 
-  /* Shooting problem */
+  /// SHOOTING PROBLEM
 
   // fwd ShootingProblemTpl
   template<typename _Scalar>
