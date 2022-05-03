@@ -8,10 +8,6 @@
 namespace proxddp
 {
 
-  // fwd declaration of ExplicitDynamicsDataTpl
-  template<typename _Scalar>
-  struct ExplicitDynamicsDataTpl;
-
   /** @brief Explicit forward dynamics model \f$ x_{k+1} = f(x_k, u_k) \f$.
    * 
    * 
@@ -66,7 +62,7 @@ namespace proxddp
 
     std::shared_ptr<Data> createData() const override
     {
-      return std::make_shared<SpecificData>(this->ndx1, this->nu, this->ndx2);
+      return std::make_shared<SpecificData>(this->ndx1, this->nu, this->out_space_);
     }
 
   };
@@ -81,16 +77,14 @@ namespace proxddp
 
     ExplicitDynamicsDataTpl(const int ndx1,
                             const int nu,
-                            const int ndx2)
-      : FunctionDataTpl<Scalar>(ndx1, nu, ndx2, ndx2)
-      , xout_(ndx2)
+                            const ManifoldAbstractTpl<Scalar>& space)
+      : FunctionDataTpl<Scalar>(ndx1, nu, space.ndx(), space.ndx())
+      , xout_(space.nx())
     {
       xout_.setZero();
+      const int ndx2 = space.ndx();
       this->Jy_ = -MatrixXs::Identity(ndx2, ndx2);
     }
-    
-    ExplicitDynamicsDataTpl(const int ndx, const int nu)
-      : ExplicitDynamicsDataTpl(ndx, nu, ndx) {}
 
   };
   
