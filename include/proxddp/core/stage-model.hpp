@@ -39,6 +39,7 @@ namespace proxddp
     using Manifold = ManifoldAbstractTpl<Scalar>;
     using Dynamics = DynamicsModelTpl<Scalar>;
     using Constraint = StageConstraintTpl<Scalar>;
+    using CostBase = CostBaseTpl<Scalar>;
     using Data = StageDataTpl<Scalar>;
 
     using ConstraintPtr = shared_ptr<Constraint>;
@@ -50,6 +51,7 @@ namespace proxddp
     /// Control vector space.
     VectorSpaceTpl<Scalar> uspace;
 
+    const CostBase& cost_;
     const Dynamics& dyn_model_;
     std::vector<ConstraintPtr> constraints_;
 
@@ -62,18 +64,22 @@ namespace proxddp
     StageModelTpl(const Manifold& space1,
                   const int nu,
                   const Manifold& space2,
+                  const CostBase& cost,
                   const Dynamics& dyn_model)
       : xspace1_(space1)
       , xspace2_(space2)
       , uspace(nu)
+      , cost_(cost)
       , dyn_model_(dyn_model)
       {}
 
     /// Secondary constructor: use a single manifold.
-    StageModelTpl(const Manifold& space, const int nu, const Dynamics& dyn_model)
-      : StageModelTpl(space, nu, space, dyn_model)
+    StageModelTpl(const Manifold& space,
+                  const int nu,
+                  const CostBase& cost,
+                  const Dynamics& dyn_model)
+      : StageModelTpl(space, nu, space, cost, dyn_model)
       {}
-
 
     /// @brief    Add a constraint to the stage.
     void addConstraint(const ConstraintPtr& cstr) { constraints_.push_back(cstr); }
@@ -84,12 +90,14 @@ namespace proxddp
     /* Compute on the node */
 
     /// @brief    Evaluate all the functions (cost, dynamics, constraints) at this node.
-    void calc(const ConstVectorRef& x,
-              const ConstVectorRef& u,
-              const ConstVectorRef& y,
-              Data& data) const
+    void evaluate(const ConstVectorRef& x,
+                  const ConstVectorRef& u,
+                  const ConstVectorRef& y,
+                  Data& data) const
     {
-      dyn_model_->evaluate(x, u, y, *data.dyn_data);
+      dyn_model_.evaluate(x, u, y, *data.dyn_data);
+      cost_.evaluate(x, u, *data.cost_data);
+
       for (std::size_t i = 0; i < numConstraints(); i++)
       {
         // calc on constraint
@@ -98,6 +106,39 @@ namespace proxddp
       }
     }
 
+    /// @brief    Compute the derivatives of the StageModelTpl.
+    void computeDerivatives(const ConstVectorRef& x,
+                            const ConstVectorRef& u,
+                            const ConstVectorRef& y,
+                            const std::vector<ConstVectorRef>& lbdas,
+                            Data& data,
+                            bool compute_all_hessians = false) const
+    {
+      cost_.computeGradients(x, u, *data.cost_data);
+      cost_.computeHessians(x, u, *data.cost_data);
+
+      dyn_model_.computeJacobians(x, u, y, *data.dyn_data);
+      if (compute_all_hessians)
+      {
+        const std::size_t desired_lbda_size = numConstraints() + 1;
+        if (lbdas.size() != desired_lbda_size)
+          throw std::runtime_error("Asked for Hessians but provided wrong number of Hessians.");
+        dyn_model_.computeVectorHessianProducts(x, u, y, lbdas[0], *data.dyn_data);
+      }
+
+      for (std::size_t i = 0; i < numConstraints(); i++)
+      {
+        // calc on constraint
+        const auto& cstr = constraints_[i];
+        cstr->func_.computeJacobians(x, u, y, *data.constraint_data[i]);
+
+        if (compute_all_hessians)
+        {
+          cstr->func_.computeVectorHessianProducts(x, u, y, lbdas[i + 1], *data.constraint_data[i]);
+        }
+
+      }
+    }
 
     /// @brief    Create a Data object.
     shared_ptr<Data> createData() const
@@ -137,18 +178,22 @@ namespace proxddp
     PROXNLP_FUNCTION_TYPEDEFS(Scalar)
 
     using StageModel = StageModelTpl<Scalar>;
+    using CostData = CostDataTpl<Scalar>;
     using FunctionData = FunctionDataTpl<Scalar>;
 
     /// Data struct for the dynamics.
     shared_ptr<DynamicsDataTpl<Scalar>> dyn_data;
     /// Data structs for the functions involved in the constraints.
     std::vector<shared_ptr<FunctionData>> constraint_data;
+    /// Data for the running costs.
+    shared_ptr<CostData> cost_data;
 
     /// @brief    Constructor.
     ///
-    /// The constructor initializes or fills in the data members using move semantics.
+    /// @details  The constructor initializes or fills in the data members using move semantics.
     explicit StageDataTpl(const StageModel& stage_model)
       : dyn_data(std::move(stage_model.dyn_model_.createData()))
+      , cost_data(std::move(stage_model.cost_.createData()))
     {
       const std::size_t nc = stage_model.numConstraints();
       constraint_data.reserve(nc);
