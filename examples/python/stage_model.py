@@ -9,54 +9,9 @@ space = manifolds.SE2()
 nu = space.ndx
 
 
-class TwistModel(proxddp.DynamicsModel):
-    def __init__(self, B: np.ndarray = None):
-        if B is None:
-            B = np.eye(nu)
-        proxddp.DynamicsModel.__init__(self, space.ndx, nu)
-        self.B = B
-
-    def evaluate(self, x, u, y, data: proxddp.FunctionData):
-        data.value[:] = space.difference(
-            y, space.integrate(x, self.B @ u))
-
-    def computeJacobians(self, x, u, y, data: proxddp.FunctionData):
-        v_ = self.B @ u
-
-        xnext = space.integrate(x, v_)
-
-        Jv_u = self.B
-        Jxnext_x = space.Jintegrate(x, v_, 0)
-        Jxnext_v = space.Jintegrate(x, v_, 1)
-
-        # res = space.difference(xnext, y)
-
-        Jres_xnext = np.eye(space.ndx)
-        Jres_y = np.eye(space.ndx)
-        Jres_xnext = space.Jdifference(y, xnext, 0)
-        Jres_y = space.Jdifference(y, xnext, 1)
-
-        data.Jx[:, :] = Jres_xnext @ Jxnext_x
-        data.Ju[:, :] = Jres_xnext @ Jxnext_v @ Jv_u
-        data.Jy[:, :] = Jres_y
-
-
-dynmodel = TwistModel()
-data = dynmodel.createData()
-
 x0 = space.rand()
 u0 = np.random.randn(nu)
 x1 = space.rand()
-
-dynmodel.evaluate(x0, u0, x1, data)
-dynmodel.computeJacobians(x0, u0, x1, data)
-
-
-stage_model = proxddp.StageModel(space, nu, dynmodel)
-stage_data = stage_model.createData()
-
-shooting_problem = proxddp.ShootingProblem()
-shooting_problem.add_stage(stage_model)
 
 
 class TwistModelExplicit(proxddp.ExplicitDynamicsModel):
@@ -79,10 +34,49 @@ class TwistModelExplicit(proxddp.ExplicitDynamicsModel):
         Ju[:, :] = Jxnext_dv @ dv_du
 
 
+class MyQuadCost(proxddp.CostBase):
+    def __init__(self, W: np.ndarray, x_ref: np.ndarray):
+        self.x_ref = x_ref
+        self.W = W
+        super().__init__(space.ndx, nu)
+
+    def evaluate(self, x, u, data):
+        dx = space.difference(x, self.x_ref)
+        data.value = 0.5 * np.dot(dx, self.W @ dx)
+
+    def computeGradients(self, x, u, data):
+        space.Jdifference(x, self.x_ref, data.Lx, 0)
+        data.Lx[:] = self.W @ data.Lx
+        data.Lu[:] = 0.
+
+    def computeHessians(self, x, u, data):
+        J = space.Jdifference(x, self.x_ref, 0)
+        data._hessian[:] = 0.
+        data.Lxx[:, :] = J.T @ self.W @ J
+
+
 us_ = [u0] * 20
 print("const control u0:", u0)
-expdyn = TwistModelExplicit(dt=0.1)
-xs_out = proxddp.rollout(expdyn, x0, us_).tolist()
+dynmodel = TwistModelExplicit(dt=0.1)
+dyn_data = dynmodel.createData()
+xs_out = proxddp.rollout(dynmodel, x0, us_).tolist()
+
+dynmodel.evaluate(x0, u0, x1, dyn_data)
+dynmodel.computeJacobians(x0, u0, x1, dyn_data)
+
+cost = MyQuadCost(W=np.eye(space.ndx), x_ref=x1)
+
+stage_model = proxddp.StageModel(space, nu, cost, dynmodel)
+stage_data = stage_model.createData()
+cost_data = stage_data.cost_data
+
+cost.evaluate(x0, u0, cost_data)
+cost.computeGradients(x0, u0, cost_data)
+cost.computeHessians(x0, u0, cost_data)
+
+shooting_problem = proxddp.ShootingProblem()
+shooting_problem.add_stage(stage_model)
+
 
 fig, ax = plt.subplots()
 ax: plt.Axes

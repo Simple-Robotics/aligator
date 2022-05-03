@@ -35,6 +35,26 @@ struct AddModel : ExplicitDynamicsModelTpl<double>
 };
 
 
+struct MyCost : CostBaseTpl<double>
+{
+  using CostBaseTpl<double>::CostBaseTpl;
+  void evaluate(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const
+  {
+    data.value_ = 0.;
+  }
+
+  void computeGradients(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const
+  {
+    data.grad_.setZero();
+  }
+
+  void computeHessians(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const
+  {
+    data.hess_.setZero();
+  }
+};
+
+
 BOOST_AUTO_TEST_CASE(test_node1)
 {
   using Manifold = proxnlp::VectorSpaceTpl<Scalar>;
@@ -45,7 +65,8 @@ BOOST_AUTO_TEST_CASE(test_node1)
 
   Manifold space(NX);
   AddModel dyn_model(space, NU);
-  Stage stage(space, NU, dyn_model);
+  MyCost cost(NX, NU);
+  Stage stage(space, NU, cost, dyn_model);
 
   fmt::print("Node: {}\n", stage);
 
@@ -60,6 +81,10 @@ BOOST_AUTO_TEST_CASE(test_node1)
   {
     BOOST_CHECK(x0.isApprox(xs[i]));
   }
+
+  auto stage_data = stage.createData();
+  stage.evaluate(x0, u0, x0, *stage_data);
+  BOOST_CHECK_EQUAL(stage_data->cost_data->value_, 0.);
 
 }
 

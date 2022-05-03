@@ -19,17 +19,24 @@ namespace python
       bp::init<const Manifold&,
                const int,
                const Manifold&,
+               const context::CostBase&,
                const DynamicsModel&
-               >(bp::args("self", "space1", "nu", "space2", "dyn_model"))
+               >(bp::args("self", "space1", "nu", "space2", "cost", "dyn_model"))
     )
       .def(bp::init<const Manifold&,
                     const int,
+                    const context::CostBase&,
                     const DynamicsModel&
-                    >(bp::args("self", "space", "nu", "dyn_model")))
+                    >(bp::args("self", "space", "nu", "cost", "dyn_model")))
       .def("add_constraint", (void(StageModel::*)(const StageModel::ConstraintPtr&))&StageModel::addConstraint)
       .def("createData", &StageModel::createData, "Create the data object.")
-      // .def_readonly("space1", &StageModelTpl<Scalar>::xspace1_)
       .def_readonly("uspace", &StageModel::uspace)
+      .def("evaluate", &StageModel::evaluate,
+           bp::args("self", "x", "u", "y", "data"),
+           "Evaluate the stage cost, dynamics, constraints.")
+      .def("computeDerivatives", &StageModel::computeDerivatives,
+           bp::args("self", "x", "u", "y", "lbdas", "data", "compute_all_hessians"),
+           "Compute derivatives of the stage cost, dynamics, and constraints.")
       .add_property("ndx1", &StageModel::ndx1)
       .add_property("ndx2", &StageModel::ndx2)
       .add_property("nu", &StageModel::nu, "Control space dimension.")
@@ -41,6 +48,7 @@ namespace python
       "StageData", "Data struct for StageModel objects.",
       bp::init<const StageModel&>()
     )
+      .def_readonly("cost_data", &StageData::cost_data)
       .def_readonly("dyn_data", &StageData::dyn_data)
       .def_readonly("constraint_data", &StageData::constraint_data)
       ;
