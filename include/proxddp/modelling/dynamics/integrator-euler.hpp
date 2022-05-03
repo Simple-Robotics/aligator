@@ -1,7 +1,7 @@
 #pragma once
 ///   Define the explicit Euler integrator.
 
-#include "proxddp/modelling/dynamics/integrator-base.hpp"
+#include "proxddp/modelling/dynamics/integrator-explicit.hpp"
 
 
 namespace proxddp

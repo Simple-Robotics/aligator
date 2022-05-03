@@ -3,7 +3,6 @@
 #pragma once
 
 #include "proxddp/modelling/dynamics/continuous-base.hpp"
-#include "proxddp/core/explicit-dynamics.hpp"
 
 
 namespace proxddp

@@ -1,6 +1,7 @@
 #pragma once
 /// @file continuous-base.hpp
 /// @brief Base definitions for continuous dynamics.
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
 #include "proxddp/modelling/dynamics/fwd.hpp"
 

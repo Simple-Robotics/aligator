@@ -1,8 +1,10 @@
 #pragma once
 ///   Base definitions for explicit integrators.
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
 
 #include "proxddp/modelling/dynamics/integrator-base.hpp"
+#include "proxddp/core/explicit-dynamics.hpp"
 
 
 namespace proxddp
