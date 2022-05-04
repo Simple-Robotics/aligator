@@ -67,6 +67,9 @@ namespace proxddp
   template<typename _Scalar>
   struct ShootingProblemTpl;
 
+  template<typename _Scalar>
+  struct ProblemDataTpl;
+
 
   /// Math utilities
   namespace math
