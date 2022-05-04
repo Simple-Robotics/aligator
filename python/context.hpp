@@ -21,10 +21,11 @@ namespace proxddp
       using FunctionData = FunctionDataTpl<Scalar>;
 
       using CostBase = CostBaseTpl<Scalar>;
-
       using DynamicsModel = DynamicsModelTpl<Scalar>;      
+      using StageModel = StageModelTpl<Scalar>;
 
       using ShootingProblem = ShootingProblemTpl<Scalar>;
+      using ProblemData = ProblemDataTpl<Scalar>;
 
     } // namespace context
 
