@@ -5,7 +5,6 @@
 
 #include <proxnlp/manifold-base.hpp>
 
-#include <proxnlp/modelling/spaces/cartesian-product.hpp>
 #include <proxnlp/modelling/spaces/vector-space.hpp>
 
 #include "proxddp/core/costs.hpp"
@@ -15,10 +14,6 @@
 
 namespace proxddp
 {
-  using proxnlp::VectorSpaceTpl;
-  using proxnlp::CartesianProductTpl;
-
-
   // fwd StageData
   template<typename _Scalar>
   struct StageDataTpl;
@@ -49,7 +44,7 @@ namespace proxddp
     /// Next state space.
     const Manifold& xspace2_;
     /// Control vector space.
-    VectorSpaceTpl<Scalar> uspace;
+    proxnlp::VectorSpaceTpl<Scalar> uspace;
 
     const CostBase& cost_;
     const Dynamics& dyn_model_;
@@ -60,6 +55,21 @@ namespace proxddp
     inline int ndx2() const { return xspace2_.ndx(); }
 
     inline std::size_t numConstraints() const { return constraints_.size(); }
+
+    /// Number of primal variables
+    inline int numPrimal() const {
+      return this->nu() + this->ndx2();
+    }
+    /// Number of dual variables
+    inline int numDual() const {
+      int ret = 0;
+      for (std::size_t i = 0; i < numConstraints(); i++)
+      {
+        const StageFunctionTpl<Scalar>& func = constraints_[i]->func_;
+        ret += func.nr;
+      }
+      return ret;
+    }
 
     StageModelTpl(const Manifold& space1,
                   const int nu,
@@ -110,33 +120,18 @@ namespace proxddp
     void computeDerivatives(const ConstVectorRef& x,
                             const ConstVectorRef& u,
                             const ConstVectorRef& y,
-                            const std::vector<ConstVectorRef>& lbdas,
-                            Data& data,
-                            bool compute_all_hessians = false) const
+                            Data& data) const
     {
       cost_.computeGradients(x, u, *data.cost_data);
       cost_.computeHessians(x, u, *data.cost_data);
 
       dyn_model_.computeJacobians(x, u, y, *data.dyn_data);
-      if (compute_all_hessians)
-      {
-        const std::size_t desired_lbda_size = numConstraints() + 1;
-        if (lbdas.size() != desired_lbda_size)
-          throw std::runtime_error("Asked for Hessians but provided wrong number of Hessians.");
-        dyn_model_.computeVectorHessianProducts(x, u, y, lbdas[0], *data.dyn_data);
-      }
 
       for (std::size_t i = 0; i < numConstraints(); i++)
       {
         // calc on constraint
         const auto& cstr = constraints_[i];
         cstr->func_.computeJacobians(x, u, y, *data.constraint_data[i]);
-
-        if (compute_all_hessians)
-        {
-          cstr->func_.computeVectorHessianProducts(x, u, y, lbdas[i + 1], *data.constraint_data[i]);
-        }
-
       }
     }
 
