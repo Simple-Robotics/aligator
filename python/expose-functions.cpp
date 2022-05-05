@@ -33,11 +33,10 @@ namespace proxddp
         .def("computeVectorHessianProducts",
              &StageFunction::computeVectorHessianProducts,
              bp::args("self", "x", "u", "y", "lbda", "data"))
-        .def("createData", &StageFunction::createData, "Create a data object.")
         .def_readonly("ndx1", &StageFunction::ndx1, "Current state space.")
         .def_readonly("ndx2", &StageFunction::ndx2, "Next state space.")
         .def_readonly("nu", &StageFunction::nu, "Control dimension.")
-      ;
+        .def(CreateDataPythonVisitor<StageFunction>());
 
       bp::class_<context::FunctionData, shared_ptr<context::FunctionData>>(
         "FunctionData", "Data struct for holding data about functions.",
@@ -65,6 +64,8 @@ namespace proxddp
         .add_property("Hyy", bp::make_getter(&context::FunctionData::Hyy_, bp::return_value_policy<bp::return_by_value>()),
                       "Hessian with respect to $(y, y)$.")
       ;
+
+      pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<context::FunctionData>>, true>::expose("StdVec_FunctionData", "Vector of function data objects.");
 
       /** DYNAMICS **/
       using PyDynModel = internal::PyStageFunction<DynamicsModel>;

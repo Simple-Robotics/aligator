@@ -29,8 +29,7 @@ namespace proxddp
              bp::args("self", "x", "u", "xdot", "data"))
         .def("computeJacobians",  bp::pure_virtual(&ContinuousDynamicsBase::computeJacobians),
              bp::args("self", "x", "u", "xdot", "data"))
-        .def("createData",&ContinuousDynamicsBase::createData, "Instantiate a data holder.")
-      ;
+        .def(CreateDataPythonVisitor<ContinuousDynamicsBase>());
 
       using ContData = dynamics::ContinuousDynamicsDataTpl<Scalar>;
       bp::register_ptr_to_python<shared_ptr<ContData>>();
@@ -65,8 +64,7 @@ namespace proxddp
              bp::args("self", "x", "u", "Jout_x", "Jout_u"),
              "Compute the derivatives of the ODE vector field wrt (x, u)."
              )
-        .def("createData", &ODEBase::createData)
-      ;
+        .def(CreateDataPythonVisitor<ODEBase>());
 
       bp::class_<ODEData,
                  bp::bases<ContData>

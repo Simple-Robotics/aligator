@@ -12,47 +12,46 @@ namespace python
     using context::Scalar;
     using context::Manifold;
     using context::DynamicsModel;
-    using StageModel = StageModelTpl<Scalar>;
+    using context::StageModel;
 
     bp::class_<StageModel>(
       "StageModel", "A stage of the control problem. Holds costs, dynamics, and constraints.",
-      bp::init<const Manifold&,
-               const int,
-               const Manifold&,
-               const context::CostBase&,
-               const DynamicsModel&
-               >(bp::args("self", "space1", "nu", "space2", "cost", "dyn_model"))
+      bp::init<const Manifold&, const int, const Manifold&,
+               const context::CostBase&, const DynamicsModel&>(
+                 bp::args("self", "space1", "nu", "space2", "cost", "dyn_model")
+                 )
     )
-      .def(bp::init<const Manifold&,
-                    const int,
-                    const context::CostBase&,
-                    const DynamicsModel&
-                    >(bp::args("self", "space", "nu", "cost", "dyn_model")))
+      .def(bp::init<const Manifold&, const int, const context::CostBase&, const DynamicsModel&>(
+        bp::args("self", "space", "nu", "cost", "dyn_model")
+        ))
       .def("add_constraint", (void(StageModel::*)(const StageModel::ConstraintPtr&))&StageModel::addConstraint)
-      .def("createData", &StageModel::createData, "Create the data object.")
       .def_readonly("uspace", &StageModel::uspace)
       .def("evaluate", &StageModel::evaluate,
            bp::args("self", "x", "u", "y", "data"),
            "Evaluate the stage cost, dynamics, constraints.")
       .def("computeDerivatives", &StageModel::computeDerivatives,
-           bp::args("self", "x", "u", "y", "lbdas", "data", "compute_all_hessians"),
+           bp::args("self", "x", "u", "y", "data"),
            "Compute derivatives of the stage cost, dynamics, and constraints.")
       .add_property("ndx1", &StageModel::ndx1)
       .add_property("ndx2", &StageModel::ndx2)
       .add_property("nu", &StageModel::nu, "Control space dimension.")
-    ;
+      .def(CreateDataPythonVisitor<StageModel>())
+      .def(ClonePythonVisitor<StageModel>());
 
-    using StageData = StageModel::Data;
+    using StageData = StageDataTpl<Scalar>;
+
     bp::register_ptr_to_python<shared_ptr<StageData>>();
+
     bp::class_<StageData>(
       "StageData", "Data struct for StageModel objects.",
       bp::init<const StageModel&>()
     )
-      .def_readonly("cost_data", &StageData::cost_data)
-      .def_readonly("dyn_data", &StageData::dyn_data)
-      .def_readonly("constraint_data", &StageData::constraint_data)
+      .def_readwrite("cost_data", &StageData::cost_data)
+      .def_readwrite("dyn_data", &StageData::dyn_data)
+      .def_readwrite("constraint_data", &StageData::constraint_data)
       ;
 
+    pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<StageData>>, true>::expose("StdVec_StageData");
   }
   
 } // namespace python

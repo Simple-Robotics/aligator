@@ -67,13 +67,10 @@ namespace proxddp
         .def("computeHessians", bp::pure_virtual(&context::CostBase::computeHessians),
              bp::args("self", "x", "u", "data"),
              "Compute the cost function hessians.")
-        .def("createData", &context::CostBase::createData,
-             bp::args("self"),
-             "Instantiate a data holding struct.")
-      ;
+        .def(CreateDataPythonVisitor<context::CostBase>());
 
       using CostData = CostDataTpl<Scalar>;
-      bp::class_<CostData, shared_ptr<CostData>, boost::noncopyable>(
+      bp::class_<CostData, shared_ptr<CostData>>(
         "CostData", "Cost function data struct.",
         bp::init<const int, const int>(
           bp::args("self", "ndx", "nu")
@@ -90,6 +87,7 @@ namespace proxddp
         .def_readwrite("_hessian", &CostData::hess_)
         ;
 
+      pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<CostData>>, true>::expose("StdVec_CostData", "Vector of CostData.");
     }
     
   } // namespace python
