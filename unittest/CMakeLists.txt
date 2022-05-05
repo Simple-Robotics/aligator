@@ -16,12 +16,14 @@ function(get_cpp_test_name name dir out_var)
   set(${out_var} "test-${prefix}${name}" PARENT_SCOPE)
 endfunction(get_cpp_test_name)
 
+set(TEST_HEADERS
+    generate-problem.hpp)
 
 macro(add_proxddp_test name)
   get_cpp_test_name(${name} ${CMAKE_CURRENT_SOURCE_DIR} test_name)
   set(test_file ${name}.cpp)
 
-  ADD_UNIT_TEST(${test_name} ${test_file})
+  ADD_UNIT_TEST(${test_name} ${test_file} ${TEST_HEADERS})
   set_target_properties(${test_name} PROPERTIES LINKER_LANGUAGE CXX)
   target_include_directories(${test_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -45,7 +47,8 @@ endmacro(add_proxddp_test)
 
 set(TEST_NAMES
     integrators
-    stage-model)
+    problem
+    solver-storage)
 
 foreach(test_name ${TEST_NAMES})
   add_proxddp_test(${test_name})
