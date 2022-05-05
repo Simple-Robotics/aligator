@@ -6,7 +6,6 @@
 /// Main package namespace.
 namespace proxddp
 {
-
   /// TYPEDEFS FROM PROXNLP
 
   // Use the shared_ptr used in proxnlp.
