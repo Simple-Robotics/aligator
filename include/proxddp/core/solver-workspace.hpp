@@ -75,4 +75,103 @@ namespace proxddp
     };
 
   } // namespace internal
+
+  /// Storage for Riccati backward pass.
+  template<typename _Scalar>
+  struct WorkspaceTpl
+  {
+    using Scalar = _Scalar;
+    PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
+    using value_storage_t = internal::value_storage<Scalar>;
+    using q_storage_t = internal::q_function_storage<Scalar>;
+
+    /// @brief Value function parameter storage
+    std::vector<value_storage_t> value_params;
+
+    /// @brief Q-function storage
+    std::vector<q_storage_t> q_params;
+
+    /// @name Riccati gains and buffers for primal-dual steps
+
+    std::vector<MatrixXs> gains_;
+    std::vector<VectorXs> dxs_;
+    std::vector<VectorXs> dus_;
+    std::vector<VectorXs> dlams_;
+
+    /// Buffer for KKT matrix
+    MatrixXs kktMatrixFull_;
+
+    /// @name Temp data
+
+    std::vector<VectorXs> trial_xs_;
+    std::vector<VectorXs> trial_us_;
+    std::vector<VectorXs> trial_lams_;
+
+    WorkspaceTpl(const ShootingProblemTpl<Scalar>& problem);
+
+  };
+
+
+  template<typename Scalar>
+  WorkspaceTpl<Scalar>::WorkspaceTpl(const ShootingProblemTpl<Scalar>& problem)
+  {
+    using VectorXs = typename math_types<Scalar>::VectorXs;
+    using MatrixXs = typename math_types<Scalar>::MatrixXs;
+    using Workspace = WorkspaceTpl<Scalar>;
+    using value_storage_t = typename Workspace::value_storage_t;
+    using q_storage_t = typename Workspace::q_storage_t;
+    using StageModel = StageModelTpl<Scalar>;
+
+    const std::size_t nsteps = problem.numSteps();
+    value_params.reserve(nsteps);
+
+    trial_xs_.reserve(nsteps + 1);
+    trial_us_.reserve(nsteps);
+    trial_lams_.reserve(nsteps);
+
+    int nprim;
+    int ndual;
+    int nx;
+    int nu;
+    int max_kkt_size = 0;
+    std::size_t i = 0;
+    for (i = 0; i < nsteps; i++)
+    {
+      const StageModel& stage = problem.stages_[i];
+      nx = stage.xspace1_.nx();
+      nu = stage.nu();
+      nprim = stage.numPrimal();
+      ndual = stage.numDual();
+
+      value_params.push_back(value_storage_t(stage.ndx1()));
+      q_params.push_back(q_storage_t(stage.ndx1(), nu, stage.ndx2()));
+
+      gains_.push_back(MatrixXs::Zero(nprim + ndual, stage.ndx1() + 1));
+
+      dxs_.push_back(VectorXs::Zero(stage.ndx1()));
+      dus_.push_back(VectorXs::Zero(nu));
+      dlams_.push_back(VectorXs::Zero(ndual));
+
+      trial_xs_.push_back(VectorXs::Zero(nx));
+      trial_us_.push_back(VectorXs::Zero(nu));
+      trial_lams_.push_back(VectorXs::Zero(ndual));
+
+      max_kkt_size = std::max(max_kkt_size, nprim + ndual);
+    }
+
+    assert(i == nsteps);
+    // terminal node
+    const auto& stage = problem.stages_[nsteps - 1];
+
+    nx = stage.xspace1_.nx();
+    value_params.push_back(value_storage_t(stage.ndx2()));
+
+    dxs_.push_back(VectorXs::Zero(stage.ndx2()));
+    trial_xs_.push_back(VectorXs::Zero(nx));
+
+    assert(value_params.size() == nsteps + 1);
+    assert(dxs_.size() == nsteps + 1);
+    assert(dus_.size() == nsteps);
+  }
+
 } // namespace proxddp

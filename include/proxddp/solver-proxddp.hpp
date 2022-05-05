@@ -9,85 +9,72 @@
 
 namespace proxddp
 {
-  /// Storage for Riccati backward pass.
+
   template<typename _Scalar>
-  struct WorkspaceTpl
+  struct ResultsTpl
   {
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
-    using value_storage_t = internal::value_storage<Scalar>;
-    using q_storage_t = internal::q_function_storage<Scalar>;
 
-    /// @brief Value function parameter storage
-    std::vector<value_storage_t> value_params;
+    std::vector<VectorXs> xs_;
+    std::vector<VectorXs> us_;
+    std::vector<VectorXs> lams_;
 
-    /// @brief Q-function storage
-    std::vector<q_storage_t> q_params;
+    ResultsTpl(const ShootingProblemTpl<Scalar>& problem)
+    {
 
-    /// @name Riccati gains and buffers for primal-dual steps
-
-    std::vector<MatrixXs> gains_;
-    std::vector<VectorXs> dxs_;
-    std::vector<VectorXs> dus_;
-    std::vector<VectorXs> dlams_;
-
-    /// Buffer for KKT matrix
-    MatrixXs kktMatrixFull_;
+      const std::size_t nsteps = problem.numSteps();
+      std::size_t i = 0;
+      int nx;
+      int ndual;
+      for (i = 0; i < nsteps; i++)
+      {
+        const StageModelTpl<Scalar>& stage = problem.stages_[i];
+        nx = stage.xspace1_.nx();
+        ndual = stage.numDual();
+        xs_.push_back(VectorXs::Zero(nx));
+        us_.push_back(VectorXs::Zero(stage.nu()));
+        lams_.push_back(VectorXs::Zero(ndual));
+      }
+      xs_.push_back(problem.stages_[nsteps - 1].xspace2_.ndx());
+    }
 
   };
 
-  template<typename Scalar>
-  WorkspaceTpl<Scalar> createWorkspace(
-    const ShootingProblemTpl<Scalar>& problem_)
-  {
-    PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
-    using Workspace = WorkspaceTpl<Scalar>;
-    using value_storage_t = typename Workspace::value_storage_t;
-    using q_storage_t = typename Workspace::q_storage_t;
-    using StageModel = StageModelTpl<Scalar>;
-
-    Workspace workspace;
-    const std::size_t nsteps = problem_.numSteps();
-    workspace.value_params.reserve(nsteps);
-
-    int nprim;
-    int ndual;
-    for (std::size_t i = 0; i < nsteps; i++)
-    {
-      const StageModel& stage = problem_.stages_[i];
-      nprim = stage.numPrimal();
-      ndual = stage.numDual();
-      workspace.value_params.push_back(value_storage_t(stage.ndx1()));
-      workspace.q_params.push_back(q_function_storage(stage.ndx1(), stage.nu(), stage.ndx2()));
-
-      workspace.gains_.push_back(MatrixXs::Zero(nprim + ndual, stage.ndx1() + 1));
-
-      workspace.dxs_.push_back(VectorXs::Zero(stage.ndx1()));
-      workspace.dus_.push_back(VectorXs::Zero(stage.nu()));
-      workspace.dlams_.push_back(VectorXs::Zero(ndual));
-
-    }
-    // terminal node
-    const int term_ndx = problem_.stages_[nsteps - 1].ndx2();
-    workspace.value_params.push_back(value_storage_t(term_ndx));
-    workspace.dxs_.push_back(VectorXs::Zero(term_ndx));
-
-    assert(workspace.value_params.size() == nsteps + 1);
-    assert(workspace.dxs_.size() == nsteps + 1);
-    assert(workspace.dus_.size() == nsteps);
-
-    return workspace;
-  }
-
-
-  /// Run the Riccati forward pass.
+  /// @brief Perform the Riccati forward pass.
+  /// This computes the primal-dual step \f$(\delta x,\delta u,\delta\lambda)\f$
+  /// @warning This function assumes \f$\delta x_0\f$ has already been computed!
   template<typename Scalar>
   void forward_pass(
     const ShootingProblemTpl<Scalar>& problem,
     WorkspaceTpl<Scalar>& workspace)
   {
-    PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
+    using StageModel = StageModelTpl<Scalar>;
+    using VectorXs = typename math_types<Scalar>::VectorXs;
+    using MatrixXs = typename math_types<Scalar>::MatrixXs;
+    using VectorRef = Eigen::Ref<VectorXs>;
+    using MatrixRef = Eigen::Ref<MatrixXs>;
+
     const std::vector<MatrixXs>& gains = workspace.gains_;
+    const std::size_t nsteps = problem.numSteps();
+    assert(gains.size() == nsteps);
+
+    int nu;
+    int ndual;
+    std::size_t i = 0;
+    for (i = 0; i < nsteps; i++)
+    {
+      const StageModel& stage = problem.stages_[i];
+      nu = stage.nu();
+      ndual = stage.numDual();
+      VectorRef feedforward = gains[i].leftCols(1);
+      MatrixRef feedback = gains[i].rightCols(stage.ndx1());
+
+      VectorXs pd_step = feedforward + feedback * workspace.dxs_[i];
+      workspace.dus_[i] = pd_step.head(nu);
+      workspace.dxs_[i + 1] = pd_step.segment(nu, stage.ndx2());
+      workspace.dlams_[i] = pd_step.tail(ndual);
+    }
 
   }
 
