@@ -57,19 +57,10 @@ namespace proxddp
     inline std::size_t numConstraints() const { return constraints_.size(); }
 
     /// Number of primal variables
-    inline int numPrimal() const {
-      return this->nu() + this->ndx2();
-    }
+    inline int numPrimal() const;
+
     /// Number of dual variables
-    inline int numDual() const {
-      int ret = 0;
-      for (std::size_t i = 0; i < numConstraints(); i++)
-      {
-        const StageFunctionTpl<Scalar>& func = constraints_[i]->func_;
-        ret += func.nr;
-      }
-      return ret;
-    }
+    inline int numDual() const;
 
     StageModelTpl(const Manifold& space1,
                   const int nu,
@@ -163,6 +154,12 @@ namespace proxddp
       oss << ")";
       return oss;
     }
+
+    shared_ptr<StageModelTpl> clone() const
+    {
+      return std::make_shared<StageModelTpl>(*this);
+    }
+
   };
 
   /// @brief    Data struct for stage models StageModelTpl.
@@ -200,7 +197,7 @@ namespace proxddp
     }
 
   };
-  
-
 
 } // namespace proxddp
+
+#include "proxddp/core/stage-model.hxx"
