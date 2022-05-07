@@ -7,3 +7,7 @@
 \newcommand{\proj}{\mathop{\mathrm{proj}}}
 
 \newcommand{\RR}{\mathbb{R}}
+
+\newcommand{\bfx}{\mathbf{x}}
+\newcommand{\bfu}{\mathbf{u}}
+\newcommand{\bmlam}{\boldsymbol{\lambda}}
