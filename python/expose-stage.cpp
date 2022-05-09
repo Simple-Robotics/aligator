@@ -35,6 +35,8 @@ namespace python
       .add_property("ndx1", &StageModel::ndx1)
       .add_property("ndx2", &StageModel::ndx2)
       .add_property("nu", &StageModel::nu, "Control space dimension.")
+      .add_property("num_primal", &StageModel::numPrimal, "Number of primal variables.")
+      .add_property("num_dual", &StageModel::numDual, "Number of dual variables.")
       .def(CreateDataPythonVisitor<StageModel>())
       .def(ClonePythonVisitor<StageModel>());
 
