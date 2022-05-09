@@ -24,7 +24,7 @@ namespace proxddp
         using bp::wrapper<FunctionBase>::get_override;
         using Scalar = typename FunctionBase::Scalar;
         using Data = FunctionDataTpl<Scalar>;
-        PROXNLP_FUNCTION_TYPEDEFS(Scalar)
+        PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
         // Use perfect forwarding to the FunctionBase constructors.
         template<typename... Args>
@@ -60,7 +60,7 @@ namespace proxddp
         bp::wrapper<ExplicitDynamicsModelTpl<context::Scalar>>
       {
         using Scalar = context::Scalar;
-        PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
+        PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
         template<typename... Args>
         PyExplicitDynamicsModel(Args&&... args)

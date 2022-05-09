@@ -12,7 +12,7 @@ namespace proxddp
     {
       using Scalar = double;
 
-      PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
+      PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
       using Manifold = ManifoldAbstractTpl<Scalar>;
       using Constraint = StageConstraintTpl<Scalar>;

@@ -21,7 +21,7 @@ namespace dynamics
   struct ContinuousDynamicsTpl
   {
     using Scalar = _Scalar;
-    PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
+    PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
     using Manifold = ManifoldAbstractTpl<Scalar>;
     using Data = ContinuousDynamicsDataTpl<Scalar>;
 
@@ -73,7 +73,7 @@ namespace dynamics
   struct ContinuousDynamicsDataTpl
   {
     using Scalar = _Scalar;
-    PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
+    PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
     /// Residual value \f$e = f(x,u,\dot{x})\f$
     VectorXs error_;

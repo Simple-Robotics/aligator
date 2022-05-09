@@ -16,7 +16,7 @@ namespace proxddp
       {
         using bp::wrapper<T>::get_override;
         using Data = typename T::Data;
-        PROXNLP_DYNAMIC_TYPEDEFS(context::Scalar)
+        PROXNLP_DYNAMIC_TYPEDEFS(context::Scalar);
 
         template<typename... Args>
         PyContinuousDynamics(PyObject*&, Args&&... args)
@@ -38,7 +38,7 @@ namespace proxddp
           dynamics::ODEBaseTpl<context::Scalar>,
           bp::wrapper<dynamics::ODEBaseTpl<context::Scalar>>
       {
-        PROXNLP_DYNAMIC_TYPEDEFS(context::Scalar)
+        PROXNLP_DYNAMIC_TYPEDEFS(context::Scalar);
         using Base = dynamics::ODEBaseTpl<context::Scalar>;
         using Data = dynamics::ODEBaseTpl<context::Scalar>::Data;
 

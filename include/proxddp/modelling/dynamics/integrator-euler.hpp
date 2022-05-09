@@ -13,7 +13,7 @@ namespace proxddp
     struct IntegratorEuler : ExplicitIntegratorTpl<_Scalar>
     {
       using Scalar = _Scalar;
-      PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
+      PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
       using Base = ExplicitIntegratorTpl<Scalar>;
       using Data = ExplicitIntegratorDataTpl<Scalar>;
 

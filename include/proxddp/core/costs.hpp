@@ -22,7 +22,7 @@ namespace proxddp
 
   public:
     using Scalar = _Scalar;
-    PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
+    PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
     using CostData = CostDataTpl<Scalar>;
 
     /// @copybrief ndx_
@@ -64,7 +64,7 @@ namespace proxddp
   struct CostDataTpl
   {
     using Scalar = _Scalar;
-    PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
+    PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
     Scalar value_;
 

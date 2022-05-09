@@ -19,7 +19,7 @@ namespace proxddp
   struct StageConstraintTpl
   {
     using Scalar = _Scalar;
-    PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
+    PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
     using FunctionType = StageFunctionTpl<Scalar>;
     using ConstraintSet = ConstraintSetBase<Scalar>;

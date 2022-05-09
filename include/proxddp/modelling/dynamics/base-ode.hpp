@@ -19,7 +19,7 @@ namespace proxddp
     struct ODEBaseTpl : ContinuousDynamicsTpl<_Scalar>
     {
       using Scalar = _Scalar;
-      PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
+      PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
       using BaseType = ContinuousDynamicsTpl<_Scalar>;
       using Data = typename BaseType::Data;
@@ -59,7 +59,7 @@ namespace proxddp
     struct ODEDataTpl : ContinuousDynamicsDataTpl<_Scalar>
     {
       using Scalar = _Scalar;
-      PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
+      PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
       using Base = ContinuousDynamicsDataTpl<Scalar>;
 
       /// Value of the derivative \f$\dot{x}\f$

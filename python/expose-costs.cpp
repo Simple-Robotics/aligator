@@ -16,7 +16,7 @@ namespace proxddp
         using Scalar = context::Scalar;
         using bp::wrapper<T>::get_override;
         using CostData = CostDataTpl<Scalar>;
-        PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
+        PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
         /// forwarding constructor
         template<typename... Args>

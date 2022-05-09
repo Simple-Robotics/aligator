@@ -15,7 +15,7 @@ namespace proxddp
     template<typename Scalar>
     struct value_storage
     {
-      PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
+      PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
       MatrixXs storage;
       Scalar& v_2_;
       VectorRef Vx_;
@@ -33,7 +33,7 @@ namespace proxddp
     template<typename Scalar>
     struct q_function_storage
     {
-      PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
+      PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
       const int ntot;
 
       MatrixXs storage;
@@ -76,12 +76,13 @@ namespace proxddp
 
   } // namespace internal
 
-  /// Storage for Riccati backward pass.
+
+  /// @brief Storage for the Riccati forward and backward passes.
   template<typename _Scalar>
   struct WorkspaceTpl
   {
     using Scalar = _Scalar;
-    PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
+    PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
     using value_storage_t = internal::value_storage<Scalar>;
     using q_storage_t = internal::q_function_storage<Scalar>;
 
@@ -158,6 +159,9 @@ namespace proxddp
 
       max_kkt_size = std::max(max_kkt_size, nprim + ndual);
     }
+
+    kktMatrixFull_.resize(max_kkt_size, max_kkt_size);
+    kktMatrixFull_.setZero();
 
     assert(i == nsteps);
     // terminal node

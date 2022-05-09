@@ -14,7 +14,7 @@ namespace proxddp
   struct ResultsTpl
   {
     using Scalar = _Scalar;
-    PROXNLP_DYNAMIC_TYPEDEFS(Scalar)
+    PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
     std::vector<VectorXs> xs_;
     std::vector<VectorXs> us_;

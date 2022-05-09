@@ -3,8 +3,6 @@
 #include "proxddp/fwd.hpp"
 #include "proxddp/core/function.hpp"
 
-#include <proxnlp/manifold-base.hpp>
-
 #include <proxnlp/modelling/spaces/vector-space.hpp>
 
 #include "proxddp/core/costs.hpp"
@@ -29,7 +27,7 @@ namespace proxddp
   {
   public:
     using Scalar = _Scalar;
-    PROXNLP_FUNCTION_TYPEDEFS(Scalar)
+    PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
     using Manifold = ManifoldAbstractTpl<Scalar>;
     using Dynamics = DynamicsModelTpl<Scalar>;
