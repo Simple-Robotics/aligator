@@ -1,6 +1,9 @@
 from proxnlp import manifolds
+from proxnlp import costs
 import proxddp
 import numpy as np
+
+import pytest
 
 
 np.set_printoptions(precision=4, linewidth=250)
@@ -27,19 +30,12 @@ class TwistModelExplicit(proxddp.ExplicitDynamicsModel):
         space.integrate(x, self.dt * self.B @ u, out)
 
     def dForward(self, x, u, Jx, Ju):
-        print("In:")
-        print(Jx, "x")
-        print(Ju, "u")
         v_ = self.dt * self.B @ u
         dv_du = self.dt * self.B
 
         space.Jintegrate(x, v_, Jx, 0)
         Jxnext_dv = space.Jintegrate(x, v_, 1)
         Ju[:, :] = Jxnext_dv @ dv_du
-        print("Out:")
-        print(Jx, "x")
-        print(Ju, "u")
-        print("done dForward()")
 
 
 class MyQuadCost(proxddp.CostBase):
@@ -47,82 +43,75 @@ class MyQuadCost(proxddp.CostBase):
         self.x_ref = x_ref
         self.W = W
         super().__init__(space.ndx, nu)
+        self._basis = costs.QuadraticDistanceCost(space, self.x_ref, self.W)
 
     def evaluate(self, x, u, data):
-        dx = np.zeros(ndx)
-        space.difference(x, self.x_ref, dx)
-        data.value = 0.5 * np.dot(dx, self.W @ dx)
+        data.value = self._basis.call(x)
 
     def computeGradients(self, x, u, data):
-        dx = space.difference(x, self.x_ref)
-        J = space.Jdifference(x, self.x_ref, 0)
-        data.Lx[:] = J.T @ self.W @ dx
+        self._basis.computeGradient(x, data.Lx)
         data.Lu[:] = 0.
 
     def computeHessians(self, x, u, data):
-        J = space.Jdifference(x, self.x_ref, 0)
         data._hessian[:, :] = 0.
-        data.Lxx[:, :] = J.T @ self.W @ J
+        self._basis.computeHessian(x, data.Lxx)
 
 
-nsteps = 1
-us_ = [u0] * nsteps
-print("const control u0:", u0)
-dynmodel = TwistModelExplicit(dt=0.1)
-dyn_data = dynmodel.createData()
-xs_out = proxddp.rollout(dynmodel, x0, us_).tolist()
-print("xs_out:")
-print(xs_out)
-cost = MyQuadCost(W=np.eye(space.ndx), x_ref=x1)
-
-
-def test_dyn_cost():
-
-    dyn_data.Jx[:, :] = np.arange(ndx ** 2).reshape(ndx, ndx)
-    dyn_data.Ju[:, :] = np.arange(ndx ** 2, ndx ** 2 + ndx * nu).reshape(ndx, nu)
-    dynmodel.evaluate(x0, u0, x1, dyn_data)
-    dynmodel.computeJacobians(x0, u0, x1, dyn_data)
-    print("dynmodel after:")
-    print(dyn_data.Jx, "x")
-    print(dyn_data.Ju, "u")
-
-    cost_data = cost.createData()
-    cost.evaluate(x0, u0, cost_data)
-    cost.computeGradients(x0, u0, cost_data)
-    cost.computeHessians(x0, u0, cost_data)
-
-
-test_dyn_cost()
-
-stage_model = proxddp.StageModel(space, nu, cost, dynmodel)
-sd = stage_model.createData()
-sd.dyn_data.Jx[:, :] = np.arange(ndx * ndx).reshape(ndx, ndx)
-stage_model.computeDerivatives(x0, u0, x1, sd)
-print(sd.dyn_data.Jx, "after")
-
-
-# Define shooting problem
-
-def test_shooting_problem():
+@pytest.mark.parametrize("nsteps", [1, 4])
+class TestClass:
+    dt = 0.1
+    dynmodel = TwistModelExplicit(dt)
+    cost = MyQuadCost(W=np.eye(space.ndx), x_ref=x1)
     stage_model = proxddp.StageModel(space, nu, cost, dynmodel)
-    shooting_problem = proxddp.ShootingProblem()
-    for _ in range(nsteps):
-        shooting_problem.add_stage(stage_model)
 
-    problem_data = shooting_problem.createData()
-    stage_datas = problem_data.stage_data
-    stage_datas[0].dyn_data.Jx[:, :] = np.arange(ndx * ndx).reshape(ndx, ndx)
-    # print(stage_datas[0].dyn_data.Jx, "dd0 Jx")
-    print(stage_datas[0].dyn_data.Jx, "dd0 Jx")
+    def test_dyn(self, nsteps):
+        dyn_data = self.dynmodel.createData()
+        dyn_data.Jx[:, :] = np.arange(ndx ** 2).reshape(ndx, ndx)
+        dyn_data.Ju[:, :] = np.arange(ndx ** 2, ndx ** 2 + ndx * nu).reshape(ndx, nu)
+        self.dynmodel.evaluate(x0, u0, x1, dyn_data)
+        self.dynmodel.computeJacobians(x0, u0, x1, dyn_data)
+        print(dyn_data.Jx, "x")
+        print(dyn_data.Ju, "u")
 
-    assert len(problem_data.stage_data) == shooting_problem.num_steps
-    assert shooting_problem.num_steps == nsteps
+    def test_cost(self, nsteps):
+        cost = self.cost
+        cost_data = cost.createData()
+        cost.evaluate(x0, u0, cost_data)
+        cost.computeGradients(x0, u0, cost_data)
+        cost.computeHessians(x0, u0, cost_data)
 
-    shooting_problem.evaluate(xs_out, us_, problem_data)
-    shooting_problem.computeDerivatives(xs_out, us_, problem_data)
+    def test_stage(self, nsteps):
+        stage_model = self.stage_model
+        sd = stage_model.createData()
+        sd.dyn_data.Jx[:, :] = np.arange(ndx * ndx).reshape(ndx, ndx)
+        stage_model.computeDerivatives(x0, u0, x1, sd)
+        stage_model.num_primal == ndx + nu
+        stage_model.num_dual == ndx
+        print(sd.dyn_data.Jx, "after")
 
+    def test_shooting_problem(self, nsteps):
+        stage_model = self.stage_model
+        shooting_problem = proxddp.ShootingProblem()
+        for _ in range(nsteps):
+            shooting_problem.add_stage(stage_model)
 
-test_shooting_problem()
+        problem_data = shooting_problem.createData()
+        stage_datas = problem_data.stage_data
+        stage_datas[0].dyn_data.Jx[:, :] = np.arange(ndx * ndx).reshape(ndx, ndx)
+        print(stage_datas[0].dyn_data.Jx, "dd0 Jx")
+
+        us_ = [u0] * nsteps
+        xs_out = proxddp.rollout(self.dynmodel, x0, us_).tolist()
+
+        assert len(problem_data.stage_data) == shooting_problem.num_steps
+        assert shooting_problem.num_steps == nsteps
+
+        shooting_problem.evaluate(xs_out, us_, problem_data)
+        shooting_problem.computeDerivatives(xs_out, us_, problem_data)
+
+        ws = proxddp.Workspace(shooting_problem)
+        ws.gains
+        assert ws.kkt_matrix_buffer_.shape[0] == stage_model.num_primal + stage_model.num_dual
 
 # import matplotlib.pyplot as plt
 # import utils
