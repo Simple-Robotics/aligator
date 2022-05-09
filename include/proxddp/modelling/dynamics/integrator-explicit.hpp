@@ -1,5 +1,6 @@
 #pragma once
-///   Base definitions for explicit integrators.
+/// @file integrator-explicit.hpp
+/// @brief  Base definitions for explicit integrators.
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
 

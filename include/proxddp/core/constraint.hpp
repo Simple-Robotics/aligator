@@ -1,4 +1,5 @@
-///   Defines the constraint object for this library.
+/// @file constraint.hpp
+/// @brief Defines the constraint object for this library.
 #pragma once
 
 #include "proxddp/core/function.hpp"

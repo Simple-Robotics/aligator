@@ -1,5 +1,7 @@
-///   Forward declarations.
 #pragma once
+/// @file fwd.hpp
+/// @brief Forward declarations.
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
 #include "proxnlp/fwd.hpp"
 
