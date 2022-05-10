@@ -105,13 +105,15 @@ endif(BUILD_PYTHON_INTERFACE)
 
 # Add library target
 
+set(LIB_SOURCES)
+
 file(GLOB_RECURSE LIB_HEADERS
      ${PROJECT_SOURCE_DIR}/include/proxddp/*.hpp
      ${PROJECT_SOURCE_DIR}/include/proxddp/*.hxx
      )
 
 function(create_library)
-  add_library(${PROJECT_NAME} SHARED ${LIB_HEADERS})
+  add_library(${PROJECT_NAME} SHARED ${LIB_HEADERS} ${LIB_SOURCES})
   set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 
   if(BUILD_LIBRARY_WITH_VERSION_SUFFIX)
@@ -147,6 +149,7 @@ if (BUILD_PYTHON_INTERFACE)
   add_subdirectory(python)
 endif()
 
+add_subdirectory(examples)
 add_subdirectory(unittest)
 
 
