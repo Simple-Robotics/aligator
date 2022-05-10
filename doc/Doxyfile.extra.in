@@ -8,7 +8,7 @@ FILE_PATTERNS           = *.cc *.cpp *.h *.hpp *.hh *.dox *.md *.py
 
 # Document members in declaration order
 SORT_MEMBER_DOCS        = NO
-SORT_BRIEF_DOCS         = YES
+SORT_BRIEF_DOCS         = NO
 SORT_MEMBERS_CTORS_1ST  = YES
 
 GENERATE_TESTLIST       = YES

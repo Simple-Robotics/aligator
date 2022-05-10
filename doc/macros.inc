@@ -13,3 +13,4 @@
 \newcommand{\bmlam}{\boldsymbol{\lambda}}
 
 \newcommand{\dim}{\mathrm{dim}}
+\renewcommand{\epsilon}{\varepsilon}
