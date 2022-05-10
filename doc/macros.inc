@@ -11,3 +11,5 @@
 \newcommand{\bfx}{\mathbf{x}}
 \newcommand{\bfu}{\mathbf{u}}
 \newcommand{\bmlam}{\boldsymbol{\lambda}}
+
+\newcommand{\dim}{\mathrm{dim}}
