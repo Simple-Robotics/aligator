@@ -39,6 +39,10 @@ namespace proxddp
   template<typename Scalar>
   struct DynamicsModelTpl;
 
+  // fwd DynamicsDataTpl
+  template<typename _Scalar>
+  using DynamicsDataTpl = FunctionDataTpl<_Scalar>;
+
   // fwd StageConstraintTpl
   template<typename Scalar>
   struct StageConstraintTpl;

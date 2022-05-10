@@ -6,9 +6,6 @@
 
 namespace proxddp
 {
-  template<typename _Scalar>
-  using DynamicsDataTpl = FunctionDataTpl<_Scalar>;
-
   /** @brief    Dynamics model.
    * 
    *  A dynamics model is a function  \f$f(x,u,x')\f$ that must be set to zero,
@@ -19,7 +16,7 @@ namespace proxddp
   {
   public:
     using Scalar = _Scalar;
-    PROXNLP_FUNCTION_TYPEDEFS(Scalar)
+    PROXNLP_FUNCTION_TYPEDEFS(Scalar);
     using Base = StageFunctionTpl<Scalar>;
     using Data = DynamicsDataTpl<Scalar>;
 
@@ -45,6 +42,5 @@ namespace proxddp
       : DynamicsModelTpl<Scalar>(ndx, nu, ndx) {}
 
   };
-
 
 } // namespace proxddp
