@@ -2,7 +2,7 @@
 /// @file integrator-euler.hpp
 /// @brief Define the explicit Euler integrator.
 
-#include "proxddp/modelling/dynamics/integrator-explicit.hpp"
+#include "proxddp/core/dynamics/integrator-explicit.hpp"
 
 
 namespace proxddp

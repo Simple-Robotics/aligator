@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/modelling/dynamics/integrator-explicit.hpp"
+#include "proxddp/core/dynamics/integrator-explicit.hpp"
 
 
 namespace proxddp

@@ -2,8 +2,8 @@
 #include "proxddp/python/fwd.hpp"
 #include "proxddp/python/functions.hpp"
 
-#include "proxddp/modelling/dynamics/integrator-base.hpp"
-#include "proxddp/modelling/dynamics/integrator-euler.hpp"
+#include "proxddp/core/dynamics/integrator-base.hpp"
+#include "proxddp/core/dynamics/integrator-euler.hpp"
 
 
 namespace proxddp

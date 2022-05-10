@@ -3,7 +3,7 @@
 /// @brief Base definitions for continuous dynamics.
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
-#include "proxddp/modelling/dynamics/fwd.hpp"
+#include "proxddp/core/dynamics/fwd.hpp"
 
 
 namespace proxddp

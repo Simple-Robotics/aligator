@@ -2,7 +2,7 @@
 /// @brief Base definitions for numerical integrators.
 #pragma once
 
-#include "proxddp/modelling/dynamics/continuous-base.hpp"
+#include "proxddp/core/dynamics/continuous-base.hpp"
 
 
 namespace proxddp

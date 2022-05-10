@@ -4,7 +4,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
 
-#include "proxddp/modelling/dynamics/integrator-base.hpp"
+#include "proxddp/core/dynamics/integrator-base.hpp"
 #include "proxddp/core/explicit-dynamics.hpp"
 
 
