@@ -9,6 +9,8 @@
 #include "proxddp/core/dynamics.hpp"
 #include "proxddp/core/constraint.hpp"
 
+#include "proxddp/core/clone.hpp"
+
 
 namespace proxddp
 {
@@ -23,7 +25,7 @@ namespace proxddp
    *            and constraint models.
    */
   template<typename _Scalar>
-  class StageModelTpl
+  class StageModelTpl : public cloneable<StageModelTpl<_Scalar>>
   {
   public:
     using Scalar = _Scalar;
@@ -132,40 +134,34 @@ namespace proxddp
 
     friend std::ostream& operator<<(std::ostream& oss, const StageModelTpl& stage)
     {
-      oss << "StageModel(";
+      oss << "StageModel { ";
       if (stage.ndx1() == stage.ndx2())
       {
-        oss << "ndx=" << stage.ndx1()
-            << ", nu=" << stage.nu();
+        oss << "ndx: " << stage.ndx1() << ", "
+            << "nu:  " << stage.nu();
       } else {
-        oss << "ndx1=" << stage.ndx1() << ", "
-            << "nu=" << stage.nu() << ", "
-            << "ndx2=" << stage.ndx2();
+        oss << "ndx1:" << stage.ndx1() << ", "
+            << "nu:  " << stage.nu() << ", "
+            << "ndx2:" << stage.ndx2();
       }
 
       if (stage.numConstraints() > 0)
       {
         oss << ", ";
-        oss << "nc=" << stage.numConstraints();
+        oss << "nc: " << stage.numConstraints();
       }
       
-      oss << ")";
+      oss << " }";
       return oss;
     }
-
-    shared_ptr<StageModelTpl> clone() const
-    {
-      return std::make_shared<StageModelTpl>(*this);
-    }
-
   };
 
   /// @brief    Data struct for stage models StageModelTpl.
   template<typename _Scalar>
-  struct StageDataTpl
+  struct StageDataTpl : public cloneable<StageDataTpl<_Scalar>>
   {
     using Scalar = _Scalar;
-    PROXNLP_FUNCTION_TYPEDEFS(Scalar)
+    PROXNLP_FUNCTION_TYPEDEFS(Scalar);
 
     using StageModel = StageModelTpl<Scalar>;
     using CostData = CostDataTpl<Scalar>;
@@ -190,7 +186,7 @@ namespace proxddp
       for (std::size_t i = 0; i < nc; i++)
       {
         const auto& func = stage_model.constraints_[i]->func_;
-        constraint_data.emplace_back(std::move(func.createData()));
+        constraint_data.push_back(std::move(func.createData()));
       }
     }
 

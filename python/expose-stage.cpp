@@ -13,6 +13,9 @@ namespace python
     using context::Manifold;
     using context::DynamicsModel;
     using context::StageModel;
+    using StageData = StageDataTpl<Scalar>;
+
+    bp::register_ptr_to_python<shared_ptr<StageModel>>();
 
     bp::class_<StageModel>(
       "StageModel", "A stage of the control problem. Holds costs, dynamics, and constraints.",
@@ -38,9 +41,8 @@ namespace python
       .add_property("num_primal", &StageModel::numPrimal, "Number of primal variables.")
       .add_property("num_dual", &StageModel::numDual, "Number of dual variables.")
       .def(CreateDataPythonVisitor<StageModel>())
-      .def(ClonePythonVisitor<StageModel>());
-
-    using StageData = StageDataTpl<Scalar>;
+      .def(ClonePythonVisitor<StageModel>())
+      .def(bp::self_ns::str(bp::self));
 
     bp::register_ptr_to_python<shared_ptr<StageData>>();
 
@@ -51,6 +53,7 @@ namespace python
       .def_readwrite("cost_data", &StageData::cost_data)
       .def_readwrite("dyn_data", &StageData::dyn_data)
       .def_readwrite("constraint_data", &StageData::constraint_data)
+      .def(ClonePythonVisitor<StageData>())
       ;
 
     pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<StageData>>, true>::expose("StdVec_StageData");

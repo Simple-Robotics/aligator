@@ -97,6 +97,12 @@ class TestClass:
 
         problem_data = shooting_problem.createData()
         stage_datas = problem_data.stage_data
+
+        stage2 = stage_model.clone()
+        sd0 = stage_datas[0].clone()
+        print("Clone stage:", stage2)
+        print("Clone stage data:", sd0)
+
         stage_datas[0].dyn_data.Jx[:, :] = np.arange(ndx * ndx).reshape(ndx, ndx)
         print(stage_datas[0].dyn_data.Jx, "dd0 Jx")
 
