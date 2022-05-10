@@ -16,7 +16,7 @@ namespace proxddp
     // value to the difference between y and the xout_.
     auto d = static_cast<SpecificData&>(data);
     this->forward(x, u, d.xout_);
-    out_space_.difference(y, d.xout_, d.value_);  // xnext - y
+    out_space().difference(y, d.xout_, d.value_);  // xnext - y
   }
 
   template<typename Scalar>
@@ -31,9 +31,9 @@ namespace proxddp
     this->dForward(x, u, d.Jx_, d.Ju_); // dxnext_(x,u)
     // compose by jacobians of log (xout - y)
     MatrixXs Jtemp(this->ndx2, this->ndx2);
-    out_space_.Jdifference(y, d.xout_, d.Jy_, 0);  // d(xnext - y) / y
+    out_space().Jdifference(y, d.xout_, d.Jy_, 0);  // d(xnext - y) / y
     Jtemp.setZero();
-    out_space_.Jdifference(y, d.xout_, Jtemp, 1);  // d(xnext - y) / xnext
+    out_space().Jdifference(y, d.xout_, Jtemp, 1);  // d(xnext - y) / xnext
     d.Jx_ = (Jtemp * d.Jx_).eval();  // chain rule d(log)/dxnext * dxnext_dx
     d.Ju_ = (Jtemp * d.Ju_).eval();
   }

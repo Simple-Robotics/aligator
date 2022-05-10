@@ -30,7 +30,7 @@ namespace proxddp
 
     for (std::size_t i = 0; i < N; i++)
     {
-      xs.push_back(VectorXs::Zero(dyn_models[i]->out_space_.nx()));
+      xs.push_back(VectorXs::Zero(dyn_models[i]->out_space_->nx()));
       dyn_models[i]->forward(xs[i], us[i], xs[i + 1]);
     }
 

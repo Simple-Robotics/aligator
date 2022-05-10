@@ -12,17 +12,19 @@ using namespace proxddp;
 /// @details  It maps \f$(x,u)\f$ to \f$ x + u \f$.
 struct MyModel : ExplicitDynamicsModelTpl<double>
 {
-  MyModel(const ManifoldAbstractTpl<double>& space)
-    : ExplicitDynamicsModelTpl<double>(space, space.ndx()) {}  
+  using Manifold = ManifoldAbstractTpl<double>;
+  MyModel(const shared_ptr<Manifold>& space)
+    : ExplicitDynamicsModelTpl<double>(space, space->ndx()) {}
+
   void forward(const ConstVectorRef& x, const ConstVectorRef& u, VectorRef out) const
   {
-    out_space_.integrate(x, u, out);
+    out_space().integrate(x, u, out);
   }
 
   void dForward(const ConstVectorRef& x, const ConstVectorRef& u, MatrixRef Jx, MatrixRef Ju) const
   {
-    out_space_.Jintegrate(x, u, Jx, 0);
-    out_space_.Jintegrate(x, u, Ju, 1);
+    out_space().Jintegrate(x, u, Jx, 0);
+    out_space().Jintegrate(x, u, Ju, 1);
   }
 };
 
@@ -52,7 +54,7 @@ using StageModel = proxddp::StageModelTpl<double>;
 
 struct MyFixture
 {
-  Manifold space;
+  shared_ptr<Manifold> space;
   const int nx;
   const int nu;
   MyModel dyn_model;
@@ -61,12 +63,12 @@ struct MyFixture
   ShootingProblemTpl<double> problem;
 
   MyFixture()
-    : space()
-    , nx(space.nx())
-    , nu(space.ndx())
+    : space(std::make_shared<Manifold>())
+    , nx(space->nx())
+    , nu(space->ndx())
     , dyn_model(space)
     , cost(nx, nu)
-    , stage(space, nu, cost, dyn_model)
+    , stage(*space, nu, cost, dyn_model)
     {
       problem.addStage(stage);
       problem.addStage(stage);

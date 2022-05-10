@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE(test_problem)
   MyFixture f;
 
   auto nu = f.nu;
-  auto space = f.space;
+  auto space = *f.space;
   BOOST_CHECK_EQUAL(f.stage.numPrimal(), space.ndx() + nu);
   BOOST_CHECK_EQUAL(f.stage.numDual(), space.ndx());
 
@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(test_workspace)
   using Workspace = WorkspaceTpl<double>;
   MyFixture f;
   auto nu = f.nu;
-  auto space = f.space;
+  auto space = *f.space;
   Workspace workspace(f.problem);
   fmt::print("{}", workspace);
   const std::size_t nsteps = f.problem.numSteps();
