@@ -18,6 +18,84 @@ namespace proxddp
   template<typename _Scalar>
   struct StageDataTpl;
 
+  template<typename Scalar>
+  struct ConstraintContainer
+  {
+    PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+    using Constraint = StageConstraintTpl<Scalar>;
+    ConstraintContainer() {};
+
+    std::size_t size() const
+    {
+      return storage_.size();
+    }
+
+    void push_back(const shared_ptr<Constraint>& el)
+    {
+      const int nr = el->nr();
+      const int last_cursor = cursors_[this->size() - 1];
+      storage_.push_back(el);
+      cursors_.push_back(last_cursor + nr);
+      dims_.push_back(nr);
+    }
+
+    std::size_t getIndex(const std::size_t i) const
+    {
+      return cursors_[i];
+    }
+
+    std::size_t getDim(const std::size_t i) const
+    {
+      return dims_[i];
+    }
+
+    /// Get corresponding segment of a vector corresponding
+    /// to the @p i-th constraint.
+    VectorRef getSegmentByConstraint(VectorRef lambda, const std::size_t i) const
+    {
+      assert(lambda.size() == totalDim());
+      return lambda.segment(getIndex(i), getDim(i));
+    }
+
+    MatrixRef getBlockByConstraint(MatrixRef J, const std::size_t i) const
+    {
+      assert(J.rows() == totalDim());
+      return J.middleRows(getIndex(i), getDim(i));
+    }
+
+    std::size_t totalDim() const
+    {
+      return cursors_[this->size() - 1];
+    }
+
+    shared_ptr<Constraint>& operator[](std::size_t i)
+    {
+      return storage_[i];
+    }
+
+    const shared_ptr<Constraint>& operator[](std::size_t i) const
+    {
+      return storage_[i];
+    }
+
+  protected:
+    std::vector<shared_ptr<Constraint>> storage_;
+    std::vector<int> cursors_;
+    std::vector<int> dims_;
+    void update_indices()
+    {
+      cursors_.clear();
+      int cursor = 0;
+      int nr = 0;
+      for (std::size_t i = 0; i < storage_.size(); i++)
+      {
+        nr = storage_[i]->nr();
+        cursors_.push_back(cursor);
+        dims_.push_back(nr);
+        cursor += nr;
+      }
+    }
+  };
 
   /** @brief    A stage in the control problem.
    * 
@@ -48,19 +126,20 @@ namespace proxddp
 
     const CostBase& cost_;
     const Dynamics& dyn_model_;
-    std::vector<ConstraintPtr> constraints_;
+    ConstraintContainer<Scalar> constraints_;
 
+    inline int nx1()  const { return xspace1_.nx(); }
     inline int ndx1() const { return xspace1_.ndx(); }
     inline int nu()   const { return uspace.ndx(); }
+    inline int nx2()  const { return xspace2_.nx(); }
     inline int ndx2() const { return xspace2_.ndx(); }
 
     inline std::size_t numConstraints() const { return constraints_.size(); }
 
-    /// Number of primal variables
-    inline int numPrimal() const;
-
-    /// Number of dual variables
-    inline int numDual() const;
+    /// Number of primal optimization variables.
+    int numPrimal() const;
+    /// Number of dual variables, i.e. Lagrange multipliers.
+    int numDual() const;
 
     StageModelTpl(const Manifold& space1,
                   const int nu,
@@ -84,9 +163,6 @@ namespace proxddp
 
     /// @brief    Add a constraint to the stage.
     void addConstraint(const ConstraintPtr& cstr) { constraints_.push_back(cstr); }
-    /// @copybrief addConstraint()
-    /// @details   This moves the rvalue into the vector.
-    void addConstraint(ConstraintPtr&& cstr) { constraints_.push_back(std::move(cstr)); }
 
     /* Compute on the node */
 
@@ -102,7 +178,7 @@ namespace proxddp
       for (std::size_t i = 0; i < numConstraints(); i++)
       {
         // calc on constraint
-        auto& cstr = constraints_[i];
+        const auto& cstr = constraints_[i];
         cstr->func_.evaluate(x, u, y, *data.constraint_data[i]);
       }
     }

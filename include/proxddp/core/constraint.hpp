@@ -35,6 +35,11 @@ namespace proxddp
       , set_(constraint_set)
     {}
 
+    inline int nr() const
+    {
+      return func_.nr;
+    }
+
     ConstraintSetBase<Scalar>& getConstraintSet() const
     {
       return *set_;
