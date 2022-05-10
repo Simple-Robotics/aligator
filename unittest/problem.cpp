@@ -1,5 +1,6 @@
 #include "proxddp/core/stage-model.hpp"
 #include "proxddp/core/solver-workspace.hpp"
+#include "proxddp/solver-proxddp.hpp"
 #include "proxddp/utils.hpp"
 
 #include "generate-problem.hpp"
@@ -15,44 +16,14 @@ BOOST_AUTO_TEST_SUITE(node)
 
 using namespace proxddp;
 
-using Scalar = double;
-
-using Manifold = proxnlp::VectorSpaceTpl<double>;
-using StageModel = proxddp::StageModelTpl<double>;
-
-constexpr int NX = 3;
-
-struct MyFixture
-{
-  const int NX;
-  Manifold space;
-  int NU;
-  MyModel dyn_model;
-  MyCost cost;
-  StageModel stage;
-  ShootingProblemTpl<double> problem;
-
-  MyFixture(const int nx)
-    : NX(nx)
-    , space(NX)
-    , NU(space.ndx())
-    , dyn_model(space)
-    , cost(NX, NU)
-    , stage(space, NU, cost, dyn_model)
-    {
-      problem.addStage(stage);
-      problem.addStage(stage);
-    }
-};
-
-
 BOOST_AUTO_TEST_CASE(test_problem)
 {
-  MyFixture f(NX);
+  MyFixture f;
 
-  auto nu = f.NU;
-  BOOST_CHECK_EQUAL(f.stage.numPrimal(), NX + nu);
-  BOOST_CHECK_EQUAL(f.stage.numDual(), NX);
+  auto nu = f.nu;
+  auto space = f.space;
+  BOOST_CHECK_EQUAL(f.stage.numPrimal(), space.ndx() + nu);
+  BOOST_CHECK_EQUAL(f.stage.numDual(), space.ndx());
 
   Eigen::VectorXd u0(nu);
   u0.setZero();
@@ -65,6 +36,8 @@ BOOST_AUTO_TEST_CASE(test_problem)
   {
     BOOST_CHECK(x0.isApprox(xs[i]));
   }
+
+  fmt::print("{}\n", f.stage);
 
   auto stage_data = f.stage.createData();
   f.stage.evaluate(x0, u0, x0, *stage_data);
@@ -79,9 +52,11 @@ BOOST_AUTO_TEST_CASE(test_problem)
 BOOST_AUTO_TEST_CASE(test_workspace)
 {
   using Workspace = WorkspaceTpl<double>;
-  MyFixture f(NX);
-  auto nu = f.NU;
+  MyFixture f;
+  auto nu = f.nu;
+  auto space = f.space;
   Workspace workspace(f.problem);
+  fmt::print("{}", workspace);
   const std::size_t nsteps = f.problem.numSteps();
   BOOST_CHECK_EQUAL(workspace.trial_xs_.size(), nsteps + 1);
 
@@ -89,12 +64,13 @@ BOOST_AUTO_TEST_CASE(test_workspace)
   {
     auto& x = workspace.trial_xs_[i];
     auto& u = workspace.trial_us_[i];
-    BOOST_CHECK_EQUAL(x.size(), NX);
+    BOOST_CHECK_EQUAL(x.size(), space.nx());
     BOOST_CHECK_EQUAL(u.size(), nu);
   }
   auto& x = workspace.trial_xs_[nsteps];
-  BOOST_CHECK_EQUAL(x.size(), NX);
+  BOOST_CHECK_EQUAL(x.size(), space.nx());
 
+  ResultsTpl<double> results(f.problem);
 }
 
 
