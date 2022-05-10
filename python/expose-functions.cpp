@@ -38,31 +38,27 @@ namespace proxddp
         .def_readonly("nu", &StageFunction::nu, "Control dimension.")
         .def(CreateDataPythonVisitor<StageFunction>());
 
-      bp::class_<context::FunctionData, shared_ptr<context::FunctionData>>(
+      bp::register_ptr_to_python<shared_ptr<context::FunctionData>>();
+
+      bp::class_<context::FunctionData>(
         "FunctionData", "Data struct for holding data about functions.",
         bp::init<const int, const int, const int, const int>(
           bp::args("self", "ndx1", "nu", "ndx2", "nr")
         )
       )
-        .def_readwrite("value", &context::FunctionData::value_, "Function value.")
-        .add_property("Jx",  bp::make_getter(&context::FunctionData::Jx_, bp::return_value_policy<bp::return_by_value>()),
-                      "Jacobian with respect to $x$.")
-        .add_property("Ju",  bp::make_getter(&context::FunctionData::Ju_, bp::return_value_policy<bp::return_by_value>()),
-                      "Jacobian with respect to $u$.")
-        .add_property("Jy",  bp::make_getter(&context::FunctionData::Jy_, bp::return_value_policy<bp::return_by_value>()),
-                      "Jacobian with respect to $y$.")
-        .add_property("Hxx", bp::make_getter(&context::FunctionData::Hxx_, bp::return_value_policy<bp::return_by_value>()),
-                      "Hessian with respect to $(x, x)$.")
-        .add_property("Hxu", bp::make_getter(&context::FunctionData::Hxu_, bp::return_value_policy<bp::return_by_value>()),
-                      "Hessian with respect to $(x, u)$.")
-        .add_property("Hxy", bp::make_getter(&context::FunctionData::Hxy_, bp::return_value_policy<bp::return_by_value>()),
-                      "Hessian with respect to $(x, y)$.")
-        .add_property("Huu", bp::make_getter(&context::FunctionData::Huu_, bp::return_value_policy<bp::return_by_value>()),
-                      "Hessian with respect to $(u, u)$.")
-        .add_property("Huy", bp::make_getter(&context::FunctionData::Huy_, bp::return_value_policy<bp::return_by_value>()),
-                      "Hessian with respect to $(x, y)$.")
-        .add_property("Hyy", bp::make_getter(&context::FunctionData::Hyy_, bp::return_value_policy<bp::return_by_value>()),
-                      "Hessian with respect to $(y, y)$.")
+        .def_readonly("value", &context::FunctionData::value_, "Function value.")
+        .def_readonly("jac_buffer_", &context::FunctionData::jac_buffer_, "Buffer of the full function Jacobian wrt (x,u,y).")
+        .def_readonly("vhp_buffer", &context::FunctionData::vhp_buffer_, "Buffer of the full function vector-Hessian product wrt (x,u,y).")
+        .add_property("Jx",  bp::make_getter(&context::FunctionData::Jx_, bp::return_value_policy<bp::return_by_value>()), "Jacobian with respect to $x$.")
+        .add_property("Ju",  bp::make_getter(&context::FunctionData::Ju_, bp::return_value_policy<bp::return_by_value>()), "Jacobian with respect to $u$.")
+        .add_property("Jy",  bp::make_getter(&context::FunctionData::Jy_, bp::return_value_policy<bp::return_by_value>()), "Jacobian with respect to $y$.")
+        .add_property("Hxx", bp::make_getter(&context::FunctionData::Hxx_, bp::return_value_policy<bp::return_by_value>()), "Hessian with respect to $(x, x)$.")
+        .add_property("Hxu", bp::make_getter(&context::FunctionData::Hxu_, bp::return_value_policy<bp::return_by_value>()), "Hessian with respect to $(x, u)$.")
+        .add_property("Hxy", bp::make_getter(&context::FunctionData::Hxy_, bp::return_value_policy<bp::return_by_value>()), "Hessian with respect to $(x, y)$.")
+        .add_property("Huu", bp::make_getter(&context::FunctionData::Huu_, bp::return_value_policy<bp::return_by_value>()), "Hessian with respect to $(u, u)$.")
+        .add_property("Huy", bp::make_getter(&context::FunctionData::Huy_, bp::return_value_policy<bp::return_by_value>()), "Hessian with respect to $(x, y)$.")
+        .add_property("Hyy", bp::make_getter(&context::FunctionData::Hyy_, bp::return_value_policy<bp::return_by_value>()), "Hessian with respect to $(y, y)$.")
+        .def(ClonePythonVisitor<context::FunctionData>())
       ;
 
       pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<context::FunctionData>>, true>::expose("StdVec_FunctionData", "Vector of function data objects.");

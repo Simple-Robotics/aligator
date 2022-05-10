@@ -3,6 +3,7 @@
 #pragma once
 
 #include "proxddp/fwd.hpp"
+#include "proxddp/core/clone.hpp"
 
 
 namespace proxddp
@@ -14,7 +15,7 @@ namespace proxddp
   {
   public:
     using Scalar = _Scalar;
-    PROXNLP_FUNCTION_TYPEDEFS(Scalar)
+    PROXNLP_FUNCTION_TYPEDEFS(Scalar);
     using Data = FunctionDataTpl<Scalar>;
 
     /// @brief Current state dimension
@@ -83,11 +84,11 @@ namespace proxddp
 
   /// @brief  Struct to hold function data.
   template<typename _Scalar>
-  struct FunctionDataTpl
+  struct FunctionDataTpl : cloneable<FunctionDataTpl<_Scalar>>
   {
   public:
     using Scalar = _Scalar;
-    PROXNLP_FUNCTION_TYPEDEFS(Scalar)
+    PROXNLP_FUNCTION_TYPEDEFS(Scalar);
 
   protected:
     const int ndx1;
@@ -97,15 +98,18 @@ namespace proxddp
     const int nvar = ndx1 + nu + ndx2;
 
   public:
-    MatrixXs vhp_buffer_;
     /// Function value.
     VectorXs value_;
+    /// Full Jacobian.
+    MatrixXs jac_buffer_;
+    /// Vector-Hessian product buffer.
+    MatrixXs vhp_buffer_;
     /// Jacobian with respect to \f$x\f$.
-    MatrixXs Jx_;
+    MatrixRef Jx_;
     /// Jacobian with respect to \f$u\f$.
-    MatrixXs Ju_;
+    MatrixRef Ju_;
     /// Jacobian with respect to \f$y\f$.
-    MatrixXs Jy_;
+    MatrixRef Jy_;
 
     /* Vector-Hessian product buffers */
   
@@ -122,11 +126,12 @@ namespace proxddp
       , nu(nu)
       , ndx2(ndx2)
       , nr(nr)
-      , vhp_buffer_(nvar, nvar)
       , value_(nr)
-      , Jx_(nr, ndx1)
-      , Ju_(nr, nu)
-      , Jy_(nr, ndx2)
+      , jac_buffer_(nr, nvar)
+      , vhp_buffer_(nvar, nvar)
+      , Jx_(jac_buffer_.leftCols(ndx1))
+      , Ju_(jac_buffer_.middleCols(ndx1, nu))
+      , Jy_(jac_buffer_.rightCols(ndx2))
       , Hxx_(vhp_buffer_.topLeftCorner(ndx1, ndx1))
       , Hxu_(vhp_buffer_.topRows(ndx1).middleCols(ndx1, nu))
       , Hxy_(vhp_buffer_.topRightCorner(ndx1, ndx2))
@@ -135,9 +140,7 @@ namespace proxddp
       , Hyy_(vhp_buffer_.bottomRightCorner(ndx2, ndx2))
     {
       value_.setZero();
-      Jx_.setZero();
-      Ju_.setZero();
-      Jy_.setZero();
+      jac_buffer_.setZero();
       vhp_buffer_.setZero();
     }
 
