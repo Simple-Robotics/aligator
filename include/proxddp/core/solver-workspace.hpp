@@ -30,6 +30,19 @@ namespace proxddp
       }
     };
 
+    /** @brief  Contiguous storage for Q-function parameters with corresponding
+     *          sub-matrix views.
+     * 
+     * @details  The storage layout is as follows:
+     * \f[
+     *    \begin{bmatrix}
+     *      2q    & Q_x^\top  & Q_u^top & Q_y^\top  \\
+     *      Q_x   & Q_{xx}    & Q_{xu}  & Q_{xy}    \\
+     *      Q_u   & Q_{ux}    & Q_{uu}  & Q_{uy}    \\
+     *      Q_y   & Q_{yx}    & Q_{yu}  & Q_{yy} 
+     *    \end{bmatrix}
+     * ]\f
+     */
     template<typename Scalar>
     struct q_function_storage
     {
@@ -77,7 +90,7 @@ namespace proxddp
   } // namespace internal
 
 
-  /// @brief Storage for the Riccati forward and backward passes.
+  /// @brief    Storage for the Riccati forward and backward passes.
   template<typename _Scalar>
   struct WorkspaceTpl
   {
@@ -86,11 +99,16 @@ namespace proxddp
     using value_storage_t = internal::value_storage<Scalar>;
     using q_storage_t = internal::q_function_storage<Scalar>;
 
+    shared_ptr<ProblemDataTpl<Scalar>> problem_data;
+
     /// @brief Value function parameter storage
     std::vector<value_storage_t> value_params;
 
     /// @brief Q-function storage
     std::vector<q_storage_t> q_params;
+
+    std::vector<VectorXs> lams_plus_;
+    std::vector<VectorXs> lams_pdal_;
 
     /// @name Riccati gains and buffers for primal-dual steps
 
@@ -101,6 +119,8 @@ namespace proxddp
 
     /// Buffer for KKT matrix
     MatrixXs kktMatrixFull_;
+    /// Buffer for KKT right hand side
+    MatrixXs kktRhsFull_;
 
     /// @name Temp data
 
@@ -108,13 +128,35 @@ namespace proxddp
     std::vector<VectorXs> trial_us_;
     std::vector<VectorXs> trial_lams_;
 
-    WorkspaceTpl(const ShootingProblemTpl<Scalar>& problem);
+    /// @name Previous proximal iterates
 
+    std::vector<VectorXs> prev_xs_;
+    std::vector<VectorXs> prev_us_;
+    std::vector<VectorXs> prev_lams_;
+
+    explicit WorkspaceTpl(const ShootingProblemTpl<Scalar>& problem);
+
+    Eigen::SelfAdjointView<MatrixRef, Eigen::Lower>
+    getKktView(const int nprim, const int ndual)
+    {
+      return kktMatrixFull_
+        .topLeftCorner(nprim + ndual, nprim + ndual)
+        .template selfadjointView<Eigen::Lower>();
+    }
+
+    friend std::ostream& operator<<(std::ostream& oss, const WorkspaceTpl<Scalar>& workspace)
+    {
+      oss << "Workspace {";
+      oss << "\n\tnum nodes:              " << workspace.trial_us_.size()
+          << "\n\tkkt matrix buffer size: " << workspace.kktMatrixFull_.rows();
+      oss << "\n}";
+      return oss;
+    }
   };
-
 
   template<typename Scalar>
   WorkspaceTpl<Scalar>::WorkspaceTpl(const ShootingProblemTpl<Scalar>& problem)
+    : problem_data(problem.createData())
   {
     using VectorXs = typename math_types<Scalar>::VectorXs;
     using MatrixXs = typename math_types<Scalar>::MatrixXs;
@@ -124,22 +166,25 @@ namespace proxddp
     using StageModel = StageModelTpl<Scalar>;
 
     const std::size_t nsteps = problem.numSteps();
-    value_params.reserve(nsteps);
+    value_params.reserve(nsteps + 1);
+    q_params.reserve(nsteps);
 
     trial_xs_.reserve(nsteps + 1);
     trial_us_.reserve(nsteps);
     trial_lams_.reserve(nsteps);
+    prev_xs_.reserve(nsteps + 1);
+    prev_us_.reserve(nsteps);
+    prev_lams_.reserve(nsteps);
 
-    int nprim;
-    int ndual;
-    int nx;
+    int nprim, ndual;
     int nu;
     int max_kkt_size = 0;
+    int max_ndx = problem.stages_[0].ndx1();
+
     std::size_t i = 0;
     for (i = 0; i < nsteps; i++)
     {
       const StageModel& stage = problem.stages_[i];
-      nx = stage.xspace1_.nx();
       nu = stage.nu();
       nprim = stage.numPrimal();
       ndual = stage.numDual();
@@ -153,25 +198,32 @@ namespace proxddp
       dus_.push_back(VectorXs::Zero(nu));
       dlams_.push_back(VectorXs::Zero(ndual));
 
-      trial_xs_.push_back(VectorXs::Zero(nx));
+      trial_xs_.push_back(VectorXs::Zero(stage.nx1()));
       trial_us_.push_back(VectorXs::Zero(nu));
       trial_lams_.push_back(VectorXs::Zero(ndual));
 
+      prev_xs_.push_back(trial_xs_[i]);
+      prev_us_.push_back(trial_us_[i]);
+      prev_lams_.push_back(trial_lams_[i]);
+
       max_kkt_size = std::max(max_kkt_size, nprim + ndual);
+      max_ndx = std::max(max_ndx, stage.ndx2());
     }
 
     kktMatrixFull_.resize(max_kkt_size, max_kkt_size);
     kktMatrixFull_.setZero();
 
-    assert(i == nsteps);
-    // terminal node
-    const auto& stage = problem.stages_[nsteps - 1];
+    kktRhsFull_.resize(max_kkt_size, max_ndx + 1);;
+    kktRhsFull_.setZero();
 
-    nx = stage.xspace1_.nx();
+    /** terminal node **/
+
+    const StageModel& stage = problem.stages_[nsteps - 1];
+
     value_params.push_back(value_storage_t(stage.ndx2()));
 
     dxs_.push_back(VectorXs::Zero(stage.ndx2()));
-    trial_xs_.push_back(VectorXs::Zero(nx));
+    trial_xs_.push_back(VectorXs::Zero(stage.nx2()));
 
     assert(value_params.size() == nsteps + 1);
     assert(dxs_.size() == nsteps + 1);
