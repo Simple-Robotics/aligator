@@ -4,7 +4,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
 #include "proxddp/fwd.hpp"
-#include "proxddp/core/function.hpp"
+#include "proxddp/core/clone.hpp"
 
 
 namespace proxddp
