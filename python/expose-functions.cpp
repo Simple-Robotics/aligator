@@ -82,17 +82,18 @@ namespace proxddp
           ))
       ;
 
+      using ManifoldPtr = shared_ptr<context::Manifold>;
       using ExplicitDynamics = ExplicitDynamicsModelTpl<Scalar>;
       bp::class_<internal::PyExplicitDynamicsModel,
                  bp::bases<DynamicsModel>,
                  boost::noncopyable>
       (
         "ExplicitDynamicsModel", "Explicit dynamics.",
-        bp::init<const int, const int, const context::Manifold&>(
+        bp::init<const int, const int, const ManifoldPtr&>(
           bp::args("self", "ndx1", "nu", "out_space")
         )
       )
-        .def(bp::init<const context::Manifold&, const int>(
+        .def(bp::init<const ManifoldPtr&, const int>(
           bp::args("self", "out_space", "nu")
         ))
         .def("forward", bp::pure_virtual(&ExplicitDynamics::forward),
