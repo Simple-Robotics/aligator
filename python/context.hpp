@@ -25,7 +25,7 @@ namespace proxddp
       using StageModel = StageModelTpl<Scalar>;
 
       using ShootingProblem = ShootingProblemTpl<Scalar>;
-      using ProblemData = ProblemDataTpl<Scalar>;
+      using ProblemData = ShootingProblemDataTpl<Scalar>;
 
     } // namespace context
 

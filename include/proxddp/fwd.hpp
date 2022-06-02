@@ -55,8 +55,7 @@ namespace proxddp
   template<typename _Scalar>
   struct ExplicitDynamicsDataTpl;
 
-
-  /// STAGE MODEL
+  /* STAGE MODEL */
 
   // fwd StageModelTpl
   template<typename Scalar>
@@ -65,15 +64,14 @@ namespace proxddp
   template<typename Scalar>
   struct StageDataTpl;
 
-
-  /// SHOOTING PROBLEM
+  /* SHOOTING PROBLEM */
 
   // fwd ShootingProblemTpl
   template<typename _Scalar>
   struct ShootingProblemTpl;
 
   template<typename _Scalar>
-  struct ProblemDataTpl;
+  struct ShootingProblemDataTpl;
 
 
   /// Math utilities

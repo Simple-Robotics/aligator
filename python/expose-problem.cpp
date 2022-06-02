@@ -14,8 +14,9 @@ namespace proxddp
 
       bp::class_<ShootingProblem>(
         "ShootingProblem", "Define a shooting problem.",
-        bp::init<>()
+        bp::init<const context::VectorXs&, const std::vector<StageModel>&>(bp::args("self", "x0", "stages"))
       )
+        .def(bp::init<const context::VectorXs&>(bp::args("self", "x0")))
         .def<void(ShootingProblem::*)(const StageModel&)>(
           "add_stage",
           &ShootingProblem::addStage,
@@ -32,8 +33,9 @@ namespace proxddp
         .def(CreateDataPythonVisitor<ShootingProblem>());
 
       bp::register_ptr_to_python<shared_ptr<ProblemData>>();
-      bp::class_<ProblemData, boost::noncopyable>(
-        "ProblemData", bp::no_init
+      bp::class_<ProblemData>(
+        "ShootingProblemData", "Data struct for shooting problems.",
+        bp::init<const ShootingProblem&>(bp::args("self", "problem"))
       )
         .add_property("stage_data", bp::make_getter(&ProblemData::stage_data, bp::return_value_policy<bp::return_by_value>()),
                       "Data for each stage.")
