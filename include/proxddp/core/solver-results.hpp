@@ -23,7 +23,7 @@ namespace proxddp
     std::vector<VectorRef> co_state_;
 
     /// @brief    Create the results struct from a problem (ShootingProblemTpl) instance.
-    ResultsTpl(const ShootingProblemTpl<Scalar>& problem)
+    explicit ResultsTpl(const ShootingProblemTpl<Scalar>& problem)
     {
 
       const std::size_t nsteps = problem.numSteps();
@@ -38,15 +38,18 @@ namespace proxddp
       for (i = 0; i < nsteps; i++)
       {
         const StageModelTpl<Scalar>& stage = problem.stages_[i];
-        nx = stage.xspace1_.nx();
+        nx = stage.nx1();
         nu = stage.nu();
         ndual = stage.numDual();
-        xs_.push_back(VectorXs::Zero(nx));
+        xs_.push_back(stage.xspace1_.neutral());
         us_.push_back(VectorXs::Zero(nu));
-        lams_.push_back(VectorXs::Zero(ndual));
-        co_state_.push_back(lams_[i].head(stage.dyn_model_.nr));
+        lams_.push_back(VectorXs::Ones(ndual));
+        co_state_.push_back(lams_[i].head(stage.nx2()));
+        if (i == nsteps - 1)
+          xs_.push_back(stage.xspace2_.neutral());
       }
-      xs_.push_back(VectorXs::Zero(problem.stages_[nsteps - 1].xspace2_.ndx()));
+      assert(xs_.size() == nsteps + 1);
+      assert(us_.size() == nsteps);
     }
 
   };
