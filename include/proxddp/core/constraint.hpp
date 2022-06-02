@@ -27,10 +27,10 @@ namespace proxddp
     using ConstraintSetPtr = shared_ptr<ConstraintSetBase<Scalar>>;
 
     const FunctionType& func_;
-    const ConstraintSet& set_;
+    ConstraintSetPtr set_;
 
     StageConstraintTpl(const FunctionType& func,
-                       const ConstraintSet& constraint_set)
+                       const ConstraintSetPtr& constraint_set)
       : func_(func)
       , set_(constraint_set)
     {}
