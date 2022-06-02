@@ -28,7 +28,7 @@ namespace python
         bp::args("self", "space", "nu", "cost", "dyn_model")
         ))
       .def("add_constraint", (void(StageModel::*)(const StageModel::ConstraintPtr&))&StageModel::addConstraint)
-      .def_readonly("uspace", &StageModel::uspace)
+      .def_readonly("uspace", &StageModel::uspace_)
       .def("evaluate", &StageModel::evaluate,
            bp::args("self", "x", "u", "y", "data"),
            "Evaluate the stage cost, dynamics, constraints.")
@@ -51,7 +51,7 @@ namespace python
       bp::init<const StageModel&>()
     )
       .def_readwrite("cost_data", &StageData::cost_data)
-      .def_readwrite("dyn_data", &StageData::dyn_data)
+      // .def_readwrite("dyn_data", &StageData::dyn_data)
       .def_readwrite("constraint_data", &StageData::constraint_data)
       .def(ClonePythonVisitor<StageData>())
       ;

@@ -4,6 +4,7 @@
 #include "proxddp/core/function.hpp"
 
 #include <proxnlp/modelling/spaces/vector-space.hpp>
+#include <proxnlp/modelling/constraints/equality-constraint.hpp>
 
 #include "proxddp/core/costs.hpp"
 #include "proxddp/core/dynamics.hpp"
@@ -14,16 +15,13 @@
 
 namespace proxddp
 {
-  // fwd StageData
-  template<typename _Scalar>
-  struct StageDataTpl;
 
   template<typename Scalar>
   struct ConstraintContainer
   {
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
     using Constraint = StageConstraintTpl<Scalar>;
-    ConstraintContainer() {};
+    ConstraintContainer() : cursors_({0}) {};
 
     std::size_t size() const
     {
@@ -33,18 +31,18 @@ namespace proxddp
     void push_back(const shared_ptr<Constraint>& el)
     {
       const int nr = el->nr();
-      const int last_cursor = cursors_[this->size() - 1];
+      const int last_cursor = this->totalDim();
       storage_.push_back(el);
       cursors_.push_back(last_cursor + nr);
       dims_.push_back(nr);
     }
 
-    std::size_t getIndex(const std::size_t i) const
+    int getIndex(const std::size_t i) const
     {
       return cursors_[i];
     }
 
-    std::size_t getDim(const std::size_t i) const
+    int getDim(const std::size_t i) const
     {
       return dims_[i];
     }
@@ -63,9 +61,9 @@ namespace proxddp
       return J.middleRows(getIndex(i), getDim(i));
     }
 
-    std::size_t totalDim() const
+    int totalDim() const
     {
-      return cursors_[this->size() - 1];
+      return cursors_[this->size()];
     }
 
     shared_ptr<Constraint>& operator[](std::size_t i)
@@ -82,19 +80,6 @@ namespace proxddp
     std::vector<shared_ptr<Constraint>> storage_;
     std::vector<int> cursors_;
     std::vector<int> dims_;
-    void update_indices()
-    {
-      cursors_.clear();
-      int cursor = 0;
-      int nr = 0;
-      for (std::size_t i = 0; i < storage_.size(); i++)
-      {
-        nr = storage_[i]->nr();
-        cursors_.push_back(cursor);
-        dims_.push_back(nr);
-        cursor += nr;
-      }
-    }
   };
 
   /** @brief    A stage in the control problem.
@@ -122,15 +107,15 @@ namespace proxddp
     /// Next state space.
     const Manifold& xspace2_;
     /// Control vector space.
-    proxnlp::VectorSpaceTpl<Scalar> uspace;
+    proxnlp::VectorSpaceTpl<Scalar> uspace_;
 
     const CostBase& cost_;
-    const Dynamics& dyn_model_;
+    const Dynamics& dyn_model() const { return static_cast<const Dynamics&>(constraints_[0]->func_); }
     ConstraintContainer<Scalar> constraints_;
 
     inline int nx1()  const { return xspace1_.nx(); }
     inline int ndx1() const { return xspace1_.ndx(); }
-    inline int nu()   const { return uspace.ndx(); }
+    inline int nu()   const { return uspace_.ndx(); }
     inline int nx2()  const { return xspace2_.nx(); }
     inline int ndx2() const { return xspace2_.ndx(); }
 
@@ -148,10 +133,13 @@ namespace proxddp
                   const Dynamics& dyn_model)
       : xspace1_(space1)
       , xspace2_(space2)
-      , uspace(nu)
+      , uspace_(nu)
       , cost_(cost)
-      , dyn_model_(dyn_model)
-      {}
+    {
+      ConstraintPtr dynptr = std::make_shared<Constraint>(
+        dyn_model, std::make_shared<proxnlp::EqualityConstraint<Scalar>>());
+      constraints_.push_back(std::move(dynptr));
+    }
 
     /// Secondary constructor: use a single manifold.
     StageModelTpl(const Manifold& space,
@@ -172,7 +160,6 @@ namespace proxddp
                   const ConstVectorRef& y,
                   Data& data) const
     {
-      dyn_model_.evaluate(x, u, y, *data.dyn_data);
       cost_.evaluate(x, u, *data.cost_data);
 
       for (std::size_t i = 0; i < numConstraints(); i++)
@@ -190,14 +177,12 @@ namespace proxddp
                             Data& data) const
     {
       cost_.computeGradients(x, u, *data.cost_data);
-      cost_.computeHessians(x, u, *data.cost_data);
-
-      dyn_model_.computeJacobians(x, u, y, *data.dyn_data);
+      cost_.computeHessians (x, u, *data.cost_data);
 
       for (std::size_t i = 0; i < numConstraints(); i++)
       {
         // calc on constraint
-        const auto& cstr = constraints_[i];
+        const ConstraintPtr& cstr = constraints_[i];
         cstr->func_.computeJacobians(x, u, y, *data.constraint_data[i]);
       }
     }
@@ -242,11 +227,12 @@ namespace proxddp
     using StageModel = StageModelTpl<Scalar>;
     using CostData = CostDataTpl<Scalar>;
     using FunctionData = FunctionDataTpl<Scalar>;
+    using DynamicsData = DynamicsDataTpl<Scalar>;
 
-    /// Data struct for the dynamics.
-    shared_ptr<DynamicsDataTpl<Scalar>> dyn_data;
     /// Data structs for the functions involved in the constraints.
     std::vector<shared_ptr<FunctionData>> constraint_data;
+    /// Data struct for the dynamics.
+    shared_ptr<DynamicsData>& dyn_data;
     /// Data for the running costs.
     shared_ptr<CostData> cost_data;
 
@@ -254,15 +240,15 @@ namespace proxddp
     ///
     /// @details  The constructor initializes or fills in the data members using move semantics.
     explicit StageDataTpl(const StageModel& stage_model)
-      : dyn_data(std::move(stage_model.dyn_model_.createData()))
+      : constraint_data(stage_model.numConstraints())
+      , dyn_data(constraint_data[0])
       , cost_data(std::move(stage_model.cost_.createData()))
     {
       const std::size_t nc = stage_model.numConstraints();
-      constraint_data.reserve(nc);
       for (std::size_t i = 0; i < nc; i++)
       {
         const auto& func = stage_model.constraints_[i]->func_;
-        constraint_data.push_back(std::move(func.createData()));
+        constraint_data[i] = std::move(func.createData());
       }
     }
 
