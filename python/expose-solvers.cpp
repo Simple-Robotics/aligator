@@ -23,6 +23,7 @@ namespace proxddp
         .def_readonly("q_params", &Workspace::q_params)
         .def_readonly("kkt_matrix_buffer_", &Workspace::kktMatrixFull_)
         .def_readonly("gains", &Workspace::gains_)
+        .def(bp::self_ns::str(bp::self))
         ;
 
       bp::class_<Results>(
@@ -34,9 +35,24 @@ namespace proxddp
         .def_readonly("co_state", &Results::co_state_)
       ;
 
-      bp::def("forward_pass", &forward_pass<Scalar>, "Perform the forward pass");
-      bp::def("try_step", &try_step<Scalar>, "Try a step of size \\alpha.");
+      using SolverType = SolverTpl<Scalar>;
 
+      bp::class_<SolverType>(
+        "Solver",
+        bp::init< Scalar
+                , Scalar
+                , Scalar>(
+                  bp::args("self", "tol", "mu_init", "rho_init")
+                )
+      )
+        .def_readwrite("target_tol", &SolverType::target_tolerance, "Desired tolerance.")
+        .def_readonly("mu_init",  &SolverType::mu_init,  "mu_init")
+        .def_readonly("rho_init", &SolverType::rho_init, "rho_init")
+        .def("run", &SolverType::run,
+             bp::args("self", "problem", "workspace", "results",
+                      "xs_init", "us_init"),
+             "Run the solver.")
+        ;
     }
     
   } // namespace python
