@@ -28,6 +28,7 @@ INCLUDE_PATH            = @PROJECT_SOURCE_DIR@/include
 
 EXAMPLE_PATH            = @PROJECT_SOURCE_DIR@/examples
 
+EXTRA_PACKAGES          = {bm,stmaryrd}
 FORMULA_MACROFILE       = @CMAKE_SOURCE_DIR@/doc/macros.inc
 
 GENERATE_TREEVIEW       = YES
