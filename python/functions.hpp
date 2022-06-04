@@ -31,23 +31,23 @@ namespace proxddp
         PyStageFunction(PyObject*&, Args&&... args)
           : FunctionBase(std::forward<Args>(args)...) {}
 
-        void evaluate(const ConstVectorRef& x,
-                      const ConstVectorRef& u,
-                      const ConstVectorRef& y,
-                      Data& data) const override
-        { PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeJacobians", x, u, y, data); }
-
-        void computeJacobians(const ConstVectorRef& x,
+        virtual void evaluate(const ConstVectorRef& x,
                               const ConstVectorRef& u,
                               const ConstVectorRef& y,
                               Data& data) const override
         { PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeJacobians", x, u, y, data); }
+
+        virtual void computeJacobians(const ConstVectorRef& x,
+                                      const ConstVectorRef& u,
+                                      const ConstVectorRef& y,
+                                      Data& data) const override
+        { PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeJacobians", x, u, y, data); }
         
-        void computeVectorHessianProducts(const ConstVectorRef& x,
-                                          const ConstVectorRef& u,
-                                          const ConstVectorRef& y,
-                                          const ConstVectorRef& lbda,
-                                          Data& data) const override
+        virtual void computeVectorHessianProducts(const ConstVectorRef& x,
+                                                  const ConstVectorRef& u,
+                                                  const ConstVectorRef& y,
+                                                  const ConstVectorRef& lbda,
+                                                  Data& data) const override
         { PROXDDP_PYTHON_OVERRIDE(void, FunctionBase, computeVectorHessianProducts, x, u, y, lbda, data); }
 
         shared_ptr<Data> createData() const override
@@ -66,15 +66,15 @@ namespace proxddp
         PyExplicitDynamicsModel(Args&&... args)
           : ExplicitDynamicsModelTpl<Scalar>(std::forward<Args>(args)...) {}
 
-        void forward(const ConstVectorRef& x,
-                     const ConstVectorRef& u,
-                     VectorRef out) const override
+        virtual void forward(const ConstVectorRef& x,
+                             const ConstVectorRef& u,
+                             VectorRef out) const override
         { PROXDDP_PYTHON_OVERRIDE_PURE(void, "forward", x, u, out) }
 
-        void dForward(const ConstVectorRef& x,
-                      const ConstVectorRef& u,
-                      MatrixRef Jx,
-                      MatrixRef Ju) const override
+        virtual void dForward(const ConstVectorRef& x,
+                              const ConstVectorRef& u,
+                              MatrixRef Jx,
+                              MatrixRef Ju) const override
         { PROXDDP_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, Jx, Ju) }
 
       };
