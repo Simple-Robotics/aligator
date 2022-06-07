@@ -165,9 +165,9 @@ namespace proxddp
     /// Data structs for the functions involved in the constraints.
     std::vector<shared_ptr<FunctionData>> constraint_data;
     /// Data struct for the dynamics.
-    shared_ptr<DynamicsData>& dyn_data;
+    shared_ptr<DynamicsData> dyn_data() { return constraint_data[0]; }
     /// Data for the running costs.
-    shared_ptr<CostData> cost_data;
+    const shared_ptr<CostData> cost_data;
 
     /// @brief    Constructor.
     ///

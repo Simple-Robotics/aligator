@@ -37,7 +37,7 @@ namespace python
            "Compute derivatives of the stage cost, dynamics, and constraints.")
       .add_property("ndx1", &StageModel::ndx1)
       .add_property("ndx2", &StageModel::ndx2)
-      .add_property("nu", &StageModel::nu, "Control space dimension.")
+      .add_property("nu",   &StageModel::nu, "Control space dimension.")
       .add_property("num_primal", &StageModel::numPrimal, "Number of primal variables.")
       .add_property("num_dual", &StageModel::numDual, "Number of dual variables.")
       .def(CreateDataPythonVisitor<StageModel>())
@@ -50,8 +50,9 @@ namespace python
       "StageData", "Data struct for StageModel objects.",
       bp::init<const StageModel&>()
     )
-      .def_readwrite("cost_data", &StageData::cost_data)
-      // .def_readwrite("dyn_data", &StageData::dyn_data)
+      .def_readonly("cost_data", &StageData::cost_data)
+      .add_property("dyn_data", &StageData::dyn_data,
+                    "Data struct for dynamics data.")
       .def_readwrite("constraint_data", &StageData::constraint_data)
       .def(ClonePythonVisitor<StageData>())
       ;

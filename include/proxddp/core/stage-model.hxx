@@ -24,7 +24,7 @@ namespace proxddp
           << "nu:  " << stage.nu();
     } else {
       oss << "ndx1:" << stage.ndx1() << ", "
-          << "nu:  " << stage.nu() << ", "
+          << "nu:  " << stage.nu()   << ", "
           << "ndx2:" << stage.ndx2();
     }
 
@@ -41,7 +41,6 @@ namespace proxddp
   template<typename Scalar>
   StageDataTpl<Scalar>::StageDataTpl(const StageModel& stage_model)
     : constraint_data(stage_model.numConstraints())
-    , dyn_data(constraint_data[0])
     , cost_data(std::move(stage_model.cost_.createData()))
   {
     const std::size_t nc = stage_model.numConstraints();
