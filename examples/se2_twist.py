@@ -60,6 +60,7 @@ class MyQuadCost(proxddp.CostBase):
 @pytest.mark.parametrize("nsteps", [1, 4])
 class TestClass:
     dt = 0.1
+    x0 = space.neutral()
     dynmodel = TwistModelExplicit(dt)
     cost = MyQuadCost(W=np.eye(space.ndx), x_ref=x1)
     stage_model = proxddp.StageModel(space, nu, cost, dynmodel)
@@ -91,7 +92,7 @@ class TestClass:
 
     def test_shooting_problem(self, nsteps):
         stage_model = self.stage_model
-        shooting_problem = proxddp.ShootingProblem()
+        shooting_problem = proxddp.ShootingProblem(self.x0)
         for _ in range(nsteps):
             shooting_problem.add_stage(stage_model)
 
