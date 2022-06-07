@@ -75,6 +75,7 @@ namespace proxddp
     /// Data structs for each stage of the problem.
     std::vector<StageDataPtr> stage_data;
     /// Terminal cost data.
+    shared_ptr<CostDataAbstract<Scalar>> term_cost_data;
 
     ShootingProblemDataTpl(const ShootingProblemTpl<Scalar>& problem)
     {

@@ -33,7 +33,7 @@ namespace proxddp
   struct CostBaseTpl;
 
   template<typename Scalar>
-  struct CostDataTpl;
+  struct CostDataAbstract;
 
   // fwd DynamicsModelTpl
   template<typename Scalar>

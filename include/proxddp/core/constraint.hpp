@@ -47,5 +47,74 @@ namespace proxddp
 
   };
   
+  /// @brief Convenience class to manage a stack of constraints.
+  template<typename Scalar>
+  struct ConstraintContainer
+  {
+    PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+    using Constraint = StageConstraintTpl<Scalar>;
+    ConstraintContainer() : cursors_({0}) {};
+
+    std::size_t numConstraints() const
+    {
+      return storage_.size();
+    }
+
+    void push_back(const shared_ptr<Constraint>& el)
+    {
+      const int nr = el->nr();
+      const int last_cursor = cursors_.back();
+      storage_.push_back(el);
+      cursors_.push_back(last_cursor + nr);
+      dims_.push_back(nr);
+      total_dim += nr;
+    }
+
+    int getIndex(const std::size_t i) const
+    {
+      return cursors_[i];
+    }
+
+    int getDim(const std::size_t i) const
+    {
+      return dims_[i];
+    }
+
+    /// Get corresponding segment of a vector corresponding
+    /// to the @p i-th constraint.
+    VectorRef getSegmentByConstraint(VectorRef lambda, const std::size_t i) const
+    {
+      assert(lambda.size() == totalDim());
+      return lambda.segment(getIndex(i), getDim(i));
+    }
+
+    MatrixRef getBlockByConstraint(MatrixRef J, const std::size_t i) const
+    {
+      assert(J.rows() == totalDim());
+      return J.middleRows(getIndex(i), getDim(i));
+    }
+
+    int totalDim() const
+    {
+      return total_dim;
+    }
+
+    shared_ptr<Constraint>& operator[](std::size_t i)
+    {
+      return storage_[i];
+    }
+
+    const shared_ptr<Constraint>& operator[](std::size_t i) const
+    {
+      return storage_[i];
+    }
+
+  protected:
+    std::vector<shared_ptr<Constraint>> storage_;
+    std::vector<int> cursors_;
+    std::vector<int> dims_;
+    int total_dim = 0;
+  };
+
 } // namespace proxddp
 

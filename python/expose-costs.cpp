@@ -9,13 +9,13 @@ namespace proxddp
   {
     namespace internal
     {
-      /// @brief Wrapper for the CostDataTpl class and its children.
+      /// @brief Wrapper for the CostDataAbstract class and its children.
       template<typename T = CostBaseTpl<context::Scalar>>
       struct PyCostFunction : T, bp::wrapper<T>
       {
         using Scalar = context::Scalar;
         using bp::wrapper<T>::get_override;
-        using CostData = CostDataTpl<Scalar>;
+        using CostData = CostDataAbstract<Scalar>;
         PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
         /// forwarding constructor
@@ -69,7 +69,7 @@ namespace proxddp
              "Compute the cost function hessians.")
         .def(CreateDataPythonVisitor<context::CostBase>());
 
-      using CostData = CostDataTpl<Scalar>;
+      using CostData = CostDataAbstract<Scalar>;
       bp::class_<CostData, shared_ptr<CostData>>(
         "CostData", "Cost function data struct.",
         bp::init<const int, const int>(
