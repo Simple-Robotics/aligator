@@ -14,49 +14,54 @@
 
 #include "boost/optional.hpp"
 
-using namespace proxddp;
 
-
-template<typename _Scalar>
-struct LinearDiscreteDynamics : ExplicitDynamicsModelTpl<_Scalar>
+namespace proxddp
 {
-  using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-  const MatrixXs A_;
-  const MatrixXs B_;
-  VectorXs c_;
 
-  using Base = ExplicitDynamicsModelTpl<double>;
-  LinearDiscreteDynamics(const MatrixXs& A,
-                         const MatrixXs& B,
-                         const boost::optional<VectorXs>& c = boost::none)
-    : Base(std::make_shared<proxnlp::VectorSpaceTpl<double>>((int)A.cols()), (int)B.cols())
-    , A_(A), B_(B)
-    {
-      if (boost::optional<VectorXs> value = c)
+  template<typename _Scalar>
+  struct LinearDiscreteDynamics : ExplicitDynamicsModelTpl<_Scalar>
+  {
+    using Scalar = _Scalar;
+    PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+    const MatrixXs A_;
+    const MatrixXs B_;
+    VectorXs c_;
+
+    using Base = ExplicitDynamicsModelTpl<double>;
+    LinearDiscreteDynamics(const MatrixXs& A,
+                          const MatrixXs& B,
+                          const boost::optional<VectorXs>& c = boost::none)
+      : Base(std::make_shared<proxnlp::VectorSpaceTpl<double>>((int)A.cols()), (int)B.cols())
+      , A_(A), B_(B)
       {
-        c_ = *value;
-      } else {
-        c_ = VectorXs::Zero(A.cols());
+        if (boost::optional<VectorXs> value = c)
+        {
+          c_ = *value;
+        } else {
+          c_ = VectorXs::Zero(A.cols());
+        }
       }
+
+    void forward(const ConstVectorRef& x,
+                const ConstVectorRef& u,
+                VectorRef out) const override
+    {
+      out = A_ * x + B_ * u + c_;
+    }
+    
+    void dForward(const ConstVectorRef&,
+                  const ConstVectorRef&,
+                  MatrixRef Jx, MatrixRef Ju) const override
+    {
+      Jx = A_;
+      Ju = B_;
     }
 
-  void forward(const ConstVectorRef& x,
-               const ConstVectorRef& u,
-               VectorRef out) const override
-  {
-    out = A_ * x + B_ * u + c_;
-  }
-  
-  void dForward(const ConstVectorRef&,
-                const ConstVectorRef&,
-                MatrixRef Jx, MatrixRef Ju) const override
-  {
-    Jx = A_;
-    Ju = B_;
-  }
+  };
 
-};
+} // namespace proxddp
+
+using namespace proxddp;
 
 
 int main()
