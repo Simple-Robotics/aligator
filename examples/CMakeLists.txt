@@ -19,4 +19,13 @@ foreach(exfile ${EXAMPLES_CPP})
   target_link_libraries(${exname} PRIVATE fmt::fmt)
 endforeach(exfile)
 
+file(GLOB EXAMPLES_PY *.py)
 
+foreach(pyfile ${EXAMPLES_PY})
+  get_filename_component(pyfile_name ${pyfile} NAME)
+  execute_process(
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+    ${pyfile}
+    ${CMAKE_CURRENT_BINARY_DIR}/${pyfile_name}
+  )
+endforeach()
