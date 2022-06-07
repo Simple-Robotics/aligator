@@ -35,10 +35,10 @@ namespace proxddp
         .def_readonly("co_state", &Results::co_state_)
       ;
 
-      using SolverType = SolverTpl<Scalar>;
+      using SolverType = SolverProxDDP<Scalar>;
 
       bp::class_<SolverType>(
-        "Solver",
+        "ProxDDP",
         bp::init< Scalar
                 , Scalar
                 , Scalar>(
