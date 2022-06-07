@@ -1,5 +1,5 @@
-#include "proxddp/core/dynamics/integrator-euler.hpp"
-#include "proxddp/core/dynamics/integrator-rk2.hpp"
+#include "proxddp/modelling/dynamics/integrator-euler.hpp"
+#include "proxddp/modelling/dynamics/integrator-rk2.hpp"
 
 #include <proxnlp/modelling/spaces/vector-space.hpp>
 

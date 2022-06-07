@@ -14,7 +14,7 @@ namespace proxddp
   {
     // Call the forward dynamics and set the function residual
     // value to the difference between y and the xout_.
-    auto d = static_cast<SpecificData&>(data);
+    SpecificData& d = static_cast<SpecificData&>(data);
     this->forward(x, u, d.xout_);
     out_space().difference(y, d.xout_, d.value_);  // xnext - y
   }
@@ -30,12 +30,11 @@ namespace proxddp
     this->forward(x, u, d.xout_);
     this->dForward(x, u, d.Jx_, d.Ju_); // dxnext_(x,u)
     // compose by jacobians of log (xout - y)
-    MatrixXs Jtemp(this->ndx2, this->ndx2);
     out_space().Jdifference(y, d.xout_, d.Jy_, 0);  // d(xnext - y) / y
-    Jtemp.setZero();
-    out_space().Jdifference(y, d.xout_, Jtemp, 1);  // d(xnext - y) / xnext
-    d.Jx_ = (Jtemp * d.Jx_).eval();  // chain rule d(log)/dxnext * dxnext_dx
-    d.Ju_ = (Jtemp * d.Ju_).eval();
+    d.Jtemp_.setZero();
+    out_space().Jdifference(y, d.xout_, d.Jtemp_, 1);  // d(xnext - y) / xnext
+    d.Jx_ = d.Jtemp_ * d.Jx_;  // chain rule d(log)/dxnext * dxnext_dx
+    d.Ju_ = d.Jtemp_ * d.Ju_;
   }
   
 } // namespace proxddp

@@ -4,6 +4,7 @@
 
 namespace proxddp
 {
+  /// @brief Euclidean quadratic cost.
   template<typename _Scalar>
   struct QuadraticCost : CostBaseTpl<_Scalar>
   {

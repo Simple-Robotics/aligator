@@ -1,7 +1,7 @@
 /// @file base-ode.hxx  Implement the ContinuousDynamicsTpl interface for BaseODETpl.
 #pragma once
 
-#include "proxddp/core/dynamics/base-ode.hpp"
+#include "proxddp/modelling/dynamics/base-ode.hpp"
 
 #include <proxnlp/manifold-base.hpp>
 

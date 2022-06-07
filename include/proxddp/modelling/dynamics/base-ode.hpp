@@ -2,7 +2,7 @@
 /// @file base-ode.hpp
 /// @brief Defines a class representing ODEs.
 
-#include "proxddp/core/dynamics/continuous-base.hpp"
+#include "proxddp/modelling/dynamics/continuous-base.hpp"
 
 
 namespace proxddp
@@ -77,5 +77,5 @@ namespace proxddp
   } // namespace dynamics
 } // namespace proxddp
 
-#include "proxddp/core/dynamics/base-ode.hxx"
+#include "proxddp/modelling/dynamics/base-ode.hxx"
 

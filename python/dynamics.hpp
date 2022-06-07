@@ -1,8 +1,8 @@
 #pragma once
 
 #include "proxddp/python/fwd.hpp"
-#include "proxddp/core/dynamics/continuous-base.hpp"
-#include "proxddp/core/dynamics/base-ode.hpp"
+#include "proxddp/modelling/dynamics/continuous-base.hpp"
+#include "proxddp/modelling/dynamics/base-ode.hpp"
 
 
 namespace proxddp

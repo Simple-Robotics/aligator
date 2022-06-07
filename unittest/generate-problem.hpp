@@ -1,5 +1,5 @@
 #pragma once
-#include "proxddp/core/problem.hpp"
+#include "proxddp/core/shooting-problem.hpp"
 #include "proxddp/core/explicit-dynamics.hpp"
 
 #include <proxnlp/modelling/spaces/pinocchio-groups.hpp>

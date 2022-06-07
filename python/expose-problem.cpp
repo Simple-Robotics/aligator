@@ -1,5 +1,5 @@
 #include "proxddp/python/fwd.hpp"
-#include "proxddp/core/problem.hpp"
+#include "proxddp/core/shooting-problem.hpp"
 
 
 namespace proxddp

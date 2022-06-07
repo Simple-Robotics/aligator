@@ -13,7 +13,9 @@ namespace proxddp
    * 
    *  @details    Forward dynamics \f$ x_{k+1} = f(x_k, u_k) \f$.
    *              The corresponding residuals for multiple-shooting formulations are
-   *              \f$ f(x_k, u_k) \ominus x_{k+1} \f$.
+   *  \f[
+   *    \bar{f}(x_k, u_k, x_{k+1}) = f(x_k, u_k) \ominus x_{k+1}.
+   *  \f]
    */
   template<typename _Scalar>
   struct ExplicitDynamicsModelTpl : DynamicsModelTpl<_Scalar>
@@ -28,6 +30,7 @@ namespace proxddp
 
     shared_ptr<const Manifold> out_space_;
 
+    /// @return Reference to output state space.
     const Manifold& out_space() const
     {
       return *out_space_;
@@ -79,16 +82,17 @@ namespace proxddp
     using Scalar = _Scalar;
     PROXNLP_FUNCTION_TYPEDEFS(Scalar);
     VectorXs xout_;
+    MatrixXs Jtemp_;
 
     ExplicitDynamicsDataTpl(const int ndx1,
                             const int nu,
                             const ManifoldAbstractTpl<Scalar>& space)
       : FunctionDataTpl<Scalar>(ndx1, nu, space.ndx(), space.ndx())
       , xout_(space.nx())
+      , Jtemp_(space.ndx(), space.ndx())
     {
       xout_.setZero();
-      const int ndx2 = space.ndx();
-      this->Jy_ = -MatrixXs::Identity(ndx2, ndx2);
+      Jtemp_.setZero();
     }
 
   };

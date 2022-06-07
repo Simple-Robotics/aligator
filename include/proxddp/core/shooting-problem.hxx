@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/core/problem.hpp"
+#include "proxddp/core/shooting-problem.hpp"
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>
