@@ -143,8 +143,6 @@ int main()
     // fmt::print("u[{:d}] = {}\n", i, results.us_[i].transpose());
     fmt::print("u[{:d}] = {}\n", i, workspace.trial_us_[i].transpose());
   }
-  for (std::size_t i = 0; i < nsteps; i++)
-    fmt::print("gains t={:d},\n{}\n", i, workspace.gains_[i]);
 
   return 0;
 }
