@@ -1,6 +1,8 @@
 #pragma once
 
-#include "proxddp/core/problem.hpp"
+#include "proxddp/core/shooting-problem.hpp"
+
+#include <ostream>
 
 
 namespace proxddp
@@ -32,13 +34,11 @@ namespace proxddp
       lams_.reserve(nsteps);
       co_state_.reserve(nsteps);
       std::size_t i = 0;
-      int nx;
       int nu;
       int ndual;
       for (i = 0; i < nsteps; i++)
       {
         const StageModelTpl<Scalar>& stage = problem.stages_[i];
-        nx = stage.nx1();
         nu = stage.nu();
         ndual = stage.numDual();
         xs_.push_back(stage.xspace1_.neutral());
@@ -50,6 +50,12 @@ namespace proxddp
       }
       assert(xs_.size() == nsteps + 1);
       assert(us_.size() == nsteps);
+    }
+
+
+    friend std::ostream& operator<<(std::ostream& oss, ResultsTpl& obj)
+    {
+
     }
 
   };
