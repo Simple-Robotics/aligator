@@ -128,9 +128,10 @@ namespace proxddp
     /// @name Riccati gains and buffers for primal-dual steps
 
     std::vector<MatrixXs> gains_;
-    std::vector<VectorXs> dxs_;
-    std::vector<VectorXs> dus_;
-    std::vector<VectorXs> dlams_;
+    std::vector<VectorXs> pd_step_;
+    std::vector<VectorRef> dxs_;
+    std::vector<VectorRef> dus_;
+    std::vector<VectorRef> dlams_;
 
     /// Buffer for KKT matrix
     MatrixXs kktMatrixFull_;
@@ -208,29 +209,38 @@ namespace proxddp
     prev_lams_.reserve(nsteps);
 
     int nprim, ndual;
-    int nu;
+    int ndx1, nu, ndx2;
     int max_kkt_size = 0;
     int max_ndx = problem.stages_[0].ndx1();
+    ndx1 = problem.stages_[0].ndx1();
+    pd_step_.push_back(VectorXs::Zero(ndx1));
+    dxs_.push_back(pd_step_[0].head(ndx1));
 
     std::size_t i = 0;
     for (i = 0; i < nsteps; i++)
     {
       const StageModel& stage = problem.stages_[i];
+      ndx1 = stage.ndx1(),
       nu = stage.nu();
+      ndx2 = stage.ndx2();
       nprim = stage.numPrimal();
       ndual = stage.numDual();
 
-      value_params.push_back(value_storage_t(stage.ndx1()));
-      q_params.push_back(q_storage_t(stage.ndx1(), nu, stage.ndx2()));
+      value_params.push_back(value_storage_t(ndx1));
+      q_params.push_back(q_storage_t(ndx1, nu, ndx2));
 
       lams_plus_.push_back(VectorXs::Zero(ndual));
       lams_pdal_.push_back(VectorXs::Zero(ndual));
 
-      gains_.push_back(MatrixXs::Zero(nprim + ndual, stage.ndx1() + 1));
+      gains_.push_back(MatrixXs::Zero(nprim + ndual, ndx1 + 1));
 
-      dxs_.push_back(VectorXs::Zero(stage.ndx1()));
-      dus_.push_back(VectorXs::Zero(nu));
-      dlams_.push_back(VectorXs::Zero(ndual));
+      pd_step_.push_back(VectorXs::Zero(nprim + ndual));
+      // dxs_.push_back(VectorXs::Zero(ndx1));
+      // dus_.push_back(VectorXs::Zero(nu));
+      // dlams_.push_back(VectorXs::Zero(ndual));
+      dxs_.push_back(pd_step_[i + 1].segment(nu, ndx2));
+      dus_.push_back(pd_step_[i + 1].head(nu));
+      dlams_.push_back(pd_step_[i + 1].tail(ndual));
 
       trial_xs_.push_back(VectorXs::Zero(stage.nx1()));
       trial_us_.push_back(VectorXs::Zero(nu));
@@ -243,15 +253,13 @@ namespace proxddp
       /** terminal node **/
       if (i == nsteps - 1)
       {
-        value_params.push_back(value_storage_t(stage.ndx2()));
-
-        dxs_.push_back(VectorXs::Zero(stage.ndx2()));
+        value_params.push_back(value_storage_t(ndx2));
         trial_xs_.push_back(VectorXs::Zero(stage.nx2()));
         prev_xs_.push_back(trial_xs_[nsteps]);
       }
 
       max_kkt_size = std::max(max_kkt_size, nprim + ndual);
-      max_ndx = std::max(max_ndx, stage.ndx2());
+      max_ndx = std::max(max_ndx, ndx2);
     }
 
     kktMatrixFull_.resize(max_kkt_size, max_kkt_size);
