@@ -88,6 +88,12 @@ namespace proxddp
       return lambda.segment(getIndex(i), getDim(i));
     }
 
+    ConstVectorRef getConstSegmentByConstraint(const ConstVectorRef lambda, const std::size_t i) const
+    {
+      assert(lambda.size() == totalDim());
+      return lambda.segment(getIndex(i), getDim(i));
+    }
+
     MatrixRef getBlockByConstraint(MatrixRef J, const std::size_t i) const
     {
       assert(J.rows() == totalDim());
@@ -99,6 +105,7 @@ namespace proxddp
       return total_dim;
     }
 
+    /// Get the i-th constraint.
     shared_ptr<Constraint>& operator[](std::size_t i)
     {
       return storage_[i];

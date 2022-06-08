@@ -24,6 +24,8 @@ namespace proxddp
     /// Dynamics' co-states
     std::vector<VectorRef> co_state_;
 
+    Scalar traj_cost_ = 0.;
+
     /// @brief    Create the results struct from a problem (ShootingProblemTpl) instance.
     explicit ResultsTpl(const ShootingProblemTpl<Scalar>& problem)
     {
