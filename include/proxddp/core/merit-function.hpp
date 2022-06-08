@@ -1,3 +1,4 @@
+/// @file merit-function.hpp
 #pragma once
 
 #include "proxddp/fwd.hpp"
@@ -8,6 +9,14 @@
 
 namespace proxddp
 {
+
+  /// Whether to use merit functions in primal or primal-dual mode.
+  enum class LinesearchMode : std::uint32_t
+  {
+    PRIMAL = 0,
+    PRIMAL_DUAL = 1
+  };
+
   /** @brief Primal-dual augmented Lagrangian merit function.
    * 
    * @details The standard Powell-Hestenes-Rockafellar (PHR) augmented Lagrangian evaluates as:
@@ -47,32 +56,59 @@ namespace proxddp
     Scalar mu_penal_;
     Scalar mu_penal_inv_ = 1. / mu_penal_;
 
+    LinesearchMode ls_mode = LinesearchMode::PRIMAL_DUAL;
+
+    Scalar traj_cost = 0.;
+    Scalar penalty_value = 0.;
+
+    /// Weight of dual penalty. Values different from 1 not supported yet.
+    static constexpr Scalar dual_weight_ = 1.;
+
     /// @brief Evaluate the merit function at the trial point.
     Scalar evaluate(
       const ShootingProblemTpl<Scalar>& problem,
+      const std::vector<VectorXs>& xs,
+      const std::vector<VectorXs>& us,
+      const std::vector<VectorXs>& lams,
       WorkspaceTpl<Scalar>& workspace,
-      const ResultsTpl<Scalar>& results,
-      ShootingProblemDataTpl<Scalar>& prob_data) const
+      ShootingProblemDataTpl<Scalar>& prob_data)
     {
-      problem.evaluate(workspace.trial_xs_, workspace.trial_us_, prob_data);
-      Scalar traj_cost = 0.;
-      Scalar penalty_value = 0.;
+      using StageModel = StageModelTpl<Scalar>;
+      problem.evaluate(xs, us, prob_data);
+      traj_cost = 0.;
+      penalty_value = 0.;
       const std::size_t nsteps = problem.numSteps();
       std::size_t num_c;
       for (std::size_t i = 0; i < nsteps; i++)
       {
+        const StageModel& sm = problem.stages_[i];
         StageDataTpl<Scalar>& sd = *prob_data.stage_data[i];
         traj_cost += sd.cost_data->value_;
 
-        num_c = sd.constraint_data.size();
+        num_c = sm.numConstraints();
+        // loop over constraints
+        // get corresponding multipliers from allocated memory
         for (std::size_t j = 0; j < num_c; j++)
         {
+          const ConstraintSetBase<Scalar>& cstr_set = sm.constraints_manager[j]->getConstraintSet();
           FunctionDataTpl<Scalar>& cstr_data = *sd.constraint_data[j];
+          VectorRef lamplus_j = sm.constraints_manager.getSegmentByConstraint(workspace.lams_plus_[i], j);
+          VectorRef lamprev_j = sm.constraints_manager.getSegmentByConstraint(workspace.prev_lams_[i], j);
+          lamplus_j = lamprev_j + mu_penal_inv_ * cstr_data.value_;
+          lamplus_j.noalias() = cstr_set.normalConeProjection(lamplus_j);
+          penalty_value += .5 * mu_penal_ * lamplus_j.squaredNorm();
+
+          if (this->ls_mode == LinesearchMode::PRIMAL_DUAL)
+          {
+            // add the dual penalty term
+            ConstVectorRef lam_j = sm.constraints_manager.getConstSegmentByConstraint(lams[i], j);
+            penalty_value += .5 * dual_weight_ * mu_penal_ * (lamplus_j - lam_j).squaredNorm();
+          }
+
         }
       }
       traj_cost += prob_data.term_cost_data->value_;
-      Scalar result = traj_cost + penalty_value;
-      return result;
+      return traj_cost + penalty_value;
     }
 
   };
