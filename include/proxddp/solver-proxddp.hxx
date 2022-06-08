@@ -44,7 +44,7 @@ namespace proxddp
   void SolverProxDDP<Scalar>::tryStep(
     const Problem& problem,
     Workspace& workspace,
-    Results& results,
+    const Results& results,
     const Scalar alpha) const
   {
 
@@ -85,6 +85,7 @@ namespace proxddp
     {
       computeGains(problem, workspace, results, nsteps - i - 1);
     }
+    workspace.inner_criterion = math::infty_norm(workspace.inner_criterion_by_stage);
   }
 
   template<typename Scalar>

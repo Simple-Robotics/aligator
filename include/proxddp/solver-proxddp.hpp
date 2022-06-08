@@ -6,7 +6,10 @@
 #include "proxddp/core/solver-workspace.hpp"
 #include "proxddp/core/solver-results.hpp"
 
+#include "proxddp/core/merit-function.hpp"
+
 #include <proxnlp/constraint-base.hpp>
+#include <proxnlp/linesearch-base.hpp>
 
 #include <fmt/color.h>
 #include <fmt/ostream.h>
@@ -58,12 +61,17 @@ namespace proxddp
     const Scalar inner_tol0 = 1.;
     const Scalar prim_tol0 = 1.;
 
+    /// Log-factor \f$\alpha_\eta\f$ for primal tolerance (failure)
     const Scalar prim_alpha;
+    /// Log-factor \f$\beta_\eta\f$ for primal tolerance (success)
     const Scalar prim_beta;
+    /// Log-factor \f$\alpha_\eta\f$ for dual tolerance (failure)
     const Scalar dual_alpha;
+    /// Log-factor \f$\beta_\eta\f$ for dual tolerance (success)
     const Scalar dual_beta;
 
     Scalar mu_update_factor_ = 0.1;
+    Scalar rho_update_factor_ = 1.;
 
     /// Subproblem tolerance
     Scalar inner_tol_;
@@ -76,13 +84,13 @@ namespace proxddp
     const Scalar TOL_MIN = 1e-10;
 
     SolverProxDDP(const Scalar tol=1e-6,
-              const Scalar mu_init=0.01,
-              const Scalar rho_init=0.,
-              const Scalar prim_alpha=0.1,
-              const Scalar prim_beta=0.9,
-              const Scalar dual_alpha=1.,
-              const Scalar dual_beta=1.
-              )
+                  const Scalar mu_init=0.01,
+                  const Scalar rho_init=0.,
+                  const Scalar prim_alpha=0.1,
+                  const Scalar prim_beta=0.9,
+                  const Scalar dual_alpha=1.,
+                  const Scalar dual_beta=1.
+                  )
       : target_tolerance(tol)
       , mu_init(mu_init)
       , rho_init(rho_init)
@@ -94,6 +102,7 @@ namespace proxddp
 
     /// @brief Compute the search direction.
     ///
+    /// @todo Compute real search direction in x0
     /// @warning This function assumes \f$\delta x_0\f$ has already been computed!
     /// @returns This computes the primal-dual step \f$(\delta \bfx,\delta \bfu,\delta\bmlam)\f$
     void computeDirection(const Problem& problem, Workspace& workspace) const;
@@ -101,8 +110,10 @@ namespace proxddp
     /// @brief    Try a step of size \f$\alpha\f$.
     /// @returns  A primal-dual trial point
     ///           \f$(\bfx \oplus\alpha\delta\bfx, \bfu+\alpha\delta\bfu, \bmlam+\alpha\delta\bmlam)\f$
-    void tryStep(const Problem& problem, Workspace& workspace,
-                 Results& results, const Scalar alpha) const;
+    void tryStep(const Problem& problem,
+                 Workspace& workspace,
+                 const Results& results,
+                 const Scalar alpha) const;
 
     /// Compute the active sets at each node and multiplier estimates, and projector Jacobian matrices.
     void computeActiveSetsAndMultipliers(const Problem& problem, Workspace& workspace, Results& results) const;
@@ -192,6 +203,20 @@ namespace proxddp
       assert(results.us_.size() == nsteps);
       assert(results.lams_.size() == nsteps);
 
+      // instantiate the subproblem merit function
+      PDAL_Function<Scalar> fun { mu_ };
+
+      auto merit_eval_fun = [&](Scalar a0) {
+        tryStep(problem, workspace, results, a0);
+        return fun.evaluate(
+          problem,
+          workspace.trial_xs_,
+          workspace.trial_us_,
+          workspace.trial_lams_,
+          workspace,
+          *workspace.problem_data);
+      };
+
       std::size_t k = 0;
       while (k < MAX_STEPS)
       {
@@ -201,7 +226,6 @@ namespace proxddp
         problem.computeDerivatives(results.xs_, results.us_, *workspace.problem_data);
 
         backwardPass(problem, workspace, results);
-        workspace.inner_criterion = math::infty_norm(workspace.inner_criterion_by_stage);
 
         fmt::print(" | inner_crit: {:.3e}\n", workspace.inner_criterion);
 
@@ -210,11 +234,23 @@ namespace proxddp
           break;
         }
 
-        workspace.dxs_[0].setZero();
         computeDirection(problem, workspace);
 
-        Scalar alpha_opt = performLinesearch(problem, workspace, results);
-        tryStep(problem, workspace, results, alpha_opt);
+        Scalar phi0 = merit_eval_fun(0.);
+        Scalar eps = 1e-9;
+        Scalar veps = merit_eval_fun(eps);
+        Scalar dphi0 = (veps - phi0) / eps;
+
+        Scalar alpha_opt = 1;
+
+        proxnlp::ArmijoLinesearch<Scalar>::run(
+          merit_eval_fun, phi0, dphi0,
+          ls_params.ls_beta, ls_params.armijo_c1, ls_params.alpha_min,
+          alpha_opt);
+
+        results.traj_cost_ = fun.traj_cost;
+        fmt::print(" | New merit fun. val: {:.3e}\n", phi0);
+        fmt::print(" | New traj. cost: {:.3e}\n", results.traj_cost_);
 
         // accept the damn step
         results.xs_ = workspace.trial_xs_;
@@ -223,49 +259,8 @@ namespace proxddp
 
         k++;
       }
-
     }
 
-    /** @brief Compute algorithm termination criteria.
-     * 
-     * @details The termination for \f$u\f$,
-     * \f[
-     *    \| \nabla_u H \|_\infty \leq \omega
-     * \f]
-     * backwardPass() must be called first.
-     */
-    void computeTerminationCriteria(const Problem& problem, Workspace& workspace, const Results& results)
-    {
-      const std::size_t nsteps = problem.numSteps();
-      VectorXs crit_x_vec(nsteps);
-      VectorXs crit_u_vec(nsteps);
-      VectorXs crit_l_vec(nsteps);  // proximal dual infeas.
-
-      workspace.dual_infeasibility = 0.;
-      auto all_qparams = workspace.q_params;
-      for (std::size_t i = 0; i < nsteps; i++)
-      {
-        crit_u_vec((long)i) = math::infty_norm(all_qparams[i].Qu_);
-        crit_x_vec((long)i) = math::infty_norm(all_qparams[i].Qy_);
-        crit_l_vec((long)i) = math::infty_norm( mu_ * (workspace.lams_plus_[i] - results.lams_[i]) );
-      }
-      fmt::print("Qu norms: {}\n", crit_u_vec.transpose());
-      fmt::print("Qy norms: {}\n", crit_x_vec.transpose());
-      fmt::print("proxerr : {}\n", crit_l_vec.transpose());
-
-      if (rho_ == 0.)
-        workspace.dual_infeasibility = std::max(crit_u_vec.maxCoeff(), crit_x_vec.maxCoeff());
-
-    }
-
-    /// @brief Run the linesearch procedure.
-    /// @returns    The optimal step size \f$\alpha^*\f$.
-    Scalar performLinesearch(const ShootingProblemTpl<Scalar>& problem,
-                             Workspace& workspace,
-                             const Results& results) const
-    {
-      return 1.;
-    }
 
   protected:
 
