@@ -8,7 +8,7 @@ namespace proxddp
 
   /// @brief Constant cost.
   template<typename _Scalar>
-  struct ConstantCost : CostBaseTpl<_Scalar>
+  struct ConstantCost : CostAbstractTpl<_Scalar>
   {
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
@@ -35,7 +35,7 @@ namespace proxddp
 
   /// @brief Euclidean quadratic cost.
   template<typename _Scalar>
-  struct QuadraticCost : CostBaseTpl<_Scalar>
+  struct QuadraticCost : CostAbstractTpl<_Scalar>
   {
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
@@ -50,7 +50,7 @@ namespace proxddp
                   const ConstMatrixRef& w_u,
                   const ConstMatrixRef& interp_x,
                   const ConstMatrixRef& interp_u)
-      : CostBaseTpl<_Scalar>((int)w_x.cols(), (int)w_u.cols())
+      : CostAbstractTpl<_Scalar>((int)w_x.cols(), (int)w_u.cols())
       , weights_x(w_x)
       , weights_u(w_u)
       , interp_x(interp_x)
