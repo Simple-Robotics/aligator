@@ -14,15 +14,15 @@ This package provides
 ### Dependencies
 
 * [proxnlp](https://github.com/Simple-Robotics/proxnlp.git)
-* Eigen3 >= 3.4.0
+* [Eigen3](https://eigen.tuxfamily.org) >= 3.4.0
 * Boost >= 1.71.0
-* Eigenpy >= 2.7.2
+* [eigenpy](https://github.com/stack-of-tasks/eigenpy) >= 2.7.2
 
 ### Build from source
 
 ```bash
 git clone repo_link --recursive
-# define envars here #
+# define envars here
 cmake -DCMAKE_INSTALL_PREFIX=your_install_folder -S . -B build/
 make -jNCPUS
 ```

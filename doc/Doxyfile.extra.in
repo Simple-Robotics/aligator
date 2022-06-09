@@ -1,6 +1,7 @@
 
 INPUT                   = @CMAKE_SOURCE_DIR@/doc \
-                          @CMAKE_SOURCE_DIR@/include
+                          @CMAKE_SOURCE_DIR@/include \
+                          @CMAKE_SOURCE_DIR@/README.md
 
 RECURSIVE               = YES
 
@@ -38,3 +39,11 @@ HTML_EXTRA_STYLESHEET   = @PROJECT_SOURCE_DIR@/doc/doxygen-awesome.css
 HTML_EXTRA_FILES        = @PROJECT_SOURCE_DIR@/doc/doxygen-awesome-darkmode-toggle.js
 
 MATHJAX_FORMAT          = SVG
+
+
+USE_MDFILE_AS_MAINPAGE  = README.md
+
+BUILTIN_STL_SUPPORT     = YES
+HAVE_DOT                = YES
+DOT_IMAGE_FORMAT        = SVG
+DOT_TRANSPARENT         = YES
