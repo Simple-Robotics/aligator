@@ -39,11 +39,11 @@ namespace proxddp
     /// The constructor requires providing the next state's manifold.
     ExplicitDynamicsModelTpl(const int ndx1,
                              const int nu,
-                             const shared_ptr<Manifold>& space2)
+                             const shared_ptr<const Manifold>& space2)
       : DynamicsModelTpl<Scalar>(ndx1, nu, space2->ndx())
       , out_space_(space2) {}
 
-    ExplicitDynamicsModelTpl(const shared_ptr<Manifold>& space,
+    ExplicitDynamicsModelTpl(const shared_ptr<const Manifold>& space,
                              const int nu)
       : ExplicitDynamicsModelTpl(space->ndx(), nu, space) {}
 
@@ -86,10 +86,10 @@ namespace proxddp
 
     ExplicitDynamicsDataTpl(const int ndx1,
                             const int nu,
-                            const ManifoldAbstractTpl<Scalar>& space)
-      : FunctionDataTpl<Scalar>(ndx1, nu, space.ndx(), space.ndx())
-      , xout_(space.nx())
-      , Jtemp_(space.ndx(), space.ndx())
+                            const ManifoldAbstractTpl<Scalar>& output_space)
+      : FunctionDataTpl<Scalar>(ndx1, nu, output_space.ndx(), output_space.ndx())
+      , xout_(output_space.nx())
+      , Jtemp_(output_space.ndx(), output_space.ndx())
     {
       xout_.setZero();
       Jtemp_.setZero();

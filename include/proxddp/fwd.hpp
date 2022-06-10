@@ -28,9 +28,9 @@ namespace proxddp
   template<typename Scalar>
   struct FunctionDataTpl;
 
-  // fwd CostBaseTpl
+  // fwd CostAbstractTpl
   template<typename Scalar>
-  struct CostBaseTpl;
+  struct CostAbstractTpl;
 
   template<typename Scalar>
   struct CostDataAbstract;

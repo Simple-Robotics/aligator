@@ -32,7 +32,7 @@ namespace proxddp
 
     /// Stages of the control problem.
     std::vector<StageModel> stages_;
-    shared_ptr<CostBaseTpl<Scalar>> term_cost_;
+    shared_ptr<CostAbstractTpl<Scalar>> term_cost_;
 
     ShootingProblemTpl(const VectorXs& x0, const std::vector<StageModel>& stages) : x0_init(x0), stages_(stages) {}
     ShootingProblemTpl(const VectorXs& x0) : ShootingProblemTpl(x0, {}) {}

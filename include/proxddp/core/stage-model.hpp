@@ -31,7 +31,7 @@ namespace proxddp
     using Manifold = ManifoldAbstractTpl<Scalar>;
     using Dynamics = DynamicsModelTpl<Scalar>;
     using Constraint = StageConstraintTpl<Scalar>;
-    using CostBase = CostBaseTpl<Scalar>;
+    using CostBase = CostAbstractTpl<Scalar>;
     using Data = StageDataTpl<Scalar>;
 
     using ConstraintPtr = shared_ptr<Constraint>;

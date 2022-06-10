@@ -12,7 +12,7 @@ namespace proxddp
   /** @brief Stage costs \f$ \ell(x, u) \f$ for control problems.
    */
   template<typename _Scalar>
-  struct CostBaseTpl
+  struct CostAbstractTpl
   {
   protected:
     /// @brief State dimension
@@ -30,7 +30,7 @@ namespace proxddp
     /// @copybrief nu_
     inline int nu()  const { return nu_; }
 
-    CostBaseTpl(const int ndx, const int nu)
+    CostAbstractTpl(const int ndx, const int nu)
      : ndx_(ndx), nu_(nu) {}
 
     /// @brief Evaluate the cost function.
@@ -56,10 +56,10 @@ namespace proxddp
       return std::make_shared<CostData>(ndx_, nu_);
     }
 
-    virtual ~CostBaseTpl() = default;
+    virtual ~CostAbstractTpl() = default;
   };
   
-  /// @brief  Data struct for CostBaseTpl
+  /// @brief  Data struct for CostAbstractTpl
   template<typename _Scalar>
   struct CostDataAbstract
   {

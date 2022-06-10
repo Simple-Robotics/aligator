@@ -45,8 +45,8 @@ namespace proxddp
     struct IntegratorBaseDataTpl : DynamicsDataTpl<_Scalar>
     {
       using Scalar = _Scalar;
-      using ContDataType = ContinuousDynamicsDataTpl<Scalar>;
-      shared_ptr<ContDataType> cont_data;
+      using ContinuousDynamicsDataType = ContinuousDynamicsDataTpl<Scalar>;
+      shared_ptr<ContinuousDynamicsDataType> cont_data;
 
       IntegratorBaseDataTpl(const IntegratorBaseTpl<Scalar>& integrator)
         : DynamicsDataTpl<Scalar>(integrator.ndx1, integrator.nu, integrator.ndx2, integrator.ndx2)
