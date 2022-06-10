@@ -53,3 +53,16 @@ set(TEST_NAMES
 foreach(test_name ${TEST_NAMES})
   add_proxddp_test(${test_name})
 endforeach(test_name)
+
+# PYTHON TESTS
+file(GLOB PYTHON_TESTS python/*.py)
+make_directory(${CMAKE_CURRENT_BINARY_DIR}/python)
+
+foreach(pyfile ${PYTHON_TESTS})
+  get_filename_component(pyfile_name ${pyfile} NAME)
+  execute_process(
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+    ${pyfile}
+    ${CMAKE_CURRENT_BINARY_DIR}/python/${pyfile_name}
+  )
+endforeach()
