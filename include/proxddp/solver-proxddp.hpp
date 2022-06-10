@@ -25,6 +25,7 @@ namespace proxddp
     S directional_derivative_thresh = 1e-13;
     S armijo_c1 = 1e-4;
     S ls_beta = 0.5;
+    LinesearchMode ls_mode = LinesearchMode::PRIMAL_DUAL;
   };
 
   /// @brief Solver.
@@ -70,8 +71,8 @@ namespace proxddp
     /// Log-factor \f$\beta_\eta\f$ for dual tolerance (success)
     const Scalar dual_beta;
 
-    Scalar mu_update_factor_ = 0.1;
-    Scalar rho_update_factor_ = 1.;
+    Scalar mu_update_factor_ = 0.01;
+    Scalar rho_update_factor_ = 0.1;
 
     /// Subproblem tolerance
     Scalar inner_tol_;
@@ -102,7 +103,6 @@ namespace proxddp
 
     /// @brief Compute the search direction.
     ///
-    /// @todo Compute real search direction in x0
     /// @pre This function assumes \f$\delta x_0\f$ has already been computed!
     /// @returns This computes the primal-dual step \f$(\delta \bfx,\delta \bfu,\delta\bmlam)\f$
     void computeDirection(const Problem& problem, Workspace& workspace) const;
@@ -136,7 +136,7 @@ namespace proxddp
 
       results.xs_ = xs_init;
       results.us_ = us_init;
-      results.xs_[0] = problem.x0_init;
+      results.xs_[0] = problem.x0_init_;
 
       workspace.prev_xs_ = results.xs_;
       workspace.prev_us_ = results.us_;
@@ -153,10 +153,11 @@ namespace proxddp
       std::size_t al_iter;
       for (al_iter = 0; al_iter < MAX_AL_ITERS; al_iter++)
       {
-        fmt::print(fmt::emphasis::bold | fmt::fg(fmt::color::medium_orchid),
+        auto colout = fmt::fg(fmt::color::medium_orchid);
+        fmt::print(fmt::emphasis::bold | colout,
                    "[AL iter {:>2d}]", al_iter);
         fmt::print("\n");
-        fmt::print("inner_tol={:.3e} | dual_tol={:.3e} | mu={:.3e} | rho={:.3e}\n",
+        fmt::print(colout, " | inner_tol={:.3e} | dual_tol={:.3e} | mu={:.3e} | rho={:.3e}\n",
                    inner_tol_, prim_tol, mu_, rho_);
         solverInnerLoop(problem, workspace, results);
         computeInfeasibilities(problem, workspace);
@@ -198,34 +199,10 @@ namespace proxddp
       return conv;
     }
 
-    /** @brief    Perform the inner loop of the algorithm (augmented Lagrangian minimization).
-     */
-    void solverInnerLoop(
-      const Problem& problem,
-      Workspace& workspace,
-      Results& results);
-
-    void computeInfeasibilities(const Problem& problem, Workspace& workspace) const
-    {
-      const ShootingProblemDataTpl<Scalar>& prob_data = *workspace.problem_data;
-      const std::size_t nsteps = problem.numSteps();
-      auto& prim_infeases = workspace.primal_infeas_by_stage;
-      workspace.primal_infeasibility = 0.;
-      for (std::size_t i = 0; i < nsteps; i++)
-      {
-        const StageDataTpl<Scalar>& sd = *prob_data.stage_data[i];
-        const auto& cstr_mgr = problem.stages_[i].constraints_manager;
-        std::vector<Scalar> infeas_by_cstr(cstr_mgr.numConstraints());
-        for (std::size_t j = 0; j < cstr_mgr.numConstraints(); j++)
-        {
-          const ConstraintSetBase<Scalar>& cstr_set = cstr_mgr[j]->getConstraintSet();
-          infeas_by_cstr[j] = math::infty_norm(cstr_set.normalConeProjection(sd.constraint_data[j]->value_));
-        }
-        prim_infeases(long(i)) = *std::max_element(infeas_by_cstr.begin(), infeas_by_cstr.end());
-      }
-      workspace.primal_infeasibility = math::infty_norm(prim_infeases);
-      return;
-    }
+    /// @brief    Perform the inner loop of the algorithm (augmented Lagrangian minimization).
+    void solverInnerLoop(const Problem& problem, Workspace& workspace, Results& results);
+    /// @brief    Compute the infeasibility measures.
+    void computeInfeasibilities(const Problem& problem, Workspace& workspace) const;
 
   protected:
 

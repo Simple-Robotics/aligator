@@ -54,10 +54,9 @@ namespace proxddp
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
     Scalar mu_penal_;
+    LinesearchMode ls_mode;
+
     Scalar mu_penal_inv_ = 1. / mu_penal_;
-
-    LinesearchMode ls_mode = LinesearchMode::PRIMAL_DUAL;
-
     Scalar traj_cost = 0.;
     Scalar penalty_value = 0.;
 
@@ -82,7 +81,7 @@ namespace proxddp
       for (std::size_t i = 0; i < nsteps; i++)
       {
         const StageModel& sm = problem.stages_[i];
-        StageDataTpl<Scalar>& sd = *prob_data.stage_data[i];
+        const StageDataTpl<Scalar>& sd = *prob_data.stage_data[i];
         traj_cost += sd.cost_data->value_;
 
         num_c = sm.numConstraints();
@@ -91,7 +90,7 @@ namespace proxddp
         for (std::size_t j = 0; j < num_c; j++)
         {
           const ConstraintSetBase<Scalar>& cstr_set = sm.constraints_manager[j]->getConstraintSet();
-          FunctionDataTpl<Scalar>& cstr_data = *sd.constraint_data[j];
+          const FunctionDataTpl<Scalar>& cstr_data = *sd.constraint_data[j];
           VectorRef lamplus_j = sm.constraints_manager.getSegmentByConstraint(workspace.lams_plus_[i], j);
           VectorRef lamprev_j = sm.constraints_manager.getSegmentByConstraint(workspace.prev_lams_[i], j);
           lamplus_j = lamprev_j + mu_penal_inv_ * cstr_data.value_;

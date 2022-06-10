@@ -9,11 +9,32 @@
 namespace proxddp
 {
   template<typename Scalar>
-  void SolverProxDDP<Scalar>::computeDirection(
-    const Problem& problem,
-    WorkspaceTpl<Scalar>& workspace) const
+  void SolverProxDDP<Scalar>::
+  computeDirection(const Problem& problem, Workspace& workspace) const
   {
     const std::size_t nsteps = problem.numSteps();
+
+    // compute direction dx0
+    {
+      const auto& vp = workspace.value_params[0];
+      const StageModel& stage0 = problem.stages_[0];
+      const ShootingProblemDataTpl<Scalar> prob_data = *workspace.problem_data;
+      const int ndual0 = problem.init_state_error.nr;
+      const int ntot0 = stage0.ndx1() + ndual0;
+      MatrixXs kktmat0(ntot0, ntot0);
+      VectorXs kktrhs0(ntot0);
+      kktmat0.setIdentity();
+      kktrhs0.setZero();
+      kktmat0.topLeftCorner(stage0.ndx1(), stage0.ndx1()) = vp.Vxx_;
+      // kktmat0.bottomRightCorner(ndual0, ndual0) *= -mu_;
+      kktrhs0.head(stage0.ndx1()) = vp.Vx_;
+      kktrhs0.tail(ndual0) = prob_data.init_data->value_;
+
+      auto ldlt = kktmat0.ldlt();
+      ldlt.compute(kktmat0);
+      auto res = ldlt.solve(-kktrhs0);
+      workspace.dxs_[0] = res.head(stage0.ndx1());
+    }
 
     workspace.dxs_[0].setZero();
     for (std::size_t i = 0; i < nsteps; i++)
@@ -32,20 +53,15 @@ namespace proxddp
   }
 
   template<typename Scalar>
-  void SolverProxDDP<Scalar>::computeActiveSetsAndMultipliers(
-    const Problem& problem,
-    Workspace& workspace,
-    Results& results) const
+  void SolverProxDDP<Scalar>::
+  computeActiveSetsAndMultipliers(const Problem& problem, Workspace& workspace, Results& results) const
   {
 
   }
   
   template<typename Scalar>
-  void SolverProxDDP<Scalar>::tryStep(
-    const Problem& problem,
-    Workspace& workspace,
-    const Results& results,
-    const Scalar alpha) const
+  void SolverProxDDP<Scalar>::
+  tryStep(const Problem& problem, Workspace& workspace, const Results& results, const Scalar alpha) const
   {
 
     const std::size_t nsteps = problem.numSteps();
@@ -64,10 +80,8 @@ namespace proxddp
   }
 
   template<typename Scalar>
-  void SolverProxDDP<Scalar>::backwardPass(
-    const Problem& problem,
-    Workspace& workspace,
-    ResultsTpl<Scalar>& results) const
+  void SolverProxDDP<Scalar>::
+  backwardPass(const Problem& problem, Workspace& workspace, Results& results) const
   {
     const ShootingProblemDataTpl<Scalar>& problem_data = *workspace.problem_data;
 
@@ -89,11 +103,8 @@ namespace proxddp
   }
 
   template<typename Scalar>
-  void SolverProxDDP<Scalar>::computeGains(
-    const ShootingProblemTpl<Scalar>& problem,
-    Workspace& workspace,
-    ResultsTpl<Scalar>& results,
-    const std::size_t step) const
+  void SolverProxDDP<Scalar>::
+  computeGains(const Problem& problem, Workspace& workspace, Results& results, const std::size_t step) const
   {
     using FunctionData = FunctionDataTpl<Scalar>;
 
@@ -198,10 +209,7 @@ namespace proxddp
   }
 
   template<typename Scalar>
-  void SolverProxDDP<Scalar>::solverInnerLoop(
-    const Problem& problem,
-    Workspace& workspace,
-    Results& results)
+  void SolverProxDDP<Scalar>::solverInnerLoop(const Problem& problem, Workspace& workspace, Results& results)
   {
     const std::size_t nsteps = problem.numSteps();
 
@@ -210,7 +218,7 @@ namespace proxddp
     assert(results.lams_.size() == nsteps);
 
     // instantiate the subproblem merit function
-    PDAL_Function<Scalar> fun { mu_ };
+    PDAL_Function<Scalar> fun { mu_, ls_params.ls_mode };
 
     auto merit_eval_fun = [&](Scalar a0) {
       tryStep(problem, workspace, results, a0);
@@ -243,8 +251,14 @@ namespace proxddp
 
       computeDirection(problem, workspace);
 
-      Scalar phi0 = merit_eval_fun(0.);
-      Scalar eps = 1e-9;
+      Scalar phi0 = fun.evaluate(
+        problem,
+        results.xs_,
+        results.us_,
+        results.lams_,
+        workspace,
+        *workspace.problem_data);
+      Scalar eps = 1e-8;
       Scalar veps = merit_eval_fun(eps);
       Scalar dphi0 = (veps - phi0) / eps;
 
@@ -256,7 +270,7 @@ namespace proxddp
         alpha_opt);
 
       results.traj_cost_ = fun.traj_cost;
-      fmt::print(" | step size: {:.3e}\n", alpha_opt);
+      fmt::print(" | step size: {:.3e}, dphi0 = {:.3e}\n", alpha_opt, dphi0);
       fmt::print(" | new merit fun. val: {:.3e}\n", phi0);
 
       // accept the damn step
@@ -267,5 +281,29 @@ namespace proxddp
       k++;
     }
   }
+
+  template<typename Scalar>
+  void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem& problem, Workspace& workspace) const
+  {
+    const ShootingProblemDataTpl<Scalar>& prob_data = *workspace.problem_data;
+    const std::size_t nsteps = problem.numSteps();
+    auto& prim_infeases = workspace.primal_infeas_by_stage;
+    workspace.primal_infeasibility = 0.;
+    for (std::size_t i = 0; i < nsteps; i++)
+    {
+      const StageDataTpl<Scalar>& sd = *prob_data.stage_data[i];
+      const auto& cstr_mgr = problem.stages_[i].constraints_manager;
+      std::vector<Scalar> infeas_by_cstr(cstr_mgr.numConstraints());
+      for (std::size_t j = 0; j < cstr_mgr.numConstraints(); j++)
+      {
+        const ConstraintSetBase<Scalar>& cstr_set = cstr_mgr[j]->getConstraintSet();
+        infeas_by_cstr[j] = math::infty_norm(cstr_set.normalConeProjection(sd.constraint_data[j]->value_));
+      }
+      prim_infeases(long(i)) = *std::max_element(infeas_by_cstr.begin(), infeas_by_cstr.end());
+    }
+    workspace.primal_infeasibility = math::infty_norm(prim_infeases);
+    return;
+  }
+
 } // namespace proxddp
 
