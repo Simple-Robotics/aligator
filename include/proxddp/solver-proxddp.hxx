@@ -183,7 +183,7 @@ namespace proxddp
 
     auto kkt_mat_view = kkt_mat.template selfadjointView<Eigen::Lower>();
 
-    workspace.inner_criterion_by_stage((long)step) = math::infty_norm(rhs_0);
+    workspace.inner_criterion_by_stage(long(step)) = math::infty_norm(rhs_0);
 
     /* Compute gains with LDLT */
     auto ldlt_ = kkt_mat_view.ldlt();
@@ -197,5 +197,75 @@ namespace proxddp
       kkt_rhs.transpose() * workspace.gains_[step];
   }
 
+  template<typename Scalar>
+  void SolverProxDDP<Scalar>::solverInnerLoop(
+    const Problem& problem,
+    Workspace& workspace,
+    Results& results)
+  {
+    const std::size_t nsteps = problem.numSteps();
+
+    assert(results.xs_.size() == nsteps + 1);
+    assert(results.us_.size() == nsteps);
+    assert(results.lams_.size() == nsteps);
+
+    // instantiate the subproblem merit function
+    PDAL_Function<Scalar> fun { mu_ };
+
+    auto merit_eval_fun = [&](Scalar a0) {
+      tryStep(problem, workspace, results, a0);
+      return fun.evaluate(
+        problem,
+        workspace.trial_xs_,
+        workspace.trial_us_,
+        workspace.trial_lams_,
+        workspace,
+        *workspace.problem_data);
+    };
+
+    std::size_t& k = results.num_iters;
+    while (k < MAX_STEPS)
+    {
+      problem.evaluate(results.xs_, results.us_, *workspace.problem_data);
+      problem.computeDerivatives(results.xs_, results.us_, *workspace.problem_data);
+
+      backwardPass(problem, workspace, results);
+
+      fmt::print(" | inner_crit: {:.3e}\n", workspace.inner_criterion);
+
+      if ((workspace.inner_criterion < inner_tol_))
+      {
+        break;
+      }
+
+      fmt::print(fmt::fg(fmt::color::yellow_green), "[iter {:>3d}]", k);
+      fmt::print("\n");
+
+      computeDirection(problem, workspace);
+
+      Scalar phi0 = merit_eval_fun(0.);
+      Scalar eps = 1e-9;
+      Scalar veps = merit_eval_fun(eps);
+      Scalar dphi0 = (veps - phi0) / eps;
+
+      Scalar alpha_opt = 1;
+
+      proxnlp::ArmijoLinesearch<Scalar>::run(
+        merit_eval_fun, phi0, dphi0,
+        ls_params.ls_beta, ls_params.armijo_c1, ls_params.alpha_min,
+        alpha_opt);
+
+      results.traj_cost_ = fun.traj_cost;
+      fmt::print(" | step size: {:.3e}\n", alpha_opt);
+      fmt::print(" | new merit fun. val: {:.3e}\n", phi0);
+
+      // accept the damn step
+      results.xs_ = workspace.trial_xs_;
+      results.us_ = workspace.trial_us_;
+      results.lams_ = workspace.trial_lams_;
+
+      k++;
+    }
+  }
 } // namespace proxddp
 

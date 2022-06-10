@@ -15,6 +15,8 @@ namespace proxddp
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
+    std::size_t num_iters = 0;
+
     /// States
     std::vector<VectorXs> xs_;
     /// Controls

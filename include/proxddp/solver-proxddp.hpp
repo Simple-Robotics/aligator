@@ -48,8 +48,8 @@ namespace proxddp
     const Scalar rho_init = 0.;
 
     /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.
-    const std::size_t MAX_STEPS = 20;
-    const std::size_t MAX_AL_ITERS = 20;
+    const std::size_t MAX_STEPS = 1000;
+    const std::size_t MAX_AL_ITERS = 50;
 
     /// Dual proximal/constraint penalty parameter \f$\mu\f$
     Scalar mu_ = mu_init;
@@ -81,7 +81,7 @@ namespace proxddp
     LinesearchParams<Scalar> ls_params;
 
     /// Minimum possible tolerance asked from the solver.
-    const Scalar TOL_MIN = 1e-10;
+    const Scalar TOL_MIN = 1e-8;
 
     SolverProxDDP(const Scalar tol=1e-6,
                   const Scalar mu_init=0.01,
@@ -103,7 +103,7 @@ namespace proxddp
     /// @brief Compute the search direction.
     ///
     /// @todo Compute real search direction in x0
-    /// @warning This function assumes \f$\delta x_0\f$ has already been computed!
+    /// @pre This function assumes \f$\delta x_0\f$ has already been computed!
     /// @returns This computes the primal-dual step \f$(\delta \bfx,\delta \bfu,\delta\bmlam)\f$
     void computeDirection(const Problem& problem, Workspace& workspace) const;
 
@@ -120,7 +120,7 @@ namespace proxddp
 
     /// @brief    Perform the Riccati backward pass.
     ///
-    /// @warning  Compute the derivatives first!
+    /// @pre  Compute the derivatives first!
     void backwardPass(const Problem& problem, Workspace& workspace, Results& results) const;
 
     bool run(
@@ -154,16 +154,23 @@ namespace proxddp
       for (al_iter = 0; al_iter < MAX_AL_ITERS; al_iter++)
       {
         fmt::print(fmt::emphasis::bold | fmt::fg(fmt::color::medium_orchid),
-                   "[AL iter {:>02d}]", al_iter);
+                   "[AL iter {:>2d}]", al_iter);
         fmt::print("\n");
         fmt::print("inner_tol={:.3e} | dual_tol={:.3e} | mu={:.3e} | rho={:.3e}\n",
                    inner_tol_, prim_tol, mu_, rho_);
         solverInnerLoop(problem, workspace, results);
+        computeInfeasibilities(problem, workspace);
+
+        fmt::print(" | prim. infeas: {:.3e}\n", workspace.primal_infeasibility);
+
+        // accept primal updates
+        workspace.prev_xs_ = results.xs_;
+        workspace.prev_us_ = results.us_;
 
         if (workspace.primal_infeasibility <= prim_tol)
         {
           this->updateTolerancesOnSuccess();
-          workspace.prev_lams_ = workspace.lams_plus_;
+          workspace.prev_lams_ = workspace.lams_pdal_;
           if (workspace.primal_infeasibility <= target_tolerance)
           {
             conv = true;
@@ -173,14 +180,19 @@ namespace proxddp
           this->updateALPenalty();
           this->updateTolerancesOnFailure();
         }
+        rho_ *= rho_update_factor_;
 
-        inner_tol_ = std::max(inner_tol_, TOL_MIN);
-        prim_tol = std::max(prim_tol, TOL_MIN);
+        inner_tol_ = std::max(inner_tol_, std::min(TOL_MIN, target_tolerance));
+        prim_tol = std::max(prim_tol, target_tolerance);
       }
 
       if (conv)
       {
         fmt::print(fmt::fg(fmt::color::dodger_blue), "Successfully converged.\n");
+      }
+      else
+      {
+        fmt::print(fmt::fg(fmt::color::red), "Convergence failure.\n");
       }
 
       return conv;
@@ -191,76 +203,29 @@ namespace proxddp
     void solverInnerLoop(
       const Problem& problem,
       Workspace& workspace,
-      Results& results)
+      Results& results);
+
+    void computeInfeasibilities(const Problem& problem, Workspace& workspace) const
     {
-
+      const ShootingProblemDataTpl<Scalar>& prob_data = *workspace.problem_data;
       const std::size_t nsteps = problem.numSteps();
-      results.xs_ = workspace.prev_xs_;
-      results.us_ = workspace.prev_us_;
-      results.lams_ = workspace.prev_lams_;
-
-      assert(results.xs_.size() == nsteps + 1);
-      assert(results.us_.size() == nsteps);
-      assert(results.lams_.size() == nsteps);
-
-      // instantiate the subproblem merit function
-      PDAL_Function<Scalar> fun { mu_ };
-
-      auto merit_eval_fun = [&](Scalar a0) {
-        tryStep(problem, workspace, results, a0);
-        return fun.evaluate(
-          problem,
-          workspace.trial_xs_,
-          workspace.trial_us_,
-          workspace.trial_lams_,
-          workspace,
-          *workspace.problem_data);
-      };
-
-      std::size_t k = 0;
-      while (k < MAX_STEPS)
+      auto& prim_infeases = workspace.primal_infeas_by_stage;
+      workspace.primal_infeasibility = 0.;
+      for (std::size_t i = 0; i < nsteps; i++)
       {
-        fmt::print(fmt::fg(fmt::color::yellow_green), "iter {:>3d}", k);
-        fmt::print("\n");
-        problem.evaluate(results.xs_, results.us_, *workspace.problem_data);
-        problem.computeDerivatives(results.xs_, results.us_, *workspace.problem_data);
-
-        backwardPass(problem, workspace, results);
-
-        fmt::print(" | inner_crit: {:.3e}\n", workspace.inner_criterion);
-
-        if ((workspace.inner_criterion < inner_tol_))
+        const StageDataTpl<Scalar>& sd = *prob_data.stage_data[i];
+        const auto& cstr_mgr = problem.stages_[i].constraints_manager;
+        std::vector<Scalar> infeas_by_cstr(cstr_mgr.numConstraints());
+        for (std::size_t j = 0; j < cstr_mgr.numConstraints(); j++)
         {
-          break;
+          const ConstraintSetBase<Scalar>& cstr_set = cstr_mgr[j]->getConstraintSet();
+          infeas_by_cstr[j] = math::infty_norm(cstr_set.normalConeProjection(sd.constraint_data[j]->value_));
         }
-
-        computeDirection(problem, workspace);
-
-        Scalar phi0 = merit_eval_fun(0.);
-        Scalar eps = 1e-9;
-        Scalar veps = merit_eval_fun(eps);
-        Scalar dphi0 = (veps - phi0) / eps;
-
-        Scalar alpha_opt = 1;
-
-        proxnlp::ArmijoLinesearch<Scalar>::run(
-          merit_eval_fun, phi0, dphi0,
-          ls_params.ls_beta, ls_params.armijo_c1, ls_params.alpha_min,
-          alpha_opt);
-
-        results.traj_cost_ = fun.traj_cost;
-        fmt::print(" | New merit fun. val: {:.3e}\n", phi0);
-        fmt::print(" | New traj. cost: {:.3e}\n", results.traj_cost_);
-
-        // accept the damn step
-        results.xs_ = workspace.trial_xs_;
-        results.us_ = workspace.trial_us_;
-        results.lams_ = workspace.trial_lams_;
-
-        k++;
+        prim_infeases(long(i)) = *std::max_element(infeas_by_cstr.begin(), infeas_by_cstr.end());
       }
+      workspace.primal_infeasibility = math::infty_norm(prim_infeases);
+      return;
     }
-
 
   protected:
 

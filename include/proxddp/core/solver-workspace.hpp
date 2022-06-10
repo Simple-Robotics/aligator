@@ -153,9 +153,16 @@ namespace proxddp
     std::vector<VectorXs> prev_us_;
     std::vector<VectorXs> prev_lams_;
 
-    Scalar inner_criterion;
+    /// Subproblem termination criterion for each stage.
     VectorXs inner_criterion_by_stage;
+    /// Constraint violation for each stage of the ShootingProblemTpl.
+    VectorXs primal_infeas_by_stage;
+
+    /// Overall subproblem termination criterion.
+    Scalar inner_criterion;
+    /// Overall primal infeasibility/constraint violation for the ShootingProblemTpl.
     Scalar primal_infeasibility;
+    /// Overall dual infeasibility measure for the ShootingProblemTpl.
     Scalar dual_infeasibility;
 
     explicit WorkspaceTpl(const ShootingProblemTpl<Scalar>& problem);
