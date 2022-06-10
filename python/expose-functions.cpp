@@ -1,6 +1,7 @@
 #include "proxddp/python/fwd.hpp"
 
 #include "proxddp/python/functions.hpp"
+#include "proxddp/modelling/state-error.hpp"
 
 
 namespace proxddp
@@ -63,6 +64,15 @@ namespace proxddp
 
       pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<context::FunctionData>>, true>::expose("StdVec_FunctionData", "Vector of function data objects.");
 
+      bp::class_<StateErrorResidual<Scalar>, bp::bases<StageFunction>>(
+        "StateErrorResidual",
+        bp::init<const context::Manifold&, const int, const context::VectorXs&>(
+          bp::args("self", "space", "nu", "target")
+        )
+      )
+        .def_readwrite("target", &StateErrorResidual<Scalar>::target)
+        ;
+
       /** DYNAMICS **/
       using PyDynModel = internal::PyStageFunction<DynamicsModel>;
 
@@ -77,33 +87,8 @@ namespace proxddp
           bp::args("self", "ndx1", "nu", "ndx2")
           )
       )
-        .def(bp::init<const int, const int>(
-          bp::args("self", "ndx", "nu")
-          ))
+        .def(bp::init<const int, const int>(bp::args("self", "ndx", "nu")))
       ;
-
-      using ManifoldPtr = shared_ptr<context::Manifold>;
-      using ExplicitDynamics = ExplicitDynamicsModelTpl<Scalar>;
-      bp::class_<internal::PyExplicitDynamicsModel,
-                 bp::bases<DynamicsModel>,
-                 boost::noncopyable>
-      (
-        "ExplicitDynamicsModel", "Explicit dynamics.",
-        bp::init<const int, const int, const ManifoldPtr&>(
-          bp::args("self", "ndx1", "nu", "out_space")
-        )
-      )
-        .def(bp::init<const ManifoldPtr&, const int>(
-          bp::args("self", "out_space", "nu")
-        ))
-        .def("forward", bp::pure_virtual(&ExplicitDynamics::forward),
-              bp::args("self", "x", "u", "out"),
-              "Call for forward discrete dynamics.")
-        .def("forward", bp::pure_virtual(&ExplicitDynamics::dForward),
-              bp::args("self", "x", "u", "Jx", "Ju"),
-              "Compute the derivatives of forward discrete dynamics.")
-        ;
-
     }
 
   } // namespace python

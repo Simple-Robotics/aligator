@@ -29,9 +29,9 @@ struct MyModel : ExplicitDynamicsModelTpl<double>
 };
 
 
-struct MyCost : CostBaseTpl<double>
+struct MyCost : CostAbstractTpl<double>
 {
-  using CostBaseTpl<double>::CostBaseTpl;
+  using CostAbstractTpl<double>::CostAbstractTpl;
   void evaluate(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const
   {
     data.value_ = 0.;

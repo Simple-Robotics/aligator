@@ -1,59 +1,27 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "proxddp/python/fwd.hpp"
-#include "proxddp/core/costs.hpp"
+#include "proxddp/python/costs.hpp"
+
+#include "proxddp/modelling/quad-costs.hpp"
+#include "proxddp/modelling/composite-costs.hpp"
+#include "proxddp/modelling/sum-of-costs.hpp"
 
 
 namespace proxddp
 {
   namespace python
   {
-    namespace internal
-    {
-      /// @brief Wrapper for the CostDataAbstract class and its children.
-      template<typename T = CostBaseTpl<context::Scalar>>
-      struct PyCostFunction : T, bp::wrapper<T>
-      {
-        using Scalar = context::Scalar;
-        using bp::wrapper<T>::get_override;
-        using CostData = CostDataAbstract<Scalar>;
-        PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-
-        /// forwarding constructor
-        template<typename... Args>
-        PyCostFunction(Args&&... args)
-          : T(std::forward<Args>(args)...) {}
-
-        virtual void evaluate(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const override
-        {
-          PROXDDP_PYTHON_OVERRIDE_PURE(void, "evaluate", x, u, data);
-        }
-
-        virtual void computeGradients(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const override
-        {
-          PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeGradients", x, u, data);
-        }
-
-        virtual void computeHessians(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const override
-        {
-          PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeHessians", x, u, data);
-        }
-
-        virtual shared_ptr<CostData> createData() const override
-        {
-          PROXDDP_PYTHON_OVERRIDE(shared_ptr<CostData>, T, createData,);
-        }
-
-      };
-    } // namespace internal
     
     void exposeCosts()
     {
       using context::Scalar;
+      using context::StageFunction;
+      using CostData = CostDataAbstract<Scalar>;
 
       bp::register_ptr_to_python<shared_ptr<context::CostBase>>();
 
       bp::class_<internal::PyCostFunction<>>(
-        "CostBase", "Base class for cost functions.",
+        "CostAbstract", "Base class for cost functions.",
         bp::init<const int, const int>(
           bp::args("self", "ndx", "nu")
         )
@@ -69,7 +37,28 @@ namespace proxddp
              "Compute the cost function hessians.")
         .def(CreateDataPythonVisitor<context::CostBase>());
 
-      using CostData = CostDataAbstract<Scalar>;
+      // bp::class_<SumOfCosts<Scalar>, bp::bases<context::CostBase>>(
+      //   "SumOfCosts",
+      //   bp::init<const std::vector<shared_ptr<context::CostBase>>&,
+      //            const std::vector<Scalar>&>(
+      //              bp::args("self", "components", "weights")
+      //            )
+      // )
+      //   .def("addCost", &SumOfCosts<Scalar>::addCost, "Add a cost to the stack of costs.")
+      //   .def("size", &SumOfCosts<Scalar>::size, "Get the number of cost components.");
+
+      bp::class_<QuadResidualCost<Scalar>, bp::bases<context::CostBase>>(
+        "QuadResidualCost",
+        "Weighted 2-norm of a given residual function.",
+        bp::init<const shared_ptr<StageFunction>&,
+                 const context::MatrixXs&>(
+                   bp::args("self", "function", "weights")
+                 )
+      )
+        .def_readwrite("residual", &QuadResidualCost<Scalar>::residual_)
+        .def_readwrite("weights", &QuadResidualCost<Scalar>::weights_)
+        .def(CreateDataPythonVisitor<QuadResidualCost<Scalar>>());
+
       bp::class_<CostData, shared_ptr<CostData>>(
         "CostData", "Cost function data struct.",
         bp::init<const int, const int>(

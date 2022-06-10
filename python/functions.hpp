@@ -4,7 +4,6 @@
 
 #include "proxddp/core/function.hpp"
 #include "proxddp/core/dynamics.hpp"
-#include "proxddp/core/explicit-dynamics.hpp"
 
 
 namespace proxddp
@@ -55,30 +54,6 @@ namespace proxddp
 
       };
 
-      struct PyExplicitDynamicsModel :
-        ExplicitDynamicsModelTpl<context::Scalar>,
-        bp::wrapper<ExplicitDynamicsModelTpl<context::Scalar>>
-      {
-        using Scalar = context::Scalar;
-        PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-
-        template<typename... Args>
-        PyExplicitDynamicsModel(Args&&... args)
-          : ExplicitDynamicsModelTpl<Scalar>(std::forward<Args>(args)...) {}
-
-        virtual void forward(const ConstVectorRef& x,
-                             const ConstVectorRef& u,
-                             VectorRef out) const override
-        { PROXDDP_PYTHON_OVERRIDE_PURE(void, "forward", x, u, out) }
-
-        virtual void dForward(const ConstVectorRef& x,
-                              const ConstVectorRef& u,
-                              MatrixRef Jx,
-                              MatrixRef Ju) const override
-        { PROXDDP_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, Jx, Ju) }
-
-      };
-      
     } // namespace internal
     
   } // namespace python

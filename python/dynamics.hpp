@@ -1,6 +1,8 @@
 #pragma once
 
 #include "proxddp/python/fwd.hpp"
+
+#include "proxddp/core/explicit-dynamics.hpp"
 #include "proxddp/modelling/dynamics/continuous-base.hpp"
 #include "proxddp/modelling/dynamics/base-ode.hpp"
 
@@ -11,6 +13,30 @@ namespace proxddp
   {
     namespace internal
     {
+      struct PyExplicitDynamicsModel :
+        ExplicitDynamicsModelTpl<context::Scalar>,
+        bp::wrapper<ExplicitDynamicsModelTpl<context::Scalar>>
+      {
+        using Scalar = context::Scalar;
+        PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+
+        template<typename... Args>
+        PyExplicitDynamicsModel(Args&&... args)
+          : ExplicitDynamicsModelTpl<Scalar>(std::forward<Args>(args)...) {}
+
+        virtual void forward(const ConstVectorRef& x,
+                             const ConstVectorRef& u,
+                             VectorRef out) const override
+        { PROXDDP_PYTHON_OVERRIDE_PURE(void, "forward", x, u, out) }
+
+        virtual void dForward(const ConstVectorRef& x,
+                              const ConstVectorRef& u,
+                              MatrixRef Jx,
+                              MatrixRef Ju) const override
+        { PROXDDP_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, Jx, Ju) }
+
+      };
+      
       template<class T = dynamics::ContinuousDynamicsTpl<context::Scalar>>
       struct PyContinuousDynamics : T, bp::wrapper<T>
       {

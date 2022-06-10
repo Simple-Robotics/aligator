@@ -2,6 +2,8 @@
 #include "proxddp/python/fwd.hpp"
 #include "proxddp/python/dynamics.hpp"
 
+#include "proxddp/modelling/linear-discrete-dynamics.hpp"
+
 
 namespace proxddp
 {
@@ -11,7 +13,41 @@ namespace proxddp
     void exposeDynamics()
     {
       using context::Scalar;
+      using context::Manifold;
+      using context::DynamicsModel;
       using namespace proxddp::dynamics;
+
+      using ManifoldPtr = shared_ptr<context::Manifold>;
+      using context::ExplicitDynamics;
+      bp::class_<internal::PyExplicitDynamicsModel,
+                 bp::bases<DynamicsModel>,
+                 boost::noncopyable>
+      (
+        "ExplicitDynamicsModel", "Base class for explicit dynamics.",
+        bp::init<const int, const int, const ManifoldPtr&>(
+          bp::args("self", "ndx1", "nu", "out_space")
+        )
+      )
+        .def(bp::init<const ManifoldPtr&, const int>(
+          bp::args("self", "out_space", "nu")
+        ))
+        .def("forward", bp::pure_virtual(&ExplicitDynamics::forward),
+              bp::args("self", "x", "u", "out"),
+              "Call for forward discrete dynamics.")
+        .def("dForward", bp::pure_virtual(&ExplicitDynamics::dForward),
+              bp::args("self", "x", "u", "Jx", "Ju"),
+              "Compute the derivatives of forward discrete dynamics.")
+        .def_readonly("space", &ExplicitDynamics::out_space_, "Output space.")
+        .def(CreateDataPythonVisitor<ExplicitDynamics>());
+
+      bp::class_<context::ExplicitDynData,
+                 bp::bases<context::FunctionData>,
+                 boost::noncopyable>(
+                   "ExplicitDynamicsData",
+                   "Data struct for explicit dynamics models.",
+                   bp::no_init
+                 )
+        .def_readwrite("xout", &context::ExplicitDynData::xout_);
 
       using ContinuousDynamicsBase = ContinuousDynamicsTpl<Scalar>;
 
@@ -31,17 +67,17 @@ namespace proxddp
              bp::args("self", "x", "u", "xdot", "data"))
         .def(CreateDataPythonVisitor<ContinuousDynamicsBase>());
 
-      using ContData = dynamics::ContinuousDynamicsDataTpl<Scalar>;
-      bp::register_ptr_to_python<shared_ptr<ContData>>();
-      bp::class_<ContData>
+      using ContinuousDynamicsData = dynamics::ContinuousDynamicsDataTpl<Scalar>;
+      bp::register_ptr_to_python<shared_ptr<ContinuousDynamicsData>>();
+      bp::class_<ContinuousDynamicsData>
       (
         "ContinuousDynamicsData", "Data struct for continuous dynamics/DAE models.",
         bp::no_init
       )
-        .def_readwrite("value", &ContData::error_)
-        .def_readwrite("Jx", &ContData::Jx_)
-        .def_readwrite("Ju", &ContData::Ju_)
-        .def_readwrite("Jxdot", &ContData::Jxdot_)
+        .def_readwrite("value", &ContinuousDynamicsData::error_)
+        .def_readwrite("Jx", &ContinuousDynamicsData::Jx_)
+        .def_readwrite("Ju", &ContinuousDynamicsData::Ju_)
+        .def_readwrite("Jxdot", &ContinuousDynamicsData::Jxdot_)
         ;
       
       using ODEBase = ODEBaseTpl<Scalar>;
@@ -67,13 +103,28 @@ namespace proxddp
         .def(CreateDataPythonVisitor<ODEBase>());
 
       bp::class_<ODEData,
-                 bp::bases<ContData>
+                 bp::bases<ContinuousDynamicsData>
                  >
       (
         "ODEData", "Data struct for ODE models.", bp::no_init
       )
         .def_readwrite("xdot", &ODEData::xdot_)
       ;
+
+      using context::MatrixXs;
+      using context::VectorXs;
+
+      bp::class_<LinearDiscreteDynamics<Scalar>, bp::bases<context::ExplicitDynamics>>(
+        "LinearDiscreteDynamics",
+        "Linear discrete dynamics x[t+1] = Ax[t] + Bu[t] in Euclidean space, or on the tangent state space.",
+        bp::init<const MatrixXs&, const MatrixXs&, const VectorXs&>(
+          (bp::arg("self"), bp::arg("A"), bp::arg("B"), bp::arg("c"))
+        )
+      )
+        .def_readonly("A", &LinearDiscreteDynamics<Scalar>::A_)
+        .def_readonly("B", &LinearDiscreteDynamics<Scalar>::B_)
+        .def_readonly("c", &LinearDiscreteDynamics<Scalar>::c_)
+        ;
 
     }
     
