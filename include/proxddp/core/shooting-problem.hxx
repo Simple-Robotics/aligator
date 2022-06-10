@@ -39,6 +39,8 @@ namespace proxddp
         fmt::format("Wrong size for xs or us, expected us.size = {:d}", nsteps));
     }
 
+    init_state_error.evaluate(xs[0], us[0], xs[1], *prob_data.init_data);
+
     for (std::size_t i = 0; i < nsteps; i++)
     {
       const StageModel& stage = stages_[i];
@@ -66,6 +68,8 @@ namespace proxddp
         fmt::format("Wrong size for xs or us, expected us.size = {:d}", nsteps));
     }
 
+    init_state_error.computeJacobians(xs[0], us[0], xs[1], *prob_data.init_data);
+
     for (std::size_t i = 0; i < nsteps; i++)
     {
       const StageModel& stage = stages_[i];
@@ -78,5 +82,23 @@ namespace proxddp
       term_cost_->computeHessians(xs[nsteps], us[nsteps - 1], *prob_data.term_cost_data);
     }
   }
+
+  template<typename Scalar>
+  ShootingProblemDataTpl<Scalar>::
+  ShootingProblemDataTpl(const ShootingProblemTpl<Scalar>& problem)
+    : init_data(std::move(problem.init_state_error.createData()))
+  {
+    stage_data.reserve(problem.numSteps());
+    for (std::size_t i = 0; i < problem.numSteps(); i++)
+    {
+      stage_data.push_back(std::move(problem.stages_[i].createData()));
+    }
+
+    if (problem.term_cost_)
+    {
+      term_cost_data = problem.term_cost_->createData();
+    }
+  }
+
 } // namespace proxddp
 

@@ -16,7 +16,7 @@ namespace proxddp
         "ShootingProblem", "Define a shooting problem.",
         bp::init<const context::VectorXs&, const std::vector<StageModel>&>(bp::args("self", "x0", "stages"))
       )
-        .def(bp::init<const context::VectorXs&>(bp::args("self", "x0")))
+        .def(bp::init<const context::VectorXs&, const int, const context::Manifold&>(bp::args("self", "x0", "nu", "space")))
         .def<void(ShootingProblem::*)(const StageModel&)>(
           "add_stage",
           &ShootingProblem::addStage,

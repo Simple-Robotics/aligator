@@ -4,6 +4,9 @@
 #include "proxddp/core/stage-model.hpp"
 
 
+#include "proxddp/modelling/state-error.hpp"
+
+
 namespace proxddp
 {
   /// @brief    Shooting problem, consisting in a succession of nodes.
@@ -21,21 +24,27 @@ namespace proxddp
   {
     using Scalar = _Scalar;
     using StageModel = StageModelTpl<Scalar>;
-    using StageData = StageDataTpl<Scalar>;
-
     using ProblemData = ShootingProblemDataTpl<Scalar>;
 
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
     /// Initial condition
-    VectorXs x0_init;
+    VectorXs x0_init_;
+    StateErrorResidual<Scalar> init_state_error;
 
     /// Stages of the control problem.
     std::vector<StageModel> stages_;
     shared_ptr<CostAbstractTpl<Scalar>> term_cost_;
 
-    ShootingProblemTpl(const VectorXs& x0, const std::vector<StageModel>& stages) : x0_init(x0), stages_(stages) {}
-    ShootingProblemTpl(const VectorXs& x0) : ShootingProblemTpl(x0, {}) {}
+    ShootingProblemTpl(const VectorXs& x0, const std::vector<StageModel>& stages)
+      : x0_init_(x0)
+      , init_state_error(stages[0].xspace1_, stages[0].nu(), x0_init_)
+      , stages_(stages) {}
+
+    ShootingProblemTpl(const VectorXs& x0, const int nu, const ManifoldAbstractTpl<Scalar>& space)
+      : x0_init_(x0)
+      , init_state_error(space, nu, x0_init_)
+      {}
 
     /// @brief Add a stage to the control problem.
     void addStage(const StageModel& new_stage);
@@ -70,26 +79,15 @@ namespace proxddp
   {
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-
     using StageDataPtr = shared_ptr<StageDataTpl<Scalar>>;
+
+    shared_ptr<FunctionDataTpl<Scalar>> init_data;
     /// Data structs for each stage of the problem.
     std::vector<StageDataPtr> stage_data;
     /// Terminal cost data.
     shared_ptr<CostDataAbstract<Scalar>> term_cost_data;
 
-    ShootingProblemDataTpl(const ShootingProblemTpl<Scalar>& problem)
-    {
-      stage_data.reserve(problem.numSteps());
-      for (std::size_t i = 0; i < problem.numSteps(); i++)
-      {
-        stage_data.push_back(std::move(problem.stages_[i].createData()));
-      }
-
-      if (problem.term_cost_)
-      {
-        term_cost_data = problem.term_cost_->createData();
-      }
-    }
+    ShootingProblemDataTpl(const ShootingProblemTpl<Scalar>& problem);
   };
   
 } // namespace proxddp

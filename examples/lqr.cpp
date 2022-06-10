@@ -6,7 +6,6 @@
 #include "proxddp/modelling/quad-costs.hpp"
 #include "proxddp/solver-proxddp.hpp"
 
-#include <proxnlp/modelling/spaces/vector-space.hpp>
 #include <proxnlp/modelling/constraints/negative-orthant.hpp>
 
 #include "proxddp/modelling/linear-discrete-dynamics.hpp"
@@ -33,7 +32,7 @@ int main()
   w_x.setIdentity();
   w_u.setIdentity();
   w_x(0, 0) = 2.1;
-  w_u(0, 0) = 0.06;
+  w_u *= 1e-2;
 
   auto dynptr = std::make_shared<LinearDiscreteDynamics<double>>(A, B, c_);
   auto& dynamics = *dynptr;
@@ -46,8 +45,9 @@ int main()
 
   // Define stage
 
+  double u_bound = 0.2;
   StageModelTpl<double> stage(space, nu, rcost, dynamics);
-  ControlBoxFunction<double> ctrl_bounds_fun(dim, nu, -0.2, 0.2);
+  ControlBoxFunction<double> ctrl_bounds_fun(dim, nu, -u_bound, u_bound);
 
   const bool HAS_CONTROL_BOUNDS = true;
 
@@ -63,7 +63,7 @@ int main()
 
   auto x0 = space.rand();
   x0 << 1., -0.1;
-  ShootingProblemTpl<double> problem(x0);
+  ShootingProblemTpl<double> problem(x0, nu, space);
 
   std::size_t nsteps = 10;
 
