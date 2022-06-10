@@ -60,26 +60,11 @@ namespace proxddp
     /// Number of dual variables, i.e. Lagrange multipliers.
     int numDual() const;
 
-    StageModelTpl(const Manifold& space1,
-                  const int nu,
-                  const Manifold& space2,
-                  const CostBase& cost,
-                  const Dynamics& dyn_model)
-      : xspace1_(space1)
-      , xspace2_(space2)
-      , uspace_(nu)
-      , cost_(cost)
-    {
-      ConstraintPtr dynptr = std::make_shared<Constraint>(
-        dyn_model, std::make_shared<proxnlp::EqualityConstraint<Scalar>>());
-      constraints_manager.push_back(std::move(dynptr));
-    }
+    StageModelTpl(const Manifold& space1, const int nu, const Manifold& space2,
+                  const CostBase& cost, const Dynamics& dyn_model);
 
     /// Secondary constructor: use a single manifold.
-    StageModelTpl(const Manifold& space,
-                  const int nu,
-                  const CostBase& cost,
-                  const Dynamics& dyn_model)
+    StageModelTpl(const Manifold& space, const int nu, const CostBase& cost, const Dynamics& dyn_model)
       : StageModelTpl(space, nu, space, cost, dyn_model)
       {}
 
@@ -91,37 +76,10 @@ namespace proxddp
     /* Evaluate costs, constraints, ... */
 
     /// @brief    Evaluate all the functions (cost, dynamics, constraints) at this node.
-    void evaluate(const ConstVectorRef& x,
-                  const ConstVectorRef& u,
-                  const ConstVectorRef& y,
-                  Data& data) const
-    {
-      cost_.evaluate(x, u, *data.cost_data);
-
-      for (std::size_t i = 0; i < numConstraints(); i++)
-      {
-        // calc on constraint
-        const auto& cstr = constraints_manager[i];
-        cstr->func_.evaluate(x, u, y, *data.constraint_data[i]);
-      }
-    }
+    void evaluate(const ConstVectorRef& x, const ConstVectorRef& u, const ConstVectorRef& y, Data& data) const;
 
     /// @brief    Compute the derivatives of the StageModelTpl.
-    void computeDerivatives(const ConstVectorRef& x,
-                            const ConstVectorRef& u,
-                            const ConstVectorRef& y,
-                            Data& data) const
-    {
-      cost_.computeGradients(x, u, *data.cost_data);
-      cost_.computeHessians (x, u, *data.cost_data);
-
-      for (std::size_t i = 0; i < numConstraints(); i++)
-      {
-        // calc on constraint
-        const ConstraintPtr& cstr = constraints_manager[i];
-        cstr->func_.computeJacobians(x, u, y, *data.constraint_data[i]);
-      }
-    }
+    void computeDerivatives(const ConstVectorRef& x, const ConstVectorRef& u, const ConstVectorRef& y, Data& data) const;
 
     /// @brief    Create a Data object.
     shared_ptr<Data> createData() const { return std::make_shared<Data>(*this); }
