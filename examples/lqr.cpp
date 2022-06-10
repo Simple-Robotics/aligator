@@ -15,6 +15,8 @@
 using namespace proxddp;
 
 
+constexpr double TOL = 1e-7;
+
 int main()
 {
 
@@ -41,21 +43,29 @@ int main()
   const auto& space = dynamics.out_space();
 
   QuadraticCost<double> rcost(w_x, w_u);
-  ControlBoxFunction<double> ctrl_bounds_fun(dim, nu, -0.1, 0.1);
-  auto ctrl_bounds_cstr = std::make_shared<StageConstraintTpl<double>>(
-    ctrl_bounds_fun,
-    std::make_shared<proxnlp::NegativeOrthant<double>>());
 
   // Define stage
 
   StageModelTpl<double> stage(space, nu, rcost, dynamics);
-  // stage.addConstraint(ctrl_bounds_cstr);
+  ControlBoxFunction<double> ctrl_bounds_fun(dim, nu, -0.2, 0.2);
+
+  const bool HAS_CONTROL_BOUNDS = true;
+
+  if (HAS_CONTROL_BOUNDS)
+  {
+    fmt::print("Adding control bounds.\n");
+    fmt::print("control box fun has bounds:\n{} max\n{} min\n", ctrl_bounds_fun.umax_, ctrl_bounds_fun.umin_);
+    auto ctrl_bounds_cstr = std::make_shared<StageConstraintTpl<double>>(
+      ctrl_bounds_fun,
+      std::make_shared<proxnlp::NegativeOrthant<double>>());
+    stage.addConstraint(ctrl_bounds_cstr);
+  }
 
   auto x0 = space.rand();
   x0 << 1., -0.1;
   ShootingProblemTpl<double> problem(x0);
 
-  std::size_t nsteps = 8;
+  std::size_t nsteps = 10;
 
   std::vector<Eigen::VectorXd> us;
   for (std::size_t i = 0; i < nsteps; i++)
@@ -72,9 +82,8 @@ int main()
     fmt::print("x[{:d}] = {}\n", i, xs[i].transpose());
   }
 
-  const double TOL = 1e-6;
-  const double mu_init = 1e-4;
-  const double rho_init = 0.;
+  const double mu_init = 1e-5;
+  const double rho_init = 1e-8;
 
   SolverProxDDP<double> solver(TOL, mu_init, rho_init);
 
@@ -102,4 +111,3 @@ int main()
 
   return 0;
 }
-
