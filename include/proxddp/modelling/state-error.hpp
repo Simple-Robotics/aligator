@@ -26,16 +26,16 @@ namespace proxddp
       , target(target), space(space) {}
 
     void evaluate(const ConstVectorRef& x,
-                  const ConstVectorRef& u,
-                  const ConstVectorRef& y,
+                  const ConstVectorRef&,
+                  const ConstVectorRef&,
                   Data& data) const
     {
       space.difference(x, target, data.value_);
     }
 
     void computeJacobians(const ConstVectorRef& x,
-                          const ConstVectorRef& u,
-                          const ConstVectorRef& y,
+                          const ConstVectorRef&,
+                          const ConstVectorRef&,
                           Data& data) const
     {
       space.Jdifference(x, target, data.Jx_, 0);
