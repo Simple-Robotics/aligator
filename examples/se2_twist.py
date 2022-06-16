@@ -18,7 +18,7 @@ u0 = np.random.randn(nu)
 x1 = space.neutral()
 
 
-class TwistModelExplicit(proxddp.ExplicitDynamicsModel):
+class TwistModelExplicit(proxddp.dynamics.ExplicitDynamicsModel):
     def __init__(self, dt: float, B: np.ndarray = None):
         if B is None:
             B = np.eye(nu)
@@ -38,7 +38,7 @@ class TwistModelExplicit(proxddp.ExplicitDynamicsModel):
         Ju[:, :] = Jxnext_dv @ dv_du
 
 
-class MyQuadCost(proxddp.CostBase):
+class MyQuadCost(proxddp.CostAbstract):
     def __init__(self, W: np.ndarray, x_ref: np.ndarray):
         self.x_ref = x_ref
         self.W = W

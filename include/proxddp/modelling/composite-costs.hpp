@@ -5,14 +5,16 @@
 #include "proxddp/core/costs.hpp"
 
 
-namespace proxddp
+  namespace proxddp
 {
   /// Data struct for composite costs.
   template<typename Scalar>
   struct CompositeCostDataTpl : CostDataAbstract<Scalar>
   {
     shared_ptr<FunctionDataTpl<Scalar>> underlying_data;
-    CompositeCostDataTpl(const int ndx, const int nu) : CostDataAbstract<Scalar>(ndx, nu) {}
+    CompositeCostDataTpl(const int ndx, const int nu)
+      : CostDataAbstract<Scalar>(ndx, nu)
+      {}
   };
 
   /** @brief Quadratic composite of an underlying function.
@@ -22,21 +24,21 @@ namespace proxddp
    *      c(x, u) \overset{\triangle}{=} \frac{1}{2} \|r(x, u)\|_W^2.
    * \f]
    */
-  template<typename T>
-  struct QuadResidualCost : CostAbstractTpl<T>
+  template<typename _Scalar>
+  struct QuadResidualCost : CostAbstractTpl<_Scalar>
   {
-    using Scalar = T;
-    PROXNLP_DYNAMIC_TYPEDEFS(T);
-    using CostData = CostDataAbstract<T>;
-    using CompositeData = CompositeCostDataTpl<T>;
+    using Scalar = _Scalar;
+    PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+    using CostData = CostDataAbstract<Scalar>;
+    using CompositeData = CompositeCostDataTpl<Scalar>;
 
     MatrixXs weights_;
-    shared_ptr<StageFunctionTpl<T>> residual_;
+    shared_ptr<const StageFunctionTpl<Scalar>> residual_;
     bool gauss_newton = true;
 
-    QuadResidualCost(const shared_ptr<StageFunctionTpl<T>>& function,
+    QuadResidualCost(const shared_ptr<StageFunctionTpl<Scalar>>& function,
                      const MatrixXs& weights)
-      : CostAbstractTpl<T>(function->ndx1, function->nu)
+      : CostAbstractTpl<Scalar>(function->ndx1, function->nu)
       , weights_(weights)
       , residual_(function)
       {
@@ -45,7 +47,7 @@ namespace proxddp
 
     void evaluate(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data_) const
     {
-      auto data = static_cast<CompositeData&>(data_);
+      auto& data = static_cast<CompositeData&>(data_);
       auto& under_data = *data.underlying_data;
       residual_->evaluate(x, u, x, under_data);
       data.value_ = .5 * under_data.value_.dot(weights_ * under_data.value_);
@@ -53,15 +55,15 @@ namespace proxddp
 
     void computeGradients(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data_) const
     {
-      auto data = static_cast<CompositeData&>(data_);
+      auto& data = static_cast<CompositeData&>(data_);
       auto& under_data = *data.underlying_data;
       residual_->computeJacobians(x, u, x, under_data);
-      data.grad_ = (weights_ * under_data.jac_buffer_.transpose()) * under_data.value_;
+      data.grad_ = under_data.jac_buffer_.transpose() * (weights_ * under_data.value_);
     }
 
     void computeHessians(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data_) const
     {
-      auto data = static_cast<CompositeData&>(data_);
+      auto& data = static_cast<CompositeData&>(data_);
       auto& under_data = *data.underlying_data;
       data.hess_ = under_data.jac_buffer_.transpose() * (weights_ * under_data.jac_buffer_);
       if (!gauss_newton)
@@ -71,11 +73,11 @@ namespace proxddp
       }
     }
 
-    shared_ptr<CostDataAbstract<T>> createData() const
+    shared_ptr<CostData> createData() const
     {
-      auto d = new CompositeData{this->ndx_, this->nu_};
-      d->underlying_data = residual_->createData();
-      return shared_ptr<CostDataAbstract<T>>(d);
+      CompositeData* d = new CompositeData{this->ndx_, this->nu_};
+      d->underlying_data = std::move(residual_->createData());
+      return shared_ptr<CostData>(std::move(d));
     }
 
   };
@@ -101,7 +103,8 @@ namespace proxddp
 
     LogResidualCost(const shared_ptr<StageFunction>& function,
                     const Scalar scale)
-      : LogResidualCost(function, scale * VectorXs::Ones(function->nr)) {}
+      : LogResidualCost(function, VectorXs::Constant(function->nr, scale))
+      {}
 
     void evaluate(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const
     {
@@ -138,5 +141,24 @@ namespace proxddp
       }
     }
   };
-  
+} // namespace proxddp
+
+#include "proxddp/modelling/state-error.hpp"
+
+namespace proxddp
+{
+
+  template<typename Scalar>
+  shared_ptr<QuadResidualCost<Scalar>>
+  make_state_distance_cost(
+    const typename math_types<Scalar>::MatrixXs& weights,
+    const ManifoldAbstractTpl<Scalar>& space,
+    const int nu,
+    const typename math_types<Scalar>::VectorXs& target)
+  {
+    return std::make_shared<QuadResidualCost<Scalar>>(
+      std::make_shared<StateErrorResidual<Scalar>>(space, nu, target),
+      weights);
+  }
+
 } // namespace proxddp
