@@ -28,6 +28,13 @@ namespace proxddp
     LinesearchMode ls_mode = LinesearchMode::PRIMAL_DUAL;
   };
 
+  enum class MultiplierUpdateMode : std::uint32_t
+  {
+    NEWTON = 0,
+    PRIMAL = 1,
+    PDAL = 2
+  };
+
   /// @brief Solver.
   template<typename _Scalar>
   struct SolverProxDDP
@@ -80,6 +87,7 @@ namespace proxddp
     Scalar prim_tol;
 
     LinesearchParams<Scalar> ls_params;
+    MultiplierUpdateMode mul_up_mode = MultiplierUpdateMode::NEWTON;
 
     /// Minimum possible tolerance asked from the solver.
     const Scalar TOL_MIN = 1e-8;
@@ -105,7 +113,7 @@ namespace proxddp
     ///
     /// @pre This function assumes \f$\delta x_0\f$ has already been computed!
     /// @returns This computes the primal-dual step \f$(\delta \bfx,\delta \bfu,\delta\bmlam)\f$
-    void computeDirection(const Problem& problem, Workspace& workspace) const;
+    void computeDirection(const Problem& problem, Workspace& workspace, const Results& results) const;
 
     /// @brief    Try a step of size \f$\alpha\f$.
     /// @returns  A primal-dual trial point
@@ -136,7 +144,6 @@ namespace proxddp
 
       results.xs_ = xs_init;
       results.us_ = us_init;
-      results.xs_[0] = problem.x0_init_;
 
       workspace.prev_xs_ = results.xs_;
       workspace.prev_us_ = results.us_;
@@ -155,7 +162,7 @@ namespace proxddp
       {
         auto colout = fmt::fg(fmt::color::medium_orchid);
         fmt::print(fmt::emphasis::bold | colout,
-                   "[AL iter {:>2d}]", al_iter);
+                   "[AL iter {:>2d}]", al_iter + 1);
         fmt::print("\n");
         fmt::print(colout, " | inner_tol={:.3e} | dual_tol={:.3e} | mu={:.3e} | rho={:.3e}\n",
                    inner_tol_, prim_tol, mu_, rho_);
@@ -171,7 +178,22 @@ namespace proxddp
         if (workspace.primal_infeasibility <= prim_tol)
         {
           this->updateTolerancesOnSuccess();
-          workspace.prev_lams_ = workspace.lams_pdal_;
+
+          switch (mul_up_mode)
+          {
+          case MultiplierUpdateMode::NEWTON:
+            workspace.prev_lams_ = results.lams_;
+            break;
+          case MultiplierUpdateMode::PRIMAL:
+            workspace.prev_lams_ = workspace.lams_plus_;
+            break;
+          case MultiplierUpdateMode::PDAL:
+            workspace.prev_lams_ = workspace.lams_pdal_;
+            break;
+          default:
+            break;
+          }
+
           if (workspace.primal_infeasibility <= target_tolerance)
           {
             conv = true;

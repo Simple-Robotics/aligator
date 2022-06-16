@@ -74,14 +74,24 @@ namespace proxddp
     {
       using StageModel = StageModelTpl<Scalar>;
       problem.evaluate(xs, us, prob_data);
+
       traj_cost = 0.;
       penalty_value = 0.;
-      const std::size_t nsteps = problem.numSteps();
-      std::size_t num_c;
-      for (std::size_t i = 0; i < nsteps; i++)
+
+      workspace.lams_plus_[0] = workspace.prev_lams_[0] + mu_penal_inv_ * prob_data.init_data->value_;
+      workspace.lams_pdal_[0] = 2 * workspace.lams_plus_[0] - lams[0];
+      penalty_value += .5 * mu_penal_ * workspace.lams_plus_[0].squaredNorm();
+      if (this->ls_mode == LinesearchMode::PRIMAL_DUAL)
       {
-        const StageModel& sm = problem.stages_[i];
-        const StageDataTpl<Scalar>& sd = *prob_data.stage_data[i];
+        penalty_value += .5 * dual_weight_ * mu_penal_ * (workspace.lams_plus_[0] - lams[0]).squaredNorm();
+      }
+
+      std::size_t num_c;
+      const std::size_t nsteps = problem.numSteps();
+      for (std::size_t step = 0; step < nsteps; step++)
+      {
+        const StageModel& sm = problem.stages_[step];
+        const StageDataTpl<Scalar>& sd = *prob_data.stage_data[step];
         traj_cost += sd.cost_data->value_;
 
         num_c = sm.numConstraints();
@@ -91,19 +101,15 @@ namespace proxddp
         {
           const ConstraintSetBase<Scalar>& cstr_set = sm.constraints_manager[j]->getConstraintSet();
           const FunctionDataTpl<Scalar>& cstr_data = *sd.constraint_data[j];
-          VectorRef lamplus_j = sm.constraints_manager.getSegmentByConstraint(workspace.lams_plus_[i], j);
-          VectorRef lamprev_j = sm.constraints_manager.getSegmentByConstraint(workspace.prev_lams_[i], j);
+          VectorRef lamplus_j = sm.constraints_manager.getSegmentByConstraint(workspace.lams_plus_[step + 1], j);
+          VectorRef lamprev_j = sm.constraints_manager.getSegmentByConstraint(workspace.prev_lams_[step + 1], j);
           lamplus_j = lamprev_j + mu_penal_inv_ * cstr_data.value_;
           lamplus_j.noalias() = cstr_set.normalConeProjection(lamplus_j);
-          penalty_value += .5 * mu_penal_ * lamplus_j.squaredNorm();
-
-          if (this->ls_mode == LinesearchMode::PRIMAL_DUAL)
-          {
-            // add the dual penalty term
-            ConstVectorRef lam_j = sm.constraints_manager.getConstSegmentByConstraint(lams[i], j);
-            penalty_value += .5 * dual_weight_ * mu_penal_ * (lamplus_j - lam_j).squaredNorm();
-          }
-
+        }
+        penalty_value += .5 * mu_penal_ * workspace.lams_plus_[step + 1].squaredNorm();
+        if (this->ls_mode == LinesearchMode::PRIMAL_DUAL)
+        {
+          penalty_value += .5 * dual_weight_ * mu_penal_ * (workspace.lams_plus_[step + 1] - lams[step + 1]).squaredNorm();
         }
       }
       traj_cost += prob_data.term_cost_data->value_;

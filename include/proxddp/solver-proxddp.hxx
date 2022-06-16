@@ -10,7 +10,7 @@ namespace proxddp
 {
   template<typename Scalar>
   void SolverProxDDP<Scalar>::
-  computeDirection(const Problem& problem, Workspace& workspace) const
+  computeDirection(const Problem& problem, Workspace& workspace, const Results& results) const
   {
     const std::size_t nsteps = problem.numSteps();
 
@@ -18,25 +18,31 @@ namespace proxddp
     {
       const auto& vp = workspace.value_params[0];
       const StageModel& stage0 = problem.stages_[0];
-      const ShootingProblemDataTpl<Scalar> prob_data = *workspace.problem_data;
+      const FunctionDataTpl<Scalar>& init_data = *workspace.problem_data->init_data;
       const int ndual0 = problem.init_state_error.nr;
-      const int ntot0 = stage0.ndx1() + ndual0;
-      MatrixXs kktmat0(ntot0, ntot0);
-      VectorXs kktrhs0(ntot0);
-      kktmat0.setIdentity();
+      const int ndx1 = stage0.ndx1();
+      const int ntot0 = ndx1 + ndual0;
+      const VectorXs& lamin0 = results.lams_[0];
+      const VectorXs& prevlam0 = workspace.prev_lams_[0];
+      MatrixRef kktmat0 = workspace.getKktView(ndx1, ndual0);
+      VectorRef kktrhs0 = workspace.getKktRhs(ndx1, ndual0, 1).col(0);
+      kktmat0.setZero();
       kktrhs0.setZero();
-      kktmat0.topLeftCorner(stage0.ndx1(), stage0.ndx1()) = vp.Vxx_;
-      // kktmat0.bottomRightCorner(ndual0, ndual0) *= -mu_;
-      kktrhs0.head(stage0.ndx1()) = vp.Vx_;
-      kktrhs0.tail(ndual0) = prob_data.init_data->value_;
+      kktmat0.topLeftCorner(ndx1, ndx1) = vp.Vxx_;
+      kktmat0.bottomLeftCorner(ndual0, ndx1) = init_data.Jx_;
+      kktmat0.bottomRightCorner(ndual0, ndual0).diagonal().array() = -mu_;
+      workspace.lams_plus_[0] = prevlam0 + mu_inverse_ * init_data.value_;
+      workspace.lams_pdal_[0] = 2 * workspace.lams_plus_[0] - lamin0;
+      kktrhs0.head(ndx1) = vp.Vx_ + init_data.Jx_ * lamin0;
+      kktrhs0.tail(ndual0) = mu_ * (workspace.lams_plus_[0] - lamin0);
 
-      auto ldlt = kktmat0.ldlt();
-      ldlt.compute(kktmat0);
+      auto kkt_sym = kktmat0.template selfadjointView<Eigen::Lower>();
+      auto ldlt = kkt_sym.ldlt();
       auto res = ldlt.solve(-kktrhs0);
-      workspace.dxs_[0] = res.head(stage0.ndx1());
+      workspace.dxs_[0] = res.head(ndx1);
     }
 
-    workspace.dxs_[0].setZero();
+    workspace.pd_step_[0].setZero();
     for (std::size_t i = 0; i < nsteps; i++)
     {
       const StageModel& stage = problem.stages_[i];
@@ -66,17 +72,17 @@ namespace proxddp
 
     const std::size_t nsteps = problem.numSteps();
 
+    for (std::size_t i = 0; i <= nsteps; i++)
+      workspace.trial_lams_[i] = results.lams_[i] + alpha * workspace.dlams_[i];
+
     for (std::size_t i = 0; i < nsteps; i++)
     {
       const StageModel& stage = problem.stages_[i];
       stage.xspace1_.integrate(results.xs_[i], alpha * workspace.dxs_[i], workspace.trial_xs_[i]);
       stage.uspace_.integrate(results.us_[i], alpha * workspace.dus_[i], workspace.trial_us_[i]);
-      workspace.trial_lams_[i] = results.lams_[i] + alpha * workspace.dlams_[i];
-      if (i == nsteps - 1)
-      {
-        stage.xspace2_.integrate(results.xs_[nsteps], alpha * workspace.dxs_[nsteps], workspace.trial_xs_[nsteps]);
-      }
     }
+    const StageModel& stage = problem.stages_[nsteps - 1];
+    stage.xspace2_.integrate(results.xs_[nsteps], alpha * workspace.dxs_[nsteps], workspace.trial_xs_[nsteps]);
   }
 
   template<typename Scalar>
@@ -144,10 +150,10 @@ namespace proxddp
     VectorRef rhs_0 = kkt_rhs.col(0);
     MatrixRef rhs_D = kkt_rhs.rightCols(ndx1);
 
-    VectorRef lambda_in = results.lams_[step];
-    VectorRef lamprev = workspace.prev_lams_[step];
-    VectorRef lamplus = workspace.lams_plus_[step];
-    VectorRef lampdal = workspace.lams_pdal_[step];
+    VectorRef lam_inn = results.lams_[step + 1];
+    VectorRef lamprev = workspace.prev_lams_[step + 1];
+    VectorRef lamplus = workspace.lams_plus_[step + 1];
+    VectorRef lampdal = workspace.lams_pdal_[step + 1];
 
     // Loop over constraints
     for (std::size_t i = 0; i < numc; i++)
@@ -159,10 +165,10 @@ namespace proxddp
 
       // Grab Lagrange multiplier segments
 
-      VectorRef lam_i     = stage.constraints_manager.getSegmentByConstraint(lambda_in, i);
-      VectorRef lamprev_i = stage.constraints_manager.getSegmentByConstraint(lamprev,   i);
-      VectorRef lamplus_i = stage.constraints_manager.getSegmentByConstraint(lamplus,   i);
-      VectorRef lampdal_i = stage.constraints_manager.getSegmentByConstraint(lampdal,   i);
+      VectorRef lam_inn_i = stage.constraints_manager.getSegmentByConstraint(lam_inn, i);
+      VectorRef lamprev_i = stage.constraints_manager.getSegmentByConstraint(lamprev, i);
+      VectorRef lamplus_i = stage.constraints_manager.getSegmentByConstraint(lamplus, i);
+      VectorRef lampdal_i = stage.constraints_manager.getSegmentByConstraint(lampdal, i);
 
       assert(cstr_jac.rows() == cstr->nr());
       assert(cstr_jac.cols() == ndx1 + nprim);
@@ -171,9 +177,9 @@ namespace proxddp
       lamplus_i = lamprev_i + mu_inverse_ * cstr_data.value_;
       cstr_set.applyNormalConeProjectionJacobian(lamplus_i, cstr_jac);
       lamplus_i.noalias() = cstr_set.normalConeProjection(lamplus_i);
-      lampdal_i = 2 * lamplus_i - lam_i;
+      lampdal_i = 2 * lamplus_i - lam_inn_i;
 
-      q_param.grad_.noalias() += cstr_jac.transpose() * lam_i;
+      q_param.grad_.noalias() += cstr_jac.transpose() * lam_inn_i;
       q_param.hess_.noalias() += cstr_data.vhp_buffer_;
 
       // update the KKT jacobian columns
@@ -183,7 +189,7 @@ namespace proxddp
 
     // blocks: u, y, and dual
     rhs_0.head(nprim) = q_param.grad_.tail(nprim);
-    rhs_0.tail(ndual) = mu_ * (workspace.lams_plus_[step] - results.lams_[step]);
+    rhs_0.tail(ndual) = mu_ * (workspace.lams_plus_[step + 1] - results.lams_[step + 1]);
 
     rhs_D.middleRows(0,  nu) = q_param.Qxu_.transpose();
     rhs_D.middleRows(nu, ndx2) = q_param.Qxy_.transpose();
@@ -215,14 +221,14 @@ namespace proxddp
 
     assert(results.xs_.size() == nsteps + 1);
     assert(results.us_.size() == nsteps);
-    assert(results.lams_.size() == nsteps);
+    assert(results.lams_.size() == nsteps + 1);
 
     // instantiate the subproblem merit function
-    PDAL_Function<Scalar> fun { mu_, ls_params.ls_mode };
+    PDAL_Function<Scalar> merit_fun { mu_, ls_params.ls_mode };
 
     auto merit_eval_fun = [&](Scalar a0) {
       tryStep(problem, workspace, results, a0);
-      return fun.evaluate(
+      return merit_fun.evaluate(
         problem,
         workspace.trial_xs_,
         workspace.trial_us_,
@@ -249,16 +255,16 @@ namespace proxddp
       fmt::print(fmt::fg(fmt::color::yellow_green), "[iter {:>3d}]", k);
       fmt::print("\n");
 
-      computeDirection(problem, workspace);
+      computeDirection(problem, workspace, results);
 
-      Scalar phi0 = fun.evaluate(
+      Scalar phi0 = merit_fun.evaluate(
         problem,
         results.xs_,
         results.us_,
         results.lams_,
         workspace,
         *workspace.problem_data);
-      Scalar eps = 1e-8;
+      Scalar eps = 1e-10;
       Scalar veps = merit_eval_fun(eps);
       Scalar dphi0 = (veps - phi0) / eps;
 
@@ -269,7 +275,7 @@ namespace proxddp
         ls_params.ls_beta, ls_params.armijo_c1, ls_params.alpha_min,
         alpha_opt);
 
-      results.traj_cost_ = fun.traj_cost;
+      results.traj_cost_ = merit_fun.traj_cost;
       fmt::print(" | step size: {:.3e}, dphi0 = {:.3e}\n", alpha_opt, dphi0);
       fmt::print(" | new merit fun. val: {:.3e}\n", phi0);
 
