@@ -92,6 +92,7 @@ namespace proxddp
 
     /// Minimum possible tolerance asked from the solver.
     const Scalar TOL_MIN = 1e-8;
+    const Scalar MU_MIN = 1e-8;
 
     SolverProxDDP(const Scalar tol=1e-6,
                   const Scalar mu_init=0.01,
@@ -250,7 +251,7 @@ namespace proxddp
 
     void setPenalty(Scalar new_mu)
     {
-      mu_ = new_mu;
+      mu_ = std::max(new_mu, MU_MIN);
       mu_inverse_ = 1. / new_mu;
     }
 

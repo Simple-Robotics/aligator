@@ -21,6 +21,7 @@ ndx = space.ndx
 nu = space.ndx
 
 
+np.random.seed(42)  # of course
 x0 = space.rand()
 u0 = np.random.randn(nu)
 x1 = space.neutral()
@@ -65,7 +66,7 @@ class MyQuadCost(proxddp.CostAbstract):
         self._basis.computeHessian(x, data.Lxx)
 
 
-@pytest.mark.parametrize("nsteps", [1, 4])
+@pytest.mark.parametrize("nsteps", [1, 4, 20])
 class TestClass:
     dt = 0.1
     x0 = space.neutral()
