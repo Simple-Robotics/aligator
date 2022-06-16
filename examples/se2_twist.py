@@ -1,3 +1,8 @@
+"""
+Run this file using pytest:
+
+    pytest examples/se2_twist.py -s
+"""
 from proxnlp import manifolds
 from proxnlp import costs
 import proxddp
@@ -71,8 +76,6 @@ class TestClass:
         dyn_data.Ju[:, :] = np.arange(ndx ** 2, ndx ** 2 + ndx * nu).reshape(ndx, nu)
         self.dynmodel.evaluate(x0, u0, x1, dyn_data)
         self.dynmodel.computeJacobians(x0, u0, x1, dyn_data)
-        print(dyn_data.Jx, "x")
-        print(dyn_data.Ju, "u")
 
     def test_cost(self, nsteps):
         cost = self.cost
@@ -88,11 +91,10 @@ class TestClass:
         stage_model.computeDerivatives(x0, u0, x1, sd)
         stage_model.num_primal == ndx + nu
         stage_model.num_dual == ndx
-        print(sd.dyn_data.Jx, "after")
 
     def test_shooting_problem(self, nsteps):
         stage_model = self.stage_model
-        shooting_problem = proxddp.ShootingProblem(self.x0, nu, space)
+        shooting_problem = proxddp.ShootingProblem(self.x0, nu, space, term_cost=self.cost)
         for _ in range(nsteps):
             shooting_problem.add_stage(stage_model)
 
@@ -107,18 +109,27 @@ class TestClass:
         stage_datas[0].dyn_data.Jx[:, :] = np.arange(ndx * ndx).reshape(ndx, ndx)
         print(stage_datas[0].dyn_data.Jx, "dd0 Jx")
 
-        us_ = [u0] * nsteps
-        xs_out = proxddp.rollout(self.dynmodel, x0, us_).tolist()
+        us_init = [u0] * nsteps
+        xs_out = proxddp.rollout(self.dynmodel, x0, us_init).tolist()
 
         assert len(problem_data.stage_data) == shooting_problem.num_steps
         assert shooting_problem.num_steps == nsteps
 
-        shooting_problem.evaluate(xs_out, us_, problem_data)
-        shooting_problem.computeDerivatives(xs_out, us_, problem_data)
+        shooting_problem.evaluate(xs_out, us_init, problem_data)
+        shooting_problem.computeDerivatives(xs_out, us_init, problem_data)
 
         ws = proxddp.Workspace(shooting_problem)
-        ws.gains
         assert ws.kkt_matrix_buffer_.shape[0] == stage_model.num_primal + stage_model.num_dual
+
+        rs = proxddp.Results(shooting_problem) 
+        tol = 1e-5
+        mu_init = 1e-2
+        rho_init = 0.
+
+        solver = proxddp.ProxDDP(tol, mu_init, rho_init)
+        solver.multiplier_update_mode = proxddp.MultiplierUpdateMode.NEWTON
+        solver.run(shooting_problem, ws, rs, xs_out, us_init)
+
 
 # import matplotlib.pyplot as plt
 # import utils
