@@ -1,7 +1,10 @@
 """
-Run this file using pytest:
+
+You can run this file using pytest:
 
     pytest examples/se2_twist.py -s
+
+Or also as a module.
 """
 from proxnlp import manifolds
 from proxnlp import costs
@@ -131,18 +134,7 @@ class TestClass:
         solver.run(shooting_problem, ws, rs, xs_out, us_init)
 
 
-# import matplotlib.pyplot as plt
-# import utils
+if __name__ == '__main__':
+    import sys
+    retcode = pytest.main(sys.argv)
 
-# fig, ax = plt.subplots()
-# ax: plt.Axes
-# cmap = plt.get_cmap("viridis")
-# cols_ = cmap(np.linspace(0, 1, len(xs_out)))
-
-# for i, q in enumerate(xs_out):
-#     utils.plot_se2_pose(q, ax, alpha=0.2, fc=cols_[i])
-# ax.autoscale_view()
-# ax.set_title("Motion in $\\mathrm{SE}(2)$")
-
-# ax.set_aspect("equal")
-# plt.show()
