@@ -38,8 +38,7 @@ namespace proxddp
 
       auto kkt_sym = kktmat0.template selfadjointView<Eigen::Lower>();
       auto ldlt = kkt_sym.ldlt();
-      auto res = ldlt.solve(-kktrhs0);
-      workspace.dxs_[0] = res.head(ndx1);
+      workspace.pd_step_[0] = ldlt.solve(-kktrhs0);
     }
 
     workspace.pd_step_[0].setZero();
