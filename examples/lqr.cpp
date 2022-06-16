@@ -63,7 +63,8 @@ int main()
 
   auto x0 = space.rand();
   x0 << 1., -0.1;
-  ShootingProblemTpl<double> problem(x0, nu, space);
+  auto term_cost = std::make_shared<decltype(rcost)>(rcost);
+  ShootingProblemTpl<double> problem(x0, nu, space, term_cost);
 
   std::size_t nsteps = 10;
 
@@ -74,7 +75,6 @@ int main()
     problem.addStage(*stage.clone());
   }
 
-  problem.term_cost_ = std::make_shared<decltype(rcost)>(rcost);
   auto xs = rollout(dynamics, x0, us);
   fmt::print("Initial traj.:\n");
   for(std::size_t i = 0; i <= nsteps; i++)

@@ -25,6 +25,7 @@ namespace proxddp
     using Scalar = _Scalar;
     using StageModel = StageModelTpl<Scalar>;
     using ProblemData = ShootingProblemDataTpl<Scalar>;
+    using CostAbstract = CostAbstractTpl<Scalar>;
 
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
@@ -34,17 +35,18 @@ namespace proxddp
 
     /// Stages of the control problem.
     std::vector<StageModel> stages_;
-    shared_ptr<CostAbstractTpl<Scalar>> term_cost_;
+    shared_ptr<CostAbstract> term_cost_;
 
-    ShootingProblemTpl(const VectorXs& x0, const std::vector<StageModel>& stages)
+    ShootingProblemTpl(const VectorXs& x0, const std::vector<StageModel>& stages, const shared_ptr<CostAbstract>& term_cost)
       : x0_init_(x0)
       , init_state_error(stages[0].xspace1_, stages[0].nu(), x0_init_)
-      , stages_(stages) {}
+      , stages_(stages)
+      , term_cost_(term_cost) {}
 
-    ShootingProblemTpl(const VectorXs& x0, const int nu, const ManifoldAbstractTpl<Scalar>& space)
+    ShootingProblemTpl(const VectorXs& x0, const int nu, const ManifoldAbstractTpl<Scalar>& space, const shared_ptr<CostAbstract>& term_cost)
       : x0_init_(x0)
       , init_state_error(space, nu, x0_init_)
-      {}
+      , term_cost_(term_cost) {}
 
     /// @brief Add a stage to the control problem.
     void addStage(const StageModel& new_stage);

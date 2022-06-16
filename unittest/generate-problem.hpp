@@ -69,7 +69,7 @@ struct MyFixture
     , dyn_model(space)
     , cost(nx, nu)
     , stage(*space, nu, cost, dyn_model)
-    , problem(space->neutral(), nu, *space)
+    , problem(space->neutral(), nu, *space, shared_ptr<MyCost>(&cost))
     {
       problem.addStage(stage);
       problem.addStage(stage);
