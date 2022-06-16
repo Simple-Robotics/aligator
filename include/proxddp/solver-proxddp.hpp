@@ -39,6 +39,7 @@ namespace proxddp
   template<typename _Scalar>
   struct SolverProxDDP
   {
+  public:
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
@@ -87,7 +88,7 @@ namespace proxddp
     Scalar prim_tol;
 
     LinesearchParams<Scalar> ls_params;
-    MultiplierUpdateMode mul_up_mode = MultiplierUpdateMode::NEWTON;
+    MultiplierUpdateMode mul_update_mode = MultiplierUpdateMode::NEWTON;
 
     /// Minimum possible tolerance asked from the solver.
     const Scalar TOL_MIN = 1e-8;
@@ -179,7 +180,7 @@ namespace proxddp
         {
           this->updateTolerancesOnSuccess();
 
-          switch (mul_up_mode)
+          switch (mul_update_mode)
           {
           case MultiplierUpdateMode::NEWTON:
             workspace.prev_lams_ = results.lams_;
