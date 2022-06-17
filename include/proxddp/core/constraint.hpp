@@ -25,11 +25,12 @@ namespace proxddp
     using FunctionType = StageFunctionTpl<Scalar>;
     using ConstraintSet = ConstraintSetBase<Scalar>;
     using ConstraintSetPtr = shared_ptr<ConstraintSetBase<Scalar>>;
+    using FunctionPtr = shared_ptr<const FunctionType>;
 
-    const FunctionType& func_;
+    const FunctionPtr func_;
     ConstraintSetPtr set_;
 
-    StageConstraintTpl(const FunctionType& func,
+    StageConstraintTpl(const FunctionPtr& func,
                        const ConstraintSetPtr& constraint_set)
       : func_(func)
       , set_(constraint_set)
@@ -37,12 +38,17 @@ namespace proxddp
 
     inline int nr() const
     {
-      return func_.nr;
+      return func_->nr;
     }
 
-    ConstraintSetBase<Scalar>& getConstraintSet() const
+    const ConstraintSetBase<Scalar>& getConstraintSet() const
     {
       return *set_;
+    }
+
+    const FunctionType& func() const
+    {
+      return *func_;
     }
 
   };

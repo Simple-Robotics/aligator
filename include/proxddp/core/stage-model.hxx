@@ -9,7 +9,7 @@ namespace proxddp
                 const int nu,
                 const Manifold& space2,
                 const CostBase& cost,
-                const Dynamics& dyn_model)
+                const shared_ptr<Dynamics>& dyn_model)
     : xspace1_(space1)
     , xspace2_(space2)
     , uspace_(nu)
@@ -43,7 +43,7 @@ namespace proxddp
     {
       // calc on constraint
       const auto& cstr = constraints_manager[i];
-      cstr->func_.evaluate(x, u, y, *data.constraint_data[i]);
+      cstr->func().evaluate(x, u, y, *data.constraint_data[i]);
     }
   }
 
@@ -61,7 +61,7 @@ namespace proxddp
     {
       // calc on constraint
       const ConstraintPtr& cstr = constraints_manager[i];
-      cstr->func_.computeJacobians(x, u, y, *data.constraint_data[i]);
+      cstr->func().computeJacobians(x, u, y, *data.constraint_data[i]);
     }
   }
 
@@ -97,7 +97,7 @@ namespace proxddp
     const std::size_t nc = stage_model.numConstraints();
     for (std::size_t i = 0; i < nc; i++)
     {
-      const auto& func = stage_model.constraints_manager[i]->func_;
+      const auto& func = stage_model.constraints_manager[i]->func();
       constraint_data[i] = std::move(func.createData());
     }
   }

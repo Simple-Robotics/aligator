@@ -19,12 +19,11 @@ namespace python
 
     bp::class_<StageModel>(
       "StageModel", "A stage of the control problem. Holds costs, dynamics, and constraints.",
-      bp::init<const Manifold&, const int, const Manifold&,
-               const context::CostBase&, const DynamicsModel&>(
-                 bp::args("self", "space1", "nu", "space2", "cost", "dyn_model")
-                 )
+      bp::init<const Manifold&, const int, const Manifold&, const context::CostBase&, const shared_ptr<DynamicsModel>&>(
+        bp::args("self", "space1", "nu", "space2", "cost", "dyn_model")
+        )
     )
-      .def(bp::init<const Manifold&, const int, const context::CostBase&, const DynamicsModel&>(
+      .def(bp::init<const Manifold&, const int, const context::CostBase&, const shared_ptr<DynamicsModel>&>(
         bp::args("self", "space", "nu", "cost", "dyn_model")
         ))
       .def("add_constraint", (void(StageModel::*)(const StageModel::ConstraintPtr&))&StageModel::addConstraint)
@@ -58,6 +57,24 @@ namespace python
       ;
 
     pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<StageData>>, true>::expose("StdVec_StageData");
+
+    using FunctionPtr = shared_ptr<context::StageFunction>;
+    bp::class_<context::StageConstraint>(
+      "StageConstraint",
+      "A stage-wise constraint, of the form :math:`c(x,u) \\leq 0 c(x,u)`.",
+      bp::init<const FunctionPtr&, const shared_ptr<proxnlp::ConstraintSetBase<Scalar>>&>(
+        "Contruct a StageConstraint from a StageFunction and a constraint set.",
+        bp::args("func", "constraint_set")
+      )
+    )
+      .add_property("function",
+                    bp::make_function(&context::StageConstraint::func, bp::return_value_policy<bp::return_by_value>()),
+                    "The underlying function c(x,u,x') for this constraint.")
+      .add_property("constraint_set",
+                    bp::make_function(&context::StageConstraint::getConstraintSet, bp::return_value_policy<bp::return_by_value>()),
+                    "The type of constraint set for this StageConstraint.")
+    ;
+
   }
   
 } // namespace python

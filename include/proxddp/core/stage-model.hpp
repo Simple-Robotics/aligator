@@ -44,7 +44,7 @@ namespace proxddp
     proxnlp::VectorSpaceTpl<Scalar> uspace_;
 
     const CostBase& cost_;
-    const Dynamics& dyn_model() const { return static_cast<const Dynamics&>(constraints_manager[0]->func_); }
+    const Dynamics& dyn_model() const { return static_cast<const Dynamics&>(constraints_manager[0]->func()); }
     ConstraintContainer<Scalar> constraints_manager;
 
     inline int nx1()  const { return xspace1_.nx(); }
@@ -61,10 +61,10 @@ namespace proxddp
     int numDual() const;
 
     StageModelTpl(const Manifold& space1, const int nu, const Manifold& space2,
-                  const CostBase& cost, const Dynamics& dyn_model);
+                  const CostBase& cost, const shared_ptr<Dynamics>& dyn_model);
 
     /// Secondary constructor: use a single manifold.
-    StageModelTpl(const Manifold& space, const int nu, const CostBase& cost, const Dynamics& dyn_model)
+    StageModelTpl(const Manifold& space, const int nu, const CostBase& cost, const shared_ptr<Dynamics>& dyn_model)
       : StageModelTpl(space, nu, space, cost, dyn_model)
       {}
 

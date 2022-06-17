@@ -15,10 +15,10 @@ namespace proxddp
       PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
       using Manifold = ManifoldAbstractTpl<Scalar>;
-      using Constraint = StageConstraintTpl<Scalar>;
 
       using StageFunction = StageFunctionTpl<Scalar>;
       using FunctionData = FunctionDataTpl<Scalar>;
+      using StageConstraint = StageConstraintTpl<Scalar>;
 
       using CostBase = CostAbstractTpl<Scalar>;
       using DynamicsModel = DynamicsModelTpl<Scalar>;      

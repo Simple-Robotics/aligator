@@ -46,11 +46,11 @@ namespace proxddp
       bp::class_<SolverType>(
         "ProxDDP",
         bp::init< Scalar
-                , Scalar
-                , Scalar
-                , Scalar
-                , Scalar>((
-                  "self", "tol", "mu_init", "rho_init", bp::arg("prim_alpha") = 0.1, bp::arg("prim_beta") = 0.9)
+                , Scalar, Scalar
+                , Scalar, Scalar>
+                ((bp::arg("self"), bp::arg("tol"),
+                  bp::arg("mu_init"), bp::arg("rho_init"),
+                  bp::arg("prim_alpha") = 0.1, bp::arg("prim_beta") = 0.9)
                   ))
         .def_readwrite("target_tol", &SolverType::target_tolerance, "Desired tolerance.")
         .def_readonly("mu_init",  &SolverType::mu_init,  "mu_init")

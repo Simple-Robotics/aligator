@@ -46,15 +46,15 @@ int main()
   // Define stage
 
   double u_bound = 0.2;
-  StageModelTpl<double> stage(space, nu, rcost, dynamics);
-  ControlBoxFunction<double> ctrl_bounds_fun(dim, nu, -u_bound, u_bound);
+  StageModelTpl<double> stage(space, nu, rcost, dynptr);
+  auto ctrl_bounds_fun = std::make_shared<ControlBoxFunction<double>>(dim, nu, -u_bound, u_bound);
 
   const bool HAS_CONTROL_BOUNDS = true;
 
   if (HAS_CONTROL_BOUNDS)
   {
     fmt::print("Adding control bounds.\n");
-    fmt::print("control box fun has bounds:\n{} max\n{} min\n", ctrl_bounds_fun.umax_, ctrl_bounds_fun.umin_);
+    fmt::print("control box fun has bounds:\n{} max\n{} min\n", ctrl_bounds_fun->umax_, ctrl_bounds_fun->umin_);
     auto ctrl_bounds_cstr = std::make_shared<StageConstraintTpl<double>>(
       ctrl_bounds_fun,
       std::make_shared<proxnlp::NegativeOrthant<double>>());
