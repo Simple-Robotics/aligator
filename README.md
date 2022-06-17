@@ -14,7 +14,7 @@ This package provides
 ### Dependencies
 
 * [proxnlp](https://github.com/Simple-Robotics/proxnlp.git)
-* [Eigen3](https://eigen.tuxfamily.org) >= 3.4.0
+* [Eigen3](https://eigen.tuxfamily.org) >= 3.3.7
 * Boost >= 1.71.0
 * [eigenpy](https://github.com/stack-of-tasks/eigenpy) >= 2.7.2
 
