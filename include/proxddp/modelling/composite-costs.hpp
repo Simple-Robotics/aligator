@@ -25,7 +25,7 @@
    * \f]
    */
   template<typename _Scalar>
-  struct QuadResidualCost : CostAbstractTpl<_Scalar>
+  struct QuadraticResidualCost : CostAbstractTpl<_Scalar>
   {
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
@@ -36,7 +36,7 @@
     shared_ptr<const StageFunctionTpl<Scalar>> residual_;
     bool gauss_newton = true;
 
-    QuadResidualCost(const shared_ptr<StageFunctionTpl<Scalar>>& function,
+    QuadraticResidualCost(const shared_ptr<StageFunctionTpl<Scalar>>& function,
                      const MatrixXs& weights)
       : CostAbstractTpl<Scalar>(function->ndx1, function->nu)
       , weights_(weights)
@@ -149,14 +149,14 @@ namespace proxddp
 {
 
   template<typename Scalar>
-  shared_ptr<QuadResidualCost<Scalar>>
+  shared_ptr<QuadraticResidualCost<Scalar>>
   make_state_distance_cost(
     const typename math_types<Scalar>::MatrixXs& weights,
     const ManifoldAbstractTpl<Scalar>& space,
     const int nu,
     const typename math_types<Scalar>::VectorXs& target)
   {
-    return std::make_shared<QuadResidualCost<Scalar>>(
+    return std::make_shared<QuadraticResidualCost<Scalar>>(
       std::make_shared<StateErrorResidual<Scalar>>(space, nu, target),
       weights);
   }

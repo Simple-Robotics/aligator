@@ -16,6 +16,8 @@ namespace proxddp
     {
       using context::Scalar;
       using context::StageFunction;
+      using context::VectorXs;
+      using context::MatrixXs;
       using CostData = CostDataAbstract<Scalar>;
 
       bp::register_ptr_to_python<shared_ptr<context::CostBase>>();
@@ -37,27 +39,26 @@ namespace proxddp
              "Compute the cost function hessians.")
         .def(CreateDataPythonVisitor<context::CostBase>());
 
-      // bp::class_<SumOfCosts<Scalar>, bp::bases<context::CostBase>>(
-      //   "SumOfCosts",
-      //   bp::init<const std::vector<shared_ptr<context::CostBase>>&,
-      //            const std::vector<Scalar>&>(
-      //              bp::args("self", "components", "weights")
-      //            )
-      // )
-      //   .def("addCost", &SumOfCosts<Scalar>::addCost, "Add a cost to the stack of costs.")
-      //   .def("size", &SumOfCosts<Scalar>::size, "Get the number of cost components.");
+      bp::class_<QuadraticCost<Scalar>, bp::bases<context::CostBase>>(
+        "QuadraticCost", "Quadratic cost in both state and control.",
+        bp::init<const MatrixXs&, const MatrixXs&, const VectorXs&, const VectorXs&>(
+          bp::args("self", "w_x", "w_u", "interp_x", "interp_u")
+        )
+      )
+        .def(bp::init<const MatrixXs&, const MatrixXs&>(bp::args("self", "w_x", "w_u")))
+      ;
 
-      bp::class_<QuadResidualCost<Scalar>, bp::bases<context::CostBase>>(
-        "QuadResidualCost",
+      bp::class_<QuadraticResidualCost<Scalar>, bp::bases<context::CostBase>>(
+        "QuadraticResidualCost",
         "Weighted 2-norm of a given residual function.",
         bp::init<const shared_ptr<StageFunction>&,
                  const context::MatrixXs&>(
                    bp::args("self", "function", "weights")
                  )
       )
-        .def_readwrite("residual", &QuadResidualCost<Scalar>::residual_)
-        .def_readwrite("weights", &QuadResidualCost<Scalar>::weights_)
-        .def(CreateDataPythonVisitor<QuadResidualCost<Scalar>>());
+        .def_readwrite("residual", &QuadraticResidualCost<Scalar>::residual_)
+        .def_readwrite("weights", &QuadraticResidualCost<Scalar>::weights_)
+        .def(CreateDataPythonVisitor<QuadraticResidualCost<Scalar>>());
 
       bp::class_<CostData, shared_ptr<CostData>>(
         "CostData", "Cost function data struct.",

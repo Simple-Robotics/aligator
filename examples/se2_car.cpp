@@ -39,7 +39,7 @@ int main()
   Eigen::MatrixXd weights(err_fun->nr, err_fun->nr);
   weights.setIdentity();
 
-  shared_ptr<QuadResidualCost<T>> cost_fun = std::make_shared<QuadResidualCost<T>>(err_fun, weights);
+  shared_ptr<QuadraticResidualCost<T>> cost_fun = std::make_shared<QuadraticResidualCost<T>>(err_fun, weights);
   auto cd1 = cost_fun->createData();
   cost_fun->evaluate(x0, u0, *cd1);
   fmt::print("cost val(x0)  : {:.3e}\n", cd1->value_);
