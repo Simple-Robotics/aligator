@@ -33,7 +33,8 @@ namespace proxddp
         .def_readonly("us", &Results::us_)
         .def_readonly("lams", &Results::lams_)
         .def_readonly("co_state", &Results::co_state_)
-      ;
+        .def(bp::self_ns::str(bp::self))
+        ;
 
       using SolverType = SolverProxDDP<Scalar>;
 

@@ -2,6 +2,7 @@
 
 #include "proxddp/core/shooting-problem.hpp"
 
+#include <fmt/format.h>
 #include <ostream>
 
 
@@ -33,7 +34,11 @@ namespace proxddp
 
     friend std::ostream& operator<<(std::ostream& oss, ResultsTpl& obj)
     {
-
+      oss << "Results {";
+      oss << "\n";
+      oss << fmt::format("\tnumiters  :  {:d}\n", obj.num_iters);
+      oss << fmt::format("\ttraj. cost:  {:d}\n", obj.num_iters);
+      oss << "}";
     }
 
   };
