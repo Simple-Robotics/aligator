@@ -39,6 +39,17 @@ namespace proxddp
              "Compute the cost function hessians.")
         .def(CreateDataPythonVisitor<context::CostBase>());
 
+      bp::class_<CostStack<Scalar>, bp::bases<context::CostBase>>(
+        "CostStack",
+        bp::init<const int, const int,
+                 const std::vector<shared_ptr<context::CostBase>>&,
+                 const std::vector<Scalar>&>(
+                   bp::args("self", "components", "weights")
+                 )
+      )
+        .def("addCost", &CostStack<Scalar>::addCost, "Add a cost to the stack of costs.")
+        .def("size", &CostStack<Scalar>::size, "Get the number of cost components.");
+
       bp::class_<QuadraticCost<Scalar>, bp::bases<context::CostBase>>(
         "QuadraticCost", "Quadratic cost in both state and control.",
         bp::init<const MatrixXs&, const MatrixXs&, const VectorXs&, const VectorXs&>(
