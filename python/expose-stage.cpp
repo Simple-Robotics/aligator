@@ -14,6 +14,7 @@ namespace python
     using context::DynamicsModel;
     using context::StageModel;
     using StageData = StageDataTpl<Scalar>;
+    using FunctionPtr = shared_ptr<context::StageFunction>;
 
     bp::register_ptr_to_python<shared_ptr<StageModel>>();
 
@@ -58,7 +59,6 @@ namespace python
 
     pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<StageData>>, true>::expose("StdVec_StageData");
 
-    using FunctionPtr = shared_ptr<context::StageFunction>;
     bp::class_<context::StageConstraint>(
       "StageConstraint",
       "A stage-wise constraint, of the form :math:`c(x,u) \\leq 0 c(x,u)`.",
