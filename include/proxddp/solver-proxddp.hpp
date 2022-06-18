@@ -213,12 +213,13 @@ namespace proxddp
 
       if (conv)
       {
-        fmt::print(fmt::fg(fmt::color::dodger_blue), "Successfully converged.\n");
+        fmt::print(fmt::fg(fmt::color::dodger_blue), "Successfully converged.");
       }
       else
       {
-        fmt::print(fmt::fg(fmt::color::red), "Convergence failure.\n");
+        fmt::print(fmt::fg(fmt::color::red), "Convergence failure.");
       }
+      fmt::print("\n");
 
       return conv;
     }
