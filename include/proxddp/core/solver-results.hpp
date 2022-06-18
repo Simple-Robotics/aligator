@@ -32,13 +32,14 @@ namespace proxddp
     /// @brief    Create the results struct from a problem (ShootingProblemTpl) instance.
     explicit ResultsTpl(const ShootingProblemTpl<Scalar>& problem);
 
-    friend std::ostream& operator<<(std::ostream& oss, ResultsTpl& obj)
+    friend std::ostream& operator<<(std::ostream& oss, const ResultsTpl& self)
     {
       oss << "Results {";
-      oss << "\n";
-      oss << fmt::format("\tnumiters  :  {:d}\n", obj.num_iters);
-      oss << fmt::format("\ttraj. cost:  {:d}\n", obj.num_iters);
-      oss << "}";
+      oss << fmt::format("\n\tnumiters  :  {:d}", self.num_iters);
+      oss << ",";
+      oss << fmt::format("\n\ttraj. cost:  {:.3e}", self.traj_cost_);
+      oss << "\n}";
+      return oss;
     }
 
   };
