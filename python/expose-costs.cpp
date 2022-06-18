@@ -56,7 +56,9 @@ namespace proxddp
           bp::args("self", "w_x", "w_u", "interp_x", "interp_u")
         )
       )
-        .def(bp::init<const MatrixXs&, const MatrixXs&>(bp::args("self", "w_x", "w_u")))
+        .def(bp::init<const MatrixXs&, const MatrixXs&>(
+          "Constructor with just weights.",
+          bp::args("self", "w_x", "w_u")))
       ;
 
       bp::class_<QuadraticResidualCost<Scalar>, bp::bases<context::CostBase>>(

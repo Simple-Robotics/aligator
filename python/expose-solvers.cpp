@@ -50,7 +50,7 @@ namespace proxddp
                 , Scalar, Scalar
                 , Scalar, Scalar>
                 ((bp::arg("self"), bp::arg("tol"),
-                  bp::arg("mu_init"), bp::arg("rho_init"),
+                  bp::arg("mu_init"), bp::arg("rho_init") = 0.,
                   bp::arg("prim_alpha") = 0.1, bp::arg("prim_beta") = 0.9)
                   ))
         .def_readwrite("target_tol", &SolverType::target_tolerance, "Desired tolerance.")

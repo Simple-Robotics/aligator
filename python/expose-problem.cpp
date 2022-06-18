@@ -16,7 +16,7 @@ namespace proxddp
       bp::class_<ShootingProblem>(
         "ShootingProblem", "Define a shooting problem.",
         bp::init<const context::VectorXs&, const std::vector<StageModel>&, const shared_ptr<CostBase>&>(
-          bp::args("self", "x0", "stages")
+          bp::args("self", "x0", "stages", "term_cost")
           )
       )
         .def(bp::init<const context::VectorXs&, const int, const context::Manifold&, const shared_ptr<CostBase>&>(
