@@ -56,8 +56,7 @@ int main()
     fmt::print("Adding control bounds.\n");
     fmt::print("control box fun has bounds:\n{} max\n{} min\n", ctrl_bounds_fun->umax_, ctrl_bounds_fun->umin_);
     auto ctrl_bounds_cstr = std::make_shared<StageConstraintTpl<double>>(
-      ctrl_bounds_fun,
-      std::make_shared<proxnlp::NegativeOrthant<double>>());
+      ctrl_bounds_fun, std::make_shared<proxnlp::NegativeOrthant<double>>());
     stage.addConstraint(ctrl_bounds_cstr);
   }
 

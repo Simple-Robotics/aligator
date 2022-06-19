@@ -2,6 +2,8 @@
 
 #include "proxddp/python/functions.hpp"
 #include "proxddp/modelling/state-error.hpp"
+#include "proxddp/modelling/linear-function.hpp"
+#include "proxddp/modelling/box-constraints.hpp"
 
 
 namespace proxddp
@@ -15,6 +17,10 @@ namespace proxddp
       using context::DynamicsModel;
       using context::StageFunction;
       using internal::PyStageFunction;
+      using context::VectorXs;
+      using context::MatrixXs;
+      using context::ConstVectorRef;
+      using context::ConstMatrixRef;
 
       bp::register_ptr_to_python<shared_ptr<StageFunction>>();
 
@@ -76,12 +82,24 @@ namespace proxddp
       bp::class_<ControlErrorResidual<Scalar>, bp::bases<StageFunction>>(
         "ControlErrorResidual",
         bp::init<const int, const context::Manifold&, const context::VectorXs&>(
-          bp::args("self", "ndx", "uspace", "target")
-        )
+          bp::args("self", "ndx", "uspace", "target"))
       )
         .def(bp::init<const int, const int, const context::VectorXs&>(bp::args("self", "ndx", "nu", "target")))
-        .def_readwrite("target", &ControlErrorResidual<Scalar>::target)
-        ;
+        .def_readwrite("target", &ControlErrorResidual<Scalar>::target);
+
+      bp::class_<LinearFunction<Scalar>, bp::bases<StageFunction>>(
+        "LinearFunction",
+        bp::init<const int, const int, const int, const int>(
+          bp::args("self", "ndx1", "nu", "ndx2", "nr"))
+      )
+        .def(bp::init<const ConstMatrixRef, const ConstMatrixRef, const ConstMatrixRef, const ConstVectorRef>(
+          "Constructor with given matrices.", bp::args("self", "A", "B", "C", "d")))
+        .def(bp::init<const ConstMatrixRef, const ConstMatrixRef, const ConstVectorRef>(
+          "Constructor with C=0.", bp::args("self", "A", "B", "d")))
+        .def_readonly("A", &LinearFunction<Scalar>::A_)
+        .def_readonly("B", &LinearFunction<Scalar>::B_)
+        .def_readonly("C", &LinearFunction<Scalar>::C_)
+        .def_readonly("d", &LinearFunction<Scalar>::d_);
 
       /** DYNAMICS **/
       using PyDynModel = internal::PyStageFunction<DynamicsModel>;

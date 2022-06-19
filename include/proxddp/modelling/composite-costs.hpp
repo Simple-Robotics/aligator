@@ -3,6 +3,7 @@
 #include "proxddp/fwd.hpp"
 #include "proxddp/core/function.hpp"
 #include "proxddp/core/costs.hpp"
+#include "proxddp/modelling/state-error.hpp"
 
 
   namespace proxddp
@@ -141,12 +142,6 @@
       }
     }
   };
-} // namespace proxddp
-
-#include "proxddp/modelling/state-error.hpp"
-
-namespace proxddp
-{
 
   template<typename Scalar>
   shared_ptr<QuadraticResidualCost<Scalar>>
