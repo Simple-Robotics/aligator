@@ -5,7 +5,6 @@
 
 #include "proxddp/core/solver-workspace.hpp"
 #include "proxddp/core/solver-results.hpp"
-
 #include "proxddp/core/merit-function.hpp"
 
 #include <proxnlp/constraint-base.hpp>
@@ -14,17 +13,17 @@
 #include <fmt/color.h>
 #include <fmt/ostream.h>
 
-#include <Eigen/Cholesky>
-
 namespace proxddp
 {
-  template<typename S>
+  using proxnlp::VerboseLevel;
+
+  template<typename Scalar>
   struct LinesearchParams
   {
-    S alpha_min = 1e-7;
-    S directional_derivative_thresh = 1e-13;
-    S armijo_c1 = 1e-4;
-    S ls_beta = 0.5;
+    Scalar alpha_min = 1e-7;
+    Scalar directional_derivative_thresh = 1e-13;
+    Scalar armijo_c1 = 1e-4;
+    Scalar ls_beta = 0.5;
     LinesearchMode ls_mode = LinesearchMode::PRIMAL_DUAL;
   };
 
@@ -87,6 +86,7 @@ namespace proxddp
     /// Desired primal feasibility
     Scalar prim_tol;
 
+    const VerboseLevel verbose_;
     LinesearchParams<Scalar> ls_params;
     MultiplierUpdateMode mul_update_mode = MultiplierUpdateMode::NEWTON;
 
@@ -100,7 +100,8 @@ namespace proxddp
                   const Scalar prim_alpha=0.1,
                   const Scalar prim_beta=0.9,
                   const Scalar dual_alpha=1.,
-                  const Scalar dual_beta=1.
+                  const Scalar dual_beta=1.,
+                  const VerboseLevel verbose=VerboseLevel::QUIET
                   )
       : target_tolerance(tol)
       , mu_init(mu_init)
@@ -109,6 +110,7 @@ namespace proxddp
       , prim_beta(prim_beta)
       , dual_alpha(dual_alpha)
       , dual_beta(dual_beta)
+      , verbose_(verbose)
       {}
 
     /// @brief Compute the search direction.
@@ -162,16 +164,19 @@ namespace proxddp
       std::size_t al_iter;
       for (al_iter = 0; al_iter < MAX_AL_ITERS; al_iter++)
       {
-        auto colout = fmt::fg(fmt::color::medium_orchid);
-        fmt::print(fmt::emphasis::bold | colout,
-                   "[AL iter {:>2d}]", al_iter + 1);
-        fmt::print("\n");
-        fmt::print(colout, " | inner_tol={:.3e} | dual_tol={:.3e} | mu={:.3e} | rho={:.3e}\n",
-                   inner_tol_, prim_tol, mu_, rho_);
+        if (verbose_ >= 1)
+        {
+          auto colout = fmt::fg(fmt::color::medium_orchid);
+          fmt::print(fmt::emphasis::bold | colout, "[AL iter {:>2d}]", al_iter + 1);
+          fmt::print("\n");
+          fmt::print(" | inner_tol={:.3e} | dual_tol={:.3e} | mu={:.3e} | rho={:.3e}\n",
+                     inner_tol_, prim_tol, mu_, rho_);
+        }
         solverInnerLoop(problem, workspace, results);
         computeInfeasibilities(problem, workspace);
 
-        fmt::print(" | prim. infeas: {:.3e}\n", workspace.primal_infeasibility);
+        if (verbose_ >= 1)
+          fmt::print(" | prim. infeas: {:.3e}\n", workspace.primal_infeasibility);
 
         // accept primal updates
         workspace.prev_xs_ = results.xs_;
@@ -179,7 +184,7 @@ namespace proxddp
 
         if (workspace.primal_infeasibility <= prim_tol)
         {
-          this->updateTolerancesOnSuccess();
+          updateTolerancesOnSuccess();
 
           switch (mul_update_mode)
           {
@@ -211,15 +216,15 @@ namespace proxddp
         prim_tol = std::max(prim_tol, target_tolerance);
       }
 
-      if (conv)
+      if (verbose_ >= 1)
       {
-        fmt::print(fmt::fg(fmt::color::dodger_blue), "Successfully converged.");
+        if (conv)
+          fmt::print(fmt::fg(fmt::color::dodger_blue), "Successfully converged.");
+        else {
+          fmt::print(fmt::fg(fmt::color::red), "Convergence failure.");
+        }
+        fmt::print("\n");
       }
-      else
-      {
-        fmt::print(fmt::fg(fmt::color::red), "Convergence failure.");
-      }
-      fmt::print("\n");
 
       return conv;
     }

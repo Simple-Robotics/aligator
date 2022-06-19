@@ -5,6 +5,8 @@
 
 #include "proxddp/solver-proxddp.hpp"
 
+#include <Eigen/Cholesky>
+
 
 namespace proxddp
 {
@@ -244,15 +246,19 @@ namespace proxddp
 
       backwardPass(problem, workspace, results);
 
-      fmt::print(" | inner_crit: {:.3e}\n", workspace.inner_criterion);
+      if (verbose_ >= 1)
+        fmt::print(" | inner_crit: {:.3e}\n", workspace.inner_criterion);
 
       if ((workspace.inner_criterion < inner_tol_))
       {
         break;
       }
 
-      fmt::print(fmt::fg(fmt::color::yellow_green), "[iter {:>3d}]", k);
-      fmt::print("\n");
+      if (verbose_ >= 1)
+      {
+        fmt::print(fmt::fg(fmt::color::yellow_green), "[iter {:>3d}]", k);
+        fmt::print("\n");
+      }
 
       computeDirection(problem, workspace, results);
 
@@ -275,8 +281,11 @@ namespace proxddp
         alpha_opt);
 
       results.traj_cost_ = merit_fun.traj_cost;
-      fmt::print(" | step size: {:.3e}, dphi0 = {:.3e}\n", alpha_opt, dphi0);
-      fmt::print(" | new merit fun. val: {:.3e}\n", phi0);
+      if (verbose_ >= 1)
+      {
+        fmt::print(" | step size: {:.3e}, dphi0 = {:.3e}\n", alpha_opt, dphi0);
+        fmt::print(" | new merit fun. val: {:.3e}\n", phi0);
+      }
 
       // accept the damn step
       results.xs_ = workspace.trial_xs_;
