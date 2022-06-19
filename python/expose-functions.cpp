@@ -67,10 +67,20 @@ namespace proxddp
       bp::class_<StateErrorResidual<Scalar>, bp::bases<StageFunction>>(
         "StateErrorResidual",
         bp::init<const context::Manifold&, const int, const context::VectorXs&>(
-          bp::args("self", "space", "nu", "target")
+          bp::args("self", "xspace", "nu", "target")
         )
       )
         .def_readwrite("target", &StateErrorResidual<Scalar>::target)
+        ;
+
+      bp::class_<ControlErrorResidual<Scalar>, bp::bases<StageFunction>>(
+        "ControlErrorResidual",
+        bp::init<const int, const context::Manifold&, const context::VectorXs&>(
+          bp::args("self", "ndx", "uspace", "target")
+        )
+      )
+        .def(bp::init<const int, const int, const context::VectorXs&>(bp::args("self", "ndx", "nu", "target")))
+        .def_readwrite("target", &ControlErrorResidual<Scalar>::target)
         ;
 
       /** DYNAMICS **/
