@@ -36,7 +36,8 @@ for i in range(nsteps):
 res = proxddp.Results(problem)
 ws = proxddp.Workspace(problem)
 mu_init = 1e-2
-solver = proxddp.ProxDDP(1e-6, mu_init)
+verbose = proxddp.VerboseLevel.VERBOSE
+solver = proxddp.ProxDDP(1e-6, mu_init, verbose=verbose)
 
 u0 = np.zeros(nu)
 us_i = [u0] * nsteps
