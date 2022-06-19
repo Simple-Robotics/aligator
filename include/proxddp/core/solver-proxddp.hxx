@@ -3,7 +3,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/solver-proxddp.hpp"
+#include "proxddp/core/solver-proxddp.hpp"
 
 #include <Eigen/Cholesky>
 
@@ -256,7 +256,7 @@ namespace proxddp
 
       if (verbose_ >= 1)
       {
-        fmt::print(fmt::fg(fmt::color::yellow_green), "[iter {:>3d}]", k);
+        fmt::print(fmt::fg(fmt::color::yellow_green), "[iter {:>3d}]", k + 1);
         fmt::print("\n");
       }
 

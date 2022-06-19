@@ -4,7 +4,7 @@
 #include "proxddp/core/shooting-problem.hpp"
 #include "proxddp/utils.hpp"
 #include "proxddp/modelling/quad-costs.hpp"
-#include "proxddp/solver-proxddp.hpp"
+#include "proxddp/core/solver-proxddp.hpp"
 
 #include <proxnlp/modelling/constraints/negative-orthant.hpp>
 

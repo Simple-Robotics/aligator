@@ -1,6 +1,6 @@
 #include "proxddp/python/fwd.hpp"
 
-#include "proxddp/solver-proxddp.hpp"
+#include "proxddp/core/solver-proxddp.hpp"
 
 
 namespace proxddp

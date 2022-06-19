@@ -4,7 +4,7 @@
 #include <proxnlp/modelling/spaces/pinocchio-groups.hpp>
 #include <pinocchio/multibody/liegroup/special-euclidean.hpp>
 
-#include "proxddp/solver-proxddp.hpp"
+#include "proxddp/core/solver-proxddp.hpp"
 #include "proxddp/core/explicit-dynamics.hpp"
 #include "proxddp/modelling/quad-costs.hpp"
 #include "proxddp/modelling/state-error.hpp"

@@ -271,4 +271,4 @@ namespace proxddp
  
 } // namespace proxddp
 
-#include "proxddp/solver-proxddp.hxx"
+#include "proxddp/core/solver-proxddp.hxx"
