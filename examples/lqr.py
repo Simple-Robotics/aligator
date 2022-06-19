@@ -1,7 +1,6 @@
 import proxddp
 
-from proxddp import dynamics
-from proxnlp import manifolds
+from proxddp import dynamics, manifolds
 
 import numpy as np
 import matplotlib.pyplot as plt

@@ -6,9 +6,9 @@ You can run this file using pytest:
 
 Or also as a module.
 """
-from proxnlp import manifolds
 from proxnlp import costs
 import proxddp
+from proxddp import manifolds
 import numpy as np
 
 import pytest
