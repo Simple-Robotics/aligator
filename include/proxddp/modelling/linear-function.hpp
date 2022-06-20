@@ -53,9 +53,9 @@ namespace proxddp
       data.value_ = A_ * x + B_ * u + C_ * y + d_;
     }
 
-    void computeJacobians(const ConstVectorRef& x,
-                          const ConstVectorRef& u,
-                          const ConstVectorRef& y,
+    void computeJacobians(const ConstVectorRef&,
+                          const ConstVectorRef&,
+                          const ConstVectorRef&,
                           Data& data) const
     {
       data.Jx_ = A_;

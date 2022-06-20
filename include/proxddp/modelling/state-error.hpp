@@ -15,7 +15,7 @@ namespace proxddp
   template<typename _Scalar, unsigned int arg>
   struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar>
   {
-    static_assert(arg < 2, "arg value must be 0 or 1!");
+    static_assert(arg <= 2, "arg value must be 0, 1 or 2!");
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
     using Data = FunctionDataTpl<Scalar>;
@@ -25,7 +25,7 @@ namespace proxddp
     const Manifold& space;
 
     /// @brief Constructor using the state manifold, control dimension and state target.
-    template<unsigned int N = arg, typename = typename std::enable_if<N == 0>::type>
+    template<unsigned int N = arg, typename = typename std::enable_if<N == 0 || N == 2>::type>
     StateOrControlErrorResidual(const Manifold& xspace,
                                 const int nu,
                                 const VectorXs& target)
@@ -48,7 +48,7 @@ namespace proxddp
 
     void evaluate(const ConstVectorRef& x,
                   const ConstVectorRef& u,
-                  const ConstVectorRef&,
+                  const ConstVectorRef& y,
                   Data& data) const
     {
       switch (arg)
@@ -57,13 +57,15 @@ namespace proxddp
               break;
       case 1: space.difference(target, u, data.value_);
               break;
+      case 2: space.difference(target, y, data.value_);
+              break;
       default: break;
       }
     }
 
     void computeJacobians(const ConstVectorRef& x,
                           const ConstVectorRef& u,
-                          const ConstVectorRef&,
+                          const ConstVectorRef& y,
                           Data& data) const
     {
       switch (arg)
@@ -73,6 +75,9 @@ namespace proxddp
         break;
       case 1:
         space.Jdifference(target, u, data.Ju_, 1);
+        break;
+      case 2:
+        space.Jdifference(target, y, data.Jy_, 1);
         break;
       default:
         break;
