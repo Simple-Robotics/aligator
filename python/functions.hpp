@@ -20,33 +20,32 @@ namespace proxddp
       template<class FunctionBase = context::StageFunction>
       struct PyStageFunction : FunctionBase, bp::wrapper<FunctionBase>
       {
-        using bp::wrapper<FunctionBase>::get_override;
         using Scalar = typename FunctionBase::Scalar;
         using Data = FunctionDataTpl<Scalar>;
         PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
         // Use perfect forwarding to the FunctionBase constructors.
         template<typename... Args>
-        PyStageFunction(PyObject*&, Args&&... args)
+        PyStageFunction(Args&&... args)
           : FunctionBase(std::forward<Args>(args)...) {}
 
-        virtual void evaluate(const ConstVectorRef& x,
+        void evaluate(const ConstVectorRef& x,
+                      const ConstVectorRef& u,
+                      const ConstVectorRef& y,
+                      Data& data) const override
+        { PROXDDP_PYTHON_OVERRIDE_PURE(void, "evaluate", x, u, y, data); }
+
+        void computeJacobians(const ConstVectorRef& x,
                               const ConstVectorRef& u,
                               const ConstVectorRef& y,
                               Data& data) const override
         { PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeJacobians", x, u, y, data); }
-
-        virtual void computeJacobians(const ConstVectorRef& x,
-                                      const ConstVectorRef& u,
-                                      const ConstVectorRef& y,
-                                      Data& data) const override
-        { PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeJacobians", x, u, y, data); }
         
-        virtual void computeVectorHessianProducts(const ConstVectorRef& x,
-                                                  const ConstVectorRef& u,
-                                                  const ConstVectorRef& y,
-                                                  const ConstVectorRef& lbda,
-                                                  Data& data) const override
+        void computeVectorHessianProducts(const ConstVectorRef& x,
+                                          const ConstVectorRef& u,
+                                          const ConstVectorRef& y,
+                                          const ConstVectorRef& lbda,
+                                          Data& data) const override
         { PROXDDP_PYTHON_OVERRIDE(void, FunctionBase, computeVectorHessianProducts, x, u, y, lbda, data); }
 
         shared_ptr<Data> createData() const override

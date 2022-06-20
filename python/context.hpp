@@ -17,7 +17,7 @@ namespace proxddp
       using Manifold = ManifoldAbstractTpl<Scalar>;
 
       using StageFunction = StageFunctionTpl<Scalar>;
-      using FunctionData = FunctionDataTpl<Scalar>;
+      using StageFunctionData = FunctionDataTpl<Scalar>;
       using StageConstraint = StageConstraintTpl<Scalar>;
 
       using CostBase = CostAbstractTpl<Scalar>;

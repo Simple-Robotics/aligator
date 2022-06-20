@@ -15,6 +15,9 @@ namespace proxddp
       using context::Scalar;
       using context::Manifold;
       using context::DynamicsModel;
+      using context::MatrixXs;
+      using context::VectorXs;
+
       using namespace proxddp::dynamics;
 
       using ManifoldPtr = shared_ptr<context::Manifold>;
@@ -29,19 +32,18 @@ namespace proxddp
         )
       )
         .def(bp::init<const ManifoldPtr&, const int>(
-          bp::args("self", "out_space", "nu")
-        ))
+          bp::args("self", "out_space", "nu")))
         .def("forward", bp::pure_virtual(&ExplicitDynamics::forward),
               bp::args("self", "x", "u", "out"),
               "Call for forward discrete dynamics.")
         .def("dForward", bp::pure_virtual(&ExplicitDynamics::dForward),
-              bp::args("self", "x", "u", "Jx", "Ju"),
-              "Compute the derivatives of forward discrete dynamics.")
+             bp::args("self", "x", "u", "Jx", "Ju"),
+             "Compute the derivatives of forward discrete dynamics.")
         .def_readonly("space", &ExplicitDynamics::out_space_, "Output space.")
         .def(CreateDataPythonVisitor<ExplicitDynamics>());
 
       bp::class_<context::ExplicitDynData,
-                 bp::bases<context::FunctionData>,
+                 bp::bases<context::StageFunctionData>,
                  boost::noncopyable>(
                    "ExplicitDynamicsData",
                    "Data struct for explicit dynamics models.",
@@ -51,10 +53,7 @@ namespace proxddp
 
       using ContinuousDynamicsBase = ContinuousDynamicsTpl<Scalar>;
 
-      bp::class_<
-        ContinuousDynamicsBase,
-        internal::PyContinuousDynamics<>
-        >
+      bp::class_<internal::PyContinuousDynamics<>>
       (
         "ContinuousDynamicsBase", "Base class for continuous dynamics/DAE models.",
         bp::init<const context::Manifold&, const int>(
@@ -83,10 +82,8 @@ namespace proxddp
       using ODEBase = ODEBaseTpl<Scalar>;
       using ODEData = ODEDataTpl<Scalar>;
       bp::register_ptr_to_python<shared_ptr<ODEData>>();
-      bp::class_<ODEBase,
-                 bp::bases<ContinuousDynamicsBase>,
-                 internal::PyODEBase
-                 >
+      bp::class_<internal::PyODEBase,
+                 bp::bases<ContinuousDynamicsBase>>
       (
         "ODEBase", "Continuous dynamics described by ordinary differential equations (ODEs).",
         bp::init<const context::Manifold&, const int>(
@@ -94,25 +91,17 @@ namespace proxddp
       )
         .def("forward",  bp::pure_virtual(&ODEBase::forward),
              bp::args("self", "x", "u", "xdot_out"),
-             "Compute the value of the ODE vector field."
-             )
+             "Compute the value of the ODE vector field.")
         .def("dForward", bp::pure_virtual(&ODEBase::dForward),
              bp::args("self", "x", "u", "Jout_x", "Jout_u"),
-             "Compute the derivatives of the ODE vector field wrt (x, u)."
-             )
+             "Compute the derivatives of the ODE vector field wrt (x, u).")
         .def(CreateDataPythonVisitor<ODEBase>());
 
-      bp::class_<ODEData,
-                 bp::bases<ContinuousDynamicsData>
-                 >
-      (
+      bp::class_<ODEData, bp::bases<ContinuousDynamicsData>>(
         "ODEData", "Data struct for ODE models.", bp::no_init
       )
         .def_readwrite("xdot", &ODEData::xdot_)
       ;
-
-      using context::MatrixXs;
-      using context::VectorXs;
 
       bp::class_<LinearDiscreteDynamics<Scalar>, bp::bases<context::ExplicitDynamics>>(
         "LinearDiscreteDynamics",

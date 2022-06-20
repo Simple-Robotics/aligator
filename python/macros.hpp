@@ -3,7 +3,7 @@
 #pragma once
 
 #include <type_traits>
-
+#include <fmt/core.h>
 
 namespace proxddp { namespace python {
   namespace internal
@@ -23,18 +23,16 @@ namespace proxddp { namespace python {
 
 
 #define PROXDDP_PYTHON_OVERRIDE_IMPL(ret_type, pyname, ...)  \
-  bp::override fo = get_override(pyname);           \
-  if (fo)                                           \
-  {                                                 \
-    return ::proxddp::python::internal::suppress_if_void<ret_type>(fo(__VA_ARGS__));}  \
+  if (bp::override fo = this->get_override(pyname))          \
+  { return ::proxddp::python::internal::suppress_if_void<ret_type>(fo(__VA_ARGS__));}  \
 
 /** @def PROXDDP_PYTHON_OVERRIDE_PURE(ret_type, pyname, ...)
  * @brief Define the body of a virtual function override. This is meant
  *        to reduce boilerplate code when exposing virtual member functions.
  */
 #define PROXDDP_PYTHON_OVERRIDE_PURE(ret_type, pyname, ...)      \
-  PROXDDP_PYTHON_OVERRIDE_IMPL(ret_type, pyname, __VA_ARGS__)
-
+  bp::override fo = this->get_override(pyname);                  \
+  return ::proxddp::python::internal::suppress_if_void<ret_type>(fo(__VA_ARGS__));
 
 /**
  * @def

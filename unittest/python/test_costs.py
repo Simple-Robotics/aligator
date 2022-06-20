@@ -15,7 +15,6 @@ def test_cost_stack():
     data1 = rcost.createData()
     data2 = cost_stack.createData()
 
-
     for _ in range(10):
         x0 = np.random.randn(nx)
         u0 = np.random.randn(nu)

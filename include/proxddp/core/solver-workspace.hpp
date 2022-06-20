@@ -1,6 +1,7 @@
 #pragma once
 #include "proxddp/fwd.hpp"
 
+#include <fmt/format.h>
 #include <ostream>
 
 
@@ -180,11 +181,13 @@ namespace proxddp
       return kktRhsFull_.topLeftCorner(nprim + ndual, ndx1 + 1);
     }
 
-    friend std::ostream& operator<<(std::ostream& oss, const WorkspaceTpl<Scalar>& workspace)
+    friend std::ostream& operator<<(std::ostream& oss, const WorkspaceTpl<Scalar>& self)
     {
       oss << "Workspace {";
-      oss << "\n  num nodes:              " << workspace.trial_us_.size()
-          << "\n  kkt matrix buffer size: " << workspace.kktMatrixFull_.rows();
+      oss << fmt::format("\n  num nodes      : {:d}", self.trial_us_.size())
+          << fmt::format("\n  kkt buffer size: {:d}", self.kktMatrixFull_.rows())
+          << fmt::format("\n  prim_infeas    : {:.3e}", self.primal_infeasibility)
+          << fmt::format("\n  dual_infeas    : {:.3e}", self.dual_infeasibility);
       oss << "\n}";
       return oss;
     }

@@ -45,7 +45,7 @@ namespace proxddp
         PROXNLP_DYNAMIC_TYPEDEFS(context::Scalar);
 
         template<typename... Args>
-        PyContinuousDynamics(PyObject*&, Args&&... args)
+        PyContinuousDynamics(Args&&... args)
           : T(std::forward<Args>(args)...) {}
 
         void evaluate(const ConstVectorRef& x, const ConstVectorRef& u, const ConstVectorRef& xdot, Data& data) const
@@ -69,7 +69,7 @@ namespace proxddp
         using Data = dynamics::ODEBaseTpl<context::Scalar>::Data;
 
         template<typename ...Args>
-        PyODEBase(PyObject*&, Args&&... args)
+        PyODEBase(Args&&... args)
           : Base(std::forward<Args>(args)...) {}
 
         void forward(const ConstVectorRef& x,

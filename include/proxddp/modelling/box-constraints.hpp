@@ -13,18 +13,19 @@ namespace proxddp
 
     VectorXs umin_, umax_;
 
-    ControlBoxFunction(const int ndx, const int nu, const VectorXs umin, const VectorXs umax)
-      : LinearFunction<Scalar>(ndx, nu, ndx, 2 * nu)
+    ControlBoxFunction(const int ndx, const VectorXs umin, const VectorXs umax)
+      : LinearFunction<Scalar>(ndx, umin.size(), ndx, 2 * umin.size())
       , umin_(umin)
       , umax_(umax)
     {
+      assert(umin.size() == umax.size() && "Size of umin and umax should be the same!");
       this->d_ << umin_, -umax_;
-      this->B_.topRows(nu).diagonal().array() = -1.;
-      this->B_.bottomRows(nu).setIdentity();
+      this->B_.topRows(this->nu).diagonal().array() = -1.;
+      this->B_.bottomRows(this->nu).setIdentity();
     }
 
     ControlBoxFunction(const int ndx, const int nu, Scalar umin, Scalar umax)
-      : ControlBoxFunction(ndx, nu, VectorXs::Constant(nu, umin), VectorXs::Constant(nu, umax))
+      : ControlBoxFunction(ndx, VectorXs::Constant(nu, umin), VectorXs::Constant(nu, umax))
       {}
   };
   

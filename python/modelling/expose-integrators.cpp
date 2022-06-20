@@ -19,9 +19,9 @@ namespace proxddp
       using IntegratorBase = IntegratorBaseTpl<Scalar>;
 
       using PyIntegratorBase = internal::PyStageFunction<IntegratorBase>;
-      bp::class_<IntegratorBase,
-                 bp::bases<context::DynamicsModel>,
-                 PyIntegratorBase>
+      bp::class_<PyIntegratorBase,
+                 bp::bases<context::DynamicsModel>
+                 >
       (
         "IntegratorBase", "Base class for numerical integrators.",
         bp::init<const IntegratorBase::ContDynamics&>(
