@@ -1,15 +1,26 @@
 import proxddp
 
 from proxddp import dynamics, manifolds
+from proxnlp import constraints
 
 import numpy as np
 import matplotlib.pyplot as plt
 
+import tap
+
+
+class Args(tap.Tap):
+    use_term_cstr: bool = False
+
+
+args = Args().parse_args()
+print(args)
+
 np.random.seed(42)
 nx = 3
 nu = 3
-vecspace = manifolds.VectorSpace(nx)
-x0 = vecspace.neutral() + (0.2, 0.3, -0.1)
+space = manifolds.VectorSpace(nx)
+x0 = space.neutral() + (0.2, 0.3, -0.1)
 x0 = np.clip(x0, -10, 10)
 
 A = np.eye(nx)
@@ -26,11 +37,23 @@ Qf = np.eye(nx)
 rcost = proxddp.QuadraticCost(Q, R)
 term_cost = proxddp.QuadraticCost(Qf, R)
 dynmodel = dynamics.LinearDiscreteDynamics(A, B, c)
-stage = proxddp.StageModel(vecspace, nu, rcost, dynmodel)
+stage = proxddp.StageModel(space, nu, rcost, dynmodel)
+
+use_term_cstr = args.use_term_cstr
+
 
 nsteps = 20
-problem = proxddp.ShootingProblem(x0, nu, vecspace, term_cost)
+problem = proxddp.ShootingProblem(x0, nu, space, term_cost)
 for i in range(nsteps):
+    if i == nsteps - 1 and use_term_cstr:
+        xtar = np.ones(nx)
+        term_fun = proxddp.LinearFunction(np.zeros((nx, nx)),
+                                          np.zeros((nx, nu)),
+                                          np.eye(nx),
+                                          xtar)
+        stage.add_constraint(
+            proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet())
+        )
     problem.add_stage(stage)
 
 res = proxddp.Results(problem)
