@@ -1,6 +1,5 @@
 import numpy as np
 import proxddp
-from proxnlp import manifolds
 
 
 def test_linear():
