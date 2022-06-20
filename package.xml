@@ -1,4 +1,20 @@
 <?xml version="1.0"?>
 <package format="3">
-  <version>0.1.1</version>
+  <version>0.2.0</version>
+  <maintainer email="wilson.jallet@laas.fr">Wilson Jallet</maintainer>
+
+  <build_depend>git</build_depend>
+  <build_depend>doxygen</build_depend>
+  <doc_depend>doxygen</doc_depend>
+
+  <depend>python3</depend>
+  <depend>python3-numpy</depend>
+  <depend>boost</depend>
+  <depend>eigenpy</depend>
+  <depend>fmtlib</depend>
+  <depend>proxnlp</depend>
+
+  <buildtool_depend>cmake</buildtool_depend>
+  <export>
+    <build_type>cmake</build_type>
 </package>
