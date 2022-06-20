@@ -23,6 +23,9 @@ namespace proxddp
         .def_readonly("q_params", &Workspace::q_params)
         .def_readonly("kkt_matrix_buffer_", &Workspace::kktMatrixFull_)
         .def_readonly("gains", &Workspace::gains_)
+        .def_readonly("primal_infeas", &Workspace::primal_infeasibility)
+        .def_readonly("dual_infeas", &Workspace::dual_infeasibility)
+        .def_readonly("inner_crit", &Workspace::inner_criterion)
         .def(bp::self_ns::str(bp::self))
         ;
 
