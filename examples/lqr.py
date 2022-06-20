@@ -54,7 +54,7 @@ for i in range(nsteps):
         stage.add_constraint(
             proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet())
         )
-    problem.add_stage(stage)
+    problem.addStage(stage)
 
 res = proxddp.Results(problem)
 ws = proxddp.Workspace(problem)

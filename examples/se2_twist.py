@@ -100,7 +100,7 @@ class TestClass:
         stage_model = self.stage_model
         shooting_problem = proxddp.ShootingProblem(self.x0, nu, space, term_cost=self.cost)
         for _ in range(nsteps):
-            shooting_problem.add_stage(stage_model)
+            shooting_problem.addStage(stage_model)
 
         problem_data = shooting_problem.createData()
         stage_datas = problem_data.stage_data
@@ -125,7 +125,7 @@ class TestClass:
         ws = proxddp.Workspace(shooting_problem)
         assert ws.kkt_matrix_buffer_.shape[0] == stage_model.num_primal + stage_model.num_dual
 
-        rs = proxddp.Results(shooting_problem) 
+        rs = proxddp.Results(shooting_problem)
         tol = 1e-5
         mu_init = 1e-2
         rho_init = 0.

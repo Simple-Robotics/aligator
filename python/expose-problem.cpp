@@ -23,7 +23,7 @@ namespace proxddp
               bp::args("self", "x0", "nu", "space", "term_cost"))
              )
         .def<void(ShootingProblem::*)(const StageModel&)>(
-          "add_stage",
+          "addStage",
           &ShootingProblem::addStage,
           bp::args("self", "new_stage"),
           "Add a stage to the problem.")
