@@ -140,20 +140,16 @@ namespace proxddp
                  const Results& results,
                  const Scalar alpha) const;
 
-    /// Compute the active sets at each node and multiplier estimates, and projector Jacobian matrices.
-    void computeActiveSetsAndMultipliers(const Problem& problem, Workspace& workspace, Results& results) const;
-
     /// @brief    Perform the Riccati backward pass.
     ///
     /// @pre  Compute the derivatives first!
     void backwardPass(const Problem& problem, Workspace& workspace, Results& results) const;
 
-    bool run(
-      const Problem& problem,
-      Workspace& workspace,
-      Results& results,
-      const std::vector<VectorXs>& xs_init,
-      const std::vector<VectorXs>& us_init)
+    bool run(const Problem& problem,
+             Workspace& workspace,
+             Results& results,
+             const std::vector<VectorXs>& xs_init,
+             const std::vector<VectorXs>& us_init)
     {
       const std::size_t nsteps = problem.numSteps();
       assert(xs_init.size() == nsteps + 1);
@@ -168,14 +164,14 @@ namespace proxddp
 
       inner_tol_ = inner_tol0;
       prim_tol = prim_tol0;
-      this->updateTolerancesOnFailure();
+      updateTolerancesOnFailure();
 
       inner_tol_ = std::max(inner_tol_, target_tolerance);
 
       bool conv = false;
 
-      std::size_t al_iter;
-      for (al_iter = 0; al_iter < MAX_AL_ITERS; al_iter++)
+      std::size_t al_iter = 0;
+      while ((al_iter < MAX_AL_ITERS) && (results.num_iters < MAX_ITERS))
       {
         if (verbose_ >= 1)
         {
@@ -220,13 +216,15 @@ namespace proxddp
             break;
           }
         } else {
-          this->updateALPenalty();
-          this->updateTolerancesOnFailure();
+          updateALPenalty();
+          updateTolerancesOnFailure();
         }
         rho_ *= rho_update_factor_;
 
         inner_tol_ = std::max(inner_tol_, std::min(TOL_MIN, target_tolerance));
         prim_tol = std::max(prim_tol, target_tolerance);
+
+        al_iter++;
       }
 
       if (verbose_ >= 1)

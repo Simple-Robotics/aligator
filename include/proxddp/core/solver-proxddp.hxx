@@ -22,20 +22,19 @@ namespace proxddp
       const StageModel& stage0 = problem.stages_[0];
       const FunctionDataTpl<Scalar>& init_data = *workspace.problem_data->init_data;
       const int ndual0 = problem.init_state_error.nr;
-      const int ndx1 = stage0.ndx1();
-      const int ntot0 = ndx1 + ndual0;
+      const int ndx0 = stage0.ndx1();
       const VectorXs& lamin0 = results.lams_[0];
       const VectorXs& prevlam0 = workspace.prev_lams_[0];
-      MatrixRef kktmat0 = workspace.getKktView(ndx1, ndual0);
-      VectorRef kktrhs0 = workspace.getKktRhs(ndx1, ndual0, 1).col(0);
+      MatrixRef kktmat0 = workspace.getKktView(ndx0, ndual0);
+      VectorRef kktrhs0 = workspace.getKktRhs(ndx0, ndual0, 1).col(0);
       kktmat0.setZero();
       kktrhs0.setZero();
-      kktmat0.topLeftCorner(ndx1, ndx1) = vp.Vxx_;
-      kktmat0.bottomLeftCorner(ndual0, ndx1) = init_data.Jx_;
+      kktmat0.topLeftCorner(ndx0, ndx0) = vp.Vxx_;
+      kktmat0.bottomLeftCorner(ndual0, ndx0) = init_data.Jx_;
       kktmat0.bottomRightCorner(ndual0, ndual0).diagonal().array() = -mu_;
       workspace.lams_plus_[0] = prevlam0 + mu_inverse_ * init_data.value_;
       workspace.lams_pdal_[0] = 2 * workspace.lams_plus_[0] - lamin0;
-      kktrhs0.head(ndx1) = vp.Vx_ + init_data.Jx_ * lamin0;
+      kktrhs0.head(ndx0) = vp.Vx_ + init_data.Jx_ * lamin0;
       kktrhs0.tail(ndual0) = mu_ * (workspace.lams_plus_[0] - lamin0);
 
       auto kkt_sym = kktmat0.template selfadjointView<Eigen::Lower>();
@@ -43,12 +42,9 @@ namespace proxddp
       workspace.pd_step_[0] = ldlt.solve(-kktrhs0);
     }
 
-    workspace.pd_step_[0].setZero();
     for (std::size_t i = 0; i < nsteps; i++)
     {
       const StageModel& stage = problem.stages_[i];
-      // int nu = stage.nu();
-      // int ndual = stage.numDual();
       VectorRef pd_step = workspace.pd_step_[i + 1];
       MatrixRef gains = workspace.gains_[i];
       ConstVectorRef feedforward = gains.col(0);
@@ -59,13 +55,6 @@ namespace proxddp
 
   }
 
-  template<typename Scalar>
-  void SolverProxDDP<Scalar>::
-  computeActiveSetsAndMultipliers(const Problem& problem, Workspace& workspace, Results& results) const
-  {
-
-  }
-  
   template<typename Scalar>
   void SolverProxDDP<Scalar>::
   tryStep(const Problem& problem, Workspace& workspace, const Results& results, const Scalar alpha) const
@@ -218,8 +207,6 @@ namespace proxddp
   template<typename Scalar>
   void SolverProxDDP<Scalar>::solverInnerLoop(const Problem& problem, Workspace& workspace, Results& results)
   {
-    const std::size_t nsteps = problem.numSteps();
-
     assert(results.xs_.size() == nsteps + 1);
     assert(results.us_.size() == nsteps);
     assert(results.lams_.size() == nsteps + 1);

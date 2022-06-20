@@ -35,9 +35,8 @@ namespace proxddp
     friend std::ostream& operator<<(std::ostream& oss, const ResultsTpl& self)
     {
       oss << "Results {";
-      oss << fmt::format("\n\tnumiters  :  {:d}", self.num_iters);
-      oss << ",";
-      oss << fmt::format("\n\ttraj. cost:  {:.3e}", self.traj_cost_);
+      oss << fmt::format("\n  numiters  :  {:d},", self.num_iters);
+      oss << fmt::format("\n  traj. cost:  {:.3e}", self.traj_cost_);
       oss << "\n}";
       return oss;
     }
