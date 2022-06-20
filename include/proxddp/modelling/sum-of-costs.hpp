@@ -78,6 +78,7 @@ namespace proxddp
     void computeGradients(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const
     {
       SumCostData& d = static_cast<SumCostData&>(data);
+      d.grad_.setZero();
       for (std::size_t i = 0; i < components_.size(); i++)
       {
         components_[i]->computeGradients(x, u, *d.sub_datas[i]);
@@ -88,6 +89,7 @@ namespace proxddp
     void computeHessians(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const
     {
       SumCostData& d = static_cast<SumCostData&>(data);
+      d.hess_.setZero();
       for (std::size_t i = 0; i < components_.size(); i++)
       {
         components_[i]->computeHessians(x, u, *d.sub_datas[i]);

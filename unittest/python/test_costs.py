@@ -15,21 +15,23 @@ def test_cost_stack():
     data1 = rcost.createData()
     data2 = cost_stack.createData()
 
-    x0 = np.random.randn(nx)
-    u0 = np.random.randn(nu)
 
-    rcost.evaluate(x0, u0, data1)
-    cost_stack.evaluate(x0, u0, data2)
+    for _ in range(10):
+        x0 = np.random.randn(nx)
+        u0 = np.random.randn(nu)
 
-    print(data1.value)
-    print(data2.value)
+        rcost.evaluate(x0, u0, data1)
+        cost_stack.evaluate(x0, u0, data2)
 
-    rcost.computeGradients(x0, u0, data1)
-    cost_stack.computeGradients(x0, u0, data2)
+        print(data1.value)
+        print(data2.value)
 
-    rcost.computeHessians(x0, u0, data1)
-    cost_stack.computeHessians(x0, u0, data2)
+        rcost.computeGradients(x0, u0, data1)
+        cost_stack.computeGradients(x0, u0, data2)
 
-    assert data1.value == data2.value
-    assert np.allclose(data1._grad, data2._grad)
-    assert np.allclose(data1._hessian, data2._hessian)
+        rcost.computeHessians(x0, u0, data1)
+        cost_stack.computeHessians(x0, u0, data2)
+
+        assert data1.value == data2.value
+        assert np.allclose(data1._grad, data2._grad)
+        assert np.allclose(data1._hessian, data2._hessian)

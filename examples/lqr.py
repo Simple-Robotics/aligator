@@ -35,6 +35,7 @@ R = 1e-2 * np.eye(nu)
 Qf = np.eye(nx)
 
 rcost = proxddp.QuadraticCost(Q, R)
+rcost = proxddp.CostStack(nx, nu, [rcost], [1.])
 term_cost = proxddp.QuadraticCost(Qf, R)
 dynmodel = dynamics.LinearDiscreteDynamics(A, B, c)
 stage = proxddp.StageModel(space, nu, rcost, dynmodel)
