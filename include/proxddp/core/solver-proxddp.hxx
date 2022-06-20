@@ -239,7 +239,7 @@ namespace proxddp
     };
 
     std::size_t& k = results.num_iters;
-    while (k < MAX_STEPS)
+    while (k < MAX_ITERS)
     {
       problem.evaluate(results.xs_, results.us_, *workspace.problem_data);
       problem.computeDerivatives(results.xs_, results.us_, *workspace.problem_data);

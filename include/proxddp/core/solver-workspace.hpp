@@ -183,8 +183,8 @@ namespace proxddp
     friend std::ostream& operator<<(std::ostream& oss, const WorkspaceTpl<Scalar>& workspace)
     {
       oss << "Workspace {";
-      oss << "\n\tnum nodes:              " << workspace.trial_us_.size()
-          << "\n\tkkt matrix buffer size: " << workspace.kktMatrixFull_.rows();
+      oss << "\n  num nodes:              " << workspace.trial_us_.size()
+          << "\n  kkt matrix buffer size: " << workspace.kktMatrixFull_.rows();
       oss << "\n}";
       return oss;
     }

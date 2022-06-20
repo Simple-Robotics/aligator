@@ -11,7 +11,7 @@ namespace proxddp
 {
 
   /// Whether to use merit functions in primal or primal-dual mode.
-  enum class LinesearchMode : std::uint32_t
+  enum class LinesearchMode : unsigned int
   {
     PRIMAL = 0,
     PRIMAL_DUAL = 1

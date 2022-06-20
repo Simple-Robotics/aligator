@@ -27,11 +27,22 @@ namespace proxddp
     LinesearchMode ls_mode = LinesearchMode::PRIMAL_DUAL;
   };
 
-  enum class MultiplierUpdateMode : std::uint32_t
+  enum class MultiplierUpdateMode : unsigned int
   {
     NEWTON = 0,
     PRIMAL = 1,
-    PDAL = 2
+    PRIMAL_DUAL = 2
+  };
+
+  template<typename Scalar>
+  struct BCLParams
+  {
+    Scalar prim_alpha = 0.1;
+    Scalar prim_beta = 0.9;
+    Scalar dual_alpha = 1.;
+    Scalar dual_beta = 1.;
+    Scalar mu_update_factor = 0.01;
+    Scalar rho_update_factor = 0.1;
   };
 
   /// @brief Solver.
@@ -49,15 +60,16 @@ namespace proxddp
     using value_store_t = internal::value_storage<Scalar>;
     using q_store_t = internal::q_function_storage<Scalar>;
 
+    /// Subproblem tolerance
+    Scalar inner_tol_;
+    /// Desired primal feasibility
+    Scalar prim_tol;
+
     /// Solver tolerance \f$\epsilon > 0\f$.
     Scalar target_tolerance = 1e-6;
 
     const Scalar mu_init = 0.01;
     const Scalar rho_init = 0.;
-
-    /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.
-    const std::size_t MAX_STEPS = 1000;
-    const std::size_t MAX_AL_ITERS = 50;
 
     /// Dual proximal/constraint penalty parameter \f$\mu\f$
     Scalar mu_ = mu_init;
@@ -81,14 +93,13 @@ namespace proxddp
     Scalar mu_update_factor_ = 0.01;
     Scalar rho_update_factor_ = 0.1;
 
-    /// Subproblem tolerance
-    Scalar inner_tol_;
-    /// Desired primal feasibility
-    Scalar prim_tol;
-
     const VerboseLevel verbose_;
     LinesearchParams<Scalar> ls_params;
     MultiplierUpdateMode mul_update_mode = MultiplierUpdateMode::NEWTON;
+
+    /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.
+    const std::size_t MAX_ITERS;
+    const std::size_t MAX_AL_ITERS = 50;
 
     /// Minimum possible tolerance asked from the solver.
     const Scalar TOL_MIN = 1e-8;
@@ -101,6 +112,7 @@ namespace proxddp
                   const Scalar prim_beta=0.9,
                   const Scalar dual_alpha=1.,
                   const Scalar dual_beta=1.,
+                  const std::size_t max_iters=1000,
                   const VerboseLevel verbose=VerboseLevel::QUIET
                   )
       : target_tolerance(tol)
@@ -111,6 +123,7 @@ namespace proxddp
       , dual_alpha(dual_alpha)
       , dual_beta(dual_beta)
       , verbose_(verbose)
+      , MAX_ITERS(max_iters)
       {}
 
     /// @brief Compute the search direction.
@@ -194,7 +207,7 @@ namespace proxddp
           case MultiplierUpdateMode::PRIMAL:
             workspace.prev_lams_ = workspace.lams_plus_;
             break;
-          case MultiplierUpdateMode::PDAL:
+          case MultiplierUpdateMode::PRIMAL_DUAL:
             workspace.prev_lams_ = workspace.lams_pdal_;
             break;
           default:

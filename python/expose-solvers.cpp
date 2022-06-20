@@ -44,7 +44,7 @@ namespace proxddp
       bp::enum_<MultiplierUpdateMode>("MultiplierUpdateMode", "Enum for the kind of multiplier update to use.")
         .value("NEWTON", MultiplierUpdateMode::NEWTON)
         .value("PRIMAL", MultiplierUpdateMode::PRIMAL)
-        .value("PDAL", MultiplierUpdateMode::PDAL)
+        .value("PRIMAL_DUAL", MultiplierUpdateMode::PRIMAL_DUAL)
         ;
 
       bp::class_<SolverType>(
@@ -53,13 +53,17 @@ namespace proxddp
                 , Scalar, Scalar
                 , Scalar, Scalar
                 , Scalar, Scalar
-                , VerboseLevel>(
+                , std::size_t
+                , VerboseLevel
+                >(
                   (bp::arg("self"), bp::arg("tol"),
                    bp::arg("mu_init") = 1e-2, bp::arg("rho_init") = 0.,
                    bp::arg("prim_alpha") = 0.1, bp::arg("prim_beta") = 0.9,
                    bp::arg("dual_alpha") = 1.0, bp::arg("dual_beta") = 1.0,
-                   bp::arg("verbose") = VerboseLevel::QUIET)
-                   ))
+                   bp::arg("max_iters") = 1000,
+                   bp::arg("verbose") = VerboseLevel::QUIET
+                  ))
+      )
         .def_readwrite("target_tol", &SolverType::target_tolerance, "Desired tolerance.")
         .def_readonly("mu_init",  &SolverType::mu_init,  "mu_init")
         .def_readonly("rho_init", &SolverType::rho_init, "rho_init")
