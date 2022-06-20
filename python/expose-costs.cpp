@@ -45,8 +45,10 @@ namespace proxddp
                  const std::vector<shared_ptr<context::CostBase>>&,
                  const std::vector<Scalar>&>(
                    (bp::arg("self"), bp::arg("ndx"), bp::arg("nu"),
-                    bp::arg("components"), bp::arg("weights")))
+                    bp::arg("components") = bp::list(), bp::arg("weights") = bp::list()))
                  )
+        .def_readonly("components", &CostStack<Scalar>::components_, "Components of this cost stack.")
+        .def_readonly("weights", &CostStack<Scalar>::weights_, "Weights of this cost stack.")
         .def("addCost", &CostStack<Scalar>::addCost, "Add a cost to the stack of costs.")
         .def("size", &CostStack<Scalar>::size, "Get the number of cost components.");
 
