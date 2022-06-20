@@ -68,6 +68,7 @@ namespace proxddp
         .def(ClonePythonVisitor<context::FunctionData>())
       ;
 
+      pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<StageFunction>>, true>::expose("StdVec_StageFunction", "Vector of function objects.");
       pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<context::FunctionData>>, true>::expose("StdVec_FunctionData", "Vector of function data objects.");
 
       bp::class_<StateErrorResidual<Scalar>, bp::bases<StageFunction>>(

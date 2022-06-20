@@ -52,7 +52,7 @@ BOOST_PYTHON_MODULE(pyproxddp)
 
   exposeFunctions();
   exposeCosts();
-  exposeNode();
+  exposeStage();
   exposeProblem();
   {
     bp::scope dynamics = get_namespace("dynamics");

@@ -7,7 +7,7 @@ namespace proxddp
 {
 namespace python
 {
-  void exposeNode()
+  void exposeStage()
   {
     using context::Scalar;
     using context::Manifold;

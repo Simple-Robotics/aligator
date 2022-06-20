@@ -25,7 +25,7 @@ namespace proxddp
     /// Expose ternary functions
     void exposeFunctions();
     void exposeCosts();
-    void exposeNode();
+    void exposeStage();
     void exposeProblem();
 
     void exposeDynamics();

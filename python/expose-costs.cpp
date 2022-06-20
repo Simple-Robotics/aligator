@@ -44,9 +44,9 @@ namespace proxddp
         bp::init<const int, const int,
                  const std::vector<shared_ptr<context::CostBase>>&,
                  const std::vector<Scalar>&>(
-                   bp::args("self", "components", "weights")
+                   (bp::arg("self"), bp::arg("ndx"), bp::arg("nu"),
+                    bp::arg("components"), bp::arg("weights")))
                  )
-      )
         .def("addCost", &CostStack<Scalar>::addCost, "Add a cost to the stack of costs.")
         .def("size", &CostStack<Scalar>::size, "Get the number of cost components.");
 
@@ -90,7 +90,8 @@ namespace proxddp
         .def_readwrite("_hessian", &CostData::hess_)
         ;
 
-      pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<CostData>>, true>::expose("StdVec_CostData", "Vector of CostData.");
+      pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<context::CostBase>>, true>::expose("StdVec_CostAbstract", "Vector of cost objects.");
+      pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<CostData>>, true>::expose("StdVec_CostData", "Vector of CostData objects.");
     }
     
   } // namespace python
