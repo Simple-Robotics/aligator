@@ -20,34 +20,40 @@ namespace proxddp
   {
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-    using Base = CostAbstractTpl<Scalar>;
+    using CostBase = CostAbstractTpl<Scalar>;
     using CostData = CostDataAbstract<Scalar>;
-    using Self = CostStack<Scalar>;
-    using VectorOfCosts = std::vector<shared_ptr<Base>>;
+    using VectorOfCosts = std::vector<shared_ptr<CostBase>>;
 
     /// Specific data holding struct for CostStack.
     struct SumCostData : CostData
     {
       std::vector<shared_ptr<CostData>> sub_datas;
-      using CostData::CostDataAbstract;
+      SumCostData(const CostStack& obj)
+        : CostData(obj.ndx(), obj.nu())
+      {
+        for (std::size_t i = 0; i < obj.size(); i++)
+        {
+          sub_datas.push_back(std::move(obj.components_[i]->createData()));
+        }
+      }
     };
 
     VectorOfCosts components_;
     std::vector<Scalar> weights_;
 
-    CostStack(const int ndx, const int nu, const VectorOfCosts& comps, const std::vector<Scalar>& weights)
-      : Base(ndx, nu)
+    CostStack(const int ndx, const int nu, const VectorOfCosts& comps = {}, const std::vector<Scalar>& weights = {})
+      : CostBase(ndx, nu)
       , components_(comps)
       , weights_(weights)
     {
       assert(comps.size() == weights.size());
     }
 
-    CostStack(const shared_ptr<Base>& comp)
+    CostStack(const shared_ptr<CostBase>& comp)
       : CostStack(comp->ndx(), comp->nu(), {comp}, {1.})
       {}
 
-    void addCost(const shared_ptr<Base>& cost, const Scalar weight = 1.)
+    void addCost(const shared_ptr<CostBase>& cost, const Scalar weight = 1.)
     {
       components_.push_back(cost);
       weights_.push_back(weight);
@@ -88,6 +94,12 @@ namespace proxddp
         d.hess_.noalias() += d.sub_datas[i]->hess_;
       }
     }
+
+    shared_ptr<CostData> createData() const
+    {
+      return std::make_shared<SumCostData>(*this);
+    }
+
   };
 
   template<typename T>
