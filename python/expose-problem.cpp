@@ -27,7 +27,7 @@ namespace proxddp
           &ShootingProblem::addStage,
           bp::args("self", "new_stage"),
           "Add a stage to the problem.")
-        .def_readonly("stages", &ShootingProblem::stages_, "Stages of the shooting problem.")
+        .def_readwrite("stages", &ShootingProblem::stages_, "Stages of the shooting problem.")
         .add_property("num_steps", &ShootingProblem::numSteps, "Number of stages in the problem.")
         .def("evaluate", &ShootingProblem::evaluate,
              bp::args("self", "xs", "us", "prob_data"),
