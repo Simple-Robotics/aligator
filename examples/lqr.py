@@ -58,7 +58,7 @@ u_min = -0.17 * np.ones(nu)
 u_max = +0.17 * np.ones(nu)
 ctrl_box = ControlBoxFunction(nx, nu, u_min, u_max)
 # ctrl_box = proxddp.ControlBoxFunction(nx, u_min, u_max)
-stage.add_constraint(proxddp.StageConstraint(ctrl_box, constraints.NegativeOrthant()))
+stage.addConstraint(proxddp.StageConstraint(ctrl_box, constraints.NegativeOrthant()))
 
 
 nsteps = 5
@@ -70,7 +70,7 @@ for i in range(nsteps):
                                           np.zeros((nx, nu)),
                                           -np.eye(nx),
                                           xtar)
-        stage.add_constraint(proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet()))
+        stage.addConstraint(proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet()))
     problem.addStage(stage)
 
 mu_init = 1e-2

@@ -31,7 +31,7 @@ namespace python
       .def(bp::init<const ManifoldPtr&, const int, const CostPtr&, const shared_ptr<DynamicsModel>&>(
         bp::args("self", "space", "nu", "cost", "dyn_model")
         ))
-      .def("add_constraint", (void(StageModel::*)(const StageModel::ConstraintPtr&))&StageModel::addConstraint)
+      .def("addConstraint", (void(StageModel::*)(const StageModel::ConstraintPtr&))&StageModel::addConstraint)
       .def_readonly("uspace", &StageModel::uspace_)
       .def("evaluate", &StageModel::evaluate,
            bp::args("self", "x", "u", "y", "data"),
