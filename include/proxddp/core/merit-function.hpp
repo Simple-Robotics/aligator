@@ -63,6 +63,7 @@ namespace proxddp
     /// Weight of dual penalty. Values different from 1 not supported yet.
     static constexpr Scalar dual_weight_ = 1.;
 
+
     /// @brief Evaluate the merit function at the trial point.
     Scalar evaluate(
       const ShootingProblemTpl<Scalar>& problem,
