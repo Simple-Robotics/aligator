@@ -49,7 +49,7 @@ namespace proxddp
       template<typename Pyclass>
       void visit(Pyclass& obj) const
       {
-        obj.def("createData", &T::createData, "Create a data object.");
+        obj.def("createData", &T::createData, "Create a data object.", bp::with_custodian_and_ward_postcall<0,2>());
       }
     };
 
