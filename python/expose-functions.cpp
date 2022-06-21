@@ -50,7 +50,7 @@ namespace proxddp
           bp::args("self", "ndx1", "nu", "ndx2", "nr")
         )
       )
-        .def_readonly("value", &context::StageFunctionData::value_, "Function value.")
+        .add_property("value", bp::make_getter(&context::StageFunctionData::valref_, bp::return_value_policy<bp::return_by_value>()), "Function value.")
         .def_readonly("jac_buffer_", &context::StageFunctionData::jac_buffer_, "Buffer of the full function Jacobian wrt (x,u,y).")
         .def_readonly("vhp_buffer", &context::StageFunctionData::vhp_buffer_, "Buffer of the full function vector-Hessian product wrt (x,u,y).")
         .add_property("Jx",  bp::make_getter(&context::StageFunctionData::Jx_, bp::return_value_policy<bp::return_by_value>()), "Jacobian with respect to $x$.")

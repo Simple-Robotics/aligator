@@ -89,15 +89,14 @@ namespace proxddp
   public:
     using Scalar = _Scalar;
     PROXNLP_FUNCTION_TYPEDEFS(Scalar);
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  protected:
     const int ndx1;
     const int nu;
     const int ndx2;
     const int nr;
     const int nvar = ndx1 + nu + ndx2;
 
-  public:
     /// Function value.
     VectorXs value_;
     /// Full Jacobian.
@@ -120,6 +119,8 @@ namespace proxddp
     MatrixRef Huy_;
     MatrixRef Hyy_;
 
+    VectorRef valref_;
+
     /// @brief Default constructor.
     FunctionDataTpl(const int ndx1, const int nu, const int ndx2, const int nr)
       : ndx1(ndx1)
@@ -138,6 +139,7 @@ namespace proxddp
       , Huu_(vhp_buffer_.middleRows(ndx1, nu).middleCols(ndx1, nu))
       , Huy_(vhp_buffer_.middleRows(ndx1, nu).rightCols(ndx2))
       , Hyy_(vhp_buffer_.bottomRightCorner(ndx2, ndx2))
+      , valref_(value_)
     {
       value_.setZero();
       jac_buffer_.setZero();

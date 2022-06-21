@@ -207,6 +207,7 @@ namespace proxddp
   template<typename Scalar>
   void SolverProxDDP<Scalar>::solverInnerLoop(const Problem& problem, Workspace& workspace, Results& results)
   {
+    const std::size_t nsteps = problem.numSteps();
     assert(results.xs_.size() == nsteps + 1);
     assert(results.us_.size() == nsteps);
     assert(results.lams_.size() == nsteps + 1);
@@ -236,9 +237,20 @@ namespace proxddp
       if (verbose_ >= 1)
         fmt::print(" | inner_crit: {:.3e}\n", workspace.inner_criterion);
 
-      if ((workspace.inner_criterion < inner_tol_))
+      bool inner_conv = workspace.inner_criterion < inner_tol_;
+      if (inner_conv)
       {
         break;
+      } else {
+        bool inner_acceptable = workspace.inner_criterion < target_tolerance;
+        if (inner_acceptable)
+        {
+          computeInfeasibilities(problem, workspace);
+          if (workspace.primal_infeasibility < target_tolerance)
+          {
+            break;
+          }
+        }
       }
 
       if (verbose_ >= 1)

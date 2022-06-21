@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import tap
+import pprint
 
 
 class Args(tap.Tap):
@@ -37,18 +38,15 @@ Qf = np.eye(nx)
 
 class ControlBoxFunction(proxddp.StageFunction):
     def __init__(self, nx, nu, u_min, u_max) -> None:
-        super().__init__(nx, nu, nr=2 * nu)
+        super().__init__(nx, nu, 2 * nu)
         self.u_min = u_min
         self.u_max = u_max
 
     def evaluate(self, x, u, y, data):
-        data.value[:] = np.concatenate([u - self.u_max, self.u_min - u])
+        data.value[:] = np.concatenate([self.u_min - u, u - self.u_max])
 
     def computeJacobians(self, x, u, y, data):
-        nu = self.nu
-        data.jac_buffer_[:] = 0.
-        data.Ju[:nu, :] = np.eye(nu)
-        data.Ju[nu:, :] = -np.eye(nu)
+        data.Ju[:, :] = np.block([[-np.eye(self.nu)], [np.eye(self.nu)]])
 
 
 rcost = proxddp.QuadraticCost(Q, R)
@@ -58,15 +56,15 @@ dynmodel = dynamics.LinearDiscreteDynamics(A, B, c)
 stage = proxddp.StageModel(space, nu, rcost, dynmodel)
 u_min = -0.1 * np.ones(nu)
 u_max = +0.1 * np.ones(nu)
-# ctrl_box = ControlBoxFunction(nx, nu, u_min, u_max)
-ctrl_box = proxddp.ControlBoxFunction(nx, u_min, u_max)
+ctrl_box = ControlBoxFunction(nx, nu, u_min, u_max)
+# ctrl_box = proxddp.ControlBoxFunction(nx, u_min, u_max)
 
 stage.add_constraint(proxddp.StageConstraint(ctrl_box, constraints.NegativeOrthant()))
 
 use_term_cstr = args.use_term_cstr
 
 
-nsteps = 20
+nsteps = 5
 problem = proxddp.ShootingProblem(x0, nu, space, term_cost)
 for i in range(nsteps):
     if i == nsteps - 1 and use_term_cstr:
@@ -75,14 +73,12 @@ for i in range(nsteps):
                                           np.zeros((nx, nu)),
                                           np.eye(nx),
                                           xtar)
-        stage.add_constraint(
-            proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet())
-        )
+        stage.add_constraint(proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet()))
     problem.addStage(stage)
 
 res = proxddp.Results(problem)
 workspace = proxddp.Workspace(problem)
-mu_init = 1e-4
+mu_init = 1e-2
 verbose = proxddp.VerboseLevel.VERBOSE
 solver = proxddp.ProxDDP(1e-6, mu_init, verbose=verbose)
 
@@ -93,7 +89,10 @@ xs_i = proxddp.rollout(dynmodel, x0, us_i)
 solver.run(problem, workspace, res, xs_i, us_i)
 
 print(res)
-print(res.us.tolist())
+print("xs")
+pprint.pprint(res.xs.tolist())
+print("us")
+pprint.pprint(res.us.tolist())
 print(workspace)
 
 plt.subplot(121)
