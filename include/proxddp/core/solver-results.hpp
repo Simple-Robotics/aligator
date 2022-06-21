@@ -31,6 +31,10 @@ namespace proxddp
     std::vector<VectorRef> co_state_;
 
     Scalar traj_cost_ = 0.;
+    /// Overall primal infeasibility/constraint violation for the ShootingProblemTpl.
+    Scalar primal_infeasibility;
+    /// Overall dual infeasibility measure for the ShootingProblemTpl.
+    Scalar dual_infeasibility;
 
     /// @brief    Create the results struct from a problem (ShootingProblemTpl) instance.
     explicit ResultsTpl(const ShootingProblemTpl<Scalar>& problem);
@@ -38,9 +42,11 @@ namespace proxddp
     friend std::ostream& operator<<(std::ostream& oss, const ResultsTpl& self)
     {
       oss << "Results {";
-      oss << fmt::format("\n  numiters  :  {:d},", self.num_iters);
-      oss << fmt::format("\n  converged :  {},", self.conv);
-      oss << fmt::format("\n  traj. cost:  {:.3e}", self.traj_cost_);
+      oss << fmt::format("\n  numiters   :  {:d},", self.num_iters);
+      oss << fmt::format("\n  converged  :  {},", self.conv);
+      oss << fmt::format("\n  traj. cost :  {:.3e},", self.traj_cost_)
+          << fmt::format("\n  prim_infeas:  {:.3e},", self.primal_infeasibility)
+          << fmt::format("\n  dual_infeas:  {:.3e},", self.dual_infeasibility);
       oss << "\n}";
       return oss;
     }

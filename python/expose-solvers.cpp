@@ -22,9 +22,7 @@ namespace proxddp
         .def_readonly("value_params", &Workspace::value_params)
         .def_readonly("q_params", &Workspace::q_params)
         .def_readonly("kkt_matrix_buffer_", &Workspace::kktMatrixFull_)
-        .def_readonly("primal_infeas", &Workspace::primal_infeasibility)
-        .def_readonly("dual_infeas", &Workspace::dual_infeasibility)
-        .def_readonly("inner_crit", &Workspace::inner_criterion)
+        .def_readonly("inner_crit",  &Workspace::inner_criterion)
         .def(bp::self_ns::str(bp::self))
         ;
 
@@ -36,6 +34,8 @@ namespace proxddp
         .def_readonly("us", &Results::us_)
         .def_readonly("lams", &Results::lams_)
         .def_readonly("co_state", &Results::co_state_)
+        .def_readonly("primal_infeas", &Results::primal_infeasibility)
+        .def_readonly("dual_infeas",   &Results::dual_infeasibility)
         .def(bp::self_ns::str(bp::self))
         ;
 

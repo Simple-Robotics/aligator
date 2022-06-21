@@ -159,10 +159,6 @@ namespace proxddp
 
     /// Overall subproblem termination criterion.
     Scalar inner_criterion;
-    /// Overall primal infeasibility/constraint violation for the ShootingProblemTpl.
-    Scalar primal_infeasibility;
-    /// Overall dual infeasibility measure for the ShootingProblemTpl.
-    Scalar dual_infeasibility;
 
     explicit WorkspaceTpl(const ShootingProblemTpl<Scalar>& problem);
 
@@ -183,9 +179,7 @@ namespace proxddp
     {
       oss << "Workspace {";
       oss << fmt::format("\n  num nodes      : {:d}", self.trial_us_.size())
-          << fmt::format("\n  kkt buffer size: {:d}", self.kktMatrixFull_.rows())
-          << fmt::format("\n  prim_infeas    : {:.3e}", self.primal_infeasibility)
-          << fmt::format("\n  dual_infeas    : {:.3e}", self.dual_infeasibility);
+          << fmt::format("\n  kkt buffer size: {:d}", self.kktMatrixFull_.rows());
       oss << "\n}";
       return oss;
     }

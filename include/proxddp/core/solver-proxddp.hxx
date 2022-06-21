@@ -244,8 +244,8 @@ namespace proxddp
         bool inner_acceptable = workspace.inner_criterion < target_tolerance;
         if (inner_acceptable)
         {
-          computeInfeasibilities(problem, workspace);
-          if (workspace.primal_infeasibility < target_tolerance)
+          computeInfeasibilities(problem, workspace, results);
+          if (results.primal_infeasibility < target_tolerance)
           {
             break;
           }
@@ -295,12 +295,12 @@ namespace proxddp
   }
 
   template<typename Scalar>
-  void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem& problem, Workspace& workspace) const
+  void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem& problem, Workspace& workspace, Results& results) const
   {
     const ShootingProblemDataTpl<Scalar>& prob_data = *workspace.problem_data;
     const std::size_t nsteps = problem.numSteps();
     auto& prim_infeases = workspace.primal_infeas_by_stage;
-    workspace.primal_infeasibility = 0.;
+    results.primal_infeasibility = 0.;
     for (std::size_t i = 0; i < nsteps; i++)
     {
       const StageDataTpl<Scalar>& sd = *prob_data.stage_data[i];
@@ -313,7 +313,7 @@ namespace proxddp
       }
       prim_infeases(long(i)) = *std::max_element(infeas_by_cstr.begin(), infeas_by_cstr.end());
     }
-    workspace.primal_infeasibility = math::infty_norm(prim_infeases);
+    results.primal_infeasibility = math::infty_norm(prim_infeases);
     return;
   }
 

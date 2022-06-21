@@ -140,10 +140,7 @@ namespace proxddp
     /// @brief    Try a step of size \f$\alpha\f$.
     /// @returns  A primal-dual trial point
     ///           \f$(\bfx \oplus\alpha\delta\bfx, \bfu+\alpha\delta\bfu, \bmlam+\alpha\delta\bmlam)\f$
-    void tryStep(const Problem& problem,
-                 Workspace& workspace,
-                 const Results& results,
-                 const Scalar alpha) const;
+    void tryStep(const Problem& problem, Workspace& workspace, const Results& results, const Scalar alpha) const;
 
     /// @brief    Perform the Riccati backward pass.
     ///
@@ -190,16 +187,16 @@ namespace proxddp
                      inner_tol_, prim_tol, mu_, rho_);
         }
         solverInnerLoop(problem, workspace, results);
-        computeInfeasibilities(problem, workspace);
+        computeInfeasibilities(problem, workspace, results);
 
         if (verbose_ >= 1)
-          fmt::print(" | prim. infeas: {:.3e}\n", workspace.primal_infeasibility);
+          fmt::print(" | prim. infeas: {:.3e}\n", results.primal_infeasibility);
 
         // accept primal updates
         workspace.prev_xs_ = results.xs_;
         workspace.prev_us_ = results.us_;
 
-        if (workspace.primal_infeasibility <= prim_tol)
+        if (results.primal_infeasibility <= prim_tol)
         {
           updateTolerancesOnSuccess();
 
@@ -218,7 +215,7 @@ namespace proxddp
             break;
           }
 
-          if (workspace.primal_infeasibility <= target_tolerance)
+          if (results.primal_infeasibility <= target_tolerance)
           {
             conv = true;
             break;
@@ -251,7 +248,7 @@ namespace proxddp
     /// @brief    Perform the inner loop of the algorithm (augmented Lagrangian minimization).
     void solverInnerLoop(const Problem& problem, Workspace& workspace, Results& results);
     /// @brief    Compute the infeasibility measures.
-    void computeInfeasibilities(const Problem& problem, Workspace& workspace) const;
+    void computeInfeasibilities(const Problem& problem, Workspace& workspace, Results& results) const;
 
   protected:
 
