@@ -1,10 +1,11 @@
 #pragma once
 
-
 namespace proxddp
 {
   /// @brief  The Python bindings.
-  namespace python {}
+  namespace python
+  {
+  }
 } // namespace proxddp
 
 #include "proxddp/python/context.hpp"
@@ -21,7 +22,7 @@ namespace proxddp
   {
     namespace pinpy = pinocchio::python;
     namespace bp = boost::python;
-    
+
     /// Expose ternary functions
     void exposeFunctions();
     void exposeCosts();
@@ -32,27 +33,25 @@ namespace proxddp
     void exposeIntegrators();
     void exposeSolvers();
 
-
-    template<typename T>
+    template <typename T>
     struct ClonePythonVisitor : bp::def_visitor<ClonePythonVisitor<T>>
     {
-      template<typename PyT>
-      void visit(PyT& obj) const
+      template <typename PyT>
+      void visit(PyT &obj) const
       {
         obj.def("clone", &T::clone, "Clone the object.");
       }
     };
 
-    template<typename T>
+    template <typename T>
     struct CreateDataPythonVisitor : bp::def_visitor<CreateDataPythonVisitor<T>>
     {
-      template<typename Pyclass>
-      void visit(Pyclass& obj) const
+      template <typename Pyclass>
+      void visit(Pyclass &obj) const
       {
-        obj.def("createData", &T::createData, "Create a data object.", bp::with_custodian_and_ward_postcall<0,2>());
+        obj.def("createData", &T::createData, "Create a data object.");
       }
     };
 
   } // namespace python
 } // namespace proxddp
-

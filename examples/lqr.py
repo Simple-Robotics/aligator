@@ -50,7 +50,7 @@ class ControlBoxFunction(proxddp.StageFunction):
 
 
 rcost = proxddp.QuadraticCost(Q, R)
-rcost = proxddp.CostStack(nx, nu, [rcost], [1.])
+rcost = proxddp.CostStack(nx, nu, [rcost], [1.0])
 term_cost = proxddp.QuadraticCost(Qf, R)
 dynmodel = dynamics.LinearDiscreteDynamics(A, B, c)
 stage = proxddp.StageModel(space, nu, rcost, dynmodel)
@@ -66,11 +66,12 @@ problem = proxddp.ShootingProblem(x0, nu, space, term_cost)
 for i in range(nsteps):
     if i == nsteps - 1 and args.use_term_cstr:
         xtar = 0.1 * np.ones(nx)
-        term_fun = proxddp.LinearFunction(np.zeros((nx, nx)),
-                                          np.zeros((nx, nu)),
-                                          -np.eye(nx),
-                                          xtar)
-        stage.addConstraint(proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet()))
+        term_fun = proxddp.LinearFunction(
+            np.zeros((nx, nx)), np.zeros((nx, nu)), -np.eye(nx), xtar
+        )
+        stage.addConstraint(
+            proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet())
+        )
     problem.addStage(stage)
 
 mu_init = 1e-2
@@ -80,6 +81,8 @@ solver = proxddp.ProxDDP(1e-6, mu_init, verbose=verbose)
 u0 = np.zeros(nu)
 us_i = [u0] * nsteps
 xs_i = proxddp.rollout(dynmodel, x0, us_i)
+prob_data = problem.createData()
+problem.evaluate(xs_i, us_i, prob_data)
 
 solver.run(problem, xs_i, us_i)
 res = solver.getResults()
@@ -91,17 +94,33 @@ print("us")
 pprint.pprint(res.us.tolist())
 
 plt.subplot(121)
-lstyle = {'lw': 0.9, 'marker': '.', 'markersize': 5}
+lstyle = {"lw": 0.9, "marker": ".", "markersize": 5}
 trange = np.arange(nsteps + 1)
-plt.plot(res.xs, ls='-', **lstyle)
+plt.plot(res.xs, ls="-", **lstyle)
 if args.use_term_cstr:
-    plt.hlines(xtar, *trange[[0, -1]], ls='-', lw=1., colors='k', alpha=0.4, label=r'$x_{tar}$')
+    plt.hlines(
+        xtar,
+        *trange[[0, -1]],
+        ls="-",
+        lw=1.0,
+        colors="k",
+        alpha=0.4,
+        label=r"$x_{tar}$"
+    )
 plt.legend()
 plt.xlabel("Time $i$")
 
 plt.subplot(122)
 plt.plot(res.us, **lstyle)
-plt.hlines(np.concatenate([u_min, u_max]), *trange[[0, -1]], ls='-', colors='k', lw=1.5, alpha=0.2, label=r'$\bar{u}$')
+plt.hlines(
+    np.concatenate([u_min, u_max]),
+    *trange[[0, -1]],
+    ls="-",
+    colors="k",
+    lw=1.5,
+    alpha=0.2,
+    label=r"$\bar{u}$"
+)
 plt.title("Controls $u(t)$")
 
 plt.legend()
