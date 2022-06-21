@@ -34,9 +34,9 @@ namespace proxddp
       : StageFunctionTpl<Scalar>(A.cols(), B.cols(), C.cols(), d.rows())
       , A_(A), B_(B), C_(C), d_(d)
     {
-      assert((A_.rows() == d_.cols()) &&
-             (A_.rows() == B_.rows()) &&
-             (A_.rows() == C_.rows()) &&
+      assert((A_.rows() == d_.rows()) &&
+             (B_.rows() == d_.rows()) &&
+             (C_.rows() == d_.rows()) &&
              "Number of rows not consistent.");
     }
 

@@ -54,24 +54,21 @@ rcost = proxddp.CostStack(nx, nu, [rcost], [1.])
 term_cost = proxddp.QuadraticCost(Qf, R)
 dynmodel = dynamics.LinearDiscreteDynamics(A, B, c)
 stage = proxddp.StageModel(space, nu, rcost, dynmodel)
-u_min = -0.1 * np.ones(nu)
-u_max = +0.1 * np.ones(nu)
+u_min = -0.17 * np.ones(nu)
+u_max = +0.17 * np.ones(nu)
 ctrl_box = ControlBoxFunction(nx, nu, u_min, u_max)
 # ctrl_box = proxddp.ControlBoxFunction(nx, u_min, u_max)
-
 stage.add_constraint(proxddp.StageConstraint(ctrl_box, constraints.NegativeOrthant()))
-
-use_term_cstr = args.use_term_cstr
 
 
 nsteps = 5
 problem = proxddp.ShootingProblem(x0, nu, space, term_cost)
 for i in range(nsteps):
-    if i == nsteps - 1 and use_term_cstr:
-        xtar = np.ones(nx)
+    if i == nsteps - 1 and args.use_term_cstr:
+        xtar = 0.1 * np.ones(nx)
         term_fun = proxddp.LinearFunction(np.zeros((nx, nx)),
                                           np.zeros((nx, nu)),
-                                          np.eye(nx),
+                                          -np.eye(nx),
                                           xtar)
         stage.add_constraint(proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet()))
     problem.addStage(stage)
@@ -94,12 +91,20 @@ print("us")
 pprint.pprint(res.us.tolist())
 
 plt.subplot(121)
-plt.plot(res.xs, ls='--', lw=1.)
+lstyle = {'lw': 0.9, 'marker': '.', 'markersize': 5}
+trange = np.arange(nsteps + 1)
+plt.plot(res.xs, ls='-', **lstyle)
+if args.use_term_cstr:
+    plt.hlines(xtar, *trange[[0, -1]], ls='-', lw=1., colors='k', alpha=0.4, label=r'$x_{tar}$')
+plt.legend()
 plt.xlabel("Time $i$")
 
 plt.subplot(122)
-plt.plot(res.us, ls='--', lw=1.)
+plt.plot(res.us, **lstyle)
+plt.hlines(np.concatenate([u_min, u_max]), *trange[[0, -1]], ls='-', colors='k', lw=1.5, alpha=0.2, label=r'$\bar{u}$')
 plt.title("Controls $u(t)$")
+
+plt.legend()
 
 plt.tight_layout()
 plt.show()
