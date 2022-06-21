@@ -49,7 +49,7 @@ namespace proxddp
                  )
         .def_readonly("components", &CostStack<Scalar>::components_, "Components of this cost stack.")
         .def_readonly("weights", &CostStack<Scalar>::weights_, "Weights of this cost stack.")
-        .def("addCost", &CostStack<Scalar>::addCost, "Add a cost to the stack of costs.")
+        .def("addCost", &CostStack<Scalar>::addCost, (bp::arg("self"), bp::arg("cost"), bp::arg("weight") = 1.), "Add a cost to the stack of costs.")
         .def("size", &CostStack<Scalar>::size, "Get the number of cost components.");
 
       bp::class_<QuadraticCost<Scalar>, bp::bases<context::CostBase>>(
