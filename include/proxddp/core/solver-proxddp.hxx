@@ -46,9 +46,8 @@ namespace proxddp
     {
       const StageModel& stage = problem.stages_[i];
       VectorRef pd_step = workspace.pd_step_[i + 1];
-      MatrixRef gains = workspace.gains_[i];
-      ConstVectorRef feedforward = gains.col(0);
-      ConstMatrixRef feedback = gains.rightCols(stage.ndx1());
+      ConstVectorRef feedforward = results.gains_[i].col(0);
+      ConstMatrixRef feedback = results.gains_[i].rightCols(stage.ndx1());
 
       pd_step = feedforward + feedback * workspace.dxs_[i];
     }
@@ -194,14 +193,14 @@ namespace proxddp
 
     /* Compute gains with LDLT */
     auto ldlt_ = kkt_mat_view.ldlt();
-    workspace.gains_[step] = -kkt_rhs;
-    ldlt_.solveInPlace(workspace.gains_[step]);
+    results.gains_[step] = -kkt_rhs;
+    ldlt_.solveInPlace(results.gains_[step]);
 
     /* Value function */
     value_store_t& v_current = workspace.value_params[step];
     v_current.storage = \
       q_param.storage.topLeftCorner(ndx1 + 1, ndx1 + 1) +\
-      kkt_rhs.transpose() * workspace.gains_[step];
+      kkt_rhs.transpose() * results.gains_[step];
   }
 
   template<typename Scalar>

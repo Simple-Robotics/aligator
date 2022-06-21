@@ -8,18 +8,21 @@ namespace proxddp
   {
 
     const std::size_t nsteps = problem.numSteps();
+    gains_.reserve(nsteps);
     xs_.reserve(nsteps + 1);
     us_.reserve(nsteps);
     lams_.reserve(nsteps + 1);
     co_state_.reserve(nsteps);
-    int nu, ndual;
+    int nprim, ndual, nu;
     ndual = problem.init_state_error.nr;
     lams_.push_back(VectorXs::Ones(ndual));
     for (std::size_t i = 0; i < nsteps; i++)
     {
       const StageModelTpl<Scalar>& stage = problem.stages_[i];
       nu = stage.nu();
+      nprim = stage.numPrimal();
       ndual = stage.numDual();
+      gains_.push_back(MatrixXs::Zero(nprim + ndual, stage.ndx1() + 1));
       xs_.push_back(stage.xspace1_.neutral());
       us_.push_back(VectorXs::Zero(nu));
       lams_.push_back(VectorXs::Ones(ndual));

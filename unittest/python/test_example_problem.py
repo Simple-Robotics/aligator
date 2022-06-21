@@ -122,17 +122,13 @@ class TestClass:
         shooting_problem.evaluate(xs_out, us_init, problem_data)
         shooting_problem.computeDerivatives(xs_out, us_init, problem_data)
 
-        ws = proxddp.Workspace(shooting_problem)
-        assert ws.kkt_matrix_buffer_.shape[0] == stage_model.num_primal + stage_model.num_dual
-
-        rs = proxddp.Results(shooting_problem)
         tol = 1e-5
         mu_init = 1e-2
         rho_init = 0.
 
         solver = proxddp.ProxDDP(tol, mu_init, rho_init)
         solver.multiplier_update_mode = proxddp.MultiplierUpdateMode.NEWTON
-        solver.run(shooting_problem, ws, rs, xs_out, us_init)
+        solver.run(shooting_problem, xs_out, us_init)
 
 
 if __name__ == '__main__':

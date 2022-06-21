@@ -76,8 +76,6 @@ for i in range(nsteps):
         stage.add_constraint(proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet()))
     problem.addStage(stage)
 
-res = proxddp.Results(problem)
-workspace = proxddp.Workspace(problem)
 mu_init = 1e-2
 verbose = proxddp.VerboseLevel.VERBOSE
 solver = proxddp.ProxDDP(1e-6, mu_init, verbose=verbose)
@@ -86,14 +84,14 @@ u0 = np.zeros(nu)
 us_i = [u0] * nsteps
 xs_i = proxddp.rollout(dynmodel, x0, us_i)
 
-solver.run(problem, workspace, res, xs_i, us_i)
+solver.run(problem, xs_i, us_i)
+res = solver.getResults()
 
 print(res)
 print("xs")
 pprint.pprint(res.xs.tolist())
 print("us")
 pprint.pprint(res.us.tolist())
-print(workspace)
 
 plt.subplot(121)
 plt.plot(res.xs, ls='--', lw=1.)

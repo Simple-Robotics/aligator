@@ -22,7 +22,6 @@ namespace proxddp
         .def_readonly("value_params", &Workspace::value_params)
         .def_readonly("q_params", &Workspace::q_params)
         .def_readonly("kkt_matrix_buffer_", &Workspace::kktMatrixFull_)
-        .def_readonly("gains", &Workspace::gains_)
         .def_readonly("primal_infeas", &Workspace::primal_infeasibility)
         .def_readonly("dual_infeas", &Workspace::dual_infeasibility)
         .def_readonly("inner_crit", &Workspace::inner_criterion)
@@ -32,6 +31,7 @@ namespace proxddp
       bp::class_<Results>(
         "Results", "Results struct for proxDDP.", bp::init<const ShootingProblem&>()
       )
+        .def_readonly("gains", &Results::gains_)
         .def_readonly("xs", &Results::xs_)
         .def_readonly("us", &Results::us_)
         .def_readonly("lams", &Results::lams_)
@@ -47,7 +47,7 @@ namespace proxddp
         .value("PRIMAL_DUAL", MultiplierUpdateMode::PRIMAL_DUAL)
         ;
 
-      bp::class_<SolverType>(
+      bp::class_<SolverType, boost::noncopyable>(
         "ProxDDP",
         bp::init< Scalar
                 , Scalar, Scalar
@@ -71,9 +71,10 @@ namespace proxddp
         .def_readwrite("rho_factor", &SolverType::rho_update_factor_)
         .def_readwrite("multiplier_update_mode", &SolverType::mul_update_mode)
         .def_readonly("verbose", &SolverType::verbose_, "Verbosity level of the solver.")
+        .def("getResults", &SolverType::getResults, bp::return_internal_reference<>(), "Get the results instance.")
         .def("run",
              &SolverType::run,
-             bp::args("self", "problem", "workspace", "results", "xs_init", "us_init"),
+             bp::args("self", "problem", "xs_init", "us_init"),
              "Run the solver.")
         ;
     }

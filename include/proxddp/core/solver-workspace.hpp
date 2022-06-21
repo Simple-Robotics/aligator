@@ -132,8 +132,6 @@ namespace proxddp
 
     /// @name Riccati gains and buffers for primal-dual steps
 
-    /// Riccati gains
-    std::vector<MatrixXs> gains_;
     std::vector<VectorXs> pd_step_;
     std::vector<VectorRef> dxs_;
     std::vector<VectorRef> dus_;

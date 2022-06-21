@@ -59,7 +59,6 @@ namespace proxddp
       value_params.push_back(value_storage_t(ndx1));
       q_params.push_back(q_storage_t(ndx1, nu, ndx2));
 
-      gains_.push_back(MatrixXs::Zero(nprim + ndual, ndx1 + 1));
       pd_step_.push_back(VectorXs::Zero(nprim + ndual));
 
       dxs_.push_back(pd_step_[i + 1].segment(nu, ndx2));

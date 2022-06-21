@@ -17,7 +17,10 @@ namespace proxddp
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
     std::size_t num_iters = 0;
+    bool conv = false;
 
+    /// Riccati gains
+    std::vector<MatrixXs> gains_;
     /// States
     std::vector<VectorXs> xs_;
     /// Controls
@@ -36,6 +39,7 @@ namespace proxddp
     {
       oss << "Results {";
       oss << fmt::format("\n  numiters  :  {:d},", self.num_iters);
+      oss << fmt::format("\n  converged :  {},", self.conv);
       oss << fmt::format("\n  traj. cost:  {:.3e}", self.traj_cost_);
       oss << "\n}";
       return oss;

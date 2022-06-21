@@ -105,6 +105,11 @@ namespace proxddp
     const Scalar TOL_MIN = 1e-8;
     const Scalar MU_MIN = 1e-8;
 
+    std::unique_ptr<Workspace> workspace_;
+    std::unique_ptr<Results> results_;
+
+    Results& getResults() { return *results_; }
+
     SolverProxDDP(const Scalar tol=1e-6,
                   const Scalar mu_init=0.01,
                   const Scalar rho_init=0.,
@@ -146,11 +151,14 @@ namespace proxddp
     void backwardPass(const Problem& problem, Workspace& workspace, Results& results) const;
 
     bool run(const Problem& problem,
-             Workspace& workspace,
-             Results& results,
              const std::vector<VectorXs>& xs_init,
              const std::vector<VectorXs>& us_init)
     {
+      workspace_  = std::unique_ptr<Workspace>(new Workspace(problem));
+      results_    = std::unique_ptr<Results>(new Results(problem));
+      Workspace& workspace = *workspace_;
+      Results& results = *results_;
+
       const std::size_t nsteps = problem.numSteps();
       assert(xs_init.size() == nsteps + 1);
       assert(us_init.size() == nsteps);
@@ -168,7 +176,7 @@ namespace proxddp
 
       inner_tol_ = std::max(inner_tol_, target_tolerance);
 
-      bool conv = false;
+      bool& conv = results.conv;
 
       std::size_t al_iter = 0;
       while ((al_iter < MAX_AL_ITERS) && (results.num_iters < MAX_ITERS))

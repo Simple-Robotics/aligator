@@ -91,7 +91,7 @@ int main()
   assert(results.xs_.size() == nsteps + 1);
   assert(results.us_.size() == nsteps);
 
-  solver.run(problem, workspace, results, xs, us);
+  solver.run(problem, xs, us);
 
   std::string line_ = "";
   for (std::size_t i = 0; i < 20; i++)
