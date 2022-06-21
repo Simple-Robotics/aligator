@@ -60,7 +60,6 @@ namespace proxddp
                      ProblemData& prob_data) const
   {
     const std::size_t nsteps = numSteps();
-    auto stage_data = prob_data.stage_data;
     const bool sizes_correct = (xs.size() == nsteps + 1) && (us.size() == nsteps);
     if (!sizes_correct)
     {
@@ -73,7 +72,7 @@ namespace proxddp
     for (std::size_t i = 0; i < nsteps; i++)
     {
       const StageModel& stage = stages_[i];
-      stage.computeDerivatives(xs[i], us[i], xs[i + 1], *stage_data[i]);
+      stage.computeDerivatives(xs[i], us[i], xs[i + 1], *prob_data.stage_data[i]);
     }
 
     if (term_cost_)
