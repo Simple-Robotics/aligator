@@ -5,10 +5,10 @@ namespace proxddp
 {
   template<typename Scalar>
   StageModelTpl<Scalar>::
-  StageModelTpl(const Manifold& space1,
+  StageModelTpl(const ManifoldPtr& space1,
                 const int nu,
-                const Manifold& space2,
-                const CostBase& cost,
+                const ManifoldPtr& space2,
+                const CostPtr& cost,
                 const shared_ptr<Dynamics>& dyn_model)
     : xspace1_(space1)
     , xspace2_(space2)
@@ -37,7 +37,7 @@ namespace proxddp
     const ConstVectorRef& y,
     Data& data) const
   {
-    cost_.evaluate(x, u, *data.cost_data);
+    cost_->evaluate(x, u, *data.cost_data);
 
     for (std::size_t i = 0; i < numConstraints(); i++)
     {
@@ -54,8 +54,8 @@ namespace proxddp
     const ConstVectorRef& y,
     Data& data) const
   {
-    cost_.computeGradients(x, u, *data.cost_data);
-    cost_.computeHessians (x, u, *data.cost_data);
+    cost_->computeGradients(x, u, *data.cost_data);
+    cost_->computeHessians (x, u, *data.cost_data);
 
     for (std::size_t i = 0; i < numConstraints(); i++)
     {
@@ -92,7 +92,7 @@ namespace proxddp
   template<typename Scalar>
   StageDataTpl<Scalar>::StageDataTpl(const StageModel& stage_model)
     : constraint_data(stage_model.numConstraints())
-    , cost_data(std::move(stage_model.cost_.createData()))
+    , cost_data(std::move(stage_model.cost_->createData()))
   {
     const std::size_t nc = stage_model.numConstraints();
     for (std::size_t i = 0; i < nc; i++)

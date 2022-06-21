@@ -39,14 +39,15 @@ int main()
   fmt::print("matrix A:\n{}\n", dynamics.A_);
   fmt::print("matrix B:\n{}\n", dynamics.B_);
   fmt::print("drift  c:\n{}\n", dynamics.c_);
-  const auto& space = dynamics.out_space();
+  auto spaceptr = dynamics.out_space_;
+  const auto& space = *spaceptr;;
 
-  QuadraticCost<double> rcost(w_x, w_u);
+  auto rcost = std::make_shared<QuadraticCost<double>>(w_x, w_u);
 
   // Define stage
 
   double u_bound = 0.2;
-  StageModelTpl<double> stage(space, nu, rcost, dynptr);
+  StageModelTpl<double> stage(spaceptr, nu, rcost, dynptr);
   auto ctrl_bounds_fun = std::make_shared<ControlBoxFunction<double>>(dim, nu, -u_bound, u_bound);
 
   const bool HAS_CONTROL_BOUNDS = true;
@@ -62,7 +63,7 @@ int main()
 
   auto x0 = space.rand();
   x0 << 1., -0.1;
-  auto term_cost = std::make_shared<decltype(rcost)>(rcost);
+  auto term_cost = rcost;
   ShootingProblemTpl<double> problem(x0, nu, space, term_cost);
 
   std::size_t nsteps = 10;

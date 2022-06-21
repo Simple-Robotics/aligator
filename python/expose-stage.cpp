@@ -14,17 +14,21 @@ namespace python
     using context::DynamicsModel;
     using context::StageModel;
     using StageData = StageDataTpl<Scalar>;
+
+    using CostPtr = shared_ptr<context::CostBase>;
     using FunctionPtr = shared_ptr<context::StageFunction>;
+    using ManifoldPtr = shared_ptr<Manifold>;
 
     bp::register_ptr_to_python<shared_ptr<StageModel>>();
+    pinpy::StdVectorPythonVisitor<std::vector<StageModel>, true>::expose("StdVec_StageModel");
 
     bp::class_<StageModel>(
       "StageModel", "A stage of the control problem. Holds costs, dynamics, and constraints.",
-      bp::init<const Manifold&, const int, const Manifold&, const context::CostBase&, const shared_ptr<DynamicsModel>&>(
+      bp::init<const ManifoldPtr&, const int, const ManifoldPtr&, const CostPtr&, const shared_ptr<DynamicsModel>&>(
         bp::args("self", "space1", "nu", "space2", "cost", "dyn_model")
         )
     )
-      .def(bp::init<const Manifold&, const int, const context::CostBase&, const shared_ptr<DynamicsModel>&>(
+      .def(bp::init<const ManifoldPtr&, const int, const CostPtr&, const shared_ptr<DynamicsModel>&>(
         bp::args("self", "space", "nu", "cost", "dyn_model")
         ))
       .def("add_constraint", (void(StageModel::*)(const StageModel::ConstraintPtr&))&StageModel::addConstraint)
@@ -45,6 +49,7 @@ namespace python
       .def(bp::self_ns::str(bp::self));
 
     bp::register_ptr_to_python<shared_ptr<StageData>>();
+    pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<StageData>>, true>::expose("StdVec_StageData");
 
     bp::class_<StageData>(
       "StageData", "Data struct for StageModel objects.",
@@ -56,8 +61,6 @@ namespace python
       .def_readwrite("constraint_data", &StageData::constraint_data)
       .def(ClonePythonVisitor<StageData>())
       ;
-
-    pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<StageData>>, true>::expose("StdVec_StageData");
 
     bp::class_<context::StageConstraint>(
       "StageConstraint",

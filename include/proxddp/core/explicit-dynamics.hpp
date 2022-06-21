@@ -28,7 +28,7 @@ namespace proxddp
     using SpecificData = ExplicitDynamicsDataTpl<Scalar>;
     using Manifold = ManifoldAbstractTpl<Scalar>;
 
-    shared_ptr<const Manifold> out_space_;
+    shared_ptr<Manifold> out_space_;
 
     /// @return Reference to output state space.
     const Manifold& out_space() const
@@ -39,11 +39,11 @@ namespace proxddp
     /// The constructor requires providing the next state's manifold.
     ExplicitDynamicsModelTpl(const int ndx1,
                              const int nu,
-                             const shared_ptr<const Manifold>& space2)
+                             const shared_ptr<Manifold>& space2)
       : DynamicsModelTpl<Scalar>(ndx1, nu, space2->ndx())
       , out_space_(space2) {}
 
-    ExplicitDynamicsModelTpl(const shared_ptr<const Manifold>& space,
+    ExplicitDynamicsModelTpl(const shared_ptr<Manifold>& space,
                              const int nu)
       : ExplicitDynamicsModelTpl(space->ndx(), nu, space) {}
 

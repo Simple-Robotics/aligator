@@ -35,23 +35,29 @@ namespace proxddp
     using Data = StageDataTpl<Scalar>;
 
     using ConstraintPtr = shared_ptr<Constraint>;
+    using ManifoldPtr = shared_ptr<Manifold>;
+    using CostPtr = shared_ptr<CostBase>;
 
-    /// Current state space.
-    const Manifold& xspace1_;
-    /// Next state space.
-    const Manifold& xspace2_;
+    ManifoldPtr xspace1_;
+    ManifoldPtr xspace2_;
     /// Control vector space.
     proxnlp::VectorSpaceTpl<Scalar> uspace_;
 
-    const CostBase& cost_;
+    CostPtr cost_;
+
     const Dynamics& dyn_model() const { return static_cast<const Dynamics&>(constraints_manager[0]->func()); }
+    const CostBase& cost() const {return *cost_; }
+
     ConstraintContainer<Scalar> constraints_manager;
 
-    inline int nx1()  const { return xspace1_.nx(); }
-    inline int ndx1() const { return xspace1_.ndx(); }
+    const Manifold& xspace1() const { return *xspace1_; }
+    const Manifold& xspace2() const { return *xspace2_; }
+
+    inline int nx1()  const { return xspace1().nx(); }
+    inline int ndx1() const { return xspace1().ndx(); }
     inline int nu()   const { return uspace_.ndx(); }
-    inline int nx2()  const { return xspace2_.nx(); }
-    inline int ndx2() const { return xspace2_.ndx(); }
+    inline int nx2()  const { return xspace2().nx(); }
+    inline int ndx2() const { return xspace2().ndx(); }
 
     inline std::size_t numConstraints() const { return constraints_manager.numConstraints(); }
 
@@ -60,11 +66,11 @@ namespace proxddp
     /// Number of dual variables, i.e. Lagrange multipliers.
     int numDual() const;
 
-    StageModelTpl(const Manifold& space1, const int nu, const Manifold& space2,
-                  const CostBase& cost, const shared_ptr<Dynamics>& dyn_model);
+    StageModelTpl(const ManifoldPtr& space1, const int nu, const ManifoldPtr& space2,
+                  const CostPtr& cost, const shared_ptr<Dynamics>& dyn_model);
 
     /// Secondary constructor: use a single manifold.
-    StageModelTpl(const Manifold& space, const int nu, const CostBase& cost, const shared_ptr<Dynamics>& dyn_model)
+    StageModelTpl(const ManifoldPtr& space, const int nu, const CostPtr& cost, const shared_ptr<Dynamics>& dyn_model)
       : StageModelTpl(space, nu, space, cost, dyn_model)
       {}
 

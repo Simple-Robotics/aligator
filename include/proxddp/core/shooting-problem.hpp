@@ -39,7 +39,7 @@ namespace proxddp
 
     ShootingProblemTpl(const VectorXs& x0, const std::vector<StageModel>& stages, const shared_ptr<CostAbstract>& term_cost)
       : x0_init_(x0)
-      , init_state_error(stages[0].xspace1_, stages[0].nu(), x0_init_)
+      , init_state_error(stages[0].xspace1(), stages[0].nu(), x0_init_)
       , stages_(stages)
       , term_cost_(term_cost) {}
 
