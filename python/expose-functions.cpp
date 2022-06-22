@@ -40,6 +40,7 @@ namespace proxddp
         .def_readonly("ndx1", &StageFunction::ndx1, "Current state space.")
         .def_readonly("ndx2", &StageFunction::ndx2, "Next state space.")
         .def_readonly("nu", &StageFunction::nu, "Control dimension.")
+        .def_readonly("nr", &StageFunction::nr, "Function codimension.")
         .def(CreateDataPythonVisitor<StageFunction>());
 
       bp::register_ptr_to_python<shared_ptr<context::StageFunctionData>>();
