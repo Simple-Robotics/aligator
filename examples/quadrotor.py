@@ -100,14 +100,15 @@ class EulerIntegratorDynamics(proxddp.dynamics.ExplicitDynamicsModel):
         Jx[:, :] = Jtemp0 + Jx
 
 
-dt = 0.025
-Tf = 1.
+dt = 0.03
+Tf = 2.
 nsteps = int(Tf / dt)
 
 dynmodel = EulerIntegratorDynamics(dt, QUAD_ACT_MATRIX)
 
 x0 = space.neutral()
-x0[:3] = 1., 0., .5
+x0 = np.concatenate([robot.q0, np.zeros(nv)])
+
 u0 = np.zeros(nu)
 vizer.display(x0[:nq])
 out = space.neutral()
@@ -149,29 +150,31 @@ xs_init = [x0] * (nsteps + 1)
 meshcat_utils.display_trajectory(vizer, augvizer, xs_init, wait=dt)
 
 x_tar = space.neutral()
-x_tar[:3] = (0.1, 0., 1.)
+x_tar[:3] = (0.4, 0., 1.)
 
 
 def setup():
     state_err = proxddp.StateErrorResidual(space, nu, x_tar)
-    weights = np.zeros(space.ndx)
-    weights[:3] = 1.
-    weights[3:] = 1e-2
-    weights = np.diag(weights)
+    weights1 = np.zeros(space.ndx)
+    weights1[:3] = 0.
+    weights1[3:nv] = 1e-2
+    weights1[nv:] = 1e-1
+    w_x_term = weights1.copy()
     print(state_err.nr)
-    assert state_err.nr == weights.shape[0]
+    assert state_err.nr == weights1.shape[0]
 
     rcost = proxddp.CostStack(space.ndx, nu)
-    tarcost = proxddp.QuadraticResidualCost(state_err, 0.1 * weights * dt)
-    rcost.addCost(tarcost)
+    xreg_cost = proxddp.QuadraticResidualCost(state_err, 1e-3 * np.diag(weights1) * dt)
+    rcost.addCost(xreg_cost)
 
     utar = np.zeros(nu)
     u_err = proxddp.ControlErrorResidual(space.ndx, nu, utar)
-    w_u = np.eye(nu) * 1e-2
+    w_u = np.eye(nu) * 1e-4
     ucost = proxddp.QuadraticResidualCost(u_err, w_u * dt)
-    # rcost.addCost(ucost)
+    rcost.addCost(ucost)
 
-    term_cost = proxddp.QuadraticResidualCost(state_err, weights)
+    w_x_term[:6] = 1.
+    term_cost = proxddp.QuadraticResidualCost(state_err, np.diag(w_x_term))
     prob = proxddp.ShootingProblem(x0, nu, space, term_cost=term_cost)
     for i in range(nsteps):
         stage = proxddp.StageModel(space, nu, rcost, dynmodel)
@@ -189,7 +192,7 @@ def setup():
 
 problem = setup()
 tol = 1e-4
-mu_init = 4e-1
+mu_init = 0.2
 verbose = proxddp.VerboseLevel.VERBOSE
 solver = proxddp.ProxDDP(tol, mu_init, verbose=verbose)
 solver.run(problem, xs_init, us_init)
