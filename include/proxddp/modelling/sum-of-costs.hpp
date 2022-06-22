@@ -15,13 +15,12 @@ namespace proxddp
    * \f]
    */
   template<typename _Scalar>
-  struct CostStack
-    : CostAbstractTpl<_Scalar>
+  struct CostStack : CostAbstractTpl<_Scalar>
   {
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
     using CostBase = CostAbstractTpl<Scalar>;
-    using CostData = CostDataAbstract<Scalar>;
+    using CostData = CostDataAbstractTpl<Scalar>;
     using VectorOfCosts = std::vector<shared_ptr<CostBase>>;
 
     /// Specific data holding struct for CostStack.
@@ -53,54 +52,17 @@ namespace proxddp
       : CostStack(comp->ndx(), comp->nu(), {comp}, {1.})
       {}
 
-    void addCost(const shared_ptr<CostBase>& cost, const Scalar weight = 1.)
-    {
-      components_.push_back(cost);
-      weights_.push_back(weight);
-    }
+    void addCost(const shared_ptr<CostBase>& cost, const Scalar weight = 1.);
 
-    std::size_t size() const
-    {
-      return components_.size();
-    }
+    std::size_t size() const;
 
-    void evaluate(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const
-    {
-      SumCostData& d = static_cast<SumCostData&>(data);
-      d.value_ = 0.;
-      for (std::size_t i = 0; i < components_.size(); i++)
-      {
-        components_[i]->evaluate(x, u, *d.sub_datas[i]);
-        d.value_ += d.sub_datas[i]->value_;
-      }
-    }
+    void evaluate(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const;
 
-    void computeGradients(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const
-    {
-      SumCostData& d = static_cast<SumCostData&>(data);
-      d.grad_.setZero();
-      for (std::size_t i = 0; i < components_.size(); i++)
-      {
-        components_[i]->computeGradients(x, u, *d.sub_datas[i]);
-        d.grad_.noalias() += d.sub_datas[i]->grad_;
-      }
-    }
+    void computeGradients(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const;
 
-    void computeHessians(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const
-    {
-      SumCostData& d = static_cast<SumCostData&>(data);
-      d.hess_.setZero();
-      for (std::size_t i = 0; i < components_.size(); i++)
-      {
-        components_[i]->computeHessians(x, u, *d.sub_datas[i]);
-        d.hess_.noalias() += d.sub_datas[i]->hess_;
-      }
-    }
+    void computeHessians(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const;
 
-    shared_ptr<CostData> createData() const
-    {
-      return std::make_shared<SumCostData>(*this);
-    }
+    shared_ptr<CostData> createData() const;
 
   };
 
@@ -149,3 +111,4 @@ namespace proxddp
 
 } // namespace proxddp
 
+#include "proxddp/modelling/sum-of-costs.hxx"
