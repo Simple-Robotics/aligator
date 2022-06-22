@@ -122,7 +122,7 @@ namespace proxddp
     PROXNLP_FUNCTION_TYPEDEFS(Scalar);
 
     using StageModel = StageModelTpl<Scalar>;
-    using CostData = CostDataAbstract<Scalar>;
+    using CostDataAbstract = CostDataAbstractTpl<Scalar>;
     using FunctionData = FunctionDataTpl<Scalar>;
     using DynamicsData = DynamicsDataTpl<Scalar>;
 
@@ -131,7 +131,7 @@ namespace proxddp
     /// Data struct for the dynamics.
     shared_ptr<DynamicsData> dyn_data() { return constraint_data[0]; }
     /// Data for the running costs.
-    const shared_ptr<CostData> cost_data;
+    const shared_ptr<CostDataAbstract> cost_data;
 
     /// @brief    Constructor.
     ///

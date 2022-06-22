@@ -18,7 +18,7 @@ namespace proxddp
       using context::StageFunction;
       using context::VectorXs;
       using context::MatrixXs;
-      using CostData = CostDataAbstract<Scalar>;
+      using CostData = CostDataAbstractTpl<Scalar>;
 
       bp::register_ptr_to_python<shared_ptr<context::CostBase>>();
 

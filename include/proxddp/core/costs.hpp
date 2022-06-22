@@ -23,7 +23,7 @@ namespace proxddp
   public:
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-    using CostData = CostDataAbstract<Scalar>;
+    using CostData = CostDataAbstractTpl<Scalar>;
 
     /// @copybrief ndx_
     inline int ndx() const { return ndx_; }
@@ -61,7 +61,7 @@ namespace proxddp
   
   /// @brief  Data struct for CostAbstractTpl
   template<typename _Scalar>
-  struct CostDataAbstract
+  struct CostDataAbstractTpl
   {
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
@@ -84,7 +84,7 @@ namespace proxddp
     /// @brief Hessian \f$\ell_{uu}\f$
     MatrixRef Luu_;
 
-    CostDataAbstract(const int ndx, const int nu)
+    CostDataAbstractTpl(const int ndx, const int nu)
       : grad_(ndx + nu)
       , hess_(ndx + nu, ndx + nu)
       , Lx_(grad_.head(ndx))

@@ -12,7 +12,7 @@ namespace proxddp
   {
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-    using CostData = CostDataAbstract<Scalar>;
+    using CostData = CostDataAbstractTpl<Scalar>;
 
     Scalar value_;
     ConstantCost(const Scalar value) : value_(value) {}
@@ -39,7 +39,7 @@ namespace proxddp
   {
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-    using CostData = CostDataAbstract<Scalar>;
+    using CostData = CostDataAbstractTpl<Scalar>;
 
     MatrixXs weights_x;
     MatrixXs weights_u;

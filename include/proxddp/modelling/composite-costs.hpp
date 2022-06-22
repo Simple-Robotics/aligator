@@ -10,11 +10,11 @@
 {
   /// Data struct for composite costs.
   template<typename Scalar>
-  struct CompositeCostDataTpl : CostDataAbstract<Scalar>
+  struct CompositeCostDataTpl : CostDataAbstractTpl<Scalar>
   {
     shared_ptr<FunctionDataTpl<Scalar>> underlying_data;
     CompositeCostDataTpl(const int ndx, const int nu)
-      : CostDataAbstract<Scalar>(ndx, nu)
+      : CostDataAbstractTpl<Scalar>(ndx, nu)
       {}
   };
 
@@ -30,15 +30,15 @@
   {
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-    using CostData = CostDataAbstract<Scalar>;
-    using CompositeData = CompositeCostDataTpl<Scalar>;
+    using CostDataAbstract = CostDataAbstractTpl<Scalar>;
+    using Data = CompositeCostDataTpl<Scalar>;
 
     MatrixXs weights_;
     shared_ptr<const StageFunctionTpl<Scalar>> residual_;
     bool gauss_newton = true;
 
     QuadraticResidualCost(const shared_ptr<StageFunctionTpl<Scalar>>& function,
-                     const MatrixXs& weights)
+                          const MatrixXs& weights)
       : CostAbstractTpl<Scalar>(function->ndx1, function->nu)
       , weights_(weights)
       , residual_(function)
@@ -46,27 +46,31 @@
         assert(residual_->nr == weights.cols());
       }
 
-    void evaluate(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data_) const
+    void evaluate(const ConstVectorRef& x, const ConstVectorRef& u, CostDataAbstract& data_) const
     {
-      auto& data = static_cast<CompositeData&>(data_);
+      auto& data = static_cast<Data&>(data_);
       auto& under_data = *data.underlying_data;
       residual_->evaluate(x, u, x, under_data);
       data.value_ = .5 * under_data.value_.dot(weights_ * under_data.value_);
     }
 
-    void computeGradients(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data_) const
+    void computeGradients(const ConstVectorRef& x, const ConstVectorRef& u, CostDataAbstract& data_) const
     {
-      auto& data = static_cast<CompositeData&>(data_);
+      auto& data = static_cast<Data&>(data_);
       auto& under_data = *data.underlying_data;
       residual_->computeJacobians(x, u, x, under_data);
-      data.grad_ = under_data.jac_buffer_.transpose() * (weights_ * under_data.value_);
+      const long size = data.grad_.size();
+      MatrixRef J = under_data.jac_buffer_.leftCols(size);
+      data.grad_ = J.transpose() * (weights_ * under_data.value_);
     }
 
-    void computeHessians(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data_) const
+    void computeHessians(const ConstVectorRef& x, const ConstVectorRef& u, CostDataAbstract& data_) const
     {
-      auto& data = static_cast<CompositeData&>(data_);
+      auto& data = static_cast<Data&>(data_);
       auto& under_data = *data.underlying_data;
-      data.hess_ = under_data.jac_buffer_.transpose() * (weights_ * under_data.jac_buffer_);
+      const long size = data.grad_.size();
+      MatrixRef J = under_data.jac_buffer_.leftCols(size);
+      data.hess_ = J.transpose() * (weights_ * J);
       if (!gauss_newton)
       {
         residual_->computeVectorHessianProducts(x, u, x, weights_ * under_data.value_, under_data);
@@ -74,11 +78,11 @@
       }
     }
 
-    shared_ptr<CostData> createData() const
+    shared_ptr<CostDataAbstract> createData() const
     {
-      CompositeData* d = new CompositeData{this->ndx_, this->nu_};
+      Data* d = new Data{this->ndx_, this->nu_};
       d->underlying_data = std::move(residual_->createData());
-      return shared_ptr<CostData>(std::move(d));
+      return shared_ptr<CostDataAbstract>(std::move(d));
     }
 
   };
@@ -88,8 +92,8 @@
   struct LogResidualCost : CostAbstractTpl<Scalar>
   {
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-    using CostData = CostDataAbstract<Scalar>;
-    using CompositeData = CompositeCostDataTpl<Scalar>;
+    using CostDataAbstract = CostDataAbstractTpl<Scalar>;
+    using Data = CompositeCostDataTpl<Scalar>;
     using StageFunction = StageFunctionTpl<Scalar>;
 
     VectorXs barrier_weights_;
@@ -107,16 +111,16 @@
       : LogResidualCost(function, VectorXs::Constant(function->nr, scale))
       {}
 
-    void evaluate(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const
+    void evaluate(const ConstVectorRef& x, const ConstVectorRef& u, CostDataAbstract& data) const
     {
-      auto& d = static_cast<CompositeData&>(data);
+      auto& d = static_cast<Data&>(data);
       residual_->evaluate(x, u, x, *d.underlying_data);
       d.value_ = barrier_weights_.dot(d.underlying_data->value_.log());
     }
 
-    void computeGradients(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const
+    void computeGradients(const ConstVectorRef& x, const ConstVectorRef& u, CostDataAbstract& data) const
     {
-      auto& d = static_cast<CompositeData&>(data);
+      auto& d = static_cast<Data&>(data);
       auto& under_d = *d.underlying_data;
       residual_->computeJacobians(x, u, x, under_d);
       d.grad_.setZero();
@@ -128,9 +132,9 @@
       }
     }
 
-    void computeHessians(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const
+    void computeHessians(const ConstVectorRef& x, const ConstVectorRef& u, CostDataAbstract& data) const
     {
-      auto& d = static_cast<CompositeData&>(data);
+      auto& d = static_cast<Data&>(data);
       auto& under_d = *d.underlying_data;
       d.hess_.setZero();
       VectorXs& v = under_d.value_;

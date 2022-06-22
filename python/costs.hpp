@@ -11,13 +11,13 @@ namespace proxddp
   {
     namespace internal
     {
-      /// @brief Wrapper for the CostDataAbstract class and its children.
+      /// @brief Wrapper for the CostDataAbstractTpl class and its children.
       template<typename T = CostAbstractTpl<context::Scalar>>
       struct PyCostFunction : T, bp::wrapper<T>
       {
         using Scalar = context::Scalar;
         using bp::wrapper<T>::get_override;
-        using CostData = CostDataAbstract<Scalar>;
+        using CostData = CostDataAbstractTpl<Scalar>;
         PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
         /// forwarding constructor

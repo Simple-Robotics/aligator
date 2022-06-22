@@ -110,7 +110,7 @@ namespace proxddp
     q_store_t& q_param = workspace.q_params[step];
 
     StageDataTpl<Scalar>& stage_data = *workspace.problem_data->stage_data[step];
-    const CostDataAbstract<Scalar>& cdata = *stage_data.cost_data;
+    const CostDataAbstractTpl<Scalar>& cdata = *stage_data.cost_data;
 
     int nprim = stage.numPrimal();
     int ndual = stage.numDual();
@@ -232,9 +232,14 @@ namespace proxddp
       problem.computeDerivatives(results.xs_, results.us_, *workspace.problem_data);
 
       backwardPass(problem, workspace, results);
+      computeInfeasibilities(problem, workspace, results);
 
       if (verbose_ >= 1)
-        fmt::print(" | inner_crit: {:.3e}\n", workspace.inner_criterion);
+      {
+        fmt::print(" | inner_crit: {:.3e}", workspace.inner_criterion);
+        fmt::print(" | prim_err: {:.3e}\n", results.primal_infeasibility);
+
+      }
 
       bool inner_conv = workspace.inner_criterion < inner_tol_;
       if (inner_conv)
@@ -244,7 +249,6 @@ namespace proxddp
         bool inner_acceptable = workspace.inner_criterion < target_tolerance;
         if (inner_acceptable)
         {
-          computeInfeasibilities(problem, workspace, results);
           if (results.primal_infeasibility < target_tolerance)
           {
             break;
