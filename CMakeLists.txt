@@ -5,7 +5,7 @@
 cmake_minimum_required(VERSION 3.1)
 
 set(PROJECT_NAME proxddp)
-set(PROJECT_DESCRIPTION "A primal-dual augmented Lagrangian-type solver for trajectory optimization")
+set(PROJECT_DESCRIPTION "A primal-dual augmented Lagrangian-type solver for nonlinear trajectory optimization.")
 set(PROJECT_URL "https://gitlab.inria.fr/wjallet/proxddp")
 set(PROJECT_CUSTOM_HEADER_EXTENSION "hpp")
 set(PROJECT_USE_KEYWORD_LINK_LIBRARIES True)
