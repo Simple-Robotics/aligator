@@ -19,7 +19,12 @@ import tap
 
 
 class Args(tap.Tap):
-    display: bool = False 
+    display: bool = False
+    record: bool = False
+
+    def process_args(self):
+        if self.record:
+            self.display = True
 
 
 args = Args().parse_args()
@@ -108,7 +113,6 @@ nsteps = int(Tf / dt)
 
 dynmodel = EulerIntegratorDynamics(dt, QUAD_ACT_MATRIX)
 
-x0 = space.neutral()
 x0 = np.concatenate([robot.q0, np.zeros(nv)])
 
 u0 = np.zeros(nu)
@@ -151,14 +155,13 @@ xs_init = [x0] * (nsteps + 1)
 meshcat_utils.display_trajectory(vizer, augvizer, xs_init, wait=dt)
 
 x_tar = space.neutral()
-x_tar[:3] = (0.4, 0., 1.)
+x_tar[:3] = (0.9, 0.1, 1.)
 
-u_max = 3.5 * np.ones(nu)
+u_max = 4. * np.ones(nu)
 u_min = -u_max
 
 
 def setup():
-
 
     state_err = proxddp.StateErrorResidual(space, nu, x_tar)
     weights1 = np.zeros(space.ndx)
@@ -216,8 +219,14 @@ ax0.set_xlabel("Time")
 
 
 if args.display:
+    import imageio
+    frames_ = []
     input("[enter to play]")
     for _ in range(3):
-        meshcat_utils.display_trajectory(vizer, augvizer, xs_opt, wait=dt)
+        frames_ += meshcat_utils.display_trajectory(vizer, augvizer, xs_opt,
+                                                    frame_ids=[rmodel.getFrameId("base_link")],
+                                                    record=args.record, wait=dt, show_vel=True)
+
+    imageio.mimwrite("examples/quadrotor_fly.mp4", frames_, fps=1. / dt)
 
 plt.show()
