@@ -92,6 +92,28 @@ namespace proxddp
     ShootingProblemDataTpl(const ShootingProblemTpl<Scalar>& problem);
   };
   
+  /**
+   * @brief Compute the trajectory cost.
+   * 
+   * @warning Call ShootingProblemTpl::evaluate() first!
+   */
+  template<typename Scalar>
+  Scalar computeTrajectoryCost(const ShootingProblemTpl<Scalar>& problem, const ShootingProblemDataTpl<Scalar>& problem_data)
+  {
+    Scalar traj_cost = 0.;
+
+    const std::size_t nsteps = problem.numSteps();
+    for (std::size_t step = 0; step < nsteps; step++)
+    {
+      const StageModelTpl<Scalar>& sm = problem.stages_[step];
+      const StageDataTpl<Scalar>& sd = *problem_data.stage_data[step];
+      traj_cost += sd.cost_data->value_;
+    }
+    traj_cost += problem_data.term_cost_data->value_;
+
+    return traj_cost;
+  }
+
 } // namespace proxddp
 
 #include "proxddp/core/shooting-problem.hxx"

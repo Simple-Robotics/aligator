@@ -17,28 +17,6 @@ namespace proxddp
     PRIMAL_DUAL = 1
   };
 
-  /**
-   * @brief Compute the trajectory cost.
-   * 
-   * @warning Call ShootingProblemTpl::evaluate() first!
-   */
-  template<typename Scalar>
-  Scalar computeTrajectoryCost(const ShootingProblemTpl<Scalar>& problem, const ShootingProblemDataTpl<Scalar>& problem_data)
-  {
-    Scalar traj_cost = 0.;
-
-    const std::size_t nsteps = problem.numSteps();
-    for (std::size_t step = 0; step < nsteps; step++)
-    {
-      const StageModelTpl<Scalar>& sm = problem.stages_[step];
-      const StageDataTpl<Scalar>& sd = *problem_data.stage_data[step];
-      traj_cost += sd.cost_data->value_;
-    }
-    traj_cost += problem_data.term_cost_data->value_;
-
-    return traj_cost;
-  }
-
   /** @brief Primal-dual augmented Lagrangian merit function.
    * 
    * @details The standard Powell-Hestenes-Rockafellar (PHR) augmented Lagrangian evaluates as:
@@ -81,6 +59,7 @@ namespace proxddp
     Scalar mu_penal_inv_ = 1. / mu_penal_;
     Scalar traj_cost = 0.;
     Scalar penalty_value = 0.;
+    Scalar value_;
 
     /// Weight of dual penalty. Values different from 1 not supported yet.
     static constexpr Scalar dual_weight_ = 1.;
@@ -134,7 +113,8 @@ namespace proxddp
           penalty_value += .5 * dual_weight_ * mu_penal_ * (workspace.lams_plus_[step + 1] - lams[step + 1]).squaredNorm();
         }
       }
-      return traj_cost + penalty_value;
+      value_ = traj_cost + penalty_value;
+      return value_;
     }
 
   };

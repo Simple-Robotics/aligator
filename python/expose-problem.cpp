@@ -46,6 +46,10 @@ namespace proxddp
                       "Data for each stage.")
       ;
 
+      bp::def("computeTrajectoryCost", &computeTrajectoryCost<context::Scalar>,
+              bp::args("problem", "data"),
+              "Compute the cost of the trajectory. NOTE: problem.evaluate() must be called beforehand!");
+
     }
     
   } // namespace python
