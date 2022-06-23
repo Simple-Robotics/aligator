@@ -63,7 +63,11 @@ namespace proxddp
                           const ConstVectorRef&,
                           const ConstVectorRef&,
                           Data& data) const
-    {}
+    {
+      data.Jx_ = A_;
+      data.Ju_ = B_;
+      data.Jy_ = C_;
+    }
 
     /// @copybrief Base::createData()
     /// @details   This override sets the appropriate values of the Jacobians.
