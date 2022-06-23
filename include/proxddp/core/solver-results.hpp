@@ -33,9 +33,9 @@ namespace proxddp
     Scalar traj_cost_ = 0.;
     Scalar merit_value_ = 0.;
     /// Overall primal infeasibility/constraint violation for the ShootingProblemTpl.
-    Scalar primal_infeasibility;
+    Scalar primal_infeasibility = 0.;
     /// Overall dual infeasibility measure for the ShootingProblemTpl.
-    Scalar dual_infeasibility;
+    Scalar dual_infeasibility = 0.;
 
     /// @brief    Create the results struct from a problem (ShootingProblemTpl) instance.
     explicit ResultsTpl(const ShootingProblemTpl<Scalar>& problem);
