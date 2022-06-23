@@ -303,21 +303,23 @@ namespace proxddp
   {
     const ShootingProblemDataTpl<Scalar>& prob_data = *workspace.problem_data;
     const std::size_t nsteps = problem.numSteps();
-    auto& prim_infeases = workspace.primal_infeas_by_stage;
     results.primal_infeasibility = 0.;
+    Scalar infeas_over_i = 0.;
     for (std::size_t i = 0; i < nsteps; i++)
     {
       const StageDataTpl<Scalar>& sd = *prob_data.stage_data[i];
       const auto& cstr_mgr = problem.stages_[i].constraints_manager;
-      std::vector<Scalar> infeas_by_cstr(cstr_mgr.numConstraints());
+      infeas_over_i = 0.;
       for (std::size_t j = 0; j < cstr_mgr.numConstraints(); j++)
       {
         const ConstraintSetBase<Scalar>& cstr_set = cstr_mgr[j]->getConstraintSet();
-        infeas_by_cstr[j] = math::infty_norm(cstr_set.normalConeProjection(sd.constraint_data[j]->value_));
+        infeas_over_i = std::max(
+          infeas_over_i, math::infty_norm(cstr_set.normalConeProjection(sd.constraint_data[j]->value_))
+        );
       }
-      prim_infeases(long(i)) = *std::max_element(infeas_by_cstr.begin(), infeas_by_cstr.end());
+      workspace.primal_infeas_by_stage(long(i)) = infeas_over_i;
     }
-    results.primal_infeasibility = math::infty_norm(prim_infeases);
+    results.primal_infeasibility = math::infty_norm(workspace.primal_infeas_by_stage);
     return;
   }
 
