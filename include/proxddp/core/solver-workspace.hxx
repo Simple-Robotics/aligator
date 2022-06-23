@@ -9,6 +9,7 @@ namespace proxddp
     , problem_data(problem.createData())
     , inner_criterion_by_stage(nsteps)
     , primal_infeas_by_stage(nsteps)
+    , dual_infeas_by_stage(nsteps)
   {
     using VectorXs = typename math_types<Scalar>::VectorXs;
     using MatrixXs = typename math_types<Scalar>::MatrixXs;

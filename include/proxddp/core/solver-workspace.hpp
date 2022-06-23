@@ -156,6 +156,8 @@ namespace proxddp
     VectorXs inner_criterion_by_stage;
     /// Constraint violation for each stage of the ShootingProblemTpl.
     VectorXs primal_infeas_by_stage;
+    /// Dual infeasibility for each stage of the ShootingProblemTpl.
+    VectorXs dual_infeas_by_stage;
 
     /// Overall subproblem termination criterion.
     Scalar inner_criterion;

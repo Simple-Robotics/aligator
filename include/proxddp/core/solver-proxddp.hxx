@@ -95,6 +95,7 @@ namespace proxddp
       computeGains(problem, workspace, results, nsteps - i - 1);
     }
     workspace.inner_criterion = math::infty_norm(workspace.inner_criterion_by_stage);
+    results.dual_infeasibility = math::infty_norm(workspace.dual_infeas_by_stage);
   }
 
   template<typename Scalar>
@@ -190,6 +191,7 @@ namespace proxddp
     auto kkt_mat_view = kkt_mat.template selfadjointView<Eigen::Lower>();
 
     workspace.inner_criterion_by_stage(long(step)) = math::infty_norm(rhs_0);
+    workspace.dual_infeas_by_stage(long(step)) = math::infty_norm(rhs_0.head(nprim));  // dual infeas: norm of Q-function gradient
 
     /* Compute gains with LDLT */
     auto ldlt_ = kkt_mat_view.ldlt();
