@@ -12,6 +12,7 @@
 
 #include <fmt/color.h>
 #include <fmt/ostream.h>
+#include <iostream>
 
 namespace proxddp
 {
@@ -65,7 +66,7 @@ namespace proxddp
     /// Subproblem tolerance
     Scalar inner_tol_;
     /// Desired primal feasibility
-    Scalar prim_tol;
+    Scalar prim_tol_;
 
     /// Solver tolerance \f$\epsilon > 0\f$.
     Scalar target_tolerance = 1e-6;
@@ -132,7 +133,12 @@ namespace proxddp
       , dual_beta(dual_beta)
       , verbose_(verbose)
       , MAX_ITERS(max_iters)
-      {}
+      {
+        if (mu_init >= 1.)
+        {
+          fmt::print(std::cerr, "[warning]: Penalty value mu_init={:g}>=1!\n", mu_init);
+        }
+      }
 
     /// @brief Compute the search direction.
     ///
@@ -171,10 +177,12 @@ namespace proxddp
       workspace.prev_lams_ = results.lams_;
 
       inner_tol_ = inner_tol0;
-      prim_tol = prim_tol0;
+      prim_tol_ = prim_tol0;
       updateTolerancesOnFailure();
 
       inner_tol_ = std::max(inner_tol_, target_tolerance);
+      prim_tol_ = std::max(prim_tol_, target_tolerance);
+      
 
       bool& conv = results.conv;
 
@@ -187,7 +195,7 @@ namespace proxddp
           fmt::print(fmt::emphasis::bold | colout, "[AL iter {:>2d}]", al_iter + 1);
           fmt::print("\n");
           fmt::print(" | inner_tol={:.3e} | prim_tol={:.3e} | mu={:.3e} | rho={:.3e}\n",
-                     inner_tol_, prim_tol, mu_, rho_);
+                     inner_tol_, prim_tol_, mu_, rho_);
         }
         solverInnerLoop(problem, workspace, results);
         computeInfeasibilities(problem, workspace, results);
@@ -196,7 +204,7 @@ namespace proxddp
         workspace.prev_xs_ = results.xs_;
         workspace.prev_us_ = results.us_;
 
-        if (results.primal_infeasibility <= prim_tol)
+        if (results.primal_infeasibility <= prim_tol_)
         {
           updateTolerancesOnSuccess();
 
@@ -226,8 +234,8 @@ namespace proxddp
         }
         rho_ *= rho_update_factor_;
 
-        inner_tol_ = std::max(inner_tol_, std::min(TOL_MIN, target_tolerance));
-        prim_tol = std::max(prim_tol, target_tolerance);
+        inner_tol_ = std::max(inner_tol_, target_tolerance);
+        prim_tol_ = std::max(prim_tol_, target_tolerance);
 
         al_iter++;
       }
@@ -261,13 +269,13 @@ namespace proxddp
 
     void updateTolerancesOnFailure()
     {
-      prim_tol = prim_tol0 * std::pow(mu_, prim_alpha);
+      prim_tol_ = prim_tol0 * std::pow(mu_, prim_alpha);
       inner_tol_ = inner_tol0 * std::pow(mu_, dual_alpha);
     }
 
     void updateTolerancesOnSuccess()
     {
-      prim_tol = prim_tol * std::pow(mu_, prim_beta);
+      prim_tol_ = prim_tol_ * std::pow(mu_, prim_beta);
       inner_tol_ = inner_tol_ * std::pow(mu_, dual_beta);
     }
 
