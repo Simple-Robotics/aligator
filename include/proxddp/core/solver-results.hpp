@@ -31,6 +31,7 @@ namespace proxddp
     std::vector<VectorRef> co_state_;
 
     Scalar traj_cost_ = 0.;
+    Scalar merit_value_ = 0.;
     /// Overall primal infeasibility/constraint violation for the ShootingProblemTpl.
     Scalar primal_infeasibility;
     /// Overall dual infeasibility measure for the ShootingProblemTpl.
@@ -45,6 +46,7 @@ namespace proxddp
       oss << fmt::format("\n  numiters   :  {:d},", self.num_iters);
       oss << fmt::format("\n  converged  :  {},", self.conv);
       oss << fmt::format("\n  traj. cost :  {:.3e},", self.traj_cost_)
+          << fmt::format("\n  merit.value:  {:.3e},", self.merit_value_)
           << fmt::format("\n  prim_infeas:  {:.3e},", self.primal_infeasibility)
           << fmt::format("\n  dual_infeas:  {:.3e},", self.dual_infeasibility);
       oss << "\n}";

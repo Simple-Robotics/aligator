@@ -36,6 +36,8 @@ namespace proxddp
         .def_readonly("co_state", &Results::co_state_)
         .def_readonly("primal_infeas", &Results::primal_infeasibility)
         .def_readonly("dual_infeas",   &Results::dual_infeasibility)
+        .def_readonly("traj_cost",  &Results::traj_cost_, "Trajectory cost.")
+        .def_readonly("merit_value",&Results::merit_value_, "Merit function value.")
         .def(bp::self_ns::str(bp::self))
         ;
 
