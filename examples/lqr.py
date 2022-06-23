@@ -6,6 +6,8 @@ from proxnlp import constraints
 import numpy as np
 import matplotlib.pyplot as plt
 
+from utils.custom_functions import ControlBoxFunction as PyControlBoxFunction
+
 import tap
 import pprint
 
@@ -36,19 +38,6 @@ R = 1e-2 * np.eye(nu)
 Qf = np.eye(nx)
 
 
-class ControlBoxFunction(proxddp.StageFunction):
-    def __init__(self, nx, nu, u_min, u_max) -> None:
-        super().__init__(nx, nu, 2 * nu)
-        self.u_min = u_min
-        self.u_max = u_max
-
-    def evaluate(self, x, u, y, data):
-        data.value[:] = np.concatenate([self.u_min - u, u - self.u_max])
-
-    def computeJacobians(self, x, u, y, data):
-        data.Ju[:, :] = np.block([[-np.eye(self.nu)], [np.eye(self.nu)]])
-
-
 rcost = proxddp.QuadraticCost(Q, R)
 rcost = proxddp.CostStack(nx, nu, [rcost], [1.0])
 term_cost = proxddp.QuadraticCost(Qf, R)
@@ -56,7 +45,7 @@ dynmodel = dynamics.LinearDiscreteDynamics(A, B, c)
 stage = proxddp.StageModel(space, nu, rcost, dynmodel)
 u_min = -0.17 * np.ones(nu)
 u_max = +0.17 * np.ones(nu)
-ctrl_box = ControlBoxFunction(nx, nu, u_min, u_max)
+ctrl_box = PyControlBoxFunction(nx, nu, u_min, u_max)
 # ctrl_box = proxddp.ControlBoxFunction(nx, u_min, u_max)
 stage.addConstraint(proxddp.StageConstraint(ctrl_box, constraints.NegativeOrthant()))
 

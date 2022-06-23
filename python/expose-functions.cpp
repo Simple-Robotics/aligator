@@ -3,7 +3,7 @@
 #include "proxddp/python/functions.hpp"
 #include "proxddp/modelling/state-error.hpp"
 #include "proxddp/modelling/linear-function.hpp"
-#include "proxddp/modelling/box-constraints.hpp"
+#include "proxddp/modelling/control-box-function.hpp"
 
 
 namespace proxddp
@@ -84,7 +84,7 @@ namespace proxddp
         .def(bp::init<const int, const int, const context::VectorXs&>(bp::args("self", "ndx", "nu", "target")))
         .def_readwrite("target", &ControlErrorResidual<Scalar>::target);
 
-      bp::class_<LinearFunction<Scalar>, bp::bases<StageFunction>>(
+      bp::class_<LinearFunctionTpl<Scalar>, bp::bases<StageFunction>>(
         "LinearFunction",
         bp::init<const int, const int, const int, const int>(
           bp::args("self", "ndx1", "nu", "ndx2", "nr"))
@@ -93,12 +93,12 @@ namespace proxddp
           "Constructor with given matrices.", bp::args("self", "A", "B", "C", "d")))
         .def(bp::init<const ConstMatrixRef, const ConstMatrixRef, const ConstVectorRef>(
           "Constructor with C=0.", bp::args("self", "A", "B", "d")))
-        .def_readonly("A", &LinearFunction<Scalar>::A_)
-        .def_readonly("B", &LinearFunction<Scalar>::B_)
-        .def_readonly("C", &LinearFunction<Scalar>::C_)
-        .def_readonly("d", &LinearFunction<Scalar>::d_);
+        .def_readonly("A", &LinearFunctionTpl<Scalar>::A_)
+        .def_readonly("B", &LinearFunctionTpl<Scalar>::B_)
+        .def_readonly("C", &LinearFunctionTpl<Scalar>::C_)
+        .def_readonly("d", &LinearFunctionTpl<Scalar>::d_);
 
-      bp::class_<ControlBoxFunction<Scalar>, bp::bases<LinearFunction<Scalar>>>(
+      bp::class_<ControlBoxFunctionTpl<Scalar>, bp::bases<StageFunction>>(
         "ControlBoxFunction",
         bp::init<const int, const VectorXs, const VectorXs>(bp::args("self", "ndx", "umin", "umax"))
       )

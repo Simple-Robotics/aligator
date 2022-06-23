@@ -31,33 +31,36 @@ namespace proxddp
     using Manifold = ManifoldAbstractTpl<Scalar>;
     using Dynamics = DynamicsModelTpl<Scalar>;
     using Constraint = StageConstraintTpl<Scalar>;
-    using CostBase = CostAbstractTpl<Scalar>;
+    using CostAbstract = CostAbstractTpl<Scalar>;
     using Data = StageDataTpl<Scalar>;
 
     using ConstraintPtr = shared_ptr<Constraint>;
     using ManifoldPtr = shared_ptr<Manifold>;
-    using CostPtr = shared_ptr<CostBase>;
+    using CostPtr = shared_ptr<CostAbstract>;
 
-    ManifoldPtr xspace1_;
-    ManifoldPtr xspace2_;
-    /// Control vector space.
-    proxnlp::VectorSpaceTpl<Scalar> uspace_;
+    /// State space for the current state \f$x_k\f$.
+    ManifoldPtr xspace_;
+    /// State space for the next state \f$x_{k+1}\f$.
+    ManifoldPtr xspace_next_;
+    /// Control vector space -- by default, a simple Euclidean space.
+    ManifoldPtr uspace_;
 
     CostPtr cost_;
 
     const Dynamics& dyn_model() const { return static_cast<const Dynamics&>(constraints_manager[0]->func()); }
-    const CostBase& cost() const {return *cost_; }
+    const CostAbstract& cost() const {return *cost_; }
 
     ConstraintContainer<Scalar> constraints_manager;
 
-    const Manifold& xspace1() const { return *xspace1_; }
-    const Manifold& xspace2() const { return *xspace2_; }
+    const Manifold& xspace() const { return *xspace_; }
+    const Manifold& uspace() const { return *uspace_; }
+    const Manifold& xspace_next() const { return *xspace_next_; }
 
-    inline int nx1()  const { return xspace1().nx(); }
-    inline int ndx1() const { return xspace1().ndx(); }
-    inline int nu()   const { return uspace_.ndx(); }
-    inline int nx2()  const { return xspace2().nx(); }
-    inline int ndx2() const { return xspace2().ndx(); }
+    inline int nx1()  const { return xspace_->nx(); }
+    inline int ndx1() const { return xspace_->ndx(); }
+    inline int nu()   const { return uspace_->ndx(); }
+    inline int nx2()  const { return xspace_next_->nx(); }
+    inline int ndx2() const { return xspace_next_->ndx(); }
 
     inline std::size_t numConstraints() const { return constraints_manager.numConstraints(); }
 
@@ -66,18 +69,23 @@ namespace proxddp
     /// Number of dual variables, i.e. Lagrange multipliers.
     int numDual() const;
 
+    /// Default constructor: assumes the control space is a Euclidean space of dimension \p nu.
     StageModelTpl(const ManifoldPtr& space1, const int nu, const ManifoldPtr& space2,
                   const CostPtr& cost, const shared_ptr<Dynamics>& dyn_model);
 
     /// Secondary constructor: use a single manifold.
-    StageModelTpl(const ManifoldPtr& space, const int nu, const CostPtr& cost, const shared_ptr<Dynamics>& dyn_model)
-      : StageModelTpl(space, nu, space, cost, dyn_model)
-      {}
+    StageModelTpl(const ManifoldPtr& space, const int nu, const CostPtr& cost, const shared_ptr<Dynamics>& dyn_model);
 
     /// @brief    Add a constraint to the stage.
     void addConstraint(const ConstraintPtr& cstr) { constraints_manager.push_back(cstr); }
     /// @copybrief addConstraint()
     void addConstraint(ConstraintPtr&& cstr) { constraints_manager.push_back(std::move(cstr)); }
+    /// @copybrief  addConstraint().
+    /// @details    Adds a constraint by allocating a new StageConstraintTpl.
+    void addConstraint(const shared_ptr<StageFunctionTpl<Scalar>>& func, const shared_ptr<ConstraintSetBase<Scalar>>& cstr_set)
+    {
+      constraints_manager.push_back(std::make_shared<Constraint>(func, cstr_set));
+    }
 
     /* Evaluate costs, constraints, ... */
 

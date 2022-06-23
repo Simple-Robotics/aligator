@@ -93,7 +93,7 @@ namespace proxddp
     Scalar mu_update_factor_ = 0.01;
     Scalar rho_update_factor_ = 0.1;
 
-    const VerboseLevel verbose_;
+    VerboseLevel verbose_;
     LinesearchParams<Scalar> ls_params;
     MultiplierUpdateMode mul_update_mode = MultiplierUpdateMode::NEWTON;
 
@@ -109,6 +109,7 @@ namespace proxddp
     std::unique_ptr<Results> results_;
 
     Results& getResults() { return *results_; }
+    Workspace& getWorkspace() { return *workspace_; }
 
     SolverProxDDP(const Scalar tol=1e-6,
                   const Scalar mu_init=0.01,

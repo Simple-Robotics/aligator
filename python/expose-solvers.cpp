@@ -49,6 +49,9 @@ namespace proxddp
 
       bp::class_<SolverType, boost::noncopyable>(
         "ProxDDP",
+        "A primal-dual augmented Lagrangian solver, based on DDP to compute search directions."
+        " The solver instance initializes both a Workspace and Results which can be retrieved"
+        " through the `getWorkspace` and `getResults` methods, respectively.",
         bp::init< Scalar
                 , Scalar, Scalar
                 , Scalar, Scalar
@@ -64,18 +67,25 @@ namespace proxddp
                    bp::arg("verbose") = VerboseLevel::QUIET
                   ))
       )
+        .def_readonly("mu_init",  &SolverType::mu_init,  "Initial dual penalty parameter.")
+        .def_readonly("rho_init", &SolverType::rho_init, "Initial (primal) proximal parameter.")
+        .def_readonly("prim_alpha",&SolverType::prim_alpha,"Primal tolerance log-factor (when steps are accepted).")
+        .def_readonly("dual_alpha",&SolverType::dual_alpha,"Dual tolerance log-factor (when steps are accepted).")
+        .def_readonly("prim_beta", &SolverType::prim_beta, "Primal tolerance log-factor (when steps are rejected).")
+        .def_readonly("dual_beta", &SolverType::dual_beta, "Dual tolerance log-factor (when steps are rejected).")
         .def_readwrite("target_tol", &SolverType::target_tolerance, "Desired tolerance.")
-        .def_readonly("mu_init",  &SolverType::mu_init,  "mu_init")
-        .def_readonly("rho_init", &SolverType::rho_init, "rho_init")
         .def_readwrite("mu_factor",  &SolverType::mu_update_factor_)
         .def_readwrite("rho_factor", &SolverType::rho_update_factor_)
         .def_readwrite("multiplier_update_mode", &SolverType::mul_update_mode)
-        .def_readonly("verbose", &SolverType::verbose_, "Verbosity level of the solver.")
-        .def("getResults", &SolverType::getResults, bp::return_internal_reference<>(), "Get the results instance.")
-        .def("run",
-             &SolverType::run,
+        .def_readwrite("verbose", &SolverType::verbose_, "Verbosity level of the solver.")
+        .def("getResults",  &SolverType::getResults,   bp::args("self"),
+             bp::return_internal_reference<>(), "Get the results instance.")
+        .def("getWorkspace",&SolverType::getWorkspace, bp::args("self"),
+             bp::return_internal_reference<>(), "Get the workspace instance.")
+        .def("run", &SolverType::run,
              bp::args("self", "problem", "xs_init", "us_init"),
-             "Run the solver.")
+             "Run the algorithm. This requires providing initial guesses for both "
+             "trajectory and control.")
         ;
     }
     

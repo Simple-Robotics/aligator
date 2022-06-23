@@ -13,6 +13,8 @@ import proxddp
 from proxddp import manifolds
 from proxnlp import constraints
 
+from utils.custom_functions import ControlBoxFunction as PyControlBoxFunction
+
 import tap
 
 
@@ -123,7 +125,6 @@ x1 = space.rand()
 dynmodel.dForward(x1, u0, Jx, Ju)
 
 
-
 EPS = 1e-7
 ei = np.zeros(space.ndx)
 x_n_plus = space.neutral()
@@ -152,8 +153,13 @@ meshcat_utils.display_trajectory(vizer, augvizer, xs_init, wait=dt)
 x_tar = space.neutral()
 x_tar[:3] = (0.4, 0., 1.)
 
+u_max = 3.5 * np.ones(nu)
+u_min = -u_max
+
 
 def setup():
+
+
     state_err = proxddp.StateErrorResidual(space, nu, x_tar)
     weights1 = np.zeros(space.ndx)
     weights1[:3] = 0.
@@ -178,13 +184,10 @@ def setup():
     prob = proxddp.ShootingProblem(x0, nu, space, term_cost=term_cost)
     for i in range(nsteps):
         stage = proxddp.StageModel(space, nu, rcost, dynmodel)
-        # if i == nsteps - 1:
-        #     stage.addConstraint(
-        #         proxddp.StageConstraint(   
-        #             proxddp.StateErrorResidual(space, nu, x_tar),
-        #             constraints.EqualityConstraintSet()
-        #         )
-        #     )
+        stage.addConstraint(
+            PyControlBoxFunction(space.ndx, nu, u_min, u_max),
+            constraints.NegativeOrthant()
+        )
         prob.addStage(stage)
 
     return prob
@@ -192,7 +195,7 @@ def setup():
 
 problem = setup()
 tol = 1e-4
-mu_init = 0.2
+mu_init = 0.01
 verbose = proxddp.VerboseLevel.VERBOSE
 solver = proxddp.ProxDDP(tol, mu_init, verbose=verbose)
 solver.run(problem, xs_init, us_init)

@@ -68,8 +68,8 @@ namespace proxddp
       lams_plus_.push_back(VectorXs::Zero(ndual));
       lams_pdal_.push_back(lams_plus_.back());
 
-      trial_xs_.push_back(VectorXs::Zero(stage.nx1()));
-      trial_us_.push_back(VectorXs::Zero(nu));
+      trial_xs_.push_back(stage.xspace_->neutral());
+      trial_us_.push_back(stage.uspace_->neutral());
       trial_lams_.push_back(VectorXs::Zero(ndual));
 
       prev_xs_.push_back(trial_xs_.back());

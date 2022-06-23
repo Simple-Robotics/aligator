@@ -10,9 +10,9 @@ namespace proxddp
                 const ManifoldPtr& space2,
                 const CostPtr& cost,
                 const shared_ptr<Dynamics>& dyn_model)
-    : xspace1_(space1)
-    , xspace2_(space2)
-    , uspace_(nu)
+    : xspace_(space1)
+    , xspace_next_(space2)
+    , uspace_(std::make_shared<proxnlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>>(nu))
     , cost_(cost)
   {
     ConstraintPtr dynptr = std::make_shared<Constraint>(
@@ -20,6 +20,12 @@ namespace proxddp
     constraints_manager.push_back(std::move(dynptr));
   }
   
+  template<typename Scalar>
+  StageModelTpl<Scalar>::
+  StageModelTpl(const ManifoldPtr& space, const int nu, const CostPtr& cost, const shared_ptr<Dynamics>& dyn_model)
+    : StageModelTpl(space, nu, space, cost, dyn_model)
+    {}
+
   template<typename Scalar>
   inline int StageModelTpl<Scalar>::numPrimal() const {
     return this->nu() + this->ndx2();

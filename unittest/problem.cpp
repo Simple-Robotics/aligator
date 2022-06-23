@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(test_problem)
 
   Eigen::VectorXd u0(nu);
   u0.setZero();
-  auto x0 = f.stage.xspace1_->rand();
+  auto x0 = f.stage.xspace_->rand();
   constexpr int nsteps = 20;
   std::vector<Eigen::VectorXd> us(nsteps, u0);
 

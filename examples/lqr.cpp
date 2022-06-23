@@ -9,7 +9,7 @@
 #include <proxnlp/modelling/constraints/negative-orthant.hpp>
 
 #include "proxddp/modelling/linear-discrete-dynamics.hpp"
-#include "proxddp/modelling/box-constraints.hpp"
+#include "proxddp/modelling/control-box-function.hpp"
 
 using namespace proxddp;
 
@@ -48,7 +48,7 @@ int main()
 
   double u_bound = 0.2;
   StageModelTpl<double> stage(spaceptr, nu, rcost, dynptr);
-  auto ctrl_bounds_fun = std::make_shared<ControlBoxFunction<double>>(dim, nu, -u_bound, u_bound);
+  auto ctrl_bounds_fun = std::make_shared<ControlBoxFunctionTpl<double>>(dim, nu, -u_bound, u_bound);
 
   const bool HAS_CONTROL_BOUNDS = true;
 

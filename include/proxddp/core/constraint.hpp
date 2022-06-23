@@ -23,7 +23,6 @@ namespace proxddp
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
     using FunctionType = StageFunctionTpl<Scalar>;
-    using ConstraintSet = ConstraintSetBase<Scalar>;
     using ConstraintSetPtr = shared_ptr<ConstraintSetBase<Scalar>>;
     using FunctionPtr = shared_ptr<const FunctionType>;
 

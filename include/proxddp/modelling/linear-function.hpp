@@ -9,10 +9,11 @@ namespace proxddp
    * 
    */
   template<typename Scalar>
-  struct LinearFunction : StageFunctionTpl<Scalar>
+  struct LinearFunctionTpl : StageFunctionTpl<Scalar>
   {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+    using Base = StageFunctionTpl<Scalar>;
     using Data = FunctionDataTpl<Scalar>;
 
     MatrixXs A_;
@@ -20,8 +21,8 @@ namespace proxddp
     MatrixXs C_;
     VectorXs d_;
 
-    LinearFunction(const int ndx, const int nu, const int ndx2, const int nr)
-      : StageFunctionTpl<Scalar>(ndx, nu, ndx2, nr)
+    LinearFunctionTpl(const int ndx, const int nu, const int ndx2, const int nr)
+      : Base(ndx, nu, ndx2, nr)
       , A_(nr, ndx), B_(nr, nu), C_(nr, ndx2), d_(nr)
     {
       A_.setZero();
@@ -30,8 +31,8 @@ namespace proxddp
       d_.setZero();
     }
 
-    LinearFunction(const ConstMatrixRef A, const ConstMatrixRef B, const ConstMatrixRef C, const ConstVectorRef d)
-      : StageFunctionTpl<Scalar>(A.cols(), B.cols(), C.cols(), d.rows())
+    LinearFunctionTpl(const ConstMatrixRef A, const ConstMatrixRef B, const ConstMatrixRef C, const ConstVectorRef d)
+      : Base(A.cols(), B.cols(), C.cols(), d.rows())
       , A_(A), B_(B), C_(C), d_(d)
     {
       assert((A_.rows() == d_.rows()) &&
@@ -41,8 +42,8 @@ namespace proxddp
     }
 
     /// @brief Constructor where \f$C = 0\f$ is assumed.
-    LinearFunction(const ConstMatrixRef A, const ConstMatrixRef B, const ConstVectorRef d)
-      : LinearFunction(A, B, MatrixXs::Zero(A.rows(), A.cols()), d)
+    LinearFunctionTpl(const ConstMatrixRef A, const ConstMatrixRef B, const ConstVectorRef d)
+      : LinearFunctionTpl(A, B, MatrixXs::Zero(A.rows(), A.cols()), d)
       {}
 
     void evaluate(const ConstVectorRef& x,
@@ -53,14 +54,26 @@ namespace proxddp
       data.value_ = A_ * x + B_ * u + C_ * y + d_;
     }
 
+    /**
+     * @copybrief Base::computeJacobians()
+     * @details   This implementation does nothing: the values of the Jacobians are
+     *            already set in createData().
+     */
     void computeJacobians(const ConstVectorRef&,
                           const ConstVectorRef&,
                           const ConstVectorRef&,
                           Data& data) const
+    {}
+
+    /// @copybrief Base::createData()
+    /// @details   This override sets the appropriate values of the Jacobians.
+    virtual shared_ptr<Data> createData() const
     {
-      data.Jx_ = A_;
-      data.Ju_ = B_;
-      data.Jy_ = C_;
+      auto data = std::make_shared<Data>(this->ndx1, this->nu, this->ndx2, this->nr);
+      data->Jx_ = A_;
+      data->Ju_ = B_;
+      data->Jy_ = C_;
+      return data;
     }
   };
   

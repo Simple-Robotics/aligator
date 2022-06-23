@@ -38,9 +38,13 @@ namespace proxddp
     StageFunctionTpl(const int ndx, const int nu, const int nr)
       : StageFunctionTpl(ndx, nu, ndx, nr) {}
 
-    /// @brief    Evaluate this node function.
-    ///
-    /// @param data  Data holding struct.
+    /**
+     * @brief       Evaluate the function.
+     * @param x     Current state.
+     * @param u     Controls.
+     * @param y     Next state.
+     * @param data  Data holding struct.
+     */
     virtual void evaluate(const ConstVectorRef& x,
                           const ConstVectorRef& u,
                           const ConstVectorRef& y,
@@ -54,32 +58,35 @@ namespace proxddp
      *   \frac{\partial f}{\partial u},
      *   \frac{\partial f}{\partial x'})
      * \f$
+     * 
+     * @param x     Current state.
+     * @param u     Controls.
+     * @param y     Next state.
+     * @param data  Data holding struct.
      */
     virtual void computeJacobians(const ConstVectorRef& x,
                                   const ConstVectorRef& u,
                                   const ConstVectorRef& y,
                                   Data& data) const = 0;
 
-    /// @brief    Compute the vector-hessian products of this function.
-    ///
-    /// @param lbda Multiplier estimate.
-    /// @param data  Data holding struct.
-    virtual void computeVectorHessianProducts(const ConstVectorRef&,
-                                              const ConstVectorRef&,
-                                              const ConstVectorRef&,
-                                              const ConstVectorRef&,
-                                              Data& data) const
-    {
-      data.vhp_buffer_.setZero();
-    }
+    /** @brief    Compute the vector-hessian products of this function.
+     * 
+     *  @param x     Current state.
+     *  @param u     Controls.
+     *  @param y     Next state.
+     *  @param lbda Multiplier estimate.
+     *  @param data  Data holding struct.
+     */
+    virtual void computeVectorHessianProducts(const ConstVectorRef& x,
+                                              const ConstVectorRef& u,
+                                              const ConstVectorRef& y,
+                                              const ConstVectorRef& lbda,
+                                              Data& data) const;
 
     virtual ~StageFunctionTpl() = default;
 
     /// @brief Instantiate a Data object.
-    virtual std::shared_ptr<Data> createData() const
-    {
-      return std::make_shared<Data>(ndx1, nu, ndx2, nr);
-    }
+    virtual std::shared_ptr<Data> createData() const;
   };
 
   /// @brief  Struct to hold function data.

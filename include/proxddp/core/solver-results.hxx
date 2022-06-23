@@ -23,12 +23,12 @@ namespace proxddp
       nprim = stage.numPrimal();
       ndual = stage.numDual();
       gains_.push_back(MatrixXs::Zero(nprim + ndual, stage.ndx1() + 1));
-      xs_.push_back(stage.xspace1_->neutral());
-      us_.push_back(VectorXs::Zero(nu));
+      xs_.push_back(stage.xspace_->neutral());
+      us_.push_back(stage.uspace_->neutral());
       lams_.push_back(VectorXs::Ones(ndual));
       co_state_.push_back(lams_[i + 1].head(stage.dyn_model().nr));
       if (i == nsteps - 1)
-        xs_.push_back(stage.xspace2_->neutral());
+        xs_.push_back(stage.xspace_next_->neutral());
     }
     assert(xs_.size() == nsteps + 1);
     assert(us_.size() == nsteps);

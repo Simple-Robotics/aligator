@@ -31,8 +31,22 @@ namespace python
       .def(bp::init<const ManifoldPtr&, const int, const CostPtr&, const shared_ptr<DynamicsModel>&>(
         bp::args("self", "space", "nu", "cost", "dyn_model")
         ))
-      .def("addConstraint", (void(StageModel::*)(const StageModel::ConstraintPtr&))&StageModel::addConstraint)
-      .def_readonly("uspace", &StageModel::uspace_)
+      .def("addConstraint", (void(StageModel::*)(const StageModel::ConstraintPtr&))&StageModel::addConstraint,
+           bp::args("self", "constraint"),
+           "Add an existing constraint to the stage.")
+      .def("addConstraint", (void(StageModel::*)(const FunctionPtr&, const shared_ptr<ConstraintSetBase<Scalar>>&))&StageModel::addConstraint,
+           bp::args("self", "func", "cstr_set"),
+           "Constructs a new constraint (from the underlying function and set) and adds it to the stage.")
+      .add_property("xspace",
+                    bp::make_function(&StageModel::xspace, bp::return_internal_reference<>()),
+                    "State space for the current state :math:`x_k`."
+                    )
+      .add_property("xspace_next",
+                    bp::make_function(&StageModel::xspace_next, bp::return_internal_reference<>()),
+                    "State space corresponding to next state :math:`x_{k+1}`.")
+      .add_property("uspace",
+                    bp::make_function(&StageModel::uspace, bp::return_internal_reference<>()),
+                    "Control space.")
       .def("evaluate", &StageModel::evaluate,
            bp::args("self", "x", "u", "y", "data"),
            "Evaluate the stage cost, dynamics, constraints.")

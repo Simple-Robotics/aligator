@@ -67,11 +67,11 @@ namespace proxddp
     for (std::size_t i = 0; i < nsteps; i++)
     {
       const StageModel& stage = problem.stages_[i];
-      stage.xspace1_->integrate(results.xs_[i], alpha * workspace.dxs_[i], workspace.trial_xs_[i]);
-      stage.uspace_.integrate(results.us_[i], alpha * workspace.dus_[i], workspace.trial_us_[i]);
+      stage.xspace_->integrate(results.xs_[i], alpha * workspace.dxs_[i], workspace.trial_xs_[i]);
+      stage.uspace_->integrate(results.us_[i], alpha * workspace.dus_[i], workspace.trial_us_[i]);
     }
     const StageModel& stage = problem.stages_[nsteps - 1];
-    stage.xspace2_->integrate(results.xs_[nsteps], alpha * workspace.dxs_[nsteps], workspace.trial_xs_[nsteps]);
+    stage.xspace_next_->integrate(results.xs_[nsteps], alpha * workspace.dxs_[nsteps], workspace.trial_xs_[nsteps]);
   }
 
   template<typename Scalar>
