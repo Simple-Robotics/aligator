@@ -49,6 +49,25 @@ namespace proxddp
         .value("PRIMAL_DUAL", MultiplierUpdateMode::PRIMAL_DUAL)
         ;
 
+      bp::enum_<LinesearchMode>(
+        "LinesearchMode", "Linesearch mode."
+      )
+        .value("PRIMAL",      LinesearchMode::PRIMAL)
+        .value("PRIMAL_DUAL", LinesearchMode::PRIMAL_DUAL)
+        ;
+
+      bp::class_<LinesearchParams<Scalar>>(
+        "LinesearchParams",
+        "Parameters for the linesearch.",
+        bp::init<>()
+      )
+        .def_readwrite("alpha_min", &LinesearchParams<Scalar>::alpha_min)
+        .def_readwrite("armijo_c1", &LinesearchParams<Scalar>::armijo_c1)
+        .def_readwrite("ls_beta", &LinesearchParams<Scalar>::ls_beta, "Decrease factor; only applies to Armijo linesearch.")
+        .def_readwrite("mode", &LinesearchParams<Scalar>::mode, "Linesearch mode.")
+        .def_readwrite("strategy", &LinesearchParams<Scalar>::strategy, "Linesearch strategy.")
+        ;
+
       bp::class_<SolverType, boost::noncopyable>(
         "ProxDDP",
         "A primal-dual augmented Lagrangian solver, based on DDP to compute search directions."

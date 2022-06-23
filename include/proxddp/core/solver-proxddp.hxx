@@ -212,7 +212,7 @@ namespace proxddp
     assert(results.lams_.size() == nsteps + 1);
 
     // instantiate the subproblem merit function
-    PDAL_Function<Scalar> merit_fun { mu_, ls_params.ls_mode };
+    PDAL_Function<Scalar> merit_fun { mu_, ls_params.mode };
 
     auto merit_eval_fun = [&](Scalar a0) {
       tryStep(problem, workspace, results, a0);
@@ -277,16 +277,34 @@ namespace proxddp
 
       Scalar alpha_opt = 1;
 
-      proxnlp::ArmijoLinesearch<Scalar>::run(
-        merit_eval_fun, phi0, dphi0,
-        ls_params.ls_beta, ls_params.armijo_c1, ls_params.alpha_min,
-        alpha_opt);
+      switch (ls_params.strategy)
+      {
+      case LinesearchStrategy::ARMIJO:
+        proxnlp::ArmijoLinesearch<Scalar>::run(
+          merit_eval_fun, phi0, dphi0, verbose_,
+          ls_params.ls_beta,
+          ls_params.armijo_c1,
+          ls_params.alpha_min,
+          alpha_opt);
+        break;
+      case LinesearchStrategy::CUBIC_INTERP:
+        proxnlp::CubicInterpLinesearch<Scalar>::run(
+          merit_eval_fun, phi0, dphi0, verbose_,
+          ls_params.armijo_c1,
+          ls_params.alpha_min,
+          alpha_opt);
+        break;
+      
+      default:
+        break;
+      }
 
       results.traj_cost_ = merit_fun.traj_cost;
+      results.merit_value_ = merit_fun.value_;
       if (verbose_ >= 1)
       {
         fmt::print(" | step size: {:.3e}, dphi0 = {:.3e}\n", alpha_opt, dphi0);
-        fmt::print(" | new merit fun. val: {:.3e}\n", phi0);
+        fmt::print(" | merit value: {:.3e}\n", results.merit_value_);
       }
 
       // accept the damn step
