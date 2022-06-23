@@ -184,14 +184,11 @@ namespace proxddp
           auto colout = fmt::fg(fmt::color::medium_orchid);
           fmt::print(fmt::emphasis::bold | colout, "[AL iter {:>2d}]", al_iter + 1);
           fmt::print("\n");
-          fmt::print(" | inner_tol={:.3e} | dual_tol={:.3e} | mu={:.3e} | rho={:.3e}\n",
+          fmt::print(" | inner_tol={:.3e} | prim_tol={:.3e} | mu={:.3e} | rho={:.3e}\n",
                      inner_tol_, prim_tol, mu_, rho_);
         }
         solverInnerLoop(problem, workspace, results);
         computeInfeasibilities(problem, workspace, results);
-
-        if (verbose_ >= 1)
-          fmt::print(" | prim. infeas: {:.3e}\n", results.primal_infeasibility);
 
         // accept primal updates
         workspace.prev_xs_ = results.xs_;
