@@ -37,7 +37,10 @@ namespace proxddp
                    const ConstVectorRef&,
                    const ConstVectorRef&,
                    Data& data) const
-  {}
+  {
+    data.Ju_.topRows   (this->nu).diagonal().array() = static_cast<Scalar>(-1.);
+    data.Ju_.bottomRows(this->nu).diagonal().array() = static_cast<Scalar>(1.);
+  }
 
   template<typename Scalar>
   shared_ptr<FunctionDataTpl<Scalar>>
