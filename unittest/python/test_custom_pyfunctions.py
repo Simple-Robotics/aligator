@@ -26,6 +26,5 @@ def test_custom_controlbox():
     bf2.computeJacobians(x0, u0, x0, data2)
     print(data1.value)
     print(data1.Ju)
-    print("bf2 d:", bf2.d)
     assert np.allclose(data1.value, data2.value)
     assert np.allclose(data1.jac_buffer_, data2.jac_buffer_)

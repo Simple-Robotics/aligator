@@ -87,6 +87,10 @@ namespace proxddp
              "Run the algorithm. This requires providing initial guesses for both "
              "trajectory and control.")
         ;
+
+      bp::def("computeTrajectoryCost", &computeTrajectoryCost<Scalar>, bp::args("problem", "data"),
+              "Compute the cost of the trajectory. NOTE: problem.evaluate() must be called beforehand!");
+
     }
     
   } // namespace python
