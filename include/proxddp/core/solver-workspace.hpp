@@ -160,7 +160,7 @@ namespace proxddp
     VectorXs dual_infeas_by_stage;
 
     /// Overall subproblem termination criterion.
-    Scalar inner_criterion;
+    Scalar inner_criterion = 0.;
 
     explicit WorkspaceTpl(const TrajOptProblemTpl<Scalar>& problem);
 

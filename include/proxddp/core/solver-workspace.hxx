@@ -19,6 +19,8 @@ namespace proxddp
     using StageModel = StageModelTpl<Scalar>;
 
     inner_criterion_by_stage.setZero();
+    primal_infeas_by_stage.setZero();
+    dual_infeas_by_stage.setZero();
 
     value_params.reserve(nsteps + 1);
     q_params.reserve(nsteps);
