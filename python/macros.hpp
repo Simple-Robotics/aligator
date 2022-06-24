@@ -15,7 +15,7 @@ namespace proxddp { namespace python {
     typename std::enable_if<std::is_same<ret_type, void>::value, void>::type
     suppress_if_void(T&&) {}
 
-    template<typename T> T suppress_if_void(T&& o) { return std::move(o); }
+    template<typename T> T suppress_if_void(T&& o) { return std::forward<T>(o); }
     
   } // namespace internal
 } // namespace python
