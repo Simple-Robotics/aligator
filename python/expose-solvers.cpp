@@ -38,6 +38,7 @@ namespace proxddp
         .def_readonly("prim_infeas_by_stage", &Workspace::primal_infeas_by_stage)
         .def_readonly("dual_infeas_by_stage", &Workspace::dual_infeas_by_stage)
         .def_readonly("inner_criterion_by_stage", &Workspace::inner_criterion_by_stage)
+        .def_readonly("problem_data", &Workspace::problem_data)
         .def(bp::self_ns::str(bp::self))
         ;
 
