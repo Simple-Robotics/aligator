@@ -16,11 +16,11 @@ namespace proxddp
      * 
      */
     template<typename _Scalar>
-    struct IntegratorRK2 : ExplicitIntegratorTpl<_Scalar>
+    struct IntegratorRK2 : ExplicitIntegratorAbstractTpl<_Scalar>
     {
       using Scalar = _Scalar;
       PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-      using Base = ExplicitIntegratorTpl<Scalar>;
+      using Base = ExplicitIntegratorAbstractTpl<Scalar>;
       using Data = typename Base::Data;
     };
     
