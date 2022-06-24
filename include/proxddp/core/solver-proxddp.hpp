@@ -101,7 +101,7 @@ namespace proxddp
     MultiplierUpdateMode mul_update_mode = MultiplierUpdateMode::NEWTON;
 
     /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.
-    const std::size_t MAX_ITERS;
+    std::size_t MAX_ITERS;
     const std::size_t MAX_AL_ITERS = 50;
 
     /// Minimum possible tolerance asked from the solver.

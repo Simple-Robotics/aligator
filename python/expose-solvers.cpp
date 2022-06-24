@@ -113,6 +113,7 @@ namespace proxddp
         .def_readwrite("mu_factor",  &SolverType::mu_update_factor_)
         .def_readwrite("rho_factor", &SolverType::rho_update_factor_)
         .def_readwrite("multiplier_update_mode", &SolverType::mul_update_mode)
+        .def_readwrite("max_iters", &SolverType::MAX_ITERS, "Maximum number of iterations.")
         .def_readwrite("verbose", &SolverType::verbose_, "Verbosity level of the solver.")
         .def("getResults",  &SolverType::getResults,   bp::args("self"),
              bp::return_internal_reference<>(), "Get the results instance.")
