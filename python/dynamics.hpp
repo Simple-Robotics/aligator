@@ -52,13 +52,13 @@ namespace proxddp
                       const ConstVectorRef& u,
                       const ConstVectorRef& xdot,
                       Data& data) const
-        { get_override("evaluate")(x, u, xdot, data); }
+        { PROXDDP_PYTHON_OVERRIDE_PURE(void, "evaluate", x, u, xdot, data) }
 
         void computeJacobians(const ConstVectorRef& x,
                               const ConstVectorRef& u,
                               const ConstVectorRef& xdot,
                               Data& data) const
-        { get_override("computeJacobians")(x, u, xdot, data); }
+        { PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeJacobians", x, u, xdot, data) }
 
       };
 
