@@ -126,7 +126,7 @@ namespace proxddp
     // to fill in the Q-function derivatives
     q_param.storage.setZero();
 
-    q_param.q_2_ = 2 * cdata.value_;
+    q_param.q_2() = 2 * cdata.value_;
     q_param.grad_.head(ndx1 + nu) = cdata.grad_;
     q_param.grad_.tail(ndx2) = vnext.Vx_;
     q_param.hess_.topLeftCorner(ndx1 + nu, ndx1 + nu) = cdata.hess_;

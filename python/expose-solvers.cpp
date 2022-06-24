@@ -15,6 +15,18 @@ namespace proxddp
       using Workspace = WorkspaceTpl<Scalar>;
       using Results = ResultsTpl<Scalar>;
 
+      {
+        using QParams = proxddp::internal::q_function_storage<Scalar>;
+        bp::class_<QParams>(
+          "QParams", "Q-function parameters.", bp::no_init
+        )
+          .def_readonly("storage", &QParams::storage)
+          .add_property("grad_", bp::make_getter(&QParams::grad_, bp::return_value_policy<bp::return_by_value>()))
+          .add_property("hess_", bp::make_getter(&QParams::hess_, bp::return_value_policy<bp::return_by_value>()))
+        ;
+        pinpy::StdVectorPythonVisitor<std::vector<QParams>, true>::expose("StdVec_QParams");
+      }
+
       bp::class_<Workspace>(
         "Workspace", "Workspace for ProxDDP.",
         bp::init<const TrajOptProblem&>(bp::args("self", "problem"))

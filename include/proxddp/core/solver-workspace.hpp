@@ -60,12 +60,14 @@ namespace proxddp
     template<typename Scalar>
     struct q_function_storage
     {
+    protected:
+      int ntot;
+    public:
       PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-      const int ntot;
 
       MatrixXs storage;
 
-      Scalar& q_2_; 
+      Scalar& q_2() { return storage.coeffRef(0, 0); }
 
       VectorRef grad_;
       MatrixRef hess_;
@@ -84,7 +86,6 @@ namespace proxddp
       q_function_storage(const int ndx1, const int nu, const int ndx2)
         : ntot(ndx1 + nu + ndx2)
         , storage(ntot + 1, ntot + 1)
-        , q_2_(storage.coeffRef(0, 0))
         , grad_(storage.bottomRows(ntot).col(0))
         , hess_(storage.bottomRightCorner(ntot, ntot))
         , Qx_(grad_.head(ndx1))
