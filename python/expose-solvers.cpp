@@ -28,7 +28,7 @@ namespace proxddp
         pinpy::StdVectorPythonVisitor<std::vector<QParams>, true>::expose("StdVec_QParams");
 
         bp::class_<VParams>("VParams", "Value function parameters.", bp::no_init)
-          .def_readonly("storage", &QParams::storage);
+          .def_readonly("storage", &VParams::storage);
         pinpy::StdVectorPythonVisitor<std::vector<VParams>, true>::expose("StdVec_VParams");
       }
 

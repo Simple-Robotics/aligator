@@ -21,14 +21,12 @@ namespace proxddp
       PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
       MatrixXs storage;
       // Eigen::SelfAdjointView<MatrixXs, Eigen::Lower> store_sym_;
-      Scalar& v_2_;
+      Scalar& v_2() { return storage.coeffRef(0, 0); }
       VectorRef Vx_;
       MatrixRef Vxx_;
 
       value_storage(const int ndx)
         : storage(MatrixXs::Zero(ndx + 1, ndx + 1))
-        // , store_sym_(storage)
-        , v_2_(storage.coeffRef(0, 0))
         , Vx_(storage.bottomRows(ndx).col(0))
         , Vxx_(storage.bottomRightCorner(ndx, ndx))
         {}

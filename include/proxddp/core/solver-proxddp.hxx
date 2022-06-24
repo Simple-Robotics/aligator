@@ -83,10 +83,10 @@ namespace proxddp
     const std::size_t nsteps = problem.numSteps();
 
     /* Terminal node */
-    const auto& term_data = *problem_data.term_cost_data;
+    const CostDataAbstractTpl<Scalar>& term_data = *problem_data.term_cost_data;
     value_store_t& term_value = workspace.value_params[nsteps];
 
-    term_value.v_2_ = 2 * term_data.value_;
+    term_value.v_2() = 2 * term_data.value_;
     term_value.Vx_ = term_data.Lx_;
     term_value.Vxx_ = term_data.Lxx_;
     term_value.storage = term_value.storage.template selfadjointView<Eigen::Lower>();
