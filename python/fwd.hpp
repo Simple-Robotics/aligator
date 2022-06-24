@@ -29,6 +29,8 @@ namespace proxddp
     void exposeStage();
     void exposeProblem();
 
+    /// Expose continuous dynamics models.
+    void exposeODEs();
     void exposeDynamics();
     void exposeIntegrators();
     void exposeSolvers();

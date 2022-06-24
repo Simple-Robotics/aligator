@@ -10,34 +10,34 @@ namespace proxddp
   namespace dynamics
   {
 
-    // fwd ContinuousDynamicsTpl
+    // fwd ContinuousDynamicsAbstractTpl
     template<typename _Scalar>
-    struct ContinuousDynamicsTpl;
+    struct ContinuousDynamicsAbstractTpl;
 
     // fwd ContinuousDynamicsDataTpl
     template<typename _Scalar>
     struct ContinuousDynamicsDataTpl;
 
-    // fwd ODEBaseTpl
+    // fwd ODEAbstractTpl
     template<typename _Scalar>
-    struct ODEBaseTpl;
+    struct ODEAbstractTpl;
 
     template<typename _Scalar>
     struct ODEDataTpl;
 
     //// INTEGRATORS
 
-    // fwd IntegratorBaseTpl;
+    // fwd IntegratorAbstractTpl;
     template<typename _Scalar>
-    struct IntegratorBaseTpl;
+    struct IntegratorAbstractTpl;
 
-    // fwd IntegratorBaseDataTpl;
+    // fwd IntegratorDataTpl;
     template<typename _Scalar>
-    struct IntegratorBaseDataTpl;
+    struct IntegratorDataTpl;
 
-    // fwd ExplicitIntegratorTpl;
+    // fwd ExplicitIntegratorAbstractTpl;
     template<typename _Scalar>
-    struct ExplicitIntegratorTpl;
+    struct ExplicitIntegratorAbstractTpl;
 
     // fwd ExplicitIntegratorDataTpl;
     template<typename _Scalar>

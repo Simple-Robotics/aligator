@@ -16,27 +16,27 @@ namespace proxddp
       using context::Scalar;
       using namespace proxddp::dynamics;
 
-      using IntegratorBase = IntegratorBaseTpl<Scalar>;
+      using IntegratorAbstract = IntegratorAbstractTpl<Scalar>;
+      using DAEType = ContinuousDynamicsAbstractTpl<Scalar>;
 
-      using PyIntegratorBase = internal::PyStageFunction<IntegratorBase>;
-      bp::class_<PyIntegratorBase,
-                 bp::bases<context::DynamicsModel>
-                 >
-      (
-        "IntegratorBase", "Base class for numerical integrators.",
-        bp::init<const IntegratorBase::ContDynamics&>(
-          bp::args("self", "cont_dynamics")
-          )
+      /*
+      using PyIntegratorAbstract = internal::PyStageFunction<IntegratorAbstract>;
+      bp::class_<PyIntegratorAbstract, bp::bases<context::DynamicsModel>>(
+        "IntegratorAbstract", "Base class for numerical integrators.",
+        bp::init<const shared_ptr<DAEType>&>("Construct the integrator from a DAE.", bp::args("self", "cont_dynamics"))
       )
-        .def("continuous", &IntegratorBase::continuous,
+        .def("getContinuousDynamics", &IntegratorAbstract::getContinuousDynamics,
              "Get the underlying continuous dynamics.",
-             bp::return_internal_reference<>())
-      ;
+             bp::return_internal_reference<>());
 
-      // bp::class_<IntegratorEuler<Scalar>, bp::bases<IntegratorBase>>(
-      //   "Euler", "Explicit Euler integrator."
-      // );
-
+      bp::class_<IntegratorEuler<Scalar>, bp::bases<IntegratorAbstract>>(
+        "IntegratorEuler",
+        "The explicit Euler integrator :math:`x' = x \\oplus \\Delta t f(x, u)`; "
+        "this integrator has error :math:`O(\\Delta t)` "
+        "in the time step :math:`\\Delta t`."
+      )
+        .def_readwrite("timestep", &IntegratorEuler<Scalar>::timestep_, "Time step.");
+      */
     }
     
   } // namespace python

@@ -10,13 +10,13 @@ namespace proxddp
   evaluate(const ConstVectorRef& x,
            const ConstVectorRef& u,
            const ConstVectorRef& y,
-           Data& data) const
+           BaseData& data) const
   {
     // Call the forward dynamics and set the function residual
     // value to the difference between y and the xout_.
-    SpecificData& d = static_cast<SpecificData&>(data);
-    this->forward(x, u, d.xout_);
-    out_space().difference(y, d.xout_, d.value_);  // xnext - y
+    ExplicitData& data_ = static_cast<ExplicitData&>(data);
+    this->forward(x, u, data_);
+    out_space().difference(y, data_.xout_, data_.value_);  // xnext - y
   }
 
   template<typename Scalar>
@@ -24,17 +24,23 @@ namespace proxddp
   computeJacobians(const ConstVectorRef& x,
                    const ConstVectorRef& u,
                    const ConstVectorRef& y,
-                   Data& data) const
+                   BaseData& data) const
   {
-    SpecificData& d = static_cast<SpecificData&>(data);
-    this->forward(x, u, d.xout_);
-    this->dForward(x, u, d.Jx_, d.Ju_); // dxnext_(x,u)
+    ExplicitData& data_ = static_cast<ExplicitData&>(data);
+    this->forward(x, u, data_);
+    this->dForward(x, u, data_); // dxnext_(x,u)
     // compose by jacobians of log (xout - y)
-    out_space().Jdifference(y, d.xout_, d.Jy_, 0);  // d(xnext - y) / y
-    d.Jtemp_.setZero();
-    out_space().Jdifference(y, d.xout_, d.Jtemp_, 1);  // d(xnext - y) / xnext
-    d.Jx_ = d.Jtemp_ * d.Jx_;  // chain rule d(log)/dxnext * dxnext_dx
-    d.Ju_ = d.Jtemp_ * d.Ju_;
+    out_space().Jdifference(y, data_.xout_, data_.Jy_, 0);  // d(xnext - y) / y
+    data_.Jtemp_.setZero();
+    out_space().Jdifference(y, data_.xout_, data_.Jtemp_, 1);  // d(xnext - y) / xnext
+    data_.Jx_ = data_.Jtemp_ * data_.Jx_;  // chain rule d(log)/dxnext * dxnext_dx
+    data_.Ju_ = data_.Jtemp_ * data_.Ju_;
   }
   
+  template<typename Scalar>
+  shared_ptr<DynamicsDataTpl<Scalar>>
+  ExplicitDynamicsModelTpl<Scalar>::createData() const
+  {
+    return std::make_shared<ExplicitData>(this->ndx1, this->nu, this->out_space());
+  }
 } // namespace proxddp

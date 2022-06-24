@@ -4,7 +4,7 @@
 
 #include "proxddp/core/explicit-dynamics.hpp"
 #include "proxddp/modelling/dynamics/continuous-base.hpp"
-#include "proxddp/modelling/dynamics/base-ode.hpp"
+#include "proxddp/modelling/dynamics/ode-abstract.hpp"
 
 
 namespace proxddp
@@ -19,6 +19,7 @@ namespace proxddp
       {
         using Scalar = context::Scalar;
         PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+        using Data = ExplicitDynamicsDataTpl<Scalar>;
 
         template<typename... Args>
         PyExplicitDynamicsModel(Args&&... args)
@@ -26,18 +27,17 @@ namespace proxddp
 
         virtual void forward(const ConstVectorRef& x,
                              const ConstVectorRef& u,
-                             VectorRef out) const override
-        { PROXDDP_PYTHON_OVERRIDE_PURE(void, "forward", x, u, out) }
+                             Data& data) const override
+        { PROXDDP_PYTHON_OVERRIDE_PURE(void, "forward", x, u, data) }
 
         virtual void dForward(const ConstVectorRef& x,
                               const ConstVectorRef& u,
-                              MatrixRef Jx,
-                              MatrixRef Ju) const override
-        { PROXDDP_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, Jx, Ju) }
+                              Data& data) const override
+        { PROXDDP_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, data) }
 
       };
       
-      template<class T = dynamics::ContinuousDynamicsTpl<context::Scalar>>
+      template<class T = dynamics::ContinuousDynamicsAbstractTpl<context::Scalar>>
       struct PyContinuousDynamics : T, bp::wrapper<T>
       {
         using bp::wrapper<T>::get_override;
@@ -48,7 +48,10 @@ namespace proxddp
         PyContinuousDynamics(Args&&... args)
           : T(std::forward<Args>(args)...) {}
 
-        void evaluate(const ConstVectorRef& x, const ConstVectorRef& u, const ConstVectorRef& xdot, Data& data) const
+        void evaluate(const ConstVectorRef& x,
+                      const ConstVectorRef& u,
+                      const ConstVectorRef& xdot,
+                      Data& data) const
         { get_override("evaluate")(x, u, xdot, data); }
 
         void computeJacobians(const ConstVectorRef& x,
@@ -61,12 +64,12 @@ namespace proxddp
 
 
       struct PyODEBase :
-          dynamics::ODEBaseTpl<context::Scalar>,
-          bp::wrapper<dynamics::ODEBaseTpl<context::Scalar>>
+          dynamics::ODEAbstractTpl<context::Scalar>,
+          bp::wrapper<dynamics::ODEAbstractTpl<context::Scalar>>
       {
         PROXNLP_DYNAMIC_TYPEDEFS(context::Scalar);
-        using Base = dynamics::ODEBaseTpl<context::Scalar>;
-        using Data = dynamics::ODEBaseTpl<context::Scalar>::Data;
+        using Base = dynamics::ODEAbstractTpl<context::Scalar>;
+        using Data = dynamics::ODEAbstractTpl<context::Scalar>::Data;
 
         template<typename ...Args>
         PyODEBase(Args&&... args)
@@ -74,17 +77,16 @@ namespace proxddp
 
         void forward(const ConstVectorRef& x,
                      const ConstVectorRef& u,
-                     VectorRef xdot_out) const override
+                     Data& data) const override
         {
-          get_override("forward")(x, u, xdot_out);
+          get_override("forward")(x, u, data);
         }
 
         void dForward(const ConstVectorRef& x,
                       const ConstVectorRef& u,
-                      MatrixRef Jxdot_x,
-                      MatrixRef Jxdot_u) const override
+                      Data& data) const override
         {
-          get_override("dForward")(x, u, Jxdot_x, Jxdot_u);
+          get_override("dForward")(x, u, data);
         }
       };
 

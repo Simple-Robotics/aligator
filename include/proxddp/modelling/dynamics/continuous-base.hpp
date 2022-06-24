@@ -18,7 +18,7 @@ namespace dynamics
    *          The codimension of this function is the same as that of \f$x\f$.
    */
   template<typename _Scalar>
-  struct ContinuousDynamicsTpl
+  struct ContinuousDynamicsAbstractTpl
   {
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
@@ -33,12 +33,12 @@ namespace dynamics
     inline int ndx() const { return space_.ndx(); }
     inline int nu()  const { return nu_; }
 
-    ContinuousDynamicsTpl(const Manifold& space, const int nu)
+    ContinuousDynamicsAbstractTpl(const Manifold& space, const int nu)
       : space_(space)
       , nu_(nu)
       {}
 
-    virtual ~ContinuousDynamicsTpl() = default;
+    virtual ~ContinuousDynamicsAbstractTpl() = default;
 
     /// @brief   Evaluate the vector field at a point \f$(x, u)\f$.
     /// @param   x The input state variable.
@@ -68,7 +68,7 @@ namespace dynamics
 
   };
 
-  /// @brief  Data struct for ContinuousDynamicsTpl.
+  /// @brief  Data struct for ContinuousDynamicsAbstractTpl.
   template<typename _Scalar>
   struct ContinuousDynamicsDataTpl
   {
@@ -76,18 +76,18 @@ namespace dynamics
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
     /// Residual value \f$e = f(x,u,\dot{x})\f$
-    VectorXs error_;
+    VectorXs value_;
     MatrixXs Jx_;
     MatrixXs Ju_;
     MatrixXs Jxdot_;
 
     ContinuousDynamicsDataTpl(const int ndx, const int nu)
-      : error_(ndx)
+      : value_(ndx)
       , Jx_(ndx, ndx)
       , Ju_(ndx, nu)
       , Jxdot_(ndx, ndx)
     {
-      error_.setZero();
+      value_.setZero();
       Jx_.setZero();
       Ju_.setZero();
       Jxdot_.setZero();

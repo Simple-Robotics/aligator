@@ -39,7 +39,7 @@ int main()
   fmt::print("matrix A:\n{}\n", dynamics.A_);
   fmt::print("matrix B:\n{}\n", dynamics.B_);
   fmt::print("drift  c:\n{}\n", dynamics.c_);
-  auto spaceptr = dynamics.out_space_;
+  auto spaceptr = dynamics.next_state_;
   const auto& space = *spaceptr;;
 
   auto rcost = std::make_shared<QuadraticCost<double>>(w_x, w_u);

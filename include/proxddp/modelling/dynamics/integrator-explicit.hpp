@@ -7,29 +7,40 @@
 #include "proxddp/modelling/dynamics/integrator-base.hpp"
 #include "proxddp/core/explicit-dynamics.hpp"
 
+#include "proxddp/modelling/dynamics/ode-abstract.hpp"
+
 
 namespace proxddp
 {
   namespace dynamics
   {
     
-    /// @brief  Explicit integrators \f$ x_{k+1} = \phi(x_k, u_k) \f$.
+    /**
+     * @brief   Explicit integrators \f$x_{k+1} = f(x_k, u_k) \f$.
+     * @details This class of integrator mostly applies to integrating ODE models \f$\dot{x} = \phi(x,u)\f$.
+     */ 
     template<typename _Scalar>
-    struct ExplicitIntegratorTpl : ExplicitDynamicsModelTpl<_Scalar>, IntegratorBaseTpl<_Scalar>
+    struct ExplicitIntegratorAbstractTpl : ExplicitDynamicsModelTpl<_Scalar>, IntegratorAbstractTpl<_Scalar>
     {
-    public:
       using Scalar = _Scalar;
-      using IntegratorBase = IntegratorBaseTpl<Scalar>;
-      using ContDynamics = ODEBaseTpl<Scalar>;
+      using IntegratorAbstract = IntegratorAbstractTpl<Scalar>;
+      using ODEType = ODEAbstractTpl<Scalar>;
+      using BaseExplicit = ExplicitDynamicsModelTpl<Scalar>;
 
-      inline const ContDynamics& continuous() const
-      {
-        return static_cast<const ContDynamics&>(cont_dynamics_);
-      }
+      using BaseExplicit::evaluate;
+      using BaseExplicit::computeJacobians;
+      using BaseExplicit::ndx1;
+      using BaseExplicit::ndx2;
+      using BaseExplicit::nu;
 
-      ExplicitIntegratorTpl(const ContDynamics& cont_dynamics)
-        : IntegratorBase(cont_dynamics)
-        , ExplicitDynamicsModelTpl<Scalar>(cont_dynamics.ndx(), cont_dynamics.nu())
+      shared_ptr<ODEType> cont_dynamics_;
+
+      /// @brief  Get the underlying ODE instance.
+      virtual inline const ODEType& getContinuousDynamics() const { return *cont_dynamics_; }
+
+      explicit ExplicitIntegratorAbstractTpl(const shared_ptr<ODEType>& cont_dynamics)
+        : IntegratorAbstract(cont_dynamics)
+        , BaseExplicit(cont_dynamics.ndx(), cont_dynamics.nu())
         {}
 
 
@@ -38,20 +49,21 @@ namespace proxddp
         return std::make_shared<ExplicitIntegratorDataTpl<Scalar>>(*this);
       }
 
-    protected:
-      using IntegratorBase::cont_dynamics_;
     };
 
     template<typename _Scalar>
-    struct ExplicitIntegratorDataTpl : IntegratorBaseDataTpl<_Scalar>, ExplicitDynamicsDataTpl<_Scalar>
+    struct ExplicitIntegratorDataTpl : IntegratorDataTpl<_Scalar>, ExplicitDynamicsDataTpl<_Scalar>
     {
       using Scalar = _Scalar;
-      using IntegratorBaseData = IntegratorBaseDataTpl<Scalar>;
-      using IntegratorBaseData::cont_dynamics;
+      using IntegratorData = IntegratorDataTpl<Scalar>;
+      using ExplicitData = ExplicitDynamicsDataTpl<Scalar>;
+      using ExplicitData::Jx_;
+      using ExplicitData::Ju_;
+      using ExplicitData::Jy_;
 
-      ExplicitIntegratorDataTpl(const ExplicitIntegratorTpl<Scalar> integrator)
-        : IntegratorBaseData(integrator)
-        , ExplicitDynamicsDataTpl<Scalar>(integrator.ndx(), integrator.nu())
+      ExplicitIntegratorDataTpl(const ExplicitIntegratorAbstractTpl<Scalar>& integrator)
+        : IntegratorData(integrator)
+        , ExplicitData(integrator.ndx1, integrator.nu)
         {}
     };
     

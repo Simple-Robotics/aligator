@@ -10,47 +10,49 @@ namespace proxddp
   namespace dynamics
   {
     
-    /// @brief  Base class for (implicit) numerical integrators.
-    ///
-    /// Numerical integrators are instances DynamicsModelTpl
-    /// which call into a ContinuousDynamicsTpl and construct an integration rule.
+    /**
+     * @brief  Base class for (implicit) numerical integrators.
+     *
+     * @details Numerical integrators are instances DynamicsModelTpl which call into a
+     *          ContinuousDynamicsAbstractTpl and construct an integration rule.
+     */ 
     template<typename _Scalar>
-    struct IntegratorBaseTpl : DynamicsModelTpl<_Scalar>
+    struct IntegratorAbstractTpl : virtual DynamicsModelTpl<_Scalar>
     {
     public:
       using Scalar = _Scalar;
-      using ContDynamics = ContinuousDynamicsTpl<Scalar>;
+      using Base = DynamicsModelTpl<Scalar>;
+      using BaseData = DynamicsDataTpl<Scalar>;
+      using ContinuousDynamics = ContinuousDynamicsAbstractTpl<Scalar>;
 
-      /// @brief    Return a reference to the underlying continuous dynamics.
-      virtual inline const ContDynamics& continuous() const { return cont_dynamics_; }
+      /// The underlying continuous dynamics.
+      shared_ptr<ContinuousDynamics> cont_dynamics_;
+
+      /// @brief  Return a reference to the underlying continuous dynamics.
+      virtual inline const ContinuousDynamics& getContinuousDynamics() const { return *cont_dynamics_; }
 
       /// Constructor from instances of DynamicsType.
-      explicit IntegratorBaseTpl(const ContDynamics& cont_dynamics)
-        : DynamicsModelTpl<Scalar>(cont_dynamics.ndx(), cont_dynamics.nu())
+      explicit IntegratorAbstractTpl(const shared_ptr<ContinuousDynamics>& cont_dynamics)
+        : Base(cont_dynamics->ndx(), cont_dynamics->nu())
         , cont_dynamics_(cont_dynamics) {}
 
-      shared_ptr<DynamicsDataTpl<Scalar>> createData() const
+      shared_ptr<BaseData> createData() const
       {
-        return std::make_shared<IntegratorBaseDataTpl<Scalar>>(*this);
+        return std::make_shared<IntegratorDataTpl<Scalar>>(*this);
       }
-
-    protected:
-      /// The underlying continuous dynamics.
-      const ContDynamics& cont_dynamics_;
     };
 
 
-    /// @brief  Data class for numerical integrators IntegratorBaseTpl.
+    /// @brief  Data class for numerical integrators (IntegratorAbstractTpl).
     template<typename _Scalar>
-    struct IntegratorBaseDataTpl : DynamicsDataTpl<_Scalar>
+    struct IntegratorDataTpl : virtual DynamicsDataTpl<_Scalar>
     {
       using Scalar = _Scalar;
-      using ContinuousDynamicsDataType = ContinuousDynamicsDataTpl<Scalar>;
-      shared_ptr<ContinuousDynamicsDataType> cont_data;
+      shared_ptr<ContinuousDynamicsDataTpl<Scalar>> continuous_data;
 
-      IntegratorBaseDataTpl(const IntegratorBaseTpl<Scalar>& integrator)
+      explicit IntegratorDataTpl(const IntegratorAbstractTpl<Scalar>& integrator)
         : DynamicsDataTpl<Scalar>(integrator.ndx1, integrator.nu, integrator.ndx2, integrator.ndx2)
-        , cont_data(std::move(integrator.continuous().createData()))
+        , continuous_data(std::move(integrator.cont_dynamics_->createData()))
         {}
 
     };

@@ -13,18 +13,19 @@ using namespace proxddp;
 struct MyModel : ExplicitDynamicsModelTpl<double>
 {
   using Manifold = ManifoldAbstractTpl<double>;
+  using ExplicitData = ExplicitDynamicsDataTpl<double>;
   MyModel(const shared_ptr<Manifold>& space)
     : ExplicitDynamicsModelTpl<double>(space, space->ndx()) {}
 
-  void forward(const ConstVectorRef& x, const ConstVectorRef& u, VectorRef out) const
+  void forward(const ConstVectorRef& x, const ConstVectorRef& u, ExplicitData& data) const
   {
-    out_space().integrate(x, u, out);
+    out_space().integrate(x, u, data.xout_);
   }
 
-  void dForward(const ConstVectorRef& x, const ConstVectorRef& u, MatrixRef Jx, MatrixRef Ju) const
+  void dForward(const ConstVectorRef& x, const ConstVectorRef& u, ExplicitData& data) const
   {
-    out_space().Jintegrate(x, u, Jx, 0);
-    out_space().Jintegrate(x, u, Ju, 1);
+    out_space().Jintegrate(x, u, data.Jx_, 0);
+    out_space().Jintegrate(x, u, data.Ju_, 1);
   }
 };
 

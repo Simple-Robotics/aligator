@@ -23,6 +23,7 @@ namespace proxddp
           const typename math_types<Scalar>::VectorOfVectors& us)
   {
     typename math_types<Scalar>::VectorOfVectors xs { x0 };
+    using ExpData = ExplicitDynamicsDataTpl<Scalar>;
     using VectorXs = typename math_types<Scalar>::VectorXs;
     std::size_t N = us.size();
     xs.reserve(N + 1);
@@ -30,8 +31,11 @@ namespace proxddp
 
     for (std::size_t i = 0; i < N; i++)
     {
-      xs.push_back(VectorXs::Zero(dyn_models[i]->out_space_->nx()));
-      dyn_models[i]->forward(xs[i], us[i], xs[i + 1]);
+      auto data = dyn_models[i]->createData();
+      shared_ptr<ExpData> exp_data = std::static_pointer_cast<ExpData>(data);
+      xs.push_back(VectorXs::Zero(dyn_models[i]->next_state_->nx()));
+      dyn_models[i]->forward(xs[i], us[i], *exp_data);
+      xs[i + 1] = exp_data->xout_;
     }
 
     return xs;
