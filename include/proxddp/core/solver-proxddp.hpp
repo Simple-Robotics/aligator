@@ -238,7 +238,7 @@ namespace proxddp
             break;
           }
 
-          if (results.primal_infeasibility <= target_tolerance)
+          if (std::max(results.primal_infeasibility, workspace.inner_criterion) <= target_tolerance)
           {
             conv = true;
             break;

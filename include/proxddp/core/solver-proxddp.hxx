@@ -89,6 +89,7 @@ namespace proxddp
     term_value.v_2_ = 2 * term_data.value_;
     term_value.Vx_ = term_data.Lx_;
     term_value.Vxx_ = term_data.Lxx_;
+    term_value.storage = term_value.storage.template selfadjointView<Eigen::Lower>();
 
     for (std::size_t i = 0; i < nsteps; i++)
     {
@@ -177,6 +178,8 @@ namespace proxddp
       stage.constraints_manager.getBlockByConstraint(rhs_D.bottomRows(ndual), i) = cstr_jac.leftCols(ndx1);
     }
 
+    q_param.storage = q_param.storage.template selfadjointView<Eigen::Lower>();
+
     // blocks: u, y, and dual
     rhs_0.head(nprim) = q_param.grad_.tail(nprim);
     rhs_0.tail(ndual) = mu_ * (workspace.lams_plus_[step + 1] - results.lams_[step + 1]);
@@ -188,7 +191,7 @@ namespace proxddp
     kkt_mat.topLeftCorner(nprim, nprim) = q_param.hess_.bottomRightCorner(nprim, nprim);
     kkt_mat.bottomRightCorner(ndual, ndual).diagonal().array() = -mu_;
 
-    auto kkt_mat_view = kkt_mat.template selfadjointView<Eigen::Lower>();
+    Eigen::SelfAdjointView<MatrixRef, Eigen::Lower> kkt_mat_view(kkt_mat);
 
     workspace.inner_criterion_by_stage(long(step)) = math::infty_norm(rhs_0);
     workspace.dual_infeas_by_stage(long(step)) = math::infty_norm(rhs_0.head(nprim));  // dual infeas: norm of Q-function gradient
@@ -200,8 +203,7 @@ namespace proxddp
 
     /* Value function */
     value_store_t& v_current = workspace.value_params[step];
-    v_current.storage = \
-      q_param.storage.topLeftCorner(ndx1 + 1, ndx1 + 1) +\
+    v_current.storage = q_param.storage.topLeftCorner(ndx1 + 1, ndx1 + 1) +\
       kkt_rhs.transpose() * results.gains_[step];
   }
 
