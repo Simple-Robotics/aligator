@@ -70,8 +70,8 @@ class EulerIntegratorDynamics(proxddp.dynamics.ExplicitDynamicsModel):
         self.B = B
         super().__init__(space, nu)
 
-    def forward(self, x, u, out):
-        assert out.size == space.nx
+    def forward(self, x, u, data: proxddp.dynamics.ExplicitDynamicsData):
+        out = data.xout[:]
         q = x[:self.model.nq]
         v = x[self.model.nq:]
         tau = self.B @ u
@@ -81,7 +81,9 @@ class EulerIntegratorDynamics(proxddp.dynamics.ExplicitDynamicsModel):
         vout[:] = v + self.dt * acc
         qout[:] = pin.integrate(self.model, q, self.dt * vout)
 
-    def dForward(self, x, u, Jx, Ju):
+    def dForward(self, x, u, data: proxddp.dynamics.ExplicitDynamicsData):
+        Jx = data.Jx
+        Ju = data.Ju
         Jx[:, :] = 0.
         Ju[:, :] = 0.
         q = x[:self.model.nq]
@@ -108,9 +110,10 @@ class EulerIntegratorDynamics(proxddp.dynamics.ExplicitDynamicsModel):
         Jx[:, :] = Jtemp0 + Jx
 
 
-dt = 0.03
-Tf = 2.5
+dt = 0.033
+Tf = 2.
 nsteps = int(Tf / dt)
+print("nsteps: {:d}".format(nsteps))
 
 dynmodel = EulerIntegratorDynamics(dt, QUAD_ACT_MATRIX)
 
@@ -121,14 +124,15 @@ u0 = np.zeros(nu)
 vizer.display(x0[:nq])
 out = space.neutral()
 
-dynmodel.forward(x0, u0, out)
+data = dynmodel.createData()
+dynmodel.forward(x0, u0, data)
 np.set_printoptions(precision=2, linewidth=250)
 Jx = np.zeros((space.ndx, space.ndx))
 Ju = np.zeros((space.ndx, nu))
 Jx_nd = Jx.copy()
 
 x1 = space.rand()
-dynmodel.dForward(x1, u0, Jx, Ju)
+dynmodel.dForward(x1, u0, data)
 
 us_init = [u0] * nsteps
 xs_init = [x0] * (nsteps + 1)
@@ -138,7 +142,7 @@ x_tar1[:3] = (0.9, 0.8, 1.0)
 x_tar2 = x_tar1.copy()
 x_tar2[:3] = (1.4, -0.6, 1.0)
 
-u_max = 4. * np.ones(nu)
+u_max = 4.5 * np.ones(nu)
 u_min = -1. * np.ones(nu)
 
 times = np.linspace(0, Tf, nsteps + 1)
@@ -187,6 +191,9 @@ def setup():
         ctrl_box = proxddp.ControlBoxFunction(space.ndx, u_min, u_max)
         stage.addConstraint(ctrl_box, constraints.NegativeOrthant())
         stages.append(stage)
+
+        sd = stage.createData()
+        stage.evaluate(x0, u0, x1, sd)
 
     term_cost = proxddp.QuadraticResidualCost(
         proxddp.StateErrorResidual(space, nu, x_tar2),
