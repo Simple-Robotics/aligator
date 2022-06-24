@@ -83,6 +83,9 @@ namespace proxddp
     VectorXs dx_;
     MatrixXs Jtemp_;
 
+    VectorRef xoutref_;
+    VectorRef dxref_;
+
     ExplicitDynamicsDataTpl(const int ndx1,
                             const int nu,
                             const ManifoldAbstractTpl<Scalar>& output_space)
@@ -90,6 +93,8 @@ namespace proxddp
       , xout_(output_space.neutral())
       , dx_(output_space.ndx())
       , Jtemp_(output_space.ndx(), output_space.ndx())
+      , xoutref_(xout_)
+      , dxref_(dx_)
     {
       xout_.setZero();
       dx_.setZero();

@@ -107,10 +107,12 @@ namespace proxddp
                       "Output space.")
         .def(CreateDataPythonVisitor<ExplicitDynamics>());
 
-      bp::class_<context::ExplicitDynData, bp::bases<context::StageFunctionData>, boost::noncopyable>(
+      bp::register_ptr_to_python<shared_ptr<context::ExplicitDynData>>();
+
+      bp::class_<context::ExplicitDynData, bp::bases<context::StageFunctionData>>(
         "ExplicitDynamicsData", "Data struct for explicit dynamics models.", bp::no_init)
-        .def_readwrite("dx",   &context::ExplicitDynData::dx_)
-        .def_readwrite("xout", &context::ExplicitDynData::xout_);
+        .add_property("dx",   bp::make_getter(&context::ExplicitDynData::dx_, bp::return_value_policy<bp::return_by_value>()))
+        .add_property("xout", bp::make_getter(&context::ExplicitDynData::xoutref_, bp::return_value_policy<bp::return_by_value>()));
 
       /* Expose implementations */
 
