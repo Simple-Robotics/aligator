@@ -73,6 +73,7 @@ xs_i = proxddp.rollout(dynmodel, x0, us_i)
 prob_data = problem.createData()
 problem.evaluate(xs_i, us_i, prob_data)
 
+solver.setup(problem)
 solver.run(problem, xs_i, us_i)
 res = solver.getResults()
 

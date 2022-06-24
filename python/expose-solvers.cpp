@@ -103,6 +103,8 @@ namespace proxddp
              bp::return_internal_reference<>(), "Get the results instance.")
         .def("getWorkspace",&SolverType::getWorkspace, bp::args("self"),
              bp::return_internal_reference<>(), "Get the workspace instance.")
+        .def("setup", &SolverType::setup, bp::args("self", "problem"),
+             "Allocate workspace and results memory for the problem.")
         .def("run", &SolverType::run,
              bp::args("self", "problem", "xs_init", "us_init"),
              "Run the algorithm. This requires providing initial guesses for both "

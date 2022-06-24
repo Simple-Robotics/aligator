@@ -156,12 +156,27 @@ namespace proxddp
     /// @pre  Compute the derivatives first!
     void backwardPass(const Problem& problem, Workspace& workspace, Results& results) const;
 
+    /// @brief Allocate new workspace and results instances according to the specifications of @p problem.
+    /// @param problem  The problem instance with respect to which memory will be allocated.
+    void setup(const Problem& problem)
+    {
+      workspace_  = std::unique_ptr<Workspace>(new Workspace(problem));
+      results_    = std::unique_ptr<Results>(new Results(problem));
+    }
+
+    /// @brief Run the numerical solver.
+    /// @param problem  The trajectory optimization problem to solve.
+    /// @param xs_init  Initial trajectory guess.
+    /// @param us_init  Initial control sequence guess.
+    /// @pre  You must call SolverProxDDP::setup beforehand to allocate a workspace and results.
     bool run(const Problem& problem,
              const std::vector<VectorXs>& xs_init,
              const std::vector<VectorXs>& us_init)
     {
-      workspace_  = std::unique_ptr<Workspace>(new Workspace(problem));
-      results_    = std::unique_ptr<Results>(new Results(problem));
+      if (workspace_ == 0 || results_ == 0)
+      {
+        throw std::runtime_error("workspace and results were not allocated yet!");
+      }
       Workspace& workspace = *workspace_;
       Results& results = *results_;
 

@@ -34,7 +34,7 @@ int main()
   w_x(0, 0) = 2.1;
   w_u *= 1e-2;
 
-  auto dynptr = std::make_shared<LinearDiscreteDynamics<double>>(A, B, c_);
+  auto dynptr = std::make_shared<LinearDiscreteDynamicsTpl<double>>(A, B, c_);
   auto& dynamics = *dynptr;
   fmt::print("matrix A:\n{}\n", dynamics.A_);
   fmt::print("matrix B:\n{}\n", dynamics.B_);
@@ -92,6 +92,7 @@ int main()
   assert(results.xs_.size() == nsteps + 1);
   assert(results.us_.size() == nsteps);
 
+  solver.setup(problem);
   solver.run(problem, xs, us);
 
   std::string line_ = "";

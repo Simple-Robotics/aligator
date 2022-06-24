@@ -12,7 +12,7 @@ namespace proxddp
 
   /// @brief Discrete explicit linear dynamics.
   template<typename _Scalar>
-  struct LinearDiscreteDynamics : ExplicitDynamicsModelTpl<_Scalar>
+  struct LinearDiscreteDynamicsTpl : ExplicitDynamicsModelTpl<_Scalar>
   {
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
@@ -21,10 +21,11 @@ namespace proxddp
     const VectorXs c_;
 
     using Base = ExplicitDynamicsModelTpl<Scalar>;
+    using Data = ExplicitDynamicsDataTpl<Scalar>;
     using VectorSpaceType = proxnlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
 
     /// @brief Constructor with state manifold and matrices.
-    LinearDiscreteDynamics(
+    LinearDiscreteDynamicsTpl(
       const MatrixXs& A,
       const MatrixXs& B,
       const VectorXs& c)
@@ -35,18 +36,18 @@ namespace proxddp
       {}
 
     void forward(const ConstVectorRef& x,
-                const ConstVectorRef& u,
-                VectorRef out) const override
+                 const ConstVectorRef& u,
+                 Data& data) const
     {
-      out = A_ * x + B_ * u + c_;
+      data.xout_ = A_ * x + B_ * u + c_;
     }
     
     void dForward(const ConstVectorRef&,
                   const ConstVectorRef&,
-                  MatrixRef Jx, MatrixRef Ju) const override
+                  Data& data) const
     {
-      Jx = A_;
-      Ju = B_;
+      data.Jx_ = A_;
+      data.Ju_ = B_;
     }
 
   };

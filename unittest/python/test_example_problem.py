@@ -98,11 +98,11 @@ class TestClass:
 
     def test_shooting_problem(self, nsteps):
         stage_model = self.stage_model
-        shooting_problem = proxddp.TrajOptProblem(self.x0, nu, space, term_cost=self.cost)
+        problem = proxddp.TrajOptProblem(self.x0, nu, space, term_cost=self.cost)
         for _ in range(nsteps):
-            shooting_problem.addStage(stage_model)
+            problem.addStage(stage_model)
 
-        problem_data = shooting_problem.createData()
+        problem_data = problem.createData()
         stage_datas = problem_data.stage_data
 
         stage2 = stage_model.clone()
@@ -116,11 +116,11 @@ class TestClass:
         us_init = [u0] * nsteps
         xs_out = proxddp.rollout(self.dynmodel, x0, us_init).tolist()
 
-        assert len(problem_data.stage_data) == shooting_problem.num_steps
-        assert shooting_problem.num_steps == nsteps
+        assert len(problem_data.stage_data) == problem.num_steps
+        assert problem.num_steps == nsteps
 
-        shooting_problem.evaluate(xs_out, us_init, problem_data)
-        shooting_problem.computeDerivatives(xs_out, us_init, problem_data)
+        problem.evaluate(xs_out, us_init, problem_data)
+        problem.computeDerivatives(xs_out, us_init, problem_data)
 
         tol = 1e-5
         mu_init = 1e-2
@@ -128,7 +128,8 @@ class TestClass:
 
         solver = proxddp.ProxDDP(tol, mu_init, rho_init)
         solver.multiplier_update_mode = proxddp.MultiplierUpdateMode.NEWTON
-        solver.run(shooting_problem, xs_out, us_init)
+        solver.setup(problem)
+        solver.run(problem, xs_out, us_init)
 
 
 if __name__ == '__main__':

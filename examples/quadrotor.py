@@ -200,6 +200,7 @@ tol = 1e-3
 mu_init = 0.01
 verbose = proxddp.VerboseLevel.VERBOSE
 solver = proxddp.ProxDDP(tol, mu_init, verbose=verbose)
+solver.setup(problem)
 solver.run(problem, xs_init, us_init)
 
 results = solver.getResults()
