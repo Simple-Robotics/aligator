@@ -17,6 +17,7 @@ namespace proxddp
 
       {
         using QParams = proxddp::internal::q_function_storage<Scalar>;
+        using VParams = proxddp::internal::value_storage<Scalar>;
         bp::class_<QParams>(
           "QParams", "Q-function parameters.", bp::no_init
         )
@@ -25,6 +26,10 @@ namespace proxddp
           .add_property("hess_", bp::make_getter(&QParams::hess_, bp::return_value_policy<bp::return_by_value>()))
         ;
         pinpy::StdVectorPythonVisitor<std::vector<QParams>, true>::expose("StdVec_QParams");
+
+        bp::class_<VParams>("VParams", "Value function parameters.", bp::no_init)
+          .def_readonly("storage", &QParams::storage);
+        pinpy::StdVectorPythonVisitor<std::vector<VParams>, true>::expose("StdVec_VParams");
       }
 
       bp::class_<Workspace>(
@@ -33,6 +38,7 @@ namespace proxddp
         )
         .def_readonly("value_params", &Workspace::value_params)
         .def_readonly("q_params", &Workspace::q_params)
+        .def_readonly("value_params", &Workspace::value_params)
         .def_readonly("kkt_matrix_buffer_", &Workspace::kktMatrixFull_)
         .def_readonly("inner_crit",  &Workspace::inner_criterion)
         .def_readonly("prim_infeas_by_stage", &Workspace::primal_infeas_by_stage)
