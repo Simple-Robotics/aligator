@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/core/shooting-problem.hpp"
+#include "proxddp/core/traj-opt-problem.hpp"
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -8,25 +8,25 @@
 namespace proxddp
 {
   template<typename Scalar>
-  void ShootingProblemTpl<Scalar>::addStage(const StageModel& new_stage)
+  void TrajOptProblemTpl<Scalar>::addStage(const StageModel& new_stage)
   {
     stages_.push_back(new_stage);
   }
 
   template<typename Scalar>
-  void ShootingProblemTpl<Scalar>::addStage(StageModel&& new_stage)
+  void TrajOptProblemTpl<Scalar>::addStage(StageModel&& new_stage)
   {
     stages_.push_back(std::move(new_stage));
   }
   
   template<typename Scalar>
-  inline std::size_t ShootingProblemTpl<Scalar>::numSteps() const
+  inline std::size_t TrajOptProblemTpl<Scalar>::numSteps() const
   {
     return stages_.size();
   }
 
   template<typename Scalar>
-  void ShootingProblemTpl<Scalar>::
+  void TrajOptProblemTpl<Scalar>::
   evaluate(const std::vector<VectorXs>& xs,
            const std::vector<VectorXs>& us,
            ProblemData& prob_data) const
@@ -54,7 +54,7 @@ namespace proxddp
   }
 
   template<typename Scalar>
-  void ShootingProblemTpl<Scalar>::
+  void TrajOptProblemTpl<Scalar>::
   computeDerivatives(const std::vector<VectorXs>& xs,
                      const std::vector<VectorXs>& us,
                      ProblemData& prob_data) const
@@ -83,8 +83,8 @@ namespace proxddp
   }
 
   template<typename Scalar>
-  ShootingProblemDataTpl<Scalar>::
-  ShootingProblemDataTpl(const ShootingProblemTpl<Scalar>& problem)
+  TrajOptDataTpl<Scalar>::
+  TrajOptDataTpl(const TrajOptProblemTpl<Scalar>& problem)
     : init_data(std::move(problem.init_state_error.createData()))
   {
     stage_data.reserve(problem.numSteps());

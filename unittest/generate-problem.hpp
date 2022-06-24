@@ -1,5 +1,5 @@
 #pragma once
-#include "proxddp/core/shooting-problem.hpp"
+#include "proxddp/core/traj-opt-problem.hpp"
 #include "proxddp/core/explicit-dynamics.hpp"
 
 #include <proxnlp/modelling/spaces/pinocchio-groups.hpp>
@@ -60,7 +60,7 @@ struct MyFixture
   MyModel dyn_model;
   MyCost cost;
   StageModel stage;
-  ShootingProblemTpl<double> problem;
+  TrajOptProblemTpl<double> problem;
 
   MyFixture()
     : space(std::make_shared<Manifold>())

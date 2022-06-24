@@ -20,11 +20,11 @@ namespace proxddp
   ///   \end{aligned}
   /// \f]
   template<typename _Scalar>
-  struct ShootingProblemTpl
+  struct TrajOptProblemTpl
   {
     using Scalar = _Scalar;
     using StageModel = StageModelTpl<Scalar>;
-    using ProblemData = ShootingProblemDataTpl<Scalar>;
+    using ProblemData = TrajOptDataTpl<Scalar>;
     using CostAbstract = CostAbstractTpl<Scalar>;
 
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
@@ -37,13 +37,13 @@ namespace proxddp
     std::vector<StageModel> stages_;
     shared_ptr<CostAbstract> term_cost_;
 
-    ShootingProblemTpl(const VectorXs& x0, const std::vector<StageModel>& stages, const shared_ptr<CostAbstract>& term_cost)
+    TrajOptProblemTpl(const VectorXs& x0, const std::vector<StageModel>& stages, const shared_ptr<CostAbstract>& term_cost)
       : x0_init_(x0)
       , init_state_error(stages[0].xspace(), stages[0].nu(), x0_init_)
       , stages_(stages)
       , term_cost_(term_cost) {}
 
-    ShootingProblemTpl(const VectorXs& x0, const int nu, const ManifoldAbstractTpl<Scalar>& space, const shared_ptr<CostAbstract>& term_cost)
+    TrajOptProblemTpl(const VectorXs& x0, const int nu, const ManifoldAbstractTpl<Scalar>& space, const shared_ptr<CostAbstract>& term_cost)
       : x0_init_(x0)
       , init_state_error(space, nu, x0_init_)
       , term_cost_(term_cost) {}
@@ -77,7 +77,7 @@ namespace proxddp
 
   /// @brief Problem data struct.
   template<typename _Scalar>
-  struct ShootingProblemDataTpl
+  struct TrajOptDataTpl
   {
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
@@ -89,16 +89,16 @@ namespace proxddp
     /// Terminal cost data.
     shared_ptr<CostDataAbstractTpl<Scalar>> term_cost_data;
 
-    ShootingProblemDataTpl(const ShootingProblemTpl<Scalar>& problem);
+    TrajOptDataTpl(const TrajOptProblemTpl<Scalar>& problem);
   };
   
   /**
    * @brief Compute the trajectory cost.
    * 
-   * @warning Call ShootingProblemTpl::evaluate() first!
+   * @warning Call TrajOptProblemTpl::evaluate() first!
    */
   template<typename Scalar>
-  Scalar computeTrajectoryCost(const ShootingProblemTpl<Scalar>& problem, const ShootingProblemDataTpl<Scalar>& problem_data)
+  Scalar computeTrajectoryCost(const TrajOptProblemTpl<Scalar>& problem, const TrajOptDataTpl<Scalar>& problem_data)
   {
     Scalar traj_cost = 0.;
 
@@ -116,4 +116,4 @@ namespace proxddp
 
 } // namespace proxddp
 
-#include "proxddp/core/shooting-problem.hxx"
+#include "proxddp/core/traj-opt-problem.hxx"

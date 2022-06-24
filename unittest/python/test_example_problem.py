@@ -98,7 +98,7 @@ class TestClass:
 
     def test_shooting_problem(self, nsteps):
         stage_model = self.stage_model
-        shooting_problem = proxddp.ShootingProblem(self.x0, nu, space, term_cost=self.cost)
+        shooting_problem = proxddp.TrajOptProblem(self.x0, nu, space, term_cost=self.cost)
         for _ in range(nsteps):
             shooting_problem.addStage(stage_model)
 

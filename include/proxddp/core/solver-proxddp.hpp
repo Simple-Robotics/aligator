@@ -56,7 +56,7 @@ namespace proxddp
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
-    using Problem = ShootingProblemTpl<Scalar>;
+    using Problem = TrajOptProblemTpl<Scalar>;
     using Workspace = WorkspaceTpl<Scalar>;
     using Results = ResultsTpl<Scalar>;
     using StageModel = StageModelTpl<Scalar>;

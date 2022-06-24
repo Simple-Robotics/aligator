@@ -78,7 +78,7 @@ namespace proxddp
   void SolverProxDDP<Scalar>::
   backwardPass(const Problem& problem, Workspace& workspace, Results& results) const
   {
-    const ShootingProblemDataTpl<Scalar>& problem_data = *workspace.problem_data;
+    const TrajOptDataTpl<Scalar>& problem_data = *workspace.problem_data;
 
     const std::size_t nsteps = problem.numSteps();
 
@@ -321,7 +321,7 @@ namespace proxddp
   template<typename Scalar>
   void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem& problem, Workspace& workspace, Results& results) const
   {
-    const ShootingProblemDataTpl<Scalar>& prob_data = *workspace.problem_data;
+    const TrajOptDataTpl<Scalar>& prob_data = *workspace.problem_data;
     const std::size_t nsteps = problem.numSteps();
     results.primal_infeasibility = 0.;
     Scalar infeas_over_i = 0.;

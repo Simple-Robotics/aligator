@@ -24,8 +24,8 @@ namespace proxddp
       using DynamicsModel = DynamicsModelTpl<Scalar>;      
       using StageModel = StageModelTpl<Scalar>;
 
-      using ShootingProblem = ShootingProblemTpl<Scalar>;
-      using ProblemData = ShootingProblemDataTpl<Scalar>;
+      using TrajOptProblem = TrajOptProblemTpl<Scalar>;
+      using ProblemData = TrajOptDataTpl<Scalar>;
 
       using ExplicitDynamics = ExplicitDynamicsModelTpl<Scalar>;
       using ExplicitDynData = ExplicitDynamicsDataTpl<Scalar>;

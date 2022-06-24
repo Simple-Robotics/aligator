@@ -2,7 +2,7 @@
 #pragma once
 
 #include "proxddp/fwd.hpp"
-#include "proxddp/core/shooting-problem.hpp"
+#include "proxddp/core/traj-opt-problem.hpp"
 #include "proxddp/core/solver-workspace.hpp"
 #include "proxddp/core/solver-results.hpp"
 
@@ -67,12 +67,12 @@ namespace proxddp
 
     /// @brief Evaluate the merit function at the trial point.
     Scalar evaluate(
-      const ShootingProblemTpl<Scalar>& problem,
+      const TrajOptProblemTpl<Scalar>& problem,
       const std::vector<VectorXs>& xs,
       const std::vector<VectorXs>& us,
       const std::vector<VectorXs>& lams,
       WorkspaceTpl<Scalar>& workspace,
-      ShootingProblemDataTpl<Scalar>& prob_data)
+      TrajOptDataTpl<Scalar>& prob_data)
     {
       using StageModel = StageModelTpl<Scalar>;
       problem.evaluate(xs, us, prob_data);

@@ -51,7 +51,7 @@ stage.addConstraint(proxddp.StageConstraint(ctrl_box, constraints.NegativeOrthan
 
 
 nsteps = 5
-problem = proxddp.ShootingProblem(x0, nu, space, term_cost)
+problem = proxddp.TrajOptProblem(x0, nu, space, term_cost)
 for i in range(nsteps):
     if i == nsteps - 1 and args.use_term_cstr:
         xtar = 0.1 * np.ones(nx)

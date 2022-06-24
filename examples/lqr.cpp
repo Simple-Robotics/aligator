@@ -1,7 +1,7 @@
 /// @file
 /// @brief Linear-quadratic regulator
 
-#include "proxddp/core/shooting-problem.hpp"
+#include "proxddp/core/traj-opt-problem.hpp"
 #include "proxddp/utils.hpp"
 #include "proxddp/modelling/quad-costs.hpp"
 #include "proxddp/core/solver-proxddp.hpp"
@@ -64,7 +64,7 @@ int main()
   auto x0 = space.rand();
   x0 << 1., -0.1;
   auto term_cost = rcost;
-  ShootingProblemTpl<double> problem(x0, nu, space, term_cost);
+  TrajOptProblemTpl<double> problem(x0, nu, space, term_cost);
 
   std::size_t nsteps = 10;
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/core/shooting-problem.hpp"
+#include "proxddp/core/traj-opt-problem.hpp"
 
 #include <fmt/format.h>
 #include <ostream>
@@ -32,13 +32,13 @@ namespace proxddp
 
     Scalar traj_cost_ = 0.;
     Scalar merit_value_ = 0.;
-    /// Overall primal infeasibility/constraint violation for the ShootingProblemTpl.
+    /// Overall primal infeasibility/constraint violation for the TrajOptProblemTpl.
     Scalar primal_infeasibility = 0.;
-    /// Overall dual infeasibility measure for the ShootingProblemTpl.
+    /// Overall dual infeasibility measure for the TrajOptProblemTpl.
     Scalar dual_infeasibility = 0.;
 
-    /// @brief    Create the results struct from a problem (ShootingProblemTpl) instance.
-    explicit ResultsTpl(const ShootingProblemTpl<Scalar>& problem);
+    /// @brief    Create the results struct from a problem (TrajOptProblemTpl) instance.
+    explicit ResultsTpl(const TrajOptProblemTpl<Scalar>& problem);
 
     friend std::ostream& operator<<(std::ostream& oss, const ResultsTpl& self)
     {

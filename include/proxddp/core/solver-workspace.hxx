@@ -4,7 +4,7 @@ namespace proxddp
 {
 
   template<typename Scalar>
-  WorkspaceTpl<Scalar>::WorkspaceTpl(const ShootingProblemTpl<Scalar>& problem)
+  WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar>& problem)
     : nsteps(problem.numSteps())
     , problem_data(problem.createData())
     , inner_criterion_by_stage(nsteps)

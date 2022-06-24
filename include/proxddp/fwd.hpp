@@ -66,12 +66,12 @@ namespace proxddp
 
   /* SHOOTING PROBLEM */
 
-  // fwd ShootingProblemTpl
+  // fwd TrajOptProblemTpl
   template<typename _Scalar>
-  struct ShootingProblemTpl;
+  struct TrajOptProblemTpl;
 
   template<typename _Scalar>
-  struct ShootingProblemDataTpl;
+  struct TrajOptDataTpl;
 
 
   /// Math utilities

@@ -13,10 +13,13 @@ import proxddp
 from proxddp import manifolds
 from proxnlp import constraints
 
-from utils.custom_functions import ControlBoxFunction as PyControlBoxFunction
-
 import tap
 
+VIDEO_ARGS = {
+    "codec": "libx264",
+    "macro_block_size": 8,
+    "output_params": ["-crf", "17"],
+}
 
 class Args(tap.Tap):
     display: bool = False
@@ -43,8 +46,6 @@ if args.display:
 augvizer = meshcat_utils.ForceDraw(vizer)
 
 space = manifolds.MultibodyPhaseSpace(rmodel)
-print("Space:", space)
-print("nq:", nq, "nv:", rmodel.nv)
 
 
 # The matrix below maps rotor controls to torques
@@ -108,12 +109,13 @@ class EulerIntegratorDynamics(proxddp.dynamics.ExplicitDynamicsModel):
 
 
 dt = 0.03
-Tf = 2.
+Tf = 2.5
 nsteps = int(Tf / dt)
 
 dynmodel = EulerIntegratorDynamics(dt, QUAD_ACT_MATRIX)
 
 x0 = np.concatenate([robot.q0, np.zeros(nv)])
+x0[2] = 0.2
 
 u0 = np.zeros(nu)
 vizer.display(x0[:nq])
@@ -128,76 +130,73 @@ Jx_nd = Jx.copy()
 x1 = space.rand()
 dynmodel.dForward(x1, u0, Jx, Ju)
 
-
-EPS = 1e-7
-ei = np.zeros(space.ndx)
-x_n_plus = space.neutral()
-x_n_ = space.neutral()
-for i in range(space.ndx):
-    ei[i] = EPS
-    dynmodel.forward(x1, u0, x_n_)
-    dynmodel.forward(space.integrate(x1, ei), u0, x_n_plus)
-    Jx_nd[:, i] = space.difference(x_n_, x_n_plus) / EPS
-    ei[i] = 0.
-
-
-print(Jx, "Jx")
-print(Jx_nd, "Jx_nd")
-error_ = abs(Jx_nd - Jx)
-print(error_)
-print("Error nd:", np.max(error_))
-
-
 us_init = [u0] * nsteps
 xs_init = [x0] * (nsteps + 1)
 
-# input("[enter]")
-meshcat_utils.display_trajectory(vizer, augvizer, xs_init, wait=dt)
-
-x_tar = space.neutral()
-x_tar[:3] = (0.9, 0.1, 1.)
+x_tar1 = space.neutral()
+x_tar1[:3] = (0.9, 0.8, 1.0)
+x_tar2 = x_tar1.copy()
+x_tar2[:3] = (1.4, -0.6, 1.0)
 
 u_max = 4. * np.ones(nu)
-u_min = -u_max
+u_min = -1. * np.ones(nu)
 
+times = np.linspace(0, Tf, nsteps + 1)
+idx_switch = int(0.7 * nsteps)
+t_switch = times[idx_switch]
 
 def setup():
-
-    state_err = proxddp.StateErrorResidual(space, nu, x_tar)
     weights1 = np.zeros(space.ndx)
-    weights1[:3] = 0.
-    weights1[3:nv] = 1e-2
-    weights1[nv:] = 1e-1
-    w_x_term = weights1.copy()
-    print(state_err.nr)
-    assert state_err.nr == weights1.shape[0]
+    weights1[:3] = 4.
+    weights1[3:6] = 1e-2
+    weights1[nv:] = 1e-3
+    weights2 = weights1.copy()
+    weights2[:3] = 1.
 
-    rcost = proxddp.CostStack(space.ndx, nu)
-    xreg_cost = proxddp.QuadraticResidualCost(state_err, 1e-3 * np.diag(weights1) * dt)
-    rcost.addCost(xreg_cost)
+    w_x_term = np.ones(space.ndx)
+    w_x_term[:nv] = 4.
+    w_x_term[nv:] = 0.1
 
-    utar = np.zeros(nu)
-    u_err = proxddp.ControlErrorResidual(space.ndx, nu, utar)
-    w_u = np.eye(nu) * 1e-4
-    ucost = proxddp.QuadraticResidualCost(u_err, w_u * dt)
-    rcost.addCost(ucost)
+    w_u = np.eye(nu) * 1e-2
 
-    w_x_term[:6] = 1.
-    term_cost = proxddp.QuadraticResidualCost(state_err, np.diag(w_x_term))
-    prob = proxddp.ShootingProblem(x0, nu, space, term_cost=term_cost)
+    stages = []
+
     for i in range(nsteps):
-        stage = proxddp.StageModel(space, nu, rcost, dynmodel)
-        stage.addConstraint(
-            PyControlBoxFunction(space.ndx, nu, u_min, u_max),
-            constraints.NegativeOrthant()
-        )
-        prob.addStage(stage)
 
+        rcost = proxddp.CostStack(space.ndx, nu)
+
+        x_tar = x_tar1
+        weights = weights1
+        if i == idx_switch:
+            weights[:] /= dt
+        if i > idx_switch:
+            x_tar = x_tar2
+            weights = weights2
+
+        state_err = proxddp.StateErrorResidual(space, nu, x_tar)
+        xreg_cost = proxddp.QuadraticResidualCost(state_err, np.diag(weights) * dt)
+            
+        rcost.addCost(xreg_cost)
+
+        utar = np.zeros(nu)
+        u_err = proxddp.ControlErrorResidual(space.ndx, nu, utar)
+        ucost = proxddp.QuadraticResidualCost(u_err, w_u * dt)
+        rcost.addCost(ucost)
+
+        stage = proxddp.StageModel(space, nu, rcost, dynmodel)
+        ctrl_box = proxddp.ControlBoxFunction(space.ndx, u_min, u_max)
+        stage.addConstraint(ctrl_box, constraints.NegativeOrthant())
+        stages.append(stage)
+
+    term_cost = proxddp.QuadraticResidualCost(
+        proxddp.StateErrorResidual(space, nu, x_tar2),
+        np.diag(w_x_term))
+    prob = proxddp.TrajOptProblem(x0, stages, term_cost=term_cost)
     return prob
 
 
 problem = setup()
-tol = 1e-4
+tol = 1e-3
 mu_init = 0.01
 verbose = proxddp.VerboseLevel.VERBOSE
 solver = proxddp.ProxDDP(tol, mu_init, verbose=verbose)
@@ -210,23 +209,48 @@ us_opt = results.us.tolist()
 
 import matplotlib.pyplot as plt
 
-times = np.linspace(0, Tf, nsteps + 1)
 fig: plt.Figure = plt.figure()
-ax0 = fig.add_subplot(111)
+ax0: plt.Axes = fig.add_subplot(121)
 ax0.plot(times[:-1], us_opt)
+ax0.hlines((u_min[0], u_max[0]), *times[[0, -1]], colors='k', alpha=0.3, lw=1.4)
 ax0.set_title("Controls")
 ax0.set_xlabel("Time")
+ax1: plt.Axes = fig.add_subplot(122)
+root_pt_opt = np.stack(xs_opt)[:, :3]
+ax1.plot(times, root_pt_opt)
+ax1.hlines(x_tar1[:3], t_switch - 3*dt, t_switch + 3*dt, colors=['C0', 'C1', 'C2'], linestyles='dotted')
+ax1.hlines(x_tar2[:3], Tf - 3*dt, Tf + 3*dt, colors=['C0', 'C1', 'C2'], linestyles='dashed')
 
 
 if args.display:
     import imageio
     frames_ = []
     input("[enter to play]")
-    for _ in range(3):
+    dist_ = 2.
+    directions_ = [np.array([1., 1., .5])]
+    directions_.append(np.array([1., -1., .8]))
+    directions_.append(np.array([1., 0.1, 0.2]))
+    for d in directions_: d /= np.linalg.norm(d)
+
+
+    for i in range(3):
+        def post_callback(t):
+            n = len(root_pt_opt)
+            pos = root_pt_opt[min(t, n)].copy()
+            pos += directions_[i] * dist_
+            augvizer.set_cam_pos(pos, False)
+
+        augvizer.draw_objectives([x_tar1, x_tar2], prefix='obj')
         frames_ += meshcat_utils.display_trajectory(vizer, augvizer, xs_opt,
                                                     frame_ids=[rmodel.getFrameId("base_link")],
-                                                    record=args.record, wait=dt, show_vel=True)
+                                                    record=args.record, wait=dt, show_vel=True,
+                                                    frame_sphere_size=0.06,
+                                                    post_callback=post_callback)
 
-    imageio.mimwrite("examples/quadrotor_fly.mp4", frames_, fps=1. / dt)
+    if args.record:
+        vid_uri = "examples/quadrotor_fly.mp4"
+        imageio.mimwrite(vid_uri, frames_, fps=1. / dt, **VIDEO_ARGS)
 
+for ext in ['png', 'pdf']:
+    fig.savefig("examples/quadrotor_controls.{}".format(ext))
 plt.show()

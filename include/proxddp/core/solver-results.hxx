@@ -4,7 +4,7 @@ namespace proxddp
 {
   
   template<typename Scalar>
-  ResultsTpl<Scalar>::ResultsTpl(const ShootingProblemTpl<Scalar>& problem)
+  ResultsTpl<Scalar>::ResultsTpl(const TrajOptProblemTpl<Scalar>& problem)
   {
 
     const std::size_t nsteps = problem.numSteps();

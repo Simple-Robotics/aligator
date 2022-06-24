@@ -119,7 +119,7 @@ namespace proxddp
 
     const std::size_t nsteps;
 
-    shared_ptr<ShootingProblemDataTpl<Scalar>> problem_data;
+    shared_ptr<TrajOptDataTpl<Scalar>> problem_data;
 
     /// Value function parameter storage
     std::vector<value_storage_t> value_params;
@@ -154,15 +154,15 @@ namespace proxddp
 
     /// Subproblem termination criterion for each stage.
     VectorXs inner_criterion_by_stage;
-    /// Constraint violation for each stage of the ShootingProblemTpl.
+    /// Constraint violation for each stage of the TrajOptProblemTpl.
     VectorXs primal_infeas_by_stage;
-    /// Dual infeasibility for each stage of the ShootingProblemTpl.
+    /// Dual infeasibility for each stage of the TrajOptProblemTpl.
     VectorXs dual_infeas_by_stage;
 
     /// Overall subproblem termination criterion.
     Scalar inner_criterion;
 
-    explicit WorkspaceTpl(const ShootingProblemTpl<Scalar>& problem);
+    explicit WorkspaceTpl(const TrajOptProblemTpl<Scalar>& problem);
 
     MatrixRef
     getKktView(const int nprim, const int ndual)

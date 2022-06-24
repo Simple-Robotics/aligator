@@ -11,13 +11,13 @@ namespace proxddp
     void exposeSolvers()
     {
       using context::Scalar;
-      using context::ShootingProblem;
+      using context::TrajOptProblem;
       using Workspace = WorkspaceTpl<Scalar>;
       using Results = ResultsTpl<Scalar>;
 
       bp::class_<Workspace>(
         "Workspace", "Workspace for ProxDDP.",
-        bp::init<const ShootingProblem&>(bp::args("self", "problem"))
+        bp::init<const TrajOptProblem&>(bp::args("self", "problem"))
         )
         .def_readonly("value_params", &Workspace::value_params)
         .def_readonly("q_params", &Workspace::q_params)
@@ -27,7 +27,7 @@ namespace proxddp
         ;
 
       bp::class_<Results>(
-        "Results", "Results struct for proxDDP.", bp::init<const ShootingProblem&>()
+        "Results", "Results struct for proxDDP.", bp::init<const TrajOptProblem&>()
       )
         .def_readonly("gains", &Results::gains_)
         .def_readonly("xs", &Results::xs_)
