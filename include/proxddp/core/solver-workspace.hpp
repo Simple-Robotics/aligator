@@ -29,7 +29,7 @@ namespace proxddp
         : storage(MatrixXs::Zero(ndx + 1, ndx + 1))
         // , store_sym_(storage)
         , v_2_(storage.coeffRef(0, 0))
-        , Vx_(storage.bottomLeftCorner(ndx, 1))
+        , Vx_(storage.bottomRows(ndx).col(0))
         , Vxx_(storage.bottomRightCorner(ndx, ndx))
         {}
 
@@ -85,7 +85,7 @@ namespace proxddp
         : ntot(ndx1 + nu + ndx2)
         , storage(ntot + 1, ntot + 1)
         , q_2_(storage.coeffRef(0, 0))
-        , grad_(storage.bottomLeftCorner(ntot, 1))
+        , grad_(storage.bottomRows(ntot).col(0))
         , hess_(storage.bottomRightCorner(ntot, ntot))
         , Qx_(grad_.head(ndx1))
         , Qu_(grad_.segment(ndx1, nu))
