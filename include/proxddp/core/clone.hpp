@@ -5,14 +5,17 @@
 
 namespace proxddp
 {
+  /// @brief Mixin which makes a class cloneable.
+  ///
+  /// @tparam T         The type to make cloneable, or its parent through which clone() is called.
+  /// @tparam concrete  The concrete type to clone, or nothing if T is a top node in the class hierarchy.
   template<typename T, typename concrete = void>
   struct cloneable;
 
-  /// @brief CRTP trait which makes a class cloneable.
-  ///
-  /// @details  Trait CRTP struct, make T inherit from this to endow it with clone().
-  ///
-  /// @warning This variant requires the existence of a copy constructor for type T.
+  /// @copybrief cloneable
+  /// @tparam T The type to make clonable.
+  /// @warning  This variant requires the existence of a <a href="https://en.cppreference.com/w/cpp/language/copy_constructor">copy constructor</a> for type T.
+  ///           Most of the time, the default copy constructor shall suffice if it is not deleted.
   template<typename T>
   struct cloneable<T, void>
   {
@@ -30,12 +33,10 @@ namespace proxddp
     }
   };
 
-  /// @copybrief cloneable
-  /// @details This version injects the concrete type to provide
-  /// a default implementation of clone_impl().
-  /// @warning This requires type concrete to have a copy constructor.
-  template<typename base_type, typename concrete>
-  struct cloneable : base_type
+  /// @warning  This requires type @c concrete to have a <a href="https://en.cppreference.com/w/cpp/language/copy_constructor">copy constructor</a>.
+  ///           Often, the compiler-generated default copy constructor shall suffice (if it is not deleted).
+  template<typename T, typename concrete>
+  struct cloneable : T
   {
   public:
     virtual ~cloneable() = default;
