@@ -8,14 +8,14 @@
 namespace proxddp
 {
   template<typename Scalar>
-  bool CostStack<Scalar>::checkDimension(const CostBase* comp) const
+  bool CostStackTpl<Scalar>::checkDimension(const CostBase* comp) const
   {
     return (comp->ndx() == this->ndx()) && (comp->nu() == this->nu());
   }
 
   template<typename Scalar>
-  CostStack<Scalar>::
-  CostStack(const int ndx, const int nu, const VectorOfCosts& comps, const std::vector<Scalar>& weights)
+  CostStackTpl<Scalar>::
+  CostStackTpl(const int ndx, const int nu, const VectorOfCosts& comps, const std::vector<Scalar>& weights)
     : CostBase(ndx, nu)
     , components_(comps)
     , weights_(weights)
@@ -39,17 +39,17 @@ namespace proxddp
   }
 
   template<typename Scalar>
-  CostStack<Scalar>::
-  CostStack(const shared_ptr<CostBase>& comp): CostStack(comp->ndx(), comp->nu(), {comp}, {1.}) {}
+  CostStackTpl<Scalar>::
+  CostStackTpl(const shared_ptr<CostBase>& comp): CostStackTpl(comp->ndx(), comp->nu(), {comp}, {1.}) {}
 
   template<typename Scalar>
-  std::size_t CostStack<Scalar>::size() const
+  std::size_t CostStackTpl<Scalar>::size() const
   {
     return components_.size();
   }
 
   template<typename Scalar>
-  void CostStack<Scalar>::addCost(const shared_ptr<CostBase>& cost, const Scalar weight)
+  void CostStackTpl<Scalar>::addCost(const shared_ptr<CostBase>& cost, const Scalar weight)
   {
     if (!this->checkDimension(cost.get()))
     {
@@ -63,7 +63,7 @@ namespace proxddp
   }
 
   template<typename Scalar>
-  void CostStack<Scalar>::evaluate(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const
+  void CostStackTpl<Scalar>::evaluate(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const
   {
     SumCostData& d = static_cast<SumCostData&>(data);
     d.value_ = 0.;
@@ -75,7 +75,7 @@ namespace proxddp
   }
 
   template<typename Scalar>
-  void CostStack<Scalar>::computeGradients(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const
+  void CostStackTpl<Scalar>::computeGradients(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const
   {
     SumCostData& d = static_cast<SumCostData&>(data);
     d.grad_.setZero();
@@ -87,7 +87,7 @@ namespace proxddp
   }
 
   template<typename Scalar>
-  void CostStack<Scalar>::computeHessians(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const
+  void CostStackTpl<Scalar>::computeHessians(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const
   {
     SumCostData& d = static_cast<SumCostData&>(data);
     d.hess_.setZero();
@@ -99,7 +99,7 @@ namespace proxddp
   }
   
   template<typename Scalar>
-  shared_ptr< CostDataAbstractTpl<Scalar> > CostStack<Scalar>::createData() const
+  shared_ptr< CostDataAbstractTpl<Scalar> > CostStackTpl<Scalar>::createData() const
   {
     return std::make_shared<SumCostData>(*this);
   }

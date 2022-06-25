@@ -41,7 +41,7 @@ namespace proxddp
         .add_property("nu",  &context::CostBase::nu)
         .def(CreateDataPythonVisitor<context::CostBase>());
 
-      bp::class_<CostStack<Scalar>, bp::bases<context::CostBase>>(
+      bp::class_<CostStackTpl<Scalar>, bp::bases<context::CostBase>>(
         "CostStack",
         bp::init<const int, const int,
                  const std::vector<shared_ptr<context::CostBase>>&,
@@ -49,10 +49,10 @@ namespace proxddp
                    (bp::arg("self"), bp::arg("ndx"), bp::arg("nu"),
                     bp::arg("components") = bp::list(), bp::arg("weights") = bp::list()))
                  )
-        .def_readonly("components", &CostStack<Scalar>::components_, "Components of this cost stack.")
-        .def_readonly("weights", &CostStack<Scalar>::weights_, "Weights of this cost stack.")
-        .def("addCost", &CostStack<Scalar>::addCost, (bp::arg("self"), bp::arg("cost"), bp::arg("weight") = 1.), "Add a cost to the stack of costs.")
-        .def("size", &CostStack<Scalar>::size, "Get the number of cost components.");
+        .def_readonly("components", &CostStackTpl<Scalar>::components_, "Components of this cost stack.")
+        .def_readonly("weights", &CostStackTpl<Scalar>::weights_, "Weights of this cost stack.")
+        .def("addCost", &CostStackTpl<Scalar>::addCost, (bp::arg("self"), bp::arg("cost"), bp::arg("weight") = 1.), "Add a cost to the stack of costs.")
+        .def("size", &CostStackTpl<Scalar>::size, "Get the number of cost components.");
 
       bp::class_<QuadraticCost<Scalar>, bp::bases<context::CostBase>>(
         "QuadraticCost", "Quadratic cost in both state and control.",
