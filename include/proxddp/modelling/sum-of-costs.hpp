@@ -40,17 +40,15 @@ namespace proxddp
     VectorOfCosts components_;
     std::vector<Scalar> weights_;
 
-    CostStack(const int ndx, const int nu, const VectorOfCosts& comps = {}, const std::vector<Scalar>& weights = {})
-      : CostBase(ndx, nu)
-      , components_(comps)
-      , weights_(weights)
-    {
-      assert(comps.size() == weights.size());
-    }
+    /// @brief    Check the dimension of a component.
+    /// @returns  A bool value indicating whether the component is OK to be added to this instance.
+    bool checkDimension(const CostBase* comp) const;
 
-    CostStack(const shared_ptr<CostBase>& comp)
-      : CostStack(comp->ndx(), comp->nu(), {comp}, {1.})
-      {}
+    /// @brief  Constructor with a specified dimension, and optional vector of components and weights.
+    CostStack(const int ndx, const int nu, const VectorOfCosts& comps = {}, const std::vector<Scalar>& weights = {});
+
+    /// @brief  Constructor from a single CostBase instance.
+    CostStack(const shared_ptr<CostBase>& comp);
 
     void addCost(const shared_ptr<CostBase>& cost, const Scalar weight = 1.);
 
@@ -66,35 +64,40 @@ namespace proxddp
 
   };
 
+  namespace {
+    template<typename T>
+    using CostPtr = shared_ptr<CostAbstractTpl<T>>;  //< convenience typedef for rest of this file
+  }
+
   template<typename T>
-  shared_ptr<CostStack<T>> operator+(const shared_ptr<CostAbstractTpl<T>>& c1, const shared_ptr<CostAbstractTpl<T>>& c2)
+  shared_ptr<CostStack<T>> operator+(const CostPtr<T>& c1, const CostPtr<T>& c2)
   {
     return std::make_shared<CostStack<T>>({c1, c2}, {1., 1.});
   }
 
   template<typename T>
-  shared_ptr<CostStack<T>> operator+(shared_ptr<CostStack<T>>&& c1, const shared_ptr<CostAbstractTpl<T>>& c2)
+  shared_ptr<CostStack<T>> operator+(shared_ptr<CostStack<T>>&& c1, const CostPtr<T>& c2)
   {
     c1->addCost(c2, 1.);
     return std::move(c1);
   }
 
   template<typename T>
-  shared_ptr<CostStack<T>> operator+(shared_ptr<CostStack<T>>&& c1, shared_ptr<CostAbstractTpl<T>>&& c2)
+  shared_ptr<CostStack<T>> operator+(shared_ptr<CostStack<T>>&& c1, CostPtr<T>&& c2)
   {
     c1->addCost(std::move(c2), 1.);
     return std::move(c1);
   }
 
   template<typename T>
-  shared_ptr<CostStack<T>> operator+(const shared_ptr<CostStack<T>>& c1, shared_ptr<CostAbstractTpl<T>>&& c2)
+  shared_ptr<CostStack<T>> operator+(const shared_ptr<CostStack<T>>& c1, CostPtr<T>&& c2)
   {
     c1->addCost(std::move(c2), 1.);
     return c1;
   }
 
   template<typename T>
-  shared_ptr<CostStack<T>> operator*(T u, const shared_ptr<CostAbstractTpl<T>>& c1)
+  shared_ptr<CostStack<T>> operator*(T u, const CostPtr<T>& c1)
   {
     return std::make_shared<CostStack<T>>({c1}, {u});
   }

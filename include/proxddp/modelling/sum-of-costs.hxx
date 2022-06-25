@@ -2,8 +2,46 @@
 
 #include "proxddp/modelling/sum-of-costs.hpp"
 
+#include <stdexcept>
+#include <fmt/format.h>
+
 namespace proxddp
 {
+  template<typename Scalar>
+  bool CostStack<Scalar>::checkDimension(const CostBase* comp) const
+  {
+    return (comp->ndx() == this->ndx()) && (comp->nu() == this->nu());
+  }
+
+  template<typename Scalar>
+  CostStack<Scalar>::
+  CostStack(const int ndx, const int nu, const VectorOfCosts& comps, const std::vector<Scalar>& weights)
+    : CostBase(ndx, nu)
+    , components_(comps)
+    , weights_(weights)
+  {
+    if (comps.size() != weights.size())
+    {
+      std::string msg = fmt::format("Inconsistent number of components ({:d}) and weights ({:d}).", comps.size(), weights.size());
+      throw std::domain_error(msg);
+    } else {
+      for (std::size_t i = 0; i < comps.size(); i++)
+      {
+        if (!this->checkDimension(comps[i].get()))
+        {
+          std::string msg = fmt::format(
+            "Component #{:d} has wrong input dimensions ({:d}, {:d}) (expected ({:d}, {:d}))",
+            i, comps[i]->ndx(), comps[i]->nu(), this->ndx(), this->nu());
+          throw std::domain_error(msg);
+        }
+      }
+    }
+  }
+
+  template<typename Scalar>
+  CostStack<Scalar>::
+  CostStack(const shared_ptr<CostBase>& comp): CostStack(comp->ndx(), comp->nu(), {comp}, {1.}) {}
+
   template<typename Scalar>
   std::size_t CostStack<Scalar>::size() const
   {
@@ -13,6 +51,13 @@ namespace proxddp
   template<typename Scalar>
   void CostStack<Scalar>::addCost(const shared_ptr<CostBase>& cost, const Scalar weight)
   {
+    if (!this->checkDimension(cost.get()))
+    {
+      throw std::domain_error(fmt::format(
+        "Cannot add new component due to inconsistent input dimensions "
+        "(got ({:d}, {:d}), expected ({:d}, {:d}))",
+        cost->ndx(), cost->nu(), this->ndx(), this->nu()));
+    }
     components_.push_back(cost);
     weights_.push_back(weight);
   }

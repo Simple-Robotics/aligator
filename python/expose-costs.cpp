@@ -37,6 +37,8 @@ namespace proxddp
         .def("computeHessians", bp::pure_virtual(&context::CostBase::computeHessians),
              bp::args("self", "x", "u", "data"),
              "Compute the cost function hessians.")
+        .add_property("ndx", &context::CostBase::ndx)
+        .add_property("nu",  &context::CostBase::nu)
         .def(CreateDataPythonVisitor<context::CostBase>());
 
       bp::class_<CostStack<Scalar>, bp::bases<context::CostBase>>(
