@@ -34,6 +34,7 @@ int main()
   w_x(0, 0) = 2.1;
   w_u *= 1e-2;
 
+  using dynamics::LinearDiscreteDynamicsTpl;
   auto dynptr = std::make_shared<LinearDiscreteDynamicsTpl<double>>(A, B, c_);
   auto& dynamics = *dynptr;
   fmt::print("matrix A:\n{}\n", dynamics.A_);
