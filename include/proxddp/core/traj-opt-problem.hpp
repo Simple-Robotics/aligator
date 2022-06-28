@@ -105,7 +105,6 @@ namespace proxddp
     const std::size_t nsteps = problem.numSteps();
     for (std::size_t step = 0; step < nsteps; step++)
     {
-      const StageModelTpl<Scalar>& sm = problem.stages_[step];
       const StageDataTpl<Scalar>& sd = *problem_data.stage_data[step];
       traj_cost += sd.cost_data->value_;
     }
