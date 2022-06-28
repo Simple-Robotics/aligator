@@ -12,7 +12,6 @@ namespace proxddp
     , dual_infeas_by_stage(nsteps)
   {
     using VectorXs = typename math_types<Scalar>::VectorXs;
-    using MatrixXs = typename math_types<Scalar>::MatrixXs;
     using Workspace = WorkspaceTpl<Scalar>;
     using value_storage_t = typename Workspace::value_storage_t;
     using q_storage_t = typename Workspace::q_storage_t;
