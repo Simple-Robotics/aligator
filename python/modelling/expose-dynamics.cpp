@@ -1,6 +1,5 @@
-
 #include "proxddp/python/fwd.hpp"
-#include "proxddp/python/dynamics.hpp"
+#include "proxddp/python/functions.hpp"
 
 #include "proxddp/modelling/linear-discrete-dynamics.hpp"
 
@@ -9,71 +8,34 @@ namespace proxddp
 {
   namespace python
   {
-    
-    void exposeODEs()
+    namespace internal
     {
-      using namespace proxddp::dynamics;
-      using context::Scalar;
-      using ContinuousDynamicsBase = ContinuousDynamicsAbstractTpl<Scalar>;
-      using ContinuousDynamicsData = ContinuousDynamicsDataTpl<Scalar>;
-      using ODEBase = ODEAbstractTpl<Scalar>;
-      using ODEData = ODEDataTpl<Scalar>;
+      struct PyExplicitDynamicsModel :
+        ExplicitDynamicsModelTpl<context::Scalar>,
+        bp::wrapper<ExplicitDynamicsModelTpl<context::Scalar>>
+      {
+        using Scalar = context::Scalar;
+        PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+        using Data = ExplicitDynamicsDataTpl<Scalar>;
 
-      bp::class_<internal::PyContinuousDynamics<>>(
-        "ContinuousDynamicsBase",
-        "Base class for continuous-time dynamical models (DAEs and ODEs).",
-        bp::init<const context::Manifold&, const int>(
-          "Default constructor: provide the working manifold and control space dimension.",
-          bp::args("self", "space", "nu"))
-      )
-        .def("evaluate",
-             bp::pure_virtual(&ContinuousDynamicsBase::evaluate),
-             bp::args("self", "x", "u", "xdot", "data"),
-             "Evaluate the DAE functions.")
-        .def("computeJacobians",  
-             bp::pure_virtual(&ContinuousDynamicsBase::computeJacobians),
-             bp::args("self", "x", "u", "xdot", "data"),
-             "Evaluate the DAE function derivatives.")
-        .def(CreateDataPythonVisitor<ContinuousDynamicsBase>());
+        template<typename... Args>
+        PyExplicitDynamicsModel(Args&&... args)
+          : ExplicitDynamicsModelTpl<Scalar>(std::forward<Args>(args)...) {}
 
-      bp::register_ptr_to_python<shared_ptr<ContinuousDynamicsData>>();
-      bp::class_<ContinuousDynamicsData>(
-        "ContinuousDynamicsData",
-        "Data struct for continuous dynamics/DAE models.",
-        bp::no_init
-      )
-        .def_readwrite("value", &ContinuousDynamicsData::value_, "Vector value of the DAE residual.")
-        .def_readwrite("Jx", &ContinuousDynamicsData::Jx_, "Jacobian with respect to state.")
-        .def_readwrite("Ju", &ContinuousDynamicsData::Ju_, "Jacobian with respect to controls.")
-        .def_readwrite("Jxdot", &ContinuousDynamicsData::Jxdot_, "Jacobian with respect to :math:`\\dot{x}`.")
-        ;
-      
-      /* ODEs */
+        virtual void forward(const ConstVectorRef& x,
+                             const ConstVectorRef& u,
+                             Data& data) const
+        { PROXDDP_PYTHON_OVERRIDE_PURE(void, "forward", x, u, data); }
 
-      bp::class_<internal::PyODEBase, bp::bases<ContinuousDynamicsBase>>(
-        "ODEBase", "Continuous dynamics described by ordinary differential equations (ODEs).",
-        bp::init<const context::Manifold&, const int>(bp::args("self", "space", "nu"))
-      )
-        .def("forward",  bp::pure_virtual(&ODEBase::forward),
-             bp::args("self", "x", "u", "data"),
-             "Compute the value of the ODE vector field, i.e. the "
-             "state time derivative :math:`\\dot{x}`.")
-        .def("dForward", bp::pure_virtual(&ODEBase::dForward),
-             bp::args("self", "x", "u", "data"),
-             "Compute the derivatives of the ODE vector field with respect "
-             "to the state-control pair :math:`(x, u)`.")
-        .def(CreateDataPythonVisitor<ODEBase>());
+        virtual void dForward(const ConstVectorRef& x,
+                              const ConstVectorRef& u,
+                              Data& data) const
+        { PROXDDP_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, data); }
 
-      bp::register_ptr_to_python<shared_ptr<ODEData>>();
-
-      bp::class_<ODEData, bp::bases<ContinuousDynamicsData>>(
-        "ODEData", "Data struct for ODE models.", bp::no_init
-      )
-        .def_readwrite("xdot", &ODEData::xdot_);
-
-
-    }
-
+      };
+    } // namespace internal
+    
+    
     void exposeDynamics()
     {
       using context::Scalar;
@@ -81,15 +43,25 @@ namespace proxddp
       using context::DynamicsModel;
       using context::MatrixXs;
       using context::VectorXs;
-
-      using namespace proxddp::dynamics;
-
+      using context::StageFunction;
       using ManifoldPtr = shared_ptr<context::Manifold>;
+
+      using PyDynamicsModel = internal::PyStageFunction<DynamicsModel>;
+
+      bp::class_<PyDynamicsModel, bp::bases<StageFunction>, boost::noncopyable>(
+        "DynamicsModel",
+        "Dynamics models are specific ternary functions f(x,u,x') which map "
+        "to the tangent bundle of the next state variable x'.",
+        bp::init<const int, const int, const int>(
+          bp::args("self", "ndx1", "nu", "ndx2")
+          )
+      )
+        .def(bp::init<const int, const int>(bp::args("self", "ndx", "nu")))
+        ;
+
       using context::ExplicitDynamics;
-      bp::class_<internal::PyExplicitDynamicsModel,
-                 bp::bases<DynamicsModel>,
-                 boost::noncopyable>
-      (
+
+      bp::class_<internal::PyExplicitDynamicsModel, bp::bases<DynamicsModel>, boost::noncopyable>(
         "ExplicitDynamicsModel", "Base class for explicit dynamics.",
         bp::init<const int, const int, const ManifoldPtr&>(
           bp::args("self", "ndx1", "nu", "next_space")
@@ -115,6 +87,7 @@ namespace proxddp
         .add_property("xout", bp::make_getter(&context::ExplicitDynData::xoutref_, bp::return_value_policy<bp::return_by_value>()));
 
       /* Expose implementations */
+      using namespace proxddp::dynamics;
 
       bp::class_<LinearDiscreteDynamicsTpl<Scalar>, bp::bases<context::ExplicitDynamics>>(
         "LinearDiscreteDynamics",

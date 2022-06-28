@@ -15,7 +15,7 @@ namespace proxddp
     {
       using context::Scalar;
       using context::StageFunction;
-      using internal::PyStageFunction;
+      using context::DynamicsModel;
       using context::VectorXs;
       using context::MatrixXs;
       using context::ConstVectorRef;
@@ -23,7 +23,7 @@ namespace proxddp
 
       bp::register_ptr_to_python<shared_ptr<StageFunction>>();
 
-      bp::class_<PyStageFunction<>, boost::noncopyable>(
+      bp::class_<internal::PyStageFunction<>, boost::noncopyable>(
         "StageFunction", "Base class for ternary functions f(x,u,x') on a stage of the problem.",
         bp::init<const int, const int, const int, const int>(bp::args("self", "ndx1", "nu", "ndx2", "nr"))
       )
@@ -39,8 +39,8 @@ namespace proxddp
              bp::args("self", "x", "u", "y", "lbda", "data"))
         .def_readonly("ndx1", &StageFunction::ndx1, "Current state space.")
         .def_readonly("ndx2", &StageFunction::ndx2, "Next state space.")
-        .def_readonly("nu", &StageFunction::nu, "Control dimension.")
-        .def_readonly("nr", &StageFunction::nr, "Function codimension.")
+        .def_readonly("nu",   &StageFunction::nu, "Control dimension.")
+        .def_readonly("nr",   &StageFunction::nr, "Function codimension.")
         .def(CreateDataPythonVisitor<StageFunction>());
 
       bp::register_ptr_to_python<shared_ptr<context::StageFunctionData>>();
@@ -106,21 +106,7 @@ namespace proxddp
           bp::args("self", "ndx", "nu", "umin", "umax"))
           );
 
-      /** DYNAMICS **/
-      using PyDynModel = internal::PyStageFunction<context::DynamicsModel>;
 
-      bp::class_<PyDynModel,
-                 bp::bases<StageFunction>,
-                 boost::noncopyable>(
-        "DynamicsModel",
-        "Dynamics models are specific ternary functions f(x,u,x') which map "
-        "to the tangent bundle of the next state variable x'.",
-        bp::init<const int, const int, const int>(
-          bp::args("self", "ndx1", "nu", "ndx2")
-          )
-      )
-        .def(bp::init<const int, const int>(bp::args("self", "ndx", "nu")))
-      ;
     }
 
   } // namespace python

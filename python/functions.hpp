@@ -3,7 +3,6 @@
 #include "proxddp/python/fwd.hpp"
 
 #include "proxddp/core/function.hpp"
-#include "proxddp/core/dynamics.hpp"
 
 
 namespace proxddp
