@@ -58,6 +58,7 @@ BOOST_PYTHON_MODULE(pyproxddp)
     bp::scope dynamics = get_namespace("dynamics");
     exposeODEs();
     exposeDynamics();
+    exposeFreeFwdDynamics();
     exposeIntegrators();
   }
   exposeUtils();

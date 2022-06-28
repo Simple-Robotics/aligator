@@ -31,7 +31,9 @@ namespace proxddp
 
     /// Expose continuous dynamics models.
     void exposeODEs();
+    void exposeFreeFwdDynamics();
     void exposeDynamics();
+    /// Expose integrators
     void exposeIntegrators();
     void exposeSolvers();
 
