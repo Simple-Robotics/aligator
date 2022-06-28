@@ -4,7 +4,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
 
-#include "proxddp/modelling/dynamics/integrator-base.hpp"
+#include "proxddp/modelling/dynamics/integrator-abstract.hpp"
 #include "proxddp/core/explicit-dynamics.hpp"
 
 #include "proxddp/modelling/dynamics/ode-abstract.hpp"
@@ -34,9 +34,6 @@ namespace proxddp
       using BaseExplicit::nu;
 
       shared_ptr<ODEType> cont_dynamics_;
-
-      /// @brief  Get the underlying ODE instance.
-      virtual inline const ODEType& getContinuousDynamics() const { return *cont_dynamics_; }
 
       explicit ExplicitIntegratorAbstractTpl(const shared_ptr<ODEType>& cont_dynamics)
         : IntegratorAbstract(cont_dynamics)
