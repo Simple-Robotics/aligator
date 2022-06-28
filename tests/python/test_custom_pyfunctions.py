@@ -13,12 +13,13 @@ def test_custom_controlbox():
     u_max = np.ones(nu) * 0.1
     box_function = PyControlBoxFunction(ndx, nu, u_min, u_max)
     bf2 = proxddp.ControlBoxFunction(ndx, u_min, u_max)
-    data1 = box_function.createData()
+    data1: proxddp.FunctionData = box_function.createData()
     data2 = bf2.createData()
 
+
+    lbd0 = np.zeros(box_function.nr)
     x0 = np.random.randn(ndx)
     u0 = np.random.randn(nu)
-    print(u0)
 
     box_function.evaluate(x0, u0, x0, data1)
     box_function.computeJacobians(x0, u0, x0, data1)
@@ -28,3 +29,7 @@ def test_custom_controlbox():
     print(data1.Ju)
     assert np.allclose(data1.value, data2.value)
     assert np.allclose(data1.jac_buffer_, data2.jac_buffer_)
+
+    data1.vhp_buffer[:, :] = np.random.randn(*data1.vhp_buffer.shape)
+    box_function.computeVectorHessianProducts(x0, u0, x0, lbd0, data1)
+    assert np.all(data1.vhp_buffer == 0.)

@@ -150,7 +150,7 @@ if (BUILD_PYTHON_INTERFACE)
 endif()
 
 add_subdirectory(examples)
-add_subdirectory(unittest)
+add_subdirectory(tests)
 
 
 # --- PACKAGING ----------------------------------------------------------------

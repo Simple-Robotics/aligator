@@ -35,10 +35,12 @@ class TwistModelExplicit(proxddp.dynamics.ExplicitDynamicsModel):
         self.dt = dt
         super().__init__(space, nu)
 
-    def forward(self, x, u, out):
-        space.integrate(x, self.dt * self.B @ u, out)
+    def forward(self, x, u, data: proxddp.dynamics.ExplicitDynamicsData):
+        space.integrate(x, self.dt * self.B @ u, data.xout)
 
-    def dForward(self, x, u, Jx, Ju):
+    def dForward(self, x, u, data: proxddp.dynamics.ExplicitDynamicsData):
+        Jx = data.Jx
+        Ju = data.Ju
         v_ = self.dt * self.B @ u
         dv_du = self.dt * self.B
 
