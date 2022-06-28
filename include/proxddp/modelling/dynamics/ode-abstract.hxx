@@ -16,9 +16,9 @@ namespace proxddp
       const ConstVectorRef& x,
       const ConstVectorRef& u,
       const ConstVectorRef& xdot,
-      BaseData& data) const
+      ContDataAbstract& data) const
     {
-      Data& d = static_cast<Data&>(data);
+      ODEData& d = static_cast<ODEData&>(data);
       this->forward(x, u, d);
       d.value_ = d.xdot_ - xdot;
     }
@@ -28,9 +28,9 @@ namespace proxddp
       const ConstVectorRef& x,
       const ConstVectorRef& u,
       const ConstVectorRef&,
-      BaseData& data) const
+      ContDataAbstract& data) const
     {
-      Data& d = static_cast<Data&>(data);
+      ODEData& d = static_cast<ODEData&>(data);
       this->dForward(x, u, d);
       d.Jxdot_.setIdentity();
       d.Jxdot_ *= -1.;
