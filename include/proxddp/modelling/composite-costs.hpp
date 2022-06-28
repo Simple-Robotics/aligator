@@ -6,7 +6,7 @@
 #include "proxddp/modelling/state-error.hpp"
 
 
-  namespace proxddp
+namespace proxddp
 {
   /// Data struct for composite costs.
   template<typename Scalar>
@@ -99,28 +99,35 @@
     VectorXs barrier_weights_;
     shared_ptr<StageFunction> residual_;
 
-    LogResidualCost(const shared_ptr<StageFunction>& function,
-                    const VectorXs scale)
+    LogResidualCost(const shared_ptr<StageFunction>& function, const VectorXs scale)
       : residual_(function)
-      , barrier_weights_(scale) {
-      assert(scale.size() == function->nr);
+      , barrier_weights_(scale)
+    {
+      if (scale.size() != function->nr)
+      {
+        throw std::domain_error("scale argument dimension ({:d}) != function codimension ({:d})",
+                                scale.size(), function->nr);
+      }
+      if (scale.cWiseMin() < 0.)
+      {
+        throw std::domain_error("scale coefficients must be > 0.");
+      }
     }
 
-    LogResidualCost(const shared_ptr<StageFunction>& function,
-                    const Scalar scale)
+    LogResidualCost(const shared_ptr<StageFunction>& function, const Scalar scale)
       : LogResidualCost(function, VectorXs::Constant(function->nr, scale))
       {}
 
     void evaluate(const ConstVectorRef& x, const ConstVectorRef& u, CostDataAbstract& data) const
     {
-      auto& d = static_cast<Data&>(data);
+      Data& d = static_cast<Data&>(data);
       residual_->evaluate(x, u, x, *d.underlying_data);
       d.value_ = barrier_weights_.dot(d.underlying_data->value_.log());
     }
 
     void computeGradients(const ConstVectorRef& x, const ConstVectorRef& u, CostDataAbstract& data) const
     {
-      auto& d = static_cast<Data&>(data);
+      Data& d = static_cast<Data&>(data);
       auto& under_d = *d.underlying_data;
       residual_->computeJacobians(x, u, x, under_d);
       d.grad_.setZero();
@@ -128,13 +135,13 @@
       const int nrows = residual_->nr;
       for (int i = 0; i < nrows; i++)
       {
-        d.grad_ += barrier_weights_(i) * under_d.jac_buffer_.row(i) / v(i);
+        d.grad_.noalias() += barrier_weights_(i) * under_d.jac_buffer_.row(i) / v(i);
       }
     }
 
     void computeHessians(const ConstVectorRef& x, const ConstVectorRef& u, CostDataAbstract& data) const
     {
-      auto& d = static_cast<Data&>(data);
+      Data& d = static_cast<Data&>(data);
       auto& under_d = *d.underlying_data;
       d.hess_.setZero();
       VectorXs& v = under_d.value_;
@@ -142,18 +149,17 @@
       for (int i = 0; i < nrows; i++)
       {
         VectorRef g_i = under_d.jac_buffer_.row(i);
-        d.hess_ += barrier_weights_(i) * (g_i * g_i.transpose()) / (v(i) * v(i));
+        d.hess_.noalias() += barrier_weights_(i) * (g_i * g_i.transpose()) / (v(i) * v(i));
       }
     }
   };
 
   template<typename Scalar>
   shared_ptr<QuadraticResidualCost<Scalar>>
-  make_state_distance_cost(
-    const typename math_types<Scalar>::MatrixXs& weights,
-    const ManifoldAbstractTpl<Scalar>& space,
-    const int nu,
-    const typename math_types<Scalar>::VectorXs& target)
+  make_state_distance_cost(const typename math_types<Scalar>::MatrixXs& weights,
+                           const ManifoldAbstractTpl<Scalar>& space,
+                           const int nu,
+                           const typename math_types<Scalar>::VectorXs& target)
   {
     return std::make_shared<QuadraticResidualCost<Scalar>>(
       std::make_shared<StateErrorResidual<Scalar>>(space, nu, target),
