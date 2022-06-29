@@ -1,7 +1,18 @@
 import proxddp
 import numpy as np
+import pytest
 
-from examples.utils.custom_functions import ControlBoxFunction as PyControlBoxFunction
+from examples.custom_functions import ControlBoxFunction as PyControlBoxFunction
+
+
+def test_abstract():
+    space = proxddp.manifolds.SE2()
+    ndx = space.ndx
+    nu = 3
+    nr = 1
+    fun = proxddp.StageFunction(ndx, nu, nr)
+    data = fun.createData()
+    print(data)
 
 
 def test_custom_controlbox():
@@ -15,7 +26,6 @@ def test_custom_controlbox():
     bf2 = proxddp.ControlBoxFunction(ndx, u_min, u_max)
     data1: proxddp.FunctionData = box_function.createData()
     data2 = bf2.createData()
-
 
     lbd0 = np.zeros(box_function.nr)
     x0 = np.random.randn(ndx)
@@ -33,3 +43,8 @@ def test_custom_controlbox():
     data1.vhp_buffer[:, :] = np.random.randn(*data1.vhp_buffer.shape)
     box_function.computeVectorHessianProducts(x0, u0, x0, lbd0, data1)
     assert np.all(data1.vhp_buffer == 0.)
+
+
+if __name__ == '__main__':
+    import sys
+    retcode = pytest.main(sys.argv)

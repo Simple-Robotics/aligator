@@ -17,4 +17,3 @@ def test_aba_field():
         def Jforward(self, x, u, data: dynamics.ODEData):
             data.Jx
             data.Ju
-
