@@ -5,6 +5,8 @@
 #include "proxddp/fwd.hpp"
 #include "proxddp/core/clone.hpp"
 
+#include <fmt/format.h>
+#include <ostream>
 
 namespace proxddp
 {
@@ -153,6 +155,25 @@ namespace proxddp
       vhp_buffer_.setZero();
     }
 
+    friend std::ostream& operator<<(std::ostream& oss, const FunctionDataTpl& self)
+    {
+      oss << "FunctionData { ";
+      if (self.ndx1 == self.ndx2)
+      {
+        oss << fmt::format("ndx : {:d}", self.ndx1);
+        oss << ",  ";
+      } else {
+        oss << fmt::format("ndx1: {:d}", self.ndx1);
+        oss << ",  ";
+        oss << fmt::format("ndx2: {:d}", self.ndx2);
+        oss << ",  ";
+      }
+      oss << fmt::format("nu:   {:d}", self.nu);
+      oss << ",  ";
+      oss << fmt::format("nr:   {:d}", self.nr);
+      oss << " }";
+      return oss;
+    }
   };
 
 } // namespace proxddp
