@@ -4,12 +4,13 @@
 
 #include <proxnlp/manifold-base.hpp>
 
+#include <fmt/format.h>
+
 
 namespace proxddp
 {
 
   /** @brief Explicit forward dynamics model \f$ x_{k+1} = f(x_k, u_k) \f$.
-   * 
    * 
    *  @details    Forward dynamics \f$ x_{k+1} = f(x_k, u_k) \f$.
    *              The corresponding residuals for multiple-shooting formulations are
@@ -69,7 +70,7 @@ namespace proxddp
                           const ConstVectorRef& y,
                           BaseData& data) const;
 
-    shared_ptr<BaseData> createData() const;
+    virtual shared_ptr<BaseData> createData() const;
 
   };
 
@@ -94,13 +95,20 @@ namespace proxddp
       , dx_(output_space.ndx())
       , Jtemp_(output_space.ndx(), output_space.ndx())
       , xoutref_(xout_)
-      , dxref_(dx_)
-    {
+      , dxref_(dx_) {
       xout_.setZero();
       dx_.setZero();
       Jtemp_.setZero();
     }
 
+    friend std::ostream& operator<<(std::ostream& oss, const ExplicitDynamicsDataTpl& self)
+    {
+      oss << "ExplicitDynamicsData { ";
+      oss << fmt::format("ndx: {:d},  ", self.ndx1);
+      oss << fmt::format("nu:  {:d}", self.nu);
+      oss << " }";
+      return oss;
+    }
   };
   
 } // namespace proxddp
