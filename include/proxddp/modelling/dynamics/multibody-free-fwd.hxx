@@ -21,7 +21,7 @@ namespace dynamics
     , space_(state)
     , actuation_matrix_(actuation)
   {
-    const long nv = state.getModel().nv;
+    const int nv = state.getModel().nv;
     if (nv != actuation.rows())
     {
       throw std::domain_error(fmt::format("actuation matrix should have number of rows = pinocchio model nv ({} and {}).", actuation.rows(), nv));
@@ -35,8 +35,8 @@ namespace dynamics
     Data& d = static_cast<Data&>(data);
     d.tau_ = actuation_matrix_ * u;
     const pinocchio::ModelTpl<Scalar>& model = space_.getModel();
-    const long nq = model.nq;
-    const long nv = model.nv;
+    const int nq = model.nq;
+    const int nv = model.nv;
     d.xdot_.head(nv) = x.tail(nv);
     d.xdot_.tail(nv) = pinocchio::aba(model, *d.pin_data_, x.head(nq), x.tail(nv), d.tau_);
   }
@@ -48,8 +48,8 @@ namespace dynamics
     Data& d = static_cast<Data&>(data);
     // do not change d.dtau_du_ which is already set in createData()
     const auto& model = space_.getModel();
-    const long nq = model.nq;
-    const long nv = model.nv;
+    const int nq = model.nq;
+    const int nv = model.nv;
     const ConstVectorRef q = x.head(nq);
     const ConstVectorRef v = x.head(nv);
     pinocchio::computeABADerivatives(model, *d.pin_data_, q, v, d.tau_, d.Jx_.leftCols(nv), d.Jx_.rightCols(nv),

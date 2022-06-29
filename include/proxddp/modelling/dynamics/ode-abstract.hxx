@@ -36,6 +36,20 @@ namespace proxddp
       d.Jxdot_ *= -1.;
     }
 
+    template<typename Scalar>
+    shared_ptr<ContinuousDynamicsDataTpl<Scalar>>
+    ODEAbstractTpl<Scalar>::createData() const
+    {
+      return std::shared_ptr<ODEData>(new ODEData(this->ndx(), this->nu()));
+    }
+
+    template<typename Scalar>
+    ODEDataTpl<Scalar>::
+    ODEDataTpl(const int ndx, const int nu)
+      : Base(ndx, nu), xdot_(ndx)
+    {
+      xdot_.setZero();
+    }
   } // namespace dynamics
 } // namespace proxddp
 

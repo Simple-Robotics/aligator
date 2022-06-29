@@ -21,11 +21,12 @@ namespace proxddp
       using Scalar = _Scalar;
       PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
-      using Base = ContinuousDynamicsAbstractTpl<_Scalar>;
-      using ContDataAbstract = typename Base::Data;
-      using Base::Base; // use parent ctor
-
+      using Base = ContinuousDynamicsAbstractTpl<Scalar>;
+      using ContDataAbstract = ContinuousDynamicsDataTpl<Scalar>;
+      using Base::Base;
       using ODEData = ODEDataTpl<Scalar>;
+
+      virtual ~ODEAbstractTpl() = default;
 
       /// Evaluate the ODE vector field: this returns the value of \f$\dot{x}\f$.
       virtual void forward(const ConstVectorRef& x, const ConstVectorRef& u, ODEData& data) const = 0;
@@ -38,17 +39,14 @@ namespace proxddp
       void evaluate(const ConstVectorRef& x,
                     const ConstVectorRef& u,
                     const ConstVectorRef& xdot,
-                    ContDataAbstract& data) const;
+                    ContDataAbstract& data) const override;
 
       void computeJacobians(const ConstVectorRef& x,
                             const ConstVectorRef& u,
                             const ConstVectorRef& xdot,
-                            ContDataAbstract& data) const;
+                            ContDataAbstract& data) const override;
 
-      virtual shared_ptr<ContDataAbstract> createData() const
-      {
-        return std::make_shared<ODEData>(this->ndx(), this->nu());
-      }
+      virtual shared_ptr<ContDataAbstract> createData() const override;
 
     };
 
@@ -62,12 +60,9 @@ namespace proxddp
       /// Value of the derivative \f$\dot{x}\f$
       VectorXs xdot_;
 
-      ODEDataTpl(const int ndx, const int nu)
-        : Base(ndx, nu)
-        , xdot_(ndx)
-        {
-          xdot_.setZero();
-        }
+      ODEDataTpl(const int ndx, const int nu);
+
+      virtual ~ODEDataTpl() = default;
     };
     
   } // namespace dynamics
