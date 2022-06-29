@@ -21,6 +21,7 @@ VIDEO_ARGS = {
     "output_params": ["-crf", "17"],
 }
 
+
 class Args(tap.Tap):
     display: bool = False
     record: bool = False
@@ -62,60 +63,14 @@ QUAD_ACT_MATRIX = np.array(
 nu = QUAD_ACT_MATRIX.shape[1]  # = no. of nrotors
 
 
-class EulerIntegratorDynamics(proxddp.dynamics.ExplicitDynamicsModel):
-    def __init__(self, dt: float, B: np.ndarray):
-        self.dt = dt
-        self.model = rmodel
-        self.data = self.model.createData()
-        self.B = B
-        super().__init__(space, nu)
-
-    def forward(self, x, u, data: proxddp.dynamics.ExplicitDynamicsData):
-        out = data.xout[:]
-        q = x[:self.model.nq]
-        v = x[self.model.nq:]
-        tau = self.B @ u
-        acc = pin.aba(self.model, self.data, q, v, tau)
-        qout = out[:self.model.nq]
-        vout = out[self.model.nq:]
-        vout[:] = v + self.dt * acc
-        qout[:] = pin.integrate(self.model, q, self.dt * vout)
-
-    def dForward(self, x, u, data: proxddp.dynamics.ExplicitDynamicsData):
-        Jx = data.Jx
-        Ju = data.Ju
-        Jx[:, :] = 0.
-        Ju[:, :] = 0.
-        q = x[:self.model.nq]
-        v = x[self.model.nq:]
-        tau = self.B @ u
-        acc = pin.aba(self.model, self.data, q, v, tau)
-        [dacc_dq, dacc_dv, dacc_dtau] = pin.computeABADerivatives(self.model, self.data, q, v, tau)
-        dx = np.concatenate([self.dt * (v + self.dt * acc), self.dt * acc])
-
-        dacc_dx = np.hstack([dacc_dq, dacc_dv])
-        dacc_du = dacc_dtau @ self.B
-
-        # Jx <- ddx_dx
-        Jx[nv:, :] = dacc_dx * self.dt
-        Jx[:nv, :] = Jx[nv:, :] * self.dt
-        Jx[:nv, nv:] += np.eye(nv) * self.dt
-        Ju[nv:, :] = dacc_du * self.dt
-        Ju[:nv, :] = Ju[nv:, :] * self.dt
-        space.JintegrateTransport(x, dx, Jx, 1)
-        space.JintegrateTransport(x, dx, Ju, 1)
-
-        Jtemp0 = np.zeros((space.ndx, space.ndx))
-        space.Jintegrate(x, dx, Jtemp0, 0)
-        Jx[:, :] = Jtemp0 + Jx
-
+ode_dynamics = proxddp.dynamics.MultibodyFreeFwdDynamics(space, QUAD_ACT_MATRIX)
 
 dt = 0.033
 Tf = 2.
 nsteps = int(Tf / dt)
 print("nsteps: {:d}".format(nsteps))
 
-dynmodel = EulerIntegratorDynamics(dt, QUAD_ACT_MATRIX)
+dynmodel = proxddp.dynamics.IntegratorEuler(ode_dynamics, dt)
 
 x0 = np.concatenate([robot.q0, np.zeros(nv)])
 x0[2] = 0.2
@@ -148,6 +103,7 @@ u_min = -1. * np.ones(nu)
 times = np.linspace(0, Tf, nsteps + 1)
 idx_switch = int(0.7 * nsteps)
 t_switch = times[idx_switch]
+
 
 def setup():
     weights1 = np.zeros(space.ndx)
