@@ -33,17 +33,17 @@ struct MyModel : ExplicitDynamicsModelTpl<double>
 struct MyCost : CostAbstractTpl<double>
 {
   using CostAbstractTpl<double>::CostAbstractTpl;
-  void evaluate(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const
+  void evaluate(const ConstVectorRef&, const ConstVectorRef&, CostData& data) const
   {
     data.value_ = 0.;
   }
 
-  void computeGradients(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const
+  void computeGradients(const ConstVectorRef&, const ConstVectorRef&, CostData& data) const
   {
     data.grad_.setZero();
   }
 
-  void computeHessians(const ConstVectorRef& x, const ConstVectorRef& u, CostData& data) const
+  void computeHessians(const ConstVectorRef&, const ConstVectorRef&, CostData& data) const
   {
     data.hess_.setZero();
   }
