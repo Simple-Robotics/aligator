@@ -17,7 +17,7 @@ namespace dynamics
   MultibodyFreeFwdDynamicsTpl(
     const ManifoldPtr& state,
     const MatrixXs& actuation)
-    : Base(state, actuation.cols())
+    : Base(state, (int)actuation.cols())
     , space_(state)
     , actuation_matrix_(actuation)
   {
@@ -34,7 +34,7 @@ namespace dynamics
   {
     Data& d = static_cast<Data&>(data);
     d.tau_ = actuation_matrix_ * u;
-    const pinocchio::ModelTpl<Scalar>& model = space().getModel();
+    const pinocchio::ModelTpl<Scalar>& model = space_->getModel();
     const int nq = model.nq;
     const int nv = model.nv;
     d.xdot_.head(nv) = x.tail(nv);
@@ -46,27 +46,36 @@ namespace dynamics
   dForward(const ConstVectorRef& x, const ConstVectorRef& u, ODEData& data) const
   {
     Data& d = static_cast<Data&>(data);
-    // do not change d.dtau_du_ which is already set in createData()
-    const auto& model = space().getModel();
+    const pinocchio::ModelTpl<Scalar>& model = space_->getModel();
     const int nq = model.nq;
     const int nv = model.nv;
-    const ConstVectorRef q = x.head(nq);
-    const ConstVectorRef v = x.head(nv);
-    pinocchio::computeABADerivatives(model, *d.pin_data_, q, v, d.tau_, d.Jx_.leftCols(nv), d.Jx_.rightCols(nv),
+    auto da_dx = d.Jx_.bottomRows(nv);
+    pinocchio::computeABADerivatives(model, *d.pin_data_,
+                                     x.head(nq), x.tail(nv), d.tau_,
+                                     da_dx.leftCols(nv), da_dx.rightCols(nv),
                                      d.pin_data_->Minv);
-    d.Ju_ = d.pin_data_->Minv * d.dtau_du_;
+    d.Ju_.bottomRows(nv) = d.pin_data_->Minv * d.dtau_du_;
   }
 
   template<typename Scalar>
   shared_ptr<ContinuousDynamicsDataTpl<Scalar>>
   MultibodyFreeFwdDynamicsTpl<Scalar>::createData() const
   {
-    auto data = std::make_shared<MultibodyFreeFwdDataTpl<Scalar>>(this->ndx(), this->nu());
-    data->tau_ = VectorXs::Zero(space().getModel().nv);
-    data->pin_data_ = std::make_shared<pinocchio::DataTpl<Scalar>>(space().getModel());
-    data->dtau_du_ = this->actuation_matrix_;
-    return data;
+    return std::make_shared<Data>(this);
   }
+
+  template<typename Scalar>
+  MultibodyFreeFwdDataTpl<Scalar>::
+  MultibodyFreeFwdDataTpl(const MultibodyFreeFwdDynamicsTpl<Scalar>* cont_dyn)
+    : ODEDataTpl<Scalar>(cont_dyn->ndx(), cont_dyn->nu())
+    , tau_(cont_dyn->space_->getModel().nv)
+    , dtau_du_(cont_dyn->actuation_matrix_)
+    {
+      tau_.setZero();
+      const pinocchio::ModelTpl<Scalar>& model = cont_dyn->space_->getModel();
+      pin_data_ = std::make_shared<pinocchio::DataTpl<Scalar>>(model);
+      this->Jx_.topRightCorner(model.nv, model.nv).setIdentity();
+    }
 } // namespace dynamics
 } // namespace proxddp
 
