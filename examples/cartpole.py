@@ -1,6 +1,6 @@
 """
 @Time    :   2022/06/29 15:58:26
-@Author  :   quentinll 
+@Author  :   quentinll
 @License :   (C)Copyright 2021-2022, INRIA
 """
 
@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 
 
 class Args(tap.Tap):
-    use_term_cstr: bool = False
+    use_term_cstr: bool = True
 
 
 args = Args().parse_args()
@@ -106,109 +106,58 @@ def create_cartpole(N):
 
 model, geom_model, data, geom_data, ddl = create_cartpole(1)
 time_step = 0.01
-nx = 4
 nu = 1
-act_mat = np.zeros((2, 1))
+act_mat = np.zeros((2, nu))
 act_mat[0, 0] = 1.0
 space = proxnlp.manifolds.MultibodyPhaseSpace(model)
-# cont_dyn = proxddp.dynamics.MultibodyFreeFwdDynamics(space, act_mat)
-# disc_dyn = proxddp.IntegratorEuler(cont_dyn, time_step)
+nx = space.nx
+ndx = space.ndx
+cont_dyn = proxddp.dynamics.MultibodyFreeFwdDynamics(space, act_mat)
+disc_dyn = proxddp.dynamics.IntegratorEuler(cont_dyn, time_step)
 
 nq = model.nq
 nv = model.nv
+x0 = space.neutral()
+x0[1] = np.pi
 
-class EulerIntegratorDynamics(proxddp.dynamics.ExplicitDynamicsModel):
-    """Temporarily replaces IntegratorEuler."""
-
-    def __init__(self, dt: float, B: np.ndarray):
-        self.dt = dt
-        self.model = model
-        self.data = self.model.createData()
-        self.B = B
-        super().__init__(space, nu)
-
-    def forward(self, x, u, data: proxddp.dynamics.ExplicitDynamicsData):
-        out = data.xout[:]
-        q = x[:nq]
-        v = x[nq:]
-        tau = self.B @ u
-        acc = pin.aba(self.model, self.data, q, v, tau)
-        qout = out[:nq]
-        vout = out[nq:]
-        vout[:] = v + self.dt * acc
-        qout[:] = pin.integrate(self.model, q, self.dt * vout)
-
-    def dForward(self, x, u, data: proxddp.dynamics.ExplicitDynamicsData):
-        Jx = data.Jx
-        Ju = data.Ju
-        Jx[:, :] = 0.0
-        Ju[:] = 0.0
-        q = x[: self.model.nq]
-        v = x[self.model.nq :]
-        tau = self.B @ u
-        acc = pin.aba(self.model, self.data, q, v, tau)
-        [dacc_dq, dacc_dv, dacc_dtau] = pin.computeABADerivatives(
-            self.model, self.data, q, v, tau
-        )
-        dx = np.concatenate([self.dt * (v + self.dt * acc), self.dt * acc])
-
-        dacc_dx = np.hstack([dacc_dq, dacc_dv])
-        dacc_du = dacc_dtau @ self.B
-
-        # Jx <- ddx_dx
-        Jx[nv:, :] = dacc_dx * self.dt
-        Jx[:nv, :] = Jx[nv:, :] * self.dt
-        Jx[:nv, nv:] += np.eye(nv) * self.dt
-        Ju[nv:] = dacc_du[:, 0] * self.dt
-        Ju[:nv] = Ju[nv:] * self.dt
-        space.JintegrateTransport(x, dx, Jx, 1)
-        space.JintegrateTransport(x, dx, Ju, 1)
-
-        Jtemp0 = np.zeros((space.ndx, space.ndx))
-        space.Jintegrate(x, dx, Jtemp0, 0)
-        Jx[:, :] = Jtemp0 + Jx
-
-
-disc_dyn = EulerIntegratorDynamics(time_step, act_mat)
-q_init = np.zeros(nq)
-q_init[1] = np.pi
-v_init = np.zeros(nv)
-x0 = np.zeros(nx)
-x0[: model.nq] = q_init
-x0[model.nq :] = v_init
 target_pos = np.array([0.0, 0.0, 1.0])
 frame_id = model.getFrameId("end_effector_frame")
 
 # running cost regularizes the control input
-rcost = proxddp.CostStack(nx, nu)
+rcost = proxddp.CostStack(ndx, nu)
 wu = np.ones(nu) * 1e-2
 rcost.addCost(
     proxddp.QuadraticResidualCost(
-        proxddp.ControlErrorResidual(nx, nu, np.zeros(nu)), np.diag(wu)
+        proxddp.ControlErrorResidual(ndx, nu, np.zeros(nu)), np.diag(wu)
     )
 )
-term_cost = proxddp.CostStack(nx, nu)
+term_cost = proxddp.CostStack(ndx, nu)
 stage = proxddp.StageModel(space, nu, rcost, disc_dyn)
 
 # box constraint on control
 u_min = -25.0 * np.ones(nu)
 u_max = +25.0 * np.ones(nu)
-ctrl_box = proxddp.ControlBoxFunction(nx, u_min, u_max)
+ctrl_box = proxddp.ControlBoxFunction(ndx, u_min, u_max)
 stage.addConstraint(
     proxddp.StageConstraint(ctrl_box, proxnlp.constraints.NegativeOrthant())
 )
-# residual error on a frame position
-# temporarily replace the c++ implementation
+
+
 class FramePosErrorResidual(proxddp.StageFunction):
-    def __init__(self, model, nx, nu, target_pos, frame_id) -> None:
+    """residual error on a frame position.
+    temporarily replace the c++ implementation"""
+    def __init__(self, model, nx, nu, target_pos, frame_id, terminal=True) -> None:
         super().__init__(nx, nu, 3)
         self.nx = nx
         self.target = target_pos
         self.rmodel = model
         self.rdata = model.createData()
         self.fid = frame_id
+        self.terminal = terminal
 
     def evaluate(self, x, u, y, data):
+        if self.terminal:
+            x = y
         q = x[: self.rmodel.nq]
         pin.forwardKinematics(self.rmodel, self.rdata, q)
         pin.updateFramePlacements(self.rmodel, self.rdata)
@@ -235,21 +184,31 @@ class FramePosErrorResidual(proxddp.StageFunction):
     def computeJacobians(self, x, u, y, data):
         nq = self.rmodel.nq
         nv = self.rmodel.nv
+        if self.terminal:
+            x = y
         q = x[:nq]
         err, Jf = self._get_errvec_and_jac(q)
-        data.Jx[:, :nv] = Jf
+        if self.terminal:
+            data.Jy[:, :nv] = Jf
+        else:
+            data.Jx[:, :nv] = Jf
 
 
 nsteps = 600
+Tf = nsteps * time_step
 problem = proxddp.TrajOptProblem(x0, nu, space, term_cost)
 for i in range(nsteps):
     if i == nsteps - 1 and args.use_term_cstr:
-        xtar = 0.1 * np.ones(nx)
-        term_fun = FramePosErrorResidual(model, nx, nu, target_pos, frame_id)
+        xtar = space.neutral()
+        # term_fun = FramePosErrorResidual(model, nx, nu, target_pos, frame_id, terminal=True)
+        # stage.addConstraint(
+        #     proxddp.StageConstraint(
+        #         term_fun, proxnlp.constraints.EqualityConstraintSet()
+        #     )
+        # )
         stage.addConstraint(
-            proxddp.StageConstraint(
-                term_fun, proxnlp.constraints.EqualityConstraintSet()
-            )
+            proxddp.StateErrorResidual(space, nu, xtar),
+            proxnlp.constraints.EqualityConstraintSet()
         )
     problem.addStage(stage)
 
@@ -269,32 +228,34 @@ solver.setup(problem)
 solver.run(problem, xs_i, us_i)
 res = solver.getResults()
 
+plt.figure(figsize=(9.6, 4.8))
 plt.subplot(121)
-lstyle = {"lw": 0.9, "marker": ".", "markersize": 5}
-trange = np.arange(nsteps + 1)
-plt.plot(res.xs, ls="-", **lstyle)
+lstyle = {"lw": 0.9}
+trange = np.linspace(0, Tf, nsteps + 1)
+plt.plot(trange, res.xs, ls="-", **lstyle)
+plt.title("State $x(t)$")
 if args.use_term_cstr:
     plt.hlines(
         xtar,
         *trange[[0, -1]],
         ls="-",
-        lw=1.0,
+        lw=1.3,
         colors="k",
-        alpha=0.4,
-        label=r"$x_{tar}$"
+        alpha=0.8,
+        label=r"$x_\mathrm{tar}$"
     )
 plt.legend()
 plt.xlabel("Time $i$")
 
 plt.subplot(122)
-plt.plot(res.us, **lstyle)
+plt.plot(trange[:-1], res.us, **lstyle)
 plt.hlines(
     np.concatenate([u_min, u_max]),
     *trange[[0, -1]],
     ls="-",
     colors="k",
-    lw=1.5,
-    alpha=0.2,
+    lw=2.5,
+    alpha=0.4,
     label=r"$\bar{u}$"
 )
 plt.title("Controls $u(t)$")
