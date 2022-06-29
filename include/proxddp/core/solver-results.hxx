@@ -13,13 +13,12 @@ namespace proxddp
     us_.reserve(nsteps);
     lams_.reserve(nsteps + 1);
     co_state_.reserve(nsteps);
-    int nprim, ndual, nu;
+    int nprim, ndual;
     ndual = problem.init_state_error.nr;
     lams_.push_back(VectorXs::Ones(ndual));
     for (std::size_t i = 0; i < nsteps; i++)
     {
       const StageModelTpl<Scalar>& stage = problem.stages_[i];
-      nu = stage.nu();
       nprim = stage.numPrimal();
       ndual = stage.numDual();
       gains_.push_back(MatrixXs::Zero(nprim + ndual, stage.ndx1() + 1));

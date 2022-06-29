@@ -36,7 +36,6 @@ namespace proxddp
         Eigen::IOFormat CleanFmt(3, 0, ", ", "\n", "  [", "]");
         oss << "value_storage {\n";
         oss << store.storage.format(CleanFmt);
-        // oss << MatrixXs(store.store_sym_).format(CleanFmt);
         oss << "\n}";
         return oss;
       }
