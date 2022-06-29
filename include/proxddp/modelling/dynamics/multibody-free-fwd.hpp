@@ -47,11 +47,14 @@ namespace proxddp
       using Data = MultibodyFreeFwdDataTpl<Scalar>;
 
       using Manifold = proxnlp::MultibodyPhaseSpace<Scalar>;
-      const Manifold& space_;
+
+      using ManifoldPtr = shared_ptr<Manifold>;
+      ManifoldPtr space_;
+      const Manifold& space() const { return *space_; }
 
       MatrixXs actuation_matrix_;
 
-      MultibodyFreeFwdDynamicsTpl(const proxnlp::MultibodyPhaseSpace<Scalar>& state, const MatrixXs& actuation);
+      MultibodyFreeFwdDynamicsTpl(const ManifoldPtr& state, const MatrixXs& actuation);
 
       virtual void forward(const ConstVectorRef& x, const ConstVectorRef& u, ODEData& data) const;
       virtual void dForward(const ConstVectorRef& x, const ConstVectorRef& u, ODEData& data) const;

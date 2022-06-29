@@ -7,16 +7,20 @@ from proxddp import dynamics, manifolds
 
 
 def test_abstract():
+    """Test have the right types, etc."""
     space = manifolds.SO3()
     nu = 1
     cm = dynamics.ContinuousDynamicsBase(space, nu)
     cd = cm.createData()
-    print(cd)
+    assert isinstance(cd, dynamics.ContinuousDynamicsData)
+    assert hasattr(cd, "Jx")
+    assert hasattr(cd, "Ju")
+    assert hasattr(cd, "Jxdot")
 
     ode = dynamics.ODEAbstract(space, nu)
     ode_data = ode.createData()
-    print(ode_data)
     assert isinstance(ode_data, dynamics.ODEData)
+    assert hasattr(ode_data, "xdot")
 
 
 def test_multibody_free():
@@ -27,11 +31,6 @@ def test_multibody_free():
     ode = dynamics.MultibodyFreeFwdDynamics(space, B)
     data = ode.createData()
     assert hasattr(data, "tau")
-
-
-def test_dae():
-    space = manifolds.SE2()
-    nu = space.ndx
 
 
 if __name__ == '__main__':

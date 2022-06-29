@@ -23,17 +23,20 @@ namespace dynamics
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
     using Manifold = ManifoldAbstractTpl<Scalar>;
+    using ManifoldPtr = shared_ptr<Manifold>;
     using Data = ContinuousDynamicsDataTpl<Scalar>;
 
     /// State space.
-    const Manifold& space_;
+    shared_ptr<Manifold> space_;
     /// Control space dimension.
     const int nu_;
 
-    inline int ndx() const { return space_.ndx(); }
+    inline int ndx() const { return space_->ndx(); }
     inline int nu()  const { return nu_; }
 
-    ContinuousDynamicsAbstractTpl(const Manifold& space, const int nu);
+    inline const Manifold& space() const { return *space_; }
+
+    ContinuousDynamicsAbstractTpl(const ManifoldPtr& space, const int nu);
 
     virtual ~ContinuousDynamicsAbstractTpl() = default;
 

@@ -14,7 +14,7 @@ namespace proxddp
   {
     // Call the forward dynamics and set the function residual
     // value to the difference between y and the xout_.
-    ExplicitData& data_ = static_cast<ExplicitData&>(data);
+    Data& data_ = static_cast<Data&>(data);
     this->forward(x, u, data_);
     out_space().difference(y, data_.xout_, data_.value_);  // xnext - y
   }
@@ -26,7 +26,7 @@ namespace proxddp
                    const ConstVectorRef& y,
                    BaseData& data) const
   {
-    ExplicitData& data_ = static_cast<ExplicitData&>(data);
+    Data& data_ = static_cast<Data&>(data);
     this->forward(x, u, data_);
     this->dForward(x, u, data_); // dxnext_(x,u)
     // compose by jacobians of log (xout - y)
@@ -41,6 +41,6 @@ namespace proxddp
   shared_ptr<DynamicsDataTpl<Scalar>>
   ExplicitDynamicsModelTpl<Scalar>::createData() const
   {
-    return std::make_shared<ExplicitData>(this->ndx1, this->nu, this->out_space());
+    return std::make_shared<Data>(this->ndx1, this->nu, this->out_space());
   }
 } // namespace proxddp

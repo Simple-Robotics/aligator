@@ -9,7 +9,9 @@ namespace proxddp
 {
   namespace dynamics
   {
-    /// @brief Explicit Euler integrator \f$ x_{k+1} = x_k \oplus h f(x_k, u_k)\f$.
+    /**
+     *  @brief Explicit Euler integrator \f$ x_{k+1} = x_k \oplus h f(x_k, u_k)\f$.
+     */
     template<typename _Scalar>
     struct IntegratorEuler : ExplicitIntegratorAbstractTpl<_Scalar>
     {
@@ -19,14 +21,10 @@ namespace proxddp
       using Data = ExplicitIntegratorDataTpl<Scalar>;
       using ODEType = ODEAbstractTpl<Scalar>;
 
-      using Base::evaluate;
-      using Base::computeJacobians;
-      using Base::computeVectorHessianProducts;
-
       /// Integration time step \f$h\f$.
       Scalar timestep_;
 
-      explicit IntegratorEuler(const ODEType& cont_dynamics, const Scalar timestep);
+      explicit IntegratorEuler(const shared_ptr<ODEType>& cont_dynamics, const Scalar timestep);
 
       void forward(const ConstVectorRef& x, const ConstVectorRef& u, ExplicitDynamicsDataTpl<Scalar>& data) const;
 

@@ -18,8 +18,8 @@ namespace python
 
     bp::class_<MultibodyFreeFwdDynamics, bp::bases<ODEAbstract>>(
       "MultibodyFreeFwdDynamics", "Free-space forward dynamics on multibodies using Pinocchio's ABA algorithm.",
-      bp::init<const proxnlp::MultibodyPhaseSpace<Scalar>&,
-                const context::MatrixXs&>(bp::args("self", "space", "actuation_matrix"))
+      bp::init<const shared_ptr<proxnlp::MultibodyPhaseSpace<Scalar>>&,
+               const context::MatrixXs&>(bp::args("self", "space", "actuation_matrix"))
     )
       .def(CreateDataPythonVisitor<MultibodyFreeFwdDynamics>())
       ;

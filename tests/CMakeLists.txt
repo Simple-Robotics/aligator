@@ -48,6 +48,7 @@ endmacro(add_proxddp_test)
 set(TEST_NAMES
     integrators
     problem
+    continuous
     solver-storage)
 
 foreach(test_name ${TEST_NAMES})

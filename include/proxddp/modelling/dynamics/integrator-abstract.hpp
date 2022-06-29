@@ -1,6 +1,7 @@
+#pragma once
 /// @file integrator-abstract.hpp
 /// @brief Base definitions for numerical integrators.
-#pragma once
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
 #include "proxddp/modelling/dynamics/continuous-base.hpp"
 
@@ -37,31 +38,24 @@ namespace proxddp
       shared_ptr<ContinuousDynamics> continuous_dynamics_;
 
       /// Constructor from instances of DynamicsType.
-      explicit IntegratorAbstractTpl(const shared_ptr<ContinuousDynamics>& cont_dynamics)
-        : Base(cont_dynamics->ndx(), cont_dynamics->nu())
-        , continuous_dynamics_(cont_dynamics) {}
-
-      shared_ptr<BaseData> createData() const
-      {
-        return std::make_shared<IntegratorDataTpl<Scalar>>(*this);
-      }
+      explicit IntegratorAbstractTpl(const shared_ptr<ContinuousDynamics>& cont_dynamics);
+      virtual ~IntegratorAbstractTpl() = default;
+      shared_ptr<BaseData> createData() const;
     };
 
 
     /// @brief  Data class for numerical integrators (IntegratorAbstractTpl).
     template<typename _Scalar>
-    struct IntegratorDataTpl : virtual DynamicsDataTpl<_Scalar>
+    struct IntegratorDataTpl : DynamicsDataTpl<_Scalar>
     {
       using Scalar = _Scalar;
       shared_ptr<ContinuousDynamicsDataTpl<Scalar>> continuous_data;
 
-      explicit IntegratorDataTpl(const IntegratorAbstractTpl<Scalar>& integrator)
-        : DynamicsDataTpl<Scalar>(integrator.ndx1, integrator.nu, integrator.ndx2, integrator.ndx2)
-        , continuous_data(std::move(integrator.continuous_dynamics_->createData()))
-        {}
-
+      explicit IntegratorDataTpl(const IntegratorAbstractTpl<Scalar>* integrator);
+      virtual ~IntegratorDataTpl() = default;
     };
 
   } // namespace dynamics
 } // namespace proxddp
 
+#include "proxddp/modelling/dynamics/integrator-abstract.hxx"

@@ -15,13 +15,13 @@ namespace dynamics
   template<typename Scalar>
   MultibodyFreeFwdDynamicsTpl<Scalar>::
   MultibodyFreeFwdDynamicsTpl(
-    const proxnlp::MultibodyPhaseSpace<Scalar>& state,
+    const ManifoldPtr& state,
     const MatrixXs& actuation)
     : Base(state, actuation.cols())
     , space_(state)
     , actuation_matrix_(actuation)
   {
-    const int nv = state.getModel().nv;
+    const int nv = state->getModel().nv;
     if (nv != actuation.rows())
     {
       throw std::domain_error(fmt::format("actuation matrix should have number of rows = pinocchio model nv ({} and {}).", actuation.rows(), nv));
@@ -34,7 +34,7 @@ namespace dynamics
   {
     Data& d = static_cast<Data&>(data);
     d.tau_ = actuation_matrix_ * u;
-    const pinocchio::ModelTpl<Scalar>& model = space_.getModel();
+    const pinocchio::ModelTpl<Scalar>& model = space().getModel();
     const int nq = model.nq;
     const int nv = model.nv;
     d.xdot_.head(nv) = x.tail(nv);
@@ -47,7 +47,7 @@ namespace dynamics
   {
     Data& d = static_cast<Data&>(data);
     // do not change d.dtau_du_ which is already set in createData()
-    const auto& model = space_.getModel();
+    const auto& model = space().getModel();
     const int nq = model.nq;
     const int nv = model.nv;
     const ConstVectorRef q = x.head(nq);
@@ -62,8 +62,8 @@ namespace dynamics
   MultibodyFreeFwdDynamicsTpl<Scalar>::createData() const
   {
     auto data = std::make_shared<MultibodyFreeFwdDataTpl<Scalar>>(this->ndx(), this->nu());
-    data->tau_ = VectorXs::Zero(space_.getModel().nv);
-    data->pin_data_ = std::make_shared<pinocchio::DataTpl<Scalar>>(space_.getModel());
+    data->tau_ = VectorXs::Zero(space().getModel().nv);
+    data->pin_data_ = std::make_shared<pinocchio::DataTpl<Scalar>>(space().getModel());
     data->dtau_du_ = this->actuation_matrix_;
     return data;
   }

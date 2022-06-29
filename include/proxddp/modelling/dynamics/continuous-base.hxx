@@ -8,7 +8,7 @@ namespace dynamics
 {
   template<typename Scalar>
   ContinuousDynamicsAbstractTpl<Scalar>::
-  ContinuousDynamicsAbstractTpl(const Manifold& space, const int nu)
+  ContinuousDynamicsAbstractTpl(const ManifoldPtr& space, const int nu)
     : space_(space)
     , nu_(nu)
     {}

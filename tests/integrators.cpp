@@ -11,7 +11,6 @@ BOOST_AUTO_TEST_SUITE(integrators)
 BOOST_AUTO_TEST_CASE(euler)
 {
   using Manifold = proxnlp::VectorSpaceTpl<double>;
-  using IntegratorType = proxddp::dynamics::IntegratorEuler<double>;
   constexpr int NX = 3;
   Manifold space(NX);
 

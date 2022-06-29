@@ -24,6 +24,8 @@ namespace proxddp
       using Base = ContinuousDynamicsAbstractTpl<Scalar>;
       using ContDataAbstract = ContinuousDynamicsDataTpl<Scalar>;
       using Base::Base;
+      using Base::space_;
+      using Base::nu_;
       using ODEData = ODEDataTpl<Scalar>;
 
       virtual ~ODEAbstractTpl() = default;

@@ -26,7 +26,7 @@ namespace proxddp
     PROXNLP_FUNCTION_TYPEDEFS(Scalar);
     using Base = DynamicsModelTpl<Scalar>;
     using BaseData = DynamicsDataTpl<Scalar>;
-    using ExplicitData = ExplicitDynamicsDataTpl<Scalar>;
+    using Data = ExplicitDynamicsDataTpl<Scalar>;
     using Manifold = ManifoldAbstractTpl<Scalar>;
 
     shared_ptr<Manifold> next_state_;
@@ -53,12 +53,12 @@ namespace proxddp
     /// @brief Evaluate the forward discrete dynamics.
     void virtual forward(const ConstVectorRef& x,
                          const ConstVectorRef& u,
-                         ExplicitData& data) const = 0;
+                         Data& data) const = 0;
 
     /// @brief Compute the Jacobians of the forward dynamics.
     void virtual dForward(const ConstVectorRef& x,
                           const ConstVectorRef& u,
-                          ExplicitData& data) const = 0;
+                          Data& data) const = 0;
 
     void evaluate(const ConstVectorRef& x,
                   const ConstVectorRef& u,

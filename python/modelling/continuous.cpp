@@ -10,7 +10,7 @@ namespace proxddp
     {
       using namespace proxddp::dynamics;
       using context::Scalar;
-      using context::Manifold;
+      using ManifoldPtr = shared_ptr<context::Manifold>;
       using ContinuousDynamicsBase = ContinuousDynamicsAbstractTpl<Scalar>;
       using ContinuousDynamicsData = ContinuousDynamicsDataTpl<Scalar>;
       using ODEAbstract = ODEAbstractTpl<Scalar>;
@@ -22,7 +22,7 @@ namespace proxddp
       bp::class_<PyContinuousDynamics<>, boost::noncopyable>(
         "ContinuousDynamicsBase",
         "Base class for continuous-time dynamical models (DAEs and ODEs).",
-        bp::init<const Manifold&, int>(
+        bp::init<const ManifoldPtr&, int>(
           "Default constructor: provide the working manifold and control space dimension.",
           bp::args("self", "space", "nu"))
       )
@@ -59,7 +59,7 @@ namespace proxddp
       bp::register_ptr_to_python< shared_ptr<ODEAbstract> >();
       bp::class_<PyODEAbstract, bp::bases<ContinuousDynamicsBase>, boost::noncopyable>(
         "ODEAbstract", "Continuous dynamics described by ordinary differential equations (ODEs).",
-        bp::init<const Manifold&, int>(bp::args("self", "space", "nu"))
+        bp::init<const ManifoldPtr&, int>(bp::args("self", "space", "nu"))
       )
         .def("forward",  bp::pure_virtual(&ODEAbstract::forward),
              bp::args("self", "x", "u", "data"),
