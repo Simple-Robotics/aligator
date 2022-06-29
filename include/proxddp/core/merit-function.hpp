@@ -59,7 +59,7 @@ namespace proxddp
     Scalar mu_penal_inv_ = 1. / mu_penal_;
     Scalar traj_cost = 0.;
     Scalar penalty_value = 0.;
-    Scalar value_;
+    Scalar value_ = 0.;
 
     /// Weight of dual penalty. Values different from 1 not supported yet.
     static constexpr Scalar dual_weight_ = 1.;
