@@ -33,10 +33,7 @@ namespace dynamics
     inline int ndx() const { return space_.ndx(); }
     inline int nu()  const { return nu_; }
 
-    ContinuousDynamicsAbstractTpl(const Manifold& space, const int nu)
-      : space_(space)
-      , nu_(nu)
-      {}
+    ContinuousDynamicsAbstractTpl(const Manifold& space, const int nu);
 
     virtual ~ContinuousDynamicsAbstractTpl() = default;
 
@@ -61,17 +58,14 @@ namespace dynamics
                                   Data& data) const = 0;
 
     /// @brief  Create a data holder instance.
-    virtual shared_ptr<Data> createData() const
-    {
-      return std::make_shared<Data>(ndx(), nu());
-    }
-
+    virtual shared_ptr<Data> createData() const;
   };
 
   /// @brief  Data struct for ContinuousDynamicsAbstractTpl.
   template<typename _Scalar>
   struct ContinuousDynamicsDataTpl
   {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     using Scalar = _Scalar;
     PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
@@ -81,20 +75,12 @@ namespace dynamics
     MatrixXs Ju_;
     MatrixXs Jxdot_;
 
-    ContinuousDynamicsDataTpl(const int ndx, const int nu)
-      : value_(ndx)
-      , Jx_(ndx, ndx)
-      , Ju_(ndx, nu)
-      , Jxdot_(ndx, ndx)
-    {
-      value_.setZero();
-      Jx_.setZero();
-      Ju_.setZero();
-      Jxdot_.setZero();
-    }
+    ContinuousDynamicsDataTpl(const int ndx, const int nu);
 
+    virtual ~ContinuousDynamicsDataTpl() = default;  // marks this type as polymorphic; required for Boost.Python
   };
 
 } // namespace dynamics  
 } // namespace proxddp
 
+#include "proxddp/modelling/dynamics/continuous-base.hxx"
