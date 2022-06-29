@@ -36,3 +36,13 @@ export CMAKE_PREFIX_PATH=$CONDA_PREFIX
 ```
 
 and use `$CONDA_PREFIX` as your install folder.
+
+## Contributors
+
+* Antoine Bambade
+* Justin Carpentier
+* Wilson Jallet
+* Sarah Kazdadi
+* Quentin Le Lidec
+* Nicolas Mansard
+* Fabian Schramm
