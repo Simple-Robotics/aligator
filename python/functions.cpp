@@ -20,10 +20,11 @@ namespace proxddp
       using context::MatrixXs;
       using context::ConstVectorRef;
       using context::ConstMatrixRef;
+      using internal::PyStageFunction;
 
       bp::register_ptr_to_python<shared_ptr<StageFunction>>();
 
-      bp::class_<internal::PyStageFunction<>, boost::noncopyable>(
+      bp::class_<PyStageFunction<>, boost::noncopyable>(
         "StageFunction", "Base class for ternary functions f(x,u,x') on a stage of the problem.",
         bp::init<const int, const int, const int, const int>(bp::args("self", "ndx1", "nu", "ndx2", "nr"))
       )
@@ -47,10 +48,9 @@ namespace proxddp
 
       bp::class_<context::StageFunctionData>(
         "FunctionData", "Data struct for holding data about functions.",
-        bp::init<const int, const int, const int, const int>(
+        bp::init<int, int, int, int>(
           bp::args("self", "ndx1", "nu", "ndx2", "nr")
-        )
-      )
+        ))
         .add_property("value", bp::make_getter(&context::StageFunctionData::valref_, bp::return_value_policy<bp::return_by_value>()), "Function value.")
         .def_readonly("jac_buffer_", &context::StageFunctionData::jac_buffer_, "Buffer of the full function Jacobian wrt (x,u,y).")
         .def_readonly("vhp_buffer", &context::StageFunctionData::vhp_buffer_, "Buffer of the full function vector-Hessian product wrt (x,u,y).")

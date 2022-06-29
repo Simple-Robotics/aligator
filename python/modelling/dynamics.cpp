@@ -57,11 +57,13 @@ namespace proxddp
           )
       )
         .def(bp::init<const int, const int>(bp::args("self", "ndx", "nu")))
+        .def(CreateDataPythonVisitor<DynamicsModel>())
         ;
 
       using context::ExplicitDynamics;
+      using internal::PyExplicitDynamicsModel;
 
-      bp::class_<internal::PyExplicitDynamicsModel, bp::bases<DynamicsModel>, boost::noncopyable>(
+      bp::class_<PyExplicitDynamicsModel, bp::bases<DynamicsModel>, boost::noncopyable>(
         "ExplicitDynamicsModel", "Base class for explicit dynamics.",
         bp::init<const int, const int, const ManifoldPtr&>(
           bp::args("self", "ndx1", "nu", "next_space")
@@ -83,7 +85,7 @@ namespace proxddp
 
       bp::class_<context::ExplicitDynData, bp::bases<context::StageFunctionData>>(
         "ExplicitDynamicsData", "Data struct for explicit dynamics models.", bp::no_init)
-        .add_property("dx",   bp::make_getter(&context::ExplicitDynData::dx_, bp::return_value_policy<bp::return_by_value>()))
+        .add_property("dx",   bp::make_getter(&context::ExplicitDynData::dxref_,   bp::return_value_policy<bp::return_by_value>()))
         .add_property("xout", bp::make_getter(&context::ExplicitDynData::xoutref_, bp::return_value_policy<bp::return_by_value>()));
 
       /* Expose implementations */

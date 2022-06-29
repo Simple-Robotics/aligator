@@ -1,5 +1,5 @@
 #include "proxddp/python/fwd.hpp"
-#include "proxddp/python/dynamics-continuous.hpp"
+#include "proxddp/python/modelling/continuous.hpp"
 
 
 namespace proxddp
@@ -15,11 +15,14 @@ namespace proxddp
       using ContinuousDynamicsData = ContinuousDynamicsDataTpl<Scalar>;
       using ODEAbstract = ODEAbstractTpl<Scalar>;
       using ODEData = ODEDataTpl<Scalar>;
+      using internal::PyContinuousDynamics;
+      using internal::PyODEAbstract;
 
-      bp::class_<internal::PyContinuousDynamics<>>(
+      bp::register_ptr_to_python< shared_ptr<PyContinuousDynamics<>> >();
+      bp::class_<PyContinuousDynamics<>, boost::noncopyable>(
         "ContinuousDynamicsBase",
         "Base class for continuous-time dynamical models (DAEs and ODEs).",
-        bp::init<const Manifold&, const int>(
+        bp::init<const Manifold&, int>(
           "Default constructor: provide the working manifold and control space dimension.",
           bp::args("self", "space", "nu"))
       )
@@ -30,26 +33,33 @@ namespace proxddp
         .def("computeJacobians",  
              bp::pure_virtual(&ContinuousDynamicsBase::computeJacobians),
              bp::args("self", "x", "u", "xdot", "data"),
-             "Evaluate the DAE function derivatives.")
-        .def(CreateDataPythonVisitor<ContinuousDynamicsBase>());
+             "Evaluate the DAE function derivatives.") 
+        .def(CreateDataPythonVisitor<ContinuousDynamicsBase>())
+        ;
 
       bp::register_ptr_to_python<shared_ptr<ContinuousDynamicsData>>();
       bp::class_<ContinuousDynamicsData>(
         "ContinuousDynamicsData",
         "Data struct for continuous dynamics/DAE models.",
-        bp::init<int, int>()
-      )
-        .def_readwrite("value", &ContinuousDynamicsData::value_, "Vector value of the DAE residual.")
-        .def_readwrite("Jx", &ContinuousDynamicsData::Jx_, "Jacobian with respect to state.")
-        .def_readwrite("Ju", &ContinuousDynamicsData::Ju_, "Jacobian with respect to controls.")
-        .def_readwrite("Jxdot", &ContinuousDynamicsData::Jxdot_, "Jacobian with respect to :math:`\\dot{x}`.")
+        bp::init<int, int>(bp::args("self", "ndx", "nu")))
+        .add_property("value",
+                      bp::make_getter(&ContinuousDynamicsData::value_, bp::return_internal_reference<>()),
+                      "Vector value of the DAE residual.")
+        .add_property("Jx",
+                      bp::make_getter(&ContinuousDynamicsData::Jx_, bp::return_internal_reference<>()),
+                      "Jacobian with respect to state.")
+        .add_property("Ju",
+                      bp::make_getter(&ContinuousDynamicsData::Ju_, bp::return_internal_reference<>()),
+                      "Jacobian with respect to controls.")
+        .add_property("Jxdot",
+                      bp::make_getter(&ContinuousDynamicsData::Jxdot_, bp::return_internal_reference<>()),
+                      "Jacobian with respect to :math:`\\dot{x}`.")
         ;
-      
-      /* ODEs */
 
-      bp::class_<internal::PyODEBase, bp::bases<ContinuousDynamicsBase>>(
+      bp::register_ptr_to_python< shared_ptr<ODEAbstract> >();
+      bp::class_<PyODEAbstract, bp::bases<ContinuousDynamicsBase>, boost::noncopyable>(
         "ODEAbstract", "Continuous dynamics described by ordinary differential equations (ODEs).",
-        bp::init<const Manifold&, const int>(bp::args("self", "space", "nu"))
+        bp::init<const Manifold&, int>(bp::args("self", "space", "nu"))
       )
         .def("forward",  bp::pure_virtual(&ODEAbstract::forward),
              bp::args("self", "x", "u", "data"),
@@ -61,13 +71,11 @@ namespace proxddp
              "to the state-control pair :math:`(x, u)`.")
         .def(CreateDataPythonVisitor<ODEAbstract>())
         ;
-
+      
       bp::register_ptr_to_python<shared_ptr<ODEData>>();
-
       bp::class_<ODEData, bp::bases<ContinuousDynamicsData>>(
-        "ODEData", "Data struct for ODE models.", bp::init<int, int>()
-      )
-        .def_readwrite("xdot", &ODEData::xdot_);
+        "ODEData", "Data struct for ODE models.", bp::init<int, int>(bp::args("self", "ndx", "nu")))
+        .add_property("xdot", bp::make_getter(&ODEData::xdot_, bp::return_internal_reference<>()));
 
     }
 

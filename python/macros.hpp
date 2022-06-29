@@ -27,8 +27,7 @@ namespace proxddp { namespace python {
 
 #define PROXDDP_PYTHON_OVERRIDE_IMPL(ret_type, pyname, ...)                          \
   do {                                                                               \
-    bp::override fo = this->get_override(pyname);                                    \
-    if (fo)                                                                          \
+    if (bp::override fo = this->get_override(pyname))                                \
     {                                                                                \
       auto o = fo(__VA_ARGS__);                                                      \
       return ::proxddp::python::internal::suppress_if_void<ret_type>(std::move(o));  \
