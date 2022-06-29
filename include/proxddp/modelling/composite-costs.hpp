@@ -59,7 +59,7 @@ namespace proxddp
       auto& data = static_cast<Data&>(data_);
       auto& under_data = *data.underlying_data;
       residual_->computeJacobians(x, u, x, under_data);
-      const long size = data.grad_.size();
+      const int size = data.grad_.size();
       MatrixRef J = under_data.jac_buffer_.leftCols(size);
       data.grad_ = J.transpose() * (weights_ * under_data.value_);
     }
@@ -68,7 +68,7 @@ namespace proxddp
     {
       auto& data = static_cast<Data&>(data_);
       auto& under_data = *data.underlying_data;
-      const long size = data.grad_.size();
+      const int size = data.grad_.size();
       MatrixRef J = under_data.jac_buffer_.leftCols(size);
       data.hess_ = J.transpose() * (weights_ * J);
       if (!gauss_newton)
@@ -139,7 +139,7 @@ namespace proxddp
       }
     }
 
-    void computeHessians(const ConstVectorRef& x, const ConstVectorRef& u, CostDataAbstract& data) const
+    void computeHessians(const ConstVectorRef&, const ConstVectorRef&, CostDataAbstract& data) const
     {
       Data& d = static_cast<Data&>(data);
       auto& under_d = *d.underlying_data;
