@@ -26,8 +26,8 @@ namespace proxddp
       using PyIntegratorAbstract = internal::PyStageFunction<IntegratorAbstract>;
       bp::class_<PyIntegratorAbstract, bp::bases<context::DynamicsModel>>(
         "IntegratorAbstract", "Base class for numerical integrators.",
-        bp::init<const shared_ptr<DAEType>&>("Construct the integrator from a DAE.", bp::args("self", "cont_dynamics"))
-      );
+        bp::init<const shared_ptr<DAEType>&>("Construct the integrator from a DAE.", bp::args("self", "cont_dynamics")))
+        .def_readwrite("differential_dynamics", &IntegratorAbstract::continuous_dynamics_, "The underlying ODE or DAE.");
 
 
       //// EXPLICIT INTEGRATORS
@@ -37,7 +37,8 @@ namespace proxddp
 
 
       bp::class_<PyExplicitIntegrator, bp::bases<ExplicitDynamicsModelTpl<Scalar>>>(
-        "ExplicitIntegratorAbstract", bp::no_init);
+        "ExplicitIntegratorAbstract", bp::no_init)
+        .def_readwrite("differential_dynamics", &ExplicitIntegratorAbstract::ode_, "The underlying differential equation.");
 
       bp::class_<IntegratorEuler<Scalar>, bp::bases<ExplicitIntegratorAbstract>>(
         "IntegratorEuler",

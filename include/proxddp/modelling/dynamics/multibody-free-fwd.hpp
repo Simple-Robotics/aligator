@@ -11,15 +11,7 @@ namespace proxddp
   namespace dynamics
   {
     template<typename Scalar>
-    struct MultibodyFreeFwdDataTpl : ODEDataTpl<Scalar>
-    {
-      PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-      MatrixXs tau_;
-      MatrixXs dtau_du_;
-      using ODEDataTpl<Scalar>::ODEDataTpl;
-      /// shared_ptr to the underlying Pinocchio data object.
-      shared_ptr<pinocchio::DataTpl<Scalar>> pin_data_;
-    };
+    struct MultibodyFreeFwdDataTpl;
 
     /**
      * @brief   Free-space multibody forward dynamics, using Pinocchio.
@@ -50,9 +42,10 @@ namespace proxddp
 
       using ManifoldPtr = shared_ptr<Manifold>;
       ManifoldPtr space_;
-      const Manifold& space() const { return *space_; }
-
       MatrixXs actuation_matrix_;
+
+      const Manifold& space() const { return *space_; }
+      int ntau() const { return space_->getModel().nv; }
 
       MultibodyFreeFwdDynamicsTpl(const ManifoldPtr& state, const MatrixXs& actuation);
 
@@ -60,9 +53,21 @@ namespace proxddp
       virtual void dForward(const ConstVectorRef& x, const ConstVectorRef& u, ODEData& data) const;
 
       shared_ptr<ContDataAbstract> createData() const;
-
     };
   
+    template<typename Scalar>
+    struct MultibodyFreeFwdDataTpl : ODEDataTpl<Scalar>
+    {
+      using VectorXs = typename math_types<Scalar>::VectorXs;
+      using MatrixXs = typename math_types<Scalar>::MatrixXs;
+      VectorXs tau_;
+      MatrixXs dtau_dx_;
+      MatrixXs dtau_du_;
+      /// shared_ptr to the underlying pinocchio::DataTpl object.
+      shared_ptr<pinocchio::DataTpl<Scalar>> pin_data_;
+      MultibodyFreeFwdDataTpl(const MultibodyFreeFwdDynamicsTpl<Scalar>* cont_dyn);
+    };
+
   } // namespace dynamics
 } // namespace proxddp
 

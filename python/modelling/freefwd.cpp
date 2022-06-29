@@ -21,13 +21,14 @@ namespace python
       bp::init<const shared_ptr<proxnlp::MultibodyPhaseSpace<Scalar>>&,
                const context::MatrixXs&>(bp::args("self", "space", "actuation_matrix"))
     )
+      .add_property("ntau", &MultibodyFreeFwdDynamics::ntau, "Torque dimension.")
       .def(CreateDataPythonVisitor<MultibodyFreeFwdDynamics>())
       ;
 
     bp::register_ptr_to_python<shared_ptr<MultibodyFreeFwdData>>();
 
     bp::class_<MultibodyFreeFwdData, bp::bases<ODEData>>(
-      "MultibodyFreeFwdData", bp::init<int, int>())
+      "MultibodyFreeFwdData", bp::no_init)
       .def_readwrite("tau",     &MultibodyFreeFwdData::tau_)
       .def_readwrite("dtau_du", &MultibodyFreeFwdData::dtau_du_)
       .def_readwrite("pin_data",&MultibodyFreeFwdData::pin_data_)
