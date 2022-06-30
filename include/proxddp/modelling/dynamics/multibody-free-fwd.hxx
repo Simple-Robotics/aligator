@@ -43,7 +43,7 @@ namespace dynamics
 
   template<typename Scalar>
   void MultibodyFreeFwdDynamicsTpl<Scalar>::
-  dForward(const ConstVectorRef& x, const ConstVectorRef& u, ODEData& data) const
+  dForward(const ConstVectorRef& x, const ConstVectorRef&, ODEData& data) const
   {
     Data& d = static_cast<Data&>(data);
     const pinocchio::ModelTpl<Scalar>& model = space_->getModel();
@@ -69,6 +69,7 @@ namespace dynamics
   MultibodyFreeFwdDataTpl(const MultibodyFreeFwdDynamicsTpl<Scalar>* cont_dyn)
     : ODEDataTpl<Scalar>(cont_dyn->ndx(), cont_dyn->nu())
     , tau_(cont_dyn->space_->getModel().nv)
+    , dtau_dx_(cont_dyn->ntau(), cont_dyn->ndx())
     , dtau_du_(cont_dyn->actuation_matrix_)
     {
       tau_.setZero();

@@ -45,6 +45,7 @@ namespace proxddp
       MatrixXs actuation_matrix_;
 
       const Manifold& space() const { return *space_; }
+      int ntau() const { return space_->getModel().nv; }
 
       MultibodyFreeFwdDynamicsTpl(const ManifoldPtr& state, const MatrixXs& actuation);
 
@@ -60,6 +61,7 @@ namespace proxddp
       using VectorXs = typename math_types<Scalar>::VectorXs;
       using MatrixXs = typename math_types<Scalar>::MatrixXs;
       VectorXs tau_;
+      MatrixXs dtau_dx_;
       MatrixXs dtau_du_;
       /// shared_ptr to the underlying pinocchio::DataTpl object.
       shared_ptr<pinocchio::DataTpl<Scalar>> pin_data_;

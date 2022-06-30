@@ -26,6 +26,8 @@ namespace proxddp
           "Default constructor: provide the working manifold and control space dimension.",
           bp::args("self", "space", "nu"))
       )
+        .add_property("ndx", &ContinuousDynamicsBase::ndx, "State space dimension.")
+        .add_property("nu",  &ContinuousDynamicsBase::nu, "Control space dimension.")
         .def("evaluate",
              bp::pure_virtual(&ContinuousDynamicsBase::evaluate),
              bp::args("self", "x", "u", "xdot", "data"),
