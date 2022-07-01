@@ -73,7 +73,19 @@ def test_explicit_euler():
     dt = 0.1
     dyn = dynamics.IntegratorEuler(ode, dt)
     assert isinstance(dyn.createData(), dynamics.ExplicitIntegratorData)
+    ode_int_run(ode, dyn)
 
+
+def test_semi_euler():
+    # ode = create_multibody_ode()
+    ode = create_linear()
+    dt = 0.1
+    dyn = dynamics.IntegratorSemiEuler(ode, dt)
+    assert isinstance(dyn.createData(), dynamics.ExplicitIntegratorData)
+    ode_int_run(ode, dyn)
+
+
+def ode_int_run(ode, dyn):
     x = ode.space.rand()
     u = np.random.randn(ode.nu)
     eps = 1e-4
@@ -100,7 +112,8 @@ def test_explicit_euler():
     print("Ju")
     print(data.Ju)
     print(Ju_nd)
-    assert np.allclose(data.continuous_data.Jx, ode.A)
+    assert np.allclose(data.Jx, Jx_nd)
+    assert np.allclose(data.Ju, Ju_nd)
 
 
 if __name__ == "__main__":
