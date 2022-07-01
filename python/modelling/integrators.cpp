@@ -79,6 +79,13 @@ void exposeIntegrators() {
                            bp::args("self", "ode", "timestep")))
       .def_readwrite("timestep", &IntegratorRK2Tpl<Scalar>::timestep_,
                      "Time step.");
+
+  bp::class_<IntegratorSemiImplEulerTpl<Scalar>, bp::bases<ExplicitIntegratorAbstract>>(
+    "IntegratorSemiEuler",
+    "The semi-explicit Euler integrator.",
+    bp::init<const shared_ptr<ODEType>&, Scalar>(bp::args("self", "ode", "timestep"))
+  )
+    .def_readwrite("timestep", &IntegratorSemiImplEulerTpl<Scalar>::timestep_, "Time step.");
 }
 
 } // namespace python
