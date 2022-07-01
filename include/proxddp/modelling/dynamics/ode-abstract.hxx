@@ -32,15 +32,15 @@ namespace proxddp
     {
       ODEData& d = static_cast<ODEData&>(data);
       this->dForward(x, u, d);
-      d.Jxdot_.setIdentity();
-      d.Jxdot_ *= -1.;
     }
 
     template<typename Scalar>
     shared_ptr<ContinuousDynamicsDataTpl<Scalar>>
     ODEAbstractTpl<Scalar>::createData() const
     {
-      return std::shared_ptr<ODEData>(new ODEData(this->ndx(), this->nu()));
+      auto data = std::make_shared<ODEData>(this->ndx(), this->nu());
+      data->Jxdot_.diagonal().array() = -1.;
+      return data;
     }
 
     template<typename Scalar>

@@ -19,7 +19,7 @@ struct MyModel : ExplicitDynamicsModelTpl<double>
 
   void forward(const ConstVectorRef& x, const ConstVectorRef& u, ExplicitData& data) const
   {
-    out_space().integrate(x, u, data.xout_);
+    out_space().integrate(x, u, data.xnext_);
   }
 
   void dForward(const ConstVectorRef& x, const ConstVectorRef& u, ExplicitData& data) const

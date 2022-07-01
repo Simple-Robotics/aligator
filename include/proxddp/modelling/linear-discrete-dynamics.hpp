@@ -42,7 +42,7 @@ namespace proxddp
                   const ConstVectorRef& u,
                   Data& data) const
       {
-        data.xout_ = A_ * x + B_ * u + c_;
+        data.xnext_ = A_ * x + B_ * u + c_;
       }
       
       void dForward(const ConstVectorRef&,

@@ -35,7 +35,7 @@ namespace proxddp
       shared_ptr<ExpData> exp_data = std::static_pointer_cast<ExpData>(data);
       xs.push_back(VectorXs::Zero(dyn_models[i]->next_state_->nx()));
       dyn_models[i]->forward(xs[i], us[i], *exp_data);
-      xs[i + 1] = exp_data->xout_;
+      xs[i + 1] = exp_data->xnext_;
     }
 
     return xs;

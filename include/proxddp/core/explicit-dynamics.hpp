@@ -31,24 +31,14 @@ namespace proxddp
 
     shared_ptr<Manifold> next_state_;
 
-    /// @return Reference to output state space.
-    const Manifold& out_space() const
-    {
-      return *next_state_;
-    }
-
     /// The constructor requires providing the next state's manifold.
-    ExplicitDynamicsModelTpl(const int ndx1,
-                             const int nu,
-                             const shared_ptr<Manifold>& next_state)
-      : Base(ndx1, nu, next_state->ndx())
-      , next_state_(next_state)
-      {}
+    ExplicitDynamicsModelTpl(const int ndx1, const int nu, const shared_ptr<Manifold>& next_state);
+    /// Constructor with current (same as next) state space, and control space dimension.
+    ExplicitDynamicsModelTpl(const shared_ptr<Manifold>& next_state, const int nu);
+    virtual ~ExplicitDynamicsModelTpl() = default;
 
-    ExplicitDynamicsModelTpl(const shared_ptr<Manifold>& next_state,
-                             const int nu)
-      : ExplicitDynamicsModelTpl(next_state->ndx(), nu, next_state)
-      {}
+    /// @return Reference to output state space.
+    const Manifold& out_space() const { return *next_state_; }
 
     /// @brief Evaluate the forward discrete dynamics.
     void virtual forward(const ConstVectorRef& x,
@@ -78,28 +68,19 @@ namespace proxddp
   template<typename _Scalar>
   struct ExplicitDynamicsDataTpl : FunctionDataTpl<_Scalar>
   {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     using Scalar = _Scalar;
     PROXNLP_FUNCTION_TYPEDEFS(Scalar);
-    VectorXs xout_;
+    using Base = FunctionDataTpl<Scalar>;
+    VectorXs xnext_;
     VectorXs dx_;
-    MatrixXs Jtemp_;
+    MatrixXs Jtmp_xnext;
 
     VectorRef xoutref_;
     VectorRef dxref_;
 
-    ExplicitDynamicsDataTpl(const int ndx1,
-                            const int nu,
-                            const ManifoldAbstractTpl<Scalar>& output_space)
-      : FunctionDataTpl<Scalar>(ndx1, nu, output_space.ndx(), output_space.ndx())
-      , xout_(output_space.neutral())
-      , dx_(output_space.ndx())
-      , Jtemp_(output_space.ndx(), output_space.ndx())
-      , xoutref_(xout_)
-      , dxref_(dx_) {
-      xout_.setZero();
-      dx_.setZero();
-      Jtemp_.setZero();
-    }
+    ExplicitDynamicsDataTpl(const int ndx1, const int nu, const ManifoldAbstractTpl<Scalar>& output_space);
+    virtual ~ExplicitDynamicsDataTpl() = default;
 
     friend std::ostream& operator<<(std::ostream& oss, const ExplicitDynamicsDataTpl& self)
     {
