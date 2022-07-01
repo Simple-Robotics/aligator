@@ -1,6 +1,5 @@
 /// A car in SE2
 
-
 #include <proxnlp/modelling/spaces/pinocchio-groups.hpp>
 #include <pinocchio/multibody/liegroup/special-euclidean.hpp>
 
@@ -10,15 +9,13 @@
 #include "proxddp/modelling/state-error.hpp"
 #include "proxddp/modelling/composite-costs.hpp"
 
-
 using T = double;
-using SE2_t = proxnlp::PinocchioLieGroup<pinocchio::SpecialEuclideanOperationTpl<2, T>>;
-
+using SE2_t =
+    proxnlp::PinocchioLieGroup<pinocchio::SpecialEuclideanOperationTpl<2, T>>;
 
 using namespace proxddp;
 
-int main()
-{
+int main() {
   SE2_t space;
   const int nu = space.ndx();
 
@@ -35,11 +32,11 @@ int main()
   err_fun->evaluate(x_target, u0, x0, *err_fun_data);
   fmt::print("err fun eval: {}\n", err_fun_data->value_.transpose());
 
-
   Eigen::MatrixXd weights(err_fun->nr, err_fun->nr);
   weights.setIdentity();
 
-  shared_ptr<QuadraticResidualCost<T>> cost_fun = std::make_shared<QuadraticResidualCost<T>>(err_fun, weights);
+  shared_ptr<QuadraticResidualCost<T>> cost_fun =
+      std::make_shared<QuadraticResidualCost<T>>(err_fun, weights);
   auto cd1 = cost_fun->createData();
   cost_fun->evaluate(x0, u0, *cd1);
   fmt::print("cost val(x0)  : {:.3e}\n", cd1->value_);
@@ -59,4 +56,3 @@ int main()
   fmt::print("grad: {}\n", cd2->grad_.transpose());
   return 0;
 }
-

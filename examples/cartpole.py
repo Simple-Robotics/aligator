@@ -146,6 +146,7 @@ stage.addConstraint(
 class FramePosErrorResidual(proxddp.StageFunction):
     """residual error on a frame position.
     temporarily replace the c++ implementation"""
+
     def __init__(self, model, nx, nu, target_pos, frame_id, terminal=True) -> None:
         super().__init__(nx, nu, 3)
         self.nx = nx
@@ -208,7 +209,7 @@ for i in range(nsteps):
         # )
         stage.addConstraint(
             proxddp.StateErrorResidual(space, nu, xtar),
-            proxnlp.constraints.EqualityConstraintSet()
+            proxnlp.constraints.EqualityConstraintSet(),
         )
     problem.addStage(stage)
 

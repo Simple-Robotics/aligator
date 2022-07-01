@@ -61,10 +61,10 @@ class MyQuadCost(proxddp.CostAbstract):
 
     def computeGradients(self, x, u, data):
         self._basis.computeGradient(x, data.Lx)
-        data.Lu[:] = 0.
+        data.Lu[:] = 0.0
 
     def computeHessians(self, x, u, data):
-        data._hessian[:, :] = 0.
+        data._hessian[:, :] = 0.0
         self._basis.computeHessian(x, data.Lxx)
 
 
@@ -78,8 +78,8 @@ class TestClass:
 
     def test_dyn(self, nsteps):
         dyn_data = self.dynmodel.createData()
-        dyn_data.Jx[:, :] = np.arange(ndx ** 2).reshape(ndx, ndx)
-        dyn_data.Ju[:, :] = np.arange(ndx ** 2, ndx ** 2 + ndx * nu).reshape(ndx, nu)
+        dyn_data.Jx[:, :] = np.arange(ndx**2).reshape(ndx, ndx)
+        dyn_data.Ju[:, :] = np.arange(ndx**2, ndx**2 + ndx * nu).reshape(ndx, nu)
         self.dynmodel.evaluate(x0, u0, x1, dyn_data)
         self.dynmodel.computeJacobians(x0, u0, x1, dyn_data)
 
@@ -126,7 +126,7 @@ class TestClass:
 
         tol = 1e-5
         mu_init = 1e-2
-        rho_init = 0.
+        rho_init = 0.0
 
         solver = proxddp.ProxDDP(tol, mu_init, rho_init)
         solver.multiplier_update_mode = proxddp.MultiplierUpdateMode.NEWTON
@@ -134,6 +134,7 @@ class TestClass:
         solver.run(problem, xs_out, us_init)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
+
     retcode = pytest.main(sys.argv)

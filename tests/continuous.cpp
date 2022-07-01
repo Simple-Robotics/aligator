@@ -3,14 +3,11 @@
 
 #include <boost/test/unit_test.hpp>
 
-
-
 BOOST_AUTO_TEST_SUITE(continuous)
 
 using namespace proxddp;
 
-BOOST_AUTO_TEST_CASE(create_data)
-{
+BOOST_AUTO_TEST_CASE(create_data) {
   pinocchio::Model model;
   pinocchio::buildModels::humanoidRandom(model);
 
@@ -27,8 +24,6 @@ BOOST_AUTO_TEST_CASE(create_data)
   BOOST_CHECK_EQUAL(d2->tau_.size(), model.nv);
   BOOST_CHECK_EQUAL(d2->dtau_du_.cols(), model.nv);
   BOOST_CHECK_EQUAL(d2->dtau_du_.rows(), model.nv);
-
 }
-
 
 BOOST_AUTO_TEST_SUITE_END()

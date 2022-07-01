@@ -55,9 +55,9 @@ def test_stack_error():
     print(e_info)
 
     with pytest.raises(Exception) as e_info:
-        CostStack(nx, nu, [rcost, rc2], [1., 1.])
+        CostStack(nx, nu, [rcost, rc2], [1.0, 1.0])
     print(e_info)
 
     with pytest.raises(Exception) as e_info:
-        CostStack(nx, nu, [rcost], [1., 1.])
+        CostStack(nx, nu, [rcost], [1.0, 1.0])
     print(e_info)
