@@ -98,9 +98,7 @@ def ode_int_run(ode, dyn):
     dyn.dForward(x, u, data)
     err_x = abs(data.Jx - Jx_nd)
     err_u = abs(data.Ju - Ju_nd)
-    import ipdb
 
-    ipdb.set_trace()
     print("err_x: {}".format(np.max(err_x)))
     print("err_u: {}".format(np.max(err_u)))
     print("err_x\n{}".format(err_x))
