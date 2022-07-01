@@ -25,7 +25,7 @@ namespace proxddp
       }
       this->out_space().integrate(x, d.dx_, d.xnext_);
       for(int i=0; i<ndx/2; i++){
-        d.dx_(i) = d.xnext_(ndx/2+i);
+        d.dx_(i) = d.xnext_(ndx/2+i)* timestep_;
       }
       this->out_space().integrate(x, d.dx_, d.xnext_);
     }
