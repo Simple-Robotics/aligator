@@ -23,11 +23,11 @@ namespace proxddp
       for(int i=0; i<ndx/2; i++){
         d.dx_(ndx/2+i) = cdata.xdot_(i) * timestep_;
       }
-      this->out_space().integrate(x, d.dx_, d.xout_);
+      this->out_space().integrate(x, d.dx_, d.xnext_);
       for(int i=0; i<ndx/2; i++){
-        d.dx_(i) = d.xout_(ndx/2+i);
+        d.dx_(i) = d.xnext_(ndx/2+i);
       }
-      this->out_space().integrate(x, d.dx_, d.xout_);
+      this->out_space().integrate(x, d.dx_, d.xnext_);
     }
 
     
@@ -46,8 +46,8 @@ namespace proxddp
       d.Ju_ = timestep_ * cdata.Ju_; // ddx_du
       this->out_space().JintegrateTransport(x, d.dx_, d.Jx_, 1);
       this->out_space().JintegrateTransport(x, d.dx_, d.Ju_, 1);
-      this->out_space().Jintegrate(x, d.dx_, d.Jtemp_, 0);
-      d.Jx_ = d.Jtemp_ + d.Jx_; 
+      this->out_space().Jintegrate(x, d.dx_, d.Jtmp_xnext, 0);
+      d.Jx_ = d.Jtmp_xnext + d.Jx_; 
       // dq_dx and dq_du needs to be modified
       for(int i = 0; i<ndx/2; i++){
         Jxtemp_(i) = timestep_ *d.Jx_(ndx/2+i);
@@ -59,7 +59,7 @@ namespace proxddp
       }
       this->out_space().JintegrateTransport(x, d.dx_, Jxtemp_, 1);
       this->out_space().JintegrateTransport(x, d.dx_, Jutemp_, 1);
-      Jxtemp_ = d.Jtemp_ + Jxtemp_; 
+      Jxtemp_ = d.Jtmp_xnext + Jxtemp_; 
       for(int i = 0; i<ndx/2; i++){
         d.Jx_(i) = Jxtemp_(i);
       }
