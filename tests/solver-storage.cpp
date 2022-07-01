@@ -5,11 +5,9 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 
-
 BOOST_AUTO_TEST_SUITE(solver_workspace)
 
-BOOST_AUTO_TEST_CASE(storage)
-{
+BOOST_AUTO_TEST_CASE(storage) {
   using value_store_t = proxddp::internal::value_storage<double>;
   using q_store_t = proxddp::internal::q_function_storage<double>;
   const int NX = 3;
@@ -19,7 +17,8 @@ BOOST_AUTO_TEST_CASE(storage)
 
   Eigen::Map<Eigen::VectorXd> map(vstore.storage.data(), vstore.storage.size());
   map.setLinSpaced(0., (double)vstore.storage.size() - 1.);
-  Eigen::Map<Eigen::VectorXd> map_q(qstore.storage.data(), qstore.storage.size());
+  Eigen::Map<Eigen::VectorXd> map_q(qstore.storage.data(),
+                                    qstore.storage.size());
   map_q.setLinSpaced(0., (double)qstore.storage.size() - 1.);
 
   BOOST_TEST_MESSAGE("Checking value function");
@@ -43,7 +42,6 @@ BOOST_AUTO_TEST_CASE(storage)
   fmt::print("{} < Qxy\n", qstore.Qxy_);
   fmt::print("{} < Quu\n", qstore.Quu_);
   fmt::print("{} < Qyy\n", qstore.Qyy_);
-
 }
 
 BOOST_AUTO_TEST_SUITE_END()

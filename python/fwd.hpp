@@ -9,28 +9,25 @@
 #include <eigenpy/eigenpy.hpp>
 #include "proxddp/python/visitors.hpp"
 
+namespace proxddp {
+/// @brief  The Python bindings.
+namespace python {
+namespace pinpy = pinocchio::python;
+namespace bp = boost::python;
 
-namespace proxddp
-{
-  /// @brief  The Python bindings.
-  namespace python
-  {
-    namespace pinpy = pinocchio::python;
-    namespace bp = boost::python;
+/// Expose ternary functions
+void exposeFunctions();
+void exposeCosts();
+void exposeStage();
+void exposeProblem();
 
-    /// Expose ternary functions
-    void exposeFunctions();
-    void exposeCosts();
-    void exposeStage();
-    void exposeProblem();
+/// Expose continuous dynamics models.
+void exposeODEs();
+void exposeFreeFwdDynamics();
+void exposeDynamics();
+/// Expose integrators
+void exposeIntegrators();
+void exposeSolvers();
 
-    /// Expose continuous dynamics models.
-    void exposeODEs();
-    void exposeFreeFwdDynamics();
-    void exposeDynamics();
-    /// Expose integrators
-    void exposeIntegrators();
-    void exposeSolvers();
-
-  } // namespace python
+} // namespace python
 } // namespace proxddp

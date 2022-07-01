@@ -11,13 +11,11 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 
-
 BOOST_AUTO_TEST_SUITE(node)
 
 using namespace proxddp;
 
-BOOST_AUTO_TEST_CASE(test_problem)
-{
+BOOST_AUTO_TEST_CASE(test_problem) {
   MyFixture f;
 
   auto nu = f.nu;
@@ -32,8 +30,7 @@ BOOST_AUTO_TEST_CASE(test_problem)
   std::vector<Eigen::VectorXd> us(nsteps, u0);
 
   auto xs = rollout(f.dyn_model, x0, us);
-  for (std::size_t i = 0; i < xs.size(); i++)
-  {
+  for (std::size_t i = 0; i < xs.size(); i++) {
     BOOST_CHECK(x0.isApprox(xs[i]));
   }
 
@@ -48,9 +45,7 @@ BOOST_AUTO_TEST_CASE(test_problem)
   f.problem.computeDerivatives({x0, xs[1], xs[2]}, {u0, u0}, *prob_data);
 }
 
-
-BOOST_AUTO_TEST_CASE(test_workspace)
-{
+BOOST_AUTO_TEST_CASE(test_workspace) {
   using Workspace = WorkspaceTpl<double>;
   MyFixture f;
   auto nu = f.nu;
@@ -60,18 +55,16 @@ BOOST_AUTO_TEST_CASE(test_workspace)
   const std::size_t nsteps = f.problem.numSteps();
   BOOST_CHECK_EQUAL(workspace.trial_xs_.size(), nsteps + 1);
 
-  for (std::size_t i = 0; i < nsteps; i++)
-  {
-    auto& x = workspace.trial_xs_[i];
-    auto& u = workspace.trial_us_[i];
+  for (std::size_t i = 0; i < nsteps; i++) {
+    auto &x = workspace.trial_xs_[i];
+    auto &u = workspace.trial_us_[i];
     BOOST_CHECK_EQUAL(x.size(), space.nx());
     BOOST_CHECK_EQUAL(u.size(), nu);
   }
-  auto& x = workspace.trial_xs_[nsteps];
+  auto &x = workspace.trial_xs_[nsteps];
   BOOST_CHECK_EQUAL(x.size(), space.nx());
 
   ResultsTpl<double> results(f.problem);
 }
-
 
 BOOST_AUTO_TEST_SUITE_END()

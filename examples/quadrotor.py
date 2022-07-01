@@ -40,7 +40,9 @@ rdata = robot.data
 nq = rmodel.nq
 nv = rmodel.nv
 
-vizer = pin.visualize.MeshcatVisualizer(rmodel, robot.collision_model, robot.visual_model, data=rdata)
+vizer = pin.visualize.MeshcatVisualizer(
+    rmodel, robot.collision_model, robot.visual_model, data=rdata
+)
 vizer.initViewer(loadModel=True)
 if args.display:
     vizer.viewer.open()
@@ -51,14 +53,16 @@ space = manifolds.MultibodyPhaseSpace(rmodel)
 
 # The matrix below maps rotor controls to torques
 
-d_cog, cf, cm, u_lim, l_lim = 0.1525, 6.6e-5, 1e-6, 5., 0.1
+d_cog, cf, cm, u_lim, l_lim = 0.1525, 6.6e-5, 1e-6, 5.0, 0.1
 QUAD_ACT_MATRIX = np.array(
-    [[0., 0., 0., 0.],
-     [0., 0., 0., 0.],
-     [1., 1., 1., 1.],
-     [0., d_cog, 0., -d_cog],
-     [-d_cog, 0., d_cog, 0.],
-     [-cm / cf, cm / cf, -cm / cf, cm / cf]]
+    [
+        [0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0],
+        [1.0, 1.0, 1.0, 1.0],
+        [0.0, d_cog, 0.0, -d_cog],
+        [-d_cog, 0.0, d_cog, 0.0],
+        [-cm / cf, cm / cf, -cm / cf, cm / cf],
+    ]
 )
 nu = QUAD_ACT_MATRIX.shape[1]  # = no. of nrotors
 
@@ -66,7 +70,7 @@ nu = QUAD_ACT_MATRIX.shape[1]  # = no. of nrotors
 ode_dynamics = proxddp.dynamics.MultibodyFreeFwdDynamics(space, QUAD_ACT_MATRIX)
 
 dt = 0.033
-Tf = 2.
+Tf = 2.0
 nsteps = int(Tf / dt)
 print("nsteps: {:d}".format(nsteps))
 
@@ -98,7 +102,7 @@ x_tar2 = x_tar1.copy()
 x_tar2[:3] = (1.4, -0.6, 1.0)
 
 u_max = 4.5 * np.ones(nu)
-u_min = -1. * np.ones(nu)
+u_min = -1.0 * np.ones(nu)
 
 times = np.linspace(0, Tf, nsteps + 1)
 idx_switch = int(0.7 * nsteps)
@@ -107,14 +111,14 @@ t_switch = times[idx_switch]
 
 def setup():
     weights1 = np.zeros(space.ndx)
-    weights1[:3] = 4.
+    weights1[:3] = 4.0
     weights1[3:6] = 1e-2
     weights1[nv:] = 1e-3
     weights2 = weights1.copy()
-    weights2[:3] = 1.
+    weights2[:3] = 1.0
 
     w_x_term = np.ones(space.ndx)
-    w_x_term[:nv] = 4.
+    w_x_term[:nv] = 4.0
     w_x_term[nv:] = 0.1
 
     w_u = np.eye(nu) * 1e-2
@@ -135,7 +139,7 @@ def setup():
 
         state_err = proxddp.StateErrorResidual(space, nu, x_tar)
         xreg_cost = proxddp.QuadraticResidualCost(state_err, np.diag(weights) * dt)
-            
+
         rcost.addCost(xreg_cost)
 
         utar = np.zeros(nu)
@@ -152,8 +156,8 @@ def setup():
         stage.evaluate(x0, u0, x1, sd)
 
     term_cost = proxddp.QuadraticResidualCost(
-        proxddp.StateErrorResidual(space, nu, x_tar2),
-        np.diag(w_x_term))
+        proxddp.StateErrorResidual(space, nu, x_tar2), np.diag(w_x_term)
+    )
     prob = proxddp.TrajOptProblem(x0, stages, term_cost=term_cost)
     return prob
 
@@ -176,45 +180,61 @@ import matplotlib.pyplot as plt
 fig: plt.Figure = plt.figure()
 ax0: plt.Axes = fig.add_subplot(121)
 ax0.plot(times[:-1], us_opt)
-ax0.hlines((u_min[0], u_max[0]), *times[[0, -1]], colors='k', alpha=0.3, lw=1.4)
+ax0.hlines((u_min[0], u_max[0]), *times[[0, -1]], colors="k", alpha=0.3, lw=1.4)
 ax0.set_title("Controls")
 ax0.set_xlabel("Time")
 ax1: plt.Axes = fig.add_subplot(122)
 root_pt_opt = np.stack(xs_opt)[:, :3]
 ax1.plot(times, root_pt_opt)
-ax1.hlines(x_tar1[:3], t_switch - 3*dt, t_switch + 3*dt, colors=['C0', 'C1', 'C2'], linestyles='dotted')
-ax1.hlines(x_tar2[:3], Tf - 3*dt, Tf + 3*dt, colors=['C0', 'C1', 'C2'], linestyles='dashed')
+ax1.hlines(
+    x_tar1[:3],
+    t_switch - 3 * dt,
+    t_switch + 3 * dt,
+    colors=["C0", "C1", "C2"],
+    linestyles="dotted",
+)
+ax1.hlines(
+    x_tar2[:3], Tf - 3 * dt, Tf + 3 * dt, colors=["C0", "C1", "C2"], linestyles="dashed"
+)
 
 
 if args.display:
     import imageio
+
     frames_ = []
     input("[enter to play]")
-    dist_ = 2.
-    directions_ = [np.array([1., 1., .5])]
-    directions_.append(np.array([1., -1., .8]))
-    directions_.append(np.array([1., 0.1, 0.2]))
-    for d in directions_: d /= np.linalg.norm(d)
-
+    dist_ = 2.0
+    directions_ = [np.array([1.0, 1.0, 0.5])]
+    directions_.append(np.array([1.0, -1.0, 0.8]))
+    directions_.append(np.array([1.0, 0.1, 0.2]))
+    for d in directions_:
+        d /= np.linalg.norm(d)
 
     for i in range(3):
+
         def post_callback(t):
             n = len(root_pt_opt)
             pos = root_pt_opt[min(t, n)].copy()
             pos += directions_[i] * dist_
             augvizer.set_cam_pos(pos, False)
 
-        augvizer.draw_objectives([x_tar1, x_tar2], prefix='obj')
-        frames_ += meshcat_utils.display_trajectory(vizer, augvizer, xs_opt,
-                                                    frame_ids=[rmodel.getFrameId("base_link")],
-                                                    record=args.record, wait=dt, show_vel=True,
-                                                    frame_sphere_size=0.06,
-                                                    post_callback=post_callback)
+        augvizer.draw_objectives([x_tar1, x_tar2], prefix="obj")
+        frames_ += meshcat_utils.display_trajectory(
+            vizer,
+            augvizer,
+            xs_opt,
+            frame_ids=[rmodel.getFrameId("base_link")],
+            record=args.record,
+            wait=dt,
+            show_vel=True,
+            frame_sphere_size=0.06,
+            post_callback=post_callback,
+        )
 
     if args.record:
         vid_uri = "examples/quadrotor_fly.mp4"
-        imageio.mimwrite(vid_uri, frames_, fps=1. / dt, **VIDEO_ARGS)
+        imageio.mimwrite(vid_uri, frames_, fps=1.0 / dt, **VIDEO_ARGS)
 
-for ext in ['png', 'pdf']:
+for ext in ["png", "pdf"]:
     fig.savefig("examples/quadrotor_controls.{}".format(ext))
 plt.show()
