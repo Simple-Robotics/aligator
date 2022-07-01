@@ -18,15 +18,11 @@ namespace proxddp
       Data& d = static_cast<Data&>(data);
       ODEDataTpl<Scalar>& cdata = static_cast<ODEDataTpl<Scalar>&>(*d.continuous_data);
       this->ode_->forward(x, u, cdata);
-      // dx = (dx/dt) * dt
       int ndx =  this->ndx1;
-      for(int i=0; i<ndx/2; i++){
-        d.dx_(ndx/2+i) = cdata.xdot_(i) * timestep_;
-      }
+      const int ndx_2 = ndx / 2;
+      d.dx_.bottomRows(ndx_2) = cdata.xdot_.bottomRows(ndx_2)* timestep_;
       this->out_space().integrate(x, d.dx_, d.xnext_);
-      for(int i=0; i<ndx/2; i++){
-        d.dx_(i) = d.xnext_(ndx/2+i)* timestep_;
-      }
+      d.dx_.topRows(ndx_2) = d.xnext_.bottomRows(ndx_2)* timestep_;
       this->out_space().integrate(x, d.dx_, d.xnext_);
     }
 
