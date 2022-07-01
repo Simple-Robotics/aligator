@@ -47,10 +47,14 @@ namespace proxddp
     struct ExplicitIntegratorDataTpl : ExplicitDynamicsDataTpl<_Scalar>
     {
       using Scalar = _Scalar;
+      using Base = ExplicitDynamicsDataTpl<Scalar>;
       shared_ptr<ODEDataTpl<Scalar>> continuous_data;
 
       explicit ExplicitIntegratorDataTpl(const ExplicitIntegratorAbstractTpl<Scalar>* integrator);
       virtual ~ExplicitIntegratorDataTpl() = default;
+
+      using Base::dx_;
+      using Base::xnext_;
     };
     
   } // namespace dynamics

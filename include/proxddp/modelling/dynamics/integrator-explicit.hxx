@@ -25,13 +25,11 @@ namespace proxddp
     template<typename Scalar>
     ExplicitIntegratorDataTpl<Scalar>::
     ExplicitIntegratorDataTpl(const ExplicitIntegratorAbstractTpl<Scalar>* integrator)
-      : ExplicitDynamicsDataTpl<Scalar>(integrator->ndx1,
-                                        integrator->nu,
-                                        integrator->out_space())
+      : Base(integrator->ndx1,
+             integrator->nu,
+             integrator->out_space())
       {
-        continuous_data = std::static_pointer_cast<ODEDataTpl<Scalar>>(
-          integrator->ode_->createData()
-        );
+        continuous_data = std::static_pointer_cast<ODEDataTpl<Scalar>>(integrator->ode_->createData());
       }
   } // namespace dynamics
 } // namespace proxddp
