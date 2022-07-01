@@ -6,6 +6,7 @@
 #include "proxddp/modelling/dynamics/integrator-abstract.hpp"
 #include "proxddp/modelling/dynamics/integrator-euler.hpp"
 #include "proxddp/modelling/dynamics/integrator-rk2.hpp"
+#include "proxddp/modelling/dynamics/integrator-semi-impl-euler.hpp"
 
 namespace proxddp {
 namespace python {
@@ -63,6 +64,16 @@ void exposeIntegrators() {
       bp::init<shared_ptr<ODEType>, Scalar>(
           bp::args("self", "ode", "timestep")))
       .def_readwrite("timestep", &IntegratorEulerTpl<Scalar>::timestep_,
+                     "Time step.");
+  
+  bp::class_<IntegratorSemiImplEulerTpl<Scalar>, bp::bases<ExplicitIntegratorAbstract>>(
+      "IntegratorEuler",
+      "The explicit Euler integrator :math:`x' = x \\oplus \\Delta t f(x, u)`; "
+      "this integrator has error :math:`O(\\Delta t)` "
+      "in the time step :math:`\\Delta t`.",
+      bp::init<shared_ptr<ODEType>, Scalar>(
+          bp::args("self", "ode", "timestep")))
+      .def_readwrite("timestep", &IntegratorSemiImplEulerTpl<Scalar>::timestep_,
                      "Time step.");
 
   bp::class_<IntegratorRK2Tpl<Scalar>, bp::bases<ExplicitIntegratorAbstract>>(
