@@ -113,7 +113,7 @@ space = proxnlp.manifolds.MultibodyPhaseSpace(model)
 nx = space.nx
 ndx = space.ndx
 cont_dyn = proxddp.dynamics.MultibodyFreeFwdDynamics(space, act_mat)
-disc_dyn = proxddp.dynamics.IntegratorEuler(cont_dyn, time_step)
+disc_dyn = proxddp.dynamics.IntegratorSemiImplEuler(cont_dyn, time_step)
 
 nq = model.nq
 nv = model.nv
