@@ -3,7 +3,9 @@ from proxddp import dynamics, manifolds
 import pytest
 
 
-def finite_difference_explicit_dyn(dyn: dynamics.ExplicitIntegratorAbstract, x0, u0, eps):
+def finite_difference_explicit_dyn(
+    dyn: dynamics.ExplicitIntegratorAbstract, x0, u0, eps
+):
     data = dyn.createData()
     space: manifolds.ManifoldAbstract = dyn.space
     ode = dyn.differential_dynamics
@@ -20,7 +22,7 @@ def finite_difference_explicit_dyn(dyn: dynamics.ExplicitIntegratorAbstract, x0,
         yplus[:] = data.xout
         space.JintegrateTransport(x0, ei, yplus, 1)
         Jx_nd[:, i] = space.difference(y0, yplus) / eps
-        ei[i] = 0.
+        ei[i] = 0.0
 
     Ju_nd = np.zeros((dyn.ndx2, dyn.nu))
     ei = np.zeros(dyn.nu)
@@ -33,12 +35,13 @@ def finite_difference_explicit_dyn(dyn: dynamics.ExplicitIntegratorAbstract, x0,
         print("yplus:", yplus)
         print("dy:", yplus - y0)
         Ju_nd[:, i] = space.difference(y0, yplus) / eps
-        ei[i] = 0.
+        ei[i] = 0.0
     return Jx_nd, Ju_nd
 
 
 def create_multibody_ode():
     import pinocchio as pin
+
     model = pin.buildSampleModelHumanoid()
     space = manifolds.MultibodyPhaseSpace(model)
     nu = model.nv
@@ -54,7 +57,7 @@ def create_linear():
     n = min(nx, nu)
     # A[1, 0] = 0.1
     B = np.zeros((nx, nu))
-    B[range(n), range(n)] = 1.
+    B[range(n), range(n)] = 1.0
     # B[0, 0] = 0.5
     c = np.zeros(nx)
     ode = dynamics.LinearODE(A, B, c)
@@ -83,7 +86,9 @@ def test_explicit_euler():
     dyn.dForward(x, u, data)
     err_x = abs(data.Jx - Jx_nd)
     err_u = abs(data.Ju - Ju_nd)
-    import ipdb; ipdb.set_trace()
+    import ipdb
+
+    ipdb.set_trace()
     print("err_x: {}".format(np.max(err_x)))
     print("err_u: {}".format(np.max(err_u)))
     print("err_x\n{}".format(err_x))
@@ -98,6 +103,7 @@ def test_explicit_euler():
     assert np.allclose(data.continuous_data.Jx, ode.A)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
+
     retcode = pytest.main(sys.argv)

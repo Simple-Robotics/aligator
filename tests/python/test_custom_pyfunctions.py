@@ -42,9 +42,10 @@ def test_custom_controlbox():
 
     data1.vhp_buffer[:, :] = np.random.randn(*data1.vhp_buffer.shape)
     box_function.computeVectorHessianProducts(x0, u0, x0, lbd0, data1)
-    assert np.all(data1.vhp_buffer == 0.)
+    assert np.all(data1.vhp_buffer == 0.0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
+
     retcode = pytest.main(sys.argv)
