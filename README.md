@@ -45,4 +45,5 @@ and use `$CONDA_PREFIX` as your install folder.
 * Sarah Kazdadi
 * Quentin Le Lidec
 * Nicolas Mansard
+* Guilhem Saurel
 * Fabian Schramm
