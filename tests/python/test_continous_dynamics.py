@@ -25,6 +25,7 @@ def test_abstract():
 
 def test_multibody_free():
     import pinocchio as pin
+
     model = pin.buildSampleModelHumanoid()
     space = manifolds.MultibodyPhaseSpace(model)
     nu = model.nv
@@ -41,6 +42,7 @@ def test_multibody_free():
 
     # compare with croc
     import crocoddyl as cc
+
     state_ = cc.StateMultibody(model)
     actuation_ = cc.ActuationModelFull(state_)
     cost_ = cc.CostModelSum(state_, nu)
@@ -49,13 +51,13 @@ def test_multibody_free():
     cm.calc(cm_data, x0, u0)
     cm.calcDiff(cm_data, x0, u0)
 
-    err_x = abs(cm_data.Fx - data.Jx[model.nv:])
-    err_u = abs(cm_data.Fu - data.Ju[model.nv:])
-    assert np.allclose(err_x, 0.)
-    assert np.allclose(err_u, 0.)
+    err_x = abs(cm_data.Fx - data.Jx[model.nv :])
+    err_u = abs(cm_data.Fu - data.Ju[model.nv :])
+    assert np.allclose(err_x, 0.0)
+    assert np.allclose(err_u, 0.0)
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
+
     retcode = pytest.main(sys.argv)

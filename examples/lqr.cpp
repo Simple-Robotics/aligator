@@ -13,11 +13,9 @@
 
 using namespace proxddp;
 
-
 constexpr double TOL = 1e-7;
 
-int main()
-{
+int main() {
 
   const int dim = 2;
   const int nu = 1;
@@ -36,12 +34,13 @@ int main()
 
   using dynamics::LinearDiscreteDynamicsTpl;
   auto dynptr = std::make_shared<LinearDiscreteDynamicsTpl<double>>(A, B, c_);
-  auto& dynamics = *dynptr;
+  auto &dynamics = *dynptr;
   fmt::print("matrix A:\n{}\n", dynamics.A_);
   fmt::print("matrix B:\n{}\n", dynamics.B_);
   fmt::print("drift  c:\n{}\n", dynamics.c_);
   auto spaceptr = dynamics.next_state_;
-  const auto& space = *spaceptr;;
+  const auto &space = *spaceptr;
+  ;
 
   auto rcost = std::make_shared<QuadraticCost<double>>(w_x, w_u);
 
@@ -49,16 +48,17 @@ int main()
 
   double u_bound = 0.2;
   StageModelTpl<double> stage(spaceptr, nu, rcost, dynptr);
-  auto ctrl_bounds_fun = std::make_shared<ControlBoxFunctionTpl<double>>(dim, nu, -u_bound, u_bound);
+  auto ctrl_bounds_fun = std::make_shared<ControlBoxFunctionTpl<double>>(
+      dim, nu, -u_bound, u_bound);
 
   const bool HAS_CONTROL_BOUNDS = true;
 
-  if (HAS_CONTROL_BOUNDS)
-  {
+  if (HAS_CONTROL_BOUNDS) {
     fmt::print("Adding control bounds.\n");
-    fmt::print("control box fun has bounds:\n{} max\n{} min\n", ctrl_bounds_fun->umax_, ctrl_bounds_fun->umin_);
+    fmt::print("control box fun has bounds:\n{} max\n{} min\n",
+               ctrl_bounds_fun->umax_, ctrl_bounds_fun->umin_);
     auto ctrl_bounds_cstr = std::make_shared<StageConstraintTpl<double>>(
-      ctrl_bounds_fun, std::make_shared<proxnlp::NegativeOrthant<double>>());
+        ctrl_bounds_fun, std::make_shared<proxnlp::NegativeOrthant<double>>());
     stage.addConstraint(ctrl_bounds_cstr);
   }
 
@@ -70,16 +70,14 @@ int main()
   std::size_t nsteps = 10;
 
   std::vector<Eigen::VectorXd> us;
-  for (std::size_t i = 0; i < nsteps; i++)
-  {
+  for (std::size_t i = 0; i < nsteps; i++) {
     us.push_back(Eigen::VectorXd::Random(nu));
     problem.addStage(*stage.clone());
   }
 
   auto xs = rollout(dynamics, x0, us);
   fmt::print("Initial traj.:\n");
-  for(std::size_t i = 0; i <= nsteps; i++)
-  {
+  for (std::size_t i = 0; i <= nsteps; i++) {
     fmt::print("x[{:d}] = {}\n", i, xs[i].transpose());
   }
 
@@ -97,16 +95,15 @@ int main()
   solver.run(problem, xs, us);
 
   std::string line_ = "";
-  for (std::size_t i = 0; i < 20; i++)
-  { line_.append("="); }
+  for (std::size_t i = 0; i < 20; i++) {
+    line_.append("=");
+  }
   line_.append("\n");
-  for (std::size_t i = 0; i < nsteps + 1; i++)
-  {
+  for (std::size_t i = 0; i < nsteps + 1; i++) {
     // fmt::print("x[{:d}] = {}\n", i, results.xs_[i].transpose());
     fmt::print("x[{:d}] = {}\n", i, workspace.trial_xs_[i].transpose());
   }
-  for (std::size_t i = 0; i < nsteps; i++)
-  {
+  for (std::size_t i = 0; i < nsteps; i++) {
     // fmt::print("u[{:d}] = {}\n", i, results.us_[i].transpose());
     fmt::print("u[{:d}] = {}\n", i, workspace.trial_us_[i].transpose());
   }

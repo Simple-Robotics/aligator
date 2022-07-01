@@ -21,7 +21,7 @@ jobs:
       with:
         key: ${{ runner.os }}
         path: ${{ env.CCACHE_DIR }}
-        
+
     # extract branch name
     - name: Get branch name (merge)
       if: github.event_name != 'pull_request'
@@ -37,12 +37,12 @@ jobs:
     # print branch name
     - name: Debug
       run: echo ${{ env.BRANCH_NAME }}
-      
+
     - name: Register robotpkg
       run: |
         sudo sh -c "echo \"deb [arch=amd64] http://robotpkg.openrobots.org/packages/debian/pub $(lsb_release -cs) robotpkg\" >> /etc/apt/sources.list "
         sudo apt-key adv --fetch-keys http://robotpkg.openrobots.org/packages/debian/robotpkg.key
-    
+
     - name: Apt install dependencies
       run: |
         export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
@@ -102,7 +102,7 @@ jobs:
         export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
         export PYTHONPATH="/usr/local/lib/python3/dist-packages:$PYTHONPATH"
         cd $CI_PROJECT_DIR
-        
+
         git clone --recursive https://fabinsch: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@github.com/Simple-Robotics/proxnlp.git
         cd proxnlp
         mkdir build
@@ -115,7 +115,7 @@ jobs:
         export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
         export PYTHONPATH="/usr/local/lib/python3/dist-packages:$PYTHONPATH"
         cd $GITHUB_WORKSPACE
-        
+
         mkdir build
         cd build
         cmake .. -DCMAKE_BUILD_TYPE=Release
