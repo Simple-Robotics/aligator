@@ -60,10 +60,11 @@ namespace proxddp
     Scalar traj_cost = 0.;
     Scalar penalty_value = 0.;
     Scalar value_ = 0.;
-
     /// Weight of dual penalty. Values different from 1 not supported yet.
-    static constexpr Scalar dual_weight_ = 1.;
+    Scalar dual_weight_ = 1.;
 
+    PDAL_Function(const Scalar mu, const LinesearchMode mode)
+      : mu_penal_(mu), ls_mode(mode) {}
 
     /// @brief Evaluate the merit function at the trial point.
     Scalar evaluate(

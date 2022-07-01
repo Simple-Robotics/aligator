@@ -9,16 +9,18 @@
 
 namespace proxddp
 {
-  /// @brief    Shooting problem, consisting in a succession of nodes.
-  ///
-  /// @details  The problem can be written as a nonlinear program:
-  /// \f[
-  ///   \begin{aligned}
-  ///     \min_{\bfx,\bfu}~& \sum_{i=0}^{N-1} \ell_i(x_i, u_i) + \ell_N(x_N)  \\
-  ///     \subjectto & \varphi(x_i, u_i, x_{i+1}) = 0, \ i \in [ 0, N-1 ] \\
-  ///                & g(x_i, u_i) \in \calC_i
-  ///   \end{aligned}
-  /// \f]
+  /** 
+   * @brief    Shooting problem, consisting in a succession of nodes.
+   *
+   * @details  The problem can be written as a nonlinear program:
+   * \f[
+   *   \begin{aligned}
+   *     \min_{\bfx,\bfu}~& \sum_{i=0}^{N-1} \ell_i(x_i, u_i) + \ell_N(x_N)  \\
+   *     \subjectto & \varphi(x_i, u_i, x_{i+1}) = 0, \ i \in [ 0, N-1 ] \\
+   *                & g(x_i, u_i) \in \calC_i
+   *   \end{aligned}
+   * \f]
+   */
   template<typename _Scalar>
   struct TrajOptProblemTpl
   {
@@ -60,10 +62,12 @@ namespace proxddp
                   const std::vector<VectorXs>& us,
                   ProblemData& prob_data) const;
 
-    /// @brief Rollout the problem derivatives, stage per stage.
-    ///
-    /// @param xs State sequence
-    /// @param us Control sequence
+    /**
+     * @brief Rollout the problem derivatives, stage per stage.
+     *
+     * @param xs State sequence
+     * @param us Control sequence
+     */
     void computeDerivatives(const std::vector<VectorXs>& xs,
                             const std::vector<VectorXs>& us,
                             ProblemData& prob_data) const;
