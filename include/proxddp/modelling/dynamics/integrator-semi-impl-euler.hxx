@@ -8,11 +8,11 @@ namespace proxddp
   namespace dynamics
   {
     template<typename Scalar>
-    IntegratorSemiImplEuler<Scalar>::IntegratorSemiImplEuler(const shared_ptr<ODEType>& cont_dynamics, const Scalar timestep)
+    IntegratorSemiImplEulerTpl<Scalar>::IntegratorSemiImplEulerTpl(const shared_ptr<ODEType>& cont_dynamics, const Scalar timestep)
       : Base(cont_dynamics), timestep_(timestep) {}
 
     template<typename Scalar>
-    void IntegratorSemiImplEuler<Scalar>::
+    void IntegratorSemiImplEulerTpl<Scalar>::
     forward(const ConstVectorRef& x, const ConstVectorRef& u, ExplicitDynamicsDataTpl<Scalar>& data) const
     {
       Data& d = static_cast<Data&>(data);
@@ -32,7 +32,7 @@ namespace proxddp
 
     
     template<typename Scalar>
-    void IntegratorSemiImplEuler<Scalar>::
+    void IntegratorSemiImplEulerTpl<Scalar>::
     dForward(const ConstVectorRef& x, const ConstVectorRef& u, ExplicitDynamicsDataTpl<Scalar>& data) const
     {
       Data& d = static_cast<Data&>(data);

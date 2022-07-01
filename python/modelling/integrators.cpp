@@ -67,10 +67,8 @@ void exposeIntegrators() {
                      "Time step.");
   
   bp::class_<IntegratorSemiImplEulerTpl<Scalar>, bp::bases<ExplicitIntegratorAbstract>>(
-      "IntegratorEuler",
-      "The explicit Euler integrator :math:`x' = x \\oplus \\Delta t f(x, u)`; "
-      "this integrator has error :math:`O(\\Delta t)` "
-      "in the time step :math:`\\Delta t`.",
+      "IntegratorSemiImplEuler",
+      "The semi implicit Euler integrator.",
       bp::init<shared_ptr<ODEType>, Scalar>(
           bp::args("self", "ode", "timestep")))
       .def_readwrite("timestep", &IntegratorSemiImplEulerTpl<Scalar>::timestep_,

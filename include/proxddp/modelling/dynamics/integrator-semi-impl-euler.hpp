@@ -13,7 +13,7 @@ namespace proxddp
      *  @brief Semi-implicit Euler integrator \f$ x_{k+1} = x_k \oplus h f(x_k, u_k)\f$.
      */
     template<typename _Scalar>
-    struct IntegratorSemiImplEuler : ExplicitIntegratorAbstractTpl<_Scalar>
+    struct IntegratorSemiImplEulerTpl : ExplicitIntegratorAbstractTpl<_Scalar>
     {
       using Scalar = _Scalar;
       PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
@@ -24,7 +24,7 @@ namespace proxddp
       /// Integration time step \f$h\f$.
       Scalar timestep_;
 
-      explicit IntegratorSemiImplEuler(const shared_ptr<ODEType>& cont_dynamics, const Scalar timestep);
+      IntegratorSemiImplEulerTpl(const shared_ptr<ODEType>& cont_dynamics, const Scalar timestep);
 
       void forward(const ConstVectorRef& x, const ConstVectorRef& u, ExplicitDynamicsDataTpl<Scalar>& data) const;
 
