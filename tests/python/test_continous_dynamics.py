@@ -57,7 +57,12 @@ def test_multibody_free():
     assert np.allclose(err_u, 0.0)
 
 
-if __name__ == "__main__":
+def test_linear():
+    # TODO: finish
+    assert False
+
+
+if __name__ == '__main__':
     import sys
 
     retcode = pytest.main(sys.argv)
