@@ -1,0 +1,14 @@
+repos:
+-   repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v14.0.3
+    hooks:
+    -   id: clang-format
+        args: ['-i', '--style={BasedOnStyle: LLVM, SortIncludes: false}']
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.2.0
+    hooks:
+    -   id: trailing-whitespace
+-   repo: https://github.com/psf/black
+    rev: 22.3.0
+    hooks:
+    -   id: black
