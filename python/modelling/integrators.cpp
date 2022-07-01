@@ -5,6 +5,7 @@
 
 #include "proxddp/modelling/dynamics/integrator-abstract.hpp"
 #include "proxddp/modelling/dynamics/integrator-euler.hpp"
+#include "proxddp/modelling/dynamics/integrator-semi-impl-euler.hpp"
 
 
 namespace proxddp
@@ -48,6 +49,15 @@ namespace proxddp
         bp::init<const shared_ptr<ODEType>&, Scalar>(bp::args("self", "ode", "timestep"))
       )
         .def_readwrite("timestep", &IntegratorEuler<Scalar>::timestep_, "Time step.");
+
+      bp::class_<IntegratorSemiImplEuler<Scalar>, bp::bases<ExplicitIntegratorAbstract>>(
+        "IntegratorEuler",
+        "The explicit Euler integrator :math:`x' = x \\oplus \\Delta t f(x, u)`; "
+        "this integrator has error :math:`O(\\Delta t)` "
+        "in the time step :math:`\\Delta t`.",
+        bp::init<const shared_ptr<ODEType>&, Scalar>(bp::args("self", "ode", "timestep"))
+      )
+        .def_readwrite("timestep", &IntegratorSemiImplEuler<Scalar>::timestep_, "Time step.");
 
     }
     
