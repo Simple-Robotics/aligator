@@ -54,7 +54,7 @@ template <typename _Scalar> struct PDAL_Function {
   Scalar dual_weight_ = 1.;
 
   PDAL_Function(const Scalar mu, const LinesearchMode mode)
-    : mu_penal_(mu), ls_mode(mode) {}
+      : mu_penal_(mu), ls_mode(mode) {}
 
   /// @brief Evaluate the merit function at the trial point.
   Scalar evaluate(const TrajOptProblemTpl<Scalar> &problem,
