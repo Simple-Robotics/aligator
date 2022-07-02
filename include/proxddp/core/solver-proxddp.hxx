@@ -221,11 +221,6 @@ template <typename Scalar>
 void SolverProxDDP<Scalar>::solverInnerLoop(const Problem &problem,
                                             Workspace &workspace,
                                             Results &results) {
-  const std::size_t nsteps = problem.numSteps();
-  assert(results.xs_.size() == nsteps + 1);
-  assert(results.us_.size() == nsteps);
-  assert(results.lams_.size() == nsteps + 1);
-
   // instantiate the subproblem merit function
   PDAL_Function<Scalar> merit_fun{mu_, ls_params.mode};
 

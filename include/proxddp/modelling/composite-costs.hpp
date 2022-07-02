@@ -52,7 +52,7 @@ struct QuadraticResidualCost : CostAbstractTpl<_Scalar> {
     auto &data = static_cast<Data &>(data_);
     auto &under_data = *data.underlying_data;
     residual_->computeJacobians(x, u, x, under_data);
-    const int size = data.grad_.size();
+    const long size = data.grad_.size();
     MatrixRef J = under_data.jac_buffer_.leftCols(size);
     data.grad_ = J.transpose() * (weights_ * under_data.value_);
   }
@@ -61,7 +61,7 @@ struct QuadraticResidualCost : CostAbstractTpl<_Scalar> {
                        CostDataAbstract &data_) const {
     auto &data = static_cast<Data &>(data_);
     auto &under_data = *data.underlying_data;
-    const int size = data.grad_.size();
+    const long size = data.grad_.size();
     MatrixRef J = under_data.jac_buffer_.leftCols(size);
     data.hess_ = J.transpose() * (weights_ * J);
     if (!gauss_newton) {
