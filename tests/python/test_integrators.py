@@ -80,7 +80,7 @@ def test_semi_euler():
     # ode = create_multibody_ode()
     ode = create_linear()
     dt = 0.1
-    dyn = dynamics.IntegratorSemiEuler(ode, dt)
+    dyn = dynamics.IntegratorSemiImplEuler(ode, dt)
     assert isinstance(dyn.createData(), dynamics.ExplicitIntegratorData)
     ode_int_run(ode, dyn)
 
