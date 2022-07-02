@@ -22,11 +22,12 @@ void exposeIntegrators() {
   //// GENERIC INTEGRATORS
 
   using PyIntegratorAbstract = internal::PyStageFunction<IntegratorAbstract>;
-  bp::class_<PyIntegratorAbstract, bp::bases<context::DynamicsModel>>(
-      "IntegratorAbstract", "Base class for numerical integrators.",
-      bp::init<const shared_ptr<DAEType> &>(
-          "Construct the integrator from a DAE.",
-          bp::args("self", "cont_dynamics")))
+  bp::class_<PyIntegratorAbstract, bp::bases<context::DynamicsModel>,
+             boost::noncopyable>("IntegratorAbstract",
+                                 "Base class for numerical integrators.",
+                                 bp::init<const shared_ptr<DAEType> &>(
+                                     "Construct the integrator from a DAE.",
+                                     bp::args("self", "cont_dynamics")))
       .def_readwrite("differential_dynamics",
                      &IntegratorAbstract::continuous_dynamics_,
                      "The underlying ODE or DAE.");
@@ -43,8 +44,11 @@ void exposeIntegrators() {
   using PyExplicitIntegrator =
       internal::PyExplicitDynamics<ExplicitIntegratorAbstract>;
 
-  bp::class_<PyExplicitIntegrator, bp::bases<ExplicitDynamicsModelTpl<Scalar>>>(
-      "ExplicitIntegratorAbstract", bp::no_init)
+  bp::class_<PyExplicitIntegrator, bp::bases<ExplicitDynamicsModelTpl<Scalar>>,
+             boost::noncopyable>("ExplicitIntegratorAbstract",
+                                 bp::init<const shared_ptr<ODEType> &>(
+                                     "Construct the integrator from an ODE.",
+                                     bp::args("self", "cont_dynamics")))
       .def_readwrite("differential_dynamics", &ExplicitIntegratorAbstract::ode_,
                      "The underlying differential equation.");
 
@@ -65,10 +69,10 @@ void exposeIntegrators() {
           bp::args("self", "ode", "timestep")))
       .def_readwrite("timestep", &IntegratorEulerTpl<Scalar>::timestep_,
                      "Time step.");
-  
-  bp::class_<IntegratorSemiImplEulerTpl<Scalar>, bp::bases<ExplicitIntegratorAbstract>>(
-      "IntegratorSemiImplEuler",
-      "The semi implicit Euler integrator.",
+
+  bp::class_<IntegratorSemiImplEulerTpl<Scalar>,
+             bp::bases<ExplicitIntegratorAbstract>>(
+      "IntegratorSemiImplEuler", "The semi implicit Euler integrator.",
       bp::init<shared_ptr<ODEType>, Scalar>(
           bp::args("self", "ode", "timestep")))
       .def_readwrite("timestep", &IntegratorSemiImplEulerTpl<Scalar>::timestep_,
@@ -79,7 +83,6 @@ void exposeIntegrators() {
                            bp::args("self", "ode", "timestep")))
       .def_readwrite("timestep", &IntegratorRK2Tpl<Scalar>::timestep_,
                      "Time step.");
-
 }
 
 } // namespace python

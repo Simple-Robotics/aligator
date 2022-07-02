@@ -62,7 +62,7 @@ def test_linear():
     assert False
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
 
     retcode = pytest.main(sys.argv)

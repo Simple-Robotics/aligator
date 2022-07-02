@@ -18,7 +18,7 @@ void exposeCosts() {
 
   bp::register_ptr_to_python<shared_ptr<context::CostBase>>();
 
-  bp::class_<internal::PyCostFunction<>>(
+  bp::class_<internal::PyCostFunction<>, boost::noncopyable>(
       "CostAbstract", "Base class for cost functions.",
       bp::init<const int, const int>(bp::args("self", "ndx", "nu")))
       .def("evaluate", bp::pure_virtual(&context::CostBase::evaluate),
