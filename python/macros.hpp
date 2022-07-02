@@ -13,11 +13,10 @@ namespace internal {
 /// Template function enabled when template arg ret_type is void.
 /// In this case, suppress the return.
 template <typename ret_type, typename T>
-std::enable_if_t<std::is_same<ret_type, void>::value, ret_type>
-suppress_if_void(T &&) {}
+std::enable_if_t<std::is_void<ret_type>::value> suppress_if_void(T &&) {}
 
 template <typename ret_type, typename T>
-std::enable_if_t<!std::is_same<ret_type, void>::value, ret_type>
+std::enable_if_t<!std::is_void<ret_type>::value, ret_type>
 suppress_if_void(T &&o) {
   return std::forward<T>(o);
 }
