@@ -164,10 +164,6 @@ public:
     Workspace &workspace = *workspace_;
     Results &results = *results_;
 
-    const std::size_t nsteps = problem.numSteps();
-    assert(xs_init.size() == nsteps + 1);
-    assert(us_init.size() == nsteps);
-
     results.xs_ = xs_init;
     results.us_ = us_init;
 
