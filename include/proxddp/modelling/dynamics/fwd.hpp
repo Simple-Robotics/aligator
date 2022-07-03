@@ -32,6 +32,15 @@ template <typename _Scalar> struct ExplicitIntegratorAbstractTpl;
 // fwd ExplicitIntegratorDataTpl;
 template <typename _Scalar> struct ExplicitIntegratorDataTpl;
 
+// fwd IntegratorEulerTpl;
+template <typename _Scalar> struct IntegratorEulerTpl;
+
+// fwd IntegratorSemiImplEulerTpl;
+template <typename _Scalar> struct IntegratorSemiImplEulerTpl;
+
+// fwd IntegratorRK2Tpl;
+template <typename _Scalar> struct IntegratorRK2Tpl;
+
 } // namespace dynamics
 
 } // namespace proxddp
