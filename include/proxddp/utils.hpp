@@ -17,6 +17,7 @@ rollout(const std::vector<const DynamicsModelTpl<Scalar> *> &dyn_models,
         const typename math_types<Scalar>::VectorXs &x0,
         const typename math_types<Scalar>::VectorOfVectors &us);
 
+/// @copybrief rollout()
 template <typename Scalar>
 typename math_types<Scalar>::VectorOfVectors
 rollout(const ManifoldAbstractTpl<Scalar> &space,
@@ -76,7 +77,6 @@ rollout(const std::vector<const ExplicitDynamicsModelTpl<Scalar> *> &dyn_models,
 }
 
 /// @copybrief rollout() Rolls out a single ExplicitDynamicsModelTpl.
-/// @details  This version rolls out a single model by copying it.
 template <typename Scalar>
 typename math_types<Scalar>::VectorOfVectors
 rollout(const ExplicitDynamicsModelTpl<Scalar> &dyn_model,
