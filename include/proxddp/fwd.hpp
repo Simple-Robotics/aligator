@@ -34,7 +34,7 @@ template <typename Scalar> struct CostDataAbstractTpl;
 template <typename Scalar> struct DynamicsModelTpl;
 
 // fwd DynamicsDataTpl
-template <typename _Scalar> using DynamicsDataTpl = FunctionDataTpl<_Scalar>;
+template <typename Scalar> using DynamicsDataTpl = FunctionDataTpl<Scalar>;
 
 // fwd StageConstraintTpl
 template <typename Scalar> struct StageConstraintTpl;
@@ -43,7 +43,7 @@ template <typename Scalar> struct StageConstraintTpl;
 template <typename Scalar> struct ExplicitDynamicsModelTpl;
 
 // fwd declaration of ExplicitDynamicsDataTpl
-template <typename _Scalar> struct ExplicitDynamicsDataTpl;
+template <typename Scalar> struct ExplicitDynamicsDataTpl;
 
 /* STAGE MODEL */
 
@@ -55,9 +55,9 @@ template <typename Scalar> struct StageDataTpl;
 /* SHOOTING PROBLEM */
 
 // fwd TrajOptProblemTpl
-template <typename _Scalar> struct TrajOptProblemTpl;
+template <typename Scalar> struct TrajOptProblemTpl;
 
-template <typename _Scalar> struct TrajOptDataTpl;
+template <typename Scalar> struct TrajOptDataTpl;
 
 /// Math utilities
 namespace math {
