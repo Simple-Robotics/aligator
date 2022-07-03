@@ -41,7 +41,23 @@ public:
 template <typename _Scalar>
 struct IntegratorDataTpl : DynamicsDataTpl<_Scalar> {
   using Scalar = _Scalar;
+  using Base = DynamicsDataTpl<Scalar>;
+  using VectorXs = typename math_types<Scalar>::VectorXs;
   shared_ptr<ContinuousDynamicsDataTpl<Scalar>> continuous_data;
+
+  using Base::Huu_;
+  using Base::Huy_;
+  using Base::Hxu_;
+  using Base::Hxx_;
+  using Base::Hxy_;
+  using Base::Hyy_;
+  using Base::Ju_;
+  using Base::Jx_;
+  using Base::Jy_;
+  using Base::value_;
+
+  /// Value of the time-derivative to use in the integration rule.
+  VectorXs xdot_;
 
   explicit IntegratorDataTpl(const IntegratorAbstractTpl<Scalar> *integrator);
   virtual ~IntegratorDataTpl() = default;

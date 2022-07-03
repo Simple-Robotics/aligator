@@ -19,9 +19,11 @@ IntegratorAbstractTpl<Scalar>::createData() const {
 template <typename Scalar>
 IntegratorDataTpl<Scalar>::IntegratorDataTpl(
     const IntegratorAbstractTpl<Scalar> *integrator)
-    : DynamicsDataTpl<Scalar>(integrator->ndx1, integrator->nu,
-                              integrator->ndx2, integrator->ndx2),
-      continuous_data(
-          std::move(integrator->continuous_dynamics_->createData())) {}
+    : Base(integrator->ndx1, integrator->nu, integrator->ndx2,
+           integrator->ndx2),
+      xdot_(integrator->continuous_dynamics_->ndx()),
+      continuous_data(integrator->continuous_dynamics_->createData()) {
+  xdot_.setZero();
+}
 } // namespace dynamics
 } // namespace proxddp
