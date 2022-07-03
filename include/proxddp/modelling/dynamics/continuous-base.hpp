@@ -65,14 +65,17 @@ template <typename _Scalar> struct ContinuousDynamicsDataTpl {
 
   /// Residual value \f$e = f(x,u,\dot{x})\f$
   VectorXs value_;
+  /// Derivative \f$\partial f/{\partial x}\f$
   MatrixXs Jx_;
+  /// Derivative \f$\partial f/{\partial u}\f$
   MatrixXs Ju_;
+  /// Derivative \f$\partial f/\partial\dot{x}\f$
   MatrixXs Jxdot_;
 
   ContinuousDynamicsDataTpl(const int ndx, const int nu);
 
-  virtual ~ContinuousDynamicsDataTpl() =
-      default; // marks this type as polymorphic; required for Boost.Python
+  // marks this type as polymorphic; required for Boost.Python
+  virtual ~ContinuousDynamicsDataTpl() = default;
 };
 
 } // namespace dynamics
