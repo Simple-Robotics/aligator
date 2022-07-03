@@ -4,6 +4,8 @@
 #include "proxddp/core/dynamics.hpp"
 #include "proxddp/core/explicit-dynamics.hpp"
 
+#include "proxddp/utils/newton-raphson.hpp"
+
 #include <stdexcept>
 
 namespace proxddp {
@@ -14,6 +16,36 @@ typename math_types<Scalar>::VectorOfVectors
 rollout(const std::vector<const DynamicsModelTpl<Scalar> *> &dyn_models,
         const typename math_types<Scalar>::VectorXs &x0,
         const typename math_types<Scalar>::VectorOfVectors &us);
+
+template <typename Scalar>
+typename math_types<Scalar>::VectorOfVectors
+rollout(const ManifoldAbstractTpl<Scalar> &space,
+        const DynamicsModelTpl<Scalar> &dyn_model,
+        const typename math_types<Scalar>::VectorXs &x0,
+        const typename math_types<Scalar>::VectorOfVectors &us) {
+  using VectorXs = typename math_types<Scalar>::VectorXs;
+  using ConstVectorRef = typename math_types<Scalar>::ConstVectorRef;
+
+  const std::size_t N = us.size();
+  std::vector<VectorXs> xs{x0};
+  xs.reserve(N + 1);
+  shared_ptr<DynamicsDataTpl<Scalar>> data = dyn_model.createData();
+
+  for (std::size_t i = 0; i < N; i++) {
+    auto fun = [&](const ConstVectorRef xnext) {
+      dyn_model.evaluate(xs[i], us[i], xnext, *data);
+      return data->value_;
+    };
+
+    auto Jfun = [&](const ConstVectorRef xnext) {
+      dyn_model.computeJacobians(xs[i], us[i], xnext, *data);
+      return data->Jy_;
+    };
+    xs.push_back(space.neutral());
+    NewtonRaphson<Scalar>::run(space, fun, Jfun, xs[i + 1], xs[i + 1], 1e-6);
+  }
+  return xs;
+}
 
 /// @copybrief  rollout()
 /// @details    This overload applies to explicit forward dynamics.
@@ -43,7 +75,7 @@ rollout(const std::vector<const ExplicitDynamicsModelTpl<Scalar> *> &dyn_models,
   return xs;
 }
 
-/// @copybrief rollout() Single model version.
+/// @copybrief rollout() Rolls out a single ExplicitDynamicsModelTpl.
 /// @details  This version rolls out a single model by copying it.
 template <typename Scalar>
 typename math_types<Scalar>::VectorOfVectors

@@ -15,6 +15,7 @@ using proxnlp::math_types;
 using proxnlp::shared_ptr;
 // Using the constraint set from proxnlp
 using proxnlp::ConstraintSetBase;
+using proxnlp::VerboseLevel;
 
 /// 1 BASE TYPES
 
