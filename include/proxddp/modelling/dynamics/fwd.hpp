@@ -8,38 +8,38 @@ namespace proxddp {
 namespace dynamics {
 
 // fwd ContinuousDynamicsAbstractTpl
-template <typename _Scalar> struct ContinuousDynamicsAbstractTpl;
+template <typename Scalar> struct ContinuousDynamicsAbstractTpl;
 
 // fwd ContinuousDynamicsDataTpl
-template <typename _Scalar> struct ContinuousDynamicsDataTpl;
+template <typename Scalar> struct ContinuousDynamicsDataTpl;
 
 // fwd ODEAbstractTpl
-template <typename _Scalar> struct ODEAbstractTpl;
+template <typename Scalar> struct ODEAbstractTpl;
 
-template <typename _Scalar> struct ODEDataTpl;
+template <typename Scalar> struct ODEDataTpl;
 
 //// INTEGRATORS
 
 // fwd IntegratorAbstractTpl;
-template <typename _Scalar> struct IntegratorAbstractTpl;
+template <typename Scalar> struct IntegratorAbstractTpl;
 
 // fwd IntegratorDataTpl;
-template <typename _Scalar> struct IntegratorDataTpl;
+template <typename Scalar> struct IntegratorDataTpl;
 
 // fwd ExplicitIntegratorAbstractTpl;
-template <typename _Scalar> struct ExplicitIntegratorAbstractTpl;
+template <typename Scalar> struct ExplicitIntegratorAbstractTpl;
 
 // fwd ExplicitIntegratorDataTpl;
-template <typename _Scalar> struct ExplicitIntegratorDataTpl;
+template <typename Scalar> struct ExplicitIntegratorDataTpl;
 
 // fwd IntegratorEulerTpl;
-template <typename _Scalar> struct IntegratorEulerTpl;
+template <typename Scalar> struct IntegratorEulerTpl;
 
 // fwd IntegratorSemiImplEulerTpl;
-template <typename _Scalar> struct IntegratorSemiImplEulerTpl;
+template <typename Scalar> struct IntegratorSemiImplEulerTpl;
 
 // fwd IntegratorRK2Tpl;
-template <typename _Scalar> struct IntegratorRK2Tpl;
+template <typename Scalar> struct IntegratorRK2Tpl;
 
 } // namespace dynamics
 
