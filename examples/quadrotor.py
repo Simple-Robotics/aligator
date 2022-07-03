@@ -7,19 +7,14 @@ import pinocchio as pin
 import example_robot_data as erd
 
 import numpy as np
-import meshcat_utils
+import meshcat_utils as msu
+import matplotlib.pyplot as plt
 
 import proxddp
-from proxddp import manifolds
-from proxnlp import constraints
-
 import tap
 
-VIDEO_ARGS = {
-    "codec": "libx264",
-    "macro_block_size": 8,
-    "output_params": ["-crf", "17"],
-}
+from proxddp import manifolds
+from proxnlp import constraints
 
 
 class Args(tap.Tap):
@@ -46,7 +41,6 @@ vizer = pin.visualize.MeshcatVisualizer(
 vizer.initViewer(loadModel=True)
 if args.display:
     vizer.viewer.open()
-augvizer = meshcat_utils.ForceDraw(vizer)
 
 space = manifolds.MultibodyPhaseSpace(rmodel)
 
@@ -175,8 +169,6 @@ print(results)
 xs_opt = results.xs.tolist()
 us_opt = results.us.tolist()
 
-import matplotlib.pyplot as plt
-
 fig: plt.Figure = plt.figure()
 ax0: plt.Axes = fig.add_subplot(121)
 ax0.plot(times[:-1], us_opt)
@@ -199,9 +191,7 @@ ax1.hlines(
 
 
 if args.display:
-    import imageio
-
-    frames_ = []
+    viz_util = msu.VizUtil(vizer)
     input("[enter to play]")
     dist_ = 2.0
     directions_ = [np.array([1.0, 1.0, 0.5])]
@@ -210,30 +200,28 @@ if args.display:
     for d in directions_:
         d /= np.linalg.norm(d)
 
+    vid_uri = "examples/quadrotor_fly.mp4"
+    vid_recorder = msu.VideoRecorder(vid_uri, fps=1.0 / dt)
     for i in range(3):
 
         def post_callback(t):
             n = len(root_pt_opt)
             pos = root_pt_opt[min(t, n)].copy()
             pos += directions_[i] * dist_
-            augvizer.set_cam_pos(pos, False)
+            viz_util.set_cam_pos(pos)
 
-        augvizer.draw_objectives([x_tar1, x_tar2], prefix="obj")
-        frames_ += meshcat_utils.display_trajectory(
-            vizer,
-            augvizer,
+        viz_util.draw_objectives([x_tar1, x_tar2], prefix="obj")
+        viz_util.play_trajectory(
             xs_opt,
+            us_opt,
             frame_ids=[rmodel.getFrameId("base_link")],
             record=args.record,
-            wait=dt,
+            timestep=dt,
             show_vel=True,
             frame_sphere_size=0.06,
+            recorder=vid_recorder,
             post_callback=post_callback,
         )
-
-    if args.record:
-        vid_uri = "examples/quadrotor_fly.mp4"
-        imageio.mimwrite(vid_uri, frames_, fps=1.0 / dt, **VIDEO_ARGS)
 
 for ext in ["png", "pdf"]:
     fig.savefig("examples/quadrotor_controls.{}".format(ext))
