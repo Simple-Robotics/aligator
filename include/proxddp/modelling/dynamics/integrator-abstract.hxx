@@ -21,9 +21,10 @@ IntegratorDataTpl<Scalar>::IntegratorDataTpl(
     const IntegratorAbstractTpl<Scalar> *integrator)
     : Base(integrator->ndx1, integrator->nu, integrator->ndx2,
            integrator->ndx2),
-      xdot_(integrator->continuous_dynamics_->ndx()),
-      continuous_data(integrator->continuous_dynamics_->createData()) {
+      continuous_data(integrator->continuous_dynamics_->createData()),
+      xdot_(integrator->continuous_dynamics_->ndx()) {
   xdot_.setZero();
 }
+
 } // namespace dynamics
 } // namespace proxddp

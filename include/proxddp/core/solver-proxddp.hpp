@@ -16,7 +16,6 @@
 
 namespace proxddp {
 using proxnlp::LinesearchStrategy;
-using proxnlp::VerboseLevel;
 
 template <typename Scalar> struct LinesearchParams {
   Scalar alpha_min = 1e-7;
