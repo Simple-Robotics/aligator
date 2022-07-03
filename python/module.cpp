@@ -22,7 +22,8 @@ void exposeUtils() {
       const context::VectorOfVectors &);
 
   bp::def<rollout_generic_t>(
-      "rollout", &proxddp::rollout, bp::args("space", "dyn_model", "x0", "us"),
+      "rollout_implicit", &proxddp::rollout,
+      bp::args("space", "dyn_model", "x0", "us"),
       "Perform a dynamics rollout, for a generic (implicit) dynamics model.");
 
   bp::def<rollout_explicit_t>(
