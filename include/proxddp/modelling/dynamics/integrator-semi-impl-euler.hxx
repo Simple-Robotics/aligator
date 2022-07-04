@@ -43,7 +43,7 @@ void IntegratorSemiImplEulerTpl<Scalar>::dForward(
   this->out_space().JintegrateTransport(x, d.dx_, d.Jx_, 1);
   this->out_space().JintegrateTransport(x, d.dx_, d.Ju_, 1);
   this->out_space().Jintegrate(x, d.dx_, d.Jtmp_xnext, 0);
-  d.Jx_ = d.Jtmp_xnext + d.Jx_;
+  d.Jx_ += d.Jtmp_xnext;
   // dq_dx and dq_du needs to be modified
   Jxtemp_.topRows(ndx_2) = timestep_ * d.Jx_.bottomRows(ndx_2);
   Jxtemp_.bottomRows(ndx_2) = timestep_ * cdata.Jx_.bottomRows(ndx_2);
@@ -52,7 +52,7 @@ void IntegratorSemiImplEulerTpl<Scalar>::dForward(
 
   this->out_space().JintegrateTransport(x, d.dx_, Jxtemp_, 1);
   this->out_space().JintegrateTransport(x, d.dx_, Jutemp_, 1);
-  Jxtemp_ = d.Jtmp_xnext + Jxtemp_;
+  Jxtemp_ += d.Jtmp_xnext ;
   d.Jx_.topRows(ndx_2) = Jxtemp_.topRows(ndx_2);
   d.Ju_.topRows(ndx_2) = Jutemp_.topRows(ndx_2);
 }
