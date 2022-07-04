@@ -38,7 +38,7 @@ void IntegratorEulerTpl<Scalar>::dForward(
   this->out_space().JintegrateTransport(x, d.dx_, d.Ju_, 1);
 
   this->out_space().Jintegrate(x, d.dx_, d.Jtmp_xnext, 0);
-  d.Jx_.noalias() += d.Jtmp_xnext;
+  d.Jx_ += d.Jtmp_xnext;
 }
 } // namespace dynamics
 } // namespace proxddp
