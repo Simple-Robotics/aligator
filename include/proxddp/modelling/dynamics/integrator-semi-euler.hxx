@@ -35,7 +35,6 @@ void IntegratorSemiImplEulerTpl<Scalar>::dForward(
   int ndx = this->ndx1;
   int nu = this->nu;
   const int ndx_2 = ndx / 2;
-  MatrixXs Jxtemp_(ndx, ndx), Jutemp_(ndx, nu);
   this->ode_->dForward(x, u, cdata);
   // dv_dx and dv_du are same as euler explicit
   d.Jx_ = timestep_ * cdata.Jx_; // dddx_dx
@@ -45,17 +44,25 @@ void IntegratorSemiImplEulerTpl<Scalar>::dForward(
   this->out_space().Jintegrate(x, d.dx_, d.Jtmp_xnext, 0);
   d.Jx_ += d.Jtmp_xnext;
   // dq_dx and dq_du needs to be modified
-  Jxtemp_.topRows(ndx_2) = timestep_ * d.Jx_.bottomRows(ndx_2);
-  Jxtemp_.bottomRows(ndx_2) = timestep_ * cdata.Jx_.bottomRows(ndx_2);
-  Jutemp_.topRows(ndx_2) = timestep_ * d.Ju_.bottomRows(ndx_2);
-  Jutemp_.bottomRows(ndx_2) = timestep_ * cdata.Ju_.bottomRows(ndx_2);
+  d.Jtmp_xnext2.topRows(ndx_2) = timestep_ * d.Jx_.bottomRows(ndx_2);
+  d.Jtmp_xnext2.bottomRows(ndx_2) = timestep_ * cdata.Jx_.bottomRows(ndx_2);
+  d.Jtmp_u.topRows(ndx_2) = timestep_ * d.Ju_.bottomRows(ndx_2);
+  d.Jtmp_u.bottomRows(ndx_2) = timestep_ * cdata.Ju_.bottomRows(ndx_2);
 
-  this->out_space().JintegrateTransport(x, d.dx_, Jxtemp_, 1);
-  this->out_space().JintegrateTransport(x, d.dx_, Jutemp_, 1);
-  Jxtemp_ += d.Jtmp_xnext ;
-  d.Jx_.topRows(ndx_2) = Jxtemp_.topRows(ndx_2);
-  d.Ju_.topRows(ndx_2) = Jutemp_.topRows(ndx_2);
+  this->out_space().JintegrateTransport(x, d.dx_, d.Jtmp_xnext2, 1);
+  this->out_space().JintegrateTransport(x, d.dx_, d.Jtmp_u, 1);
+  d.Jtmp_xnext2 += d.Jtmp_xnext ;
+  d.Jx_.topRows(ndx_2) = d.Jtmp_xnext2.topRows(ndx_2);
+  d.Ju_.topRows(ndx_2) = d.Jtmp_u.topRows(ndx_2);
 }
+template <typename Scalar>
+IntegratorSemiImplDataTpl<Scalar>::IntegratorSemiImplDataTpl(
+    const IntegratorSemiImplEulerTpl<Scalar> *integrator)
+    : Base(integrator), Jtmp_xnext2(integrator->ndx1,integrator->ndx1),Jtmp_u(integrator->ndx1,integrator->nu)  {
+  Jtmp_xnext2.setZero();
+  Jtmp_u.setZero();
+}
+
 } // namespace dynamics
 
 } // namespace proxddp
