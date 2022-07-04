@@ -53,17 +53,17 @@ struct MyFixture {
   shared_ptr<Manifold> space;
   const int nx;
   const int nu;
-  MyModel dyn_model;
-  MyCost cost;
+  shared_ptr<MyModel> dyn_model;
+  shared_ptr<MyCost> cost;
   StageModel stage;
   TrajOptProblemTpl<double> problem;
 
   MyFixture()
       : space(std::make_shared<Manifold>()), nx(space->nx()), nu(space->ndx()),
-        dyn_model(space), cost(nx, nu),
-        stage(space, nu, shared_ptr<MyCost>(&cost),
-              shared_ptr<MyModel>(&dyn_model)),
-        problem(space->neutral(), nu, *space, shared_ptr<MyCost>(&cost)) {
+        dyn_model(std::make_shared<MyModel>(space)),
+        cost(std::make_shared<MyCost>(nx, nu)),
+        stage(space, nu, cost, dyn_model),
+        problem(space->neutral(), nu, *space, cost) {
     problem.addStage(stage);
     problem.addStage(stage);
   }

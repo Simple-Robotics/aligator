@@ -4,7 +4,7 @@
 
 namespace proxddp {
 namespace dynamics {
-template <typename Scalar> struct RK2DataTpl;
+template <typename Scalar> struct IntegratorRK2DataTpl;
 
 /** @brief  Second-order Runge-Kutta integrator.
  *
@@ -20,7 +20,7 @@ struct IntegratorRK2Tpl : ExplicitIntegratorAbstractTpl<_Scalar> {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ExplicitIntegratorAbstractTpl<Scalar>;
   using BaseData = ExplicitDynamicsDataTpl<Scalar>;
-  using Data = RK2DataTpl<Scalar>;
+  using Data = IntegratorRK2DataTpl<Scalar>;
   using ODEType = typename Base::ODEType;
 
   Scalar timestep_;
@@ -35,7 +35,7 @@ struct IntegratorRK2Tpl : ExplicitIntegratorAbstractTpl<_Scalar> {
 };
 
 template <typename Scalar>
-struct RK2DataTpl : ExplicitIntegratorDataTpl<Scalar> {
+struct IntegratorRK2DataTpl : ExplicitIntegratorDataTpl<Scalar> {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ExplicitIntegratorDataTpl<Scalar>;
   using ODEData = ODEDataTpl<Scalar>;
@@ -44,7 +44,7 @@ struct RK2DataTpl : ExplicitIntegratorDataTpl<Scalar> {
   VectorXs x1_;
   VectorXs dx1_;
 
-  explicit RK2DataTpl(const IntegratorRK2Tpl<Scalar> *integrator);
+  explicit IntegratorRK2DataTpl(const IntegratorRK2Tpl<Scalar> *integrator);
 
   using Base::dx_;
   using Base::Jtmp_xnext;

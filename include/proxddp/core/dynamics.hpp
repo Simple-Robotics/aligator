@@ -18,6 +18,9 @@ struct DynamicsModelTpl : StageFunctionTpl<_Scalar> {
   using Scalar = _Scalar;
   PROXNLP_FUNCTION_TYPEDEFS(Scalar);
   using Base = StageFunctionTpl<Scalar>;
+  using Base::ndx1;
+  using Base::ndx2;
+  using Base::nu;
 
   /**
    * @brief  Constructor for dynamics.

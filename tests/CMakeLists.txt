@@ -49,6 +49,7 @@ set(TEST_NAMES
     integrators
     problem
     continuous
+    utils
     solver-storage)
 
 foreach(test_name ${TEST_NAMES})

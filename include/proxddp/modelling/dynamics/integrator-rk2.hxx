@@ -56,7 +56,8 @@ void IntegratorRK2Tpl<Scalar>::dForward(const ConstVectorRef &x,
 }
 
 template <typename Scalar>
-RK2DataTpl<Scalar>::RK2DataTpl(const IntegratorRK2Tpl<Scalar> *integrator)
+IntegratorRK2DataTpl<Scalar>::IntegratorRK2DataTpl(
+    const IntegratorRK2Tpl<Scalar> *integrator)
     : Base(integrator), x1_(integrator->out_space().neutral()) {
   continuous_data2 = std::make_shared<ODEData>(*this->continuous_data);
 }

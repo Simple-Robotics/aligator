@@ -48,14 +48,13 @@ struct ODEAbstractTpl : ContinuousDynamicsAbstractTpl<_Scalar> {
 template <typename _Scalar>
 struct ODEDataTpl : ContinuousDynamicsDataTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  using VectorXs = typename math_types<Scalar>::VectorXs;
   using Base = ContinuousDynamicsDataTpl<Scalar>;
 
-  /// Value of the derivative \f$\dot{x}\f$
+  /// Time derivative \f$\dot{x} = f(x, u)\f$, output of ODE model
   VectorXs xdot_;
 
   ODEDataTpl(const int ndx, const int nu);
-
   virtual ~ODEDataTpl() = default;
 };
 
