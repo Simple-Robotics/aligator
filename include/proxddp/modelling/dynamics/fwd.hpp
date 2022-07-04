@@ -38,6 +38,9 @@ template <typename Scalar> struct IntegratorEulerTpl;
 // fwd IntegratorSemiImplEulerTpl;
 template <typename Scalar> struct IntegratorSemiImplEulerTpl;
 
+// fwd IntegratorSemiImplDataTpl;
+template <typename Scalar> struct IntegratorSemiImplDataTpl;
+
 // fwd IntegratorRK2Tpl;
 template <typename Scalar> struct IntegratorRK2Tpl;
 
