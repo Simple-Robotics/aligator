@@ -34,4 +34,4 @@ struct IntegratorSemiImplEulerTpl : ExplicitIntegratorAbstractTpl<_Scalar> {
 } // namespace dynamics
 } // namespace proxddp
 
-#include "proxddp/modelling/dynamics/integrator-semi-impl-euler.hxx"
+#include "proxddp/modelling/dynamics/integrator-semi-euler.hxx"

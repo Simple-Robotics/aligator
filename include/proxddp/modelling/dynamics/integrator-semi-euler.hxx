@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/modelling/dynamics/integrator-semi-impl-euler.hpp"
+#include "proxddp/modelling/dynamics/integrator-semi-euler.hpp"
 
 namespace proxddp {
 namespace dynamics {
