@@ -6,7 +6,7 @@
 #include "proxddp/modelling/dynamics/integrator-abstract.hpp"
 #include "proxddp/modelling/dynamics/integrator-euler.hpp"
 #include "proxddp/modelling/dynamics/integrator-rk2.hpp"
-#include "proxddp/modelling/dynamics/integrator-semi-impl-euler.hpp"
+#include "proxddp/modelling/dynamics/integrator-semi-euler.hpp"
 
 namespace proxddp {
 namespace python {
