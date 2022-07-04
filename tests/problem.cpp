@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(test_problem) {
   constexpr int nsteps = 20;
   std::vector<Eigen::VectorXd> us(nsteps, u0);
 
-  auto xs = rollout(f.dyn_model, x0, us);
+  auto xs = rollout(*f.dyn_model, x0, us);
   for (std::size_t i = 0; i < xs.size(); i++) {
     BOOST_CHECK(x0.isApprox(xs[i]));
   }
