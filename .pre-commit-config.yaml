@@ -1,3 +1,5 @@
+ci:
+    autoupdate_branch: main
 repos:
 -   repo: https://github.com/pre-commit/mirrors-clang-format
     rev: v14.0.6
@@ -11,6 +13,10 @@ repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.3.0
     hooks:
+    -   id: detect-private-key
+    -   id: end-of-file-fixer
+    -   id: mixed-line-ending
+    -   id: check-merge-conflict
     -   id: trailing-whitespace
         exclude: |
             (?x)^(

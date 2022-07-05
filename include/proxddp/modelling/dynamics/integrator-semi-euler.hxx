@@ -51,14 +51,15 @@ void IntegratorSemiImplEulerTpl<Scalar>::dForward(
 
   this->out_space().JintegrateTransport(x, d.dx_, d.Jtmp_xnext2, 1);
   this->out_space().JintegrateTransport(x, d.dx_, d.Jtmp_u, 1);
-  d.Jtmp_xnext2 += d.Jtmp_xnext ;
+  d.Jtmp_xnext2 += d.Jtmp_xnext;
   d.Jx_.topRows(ndx_2) = d.Jtmp_xnext2.topRows(ndx_2);
   d.Ju_.topRows(ndx_2) = d.Jtmp_u.topRows(ndx_2);
 }
 template <typename Scalar>
 IntegratorSemiImplDataTpl<Scalar>::IntegratorSemiImplDataTpl(
     const IntegratorSemiImplEulerTpl<Scalar> *integrator)
-    : Base(integrator), Jtmp_xnext2(integrator->ndx1,integrator->ndx1),Jtmp_u(integrator->ndx1,integrator->nu)  {
+    : Base(integrator), Jtmp_xnext2(integrator->ndx1, integrator->ndx1),
+      Jtmp_u(integrator->ndx1, integrator->nu) {
   Jtmp_xnext2.setZero();
   Jtmp_u.setZero();
 }

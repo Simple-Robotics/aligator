@@ -60,4 +60,3 @@ set(${PYLIB_NAME}_PYFILES
 foreach(pyfile ${${PYLIB_NAME}_PYFILES})
   python_install_on_site(${PROJECT_NAME} ${pyfile})
 endforeach()
-
