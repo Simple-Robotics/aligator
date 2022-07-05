@@ -4,6 +4,7 @@ Simple quadrotor dynamics example.
 Inspired by: https://github.com/loco-3d/crocoddyl/blob/master/examples/quadrotor.py
 """
 import pinocchio as pin
+import hppfcl as fcl
 import example_robot_data as erd
 
 import numpy as np
@@ -25,6 +26,8 @@ class Args(tap.Tap):
         if self.record:
             self.display = True
 
+    obstacles: bool = False
+
 
 args = Args().parse_args()
 print(args)
@@ -34,6 +37,25 @@ rmodel = robot.model
 rdata = robot.data
 nq = rmodel.nq
 nv = rmodel.nv
+
+if args.obstacles:  # we add the obstacles to the geometric model
+    R = np.eye(3)
+    cyl_radius = 0.2
+    cylinder = fcl.Cylinder(cyl_radius, 10.0)
+    center_column1 = np.array([-0.2, 0.8, 0.0])
+    geom_cyl1 = pin.GeometryObject(
+        "column1", 0, 0, cylinder, pin.SE3(R, center_column1)
+    )
+    center_column2 = np.array([0.2, 2.1, 0.0])
+    geom_cyl2 = pin.GeometryObject(
+        "column2", 0, 0, cylinder, pin.SE3(R, center_column2)
+    )
+    geom_cyl1.meshColor = np.array([2.0, 0.2, 1.0, 0.6])
+    geom_cyl2.meshColor = np.array([2.0, 0.2, 1.0, 0.6])
+    robot.collision_model.addGeometryObject(geom_cyl1)
+    robot.visual_model.addGeometryObject(geom_cyl1)
+    robot.collision_model.addGeometryObject(geom_cyl2)
+    robot.visual_model.addGeometryObject(geom_cyl2)
 
 vizer = pin.visualize.MeshcatVisualizer(
     rmodel, robot.collision_model, robot.visual_model, data=rdata
@@ -64,7 +86,7 @@ nu = QUAD_ACT_MATRIX.shape[1]  # = no. of nrotors
 ode_dynamics = proxddp.dynamics.MultibodyFreeFwdDynamics(space, QUAD_ACT_MATRIX)
 
 dt = 0.033
-Tf = 2.0
+Tf = 2.5
 nsteps = int(Tf / dt)
 print("nsteps: {:d}".format(nsteps))
 
@@ -90,10 +112,8 @@ dynmodel.dForward(x1, u0, data)
 us_init = [u0] * nsteps
 xs_init = [x0] * (nsteps + 1)
 
-x_tar1 = space.neutral()
-x_tar1[:3] = (0.9, 0.8, 1.0)
-x_tar2 = x_tar1.copy()
-x_tar2[:3] = (1.4, -0.6, 1.0)
+x_tar = space.neutral()
+x_tar[:3] = (-0.2, 2.5, 1.0)
 
 u_max = 4.5 * np.ones(nu)
 u_min = -1.0 * np.ones(nu)
@@ -103,13 +123,49 @@ idx_switch = int(0.7 * nsteps)
 t_switch = times[idx_switch]
 
 
+class HalfspaceZ(proxddp.StageFunction):
+    def __init__(self, ndx, nu, offset: float = 0.0, neg: bool = False) -> None:
+        super().__init__(ndx, nu, 1)
+        self.ndx = ndx
+        self.offset = offset
+        self.sign = -1.0 if neg else 1.0
+
+    def evaluate(self, x, u, y, data):
+        res = self.sign * (x[2] - self.offset)
+        data.value[:] = res
+
+    def computeJacobians(self, x, u, y, data):
+        Jx = np.zeros((1, self.ndx))
+        Jx[:, 2] = self.sign
+        Ju = np.zeros((1, self.nu))
+        data.Jx[:] = Jx
+        data.Ju[:] = Ju
+
+
+class Column(proxddp.StageFunction):
+    def __init__(self, ndx, nu, center, radius: float = 0.2) -> None:
+        super().__init__(ndx, nu, 1)
+        self.ndx = ndx
+        self.center = center
+        self.radius = radius
+
+    def evaluate(self, x, u, y, data):
+        res = -(np.sum(np.square(x[:2] - self.center)) - self.radius)
+        data.value[:] = res
+
+    def computeJacobians(self, x, u, y, data):
+        Jx = np.zeros((1, self.ndx))
+        Jx[:, :2] = -(x[:2] - self.center)
+        Ju = np.zeros((1, self.nu))
+        data.Jx[:] = Jx
+        data.Ju[:] = Ju
+
+
 def setup():
-    weights1 = np.zeros(space.ndx)
-    weights1[:3] = 4.0
-    weights1[3:6] = 1e-2
-    weights1[nv:] = 1e-3
-    weights2 = weights1.copy()
-    weights2[:3] = 1.0
+    weights = np.zeros(space.ndx)
+    weights[:3] = 4.0
+    weights[3:6] = 1e-2
+    weights[nv:] = 1e-3
 
     w_x_term = np.ones(space.ndx)
     w_x_term[:nv] = 4.0
@@ -122,14 +178,6 @@ def setup():
     for i in range(nsteps):
 
         rcost = proxddp.CostStack(space.ndx, nu)
-
-        x_tar = x_tar1
-        weights = weights1
-        if i == idx_switch:
-            weights[:] /= dt
-        if i > idx_switch:
-            x_tar = x_tar2
-            weights = weights2
 
         state_err = proxddp.StateErrorResidual(space, nu, x_tar)
         xreg_cost = proxddp.QuadraticResidualCost(state_err, np.diag(weights) * dt)
@@ -144,13 +192,22 @@ def setup():
         stage = proxddp.StageModel(space, nu, rcost, dynmodel)
         ctrl_box = proxddp.ControlBoxFunction(space.ndx, u_min, u_max)
         stage.addConstraint(ctrl_box, constraints.NegativeOrthant())
+        if args.obstacles:  # add obstacles' constraints
+            ceiling = HalfspaceZ(space.ndx, nu, 2.0)
+            stage.addConstraint(ceiling, constraints.NegativeOrthant())
+            floor = HalfspaceZ(space.ndx, nu, 0.0, True)
+            stage.addConstraint(floor, constraints.NegativeOrthant())
+            column1 = Column(space.ndx, nu, center_column1[:2])
+            stage.addConstraint(column1, constraints.NegativeOrthant())
+            column2 = Column(space.ndx, nu, center_column2[:2])
+            stage.addConstraint(column2, constraints.NegativeOrthant())
         stages.append(stage)
 
         sd = stage.createData()
         stage.evaluate(x0, u0, x1, sd)
 
     term_cost = proxddp.QuadraticResidualCost(
-        proxddp.StateErrorResidual(space, nu, x_tar2), np.diag(w_x_term)
+        proxddp.StateErrorResidual(space, nu, x_tar), np.diag(w_x_term)
     )
     prob = proxddp.TrajOptProblem(x0, stages, term_cost=term_cost)
     return prob
@@ -179,14 +236,11 @@ ax1: plt.Axes = fig.add_subplot(122)
 root_pt_opt = np.stack(xs_opt)[:, :3]
 ax1.plot(times, root_pt_opt)
 ax1.hlines(
-    x_tar1[:3],
+    x_tar[:3],
     t_switch - 3 * dt,
     t_switch + 3 * dt,
     colors=["C0", "C1", "C2"],
     linestyles="dotted",
-)
-ax1.hlines(
-    x_tar2[:3], Tf - 3 * dt, Tf + 3 * dt, colors=["C0", "C1", "C2"], linestyles="dashed"
 )
 
 
@@ -210,7 +264,7 @@ if args.display:
             pos += directions_[i] * dist_
             viz_util.set_cam_pos(pos)
 
-        viz_util.draw_objectives([x_tar1, x_tar2], prefix="obj")
+        viz_util.draw_objectives([x_tar], prefix="obj")
         viz_util.play_trajectory(
             xs_opt,
             us_opt,
