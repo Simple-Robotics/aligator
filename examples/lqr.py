@@ -6,7 +6,7 @@ from proxnlp import constraints
 import numpy as np
 import matplotlib.pyplot as plt
 
-from utils.custom_functions import ControlBoxFunction as PyControlBoxFunction
+from proxddp import ControlBoxFunction
 
 import tap
 import pprint
@@ -45,7 +45,7 @@ dynmodel = dynamics.LinearDiscreteDynamics(A, B, c)
 stage = proxddp.StageModel(space, nu, rcost, dynmodel)
 u_min = -0.17 * np.ones(nu)
 u_max = +0.17 * np.ones(nu)
-ctrl_box = PyControlBoxFunction(nx, nu, u_min, u_max)
+ctrl_box = ControlBoxFunction(nx, u_min, u_max)
 # ctrl_box = proxddp.ControlBoxFunction(nx, u_min, u_max)
 stage.addConstraint(proxddp.StageConstraint(ctrl_box, constraints.NegativeOrthant()))
 
