@@ -94,6 +94,14 @@ def test_semi_euler():
     ode_int_run(ode, dyn)
 
 
+def test_rk2():
+    ode = create_linear()
+    dt = 0.1
+    dyn = dynamics.IntegratorRK2(ode, dt)
+    assert isinstance(dyn.createData(), dynamics.ExplicitIntegratorData)
+    ode_int_run(ode, dyn)
+
+
 def ode_int_run(ode, dyn):
     x = ode.space.rand()
     u = np.random.randn(ode.nu)
