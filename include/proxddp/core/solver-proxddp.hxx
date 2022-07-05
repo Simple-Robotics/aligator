@@ -13,6 +13,7 @@ void SolverProxDDP<Scalar>::computeDirection(const Problem &problem,
                                              Workspace &workspace,
                                              const Results &results) const {
   const std::size_t nsteps = problem.numSteps();
+  using BlockXs = Eigen::Block<MatrixXs, -1, -1>;
 
   // compute direction dx0
   {
@@ -24,8 +25,8 @@ void SolverProxDDP<Scalar>::computeDirection(const Problem &problem,
     const int ndx0 = stage0.ndx1();
     const VectorXs &lamin0 = results.lams_[0];
     const VectorXs &prevlam0 = workspace.prev_lams_[0];
-    MatrixRef kktmat0 = workspace.getKktView(ndx0, ndual0);
-    VectorRef kktrhs0 = workspace.getKktRhs(ndx0, ndual0, 1).col(0);
+    BlockXs kktmat0 = workspace.getKktView(ndx0, ndual0);
+    auto kktrhs0 = workspace.getKktRhs(ndx0, ndual0, 1).col(0);
     kktmat0.setZero();
     kktrhs0.setZero();
     kktmat0.topLeftCorner(ndx0, ndx0) = vp.Vxx_;
@@ -43,9 +44,11 @@ void SolverProxDDP<Scalar>::computeDirection(const Problem &problem,
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = problem.stages_[i];
-    VectorRef pd_step = workspace.pd_step_[i + 1];
-    ConstVectorRef feedforward = results.gains_[i].col(0);
-    ConstMatrixRef feedback = results.gains_[i].rightCols(stage.ndx1());
+    VectorXs &pd_step = workspace.pd_step_[i + 1];
+    Eigen::Block<const MatrixXs, -1, 1, true> feedforward =
+        results.gains_[i].col(0);
+    Eigen::Block<const MatrixXs, -1, -1, true> feedback =
+        results.gains_[i].rightCols(stage.ndx1());
 
     pd_step = feedforward + feedback * workspace.dxs_[i];
   }
@@ -108,6 +111,7 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   using FunctionData = FunctionDataTpl<Scalar>;
 
   const StageModel &stage = problem.stages_[step];
+  using ConstraintType = typename StageModel::Constraint;
   const std::size_t numc = stage.numConstraints();
 
   const value_store_t &vnext = workspace.value_params[step + 1];
@@ -135,41 +139,43 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   q_param.hess_.topLeftCorner(ndx1 + nu, ndx1 + nu) = cdata.hess_;
   q_param.hess_.bottomRightCorner(ndx2, ndx2) = vnext.Vxx_;
 
+  using BlockXs = Eigen::Block<MatrixXs, -1, -1>;
+
   // self-adjoint view to (nprim + ndual) sized block of kkt buffer
-  MatrixRef kkt_mat = workspace.getKktView(nprim, ndual);
-  MatrixRef kkt_rhs = workspace.getKktRhs(nprim, ndual, ndx1);
-  MatrixRef kkt_jac = kkt_mat.block(nprim, 0, ndual, nprim);
+  BlockXs kkt_mat = workspace.getKktView(nprim, ndual);
+  BlockXs kkt_rhs = workspace.getKktRhs(nprim, ndual, ndx1);
+  Eigen::Block<BlockXs, -1, -1> kkt_jac = kkt_mat.block(nprim, 0, ndual, nprim);
 
-  VectorRef rhs_0 = kkt_rhs.col(0);
-  MatrixRef rhs_D = kkt_rhs.rightCols(ndx1);
+  auto rhs_0 = kkt_rhs.col(0);
+  auto rhs_D = kkt_rhs.rightCols(ndx1);
 
-  VectorRef lam_inn = results.lams_[step + 1];
-  VectorRef lamprev = workspace.prev_lams_[step + 1];
-  VectorRef lamplus = workspace.lams_plus_[step + 1];
-  VectorRef lampdal = workspace.lams_pdal_[step + 1];
+  VectorXs &lam_inn = results.lams_[step + 1];
+  VectorXs &lamprev = workspace.prev_lams_[step + 1];
+  VectorXs &lamplus = workspace.lams_plus_[step + 1];
+  VectorXs &lampdal = workspace.lams_pdal_[step + 1];
 
   // Loop over constraints
   for (std::size_t i = 0; i < numc; i++) {
     const auto &cstr = stage.constraints_manager[i];
-    const auto &cstr_set = *cstr->set_;
     FunctionData &cstr_data = *stage_data.constraint_data[i];
-    MatrixRef cstr_jac = cstr_data.jac_buffer_;
+    MatrixXs &cstr_jac = cstr_data.jac_buffer_;
 
     // Grab Lagrange multiplier segments
 
-    VectorRef lam_inn_i =
+    auto lam_inn_i =
         stage.constraints_manager.getSegmentByConstraint(lam_inn, i);
-    VectorRef lamprev_i =
+    auto lamprev_i =
         stage.constraints_manager.getSegmentByConstraint(lamprev, i);
-    VectorRef lamplus_i =
+    auto lamplus_i =
         stage.constraints_manager.getSegmentByConstraint(lamplus, i);
-    VectorRef lampdal_i =
+    auto lampdal_i =
         stage.constraints_manager.getSegmentByConstraint(lampdal, i);
 
     assert(cstr_jac.rows() == cstr->nr());
     assert(cstr_jac.cols() == ndx1 + nprim);
 
     // compose Jacobian by projector and project multiplier
+    const ConstraintSetBase<Scalar> &cstr_set = *cstr->set_;
     lamplus_i = lamprev_i + mu_inverse_ * cstr_data.value_;
     cstr_set.applyNormalConeProjectionJacobian(lamplus_i, cstr_jac);
     lamplus_i.noalias() = cstr_set.normalConeProjection(lamplus_i);
@@ -200,13 +206,12 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
       q_param.hess_.bottomRightCorner(nprim, nprim);
   kkt_mat.bottomRightCorner(ndual, ndual).diagonal().array() = -mu_;
 
-  Eigen::SelfAdjointView<MatrixRef, Eigen::Lower> kkt_mat_view(kkt_mat);
-
   workspace.inner_criterion_by_stage(long(step)) = math::infty_norm(rhs_0);
   workspace.dual_infeas_by_stage(long(step)) = math::infty_norm(
       rhs_0.head(nprim)); // dual infeas: norm of Q-function gradient
 
   /* Compute gains with LDLT */
+  auto kkt_mat_view = kkt_mat.template selfadjointView<Eigen::Lower>();
   auto ldlt_ = kkt_mat_view.ldlt();
   results.gains_[step] = -kkt_rhs;
   ldlt_.solveInPlace(results.gains_[step]);

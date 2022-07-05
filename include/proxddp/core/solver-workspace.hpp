@@ -148,11 +148,12 @@ template <typename _Scalar> struct WorkspaceTpl {
 
   explicit WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem);
 
-  MatrixRef getKktView(const int nprim, const int ndual) {
+  Eigen::Block<MatrixXs, -1, -1> getKktView(const int nprim, const int ndual) {
     return kktMatrixFull_.topLeftCorner(nprim + ndual, nprim + ndual);
   }
 
-  MatrixRef getKktRhs(const int nprim, const int ndual, const int ndx1) {
+  Eigen::Block<MatrixXs, -1, -1> getKktRhs(const int nprim, const int ndual,
+                                           const int ndx1) {
     return kktRhsFull_.topLeftCorner(nprim + ndual, ndx1 + 1);
   }
 

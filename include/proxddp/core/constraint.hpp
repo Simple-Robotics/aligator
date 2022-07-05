@@ -59,8 +59,8 @@ template <typename Scalar> struct ConstraintContainer {
 
   /// Get corresponding segment of a vector corresponding
   /// to the @p i-th constraint.
-  VectorRef getSegmentByConstraint(VectorRef lambda,
-                                   const std::size_t i) const {
+  Eigen::VectorBlock<VectorRef, -1>
+  getSegmentByConstraint(VectorRef lambda, const std::size_t i) const {
     assert(lambda.size() == totalDim());
     return lambda.segment(getIndex(i), getDim(i));
   }
@@ -71,7 +71,8 @@ template <typename Scalar> struct ConstraintContainer {
     return lambda.segment(getIndex(i), getDim(i));
   }
 
-  MatrixRef getBlockByConstraint(MatrixRef J, const std::size_t i) const {
+  Eigen::Block<MatrixRef, -1, -1>
+  getBlockByConstraint(MatrixRef J, const std::size_t i) const {
     assert(J.rows() == totalDim());
     return J.middleRows(getIndex(i), getDim(i));
   }
