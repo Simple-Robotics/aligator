@@ -1,0 +1,36 @@
+variables:
+  GIT_SUBMODULE_STRATEGY: "recursive"
+  GIT_DEPTH: "3"
+
+.proxnlp: &proxnlp
+  retry:
+    max: 2
+    when: runner_system_failure
+  except:
+    - gh-pages
+  timeout: 3 hours 30 minutes
+  script:
+    - export PYTHONPATH="/usr/local/lib/python3/dist-packages:$PYTHONPATH"
+    - cd $CI_PROJECT_DIR
+    - git clone --recursive https://$PROXNLP_TOKEN@github.com/Simple-Robotics/proxnlp.git
+    - cd proxnlp
+    - mkdir build
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DINSTALL_DOCUMENTATION=OFF
+    - make -j3 install
+    - cd ../..
+
+    - mkdir build
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DINSTALL_DOCUMENTATION=OFF
+    - make -j3 install
+    - make test
+  interruptible: true
+
+proxnlp-20.04:
+  tags:
+    - ci.inria.fr
+    - large
+  <<: *proxnlp
+  image: registry.gitlab.inria.fr/jucarpen/pinocchio:pin3x-20.04
+  allow_failure: false
