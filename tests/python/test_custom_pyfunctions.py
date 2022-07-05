@@ -2,7 +2,7 @@ import proxddp
 import numpy as np
 import pytest
 
-from examples.custom_functions import ControlBoxFunction as PyControlBoxFunction
+from proxddp import ControlBoxFunction as PyControlBoxFunction
 
 
 def test_abstract():
@@ -22,7 +22,7 @@ def test_custom_controlbox():
 
     u_min = np.ones(nu) * -0.1
     u_max = np.ones(nu) * 0.1
-    box_function = PyControlBoxFunction(ndx, nu, u_min, u_max)
+    box_function = PyControlBoxFunction(ndx, u_min, u_max)
     bf2 = proxddp.ControlBoxFunction(ndx, u_min, u_max)
     data1: proxddp.FunctionData = box_function.createData()
     data2 = bf2.createData()

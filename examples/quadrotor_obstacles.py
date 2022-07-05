@@ -46,7 +46,7 @@ if args.obstacles:  # we add the obstacles to the geometric model
     geom_cyl1 = pin.GeometryObject(
         "column1", 0, 0, cylinder, pin.SE3(R, center_column1)
     )
-    center_column2 = np.array([0.2, 2.1, 0.0])
+    center_column2 = np.array([0.3, 2.1, 0.0])
     geom_cyl2 = pin.GeometryObject(
         "column2", 0, 0, cylinder, pin.SE3(R, center_column2)
     )
@@ -113,7 +113,7 @@ us_init = [u0] * nsteps
 xs_init = [x0] * (nsteps + 1)
 
 x_tar = space.neutral()
-x_tar[:3] = (-0.2, 2.5, 1.0)
+x_tar[:3] = (-0.3, 2.5, 1.0)
 
 u_max = 4.5 * np.ones(nu)
 u_min = -1.0 * np.ones(nu)
@@ -215,7 +215,7 @@ def setup():
 
 problem = setup()
 tol = 1e-3
-mu_init = 0.01
+mu_init = 0.005
 verbose = proxddp.VerboseLevel.VERBOSE
 solver = proxddp.ProxDDP(tol, mu_init, verbose=verbose, max_iters=300)
 solver.setup(problem)
