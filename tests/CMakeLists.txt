@@ -16,7 +16,7 @@ endmacro()
 
 function(get_cpp_test_name name dir out_var)
   string(REPLACE "${TEST_DIR}" "" prefix ${dir})
-  set(${out_var} "test-${prefix}${name}" PARENT_SCOPE)
+  set(${out_var} "test-cpp-${prefix}${name}" PARENT_SCOPE)
 endfunction(get_cpp_test_name)
 
 set(TEST_HEADERS
@@ -58,14 +58,12 @@ foreach(test_name ${TEST_NAMES})
 endforeach(test_name)
 
 # PYTHON TESTS
-file(GLOB PYTHON_TESTS python/*.py)
+file(GLOB PYTHON_TESTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} python/test_*.py)
+message(STATUS "Python tests: ${PYTHON_TESTS}")
 make_directory(${CMAKE_CURRENT_BINARY_DIR}/python)
 
 foreach(pyfile ${PYTHON_TESTS})
   get_filename_component(pyfile_name ${pyfile} NAME)
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} -E create_symlink
-    ${pyfile}
-    ${CMAKE_CURRENT_BINARY_DIR}/python/${pyfile_name}
-  )
+  message(STATUS "adding python test ${pyfile_name}")
+  ADD_PYTHON_UNIT_TEST(${pyfile_name} "tests/${pyfile}")
 endforeach()
