@@ -46,9 +46,7 @@ def create_multibody_ode():
     return ode
 
 
-def create_linear():
-    nx = 3
-    nu = 2
+def create_linear(nx, nu):
     A = np.zeros((nx, nx))
     n = min(nx, nu)
     A[1, 0] = 0.1
@@ -65,7 +63,9 @@ def create_linear():
 
 def test_explicit_euler():
     # ode = create_multibody_ode()
-    ode = create_linear()
+    nx = 3
+    nu = 2
+    ode = create_linear(nx, nu)
     dt = 0.1
     dyn = dynamics.IntegratorEuler(ode, dt)
     assert isinstance(dyn.createData(), dynamics.ExplicitIntegratorData)
@@ -73,7 +73,9 @@ def test_explicit_euler():
 
 
 def test_semi_euler():
-    ode = create_linear()
+    nx = 4
+    nu = 2
+    ode = create_linear(nx, nu)
     dt = 0.1
     dyn = dynamics.IntegratorSemiImplEuler(ode, dt)
     assert isinstance(dyn.createData(), dynamics.ExplicitIntegratorData)
@@ -81,7 +83,9 @@ def test_semi_euler():
 
 
 def test_rk2():
-    ode = create_linear()
+    nx = 3
+    nu = 2
+    ode = create_linear(nx, nu)
     dt = 0.1
     dyn = dynamics.IntegratorRK2(ode, dt)
     assert isinstance(dyn.createData(), dynamics.ExplicitIntegratorData)
