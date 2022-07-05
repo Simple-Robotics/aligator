@@ -8,12 +8,18 @@ def finite_difference_explicit_dyn(
 ):
     data = dyn.createData()
     space: manifolds.ManifoldAbstract = dyn.space
+<<<<<<< HEAD
     ode = dyn.differential_dynamics
+=======
+>>>>>>> af0ae0e5e5e6dfa4de430ab730a90b438c8805cf
     Jx_nd = np.zeros((dyn.ndx2, dyn.ndx1))
     ei = np.zeros(dyn.ndx1)
     dyn.forward(x0, u0, data)
     y0 = data.xout.copy()
+<<<<<<< HEAD
     print("y0:   ", y0)
+=======
+>>>>>>> af0ae0e5e5e6dfa4de430ab730a90b438c8805cf
     yplus = y0.copy()
     for i in range(dyn.ndx1):
         ei[i] = eps
@@ -24,10 +30,15 @@ def finite_difference_explicit_dyn(
         Jx_nd[:, i] = space.difference(y0, yplus) / eps
         ei[i] = 0.0
 
+<<<<<<< HEAD
+=======
+    uspace = manifolds.VectorSpace(dyn.nu)
+>>>>>>> af0ae0e5e5e6dfa4de430ab730a90b438c8805cf
     Ju_nd = np.zeros((dyn.ndx2, dyn.nu))
     ei = np.zeros(dyn.nu)
     for i in range(dyn.nu):
         ei[i] = eps
+<<<<<<< HEAD
         print("ei:", ei)
         uplus = u0 + eps
         dyn.forward(x0, uplus, data)
@@ -36,6 +47,13 @@ def finite_difference_explicit_dyn(
         print("dy:", yplus - y0)
         Ju_nd[:, i] = space.difference(y0, yplus) / eps
         ei[i] = 0.0
+=======
+        uplus = uspace.integrate(u0, ei)
+        dyn.forward(x0, uplus, data)
+        yplus[:] = data.xout
+        Ju_nd[:, i] = space.difference(y0, yplus) / eps
+        ei[:] = 0.0
+>>>>>>> af0ae0e5e5e6dfa4de430ab730a90b438c8805cf
     return Jx_nd, Ju_nd
 
 
@@ -55,10 +73,17 @@ def create_linear():
     nu = 2
     A = np.zeros((nx, nx))
     n = min(nx, nu)
+<<<<<<< HEAD
     # A[1, 0] = 0.1
     B = np.zeros((nx, nu))
     B[range(n), range(n)] = 1.0
     # B[0, 0] = 0.5
+=======
+    A[1, 0] = 0.1
+    B = np.zeros((nx, nu))
+    B[range(n), range(n)] = 1.0
+    B[0, 1] = 0.5
+>>>>>>> af0ae0e5e5e6dfa4de430ab730a90b438c8805cf
     c = np.zeros(nx)
     ode = dynamics.LinearODE(A, B, c)
     cd = ode.createData()
@@ -77,7 +102,10 @@ def test_explicit_euler():
 
 
 def test_semi_euler():
+<<<<<<< HEAD
     # ode = create_multibody_ode()
+=======
+>>>>>>> af0ae0e5e5e6dfa4de430ab730a90b438c8805cf
     ode = create_linear()
     dt = 0.1
     dyn = dynamics.IntegratorSemiImplEuler(ode, dt)

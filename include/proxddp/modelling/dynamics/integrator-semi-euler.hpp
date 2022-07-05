@@ -1,5 +1,6 @@
 #pragma once
 /// @file integrator-semi-impl-euler.hpp
+/// @author Quentin Le Lidec
 /// @brief Define the semi-implicit Euler integrator.
 
 #include "proxddp/modelling/dynamics/integrator-explicit.hpp"
@@ -41,7 +42,8 @@ struct IntegratorSemiImplDataTpl : ExplicitIntegratorDataTpl<Scalar> {
   MatrixXs Jtmp_xnext2;
   MatrixXs Jtmp_u;
 
-  explicit IntegratorSemiImplDataTpl(const IntegratorSemiImplEulerTpl<Scalar> *integrator);
+  explicit IntegratorSemiImplDataTpl(
+      const IntegratorSemiImplEulerTpl<Scalar> *integrator);
 
   using Base::dx_;
   using Base::Jtmp_xnext;
@@ -49,7 +51,6 @@ struct IntegratorSemiImplDataTpl : ExplicitIntegratorDataTpl<Scalar> {
   using Base::Jx_;
   using Base::xnext_;
 };
-
 
 } // namespace dynamics
 } // namespace proxddp

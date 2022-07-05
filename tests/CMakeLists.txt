@@ -1,9 +1,12 @@
+#
 # Copyright (C) 2022 LAAS-CNRS, INRIA
+#
 
 set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 
 ADD_PROJECT_DEPENDENCY(Boost COMPONENTS unit_test_framework REQUIRED)
+ADD_PROJECT_DEPENDENCY(benchmark REQUIRED)
 
 
 macro(ADD_TEST_CFLAGS test_name flag)
@@ -19,7 +22,7 @@ endfunction(get_cpp_test_name)
 set(TEST_HEADERS
     generate-problem.hpp)
 
-macro(add_proxddp_test name)
+function(add_proxddp_test name)
   get_cpp_test_name(${name} ${CMAKE_CURRENT_SOURCE_DIR} test_name)
   set(test_file ${name}.cpp)
 
@@ -38,12 +41,10 @@ macro(add_proxddp_test name)
   ADD_TEST_CFLAGS(${test_name} "-DBOOST_TEST_MODULE=${MODULE_NAME}")
 
   target_link_libraries(${test_name} ${PROJECT_NAME})
-  target_link_libraries(${test_name} proxnlp::proxnlp)
   target_link_libraries(${test_name} fmt::fmt)
   target_link_libraries(${test_name} Boost::unit_test_framework)
-
-  unset(test_name)
-endmacro(add_proxddp_test)
+  target_link_libraries(${test_name} benchmark::benchmark)
+endfunction(add_proxddp_test)
 
 set(TEST_NAMES
     integrators
