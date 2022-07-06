@@ -218,9 +218,9 @@ tol = 1e-3
 mu_init = 0.01
 rho_init = 0.003
 verbose = proxddp.VerboseLevel.QUIET
-cb = proxddp.HistoryCallback()
+history_cb = proxddp.HistoryCallback()
 solver = proxddp.ProxDDP(tol, mu_init, rho_init, verbose=verbose, max_iters=300)
-solver.registerCallback(cb)
+solver.registerCallback(history_cb)
 solver.setup(problem)
 solver.run(problem, xs_init, us_init)
 
@@ -246,9 +246,9 @@ ax1.hlines(
     linestyles="dotted",
 )
 ax2: plt.Axes = fig.add_subplot(133)
-n_iter = [i for i in range(len(cb.storage.prim_infeas.tolist()))]
-ax2.semilogy(n_iter, cb.storage.prim_infeas.tolist(), label="Primal err.")
-ax2.semilogy(n_iter, cb.storage.dual_infeas.tolist(), label="Dual err.")
+n_iter = [i for i in range(len(history_cb.storage.prim_infeas.tolist()))]
+ax2.semilogy(n_iter, history_cb.storage.prim_infeas.tolist(), label="Primal err.")
+ax2.semilogy(n_iter, history_cb.storage.dual_infeas.tolist(), label="Dual err.")
 ax2.set_xlabel("Iterations")
 ax2.legend()
 
@@ -263,15 +263,17 @@ if args.display:
     for d in directions_:
         d /= np.linalg.norm(d)
 
-    vid_uri = "examples/quadrotor_fly.mp4"
+    vid_uri = "examples/quadrotor_obstacles_fly.mp4"
     vid_recorder = msu.VideoRecorder(vid_uri, fps=1.0 / dt)
     for i in range(3):
 
         def post_callback(t):
             n = len(root_pt_opt)
-            pos = root_pt_opt[min(t, n)].copy()
-            pos += directions_[i] * dist_
+            n = min(t, n)
+            rp = root_pt_opt[n]
+            pos = rp + directions_[i] * dist_
             viz_util.set_cam_pos(pos)
+            viz_util.set_cam_target(rp)
 
         viz_util.draw_objectives([x_tar], prefix="obj")
         viz_util.play_trajectory(

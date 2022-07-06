@@ -209,9 +209,11 @@ if args.display:
 
         def post_callback(t):
             n = len(root_pt_opt)
-            pos = root_pt_opt[min(t, n)].copy()
-            pos += directions_[i] * dist_
+            n = min(t, n)
+            rp = root_pt_opt[n]
+            pos = rp + directions_[i] * dist_
             viz_util.set_cam_pos(pos)
+            viz_util.set_cam_target(rp)
 
         viz_util.draw_objectives([x_tar1, x_tar2], prefix="obj")
         viz_util.play_trajectory(
@@ -227,5 +229,5 @@ if args.display:
         )
 
 for ext in ["png", "pdf"]:
-    fig.savefig("examples/quadrotor_controls.{}".format(ext))
+    fig.savefig("examples/quadrotor_obstacles_controls.{}".format(ext))
 plt.show()
