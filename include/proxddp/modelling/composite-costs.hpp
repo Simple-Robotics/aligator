@@ -72,7 +72,7 @@ struct QuadraticResidualCost : CostAbstractTpl<_Scalar> {
   }
 
   shared_ptr<CostDataAbstract> createData() const {
-    Data *d = new Data{this->ndx_, this->nu_};
+    Data *d = new Data{this->ndx, this->nu};
     d->underlying_data = std::move(residual_->createData());
     return shared_ptr<CostDataAbstract>(std::move(d));
   }

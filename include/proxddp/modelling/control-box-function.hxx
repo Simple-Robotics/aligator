@@ -6,8 +6,8 @@
 namespace proxddp {
 template <typename Scalar>
 ControlBoxFunctionTpl<Scalar>::ControlBoxFunctionTpl(const int ndx,
-                                                     const VectorXs umin,
-                                                     const VectorXs umax)
+                                                     const VectorXs &umin,
+                                                     const VectorXs &umax)
     : Base(ndx, (int)umin.size(), ndx, 2 * (int)umin.size()), umin_(umin),
       umax_(umax) {
   if (umin.size() != umax.size()) {

@@ -20,8 +20,8 @@ struct ControlBoxFunctionTpl : StageFunctionTpl<_Scalar> {
 
   /// @brief Standard constructor: takes state space dimension and desired
   /// control bounds as vectors.
-  ControlBoxFunctionTpl(const int ndx, const VectorXs umin,
-                        const VectorXs umax);
+  ControlBoxFunctionTpl(const int ndx, const VectorXs &umin,
+                        const VectorXs &umax);
 
   /// @brief Constructor which takes control bounds as scalars cast into vectors
   /// of appropriate dimension.

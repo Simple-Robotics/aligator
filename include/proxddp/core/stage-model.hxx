@@ -34,13 +34,12 @@ void StageModelTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                      const ConstVectorRef &u,
                                      const ConstVectorRef &y,
                                      Data &data) const {
-  cost_->evaluate(x, u, *data.cost_data);
-
   for (std::size_t i = 0; i < numConstraints(); i++) {
     // calc on constraint
     const auto &cstr = constraints_manager[i];
     cstr->func().evaluate(x, u, y, *data.constraint_data[i]);
   }
+  cost_->evaluate(x, u, *data.cost_data);
 }
 
 template <typename Scalar>
@@ -48,14 +47,13 @@ void StageModelTpl<Scalar>::computeDerivatives(const ConstVectorRef &x,
                                                const ConstVectorRef &u,
                                                const ConstVectorRef &y,
                                                Data &data) const {
-  cost_->computeGradients(x, u, *data.cost_data);
-  cost_->computeHessians(x, u, *data.cost_data);
-
   for (std::size_t i = 0; i < numConstraints(); i++) {
     // calc on constraint
     const ConstraintPtr &cstr = constraints_manager[i];
     cstr->func().computeJacobians(x, u, y, *data.constraint_data[i]);
   }
+  cost_->computeGradients(x, u, *data.cost_data);
+  cost_->computeHessians(x, u, *data.cost_data);
 }
 
 template <typename Scalar>

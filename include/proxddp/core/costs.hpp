@@ -10,23 +10,16 @@ namespace proxddp {
 /** @brief Stage costs \f$ \ell(x, u) \f$ for control problems.
  */
 template <typename _Scalar> struct CostAbstractTpl {
-protected:
-  /// @brief State dimension
-  const int ndx_;
-  /// @brief Control dimension
-  const int nu_;
-
-public:
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using CostData = CostDataAbstractTpl<Scalar>;
 
-  /// @copybrief ndx_
-  int ndx() const { return ndx_; }
-  /// @copybrief nu_
-  int nu() const { return nu_; }
+  /// @brief State dimension
+  const int ndx;
+  /// @brief Control dimension
+  const int nu;
 
-  CostAbstractTpl(const int ndx, const int nu) : ndx_(ndx), nu_(nu) {}
+  CostAbstractTpl(const int ndx, const int nu) : ndx(ndx), nu(nu) {}
 
   /// @brief Evaluate the cost function.
   virtual void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
@@ -42,7 +35,7 @@ public:
                                CostData &data) const = 0;
 
   virtual shared_ptr<CostData> createData() const {
-    return std::make_shared<CostData>(ndx_, nu_);
+    return std::make_shared<CostData>(ndx, nu);
   }
 
   virtual ~CostAbstractTpl() = default;

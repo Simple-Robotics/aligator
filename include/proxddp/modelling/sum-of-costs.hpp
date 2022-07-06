@@ -1,7 +1,6 @@
 #pragma once
 
 #include "proxddp/core/costs.hpp"
-#include <vector>
 
 namespace proxddp {
 
@@ -22,7 +21,7 @@ template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
   /// Specific data holding struct for CostStackTpl.
   struct SumCostData : CostData {
     std::vector<shared_ptr<CostData>> sub_datas;
-    SumCostData(const CostStackTpl &obj) : CostData(obj.ndx(), obj.nu()) {
+    SumCostData(const CostStackTpl &obj) : CostData(obj.ndx, obj.nu) {
       for (std::size_t i = 0; i < obj.size(); i++) {
         sub_datas.push_back(std::move(obj.components_[i]->createData()));
       }

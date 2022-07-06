@@ -144,8 +144,9 @@ void exposeFunctions() {
       .def_readonly("d", &LinearFunctionTpl<Scalar>::d_);
 
   bp::class_<ControlBoxFunctionTpl<Scalar>, bp::bases<StageFunction>>(
-      "ControlBoxFunction", bp::init<const int, const VectorXs, const VectorXs>(
-                                bp::args("self", "ndx", "umin", "umax")))
+      "ControlBoxFunction",
+      bp::init<const int, const VectorXs &, const VectorXs &>(
+          bp::args("self", "ndx", "umin", "umax")))
       .def(bp::init<const int, const int, const Scalar, const Scalar>(
           bp::args("self", "ndx", "nu", "umin", "umax")));
 }
