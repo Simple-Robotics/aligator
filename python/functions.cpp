@@ -4,9 +4,12 @@
 #include "proxddp/modelling/state-error.hpp"
 #include "proxddp/modelling/linear-function.hpp"
 #include "proxddp/modelling/control-box-function.hpp"
+#include "proxddp/modelling/multibody/frame-placement.hpp"
 
 namespace proxddp {
 namespace python {
+
+void exposePinocchioFunctions();
 
 void exposeFunctions() {
   using context::ConstMatrixRef;
@@ -149,6 +152,44 @@ void exposeFunctions() {
           bp::args("self", "ndx", "umin", "umax")))
       .def(bp::init<const int, const int, const Scalar, const Scalar>(
           bp::args("self", "ndx", "nu", "umin", "umax")));
+
+  exposePinocchioFunctions();
+}
+
+void exposePinocchioFunctions() {
+  using context::Manifold;
+  using context::Scalar;
+  using context::StageFunction;
+  using Model = pinocchio::ModelTpl<Scalar>;
+  using PinData = pinocchio::DataTpl<Scalar>;
+  using SE3 = pinocchio::SE3Tpl<Scalar>;
+
+  using FramePlacement = FramePlacementResidualTpl<Scalar>;
+  using FramePlacementData = FramePlacementDataTpl<Scalar>;
+
+  bp::register_ptr_to_python<shared_ptr<PinData>>();
+
+  bp::class_<FramePlacement, bp::bases<StageFunction>>(
+      "FramePlacementResidual", "Frame placement residual function.",
+      bp::init<int, int, shared_ptr<Model>, const SE3 &, pinocchio::FrameIndex>(
+          bp::args("self", "ndx", "nu", "model", "p_ref")))
+      .add_property("frame_id", &FramePlacement::getFrameId,
+                    &FramePlacement::setFrameId)
+      .def("getReference", &FramePlacement::getReference, bp::args("self"),
+           bp::return_internal_reference<>(), "Get the target frame in SE3.")
+      .def("setReference", &FramePlacement::setReference,
+           bp::args("self", "p_new"), "Set the target frame in SE3.");
+
+  bp::register_ptr_to_python<shared_ptr<FramePlacementData>>();
+
+  bp::class_<FramePlacementData, bp::bases<context::StageFunctionData>>(
+      "FramePlacementData", "Data struct for FramePlacementResidual.",
+      bp::no_init)
+      .def_readonly("rMf", &FramePlacementData::rMf_, "Frame placement error.")
+      .def_readonly("rJf", &FramePlacementData::rJf_)
+      .def_readonly("fJf", &FramePlacementData::fJf_)
+      .def_readonly("pin_data", &FramePlacementData::pin_data_,
+                    "Pinocchio data struct.");
 }
 
 } // namespace python
