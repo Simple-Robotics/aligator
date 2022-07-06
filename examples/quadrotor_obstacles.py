@@ -220,7 +220,7 @@ rho_init = 0.003
 verbose = proxddp.VerboseLevel.QUIET
 cb = proxddp.HistoryCallback()
 solver = proxddp.ProxDDP(tol, mu_init, rho_init, verbose=verbose, max_iters=300)
-solver.register_callback(cb)
+solver.registerCallback(cb)
 solver.setup(problem)
 solver.run(problem, xs_init, us_init)
 

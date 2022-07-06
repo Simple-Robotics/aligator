@@ -13,4 +13,4 @@ template <typename Scalar> struct base_callback {
 };
 
 } // namespace helpers
-} // namespace proxnlp
+} // namespace proxddp

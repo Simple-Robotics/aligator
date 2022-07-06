@@ -6,7 +6,7 @@ from proxnlp import constraints
 import numpy as np
 import matplotlib.pyplot as plt
 
-from proxddp import ControlBoxFunction
+from utils.custom_functions import ControlBoxFunction as PyControlBoxFunction
 
 import tap
 import pprint

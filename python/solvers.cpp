@@ -131,9 +131,9 @@ void exposeSolvers() {
           bp::args("self", "problem", "xs_init", "us_init"),
           "Run the algorithm. This requires providing initial guesses for both "
           "trajectory and control.")
-      .def("register_callback", &SolverType::registerCallback,
+      .def("registerCallback", &SolverType::registerCallback,
            bp::args("self", "cb"), "Add a callback to the solver.")
-      .def("clear_callbacks", &SolverType::clearCallbacks, "Clear callbacks.");
+      .def("clearCallbacks", &SolverType::clearCallbacks, "Clear callbacks.");
 }
 
 } // namespace python
