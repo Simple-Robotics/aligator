@@ -303,7 +303,7 @@ void SolverProxDDP<Scalar>::solverInnerLoop(const Problem &problem,
       fmt::print(" | merit value: {:.3e}\n", results.merit_value_);
     }
 
-    // accept the damn step
+    // accept the step
     results.xs_ = workspace.trial_xs_;
     results.us_ = workspace.trial_us_;
     results.lams_ = workspace.trial_lams_;
