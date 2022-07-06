@@ -43,17 +43,19 @@ q0 = x0[:nq]
 
 vizer.display(q0)
 
-wt_x = 2e-4 * np.eye(space.ndx)
-wt_u = 1e-5 * np.eye(nu)
+wt_x = 1e-5 * np.ones(space.ndx)
+wt_x[nv:] = 2e-4
+wt_x = np.diag(wt_x)
+wt_u = 5e-6 * np.eye(nu)
 wt_x_term = wt_x.copy()
-wt_frame = 6.0 * np.eye(6)
+wt_frame = 8.0 * np.eye(6)
 wt_frame[3:] = 0.0
 print(wt_frame)
 
 
 idTool = rmodel.getFrameId("tool0")
 target_frame: pin.SE3 = pin.SE3.Identity()
-target_frame.translation[:] = (0.8, 0.0, 0.5)
+target_frame.translation[:] = (-0.75, 0.1, 0.5)
 print(target_frame)
 
 frame_fun = proxddp.FramePlacementResidual(space.ndx, nu, rmodel, target_frame, idTool)
@@ -124,13 +126,16 @@ xs_opt = results.xs.tolist()
 us_opt = results.us.tolist()
 
 
+numrep = 3
 cp = [0.8, 0.8, 0.8]
-viz_util.set_cam_pos(cp)
+cps_ = [cp.copy() for _ in range(numrep)]
+cps_[1][1] = -0.4
 vidrecord = msu.VideoRecorder("examples/ur5_reach_ctrlbox.mp4", fps=1.0 / dt)
 if args.display:
     input("[Press enter]")
 
-    for i in range(3):
+    for i in range(numrep):
+        viz_util.set_cam_pos(cps_[i])
         viz_util.draw_objective(target_frame.translation)
         viz_util.play_trajectory(
             xs_opt,
