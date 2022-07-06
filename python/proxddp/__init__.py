@@ -6,11 +6,12 @@ import proxnlp
 from .pyproxddp import *
 from . import utils
 
-from proxnlp import manifolds, VerboseLevel
+from proxnlp import constraints, manifolds, VerboseLevel
 
 
 def _process():
-    import sys, inspect
+    import sys
+    import inspect
     from . import pyproxddp
 
     lib_name = "proxddp"
