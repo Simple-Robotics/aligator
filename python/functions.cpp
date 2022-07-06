@@ -126,8 +126,9 @@ void exposeFunctions() {
       bp::init<const int, const shared_ptr<context::Manifold> &,
                const context::VectorXs &>(
           bp::args("self", "ndx", "uspace", "target")))
-      .def(bp::init<const int, const int, const context::VectorXs &>(
-          bp::args("self", "ndx", "nu", "target")))
+      .def(bp::init<const int, const context::VectorXs &>(
+          bp::args("self", "ndx", "target")))
+      .def(bp::init<int, int>(bp::args("self", "ndx", "nu")))
       .def_readonly("xspace", &ControlErrorResidual<Scalar>::space_)
       .def_readwrite("target", &ControlErrorResidual<Scalar>::target_);
 

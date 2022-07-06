@@ -136,8 +136,7 @@ def setup():
 
         rcost.addCost(xreg_cost)
 
-        utar = np.zeros(nu)
-        u_err = proxddp.ControlErrorResidual(space.ndx, nu, utar)
+        u_err = proxddp.ControlErrorResidual(space.ndx, nu)
         ucost = proxddp.QuadraticResidualCost(u_err, w_u * dt)
         rcost.addCost(ucost)
 

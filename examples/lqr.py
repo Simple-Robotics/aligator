@@ -44,7 +44,7 @@ stage = proxddp.StageModel(space, nu, rcost, dynmodel)
 u_min = -0.17 * np.ones(nu)
 u_max = +0.17 * np.ones(nu)
 ctrl_box = proxddp.ControlBoxFunction(nx, u_min, u_max)
-stage.addConstraint(proxddp.StageConstraint(ctrl_box, constraints.NegativeOrthant()))
+stage.addConstraint(ctrl_box, constraints.NegativeOrthant())
 
 
 nsteps = 5

@@ -50,10 +50,15 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
    */
   template <unsigned int N = arg,
             typename = typename std::enable_if<N == 1>::type>
-  StateOrControlErrorResidual(const int ndx, const int nu,
-                              const ConstVectorRef &target)
+  StateOrControlErrorResidual(const int ndx, const ConstVectorRef &target)
+      : StateOrControlErrorResidual(
+            ndx, std::make_shared<VectorSpace>(target.size()), target) {}
+
+  template <unsigned int N = arg,
+            typename = typename std::enable_if<N == 1>::type>
+  StateOrControlErrorResidual(const int ndx, const int nu)
       : StateOrControlErrorResidual(ndx, std::make_shared<VectorSpace>(nu),
-                                    target) {}
+                                    space_->neutral()) {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &y, Data &data) const {
