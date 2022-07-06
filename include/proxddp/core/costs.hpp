@@ -22,9 +22,9 @@ public:
   using CostData = CostDataAbstractTpl<Scalar>;
 
   /// @copybrief ndx_
-  inline int ndx() const { return ndx_; }
+  int ndx() const { return ndx_; }
   /// @copybrief nu_
-  inline int nu() const { return nu_; }
+  int nu() const { return nu_; }
 
   CostAbstractTpl(const int ndx, const int nu) : ndx_(ndx), nu_(nu) {}
 

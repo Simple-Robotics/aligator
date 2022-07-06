@@ -85,6 +85,18 @@ void exposeSolvers() {
       .def_readwrite("strategy", &LinesearchParams<Scalar>::strategy,
                      "Linesearch strategy.");
 
+  {
+    using bcl_t = BCLParams<Scalar>;
+    bp::class_<bcl_t>("BCLParams",
+                      "Parameters for the bound-constrained Lagrangian (BCL) "
+                      "penalty update strategy.",
+                      bp::init<>())
+        .def_readwrite("prim_alpha", &bcl_t::prim_alpha)
+        .def_readwrite("prim_beta", &bcl_t::prim_beta)
+        .def_readwrite("dual_alpha", &bcl_t::dual_alpha)
+        .def_readwrite("dual_beta", &bcl_t::dual_beta);
+  }
+
   bp::class_<SolverType, boost::noncopyable>(
       "ProxDDP",
       "A primal-dual augmented Lagrangian solver, based on DDP to compute "
@@ -92,29 +104,17 @@ void exposeSolvers() {
       " The solver instance initializes both a Workspace and Results which can "
       "be retrieved"
       " through the `getWorkspace` and `getResults` methods, respectively.",
-      bp::init<Scalar, Scalar, Scalar, Scalar, Scalar, Scalar, Scalar,
-               std::size_t, VerboseLevel>(
+      bp::init<Scalar, Scalar, Scalar, std::size_t, VerboseLevel>(
           (bp::arg("self"), bp::arg("tol"), bp::arg("mu_init") = 1e-2,
-           bp::arg("rho_init") = 0., bp::arg("prim_alpha") = 0.1,
-           bp::arg("prim_beta") = 0.9, bp::arg("dual_alpha") = 1.0,
-           bp::arg("dual_beta") = 1.0, bp::arg("max_iters") = 1000,
+           bp::arg("rho_init") = 0., bp::arg("max_iters") = 1000,
            bp::arg("verbose") = VerboseLevel::QUIET)))
       .def_readonly("mu_init", &SolverType::mu_init,
                     "Initial dual penalty parameter.")
       .def_readonly("rho_init", &SolverType::rho_init,
                     "Initial (primal) proximal parameter.")
-      .def_readonly("prim_alpha", &SolverType::prim_alpha,
-                    "Primal tolerance log-factor (when steps are accepted).")
-      .def_readonly("dual_alpha", &SolverType::dual_alpha,
-                    "Dual tolerance log-factor (when steps are accepted).")
-      .def_readonly("prim_beta", &SolverType::prim_beta,
-                    "Primal tolerance log-factor (when steps are rejected).")
-      .def_readonly("dual_beta", &SolverType::dual_beta,
-                    "Dual tolerance log-factor (when steps are rejected).")
       .def_readwrite("target_tol", &SolverType::target_tolerance,
                      "Desired tolerance.")
-      .def_readwrite("mu_factor", &SolverType::mu_update_factor_)
-      .def_readwrite("rho_factor", &SolverType::rho_update_factor_)
+      .def_readwrite("bcl_params", &SolverType::bcl_params, "BCL parameters.")
       .def_readwrite("multiplier_update_mode", &SolverType::mul_update_mode)
       .def_readwrite("max_iters", &SolverType::MAX_ITERS,
                      "Maximum number of iterations.")
@@ -126,11 +126,10 @@ void exposeSolvers() {
            bp::return_internal_reference<>(), "Get the workspace instance.")
       .def("setup", &SolverType::setup, bp::args("self", "problem"),
            "Allocate workspace and results memory for the problem.")
-      .def(
-          "run", &SolverType::run,
-          bp::args("self", "problem", "xs_init", "us_init"),
-          "Run the algorithm. This requires providing initial guesses for both "
-          "trajectory and control.");
+      .def("run", &SolverType::run,
+           bp::args("self", "problem", "xs_init", "us_init"),
+           "Run the algorithm. This requires providing initial guesses "
+           "for both trajectory and control.");
 }
 
 } // namespace python

@@ -55,13 +55,13 @@ public:
   const Manifold &uspace() const { return *uspace_; }
   const Manifold &xspace_next() const { return *xspace_next_; }
 
-  inline int nx1() const { return xspace_->nx(); }
-  inline int ndx1() const { return xspace_->ndx(); }
-  inline int nu() const { return uspace_->ndx(); }
-  inline int nx2() const { return xspace_next_->nx(); }
-  inline int ndx2() const { return xspace_next_->ndx(); }
+  int nx1() const { return xspace_->nx(); }
+  int ndx1() const { return xspace_->ndx(); }
+  int nu() const { return uspace_->ndx(); }
+  int nx2() const { return xspace_next_->nx(); }
+  int ndx2() const { return xspace_next_->ndx(); }
 
-  inline std::size_t numConstraints() const {
+  std::size_t numConstraints() const {
     return constraints_manager.numConstraints();
   }
 

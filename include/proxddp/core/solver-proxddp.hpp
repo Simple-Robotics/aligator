@@ -3,29 +3,18 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/core/solver-workspace.hpp"
-#include "proxddp/core/solver-results.hpp"
 #include "proxddp/core/merit-function.hpp"
 #include "proxddp/core/proximal-penalty.hpp"
+#include "proxddp/core/linesearch.hpp"
 
 #include <proxnlp/constraint-base.hpp>
-#include <proxnlp/linesearch-base.hpp>
 
 #include <fmt/color.h>
 #include <fmt/ostream.h>
-#include <iostream>
+
+#include <stdexcept>
 
 namespace proxddp {
-using proxnlp::LinesearchStrategy;
-
-template <typename Scalar> struct LinesearchParams {
-  Scalar alpha_min = 1e-7;
-  Scalar directional_derivative_thresh = 1e-13;
-  Scalar armijo_c1 = 1e-4;
-  Scalar ls_beta = 0.5;
-  LinesearchMode mode = LinesearchMode::PRIMAL_DUAL;
-  LinesearchStrategy strategy = LinesearchStrategy::ARMIJO;
-};
 
 enum class MultiplierUpdateMode : unsigned int {
   NEWTON = 0,
@@ -34,12 +23,17 @@ enum class MultiplierUpdateMode : unsigned int {
 };
 
 template <typename Scalar> struct BCLParams {
+
+  /// Log-factor \f$\alpha_\eta\f$ for primal tolerance (failure)
   Scalar prim_alpha = 0.1;
+  /// Log-factor \f$\beta_\eta\f$ for primal tolerance (success)
   Scalar prim_beta = 0.9;
+  /// Log-factor \f$\alpha_\eta\f$ for dual tolerance (failure)
   Scalar dual_alpha = 1.;
+  /// Log-factor \f$\beta_\eta\f$ for dual tolerance (success)
   Scalar dual_beta = 1.;
   Scalar mu_update_factor = 0.01;
-  Scalar rho_update_factor = 0.1;
+  Scalar rho_update_factor = 1.;
 };
 
 /// @brief Solver.
@@ -81,25 +75,17 @@ public:
   const Scalar inner_tol0 = 1.;
   const Scalar prim_tol0 = 1.;
 
-  /// Log-factor \f$\alpha_\eta\f$ for primal tolerance (failure)
-  const Scalar prim_alpha;
-  /// Log-factor \f$\beta_\eta\f$ for primal tolerance (success)
-  const Scalar prim_beta;
-  /// Log-factor \f$\alpha_\eta\f$ for dual tolerance (failure)
-  const Scalar dual_alpha;
-  /// Log-factor \f$\beta_\eta\f$ for dual tolerance (success)
-  const Scalar dual_beta;
-
-  Scalar mu_update_factor_ = 0.01;
-  Scalar rho_update_factor_ = 1.;
-
   VerboseLevel verbose_;
   LinesearchParams<Scalar> ls_params;
   MultiplierUpdateMode mul_update_mode = MultiplierUpdateMode::NEWTON;
+  BCLParams<Scalar> bcl_params;
+
+  Scalar &mu_update_factor_ = bcl_params.mu_update_factor;
+  Scalar &rho_update_factor_ = bcl_params.rho_update_factor;
 
   /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.
   std::size_t MAX_ITERS;
-  const std::size_t MAX_AL_ITERS = 50;
+  std::size_t MAX_AL_ITERS = 50;
 
   /// Minimum possible tolerance asked from the solver.
   const Scalar TOL_MIN = 1e-8;
@@ -112,16 +98,13 @@ public:
   Workspace &getWorkspace() { return *workspace_; }
 
   SolverProxDDP(const Scalar tol = 1e-6, const Scalar mu_init = 0.01,
-                const Scalar rho_init = 0., const Scalar prim_alpha = 0.1,
-                const Scalar prim_beta = 0.9, const Scalar dual_alpha = 1.,
-                const Scalar dual_beta = 1., const std::size_t max_iters = 1000,
+                const Scalar rho_init = 0., const std::size_t max_iters = 1000,
                 const VerboseLevel verbose = VerboseLevel::QUIET)
       : target_tolerance(tol), mu_init(mu_init), rho_init(rho_init),
-        prim_alpha(prim_alpha), prim_beta(prim_beta), dual_alpha(dual_alpha),
-        dual_beta(dual_beta), verbose_(verbose), MAX_ITERS(max_iters) {
+        verbose_(verbose), MAX_ITERS(max_iters) {
     if (mu_init >= 1.) {
-      fmt::print(std::cerr, "[warning]: Penalty value mu_init={:g}>=1!\n",
-                 mu_init);
+      throw std::domain_error(
+          fmt::format("Penalty value mu_init={:g}>=1!", mu_init));
     }
   }
 
@@ -313,13 +296,13 @@ protected:
                            Results &results, const std::size_t step) const;
 
   void updateTolerancesOnFailure() {
-    prim_tol_ = prim_tol0 * std::pow(mu_, prim_alpha);
-    inner_tol_ = inner_tol0 * std::pow(mu_, dual_alpha);
+    prim_tol_ = prim_tol0 * std::pow(mu_, bcl_params.prim_alpha);
+    inner_tol_ = inner_tol0 * std::pow(mu_, bcl_params.dual_alpha);
   }
 
   void updateTolerancesOnSuccess() {
-    prim_tol_ = prim_tol_ * std::pow(mu_, prim_beta);
-    inner_tol_ = inner_tol_ * std::pow(mu_, dual_beta);
+    prim_tol_ = prim_tol_ * std::pow(mu_, bcl_params.prim_beta);
+    inner_tol_ = inner_tol_ * std::pow(mu_, bcl_params.dual_beta);
   }
 
   void setPenalty(Scalar new_mu) {

@@ -129,6 +129,15 @@ class TestClass:
         rho_init = 0.0
 
         solver = proxddp.ProxDDP(tol, mu_init, rho_init)
+
+        assert solver.bcl_params.prim_alpha == 0.1
+        assert solver.bcl_params.prim_beta == 0.9
+        assert solver.bcl_params.dual_alpha == 1.0
+        assert solver.bcl_params.dual_beta == 1.0
+
+        solver.rho_factor = 0.1
+        assert solver.rho_factor == 0.1
+
         solver.multiplier_update_mode = proxddp.MultiplierUpdateMode.NEWTON
         solver.setup(problem)
         solver.run(problem, xs_out, us_init)

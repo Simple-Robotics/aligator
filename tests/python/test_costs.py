@@ -40,7 +40,8 @@ def test_stack_error():
     cost_stack = CostStack(nx, nu)
     Q = np.eye(nx)
     R = np.eye(nu)
-    rcost = QuadraticCost(np.eye(nx), np.eye(nu))
+    R[range(nu), range(nu)] = np.random.rand(nu) * 2.0
+    rcost = QuadraticCost(Q, R)
     cost_stack.addCost(rcost)  # optional
 
     rc2 = QuadraticCost(np.eye(3), np.eye(nu))
