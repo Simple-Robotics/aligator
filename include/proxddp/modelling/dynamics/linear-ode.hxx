@@ -11,9 +11,8 @@ void LinearODETpl<Scalar>::forward(const ConstVectorRef &x,
   data.xdot_ = A_ * x + B_ * u + c_;
 }
 template <typename Scalar>
-void LinearODETpl<Scalar>::dForward(const ConstVectorRef &x,
-                                    const ConstVectorRef &u,
-                                    ODEData &data) const {
+void LinearODETpl<Scalar>::dForward(const ConstVectorRef &,
+                                    const ConstVectorRef &, ODEData &) const {
   return;
 }
 } // namespace dynamics
