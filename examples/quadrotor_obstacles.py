@@ -216,7 +216,7 @@ def setup():
 problem = setup()
 tol = 1e-3
 mu_init = 0.005
-rho = 0.001
+rho = 0.00001
 verbose = proxddp.VerboseLevel.VERBOSE
 solver = proxddp.ProxDDP(tol, mu_init, rho, verbose=verbose, max_iters=300)
 solver.setup(problem)
