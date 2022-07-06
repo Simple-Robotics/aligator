@@ -39,8 +39,6 @@ int main() {
   fmt::print("matrix B:\n{}\n", dynamics.B_);
   fmt::print("drift  c:\n{}\n", dynamics.c_);
   auto spaceptr = dynamics.next_state_;
-  const auto &space = *spaceptr;
-  ;
 
   auto rcost = std::make_shared<QuadraticCost<double>>(w_x, w_u);
 
@@ -62,10 +60,10 @@ int main() {
     stage.addConstraint(ctrl_bounds_cstr);
   }
 
-  auto x0 = space.rand();
+  auto x0 = spaceptr->rand();
   x0 << 1., -0.1;
   auto term_cost = rcost;
-  TrajOptProblemTpl<double> problem(x0, nu, space, term_cost);
+  TrajOptProblemTpl<double> problem(x0, nu, spaceptr, term_cost);
 
   std::size_t nsteps = 10;
 

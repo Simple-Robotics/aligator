@@ -6,6 +6,7 @@
 #include "proxddp/core/solver-workspace.hpp"
 #include "proxddp/core/solver-results.hpp"
 #include "proxddp/core/merit-function.hpp"
+#include "proxddp/core/proximal-penalty.hpp"
 
 #include <proxnlp/constraint-base.hpp>
 #include <proxnlp/linesearch-base.hpp>
@@ -46,14 +47,19 @@ template <typename _Scalar> struct SolverProxDDP {
 public:
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-
+  using BlockXs = typename MatrixXs::BlockXpr;
   using Problem = TrajOptProblemTpl<Scalar>;
   using Workspace = WorkspaceTpl<Scalar>;
   using Results = ResultsTpl<Scalar>;
+  using FunctionData = FunctionDataTpl<Scalar>;
+  using CostData = CostDataAbstractTpl<Scalar>;
   using StageModel = StageModelTpl<Scalar>;
+  using StageData = StageDataTpl<Scalar>;
   using value_store_t = internal::value_storage<Scalar>;
   using q_store_t = internal::q_function_storage<Scalar>;
+  using ProxPenaltyType = ProximalPenaltyTpl<Scalar>;
 
+  std::vector<ProxPenaltyType> prox_penalties_;
   /// Subproblem tolerance
   Scalar inner_tol_;
   /// Desired primal feasibility
@@ -85,7 +91,7 @@ public:
   const Scalar dual_beta;
 
   Scalar mu_update_factor_ = 0.01;
-  Scalar rho_update_factor_ = 0.1;
+  Scalar rho_update_factor_ = 1.;
 
   VerboseLevel verbose_;
   LinesearchParams<Scalar> ls_params;
@@ -145,8 +151,57 @@ public:
   /// @param problem  The problem instance with respect to which memory will be
   /// allocated.
   void setup(const Problem &problem) {
-    workspace_ = std::unique_ptr<Workspace>(new Workspace(problem));
-    results_ = std::unique_ptr<Results>(new Results(problem));
+    workspace_ = std::make_unique<Workspace>(problem);
+    results_ = std::make_unique<Results>(problem);
+
+    Workspace *ws = workspace_.get();
+    prox_penalties_.clear();
+    const std::size_t nsteps = problem.numSteps();
+    for (std::size_t i = 0; i < nsteps; i++) {
+      const StageModel &sm = problem.stages_[i];
+      prox_penalties_.emplace_back(sm.xspace_, sm.uspace_, ws->prev_xs_[i],
+                                   ws->prev_us_[i], false);
+      if (i == nsteps - 1) {
+        prox_penalties_.emplace_back(sm.xspace_next_, sm.uspace_,
+                                     ws->prev_xs_[nsteps],
+                                     ws->prev_us_[nsteps - 1], true);
+      }
+    }
+
+    using ProxData = typename ProxPenaltyType::Data;
+    for (std::size_t i = 0; i < nsteps + 1; i++) {
+      const auto &penal = prox_penalties_[i];
+      ws->prox_datas.push_back(static_cast<ProxData &&>(*penal.createData()));
+    }
+
+    assert(prox_penalties_.size() == (nsteps + 1));
+    assert(ws->prox_datas.size() == (nsteps + 1));
+  }
+
+  void evaluateProx(const std::vector<VectorXs> &xs,
+                    const std::vector<VectorXs> &us,
+                    Workspace &workspace) const {
+    const std::size_t nsteps = workspace.nsteps;
+    for (std::size_t i = 0; i < nsteps; i++) {
+      prox_penalties_[i].evaluate(xs[i], us[i], workspace.prox_datas[i]);
+    }
+    prox_penalties_[nsteps].evaluate(xs[nsteps], us[nsteps - 1],
+                                     workspace.prox_datas[nsteps]);
+  }
+
+  void evaluateProxDerivatives(const std::vector<VectorXs> &xs,
+                               const std::vector<VectorXs> &us,
+                               Workspace &workspace) const {
+    const std::size_t nsteps = workspace.nsteps;
+    for (std::size_t i = 0; i < nsteps; i++) {
+      prox_penalties_[i].computeGradients(xs[i], us[i],
+                                          workspace.prox_datas[i]);
+      prox_penalties_[i].computeHessians(xs[i], us[i], workspace.prox_datas[i]);
+    }
+    prox_penalties_[nsteps].computeGradients(xs[nsteps], us[nsteps - 1],
+                                             workspace.prox_datas[nsteps]);
+    prox_penalties_[nsteps].computeHessians(xs[nsteps], us[nsteps - 1],
+                                            workspace.prox_datas[nsteps]);
   }
 
   /// @brief Run the numerical solver.

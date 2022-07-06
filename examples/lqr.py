@@ -70,7 +70,7 @@ solver = proxddp.ProxDDP(1e-6, mu_init, verbose=verbose)
 u0 = np.zeros(nu)
 us_i = [u0] * nsteps
 xs_i = proxddp.rollout(dynmodel, x0, us_i)
-prob_data = problem.createData()
+prob_data = proxddp.TrajOptData(problem)
 problem.evaluate(xs_i, us_i, prob_data)
 
 solver.setup(problem)

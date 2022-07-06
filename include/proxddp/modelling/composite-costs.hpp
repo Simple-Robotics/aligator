@@ -140,13 +140,4 @@ template <typename Scalar> struct LogResidualCost : CostAbstractTpl<Scalar> {
   }
 };
 
-template <typename Scalar>
-shared_ptr<QuadraticResidualCost<Scalar>>
-make_state_distance_cost(const typename math_types<Scalar>::MatrixXs &weights,
-                         const ManifoldAbstractTpl<Scalar> &space, const int nu,
-                         const typename math_types<Scalar>::VectorXs &target) {
-  return std::make_shared<QuadraticResidualCost<Scalar>>(
-      std::make_shared<StateErrorResidual<Scalar>>(space, nu, target), weights);
-}
-
 } // namespace proxddp

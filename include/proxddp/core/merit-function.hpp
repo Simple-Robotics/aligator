@@ -11,6 +11,21 @@ namespace proxddp {
 /// Whether to use merit functions in primal or primal-dual mode.
 enum class LinesearchMode : unsigned int { PRIMAL = 0, PRIMAL_DUAL = 1 };
 
+/**
+ * @brief   Compute the proximal penalty in the state-control trajectory.
+ * @warning Compute the proximal penalty for each timestep first.
+ */
+template <typename Scalar>
+Scalar computeProxPenalty(const WorkspaceTpl<Scalar> &workspace,
+                          const Scalar rho) {
+  Scalar res = 0.;
+  const std::size_t nsteps = workspace.nsteps;
+  for (std::size_t i = 0; i < nsteps + 1; i++) {
+    res += rho * workspace.prox_datas[i].value_;
+  }
+  return res;
+}
+
 /** @brief Primal-dual augmented Lagrangian merit function.
  *
  * @details The standard Powell-Hestenes-Rockafellar (PHR) augmented Lagrangian
@@ -42,33 +57,34 @@ enum class LinesearchMode : unsigned int { PRIMAL = 0, PRIMAL_DUAL = 1 };
 template <typename _Scalar> struct PDAL_Function {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  using StageModel = StageModelTpl<Scalar>;
+  using StageData = StageDataTpl<Scalar>;
+  using FunctionData = FunctionDataTpl<Scalar>;
 
   Scalar mu_penal_;
+  Scalar rho_penal_;
   LinesearchMode ls_mode;
 
   Scalar mu_penal_inv_ = 1. / mu_penal_;
-  Scalar traj_cost = 0.;
-  Scalar penalty_value = 0.;
+  Scalar traj_cost;
+  Scalar penalty_value;
+  Scalar prox_value;
   Scalar value_ = 0.;
   /// Weight of dual penalty. Values different from 1 not supported yet.
   Scalar dual_weight_ = 1.;
 
-  PDAL_Function(const Scalar mu, const LinesearchMode mode)
-      : mu_penal_(mu), ls_mode(mode) {}
+  PDAL_Function(const Scalar mu, const Scalar rho, const LinesearchMode mode)
+      : mu_penal_(mu), rho_penal_(rho), ls_mode(mode) {}
 
   /// @brief Evaluate the merit function at the trial point.
   Scalar evaluate(const TrajOptProblemTpl<Scalar> &problem,
-                  const std::vector<VectorXs> &xs,
-                  const std::vector<VectorXs> &us,
                   const std::vector<VectorXs> &lams,
                   WorkspaceTpl<Scalar> &workspace,
                   TrajOptDataTpl<Scalar> &prob_data) {
-    using StageModel = StageModelTpl<Scalar>;
-    problem.evaluate(xs, us, prob_data);
-
     traj_cost = computeTrajectoryCost(problem, prob_data);
+    prox_value = computeProxPenalty(workspace, rho_penal_);
     penalty_value = 0.;
-
+    // initial constraint
     workspace.lams_plus_[0] =
         workspace.prev_lams_[0] + mu_penal_inv_ * prob_data.init_data->value_;
     workspace.lams_pdal_[0] = 2 * workspace.lams_plus_[0] - lams[0];
@@ -78,11 +94,12 @@ template <typename _Scalar> struct PDAL_Function {
                        (workspace.lams_plus_[0] - lams[0]).squaredNorm();
     }
 
+    // stage-per-stage
     std::size_t num_c;
     const std::size_t nsteps = problem.numSteps();
-    for (std::size_t step = 0; step < nsteps; step++) {
-      const StageModel &sm = problem.stages_[step];
-      const StageDataTpl<Scalar> &sd = *prob_data.stage_data[step];
+    for (std::size_t i = 0; i < nsteps; i++) {
+      const StageModel &sm = problem.stages_[i];
+      const StageData &sd = *prob_data.stage_data[i];
 
       num_c = sm.numConstraints();
       // loop over constraints
@@ -90,23 +107,24 @@ template <typename _Scalar> struct PDAL_Function {
       for (std::size_t j = 0; j < num_c; j++) {
         const ConstraintSetBase<Scalar> &cstr_set =
             sm.constraints_manager[j]->getConstraintSet();
-        const FunctionDataTpl<Scalar> &cstr_data = *sd.constraint_data[j];
-        VectorRef lamplus_j = sm.constraints_manager.getSegmentByConstraint(
-            workspace.lams_plus_[step + 1], j);
-        VectorRef lamprev_j = sm.constraints_manager.getSegmentByConstraint(
-            workspace.prev_lams_[step + 1], j);
+        const FunctionData &cstr_data = *sd.constraint_data[j];
+        auto lamplus_j = sm.constraints_manager.getSegmentByConstraint(
+            workspace.lams_plus_[i + 1], j);
+        auto lamprev_j = sm.constraints_manager.getConstSegmentByConstraint(
+            workspace.prev_lams_[i + 1], j);
         lamplus_j = lamprev_j + mu_penal_inv_ * cstr_data.value_;
         lamplus_j.noalias() = cstr_set.normalConeProjection(lamplus_j);
       }
       penalty_value +=
-          .5 * mu_penal_ * workspace.lams_plus_[step + 1].squaredNorm();
-      if (this->ls_mode == LinesearchMode::PRIMAL_DUAL) {
+          .5 * mu_penal_ * workspace.lams_plus_[i + 1].squaredNorm();
+      if (ls_mode == LinesearchMode::PRIMAL_DUAL) {
         penalty_value +=
             .5 * dual_weight_ * mu_penal_ *
-            (workspace.lams_plus_[step + 1] - lams[step + 1]).squaredNorm();
+            (workspace.lams_plus_[i + 1] - lams[i + 1]).squaredNorm();
       }
     }
-    value_ = traj_cost + penalty_value;
+
+    value_ = traj_cost + prox_value + penalty_value;
     return value_;
   }
 };

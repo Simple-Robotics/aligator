@@ -40,9 +40,9 @@ BOOST_AUTO_TEST_CASE(test_problem) {
   f.stage.evaluate(x0, u0, x0, *stage_data);
   BOOST_CHECK_EQUAL(stage_data->cost_data->value_, 0.);
 
-  auto prob_data = f.problem.createData();
-  f.problem.evaluate({x0, xs[1], xs[2]}, {u0, u0}, *prob_data);
-  f.problem.computeDerivatives({x0, xs[1], xs[2]}, {u0, u0}, *prob_data);
+  TrajOptDataTpl<double> prob_data(f.problem);
+  f.problem.evaluate({x0, xs[1], xs[2]}, {u0, u0}, prob_data);
+  f.problem.computeDerivatives({x0, xs[1], xs[2]}, {u0, u0}, prob_data);
 }
 
 BOOST_AUTO_TEST_CASE(test_workspace) {

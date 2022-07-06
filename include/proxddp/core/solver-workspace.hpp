@@ -1,5 +1,7 @@
 #pragma once
+
 #include "proxddp/fwd.hpp"
+#include "proxddp/core/proximal-penalty.hpp"
 
 #include <fmt/format.h>
 #include <ostream>
@@ -100,16 +102,22 @@ template <typename _Scalar> struct WorkspaceTpl {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using value_storage_t = internal::value_storage<Scalar>;
   using q_storage_t = internal::q_function_storage<Scalar>;
+  using ProxPenalty = ProximalPenaltyTpl<Scalar>;
+  using ProxData = typename ProxPenalty::Data;
+  using StageModel = StageModelTpl<Scalar>;
 
   const std::size_t nsteps;
 
-  shared_ptr<TrajOptDataTpl<Scalar>> problem_data;
+  TrajOptDataTpl<Scalar> problem_data;
+  TrajOptDataTpl<Scalar> trial_prob_data;
 
   /// Value function parameter storage
   std::vector<value_storage_t> value_params;
 
   /// Q-function storage
   std::vector<q_storage_t> q_params;
+
+  std::vector<ProxData> prox_datas;
 
   std::vector<VectorXs> lams_plus_;
   std::vector<VectorXs> lams_pdal_;
