@@ -14,6 +14,7 @@ space = manifolds.MultibodyConfiguration(model)
 
 ndx = space.ndx
 nq = model.nq
+nv = model.nv
 nu = model.nv
 
 
@@ -23,6 +24,9 @@ def test_frame_placement():
     fr_id1 = model.getFrameId(fr_name1)
 
     x0 = space.neutral()
+    d = np.random.randn(space.ndx) * 0.1
+    d[6:] = 0.0
+    x0 = space.integrate(x0, d)
     u0 = np.zeros(nu)
     q0 = x0[:nq]
 
@@ -43,6 +47,16 @@ def test_frame_placement():
     print("pindata from fdata:")
     pdata_f = fdata.pin_data
     print(pdata_f.oMf[fr_id1])
+
+    fun.computeJacobians(x0, u0, x0, fdata)
+    J = fdata.Jx[:, :nv]
+    print("JAC:", J)
+
+    pin.computeJointJacobians(model, rdata)
+    realJ = pin.getFrameJacobian(model, rdata, fr_id1, pin.LOCAL)
+    print("ACTUAL J:", realJ)
+    assert J.shape == realJ.shape
+    assert np.allclose(fdata.Jx[:, :nv], realJ)
 
 
 if __name__ == "__main__":

@@ -13,6 +13,11 @@ import tap
 
 class Args(tap.Tap):
     display: bool = False
+    record: bool = False
+
+    def process_args(self):
+        if self.record:
+            self.display = True
 
 
 args = Args().parse_args()
@@ -38,24 +43,25 @@ q0 = x0[:nq]
 
 vizer.display(q0)
 
-wt_x = 1e-4 * np.eye(space.ndx)
+wt_x = 2e-4 * np.eye(space.ndx)
 wt_u = 1e-5 * np.eye(nu)
 wt_x_term = wt_x.copy()
-wt_frame = 2.0 * np.eye(6)
+wt_frame = 6.0 * np.eye(6)
 wt_frame[3:] = 0.0
 print(wt_frame)
 
 
 idTool = rmodel.getFrameId("tool0")
 target_frame: pin.SE3 = pin.SE3.Identity()
-target_frame.translation[:] = (0.0, 0.5, 0.2)
+target_frame.translation[:] = (0.8, 0.0, 0.5)
+print(target_frame)
 
 frame_fun = proxddp.FramePlacementResidual(space.ndx, nu, rmodel, target_frame, idTool)
 assert wt_frame.shape[0] == frame_fun.nr
 
 B_mat = np.eye(nu)
 
-Tf = 1.0
+Tf = 1.2
 dt = 0.01
 nsteps = int(Tf / dt)
 
@@ -67,7 +73,7 @@ term_cost_.addCost(proxddp.QuadraticCost(wt_x_term, wt_u))
 term_cost_.addCost(proxddp.QuadraticResidualCost(frame_fun, wt_frame))
 
 continuous_dynamics = dynamics.MultibodyFreeFwdDynamics(space, B_mat)
-discrete_dynamics = dynamics.IntegratorEuler(continuous_dynamics, dt)
+discrete_dynamics = dynamics.IntegratorSemiImplEuler(continuous_dynamics, dt)
 
 u_max = rmodel.effortLimit
 u_min = -u_max
@@ -118,9 +124,19 @@ xs_opt = results.xs.tolist()
 us_opt = results.us.tolist()
 
 
+cp = [0.8, 0.8, 0.8]
+viz_util.set_cam_pos(cp)
+vidrecord = msu.VideoRecorder("examples/ur5_reach_ctrlbox.mp4", fps=1.0 / dt)
 if args.display:
     input("[Press enter]")
 
     for i in range(3):
         viz_util.draw_objective(target_frame.translation)
-        viz_util.play_trajectory(xs_opt, us_opt, frame_ids=[idTool], timestep=dt)
+        viz_util.play_trajectory(
+            xs_opt,
+            us_opt,
+            frame_ids=[idTool],
+            timestep=dt,
+            record=args.record,
+            recorder=vidrecord,
+        )

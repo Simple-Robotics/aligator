@@ -29,6 +29,7 @@ void FramePlacementResidualTpl<Scalar>::computeJacobians(
   const Model &model = *pin_model_;
   pinocchio::DataTpl<Scalar> &pdata = d.pin_data_;
   pinocchio::Jlog6(d.rMf_, d.rJf_);
+  pinocchio::computeJointJacobians(model, pdata);
   pinocchio::getFrameJacobian(model, pdata, pin_frame_id_, pinocchio::LOCAL,
                               d.fJf_);
   d.Jx_.leftCols(model.nv) = d.rJf_ * d.fJf_;
