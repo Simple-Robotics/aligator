@@ -25,7 +25,7 @@ struct MultibodyFreeFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ODEAbstractTpl<Scalar>;
-  using ODEData = ODEDataTpl<Scalar>;
+  using BaseData = ODEDataTpl<Scalar>;
   using ContDataAbstract = ContinuousDynamicsDataTpl<Scalar>;
   using Data = MultibodyFreeFwdDataTpl<Scalar>;
 
@@ -42,14 +42,15 @@ struct MultibodyFreeFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
                               const MatrixXs &actuation);
 
   virtual void forward(const ConstVectorRef &x, const ConstVectorRef &u,
-                       ODEData &data) const;
+                       BaseData &data) const;
   virtual void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
-                        ODEData &data) const;
+                        BaseData &data) const;
 
   shared_ptr<ContDataAbstract> createData() const;
 };
 
 template <typename Scalar> struct MultibodyFreeFwdDataTpl : ODEDataTpl<Scalar> {
+  using Base = ODEDataTpl<Scalar>;
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
   VectorXs tau_;

@@ -26,21 +26,23 @@ MultibodyFreeFwdDynamicsTpl<Scalar>::MultibodyFreeFwdDynamicsTpl(
 template <typename Scalar>
 void MultibodyFreeFwdDynamicsTpl<Scalar>::forward(const ConstVectorRef &x,
                                                   const ConstVectorRef &u,
-                                                  ODEData &data) const {
+                                                  BaseData &data) const {
   Data &d = static_cast<Data &>(data);
   d.tau_ = actuation_matrix_ * u;
   const pinocchio::ModelTpl<Scalar> &model = space_->getModel();
   const int nq = model.nq;
   const int nv = model.nv;
-  d.xdot_.head(nv) = x.tail(nv);
-  d.xdot_.tail(nv) =
-      pinocchio::aba(model, *d.pin_data_, x.head(nq), x.tail(nv), d.tau_);
+  const auto q = x.head(nq);
+  const auto v = x.segment(nq, nq + nv);
+  d.xdot_.head(nv) = v;
+  d.xdot_.segment(nq, nq + nv) =
+      pinocchio::aba(model, *d.pin_data_, q, v, d.tau_);
 }
 
 template <typename Scalar>
 void MultibodyFreeFwdDynamicsTpl<Scalar>::dForward(const ConstVectorRef &x,
                                                    const ConstVectorRef &,
-                                                   ODEData &data) const {
+                                                   BaseData &data) const {
   Data &d = static_cast<Data &>(data);
   const pinocchio::ModelTpl<Scalar> &model = space_->getModel();
   const int nq = model.nq;
@@ -61,7 +63,7 @@ MultibodyFreeFwdDynamicsTpl<Scalar>::createData() const {
 template <typename Scalar>
 MultibodyFreeFwdDataTpl<Scalar>::MultibodyFreeFwdDataTpl(
     const MultibodyFreeFwdDynamicsTpl<Scalar> *cont_dyn)
-    : ODEDataTpl<Scalar>(cont_dyn->ndx(), cont_dyn->nu()),
+    : Base(cont_dyn->ndx(), cont_dyn->nu()),
       tau_(cont_dyn->space_->getModel().nv),
       dtau_dx_(cont_dyn->ntau(), cont_dyn->ndx()),
       dtau_du_(cont_dyn->actuation_matrix_) {
