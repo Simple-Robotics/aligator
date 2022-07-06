@@ -7,6 +7,7 @@
 #include "proxddp/core/solver-results.hpp"
 #include "proxddp/core/merit-function.hpp"
 #include "proxddp/core/proximal-penalty.hpp"
+#include "proxddp/core/helpers-base.hpp"
 
 #include <proxnlp/constraint-base.hpp>
 #include <proxnlp/linesearch-base.hpp>
@@ -110,6 +111,10 @@ public:
 
   Results &getResults() { return *results_; }
   Workspace &getWorkspace() { return *workspace_; }
+
+  /// Callbacks
+  using CallbackPtr = shared_ptr<helpers::base_callback<Scalar>>;
+  std::vector<CallbackPtr> callbacks_;
 
   SolverProxDDP(const Scalar tol = 1e-6, const Scalar mu_init = 0.01,
                 const Scalar rho_init = 0., const Scalar prim_alpha = 0.1,
@@ -294,7 +299,7 @@ public:
       }
       fmt::print("\n");
     }
-
+    invokeCallbacks(workspace, results);
     return conv;
   }
 
@@ -305,6 +310,20 @@ public:
   /// @brief    Compute the infeasibility measures.
   void computeInfeasibilities(const Problem &problem, Workspace &workspace,
                               Results &results) const;
+
+  /// @brief    Add a callback to the solver instance.
+  inline void registerCallback(const CallbackPtr &cb) {
+    callbacks_.push_back(cb);
+  }
+
+  /// @brief    Remove all callbacks from the instance.
+  inline void clearCallbacks() { callbacks_.clear(); }
+
+  void invokeCallbacks(Workspace &workspace, Results &results) {
+    for (auto cb : callbacks_) {
+      cb->call(workspace, results);
+    }
+  }
 
 protected:
   /// @brief  Put together the Q-function parameters and compute the Riccati
@@ -329,6 +348,7 @@ protected:
 
   /// Update the dual proximal penalty.
   void updateALPenalty() { setPenalty(mu_ * mu_update_factor_); }
+
 };
 
 } // namespace proxddp

@@ -60,4 +60,5 @@ BOOST_PYTHON_MODULE(pyproxddp) {
   }
   exposeUtils();
   exposeSolvers();
+  exposeCallbacks();
 }

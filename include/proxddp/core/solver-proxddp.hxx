@@ -308,6 +308,8 @@ void SolverProxDDP<Scalar>::solverInnerLoop(const Problem &problem,
     results.us_ = workspace.trial_us_;
     results.lams_ = workspace.trial_lams_;
 
+    invokeCallbacks(workspace,results);
+
     k++;
   }
 }
