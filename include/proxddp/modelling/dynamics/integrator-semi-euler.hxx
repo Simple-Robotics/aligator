@@ -24,6 +24,8 @@ void IntegratorSemiImplEulerTpl<Scalar>::forward(
   this->out_space().integrate(x, d.dx_, d.xnext_);
   d.dx_.topRows(ndx_2) = d.xnext_.bottomRows(ndx_2) * timestep_;
   this->out_space().integrate(x, d.dx_, d.xnext_);
+  std::cout << "data Jtmpx: \n";
+  std::cout << d.Jtmp_xnext2;
 }
 
 template <typename Scalar>
@@ -38,6 +40,7 @@ void IntegratorSemiImplEulerTpl<Scalar>::dForward(
   const int ndx_2 = ndx / 2;
   const auto &space = this->out_space();
   MatrixXs Jx_tmp(ndx, ndx), Ju_tmp(ndx, nu);
+  std::cout << d.Jtmp_xnext2;
 
   this->ode_->dForward(x, u, cdata);
   // dv_dx and dv_du are same as euler explicit
@@ -49,23 +52,23 @@ void IntegratorSemiImplEulerTpl<Scalar>::dForward(
   d.Jx_ += d.Jtmp_xnext;
 
   // dq_dx and dq_du needs to be modified
-  // d.Jtmp_xnext2.topRows(ndx_2) = timestep_ * d.Jx_.bottomRows(ndx_2);
-  // d.Jtmp_xnext2.bottomRows(ndx_2) = timestep_ * cdata.Jx_.bottomRows(ndx_2);
-  Jx_tmp.topRows(ndx_2) = timestep_ * d.Jx_.bottomRows(ndx_2);
-  Jx_tmp.bottomRows(ndx_2) = timestep_ * cdata.Jx_.bottomRows(ndx_2);
+  d.Jtmp_xnext2.topRows(ndx_2) = timestep_ * d.Jx_.bottomRows(ndx_2);
+  d.Jtmp_xnext2.bottomRows(ndx_2) = timestep_ * cdata.Jx_.bottomRows(ndx_2);
+  // Jx_tmp.topRows(ndx_2) = timestep_ * d.Jx_.bottomRows(ndx_2);
+  // Jx_tmp.bottomRows(ndx_2) = timestep_ * cdata.Jx_.bottomRows(ndx_2);
   // d.Jtmp_u.topRows(ndx_2) = timestep_ * d.Ju_.bottomRows(ndx_2);
   // d.Jtmp_u.bottomRows(ndx_2) = timestep_ * cdata.Ju_.bottomRows(ndx_2);
   Ju_tmp.topRows(ndx_2) = timestep_ * d.Ju_.bottomRows(ndx_2);
   Ju_tmp.bottomRows(ndx_2) = timestep_ * cdata.Ju_.bottomRows(ndx_2);
 
-  // space.JintegrateTransport(x, d.dx_, d.Jtmp_xnext2, 1);
-  space.JintegrateTransport(x, d.dx_, Jx_tmp, 1);
+  space.JintegrateTransport(x, d.dx_, d.Jtmp_xnext2, 1);
+  // space.JintegrateTransport(x, d.dx_, Jx_tmp, 1);
   // space.JintegrateTransport(x, d.dx_, d.Jtmp_u, 1);
   space.JintegrateTransport(x, d.dx_, Ju_tmp, 1);
-  // d.Jtmp_xnext2 += d.Jtmp_xnext;
-  Jx_tmp += d.Jtmp_xnext;
-  // d.Jx_.topRows(ndx_2) = d.Jtmp_xnext2.topRows(ndx_2);
-  d.Jx_.topRows(ndx_2) = Jx_tmp.topRows(ndx_2);
+  d.Jtmp_xnext2 += d.Jtmp_xnext;
+  // Jx_tmp += d.Jtmp_xnext;
+  d.Jx_.topRows(ndx_2) = d.Jtmp_xnext2.topRows(ndx_2);
+  // d.Jx_.topRows(ndx_2) = Jx_tmp.topRows(ndx_2);
   // d.Ju_.topRows(ndx_2) = d.Jtmp_u.topRows(ndx_2);
   d.Ju_.topRows(ndx_2) = Ju_tmp.topRows(ndx_2);
 }
