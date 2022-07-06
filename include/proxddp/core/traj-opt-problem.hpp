@@ -37,11 +37,11 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   TrajOptProblemTpl(const VectorXs &x0, const std::vector<StageModel> &stages,
                     const shared_ptr<CostAbstract> &term_cost)
       : x0_init_(x0),
-        init_state_error(stages[0].xspace(), stages[0].nu(), x0_init_),
+        init_state_error(stages[0].xspace_, stages[0].nu(), x0_init_),
         stages_(stages), term_cost_(term_cost) {}
 
   TrajOptProblemTpl(const VectorXs &x0, const int nu,
-                    const ManifoldAbstractTpl<Scalar> &space,
+                    const shared_ptr<ManifoldAbstractTpl<Scalar>> &space,
                     const shared_ptr<CostAbstract> &term_cost)
       : x0_init_(x0), init_state_error(space, nu, x0_init_),
         term_cost_(term_cost) {}
@@ -66,10 +66,6 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   void computeDerivatives(const std::vector<VectorXs> &xs,
                           const std::vector<VectorXs> &us,
                           ProblemData &prob_data) const;
-
-  shared_ptr<ProblemData> createData() const {
-    return std::make_shared<ProblemData>(*this);
-  }
 };
 
 /// @brief Problem data struct.
@@ -84,6 +80,7 @@ template <typename _Scalar> struct TrajOptDataTpl {
   /// Terminal cost data.
   shared_ptr<CostDataAbstractTpl<Scalar>> term_cost_data;
 
+  TrajOptDataTpl() = delete;
   TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem);
 };
 

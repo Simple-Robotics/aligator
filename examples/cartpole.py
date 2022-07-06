@@ -222,7 +222,7 @@ solver = proxddp.ProxDDP(TOL, mu_init, max_iters=MAX_ITER, verbose=verbose)
 u0 = np.zeros(nu)
 us_i = [u0] * nsteps
 xs_i = proxddp.rollout(disc_dyn, x0, us_i)
-prob_data = problem.createData()
+prob_data = proxddp.TrajOptData(problem)
 problem.evaluate(xs_i, us_i, prob_data)
 
 solver.setup(problem)

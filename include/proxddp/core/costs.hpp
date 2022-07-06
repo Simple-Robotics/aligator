@@ -53,8 +53,9 @@ template <typename _Scalar> struct CostDataAbstractTpl {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
-  Scalar value_;
+  int ndx_, nu_;
 
+  Scalar value_;
   VectorXs grad_;
   MatrixXs hess_;
 
@@ -72,8 +73,9 @@ template <typename _Scalar> struct CostDataAbstractTpl {
   MatrixRef Luu_;
 
   CostDataAbstractTpl(const int ndx, const int nu)
-      : grad_(ndx + nu), hess_(ndx + nu, ndx + nu), Lx_(grad_.head(ndx)),
-        Lu_(grad_.tail(nu)), Lxx_(hess_.topLeftCorner(ndx, ndx)),
+      : ndx_(ndx), nu_(nu), value_(0.), grad_(ndx + nu),
+        hess_(ndx + nu, ndx + nu), Lx_(grad_.head(ndx)), Lu_(grad_.tail(nu)),
+        Lxx_(hess_.topLeftCorner(ndx, ndx)),
         Lxu_(hess_.topRightCorner(ndx, nu)),
         Lux_(hess_.bottomLeftCorner(nu, ndx)),
         Luu_(hess_.bottomRightCorner(nu, nu)) {

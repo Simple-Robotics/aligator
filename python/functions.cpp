@@ -112,18 +112,21 @@ void exposeFunctions() {
       true>::expose("StdVec_FunctionData", "Vector of function data objects.");
 
   bp::class_<StateErrorResidual<Scalar>, bp::bases<StageFunction>>(
-      "StateErrorResidual",
-      bp::init<const context::Manifold &, const int, const context::VectorXs &>(
-          bp::args("self", "xspace", "nu", "target")))
-      .def_readwrite("target", &StateErrorResidual<Scalar>::target);
+      "StateErrorResidual", bp::init<const shared_ptr<context::Manifold> &,
+                                     const int, const context::VectorXs &>(
+                                bp::args("self", "xspace", "nu", "target")))
+      .def_readonly("xspace", &StateErrorResidual<Scalar>::space_)
+      .def_readwrite("target", &StateErrorResidual<Scalar>::target_);
 
   bp::class_<ControlErrorResidual<Scalar>, bp::bases<StageFunction>>(
       "ControlErrorResidual",
-      bp::init<const int, const context::Manifold &, const context::VectorXs &>(
+      bp::init<const int, const shared_ptr<context::Manifold> &,
+               const context::VectorXs &>(
           bp::args("self", "ndx", "uspace", "target")))
       .def(bp::init<const int, const int, const context::VectorXs &>(
           bp::args("self", "ndx", "nu", "target")))
-      .def_readwrite("target", &ControlErrorResidual<Scalar>::target);
+      .def_readonly("xspace", &ControlErrorResidual<Scalar>::space_)
+      .def_readwrite("target", &ControlErrorResidual<Scalar>::target_);
 
   bp::class_<LinearFunctionTpl<Scalar>, bp::bases<StageFunction>>(
       "LinearFunction", bp::init<const int, const int, const int, const int>(

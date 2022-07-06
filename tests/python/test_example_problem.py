@@ -104,7 +104,7 @@ class TestClass:
         for _ in range(nsteps):
             problem.addStage(stage_model)
 
-        problem_data = problem.createData()
+        problem_data = proxddp.TrajOptData(problem)
         stage_datas = problem_data.stage_data
 
         stage2 = stage_model.clone()

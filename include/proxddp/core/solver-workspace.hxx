@@ -4,14 +4,9 @@ namespace proxddp {
 
 template <typename Scalar>
 WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
-    : nsteps(problem.numSteps()), problem_data(problem.createData()),
-      inner_criterion_by_stage(nsteps), primal_infeas_by_stage(nsteps),
-      dual_infeas_by_stage(nsteps) {
-  using VectorXs = typename math_types<Scalar>::VectorXs;
-  using Workspace = WorkspaceTpl<Scalar>;
-  using value_storage_t = typename Workspace::value_storage_t;
-  using q_storage_t = typename Workspace::q_storage_t;
-  using StageModel = StageModelTpl<Scalar>;
+    : nsteps(problem.numSteps()), problem_data(problem),
+      trial_prob_data(problem), inner_criterion_by_stage(nsteps),
+      primal_infeas_by_stage(nsteps), dual_infeas_by_stage(nsteps) {
 
   inner_criterion_by_stage.setZero();
   primal_infeas_by_stage.setZero();
@@ -19,6 +14,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 
   value_params.reserve(nsteps + 1);
   q_params.reserve(nsteps);
+  prox_datas.reserve(nsteps + 1);
 
   lams_plus_.reserve(nsteps + 1);
   lams_pdal_.reserve(nsteps + 1);

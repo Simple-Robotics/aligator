@@ -15,7 +15,8 @@ void exposeProblem() {
                const shared_ptr<CostBase> &>(
           bp::args("self", "x0", "stages", "term_cost")))
       .def(bp::init<const context::VectorXs &, const int,
-                    const context::Manifold &, const shared_ptr<CostBase> &>(
+                    const shared_ptr<context::Manifold> &,
+                    const shared_ptr<CostBase> &>(
           bp::args("self", "x0", "nu", "space", "term_cost")))
       .def<void (TrajOptProblem::*)(const StageModel &)>(
           "addStage", &TrajOptProblem::addStage, bp::args("self", "new_stage"),
@@ -32,8 +33,7 @@ void exposeProblem() {
            "Rollout the problem costs, dynamics, and constraints.")
       .def("computeDerivatives", &TrajOptProblem::computeDerivatives,
            bp::args("self", "xs", "us", "prob_data"),
-           "Rollout the problem derivatives.")
-      .def(CreateDataPythonVisitor<TrajOptProblem>());
+           "Rollout the problem derivatives.");
 
   bp::register_ptr_to_python<shared_ptr<ProblemData>>();
   bp::class_<ProblemData>(
