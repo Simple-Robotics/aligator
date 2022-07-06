@@ -149,13 +149,13 @@ class Column(proxddp.StageFunction):
         self.center = center
         self.radius = radius
 
-    def evaluate(self, x, u, y, data):
-        res = -(np.sum(np.square(x[:2] - self.center)) - self.radius)
+    def evaluate(self, x, u, y, data):  # distance function
+        res = -(np.sum(np.square(x[:2] - self.center)) - self.radius**2)
         data.value[:] = res
 
-    def computeJacobians(self, x, u, y, data):
+    def computeJacobians(self, x, u, y, data):  # TODO check jacobian
         Jx = np.zeros((1, self.ndx))
-        Jx[:, :2] = -(x[:2] - self.center)
+        Jx[:, :2] = -2 * (x[:2] - self.center)
         Ju = np.zeros((1, self.nu))
         data.Jx[:] = Jx
         data.Ju[:] = Ju
@@ -215,9 +215,12 @@ def setup():
 
 problem = setup()
 tol = 1e-3
-mu_init = 0.005
-verbose = proxddp.VerboseLevel.VERBOSE
-solver = proxddp.ProxDDP(tol, mu_init, verbose=verbose, max_iters=300)
+mu_init = 0.01
+rho_init = 0.003
+verbose = proxddp.VerboseLevel.QUIET
+cb = proxddp.HistoryCallback()
+solver = proxddp.ProxDDP(tol, mu_init, rho_init, verbose=verbose, max_iters=300)
+solver.registerCallback(cb)
 solver.setup(problem)
 solver.run(problem, xs_init, us_init)
 
@@ -227,12 +230,12 @@ xs_opt = results.xs.tolist()
 us_opt = results.us.tolist()
 
 fig: plt.Figure = plt.figure()
-ax0: plt.Axes = fig.add_subplot(121)
+ax0: plt.Axes = fig.add_subplot(131)
 ax0.plot(times[:-1], us_opt)
 ax0.hlines((u_min[0], u_max[0]), *times[[0, -1]], colors="k", alpha=0.3, lw=1.4)
 ax0.set_title("Controls")
 ax0.set_xlabel("Time")
-ax1: plt.Axes = fig.add_subplot(122)
+ax1: plt.Axes = fig.add_subplot(132)
 root_pt_opt = np.stack(xs_opt)[:, :3]
 ax1.plot(times, root_pt_opt)
 ax1.hlines(
@@ -242,6 +245,12 @@ ax1.hlines(
     colors=["C0", "C1", "C2"],
     linestyles="dotted",
 )
+ax2: plt.Axes = fig.add_subplot(133)
+n_iter = [i for i in range(len(cb.storage.prim_infeas.tolist()))]
+ax2.semilogy(n_iter, cb.storage.prim_infeas.tolist(), label="Primal err.")
+ax2.semilogy(n_iter, cb.storage.dual_infeas.tolist(), label="Dual err.")
+ax2.set_xlabel("Iterations")
+ax2.legend()
 
 
 if args.display:

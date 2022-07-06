@@ -28,6 +28,7 @@ void exposeDynamics();
 /// Expose integrators
 void exposeIntegrators();
 void exposeSolvers();
+void exposeCallbacks();
 
 } // namespace python
 } // namespace proxddp
