@@ -149,13 +149,13 @@ class Column(proxddp.StageFunction):
         self.center = center
         self.radius = radius
 
-    def evaluate(self, x, u, y, data):
-        res = -(np.sum(np.square(x[:2] - self.center)) - self.radius)
+    def evaluate(self, x, u, y, data):  # distance function
+        res = -(np.sum(np.square(x[:2] - self.center)) - self.radius**2)
         data.value[:] = res
 
-    def computeJacobians(self, x, u, y, data):
+    def computeJacobians(self, x, u, y, data):  # TODO check jacobian
         Jx = np.zeros((1, self.ndx))
-        Jx[:, :2] = -(x[:2] - self.center)
+        Jx[:, :2] = -2 * (x[:2] - self.center)
         Ju = np.zeros((1, self.nu))
         data.Jx[:] = Jx
         data.Ju[:] = Ju
@@ -215,8 +215,8 @@ def setup():
 
 problem = setup()
 tol = 1e-3
-mu_init = 0.005
-rho = 0.00001
+mu_init = 0.01
+rho = 0.001
 verbose = proxddp.VerboseLevel.VERBOSE
 solver = proxddp.ProxDDP(tol, mu_init, rho, verbose=verbose, max_iters=300)
 solver.setup(problem)
