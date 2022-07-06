@@ -216,10 +216,10 @@ def setup():
 problem = setup()
 tol = 1e-3
 mu_init = 0.01
-rho = 0.001
-verbose = proxddp.VerboseLevel.VERBOSE
+rho_init = 0.003
+verbose = proxddp.VerboseLevel.QUIET
 cb = proxddp.HistoryCallback()
-solver = proxddp.ProxDDP(tol, mu_init, rho, verbose=verbose, max_iters=300)
+solver = proxddp.ProxDDP(tol, mu_init, rho_init, verbose=verbose, max_iters=300)
 solver.register_callback(cb)
 solver.setup(problem)
 solver.run(problem, xs_init, us_init)
