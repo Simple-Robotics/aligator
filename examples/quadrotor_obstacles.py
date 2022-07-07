@@ -172,11 +172,8 @@ class HalfspaceZ(proxddp.StageFunction):
         data.value[:] = res
 
     def computeJacobians(self, x, u, y, data):
-        Jx = np.zeros((1, self.ndx))
-        Jx[:, 2] = self.sign
-        Ju = np.zeros((1, self.nu))
-        data.Jx[:] = Jx
-        data.Ju[:] = Ju
+        data.Jx[2] = self.sign
+        data.Ju[:] = 0.0
 
 
 class Column(proxddp.StageFunction):
@@ -190,17 +187,14 @@ class Column(proxddp.StageFunction):
         self.margin = margin
 
     def evaluate(self, x, u, y, data):  # distance function
-        res = -(
-            np.sum(np.square(x[:2] - self.center)) - (self.radius + self.margin) ** 2
-        )
-        data.value[:] = res
+        err = x[:2] - self.center
+        res = np.dot(err, err) - (self.radius + self.margin) ** 2
+        data.value[:] = -res
 
     def computeJacobians(self, x, u, y, data):  # TODO check jacobian
-        Jx = np.zeros((1, self.ndx))
-        Jx[:, :2] = -2 * (x[:2] - self.center)
-        Ju = np.zeros((1, self.nu))
-        data.Jx[:] = Jx
-        data.Ju[:] = Ju
+        err = x[:2] - self.center
+        data.Jx[:2] = -2 * err
+        data.Ju[:] = 0.0
 
 
 task_fun = make_task()
