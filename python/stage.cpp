@@ -37,17 +37,15 @@ void exposeStage() {
       .def(bp::init<const ManifoldPtr &, const int, const CostPtr &,
                     const shared_ptr<DynamicsModel> &>(
           bp::args("self", "space", "nu", "cost", "dyn_model")))
-      .def("addConstraint",
-           (void(StageModel::*)(const context::StageConstraint &)) &
-               StageModel::addConstraint,
-           bp::args("self", "constraint"),
-           "Add an existing constraint to the stage.")
-      .def("addConstraint",
-           (void(StageModel::*)(const FunctionPtr &, const CstrSetPtr &)) &
-               StageModel::addConstraint,
-           bp::args("self", "func", "cstr_set"),
-           "Constructs a new constraint (from the underlying function and set) "
-           "and adds it to the stage.")
+      .def<void (StageModel::*)(const context::StageConstraint &)>(
+          "addConstraint", &StageModel::addConstraint,
+          bp::args("self", "constraint"),
+          "Add an existing constraint to the stage.")
+      .def<void (StageModel::*)(const FunctionPtr &, const CstrSetPtr &)>(
+          "addConstraint", &StageModel::addConstraint,
+          bp::args("self", "func", "cstr_set"),
+          "Constructs a new constraint (from the underlying function and set) "
+          "and adds it to the stage.")
       .add_property("xspace",
                     bp::make_function(&StageModel::xspace,
                                       bp::return_internal_reference<>()),
