@@ -22,9 +22,9 @@ struct IntegratorRK2Tpl : ExplicitIntegratorAbstractTpl<_Scalar> {
   using BaseData = ExplicitDynamicsDataTpl<Scalar>;
   using Data = IntegratorRK2DataTpl<Scalar>;
   using ODEType = typename Base::ODEType;
+  using Base::next_state_;
 
   Scalar timestep_;
-  Scalar dt_2_ = 0.5 * timestep_;
 
   IntegratorRK2Tpl(const shared_ptr<ODEType> &cont_dynamics,
                    const Scalar timestep);
@@ -32,6 +32,13 @@ struct IntegratorRK2Tpl : ExplicitIntegratorAbstractTpl<_Scalar> {
                BaseData &data) const;
   void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
                 BaseData &data) const;
+
+  shared_ptr<FunctionDataTpl<Scalar>> createData() const {
+    return std::make_shared<Data>(this);
+  }
+
+protected:
+  Scalar dt_2_ = 0.5 * timestep_;
 };
 
 template <typename Scalar>

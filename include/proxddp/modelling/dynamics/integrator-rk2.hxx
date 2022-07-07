@@ -36,23 +36,26 @@ void IntegratorRK2Tpl<Scalar>::dForward(const ConstVectorRef &x,
   ODEData &cd1 = static_cast<ODEData &>(*d.continuous_data);
   ODEData &cd2 = static_cast<ODEData &>(*d.continuous_data2);
 
-  // dx1_dz = Transport(d(dx1)_dz)
+  // x1 = x + dx1
+  // dx1_dz = Transport(d(dx1)_dz) + dx_dz
   this->ode_->dForward(x, u, cd1);
   d.Jx_ = dt_2_ * cd1.Jx_;
   d.Ju_ = dt_2_ * cd1.Ju_;
-  this->out_space().JintegrateTransport(x, d.dx1_, d.Jx_, 1);
-  this->out_space().JintegrateTransport(x, d.dx1_, d.Ju_, 1);
+  this->next_state_->JintegrateTransport(x, d.dx1_, d.Jx_, 1);
+  this->next_state_->JintegrateTransport(x, d.dx1_, d.Ju_, 1);
+  this->next_state_->Jintegrate(x, d.dx1_, d.Jtmp_xnext, 0);
+  d.Jx_ += d.Jtmp_xnext;
 
-  // J = d(dx)_dz = d(dx)_dx1 * dx1_dz
+  // J = d(x+dx)_dz = d(x+dx)_dx1 * dx1_dz
   // then transport J to xnext = exp(dx) * x1
   this->ode_->dForward(d.x1_, u, cd2);
   d.Jx_ = (timestep_ * cd2.Jx_) * d.Jx_;
-  d.Ju_ = (timestep_ * cd2.Ju_) * d.Ju_;
-  this->out_space().JintegrateTransport(d.x1_, d.dx_, d.Jx_, 1);
-  this->out_space().JintegrateTransport(d.x1_, d.dx_, d.Ju_, 1);
+  d.Ju_ = (timestep_ * cd2.Jx_) * d.Ju_ + timestep_ * cd2.Ju_;
+  this->next_state_->JintegrateTransport(d.x1_, d.dx_, d.Jx_, 1);
+  this->next_state_->JintegrateTransport(d.x1_, d.dx_, d.Ju_, 1);
 
-  this->out_space().Jintegrate(d.x1_, d.dx_, d.Jtmp_xnext, 0);
-  d.Jx_.noalias() += d.Jtmp_xnext;
+  this->next_state_->Jintegrate(d.x1_, d.dx_, d.Jtmp_xnext, 0);
+  d.Jx_ += d.Jtmp_xnext;
 }
 
 template <typename Scalar>

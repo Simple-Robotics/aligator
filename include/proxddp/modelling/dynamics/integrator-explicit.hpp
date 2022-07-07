@@ -26,6 +26,7 @@ struct ExplicitIntegratorAbstractTpl : ExplicitDynamicsModelTpl<_Scalar> {
   using Base::evaluate;
   using Base::ndx1;
   using Base::ndx2;
+  using Base::next_state_;
   using Base::nu;
   using Manifold = ManifoldAbstractTpl<Scalar>;
 
