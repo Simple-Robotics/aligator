@@ -7,6 +7,7 @@
 
 namespace proxddp {
 namespace dynamics {
+template <typename Scalar> struct IntegratorSemiImplDataTpl;
 /**
  *  @brief Semi-implicit Euler integrator \f$ x_{k+1} = x_k \oplus h f(x_k,
  * u_k)\f$.
@@ -16,8 +17,10 @@ struct IntegratorSemiImplEulerTpl : ExplicitIntegratorAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ExplicitIntegratorAbstractTpl<Scalar>;
+  using BaseData = ExplicitDynamicsDataTpl<Scalar>;
   using Data = IntegratorSemiImplDataTpl<Scalar>;
   using ODEType = ODEAbstractTpl<Scalar>;
+  using Base::next_state_;
 
   /// Integration time step \f$h\f$.
   Scalar timestep_;
@@ -26,10 +29,15 @@ struct IntegratorSemiImplEulerTpl : ExplicitIntegratorAbstractTpl<_Scalar> {
                              const Scalar timestep);
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
-               ExplicitDynamicsDataTpl<Scalar> &data) const;
+               BaseData &data) const;
 
   void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
-                ExplicitDynamicsDataTpl<Scalar> &data) const;
+                BaseData &data) const;
+
+  shared_ptr<FunctionDataTpl<Scalar>> createData() const {
+    return std::make_shared<Data>(this);
+  }
+
 };
 
 template <typename Scalar>
@@ -37,7 +45,6 @@ struct IntegratorSemiImplDataTpl : ExplicitIntegratorDataTpl<Scalar> {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ExplicitIntegratorDataTpl<Scalar>;
   using ODEData = ODEDataTpl<Scalar>;
-  shared_ptr<ODEData> continuous_data2;
 
   MatrixXs Jtmp_xnext2;
   MatrixXs Jtmp_u;

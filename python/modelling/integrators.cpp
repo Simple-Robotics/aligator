@@ -77,6 +77,9 @@ void exposeIntegrators() {
           bp::args("self", "ode", "timestep")))
       .def_readwrite("timestep", &IntegratorSemiImplEulerTpl<Scalar>::timestep_,
                      "Time step.");
+  bp::class_<IntegratorSemiImplDataTpl<Scalar>,
+             bp::bases<ExplicitIntegratorDataTpl<Scalar>>>("IntegratorSemiImplData",
+                                                           bp::no_init);
 
   bp::class_<IntegratorRK2Tpl<Scalar>, bp::bases<ExplicitIntegratorAbstract>>(
       "IntegratorRK2", bp::init<shared_ptr<ODEType>, Scalar>(
