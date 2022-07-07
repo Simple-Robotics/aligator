@@ -17,12 +17,13 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
   static_assert(arg <= 2, "arg value must be 0, 1 or 2!");
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  using Base = StageFunctionTpl<Scalar>;
   using Data = FunctionDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using VectorSpace = proxnlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
 
-  VectorXs target_;
   shared_ptr<Manifold> space_;
+  VectorXs target_;
 
   /// @brief Constructor using the state space, control dimension and state
   /// target.
@@ -30,8 +31,8 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
             typename = typename std::enable_if<N == 0 || N == 2>::type>
   StateOrControlErrorResidual(const shared_ptr<Manifold> &xspace, const int nu,
                               const ConstVectorRef &target)
-      : StageFunctionTpl<Scalar>(xspace->ndx(), nu, xspace->ndx()),
-        target_(target), space_(xspace) {}
+      : Base(xspace->ndx(), nu, xspace->ndx()), space_(xspace),
+        target_(target) {}
 
   /**
    * @brief Constructor using the state space dimension, control manifold and
@@ -41,8 +42,8 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
             typename = typename std::enable_if<N == 1>::type>
   StateOrControlErrorResidual(const int ndx, const shared_ptr<Manifold> &uspace,
                               const ConstVectorRef &target)
-      : StageFunctionTpl<Scalar>(ndx, uspace->nx(), uspace->ndx()),
-        target_(target), space_(uspace) {}
+      : Base(ndx, uspace->nx(), uspace->ndx()), space_(uspace),
+        target_(target) {}
 
   /**
    * @brief Constructor using state space and control space dimensions,
@@ -57,8 +58,8 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
   template <unsigned int N = arg,
             typename = typename std::enable_if<N == 1>::type>
   StateOrControlErrorResidual(const int ndx, const int nu)
-      : StateOrControlErrorResidual(ndx, std::make_shared<VectorSpace>(nu),
-                                    space_->neutral()) {}
+      : Base(ndx, nu, ndx, nu), space_(std::make_shared<VectorSpace>(nu)),
+        target_(space_->neutral()) {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &y, Data &data) const {
