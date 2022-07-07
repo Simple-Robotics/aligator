@@ -44,11 +44,11 @@ if args.obstacles:  # we add the obstacles to the geometric model
     cylinder = fcl.Cylinder(cyl_radius, 10.0)
     center_column1 = np.array([-0.2, 0.8, 0.0])
     geom_cyl1 = pin.GeometryObject(
-        "column1", 0, 0, cylinder, pin.SE3(R, center_column1)
+        "column1", 0, 0, pin.SE3(R, center_column1), cylinder
     )
     center_column2 = np.array([0.3, 2.1, 0.0])
     geom_cyl2 = pin.GeometryObject(
-        "column2", 0, 0, cylinder, pin.SE3(R, center_column2)
+        "column2", 0, 0, pin.SE3(R, center_column2), cylinder
     )
     geom_cyl1.meshColor = np.array([2.0, 0.2, 1.0, 0.6])
     geom_cyl2.meshColor = np.array([2.0, 0.2, 1.0, 0.6])
@@ -56,6 +56,8 @@ if args.obstacles:  # we add the obstacles to the geometric model
     robot.visual_model.addGeometryObject(geom_cyl1)
     robot.collision_model.addGeometryObject(geom_cyl2)
     robot.visual_model.addGeometryObject(geom_cyl2)
+    robot.collision_model.geometryObjects[0].geometry.computeLocalAABB()
+    quad_radius = robot.collision_model.geometryObjects[0].geometry.aabb_radius
 
 vizer = pin.visualize.MeshcatVisualizer(
     rmodel, robot.collision_model, robot.visual_model, data=rdata
@@ -120,7 +122,7 @@ x_tar3 = space.neutral()
 x_tar3[:3] = (-0.3, 2.5, 1.0)
 
 u_max = 4.5 * np.ones(nu)
-u_min = -1.0 * np.ones(nu)
+u_min = 0.0 * np.ones(nu)
 
 times = np.linspace(0, Tf, nsteps + 1)
 idx_switch = int(0.7 * nsteps)
@@ -178,14 +180,19 @@ class HalfspaceZ(proxddp.StageFunction):
 
 
 class Column(proxddp.StageFunction):
-    def __init__(self, ndx, nu, center, radius: float = 0.2) -> None:
+    def __init__(
+        self, ndx, nu, center, radius: float = 0.2, margin: float = 0.0
+    ) -> None:
         super().__init__(ndx, nu, 1)
         self.ndx = ndx
         self.center = center
         self.radius = radius
+        self.margin = margin
 
     def evaluate(self, x, u, y, data):  # distance function
-        res = -(np.sum(np.square(x[:2] - self.center)) - self.radius**2)
+        res = -(
+            np.sum(np.square(x[:2] - self.center)) - (self.radius + self.margin) ** 2
+        )
         data.value[:] = res
 
     def computeJacobians(self, x, u, y, data):  # TODO check jacobian
@@ -232,11 +239,16 @@ def setup():
             stage.addConstraint(ceiling, constraints.NegativeOrthant())
             floor = HalfspaceZ(space.ndx, nu, 0.0, True)
             stage.addConstraint(floor, constraints.NegativeOrthant())
-            column1 = Column(space.ndx, nu, center_column1[:2])
+            column1 = Column(space.ndx, nu, center_column1[:2], margin=quad_radius)
             stage.addConstraint(column1, constraints.NegativeOrthant())
-            column2 = Column(space.ndx, nu, center_column2[:2])
+            column2 = Column(space.ndx, nu, center_column2[:2], margin=quad_radius)
             stage.addConstraint(column2, constraints.NegativeOrthant())
         stages.append(stage)
+        if i == nsteps - 1:  # terminal constraint
+            stage.addConstraint(
+                proxddp.StateErrorResidual(space, nu, x_tar),
+                constraints.EqualityConstraintSet(),
+            )
 
         sd = stage.createData()
         stage.evaluate(x0, u0, x1, sd)
