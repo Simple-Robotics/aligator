@@ -97,7 +97,8 @@ dynmodel = proxddp.dynamics.IntegratorEuler(ode_dynamics, dt)
 x0 = np.concatenate([robot.q0, np.zeros(nv)])
 x0[2] = 0.2
 
-u0 = np.zeros(nu)
+tau = pin.rnea(rmodel, rdata, robot.q0, np.zeros(nv), np.zeros(nv))
+u0, _, _, _ = np.linalg.lstsq(QUAD_ACT_MATRIX, tau)
 vizer.display(x0[:nq])
 out = space.neutral()
 
