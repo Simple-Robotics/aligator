@@ -128,7 +128,7 @@ rcost = proxddp.CostStack(ndx, nu)
 wu = np.ones(nu) * 1e-2
 rcost.addCost(
     proxddp.QuadraticResidualCost(
-        proxddp.ControlErrorResidual(ndx, nu, np.zeros(nu)), np.diag(wu)
+        proxddp.ControlErrorResidual(ndx, np.zeros(nu)), np.diag(wu)
     )
 )
 term_cost = proxddp.CostStack(ndx, nu)
