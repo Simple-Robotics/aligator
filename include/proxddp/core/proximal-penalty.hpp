@@ -1,7 +1,6 @@
 #pragma once
 
 #include "proxddp/fwd.hpp"
-#include "proxddp/modelling/state-error.hpp"
 
 namespace proxddp {
 
@@ -76,8 +75,6 @@ struct ProximalPenaltyTpl : CostAbstractTpl<_Scalar> {
     d.Lxx_ = d.Jx_.transpose() * d.Jx_;
     if (this->no_ctrl_term)
       return;
-    d.Lxu_ = d.Jx_.transpose() * d.Ju_;
-    d.Lux_ = d.Lxu_.transpose();
     d.Luu_ = d.Ju_.transpose() * d.Ju_;
   }
 
