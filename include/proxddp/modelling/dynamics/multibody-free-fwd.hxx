@@ -35,7 +35,7 @@ void MultibodyFreeFwdDynamicsTpl<Scalar>::forward(const ConstVectorRef &x,
   const auto q = x.head(nq);
   const auto v = x.segment(nq, nv);
   d.xdot_.head(nv) = v;
-  d.xdot_.segment(nq, nv) = pinocchio::aba(model, *d.pin_data_, q, v, d.tau_);
+  d.xdot_.segment(nv, nv) = pinocchio::aba(model, *d.pin_data_, q, v, d.tau_);
 }
 
 template <typename Scalar>
