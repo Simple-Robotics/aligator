@@ -6,34 +6,11 @@
 
 namespace proxddp {
 
-/** @brief  Base class for stage-wise constraint objects.
- *
- * This class packs a StageFunctionTpl and ConstraintSetBase together.
- * It models stage-wise constraints of the form
- * \f[
- *        c(x, u, x') \in \mathcal{C}.
- * \f]
- */
-template <typename _Scalar> struct StageConstraintTpl {
-  using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-
-  using FunctionType = StageFunctionTpl<Scalar>;
-  using ConstraintSetPtr = shared_ptr<ConstraintSetBase<Scalar>>;
-  using FunctionPtr = shared_ptr<const FunctionType>;
-
-  const FunctionPtr func_;
-  ConstraintSetPtr set_;
-
-  StageConstraintTpl(const FunctionPtr &func,
-                     const ConstraintSetPtr &constraint_set)
-      : func_(func), set_(constraint_set) {}
-
-  inline int nr() const { return func_->nr; }
-
-  const ConstraintSetBase<Scalar> &getConstraintSet() const { return *set_; }
-
-  const FunctionType &func() const { return *func_; }
+/// @brief Simple struct holding together a function and set, to describe a
+/// constraint.
+template <typename Scalar> struct StageConstraintTpl {
+  shared_ptr<StageFunctionTpl<Scalar>> func_;
+  shared_ptr<ConstraintSetBase<Scalar>> set_;
 };
 
 /// @brief Convenience class to manage a stack of constraints.
@@ -44,8 +21,8 @@ template <typename Scalar> struct ConstraintContainer {
 
   std::size_t numConstraints() const { return storage_.size(); }
 
-  void push_back(const shared_ptr<Constraint> &el) {
-    const int nr = el->nr();
+  void push_back(const Constraint &el) {
+    const int nr = el.func_->nr;
     const int last_cursor = cursors_.back();
     storage_.push_back(el);
     cursors_.push_back(last_cursor + nr);
@@ -86,14 +63,12 @@ template <typename Scalar> struct ConstraintContainer {
   int totalDim() const { return total_dim; }
 
   /// Get the i-th constraint.
-  shared_ptr<Constraint> &operator[](std::size_t i) { return storage_[i]; }
+  Constraint &operator[](std::size_t i) { return storage_[i]; }
 
-  const shared_ptr<Constraint> &operator[](std::size_t i) const {
-    return storage_[i];
-  }
+  const Constraint &operator[](std::size_t i) const { return storage_[i]; }
 
 protected:
-  std::vector<shared_ptr<Constraint>> storage_;
+  std::vector<Constraint> storage_;
   std::vector<int> cursors_;
   std::vector<int> dims_;
   int total_dim = 0;

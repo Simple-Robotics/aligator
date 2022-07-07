@@ -31,7 +31,6 @@ public:
   using CostAbstract = CostAbstractTpl<Scalar>;
   using Data = StageDataTpl<Scalar>;
 
-  using ConstraintPtr = shared_ptr<Constraint>;
   using ManifoldPtr = shared_ptr<Manifold>;
   using CostPtr = shared_ptr<CostAbstract>;
 
@@ -45,7 +44,7 @@ public:
   CostPtr cost_;
 
   const Dynamics &dyn_model() const {
-    return static_cast<const Dynamics &>(constraints_manager[0]->func());
+    return static_cast<const Dynamics &>(*constraints_manager[0].func_);
   }
   const CostAbstract &cost() const { return *cost_; }
 
@@ -81,18 +80,18 @@ public:
                 const shared_ptr<Dynamics> &dyn_model);
 
   /// @brief    Add a constraint to the stage.
-  void addConstraint(const ConstraintPtr &cstr) {
+  void addConstraint(const Constraint &cstr) {
     constraints_manager.push_back(cstr);
   }
   /// @copybrief addConstraint()
-  void addConstraint(ConstraintPtr &&cstr) {
+  void addConstraint(Constraint &&cstr) {
     constraints_manager.push_back(std::move(cstr));
   }
   /// @copybrief  addConstraint().
   /// @details    Adds a constraint by allocating a new StageConstraintTpl.
   void addConstraint(const shared_ptr<StageFunctionTpl<Scalar>> &func,
                      const shared_ptr<ConstraintSetBase<Scalar>> &cstr_set) {
-    constraints_manager.push_back(std::make_shared<Constraint>(func, cstr_set));
+    constraints_manager.push_back(Constraint{func, cstr_set});
   }
 
   /* Evaluate costs, constraints, ... */

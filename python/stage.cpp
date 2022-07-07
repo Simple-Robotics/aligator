@@ -4,7 +4,15 @@
 
 namespace proxddp {
 namespace python {
+
+context::StageConstraint *
+make_constraint_wrap(const shared_ptr<context::StageFunction> &f,
+                     const shared_ptr<context::ConstraintSet> &c) {
+  return new context::StageConstraint{f, c};
+}
+
 void exposeStage() {
+  using context::ConstraintSet;
   using context::DynamicsModel;
   using context::Manifold;
   using context::Scalar;
@@ -14,6 +22,7 @@ void exposeStage() {
   using CostPtr = shared_ptr<context::CostBase>;
   using FunctionPtr = shared_ptr<context::StageFunction>;
   using ManifoldPtr = shared_ptr<Manifold>;
+  using CstrSetPtr = shared_ptr<ConstraintSet>;
 
   bp::register_ptr_to_python<shared_ptr<StageModel>>();
   pinpy::StdVectorPythonVisitor<std::vector<StageModel>, true>::expose(
@@ -29,18 +38,16 @@ void exposeStage() {
                     const shared_ptr<DynamicsModel> &>(
           bp::args("self", "space", "nu", "cost", "dyn_model")))
       .def("addConstraint",
-           (void(StageModel::*)(const StageModel::ConstraintPtr &)) &
+           (void(StageModel::*)(const context::StageConstraint &)) &
                StageModel::addConstraint,
            bp::args("self", "constraint"),
            "Add an existing constraint to the stage.")
-      .def(
-          "addConstraint",
-          (void(StageModel::*)(const FunctionPtr &,
-                               const shared_ptr<ConstraintSetBase<Scalar>> &)) &
-              StageModel::addConstraint,
-          bp::args("self", "func", "cstr_set"),
-          "Constructs a new constraint (from the underlying function and set) "
-          "and adds it to the stage.")
+      .def("addConstraint",
+           (void(StageModel::*)(const FunctionPtr &, const CstrSetPtr &)) &
+               StageModel::addConstraint,
+           bp::args("self", "func", "cstr_set"),
+           "Constructs a new constraint (from the underlying function and set) "
+           "and adds it to the stage.")
       .add_property("xspace",
                     bp::make_function(&StageModel::xspace,
                                       bp::return_internal_reference<>()),
@@ -92,22 +99,18 @@ void exposeStage() {
 
   bp::class_<context::StageConstraint>(
       "StageConstraint",
-      "A stage-wise constraint, of the form :math:`c(x,u) \\leq 0 c(x,u)`.",
-      bp::init<const FunctionPtr &,
-               const shared_ptr<proxnlp::ConstraintSetBase<Scalar>> &>(
-          "Contruct a StageConstraint from a StageFunction and a constraint "
-          "set.",
-          bp::args("func", "constraint_set")))
-      .add_property(
-          "function",
-          bp::make_function(&context::StageConstraint::func,
-                            bp::return_value_policy<bp::return_by_value>()),
-          "The underlying function c(x,u,x') for this constraint.")
-      .add_property(
-          "constraint_set",
-          bp::make_function(&context::StageConstraint::getConstraintSet,
-                            bp::return_value_policy<bp::return_by_value>()),
-          "The type of constraint set for this StageConstraint.");
+      "A stage-wise constraint, of the form :math:`c(x,u) \\leq 0 c(x,u)`.\n"
+      ":param f: underlying function\n"
+      ":param cs: constraint set",
+      bp::no_init)
+      .def("__init__",
+           bp::make_constructor(make_constraint_wrap,
+                                bp::default_call_policies(),
+                                bp::args("func", "cstr_set")),
+           "Contruct a StageConstraint from a StageFunction and a constraint "
+           "set.")
+      .def_readwrite("func", &context::StageConstraint::func_)
+      .def_readwrite("cstr_set", &context::StageConstraint::set_);
 }
 
 } // namespace python

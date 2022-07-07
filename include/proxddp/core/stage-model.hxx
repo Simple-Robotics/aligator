@@ -10,9 +10,9 @@ StageModelTpl<Scalar>::StageModelTpl(const ManifoldPtr &space1, const int nu,
       uspace_(std::make_shared<proxnlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>>(
           nu)),
       cost_(cost) {
-  ConstraintPtr dynptr = std::make_shared<Constraint>(
-      dyn_model, std::make_shared<proxnlp::EqualityConstraint<Scalar>>());
-  constraints_manager.push_back(std::move(dynptr));
+  using EqualitySet = proxnlp::EqualityConstraint<Scalar>;
+  constraints_manager.push_back(
+      Constraint{dyn_model, std::make_shared<EqualitySet>()});
 }
 
 template <typename Scalar>
@@ -34,10 +34,10 @@ void StageModelTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                      const ConstVectorRef &u,
                                      const ConstVectorRef &y,
                                      Data &data) const {
-  for (std::size_t i = 0; i < numConstraints(); i++) {
+  for (std::size_t j = 0; j < numConstraints(); j++) {
     // calc on constraint
-    const auto &cstr = constraints_manager[i];
-    cstr->func().evaluate(x, u, y, *data.constraint_data[i]);
+    const Constraint &cstr = constraints_manager[j];
+    cstr.func_->evaluate(x, u, y, *data.constraint_data[j]);
   }
   cost_->evaluate(x, u, *data.cost_data);
 }
@@ -47,10 +47,10 @@ void StageModelTpl<Scalar>::computeDerivatives(const ConstVectorRef &x,
                                                const ConstVectorRef &u,
                                                const ConstVectorRef &y,
                                                Data &data) const {
-  for (std::size_t i = 0; i < numConstraints(); i++) {
+  for (std::size_t j = 0; j < numConstraints(); j++) {
     // calc on constraint
-    const ConstraintPtr &cstr = constraints_manager[i];
-    cstr->func().computeJacobians(x, u, y, *data.constraint_data[i]);
+    const Constraint &cstr = constraints_manager[j];
+    cstr.func_->computeJacobians(x, u, y, *data.constraint_data[j]);
   }
   cost_->computeGradients(x, u, *data.cost_data);
   cost_->computeHessians(x, u, *data.cost_data);
@@ -83,9 +83,10 @@ StageDataTpl<Scalar>::StageDataTpl(const StageModel &stage_model)
     : constraint_data(stage_model.numConstraints()),
       cost_data(std::move(stage_model.cost_->createData())) {
   const std::size_t nc = stage_model.numConstraints();
-  for (std::size_t i = 0; i < nc; i++) {
-    const auto &func = stage_model.constraints_manager[i]->func();
-    constraint_data[i] = std::move(func.createData());
+  for (std::size_t j = 0; j < nc; j++) {
+    const shared_ptr<StageFunctionTpl<Scalar>> &func =
+        stage_model.constraints_manager[j].func_;
+    constraint_data[j] = std::move(func->createData());
   }
 }
 } // namespace proxddp

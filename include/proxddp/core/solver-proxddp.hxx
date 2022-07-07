@@ -155,7 +155,7 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
 
   // Loop over constraints
   for (std::size_t i = 0; i < numc; i++) {
-    const shared_ptr<ConstraintType> &cstr = stage.constraints_manager[i];
+    const ConstraintType &cstr = stage.constraints_manager[i];
     FunctionData &cstr_data = *stage_data.constraint_data[i];
     MatrixXs &cstr_jac = cstr_data.jac_buffer_;
 
@@ -170,11 +170,8 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
     auto lampdal_i =
         stage.constraints_manager.getSegmentByConstraint(lampdal, i);
 
-    assert(cstr_jac.rows() == cstr->nr());
-    assert(cstr_jac.cols() == ndx1 + nprim);
-
     // compose Jacobian by projector and project multiplier
-    const ConstraintSetBase<Scalar> &cstr_set = *cstr->set_;
+    const ConstraintSetBase<Scalar> &cstr_set = *cstr.set_;
     lamplus_i = lamprev_i + mu_inverse_ * cstr_data.value_;
     cstr_set.applyNormalConeProjectionJacobian(lamplus_i, cstr_jac);
     lamplus_i.noalias() = cstr_set.normalConeProjection(lamplus_i);
@@ -327,8 +324,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
     const auto &cstr_mgr = problem.stages_[i].constraints_manager;
     infeas_over_i = 0.;
     for (std::size_t j = 0; j < cstr_mgr.numConstraints(); j++) {
-      const ConstraintSetBase<Scalar> &cstr_set =
-          cstr_mgr[j]->getConstraintSet();
+      const ConstraintSetBase<Scalar> &cstr_set = *cstr_mgr[j].set_;
       infeas_over_i = std::max(infeas_over_i,
                                math::infty_norm(cstr_set.normalConeProjection(
                                    sd.constraint_data[j]->value_)));
