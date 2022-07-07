@@ -86,7 +86,7 @@ nu = QUAD_ACT_MATRIX.shape[1]  # = no. of nrotors
 ode_dynamics = proxddp.dynamics.MultibodyFreeFwdDynamics(space, QUAD_ACT_MATRIX)
 
 dt = 0.033
-Tf = 2.5
+Tf = 2.0
 nsteps = int(Tf / dt)
 print("nsteps: {:d}".format(nsteps))
 
@@ -112,8 +112,12 @@ dynmodel.dForward(x1, u0, data)
 us_init = [u0] * nsteps
 xs_init = [x0] * (nsteps + 1)
 
-x_tar = space.neutral()
-x_tar[:3] = (-0.3, 2.5, 1.0)
+x_tar1 = space.neutral()
+x_tar1[:3] = (0.9, 0.8, 1.0)
+x_tar2 = space.neutral()
+x_tar2[:3] = (1.4, -0.6, 1.0)
+x_tar3 = space.neutral()
+x_tar3[:3] = (-0.3, 2.5, 1.0)
 
 u_max = 4.5 * np.ones(nu)
 u_min = -1.0 * np.ones(nu)
@@ -121,6 +125,37 @@ u_min = -1.0 * np.ones(nu)
 times = np.linspace(0, Tf, nsteps + 1)
 idx_switch = int(0.7 * nsteps)
 t_switch = times[idx_switch]
+
+
+def make_task():
+    if args.obstacles:
+        weights = np.zeros(space.ndx)
+        weights[:3] = 4.0
+        weights[3:6] = 1e-2
+        weights[nv:] = 1e-3
+
+        def weight_target_selector(i):
+            return weights, x_tar3
+
+    else:
+        weights1 = np.zeros(space.ndx)
+        weights1[:3] = 4.0
+        weights1[3:6] = 1e-2
+        weights1[nv:] = 1e-3
+        weights2 = weights1.copy()
+        weights2[:3] = 1.0
+
+        def weight_target_selector(i):
+            x_tar = x_tar1
+            weights = weights1
+            if i == idx_switch:
+                weights[:] /= dt
+            if i > idx_switch:
+                x_tar = x_tar2
+                weights = weights2
+            return weights, x_tar
+
+    return weight_target_selector
 
 
 class HalfspaceZ(proxddp.StageFunction):
@@ -161,11 +196,10 @@ class Column(proxddp.StageFunction):
         data.Ju[:] = Ju
 
 
+task_fun = make_task()
+
+
 def setup():
-    weights = np.zeros(space.ndx)
-    weights[:3] = 4.0
-    weights[3:6] = 1e-2
-    weights[nv:] = 1e-3
 
     w_x_term = np.ones(space.ndx)
     w_x_term[:nv] = 4.0
@@ -178,6 +212,8 @@ def setup():
     for i in range(nsteps):
 
         rcost = proxddp.CostStack(space.ndx, nu)
+
+        weights, x_tar = task_fun(i)
 
         state_err = proxddp.StateErrorResidual(space, nu, x_tar)
         xreg_cost = proxddp.QuadraticResidualCost(state_err, np.diag(weights) * dt)
@@ -212,11 +248,12 @@ def setup():
     return prob
 
 
+_, x_term = task_fun(nsteps)
 problem = setup()
 tol = 1e-3
 mu_init = 0.01
+verbose = proxddp.VerboseLevel.VERBOSE
 rho_init = 0.003
-verbose = proxddp.VerboseLevel.QUIET
 history_cb = proxddp.HistoryCallback()
 solver = proxddp.ProxDDP(tol, mu_init, rho_init, verbose=verbose, max_iters=300)
 solver.registerCallback(history_cb)
@@ -228,7 +265,7 @@ print(results)
 xs_opt = results.xs.tolist()
 us_opt = results.us.tolist()
 
-fig: plt.Figure = plt.figure()
+fig: plt.Figure = plt.figure(figsize=(9.6, 5.4))
 ax0: plt.Axes = fig.add_subplot(131)
 ax0.plot(times[:-1], us_opt)
 ax0.hlines((u_min[0], u_max[0]), *times[[0, -1]], colors="k", alpha=0.3, lw=1.4)
@@ -238,11 +275,14 @@ ax1: plt.Axes = fig.add_subplot(132)
 root_pt_opt = np.stack(xs_opt)[:, :3]
 ax1.plot(times, root_pt_opt)
 ax1.hlines(
-    x_tar[:3],
+    x_term[:3],
     t_switch - 3 * dt,
     t_switch + 3 * dt,
     colors=["C0", "C1", "C2"],
     linestyles="dotted",
+)
+ax1.hlines(
+    x_term[:3], Tf - 3 * dt, Tf + 3 * dt, colors=["C0", "C1", "C2"], linestyles="dashed"
 )
 ax2: plt.Axes = fig.add_subplot(133)
 n_iter = [i for i in range(len(history_cb.storage.prim_infeas.tolist()))]
@@ -250,6 +290,11 @@ ax2.semilogy(n_iter, history_cb.storage.prim_infeas.tolist(), label="Primal err.
 ax2.semilogy(n_iter, history_cb.storage.dual_infeas.tolist(), label="Dual err.")
 ax2.set_xlabel("Iterations")
 ax2.legend()
+
+if args.obstacles:
+    TAG = "quadrotor_obstacles"
+else:
+    TAG = "quadrotor"
 
 
 if args.display:
@@ -262,7 +307,7 @@ if args.display:
     for d in directions_:
         d /= np.linalg.norm(d)
 
-    vid_uri = "examples/quadrotor_obstacles_fly.mp4"
+    vid_uri = "examples/{}.mp4".format(TAG)
     vid_recorder = msu.VideoRecorder(vid_uri, fps=1.0 / dt)
     for i in range(3):
 
@@ -274,7 +319,10 @@ if args.display:
             viz_util.set_cam_pos(pos)
             viz_util.set_cam_target(rp)
 
-        viz_util.draw_objectives([x_tar], prefix="obj")
+        if args.obstacles:
+            viz_util.draw_objectives([x_tar3], prefix="obj")
+        else:
+            viz_util.draw_objectives([x_tar1, x_tar2], prefix="obj")
         viz_util.play_trajectory(
             xs_opt,
             us_opt,
@@ -288,5 +336,5 @@ if args.display:
         )
 
 for ext in ["png", "pdf"]:
-    fig.savefig("examples/quadrotor_controls.{}".format(ext))
+    fig.savefig("examples/{}.{}".format(TAG, ext))
 plt.show()

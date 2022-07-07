@@ -149,7 +149,7 @@ def setup():
         stage.evaluate(x0, u0, x1, sd)
 
     term_cost = proxddp.QuadraticResidualCost(
-        proxddp.StateErrorResidual(space, nu, x_tar2), np.diag(w_x_term)
+        proxddp.StateErrorResidual(space, nu, x_tar), np.diag(w_x_term)
     )
     prob = proxddp.TrajOptProblem(x0, stages, term_cost=term_cost)
     return prob
@@ -167,6 +167,8 @@ solver.setup(problem)
 solver.run(problem, xs_init, us_init)
 
 results = solver.getResults()
+if not args.display:
+    results.numiters <= 140
 print(results)
 xs_opt = results.xs.tolist()
 us_opt = results.us.tolist()
