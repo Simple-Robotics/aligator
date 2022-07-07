@@ -105,6 +105,7 @@ void exposeFunctions() {
           bp::make_getter(&context::StageFunctionData::Hyy_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Hessian with respect to $(y, y)$.")
+      .def(PrintableVisitor<context::StageFunctionData>())
       .def(ClonePythonVisitor<context::StageFunctionData>());
 
   pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<StageFunction>>,

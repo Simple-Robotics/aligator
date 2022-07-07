@@ -81,7 +81,7 @@ void exposeStage() {
                     "Number of dual variables.")
       .def(CreateDataPythonVisitor<StageModel>())
       .def(ClonePythonVisitor<StageModel>())
-      .def(bp::self_ns::str(bp::self));
+      .def(PrintableVisitor<StageModel>());
 
   bp::register_ptr_to_python<shared_ptr<StageData>>();
   pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<StageData>>,

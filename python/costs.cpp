@@ -49,7 +49,9 @@ void exposeCosts() {
            (bp::arg("self"), bp::arg("cost"), bp::arg("weight") = 1.),
            "Add a cost to the stack of costs.")
       .def("size", &CostStackTpl<Scalar>::size,
-           "Get the number of cost components.");
+           "Get the number of cost components.")
+      .def(CopyableVisitor<CostStackTpl<Scalar>>())
+      .def(CreateDataPythonVisitor<CostStackTpl<Scalar>>());
 
   bp::class_<QuadraticCost<Scalar>, bp::bases<context::CostBase>>(
       "QuadraticCost", "Quadratic cost in both state and control.",
@@ -57,7 +59,8 @@ void exposeCosts() {
                const VectorXs &>(
           bp::args("self", "w_x", "w_u", "interp_x", "interp_u")))
       .def(bp::init<const MatrixXs &, const MatrixXs &>(
-          "Constructor with just weights.", bp::args("self", "w_x", "w_u")));
+          "Constructor with just weights.", bp::args("self", "w_x", "w_u")))
+      .def(CopyableVisitor<QuadraticCost<Scalar>>());
 
   bp::class_<QuadraticResidualCost<Scalar>, bp::bases<context::CostBase>>(
       "QuadraticResidualCost", "Weighted 2-norm of a given residual function.",
@@ -65,6 +68,7 @@ void exposeCosts() {
           bp::args("self", "function", "weights")))
       .def_readwrite("residual", &QuadraticResidualCost<Scalar>::residual_)
       .def_readwrite("weights", &QuadraticResidualCost<Scalar>::weights_)
+      .def(CopyableVisitor<QuadraticResidualCost<Scalar>>())
       .def(CreateDataPythonVisitor<QuadraticResidualCost<Scalar>>());
 
   bp::class_<CostData, shared_ptr<CostData>>(

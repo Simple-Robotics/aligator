@@ -46,7 +46,7 @@ void exposeSolvers() {
       .def_readonly("inner_criterion_by_stage",
                     &Workspace::inner_criterion_by_stage)
       .def_readonly("problem_data", &Workspace::problem_data)
-      .def(bp::self_ns::str(bp::self));
+      .def(PrintableVisitor<Workspace>());
 
   bp::class_<Results>("Results", "Results struct for proxDDP.",
                       bp::init<const TrajOptProblem &>())
@@ -60,7 +60,7 @@ void exposeSolvers() {
       .def_readonly("traj_cost", &Results::traj_cost_, "Trajectory cost.")
       .def_readonly("merit_value", &Results::merit_value_,
                     "Merit function value.")
-      .def(bp::self_ns::str(bp::self));
+      .def(PrintableVisitor<Results>());
 
   using SolverType = SolverProxDDP<Scalar>;
 
@@ -86,15 +86,15 @@ void exposeSolvers() {
                      "Linesearch strategy.");
 
   {
-    using bcl_t = BCLParams<Scalar>;
-    bp::class_<bcl_t>("BCLParams",
-                      "Parameters for the bound-constrained Lagrangian (BCL) "
-                      "penalty update strategy.",
-                      bp::init<>())
-        .def_readwrite("prim_alpha", &bcl_t::prim_alpha)
-        .def_readwrite("prim_beta", &bcl_t::prim_beta)
-        .def_readwrite("dual_alpha", &bcl_t::dual_alpha)
-        .def_readwrite("dual_beta", &bcl_t::dual_beta);
+    using BCLType = BCLParams<Scalar>;
+    bp::class_<BCLType>("BCLParams",
+                        "Parameters for the bound-constrained Lagrangian (BCL) "
+                        "penalty update strategy.",
+                        bp::init<>())
+        .def_readwrite("prim_alpha", &BCLType::prim_alpha)
+        .def_readwrite("prim_beta", &BCLType::prim_beta)
+        .def_readwrite("dual_alpha", &BCLType::dual_alpha)
+        .def_readwrite("dual_beta", &BCLType::dual_beta);
   }
 
   bp::class_<SolverType, boost::noncopyable>(
