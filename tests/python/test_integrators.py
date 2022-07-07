@@ -88,7 +88,6 @@ def test_rk2():
     ode = create_linear(nx, nu)
     dt = 0.1
     dyn = dynamics.IntegratorRK2(ode, dt)
-    assert isinstance(dyn.createData(), dynamics.ExplicitIntegratorData)
     ode_int_run(ode, dyn)
 
 
