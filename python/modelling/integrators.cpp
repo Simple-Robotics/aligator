@@ -83,6 +83,10 @@ void exposeIntegrators() {
                            bp::args("self", "ode", "timestep")))
       .def_readwrite("timestep", &IntegratorRK2Tpl<Scalar>::timestep_,
                      "Time step.");
+
+  bp::class_<IntegratorRK2DataTpl<Scalar>,
+             bp::bases<ExplicitIntegratorDataTpl<Scalar>>>("IntegratorRK2Data",
+                                                           bp::no_init);
 }
 
 } // namespace python
