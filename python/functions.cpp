@@ -5,6 +5,8 @@
 #include "proxddp/modelling/linear-function.hpp"
 #include "proxddp/modelling/control-box-function.hpp"
 #include "proxddp/modelling/multibody/frame-placement.hpp"
+#include "proxddp/modelling/multibody/frame-velocity.hpp"
+#include "proxddp/modelling/multibody/frame-translation.hpp"
 
 namespace proxddp {
 namespace python {
@@ -165,9 +167,16 @@ void exposePinocchioFunctions() {
   using Model = pinocchio::ModelTpl<Scalar>;
   using PinData = pinocchio::DataTpl<Scalar>;
   using SE3 = pinocchio::SE3Tpl<Scalar>;
+  using Motion = pinocchio::MotionTpl<Scalar>;
 
   using FramePlacement = FramePlacementResidualTpl<Scalar>;
   using FramePlacementData = FramePlacementDataTpl<Scalar>;
+
+  using FrameVelocity = FrameVelocityResidualTpl<Scalar>;
+  using FrameVelocityData = FrameVelocityDataTpl<Scalar>;
+
+  using FrameTranslation = FrameTranslationResidualTpl<Scalar>;
+  using FrameTranslationData = FrameTranslationDataTpl<Scalar>;
 
   bp::register_ptr_to_python<shared_ptr<PinData>>();
 
@@ -191,6 +200,45 @@ void exposePinocchioFunctions() {
       .def_readonly("rJf", &FramePlacementData::rJf_)
       .def_readonly("fJf", &FramePlacementData::fJf_)
       .def_readonly("pin_data", &FramePlacementData::pin_data_,
+                    "Pinocchio data struct.");
+
+  bp::class_<FrameVelocity, bp::bases<StageFunction>>(
+      "FrameVelocityResidual", "Frame velocity residual function.",
+      bp::init<int, int, shared_ptr<Model>, const Motion &, pinocchio::FrameIndex, pinocchio::ReferenceFrame>(
+          bp::args("self", "ndx", "nu", "model", "v_ref")))
+      .add_property("frame_id", &FrameVelocity::getFrameId,
+                    &FrameVelocity::setFrameId)
+      .def("getReference", &FrameVelocity::getReference, bp::args("self"),
+           bp::return_internal_reference<>(), "Get the target frame velocity.")
+      .def("setReference", &FrameVelocity::setReference,
+           bp::args("self", "v_new"), "Set the target frame velocity.");
+
+  bp::register_ptr_to_python<shared_ptr<FrameVelocityData>>();
+
+  bp::class_<FrameVelocityData, bp::bases<context::StageFunctionData>>(
+      "FrameVelocityData", "Data struct for FrameVelocityResidual.",
+      bp::no_init)
+      .def_readonly("pin_data", &FrameVelocityData::pin_data_,
+                    "Pinocchio data struct.");
+    
+  bp::class_<FrameTranslation, bp::bases<StageFunction>>(
+      "FrameTranslationResidual", "Frame placement residual function.",
+      bp::init<int, int, shared_ptr<Model>, const context::VectorXs &, pinocchio::FrameIndex>(
+          bp::args("self", "ndx", "nu", "model", "p_ref")))
+      .add_property("frame_id", &FrameTranslation::getFrameId,
+                    &FrameTranslation::setFrameId)
+      .def("getReference", &FrameTranslation::getReference, bp::args("self"),
+           bp::return_internal_reference<>(), "Get the target frame translation.")
+      .def("setReference", &FrameTranslation::setReference,
+           bp::args("self", "p_new"), "Set the target frame translation.");
+
+  bp::register_ptr_to_python<shared_ptr<FrameTranslationData>>();
+
+  bp::class_<FrameTranslationData, bp::bases<context::StageFunctionData>>(
+      "FrameTranslationData", "Data struct for FrameTranslationResidual.",
+      bp::no_init)
+      .def_readonly("fJf", &FrameTranslationData::fJf_)
+      .def_readonly("pin_data", &FrameTranslationData::pin_data_,
                     "Pinocchio data struct.");
 }
 

@@ -59,6 +59,45 @@ def test_frame_placement():
     assert np.allclose(fdata.Jx[:, :nv], realJ)
 
 
+def test_frame_velocity():
+    fr_name1 = "larm_shoulder2_body"
+    print(model.frames.tolist())
+    fr_id1 = model.getFrameId(fr_name1)
+
+    x0 = space.neutral()
+    d = np.random.randn(space.ndx) * 0.1
+    d[6:] = 0.0
+    x0 = space.integrate(x0, d)
+    u0 = np.zeros(nu)
+    q0 = x0[:nq]
+
+    # pin.framesForwardKinematics(model, rdata, q0)
+    # fr_plc1 = rdata.oMf[fr_id1]
+    v_ref = pin.getFrameVelocity(model, rdata, fr_id1, pin.LOCAL)
+
+    fun = proxddp.FrameVelocityResidual(ndx, nu, model, v_ref, fr_id1, pin.LOCAL)
+    assert fr_id1 == fun.frame_id
+    assert v_ref == fun.getReference()
+
+    fdata = fun.createData()
+    fun.evaluate(x0, u0, x0, fdata)
+
+    assert np.allclose(fdata.value, 0.0)
+    print(fdata.value)
+    print("pindata from fdata:")
+    pdata_f = fdata.pin_data
+    print(pdata_f.oMf[fr_id1])
+
+    fun.computeJacobians(x0, u0, x0, fdata)
+    J = fdata.Jx[:, :nv]
+    print("JAC:", J)
+
+    realJ, _ = pin.getFrameVelocityDerivatives(model, rdata, fr_id1, pin.LOCAL)
+    print("ACTUAL J:", realJ)
+    assert J.shape == realJ.shape
+    assert np.allclose(fdata.Jx[:, :nv], realJ)
+
+
 if __name__ == "__main__":
     import pytest
     import sys
