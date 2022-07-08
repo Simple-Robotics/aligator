@@ -46,7 +46,7 @@ if args.obstacles:  # we add the obstacles to the geometric model
     geom_cyl1 = pin.GeometryObject(
         "column1", 0, 0, pin.SE3(R, center_column1), cylinder
     )
-    center_column2 = np.array([0.3, 2.1, 0.0])
+    center_column2 = np.array([0.3, 2.4, 0.0])
     geom_cyl2 = pin.GeometryObject(
         "column2", 0, 0, pin.SE3(R, center_column2), cylinder
     )
@@ -120,7 +120,7 @@ x_tar1[:3] = (0.9, 0.8, 1.0)
 x_tar2 = space.neutral()
 x_tar2[:3] = (1.4, -0.6, 1.0)
 x_tar3 = space.neutral()
-x_tar3[:3] = (-0.3, 2.5, 1.0)
+x_tar3[:3] = (-0.4, 2.6, 1.0)
 
 u_max = 4.5 * np.ones(nu)
 u_min = -u_max
