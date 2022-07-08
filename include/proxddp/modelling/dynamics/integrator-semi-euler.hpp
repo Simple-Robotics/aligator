@@ -37,7 +37,6 @@ struct IntegratorSemiImplEulerTpl : ExplicitIntegratorAbstractTpl<_Scalar> {
   shared_ptr<FunctionDataTpl<Scalar>> createData() const {
     return std::make_shared<Data>(this);
   }
-
 };
 
 template <typename Scalar>
