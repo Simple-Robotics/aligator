@@ -93,7 +93,7 @@ if(BUILD_PYTHON_INTERFACE)
   set(PYLIB_NAME "py${PROJECT_NAME}")
   set(${PYLIB_NAME}_INSTALL_DIR ${PYTHON_SITELIB}/${PROJECT_NAME})
   SEARCH_FOR_BOOST_PYTHON(REQUIRED)
-  ADD_PROJECT_DEPENDENCY(eigenpy 2.7.2 REQUIRED)
+  ADD_PROJECT_DEPENDENCY(eigenpy 2.7.2 REQUIRED PKG_CONFIG_REQUIRES "eigenpy >= 2.7.2")
 
   execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import platform; print(platform.python_implementation())"
     OUTPUT_VARIABLE _python_implementation_value
@@ -103,7 +103,6 @@ if(BUILD_PYTHON_INTERFACE)
 
 endif(BUILD_PYTHON_INTERFACE)
 
-# Add library target
 
 set(LIB_SOURCES)
 
@@ -129,9 +128,13 @@ function(create_library)
   target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
   target_include_directories(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:include>)
 
-  install(FILES ${LIB_HEADERS}
-          DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}/
-          PERMISSIONS OWNER_READ GROUP_READ WORLD_READ OWNER_WRITE)
+  foreach(headerFile ${LIB_HEADERS})
+    string(REGEX REPLACE "${PROJECT_SOURCE_DIR}/" "" headerFileRelative ${headerFile})
+    get_filename_component(headerPath ${headerFileRelative} PATH)
+    install(FILES ${headerFileRelative}
+            DESTINATION ${CMAKE_INSTALL_PREFIX}/${headerPath}
+            PERMISSIONS OWNER_READ GROUP_READ WORLD_READ OWNER_WRITE)
+  endforeach(headerFile ${LIB_HEADERS})
 
 endfunction()
 
@@ -145,13 +148,12 @@ install(TARGETS ${PROJECT_NAME}
         INCLUDES DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
 
-if (BUILD_PYTHON_INTERFACE)
+if(BUILD_PYTHON_INTERFACE)
   add_subdirectory(python)
 endif()
 
 add_subdirectory(examples)
 add_subdirectory(tests)
-
 
 # --- PACKAGING ----------------------------------------------------------------
 macro(EXPORT_VARIABLE var_name var_value)
@@ -163,6 +165,10 @@ macro(EXPORT_VARIABLE var_name var_value)
   endif()
 endmacro(EXPORT_VARIABLE var_name var_value)
 
+if(BUILD_WITH_CASADI_SUPPORT)
+  EXPORT_VARIABLE(PROXDDP_USE_CASADI ON)
+  set(PACKAGE_EXTRA_MACROS "${PACKAGE_EXTRA_MACROS}\nset(PROXDDP_USE_CASADI \"\")")
+endif()
 if(BUILD_PYTHON_INTERFACE)
   EXPORT_VARIABLE(PROXDDP_WITH_PYTHON_INTERFACE ON)
   set(PACKAGE_EXTRA_MACROS "${PACKAGE_EXTRA_MACROS}\nset(PROXDDP_WITH_PYTHON_INTERFACE \"\")")
