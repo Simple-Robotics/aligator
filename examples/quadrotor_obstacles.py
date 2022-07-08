@@ -123,7 +123,7 @@ x_tar3 = space.neutral()
 x_tar3[:3] = (-0.3, 2.5, 1.0)
 
 u_max = 4.5 * np.ones(nu)
-u_min = 0.0 * np.ones(nu)
+u_min = -u_max
 
 times = np.linspace(0, Tf, nsteps + 1)
 idx_switch = int(0.7 * nsteps)
