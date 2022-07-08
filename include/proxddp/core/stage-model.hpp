@@ -20,7 +20,7 @@ namespace proxddp {
  *            and constraint models.
  */
 template <typename _Scalar>
-class StageModelTpl : public cloneable<StageModelTpl<_Scalar>> {
+class StageModelTpl : public Cloneable<StageModelTpl<_Scalar>> {
 public:
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
@@ -132,7 +132,7 @@ public:
 
 /// @brief    Data struct for stage models StageModelTpl.
 template <typename _Scalar>
-struct StageDataTpl : public cloneable<StageDataTpl<_Scalar>> {
+struct StageDataTpl : public Cloneable<StageDataTpl<_Scalar>> {
   using Scalar = _Scalar;
   PROXNLP_FUNCTION_TYPEDEFS(Scalar);
 

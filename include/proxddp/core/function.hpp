@@ -83,7 +83,7 @@ public:
 
 /// @brief  Struct to hold function data.
 template <typename _Scalar>
-struct FunctionDataTpl : cloneable<FunctionDataTpl<_Scalar>> {
+struct FunctionDataTpl : Cloneable<FunctionDataTpl<_Scalar>> {
 public:
   using Scalar = _Scalar;
   PROXNLP_FUNCTION_TYPEDEFS(Scalar);
