@@ -42,7 +42,7 @@ if args.obstacles:  # we add the obstacles to the geometric model
     R = np.eye(3)
     cyl_radius = 0.2
     cylinder = fcl.Cylinder(cyl_radius, 10.0)
-    center_column1 = np.array([-0.2, 0.8, 0.0])
+    center_column1 = np.array([-0.3, 0.8, 0.0])
     geom_cyl1 = pin.GeometryObject(
         "column1", 0, 0, pin.SE3(R, center_column1), cylinder
     )
@@ -178,23 +178,26 @@ class HalfspaceZ(proxddp.StageFunction):
 
 
 class Column(proxddp.StageFunction):
-    def __init__(
-        self, ndx, nu, center, radius: float = 0.2, margin: float = 0.0
-    ) -> None:
+    def __init__(self, ndx, nu, center, radius, margin: float = 0.0) -> None:
         super().__init__(ndx, nu, 1)
         self.ndx = ndx
         self.center = center
         self.radius = radius
         self.margin = margin
+        self._c = space.neutral()
 
     def evaluate(self, x, u, y, data):  # distance function
-        err = x[:2] - self.center
+        err = space.difference(self._c, x)[:2] - self.center
         res = np.dot(err, err) - (self.radius + self.margin) ** 2
         data.value[:] = -res
 
-    def computeJacobians(self, x, u, y, data):  # TODO check jacobian
-        err = x[:2] - self.center
-        data.Jx[:2] = -2 * err
+    def computeJacobians(self, x, u, y, data):
+        err = space.difference(self._c, x)[:2] - self.center
+        Jerr = np.empty((space.ndx, space.ndx))
+        space.Jdifference(self._c, x, Jerr, 1)
+        Jerr = Jerr[:2, :]
+
+        data.Jx[:] = -2 * Jerr.T @ err
         data.Ju[:] = 0.0
 
 
@@ -203,12 +206,10 @@ task_fun = make_task()
 
 def setup():
 
-    w_x_term = np.ones(space.ndx)
-    w_x_term[:nv] = 4.0
-    w_x_term[nv:] = 0.1
-
     w_u = np.eye(nu) * 1e-2
 
+    ceiling = HalfspaceZ(space.ndx, nu, 2.0)
+    floor = HalfspaceZ(space.ndx, nu, 0.0, True)
     stages = []
 
     for i in range(nsteps):
@@ -230,13 +231,15 @@ def setup():
         ctrl_box = proxddp.ControlBoxFunction(space.ndx, u_min, u_max)
         stage.addConstraint(ctrl_box, constraints.NegativeOrthant())
         if args.obstacles:  # add obstacles' constraints
-            ceiling = HalfspaceZ(space.ndx, nu, 2.0)
+            column1 = Column(
+                space.ndx, nu, center_column1[:2], cyl_radius, margin=quad_radius
+            )
+            column2 = Column(
+                space.ndx, nu, center_column2[:2], cyl_radius, margin=quad_radius
+            )
             stage.addConstraint(ceiling, constraints.NegativeOrthant())
-            floor = HalfspaceZ(space.ndx, nu, 0.0, True)
             stage.addConstraint(floor, constraints.NegativeOrthant())
-            column1 = Column(space.ndx, nu, center_column1[:2], margin=quad_radius)
             stage.addConstraint(column1, constraints.NegativeOrthant())
-            column2 = Column(space.ndx, nu, center_column2[:2], margin=quad_radius)
             stage.addConstraint(column2, constraints.NegativeOrthant())
         stages.append(stage)
         if i == nsteps - 1:  # terminal constraint
@@ -249,7 +252,7 @@ def setup():
         stage.evaluate(x0, u0, x1, sd)
 
     term_cost = proxddp.QuadraticResidualCost(
-        proxddp.StateErrorResidual(space, nu, x_tar), np.diag(w_x_term)
+        proxddp.StateErrorResidual(space, nu, x_tar), np.diag(weights)
     )
     prob = proxddp.TrajOptProblem(x0, stages, term_cost=term_cost)
     return prob
@@ -258,7 +261,7 @@ def setup():
 _, x_term = task_fun(nsteps)
 problem = setup()
 tol = 1e-3
-mu_init = 0.01
+mu_init = 0.001
 verbose = proxddp.VerboseLevel.VERBOSE
 rho_init = 0.003
 history_cb = proxddp.HistoryCallback()
@@ -307,29 +310,31 @@ else:
 if args.display:
     viz_util = msu.VizUtil(vizer)
     input("[enter to play]")
-    dist_ = 2.0
+    cam_dist = 2.0
     directions_ = [np.array([1.0, 1.0, 0.5])]
     directions_.append(np.array([1.0, -1.0, 0.8]))
     directions_.append(np.array([1.0, 0.1, 0.2]))
+    directions_.append(np.array([0.0, -1.0, 0.8]))
     for d in directions_:
         d /= np.linalg.norm(d)
 
     vid_uri = "examples/{}.mp4".format(TAG)
     vid_recorder = msu.VideoRecorder(vid_uri, fps=1.0 / dt)
-    for i in range(3):
+    if args.obstacles:
+        viz_util.draw_objectives([x_tar3], prefix="obj")
+    else:
+        viz_util.draw_objectives([x_tar1, x_tar2], prefix="obj")
+
+    for i in range(4):
 
         def post_callback(t):
             n = len(root_pt_opt)
             n = min(t, n)
             rp = root_pt_opt[n]
-            pos = rp + directions_[i] * dist_
+            pos = rp + directions_[i] * cam_dist
             viz_util.set_cam_pos(pos)
             viz_util.set_cam_target(rp)
 
-        if args.obstacles:
-            viz_util.draw_objectives([x_tar3], prefix="obj")
-        else:
-            viz_util.draw_objectives([x_tar1, x_tar2], prefix="obj")
         viz_util.play_trajectory(
             xs_opt,
             us_opt,
