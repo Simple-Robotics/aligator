@@ -1,8 +1,6 @@
 """
 Copyright (C) 2022 LAAS-CNRS, INRIA
 """
-import proxnlp
-
 from .pyproxddp import *
 from . import utils
 

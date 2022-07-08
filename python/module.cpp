@@ -46,6 +46,7 @@ BOOST_PYTHON_MODULE(pyproxddp) {
   eigenpy::enableEigenPy();
 
   bp::import("warnings");
+  bp::import("proxnlp");
 
   exposeFunctions();
   exposeCosts();
