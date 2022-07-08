@@ -2,7 +2,7 @@
 
 #include "proxddp/fwd.hpp"
 #include "proxddp/core/function.hpp"
-#include "proxddp/core/costs.hpp"
+#include "proxddp/core/cost-abstract.hpp"
 #include "proxddp/modelling/state-error.hpp"
 
 namespace proxddp {

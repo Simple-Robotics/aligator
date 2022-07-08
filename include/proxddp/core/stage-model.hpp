@@ -6,7 +6,7 @@
 #include <proxnlp/modelling/spaces/vector-space.hpp>
 #include <proxnlp/modelling/constraints/equality-constraint.hpp>
 
-#include "proxddp/core/costs.hpp"
+#include "proxddp/core/cost-abstract.hpp"
 #include "proxddp/core/dynamics.hpp"
 #include "proxddp/core/constraint.hpp"
 

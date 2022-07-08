@@ -2,7 +2,7 @@
 #pragma once
 
 #include "proxddp/python/fwd.hpp"
-#include "proxddp/core/costs.hpp"
+#include "proxddp/core/cost-abstract.hpp"
 
 namespace proxddp {
 namespace python {

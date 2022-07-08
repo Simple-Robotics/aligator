@@ -19,3 +19,8 @@ set_target_properties(${COMPAT_LIB}
   VERSION ${PROJECT_VERSION})
 
 target_link_libraries(${COMPAT_LIB} PUBLIC ${PROJECT_NAME} crocoddyl::crocoddyl)
+
+
+install(FILES ${HEADERS}
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}/compat/crocoddyl
+        PERMISSIONS OWNER_READ GROUP_READ WORLD_READ OWNER_WRITE)

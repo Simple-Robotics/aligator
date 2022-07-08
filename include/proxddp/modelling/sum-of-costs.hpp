@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/core/costs.hpp"
+#include "proxddp/core/cost-abstract.hpp"
 
 namespace proxddp {
 
