@@ -42,6 +42,8 @@ option(BUILD_WITH_VERSION_SUFFIX "Build libraries with version appended to suffi
 
 # --- OPTIONAL DEPENDENCIES -------------------------
 option(BUILD_WITH_PINOCCHIO_SUPPORT "Build the library with support for Pinocchio" ON)
+option(BUILD_WITH_CASADI_SUPPORT "Build the library with the support of CASADI" OFF)
+option(BUILD_CROCODDYL_COMPAT "Build the Crocoddyl compatibility module" ON)
 option(BUILD_WITH_OPENMP_SUPPORT "Build the library with the OpenMP support" ON)
 cmake_dependent_option(LINK_PYTHON_INTERFACE_TO_OPENMP "Link OpenMP to the Python interface" ON BUILD_WITH_OPENMP_SUPPORT OFF)
 option(GENERATE_PYTHON_STUBS "Generate the Python stubs associated to the Python library" OFF)
@@ -110,10 +112,14 @@ file(GLOB_RECURSE LIB_HEADERS
      ${PROJECT_SOURCE_DIR}/include/proxddp/*.hpp
      ${PROJECT_SOURCE_DIR}/include/proxddp/*.hxx
      )
+list(FILTER LIB_HEADERS EXCLUDE REGEX ${PROJECT_SOURCE_DIR}/include/proxddp/compat/*)
 
 function(create_library)
   add_library(${PROJECT_NAME} SHARED ${LIB_HEADERS} ${LIB_SOURCES})
-  set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+  set_target_properties(${PROJECT_NAME}
+    PROPERTIES
+    LINKER_LANGUAGE CXX
+    VERSION ${PROJECT_VERSION})
 
   if(BUILD_LIBRARY_WITH_VERSION_SUFFIX)
     TAG_LIBRARY_VERSION(${PROJECT_NAME})
@@ -147,6 +153,10 @@ install(TARGETS ${PROJECT_NAME}
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}
         INCLUDES DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
+
+if(BUILD_CROCODDYL_COMPAT)
+  add_subdirectory(include/proxddp/compat/crocoddyl)
+endif()
 
 if(BUILD_PYTHON_INTERFACE)
   add_subdirectory(python)
