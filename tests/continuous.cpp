@@ -11,14 +11,15 @@ BOOST_AUTO_TEST_CASE(create_data) {
   pinocchio::Model model;
   pinocchio::buildModels::humanoidRandom(model);
 
-  proxnlp::MultibodyPhaseSpace<double> space(model);
-  auto spaceptr = shared_ptr<decltype(space)>(&space);
+  using StateMultibody = proxnlp::MultibodyPhaseSpace<double>;
+  auto spaceptr = std::make_shared<StateMultibody>(model);
   Eigen::MatrixXd B(model.nv, model.nv);
   B.setIdentity();
   dynamics::MultibodyFreeFwdDynamicsTpl<double> contdyn(spaceptr, B);
 
-  auto data = contdyn.createData();
+  using ContDataAbstract = dynamics::ContinuousDynamicsDataTpl<double>;
   using Data = dynamics::MultibodyFreeFwdDataTpl<double>;
+  shared_ptr<ContDataAbstract> data = contdyn.createData();
   shared_ptr<Data> d2 = std::static_pointer_cast<Data>(data);
 
   BOOST_CHECK_EQUAL(d2->tau_.size(), model.nv);
