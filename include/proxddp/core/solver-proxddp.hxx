@@ -17,7 +17,7 @@ void SolverProxDDP<Scalar>::computeDirection(const Problem &problem,
   // compute direction dx0
   {
     const value_store_t &vp = workspace.value_params[0];
-    const StageModel &stage0 = problem.stages_[0];
+    const StageModel &stage0 = *problem.stages_[0];
     const FunctionData &init_data = *workspace.problem_data.init_data;
     const int ndual0 = problem.init_state_error.nr;
     const int ndx0 = stage0.ndx1();
@@ -42,7 +42,7 @@ void SolverProxDDP<Scalar>::computeDirection(const Problem &problem,
   }
 
   for (std::size_t i = 0; i < nsteps; i++) {
-    const StageModel &stage = problem.stages_[i];
+    const StageModel &stage = *problem.stages_[i];
     VectorXs &pd_step = workspace.pd_step_[i + 1];
     Eigen::Block<const MatrixXs, -1, 1, true> feedforward =
         results.gains_[i].col(0);
@@ -65,13 +65,13 @@ void SolverProxDDP<Scalar>::tryStep(const Problem &problem,
     workspace.trial_lams_[i] = results.lams_[i] + alpha * workspace.dlams_[i];
 
   for (std::size_t i = 0; i < nsteps; i++) {
-    const StageModel &stage = problem.stages_[i];
+    const StageModel &stage = *problem.stages_[i];
     stage.xspace_->integrate(results.xs_[i], alpha * workspace.dxs_[i],
                              workspace.trial_xs_[i]);
     stage.uspace_->integrate(results.us_[i], alpha * workspace.dus_[i],
                              workspace.trial_us_[i]);
   }
-  const StageModel &stage = problem.stages_[nsteps - 1];
+  const StageModel &stage = *problem.stages_[nsteps - 1];
   stage.xspace_next_->integrate(results.xs_[nsteps],
                                 alpha * workspace.dxs_[nsteps],
                                 workspace.trial_xs_[nsteps]);
@@ -108,14 +108,14 @@ template <typename Scalar>
 void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
                                          Workspace &workspace, Results &results,
                                          const std::size_t step) const {
-  const StageModel &stage = problem.stages_[step];
+  const StageModel &stage = *problem.stages_[step];
   using ConstraintType = typename StageModel::Constraint;
   const std::size_t numc = stage.numConstraints();
 
   const value_store_t &vnext = workspace.value_params[step + 1];
   q_store_t &q_param = workspace.q_params[step];
 
-  StageData &stage_data = *workspace.problem_data.stage_data[step];
+  StageData &stage_data = workspace.problem_data.stage_data[step];
   const CostData &cdata = *stage_data.cost_data;
 
   const CostData &proxdata = workspace.prox_datas[step];

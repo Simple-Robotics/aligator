@@ -99,8 +99,8 @@ template <typename _Scalar> struct PDALFunction {
     std::size_t num_c;
     const std::size_t nsteps = problem.numSteps();
     for (std::size_t i = 0; i < nsteps; i++) {
-      const StageModel &sm = problem.stages_[i];
-      const StageData &sd = *prob_data.stage_data[i];
+      const StageModel &sm = *problem.stages_[i];
+      const StageData &sd = prob_data.stage_data[i];
 
       num_c = sm.numConstraints();
       // loop over constraints

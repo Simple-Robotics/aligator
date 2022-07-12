@@ -18,7 +18,7 @@ function(get_cpp_test_name name dir out_var)
 endfunction(get_cpp_test_name)
 
 set(TEST_HEADERS
-    generate-problem.hpp)
+    ${CMAKE_CURRENT_SOURCE_DIR}/generate-problem.hpp)
 
 function(add_proxddp_test name)
   get_cpp_test_name(${name} ${CMAKE_CURRENT_SOURCE_DIR} test_name)
@@ -64,4 +64,8 @@ if (BUILD_PYTHON_INTERFACE)
     message(STATUS "adding python test ${pyfile_name}")
     ADD_PYTHON_UNIT_TEST(${pyfile_name} "tests/${pyfile}")
   endforeach()
+endif()
+
+if(BUILD_CROCODDYL_COMPAT)
+  add_subdirectory(compat)
 endif()

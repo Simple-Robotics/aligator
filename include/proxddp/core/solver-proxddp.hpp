@@ -146,7 +146,7 @@ public:
     prox_penalties_.clear();
     const std::size_t nsteps = problem.numSteps();
     for (std::size_t i = 0; i < nsteps; i++) {
-      const StageModel &sm = problem.stages_[i];
+      const StageModel &sm = *problem.stages_[i];
       prox_penalties_.emplace_back(sm.xspace_, sm.uspace_, ws->prev_xs_[i],
                                    ws->prev_us_[i], false);
       if (i == nsteps - 1) {

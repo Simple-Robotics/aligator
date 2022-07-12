@@ -2,9 +2,10 @@
 
 namespace proxddp {
 template <typename Scalar>
-StageModelTpl<Scalar>::StageModelTpl(const ManifoldPtr &space1, const int nu,
-                                     const ManifoldPtr &space2,
-                                     const CostPtr &cost,
+StageModelTpl<Scalar>::StageModelTpl(const shared_ptr<Manifold> &space1,
+                                     const int nu,
+                                     const shared_ptr<Manifold> &space2,
+                                     const shared_ptr<Cost> &cost,
                                      const shared_ptr<Dynamics> &dyn_model)
     : xspace_(space1), xspace_next_(space2),
       uspace_(std::make_shared<proxnlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>>(
@@ -16,8 +17,8 @@ StageModelTpl<Scalar>::StageModelTpl(const ManifoldPtr &space1, const int nu,
 }
 
 template <typename Scalar>
-StageModelTpl<Scalar>::StageModelTpl(const ManifoldPtr &space, const int nu,
-                                     const CostPtr &cost,
+StageModelTpl<Scalar>::StageModelTpl(const shared_ptr<Manifold> &space,
+                                     const int nu, const shared_ptr<Cost> &cost,
                                      const shared_ptr<Dynamics> &dyn_model)
     : StageModelTpl(space, nu, space, cost, dyn_model) {}
 

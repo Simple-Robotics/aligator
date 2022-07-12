@@ -28,7 +28,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 
   int nprim, ndual, ndx1, nu, ndx2;
   int max_kkt_size = 0;
-  ndx1 = problem.stages_[0].ndx1();
+  ndx1 = problem.stages_[0]->ndx1();
   nprim = ndx1;
   ndual = problem.init_state_error.nr;
   int max_ndx = nprim + ndual;
@@ -42,7 +42,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 
   std::size_t i = 0;
   for (i = 0; i < nsteps; i++) {
-    const StageModel &stage = problem.stages_[i];
+    const StageModel &stage = *problem.stages_[i];
     ndx1 = stage.ndx1(), nu = stage.nu();
     ndx2 = stage.ndx2();
     nprim = stage.numPrimal();

@@ -21,8 +21,8 @@ void exposeProblem() {
       .def<void (TrajOptProblem::*)(const StageModel &)>(
           "addStage", &TrajOptProblem::addStage, bp::args("self", "new_stage"),
           "Add a stage to the problem.")
-      .def_readwrite("stages", &TrajOptProblem::stages_,
-                     "Stages of the shooting problem.")
+      .def_readonly("stages", &TrajOptProblem::stages_,
+                    "Stages of the shooting problem.")
       .def_readwrite("term_cost", &TrajOptProblem::term_cost_,
                      "Problem terminal cost.")
       .add_property("num_steps", &TrajOptProblem::numSteps,

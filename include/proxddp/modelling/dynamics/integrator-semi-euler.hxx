@@ -34,7 +34,6 @@ void IntegratorSemiImplEulerTpl<Scalar>::dForward(
   ODEDataTpl<Scalar> &cdata =
       static_cast<ODEDataTpl<Scalar> &>(*d.continuous_data);
   int ndx = this->ndx1;
-  int nu = this->nu;
   const int ndx_2 = ndx / 2;
   const auto &space = this->out_space();
 

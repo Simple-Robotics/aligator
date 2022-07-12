@@ -8,12 +8,12 @@
 namespace proxddp {
 template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::addStage(const StageModel &new_stage) {
-  stages_.push_back(new_stage);
+  stages_.push_back(std::make_shared<StageModel>(new_stage));
 }
 
 template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::addStage(StageModel &&new_stage) {
-  stages_.push_back(std::move(new_stage));
+  stages_.push_back(std::make_shared<StageModel>(new_stage));
 }
 
 template <typename Scalar>
@@ -35,8 +35,7 @@ void TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
   init_state_error.evaluate(xs[0], us[0], xs[1], *prob_data.init_data);
 
   for (std::size_t i = 0; i < nsteps; i++) {
-    const StageModel &stage = stages_[i];
-    stage.evaluate(xs[i], us[i], xs[i + 1], *prob_data.stage_data[i]);
+    stages_[i]->evaluate(xs[i], us[i], xs[i + 1], prob_data.stage_data[i]);
   }
 
   if (term_cost_) {
@@ -58,8 +57,8 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
   init_state_error.computeJacobians(xs[0], us[0], xs[1], *prob_data.init_data);
 
   for (std::size_t i = 0; i < nsteps; i++) {
-    const StageModel &stage = stages_[i];
-    stage.computeDerivatives(xs[i], us[i], xs[i + 1], *prob_data.stage_data[i]);
+    stages_[i]->computeDerivatives(xs[i], us[i], xs[i + 1],
+                                   prob_data.stage_data[i]);
   }
 
   if (term_cost_) {
@@ -75,7 +74,7 @@ TrajOptDataTpl<Scalar>::TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem)
     : init_data(std::move(problem.init_state_error.createData())) {
   stage_data.reserve(problem.numSteps());
   for (std::size_t i = 0; i < problem.numSteps(); i++) {
-    stage_data.push_back(std::move(problem.stages_[i].createData()));
+    stage_data.push_back(std::move(*problem.stages_[i]->createData()));
   }
 
   if (problem.term_cost_) {
