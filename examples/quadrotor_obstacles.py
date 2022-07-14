@@ -42,7 +42,7 @@ if args.obstacles:  # we add the obstacles to the geometric model
     R = np.eye(3)
     cyl_radius = 0.2
     cylinder = fcl.Cylinder(cyl_radius, 10.0)
-    center_column1 = np.array([-0.3, 0.8, 0.0])
+    center_column1 = np.array([-0.5, 0.8, 0.0])
     geom_cyl1 = pin.GeometryObject(
         "column1", 0, 0, pin.SE3(R, center_column1), cylinder
     )
@@ -56,8 +56,8 @@ if args.obstacles:  # we add the obstacles to the geometric model
     robot.visual_model.addGeometryObject(geom_cyl1)
     robot.collision_model.addGeometryObject(geom_cyl2)
     robot.visual_model.addGeometryObject(geom_cyl2)
-    robot.collision_model.geometryObjects[0].geometry.computeLocalAABB()
-    quad_radius = robot.collision_model.geometryObjects[0].geometry.aabb_radius
+robot.collision_model.geometryObjects[0].geometry.computeLocalAABB()
+quad_radius = robot.collision_model.geometryObjects[0].geometry.aabb_radius
 
 vizer = pin.visualize.MeshcatVisualizer(
     rmodel, robot.collision_model, robot.visual_model, data=rdata
@@ -104,7 +104,7 @@ out = space.neutral()
 
 data = dynmodel.createData()
 dynmodel.forward(x0, u0, data)
-np.set_printoptions(precision=2, linewidth=250)
+np.set_printoptions(precision=3, linewidth=250)
 Jx = np.zeros((space.ndx, space.ndx))
 Ju = np.zeros((space.ndx, nu))
 Jx_nd = Jx.copy()
@@ -181,24 +181,21 @@ class Column(proxddp.StageFunction):
     def __init__(self, ndx, nu, center, radius, margin: float = 0.0) -> None:
         super().__init__(ndx, nu, 1)
         self.ndx = ndx
-        self.center = center
+        self.center = center.copy()
         self.radius = radius
         self.margin = margin
         self._c = space.neutral()
 
     def evaluate(self, x, u, y, data):  # distance function
-        err = space.difference(self._c, x)[:2] - self.center
+        err = x[:2] - self.center
         res = np.dot(err, err) - (self.radius + self.margin) ** 2
         data.value[:] = -res
 
     def computeJacobians(self, x, u, y, data):
-        err = space.difference(self._c, x)[:2] - self.center
-        Jerr = np.empty((space.ndx, space.ndx))
-        space.Jdifference(self._c, x, Jerr, 1)
-        Jerr = Jerr[:2, :]
-
-        data.Jx[:] = -2 * Jerr.T @ err
-        data.Ju[:] = 0.0
+        q = x[:nq]
+        J = pin.computeFrameJacobian(rmodel, rdata, q, 1, pin.LOCAL_WORLD_ALIGNED)
+        err = x[:2] - self.center
+        data.Jx[:nv] = -2 * J[:2].T @ err
 
 
 task_fun = make_task()
@@ -263,7 +260,7 @@ problem = setup()
 tol = 1e-3
 mu_init = 0.001
 verbose = proxddp.VerboseLevel.VERBOSE
-rho_init = 0.003
+rho_init = 0.01
 history_cb = proxddp.HistoryCallback()
 solver = proxddp.ProxDDP(tol, mu_init, rho_init, verbose=verbose, max_iters=300)
 solver.registerCallback(history_cb)
@@ -313,7 +310,7 @@ if args.display:
     cam_dist = 2.0
     directions_ = [np.array([1.0, 1.0, 0.5])]
     directions_.append(np.array([1.0, -1.0, 0.8]))
-    directions_.append(np.array([1.0, 0.1, 0.2]))
+    directions_.append(np.array([0.1, 0.1, 1.0]))
     directions_.append(np.array([0.0, -1.0, 0.8]))
     for d in directions_:
         d /= np.linalg.norm(d)
@@ -342,7 +339,7 @@ if args.display:
             record=args.record,
             timestep=dt,
             show_vel=True,
-            frame_sphere_size=0.06,
+            frame_sphere_size=quad_radius,
             recorder=vid_recorder,
             post_callback=post_callback,
         )
