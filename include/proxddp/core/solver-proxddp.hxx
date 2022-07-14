@@ -320,8 +320,8 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
   results.primal_infeasibility = 0.;
   Scalar infeas_over_j = 0.;
   for (std::size_t i = 0; i < nsteps; i++) {
-    const StageData &sd = *prob_data.stage_data[i];
-    const auto &cstr_mgr = problem.stages_[i].constraints_manager;
+    const StageData &sd = prob_data.stage_data[i];
+    const auto &cstr_mgr = problem.stages_[i]->constraints_manager;
     infeas_over_j = 0.;
     for (std::size_t j = 0; j < cstr_mgr.numConstraints(); j++) {
       const ConstraintSetBase<Scalar> &cstr_set = *cstr_mgr[j].set_;

@@ -109,7 +109,7 @@ public:
                                   const ConstVectorRef &y, Data &data) const;
 
   /// @brief    Create a Data object.
-  std::shared_ptr<Data> createData() const {
+  virtual std::shared_ptr<Data> createData() const {
     return std::make_shared<Data>(*this);
   }
 
