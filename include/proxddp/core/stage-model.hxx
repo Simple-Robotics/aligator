@@ -60,12 +60,12 @@ void StageModelTpl<Scalar>::computeDerivatives(const ConstVectorRef &x,
 template <typename Scalar>
 StageDataTpl<Scalar>::StageDataTpl(const StageModel &stage_model)
     : constraint_data(stage_model.numConstraints()),
-      cost_data(std::move(stage_model.cost_->createData())) {
+      cost_data(stage_model.cost_->createData()) {
   const std::size_t nc = stage_model.numConstraints();
   for (std::size_t j = 0; j < nc; j++) {
     const shared_ptr<StageFunctionTpl<Scalar>> &func =
         stage_model.constraints_manager[j].func_;
-    constraint_data[j] = std::move(func->createData());
+    constraint_data[j] = func->createData();
   }
 }
 } // namespace proxddp

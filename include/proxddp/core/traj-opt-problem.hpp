@@ -21,6 +21,7 @@ namespace proxddp {
 template <typename _Scalar> struct TrajOptProblemTpl {
   using Scalar = _Scalar;
   using StageModel = StageModelTpl<Scalar>;
+  using Function = StageFunctionTpl<Scalar>;
   using ProblemData = TrajOptDataTpl<Scalar>;
   using CostAbstract = CostAbstractTpl<Scalar>;
 
@@ -33,6 +34,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// Stages of the control problem.
   std::vector<std::shared_ptr<StageModel>> stages_;
   shared_ptr<CostAbstract> term_cost_;
+  shared_ptr<Function> term_constraint_;
 
   TrajOptProblemTpl(const VectorXs &x0, const std::vector<StageModel> &stages,
                     const shared_ptr<CostAbstract> &term_cost)
@@ -51,12 +53,12 @@ template <typename _Scalar> struct TrajOptProblemTpl {
         term_cost_(term_cost) {}
 
   /// @brief Add a stage to the control problem.
-  void addStage(const StageModel &new_stage);
+  void addStage(const StageModel &stage);
   /// @copybrief addStage()
-  void addStage(StageModel &&new_stage);
+  void addStage(StageModel &&stage);
 
-  void addStage(const shared_ptr<StageModel> &new_stage) {
-    stages_.push_back(new_stage);
+  void addStage(const shared_ptr<StageModel> &stage) {
+    stages_.push_back(stage);
   }
 
   inline std::size_t numSteps() const;

@@ -113,26 +113,9 @@ public:
     return std::make_shared<Data>(*this);
   }
 
+  template <typename S>
   friend std::ostream &operator<<(std::ostream &oss,
-                                  const StageModelTpl &stage) {
-    oss << "StageModel { ";
-    if (stage.ndx1() == stage.ndx2()) {
-      oss << "ndx: " << stage.ndx1() << ", "
-          << "nu:  " << stage.nu();
-    } else {
-      oss << "ndx1:" << stage.ndx1() << ", "
-          << "nu:  " << stage.nu() << ", "
-          << "ndx2:" << stage.ndx2();
-    }
-
-    if (stage.numConstraints() > 0) {
-      oss << ", ";
-      oss << "nc: " << stage.numConstraints();
-    }
-
-    oss << " }";
-    return oss;
-  }
+                                  const StageModelTpl<S> &stage);
 
 protected:
   /// Constructor which does not allocate anything.
@@ -164,6 +147,27 @@ struct StageDataTpl : public Cloneable<StageDataTpl<_Scalar>> {
   explicit StageDataTpl(const StageModel &stage_model);
 };
 
+template <typename Scalar>
+std::ostream &operator<<(std::ostream &oss,
+                         const StageModelTpl<Scalar> &stage) {
+  oss << "StageModel { ";
+  if (stage.ndx1() == stage.ndx2()) {
+    oss << "ndx: " << stage.ndx1() << ", "
+        << "nu:  " << stage.nu();
+  } else {
+    oss << "ndx1:" << stage.ndx1() << ", "
+        << "nu:  " << stage.nu() << ", "
+        << "ndx2:" << stage.ndx2();
+  }
+
+  if (stage.numConstraints() > 0) {
+    oss << ", ";
+    oss << "nc: " << stage.numConstraints();
+  }
+
+  oss << " }";
+  return oss;
+}
 } // namespace proxddp
 
 #include "proxddp/core/stage-model.hxx"

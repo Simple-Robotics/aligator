@@ -100,18 +100,18 @@ template <typename _Scalar> struct PDALFunction {
     const std::size_t nsteps = problem.numSteps();
     for (std::size_t i = 0; i < nsteps; i++) {
       const StageModel &sm = *problem.stages_[i];
-      const StageData &sd = prob_data.stage_data[i];
+      const StageData &stage_data = prob_data.stage_data[i];
 
       num_c = sm.numConstraints();
       // loop over constraints
       // get corresponding multipliers from allocated memory
       for (std::size_t j = 0; j < num_c; j++) {
-        const ConstraintSetBase<Scalar> &cstr_set =
-            *sm.constraints_manager[j].set_;
-        const FunctionData &cstr_data = *sd.constraint_data[j];
-        auto lamplus_j = sm.constraints_manager.getSegmentByConstraint(
-            workspace.lams_plus_[i + 1], j);
-        auto lamprev_j = sm.constraints_manager.getConstSegmentByConstraint(
+        const auto &cstr_mgr = sm.constraints_manager;
+        const ConstraintSetBase<Scalar> &cstr_set = *cstr_mgr[j].set_;
+        const FunctionData &cstr_data = *stage_data.constraint_data[j];
+        auto lamplus_j =
+            cstr_mgr.getSegmentByConstraint(workspace.lams_plus_[i + 1], j);
+        auto lamprev_j = cstr_mgr.getConstSegmentByConstraint(
             workspace.prev_lams_[i + 1], j);
         cstr_set.normalConeProjection(
             lamprev_j + mu_penal_inv_ * cstr_data.value_, lamplus_j);

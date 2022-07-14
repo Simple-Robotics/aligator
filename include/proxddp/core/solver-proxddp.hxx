@@ -153,46 +153,43 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   VectorXs &lamplus = workspace.lams_plus_[step + 1];
   VectorXs &lampdal = workspace.lams_pdal_[step + 1];
 
+  auto &cstr_mgr = stage.constraints_manager;
+
   // Loop over constraints
   for (std::size_t j = 0; j < numc; j++) {
-    const ConstraintType &cstr = stage.constraints_manager[j];
+    const ConstraintType &cstr = cstr_mgr[j];
     FunctionData &cstr_data = *stage_data.constraint_data[j];
-    MatrixXs &cstr_jac = cstr_data.jac_buffer_;
 
     // Grab Lagrange multiplier segments
 
-    const auto laminn_j =
-        stage.constraints_manager.getConstSegmentByConstraint(lam_inn, j);
-    const auto lamprev_j =
-        stage.constraints_manager.getConstSegmentByConstraint(lamprev, j);
-    auto lamplus_j =
-        stage.constraints_manager.getSegmentByConstraint(lamplus, j);
-    auto lampdal_j =
-        stage.constraints_manager.getSegmentByConstraint(lampdal, j);
+    const auto lam_inn_j = cstr_mgr.getConstSegmentByConstraint(lam_inn, j);
+    const auto lamprev_j = cstr_mgr.getConstSegmentByConstraint(lamprev, j);
+    auto lamplus_j = cstr_mgr.getSegmentByConstraint(lamplus, j);
+    auto lampdal_j = cstr_mgr.getSegmentByConstraint(lampdal, j);
 
     // compose Jacobian by projector and project multiplier
     const ConstraintSetBase<Scalar> &cstr_set = *cstr.set_;
     lamplus_j = lamprev_j + mu_inverse_ * cstr_data.value_;
-    cstr_set.applyNormalConeProjectionJacobian(lamplus_j, cstr_jac);
+    cstr_set.applyNormalConeProjectionJacobian(lamplus_j,
+                                               cstr_data.jac_buffer_);
     cstr_set.normalConeProjection(lamplus_j, lamplus_j);
-    lampdal_j = 2 * lamplus_j - laminn_j;
+    lampdal_j = 2 * lamplus_j - lam_inn_j;
 
-    q_param.grad_.noalias() += cstr_jac.transpose() * laminn_j;
-    q_param.hess_.noalias() += cstr_data.vhp_buffer_;
+    q_param.grad_ += cstr_data.jac_buffer_.transpose() * lam_inn_j;
+    q_param.hess_ += cstr_data.vhp_buffer_;
 
     // update the KKT jacobian columns
-    stage.constraints_manager.getBlockByConstraint(kkt_jac, j) =
-        cstr_jac.rightCols(nprim);
-    stage.constraints_manager.getBlockByConstraint(rhs_D.bottomRows(ndual), j) =
-        cstr_jac.leftCols(ndx1);
+    cstr_mgr.getBlockByConstraint(kkt_jac, j) =
+        cstr_data.jac_buffer_.rightCols(nprim);
+    cstr_mgr.getBlockByConstraint(rhs_D.bottomRows(ndual), j) =
+        cstr_data.jac_buffer_.leftCols(ndx1);
   }
 
   q_param.storage = q_param.storage.template selfadjointView<Eigen::Lower>();
 
   // blocks: u, y, and dual
   rhs_0.head(nprim) = q_param.grad_.tail(nprim);
-  rhs_0.tail(ndual) =
-      mu_ * (workspace.lams_plus_[step + 1] - results.lams_[step + 1]);
+  rhs_0.tail(ndual) = mu_ * (lamplus - lam_inn);
 
   rhs_D.middleRows(0, nu) = q_param.Qxu_.transpose();
   rhs_D.middleRows(nu, ndx2) = q_param.Qxy_.transpose();
@@ -202,8 +199,9 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
       q_param.hess_.bottomRightCorner(nprim, nprim);
   kkt_mat.bottomRightCorner(ndual, ndual).diagonal().array() = -mu_;
 
-  workspace.inner_criterion_by_stage(long(step)) = math::infty_norm(rhs_0);
-  workspace.dual_infeas_by_stage(long(step)) = math::infty_norm(
+  workspace.inner_criterion_by_stage(std::size_t(step)) =
+      math::infty_norm(rhs_0);
+  workspace.dual_infeas_by_stage(std::size_t(step)) = math::infty_norm(
       rhs_0.head(nprim)); // dual infeas: norm of Q-function gradient
 
   /* Compute gains with LDLT */
@@ -219,6 +217,95 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
 }
 
 template <typename Scalar>
+bool SolverProxDDP<Scalar>::run(const Problem &problem,
+                                const std::vector<VectorXs> &xs_init,
+                                const std::vector<VectorXs> &us_init) {
+  if (workspace_ == 0 || results_ == 0) {
+    throw std::runtime_error("workspace and results were not allocated yet!");
+  }
+  Workspace &workspace = *workspace_;
+  Results &results = *results_;
+
+  results.xs_ = xs_init;
+  results.us_ = us_init;
+
+  workspace.prev_xs_ = results.xs_;
+  workspace.prev_us_ = results.us_;
+  workspace.prev_lams_ = results.lams_;
+
+  inner_tol_ = inner_tol0;
+  prim_tol_ = prim_tol0;
+  updateTolerancesOnFailure();
+
+  inner_tol_ = std::max(inner_tol_, target_tolerance);
+  prim_tol_ = std::max(prim_tol_, target_tolerance);
+
+  bool &conv = results.conv;
+
+  std::size_t al_iter = 0;
+  while ((al_iter < MAX_AL_ITERS) && (results.num_iters < MAX_ITERS)) {
+    if (verbose_ >= 1) {
+      auto colout = fmt::fg(fmt::color::medium_orchid);
+      fmt::print(fmt::emphasis::bold | colout, "[AL iter {:>2d}]", al_iter + 1);
+      fmt::print("\n");
+      fmt::print(
+          " | inner_tol={:.3e} | prim_tol={:.3e} | mu={:.3e} | rho={:.3e}\n",
+          inner_tol_, prim_tol_, mu_, rho_);
+    }
+    solverInnerLoop(problem, workspace, results);
+    computeInfeasibilities(problem, workspace, results);
+
+    // accept primal updates
+    workspace.prev_xs_ = results.xs_;
+    workspace.prev_us_ = results.us_;
+
+    if (results.primal_infeasibility <= prim_tol_) {
+      updateTolerancesOnSuccess();
+
+      switch (mul_update_mode) {
+      case MultiplierUpdateMode::NEWTON:
+        workspace.prev_lams_ = results.lams_;
+        break;
+      case MultiplierUpdateMode::PRIMAL:
+        workspace.prev_lams_ = workspace.lams_plus_;
+        break;
+      case MultiplierUpdateMode::PRIMAL_DUAL:
+        workspace.prev_lams_ = workspace.lams_pdal_;
+        break;
+      default:
+        break;
+      }
+
+      if (std::max(results.primal_infeasibility, workspace.inner_criterion) <=
+          target_tolerance) {
+        conv = true;
+        break;
+      }
+    } else {
+      updateALPenalty();
+      updateTolerancesOnFailure();
+    }
+    rho_ *= rho_update_factor_;
+
+    inner_tol_ = std::max(inner_tol_, target_tolerance);
+    prim_tol_ = std::max(prim_tol_, target_tolerance);
+
+    al_iter++;
+  }
+
+  if (verbose_ >= 1) {
+    if (conv)
+      fmt::print(fmt::fg(fmt::color::dodger_blue), "Successfully converged.");
+    else {
+      fmt::print(fmt::fg(fmt::color::red), "Convergence failure.");
+    }
+    fmt::print("\n");
+  }
+  invokeCallbacks(workspace, results);
+  return conv;
+}
+
+template <typename Scalar>
 void SolverProxDDP<Scalar>::solverInnerLoop(const Problem &problem,
                                             Workspace &workspace,
                                             Results &results) {
@@ -229,20 +316,25 @@ void SolverProxDDP<Scalar>::solverInnerLoop(const Problem &problem,
     tryStep(problem, workspace, results, a0);
     problem.evaluate(workspace.trial_xs_, workspace.trial_us_,
                      workspace.trial_prob_data);
-    this->evaluateProx(workspace.trial_xs_, workspace.trial_us_, workspace);
+    evaluateProx(workspace.trial_xs_, workspace.trial_us_, workspace);
     return merit_fun.evaluate(problem, workspace.trial_lams_, workspace,
                               workspace.trial_prob_data);
   };
+  Scalar phi0 = 0.;
+  Scalar eps = 1e-10;
+  Scalar phieps = 0., dphi0 = 0.;
 
   std::size_t &k = results.num_iters;
   while (k < MAX_ITERS) {
     problem.evaluate(results.xs_, results.us_, workspace.problem_data);
     problem.computeDerivatives(results.xs_, results.us_,
                                workspace.problem_data);
-    this->evaluateProx(results.xs_, results.us_, workspace);
-    this->evaluateProxDerivatives(results.xs_, results.us_, workspace);
+    evaluateProx(results.xs_, results.us_, workspace);
+    evaluateProxDerivatives(results.xs_, results.us_, workspace);
 
     backwardPass(problem, workspace, results);
+    phi0 = merit_fun.evaluate(problem, results.lams_, workspace,
+                              workspace.problem_data);
     computeInfeasibilities(problem, workspace, results);
 
     if (verbose_ >= 1) {
@@ -255,10 +347,9 @@ void SolverProxDDP<Scalar>::solverInnerLoop(const Problem &problem,
       break;
     } else {
       bool inner_acceptable = workspace.inner_criterion < target_tolerance;
-      if (inner_acceptable) {
-        if (results.primal_infeasibility < target_tolerance) {
-          break;
-        }
+      if (inner_acceptable &&
+          (results.primal_infeasibility < target_tolerance)) {
+        break;
       }
     }
 
@@ -269,11 +360,8 @@ void SolverProxDDP<Scalar>::solverInnerLoop(const Problem &problem,
 
     computeDirection(problem, workspace, results);
 
-    Scalar phi0 = merit_fun.evaluate(problem, results.lams_, workspace,
-                                     workspace.problem_data);
-    Scalar eps = 1e-10;
-    Scalar veps = merit_eval_fun(eps);
-    Scalar dphi0 = (veps - phi0) / eps;
+    phieps = merit_eval_fun(eps);
+    dphi0 = (phieps - phi0) / eps;
 
     Scalar alpha_opt = 1;
 
@@ -320,18 +408,18 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
   results.primal_infeasibility = 0.;
   Scalar infeas_over_j = 0.;
   for (std::size_t i = 0; i < nsteps; i++) {
-    const StageData &sd = prob_data.stage_data[i];
-    const auto &cstr_mgr = problem.stages_[i]->constraints_manager;
+    const StageData &stage_data = prob_data.stage_data[i];
+    const ConstraintContainer<Scalar> &cstr_mgr =
+        problem.stages_[i]->constraints_manager;
     infeas_over_j = 0.;
     for (std::size_t j = 0; j < cstr_mgr.numConstraints(); j++) {
       const ConstraintSetBase<Scalar> &cstr_set = *cstr_mgr[j].set_;
-      auto &v = sd.constraint_data[j]->value_;
+      auto &v = stage_data.constraint_data[j]->value_;
       /// @todo fix allocation here
-      VectorXs vproj = v;
-      cstr_set.normalConeProjection(v, vproj);
-      infeas_over_j = std::max(infeas_over_j, math::infty_norm(vproj));
+      cstr_set.normalConeProjection(v, v);
+      infeas_over_j = std::max(infeas_over_j, math::infty_norm(v));
     }
-    workspace.primal_infeas_by_stage(long(i)) = infeas_over_j;
+    workspace.primal_infeas_by_stage(std::size_t(i)) = infeas_over_j;
   }
   results.primal_infeasibility =
       math::infty_norm(workspace.primal_infeas_by_stage);

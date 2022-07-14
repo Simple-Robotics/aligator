@@ -7,13 +7,13 @@
 
 namespace proxddp {
 template <typename Scalar>
-void TrajOptProblemTpl<Scalar>::addStage(const StageModel &new_stage) {
-  stages_.push_back(std::make_shared<StageModel>(new_stage));
+void TrajOptProblemTpl<Scalar>::addStage(const StageModel &stage) {
+  stages_.push_back(std::make_shared<StageModel>(stage));
 }
 
 template <typename Scalar>
-void TrajOptProblemTpl<Scalar>::addStage(StageModel &&new_stage) {
-  stages_.push_back(std::make_shared<StageModel>(new_stage));
+void TrajOptProblemTpl<Scalar>::addStage(StageModel &&stage) {
+  stages_.push_back(std::make_shared<StageModel>(stage));
 }
 
 template <typename Scalar>

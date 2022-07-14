@@ -199,98 +199,17 @@ public:
   /// @pre  You must call SolverProxDDP::setup beforehand to allocate a
   /// workspace and results.
   bool run(const Problem &problem, const std::vector<VectorXs> &xs_init,
-           const std::vector<VectorXs> &us_init) {
-    if (workspace_ == 0 || results_ == 0) {
-      throw std::runtime_error("workspace and results were not allocated yet!");
-    }
-    Workspace &workspace = *workspace_;
-    Results &results = *results_;
-
-    results.xs_ = xs_init;
-    results.us_ = us_init;
-
-    workspace.prev_xs_ = results.xs_;
-    workspace.prev_us_ = results.us_;
-    workspace.prev_lams_ = results.lams_;
-
-    inner_tol_ = inner_tol0;
-    prim_tol_ = prim_tol0;
-    updateTolerancesOnFailure();
-
-    inner_tol_ = std::max(inner_tol_, target_tolerance);
-    prim_tol_ = std::max(prim_tol_, target_tolerance);
-
-    bool &conv = results.conv;
-
-    std::size_t al_iter = 0;
-    while ((al_iter < MAX_AL_ITERS) && (results.num_iters < MAX_ITERS)) {
-      if (verbose_ >= 1) {
-        auto colout = fmt::fg(fmt::color::medium_orchid);
-        fmt::print(fmt::emphasis::bold | colout, "[AL iter {:>2d}]",
-                   al_iter + 1);
-        fmt::print("\n");
-        fmt::print(
-            " | inner_tol={:.3e} | prim_tol={:.3e} | mu={:.3e} | rho={:.3e}\n",
-            inner_tol_, prim_tol_, mu_, rho_);
-      }
-      solverInnerLoop(problem, workspace, results);
-      computeInfeasibilities(problem, workspace, results);
-
-      // accept primal updates
-      workspace.prev_xs_ = results.xs_;
-      workspace.prev_us_ = results.us_;
-
-      if (results.primal_infeasibility <= prim_tol_) {
-        updateTolerancesOnSuccess();
-
-        switch (mul_update_mode) {
-        case MultiplierUpdateMode::NEWTON:
-          workspace.prev_lams_ = results.lams_;
-          break;
-        case MultiplierUpdateMode::PRIMAL:
-          workspace.prev_lams_ = workspace.lams_plus_;
-          break;
-        case MultiplierUpdateMode::PRIMAL_DUAL:
-          workspace.prev_lams_ = workspace.lams_pdal_;
-          break;
-        default:
-          break;
-        }
-
-        if (std::max(results.primal_infeasibility, workspace.inner_criterion) <=
-            target_tolerance) {
-          conv = true;
-          break;
-        }
-      } else {
-        updateALPenalty();
-        updateTolerancesOnFailure();
-      }
-      rho_ *= rho_update_factor_;
-
-      inner_tol_ = std::max(inner_tol_, target_tolerance);
-      prim_tol_ = std::max(prim_tol_, target_tolerance);
-
-      al_iter++;
-    }
-
-    if (verbose_ >= 1) {
-      if (conv)
-        fmt::print(fmt::fg(fmt::color::dodger_blue), "Successfully converged.");
-      else {
-        fmt::print(fmt::fg(fmt::color::red), "Convergence failure.");
-      }
-      fmt::print("\n");
-    }
-    invokeCallbacks(workspace, results);
-    return conv;
-  }
+           const std::vector<VectorXs> &us_init);
 
   /// @brief    Perform the inner loop of the algorithm (augmented Lagrangian
   /// minimization).
   void solverInnerLoop(const Problem &problem, Workspace &workspace,
                        Results &results);
-  /// @brief    Compute the infeasibility measures.
+
+  /// @brief    Compute the primal infeasibility measures.
+  /// @warning  This will alter the constraint values (by projecting on the
+  /// normal cone in-place).
+  ///           Compute anything which accesses these before!
   void computeInfeasibilities(const Problem &problem, Workspace &workspace,
                               Results &results) const;
 
