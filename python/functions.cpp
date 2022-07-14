@@ -6,6 +6,7 @@
 #include "proxddp/modelling/control-box-function.hpp"
 #include "proxddp/modelling/multibody/frame-placement.hpp"
 #include "proxddp/modelling/multibody/frame-velocity.hpp"
+#include "proxddp/modelling/multibody/frame-translation.hpp"
 
 namespace proxddp {
 namespace python {
@@ -174,6 +175,9 @@ void exposePinocchioFunctions() {
   using FrameVelocity = FrameVelocityResidualTpl<Scalar>;
   using FrameVelocityData = FrameVelocityDataTpl<Scalar>;
 
+  using FrameTranslation = FrameTranslationResidualTpl<Scalar>;
+  using FrameTranslationData = FrameTranslationDataTpl<Scalar>;
+
   bp::register_ptr_to_python<shared_ptr<PinData>>();
 
   bp::class_<FramePlacement, bp::bases<StageFunction>>(
@@ -215,6 +219,26 @@ void exposePinocchioFunctions() {
       "FrameVelocityData", "Data struct for FrameVelocityResidual.",
       bp::no_init)
       .def_readonly("pin_data", &FrameVelocityData::pin_data_,
+                    "Pinocchio data struct.");
+    
+  bp::class_<FrameTranslation, bp::bases<StageFunction>>(
+      "FrameTranslationResidual", "Frame placement residual function.",
+      bp::init<int, int, shared_ptr<Model>, const context::VectorXs &, pinocchio::FrameIndex>(
+          bp::args("self", "ndx", "nu", "model", "p_ref")))
+      .add_property("frame_id", &FrameTranslation::getFrameId,
+                    &FrameTranslation::setFrameId)
+      .def("getReference", &FrameTranslation::getReference, bp::args("self"),
+           bp::return_internal_reference<>(), "Get the target frame translation.")
+      .def("setReference", &FrameTranslation::setReference,
+           bp::args("self", "p_new"), "Set the target frame translation.");
+
+  bp::register_ptr_to_python<shared_ptr<FrameTranslationData>>();
+
+  bp::class_<FrameTranslationData, bp::bases<context::StageFunctionData>>(
+      "FrameTranslationData", "Data struct for FrameTranslationResidual.",
+      bp::no_init)
+      .def_readonly("fJf", &FrameTranslationData::fJf_)
+      .def_readonly("pin_data", &FrameTranslationData::pin_data_,
                     "Pinocchio data struct.");
 }
 

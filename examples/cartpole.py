@@ -49,7 +49,7 @@ def create_cartpole(N):
     shape_cart = fcl.Cylinder(cart_radius, cart_length)
 
     geom_cart = pin.GeometryObject(
-        "shape_cart", joint_id, shape_cart, geometry_placement
+        "shape_cart", joint_id, geometry_placement, shape_cart
     )
     geom_cart.meshColor = np.array([1.0, 0.1, 0.1, 1.0])
     geom_model.addGeometryObject(geom_cart)
@@ -71,7 +71,7 @@ def create_cartpole(N):
 
         geom1_name = "ball_" + str(k + 1)
         shape1 = fcl.Sphere(body_radius)
-        geom1_obj = pin.GeometryObject(geom1_name, joint_id, shape1, body_placement)
+        geom1_obj = pin.GeometryObject(geom1_name, joint_id, body_placement, shape1)
         geom1_obj.meshColor = np.ones((4))
         geom_model.addGeometryObject(geom1_obj)
 
@@ -80,7 +80,7 @@ def create_cartpole(N):
         shape2_placement = body_placement.copy()
         shape2_placement.translation[2] /= 2.0
 
-        geom2_obj = pin.GeometryObject(geom2_name, joint_id, shape2, shape2_placement)
+        geom2_obj = pin.GeometryObject(geom2_name, joint_id, shape2_placement, shape2)
         geom2_obj.meshColor = np.array([0.0, 0.0, 0.0, 1.0])
         geom_model.addGeometryObject(geom2_obj)
 
@@ -142,81 +142,24 @@ stage.addConstraint(
     proxddp.StageConstraint(ctrl_box, proxnlp.constraints.NegativeOrthant())
 )
 
-
-class FramePosErrorResidual(proxddp.StageFunction):
-    """residual error on a frame position.
-    temporarily replace the c++ implementation"""
-
-    def __init__(self, model, nx, nu, target_pos, frame_id, terminal=True) -> None:
-        super().__init__(nx, nu, 3)
-        self.nx = nx
-        self.target = target_pos
-        self.rmodel = model
-        self.rdata = model.createData()
-        self.fid = frame_id
-        self.terminal = terminal
-
-    def evaluate(self, x, u, y, data):
-        if self.terminal:
-            x = y
-        q = x[: self.rmodel.nq]
-        pin.forwardKinematics(self.rmodel, self.rdata, q)
-        pin.updateFramePlacements(self.rmodel, self.rdata)
-
-        cur_pose = self.rdata.oMf[self.fid]
-        cur_position = cur_pose.translation
-        data.value[:] = cur_position - self.target
-
-    def _get_errvec_and_jac(self, q):
-        """Get the error vector and frame placement Jacobian."""
-        pin.framesForwardKinematics(self.rmodel, self.rdata, q)
-        pin.computeJointJacobians(self.rmodel, self.rdata)
-
-        cur_pose = self.rdata.oMf[self.fid]
-        cur_position = cur_pose.translation
-        err = cur_position - self.target
-
-        Jf = pin.getFrameJacobian(
-            self.rmodel, self.rdata, self.fid, pin.LOCAL_WORLD_ALIGNED
-        )
-        Jf = Jf[:3]
-        return err, Jf
-
-    def computeJacobians(self, x, u, y, data):
-        nq = self.rmodel.nq
-        nv = self.rmodel.nv
-        if self.terminal:
-            x = y
-        q = x[:nq]
-        err, Jf = self._get_errvec_and_jac(q)
-        if self.terminal:
-            data.Jy[:, :nv] = Jf
-        else:
-            data.Jx[:, :nv] = Jf
-
-
 nsteps = 600
 Tf = nsteps * time_step
 problem = proxddp.TrajOptProblem(x0, nu, space, term_cost)
 for i in range(nsteps):
     if i == nsteps - 1 and args.use_term_cstr:
-        xtar = space.neutral()
-        # term_fun = FramePosErrorResidual(model, nx, nu, target_pos, frame_id, terminal=True)
-        # stage.addConstraint(
-        #     proxddp.StageConstraint(
-        #         term_fun, proxnlp.constraints.EqualityConstraintSet()
-        #     )
-        # )
+        term_fun = proxddp.FrameTranslationResidual(nx, nu, model, target_pos, frame_id)
         stage.addConstraint(
-            proxddp.StateErrorResidual(space, nu, xtar),
-            proxnlp.constraints.EqualityConstraintSet(),
+            proxddp.StageConstraint(
+                term_fun, proxnlp.constraints.EqualityConstraintSet()
+            )
         )
+        xtar = space.neutral()
     problem.addStage(stage)
 
 mu_init = 1e-2
 verbose = proxddp.VerboseLevel.VERBOSE
 TOL = 1e-3
-MAX_ITER = 500
+MAX_ITER = 300
 solver = proxddp.ProxDDP(TOL, mu_init, max_iters=MAX_ITER, verbose=verbose)
 
 u0 = np.zeros(nu)
