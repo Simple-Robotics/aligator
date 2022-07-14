@@ -98,12 +98,13 @@ public:
 
   /// @brief    Evaluate all the functions (cost, dynamics, constraints) at this
   /// node.
-  void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                const ConstVectorRef &y, Data &data) const;
+  virtual void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
+                        const ConstVectorRef &y, Data &data) const;
 
   /// @brief    Compute the derivatives of the StageModelTpl.
-  void computeDerivatives(const ConstVectorRef &x, const ConstVectorRef &u,
-                          const ConstVectorRef &y, Data &data) const;
+  virtual void computeDerivatives(const ConstVectorRef &x,
+                                  const ConstVectorRef &u,
+                                  const ConstVectorRef &y, Data &data) const;
 
   /// @brief    Create a Data object.
   shared_ptr<Data> createData() const { return std::make_shared<Data>(*this); }
@@ -128,6 +129,10 @@ public:
     oss << " }";
     return oss;
   }
+
+protected:
+  /// Constructor which does not allocate anything.
+  StageModelTpl() {}
 };
 
 /// @brief    Data struct for stage models StageModelTpl.

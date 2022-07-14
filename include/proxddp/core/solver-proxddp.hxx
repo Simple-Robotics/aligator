@@ -154,36 +154,36 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   VectorXs &lampdal = workspace.lams_pdal_[step + 1];
 
   // Loop over constraints
-  for (std::size_t i = 0; i < numc; i++) {
-    const ConstraintType &cstr = stage.constraints_manager[i];
-    FunctionData &cstr_data = *stage_data.constraint_data[i];
+  for (std::size_t j = 0; j < numc; j++) {
+    const ConstraintType &cstr = stage.constraints_manager[j];
+    FunctionData &cstr_data = *stage_data.constraint_data[j];
     MatrixXs &cstr_jac = cstr_data.jac_buffer_;
 
     // Grab Lagrange multiplier segments
 
-    const auto lam_inn_i =
-        stage.constraints_manager.getConstSegmentByConstraint(lam_inn, i);
-    const auto lamprev_i =
-        stage.constraints_manager.getConstSegmentByConstraint(lamprev, i);
-    auto lamplus_i =
-        stage.constraints_manager.getSegmentByConstraint(lamplus, i);
-    auto lampdal_i =
-        stage.constraints_manager.getSegmentByConstraint(lampdal, i);
+    const auto laminn_j =
+        stage.constraints_manager.getConstSegmentByConstraint(lam_inn, j);
+    const auto lamprev_j =
+        stage.constraints_manager.getConstSegmentByConstraint(lamprev, j);
+    auto lamplus_j =
+        stage.constraints_manager.getSegmentByConstraint(lamplus, j);
+    auto lampdal_j =
+        stage.constraints_manager.getSegmentByConstraint(lampdal, j);
 
     // compose Jacobian by projector and project multiplier
     const ConstraintSetBase<Scalar> &cstr_set = *cstr.set_;
-    lamplus_i = lamprev_i + mu_inverse_ * cstr_data.value_;
-    cstr_set.applyNormalConeProjectionJacobian(lamplus_i, cstr_jac);
-    lamplus_i.noalias() = cstr_set.normalConeProjection(lamplus_i);
-    lampdal_i = 2 * lamplus_i - lam_inn_i;
+    lamplus_j = lamprev_j + mu_inverse_ * cstr_data.value_;
+    cstr_set.applyNormalConeProjectionJacobian(lamplus_j, cstr_jac);
+    cstr_set.normalConeProjection(lamplus_j, lamplus_j);
+    lampdal_j = 2 * lamplus_j - laminn_j;
 
-    q_param.grad_.noalias() += cstr_jac.transpose() * lam_inn_i;
+    q_param.grad_.noalias() += cstr_jac.transpose() * laminn_j;
     q_param.hess_.noalias() += cstr_data.vhp_buffer_;
 
     // update the KKT jacobian columns
-    stage.constraints_manager.getBlockByConstraint(kkt_jac, i) =
+    stage.constraints_manager.getBlockByConstraint(kkt_jac, j) =
         cstr_jac.rightCols(nprim);
-    stage.constraints_manager.getBlockByConstraint(rhs_D.bottomRows(ndual), i) =
+    stage.constraints_manager.getBlockByConstraint(rhs_D.bottomRows(ndual), j) =
         cstr_jac.leftCols(ndx1);
   }
 
@@ -223,7 +223,7 @@ void SolverProxDDP<Scalar>::solverInnerLoop(const Problem &problem,
                                             Workspace &workspace,
                                             Results &results) {
   // instantiate the subproblem merit function
-  PDAL_Function<Scalar> merit_fun{mu_, rho_, ls_params.mode};
+  PDALFunction<Scalar> merit_fun{mu_, rho_, ls_params.mode};
 
   auto merit_eval_fun = [&](Scalar a0) {
     tryStep(problem, workspace, results, a0);
@@ -318,18 +318,20 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
   const TrajOptDataTpl<Scalar> &prob_data = workspace.problem_data;
   const std::size_t nsteps = problem.numSteps();
   results.primal_infeasibility = 0.;
-  Scalar infeas_over_i = 0.;
+  Scalar infeas_over_j = 0.;
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageData &sd = *prob_data.stage_data[i];
     const auto &cstr_mgr = problem.stages_[i].constraints_manager;
-    infeas_over_i = 0.;
+    infeas_over_j = 0.;
     for (std::size_t j = 0; j < cstr_mgr.numConstraints(); j++) {
       const ConstraintSetBase<Scalar> &cstr_set = *cstr_mgr[j].set_;
-      infeas_over_i = std::max(infeas_over_i,
-                               math::infty_norm(cstr_set.normalConeProjection(
-                                   sd.constraint_data[j]->value_)));
+      auto &v = sd.constraint_data[j]->value_;
+      /// @todo fix allocation here
+      VectorXs vproj = v;
+      cstr_set.normalConeProjection(v, vproj);
+      infeas_over_j = std::max(infeas_over_j, math::infty_norm(vproj));
     }
-    workspace.primal_infeas_by_stage(long(i)) = infeas_over_i;
+    workspace.primal_infeas_by_stage(long(i)) = infeas_over_j;
   }
   results.primal_infeasibility =
       math::infty_norm(workspace.primal_infeas_by_stage);

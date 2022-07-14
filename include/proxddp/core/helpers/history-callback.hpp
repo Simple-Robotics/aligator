@@ -24,7 +24,7 @@ template <typename Scalar> struct history_callback : base_callback<Scalar> {
     std::vector<Scalar> dual_infeas;
   } storage;
 
-  void call(const WorkspaceTpl<Scalar> &workspace,
+  void call(const WorkspaceTpl<Scalar> & /*workspace*/,
             const ResultsTpl<Scalar> &results) {
     if (store_primal_dual_vars_) {
       storage.xs.push_back(results.xs_);

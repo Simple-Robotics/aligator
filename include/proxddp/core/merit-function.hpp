@@ -54,7 +54,7 @@ Scalar computeProxPenalty(const WorkspaceTpl<Scalar> &workspace,
  * \f]
  * where \f$(*)\f$ is the expression within the norm in \f$\mathscr{P}\f$ above.
  */
-template <typename _Scalar> struct PDAL_Function {
+template <typename _Scalar> struct PDALFunction {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using StageModel = StageModelTpl<Scalar>;
@@ -73,10 +73,11 @@ template <typename _Scalar> struct PDAL_Function {
   /// Weight of dual penalty. Values different from 1 not supported yet.
   Scalar dual_weight_ = 1.;
 
-  PDAL_Function(const Scalar mu, const Scalar rho, const LinesearchMode mode)
+  PDALFunction(const Scalar mu, const Scalar rho, const LinesearchMode mode)
       : mu_penal_(mu), rho_penal_(rho), ls_mode(mode) {}
 
-  /// @brief Evaluate the merit function at the trial point.
+  /// @brief    Evaluate the merit function at the trial point.
+  /// @warning  Evaluate the problem first!
   Scalar evaluate(const TrajOptProblemTpl<Scalar> &problem,
                   const std::vector<VectorXs> &lams,
                   WorkspaceTpl<Scalar> &workspace,
@@ -112,8 +113,8 @@ template <typename _Scalar> struct PDAL_Function {
             workspace.lams_plus_[i + 1], j);
         auto lamprev_j = sm.constraints_manager.getConstSegmentByConstraint(
             workspace.prev_lams_[i + 1], j);
-        lamplus_j = lamprev_j + mu_penal_inv_ * cstr_data.value_;
-        lamplus_j.noalias() = cstr_set.normalConeProjection(lamplus_j);
+        cstr_set.normalConeProjection(
+            lamprev_j + mu_penal_inv_ * cstr_data.value_, lamplus_j);
       }
       penalty_value +=
           .5 * mu_penal_ * workspace.lams_plus_[i + 1].squaredNorm();
