@@ -53,6 +53,7 @@ public:
   using value_store_t = internal::value_storage<Scalar>;
   using q_store_t = internal::q_function_storage<Scalar>;
   using ProxPenaltyType = ProximalPenaltyTpl<Scalar>;
+  using CallbackPtr = shared_ptr<helpers::base_callback<Scalar>>;
 
   std::vector<ProxPenaltyType> prox_penalties_;
   /// Subproblem tolerance
@@ -99,7 +100,6 @@ public:
   Workspace &getWorkspace() { return *workspace_; }
 
   /// Callbacks
-  using CallbackPtr = shared_ptr<helpers::base_callback<Scalar>>;
   std::vector<CallbackPtr> callbacks_;
 
   SolverProxDDP(const Scalar tol = 1e-6, const Scalar mu_init = 0.01,
@@ -127,6 +127,10 @@ public:
   ///           \bmlam+\alpha\delta\bmlam)\f$
   void tryStep(const Problem &problem, Workspace &workspace,
                const Results &results, const Scalar alpha) const;
+
+  /// @brief    Terminal node.
+  void computeTerminalValue(const Problem &problem, Workspace &workspace,
+                            Results &results) const;
 
   /// @brief    Perform the Riccati backward pass.
   ///

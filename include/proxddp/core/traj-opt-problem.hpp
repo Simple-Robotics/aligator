@@ -5,6 +5,8 @@
 
 #include "proxddp/modelling/state-error.hpp"
 
+#include <boost/optional.hpp>
+
 namespace proxddp {
 /**
  * @brief    Shooting problem, consisting in a succession of nodes.
@@ -24,6 +26,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   using Function = StageFunctionTpl<Scalar>;
   using ProblemData = TrajOptDataTpl<Scalar>;
   using CostAbstract = CostAbstractTpl<Scalar>;
+  using Constraint = StageConstraintTpl<Scalar>;
 
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
@@ -34,7 +37,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// Stages of the control problem.
   std::vector<std::shared_ptr<StageModel>> stages_;
   shared_ptr<CostAbstract> term_cost_;
-  shared_ptr<Function> term_constraint_;
+  boost::optional<Constraint> term_constraint_ = boost::none;
 
   TrajOptProblemTpl(const VectorXs &x0, const std::vector<StageModel> &stages,
                     const shared_ptr<CostAbstract> &term_cost)
@@ -61,7 +64,11 @@ template <typename _Scalar> struct TrajOptProblemTpl {
     stages_.push_back(stage);
   }
 
-  inline std::size_t numSteps() const;
+  void setTerminalConstraint(const Constraint &cstr) {
+    this->term_constraint_ = cstr;
+  }
+
+  std::size_t numSteps() const;
 
   /// @brief Rollout the problem costs, constraints, dynamics, stage per stage.
   void evaluate(const std::vector<VectorXs> &xs,
@@ -89,6 +96,8 @@ template <typename _Scalar> struct TrajOptDataTpl {
   std::vector<StageData> stage_data;
   /// Terminal cost data.
   shared_ptr<CostDataAbstractTpl<Scalar>> term_cost_data;
+  /// Terminal constraint data.
+  shared_ptr<FunctionDataTpl<Scalar>> term_cstr_data;
 
   TrajOptDataTpl() = delete;
   TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem);

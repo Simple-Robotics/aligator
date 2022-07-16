@@ -79,16 +79,38 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     max_ndx = std::max(max_ndx, ndx2);
   }
 
+  if (problem.term_constraint_) {
+    const StageConstraintTpl<Scalar> &tc = *problem.term_constraint_;
+    nprim = tc.func_->ndx1;
+    ndual = tc.func_->nr;
+    max_kkt_size = std::max(max_kkt_size, ndual);
+    lams_plus_.push_back(VectorXs::Zero(ndual));
+    lams_pdal_.push_back(VectorXs::Zero(ndual));
+    trial_lams_.push_back(VectorXs::Zero(ndual));
+    prev_lams_.push_back(VectorXs::Zero(ndual));
+
+    pd_step_.push_back(VectorXs::Zero(ndual));
+    dlams_.push_back(pd_step_.back().tail(ndual));
+  }
+
   kktMatrixFull_.resize(max_kkt_size, max_kkt_size);
   kktMatrixFull_.setZero();
 
   kktRhsFull_.resize(max_kkt_size, max_ndx + 1);
-  ;
   kktRhsFull_.setZero();
 
   assert(value_params.size() == nsteps + 1);
   assert(dxs_.size() == nsteps + 1);
   assert(dus_.size() == nsteps);
+}
+
+template <typename Scalar>
+std::ostream &operator<<(std::ostream &oss, const WorkspaceTpl<Scalar> &self) {
+  oss << "Workspace {";
+  oss << fmt::format("\n  num nodes      : {:d}", self.trial_us_.size())
+      << fmt::format("\n  kkt buffer size: {:d}", self.kktMatrixFull_.rows());
+  oss << "\n}";
+  return oss;
 }
 
 } // namespace proxddp

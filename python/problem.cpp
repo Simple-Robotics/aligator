@@ -28,6 +28,8 @@ void exposeProblem() {
       .add_property("num_steps", &TrajOptProblem::numSteps,
                     "Number of stages in the problem.")
       .add_property("x0", &TrajOptProblem::x0_init_, "Initial state.")
+      .def("setTerminalConstraint", &TrajOptProblem::setTerminalConstraint,
+           "Set terminal constraint.")
       .def("evaluate", &TrajOptProblem::evaluate,
            bp::args("self", "xs", "us", "prob_data"),
            "Rollout the problem costs, dynamics, and constraints.")

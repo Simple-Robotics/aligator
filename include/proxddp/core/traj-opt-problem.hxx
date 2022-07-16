@@ -41,6 +41,10 @@ void TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
   if (term_cost_) {
     term_cost_->evaluate(xs[nsteps], us[nsteps - 1], *prob_data.term_cost_data);
   }
+  if (term_constraint_) {
+    term_constraint_->func_->evaluate(xs[nsteps], us[nsteps - 1], xs[nsteps],
+                                      *prob_data.term_cstr_data);
+  }
 }
 
 template <typename Scalar>
@@ -67,6 +71,11 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
     term_cost_->computeHessians(xs[nsteps], us[nsteps - 1],
                                 *prob_data.term_cost_data);
   }
+  if (term_constraint_) {
+    (*term_constraint_)
+        .func_->computeJacobians(xs[nsteps], us[nsteps - 1], xs[nsteps],
+                                 *prob_data.term_cstr_data);
+  }
 }
 
 template <typename Scalar>
@@ -79,6 +88,10 @@ TrajOptDataTpl<Scalar>::TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem)
 
   if (problem.term_cost_) {
     term_cost_data = problem.term_cost_->createData();
+  }
+
+  if (problem.term_constraint_) {
+    term_cstr_data = (*problem.term_constraint_).func_->createData();
   }
 }
 

@@ -14,10 +14,10 @@ namespace internal {
 /// @details This provides storage for the matrix \f[
 ///     \begin{bmatrix} 2v & V_x^\top \\ V_x & V_{xx} \end{bmatrix}
 /// \f]
-template <typename Scalar> struct value_storage {
+template <typename _Scalar> struct value_storage {
+  using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   MatrixXs storage;
-  // Eigen::SelfAdjointView<MatrixXs, Eigen::Lower> store_sym_;
   Scalar &v_2() { return storage.coeffRef(0, 0); }
   VectorRef Vx_;
   MatrixRef Vxx_;
@@ -165,14 +165,9 @@ template <typename _Scalar> struct WorkspaceTpl {
     return kktRhsFull_.topLeftCorner(nprim + ndual, ndx1 + 1);
   }
 
+  template <typename T>
   friend std::ostream &operator<<(std::ostream &oss,
-                                  const WorkspaceTpl<Scalar> &self) {
-    oss << "Workspace {";
-    oss << fmt::format("\n  num nodes      : {:d}", self.trial_us_.size())
-        << fmt::format("\n  kkt buffer size: {:d}", self.kktMatrixFull_.rows());
-    oss << "\n}";
-    return oss;
-  }
+                                  const WorkspaceTpl<T> &self);
 };
 
 } // namespace proxddp

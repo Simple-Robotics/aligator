@@ -90,7 +90,7 @@ template <typename _Scalar> struct PDALFunction {
         workspace.prev_lams_[0] + mu_penal_inv_ * prob_data.init_data->value_;
     workspace.lams_pdal_[0] = 2 * workspace.lams_plus_[0] - lams[0];
     penalty_value += .5 * mu_penal_ * workspace.lams_plus_[0].squaredNorm();
-    if (this->ls_mode == LinesearchMode::PRIMAL_DUAL) {
+    if (ls_mode == LinesearchMode::PRIMAL_DUAL) {
       penalty_value += .5 * dual_weight_ * mu_penal_ *
                        (workspace.lams_plus_[0] - lams[0]).squaredNorm();
     }
@@ -113,15 +113,32 @@ template <typename _Scalar> struct PDALFunction {
             cstr_mgr.getSegmentByConstraint(workspace.lams_plus_[i + 1], j);
         auto lamprev_j = cstr_mgr.getConstSegmentByConstraint(
             workspace.prev_lams_[i + 1], j);
-        cstr_set.normalConeProjection(
-            lamprev_j + mu_penal_inv_ * cstr_data.value_, lamplus_j);
+        auto c_s_expr = cstr_data.value_ + mu_penal_ * lamprev_j;
+        penalty_value += proxnlp::computeMoreauEnvelope(
+            cstr_set, c_s_expr, mu_penal_inv_, lamplus_j);
+        lamplus_j *= mu_penal_inv_;
       }
-      penalty_value +=
-          .5 * mu_penal_ * workspace.lams_plus_[i + 1].squaredNorm();
       if (ls_mode == LinesearchMode::PRIMAL_DUAL) {
         penalty_value +=
             .5 * dual_weight_ * mu_penal_ *
             (workspace.lams_plus_[i + 1] - lams[i + 1]).squaredNorm();
+      }
+    }
+
+    if (problem.term_constraint_) {
+      const StageConstraintTpl<Scalar> &tc = *problem.term_constraint_;
+      const ConstraintSetBase<Scalar> &cstr_set = *tc.set_;
+      const FunctionData &cstr_data = *prob_data.term_cstr_data;
+      VectorXs &lamplus = workspace.lams_plus_[nsteps + 1];
+      auto c_s_expr =
+          cstr_data.value_ + mu_penal_ * workspace.prev_lams_[nsteps + 1];
+      penalty_value += proxnlp::computeMoreauEnvelope(cstr_set, c_s_expr,
+                                                      mu_penal_inv_, lamplus);
+      lamplus *= mu_penal_inv_;
+      if (ls_mode == LinesearchMode::PRIMAL_DUAL) {
+        penalty_value +=
+            .5 * dual_weight_ * mu_penal_ *
+            (workspace.lams_plus_[nsteps + 1] - lams[nsteps + 1]).squaredNorm();
       }
     }
 
