@@ -1,7 +1,7 @@
 #pragma once
 
 #include "proxddp/fwd.hpp"
-#include "proxddp/core/function.hpp"
+#include "proxddp/core/function-abstract.hpp"
 #include "proxddp/core/cost-abstract.hpp"
 #include "proxddp/modelling/state-error.hpp"
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "proxddp/fwd.hpp"
-#include "proxddp/core/function.hpp"
+#include "proxddp/core/function-abstract.hpp"
 
 #include <proxnlp/modelling/spaces/vector-space.hpp>
 #include <proxnlp/modelling/constraints/equality-constraint.hpp>
@@ -41,16 +41,16 @@ public:
   shared_ptr<Manifold> uspace_;
   /// Stage cost function.
   shared_ptr<Cost> cost_;
+  /// Constraint manager.
+  ConstraintContainer<Scalar> constraints_;
 
   const Manifold &xspace() const { return *xspace_; }
   const Manifold &uspace() const { return *uspace_; }
   const Manifold &xspace_next() const { return *xspace_next_; }
   const Dynamics &dyn_model() const {
-    return static_cast<const Dynamics &>(*constraints_manager[0].func_);
+    return static_cast<const Dynamics &>(*constraints_[0].func_);
   }
   const Cost &cost() const { return *cost_; }
-
-  ConstraintContainer<Scalar> constraints_manager;
 
   int nx1() const { return xspace_->nx(); }
   int ndx1() const { return xspace_->ndx(); }
@@ -58,9 +58,7 @@ public:
   int nx2() const { return xspace_next_->nx(); }
   int ndx2() const { return xspace_next_->ndx(); }
 
-  std::size_t numConstraints() const {
-    return constraints_manager.numConstraints();
-  }
+  std::size_t numConstraints() const { return constraints_.numConstraints(); }
 
   /// Number of primal optimization variables.
   int numPrimal() const;
@@ -82,18 +80,16 @@ public:
   virtual ~StageModelTpl() = default;
 
   /// @brief    Add a constraint to the stage.
-  void addConstraint(const Constraint &cstr) {
-    constraints_manager.push_back(cstr);
-  }
+  void addConstraint(const Constraint &cstr) { constraints_.push_back(cstr); }
   /// @copybrief addConstraint()
   void addConstraint(Constraint &&cstr) {
-    constraints_manager.push_back(std::move(cstr));
+    constraints_.push_back(std::move(cstr));
   }
   /// @copybrief  addConstraint().
   /// @details    Adds a constraint by allocating a new StageConstraintTpl.
   void addConstraint(const shared_ptr<StageFunctionTpl<Scalar>> &func,
                      const shared_ptr<ConstraintSetBase<Scalar>> &cstr_set) {
-    constraints_manager.push_back(Constraint{func, cstr_set});
+    constraints_.push_back(Constraint{func, cstr_set});
   }
 
   /* Evaluate costs, constraints, ... */
@@ -145,6 +141,19 @@ struct StageDataTpl : public Cloneable<StageDataTpl<_Scalar>> {
   /// @details  The constructor initializes or fills in the data members using
   /// move semantics.
   explicit StageDataTpl(const StageModel &stage_model);
+
+  virtual ~StageDataTpl() = default;
+
+  /// @brief Check data integrity.
+  virtual void checkData() {
+    bool cond = (constraint_data.size() >= 1) && (cost_data != 0);
+    if (!cond) {
+      std::domain_error("[StageData] integrity check failed.");
+    }
+  }
+
+protected:
+  StageDataTpl(){};
 };
 
 template <typename Scalar>

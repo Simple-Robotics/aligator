@@ -12,7 +12,7 @@ StageModelTpl<Scalar>::StageModelTpl(const shared_ptr<Manifold> &space1,
           nu)),
       cost_(cost) {
   using EqualitySet = proxnlp::EqualityConstraint<Scalar>;
-  constraints_manager.push_back(
+  constraints_.push_back(
       Constraint{dyn_model, std::make_shared<EqualitySet>()});
 }
 
@@ -27,7 +27,7 @@ template <typename Scalar> inline int StageModelTpl<Scalar>::numPrimal() const {
 }
 
 template <typename Scalar> inline int StageModelTpl<Scalar>::numDual() const {
-  return constraints_manager.totalDim();
+  return constraints_.totalDim();
 }
 
 template <typename Scalar>
@@ -37,7 +37,7 @@ void StageModelTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                      Data &data) const {
   for (std::size_t j = 0; j < numConstraints(); j++) {
     // calc on constraint
-    const Constraint &cstr = constraints_manager[j];
+    const Constraint &cstr = constraints_[j];
     cstr.func_->evaluate(x, u, y, *data.constraint_data[j]);
   }
   cost_->evaluate(x, u, *data.cost_data);
@@ -50,7 +50,7 @@ void StageModelTpl<Scalar>::computeDerivatives(const ConstVectorRef &x,
                                                Data &data) const {
   for (std::size_t j = 0; j < numConstraints(); j++) {
     // calc on constraint
-    const Constraint &cstr = constraints_manager[j];
+    const Constraint &cstr = constraints_[j];
     cstr.func_->computeJacobians(x, u, y, *data.constraint_data[j]);
   }
   cost_->computeGradients(x, u, *data.cost_data);
@@ -64,7 +64,7 @@ StageDataTpl<Scalar>::StageDataTpl(const StageModel &stage_model)
   const std::size_t nc = stage_model.numConstraints();
   for (std::size_t j = 0; j < nc; j++) {
     const shared_ptr<StageFunctionTpl<Scalar>> &func =
-        stage_model.constraints_manager[j].func_;
+        stage_model.constraints_[j].func_;
     constraint_data[j] = func->createData();
   }
 }

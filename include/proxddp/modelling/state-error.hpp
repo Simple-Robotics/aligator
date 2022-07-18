@@ -1,7 +1,7 @@
 #pragma once
 
 #include "proxddp/fwd.hpp"
-#include "proxddp/core/function.hpp"
+#include "proxddp/core/function-abstract.hpp"
 #include <proxnlp/modelling/spaces/vector-space.hpp>
 
 namespace proxddp {

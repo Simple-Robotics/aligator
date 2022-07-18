@@ -70,19 +70,23 @@ struct ExplicitDynamicsDataTpl : FunctionDataTpl<_Scalar> {
   VectorRef xoutref_;
   VectorRef dxref_;
 
-  ExplicitDynamicsDataTpl(const int ndx1, const int nu,
-                          const ManifoldAbstractTpl<Scalar> &output_space);
+  ExplicitDynamicsDataTpl(const int ndx1, const int nu, const int ndx2);
   virtual ~ExplicitDynamicsDataTpl() = default;
 
+  template <typename S>
   friend std::ostream &operator<<(std::ostream &oss,
-                                  const ExplicitDynamicsDataTpl &self) {
-    oss << "ExplicitDynamicsData { ";
-    oss << fmt::format("ndx: {:d},  ", self.ndx1);
-    oss << fmt::format("nu:  {:d}", self.nu);
-    oss << " }";
-    return oss;
-  }
+                                  const ExplicitDynamicsDataTpl<S> &self);
 };
+
+template <typename S>
+std::ostream &operator<<(std::ostream &oss,
+                         const ExplicitDynamicsDataTpl<S> &self) {
+  oss << "ExplicitDynamicsData { ";
+  oss << fmt::format("ndx: {:d},  ", self.ndx1);
+  oss << fmt::format("nu:  {:d}", self.nu);
+  oss << " }";
+  return oss;
+}
 
 } // namespace proxddp
 

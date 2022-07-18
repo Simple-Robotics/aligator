@@ -1,4 +1,4 @@
-/// @file function.hpp
+/// @file function-abstract.hpp
 /// @brief  Base definitions for ternary functions.
 #pragma once
 
@@ -158,4 +158,4 @@ public:
 
 } // namespace proxddp
 
-#include "proxddp/core/function.hxx"
+#include "proxddp/core/function-abstract.hxx"

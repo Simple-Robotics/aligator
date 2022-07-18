@@ -2,7 +2,7 @@
 /// @brief Defines the constraint object for this library.
 #pragma once
 
-#include "proxddp/core/function.hpp"
+#include "proxddp/core/function-abstract.hpp"
 
 namespace proxddp {
 

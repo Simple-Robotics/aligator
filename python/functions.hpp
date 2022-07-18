@@ -2,7 +2,7 @@
 
 #include "proxddp/python/fwd.hpp"
 
-#include "proxddp/core/function.hpp"
+#include "proxddp/core/function-abstract.hpp"
 
 namespace proxddp {
 namespace python {

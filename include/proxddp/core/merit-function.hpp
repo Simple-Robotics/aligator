@@ -106,7 +106,7 @@ template <typename _Scalar> struct PDALFunction {
       // loop over constraints
       // get corresponding multipliers from allocated memory
       for (std::size_t j = 0; j < num_c; j++) {
-        const auto &cstr_mgr = sm.constraints_manager;
+        const auto &cstr_mgr = sm.constraints_;
         const ConstraintSetBase<Scalar> &cstr_set = *cstr_mgr[j].set_;
         const FunctionData &cstr_data = *stage_data.constraint_data[j];
         auto lamplus_j =
