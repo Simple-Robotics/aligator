@@ -18,6 +18,11 @@ This package provides
 * [Boost](https://www.boost.org) >= 1.71.0
 * [eigenpy](https://github.com/stack-of-tasks/eigenpy) >= 2.7.2
 
+Python:
+
+* [typed-argument-parser](https://github.com/swansonk14/typed-argument-parser)
+* [pin-meshcat-utils](https://gitlab.inria.fr/wjallet/pin-meshcat-utils)
+
 ### Build from source
 
 ```bash
