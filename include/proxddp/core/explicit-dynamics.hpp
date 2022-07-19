@@ -25,6 +25,7 @@ public:
   using Manifold = ManifoldAbstractTpl<Scalar>;
 
   shared_ptr<Manifold> next_state_;
+  int nx2;
 
   /// The constructor requires providing the next state's manifold.
   ExplicitDynamicsModelTpl(const int ndx1, const int nu,
@@ -70,7 +71,8 @@ struct ExplicitDynamicsDataTpl : FunctionDataTpl<_Scalar> {
   VectorRef xoutref_;
   VectorRef dxref_;
 
-  ExplicitDynamicsDataTpl(const int ndx1, const int nu, const int ndx2);
+  ExplicitDynamicsDataTpl(const int ndx1, const int nu, const int nx2,
+                          const int ndx2);
   virtual ~ExplicitDynamicsDataTpl() = default;
 
   template <typename S>

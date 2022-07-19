@@ -254,7 +254,7 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
     Scalar dual_res_u = math::infty_norm(kkt_rhs_0.head(nu) - proxdata.Lu_);
     const auto &proxnext = workspace.prox_datas[i + 1];
     Scalar dual_res_y =
-        math::infty_norm(kkt_rhs_0.middleRows(nu, nprim) - proxnext.Lx_);
+        math::infty_norm(kkt_rhs_0.middleRows(nu, ndx2) - proxnext.Lx_);
     workspace.dual_infeas_by_stage(long(i)) = std::max(dual_res_u, dual_res_y);
   }
 

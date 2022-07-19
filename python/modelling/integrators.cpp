@@ -49,6 +49,8 @@ void exposeIntegrators() {
                                  bp::init<const shared_ptr<ODEType> &>(
                                      "Construct the integrator from an ODE.",
                                      bp::args("self", "cont_dynamics")))
+      .def_readonly("nx2", &ExplicitIntegratorAbstract::nx2,
+                    "Next state dimension.")
       .def_readwrite("differential_dynamics", &ExplicitIntegratorAbstract::ode_,
                      "The underlying differential equation.");
 
