@@ -9,14 +9,14 @@ namespace proxddp {
 namespace compat {
 namespace croc {
 
-template <typename Scalar> struct CrocCostDataWrapper;
+template <typename Scalar> struct CrocCostDataWrapperTpl;
 
 template <typename _Scalar>
 struct CrocCostWrapperTpl : CostAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using CrocCostModel = ::crocoddyl::CostModelAbstractTpl<Scalar>;
-  using CrocCostData = ::crocoddyl::CostDataAbstractTpl<Scalar>;
+  using CostData = ::crocoddyl::CostDataAbstractTpl<Scalar>;
   boost::shared_ptr<CrocCostModel> croc_cost_;
 
   using BaseData = CostDataAbstractTpl<Scalar>;
@@ -26,7 +26,7 @@ struct CrocCostWrapperTpl : CostAbstractTpl<_Scalar> {
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 BaseData &data) {
-    using Data = CrocCostDataWrapper<Scalar>;
+    using Data = CrocCostDataWrapperTpl<Scalar>;
     Data &d = static_cast<Data &>(data);
     croc_cost_->calc(d.croc_data_, x, u);
     d.value_ = d.croc_data_->cost;
@@ -45,11 +45,11 @@ struct CrocCostWrapperTpl : CostAbstractTpl<_Scalar> {
 };
 
 template <typename Scalar>
-struct CrocCostDataWrapper : CostDataAbstractTpl<Scalar> {
-  using CrocCostData = ::crocoddyl::CostDataAbstractTpl<Scalar>;
+struct CrocCostDataWrapperTpl : CostDataAbstractTpl<Scalar> {
+  using CostData = ::crocoddyl::CostDataAbstractTpl<Scalar>;
   using Base = CostDataAbstractTpl<Scalar>;
-  boost::shared_ptr<CrocCostData> croc_data_;
-  CrocCostDataWrapper(boost::shared_ptr<CrocCostData> crocdata)
+  boost::shared_ptr<CostData> croc_data_;
+  CrocCostDataWrapperTpl(boost::shared_ptr<CostData> crocdata)
       : Base(crocdata->Lx.rows(), crocdata->Lu.cols()), croc_data_(crocdata) {}
 };
 
