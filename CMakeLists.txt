@@ -43,7 +43,7 @@ option(BUILD_WITH_VERSION_SUFFIX "Build libraries with version appended to suffi
 # --- OPTIONAL DEPENDENCIES -------------------------
 option(BUILD_WITH_PINOCCHIO_SUPPORT "Build the library with support for Pinocchio" ON)
 option(BUILD_WITH_CASADI_SUPPORT "Build the library with the support of CASADI" OFF)
-option(BUILD_CROCODDYL_COMPAT "Build the Crocoddyl compatibility module" ON)
+option(BUILD_CROCODDYL_COMPAT "Build the Crocoddyl compatibility module" OFF)
 option(BUILD_WITH_OPENMP_SUPPORT "Build the library with the OpenMP support" ON)
 cmake_dependent_option(LINK_PYTHON_INTERFACE_TO_OPENMP "Link OpenMP to the Python interface" ON BUILD_WITH_OPENMP_SUPPORT OFF)
 option(GENERATE_PYTHON_STUBS "Generate the Python stubs associated to the Python library" OFF)
