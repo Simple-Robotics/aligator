@@ -462,17 +462,17 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
   const std::size_t nsteps = problem.numSteps();
   results.primal_infeasibility = 0.;
   Scalar infeas_over_j = 0.;
-  for (std::size_t i = 0; i < nsteps; i++) {
-    const StageModel &stage = *problem.stages_[i];
-    const StageData &stage_data = prob_data.stage_data[i];
+  for (std::size_t step = 0; step < nsteps; step++) {
+    const StageModel &stage = *problem.stages_[step];
+    const StageData &stage_data = prob_data.stage_data[step];
     infeas_over_j = 0.;
     for (std::size_t j = 0; j < stage.numConstraints(); j++) {
-      const ConstraintSetBase<Scalar> &cstr_set = *stage.constraints_[i].set_;
+      const ConstraintSetBase<Scalar> &cstr_set = *stage.constraints_[j].set_;
       auto &v = stage_data.constraint_data[j]->value_;
       cstr_set.normalConeProjection(v, v);
       infeas_over_j = std::max(infeas_over_j, math::infty_norm(v));
     }
-    workspace.primal_infeas_by_stage(long(i)) = infeas_over_j;
+    workspace.primal_infeas_by_stage(long(step)) = infeas_over_j;
   }
   results.primal_infeasibility =
       math::infty_norm(workspace.primal_infeas_by_stage);

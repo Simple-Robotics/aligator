@@ -112,10 +112,6 @@ public:
   template <typename S>
   friend std::ostream &operator<<(std::ostream &oss,
                                   const StageModelTpl<S> &stage);
-
-protected:
-  /// Constructor which does not allocate anything.
-  StageModelTpl() {}
 };
 
 /// @brief    Data struct for stage models StageModelTpl.

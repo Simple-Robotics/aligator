@@ -19,13 +19,14 @@ BOOST_AUTO_TEST_CASE(test_problem) {
   MyFixture f;
 
   auto nu = f.nu;
-  auto space = *f.space;
-  BOOST_CHECK_EQUAL(f.stage.numPrimal(), space.ndx() + nu);
-  BOOST_CHECK_EQUAL(f.stage.numDual(), space.ndx());
+  auto &space = *f.space;
+  auto &stage = *f.stage;
+  BOOST_CHECK_EQUAL(stage.numPrimal(), space.ndx() + nu);
+  BOOST_CHECK_EQUAL(stage.numDual(), space.ndx());
 
   Eigen::VectorXd u0(nu);
   u0.setZero();
-  auto x0 = f.stage.xspace_->rand();
+  auto x0 = stage.xspace_->rand();
   constexpr int nsteps = 20;
   std::vector<Eigen::VectorXd> us(nsteps, u0);
 
@@ -34,10 +35,10 @@ BOOST_AUTO_TEST_CASE(test_problem) {
     BOOST_CHECK(x0.isApprox(xs[i]));
   }
 
-  fmt::print("{}\n", f.stage);
+  fmt::print("{}\n", stage);
 
-  auto stage_data = f.stage.createData();
-  f.stage.evaluate(x0, u0, x0, *stage_data);
+  auto stage_data = stage.createData();
+  stage.evaluate(x0, u0, x0, *stage_data);
   BOOST_CHECK_EQUAL(stage_data->cost_data->value_, 0.);
 
   TrajOptDataTpl<double> prob_data(f.problem);

@@ -204,7 +204,8 @@ void exposePinocchioFunctions() {
 
   bp::class_<FrameVelocity, bp::bases<StageFunction>>(
       "FrameVelocityResidual", "Frame velocity residual function.",
-      bp::init<int, int, shared_ptr<Model>, const Motion &, pinocchio::FrameIndex, pinocchio::ReferenceFrame>(
+      bp::init<int, int, shared_ptr<Model>, const Motion &,
+               pinocchio::FrameIndex, pinocchio::ReferenceFrame>(
           bp::args("self", "ndx", "nu", "model", "v_ref")))
       .add_property("frame_id", &FrameVelocity::getFrameId,
                     &FrameVelocity::setFrameId)
@@ -220,15 +221,17 @@ void exposePinocchioFunctions() {
       bp::no_init)
       .def_readonly("pin_data", &FrameVelocityData::pin_data_,
                     "Pinocchio data struct.");
-    
+
   bp::class_<FrameTranslation, bp::bases<StageFunction>>(
       "FrameTranslationResidual", "Frame placement residual function.",
-      bp::init<int, int, shared_ptr<Model>, const context::VectorXs &, pinocchio::FrameIndex>(
+      bp::init<int, int, shared_ptr<Model>, const context::VectorXs &,
+               pinocchio::FrameIndex>(
           bp::args("self", "ndx", "nu", "model", "p_ref")))
       .add_property("frame_id", &FrameTranslation::getFrameId,
                     &FrameTranslation::setFrameId)
       .def("getReference", &FrameTranslation::getReference, bp::args("self"),
-           bp::return_internal_reference<>(), "Get the target frame translation.")
+           bp::return_internal_reference<>(),
+           "Get the target frame translation.")
       .def("setReference", &FrameTranslation::setReference,
            bp::args("self", "p_new"), "Set the target frame translation.");
 

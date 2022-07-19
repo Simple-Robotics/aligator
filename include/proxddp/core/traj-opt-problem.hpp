@@ -24,7 +24,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   using Scalar = _Scalar;
   using StageModel = StageModelTpl<Scalar>;
   using Function = StageFunctionTpl<Scalar>;
-  using ProblemData = TrajOptDataTpl<Scalar>;
+  using TrajOptData = TrajOptDataTpl<Scalar>;
   using CostAbstract = CostAbstractTpl<Scalar>;
   using Constraint = StageConstraintTpl<Scalar>;
 
@@ -39,15 +39,12 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   shared_ptr<CostAbstract> term_cost_;
   boost::optional<Constraint> term_constraint_ = boost::none;
 
-  TrajOptProblemTpl(const VectorXs &x0, const std::vector<StageModel> &stages,
+  TrajOptProblemTpl(const VectorXs &x0,
+                    const std::vector<shared_ptr<StageModel>> &stages,
                     const shared_ptr<CostAbstract> &term_cost)
       : x0_init_(x0),
-        init_state_error(stages[0].xspace_, stages[0].nu(), x0_init_),
-        term_cost_(term_cost) {
-    for (std::size_t i = 0; i < stages.size(); i++) {
-      this->addStage(stages[i]);
-    }
-  }
+        init_state_error(stages[0]->xspace_, stages[0]->nu(), x0_init_),
+        stages_(stages), term_cost_(term_cost) {}
 
   TrajOptProblemTpl(const VectorXs &x0, const int nu,
                     const shared_ptr<ManifoldAbstractTpl<Scalar>> &space,
@@ -56,10 +53,6 @@ template <typename _Scalar> struct TrajOptProblemTpl {
         term_cost_(term_cost) {}
 
   /// @brief Add a stage to the control problem.
-  void addStage(const StageModel &stage);
-  /// @copybrief addStage()
-  void addStage(StageModel &&stage);
-
   void addStage(const shared_ptr<StageModel> &stage) {
     stages_.push_back(stage);
   }
@@ -72,7 +65,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 
   /// @brief Rollout the problem costs, constraints, dynamics, stage per stage.
   void evaluate(const std::vector<VectorXs> &xs,
-                const std::vector<VectorXs> &us, ProblemData &prob_data) const;
+                const std::vector<VectorXs> &us, TrajOptData &prob_data) const;
 
   /**
    * @brief Rollout the problem derivatives, stage per stage.
@@ -82,7 +75,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
    */
   void computeDerivatives(const std::vector<VectorXs> &xs,
                           const std::vector<VectorXs> &us,
-                          ProblemData &prob_data) const;
+                          TrajOptData &prob_data) const;
 };
 
 /// @brief Problem data struct.

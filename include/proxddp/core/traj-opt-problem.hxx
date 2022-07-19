@@ -6,15 +6,6 @@
 #include <fmt/ostream.h>
 
 namespace proxddp {
-template <typename Scalar>
-void TrajOptProblemTpl<Scalar>::addStage(const StageModel &stage) {
-  stages_.push_back(std::make_shared<StageModel>(stage));
-}
-
-template <typename Scalar>
-void TrajOptProblemTpl<Scalar>::addStage(StageModel &&stage) {
-  stages_.push_back(std::make_shared<StageModel>(stage));
-}
 
 template <typename Scalar>
 inline std::size_t TrajOptProblemTpl<Scalar>::numSteps() const {
@@ -24,7 +15,7 @@ inline std::size_t TrajOptProblemTpl<Scalar>::numSteps() const {
 template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
                                          const std::vector<VectorXs> &us,
-                                         ProblemData &prob_data) const {
+                                         TrajOptData &prob_data) const {
   const std::size_t nsteps = numSteps();
   const bool sizes_correct = (xs.size() == nsteps + 1) && (us.size() == nsteps);
   if (!sizes_correct) {
@@ -50,7 +41,7 @@ void TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
 template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::computeDerivatives(
     const std::vector<VectorXs> &xs, const std::vector<VectorXs> &us,
-    ProblemData &prob_data) const {
+    TrajOptData &prob_data) const {
   const std::size_t nsteps = numSteps();
   const bool sizes_correct = (xs.size() == nsteps + 1) && (us.size() == nsteps);
   if (!sizes_correct) {
@@ -80,10 +71,10 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
 
 template <typename Scalar>
 TrajOptDataTpl<Scalar>::TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem)
-    : init_data(std::move(problem.init_state_error.createData())) {
+    : init_data(problem.init_state_error.createData()) {
   stage_data.reserve(problem.numSteps());
   for (std::size_t i = 0; i < problem.numSteps(); i++) {
-    stage_data.push_back(std::move(*problem.stages_[i]->createData()));
+    stage_data.push_back(*problem.stages_[i]->createData());
   }
 
   if (problem.term_cost_) {

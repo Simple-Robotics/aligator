@@ -63,9 +63,15 @@ template <typename Scalar> struct ConstraintContainer {
   int totalDim() const { return total_dim; }
 
   /// Get the i-th constraint.
-  Constraint &operator[](std::size_t i) { return storage_[i]; }
+  Constraint &operator[](std::size_t i) {
+    assert((i < this->storage_.size()) && "i exceeds number of constraints!");
+    return storage_[i];
+  }
 
-  const Constraint &operator[](std::size_t i) const { return storage_[i]; }
+  const Constraint &operator[](std::size_t i) const {
+    assert((i < this->storage_.size()) && "i exceeds number of constraints!");
+    return storage_[i];
+  }
 
 protected:
   std::vector<Constraint> storage_;

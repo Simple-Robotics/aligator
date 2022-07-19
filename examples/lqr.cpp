@@ -45,7 +45,8 @@ int main() {
   // Define stage
 
   double u_bound = 0.2;
-  StageModelTpl<double> stage(spaceptr, nu, rcost, dynptr);
+  auto stage =
+      std::make_shared<StageModelTpl<double>>(spaceptr, nu, rcost, dynptr);
   auto ctrl_bounds_fun = std::make_shared<ControlBoxFunctionTpl<double>>(
       dim, nu, -u_bound, u_bound);
 
@@ -56,7 +57,7 @@ int main() {
     fmt::print("control box fun has bounds:\n{} max\n{} min\n",
                ctrl_bounds_fun->umax_, ctrl_bounds_fun->umin_);
     using InequalitySet = proxnlp::NegativeOrthant<double>;
-    stage.addConstraint(ctrl_bounds_fun, std::make_shared<InequalitySet>());
+    stage->addConstraint(ctrl_bounds_fun, std::make_shared<InequalitySet>());
   }
 
   auto x0 = spaceptr->rand();
@@ -69,7 +70,7 @@ int main() {
   std::vector<Eigen::VectorXd> us;
   for (std::size_t i = 0; i < nsteps; i++) {
     us.push_back(Eigen::VectorXd::Random(nu));
-    problem.addStage(*stage.clone());
+    problem.addStage(stage);
   }
 
   auto xs = rollout(dynamics, x0, us);
