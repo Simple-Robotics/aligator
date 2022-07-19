@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 
 
 class Args(tap.Tap):
-    use_term_cstr: bool = True
+    use_term_cstr: bool = False
 
 
 args = Args().parse_args()
@@ -131,6 +131,18 @@ rcost.addCost(
         proxddp.ControlErrorResidual(ndx, np.zeros(nu)), np.diag(wu)
     )
 )
+frame_place_target = pin.SE3.Identity()
+frame_place_target.translation = target_pos
+frame_err = proxddp.FramePlacementResidual(
+    ndx,
+    nu,
+    model,
+    frame_place_target,
+    frame_id,
+)
+weights_frame_place = np.zeros(6)
+weights_frame_place[:3] = np.ones(3) * 1.0
+rcost.addCost(proxddp.QuadraticResidualCost(frame_err, np.diag(weights_frame_place)))
 term_cost = proxddp.CostStack(ndx, nu)
 stage = proxddp.StageModel(space, nu, rcost, disc_dyn)
 
@@ -153,6 +165,14 @@ for i in range(nsteps):
                 term_fun, proxnlp.constraints.EqualityConstraintSet()
             )
         )
+        term_fun2 = proxddp.FrameVelocityResidual(
+            nx, nu, model, pin.Motion(np.zeros(6)), frame_id, pin.ReferenceFrame.LOCAL
+        )
+        stage.addConstraint(
+            proxddp.StageConstraint(
+                term_fun2, proxnlp.constraints.EqualityConstraintSet()
+            )
+        )
         xtar = space.neutral()
     problem.addStage(stage)
 
@@ -171,6 +191,7 @@ problem.evaluate(xs_i, us_i, prob_data)
 solver.setup(problem)
 solver.run(problem, xs_i, us_i)
 res = solver.getResults()
+print(res)
 
 plt.figure(figsize=(9.6, 4.8))
 plt.subplot(121)
