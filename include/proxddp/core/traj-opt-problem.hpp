@@ -32,7 +32,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 
   /// Initial condition
   VectorXs x0_init_;
-  StateErrorResidual<Scalar> init_state_error;
+  StateErrorResidualTpl<Scalar> init_state_error;
 
   /// Stages of the control problem.
   std::vector<shared_ptr<StageModel>> stages_;

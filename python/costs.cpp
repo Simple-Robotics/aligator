@@ -62,14 +62,14 @@ void exposeCosts() {
           "Constructor with just weights.", bp::args("self", "w_x", "w_u")))
       .def(CopyableVisitor<QuadraticCost<Scalar>>());
 
-  bp::class_<QuadraticResidualCost<Scalar>, bp::bases<context::CostBase>>(
+  bp::class_<QuadraticResidualCostTpl<Scalar>, bp::bases<context::CostBase>>(
       "QuadraticResidualCost", "Weighted 2-norm of a given residual function.",
       bp::init<const shared_ptr<StageFunction> &, const context::MatrixXs &>(
           bp::args("self", "function", "weights")))
-      .def_readwrite("residual", &QuadraticResidualCost<Scalar>::residual_)
-      .def_readwrite("weights", &QuadraticResidualCost<Scalar>::weights_)
-      .def(CopyableVisitor<QuadraticResidualCost<Scalar>>())
-      .def(CreateDataPythonVisitor<QuadraticResidualCost<Scalar>>());
+      .def_readwrite("residual", &QuadraticResidualCostTpl<Scalar>::residual_)
+      .def_readwrite("weights", &QuadraticResidualCostTpl<Scalar>::weights_)
+      .def(CopyableVisitor<QuadraticResidualCostTpl<Scalar>>())
+      .def(CreateDataPythonVisitor<QuadraticResidualCostTpl<Scalar>>());
 
   bp::class_<CostData, shared_ptr<CostData>>(
       "CostData", "Cost function data struct.",

@@ -117,12 +117,12 @@ void exposeFunctions() {
       std::vector<shared_ptr<context::StageFunctionData>>,
       true>::expose("StdVec_FunctionData", "Vector of function data objects.");
 
-  bp::class_<StateErrorResidual<Scalar>, bp::bases<StageFunction>>(
+  bp::class_<StateErrorResidualTpl<Scalar>, bp::bases<StageFunction>>(
       "StateErrorResidual", bp::init<const shared_ptr<context::Manifold> &,
                                      const int, const context::VectorXs &>(
                                 bp::args("self", "xspace", "nu", "target")))
-      .def_readonly("xspace", &StateErrorResidual<Scalar>::space_)
-      .def_readwrite("target", &StateErrorResidual<Scalar>::target_);
+      .def_readonly("xspace", &StateErrorResidualTpl<Scalar>::space_)
+      .def_readwrite("target", &StateErrorResidualTpl<Scalar>::target_);
 
   bp::class_<ControlErrorResidual<Scalar>, bp::bases<StageFunction>>(
       "ControlErrorResidual",

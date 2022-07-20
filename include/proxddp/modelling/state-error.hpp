@@ -101,7 +101,7 @@ template <typename Scalar> struct ErrorResidualData : FunctionDataTpl<Scalar> {
 };
 
 template <typename Scalar>
-using StateErrorResidual = StateOrControlErrorResidual<Scalar, 0>;
+using StateErrorResidualTpl = StateOrControlErrorResidual<Scalar, 0>;
 
 template <typename Scalar>
 using ControlErrorResidual = StateOrControlErrorResidual<Scalar, 1>;
