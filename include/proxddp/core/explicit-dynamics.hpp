@@ -64,6 +64,10 @@ struct ExplicitDynamicsDataTpl : FunctionDataTpl<_Scalar> {
   using Scalar = _Scalar;
   PROXNLP_FUNCTION_TYPEDEFS(Scalar);
   using Base = FunctionDataTpl<Scalar>;
+  using Base::Ju_;
+  using Base::Jx_;
+  using Base::Jy_;
+  using Base::value_;
   VectorXs xnext_;
   VectorXs dx_;
   MatrixXs Jtmp_xnext;
