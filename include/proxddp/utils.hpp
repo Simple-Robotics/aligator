@@ -5,6 +5,7 @@
 #include "proxddp/core/explicit-dynamics.hpp"
 
 #include "proxddp/utils/newton-raphson.hpp"
+#include "proxddp/utils/exceptions.hpp"
 
 #include <stdexcept>
 
@@ -61,7 +62,7 @@ rollout(const std::vector<const ExplicitDynamicsModelTpl<Scalar> *> &dyn_models,
   const std::size_t N = us.size();
   xs.reserve(N + 1);
   if (dyn_models.size() != N) {
-    throw std::domain_error(
+    proxddp_runtime_error(
         "Number of controls should be the same as number of dynamical models!");
   }
 
