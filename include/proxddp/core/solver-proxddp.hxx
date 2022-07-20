@@ -4,6 +4,7 @@
 #pragma once
 
 #include "proxddp/core/solver-proxddp.hpp"
+#include "proxddp/utils/exceptions.hpp"
 
 #include <Eigen/Cholesky>
 
@@ -273,7 +274,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
                                 const std::vector<VectorXs> &xs_init,
                                 const std::vector<VectorXs> &us_init) {
   if (workspace_ == 0 || results_ == 0) {
-    throw std::runtime_error("workspace and results were not allocated yet!");
+    proxddp_runtime_error("workspace and results were not allocated yet!");
   }
   Workspace &workspace = *workspace_;
   Results &results = *results_;
