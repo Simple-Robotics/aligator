@@ -24,6 +24,7 @@ void exposeProblem();
 /// Expose continuous dynamics models.
 void exposeODEs();
 void exposeFreeFwdDynamics();
+void exposeConstraintFwdDynamics();
 void exposeDynamics();
 /// Expose integrators
 void exposeIntegrators();
