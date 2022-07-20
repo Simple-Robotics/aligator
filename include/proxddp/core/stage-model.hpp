@@ -4,7 +4,6 @@
 #include "proxddp/core/function-abstract.hpp"
 
 #include <proxnlp/modelling/spaces/vector-space.hpp>
-#include <proxnlp/modelling/constraints/equality-constraint.hpp>
 
 #include "proxddp/core/cost-abstract.hpp"
 #include "proxddp/core/dynamics.hpp"
@@ -32,6 +31,7 @@ public:
   using Constraint = StageConstraintTpl<Scalar>;
   using Cost = CostAbstractTpl<Scalar>;
   using Data = StageDataTpl<Scalar>;
+  using VectorSpace = proxnlp::VectorSpaceTpl<Scalar>;
 
   /// State space for the current state \f$x_k\f$.
   shared_ptr<Manifold> xspace_;
@@ -47,10 +47,11 @@ public:
   const Manifold &xspace() const { return *xspace_; }
   const Manifold &uspace() const { return *uspace_; }
   const Manifold &xspace_next() const { return *xspace_next_; }
-  const Dynamics &dyn_model() const {
+  virtual const Dynamics &dyn_model() const {
+    assert(constraints_.numConstraints() > 0);
     return static_cast<const Dynamics &>(*constraints_[0].func_);
   }
-  const Cost &cost() const { return *cost_; }
+  virtual const Cost &cost() const { return *cost_; }
 
   int nx1() const { return xspace_->nx(); }
   int ndx1() const { return xspace_->ndx(); }
@@ -80,17 +81,12 @@ public:
   virtual ~StageModelTpl() = default;
 
   /// @brief    Add a constraint to the stage.
-  void addConstraint(const Constraint &cstr) { constraints_.push_back(cstr); }
-  /// @copybrief addConstraint()
-  void addConstraint(Constraint &&cstr) {
-    constraints_.push_back(std::move(cstr));
-  }
+  template <typename T> void addConstraint(T &&cstr);
+
   /// @copybrief  addConstraint().
   /// @details    Adds a constraint by allocating a new StageConstraintTpl.
   void addConstraint(const shared_ptr<StageFunctionTpl<Scalar>> &func,
-                     const shared_ptr<ConstraintSetBase<Scalar>> &cstr_set) {
-    constraints_.push_back(Constraint{func, cstr_set});
-  }
+                     const shared_ptr<ConstraintSetBase<Scalar>> &cstr_set);
 
   /* Evaluate costs, constraints, ... */
 
@@ -105,13 +101,16 @@ public:
                                   const ConstVectorRef &y, Data &data) const;
 
   /// @brief    Create a Data object.
-  virtual std::shared_ptr<Data> createData() const {
-    return std::make_shared<Data>(*this);
-  }
+  virtual shared_ptr<Data> createData() const;
 
   template <typename S>
   friend std::ostream &operator<<(std::ostream &oss,
                                   const StageModelTpl<S> &stage);
+
+protected:
+  StageModelTpl(const shared_ptr<Manifold> &space, const int nu)
+      : xspace_(space), xspace_next_(space),
+        uspace_(std::make_shared<VectorSpace>(nu)) {}
 };
 
 /// @brief    Data struct for stage models StageModelTpl.
@@ -127,10 +126,8 @@ struct StageDataTpl : public Cloneable<StageDataTpl<_Scalar>> {
 
   /// Data structs for the functions involved in the constraints.
   std::vector<shared_ptr<FunctionData>> constraint_data;
-  /// Data struct for the dynamics.
-  shared_ptr<DynamicsData> dyn_data() { return constraint_data[0]; }
   /// Data for the running costs.
-  const shared_ptr<CostDataAbstract> cost_data;
+  shared_ptr<CostDataAbstract> cost_data;
 
   /// @brief    Constructor.
   ///
@@ -152,27 +149,6 @@ protected:
   StageDataTpl(){};
 };
 
-template <typename Scalar>
-std::ostream &operator<<(std::ostream &oss,
-                         const StageModelTpl<Scalar> &stage) {
-  oss << "StageModel { ";
-  if (stage.ndx1() == stage.ndx2()) {
-    oss << "ndx: " << stage.ndx1() << ", "
-        << "nu:  " << stage.nu();
-  } else {
-    oss << "ndx1:" << stage.ndx1() << ", "
-        << "nu:  " << stage.nu() << ", "
-        << "ndx2:" << stage.ndx2();
-  }
-
-  if (stage.numConstraints() > 0) {
-    oss << ", ";
-    oss << "nc: " << stage.numConstraints();
-  }
-
-  oss << " }";
-  return oss;
-}
 } // namespace proxddp
 
 #include "proxddp/core/stage-model.hxx"
