@@ -7,13 +7,8 @@
 
 namespace proxddp {
 template <typename Scalar>
-bool CostStackTpl<Scalar>::checkDimension(const CostBase *comp) const {
-  return (comp->ndx == this->ndx) && (comp->nu == this->nu);
-}
-
-template <typename Scalar>
 CostStackTpl<Scalar>::CostStackTpl(const int ndx, const int nu,
-                                   const VectorOfCosts &comps,
+                                   const std::vector<CostPtr> &comps,
                                    const std::vector<Scalar> &weights)
     : CostBase(ndx, nu), components_(comps), weights_(weights) {
   if (comps.size() != weights.size()) {
@@ -35,16 +30,20 @@ CostStackTpl<Scalar>::CostStackTpl(const int ndx, const int nu,
 }
 
 template <typename Scalar>
-CostStackTpl<Scalar>::CostStackTpl(const shared_ptr<CostBase> &comp)
-    : CostStackTpl(comp->ndx, comp->nu, {comp}, {1.}) {}
+CostStackTpl<Scalar>::CostStackTpl(const CostPtr &cost)
+    : CostStackTpl(cost->ndx, cost->nu, {cost}, {1.}) {}
+
+template <typename Scalar>
+bool CostStackTpl<Scalar>::checkDimension(const CostBase *comp) const {
+  return (comp->ndx == this->ndx) && (comp->nu == this->nu);
+}
 
 template <typename Scalar> std::size_t CostStackTpl<Scalar>::size() const {
   return components_.size();
 }
 
 template <typename Scalar>
-void CostStackTpl<Scalar>::addCost(const shared_ptr<CostBase> &cost,
-                                   const Scalar weight) {
+void CostStackTpl<Scalar>::addCost(const CostPtr &cost, const Scalar weight) {
   if (!this->checkDimension(cost.get())) {
     throw std::domain_error(fmt::format(
         "Cannot add new component due to inconsistent input dimensions "
@@ -94,6 +93,17 @@ void CostStackTpl<Scalar>::computeHessians(const ConstVectorRef &x,
 template <typename Scalar>
 shared_ptr<CostDataAbstractTpl<Scalar>>
 CostStackTpl<Scalar>::createData() const {
-  return std::make_shared<SumCostData>(*this);
+  return std::make_shared<SumCostData>(this);
 }
+
+/* SumCostData */
+
+template <typename Scalar>
+SumCostDataTpl<Scalar>::SumCostDataTpl(const CostStackTpl<Scalar> *obj)
+    : CostData(obj->ndx, obj->nu) {
+  for (std::size_t i = 0; i < obj->size(); i++) {
+    sub_datas.push_back(obj->components_[i]->createData());
+  }
+}
+
 } // namespace proxddp

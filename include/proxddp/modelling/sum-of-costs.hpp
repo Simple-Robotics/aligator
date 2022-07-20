@@ -4,6 +4,8 @@
 
 namespace proxddp {
 
+template <typename Scalar> struct SumCostDataTpl;
+
 /** @brief Weighted sum of multiple cost components.
  *
  * @details This is expressed as
@@ -16,19 +18,10 @@ template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using CostBase = CostAbstractTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
-  using VectorOfCosts = std::vector<shared_ptr<CostBase>>;
+  using CostPtr = shared_ptr<CostBase>;
+  using SumCostData = SumCostDataTpl<Scalar>;
 
-  /// Specific data holding struct for CostStackTpl.
-  struct SumCostData : CostData {
-    std::vector<shared_ptr<CostData>> sub_datas;
-    SumCostData(const CostStackTpl &obj) : CostData(obj.ndx, obj.nu) {
-      for (std::size_t i = 0; i < obj.size(); i++) {
-        sub_datas.push_back(std::move(obj.components_[i]->createData()));
-      }
-    }
-  };
-
-  VectorOfCosts components_;
+  std::vector<CostPtr> components_;
   std::vector<Scalar> weights_;
 
   /// @brief    Check the dimension of a component.
@@ -38,13 +31,14 @@ template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
 
   /// @brief  Constructor with a specified dimension, and optional vector of
   /// components and weights.
-  CostStackTpl(const int ndx, const int nu, const VectorOfCosts &comps = {},
+  CostStackTpl(const int ndx, const int nu,
+               const std::vector<CostPtr> &comps = {},
                const std::vector<Scalar> &weights = {});
 
   /// @brief  Constructor from a single CostBase instance.
-  CostStackTpl(const shared_ptr<CostBase> &comp);
+  CostStackTpl(const CostPtr &cost);
 
-  void addCost(const shared_ptr<CostBase> &cost, const Scalar weight = 1.);
+  void addCost(const CostPtr &cost, const Scalar weight = 1.);
 
   std::size_t size() const;
 
@@ -106,6 +100,13 @@ shared_ptr<CostStackTpl<T>> operator*(T u, shared_ptr<CostStackTpl<T>> &&c1) {
   return std::move(c1);
 }
 
+template <typename _Scalar>
+struct SumCostDataTpl : CostDataAbstractTpl<_Scalar> {
+  using Scalar = _Scalar;
+  using CostData = CostDataAbstractTpl<Scalar>;
+  std::vector<shared_ptr<CostData>> sub_datas;
+  SumCostDataTpl(const CostStackTpl<Scalar> *obj);
+};
 } // namespace proxddp
 
 #include "proxddp/modelling/sum-of-costs.hxx"
