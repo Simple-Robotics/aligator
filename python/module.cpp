@@ -4,7 +4,7 @@
 #include "proxddp/utils.hpp"
 
 #ifdef WITH_CROCODDYL_COMPAT
-#include "proxddp/compat/crocoddyl/problem-wrap.hpp"
+#include "proxddp/python/compat/croco.hpp"
 #endif
 
 namespace proxddp {
@@ -68,15 +68,6 @@ BOOST_PYTHON_MODULE(pyproxddp) {
   exposeCallbacks();
 
 #ifdef WITH_CROCODDYL_COMPAT
-
-  {
-    bp::scope croc = get_namespace("croc");
-    namespace ns_croc = ::proxddp::compat::croc;
-    bp::def("convertCrocoddylProblem",
-            &ns_croc::convertCrocoddylProblem<context::Scalar>,
-            bp::args("croc_problem"),
-            "Convert a Crocoddyl problem to a ProxDDP problem.");
-  }
-
+  exposeCrocoddylCompat();
 #endif
 }
