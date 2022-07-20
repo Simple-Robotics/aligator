@@ -114,7 +114,7 @@ void exposeCosts() {
     using CompositeData = CompositeCostDataTpl<Scalar>;
     bp::class_<CompositeData, bp::bases<CostData>>("CompositeCostData",
                                                    bp::init<int, int>())
-        .def_readwrite("underlying_data", &CompositeData::underlying_data);
+        .def_readwrite("residual_data", &CompositeData::residual_data);
   }
 }
 

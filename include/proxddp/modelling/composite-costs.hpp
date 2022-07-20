@@ -9,7 +9,7 @@ namespace proxddp {
 /// Data struct for composite costs.
 template <typename Scalar>
 struct CompositeCostDataTpl : CostDataAbstractTpl<Scalar> {
-  shared_ptr<FunctionDataTpl<Scalar>> underlying_data;
+  shared_ptr<FunctionDataTpl<Scalar>> residual_data;
   CompositeCostDataTpl(const int ndx, const int nu)
       : CostDataAbstractTpl<Scalar>(ndx, nu) {}
 };
@@ -42,7 +42,7 @@ struct QuadraticResidualCostTpl : CostAbstractTpl<_Scalar> {
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 CostDataAbstract &data_) const {
     auto &data = static_cast<Data &>(data_);
-    auto &under_data = *data.underlying_data;
+    auto &under_data = *data.residual_data;
     residual_->evaluate(x, u, x, under_data);
     data.value_ = .5 * under_data.value_.dot(weights_ * under_data.value_);
   }
@@ -50,7 +50,7 @@ struct QuadraticResidualCostTpl : CostAbstractTpl<_Scalar> {
   void computeGradients(const ConstVectorRef &x, const ConstVectorRef &u,
                         CostDataAbstract &data_) const {
     auto &data = static_cast<Data &>(data_);
-    auto &under_data = *data.underlying_data;
+    auto &under_data = *data.residual_data;
     residual_->computeJacobians(x, u, x, under_data);
     const long size = data.grad_.size();
     MatrixRef J = under_data.jac_buffer_.leftCols(size);
@@ -60,7 +60,7 @@ struct QuadraticResidualCostTpl : CostAbstractTpl<_Scalar> {
   void computeHessians(const ConstVectorRef &x, const ConstVectorRef &u,
                        CostDataAbstract &data_) const {
     auto &data = static_cast<Data &>(data_);
-    auto &under_data = *data.underlying_data;
+    auto &under_data = *data.residual_data;
     const long size = data.grad_.size();
     MatrixRef J = under_data.jac_buffer_.leftCols(size);
     data.hess_ = J.transpose() * (weights_ * J);
@@ -73,7 +73,7 @@ struct QuadraticResidualCostTpl : CostAbstractTpl<_Scalar> {
 
   shared_ptr<CostDataAbstract> createData() const {
     Data *d = new Data{this->ndx, this->nu};
-    d->underlying_data = std::move(residual_->createData());
+    d->residual_data = std::move(residual_->createData());
     return shared_ptr<CostDataAbstract>(std::move(d));
   }
 };
@@ -108,14 +108,14 @@ template <typename Scalar> struct LogResidualCostTpl : CostAbstractTpl<Scalar> {
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 CostDataAbstract &data) const {
     Data &d = static_cast<Data &>(data);
-    residual_->evaluate(x, u, x, *d.underlying_data);
-    d.value_ = barrier_weights_.dot(d.underlying_data->value_.log());
+    residual_->evaluate(x, u, x, *d.residual_data);
+    d.value_ = barrier_weights_.dot(d.residual_data->value_.log());
   }
 
   void computeGradients(const ConstVectorRef &x, const ConstVectorRef &u,
                         CostDataAbstract &data) const {
     Data &d = static_cast<Data &>(data);
-    auto &under_d = *d.underlying_data;
+    auto &under_d = *d.residual_data;
     residual_->computeJacobians(x, u, x, under_d);
     d.grad_.setZero();
     VectorXs &v = under_d.value_;
@@ -129,7 +129,7 @@ template <typename Scalar> struct LogResidualCostTpl : CostAbstractTpl<Scalar> {
   void computeHessians(const ConstVectorRef &, const ConstVectorRef &,
                        CostDataAbstract &data) const {
     Data &d = static_cast<Data &>(data);
-    auto &under_d = *d.underlying_data;
+    auto &under_d = *d.residual_data;
     d.hess_.setZero();
     VectorXs &v = under_d.value_;
     const int nrows = residual_->nr;
