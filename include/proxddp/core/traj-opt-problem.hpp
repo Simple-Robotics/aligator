@@ -35,31 +35,23 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   StateErrorResidual<Scalar> init_state_error;
 
   /// Stages of the control problem.
-  std::vector<std::shared_ptr<StageModel>> stages_;
+  std::vector<shared_ptr<StageModel>> stages_;
   shared_ptr<CostAbstract> term_cost_;
   boost::optional<Constraint> term_constraint_ = boost::none;
 
   TrajOptProblemTpl(const VectorXs &x0,
                     const std::vector<shared_ptr<StageModel>> &stages,
-                    const shared_ptr<CostAbstract> &term_cost)
-      : x0_init_(x0),
-        init_state_error(stages[0]->xspace_, stages[0]->nu(), x0_init_),
-        stages_(stages), term_cost_(term_cost) {}
+                    const shared_ptr<CostAbstract> &term_cost);
 
   TrajOptProblemTpl(const VectorXs &x0, const int nu,
                     const shared_ptr<ManifoldAbstractTpl<Scalar>> &space,
-                    const shared_ptr<CostAbstract> &term_cost)
-      : x0_init_(x0), init_state_error(space, nu, x0_init_),
-        term_cost_(term_cost) {}
+                    const shared_ptr<CostAbstract> &term_cost);
 
   /// @brief Add a stage to the control problem.
-  void addStage(const shared_ptr<StageModel> &stage) {
-    stages_.push_back(stage);
-  }
+  void addStage(const shared_ptr<StageModel> &stage);
 
-  void setTerminalConstraint(const Constraint &cstr) {
-    this->term_constraint_ = cstr;
-  }
+  /// @brief Set a terminal constraint for the model.
+  void setTerminalConstraint(const Constraint &cstr);
 
   std::size_t numSteps() const;
 
@@ -86,7 +78,7 @@ template <typename _Scalar> struct TrajOptDataTpl {
 
   shared_ptr<FunctionDataTpl<Scalar>> init_data;
   /// Data structs for each stage of the problem.
-  std::vector<StageData> stage_data;
+  std::vector<shared_ptr<StageData>> stage_data;
   /// Terminal cost data.
   shared_ptr<CostDataAbstractTpl<Scalar>> term_cost_data;
   /// Terminal constraint data.
@@ -94,6 +86,9 @@ template <typename _Scalar> struct TrajOptDataTpl {
 
   TrajOptDataTpl() = delete;
   TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem);
+
+  StageData &getData(std::size_t i) { return *stage_data[i]; }
+  const StageData &getData(std::size_t i) const { return *stage_data[i]; }
 };
 
 /**
@@ -108,7 +103,7 @@ Scalar computeTrajectoryCost(const TrajOptProblemTpl<Scalar> &problem,
 
   const std::size_t nsteps = problem.numSteps();
   for (std::size_t step = 0; step < nsteps; step++) {
-    const StageDataTpl<Scalar> &sd = problem_data.stage_data[step];
+    const StageDataTpl<Scalar> &sd = problem_data.getData(step);
     traj_cost += sd.cost_data->value_;
   }
   traj_cost += problem_data.term_cost_data->value_;

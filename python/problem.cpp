@@ -42,6 +42,10 @@ void exposeProblem() {
   bp::class_<TrajOptData>(
       "TrajOptData", "Data struct for shooting problems.",
       bp::init<const TrajOptProblem &>(bp::args("self", "problem")))
+      .def_readonly("term_cost", &TrajOptData::term_cost_data,
+                    "Terminal cost data.")
+      .def_readonly("term_constraint", &TrajOptData::term_cstr_data,
+                    "Terminal constraint data.")
       .add_property(
           "stage_data",
           bp::make_getter(&TrajOptData::stage_data,

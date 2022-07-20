@@ -1,16 +1,27 @@
 #pragma once
 
 #include "proxddp/core/traj-opt-problem.hpp"
+#include "proxddp/utils/exceptions.hpp"
 
 #include <fmt/core.h>
-#include <fmt/ostream.h>
 
 namespace proxddp {
 
 template <typename Scalar>
-inline std::size_t TrajOptProblemTpl<Scalar>::numSteps() const {
-  return stages_.size();
-}
+TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
+    const VectorXs &x0, const std::vector<shared_ptr<StageModel>> &stages,
+    const shared_ptr<CostAbstract> &term_cost)
+    : x0_init_(x0),
+      init_state_error(stages[0]->xspace_, stages[0]->nu(), x0_init_),
+      stages_(stages), term_cost_(term_cost) {}
+
+template <typename Scalar>
+TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
+    const VectorXs &x0, const int nu,
+    const shared_ptr<ManifoldAbstractTpl<Scalar>> &space,
+    const shared_ptr<CostAbstract> &term_cost)
+    : x0_init_(x0), init_state_error(space, nu, x0_init_),
+      term_cost_(term_cost) {}
 
 template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
@@ -19,14 +30,14 @@ void TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
   const std::size_t nsteps = numSteps();
   const bool sizes_correct = (xs.size() == nsteps + 1) && (us.size() == nsteps);
   if (!sizes_correct) {
-    throw std::runtime_error(fmt::format(
+    proxddp_runtime_error(fmt::format(
         "Wrong size for xs or us, expected us.size = {:d}", nsteps));
   }
 
   init_state_error.evaluate(xs[0], us[0], xs[1], *prob_data.init_data);
 
   for (std::size_t i = 0; i < nsteps; i++) {
-    stages_[i]->evaluate(xs[i], us[i], xs[i + 1], prob_data.stage_data[i]);
+    stages_[i]->evaluate(xs[i], us[i], xs[i + 1], prob_data.getData(i));
   }
 
   if (term_cost_) {
@@ -45,7 +56,7 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
   const std::size_t nsteps = numSteps();
   const bool sizes_correct = (xs.size() == nsteps + 1) && (us.size() == nsteps);
   if (!sizes_correct) {
-    throw std::runtime_error(fmt::format(
+    proxddp_runtime_error(fmt::format(
         "Wrong size for xs or us, expected us.size = {:d}", nsteps));
   }
 
@@ -53,7 +64,7 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
 
   for (std::size_t i = 0; i < nsteps; i++) {
     stages_[i]->computeDerivatives(xs[i], us[i], xs[i + 1],
-                                   prob_data.stage_data[i]);
+                                   prob_data.getData(i));
   }
 
   if (term_cost_) {
@@ -70,11 +81,28 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
 }
 
 template <typename Scalar>
+void TrajOptProblemTpl<Scalar>::addStage(const shared_ptr<StageModel> &stage) {
+  stages_.push_back(stage);
+}
+
+template <typename Scalar>
+void TrajOptProblemTpl<Scalar>::setTerminalConstraint(const Constraint &cstr) {
+  this->term_constraint_ = cstr;
+}
+
+template <typename Scalar>
+inline std::size_t TrajOptProblemTpl<Scalar>::numSteps() const {
+  return stages_.size();
+}
+
+/* TrajOptDataTpl */
+
+template <typename Scalar>
 TrajOptDataTpl<Scalar>::TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem)
     : init_data(problem.init_state_error.createData()) {
   stage_data.reserve(problem.numSteps());
   for (std::size_t i = 0; i < problem.numSteps(); i++) {
-    stage_data.push_back(*problem.stages_[i]->createData());
+    stage_data.push_back(problem.stages_[i]->createData());
   }
 
   if (problem.term_cost_) {
