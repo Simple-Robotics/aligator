@@ -93,8 +93,13 @@ void exposeCosts() {
       .add_property("Luu", bp::make_getter(
                                &CostData::Luu_,
                                bp::return_value_policy<bp::return_by_value>()))
-      .def_readwrite("_grad", &CostData::grad_)
-      .def_readwrite("_hessian", &CostData::hess_);
+      .add_property("grad", bp::make_getter(
+                                &CostData::grad_,
+                                bp::return_value_policy<bp::return_by_value>()))
+      .add_property(
+          "hess",
+          bp::make_getter(&CostData::hess_,
+                          bp::return_value_policy<bp::return_by_value>()));
 
   pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<context::CostBase>>,
                                 true>::expose("StdVec_CostAbstract",
