@@ -57,6 +57,7 @@ BOOST_PYTHON_MODULE(pyproxddp) {
     exposeODEs();
     exposeDynamics();
     exposeFreeFwdDynamics();
+    exposeConstraintFwdDynamics();
     exposeIntegrators();
   }
   exposeUtils();
