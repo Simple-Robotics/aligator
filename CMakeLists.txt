@@ -155,6 +155,7 @@ install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
 
 if(BUILD_CROCODDYL_COMPAT)
+  add_definitions(-DWITH_CROCODDYL_COMPAT)
   add_subdirectory(include/proxddp/compat/crocoddyl)
 endif()
 

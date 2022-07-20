@@ -9,7 +9,7 @@ set(LIB_HEADERS ${LIB_HEADERS} ${HEADERS})
 
 message(STATUS "Compat module: headers ${HEADERS}")
 
-find_package(crocoddyl REQUIRED)
+ADD_PROJECT_DEPENDENCY(crocoddyl REQUIRED)
 
 set(COMPAT_LIB ${PROJECT_NAME}_croc_compat)
 add_library(${COMPAT_LIB} SHARED ${HEADERS} ${SOURCES})

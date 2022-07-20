@@ -30,9 +30,11 @@ BOOST_AUTO_TEST_CASE(lqr) {
   Eigen::VectorXd u0(nu);
   u0.setRandom();
 
+  auto lx0 = Eigen::VectorXd::Zero(nx);
+  auto lu0 = Eigen::VectorXd::Zero(nu);
   auto lqr_model = boost::make_shared<ActionModelLQR>(nx, nu);
-  lqr_model->set_lx(Eigen::VectorXd::Zero(nx));
-  lqr_model->set_lu(Eigen::VectorXd::Zero(nu));
+  lqr_model->set_lx(lx0);
+  lqr_model->set_lu(lu0);
   lqr_model->set_Lxu(Eigen::MatrixXd::Zero(nx, nu));
   auto lqr_data = lqr_model->createData();
   lqr_model->calc(lqr_data, x0, u0);
@@ -84,6 +86,10 @@ BOOST_AUTO_TEST_CASE(lqr) {
 
   BOOST_TEST_CHECK(conv2);
   BOOST_TEST_CHECK(results.num_iters <= 3);
+
+  for (std::size_t i = 0; i < nsteps; i++) {
+    BOOST_TEST_CHECK(results.xs_[i].isApprox(croc_xs[i]));
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
