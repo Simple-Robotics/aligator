@@ -1,3 +1,4 @@
+/// @file dynamics.hpp
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 

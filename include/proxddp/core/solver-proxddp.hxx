@@ -117,8 +117,6 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
   term_value.Vxx_ = term_cost_data.Lxx_ + rho_ * proxdata.Lxx_;
 
   if (problem.term_constraint_) {
-    using Constraint = typename StageModel::Constraint;
-
     /* check number of multipliers */
     assert(results.lams_.size() == (nsteps + 2));
     assert(results.gains_.size() == (nsteps + 1));
@@ -160,16 +158,15 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
 template <typename Scalar>
 void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
                                          Workspace &workspace, Results &results,
-                                         const std::size_t i) const {
-  using Constraint = typename StageModel::Constraint;
-  const StageModel &stage = *problem.stages_[i];
+                                         const std::size_t step) const {
+  const StageModel &stage = *problem.stages_[step];
 
-  const value_store_t &vnext = workspace.value_params[i + 1];
-  q_store_t &qparam = workspace.q_params[i];
+  const value_store_t &vnext = workspace.value_params[step + 1];
+  q_store_t &qparam = workspace.q_params[step];
 
-  StageData &stage_data = workspace.problem_data.stage_data[i];
+  StageData &stage_data = workspace.problem_data.getData(step);
   const CostData &cdata = *stage_data.cost_data;
-  const CostData &proxdata = workspace.prox_datas[i];
+  const CostData &proxdata = workspace.prox_datas[step];
 
   const int nprim = stage.numPrimal();
   const int ndual = stage.numDual();
@@ -199,16 +196,15 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   auto kkt_rhs_0 = kkt_rhs.col(0);
   auto kkt_rhs_D = kkt_rhs.rightCols(ndx1);
 
-  const VectorXs &lam_inn = results.lams_[i + 1];
-  const VectorXs &lamprev = workspace.prev_lams_[i + 1];
-  VectorXs &lamplus = workspace.lams_plus_[i + 1];
-  VectorXs &lampdal = workspace.lams_pdal_[i + 1];
+  const VectorXs &lam_inn = results.lams_[step + 1];
+  const VectorXs &lamprev = workspace.prev_lams_[step + 1];
+  VectorXs &lamplus = workspace.lams_plus_[step + 1];
+  VectorXs &lampdal = workspace.lams_pdal_[step + 1];
 
   const ConstraintContainer<Scalar> &cstr_mgr = stage.constraints_;
 
   // Loop over constraints
   for (std::size_t j = 0; j < stage.numConstraints(); j++) {
-    const Constraint &cstr = cstr_mgr[j];
     FunctionData &cstr_data = *stage_data.constraint_data[j];
 
     // Grab Lagrange multiplier segments
@@ -219,7 +215,7 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
     auto lampdal_j = cstr_mgr.getSegmentByConstraint(lampdal, j);
 
     // compose Jacobian by projector and project multiplier
-    const ConstraintSetBase<Scalar> &cstr_set = *cstr.set_;
+    const ConstraintSetBase<Scalar> &cstr_set = cstr_mgr.getConstraintSet(j);
     auto lam_expr = lamprev_j + mu_inverse_ * cstr_data.value_;
     cstr_set.applyNormalConeProjectionJacobian(lam_expr, cstr_data.jac_buffer_);
     cstr_set.normalConeProjection(lam_expr, lamplus_j);
@@ -249,24 +245,25 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
       qparam.hess_.bottomRightCorner(nprim, nprim);
   kkt_mat.bottomRightCorner(ndual, ndual).diagonal().array() = -mu_;
 
-  workspace.inner_criterion_by_stage(long(i)) = math::infty_norm(kkt_rhs_0);
+  workspace.inner_criterion_by_stage(long(step)) = math::infty_norm(kkt_rhs_0);
   {
     Scalar dual_res_u = math::infty_norm(kkt_rhs_0.head(nu) - proxdata.Lu_);
-    const auto &proxnext = workspace.prox_datas[i + 1];
+    const auto &proxnext = workspace.prox_datas[step + 1];
     Scalar dual_res_y =
         math::infty_norm(kkt_rhs_0.middleRows(nu, ndx2) - proxnext.Lx_);
-    workspace.dual_infeas_by_stage(long(i)) = std::max(dual_res_u, dual_res_y);
+    workspace.dual_infeas_by_stage(long(step)) =
+        std::max(dual_res_u, dual_res_y);
   }
 
   /* Compute gains with LDLT */
   auto kkt_mat_view = kkt_mat.template selfadjointView<Eigen::Lower>();
   auto ldlt_ = kkt_mat_view.ldlt();
-  MatrixXs &G = results.gains_[i];
+  MatrixXs &G = results.gains_[step];
   G = -kkt_rhs;
   ldlt_.solveInPlace(G);
 
   /* Value function */
-  value_store_t &vcurr = workspace.value_params[i];
+  value_store_t &vcurr = workspace.value_params[step];
   vcurr.storage = qparam.storage.topLeftCorner(ndx1 + 1, ndx1 + 1) +
                   kkt_rhs.transpose() * G;
 }
@@ -464,10 +461,11 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
   Scalar infeas_over_j = 0.;
   for (std::size_t step = 0; step < nsteps; step++) {
     const StageModel &stage = *problem.stages_[step];
-    const StageData &stage_data = prob_data.stage_data[step];
+    const StageData &stage_data = prob_data.getData(step);
     infeas_over_j = 0.;
     for (std::size_t j = 0; j < stage.numConstraints(); j++) {
-      const ConstraintSetBase<Scalar> &cstr_set = *stage.constraints_[j].set_;
+      const ConstraintSetBase<Scalar> &cstr_set =
+          stage.constraints_.getConstraintSet(j);
       auto &v = stage_data.constraint_data[j]->value_;
       cstr_set.normalConeProjection(v, v);
       infeas_over_j = std::max(infeas_over_j, math::infty_norm(v));

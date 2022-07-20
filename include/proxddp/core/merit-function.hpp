@@ -98,21 +98,22 @@ template <typename _Scalar> struct PDALFunction {
     // stage-per-stage
     std::size_t num_c;
     const std::size_t nsteps = problem.numSteps();
-    for (std::size_t i = 0; i < nsteps; i++) {
-      const StageModel &sm = *problem.stages_[i];
-      const StageData &stage_data = prob_data.stage_data[i];
+    for (std::size_t step = 0; step < nsteps; step++) {
+      const StageModel &stage = *problem.stages_[step];
+      const StageData &stage_data = prob_data.getData(step);
 
-      num_c = sm.numConstraints();
+      num_c = stage.numConstraints();
       // loop over constraints
       // get corresponding multipliers from allocated memory
       for (std::size_t j = 0; j < num_c; j++) {
-        const auto &cstr_mgr = sm.constraints_;
-        const ConstraintSetBase<Scalar> &cstr_set = *cstr_mgr[j].set_;
+        const ConstraintContainer<Scalar> &cstr_mgr = stage.constraints_;
+        const ConstraintSetBase<Scalar> &cstr_set =
+            cstr_mgr.getConstraintSet(j);
         const FunctionData &cstr_data = *stage_data.constraint_data[j];
         auto lamplus_j =
-            cstr_mgr.getSegmentByConstraint(workspace.lams_plus_[i + 1], j);
+            cstr_mgr.getSegmentByConstraint(workspace.lams_plus_[step + 1], j);
         auto lamprev_j = cstr_mgr.getConstSegmentByConstraint(
-            workspace.prev_lams_[i + 1], j);
+            workspace.prev_lams_[step + 1], j);
         auto c_s_expr = cstr_data.value_ + mu_penal_ * lamprev_j;
         penalty_value += proxnlp::computeMoreauEnvelope(
             cstr_set, c_s_expr, mu_penal_inv_, lamplus_j);
@@ -121,7 +122,7 @@ template <typename _Scalar> struct PDALFunction {
       if (ls_mode == LinesearchMode::PRIMAL_DUAL) {
         penalty_value +=
             .5 * dual_weight_ * mu_penal_ *
-            (workspace.lams_plus_[i + 1] - lams[i + 1]).squaredNorm();
+            (workspace.lams_plus_[step + 1] - lams[step + 1]).squaredNorm();
       }
     }
 

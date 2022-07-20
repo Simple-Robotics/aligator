@@ -17,6 +17,9 @@
 
 namespace proxddp {
 
+template <typename Scalar>
+static const typename math_types<Scalar>::VectorOfVectors DEFAULT_VECTOR;
+
 enum class MultiplierUpdateMode : unsigned int {
   NEWTON = 0,
   PRIMAL = 1,
@@ -49,6 +52,7 @@ public:
   using FunctionData = FunctionDataTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using StageModel = StageModelTpl<Scalar>;
+  using Constraint = typename StageModel::Constraint;
   using StageData = StageDataTpl<Scalar>;
   using value_store_t = internal::value_storage<Scalar>;
   using q_store_t = internal::q_function_storage<Scalar>;
@@ -202,8 +206,9 @@ public:
   /// @param us_init  Initial control sequence guess.
   /// @pre  You must call SolverProxDDP::setup beforehand to allocate a
   /// workspace and results.
-  bool run(const Problem &problem, const std::vector<VectorXs> &xs_init,
-           const std::vector<VectorXs> &us_init);
+  bool run(const Problem &problem,
+           const std::vector<VectorXs> &xs_init = DEFAULT_VECTOR<Scalar>,
+           const std::vector<VectorXs> &us_init = DEFAULT_VECTOR<Scalar>);
 
   /// @brief    Perform the inner loop of the algorithm (augmented Lagrangian
   /// minimization).
