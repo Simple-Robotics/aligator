@@ -78,7 +78,7 @@ public:
   virtual ~StageFunctionTpl() = default;
 
   /// @brief Instantiate a Data object.
-  virtual std::shared_ptr<Data> createData() const;
+  virtual shared_ptr<Data> createData() const;
 };
 
 /// @brief  Struct to hold function data.
