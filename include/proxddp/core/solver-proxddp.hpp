@@ -90,9 +90,6 @@ public:
   MultiplierUpdateMode mul_update_mode = MultiplierUpdateMode::NEWTON;
   BCLParams<Scalar> bcl_params;
 
-  Scalar &mu_update_factor_ = bcl_params.mu_update_factor;
-  Scalar &rho_update_factor_ = bcl_params.rho_update_factor;
-
   /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.
   std::size_t MAX_ITERS;
   std::size_t MAX_AL_ITERS = MAX_ITERS;
@@ -262,7 +259,7 @@ protected:
   }
 
   /// Update the dual proximal penalty.
-  void updateALPenalty() { setPenalty(mu_ * mu_update_factor_); }
+  void updateALPenalty() { setPenalty(mu_ * bcl_params.mu_update_factor); }
 };
 
 } // namespace proxddp
