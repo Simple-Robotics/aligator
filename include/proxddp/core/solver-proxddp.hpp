@@ -74,11 +74,11 @@ public:
   const Scalar rho_init = 0.;
 
   /// Dual proximal/constraint penalty parameter \f$\mu\f$
-  Scalar mu_ = mu_init;
-  Scalar mu_inverse_ = 1. / mu_;
+  Scalar mu_penal_ = mu_init;
+  Scalar mu_inverse_ = 1. / mu_penal_;
 
   /// Primal proximal parameter \f$\rho > 0\f$
-  Scalar rho_ = rho_init;
+  Scalar rho_penal_ = rho_init;
 
   Scalar xreg_ = 0.;
 
@@ -244,22 +244,24 @@ protected:
                            Results &results, const std::size_t step) const;
 
   void updateTolerancesOnFailure() {
-    prim_tol_ = prim_tol0 * std::pow(mu_, bcl_params.prim_alpha);
-    inner_tol_ = inner_tol0 * std::pow(mu_, bcl_params.dual_alpha);
+    prim_tol_ = prim_tol0 * std::pow(mu_penal_, bcl_params.prim_alpha);
+    inner_tol_ = inner_tol0 * std::pow(mu_penal_, bcl_params.dual_alpha);
   }
 
   void updateTolerancesOnSuccess() {
-    prim_tol_ = prim_tol_ * std::pow(mu_, bcl_params.prim_beta);
-    inner_tol_ = inner_tol_ * std::pow(mu_, bcl_params.dual_beta);
+    prim_tol_ = prim_tol_ * std::pow(mu_penal_, bcl_params.prim_beta);
+    inner_tol_ = inner_tol_ * std::pow(mu_penal_, bcl_params.dual_beta);
   }
 
   void setPenalty(Scalar new_mu) {
-    mu_ = std::max(new_mu, MU_MIN);
+    mu_penal_ = std::max(new_mu, MU_MIN);
     mu_inverse_ = 1. / new_mu;
   }
 
   /// Update the dual proximal penalty.
-  void updateALPenalty() { setPenalty(mu_ * bcl_params.mu_update_factor); }
+  void updateALPenalty() {
+    setPenalty(mu_penal_ * bcl_params.mu_update_factor);
+  }
 };
 
 } // namespace proxddp
