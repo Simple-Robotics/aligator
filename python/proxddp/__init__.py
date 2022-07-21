@@ -4,7 +4,7 @@ Copyright (C) 2022 LAAS-CNRS, INRIA
 from .pyproxddp import *
 from . import utils
 
-from proxnlp import constraints, manifolds, VerboseLevel
+from proxnlp import constraints, manifolds, VerboseLevel, LinesearchStrategy
 
 
 def _process():
