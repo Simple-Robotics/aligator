@@ -85,13 +85,24 @@ q0 = np.array([0.173046, 1.0, -0.52366, 0.0, 0.0, 0.1, -0.005])
 x0 = np.concatenate([q0, pinocchio.utils.zero(robot_model.nv)])
 problem = crocoddyl.ShootingProblem(x0, [runningModel] * T, terminalModel)
 
-vizer = MeshcatVisualizer(
-    robot_model, talos_arm.collision_model, talos_arm.visual_model, data=talos_arm.data
-)
-vizer.initViewer(loadModel=True, open=True)
-viz_util = msu.VizUtil(vizer)
-vizer.display(q0)
+if WITHDISPLAY:
+    vizer = MeshcatVisualizer(
+        robot_model,
+        talos_arm.collision_model,
+        talos_arm.visual_model,
+        data=talos_arm.data,
+    )
+    vizer.initViewer(loadModel=True, open=True)
+    viz_util = msu.VizUtil(vizer)
+    vizer.display(q0)
+else:
+    vizer = None
+    viz_util = None
 fid_display = robot_model.getFrameId("gripper_left_joint")
+
+t_f = T * dt
+times = np.linspace(0, t_f, T + 1)
+TOLERANCE = 1e-4
 
 if True:
     # Creating the DDP solver for this OC problem, defining a logger
@@ -122,6 +133,7 @@ if True:
         solver.setCallbacks([crocoddyl.CallbackVerbose()])
 
     # Solving it with the DDP algorithm
+    solver.th_grad = TOLERANCE**2
     solver.solve()
 
     # Plotting the solution and the DDP convergence
@@ -156,12 +168,10 @@ if True:
     print("running proxddp")
     prox_problem = convertCrocoddylProblem(problem)
 
-    tol = 1e-4
-    mu_init = 1e-2
-    rho_init = 1e-5
-    solver = proxddp.ProxDDP(tol, mu_init, rho_init=rho_init)
+    mu_init = 1e-7
+    rho_init = 1e-6
+    solver = proxddp.ProxDDP(TOLERANCE, mu_init, rho_init=rho_init, max_iters=300)
     solver.verbose = proxddp.VerboseLevel.VERBOSE
-    solver.max_iters = 300
     solver.bcl_params.rho_factor = 0.1
     solver.setup(prox_problem)
     xs_i = [x0] * (T + 1)
@@ -169,23 +179,21 @@ if True:
     solver.run(prox_problem, xs_i, us_i)
 
     results = solver.getResults()
+    assert results.num_iters <= 16
     print("Results {}".format(results))
-    xs_opt = results.xs
-    us_opt = results.us
+    prox_xs = results.xs
+    prox_us = results.us
+    prox_xs = np.stack(prox_xs)
+    prox_us = np.stack(prox_us)
 
     if WITHPLOT:
         import matplotlib.pyplot as plt
 
-        xs_opt_flat = np.stack(xs_opt)
-        us_opt_flat = np.stack(us_opt)
-        t_f = T * dt
-        times = np.linspace(0, t_f, T + 1)
-
         plt.subplot(121)
-        plt.plot(times, xs_opt_flat)
+        plt.plot(times, prox_xs)
         plt.title("States")
         plt.subplot(122)
-        plt.plot(times[:-1], us_opt_flat)
+        plt.plot(times[:-1], prox_us)
         plt.title("Controls")
         plt.show()
 
@@ -194,12 +202,27 @@ if True:
         input("[press enter to play]")
         for i in range(3):
             viz_util.play_trajectory(
-                xs_opt, us_opt, timestep=dt, frame_ids=[fid_display], show_vel=True
+                prox_xs, prox_us, timestep=dt, frame_ids=[fid_display], show_vel=True
             )
 
 
-dist_x = [np.linalg.norm(croc_xs[i] - xs_opt[i]) for i in range(T + 1)]
-dist_u = [np.linalg.norm(croc_us[i] - us_opt[i]) for i in range(T)]
+croc_xs = np.stack(croc_xs.tolist())
+croc_us = np.stack(croc_us.tolist())
+nq = robot_model.nq
+for i in range(robot_model.nq):
+    plt.subplot(2, nq // 2 + 1, i + 1)
+    plt.plot(times, croc_xs[:, i], ls="--")
+    plt.plot(times, prox_xs[:, i], ls="--")
+fig = plt.gcf()
+fig.legend(["croco", "prox"])
+plt.tight_layout()
+plt.show()
+
+dist_x = [np.linalg.norm(croc_xs[i] - prox_xs[i]) for i in range(T + 1)]
+dist_u = [np.linalg.norm(croc_us[i] - prox_us[i]) for i in range(T)]
+
+dist_x = np.max(dist_x)
+dist_u = np.max(dist_u)
 
 print("Errs:")
 print(dist_x)
