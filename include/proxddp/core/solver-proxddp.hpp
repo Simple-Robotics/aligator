@@ -36,8 +36,10 @@ template <typename Scalar> struct BCLParams {
   Scalar dual_alpha = 1.;
   /// Log-factor \f$\beta_\eta\f$ for dual tolerance (success)
   Scalar dual_beta = 1.;
+  /// Scale factor for the dual proximal penalty.
   Scalar mu_update_factor = 0.01;
-  Scalar rho_update_factor = 1.;
+  /// Scale factor for the primal proximal penalty.
+  Scalar rho_update_factor = 0.1;
 };
 
 /// @brief Solver.
@@ -212,8 +214,8 @@ public:
 
   /// @brief    Perform the inner loop of the algorithm (augmented Lagrangian
   /// minimization).
-  void solverInnerLoop(const Problem &problem, Workspace &workspace,
-                       Results &results);
+  void innerLoop(const Problem &problem, Workspace &workspace,
+                 Results &results);
 
   /// @brief    Compute the primal infeasibility measures.
   /// @warning  This will alter the constraint values (by projecting on the

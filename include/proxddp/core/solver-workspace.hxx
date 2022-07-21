@@ -8,8 +8,8 @@ namespace proxddp {
 template <typename Scalar>
 WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     : nsteps(problem.numSteps()), problem_data(problem),
-      trial_prob_data(problem), inner_criterion_by_stage(nsteps),
-      primal_infeas_by_stage(nsteps), dual_infeas_by_stage(nsteps) {
+      trial_prob_data(problem), inner_criterion_by_stage(nsteps + 1),
+      primal_infeas_by_stage(nsteps), dual_infeas_by_stage(nsteps + 1) {
 
   inner_criterion_by_stage.setZero();
   primal_infeas_by_stage.setZero();
