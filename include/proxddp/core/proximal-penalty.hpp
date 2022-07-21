@@ -4,6 +4,9 @@
 
 namespace proxddp {
 
+/// @brief  Data for proximal penalty.
+template <typename Scalar> struct ProximalDataTpl;
+
 /**
  * @brief   Proximal penalty cost.
  *
@@ -18,27 +21,13 @@ struct ProximalPenaltyTpl : CostAbstractTpl<_Scalar> {
   using ManifoldPtr = shared_ptr<ManifoldAbstractTpl<Scalar>>;
   using Base = CostAbstractTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
+  using Data = ProximalDataTpl<Scalar>;
 
   const ManifoldPtr xspace_, uspace_;
   const ConstVectorRef x_ref, u_ref;
   /// Whether to exclude the control term of the penalty. Switch to true e.g.
   /// for terminal node.
   const bool no_ctrl_term;
-
-  struct Data : CostData {
-    using CostData::ndx_;
-    using CostData::nu_;
-    VectorXs dx_, du_;
-    MatrixXs Jx_, Ju_;
-    explicit Data(const ProximalPenaltyTpl *model)
-        : CostData(model->xspace_->ndx(), model->uspace_->ndx()), dx_(ndx_),
-          du_(nu_), Jx_(ndx_, ndx_), Ju_(nu_, nu_) {
-      dx_.setZero();
-      du_.setZero();
-      Jx_.setZero();
-      Ju_.setZero();
-    }
-  };
 
   ProximalPenaltyTpl(const ManifoldPtr &xspace, const ManifoldPtr &uspace,
                      const ConstVectorRef &xt, const ConstVectorRef &ut,
@@ -80,6 +69,25 @@ struct ProximalPenaltyTpl : CostAbstractTpl<_Scalar> {
 
   shared_ptr<CostData> createData() const {
     return std::make_shared<Data>(this);
+  }
+};
+
+template <typename Scalar>
+struct ProximalDataTpl : CostDataAbstractTpl<Scalar> {
+  using Base = CostDataAbstractTpl<Scalar>;
+  using VectorXs = typename math_types<Scalar>::VectorXs;
+  using MatrixXs = typename math_types<Scalar>::MatrixXs;
+  using Base::ndx_;
+  using Base::nu_;
+  VectorXs dx_, du_;
+  MatrixXs Jx_, Ju_;
+  explicit ProximalDataTpl(const ProximalPenaltyTpl<Scalar> *model)
+      : Base(model->xspace_->ndx(), model->uspace_->ndx()), dx_(ndx_), du_(nu_),
+        Jx_(ndx_, ndx_), Ju_(nu_, nu_) {
+    dx_.setZero();
+    du_.setZero();
+    Jx_.setZero();
+    Ju_.setZero();
   }
 };
 
