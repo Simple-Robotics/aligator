@@ -15,10 +15,8 @@ TrajOptProblemTpl<Scalar> convertCrocoddylProblem(
         &croc_problem) {
   const auto &cpb = *croc_problem;
   using VectorXs = typename math_types<Scalar>::VectorXs;
-  using MatrixXs = typename math_types<Scalar>::MatrixXs;
   using StageModel = StageModelTpl<Scalar>;
   using ActionModelWrapper = CrocActionModelWrapperTpl<Scalar>;
-  using CrocActModel = crocoddyl::ActionModelAbstractTpl<Scalar>;
 
   const std::size_t nsteps = cpb.get_T();
   const VectorXs &x0 = cpb.get_x0();
