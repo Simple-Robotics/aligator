@@ -1,7 +1,8 @@
 #include "proxddp/python/fwd.hpp"
-#include "proxddp/python/util.hpp"
+#include "proxddp/python/utils.hpp"
 
 #include "proxddp/utils.hpp"
+#include "proxddp/version.hpp"
 
 #ifdef WITH_CROCODDYL_COMPAT
 #include "proxddp/python/compat/croco.hpp"
@@ -47,6 +48,7 @@ BOOST_PYTHON_MODULE(pyproxddp) {
 
   bp::docstring_options module_docstring_options(true, true, true);
 
+  bp::scope().attr("__version__") = proxddp::printVersion();
   eigenpy::enableEigenPy();
 
   bp::import("warnings");
@@ -60,8 +62,12 @@ BOOST_PYTHON_MODULE(pyproxddp) {
     bp::scope dynamics = get_namespace("dynamics");
     exposeODEs();
     exposeDynamics();
+
+#ifdef WITH_PINOCCHIO_SUPPORT
     exposeFreeFwdDynamics();
     exposeConstraintFwdDynamics();
+#endif
+
     exposeIntegrators();
   }
   exposeUtils();
