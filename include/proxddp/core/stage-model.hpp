@@ -49,7 +49,7 @@ public:
   const Manifold &xspace_next() const { return *xspace_next_; }
   virtual const Dynamics &dyn_model() const {
     assert(constraints_.numConstraints() > 0);
-    return static_cast<const Dynamics &>(*constraints_[0].func_);
+    return dynamic_cast<const Dynamics &>(*constraints_[0].func_);
   }
   virtual const Cost &cost() const { return *cost_; }
 

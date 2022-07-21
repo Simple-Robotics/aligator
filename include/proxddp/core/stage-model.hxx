@@ -1,3 +1,5 @@
+#pragma once
+
 #include "proxddp/core/stage-model.hpp"
 
 #include <proxnlp/modelling/constraints/equality-constraint.hpp>
@@ -52,7 +54,6 @@ void StageModelTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                      const ConstVectorRef &y,
                                      Data &data) const {
   for (std::size_t j = 0; j < numConstraints(); j++) {
-    // calc on constraint
     const Constraint &cstr = constraints_[j];
     cstr.func_->evaluate(x, u, y, *data.constraint_data[j]);
   }
@@ -65,7 +66,6 @@ void StageModelTpl<Scalar>::computeDerivatives(const ConstVectorRef &x,
                                                const ConstVectorRef &y,
                                                Data &data) const {
   for (std::size_t j = 0; j < numConstraints(); j++) {
-    // calc on constraint
     const Constraint &cstr = constraints_[j];
     cstr.func_->computeJacobians(x, u, y, *data.constraint_data[j]);
   }
