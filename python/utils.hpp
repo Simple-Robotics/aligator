@@ -1,4 +1,4 @@
-#include <proxnlp/python/util.hpp>
+#include <proxnlp/python/utils/namespace.hpp>
 
 namespace proxddp {
 namespace python {
