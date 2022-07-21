@@ -22,6 +22,7 @@ space = manifolds.MultibodyPhaseSpace(model)
 
 vizer = MeshcatVisualizer(model, robot.collision_model, robot.visual_model)
 vizer.initViewer(open=args.display, loadModel=True)
+viz_util = msu.VizUtil(vizer)
 
 
 nq = model.nq
@@ -74,4 +75,4 @@ if __name__ == "__main__":
         input()
 
         for _ in range(3):
-            msu.play_trajectory(vizer, xs_ref, us_ref)
+            viz_util.play_trajectory(xs_ref, us_ref, timestep=timestep)
