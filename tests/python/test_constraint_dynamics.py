@@ -247,9 +247,6 @@ def test_constraint_dynamics():
     data = discrete_dynamics.createData()
     u = np.zeros((model.nv))
     x = x0.copy()
-    if DISPLAY:
-        viz.initViewer(loadModel=True)
-        viz.viewer.open()
     while t <= T_sim:
 
         discrete_dynamics.forward(x, u, data)
