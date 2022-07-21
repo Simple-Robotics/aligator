@@ -46,6 +46,7 @@ void exposeSolvers() {
       .def_readonly("inner_criterion_by_stage",
                     &Workspace::inner_criterion_by_stage)
       .def_readonly("problem_data", &Workspace::problem_data)
+      .def_readonly("prox_datas", &Workspace::prox_datas)
       .def(PrintableVisitor<Workspace>());
 
   bp::class_<Results>("Results", "Results struct for proxDDP.",
@@ -94,7 +95,9 @@ void exposeSolvers() {
         .def_readwrite("prim_alpha", &BCLType::prim_alpha)
         .def_readwrite("prim_beta", &BCLType::prim_beta)
         .def_readwrite("dual_alpha", &BCLType::dual_alpha)
-        .def_readwrite("dual_beta", &BCLType::dual_beta);
+        .def_readwrite("dual_beta", &BCLType::dual_beta)
+        .def_readwrite("mu_factor", &BCLType::mu_update_factor)
+        .def_readwrite("rho_factor", &BCLType::rho_update_factor);
   }
 
   bp::class_<SolverType, boost::noncopyable>(
