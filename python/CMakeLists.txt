@@ -4,7 +4,7 @@ file(GLOB_RECURSE ${PYLIB_NAME}_SOURCES
      ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
 file(GLOB_RECURSE ${PYLIB_NAME}_HEADERS
-     ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
+     ${CMAKE_CURRENT_SOURCE_DIR}/**.hpp)
 
 set(PY_HEADERS ${${PYLIB_NAME}_HEADERS})
 set(PY_SOURCES ${${PYLIB_NAME}_SOURCES})
@@ -45,14 +45,14 @@ file(MAKE_DIRECTORY
 
 foreach(pyheader ${PY_HEADERS})
   string(REGEX REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" pyheader ${pyheader})
+  get_filename_component(headerPath ${pyheader} PATH)
   execute_process(COMMAND ${CMAKE_COMMAND} -E ${LINK}
                   ${CMAKE_CURRENT_SOURCE_DIR}/${pyheader}
                   ${${PROJECT_NAME}_BINARY_DIR}/include/${PROJECT_NAME}/python/${pyheader})
+  install(FILES ${pyheader}
+          DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}/python/${headerPath}
+          PERMISSIONS OWNER_READ GROUP_READ WORLD_READ OWNER_WRITE)
 endforeach(pyheader)
-
-install(FILES ${PY_HEADERS}
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}/python
-        PERMISSIONS OWNER_READ GROUP_READ WORLD_READ OWNER_WRITE)
 
 if(IS_ABSOLUTE ${PYTHON_SITELIB})
   set(ABSOLUTE_PYTHON_SITELIB ${PYTHON_SITELIB})
@@ -62,7 +62,7 @@ endif()
 # --- GENERATE STUBS
 if(GENERATE_PYTHON_STUBS)
   load_stubgen()
-  generate_stubs(${CMAKE_CURRENT_BINARY_DIR} ${PROJECT_NAME} ${PYTHON_SITELIB})
+  generate_stubs(${CMAKE_CURRENT_BINARY_DIR} ${PROJECT_NAME} ${ABSOLUTE_PYTHON_SITELIB})
 endif(GENERATE_PYTHON_STUBS)
 
 set(${PYLIB_NAME}_PYFILES
