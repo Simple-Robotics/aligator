@@ -18,7 +18,7 @@ def _process():
         mod_name = "{}.{}".format(lib_name, mod_info[0])
         sys.modules[mod_name] = mod_info[1]
         mod_info[1].__file__ = pyproxddp.__file__
-        mod_info[1].__name__ = mod_name
+        # mod_info[1].__name__ = mod_name
 
 
 _process()
