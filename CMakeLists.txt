@@ -46,7 +46,8 @@ option(BUILD_WITH_CASADI_SUPPORT "Build the library with the support of CASADI" 
 option(BUILD_CROCODDYL_COMPAT "Build the Crocoddyl compatibility module" OFF)
 option(BUILD_WITH_OPENMP_SUPPORT "Build the library with the OpenMP support" ON)
 cmake_dependent_option(LINK_PYTHON_INTERFACE_TO_OPENMP "Link OpenMP to the Python interface" ON BUILD_WITH_OPENMP_SUPPORT OFF)
-option(GENERATE_PYTHON_STUBS "Generate the Python stubs associated to the Python library" OFF)
+cmake_dependent_option(GENERATE_PYTHON_STUBS "Generate the Python stubs associated to the Python library" OFF BUILD_PYTHON_INTERFACE OFF)
+
 
 option(INITIALIZE_WITH_NAN "Initialize Eigen entries with NaN" OFF)
 option(CHECK_RUNTIME_MALLOC "Check if some memory allocations are performed at runtime" OFF)
