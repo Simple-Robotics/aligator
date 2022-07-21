@@ -64,7 +64,7 @@ class MyQuadCost(proxddp.CostAbstract):
         data.Lu[:] = 0.0
 
     def computeHessians(self, x, u, data):
-        data._hessian[:, :] = 0.0
+        data.hess[:, :] = 0.0
         self._basis.computeHessian(x, data.Lxx)
 
 
@@ -93,7 +93,6 @@ class TestClass:
     def test_stage(self, nsteps):
         stage_model = self.stage_model
         sd = stage_model.createData()
-        sd.dyn_data.Jx[:, :] = np.arange(ndx * ndx).reshape(ndx, ndx)
         stage_model.computeDerivatives(x0, u0, x1, sd)
         stage_model.num_primal == ndx + nu
         stage_model.num_dual == ndx
@@ -107,13 +106,13 @@ class TestClass:
         problem_data = proxddp.TrajOptData(problem)
         stage_datas = problem_data.stage_data
 
+        print("term cost data:", problem_data.term_cost)
+        print("term cstr data:", problem_data.term_constraint)
+
         stage2 = stage_model.clone()
         sd0 = stage_datas[0].clone()
         print("Clone stage:", stage2)
         print("Clone stage data:", sd0)
-
-        stage_datas[0].dyn_data.Jx[:, :] = np.arange(ndx * ndx).reshape(ndx, ndx)
-        print(stage_datas[0].dyn_data.Jx, "dd0 Jx")
 
         us_init = [u0] * nsteps
         xs_out = proxddp.rollout(self.dynmodel, x0, us_init).tolist()

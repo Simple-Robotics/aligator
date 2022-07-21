@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/core/function.hpp"
+#include "proxddp/core/function-abstract.hpp"
 
 #include <pinocchio/multibody/model.hpp>
 #include <pinocchio/multibody/frame.hpp>

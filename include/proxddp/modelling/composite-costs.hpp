@@ -1,15 +1,15 @@
 #pragma once
 
 #include "proxddp/fwd.hpp"
-#include "proxddp/core/function.hpp"
-#include "proxddp/core/costs.hpp"
+#include "proxddp/core/function-abstract.hpp"
+#include "proxddp/core/cost-abstract.hpp"
 #include "proxddp/modelling/state-error.hpp"
 
 namespace proxddp {
 /// Data struct for composite costs.
 template <typename Scalar>
 struct CompositeCostDataTpl : CostDataAbstractTpl<Scalar> {
-  shared_ptr<FunctionDataTpl<Scalar>> underlying_data;
+  shared_ptr<FunctionDataTpl<Scalar>> residual_data;
   CompositeCostDataTpl(const int ndx, const int nu)
       : CostDataAbstractTpl<Scalar>(ndx, nu) {}
 };
@@ -22,7 +22,7 @@ struct CompositeCostDataTpl : CostDataAbstractTpl<Scalar> {
  * \f]
  */
 template <typename _Scalar>
-struct QuadraticResidualCost : CostAbstractTpl<_Scalar> {
+struct QuadraticResidualCostTpl : CostAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using CostDataAbstract = CostDataAbstractTpl<Scalar>;
@@ -32,8 +32,8 @@ struct QuadraticResidualCost : CostAbstractTpl<_Scalar> {
   shared_ptr<const StageFunctionTpl<Scalar>> residual_;
   bool gauss_newton = true;
 
-  QuadraticResidualCost(const shared_ptr<StageFunctionTpl<Scalar>> &function,
-                        const MatrixXs &weights)
+  QuadraticResidualCostTpl(const shared_ptr<StageFunctionTpl<Scalar>> &function,
+                           const MatrixXs &weights)
       : CostAbstractTpl<Scalar>(function->ndx1, function->nu),
         weights_(weights), residual_(function) {
     assert(residual_->nr == weights.cols());
@@ -42,7 +42,7 @@ struct QuadraticResidualCost : CostAbstractTpl<_Scalar> {
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 CostDataAbstract &data_) const {
     auto &data = static_cast<Data &>(data_);
-    auto &under_data = *data.underlying_data;
+    auto &under_data = *data.residual_data;
     residual_->evaluate(x, u, x, under_data);
     data.value_ = .5 * under_data.value_.dot(weights_ * under_data.value_);
   }
@@ -50,7 +50,7 @@ struct QuadraticResidualCost : CostAbstractTpl<_Scalar> {
   void computeGradients(const ConstVectorRef &x, const ConstVectorRef &u,
                         CostDataAbstract &data_) const {
     auto &data = static_cast<Data &>(data_);
-    auto &under_data = *data.underlying_data;
+    auto &under_data = *data.residual_data;
     residual_->computeJacobians(x, u, x, under_data);
     const long size = data.grad_.size();
     MatrixRef J = under_data.jac_buffer_.leftCols(size);
@@ -60,7 +60,7 @@ struct QuadraticResidualCost : CostAbstractTpl<_Scalar> {
   void computeHessians(const ConstVectorRef &x, const ConstVectorRef &u,
                        CostDataAbstract &data_) const {
     auto &data = static_cast<Data &>(data_);
-    auto &under_data = *data.underlying_data;
+    auto &under_data = *data.residual_data;
     const long size = data.grad_.size();
     MatrixRef J = under_data.jac_buffer_.leftCols(size);
     data.hess_ = J.transpose() * (weights_ * J);
@@ -73,13 +73,13 @@ struct QuadraticResidualCost : CostAbstractTpl<_Scalar> {
 
   shared_ptr<CostDataAbstract> createData() const {
     Data *d = new Data{this->ndx, this->nu};
-    d->underlying_data = std::move(residual_->createData());
+    d->residual_data = std::move(residual_->createData());
     return shared_ptr<CostDataAbstract>(std::move(d));
   }
 };
 
 /// Log-barrier of an underlying cost function.
-template <typename Scalar> struct LogResidualCost : CostAbstractTpl<Scalar> {
+template <typename Scalar> struct LogResidualCostTpl : CostAbstractTpl<Scalar> {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using CostDataAbstract = CostDataAbstractTpl<Scalar>;
   using Data = CompositeCostDataTpl<Scalar>;
@@ -88,8 +88,8 @@ template <typename Scalar> struct LogResidualCost : CostAbstractTpl<Scalar> {
   VectorXs barrier_weights_;
   shared_ptr<StageFunction> residual_;
 
-  LogResidualCost(const shared_ptr<StageFunction> &function,
-                  const VectorXs scale)
+  LogResidualCostTpl(const shared_ptr<StageFunction> &function,
+                     const VectorXs scale)
       : residual_(function), barrier_weights_(scale) {
     if (scale.size() != function->nr) {
       throw std::domain_error(
@@ -101,20 +101,21 @@ template <typename Scalar> struct LogResidualCost : CostAbstractTpl<Scalar> {
     }
   }
 
-  LogResidualCost(const shared_ptr<StageFunction> &function, const Scalar scale)
-      : LogResidualCost(function, VectorXs::Constant(function->nr, scale)) {}
+  LogResidualCostTpl(const shared_ptr<StageFunction> &function,
+                     const Scalar scale)
+      : LogResidualCostTpl(function, VectorXs::Constant(function->nr, scale)) {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 CostDataAbstract &data) const {
     Data &d = static_cast<Data &>(data);
-    residual_->evaluate(x, u, x, *d.underlying_data);
-    d.value_ = barrier_weights_.dot(d.underlying_data->value_.log());
+    residual_->evaluate(x, u, x, *d.residual_data);
+    d.value_ = barrier_weights_.dot(d.residual_data->value_.log());
   }
 
   void computeGradients(const ConstVectorRef &x, const ConstVectorRef &u,
                         CostDataAbstract &data) const {
     Data &d = static_cast<Data &>(data);
-    auto &under_d = *d.underlying_data;
+    auto &under_d = *d.residual_data;
     residual_->computeJacobians(x, u, x, under_d);
     d.grad_.setZero();
     VectorXs &v = under_d.value_;
@@ -128,7 +129,7 @@ template <typename Scalar> struct LogResidualCost : CostAbstractTpl<Scalar> {
   void computeHessians(const ConstVectorRef &, const ConstVectorRef &,
                        CostDataAbstract &data) const {
     Data &d = static_cast<Data &>(data);
-    auto &under_d = *d.underlying_data;
+    auto &under_d = *d.residual_data;
     d.hess_.setZero();
     VectorXs &v = under_d.value_;
     const int nrows = residual_->nr;

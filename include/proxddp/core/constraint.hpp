@@ -2,7 +2,7 @@
 /// @brief Defines the constraint object for this library.
 #pragma once
 
-#include "proxddp/core/function.hpp"
+#include "proxddp/core/function-abstract.hpp"
 
 namespace proxddp {
 
@@ -16,13 +16,17 @@ template <typename Scalar> struct StageConstraintTpl {
 /// @brief Convenience class to manage a stack of constraints.
 template <typename Scalar> struct ConstraintContainer {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-  using Constraint = StageConstraintTpl<Scalar>;
+  using ConstraintType = StageConstraintTpl<Scalar>;
   ConstraintContainer() : cursors_({0}){};
 
   std::size_t numConstraints() const { return storage_.size(); }
 
-  void push_back(const Constraint &el) {
-    const int nr = el.func_->nr;
+  void push_back(const ConstraintType &el) {
+    assert(el.func_ != 0 && "member func can't be called with nullptr");
+    this->push_back(el, el.func_->nr);
+  }
+
+  void push_back(const ConstraintType &el, const int nr) {
     const int last_cursor = cursors_.back();
     storage_.push_back(el);
     cursors_.push_back(last_cursor + nr);
@@ -33,6 +37,10 @@ template <typename Scalar> struct ConstraintContainer {
   int getIndex(const std::size_t i) const { return cursors_[i]; }
 
   int getDim(const std::size_t i) const { return dims_[i]; }
+
+  const ConstraintSetBase<Scalar> &getConstraintSet(const std::size_t i) const {
+    return *this->storage_[i].set_;
+  }
 
   /// Get corresponding segment of a vector corresponding
   /// to the @p i-th constraint.
@@ -63,12 +71,18 @@ template <typename Scalar> struct ConstraintContainer {
   int totalDim() const { return total_dim; }
 
   /// Get the i-th constraint.
-  Constraint &operator[](std::size_t i) { return storage_[i]; }
+  ConstraintType &operator[](std::size_t i) {
+    assert((i < this->storage_.size()) && "i exceeds number of constraints!");
+    return storage_[i];
+  }
 
-  const Constraint &operator[](std::size_t i) const { return storage_[i]; }
+  const ConstraintType &operator[](std::size_t i) const {
+    assert((i < this->storage_.size()) && "i exceeds number of constraints!");
+    return storage_[i];
+  }
 
 protected:
-  std::vector<Constraint> storage_;
+  std::vector<ConstraintType> storage_;
   std::vector<int> cursors_;
   std::vector<int> dims_;
   int total_dim = 0;

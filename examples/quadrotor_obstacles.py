@@ -127,13 +127,14 @@ u_min = -u_max
 
 times = np.linspace(0, Tf, nsteps + 1)
 idx_switch = int(0.7 * nsteps)
-t_switch = times[idx_switch]
+times_wp = [times[idx_switch], times[-1]]
+t0_switch = times[idx_switch]
 
 
 def make_task():
     if args.obstacles:
         weights = np.zeros(space.ndx)
-        weights[:3] = 4.0
+        weights[:3] = 1.0
         weights[3:6] = 1e-2
         weights[nv:] = 1e-3
 
@@ -184,10 +185,12 @@ class Column(proxddp.StageFunction):
         self.center = center.copy()
         self.radius = radius
         self.margin = margin
-        self._c = space.neutral()
 
     def evaluate(self, x, u, y, data):  # distance function
-        err = x[:2] - self.center
+        q = x[:nq]
+        pin.forwardKinematics(rmodel, rdata, q)
+        M: pin.SE3 = pin.updateFramePlacement(rmodel, rdata, 1)
+        err = M.translation[:2] - self.center
         res = np.dot(err, err) - (self.radius + self.margin) ** 2
         data.value[:] = -res
 
@@ -239,19 +242,20 @@ def setup():
             stage.addConstraint(column1, constraints.NegativeOrthant())
             stage.addConstraint(column2, constraints.NegativeOrthant())
         stages.append(stage)
-        if i == nsteps - 1:  # terminal constraint
-            stage.addConstraint(
-                proxddp.StateErrorResidual(space, nu, x_tar),
-                constraints.EqualityConstraintSet(),
-            )
 
         sd = stage.createData()
         stage.evaluate(x0, u0, x1, sd)
 
+    term_cstr = proxddp.StageConstraint(
+        proxddp.StateErrorResidual(space, nu, x_tar),
+        constraints.EqualityConstraintSet(),
+    )
+    # stages[-1].addConstraint(term_cstr)
     term_cost = proxddp.QuadraticResidualCost(
         proxddp.StateErrorResidual(space, nu, x_tar), np.diag(weights)
     )
     prob = proxddp.TrajOptProblem(x0, stages, term_cost=term_cost)
+    prob.setTerminalConstraint(term_cstr)
     return prob
 
 
@@ -259,10 +263,11 @@ _, x_term = task_fun(nsteps)
 problem = setup()
 tol = 1e-3
 mu_init = 0.001
+rho_init = 1e-3
 verbose = proxddp.VerboseLevel.VERBOSE
-rho_init = 0.01
 history_cb = proxddp.HistoryCallback()
-solver = proxddp.ProxDDP(tol, mu_init, rho_init, verbose=verbose, max_iters=300)
+solver = proxddp.ProxDDP(tol, mu_init, rho_init, verbose=verbose, max_iters=400)
+solver.bcl_params.rho_factor = 0.1
 solver.registerCallback(history_cb)
 solver.setup(problem)
 solver.run(problem, xs_init, us_init)
@@ -281,16 +286,8 @@ ax0.set_xlabel("Time")
 ax1: plt.Axes = fig.add_subplot(132)
 root_pt_opt = np.stack(xs_opt)[:, :3]
 ax1.plot(times, root_pt_opt)
-ax1.hlines(
-    x_term[:3],
-    t_switch - 3 * dt,
-    t_switch + 3 * dt,
-    colors=["C0", "C1", "C2"],
-    linestyles="dotted",
-)
-ax1.hlines(
-    x_term[:3], Tf - 3 * dt, Tf + 3 * dt, colors=["C0", "C1", "C2"], linestyles="dashed"
-)
+plt.legend(["$x$", "$y$", "$z$"])
+ax1.scatter([times_wp[-1]] * 3, x_term[:3], marker=".", c=["C0", "C1", "C2"])
 ax2: plt.Axes = fig.add_subplot(133)
 n_iter = [i for i in range(len(history_cb.storage.prim_infeas.tolist()))]
 ax2.semilogy(n_iter, history_cb.storage.prim_infeas.tolist(), label="Primal err.")

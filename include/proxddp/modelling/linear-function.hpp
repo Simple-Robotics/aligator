@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/core/function.hpp"
+#include "proxddp/core/function-abstract.hpp"
 
 namespace proxddp {
 /** @brief Linear function \f$f(x,u,y) = Ax + Bu + Cy + d\f$.

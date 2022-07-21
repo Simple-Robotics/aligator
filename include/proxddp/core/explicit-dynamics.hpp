@@ -25,6 +25,7 @@ public:
   using Manifold = ManifoldAbstractTpl<Scalar>;
 
   shared_ptr<Manifold> next_state_;
+  int nx2;
 
   /// The constructor requires providing the next state's manifold.
   ExplicitDynamicsModelTpl(const int ndx1, const int nu,
@@ -63,6 +64,10 @@ struct ExplicitDynamicsDataTpl : FunctionDataTpl<_Scalar> {
   using Scalar = _Scalar;
   PROXNLP_FUNCTION_TYPEDEFS(Scalar);
   using Base = FunctionDataTpl<Scalar>;
+  using Base::Ju_;
+  using Base::Jx_;
+  using Base::Jy_;
+  using Base::value_;
   VectorXs xnext_;
   VectorXs dx_;
   MatrixXs Jtmp_xnext;
@@ -70,19 +75,24 @@ struct ExplicitDynamicsDataTpl : FunctionDataTpl<_Scalar> {
   VectorRef xoutref_;
   VectorRef dxref_;
 
-  ExplicitDynamicsDataTpl(const int ndx1, const int nu,
-                          const ManifoldAbstractTpl<Scalar> &output_space);
+  ExplicitDynamicsDataTpl(const int ndx1, const int nu, const int nx2,
+                          const int ndx2);
   virtual ~ExplicitDynamicsDataTpl() = default;
 
+  template <typename S>
   friend std::ostream &operator<<(std::ostream &oss,
-                                  const ExplicitDynamicsDataTpl &self) {
-    oss << "ExplicitDynamicsData { ";
-    oss << fmt::format("ndx: {:d},  ", self.ndx1);
-    oss << fmt::format("nu:  {:d}", self.nu);
-    oss << " }";
-    return oss;
-  }
+                                  const ExplicitDynamicsDataTpl<S> &self);
 };
+
+template <typename S>
+std::ostream &operator<<(std::ostream &oss,
+                         const ExplicitDynamicsDataTpl<S> &self) {
+  oss << "ExplicitDynamicsData { ";
+  oss << fmt::format("ndx: {:d},  ", self.ndx1);
+  oss << fmt::format("nu:  {:d}", self.nu);
+  oss << " }";
+  return oss;
+}
 
 } // namespace proxddp
 

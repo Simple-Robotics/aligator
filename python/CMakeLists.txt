@@ -39,6 +39,7 @@ make_bindings()
 
 file(MAKE_DIRECTORY
      ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python
+     ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python/compat
      ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python/modelling
      ${CMAKE_CURRENT_BINARY_DIR}/examples)
 

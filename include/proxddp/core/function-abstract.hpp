@@ -1,4 +1,4 @@
-/// @file function.hpp
+/// @file function-abstract.hpp
 /// @brief  Base definitions for ternary functions.
 #pragma once
 
@@ -27,11 +27,9 @@ public:
   const int nr;
   const int nvar = ndx1 + nu + ndx2;
 
-  StageFunctionTpl(const int ndx1, const int nu, const int ndx2, const int nr)
-      : ndx1(ndx1), nu(nu), ndx2(ndx2), nr(nr) {}
+  StageFunctionTpl(const int ndx1, const int nu, const int ndx2, const int nr);
 
-  StageFunctionTpl(const int ndx, const int nu, const int nr)
-      : StageFunctionTpl(ndx, nu, ndx, nr) {}
+  StageFunctionTpl(const int ndx, const int nu, const int nr);
 
   /**
    * @brief       Evaluate the function.
@@ -78,7 +76,7 @@ public:
   virtual ~StageFunctionTpl() = default;
 
   /// @brief Instantiate a Data object.
-  virtual std::shared_ptr<Data> createData() const;
+  virtual shared_ptr<Data> createData() const;
 };
 
 /// @brief  Struct to hold function data.
@@ -120,42 +118,13 @@ public:
   VectorRef valref_;
 
   /// @brief Default constructor.
-  FunctionDataTpl(const int ndx1, const int nu, const int ndx2, const int nr)
-      : ndx1(ndx1), nu(nu), ndx2(ndx2), nr(nr), value_(nr),
-        jac_buffer_(nr, nvar), vhp_buffer_(nvar, nvar),
-        Jx_(jac_buffer_.leftCols(ndx1)), Ju_(jac_buffer_.middleCols(ndx1, nu)),
-        Jy_(jac_buffer_.rightCols(ndx2)),
-        Hxx_(vhp_buffer_.topLeftCorner(ndx1, ndx1)),
-        Hxu_(vhp_buffer_.topRows(ndx1).middleCols(ndx1, nu)),
-        Hxy_(vhp_buffer_.topRightCorner(ndx1, ndx2)),
-        Huu_(vhp_buffer_.middleRows(ndx1, nu).middleCols(ndx1, nu)),
-        Huy_(vhp_buffer_.middleRows(ndx1, nu).rightCols(ndx2)),
-        Hyy_(vhp_buffer_.bottomRightCorner(ndx2, ndx2)), valref_(value_) {
-    value_.setZero();
-    jac_buffer_.setZero();
-    vhp_buffer_.setZero();
-  }
+  FunctionDataTpl(const int ndx1, const int nu, const int ndx2, const int nr);
 
+  template <typename T>
   friend std::ostream &operator<<(std::ostream &oss,
-                                  const FunctionDataTpl &self) {
-    oss << "FunctionData { ";
-    if (self.ndx1 == self.ndx2) {
-      oss << fmt::format("ndx : {:d}", self.ndx1);
-      oss << ",  ";
-    } else {
-      oss << fmt::format("ndx1: {:d}", self.ndx1);
-      oss << ",  ";
-      oss << fmt::format("ndx2: {:d}", self.ndx2);
-      oss << ",  ";
-    }
-    oss << fmt::format("nu:   {:d}", self.nu);
-    oss << ",  ";
-    oss << fmt::format("nr:   {:d}", self.nr);
-    oss << " }";
-    return oss;
-  }
+                                  const FunctionDataTpl<T> &self);
 };
 
 } // namespace proxddp
 
-#include "proxddp/core/function.hxx"
+#include "proxddp/core/function-abstract.hxx"

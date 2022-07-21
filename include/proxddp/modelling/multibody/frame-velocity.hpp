@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/core/function.hpp"
+#include "proxddp/core/function-abstract.hpp"
 
 #include <pinocchio/multibody/model.hpp>
 #include <pinocchio/multibody/frame.hpp>
@@ -26,17 +26,18 @@ public:
   pinocchio::FrameIndex pin_frame_id_;
 
   FrameVelocityResidualTpl(const int ndx, const int nu,
-                            const shared_ptr<Model> &model, const Motion &velocity,
-                            const pinocchio::FrameIndex id, const pinocchio::ReferenceFrame type)
-      : Base(ndx, nu, 6), pin_model_(model), pin_frame_id_(id), v_ref_(velocity), type_(type) {} 
+                           const shared_ptr<Model> &model,
+                           const Motion &velocity,
+                           const pinocchio::FrameIndex id,
+                           const pinocchio::ReferenceFrame type)
+      : Base(ndx, nu, 6), pin_model_(model), pin_frame_id_(id),
+        v_ref_(velocity), type_(type) {}
 
   pinocchio::FrameIndex getFrameId() const { return pin_frame_id_; }
   void setFrameId(const std::size_t id) { pin_frame_id_ = id; }
 
   const Motion &getReference() const { return v_ref_; }
-  void setReference(const Motion &v_new) {
-    v_ref_ = v_new;
-  }
+  void setReference(const Motion &v_new) { v_ref_ = v_new; }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &y, BaseData &data) const;

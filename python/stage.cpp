@@ -24,11 +24,10 @@ void exposeStage() {
   using ManifoldPtr = shared_ptr<Manifold>;
   using CstrSetPtr = shared_ptr<ConstraintSet>;
 
-  bp::register_ptr_to_python<shared_ptr<StageModel>>();
-  pinpy::StdVectorPythonVisitor<std::vector<StageModel>, true>::expose(
-      "StdVec_StageModel");
+  pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<StageModel>>,
+                                true>::expose("StdVec_StageModel");
 
-  bp::class_<StageModel>(
+  bp::class_<StageModel, shared_ptr<StageModel>>(
       "StageModel",
       "A stage of the control problem. Holds costs, dynamics, and constraints.",
       bp::init<const ManifoldPtr &, const int, const ManifoldPtr &,
@@ -90,8 +89,6 @@ void exposeStage() {
   bp::class_<StageData>("StageData", "Data struct for StageModel objects.",
                         bp::init<const StageModel &>())
       .def_readonly("cost_data", &StageData::cost_data)
-      .add_property("dyn_data", &StageData::dyn_data,
-                    "Data struct for dynamics data.")
       .def_readwrite("constraint_data", &StageData::constraint_data)
       .def(ClonePythonVisitor<StageData>());
 

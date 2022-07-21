@@ -1,7 +1,7 @@
 #pragma once
 
 #include "proxddp/fwd.hpp"
-#include "proxddp/core/function.hpp"
+#include "proxddp/core/function-abstract.hpp"
 #include <proxnlp/modelling/spaces/vector-space.hpp>
 
 namespace proxddp {
@@ -101,7 +101,7 @@ template <typename Scalar> struct ErrorResidualData : FunctionDataTpl<Scalar> {
 };
 
 template <typename Scalar>
-using StateErrorResidual = StateOrControlErrorResidual<Scalar, 0>;
+using StateErrorResidualTpl = StateOrControlErrorResidual<Scalar, 0>;
 
 template <typename Scalar>
 using ControlErrorResidual = StateOrControlErrorResidual<Scalar, 1>;

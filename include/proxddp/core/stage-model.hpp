@@ -1,12 +1,11 @@
 #pragma once
 
 #include "proxddp/fwd.hpp"
-#include "proxddp/core/function.hpp"
+#include "proxddp/core/function-abstract.hpp"
 
 #include <proxnlp/modelling/spaces/vector-space.hpp>
-#include <proxnlp/modelling/constraints/equality-constraint.hpp>
 
-#include "proxddp/core/costs.hpp"
+#include "proxddp/core/cost-abstract.hpp"
 #include "proxddp/core/dynamics.hpp"
 #include "proxddp/core/constraint.hpp"
 
@@ -17,7 +16,9 @@ namespace proxddp {
 /** @brief    A stage in the control problem.
  *
  *  @details  Each stage containts cost functions, dynamical
- *            and constraint models.
+ *            and constraint models. These objects are hold
+ *            through smart pointers to leverage dynamic
+ *            polymorphism.
  */
 template <typename _Scalar>
 class StageModelTpl : public Cloneable<StageModelTpl<_Scalar>> {
@@ -28,31 +29,29 @@ public:
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using Dynamics = DynamicsModelTpl<Scalar>;
   using Constraint = StageConstraintTpl<Scalar>;
-  using CostAbstract = CostAbstractTpl<Scalar>;
+  using Cost = CostAbstractTpl<Scalar>;
   using Data = StageDataTpl<Scalar>;
-
-  using ManifoldPtr = shared_ptr<Manifold>;
-  using CostPtr = shared_ptr<CostAbstract>;
+  using VectorSpace = proxnlp::VectorSpaceTpl<Scalar>;
 
   /// State space for the current state \f$x_k\f$.
-  ManifoldPtr xspace_;
+  shared_ptr<Manifold> xspace_;
   /// State space for the next state \f$x_{k+1}\f$.
-  ManifoldPtr xspace_next_;
+  shared_ptr<Manifold> xspace_next_;
   /// Control vector space -- by default, a simple Euclidean space.
-  ManifoldPtr uspace_;
-
-  CostPtr cost_;
-
-  const Dynamics &dyn_model() const {
-    return static_cast<const Dynamics &>(*constraints_manager[0].func_);
-  }
-  const CostAbstract &cost() const { return *cost_; }
-
-  ConstraintContainer<Scalar> constraints_manager;
+  shared_ptr<Manifold> uspace_;
+  /// Stage cost function.
+  shared_ptr<Cost> cost_;
+  /// Constraint manager.
+  ConstraintContainer<Scalar> constraints_;
 
   const Manifold &xspace() const { return *xspace_; }
   const Manifold &uspace() const { return *uspace_; }
   const Manifold &xspace_next() const { return *xspace_next_; }
+  virtual const Dynamics &dyn_model() const {
+    assert(constraints_.numConstraints() > 0);
+    return dynamic_cast<const Dynamics &>(*constraints_[0].func_);
+  }
+  virtual const Cost &cost() const { return *cost_; }
 
   int nx1() const { return xspace_->nx(); }
   int ndx1() const { return xspace_->ndx(); }
@@ -60,9 +59,7 @@ public:
   int nx2() const { return xspace_next_->nx(); }
   int ndx2() const { return xspace_next_->ndx(); }
 
-  std::size_t numConstraints() const {
-    return constraints_manager.numConstraints();
-  }
+  std::size_t numConstraints() const { return constraints_.numConstraints(); }
 
   /// Number of primal optimization variables.
   int numPrimal() const;
@@ -71,28 +68,25 @@ public:
 
   /// Default constructor: assumes the control space is a Euclidean space of
   /// dimension \p nu.
-  StageModelTpl(const ManifoldPtr &space1, const int nu,
-                const ManifoldPtr &space2, const CostPtr &cost,
+  StageModelTpl(const shared_ptr<Manifold> &space1, const int nu,
+                const shared_ptr<Manifold> &space2,
+                const shared_ptr<Cost> &cost,
                 const shared_ptr<Dynamics> &dyn_model);
 
   /// Secondary constructor: use a single manifold.
-  StageModelTpl(const ManifoldPtr &space, const int nu, const CostPtr &cost,
+  StageModelTpl(const shared_ptr<Manifold> &space, const int nu,
+                const shared_ptr<Cost> &cost,
                 const shared_ptr<Dynamics> &dyn_model);
 
+  virtual ~StageModelTpl() = default;
+
   /// @brief    Add a constraint to the stage.
-  void addConstraint(const Constraint &cstr) {
-    constraints_manager.push_back(cstr);
-  }
-  /// @copybrief addConstraint()
-  void addConstraint(Constraint &&cstr) {
-    constraints_manager.push_back(std::move(cstr));
-  }
+  template <typename T> void addConstraint(T &&cstr);
+
   /// @copybrief  addConstraint().
   /// @details    Adds a constraint by allocating a new StageConstraintTpl.
   void addConstraint(const shared_ptr<StageFunctionTpl<Scalar>> &func,
-                     const shared_ptr<ConstraintSetBase<Scalar>> &cstr_set) {
-    constraints_manager.push_back(Constraint{func, cstr_set});
-  }
+                     const shared_ptr<ConstraintSetBase<Scalar>> &cstr_set);
 
   /* Evaluate costs, constraints, ... */
 
@@ -107,32 +101,16 @@ public:
                                   const ConstVectorRef &y, Data &data) const;
 
   /// @brief    Create a Data object.
-  shared_ptr<Data> createData() const { return std::make_shared<Data>(*this); }
+  virtual shared_ptr<Data> createData() const;
 
+  template <typename S>
   friend std::ostream &operator<<(std::ostream &oss,
-                                  const StageModelTpl &stage) {
-    oss << "StageModel { ";
-    if (stage.ndx1() == stage.ndx2()) {
-      oss << "ndx: " << stage.ndx1() << ", "
-          << "nu:  " << stage.nu();
-    } else {
-      oss << "ndx1:" << stage.ndx1() << ", "
-          << "nu:  " << stage.nu() << ", "
-          << "ndx2:" << stage.ndx2();
-    }
-
-    if (stage.numConstraints() > 0) {
-      oss << ", ";
-      oss << "nc: " << stage.numConstraints();
-    }
-
-    oss << " }";
-    return oss;
-  }
+                                  const StageModelTpl<S> &stage);
 
 protected:
-  /// Constructor which does not allocate anything.
-  StageModelTpl() {}
+  StageModelTpl(const shared_ptr<Manifold> &space, const int nu)
+      : xspace_(space), xspace_next_(space),
+        uspace_(std::make_shared<VectorSpace>(nu)) {}
 };
 
 /// @brief    Data struct for stage models StageModelTpl.
@@ -148,16 +126,27 @@ struct StageDataTpl : public Cloneable<StageDataTpl<_Scalar>> {
 
   /// Data structs for the functions involved in the constraints.
   std::vector<shared_ptr<FunctionData>> constraint_data;
-  /// Data struct for the dynamics.
-  shared_ptr<DynamicsData> dyn_data() { return constraint_data[0]; }
   /// Data for the running costs.
-  const shared_ptr<CostDataAbstract> cost_data;
+  shared_ptr<CostDataAbstract> cost_data;
 
   /// @brief    Constructor.
   ///
   /// @details  The constructor initializes or fills in the data members using
   /// move semantics.
   explicit StageDataTpl(const StageModel &stage_model);
+
+  virtual ~StageDataTpl() = default;
+
+  /// @brief Check data integrity.
+  virtual void checkData() {
+    bool cond = (constraint_data.size() >= 1) && (cost_data != 0);
+    if (!cond) {
+      std::domain_error("[StageData] integrity check failed.");
+    }
+  }
+
+protected:
+  StageDataTpl(){};
 };
 
 } // namespace proxddp

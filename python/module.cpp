@@ -3,6 +3,10 @@
 
 #include "proxddp/utils.hpp"
 
+#ifdef WITH_CROCODDYL_COMPAT
+#include "proxddp/python/compat/croco.hpp"
+#endif
+
 namespace proxddp {
 namespace python {
 void exposeUtils() {
@@ -63,4 +67,8 @@ BOOST_PYTHON_MODULE(pyproxddp) {
   exposeUtils();
   exposeSolvers();
   exposeCallbacks();
+
+#ifdef WITH_CROCODDYL_COMPAT
+  exposeCrocoddylCompat();
+#endif
 }

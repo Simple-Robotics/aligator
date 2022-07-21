@@ -23,7 +23,7 @@ using DynamicsModel = DynamicsModelTpl<Scalar>;
 using StageModel = StageModelTpl<Scalar>;
 
 using TrajOptProblem = TrajOptProblemTpl<Scalar>;
-using ProblemData = TrajOptDataTpl<Scalar>;
+using TrajOptData = TrajOptDataTpl<Scalar>;
 
 using ExplicitDynamics = ExplicitDynamicsModelTpl<Scalar>;
 using ExplicitDynData = ExplicitDynamicsDataTpl<Scalar>;

@@ -5,6 +5,8 @@
 
 #include "proxddp/modelling/state-error.hpp"
 
+#include <boost/optional.hpp>
+
 namespace proxddp {
 /**
  * @brief    Shooting problem, consisting in a succession of nodes.
@@ -21,41 +23,41 @@ namespace proxddp {
 template <typename _Scalar> struct TrajOptProblemTpl {
   using Scalar = _Scalar;
   using StageModel = StageModelTpl<Scalar>;
-  using ProblemData = TrajOptDataTpl<Scalar>;
+  using Function = StageFunctionTpl<Scalar>;
+  using TrajOptData = TrajOptDataTpl<Scalar>;
   using CostAbstract = CostAbstractTpl<Scalar>;
+  using Constraint = StageConstraintTpl<Scalar>;
 
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
   /// Initial condition
   VectorXs x0_init_;
-  StateErrorResidual<Scalar> init_state_error;
+  StateErrorResidualTpl<Scalar> init_state_error;
 
   /// Stages of the control problem.
-  std::vector<StageModel> stages_;
+  std::vector<shared_ptr<StageModel>> stages_;
   shared_ptr<CostAbstract> term_cost_;
+  boost::optional<Constraint> term_constraint_ = boost::none;
 
-  TrajOptProblemTpl(const VectorXs &x0, const std::vector<StageModel> &stages,
-                    const shared_ptr<CostAbstract> &term_cost)
-      : x0_init_(x0),
-        init_state_error(stages[0].xspace_, stages[0].nu(), x0_init_),
-        stages_(stages), term_cost_(term_cost) {}
+  TrajOptProblemTpl(const VectorXs &x0,
+                    const std::vector<shared_ptr<StageModel>> &stages,
+                    const shared_ptr<CostAbstract> &term_cost);
 
   TrajOptProblemTpl(const VectorXs &x0, const int nu,
                     const shared_ptr<ManifoldAbstractTpl<Scalar>> &space,
-                    const shared_ptr<CostAbstract> &term_cost)
-      : x0_init_(x0), init_state_error(space, nu, x0_init_),
-        term_cost_(term_cost) {}
+                    const shared_ptr<CostAbstract> &term_cost);
 
   /// @brief Add a stage to the control problem.
-  void addStage(const StageModel &new_stage);
-  /// @copybrief addStage()
-  void addStage(StageModel &&new_stage);
+  void addStage(const shared_ptr<StageModel> &stage);
 
-  inline std::size_t numSteps() const;
+  /// @brief Set a terminal constraint for the model.
+  void setTerminalConstraint(const Constraint &cstr);
+
+  std::size_t numSteps() const;
 
   /// @brief Rollout the problem costs, constraints, dynamics, stage per stage.
   void evaluate(const std::vector<VectorXs> &xs,
-                const std::vector<VectorXs> &us, ProblemData &prob_data) const;
+                const std::vector<VectorXs> &us, TrajOptData &prob_data) const;
 
   /**
    * @brief Rollout the problem derivatives, stage per stage.
@@ -65,23 +67,28 @@ template <typename _Scalar> struct TrajOptProblemTpl {
    */
   void computeDerivatives(const std::vector<VectorXs> &xs,
                           const std::vector<VectorXs> &us,
-                          ProblemData &prob_data) const;
+                          TrajOptData &prob_data) const;
 };
 
 /// @brief Problem data struct.
 template <typename _Scalar> struct TrajOptDataTpl {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-  using StageDataPtr = shared_ptr<StageDataTpl<Scalar>>;
+  using StageData = StageDataTpl<Scalar>;
 
   shared_ptr<FunctionDataTpl<Scalar>> init_data;
   /// Data structs for each stage of the problem.
-  std::vector<StageDataPtr> stage_data;
+  std::vector<shared_ptr<StageData>> stage_data;
   /// Terminal cost data.
   shared_ptr<CostDataAbstractTpl<Scalar>> term_cost_data;
+  /// Terminal constraint data.
+  shared_ptr<FunctionDataTpl<Scalar>> term_cstr_data;
 
   TrajOptDataTpl() = delete;
   TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem);
+
+  StageData &getData(std::size_t i) { return *stage_data[i]; }
+  const StageData &getData(std::size_t i) const { return *stage_data[i]; }
 };
 
 /**
@@ -96,7 +103,7 @@ Scalar computeTrajectoryCost(const TrajOptProblemTpl<Scalar> &problem,
 
   const std::size_t nsteps = problem.numSteps();
   for (std::size_t step = 0; step < nsteps; step++) {
-    const StageDataTpl<Scalar> &sd = *problem_data.stage_data[step];
+    const StageDataTpl<Scalar> &sd = problem_data.getData(step);
     traj_cost += sd.cost_data->value_;
   }
   traj_cost += problem_data.term_cost_data->value_;
