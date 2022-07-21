@@ -25,15 +25,12 @@ void exposeConstraintFwdDynamics() {
   using MultibodyConstraintFwdDynamics =
       MultibodyConstraintFwdDynamicsTpl<Scalar>;
 
-  bp::register_ptr_to_python<
-      shared_ptr<pinocchio::ProximalSettingsTpl<Scalar>>>();
-
   bp::class_<MultibodyConstraintFwdDynamics, bp::bases<ODEAbstract>>(
       "MultibodyConstraintFwdDynamics",
       "Constraint forward dynamics using Pinocchio.",
       bp::init<const shared_ptr<proxnlp::MultibodyPhaseSpace<Scalar>> &,
                const context::MatrixXs &, const RigidConstraintModelVector &,
-               const shared_ptr<pinocchio::ProximalSettingsTpl<Scalar>> &>(
+               const pinocchio::ProximalSettingsTpl<Scalar> &>(
           bp::args("self", "space", "actuation_matrix", "constraint_models",
                    "prox_settings")))
       .add_property("ntau", &MultibodyConstraintFwdDynamics::ntau,

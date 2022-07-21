@@ -5,6 +5,8 @@
 #include <proxnlp/modelling/spaces/multibody.hpp>
 #include <pinocchio/multibody/data.hpp>
 
+#include <pinocchio/algorithm/proximal.hpp>
+
 namespace proxddp {
 namespace dynamics {
 template <typename Scalar> struct MultibodyConstraintFwdDataTpl;
@@ -27,14 +29,13 @@ struct MultibodyConstraintFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using RigidConstraintDataVector =
       PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(pinocchio::RigidConstraintData);
   using ProxSettings = pinocchio::ProximalSettingsTpl<Scalar>;
-  using ProxSettingsPtr = shared_ptr<ProxSettings>;
   using Manifold = proxnlp::MultibodyPhaseSpace<Scalar>;
 
   using ManifoldPtr = shared_ptr<Manifold>;
   ManifoldPtr space_;
   MatrixXs actuation_matrix_;
   RigidConstraintModelVector constraint_models_;
-  ProxSettingsPtr prox_settings_;
+  ProxSettings prox_settings_;
 
   const Manifold &space() const { return *space_; }
   int ntau() const { return space_->getModel().nv; }
@@ -45,7 +46,7 @@ struct MultibodyConstraintFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   MultibodyConstraintFwdDynamicsTpl(
       const ManifoldPtr &state, const MatrixXs &actuation,
       const RigidConstraintModelVector &constraint_models,
-      const ProxSettingsPtr &prox_settings);
+      const ProxSettings &prox_settings);
 
   virtual void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                        BaseData &data) const;
@@ -70,6 +71,7 @@ struct MultibodyConstraintFwdDataTpl : ODEDataTpl<Scalar> {
   MatrixXs dtau_du_;
   RigidConstraintModelVector constraint_models_;
   RigidConstraintDataVector constraint_datas_;
+  pinocchio::ProximalSettingsTpl<Scalar> settings;
   /// shared_ptr to the underlying pinocchio::DataTpl object.
   shared_ptr<pinocchio::DataTpl<Scalar>> pin_data_;
   MultibodyConstraintFwdDataTpl(
