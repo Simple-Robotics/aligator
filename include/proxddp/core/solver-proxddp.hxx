@@ -92,8 +92,6 @@ template <typename Scalar>
 void SolverProxDDP<Scalar>::backwardPass(const Problem &problem,
                                          Workspace &workspace,
                                          Results &results) const {
-  const TrajOptDataTpl<Scalar> &prob_data = workspace.problem_data;
-
   /* Terminal node */
   computeTerminalValue(problem, workspace, results);
 
@@ -248,6 +246,7 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   // KKT matrix: (u, y)-block = bottom right of q hessian
   kkt_mat.topLeftCorner(nprim, nprim) =
       qparam.hess_.bottomRightCorner(nprim, nprim);
+  kkt_mat.topLeftCorner(nprim, nprim).diagonal().array() += xreg_;
   kkt_mat.bottomRightCorner(ndual, ndual).diagonal().array() = -mu_;
 
   {
@@ -285,8 +284,30 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   Workspace &workspace = *workspace_;
   Results &results = *results_;
 
-  results.xs_ = xs_init;
-  results.us_ = us_init;
+  const std::size_t nsteps = problem.numSteps();
+  if (xs_init.size() == 0) {
+    for (std::size_t i = 0; i < nsteps + 1; i++) {
+      const StageModel &sm = *problem.stages_[i];
+      results.xs_[i] = sm.xspace().neutral();
+    }
+  } else {
+    if (xs_init.size() != (nsteps + 1)) {
+      proxddp_runtime_error("warm-start for xs has wrong size!")
+    }
+    results.xs_ = xs_init;
+  }
+
+  if (us_init.size() == 0) {
+    for (std::size_t i = 0; i < nsteps; i++) {
+      const StageModel &sm = *problem.stages_[i];
+      results.us_[i] = sm.uspace().neutral();
+    }
+  } else {
+    if (us_init.size() != nsteps) {
+      proxddp_runtime_error("warm-start for us has wrong size!")
+    }
+    results.us_ = us_init;
+  }
 
   workspace.prev_xs_ = results.xs_;
   workspace.prev_us_ = results.us_;
@@ -440,7 +461,6 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
           merit_eval_fun, phi0, dphi0, verbose_, ls_params.armijo_c1,
           ls_params.alpha_min, alpha_opt);
       break;
-
     default:
       break;
     }

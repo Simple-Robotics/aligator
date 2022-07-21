@@ -80,6 +80,8 @@ public:
   /// Primal proximal parameter \f$\rho > 0\f$
   Scalar rho_ = rho_init;
 
+  Scalar xreg_ = 0.;
+
   const Scalar inner_tol0 = 1.;
   const Scalar prim_tol0 = 1.;
 
@@ -93,7 +95,7 @@ public:
 
   /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.
   std::size_t MAX_ITERS;
-  std::size_t MAX_AL_ITERS = 50;
+  std::size_t MAX_AL_ITERS = MAX_ITERS;
 
   /// Minimum possible tolerance asked from the solver.
   const Scalar TOL_MIN = 1e-8;
