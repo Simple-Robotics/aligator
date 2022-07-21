@@ -134,7 +134,7 @@ t0_switch = times[idx_switch]
 def make_task():
     if args.obstacles:
         weights = np.zeros(space.ndx)
-        weights[:3] = 4.0
+        weights[:3] = 1.0
         weights[3:6] = 1e-2
         weights[nv:] = 1e-3
 
@@ -185,10 +185,12 @@ class Column(proxddp.StageFunction):
         self.center = center.copy()
         self.radius = radius
         self.margin = margin
-        self._c = space.neutral()
 
     def evaluate(self, x, u, y, data):  # distance function
-        err = x[:2] - self.center
+        q = x[:nq]
+        pin.forwardKinematics(rmodel, rdata, q)
+        M: pin.SE3 = pin.updateFramePlacement(rmodel, rdata, 1)
+        err = M.translation[:2] - self.center
         res = np.dot(err, err) - (self.radius + self.margin) ** 2
         data.value[:] = -res
 
@@ -261,10 +263,11 @@ _, x_term = task_fun(nsteps)
 problem = setup()
 tol = 1e-3
 mu_init = 0.001
+rho_init = 1e-3
 verbose = proxddp.VerboseLevel.VERBOSE
-rho_init = 0.01
 history_cb = proxddp.HistoryCallback()
-solver = proxddp.ProxDDP(tol, mu_init, rho_init, verbose=verbose, max_iters=300)
+solver = proxddp.ProxDDP(tol, mu_init, rho_init, verbose=verbose, max_iters=400)
+solver.bcl_params.rho_factor = 0.1
 solver.registerCallback(history_cb)
 solver.setup(problem)
 solver.run(problem, xs_init, us_init)
