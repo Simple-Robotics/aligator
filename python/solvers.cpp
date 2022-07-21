@@ -61,6 +61,8 @@ void exposeSolvers() {
       .def_readonly("traj_cost", &Results::traj_cost_, "Trajectory cost.")
       .def_readonly("merit_value", &Results::merit_value_,
                     "Merit function value.")
+      .def_readonly("num_iters", &Results::num_iters,
+                    "Number of solver iterations.")
       .def(PrintableVisitor<Results>());
 
   using SolverType = SolverProxDDP<Scalar>;
