@@ -4,6 +4,18 @@
 
 namespace proxddp {
 namespace python {
+namespace context {
+
+using RigidConstraintModel = pinocchio::RigidConstraintModelTpl<Scalar, 0>;
+using RigidConstraintData = pinocchio::RigidConstraintDataTpl<Scalar, 0>;
+
+} // namespace context
+
+using RigidConstraintModelVector =
+    PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(context::RigidConstraintModel);
+using RigidConstraintDataVector =
+    PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(context::RigidConstraintData);
+
 void exposeConstraintFwdDynamics() {
   using namespace proxddp::dynamics;
   using context::Scalar;
@@ -12,10 +24,9 @@ void exposeConstraintFwdDynamics() {
   using MultibodyConstraintFwdData = MultibodyConstraintFwdDataTpl<Scalar>;
   using MultibodyConstraintFwdDynamics =
       MultibodyConstraintFwdDynamicsTpl<Scalar>;
-  using RigidConstraintModelVector = PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(
-      pinocchio::RigidConstraintModel);
-  using RigidConstraintDataVector =
-      PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(pinocchio::RigidConstraintData);
+
+  bp::register_ptr_to_python<
+      shared_ptr<pinocchio::ProximalSettingsTpl<Scalar>>>();
 
   bp::class_<MultibodyConstraintFwdDynamics, bp::bases<ODEAbstract>>(
       "MultibodyConstraintFwdDynamics",
@@ -23,8 +34,8 @@ void exposeConstraintFwdDynamics() {
       bp::init<const shared_ptr<proxnlp::MultibodyPhaseSpace<Scalar>> &,
                const context::MatrixXs &, const RigidConstraintModelVector &,
                const shared_ptr<pinocchio::ProximalSettingsTpl<Scalar>> &>(
-          bp::args("self", "space",
-                   "actuation_matrix, constraint_models, prox_settings")))
+          bp::args("self", "space", "actuation_matrix", "constraint_models",
+                   "prox_settings")))
       .add_property("ntau", &MultibodyConstraintFwdDynamics::ntau,
                     "Torque dimension.")
       .def(CreateDataPythonVisitor<MultibodyConstraintFwdDynamics>());
