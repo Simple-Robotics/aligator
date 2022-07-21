@@ -21,6 +21,7 @@ from proxnlp import constraints
 class Args(tap.Tap):
     display: bool = False
     record: bool = False
+    u_bounds: bool = True
 
     def process_args(self):
         if self.record:
@@ -134,7 +135,7 @@ t0_switch = times[idx_switch]
 def make_task():
     if args.obstacles:
         weights = np.zeros(space.ndx)
-        weights[:3] = 1.0
+        weights[:3] = 1e-1
         weights[3:6] = 1e-2
         weights[nv:] = 1e-3
 
@@ -228,8 +229,9 @@ def setup():
         rcost.addCost(ucost)
 
         stage = proxddp.StageModel(space, nu, rcost, dynmodel)
-        ctrl_box = proxddp.ControlBoxFunction(space.ndx, u_min, u_max)
-        stage.addConstraint(ctrl_box, constraints.NegativeOrthant())
+        if args.u_bounds:
+            ctrl_box = proxddp.ControlBoxFunction(space.ndx, u_min, u_max)
+            stage.addConstraint(ctrl_box, constraints.NegativeOrthant())
         if args.obstacles:  # add obstacles' constraints
             column1 = Column(
                 space.ndx, nu, center_column1[:2], cyl_radius, margin=quad_radius
@@ -262,8 +264,8 @@ def setup():
 _, x_term = task_fun(nsteps)
 problem = setup()
 tol = 1e-3
-mu_init = 0.001
-rho_init = 1e-3
+mu_init = 1e-1
+rho_init = 1e-8
 verbose = proxddp.VerboseLevel.VERBOSE
 history_cb = proxddp.HistoryCallback()
 solver = proxddp.ProxDDP(tol, mu_init, rho_init, verbose=verbose, max_iters=400)
