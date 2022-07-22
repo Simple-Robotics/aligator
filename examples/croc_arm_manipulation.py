@@ -104,9 +104,12 @@ t_f = T * dt
 times = np.linspace(0, t_f, T + 1)
 TOLERANCE = 1e-4
 
+xs_i = [x0] * (T + 1)
+us_i = [np.zeros(actuationModel.nu) for _ in range(T)]
+
 if True:
     # Creating the DDP solver for this OC problem, defining a logger
-    solver = crocoddyl.SolverDDP(problem)
+    solver = crocoddyl.SolverFDDP(problem)
     cameraTF = [2.0, 2.68, 0.54, 0.2, 0.62, 0.72, 0.22]
     if WITHDISPLAY and WITHPLOT:
         display = crocoddyl.MeshcatDisplay(talos_arm, 4, 4)
@@ -134,7 +137,7 @@ if True:
 
     # Solving it with the DDP algorithm
     solver.th_grad = TOLERANCE**2
-    solver.solve()
+    solver.solve(xs_i, us_i)
 
     # Plotting the solution and the DDP convergence
     if WITHPLOT:
@@ -169,17 +172,15 @@ if True:
     prox_problem = convertCrocoddylProblem(problem)
 
     mu_init = 1e-7
-    rho_init = 1e-6
+    rho_init = 1e-10
     solver = proxddp.ProxDDP(TOLERANCE, mu_init, rho_init=rho_init, max_iters=300)
     solver.verbose = proxddp.VerboseLevel.VERBOSE
     solver.bcl_params.rho_factor = 0.1
     solver.setup(prox_problem)
-    xs_i = [x0] * (T + 1)
-    us_i = [np.zeros(actuationModel.nu) for _ in range(T)]
     solver.run(prox_problem, xs_i, us_i)
 
     results = solver.getResults()
-    assert results.num_iters <= 16
+    assert results.num_iters <= 24
     print("Results {}".format(results))
     prox_xs = results.xs
     prox_us = results.us
