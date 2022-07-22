@@ -20,10 +20,10 @@ template <typename _Scalar> struct ConstantCostTpl : CostAbstractTpl<_Scalar> {
   }
 
   void computeGradients(const ConstVectorRef &, const ConstVectorRef &,
-                        CostData &data) const {}
+                        CostData &) const {}
 
   void computeHessians(const ConstVectorRef &, const ConstVectorRef &,
-                       CostData &data) const {}
+                       CostData &) const {}
 };
 
 /// @brief Euclidean quadratic cost.
@@ -61,7 +61,7 @@ template <typename _Scalar> struct QuadraticCostTpl : CostAbstractTpl<_Scalar> {
   }
 
   void computeHessians(const ConstVectorRef &, const ConstVectorRef &,
-                       CostData &data) const {}
+                       CostData &) const {}
 
   shared_ptr<CostData> createData() const {
     shared_ptr<CostData> data = Base::createData();
