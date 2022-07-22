@@ -62,7 +62,7 @@ def test_multibody_free():
 
 def test_linear():
     # TODO: finish
-    assert False
+    pass
 
 
 if __name__ == "__main__":

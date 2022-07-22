@@ -29,8 +29,8 @@ def test_cost_stack():
         cost_stack.computeHessians(x0, u0, data2)
 
         assert data1.value == data2.value
-        assert np.allclose(data1._grad, data2._grad)
-        assert np.allclose(data1._hessian, data2._hessian)
+        assert np.allclose(data1.grad, data2.grad)
+        assert np.allclose(data1.hess, data2.hess)
 
 
 # Should raise RuntimeError due to wrong use.
@@ -46,6 +46,9 @@ def test_stack_error():
 
     rc2 = QuadraticCost(np.eye(3), np.eye(nu))
     rc3 = QuadraticCost(np.eye(nx), np.eye(nu * 2))
+
+    cost_data = cost_stack.createData()
+    print(cost_data.sub_cost_data.tolist())
 
     with pytest.raises(Exception) as e_info:
         cost_stack.addCost(rc2)

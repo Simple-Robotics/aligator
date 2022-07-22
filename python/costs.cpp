@@ -43,7 +43,8 @@ void exposeCosts() {
           "Constructor with just weights.", bp::args("self", "w_x", "w_u")))
       .def(CopyableVisitor<QuadraticCost<Scalar>>());
 
-  bp::class_<CostData, shared_ptr<CostData>>(
+  bp::register_ptr_to_python<shared_ptr<CostData>>();
+  bp::class_<CostData>(
       "CostData", "Cost function data struct.",
       bp::init<const int, const int>(bp::args("self", "ndx", "nu")))
       .def_readwrite("value", &CostData::value_)
@@ -88,8 +89,7 @@ void exposeCosts() {
           bp::args("self", "function", "weights")))
       .def_readwrite("residual", &QuadraticResidualCostTpl<Scalar>::residual_)
       .def_readwrite("weights", &QuadraticResidualCostTpl<Scalar>::weights_)
-      .def(CopyableVisitor<QuadraticResidualCostTpl<Scalar>>())
-      .def(CreateDataPythonVisitor<QuadraticResidualCostTpl<Scalar>>());
+      .def(CopyableVisitor<QuadraticResidualCostTpl<Scalar>>());
 
   {
     using CompositeData = CompositeCostDataTpl<Scalar>;
@@ -98,26 +98,27 @@ void exposeCosts() {
         .def_readwrite("residual_data", &CompositeData::residual_data);
   }
 
-  bp::class_<CostStackTpl<Scalar>, bp::bases<context::CostBase>>(
+  using CostStack = CostStackTpl<Scalar>;
+  bp::class_<CostStack, bp::bases<context::CostBase>>(
       "CostStack",
       bp::init<const int, const int,
                const std::vector<shared_ptr<context::CostBase>> &,
                const std::vector<Scalar> &>((
           bp::arg("self"), bp::arg("ndx"), bp::arg("nu"),
           bp::arg("components") = bp::list(), bp::arg("weights") = bp::list())))
-      .def_readonly("components", &CostStackTpl<Scalar>::components_,
+      .def_readonly("components", &CostStack::components_,
                     "Components of this cost stack.")
-      .def_readonly("weights", &CostStackTpl<Scalar>::weights_,
+      .def_readonly("weights", &CostStack::weights_,
                     "Weights of this cost stack.")
-      .def("addCost", &CostStackTpl<Scalar>::addCost,
+      .def("addCost", &CostStack::addCost,
            (bp::arg("self"), bp::arg("cost"), bp::arg("weight") = 1.),
            "Add a cost to the stack of costs.")
-      .def("size", &CostStackTpl<Scalar>::size,
-           "Get the number of cost components.")
-      .def(CopyableVisitor<CostStackTpl<Scalar>>())
-      .def(CreateDataPythonVisitor<CostStackTpl<Scalar>>());
+      .def("size", &CostStack::size, "Get the number of cost components.")
+      .def(CopyableVisitor<CostStack>())
+      .def(CreateDataPythonVisitor<CostStack>());
 
-  bp::class_<CostStackDataTpl<Scalar>, bp::bases<CostData>>(
+  using CostStackData = CostStackDataTpl<Scalar>;
+  bp::class_<CostStackData, bp::bases<CostData>>(
       "CostStackData", "Data struct for CostStack.", bp::no_init)
       .add_property(
           "sub_cost_data",
