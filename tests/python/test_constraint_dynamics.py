@@ -222,6 +222,7 @@ def test_constraint_dynamics():
 
     ode = dynamics.MultibodyConstraintFwdDynamics(space, B, [constraint_model], prox)
     data = ode.createData()
+    assert(isinstance(data, dynamics.MultibodyConstraintFwdData))
 
     x0 = space.neutral()
     x0[: model.nq] = model.q_init
