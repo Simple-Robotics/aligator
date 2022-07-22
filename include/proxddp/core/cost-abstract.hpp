@@ -80,6 +80,8 @@ public:
     grad_.setZero();
     hess_.setZero();
   }
+
+  virtual ~CostDataAbstractTpl() = default;
 };
 
 } // namespace proxddp

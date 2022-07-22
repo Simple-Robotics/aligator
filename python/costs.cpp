@@ -90,16 +90,16 @@ void exposeCosts() {
   /* Composite costs */
 
   using CompositeData = CompositeCostDataTpl<Scalar>;
-  bp::register_ptr_to_python<shared_ptr<QuadraticResidualCostTpl<Scalar>>>();
+  using QuadResCost = QuadraticResidualCostTpl<Scalar>;
+  bp::register_ptr_to_python<shared_ptr<QuadResCost>>();
 
-  bp::class_<QuadraticResidualCostTpl<Scalar>, bp::bases<CostBase>>(
+  bp::class_<QuadResCost, bp::bases<CostBase>>(
       "QuadraticResidualCost", "Weighted 2-norm of a given residual function.",
       bp::init<const shared_ptr<StageFunction> &, const context::MatrixXs &>(
           bp::args("self", "function", "weights")))
-      .def_readwrite("residual", &QuadraticResidualCostTpl<Scalar>::residual_)
-      .def_readwrite("weights", &QuadraticResidualCostTpl<Scalar>::weights_)
-      .def(CopyableVisitor<QuadraticResidualCostTpl<Scalar>>())
-      .def(CreateDataPythonVisitor<QuadraticResidualCostTpl<Scalar>>());
+      .def_readwrite("residual", &QuadResCost::residual_)
+      .def_readwrite("weights", &QuadResCost::weights_)
+      .def(CopyableVisitor<QuadResCost>());
 
   bp::register_ptr_to_python<shared_ptr<CompositeData>>();
   bp::class_<CompositeData, bp::bases<CostData>>("CompositeCostData",
@@ -126,8 +126,7 @@ void exposeCosts() {
           (bp::arg("self"), bp::arg("cost"), bp::arg("weight") = 1.),
           "Add a cost to the stack of costs.")
       .def("size", &CostStack::size, "Get the number of cost components.")
-      .def(CopyableVisitor<CostStack>())
-      .def(CreateDataPythonVisitor<CostStack>());
+      .def(CopyableVisitor<CostStack>());
 
   bp::register_ptr_to_python<shared_ptr<CostStackData>>();
   bp::class_<CostStackData, bp::bases<CostData>>(
