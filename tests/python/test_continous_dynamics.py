@@ -32,6 +32,7 @@ def test_multibody_free():
     B = np.eye(nu)
     ode = dynamics.MultibodyFreeFwdDynamics(space, B)
     data = ode.createData()
+    assert isinstance(data, dynamics.MultibodyFreeFwdData)
     assert hasattr(data, "tau")
 
     x0 = space.neutral()
