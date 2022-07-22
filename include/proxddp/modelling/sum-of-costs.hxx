@@ -62,7 +62,7 @@ void CostStackTpl<Scalar>::evaluate(const ConstVectorRef &x,
   d.value_ = 0.;
   for (std::size_t i = 0; i < components_.size(); i++) {
     components_[i]->evaluate(x, u, *d.sub_datas[i]);
-    d.value_ += d.sub_datas[i]->value_;
+    d.value_ += this->weights_[i] * d.sub_datas[i]->value_;
   }
 }
 
@@ -74,7 +74,7 @@ void CostStackTpl<Scalar>::computeGradients(const ConstVectorRef &x,
   d.grad_.setZero();
   for (std::size_t i = 0; i < components_.size(); i++) {
     components_[i]->computeGradients(x, u, *d.sub_datas[i]);
-    d.grad_.noalias() += d.sub_datas[i]->grad_;
+    d.grad_.noalias() += this->weights_[i] * d.sub_datas[i]->grad_;
   }
 }
 
@@ -86,7 +86,7 @@ void CostStackTpl<Scalar>::computeHessians(const ConstVectorRef &x,
   d.hess_.setZero();
   for (std::size_t i = 0; i < components_.size(); i++) {
     components_[i]->computeHessians(x, u, *d.sub_datas[i]);
-    d.hess_.noalias() += d.sub_datas[i]->hess_;
+    d.hess_.noalias() += this->weights_[i] * d.sub_datas[i]->hess_;
   }
 }
 
