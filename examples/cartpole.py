@@ -118,7 +118,8 @@ disc_dyn = proxddp.dynamics.IntegratorSemiImplEuler(cont_dyn, time_step)
 nq = model.nq
 nv = model.nv
 x0 = space.neutral()
-x0[1] = np.pi
+x0[1] = 0.5
+# x0[1] = np.pi
 
 target_pos = np.array([0.0, 0.0, 1.0])
 frame_id = model.getFrameId("end_effector_frame")
@@ -128,7 +129,7 @@ rcost = proxddp.CostStack(ndx, nu)
 wu = np.ones(nu) * 1e-2
 rcost.addCost(
     proxddp.QuadraticResidualCost(
-        proxddp.ControlErrorResidual(ndx, np.zeros(nu)), np.diag(wu)
+        proxddp.ControlErrorResidual(ndx, np.zeros(nu)), np.diag(wu) * time_step
     )
 )
 frame_place_target = pin.SE3.Identity()
@@ -142,7 +143,13 @@ frame_err = proxddp.FramePlacementResidual(
 )
 weights_frame_place = np.zeros(6)
 weights_frame_place[:3] = np.ones(3) * 1.0
-rcost.addCost(proxddp.QuadraticResidualCost(frame_err, np.diag(weights_frame_place)))
+# frame_err = proxddp.FrameTranslationResidual(ndx, nu, model, target_pos, frame_id)
+# weights_frame_place = np.zeros(3)
+# weights_frame_place[2] = np.ones(1) * 1.0
+# weights_frame_place[:3] = 1.0
+rcost.addCost(
+    proxddp.QuadraticResidualCost(frame_err, np.diag(weights_frame_place) * time_step)
+)
 term_cost = proxddp.CostStack(ndx, nu)
 stage = proxddp.StageModel(space, nu, rcost, disc_dyn)
 
@@ -154,19 +161,21 @@ stage.addConstraint(
     proxddp.StageConstraint(ctrl_box, proxnlp.constraints.NegativeOrthant())
 )
 
-nsteps = 600
+nsteps = 1000
 Tf = nsteps * time_step
 problem = proxddp.TrajOptProblem(x0, nu, space, term_cost)
 for i in range(nsteps):
     if i == nsteps - 1 and args.use_term_cstr:
-        term_fun = proxddp.FrameTranslationResidual(nx, nu, model, target_pos, frame_id)
+        term_fun = proxddp.FrameTranslationResidual(
+            ndx, nu, model, target_pos, frame_id
+        )
         stage.addConstraint(
             proxddp.StageConstraint(
                 term_fun, proxnlp.constraints.EqualityConstraintSet()
             )
         )
         term_fun2 = proxddp.FrameVelocityResidual(
-            nx, nu, model, pin.Motion(np.zeros(6)), frame_id, pin.ReferenceFrame.LOCAL
+            ndx, nu, model, pin.Motion(np.zeros(6)), frame_id, pin.ReferenceFrame.LOCAL
         )
         stage.addConstraint(
             proxddp.StageConstraint(
@@ -176,11 +185,15 @@ for i in range(nsteps):
         xtar = space.neutral()
     problem.addStage(stage)
 
-mu_init = 1e-2
+mu_init = 1e-6
+rho_init = 1e-4
 verbose = proxddp.VerboseLevel.VERBOSE
 TOL = 1e-3
 MAX_ITER = 300
-solver = proxddp.ProxDDP(TOL, mu_init, max_iters=MAX_ITER, verbose=verbose)
+solver = proxddp.ProxDDP(
+    TOL, mu_init, rho_init=rho_init, max_iters=MAX_ITER, verbose=verbose
+)
+solver.bcl_params.rho_factor = 0.01
 
 u0 = np.zeros(nu)
 us_i = [u0] * nsteps
