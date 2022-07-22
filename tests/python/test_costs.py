@@ -1,4 +1,6 @@
 from proxddp import QuadraticCost, CostStack
+from proxddp import manifolds
+import proxddp
 import numpy as np
 
 import pytest
@@ -31,6 +33,19 @@ def test_cost_stack():
         assert data1.value == data2.value
         assert np.allclose(data1.grad, data2.grad)
         assert np.allclose(data1.hess, data2.hess)
+
+
+def test_composite_cost():
+    space = manifolds.SE2()
+    nu = space.ndx
+    target = space.rand()
+    fun = proxddp.StateErrorResidual(space, nu, target)
+    weights = np.eye(fun.nr)
+    cost = proxddp.QuadraticResidualCost(fun, weights) 
+
+    data = cost.createData()
+    print("Composite data:", data)
+    assert isinstance(data, proxddp.CompositeCostData)
 
 
 # Should raise RuntimeError due to wrong use.
