@@ -19,6 +19,7 @@ using StageConstraint = StageConstraintTpl<Scalar>;
 using ConstraintSet = ConstraintSetBase<Scalar>;
 
 using CostBase = CostAbstractTpl<Scalar>;
+using CostData = CostDataAbstractTpl<Scalar>;
 using DynamicsModel = DynamicsModelTpl<Scalar>;
 using StageModel = StageModelTpl<Scalar>;
 

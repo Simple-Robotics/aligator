@@ -104,7 +104,7 @@ template <typename _Scalar>
 struct SumCostDataTpl : CostDataAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
   using CostData = CostDataAbstractTpl<Scalar>;
-  std::vector<shared_ptr<CostData>> sub_datas;
+  std::vector<shared_ptr<CostData>> sub_cost_data;
   SumCostDataTpl(const CostStackTpl<Scalar> *obj);
 };
 } // namespace proxddp

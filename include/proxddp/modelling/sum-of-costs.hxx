@@ -61,8 +61,8 @@ void CostStackTpl<Scalar>::evaluate(const ConstVectorRef &x,
   SumCostData &d = static_cast<SumCostData &>(data);
   d.value_ = 0.;
   for (std::size_t i = 0; i < components_.size(); i++) {
-    components_[i]->evaluate(x, u, *d.sub_datas[i]);
-    d.value_ += this->weights_[i] * d.sub_datas[i]->value_;
+    components_[i]->evaluate(x, u, *d.sub_cost_data[i]);
+    d.value_ += this->weights_[i] * d.sub_cost_data[i]->value_;
   }
 }
 
@@ -73,8 +73,8 @@ void CostStackTpl<Scalar>::computeGradients(const ConstVectorRef &x,
   SumCostData &d = static_cast<SumCostData &>(data);
   d.grad_.setZero();
   for (std::size_t i = 0; i < components_.size(); i++) {
-    components_[i]->computeGradients(x, u, *d.sub_datas[i]);
-    d.grad_.noalias() += this->weights_[i] * d.sub_datas[i]->grad_;
+    components_[i]->computeGradients(x, u, *d.sub_cost_data[i]);
+    d.grad_.noalias() += this->weights_[i] * d.sub_cost_data[i]->grad_;
   }
 }
 
@@ -85,8 +85,8 @@ void CostStackTpl<Scalar>::computeHessians(const ConstVectorRef &x,
   SumCostData &d = static_cast<SumCostData &>(data);
   d.hess_.setZero();
   for (std::size_t i = 0; i < components_.size(); i++) {
-    components_[i]->computeHessians(x, u, *d.sub_datas[i]);
-    d.hess_.noalias() += this->weights_[i] * d.sub_datas[i]->hess_;
+    components_[i]->computeHessians(x, u, *d.sub_cost_data[i]);
+    d.hess_.noalias() += this->weights_[i] * d.sub_cost_data[i]->hess_;
   }
 }
 
@@ -102,7 +102,7 @@ template <typename Scalar>
 SumCostDataTpl<Scalar>::SumCostDataTpl(const CostStackTpl<Scalar> *obj)
     : CostData(obj->ndx, obj->nu) {
   for (std::size_t i = 0; i < obj->size(); i++) {
-    sub_datas.push_back(obj->components_[i]->createData());
+    sub_cost_data.push_back(obj->components_[i]->createData());
   }
 }
 

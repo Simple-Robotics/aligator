@@ -53,6 +53,13 @@ void exposeCosts() {
       .def(CopyableVisitor<CostStackTpl<Scalar>>())
       .def(CreateDataPythonVisitor<CostStackTpl<Scalar>>());
 
+  bp::class_<SumCostDataTpl<Scalar>, bp::bases<context::CostData>>(
+      "CostStackData", "Data struct for costs.", bp::no_init)
+      .add_property(
+          "sub_cost_data",
+          bp::make_getter(&SumCostDataTpl<Scalar>::sub_cost_data,
+                          bp::return_value_policy<bp::return_by_value>()));
+
   bp::class_<QuadraticCost<Scalar>, bp::bases<context::CostBase>>(
       "QuadraticCost", "Quadratic cost in both state and control.",
       bp::init<const MatrixXs &, const MatrixXs &, const VectorXs &,
