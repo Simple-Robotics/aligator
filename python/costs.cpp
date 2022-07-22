@@ -117,11 +117,11 @@ void exposeCosts() {
       .def(CopyableVisitor<CostStackTpl<Scalar>>())
       .def(CreateDataPythonVisitor<CostStackTpl<Scalar>>());
 
-  bp::class_<SumCostDataTpl<Scalar>, bp::bases<CostData>>(
+  bp::class_<CostStackDataTpl<Scalar>, bp::bases<CostData>>(
       "CostStackData", "Data struct for CostStack.", bp::no_init)
       .add_property(
           "sub_cost_data",
-          bp::make_getter(&SumCostDataTpl<Scalar>::sub_cost_data,
+          bp::make_getter(&CostStackDataTpl<Scalar>::sub_cost_data,
                           bp::return_value_policy<bp::return_by_value>()));
 }
 

@@ -4,7 +4,7 @@
 
 namespace proxddp {
 
-template <typename Scalar> struct SumCostDataTpl;
+template <typename Scalar> struct CostStackDataTpl;
 
 /** @brief Weighted sum of multiple cost components.
  *
@@ -19,7 +19,7 @@ template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
   using CostBase = CostAbstractTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using CostPtr = shared_ptr<CostBase>;
-  using SumCostData = SumCostDataTpl<Scalar>;
+  using SumCostData = CostStackDataTpl<Scalar>;
 
   std::vector<CostPtr> components_;
   std::vector<Scalar> weights_;
@@ -101,11 +101,11 @@ shared_ptr<CostStackTpl<T>> operator*(T u, shared_ptr<CostStackTpl<T>> &&c1) {
 }
 
 template <typename _Scalar>
-struct SumCostDataTpl : CostDataAbstractTpl<_Scalar> {
+struct CostStackDataTpl : CostDataAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
   using CostData = CostDataAbstractTpl<Scalar>;
   std::vector<shared_ptr<CostData>> sub_cost_data;
-  SumCostDataTpl(const CostStackTpl<Scalar> *obj);
+  CostStackDataTpl(const CostStackTpl<Scalar> *obj);
 };
 } // namespace proxddp
 

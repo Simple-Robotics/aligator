@@ -99,7 +99,7 @@ CostStackTpl<Scalar>::createData() const {
 /* SumCostData */
 
 template <typename Scalar>
-SumCostDataTpl<Scalar>::SumCostDataTpl(const CostStackTpl<Scalar> *obj)
+CostStackDataTpl<Scalar>::CostStackDataTpl(const CostStackTpl<Scalar> *obj)
     : CostData(obj->ndx, obj->nu) {
   for (std::size_t i = 0; i < obj->size(); i++) {
     sub_cost_data.push_back(obj->components_[i]->createData());
