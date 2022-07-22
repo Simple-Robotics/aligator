@@ -11,6 +11,7 @@ import numpy as np
 import meshcat_utils as msu
 import matplotlib.pyplot as plt
 
+import os
 import proxddp
 import tap
 
@@ -30,6 +31,7 @@ class Args(tap.Tap):
     obstacles: bool = False
 
 
+os.makedirs("assets", exist_ok=True)
 args = Args().parse_args()
 print(args)
 
@@ -314,7 +316,7 @@ if args.display:
     for d in directions_:
         d /= np.linalg.norm(d)
 
-    vid_uri = "examples/{}.mp4".format(TAG)
+    vid_uri = "assets/{}.mp4".format(TAG)
     vid_recorder = msu.VideoRecorder(vid_uri, fps=1.0 / dt)
     if args.obstacles:
         viz_util.draw_objectives([x_tar3], prefix="obj")
@@ -344,5 +346,5 @@ if args.display:
         )
 
 for ext in ["png", "pdf"]:
-    fig.savefig("examples/{}.{}".format(TAG, ext))
+    fig.savefig("assets/{}.{}".format(TAG, ext))
 plt.show()
