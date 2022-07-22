@@ -33,10 +33,13 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// Initial condition
   VectorXs x0_init_;
   StateErrorResidualTpl<Scalar> init_state_error;
+  VectorXs dummy_term_u0;
 
   /// Stages of the control problem.
   std::vector<shared_ptr<StageModel>> stages_;
+  /// Terminal cost.
   shared_ptr<CostAbstract> term_cost_;
+  /// (Optional) terminal constraint.
   boost::optional<Constraint> term_constraint_ = boost::none;
 
   TrajOptProblemTpl(const VectorXs &x0,

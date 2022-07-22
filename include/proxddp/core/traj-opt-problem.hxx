@@ -13,7 +13,9 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     const shared_ptr<CostAbstract> &term_cost)
     : x0_init_(x0),
       init_state_error(stages[0]->xspace_, stages[0]->nu(), x0_init_),
-      stages_(stages), term_cost_(term_cost) {}
+      stages_(stages), term_cost_(term_cost) {
+  dummy_term_u0 = VectorXs::Zero(term_cost->nu);
+}
 
 template <typename Scalar>
 TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
@@ -21,7 +23,9 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     const shared_ptr<ManifoldAbstractTpl<Scalar>> &space,
     const shared_ptr<CostAbstract> &term_cost)
     : x0_init_(x0), init_state_error(space, nu, x0_init_),
-      term_cost_(term_cost) {}
+      term_cost_(term_cost) {
+  dummy_term_u0 = VectorXs::Zero(term_cost->nu);
+}
 
 template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
@@ -41,10 +45,10 @@ void TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
   }
 
   if (term_cost_) {
-    term_cost_->evaluate(xs[nsteps], us[nsteps - 1], *prob_data.term_cost_data);
+    term_cost_->evaluate(xs[nsteps], dummy_term_u0, *prob_data.term_cost_data);
   }
   if (term_constraint_) {
-    term_constraint_->func_->evaluate(xs[nsteps], us[nsteps - 1], xs[nsteps],
+    term_constraint_->func_->evaluate(xs[nsteps], dummy_term_u0, xs[nsteps],
                                       *prob_data.term_cstr_data);
   }
 }
@@ -68,14 +72,14 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
   }
 
   if (term_cost_) {
-    term_cost_->computeGradients(xs[nsteps], us[nsteps - 1],
+    term_cost_->computeGradients(xs[nsteps], dummy_term_u0,
                                  *prob_data.term_cost_data);
-    term_cost_->computeHessians(xs[nsteps], us[nsteps - 1],
+    term_cost_->computeHessians(xs[nsteps], dummy_term_u0,
                                 *prob_data.term_cost_data);
   }
   if (term_constraint_) {
     (*term_constraint_)
-        .func_->computeJacobians(xs[nsteps], us[nsteps - 1], xs[nsteps],
+        .func_->computeJacobians(xs[nsteps], dummy_term_u0, xs[nsteps],
                                  *prob_data.term_cstr_data);
   }
 }
