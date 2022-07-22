@@ -40,7 +40,7 @@ int main() {
   fmt::print("drift  c:\n{}\n", dynamics.c_);
   auto spaceptr = dynamics.next_state_;
 
-  auto rcost = std::make_shared<QuadraticCost<double>>(w_x, w_u);
+  auto rcost = std::make_shared<QuadraticCostTpl<double>>(w_x, w_u);
 
   // Define stage
 

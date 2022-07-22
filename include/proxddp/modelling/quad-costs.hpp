@@ -5,33 +5,32 @@
 namespace proxddp {
 
 /// @brief Constant cost.
-template <typename _Scalar> struct ConstantCost : CostAbstractTpl<_Scalar> {
+template <typename _Scalar> struct ConstantCostTpl : CostAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  using Base = CostAbstractTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
 
   Scalar value_;
-  ConstantCost(const Scalar value) : value_(value) {}
+  ConstantCostTpl(const int ndx, const int nu, const Scalar value)
+      : Base(ndx, nu), value_(value) {}
   void evaluate(const ConstVectorRef &, const ConstVectorRef &,
                 CostData &data) const {
     data.value_ = value_;
   }
 
   void computeGradients(const ConstVectorRef &, const ConstVectorRef &,
-                        CostData &data) const {
-    data.grad_.setZero();
-  }
+                        CostData &data) const {}
 
   void computeHessians(const ConstVectorRef &, const ConstVectorRef &,
-                       CostData &data) const {
-    data.hess_.setZero();
-  }
+                       CostData &data) const {}
 };
 
 /// @brief Euclidean quadratic cost.
-template <typename _Scalar> struct QuadraticCost : CostAbstractTpl<_Scalar> {
+template <typename _Scalar> struct QuadraticCostTpl : CostAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  using Base = CostAbstractTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
 
   MatrixXs weights_x;
@@ -39,14 +38,14 @@ template <typename _Scalar> struct QuadraticCost : CostAbstractTpl<_Scalar> {
   VectorXs interp_x;
   VectorXs interp_u;
 
-  QuadraticCost(const ConstMatrixRef &w_x, const ConstMatrixRef &w_u,
+  QuadraticCostTpl(const ConstMatrixRef &w_x, const ConstMatrixRef &w_u,
                 const ConstVectorRef &interp_x, const ConstVectorRef &interp_u)
-      : CostAbstractTpl<_Scalar>((int)w_x.cols(), (int)w_u.cols()),
+      : Base((int)w_x.cols(), (int)w_u.cols()),
         weights_x(w_x), weights_u(w_u), interp_x(interp_x), interp_u(interp_u) {
   }
 
-  QuadraticCost(const ConstMatrixRef &w_x, const ConstMatrixRef &w_u)
-      : QuadraticCost(w_x, w_u, VectorXs::Zero(w_x.cols()),
+  QuadraticCostTpl(const ConstMatrixRef &w_x, const ConstMatrixRef &w_u)
+      : QuadraticCostTpl(w_x, w_u, VectorXs::Zero(w_x.cols()),
                       VectorXs::Zero(w_u.cols())) {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
@@ -62,9 +61,13 @@ template <typename _Scalar> struct QuadraticCost : CostAbstractTpl<_Scalar> {
   }
 
   void computeHessians(const ConstVectorRef &, const ConstVectorRef &,
-                       CostData &data) const {
-    data.Lxx_ = weights_x;
-    data.Luu_ = weights_u;
+                       CostData &data) const {}
+
+  shared_ptr<CostData> createData() const {
+    shared_ptr<CostData> data = Base::createData();
+    data->Lxx_ = weights_x;
+    data->Luu_ = weights_u;
+    return data;
   }
 };
 
