@@ -26,12 +26,16 @@ template <typename _Scalar> struct ConstantCostTpl : CostAbstractTpl<_Scalar> {
                        CostData &) const {}
 };
 
+template <typename Scalar> struct QuadraticCostDataTpl;
+
 /// @brief Euclidean quadratic cost.
 template <typename _Scalar> struct QuadraticCostTpl : CostAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = CostAbstractTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
+
+  using Data = QuadraticCostDataTpl<Scalar>;
 
   MatrixXs weights_x;
   MatrixXs weights_u;
@@ -50,24 +54,41 @@ template <typename _Scalar> struct QuadraticCostTpl : CostAbstractTpl<_Scalar> {
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 CostData &data) const {
-    data.value_ = 0.5 * x.dot(weights_x * x + 2 * interp_x) +
-                  0.5 * u.dot(weights_u * u + 2 * interp_u);
+    Data &d = static_cast<Data &>(data);
+    d.w_times_x_ = weights_x * x;
+    d.w_times_u_ = weights_u * u;
+    data.value_ = Scalar(0.5) * x.dot(d.w_times_x_ + 2 * interp_x) +
+                  Scalar(0.5) * u.dot(d.w_times_u_ + 2 * interp_u);
   }
 
   void computeGradients(const ConstVectorRef &x, const ConstVectorRef &u,
                         CostData &data) const {
-    data.Lx_ = weights_x * x + interp_x;
-    data.Lu_ = weights_u * u + interp_u;
+    Data &d = static_cast<Data &>(data);
+    d.Lx_ = d.w_times_x_ + interp_x;
+    d.Lu_ = d.w_times_u_ + interp_u;
   }
 
   void computeHessians(const ConstVectorRef &, const ConstVectorRef &,
-                       CostData &) const {}
+                       CostData &data) const {
+    data.Lxx_ = weights_x;
+    data.Luu_ = weights_u;
+  }
 
   shared_ptr<CostData> createData() const {
-    shared_ptr<CostData> data = Base::createData();
-    data->Lxx_ = weights_x;
-    data->Luu_ = weights_u;
+    auto data = std::make_shared<Data>(this->ndx, this->nu);
     return data;
+  }
+};
+
+template <typename Scalar> struct QuadraticCostDataTpl : CostDataAbstractTpl<Scalar> {
+  using Base = CostDataAbstractTpl<Scalar>;
+  using VectorXs = typename Base::VectorXs;
+  VectorXs w_times_x_, w_times_u_;
+
+  QuadraticCostDataTpl(const int nx, const int nu)
+      : Base(nx, nu), w_times_x_(nx), w_times_u_(nu) {
+    w_times_x_.setZero();
+    w_times_u_.setZero();
   }
 };
 

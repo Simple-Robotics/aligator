@@ -87,6 +87,10 @@ void exposeCosts() {
           "Constructor with just weights.", bp::args("self", "w_x", "w_u")))
       .def(CopyableVisitor<QuadraticCostTpl<Scalar>>());
 
+  bp::class_<QuadraticCostDataTpl<Scalar>, bp::bases<CostData>>(
+    "QuadraticCostData", "Quadratic cost data.",
+    bp::no_init);
+
   /* Composite costs */
 
   using CompositeData = CompositeCostDataTpl<Scalar>;
