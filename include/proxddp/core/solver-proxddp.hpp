@@ -10,7 +10,6 @@
 
 #include <proxnlp/constraint-base.hpp>
 
-#include <fmt/color.h>
 #include <fmt/ostream.h>
 
 #include <stdexcept>
@@ -59,6 +58,7 @@ public:
   using value_store_t = internal::value_storage<Scalar>;
   using q_store_t = internal::q_function_storage<Scalar>;
   using ProxPenaltyType = ProximalPenaltyTpl<Scalar>;
+  using ProxData = typename ProxPenaltyType::Data;
   using CallbackPtr = shared_ptr<helpers::base_callback<Scalar>>;
 
   std::vector<ProxPenaltyType> prox_penalties_;
@@ -161,14 +161,13 @@ public:
       if (i == nsteps - 1) {
         prox_penalties_.emplace_back(sm.xspace_next_, sm.uspace_,
                                      ws->prev_xs_[nsteps],
-                                     ws->prev_us_[nsteps - 1], true);
+                                     problem.dummy_term_u0, true);
       }
     }
 
-    using ProxData = typename ProxPenaltyType::Data;
     for (std::size_t i = 0; i < nsteps + 1; i++) {
-      const auto &penal = prox_penalties_[i];
-      ws->prox_datas.push_back(static_cast<ProxData &&>(*penal.createData()));
+      const ProxPenaltyType &penal = prox_penalties_[i];
+      ws->prox_datas.push_back(std::static_pointer_cast<ProxData>(penal.createData()));
     }
 
     assert(prox_penalties_.size() == (nsteps + 1));
@@ -180,10 +179,10 @@ public:
                     Workspace &workspace) const {
     const std::size_t nsteps = workspace.nsteps;
     for (std::size_t i = 0; i < nsteps; i++) {
-      prox_penalties_[i].evaluate(xs[i], us[i], workspace.prox_datas[i]);
+      prox_penalties_[i].evaluate(xs[i], us[i], *workspace.prox_datas[i]);
     }
     prox_penalties_[nsteps].evaluate(xs[nsteps], us[nsteps - 1],
-                                     workspace.prox_datas[nsteps]);
+                                     *workspace.prox_datas[nsteps]);
   }
 
   void evaluateProxDerivatives(const std::vector<VectorXs> &xs,
@@ -192,13 +191,13 @@ public:
     const std::size_t nsteps = workspace.nsteps;
     for (std::size_t i = 0; i < nsteps; i++) {
       prox_penalties_[i].computeGradients(xs[i], us[i],
-                                          workspace.prox_datas[i]);
-      prox_penalties_[i].computeHessians(xs[i], us[i], workspace.prox_datas[i]);
+                                          *workspace.prox_datas[i]);
+      prox_penalties_[i].computeHessians(xs[i], us[i], *workspace.prox_datas[i]);
     }
     prox_penalties_[nsteps].computeGradients(xs[nsteps], us[nsteps - 1],
-                                             workspace.prox_datas[nsteps]);
+                                             *workspace.prox_datas[nsteps]);
     prox_penalties_[nsteps].computeHessians(xs[nsteps], us[nsteps - 1],
-                                            workspace.prox_datas[nsteps]);
+                                            *workspace.prox_datas[nsteps]);
   }
 
   /// @brief Run the numerical solver.

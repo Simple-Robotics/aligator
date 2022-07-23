@@ -21,7 +21,7 @@ Scalar computeProxPenalty(const WorkspaceTpl<Scalar> &workspace,
   Scalar res = 0.;
   const std::size_t nsteps = workspace.nsteps;
   for (std::size_t i = 0; i < nsteps + 1; i++) {
-    res += rho * workspace.prox_datas[i].value_;
+    res += rho * workspace.prox_datas[i]->value_;
   }
   return res;
 }

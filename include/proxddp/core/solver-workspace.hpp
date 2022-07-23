@@ -36,7 +36,7 @@ template <typename _Scalar> struct WorkspaceTpl {
   /// Q-function storage
   std::vector<q_storage_t> q_params;
 
-  std::vector<ProxData> prox_datas;
+  std::vector<shared_ptr<ProxData>> prox_datas;
 
   std::vector<VectorXs> lams_plus_;
   std::vector<VectorXs> lams_pdal_;

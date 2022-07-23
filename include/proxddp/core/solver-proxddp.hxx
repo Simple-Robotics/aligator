@@ -8,6 +8,8 @@
 
 #include <Eigen/Cholesky>
 
+#include <fmt/color.h>
+
 namespace proxddp {
 template <typename Scalar>
 void SolverProxDDP<Scalar>::computeDirection(const Problem &problem,
@@ -24,7 +26,7 @@ void SolverProxDDP<Scalar>::computeDirection(const Problem &problem,
     const int ndx0 = stage0.ndx1();
     const VectorXs &lamin0 = results.lams_[0];
     const VectorXs &prevlam0 = workspace.prev_lams_[0];
-    const CostData &proxdata0 = workspace.prox_datas[0];
+    const CostData &proxdata0 = *workspace.prox_datas[0];
     BlockXs kkt_mat = workspace.getKktView(ndx0, ndual0);
     Eigen::Block<BlockXs, -1, 1, true> kkt_rhs_0 =
         workspace.getKktRhs(ndx0, ndual0, 1).col(0);
@@ -113,7 +115,7 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
   const TrajOptDataTpl<Scalar> &prob_data = workspace.problem_data;
   const CostData &term_cost_data = *prob_data.term_cost_data;
   value_store_t &term_value = workspace.value_params[nsteps];
-  const CostData &proxdata = workspace.prox_datas[nsteps];
+  const CostData &proxdata = *workspace.prox_datas[nsteps];
 
   term_value.v_2() = 2 * (term_cost_data.value_ + rho_penal_ * proxdata.value_);
   term_value.Vx_ = term_cost_data.Lx_ + rho_penal_ * proxdata.Lx_;
@@ -169,7 +171,7 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
 
   StageData &stage_data = workspace.problem_data.getData(step);
   const CostData &cdata = *stage_data.cost_data;
-  const CostData &proxdata = workspace.prox_datas[step];
+  const CostData &proxdata = *workspace.prox_datas[step];
 
   const int nprim = stage.numPrimal();
   const int ndual = stage.numDual();
@@ -250,7 +252,7 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   kkt_mat.bottomRightCorner(ndual, ndual).diagonal().array() = -mu_penal_;
 
   {
-    const CostData &proxnext = workspace.prox_datas[step + 1];
+    const CostData &proxnext = *workspace.prox_datas[step + 1];
     auto grad_u = kkt_rhs_0.head(nu);
     auto grad_y = kkt_rhs_0.segment(nu, ndx2);
     Scalar dual_res_u = math::infty_norm(grad_u - rho_penal_ * proxdata.Lu_);
