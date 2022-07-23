@@ -83,6 +83,7 @@ int main() {
   const double rho_init = 1e-8;
 
   SolverProxDDP<double> solver(TOL, mu_init, rho_init);
+  solver.verbose_ = VerboseLevel::VERBOSE;
 
   WorkspaceTpl<double> workspace(problem);
   ResultsTpl<double> results(problem);
@@ -99,11 +100,11 @@ int main() {
   line_.append("\n");
   for (std::size_t i = 0; i < nsteps + 1; i++) {
     // fmt::print("x[{:d}] = {}\n", i, results.xs_[i].transpose());
-    fmt::print("x[{:d}] = {}\n", i, workspace.trial_xs_[i].transpose());
+    fmt::print("x[{:d}] = {}\n", i, results.xs_[i].transpose());
   }
   for (std::size_t i = 0; i < nsteps; i++) {
     // fmt::print("u[{:d}] = {}\n", i, results.us_[i].transpose());
-    fmt::print("u[{:d}] = {}\n", i, workspace.trial_us_[i].transpose());
+    fmt::print("u[{:d}] = {}\n", i, results.us_[i].transpose());
   }
 
   return 0;
