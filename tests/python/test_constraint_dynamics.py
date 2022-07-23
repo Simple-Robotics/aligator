@@ -9,7 +9,8 @@ import proxddp
 from proxddp import manifolds, dynamics
 from pinocchio.visualize import MeshcatVisualizer
 
-DISPLAY = True
+IS_MAIN = __name__ == "__main__"
+DISPLAY = True & IS_MAIN
 TOL = 1e-4
 
 
@@ -313,7 +314,7 @@ def test_constraint_dynamics():
     assert conv
 
 
-if __name__ == "__main__":
+if IS_MAIN:
     import sys
 
     retcode = pytest.main(sys.argv)
