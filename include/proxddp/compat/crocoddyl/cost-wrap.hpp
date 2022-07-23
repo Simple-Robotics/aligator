@@ -98,11 +98,11 @@ struct CrocCostDataWrapperTpl : CostDataAbstractTpl<Scalar> {
   boost::shared_ptr<ActionData> croc_act_data_;
 
   explicit CrocCostDataWrapperTpl(const boost::shared_ptr<CostData> &crocdata)
-      : Base(crocdata->Lx.rows(), crocdata->Lu.rows()),
+      : Base((int)crocdata->Lx.rows(), (int)crocdata->Lu.rows()),
         croc_cost_data_(crocdata) {}
 
   explicit CrocCostDataWrapperTpl(const boost::shared_ptr<ActionData> &actdata)
-      : Base(actdata->Lx.rows(), actdata->Lu.rows()), croc_act_data_(actdata) {}
+      : Base((int)actdata->Lx.rows(), (int)actdata->Lu.rows()), croc_act_data_(actdata) {}
 };
 
 } // namespace croc
