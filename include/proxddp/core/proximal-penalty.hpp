@@ -24,13 +24,13 @@ struct ProximalPenaltyTpl : CostAbstractTpl<_Scalar> {
   using Data = ProximalDataTpl<Scalar>;
 
   const ManifoldPtr xspace_, uspace_;
-  const ConstVectorRef x_ref, u_ref;
+  const VectorXs &x_ref, u_ref;
   /// Whether to exclude the control term of the penalty. Switch to true e.g.
   /// for terminal node.
   const bool no_ctrl_term;
 
   ProximalPenaltyTpl(const ManifoldPtr &xspace, const ManifoldPtr &uspace,
-                     const ConstVectorRef &xt, const ConstVectorRef &ut,
+                     const VectorXs &xt, const VectorXs &ut,
                      const bool no_ctrl_term)
       : Base(xspace->ndx(), uspace->ndx()), xspace_(xspace), uspace_(uspace),
         x_ref(xt), u_ref(ut), no_ctrl_term(no_ctrl_term) {}
@@ -74,6 +74,7 @@ struct ProximalPenaltyTpl : CostAbstractTpl<_Scalar> {
 
 template <typename Scalar>
 struct ProximalDataTpl : CostDataAbstractTpl<Scalar> {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Base = CostDataAbstractTpl<Scalar>;
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
@@ -81,14 +82,9 @@ struct ProximalDataTpl : CostDataAbstractTpl<Scalar> {
   using Base::nu_;
   VectorXs dx_, du_;
   MatrixXs Jx_, Ju_;
-  explicit ProximalDataTpl(const ProximalPenaltyTpl<Scalar> *model)
-      : Base(model->xspace_->ndx(), model->uspace_->ndx()), dx_(ndx_), du_(nu_),
-        Jx_(ndx_, ndx_), Ju_(nu_, nu_) {
-    dx_.setZero();
-    du_.setZero();
-    Jx_.setZero();
-    Ju_.setZero();
-  }
+  explicit ProximalDataTpl(const ProximalPenaltyTpl<Scalar> *model);
 };
 
 } // namespace proxddp
+
+#include "proxddp/core/proximal-penalty.hxx"
