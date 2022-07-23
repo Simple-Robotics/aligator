@@ -119,6 +119,7 @@ public:
 
   /// @brief Default constructor.
   FunctionDataTpl(const int ndx1, const int nu, const int ndx2, const int nr);
+  virtual ~FunctionDataTpl() = default;
 
   template <typename T>
   friend std::ostream &operator<<(std::ostream &oss,
