@@ -21,8 +21,8 @@ void exposeConstraintFwdDynamics() {
   using context::Scalar;
   using ODEData = ODEDataTpl<Scalar>;
   using ODEAbstract = ODEAbstractTpl<Scalar>;
-  using context::RigidConstraintModelVector;
   using context::RigidConstraintDataVector;
+  using context::RigidConstraintModelVector;
   using MultibodyConstraintFwdData = MultibodyConstraintFwdDataTpl<Scalar>;
   using MultibodyConstraintFwdDynamics =
       MultibodyConstraintFwdDynamicsTpl<Scalar>;

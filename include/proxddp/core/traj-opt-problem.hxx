@@ -12,18 +12,15 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     const VectorXs &x0, const std::vector<shared_ptr<StageModel>> &stages,
     const shared_ptr<CostAbstract> &term_cost)
     : init_state_error(stages[0]->xspace_, stages[0]->nu(), x0),
-      stages_(stages), term_cost_(term_cost),
-      dummy_term_u0(stages[0]->nu()) {
+      stages_(stages), term_cost_(term_cost), dummy_term_u0(stages[0]->nu()) {
   dummy_term_u0.setZero();
 }
 
 template <typename Scalar>
 TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
-    const VectorXs &x0, const int nu,
-    const shared_ptr<Manifold> &space,
+    const VectorXs &x0, const int nu, const shared_ptr<Manifold> &space,
     const shared_ptr<CostAbstract> &term_cost)
-    : TrajOptProblemTpl(InitCstrType(space, nu, x0),
-                        nu, term_cost) {}
+    : TrajOptProblemTpl(InitCstrType(space, nu, x0), nu, term_cost) {}
 
 template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,

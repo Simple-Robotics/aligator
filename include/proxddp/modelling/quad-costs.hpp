@@ -43,14 +43,14 @@ template <typename _Scalar> struct QuadraticCostTpl : CostAbstractTpl<_Scalar> {
   VectorXs interp_u;
 
   QuadraticCostTpl(const ConstMatrixRef &w_x, const ConstMatrixRef &w_u,
-                const ConstVectorRef &interp_x, const ConstVectorRef &interp_u)
-      : Base((int)w_x.cols(), (int)w_u.cols()),
-        weights_x(w_x), weights_u(w_u), interp_x(interp_x), interp_u(interp_u) {
-  }
+                   const ConstVectorRef &interp_x,
+                   const ConstVectorRef &interp_u)
+      : Base((int)w_x.cols(), (int)w_u.cols()), weights_x(w_x), weights_u(w_u),
+        interp_x(interp_x), interp_u(interp_u) {}
 
   QuadraticCostTpl(const ConstMatrixRef &w_x, const ConstMatrixRef &w_u)
       : QuadraticCostTpl(w_x, w_u, VectorXs::Zero(w_x.cols()),
-                      VectorXs::Zero(w_u.cols())) {}
+                         VectorXs::Zero(w_u.cols())) {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 CostData &data) const {
@@ -80,7 +80,8 @@ template <typename _Scalar> struct QuadraticCostTpl : CostAbstractTpl<_Scalar> {
   }
 };
 
-template <typename Scalar> struct QuadraticCostDataTpl : CostDataAbstractTpl<Scalar> {
+template <typename Scalar>
+struct QuadraticCostDataTpl : CostDataAbstractTpl<Scalar> {
   using Base = CostDataAbstractTpl<Scalar>;
   using VectorXs = typename Base::VectorXs;
   VectorXs w_times_x_, w_times_u_;

@@ -28,7 +28,7 @@ template <typename Scalar> struct history_callback : base_callback<Scalar> {
   } storage;
 
   void call(const SolverProxDDP<Scalar> *solver,
-            const WorkspaceTpl<Scalar> & workspace,
+            const WorkspaceTpl<Scalar> &workspace,
             const ResultsTpl<Scalar> &results) {
     if (store_primal_dual_vars_) {
       storage.xs.push_back(results.xs_);

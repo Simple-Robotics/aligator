@@ -42,7 +42,9 @@ template <typename T>
 void StageModelTpl<Scalar>::addConstraint(T &&cstr) {
   const int c_nu = cstr.func_->nu;
   if (c_nu != this->nu()) {
-    proxddp_runtime_error(fmt::format("Function has the wrong dimension for u: got {:d}, expected {:d}", c_nu, this->nu()));
+    proxddp_runtime_error(fmt::format(
+        "Function has the wrong dimension for u: got {:d}, expected {:d}", c_nu,
+        this->nu()));
   }
   constraints_.push_back(std::forward<T>(cstr));
 }
@@ -52,7 +54,9 @@ void StageModelTpl<Scalar>::addConstraint(
     const shared_ptr<StageFunctionTpl<Scalar>> &func,
     const shared_ptr<ConstraintSetBase<Scalar>> &cstr_set) {
   if (func->nu != this->nu()) {
-    proxddp_runtime_error(fmt::format("Function has the wrong dimension for u: got {:d}, expected {:d}", func->nu, this->nu()));
+    proxddp_runtime_error(fmt::format(
+        "Function has the wrong dimension for u: got {:d}, expected {:d}",
+        func->nu, this->nu()));
   }
   constraints_.push_back(Constraint{func, cstr_set});
 }

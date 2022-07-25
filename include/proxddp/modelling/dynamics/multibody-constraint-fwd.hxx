@@ -44,8 +44,9 @@ void MultibodyConstraintFwdDynamicsTpl<Scalar>::forward(const ConstVectorRef &x,
 }
 
 template <typename Scalar>
-void MultibodyConstraintFwdDynamicsTpl<Scalar>::dForward(
-    const ConstVectorRef &, const ConstVectorRef &, BaseData &data) const {
+void MultibodyConstraintFwdDynamicsTpl<Scalar>::dForward(const ConstVectorRef &,
+                                                         const ConstVectorRef &,
+                                                         BaseData &data) const {
   Data &d = static_cast<Data &>(data);
   const pinocchio::ModelTpl<Scalar> &model = space_->getModel();
   const int nq = model.nq;

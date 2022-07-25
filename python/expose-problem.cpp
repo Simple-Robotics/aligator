@@ -5,11 +5,11 @@ namespace proxddp {
 namespace python {
 void exposeProblem() {
   using context::CostBase;
+  using context::Manifold;
+  using context::Scalar;
   using context::StageModel;
   using context::TrajOptData;
   using context::TrajOptProblem;
-  using context::Scalar;
-  using context::Manifold;
   using InitCstrType = StateErrorResidualTpl<Scalar>;
 
   bp::class_<TrajOptProblem>(
@@ -26,15 +26,17 @@ void exposeProblem() {
           "addStage", &TrajOptProblem::addStage, bp::args("self", "new_stage"),
           "Add a stage to the problem.")
       .def(bp::init<InitCstrType, int, shared_ptr<CostBase>>(
-        "Constructor adding the initial constraint explicitly.",
-        bp::args("self", "init_constraint", "nu", "term_cost")))
+          "Constructor adding the initial constraint explicitly.",
+          bp::args("self", "init_constraint", "nu", "term_cost")))
       .def_readonly("stages", &TrajOptProblem::stages_,
                     "Stages of the shooting problem.")
       .def_readwrite("term_cost", &TrajOptProblem::term_cost_,
                      "Problem terminal cost.")
       .add_property("num_steps", &TrajOptProblem::numSteps,
                     "Number of stages in the problem.")
-      .add_property("x0_init", bp::make_function(&TrajOptProblem::getInitState, bp::return_internal_reference<>()),
+      .add_property("x0_init",
+                    bp::make_function(&TrajOptProblem::getInitState,
+                                      bp::return_internal_reference<>()),
                     "Initial state.")
       .def("setTerminalConstraint", &TrajOptProblem::setTerminalConstraint,
            "Set terminal constraint.")

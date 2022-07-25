@@ -24,12 +24,14 @@ struct CrocCostModelWrapperTpl : CostAbstractTpl<_Scalar> {
 
   /// Constructor from a crocoddyl cost model.
   explicit CrocCostModelWrapperTpl(boost::shared_ptr<CrocCostModel> cost)
-      : Base((int)cost->get_state()->get_ndx(), (int)cost->get_nu()), croc_cost_(cost) {}
+      : Base((int)cost->get_state()->get_ndx(), (int)cost->get_nu()),
+        croc_cost_(cost) {}
 
   /// Constructor using a terminal action model.
   explicit CrocCostModelWrapperTpl(
       boost::shared_ptr<crocoddyl::ActionModelAbstractTpl<Scalar>> action_model)
-      : Base((int)action_model->get_state()->get_ndx(), (int)action_model->get_nu()),
+      : Base((int)action_model->get_state()->get_ndx(),
+             (int)action_model->get_nu()),
         action_model_(action_model) {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
@@ -102,7 +104,8 @@ struct CrocCostDataWrapperTpl : CostDataAbstractTpl<Scalar> {
         croc_cost_data_(crocdata) {}
 
   explicit CrocCostDataWrapperTpl(const boost::shared_ptr<ActionData> &actdata)
-      : Base((int)actdata->Lx.rows(), (int)actdata->Lu.rows()), croc_act_data_(actdata) {}
+      : Base((int)actdata->Lx.rows(), (int)actdata->Lu.rows()),
+        croc_act_data_(actdata) {}
 };
 
 } // namespace croc

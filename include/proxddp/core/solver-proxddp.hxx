@@ -335,7 +335,8 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
         colout = fmt::color::red;
     }
     if (verbose_ >= 1) {
-      fmt::print(fmt::emphasis::bold | fmt::fg(colout), "[AL iter {:>2d}]", al_iter + 1);
+      fmt::print(fmt::emphasis::bold | fmt::fg(colout), "[AL iter {:>2d}]",
+                 al_iter + 1);
       fmt::print(" ("
                  " inner_tol {:.2g} |"
                  " prim_tol  {:.2g} |"

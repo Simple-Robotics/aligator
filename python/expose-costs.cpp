@@ -9,10 +9,10 @@ namespace proxddp {
 namespace python {
 
 void exposeCosts() {
-  using context::Scalar;
   using context::CostBase;
   using context::CostData;
   using context::MatrixXs;
+  using context::Scalar;
   using context::StageFunction;
   using context::VectorXs;
 
@@ -26,8 +26,7 @@ void exposeCosts() {
       .def("computeGradients", bp::pure_virtual(&CostBase::evaluate),
            bp::args("self", "x", "u", "data"),
            "Compute the cost function gradients.")
-      .def("computeHessians",
-           bp::pure_virtual(&CostBase::computeHessians),
+      .def("computeHessians", bp::pure_virtual(&CostBase::computeHessians),
            bp::args("self", "x", "u", "data"),
            "Compute the cost function hessians.")
       .add_property("ndx", &CostBase::ndx)
@@ -73,10 +72,10 @@ void exposeCosts() {
                                               "Vector of CostData objects.");
 
   bp::class_<ConstantCostTpl<Scalar>, bp::bases<CostBase>>(
-    "ConstantCost", "A constant cost term.",
-    bp::init<int, int, Scalar>(bp::args("self", "ndx", "nu", "value")))
-    .def_readwrite("value", &ConstantCostTpl<Scalar>::value_)
-    .def(CopyableVisitor<QuadraticCostTpl<Scalar>>());
+      "ConstantCost", "A constant cost term.",
+      bp::init<int, int, Scalar>(bp::args("self", "ndx", "nu", "value")))
+      .def_readwrite("value", &ConstantCostTpl<Scalar>::value_)
+      .def(CopyableVisitor<QuadraticCostTpl<Scalar>>());
 
   bp::class_<QuadraticCostTpl<Scalar>, bp::bases<CostBase>>(
       "QuadraticCost", "Quadratic cost in both state and control.",
@@ -88,8 +87,7 @@ void exposeCosts() {
       .def(CopyableVisitor<QuadraticCostTpl<Scalar>>());
 
   bp::class_<QuadraticCostDataTpl<Scalar>, bp::bases<CostData>>(
-    "QuadraticCostData", "Quadratic cost data.",
-    bp::no_init);
+      "QuadraticCostData", "Quadratic cost data.", bp::no_init);
 
   /* Composite costs */
 
@@ -107,7 +105,7 @@ void exposeCosts() {
 
   bp::register_ptr_to_python<shared_ptr<CompositeData>>();
   bp::class_<CompositeData, bp::bases<CostData>>("CompositeCostData",
-                                                  bp::init<int, int>())
+                                                 bp::init<int, int>())
       .def_readwrite("residual_data", &CompositeData::residual_data);
 
   /* Cost stack */
@@ -117,9 +115,8 @@ void exposeCosts() {
 
   bp::class_<CostStack, bp::bases<CostBase>>(
       "CostStack", "A weighted sum of other cost functions.",
-      bp::init<const int, const int,
-              const std::vector<shared_ptr<CostBase>> &,
-              const std::vector<Scalar> &>((
+      bp::init<const int, const int, const std::vector<shared_ptr<CostBase>> &,
+               const std::vector<Scalar> &>((
           bp::arg("self"), bp::arg("ndx"), bp::arg("nu"),
           bp::arg("components") = bp::list(), bp::arg("weights") = bp::list())))
       .def_readwrite("components", &CostStack::components_,
@@ -127,8 +124,8 @@ void exposeCosts() {
       .def_readonly("weights", &CostStack::weights_,
                     "Weights of this cost stack.")
       .def("addCost", &CostStack::addCost,
-          (bp::arg("self"), bp::arg("cost"), bp::arg("weight") = 1.),
-          "Add a cost to the stack of costs.")
+           (bp::arg("self"), bp::arg("cost"), bp::arg("weight") = 1.),
+           "Add a cost to the stack of costs.")
       .def("size", &CostStack::size, "Get the number of cost components.")
       .def(CopyableVisitor<CostStack>());
 

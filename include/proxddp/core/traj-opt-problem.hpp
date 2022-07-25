@@ -32,7 +32,6 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
-
   /// Initial condition
   InitCstrType init_state_error;
   /// Stages of the control problem.
@@ -52,10 +51,9 @@ template <typename _Scalar> struct TrajOptProblemTpl {
                     const shared_ptr<Manifold> &space,
                     const shared_ptr<CostAbstract> &term_cost);
 
-  TrajOptProblemTpl(const InitCstrType &resdl,
-                    const int nu, const shared_ptr<CostAbstract> &term_cost)
-      : init_state_error(resdl), term_cost_(term_cost),
-        dummy_term_u0(nu) {
+  TrajOptProblemTpl(const InitCstrType &resdl, const int nu,
+                    const shared_ptr<CostAbstract> &term_cost)
+      : init_state_error(resdl), term_cost_(term_cost), dummy_term_u0(nu) {
     dummy_term_u0.setZero();
   }
 

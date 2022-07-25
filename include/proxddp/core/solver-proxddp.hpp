@@ -194,7 +194,8 @@ public:
     for (std::size_t i = 0; i < nsteps; i++) {
       prox_penalties_[i].computeGradients(xs[i], us[i],
                                           *workspace.prox_datas[i]);
-      prox_penalties_[i].computeHessians(xs[i], us[i], *workspace.prox_datas[i]);
+      prox_penalties_[i].computeHessians(xs[i], us[i],
+                                         *workspace.prox_datas[i]);
     }
     prox_penalties_[nsteps].computeGradients(xs[nsteps], us[nsteps - 1],
                                              *workspace.prox_datas[nsteps]);
@@ -224,14 +225,11 @@ public:
   void computeInfeasibilities(const Problem &problem, Workspace &workspace,
                               Results &results) const;
 
-
   /// @name callbacks
   /// \{
 
   /// @brief    Add a callback to the solver instance.
-  void registerCallback(const CallbackPtr &cb) {
-    callbacks_.push_back(cb);
-  }
+  void registerCallback(const CallbackPtr &cb) { callbacks_.push_back(cb); }
 
   /// @brief    Remove all callbacks from the instance.
   void clearCallbacks() { callbacks_.clear(); }
