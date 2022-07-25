@@ -11,21 +11,19 @@ template <typename Scalar>
 TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     const VectorXs &x0, const std::vector<shared_ptr<StageModel>> &stages,
     const shared_ptr<CostAbstract> &term_cost)
-    : x0_init_(x0),
-      init_state_error(stages[0]->xspace_, stages[0]->nu(), x0_init_),
-      stages_(stages), term_cost_(term_cost) {
-  dummy_term_u0 = VectorXs::Zero(term_cost->nu);
+    : init_state_error(stages[0]->xspace_, stages[0]->nu(), x0),
+      stages_(stages), term_cost_(term_cost),
+      dummy_term_u0(stages[0]->nu()) {
+  dummy_term_u0.setZero();
 }
 
 template <typename Scalar>
 TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     const VectorXs &x0, const int nu,
-    const shared_ptr<ManifoldAbstractTpl<Scalar>> &space,
+    const shared_ptr<Manifold> &space,
     const shared_ptr<CostAbstract> &term_cost)
-    : x0_init_(x0), init_state_error(space, nu, x0_init_),
-      term_cost_(term_cost) {
-  dummy_term_u0 = VectorXs::Zero(term_cost->nu);
-}
+    : TrajOptProblemTpl(InitCstrType(space, nu, x0),
+                        nu, term_cost) {}
 
 template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,

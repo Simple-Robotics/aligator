@@ -25,16 +25,16 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   using StageModel = StageModelTpl<Scalar>;
   using Function = StageFunctionTpl<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
+  using Manifold = ManifoldAbstractTpl<Scalar>;
   using CostAbstract = CostAbstractTpl<Scalar>;
   using Constraint = StageConstraintTpl<Scalar>;
+  using InitCstrType = StateErrorResidualTpl<Scalar>;
 
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
-  /// Initial condition
-  VectorXs x0_init_;
-  StateErrorResidualTpl<Scalar> init_state_error;
-  VectorXs dummy_term_u0;
 
+  /// Initial condition
+  InitCstrType init_state_error;
   /// Stages of the control problem.
   std::vector<shared_ptr<StageModel>> stages_;
   /// Terminal cost.
@@ -42,16 +42,28 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// (Optional) terminal constraint.
   boost::optional<Constraint> term_constraint_ = boost::none;
 
+  VectorXs dummy_term_u0;
+
   TrajOptProblemTpl(const VectorXs &x0,
                     const std::vector<shared_ptr<StageModel>> &stages,
                     const shared_ptr<CostAbstract> &term_cost);
 
   TrajOptProblemTpl(const VectorXs &x0, const int nu,
-                    const shared_ptr<ManifoldAbstractTpl<Scalar>> &space,
+                    const shared_ptr<Manifold> &space,
                     const shared_ptr<CostAbstract> &term_cost);
+
+  TrajOptProblemTpl(const InitCstrType &resdl,
+                    const int nu, const shared_ptr<CostAbstract> &term_cost)
+      : init_state_error(resdl), term_cost_(term_cost),
+        dummy_term_u0(nu) {
+    dummy_term_u0.setZero();
+  }
 
   /// @brief Add a stage to the control problem.
   void addStage(const shared_ptr<StageModel> &stage);
+
+  /// @brief Get initial state constraint.
+  const VectorXs &getInitState() const { return init_state_error.target_; }
 
   /// @brief Set a terminal constraint for the model.
   void setTerminalConstraint(const Constraint &cstr);

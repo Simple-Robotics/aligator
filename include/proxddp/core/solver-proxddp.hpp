@@ -166,8 +166,8 @@ public:
     }
 
     for (std::size_t i = 0; i < nsteps + 1; i++) {
-      const ProxPenaltyType &penal = prox_penalties_[i];
-      ws->prox_datas.push_back(std::static_pointer_cast<ProxData>(penal.createData()));
+      const ProxPenaltyType *penal = &prox_penalties_[i];
+      ws->prox_datas.emplace_back(new ProxData(penal));
     }
 
     assert(prox_penalties_.size() == (nsteps + 1));
