@@ -59,6 +59,9 @@ template <typename Scalar> struct TrajOptProblemTpl;
 
 template <typename Scalar> struct TrajOptDataTpl;
 
+// fwd SolverProxDDP
+template <typename Scalar> struct SolverProxDDP;
+
 /// Math utilities
 namespace math {
 using namespace proxnlp::math;
