@@ -41,7 +41,7 @@ def test_composite_cost():
     target = space.rand()
     fun = proxddp.StateErrorResidual(space, nu, target)
     weights = np.eye(fun.nr)
-    cost = proxddp.QuadraticResidualCost(fun, weights) 
+    cost = proxddp.QuadraticResidualCost(fun, weights)
 
     data = cost.createData()
     print("Composite data:", data)
