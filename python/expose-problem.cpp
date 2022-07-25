@@ -8,6 +8,9 @@ void exposeProblem() {
   using context::StageModel;
   using context::TrajOptData;
   using context::TrajOptProblem;
+  using context::Scalar;
+  using context::Manifold;
+  using InitCstrType = StateErrorResidualTpl<Scalar>;
 
   bp::class_<TrajOptProblem>(
       "TrajOptProblem", "Define a shooting problem.",
@@ -22,13 +25,17 @@ void exposeProblem() {
       .def<void (TrajOptProblem::*)(const shared_ptr<StageModel> &)>(
           "addStage", &TrajOptProblem::addStage, bp::args("self", "new_stage"),
           "Add a stage to the problem.")
+      .def(bp::init<InitCstrType, int, shared_ptr<CostBase>>(
+        "Constructor adding the initial constraint explicitly.",
+        bp::args("self", "init_constraint", "nu", "term_cost")))
       .def_readonly("stages", &TrajOptProblem::stages_,
                     "Stages of the shooting problem.")
       .def_readwrite("term_cost", &TrajOptProblem::term_cost_,
                      "Problem terminal cost.")
       .add_property("num_steps", &TrajOptProblem::numSteps,
                     "Number of stages in the problem.")
-      .add_property("x0", &TrajOptProblem::x0_init_, "Initial state.")
+      .add_property("x0_init", bp::make_function(&TrajOptProblem::getInitState, bp::return_internal_reference<>()),
+                    "Initial state.")
       .def("setTerminalConstraint", &TrajOptProblem::setTerminalConstraint,
            "Set terminal constraint.")
       .def("evaluate", &TrajOptProblem::evaluate,

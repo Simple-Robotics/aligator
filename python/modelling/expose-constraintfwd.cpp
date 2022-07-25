@@ -9,18 +9,20 @@ namespace context {
 using RigidConstraintModel = pinocchio::RigidConstraintModelTpl<Scalar, 0>;
 using RigidConstraintData = pinocchio::RigidConstraintDataTpl<Scalar, 0>;
 
-} // namespace context
-
 using RigidConstraintModelVector =
     PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(context::RigidConstraintModel);
 using RigidConstraintDataVector =
     PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(context::RigidConstraintData);
+
+} // namespace context
 
 void exposeConstraintFwdDynamics() {
   using namespace proxddp::dynamics;
   using context::Scalar;
   using ODEData = ODEDataTpl<Scalar>;
   using ODEAbstract = ODEAbstractTpl<Scalar>;
+  using context::RigidConstraintModelVector;
+  using context::RigidConstraintDataVector;
   using MultibodyConstraintFwdData = MultibodyConstraintFwdDataTpl<Scalar>;
   using MultibodyConstraintFwdDynamics =
       MultibodyConstraintFwdDynamicsTpl<Scalar>;
