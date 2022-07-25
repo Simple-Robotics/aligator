@@ -8,7 +8,8 @@ namespace python {
 struct CallbackWrapper : helpers::base_callback<context::Scalar>,
                          bp::wrapper<helpers::base_callback<context::Scalar>> {
   CallbackWrapper() = default;
-  void call(const WorkspaceTpl<context::Scalar> &w,
+  void call(const SolverProxDDP<context::Scalar> *,
+            const WorkspaceTpl<context::Scalar> &w,
             const ResultsTpl<context::Scalar> &r) {
     PROXDDP_PYTHON_OVERRIDE_PURE(void, "call", w, r);
   }
@@ -39,13 +40,16 @@ void exposeCallbacks() {
                           &helpers::history_callback<Scalar>::storage);
 
     bp::class_<history_storage_t, shared_ptr<history_storage_t>>(
-        "_history_storage")
+        "history_storage")
         .def_readonly("xs", &history_storage_t::xs)
         .def_readonly("lams", &history_storage_t::lams)
         .def_readonly("values", &history_storage_t::values)
         .def_readonly("merit_values", &history_storage_t::merit_values)
         .def_readonly("prim_infeas", &history_storage_t::prim_infeas)
-        .def_readonly("dual_infeas", &history_storage_t::dual_infeas);
+        .def_readonly("dual_infeas", &history_storage_t::dual_infeas)
+        .def_readonly("al_iters", &history_storage_t::al_index)
+        .def_readonly("prim_tols", &history_storage_t::prim_tols)
+        .def_readonly("dual_tols", &history_storage_t::dual_tols);
   }
 }
 } // namespace python

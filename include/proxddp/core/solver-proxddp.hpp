@@ -87,8 +87,10 @@ public:
 
   VerboseLevel verbose_;
   LinesearchParams<Scalar> ls_params;
-  MultiplierUpdateMode mul_update_mode = MultiplierUpdateMode::NEWTON;
+  MultiplierUpdateMode mul_update_mode = MultiplierUpdateMode::PRIMAL_DUAL;
   BCLParams<Scalar> bcl_params;
+
+  std::size_t al_iter = 0;
 
   /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.
   std::size_t MAX_ITERS;
@@ -222,19 +224,24 @@ public:
   void computeInfeasibilities(const Problem &problem, Workspace &workspace,
                               Results &results) const;
 
+
+  /// @name callbacks
+  /// \{
+
   /// @brief    Add a callback to the solver instance.
-  inline void registerCallback(const CallbackPtr &cb) {
+  void registerCallback(const CallbackPtr &cb) {
     callbacks_.push_back(cb);
   }
 
   /// @brief    Remove all callbacks from the instance.
-  inline void clearCallbacks() { callbacks_.clear(); }
+  void clearCallbacks() { callbacks_.clear(); }
 
   void invokeCallbacks(Workspace &workspace, Results &results) {
     for (auto cb : callbacks_) {
-      cb->call(workspace, results);
+      cb->call(this, workspace, results);
     }
   }
+  /// \}
 
 protected:
   /// @brief  Put together the Q-function parameters and compute the Riccati

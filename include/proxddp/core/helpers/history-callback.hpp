@@ -22,9 +22,13 @@ template <typename Scalar> struct history_callback : base_callback<Scalar> {
     std::vector<Scalar> merit_values;
     std::vector<Scalar> prim_infeas;
     std::vector<Scalar> dual_infeas;
+    std::vector<std::size_t> al_index;
+    std::vector<Scalar> prim_tols;
+    std::vector<Scalar> dual_tols;
   } storage;
 
-  void call(const WorkspaceTpl<Scalar> & /*workspace*/,
+  void call(const SolverProxDDP<Scalar> *solver,
+            const WorkspaceTpl<Scalar> & workspace,
             const ResultsTpl<Scalar> &results) {
     if (store_primal_dual_vars_) {
       storage.xs.push_back(results.xs_);
@@ -38,6 +42,9 @@ template <typename Scalar> struct history_callback : base_callback<Scalar> {
       storage.prim_infeas.push_back(results.primal_infeasibility);
       storage.dual_infeas.push_back(results.dual_infeasibility);
     }
+    storage.al_index.push_back(solver->al_iter);
+    storage.prim_tols.push_back(solver->prim_tol_);
+    storage.dual_tols.push_back(solver->inner_tol_);
   }
 
 protected:

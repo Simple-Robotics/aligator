@@ -323,12 +323,19 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   prim_tol_ = std::max(prim_tol_, target_tolerance);
 
   bool &conv = results.conv;
+  bool cur_al_accept = true;
+  auto colout = fmt::color::medium_orchid;
 
-  std::size_t al_iter = 0;
+  al_iter = 0;
   while ((al_iter < MAX_AL_ITERS) && (results.num_iters < MAX_ITERS)) {
+    if (al_iter > 0) {
+      if (cur_al_accept)
+        colout = fmt::color::dodger_blue;
+      else
+        colout = fmt::color::red;
+    }
     if (verbose_ >= 1) {
-      auto colout = fmt::fg(fmt::color::medium_orchid);
-      fmt::print(fmt::emphasis::bold | colout, "[AL iter {:>2d}]", al_iter + 1);
+      fmt::print(fmt::emphasis::bold | fmt::fg(colout), "[AL iter {:>2d}]", al_iter + 1);
       fmt::print(" ("
                  " inner_tol {:.2g} |"
                  " prim_tol  {:.2g} |"
@@ -365,9 +372,11 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
         conv = true;
         break;
       }
+      cur_al_accept = true;
     } else {
       updateALPenalty();
       updateTolerancesOnFailure();
+      cur_al_accept = false;
     }
     rho_penal_ *= bcl_params.rho_update_factor;
 
