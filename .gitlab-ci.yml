@@ -22,7 +22,7 @@ variables:
 
     - mkdir build
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DINSTALL_DOCUMENTATION=OFF
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DINSTALL_DOCUMENTATION=OFF -DBUILD_CROCODDYL_COMPAT=ON
     - make -j3 install
     - make test
   interruptible: true
