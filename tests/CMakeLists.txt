@@ -56,6 +56,9 @@ endforeach(test_name)
 # PYTHON TESTS
 if (BUILD_PYTHON_INTERFACE)
   file(GLOB PYTHON_TESTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} python/test_*.py)
+  if (NOT BUILD_CROCODDYL_COMPAT)
+    list(REMOVE_ITEM PYTHON_TESTS python/test_compat_croc.py)
+  endif()
   message(STATUS "Python tests: ${PYTHON_TESTS}")
   make_directory(${CMAKE_CURRENT_BINARY_DIR}/python)
 
