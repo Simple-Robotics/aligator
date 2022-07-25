@@ -151,60 +151,49 @@ rcost.addCost(
     proxddp.QuadraticResidualCost(frame_err, np.diag(weights_frame_place) * time_step)
 )
 term_cost = proxddp.CostStack(ndx, nu)
-stage = proxddp.StageModel(space, nu, rcost, disc_dyn)
 
 # box constraint on control
 u_min = -25.0 * np.ones(nu)
 u_max = +25.0 * np.ones(nu)
 ctrl_box = proxddp.ControlBoxFunction(ndx, u_min, u_max)
-stage.addConstraint(
-    proxddp.StageConstraint(ctrl_box, proxnlp.constraints.NegativeOrthant())
-)
 
 nsteps = 1000
 Tf = nsteps * time_step
 problem = proxddp.TrajOptProblem(x0, nu, space, term_cost)
+
 for i in range(nsteps):
-    if i == nsteps - 1 and args.use_term_cstr:
-        term_fun = proxddp.FrameTranslationResidual(
-            ndx, nu, model, target_pos, frame_id
-        )
-        stage.addConstraint(
-            proxddp.StageConstraint(
-                term_fun, proxnlp.constraints.EqualityConstraintSet()
-            )
-        )
-        term_fun2 = proxddp.FrameVelocityResidual(
-            ndx, nu, model, pin.Motion(np.zeros(6)), frame_id, pin.ReferenceFrame.LOCAL
-        )
-        stage.addConstraint(
-            proxddp.StageConstraint(
-                term_fun2, proxnlp.constraints.EqualityConstraintSet()
-            )
-        )
-        xtar = space.neutral()
+    stage = proxddp.StageModel(space, nu, rcost, disc_dyn)
+    stage.addConstraint(
+        proxddp.StageConstraint(ctrl_box, proxnlp.constraints.NegativeOrthant())
+    )
     problem.addStage(stage)
 
-mu_init = 1e-6
-rho_init = 1e-4
+term_fun = proxddp.FrameTranslationResidual(ndx, nu, model, target_pos, frame_id)
+term_cstr = proxddp.StageConstraint(
+    term_fun, proxnlp.constraints.EqualityConstraintSet()
+)
+# problem.setTerminalConstraint(term_cstr)
+
+mu_init = 4e-2
+rho_init = 1e-2
 verbose = proxddp.VerboseLevel.VERBOSE
 TOL = 1e-3
-MAX_ITER = 300
+MAX_ITER = 200
 solver = proxddp.ProxDDP(
     TOL, mu_init, rho_init=rho_init, max_iters=MAX_ITER, verbose=verbose
 )
-solver.bcl_params.rho_factor = 0.01
+callback = proxddp.HistoryCallback()
+solver.registerCallback(callback)
 
 u0 = np.zeros(nu)
 us_i = [u0] * nsteps
 xs_i = proxddp.rollout(disc_dyn, x0, us_i)
-prob_data = proxddp.TrajOptData(problem)
-problem.evaluate(xs_i, us_i, prob_data)
 
 solver.setup(problem)
 solver.run(problem, xs_i, us_i)
 res = solver.getResults()
 print(res)
+xtar = space.neutral()
 
 plt.figure(figsize=(9.6, 4.8))
 plt.subplot(121)
@@ -222,7 +211,6 @@ if args.use_term_cstr:
         alpha=0.8,
         label=r"$x_\mathrm{tar}$"
     )
-plt.legend()
 plt.xlabel("Time $i$")
 
 plt.subplot(122)
@@ -239,6 +227,27 @@ plt.hlines(
 plt.title("Controls $u(t)$")
 
 plt.legend()
+
+if True:
+    from proxnlp.utils import plot_pd_errs
+
+    plt.figure(figsize=(6.4, 4.8))
+    prim_errs = callback.storage.prim_infeas
+    dual_errs = callback.storage.dual_infeas
+    prim_tols = np.array(callback.storage.prim_tols)
+    al_iters = np.array(callback.storage.al_iters)
+
+    ax: plt.Axes = plt.subplot(111)
+    plot_pd_errs(ax, prim_errs, dual_errs)
+    itrange = np.arange(len(al_iters))
+    print(prim_tols)
+    ax.step(itrange, prim_tols, c="green", alpha=0.9, lw=1.1)
+    al_change = al_iters[1:] - al_iters[:-1]
+    al_change_idx = itrange[:-1][al_change > 0]
+
+    ax.vlines(al_change_idx, *ax.get_ylim(), colors="gray", lw=4.0, alpha=0.5)
+    ax.legend(["Prim. err $p$", "Dual err $d$", "Prim tol $\\eta_k$", "AL iters"])
+
 
 plt.tight_layout()
 plt.show()
