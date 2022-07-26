@@ -6,10 +6,6 @@ import pytest
 EPSILON = 1e-4
 
 
-space1 = manifolds.VectorSpace(4)
-space2 = manifolds.TSE2()
-
-
 def function_finite_difference(
     fun: proxddp.StageFunction,
     space: manifolds.ManifoldAbstract,
@@ -19,7 +15,10 @@ def function_finite_difference(
     eps=EPSILON,
 ):
     """Use finite differences to compute Jacobians
-    of a `proxddp.StageFunction`."""
+    of a `proxddp.StageFunction`.
+
+    TODO: move to a test utils file
+    """
     if y0 is None:
         y0 = x0
     data = fun.createData()
@@ -95,10 +94,12 @@ def create_multibody_ode():
     nu = model.nv
     B = np.eye(nu)
     ode = dynamics.MultibodyFreeFwdDynamics(space, B)
+    data = ode.createData()
+    assert isinstance(data, dynamics.MultibodyFreeFwdData)
     return ode
 
 
-def create_linear(nx, nu):
+def create_linear_ode(nx, nu):
     n = min(nx, nu)
     A = np.eye(nx)
     A[1, 0] = 0.1
@@ -122,25 +123,14 @@ def create_linear(nx, nu):
         dynamics.IntegratorRK2,
     ],
 )
-def test_ode_int_combinations(ode, integrator):
+def test_explicit_integrator_combinations(ode, integrator):
     dt = 0.1
-    dyn = dynamics.IntegratorEuler(ode, dt)
-    assert isinstance(dyn.createData(), dynamics.ExplicitIntegratorData)
-    ode_int_run(ode, dyn)
-
-
-def test_semi_euler():
-    nx = 4
-    nu = 2
-    ode = create_linear(nx, nu)
-    dt = 0.1
-    dyn = dynamics.IntegratorSemiImplEuler(ode, dt)
-    assert isinstance(dyn.createData(), dynamics.IntegratorSemiImplData)
+    dyn = integrator(ode, dt)
     ode_int_run(ode, dyn)
 
 
 def test_midpoint():
-    dae = create_linear(4, 2)
+    dae = create_linear_ode(4, 2)
     dt = 0.1
     dyn = dynamics.IntegratorMidpoint(dae, dt)
     x = dae.space.rand()
@@ -154,16 +144,6 @@ def test_midpoint():
     assert np.allclose(data.Jx, Jx_nd)
     assert np.allclose(data.Ju, Ju_nd)
     assert np.allclose(data.Jy, Jy_nd)
-
-
-def test_rk2():
-    nx = 3
-    nu = 2
-    ode = create_linear(nx, nu)
-    dt = 0.1
-    dyn = dynamics.IntegratorRK2(ode, dt)
-    assert isinstance(dyn.createData(), dynamics.IntegratorRK2Data)
-    ode_int_run(ode, dyn)
 
 
 def exp_dyn_fd_check(dyn, x, u, eps):
