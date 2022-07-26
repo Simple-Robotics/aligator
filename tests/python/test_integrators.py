@@ -18,6 +18,8 @@ def function_finite_difference(
     y0=None,
     eps=EPSILON,
 ):
+    """Use finite differences to compute Jacobians
+    of a `proxddp.StageFunction`."""
     if y0 is None:
         y0 = x0
     data = fun.createData()
@@ -41,7 +43,18 @@ def function_finite_difference(
         Ju_nd[:, i] = (data.value - r0) / eps
         ei[i] = 0.0
 
-    return Jx_nd, Ju_nd
+    ei = np.zeros(fun.ndx2)
+    yplus = y0.copy()
+    Jy_nd = np.zeros((fun.nr, fun.ndx2))
+    for i in range(fun.ndx2):
+        ei[i] = eps
+        space.integrate(y0, ei, yplus)
+        fun.evaluate(x0, u0, yplus, data)
+        space.JintegrateTransport(y0, ei, data.value, 1)
+        Jy_nd[:, i] = (data.value - r0) / eps
+        ei[i] = 0.0
+
+    return Jx_nd, Ju_nd, Jy_nd
 
 
 def finite_difference_explicit_dyn(dyn: dynamics.IntegratorAbstract, x0, u0, eps):
@@ -135,17 +148,12 @@ def test_midpoint():
     data = dyn.createData()
     assert isinstance(data, dynamics.IntegratorMidpointData)
 
-    Jx_nd, Ju_nd = function_finite_difference(dyn, dyn.space, x, u)
-    print(Jx_nd)
+    Jx_nd, Ju_nd, Jy_nd = function_finite_difference(dyn, dyn.space, x, u)
 
     dyn.computeJacobians(x, u, x, data)
-    errx = data.Jx - Jx_nd
-    print(data.Jx)
-    print(errx)
-    erru = data.Ju - Ju_nd
-    print("erru:", erru)
     assert np.allclose(data.Jx, Jx_nd)
     assert np.allclose(data.Ju, Ju_nd)
+    assert np.allclose(data.Jy, Jy_nd)
 
 
 def test_rk2():
