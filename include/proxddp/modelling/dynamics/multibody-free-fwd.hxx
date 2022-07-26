@@ -68,7 +68,8 @@ MultibodyFreeFwdDataTpl<Scalar>::MultibodyFreeFwdDataTpl(
       dtau_du_(cont_dyn->actuation_matrix_) {
   tau_.setZero();
   const pinocchio::ModelTpl<Scalar> &model = cont_dyn->space_->getModel();
-  pin_data_ = std::make_shared<pinocchio::DataTpl<Scalar>>(model);
+  pin_data_ = std::allocate_shared<PinDataType>(
+      Eigen::aligned_allocator<PinDataType>(), model);
   this->Jx_.topRightCorner(model.nv, model.nv).setIdentity();
 }
 } // namespace dynamics
