@@ -8,6 +8,7 @@ This package provides
 
 * a modelling interface for optimal control problems, node-per-node
 * an efficient solver algorithm
+* (optional) an interface to [Crocoddyl](https://github.com/loco-3d/crocoddyl)
 
 ## Installation
 
@@ -17,6 +18,7 @@ This package provides
 * [Eigen3](https://eigen.tuxfamily.org) >= 3.3.7
 * [Boost](https://www.boost.org) >= 1.71.0
 * [eigenpy](https://github.com/stack-of-tasks/eigenpy) >= 2.7.2
+* (optional) [Crocoddyl](https://github.com/loco-3d/crocoddyl)
 
 Python:
 
@@ -29,10 +31,14 @@ Python:
 git clone repo_link --recursive
 # define envars here
 cmake -DCMAKE_INSTALL_PREFIX=your_install_folder -S . -B build/
-make -jNCPUS
+cd build/
+cmake --build . -jNCPUS
 ```
 
-For developers, add the `-DCMAKE_EXPORT_COMPILE_COMMANDS=1` when working with language servers e.g. clangd.
+Options:
+
+* For developers, add the `-DCMAKE_EXPORT_COMPILE_COMMANDS=1` when working with language servers e.g. clangd.
+* To use the Crocoddyl interface, add `-DBUILD_CROCODDYL_COMPAT=ON`
 
 **Building against conda:** define
 
