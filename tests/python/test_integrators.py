@@ -46,7 +46,7 @@ def create_multibody_ode():
     return ode
 
 
-def create_linear(nx, nu):
+def create_linear_ode(nx, nu):
     A = np.zeros((nx, nx))
     n = min(nx, nu)
     A[1, 0] = 0.1
@@ -61,33 +61,18 @@ def create_linear(nx, nu):
     return ode
 
 
-def test_explicit_euler():
-    # ode = create_multibody_ode()
-    nx = 3
-    nu = 2
-    ode = create_linear(nx, nu)
+@pytest.mark.parametrize("ode", [create_linear_ode(4, 2), create_multibody_ode()])
+@pytest.mark.parametrize(
+    "integrator",
+    [
+        dynamics.IntegratorEuler,
+        dynamics.IntegratorSemiImplEuler,
+        dynamics.IntegratorRK2,
+    ],
+)
+def test_ode_int_combinations(ode, integrator):
     dt = 0.1
-    dyn = dynamics.IntegratorEuler(ode, dt)
-    assert isinstance(dyn.createData(), dynamics.ExplicitIntegratorData)
-    ode_int_run(ode, dyn)
-
-
-def test_semi_euler():
-    nx = 4
-    nu = 2
-    ode = create_linear(nx, nu)
-    dt = 0.1
-    dyn = dynamics.IntegratorSemiImplEuler(ode, dt)
-    assert isinstance(dyn.createData(), dynamics.ExplicitIntegratorData)
-    ode_int_run(ode, dyn)
-
-
-def test_rk2():
-    nx = 3
-    nu = 2
-    ode = create_linear(nx, nu)
-    dt = 0.1
-    dyn = dynamics.IntegratorRK2(ode, dt)
+    dyn = integrator(ode, dt)
     assert isinstance(dyn.createData(), dynamics.ExplicitIntegratorData)
     ode_int_run(ode, dyn)
 
