@@ -76,8 +76,7 @@ void exposeODEs() {
       .def("dForward", bp::pure_virtual(&ODEAbstract::dForward),
            bp::args("self", "x", "u", "data"),
            "Compute the derivatives of the ODE vector field with respect "
-           "to the state-control pair :math:`(x, u)`.")
-      .def(CreateDataPythonVisitor<ODEAbstract>());
+           "to the state-control pair :math:`(x, u)`.");
 
   bp::register_ptr_to_python<shared_ptr<ODEData>>();
   bp::class_<ODEData, bp::bases<ContinuousDynamicsData>>(
@@ -100,8 +99,7 @@ void exposeODEs() {
           bp::args("self", "A", "B", "c")))
       .def_readonly("A", &LinearODETpl<Scalar>::A_, "State transition matrix.")
       .def_readonly("B", &LinearODETpl<Scalar>::B_, "Control matrix.")
-      .def_readonly("c", &LinearODETpl<Scalar>::c_, "Constant drift term.")
-      .def(CreateDataPythonVisitor<LinearODETpl<Scalar>>());
+      .def_readonly("c", &LinearODETpl<Scalar>::c_, "Constant drift term.");
 }
 
 } // namespace python
