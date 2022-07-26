@@ -7,6 +7,7 @@
 #include "proxddp/modelling/dynamics/integrator-euler.hpp"
 #include "proxddp/modelling/dynamics/integrator-rk2.hpp"
 #include "proxddp/modelling/dynamics/integrator-semi-euler.hpp"
+#include "proxddp/modelling/dynamics/integrator-midpoint.hpp"
 
 namespace proxddp {
 namespace python {
@@ -28,9 +29,13 @@ void exposeIntegrators() {
                                  bp::init<const shared_ptr<DAEType> &>(
                                      "Construct the integrator from a DAE.",
                                      bp::args("self", "cont_dynamics")))
-      .def_readwrite("differential_dynamics",
+      .def_readwrite("continuous_dynamics",
                      &IntegratorAbstract::continuous_dynamics_,
-                     "The underlying ODE or DAE.");
+                     "The underlying ODE or DAE.")
+      .add_property("space",
+                    bp::make_function(&IntegratorAbstract::space,
+                                      bp::return_internal_reference<>()),
+                    "Return the state manifold.");
 
   bp::register_ptr_to_python<shared_ptr<IntegratorDataTpl<Scalar>>>();
   bp::class_<IntegratorDataTpl<Scalar>, bp::bases<DynamicsDataTpl<Scalar>>>(
@@ -92,6 +97,17 @@ void exposeIntegrators() {
   bp::class_<IntegratorRK2DataTpl<Scalar>,
              bp::bases<ExplicitIntegratorDataTpl<Scalar>>>("IntegratorRK2Data",
                                                            bp::no_init);
+
+  using MidpointType = IntegratorMidpointTpl<Scalar>;
+  bp::class_<MidpointType, bp::bases<IntegratorAbstract>>(
+      "IntegratorMidpoint", bp::init<shared_ptr<DAEType>, Scalar>(
+                                bp::args("self", "dae", "timestep")))
+      .def_readwrite("timestep", &MidpointType::timestep_, "Time step.");
+
+  bp::register_ptr_to_python<shared_ptr<IntegratorMidpointDataTpl<Scalar>>>();
+  bp::class_<IntegratorMidpointDataTpl<Scalar>,
+             bp::bases<IntegratorDataTpl<Scalar>>>("IntegratorMidpointData",
+                                                   bp::no_init);
 }
 
 } // namespace python

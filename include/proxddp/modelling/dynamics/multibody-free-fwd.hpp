@@ -28,10 +28,9 @@ struct MultibodyFreeFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using BaseData = ODEDataTpl<Scalar>;
   using ContDataAbstract = ContinuousDynamicsDataTpl<Scalar>;
   using Data = MultibodyFreeFwdDataTpl<Scalar>;
-
   using Manifold = proxnlp::MultibodyPhaseSpace<Scalar>;
-
   using ManifoldPtr = shared_ptr<Manifold>;
+
   ManifoldPtr space_;
   MatrixXs actuation_matrix_;
 
@@ -53,11 +52,11 @@ template <typename Scalar> struct MultibodyFreeFwdDataTpl : ODEDataTpl<Scalar> {
   using Base = ODEDataTpl<Scalar>;
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
+  using PinDataType = pinocchio::DataTpl<Scalar>;
   VectorXs tau_;
   MatrixXs dtau_dx_;
   MatrixXs dtau_du_;
-  /// shared_ptr to the underlying pinocchio::DataTpl object.
-  shared_ptr<pinocchio::DataTpl<Scalar>> pin_data_;
+  shared_ptr<PinDataType> pin_data_;
   MultibodyFreeFwdDataTpl(const MultibodyFreeFwdDynamicsTpl<Scalar> *cont_dyn);
 };
 

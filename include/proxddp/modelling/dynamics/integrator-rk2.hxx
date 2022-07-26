@@ -62,7 +62,8 @@ template <typename Scalar>
 IntegratorRK2DataTpl<Scalar>::IntegratorRK2DataTpl(
     const IntegratorRK2Tpl<Scalar> *integrator)
     : Base(integrator), x1_(integrator->out_space().neutral()) {
-  continuous_data2 = std::make_shared<ODEData>(*this->continuous_data);
+  continuous_data2 =
+      std::static_pointer_cast<ODEData>(integrator->ode_->createData());
 }
 
 } // namespace dynamics

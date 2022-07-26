@@ -47,8 +47,7 @@ void exposeDynamics() {
       .add_property("space",
                     bp::make_function(&ExplicitDynamics::out_space,
                                       bp::return_internal_reference<>()),
-                    "Output space.")
-      .def(CreateDataPythonVisitor<ExplicitDynamics>());
+                    "Output space.");
 
   bp::register_ptr_to_python<shared_ptr<context::ExplicitDynData>>();
 

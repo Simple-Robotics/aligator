@@ -20,8 +20,7 @@ void exposeFreeFwdDynamics() {
                const context::MatrixXs &>(
           bp::args("self", "space", "actuation_matrix")))
       .add_property("ntau", &MultibodyFreeFwdDynamics::ntau,
-                    "Torque dimension.")
-      .def(CreateDataPythonVisitor<MultibodyFreeFwdDynamics>());
+                    "Torque dimension.");
 
   bp::register_ptr_to_python<shared_ptr<MultibodyFreeFwdData>>();
 
