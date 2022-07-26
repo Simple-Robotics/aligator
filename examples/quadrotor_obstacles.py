@@ -17,12 +17,20 @@ import tap
 
 from proxddp import manifolds
 from proxnlp import constraints
+from typing import Literal
+
+
+_integrator_choices = Literal["Euler", "SemiEuler", "RK2"]
 
 
 class Args(tap.Tap):
     display: bool = False
     record: bool = False
+    """Record video"""
     u_bounds: bool = True
+    """Use control bounds"""
+    integrator: _integrator_choices = "Euler"
+    """Numerical integrator to use"""
 
     def process_args(self):
         if self.record:
@@ -95,7 +103,14 @@ Tf = 2.0
 nsteps = int(Tf / dt)
 print("nsteps: {:d}".format(nsteps))
 
-dynmodel = proxddp.dynamics.IntegratorEuler(ode_dynamics, dt)
+if args.integrator == "Euler":
+    dynmodel = proxddp.dynamics.IntegratorEuler(ode_dynamics, dt)
+elif args.integrator == "SemiEuler":
+    dynmodel = proxddp.dynamics.IntegratorSemiImplEuler(ode_dynamics, dt)
+elif args.integrator == "RK2":
+    dynmodel = proxddp.dynamics.IntegratorRK2(ode_dynamics, dt)
+else:
+    raise ValueError()
 
 x0 = np.concatenate([robot.q0, np.zeros(nv)])
 x0[2] = 0.2
@@ -105,15 +120,12 @@ u0, _, _, _ = np.linalg.lstsq(QUAD_ACT_MATRIX, tau)
 vizer.display(x0[:nq])
 out = space.neutral()
 
-data = dynmodel.createData()
-dynmodel.forward(x0, u0, data)
 np.set_printoptions(precision=3, linewidth=250)
 Jx = np.zeros((space.ndx, space.ndx))
 Ju = np.zeros((space.ndx, nu))
 Jx_nd = Jx.copy()
 
 x1 = space.rand()
-dynmodel.dForward(x1, u0, data)
 
 us_init = [u0] * nsteps
 xs_init = [x0] * (nsteps + 1)
