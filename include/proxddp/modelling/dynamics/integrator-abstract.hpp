@@ -30,6 +30,9 @@ public:
   /// The underlying continuous dynamics.
   shared_ptr<ContinuousDynamics> continuous_dynamics_;
 
+  /// Return a reference to the underlying DAE's state manifold.
+  const auto &space() const { return continuous_dynamics_->space(); }
+
   /// Constructor from instances of DynamicsType.
   explicit IntegratorAbstractTpl(
       const shared_ptr<ContinuousDynamics> &cont_dynamics);

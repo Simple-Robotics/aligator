@@ -1,11 +1,50 @@
 import numpy as np
+import proxddp
 from proxddp import dynamics, manifolds
 import pytest
 
+EPSILON = 1e-4
 
-def finite_difference_explicit_dyn(
-    dyn: dynamics.ExplicitIntegratorAbstract, x0, u0, eps
+
+space1 = manifolds.VectorSpace(4)
+space2 = manifolds.TSE2()
+
+
+def function_finite_difference(
+    fun: proxddp.StageFunction,
+    space: manifolds.ManifoldAbstract,
+    x0,
+    u0,
+    y0=None,
+    eps=EPSILON,
 ):
+    if y0 is None:
+        y0 = x0
+    data = fun.createData()
+    Jx_nd = np.zeros((fun.nr, fun.ndx1))
+    ei = np.zeros(fun.ndx1)
+    fun.evaluate(x0, u0, y0, data)
+    r0 = data.value.copy()
+    for i in range(fun.ndx1):
+        ei[i] = eps
+        xplus = space.integrate(x0, ei)
+        fun.evaluate(xplus, u0, y0, data)
+        space.JintegrateTransport(x0, ei, data.value, 1)
+        Jx_nd[:, i] = (data.value - r0) / eps
+        ei[i] = 0.0
+
+    ei = np.zeros(fun.nu)
+    Ju_nd = np.zeros((fun.nr, fun.nu))
+    for i in range(fun.nu):
+        ei[i] = eps
+        fun.evaluate(x0, u0 + ei, y0, data)
+        Ju_nd[:, i] = (data.value - r0) / eps
+        ei[i] = 0.0
+
+    return Jx_nd, Ju_nd
+
+
+def finite_difference_explicit_dyn(dyn: dynamics.IntegratorAbstract, x0, u0, eps):
     data = dyn.createData()
     space: manifolds.ManifoldAbstract = dyn.space
     Jx_nd = np.zeros((dyn.ndx2, dyn.ndx1))
@@ -46,9 +85,9 @@ def create_multibody_ode():
     return ode
 
 
-def create_linear_ode(nx, nu):
-    A = np.zeros((nx, nx))
+def create_linear(nx, nu):
     n = min(nx, nu)
+    A = np.eye(nx)
     A[1, 0] = 0.1
     B = np.zeros((nx, nu))
     B[range(n), range(n)] = 1.0
@@ -72,24 +111,70 @@ def create_linear_ode(nx, nu):
 )
 def test_ode_int_combinations(ode, integrator):
     dt = 0.1
-    dyn = integrator(ode, dt)
+    dyn = dynamics.IntegratorEuler(ode, dt)
     assert isinstance(dyn.createData(), dynamics.ExplicitIntegratorData)
     ode_int_run(ode, dyn)
+
+
+def test_semi_euler():
+    nx = 4
+    nu = 2
+    ode = create_linear(nx, nu)
+    dt = 0.1
+    dyn = dynamics.IntegratorSemiImplEuler(ode, dt)
+    assert isinstance(dyn.createData(), dynamics.IntegratorSemiImplData)
+    ode_int_run(ode, dyn)
+
+
+def test_midpoint():
+    dae = create_linear(4, 2)
+    dt = 0.1
+    dyn = dynamics.IntegratorMidpoint(dae, dt)
+    x = dae.space.rand()
+    u = np.random.randn(dyn.nu)
+    data = dyn.createData()
+    assert isinstance(data, dynamics.IntegratorMidpointData)
+
+    Jx_nd, Ju_nd = function_finite_difference(dyn, dyn.space, x, u)
+    print(Jx_nd)
+
+    dyn.computeJacobians(x, u, x, data)
+    errx = data.Jx - Jx_nd
+    print(data.Jx)
+    print(errx)
+    erru = data.Ju - Ju_nd
+    print("erru:", erru)
+    assert np.allclose(data.Jx, Jx_nd)
+    assert np.allclose(data.Ju, Ju_nd)
+
+
+def test_rk2():
+    nx = 3
+    nu = 2
+    ode = create_linear(nx, nu)
+    dt = 0.1
+    dyn = dynamics.IntegratorRK2(ode, dt)
+    assert isinstance(dyn.createData(), dynamics.IntegratorRK2Data)
+    ode_int_run(ode, dyn)
+
+
+def exp_dyn_fd_check(dyn, x, u, eps):
+    Jx_nd, Ju_nd = finite_difference_explicit_dyn(dyn, x, u, eps=eps)
+
+    np.set_printoptions(precision=3, linewidth=250)
+    data = dyn.createData()
+    dyn.forward(x, u, data)
+    dyn.dForward(x, u, data)
+    assert np.allclose(data.Jx, Jx_nd)
+    assert np.allclose(data.Ju, Ju_nd)
 
 
 def ode_int_run(ode, dyn):
     x = ode.space.rand()
     u = np.random.randn(ode.nu)
     eps = 1e-4
-    Jx_nd, Ju_nd = finite_difference_explicit_dyn(dyn, x, u, eps=eps)
 
-    np.set_printoptions(precision=3, linewidth=250)
-    data = dyn.createData()
-    print(data.continuous_data)
-    dyn.forward(x, u, data)
-    dyn.dForward(x, u, data)
-    assert np.allclose(data.Jx, Jx_nd)
-    assert np.allclose(data.Ju, Ju_nd)
+    exp_dyn_fd_check(dyn, x, u, eps)
 
 
 if __name__ == "__main__":

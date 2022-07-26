@@ -6,7 +6,7 @@
 
 namespace proxddp {
 namespace dynamics {
-template <typename Scalar> struct IntegratorIntegratorMidpointDataTpl;
+template <typename Scalar> struct IntegratorMidpointDataTpl;
 
 /**
  * @brief Midpoint integration rule.
@@ -26,19 +26,20 @@ struct IntegratorMidpointTpl : IntegratorAbstractTpl<_Scalar> {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = IntegratorAbstractTpl<Scalar>;
   using ContinuousDynamics = ContinuousDynamicsAbstractTpl<Scalar>;
+  using Manifold = ManifoldAbstractTpl<Scalar>;
+  using Data = IntegratorMidpointDataTpl<Scalar>;
 
   Scalar timestep_;
 
-  explicit IntegratorMidpointTpl(
-      const shared_ptr<ContinuousDynamics> &cont_dynamics,
-      const Scalar timestep) {}
+  IntegratorMidpointTpl(const shared_ptr<ContinuousDynamics> &cont_dynamics,
+                        const Scalar timestep);
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &y, DynamicsDataTpl<Scalar> &data) const {
-    IntegratorIntegratorMidpointDataTpl<Scalar> &d =
-        static_cast<IntegratorIntegratorMidpointDataTpl<Scalar> &>(data);
+    IntegratorMidpointDataTpl<Scalar> &d =
+        static_cast<IntegratorMidpointDataTpl<Scalar> &>(data);
     const ContinuousDynamics *contdyn = this->continuous_dynamics_.get();
-    const ManifoldAbstractTpl<Scalar> &space = contdyn->space();
+    const Manifold &space = contdyn->space();
     ContinuousDynamicsDataTpl<Scalar> *contdata = d.continuous_data.get();
     // define x1 = midpoint of x,y
     space.difference(x, y, d.xdot_);
@@ -53,10 +54,10 @@ struct IntegratorMidpointTpl : IntegratorAbstractTpl<_Scalar> {
   void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
                         const ConstVectorRef &y,
                         DynamicsDataTpl<Scalar> &data) const {
-    IntegratorIntegratorMidpointDataTpl<Scalar> &d =
-        static_cast<IntegratorIntegratorMidpointDataTpl<Scalar> &>(data);
+    IntegratorMidpointDataTpl<Scalar> &d =
+        static_cast<IntegratorMidpointDataTpl<Scalar> &>(data);
     const ContinuousDynamics *contdyn = this->continuous_dynamics_.get();
-    const ManifoldAbstractTpl<Scalar> &space = contdyn->space();
+    const Manifold &space = contdyn->space();
     ContinuousDynamicsDataTpl<Scalar> *contdata = d.continuous_data.get();
 
     // d.x1_ contains midpoint of x,y
@@ -64,20 +65,29 @@ struct IntegratorMidpointTpl : IntegratorAbstractTpl<_Scalar> {
     contdyn->computeJacobians(d.x1_, u, d.xdot_, *contdata);
     throw std::exception("Implementation not finished.");
   }
+
+  shared_ptr<DynamicsDataTpl<Scalar>> createData() const;
 };
 
 template <typename _Scalar>
-struct IntegratorIntegratorMidpointDataTpl : IntegratorDataTpl<_Scalar> {
+struct IntegratorMidpointDataTpl : IntegratorDataTpl<_Scalar> {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = IntegratorDataTpl<Scalar>;
 
   VectorXs x1_;
   VectorXs dx1_;
+  MatrixXs J_v_0;
+  MatrixXs J_v_1;
 
-  explicit IntegratorIntegratorMidpointDataTpl(
+  explicit IntegratorMidpointDataTpl(
       const IntegratorMidpointTpl<Scalar> *integrator)
-      : Base(integrator), x1_(integrator->ndx) {}
+      : Base(integrator), x1_(integrator->space().neutral()), dx1_(this->ndx1),
+        J_v_0(this->ndx1, this->ndx1), J_v_1(this->ndx1, this->ndx1) {
+    x1_.setZero();
+    J_v_0.setZero();
+    J_v_1.setZero();
+  }
 };
 
 } // namespace dynamics
