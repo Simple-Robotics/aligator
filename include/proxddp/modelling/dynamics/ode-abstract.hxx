@@ -31,15 +31,14 @@ void ODEAbstractTpl<Scalar>::computeJacobians(const ConstVectorRef &x,
 template <typename Scalar>
 shared_ptr<ContinuousDynamicsDataTpl<Scalar>>
 ODEAbstractTpl<Scalar>::createData() const {
-  auto data = std::make_shared<ODEData>(this->ndx(), this->nu());
-  data->Jxdot_.diagonal().array() = -1.;
-  return data;
+  return std::make_shared<ODEData>(this->ndx(), this->nu());
 }
 
 template <typename Scalar>
 ODEDataTpl<Scalar>::ODEDataTpl(const int ndx, const int nu)
     : Base(ndx, nu), xdot_(ndx) {
   xdot_.setZero();
+  this->Jxdot_.diagonal().array() = -1.;
 }
 } // namespace dynamics
 } // namespace proxddp

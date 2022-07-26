@@ -59,14 +59,20 @@ struct IntegratorMidpointDataTpl : IntegratorDataTpl<_Scalar> {
   VectorXs dx1_;
   MatrixXs J_v_0;
   MatrixXs J_v_1;
+  MatrixXs Jtm0;
+  MatrixXs Jtm1;
 
   explicit IntegratorMidpointDataTpl(
       const IntegratorMidpointTpl<Scalar> *integrator)
       : Base(integrator), x1_(integrator->space().neutral()), dx1_(this->ndx1),
-        J_v_0(this->ndx1, this->ndx1), J_v_1(this->ndx1, this->ndx1) {
+        J_v_0(this->ndx1, this->ndx1), J_v_1(this->ndx1, this->ndx1),
+        Jtm0(this->ndx1, this->ndx1), Jtm1(this->ndx1, this->ndx1) {
     x1_.setZero();
+    dx1_.setZero();
     J_v_0.setZero();
     J_v_1.setZero();
+    Jtm0.setZero();
+    Jtm1.setZero();
   }
 };
 

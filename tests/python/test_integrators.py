@@ -3,7 +3,8 @@ import proxddp
 from proxddp import dynamics, manifolds
 import pytest
 
-EPSILON = 1e-4
+EPSILON = 1e-5
+ATOL = EPSILON**0.5
 
 
 def function_finite_difference(
@@ -30,7 +31,6 @@ def function_finite_difference(
         ei[i] = eps
         xplus = space.integrate(x0, ei)
         fun.evaluate(xplus, u0, y0, data)
-        space.JintegrateTransport(x0, ei, data.value, 1)
         Jx_nd[:, i] = (data.value - r0) / eps
         ei[i] = 0.0
 
@@ -49,7 +49,6 @@ def function_finite_difference(
         ei[i] = eps
         space.integrate(y0, ei, yplus)
         fun.evaluate(x0, u0, yplus, data)
-        space.JintegrateTransport(y0, ei, data.value, 1)
         Jy_nd[:, i] = (data.value - r0) / eps
         ei[i] = 0.0
 
@@ -69,7 +68,6 @@ def finite_difference_explicit_dyn(dyn: dynamics.IntegratorAbstract, x0, u0, eps
         xplus = space.integrate(x0, ei)
         dyn.forward(xplus, u0, data)
         yplus[:] = data.xout
-        space.JintegrateTransport(x0, ei, yplus, 1)
         Jx_nd[:, i] = space.difference(y0, yplus) / eps
         ei[i] = 0.0
 
@@ -129,40 +127,46 @@ def test_explicit_integrator_combinations(ode, integrator):
     ode_int_run(ode, dyn)
 
 
-def test_midpoint():
-    dae = create_linear_ode(4, 2)
+@pytest.mark.parametrize("dae", [create_linear_ode(4, 3), create_multibody_ode()])
+@pytest.mark.parametrize("integrator", [dynamics.IntegratorMidpoint])
+def test_implicit_integrator(
+    dae: dynamics.ContinuousDynamicsBase, integrator: dynamics.IntegratorAbstract
+):
     dt = 0.1
-    dyn = dynamics.IntegratorMidpoint(dae, dt)
+    dyn = integrator(dae, dt)
     x = dae.space.rand()
+    x = np.clip(x, -5, 5)
     u = np.random.randn(dyn.nu)
     data = dyn.createData()
-    assert isinstance(data, dynamics.IntegratorMidpointData)
+    dyn.evaluate(x, u, x, data)
+    assert isinstance(data, dynamics.IntegratorData)
 
     Jx_nd, Ju_nd, Jy_nd = function_finite_difference(dyn, dyn.space, x, u)
 
+    dyn.evaluate(x, u, x, data)
     dyn.computeJacobians(x, u, x, data)
-    assert np.allclose(data.Jx, Jx_nd)
-    assert np.allclose(data.Ju, Ju_nd)
-    assert np.allclose(data.Jy, Jy_nd)
+    assert np.allclose(data.Jx, Jx_nd, atol=ATOL)
+    assert np.allclose(data.Ju, Ju_nd, atol=ATOL)
+    assert np.allclose(data.Jy, Jy_nd, atol=ATOL)
 
 
-def exp_dyn_fd_check(dyn, x, u, eps):
+def exp_dyn_fd_check(dyn, x, u, eps=EPSILON):
     Jx_nd, Ju_nd = finite_difference_explicit_dyn(dyn, x, u, eps=eps)
 
     np.set_printoptions(precision=3, linewidth=250)
     data = dyn.createData()
     dyn.forward(x, u, data)
     dyn.dForward(x, u, data)
-    assert np.allclose(data.Jx, Jx_nd)
-    assert np.allclose(data.Ju, Ju_nd)
+    assert np.allclose(data.Jx, Jx_nd, atol=ATOL)
+    assert np.allclose(data.Ju, Ju_nd, atol=ATOL)
 
 
 def ode_int_run(ode, dyn):
     x = ode.space.rand()
+    x = np.clip(x, -5, 5)
     u = np.random.randn(ode.nu)
-    eps = 1e-4
 
-    exp_dyn_fd_check(dyn, x, u, eps)
+    exp_dyn_fd_check(dyn, x, u)
 
 
 if __name__ == "__main__":
