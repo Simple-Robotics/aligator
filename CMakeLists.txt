@@ -103,6 +103,17 @@ if(BUILD_PYTHON_INTERFACE)
     ERROR_QUIET)
   message(STATUS "Python compiler: ${_python_implementation_value}")
 
+  execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import proxnlp"
+  RESULT_VARIABLE _proxnlp_python_bindings_not_found
+  OUTPUT_QUIET
+  ERROR_QUIET)
+  if(_proxnlp_python_bindings_not_found EQUAL 0)
+    message(STATUS "Found proxnlp Python bindings.")
+  else()
+    message(FATAL_ERROR "proxnlp Python bindings NOT found.")
+  endif()
+  unset(_proxnlp_python_bindings_not_found)
+
 endif(BUILD_PYTHON_INTERFACE)
 
 ADD_PROJECT_DEPENDENCY(proxnlp 0.2.3 REQUIRED)
