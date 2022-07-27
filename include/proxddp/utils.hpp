@@ -1,15 +1,54 @@
 #pragma once
 
-#include "proxddp/fwd.hpp"
 #include "proxddp/core/dynamics.hpp"
 #include "proxddp/core/explicit-dynamics.hpp"
 
 #include "proxddp/utils/newton-raphson.hpp"
 #include "proxddp/utils/exceptions.hpp"
 
-#include <stdexcept>
-
 namespace proxddp {
+
+namespace internal {
+
+struct __forward_dyn {
+  double EPS = 1e-6;
+  template <typename T>
+  void operator()(const ManifoldAbstractTpl<T> &space,
+                  const DynamicsModelTpl<T> &model,
+                  const typename math_types<T>::ConstVectorRef &x,
+                  const typename math_types<T>::ConstVectorRef &u,
+                  DynamicsDataTpl<T> &data,
+                  typename math_types<T>::VectorRef xout) const {
+    using ConstVectorRef = typename math_types<T>::ConstVectorRef;
+    auto fun = [&](const ConstVectorRef &xnext) {
+      model.evaluate(x, u, xnext, data);
+      return data.value_;
+    };
+    auto Jfun = [&](const ConstVectorRef &xnext) {
+      model.computeJacobians(x, u, xnext, data);
+      return data.Jy_;
+    };
+    NewtonRaphson<T>::run(space, fun, Jfun, x, xout, EPS);
+  }
+
+  /// Override; falls back to the standard behaviour.
+  template <typename T>
+  void operator()(const ManifoldAbstractTpl<T> &,
+                  const ExplicitDynamicsModelTpl<T> &model,
+                  const typename math_types<T>::ConstVectorRef &x,
+                  const typename math_types<T>::ConstVectorRef &u,
+                  ExplicitDynamicsDataTpl<T> &data,
+                  typename math_types<T>::VectorRef xout) {
+    model.forward(x, u, data);
+    xout = data.xnext_;
+  }
+};
+
+} // namespace internal
+
+/// @brief Forward map for an dynamics model.
+inline constexpr internal::__forward_dyn forward_dyn{};
+
 /// @brief   Perform a rollout of the controlled trajectory.
 /// @todo    Implement for generic DynamicsModelTpl.
 template <typename Scalar>
@@ -34,17 +73,8 @@ rollout(const ManifoldAbstractTpl<Scalar> &space,
   shared_ptr<DynamicsDataTpl<Scalar>> data = dyn_model.createData();
 
   for (std::size_t i = 0; i < N; i++) {
-    auto fun = [&](const ConstVectorRef xnext) {
-      dyn_model.evaluate(xs[i], us[i], xnext, *data);
-      return data->value_;
-    };
-
-    auto Jfun = [&](const ConstVectorRef xnext) {
-      dyn_model.computeJacobians(xs[i], us[i], xnext, *data);
-      return data->Jy_;
-    };
     xs.push_back(space.neutral());
-    NewtonRaphson<Scalar>::run(space, fun, Jfun, xs[i + 1], xs[i + 1], 1e-6);
+    forward_dyn(space, dyn_model, xs[i], us[i], *data, xs[i + 1]);
   }
   return xs;
 }
