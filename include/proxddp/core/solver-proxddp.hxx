@@ -429,7 +429,7 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
                               workspace.problem_data);
     computeInfeasibilities(problem, workspace, results);
 
-    Log iter_log;
+    LogRecord iter_log;
     iter_log.iter = k + 1;
     iter_log.inner_crit = workspace.inner_criterion;
     iter_log.prim_err = results.primal_infeasibility;

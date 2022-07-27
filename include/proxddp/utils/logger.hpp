@@ -1,7 +1,6 @@
 #pragma once
 
-#include "proxddp/fwd.hpp"
-
+#include <vector>
 #include <fmt/color.h>
 #include <fmt/ranges.h>
 
@@ -11,7 +10,7 @@ const std::vector<std::string> BASIC_KEYS{"iter",     "step_size", "inner_crit",
                                           "prim_err", "dual_err",  "dphi0",
                                           "merit"};
 
-struct Log {
+struct LogRecord {
   unsigned int iter;
   double step_size;
   double inner_crit;
@@ -22,25 +21,28 @@ struct Log {
 };
 
 struct CustomLogger {
+  unsigned int COL_WIDTH_0 = 6;
   unsigned int COL_WIDTH = 10;
-  std::string fstr = "{: ^{}s}";
+  static constexpr const char fstr[] = "{: ^{}s}";
+  static constexpr const char int_format[] = "{: >{}d}";
+  static constexpr const char sci_format[] = "{: > {}.{}e}";
+  static constexpr const char dbl_format[] = "{: > {}.{}g}";
 
   void start() {
     std::vector<std::string> v;
-    for (auto &key : BASIC_KEYS) {
-      v.push_back(fmt::format(fstr, key, COL_WIDTH));
+    auto it = BASIC_KEYS.begin();
+    v.push_back(fmt::format(fstr, *it, COL_WIDTH_0));
+    for (it = BASIC_KEYS.begin() + 1; it != BASIC_KEYS.end(); ++it) {
+      v.push_back(fmt::format(fstr, *it, COL_WIDTH));
     }
     fmt::print(fmt::emphasis::bold, "{}\n", fmt::join(v, " | "));
   }
 
-  void log(Log &values) {
+  template <typename T> void log(const T &values) {
     std::vector<std::string> v;
-    std::string log_format = "{: >{}}";
     int dbl_prec = 3;
-    std::string sci_format = "{: > {}.{}e}";
-    std::string dbl_format = "{: > {}.{}g}";
 
-    v.push_back(fmt::format(log_format, values.iter, COL_WIDTH));
+    v.push_back(fmt::format(int_format, values.iter, COL_WIDTH_0));
     v.push_back(fmt::format(sci_format, values.step_size, COL_WIDTH, dbl_prec));
     v.push_back(
         fmt::format(sci_format, values.inner_crit, COL_WIDTH, dbl_prec));
