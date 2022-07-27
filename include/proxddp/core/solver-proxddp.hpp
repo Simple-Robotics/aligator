@@ -3,6 +3,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
+#include "proxddp/core/solver-base.hpp"
 #include "proxddp/core/merit-function.hpp"
 #include "proxddp/core/proximal-penalty.hpp"
 #include "proxddp/core/linesearch.hpp"
@@ -13,9 +14,6 @@
 #include <proxnlp/constraint-base.hpp>
 
 namespace proxddp {
-
-template <typename Scalar>
-static const typename math_types<Scalar>::VectorOfVectors DEFAULT_VECTOR;
 
 enum class MultiplierUpdateMode : unsigned int {
   NEWTON = 0,
