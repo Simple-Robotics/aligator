@@ -61,13 +61,13 @@ def finite_difference_explicit_dyn(dyn: dynamics.IntegratorAbstract, x0, u0, eps
     Jx_nd = np.zeros((dyn.ndx2, dyn.ndx1))
     ei = np.zeros(dyn.ndx1)
     dyn.forward(x0, u0, data)
-    y0 = data.xout.copy()
+    y0 = data.xnext.copy()
     yplus = y0.copy()
     for i in range(dyn.ndx1):
         ei[i] = eps
         xplus = space.integrate(x0, ei)
         dyn.forward(xplus, u0, data)
-        yplus[:] = data.xout
+        yplus[:] = data.xnext
         Jx_nd[:, i] = space.difference(y0, yplus) / eps
         ei[i] = 0.0
 
@@ -78,7 +78,7 @@ def finite_difference_explicit_dyn(dyn: dynamics.IntegratorAbstract, x0, u0, eps
         ei[i] = eps
         uplus = uspace.integrate(u0, ei)
         dyn.forward(x0, uplus, data)
-        yplus[:] = data.xout
+        yplus[:] = data.xnext
         Ju_nd[:, i] = space.difference(y0, yplus) / eps
         ei[:] = 0.0
     return Jx_nd, Ju_nd

@@ -252,7 +252,7 @@ def test_constraint_dynamics():
     while t <= T_sim:
 
         discrete_dynamics.forward(x, u, data)
-        x = data.xout.copy()
+        x = data.xnext.copy()
         t += dt
         if DISPLAY:
             viz.display(x[: model.nq])

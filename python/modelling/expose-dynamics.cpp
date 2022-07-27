@@ -57,9 +57,10 @@ void exposeDynamics() {
       .add_property(
           "dx", bp::make_getter(&context::ExplicitDynData::dxref_,
                                 bp::return_value_policy<bp::return_by_value>()))
-      .add_property("xout", bp::make_getter(
-                                &context::ExplicitDynData::xoutref_,
-                                bp::return_value_policy<bp::return_by_value>()))
+      .add_property(
+          "xnext",
+          bp::make_getter(&context::ExplicitDynData::xnextref_,
+                          bp::return_value_policy<bp::return_by_value>()))
       .def(PrintableVisitor<context::ExplicitDynData>());
 
   exposeDynamicsImplementations();

@@ -72,7 +72,7 @@ struct ExplicitDynamicsDataTpl : FunctionDataTpl<_Scalar> {
   VectorXs dx_;
   MatrixXs Jtmp_xnext;
 
-  VectorRef xoutref_;
+  VectorRef xnextref_;
   VectorRef dxref_;
 
   ExplicitDynamicsDataTpl(const int ndx1, const int nu, const int nx2,
