@@ -7,12 +7,10 @@
 #include "proxddp/core/proximal-penalty.hpp"
 #include "proxddp/core/linesearch.hpp"
 #include "proxddp/core/helpers-base.hpp"
+#include "proxddp/utils/exceptions.hpp"
+#include "proxddp/utils/logger.hpp"
 
 #include <proxnlp/constraint-base.hpp>
-
-#include <fmt/ostream.h>
-
-#include <stdexcept>
 
 namespace proxddp {
 
@@ -115,7 +113,7 @@ public:
       : target_tolerance(tol), mu_init(mu_init), rho_init(rho_init),
         verbose_(verbose), MAX_ITERS(max_iters) {
     if (mu_init >= 1.) {
-      throw std::domain_error(
+      proxddp_runtime_error(
           fmt::format("Penalty value mu_init={:g}>=1!", mu_init));
     }
   }

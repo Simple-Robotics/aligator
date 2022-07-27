@@ -3,7 +3,7 @@
 #include "proxddp/modelling/sum-of-costs.hpp"
 
 #include <stdexcept>
-#include <fmt/format.h>
+#include <fmt/core.h>
 
 namespace proxddp {
 template <typename Scalar>

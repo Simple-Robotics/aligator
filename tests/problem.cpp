@@ -1,5 +1,3 @@
-#include "proxddp/core/stage-model.hpp"
-#include "proxddp/core/solver-workspace.hpp"
 #include "proxddp/core/solver-proxddp.hpp"
 #include "proxddp/utils.hpp"
 

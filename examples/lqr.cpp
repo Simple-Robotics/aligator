@@ -1,10 +1,9 @@
 /// @file
 /// @brief Linear-quadratic regulator
 
-#include "proxddp/core/traj-opt-problem.hpp"
+#include "proxddp/core/solver-proxddp.hpp"
 #include "proxddp/utils.hpp"
 #include "proxddp/modelling/quad-costs.hpp"
-#include "proxddp/core/solver-proxddp.hpp"
 
 #include <proxnlp/modelling/constraints/negative-orthant.hpp>
 

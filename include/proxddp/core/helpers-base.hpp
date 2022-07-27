@@ -1,7 +1,6 @@
 #pragma once
 
-#include "proxddp/core/solver-workspace.hpp"
-#include "proxddp/core/solver-results.hpp"
+#include "proxddp/fwd.hpp"
 
 namespace proxddp {
 namespace helpers {

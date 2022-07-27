@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdexcept>
-#include <fmt/format.h>
+#include <fmt/core.h>
 
 #define proxddp_runtime_error(msg)                                             \
   {                                                                            \

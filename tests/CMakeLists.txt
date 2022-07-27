@@ -64,7 +64,6 @@ if (BUILD_PYTHON_INTERFACE)
 
   foreach(pyfile ${PYTHON_TESTS})
     get_filename_component(pyfile_name ${pyfile} NAME)
-    message(STATUS "adding python test ${pyfile_name}")
     ADD_PYTHON_UNIT_TEST(${pyfile_name} "tests/${pyfile}")
   endforeach()
 endif()

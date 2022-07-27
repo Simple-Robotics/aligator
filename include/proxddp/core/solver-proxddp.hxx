@@ -3,9 +3,6 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/core/solver-proxddp.hpp"
-#include "proxddp/utils/exceptions.hpp"
-
 #include <Eigen/Cholesky>
 
 #include <fmt/color.h>
@@ -311,6 +308,8 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
     results.us_ = us_init;
   }
 
+  ::proxddp::CustomLogger().start();
+
   workspace.prev_xs_ = results.xs_;
   workspace.prev_us_ = results.us_;
   workspace.prev_lams_ = results.lams_;
@@ -430,13 +429,19 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
                               workspace.problem_data);
     computeInfeasibilities(problem, workspace, results);
 
+    Log iter_log;
+    iter_log.iter = k + 1;
+    iter_log.inner_crit = workspace.inner_criterion;
+    iter_log.prim_err = results.primal_infeasibility;
+    iter_log.dual_err = results.dual_infeasibility;
+
     if (verbose_ >= 1) {
-      fmt::print(" | inner_crit {:.3e}"
-                 " | prim_err   {:.3e}"
-                 " | dual_err   {:.3e}",
-                 workspace.inner_criterion, results.primal_infeasibility,
-                 results.dual_infeasibility);
-      fmt::print(" |\n");
+      // fmt::print(" | inner_crit {:.3e}"
+      //            " | prim_err   {:.3e}"
+      //            " | dual_err   {:.3e}",
+      //            workspace.inner_criterion, results.primal_infeasibility,
+      //            results.dual_infeasibility);
+      // fmt::print(" |\n");
     }
 
     bool inner_conv = workspace.inner_criterion < inner_tol_;
@@ -451,8 +456,8 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     }
 
     if (verbose_ >= 1) {
-      fmt::print(fmt::fg(fmt::color::yellow_green), "[iter {:>3d}]", k + 1);
-      fmt::print("\n");
+      // fmt::print(fmt::fg(fmt::color::yellow_green), "[iter {:>3d}]", k + 1);
+      // fmt::print("\n");
     }
 
     computeDirection(problem, workspace, results);
@@ -479,11 +484,16 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
     results.traj_cost_ = merit_fun.traj_cost;
     results.merit_value_ = merit_fun.value_;
+    iter_log.step_size = alpha_opt;
+    iter_log.dphi0 = dphi0;
+    iter_log.merit = results.merit_value_;
+
     if (verbose_ >= 1) {
-      fmt::print(" | alpha  {:.3e}"
-                 " | dphi0  {:.3e}"
-                 " | merit  {:.3e}\n",
-                 alpha_opt, dphi0, results.merit_value_);
+      // fmt::print(" | alpha  {:.3e}"
+      //            " | dphi0  {:.3e}"
+      //            " | merit  {:.3e}\n",
+      //            alpha_opt, dphi0, results.merit_value_);
+      CustomLogger().log(iter_log);
     }
 
     // accept the step

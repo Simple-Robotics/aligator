@@ -22,6 +22,7 @@ template <typename Scalar> struct history_callback : base_callback<Scalar> {
     std::vector<Scalar> merit_values;
     std::vector<Scalar> prim_infeas;
     std::vector<Scalar> dual_infeas;
+    std::vector<Scalar> inner_crits;
     std::vector<std::size_t> al_index;
     std::vector<Scalar> prim_tols;
     std::vector<Scalar> dual_tols;
@@ -39,6 +40,7 @@ template <typename Scalar> struct history_callback : base_callback<Scalar> {
       storage.merit_values.push_back(results.merit_value_);
     }
     if (store_residuals_) {
+      storage.inner_crits.push_back(workspace.inner_criterion);
       storage.prim_infeas.push_back(results.primal_infeasibility);
       storage.dual_infeas.push_back(results.dual_infeasibility);
     }
