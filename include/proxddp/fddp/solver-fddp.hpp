@@ -331,6 +331,9 @@ template <typename Scalar> struct SolverFDDP {
     std::size_t &iter = results.num_iters;
     for (iter = 0; iter < MAX_ITERS; ++iter) {
 
+      LogRecord record;
+      record.iter = iter;
+
       problem.evaluate(results.xs_, results.us_, workspace.problem_data);
       problem.computeDerivatives(results.xs_, results.us_,
                                  workspace.problem_data);
@@ -354,6 +357,10 @@ template <typename Scalar> struct SolverFDDP {
           ls_params.armijo_c1, ls_params.alpha_min, alpha_opt);
       forwardPass(problem, results, workspace, alpha_opt);
 
+      record.merit = phi0;
+      record.dphi0 = dphi0;
+      record.step_size = alpha_opt;
+
       if (alpha_opt > th_step_dec_) {
         increase_reg();
       }
@@ -364,6 +371,8 @@ template <typename Scalar> struct SolverFDDP {
           break;
         }
       }
+
+      logger.log(record);
     }
 
     return results.conv;
