@@ -51,7 +51,7 @@ public:
   using StageModel = StageModelTpl<Scalar>;
   using Constraint = typename StageModel::Constraint;
   using StageData = StageDataTpl<Scalar>;
-  using value_store_t = typename Workspace::value_store_t;
+  using value_store_t = typename Workspace::value_storage_t;
   using q_store_t = typename Workspace::q_storage_t;
   using ProxPenaltyType = ProximalPenaltyTpl<Scalar>;
   using ProxData = typename ProxPenaltyType::Data;
