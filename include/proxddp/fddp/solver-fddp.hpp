@@ -2,10 +2,10 @@
 
 #include "proxddp/core/solver-base.hpp"
 #include "proxddp/core/solver-results.hpp"
-#include "proxddp/core/solver-workspace.hpp"
 #include "proxddp/core/linesearch.hpp"
-
 #include "proxddp/core/explicit-dynamics.hpp"
+
+#include "proxddp/fddp/workspace.hpp"
 
 #include "proxddp/utils/exceptions.hpp"
 #include "proxddp/utils/logger.hpp"
@@ -40,84 +40,7 @@ template <typename Scalar> struct ResultsFDDP : ResultsBaseTpl<Scalar> {
     return gains_[i].rightCols(ndx);
   }
 
-  explicit ResultsFDDP(const TrajOptProblemTpl<Scalar> &problem) {
-    using StageModel = StageModelTpl<Scalar>;
-    using Manifold = ManifoldAbstractTpl<Scalar>;
-
-    const std::size_t nsteps = problem.numSteps();
-    xs_.resize(nsteps + 1);
-    us_.resize(nsteps);
-
-    xs_default_init(problem, xs_);
-
-    gains_.resize(nsteps);
-
-    for (std::size_t i = 0; i < nsteps; i++) {
-      const StageModel &sm = *problem.stages_[i];
-      const Manifold &uspace = sm.uspace();
-
-      const int ndx = sm.ndx1();
-      const int nu = sm.nu();
-      const int ndual = sm.numDual();
-
-      us_[i] = uspace.neutral();
-      gains_[i] = MatrixXs::Zero(nu, ndx + 1);
-    }
-  }
-};
-
-template <typename Scalar> struct WorkspaceFDDP : WorkspaceBaseTpl<Scalar> {
-  using Base = WorkspaceBaseTpl<Scalar>;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-  using Base::nsteps;
-  using Base::trial_us_;
-  using Base::trial_xs_;
-  using Base::value_params;
-
-  /// Value of `f(x_i, u_i)`
-  std::vector<VectorXs> xnexts;
-  /// Feasibility gaps
-  std::vector<VectorXs> feas_gaps_;
-  /// State increment
-  std::vector<VectorXs> dxs_;
-
-  /// Buffer for KKT matrices.
-  std::vector<MatrixXs> kkt_matrix_bufs;
-  /// Buffer for KKT system right-hand sides.
-  std::vector<MatrixXs> kkt_rhs_bufs;
-  /// LLT struct for each KKT system.
-  std::vector<Eigen::LLT<MatrixXs>> llts_;
-
-  explicit WorkspaceFDDP(const TrajOptProblemTpl<Scalar> &problem)
-      : Base(problem) {
-    feas_gaps_.resize(nsteps + 1);
-
-    kkt_matrix_bufs.resize(nsteps);
-    kkt_rhs_bufs.resize(nsteps);
-    llts_.reserve(nsteps);
-    dxs_.resize(nsteps + 1);
-    xnexts.resize(nsteps + 1);
-
-    feas_gaps_[0].resize(problem.stages_[0]->ndx1());
-
-    for (std::size_t i = 0; i < nsteps; i++) {
-      const StageModelTpl<Scalar> &sm = *problem.stages_[i];
-      const int ndx = sm.ndx1();
-      const int nu = sm.nu();
-      const int ndual = sm.numDual();
-
-      feas_gaps_[i + 1] = VectorXs::Zero(sm.ndx2());
-      kkt_matrix_bufs[i] = MatrixXs::Zero(nu, nu);
-      kkt_rhs_bufs[i] = MatrixXs::Zero(nu, ndx + 1);
-      llts_.emplace_back(nu);
-
-      dxs_[i] = VectorXs::Zero(ndx);
-      xnexts[i] = sm.xspace().neutral();
-    }
-    const StageModelTpl<Scalar> &sm = *problem.stages_.back();
-    dxs_[nsteps] = VectorXs::Zero(sm.ndx2());
-    xnexts[nsteps] = sm.xspace().neutral();
-  }
+  explicit ResultsFDDP(const TrajOptProblemTpl<Scalar> &problem);
 };
 
 /**
@@ -176,32 +99,12 @@ template <typename Scalar> struct SolverFDDP {
   /// @warning  We assume the dynamics were already computed.
   void evaluateGaps(const Problem &problem, const std::vector<VectorXs> &xs,
                     const std::vector<VectorXs> &us, const Workspace &workspace,
-                    Results &results) const {
-    const std::size_t nsteps = problem.numSteps();
-    const ProblemData &pd = workspace.problem_data;
-
-    const Manifold &space = problem.stages_[0]->xspace();
-    space.difference(xs[0], problem.getInitState(), workspace.feas_gaps_[0]);
-
-    for (std::size_t i = 0; i < nsteps; i++) {
-      const StageModel &sm = *problem.stages_[i];
-      const StageData &sd = pd.getData(i);
-      const Manifold &space = sm.xspace();
-      space.difference(xs[i + 1], workspace.xnexts[i],
-                       workspace.feas_gaps_[i + 1]);
-    }
-  }
+                    Results &results) const;
 
   /// @brief Try a given step size, and store the resulting cost in
   /// `Results::traj_cost_`.
   Scalar tryStep(const Problem &problem, const Results &results,
-                 Workspace &workspace, const Scalar alpha) const {
-    forwardPass(problem, results, workspace, alpha);
-    problem.evaluate(workspace.trial_xs_, workspace.trial_us_,
-                     workspace.trial_prob_data);
-    Scalar ret = computeTrajectoryCost(problem, workspace.trial_prob_data);
-    return ret;
-  }
+                 Workspace &workspace, const Scalar alpha) const;
 
   Scalar computeDirectionalDerivatives(const Problem &problem,
                                        const Workspace &workspace) const {

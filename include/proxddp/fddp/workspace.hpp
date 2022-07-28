@@ -1,0 +1,64 @@
+#pragma once
+
+#include "proxddp/core/solver-workspace.hpp"
+
+namespace proxddp {
+
+template <typename Scalar> struct WorkspaceFDDP : WorkspaceBaseTpl<Scalar> {
+  using Base = WorkspaceBaseTpl<Scalar>;
+  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  using Base::nsteps;
+  using Base::trial_us_;
+  using Base::trial_xs_;
+  using Base::value_params;
+
+  /// Value of `f(x_i, u_i)`
+  std::vector<VectorXs> xnexts;
+  /// Feasibility gaps
+  std::vector<VectorXs> feas_gaps_;
+  /// State increment
+  std::vector<VectorXs> dxs_;
+
+  /// Buffer for KKT matrices.
+  std::vector<MatrixXs> kkt_matrix_bufs;
+  /// Buffer for KKT system right-hand sides.
+  std::vector<MatrixXs> kkt_rhs_bufs;
+  /// LLT struct for each KKT system.
+  std::vector<Eigen::LLT<MatrixXs>> llts_;
+
+  explicit WorkspaceFDDP(const TrajOptProblemTpl<Scalar> &problem);
+};
+
+template <typename Scalar>
+WorkspaceFDDP<Scalar>::WorkspaceFDDP(const TrajOptProblemTpl<Scalar> &problem)
+    : Base(problem) {
+  feas_gaps_.resize(nsteps + 1);
+
+  kkt_matrix_bufs.resize(nsteps);
+  kkt_rhs_bufs.resize(nsteps);
+  llts_.reserve(nsteps);
+  dxs_.resize(nsteps + 1);
+  xnexts.resize(nsteps + 1);
+
+  feas_gaps_[0].resize(problem.stages_[0]->ndx1());
+
+  for (std::size_t i = 0; i < nsteps; i++) {
+    const StageModelTpl<Scalar> &sm = *problem.stages_[i];
+    const int ndx = sm.ndx1();
+    const int nu = sm.nu();
+    const int ndual = sm.numDual();
+
+    feas_gaps_[i + 1] = VectorXs::Zero(sm.ndx2());
+    kkt_matrix_bufs[i] = MatrixXs::Zero(nu, nu);
+    kkt_rhs_bufs[i] = MatrixXs::Zero(nu, ndx + 1);
+    llts_.emplace_back(nu);
+
+    dxs_[i] = VectorXs::Zero(ndx);
+    xnexts[i] = sm.xspace().neutral();
+  }
+  const StageModelTpl<Scalar> &sm = *problem.stages_.back();
+  dxs_[nsteps] = VectorXs::Zero(sm.ndx2());
+  xnexts[nsteps] = sm.xspace().neutral();
+}
+
+} // namespace proxddp
