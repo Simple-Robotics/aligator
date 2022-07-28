@@ -5,6 +5,8 @@
 #include "proxddp/utils/rollout.hpp"
 #include "proxddp/modelling/quad-costs.hpp"
 
+#include "proxddp/fddp/solver-fddp.hpp"
+
 #include <proxnlp/modelling/constraints/negative-orthant.hpp>
 
 #include "proxddp/modelling/linear-discrete-dynamics.hpp"
@@ -17,12 +19,12 @@ constexpr double TOL = 1e-7;
 int main() {
 
   const int dim = 2;
-  const int nu = 1;
+  const int nu = 2;
   Eigen::MatrixXd A(dim, dim);
   Eigen::MatrixXd B(dim, nu);
   Eigen::VectorXd c_(dim);
   A.setIdentity();
-  B << -0.6, 0.3;
+  B << -0.6, 0.3, 0., 1.;
   c_ << 0.1, 0.;
 
   Eigen::MatrixXd w_x(dim, dim), w_u(nu, nu);
@@ -49,7 +51,7 @@ int main() {
   auto ctrl_bounds_fun = std::make_shared<ControlBoxFunctionTpl<double>>(
       dim, nu, -u_bound, u_bound);
 
-  const bool HAS_CONTROL_BOUNDS = true;
+  const bool HAS_CONTROL_BOUNDS = false;
 
   if (HAS_CONTROL_BOUNDS) {
     fmt::print("Adding control bounds.\n");
@@ -59,24 +61,21 @@ int main() {
     stage->addConstraint(ctrl_bounds_fun, std::make_shared<InequalitySet>());
   }
 
-  auto x0 = spaceptr->rand();
+  Eigen::VectorXd x0(2);
   x0 << 1., -0.1;
-  auto term_cost = rcost;
+
+  auto &term_cost = rcost;
   TrajOptProblemTpl<double> problem(x0, nu, spaceptr, term_cost);
 
   std::size_t nsteps = 10;
 
-  std::vector<Eigen::VectorXd> us;
+  std::vector<Eigen::VectorXd> us_init;
   for (std::size_t i = 0; i < nsteps; i++) {
-    us.push_back(Eigen::VectorXd::Random(nu));
+    us_init.push_back(Eigen::VectorXd::Random(nu));
     problem.addStage(stage);
   }
 
-  auto xs = rollout(dynamics, x0, us);
-  fmt::print("Initial traj.:\n");
-  for (std::size_t i = 0; i <= nsteps; i++) {
-    fmt::print("x[{:d}] = {}\n", i, xs[i].transpose());
-  }
+  auto xs_init = rollout(dynamics, x0, us_init);
 
   const double mu_init = 1e-5;
   const double rho_init = 1e-8;
@@ -84,13 +83,9 @@ int main() {
   SolverProxDDP<double> solver(TOL, mu_init, rho_init);
   solver.verbose_ = VerboseLevel::VERBOSE;
 
-  WorkspaceTpl<double> workspace(problem);
-  ResultsTpl<double> results(problem);
-  assert(results.xs_.size() == nsteps + 1);
-  assert(results.us_.size() == nsteps);
-
   solver.setup(problem);
-  solver.run(problem, xs, us);
+  solver.run(problem, xs_init, us_init);
+  const auto &results = solver.getResults();
 
   std::string line_ = "";
   for (std::size_t i = 0; i < 20; i++) {
@@ -104,6 +99,19 @@ int main() {
   for (std::size_t i = 0; i < nsteps; i++) {
     // fmt::print("u[{:d}] = {}\n", i, results.us_[i].transpose());
     fmt::print("u[{:d}] = {}\n", i, results.us_[i].transpose());
+  }
+
+  {
+    fmt::print("TEST FDDP\n");
+    SolverFDDP<double> fddp(TOL, 1e-10, VerboseLevel::VERBOSE);
+    fddp.MAX_ITERS = 20;
+    fddp.setup(problem);
+    fddp.run(problem, xs_init, us_init);
+    fmt::print("FDDP done.\n");
+    const ResultsFDDP<double> &res_fddp = fddp.getResults();
+    for (std::size_t i = 0; i < nsteps + 1; i++) {
+      fmt::print("x[{:d}] = {}\n", i, res_fddp.xs_[i].transpose());
+    }
   }
 
   return 0;

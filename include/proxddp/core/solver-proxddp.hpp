@@ -96,14 +96,14 @@ public:
   const Scalar TOL_MIN = 1e-8;
   const Scalar MU_MIN = 1e-8;
 
+  /// Callbacks
+  std::vector<CallbackPtr> callbacks_;
+
   std::unique_ptr<Workspace> workspace_;
   std::unique_ptr<Results> results_;
 
   Results &getResults() { return *results_; }
   Workspace &getWorkspace() { return *workspace_; }
-
-  /// Callbacks
-  std::vector<CallbackPtr> callbacks_;
 
   SolverProxDDP(const Scalar tol = 1e-6, const Scalar mu_init = 0.01,
                 const Scalar rho_init = 0., const std::size_t max_iters = 1000,

@@ -3,6 +3,7 @@
 #include "proxddp/core/solver-base.hpp"
 #include "proxddp/core/solver-results.hpp"
 #include "proxddp/core/linesearch.hpp"
+#include "proxddp/core/helpers-base.hpp"
 #include "proxddp/core/explicit-dynamics.hpp"
 
 #include "proxddp/fddp/workspace.hpp"
@@ -10,6 +11,8 @@
 #include "proxddp/utils/exceptions.hpp"
 #include "proxddp/utils/logger.hpp"
 #include "proxddp/utils/rollout.hpp"
+
+#include <fmt/ostream.h>
 
 #include <Eigen/Cholesky>
 
@@ -61,6 +64,7 @@ template <typename Scalar> struct SolverFDDP {
   using CostData = CostDataAbstractTpl<Scalar>;
   using ExpModel = ExplicitDynamicsModelTpl<Scalar>;
   using ExpData = ExplicitDynamicsDataTpl<Scalar>;
+  using CallbackPtr = shared_ptr<helpers::base_callback<Scalar>>;
 
   const Scalar tol_;
 
@@ -85,6 +89,9 @@ template <typename Scalar> struct SolverFDDP {
   VerboseLevel verbose_;
   /// Maximum number of iterations for the solver.
   std::size_t MAX_ITERS = 200;
+
+  /// Callbacks
+  std::vector<CallbackPtr> callbacks_;
 
   std::unique_ptr<Results> results_;
   std::unique_ptr<Workspace> workspace_;
@@ -115,7 +122,7 @@ template <typename Scalar> struct SolverFDDP {
   /// the state trajectory.
   void forwardPass(const Problem &problem, const Results &results,
                    Workspace &workspace, const Scalar alpha) const {
-    const std::size_t nsteps = problem.numSteps();
+    const std::size_t nsteps = workspace.nsteps;
     std::vector<VectorXs> &xs = workspace.trial_xs_;
     std::vector<VectorXs> &us = workspace.trial_us_;
     ProblemData &pd = workspace.problem_data;
@@ -158,8 +165,8 @@ template <typename Scalar> struct SolverFDDP {
         term_value.storage.template selfadjointView<Eigen::Lower>();
 
     std::size_t i;
-    for (i = nsteps - 1; i >= 0; i--) {
-
+    for (std::size_t k = 0; k < nsteps; k++) {
+      i = nsteps - k - 1;
       const VParams &vnext = workspace.value_params[i + 1];
       QParams &qparam = workspace.q_params[i];
 
@@ -178,6 +185,9 @@ template <typename Scalar> struct SolverFDDP {
       qparam.q_2() = 2 * cd.value_;
       qparam.grad_ = cd.grad_;
       qparam.hess_ = cd.hess_;
+      fmt::print("qparam:\n");
+      fmt::print("grad: {}\n", qparam.grad_.transpose());
+      fmt::print("hess:\n{}\n", qparam.hess_);
 
       // TODO: implement second-order derivatives for the Q-function
       qparam.grad_.noalias() += J_x_u.transpose() * vnext.Vx_;
@@ -186,17 +196,24 @@ template <typename Scalar> struct SolverFDDP {
       qparam.Quu_.diagonal().array() += ureg_;
 
       /* Compute gains */
-      results.getFeedforward(i) = -qparam.Qu_;
-      results.getFeedback(i) = -qparam.Qxu_.transpose();
+      MatrixXs &kkt_rhs = workspace.kkt_rhs_bufs[i];
+      VectorRef ffwd = results.getFeedforward(i);
+      MatrixRef fback = results.getFeedback(i);
+      ffwd = -qparam.Qu_;
+      fback = -qparam.Qxu_.transpose();
       Eigen::LLT<MatrixXs> &llt = workspace.llts_[i];
-      workspace.kkt_matrix_bufs[i] = qparam.Quu_;
+      kkt_rhs = qparam.Quu_;
       llt.compute(workspace.kkt_matrix_bufs[i]);
       llt.solveInPlace(results.gains_[i]);
 
+      workspace.Quuks_[i] = qparam.Quu_ * ffwd;
+      fmt::print("{}\n", workspace.Quuks_[i]);
+
       /* Compute value function */
       VParams &vcur = workspace.value_params[i];
-      vcur.storage = qparam.storage.topLeftCorner(ndx1 + 1, ndx1 + 1) +
-                     workspace.kkt_matrix_bufs[i] * results.gains_[i];
+      vcur.Vx_ = qparam.Qx_ + fback.transpose() * qparam.Qu_;
+      vcur.Vxx_ = qparam.Qxx_;
+      vcur.Vxx_.noalias() += qparam.Qxu_ * fback;
       vcur.Vxx_.diagonal().array() += xreg_;
       vcur.Vx_.noalias() += vcur.Vxx_ * workspace.feas_gaps_[i];
     }
@@ -215,9 +232,19 @@ template <typename Scalar> struct SolverFDDP {
     ureg_ = xreg_;
   }
 
+  /// @brief Compute the dual feasibility of the problem.
+  void computeCriterion(Workspace &workspace, Results &results) {
+    const std::size_t nsteps = workspace.nsteps;
+    results.dual_infeasibility = math::infty_norm(workspace.Quuks_);
+  }
+
   bool run(const Problem &problem,
            const std::vector<VectorXs> &xs_init = DEFAULT_VECTOR<Scalar>,
            const std::vector<VectorXs> &us_init = DEFAULT_VECTOR<Scalar>) {
+    if (results_ == 0 || workspace_ == 0) {
+      proxddp_runtime_error(
+          "Either results or workspace not allocated. Call setup() first!");
+    }
     Results &results = *results_;
     Workspace &workspace = *workspace_;
 
@@ -225,17 +252,17 @@ template <typename Scalar> struct SolverFDDP {
                              results.us_);
 
     ::proxddp::CustomLogger logger{};
+    logger.start();
 
     auto linesearch_fun = [&](const Scalar alpha) {
-      tryStep(problem, results, workspace, alpha);
-      return results.merit_value_;
+      return tryStep(problem, results, workspace, alpha);
     };
 
+    LogRecord record;
     std::size_t &iter = results.num_iters;
     for (iter = 0; iter < MAX_ITERS; ++iter) {
 
-      LogRecord record;
-      record.iter = iter;
+      record.iter = iter + 1;
 
       problem.evaluate(results.xs_, results.us_, workspace.problem_data);
       problem.computeDerivatives(results.xs_, results.us_,
@@ -243,11 +270,12 @@ template <typename Scalar> struct SolverFDDP {
       results.traj_cost_ =
           computeTrajectoryCost(problem, workspace.problem_data);
 
-      // TODO implement
       backwardPass(problem, workspace, results);
+      computeCriterion(workspace, results);
+      record.dual_err = results.dual_infeasibility;
+      record.merit = results.traj_cost_;
 
-      // if something terminate
-      if (false) {
+      if (results.dual_infeasibility < tol_) {
         results.conv = true;
         break;
       }
@@ -259,8 +287,9 @@ template <typename Scalar> struct SolverFDDP {
           linesearch_fun, phi0, dphi0, verbose_, ls_params.ls_beta,
           ls_params.armijo_c1, ls_params.alpha_min, alpha_opt);
       forwardPass(problem, results, workspace, alpha_opt);
+      results.xs_ = workspace.trial_xs_;
+      results.us_ = workspace.trial_us_;
 
-      record.merit = phi0;
       record.dphi0 = dphi0;
       record.step_size = alpha_opt;
 
@@ -278,6 +307,12 @@ template <typename Scalar> struct SolverFDDP {
       logger.log(record);
     }
 
+    if (results.conv) {
+      logger.log(record);
+      fmt::print(fmt::fg(fmt::color::dodger_blue), "Successfully converged.\n");
+    } else {
+      fmt::print(fmt::fg(fmt::color::red), "Convergence failure.\n");
+    }
     return results.conv;
   }
 
