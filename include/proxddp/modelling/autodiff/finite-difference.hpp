@@ -65,20 +65,20 @@ template <typename _Scalar, FDLevel n = TOC1> struct finite_difference_wrapper;
  *            using finite differences, to downcast the function to a
  * StageFunctionTpl.
  */
-template <typename __Scalar>
-struct finite_difference_wrapper<__Scalar, TOC1>
-    : internal::finite_difference_impl<__Scalar, TOC1> {
-  using _Scalar = __Scalar;
+template <typename _Scalar>
+struct finite_difference_wrapper<_Scalar, TOC1>
+    : internal::finite_difference_impl<_Scalar, TOC1> {
+  using Scalar = _Scalar;
 
-  using InputType = StageFunctionTpl<_Scalar>;
-  using OutType = StageFunctionTpl<_Scalar>;
-  using Base = internal::finite_difference_impl<_Scalar, TOC1>;
+  using InputType = StageFunctionTpl<Scalar>;
+  using OutType = StageFunctionTpl<Scalar>;
+  using Base = internal::finite_difference_impl<Scalar, TOC1>;
   using Base::computeJacobians;
 
   PROXNLP_FUNCTION_TYPEDEFS(_Scalar);
 
-  finite_difference_wrapper(const ManifoldAbstractTpl<_Scalar> &space,
-                            const InputType &func, const _Scalar fd_eps)
+  finite_difference_wrapper(const ManifoldAbstractTpl<Scalar> &space,
+                            const InputType &func, const Scalar fd_eps)
       : OutType(func.ndx1(), func.nu(), func.ndx2(), func.nr()), Base(space, func, fd_eps) {}
 
   ReturnType operator()(const ConstVectorRef &x) const { return this->func(x); }
