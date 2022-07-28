@@ -20,9 +20,9 @@ struct __forward_dyn {
                   DynamicsDataTpl<T> &data,
                   typename math_types<T>::VectorRef xout) const {
     const auto *model_ptr_cast =
-        dynamic_cast<const ExplicitDynamicsModelTpl<Scalar> *>(&model);
+        dynamic_cast<const ExplicitDynamicsModelTpl<T> *>(&model);
     const auto *data_ptr_cast =
-        dynamic_cast<ExplicitDynamicsDataTpl<Scalar> *>(&data);
+        dynamic_cast<ExplicitDynamicsDataTpl<T> *>(&data);
     bool check = (model_ptr_cast != nullptr) && (data_ptr_cast != nullptr);
     if (check) {
       // safely deref to an ExplicitDynamicsModelTpl
