@@ -113,6 +113,18 @@ if(BUILD_PYTHON_INTERFACE)
   endif()
   unset(_proxnlp_python_bindings_not_found)
 
+  execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import pinocchio"
+  RESULT_VARIABLE _pinocchio_python_bindings_not_found
+  OUTPUT_QUIET
+  ERROR_QUIET)
+  if(_pinocchio_python_bindings_not_found EQUAL 0)
+    message(STATUS "Found pinocchio Python bindings.")
+    set(BUILD_WITH_PINOCCHIO_PYTHON_BINDINGS)
+  else()
+    message(STATUS "pinocchio Python bindings NOT found.")
+  endif()
+  unset(_pinocchio_python_bindings_not_found)
+
 endif(BUILD_PYTHON_INTERFACE)
 
 ADD_PROJECT_DEPENDENCY(proxnlp 0.2.3 REQUIRED)
