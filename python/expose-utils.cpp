@@ -1,5 +1,5 @@
 #include "proxddp/python/fwd.hpp"
-#include "proxddp/utils.hpp"
+#include "proxddp/utils/rollout.hpp"
 
 namespace proxddp {
 namespace python {

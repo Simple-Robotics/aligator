@@ -1,5 +1,5 @@
 #include "proxddp/core/solver-proxddp.hpp"
-#include "proxddp/utils.hpp"
+#include "proxddp/utils/rollout.hpp"
 
 #include "generate-problem.hpp"
 #include <proxnlp/modelling/spaces/vector-space.hpp>

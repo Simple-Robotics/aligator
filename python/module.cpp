@@ -1,7 +1,6 @@
 #include "proxddp/python/fwd.hpp"
 #include "proxddp/python/utils.hpp"
 
-#include "proxddp/utils.hpp"
 #include "proxddp/version.hpp"
 
 #ifdef WITH_CROCODDYL_COMPAT

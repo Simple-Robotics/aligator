@@ -9,7 +9,7 @@
 
 #include "proxddp/utils/exceptions.hpp"
 #include "proxddp/utils/logger.hpp"
-#include "proxddp/utils.hpp"
+#include "proxddp/utils/rollout.hpp"
 
 #include <Eigen/Cholesky>
 

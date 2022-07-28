@@ -2,7 +2,7 @@
 /// @brief Linear-quadratic regulator
 
 #include "proxddp/core/solver-proxddp.hpp"
-#include "proxddp/utils.hpp"
+#include "proxddp/utils/rollout.hpp"
 #include "proxddp/modelling/quad-costs.hpp"
 
 #include <proxnlp/modelling/constraints/negative-orthant.hpp>
