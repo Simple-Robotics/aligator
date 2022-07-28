@@ -38,10 +38,7 @@ template <typename Scalar> struct WorkspaceBaseTpl {
     trial_xs_.resize(nsteps + 1);
     trial_us_.resize(nsteps);
     xs_default_init(problem, trial_xs_);
-    for (std::size_t i = 0; i < nsteps; i++) {
-      const StageModelTpl<Scalar> &sm = *problem.stages_[i];
-      trial_us_[i] = sm.uspace().neutral();
-    }
+    us_default_init(problem, trial_us_);
   }
 };
 
