@@ -102,6 +102,7 @@ TrajOptDataTpl<Scalar>::TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem)
   stage_data.reserve(problem.numSteps());
   for (std::size_t i = 0; i < problem.numSteps(); i++) {
     stage_data.push_back(problem.stages_[i]->createData());
+    stage_data[i]->checkData();
   }
 
   if (problem.term_cost_) {
@@ -111,6 +112,21 @@ TrajOptDataTpl<Scalar>::TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem)
   if (problem.term_constraint_) {
     term_cstr_data = (*problem.term_constraint_).func_->createData();
   }
+}
+
+template <typename Scalar>
+Scalar computeTrajectoryCost(const TrajOptProblemTpl<Scalar> &problem,
+                             const TrajOptDataTpl<Scalar> &problem_data) {
+  Scalar traj_cost = 0.;
+
+  const std::size_t nsteps = problem.numSteps();
+  for (std::size_t step = 0; step < nsteps; step++) {
+    const StageDataTpl<Scalar> &sd = problem_data.getData(step);
+    traj_cost += sd.cost_data->value_;
+  }
+  traj_cost += problem_data.term_cost_data->value_;
+
+  return traj_cost;
 }
 
 } // namespace proxddp
