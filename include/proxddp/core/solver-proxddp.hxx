@@ -8,6 +8,20 @@
 #include <fmt/color.h>
 
 namespace proxddp {
+
+template <typename Scalar>
+SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
+                                     const Scalar rho_init,
+                                     const std::size_t max_iters,
+                                     const VerboseLevel verbose)
+    : target_tolerance(tol), mu_init(mu_init), rho_init(rho_init),
+      verbose_(verbose), MAX_ITERS(max_iters) {
+  if (mu_init >= 1.) {
+    proxddp_runtime_error(
+        fmt::format("Penalty value mu_init={:g}>=1!", mu_init));
+  }
+}
+
 template <typename Scalar>
 void SolverProxDDP<Scalar>::computeDirection(const Problem &problem,
                                              Workspace &workspace,
@@ -85,6 +99,34 @@ void SolverProxDDP<Scalar>::tryStep(const Problem &problem,
   stage.xspace_next_->integrate(results.xs_[nsteps],
                                 alpha * workspace.dxs_[nsteps],
                                 workspace.trial_xs_[nsteps]);
+}
+
+template <typename Scalar>
+void SolverProxDDP<Scalar>::setup(const Problem &problem) {
+  workspace_ = std::make_unique<Workspace>(problem);
+  results_ = std::make_unique<Results>(problem);
+
+  Workspace &ws = *workspace_;
+  prox_penalties_.clear();
+  const std::size_t nsteps = problem.numSteps();
+  for (std::size_t i = 0; i < nsteps; i++) {
+    const StageModel &sm = *problem.stages_[i];
+    prox_penalties_.emplace_back(sm.xspace_, sm.uspace_, ws.prev_xs_[i],
+                                 ws.prev_us_[i], false);
+    if (i == nsteps - 1) {
+      prox_penalties_.emplace_back(sm.xspace_next_, sm.uspace_,
+                                   ws.prev_xs_[nsteps], problem.dummy_term_u0,
+                                   true);
+    }
+  }
+
+  for (std::size_t i = 0; i < nsteps + 1; i++) {
+    const ProxPenaltyType *penal = &prox_penalties_[i];
+    ws.prox_datas.push_back(std::make_shared<ProxData>(penal));
+  }
+
+  assert(prox_penalties_.size() == (nsteps + 1));
+  assert(ws.prox_datas.size() == (nsteps + 1));
 }
 
 template <typename Scalar>
@@ -283,30 +325,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   Workspace &workspace = *workspace_;
   Results &results = *results_;
 
-  const std::size_t nsteps = problem.numSteps();
-  if (xs_init.size() == 0) {
-    for (std::size_t i = 0; i < nsteps + 1; i++) {
-      const StageModel &sm = *problem.stages_[i];
-      results.xs_[i] = sm.xspace().neutral();
-    }
-  } else {
-    if (xs_init.size() != (nsteps + 1)) {
-      proxddp_runtime_error("warm-start for xs has wrong size!")
-    }
-    results.xs_ = xs_init;
-  }
-
-  if (us_init.size() == 0) {
-    for (std::size_t i = 0; i < nsteps; i++) {
-      const StageModel &sm = *problem.stages_[i];
-      results.us_[i] = sm.uspace().neutral();
-    }
-  } else {
-    if (us_init.size() != nsteps) {
-      proxddp_runtime_error("warm-start for us has wrong size!")
-    }
-    results.us_ = us_init;
-  }
+  checkTrajectoryAndAssign(problem, xs_init, us_init, results.xs_, results.us_);
 
   ::proxddp::CustomLogger().start();
 

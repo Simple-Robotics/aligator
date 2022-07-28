@@ -51,8 +51,8 @@ public:
   using StageModel = StageModelTpl<Scalar>;
   using Constraint = typename StageModel::Constraint;
   using StageData = StageDataTpl<Scalar>;
-  using value_store_t = internal::value_storage<Scalar>;
-  using q_store_t = internal::q_function_storage<Scalar>;
+  using value_store_t = typename Workspace::value_store_t;
+  using q_store_t = typename Workspace::q_storage_t;
   using ProxPenaltyType = ProximalPenaltyTpl<Scalar>;
   using ProxData = typename ProxPenaltyType::Data;
   using CallbackPtr = shared_ptr<helpers::base_callback<Scalar>>;
@@ -107,14 +107,7 @@ public:
 
   SolverProxDDP(const Scalar tol = 1e-6, const Scalar mu_init = 0.01,
                 const Scalar rho_init = 0., const std::size_t max_iters = 1000,
-                const VerboseLevel verbose = VerboseLevel::QUIET)
-      : target_tolerance(tol), mu_init(mu_init), rho_init(rho_init),
-        verbose_(verbose), MAX_ITERS(max_iters) {
-    if (mu_init >= 1.) {
-      proxddp_runtime_error(
-          fmt::format("Penalty value mu_init={:g}>=1!", mu_init));
-    }
-  }
+                const VerboseLevel verbose = VerboseLevel::QUIET);
 
   /// @brief Compute the search direction.
   ///
@@ -145,32 +138,7 @@ public:
   /// specifications of @p problem.
   /// @param problem  The problem instance with respect to which memory will be
   /// allocated.
-  void setup(const Problem &problem) {
-    workspace_ = std::make_unique<Workspace>(problem);
-    results_ = std::make_unique<Results>(problem);
-
-    Workspace *ws = workspace_.get();
-    prox_penalties_.clear();
-    const std::size_t nsteps = problem.numSteps();
-    for (std::size_t i = 0; i < nsteps; i++) {
-      const StageModel &sm = *problem.stages_[i];
-      prox_penalties_.emplace_back(sm.xspace_, sm.uspace_, ws->prev_xs_[i],
-                                   ws->prev_us_[i], false);
-      if (i == nsteps - 1) {
-        prox_penalties_.emplace_back(sm.xspace_next_, sm.uspace_,
-                                     ws->prev_xs_[nsteps],
-                                     problem.dummy_term_u0, true);
-      }
-    }
-
-    for (std::size_t i = 0; i < nsteps + 1; i++) {
-      const ProxPenaltyType *penal = &prox_penalties_[i];
-      ws->prox_datas.emplace_back(new ProxData(penal));
-    }
-
-    assert(prox_penalties_.size() == (nsteps + 1));
-    assert(ws->prox_datas.size() == (nsteps + 1));
-  }
+  void setup(const Problem &problem);
 
   void evaluateProx(const std::vector<VectorXs> &xs,
                     const std::vector<VectorXs> &us,
