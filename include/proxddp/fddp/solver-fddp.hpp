@@ -114,7 +114,7 @@ template <typename Scalar> struct WorkspaceFDDP : WorkspaceBaseTpl<Scalar> {
       dxs_[i] = VectorXs::Zero(ndx);
       xnexts[i] = sm.xspace().neutral();
     }
-    const StageModelTpl<Scalar> &sm = problem.stages_.back();
+    const StageModelTpl<Scalar> &sm = *problem.stages_.back();
     dxs_[nsteps] = VectorXs::Zero(sm.ndx2());
     xnexts[nsteps] = sm.xspace().neutral();
   }
@@ -277,8 +277,8 @@ template <typename Scalar> struct SolverFDDP {
       qparam.hess_ = cd.hess_;
 
       // TODO: implement second-order derivatives for the Q-function
-      qparam.grad_ += J_x_u.transpose() * vnext.Vx_;
-      qparam.hess_ += J_x_u.transpose() * vnext.Vxx_ * J_x_u;
+      qparam.grad_.noalias() += J_x_u.transpose() * vnext.Vx_;
+      qparam.hess_.noalias() += J_x_u.transpose() * vnext.Vxx_ * J_x_u;
 
       qparam.Quu_.diagonal().array() += ureg_;
 
@@ -295,7 +295,7 @@ template <typename Scalar> struct SolverFDDP {
       vcur.storage = qparam.storage.topLeftCorner(ndx1 + 1, ndx1 + 1) +
                      workspace.kkt_matrix_bufs[i] * results.gains_[i];
       vcur.Vxx_.diagonal().array() += xreg_;
-      vcur.Vx_ += vcur.Vxx_ * workspace.feas_gaps_[i];
+      vcur.Vx_.noalias() += vcur.Vxx_ * workspace.feas_gaps_[i];
     }
     assert(i == 0);
   }

@@ -54,6 +54,11 @@ void exposeFDDP() {
   using context::Manifold;
   using context::Scalar;
   using SolverType = SolverFDDP<Scalar>;
+  using Workspace = WorkspaceFDDP<Scalar>;
+
+  bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>>("WorkspaceFDDP",
+                                                             bp::no_init)
+      .def_readonly("dxs", &Workspace::dxs_);
 
   bp::class_<SolverType, boost::noncopyable>(
       "SolverFDDP", "An implementation of the FDDP solver from Crocoddyl.",
@@ -63,6 +68,8 @@ void exposeFDDP() {
       .def_readwrite("reg_max", &SolverType::reg_max_)
       .def_readwrite("verbose", &SolverType::verbose_)
       .def_readwrite("max_iters", &SolverType::MAX_ITERS)
+      .def("setup", &SolverType::setup, bp::args("self", "problem"),
+           "Setup a problem.")
       .def("run", &SolverType::run);
 }
 
@@ -174,6 +181,8 @@ void exposeSolvers() {
       .def("registerCallback", &SolverType::registerCallback,
            bp::args("self", "cb"), "Add a callback to the solver.")
       .def("clearCallbacks", &SolverType::clearCallbacks, "Clear callbacks.");
+
+  exposeFDDP();
 }
 
 } // namespace python
