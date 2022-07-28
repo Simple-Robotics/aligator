@@ -53,7 +53,7 @@ template <typename _Scalar> struct value_storage {
  *    \end{bmatrix}
  * ]\f
  */
-template <typename Scalar> struct q_function_storage {
+template <typename Scalar> struct q_storage {
 protected:
   int ntot;
 
@@ -78,7 +78,7 @@ public:
   MatrixRef Quy_;
   MatrixRef Qyy_;
 
-  q_function_storage(const int ndx1, const int nu, const int ndx2)
+  q_storage(const int ndx1, const int nu, const int ndx2)
       : ntot(ndx1 + nu + ndx2), storage(ntot + 1, ntot + 1),
         grad_(storage.bottomRows(ntot).col(0)),
         hess_(storage.bottomRightCorner(ntot, ntot)), Qx_(grad_.head(ndx1)),

@@ -50,8 +50,6 @@ template <typename Scalar> struct WorkspaceBaseTpl {
 template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-  using value_storage_t = internal::value_storage<Scalar>;
-  using q_storage_t = internal::q_storage<Scalar>;
   using ProxPenalty = ProximalPenaltyTpl<Scalar>;
   using ProxData = typename ProxPenalty::Data;
   using StageModel = StageModelTpl<Scalar>;
@@ -81,9 +79,9 @@ template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
   std::vector<VectorRef> dlams_;
 
   /// Buffer for KKT matrix
-  MatrixXs kktMatrixFull_;
+  MatrixXs kkt_matrix_buf_;
   /// Buffer for KKT right hand side
-  MatrixXs kktRhsFull_;
+  MatrixXs kkt_rhs_buf_;
 
   /// @name Previous proximal iterates
 
@@ -104,12 +102,12 @@ template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
   explicit WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem);
 
   Eigen::Block<MatrixXs, -1, -1> getKktView(const int nprim, const int ndual) {
-    return kktMatrixFull_.topLeftCorner(nprim + ndual, nprim + ndual);
+    return kkt_matrix_buf_.topLeftCorner(nprim + ndual, nprim + ndual);
   }
 
   Eigen::Block<MatrixXs, -1, -1> getKktRhs(const int nprim, const int ndual,
                                            const int ndx1) {
-    return kktRhsFull_.topLeftCorner(nprim + ndual, ndx1 + 1);
+    return kkt_rhs_buf_.topLeftCorner(nprim + ndual, ndx1 + 1);
   }
 
   template <typename T>
