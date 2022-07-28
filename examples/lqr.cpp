@@ -30,7 +30,7 @@ int main() {
   Eigen::MatrixXd w_x(dim, dim), w_u(nu, nu);
   w_x.setIdentity();
   w_u.setIdentity();
-  w_x(0, 0) = 2.1;
+  w_x(0, 0) = 2.;
   w_u *= 1e-2;
 
   using dynamics::LinearDiscreteDynamicsTpl;
@@ -93,24 +93,22 @@ int main() {
   }
   line_.append("\n");
   for (std::size_t i = 0; i < nsteps + 1; i++) {
-    // fmt::print("x[{:d}] = {}\n", i, results.xs_[i].transpose());
-    fmt::print("x[{:d}] = {}\n", i, results.xs_[i].transpose());
+    fmt::print("x[{: >2d}] = {}\n", i, results.xs_[i].transpose());
   }
   for (std::size_t i = 0; i < nsteps; i++) {
-    // fmt::print("u[{:d}] = {}\n", i, results.us_[i].transpose());
-    fmt::print("u[{:d}] = {}\n", i, results.us_[i].transpose());
+    fmt::print("u[{: >2d}] = {}\n", i, results.us_[i].transpose());
   }
 
   {
     fmt::print("TEST FDDP\n");
     SolverFDDP<double> fddp(TOL, 1e-10, VerboseLevel::VERBOSE);
-    fddp.MAX_ITERS = 20;
+    fddp.MAX_ITERS = 2;
     fddp.setup(problem);
     fddp.run(problem, xs_init, us_init);
     fmt::print("FDDP done.\n");
     const ResultsFDDP<double> &res_fddp = fddp.getResults();
     for (std::size_t i = 0; i < nsteps + 1; i++) {
-      fmt::print("x[{:d}] = {}\n", i, res_fddp.xs_[i].transpose());
+      fmt::print("x[{: >2d}] = {}\n", i, res_fddp.xs_[i].transpose());
     }
   }
 

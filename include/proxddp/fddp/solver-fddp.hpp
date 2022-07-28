@@ -185,37 +185,44 @@ template <typename Scalar> struct SolverFDDP {
       qparam.q_2() = 2 * cd.value_;
       qparam.grad_ = cd.grad_;
       qparam.hess_ = cd.hess_;
-      fmt::print("qparam:\n");
-      fmt::print("grad: {}\n", qparam.grad_.transpose());
-      fmt::print("hess:\n{}\n", qparam.hess_);
 
+      fmt::print("[[NODE t = {:d}]]\n", i);
+      fmt::print("vnext: {}\n", vnext);
       // TODO: implement second-order derivatives for the Q-function
       qparam.grad_.noalias() += J_x_u.transpose() * vnext.Vx_;
       qparam.hess_.noalias() += J_x_u.transpose() * vnext.Vxx_ * J_x_u;
 
       qparam.Quu_.diagonal().array() += ureg_;
+      qparam.storage = qparam.storage.template selfadjointView<Eigen::Lower>();
+
+      fmt::print("qgrad: {}\n", qparam.grad_.transpose());
+      fmt::print("qhess:\n{}\n", qparam.hess_);
 
       /* Compute gains */
+      MatrixXs &kkt_mat = workspace.kkt_matrix_bufs[i];
       MatrixXs &kkt_rhs = workspace.kkt_rhs_bufs[i];
+
+      kkt_mat = qparam.Quu_;
       VectorRef ffwd = results.getFeedforward(i);
       MatrixRef fback = results.getFeedback(i);
       ffwd = -qparam.Qu_;
       fback = -qparam.Qxu_.transpose();
+
       Eigen::LLT<MatrixXs> &llt = workspace.llts_[i];
-      kkt_rhs = qparam.Quu_;
-      llt.compute(workspace.kkt_matrix_bufs[i]);
+      llt.compute(kkt_mat);
       llt.solveInPlace(results.gains_[i]);
+      fmt::print(fmt::fg(fmt::color::yellow), "Gains solution:\n{}\n",
+                 results.gains_[i]);
 
       workspace.Quuks_[i] = qparam.Quu_ * ffwd;
-      fmt::print("{}\n", workspace.Quuks_[i]);
 
       /* Compute value function */
       VParams &vcur = workspace.value_params[i];
       vcur.Vx_ = qparam.Qx_ + fback.transpose() * qparam.Qu_;
-      vcur.Vxx_ = qparam.Qxx_;
-      vcur.Vxx_.noalias() += qparam.Qxu_ * fback;
-      vcur.Vxx_.diagonal().array() += xreg_;
+      vcur.Vxx_ = qparam.Qxx_ + qparam.Qxu_ * fback;
       vcur.Vx_.noalias() += vcur.Vxx_ * workspace.feas_gaps_[i];
+      vcur.Vxx_.diagonal().array() += xreg_;
+      vcur.storage = vcur.storage.template selfadjointView<Eigen::Lower>();
     }
     assert(i == 0);
   }

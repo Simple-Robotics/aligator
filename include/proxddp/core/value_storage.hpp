@@ -90,6 +90,10 @@ public:
         Quy_(hess_.block(ndx1, ndx1 + nu, nu, ndx2)),
         Qyy_(hess_.bottomRightCorner(ndx2, ndx2)) {
     storage.setZero();
+    assert(hess_.rows() == ntot);
+    assert(hess_.cols() == ntot);
+    assert(grad_.rows() == ntot);
+    assert(grad_.cols() == 1);
   }
 };
 
