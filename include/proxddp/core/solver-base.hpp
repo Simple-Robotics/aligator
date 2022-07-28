@@ -51,7 +51,6 @@ void checkTrajectoryAndAssign(
     const typename math_types<Scalar>::VectorOfVectors &us_init,
     typename math_types<Scalar>::VectorOfVectors &xs_out,
     typename math_types<Scalar>::VectorOfVectors &us_out) {
-  using StageModel = StageModelTpl<Scalar>;
   const std::size_t nsteps = problem.numSteps();
   xs_out.resize(nsteps + 1);
   us_out.resize(nsteps);
