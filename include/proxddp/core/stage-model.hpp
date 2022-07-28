@@ -8,6 +8,7 @@
 #include "proxddp/core/cost-abstract.hpp"
 #include "proxddp/core/dynamics.hpp"
 #include "proxddp/core/constraint.hpp"
+#include "proxddp/utils/exceptions.hpp"
 
 #include "proxddp/core/clone.hpp"
 
