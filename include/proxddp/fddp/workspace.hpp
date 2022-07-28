@@ -8,6 +8,7 @@ template <typename Scalar> struct WorkspaceFDDP : WorkspaceBaseTpl<Scalar> {
   using Base = WorkspaceBaseTpl<Scalar>;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base::nsteps;
+  using Base::q_params;
   using Base::trial_us_;
   using Base::trial_xs_;
   using Base::value_params;
@@ -18,7 +19,7 @@ template <typename Scalar> struct WorkspaceFDDP : WorkspaceBaseTpl<Scalar> {
   std::vector<VectorXs> feas_gaps_;
   /// State increment
   std::vector<VectorXs> dxs_;
-
+  std::vector<VectorXs> Quuks_;
   /// Buffer for KKT matrices.
   std::vector<MatrixXs> kkt_matrix_bufs;
   /// Buffer for KKT system right-hand sides.
@@ -32,13 +33,14 @@ template <typename Scalar> struct WorkspaceFDDP : WorkspaceBaseTpl<Scalar> {
 template <typename Scalar>
 WorkspaceFDDP<Scalar>::WorkspaceFDDP(const TrajOptProblemTpl<Scalar> &problem)
     : Base(problem) {
-  feas_gaps_.resize(nsteps + 1);
 
+  xnexts.resize(nsteps + 1);
+  feas_gaps_.resize(nsteps + 1);
+  dxs_.resize(nsteps + 1);
+  Quuks_.resize(nsteps);
   kkt_matrix_bufs.resize(nsteps);
   kkt_rhs_bufs.resize(nsteps);
   llts_.reserve(nsteps);
-  dxs_.resize(nsteps + 1);
-  xnexts.resize(nsteps + 1);
 
   feas_gaps_[0].resize(problem.stages_[0]->ndx1());
 
@@ -48,17 +50,24 @@ WorkspaceFDDP<Scalar>::WorkspaceFDDP(const TrajOptProblemTpl<Scalar> &problem)
     const int nu = sm.nu();
     const int ndual = sm.numDual();
 
-    feas_gaps_[i + 1] = VectorXs::Zero(sm.ndx2());
+    value_params.emplace_back(ndx);
+    q_params.emplace_back(ndx, nu, 0);
+
     kkt_matrix_bufs[i] = MatrixXs::Zero(nu, nu);
     kkt_rhs_bufs[i] = MatrixXs::Zero(nu, ndx + 1);
     llts_.emplace_back(nu);
 
-    dxs_[i] = VectorXs::Zero(ndx);
     xnexts[i] = sm.xspace().neutral();
+    feas_gaps_[i + 1] = VectorXs::Zero(sm.ndx2());
+    dxs_[i] = VectorXs::Zero(ndx);
+    Quuks_[i] = VectorXs::Zero(sm.nu());
   }
   const StageModelTpl<Scalar> &sm = *problem.stages_.back();
   dxs_[nsteps] = VectorXs::Zero(sm.ndx2());
   xnexts[nsteps] = sm.xspace().neutral();
+  value_params.emplace_back(sm.ndx2());
+
+  assert(llts_.size() == nsteps);
 }
 
 } // namespace proxddp
