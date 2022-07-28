@@ -141,7 +141,6 @@ struct StageDataTpl : public Cloneable<StageDataTpl<_Scalar>> {
   /// @brief Check data integrity.
   virtual void checkData() {
     const char msg[] = "StageData integrity check failed.";
-    bool cond = (constraint_data.size() >= 1) && (cost_data != 0);
     if (constraint_data.size() == 0) {
       proxddp_runtime_error(fmt::format("{} (constraint_data empty)", msg));
     }
