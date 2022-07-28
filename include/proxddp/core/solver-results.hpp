@@ -2,29 +2,17 @@
 
 #include "proxddp/core/traj-opt-problem.hpp"
 
-#include <fmt/format.h>
+#include <fmt/core.h>
 #include <ostream>
 
 namespace proxddp {
 
-/// @brief    Results holder struct.
-template <typename _Scalar> struct ResultsTpl {
+template <typename _Scalar> struct ResultsBaseTpl {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
   std::size_t num_iters = 0;
   bool conv = false;
-
-  /// Riccati gains
-  std::vector<MatrixXs> gains_;
-  /// States
-  std::vector<VectorXs> xs_;
-  /// Controls
-  std::vector<VectorXs> us_;
-  /// Problem Lagrange multipliers
-  std::vector<VectorXs> lams_;
-  /// Dynamics' co-states
-  std::vector<VectorRef> co_state_;
 
   Scalar traj_cost_ = 0.;
   Scalar merit_value_ = 0.;
@@ -33,6 +21,30 @@ template <typename _Scalar> struct ResultsTpl {
   Scalar primal_infeasibility = 0.;
   /// Overall dual infeasibility measure for the TrajOptProblemTpl.
   Scalar dual_infeasibility = 0.;
+
+  /// Riccati gains
+  std::vector<MatrixXs> gains_;
+  /// States
+  std::vector<VectorXs> xs_;
+  /// Controls
+  std::vector<VectorXs> us_;
+};
+
+/// @brief    Results holder struct.
+template <typename _Scalar> struct ResultsTpl : ResultsBaseTpl<_Scalar> {
+  using Scalar = _Scalar;
+  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  using Base = ResultsBaseTpl<Scalar>;
+  using Base::conv;
+  using Base::gains_;
+  using Base::num_iters;
+  using Base::us_;
+  using Base::xs_;
+
+  /// Problem Lagrange multipliers
+  std::vector<VectorXs> lams_;
+  /// Dynamics' co-states
+  std::vector<VectorRef> co_state_;
 
   /// @brief    Create the results struct from a problem (TrajOptProblemTpl)
   /// instance.
