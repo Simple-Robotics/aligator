@@ -54,7 +54,7 @@ for i in range(nsteps):
     x = xs_ref[i]
     u = pin.rnea(model, robot.data, x[:nq], x[nq:], target_acc)
     dyn_model.forward(x, u, ddata)
-    xs_ref.append(ddata.xout.copy())
+    xs_ref.append(ddata.xnext.copy())
     us_ref.append(u)
     print(x)
 

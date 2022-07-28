@@ -173,7 +173,7 @@ if True:
 
     mu_init = 1e-7
     rho_init = 1e-10
-    solver = proxddp.ProxDDP(TOLERANCE, mu_init, rho_init=rho_init, max_iters=300)
+    solver = proxddp.SolverProxDDP(TOLERANCE, mu_init, rho_init=rho_init, max_iters=300)
     solver.verbose = proxddp.VerboseLevel.VERBOSE
     solver.bcl_params.rho_factor = 0.1
     solver.setup(prox_problem)

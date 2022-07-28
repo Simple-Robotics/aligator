@@ -179,7 +179,7 @@ rho_init = 1e-2
 verbose = proxddp.VerboseLevel.VERBOSE
 TOL = 1e-3
 MAX_ITER = 200
-solver = proxddp.ProxDDP(
+solver = proxddp.SolverProxDDP(
     TOL, mu_init, rho_init=rho_init, max_iters=MAX_ITER, verbose=verbose
 )
 callback = proxddp.HistoryCallback()

@@ -282,7 +282,7 @@ mu_init = 1e-1
 rho_init = 1e-8
 verbose = proxddp.VerboseLevel.VERBOSE
 history_cb = proxddp.HistoryCallback()
-solver = proxddp.ProxDDP(tol, mu_init, rho_init, verbose=verbose, max_iters=400)
+solver = proxddp.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose, max_iters=400)
 solver.bcl_params.rho_factor = 0.1
 solver.registerCallback(history_cb)
 solver.setup(problem)

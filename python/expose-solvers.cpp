@@ -137,7 +137,7 @@ void exposeSolvers() {
   }
 
   bp::class_<SolverType, boost::noncopyable>(
-      "ProxDDP",
+      "SolverProxDDP",
       "A primal-dual augmented Lagrangian solver, based on DDP to compute "
       "search directions."
       " The solver instance initializes both a Workspace and Results which can "

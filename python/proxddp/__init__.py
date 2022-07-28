@@ -13,6 +13,7 @@ def _process():
     from . import pyproxddp
 
     lib_name = "proxddp"
+    setattr(sys.modules[lib_name], "ProxDDP", SolverProxDDP)  # noqa
     submodules = inspect.getmembers(pyproxddp, inspect.ismodule)
     for mod_info in submodules:
         mod_name = "{}.{}".format(lib_name, mod_info[0])

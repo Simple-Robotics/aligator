@@ -62,7 +62,7 @@ for i in range(nsteps):
 
 mu_init = 1e-2
 verbose = proxddp.VerboseLevel.VERBOSE
-solver = proxddp.ProxDDP(1e-6, mu_init, verbose=verbose)
+solver = proxddp.SolverProxDDP(1e-6, mu_init, verbose=verbose)
 solver.max_iters = 100
 
 u0 = np.zeros(nu)

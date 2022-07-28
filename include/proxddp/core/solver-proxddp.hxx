@@ -265,8 +265,8 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
     cstr_set.normalConeProjection(lam_expr, lamplus_j);
     lampdal_j = 2 * lamplus_j - lam_inn_j;
 
-    qparam.grad_ += cstr_data.jac_buffer_.transpose() * lam_inn_j;
-    qparam.hess_ += cstr_data.vhp_buffer_;
+    qparam.grad_.noalias() += cstr_data.jac_buffer_.transpose() * lam_inn_j;
+    qparam.hess_.noalias() += cstr_data.vhp_buffer_;
 
     // update the KKT jacobian columns
     cstr_mgr.getBlockByConstraint(kkt_jac, j) =

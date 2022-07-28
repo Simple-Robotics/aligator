@@ -299,7 +299,9 @@ def test_constraint_dynamics():
     verbose = proxddp.VerboseLevel.VERBOSE
     rho_init = 0.003
     history_cb = proxddp.HistoryCallback()
-    solver = proxddp.ProxDDP(tol, mu_init, rho_init, verbose=verbose, max_iters=300)
+    solver = proxddp.SolverProxDDP(
+        tol, mu_init, rho_init, verbose=verbose, max_iters=300
+    )
     solver.registerCallback(history_cb)
     solver.setup(problem)
     conv = solver.run(problem, xs_init, us_init)
