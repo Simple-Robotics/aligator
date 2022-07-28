@@ -12,7 +12,7 @@ void exposeUtils() {
       const context::VectorXs &, const context::VectorOfVectors &);
 
   using rollout_vec_generic_t = context::VectorOfVectors (*)(
-      const context::Manifold &, const std::vector<const DynamicsType *>,
+      const context::Manifold &, const std::vector<const DynamicsType *> &,
       const context::VectorXs &, const context::VectorOfVectors &);
 
   using rollout_explicit_t = context::VectorOfVectors (*)(

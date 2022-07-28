@@ -19,14 +19,13 @@ struct __forward_dyn {
                   const typename math_types<T>::ConstVectorRef &u,
                   DynamicsDataTpl<T> &data,
                   typename math_types<T>::VectorRef xout) const {
-    const auto *model_ptr_cast =
+    auto *model_ptr_cast =
         dynamic_cast<const ExplicitDynamicsModelTpl<T> *>(&model);
-    const auto *data_ptr_cast =
-        dynamic_cast<ExplicitDynamicsDataTpl<T> *>(&data);
+    auto *data_ptr_cast = dynamic_cast<ExplicitDynamicsDataTpl<T> *>(&data);
     bool check = (model_ptr_cast != nullptr) && (data_ptr_cast != nullptr);
     if (check) {
       // safely deref to an ExplicitDynamicsModelTpl
-      this->operator()(*model_ptr_cast, x, u, *data_ptr_cast, xout);
+      (*this)(space, *model_ptr_cast, x, u, *data_ptr_cast, xout);
     } else {
       using ConstVectorRef = typename math_types<T>::ConstVectorRef;
       auto fun = [&](const ConstVectorRef &xnext) {
