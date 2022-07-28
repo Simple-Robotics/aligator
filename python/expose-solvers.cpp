@@ -70,7 +70,9 @@ void exposeFDDP() {
       .def_readwrite("max_iters", &SolverType::MAX_ITERS)
       .def("setup", &SolverType::setup, bp::args("self", "problem"),
            "Setup a problem.")
-      .def("run", &SolverType::run);
+      .def("run", &SolverType::run,
+           (bp::arg("self"), bp::arg("problem"), bp::arg("xs_init"),
+            bp::arg("us_init")));
 }
 
 void exposeSolvers() {
