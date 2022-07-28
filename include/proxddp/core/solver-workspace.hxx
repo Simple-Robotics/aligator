@@ -6,8 +6,7 @@ namespace proxddp {
 
 template <typename Scalar>
 WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
-    : nsteps(problem.numSteps()), problem_data(problem),
-      trial_prob_data(problem), inner_criterion_by_stage(nsteps + 1),
+    : Base(problem), inner_criterion_by_stage(nsteps + 1),
       primal_infeas_by_stage(nsteps), dual_infeas_by_stage(nsteps + 1) {
 
   inner_criterion_by_stage.setZero();
@@ -18,14 +17,13 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   q_params.reserve(nsteps);
   prox_datas.reserve(nsteps + 1);
 
+  prev_xs_ = trial_xs_;
+  prev_us_ = trial_us_;
+
   lams_plus_.reserve(nsteps + 1);
   lams_pdal_.reserve(nsteps + 1);
 
-  trial_xs_.reserve(nsteps + 1);
-  trial_us_.reserve(nsteps);
   trial_lams_.reserve(nsteps + 1);
-  prev_xs_.reserve(nsteps + 1);
-  prev_us_.reserve(nsteps);
   prev_lams_.reserve(nsteps + 1);
 
   int nprim, ndual, ndx1, nu, ndx2;
@@ -62,19 +60,13 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     lams_plus_.push_back(VectorXs::Zero(ndual));
     lams_pdal_.push_back(lams_plus_.back());
 
-    trial_xs_.push_back(stage.xspace_->neutral());
-    trial_us_.push_back(stage.uspace_->neutral());
     trial_lams_.push_back(VectorXs::Zero(ndual));
 
-    prev_xs_.push_back(trial_xs_.back());
-    prev_us_.push_back(trial_us_.back());
     prev_lams_.push_back(trial_lams_.back());
 
     /** terminal node **/
     if (i == nsteps - 1) {
       value_params.push_back(value_storage_t(ndx2));
-      trial_xs_.push_back(VectorXs::Zero(stage.nx2()));
-      prev_xs_.push_back(trial_xs_.back());
     }
 
     max_kkt_size = std::max(max_kkt_size, nprim + ndual);

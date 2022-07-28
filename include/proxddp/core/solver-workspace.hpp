@@ -11,33 +11,68 @@
 
 namespace proxddp {
 
+template <typename Scalar> struct WorkspaceBaseTpl {
+  using value_storage_t = internal::value_storage<Scalar>;
+  using q_storage_t = internal::q_storage<Scalar>;
+  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+
+  /// Number of steps in the problem.
+  const std::size_t nsteps;
+  /// Problem data.
+  TrajOptDataTpl<Scalar> problem_data;
+  /// @name Linesearch data
+  /// Problem data instance for linesearch.
+  TrajOptDataTpl<Scalar> trial_prob_data;
+  std::vector<VectorXs> trial_xs_;
+  std::vector<VectorXs> trial_us_;
+
+  /// @name Value function and Hamiltonian.
+  /// Value function parameter storage
+  std::vector<value_storage_t> value_params;
+  /// Q-function storage
+  std::vector<q_storage_t> q_params;
+
+  explicit WorkspaceBaseTpl(const TrajOptProblemTpl<Scalar> &problem)
+      : nsteps(problem.numSteps()), problem_data(problem),
+        trial_prob_data(problem) {
+    trial_xs_.resize(nsteps + 1);
+    trial_us_.resize(nsteps);
+    xs_default_init(problem, trial_xs_);
+    for (std::size_t i = 0; i < nsteps; i++) {
+      const StageModelTpl<Scalar> &sm = *problem.stages_[i];
+      trial_us_[i] = sm.uspace().neutral();
+    }
+  }
+};
+
 /** @brief Workspace for the solver.
  *
  * @details This struct holds data for the Riccati forward and backward passes,
  *          the primal-dual steps, problem data...
  */
-template <typename _Scalar> struct WorkspaceTpl {
+template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using value_storage_t = internal::value_storage<Scalar>;
-  using q_storage_t = internal::q_function_storage<Scalar>;
+  using q_storage_t = internal::q_storage<Scalar>;
   using ProxPenalty = ProximalPenaltyTpl<Scalar>;
   using ProxData = typename ProxPenalty::Data;
   using StageModel = StageModelTpl<Scalar>;
+  using Base = WorkspaceBaseTpl<Scalar>;
 
-  const std::size_t nsteps;
+  using Base::nsteps;
+  using Base::problem_data;
+  using Base::q_params;
+  using Base::trial_prob_data;
+  using Base::trial_us_;
+  using Base::trial_xs_;
+  using Base::value_params;
 
-  TrajOptDataTpl<Scalar> problem_data;
-  TrajOptDataTpl<Scalar> trial_prob_data;
-
-  /// Value function parameter storage
-  std::vector<value_storage_t> value_params;
-
-  /// Q-function storage
-  std::vector<q_storage_t> q_params;
-
+  /// Proximal penalty data.
   std::vector<shared_ptr<ProxData>> prox_datas;
 
+  /// Lagrange multipliers for ALM & linesearch.
+  std::vector<VectorXs> trial_lams_;
   std::vector<VectorXs> lams_plus_;
   std::vector<VectorXs> lams_pdal_;
 
@@ -52,10 +87,6 @@ template <typename _Scalar> struct WorkspaceTpl {
   MatrixXs kktMatrixFull_;
   /// Buffer for KKT right hand side
   MatrixXs kktRhsFull_;
-
-  std::vector<VectorXs> trial_xs_;
-  std::vector<VectorXs> trial_us_;
-  std::vector<VectorXs> trial_lams_;
 
   /// @name Previous proximal iterates
 
