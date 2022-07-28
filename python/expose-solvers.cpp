@@ -1,9 +1,70 @@
 #include "proxddp/python/fwd.hpp"
 
 #include "proxddp/core/solver-proxddp.hpp"
+#include "proxddp/fddp/solver-fddp.hpp"
 
 namespace proxddp {
 namespace python {
+
+void exposeBase() {
+  using context::Scalar;
+
+  using QParams = proxddp::internal::q_storage<Scalar>;
+  using VParams = proxddp::internal::value_storage<Scalar>;
+  bp::class_<QParams>("QParams", "Q-function parameters.", bp::no_init)
+      .def_readonly("storage", &QParams::storage)
+      .add_property(
+          "grad_",
+          bp::make_getter(&QParams::grad_,
+                          bp::return_value_policy<bp::return_by_value>()))
+      .add_property(
+          "hess_",
+          bp::make_getter(&QParams::hess_,
+                          bp::return_value_policy<bp::return_by_value>()));
+
+  bp::class_<VParams>("VParams", "Value function parameters.", bp::no_init)
+      .def_readonly("storage", &VParams::storage);
+
+  pinpy::StdVectorPythonVisitor<std::vector<QParams>, true>::expose(
+      "StdVec_QParams");
+  pinpy::StdVectorPythonVisitor<std::vector<VParams>, true>::expose(
+      "StdVec_VParams");
+
+  using WorkspaceBase = WorkspaceBaseTpl<Scalar>;
+  bp::class_<WorkspaceBase>("WorkspaceBase", bp::no_init)
+      .def_readonly("nsteps", &WorkspaceBase::nsteps)
+      .def_readonly("problem_data", &WorkspaceBase::problem_data)
+      .def_readonly("trial_prob_data", &WorkspaceBase::trial_prob_data)
+      .def_readonly("trial_xs", &WorkspaceBase::trial_xs_)
+      .def_readonly("trial_us", &WorkspaceBase::trial_us_)
+      .def_readonly("value_params", &WorkspaceBase::value_params)
+      .def_readonly("q_params", &WorkspaceBase::q_params);
+
+  using ResultsBase = ResultsBaseTpl<Scalar>;
+  bp::class_<ResultsBase>("ResultsBase", "Base results struct.", bp::no_init)
+      .def_readonly("num_iters", &ResultsBase::num_iters,
+                    "Number of solver iterations.")
+      .def_readonly("conv", &ResultsBase::conv)
+      .def_readonly("gains", &ResultsBase::gains_)
+      .def_readonly("xs", &ResultsBase::xs_)
+      .def_readonly("us", &ResultsBase::us_);
+}
+
+void exposeFDDP() {
+  using context::Manifold;
+  using context::Scalar;
+  using SolverType = SolverFDDP<Scalar>;
+
+  bp::class_<SolverType, boost::noncopyable>(
+      "SolverFDDP", "An implementation of the FDDP solver from Crocoddyl.",
+      bp::init<Scalar, Scalar, bp::optional<VerboseLevel>>(
+          bp::args("self", "tol", "reg_init", "verbose")))
+      .def_readwrite("reg_min", &SolverType::reg_min_)
+      .def_readwrite("reg_max", &SolverType::reg_max_)
+      .def_readwrite("verbose", &SolverType::verbose_)
+      .def_readwrite("max_iters", &SolverType::MAX_ITERS)
+      .def("run", &SolverType::run);
+}
 
 void exposeSolvers() {
   using context::Scalar;
@@ -11,49 +72,24 @@ void exposeSolvers() {
   using Workspace = WorkspaceTpl<Scalar>;
   using Results = ResultsTpl<Scalar>;
 
-  {
-    using QParams = proxddp::internal::q_function_storage<Scalar>;
-    using VParams = proxddp::internal::value_storage<Scalar>;
-    bp::class_<QParams>("QParams", "Q-function parameters.", bp::no_init)
-        .def_readonly("storage", &QParams::storage)
-        .add_property(
-            "grad_",
-            bp::make_getter(&QParams::grad_,
-                            bp::return_value_policy<bp::return_by_value>()))
-        .add_property(
-            "hess_",
-            bp::make_getter(&QParams::hess_,
-                            bp::return_value_policy<bp::return_by_value>()));
-    pinpy::StdVectorPythonVisitor<std::vector<QParams>, true>::expose(
-        "StdVec_QParams");
+  exposeBase();
 
-    bp::class_<VParams>("VParams", "Value function parameters.", bp::no_init)
-        .def_readonly("storage", &VParams::storage);
-    pinpy::StdVectorPythonVisitor<std::vector<VParams>, true>::expose(
-        "StdVec_VParams");
-  }
-
-  bp::class_<Workspace>(
+  bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>>(
       "Workspace", "Workspace for ProxDDP.",
       bp::init<const TrajOptProblem &>(bp::args("self", "problem")))
-      .def_readonly("value_params", &Workspace::value_params)
-      .def_readonly("q_params", &Workspace::q_params)
-      .def_readonly("value_params", &Workspace::value_params)
-      .def_readonly("kkt_matrix_buffer_", &Workspace::kktMatrixFull_)
+      .def_readonly("kkt_matrix_", &Workspace::kkt_matrix_buf_)
+      .def_readonly("kkt_rhs_", &Workspace::kkt_rhs_buf_)
       .def_readonly("inner_crit", &Workspace::inner_criterion)
       .def_readonly("prim_infeas_by_stage", &Workspace::primal_infeas_by_stage)
       .def_readonly("dual_infeas_by_stage", &Workspace::dual_infeas_by_stage)
       .def_readonly("inner_criterion_by_stage",
                     &Workspace::inner_criterion_by_stage)
-      .def_readonly("problem_data", &Workspace::problem_data)
       .def_readonly("prox_datas", &Workspace::prox_datas)
       .def(PrintableVisitor<Workspace>());
 
-  bp::class_<Results>("Results", "Results struct for proxDDP.",
-                      bp::init<const TrajOptProblem &>())
-      .def_readonly("gains", &Results::gains_)
-      .def_readonly("xs", &Results::xs_)
-      .def_readonly("us", &Results::us_)
+  bp::class_<Results, bp::bases<ResultsBaseTpl<Scalar>>>(
+      "Results", "Results struct for proxDDP.",
+      bp::init<const TrajOptProblem &>())
       .def_readonly("lams", &Results::lams_)
       .def_readonly("co_state", &Results::co_state_)
       .def_readonly("primal_infeas", &Results::primal_infeasibility)
@@ -61,8 +97,6 @@ void exposeSolvers() {
       .def_readonly("traj_cost", &Results::traj_cost_, "Trajectory cost.")
       .def_readonly("merit_value", &Results::merit_value_,
                     "Merit function value.")
-      .def_readonly("num_iters", &Results::num_iters,
-                    "Number of solver iterations.")
       .def(PrintableVisitor<Results>());
 
   using SolverType = SolverProxDDP<Scalar>;
