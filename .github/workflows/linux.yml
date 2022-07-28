@@ -5,7 +5,7 @@ on: [push,pull_request]
 jobs:
   proxddp:
 
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     env:
       CCACHE_DIR: /github/home/.ccache
@@ -38,91 +38,39 @@ jobs:
     - name: Debug
       run: echo ${{ env.BRANCH_NAME }}
 
-    - name: Register robotpkg
-      run: |
-        sudo sh -c "echo \"deb [arch=amd64] http://robotpkg.openrobots.org/packages/debian/pub $(lsb_release -cs) robotpkg\" >> /etc/apt/sources.list "
-        sudo apt-key adv --fetch-keys http://robotpkg.openrobots.org/packages/debian/robotpkg.key
+    - name: Checkout proxNLP
+      uses: actions/checkout@v3
+      with:
+        ref: main
+        fetch-depth: 0
+        path: ./proxnlp
+        submodules: recursive
+        repository: Simple-Robotics/proxnlp
+        token: ${{ secrets.PROXNLP_TOKEN }}
 
-    - name: Apt install dependencies
-      run: |
-        export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-        sudo rm -rf /usr/local/share/boost/1.69.0
-        export PYTHON3_VERSION=$(python3 -c "import sys; print(str(sys.version_info.major)+str(sys.version_info.minor))")
-        export APT_DEPENDENCIES="doxygen libboost-system-dev libboost-test-dev libboost-filesystem-dev libboost-program-options-dev libboost-chrono-dev libboost-serialization-dev libboost-timer-dev libeigen3-dev liburdfdom-dev texlive-font-utils libassimp-dev liboctomap-dev libfmt-dev libbenchmark-dev"
-        export APT_DEPENDENCIES=$APT_DEPENDENCIES" libboost-python-dev python3-numpy"
-        echo $APT_DEPENDENCIES
-        sudo apt-get update -qq
-        sudo apt-get install -qq curl cppcheck ${APT_DEPENDENCIES}
-        sudo apt install libomp-dev libomp5
-
-    - name: Free disk space
-      run: |
-        sudo apt clean
-        df -h
-
-    - name: Install eigenpy and hppfcl
-      run: |
-        export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-        export PYTHONPATH="/usr/local/lib/python3/dist-packages:$PYTHONPATH"
-        cd $CI_PROJECT_DIR
-        git clone --recursive https://github.com/stack-of-tasks/eigenpy.git
-        cd eigenpy
-        git checkout devel
-        mkdir build
-        cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
-        sudo make -j3 install
-        cd ../../
-        git clone --recursive https://github.com/humanoid-path-planner/hpp-fcl.git
-        cd hpp-fcl
-        git checkout devel
-        mkdir build
-        cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release
-        sudo make -j3 install
-
-    - name: Install pinocchio
-      run: |
-        export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-        export PYTHONPATH="/usr/local/lib/python3/dist-packages:$PYTHONPATH"
-        cd $CI_PROJECT_DIR
-        git clone --recursive https://fschramm:glpat-s3eMnUQhcDyCy987VsdY@gitlab.inria.fr/jucarpen/pinocchio.git
-        cd pinocchio
-        git checkout pinocchio-3x
-        cd cmake
-        git checkout master
-        cd ..
-        mkdir build
-        cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_PYTHON_INTERFACE=OFF -DBUILD_WITH_COLLISION_SUPPORT=ON -DBUILD_WITH_SDF_SUPPORT=OFF -DBUILD_ADVANCED_TESTING=OFF -DBUILD_PYTHON_BINDINGS_WITH_BOOST_MPFR_SUPPORT=OFF -DBUILD_WITH_CASADI_SUPPORT=OFF -DPYTHON_EXECUTABLE=$(which python3) -DBUILD_WITH_OPENMP_SUPPORT=OFF -DCMAKE_VERBOSE_MAKEFILE=False
-        sudo make -j2 install
 
     - name: Install proxnlp
       run: |
-        export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-        export PYTHONPATH="/usr/local/lib/python3/dist-packages:$PYTHONPATH"
-        cd $CI_PROJECT_DIR
-
-        git clone --recursive https://fabinsch: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@github.com/Simple-Robotics/proxnlp.git
-        cd proxnlp
+        cd $GITHUB_WORKSPACE/proxnlp
         mkdir build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release
-        sudo make -j3 install
+        cmake .. -DCMAKE_INSTALL_PREFIX=~/custom_install -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DINSTALL_DOCUMENTATION=OFF
+        make -j3 install
+
+        echo "PYTHONPATH=/builds/custom_install/lib/python3/dist-packages/" >> $GITHUB_ENV
+        echo "CTEST_OUTPUT_ON_FAILURE=1" >> $GITHUB_ENV
+        echo "CTEST_PARALLEL_LEVEL=4" >> $GITHUB_ENV
 
     - name: Build proxddp and test
       run: |
-        export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-        export PYTHONPATH="/usr/local/lib/python3/dist-packages:$PYTHONPATH"
         cd $GITHUB_WORKSPACE
-
         mkdir build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release
-        sudo make -j3 install
+        cmake .. -DCMAKE_INSTALL_PREFIX=~/custom_install -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DINSTALL_DOCUMENTATION=OFF -DBUILD_CROCODDYL_COMPAT=ON
+        make -j3 install
         make test
 
-    - name: Uninstall project
-      run: |
-        cd build
-        sudo make uninstall
+    # - name: Uninstall project
+    #   run: |
+    #     cd build
+    #     sudo make uninstall
