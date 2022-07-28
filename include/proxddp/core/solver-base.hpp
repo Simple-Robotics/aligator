@@ -19,12 +19,27 @@ void xs_default_init(const TrajOptProblemTpl<Scalar> &problem,
                      std::vector<typename math_types<Scalar>::VectorXs> &xs) {
   using Manifold = ManifoldAbstractTpl<Scalar>;
   const std::size_t nsteps = problem.numSteps();
+  xs.resize(nsteps + 1);
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModelTpl<Scalar> &sm = *problem.stages_[i];
     xs[i] = sm.xspace().neutral();
   }
   const Manifold &space = problem.stages_.back()->xspace_next();
   xs[nsteps] = space.neutral();
+}
+
+/// @brief Default-initialize a controls trajectory from the neutral element of
+/// each control space.
+template <typename Scalar>
+void us_default_init(const TrajOptProblemTpl<Scalar> &problem,
+                     std::vector<typename math_types<Scalar>::VectorXs> &us) {
+  using Manifold = ManifoldAbstractTpl<Scalar>;
+  const std::size_t nsteps = problem.numSteps();
+  us.resize(nsteps);
+  for (std::size_t i = 0; i < nsteps; i++) {
+    const StageModelTpl<Scalar> &sm = *problem.stages_[i];
+    us[i] = sm.uspace().neutral();
+  }
 }
 
 /// @brief Check the input state-control trajectory is a consistent warm-start
@@ -49,10 +64,7 @@ void checkTrajectoryAndAssign(
     xs_out = xs_init;
   }
   if (us_init.size() == 0) {
-    for (std::size_t i = 0; i < nsteps; i++) {
-      const StageModel &sm = *problem.stages_[i];
-      us_out[i] = sm.uspace().neutral();
-    }
+    us_default_init(problem, us_out);
   } else {
     if (us_init.size() != nsteps) {
       proxddp_runtime_error("warm-start for us has wrong size!")
