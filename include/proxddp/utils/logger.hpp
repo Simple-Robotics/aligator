@@ -21,12 +21,12 @@ struct LogRecord {
 };
 
 struct CustomLogger {
-  unsigned int COL_WIDTH_0 = 6;
-  unsigned int COL_WIDTH = 10;
-  static constexpr const char fstr[] = "{: ^{}s}";
-  static constexpr const char int_format[] = "{: >{}d}";
-  static constexpr const char sci_format[] = "{: > {}.{}e}";
-  static constexpr const char dbl_format[] = "{: > {}.{}g}";
+  static constexpr unsigned int COL_WIDTH_0 = 6;
+  static constexpr unsigned int COL_WIDTH = 10;
+  static constexpr char fstr[] = "{: ^{}s}";
+  static constexpr char int_format[] = "{: >{}d}";
+  static constexpr char sci_format[] = "{: > {}.{}e}";
+  static constexpr char dbl_format[] = "{: > {}.{}g}";
 
   void start() {
     std::vector<std::string> v;
@@ -54,5 +54,10 @@ struct CustomLogger {
     fmt::print("{}\n", fmt::join(v, " | "));
   }
 };
+
+constexpr char CustomLogger::fstr[];
+constexpr char CustomLogger::int_format[];
+constexpr char CustomLogger::sci_format[];
+constexpr char CustomLogger::dbl_format[];
 
 } // namespace proxddp
