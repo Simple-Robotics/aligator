@@ -26,10 +26,12 @@ def test_compute_jac_vs():
     assert np.allclose(fdata1.Jx, fdata1b.Jx, 1e-2)
     assert np.allclose(fdata1.Ju, fdata1b.Ju, 1e-2)
     assert np.allclose(fdata1.Jy, fdata1b.Jy, 1e-2)
-    
+
+
 def test_compute_jac_multibody():
     try:
         import pinocchio as pin
+
         model = pin.buildSampleModelHumanoid()
         space = manifolds.MultibodyConfiguration(model)
         nx = space.nx

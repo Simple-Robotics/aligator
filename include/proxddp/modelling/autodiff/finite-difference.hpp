@@ -86,8 +86,8 @@ struct finite_difference_impl<_Scalar, TOC1> : virtual StageFunctionTpl<_Scalar>
     VectorXs uminus= u;
     for (int i = 0; i < func.nu; i++) {
       eui(i) = fd_eps;
-      space.integrate(u, eui, uplus);
-      space.integrate(u, -eui, uminus);
+      uplus = u + eui;
+      uminus = u - eui;
       func.evaluate(x, uplus, y, data);
       vplus = data.value_;
       func.evaluate(x, uminus, y, data);
