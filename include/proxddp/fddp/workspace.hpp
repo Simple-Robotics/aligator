@@ -14,7 +14,7 @@ template <typename Scalar> struct WorkspaceFDDPTpl : WorkspaceBaseTpl<Scalar> {
   using Base::value_params;
 
   /// Value of `f(x_i, u_i)`
-  std::vector<VectorXs> xnexts;
+  std::vector<VectorXs> xnexts_;
   /// Feasibility gaps
   std::vector<VectorXs> feas_gaps_;
   /// State increment
@@ -35,7 +35,7 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
     const TrajOptProblemTpl<Scalar> &problem)
     : Base(problem) {
 
-  xnexts.resize(nsteps + 1);
+  xnexts_.resize(nsteps);
   feas_gaps_.resize(nsteps + 1);
   dxs_.resize(nsteps + 1);
   Quuks_.resize(nsteps);
@@ -43,7 +43,7 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
   kkt_rhs_bufs.resize(nsteps);
   llts_.reserve(nsteps);
 
-  feas_gaps_[0].resize(problem.stages_[0]->ndx1());
+  feas_gaps_[0] = VectorXs::Zero(problem.stages_[0]->ndx1());
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModelTpl<Scalar> &sm = *problem.stages_[i];
@@ -54,18 +54,17 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
     value_params.emplace_back(ndx);
     q_params.emplace_back(ndx, nu, 0);
 
+    xnexts_[i] = sm.xspace().neutral();
+    feas_gaps_[i + 1] = VectorXs::Zero(sm.ndx2());
+    dxs_[i] = VectorXs::Zero(ndx);
+
+    Quuks_[i] = VectorXs::Zero(sm.nu());
     kkt_matrix_bufs[i] = MatrixXs::Zero(nu, nu);
     kkt_rhs_bufs[i] = MatrixXs::Zero(nu, ndx + 1);
     llts_.emplace_back(nu);
-
-    xnexts[i] = sm.xspace().neutral();
-    feas_gaps_[i + 1] = VectorXs::Zero(sm.ndx2());
-    dxs_[i] = VectorXs::Zero(ndx);
-    Quuks_[i] = VectorXs::Zero(sm.nu());
   }
   const StageModelTpl<Scalar> &sm = *problem.stages_.back();
   dxs_[nsteps] = VectorXs::Zero(sm.ndx2());
-  xnexts[nsteps] = sm.xspace().neutral();
   value_params.emplace_back(sm.ndx2());
 
   assert(llts_.size() == nsteps);
