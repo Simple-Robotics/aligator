@@ -9,6 +9,9 @@ namespace proxddp {
 const std::vector<std::string> BASIC_KEYS{"iter",     "step_size", "inner_crit",
                                           "prim_err", "dual_err",  "dphi0",
                                           "merit"};
+constexpr char int_format[] = "{: >{}d}";
+constexpr char sci_format[] = "{: > {}.{}e}";
+constexpr char dbl_format[] = "{: > {}.{}g}";
 
 struct LogRecord {
   unsigned int iter;
@@ -23,12 +26,9 @@ struct LogRecord {
 struct CustomLogger {
   static constexpr unsigned int COL_WIDTH_0 = 6;
   static constexpr unsigned int COL_WIDTH = 10;
-  static constexpr char fstr[] = "{: ^{}s}";
-  static constexpr char int_format[] = "{: >{}d}";
-  static constexpr char sci_format[] = "{: > {}.{}e}";
-  static constexpr char dbl_format[] = "{: > {}.{}g}";
 
   void start() {
+    static constexpr char fstr[] = "{: ^{}s}";
     std::vector<std::string> v;
     auto it = BASIC_KEYS.begin();
     v.push_back(fmt::format(fstr, *it, COL_WIDTH_0));
@@ -54,10 +54,5 @@ struct CustomLogger {
     fmt::print("{}\n", fmt::join(v, " | "));
   }
 };
-
-constexpr char CustomLogger::fstr[];
-constexpr char CustomLogger::int_format[];
-constexpr char CustomLogger::sci_format[];
-constexpr char CustomLogger::dbl_format[];
 
 } // namespace proxddp
