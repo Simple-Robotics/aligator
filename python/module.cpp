@@ -73,6 +73,7 @@ BOOST_PYTHON_MODULE(pyproxddp) {
   exposeUtils();
   exposeSolvers();
   exposeCallbacks();
+  exposeAutodiff();
 
 #ifdef WITH_CROCODDYL_COMPAT
   exposeCrocoddylCompat();
