@@ -24,22 +24,25 @@ def test_abstract():
 
 
 def test_multibody_free():
-    import pinocchio as pin
+    try:
+        import pinocchio as pin
 
-    model = pin.buildSampleModelHumanoid()
-    space = manifolds.MultibodyPhaseSpace(model)
-    nu = model.nv
-    B = np.eye(nu)
-    ode = dynamics.MultibodyFreeFwdDynamics(space, B)
-    data = ode.createData()
-    assert isinstance(data, dynamics.MultibodyFreeFwdData)
-    assert hasattr(data, "tau")
+        model = pin.buildSampleModelHumanoid()
+        space = manifolds.MultibodyPhaseSpace(model)
+        nu = model.nv
+        B = np.eye(nu)
+        ode = dynamics.MultibodyFreeFwdDynamics(space, B)
+        data = ode.createData()
+        assert isinstance(data, dynamics.MultibodyFreeFwdData)
+        assert hasattr(data, "tau")
 
-    x0 = space.neutral()
-    u0 = np.random.randn(nu)
+        x0 = space.neutral()
+        u0 = np.random.randn(nu)
 
-    ode.forward(x0, u0, data)
-    ode.dForward(x0, u0, data)
+        ode.forward(x0, u0, data)
+        ode.dForward(x0, u0, data)
+    except ImportError:
+        pass
 
     # compare with croc
     try:

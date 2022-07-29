@@ -85,16 +85,19 @@ def finite_difference_explicit_dyn(dyn: dynamics.IntegratorAbstract, x0, u0, eps
 
 
 def create_multibody_ode():
-    import pinocchio as pin
+    try:
+        import pinocchio as pin
 
-    model = pin.buildSampleModelHumanoid()
-    space = manifolds.MultibodyPhaseSpace(model)
-    nu = model.nv
-    B = np.eye(nu)
-    ode = dynamics.MultibodyFreeFwdDynamics(space, B)
-    data = ode.createData()
-    assert isinstance(data, dynamics.MultibodyFreeFwdData)
-    return ode
+        model = pin.buildSampleModelHumanoid()
+        space = manifolds.MultibodyPhaseSpace(model)
+        nu = model.nv
+        B = np.eye(nu)
+        ode = dynamics.MultibodyFreeFwdDynamics(space, B)
+        data = ode.createData()
+        assert isinstance(data, dynamics.MultibodyFreeFwdData)
+        return ode
+    except ImportError:
+        return None
 
 
 def create_linear_ode(nx, nu):
@@ -123,6 +126,8 @@ def create_linear_ode(nx, nu):
 )
 def test_explicit_integrator_combinations(ode, integrator):
     dt = 0.1
+    if ode is None:
+        return True
     dyn = integrator(ode, dt)
     ode_int_run(ode, dyn)
 
