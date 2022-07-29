@@ -29,17 +29,16 @@ struct finite_difference_impl;
 template <typename _Scalar>
 struct finite_difference_impl<_Scalar, TOC1> : virtual StageFunctionTpl<_Scalar> {
   PROXNLP_FUNCTION_TYPEDEFS(_Scalar);
-  using FuncType = BaseFunctionTpl<_Scalar>;
   using Base = StageFunctionTpl<_Scalar>;
   using Base::computeJacobians;
 
   const ManifoldAbstractTpl<_Scalar> &space;
-  const FuncType &func;
+  const Base &func;
   _Scalar fd_eps;
 
   finite_difference_impl(const ManifoldAbstractTpl<_Scalar> &space,
-                         const FuncType &func, const _Scalar fd_eps)
-      : StageFunctionTpl<_Scalar>(func.ndx1(), func.nu(), func.ndx2(), func.nr()), space(space),
+                         const Base &func, const _Scalar fd_eps)
+      : Base(func.ndx1(), func.nu(), func.ndx2(), func.nr()), space(space),
         func(func), fd_eps(fd_eps) {}
 
   void computeJacobians(const ConstVectorRef &x, MatrixRef Jout) const override {
