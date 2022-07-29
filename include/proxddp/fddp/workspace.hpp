@@ -4,7 +4,7 @@
 
 namespace proxddp {
 
-template <typename Scalar> struct WorkspaceFDDP : WorkspaceBaseTpl<Scalar> {
+template <typename Scalar> struct WorkspaceFDDPTpl : WorkspaceBaseTpl<Scalar> {
   using Base = WorkspaceBaseTpl<Scalar>;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base::nsteps;
@@ -27,11 +27,12 @@ template <typename Scalar> struct WorkspaceFDDP : WorkspaceBaseTpl<Scalar> {
   /// LLT struct for each KKT system.
   std::vector<Eigen::LLT<MatrixXs>> llts_;
 
-  explicit WorkspaceFDDP(const TrajOptProblemTpl<Scalar> &problem);
+  explicit WorkspaceFDDPTpl(const TrajOptProblemTpl<Scalar> &problem);
 };
 
 template <typename Scalar>
-WorkspaceFDDP<Scalar>::WorkspaceFDDP(const TrajOptProblemTpl<Scalar> &problem)
+WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
+    const TrajOptProblemTpl<Scalar> &problem)
     : Base(problem) {
 
   xnexts.resize(nsteps + 1);

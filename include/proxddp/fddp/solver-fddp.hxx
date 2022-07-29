@@ -5,7 +5,8 @@
 namespace proxddp {
 
 template <typename Scalar>
-ResultsFDDP<Scalar>::ResultsFDDP(const TrajOptProblemTpl<Scalar> &problem) {
+ResultsFDDPTpl<Scalar>::ResultsFDDPTpl(
+    const TrajOptProblemTpl<Scalar> &problem) {
   using StageModel = StageModelTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
 
@@ -57,7 +58,7 @@ void SolverFDDP<Scalar>::evaluateGaps(const Problem &problem,
     const StageModel &sm = *problem.stages_[i];
     const StageData &sd = pd.getData(i);
     const Manifold &space = sm.xspace();
-    space.difference(xs[i + 1], workspace.xnexts[i],
+    space.difference(xs[i + 1], workspace.xnexts_[i],
                      workspace.feas_gaps_[i + 1]);
   }
 }

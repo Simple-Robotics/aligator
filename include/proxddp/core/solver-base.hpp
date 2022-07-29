@@ -33,7 +33,6 @@ void xs_default_init(const TrajOptProblemTpl<Scalar> &problem,
 template <typename Scalar>
 void us_default_init(const TrajOptProblemTpl<Scalar> &problem,
                      std::vector<typename math_types<Scalar>::VectorXs> &us) {
-  using Manifold = ManifoldAbstractTpl<Scalar>;
   const std::size_t nsteps = problem.numSteps();
   us.resize(nsteps);
   for (std::size_t i = 0; i < nsteps; i++) {

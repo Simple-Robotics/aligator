@@ -18,7 +18,7 @@
 
 namespace proxddp {
 
-template <typename Scalar> struct ResultsFDDP : ResultsBaseTpl<Scalar> {
+template <typename Scalar> struct ResultsFDDPTpl : ResultsBaseTpl<Scalar> {
 
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ResultsBaseTpl<Scalar>;
@@ -43,7 +43,7 @@ template <typename Scalar> struct ResultsFDDP : ResultsBaseTpl<Scalar> {
     return gains_[i].rightCols(ndx);
   }
 
-  explicit ResultsFDDP(const TrajOptProblemTpl<Scalar> &problem);
+  explicit ResultsFDDPTpl(const TrajOptProblemTpl<Scalar> &problem);
 };
 
 /**
@@ -56,8 +56,8 @@ template <typename Scalar> struct SolverFDDP {
   using StageModel = StageModelTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
   using ProblemData = TrajOptDataTpl<Scalar>;
-  using Results = ResultsFDDP<Scalar>;
-  using Workspace = WorkspaceFDDP<Scalar>;
+  using Results = ResultsFDDPTpl<Scalar>;
+  using Workspace = WorkspaceFDDPTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using VParams = internal::value_storage<Scalar>;
   using QParams = internal::q_storage<Scalar>;

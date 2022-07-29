@@ -54,7 +54,7 @@ void exposeFDDP() {
   using context::Manifold;
   using context::Scalar;
   using SolverType = SolverFDDP<Scalar>;
-  using Workspace = WorkspaceFDDP<Scalar>;
+  using Workspace = WorkspaceFDDPTpl<Scalar>;
 
   bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>>("WorkspaceFDDP",
                                                              bp::no_init)
