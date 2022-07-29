@@ -11,7 +11,8 @@ namespace compat {
 namespace croc {
 
 /**
- * @brief Wraps a crocoddyl::StateAbstractTpl to a proxnlp Manifold.
+ * @brief Wraps a crocoddyl::StateAbstractTpl to a proxnlp manifold
+ * (proxnlp::ManifoldAbstractTpl).
  *
  */
 template <typename _Scalar>

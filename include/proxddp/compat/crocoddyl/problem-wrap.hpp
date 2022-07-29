@@ -9,6 +9,11 @@ namespace proxddp {
 namespace compat {
 namespace croc {
 
+/**
+ * @brief This function converts a Crocoddyl shooting problem to a
+ * TrajOptProblemTpl.
+ *
+ */
 template <typename Scalar>
 TrajOptProblemTpl<Scalar> convertCrocoddylProblem(
     const boost::shared_ptr<crocoddyl::ShootingProblemTpl<Scalar>>

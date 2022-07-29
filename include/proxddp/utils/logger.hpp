@@ -23,6 +23,7 @@ struct LogRecord {
   double merit;
 };
 
+/// @brief  A logging utility.
 struct CustomLogger {
   static constexpr unsigned int COL_WIDTH_0 = 6;
   static constexpr unsigned int COL_WIDTH = 10;
