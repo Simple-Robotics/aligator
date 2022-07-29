@@ -13,7 +13,7 @@ enum FDLevel {
   TOC2 = 1  ///< Cast to a \f$C^2\f$ function.
 };
 
-/// Type of finite differences: forward, central, or forward.
+/// Type of finite differences: forward, central, or backward.
 ///
 enum FDType {
   BACKWARD, ///< Backward finite differences\f$\frac{f_{i} - f_{i-1}}h\f$
@@ -32,7 +32,6 @@ struct finite_difference_impl<_Scalar, TOC1> : virtual StageFunctionTpl<_Scalar>
   PROXNLP_FUNCTION_TYPEDEFS(_Scalar);
   using Base = StageFunctionTpl<_Scalar>;
   using BaseData = FunctionDataTpl<_Scalar>;
-  // using Base::computeJacobians;
 
   const ManifoldAbstractTpl<_Scalar> &space;
   const Base &func;
@@ -130,7 +129,6 @@ struct finite_difference_wrapper<_Scalar, TOC1>
                             const InputType &func, const Scalar fd_eps)
       : OutType(func.ndx1, func.nu, func.ndx2, func.nr), Base(space, func, fd_eps) {}
 
-  // ReturnType operator()(const ConstVectorRef &x) const { return this->func(x); }
 };
 
 } // namespace autodiff

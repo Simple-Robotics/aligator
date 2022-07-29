@@ -17,7 +17,7 @@ void expose_finite_differences() {
   using context::Manifold;
   using context::Scalar;
 
-  bp::enum_<FDLevel>("FDLevel", "Finite difference level.")
+  bp::enum_<FDLevel>("FDLevel", "Finite difference level (to compute Jacobians or both Jacobians and Hessians).")
       .value("ToC1", FDLevel::TOC1)
       .value("ToC2", FDLevel::TOC2);
 
