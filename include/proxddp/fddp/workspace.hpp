@@ -35,6 +35,9 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
     const TrajOptProblemTpl<Scalar> &problem)
     : Base(problem) {
 
+  value_params.reserve(nsteps + 1);
+  q_params.reserve(nsteps);
+
   xnexts_.resize(nsteps);
   feas_gaps_.resize(nsteps + 1);
   dxs_.resize(nsteps + 1);

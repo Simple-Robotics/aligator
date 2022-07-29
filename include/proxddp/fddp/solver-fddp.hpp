@@ -171,11 +171,6 @@ template <typename Scalar> struct SolverFDDP {
     }
 
     results.primal_infeasibility = math::infty_norm(workspace.feas_gaps_);
-
-    for (std::size_t i = 0; i <= nsteps; i++) {
-      fmt::print("feas_gap[{:d}] = {}\n", i,
-                 workspace.feas_gaps_[i].transpose());
-    }
   }
 
   /// @brief Allocate workspace and results structs.
@@ -207,36 +202,39 @@ template <typename Scalar> struct SolverFDDP {
 
       const int nu = sm.nu();
       const int ndx1 = sm.ndx1();
+      const int nt = ndx1 + nu;
+      assert((qparam.storage.cols() == nt + 1) &&
+             (qparam.storage.rows() == nt + 1));
+      assert(qparam.grad_.size() == nt);
+
       const CostData &cd = *sd.cost_data;
-      const ExpData &dd =
-          dynamic_cast<const ExpData &>(stage_get_dynamics_data(sd));
+      DynamicsDataTpl<Scalar> &dd = stage_get_dynamics_data(sd);
 
       /* Assemble Q-function */
-      const ConstMatrixRef J_x_u(dd.jac_buffer_.leftCols(ndx1 + nu));
+      ConstMatrixRef J_x_u = dd.jac_buffer_.leftCols(ndx1 + nu);
 
+      fmt::print("==== NODE t = {:d} ====\n", i);
       qparam.q_2() = 2 * cd.value_;
       qparam.grad_ = cd.grad_;
       qparam.hess_ = cd.hess_;
 
-      fmt::print("==== NODE t = {:d} ====\n", i);
       fmt::print("vnext: {}\n", vnext);
-      // fmt::print("Vx: {}\n", vnext.Vx_.transpose());
-      // fmt::print("Vxx:\n{}\n", vnext.Vxx_);
+      fmt::print("vgrad: {}\n", vnext.Vx_.transpose());
       // TODO: implement second-order derivatives for the Q-function
-      qparam.grad_.noalias() += J_x_u.transpose() * vnext.Vx_;
-      qparam.hess_.noalias() += J_x_u.transpose() * vnext.Vxx_ * J_x_u;
+      qparam.grad_ += J_x_u.transpose() * vnext.Vx_;
+      qparam.hess_ += J_x_u.transpose() * vnext.Vxx_ * J_x_u;
 
       qparam.Quu_.diagonal().array() += ureg_;
       qparam.storage = qparam.storage.template selfadjointView<Eigen::Lower>();
 
+      fmt::print("qstore:\n{}\n", qparam.storage);
       fmt::print("qgrad: {}\n", qparam.grad_.transpose());
-      fmt::print("qhess:\n{}\n", qparam.hess_);
 
       /* Compute gains */
-      MatrixXs &kkt_mat = workspace.kkt_matrix_bufs[i];
+      // MatrixXs &kkt_mat = workspace.kkt_matrix_bufs[i];
       MatrixXs &kkt_rhs = workspace.kkt_rhs_bufs[i];
 
-      kkt_mat = qparam.Quu_;
+      // kkt_mat = qparam.Quu_;
       VectorRef ffwd = results.getFeedforward(i);
       MatrixRef fback = results.getFeedback(i);
       ffwd = -qparam.Qu_;
@@ -244,9 +242,9 @@ template <typename Scalar> struct SolverFDDP {
       kkt_rhs = results.gains_[i];
 
       Eigen::LLT<MatrixXs> &llt = workspace.llts_[i];
-      llt.compute(kkt_mat);
+      llt.compute(qparam.Quu_);
       llt.solveInPlace(results.gains_[i]);
-      fmt::print(fmt::fg(fmt::color::yellow), "Gains solution:\n{}\n",
+      fmt::print(fmt::fg(fmt::color::yellow), "{} << gains solution\n",
                  results.gains_[i]);
 
       workspace.Quuks_[i] = qparam.Quu_ * ffwd;
@@ -258,7 +256,7 @@ template <typename Scalar> struct SolverFDDP {
       // vcur.Vxx_ = qparam.Qxx_ + qparam.Qxu_ * fback;
       vcur.storage = qparam.storage.topLeftCorner(ndx1 + 1, ndx1 + 1) +
                      kkt_rhs.transpose() * results.gains_[i];
-      vcur.Vx_.noalias() += vcur.Vxx_ * workspace.feas_gaps_[i];
+      vcur.Vx_.noalias() += vcur.Vxx_ * workspace.feas_gaps_[i + 1];
       vcur.Vxx_.diagonal().array() += xreg_;
       vcur.storage = vcur.storage.template selfadjointView<Eigen::Lower>();
     }
@@ -280,7 +278,11 @@ template <typename Scalar> struct SolverFDDP {
   /// @brief Compute the dual feasibility of the problem.
   void computeCriterion(Workspace &workspace, Results &results) {
     const std::size_t nsteps = workspace.nsteps;
-    results.dual_infeasibility = math::infty_norm(workspace.Quuks_);
+    std::vector<ConstVectorRef> Qus;
+    for (std::size_t i = 0; i < nsteps; i++) {
+      Qus.push_back(workspace.q_params[i].Qu_);
+    }
+    results.dual_infeasibility = math::infty_norm(Qus);
   }
 
   bool run(const Problem &problem,
@@ -306,7 +308,11 @@ template <typename Scalar> struct SolverFDDP {
       return tryStep(problem, results, workspace, alpha);
     };
 
+    forwardPass(problem, results, workspace, 1.);
     LogRecord record;
+    record.inner_crit = 0.;
+    record.dual_err = 0.;
+    record.dphi0 = 0.;
     std::size_t &iter = results.num_iters;
     for (iter = 0; iter < MAX_ITERS; ++iter) {
 
