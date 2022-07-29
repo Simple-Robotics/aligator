@@ -251,11 +251,11 @@ template <typename Scalar> struct SolverFDDP {
 
       /* Compute value function */
       VParams &vcur = workspace.value_params[i];
-      // vcur.Vx_ = qparam.Qx_ + fback.transpose() * qparam.Qu_;
+      vcur.Vx_ = qparam.Qx_ + fback.transpose() * qparam.Qu_;
       // vcur.Vx_ = qparam.Qx_ + qparam.Qxu_ * ffwd;
-      // vcur.Vxx_ = qparam.Qxx_ + qparam.Qxu_ * fback;
-      vcur.storage = qparam.storage.topLeftCorner(ndx1 + 1, ndx1 + 1) +
-                     kkt_rhs.transpose() * results.gains_[i];
+      vcur.Vxx_ = qparam.Qxx_ + qparam.Qxu_ * fback;
+      // vcur.storage = qparam.storage.topLeftCorner(ndx1 + 1, ndx1 + 1) +
+      //                kkt_rhs.transpose() * results.gains_[i];
       vcur.Vx_.noalias() += vcur.Vxx_ * workspace.feas_gaps_[i + 1];
       vcur.Vxx_.diagonal().array() += xreg_;
       vcur.storage = vcur.storage.template selfadjointView<Eigen::Lower>();
