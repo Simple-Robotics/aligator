@@ -58,6 +58,13 @@ def test_frame_placement():
     assert J.shape == realJ.shape
     assert np.allclose(fdata.Jx[:, :nv], realJ)
 
+    fun_fd = proxddp.FiniteDifferenceHelper(space, fun, 1e-3)
+    fdata2 = fun_fd.createData()
+    fun_fd.evaluate(x0, u0, x0, fdata2)
+    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    J_fd = fdata2.Jx[:]
+    assert(np.allclose(J,J_fd, 1e-2))
+
 
 def test_frame_velocity():
     fr_name1 = "larm_shoulder2_body"
