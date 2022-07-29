@@ -123,26 +123,58 @@ template <typename Scalar> struct SolverFDDP {
   void forwardPass(const Problem &problem, const Results &results,
                    Workspace &workspace, const Scalar alpha) const {
     const std::size_t nsteps = workspace.nsteps;
-    std::vector<VectorXs> &xs = workspace.trial_xs_;
-    std::vector<VectorXs> &us = workspace.trial_us_;
+    std::vector<VectorXs> &xs_try = workspace.trial_xs_;
+    std::vector<VectorXs> &us_try = workspace.trial_us_;
     ProblemData &pd = workspace.problem_data;
+
     for (std::size_t i = 0; i < nsteps; i++) {
-      auto ff = results.getFeedforward(i);
-      auto fb = results.getFeedback(i);
-
       const StageModel &sm = *problem.stages_[i];
-      StageData &sd = pd.getData(i);
       const DynamicsModelTpl<Scalar> &dm = sm.dyn_model();
-      auto &dd = stage_get_dynamics_data(sd);
-      // xref (-) xtrial
       const Manifold &space = sm.xspace();
-      VectorXs &dx = workspace.dxs_[i];
-      space.difference(xs[i], results.xs_[i], dx);
-      us[i] = results.us_[i] + alpha * ff + fb * dx;
-      forwardDynamics(space, dm, xs[i], us[i], dd, workspace.xnexts[i + 1]);
+      StageData &sd = pd.getData(i);
+      DynamicsDataTpl<Scalar> &dd = stage_get_dynamics_data(sd);
 
-      space.integrate(workspace.xnexts[i + 1],
-                      workspace.feas_gaps_[i + 1] * (alpha - 1.), xs[i + 1]);
+      VectorXs &dx = workspace.dxs_[i];
+      ConstVectorRef ff = results.getFeedforward(i);
+      ConstMatrixRef fb = results.getFeedback(i);
+
+      space.difference(results.xs_[i], xs_try[i], dx);
+      us_try[i] = results.us_[i] + alpha * ff + fb * dx;
+      forwardDynamics(space, dm, xs_try[i], us_try[i], dd,
+                      workspace.xnexts_[i]);
+
+      space.integrate(workspace.xnexts_[i],
+                      workspace.feas_gaps_[i + 1] * (alpha - 1.),
+                      xs_try[i + 1]);
+    }
+  }
+
+  /**
+   * @brief   Computes dynamical feasibility gaps.
+   * @details This computes the difference \f$x_{i+1} \ominus \f$, as well as
+   *          the residual of initial condition.
+   *
+   */
+  void computeInfeasibility(const Problem &problem, Results &results,
+                            Workspace &workspace) const {
+    const std::size_t nsteps = workspace.nsteps;
+    const ProblemData &pd = workspace.problem_data;
+    std::vector<VectorXs> &xs = results.xs_;
+    const Manifold &space = problem.stages_[0]->xspace();
+    const VectorXs &x0 = problem.getInitState();
+
+    space.difference(xs[0], x0, workspace.feas_gaps_[0]);
+    for (std::size_t i = 0; i < nsteps; i++) {
+      const Manifold &space = problem.stages_[i]->xspace();
+      space.difference(xs[i + 1], workspace.xnexts_[i],
+                       workspace.feas_gaps_[i + 1]);
+    }
+
+    results.primal_infeasibility = math::infty_norm(workspace.feas_gaps_);
+
+    for (std::size_t i = 0; i <= nsteps; i++) {
+      fmt::print("feas_gap[{:d}] = {}\n", i,
+                 workspace.feas_gaps_[i].transpose());
     }
   }
 
@@ -171,13 +203,13 @@ template <typename Scalar> struct SolverFDDP {
       QParams &qparam = workspace.q_params[i];
 
       StageModel &sm = *problem.stages_[i];
+      StageData &sd = prob_data.getData(i);
+
       const int nu = sm.nu();
       const int ndx1 = sm.ndx1();
-
-      StageData &sd = prob_data.getData(i);
       const CostData &cd = *sd.cost_data;
       const ExpData &dd =
-          static_cast<const ExpData &>(stage_get_dynamics_data(sd));
+          dynamic_cast<const ExpData &>(stage_get_dynamics_data(sd));
 
       /* Assemble Q-function */
       const ConstMatrixRef J_x_u(dd.jac_buffer_.leftCols(ndx1 + nu));
@@ -186,8 +218,10 @@ template <typename Scalar> struct SolverFDDP {
       qparam.grad_ = cd.grad_;
       qparam.hess_ = cd.hess_;
 
-      fmt::print("[[NODE t = {:d}]]\n", i);
+      fmt::print("==== NODE t = {:d} ====\n", i);
       fmt::print("vnext: {}\n", vnext);
+      // fmt::print("Vx: {}\n", vnext.Vx_.transpose());
+      // fmt::print("Vxx:\n{}\n", vnext.Vxx_);
       // TODO: implement second-order derivatives for the Q-function
       qparam.grad_.noalias() += J_x_u.transpose() * vnext.Vx_;
       qparam.hess_.noalias() += J_x_u.transpose() * vnext.Vxx_ * J_x_u;
@@ -207,6 +241,7 @@ template <typename Scalar> struct SolverFDDP {
       MatrixRef fback = results.getFeedback(i);
       ffwd = -qparam.Qu_;
       fback = -qparam.Qxu_.transpose();
+      kkt_rhs = results.gains_[i];
 
       Eigen::LLT<MatrixXs> &llt = workspace.llts_[i];
       llt.compute(kkt_mat);
@@ -218,8 +253,11 @@ template <typename Scalar> struct SolverFDDP {
 
       /* Compute value function */
       VParams &vcur = workspace.value_params[i];
-      vcur.Vx_ = qparam.Qx_ + fback.transpose() * qparam.Qu_;
-      vcur.Vxx_ = qparam.Qxx_ + qparam.Qxu_ * fback;
+      // vcur.Vx_ = qparam.Qx_ + fback.transpose() * qparam.Qu_;
+      // vcur.Vx_ = qparam.Qx_ + qparam.Qxu_ * ffwd;
+      // vcur.Vxx_ = qparam.Qxx_ + qparam.Qxu_ * fback;
+      vcur.storage = qparam.storage.topLeftCorner(ndx1 + 1, ndx1 + 1) +
+                     kkt_rhs.transpose() * results.gains_[i];
       vcur.Vx_.noalias() += vcur.Vxx_ * workspace.feas_gaps_[i];
       vcur.Vxx_.diagonal().array() += xreg_;
       vcur.storage = vcur.storage.template selfadjointView<Eigen::Lower>();
@@ -261,6 +299,9 @@ template <typename Scalar> struct SolverFDDP {
     ::proxddp::CustomLogger logger{};
     logger.start();
 
+    // in Crocoddyl, linesearch xs is primed to use problem x0
+    workspace.trial_xs_[0] = problem.getInitState();
+
     auto linesearch_fun = [&](const Scalar alpha) {
       return tryStep(problem, results, workspace, alpha);
     };
@@ -276,11 +317,14 @@ template <typename Scalar> struct SolverFDDP {
                                  workspace.problem_data);
       results.traj_cost_ =
           computeTrajectoryCost(problem, workspace.problem_data);
+      computeInfeasibility(problem, results, workspace);
+      record.prim_err = results.primal_infeasibility;
 
       backwardPass(problem, workspace, results);
       computeCriterion(workspace, results);
       record.dual_err = results.dual_infeasibility;
       record.merit = results.traj_cost_;
+      record.inner_crit = 0.;
 
       if (results.dual_infeasibility < tol_) {
         results.conv = true;
@@ -290,10 +334,10 @@ template <typename Scalar> struct SolverFDDP {
       Scalar alpha_opt = 1;
       Scalar phi0 = results.traj_cost_;
       Scalar dphi0 = computeDirectionalDerivatives(problem, workspace);
-      proxnlp::ArmijoLinesearch<Scalar>::run(
-          linesearch_fun, phi0, dphi0, verbose_, ls_params.ls_beta,
-          ls_params.armijo_c1, ls_params.alpha_min, alpha_opt);
-      forwardPass(problem, results, workspace, alpha_opt);
+      // proxnlp::ArmijoLinesearch<Scalar>::run(
+      //     linesearch_fun, phi0, dphi0, verbose_, ls_params.ls_beta,
+      //     ls_params.armijo_c1, ls_params.alpha_min, alpha_opt);
+      forwardPass(problem, results, workspace, 1.);
       results.xs_ = workspace.trial_xs_;
       results.us_ = workspace.trial_us_;
 
@@ -311,6 +355,7 @@ template <typename Scalar> struct SolverFDDP {
         }
       }
 
+      logger.start();
       logger.log(record);
     }
 
