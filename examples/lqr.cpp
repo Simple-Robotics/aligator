@@ -106,7 +106,7 @@ int main() {
     fddp.setup(problem);
     fddp.run(problem, xs_init, us_init);
     fmt::print("FDDP done.\n");
-    const ResultsFDDP<double> &res_fddp = fddp.getResults();
+    const auto &res_fddp = fddp.getResults();
     for (std::size_t i = 0; i < nsteps + 1; i++) {
       fmt::print("x[{: >2d}] = {}\n", i, res_fddp.xs_[i].transpose());
     }
