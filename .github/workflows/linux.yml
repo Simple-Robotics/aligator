@@ -54,7 +54,7 @@ jobs:
         cd $GITHUB_WORKSPACE/proxnlp
         mkdir build
         cd build
-        cmake .. -DCMAKE_INSTALL_PREFIX=~/custom_install -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DINSTALL_DOCUMENTATION=OFF
+        cmake .. -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=~/custom_install -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DINSTALL_DOCUMENTATION=OFF
         make -j3 install
 
         echo "PYTHONPATH=/builds/custom_install/lib/python3/dist-packages/" >> $GITHUB_ENV
@@ -66,7 +66,7 @@ jobs:
         cd $GITHUB_WORKSPACE
         mkdir build
         cd build
-        cmake .. -DCMAKE_INSTALL_PREFIX=~/custom_install -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DINSTALL_DOCUMENTATION=OFF -DBUILD_CROCODDYL_COMPAT=ON
+        cmake .. -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=~/custom_install -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DINSTALL_DOCUMENTATION=OFF -DBUILD_CROCODDYL_COMPAT=ON
         make -j3 install
         make test
 
