@@ -63,7 +63,7 @@ def test_frame_placement():
     fun_fd.evaluate(x0, u0, x0, fdata2)
     fun_fd.computeJacobians(x0, u0, x0, fdata2)
     J_fd = fdata2.Jx[:]
-    assert(np.allclose(J,J_fd, 1e-2))
+    assert np.allclose(J, J_fd, 1e-2)
 
 
 def test_frame_velocity():
@@ -76,10 +76,7 @@ def test_frame_velocity():
     d[6:] = 0.0
     x0 = space.integrate(x0, d)
     u0 = np.zeros(nu)
-    q0 = x0[:nq]
 
-    # pin.framesForwardKinematics(model, rdata, q0)
-    # fr_plc1 = rdata.oMf[fr_id1]
     v_ref = pin.getFrameVelocity(model, rdata, fr_id1, pin.LOCAL)
 
     fun = proxddp.FrameVelocityResidual(ndx, nu, model, v_ref, fr_id1, pin.LOCAL)

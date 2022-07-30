@@ -28,7 +28,8 @@ template <typename _Scalar, FDLevel n, FDType = CENTRAL>
 struct finite_difference_impl;
 
 template <typename _Scalar>
-struct finite_difference_impl<_Scalar, TOC1> : virtual StageFunctionTpl<_Scalar> {
+struct finite_difference_impl<_Scalar, TOC1>
+    : virtual StageFunctionTpl<_Scalar> {
   PROXNLP_FUNCTION_TYPEDEFS(_Scalar);
   using Base = StageFunctionTpl<_Scalar>;
   using BaseData = FunctionDataTpl<_Scalar>;
@@ -39,16 +40,17 @@ struct finite_difference_impl<_Scalar, TOC1> : virtual StageFunctionTpl<_Scalar>
 
   finite_difference_impl(const ManifoldAbstractTpl<_Scalar> &space,
                          const Base &func, const _Scalar fd_eps)
-      : Base(func.ndx1, func.nu, func.ndx2, func.nr), space(space),
-        func(func), fd_eps(fd_eps) {}
+      : Base(func.ndx1, func.nu, func.ndx2, func.nr), space(space), func(func),
+        fd_eps(fd_eps) {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                        const ConstVectorRef &y, BaseData &data) const override{
+                const ConstVectorRef &y, BaseData &data) const override {
     func.evaluate(x, u, y, data);
   }
 
   void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
-                                const ConstVectorRef &y, BaseData &data) const override {
+                        const ConstVectorRef &y,
+                        BaseData &data) const override {
     VectorXs exi(func.ndx1);
     VectorXs xplus = x;
     VectorXs xminus = x;
@@ -70,12 +72,12 @@ struct finite_difference_impl<_Scalar, TOC1> : virtual StageFunctionTpl<_Scalar>
     VectorXs yplus = y;
     VectorXs yminus = y;
     eyi.setZero();
-    for (int i = 0; i < func.ndx2; i++){
+    for (int i = 0; i < func.ndx2; i++) {
       eyi(i) = fd_eps;
       space.integrate(y, eyi, yplus);
       space.integrate(y, -eyi, yminus);
       func.evaluate(x, u, yplus, data);
-      vplus = data.value_; 
+      vplus = data.value_;
       func.evaluate(x, u, yminus, data);
       vminus = data.value_;
       data.Jy_.col(i) = (vplus - vminus) / (2 * fd_eps);
@@ -83,7 +85,7 @@ struct finite_difference_impl<_Scalar, TOC1> : virtual StageFunctionTpl<_Scalar>
     }
     VectorXs eui(func.nu);
     VectorXs uplus = u;
-    VectorXs uminus= u;
+    VectorXs uminus = u;
     for (int i = 0; i < func.nu; i++) {
       eui(i) = fd_eps;
       uplus = u + eui;
@@ -97,8 +99,11 @@ struct finite_difference_impl<_Scalar, TOC1> : virtual StageFunctionTpl<_Scalar>
     }
   }
 
-  void computeVectorHessianProducts(const ConstVectorRef &x, const ConstVectorRef &u,const ConstVectorRef &y,
-                                            const ConstVectorRef &lbda, BaseData &data) const{
+  void computeVectorHessianProducts(const ConstVectorRef &x,
+                                    const ConstVectorRef &u,
+                                    const ConstVectorRef &y,
+                                    const ConstVectorRef &lbda,
+                                    BaseData &data) const {
     func.computeVectorHessianProducts(x, u, y, lbda, data);
   }
 };
@@ -108,7 +113,7 @@ struct finite_difference_impl<_Scalar, TOC1> : virtual StageFunctionTpl<_Scalar>
 template <typename _Scalar, FDLevel n = TOC1> struct finite_difference_wrapper;
 
 /** @brief    Approximate the derivatives of a given function
- *            using finite differences, to downcast the function to a
+ * using finite differences, to downcast the function to a
  * StageFunctionTpl.
  */
 template <typename _Scalar>
@@ -119,16 +124,16 @@ struct finite_difference_wrapper<_Scalar, TOC1>
   using InputType = StageFunctionTpl<Scalar>;
   using OutType = StageFunctionTpl<Scalar>;
   using Base = internal::finite_difference_impl<Scalar, TOC1>;
-  using Base::evaluate;
   using Base::computeJacobians;
   using Base::computeVectorHessianProducts;
+  using Base::evaluate;
 
   PROXNLP_FUNCTION_TYPEDEFS(_Scalar);
 
   finite_difference_wrapper(const ManifoldAbstractTpl<Scalar> &space,
                             const InputType &func, const Scalar fd_eps)
-      : OutType(func.ndx1, func.nu, func.ndx2, func.nr), Base(space, func, fd_eps) {}
-
+      : OutType(func.ndx1, func.nu, func.ndx2, func.nr),
+        Base(space, func, fd_eps) {}
 };
 
 } // namespace autodiff

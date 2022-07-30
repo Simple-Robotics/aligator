@@ -13,11 +13,12 @@ namespace python {
 /// Expose finite difference helpers.
 void expose_finite_differences() {
   using namespace autodiff;
-  using context::StageFunction;
   using context::Manifold;
   using context::Scalar;
+  using context::StageFunction;
 
-  bp::enum_<FDLevel>("FDLevel", "Finite difference level (to compute Jacobians or both Jacobians and Hessians).")
+  bp::enum_<FDLevel>("FDLevel", "Finite difference level (to compute Jacobians "
+                                "or both Jacobians and Hessians).")
       .value("ToC1", FDLevel::TOC1)
       .value("ToC2", FDLevel::TOC2);
 
@@ -28,7 +29,6 @@ void expose_finite_differences() {
       " finite differences.",
       bp::init<const Manifold &, const StageFunction &, const Scalar>(
           bp::args("self", "func", "eps")));
-
 }
 
 void exposeAutodiff() { expose_finite_differences(); }
