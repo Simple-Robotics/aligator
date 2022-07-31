@@ -40,6 +40,26 @@ template <typename Scalar>
 void SolverFDDP<Scalar>::setup(const Problem &problem) {
   results_ = std::make_unique<Results>(problem);
   workspace_ = std::make_unique<Workspace>(problem);
+  // check if there are any constraints other than dynamics and throw a warning
+  std::vector<std::size_t> idx_where_constraints;
+  for (std::size_t i = 0; i < problem.numSteps(); i++) {
+    const shared_ptr<StageModel> &sm = problem.stages_[i];
+    if (sm->numConstraints() > 1) {
+      idx_where_constraints.push_back(i);
+    }
+  }
+  if (idx_where_constraints.size() > 0) {
+    proxddp_fddp_warning(
+        fmt::format("problem stages [{}] have constraints, "
+                    "which this solver cannot handle. "
+                    "Please use a penalized cost formulation.\n",
+                    fmt::join(idx_where_constraints, ", ")));
+  }
+  if (problem.term_constraint_) {
+    proxddp_fddp_warning(
+        "problem has a terminal constraint, which this solver cannot "
+        "handle.\n");
+  }
 }
 
 template <typename Scalar>
@@ -73,4 +93,33 @@ Scalar SolverFDDP<Scalar>::tryStep(const Problem &problem,
   return computeTrajectoryCost(problem, workspace.trial_prob_data);
 }
 
+template <typename Scalar>
+void SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem,
+                                              Results &results,
+                                              Workspace &workspace) const {
+  const std::size_t nsteps = workspace.nsteps;
+  const ProblemData &pd = workspace.problem_data;
+  std::vector<VectorXs> &xs = results.xs_;
+  const Manifold &space = problem.stages_[0]->xspace();
+  const VectorXs &x0 = problem.getInitState();
+
+  space.difference(xs[0], x0, workspace.feas_gaps_[0]);
+  for (std::size_t i = 0; i < nsteps; i++) {
+    const Manifold &space = problem.stages_[i]->xspace();
+    space.difference(xs[i + 1], workspace.xnexts_[i],
+                     workspace.feas_gaps_[i + 1]);
+  }
+
+  results.primal_infeasibility = math::infty_norm(workspace.feas_gaps_);
+}
+template <typename Scalar>
+void SolverFDDP<Scalar>::computeCriterion(Workspace &workspace,
+                                          Results &results) {
+  const std::size_t nsteps = workspace.nsteps;
+  std::vector<ConstVectorRef> Qus;
+  for (std::size_t i = 0; i < nsteps; i++) {
+    Qus.push_back(workspace.q_params[i].Qu_);
+  }
+  results.dual_infeasibility = math::infty_norm(Qus);
+}
 } // namespace proxddp

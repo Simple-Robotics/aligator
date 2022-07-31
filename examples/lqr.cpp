@@ -75,12 +75,17 @@ int main() {
     problem.addStage(stage);
   }
 
-  auto xs_init = rollout(dynamics, x0, us_init);
+  const auto xs_init = rollout(dynamics, x0, us_init);
+  fmt::print("Initial guess:\n");
+  for (std::size_t i = 0; i < xs_init.size(); i++) {
+    fmt::print("x[{: >2d}] = {}\n", i, xs_init[i].transpose());
+  }
 
   const double mu_init = 1e-5;
   const double rho_init = 1e-8;
+  const std::size_t max_iters = 5;
 
-  SolverProxDDP<double> solver(TOL, mu_init, rho_init);
+  SolverProxDDP<double> solver(TOL, mu_init, rho_init, max_iters);
   solver.verbose_ = VerboseLevel::VERBOSE;
 
   solver.setup(problem);
@@ -92,7 +97,7 @@ int main() {
     line_.append("=");
   }
   line_.append("\n");
-  for (std::size_t i = 0; i < nsteps + 1; i++) {
+  for (std::size_t i = 0; i <= nsteps; i++) {
     fmt::print("x[{: >2d}] = {}\n", i, results.xs_[i].transpose());
   }
   for (std::size_t i = 0; i < nsteps; i++) {
@@ -102,13 +107,14 @@ int main() {
   {
     fmt::print("TEST FDDP\n");
     SolverFDDP<double> fddp(TOL, 1e-10, VerboseLevel::VERBOSE);
-    fddp.MAX_ITERS = 2;
+    fddp.MAX_ITERS = max_iters;
     fddp.setup(problem);
     fddp.run(problem, xs_init, us_init);
     fmt::print("FDDP done.\n");
-    const auto &res_fddp = fddp.getResults();
-    for (std::size_t i = 0; i < nsteps + 1; i++) {
-      fmt::print("x[{: >2d}] = {}\n", i, res_fddp.xs_[i].transpose());
+    const ResultsFDDPTpl<double> &res_fddp = fddp.getResults();
+    for (std::size_t i = 0; i <= nsteps; i++) {
+      fmt::print("errx[{: >2d}] = {}\n", i,
+                 (res_fddp.xs_[i] - results.xs_[i]).lpNorm<Eigen::Infinity>());
     }
   }
 

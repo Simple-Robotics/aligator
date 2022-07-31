@@ -16,6 +16,10 @@
 
 #include <Eigen/Cholesky>
 
+#define proxddp_fddp_warning(msg)                                              \
+  fmt::print(fmt::fg(fmt::color::yellow), "[SolverFDDP] ({}) warning: {}",     \
+             __FUNCTION__, msg)
+
 namespace proxddp {
 
 template <typename Scalar> struct ResultsFDDPTpl : ResultsBaseTpl<Scalar> {
@@ -102,6 +106,9 @@ template <typename Scalar> struct SolverFDDP {
   const Results &getResults() const { return *results_; }
   const Workspace &getWorkspace() const { return *workspace_; }
 
+  /// @brief Allocate workspace and results structs.
+  void setup(const Problem &problem);
+
   /// @brief    Evaluate the defects in the dynamics.
   /// @warning  We assume the dynamics were already computed.
   void evaluateGaps(const Problem &problem, const std::vector<VectorXs> &xs,
@@ -156,25 +163,7 @@ template <typename Scalar> struct SolverFDDP {
    *
    */
   void computeInfeasibility(const Problem &problem, Results &results,
-                            Workspace &workspace) const {
-    const std::size_t nsteps = workspace.nsteps;
-    const ProblemData &pd = workspace.problem_data;
-    std::vector<VectorXs> &xs = results.xs_;
-    const Manifold &space = problem.stages_[0]->xspace();
-    const VectorXs &x0 = problem.getInitState();
-
-    space.difference(xs[0], x0, workspace.feas_gaps_[0]);
-    for (std::size_t i = 0; i < nsteps; i++) {
-      const Manifold &space = problem.stages_[i]->xspace();
-      space.difference(xs[i + 1], workspace.xnexts_[i],
-                       workspace.feas_gaps_[i + 1]);
-    }
-
-    results.primal_infeasibility = math::infty_norm(workspace.feas_gaps_);
-  }
-
-  /// @brief Allocate workspace and results structs.
-  void setup(const Problem &problem);
+                            Workspace &workspace) const;
 
   void backwardPass(const Problem &problem, Workspace &workspace,
                     Results &results) const {
@@ -213,22 +202,19 @@ template <typename Scalar> struct SolverFDDP {
       /* Assemble Q-function */
       ConstMatrixRef J_x_u = dd.jac_buffer_.leftCols(ndx1 + nu);
 
-      fmt::print("==== NODE t = {:d} ====\n", i);
       qparam.q_2() = 2 * cd.value_;
       qparam.grad_ = cd.grad_;
       qparam.hess_ = cd.hess_;
 
-      fmt::print("vnext: {}\n", vnext);
-      fmt::print("vgrad: {}\n", vnext.Vx_.transpose());
+      // fmt::print("==== NODE t = {:d} ====\n", i);
+      // fmt::print("vnext: {}\n", vnext);
+      // fmt::print("vgrad: {}\n", vnext.Vx_.transpose());
       // TODO: implement second-order derivatives for the Q-function
       qparam.grad_ += J_x_u.transpose() * vnext.Vx_;
       qparam.hess_ += J_x_u.transpose() * vnext.Vxx_ * J_x_u;
 
       qparam.Quu_.diagonal().array() += ureg_;
       qparam.storage = qparam.storage.template selfadjointView<Eigen::Lower>();
-
-      fmt::print("qstore:\n{}\n", qparam.storage);
-      fmt::print("qgrad: {}\n", qparam.grad_.transpose());
 
       /* Compute gains */
       // MatrixXs &kkt_mat = workspace.kkt_matrix_bufs[i];
@@ -244,18 +230,13 @@ template <typename Scalar> struct SolverFDDP {
       Eigen::LLT<MatrixXs> &llt = workspace.llts_[i];
       llt.compute(qparam.Quu_);
       llt.solveInPlace(results.gains_[i]);
-      fmt::print(fmt::fg(fmt::color::yellow), "{} << gains solution\n",
-                 results.gains_[i]);
 
       workspace.Quuks_[i] = qparam.Quu_ * ffwd;
 
       /* Compute value function */
       VParams &vcur = workspace.value_params[i];
       vcur.Vx_ = qparam.Qx_ + fback.transpose() * qparam.Qu_;
-      // vcur.Vx_ = qparam.Qx_ + qparam.Qxu_ * ffwd;
       vcur.Vxx_ = qparam.Qxx_ + qparam.Qxu_ * fback;
-      // vcur.storage = qparam.storage.topLeftCorner(ndx1 + 1, ndx1 + 1) +
-      //                kkt_rhs.transpose() * results.gains_[i];
       vcur.Vx_.noalias() += vcur.Vxx_ * workspace.feas_gaps_[i + 1];
       vcur.Vxx_.diagonal().array() += xreg_;
       vcur.storage = vcur.storage.template selfadjointView<Eigen::Lower>();
@@ -276,14 +257,7 @@ template <typename Scalar> struct SolverFDDP {
   }
 
   /// @brief Compute the dual feasibility of the problem.
-  void computeCriterion(Workspace &workspace, Results &results) {
-    const std::size_t nsteps = workspace.nsteps;
-    std::vector<ConstVectorRef> Qus;
-    for (std::size_t i = 0; i < nsteps; i++) {
-      Qus.push_back(workspace.q_params[i].Qu_);
-    }
-    results.dual_infeasibility = math::infty_norm(Qus);
-  }
+  void computeCriterion(Workspace &workspace, Results &results);
 
   bool run(const Problem &problem,
            const std::vector<VectorXs> &xs_init = DEFAULT_VECTOR<Scalar>,
@@ -334,16 +308,16 @@ template <typename Scalar> struct SolverFDDP {
 
       if (results.dual_infeasibility < tol_) {
         results.conv = true;
+        logger.log(record);
         break;
       }
 
       Scalar alpha_opt = 1;
       Scalar phi0 = results.traj_cost_;
       Scalar dphi0 = computeDirectionalDerivatives(problem, workspace);
-      // proxnlp::ArmijoLinesearch<Scalar>::run(
-      //     linesearch_fun, phi0, dphi0, verbose_, ls_params.ls_beta,
-      //     ls_params.armijo_c1, ls_params.alpha_min, alpha_opt);
-      forwardPass(problem, results, workspace, 1.);
+      proxnlp::ArmijoLinesearch<Scalar>::run(
+          linesearch_fun, phi0, dphi0, verbose_, ls_params.ls_beta,
+          ls_params.armijo_c1, ls_params.alpha_min, alpha_opt);
       results.xs_ = workspace.trial_xs_;
       results.us_ = workspace.trial_us_;
 
@@ -361,12 +335,10 @@ template <typename Scalar> struct SolverFDDP {
         }
       }
 
-      logger.start();
       logger.log(record);
     }
 
     if (results.conv) {
-      logger.log(record);
       fmt::print(fmt::fg(fmt::color::dodger_blue), "Successfully converged.\n");
     } else {
       fmt::print(fmt::fg(fmt::color::red), "Convergence failure.\n");
