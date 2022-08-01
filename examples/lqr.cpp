@@ -106,7 +106,7 @@ int main() {
 
   {
     fmt::print("TEST FDDP\n");
-    SolverFDDP<double> fddp(TOL, 1e-10, VerboseLevel::VERBOSE);
+    SolverFDDP<double> fddp(TOL, VerboseLevel::VERBOSE);
     fddp.MAX_ITERS = max_iters;
     fddp.setup(problem);
     fddp.run(problem, xs_init, us_init);
