@@ -183,7 +183,7 @@ void exposePinocchioFunctions() {
   bp::class_<FramePlacement, bp::bases<StageFunction>>(
       "FramePlacementResidual", "Frame placement residual function.",
       bp::init<int, int, shared_ptr<Model>, const SE3 &, pinocchio::FrameIndex>(
-          bp::args("self", "ndx", "nu", "model", "p_ref")))
+          bp::args("self", "ndx", "nu", "model", "p_ref", "id")))
       .add_property("frame_id", &FramePlacement::getFrameId,
                     &FramePlacement::setFrameId)
       .def("getReference", &FramePlacement::getReference, bp::args("self"),
@@ -205,8 +205,8 @@ void exposePinocchioFunctions() {
   bp::class_<FrameVelocity, bp::bases<StageFunction>>(
       "FrameVelocityResidual", "Frame velocity residual function.",
       bp::init<int, int, shared_ptr<Model>, const Motion &,
-               pinocchio::FrameIndex, pinocchio::ReferenceFrame>(
-          bp::args("self", "ndx", "nu", "model", "v_ref")))
+               pinocchio::FrameIndex, pinocchio::ReferenceFrame>(bp::args(
+          "self", "ndx", "nu", "model", "v_ref", "id", "reference_frame")))
       .add_property("frame_id", &FrameVelocity::getFrameId,
                     &FrameVelocity::setFrameId)
       .def("getReference", &FrameVelocity::getReference, bp::args("self"),
@@ -226,7 +226,7 @@ void exposePinocchioFunctions() {
       "FrameTranslationResidual", "Frame placement residual function.",
       bp::init<int, int, shared_ptr<Model>, const context::VectorXs &,
                pinocchio::FrameIndex>(
-          bp::args("self", "ndx", "nu", "model", "p_ref")))
+          bp::args("self", "ndx", "nu", "model", "p_ref", "id")))
       .add_property("frame_id", &FrameTranslation::getFrameId,
                     &FrameTranslation::setFrameId)
       .def("getReference", &FrameTranslation::getReference, bp::args("self"),
