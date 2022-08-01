@@ -74,11 +74,31 @@ void exposeFDDP() {
   using context::Scalar;
   using SolverType = SolverFDDP<Scalar>;
   using Workspace = WorkspaceFDDPTpl<Scalar>;
+  using Results = ResultsFDDPTpl<Scalar>;
 
   bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>>("WorkspaceFDDP",
                                                              bp::no_init)
       .def_readonly("dxs", &Workspace::dxs_)
       .def_readonly("dus", &Workspace::dus_);
+
+  bp::class_<Results, bp::bases<ResultsBaseTpl<Scalar>>>(
+      "ResultsFDDP",
+      bp::init<const context::TrajOptProblem &>(bp::args("self", "problem")))
+      .def("getFeedforward",
+           bp::make_function(
+               +[](const Results &m, std::size_t i) {
+                 return m.getFeedforward(i);
+               },
+               bp::return_value_policy<bp::return_by_value>(),
+               bp::args("self", "i")),
+           "Get the feedforward gain at time index :math:`i`.")
+      .def(
+          "getFeedback",
+          bp::make_function(
+              +[](const Results &m, std::size_t i) { return m.getFeedback(i); },
+              bp::return_value_policy<bp::return_by_value>(),
+              bp::args("self", "i")),
+          "Get the feedback gain at time index :math:`i`.");
 
   bp::class_<SolverType, boost::noncopyable>(
       "SolverFDDP", "An implementation of the FDDP solver from Crocoddyl.",
@@ -92,13 +112,11 @@ void exposeFDDP() {
             bp::arg("us_init")));
 }
 
-void exposeSolvers() {
+void exposeProxDDP() {
   using context::Scalar;
   using context::TrajOptProblem;
   using Workspace = WorkspaceTpl<Scalar>;
   using Results = ResultsTpl<Scalar>;
-
-  exposeBase();
 
   bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>>(
       "Workspace", "Workspace for ProxDDP.",
@@ -188,7 +206,11 @@ void exposeSolvers() {
       .def("registerCallback", &SolverType::registerCallback,
            bp::args("self", "cb"), "Add a callback to the solver.")
       .def("clearCallbacks", &SolverType::clearCallbacks, "Clear callbacks.");
+}
 
+void exposeSolvers() {
+  exposeBase();
+  exposeProxDDP();
   exposeFDDP();
 }
 
