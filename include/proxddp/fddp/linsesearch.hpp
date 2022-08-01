@@ -3,8 +3,6 @@
 #include "proxddp/fwd.hpp"
 #include "proxddp/core/linesearch.hpp"
 
-#include <fmt/core.h>
-
 namespace proxddp {
 
 /// @brief    The backtracking linesearch from FDDP (Mastalli et al).
@@ -25,9 +23,6 @@ template <typename Scalar> struct FDDPGoldsteinLinesearch {
     do {
       Scalar dVreal = phi(atry) - phi0;
       Scalar dVmodel = model(atry) - phi0;
-      fmt::print("atry: {:.3e} | ", atry);
-      fmt::print("dVreal: {:.3e} | ", dVreal);
-      fmt::print("dVmodl: {:.3e}\n", dVmodel);
       // check if descending
       if (dVmodel <= 0.) {
         if (dVreal <= th_accept_step_ * dVmodel)
