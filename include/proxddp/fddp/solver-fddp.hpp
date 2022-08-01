@@ -124,41 +124,60 @@ template <typename Scalar> struct SolverFDDP {
   Scalar tryStep(const Problem &problem, const Results &results,
                  Workspace &workspace, const Scalar alpha) const;
 
-  Scalar computeDirectionalDerivatives(const Problem &problem,
-                                       const Workspace &workspace) const {
-    return 0.;
-  }
-
-  /// @brief  Perform a nonlinear rollout with an additional defect tacked onto
-  /// the state trajectory.
-  void forwardPass(const Problem &problem, const Results &results,
-                   Workspace &workspace, const Scalar alpha) const {
+  void computeDirectionalDerivatives(Workspace &workspace, Results &results,
+                                     Scalar &d1, Scalar &d2) const {
     const std::size_t nsteps = workspace.nsteps;
-    std::vector<VectorXs> &xs_try = workspace.trial_xs_;
-    std::vector<VectorXs> &us_try = workspace.trial_us_;
-    ProblemData &pd = workspace.problem_data;
+    d1 = 0.; // cost directional derivative
+    d2 = 0.;
 
+    assert(workspace.q_params.size() == nsteps);
+    assert(workspace.value_params.size() == (nsteps + 1));
     for (std::size_t i = 0; i < nsteps; i++) {
-      const StageModel &sm = *problem.stages_[i];
-      const DynamicsModelTpl<Scalar> &dm = sm.dyn_model();
-      const Manifold &space = sm.xspace();
-      StageData &sd = pd.getData(i);
-      DynamicsDataTpl<Scalar> &dd = stage_get_dynamics_data(sd);
-
-      VectorXs &dx = workspace.dxs_[i];
+      const QParams &qpar = workspace.q_params[i];
+      ConstVectorRef Qu = qpar.Qu_;
       ConstVectorRef ff = results.getFeedforward(i);
-      ConstMatrixRef fb = results.getFeedback(i);
-
-      space.difference(results.xs_[i], xs_try[i], dx);
-      us_try[i] = results.us_[i] + alpha * ff + fb * dx;
-      forwardDynamics(space, dm, xs_try[i], us_try[i], dd,
-                      workspace.xnexts_[i]);
-
-      space.integrate(workspace.xnexts_[i],
-                      workspace.feas_gaps_[i + 1] * (alpha - 1.),
-                      xs_try[i + 1]);
+      d1 += Qu.dot(ff);
+      d2 += ff.dot(workspace.Quuks_[i]);
+    }
+    for (std::size_t i = 0; i <= nsteps; i++) {
+      // account for infeasibility
+      const VParams &vpar = workspace.value_params[i];
+      VectorXs &ftVxx = workspace.f_t_Vxx_[i];
+      ftVxx = vpar.Vxx_ * workspace.feas_gaps_[i];
+      d1 += vpar.Vx_.dot(workspace.feas_gaps_[i]);
+      d2 = d2 - ftVxx.dot(workspace.feas_gaps_[i]);
     }
   }
+
+  /// @brief  Correct the directional derivatives.
+  static void directionalDerivativeCorrection(const Problem &problem,
+                                              Workspace &workspace,
+                                              Results &results, Scalar &d1,
+                                              Scalar &d2) {
+    const std::size_t nsteps = workspace.nsteps;
+    const VectorOfVectors &xs = results.xs_;
+    const VectorOfVectors &us = results.us_;
+
+    Scalar dv = 0.;
+    for (std::size_t i = 0; i < nsteps; i++) {
+      const Manifold &space = problem.stages_[i]->xspace();
+      space.difference(workspace.trial_xs_[i], xs[i], workspace.dxs_[i]);
+
+      const VParams &vpar = workspace.value_params[i];
+      const VectorXs &ftVxx = workspace.f_t_Vxx_[i];
+      // ftVxx = vpar.Vxx_ * workspace.feas_gaps_[i]; // same as l.145
+      dv += workspace.dxs_[i].dot(ftVxx);
+    }
+
+    d1 += dv;
+    d2 += -2 * dv;
+  }
+
+  /**
+   * @brief  Perform a nonlinear rollout, keeping an infeasibility gap.
+   */
+  static void forwardPass(const Problem &problem, const Results &results,
+                          Workspace &workspace, const Scalar alpha);
 
   /**
    * @brief   Computes dynamical feasibility gaps.
@@ -166,9 +185,12 @@ template <typename Scalar> struct SolverFDDP {
    *          the residual of initial condition.
    *
    */
-  void computeInfeasibility(const Problem &problem, Results &results,
-                            Workspace &workspace) const;
+  static void computeInfeasibility(const Problem &problem, Results &results,
+                                   Workspace &workspace);
 
+  /**
+   * @brief   Compute Riccati gains.
+   */
   void backwardPass(const Problem &problem, Workspace &workspace,
                     Results &results) const {
 
@@ -318,14 +340,36 @@ template <typename Scalar> struct SolverFDDP {
 
       Scalar alpha_opt = 1;
       Scalar phi0 = results.traj_cost_;
-      Scalar dphi0 = computeDirectionalDerivatives(problem, workspace);
-      proxnlp::ArmijoLinesearch<Scalar>::run(
-          linesearch_fun, phi0, dphi0, verbose_, ls_params.ls_beta,
-          ls_params.armijo_c1, ls_params.alpha_min, alpha_opt);
+      Scalar d1_phi, d2_phi;
+      computeDirectionalDerivatives(workspace, results, d1_phi, d2_phi);
+      // quadratic model lambda; captures by copy
+      auto ls_model = [=, &problem, &workspace, &results](const Scalar alpha) {
+        Scalar d1 = d1_phi;
+        Scalar d2 = d2_phi;
+        directionalDerivativeCorrection(problem, workspace, results, d1, d2);
+        return phi0 + alpha * (d1 + 0.5 * d2 * alpha);
+      };
+      if (!(std::abs(d1_phi) < th_grad_)) {
+        switch (ls_type) {
+        case ARMIJO:
+          proxnlp::ArmijoLinesearch<Scalar>::run(
+              linesearch_fun, phi0, d1_phi, verbose_, ls_params.ls_beta,
+              ls_params.armijo_c1, ls_params.alpha_min, alpha_opt);
+          break;
+        case GOLDSTEIN:
+          FDDPGoldsteinLinesearch<Scalar>::run(linesearch_fun, ls_model, phi0,
+                                               verbose_, ls_params, th_grad_,
+                                               alpha_opt);
+          break;
+        default:
+          break;
+        }
+      }
+      forwardPass(problem, results, workspace, alpha_opt);
       results.xs_ = workspace.trial_xs_;
       results.us_ = workspace.trial_us_;
 
-      record.dphi0 = dphi0;
+      record.dphi0 = d1_phi;
       record.step_size = alpha_opt;
 
       if (alpha_opt > th_step_dec_) {

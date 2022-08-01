@@ -19,7 +19,10 @@ template <typename Scalar> struct WorkspaceFDDPTpl : WorkspaceBaseTpl<Scalar> {
   std::vector<VectorXs> feas_gaps_;
   /// State increment
   std::vector<VectorXs> dxs_;
+  /// Control increment
+  std::vector<VectorXs> dus_;
   std::vector<VectorXs> Quuks_;
+  std::vector<VectorXs> f_t_Vxx_;
   /// Buffer for KKT matrices.
   std::vector<MatrixXs> kkt_matrix_bufs;
   /// Buffer for KKT system right-hand sides.
@@ -41,7 +44,9 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
   xnexts_.resize(nsteps);
   feas_gaps_.resize(nsteps + 1);
   dxs_.resize(nsteps + 1);
+  dus_.reserve(nsteps);
   Quuks_.resize(nsteps);
+  f_t_Vxx_.resize(nsteps + 1);
   kkt_matrix_bufs.resize(nsteps);
   kkt_rhs_bufs.resize(nsteps);
   llts_.reserve(nsteps);
@@ -60,8 +65,10 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
     xnexts_[i] = sm.xspace().neutral();
     feas_gaps_[i + 1] = VectorXs::Zero(sm.ndx2());
     dxs_[i] = VectorXs::Zero(ndx);
+    dus_[i] = VectorXs::Zero(nu);
 
     Quuks_[i] = VectorXs::Zero(sm.nu());
+    f_t_Vxx_[i + 1] = VectorXs::Zero(sm.ndx2());
     kkt_matrix_bufs[i] = MatrixXs::Zero(nu, nu);
     kkt_rhs_bufs[i] = MatrixXs::Zero(nu, ndx + 1);
     llts_.emplace_back(nu);
