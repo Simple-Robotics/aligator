@@ -44,7 +44,7 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
   xnexts_.resize(nsteps);
   feas_gaps_.resize(nsteps + 1);
   dxs_.resize(nsteps + 1);
-  dus_.reserve(nsteps);
+  dus_.resize(nsteps);
   Quuks_.resize(nsteps);
   f_t_Vxx_.resize(nsteps + 1);
   kkt_matrix_bufs.resize(nsteps);
