@@ -28,6 +28,7 @@ template <typename Scalar> struct FunctionDataTpl;
 // fwd CostAbstractTpl
 template <typename Scalar> struct CostAbstractTpl;
 
+// fwd CostDataAbstractTpl
 template <typename Scalar> struct CostDataAbstractTpl;
 
 // fwd DynamicsModelTpl
@@ -57,6 +58,7 @@ template <typename Scalar> struct StageDataTpl;
 // fwd TrajOptProblemTpl
 template <typename Scalar> struct TrajOptProblemTpl;
 
+// fwd TrajOptDataTpl
 template <typename Scalar> struct TrajOptDataTpl;
 
 // fwd SolverProxDDP
@@ -68,9 +70,6 @@ template <typename Scalar> struct WorkspaceTpl;
 // fwd ResultsTpl
 template <typename Scalar> struct ResultsTpl;
 
-/// Math utilities
-namespace math {
-using namespace proxnlp::math;
-} // namespace math
-
 } // namespace proxddp
+
+#include "proxddp/math.hpp"
