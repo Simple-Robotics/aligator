@@ -7,6 +7,7 @@
 #include "proxddp/core/explicit-dynamics.hpp"
 
 #include "proxddp/fddp/workspace.hpp"
+#include "proxddp/fddp/linsesearch.hpp"
 
 #include "proxddp/utils/exceptions.hpp"
 #include "proxddp/utils/logger.hpp"
@@ -89,6 +90,8 @@ template <typename Scalar> struct SolverFDDP {
   Scalar th_step_inc_ = 0.01;
 
   LinesearchParams<Scalar> ls_params;
+  enum ls_types { GOLDSTEIN, ARMIJO };
+  ls_types ls_type = GOLDSTEIN;
 
   VerboseLevel verbose_;
   /// Maximum number of iterations for the solver.
@@ -100,8 +103,9 @@ template <typename Scalar> struct SolverFDDP {
   std::unique_ptr<Results> results_;
   std::unique_ptr<Workspace> workspace_;
 
-  SolverFDDP(const Scalar tol = 1e-6, const Scalar reg_init = 1e-10,
-             VerboseLevel verbose = VerboseLevel::QUIET);
+  SolverFDDP(const Scalar tol = 1e-6,
+             VerboseLevel verbose = VerboseLevel::QUIET,
+             const Scalar reg_init = 1e-10);
 
   const Results &getResults() const { return *results_; }
   const Workspace &getWorkspace() const { return *workspace_; }

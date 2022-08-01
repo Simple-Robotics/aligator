@@ -15,6 +15,7 @@ ResultsFDDPTpl<Scalar>::ResultsFDDPTpl(
   us_.resize(nsteps);
 
   xs_default_init(problem, xs_);
+  us_default_init(problem, us_);
 
   gains_.resize(nsteps);
 
@@ -26,14 +27,15 @@ ResultsFDDPTpl<Scalar>::ResultsFDDPTpl(
     const int nu = sm.nu();
     const int ndual = sm.numDual();
 
-    us_[i] = uspace.neutral();
     gains_[i] = MatrixXs::Zero(nu, ndx + 1);
   }
 }
 
+/* SolverFDDP<Scalar> */
+
 template <typename Scalar>
-SolverFDDP<Scalar>::SolverFDDP(const Scalar tol, const Scalar reg_init,
-                               VerboseLevel verbose)
+SolverFDDP<Scalar>::SolverFDDP(const Scalar tol, VerboseLevel verbose,
+                               const Scalar reg_init)
     : tol_(tol), xreg_(reg_init), ureg_(reg_init), verbose_(verbose) {}
 
 template <typename Scalar>

@@ -6,6 +6,24 @@
 namespace proxddp {
 namespace python {
 
+template <typename SolverType>
+struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
+  template <typename PyClass> void visit(PyClass &obj) const {
+    obj.def_readwrite("verbose", &SolverType::verbose_,
+                      "Verbosity level of the solver.")
+        .def_readwrite("max_iters", &SolverType::MAX_ITERS,
+                       "Maximum number of iterations.")
+        .def_readwrite("ls_params", &SolverType::ls_params,
+                       "Linesearch parameters.")
+        .def("getResults", &SolverType::getResults, bp::args("self"),
+             bp::return_internal_reference<>(), "Get the results instance.")
+        .def("getWorkspace", &SolverType::getWorkspace, bp::args("self"),
+             bp::return_internal_reference<>(), "Get the workspace instance.")
+        .def("setup", &SolverType::setup, bp::args("self", "problem"),
+             "Allocate solver workspace and results data for the problem.");
+  }
+};
+
 void exposeBase() {
   using context::Scalar;
 
@@ -58,18 +76,16 @@ void exposeFDDP() {
 
   bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>>("WorkspaceFDDP",
                                                              bp::no_init)
-      .def_readonly("dxs", &Workspace::dxs_);
+      .def_readonly("dxs", &Workspace::dxs_)
+      .def_readonly("dus", &Workspace::dus_);
 
   bp::class_<SolverType, boost::noncopyable>(
       "SolverFDDP", "An implementation of the FDDP solver from Crocoddyl.",
-      bp::init<Scalar, Scalar, bp::optional<VerboseLevel>>(
-          bp::args("self", "tol", "reg_init", "verbose")))
+      bp::init<Scalar, bp::optional<VerboseLevel, Scalar>>(
+          bp::args("self", "tol", "verbose", "reg_init")))
       .def_readwrite("reg_min", &SolverType::reg_min_)
       .def_readwrite("reg_max", &SolverType::reg_max_)
-      .def_readwrite("verbose", &SolverType::verbose_)
-      .def_readwrite("max_iters", &SolverType::MAX_ITERS)
-      .def("setup", &SolverType::setup, bp::args("self", "problem"),
-           "Setup a problem.")
+      .def(SolverVisitor<SolverType>())
       .def("run", &SolverType::run,
            (bp::arg("self"), bp::arg("problem"), bp::arg("xs_init"),
             bp::arg("us_init")));
@@ -163,19 +179,8 @@ void exposeSolvers() {
       .def_readwrite("target_tol", &SolverType::target_tolerance,
                      "Desired tolerance.")
       .def_readwrite("bcl_params", &SolverType::bcl_params, "BCL parameters.")
-      .def_readwrite("ls_params", &SolverType::ls_params,
-                     "Linesearch parameters.")
       .def_readwrite("multiplier_update_mode", &SolverType::mul_update_mode)
-      .def_readwrite("max_iters", &SolverType::MAX_ITERS,
-                     "Maximum number of iterations.")
-      .def_readwrite("verbose", &SolverType::verbose_,
-                     "Verbosity level of the solver.")
-      .def("getResults", &SolverType::getResults, bp::args("self"),
-           bp::return_internal_reference<>(), "Get the results instance.")
-      .def("getWorkspace", &SolverType::getWorkspace, bp::args("self"),
-           bp::return_internal_reference<>(), "Get the workspace instance.")
-      .def("setup", &SolverType::setup, bp::args("self", "problem"),
-           "Allocate workspace and results memory for the problem.")
+      .def(SolverVisitor<SolverType>())
       .def("run", &SolverType::run,
            bp::args("self", "problem", "xs_init", "us_init"),
            "Run the algorithm. This requires providing initial guesses "
