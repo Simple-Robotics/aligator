@@ -49,13 +49,11 @@ template <typename _Scalar> struct ResultsTpl : ResultsBaseTpl<_Scalar> {
   /// @brief    Create the results struct from a problem (TrajOptProblemTpl)
   /// instance.
   explicit ResultsTpl(const TrajOptProblemTpl<Scalar> &problem);
-
-  template <typename S>
-  friend std::ostream &operator<<(std::ostream &oss, const ResultsTpl<S> &self);
 };
 
 template <typename Scalar>
-std::ostream &operator<<(std::ostream &oss, const ResultsTpl<Scalar> &self) {
+std::ostream &operator<<(std::ostream &oss,
+                         const ResultsBaseTpl<Scalar> &self) {
   oss << "Results {";
   oss << fmt::format("\n  numiters   :  {:d},", self.num_iters);
   oss << fmt::format("\n  converged  :  {},", self.conv);

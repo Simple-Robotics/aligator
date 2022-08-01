@@ -65,7 +65,8 @@ void exposeBase() {
       .def_readonly("conv", &ResultsBase::conv)
       .def_readonly("gains", &ResultsBase::gains_)
       .def_readonly("xs", &ResultsBase::xs_)
-      .def_readonly("us", &ResultsBase::us_);
+      .def_readonly("us", &ResultsBase::us_)
+      .def(PrintableVisitor<ResultsBase>());
 }
 
 void exposeFDDP() {
@@ -121,8 +122,7 @@ void exposeSolvers() {
       .def_readonly("dual_infeas", &Results::dual_infeasibility)
       .def_readonly("traj_cost", &Results::traj_cost_, "Trajectory cost.")
       .def_readonly("merit_value", &Results::merit_value_,
-                    "Merit function value.")
-      .def(PrintableVisitor<Results>());
+                    "Merit function value.");
 
   using SolverType = SolverProxDDP<Scalar>;
 
