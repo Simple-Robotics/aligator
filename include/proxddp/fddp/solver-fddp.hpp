@@ -6,6 +6,7 @@
 #include "proxddp/core/helpers-base.hpp"
 #include "proxddp/core/explicit-dynamics.hpp"
 
+#include "proxddp/fddp/results.hpp"
 #include "proxddp/fddp/workspace.hpp"
 #include "proxddp/fddp/linsesearch.hpp"
 
@@ -22,34 +23,6 @@
              __FUNCTION__, msg)
 
 namespace proxddp {
-
-template <typename Scalar> struct ResultsFDDPTpl : ResultsBaseTpl<Scalar> {
-
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-  using Base = ResultsBaseTpl<Scalar>;
-  using BlockXs = Eigen::Block<MatrixXs, -1, -1>;
-
-  using Base::gains_;
-  using Base::us_;
-  using Base::xs_;
-
-  decltype(auto) getFeedforward(std::size_t i) { return gains_[i].col(0); }
-  decltype(auto) getFeedforward(std::size_t i) const {
-    return gains_[i].col(0);
-  }
-
-  decltype(auto) getFeedback(std::size_t i) {
-    const int ndx = this->gains_[i].cols() - 1;
-    return gains_[i].rightCols(ndx);
-  }
-
-  decltype(auto) getFeedback(std::size_t i) const {
-    const int ndx = this->gains_[i].cols() - 1;
-    return gains_[i].rightCols(ndx);
-  }
-
-  explicit ResultsFDDPTpl(const TrajOptProblemTpl<Scalar> &problem);
-};
 
 /**
  * @brief The feasible DDP (FDDP) algorithm

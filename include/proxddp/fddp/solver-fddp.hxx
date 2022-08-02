@@ -4,33 +4,6 @@
 
 namespace proxddp {
 
-template <typename Scalar>
-ResultsFDDPTpl<Scalar>::ResultsFDDPTpl(
-    const TrajOptProblemTpl<Scalar> &problem) {
-  using StageModel = StageModelTpl<Scalar>;
-  using Manifold = ManifoldAbstractTpl<Scalar>;
-
-  const std::size_t nsteps = problem.numSteps();
-  xs_.resize(nsteps + 1);
-  us_.resize(nsteps);
-
-  xs_default_init(problem, xs_);
-  us_default_init(problem, us_);
-
-  gains_.resize(nsteps);
-
-  for (std::size_t i = 0; i < nsteps; i++) {
-    const StageModel &sm = *problem.stages_[i];
-    const Manifold &uspace = sm.uspace();
-
-    const int ndx = sm.ndx1();
-    const int nu = sm.nu();
-    const int ndual = sm.numDual();
-
-    gains_[i] = MatrixXs::Zero(nu, ndx + 1);
-  }
-}
-
 /* SolverFDDP<Scalar> */
 
 template <typename Scalar>
