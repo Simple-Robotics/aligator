@@ -285,6 +285,18 @@ template <typename Scalar> struct SolverFDDP {
   /// @brief Compute the dual feasibility of the problem.
   void computeCriterion(Workspace &workspace, Results &results);
 
+  /// @brief    Add a callback to the solver instance.
+  void registerCallback(const CallbackPtr &cb) { callbacks_.push_back(cb); }
+
+  /// @brief    Remove all callbacks from the instance.
+  void clearCallbacks() { callbacks_.clear(); }
+
+  void invokeCallbacks(Workspace &workspace, Results &results) {
+    for (auto cb : callbacks_) {
+      cb->call(this, workspace, results);
+    }
+  }
+
   bool run(const Problem &problem,
            const std::vector<VectorXs> &xs_init = DEFAULT_VECTOR<Scalar>,
            const std::vector<VectorXs> &us_init = DEFAULT_VECTOR<Scalar>) {
@@ -383,6 +395,7 @@ template <typename Scalar> struct SolverFDDP {
         }
       }
 
+      invokeCallbacks(workspace, results);
       logger.log(record);
     }
 

@@ -20,7 +20,11 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
         .def("getWorkspace", &SolverType::getWorkspace, bp::args("self"),
              bp::return_internal_reference<>(), "Get the workspace instance.")
         .def("setup", &SolverType::setup, bp::args("self", "problem"),
-             "Allocate solver workspace and results data for the problem.");
+             "Allocate solver workspace and results data for the problem.")
+        .def("registerCallback", &SolverType::registerCallback,
+             bp::args("self", "cb"), "Add a callback to the solver.")
+        .def("clearCallbacks", &SolverType::clearCallbacks, bp::args("self"),
+             "Clear callbacks.");
   }
 };
 
@@ -170,7 +174,7 @@ void exposeProxDDP() {
     bp::class_<BCLType>("BCLParams",
                         "Parameters for the bound-constrained Lagrangian (BCL) "
                         "penalty update strategy.",
-                        bp::init<>())
+                        bp::init<>(bp::args("self")))
         .def_readwrite("prim_alpha", &BCLType::prim_alpha)
         .def_readwrite("prim_beta", &BCLType::prim_beta)
         .def_readwrite("dual_alpha", &BCLType::dual_alpha)
@@ -179,33 +183,34 @@ void exposeProxDDP() {
         .def_readwrite("rho_factor", &BCLType::rho_update_factor);
   }
 
-  bp::class_<SolverType, boost::noncopyable>(
-      "SolverProxDDP",
-      "A primal-dual augmented Lagrangian solver, based on DDP to compute "
-      "search directions."
-      " The solver instance initializes both a Workspace and Results which can "
-      "be retrieved"
-      " through the `getWorkspace` and `getResults` methods, respectively.",
-      bp::init<Scalar, Scalar, Scalar, std::size_t, VerboseLevel>(
-          (bp::arg("self"), bp::arg("tol"), bp::arg("mu_init") = 1e-2,
-           bp::arg("rho_init") = 0., bp::arg("max_iters") = 1000,
-           bp::arg("verbose") = VerboseLevel::QUIET)))
-      .def_readonly("mu_init", &SolverType::mu_init,
-                    "Initial dual penalty parameter.")
-      .def_readonly("rho_init", &SolverType::rho_init,
-                    "Initial (primal) proximal parameter.")
-      .def_readwrite("target_tol", &SolverType::target_tolerance,
-                     "Desired tolerance.")
-      .def_readwrite("bcl_params", &SolverType::bcl_params, "BCL parameters.")
-      .def_readwrite("multiplier_update_mode", &SolverType::mul_update_mode)
-      .def(SolverVisitor<SolverType>())
-      .def("run", &SolverType::run,
-           bp::args("self", "problem", "xs_init", "us_init"),
-           "Run the algorithm. This requires providing initial guesses "
-           "for both trajectory and control.")
-      .def("registerCallback", &SolverType::registerCallback,
-           bp::args("self", "cb"), "Add a callback to the solver.")
-      .def("clearCallbacks", &SolverType::clearCallbacks, "Clear callbacks.");
+  auto cl =
+      bp::class_<SolverType, boost::noncopyable>(
+          "SolverProxDDP",
+          "A primal-dual augmented Lagrangian solver, based on DDP to compute "
+          "search directions."
+          " The solver instance initializes both a Workspace and Results which "
+          "can "
+          "be retrieved"
+          " through the `getWorkspace` and `getResults` methods, respectively.",
+          bp::init<Scalar, Scalar, Scalar, std::size_t, VerboseLevel>(
+              (bp::arg("self"), bp::arg("tol"), bp::arg("mu_init") = 1e-2,
+               bp::arg("rho_init") = 0., bp::arg("max_iters") = 1000,
+               bp::arg("verbose") = VerboseLevel::QUIET)))
+          .def_readonly("mu_init", &SolverType::mu_init,
+                        "Initial dual penalty parameter.")
+          .def_readonly("rho_init", &SolverType::rho_init,
+                        "Initial (primal) proximal parameter.")
+          .def_readwrite("target_tol", &SolverType::target_tolerance,
+                         "Desired tolerance.")
+          .def_readwrite("bcl_params", &SolverType::bcl_params,
+                         "BCL parameters.")
+          .def_readwrite("multiplier_update_mode", &SolverType::mul_update_mode)
+          .def(SolverVisitor<SolverType>())
+          .def("run", &SolverType::run,
+               bp::args("self", "problem", "xs_init", "us_init"),
+               "Run the algorithm. This requires providing initial guesses "
+               "for both trajectory and control.");
+  bp::scope().attr("ProxDDP") = cl;
 }
 
 void exposeSolvers() {
