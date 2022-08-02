@@ -327,7 +327,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
 
   checkTrajectoryAndAssign(problem, xs_init, us_init, results.xs_, results.us_);
 
-  ::proxddp::CustomLogger().start();
+  ::proxddp::BaseLogger().start();
 
   workspace.prev_xs_ = results.xs_;
   workspace.prev_us_ = results.us_;
@@ -512,7 +512,7 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
       //            " | dphi0  {:.3e}"
       //            " | merit  {:.3e}\n",
       //            alpha_opt, dphi0, results.merit_value_);
-      CustomLogger().log(iter_log);
+      BaseLogger().log(iter_log);
     }
 
     // accept the step

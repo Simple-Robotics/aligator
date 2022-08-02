@@ -298,7 +298,7 @@ template <typename Scalar> struct SolverFDDP {
     checkTrajectoryAndAssign(problem, xs_init, us_init, results.xs_,
                              results.us_);
 
-    ::proxddp::CustomLogger logger{};
+    ::proxddp::BaseLogger logger{};
     logger.start();
 
     // in Crocoddyl, linesearch xs is primed to use problem x0
