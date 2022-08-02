@@ -37,7 +37,7 @@ struct CrocActionModelWrapperTpl : public StageModelTpl<Scalar> {
              action_model->get_nu()),
         action_model_(action_model) {
     using EqualitySet = proxnlp::EqualityConstraint<Scalar>;
-    const int nr = action_model->get_state()->get_ndx();
+    const int nr = (int)action_model->get_state()->get_ndx();
     this->constraints_.push_back(
         ConstraintType{nullptr, std::make_shared<EqualitySet>()}, nr);
   }

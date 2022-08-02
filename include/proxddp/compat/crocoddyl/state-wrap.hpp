@@ -29,8 +29,8 @@ struct StateWrapperTpl : ManifoldAbstractTpl<_Scalar> {
   explicit StateWrapperTpl(const boost::shared_ptr<StateAbstract> &state)
       : croc_state(state) {}
 
-  int nx() const { return croc_state->get_nx(); }
-  int ndx() const { return croc_state->get_ndx(); }
+  int nx() const { return (int)croc_state->get_nx(); }
+  int ndx() const { return (int)croc_state->get_ndx(); }
 
   PointType neutral() const { return croc_state->zero(); }
   PointType rand() const { return croc_state->rand(); }
