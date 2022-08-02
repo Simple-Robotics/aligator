@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/core/solver-base.hpp"
+#include "proxddp/core/solver-util.hpp"
 #include "proxddp/core/solver-results.hpp"
 #include "proxddp/core/linesearch.hpp"
 #include "proxddp/core/helpers-base.hpp"

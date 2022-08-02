@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/core/solver-base.hpp"
+#include "proxddp/core/solver-util.hpp"
 
 #include <fmt/core.h>
 
