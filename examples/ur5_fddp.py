@@ -32,21 +32,21 @@ nu = nv
 
 x0 = space.neutral()
 
-p_ref = np.array([0.9, 0.0, 0.9])
+p_ref = np.array([0.8, 0.0, 0.7])
 
 actuation_matrix = np.eye(nu)
 ode = dynamics.MultibodyFreeFwdDynamics(space, actuation_matrix)
 timestep = 0.033
-rk2_dyn = dynamics.IntegratorRK2(ode, timestep)
+discrete_dyn = dynamics.IntegratorRK2(ode, timestep)
 
-w_x = timestep * np.eye(ndx) * 1e-2
+w_x = timestep * np.eye(ndx) * 1e-1
 w_u = timestep * np.eye(nu) * 1e-4
 rcost = proxddp.QuadraticCost(w_x, w_u)
 
 stages = []
 nsteps = int(1.0 / timestep)
 for i in range(nsteps):
-    st = proxddp.StageModel(space, nu, rcost, rk2_dyn)
+    st = proxddp.StageModel(space, nu, rcost, discrete_dyn)
     stages.append(st)
 
 wx_term = np.eye(3) * 2.0
@@ -60,11 +60,15 @@ term_cost.addCost(
 problem = proxddp.TrajOptProblem(x0, stages, term_cost)
 
 tol = 1e-4
-solver = SolverFDDP(tol, verbose=proxddp.VerboseLevel.VERBOSE)
+verbose = proxddp.VerboseLevel.VERBOSE
+solver = SolverFDDP(tol, verbose=verbose)
+# solver = proxddp.SolverProxDDP(tol, 1e-6, verbose=verbose)
+solver.registerCallback(proxddp.HistoryCallback(False, True, True))
 solver.setup(problem)
 
 us_init = [np.zeros(nu)] * nsteps
-xs_init = proxddp.rollout(rk2_dyn, x0, us_init)
+# xs_init = proxddp.rollout(discrete_dyn, x0, us_init)
+xs_init = [x0] * (nsteps + 1)
 
 solver.run(problem, xs_init, us_init)
 
