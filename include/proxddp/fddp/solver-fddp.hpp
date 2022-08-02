@@ -152,6 +152,9 @@ template <typename Scalar> struct SolverFDDP {
   bool run(const Problem &problem,
            const std::vector<VectorXs> &xs_init = DEFAULT_VECTOR<Scalar>,
            const std::vector<VectorXs> &us_init = DEFAULT_VECTOR<Scalar>) {
+
+    const Scalar fd_eps = 1e-9;
+
     if (results_ == 0 || workspace_ == 0) {
       proxddp_runtime_error(
           "Either results or workspace not allocated. Call setup() first!");
@@ -206,14 +209,25 @@ template <typename Scalar> struct SolverFDDP {
       Scalar phi0 = results.traj_cost_;
       Scalar d1_phi, d2_phi;
       computeDirectionalDerivatives(workspace, results, d1_phi, d2_phi);
+      PROXDDP_RAISE_IF_NAN(d1_phi);
+      PROXDDP_RAISE_IF_NAN(d2_phi);
+#ifndef NDEBUG
+      Scalar finite_diff_d1 = (linesearch_fun(fd_eps) - phi0) / fd_eps;
+      assert(math::scalar_close(finite_diff_d1, d1_phi, std::pow(fd_eps, 0.5)));
+#endif
+      record.dphi0 = d1_phi;
+
       // quadratic model lambda; captures by copy
       auto ls_model = [=, &problem, &workspace, &results](const Scalar alpha) {
         Scalar d1 = d1_phi;
         Scalar d2 = d2_phi;
-        directionalDerivativeCorrection(problem, workspace, results, d1, d2);
+        computeInfeasibility(problem, results, workspace);
+        // directionalDerivativeCorrection(problem, workspace, results, d1, d2);
         return phi0 + alpha * (d1 + 0.5 * d2 * alpha);
       };
-      if (!(std::abs(d1_phi) < th_grad_)) {
+
+      bool d1_small = std::abs(d1_phi) < th_grad_;
+      if (!d1_small) {
         switch (ls_type) {
         case ARMIJO:
           proxnlp::ArmijoLinesearch<Scalar>::run(
@@ -228,13 +242,20 @@ template <typename Scalar> struct SolverFDDP {
         default:
           break;
         }
+        record.step_size = alpha_opt;
       }
-      forwardPass(problem, results, workspace, alpha_opt);
+      // forwardPass(problem, results, workspace, alpha_opt);
+      Scalar phi_new = tryStep(problem, results, workspace, alpha_opt);
+      PROXDDP_RAISE_IF_NAN(phi_new);
+      Scalar dphi = phi_new - phi0;
+      record.dM = dphi;
       results.xs_ = workspace.trial_xs_;
       results.us_ = workspace.trial_us_;
-
-      record.dphi0 = d1_phi;
-      record.step_size = alpha_opt;
+      if (d1_small) {
+        results.conv = true;
+        logger.log(record);
+        break;
+      }
 
       if (alpha_opt > th_step_dec_) {
         increase_reg();
