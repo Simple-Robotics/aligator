@@ -144,8 +144,8 @@ template <typename Scalar> struct SolverFDDP {
   void clearCallbacks() { callbacks_.clear(); }
 
   void invokeCallbacks(Workspace &workspace, Results &results) {
-    for (auto cb : callbacks_) {
-      cb->call(this, workspace, results);
+    for (auto &cb : callbacks_) {
+      cb->call(workspace, results);
     }
   }
 

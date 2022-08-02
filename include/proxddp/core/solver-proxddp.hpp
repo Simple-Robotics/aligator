@@ -86,8 +86,6 @@ public:
   MultiplierUpdateMode mul_update_mode = MultiplierUpdateMode::PRIMAL_DUAL;
   BCLParams<Scalar> bcl_params;
 
-  std::size_t al_iter = 0;
-
   /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.
   std::size_t MAX_ITERS;
   std::size_t MAX_AL_ITERS = MAX_ITERS;
@@ -199,8 +197,8 @@ public:
   void clearCallbacks() { callbacks_.clear(); }
 
   void invokeCallbacks(Workspace &workspace, Results &results) {
-    for (auto cb : callbacks_) {
-      cb->call(this, workspace, results);
+    for (auto &cb : callbacks_) {
+      cb->call(workspace, results);
     }
   }
   /// \}

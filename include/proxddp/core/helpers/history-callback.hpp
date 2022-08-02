@@ -5,9 +5,12 @@
 
 namespace proxddp {
 namespace helpers {
+
 /** @brief  Store the history of results.
  */
 template <typename Scalar> struct history_callback : base_callback<Scalar> {
+  using Workspace = WorkspaceBaseTpl<Scalar>;
+  using Results = ResultsBaseTpl<Scalar>;
   history_callback(bool store_pd_vars = false, bool store_values = true,
                    bool store_residuals = true)
       : store_primal_dual_vars_(store_pd_vars), store_values_(store_values),
@@ -17,6 +20,7 @@ template <typename Scalar> struct history_callback : base_callback<Scalar> {
 
   struct {
     std::vector<std::vector<VectorXs>> xs;
+    std::vector<std::vector<VectorXs>> us;
     std::vector<std::vector<VectorXs>> lams;
     std::vector<Scalar> values;
     std::vector<Scalar> merit_values;
@@ -28,11 +32,10 @@ template <typename Scalar> struct history_callback : base_callback<Scalar> {
     std::vector<Scalar> dual_tols;
   } storage;
 
-  void call(const SolverProxDDP<Scalar> *solver,
-            const WorkspaceTpl<Scalar> &workspace,
-            const ResultsTpl<Scalar> &results) {
+  void call(const Workspace &workspace, const Results &results) {
     if (store_primal_dual_vars_) {
       storage.xs.push_back(results.xs_);
+      storage.us.push_back(results.us_);
       storage.lams.push_back(results.lams_);
     }
     if (store_values_) {
@@ -40,19 +43,20 @@ template <typename Scalar> struct history_callback : base_callback<Scalar> {
       storage.merit_values.push_back(results.merit_value_);
     }
     if (store_residuals_) {
-      storage.inner_crits.push_back(workspace.inner_criterion);
       storage.prim_infeas.push_back(results.primal_infeasibility);
       storage.dual_infeas.push_back(results.dual_infeasibility);
     }
-    storage.al_index.push_back(solver->al_iter);
-    storage.prim_tols.push_back(solver->prim_tol_);
-    storage.dual_tols.push_back(solver->inner_tol_);
+    if (auto w = dynamic_cast<const WorkspaceTpl<Scalar> *>(&workspace)) {
+      storage.inner_crits.push_back(w->inner_criterion);
+    }
+    if (auto r = dynamic_cast<const ResultsTpl<Scalar> *>(&results)) {
+      storage.al_index.push_back(r->al_iter);
+    }
   }
 
-protected:
-  const bool store_primal_dual_vars_;
-  const bool store_values_;
-  const bool store_residuals_;
+  bool store_primal_dual_vars_;
+  bool store_values_;
+  bool store_residuals_;
 };
 
 } // namespace helpers

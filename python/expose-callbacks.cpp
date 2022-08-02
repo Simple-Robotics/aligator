@@ -8,9 +8,8 @@ namespace python {
 struct CallbackWrapper : helpers::base_callback<context::Scalar>,
                          bp::wrapper<helpers::base_callback<context::Scalar>> {
   CallbackWrapper() = default;
-  void call(const SolverProxDDP<context::Scalar> *,
-            const WorkspaceTpl<context::Scalar> &w,
-            const ResultsTpl<context::Scalar> &r) {
+  void call(const WorkspaceBaseTpl<context::Scalar> &w,
+            const ResultsBaseTpl<context::Scalar> &r) {
     PROXDDP_PYTHON_OVERRIDE_PURE(void, "call", w, r);
   }
 };
