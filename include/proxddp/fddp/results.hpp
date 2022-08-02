@@ -1,5 +1,7 @@
 #pragma one
 
+#include "proxddp/fwd.hpp"
+
 namespace proxddp {
 
 template <typename Scalar> struct ResultsFDDPTpl : ResultsBaseTpl<Scalar> {
