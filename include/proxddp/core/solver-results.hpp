@@ -1,8 +1,8 @@
 #pragma once
 
+#include "proxddp/fwd.hpp"
 #include "proxddp/core/traj-opt-problem.hpp"
 
-#include <fmt/core.h>
 #include <ostream>
 
 namespace proxddp {
@@ -56,20 +56,6 @@ template <typename _Scalar> struct ResultsTpl : ResultsBaseTpl<_Scalar> {
   /// instance.
   explicit ResultsTpl(const TrajOptProblemTpl<Scalar> &problem);
 };
-
-template <typename Scalar>
-std::ostream &operator<<(std::ostream &oss,
-                         const ResultsBaseTpl<Scalar> &self) {
-  oss << "Results {";
-  oss << fmt::format("\n  numiters   :  {:d},", self.num_iters);
-  oss << fmt::format("\n  converged  :  {},", self.conv);
-  oss << fmt::format("\n  traj. cost :  {:.3e},", self.traj_cost_)
-      << fmt::format("\n  merit.value:  {:.3e},", self.merit_value_)
-      << fmt::format("\n  prim_infeas:  {:.3e},", self.primal_infeasibility)
-      << fmt::format("\n  dual_infeas:  {:.3e},", self.dual_infeasibility);
-  oss << "\n}";
-  return oss;
-}
 
 } // namespace proxddp
 
