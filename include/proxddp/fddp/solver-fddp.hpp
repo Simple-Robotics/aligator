@@ -195,6 +195,8 @@ template <typename Scalar> struct SolverFDDP {
 
       backwardPass(problem, workspace, results);
       computeCriterion(workspace, results);
+
+      PROXDDP_RAISE_IF_NAN(results.dual_infeasibility);
       record.dual_err = results.dual_infeasibility;
       record.merit = results.traj_cost_;
       record.inner_crit = 0.;
