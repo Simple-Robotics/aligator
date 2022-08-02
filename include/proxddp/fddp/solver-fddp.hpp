@@ -8,7 +8,7 @@
 
 #include "proxddp/fddp/results.hpp"
 #include "proxddp/fddp/workspace.hpp"
-#include "proxddp/fddp/linsesearch.hpp"
+#include "proxddp/fddp/linesearch.hpp"
 
 #include "proxddp/utils/exceptions.hpp"
 #include "proxddp/utils/logger.hpp"
