@@ -52,6 +52,8 @@ template <typename _Scalar> struct ResultsTpl : ResultsBaseTpl<_Scalar> {
   using Base::us_;
   using Base::xs_;
 
+  std::size_t al_iter = 0;
+
   /// @brief    Create the results struct from a problem (TrajOptProblemTpl)
   /// instance.
   explicit ResultsTpl(const TrajOptProblemTpl<Scalar> &problem);

@@ -344,7 +344,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   bool cur_al_accept = true;
   auto colout = fmt::color::medium_orchid;
 
-  al_iter = 0;
+  std::size_t &al_iter = results.al_iter;
   while ((al_iter < MAX_AL_ITERS) && (results.num_iters < MAX_ITERS)) {
     if (al_iter > 0) {
       if (cur_al_accept)
