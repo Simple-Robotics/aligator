@@ -23,8 +23,9 @@ struct __forward_dyn {
     using ExpData = ExplicitDynamicsDataTpl<T>;
     const ExpModel *model_ptr_cast = dynamic_cast<const ExpModel *>(&model);
     ExpData *data_ptr_cast = dynamic_cast<ExpData *>(&data);
-    bool check = (model_ptr_cast != nullptr) && (data_ptr_cast != nullptr);
-    if (check) {
+    bool is_model_explicit =
+        (model_ptr_cast != nullptr) && (data_ptr_cast != nullptr);
+    if (is_model_explicit) {
       model_ptr_cast->forward(x, u, *data_ptr_cast);
       xout = data_ptr_cast->xnext_;
     } else {
