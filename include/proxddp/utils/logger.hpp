@@ -7,8 +7,8 @@
 namespace proxddp {
 
 const std::vector<std::string> BASIC_KEYS{"iter",     "step_size", "inner_crit",
-                                          "prim_err", "dual_err",  "dphi0",
-                                          "merit",    "dM"};
+                                          "prim_err", "dual_err",  "xreg",
+                                          "dphi0",    "merit",     "dM"};
 constexpr char int_format[] = "{: >{}d}";
 constexpr char sci_format[] = "{: > {}.{}e}";
 constexpr char dbl_format[] = "{: > {}.{}g}";
@@ -19,6 +19,7 @@ struct LogRecord {
   double inner_crit;
   double prim_err;
   double dual_err;
+  double xreg;
   double dphi0;
   double merit;
   double dM;
@@ -50,6 +51,7 @@ struct BaseLogger {
         fmt::format(sci_format, values.inner_crit, COL_WIDTH, dbl_prec));
     v.push_back(fmt::format(sci_format, values.prim_err, COL_WIDTH, dbl_prec));
     v.push_back(fmt::format(sci_format, values.dual_err, COL_WIDTH, dbl_prec));
+    v.push_back(fmt::format(sci_format, values.xreg, COL_WIDTH, dbl_prec));
     v.push_back(fmt::format(dbl_format, values.dphi0, COL_WIDTH, dbl_prec));
     v.push_back(fmt::format(dbl_format, values.merit, COL_WIDTH, dbl_prec));
     v.push_back(fmt::format(dbl_format, values.dM, COL_WIDTH, dbl_prec));

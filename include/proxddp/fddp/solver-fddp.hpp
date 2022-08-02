@@ -250,6 +250,7 @@ template <typename Scalar> struct SolverFDDP {
       Scalar phi_new = tryStep(problem, results, workspace, alpha_opt);
       PROXDDP_RAISE_IF_NAN(phi_new);
       Scalar dphi = phi_new - phi0;
+      record.xreg = xreg_;
       record.dM = dphi;
       results.xs_ = workspace.trial_xs_;
       results.us_ = workspace.trial_us_;
