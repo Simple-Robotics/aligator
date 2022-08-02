@@ -122,13 +122,13 @@ template <typename Scalar> struct SolverFDDP {
   void backwardPass(const Problem &problem, Workspace &workspace,
                     Results &results) const;
 
-  void increase_reg() {
+  void increaseRegularization() {
     xreg_ *= reg_inc_factor_;
     xreg_ = std::min(xreg_, reg_max_);
     ureg_ = xreg_;
   }
 
-  void decrease_reg() {
+  void decreaseRegularization() {
     xreg_ *= reg_dec_factor_;
     xreg_ = std::max(xreg_, reg_min_);
     ureg_ = xreg_;
@@ -261,10 +261,10 @@ template <typename Scalar> struct SolverFDDP {
       }
 
       if (alpha_opt > th_step_dec_) {
-        increase_reg();
+        decreaseRegularization();
       }
       if (alpha_opt <= th_step_inc_) {
-        decrease_reg();
+        increaseRegularization();
         if (xreg_ == reg_max_) {
           results.conv = false;
           break;
