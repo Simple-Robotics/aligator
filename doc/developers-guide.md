@@ -12,6 +12,12 @@ gdb path/to/executable
 
 with the appropriate command line arguments. Examples will appear in the binaries of `build/examples`. Make sure to look at GDB's documentation.
 
+If you want to catch `std::exception` instances thrown, enter the following command once in GDB:
+
+```gdb
+(gdb) catch throw std::exception
+```
+
 ## Debugging a Python example or test
 
 In order for debug symbols to be loaded and important variables not being optimized out, you will want to compile in `DEBUG` mode.
