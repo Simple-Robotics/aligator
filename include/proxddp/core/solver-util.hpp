@@ -56,7 +56,7 @@ void checkTrajectoryAndAssign(
     xs_default_init(problem, xs_out);
   } else {
     if (xs_init.size() != (nsteps + 1)) {
-      proxddp_runtime_error("warm-start for xs has wrong size!")
+      proxddp_runtime_error("warm-start for xs has wrong size!");
     }
     xs_out = xs_init;
   }
@@ -64,7 +64,7 @@ void checkTrajectoryAndAssign(
     us_default_init(problem, us_out);
   } else {
     if (us_init.size() != nsteps) {
-      proxddp_runtime_error("warm-start for us has wrong size!")
+      proxddp_runtime_error("warm-start for us has wrong size!");
     }
     us_out = us_init;
   }

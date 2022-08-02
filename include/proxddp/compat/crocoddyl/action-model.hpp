@@ -43,7 +43,7 @@ struct CrocActionModelWrapperTpl : public StageModelTpl<Scalar> {
   }
 
   const Dynamics &dyn_model() const {
-    proxddp_runtime_error("There is not dyn_model() for this class.")
+    proxddp_runtime_error("There is not dyn_model() for this class.");
   }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
