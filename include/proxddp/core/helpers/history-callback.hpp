@@ -46,12 +46,12 @@ template <typename Scalar> struct history_callback : base_callback<Scalar> {
       storage.prim_infeas.push_back(results.primal_infeasibility);
       storage.dual_infeas.push_back(results.dual_infeasibility);
     }
-    if (auto w = dynamic_cast<const WorkspaceTpl<Scalar> *>(&workspace)) {
-      storage.inner_crits.push_back(w->inner_criterion);
-    }
-    if (auto r = dynamic_cast<const ResultsTpl<Scalar> *>(&results)) {
-      storage.al_index.push_back(r->al_iter);
-    }
+    // if (auto w = dynamic_cast<const WorkspaceTpl<Scalar> *>(&workspace)) {
+    //   storage.inner_crits.push_back(w->inner_criterion);
+    // }
+    // if (auto r = dynamic_cast<const ResultsTpl<Scalar> *>(&results)) {
+    //   storage.al_index.push_back(r->al_iter);
+    // }
   }
 
   bool store_primal_dual_vars_;

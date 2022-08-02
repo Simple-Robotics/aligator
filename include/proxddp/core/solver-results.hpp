@@ -33,7 +33,7 @@ template <typename _Scalar> struct ResultsBaseTpl {
   /// Dynamics' co-states
   std::vector<VectorRef> co_state_;
 
-  virtual ~ResultsBaseTpl() = default;
+  // virtual ~ResultsBaseTpl() = default;
 };
 
 template <typename Scalar>

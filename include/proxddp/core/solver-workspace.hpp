@@ -41,7 +41,7 @@ template <typename Scalar> struct WorkspaceBaseTpl {
     us_default_init(problem, trial_us_);
   }
 
-  virtual ~WorkspaceBaseTpl() = default;
+  // virtual ~WorkspaceBaseTpl() = default;
 };
 
 /** @brief Workspace for the solver.
