@@ -28,23 +28,29 @@ template <typename _Scalar> struct ResultsBaseTpl {
   std::vector<VectorXs> xs_;
   /// Controls
   std::vector<VectorXs> us_;
+  /// Problem Lagrange multipliers
+  std::vector<VectorXs> lams_;
+  /// Dynamics' co-states
+  std::vector<VectorRef> co_state_;
+
+  virtual ~ResultsBaseTpl() = default;
 };
+
+template <typename Scalar>
+std::ostream &operator<<(std::ostream &oss, const ResultsBaseTpl<Scalar> &self);
 
 /// @brief    Results holder struct.
 template <typename _Scalar> struct ResultsTpl : ResultsBaseTpl<_Scalar> {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ResultsBaseTpl<Scalar>;
+  using Base::co_state_;
   using Base::conv;
   using Base::gains_;
+  using Base::lams_;
   using Base::num_iters;
   using Base::us_;
   using Base::xs_;
-
-  /// Problem Lagrange multipliers
-  std::vector<VectorXs> lams_;
-  /// Dynamics' co-states
-  std::vector<VectorRef> co_state_;
 
   /// @brief    Create the results struct from a problem (TrajOptProblemTpl)
   /// instance.
