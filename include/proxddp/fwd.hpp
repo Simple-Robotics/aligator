@@ -12,10 +12,10 @@ namespace proxddp {
 // Use the shared_ptr used in proxnlp.
 using proxnlp::ManifoldAbstractTpl;
 using proxnlp::math_types;
-using proxnlp::shared_ptr;
 // Using the constraint set from proxnlp
 using proxnlp::ConstraintSetBase;
 using proxnlp::VerboseLevel;
+using std::shared_ptr;
 
 /// 1 BASE TYPES
 
