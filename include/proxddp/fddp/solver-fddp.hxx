@@ -80,7 +80,7 @@ void SolverFDDP<Scalar>::forwardPass(const Problem &problem,
 
     space.difference(results.xs_[i], xs_try[i], dx);
     us_try[i] = results.us_[i] + alpha * ff + fb * dx;
-    forwardDynamics(space, dm, xs_try[i], us_try[i], dd, workspace.xnexts_[i]);
+    forwardDynamics(dm, xs_try[i], us_try[i], dd, workspace.xnexts_[i + 1]);
 
     space.integrate(workspace.xnexts_[i],
                     workspace.feas_gaps_[i + 1] * (alpha - 1.), xs_try[i + 1]);

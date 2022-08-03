@@ -15,8 +15,7 @@ namespace internal {
 struct __forward_dyn {
   double EPS = 1e-6;
   template <typename T>
-  void operator()(const ManifoldAbstractTpl<T> &space,
-                  const DynamicsModelTpl<T> &model,
+  void operator()(const DynamicsModelTpl<T> &model,
                   const typename math_types<T>::ConstVectorRef &x,
                   const typename math_types<T>::ConstVectorRef &u,
                   DynamicsDataTpl<T> &data,
@@ -25,6 +24,7 @@ struct __forward_dyn {
     using ExpData = ExplicitDynamicsDataTpl<T>;
     const ExpModel *model_ptr_cast = dynamic_cast<const ExpModel *>(&model);
     ExpData *data_ptr_cast = dynamic_cast<ExpData *>(&data);
+    const ManifoldAbstractTpl<T> &space = model.space();
     bool is_model_explicit =
         (model_ptr_cast != nullptr) && (data_ptr_cast != nullptr);
     if (is_model_explicit) {
@@ -46,12 +46,11 @@ struct __forward_dyn {
 
   /// Override; falls back to the standard behaviour.
   template <typename T>
-  void operator()(const ManifoldAbstractTpl<T> &,
-                  const ExplicitDynamicsModelTpl<T> &model,
+  void operator()(const ExplicitDynamicsModelTpl<T> &model,
                   const typename math_types<T>::ConstVectorRef &x,
                   const typename math_types<T>::ConstVectorRef &u,
                   ExplicitDynamicsDataTpl<T> &data,
-                  typename math_types<T>::VectorRef xout) {
+                  typename math_types<T>::VectorRef xout) const {
     model.forward(x, u, data);
     xout = data.xnext_;
   }
@@ -89,7 +88,7 @@ rollout(const std::vector<shared_ptr<DynamicsModelTpl<Scalar>>> &dyn_models,
     shared_ptr<Data> data = dyn_models[i]->createData();
     const ManifoldAbstractTpl<Scalar> &space = dyn_models[i]->space();
     xout.push_back(space.neutral());
-    forwardDynamics(space, *dyn_models[i], xout[i], us[i], *data, xout[i + 1]);
+    forwardDynamics(*dyn_models[i], xout[i], us[i], *data, xout[i + 1]);
   }
   return xout;
 }
@@ -110,7 +109,7 @@ rollout(const DynamicsModelTpl<Scalar> &dyn_model,
   for (std::size_t i = 0; i < N; i++) {
     const ManifoldAbstractTpl<Scalar> &space = dyn_model.space();
     xs.push_back(space.neutral());
-    forwardDynamics(space, dyn_model, xs[i], us[i], *data, xs[i + 1]);
+    forwardDynamics(dyn_model, xs[i], us[i], *data, xs[i + 1]);
   }
   return xs;
 }
