@@ -71,7 +71,7 @@ inline constexpr internal::__forward_dyn forwardDynamics{};
 /// @brief Perform a rollout of the supplied dynamical models.
 template <typename Scalar>
 typename math_types<Scalar>::VectorOfVectors
-rollout(const std::vector<const DynamicsModelTpl<Scalar> *> &dyn_models,
+rollout(const std::vector<shared_ptr<DynamicsModelTpl<Scalar>>> &dyn_models,
         const typename math_types<Scalar>::VectorXs &x0,
         const typename math_types<Scalar>::VectorOfVectors &us,
         typename math_types<Scalar>::VectorOfVectors &xout) {
@@ -119,7 +119,7 @@ rollout(const DynamicsModelTpl<Scalar> &dyn_model,
 /// @details    This overload applies to explicit forward dynamics.
 template <typename Scalar>
 void rollout(
-    const std::vector<const ExplicitDynamicsModelTpl<Scalar> *> &dyn_models,
+    const std::vector<shared_ptr<ExplicitDynamicsModelTpl<Scalar>>> &dyn_models,
     const typename math_types<Scalar>::VectorXs &x0,
     const typename math_types<Scalar>::VectorOfVectors &us,
     typename math_types<Scalar>::VectorOfVectors &xout) {
@@ -167,23 +167,23 @@ typename math_types<Scalar>::VectorOfVectors
 rollout(const C<Scalar> &dms, const typename math_types<Scalar>::VectorXs &x0,
         const typename math_types<Scalar>::VectorOfVectors &us) {
   const std::size_t N = us.size();
-  typename math_types<Scalar>::VectorOfVectors xs{x0};
-  xs.resize(N + 1);
-  rollout(dms, x0, us);
-  return xs;
+  typename math_types<Scalar>::VectorOfVectors xout{x0};
+  xout.reserve(N + 1);
+  rollout(dms, x0, us, xout);
+  return xout;
 }
 
 /// @copybrief rollout(). This variant allocates the output and returns it.
 template <template <typename> class C, typename Scalar>
 typename math_types<Scalar>::VectorOfVectors
-rollout(const std::vector<const C<Scalar> *> &dms,
+rollout(const std::vector<shared_ptr<C<Scalar>>> &dms,
         const typename math_types<Scalar>::VectorXs &x0,
         const typename math_types<Scalar>::VectorOfVectors &us) {
   const std::size_t N = us.size();
-  typename math_types<Scalar>::VectorOfVectors xs{x0};
-  xs.resize(N + 1);
-  rollout(dms, x0, us);
-  return xs;
+  typename math_types<Scalar>::VectorOfVectors xout{x0};
+  xout.reserve(N + 1);
+  rollout(dms, x0, us, xout);
+  return xout;
 }
 
 } // namespace proxddp
