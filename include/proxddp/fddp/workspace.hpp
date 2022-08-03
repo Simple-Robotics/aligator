@@ -41,7 +41,7 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
   value_params.reserve(nsteps + 1);
   q_params.reserve(nsteps);
 
-  xnexts_.resize(nsteps);
+  xnexts_.resize(nsteps + 1);
   feas_gaps_.resize(nsteps + 1);
   dxs_.resize(nsteps + 1);
   dus_.resize(nsteps);
@@ -75,6 +75,7 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
   }
   const StageModelTpl<Scalar> &sm = *problem.stages_.back();
   dxs_[nsteps] = VectorXs::Zero(sm.ndx2());
+  xnexts_[nsteps] = sm.xspace_next().neutral();
   value_params.emplace_back(sm.ndx2());
 
   assert(llts_.size() == nsteps);

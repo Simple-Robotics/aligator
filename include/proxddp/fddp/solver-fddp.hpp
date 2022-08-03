@@ -86,13 +86,16 @@ template <typename Scalar> struct SolverFDDP {
   /// @brief Allocate workspace and results structs.
   void setup(const Problem &problem);
 
-  /// @brief    Evaluate the defects in the dynamics.
-  /// @warning  We assume the dynamics were already computed.
-  void evaluateGaps(const Problem &problem, const std::vector<VectorXs> &xs,
-                    const std::vector<VectorXs> &us, const Workspace &workspace,
-                    Results &results) const;
-
-  /// @brief  Perform a nonlinear rollout, keeping an infeasibility gap.
+  /**
+   * @brief   Perform a nonlinear rollout, keeping an infeasibility gap.
+   * @details Perform a nonlinear rollout using the computed sensitivity gains
+   * from the backward pass, while keeping the dynamical feasibility gaps open
+   * proportionally to the step-size @p alpha.
+   * @param[in]   problem
+   * @param[in]   results
+   * @param[out]  workspace
+   * @param[in]   alpha step-size.
+   */
   static void forwardPass(const Problem &problem, const Results &results,
                           Workspace &workspace, const Scalar alpha);
 
@@ -106,17 +109,20 @@ template <typename Scalar> struct SolverFDDP {
 
   /// @brief  Correct the directional derivatives.
   static void directionalDerivativeCorrection(const Problem &problem,
-                                              Workspace &workspace,
+                                              const Workspace &workspace,
                                               Results &results, Scalar &d1,
                                               Scalar &d2);
 
   /**
    * @brief   Computes dynamical feasibility gaps.
-   * @details This computes the difference \f$x_{i+1} \ominus \f$, as well as
-   *          the residual of initial condition.
+   * @details This computes the difference \f$x_{i+1} \ominus f(x_i, u_i)$, as
+   * well as the residual of initial condition. This function will compute the
+   * forward dynamics at every step to compute the forward map $f(x_i, u_i)$.
    */
-  static void computeInfeasibility(const Problem &problem, Results &results,
-                                   Workspace &workspace);
+  static Scalar computeInfeasibility(const Problem &problem,
+                                     const std::vector<VectorXs> &xs,
+                                     const std::vector<VectorXs> &us,
+                                     Workspace &workspace);
 
   /// @brief   Perform the backward pass and compute Riccati gains.
   void backwardPass(const Problem &problem, Workspace &workspace,
@@ -166,16 +172,20 @@ template <typename Scalar> struct SolverFDDP {
                              results.us_);
 
     ::proxddp::BaseLogger logger{};
-    logger.start();
+    if (verbose_ > 0)
+      logger.start();
 
     // in Crocoddyl, linesearch xs is primed to use problem x0
-    workspace.trial_xs_[0] = problem.getInitState();
+    {
+      const VectorXs &x0 = problem.getInitState();
+      workspace.trial_xs_[0] = x0;
+      workspace.xnexts_[0] = x0;
+    }
 
     auto linesearch_fun = [&](const Scalar alpha) {
       return tryStep(problem, results, workspace, alpha);
     };
 
-    forwardPass(problem, results, workspace, 1.);
     LogRecord record;
     record.inner_crit = 0.;
     record.dual_err = 0.;
@@ -186,12 +196,14 @@ template <typename Scalar> struct SolverFDDP {
       record.iter = iter + 1;
 
       problem.evaluate(results.xs_, results.us_, workspace.problem_data);
-      problem.computeDerivatives(results.xs_, results.us_,
-                                 workspace.problem_data);
       results.traj_cost_ =
           computeTrajectoryCost(problem, workspace.problem_data);
-      computeInfeasibility(problem, results, workspace);
+      // evaluate the forward rollout into workspace.xnexts_
+      results.primal_infeasibility =
+          computeInfeasibility(problem, results.xs_, results.us_, workspace);
       record.prim_err = results.primal_infeasibility;
+      problem.computeDerivatives(results.xs_, results.us_,
+                                 workspace.problem_data);
 
       backwardPass(problem, workspace, results);
       computeCriterion(workspace, results);
@@ -200,10 +212,10 @@ template <typename Scalar> struct SolverFDDP {
       record.dual_err = results.dual_infeasibility;
       record.merit = results.traj_cost_;
       record.inner_crit = 0.;
+      record.xreg = xreg_;
 
       if (results.dual_infeasibility < tol_) {
         results.conv = true;
-        logger.log(record);
         break;
       }
 
@@ -214,8 +226,14 @@ template <typename Scalar> struct SolverFDDP {
       PROXDDP_RAISE_IF_NAN(d1_phi);
       PROXDDP_RAISE_IF_NAN(d2_phi);
 #ifndef NDEBUG
-      Scalar finite_diff_d1 = (linesearch_fun(fd_eps) - phi0) / fd_eps;
-      assert(math::scalar_close(finite_diff_d1, d1_phi, std::pow(fd_eps, 0.5)));
+      {
+        Scalar phi1 = linesearch_fun(fd_eps);
+        assert(math::scalar_close(phi0, linesearch_fun(0.),
+                                  std::numeric_limits<double>::epsilon()));
+        Scalar finite_diff_d1 = (linesearch_fun(fd_eps) - phi0) / fd_eps;
+        assert(
+            math::scalar_close(finite_diff_d1, d1_phi, std::pow(fd_eps, 0.5)));
+      }
 #endif
       record.dphi0 = d1_phi;
 
@@ -223,8 +241,7 @@ template <typename Scalar> struct SolverFDDP {
       auto ls_model = [=, &problem, &workspace, &results](const Scalar alpha) {
         Scalar d1 = d1_phi;
         Scalar d2 = d2_phi;
-        computeInfeasibility(problem, results, workspace);
-        // directionalDerivativeCorrection(problem, workspace, results, d1, d2);
+        directionalDerivativeCorrection(problem, workspace, results, d1, d2);
         return phi0 + alpha * (d1 + 0.5 * d2 * alpha);
       };
 
@@ -250,8 +267,8 @@ template <typename Scalar> struct SolverFDDP {
       Scalar phi_new = tryStep(problem, results, workspace, alpha_opt);
       PROXDDP_RAISE_IF_NAN(phi_new);
       Scalar dphi = phi_new - phi0;
-      record.xreg = xreg_;
       record.dM = dphi;
+
       results.xs_ = workspace.trial_xs_;
       results.us_ = workspace.trial_us_;
       if (d1_small) {

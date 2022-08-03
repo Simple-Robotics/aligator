@@ -38,33 +38,13 @@ void SolverFDDP<Scalar>::setup(const Problem &problem) {
 }
 
 template <typename Scalar>
-void SolverFDDP<Scalar>::evaluateGaps(const Problem &problem,
-                                      const std::vector<VectorXs> &xs,
-                                      const std::vector<VectorXs> &us,
-                                      const Workspace &workspace,
-                                      Results &results) const {
-  const std::size_t nsteps = problem.numSteps();
-  const ProblemData &pd = workspace.problem_data;
-
-  const Manifold &space = problem.stages_[0]->xspace();
-  space.difference(xs[0], problem.getInitState(), workspace.feas_gaps_[0]);
-
-  for (std::size_t i = 0; i < nsteps; i++) {
-    const StageModel &sm = *problem.stages_[i];
-    const StageData &sd = pd.getData(i);
-    const Manifold &space = sm.xspace();
-    space.difference(xs[i + 1], workspace.xnexts_[i],
-                     workspace.feas_gaps_[i + 1]);
-  }
-}
-
-template <typename Scalar>
 void SolverFDDP<Scalar>::forwardPass(const Problem &problem,
                                      const Results &results,
                                      Workspace &workspace, const Scalar alpha) {
   const std::size_t nsteps = workspace.nsteps;
   std::vector<VectorXs> &xs_try = workspace.trial_xs_;
   std::vector<VectorXs> &us_try = workspace.trial_us_;
+  const std::vector<VectorXs> &fs = workspace.feas_gaps_;
   ProblemData &pd = workspace.problem_data;
 
   for (std::size_t i = 0; i < nsteps; i++) {
@@ -82,8 +62,8 @@ void SolverFDDP<Scalar>::forwardPass(const Problem &problem,
     us_try[i] = results.us_[i] + alpha * ff + fb * dx;
     forwardDynamics(dm, xs_try[i], us_try[i], dd, workspace.xnexts_[i + 1]);
 
-    space.integrate(workspace.xnexts_[i],
-                    workspace.feas_gaps_[i + 1] * (alpha - 1.), xs_try[i + 1]);
+    space.integrate(workspace.xnexts_[i + 1], fs[i + 1] * (alpha - 1.),
+                    xs_try[i + 1]);
   }
 }
 
@@ -121,24 +101,21 @@ void SolverFDDP<Scalar>::computeDirectionalDerivatives(Workspace &workspace,
     VectorXs &ftVxx = workspace.f_t_Vxx_[i];
     ftVxx = vpar.Vxx_ * workspace.feas_gaps_[i];
     d1 += vpar.Vx_.dot(workspace.feas_gaps_[i]);
-    d2 = d2 - ftVxx.dot(workspace.feas_gaps_[i]);
+    d2 -= ftVxx.dot(workspace.feas_gaps_[i]);
   }
 }
 
 template <typename Scalar>
-void SolverFDDP<Scalar>::directionalDerivativeCorrection(const Problem &problem,
-                                                         Workspace &workspace,
-                                                         Results &results,
-                                                         Scalar &d1,
-                                                         Scalar &d2) {
+void SolverFDDP<Scalar>::directionalDerivativeCorrection(
+    const Problem &problem, const Workspace &workspace, Results &results,
+    Scalar &d1, Scalar &d2) {
   const std::size_t nsteps = workspace.nsteps;
-  const VectorOfVectors &xs = results.xs_;
-  const VectorOfVectors &us = results.us_;
+  const std::vector<VectorXs> &xs = results.xs_;
+  const std::vector<VectorXs> &us = results.us_;
 
   Scalar dv = 0.;
   for (std::size_t i = 0; i < nsteps; i++) {
     const Manifold &space = problem.stages_[i]->xspace();
-    space.difference(workspace.trial_xs_[i], xs[i], workspace.dxs_[i]);
 
     const VParams &vpar = workspace.value_params[i];
     const VectorXs &ftVxx = workspace.f_t_Vxx_[i];
@@ -151,23 +128,30 @@ void SolverFDDP<Scalar>::directionalDerivativeCorrection(const Problem &problem,
 }
 
 template <typename Scalar>
-void SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem,
-                                              Results &results,
-                                              Workspace &workspace) {
+Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem,
+                                                const std::vector<VectorXs> &xs,
+                                                const std::vector<VectorXs> &us,
+                                                Workspace &workspace) {
   const std::size_t nsteps = workspace.nsteps;
-  const ProblemData &pd = workspace.problem_data;
-  std::vector<VectorXs> &xs = results.xs_;
-  const Manifold &space = problem.stages_[0]->xspace();
-  const VectorXs &x0 = problem.getInitState();
+  ProblemData &pd = workspace.problem_data;
 
-  space.difference(xs[0], x0, workspace.feas_gaps_[0]);
+  const VectorXs &x0 = problem.getInitState();
+  std::vector<VectorXs> &fs = workspace.feas_gaps_;
+
+  const Manifold &space = problem.stages_[0]->xspace();
+  space.difference(xs[0], x0, fs[0]);
   for (std::size_t i = 0; i < nsteps; i++) {
-    const Manifold &space = problem.stages_[i]->xspace();
-    space.difference(xs[i + 1], workspace.xnexts_[i],
-                     workspace.feas_gaps_[i + 1]);
+    const StageModel &sm = *problem.stages_[i];
+    const Manifold &space = sm.xspace();
+    StageData &sd = pd.getData(i);
+    const DynamicsModelTpl<Scalar> &dm = sm.dyn_model();
+    DynamicsDataTpl<Scalar> &dd = stage_get_dynamics_data(sd);
+
+    forwardDynamics(dm, xs[i], us[i], dd, workspace.xnexts_[i + 1]);
+    space.difference(xs[i + 1], workspace.xnexts_[i + 1], fs[i + 1]);
   }
 
-  results.primal_infeasibility = math::infty_norm(workspace.feas_gaps_);
+  return math::infty_norm(workspace.feas_gaps_);
 }
 
 template <typename Scalar>
@@ -224,9 +208,6 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
     qparam.grad_ = cd.grad_;
     qparam.hess_ = cd.hess_;
 
-    // fmt::print("==== NODE t = {:d} ====\n", i);
-    // fmt::print("vnext: {}\n", vnext);
-    // fmt::print("vgrad: {}\n", vnext.Vx_.transpose());
     // TODO: implement second-order derivatives for the Q-function
     qparam.grad_.noalias() += J_x_u.transpose() * vnext.Vx_;
     qparam.hess_.noalias() += J_x_u.transpose() * vnext.Vxx_ * J_x_u;
