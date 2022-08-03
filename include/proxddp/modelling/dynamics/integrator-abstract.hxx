@@ -7,7 +7,7 @@ namespace dynamics {
 template <typename Scalar>
 IntegratorAbstractTpl<Scalar>::IntegratorAbstractTpl(
     const shared_ptr<ContinuousDynamics> &cont_dynamics)
-    : Base(cont_dynamics->ndx(), cont_dynamics->nu()),
+    : Base(cont_dynamics->space_, cont_dynamics->nu()),
       continuous_dynamics_(cont_dynamics) {}
 
 template <typename Scalar>

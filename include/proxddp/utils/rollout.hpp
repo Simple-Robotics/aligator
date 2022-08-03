@@ -6,6 +6,8 @@
 #include "proxddp/utils/newton-raphson.hpp"
 #include "proxddp/utils/exceptions.hpp"
 
+#include <type_traits>
+
 namespace proxddp {
 
 namespace internal {
@@ -66,14 +68,13 @@ struct __forward_dyn {
  */
 inline constexpr internal::__forward_dyn forwardDynamics{};
 
-/// @brief   Perform a rollout of the controlled trajectory.
-/// @todo    Implement for generic DynamicsModelTpl.
+/// @brief Perform a rollout of the supplied dynamical models.
 template <typename Scalar>
 typename math_types<Scalar>::VectorOfVectors
-rollout(const ManifoldAbstractTpl<Scalar> &space,
-        const std::vector<const DynamicsModelTpl<Scalar> *> &dyn_models,
+rollout(const std::vector<const DynamicsModelTpl<Scalar> *> &dyn_models,
         const typename math_types<Scalar>::VectorXs &x0,
-        const typename math_types<Scalar>::VectorOfVectors &us) {
+        const typename math_types<Scalar>::VectorOfVectors &us,
+        typename math_types<Scalar>::VectorOfVectors &xout) {
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using Data = DynamicsDataTpl<Scalar>;
   const std::size_t N = us.size();
@@ -81,23 +82,22 @@ rollout(const ManifoldAbstractTpl<Scalar> &space,
     proxddp_runtime_error(
         "Number of controls should be the same as number of dynamical models!");
   }
-
-  std::vector<VectorXs> xs{x0};
-  xs.reserve(N + 1);
+  xout.resize(N + 1);
+  xout[0] = x0;
 
   for (std::size_t i = 0; i < N; i++) {
     shared_ptr<Data> data = dyn_models[i]->createData();
-    xs.push_back(space.neutral());
-    forwardDynamics(space, *dyn_models[i], xs[i], us[i], *data, xs[i + 1]);
+    const ManifoldAbstractTpl<Scalar> &space = dyn_models[i]->space();
+    xout.push_back(space.neutral());
+    forwardDynamics(space, *dyn_models[i], xout[i], us[i], *data, xout[i + 1]);
   }
-  return xs;
+  return xout;
 }
 
 /// @copybrief rollout()
 template <typename Scalar>
 typename math_types<Scalar>::VectorOfVectors
-rollout(const ManifoldAbstractTpl<Scalar> &space,
-        const DynamicsModelTpl<Scalar> &dyn_model,
+rollout(const DynamicsModelTpl<Scalar> &dyn_model,
         const typename math_types<Scalar>::VectorXs &x0,
         const typename math_types<Scalar>::VectorOfVectors &us) {
   using VectorXs = typename math_types<Scalar>::VectorXs;
@@ -108,6 +108,7 @@ rollout(const ManifoldAbstractTpl<Scalar> &space,
   shared_ptr<DynamicsDataTpl<Scalar>> data = dyn_model.createData();
 
   for (std::size_t i = 0; i < N; i++) {
+    const ManifoldAbstractTpl<Scalar> &space = dyn_model.space();
     xs.push_back(space.neutral());
     forwardDynamics(space, dyn_model, xs[i], us[i], *data, xs[i + 1]);
   }
@@ -117,48 +118,71 @@ rollout(const ManifoldAbstractTpl<Scalar> &space,
 /// @copybrief  rollout()
 /// @details    This overload applies to explicit forward dynamics.
 template <typename Scalar>
-typename math_types<Scalar>::VectorOfVectors
-rollout(const std::vector<const ExplicitDynamicsModelTpl<Scalar> *> &dyn_models,
-        const typename math_types<Scalar>::VectorXs &x0,
-        const typename math_types<Scalar>::VectorOfVectors &us) {
-  using VectorXs = typename math_types<Scalar>::VectorXs;
+void rollout(
+    const std::vector<const ExplicitDynamicsModelTpl<Scalar> *> &dyn_models,
+    const typename math_types<Scalar>::VectorXs &x0,
+    const typename math_types<Scalar>::VectorOfVectors &us,
+    typename math_types<Scalar>::VectorOfVectors &xout) {
   using DataType = ExplicitDynamicsDataTpl<Scalar>;
-  std::vector<VectorXs> xs{x0};
   const std::size_t N = us.size();
-  xs.reserve(N + 1);
+  xout.reserve(N + 1);
+  xout[0] = x0;
   if (dyn_models.size() != N) {
     proxddp_runtime_error(
-        "Number of controls should be the same as number of dynamical models!");
+        fmt::format("Number of controls ({}) should be the same as number of "
+                    "dynamical models ({})!",
+                    N, dyn_models.size()));
   }
 
   for (std::size_t i = 0; i < N; i++) {
     shared_ptr<DataType> data =
         std::static_pointer_cast<DataType>(dyn_models[i]->createData());
-    dyn_models[i]->forward(xs[i], us[i], *data);
-    xs.push_back(data->xnext_);
+    dyn_models[i]->forward(xout[i], us[i], *data);
+    xout.push_back(data->xnext_);
   }
-
-  return xs;
 }
 
 /// @copybrief rollout() Rolls out a single ExplicitDynamicsModelTpl.
 template <typename Scalar>
-typename math_types<Scalar>::VectorOfVectors
-rollout(const ExplicitDynamicsModelTpl<Scalar> &dyn_model,
-        const typename math_types<Scalar>::VectorXs &x0,
-        const typename math_types<Scalar>::VectorOfVectors &us) {
+void rollout(const ExplicitDynamicsModelTpl<Scalar> &dyn_model,
+             const typename math_types<Scalar>::VectorXs &x0,
+             const typename math_types<Scalar>::VectorOfVectors &us,
+             typename math_types<Scalar>::VectorOfVectors &xout) {
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using DataType = ExplicitDynamicsDataTpl<Scalar>;
   const std::size_t N = us.size();
-  std::vector<VectorXs> xs{x0};
-  xs.reserve(N + 1);
+  xout.reserve(N + 1);
 
   shared_ptr<DataType> data =
       std::static_pointer_cast<DataType>(dyn_model.createData());
   for (std::size_t i = 0; i < N; i++) {
-    dyn_model.forward(xs[i], us[i], *data);
-    xs.push_back(data->xnext_);
+    dyn_model.forward(xout[i], us[i], *data);
+    xout.push_back(data->xnext_);
   }
+}
+
+/// @copybrief rollout(). This variant allocates the output and returns it.
+template <template <typename> class C, typename Scalar>
+typename math_types<Scalar>::VectorOfVectors
+rollout(const C<Scalar> &dms, const typename math_types<Scalar>::VectorXs &x0,
+        const typename math_types<Scalar>::VectorOfVectors &us) {
+  const std::size_t N = us.size();
+  typename math_types<Scalar>::VectorOfVectors xs{x0};
+  xs.resize(N + 1);
+  rollout(dms, x0, us);
+  return xs;
+}
+
+/// @copybrief rollout(). This variant allocates the output and returns it.
+template <template <typename> class C, typename Scalar>
+typename math_types<Scalar>::VectorOfVectors
+rollout(const std::vector<const C<Scalar> *> &dms,
+        const typename math_types<Scalar>::VectorXs &x0,
+        const typename math_types<Scalar>::VectorOfVectors &us) {
+  const std::size_t N = us.size();
+  typename math_types<Scalar>::VectorOfVectors xs{x0};
+  xs.resize(N + 1);
+  rollout(dms, x0, us);
   return xs;
 }
 

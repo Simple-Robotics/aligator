@@ -23,9 +23,9 @@ void exposeDynamics() {
       "DynamicsModel",
       "Dynamics models are specific ternary functions f(x,u,x') which map "
       "to the tangent bundle of the next state variable x'.",
-      bp::init<const int, const int, const int>(
-          bp::args("self", "ndx1", "nu", "ndx2")))
-      .def(bp::init<const int, const int>(bp::args("self", "ndx", "nu")))
+      bp::init<ManifoldPtr, const int, const int>(
+          bp::args("self", "space", "nu", "ndx2")))
+      .def(bp::init<ManifoldPtr, const int>(bp::args("self", "space", "nu")))
       .def(CreateDataPythonVisitor<DynamicsModel>());
 
   bp::class_<PyExplicitDynamics<>, bp::bases<DynamicsModel>,

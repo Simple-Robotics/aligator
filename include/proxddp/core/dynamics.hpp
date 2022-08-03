@@ -23,25 +23,38 @@ struct DynamicsModelTpl : StageFunctionTpl<_Scalar> {
   using Base::ndx2;
   using Base::nu;
 
+  using Manifold = ManifoldAbstractTpl<Scalar>;
+  /// State space for the input.
+  shared_ptr<Manifold> space_;
+  /// State space for the output of this dynamics model; by default, the same
+  /// space as the input.
+  shared_ptr<Manifold> space_next_ = space_;
+
+  /// @copybrief space_
+  const Manifold &space() const { return *space_; }
+  /// @copybrief space_next_
+  const Manifold &space_next() const { return *space_next_; }
+
   /**
    * @brief  Constructor for dynamics.
    *
-   * @param   ndx1 State space dimension for the current time node
-   * @param   nu   Control dimension
-   * @param   ndx2 Next state space dimension.
+   * @param   space State space.
+   * @param   nu    Control dimension
+   * @param   ndx2  Next state space dimension.
    */
-  DynamicsModelTpl(const int ndx1, const int nu, const int ndx2)
-      : Base(ndx1, nu, ndx2, ndx2) {}
+  DynamicsModelTpl(const shared_ptr<Manifold> &space, const int nu,
+                   const int ndx2)
+      : Base(space->ndx(), nu, ndx2, ndx2), space_(space) {}
 
   /**
    * @copybrief DynamicsModelTpl This constructor assumes same dimension for the
    * current and next state.
    *
-   * @param   ndx State space dimension for the current and next time nodes
-   * @param   nu   Control dimension
+   * @param   space State space for the current, and next node.
+   * @param   nu    Control dimension
    */
-  DynamicsModelTpl(const int ndx, const int nu)
-      : DynamicsModelTpl<Scalar>(ndx, nu, ndx) {}
+  DynamicsModelTpl(const shared_ptr<Manifold> &space, const int nu)
+      : DynamicsModelTpl<Scalar>(space, nu, space->ndx()) {}
 };
 
 } // namespace proxddp

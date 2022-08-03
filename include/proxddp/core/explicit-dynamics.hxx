@@ -6,7 +6,7 @@ namespace proxddp {
 template <typename Scalar>
 ExplicitDynamicsModelTpl<Scalar>::ExplicitDynamicsModelTpl(
     const int ndx1, const int nu, const shared_ptr<Manifold> &next_state)
-    : Base(ndx1, nu, next_state->ndx()), next_state_(next_state),
+    : Base(next_state, nu, next_state->ndx()), next_state_(next_state),
       nx2(next_state->nx()) {}
 
 template <typename Scalar>
