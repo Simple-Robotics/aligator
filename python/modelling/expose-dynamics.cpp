@@ -49,6 +49,11 @@ void exposeDynamics() {
                                       bp::return_internal_reference<>()),
                     "Output space.");
 
+  pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<PyDynamicsModel>>,
+                                true>::expose("StdVec_Dynamics");
+  pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<PyExplicitDynamics<>>>,
+                                true>::expose("StdVec_ExplicitDynamics");
+
   bp::register_ptr_to_python<shared_ptr<context::ExplicitDynData>>();
 
   bp::class_<context::ExplicitDynData, bp::bases<context::StageFunctionData>>(
