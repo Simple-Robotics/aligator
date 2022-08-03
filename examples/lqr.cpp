@@ -12,11 +12,14 @@
 #include "proxddp/modelling/linear-discrete-dynamics.hpp"
 #include "proxddp/modelling/control-box-function.hpp"
 
+#include <benchmark/benchmark.h>
+#include <iostream>
+
 using namespace proxddp;
 
 constexpr double TOL = 1e-7;
 
-int main() {
+void define_problem(shared_ptr<TrajOptProblemTpl<double>> &problemptr) {
 
   const int dim = 2;
   const int nu = 2;
@@ -36,9 +39,6 @@ int main() {
   using dynamics::LinearDiscreteDynamicsTpl;
   auto dynptr = std::make_shared<LinearDiscreteDynamicsTpl<double>>(A, B, c_);
   auto &dynamics = *dynptr;
-  fmt::print("matrix A:\n{}\n", dynamics.A_);
-  fmt::print("matrix B:\n{}\n", dynamics.B_);
-  fmt::print("drift  c:\n{}\n", dynamics.c_);
   auto spaceptr = dynamics.next_state_;
 
   auto rcost = std::make_shared<QuadraticCostTpl<double>>(w_x, w_u);
@@ -54,9 +54,6 @@ int main() {
   const bool HAS_CONTROL_BOUNDS = false;
 
   if (HAS_CONTROL_BOUNDS) {
-    fmt::print("Adding control bounds.\n");
-    fmt::print("control box fun has bounds:\n{} max\n{} min\n",
-               ctrl_bounds_fun->umax_, ctrl_bounds_fun->umin_);
     using InequalitySet = proxnlp::NegativeOrthant<double>;
     stage->addConstraint(ctrl_bounds_fun, std::make_shared<InequalitySet>());
   }
@@ -65,58 +62,63 @@ int main() {
   x0 << 1., -0.1;
 
   auto &term_cost = rcost;
-  TrajOptProblemTpl<double> problem(x0, nu, spaceptr, term_cost);
+  problemptr =
+      std::make_shared<TrajOptProblemTpl<double>>(x0, nu, spaceptr, term_cost);
 
   std::size_t nsteps = 10;
 
-  std::vector<Eigen::VectorXd> us_init;
   for (std::size_t i = 0; i < nsteps; i++) {
-    us_init.push_back(Eigen::VectorXd::Random(nu));
-    problem.addStage(stage);
+    problemptr->addStage(stage);
   }
+}
 
-  const auto xs_init = rollout(dynamics, x0, us_init);
-  fmt::print("Initial guess:\n");
-  for (std::size_t i = 0; i < xs_init.size(); i++) {
-    fmt::print("x[{: >2d}] = {}\n", i, xs_init[i].transpose());
-  }
+void BM_lqr(benchmark::State &state, const TrajOptProblemTpl<double> &problem,
+            bool run_fddp) {
 
-  const double mu_init = 1e-5;
-  const double rho_init = 1e-8;
-  const std::size_t max_iters = 5;
+  for (auto _ : state) {
 
-  SolverProxDDP<double> solver(TOL, mu_init, rho_init, max_iters);
-  solver.verbose_ = VerboseLevel::VERBOSE;
+    const std::size_t nsteps = problem.numSteps();
+    const auto &dynamics = problem.stages_[0]->dyn_model();
+    const auto &x0 = problem.getInitState();
+    std::vector<Eigen::VectorXd> us_init;
+    us_default_init(problem, us_init);
+    const auto xs_init = rollout(dynamics, x0, us_init);
 
-  solver.setup(problem);
-  solver.run(problem, xs_init, us_init);
-  const auto &results = solver.getResults();
+    auto verbose = VerboseLevel::VERBOSE;
 
-  std::string line_ = "";
-  for (std::size_t i = 0; i < 20; i++) {
-    line_.append("=");
-  }
-  line_.append("\n");
-  for (std::size_t i = 0; i <= nsteps; i++) {
-    fmt::print("x[{: >2d}] = {}\n", i, results.xs_[i].transpose());
-  }
-  for (std::size_t i = 0; i < nsteps; i++) {
-    fmt::print("u[{: >2d}] = {}\n", i, results.us_[i].transpose());
-  }
+    const std::size_t max_iters = 5;
+    if (!run_fddp) {
+      fmt::print("Running PROXDDP...\n");
+      const double mu_init = 1e-5;
+      const double rho_init = 1e-8;
 
-  {
-    fmt::print("TEST FDDP\n");
-    SolverFDDP<double> fddp(TOL, VerboseLevel::VERBOSE);
-    fddp.MAX_ITERS = max_iters;
-    fddp.setup(problem);
-    fddp.run(problem, xs_init, us_init);
-    fmt::print("FDDP done.\n");
-    const ResultsFDDPTpl<double> &res_fddp = fddp.getResults();
-    for (std::size_t i = 0; i <= nsteps; i++) {
-      fmt::print("errx[{: >2d}] = {}\n", i,
-                 (res_fddp.xs_[i] - results.xs_[i]).lpNorm<Eigen::Infinity>());
+      SolverProxDDP<double> solver(TOL, mu_init, rho_init, max_iters, verbose);
+
+      solver.setup(problem);
+      solver.run(problem, xs_init, us_init);
+      const auto &results = solver.getResults();
+    }
+    if (run_fddp) {
+      fmt::print("Running FDDP...\n");
+      SolverFDDP<double> fddp(TOL, verbose);
+      fddp.MAX_ITERS = max_iters;
+      fddp.setup(problem);
+      fddp.run(problem, xs_init, us_init);
+      const ResultsFDDPTpl<double> &res_fddp = fddp.getResults();
     }
   }
+}
 
-  return 0;
+int main(int argc, char **argv) {
+  shared_ptr<TrajOptProblemTpl<double>> problemptr;
+  define_problem(problemptr);
+
+  benchmark::RegisterBenchmark("PROXDDP", &BM_lqr, *problemptr, false);
+  benchmark::RegisterBenchmark("FDDP", &BM_lqr, *problemptr, true);
+
+  benchmark::Initialize(&argc, argv);
+  if (benchmark::ReportUnrecognizedArguments(argc, argv)) {
+    return 1;
+  }
+  benchmark::RunSpecifiedBenchmarks();
 }

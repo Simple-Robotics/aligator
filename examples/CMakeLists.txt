@@ -2,8 +2,10 @@
 # Copyright (C) 2022 LAAS-CNRS, INRIA
 #
 
+ADD_PROJECT_DEPENDENCY(benchmark REQUIRED PKG_CONFIG_REQUIRES "benchmark >= 1.5.0")
+
 file(GLOB EXAMPLES_CPP
-     *.cpp)
+     lqr.cpp)
 
 
 foreach(exfile ${EXAMPLES_CPP})
@@ -16,7 +18,7 @@ foreach(exfile ${EXAMPLES_CPP})
   target_include_directories(${exname} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
   target_link_libraries(${exname} PUBLIC ${PROJECT_NAME})
-  target_link_libraries(${exname} PRIVATE fmt::fmt)
+  target_link_libraries(${exname} PRIVATE fmt::fmt benchmark::benchmark)
 endforeach(exfile)
 
 file(GLOB EXAMPLES_PY *.py)
