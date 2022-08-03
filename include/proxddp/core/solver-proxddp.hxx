@@ -327,7 +327,8 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
 
   checkTrajectoryAndAssign(problem, xs_init, us_init, results.xs_, results.us_);
 
-  ::proxddp::BaseLogger().start();
+  ::proxddp::BaseLogger logger{};
+  logger.start();
 
   workspace.prev_xs_ = results.xs_;
   workspace.prev_us_ = results.us_;
@@ -406,12 +407,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   }
 
   if (verbose_ >= 1) {
-    if (conv)
-      fmt::print(fmt::fg(fmt::color::dodger_blue), "Successfully converged.");
-    else {
-      fmt::print(fmt::fg(fmt::color::red), "Convergence failure.");
-    }
-    fmt::print("\n");
+    logger.finish(conv);
   }
   invokeCallbacks(workspace, results);
   return conv;
@@ -450,6 +446,7 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
     LogRecord iter_log;
     iter_log.iter = k + 1;
+    iter_log.xreg = xreg_;
     iter_log.inner_crit = workspace.inner_criterion;
     iter_log.prim_err = results.primal_infeasibility;
     iter_log.dual_err = results.dual_infeasibility;
@@ -508,11 +505,7 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     iter_log.merit = results.merit_value_;
 
     if (verbose_ >= 1) {
-      // fmt::print(" | alpha  {:.3e}"
-      //            " | dphi0  {:.3e}"
-      //            " | merit  {:.3e}\n",
-      //            alpha_opt, dphi0, results.merit_value_);
-      BaseLogger().log(iter_log);
+      ::proxddp::BaseLogger().log(iter_log);
     }
 
     // accept the step

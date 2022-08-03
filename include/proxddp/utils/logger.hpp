@@ -58,6 +58,14 @@ struct BaseLogger {
 
     fmt::print("{}\n", fmt::join(v, " | "));
   }
+
+  void finish(bool conv) {
+    if (conv)
+      fmt::print(fmt::fg(fmt::color::dodger_blue), "Successfully converged.");
+    else
+      fmt::print(fmt::fg(fmt::color::red), "Convergence failure.");
+    fmt::print("\n");
+  }
 };
 
 } // namespace proxddp

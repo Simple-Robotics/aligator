@@ -256,7 +256,8 @@ template <typename Scalar> struct SolverFDDP {
       results.us_ = workspace.trial_us_;
       if (d1_small) {
         results.conv = true;
-        logger.log(record);
+        if (verbose_ > 0)
+          logger.log(record);
         break;
       }
 
@@ -272,21 +273,22 @@ template <typename Scalar> struct SolverFDDP {
       }
 
       invokeCallbacks(workspace, results);
-      logger.log(record);
+      if (verbose_ > 0)
+        logger.log(record);
     }
 
-    if (results.conv) {
-      fmt::print(fmt::fg(fmt::color::dodger_blue), "Successfully converged.");
-    } else {
-      fmt::print(fmt::fg(fmt::color::red), "Convergence failure.");
-    }
-    fmt::print("\n");
+    logger.finish(results.conv);
     return results.conv;
   }
 
   static DynamicsDataTpl<Scalar> &
   stage_get_dynamics_data(StageDataTpl<Scalar> &sd) {
     return static_cast<DynamicsDataTpl<Scalar> &>(*sd.constraint_data[0]);
+  }
+
+  static const DynamicsDataTpl<Scalar> &
+  stage_get_dynamics_data(const StageDataTpl<Scalar> &sd) {
+    return static_cast<const DynamicsDataTpl<Scalar> &>(*sd.constraint_data[0]);
   }
 };
 
