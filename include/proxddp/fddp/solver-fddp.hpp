@@ -172,8 +172,8 @@ template <typename Scalar> struct SolverFDDP {
                              results.us_);
 
     ::proxddp::BaseLogger logger{};
-    if (verbose_ > 0)
-      logger.start();
+    logger.active = verbose_ > 0;
+    logger.start();
 
     // in Crocoddyl, linesearch xs is primed to use problem x0
     {
@@ -201,6 +201,7 @@ template <typename Scalar> struct SolverFDDP {
       // evaluate the forward rollout into workspace.xnexts_
       results.primal_infeasibility =
           computeInfeasibility(problem, results.xs_, results.us_, workspace);
+      PROXDDP_RAISE_IF_NAN(results.primal_infeasibility);
       record.prim_err = results.primal_infeasibility;
       problem.computeDerivatives(results.xs_, results.us_,
                                  workspace.problem_data);
@@ -230,7 +231,7 @@ template <typename Scalar> struct SolverFDDP {
         Scalar phi1 = linesearch_fun(fd_eps);
         assert(math::scalar_close(phi0, linesearch_fun(0.),
                                   std::numeric_limits<double>::epsilon()));
-        Scalar finite_diff_d1 = (linesearch_fun(fd_eps) - phi0) / fd_eps;
+        Scalar finite_diff_d1 = (phi1 - phi0) / fd_eps;
         assert(
             math::scalar_close(finite_diff_d1, d1_phi, std::pow(fd_eps, 0.5)));
       }
@@ -273,8 +274,7 @@ template <typename Scalar> struct SolverFDDP {
       results.us_ = workspace.trial_us_;
       if (d1_small) {
         results.conv = true;
-        if (verbose_ > 0)
-          logger.log(record);
+        logger.log(record);
         break;
       }
 
@@ -290,8 +290,7 @@ template <typename Scalar> struct SolverFDDP {
       }
 
       invokeCallbacks(workspace, results);
-      if (verbose_ > 0)
-        logger.log(record);
+      logger.log(record);
     }
 
     logger.finish(results.conv);

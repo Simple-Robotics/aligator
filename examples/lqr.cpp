@@ -84,11 +84,10 @@ void BM_lqr(benchmark::State &state, const TrajOptProblemTpl<double> &problem,
     us_default_init(problem, us_init);
     const auto xs_init = rollout(dynamics, x0, us_init);
 
-    auto verbose = VerboseLevel::VERBOSE;
+    auto verbose = VerboseLevel::QUIET;
 
     const std::size_t max_iters = 5;
     if (!run_fddp) {
-      fmt::print("Running PROXDDP...\n");
       const double mu_init = 1e-5;
       const double rho_init = 1e-8;
 
@@ -99,7 +98,6 @@ void BM_lqr(benchmark::State &state, const TrajOptProblemTpl<double> &problem,
       const auto &results = solver.getResults();
     }
     if (run_fddp) {
-      fmt::print("Running FDDP...\n");
       SolverFDDP<double> fddp(TOL, verbose);
       fddp.MAX_ITERS = max_iters;
       fddp.setup(problem);

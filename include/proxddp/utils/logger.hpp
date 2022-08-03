@@ -29,8 +29,11 @@ struct LogRecord {
 struct BaseLogger {
   static constexpr unsigned int COL_WIDTH_0 = 6;
   static constexpr unsigned int COL_WIDTH = 10;
+  bool active = true;
 
   void start() {
+    if (!active)
+      return;
     static constexpr char fstr[] = "{: ^{}s}";
     std::vector<std::string> v;
     auto it = BASIC_KEYS.begin();
@@ -42,6 +45,8 @@ struct BaseLogger {
   }
 
   template <typename T> void log(const T &values) {
+    if (!active)
+      return;
     std::vector<std::string> v;
     int dbl_prec = 3;
 
@@ -60,6 +65,8 @@ struct BaseLogger {
   }
 
   void finish(bool conv) {
+    if (!active)
+      return;
     if (conv)
       fmt::print(fmt::fg(fmt::color::dodger_blue), "Successfully converged.");
     else

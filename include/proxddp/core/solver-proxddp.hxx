@@ -328,6 +328,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   checkTrajectoryAndAssign(problem, xs_init, us_init, results.xs_, results.us_);
 
   ::proxddp::BaseLogger logger{};
+  logger.active = (verbose_ > 0);
   logger.start();
 
   workspace.prev_xs_ = results.xs_;
@@ -406,9 +407,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
     al_iter++;
   }
 
-  if (verbose_ >= 1) {
-    logger.finish(conv);
-  }
+  logger.finish(conv);
   invokeCallbacks(workspace, results);
   return conv;
 }
@@ -431,6 +430,9 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
   Scalar eps = 1e-10;
   Scalar phieps = 0., dphi0 = 0.;
 
+  ::proxddp::BaseLogger logger{};
+  logger.active = (verbose_ > 0);
+
   std::size_t &k = results.num_iters;
   while (k < MAX_ITERS) {
     problem.evaluate(results.xs_, results.us_, workspace.problem_data);
@@ -451,15 +453,6 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     iter_log.prim_err = results.primal_infeasibility;
     iter_log.dual_err = results.dual_infeasibility;
 
-    if (verbose_ >= 1) {
-      // fmt::print(" | inner_crit {:.3e}"
-      //            " | prim_err   {:.3e}"
-      //            " | dual_err   {:.3e}",
-      //            workspace.inner_criterion, results.primal_infeasibility,
-      //            results.dual_infeasibility);
-      // fmt::print(" |\n");
-    }
-
     bool inner_conv = workspace.inner_criterion < inner_tol_;
     if (inner_conv) {
       break;
@@ -469,11 +462,6 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
           (results.primal_infeasibility < target_tolerance)) {
         break;
       }
-    }
-
-    if (verbose_ >= 1) {
-      // fmt::print(fmt::fg(fmt::color::yellow_green), "[iter {:>3d}]", k + 1);
-      // fmt::print("\n");
     }
 
     computeDirection(problem, workspace, results);
@@ -504,9 +492,7 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     iter_log.dphi0 = dphi0;
     iter_log.merit = results.merit_value_;
 
-    if (verbose_ >= 1) {
-      ::proxddp::BaseLogger().log(iter_log);
-    }
+    logger.log(iter_log);
 
     // accept the step
     results.xs_ = workspace.trial_xs_;
