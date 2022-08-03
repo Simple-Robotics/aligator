@@ -88,14 +88,17 @@ void BM_lqr(benchmark::State &state, const TrajOptProblemTpl<double> &problem,
 
     const std::size_t max_iters = 5;
     if (!run_fddp) {
-      const double mu_init = 1e-5;
-      const double rho_init = 1e-8;
+      const double mu_init = 1e-6;
+      const double rho_init = 1e-9;
 
       SolverProxDDP<double> solver(TOL, mu_init, rho_init, max_iters, verbose);
 
       solver.setup(problem);
       solver.run(problem, xs_init, us_init);
       const auto &results = solver.getResults();
+      if (!results.conv) {
+        proxddp_runtime_error("Solver did not converge.\n");
+      }
     }
     if (run_fddp) {
       SolverFDDP<double> fddp(TOL, verbose);
