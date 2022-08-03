@@ -107,9 +107,13 @@ template <typename Scalar> struct SolverFDDP {
   void computeDirectionalDerivatives(Workspace &workspace, Results &results,
                                      Scalar &d1, Scalar &d2) const;
 
-  /// @brief  Correct the directional derivatives.
+  /**
+   * @brief    Correct the directional derivatives.
+   * @details  This will re-compute the gap between the results trajectory and
+   * the trial trajectory.
+   */
   static void directionalDerivativeCorrection(const Problem &problem,
-                                              const Workspace &workspace,
+                                              Workspace &workspace,
                                               Results &results, Scalar &d1,
                                               Scalar &d2);
 
@@ -157,145 +161,7 @@ template <typename Scalar> struct SolverFDDP {
 
   bool run(const Problem &problem,
            const std::vector<VectorXs> &xs_init = DEFAULT_VECTOR<Scalar>,
-           const std::vector<VectorXs> &us_init = DEFAULT_VECTOR<Scalar>) {
-
-    const Scalar fd_eps = 1e-9;
-
-    if (results_ == 0 || workspace_ == 0) {
-      proxddp_runtime_error(
-          "Either results or workspace not allocated. Call setup() first!");
-    }
-    Results &results = *results_;
-    Workspace &workspace = *workspace_;
-
-    checkTrajectoryAndAssign(problem, xs_init, us_init, results.xs_,
-                             results.us_);
-
-    ::proxddp::BaseLogger logger{};
-    logger.active = verbose_ > 0;
-    logger.start();
-
-    // in Crocoddyl, linesearch xs is primed to use problem x0
-    {
-      const VectorXs &x0 = problem.getInitState();
-      workspace.trial_xs_[0] = x0;
-      workspace.xnexts_[0] = x0;
-    }
-
-    auto linesearch_fun = [&](const Scalar alpha) {
-      return tryStep(problem, results, workspace, alpha);
-    };
-
-    LogRecord record;
-    record.inner_crit = 0.;
-    record.dual_err = 0.;
-    record.dphi0 = 0.;
-    std::size_t &iter = results.num_iters;
-    for (iter = 0; iter < MAX_ITERS; ++iter) {
-
-      record.iter = iter + 1;
-
-      problem.evaluate(results.xs_, results.us_, workspace.problem_data);
-      results.traj_cost_ =
-          computeTrajectoryCost(problem, workspace.problem_data);
-      // evaluate the forward rollout into workspace.xnexts_
-      results.primal_infeasibility =
-          computeInfeasibility(problem, results.xs_, results.us_, workspace);
-      PROXDDP_RAISE_IF_NAN(results.primal_infeasibility);
-      record.prim_err = results.primal_infeasibility;
-      problem.computeDerivatives(results.xs_, results.us_,
-                                 workspace.problem_data);
-
-      backwardPass(problem, workspace, results);
-      computeCriterion(workspace, results);
-
-      PROXDDP_RAISE_IF_NAN(results.dual_infeasibility);
-      record.dual_err = results.dual_infeasibility;
-      record.merit = results.traj_cost_;
-      record.inner_crit = 0.;
-      record.xreg = xreg_;
-
-      if (results.dual_infeasibility < tol_) {
-        results.conv = true;
-        break;
-      }
-
-      Scalar alpha_opt = 1;
-      Scalar phi0 = results.traj_cost_;
-      Scalar d1_phi, d2_phi;
-      computeDirectionalDerivatives(workspace, results, d1_phi, d2_phi);
-      PROXDDP_RAISE_IF_NAN(d1_phi);
-      PROXDDP_RAISE_IF_NAN(d2_phi);
-#ifndef NDEBUG
-      {
-        Scalar phi1 = linesearch_fun(fd_eps);
-        assert(math::scalar_close(phi0, linesearch_fun(0.),
-                                  std::numeric_limits<double>::epsilon()));
-        Scalar finite_diff_d1 = (phi1 - phi0) / fd_eps;
-        assert(
-            math::scalar_close(finite_diff_d1, d1_phi, std::pow(fd_eps, 0.5)));
-      }
-#endif
-      record.dphi0 = d1_phi;
-
-      // quadratic model lambda; captures by copy
-      auto ls_model = [=, &problem, &workspace, &results](const Scalar alpha) {
-        Scalar d1 = d1_phi;
-        Scalar d2 = d2_phi;
-        directionalDerivativeCorrection(problem, workspace, results, d1, d2);
-        return phi0 + alpha * (d1 + 0.5 * d2 * alpha);
-      };
-
-      bool d1_small = std::abs(d1_phi) < th_grad_;
-      if (!d1_small) {
-        switch (ls_type) {
-        case ARMIJO:
-          proxnlp::ArmijoLinesearch<Scalar>::run(
-              linesearch_fun, phi0, d1_phi, verbose_, ls_params.ls_beta,
-              ls_params.armijo_c1, ls_params.alpha_min, alpha_opt);
-          break;
-        case GOLDSTEIN:
-          FDDPGoldsteinLinesearch<Scalar>::run(linesearch_fun, ls_model, phi0,
-                                               verbose_, ls_params, th_grad_,
-                                               alpha_opt);
-          break;
-        default:
-          break;
-        }
-        record.step_size = alpha_opt;
-      }
-      // forwardPass(problem, results, workspace, alpha_opt);
-      Scalar phi_new = tryStep(problem, results, workspace, alpha_opt);
-      PROXDDP_RAISE_IF_NAN(phi_new);
-      Scalar dphi = phi_new - phi0;
-      record.dM = dphi;
-
-      results.xs_ = workspace.trial_xs_;
-      results.us_ = workspace.trial_us_;
-      if (d1_small) {
-        results.conv = true;
-        logger.log(record);
-        break;
-      }
-
-      if (alpha_opt > th_step_dec_) {
-        decreaseRegularization();
-      }
-      if (alpha_opt <= th_step_inc_) {
-        increaseRegularization();
-        if (xreg_ == reg_max_) {
-          results.conv = false;
-          break;
-        }
-      }
-
-      invokeCallbacks(workspace, results);
-      logger.log(record);
-    }
-
-    logger.finish(results.conv);
-    return results.conv;
-  }
+           const std::vector<VectorXs> &us_init = DEFAULT_VECTOR<Scalar>);
 
   static DynamicsDataTpl<Scalar> &
   stage_get_dynamics_data(StageDataTpl<Scalar> &sd) {
