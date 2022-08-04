@@ -21,6 +21,7 @@ class Args(tap.Tap):
             self.display = True
 
 
+args = Args().parse_args()
 robot = erd.load("ur5")
 rmodel = robot.model
 rdata = robot.data
@@ -32,24 +33,27 @@ nu = nv
 
 x0 = space.neutral()
 
-p_ref = np.array([0.8, 0.0, 0.7])
+p_ref = np.array([0.7, 0.0, 0.6])
 
 actuation_matrix = np.eye(nu)
 ode = dynamics.MultibodyFreeFwdDynamics(space, actuation_matrix)
 timestep = 0.033
 discrete_dyn = dynamics.IntegratorRK2(ode, timestep)
 
-w_x = timestep * np.eye(ndx) * 1e-1
+w_x = timestep * np.ones(ndx) * 1e-2
+w_x[nv:] = 0.02
+w_x = np.diag(w_x)
 w_u = timestep * np.eye(nu) * 1e-4
 rcost = proxddp.QuadraticCost(w_x, w_u)
 
 stages = []
-nsteps = int(1.0 / timestep)
+Tf = 1.0
+nsteps = int(Tf / timestep)
 for i in range(nsteps):
     st = proxddp.StageModel(space, nu, rcost, discrete_dyn)
     stages.append(st)
 
-wx_term = np.eye(3) * 2.0
+wx_term = np.eye(3) * 6.0
 rid = rmodel.getFrameId("tool0")
 term_cost = proxddp.CostStack(space.ndx, nu)
 term_cost.addCost(
@@ -61,13 +65,12 @@ problem = proxddp.TrajOptProblem(x0, stages, term_cost)
 
 tol = 1e-4
 verbose = proxddp.VerboseLevel.VERBOSE
-solver = SolverFDDP(tol, verbose=verbose)
+solver = SolverFDDP(tol, verbose=verbose, reg_init=1e-9)
 # solver = proxddp.SolverProxDDP(tol, 1e-6, verbose=verbose)
 solver.registerCallback(proxddp.HistoryCallback(False, True, True))
 solver.setup(problem)
 
 us_init = [np.zeros(nu)] * nsteps
-# xs_init = proxddp.rollout(discrete_dyn, x0, us_init)
 xs_init = [x0] * (nsteps + 1)
 
 solver.run(problem, xs_init, us_init)
@@ -79,14 +82,16 @@ print(results)
 vizer = pin.visualize.MeshcatVisualizer(
     rmodel, robot.collision_model, robot.visual_model, data=rdata
 )
-vizer.initViewer(open=True, loadModel=True)
+vizer.initViewer(open=args.display, loadModel=True)
 viz_util = msu.VizUtil(vizer)
 q0 = pin.neutral(rmodel)
 vizer.display(q0)
 viz_util.draw_objective(p_ref)
 
-input("[press enter]")
-for _ in range(3):
-    viz_util.play_trajectory(
-        results.xs, results.us, frame_ids=[rid], timestep=timestep, show_vel=True
-    )
+if args.display:
+    viz_util.set_cam_angle_preset("preset1")
+    input("[press enter]")
+    for _ in range(3):
+        viz_util.play_trajectory(
+            results.xs, results.us, frame_ids=[rid], timestep=timestep, show_vel=True
+        )
