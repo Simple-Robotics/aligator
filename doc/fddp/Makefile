@@ -100,6 +100,8 @@ bib:
 %.ps.gz: %.ps
 	$(GZIP) $< > $@
 
+html:
+	pandoc -f latex root.tex -o fddp.html --mathjax
 
 # --->
 # --->

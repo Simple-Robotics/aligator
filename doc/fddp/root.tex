@@ -91,11 +91,11 @@ L_{xx}        & & & & L_{xu} & & & -I & F_x^T \\
 & \ddots     & & & & \ddots& & & \ddots & \ddots \\
 & & L_{xx}    & & & & L_{xu}& & & -I & F_x^T\\
 & & & L_{xx}  & & & & & & & -I\\
-\arrayrulecolor{mygray}\hline
+\hline
 L_{ux} & & &       & L_{uu} & & & & F_u^T\\
 & \ddots & &       &       & \ddots & & & & \ddots\\
 & & L_{ux} &       &       &       & L_{uu} & && & F_u^T \\
-\arrayrulecolor{mygray}\hline
+\hline
 -I &&&&&&&&&&\\
 F_x & -I &  & & F_u &&&&&& \\
 &\ddots & \ddots & & & \ddots &&&&&&\\
@@ -107,11 +107,11 @@ F_x & -I &  & & F_u &&&&&& \\
 \vdots \\
 \dx_{T-1} \\
 \dx_T \\
-\arrayrulecolor{mygray}\hline
+\hline
 \du_0 \\
 \vdots \\
 \du_{T-1} \\
-\arrayrulecolor{mygray}\hline
+\hline
 \lambda_0 \\
 \lambda_1 \\
 \vdots \\
@@ -125,11 +125,11 @@ L_x \\
 \vdots \\
 L_x \\
 L_x \\
-\arrayrulecolor{mygray}\hline
+\hline
 L_u \\
 \vdots \\
 L_u \\
-\arrayrulecolor{mygray}\hline
+\hline
 f_0 \\
 f_1 \\
 \vdots \\
@@ -355,7 +355,7 @@ If making a step of length $\alpha$ (typically in $]0,1]$) in the direction $\xt
 $$\Delta = \Delta_1 \alpha + \frac{1}{2} \Delta_2 \alpha^2$$
 $\Delta_1$ is the sum at each shooting node of the cost gradient times the change in $x$ and $u$:
 \begin{equation}
-  \label{eq:d1}
+  \label{eq:d1_nogaps}
   \Delta_1 = \sum_{t=0}^T L_{xt}^T x_t + L_{ut}^T u_t
 \end{equation}
 (to keep the sum simpler, we treat $T$ similarly to the other nodes, by introducing $L_{uT} = 0$).

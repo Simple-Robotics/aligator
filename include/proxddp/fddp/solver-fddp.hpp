@@ -1,3 +1,7 @@
+/**
+ * @page fddp_intro The FDDP algorithm
+ * @htmlinclude fddp.html
+ */
 #pragma once
 
 #include "proxddp/core/solver-util.hpp"
