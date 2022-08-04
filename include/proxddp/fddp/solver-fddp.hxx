@@ -1,9 +1,6 @@
 #pragma once
 
 #include "proxddp/fddp/solver-fddp.hpp"
-#ifndef NDEBUG
-#include "proxddp/utils/debug.hpp"
-#endif
 
 namespace proxddp {
 
@@ -47,6 +44,7 @@ void SolverFDDP<Scalar>::forwardPass(const Problem &problem,
   const std::size_t nsteps = workspace.nsteps;
   std::vector<VectorXs> &xs_try = workspace.trial_xs_;
   std::vector<VectorXs> &us_try = workspace.trial_us_;
+  std::vector<VectorXs> &xnexts = workspace.xnexts_;
   const std::vector<VectorXs> &fs = workspace.feas_gaps_;
   ProblemData &pd = workspace.problem_data;
 
@@ -58,7 +56,6 @@ void SolverFDDP<Scalar>::forwardPass(const Problem &problem,
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &sm = *problem.stages_[i];
     const DynamicsModelTpl<Scalar> &dm = sm.dyn_model();
-    const Manifold &space = sm.xspace();
     const Manifold &uspace = sm.uspace();
     StageData &sd = pd.getData(i);
     DynamicsDataTpl<Scalar> &dd = stage_get_dynamics_data(sd);
@@ -66,20 +63,16 @@ void SolverFDDP<Scalar>::forwardPass(const Problem &problem,
     ConstVectorRef ff = results.getFeedforward(i);
     ConstMatrixRef fb = results.getFeedback(i);
 
-    space.difference(results.xs_[i], xs_try[i], workspace.dxs_[i]);
+    sm.xspace().difference(results.xs_[i], xs_try[i], workspace.dxs_[i]);
     uspace.integrate(results.us_[i], alpha * ff + fb * workspace.dxs_[i],
                      us_try[i]);
-    forwardDynamics(dm, xs_try[i], us_try[i], dd, workspace.xnexts_[i + 1]);
-
-    space.integrate(workspace.xnexts_[i + 1], fs[i + 1] * (alpha - 1.),
-                    xs_try[i + 1]);
+    forwardDynamics(dm, xs_try[i], us_try[i], dd, xnexts[i + 1]);
+    sm.xspace().integrate(xnexts[i + 1], fs[i + 1] * (alpha - 1.),
+                          xs_try[i + 1]);
   }
   const Manifold &space = problem.stages_.back()->xspace();
   space.difference(results.xs_[nsteps], xs_try[nsteps], workspace.dxs_[nsteps]);
 #ifndef NDEBUG
-  for (std::size_t i = 0; i <= nsteps; i++)
-    fmt::print("fPass({:.2g}): dxs[{:>2}] = {}\n", alpha, i,
-               workspace.dxs_[i].transpose());
   if (alpha == 0.)
     assert(math::infty_norm(workspace.dxs_) <=
            std::numeric_limits<Scalar>::epsilon());
@@ -140,9 +133,6 @@ void SolverFDDP<Scalar>::directionalDerivativeCorrection(const Problem &problem,
     dv += ftVxx.dot(workspace.dxs_[i]);
   }
 #ifndef NDEBUG
-  for (std::size_t i = 0; i <= nsteps; i++) {
-    fmt::print("dxs[{:>2}] = {}\n", i, workspace.dxs_[i].transpose());
-  }
   fmt::print("dv = {:.5g}\n", dv);
 #endif
 
@@ -173,10 +163,6 @@ Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem,
     forwardDynamics(dm, xs[i], us[i], dd, workspace.xnexts_[i + 1]);
     sm.xspace().difference(xs[i + 1], workspace.xnexts_[i + 1], fs[i + 1]);
   }
-#ifndef NDEBUG
-  for (std::size_t i = 0; i <= nsteps; i++)
-    fmt::print("fs[{:>2}] = {}\n", i, fs[i].transpose());
-#endif
 
   return math::infty_norm(workspace.feas_gaps_);
 }
@@ -351,8 +337,6 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     directionalDerivativeCorrection(problem, workspace, results, d1_phi,
                                     d2_phi);
     {
-      // auto phis = plot_linesearch_function(linesearch_fun, 1., 50);
-      // fmt::print("phis = [{:.3e}]\n", fmt::join(phis, ","));
       Scalar phi_eps = linesearch_fun(fd_eps);
       fmt::print("phi_eps = {:.5g}\n", phi_eps);
       Scalar finite_diff_d1 = (phi_eps - phi0) / fd_eps;
