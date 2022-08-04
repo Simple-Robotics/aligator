@@ -30,7 +30,7 @@ void SolverProxDDP<Scalar>::computeDirection(const Problem &problem,
 
   // compute direction dx0
   {
-    const value_store_t &vp = workspace.value_params[0];
+    const VParams &vp = workspace.value_params[0];
     const StageModel &stage0 = *problem.stages_[0];
     const FunctionData &init_data = *workspace.problem_data.init_data;
     const int ndual0 = problem.init_state_error.nr;
@@ -153,7 +153,7 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
 
   const TrajOptDataTpl<Scalar> &prob_data = workspace.problem_data;
   const CostData &term_cost_data = *prob_data.term_cost_data;
-  value_store_t &term_value = workspace.value_params[nsteps];
+  VParams &term_value = workspace.value_params[nsteps];
   const CostData &proxdata = *workspace.prox_datas[nsteps];
 
   term_value.v_2() = 2 * (term_cost_data.value_ + rho_penal_ * proxdata.value_);
@@ -171,11 +171,11 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
     const int ndx = term_cstr.func_->ndx1;
     MatrixXs &G = results.gains_[nsteps];
     VectorXs &lamplus = workspace.lams_plus_[nsteps + 1];
-    VectorXs &lamprev = workspace.prev_lams_[nsteps + 1];
-    VectorXs &lamin = results.lams_[nsteps + 1];
+    const VectorXs &lamprev = workspace.prev_lams_[nsteps + 1];
+    const VectorXs &lamin = results.lams_[nsteps + 1];
 
     const VectorXs &cv = cstr_data.value_;
-    const auto &cJx = cstr_data.Jx_;
+    const MatrixRef &cJx = cstr_data.Jx_;
 
     auto l_expr = lamprev + mu_inverse_ * cv;
     cstr_set.applyNormalConeProjectionJacobian(l_expr, cJx);
@@ -188,11 +188,12 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
     /* feedback */
     fb = mu_inverse_ * cJx;
 
-    auto Hx = term_value.Vx_ + cJx.transpose() * lamin;
-    auto Hxx = term_value.Vxx_ + cstr_data.Hxx_;
-
-    term_value.Vx_ = Hx + cJx.transpose() * ff;
-    term_value.Vxx_ = Hxx + cJx.transpose() * fb;
+    term_value.v_2() += mu_inverse_ * l_expr.squaredNorm();
+    term_value.Vx_.noalias() += cJx.transpose() * lamplus;
+    term_value.Vxx_ += cstr_data.Hxx_;
+    term_value.Vxx_.noalias() += cJx.transpose() * fb;
+    // term_value.Vxx_ = Hxx + cJx.transpose() * fb;
+    // auto Hxx = term_value.Vxx_ + cstr_data.Hxx_;
   }
 
   term_value.storage =
@@ -205,8 +206,8 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
                                          const std::size_t step) const {
   const StageModel &stage = *problem.stages_[step];
 
-  const value_store_t &vnext = workspace.value_params[step + 1];
-  q_store_t &qparam = workspace.q_params[step];
+  const VParams &vnext = workspace.value_params[step + 1];
+  QParams &qparam = workspace.q_params[step];
 
   StageData &stage_data = workspace.problem_data.getData(step);
   const CostData &cdata = *stage_data.cost_data;
@@ -310,9 +311,9 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   ldlt_.solveInPlace(G);
 
   /* Value function */
-  value_store_t &vcurr = workspace.value_params[step];
-  vcurr.storage = qparam.storage.topLeftCorner(ndx1 + 1, ndx1 + 1) +
-                  kkt_rhs.transpose() * G;
+  VParams &vp = workspace.value_params[step];
+  vp.storage = qparam.storage.topLeftCorner(ndx1 + 1, ndx1 + 1) +
+               kkt_rhs.transpose() * G;
 }
 
 template <typename Scalar>
