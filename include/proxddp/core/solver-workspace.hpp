@@ -6,7 +6,7 @@
 #pragma once
 
 #include "proxddp/fwd.hpp"
-#include "proxddp/core/value_storage.hpp"
+#include "proxddp/core/value-storage.hpp"
 #include "proxddp/core/proximal-penalty.hpp"
 
 namespace proxddp {
