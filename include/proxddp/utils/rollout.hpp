@@ -74,7 +74,6 @@ rollout(const std::vector<shared_ptr<DynamicsModelTpl<Scalar>>> &dyn_models,
         const typename math_types<Scalar>::VectorXs &x0,
         const typename math_types<Scalar>::VectorOfVectors &us,
         typename math_types<Scalar>::VectorOfVectors &xout) {
-  using VectorXs = typename math_types<Scalar>::VectorXs;
   using Data = DynamicsDataTpl<Scalar>;
   const std::size_t N = us.size();
   if (dyn_models.size() != N) {
@@ -147,7 +146,6 @@ void rollout(const ExplicitDynamicsModelTpl<Scalar> &dyn_model,
              const typename math_types<Scalar>::VectorXs &x0,
              const typename math_types<Scalar>::VectorOfVectors &us,
              typename math_types<Scalar>::VectorOfVectors &xout) {
-  using VectorXs = typename math_types<Scalar>::VectorXs;
   using DataType = ExplicitDynamicsDataTpl<Scalar>;
   const std::size_t N = us.size();
   xout.reserve(N + 1);

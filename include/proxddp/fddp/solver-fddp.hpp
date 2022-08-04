@@ -159,6 +159,23 @@ template <typename Scalar> struct SolverFDDP {
     }
   }
 
+  void linearRollout(const Problem &problem, Workspace &workspace, const Results &results) {
+    const auto &fs = workspace.feas_gaps_;
+    auto &dxs = workspace.dxs_;
+    auto &dus = workspace.dus_;
+    const Manifold &space = problem.stages_[0]->xspace();
+    dxs[0] = fs[0];
+    const std::size_t nsteps = workspace.nsteps;
+    for (std::size_t i = 0; i < nsteps; i++) {
+      const StageData &sd = workspace.problem_data.getData(i);
+      const DynamicsDataTpl<Scalar> &dd = stage_get_dynamics_data(sd);
+      auto ff = results.getFeedforward(i);
+      auto fb = results.getFeedback(i);
+      dus[i] = ff + fb * dxs[i];
+      dxs[i + 1] = fs[i + 1] + dd.Jx_ * dxs[i] + dd.Ju_ * dus[i];
+    }
+  }
+
   bool run(const Problem &problem,
            const std::vector<VectorXs> &xs_init = DEFAULT_VECTOR<Scalar>,
            const std::vector<VectorXs> &us_init = DEFAULT_VECTOR<Scalar>);

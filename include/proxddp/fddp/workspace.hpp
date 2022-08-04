@@ -22,7 +22,7 @@ template <typename Scalar> struct WorkspaceFDDPTpl : WorkspaceBaseTpl<Scalar> {
   /// Control increment
   std::vector<VectorXs> dus_;
   std::vector<VectorXs> Quuks_;
-  std::vector<VectorXs> f_t_Vxx_;
+  std::vector<VectorXs> ftVxx_;
   /// Buffer for KKT matrices.
   std::vector<MatrixXs> kkt_matrix_bufs;
   /// Buffer for KKT system right-hand sides.
@@ -46,7 +46,7 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
   dxs_.resize(nsteps + 1);
   dus_.resize(nsteps);
   Quuks_.resize(nsteps);
-  f_t_Vxx_.resize(nsteps + 1);
+  ftVxx_.resize(nsteps + 1);
   kkt_matrix_bufs.resize(nsteps);
   kkt_rhs_bufs.resize(nsteps);
   llts_.reserve(nsteps);
@@ -68,7 +68,7 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
     dus_[i] = VectorXs::Zero(nu);
 
     Quuks_[i] = VectorXs::Zero(sm.nu());
-    f_t_Vxx_[i + 1] = VectorXs::Zero(sm.ndx2());
+    ftVxx_[i + 1] = VectorXs::Zero(sm.ndx2());
     kkt_matrix_bufs[i] = MatrixXs::Zero(nu, nu);
     kkt_rhs_bufs[i] = MatrixXs::Zero(nu, ndx + 1);
     llts_.emplace_back(nu);

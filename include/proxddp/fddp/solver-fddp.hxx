@@ -330,7 +330,6 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
       break;
     }
 
-    Scalar alpha_opt = 1;
     Scalar phi0 = results.traj_cost_;
     Scalar d1_phi, d2_phi;
     computeDirectionalDerivatives(workspace, results, d1_phi, d2_phi);
@@ -361,6 +360,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
       return phi0 + alpha * (d1 + 0.5 * d2 * alpha);
     };
 
+    Scalar alpha_opt = 1;
     bool d1_small = std::abs(d1_phi) < th_grad_;
     if (!d1_small) {
       switch (ls_type) {
@@ -371,7 +371,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
         break;
       case GOLDSTEIN:
         FDDPGoldsteinLinesearch<Scalar>::run(linesearch_fun, ls_model, phi0,
-                                             verbose_, ls_params, th_grad_,
+                                             verbose_, ls_params,
                                              alpha_opt);
         break;
       default:

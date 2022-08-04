@@ -13,7 +13,7 @@ template <typename Scalar> struct FDDPGoldsteinLinesearch {
 
   template <typename F, typename M>
   static void run(F phi, M model, Scalar phi0, VerboseLevel verbose,
-                  LinesearchParams<Scalar> &ls_params, Scalar th_grad,
+                  LinesearchParams<Scalar> &ls_params,
                   Scalar &alpha_opt) {
     static Scalar th_accept_step_ = 0.1;
     static Scalar th_accept_neg_step_ = 2.0;
