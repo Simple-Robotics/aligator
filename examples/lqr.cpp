@@ -77,7 +77,6 @@ void BM_lqr(benchmark::State &state, const TrajOptProblemTpl<double> &problem,
 
   for (auto _ : state) {
 
-    const std::size_t nsteps = problem.numSteps();
     const auto &dynamics = problem.stages_[0]->dyn_model();
     const auto &x0 = problem.getInitState();
     std::vector<Eigen::VectorXd> us_init;
@@ -86,10 +85,10 @@ void BM_lqr(benchmark::State &state, const TrajOptProblemTpl<double> &problem,
 
     auto verbose = VerboseLevel::QUIET;
 
-    const std::size_t max_iters = 5;
+    const std::size_t max_iters = 4;
     if (!run_fddp) {
       const double mu_init = 1e-6;
-      const double rho_init = 1e-9;
+      const double rho_init = 0.;
 
       SolverProxDDP<double> solver(TOL, mu_init, rho_init, max_iters, verbose);
 
