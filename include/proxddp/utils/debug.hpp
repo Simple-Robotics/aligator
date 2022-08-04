@@ -4,7 +4,6 @@
 
 namespace proxddp {
 
-
 template <typename Fn, typename T>
 std::vector<T> plot_linesearch_function(Fn phi, T amax, std::size_t nsteps) {
   std::vector<T> alphas;
@@ -15,6 +14,4 @@ std::vector<T> plot_linesearch_function(Fn phi, T amax, std::size_t nsteps) {
   return alphas;
 }
 
-
 } // namespace proxddp
-
