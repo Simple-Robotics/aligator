@@ -366,8 +366,8 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     }
     Scalar phi_new = linesearch_fun(alpha_opt);
     PROXDDP_RAISE_IF_NAN(phi_new);
-    Scalar dphi = phi_new - phi0;
-    record.dM = dphi;
+    record.merit = phi_new;
+    record.dM = phi_new - phi0;
 
     results.xs_ = workspace.trial_xs_;
     results.us_ = workspace.trial_us_;
