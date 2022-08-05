@@ -173,9 +173,10 @@ if True:
 
     mu_init = 1e-7
     rho_init = 1e-10
-    solver = proxddp.SolverProxDDP(TOLERANCE, mu_init, rho_init=rho_init, max_iters=300)
+    # solver = proxddp.SolverProxDDP(TOLERANCE, mu_init, rho_init=rho_init, max_iters=300)
+    solver = proxddp.SolverFDDP(TOLERANCE / T)
     solver.verbose = proxddp.VerboseLevel.VERBOSE
-    solver.bcl_params.rho_factor = 0.1
+    # solver.bcl_params.rho_factor = 0.1
     solver.setup(prox_problem)
     solver.run(prox_problem, xs_i, us_i)
 
@@ -210,14 +211,15 @@ if True:
 croc_xs = np.stack(croc_xs.tolist())
 croc_us = np.stack(croc_us.tolist())
 nq = robot_model.nq
-for i in range(robot_model.nq):
-    plt.subplot(2, nq // 2 + 1, i + 1)
-    plt.plot(times, croc_xs[:, i], ls="--")
-    plt.plot(times, prox_xs[:, i], ls="--")
-fig = plt.gcf()
-fig.legend(["croco", "prox"])
-plt.tight_layout()
-plt.show()
+if WITHPLOT:
+    for i in range(robot_model.nq):
+        plt.subplot(2, nq // 2 + 1, i + 1)
+        plt.plot(times, croc_xs[:, i], ls="--")
+        plt.plot(times, prox_xs[:, i], ls="--")
+    fig = plt.gcf()
+    fig.legend(["croco", "prox"])
+    plt.tight_layout()
+    plt.show()
 
 dist_x = [np.linalg.norm(croc_xs[i] - prox_xs[i]) for i in range(T + 1)]
 dist_u = [np.linalg.norm(croc_us[i] - prox_us[i]) for i in range(T)]
