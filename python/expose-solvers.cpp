@@ -70,6 +70,13 @@ void exposeBase() {
       .def_readonly("gains", &ResultsBase::gains_)
       .def_readonly("xs", &ResultsBase::xs_)
       .def_readonly("us", &ResultsBase::us_)
+      .def_readonly("lams", &ResultsBase::lams_)
+      .def_readonly("co_state", &ResultsBase::co_state_)
+      .def_readonly("primal_infeas", &ResultsBase::primal_infeasibility)
+      .def_readonly("dual_infeas", &ResultsBase::dual_infeasibility)
+      .def_readonly("traj_cost", &ResultsBase::traj_cost_, "Trajectory cost.")
+      .def_readonly("merit_value", &ResultsBase::merit_value_,
+                    "Merit function value.")
       .def(PrintableVisitor<ResultsBase>());
 }
 
@@ -138,13 +145,7 @@ void exposeProxDDP() {
   bp::class_<Results, bp::bases<ResultsBaseTpl<Scalar>>>(
       "Results", "Results struct for proxDDP.",
       bp::init<const TrajOptProblem &>())
-      .def_readonly("lams", &Results::lams_)
-      .def_readonly("co_state", &Results::co_state_)
-      .def_readonly("primal_infeas", &Results::primal_infeasibility)
-      .def_readonly("dual_infeas", &Results::dual_infeasibility)
-      .def_readonly("traj_cost", &Results::traj_cost_, "Trajectory cost.")
-      .def_readonly("merit_value", &Results::merit_value_,
-                    "Merit function value.");
+      .def_readonly("al_iter", &Results::al_iter);
 
   using SolverType = SolverProxDDP<Scalar>;
 
