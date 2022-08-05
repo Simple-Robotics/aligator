@@ -22,6 +22,13 @@ from typing import Literal
 
 _integrator_choices = Literal["Euler", "SemiEuler", "RK2"]
 
+np.set_printoptions(precision=3, linewidth=250)
+robot = erd.load("hector")
+rmodel = robot.model
+rdata = robot.data
+nq = rmodel.nq
+nv = rmodel.nv
+
 
 class Args(tap.Tap):
     display: bool = False
@@ -31,150 +38,14 @@ class Args(tap.Tap):
     """Use control bounds"""
     integrator: _integrator_choices = "Euler"
     """Numerical integrator to use"""
+    plot: bool = False
+    viz_open: bool = False
 
     def process_args(self):
         if self.record:
             self.display = True
 
     obstacles: bool = False
-
-
-os.makedirs("assets", exist_ok=True)
-args = Args().parse_args()
-print(args)
-
-robot = erd.load("hector")
-rmodel = robot.model
-rdata = robot.data
-nq = rmodel.nq
-nv = rmodel.nv
-
-if args.obstacles:  # we add the obstacles to the geometric model
-    R = np.eye(3)
-    cyl_radius = 0.2
-    cylinder = fcl.Cylinder(cyl_radius, 10.0)
-    center_column1 = np.array([-0.5, 0.8, 0.0])
-    geom_cyl1 = pin.GeometryObject(
-        "column1", 0, 0, pin.SE3(R, center_column1), cylinder
-    )
-    center_column2 = np.array([0.3, 2.4, 0.0])
-    geom_cyl2 = pin.GeometryObject(
-        "column2", 0, 0, pin.SE3(R, center_column2), cylinder
-    )
-    geom_cyl1.meshColor = np.array([2.0, 0.2, 1.0, 0.6])
-    geom_cyl2.meshColor = np.array([2.0, 0.2, 1.0, 0.6])
-    robot.collision_model.addGeometryObject(geom_cyl1)
-    robot.visual_model.addGeometryObject(geom_cyl1)
-    robot.collision_model.addGeometryObject(geom_cyl2)
-    robot.visual_model.addGeometryObject(geom_cyl2)
-robot.collision_model.geometryObjects[0].geometry.computeLocalAABB()
-quad_radius = robot.collision_model.geometryObjects[0].geometry.aabb_radius
-
-vizer = pin.visualize.MeshcatVisualizer(
-    rmodel, robot.collision_model, robot.visual_model, data=rdata
-)
-vizer.initViewer(loadModel=True)
-if args.display:
-    vizer.viewer.open()
-
-space = manifolds.MultibodyPhaseSpace(rmodel)
-
-
-# The matrix below maps rotor controls to torques
-
-d_cog, cf, cm, u_lim, l_lim = 0.1525, 6.6e-5, 1e-6, 5.0, 0.1
-QUAD_ACT_MATRIX = np.array(
-    [
-        [0.0, 0.0, 0.0, 0.0],
-        [0.0, 0.0, 0.0, 0.0],
-        [1.0, 1.0, 1.0, 1.0],
-        [0.0, d_cog, 0.0, -d_cog],
-        [-d_cog, 0.0, d_cog, 0.0],
-        [-cm / cf, cm / cf, -cm / cf, cm / cf],
-    ]
-)
-nu = QUAD_ACT_MATRIX.shape[1]  # = no. of nrotors
-
-
-ode_dynamics = proxddp.dynamics.MultibodyFreeFwdDynamics(space, QUAD_ACT_MATRIX)
-
-dt = 0.033
-Tf = 2.0
-nsteps = int(Tf / dt)
-print("nsteps: {:d}".format(nsteps))
-
-if args.integrator == "Euler":
-    dynmodel = proxddp.dynamics.IntegratorEuler(ode_dynamics, dt)
-elif args.integrator == "SemiEuler":
-    dynmodel = proxddp.dynamics.IntegratorSemiImplEuler(ode_dynamics, dt)
-elif args.integrator == "RK2":
-    dynmodel = proxddp.dynamics.IntegratorRK2(ode_dynamics, dt)
-else:
-    raise ValueError()
-
-x0 = np.concatenate([robot.q0, np.zeros(nv)])
-x0[2] = 0.2
-
-tau = pin.rnea(rmodel, rdata, robot.q0, np.zeros(nv), np.zeros(nv))
-u0, _, _, _ = np.linalg.lstsq(QUAD_ACT_MATRIX, tau)
-vizer.display(x0[:nq])
-out = space.neutral()
-
-np.set_printoptions(precision=3, linewidth=250)
-Jx = np.zeros((space.ndx, space.ndx))
-Ju = np.zeros((space.ndx, nu))
-Jx_nd = Jx.copy()
-
-x1 = space.rand()
-
-us_init = [u0] * nsteps
-xs_init = [x0] * (nsteps + 1)
-
-x_tar1 = space.neutral()
-x_tar1[:3] = (0.9, 0.8, 1.0)
-x_tar2 = space.neutral()
-x_tar2[:3] = (1.4, -0.6, 1.0)
-x_tar3 = space.neutral()
-x_tar3[:3] = (-0.4, 2.6, 1.0)
-
-u_max = 4.5 * np.ones(nu)
-u_min = -u_max
-
-times = np.linspace(0, Tf, nsteps + 1)
-idx_switch = int(0.7 * nsteps)
-times_wp = [times[idx_switch], times[-1]]
-t0_switch = times[idx_switch]
-
-
-def make_task():
-    if args.obstacles:
-        weights = np.zeros(space.ndx)
-        weights[:3] = 1e-1
-        weights[3:6] = 1e-2
-        weights[nv:] = 1e-3
-
-        def weight_target_selector(i):
-            return weights, x_tar3
-
-    else:
-        weights1 = np.zeros(space.ndx)
-        weights1[:3] = 4.0
-        weights1[3:6] = 1e-2
-        weights1[nv:] = 1e-3
-        weights2 = weights1.copy()
-        weights2[:3] = 1.0
-
-        def weight_target_selector(i):
-            x_tar = x_tar1
-            weights = weights1
-            if i == idx_switch:
-                weights[:] /= dt
-            if i > idx_switch:
-                x_tar = x_tar2
-                weights = weights2
-            return weights, x_tar
-
-    return weight_target_selector
 
 
 class HalfspaceZ(proxddp.StageFunction):
@@ -216,147 +87,284 @@ class Column(proxddp.StageFunction):
         data.Jx[:nv] = -2 * J[:2].T @ err
 
 
-task_fun = make_task()
+def main(args):
+    os.makedirs("assets", exist_ok=True)
+    print(args)
 
-
-def setup():
-
-    w_u = np.eye(nu) * 1e-2
-
-    ceiling = HalfspaceZ(space.ndx, nu, 2.0)
-    floor = HalfspaceZ(space.ndx, nu, 0.0, True)
-    stages = []
-
-    for i in range(nsteps):
-
-        rcost = proxddp.CostStack(space.ndx, nu)
-
-        weights, x_tar = task_fun(i)
-
-        state_err = proxddp.StateErrorResidual(space, nu, x_tar)
-        xreg_cost = proxddp.QuadraticResidualCost(state_err, np.diag(weights) * dt)
-
-        rcost.addCost(xreg_cost)
-
-        u_err = proxddp.ControlErrorResidual(space.ndx, nu)
-        ucost = proxddp.QuadraticResidualCost(u_err, w_u * dt)
-        rcost.addCost(ucost)
-
-        stage = proxddp.StageModel(space, nu, rcost, dynmodel)
-        if args.u_bounds:
-            ctrl_box = proxddp.ControlBoxFunction(space.ndx, u_min, u_max)
-            stage.addConstraint(ctrl_box, constraints.NegativeOrthant())
-        if args.obstacles:  # add obstacles' constraints
-            column1 = Column(
-                space.ndx, nu, center_column1[:2], cyl_radius, margin=quad_radius
-            )
-            column2 = Column(
-                space.ndx, nu, center_column2[:2], cyl_radius, margin=quad_radius
-            )
-            stage.addConstraint(ceiling, constraints.NegativeOrthant())
-            stage.addConstraint(floor, constraints.NegativeOrthant())
-            stage.addConstraint(column1, constraints.NegativeOrthant())
-            stage.addConstraint(column2, constraints.NegativeOrthant())
-        stages.append(stage)
-
-        sd = stage.createData()
-        stage.evaluate(x0, u0, x1, sd)
-
-    term_cstr = proxddp.StageConstraint(
-        proxddp.StateErrorResidual(space, nu, x_tar),
-        constraints.EqualityConstraintSet(),
-    )
-    # stages[-1].addConstraint(term_cstr)
-    term_cost = proxddp.QuadraticResidualCost(
-        proxddp.StateErrorResidual(space, nu, x_tar), np.diag(weights)
-    )
-    prob = proxddp.TrajOptProblem(x0, stages, term_cost=term_cost)
-    prob.setTerminalConstraint(term_cstr)
-    return prob
-
-
-_, x_term = task_fun(nsteps)
-problem = setup()
-tol = 1e-3
-mu_init = 1e-1
-rho_init = 1e-8
-verbose = proxddp.VerboseLevel.VERBOSE
-history_cb = proxddp.HistoryCallback()
-solver = proxddp.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose, max_iters=400)
-solver.bcl_params.rho_factor = 0.1
-solver.registerCallback(history_cb)
-solver.setup(problem)
-solver.run(problem, xs_init, us_init)
-
-results = solver.getResults()
-print(results)
-xs_opt = results.xs.tolist()
-us_opt = results.us.tolist()
-
-fig: plt.Figure = plt.figure(figsize=(9.6, 5.4))
-ax0: plt.Axes = fig.add_subplot(131)
-ax0.plot(times[:-1], us_opt)
-ax0.hlines((u_min[0], u_max[0]), *times[[0, -1]], colors="k", alpha=0.3, lw=1.4)
-ax0.set_title("Controls")
-ax0.set_xlabel("Time")
-ax1: plt.Axes = fig.add_subplot(132)
-root_pt_opt = np.stack(xs_opt)[:, :3]
-ax1.plot(times, root_pt_opt)
-plt.legend(["$x$", "$y$", "$z$"])
-ax1.scatter([times_wp[-1]] * 3, x_term[:3], marker=".", c=["C0", "C1", "C2"])
-ax2: plt.Axes = fig.add_subplot(133)
-n_iter = [i for i in range(len(history_cb.storage.prim_infeas.tolist()))]
-ax2.semilogy(n_iter, history_cb.storage.prim_infeas.tolist(), label="Primal err.")
-ax2.semilogy(n_iter, history_cb.storage.dual_infeas.tolist(), label="Dual err.")
-ax2.set_xlabel("Iterations")
-ax2.legend()
-
-if args.obstacles:
-    TAG = "quadrotor_obstacles"
-else:
-    TAG = "quadrotor"
-
-
-if args.display:
-    viz_util = msu.VizUtil(vizer)
-    input("[enter to play]")
-    cam_dist = 2.0
-    directions_ = [np.array([1.0, 1.0, 0.5])]
-    directions_.append(np.array([1.0, -1.0, 0.8]))
-    directions_.append(np.array([0.1, 0.1, 1.0]))
-    directions_.append(np.array([0.0, -1.0, 0.8]))
-    for d in directions_:
-        d /= np.linalg.norm(d)
-
-    vid_uri = "assets/{}.mp4".format(TAG)
-    vid_recorder = msu.VideoRecorder(vid_uri, fps=1.0 / dt)
-    if args.obstacles:
-        viz_util.draw_objectives([x_tar3], prefix="obj")
-    else:
-        viz_util.draw_objectives([x_tar1, x_tar2], prefix="obj")
-
-    for i in range(4):
-
-        def post_callback(t):
-            n = len(root_pt_opt)
-            n = min(t, n)
-            rp = root_pt_opt[n]
-            pos = rp + directions_[i] * cam_dist
-            viz_util.set_cam_pos(pos)
-            viz_util.set_cam_target(rp)
-
-        viz_util.play_trajectory(
-            xs_opt,
-            us_opt,
-            frame_ids=[rmodel.getFrameId("base_link")],
-            record=args.record,
-            timestep=dt,
-            show_vel=True,
-            frame_sphere_size=quad_radius,
-            recorder=vid_recorder,
-            post_callback=post_callback,
+    if args.obstacles:  # we add the obstacles to the geometric model
+        R = np.eye(3)
+        cyl_radius = 0.2
+        cylinder = fcl.Cylinder(cyl_radius, 10.0)
+        center_column1 = np.array([-0.5, 0.8, 0.0])
+        geom_cyl1 = pin.GeometryObject(
+            "column1", 0, 0, pin.SE3(R, center_column1), cylinder
         )
+        center_column2 = np.array([0.3, 2.4, 0.0])
+        geom_cyl2 = pin.GeometryObject(
+            "column2", 0, 0, pin.SE3(R, center_column2), cylinder
+        )
+        geom_cyl1.meshColor = np.array([2.0, 0.2, 1.0, 0.6])
+        geom_cyl2.meshColor = np.array([2.0, 0.2, 1.0, 0.6])
+        robot.collision_model.addGeometryObject(geom_cyl1)
+        robot.visual_model.addGeometryObject(geom_cyl1)
+        robot.collision_model.addGeometryObject(geom_cyl2)
+        robot.visual_model.addGeometryObject(geom_cyl2)
+    robot.collision_model.geometryObjects[0].geometry.computeLocalAABB()
+    quad_radius = robot.collision_model.geometryObjects[0].geometry.aabb_radius
 
-for ext in ["png", "pdf"]:
-    fig.savefig("assets/{}.{}".format(TAG, ext))
-plt.show()
+    import meshcat
+
+    viewer = meshcat.Visualizer(zmq_url="tcp://127.0.0.1:6000")
+    vizer = pin.visualize.MeshcatVisualizer(
+        rmodel, robot.collision_model, robot.visual_model, data=rdata
+    )
+    vizer.initViewer(viewer, open=args.viz_open, loadModel=True)
+    vizer.displayCollisions(True)
+
+    space = manifolds.MultibodyPhaseSpace(rmodel)
+
+    # The matrix below maps rotor controls to torques
+
+    d_cog, cf, cm, u_lim, _ = 0.1525, 6.6e-5, 1e-6, 5.0, 0.1
+    QUAD_ACT_MATRIX = np.array(
+        [
+            [0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0],
+            [1.0, 1.0, 1.0, 1.0],
+            [0.0, d_cog, 0.0, -d_cog],
+            [-d_cog, 0.0, d_cog, 0.0],
+            [-cm / cf, cm / cf, -cm / cf, cm / cf],
+        ]
+    )
+    nu = QUAD_ACT_MATRIX.shape[1]  # = no. of nrotors
+
+    ode_dynamics = proxddp.dynamics.MultibodyFreeFwdDynamics(space, QUAD_ACT_MATRIX)
+
+    dt = 0.033
+    Tf = 2.0
+    nsteps = int(Tf / dt)
+    print("nsteps: {:d}".format(nsteps))
+
+    if args.integrator == "Euler":
+        dynmodel = proxddp.dynamics.IntegratorEuler(ode_dynamics, dt)
+    elif args.integrator == "SemiEuler":
+        dynmodel = proxddp.dynamics.IntegratorSemiImplEuler(ode_dynamics, dt)
+    elif args.integrator == "RK2":
+        dynmodel = proxddp.dynamics.IntegratorRK2(ode_dynamics, dt)
+    else:
+        raise ValueError()
+
+    x0 = np.concatenate([robot.q0, np.zeros(nv)])
+    x0[2] = 0.2
+
+    tau = pin.rnea(rmodel, rdata, robot.q0, np.zeros(nv), np.zeros(nv))
+    u0, _, _, _ = np.linalg.lstsq(QUAD_ACT_MATRIX, tau)
+    vizer.display(x0[:nq])
+
+    x1 = space.rand()
+
+    us_init = [u0] * nsteps
+    xs_init = [x0] * (nsteps + 1)
+
+    x_tar1 = space.neutral()
+    x_tar1[:3] = (0.9, 0.8, 1.0)
+    x_tar2 = space.neutral()
+    x_tar2[:3] = (1.4, -0.6, 1.0)
+    x_tar3 = space.neutral()
+    x_tar3[:3] = (-0.4, 2.6, 1.0)
+
+    u_max = u_lim * np.ones(nu)
+    u_min = -u_max
+
+    times = np.linspace(0, Tf, nsteps + 1)
+    idx_switch = int(0.7 * nsteps)
+    times_wp = [times[idx_switch], times[-1]]
+
+    def make_task():
+        if args.obstacles:
+            weights = np.zeros(space.ndx)
+            weights[:3] = 1e-1
+            weights[3:6] = 1e-2
+            weights[nv:] = 1e-3
+
+            def weight_target_selector(i):
+                return weights, x_tar3
+
+        else:
+            weights1 = np.zeros(space.ndx)
+            weights1[:3] = 4.0
+            weights1[3:6] = 1e-2
+            weights1[nv:] = 1e-3
+            weights2 = weights1.copy()
+            weights2[:3] = 1.0
+
+            def weight_target_selector(i):
+                x_tar = x_tar1
+                weights = weights1
+                if i == idx_switch:
+                    weights[:] /= dt
+                if i > idx_switch:
+                    x_tar = x_tar2
+                    weights = weights2
+                return weights, x_tar
+
+        return weight_target_selector
+
+    task_fun = make_task()
+
+    def setup():
+
+        w_u = np.eye(nu) * 1e-2
+
+        ceiling = HalfspaceZ(space.ndx, nu, 2.0)
+        floor = HalfspaceZ(space.ndx, nu, 0.0, True)
+        stages = []
+
+        for i in range(nsteps):
+
+            rcost = proxddp.CostStack(space.ndx, nu)
+
+            weights, x_tar = task_fun(i)
+
+            state_err = proxddp.StateErrorResidual(space, nu, x_tar)
+            xreg_cost = proxddp.QuadraticResidualCost(state_err, np.diag(weights) * dt)
+
+            rcost.addCost(xreg_cost)
+
+            u_err = proxddp.ControlErrorResidual(space.ndx, nu)
+            ucost = proxddp.QuadraticResidualCost(u_err, w_u * dt)
+            rcost.addCost(ucost)
+
+            stage = proxddp.StageModel(space, nu, rcost, dynmodel)
+            if args.u_bounds:
+                ctrl_box = proxddp.ControlBoxFunction(space.ndx, u_min, u_max)
+                stage.addConstraint(ctrl_box, constraints.NegativeOrthant())
+            if args.obstacles:  # add obstacles' constraints
+                column1 = Column(
+                    space.ndx, nu, center_column1[:2], cyl_radius, margin=quad_radius
+                )
+                column2 = Column(
+                    space.ndx, nu, center_column2[:2], cyl_radius, margin=quad_radius
+                )
+                stage.addConstraint(ceiling, constraints.NegativeOrthant())
+                stage.addConstraint(floor, constraints.NegativeOrthant())
+                stage.addConstraint(column1, constraints.NegativeOrthant())
+                stage.addConstraint(column2, constraints.NegativeOrthant())
+            stages.append(stage)
+
+            sd = stage.createData()
+            stage.evaluate(x0, u0, x1, sd)
+
+        term_cstr = proxddp.StageConstraint(
+            proxddp.StateErrorResidual(space, nu, x_tar),
+            constraints.EqualityConstraintSet(),
+        )
+        # stages[-1].addConstraint(term_cstr)
+        term_cost = proxddp.QuadraticResidualCost(
+            proxddp.StateErrorResidual(space, nu, x_tar), np.diag(weights)
+        )
+        prob = proxddp.TrajOptProblem(x0, stages, term_cost=term_cost)
+        prob.setTerminalConstraint(term_cstr)
+        return prob
+
+    _, x_term = task_fun(nsteps)
+    problem = setup()
+    tol = 1e-3
+    mu_init = 1e-1
+    rho_init = 1e-8
+    verbose = proxddp.VerboseLevel.VERBOSE
+    history_cb = proxddp.HistoryCallback()
+    solver = proxddp.SolverProxDDP(
+        tol, mu_init, rho_init, verbose=verbose, max_iters=400
+    )
+    solver.bcl_params.rho_factor = 0.1
+    solver.registerCallback(history_cb)
+    solver.setup(problem)
+    solver.run(problem, xs_init, us_init)
+
+    results = solver.getResults()
+    print(results)
+    xs_opt = results.xs.tolist()
+    us_opt = results.us.tolist()
+
+    def test_results():
+        assert results.num_iters == 91
+        assert results.traj_cost <= 8.825e-01
+
+    if args.obstacles:
+        TAG = "quadrotor_obstacles"
+    else:
+        TAG = "quadrotor"
+
+    root_pt_opt = np.stack(xs_opt)[:, :3]
+    if args.plot:
+        fig: plt.Figure = plt.figure(figsize=(9.6, 5.4))
+        ax0: plt.Axes = fig.add_subplot(131)
+        ax0.plot(times[:-1], us_opt)
+        ax0.hlines((u_min[0], u_max[0]), *times[[0, -1]], colors="k", alpha=0.3, lw=1.4)
+        ax0.set_title("Controls")
+        ax0.set_xlabel("Time")
+        ax1: plt.Axes = fig.add_subplot(132)
+        ax1.plot(times, root_pt_opt)
+        plt.legend(["$x$", "$y$", "$z$"])
+        ax1.scatter([times_wp[-1]] * 3, x_term[:3], marker=".", c=["C0", "C1", "C2"])
+        ax2: plt.Axes = fig.add_subplot(133)
+        n_iter = [i for i in range(len(history_cb.storage.prim_infeas.tolist()))]
+        ax2.semilogy(
+            n_iter, history_cb.storage.prim_infeas.tolist(), label="Primal err."
+        )
+        ax2.semilogy(n_iter, history_cb.storage.dual_infeas.tolist(), label="Dual err.")
+        ax2.set_xlabel("Iterations")
+        ax2.legend()
+        for ext in ["png", "pdf"]:
+            fig.savefig("assets/{}.{}".format(TAG, ext))
+
+    if args.display:
+        viz_util = msu.VizUtil(vizer)
+        input("[enter to play]")
+        cam_dist = 2.0
+        directions_ = [np.array([1.0, 1.0, 0.5])]
+        directions_.append(np.array([1.0, -1.0, 0.8]))
+        directions_.append(np.array([0.1, 0.1, 1.0]))
+        directions_.append(np.array([0.0, -1.0, 0.8]))
+        for d in directions_:
+            d /= np.linalg.norm(d)
+
+        vid_uri = "assets/{}.mp4".format(TAG)
+        vid_recorder = msu.VideoRecorder(vid_uri, fps=1.0 / dt)
+        if args.obstacles:
+            viz_util.draw_objectives([x_tar3], prefix="obj")
+        else:
+            viz_util.draw_objectives([x_tar1, x_tar2], prefix="obj")
+
+        def get_callback(i: int):
+            def _callback(t):
+                n = len(root_pt_opt)
+                n = min(t, n)
+                rp = root_pt_opt[n]
+                pos = rp + directions_[i] * cam_dist
+                viz_util.set_cam_pos(pos)
+                viz_util.set_cam_target(rp)
+
+            return _callback
+
+        for i in range(4):
+            viz_util.play_trajectory(
+                xs_opt,
+                us_opt,
+                frame_ids=[rmodel.getFrameId("base_link")],
+                record=args.record,
+                timestep=dt,
+                show_vel=True,
+                frame_sphere_size=quad_radius,
+                recorder=vid_recorder,
+                post_callback=get_callback(i),
+            )
+
+    if args.plot:
+        plt.show()
+
+
+if __name__ == "__main__":
+    args = Args().parse_args()
+    main(args)

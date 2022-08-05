@@ -492,6 +492,7 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     iter_log.step_size = alpha_opt;
     iter_log.dphi0 = dphi0;
     iter_log.merit = results.merit_value_;
+    iter_log.dM = results.merit_value_ - phi0;
 
     logger.log(iter_log);
 
