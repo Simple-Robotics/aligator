@@ -123,7 +123,7 @@ void rollout(
     typename math_types<Scalar>::VectorOfVectors &xout) {
   using DataType = ExplicitDynamicsDataTpl<Scalar>;
   const std::size_t N = us.size();
-  xout.reserve(N + 1);
+  xout.resize(N + 1);
   xout[0] = x0;
   if (dyn_models.size() != N) {
     proxddp_runtime_error(
@@ -136,7 +136,7 @@ void rollout(
     shared_ptr<DataType> data =
         std::static_pointer_cast<DataType>(dyn_models[i]->createData());
     dyn_models[i]->forward(xout[i], us[i], *data);
-    xout.push_back(data->xnext_);
+    xout[i + 1] = data->xnext_;
   }
 }
 
@@ -148,13 +148,14 @@ void rollout(const ExplicitDynamicsModelTpl<Scalar> &dyn_model,
              typename math_types<Scalar>::VectorOfVectors &xout) {
   using DataType = ExplicitDynamicsDataTpl<Scalar>;
   const std::size_t N = us.size();
-  xout.reserve(N + 1);
+  xout.resize(N + 1);
+  xout[0] = x0;
 
   shared_ptr<DataType> data =
       std::static_pointer_cast<DataType>(dyn_model.createData());
   for (std::size_t i = 0; i < N; i++) {
     dyn_model.forward(xout[i], us[i], *data);
-    xout.push_back(data->xnext_);
+    xout[i + 1] = data->xnext_;
   }
 }
 
@@ -164,7 +165,7 @@ typename math_types<Scalar>::VectorOfVectors
 rollout(const C<Scalar> &dms, const typename math_types<Scalar>::VectorXs &x0,
         const typename math_types<Scalar>::VectorOfVectors &us) {
   const std::size_t N = us.size();
-  typename math_types<Scalar>::VectorOfVectors xout{x0};
+  typename math_types<Scalar>::VectorOfVectors xout;
   xout.reserve(N + 1);
   rollout(dms, x0, us, xout);
   return xout;
@@ -177,7 +178,7 @@ rollout(const std::vector<shared_ptr<C<Scalar>>> &dms,
         const typename math_types<Scalar>::VectorXs &x0,
         const typename math_types<Scalar>::VectorOfVectors &us) {
   const std::size_t N = us.size();
-  typename math_types<Scalar>::VectorOfVectors xout{x0};
+  typename math_types<Scalar>::VectorOfVectors xout;
   xout.reserve(N + 1);
   rollout(dms, x0, us, xout);
   return xout;
