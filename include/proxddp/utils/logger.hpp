@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <vector>
 #include <fmt/color.h>
 #include <fmt/ranges.h>
@@ -27,41 +28,43 @@ struct LogRecord {
 
 /// @brief  A logging utility.
 struct BaseLogger {
-  static constexpr unsigned int COL_WIDTH_0 = 6;
+  static constexpr unsigned int COL_WIDTH_0 = 4;
   static constexpr unsigned int COL_WIDTH = 10;
   bool active = true;
+  const std::string join_str = "｜";
 
   void start() {
     if (!active)
       return;
-    static constexpr char fstr[] = "{: ^{}s}";
+    static constexpr char fstr[] = "{:^{}s}";
     std::vector<std::string> v;
     auto it = BASIC_KEYS.begin();
     v.push_back(fmt::format(fstr, *it, COL_WIDTH_0));
     for (it = BASIC_KEYS.begin() + 1; it != BASIC_KEYS.end(); ++it) {
       v.push_back(fmt::format(fstr, *it, COL_WIDTH));
     }
-    fmt::print(fmt::emphasis::bold, "{}\n", fmt::join(v, " | "));
+    fmt::print(fmt::emphasis::bold, "{}\n", fmt::join(v, join_str));
   }
 
   template <typename T> void log(const T &values) {
     if (!active)
       return;
     std::vector<std::string> v;
+    int sci_prec = 3;
     int dbl_prec = 3;
+    using fmt::format;
 
-    v.push_back(fmt::format(int_format, values.iter, COL_WIDTH_0));
-    v.push_back(fmt::format(sci_format, values.step_size, COL_WIDTH, dbl_prec));
-    v.push_back(
-        fmt::format(sci_format, values.inner_crit, COL_WIDTH, dbl_prec));
-    v.push_back(fmt::format(sci_format, values.prim_err, COL_WIDTH, dbl_prec));
-    v.push_back(fmt::format(sci_format, values.dual_err, COL_WIDTH, dbl_prec));
-    v.push_back(fmt::format(sci_format, values.xreg, COL_WIDTH, dbl_prec));
-    v.push_back(fmt::format(dbl_format, values.dphi0, COL_WIDTH, dbl_prec));
-    v.push_back(fmt::format(dbl_format, values.merit, COL_WIDTH, dbl_prec));
-    v.push_back(fmt::format(dbl_format, values.dM, COL_WIDTH, dbl_prec));
+    v.push_back(format(int_format, values.iter, COL_WIDTH_0));
+    v.push_back(format(sci_format, values.step_size, COL_WIDTH, sci_prec));
+    v.push_back(format(sci_format, values.inner_crit, COL_WIDTH, sci_prec));
+    v.push_back(format(sci_format, values.prim_err, COL_WIDTH, sci_prec));
+    v.push_back(format(sci_format, values.dual_err, COL_WIDTH, sci_prec));
+    v.push_back(format(sci_format, values.xreg, COL_WIDTH, sci_prec));
+    v.push_back(format(dbl_format, values.dphi0, COL_WIDTH, dbl_prec));
+    v.push_back(format(sci_format, values.merit, COL_WIDTH, sci_prec));
+    v.push_back(format(dbl_format, values.dM, COL_WIDTH, dbl_prec));
 
-    fmt::print("{}\n", fmt::join(v, " | "));
+    fmt::print("{}\n", fmt::join(v, join_str));
   }
 
   void finish(bool conv) {
