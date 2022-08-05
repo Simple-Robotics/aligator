@@ -165,6 +165,9 @@ if True:
     croc_xs = solver.xs
     croc_us = solver.us
 
+    croc_dual_err = np.max([np.linalg.norm(q, np.inf) for q in solver.Qu])
+    print("Croc dual err:", croc_dual_err)
+
 if True:
     import proxddp
 
@@ -174,19 +177,21 @@ if True:
     mu_init = 1e-7
     rho_init = 1e-10
     # solver = proxddp.SolverProxDDP(TOLERANCE, mu_init, rho_init=rho_init, max_iters=300)
-    solver = proxddp.SolverFDDP(TOLERANCE / T)
-    solver.verbose = proxddp.VerboseLevel.VERBOSE
+    proxsolver = proxddp.SolverFDDP(tol=croc_dual_err)
+    proxsolver.verbose = proxddp.VerboseLevel.VERBOSE
     # solver.bcl_params.rho_factor = 0.1
-    solver.setup(prox_problem)
-    solver.run(prox_problem, xs_i, us_i)
+    proxsolver.setup(prox_problem)
+    proxsolver.run(prox_problem, xs_i, us_i)
 
-    results = solver.getResults()
+    results = proxsolver.getResults()
     assert results.num_iters <= 24
     print("Results {}".format(results))
     prox_xs = results.xs
     prox_us = results.us
     prox_xs = np.stack(prox_xs)
     prox_us = np.stack(prox_us)
+
+    print("prox_cost - croc_cost:", results.traj_cost - solver.cost)
 
     if WITHPLOT:
         import matplotlib.pyplot as plt
