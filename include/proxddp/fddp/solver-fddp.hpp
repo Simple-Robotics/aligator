@@ -82,7 +82,7 @@ template <typename Scalar> struct SolverFDDP {
 
   SolverFDDP(const Scalar tol = 1e-6,
              VerboseLevel verbose = VerboseLevel::QUIET,
-             const Scalar reg_init = 1e-10);
+             const Scalar reg_init = 1e-9);
 
   const Results &getResults() const { return *results_; }
   const Workspace &getWorkspace() const { return *workspace_; }
@@ -172,7 +172,7 @@ template <typename Scalar> struct SolverFDDP {
     const std::size_t nsteps = workspace.nsteps;
     for (std::size_t i = 0; i < nsteps; i++) {
       const StageData &sd = workspace.problem_data.getData(i);
-      const DynamicsDataTpl<Scalar> &dd = stage_get_dynamics_data(sd);
+      const ExpData &dd = stage_get_dynamics_data(sd);
       auto ff = results.getFeedforward(i);
       auto fb = results.getFeedback(i);
       dus[i] = ff + fb * dxs[i];
@@ -184,14 +184,23 @@ template <typename Scalar> struct SolverFDDP {
            const std::vector<VectorXs> &xs_init = DEFAULT_VECTOR<Scalar>,
            const std::vector<VectorXs> &us_init = DEFAULT_VECTOR<Scalar>);
 
-  static DynamicsDataTpl<Scalar> &
-  stage_get_dynamics_data(StageDataTpl<Scalar> &sd) {
-    return static_cast<DynamicsDataTpl<Scalar> &>(*sd.constraint_data[0]);
+  static ExpData &stage_get_dynamics_data(StageDataTpl<Scalar> &sd) {
+    try {
+      return dynamic_cast<ExpData &>(*sd.constraint_data[0]);
+    } catch (const std::bad_cast &e) {
+      proxddp_runtime_error(
+          fmt::format("{}: failed to cast to ExplicitDynamicsData.", e.what()));
+    }
   }
 
-  static const DynamicsDataTpl<Scalar> &
+  static const ExpData &
   stage_get_dynamics_data(const StageDataTpl<Scalar> &sd) {
-    return static_cast<const DynamicsDataTpl<Scalar> &>(*sd.constraint_data[0]);
+    try {
+      return dynamic_cast<const ExpData &>(*sd.constraint_data[0]);
+    } catch (const std::bad_cast &e) {
+      proxddp_runtime_error(
+          fmt::format("{}: failed to cast to ExplicitDynamicsData.", e.what()));
+    }
   }
 };
 

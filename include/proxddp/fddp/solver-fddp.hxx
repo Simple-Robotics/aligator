@@ -55,20 +55,19 @@ void SolverFDDP<Scalar>::forwardPass(const Problem &problem,
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &sm = *problem.stages_[i];
-    const DynamicsModelTpl<Scalar> &dm = sm.dyn_model();
-    const Manifold &uspace = sm.uspace();
     StageData &sd = pd.getData(i);
-    DynamicsDataTpl<Scalar> &dd = stage_get_dynamics_data(sd);
 
     ConstVectorRef ff = results.getFeedforward(i);
     ConstMatrixRef fb = results.getFeedback(i);
 
     sm.xspace().difference(results.xs_[i], xs_try[i], workspace.dxs_[i]);
-    uspace.integrate(results.us_[i], alpha * ff + fb * workspace.dxs_[i],
-                     us_try[i]);
-    forwardDynamics(dm, xs_try[i], us_try[i], dd, xnexts[i + 1]);
-    sm.xspace().integrate(xnexts[i + 1], fs[i + 1] * (alpha - 1.),
-                          xs_try[i + 1]);
+    sm.uspace().integrate(results.us_[i], alpha * ff + fb * workspace.dxs_[i],
+                          us_try[i]);
+    sm.evaluate(xs_try[i], us_try[i], xs_try[i + 1], sd);
+    ExpData &dd = stage_get_dynamics_data(sd);
+    xnexts[i + 1] = dd.xnext_;
+    sm.xspace_next().integrate(xnexts[i + 1], fs[i + 1] * (alpha - 1.),
+                               xs_try[i + 1]);
   }
   const Manifold &space = problem.stages_.back()->xspace();
   space.difference(results.xs_[nsteps], xs_try[nsteps], workspace.dxs_[nsteps]);
@@ -136,24 +135,23 @@ Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem,
                                                 const std::vector<VectorXs> &us,
                                                 Workspace &workspace) {
   const std::size_t nsteps = workspace.nsteps;
-  ProblemData &pd = workspace.problem_data;
+  const ProblemData &pd = workspace.problem_data;
+  std::vector<VectorXs> &xnexts = workspace.xnexts_;
   std::vector<VectorXs> &fs = workspace.feas_gaps_;
 
-  {
-    const VectorXs &x0 = problem.getInitState();
-    const Manifold &space = problem.stages_[0]->xspace();
-    space.difference(xs[0], x0, fs[0]);
-  }
+  const VectorXs &x0 = problem.getInitState();
+  const Manifold &space = problem.stages_[0]->xspace();
+  space.difference(xs[0], x0, fs[0]);
+  xnexts[0] = x0;
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &sm = *problem.stages_[i];
-    const DynamicsModelTpl<Scalar> &dm = sm.dyn_model();
-    DynamicsDataTpl<Scalar> &dd = stage_get_dynamics_data(pd.getData(i));
-
-    forwardDynamics(dm, xs[i], us[i], dd, workspace.xnexts_[i + 1]);
-    sm.xspace().difference(xs[i + 1], workspace.xnexts_[i + 1], fs[i + 1]);
+    const ExpData &dd = stage_get_dynamics_data(pd.getData(i));
+    xnexts[i + 1] = dd.xnext_;
+    sm.xspace().difference(xs[i + 1], xnexts[i + 1], fs[i + 1]);
   }
-
+  problem.term_cost_->evaluate(xs[nsteps], problem.dummy_term_u0,
+                               *pd.term_cost_data);
   return math::infty_norm(workspace.feas_gaps_);
 }
 
@@ -366,7 +364,6 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
       }
       record.step_size = alpha_opt;
     }
-    // forwardPass(problem, results, workspace, alpha_opt);
     Scalar phi_new = linesearch_fun(alpha_opt);
     PROXDDP_RAISE_IF_NAN(phi_new);
     Scalar dphi = phi_new - phi0;
