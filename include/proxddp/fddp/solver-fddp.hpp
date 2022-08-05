@@ -103,11 +103,6 @@ template <typename Scalar> struct SolverFDDP {
   static void forwardPass(const Problem &problem, const Results &results,
                           Workspace &workspace, const Scalar alpha);
 
-  /// @brief Try a given step size, and store the resulting cost in
-  /// `Results::traj_cost_`.
-  static Scalar tryStep(const Problem &problem, const Results &results,
-                        Workspace &workspace, const Scalar alpha);
-
   void computeDirectionalDerivatives(Workspace &workspace, Results &results,
                                      Scalar &d1, Scalar &d2) const;
 

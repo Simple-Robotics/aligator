@@ -80,16 +80,6 @@ void SolverFDDP<Scalar>::forwardPass(const Problem &problem,
 }
 
 template <typename Scalar>
-Scalar SolverFDDP<Scalar>::tryStep(const Problem &problem,
-                                   const Results &results, Workspace &workspace,
-                                   const Scalar alpha) {
-  forwardPass(problem, results, workspace, alpha);
-  problem.evaluate(workspace.trial_xs_, workspace.trial_us_,
-                   workspace.trial_prob_data);
-  return computeTrajectoryCost(problem, workspace.trial_prob_data);
-}
-
-template <typename Scalar>
 void SolverFDDP<Scalar>::computeDirectionalDerivatives(Workspace &workspace,
                                                        Results &results,
                                                        Scalar &dgrad,
@@ -290,7 +280,10 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
   }
 
   auto linesearch_fun = [&](const Scalar alpha) {
-    return tryStep(problem, results, workspace, alpha);
+    forwardPass(problem, results, workspace, alpha);
+    problem.evaluate(workspace.trial_xs_, workspace.trial_us_,
+                     workspace.trial_prob_data);
+    return computeTrajectoryCost(problem, workspace.trial_prob_data);
   };
 
   LogRecord record;
