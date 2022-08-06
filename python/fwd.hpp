@@ -30,6 +30,7 @@ void exposeDynamics();
 void exposeIntegrators();
 void exposeSolvers();
 void exposeCallbacks();
+void exposeAutodiff();
 
 } // namespace python
 } // namespace proxddp
