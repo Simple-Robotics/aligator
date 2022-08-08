@@ -37,13 +37,13 @@ struct CrocActionModelWrapperTpl : public StageModelTpl<Scalar> {
              action_model->get_nu()),
         action_model_(action_model) {
     using EqualitySet = proxnlp::EqualityConstraint<Scalar>;
-    const int nr = action_model->get_state()->get_ndx();
+    const int nr = (int)action_model->get_state()->get_ndx();
     this->constraints_.push_back(
         ConstraintType{nullptr, std::make_shared<EqualitySet>()}, nr);
   }
 
   const Dynamics &dyn_model() const {
-    proxddp_runtime_error("There is not dyn_model() for this class.")
+    proxddp_runtime_error("There is not dyn_model() for this class.");
   }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,

@@ -252,7 +252,7 @@ def test_constraint_dynamics():
     while t <= T_sim:
 
         discrete_dynamics.forward(x, u, data)
-        x = data.xout.copy()
+        x = data.xnext.copy()
         t += dt
         if DISPLAY:
             viz.display(x[: model.nq])
@@ -299,7 +299,9 @@ def test_constraint_dynamics():
     verbose = proxddp.VerboseLevel.VERBOSE
     rho_init = 0.003
     history_cb = proxddp.HistoryCallback()
-    solver = proxddp.ProxDDP(tol, mu_init, rho_init, verbose=verbose, max_iters=300)
+    solver = proxddp.SolverProxDDP(
+        tol, mu_init, rho_init, verbose=verbose, max_iters=300
+    )
     solver.registerCallback(history_cb)
     solver.setup(problem)
     conv = solver.run(problem, xs_init, us_init)

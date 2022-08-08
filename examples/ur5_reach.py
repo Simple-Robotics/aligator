@@ -110,7 +110,7 @@ tol = 1e-3
 mu_init = 0.001
 rho_init = 1e-7
 
-solver = proxddp.ProxDDP(
+solver = proxddp.SolverProxDDP(
     tol, mu_init, rho_init, verbose=proxddp.VerboseLevel.VERBOSE, max_iters=300
 )
 

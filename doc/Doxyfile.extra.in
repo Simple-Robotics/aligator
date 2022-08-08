@@ -21,7 +21,8 @@ EXPAND_ONLY_PREDEF      = YES
 PREDEFINED              += EIGEN_MAKE_ALIGNED_OPERATOR_NEW \
                            PROXNLP_FUNCTION_TYPEDEFS \
                            PROXNLP_DYNAMIC_TYPEDEFS \
-                           proxddp_runtime_error
+                           proxddp_runtime_error \
+                           PROXDDP_RAISE_IF_NAN
 
 FULL_PATH_NAMES         = YES
 EXCLUDE_SYMBOLS         = *::internal, internal::*, *::internal::*
@@ -32,7 +33,8 @@ INCLUDE_PATH            = @PROJECT_SOURCE_DIR@/include
 
 EXCLUDE_SYMLINKS        = YES
 
-EXAMPLE_PATH            = @PROJECT_SOURCE_DIR@/examples
+EXAMPLE_PATH            = @PROJECT_SOURCE_DIR@/examples \
+                          @PROJECT_SOURCE_DIR@/doc/fddp
 
 EXTRA_PACKAGES          = {bm,stmaryrd}
 FORMULA_MACROFILE       = @PROJECT_SOURCE_DIR@/doc/macros.inc

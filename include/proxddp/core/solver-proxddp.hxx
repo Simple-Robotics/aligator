@@ -8,6 +8,20 @@
 #include <fmt/color.h>
 
 namespace proxddp {
+
+template <typename Scalar>
+SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
+                                     const Scalar rho_init,
+                                     const std::size_t max_iters,
+                                     const VerboseLevel verbose)
+    : target_tolerance(tol), mu_init(mu_init), rho_init(rho_init),
+      verbose_(verbose), MAX_ITERS(max_iters) {
+  if (mu_init >= 1.) {
+    proxddp_runtime_error(
+        fmt::format("Penalty value mu_init={:g}>=1!", mu_init));
+  }
+}
+
 template <typename Scalar>
 void SolverProxDDP<Scalar>::computeDirection(const Problem &problem,
                                              Workspace &workspace,
@@ -16,7 +30,7 @@ void SolverProxDDP<Scalar>::computeDirection(const Problem &problem,
 
   // compute direction dx0
   {
-    const value_store_t &vp = workspace.value_params[0];
+    const VParams &vp = workspace.value_params[0];
     const StageModel &stage0 = *problem.stages_[0];
     const FunctionData &init_data = *workspace.problem_data.init_data;
     const int ndual0 = problem.init_state_error.nr;
@@ -88,6 +102,34 @@ void SolverProxDDP<Scalar>::tryStep(const Problem &problem,
 }
 
 template <typename Scalar>
+void SolverProxDDP<Scalar>::setup(const Problem &problem) {
+  workspace_ = std::make_unique<Workspace>(problem);
+  results_ = std::make_unique<Results>(problem);
+
+  Workspace &ws = *workspace_;
+  prox_penalties_.clear();
+  const std::size_t nsteps = problem.numSteps();
+  for (std::size_t i = 0; i < nsteps; i++) {
+    const StageModel &sm = *problem.stages_[i];
+    prox_penalties_.emplace_back(sm.xspace_, sm.uspace_, ws.prev_xs_[i],
+                                 ws.prev_us_[i], false);
+    if (i == nsteps - 1) {
+      prox_penalties_.emplace_back(sm.xspace_next_, sm.uspace_,
+                                   ws.prev_xs_[nsteps], problem.dummy_term_u0,
+                                   true);
+    }
+  }
+
+  for (std::size_t i = 0; i < nsteps + 1; i++) {
+    const ProxPenaltyType *penal = &prox_penalties_[i];
+    ws.prox_datas.push_back(std::make_shared<ProxData>(penal));
+  }
+
+  assert(prox_penalties_.size() == (nsteps + 1));
+  assert(ws.prox_datas.size() == (nsteps + 1));
+}
+
+template <typename Scalar>
 void SolverProxDDP<Scalar>::backwardPass(const Problem &problem,
                                          Workspace &workspace,
                                          Results &results) const {
@@ -111,7 +153,7 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
 
   const TrajOptDataTpl<Scalar> &prob_data = workspace.problem_data;
   const CostData &term_cost_data = *prob_data.term_cost_data;
-  value_store_t &term_value = workspace.value_params[nsteps];
+  VParams &term_value = workspace.value_params[nsteps];
   const CostData &proxdata = *workspace.prox_datas[nsteps];
 
   term_value.v_2() = 2 * (term_cost_data.value_ + rho_penal_ * proxdata.value_);
@@ -129,11 +171,11 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
     const int ndx = term_cstr.func_->ndx1;
     MatrixXs &G = results.gains_[nsteps];
     VectorXs &lamplus = workspace.lams_plus_[nsteps + 1];
-    VectorXs &lamprev = workspace.prev_lams_[nsteps + 1];
-    VectorXs &lamin = results.lams_[nsteps + 1];
+    const VectorXs &lamprev = workspace.prev_lams_[nsteps + 1];
+    const VectorXs &lamin = results.lams_[nsteps + 1];
 
     const VectorXs &cv = cstr_data.value_;
-    const auto &cJx = cstr_data.Jx_;
+    const MatrixRef &cJx = cstr_data.Jx_;
 
     auto l_expr = lamprev + mu_inverse_ * cv;
     cstr_set.applyNormalConeProjectionJacobian(l_expr, cJx);
@@ -146,11 +188,12 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
     /* feedback */
     fb = mu_inverse_ * cJx;
 
-    auto Hx = term_value.Vx_ + cJx.transpose() * lamin;
-    auto Hxx = term_value.Vxx_ + cstr_data.Hxx_;
-
-    term_value.Vx_ = Hx + cJx.transpose() * ff;
-    term_value.Vxx_ = Hxx + cJx.transpose() * fb;
+    term_value.v_2() += mu_inverse_ * l_expr.squaredNorm();
+    term_value.Vx_.noalias() += cJx.transpose() * lamplus;
+    term_value.Vxx_ += cstr_data.Hxx_;
+    term_value.Vxx_.noalias() += cJx.transpose() * fb;
+    // term_value.Vxx_ = Hxx + cJx.transpose() * fb;
+    // auto Hxx = term_value.Vxx_ + cstr_data.Hxx_;
   }
 
   term_value.storage =
@@ -163,8 +206,8 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
                                          const std::size_t step) const {
   const StageModel &stage = *problem.stages_[step];
 
-  const value_store_t &vnext = workspace.value_params[step + 1];
-  q_store_t &qparam = workspace.q_params[step];
+  const VParams &vnext = workspace.value_params[step + 1];
+  QParams &qparam = workspace.q_params[step];
 
   StageData &stage_data = workspace.problem_data.getData(step);
   const CostData &cdata = *stage_data.cost_data;
@@ -223,8 +266,8 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
     cstr_set.normalConeProjection(lam_expr, lamplus_j);
     lampdal_j = 2 * lamplus_j - lam_inn_j;
 
-    qparam.grad_ += cstr_data.jac_buffer_.transpose() * lam_inn_j;
-    qparam.hess_ += cstr_data.vhp_buffer_;
+    qparam.grad_.noalias() += cstr_data.jac_buffer_.transpose() * lam_inn_j;
+    qparam.hess_.noalias() += cstr_data.vhp_buffer_;
 
     // update the KKT jacobian columns
     cstr_mgr.getBlockByConstraint(kkt_jac, j) =
@@ -268,9 +311,9 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   ldlt_.solveInPlace(G);
 
   /* Value function */
-  value_store_t &vcurr = workspace.value_params[step];
-  vcurr.storage = qparam.storage.topLeftCorner(ndx1 + 1, ndx1 + 1) +
-                  kkt_rhs.transpose() * G;
+  VParams &vp = workspace.value_params[step];
+  vp.storage = qparam.storage.topLeftCorner(ndx1 + 1, ndx1 + 1) +
+               kkt_rhs.transpose() * G;
 }
 
 template <typename Scalar>
@@ -283,32 +326,11 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   Workspace &workspace = *workspace_;
   Results &results = *results_;
 
-  const std::size_t nsteps = problem.numSteps();
-  if (xs_init.size() == 0) {
-    for (std::size_t i = 0; i < nsteps + 1; i++) {
-      const StageModel &sm = *problem.stages_[i];
-      results.xs_[i] = sm.xspace().neutral();
-    }
-  } else {
-    if (xs_init.size() != (nsteps + 1)) {
-      proxddp_runtime_error("warm-start for xs has wrong size!")
-    }
-    results.xs_ = xs_init;
-  }
+  checkTrajectoryAndAssign(problem, xs_init, us_init, results.xs_, results.us_);
 
-  if (us_init.size() == 0) {
-    for (std::size_t i = 0; i < nsteps; i++) {
-      const StageModel &sm = *problem.stages_[i];
-      results.us_[i] = sm.uspace().neutral();
-    }
-  } else {
-    if (us_init.size() != nsteps) {
-      proxddp_runtime_error("warm-start for us has wrong size!")
-    }
-    results.us_ = us_init;
-  }
-
-  ::proxddp::CustomLogger().start();
+  ::proxddp::BaseLogger logger{};
+  logger.active = (verbose_ > 0);
+  logger.start();
 
   workspace.prev_xs_ = results.xs_;
   workspace.prev_us_ = results.us_;
@@ -325,7 +347,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   bool cur_al_accept = true;
   auto colout = fmt::color::medium_orchid;
 
-  al_iter = 0;
+  std::size_t &al_iter = results.al_iter;
   while ((al_iter < MAX_AL_ITERS) && (results.num_iters < MAX_ITERS)) {
     if (al_iter > 0) {
       if (cur_al_accept)
@@ -386,14 +408,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
     al_iter++;
   }
 
-  if (verbose_ >= 1) {
-    if (conv)
-      fmt::print(fmt::fg(fmt::color::dodger_blue), "Successfully converged.");
-    else {
-      fmt::print(fmt::fg(fmt::color::red), "Convergence failure.");
-    }
-    fmt::print("\n");
-  }
+  logger.finish(conv);
   invokeCallbacks(workspace, results);
   return conv;
 }
@@ -416,6 +431,9 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
   Scalar eps = 1e-10;
   Scalar phieps = 0., dphi0 = 0.;
 
+  ::proxddp::BaseLogger logger{};
+  logger.active = (verbose_ > 0);
+
   std::size_t &k = results.num_iters;
   while (k < MAX_ITERS) {
     problem.evaluate(results.xs_, results.us_, workspace.problem_data);
@@ -431,18 +449,10 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
     LogRecord iter_log;
     iter_log.iter = k + 1;
+    iter_log.xreg = xreg_;
     iter_log.inner_crit = workspace.inner_criterion;
     iter_log.prim_err = results.primal_infeasibility;
     iter_log.dual_err = results.dual_infeasibility;
-
-    if (verbose_ >= 1) {
-      // fmt::print(" | inner_crit {:.3e}"
-      //            " | prim_err   {:.3e}"
-      //            " | dual_err   {:.3e}",
-      //            workspace.inner_criterion, results.primal_infeasibility,
-      //            results.dual_infeasibility);
-      // fmt::print(" |\n");
-    }
 
     bool inner_conv = workspace.inner_criterion < inner_tol_;
     if (inner_conv) {
@@ -453,11 +463,6 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
           (results.primal_infeasibility < target_tolerance)) {
         break;
       }
-    }
-
-    if (verbose_ >= 1) {
-      // fmt::print(fmt::fg(fmt::color::yellow_green), "[iter {:>3d}]", k + 1);
-      // fmt::print("\n");
     }
 
     computeDirection(problem, workspace, results);
@@ -487,14 +492,9 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     iter_log.step_size = alpha_opt;
     iter_log.dphi0 = dphi0;
     iter_log.merit = results.merit_value_;
+    iter_log.dM = results.merit_value_ - phi0;
 
-    if (verbose_ >= 1) {
-      // fmt::print(" | alpha  {:.3e}"
-      //            " | dphi0  {:.3e}"
-      //            " | merit  {:.3e}\n",
-      //            alpha_opt, dphi0, results.merit_value_);
-      CustomLogger().log(iter_log);
-    }
+    logger.log(iter_log);
 
     // accept the step
     results.xs_ = workspace.trial_xs_;

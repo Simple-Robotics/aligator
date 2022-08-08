@@ -1,14 +1,32 @@
 #pragma once
 
+#include "proxddp/core/solver-util.hpp"
+
+#include <fmt/core.h>
+
 namespace proxddp {
+
+template <typename Scalar>
+std::ostream &operator<<(std::ostream &oss,
+                         const ResultsBaseTpl<Scalar> &self) {
+  oss << "Results {";
+  oss << fmt::format("\n  numiters   :  {:d},", self.num_iters);
+  oss << fmt::format("\n  converged  :  {},", self.conv);
+  oss << fmt::format("\n  traj. cost :  {:.3e},", self.traj_cost_)
+      << fmt::format("\n  merit.value:  {:.3e},", self.merit_value_)
+      << fmt::format("\n  prim_infeas:  {:.3e},", self.primal_infeasibility)
+      << fmt::format("\n  dual_infeas:  {:.3e},", self.dual_infeasibility);
+  oss << "\n}";
+  return oss;
+}
 
 template <typename Scalar>
 ResultsTpl<Scalar>::ResultsTpl(const TrajOptProblemTpl<Scalar> &problem) {
 
   const std::size_t nsteps = problem.numSteps();
   gains_.reserve(nsteps);
-  xs_.reserve(nsteps + 1);
-  us_.reserve(nsteps);
+  xs_default_init(problem, xs_);
+  us_default_init(problem, us_);
   lams_.reserve(nsteps + 1);
   co_state_.reserve(nsteps);
   const int ndual = problem.init_state_error.nr;
@@ -18,13 +36,9 @@ ResultsTpl<Scalar>::ResultsTpl(const TrajOptProblemTpl<Scalar> &problem) {
     const int nprim = stage.numPrimal();
     const int ndual = stage.numDual();
     gains_.push_back(MatrixXs::Zero(nprim + ndual, stage.ndx1() + 1));
-    xs_.push_back(stage.xspace_->neutral());
-    us_.push_back(stage.uspace_->neutral());
     lams_.push_back(VectorXs::Ones(ndual));
     const int nr = stage.ndx2();
     co_state_.push_back(lams_[i + 1].head(nr));
-    if (i == nsteps - 1)
-      xs_.push_back(stage.xspace_next_->neutral());
   }
 
   if (problem.term_constraint_) {

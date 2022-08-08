@@ -6,8 +6,9 @@ namespace proxddp {
 namespace helpers {
 
 template <typename Scalar> struct base_callback {
-  virtual void call(const SolverProxDDP<Scalar> *, const WorkspaceTpl<Scalar> &,
-                    const ResultsTpl<Scalar> &) = 0;
+  using Workspace = WorkspaceBaseTpl<Scalar>;
+  using Results = ResultsBaseTpl<Scalar>;
+  virtual void call(const Workspace &, const Results &) = 0;
   virtual ~base_callback() = default;
 };
 

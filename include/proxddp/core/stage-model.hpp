@@ -8,6 +8,7 @@
 #include "proxddp/core/cost-abstract.hpp"
 #include "proxddp/core/dynamics.hpp"
 #include "proxddp/core/constraint.hpp"
+#include "proxddp/utils/exceptions.hpp"
 
 #include "proxddp/core/clone.hpp"
 
@@ -139,9 +140,18 @@ struct StageDataTpl : public Cloneable<StageDataTpl<_Scalar>> {
 
   /// @brief Check data integrity.
   virtual void checkData() {
-    bool cond = (constraint_data.size() >= 1) && (cost_data != 0);
-    if (!cond) {
-      std::domain_error("[StageData] integrity check failed.");
+    const char msg[] = "StageData integrity check failed.";
+    if (constraint_data.size() == 0) {
+      proxddp_runtime_error(fmt::format("{} (constraint_data empty)", msg));
+    }
+    if (cost_data == 0) {
+      proxddp_runtime_error(fmt::format("{} (cost_data is nullptr)", msg));
+    }
+    const DynamicsData *dd =
+        static_cast<const DynamicsData *>(constraint_data[0].get());
+    if (dd == nullptr) {
+      proxddp_runtime_error(
+          fmt::format("{} (constraint_data[0] should be dynamics data)", msg));
     }
   }
 

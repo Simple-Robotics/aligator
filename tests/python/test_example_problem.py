@@ -36,7 +36,7 @@ class TwistModelExplicit(proxddp.dynamics.ExplicitDynamicsModel):
         super().__init__(space, nu)
 
     def forward(self, x, u, data: proxddp.dynamics.ExplicitDynamicsData):
-        space.integrate(x, self.dt * self.B @ u, data.xout)
+        space.integrate(x, self.dt * self.B @ u, data.xnext)
 
     def dForward(self, x, u, data: proxddp.dynamics.ExplicitDynamicsData):
         Jx = data.Jx
@@ -127,7 +127,7 @@ class TestClass:
         mu_init = 1e-2
         rho_init = 0.0
 
-        solver = proxddp.ProxDDP(tol, mu_init, rho_init)
+        solver = proxddp.SolverProxDDP(tol, mu_init, rho_init)
 
         assert solver.bcl_params.prim_alpha == 0.1
         assert solver.bcl_params.prim_beta == 0.9

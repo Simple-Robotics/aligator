@@ -2,41 +2,43 @@
 /// @brief Linear-quadratic regulator
 
 #include "proxddp/core/solver-proxddp.hpp"
-#include "proxddp/utils.hpp"
+#include "proxddp/utils/rollout.hpp"
 #include "proxddp/modelling/quad-costs.hpp"
+
+#include "proxddp/fddp/solver-fddp.hpp"
 
 #include <proxnlp/modelling/constraints/negative-orthant.hpp>
 
 #include "proxddp/modelling/linear-discrete-dynamics.hpp"
 #include "proxddp/modelling/control-box-function.hpp"
 
+#include <benchmark/benchmark.h>
+#include <iostream>
+
 using namespace proxddp;
 
 constexpr double TOL = 1e-7;
 
-int main() {
+void define_problem(shared_ptr<TrajOptProblemTpl<double>> &problemptr) {
 
   const int dim = 2;
-  const int nu = 1;
+  const int nu = 2;
   Eigen::MatrixXd A(dim, dim);
   Eigen::MatrixXd B(dim, nu);
   Eigen::VectorXd c_(dim);
   A.setIdentity();
-  B << -0.6, 0.3;
+  B << -0.6, 0.3, 0., 1.;
   c_ << 0.1, 0.;
 
   Eigen::MatrixXd w_x(dim, dim), w_u(nu, nu);
   w_x.setIdentity();
   w_u.setIdentity();
-  w_x(0, 0) = 2.1;
+  w_x(0, 0) = 2.;
   w_u *= 1e-2;
 
   using dynamics::LinearDiscreteDynamicsTpl;
   auto dynptr = std::make_shared<LinearDiscreteDynamicsTpl<double>>(A, B, c_);
   auto &dynamics = *dynptr;
-  fmt::print("matrix A:\n{}\n", dynamics.A_);
-  fmt::print("matrix B:\n{}\n", dynamics.B_);
-  fmt::print("drift  c:\n{}\n", dynamics.c_);
   auto spaceptr = dynamics.next_state_;
 
   auto rcost = std::make_shared<QuadraticCostTpl<double>>(w_x, w_u);
@@ -49,62 +51,74 @@ int main() {
   auto ctrl_bounds_fun = std::make_shared<ControlBoxFunctionTpl<double>>(
       dim, nu, -u_bound, u_bound);
 
-  const bool HAS_CONTROL_BOUNDS = true;
+  const bool HAS_CONTROL_BOUNDS = false;
 
   if (HAS_CONTROL_BOUNDS) {
-    fmt::print("Adding control bounds.\n");
-    fmt::print("control box fun has bounds:\n{} max\n{} min\n",
-               ctrl_bounds_fun->umax_, ctrl_bounds_fun->umin_);
     using InequalitySet = proxnlp::NegativeOrthant<double>;
     stage->addConstraint(ctrl_bounds_fun, std::make_shared<InequalitySet>());
   }
 
-  auto x0 = spaceptr->rand();
+  Eigen::VectorXd x0(2);
   x0 << 1., -0.1;
-  auto term_cost = rcost;
-  TrajOptProblemTpl<double> problem(x0, nu, spaceptr, term_cost);
+
+  auto &term_cost = rcost;
+  problemptr =
+      std::make_shared<TrajOptProblemTpl<double>>(x0, nu, spaceptr, term_cost);
 
   std::size_t nsteps = 10;
 
-  std::vector<Eigen::VectorXd> us;
   for (std::size_t i = 0; i < nsteps; i++) {
-    us.push_back(Eigen::VectorXd::Random(nu));
-    problem.addStage(stage);
+    problemptr->addStage(stage);
   }
+}
 
-  auto xs = rollout(dynamics, x0, us);
-  fmt::print("Initial traj.:\n");
-  for (std::size_t i = 0; i <= nsteps; i++) {
-    fmt::print("x[{:d}] = {}\n", i, xs[i].transpose());
+void BM_lqr(benchmark::State &state, const TrajOptProblemTpl<double> &problem,
+            bool run_fddp) {
+
+  for (auto _ : state) {
+
+    const auto &dynamics = problem.stages_[0]->dyn_model();
+    const auto &x0 = problem.getInitState();
+    std::vector<Eigen::VectorXd> us_init;
+    us_default_init(problem, us_init);
+    const auto xs_init = rollout(dynamics, x0, us_init);
+
+    auto verbose = VerboseLevel::QUIET;
+
+    const std::size_t max_iters = 4;
+    if (!run_fddp) {
+      const double mu_init = 1e-6;
+      const double rho_init = 0.;
+
+      SolverProxDDP<double> solver(TOL, mu_init, rho_init, max_iters, verbose);
+
+      solver.setup(problem);
+      solver.run(problem, xs_init, us_init);
+      const auto &results = solver.getResults();
+      if (!results.conv) {
+        proxddp_runtime_error("Solver did not converge.\n");
+      }
+    }
+    if (run_fddp) {
+      SolverFDDP<double> fddp(TOL, verbose);
+      fddp.MAX_ITERS = max_iters;
+      fddp.setup(problem);
+      fddp.run(problem, xs_init, us_init);
+      const ResultsFDDPTpl<double> &res_fddp = fddp.getResults();
+    }
   }
+}
 
-  const double mu_init = 1e-5;
-  const double rho_init = 1e-8;
+int main(int argc, char **argv) {
+  shared_ptr<TrajOptProblemTpl<double>> problemptr;
+  define_problem(problemptr);
 
-  SolverProxDDP<double> solver(TOL, mu_init, rho_init);
-  solver.verbose_ = VerboseLevel::VERBOSE;
+  benchmark::RegisterBenchmark("PROXDDP", &BM_lqr, *problemptr, false);
+  benchmark::RegisterBenchmark("FDDP", &BM_lqr, *problemptr, true);
 
-  WorkspaceTpl<double> workspace(problem);
-  ResultsTpl<double> results(problem);
-  assert(results.xs_.size() == nsteps + 1);
-  assert(results.us_.size() == nsteps);
-
-  solver.setup(problem);
-  solver.run(problem, xs, us);
-
-  std::string line_ = "";
-  for (std::size_t i = 0; i < 20; i++) {
-    line_.append("=");
+  benchmark::Initialize(&argc, argv);
+  if (benchmark::ReportUnrecognizedArguments(argc, argv)) {
+    return 1;
   }
-  line_.append("\n");
-  for (std::size_t i = 0; i < nsteps + 1; i++) {
-    // fmt::print("x[{:d}] = {}\n", i, results.xs_[i].transpose());
-    fmt::print("x[{:d}] = {}\n", i, results.xs_[i].transpose());
-  }
-  for (std::size_t i = 0; i < nsteps; i++) {
-    // fmt::print("u[{:d}] = {}\n", i, results.us_[i].transpose());
-    fmt::print("u[{:d}] = {}\n", i, results.us_[i].transpose());
-  }
-
-  return 0;
+  benchmark::RunSpecifiedBenchmarks();
 }

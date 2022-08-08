@@ -23,9 +23,9 @@ void exposeDynamics() {
       "DynamicsModel",
       "Dynamics models are specific ternary functions f(x,u,x') which map "
       "to the tangent bundle of the next state variable x'.",
-      bp::init<const int, const int, const int>(
-          bp::args("self", "ndx1", "nu", "ndx2")))
-      .def(bp::init<const int, const int>(bp::args("self", "ndx", "nu")))
+      bp::init<ManifoldPtr, const int, const int>(
+          bp::args("self", "space", "nu", "ndx2")))
+      .def(bp::init<ManifoldPtr, const int>(bp::args("self", "space", "nu")))
       .def(CreateDataPythonVisitor<DynamicsModel>());
 
   bp::class_<PyExplicitDynamics<>, bp::bases<DynamicsModel>,
@@ -49,6 +49,11 @@ void exposeDynamics() {
                                       bp::return_internal_reference<>()),
                     "Output space.");
 
+  pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<PyDynamicsModel>>,
+                                true>::expose("StdVec_Dynamics");
+  pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<PyExplicitDynamics<>>>,
+                                true>::expose("StdVec_ExplicitDynamics");
+
   bp::register_ptr_to_python<shared_ptr<context::ExplicitDynData>>();
 
   bp::class_<context::ExplicitDynData, bp::bases<context::StageFunctionData>>(
@@ -57,9 +62,10 @@ void exposeDynamics() {
       .add_property(
           "dx", bp::make_getter(&context::ExplicitDynData::dxref_,
                                 bp::return_value_policy<bp::return_by_value>()))
-      .add_property("xout", bp::make_getter(
-                                &context::ExplicitDynData::xoutref_,
-                                bp::return_value_policy<bp::return_by_value>()))
+      .add_property(
+          "xnext",
+          bp::make_getter(&context::ExplicitDynData::xnextref_,
+                          bp::return_value_policy<bp::return_by_value>()))
       .def(PrintableVisitor<context::ExplicitDynData>());
 
   exposeDynamicsImplementations();

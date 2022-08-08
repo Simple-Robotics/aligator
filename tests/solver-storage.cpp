@@ -7,9 +7,9 @@
 
 BOOST_AUTO_TEST_SUITE(solver_workspace)
 
-BOOST_AUTO_TEST_CASE(storage) {
+BOOST_AUTO_TEST_CASE(prox_storage) {
   using value_store_t = proxddp::internal::value_storage<double>;
-  using q_store_t = proxddp::internal::q_function_storage<double>;
+  using q_store_t = proxddp::internal::q_storage<double>;
   const int NX = 3;
   const int NU = 2;
   auto vstore = value_store_t(NX);
@@ -43,5 +43,7 @@ BOOST_AUTO_TEST_CASE(storage) {
   fmt::print("{} < Quu\n", qstore.Quu_);
   fmt::print("{} < Qyy\n", qstore.Qyy_);
 }
+
+BOOST_AUTO_TEST_CASE(fddp_storage) {}
 
 BOOST_AUTO_TEST_SUITE_END()

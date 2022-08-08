@@ -12,10 +12,10 @@ namespace proxddp {
 // Use the shared_ptr used in proxnlp.
 using proxnlp::ManifoldAbstractTpl;
 using proxnlp::math_types;
-using proxnlp::shared_ptr;
 // Using the constraint set from proxnlp
 using proxnlp::ConstraintSetBase;
 using proxnlp::VerboseLevel;
+using std::shared_ptr;
 
 /// 1 BASE TYPES
 
@@ -28,6 +28,7 @@ template <typename Scalar> struct FunctionDataTpl;
 // fwd CostAbstractTpl
 template <typename Scalar> struct CostAbstractTpl;
 
+// fwd CostDataAbstractTpl
 template <typename Scalar> struct CostDataAbstractTpl;
 
 // fwd DynamicsModelTpl
@@ -57,10 +58,20 @@ template <typename Scalar> struct StageDataTpl;
 // fwd TrajOptProblemTpl
 template <typename Scalar> struct TrajOptProblemTpl;
 
+// fwd TrajOptDataTpl
 template <typename Scalar> struct TrajOptDataTpl;
 
 // fwd SolverProxDDP
 template <typename Scalar> struct SolverProxDDP;
+
+// fwd SolverFDDP
+template <typename Scalar> struct SolverFDDP;
+
+// fwd WorkspaceBaseTpl
+template <typename Scalar> struct WorkspaceBaseTpl;
+
+// fwd ResultsBaseTpl
+template <typename Scalar> struct ResultsBaseTpl;
 
 // fwd WorkspaceTpl
 template <typename Scalar> struct WorkspaceTpl;
@@ -68,9 +79,6 @@ template <typename Scalar> struct WorkspaceTpl;
 // fwd ResultsTpl
 template <typename Scalar> struct ResultsTpl;
 
-/// Math utilities
-namespace math {
-using namespace proxnlp::math;
-} // namespace math
-
 } // namespace proxddp
+
+#include "proxddp/math.hpp"

@@ -1,0 +1,878 @@
+<h1 id="introduction">Introduction</h1>
+<h2 id="problem-definition">Problem definition</h2>
+<p>We are interested to find an approximate solution to the following
+optimal control problem OCP: <span
+class="math display">\[\min_{\underline{x},\underline{u}}
+\int_0^\mathbb{T}\ell(x(t),u(t),t) dt +
+\ell_\mathbb{T}(x(\mathbb{T}))\]</span> <span
+class="math display">\[s.t. \quad x(0) = f_0\]</span> <span
+class="math display">\[\quad \forall t \in [0,\mathbb{T}], \quad
+\dot{x}(t) = f(x(t),u(t),t))\]</span> where <span
+class="math inline">\(\underline{x}: t \rightarrow x(t)\)</span> is the
+state trajectory, <span class="math inline">\(\underline{u}: t
+\rightarrow u(t)\)</span> is the control trajectory, <span
+class="math inline">\(\ell\)</span> is the integral –running– cost,
+<span class="math inline">\(\ell_T\)</span> is the terminal cost, <span
+class="math inline">\(f_0\)</span> is the initial state value, <span
+class="math inline">\(f\)</span> is the robot dynamics and <span
+class="math inline">\(T\)</span>, the time interval, is fixed.</p>
+<p>The decision variables are <span
+class="math inline">\(\underline{x},\underline{u}\)</span>, both of
+infinite dimension. We approximate this problem using a discrete version
+of it, by following the so-called direct –discretize first, solve second
+– approach.</p>
+<h2 id="discretize-first">Discretize first</h2>
+<p>The time interval <span class="math inline">\([0,\mathbb{T}]\)</span>
+is divided into <span class="math inline">\(T\)</span> sub-intervals
+(evenly distributed or not). In each sub-interval <span
+class="math inline">\(t\)</span>, the control trajectory <span
+class="math inline">\(\underline{u}_t\)</span> is constrained to be in
+the span of a given trajectory finite basis, and we represent the
+trajectory by its coefficient in the function basis (i.e as a vector of
+finite dimension). We typically write <span
+class="math inline">\(\underline{u}_t\)</span> as a polynomial, and it
+is often taken in practice constant on the interval.</p>
+<p>The values of <span class="math inline">\(\underline{x}_t\)</span> on
+the interval <span class="math inline">\(t\)</span> are obtained by
+integrating the dynamics from the value <span
+class="math inline">\(x_t\)</span> at the beginning of the sub-interval.
+As closed-form integrals of <span class="math inline">\(f\)</span> are
+often not available, <span
+class="math inline">\(\underline{x}_t\)</span> is approximated by any
+numerical integration scheme, e.g. Runge-Kutta-4. We then represent
+<span class="math inline">\(\underline{x}\)</span> by its values at each
+interval ends, i.e. as a list of <span
+class="math inline">\(T+1\)</span> elements.</p>
+<p>In summary, the control variable <span
+class="math inline">\(\underline{u}\)</span> is represented by <span
+class="math inline">\(T\)</span> basis coefficients of the chosen
+trajectory basis –which often boils to <span
+class="math inline">\(T\)</span> constant controls– and <span
+class="math inline">\(\underline{x}\)</span> is represented by <span
+class="math inline">\(T+1\)</span> states. In the following, we will
+often abusively use the same symbols for the true object (e.g. the
+trajectory) and its representation (e.g. the coefficients of its
+discretization), in the aim of keeping the notations simple. With this
+choice, the discretized problem can be written as: <span
+class="math display">\[\min_{\underline{x},\underline{u}}
+\sum_{t=0}^{T-1} \ell(x_t,u_t) + \ell_T(x_T)\]</span> <span
+class="math display">\[s.t. \quad x_0 = f_0\]</span> <span
+class="math display">\[\quad \forall t=0..T-1, \quad x_{t+1} =
+f(x_t,u_t)\]</span> As announce, both <span
+class="math inline">\(\ell\)</span> and <span
+class="math inline">\(f\)</span> now represent the discretization of
+their respective objects in the original problem. They both typically
+depend on time (i.e. <span class="math inline">\(\ell_t,f_t\)</span>)
+but we omit this dependency in the notation for readability.</p>
+<h2 id="solve-second">Solve second</h2>
+<p>This new problem is now a static optimization problem under
+constraints, typically nonlinear and non-convex (NLP). We will solve it
+with a sequential-quadratic-programming (SQP) strategy, i.e. by
+iteratively solving the linear-quadratic-regulator (LQR) problem
+obtained by computing the linearization of the dynamics <span
+class="math inline">\(f\)</span> and the quadratic model of the cost
+<span class="math inline">\(\ell\)</span> at the current candidate
+values of <span
+class="math inline">\(\underline{x},\underline{u}\)</span>.</p>
+<p>We denote the derivatives of <span class="math inline">\(f\)</span>
+by <span class="math inline">\(F_x, F_u\)</span>, and the gradient and
+the Hessian of <span class="math inline">\(\ell\)</span> by <span
+class="math inline">\((L_x, L_u\)</span>) and <span
+class="math inline">\((L_{xx}, L_{xu}, L_{ux}, L_{uu})\)</span>,
+respectively. When possible, we will omit the time indexes for all these
+quantities. For the LQR case, due to it is a finite-horizon problem, we
+can consider without loss of generality that the <span
+class="math inline">\(F\)</span> and <span
+class="math inline">\(L\)</span> are constant matrices (for general
+case, you just need to add the evident indices <span
+class="math inline">\(_t\)</span> into each quantity). We also denote
+<span class="math inline">\(f_t\)</span> by the drift of <span
+class="math inline">\(f\)</span> (i.e. change in <span
+class="math inline">\(x\)</span> when <span
+class="math inline">\(u\)</span> is zero), whose role is clear for the
+LQR and whose role will become clear later for solving the NLP. The LQR
+is then formulated as: <span
+class="math display">\[\min_{\underline{\Delta x},\underline{\Delta u}}
+\Big( \sum_{t=0}^{T-1}  \frac{1}{2} \begin{bmatrix}\Delta x^T,\Delta u^T
+\end{bmatrix}\begin{bmatrix}L_{xx} &amp; L_{xu} \\ L_{ux} &amp; L_{uu}
+\end{bmatrix}\begin{bmatrix}\Delta x\\ \Delta u\end{bmatrix}+
+\begin{bmatrix}L_x &amp; L_u \end{bmatrix}\begin{bmatrix}\Delta x\\
+\Delta u\end{bmatrix}\]</span> <span class="math display">\[+
+\frac{1}{2} \Delta x_T L_{xx} \Delta x_T + L_x \Delta x_T \Big)\]</span>
+<span class="math display">\[s.t. \quad \Delta x_0 = f_0\]</span> <span
+class="math display">\[\quad \forall t=0\cdots T-1, \quad \Delta x_{t+1}
+= F_x \Delta x_t + F_u \Delta u_t + f_{t+1}\]</span></p>
+<p>This problem is a quadratic program (under linear equality
+constraints – QP). Various solutions can be chosen to solve the QP. It
+is obvious to recall that all of them will lead to the same solution, at
+least neglecting numerical effects related to noise and numerical
+stability. We will favor two solutions. For understanding the nature of
+the problem, we will write the solution to this QP by forming the KKT
+matrix. For solving it in practice, we will use the Ricatti recursion
+typical in differential dynamic programming (DDP).</p>
+<h2 id="the-russian-way-using-the-karush-kuhn-tucker-matrix">The Russian
+way: using the Karush-Kuhn-Tucker matrix</h2>
+<h3 id="optimality-principle">Optimality principle</h3>
+<p>The Lagrangian of the LQR QP is: <span
+class="math display">\[\mathcal{L}(\underline{\Delta
+x},\underline{\Delta u},\underline{\lambda}) = \sum_{t=0}^{T-1} \Big(
+\frac{1}{2} \begin{bmatrix}\Delta x_t^T,\Delta u_t^T
+\end{bmatrix}\begin{bmatrix}L_{xx} &amp; L_{xu} \\ L_{ux} &amp; L_{uu}
+\end{bmatrix}\begin{bmatrix}\Delta x_t \\ \Delta u_t \end{bmatrix}+
+\begin{bmatrix}L_x &amp; L_u \end{bmatrix}\begin{bmatrix}\Delta x_t \\
+\Delta u_t \end{bmatrix}\]</span> <span class="math display">\[-
+\lambda_{t+1} (\Delta x_{t+1} - F_x \Delta x_t - F_u \Delta u_t -
+f_{t+1} ) \Big)
+%$$ $$
++ \frac{1}{2} \Delta x_T L_{xx} \Delta x_T + L_x \Delta x_T -
+\lambda_0(\Delta x_0 - f_0)\]</span></p>
+<h3 id="solving-the-lqr-qp">Solving the LQR QP</h3>
+<p>The optimum of the QP is reached for the zero of the gradient of
+<span class="math inline">\(\mathcal{L}\)</span> with respect to <span
+class="math inline">\(\underline{x}\)</span>, <span
+class="math inline">\(\underline{u}\)</span> and <span
+class="math inline">\(\underline{\lambda}\)</span>, i.e. when: <span
+class="math display">\[\left[
+\begin{array}{cccc!{\color{mygray}\vrule}ccc!{\color{mygray}\vrule}cccccc}
+L_{xx}        &amp; &amp; &amp; &amp; L_{xu} &amp; &amp; &amp; -I &amp;
+F_x^T \\
+&amp; \ddots     &amp; &amp; &amp; &amp; \ddots&amp; &amp; &amp; \ddots
+&amp; \ddots \\
+&amp; &amp; L_{xx}    &amp; &amp; &amp; &amp; L_{xu}&amp; &amp; &amp; -I
+&amp; F_x^T\\
+&amp; &amp; &amp; L_{xx}  &amp; &amp; &amp; &amp; &amp; &amp; &amp; -I\\
+\hline
+L_{ux} &amp; &amp; &amp;       &amp; L_{uu} &amp; &amp; &amp; &amp;
+F_u^T\\
+&amp; \ddots &amp; &amp;       &amp;       &amp; \ddots &amp; &amp;
+&amp; &amp; \ddots\\
+&amp; &amp; L_{ux} &amp;       &amp;       &amp;       &amp; L_{uu}
+&amp; &amp;&amp; &amp; F_u^T \\
+\hline
+-I &amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;\\
+F_x &amp; -I &amp;  &amp; &amp; F_u &amp;&amp;&amp;&amp;&amp;&amp; \\
+&amp;\ddots &amp; \ddots &amp; &amp; &amp; \ddots
+&amp;&amp;&amp;&amp;&amp;&amp;\\
+&amp;    &amp;  F_x &amp; -I &amp; &amp; &amp; F_u
+\end{array} \right]
+%
+\begin{bmatrix}
+\Delta x_0 \\
+\vdots \\
+\Delta x_{T-1} \\
+\Delta x_T \\
+\hline
+\Delta u_0 \\
+\vdots \\
+\Delta u_{T-1} \\
+\hline
+\lambda_0 \\
+\lambda_1 \\
+\vdots \\
+\lambda_{T}
+\end{bmatrix}
+%
+=
+%
+-\begin{bmatrix}
+L_x \\
+\vdots \\
+L_x \\
+L_x \\
+\hline
+L_u \\
+\vdots \\
+L_u \\
+\hline
+f_0 \\
+f_1 \\
+\vdots \\
+f_{T}
+\end{bmatrix}\]</span></p>
+<p>Solving this linear equation (by inverting the full-rank KKT matrix)
+provides both the optimal state and control trajectories <span
+class="math inline">\(\underline{\Delta x}\)</span>, <span
+class="math inline">\(\underline{\Delta u}\)</span> and the Lagrange
+multipliers corresponding to the robot dynamics. These multipliers
+indeed represent the trajectory of the co-state at the shooting points.
+Solving the LQR QP by searching the zeros of the Lagrangian indeed
+corresponds to applying the Pontryagin’s Minimum Principle (PMP) on the
+discretize LQR system.</p>
+<h3 id="intuition-of-the-results">Intuition of the results</h3>
+<p>Solving the QP provides at the same time the satisfaction of the
+constraints (i.e. the resulting <span
+class="math inline">\(\underline{x}\)</span> is a continuous state
+trajectory that corresponds to the continuous control trajectory <span
+class="math inline">\(\underline{u}\)</span>, following the underlying
+linear integrator); and the resulting trajectory pair is of minimal
+(quadratic) cost.</p>
+<p>Indeed, solving the QP can be seen as computing a step to modify an
+initial-guess <span class="math inline">\(\underline{\Delta \bar
+x}\)</span>, <span class="math inline">\(\underline{\Delta \bar
+u}\)</span>. Such an observation is somehow trivial, as for a QP, any
+initial guess will lead to the exact same optimum in a single step.
+However, understanding this observation is important before going to the
+more complex SQP case. As any initial guess works the same, we typically
+consider <span class="math inline">\(\underline{\Delta \bar
+x}=0\)</span> and <span class="math inline">\(\underline{\Delta \bar
+u}=0\)</span>. Then this initial guess is not feasible, i.e. it does not
+satisfy the constraints (except in the particular case where <span
+class="math inline">\(f_0 = \cdots = f_{T-1} = 0\)</span>). These <span
+class="math inline">\(f_t\)</span> can then be seen as the gaps in the
+state trajectory, i.e. the state trajectory is piece-wise feasible
+inside each shooting interval, but is discontinuous at each shooting
+node <span class="math inline">\(t\)</span> with a gap between the
+previous piece of trajectory <span class="math inline">\(t\)</span> and
+the next one <span class="math inline">\(t+1\)</span> of <span
+class="math inline">\(f_t\)</span> (<span
+class="math inline">\(f_0\)</span> being a gap with respect to the
+initial guess state <span class="math inline">\(\Delta \bar x_0=
+0\)</span>).</p>
+<p>Then solving the QP corresponds to both making a step that nullifies
+the gaps <span class="math inline">\(f_t\)</span> and a step that
+optimizes the trajectory cost.</p>
+<h2 id="the-american-way-computing-the-optimal-flow">The American way:
+computing the optimal flow</h2>
+<h3 id="optimality-principle-1">Optimality principle</h3>
+<p>DDP is generally not associated with the KKT matrix but with the
+backward Riccati recursion. We denote the Value function (running cost)
+at time <span class="math inline">\(t\)</span> by <span
+class="math inline">\(V_t: \Delta x\rightarrow \mathbb{R}\)</span>, and
+it represents the minimal cost we can obtained with the state being
+<span class="math inline">\(\Delta x\)</span> at time <span
+class="math inline">\(t\)</span>. We denote the Hamiltonian of the
+system (Q-value) by <span class="math inline">\(Q_t: \Delta x,\Delta
+u\rightarrow Q_t(\Delta x,\Delta u) = \ell_t(\Delta x,\Delta u) + V
+\circ \Delta f(\Delta x,\Delta u)\)</span>, where the linear dynamics is
+denoted by <span class="math inline">\(\Delta f(\Delta x,\Delta u) = F_x
+\Delta x+ F_u \Delta u+ f_t\)</span>.</p>
+<p>As the problem is LQR, the Value and Hamiltonian functions have
+quadratic form; they can be represented by their gradient and their
+Hessian. It is important to note that the gradient of a quadratic
+function is not constant but varies according to the point where it is
+computed. However, the gradient at any point can be easily computed
+using the gradient at a given point plus the Hessian times the
+difference between the two points <span class="math inline">\(\nabla (a)
+= \nabla(b) + \nabla^2\cdot(a-b)\)</span>. And often, we conveniently
+compute the gradient at the origin.</p>
+<h3 id="solving-the-backward-recursion">Solving the backward
+recursion</h3>
+<p>From the Bellman principle, we know that <span
+class="math inline">\(V_t(\Delta x) = \min_{\Delta u} Q_t(\Delta
+x,\Delta u)\)</span>. A backward recursion can then be set up, starting
+from the final observation that <span class="math inline">\(V_t =
+\ell_T\)</span>. The backward recursion can be computed along any given
+guess trajectory <span class="math inline">\(\underline{\Delta \bar x},
+\underline{\Delta \bar u}\)</span>, to compute <span
+class="math inline">\(Q_t\)</span> at each shooting node <span
+class="math inline">\(t\)</span> from <span
+class="math inline">\(V_{t+1}\)</span>, and then <span
+class="math inline">\(V_t\)</span> by optimizing <span
+class="math inline">\(Q_t(.,\Delta u)\)</span>. It is important to
+remember that any trajectory can be chosen, as the problem is LQR, hence
+the optimal flow <span class="math inline">\(V\)</span> can be
+equivalently recovered from any trajectory <span
+class="math inline">\(\underline{\Delta \bar x}\)</span>. In particular,
+the trajectory does not have to be optimal, feasible, or even
+continuous.</p>
+<p>When computing backward the optimal flow, we only compute the <span
+class="math inline">\(V\)</span> values at the shooting times. However,
+the flow exists at any time and it is implicitly handled by the
+recursion through the integrated dynamics <span
+class="math inline">\(F_x,F_u\)</span>. Then care has to be taken for
+discontinuous trajectories. In such a case the flow <span
+class="math inline">\(V_t\)</span> would be typically computed at <span
+class="math inline">\(\Delta x_t\)</span>, while the Jacobians <span
+class="math inline">\(F_x\)</span>, <span
+class="math inline">\(F_u\)</span> are computed at the state reached at
+the end of interval <span class="math inline">\(t-1\)</span>, i.e. <span
+class="math inline">\(\Delta x_{t-1}^+ = F_x \Delta x+ F_u \Delta u+
+f_{t-1}\)</span>. In particular, when <span
+class="math inline">\(\underline{\Delta \bar x}=0\)</span> and <span
+class="math inline">\(\underline{\Delta \bar u}=0\)</span>, then <span
+class="math inline">\(\Delta x_{t-1}^+ = f_{t-1}\)</span>. The gradient
+of <span class="math inline">\(V\)</span> in <span
+class="math inline">\(\Delta x_{t-1}^+\)</span> is obtained from the
+gradient of <span class="math inline">\(V\)</span> at <span
+class="math inline">\(\Delta x_t=0\)</span> with: <span
+class="math display">\[V_x^+ = V_x + V_{xx} f_t\]</span> and, off
+course, if <span class="math inline">\(f_t=0\)</span>, then they are
+both equals.</p>
+<p>The backward recursion is then twofold. First it propagates the Q
+function from <span class="math inline">\(Q=\ell+V\circ \Delta
+f\)</span>: <span class="math display">\[Q_{xx} = L_{xx} + F_x^T V_{xx}
+F_x\]</span> <span class="math display">\[Q_{xu} = L_{xu} + F_x^T V_{xx}
+F_u\]</span> <span class="math display">\[Q_{ux} = L_{ux} + F_u^T V_{xx}
+F_x\]</span> <span class="math display">\[Q_{uu} = L_{uu} + F_u^T V_{xx}
+F_u\]</span> <span class="math display">\[Q_{x}  = L_x + F_x^T
+V_x^+\]</span> <span class="math display">\[Q_{u}  = L_u + F_u^T
+V_x^+\]</span> The Value function is then obtained by solving the
+minimum of <span class="math inline">\(Q(.,\Delta u)\)</span> <span
+class="math display">\[\text{arg}\min_{\Delta u} Q(\Delta x,\Delta u) =
+-k - K \Delta x\]</span> with <span class="math inline">\(k=Q_{uu}^{-1}
+Q_u\)</span> and <span class="math inline">\(K = Q_{uu}^{-1}
+Q_{ux}\)</span>. The Value is then: <span class="math display">\[V_{xx}
+= Q_{xx} - Q_{xu} K\]</span> <span class="math display">\[V_x = Q_x -
+Q_{xu} k + V_{xx} f\]</span> where the gradient <span
+class="math inline">\(V_x\)</span> is computed at the end of the
+previous interval <span class="math inline">\(x^+\)</span> and not at
+the shooting state <span class="math inline">\(x_t\)</span>.</p>
+<p>To obtain the complete solution <span
+class="math inline">\(\underline{\Delta x},\underline{\Delta
+u}\)</span>, a forward pass must then be performed. We discuss it
+later.</p>
+<h3 id="intuition-of-the-result">Intuition of the result</h3>
+<p>While the KKT approach computes the solution using the dual <span
+class="math inline">\(\lambda\)</span> variable, the DDP approach
+computes it using the <span class="math inline">\(V, Q\)</span>
+auxiliary variables. <span class="math inline">\(\lambda\)</span>
+presents the co-state trajectory, while <span
+class="math inline">\(V\)</span> is the value functions. Both are
+connected, as the PMP principle writes the optimal control in term of
+the co-state, while HJB express the optimal policy in term of the Value
+space gradient.</p>
+<p>The optimal flow is evaluated along the candidate trajectory <span
+class="math inline">\(\underline{\Delta \bar x},\underline{\Delta \bar
+u}\)</span>. As the problem is LQR, any initial guess produces the same
+backward pass, the same <span class="math inline">\(V\)</span> and the
+same solution. For this reason, choosing <span
+class="math inline">\(\underline{\Delta \bar x}=0, \underline{\Delta
+\bar u}=0\)</span> is very relevant. In that case, if <span
+class="math inline">\(f_t\)</span> is nonzero, then the initial guess is
+not feasible and the term <span class="math inline">\(V_{xx} f\)</span>
+in the Value gradient back-propagation is important. This term is a
+direct application of LQR equation with drift, but it is rarely
+mentioned in DDP works <span class="citation"
+data-cites="GiftthalerCoRR2017 LaineCoRR2018"></span>. Its role will
+become very important in the following.</p>
+<p>The solution of the LQR has once more two effects: it generates a
+feasible trajectory where the gap between <span
+class="math inline">\(x_{t-1}^+\)</span> and <span
+class="math inline">\(x_t\)</span> is zero; and this trajectory is
+optimal.</p>
+<h2 id="equivalence">Equivalence</h2>
+<p>Both solutions are equivalent.</p>
+<p>Proof: the KKT solution is obtained by applying PMP on the LQR
+system. The Riccati solution comes from integrating HJB equation on the
+LQR. In the LQR case, both PMP and HJB are sufficient optimality
+conditions. Then both solutions are equal.</p>
+<h2 id="partial-step">Partial step</h2>
+<p>In many algorithm, the QP step is only partly integrated, i.e. the
+initial guess is only modified by <span class="math inline">\(\alpha
+\Delta\)</span> where <span class="math inline">\(\alpha \in
+[0,1[\)</span> and <span class="math inline">\(\Delta = \Delta
+\underline{\Delta x},\Delta \underline{\Delta u}\)</span> the solution
+to the QP (for example if considering inequality constraints inside an
+active-set algorithm, or using the QP as the inner solver inside a SQP).
+What is the effect of taking a partial step?</p>
+<p>For the KKT formulation, the effect is pretty clear. As <span
+class="math inline">\(\Delta \underline{\Delta x}\)</span> was a step
+from a zero initial guess <span class="math inline">\(\underline{\Delta
+\bar x}= 0\)</span>, making a partial step <span
+class="math inline">\(\alpha \Delta\)</span> will bridge only a part of
+the gap. Denoting by <span class="math inline">\(\underline{\Delta
+x}^\alpha\)</span> the solution obtained after making a step of length
+<span class="math inline">\(\alpha&lt;1\)</span>, we have: <span
+class="math display">\[\Delta x_0^\alpha = \alpha f_0\]</span> <span
+class="math display">\[\Delta x_{t+1}^\alpha - F_x \Delta x_t^\alpha -
+Fu \Delta u_t^\alpha = \alpha f_t\]</span> The new solution <span
+class="math inline">\(\underline{\Delta x}^\alpha,\underline{\Delta
+u}^\alpha\)</span> is then infeasible and the gaps at each shooting
+points have only be reduced of <span
+class="math inline">\((1-\alpha)\)</span>.</p>
+<p>For the DDP formulation, this is less clear as it is not described in
+the literature. As we started to explain, the complete solution should
+be obtained by rolling out the quadratic policy <span
+class="math inline">\(k,K\)</span> from the initial state <span
+class="math inline">\(f_0\)</span>. But this is only when making a full
+step. When making a partial step, the KKT partial solution can be
+obtained if (i) applying only a part of <span
+class="math inline">\(k\)</span> and (ii) keeping a part of the gap at
+each shooting node.</p>
+<h2 id="solving-the-ddp-forward-pass-with-a-partial-step">Solving the
+DDP forward pass with a partial step</h2>
+<p>The forward pass for a partial step <span
+class="math inline">\(\alpha \le 1\)</span> then becomes: <span
+class="math display">\[\Delta x_0 = \alpha f_0\]</span> <span
+class="math display">\[\Delta u_t = -\alpha k_t - K_t \Delta
+x_t\]</span> <span class="math display">\[\Delta x_{t+1} = F_x \Delta
+x_t + F_u \Delta u_t + \alpha f_t\]</span></p>
+<p>Proof: by recurrence. We denote the <span
+class="math inline">\(\Delta x^*,\Delta u^*\)</span> the optimal
+solution given by the KKT and by the DDP for a full step. We show the
+the proposed forward pass produced the partial KKT step. <span
+class="math display">\[\Delta x_0 = \alpha f_0 = \alpha \Delta
+x_0^*\]</span> Now, assuming the <span class="math inline">\(\Delta x_t
+= \alpha \Delta x_t^*\)</span>, we have: <span
+class="math display">\[\begin{aligned}
+  \forall t=0..T\!\!-\!\!1,\quad\quad\quad \Delta u_t &amp;= -\alpha k_t
+- K_t \alpha \Delta x_t^* = \alpha \Delta u_t^*\\
+\Delta x_{t+1} &amp;= F_x \alpha  \Delta x_t^* + F_u \alpha \Delta u_t +
+\alpha f_t = \alpha \Delta x_{t+1}\end{aligned}\]</span> <span
+class="math inline">\(\square\)</span></p>
+<h1 id="a-feasibility-prone-ocp-solver-using-ddp">A feasibility-prone
+OCP solver using DDP</h1>
+<p>So far we have detailed a method to solve a LQR program. Let’s now
+look at the more generic case where cost and dynamics are any smooth
+functions. The transcription of the OCP is a NLP with nonlinear equality
+constraints representing the robot dynamics. We solve it with a SQP
+approach, i.e. at each iteration we compute the LQR corresponding to the
+tangent (differential) of the OCP at the current candidates of the
+decision variables; we solve the SQP and obtain a descent direction; and
+we search along the descent direction for a step of adequate length.</p>
+<h2 id="lqr-and-descent-direction">LQR and descent direction</h2>
+<p>The LQR is uniquely defined by the gradients of <span
+class="math inline">\(f\)</span> and <span
+class="math inline">\(\ell\)</span> and the Hessian of <span
+class="math inline">\(\ell\)</span> at the current guess <span
+class="math inline">\(\underline{x},\underline{u}\)</span>. The solution
+of the LQR is also uniquely defined and can be computed by any adequate
+method, in particular by inverting the KKT or by solving the
+backward-forward Riccati recursions (at least if not considering the
+numerical and complexity issues). Both methods will give exactly the
+same descent directions (neglecting the rounding errors).</p>
+<h2 id="line-search-and-integration">Line search and integration</h2>
+<p>Once the direction has been computed, any line search algorithm can
+be implemented. Basically, the idea is to try several directions and to
+take the longer step which gives a reward that corresponds to what the
+LQR model predicts. When considering a SQP, two contradictory objectives
+have to be considered: (i) the cost should decrease similarly to what
+the quadratic model predicts and (ii) the constraints residual should
+not increase. The trade-off between these two objectives is typically
+decided following a merit function, chosen by the user.</p>
+<p>It is important to better understand why the constraint residual may
+increase. First, the current guess may, or may not, be feasible, i.e the
+state at the end of each shooting interval may, or may not correspond to
+the value of the state at the beginning of the next interval. Following
+the names chosen in the LQR case, we name gap the discontinuity at the
+shooting nodes: the current guess is feasible if and only if all the
+<span class="math inline">\(T\)</span> gaps are zero.</p>
+<p>If all the gaps are zero, the descent direction may make them nonzero
+because the descent direction is only computed from a linear model of
+the dynamics <span class="math inline">\(F_x,F_u\)</span>. The longer
+the step, the more incorrect the linear model, and the larger the gaps
+will grow. The merit function then adjust the step length to all some
+gap growth (it is impossible with the linear model to prevent some
+growth) but forbid to large gaps to appear.</p>
+<p>If some gaps are nonzero, then the corresponding <span
+class="math inline">\(f_t\)</span> in the LQR corresponds to these gaps.
+In that case, the LQR direction will bridge the gap thanks to the linear
+prediction <span class="math inline">\(f_t\)</span>, but it will
+simultaneously increase the gap because the linear prediction is
+inaccurate. More precisely, the gap at time <span
+class="math inline">\(t\)</span> after a step <span
+class="math inline">\(\Delta x,\Delta u\)</span> will be: <span
+class="math display">\[f(x_t+\Delta x_t,u_t+\Delta u_t) -
+(x_{t+1}+\Delta x_{t+1})= f(x_t,u_t)-x_{t+1} + F_x \Delta x_t + F_u
+\Delta u_t  -  \Delta x_{t+1} + \circ(\alpha^2)\]</span> where <span
+class="math inline">\(\Delta x_{t+1} - F_x \Delta x_t - F_u \Delta u_t =
+\alpha f_t\)</span> by construction of the LQR, and the step length
+<span class="math inline">\(\alpha\)</span> is the magnitude of the step
+<span class="math inline">\(\underline{\Delta x},\underline{\Delta
+u}\)</span> that leads to quadratic <span
+class="math inline">\(\circ(\alpha^2)\)</span> errors of the linear
+model. <span class="math display">\[f(x_t+\Delta x_t,u_t+\Delta u_t) -
+(x_{t+1}+\Delta x_{t+1}) = (1-\alpha) (f(x_t,u_t) - x_{t+1}) +
+\circ(\alpha^2)\]</span> The gap evolution is composed of two terms: the
+first one decreases when <span class="math inline">\(\alpha\)</span>
+growth, and collapses for full step <span
+class="math inline">\(\alpha=1\)</span>; the second one growths with
+<span class="math inline">\(\alpha\)</span>, and vanishes with <span
+class="math inline">\(\alpha\)</span> small. Only the second one exists
+when the gap of the current guess is null.</p>
+<h2 id="nonlinear-roll-out">Nonlinear roll-out</h2>
+<p>Once more, it is important to recall that the descent direction is
+the same for KKT and DDP. However, the DDP is typically associated with
+a particular line search variant. First, recall that the exact classical
+line search can be implemented with the DDP: for that, the roll-out
+should be performed on the linear model, and a merit function should be
+considered.</p>
+<p>Yet, the DDP classically observes that a feasible solution is
+directly obtained by integrating the nonlinear dynamics around a
+candidate solution <span class="math inline">\(\underline{u}\)</span>
+from the initial state <span class="math inline">\(x_0\)</span>. As the
+nonlinear dynamics <span class="math inline">\(f(x,u)\)</span> is not
+exactly the same as the linear dynamics <span
+class="math inline">\(F_x,F_u\)</span>, the feedback term <span
+class="math inline">\(K\)</span> must be used during the integration to
+avoid the divergence. With such a roll-out, the resulting candidate
+decision variable is a feasible trajectory, where all the gaps are
+zero.</p>
+<p>This behavior is very different from the one observed with classical
+line search. We rather suggest that the same gaps than for the linear
+line search should be used for the nonlinear roll-out. We then impose
+the gaps at the next candidate solution to be: <span
+class="math display">\[f(x_t+\Delta x_t,u_t+\Delta u_t) -
+(x_{t+1}+\Delta x_{t+1}) = (1-\alpha) (f(x_t,u_t) - x_{t+1})\]</span> No
+need here to consider the second-order disturbance term <span
+class="math inline">\(\circ(\alpha^2)\)</span> as we are considering the
+exact nonlinear dynamics.</p>
+<h2 id="discussion">Discussion</h2>
+<h3 id="bridging-the-gap">Bridging the gap</h3>
+<p>It has been observed in multiple shooting that keeping the gaps
+closed during the entire search might be counterproductive as it makes
+the NLP search very sensitive to the instabilities of the dynamics. We
+agree with this observation, which it is correlated to the fact that the
+DDP tends to be an algorithm with poor exploration (globalization)
+capabilities. We have demonstrated in our experiment that the DDP is
+much more prone to face feasibility problem, and discover good solutions
+despite poor initial guesses, when the gaps are kept during the first
+part of the search.</p>
+<h3 id="using-the-true-dynamics-or-its-approximation">Using the true
+dynamics or its approximation</h3>
+<p>Using the nonlinear dynamics has some advantages. First, despite
+intuition, the nonlinear dynamics might be faster to compute, as in
+robotics <span class="math inline">\(F_x\)</span> and <span
+class="math inline">\(F_u\)</span> are large matrices with little
+structure (sparsity) while very efficient nonlinear routines exists to
+compute <span class="math inline">\(f(x,u)\)</span>. On the other hand,
+taking a linear step provides an exact Newton step with strong
+convergence guarantees, at least when the NLP is convex (and often this
+is not the case).</p>
+<p>We claim that the choice should be taken by considering the effect on
+the gaps. With the nonlinear step, the gaps strictly decreases with
+nonzero step. With the linear step, it does not strictly decreases and
+we have to relying on the merit function to accept reasonable growth.
+While we agree that maintaining the gaps open during the search is
+interesting, and that it might even be interesting to enlarge them for
+globalization purpose, it is doubtful that the <span
+class="math inline">\(\circ(\alpha^2)\)</span> term might be an
+interesting growth direction. Indeed, this term corresponds to some
+growth direction that are not predicted in the linear model. The LQR is
+then not informed to choose an interesting value for that
+perturbation.</p>
+<p>We have tried to experiment gap growth coming from the linear
+prediction error versus other perturbation terms, in particular random,
+and of course zero (with the nonlinear roll-out). While it seems clear
+that the term <span class="math inline">\((1-\alpha)(f-x)\)</span> is
+interesting, the interest or noxiousness of <span
+class="math inline">\(\circ(\alpha^2)\)</span> has not been
+observed.</p>
+<p>In conclusion, we advice to take a nonlinear step while maintaining
+the gaps open. If it is desirable to effectively relax the continuity
+constraints, we then advice to really relax the dynamic constraint (e.g.
+putting it in the cost as a penalty) and not to rely on the unpredicted
+disturbance <span class="math inline">\(\circ(\alpha^2)\)</span>.</p>
+<h1 id="conclusion">Conclusion</h1>
+<p>We have proposed two modifications to the classical DDP algorithm to
+solve OCP written as NLP problems. First, we modified the backward pass
+to accept infeasible trajectories, i.e. trajectories were a
+discontinuity exists at each shooting interval. Second, we modified the
+line search algorithm to avoid bridging the gap after the first step is
+taken.</p>
+<p>In consequence, the DDP algorithm accepts any initial guess and has a
+much better globalization capability. We can observe that the behavior
+is nearly the same as a multiple-shooting solver. Indeed, it is exactly
+the same if the classical line search is implemented. We did not
+demonstrate that the feasibility-prone DDP or the multiple shooting is
+better: the performance where equivalent on all the problems we have
+considered. We discussed that the DDP might be easier to implement and
+make efficient, and we advice to choose it.</p>
+<h1 id="expectation-model-of-the-fddp">Expectation model of the
+FDDP</h1>
+<p>At each Newton step of a NLP solver, a line-search is performed. One
+of the simple conditions of acceptance of the step is that the actual
+improvement of the cost should be similar to the expected improvement
+provided by the quadratic model. For example, if considering a function
+<span class="math inline">\(f\)</span> and its model <span
+class="math inline">\(m\)</span> with <span
+class="math inline">\(f(x+\Delta x) = f(x) + m(\delta x) + o(\Delta
+x)\)</span>, then a step <span class="math inline">\(\delta x\)</span>
+would be accepted if <span class="math inline">\(f(x+\Delta
+x)-f(x)\)</span> and <span class="math inline">\(m(x)\)</span> are close
+enough (in practice, the ratio between the two quantities is close to
+1).</p>
+<p>When considering the DDP solver, computing the expected improvement
+is more difficult, as the <span
+class="math inline">\(\underline{x},\underline{u}\)</span> of the LQR
+are never explicitly computed: the backward pass only provides <span
+class="math inline">\(k\)</span>, from which the actual <span
+class="math inline">\(\underline{x},\underline{u}\)</span> are obtained
+using a nonlinear rollout. This section provides efficient evaluation of
+the expectation model.</p>
+<h2 id="expectation-model-in-underlinexunderlineu">Expectation model in
+<span class="math inline">\(\underline{x},\underline{u}\)</span></h2>
+<p>Let’s first write the expectation model in term of the increments
+<span class="math inline">\(\underline{x},\underline{u}\)</span> (let’s
+recall that, to keep the notations concise, we use <span
+class="math inline">\(x\)</span> and <span
+class="math inline">\(u\)</span> for the LQR variables, while they
+should be intepreted as “deltas” in the nonlinear optimization
+algorithm). If making a step of length <span
+class="math inline">\(\alpha\)</span> (typically in <span
+class="math inline">\(]0,1]\)</span>) in the direction <span
+class="math inline">\(\underline{x},\underline{u}\)</span>, then the
+improvement of the cost should have the following form: <span
+class="math display">\[\Delta = \Delta_1 \alpha + \frac{1}{2} \Delta_2
+\alpha^2\]</span> <span class="math inline">\(\Delta_1\)</span> is the
+sum at each shooting node of the cost gradient times the change in <span
+class="math inline">\(x\)</span> and <span
+class="math inline">\(u\)</span>: <span
+class="math display">\[\label{eq:d1_nogaps}
+  \Delta_1 = \sum_{t=0}^T L_{xt}^T x_t + L_{ut}^T u_t\]</span> (to keep
+the sum simpler, we treat <span class="math inline">\(T\)</span>
+similarly to the other nodes, by introducing <span
+class="math inline">\(L_{uT} = 0\)</span>).</p>
+<h3 id="linear-rollout">Linear rollout</h3>
+<p>The states and controls are obtained from a linear roll-out as: <span
+class="math display">\[x_{t+1} = F_{xt} x_t + F_{ut} u_t +
+f_{t+1}\]</span> <span class="math display">\[u_{t} = K_t x_t +
+k_t\]</span> Propagating these two equations, we get: <span
+class="math display">\[x_{t+1} = (F_{xt} + F_{ut} K_t) x_t + F_{ut} k_t
++ f_{t+1} =  F_{t-1} x_{t-1} + c_{t+1}\]</span> with <span
+class="math inline">\(F_{t} = F_{xt} + F_{ut} K_t\)</span> and <span
+class="math inline">\(c_{t+1} = F_{ut} k_{t} + f_{t+1}\)</span> (with
+<span class="math inline">\(c_0 = f_0\)</span>). And finally: <span
+class="math display">\[\begin{aligned}
+  x_t &amp;= F_{t-1} ... F_0 c_0 + F_{t-1} ... F_1 c_1 + ... + F_{t-1}
+c_{t-1} + c_t \\
+  &amp;= \sum_{i=0}^t F_{t-1} ... F_i c_i
+\label{eq:lroll}\end{aligned}\]</span></p>
+<h3 id="first-order-model-delta_1">First-order model <span
+class="math inline">\(\Delta_1\)</span></h3>
+<p>Replacing <span class="math inline">\(u_t\)</span> by <span
+class="math inline">\(k_t + K_t x_t\)</span>, the first-order term is:
+<span class="math display">\[\label{eq:d1}
+  \Delta_1 = \sum_{t=0}^T (L_{xt} + K_t^T L_{ut}) ^T x_t + \sum_{t=0}^T
+L_{ut}^T k_t\]</span> where we denote <span class="math inline">\(l_t =
+L_{xt} + K_t^T L_{ut}\)</span> to simplify the notation. Putting <a
+href="#eq:lroll" data-reference-type="eqref"
+data-reference="eq:lroll">[eq:lroll]</a> in <a href="#eq:d1"
+data-reference-type="eqref" data-reference="eq:d1">[eq:d1]</a>, we get:
+<span class="math display">\[\begin{aligned}
+  \Delta_1 &amp;= \sum_{t=0}^{T} l_t \sum_{i=0}^{t} F_{t-1} ... F_i c_i
++ L_{ut}^T k_t \\
+  &amp; =  \sum_{i=0}^{T} c_i^T  \sum_{t=i}^{T} F_t^T ... F_T^T l_t +
+k_i^T L_{ui}\end{aligned}\]</span> Each term of the sum is composed of a
+product of <span class="math inline">\(f_i\)</span> and a product of
+<span class="math inline">\(k_i\)</span>, and can then be evaluated from
+the result of the backward pass. Let’s exhibit these 2 terms. The term
+in <span class="math inline">\(f_i\)</span> is: <span
+class="math display">\[\Delta_{ft} = F_i^T ... F_T^T l_i = L_{xi} +
+F_{xi}^T \Delta_{fi+1} + K_i^T (L_{ui} + F_{ui} \Delta_{fi+1})\]</span>
+The term in <span class="math inline">\(k_i\)</span> is: <span
+class="math display">\[\Delta_{ft} = l_{ui} + F_{ui}^T ... F_T^T l_i =
+L_{ui} + F_{ui}^T \Delta_{fi+1}\]</span> In the case <span
+class="math inline">\(f_i\)</span> are all zeros, we can recognize that
+<span class="math inline">\(\Delta_f\)</span> is the value gradient and
+<span class="math inline">\(\Delta_k\)</span> is the Hamiltonian control
+gradient: <span class="math inline">\(\Delta_f = V_x\)</span> and <span
+class="math inline">\(\Delta_k = Q_u\)</span>. In that case, we simply
+have: <span class="math display">\[\Delta_1 = \sum_{t=0}^{T} Q_{ut}^T
+k_t\]</span></p>
+<p>In the general case where the LQR is not drift-free, then <span
+class="math inline">\(\Delta_f\)</span> and <span
+class="math inline">\(\Delta_k\)</span> must be collected during the
+backward pass while propagating <span class="math inline">\(V_x\)</span>
+and <span class="math inline">\(Q_u\)</span>. The cost is similar, and
+an order of magnitude less than propagating the Value Hessians.</p>
+<h3 id="second-order-term-delta_2">Second-order term <span
+class="math inline">\(\Delta_2\)</span></h3>
+<p>This section is empty, work remains to be done here.</p>
+<h3 id="the-simple-case-where-t1">The simple case where <span
+class="math inline">\(T=1\)</span></h3>
+<p>It is disapointing that the expectation model is so simple in the
+drift-free case and only depends on backward-computed quantities, while
+it is so complex and requires to compute additional quantities in the
+general case. Let’s investigate that. The intuition is that the
+expectation model should only depends on the gradient and hessians of
+the Value and Hamiltonian functions.</p>
+<p>In the case where we only consider one control <span
+class="math inline">\(u_0\)</span>, the expectation model is: <span
+class="math display">\[\begin{aligned}
+  \Delta_1 &amp;= L_{x0}^T x_0 + L_{u0}^T u_0 + L_{x1}^T x1 \\
+  &amp;= L_{0}^T f_0 + L_{u0} k_0 + L_{x1} F_{0} f_0  + L_{x1} F_{u0}
+k_0  + L_{x1} f_1 \\
+  &amp;= (L_0 + F_0^T L_{x1})^T f_0 + (L_{u0} + F_{u0}^T L_{x1})^T k_0 +
+L_{x1} f_1\end{aligned}\]</span> We nearly recognize the gradients <span
+class="math inline">\(V_{x0}, Q_{u0}, V_{x1}\)</span> respectively in
+factor of <span class="math inline">\(f_0,k_0,f_1\)</span>, but some
+terms are missing: <span class="math display">\[V_{x0} = L_0 + F_0^T
+(L_{x1} + L_{xx1} f_1) + L_{xx0} f_0\]</span> <span
+class="math display">\[Q_{u0} = L_{u0} + F_{u0}^T (L_{x1} + L_{xx1}
+f_1)\]</span> <span class="math display">\[V_{x1} = L_{x1} + L_{xx1}
+f_1\]</span> Basically, the missing terms correspond to the
+re-linearization of the gradient at the <span
+class="math inline">\(f_t\)</span> points at the end of the intervals.
+Then, we get: <span class="math display">\[\begin{aligned}
+  \Delta_1 &amp;= V_{x0}^T f_0 + Q_{u0}^T k_0 + V_{x1}^T f_1 - \left(
+f_0^T V_{xx0} f_0  + f_0^T F_0^T L_{xx1} f_1 + k_0^T F_{u0} L_{xx1} f_1
++ f_1^T V_{xx1} f_1\right) \\
+  &amp;= V_{x0}^T f_0 + Q_{u0}^T k_0 + V_{x1}^T f_1 - \left( f_0^T
+V_{xx0} x_0 + f_1^T V_{xx1} x_1 \right)\end{aligned}\]</span></p>
+<p>The second-order term is: <span
+class="math display">\[\begin{aligned}
+  \Delta_2 &amp;= f_0^T V_{xx0} f_0 + k_0^T Q_{uu0} k_0 + f_1^T V_{xx1}
+f_1 + 2(f_0^T F_0^T L_{xx1} f_1 + k_0^T F_{u0} L_{xx1} f_1) \\
+  &amp;= f_0^T V_{xx0} f_0 + k_0^T Q_{uu0} k_0 + f_1^T V_{xx1} f_1 +
+2\big(f_1^T V_{xx1} (x_1-f_1) \big) \\
+  &amp;= -f_0^T V_{xx0} f_0 + k_0^T Q_{uu0} k_0 - f_1^T V_{xx1} f_1 +
+2\big(f_0^T V_{xx0} x_0 + f_1^T V_{xx1} x_1 \big)\end{aligned}\]</span>
+We can recognize in the additional terms (the 2 last ones) the same
+terms as in <span class="math inline">\(\Delta_1\)</span>. Nicely, they
+will cancel out in the case we make a full step <span
+class="math inline">\(\alpha=1\)</span>: <span
+class="math display">\[\Delta(\alpha) = \alpha(
+\Delta_1+\frac{\alpha}{2} \Delta_2)\]</span> <span
+class="math display">\[\Delta(1)= V_{x0}^T f_0 + Q_{u0}^T k_0 + V_{x1}^T
+f_1
+- \frac{1}{2} f_0^T V_{xx0} f_0 + \frac{1}{2} k_0^T Q_{uu0}^T k_0 -
+\frac{1}{2} f_1^T V_{xx1} f_1\]</span></p>
+<p>But they do not cancel out in the general case: <span
+class="math display">\[\begin{aligned}
+  \Delta(\alpha) = \alpha \Big( V_{x0}^T f_0 + Q_{u0}^T k_0 + V_{x1}^T
+f_1
++ \frac{\alpha}{2} ( - f_0^T V_{xx0} f_0 - f_1^T V_{xx1} f_1 + k_0^T
+Q_{uu0}^T k_0 ) \\
++ (\alpha-1) ( f_0^T V_{xx0} x_0 + f_1^T V_{xx1} x_1 )
+\Big)\end{aligned}\]</span></p>
+<h2 id="extending-to-t1-by-recurence">Extending to <span
+class="math inline">\(T&gt;1\)</span> by recurence</h2>
+<p>We can now work by recurence to extend the exact same shape to <span
+class="math inline">\(T&gt;1\)</span>.</p>
+<p>On the first order term, addind a new time step will add two terms in
+<span class="math inline">\(k_1\)</span> and <span
+class="math inline">\(f_2\)</span> where respectively <span
+class="math inline">\(L_{x2}\)</span> and <span
+class="math inline">\((L_{u1} + F_{u1}^T L_{x2})\)</span> are in factor,
+and also extends the previous factors. The new factors have the same
+form as the previous ones and can be handled similarly. The extension of
+the previous factors simply corresponds to the extension of the preview
+horizon when writing <span class="math inline">\(V_x\)</span> and <span
+class="math inline">\(Q_u\)</span>. As previously, we are missing the
+<span class="math inline">\(L_{xx} f\)</span> terms (corresponding to
+the relinearization), that can be collected. Each of this additional
+term is a product term involving two <span
+class="math inline">\(f\)</span> or one <span
+class="math inline">\(f\)</span> and one <span
+class="math inline">\(k\)</span>. Regrouping them by decreasing order of
+the <span class="math inline">\(f\)</span> index, this finally boils to
+the sum of the <span class="math inline">\(f^T V_{xx} x\)</span>: <span
+class="math display">\[\Delta_1 = \sum_{t=0}^T V_{xt}^T f_t + Q_{ut}^T
+k_t - f_t^T V_{xxt} x_t\]</span> (with again the simplification of
+treating symmetrically the last time step with <span
+class="math inline">\(k_T=0\)</span>).</p>
+<p>Similar observations can be made on the second-order term, and lead
+to: <span class="math display">\[\Delta_2 = \sum_{t=0}^T k_t^T Q_{uut}^T
+k_t-f_t^T V_{xxt} f_t +2 f_t^T V_{xxt} x_t\]</span></p>
+<p>The expectation model is finally: <span
+class="math display">\[\Delta(\alpha) = \alpha \sum_{t=0}^T V_{xt}^T f_t
++ Q_{ut}^T k_t
++ \frac{\alpha}{2} \Big( k_t^T Q_{uut}^T k_t-f_t^T V_{xxt} f_t \Big)
++ (\alpha-1) f_t^T V_{xxt} x_t\]</span></p>
+<h2 id="line-search-algorithm">Line-search algorithm</h2>
+<p>First, let us note that if all the gaps <span
+class="math inline">\(f_t\)</span> are null, it is simply: <span
+class="math display">\[\begin{aligned}
+  \Delta(\alpha) &amp;= \alpha \big( \sum Q_u^T k + \frac{\alpha}{2} k^T
+Q_{uu} k \big) \\
+  &amp;= \alpha(\frac{\alpha}{2} - 1) \sum  \ Q_u^T\ Q_{uu}^{-1} \
+Q_u\end{aligned}\]</span> This is always negative.</p>
+<h3 id="merit-function-...-or-not">Merit function ... or not</h3>
+<p>However, <span class="math inline">\(\Delta\)</span> can be positive
+(i.e. corresponds to an increase of the cost function) when some gap
+<span class="math inline">\(f_t\)</span> are nonzero. This corresponds
+to the expected behavior of an SQP algorithm: a step is used to reduce
+the error in the constraints, which can makes the cost function
+increases. The point is to monitor both the decrease or the increase of
+the cost function when reducing the gaps in the trajectory. One
+objective is to find a line-search strategy that holds (at least is
+consistent) whether the gaps are nonzero or zero. Let us first consider
+the case where some of the gaps are nonzero.</p>
+<p>We introduce the following merit function: <span
+class="math display">\[\phi(\underline{x},\underline{u}) =
+\ell(\underline{x},\underline{u}) + \mu \sum_{t=0}^T \|
+c_t(\underline{x},\underline{u}) \|_1\]</span> where <span
+class="math inline">\(\ell\)</span> is the total cost function (integral
+plus terminal) and the constraints <span
+class="math inline">\(c_t\)</span> are: <span
+class="math display">\[c_{t+1} = x_{t+1} - f(x_t,u_t) = f_{f+1}\]</span>
+<span class="math display">\[c_0 = x_0 - x_0^* = f_0\]</span> where the
+<span class="math inline">\(f_t\)</span> have already been introduced as
+the trajectory gaps (defects). We consider how <span
+class="math inline">\(\phi\)</span> changes when changing <span
+class="math inline">\(\underline{x},\underline{u}\)</span> in the
+direction <span class="math inline">\(\underline{\Delta
+x},\underline{\Delta u}\)</span>: <span
+class="math display">\[\underline{x}&#39;=\underline{x}+ \alpha
+\underline{\Delta x}\]</span> <span
+class="math display">\[\underline{u}&#39;= \underline{u}+ \alpha
+\underline{\Delta u}\]</span> We abusively denote by <span
+class="math inline">\(\phi\)</span> the merit changes along the line
+search: <span class="math display">\[\phi(\alpha) := \phi(\underline{x}+
+\alpha \underline{\Delta x},\underline{u}+ \alpha \underline{\Delta u})
+- \phi(\underline{x},\underline{u})\]</span> We have: <span
+class="math display">\[\phi(\alpha) = \ell&#39;-\ell - \alpha \mu
+\sum_{t=0}^T  \| f_t \|_1\]</span> As the <span
+class="math inline">\(f_t\)</span> does not depend on <span
+class="math inline">\(\alpha\)</span> (thanks to the nonlinear rollout
+used in the forward pass, as explained in the first part of this
+document), we can always find a penalization <span
+class="math inline">\(\mu\)</span> that makes this function decreases.
+This means that, if <span class="math inline">\(\mu\)</span> is large
+enough, any step from an infeasible guess would be accepted. The
+drawback is that the step might induces very large increase of the cost
+function. In particular, the cost increase might be much larger than
+predicted by the LQR model, in particular when the initial guess is far
+from being feasible (for unstable dynamics system, when the initial
+control guess is very far from stabilizing the initial state
+trajectory).</p>
+<p>As we now that <span class="math inline">\(\sum \| f_t \|_1\)</span>
+will decrease with nonzero <span class="math inline">\(\alpha\)</span>,
+we rather suggest to only consider the first term <span
+class="math inline">\(\ell&#39;-\ell\)</span>. This term exactly
+corresponds to the expectation model that we described above. <span
+class="math display">\[\ell&#39;-\ell = \Delta(\alpha) + \mathcal
+O(\alpha^3)\]</span></p>
+<h3 id="goldstein-condition">Goldstein condition</h3>
+<p>We cannot use it a second order version of the Wolfe (Armijo)
+conditions, first because <span class="math inline">\(\Delta\)</span>
+might be positive (not a descent direction), and second because strong
+Wolfe conditions uses the gradient at the next candidate point, which
+are very expensive to compute in our case. We rather suggest to take a
+second-order version of the Goldstein conditions, i.e. accept a step if
+the actual cost change is similar to the expected cost change: <span
+class="math display">\[b_1 \le \frac{\ell&#39;-\ell}{\Delta(\alpha)} \le
+b_2\]</span> with <span class="math inline">\(b_1,b_2\)</span> are two
+adjustable parameters. More precisely, if <span
+class="math inline">\(\Delta\)</span> is negative (the direction is
+descending), this imposes that: <span
+class="math display">\[\ell&#39;-\ell \le b_1 \Delta(\alpha)\]</span>
+i.e. that the cost decrease at least a fraction of the expectation
+model. A contrario, if <span class="math inline">\(\Delta\)</span> is
+positive (the direction is ascending), this imposes that: <span
+class="math display">\[\ell&#39;-\ell \le b_2 \Delta(\alpha)\]</span>
+i.e. the cost does not increase more than a multiple of the expectation
+model. In practice, we suggest to use <span
+class="math inline">\(b_1=0.1\)</span> and <span
+class="math inline">\(b_2=2\)</span>. This might be better replaced by a
+switch to avoid the quotient. The condition finally is to accept the
+step if: <span class="math display">\[\ell&#39;-\ell \le
+\begin{cases}
+  b_1 \Delta(\alpha) &amp; \textrm{if }\Delta(\alpha)\le 0 \\
+  b_2 \Delta(\alpha) &amp; \textrm{otherwise}
+\end{cases}\]</span></p>
+<h3 id="approximating-delta-with-a-nonlinear-rollout">Approximating
+<span class="math inline">\(\Delta\)</span> with a nonlinear
+rollout</h3>
+<p>The expectation model exhibited above implies the explicit values of
+the changes in the state trajectory in the term <span
+class="math inline">\(f_t^T V_{xx} \Delta x_t\)</span>. However, the DDP
+algorithm never explicitly computes the <span
+class="math inline">\(\Delta x_t\)</span>, but rather directly computes
+the next <span class="math inline">\(x_t&#39;\)</span> in the rollout,
+using the nonlinear dynamics. We do not have the linear direction <span
+class="math inline">\(\Delta x_t\)</span>, however, we can easily
+computes the change in the state trajectory by <span
+class="math inline">\(x_t&#39;(\alpha)-x_t\)</span> where <span
+class="math inline">\(x_t&#39;(\alpha)\)</span> is the state reached at
+time <span class="math inline">\(t\)</span> when applying the changes in
+the control trajectory and at the trajectory gaps. We then set: <span
+class="math display">\[\Delta x_t = x_t&#39;-x_t\]</span> And we modify
+the expectation model accordingly: <span
+class="math display">\[\Delta(\alpha) = \alpha \sum_{t=0}^T V_{xt}^T f_t
++ Q_{ut}^T k_t
++ \frac{\alpha}{2} \Big( k_t^T Q_{uut}^T k_t-f_t^T V_{xxt} f_t \Big)
++ (\alpha-1) f_t^T V_{xxt} (x_t&#39;(\alpha) - x_t)\]</span> Again, this
+boils down to the sum of the <span class="math inline">\(Q.k\)</span>
+when the gaps are all zero.</p>

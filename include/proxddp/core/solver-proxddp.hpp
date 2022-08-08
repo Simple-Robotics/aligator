@@ -3,6 +3,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
+#include "proxddp/core/solver-util.hpp"
 #include "proxddp/core/merit-function.hpp"
 #include "proxddp/core/proximal-penalty.hpp"
 #include "proxddp/core/linesearch.hpp"
@@ -13,9 +14,6 @@
 #include <proxnlp/constraint-base.hpp>
 
 namespace proxddp {
-
-template <typename Scalar>
-static const typename math_types<Scalar>::VectorOfVectors DEFAULT_VECTOR;
 
 enum class MultiplierUpdateMode : unsigned int {
   NEWTON = 0,
@@ -53,8 +51,8 @@ public:
   using StageModel = StageModelTpl<Scalar>;
   using Constraint = typename StageModel::Constraint;
   using StageData = StageDataTpl<Scalar>;
-  using value_store_t = internal::value_storage<Scalar>;
-  using q_store_t = internal::q_function_storage<Scalar>;
+  using VParams = typename Workspace::value_storage_t;
+  using QParams = typename Workspace::q_storage_t;
   using ProxPenaltyType = ProximalPenaltyTpl<Scalar>;
   using ProxData = typename ProxPenaltyType::Data;
   using CallbackPtr = shared_ptr<helpers::base_callback<Scalar>>;
@@ -88,8 +86,6 @@ public:
   MultiplierUpdateMode mul_update_mode = MultiplierUpdateMode::PRIMAL_DUAL;
   BCLParams<Scalar> bcl_params;
 
-  std::size_t al_iter = 0;
-
   /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.
   std::size_t MAX_ITERS;
   std::size_t MAX_AL_ITERS = MAX_ITERS;
@@ -98,25 +94,18 @@ public:
   const Scalar TOL_MIN = 1e-8;
   const Scalar MU_MIN = 1e-8;
 
+  /// Callbacks
+  std::vector<CallbackPtr> callbacks_;
+
   std::unique_ptr<Workspace> workspace_;
   std::unique_ptr<Results> results_;
 
   Results &getResults() { return *results_; }
   Workspace &getWorkspace() { return *workspace_; }
 
-  /// Callbacks
-  std::vector<CallbackPtr> callbacks_;
-
   SolverProxDDP(const Scalar tol = 1e-6, const Scalar mu_init = 0.01,
                 const Scalar rho_init = 0., const std::size_t max_iters = 1000,
-                const VerboseLevel verbose = VerboseLevel::QUIET)
-      : target_tolerance(tol), mu_init(mu_init), rho_init(rho_init),
-        verbose_(verbose), MAX_ITERS(max_iters) {
-    if (mu_init >= 1.) {
-      proxddp_runtime_error(
-          fmt::format("Penalty value mu_init={:g}>=1!", mu_init));
-    }
-  }
+                const VerboseLevel verbose = VerboseLevel::QUIET);
 
   /// @brief Compute the search direction.
   ///
@@ -147,32 +136,7 @@ public:
   /// specifications of @p problem.
   /// @param problem  The problem instance with respect to which memory will be
   /// allocated.
-  void setup(const Problem &problem) {
-    workspace_ = std::make_unique<Workspace>(problem);
-    results_ = std::make_unique<Results>(problem);
-
-    Workspace *ws = workspace_.get();
-    prox_penalties_.clear();
-    const std::size_t nsteps = problem.numSteps();
-    for (std::size_t i = 0; i < nsteps; i++) {
-      const StageModel &sm = *problem.stages_[i];
-      prox_penalties_.emplace_back(sm.xspace_, sm.uspace_, ws->prev_xs_[i],
-                                   ws->prev_us_[i], false);
-      if (i == nsteps - 1) {
-        prox_penalties_.emplace_back(sm.xspace_next_, sm.uspace_,
-                                     ws->prev_xs_[nsteps],
-                                     problem.dummy_term_u0, true);
-      }
-    }
-
-    for (std::size_t i = 0; i < nsteps + 1; i++) {
-      const ProxPenaltyType *penal = &prox_penalties_[i];
-      ws->prox_datas.emplace_back(new ProxData(penal));
-    }
-
-    assert(prox_penalties_.size() == (nsteps + 1));
-    assert(ws->prox_datas.size() == (nsteps + 1));
-  }
+  void setup(const Problem &problem);
 
   void evaluateProx(const std::vector<VectorXs> &xs,
                     const std::vector<VectorXs> &us,
@@ -233,8 +197,8 @@ public:
   void clearCallbacks() { callbacks_.clear(); }
 
   void invokeCallbacks(Workspace &workspace, Results &results) {
-    for (auto cb : callbacks_) {
-      cb->call(this, workspace, results);
+    for (auto &cb : callbacks_) {
+      cb->call(workspace, results);
     }
   }
   /// \}

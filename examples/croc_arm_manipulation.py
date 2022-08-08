@@ -165,6 +165,9 @@ if True:
     croc_xs = solver.xs
     croc_us = solver.us
 
+    croc_dual_err = np.max([np.linalg.norm(q, np.inf) for q in solver.Qu])
+    print("Croc dual err:", croc_dual_err)
+
 if True:
     import proxddp
 
@@ -173,19 +176,22 @@ if True:
 
     mu_init = 1e-7
     rho_init = 1e-10
-    solver = proxddp.ProxDDP(TOLERANCE, mu_init, rho_init=rho_init, max_iters=300)
-    solver.verbose = proxddp.VerboseLevel.VERBOSE
-    solver.bcl_params.rho_factor = 0.1
-    solver.setup(prox_problem)
-    solver.run(prox_problem, xs_i, us_i)
+    # solver = proxddp.SolverProxDDP(TOLERANCE, mu_init, rho_init=rho_init, max_iters=300)
+    proxsolver = proxddp.SolverFDDP(tol=croc_dual_err)
+    proxsolver.verbose = proxddp.VerboseLevel.VERBOSE
+    # solver.bcl_params.rho_factor = 0.1
+    proxsolver.setup(prox_problem)
+    proxsolver.run(prox_problem, xs_i, us_i)
 
-    results = solver.getResults()
+    results = proxsolver.getResults()
     assert results.num_iters <= 24
     print("Results {}".format(results))
     prox_xs = results.xs
     prox_us = results.us
     prox_xs = np.stack(prox_xs)
     prox_us = np.stack(prox_us)
+
+    print("prox_cost - croc_cost:", results.traj_cost - solver.cost)
 
     if WITHPLOT:
         import matplotlib.pyplot as plt
@@ -210,14 +216,15 @@ if True:
 croc_xs = np.stack(croc_xs.tolist())
 croc_us = np.stack(croc_us.tolist())
 nq = robot_model.nq
-for i in range(robot_model.nq):
-    plt.subplot(2, nq // 2 + 1, i + 1)
-    plt.plot(times, croc_xs[:, i], ls="--")
-    plt.plot(times, prox_xs[:, i], ls="--")
-fig = plt.gcf()
-fig.legend(["croco", "prox"])
-plt.tight_layout()
-plt.show()
+if WITHPLOT:
+    for i in range(robot_model.nq):
+        plt.subplot(2, nq // 2 + 1, i + 1)
+        plt.plot(times, croc_xs[:, i], ls="--")
+        plt.plot(times, prox_xs[:, i], ls="--")
+    fig = plt.gcf()
+    fig.legend(["croco", "prox"])
+    plt.tight_layout()
+    plt.show()
 
 dist_x = [np.linalg.norm(croc_xs[i] - prox_xs[i]) for i in range(T + 1)]
 dist_u = [np.linalg.norm(croc_us[i] - prox_us[i]) for i in range(T)]

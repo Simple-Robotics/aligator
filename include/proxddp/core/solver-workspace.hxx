@@ -6,8 +6,7 @@ namespace proxddp {
 
 template <typename Scalar>
 WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
-    : nsteps(problem.numSteps()), problem_data(problem),
-      trial_prob_data(problem), inner_criterion_by_stage(nsteps + 1),
+    : Base(problem), inner_criterion_by_stage(nsteps + 1),
       primal_infeas_by_stage(nsteps), dual_infeas_by_stage(nsteps + 1) {
 
   inner_criterion_by_stage.setZero();
@@ -18,15 +17,14 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   q_params.reserve(nsteps);
   prox_datas.reserve(nsteps + 1);
 
-  lams_plus_.reserve(nsteps + 1);
-  lams_pdal_.reserve(nsteps + 1);
+  prev_xs_ = trial_xs_;
+  prev_us_ = trial_us_;
 
-  trial_xs_.reserve(nsteps + 1);
-  trial_us_.reserve(nsteps);
-  trial_lams_.reserve(nsteps + 1);
-  prev_xs_.reserve(nsteps + 1);
-  prev_us_.reserve(nsteps);
-  prev_lams_.reserve(nsteps + 1);
+  lams_plus_.resize(nsteps + 1);
+  pd_step_.resize(nsteps + 1);
+  dxs_.reserve(nsteps + 1);
+  dus_.reserve(nsteps);
+  dlams_.reserve(nsteps + 1);
 
   int nprim, ndual, ndx1, nu, ndx2;
   int max_kkt_size = 0;
@@ -34,13 +32,11 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   nprim = ndx1;
   ndual = problem.init_state_error.nr;
   int max_ndx = nprim + ndual;
-  pd_step_.push_back(VectorXs::Zero(nprim + ndual));
-  lams_plus_.push_back(VectorXs::Zero(ndual));
-  lams_pdal_.push_back(lams_plus_[0]);
-  trial_lams_.push_back(lams_plus_[0]);
-  prev_lams_.push_back(lams_plus_[0]);
-  dxs_.push_back(pd_step_[0].head(ndx1));
-  dlams_.push_back(pd_step_[0].tail(ndual));
+
+  lams_plus_[0] = VectorXs::Zero(ndual);
+  pd_step_[0] = VectorXs::Zero(nprim + ndual);
+  dxs_.emplace_back(pd_step_[0].head(ndx1));
+  dlams_.emplace_back(pd_step_[0].tail(ndual));
 
   std::size_t i = 0;
   for (i = 0; i < nsteps; i++) {
@@ -50,36 +46,20 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     nprim = stage.numPrimal();
     ndual = stage.numDual();
 
-    value_params.push_back(value_storage_t(ndx1));
-    q_params.push_back(q_storage_t(ndx1, nu, ndx2));
+    value_params.emplace_back(ndx1);
+    q_params.emplace_back(ndx1, nu, ndx2);
 
-    pd_step_.push_back(VectorXs::Zero(nprim + ndual));
-
-    dxs_.push_back(pd_step_[i + 1].segment(nu, ndx2));
-    dus_.push_back(pd_step_[i + 1].head(nu));
-    dlams_.push_back(pd_step_[i + 1].tail(ndual));
-
-    lams_plus_.push_back(VectorXs::Zero(ndual));
-    lams_pdal_.push_back(lams_plus_.back());
-
-    trial_xs_.push_back(stage.xspace_->neutral());
-    trial_us_.push_back(stage.uspace_->neutral());
-    trial_lams_.push_back(VectorXs::Zero(ndual));
-
-    prev_xs_.push_back(trial_xs_.back());
-    prev_us_.push_back(trial_us_.back());
-    prev_lams_.push_back(trial_lams_.back());
-
-    /** terminal node **/
-    if (i == nsteps - 1) {
-      value_params.push_back(value_storage_t(ndx2));
-      trial_xs_.push_back(VectorXs::Zero(stage.nx2()));
-      prev_xs_.push_back(trial_xs_.back());
-    }
+    lams_plus_[i + 1] = VectorXs::Zero(ndual);
+    pd_step_[i + 1] = VectorXs::Zero(nprim + ndual);
+    dxs_.emplace_back(pd_step_[i + 1].segment(nu, ndx2));
+    dus_.emplace_back(pd_step_[i + 1].head(nu));
+    dlams_.emplace_back(pd_step_[i + 1].tail(ndual));
 
     max_kkt_size = std::max(max_kkt_size, nprim + ndual);
     max_ndx = std::max(max_ndx, ndx2);
   }
+  ndx2 = problem.stages_.back()->ndx2();
+  value_params.emplace_back(ndx2);
 
   if (problem.term_constraint_) {
     const StageConstraintTpl<Scalar> &tc = *problem.term_constraint_;
@@ -87,19 +67,19 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     ndual = tc.func_->nr;
     max_kkt_size = std::max(max_kkt_size, ndual);
     lams_plus_.push_back(VectorXs::Zero(ndual));
-    lams_pdal_.push_back(VectorXs::Zero(ndual));
-    trial_lams_.push_back(VectorXs::Zero(ndual));
-    prev_lams_.push_back(VectorXs::Zero(ndual));
-
     pd_step_.push_back(VectorXs::Zero(ndual));
     dlams_.push_back(pd_step_.back().tail(ndual));
   }
 
-  kktMatrixFull_.resize(max_kkt_size, max_kkt_size);
-  kktMatrixFull_.setZero();
+  lams_pdal_ = lams_plus_;
+  trial_lams_ = lams_plus_;
+  prev_lams_ = lams_plus_;
 
-  kktRhsFull_.resize(max_kkt_size, max_ndx + 1);
-  kktRhsFull_.setZero();
+  kkt_matrix_buf_.resize(max_kkt_size, max_kkt_size);
+  kkt_matrix_buf_.setZero();
+
+  kkt_rhs_buf_.resize(max_kkt_size, max_ndx + 1);
+  kkt_rhs_buf_.setZero();
 
   assert(value_params.size() == nsteps + 1);
   assert(dxs_.size() == nsteps + 1);
@@ -110,7 +90,7 @@ template <typename Scalar>
 std::ostream &operator<<(std::ostream &oss, const WorkspaceTpl<Scalar> &self) {
   oss << "Workspace {";
   oss << fmt::format("\n  num nodes      : {:d}", self.trial_us_.size())
-      << fmt::format("\n  kkt buffer size: {:d}", self.kktMatrixFull_.rows());
+      << fmt::format("\n  kkt buffer size: {:d}", self.kkt_matrix_buf_.rows());
   oss << "\n}";
   return oss;
 }

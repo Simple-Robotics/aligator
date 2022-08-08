@@ -1,7 +1,9 @@
 #pragma once
 
 namespace proxddp {
+/// @brief Headers for compatibility modules.
 namespace compat {
+/// @brief Headers for the Crocoddyl compatibility module.
 namespace croc {
 
 template <typename Scalar> struct StateWrapperTpl;

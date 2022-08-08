@@ -18,6 +18,7 @@ namespace internal {
 ///     \begin{bmatrix} 2v & V_x^\top \\ V_x & V_{xx} \end{bmatrix}
 /// \f]
 template <typename _Scalar> struct value_storage {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   MatrixXs storage;
@@ -27,7 +28,7 @@ template <typename _Scalar> struct value_storage {
 
   value_storage(const int ndx)
       : storage(MatrixXs::Zero(ndx + 1, ndx + 1)),
-        Vx_(storage.bottomRows(ndx).col(0)),
+        Vx_(storage.col(0).tail(ndx)),
         Vxx_(storage.bottomRightCorner(ndx, ndx)) {}
 
   friend std::ostream &operator<<(std::ostream &oss,
@@ -53,13 +54,11 @@ template <typename _Scalar> struct value_storage {
  *    \end{bmatrix}
  * ]\f
  */
-template <typename Scalar> struct q_function_storage {
-protected:
-  int ntot;
-
-public:
+template <typename Scalar> struct q_storage {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
+  int ntot;
   MatrixXs storage;
 
   Scalar &q_2() { return storage.coeffRef(0, 0); }
@@ -78,9 +77,9 @@ public:
   MatrixRef Quy_;
   MatrixRef Qyy_;
 
-  q_function_storage(const int ndx1, const int nu, const int ndx2)
-      : ntot(ndx1 + nu + ndx2), storage(ntot + 1, ntot + 1),
-        grad_(storage.bottomRows(ntot).col(0)),
+  q_storage(const int ndx1, const int nu, const int ndx2)
+      : ntot(ndx1 + nu + ndx2), storage(MatrixXs::Zero(ntot + 1, ntot + 1)),
+        grad_(storage.col(0).tail(ntot)),
         hess_(storage.bottomRightCorner(ntot, ntot)), Qx_(grad_.head(ndx1)),
         Qu_(grad_.segment(ndx1, nu)), Qy_(grad_.tail(ndx2)),
         Qxx_(hess_.topLeftCorner(ndx1, ndx1)),
@@ -89,7 +88,10 @@ public:
         Quu_(hess_.block(ndx1, ndx1, nu, nu)),
         Quy_(hess_.block(ndx1, ndx1 + nu, nu, ndx2)),
         Qyy_(hess_.bottomRightCorner(ndx2, ndx2)) {
-    storage.setZero();
+    assert(hess_.rows() == ntot);
+    assert(hess_.cols() == ntot);
+    assert(grad_.rows() == ntot);
+    assert(grad_.cols() == 1);
   }
 };
 
