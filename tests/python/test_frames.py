@@ -5,7 +5,7 @@ import proxddp
 import numpy as np
 import pinocchio as pin
 
-from proxddp import manifolds
+from proxddp import manifolds, FiniteDifferenceHelper
 
 
 model = pin.buildSampleModelHumanoid()
@@ -63,7 +63,64 @@ def test_frame_placement():
     fun_fd.evaluate(x0, u0, x0, fdata2)
     fun_fd.computeJacobians(x0, u0, x0, fdata2)
     J_fd = fdata2.Jx[:]
-    assert np.allclose(J, J_fd, 1e-2)
+    assert fdata.Jx.shape == J_fd.shape
+    assert np.allclose(fdata.Jx, J_fd, 1e-2)
+    for i in range(100):
+        x0 = space.neutral()
+        d = np.random.randn(space.ndx) * 0.1
+        d[6:] = 0.0
+        x0 = space.integrate(x0, d)
+        fun.evaluate(x0, u0, x0, fdata)
+        fun.computeJacobians(x0, u0, x0, fdata)
+        fun_fd.evaluate(x0, u0, x0, fdata2)
+        fun_fd.computeJacobians(x0, u0, x0, fdata2)
+        assert np.allclose(fdata.Jx, fdata2.Jx, 1e-2)
+
+
+def test_frame_translation():
+    fr_name1 = "larm_shoulder2_body"
+    print(model.frames.tolist())
+    fr_id1 = model.getFrameId(fr_name1)
+
+    x0 = space.neutral()
+    d = np.random.randn(space.ndx) * 0.1
+    d[6:] = 0.0
+    x0 = space.integrate(x0, d)
+    u0 = np.zeros(nu)
+    q0 = x0[:nq]
+
+    pin.framesForwardKinematics(model, rdata, q0)
+    target_pos = rdata.oMf[fr_id1].translation
+
+    fun = proxddp.FrameTranslationResidual(ndx, nu, model, target_pos, fr_id1)
+    assert fr_id1 == fun.frame_id
+
+    fdata = fun.createData()
+    fun.evaluate(x0, u0, x0, fdata)
+
+    assert np.allclose(fdata.value, 0.0)
+    print(fdata.value)
+    print("pindata from fdata:")
+    pdata_f = fdata.pin_data
+    print(pdata_f.oMf[fr_id1])
+
+    fun.computeJacobians(x0, u0, x0, fdata)
+
+    fun_fd = proxddp.FiniteDifferenceHelper(space, fun, 1e-3)
+    fdata2 = fun_fd.createData()
+    fun_fd.evaluate(x0, u0, x0, fdata2)
+    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    assert fdata.Jx == fdata2.Jx.shape
+    assert np.allclose(fdata.Jx, fdata2.Jx, 1e-2)
+    for i in range(100):
+        x0 = space.neutral()
+        d = np.random.randn(space.ndx) * 0.1
+        x0 = space.integrate(x0, d)
+        fun.evaluate(x0, u0, x0, fdata)
+        fun.computeJacobians(x0, u0, x0, fdata)
+        fun_fd.evaluate(x0, u0, x0, fdata2)
+        fun_fd.computeJacobians(x0, u0, x0, fdata2)
+        assert np.allclose(fdata.Jx, fdata2.Jx, 1e-2)
 
 
 def test_frame_velocity():
@@ -101,9 +158,18 @@ def test_frame_velocity():
     assert J.shape == realJ.shape
     assert np.allclose(fdata.Jx[:, :nv], realJ)
 
-
-if __name__ == "__main__":
-    import pytest
-    import sys
-
-    retcode = pytest.main(sys.argv)
+    fun_fd = proxddp.FiniteDifferenceHelper(space, fun, 1e-3)
+    fdata2 = fun_fd.createData()
+    fun_fd.evaluate(x0, u0, x0, fdata2)
+    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    assert fdata.Jx == fdata2.Jx.shape
+    assert np.allclose(fdata.Jx, fdata2.Jx, 1e-2)
+    for i in range(100):
+        x0 = space.neutral()
+        d = np.random.randn(space.ndx) * 0.1
+        x0 = space.integrate(x0, d)
+        fun.evaluate(x0, u0, x0, fdata)
+        fun.computeJacobians(x0, u0, x0, fdata)
+        fun_fd.evaluate(x0, u0, x0, fdata2)
+        fun_fd.computeJacobians(x0, u0, x0, fdata2)
+        assert np.allclose(fdata.Jx, fdata2.Jx, 1e-2)
