@@ -41,7 +41,7 @@ def test_compute_jac_multibody():
         fdata2 = fun2.createData()
         fun2_fd = FiniteDifferenceHelper(space, fun2, 1e-3)
         fdata2b = fun2_fd.createData()
-        x0 = np.ones(nx)
+        x0 = pin.randomConfiguration(model, -np.ones(model.nq), np.ones(model.nq))
         u0 = 0.6 * np.ones(nu)
         fun2.evaluate(x0, u0, x0, fdata2)
         fun2_fd.evaluate(x0, u0, x0, fdata2b)
