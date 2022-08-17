@@ -28,8 +28,8 @@ struct LogRecord {
 
 /// @brief  A logging utility.
 struct BaseLogger {
-  static constexpr unsigned int COL_WIDTH_0 = 4;
-  static constexpr unsigned int COL_WIDTH = 10;
+  unsigned int COL_WIDTH_0 = 4;
+  unsigned int COL_WIDTH = 10;
   bool active = true;
   const std::string join_str = "｜";
 
