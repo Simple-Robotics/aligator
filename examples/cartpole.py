@@ -5,16 +5,24 @@
 """
 
 import pinocchio as pin
+from pinocchio.visualize import MeshcatVisualizer
 import numpy as np
 import proxddp
 import proxnlp
 import hppfcl as fcl
 import tap
 import matplotlib.pyplot as plt
+import meshcat_utils as msu
 
 
 class Args(tap.Tap):
+    display: bool = False
     use_term_cstr: bool = False
+    record: bool = False
+
+    def process_args(self):
+        if self.record:
+            self.display = True
 
 
 args = Args().parse_args()
@@ -126,7 +134,7 @@ frame_id = model.getFrameId("end_effector_frame")
 
 # running cost regularizes the control input
 rcost = proxddp.CostStack(ndx, nu)
-wu = np.ones(nu) * 1e-2
+wu = np.ones(nu) * 1e-4
 rcost.addCost(
     proxddp.QuadraticResidualCost(
         proxddp.ControlErrorResidual(ndx, np.zeros(nu)), np.diag(wu) * time_step
@@ -151,6 +159,9 @@ rcost.addCost(
     proxddp.QuadraticResidualCost(frame_err, np.diag(weights_frame_place) * time_step)
 )
 term_cost = proxddp.CostStack(ndx, nu)
+term_cost.addCost(
+    proxddp.QuadraticResidualCost(frame_err, np.diag(weights_frame_place) * time_step)
+)
 
 # box constraint on control
 u_min = -25.0 * np.ones(nu)
@@ -177,7 +188,7 @@ term_cstr = proxddp.StageConstraint(
 mu_init = 4e-2
 rho_init = 1e-2
 verbose = proxddp.VerboseLevel.VERBOSE
-TOL = 1e-3
+TOL = 1e-4
 MAX_ITER = 200
 solver = proxddp.SolverProxDDP(
     TOL, mu_init, rho_init=rho_init, max_iters=MAX_ITER, verbose=verbose
@@ -251,3 +262,26 @@ if True:
 
 plt.tight_layout()
 plt.show()
+
+if args.display:
+    vizer = MeshcatVisualizer(model, geom_model, geom_model)
+    vizer.initViewer(open=args.display, loadModel=True)
+    viz_util = msu.VizUtil(vizer)
+
+    numrep = 2
+    cp = [2.0, 0.0, 0.8]
+    cps_ = [cp.copy() for _ in range(numrep)]
+    vidrecord = msu.VideoRecorder("examples/ur5_reach_ctrlbox.mp4", fps=1.0 / time_step)
+    input("[Press enter]")
+
+    for i in range(numrep):
+        viz_util.set_cam_pos(cps_[i])
+        viz_util.draw_objective(frame_place_target.translation)
+        viz_util.play_trajectory(
+            res.xs.tolist(),
+            res.us.tolist(),
+            frame_ids=[frame_id],
+            timestep=time_step,
+            record=args.record,
+            recorder=vidrecord,
+        )

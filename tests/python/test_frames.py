@@ -173,3 +173,10 @@ def test_frame_velocity():
         fun_fd.evaluate(x0, u0, x0, fdata2)
         fun_fd.computeJacobians(x0, u0, x0, fdata2)
         assert np.allclose(fdata.Jx, fdata2.Jx, 1e-2)
+
+
+if __name__ == "__main__":
+    import pytest
+    import sys
+
+    retcode = pytest.main(sys.argv)
