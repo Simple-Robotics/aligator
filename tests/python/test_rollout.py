@@ -66,7 +66,10 @@ def setup_fig():
     print("FIGURE:", fig)
     yield fig
     plt.legend()
-    plt.savefig("assets/ur5_rollout_energy.png")
+    try:
+        plt.savefig("assets/ur5_rollout_energy.png")
+    except FileNotFoundError:
+        pass
 
 
 def test_rk2(setup_fig):
