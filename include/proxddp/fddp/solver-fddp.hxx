@@ -321,10 +321,8 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     }
 
     Scalar phi0 = results.traj_cost_;
-    Scalar dgrad, dquad;
-    computeDirectionalDerivatives(workspace, results, dgrad, dquad);
-    Scalar d1_phi = dgrad;
-    Scalar d2_phi = dquad;
+    Scalar d1_phi, d2_phi;
+    computeDirectionalDerivatives(workspace, results, d1_phi, d2_phi);
     PROXDDP_RAISE_IF_NAN(d1_phi);
     PROXDDP_RAISE_IF_NAN(d2_phi);
 #ifndef NDEBUG
