@@ -112,7 +112,7 @@ def test_frame_translation():
     fdata2 = fun_fd.createData()
     fun_fd.evaluate(x0, u0, x0, fdata2)
     fun_fd.computeJacobians(x0, u0, x0, fdata2)
-    assert fdata.Jx == fdata2.Jx.shape
+    assert fdata.Jx.shape == fdata2.Jx.shape
     assert np.allclose(fdata.Jx, fdata2.Jx, 1e-2)
     for i in range(100):
         x0 = space.neutral()
@@ -164,7 +164,7 @@ def test_frame_velocity():
     fdata2 = fun_fd.createData()
     fun_fd.evaluate(x0, u0, x0, fdata2)
     fun_fd.computeJacobians(x0, u0, x0, fdata2)
-    assert fdata.Jx == fdata2.Jx.shape
+    assert fdata.Jx.shape == fdata2.Jx.shape
     assert np.allclose(fdata.Jx, fdata2.Jx, 1e-2)
     for i in range(100):
         x0 = space.neutral()
