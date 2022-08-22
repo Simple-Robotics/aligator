@@ -1,4 +1,3 @@
-import proxddp
 import example_robot_data as erd
 import numpy as np
 
@@ -59,17 +58,7 @@ for i in range(nsteps):
     print(x)
 
 
-def test_impl_rollout():
-    # rollout using implicit type
-    xs2 = proxddp.rollout_implicit(space, dyn_model, x0, us_ref).tolist()
-    close = True
-    for (a, b) in zip(xs_ref, xs2):
-        close = close & np.allclose(a, b)
-    assert close
-
-
 if __name__ == "__main__":
-    test_impl_rollout()
 
     if args.display:
         input()
