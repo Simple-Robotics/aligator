@@ -5,7 +5,7 @@ import proxddp
 import numpy as np
 import pinocchio as pin
 
-from proxddp import manifolds, FiniteDifferenceHelper
+from proxddp import manifolds
 
 
 model = pin.buildSampleModelHumanoid()
@@ -179,4 +179,4 @@ if __name__ == "__main__":
     import pytest
     import sys
 
-    retcode = pytest.main(sys.argv)
+    sys.exit(pytest.main(sys.argv))

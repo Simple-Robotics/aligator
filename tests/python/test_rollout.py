@@ -92,4 +92,4 @@ def test_midpoint(setup_fig):
 
 
 if __name__ == "__main__":
-    retcode = pytest.main(sys.argv)
+    sys.exit(pytest.main(sys.argv))

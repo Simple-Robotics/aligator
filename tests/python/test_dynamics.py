@@ -1,6 +1,7 @@
 import numpy as np
 from proxddp import dynamics, manifolds
 
+import sys
 import pytest
 
 
@@ -8,7 +9,7 @@ def test_abstract():
     nx = 3
     space = manifolds.VectorSpace(nx)
     nu = 2
-    dm = dynamics.DynamicsModel(nx, nu)
+    dm = dynamics.DynamicsModel(space, nu)
     dd = dm.createData()
     print(dd)
 
@@ -42,6 +43,4 @@ def test_linear():
 
 
 if __name__ == "__main__":
-    import sys
-
-    retcode = pytest.main(sys.argv)
+    sys.exit(pytest.main(sys.argv))

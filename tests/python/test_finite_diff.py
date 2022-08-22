@@ -35,7 +35,6 @@ def test_compute_jac_multibody():
 
         model = pin.buildSampleModelHumanoid()
         space = manifolds.MultibodyConfiguration(model)
-        nx = space.nx
         nu = 3
         x_tar = space.neutral()
         fun2 = StateErrorResidual(space, nu, x_tar)
@@ -56,3 +55,10 @@ def test_compute_jac_multibody():
         return
     except ImportError:
         pass
+
+
+if __name__ == "__main__":
+    import pytest
+    import sys
+
+    sys.exit(pytest.main(sys.argv))

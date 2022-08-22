@@ -2,6 +2,7 @@ import proxddp
 import numpy as np
 
 from proxddp import SolverFDDP
+import sys
 import pytest
 
 
@@ -24,7 +25,7 @@ def test_fddp_lqr():
         problem.addStage(stage)
 
     tol = 1e-6
-    solver = SolverFDDP(tol, 1e-10, proxddp.VerboseLevel.VERBOSE)
+    solver = SolverFDDP(tol, proxddp.VerboseLevel.VERBOSE)
     solver.setup(problem)
     solver.max_iters = 1
     xs_init = [x0] * (nsteps + 1)
@@ -34,6 +35,4 @@ def test_fddp_lqr():
 
 
 if __name__ == "__main__":
-    import sys
-
-    retcode = pytest.main(sys.argv)
+    sys.exit(pytest.main(sys.argv))
