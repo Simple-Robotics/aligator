@@ -46,7 +46,7 @@ public:
                         const ConstVectorRef &y, BaseData &data) const;
 
   shared_ptr<BaseData> createData() const {
-    return std::make_shared<Data>(this);
+    return std::make_shared<Data>(*this);
   }
 
 protected:
@@ -70,7 +70,7 @@ struct FramePlacementDataTpl : FunctionDataTpl<Scalar> {
   /// Jacobian of the error, local frame
   typename math_types<Scalar>::Matrix6Xs fJf_;
 
-  FramePlacementDataTpl(const FramePlacementResidualTpl<Scalar> *model);
+  FramePlacementDataTpl(const FramePlacementResidualTpl<Scalar> &model);
 };
 
 } // namespace proxddp
