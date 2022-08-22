@@ -193,7 +193,7 @@ def test_constraint_dynamics():
             if primal_feas < eps and dual_feas < eps:
                 print("Convergence achieved")
                 break
-            print("constraint_value:", np.linalg.norm(constraint_value))
+            print("constraint_value: {:.3e}".format(np.linalg.norm(constraint_value)))
             rhs = np.concatenate([-constraint_value - y * mu, np.zeros(model.nv)])
 
             dz = kkt_constraint.solve(rhs)
@@ -267,7 +267,7 @@ def test_constraint_dynamics():
     nsteps = 300
     stages = []
 
-    us_init = [np.zeros(1)] * nsteps
+    us_init = [np.zeros(nu)] * nsteps
     xs_init = [x0] * (nsteps + 1)
 
     w_x = np.ones(x0.size)
