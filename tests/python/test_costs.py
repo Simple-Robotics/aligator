@@ -80,3 +80,9 @@ def test_stack_error():
     with pytest.raises(Exception) as e_info:
         CostStack(nx, nu, [rcost], [1.0, 1.0])
     print(e_info)
+
+
+if __name__ == "__main__":
+    import sys
+
+    sys.exit(pytest.main(sys.argv))

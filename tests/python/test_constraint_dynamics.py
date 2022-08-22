@@ -319,4 +319,4 @@ def test_constraint_dynamics():
 if IS_MAIN:
     import sys
 
-    retcode = pytest.main(sys.argv)
+    sys.exit(pytest.main(sys.argv))

@@ -145,4 +145,4 @@ class TestClass:
 if __name__ == "__main__":
     import sys
 
-    retcode = pytest.main(sys.argv)
+    sys.exit(pytest.main(sys.argv))
