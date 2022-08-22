@@ -62,6 +62,8 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 
   /// @brief Get initial state constraint.
   const VectorXs &getInitState() const { return init_state_error.target_; }
+  /// @brief Set initial state constraint.
+  void setInitState(const ConstVectorRef x0) { init_state_error.target_ = x0; }
 
   /// @brief Set a terminal constraint for the model.
   void setTerminalConstraint(const Constraint &cstr);
