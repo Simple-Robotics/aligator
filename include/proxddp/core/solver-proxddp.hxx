@@ -345,7 +345,10 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
 
   bool &conv = results.conv;
   bool cur_al_accept = true;
-  auto colout = fmt::color::medium_orchid;
+  fmt::color colout = fmt::color::white;
+
+  results.al_iter = 0;
+  results.num_iters = 0;
 
   std::size_t &al_iter = results.al_iter;
   while ((al_iter < MAX_AL_ITERS) && (results.num_iters < MAX_ITERS)) {
@@ -359,10 +362,10 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
       fmt::print(fmt::emphasis::bold | fmt::fg(colout), "[AL iter {:>2d}]",
                  al_iter + 1);
       fmt::print(" ("
-                 " inner_tol {:.2g} |"
-                 " prim_tol  {:.2g} |"
-                 " mu  {:.2g} |"
-                 " rho {:.2g} )\n",
+                 "inner_tol {:.2g} | "
+                 "prim_tol  {:.2g} | "
+                 "mu  {:.2g} | "
+                 "rho {:.2g} )\n",
                  inner_tol_, prim_tol_, mu_penal_, rho_penal_);
     }
     innerLoop(problem, workspace, results);
