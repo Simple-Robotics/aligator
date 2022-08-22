@@ -14,7 +14,7 @@ DISPLAY = True & IS_MAIN
 TOL = 1e-4
 
 
-def test_constraint_dynamics():
+def test_constrained_dynamics():
     def finite_diff(dynmodel, space, x, u, EPS=1e-8):
         ndx = space.ndx
         Jx = np.zeros((ndx, ndx))
