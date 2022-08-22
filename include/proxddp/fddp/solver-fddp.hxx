@@ -289,7 +289,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
   record.dual_err = 0.;
   record.dphi0 = 0.;
   std::size_t &iter = results.num_iters;
-  for (iter = 0; iter < MAX_ITERS; ++iter) {
+  for (iter = 0; iter <= MAX_ITERS; ++iter) {
 
     record.iter = iter + 1;
 
@@ -313,6 +313,10 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
 
     if (results.dual_infeasibility < tol_) {
       results.conv = true;
+      break;
+    }
+
+    if (iter >= MAX_ITERS) {
       break;
     }
 
