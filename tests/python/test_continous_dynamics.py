@@ -10,12 +10,12 @@ def test_abstract():
     """Test have the right types, etc."""
     space = manifolds.SO3()
     nu = 1
-    cm = dynamics.ContinuousDynamicsBase(space, nu)
-    cd = cm.createData()
-    assert isinstance(cd, dynamics.ContinuousDynamicsData)
-    assert hasattr(cd, "Jx")
-    assert hasattr(cd, "Ju")
-    assert hasattr(cd, "Jxdot")
+    dae = dynamics.ContinuousDynamicsBase(space, nu)
+    dae_data = dae.createData()
+    assert isinstance(dae_data, dynamics.ContinuousDynamicsData)
+    assert hasattr(dae_data, "Jx")
+    assert hasattr(dae_data, "Ju")
+    assert hasattr(dae_data, "Jxdot")
 
     ode = dynamics.ODEAbstract(space, nu)
     ode_data = ode.createData()

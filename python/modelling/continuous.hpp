@@ -34,33 +34,31 @@ struct PyContinuousDynamics : T, bp::wrapper<T> {
   shared_ptr<Data> default_createData() const { return T::createData(); }
 };
 
-struct PyODEAbstract : dynamics::ODEAbstractTpl<context::Scalar>,
-                       bp::wrapper<dynamics::ODEAbstractTpl<context::Scalar>> {
+template <class T = dynamics::ODEAbstractTpl<context::Scalar>>
+struct PyODEAbstract : T, bp::wrapper<T> {
+  using bp::wrapper<T>::get_override;
   using Scalar = context::Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-  using ODEBase = dynamics::ODEAbstractTpl<Scalar>;
-  using Data = dynamics::ODEDataTpl<Scalar>;
-  using ContData = dynamics::ContinuousDynamicsDataTpl<Scalar>;
+  using ODEData = dynamics::ODEDataTpl<context::Scalar>;
+  using Data = dynamics::ContinuousDynamicsDataTpl<context::Scalar>;
 
-  using ODEBase::ODEBase; // inherit constructors
+  using T::T;
 
   virtual void forward(const ConstVectorRef &x, const ConstVectorRef &u,
-                       Data &data) const override {
+                       ODEData &data) const override {
     PROXDDP_PYTHON_OVERRIDE_PURE(void, "forward", x, u, data);
   }
 
   virtual void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
-                        Data &data) const override {
+                        ODEData &data) const override {
     PROXDDP_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, data);
   }
 
-  shared_ptr<ContData> createData() const override {
-    PROXDDP_PYTHON_OVERRIDE(shared_ptr<ContData>, ODEBase, createData, );
+  shared_ptr<Data> createData() const override {
+    PROXDDP_PYTHON_OVERRIDE(shared_ptr<Data>, T, createData, );
   }
 
-  shared_ptr<ContData> default_createData() const {
-    return ODEBase::createData();
-  }
+  shared_ptr<Data> default_createData() const { return T::createData(); }
 };
 
 } // namespace internal

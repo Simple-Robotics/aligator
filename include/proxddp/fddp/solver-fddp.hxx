@@ -289,7 +289,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
   record.dual_err = 0.;
   record.dphi0 = 0.;
   std::size_t &iter = results.num_iters;
-  for (iter = 0; iter < MAX_ITERS; ++iter) {
+  for (iter = 0; iter <= MAX_ITERS; ++iter) {
 
     record.iter = iter + 1;
 
@@ -316,11 +316,13 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
       break;
     }
 
+    if (iter >= MAX_ITERS) {
+      break;
+    }
+
     Scalar phi0 = results.traj_cost_;
-    Scalar dgrad, dquad;
-    computeDirectionalDerivatives(workspace, results, dgrad, dquad);
-    Scalar d1_phi = dgrad;
-    Scalar d2_phi = dquad;
+    Scalar d1_phi, d2_phi;
+    computeDirectionalDerivatives(workspace, results, d1_phi, d2_phi);
     PROXDDP_RAISE_IF_NAN(d1_phi);
     PROXDDP_RAISE_IF_NAN(d2_phi);
 #ifndef NDEBUG

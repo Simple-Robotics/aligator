@@ -37,7 +37,7 @@ void exposeProblem() {
       .add_property("x0_init",
                     bp::make_function(&TrajOptProblem::getInitState,
                                       bp::return_internal_reference<>()),
-                    "Initial state.")
+                    &TrajOptProblem::setInitState, "Initial state.")
       .def("setTerminalConstraint", &TrajOptProblem::setTerminalConstraint,
            "Set terminal constraint.")
       .def("evaluate", &TrajOptProblem::evaluate,

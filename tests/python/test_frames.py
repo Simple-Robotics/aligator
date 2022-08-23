@@ -6,6 +6,7 @@ import numpy as np
 import pinocchio as pin
 
 from proxddp import manifolds
+import pytest
 
 
 model = pin.buildSampleModelHumanoid()
@@ -60,6 +61,7 @@ def test_frame_placement():
 
     fun_fd = proxddp.FiniteDifferenceHelper(space, fun, 1e-3)
     fdata2 = fun_fd.createData()
+    print("FDATA2:", fdata2, type(fdata2))
     fun_fd.evaluate(x0, u0, x0, fdata2)
     fun_fd.computeJacobians(x0, u0, x0, fdata2)
     J_fd = fdata2.Jx[:]
@@ -110,7 +112,7 @@ def test_frame_translation():
     fdata2 = fun_fd.createData()
     fun_fd.evaluate(x0, u0, x0, fdata2)
     fun_fd.computeJacobians(x0, u0, x0, fdata2)
-    assert fdata.Jx == fdata2.Jx.shape
+    assert fdata.Jx.shape == fdata2.Jx.shape
     assert np.allclose(fdata.Jx, fdata2.Jx, 1e-2)
     for i in range(100):
         x0 = space.neutral()
@@ -162,7 +164,7 @@ def test_frame_velocity():
     fdata2 = fun_fd.createData()
     fun_fd.evaluate(x0, u0, x0, fdata2)
     fun_fd.computeJacobians(x0, u0, x0, fdata2)
-    assert fdata.Jx == fdata2.Jx.shape
+    assert fdata.Jx.shape == fdata2.Jx.shape
     assert np.allclose(fdata.Jx, fdata2.Jx, 1e-2)
     for i in range(100):
         x0 = space.neutral()
@@ -176,7 +178,6 @@ def test_frame_velocity():
 
 
 if __name__ == "__main__":
-    import pytest
     import sys
 
     sys.exit(pytest.main(sys.argv))

@@ -40,9 +40,14 @@ def test_custom_controlbox():
     assert np.allclose(data1.value, data2.value)
     assert np.allclose(data1.jac_buffer_, data2.jac_buffer_)
 
-    data1.vhp_buffer[:, :] = np.random.randn(*data1.vhp_buffer.shape)
+    # expected behavior: initial value of vhp_buffer is 0
+    assert np.allclose(data1.vhp_buffer, 0.0)
+
+    rdm = np.random.randn(*data1.vhp_buffer.shape)
+    data1.vhp_buffer[:, :] = rdm
     box_function.computeVectorHessianProducts(x0, u0, x0, lbd0, data1)
-    assert np.all(data1.vhp_buffer == 0.0)
+    # expected behavior: unimplemented computeVectorHessianProducts does nothing.
+    assert np.allclose(data1.vhp_buffer, rdm)
 
 
 if __name__ == "__main__":

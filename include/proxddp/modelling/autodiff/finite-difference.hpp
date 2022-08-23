@@ -106,6 +106,8 @@ struct finite_difference_impl<_Scalar, TOC1>
                                     BaseData &data) const {
     func.computeVectorHessianProducts(x, u, y, lbda, data);
   }
+
+  shared_ptr<BaseData> createData() const { return func.createData(); }
 };
 
 } // namespace internal

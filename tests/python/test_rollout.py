@@ -66,7 +66,10 @@ def setup_fig():
     print("FIGURE:", fig)
     yield fig
     plt.legend()
-    plt.savefig("assets/ur5_rollout_energy.png")
+    try:
+        plt.savefig("assets/ur5_rollout_energy.png")
+    except FileNotFoundError:
+        pass
 
 
 def test_rk2(setup_fig):
@@ -84,7 +87,7 @@ def test_midpoint(setup_fig):
     discrete_dyn = IntegratorMidpoint(ode_dynamics, dt)
     u0 = np.zeros(discrete_dyn.nu)
     us = [u0] * nsteps
-    xs = proxddp.rollout_implicit(space, discrete_dyn, x0, us).tolist()
+    xs = proxddp.rollout_implicit(discrete_dyn, x0, us).tolist()
     if DISPLAY:
         display(xs, us, dt)
     e = computeMechanicalEnergy(rmodel, rdata, xs)

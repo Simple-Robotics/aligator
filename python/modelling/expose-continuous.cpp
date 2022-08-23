@@ -15,7 +15,7 @@ void exposeODEs() {
   using internal::PyContinuousDynamics;
   using internal::PyODEAbstract;
 
-  bp::register_ptr_to_python<shared_ptr<PyContinuousDynamics<>>>();
+  bp::register_ptr_to_python<shared_ptr<ContinuousDynamicsBase>>();
   bp::class_<PyContinuousDynamics<>, boost::noncopyable>(
       "ContinuousDynamicsBase",
       "Base class for continuous-time dynamical models (DAEs and ODEs).",
@@ -63,7 +63,7 @@ void exposeODEs() {
                     "Jacobian with respect to :math:`\\dot{x}`.");
 
   bp::register_ptr_to_python<shared_ptr<ODEAbstract>>();
-  bp::class_<PyODEAbstract, bp::bases<ContinuousDynamicsBase>,
+  bp::class_<PyODEAbstract<>, bp::bases<ContinuousDynamicsBase>,
              boost::noncopyable>(
       "ODEAbstract",
       "Continuous dynamics described by ordinary differential equations "
@@ -76,7 +76,8 @@ void exposeODEs() {
       .def("dForward", bp::pure_virtual(&ODEAbstract::dForward),
            bp::args("self", "x", "u", "data"),
            "Compute the derivatives of the ODE vector field with respect "
-           "to the state-control pair :math:`(x, u)`.");
+           "to the state-control pair :math:`(x, u)`.")
+      .def(CreateDataPythonVisitor<ODEAbstract>());
 
   bp::register_ptr_to_python<shared_ptr<ODEData>>();
   bp::class_<ODEData, bp::bases<ContinuousDynamicsData>>(
