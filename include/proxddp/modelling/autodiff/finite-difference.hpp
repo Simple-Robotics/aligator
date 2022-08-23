@@ -86,6 +86,7 @@ struct finite_difference_impl<_Scalar, TOC1>
     VectorXs eui(func.nu);
     VectorXs uplus = u;
     VectorXs uminus = u;
+    eui.setZero();
     for (int i = 0; i < func.nu; i++) {
       eui(i) = fd_eps;
       uplus = u + eui;
