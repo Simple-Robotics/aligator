@@ -39,9 +39,9 @@ def test_compute_jac_multibody():
         x_tar = space.neutral()
         fun2 = StateErrorResidual(space, nu, x_tar)
         fdata2 = fun2.createData()
-        fun2_fd = FiniteDifferenceHelper(space, fun2, 1e-3)
+        fun2_fd = FiniteDifferenceHelper(space, fun2, 1e-6)
         fdata2b = fun2_fd.createData()
-        for i in range(100):
+        for i in range(1000):
             x0 = pin.randomConfiguration(model, -np.ones(model.nq), np.ones(model.nq))
             u0 = 0.6 * np.ones(nu)
             fun2.evaluate(x0, u0, x0, fdata2)
