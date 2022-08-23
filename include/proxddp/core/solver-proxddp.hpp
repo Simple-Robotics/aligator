@@ -82,7 +82,7 @@ public:
   const Scalar prim_tol0 = 1.;
 
   VerboseLevel verbose_;
-  LinesearchParams<Scalar> ls_params;
+  LinesearchOptions<Scalar> ls_params;
   MultiplierUpdateMode mul_update_mode = MultiplierUpdateMode::PRIMAL_DUAL;
   BCLParams<Scalar> bcl_params;
 

@@ -66,7 +66,7 @@ template <typename Scalar> struct SolverFDDP {
   Scalar th_step_dec_ = 0.5;
   Scalar th_step_inc_ = 0.01;
 
-  LinesearchParams<Scalar> ls_params;
+  LinesearchOptions<Scalar> ls_params;
   enum ls_types { GOLDSTEIN, ARMIJO };
   ls_types ls_type = GOLDSTEIN;
 
