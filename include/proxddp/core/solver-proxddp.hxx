@@ -14,8 +14,8 @@ SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
                                      const Scalar rho_init,
                                      const std::size_t max_iters,
                                      const VerboseLevel verbose)
-    : target_tolerance(tol), mu_init(mu_init), rho_init(rho_init),
-      verbose_(verbose), MAX_ITERS(max_iters) {
+    : target_tol_(tol), mu_init(mu_init), rho_init(rho_init), verbose_(verbose),
+      MAX_ITERS(max_iters) {
   if (mu_init >= 1.) {
     proxddp_runtime_error(
         fmt::format("Penalty value mu_init={:g}>=1!", mu_init));
@@ -328,7 +328,6 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
 
   checkTrajectoryAndAssign(problem, xs_init, us_init, results.xs_, results.us_);
 
-  ::proxddp::BaseLogger logger{};
   logger.active = (verbose_ > 0);
   logger.start();
 
@@ -341,8 +340,8 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   prim_tol_ = prim_tol0;
   updateTolerancesOnFailure();
 
-  inner_tol_ = std::max(inner_tol_, target_tolerance);
-  prim_tol_ = std::max(prim_tol_, target_tolerance);
+  inner_tol_ = std::max(inner_tol_, target_tol_);
+  prim_tol_ = std::max(prim_tol_, target_tol_);
 
   bool &conv = results.conv;
   bool cur_al_accept = true;
@@ -379,7 +378,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
     if (results.primal_infeasibility <= prim_tol_) {
       updateTolerancesOnSuccess();
 
-      switch (mul_update_mode) {
+      switch (multiplier_update_mode) {
       case MultiplierUpdateMode::NEWTON:
         workspace.prev_lams_ = results.lams_;
         break;
@@ -394,7 +393,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
       }
 
       if (std::max(results.primal_infeasibility, results.dual_infeasibility) <=
-          target_tolerance) {
+          target_tol_) {
         conv = true;
         break;
       }
@@ -406,8 +405,8 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
     }
     rho_penal_ *= bcl_params.rho_update_factor;
 
-    inner_tol_ = std::max(inner_tol_, target_tolerance);
-    prim_tol_ = std::max(prim_tol_, target_tolerance);
+    inner_tol_ = std::max(inner_tol_, target_tol_);
+    prim_tol_ = std::max(prim_tol_, target_tol_);
 
     al_iter++;
   }
@@ -423,11 +422,12 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
   // instantiate the subproblem merit function
   PDALFunction<Scalar> merit_fun{mu_penal_, rho_penal_, ls_params.mode};
 
+  // merit function evaluation
   auto merit_eval_fun = [&](Scalar a0) {
     tryStep(problem, workspace, results, a0);
     problem.evaluate(workspace.trial_xs_, workspace.trial_us_,
                      workspace.trial_prob_data);
-    evaluateProx(workspace.trial_xs_, workspace.trial_us_, workspace);
+    computeProxTerms(workspace.trial_xs_, workspace.trial_us_, workspace);
     return merit_fun.evaluate(problem, workspace.trial_lams_, workspace,
                               workspace.trial_prob_data);
   };
@@ -435,7 +435,6 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
   Scalar eps = 1e-10;
   Scalar phieps = 0., dphi0 = 0.;
 
-  ::proxddp::BaseLogger logger{};
   logger.active = (verbose_ > 0);
 
   std::size_t &k = results.num_iters;
@@ -443,8 +442,8 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     problem.evaluate(results.xs_, results.us_, workspace.problem_data);
     problem.computeDerivatives(results.xs_, results.us_,
                                workspace.problem_data);
-    evaluateProx(results.xs_, results.us_, workspace);
-    evaluateProxDerivatives(results.xs_, results.us_, workspace);
+    computeProxTerms(results.xs_, results.us_, workspace);
+    computeProxDerivatives(results.xs_, results.us_, workspace);
 
     backwardPass(problem, workspace, results);
     phi0 = merit_fun.evaluate(problem, results.lams_, workspace,
@@ -462,9 +461,10 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     if (inner_conv) {
       break;
     } else {
-      bool inner_acceptable = workspace.inner_criterion < target_tolerance;
+      bool inner_acceptable = workspace.inner_criterion < target_tol_;
       if (inner_acceptable &&
-          (results.primal_infeasibility < target_tolerance)) {
+          (std::max(results.dual_infeasibility, results.primal_infeasibility) <
+           target_tol_)) {
         break;
       }
     }

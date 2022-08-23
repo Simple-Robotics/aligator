@@ -64,10 +64,10 @@ public:
   Scalar prim_tol_;
 
   /// Solver tolerance \f$\epsilon > 0\f$.
-  Scalar target_tolerance = 1e-6;
+  Scalar target_tol_ = 1e-6;
 
   Scalar mu_init = 0.01;
-  const Scalar rho_init = 0.;
+  Scalar rho_init = 0.;
 
   /// Dual proximal/constraint penalty parameter \f$\mu\f$
   Scalar mu_penal_ = mu_init;
@@ -77,17 +77,22 @@ public:
   Scalar rho_penal_ = rho_init;
 
   Scalar xreg_ = 0.;
+  Scalar ureg_ = xreg_;
 
   const Scalar inner_tol0 = 1.;
   const Scalar prim_tol0 = 1.;
 
+  ::proxddp::BaseLogger logger{};
+
   VerboseLevel verbose_;
   LinesearchOptions<Scalar> ls_params;
-  MultiplierUpdateMode mul_update_mode = MultiplierUpdateMode::PRIMAL_DUAL;
+  MultiplierUpdateMode multiplier_update_mode =
+      MultiplierUpdateMode::PRIMAL_DUAL;
   BCLParams<Scalar> bcl_params;
 
   /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.
   std::size_t MAX_ITERS;
+  /// Maximum number of ALM iterations.
   std::size_t MAX_AL_ITERS = MAX_ITERS;
 
   /// Minimum possible tolerance asked from the solver.
@@ -138,9 +143,9 @@ public:
   /// allocated.
   void setup(const Problem &problem);
 
-  void evaluateProx(const std::vector<VectorXs> &xs,
-                    const std::vector<VectorXs> &us,
-                    Workspace &workspace) const {
+  void computeProxTerms(const std::vector<VectorXs> &xs,
+                        const std::vector<VectorXs> &us,
+                        Workspace &workspace) const {
     const std::size_t nsteps = workspace.nsteps;
     for (std::size_t i = 0; i < nsteps; i++) {
       prox_penalties_[i].evaluate(xs[i], us[i], *workspace.prox_datas[i]);
@@ -149,9 +154,9 @@ public:
                                      *workspace.prox_datas[nsteps]);
   }
 
-  void evaluateProxDerivatives(const std::vector<VectorXs> &xs,
-                               const std::vector<VectorXs> &us,
-                               Workspace &workspace) const {
+  void computeProxDerivatives(const std::vector<VectorXs> &xs,
+                              const std::vector<VectorXs> &us,
+                              Workspace &workspace) const {
     const std::size_t nsteps = workspace.nsteps;
     for (std::size_t i = 0; i < nsteps; i++) {
       prox_penalties_[i].computeGradients(xs[i], us[i],

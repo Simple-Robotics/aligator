@@ -48,7 +48,7 @@ template <typename Scalar> struct SolverFDDP {
   using ExpData = ExplicitDynamicsDataTpl<Scalar>;
   using CallbackPtr = shared_ptr<helpers::base_callback<Scalar>>;
 
-  const Scalar tol_;
+  Scalar target_tol_;
 
   /// @name Regularization parameters
   /// \{

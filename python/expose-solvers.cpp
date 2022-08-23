@@ -15,6 +15,12 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
                        "Maximum number of iterations.")
         .def_readwrite("ls_params", &SolverType::ls_params,
                        "Linesearch parameters.")
+        .def_readwrite("target_tol", &SolverType::target_tol_,
+                       "Target tolerance.")
+        .def_readwrite("xreg", &SolverType::xreg_,
+                       "Newton regularization parameter.")
+        .def_readwrite("ureg", &SolverType::ureg_,
+                       "Newton regularization parameter.")
         .def("getResults", &SolverType::getResults, bp::args("self"),
              bp::return_internal_reference<>(), "Get the results instance.")
         .def("getWorkspace", &SolverType::getWorkspace, bp::args("self"),
@@ -197,17 +203,14 @@ void exposeProxDDP() {
               (bp::arg("self"), bp::arg("tol"), bp::arg("mu_init") = 1e-2,
                bp::arg("rho_init") = 0., bp::arg("max_iters") = 1000,
                bp::arg("verbose") = VerboseLevel::QUIET)))
-          .def_readonly("mu_init", &SolverType::mu_init,
-                        "Initial dual penalty parameter.")
-          .def_readonly("rho_init", &SolverType::rho_init,
-                        "Initial (primal) proximal parameter.")
-          .def_readwrite("target_tol", &SolverType::target_tolerance,
-                         "Desired tolerance.")
           .def_readwrite("bcl_params", &SolverType::bcl_params,
                          "BCL parameters.")
-          .def_readwrite("multiplier_update_mode", &SolverType::mul_update_mode)
+          .def_readwrite("multiplier_update_mode",
+                         &SolverType::multiplier_update_mode)
           .def_readwrite("mu_init", &SolverType::mu_init,
                          "Initial dual regularization/ALM parameter.")
+          .def_readwrite("rho_init", &SolverType::rho_init,
+                         "Initial proximal regularization.")
           .def(SolverVisitor<SolverType>())
           .def("run", &SolverType::run,
                bp::args("self", "problem", "xs_init", "us_init"),

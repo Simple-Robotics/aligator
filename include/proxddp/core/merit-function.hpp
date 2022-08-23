@@ -76,15 +76,14 @@ template <typename _Scalar> struct PDALFunction {
   PDALFunction(const Scalar mu, const Scalar rho, const LinesearchMode mode)
       : mu_penal_(mu), rho_penal_(rho), ls_mode(mode) {}
 
-  /// @brief    Evaluate the merit function at the trial point.
-  /// @warning  Evaluate the problem first!
+  /// @brief    Compute the merit function at the trial point.
+  /// @warning  Evaluate the problem and proximal terms first!
   Scalar evaluate(const TrajOptProblemTpl<Scalar> &problem,
                   const std::vector<VectorXs> &lams,
                   WorkspaceTpl<Scalar> &workspace,
                   TrajOptDataTpl<Scalar> &prob_data) {
     traj_cost = computeTrajectoryCost(problem, prob_data);
-    prox_value = computeProxPenalty(workspace, rho_penal_);
-    penalty_value = 0.;
+    penalty_value = prox_value;
     // initial constraint
     workspace.lams_plus_[0] =
         workspace.prev_lams_[0] + mu_penal_inv_ * prob_data.init_data->value_;
@@ -143,7 +142,7 @@ template <typename _Scalar> struct PDALFunction {
       }
     }
 
-    value_ = traj_cost + prox_value + penalty_value;
+    value_ = traj_cost + penalty_value;
     return value_;
   }
 };

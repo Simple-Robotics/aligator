@@ -9,7 +9,7 @@ namespace proxddp {
 template <typename Scalar>
 SolverFDDP<Scalar>::SolverFDDP(const Scalar tol, VerboseLevel verbose,
                                const Scalar reg_init)
-    : tol_(tol), xreg_(reg_init), ureg_(reg_init), verbose_(verbose) {}
+    : target_tol_(tol), xreg_(reg_init), ureg_(reg_init), verbose_(verbose) {}
 
 template <typename Scalar>
 void SolverFDDP<Scalar>::setup(const Problem &problem) {
@@ -311,7 +311,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     record.inner_crit = 0.;
     record.xreg = xreg_;
 
-    if (results.dual_infeasibility < tol_) {
+    if (results.dual_infeasibility < target_tol_) {
       results.conv = true;
       break;
     }
