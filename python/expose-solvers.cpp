@@ -206,6 +206,8 @@ void exposeProxDDP() {
           .def_readwrite("bcl_params", &SolverType::bcl_params,
                          "BCL parameters.")
           .def_readwrite("multiplier_update_mode", &SolverType::mul_update_mode)
+          .def_readwrite("mu_init", &SolverType::mu_init,
+                         "Initial dual regularization/ALM parameter.")
           .def(SolverVisitor<SolverType>())
           .def("run", &SolverType::run,
                bp::args("self", "problem", "xs_init", "us_init"),

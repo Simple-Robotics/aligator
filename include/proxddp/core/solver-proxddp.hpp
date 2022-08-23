@@ -66,7 +66,7 @@ public:
   /// Solver tolerance \f$\epsilon > 0\f$.
   Scalar target_tolerance = 1e-6;
 
-  const Scalar mu_init = 0.01;
+  Scalar mu_init = 0.01;
   const Scalar rho_init = 0.;
 
   /// Dual proximal/constraint penalty parameter \f$\mu\f$
