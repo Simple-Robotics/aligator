@@ -56,6 +56,7 @@ public:
   using ProxPenaltyType = ProximalPenaltyTpl<Scalar>;
   using ProxData = typename ProxPenaltyType::Data;
   using CallbackPtr = shared_ptr<helpers::base_callback<Scalar>>;
+  using LSOptions = typename proxnlp::Linesearch<Scalar>::Options;
 
   std::vector<ProxPenaltyType> prox_penalties_;
   /// Subproblem tolerance
@@ -85,9 +86,12 @@ public:
   ::proxddp::BaseLogger logger{};
 
   VerboseLevel verbose_;
-  LinesearchOptions<Scalar> ls_params;
+  /// Linesearch options, as in proxnlp.
+  LSOptions ls_params;
+  LinesearchStrategy ls_strat = LinesearchStrategy::ARMIJO;
   MultiplierUpdateMode multiplier_update_mode =
       MultiplierUpdateMode::PRIMAL_DUAL;
+  LinesearchMode ls_mode = LinesearchMode::PRIMAL;
   BCLParams<Scalar> bcl_params;
 
   /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.

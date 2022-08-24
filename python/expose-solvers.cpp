@@ -165,17 +165,6 @@ void exposeProxDDP() {
       .value("PRIMAL", LinesearchMode::PRIMAL)
       .value("PRIMAL_DUAL", LinesearchMode::PRIMAL_DUAL);
 
-  bp::class_<LinesearchOptions<Scalar>>(
-      "LinesearchOptions", "Parameters for the linesearch.", bp::init<>())
-      .def_readwrite("alpha_min", &LinesearchOptions<Scalar>::alpha_min)
-      .def_readwrite("armijo_c1", &LinesearchOptions<Scalar>::armijo_c1)
-      .def_readwrite("ls_beta", &LinesearchOptions<Scalar>::ls_beta,
-                     "Decrease factor; only applies to Armijo linesearch.")
-      .def_readwrite("mode", &LinesearchOptions<Scalar>::mode,
-                     "Linesearch mode.")
-      .def_readwrite("strategy", &LinesearchOptions<Scalar>::strategy,
-                     "Linesearch strategy.");
-
   {
     using BCLType = BCLParams<Scalar>;
     bp::class_<BCLType>("BCLParams",

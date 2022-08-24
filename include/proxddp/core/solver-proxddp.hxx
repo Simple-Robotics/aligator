@@ -420,7 +420,7 @@ template <typename Scalar>
 void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
                                       Workspace &workspace, Results &results) {
   // instantiate the subproblem merit function
-  PDALFunction<Scalar> merit_fun{mu_penal_, rho_penal_, ls_params.mode};
+  PDALFunction<Scalar> merit_fun{mu_penal_, rho_penal_, ls_mode};
 
   // merit function evaluation
   auto merit_eval_fun = [&](Scalar a0) {
@@ -476,20 +476,9 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
     Scalar alpha_opt = 1;
 
-    switch (ls_params.strategy) {
-    case LinesearchStrategy::ARMIJO:
-      proxnlp::ArmijoLinesearch<Scalar>::run(
-          merit_eval_fun, phi0, dphi0, verbose_, ls_params.ls_beta,
-          ls_params.armijo_c1, ls_params.alpha_min, alpha_opt);
-      break;
-    case LinesearchStrategy::CUBIC_INTERP:
-      proxnlp::CubicInterpLinesearch<Scalar>::run(
-          merit_eval_fun, phi0, dphi0, verbose_, ls_params.armijo_c1,
-          ls_params.alpha_min, alpha_opt);
-      break;
-    default:
-      break;
-    }
+    typename proxnlp::Linesearch<Scalar>::Options options;
+    proxnlp::ArmijoLinesearch<Scalar>(options).run(merit_eval_fun, phi0, dphi0,
+                                                   alpha_opt);
 
     results.traj_cost_ = merit_fun.traj_cost;
     results.merit_value_ = merit_fun.value_;

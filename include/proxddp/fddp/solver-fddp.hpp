@@ -67,8 +67,6 @@ template <typename Scalar> struct SolverFDDP {
   Scalar th_step_inc_ = 0.01;
 
   LinesearchOptions<Scalar> ls_params;
-  enum ls_types { GOLDSTEIN, ARMIJO };
-  ls_types ls_type = GOLDSTEIN;
 
   VerboseLevel verbose_;
   /// Maximum number of iterations for the solver.
