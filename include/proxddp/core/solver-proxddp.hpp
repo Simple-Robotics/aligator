@@ -91,7 +91,7 @@ public:
   LinesearchStrategy ls_strat = LinesearchStrategy::ARMIJO;
   MultiplierUpdateMode multiplier_update_mode =
       MultiplierUpdateMode::PRIMAL_DUAL;
-  LinesearchMode ls_mode = LinesearchMode::PRIMAL;
+  LinesearchMode ls_mode = LinesearchMode::PRIMAL_DUAL;
   BCLParams<Scalar> bcl_params;
 
   /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.
@@ -236,6 +236,21 @@ protected:
   /// Update the dual proximal penalty.
   void updateALPenalty() {
     setPenalty(mu_penal_ * bcl_params.mu_update_factor);
+  }
+
+  void increase_reg() {
+    if (xreg_ == 0.) {
+      xreg_ = 1e-9;
+    } else {
+      xreg_ *= 5.;
+      xreg_ = std::min(xreg_, 1e8);
+    }
+    ureg_ = xreg_;
+  }
+
+  void decrease_reg() {
+    xreg_ *= 0.2;
+    ureg_ = xreg_;
   }
 };
 

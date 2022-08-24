@@ -16,6 +16,7 @@ SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
                                      const VerboseLevel verbose)
     : target_tol_(tol), mu_init(mu_init), rho_init(rho_init), verbose_(verbose),
       MAX_ITERS(max_iters) {
+  ls_params.alpha_min = 1e-7;
   if (mu_init >= 1.) {
     proxddp_runtime_error(
         fmt::format("Penalty value mu_init={:g}>=1!", mu_init));
@@ -473,12 +474,25 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
     phieps = merit_eval_fun(eps);
     dphi0 = (phieps - phi0) / eps;
-
     Scalar alpha_opt = 1;
-
     typename proxnlp::Linesearch<Scalar>::Options options;
-    proxnlp::ArmijoLinesearch<Scalar>(options).run(merit_eval_fun, phi0, dphi0,
-                                                   alpha_opt);
+    if (dphi0 <= 0.) {
+
+      proxnlp::ArmijoLinesearch<Scalar>(options).run(merit_eval_fun, phi0,
+                                                     dphi0, alpha_opt);
+      // accept the step
+      results.xs_ = workspace.trial_xs_;
+      results.us_ = workspace.trial_us_;
+      results.lams_ = workspace.trial_lams_;
+      this->decrease_reg();
+    } else {
+      alpha_opt = 0.;
+      merit_eval_fun(alpha_opt);
+      this->increase_reg();
+    }
+    if (alpha_opt == options.alpha_min) {
+      this->increase_reg();
+    }
 
     results.traj_cost_ = merit_fun.traj_cost;
     results.merit_value_ = merit_fun.value_;
@@ -488,11 +502,6 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     iter_log.dM = results.merit_value_ - phi0;
 
     logger.log(iter_log);
-
-    // accept the step
-    results.xs_ = workspace.trial_xs_;
-    results.us_ = workspace.trial_us_;
-    results.lams_ = workspace.trial_lams_;
 
     invokeCallbacks(workspace, results);
 
