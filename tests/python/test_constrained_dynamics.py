@@ -295,7 +295,7 @@ def test_constrained_dynamics():
     problem = proxddp.TrajOptProblem(x0, stages, term_cost=term_cost)
 
     tol = 1e-6
-    mu_init = 0.001
+    mu_init = 0.1
     verbose = proxddp.VerboseLevel.VERBOSE
     rho_init = 0.003
     history_cb = proxddp.HistoryCallback()
