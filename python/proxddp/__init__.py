@@ -4,7 +4,14 @@ Copyright (C) 2022 LAAS-CNRS, INRIA
 from .pyproxddp import *
 from . import utils
 
-from proxnlp import constraints, manifolds, VerboseLevel, LinesearchStrategy
+from proxnlp import (
+    constraints,
+    manifolds,
+    VerboseLevel,
+    LinesearchStrategy,
+    LSOptions,
+    LSInterpolation,
+)
 
 
 def _process():
