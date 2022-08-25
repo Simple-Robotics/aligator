@@ -308,7 +308,9 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     record.inner_crit = 0.;
     record.xreg = xreg_;
 
-    if (results.dual_infeasibility < target_tol_) {
+    Scalar stopping_criterion =
+        std::max(results.primal_infeasibility, results.dual_infeasibility);
+    if (stopping_criterion < target_tol_) {
       results.conv = true;
       break;
     }
