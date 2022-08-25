@@ -9,7 +9,7 @@ namespace proxddp {
 template <typename Scalar>
 SolverFDDP<Scalar>::SolverFDDP(const Scalar tol, VerboseLevel verbose,
                                const Scalar reg_init)
-    : target_tol_(tol), xreg_(reg_init), ureg_(reg_init), verbose_(verbose) {}
+    : target_tol_(tol), reg_init(reg_init), verbose_(verbose) {}
 
 template <typename Scalar>
 void SolverFDDP<Scalar>::setup(const Problem &problem) {
@@ -255,8 +255,8 @@ template <typename Scalar>
 bool SolverFDDP<Scalar>::run(const Problem &problem,
                              const std::vector<VectorXs> &xs_init,
                              const std::vector<VectorXs> &us_init) {
-
-  const Scalar fd_eps = 1e-7;
+  xreg_ = reg_init;
+  ureg_ = xreg_;
 
   if (results_ == 0 || workspace_ == 0) {
     proxddp_runtime_error(
@@ -272,10 +272,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
   logger.start();
 
   // in Crocoddyl, linesearch xs is primed to use problem x0
-  {
-    const VectorXs &x0 = problem.getInitState();
-    workspace.xnexts_[0] = x0;
-  }
+  workspace.xnexts_[0] = problem.getInitState();
 
   auto linesearch_fun = [&](const Scalar alpha) {
     forwardPass(problem, results, workspace, alpha);
@@ -330,6 +327,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     directionalDerivativeCorrection(problem, workspace, results, d1_phi,
                                     d2_phi);
     {
+      const Scalar fd_eps = 1e-7;
       Scalar phi_eps = linesearch_fun(fd_eps);
       fmt::print("phi_eps = {:.5g}\n", phi_eps);
       Scalar finite_diff_d1 = (phi_eps - phi0) / fd_eps;

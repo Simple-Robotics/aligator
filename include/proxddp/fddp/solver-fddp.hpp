@@ -52,7 +52,8 @@ template <typename Scalar> struct SolverFDDP {
 
   /// @name Regularization parameters
   /// \{
-  Scalar xreg_;
+  Scalar reg_init;
+  Scalar xreg_ = reg_init;
   Scalar ureg_ = xreg_;
   Scalar reg_min_ = 1e-9;
   Scalar reg_max_ = 1e9;
