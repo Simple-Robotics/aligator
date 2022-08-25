@@ -142,7 +142,6 @@ Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem,
   const VectorXs &x0 = problem.getInitState();
   const Manifold &space = problem.stages_[0]->xspace();
   space.difference(xs[0], x0, fs[0]);
-  xnexts[0] = x0;
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &sm = *problem.stages_[i];
@@ -150,8 +149,6 @@ Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem,
     xnexts[i + 1] = dd.xnext_;
     sm.xspace().difference(xs[i + 1], xnexts[i + 1], fs[i + 1]);
   }
-  problem.term_cost_->evaluate(xs[nsteps], problem.dummy_term_u0,
-                               *pd.term_cost_data);
   return math::infty_norm(workspace.feas_gaps_);
 }
 
