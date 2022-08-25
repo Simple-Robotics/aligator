@@ -339,7 +339,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   logger.active = (verbose_ > 0);
   logger.start();
 
-  this->mu_penal_ = mu_init;
+  this->setPenalty(mu_init);
   workspace.prev_xs_ = results.xs_;
   workspace.prev_us_ = results.us_;
   workspace.prev_lams_ = results.lams_;
