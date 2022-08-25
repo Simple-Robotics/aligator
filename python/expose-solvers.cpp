@@ -132,7 +132,7 @@ void exposeFDDP() {
             bp::arg("us_init")));
 }
 
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(run_overloads, run, 1, 4)
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(prox_run_overloads, run, 1, 4)
 
 void exposeProxDDP() {
   using context::Scalar;
@@ -184,34 +184,32 @@ void exposeProxDDP() {
         .def_readwrite("rho_factor", &BCLType::rho_update_factor);
   }
 
-  auto cl =
-      bp::class_<SolverType, boost::noncopyable>(
-          "SolverProxDDP",
-          "A primal-dual augmented Lagrangian solver, based on DDP to compute "
-          "search directions."
-          " The solver instance initializes both a Workspace and Results which "
-          "can "
-          "be retrieved"
-          " through the `getWorkspace` and `getResults` methods, respectively.",
-          bp::init<Scalar, Scalar, Scalar, std::size_t, VerboseLevel>(
-              (bp::arg("self"), bp::arg("tol"), bp::arg("mu_init") = 1e-2,
-               bp::arg("rho_init") = 0., bp::arg("max_iters") = 1000,
-               bp::arg("verbose") = VerboseLevel::QUIET)))
-          .def_readwrite("bcl_params", &SolverType::bcl_params,
-                         "BCL parameters.")
-          .def_readwrite("multiplier_update_mode",
-                         &SolverType::multiplier_update_mode)
-          .def_readwrite("mu_init", &SolverType::mu_init,
-                         "Initial dual regularization/ALM parameter.")
-          .def_readwrite("rho_init", &SolverType::rho_init,
-                         "Initial proximal regularization.")
-          .def(SolverVisitor<SolverType>())
-          .def("run", &SolverType::run,
-               run_overloads((bp::arg("self"), bp::arg("problem"),
-                              bp::arg("xs_init"), bp::arg("us_init"),
-                              bp::arg("lams_init")),
-                             "Run the algorithm. Can receive initial guess for "
-                             "multiplier trajectory."));
+  bp::class_<SolverType, boost::noncopyable>(
+      "SolverProxDDP",
+      "A primal-dual augmented Lagrangian solver, based on DDP to compute "
+      "search directions."
+      " The solver instance initializes both a Workspace and Results which "
+      "can "
+      "be retrieved"
+      " through the `getWorkspace` and `getResults` methods, respectively.",
+      bp::init<Scalar, Scalar, Scalar, std::size_t, VerboseLevel>(
+          (bp::arg("self"), bp::arg("tol"), bp::arg("mu_init") = 1e-2,
+           bp::arg("rho_init") = 0., bp::arg("max_iters") = 1000,
+           bp::arg("verbose") = VerboseLevel::QUIET)))
+      .def_readwrite("bcl_params", &SolverType::bcl_params, "BCL parameters.")
+      .def_readwrite("multiplier_update_mode",
+                     &SolverType::multiplier_update_mode)
+      .def_readwrite("mu_init", &SolverType::mu_init,
+                     "Initial dual regularization/ALM parameter.")
+      .def_readwrite("rho_init", &SolverType::rho_init,
+                     "Initial proximal regularization.")
+      .def(SolverVisitor<SolverType>())
+      .def("run", &SolverType::run,
+           prox_run_overloads(
+               (bp::arg("self"), bp::arg("problem"), bp::arg("xs_init"),
+                bp::arg("us_init"), bp::arg("lams_init")),
+               "Run the algorithm. Can receive initial guess for "
+               "multiplier trajectory."));
 }
 
 void exposeSolvers() {
