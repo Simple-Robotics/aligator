@@ -38,9 +38,9 @@ void SolverFDDP<Scalar>::setup(const Problem &problem) {
 }
 
 template <typename Scalar>
-void SolverFDDP<Scalar>::forwardPass(const Problem &problem,
-                                     const Results &results,
-                                     Workspace &workspace, const Scalar alpha) {
+Scalar
+SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
+                                Workspace &workspace, const Scalar alpha) {
   const std::size_t nsteps = workspace.nsteps;
   std::vector<VectorXs> &xs_try = workspace.trial_xs_;
   std::vector<VectorXs> &us_try = workspace.trial_us_;
@@ -52,6 +52,7 @@ void SolverFDDP<Scalar>::forwardPass(const Problem &problem,
     const Manifold &space = problem.stages_[0]->xspace();
     space.integrate(results.xs_[0], alpha * fs[0], xs_try[0]);
   }
+  Scalar traj_cost_ = 0.;
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &sm = *problem.stages_[i];
@@ -64,11 +65,16 @@ void SolverFDDP<Scalar>::forwardPass(const Problem &problem,
     sm.uspace().integrate(results.us_[i], alpha * ff + fb * workspace.dxs_[i],
                           us_try[i]);
     sm.evaluate(xs_try[i], us_try[i], xs_try[i + 1], sd);
-    ExpData &dd = stage_get_dynamics_data(sd);
+    const ExpData &dd = stage_get_dynamics_data(sd);
     xnexts[i + 1] = dd.xnext_;
     sm.xspace_next().integrate(xnexts[i + 1], fs[i + 1] * (alpha - 1.),
                                xs_try[i + 1]);
+    const CostData &cd = *sd.cost_data;
+    traj_cost_ += cd.value_;
   }
+  CostData &cd_term = *pd.term_cost_data;
+  problem.term_cost_->evaluate(xs_try.back(), us_try.back(), cd_term);
+  traj_cost_ += cd_term.value_;
   const Manifold &space = problem.stages_.back()->xspace();
   space.difference(results.xs_[nsteps], xs_try[nsteps], workspace.dxs_[nsteps]);
 #ifndef NDEBUG
@@ -76,6 +82,7 @@ void SolverFDDP<Scalar>::forwardPass(const Problem &problem,
     assert(math::infty_norm(workspace.dxs_) <=
            std::numeric_limits<Scalar>::epsilon());
 #endif
+  return traj_cost_;
 }
 
 template <typename Scalar>
@@ -272,10 +279,10 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
   workspace.xnexts_[0] = problem.getInitState();
 
   auto linesearch_fun = [&](const Scalar alpha) {
-    forwardPass(problem, results, workspace, alpha);
-    problem.evaluate(workspace.trial_xs_, workspace.trial_us_,
-                     workspace.trial_prob_data);
-    return computeTrajectoryCost(problem, workspace.trial_prob_data);
+    return forwardPass(problem, results, workspace, alpha);
+    // problem.evaluate(workspace.trial_xs_, workspace.trial_us_,
+    //                  workspace.trial_prob_data);
+    // return computeTrajectoryCost(problem, workspace.trial_prob_data);
   };
 
   LogRecord record;

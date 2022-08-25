@@ -99,8 +99,8 @@ template <typename Scalar> struct SolverFDDP {
    * @param[out]  workspace
    * @param[in]   alpha step-size.
    */
-  static void forwardPass(const Problem &problem, const Results &results,
-                          Workspace &workspace, const Scalar alpha);
+  static Scalar forwardPass(const Problem &problem, const Results &results,
+                            Workspace &workspace, const Scalar alpha);
 
   void computeDirectionalDerivatives(Workspace &workspace, Results &results,
                                      Scalar &d1, Scalar &d2) const;
