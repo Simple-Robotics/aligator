@@ -77,7 +77,9 @@ public:
   /// Primal proximal parameter \f$\rho > 0\f$
   Scalar rho_penal_ = rho_init;
 
-  Scalar xreg_ = 0.;
+  Scalar reg_min = 1e-9;
+  Scalar reg_max = 1e8;
+  Scalar xreg_ = reg_min;
   Scalar ureg_ = xreg_;
 
   const Scalar inner_tol0 = 1.;
@@ -178,11 +180,13 @@ public:
   /// @param problem  The trajectory optimization problem to solve.
   /// @param xs_init  Initial trajectory guess.
   /// @param us_init  Initial control sequence guess.
+  /// @param lams_init  Initial multiplier guess.
   /// @pre  You must call SolverProxDDP::setup beforehand to allocate a
   /// workspace and results.
   bool run(const Problem &problem,
            const std::vector<VectorXs> &xs_init = DEFAULT_VECTOR<Scalar>,
-           const std::vector<VectorXs> &us_init = DEFAULT_VECTOR<Scalar>);
+           const std::vector<VectorXs> &us_init = DEFAULT_VECTOR<Scalar>,
+           const std::vector<VectorXs> &lams_init = DEFAULT_VECTOR<Scalar>);
 
   /// @brief    Perform the inner loop of the algorithm (augmented Lagrangian
   /// minimization).
@@ -240,16 +244,19 @@ protected:
 
   void increase_reg() {
     if (xreg_ == 0.) {
-      xreg_ = 1e-9;
+      xreg_ = reg_min;
     } else {
       xreg_ *= 5.;
-      xreg_ = std::min(xreg_, 1e8);
+      xreg_ = std::min(xreg_, reg_max);
     }
     ureg_ = xreg_;
   }
 
   void decrease_reg() {
     xreg_ *= 0.2;
+    if (xreg_ < reg_min) {
+      xreg_ = 0.;
+    }
     ureg_ = xreg_;
   }
 };

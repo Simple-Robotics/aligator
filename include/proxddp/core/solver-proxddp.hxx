@@ -320,7 +320,8 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
 template <typename Scalar>
 bool SolverProxDDP<Scalar>::run(const Problem &problem,
                                 const std::vector<VectorXs> &xs_init,
-                                const std::vector<VectorXs> &us_init) {
+                                const std::vector<VectorXs> &us_init,
+                                const std::vector<VectorXs> &lams_init) {
   if (workspace_ == 0 || results_ == 0) {
     proxddp_runtime_error("workspace and results were not allocated yet!");
   }
@@ -328,6 +329,12 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   Results &results = *results_;
 
   checkTrajectoryAndAssign(problem, xs_init, us_init, results.xs_, results.us_);
+  if (lams_init.size() == results.lams_.size()) {
+    for (std::size_t i = 0; i < lams_init.size(); i++) {
+      std::size_t size = std::min(lams_init[i].rows(), results.lams_[i].rows());
+      results.lams_[i].head(size) = lams_init[i].head(size);
+    }
+  }
 
   logger.active = (verbose_ > 0);
   logger.start();

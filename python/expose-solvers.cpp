@@ -129,6 +129,8 @@ void exposeFDDP() {
             bp::arg("us_init")));
 }
 
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(run_overloads, run, 1, 4)
+
 void exposeProxDDP() {
   using context::Scalar;
   using context::TrajOptProblem;
@@ -202,9 +204,11 @@ void exposeProxDDP() {
                          "Initial proximal regularization.")
           .def(SolverVisitor<SolverType>())
           .def("run", &SolverType::run,
-               bp::args("self", "problem", "xs_init", "us_init"),
-               "Run the algorithm. This requires providing initial guesses "
-               "for both trajectory and control.");
+               run_overloads((bp::arg("self"), bp::arg("problem"),
+                              bp::arg("xs_init"), bp::arg("us_init"),
+                              bp::arg("lams_init")),
+                             "Run the algorithm. Can receive initial guess for "
+                             "multiplier trajectory."));
   bp::scope().attr("ProxDDP") = cl;
 }
 
