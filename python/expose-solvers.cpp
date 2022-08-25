@@ -209,7 +209,6 @@ void exposeProxDDP() {
                               bp::arg("lams_init")),
                              "Run the algorithm. Can receive initial guess for "
                              "multiplier trajectory."));
-  bp::scope().attr("ProxDDP") = cl;
 }
 
 void exposeSolvers() {
