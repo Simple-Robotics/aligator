@@ -60,21 +60,20 @@ template <typename _Scalar> struct PDALFunction {
   using StageModel = StageModelTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
   using FunctionData = FunctionDataTpl<Scalar>;
+  using CstrSet = ConstraintSetBase<Scalar>;
 
-  Scalar mu_penal_;
-  Scalar rho_penal_;
   LinesearchMode ls_mode;
 
-  Scalar mu_penal_inv_ = 1. / mu_penal_;
-  Scalar traj_cost;
-  Scalar penalty_value;
-  Scalar prox_value;
+  SolverProxDDP<Scalar> const *solver;
+  Scalar traj_cost = 0.;
+  Scalar penalty_value = 0.;
+  Scalar prox_value = 0.;
   Scalar value_ = 0.;
   /// Weight of dual penalty. Values different from 1 not supported yet.
   Scalar dual_weight_ = 1.;
 
-  PDALFunction(const Scalar mu, const Scalar rho, const LinesearchMode mode)
-      : mu_penal_(mu), rho_penal_(rho), ls_mode(mode) {}
+  PDALFunction(SolverProxDDP<Scalar> const *solver, const LinesearchMode mode)
+      : ls_mode(mode), solver(solver) {}
 
   /// @brief    Compute the merit function at the trial point.
   /// @warning  Evaluate the problem and proximal terms first!
@@ -84,14 +83,17 @@ template <typename _Scalar> struct PDALFunction {
                   TrajOptDataTpl<Scalar> &prob_data) {
     traj_cost = computeTrajectoryCost(problem, prob_data);
     penalty_value = prox_value;
+
+    bool with_primal_dual_terms = ls_mode == LinesearchMode::PRIMAL_DUAL;
+
     // initial constraint
-    workspace.lams_plus_[0] =
-        workspace.prev_lams_[0] + mu_penal_inv_ * prob_data.init_data->value_;
-    workspace.lams_pdal_[0] = 2 * workspace.lams_plus_[0] - lams[0];
-    penalty_value += .5 * mu_penal_ * workspace.lams_plus_[0].squaredNorm();
-    if (ls_mode == LinesearchMode::PRIMAL_DUAL) {
-      penalty_value += .5 * dual_weight_ * mu_penal_ *
-                       (workspace.lams_plus_[0] - lams[0]).squaredNorm();
+    workspace.lams_plus[0] =
+        workspace.prev_lams[0] + solver->mu_inv() * prob_data.init_data->value_;
+    workspace.lams_pdal[0] = 2 * workspace.lams_plus[0] - lams[0];
+    penalty_value += .5 * solver->mu() * workspace.lams_plus[0].squaredNorm();
+    if (with_primal_dual_terms) {
+      penalty_value += .5 * dual_weight_ * solver->mu() *
+                       (workspace.lams_plus[0] - lams[0]).squaredNorm();
     }
 
     // stage-per-stage
@@ -99,46 +101,44 @@ template <typename _Scalar> struct PDALFunction {
     const std::size_t nsteps = problem.numSteps();
     for (std::size_t step = 0; step < nsteps; step++) {
       const StageModel &stage = *problem.stages_[step];
-      const StageData &stage_data = prob_data.getData(step);
+      const StageData &stage_data = prob_data.getStageData(step);
 
       num_c = stage.numConstraints();
       // loop over constraints
       // get corresponding multipliers from allocated memory
       for (std::size_t j = 0; j < num_c; j++) {
         const ConstraintContainer<Scalar> &cstr_mgr = stage.constraints_;
-        const ConstraintSetBase<Scalar> &cstr_set =
-            cstr_mgr.getConstraintSet(j);
+        const CstrSet &cstr_set = cstr_mgr.getConstraintSet(j);
         const FunctionData &cstr_data = *stage_data.constraint_data[j];
         auto lamplus_j =
-            cstr_mgr.getSegmentByConstraint(workspace.lams_plus_[step + 1], j);
+            cstr_mgr.getSegmentByConstraint(workspace.lams_plus[step + 1], j);
         auto lamprev_j = cstr_mgr.getConstSegmentByConstraint(
-            workspace.prev_lams_[step + 1], j);
-        auto c_s_expr = cstr_data.value_ + mu_penal_ * lamprev_j;
+            workspace.prev_lams[step + 1], j);
+        auto c_s_expr = cstr_data.value_ + solver->mu_scaled() * lamprev_j;
         penalty_value += proxnlp::computeMoreauEnvelope(
-            cstr_set, c_s_expr, mu_penal_inv_, lamplus_j);
-        lamplus_j *= mu_penal_inv_;
+            cstr_set, c_s_expr, solver->mu_inv_scaled(), lamplus_j);
+        lamplus_j *= solver->mu_inv_scaled();
       }
-      if (ls_mode == LinesearchMode::PRIMAL_DUAL) {
+      if (with_primal_dual_terms) {
         penalty_value +=
-            .5 * dual_weight_ * mu_penal_ *
-            (workspace.lams_plus_[step + 1] - lams[step + 1]).squaredNorm();
+            .5 * dual_weight_ * solver->mu_scaled() *
+            (workspace.lams_plus[step + 1] - lams[step + 1]).squaredNorm();
       }
     }
 
     if (problem.term_constraint_) {
       const StageConstraintTpl<Scalar> &tc = *problem.term_constraint_;
-      const ConstraintSetBase<Scalar> &cstr_set = *tc.set_;
       const FunctionData &cstr_data = *prob_data.term_cstr_data;
-      VectorXs &lamplus = workspace.lams_plus_[nsteps + 1];
+      VectorXs &lamplus = workspace.lams_plus[nsteps + 1];
       auto c_s_expr =
-          cstr_data.value_ + mu_penal_ * workspace.prev_lams_[nsteps + 1];
-      penalty_value += proxnlp::computeMoreauEnvelope(cstr_set, c_s_expr,
-                                                      mu_penal_inv_, lamplus);
-      lamplus *= mu_penal_inv_;
-      if (ls_mode == LinesearchMode::PRIMAL_DUAL) {
+          cstr_data.value_ + solver->mu() * workspace.prev_lams[nsteps + 1];
+      penalty_value += proxnlp::computeMoreauEnvelope(
+          *tc.set_, c_s_expr, solver->mu_inv(), lamplus);
+      lamplus *= solver->mu_inv();
+      if (with_primal_dual_terms) {
         penalty_value +=
-            .5 * dual_weight_ * mu_penal_ *
-            (workspace.lams_plus_[nsteps + 1] - lams[nsteps + 1]).squaredNorm();
+            .5 * dual_weight_ * solver->mu() *
+            (workspace.lams_plus[nsteps + 1] - lams[nsteps + 1]).squaredNorm();
       }
     }
 

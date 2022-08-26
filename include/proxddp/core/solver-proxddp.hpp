@@ -70,13 +70,6 @@ public:
   Scalar mu_init = 0.01;
   Scalar rho_init = 0.;
 
-  /// Dual proximal/constraint penalty parameter \f$\mu\f$
-  Scalar mu_penal_ = mu_init;
-  Scalar mu_inverse_ = 1. / mu_penal_;
-
-  /// Primal proximal parameter \f$\rho > 0\f$
-  Scalar rho_penal_ = rho_init;
-
   Scalar reg_min = 1e-9;
   Scalar reg_max = 1e8;
   Scalar xreg_ = reg_min;
@@ -316,33 +309,45 @@ protected:
     inner_tol_ = inner_tol_ * std::pow(mu_penal_, bcl_params.dual_beta);
   }
 
+  /// Set dual proximal/ALM penalty parameter.
   void setPenalty(Scalar new_mu) {
     mu_penal_ = std::max(new_mu, MU_MIN);
     mu_inverse_ = 1. / new_mu;
   }
 
-  /// Update the dual proximal penalty.
-  void updateALPenalty() {
+  /// Update the dual proximal penalty according to BCL.
+  void bclUpdateALPenalty() {
     setPenalty(mu_penal_ * bcl_params.mu_update_factor);
   }
 
+  /// Increase Tikhonov regularization.
   void increase_reg() {
     if (xreg_ == 0.) {
       xreg_ = reg_min;
     } else {
-      xreg_ *= 5.;
+      xreg_ *= 10.;
       xreg_ = std::min(xreg_, reg_max);
     }
     ureg_ = xreg_;
   }
 
+  /// Decrease Tikhonov regularization.
   void decrease_reg() {
-    xreg_ *= 0.2;
+    xreg_ *= 0.1;
     if (xreg_ < reg_min) {
       xreg_ = 0.;
     }
     ureg_ = xreg_;
   }
+
+private:
+  /// Dual proximal/ALM penalty parameter \f$\mu\f$
+  Scalar mu_penal_ = mu_init;
+  /// Inverse ALM penalty parameter.
+  Scalar mu_inverse_ = 1. / mu_penal_;
+
+  /// Primal proximal parameter \f$\rho > 0\f$
+  Scalar rho_penal_ = rho_init;
 };
 
 } // namespace proxddp
