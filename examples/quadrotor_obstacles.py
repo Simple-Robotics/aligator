@@ -20,7 +20,7 @@ from proxnlp import constraints
 from typing import Literal
 
 
-_integrator_choices = Literal["Euler", "SemiEuler", "RK2"]
+integrator_choices = Literal["Euler", "SemiEuler", "midpoint", "rk2"]
 
 np.set_printoptions(precision=3, linewidth=250)
 robot = erd.load("hector")
@@ -36,16 +36,15 @@ class Args(tap.Tap):
     """Record video"""
     u_bounds: bool = True
     """Use control bounds"""
-    integrator: _integrator_choices = "Euler"
+    integrator: integrator_choices = "Euler"
     """Numerical integrator to use"""
     plot: bool = False
     viz_open: bool = False
+    obstacles: bool = False
 
     def process_args(self):
         if self.record:
             self.display = True
-
-    obstacles: bool = False
 
 
 class HalfspaceZ(proxddp.StageFunction):
@@ -87,7 +86,9 @@ class Column(proxddp.StageFunction):
         data.Jx[:nv] = -2 * J[:2].T @ err
 
 
-def main(args):
+def main(args: Args):
+    import meshcat
+
     os.makedirs("assets", exist_ok=True)
     print(args)
 
@@ -111,8 +112,6 @@ def main(args):
         robot.visual_model.addGeometryObject(geom_cyl2)
     robot.collision_model.geometryObjects[0].geometry.computeLocalAABB()
     quad_radius = robot.collision_model.geometryObjects[0].geometry.aabb_radius
-
-    import meshcat
 
     viewer = meshcat.Visualizer(zmq_url="tcp://127.0.0.1:6000")
     vizer = pin.visualize.MeshcatVisualizer(
@@ -149,8 +148,10 @@ def main(args):
         dynmodel = proxddp.dynamics.IntegratorEuler(ode_dynamics, dt)
     elif args.integrator == "SemiEuler":
         dynmodel = proxddp.dynamics.IntegratorSemiImplEuler(ode_dynamics, dt)
-    elif args.integrator == "RK2":
+    elif args.integrator == "rk2":
         dynmodel = proxddp.dynamics.IntegratorRK2(ode_dynamics, dt)
+    elif args.integrator == "midpoint":
+        dynmodel = proxddp.dynamics.IntegratorMidpoint(ode_dynamics, dt)
     else:
         raise ValueError()
 
@@ -275,9 +276,9 @@ def main(args):
     verbose = proxddp.VerboseLevel.VERBOSE
     history_cb = proxddp.HistoryCallback()
     solver = proxddp.SolverProxDDP(
-        tol, mu_init, rho_init, verbose=verbose, max_iters=400
+        tol, mu_init, rho_init, verbose=verbose, max_iters=300
     )
-    solver.bcl_params.rho_factor = 0.1
+    solver.ls_params.interp_type = proxddp.LSInterpolation.CUBIC
     solver.registerCallback(history_cb)
     solver.setup(problem)
     solver.run(problem, xs_init, us_init)
@@ -309,19 +310,19 @@ def main(args):
         plt.legend(["$x$", "$y$", "$z$"])
         ax1.scatter([times_wp[-1]] * 3, x_term[:3], marker=".", c=["C0", "C1", "C2"])
         ax2: plt.Axes = fig.add_subplot(133)
-        n_iter = [i for i in range(len(history_cb.storage.prim_infeas.tolist()))]
+        n_iter = list(range(len(history_cb.storage.prim_infeas.tolist())))
         ax2.semilogy(
-            n_iter, history_cb.storage.prim_infeas.tolist(), label="Primal err."
+            n_iter[1:], history_cb.storage.prim_infeas.tolist()[1:], label="Primal err."
         )
         ax2.semilogy(n_iter, history_cb.storage.dual_infeas.tolist(), label="Dual err.")
         ax2.set_xlabel("Iterations")
         ax2.legend()
+        fig.tight_layout()
         for ext in ["png", "pdf"]:
             fig.savefig("assets/{}.{}".format(TAG, ext))
 
     if args.display:
         viz_util = msu.VizUtil(vizer)
-        input("[enter to play]")
         cam_dist = 2.0
         directions_ = [np.array([1.0, 1.0, 0.5])]
         directions_.append(np.array([1.0, -1.0, 0.8]))
@@ -348,6 +349,7 @@ def main(args):
 
             return _callback
 
+        input("[enter to play]")
         for i in range(4):
             viz_util.play_trajectory(
                 xs_opt,
