@@ -70,8 +70,8 @@ template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
 
   /// Lagrange multipliers for ALM & linesearch.
   std::vector<VectorXs> trial_lams_;
-  std::vector<VectorXs> lams_plus_;
-  std::vector<VectorXs> lams_pdal_;
+  std::vector<VectorXs> lams_plus;
+  std::vector<VectorXs> lams_pdal;
 
   /// @name Riccati gains and buffers for primal-dual steps
 
@@ -87,9 +87,9 @@ template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
 
   /// @name Previous proximal iterates
 
-  std::vector<VectorXs> prev_xs_;
-  std::vector<VectorXs> prev_us_;
-  std::vector<VectorXs> prev_lams_;
+  std::vector<VectorXs> prev_xs;
+  std::vector<VectorXs> prev_us;
+  std::vector<VectorXs> prev_lams;
 
   /// Subproblem termination criterion for each stage.
   VectorXs inner_criterion_by_stage;
