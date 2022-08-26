@@ -49,7 +49,7 @@ public:
   using FunctionData = FunctionDataTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using StageModel = StageModelTpl<Scalar>;
-  using Constraint = typename StageModel::Constraint;
+  using Constraint = StageConstraintTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
   using VParams = typename Workspace::value_storage_t;
   using QParams = typename Workspace::q_storage_t;
@@ -215,6 +215,90 @@ public:
     }
   }
   /// \}
+
+  /// Evaluate the ALM/pdALM multiplier estimates.
+  void computeMultipliers(const Problem &problem, Workspace &workspace,
+                          const std::vector<VectorXs> &lams,
+                          bool update_jacobians = false) const {
+    ;
+    using CstrSet = ConstraintSetBase<Scalar>;
+    using ProblemData = TrajOptDataTpl<Scalar>;
+    const std::size_t nsteps = workspace.nsteps;
+    ProblemData &pd = workspace.problem_data;
+
+    std::vector<VectorXs> &lams_plus = workspace.lams_plus;
+    std::vector<VectorXs> &lams_pdal = workspace.lams_pdal;
+
+    {
+      const VectorXs &lam0 = lams[0];
+      const VectorXs &plam0 = workspace.prev_lams[0];
+      shared_ptr<CstrSet> cstr =
+          std::make_shared<proxnlp::EqualityConstraint<Scalar>>();
+      FunctionData &data = pd.getInitData();
+      auto expr = plam0 + mu_inv() * data.value_;
+      cstr->normalConeProjection(expr, lams_plus[0]);
+      lams_pdal[0] = 2 * lams_plus[0] - lam0;
+      if (update_jacobians)
+        cstr->applyNormalConeProjectionJacobian(expr, data.jac_buffer_);
+    }
+
+    if (problem.term_constraint_) {
+      const VectorXs &lamN = lams.back();
+      const VectorXs &plamN = workspace.prev_lams.back();
+      const Constraint &termcstr = problem.term_constraint_.get();
+      const CstrSet &cstr = *termcstr.set_;
+      FunctionData &data = *pd.term_cstr_data;
+      auto expr = plamN + mu_inv() * data.value_;
+      cstr.normalConeProjection(expr, lams_plus.back());
+      lams_pdal.back() = 2 * lams_plus.back() - lamN;
+      if (update_jacobians)
+        cstr.applyNormalConeProjectionJacobian(expr, data.jac_buffer_);
+    }
+
+    // loop over the stages
+    for (std::size_t i = 0; i < nsteps; i++) {
+      const StageModel &stage = *problem.stages_[i];
+      const StageData &sdata = pd.getStageData(i);
+      const ConstraintContainer<Scalar> &mgr = stage.constraints_;
+
+      // enumerate the constraints and perform projection
+      auto cstr_callback = [&](auto mgr, std::size_t k, const VectorXs &lami,
+                               const VectorXs &plami, VectorXs &lamplusi,
+                               VectorXs &lampdali) {
+        const auto lami_k = mgr.getConstSegmentByConstraint(lami, k);
+        const auto plami_k = mgr.getConstSegmentByConstraint(plami, k);
+        auto lamplus_k = mgr.getSegmentByConstraint(lamplusi, k);
+        auto lampdal_k = mgr.getSegmentByConstraint(lampdali, k);
+
+        const CstrSet &set = mgr.getConstraintSet(k);
+        FunctionData &data = *sdata.constraint_data[k];
+        auto expr = plami_k + mu_inv_scaled() * data.value_;
+        set.normalConeProjection(expr, lamplus_k);
+        lampdal_k = 2 * lamplus_k - lami_k;
+        if (update_jacobians)
+          set.applyNormalConeProjectionJacobian(expr, data.jac_buffer_);
+      };
+
+      for (std::size_t k = 0; k < mgr.numConstraints(); k++) {
+        cstr_callback(mgr, k, lams[i + 1], workspace.prev_lams[i + 1],
+                      workspace.lams_plus[i + 1], workspace.lams_pdal[i + 1]);
+      }
+    }
+  }
+
+  /// @copydoc mu_penal_
+  Scalar mu() const { return mu_penal_; }
+
+  /// @copydoc mu_inverse_
+  Scalar mu_inv() const { return mu_inverse_; }
+
+  /// Scaled penalty parameter.
+  Scalar mu_scaled() const { return this->mu(); }
+
+  /// Scaled inverse penalty parameter.
+  Scalar mu_inv_scaled() const { return 1. / mu_scaled(); }
+
+  Scalar rho() const { return rho_penal_; }
 
 protected:
   /// @brief  Put together the Q-function parameters and compute the Riccati
