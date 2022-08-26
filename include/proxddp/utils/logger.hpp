@@ -61,7 +61,7 @@ struct BaseLogger {
     v.push_back(format(sci_format, values.prim_err, COL_WIDTH, sci_prec));
     v.push_back(format(sci_format, values.dual_err, COL_WIDTH, sci_prec));
     v.push_back(format(sci_format, values.xreg, COL_WIDTH, sci_prec));
-    v.push_back(format(dbl_format, values.dphi0, COL_WIDTH, dbl_prec));
+    v.push_back(format(sci_format, values.dphi0, COL_WIDTH, dbl_prec));
     v.push_back(format(sci_format, values.merit, COL_WIDTH, sci_prec));
     v.push_back(format(dbl_format, values.dM, COL_WIDTH, dbl_prec));
 
