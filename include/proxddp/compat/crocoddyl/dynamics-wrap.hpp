@@ -13,9 +13,10 @@ struct DynamicsDataWrapperTpl : ExplicitDynamicsDataTpl<Scalar> {
   using Base = ExplicitDynamicsDataTpl<Scalar>;
   using CrocActionModel = crocoddyl::ActionModelAbstractTpl<Scalar>;
   explicit DynamicsDataWrapperTpl(const CrocActionModel *action_model)
-      : Base(action_model->get_state()->get_ndx(), action_model->get_nu(),
-             action_model->get_state()->get_nx(),
-             action_model->get_state()->get_ndx()) {}
+      : Base((int)action_model->get_state()->get_ndx(),
+             (int)action_model->get_nu(),
+             (int)action_model->get_state()->get_nx(),
+             (int)action_model->get_state()->get_ndx()) {}
 };
 
 } // namespace croc
