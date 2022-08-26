@@ -56,7 +56,7 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &sm = *problem.stages_[i];
-    StageData &sd = pd.getData(i);
+    StageData &sd = pd.getStageData(i);
 
     ConstVectorRef ff = results.getFeedforward(i);
     ConstMatrixRef fb = results.getFeedback(i);
@@ -152,7 +152,7 @@ Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem,
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &sm = *problem.stages_[i];
-    const ExpData &dd = stage_get_dynamics_data(pd.getData(i));
+    const ExpData &dd = stage_get_dynamics_data(pd.getStageData(i));
     xnexts[i + 1] = dd.xnext_;
     sm.xspace().difference(xs[i + 1], xnexts[i + 1], fs[i + 1]);
   }
@@ -199,7 +199,7 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
     QParams &qparam = workspace.q_params[i];
 
     StageModel &sm = *problem.stages_[i];
-    StageData &sd = prob_data.getData(i);
+    StageData &sd = prob_data.getStageData(i);
 
     const int nu = sm.nu();
     const int ndx1 = sm.ndx1();

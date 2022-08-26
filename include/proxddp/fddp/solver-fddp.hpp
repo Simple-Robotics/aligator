@@ -170,7 +170,7 @@ template <typename Scalar> struct SolverFDDP {
     dxs[0] = fs[0];
     const std::size_t nsteps = workspace.nsteps;
     for (std::size_t i = 0; i < nsteps; i++) {
-      const StageData &sd = workspace.problem_data.getData(i);
+      const StageData &sd = workspace.problem_data.getStageData(i);
       const ExpData &dd = stage_get_dynamics_data(sd);
       auto ff = results.getFeedforward(i);
       auto fb = results.getFeedback(i);

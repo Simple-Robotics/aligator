@@ -24,7 +24,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   using Scalar = _Scalar;
   using StageModel = StageModelTpl<Scalar>;
   using Function = StageFunctionTpl<Scalar>;
-  using TrajOptData = TrajOptDataTpl<Scalar>;
+  using Data = TrajOptDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using CostAbstract = CostAbstractTpl<Scalar>;
   using Constraint = StageConstraintTpl<Scalar>;
@@ -72,7 +72,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 
   /// @brief Rollout the problem costs, constraints, dynamics, stage per stage.
   void evaluate(const std::vector<VectorXs> &xs,
-                const std::vector<VectorXs> &us, TrajOptData &prob_data) const;
+                const std::vector<VectorXs> &us, Data &prob_data) const;
 
   /**
    * @brief Rollout the problem derivatives, stage per stage.
@@ -82,16 +82,17 @@ template <typename _Scalar> struct TrajOptProblemTpl {
    */
   void computeDerivatives(const std::vector<VectorXs> &xs,
                           const std::vector<VectorXs> &us,
-                          TrajOptData &prob_data) const;
+                          Data &prob_data) const;
 };
 
 /// @brief Problem data struct.
 template <typename _Scalar> struct TrajOptDataTpl {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  using FunctionData = FunctionDataTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
 
-  shared_ptr<FunctionDataTpl<Scalar>> init_data;
+  shared_ptr<FunctionData> init_data;
   /// Data structs for each stage of the problem.
   std::vector<shared_ptr<StageData>> stage_data;
   /// Terminal cost data.
@@ -102,8 +103,14 @@ template <typename _Scalar> struct TrajOptDataTpl {
   TrajOptDataTpl() = delete;
   TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem);
 
-  StageData &getData(std::size_t i) { return *stage_data[i]; }
-  const StageData &getData(std::size_t i) const { return *stage_data[i]; }
+  /// Get stage data for a given stage by time index.
+  StageData &getStageData(std::size_t i) { return *stage_data[i]; }
+  /// @copydoc getStageData()
+  const StageData &getStageData(std::size_t i) const { return *stage_data[i]; }
+  /// Get initial constraint function data.
+  FunctionData &getInitData() { return *init_data; }
+  /// @copydoc getInitData()
+  const FunctionData &getInitData() const { return *init_data; }
 };
 
 /**

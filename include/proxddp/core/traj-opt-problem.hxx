@@ -25,7 +25,7 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
 template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
                                          const std::vector<VectorXs> &us,
-                                         TrajOptData &prob_data) const {
+                                         Data &prob_data) const {
   const std::size_t nsteps = numSteps();
   const bool sizes_correct = (xs.size() == nsteps + 1) && (us.size() == nsteps);
   if (!sizes_correct) {
@@ -36,7 +36,7 @@ void TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
   init_state_error.evaluate(xs[0], us[0], xs[1], *prob_data.init_data);
 
   for (std::size_t i = 0; i < nsteps; i++) {
-    stages_[i]->evaluate(xs[i], us[i], xs[i + 1], prob_data.getData(i));
+    stages_[i]->evaluate(xs[i], us[i], xs[i + 1], prob_data.getStageData(i));
   }
 
   if (term_cost_) {
@@ -51,7 +51,7 @@ void TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
 template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::computeDerivatives(
     const std::vector<VectorXs> &xs, const std::vector<VectorXs> &us,
-    TrajOptData &prob_data) const {
+    Data &prob_data) const {
   const std::size_t nsteps = numSteps();
   const bool sizes_correct = (xs.size() == nsteps + 1) && (us.size() == nsteps);
   if (!sizes_correct) {
@@ -63,7 +63,7 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
 
   for (std::size_t i = 0; i < nsteps; i++) {
     stages_[i]->computeDerivatives(xs[i], us[i], xs[i + 1],
-                                   prob_data.getData(i));
+                                   prob_data.getStageData(i));
   }
 
   if (term_cost_) {
@@ -121,7 +121,7 @@ Scalar computeTrajectoryCost(const TrajOptProblemTpl<Scalar> &problem,
 
   const std::size_t nsteps = problem.numSteps();
   for (std::size_t step = 0; step < nsteps; step++) {
-    const StageDataTpl<Scalar> &sd = problem_data.getData(step);
+    const StageDataTpl<Scalar> &sd = problem_data.getStageData(step);
     traj_cost += sd.cost_data->value_;
   }
   traj_cost += problem_data.term_cost_data->value_;

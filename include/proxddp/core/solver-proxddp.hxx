@@ -193,8 +193,6 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
     term_value.Vx_.noalias() += cJx.transpose() * lamplus;
     term_value.Vxx_ += cstr_data.Hxx_;
     term_value.Vxx_.noalias() += cJx.transpose() * fb;
-    // term_value.Vxx_ = Hxx + cJx.transpose() * fb;
-    // auto Hxx = term_value.Vxx_ + cstr_data.Hxx_;
   }
 
   term_value.storage =
@@ -210,7 +208,7 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   const VParams &vnext = workspace.value_params[step + 1];
   QParams &qparam = workspace.q_params[step];
 
-  StageData &stage_data = workspace.problem_data.getData(step);
+  StageData &stage_data = workspace.problem_data.getStageData(step);
   const CostData &cdata = *stage_data.cost_data;
   const CostData &proxdata = *workspace.prox_datas[step];
 
@@ -526,7 +524,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
   Scalar infeas_over_j = 0.;
   for (std::size_t step = 0; step < nsteps; step++) {
     const StageModel &stage = *problem.stages_[step];
-    const StageData &stage_data = prob_data.getData(step);
+    const StageData &stage_data = prob_data.getStageData(step);
     infeas_over_j = 0.;
     for (std::size_t j = 0; j < stage.numConstraints(); j++) {
       const ConstraintSetBase<Scalar> &cstr_set =
