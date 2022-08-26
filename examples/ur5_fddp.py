@@ -76,7 +76,7 @@ xs_init = [x0] * (nsteps + 1)
 solver.run(problem, xs_init, us_init)
 
 results = solver.getResults()
-# ws = solver.getWorkspace()
+assert results.conv
 print(results)
 
 vizer = pin.visualize.MeshcatVisualizer(
@@ -87,6 +87,10 @@ viz_util = msu.VizUtil(vizer)
 q0 = pin.neutral(rmodel)
 vizer.display(q0)
 viz_util.draw_objective(p_ref)
+
+# try resolve
+solver.run(problem, xs_init, us_init)
+assert solver.getResults().conv
 
 if args.display:
     viz_util.set_cam_angle_preset("preset1")
