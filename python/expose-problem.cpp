@@ -39,7 +39,7 @@ void exposeProblem() {
                                       bp::return_internal_reference<>()),
                     &TrajOptProblem::setInitState, "Initial state.")
       .def("setTerminalConstraint", &TrajOptProblem::setTerminalConstraint,
-           "Set terminal constraint.")
+           bp::args("self", "constraint"), "Set terminal constraint.")
       .def("evaluate", &TrajOptProblem::evaluate,
            bp::args("self", "xs", "us", "prob_data"),
            "Rollout the problem costs, dynamics, and constraints.")
