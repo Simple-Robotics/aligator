@@ -13,14 +13,12 @@ import matplotlib.pyplot as plt
 
 import os
 import proxddp
-import tap
 
 from proxddp import manifolds
 from proxnlp import constraints
-from typing import Literal
 
+from common import ArgsBase
 
-integrator_choices = Literal["Euler", "SemiEuler", "midpoint", "rk2"]
 
 np.set_printoptions(precision=3, linewidth=250)
 robot = erd.load("hector")
@@ -30,14 +28,10 @@ nq = rmodel.nq
 nv = rmodel.nv
 
 
-class Args(tap.Tap):
-    display: bool = False
-    record: bool = False
-    """Record video"""
+class Args(ArgsBase):
+    integrator = "euler"
     u_bounds: bool = True
     """Use control bounds"""
-    integrator: integrator_choices = "Euler"
-    """Numerical integrator to use"""
     plot: bool = False
     viz_open: bool = False
     obstacles: bool = False
@@ -144,9 +138,9 @@ def main(args: Args):
     nsteps = int(Tf / dt)
     print("nsteps: {:d}".format(nsteps))
 
-    if args.integrator == "Euler":
+    if args.integrator == "euler":
         dynmodel = proxddp.dynamics.IntegratorEuler(ode_dynamics, dt)
-    elif args.integrator == "SemiEuler":
+    elif args.integrator == "semieuler":
         dynmodel = proxddp.dynamics.IntegratorSemiImplEuler(ode_dynamics, dt)
     elif args.integrator == "rk2":
         dynmodel = proxddp.dynamics.IntegratorRK2(ode_dynamics, dt)
