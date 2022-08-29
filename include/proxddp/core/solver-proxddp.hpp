@@ -280,10 +280,10 @@ public:
   }
 
   /// @copydoc mu_penal_
-  Scalar mu() const { return mu_penal_; }
+  inline Scalar mu() const { return mu_penal_; }
 
   /// @copydoc mu_inverse_
-  Scalar mu_inv() const { return mu_inverse_; }
+  inline Scalar mu_inv() const { return mu_inverse_; }
 
   /// Scaled penalty parameter.
   Scalar mu_scaled() const { return this->mu(); }
