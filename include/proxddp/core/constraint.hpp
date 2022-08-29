@@ -62,8 +62,13 @@ template <typename Scalar> struct ConstraintContainer {
     return lambda.segment(getIndex(i), getDim(i));
   }
 
-  Eigen::Block<MatrixRef, -1, -1>
-  getBlockByConstraint(MatrixRef J, const std::size_t i) const {
+  /// Get a row-wise block of a matrix by constraint index.
+  template <typename Derived>
+  Eigen::Block<Derived, -1, -1>
+  getBlockByConstraint(const Eigen::MatrixBase<Derived> &J_,
+                       const std::size_t i) const {
+    using M = Eigen::MatrixBase<Derived>;
+    M &J = const_cast<M &>(J_);
     assert(J.rows() == totalDim());
     return J.middleRows(getIndex(i), getDim(i));
   }
