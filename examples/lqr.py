@@ -63,7 +63,7 @@ if args.use_term_cstr:
 mu_init = 1e-2
 verbose = proxddp.VerboseLevel.VERBOSE
 solver = proxddp.SolverProxDDP(1e-6, mu_init, verbose=verbose)
-solver.max_iters = 100
+solver.max_iters = 20
 
 u0 = np.zeros(nu)
 us_i = [u0] * nsteps
