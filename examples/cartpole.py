@@ -185,7 +185,7 @@ term_cstr = proxddp.StageConstraint(
 )
 # problem.setTerminalConstraint(term_cstr)
 
-mu_init = 4e-2
+mu_init = 1e-3
 rho_init = 1e-2
 verbose = proxddp.VerboseLevel.VERBOSE
 TOL = 1e-4

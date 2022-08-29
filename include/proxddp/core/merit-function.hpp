@@ -113,15 +113,16 @@ template <typename _Scalar> struct PDALFunction {
             cstr_mgr.getSegmentByConstraint(workspace.lams_plus[i + 1], j);
         auto lamprev_j =
             cstr_mgr.getConstSegmentByConstraint(workspace.prev_lams[i + 1], j);
-        auto c_s_expr = cstr_data.value_ + solver->mu_scaled() * lamprev_j;
+        auto lamin_j = cstr_mgr.getConstSegmentByConstraint(lams[i + 1], j);
+        auto c_s_expr = cstr_data.value_ + solver->mu_scaled(j) * lamprev_j;
         penalty_value += proxnlp::evaluateMoreauEnvelope(
-            cstr_set, c_s_expr, lamplus_j * solver->mu_scaled(),
-            solver->mu_inv_scaled());
-      }
-      if (with_primal_dual_terms) {
-        penalty_value +=
-            .5 * dual_weight_ * solver->mu_scaled() *
-            (workspace.lams_plus[i + 1] - lams[i + 1]).squaredNorm();
+            cstr_set, c_s_expr, lamplus_j * solver->mu_scaled(j),
+            solver->mu_inv_scaled(j));
+        if (with_primal_dual_terms) {
+          penalty_value +=
+              .5 * dual_weight_ * solver->mu_scaled(j) *
+              (lamplus_j - lamin_j).squaredNorm();
+        }
       }
     }
 

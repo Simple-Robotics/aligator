@@ -181,7 +181,7 @@ public:
           cstr_mgr.getConstSegmentByConstraint(lams[i + 1], 0);
       const ConstVectorRef dynprevlam =
           cstr_mgr.getConstSegmentByConstraint(workspace.prev_lams[i + 1], 0);
-      VectorXs gap = this->mu_scaled() * (dynprevlam - dynlam);
+      VectorXs gap = this->mu_scaled(0) * (dynprevlam - dynlam);
       forwardDynamics(dm, xs[i], us[i], dd, xs[i + 1], 2, gap);
 
       VectorRef dx_next = workspace.dxs_[i + 1].head(stage.ndx2());
@@ -341,13 +341,13 @@ public:
       const VectorXs &lamN = lams.back();
       const VectorXs &plamN = workspace.prev_lams.back();
       const Constraint &termcstr = problem.term_constraint_.get();
-      const CstrSet &cstr = *termcstr.set_;
+      const CstrSet &set = *termcstr.set_;
       FunctionData &data = *pd.term_cstr_data;
       auto expr = plamN + mu_inv() * data.value_;
-      cstr.normalConeProjection(expr, lams_plus.back());
+      set.normalConeProjection(expr, lams_plus.back());
       lams_pdal.back() = 2 * lams_plus.back() - lamN;
       if (update_jacobians)
-        cstr.applyNormalConeProjectionJacobian(expr, data.jac_buffer_);
+        set.applyNormalConeProjectionJacobian(expr, data.jac_buffer_);
     }
 
     // loop over the stages
@@ -367,7 +367,7 @@ public:
 
         const CstrSet &set = mgr.getConstraintSet(k);
         FunctionData &data = *sdata.constraint_data[k];
-        auto expr = plami_k + mu_inv_scaled() * data.value_;
+        auto expr = plami_k + mu_inv_scaled(k) * data.value_;
         set.normalConeProjection(expr, lamplus_k);
         lampdal_k = 2 * lamplus_k - lami_k;
         if (update_jacobians)
@@ -388,10 +388,12 @@ public:
   inline Scalar mu_inv() const { return mu_inverse_; }
 
   /// Scaled penalty parameter.
-  Scalar mu_scaled() const { return this->mu(); }
+  Scalar mu_scaled(std::size_t) const {
+    return this->mu() * workspace_->nsteps;
+  }
 
   /// Scaled inverse penalty parameter.
-  Scalar mu_inv_scaled() const { return 1. / mu_scaled(); }
+  Scalar mu_inv_scaled(std::size_t j) const { return 1. / mu_scaled(j); }
 
   Scalar rho() const { return rho_penal_; }
 

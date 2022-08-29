@@ -7,7 +7,7 @@ from common import ArgsBase
 
 
 class Args(ArgsBase):
-    pass
+    plot: bool = False
 
 
 args = Args().parse_args()
@@ -57,11 +57,13 @@ term_cstr = proxddp.StageConstraint(
 problem.setTerminalConstraint(term_cstr)
 
 tol = 1e-3
-mu_init = 1e-4
+mu_init = 1e-6
 rho_init = 1e-8
 solver = proxddp.SolverProxDDP(
     tol, mu_init=mu_init, rho_init=rho_init, verbose=proxddp.VerboseLevel.VERBOSE
 )
+cb = proxddp.HistoryCallback()
+solver.registerCallback(cb)
 solver.setup(problem)
 
 us_init = [np.zeros(nu) for _ in range(nsteps)]
@@ -71,6 +73,16 @@ assert conv
 
 result = solver.getResults()
 print(result)
+
+
+if args.plot:
+    import matplotlib.pyplot as plt
+
+    ax: plt.Axes = plt.axes()
+    plt.plot(cb.storage.prim_infeas.tolist())
+    plt.plot(cb.storage.dual_infeas.tolist())
+    ax.set_yscale("log")
+    plt.show()
 
 
 if args.display:

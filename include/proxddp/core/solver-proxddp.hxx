@@ -22,6 +22,10 @@ SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
     proxddp_runtime_error(
         fmt::format("Penalty value mu_init={:g}>=1!", mu_init));
   }
+  if (verbose_ >= 1) {
+    fmt::print("Multiplier mode: {}\n", this->multiplier_update_mode);
+    fmt::print("Linesearch mode: {}\n", this->ls_mode);
+  }
 }
 
 template <typename Scalar>
@@ -216,6 +220,9 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
 
   const ConstraintContainer<Scalar> &cstr_mgr = stage.constraints_;
 
+  auto kkt_lowright_diagonal =
+      kkt_mat.bottomRightCorner(ndual, ndual).diagonal();
+
   // Loop over constraints
   for (std::size_t j = 0; j < stage.numConstraints(); j++) {
     FunctionData &cstr_data = *stage_data.constraint_data[j];
@@ -242,13 +249,18 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
         cstr_data.jac_buffer_.rightCols(nprim);
     cstr_mgr.getBlockByConstraint(kkt_rhs_D.bottomRows(ndual), j) =
         cstr_data.jac_buffer_.leftCols(ndx1);
+
+    cstr_mgr.getSegmentByConstraint(kkt_rhs_0.tail(ndual), j) =
+        mu_scaled(j) * (lamplus_j - lam_inn_j);
+    cstr_mgr.getSegmentByConstraint(kkt_lowright_diagonal, j).array() =
+        -mu_scaled(j);
   }
 
   qparam.storage = qparam.storage.template selfadjointView<Eigen::Lower>();
 
   // blocks: u, y, and dual
   kkt_rhs_0.head(nprim) = qparam.grad_.tail(nprim);
-  kkt_rhs_0.tail(ndual) = mu_scaled() * (lamplus - lam_inn);
+  // kkt_rhs_0.tail(ndual) = mu_scaled() * (lamplus - lam_inn);
 
   kkt_rhs_D.topRows(nu) = qparam.Qxu_.transpose();
   kkt_rhs_D.middleRows(nu, ndx2) = qparam.Qxy_.transpose();
@@ -257,7 +269,7 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   kkt_mat.topLeftCorner(nprim, nprim) =
       qparam.hess_.bottomRightCorner(nprim, nprim);
   kkt_mat.topLeftCorner(nprim, nprim).diagonal().array() += xreg_;
-  kkt_mat.bottomRightCorner(ndual, ndual).diagonal().array() = -mu_scaled();
+  // kkt_mat.bottomRightCorner(ndual, ndual).diagonal().array() = -mu_scaled();
 
   {
     const CostData &proxnext = *workspace.prox_datas[step + 1];
