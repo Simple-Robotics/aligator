@@ -399,9 +399,13 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
   // merit function evaluation
   auto merit_eval_fun = [&](Scalar a0) {
+    tryStep(problem, workspace, results, a0);
+    // nonlinearRollout(problem, workspace, results, a0);
     problem.evaluate(workspace.trial_xs, workspace.trial_us,
                      workspace.trial_prob_data);
     computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
+    computeMultipliers(problem, workspace, workspace.trial_lams,
+                       workspace.trial_prob_data, false);
     return merit_fun.evaluate(problem, workspace.trial_lams, workspace,
                               workspace.trial_prob_data);
   };
@@ -418,7 +422,8 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
                                workspace.problem_data);
     computeProxTerms(results.xs_, results.us_, workspace);
     computeProxDerivatives(results.xs_, results.us_, workspace);
-    this->computeMultipliers(problem, workspace, results.lams_, true);
+    computeMultipliers(problem, workspace, results.lams_,
+                       workspace.problem_data, true);
 
     backwardPass(problem, workspace, results);
     phi0 = merit_fun.evaluate(problem, results.lams_, workspace,

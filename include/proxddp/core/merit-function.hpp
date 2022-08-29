@@ -89,9 +89,6 @@ template <typename _Scalar> struct PDALFunction {
 
     // initial constraint
     {
-      workspace.lams_plus[0] = workspace.prev_lams[0] +
-                               solver->mu_inv() * prob_data.init_data->value_;
-      workspace.lams_pdal[0] = 2 * workspace.lams_plus[0] - lams[0];
       penalty_value += .5 * solver->mu() * workspace.lams_plus[0].squaredNorm();
       if (with_primal_dual_terms) {
         penalty_value += .5 * dual_weight_ * solver->mu() *
@@ -117,11 +114,9 @@ template <typename _Scalar> struct PDALFunction {
         auto lamprev_j =
             cstr_mgr.getConstSegmentByConstraint(workspace.prev_lams[i + 1], j);
         auto c_s_expr = cstr_data.value_ + solver->mu_scaled() * lamprev_j;
-        // penalty_value += cstr_set.evaluate(c_s_expr) +
-        //                  0.5 * solver->mu_scaled() * lamplus_j.squaredNorm();
-        penalty_value += proxnlp::computeMoreauEnvelope(
-            cstr_set, c_s_expr, lamplus_j, solver->mu_inv_scaled());
-        lamplus_j *= solver->mu_inv_scaled();
+        penalty_value += proxnlp::evaluateMoreauEnvelope(
+            cstr_set, c_s_expr, lamplus_j * solver->mu_scaled(),
+            solver->mu_inv_scaled());
       }
       if (with_primal_dual_terms) {
         penalty_value +=
@@ -136,11 +131,8 @@ template <typename _Scalar> struct PDALFunction {
       VectorXs &lamplus = workspace.lams_plus[nsteps + 1];
       auto c_s_expr =
           cstr_data.value_ + solver->mu() * workspace.prev_lams[nsteps + 1];
-      // penalty_value += tc.set_->evaluate(c_s_expr) +
-      //                  0.5 * solver->mu() * lamplus.squaredNorm();
-      penalty_value += proxnlp::computeMoreauEnvelope(
-          *tc.set_, c_s_expr, lamplus, solver->mu_inv());
-      lamplus *= solver->mu_inv();
+      penalty_value += proxnlp::evaluateMoreauEnvelope(
+          *tc.set_, c_s_expr, lamplus * solver->mu(), solver->mu_inv());
       if (with_primal_dual_terms) {
         penalty_value += .5 * dual_weight_ * solver->mu() *
                          (lamplus - lams[nsteps + 1]).squaredNorm();

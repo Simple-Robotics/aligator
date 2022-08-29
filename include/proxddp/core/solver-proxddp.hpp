@@ -136,7 +136,7 @@ public:
     const int ndual0 = problem.init_state_error.nr;
     const int ndx0 = stage0.ndx1();
     const VectorXs &lamin0 = results.lams_[0];
-    const VectorXs &prevlam0 = workspace.prev_lams[0];
+    // const VectorXs &prevlam0 = workspace.prev_lams[0];
     const CostData &proxdata0 = *workspace.prox_datas[0];
     BlockXs kkt_mat = workspace.getKktView(ndx0, ndual0);
     Eigen::Block<BlockXs, -1, 1, true> kkt_rhs_0 =
@@ -245,12 +245,11 @@ public:
   /// Evaluate the ALM/pdALM multiplier estimates.
   void computeMultipliers(const Problem &problem, Workspace &workspace,
                           const std::vector<VectorXs> &lams,
+                          TrajOptDataTpl<Scalar> &pd,
                           bool update_jacobians = false) const {
     ;
     using CstrSet = ConstraintSetBase<Scalar>;
-    using ProblemData = TrajOptDataTpl<Scalar>;
     const std::size_t nsteps = workspace.nsteps;
-    ProblemData &pd = workspace.problem_data;
 
     std::vector<VectorXs> &lams_plus = workspace.lams_plus;
     std::vector<VectorXs> &lams_pdal = workspace.lams_pdal;
@@ -307,7 +306,7 @@ public:
 
       for (std::size_t k = 0; k < mgr.numConstraints(); k++) {
         cstr_callback(mgr, k, lams[i + 1], workspace.prev_lams[i + 1],
-                      workspace.lams_plus[i + 1], workspace.lams_pdal[i + 1]);
+                      lams_plus[i + 1], lams_pdal[i + 1]);
       }
     }
   }
@@ -378,7 +377,6 @@ private:
   Scalar mu_penal_ = mu_init;
   /// Inverse ALM penalty parameter.
   Scalar mu_inverse_ = 1. / mu_penal_;
-
   /// Primal proximal parameter \f$\rho > 0\f$
   Scalar rho_penal_ = rho_init;
 };
