@@ -13,7 +13,7 @@ class Args(ArgsBase):
 args = Args().parse_args()
 print(args)
 
-robot = erd.load("double_pendulum")
+robot = erd.load("double_pendulum_continuous")
 rmodel = robot.model
 nq = rmodel.nq
 nv = rmodel.nv
@@ -26,7 +26,7 @@ vf = dynamics.MultibodyFreeFwdDynamics(space, actuation_matrix)
 timestep = 0.01
 target = space.neutral()
 x0 = target.copy()
-x0[0] = np.pi
+x0[:2] *= -1
 dyn_model = dynamics.IntegratorRK2(vf, timestep)
 w_x = np.eye(space.ndx) * 1e-4
 w_u = np.eye(nu) * 1e-2
@@ -64,8 +64,8 @@ solver = proxddp.SolverProxDDP(
 )
 solver.setup(problem)
 
-xs_init = [x0] * (nsteps + 1)
 us_init = [np.zeros(nu) for _ in range(nsteps)]
+xs_init = proxddp.rollout(dyn_model, x0, us_init).tolist()
 conv = solver.run(problem, xs_init, us_init)
 assert conv
 
