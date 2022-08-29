@@ -53,7 +53,8 @@ struct BaseLogger {
     int sci_prec = 3;
     int dbl_prec = 3;
     using fmt::format;
-
+    if (values.iter % 25 == 0)
+      start();
     v.push_back(format(int_format, values.iter, COL_WIDTH_0));
     v.push_back(format(sci_format, values.step_size, COL_WIDTH, sci_prec));
     v.push_back(format(sci_format, values.inner_crit, COL_WIDTH, sci_prec));
