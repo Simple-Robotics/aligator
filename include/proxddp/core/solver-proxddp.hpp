@@ -111,13 +111,14 @@ public:
                 const Scalar rho_init = 0., const std::size_t max_iters = 1000,
                 const VerboseLevel verbose = VerboseLevel::QUIET);
 
-  /// @brief Compute the search direction.
+  /// @brief Compute the linear search direction, i.e. the (regularized) SQP
+  /// step.
   ///
   /// @pre This function assumes \f$\delta x_0\f$ has already been computed!
   /// @returns This computes the primal-dual step \f$(\delta \bfx,\delta
   /// \bfu,\delta\bmlam)\f$
-  void computeDirection(const Problem &problem, Workspace &workspace,
-                        const Results &results) const;
+  void linearRollout(const Problem &problem, Workspace &workspace,
+                     const Results &results) const;
 
   /// @brief    Try a step of size \f$\alpha\f$.
   /// @returns  A primal-dual trial point
@@ -125,6 +126,38 @@ public:
   ///           \bmlam+\alpha\delta\bmlam)\f$
   void tryStep(const Problem &problem, Workspace &workspace,
                const Results &results, const Scalar alpha) const;
+
+  void compute_dx0(const Problem &problem, Workspace &workspace,
+                   const Results &results) const {
+    // compute direction dx0
+    const VParams &vp = workspace.value_params[0];
+    const StageModel &stage0 = *problem.stages_[0];
+    const FunctionData &init_data = *workspace.problem_data.init_data;
+    const int ndual0 = problem.init_state_error.nr;
+    const int ndx0 = stage0.ndx1();
+    const VectorXs &lamin0 = results.lams_[0];
+    const VectorXs &prevlam0 = workspace.prev_lams[0];
+    const CostData &proxdata0 = *workspace.prox_datas[0];
+    BlockXs kkt_mat = workspace.getKktView(ndx0, ndual0);
+    Eigen::Block<BlockXs, -1, 1, true> kkt_rhs_0 =
+        workspace.getKktRhs(ndx0, ndual0, 1).col(0);
+    kkt_mat.setZero();
+    kkt_mat.topLeftCorner(ndx0, ndx0) = vp.Vxx_ + rho() * proxdata0.Lxx_;
+    kkt_mat.bottomLeftCorner(ndual0, ndx0) = init_data.Jx_;
+    kkt_mat.bottomRightCorner(ndual0, ndual0).diagonal().array() = -mu();
+    // workspace.lams_plus[0] = prevlam0 + mu_inv() * init_data.value_;
+    // workspace.lams_pdal[0] = 2 * workspace.lams_plus[0] - lamin0;
+    kkt_rhs_0.head(ndx0) =
+        vp.Vx_ + init_data.Jx_ * lamin0 + rho() * proxdata0.Lx_;
+    kkt_rhs_0.tail(ndual0) = mu() * (workspace.lams_plus[0] - lamin0);
+
+    auto kkt_sym = kkt_mat.template selfadjointView<Eigen::Lower>();
+    auto ldlt = kkt_sym.ldlt();
+    workspace.pd_step_[0] = -kkt_rhs_0;
+    ldlt.solveInPlace(workspace.pd_step_[0]);
+    workspace.inner_criterion_by_stage(0) = math::infty_norm(kkt_rhs_0);
+    workspace.dual_infeas_by_stage(0) = math::infty_norm(kkt_rhs_0.head(ndx0));
+  }
 
   /// @brief    Terminal node.
   void computeTerminalValue(const Problem &problem, Workspace &workspace,
