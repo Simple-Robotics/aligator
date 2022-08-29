@@ -203,6 +203,7 @@ void exposeProxDDP() {
                      "Initial dual regularization/ALM parameter.")
       .def_readwrite("rho_init", &SolverType::rho_init,
                      "Initial proximal regularization.")
+      .def_readwrite("ls_mode", &SolverType::ls_mode, "Linesearch mode.")
       .def(SolverVisitor<SolverType>())
       .def("run", &SolverType::run,
            prox_run_overloads(
