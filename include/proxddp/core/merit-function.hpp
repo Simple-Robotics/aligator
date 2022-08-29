@@ -82,28 +82,30 @@ template <typename _Scalar> struct PDALFunction {
                   WorkspaceTpl<Scalar> &workspace,
                   TrajOptDataTpl<Scalar> &prob_data) {
     traj_cost = computeTrajectoryCost(problem, prob_data);
-    penalty_value = prox_value;
+    prox_value = computeProxPenalty(workspace, solver->rho());
+    penalty_value = 0.;
 
     bool with_primal_dual_terms = ls_mode == LinesearchMode::PRIMAL_DUAL;
 
     // initial constraint
-    workspace.lams_plus[0] =
-        workspace.prev_lams[0] + solver->mu_inv() * prob_data.init_data->value_;
-    workspace.lams_pdal[0] = 2 * workspace.lams_plus[0] - lams[0];
-    penalty_value += .5 * solver->mu() * workspace.lams_plus[0].squaredNorm();
-    if (with_primal_dual_terms) {
-      penalty_value += .5 * dual_weight_ * solver->mu() *
-                       (workspace.lams_plus[0] - lams[0]).squaredNorm();
+    {
+      workspace.lams_plus[0] = workspace.prev_lams[0] +
+                               solver->mu_inv() * prob_data.init_data->value_;
+      workspace.lams_pdal[0] = 2 * workspace.lams_plus[0] - lams[0];
+      penalty_value += .5 * solver->mu() * workspace.lams_plus[0].squaredNorm();
+      if (with_primal_dual_terms) {
+        penalty_value += .5 * dual_weight_ * solver->mu() *
+                         (workspace.lams_plus[0] - lams[0]).squaredNorm();
+      }
     }
 
     // stage-per-stage
-    std::size_t num_c;
     const std::size_t nsteps = problem.numSteps();
-    for (std::size_t step = 0; step < nsteps; step++) {
-      const StageModel &stage = *problem.stages_[step];
-      const StageData &stage_data = prob_data.getStageData(step);
+    for (std::size_t i = 0; i < nsteps; i++) {
+      const StageModel &stage = *problem.stages_[i];
+      const StageData &stage_data = prob_data.getStageData(i);
 
-      num_c = stage.numConstraints();
+      const std::size_t num_c = stage.numConstraints();
       // loop over constraints
       // get corresponding multipliers from allocated memory
       for (std::size_t j = 0; j < num_c; j++) {
@@ -111,18 +113,20 @@ template <typename _Scalar> struct PDALFunction {
         const CstrSet &cstr_set = cstr_mgr.getConstraintSet(j);
         const FunctionData &cstr_data = *stage_data.constraint_data[j];
         auto lamplus_j =
-            cstr_mgr.getSegmentByConstraint(workspace.lams_plus[step + 1], j);
-        auto lamprev_j = cstr_mgr.getConstSegmentByConstraint(
-            workspace.prev_lams[step + 1], j);
+            cstr_mgr.getSegmentByConstraint(workspace.lams_plus[i + 1], j);
+        auto lamprev_j =
+            cstr_mgr.getConstSegmentByConstraint(workspace.prev_lams[i + 1], j);
         auto c_s_expr = cstr_data.value_ + solver->mu_scaled() * lamprev_j;
+        // penalty_value += cstr_set.evaluate(c_s_expr) +
+        //                  0.5 * solver->mu_scaled() * lamplus_j.squaredNorm();
         penalty_value += proxnlp::computeMoreauEnvelope(
-            cstr_set, c_s_expr, solver->mu_inv_scaled(), lamplus_j);
+            cstr_set, c_s_expr, lamplus_j, solver->mu_inv_scaled());
         lamplus_j *= solver->mu_inv_scaled();
       }
       if (with_primal_dual_terms) {
         penalty_value +=
             .5 * dual_weight_ * solver->mu_scaled() *
-            (workspace.lams_plus[step + 1] - lams[step + 1]).squaredNorm();
+            (workspace.lams_plus[i + 1] - lams[i + 1]).squaredNorm();
       }
     }
 
@@ -132,17 +136,18 @@ template <typename _Scalar> struct PDALFunction {
       VectorXs &lamplus = workspace.lams_plus[nsteps + 1];
       auto c_s_expr =
           cstr_data.value_ + solver->mu() * workspace.prev_lams[nsteps + 1];
+      // penalty_value += tc.set_->evaluate(c_s_expr) +
+      //                  0.5 * solver->mu() * lamplus.squaredNorm();
       penalty_value += proxnlp::computeMoreauEnvelope(
-          *tc.set_, c_s_expr, solver->mu_inv(), lamplus);
+          *tc.set_, c_s_expr, lamplus, solver->mu_inv());
       lamplus *= solver->mu_inv();
       if (with_primal_dual_terms) {
-        penalty_value +=
-            .5 * dual_weight_ * solver->mu() *
-            (workspace.lams_plus[nsteps + 1] - lams[nsteps + 1]).squaredNorm();
+        penalty_value += .5 * dual_weight_ * solver->mu() *
+                         (lamplus - lams[nsteps + 1]).squaredNorm();
       }
     }
 
-    value_ = traj_cost + penalty_value;
+    value_ = traj_cost + prox_value + penalty_value;
     return value_;
   }
 };
