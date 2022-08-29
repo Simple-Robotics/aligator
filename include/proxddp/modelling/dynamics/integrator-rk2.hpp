@@ -22,7 +22,7 @@ struct IntegratorRK2Tpl : ExplicitIntegratorAbstractTpl<_Scalar> {
   using BaseData = ExplicitDynamicsDataTpl<Scalar>;
   using Data = IntegratorRK2DataTpl<Scalar>;
   using ODEType = typename Base::ODEType;
-  using Base::next_state_;
+  using Base::space_next_;
 
   Scalar timestep_;
 

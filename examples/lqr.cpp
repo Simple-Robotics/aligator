@@ -39,7 +39,7 @@ void define_problem(shared_ptr<TrajOptProblemTpl<double>> &problemptr) {
   using dynamics::LinearDiscreteDynamicsTpl;
   auto dynptr = std::make_shared<LinearDiscreteDynamicsTpl<double>>(A, B, c_);
   auto &dynamics = *dynptr;
-  auto spaceptr = dynamics.next_state_;
+  auto spaceptr = dynamics.space_next_;
 
   auto rcost = std::make_shared<QuadraticCostTpl<double>>(w_x, w_u);
 

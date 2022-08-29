@@ -6,8 +6,7 @@ namespace proxddp {
 template <typename Scalar>
 ExplicitDynamicsModelTpl<Scalar>::ExplicitDynamicsModelTpl(
     const int ndx1, const int nu, const shared_ptr<Manifold> &next_state)
-    : Base(next_state, nu, next_state->ndx()), next_state_(next_state),
-      nx2(next_state->nx()) {}
+    : Base(next_state, nu, next_state->ndx()), nx2(next_state->nx()) {}
 
 template <typename Scalar>
 ExplicitDynamicsModelTpl<Scalar>::ExplicitDynamicsModelTpl(
@@ -23,7 +22,7 @@ void ExplicitDynamicsModelTpl<Scalar>::evaluate(const ConstVectorRef &x,
   // value to the difference between y and the xnext_.
   Data &d = static_cast<Data &>(data);
   this->forward(x, u, d);
-  next_state_->difference(y, d.xnext_, d.value_);
+  space_next_->difference(y, d.xnext_, d.value_);
 }
 
 template <typename Scalar>
@@ -35,8 +34,8 @@ void ExplicitDynamicsModelTpl<Scalar>::computeJacobians(const ConstVectorRef &x,
   this->forward(x, u, data_);
   this->dForward(x, u, data_);
   // compose by jacobians of log (xout - y)
-  next_state_->Jdifference(y, data_.xnext_, data_.Jy_, 0);
-  next_state_->Jdifference(y, data_.xnext_, data_.Jtmp_xnext, 1);
+  space_next_->Jdifference(y, data_.xnext_, data_.Jy_, 0);
+  space_next_->Jdifference(y, data_.xnext_, data_.Jtmp_xnext, 1);
   data_.Jx_ = data_.Jtmp_xnext * data_.Jx_;
   data_.Ju_ = data_.Jtmp_xnext * data_.Ju_;
 }

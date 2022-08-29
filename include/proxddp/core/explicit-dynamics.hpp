@@ -23,8 +23,8 @@ public:
   using BaseData = DynamicsDataTpl<Scalar>;
   using Data = ExplicitDynamicsDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
+  using Base::space_next_;
 
-  shared_ptr<Manifold> next_state_;
   int nx2;
 
   /// The constructor requires providing the next state's manifold.
@@ -35,9 +35,6 @@ public:
   ExplicitDynamicsModelTpl(const shared_ptr<Manifold> &next_state,
                            const int nu);
   virtual ~ExplicitDynamicsModelTpl() = default;
-
-  /// @return Reference to output state space.
-  const Manifold &out_space() const { return *next_state_; }
 
   /// @brief Evaluate the forward discrete dynamics.
   void virtual forward(const ConstVectorRef &x, const ConstVectorRef &u,

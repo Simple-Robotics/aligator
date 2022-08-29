@@ -24,9 +24,9 @@ void IntegratorSemiImplEulerTpl<Scalar>::forward(
   int ndx = this->ndx1;
   const int ndx_2 = ndx / 2;
   d.dx_.bottomRows(ndx_2) = cdata.xdot_.bottomRows(ndx_2) * timestep_;
-  this->out_space().integrate(x, d.dx_, d.xnext_);
+  this->space_next().integrate(x, d.dx_, d.xnext_);
   d.dx_.topRows(ndx_2) = d.xnext_.bottomRows(ndx_2) * timestep_;
-  this->out_space().integrate(x, d.dx_, d.xnext_);
+  this->space_next().integrate(x, d.dx_, d.xnext_);
 }
 
 template <typename Scalar>
@@ -38,7 +38,7 @@ void IntegratorSemiImplEulerTpl<Scalar>::dForward(
       static_cast<ODEDataTpl<Scalar> &>(*d.continuous_data);
   int ndx = this->ndx1;
   const int ndx_2 = ndx / 2;
-  const auto &space = this->out_space();
+  const auto &space = this->space_next();
 
   this->ode_->dForward(x, u, cdata);
   // dv_dx and dv_du are same as euler explicit
