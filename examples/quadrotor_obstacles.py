@@ -272,7 +272,6 @@ def main(args: Args):
     solver = proxddp.SolverProxDDP(
         tol, mu_init, rho_init, verbose=verbose, max_iters=300
     )
-    solver.ls_params.interp_type = proxddp.LSInterpolation.CUBIC
     solver.registerCallback(history_cb)
     solver.setup(problem)
     solver.run(problem, xs_init, us_init)
