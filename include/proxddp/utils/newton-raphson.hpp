@@ -21,7 +21,6 @@ template <typename Scalar> struct NewtonRaphson {
                   const Scalar eps = 1e-6, const std::size_t MAXITERS = 1000,
                   VerboseLevel verbose = VerboseLevel::QUIET) {
     xout = xinit;
-    VectorXs xcand = xinit;
     VectorXs f0 = fun(xout);
     VectorXs dx(f0);
     MatrixXs Jf0 = jac_fun(xout);
@@ -39,8 +38,8 @@ template <typename Scalar> struct NewtonRaphson {
 
       Scalar alpha = 1.;
       while (alpha > alpha_min) {
-        man.integrate(xout, alpha * dx, xcand);
-        f0 = fun(xcand);
+        man.integrate(xout, alpha * dx, xout);
+        f0 = fun(xout);
         Scalar new_error = f0.norm();
         if (new_error <= (1. - ar_c1) * error) {
           break;
@@ -49,7 +48,6 @@ template <typename Scalar> struct NewtonRaphson {
       }
 
       error = f0.norm();
-      xout = xcand;
       Jf0 = jac_fun(xout);
     }
     return conv;
