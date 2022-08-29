@@ -47,18 +47,18 @@ ctrl_box = proxddp.ControlBoxFunction(nx, u_min, u_max)
 stage.addConstraint(ctrl_box, constraints.NegativeOrthant())
 
 
-nsteps = 5
+nsteps = 10
 problem = proxddp.TrajOptProblem(x0, nu, space, term_cost)
+
 for i in range(nsteps):
-    if i == nsteps - 1 and args.use_term_cstr:
-        xtar = 0.1 * np.ones(nx)
-        term_fun = proxddp.LinearFunction(
-            np.zeros((nx, nx)), np.zeros((nx, nu)), -np.eye(nx), xtar
-        )
-        stage.addConstraint(
-            proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet())
-        )
     problem.addStage(stage)
+
+if args.use_term_cstr:
+    xtar = 0.1 * np.ones(nx)
+    term_fun = proxddp.StateErrorResidual(space, nu, xtar)
+    problem.setTerminalConstraint(
+        proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet())
+    )
 
 mu_init = 1e-2
 verbose = proxddp.VerboseLevel.VERBOSE
