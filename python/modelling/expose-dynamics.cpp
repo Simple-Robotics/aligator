@@ -26,6 +26,8 @@ void exposeDynamics() {
       bp::init<ManifoldPtr, const int, const int>(
           bp::args("self", "space", "nu", "ndx2")))
       .def(bp::init<ManifoldPtr, const int>(bp::args("self", "space", "nu")))
+      .def_readonly("space", &DynamicsModel::space_)
+      .def_readonly("space_next", &DynamicsModel::space_next_)
       .def(CreateDataPythonVisitor<DynamicsModel>());
 
   bp::class_<PyExplicitDynamics<>, bp::bases<DynamicsModel>,
@@ -43,11 +45,7 @@ void exposeDynamics() {
            "Call for forward discrete dynamics.")
       .def("dForward", bp::pure_virtual(&ExplicitDynamics::dForward),
            bp::args("self", "x", "u", "data"),
-           "Compute the derivatives of forward discrete dynamics.")
-      .add_property("space",
-                    bp::make_function(&ExplicitDynamics::out_space,
-                                      bp::return_internal_reference<>()),
-                    "Output space.");
+           "Compute the derivatives of forward discrete dynamics.");
 
   pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<PyDynamicsModel>>,
                                 true>::expose("StdVec_Dynamics");
