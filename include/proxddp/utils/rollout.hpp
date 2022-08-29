@@ -19,7 +19,8 @@ struct __forward_dyn {
                   const typename math_types<T>::ConstVectorRef &x,
                   const typename math_types<T>::ConstVectorRef &u,
                   DynamicsDataTpl<T> &data,
-                  typename math_types<T>::VectorRef xout) const {
+                  typename math_types<T>::VectorRef xout,
+                  const std::size_t max_iters = 1000) const {
     using ExpModel = ExplicitDynamicsModelTpl<T>;
     using ExpData = ExplicitDynamicsDataTpl<T>;
     const ExpModel *model_ptr_cast = dynamic_cast<const ExpModel *>(&model);
@@ -40,7 +41,7 @@ struct __forward_dyn {
         model.computeJacobians(x, u, xnext, data);
         return data.Jy_;
       };
-      NewtonRaphson<T>::run(space, fun, Jfun, x, xout, EPS);
+      NewtonRaphson<T>::run(space, fun, Jfun, x, xout, EPS, max_iters);
     }
   }
 
@@ -50,7 +51,8 @@ struct __forward_dyn {
                   const typename math_types<T>::ConstVectorRef &x,
                   const typename math_types<T>::ConstVectorRef &u,
                   ExplicitDynamicsDataTpl<T> &data,
-                  typename math_types<T>::VectorRef xout) const {
+                  typename math_types<T>::VectorRef xout,
+                  const std::size_t) const {
     model.forward(x, u, data);
     xout = data.xnext_;
   }
