@@ -17,6 +17,7 @@ SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
     : target_tol_(tol), mu_init(mu_init), rho_init(rho_init), verbose_(verbose),
       MAX_ITERS(max_iters) {
   ls_params.alpha_min = 1e-7;
+  ls_params.interp_type = proxnlp::LSInterpolation::CUBIC;
   if (mu_init >= 1.) {
     proxddp_runtime_error(
         fmt::format("Penalty value mu_init={:g}>=1!", mu_init));
