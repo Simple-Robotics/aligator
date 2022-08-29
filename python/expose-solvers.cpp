@@ -63,8 +63,8 @@ void exposeBase() {
       .def_readonly("nsteps", &WorkspaceBase::nsteps)
       .def_readonly("problem_data", &WorkspaceBase::problem_data)
       .def_readonly("trial_prob_data", &WorkspaceBase::trial_prob_data)
-      .def_readonly("trial_xs", &WorkspaceBase::trial_xs_)
-      .def_readonly("trial_us", &WorkspaceBase::trial_us_)
+      .def_readonly("trial_xs", &WorkspaceBase::trial_xs)
+      .def_readonly("trial_us", &WorkspaceBase::trial_us)
       .def_readonly("value_params", &WorkspaceBase::value_params)
       .def_readonly("q_params", &WorkspaceBase::q_params);
 
@@ -145,6 +145,7 @@ void exposeProxDDP() {
       bp::init<const TrajOptProblem &>(bp::args("self", "problem")))
       .def_readonly("kkt_matrix_", &Workspace::kkt_matrix_buf_)
       .def_readonly("kkt_rhs_", &Workspace::kkt_rhs_buf_)
+      .def_readonly("trial_lams", &Workspace::trial_lams)
       .def_readonly("inner_crit", &Workspace::inner_criterion)
       .def_readonly("prim_infeas_by_stage", &Workspace::primal_infeas_by_stage)
       .def_readonly("dual_infeas_by_stage", &Workspace::dual_infeas_by_stage)

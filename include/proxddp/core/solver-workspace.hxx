@@ -17,8 +17,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   q_params.reserve(nsteps);
   prox_datas.reserve(nsteps + 1);
 
-  prev_xs = trial_xs_;
-  prev_us = trial_us_;
+  prev_xs = trial_xs;
+  prev_us = trial_us;
 
   lams_plus.resize(nsteps + 1);
   pd_step_.resize(nsteps + 1);
@@ -72,7 +72,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   }
 
   lams_pdal = lams_plus;
-  trial_lams_ = lams_plus;
+  trial_lams = lams_plus;
   prev_lams = lams_plus;
 
   kkt_matrix_buf_.resize(max_kkt_size, max_kkt_size);
@@ -89,7 +89,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 template <typename Scalar>
 std::ostream &operator<<(std::ostream &oss, const WorkspaceTpl<Scalar> &self) {
   oss << "Workspace {";
-  oss << fmt::format("\n  num nodes      : {:d}", self.trial_us_.size())
+  oss << fmt::format("\n  num nodes      : {:d}", self.trial_us.size())
       << fmt::format("\n  kkt buffer size: {:d}", self.kkt_matrix_buf_.rows());
   oss << "\n}";
   return oss;

@@ -9,8 +9,8 @@ template <typename Scalar> struct WorkspaceFDDPTpl : WorkspaceBaseTpl<Scalar> {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base::nsteps;
   using Base::q_params;
-  using Base::trial_us_;
-  using Base::trial_xs_;
+  using Base::trial_us;
+  using Base::trial_xs;
   using Base::value_params;
 
   /// Value of `f(x_i, u_i)`

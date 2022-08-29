@@ -42,8 +42,8 @@ Scalar
 SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
                                 Workspace &workspace, const Scalar alpha) {
   const std::size_t nsteps = workspace.nsteps;
-  std::vector<VectorXs> &xs_try = workspace.trial_xs_;
-  std::vector<VectorXs> &us_try = workspace.trial_us_;
+  std::vector<VectorXs> &xs_try = workspace.trial_xs;
+  std::vector<VectorXs> &us_try = workspace.trial_us;
   std::vector<VectorXs> &xnexts = workspace.xnexts_;
   const std::vector<VectorXs> &fs = workspace.feas_gaps_;
   ProblemData &pd = workspace.problem_data;
@@ -278,7 +278,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
 
   auto linesearch_fun = [&](const Scalar alpha) {
     return forwardPass(problem, results, workspace, alpha);
-    // problem.evaluate(workspace.trial_xs_, workspace.trial_us_,
+    // problem.evaluate(workspace.trial_xs, workspace.trial_us,
     //                  workspace.trial_prob_data);
     // return computeTrajectoryCost(problem, workspace.trial_prob_data);
   };
@@ -362,8 +362,8 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     record.merit = phi_new;
     record.dM = phi_new - phi0;
 
-    results.xs_ = workspace.trial_xs_;
-    results.us_ = workspace.trial_us_;
+    results.xs_ = workspace.trial_xs;
+    results.us_ = workspace.trial_us;
     if (d1_small) {
       results.conv = true;
       logger.log(record);

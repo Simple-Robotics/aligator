@@ -45,7 +45,7 @@ void SolverProxDDP<Scalar>::linearRollout(const Problem &problem,
   if (problem.term_constraint_) {
     const MatrixXs &Gterm = results.gains_[nsteps];
     const int ndx = (*problem.term_constraint_).func_->ndx1;
-    workspace.dlams_[nsteps + 1] =
+    workspace.dlams_.back() =
         Gterm.col(0) + Gterm.rightCols(ndx) * workspace.dxs_[nsteps];
   }
 }
@@ -59,19 +59,19 @@ void SolverProxDDP<Scalar>::tryStep(const Problem &problem,
   const std::size_t nsteps = problem.numSteps();
 
   for (std::size_t i = 0; i <= nsteps; i++)
-    workspace.trial_lams_[i] = results.lams_[i] + alpha * workspace.dlams_[i];
+    workspace.trial_lams[i] = results.lams_[i] + alpha * workspace.dlams_[i];
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
     stage.xspace_->integrate(results.xs_[i], alpha * workspace.dxs_[i],
-                             workspace.trial_xs_[i]);
+                             workspace.trial_xs[i]);
     stage.uspace_->integrate(results.us_[i], alpha * workspace.dus_[i],
-                             workspace.trial_us_[i]);
+                             workspace.trial_us[i]);
   }
   const StageModel &stage = *problem.stages_[nsteps - 1];
   stage.xspace_next_->integrate(results.xs_[nsteps],
                                 alpha * workspace.dxs_[nsteps],
-                                workspace.trial_xs_[nsteps]);
+                                workspace.trial_xs[nsteps]);
 }
 
 template <typename Scalar>
@@ -399,15 +399,14 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
   // merit function evaluation
   auto merit_eval_fun = [&](Scalar a0) {
-    tryStep(problem, workspace, results, a0);
-    problem.evaluate(workspace.trial_xs_, workspace.trial_us_,
+    problem.evaluate(workspace.trial_xs, workspace.trial_us,
                      workspace.trial_prob_data);
-    computeProxTerms(workspace.trial_xs_, workspace.trial_us_, workspace);
-    return merit_fun.evaluate(problem, workspace.trial_lams_, workspace,
+    computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
+    return merit_fun.evaluate(problem, workspace.trial_lams, workspace,
                               workspace.trial_prob_data);
   };
   Scalar phi0 = 0.;
-  Scalar eps = 1e-10;
+  const Scalar eps = 1e-10;
   Scalar phieps = 0., dphi0 = 0.;
 
   logger.active = (verbose_ > 0);
@@ -456,9 +455,9 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
       proxnlp::ArmijoLinesearch<Scalar>(options).run(merit_eval_fun, phi0,
                                                      dphi0, alpha_opt);
       // accept the step
-      results.xs_ = workspace.trial_xs_;
-      results.us_ = workspace.trial_us_;
-      results.lams_ = workspace.trial_lams_;
+      results.xs_ = workspace.trial_xs;
+      results.us_ = workspace.trial_us;
+      results.lams_ = workspace.trial_lams;
       this->decrease_reg();
     } else {
       alpha_opt = 0.;

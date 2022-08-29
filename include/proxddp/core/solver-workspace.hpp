@@ -23,8 +23,8 @@ template <typename Scalar> struct WorkspaceBaseTpl {
   /// @name Linesearch data
   /// Problem data instance for linesearch.
   TrajOptDataTpl<Scalar> trial_prob_data;
-  std::vector<VectorXs> trial_xs_;
-  std::vector<VectorXs> trial_us_;
+  std::vector<VectorXs> trial_xs;
+  std::vector<VectorXs> trial_us;
 
   /// @name Value function and Hamiltonian.
   /// Value function parameter storage
@@ -35,10 +35,10 @@ template <typename Scalar> struct WorkspaceBaseTpl {
   explicit WorkspaceBaseTpl(const TrajOptProblemTpl<Scalar> &problem)
       : nsteps(problem.numSteps()), problem_data(problem),
         trial_prob_data(problem) {
-    trial_xs_.resize(nsteps + 1);
-    trial_us_.resize(nsteps);
-    xs_default_init(problem, trial_xs_);
-    us_default_init(problem, trial_us_);
+    trial_xs.resize(nsteps + 1);
+    trial_us.resize(nsteps);
+    xs_default_init(problem, trial_xs);
+    us_default_init(problem, trial_us);
   }
 
   // virtual ~WorkspaceBaseTpl() = default;
@@ -61,15 +61,15 @@ template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
   using Base::problem_data;
   using Base::q_params;
   using Base::trial_prob_data;
-  using Base::trial_us_;
-  using Base::trial_xs_;
+  using Base::trial_us;
+  using Base::trial_xs;
   using Base::value_params;
 
   /// Proximal penalty data.
   std::vector<shared_ptr<ProxData>> prox_datas;
 
   /// Lagrange multipliers for ALM & linesearch.
-  std::vector<VectorXs> trial_lams_;
+  std::vector<VectorXs> trial_lams;
   std::vector<VectorXs> lams_plus;
   std::vector<VectorXs> lams_pdal;
 
