@@ -63,6 +63,8 @@ if args.use_term_cstr:
 mu_init = 1e-2
 verbose = proxddp.VerboseLevel.VERBOSE
 solver = proxddp.SolverProxDDP(1e-6, mu_init, verbose=verbose)
+his_cb = proxddp.HistoryCallback()
+solver.registerCallback(his_cb)
 solver.max_iters = 20
 
 u0 = np.zeros(nu)
@@ -93,7 +95,7 @@ if args.use_term_cstr:
         lw=1.0,
         colors="k",
         alpha=0.4,
-        label=r"$x_{tar}$"
+        label=r"$x_\mathrm{tar}$"
     )
 plt.legend()
 plt.xlabel("Time $i$")
@@ -110,8 +112,19 @@ plt.hlines(
     label=r"$\bar{u}$"
 )
 plt.title("Controls $u(t)$")
-
 plt.legend()
-
 plt.tight_layout()
+
+
+plt.figure()
+prim_infeas = his_cb.storage.prim_infeas
+dual_infeas = his_cb.storage.dual_infeas
+plt.plot(prim_infeas)
+plt.plot(dual_infeas)
+ax = plt.gca()
+ax.set_yscale("log")
+ax.set_xlabel("Iter")
+ax.set_ylabel("Residuals")
+plt.tight_layout()
+
 plt.show()
