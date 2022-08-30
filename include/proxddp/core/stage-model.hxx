@@ -40,7 +40,7 @@ template <typename Scalar> inline int StageModelTpl<Scalar>::numDual() const {
 template <typename Scalar>
 template <typename T>
 void StageModelTpl<Scalar>::addConstraint(T &&cstr) {
-  const int c_nu = cstr.func_->nu;
+  const int c_nu = cstr.func->nu;
   if (c_nu != this->nu()) {
     proxddp_runtime_error(fmt::format(
         "Function has the wrong dimension for u: got {:d}, expected {:d}", c_nu,
@@ -68,7 +68,7 @@ void StageModelTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                      Data &data) const {
   for (std::size_t j = 0; j < numConstraints(); j++) {
     const Constraint &cstr = constraints_[j];
-    cstr.func_->evaluate(x, u, y, *data.constraint_data[j]);
+    cstr.func->evaluate(x, u, y, *data.constraint_data[j]);
   }
   cost_->evaluate(x, u, *data.cost_data);
 }
@@ -80,7 +80,7 @@ void StageModelTpl<Scalar>::computeDerivatives(const ConstVectorRef &x,
                                                Data &data) const {
   for (std::size_t j = 0; j < numConstraints(); j++) {
     const Constraint &cstr = constraints_[j];
-    cstr.func_->computeJacobians(x, u, y, *data.constraint_data[j]);
+    cstr.func->computeJacobians(x, u, y, *data.constraint_data[j]);
   }
   cost_->computeGradients(x, u, *data.cost_data);
   cost_->computeHessians(x, u, *data.cost_data);
@@ -123,7 +123,7 @@ StageDataTpl<Scalar>::StageDataTpl(const StageModel &stage_model)
   constraint_data.reserve(nc);
   for (std::size_t j = 0; j < nc; j++) {
     const shared_ptr<StageFunctionTpl<Scalar>> &func =
-        stage_model.constraints_[j].func_;
+        stage_model.constraints_[j].func;
     constraint_data[j] = func->createData();
   }
 }

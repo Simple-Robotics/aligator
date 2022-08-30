@@ -9,8 +9,8 @@ namespace proxddp {
 /// @brief Simple struct holding together a function and set, to describe a
 /// constraint.
 template <typename Scalar> struct StageConstraintTpl {
-  shared_ptr<StageFunctionTpl<Scalar>> func_;
-  shared_ptr<ConstraintSetBase<Scalar>> set_;
+  shared_ptr<StageFunctionTpl<Scalar>> func;
+  shared_ptr<ConstraintSetBase<Scalar>> set;
 };
 
 /// @brief Convenience class to manage a stack of constraints.
@@ -22,8 +22,8 @@ template <typename Scalar> struct ConstraintContainer {
   std::size_t numConstraints() const { return storage_.size(); }
 
   void push_back(const ConstraintType &el) {
-    assert(el.func_ != 0 && "member func can't be called with nullptr");
-    this->push_back(el, el.func_->nr);
+    assert(el.func != 0 && "member func can't be called with nullptr");
+    this->push_back(el, el.func->nr);
   }
 
   void push_back(const ConstraintType &el, const int nr) {
@@ -39,7 +39,7 @@ template <typename Scalar> struct ConstraintContainer {
   int getDim(const std::size_t i) const { return dims_[i]; }
 
   const ConstraintSetBase<Scalar> &getConstraintSet(const std::size_t i) const {
-    return *this->storage_[i].set_;
+    return *this->storage_[i].set;
   }
 
   /// Get corresponding segment of a vector corresponding

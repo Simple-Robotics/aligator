@@ -43,8 +43,8 @@ ResultsTpl<Scalar>::ResultsTpl(const TrajOptProblemTpl<Scalar> &problem) {
 
   if (problem.term_constraint_) {
     const StageConstraintTpl<Scalar> &tc = *problem.term_constraint_;
-    const int ndx = tc.func_->ndx1;
-    const int ndual = tc.func_->nr;
+    const int ndx = tc.func->ndx1;
+    const int ndual = tc.func->nr;
     lams_.push_back(VectorXs::Zero(ndual));
     gains_.push_back(MatrixXs::Zero(ndual, ndx + 1));
   }

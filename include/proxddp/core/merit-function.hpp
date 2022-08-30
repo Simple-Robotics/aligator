@@ -132,7 +132,7 @@ template <typename _Scalar> struct PDALFunction {
       auto c_s_expr =
           cstr_data.value_ + solver->mu() * workspace.prev_lams[nsteps + 1];
       penalty_value += proxnlp::evaluateMoreauEnvelope(
-          *tc.set_, c_s_expr, lamplus * solver->mu(), solver->mu_inv());
+          *tc.set, c_s_expr, lamplus * solver->mu(), solver->mu_inv());
       if (with_primal_dual_terms) {
         penalty_value += .5 * dual_weight_ * solver->mu() *
                          (lamplus - lams[nsteps + 1]).squaredNorm();

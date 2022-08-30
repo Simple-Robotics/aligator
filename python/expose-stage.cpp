@@ -104,8 +104,8 @@ void exposeStage() {
                                 bp::args("func", "cstr_set")),
            "Contruct a StageConstraint from a StageFunction and a constraint "
            "set.")
-      .def_readwrite("func", &context::StageConstraint::func_)
-      .def_readwrite("cstr_set", &context::StageConstraint::set_);
+      .def_readwrite("func", &context::StageConstraint::func)
+      .def_readwrite("set", &context::StageConstraint::set);
 }
 
 } // namespace python

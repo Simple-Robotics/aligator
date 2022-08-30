@@ -189,7 +189,7 @@ public:
     }
     if (problem.term_constraint_) {
       const MatrixXs &Gterm = results.gains_[nsteps];
-      const int ndx = (*problem.term_constraint_).func_->ndx1;
+      const int ndx = (*problem.term_constraint_).func->ndx1;
       VectorRef dlam = workspace.dlams_.back();
       const VectorRef dx = workspace.dxs_.back();
       dlam = alpha * Gterm.col(0) + Gterm.rightCols(ndx) * dx;
@@ -341,7 +341,7 @@ public:
       const VectorXs &lamN = lams.back();
       const VectorXs &plamN = workspace.prev_lams.back();
       const Constraint &termcstr = problem.term_constraint_.get();
-      const CstrSet &cstr = *termcstr.set_;
+      const CstrSet &cstr = *termcstr.set;
       FunctionData &data = *pd.term_cstr_data;
       auto expr = plamN + mu_inv() * data.value_;
       cstr.normalConeProjection(expr, lams_plus.back());

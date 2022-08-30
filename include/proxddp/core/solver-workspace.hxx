@@ -80,9 +80,9 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 
   if (problem.term_constraint_) {
     const StageConstraintTpl<Scalar> &tc = *problem.term_constraint_;
-    int ndx1 = tc.func_->ndx1;
+    int ndx1 = tc.func->ndx1;
     int nprim = ndx1;
-    int ndual = tc.func_->nr;
+    int ndual = tc.func->nr;
     kkt_matrix_buf_.emplace_back(nprim + ndual, nprim + ndual);
     kkt_rhs_buf_.emplace_back(nprim + ndual, ndx1 + 1);
     lams_plus.push_back(VectorXs::Zero(ndual));

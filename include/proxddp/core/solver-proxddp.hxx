@@ -44,7 +44,7 @@ void SolverProxDDP<Scalar>::linearRollout(const Problem &problem,
   }
   if (problem.term_constraint_) {
     const MatrixXs &Gterm = results.gains_[nsteps];
-    const int ndx = (*problem.term_constraint_).func_->ndx1;
+    const int ndx = problem.term_constraint_.value().func->ndx1;
     workspace.dlams_.back() =
         Gterm.col(0) + Gterm.rightCols(ndx) * workspace.dxs_[nsteps];
   }
@@ -140,7 +140,7 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
     const Constraint &term_cstr = *problem.term_constraint_;
     const FunctionData &cstr_data = *prob_data.term_cstr_data;
 
-    const int ndx = term_cstr.func_->ndx1;
+    const int ndx = term_cstr.func->ndx1;
     MatrixXs &gains = results.gains_[nsteps];
     VectorXs &lamplus = workspace.lams_plus[nsteps + 1];
     // const VectorXs &lamprev = workspace.prev_lams[nsteps + 1];
@@ -149,7 +149,7 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
     const VectorXs &cv = cstr_data.value_;
     const MatrixRef &cJx = cstr_data.Jx_;
     // auto l_expr = lamprev + mu_inv() * cv;
-    // const ConstraintSetBase<Scalar> &cstr_set = *term_cstr.set_;
+    // const ConstraintSetBase<Scalar> &cstr_set = *term_cstr.set;
     // cstr_set.applyNormalConeProjectionJacobian(l_expr, cJx);
     // cstr_set.normalConeProjection(l_expr, lamplus);
 
