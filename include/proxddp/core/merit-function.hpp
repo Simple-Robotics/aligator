@@ -119,9 +119,8 @@ template <typename _Scalar> struct PDALFunction {
             cstr_set, c_s_expr, lamplus_j * solver->mu_scaled(j),
             solver->mu_inv_scaled(j));
         if (with_primal_dual_terms) {
-          penalty_value +=
-              .5 * dual_weight_ * solver->mu_scaled(j) *
-              (lamplus_j - lamin_j).squaredNorm();
+          penalty_value += .5 * dual_weight_ * solver->mu_scaled(j) *
+                           (lamplus_j - lamin_j).squaredNorm();
         }
       }
     }
