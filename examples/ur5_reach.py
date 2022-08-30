@@ -99,7 +99,6 @@ stages_ = []
 for i in range(nsteps):
     stm = proxddp.StageModel(space, nu, rcost_, discrete_dynamics)
     stm.addConstraint(ctrl_box, constraints.NegativeOrthant())
-    print("Stage {: 4d}: {}".format(i, stm))
 
     stages_.append(stm)
 
@@ -107,15 +106,14 @@ for i in range(nsteps):
 problem = proxddp.TrajOptProblem(x0, stages_, term_cost=term_cost_)
 tol = 1e-3
 
-mu_init = 0.001
-rho_init = 1e-7
+mu_init = 1e-5
+rho_init = 1e-8
 
 solver = proxddp.SolverProxDDP(
     tol, mu_init, rho_init, verbose=proxddp.VerboseLevel.VERBOSE, max_iters=300
 )
 
 solver.setup(problem)
-
 solver.run(problem, init_xs, init_us)
 
 
