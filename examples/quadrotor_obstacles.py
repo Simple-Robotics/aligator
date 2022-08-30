@@ -161,7 +161,7 @@ def main(args: Args):
         translation = np.random.uniform([-1.5, 0.0, 0.2], [2.0, 2.0, 1.0], 3)
         feas = is_feasible(translation, centers, radius, margin)
         while not feas:
-            translation[:2] = np.random.uniform([-1.0, 0.0, 0.2], [2.0, 2.0, 1.0], 3)
+            translation = np.random.uniform([-1.0, 0.0, 0.2], [2.0, 2.0, 1.0], 3)
             feas = is_feasible(translation, centers, radius, margin)
         return translation
 
