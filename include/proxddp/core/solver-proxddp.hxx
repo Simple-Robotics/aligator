@@ -399,8 +399,16 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
   // merit function evaluation
   auto merit_eval_fun = [&](Scalar a0) {
-    tryStep(problem, workspace, results, a0);
-    // nonlinearRollout(problem, workspace, results, a0);
+    switch (rol_type) {
+    case RolloutType::LINEAR:
+      tryStep(problem, workspace, results, a0);
+      break;
+    case RolloutType::NONLINEAR:
+      nonlinearRollout(problem, workspace, results, a0);
+      break;
+    default:
+      proxddp_runtime_error("Rollout type not recognized.");
+    }
     problem.evaluate(workspace.trial_xs, workspace.trial_us,
                      workspace.trial_prob_data);
     computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
@@ -410,7 +418,7 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
                               workspace.trial_prob_data);
   };
   Scalar phi0 = 0.;
-  const Scalar eps = 1e-10;
+  const Scalar fd_eps = 1e-8;
   Scalar phieps = 0., dphi0 = 0.;
 
   logger.active = (verbose_ > 0);
@@ -424,10 +432,10 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     computeProxDerivatives(results.xs_, results.us_, workspace);
     computeMultipliers(problem, workspace, results.lams_,
                        workspace.problem_data, true);
-
-    backwardPass(problem, workspace, results);
     phi0 = merit_fun.evaluate(problem, results.lams_, workspace,
                               workspace.problem_data);
+
+    backwardPass(problem, workspace, results);
     computeInfeasibilities(problem, workspace, results);
 
     LogRecord iter_log;
@@ -451,8 +459,23 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
     linearRollout(problem, workspace, results);
 
-    phieps = merit_eval_fun(eps);
-    dphi0 = (phieps - phi0) / eps;
+    phieps = merit_eval_fun(fd_eps);
+#ifndef NDEBUG
+    {
+      int nalph = 120;
+      Scalar a = 0.;
+      Scalar da = 1. / (nalph + 1);
+      const auto fname = fmt::format("assets/linesearch_iter{:d}.txt", k + 1);
+      std::FILE *file = std::fopen(fname.c_str(), "w");
+      fmt::print(file, "alpha,phi\n");
+      for (int i = 0; i <= nalph; i++) {
+        Scalar p = merit_eval_fun(a);
+        fmt::print(file, "{:.4e}, {:.5e}\n", a, p);
+        a += da;
+      }
+    }
+#endif
+    dphi0 = (phieps - phi0) / fd_eps;
     Scalar alpha_opt = 1;
     typename proxnlp::Linesearch<Scalar>::Options options;
     if (dphi0 <= 0.) {
@@ -463,10 +486,11 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
       results.xs_ = workspace.trial_xs;
       results.us_ = workspace.trial_us;
       results.lams_ = workspace.trial_lams;
+      results.merit_value_ = merit_fun.value_;
       this->decrease_reg();
     } else {
       alpha_opt = 0.;
-      merit_eval_fun(alpha_opt);
+      results.merit_value_ = phi0;
       this->increase_reg();
     }
     if (alpha_opt == options.alpha_min) {
@@ -474,7 +498,6 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     }
 
     results.traj_cost_ = merit_fun.traj_cost;
-    results.merit_value_ = merit_fun.value_;
     iter_log.step_size = alpha_opt;
     iter_log.dphi0 = dphi0;
     iter_log.merit = results.merit_value_;

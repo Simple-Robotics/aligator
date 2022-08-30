@@ -10,6 +10,7 @@
 #include "proxddp/core/helpers-base.hpp"
 #include "proxddp/utils/exceptions.hpp"
 #include "proxddp/utils/logger.hpp"
+#include "proxddp/utils/rollout.hpp"
 
 #include <proxnlp/constraint-base.hpp>
 
@@ -20,6 +21,8 @@ enum class MultiplierUpdateMode : unsigned int {
   PRIMAL = 1,
   PRIMAL_DUAL = 2
 };
+
+enum class RolloutType { LINEAR = 0, NONLINEAR = 1 };
 
 template <typename Scalar> struct BCLParams {
 
@@ -72,7 +75,7 @@ public:
 
   Scalar reg_min = 1e-9;
   Scalar reg_max = 1e8;
-  Scalar xreg_ = reg_min;
+  Scalar xreg_ = 0.;
   Scalar ureg_ = xreg_;
 
   const Scalar inner_tol0 = 1.;
@@ -87,6 +90,7 @@ public:
   MultiplierUpdateMode multiplier_update_mode =
       MultiplierUpdateMode::PRIMAL_DUAL;
   LinesearchMode ls_mode = LinesearchMode::PRIMAL_DUAL;
+  RolloutType rol_type = RolloutType::LINEAR;
   BCLParams<Scalar> bcl_params;
 
   /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.
@@ -126,6 +130,72 @@ public:
   ///           \bmlam+\alpha\delta\bmlam)\f$
   void tryStep(const Problem &problem, Workspace &workspace,
                const Results &results, const Scalar alpha) const;
+
+  /// @brief    Policy rollout using the full nonlinear dynamics. The feedback
+  /// gains need to be computed first.
+  void nonlinearRollout(const Problem &problem, Workspace &workspace,
+                        const Results &results, const Scalar alpha) const {
+    const std::size_t nsteps = workspace.nsteps;
+    std::vector<VectorXs> &xs = workspace.trial_xs;
+    std::vector<VectorXs> &us = workspace.trial_us;
+    std::vector<VectorXs> &lams = workspace.trial_lams;
+    TrajOptDataTpl<Scalar> &pd = workspace.trial_prob_data;
+
+    this->compute_dx0(problem, workspace, results);
+
+    {
+      workspace.dxs_[0] *= alpha; // scale by alpha
+      workspace.dlams_[0] *= alpha;
+      const StageModel &stage0 = *problem.stages_[0];
+      stage0.xspace().integrate(results.xs_[0], workspace.dxs_[0], xs[0]);
+      lams[0] = results.lams_[0] + workspace.dlams_[0];
+    }
+
+    for (std::size_t i = 0; i < nsteps; i++) {
+      const StageModel &stage = *problem.stages_[i];
+      StageData &data = pd.getStageData(i);
+      const int nu = stage.nu();
+      const int ndual = stage.numDual();
+
+      auto ff = results.gains_[i].col(0);
+      auto fb = results.gains_[i].rightCols(stage.ndx1());
+      auto ff_u = ff.head(nu);
+      auto fb_u = fb.topRows(nu);
+      auto ff_lm = ff.tail(ndual);
+      auto fb_lm = fb.bottomRows(ndual);
+
+      const VectorRef &dx = workspace.dxs_[i];
+      VectorRef &du = workspace.dus_[i];
+      du.head(nu) = alpha * ff_u + fb_u * dx;
+      stage.uspace().integrate(results.us_[i], du, us[i]);
+
+      VectorRef &dlam = workspace.dlams_[i + 1];
+      dlam.head(ndual) = alpha * ff_lm + fb_lm * dx;
+      lams[i + 1].head(ndual) = results.lams_[i + 1] + dlam;
+
+      const DynamicsModelTpl<Scalar> &dm = stage.dyn_model();
+      DynamicsDataTpl<Scalar> &dd =
+          dynamic_cast<DynamicsDataTpl<Scalar> &>(*data.constraint_data[0]);
+      const ConstraintContainer<Scalar> &cstr_mgr = stage.constraints_;
+      const ConstVectorRef dynlam =
+          cstr_mgr.getConstSegmentByConstraint(lams[i + 1], 0);
+      const ConstVectorRef dynprevlam =
+          cstr_mgr.getConstSegmentByConstraint(workspace.prev_lams[i + 1], 0);
+      VectorXs gap = this->mu_scaled() * (dynprevlam - dynlam);
+      forwardDynamics(dm, xs[i], us[i], dd, xs[i + 1], 2, gap);
+
+      VectorRef dx_next = workspace.dxs_[i + 1].head(stage.ndx2());
+      stage.xspace_next().difference(results.xs_[i + 1], xs[i + 1], dx_next);
+    }
+    if (problem.term_constraint_) {
+      const MatrixXs &Gterm = results.gains_[nsteps];
+      const int ndx = (*problem.term_constraint_).func_->ndx1;
+      VectorRef dlam = workspace.dlams_.back();
+      const VectorRef dx = workspace.dxs_.back();
+      dlam = alpha * Gterm.col(0) + Gterm.rightCols(ndx) * dx;
+      lams.back() = results.lams_.back() + dlam;
+    }
+  }
 
   void compute_dx0(const Problem &problem, Workspace &workspace,
                    const Results &results) const {

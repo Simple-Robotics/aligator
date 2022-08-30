@@ -171,6 +171,10 @@ void exposeProxDDP() {
       .value("PRIMAL", LinesearchMode::PRIMAL)
       .value("PRIMAL_DUAL", LinesearchMode::PRIMAL_DUAL);
 
+  bp::enum_<RolloutType>("RolloutType", "Rollout type.")
+      .value("LINEAR", RolloutType::LINEAR)
+      .value("NONLINEAR", RolloutType::NONLINEAR);
+
   {
     using BCLType = BCLParams<Scalar>;
     bp::class_<BCLType>("BCLParams",
@@ -205,6 +209,7 @@ void exposeProxDDP() {
       .def_readwrite("rho_init", &SolverType::rho_init,
                      "Initial proximal regularization.")
       .def_readwrite("ls_mode", &SolverType::ls_mode, "Linesearch mode.")
+      .def_readwrite("rol_type", &SolverType::rol_type, "Rollout type.")
       .def(SolverVisitor<SolverType>())
       .def("run", &SolverType::run,
            prox_run_overloads(
