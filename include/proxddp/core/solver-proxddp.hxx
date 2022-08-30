@@ -490,8 +490,8 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
       this->decrease_reg();
     } else {
       alpha_opt = 0.;
-      results.merit_value_ = phi0;
       this->increase_reg();
+      continue; // loop again
     }
     if (alpha_opt == options.alpha_min) {
       this->increase_reg();
