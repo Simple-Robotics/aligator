@@ -15,7 +15,7 @@ SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
                                      const std::size_t max_iters,
                                      const VerboseLevel verbose)
     : target_tol_(tol), mu_init(mu_init), rho_init(rho_init), verbose_(verbose),
-      MAX_ITERS(max_iters) {
+      MAX_ITERS(max_iters), merit_fun(this) {
   ls_params.alpha_min = 1e-7;
   ls_params.interp_type = proxnlp::LSInterpolation::CUBIC;
   if (mu_init >= 1.) {
@@ -394,8 +394,6 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
 template <typename Scalar>
 void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
                                       Workspace &workspace, Results &results) {
-  // instantiate the subproblem merit function
-  PDALFunction<Scalar> merit_fun(this, ls_mode);
 
   // merit function evaluation
   auto merit_eval_fun = [&](Scalar a0) {

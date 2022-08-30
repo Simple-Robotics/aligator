@@ -62,8 +62,6 @@ template <typename _Scalar> struct PDALFunction {
   using FunctionData = FunctionDataTpl<Scalar>;
   using CstrSet = ConstraintSetBase<Scalar>;
 
-  LinesearchMode ls_mode;
-
   SolverProxDDP<Scalar> const *solver;
   Scalar traj_cost = 0.;
   Scalar penalty_value = 0.;
@@ -72,8 +70,7 @@ template <typename _Scalar> struct PDALFunction {
   /// Weight of dual penalty. Values different from 1 not supported yet.
   Scalar dual_weight_ = 1.;
 
-  PDALFunction(SolverProxDDP<Scalar> const *solver, const LinesearchMode mode)
-      : ls_mode(mode), solver(solver) {}
+  PDALFunction(SolverProxDDP<Scalar> const *solver) : solver(solver) {}
 
   /// @brief    Compute the merit function at the trial point.
   /// @warning  Evaluate the problem and proximal terms first!
@@ -84,6 +81,7 @@ template <typename _Scalar> struct PDALFunction {
     traj_cost = computeTrajectoryCost(problem, prob_data);
     prox_value = computeProxPenalty(workspace, solver->rho());
     penalty_value = 0.;
+    auto ls_mode = solver->ls_mode;
 
     bool with_primal_dual_terms = ls_mode == LinesearchMode::PRIMAL_DUAL;
 
