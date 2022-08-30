@@ -19,7 +19,7 @@ from proxnlp import constraints
 
 from common import ArgsBase
 
-
+# np.random.seed(1234567)
 np.set_printoptions(precision=3, linewidth=250)
 robot = erd.load("hector")
 rmodel = robot.model
@@ -283,14 +283,14 @@ def main(args: Args):
     _, x_term = task_fun(nsteps)
     problem = setup()
     tol = 1e-3
-    mu_init = 1e-1
-    rho_init = 1e-8
+    mu_init = 1e-3
+    rho_init = 1e-3
     verbose = proxddp.VerboseLevel.VERBOSE
     history_cb = proxddp.HistoryCallback()
     solver = proxddp.SolverProxDDP(
         tol, mu_init, rho_init, verbose=verbose, max_iters=300
     )
-    solver.rol_type = proxddp.RolloutType.NONLINEAR
+    # solver.rol_type = proxddp.RolloutType.NONLINEAR
     solver.registerCallback(history_cb)
     solver.setup(problem)
     solver.run(problem, xs_init, us_init)
