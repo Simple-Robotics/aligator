@@ -269,7 +269,6 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
 
   checkTrajectoryAndAssign(problem, xs_init, us_init, results.xs_, results.us_);
 
-  ::proxddp::BaseLogger logger{};
   logger.active = verbose_ > 0;
   logger.start();
 
