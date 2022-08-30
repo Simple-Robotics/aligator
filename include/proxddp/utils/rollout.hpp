@@ -1,10 +1,11 @@
 #pragma once
 
-#include "proxddp/core/dynamics.hpp"
 #include "proxddp/core/explicit-dynamics.hpp"
 
 #include "proxddp/utils/newton-raphson.hpp"
 #include "proxddp/utils/exceptions.hpp"
+
+#include <boost/optional.hpp>
 
 #include <type_traits>
 
@@ -14,13 +15,15 @@ namespace internal {
 
 struct __forward_dyn {
   double EPS = 1e-6;
+  template <typename T> using VectorRef = typename math_types<T>::VectorRef;
   template <typename T>
-  void operator()(const DynamicsModelTpl<T> &model,
-                  const typename math_types<T>::ConstVectorRef &x,
-                  const typename math_types<T>::ConstVectorRef &u,
-                  DynamicsDataTpl<T> &data,
-                  typename math_types<T>::VectorRef xout,
-                  const std::size_t max_iters = 1000) const {
+  using ConstVectorRef = typename math_types<T>::ConstVectorRef;
+  template <typename T> using Vector = typename math_types<T>::VectorXs;
+  template <typename T>
+  void operator()(const DynamicsModelTpl<T> &model, const ConstVectorRef<T> &x,
+                  const ConstVectorRef<T> &u, DynamicsDataTpl<T> &data,
+                  VectorRef<T> xout, const std::size_t max_iters = 1000,
+                  boost::optional<Vector<T>> gap = boost::none) const {
     using ExpModel = ExplicitDynamicsModelTpl<T>;
     using ExpData = ExplicitDynamicsDataTpl<T>;
     const ExpModel *model_ptr_cast = dynamic_cast<const ExpModel *>(&model);
@@ -29,15 +32,20 @@ struct __forward_dyn {
     bool is_model_explicit =
         (model_ptr_cast != nullptr) && (data_ptr_cast != nullptr);
     if (is_model_explicit) {
-      model_ptr_cast->forward(x, u, *data_ptr_cast);
-      xout = data_ptr_cast->xnext_;
+      // model_ptr_cast->forward(x, u, *data_ptr_cast);
+      // xout = data_ptr_cast->xnext_;
+      this->operator()(*model_ptr_cast, x, u, *data_ptr_cast, xout, max_iters,
+                       gap);
     } else {
-      using ConstVectorRef = typename math_types<T>::ConstVectorRef;
-      auto fun = [&](const ConstVectorRef &xnext) {
+      auto fun = [&](const ConstVectorRef<T> &xnext) -> Vector<T> {
         model.evaluate(x, u, xnext, data);
-        return data.value_;
+        if (gap) {
+          return data.value_ + gap.value();
+        } else {
+          return data.value_;
+        }
       };
-      auto Jfun = [&](const ConstVectorRef &xnext) {
+      auto Jfun = [&](const ConstVectorRef<T> &xnext) {
         model.computeJacobians(x, u, xnext, data);
         return data.Jy_;
       };
@@ -48,13 +56,15 @@ struct __forward_dyn {
   /// Override; falls back to the standard behaviour.
   template <typename T>
   void operator()(const ExplicitDynamicsModelTpl<T> &model,
-                  const typename math_types<T>::ConstVectorRef &x,
-                  const typename math_types<T>::ConstVectorRef &u,
-                  ExplicitDynamicsDataTpl<T> &data,
-                  typename math_types<T>::VectorRef xout,
-                  const std::size_t) const {
+                  const ConstVectorRef<T> &x, const ConstVectorRef<T> &u,
+                  ExplicitDynamicsDataTpl<T> &data, VectorRef<T> xout,
+                  const std::size_t = 0,
+                  boost::optional<Vector<T>> gap = boost::none) const {
     model.forward(x, u, data);
     xout = data.xnext_;
+    if (gap) {
+      model.space_next().integrate(xout, gap.value(), xout);
+    }
   }
 };
 
