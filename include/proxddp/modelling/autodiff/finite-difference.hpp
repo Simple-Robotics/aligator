@@ -44,13 +44,12 @@ struct finite_difference_impl<_Scalar, TOC1>
         fd_eps(fd_eps) {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                const ConstVectorRef &y, BaseData &data) const override {
+                const ConstVectorRef &y, BaseData &data) const {
     func.evaluate(x, u, y, data);
   }
 
   void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
-                        const ConstVectorRef &y,
-                        BaseData &data) const override {
+                        const ConstVectorRef &y, BaseData &data) const {
     VectorXs exi(func.ndx1);
     VectorXs xplus = x;
     VectorXs xminus = x;

@@ -34,7 +34,7 @@ struct CrocActionModelWrapperTpl : public StageModelTpl<Scalar> {
   explicit CrocActionModelWrapperTpl(
       boost::shared_ptr<CrocActionModel> action_model)
       : Base(std::make_shared<StateWrapper>(action_model->get_state()),
-             action_model->get_nu()),
+             (int)action_model->get_nu()),
         action_model_(action_model) {
     using EqualitySet = proxnlp::EqualityConstraint<Scalar>;
     const int nr = (int)action_model->get_state()->get_ndx();
