@@ -12,6 +12,7 @@ import pprint
 
 class Args(tap.Tap):
     use_term_cstr: bool = False
+    bounds: bool = True
 
 
 args = Args().parse_args()
@@ -41,10 +42,11 @@ rcost = proxddp.CostStack(nx, nu, [rcost], [1.0])
 term_cost = proxddp.QuadraticCost(Qf, R)
 dynmodel = dynamics.LinearDiscreteDynamics(A, B, c)
 stage = proxddp.StageModel(space, nu, rcost, dynmodel)
-u_min = -0.17 * np.ones(nu)
-u_max = +0.17 * np.ones(nu)
-ctrl_box = proxddp.ControlBoxFunction(nx, u_min, u_max)
-stage.addConstraint(ctrl_box, constraints.NegativeOrthant())
+if args.bounds:
+    u_min = -0.16 * np.ones(nu)
+    u_max = +0.16 * np.ones(nu)
+    ctrl_box = proxddp.ControlBoxFunction(nx, u_min, u_max)
+    stage.addConstraint(ctrl_box, constraints.NegativeOrthant())
 
 
 nsteps = 10
@@ -102,15 +104,16 @@ plt.xlabel("Time $i$")
 
 plt.subplot(122)
 plt.plot(res.us, **lstyle)
-plt.hlines(
-    np.concatenate([u_min, u_max]),
-    *trange[[0, -1]],
-    ls="-",
-    colors="k",
-    lw=1.5,
-    alpha=0.2,
-    label=r"$\bar{u}$"
-)
+if args.bounds:
+    plt.hlines(
+        np.concatenate([u_min, u_max]),
+        *trange[[0, -1]],
+        ls="-",
+        colors="k",
+        lw=1.5,
+        alpha=0.2,
+        label=r"$\bar{u}$"
+    )
 plt.title("Controls $u(t)$")
 plt.legend()
 plt.tight_layout()
