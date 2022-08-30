@@ -149,8 +149,26 @@ def main(args: Args):
     else:
         raise ValueError()
 
+    def is_feasible(point, centers, radius, margin):
+        if len(centers) >= 1 and radius > 0:
+            for i in range(len(centers)):
+                dist = np.linalg.norm(point[:2] - centers[i][:2])
+                if dist < radius + margin:
+                    return False
+        return True
+
+    def sample_feasible_translation(centers, radius, margin):
+        translation = np.random.uniform([-1.5, 0.0, 0.2], [2.0, 2.0, 1.0], 3)
+        feas = is_feasible(translation, centers, radius, margin)
+        while not feas:
+            translation[:2] = np.random.uniform([-1.0, 0.0, 0.2], [2.0, 2.0, 1.0], 3)
+            feas = is_feasible(translation, centers, radius, margin)
+        return translation
+
     x0 = np.concatenate([robot.q0, np.zeros(nv)])
-    x0[2] = 0.2
+    x0[:3] = sample_feasible_translation(
+        [center_column1, center_column2], cyl_radius, quad_radius
+    )
 
     tau = pin.rnea(rmodel, rdata, robot.q0, np.zeros(nv), np.zeros(nv))
     u0, _, _, _ = np.linalg.lstsq(QUAD_ACT_MATRIX, tau)
