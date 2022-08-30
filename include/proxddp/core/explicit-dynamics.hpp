@@ -25,13 +25,7 @@ public:
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using Base::space_next_;
 
-  int nx2;
-
-  /// The constructor requires providing the next state's manifold.
-  ExplicitDynamicsModelTpl(const int ndx1, const int nu,
-                           const shared_ptr<Manifold> &next_state);
-  /// Constructor with current (same as next) state space, and control space
-  /// dimension.
+  /// Constructor requires providing the next state's manifold.
   ExplicitDynamicsModelTpl(const shared_ptr<Manifold> &next_state,
                            const int nu);
   virtual ~ExplicitDynamicsModelTpl() = default;

@@ -28,16 +28,14 @@ void exposeDynamics() {
       .def(bp::init<ManifoldPtr, const int>(bp::args("self", "space", "nu")))
       .def_readonly("space", &DynamicsModel::space_)
       .def_readonly("space_next", &DynamicsModel::space_next_)
+      .add_property("nx1", &DynamicsModel::nx1)
+      .add_property("nx2", &DynamicsModel::nx2)
       .def(CreateDataPythonVisitor<DynamicsModel>());
 
   bp::class_<PyExplicitDynamics<>, bp::bases<DynamicsModel>,
              boost::noncopyable>(
       "ExplicitDynamicsModel", "Base class for explicit dynamics.",
-      bp::init<const int, const int, const ManifoldPtr &>(
-          "Construtor with current state dimension, control dimension and "
-          "output state space.",
-          bp::args("self", "ndx1", "nu", "next_space")))
-      .def(bp::init<const ManifoldPtr &, const int>(
+      bp::init<const ManifoldPtr &, const int>(
           "Constructor with state space and control dimension.",
           bp::args("self", "space", "nu")))
       .def("forward", bp::pure_virtual(&ExplicitDynamics::forward),

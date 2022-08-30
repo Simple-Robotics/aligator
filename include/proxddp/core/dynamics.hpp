@@ -35,6 +35,9 @@ struct DynamicsModelTpl : StageFunctionTpl<_Scalar> {
   /// @copybrief space_next_
   const Manifold &space_next() const { return *space_next_; }
 
+  inline int nx1() const { return space_->nx(); }
+  inline int nx2() const { return space_next_->nx(); }
+
   /**
    * @brief  Constructor for dynamics.
    *

@@ -5,13 +5,8 @@
 namespace proxddp {
 template <typename Scalar>
 ExplicitDynamicsModelTpl<Scalar>::ExplicitDynamicsModelTpl(
-    const int ndx1, const int nu, const shared_ptr<Manifold> &next_state)
-    : Base(next_state, nu, next_state->ndx()), nx2(next_state->nx()) {}
-
-template <typename Scalar>
-ExplicitDynamicsModelTpl<Scalar>::ExplicitDynamicsModelTpl(
     const shared_ptr<Manifold> &next_state, const int nu)
-    : ExplicitDynamicsModelTpl(next_state->ndx(), nu, next_state) {}
+    : Base(next_state, nu, next_state->ndx()) {}
 
 template <typename Scalar>
 void ExplicitDynamicsModelTpl<Scalar>::evaluate(const ConstVectorRef &x,
@@ -43,7 +38,7 @@ void ExplicitDynamicsModelTpl<Scalar>::computeJacobians(const ConstVectorRef &x,
 template <typename Scalar>
 shared_ptr<DynamicsDataTpl<Scalar>>
 ExplicitDynamicsModelTpl<Scalar>::createData() const {
-  return std::make_shared<Data>(this->ndx1, this->nu, this->nx2, this->ndx2);
+  return std::make_shared<Data>(this->ndx1, this->nu, this->nx2(), this->ndx2);
 }
 
 template <typename Scalar>
