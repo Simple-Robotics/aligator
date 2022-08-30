@@ -166,7 +166,6 @@ template <typename Scalar> struct SolverFDDP {
     const auto &fs = workspace.feas_gaps_;
     auto &dxs = workspace.dxs_;
     auto &dus = workspace.dus_;
-    const Manifold &space = problem.stages_[0]->xspace();
     dxs[0] = fs[0];
     const std::size_t nsteps = workspace.nsteps;
     for (std::size_t i = 0; i < nsteps; i++) {
