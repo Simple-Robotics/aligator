@@ -202,9 +202,9 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   qparam.hess_.bottomRightCorner(ndx2, ndx2) = vnext.Vxx_;
 
   // self-adjoint view to (nprim + ndual) sized block of kkt buffer
-  BlockXs kkt_mat = workspace.getKktView(nprim, ndual);
-  BlockXs kkt_rhs = workspace.getKktRhs(nprim, ndual, ndx1);
-  Eigen::Block<BlockXs, -1, -1> kkt_jac = kkt_mat.block(nprim, 0, ndual, nprim);
+  MatrixRef kkt_mat = workspace.kkt_matrix_buf_[step + 1];
+  MatrixRef kkt_rhs = workspace.kkt_rhs_buf_[step + 1];
+  auto kkt_jac = kkt_mat.block(nprim, 0, ndual, nprim);
 
   auto kkt_rhs_0 = kkt_rhs.col(0);
   auto kkt_rhs_D = kkt_rhs.rightCols(ndx1);

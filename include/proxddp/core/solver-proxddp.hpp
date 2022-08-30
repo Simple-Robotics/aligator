@@ -138,9 +138,9 @@ public:
     const VectorXs &lamin0 = results.lams_[0];
     // const VectorXs &prevlam0 = workspace.prev_lams[0];
     const CostData &proxdata0 = *workspace.prox_datas[0];
-    BlockXs kkt_mat = workspace.getKktView(ndx0, ndual0);
-    Eigen::Block<BlockXs, -1, 1, true> kkt_rhs_0 =
-        workspace.getKktRhs(ndx0, ndual0, 1).col(0);
+    auto &kkt_mat = workspace.kkt_matrix_buf_[0];
+    auto &kkt_rhs = workspace.kkt_rhs_buf_[0];
+    auto kkt_rhs_0 = kkt_rhs.col(0);
     kkt_mat.setZero();
     kkt_mat.topLeftCorner(ndx0, ndx0) = vp.Vxx_ + rho() * proxdata0.Lxx_;
     kkt_mat.bottomLeftCorner(ndual0, ndx0) = init_data.Jx_;
