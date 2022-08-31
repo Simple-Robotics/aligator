@@ -189,7 +189,7 @@ def main(args: Args):
     x_tar3[:3] = (-0.4, 2.6, 1.0)
 
     u_max = u_lim * np.ones(nu)
-    u_min = -u_max
+    u_min = np.zeros(nu)
 
     times = np.linspace(0, Tf, nsteps + 1)
     idx_switch = int(0.7 * nsteps)
