@@ -35,6 +35,7 @@ class Args(ArgsBase):
     plot: bool = False
     viz_open: bool = False
     obstacles: bool = False
+    random: bool = True
 
     def process_args(self):
         if self.record:
@@ -166,9 +167,10 @@ def main(args: Args):
         return translation
 
     x0 = np.concatenate([robot.q0, np.zeros(nv)])
-    x0[:3] = sample_feasible_translation(
-        [center_column1, center_column2], cyl_radius, quad_radius
-    )
+    if args.random:
+        x0[:3] = sample_feasible_translation(
+            [center_column1, center_column2], cyl_radius, quad_radius
+        )
 
     tau = pin.rnea(rmodel, rdata, robot.q0, np.zeros(nv), np.zeros(nv))
     u0, _, _, _ = np.linalg.lstsq(QUAD_ACT_MATRIX, tau)
@@ -272,7 +274,6 @@ def main(args: Args):
             proxddp.StateErrorResidual(space, nu, x_tar),
             constraints.EqualityConstraintSet(),
         )
-        # stages[-1].addConstraint(term_cstr)
         term_cost = proxddp.QuadraticResidualCost(
             proxddp.StateErrorResidual(space, nu, x_tar), np.diag(weights)
         )
