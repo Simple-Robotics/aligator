@@ -9,6 +9,8 @@
 
 namespace proxddp {
 
+const char *LS_DEBUG_TPL = "assets/linesearch_iter{:d}.txt";
+
 template <typename Scalar>
 SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
                                      const Scalar rho_init,
@@ -72,6 +74,9 @@ void SolverProxDDP<Scalar>::tryStep(const Problem &problem,
   stage.xspace_next_->integrate(results.xs_[nsteps],
                                 alpha * workspace.dxs_[nsteps],
                                 workspace.trial_xs[nsteps]);
+
+  problem.evaluate(workspace.trial_xs, workspace.trial_us,
+                   workspace.trial_prob_data);
 }
 
 template <typename Scalar>
@@ -146,7 +151,6 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
     // const VectorXs &lamprev = workspace.prev_lams[nsteps + 1];
     const VectorXs &lamin = results.lams_[nsteps + 1];
 
-    const VectorXs &cv = cstr_data.value_;
     const MatrixRef &cJx = cstr_data.Jx_;
     // auto l_expr = lamprev + mu_inv() * cv;
     // const ConstraintSetBase<Scalar> &cstr_set = *term_cstr.set;
@@ -206,8 +210,8 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   MatrixRef kkt_rhs = workspace.kkt_rhs_buf_[step + 1];
   auto kkt_jac = kkt_mat.block(nprim, 0, ndual, nprim);
 
-  auto kkt_rhs_0 = kkt_rhs.col(0);
-  auto kkt_rhs_D = kkt_rhs.rightCols(ndx1);
+  auto kkt_rhs_ff = kkt_rhs.col(0);
+  auto kkt_rhs_fb = kkt_rhs.rightCols(ndx1);
 
   const VectorXs &lam_inn = results.lams_[step + 1];
   const VectorXs &lamprev = workspace.prev_lams[step + 1];
@@ -235,38 +239,39 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
     // lamplus_j); lampdal_j = 2 * lamplus_j - lam_inn_j;
 
     qparam.grad_.noalias() += cstr_data.jac_buffer_.transpose() * lam_inn_j;
-    qparam.hess_.noalias() += cstr_data.vhp_buffer_;
+    qparam.hess_ += cstr_data.vhp_buffer_;
 
     // update the KKT jacobian columns
     cstr_mgr.getBlockByConstraint(kkt_jac, j) =
         cstr_data.jac_buffer_.rightCols(nprim);
-    cstr_mgr.getBlockByConstraint(kkt_rhs_D.bottomRows(ndual), j) =
-        cstr_data.jac_buffer_.leftCols(ndx1);
+    // rhs
+    cstr_mgr.getBlockByConstraint(kkt_rhs_fb.bottomRows(ndual), j) =
+        cstr_data.Jx_;
   }
 
   qparam.storage = qparam.storage.template selfadjointView<Eigen::Lower>();
 
   // blocks: u, y, and dual
-  kkt_rhs_0.head(nprim) = qparam.grad_.tail(nprim);
-  kkt_rhs_0.tail(ndual) = mu_scaled() * (lamplus - lam_inn);
+  kkt_rhs_ff.head(nprim) = qparam.grad_.tail(nprim);
+  kkt_rhs_ff.tail(ndual) = mu_scaled() * (lamplus - lam_inn);
 
-  kkt_rhs_D.topRows(nu) = qparam.Qxu_.transpose();
-  kkt_rhs_D.middleRows(nu, ndx2) = qparam.Qxy_.transpose();
+  kkt_rhs_fb.topRows(nu) = qparam.Qxu_.transpose();
+  kkt_rhs_fb.middleRows(nu, ndx2) = qparam.Qxy_.transpose();
 
   // KKT matrix: (u, y)-block = bottom right of q hessian
-  kkt_mat.topLeftCorner(nprim, nprim) =
-      qparam.hess_.bottomRightCorner(nprim, nprim);
-  kkt_mat.topLeftCorner(nprim, nprim).diagonal().array() += xreg_;
+  auto top_left_kkt = kkt_mat.topLeftCorner(nprim, nprim);
+  top_left_kkt = qparam.hess_.bottomRightCorner(nprim, nprim);
+  top_left_kkt.topLeftCorner(nu, nu).diagonal().array() += ureg_;
   kkt_mat.bottomRightCorner(ndual, ndual).diagonal().array() = -mu_scaled();
 
   {
     const CostData &proxnext = *workspace.prox_datas[step + 1];
-    auto grad_u = kkt_rhs_0.head(nu);
-    auto grad_y = kkt_rhs_0.segment(nu, ndx2);
+    auto grad_u = kkt_rhs_ff.head(nu);
+    auto grad_y = kkt_rhs_ff.segment(nu, ndx2);
     Scalar dual_res_u = math::infty_norm(grad_u - rho() * proxdata.Lu_);
     Scalar dual_res_y = math::infty_norm(grad_y - rho() * proxnext.Lx_);
     workspace.inner_criterion_by_stage(long(step + 1)) =
-        math::infty_norm(kkt_rhs_0);
+        math::infty_norm(kkt_rhs_ff);
     workspace.dual_infeas_by_stage(long(step + 1)) =
         std::max(dual_res_u, dual_res_y);
   }
@@ -396,27 +401,37 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
                                       Workspace &workspace, Results &results) {
 
   // merit function evaluation
-  auto merit_eval_fun = [&](Scalar a0) {
-    switch (rol_type) {
-    case RolloutType::LINEAR:
-      tryStep(problem, workspace, results, a0);
-      break;
-    case RolloutType::NONLINEAR:
-      nonlinearRollout(problem, workspace, results, a0);
-      break;
-    default:
-      proxddp_runtime_error("Rollout type not recognized.");
-    }
-    problem.evaluate(workspace.trial_xs, workspace.trial_us,
-                     workspace.trial_prob_data);
+  auto merit_eval_lin = [&](Scalar a0) {
+    tryStep(problem, workspace, results, a0);
     computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
     computeMultipliers(problem, workspace, workspace.trial_lams,
                        workspace.trial_prob_data, false);
     return merit_fun.evaluate(problem, workspace.trial_lams, workspace,
                               workspace.trial_prob_data);
   };
+  auto merit_eval_fun = [&](Scalar a0) {
+    switch (this->rol_type) {
+    case RolloutType::LINEAR:
+      return merit_eval_lin(a0);
+      break;
+    case RolloutType::NONLINEAR:
+      nonlinearRollout(problem, workspace, results, a0);
+      problem.evaluate(workspace.trial_xs, workspace.trial_us,
+                       workspace.trial_prob_data);
+      computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
+      computeMultipliers(problem, workspace, workspace.trial_lams,
+                         workspace.trial_prob_data, false);
+      return merit_fun.evaluate(problem, workspace.trial_lams, workspace,
+                                workspace.trial_prob_data);
+      break;
+    default:
+      proxddp_runtime_error("RolloutType unrecognized.");
+      break;
+    }
+  };
+
   Scalar phi0 = 0.;
-  const Scalar fd_eps = 1e-8;
+  const Scalar fd_eps = 1e-9;
   Scalar phieps = 0., dphi0 = 0.;
 
   logger.active = (verbose_ > 0);
@@ -457,45 +472,62 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
     linearRollout(problem, workspace, results);
 
-    phieps = merit_eval_fun(fd_eps);
-#ifndef NDEBUG
-    {
-      int nalph = 120;
-      Scalar a = 0.;
-      Scalar da = 1. / (nalph + 1);
-      const auto fname = fmt::format("assets/linesearch_iter{:d}.txt", k + 1);
-      std::FILE *file = std::fopen(fname.c_str(), "w");
-      fmt::print(file, "alpha,phi\n");
-      for (int i = 0; i <= nalph; i++) {
-        Scalar p = merit_eval_fun(a);
-        fmt::print(file, "{:.4e}, {:.5e}\n", a, p);
-        a += da;
-      }
-    }
-#endif
+    phieps = merit_eval_lin(fd_eps);
     dphi0 = (phieps - phi0) / fd_eps;
     Scalar alpha_opt = 1;
-    typename proxnlp::Linesearch<Scalar>::Options options;
     if (dphi0 <= 0.) {
 
-      proxnlp::ArmijoLinesearch<Scalar>(options).run(merit_eval_fun, phi0,
-                                                     dphi0, alpha_opt);
+      Scalar phi_new = proxnlp::ArmijoLinesearch<Scalar>(ls_params).run(
+          merit_eval_fun, phi0, dphi0, alpha_opt);
+
+#ifndef NDEBUG
+      {
+        int nalph = 80;
+        Scalar a = 0.;
+        Scalar da = 1. / (nalph + 1);
+        const auto fname = fmt::format(LS_DEBUG_TPL, k + 1);
+        std::FILE *file = std::fopen(fname.c_str(), "w");
+        fmt::print(file, "alpha,phi\n");
+        const char *fmtstr = "{:.4e}, {:.5e}\n";
+        for (int i = 0; i <= nalph + 1; i++) {
+          Scalar p = merit_eval_fun(a);
+          fmt::print(file, fmtstr, a, p);
+          a += da;
+        }
+        if (alpha_opt < da) {
+          nalph = 40.;
+          VectorXs als;
+          als.setLinSpaced(nalph, 0., 2 * alpha_opt);
+          for (int i = 1; i < als.size(); i++) {
+            fmt::print(file, fmtstr, als(i), merit_eval_fun(als(i)));
+          }
+        }
+        fmt::print(file, fmtstr, alpha_opt, merit_eval_fun(alpha_opt));
+        std::fclose(file);
+      }
+#endif
       // accept the step
       results.xs_ = workspace.trial_xs;
       results.us_ = workspace.trial_us;
       results.lams_ = workspace.trial_lams;
-      results.merit_value_ = merit_fun.value_;
+      results.merit_value_ = phi_new;
+      if (math::checkScalar(alpha_opt)) {
+        proxddp_runtime_error("Detected NaN");
+      }
       this->decrease_reg();
     } else {
       alpha_opt = 0.;
       this->increase_reg();
       continue; // loop again
     }
-    if (alpha_opt == options.alpha_min) {
+    if (alpha_opt == ls_params.alpha_min) {
       this->increase_reg();
     }
 
     results.traj_cost_ = merit_fun.traj_cost;
+    if (math::checkScalar(results.traj_cost_)) {
+      proxddp_runtime_error("Detected NaN");
+    }
     iter_log.step_size = alpha_opt;
     iter_log.dphi0 = dphi0;
     iter_log.merit = results.merit_value_;
