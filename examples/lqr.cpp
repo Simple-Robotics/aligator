@@ -13,7 +13,6 @@
 #include "proxddp/modelling/control-box-function.hpp"
 
 #include <benchmark/benchmark.h>
-#include <iostream>
 
 using namespace proxddp;
 
