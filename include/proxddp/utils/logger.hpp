@@ -15,7 +15,7 @@ constexpr char sci_format[] = "{: > {}.{}e}";
 constexpr char dbl_format[] = "{: > {}.{}g}";
 
 struct LogRecord {
-  unsigned int iter;
+  unsigned long iter;
   double step_size;
   double inner_crit;
   double prim_err;
