@@ -195,6 +195,12 @@ public:
       dlam = alpha * Gterm.col(0) + Gterm.rightCols(ndx) * dx;
       lams.back() = results.lams_.back() + dlam;
     }
+    if (math::checkScalar(math::infty_norm(xs))) {
+      proxddp_runtime_error("Detected NaN (xs)");
+    }
+    if (math::checkScalar(math::infty_norm(lams))) {
+      proxddp_runtime_error("Detected NaN (lams)");
+    }
   }
 
   void compute_dx0(const Problem &problem, Workspace &workspace,
@@ -225,8 +231,9 @@ public:
     auto ldlt = kkt_sym.ldlt();
     workspace.pd_step_[0] = -kkt_rhs_0;
     ldlt.solveInPlace(workspace.pd_step_[0]);
-    workspace.inner_criterion_by_stage(0) = math::infty_norm(kkt_rhs_0);
-    workspace.dual_infeas_by_stage(0) = math::infty_norm(kkt_rhs_0.head(ndx0));
+    const ProxData &proxdata = *workspace.prox_datas[0];
+    workspace.dual_infeas_by_stage(0) =
+        math::infty_norm(kkt_rhs_0.head(ndx0) - rho() * proxdata.Lx_);
   }
 
   /// @brief    Terminal node.
