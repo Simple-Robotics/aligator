@@ -119,7 +119,6 @@ void SolverFDDP<Scalar>::directionalDerivativeCorrection(const Problem &problem,
                                                          Scalar &d1,
                                                          Scalar &d2) {
   const std::size_t nsteps = workspace.nsteps;
-  const std::vector<VectorXs> &xs = results.xs_;
 
   Scalar dv = 0.;
   for (std::size_t i = 0; i <= nsteps; i++) {

@@ -20,12 +20,12 @@ template <typename Scalar> struct ResultsFDDPTpl : ResultsBaseTpl<Scalar> {
   }
 
   decltype(auto) getFeedback(std::size_t i) {
-    const int ndx = this->gains_[i].cols() - 1;
+    const long ndx = this->gains_[i].cols() - 1;
     return gains_[i].rightCols(ndx);
   }
 
   decltype(auto) getFeedback(std::size_t i) const {
-    const int ndx = this->gains_[i].cols() - 1;
+    const long ndx = this->gains_[i].cols() - 1;
     return gains_[i].rightCols(ndx);
   }
 
