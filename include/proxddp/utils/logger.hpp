@@ -1,6 +1,5 @@
 #pragma once
 
-#include <algorithm>
 #include <vector>
 #include <fmt/color.h>
 #include <fmt/ranges.h>
