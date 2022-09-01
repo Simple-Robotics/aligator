@@ -73,9 +73,8 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
                                 *prob_data.term_cost_data);
   }
   if (term_constraint_) {
-    (*term_constraint_)
-        .func->computeJacobians(xs[nsteps], dummy_term_u0, xs[nsteps],
-                                *prob_data.term_cstr_data);
+    term_constraint_->func->computeJacobians(
+        xs[nsteps], dummy_term_u0, xs[nsteps], *prob_data.term_cstr_data);
   }
 }
 
