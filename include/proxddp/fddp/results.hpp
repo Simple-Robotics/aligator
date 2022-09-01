@@ -36,7 +36,6 @@ template <typename Scalar>
 ResultsFDDPTpl<Scalar>::ResultsFDDPTpl(
     const TrajOptProblemTpl<Scalar> &problem) {
   using StageModel = StageModelTpl<Scalar>;
-  using Manifold = ManifoldAbstractTpl<Scalar>;
 
   const std::size_t nsteps = problem.numSteps();
   xs_.resize(nsteps + 1);
@@ -49,7 +48,6 @@ ResultsFDDPTpl<Scalar>::ResultsFDDPTpl(
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &sm = *problem.stages_[i];
-    const Manifold &uspace = sm.uspace();
 
     const int ndx = sm.ndx1();
     const int nu = sm.nu();

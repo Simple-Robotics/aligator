@@ -19,7 +19,7 @@ template <typename Scalar> struct NewtonRaphson {
   static bool run(const Manifold &man, Fun &fun, JacFun &jac_fun,
                   const ConstVectorRef xinit, VectorRef xout,
                   const Scalar eps = 1e-6, const std::size_t MAXITERS = 1000,
-                  VerboseLevel verbose = VerboseLevel::QUIET) {
+                  VerboseLevel = VerboseLevel::QUIET) {
     xout = xinit;
     VectorXs f0 = fun(xout);
     VectorXs dx(f0);

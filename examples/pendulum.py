@@ -110,6 +110,7 @@ disc_dyn = proxddp.dynamics.IntegratorSemiImplEuler(cont_dyn, time_step)
 nq = model.nq
 nv = model.nv
 x0 = space.neutral()
+np.random.seed(1)
 x0[0] = np.random.uniform(-1, 1, 1) * np.pi
 
 target_pos = np.array([0.0, 0.0, 1.0])
@@ -183,6 +184,7 @@ MAX_ITER = 300
 solver = proxddp.SolverProxDDP(
     TOL, mu_init, rho_init=rho_init, max_iters=MAX_ITER, verbose=verbose
 )
+# solver.rol_type = proxddp.RolloutType.NONLINEAR
 callback = proxddp.HistoryCallback()
 solver.registerCallback(callback)
 
