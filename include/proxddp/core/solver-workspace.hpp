@@ -9,6 +9,8 @@
 #include "proxddp/core/value-storage.hpp"
 #include "proxddp/core/proximal-penalty.hpp"
 
+#include <Eigen/Cholesky>
+
 namespace proxddp {
 
 template <typename Scalar> struct WorkspaceBaseTpl {
@@ -82,6 +84,8 @@ template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
 
   /// Buffer for KKT matrix
   std::vector<MatrixXs> kkt_matrix_buf_;
+  /// LDLT decompositions
+  std::vector<Eigen::LDLT<MatrixXs, Eigen::Lower>> ldlts_;
   /// Buffer for KKT right hand side
   std::vector<MatrixXs> kkt_rhs_buf_;
 

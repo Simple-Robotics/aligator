@@ -3,8 +3,6 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include <Eigen/Cholesky>
-
 #include <fmt/color.h>
 
 namespace proxddp {
@@ -206,15 +204,15 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   qparam.hess_.bottomRightCorner(ndx2, ndx2) = vnext.Vxx_;
 
   // self-adjoint view to (nprim + ndual) sized block of kkt buffer
-  MatrixRef kkt_mat = workspace.kkt_matrix_buf_[step + 1];
-  MatrixRef kkt_rhs = workspace.kkt_rhs_buf_[step + 1];
+  MatrixXs &kkt_mat = workspace.kkt_matrix_buf_[step + 1];
+  MatrixXs &kkt_rhs = workspace.kkt_rhs_buf_[step + 1];
   auto kkt_jac = kkt_mat.block(nprim, 0, ndual, nprim);
 
   auto kkt_rhs_ff = kkt_rhs.col(0);
   auto kkt_rhs_fb = kkt_rhs.rightCols(ndx1);
 
   const VectorXs &lam_inn = results.lams_[step + 1];
-  const VectorXs &lamprev = workspace.prev_lams[step + 1];
+  // const VectorXs &lamprev = workspace.prev_lams[step + 1];
   VectorXs &lamplus = workspace.lams_plus[step + 1];
   VectorXs &lampdal = workspace.lams_pdal[step + 1];
 
@@ -277,11 +275,25 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   }
 
   /* Compute gains with LDLT */
-  auto kkt_mat_view = kkt_mat.template selfadjointView<Eigen::Lower>();
-  auto ldlt_ = kkt_mat_view.ldlt();
+  kkt_mat = kkt_mat.template selfadjointView<Eigen::Lower>();
+  auto &ldlt = workspace.ldlts_[step + 1];
+  ldlt.compute(kkt_mat);
   MatrixXs &gains = results.gains_[step];
   gains = -kkt_rhs;
-  ldlt_.solveInPlace(gains);
+  ldlt.solveInPlace(gains);
+
+  const Scalar resdl_thresh = 1e-10;
+  const std::size_t MAX_REFINEMENT_STEPS = 5;
+  MatrixXs resdl = kkt_mat * gains + kkt_rhs;
+  Scalar resdl_norm = math::infty_norm(resdl);
+  for (std::size_t n = 0; n < MAX_REFINEMENT_STEPS; n++) {
+    if (resdl_norm < resdl_thresh)
+      break;
+    resdl = -(kkt_mat * gains + kkt_rhs);
+    ldlt.solveInPlace(resdl);
+    gains += resdl;
+    resdl_norm = math::infty_norm(resdl);
+  }
 
   /* Value function */
   VParams &vp = workspace.value_params[step];
@@ -349,7 +361,6 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
                  inner_tol_, prim_tol_, mu(), rho());
     }
     innerLoop(problem, workspace, results);
-    computeInfeasibilities(problem, workspace, results);
 
     // accept primal updates
     workspace.prev_xs = results.xs_;

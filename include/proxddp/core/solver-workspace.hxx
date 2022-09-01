@@ -30,6 +30,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   prev_xs = trial_xs;
   prev_us = trial_us;
   kkt_matrix_buf_.reserve(nsteps + 1);
+  ldlts_.reserve(nsteps + 1);
   kkt_rhs_buf_.reserve(nsteps + 1);
 
   lams_plus.resize(nsteps + 1);
@@ -44,6 +45,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     int ndual = problem.init_state_error.nr;
 
     kkt_matrix_buf_.emplace_back(nprim + ndual, nprim + ndual);
+    ldlts_.emplace_back(kkt_matrix_buf_[0]);
     kkt_rhs_buf_.emplace_back(nprim + ndual, ndx1 + 1);
 
     lams_plus[0] = VectorXs::Zero(ndual);
@@ -52,8 +54,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     dlams_.emplace_back(pd_step_[0].tail(ndual));
   }
 
-  std::size_t i = 0;
-  for (i = 0; i < nsteps; i++) {
+  for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
     int ndx1 = stage.ndx1(), nu = stage.nu();
     int ndx2 = stage.ndx2();
@@ -64,6 +65,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     q_params.emplace_back(ndx1, nu, ndx2);
 
     kkt_matrix_buf_.emplace_back(nprim + ndual, nprim + ndual);
+    ldlts_.emplace_back(kkt_matrix_buf_[i + 1]);
     kkt_rhs_buf_.emplace_back(nprim + ndual, ndx1 + 1);
 
     lams_plus[i + 1] = VectorXs::Zero(ndual);
@@ -84,6 +86,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     int nprim = ndx1;
     int ndual = tc.func->nr;
     kkt_matrix_buf_.emplace_back(nprim + ndual, nprim + ndual);
+    ldlts_.emplace_back(kkt_matrix_buf_.back());
     kkt_rhs_buf_.emplace_back(nprim + ndual, ndx1 + 1);
     lams_plus.push_back(VectorXs::Zero(ndual));
     pd_step_.push_back(VectorXs::Zero(ndual));
