@@ -61,7 +61,7 @@ template <typename _Scalar> struct QuadraticCostTpl : CostAbstractTpl<_Scalar> {
                   Scalar(0.5) * u.dot(d.w_times_u_ + 2 * interp_u);
   }
 
-  void computeGradients(const ConstVectorRef &x, const ConstVectorRef &u,
+  void computeGradients(const ConstVectorRef &, const ConstVectorRef &,
                         CostData &data) const {
     Data &d = static_cast<Data &>(data);
     d.Lx_ = d.w_times_x_ + interp_x;
