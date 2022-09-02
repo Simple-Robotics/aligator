@@ -21,6 +21,7 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
                        "Newton regularization parameter.")
         .def_readwrite("ureg", &SolverType::ureg_,
                        "Newton regularization parameter.")
+        .def_readwrite("reg_init", &SolverType::reg_init)
         .def("getResults", &SolverType::getResults, bp::args("self"),
              bp::return_internal_reference<>(), "Get the results instance.")
         .def("getWorkspace", &SolverType::getWorkspace, bp::args("self"),
@@ -123,7 +124,6 @@ void exposeFDDP() {
           bp::args("self", "tol", "verbose", "reg_init")))
       .def_readwrite("reg_min", &SolverType::reg_min_)
       .def_readwrite("reg_max", &SolverType::reg_max_)
-      .def_readwrite("reg_init", &SolverType::reg_init)
       .def_readwrite("xreg", &SolverType::xreg_)
       .def_readwrite("ureg", &SolverType::ureg_)
       .def(SolverVisitor<SolverType>())

@@ -54,8 +54,8 @@ public:
   using StageModel = StageModelTpl<Scalar>;
   using Constraint = StageConstraintTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
-  using VParams = typename Workspace::value_storage_t;
-  using QParams = typename Workspace::q_storage_t;
+  using VParams = internal::value_storage<Scalar>;
+  using QParams = internal::q_storage<Scalar>;
   using ProxPenaltyType = ProximalPenaltyTpl<Scalar>;
   using ProxData = typename ProxPenaltyType::Data;
   using CallbackPtr = shared_ptr<helpers::base_callback<Scalar>>;
@@ -74,8 +74,9 @@ public:
   Scalar rho_init = 0.;
 
   Scalar reg_min = 1e-9;
-  Scalar reg_max = 1e8;
-  Scalar xreg_ = 0.;
+  Scalar reg_max = 1e9;
+  Scalar reg_init = 1e-9;
+  Scalar xreg_ = reg_init;
   Scalar ureg_ = xreg_;
 
   const Scalar inner_tol0 = 1.;
