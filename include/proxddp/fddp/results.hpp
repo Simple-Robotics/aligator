@@ -1,6 +1,6 @@
-#pragma one
+#pragma once
 
-#include "proxddp/fwd.hpp"
+#include "proxddp/core/solver-results.hpp"
 
 namespace proxddp {
 
@@ -51,7 +51,6 @@ ResultsFDDPTpl<Scalar>::ResultsFDDPTpl(
 
     const int ndx = sm.ndx1();
     const int nu = sm.nu();
-    const int ndual = sm.numDual();
 
     gains_[i] = MatrixXs::Zero(nu, ndx + 1);
   }
