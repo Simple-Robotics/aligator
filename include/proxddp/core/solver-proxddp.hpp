@@ -220,16 +220,11 @@ public:
     auto kkt_rhs_0 = kkt_rhs.col(0);
     kkt_mat.setZero();
     kkt_mat.topLeftCorner(ndx0, ndx0) = vp.Vxx_ + rho() * proxdata0.Lxx_;
+    kkt_mat.topRightCorner(ndx0, ndual0) = init_data.Jx_.transpose();
     kkt_mat.bottomLeftCorner(ndual0, ndx0) = init_data.Jx_;
     kkt_mat.bottomRightCorner(ndual0, ndual0).diagonal().array() = -mu();
-    // workspace.lams_plus[0] = prevlam0 + mu_inv() * init_data.value_;
-    // workspace.lams_pdal[0] = 2 * workspace.lams_plus[0] - lamin0;
-    kkt_rhs_0.head(ndx0) =
-        vp.Vx_ + init_data.Jx_ * lamin0 + rho() * proxdata0.Lx_;
-    kkt_rhs_0.tail(ndual0) = mu() * (workspace.lams_plus[0] - lamin0);
-
-    auto kkt_sym = kkt_mat.template selfadjointView<Eigen::Lower>();
-    auto ldlt = kkt_sym.ldlt();
+    Eigen::LDLT<MatrixXs, Eigen::Lower> &ldlt = workspace.ldlts_[0];
+    ldlt.compute(kkt_mat);
     workspace.pd_step_[0] = -kkt_rhs_0;
     ldlt.solveInPlace(workspace.pd_step_[0]);
     const ProxData &proxdata = *workspace.prox_datas[0];

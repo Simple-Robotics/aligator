@@ -201,6 +201,8 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   qparam.grad_.tail(ndx2) = vnext.Vx_;
   qparam.hess_.topLeftCorner(ndx1 + nu, ndx1 + nu) =
       cdata.hess_ + rho() * proxdata.hess_;
+  qparam.Quu_.diagonal().array() += ureg_;
+  qparam.Qyy_.diagonal().array() += xreg_;
   qparam.hess_.bottomRightCorner(ndx2, ndx2) = vnext.Vxx_;
 
   // self-adjoint view to (nprim + ndual) sized block of kkt buffer
@@ -315,7 +317,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   checkTrajectoryAndAssign(problem, xs_init, us_init, results.xs_, results.us_);
   if (lams_init.size() == results.lams_.size()) {
     for (std::size_t i = 0; i < lams_init.size(); i++) {
-      std::size_t size = std::min(lams_init[i].rows(), results.lams_[i].rows());
+      long size = std::min(lams_init[i].rows(), results.lams_[i].rows());
       results.lams_[i].head(size) = lams_init[i].head(size);
     }
   }
@@ -324,6 +326,9 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   logger.start();
 
   this->setPenalty(mu_init);
+  xreg_ = reg_init;
+  ureg_ = reg_init;
+
   workspace.prev_xs = results.xs_;
   workspace.prev_us = results.us_;
   workspace.prev_lams = results.lams_;
@@ -336,26 +341,18 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   prim_tol_ = std::max(prim_tol_, target_tol_);
 
   bool &conv = results.conv;
-  bool cur_al_accept = true;
   fmt::color colout = fmt::color::white;
 
   results.al_iter = 0;
   results.num_iters = 0;
-
   std::size_t &al_iter = results.al_iter;
   while ((al_iter < MAX_AL_ITERS) && (results.num_iters < MAX_ITERS)) {
-    if (al_iter > 0) {
-      if (cur_al_accept)
-        colout = fmt::color::dodger_blue;
-      else
-        colout = fmt::color::red;
-    }
     if (verbose_ >= 1) {
       fmt::print(fmt::emphasis::bold | fmt::fg(colout), "[AL iter {:>2d}]",
                  al_iter + 1);
       fmt::print(" ("
-                 "inner_tol {:.2g} | "
-                 "prim_tol  {:.2g} | "
+                 "inner_tol {:.2e} | "
+                 "prim_tol  {:.2e} | "
                  "mu  {:.2g} | "
                  "rho {:.2g} )\n",
                  inner_tol_, prim_tol_, mu(), rho());
@@ -388,11 +385,11 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
         conv = true;
         break;
       }
-      cur_al_accept = true;
+      colout = fmt::color::dodger_blue;
     } else {
       bclUpdateALPenalty();
       updateTolerancesOnFailure();
-      cur_al_accept = false;
+      colout = fmt::color::red;
     }
     rho_penal_ *= bcl_params.rho_update_factor;
 
