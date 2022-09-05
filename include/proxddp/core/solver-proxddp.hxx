@@ -519,6 +519,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
     Scalar phi_new = proxnlp::ArmijoLinesearch<Scalar>(ls_params).run(
         merit_eval_fun, phi0, dphi0, alpha_opt);
+    results.traj_cost_ = merit_fun.traj_cost;
 
 #ifndef NDEBUG
     {

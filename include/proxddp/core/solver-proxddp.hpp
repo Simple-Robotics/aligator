@@ -142,7 +142,7 @@ public:
     std::vector<VectorXs> &lams = workspace.trial_lams;
     TrajOptDataTpl<Scalar> &pd = workspace.trial_prob_data;
 
-    this->compute_dx0(problem, workspace, results);
+    compute_dx0(problem, workspace, results);
 
     {
       workspace.dxs_[0] *= alpha; // scale by alpha
@@ -187,6 +187,10 @@ public:
 
       VectorRef dx_next = workspace.dxs_[i + 1].head(stage.ndx2());
       stage.xspace_next().difference(results.xs_[i + 1], xs[i + 1], dx_next);
+
+      PROXDDP_RAISE_IF_NAN_NAME(xs[i + 1], fmt::format("xs[{:d}]", i + 1));
+      PROXDDP_RAISE_IF_NAN_NAME(us[i], fmt::format("us[{:d}]", i));
+      PROXDDP_RAISE_IF_NAN_NAME(lams[i + 1], fmt::format("lams[{:d}]", i + 1));
     }
     if (problem.term_constraint_) {
       const MatrixXs &Gterm = results.gains_[nsteps];
@@ -196,9 +200,6 @@ public:
       dlam = alpha * Gterm.col(0) + Gterm.rightCols(ndx) * dx;
       lams.back() = results.lams_.back() + dlam;
     }
-    PROXDDP_RAISE_IF_NAN_NAME(xs, "(xs)");
-    PROXDDP_RAISE_IF_NAN_NAME(us, "(us)");
-    PROXDDP_RAISE_IF_NAN_NAME(lams, "(lams)");
   }
 
   void compute_dx0(const Problem &problem, Workspace &workspace,
