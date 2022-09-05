@@ -205,46 +205,7 @@ public:
   }
 
   void compute_dx0(const Problem &problem, Workspace &workspace,
-                   const Results &results) const {
-    // compute direction dx0
-    const VParams &vp = workspace.value_params[0];
-    const StageModel &stage0 = *problem.stages_[0];
-    const FunctionData &init_data = *workspace.problem_data.init_data;
-    const int ndual0 = problem.init_state_error.nr;
-    const int ndx0 = stage0.ndx1();
-    const VectorXs &lamin0 = results.lams_[0];
-    // const VectorXs &prevlam0 = workspace.prev_lams[0];
-    const CostData &proxdata0 = *workspace.prox_datas[0];
-    auto &kkt_mat = workspace.kkt_matrix_buf_[0];
-    auto &kkt_rhs = workspace.kkt_rhs_buf_[0];
-    auto kkt_rhs_0 = kkt_rhs.col(0);
-
-    kkt_rhs_0.head(ndx0) =
-        vp.Vx() + init_data.Jx_ * lamin0 + rho() * proxdata0.Lx_;
-    kkt_rhs_0.tail(ndual0) = mu() * (workspace.lams_plus[0] - lamin0);
-    // {
-    //   workspace.pd_step_[0].setZero();
-    //   workspace.trial_xs[0] = problem.getInitState();
-    //   workspace.trial_lams[0].setZero();
-    //   kkt_rhs_0.setZero();
-    //   workspace.dual_infeas_by_stage(0) = 0.;
-    //   return;
-    // }
-
-    kkt_mat.setZero();
-    kkt_mat.topLeftCorner(ndx0, ndx0) = vp.Vxx() + rho() * proxdata0.Lxx_;
-    kkt_mat.topLeftCorner(ndx0, ndx0) += init_data.Hxx_;
-    kkt_mat.topRightCorner(ndx0, ndual0) = init_data.Jx_.transpose();
-    kkt_mat.bottomLeftCorner(ndual0, ndx0) = init_data.Jx_;
-    kkt_mat.bottomRightCorner(ndual0, ndual0).diagonal().array() = -mu();
-    Eigen::LDLT<MatrixXs, Eigen::Lower> &ldlt = workspace.ldlts_[0];
-    ldlt.compute(kkt_mat);
-    workspace.pd_step_[0] = -kkt_rhs_0;
-    ldlt.solveInPlace(workspace.pd_step_[0]);
-    const ProxData &proxdata = *workspace.prox_datas[0];
-    workspace.dual_infeas_by_stage(0) =
-        math::infty_norm(kkt_rhs_0.head(ndx0) - rho() * proxdata.Lx_);
-  }
+                   const Results &results) const;
 
   /// @brief    Terminal node.
   void computeTerminalValue(const Problem &problem, Workspace &workspace,
