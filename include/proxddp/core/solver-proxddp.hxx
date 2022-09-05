@@ -133,8 +133,8 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
   const CostData &proxdata = *workspace.prox_datas[nsteps];
 
   term_value.v_2() = 2 * (term_cost_data.value_ + rho() * proxdata.value_);
-  term_value.Vx_ = term_cost_data.Lx_ + rho() * proxdata.Lx_;
-  term_value.Vxx_ = term_cost_data.Lxx_ + rho() * proxdata.Lxx_;
+  term_value.Vx() = term_cost_data.Lx_ + rho() * proxdata.Lx_;
+  term_value.Vxx() = term_cost_data.Lxx_ + rho() * proxdata.Lxx_;
 
   if (problem.term_constraint_) {
     /* check number of multipliers */
@@ -161,9 +161,9 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
     fb = mu_inv() * cJx;
 
     term_value.v_2() += mu_inv() * lamplus.squaredNorm();
-    term_value.Vx_.noalias() += cJx.transpose() * lamplus;
-    term_value.Vxx_ += cstr_data.Hxx_;
-    term_value.Vxx_.noalias() += cJx.transpose() * fb;
+    term_value.Vx().noalias() += cJx.transpose() * lamplus;
+    term_value.Vxx() += cstr_data.Hxx_;
+    term_value.Vxx().noalias() += cJx.transpose() * fb;
   }
 
   term_value.storage =
@@ -173,15 +173,15 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
 template <typename Scalar>
 void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
                                          Workspace &workspace, Results &results,
-                                         const std::size_t step) const {
-  const StageModel &stage = *problem.stages_[step];
+                                         const std::size_t t) const {
+  const StageModel &stage = *problem.stages_[t];
 
-  const VParams &vnext = workspace.value_params[step + 1];
-  QParams &qparam = workspace.q_params[step];
+  const VParams &vnext = workspace.value_params[t + 1];
+  QParams &qparam = workspace.q_params[t];
 
-  StageData &stage_data = workspace.problem_data.getStageData(step);
+  StageData &stage_data = workspace.problem_data.getStageData(t);
   const CostData &cdata = *stage_data.cost_data;
-  const CostData &proxdata = *workspace.prox_datas[step];
+  const CostData &proxdata = *workspace.prox_datas[t];
 
   const int nprim = stage.numPrimal();
   const int ndual = stage.numDual();
@@ -198,25 +198,22 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
 
   qparam.q_2() = 2 * cdata.value_;
   qparam.grad_.head(ndx1 + nu) = cdata.grad_ + rho() * proxdata.grad_;
-  qparam.grad_.tail(ndx2) = vnext.Vx_;
+  qparam.grad_.tail(ndx2) = vnext.Vx();
   qparam.hess_.topLeftCorner(ndx1 + nu, ndx1 + nu) =
       cdata.hess_ + rho() * proxdata.hess_;
-  qparam.Quu_.diagonal().array() += ureg_;
-  qparam.Qyy_.diagonal().array() += xreg_;
-  qparam.hess_.bottomRightCorner(ndx2, ndx2) = vnext.Vxx_;
+  qparam.hess_.bottomRightCorner(ndx2, ndx2) = vnext.Vxx();
 
   // self-adjoint view to (nprim + ndual) sized block of kkt buffer
-  MatrixXs &kkt_mat = workspace.kkt_matrix_buf_[step + 1];
-  MatrixXs &kkt_rhs = workspace.kkt_rhs_buf_[step + 1];
+  MatrixXs &kkt_mat = workspace.kkt_matrix_buf_[t + 1];
+  MatrixXs &kkt_rhs = workspace.kkt_rhs_buf_[t + 1];
   auto kkt_jac = kkt_mat.block(nprim, 0, ndual, nprim);
+  auto kkt_low_right = kkt_mat.bottomRightCorner(ndual, ndual).diagonal();
 
   auto kkt_rhs_ff = kkt_rhs.col(0);
   auto kkt_rhs_fb = kkt_rhs.rightCols(ndx1);
 
-  const VectorXs &lam_inn = results.lams_[step + 1];
-  // const VectorXs &lamprev = workspace.prev_lams[step + 1];
-  VectorXs &lamplus = workspace.lams_plus[step + 1];
-  VectorXs &lampdal = workspace.lams_pdal[step + 1];
+  const VectorXs &lam_inn = results.lams_[t + 1];
+  const VectorXs &lamplus = workspace.lams_plus[t + 1];
 
   const ConstraintContainer<Scalar> &cstr_mgr = stage.constraints_;
 
@@ -224,36 +221,28 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   for (std::size_t j = 0; j < stage.numConstraints(); j++) {
     FunctionData &cstr_data = *stage_data.constraint_data[j];
 
-    // Grab Lagrange multiplier segments
-
     const auto lam_inn_j = cstr_mgr.getConstSegmentByConstraint(lam_inn, j);
-    // const auto lamprev_j = cstr_mgr.getConstSegmentByConstraint(lamprev, j);
-    auto lamplus_j = cstr_mgr.getSegmentByConstraint(lamplus, j);
-    auto lampdal_j = cstr_mgr.getSegmentByConstraint(lampdal, j);
-
-    // compose Jacobian by projector and project multiplier
-    const ConstraintSetBase<Scalar> &cstr_set = cstr_mgr.getConstraintSet(j);
-    // auto lam_expr = lamprev_j + mu_inv_scaled() * cstr_data.value_;
-    // cstr_set.applyNormalConeProjectionJacobian(lam_expr,
-    // cstr_data.jac_buffer_); cstr_set.normalConeProjection(lam_expr,
-    // lamplus_j); lampdal_j = 2 * lamplus_j - lam_inn_j;
+    const auto lamplus_j = cstr_mgr.getConstSegmentByConstraint(lamplus, j);
 
     qparam.grad_.noalias() += cstr_data.jac_buffer_.transpose() * lam_inn_j;
-    qparam.hess_ += cstr_data.vhp_buffer_;
+    // qparam.hess_ += cstr_data.vhp_buffer_;
 
     // update the KKT jacobian columns
     cstr_mgr.getBlockByConstraint(kkt_jac, j) =
         cstr_data.jac_buffer_.rightCols(nprim);
-    // rhs
     cstr_mgr.getBlockByConstraint(kkt_rhs_fb.bottomRows(ndual), j) =
         cstr_data.Jx_;
+    cstr_mgr.getSegmentByConstraint(kkt_rhs_ff.tail(ndual), j) =
+        mu_scaled() * (lamplus_j - lam_inn_j);
+
+    kkt_low_right.array() = -mu_scaled();
   }
 
   qparam.storage = qparam.storage.template selfadjointView<Eigen::Lower>();
 
   // blocks: u, y, and dual
-  kkt_rhs_ff.head(nprim) = qparam.grad_.tail(nprim);
-  kkt_rhs_ff.tail(ndual) = mu_scaled() * (lamplus - lam_inn);
+  kkt_rhs_ff.head(nu) = qparam.Qu_;
+  kkt_rhs_ff.segment(nu, ndx2) = qparam.Qy_;
 
   kkt_rhs_fb.topRows(nu) = qparam.Qxu_.transpose();
   kkt_rhs_fb.middleRows(nu, ndx2) = qparam.Qxy_.transpose();
@@ -262,25 +251,31 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   auto top_left_kkt = kkt_mat.topLeftCorner(nprim, nprim);
   top_left_kkt = qparam.hess_.bottomRightCorner(nprim, nprim);
   top_left_kkt.topLeftCorner(nu, nu).diagonal().array() += ureg_;
-  kkt_mat.bottomRightCorner(ndual, ndual).diagonal().array() = -mu_scaled();
-
-  {
-    const CostData &proxnext = *workspace.prox_datas[step + 1];
-    auto grad_u = kkt_rhs_ff.head(nu);
-    auto grad_y = kkt_rhs_ff.segment(nu, ndx2);
-    Scalar dual_res_u = math::infty_norm(grad_u - rho() * proxdata.Lu_);
-    Scalar dual_res_y = math::infty_norm(grad_y - rho() * proxnext.Lx_);
-    workspace.inner_criterion_by_stage(long(step + 1)) =
-        math::infty_norm(kkt_rhs_ff);
-    workspace.dual_infeas_by_stage(long(step + 1)) =
-        std::max(dual_res_u, dual_res_y);
-  }
 
   /* Compute gains with LDLT */
   kkt_mat = kkt_mat.template selfadjointView<Eigen::Lower>();
-  auto &ldlt = workspace.ldlts_[step + 1];
+  Eigen::LDLT<MatrixXs, Eigen::Lower> &ldlt = workspace.ldlts_[t + 1];
   ldlt.compute(kkt_mat);
-  MatrixXs &gains = results.gains_[step];
+
+  // check inertia
+  {
+    std::array<unsigned int, 3> inertia;
+    math::compute_inertia(ldlt.vectorD(), inertia.data());
+    if (inertia[0] != (unsigned)nprim) {
+#ifndef NDEBUG
+      // print inertia
+      fmt::print("[{:d}] kkt inertia ({})\n", t + 1, fmt::join(inertia, ","));
+#endif
+    }
+    if (inertia[1] > 0U) {
+      proxddp_runtime_error("Encountered singular KKT matrix.");
+    }
+    if (inertia[2] != (unsigned)ndual) {
+      proxddp_runtime_error("Wrong no. of dual eigenvalues.");
+    }
+  }
+
+  MatrixXs &gains = results.gains_[t];
   gains = -kkt_rhs;
   ldlt.solveInPlace(gains);
 
@@ -298,7 +293,7 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   }
 
   /* Value function */
-  VParams &vp = workspace.value_params[step];
+  VParams &vp = workspace.value_params[t];
   vp.storage = qparam.storage.topLeftCorner(ndx1 + 1, ndx1 + 1) +
                kkt_rhs.transpose() * gains;
 }

@@ -21,15 +21,17 @@ template <typename _Scalar> struct value_storage {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  int ndx;
   MatrixXs storage;
   Scalar &v_2() { return storage.coeffRef(0, 0); }
-  VectorRef Vx_;
-  MatrixRef Vxx_;
 
   value_storage(const int ndx)
-      : storage(MatrixXs::Zero(ndx + 1, ndx + 1)),
-        Vx_(storage.col(0).tail(ndx)),
-        Vxx_(storage.bottomRightCorner(ndx, ndx)) {}
+      : ndx(ndx), storage(MatrixXs::Zero(ndx + 1, ndx + 1)) {}
+
+  decltype(auto) Vx() { return storage.col(0).tail(ndx); }
+  decltype(auto) Vx() const { return storage.col(0).tail(ndx); }
+  decltype(auto) Vxx() { return storage.bottomRightCorner(ndx, ndx); }
+  decltype(auto) Vxx() const { return storage.bottomRightCorner(ndx, ndx); }
 
   friend std::ostream &operator<<(std::ostream &oss,
                                   const value_storage &store) {

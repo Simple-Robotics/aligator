@@ -107,7 +107,7 @@ void SolverFDDP<Scalar>::computeDirectionalDerivatives(Workspace &workspace,
   for (std::size_t i = 0; i <= nsteps; i++) {
     const VParams &vpar = workspace.value_params[i];
     const VectorXs &ftVxx = workspace.ftVxx_[i];
-    dgrad += vpar.Vx_.dot(fs[i]);
+    dgrad += vpar.Vx().dot(fs[i]);
     dquad -= ftVxx.dot(fs[i]);
   }
 }
@@ -180,12 +180,12 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
     const CostData &term_cost_data = *prob_data.term_cost_data;
     VParams &vp = workspace.value_params[nsteps];
     vp.v_2() = 2 * term_cost_data.value_;
-    vp.Vx_ = term_cost_data.Lx_;
-    vp.Vxx_ = term_cost_data.Lxx_;
-    vp.Vxx_.diagonal().array() += xreg_;
+    vp.Vx() = term_cost_data.Lx_;
+    vp.Vxx() = term_cost_data.Lxx_;
+    vp.Vxx().diagonal().array() += xreg_;
     VectorXs &ftVxx = workspace.ftVxx_[nsteps];
-    ftVxx.noalias() = vp.Vxx_ * fs[nsteps];
-    vp.Vx_ += ftVxx;
+    ftVxx.noalias() = vp.Vxx() * fs[nsteps];
+    vp.Vx() += ftVxx;
     vp.storage = vp.storage.template selfadjointView<Eigen::Lower>();
   }
 
@@ -216,8 +216,8 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
     qparam.hess_ = cd.hess_;
 
     // TODO: implement second-order derivatives for the Q-function
-    qparam.grad_.noalias() += J_x_u.transpose() * vnext.Vx_;
-    qparam.hess_.noalias() += J_x_u.transpose() * vnext.Vxx_ * J_x_u;
+    qparam.grad_.noalias() += J_x_u.transpose() * vnext.Vx();
+    qparam.hess_.noalias() += J_x_u.transpose() * vnext.Vxx() * J_x_u;
     qparam.Qxx_.diagonal().array() += xreg_;
     qparam.Quu_.diagonal().array() += ureg_;
     qparam.storage = qparam.storage.template selfadjointView<Eigen::Lower>();
@@ -241,12 +241,12 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
 
     /* Compute value function */
     VParams &vp = workspace.value_params[i];
-    vp.Vx_ = qparam.Qx_ + fback.transpose() * qparam.Qu_;
-    vp.Vxx_ = qparam.Qxx_ + qparam.Qxu_ * fback;
-    vp.Vxx_.diagonal().array() += xreg_;
+    vp.Vx() = qparam.Qx_ + fback.transpose() * qparam.Qu_;
+    vp.Vxx() = qparam.Qxx_ + qparam.Qxu_ * fback;
+    vp.Vxx().diagonal().array() += xreg_;
     VectorXs &ftVxx = workspace.ftVxx_[i];
-    ftVxx.noalias() = vp.Vxx_ * fs[i];
-    vp.Vx_ += ftVxx;
+    ftVxx.noalias() = vp.Vxx() * fs[i];
+    vp.Vx() += ftVxx;
     vp.storage = vp.storage.template selfadjointView<Eigen::Lower>();
   }
   assert(i == 0);

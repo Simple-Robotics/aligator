@@ -33,8 +33,6 @@ template <typename _Scalar> struct ResultsBaseTpl {
   /// Dynamics' co-states
   std::vector<VectorRef> co_state_;
 
-  int get_ndx1() const { return this->gains_[i].cols() - 1; }
-
   decltype(auto) getFeedforward(std::size_t i) {
     return this->gains_[i].col(0);
   }
@@ -50,6 +48,9 @@ template <typename _Scalar> struct ResultsBaseTpl {
   decltype(auto) getFeedback(std::size_t i) const {
     return this->gains_[i].rightCols(this->get_ndx1(i));
   }
+
+private:
+  int get_ndx1(std::size_t i) const { return this->gains_[i].cols() - 1; }
 };
 
 template <typename Scalar>
