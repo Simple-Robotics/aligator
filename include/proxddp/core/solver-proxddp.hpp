@@ -196,12 +196,9 @@ public:
       dlam = alpha * Gterm.col(0) + Gterm.rightCols(ndx) * dx;
       lams.back() = results.lams_.back() + dlam;
     }
-    if (math::checkScalar(math::infty_norm(xs))) {
-      proxddp_runtime_error("Detected NaN (xs)");
-    }
-    if (math::checkScalar(math::infty_norm(lams))) {
-      proxddp_runtime_error("Detected NaN (lams)");
-    }
+    PROXDDP_RAISE_IF_NAN_NAME(xs, "(xs)");
+    PROXDDP_RAISE_IF_NAN_NAME(us, "(us)");
+    PROXDDP_RAISE_IF_NAN_NAME(lams, "(lams)");
   }
 
   void compute_dx0(const Problem &problem, Workspace &workspace,

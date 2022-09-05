@@ -300,8 +300,8 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     backwardPass(problem, workspace, results);
     computeCriterion(workspace, results);
 
-    proxddp_raise_if_nan(results.primal_infeasibility);
-    proxddp_raise_if_nan(results.dual_infeasibility);
+    PROXDDP_RAISE_IF_NAN(results.primal_infeasibility);
+    PROXDDP_RAISE_IF_NAN(results.dual_infeasibility);
     record.prim_err = results.primal_infeasibility;
     record.dual_err = results.dual_infeasibility;
     record.merit = results.traj_cost_;
@@ -320,10 +320,11 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     }
 
     Scalar phi0 = results.traj_cost_;
+    PROXDDP_RAISE_IF_NAN(phi0);
     Scalar d1_phi, d2_phi;
     computeDirectionalDerivatives(workspace, results, d1_phi, d2_phi);
-    proxddp_raise_if_nan(d1_phi);
-    proxddp_raise_if_nan(d2_phi);
+    PROXDDP_RAISE_IF_NAN(d1_phi);
+    PROXDDP_RAISE_IF_NAN(d2_phi);
 #ifndef NDEBUG
     linearRollout(problem, workspace, results);
     directionalDerivativeCorrection(problem, workspace, results, d1_phi,
@@ -356,7 +357,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
       record.step_size = alpha_opt;
     }
     Scalar phi_new = linesearch_fun(alpha_opt);
-    proxddp_raise_if_nan(phi_new);
+    PROXDDP_RAISE_IF_NAN(phi_new);
     record.merit = phi_new;
     record.dM = phi_new - phi0;
 

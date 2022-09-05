@@ -9,15 +9,43 @@
 #include <cmath>
 #include <type_traits>
 
-#define proxddp_raise_if_nan(value)                                            \
-  if (::proxddp::math::checkScalar(value))                                     \
-  proxddp_runtime_error("encountered NaN.\n")
+#define PROXDDP_RAISE_IF_NAN(value)                                            \
+  if (::proxddp::math::check_numerical_value(value))                           \
+  proxddp_runtime_error("Ecountered NaN.\n")
+
+#define PROXDDP_RAISE_IF_NAN_NAME(value, name)                                 \
+  if (::proxddp::math::check_numerical_value(value))                           \
+  proxddp_runtime_error(                                                       \
+      fmt::format("Encountered NaN for variable {:s}\n", name))
 
 namespace proxddp {
 /// Math utilities
 namespace math {
 
 using namespace proxnlp::math;
+
+/// @brief  Check if a numerical value or vector contains NaNs or infinite
+/// elements. Returns true if so.
+template <typename T, typename = std::enable_if_t<std::is_scalar_v<T>>>
+bool check_numerical_value(const T &s) {
+  return ::proxnlp::math::checkScalar(s);
+}
+
+/// @copybrief check_numerical_value()
+template <typename MatrixType>
+bool check_numerical_value(const Eigen::MatrixBase<MatrixType> &x) {
+  return (x.hasNaN() || (!x.allFinite()));
+}
+
+/// @brief    Check if a std::vector of numerical objects has invalid values.
+template <typename T> bool check_numerical_value(const std::vector<T> &xs) {
+  const std::size_t n = xs.size();
+  for (std::size_t i = 0; i < n; i++) {
+    if (check_numerical_value<T>(xs[i]))
+      return true;
+  }
+  return false;
+}
 
 /// @brief Computes the inertia of a diagonal matrix \f$D\f$ represented by its
 /// diagonal vector.
