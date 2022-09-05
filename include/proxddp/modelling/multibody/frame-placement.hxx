@@ -8,7 +8,7 @@ namespace proxddp {
 
 template <typename Scalar>
 void FramePlacementResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
-                                                 const ConstVectorRef &u,
+                                                 const ConstVectorRef &,
                                                  const ConstVectorRef &,
                                                  BaseData &data) const {
   Data &d = static_cast<Data &>(data);
