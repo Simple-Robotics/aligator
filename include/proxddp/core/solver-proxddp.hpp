@@ -218,8 +218,22 @@ public:
     auto &kkt_mat = workspace.kkt_matrix_buf_[0];
     auto &kkt_rhs = workspace.kkt_rhs_buf_[0];
     auto kkt_rhs_0 = kkt_rhs.col(0);
+
+    kkt_rhs_0.head(ndx0) =
+        vp.Vx() + init_data.Jx_ * lamin0 + rho() * proxdata0.Lx_;
+    kkt_rhs_0.tail(ndual0) = mu() * (workspace.lams_plus[0] - lamin0);
+    // {
+    //   workspace.pd_step_[0].setZero();
+    //   workspace.trial_xs[0] = problem.getInitState();
+    //   workspace.trial_lams[0].setZero();
+    //   kkt_rhs_0.setZero();
+    //   workspace.dual_infeas_by_stage(0) = 0.;
+    //   return;
+    // }
+
     kkt_mat.setZero();
-    kkt_mat.topLeftCorner(ndx0, ndx0) = vp.Vxx_ + rho() * proxdata0.Lxx_;
+    kkt_mat.topLeftCorner(ndx0, ndx0) = vp.Vxx() + rho() * proxdata0.Lxx_;
+    kkt_mat.topLeftCorner(ndx0, ndx0) += init_data.Hxx_;
     kkt_mat.topRightCorner(ndx0, ndual0) = init_data.Jx_.transpose();
     kkt_mat.bottomLeftCorner(ndual0, ndx0) = init_data.Jx_;
     kkt_mat.bottomRightCorner(ndual0, ndual0).diagonal().array() = -mu();
@@ -289,7 +303,7 @@ public:
 
   /// @brief    Perform the inner loop of the algorithm (augmented Lagrangian
   /// minimization).
-  void innerLoop(const Problem &problem, Workspace &workspace,
+  bool innerLoop(const Problem &problem, Workspace &workspace,
                  Results &results);
 
   /// @brief    Compute the primal infeasibility measures.
@@ -297,7 +311,7 @@ public:
   /// normal cone in-place).
   ///           Compute anything which accesses these before!
   void computeInfeasibilities(const Problem &problem, Workspace &workspace,
-                              Results &results) const;
+                              Results &results, bool primal_only) const;
 
   /// @name callbacks
   /// \{
@@ -452,6 +466,8 @@ private:
   Scalar mu_inverse_ = 1. / mu_penal_;
   /// Primal proximal parameter \f$\rho > 0\f$
   Scalar rho_penal_ = rho_init;
+  /// Scale for the dynamical constraint
+  Scalar mu_scale_0 = 0.01;
   PDALFunction<Scalar> merit_fun;
 };
 
