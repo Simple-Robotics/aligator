@@ -28,7 +28,7 @@ template <typename Scalar>
 void SolverProxDDP<Scalar>::linearRollout(const Problem &problem,
                                           Workspace &workspace,
                                           const Results &results) const {
-  this->compute_dx0(problem, workspace, results);
+  compute_dx0(problem, workspace, results);
 
   const std::size_t nsteps = workspace.nsteps;
 
@@ -117,6 +117,7 @@ void SolverProxDDP<Scalar>::compute_dx0(const Problem &problem,
   workspace.pd_step_[0] = -kkt_rhs_0;
   ldlt.solveInPlace(workspace.pd_step_[0]);
   const ProxData &proxdata = *workspace.prox_datas[0];
+  workspace.inner_criterion_by_stage(0) = math::infty_norm(kkt_rhs_0);
   workspace.dual_infeas_by_stage(0) =
       math::infty_norm(kkt_rhs_0.head(ndx0) - rho() * proxdata.Lx_);
 }
@@ -160,9 +161,6 @@ void SolverProxDDP<Scalar>::backwardPass(const Problem &problem,
   for (std::size_t i = 0; i < nsteps; i++) {
     computeGains(problem, workspace, results, nsteps - i - 1);
   }
-  workspace.inner_criterion =
-      math::infty_norm(workspace.inner_criterion_by_stage);
-  results.dual_infeasibility = math::infty_norm(workspace.dual_infeas_by_stage);
 }
 
 template <typename Scalar>
@@ -396,7 +394,11 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
                  "rho {:.2g} )\n",
                  inner_tol_, prim_tol_, mu(), rho());
     }
-    innerLoop(problem, workspace, results);
+    bool inner_conv = innerLoop(problem, workspace, results);
+    if (!inner_conv) {
+      fmt::print("Inner loop failed to converge.\n");
+      return false;
+    }
 
     // accept primal updates
     workspace.prev_xs = results.xs_;
@@ -444,7 +446,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
 }
 
 template <typename Scalar>
-void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
+bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
                                       Workspace &workspace, Results &results) {
 
   // merit function evaluation
@@ -495,8 +497,69 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     phi0 = merit_fun.evaluate(problem, results.lams_, workspace,
                               workspace.problem_data);
 
-    backwardPass(problem, workspace, results);
-    computeInfeasibilities(problem, workspace, results);
+    while (true) {
+      try {
+        backwardPass(problem, workspace, results);
+        break;
+      } catch (const std::runtime_error &) {
+        if (xreg_ == this->reg_max) {
+          return false;
+        }
+        this->increase_reg();
+        continue;
+      }
+    }
+    linearRollout(problem, workspace, results);
+
+    phieps = merit_eval_lin(fd_eps);
+    dphi0 = (phieps - phi0) / fd_eps;
+
+    // otherwise continue linesearch
+    Scalar alpha_opt = 1;
+
+    Scalar phi_new = proxnlp::ArmijoLinesearch<Scalar>(ls_params).run(
+        merit_eval_fun, phi0, dphi0, alpha_opt);
+
+#ifndef NDEBUG
+    {
+      int nalph = 80;
+      Scalar a = 0.;
+      Scalar da = 1. / (nalph + 1);
+      const auto fname = fmt::format(LS_DEBUG_TPL, k + 1);
+      std::FILE *file = std::fopen(fname.c_str(), "w");
+      fmt::print(file, "alpha,phi\n");
+      const char *fmtstr = "{:.4e}, {:.5e}\n";
+      for (int i = 0; i <= nalph + 1; i++) {
+        Scalar p = merit_eval_fun(a);
+        fmt::print(file, fmtstr, a, p);
+        a += da;
+      }
+      if (alpha_opt < da) {
+        nalph = 40.;
+        VectorXs als;
+        als.setLinSpaced(nalph, 0., 2 * alpha_opt);
+        for (int i = 1; i < als.size(); i++) {
+          fmt::print(file, fmtstr, als(i), merit_eval_fun(als(i)));
+        }
+      }
+      fmt::print(file, fmtstr, alpha_opt, merit_eval_fun(alpha_opt));
+      std::fclose(file);
+    }
+#endif
+    // accept the step
+    results.xs_ = workspace.trial_xs;
+    results.us_ = workspace.trial_us;
+    results.lams_ = workspace.trial_lams;
+    results.merit_value_ = phi_new;
+    PROXDDP_RAISE_IF_NAN_NAME(alpha_opt, "alpha_opt");
+    PROXDDP_RAISE_IF_NAN_NAME(results.merit_value_, "results.merit_value");
+    PROXDDP_RAISE_IF_NAN_NAME(results.traj_cost_, "results.traj_cost");
+
+    if (alpha_opt == ls_params.alpha_min) {
+      this->increase_reg();
+    }
+
+    computeInfeasibilities(problem, workspace, results, false);
 
     LogRecord iter_log;
     iter_log.iter = k + 1;
@@ -504,77 +567,6 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     iter_log.inner_crit = workspace.inner_criterion;
     iter_log.prim_err = results.primal_infeasibility;
     iter_log.dual_err = results.dual_infeasibility;
-
-    bool inner_conv = workspace.inner_criterion < inner_tol_;
-    if (inner_conv) {
-      break;
-    } else {
-      bool inner_acceptable = workspace.inner_criterion < target_tol_;
-      if (inner_acceptable &&
-          (std::max(results.dual_infeasibility, results.primal_infeasibility) <
-           target_tol_)) {
-        break;
-      }
-    }
-
-    linearRollout(problem, workspace, results);
-
-    phieps = merit_eval_lin(fd_eps);
-    dphi0 = (phieps - phi0) / fd_eps;
-    Scalar alpha_opt = 1;
-    if (dphi0 <= 0.) {
-
-      Scalar phi_new = proxnlp::ArmijoLinesearch<Scalar>(ls_params).run(
-          merit_eval_fun, phi0, dphi0, alpha_opt);
-
-#ifndef NDEBUG
-      {
-        int nalph = 80;
-        Scalar a = 0.;
-        Scalar da = 1. / (nalph + 1);
-        const auto fname = fmt::format(LS_DEBUG_TPL, k + 1);
-        std::FILE *file = std::fopen(fname.c_str(), "w");
-        fmt::print(file, "alpha,phi\n");
-        const char *fmtstr = "{:.4e}, {:.5e}\n";
-        for (int i = 0; i <= nalph + 1; i++) {
-          Scalar p = merit_eval_fun(a);
-          fmt::print(file, fmtstr, a, p);
-          a += da;
-        }
-        if (alpha_opt < da) {
-          nalph = 40.;
-          VectorXs als;
-          als.setLinSpaced(nalph, 0., 2 * alpha_opt);
-          for (int i = 1; i < als.size(); i++) {
-            fmt::print(file, fmtstr, als(i), merit_eval_fun(als(i)));
-          }
-        }
-        fmt::print(file, fmtstr, alpha_opt, merit_eval_fun(alpha_opt));
-        std::fclose(file);
-      }
-#endif
-      // accept the step
-      results.xs_ = workspace.trial_xs;
-      results.us_ = workspace.trial_us;
-      results.lams_ = workspace.trial_lams;
-      results.merit_value_ = phi_new;
-      if (math::checkScalar(alpha_opt)) {
-        proxddp_runtime_error("Detected NaN");
-      }
-      this->decrease_reg();
-    } else {
-      alpha_opt = 0.;
-      this->increase_reg();
-      continue; // loop again
-    }
-    if (alpha_opt == ls_params.alpha_min) {
-      this->increase_reg();
-    }
-
-    results.traj_cost_ = merit_fun.traj_cost;
-    if (math::checkScalar(results.traj_cost_)) {
-      proxddp_runtime_error("Detected NaN");
-    }
     iter_log.step_size = alpha_opt;
     iter_log.dphi0 = dphi0;
     iter_log.merit = results.merit_value_;
@@ -582,24 +574,44 @@ void SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
     logger.log(iter_log);
 
+    if (std::abs(dphi0) <= ls_params.dphi_thresh)
+      return true;
+
+    bool inner_conv = workspace.inner_criterion < inner_tol_;
+    if (inner_conv) {
+      return true;
+    } else {
+      bool inner_acceptable = workspace.inner_criterion < target_tol_;
+      if (inner_acceptable &&
+          (std::max(results.dual_infeasibility, results.primal_infeasibility) <
+           target_tol_)) {
+        return true;
+      }
+    }
+
     invokeCallbacks(workspace, results);
 
     k++;
   }
+  return false;
 }
 
 template <typename Scalar>
 void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
                                                    Workspace &workspace,
-                                                   Results &results) const {
+                                                   Results &results,
+                                                   bool primal_only) const {
   const TrajOptDataTpl<Scalar> &prob_data = workspace.problem_data;
   const std::size_t nsteps = problem.numSteps();
-  results.primal_infeasibility = 0.;
-  Scalar infeas_over_j = 0.;
-  for (std::size_t step = 0; step < nsteps; step++) {
-    const StageModel &stage = *problem.stages_[step];
-    const StageData &stage_data = prob_data.getStageData(step);
-    infeas_over_j = 0.;
+  {
+    const FunctionData &init_data = prob_data.getInitData();
+    workspace.primal_infeas_by_stage(0) = math::infty_norm(init_data.value_);
+  }
+
+  for (std::size_t i = 0; i < nsteps; i++) {
+    const StageModel &stage = *problem.stages_[i];
+    const StageData &stage_data = prob_data.getStageData(i);
+    Scalar infeas_over_j = 0.;
     for (std::size_t j = 0; j < stage.numConstraints(); j++) {
       const ConstraintSetBase<Scalar> &cstr_set =
           stage.constraints_.getConstraintSet(j);
@@ -607,10 +619,56 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
       cstr_set.normalConeProjection(v, v);
       infeas_over_j = std::max(infeas_over_j, math::infty_norm(v));
     }
-    workspace.primal_infeas_by_stage(long(step)) = infeas_over_j;
+    workspace.primal_infeas_by_stage(long(i + 1)) = infeas_over_j;
   }
+  if (problem.term_constraint_) {
+    const FunctionData &data = *prob_data.term_cstr_data;
+    workspace.primal_infeas_by_stage(nsteps + 1) =
+        math::infty_norm(data.value_);
+  }
+
   results.primal_infeasibility =
       math::infty_norm(workspace.primal_infeas_by_stage);
+
+  if (!primal_only) {
+    for (std::size_t i = 1; i <= nsteps; i++) {
+      auto kkt_rhs_0 = workspace.kkt_rhs_buf_[i].col(0);
+      const StageModel &st = *problem.stages_[i - 1];
+      const int nu = st.nu();
+      const int ndx2 = st.ndx2();
+      const int ndual = st.numDual();
+      auto kktxnext = kkt_rhs_0.segment(nu, ndx2);
+#ifndef NDEBUG
+      fmt::print("[{:>3d}] kkt: (u = {:.3e}, y = {:.3e}, lam = {:.3e})\n", i,
+                 math::infty_norm(kkt_rhs_0.head(nu)),
+                 math::infty_norm(kktxnext),
+                 math::infty_norm(kkt_rhs_0.tail(ndual)));
+      if (i == nsteps) {
+        QParams &qN = workspace.q_params.back();
+        VParams &vN = workspace.value_params.back();
+        const ConstraintContainer<Scalar> &csmgr =
+            problem.stages_.back()->constraints_;
+        auto lam = csmgr.getConstSegmentByConstraint(results.lams_[nsteps], 0);
+      }
+#endif
+      workspace.inner_criterion_by_stage(long(i)) = math::infty_norm(kkt_rhs_0);
+      {
+        const CostData &proxdata = *workspace.prox_datas[i - 1];
+        const CostData &proxnext = *workspace.prox_datas[i];
+        auto grad_u = kkt_rhs_0.head(nu) - rho() * proxdata.Lu_;
+        auto grad_y = kkt_rhs_0.segment(nu, ndx2) - rho() * proxnext.Lx_;
+        Scalar dual_res_u = math::infty_norm(grad_u);
+        Scalar dual_res_y = math::infty_norm(grad_y);
+        workspace.dual_infeas_by_stage(long(i)) =
+            std::max(dual_res_u, dual_res_y);
+      }
+    }
+    workspace.inner_criterion =
+        math::infty_norm(workspace.inner_criterion_by_stage);
+    results.dual_infeasibility =
+        math::infty_norm(workspace.dual_infeas_by_stage);
+  }
+
   return;
 }
 
