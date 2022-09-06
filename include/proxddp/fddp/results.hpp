@@ -11,8 +11,8 @@ template <typename Scalar> struct ResultsFDDPTpl : ResultsBaseTpl<Scalar> {
   using BlockXs = Eigen::Block<MatrixXs, -1, -1>;
 
   using Base::gains_;
-  using Base::us_;
-  using Base::xs_;
+  using Base::us;
+  using Base::xs;
 
   decltype(auto) getFeedforward(std::size_t i) { return gains_[i].col(0); }
   decltype(auto) getFeedforward(std::size_t i) const {
@@ -38,11 +38,11 @@ ResultsFDDPTpl<Scalar>::ResultsFDDPTpl(
   using StageModel = StageModelTpl<Scalar>;
 
   const std::size_t nsteps = problem.numSteps();
-  xs_.resize(nsteps + 1);
-  us_.resize(nsteps);
+  xs.resize(nsteps + 1);
+  us.resize(nsteps);
 
-  xs_default_init(problem, xs_);
-  us_default_init(problem, us_);
+  xs_default_init(problem, xs);
+  us_default_init(problem, us);
 
   gains_.resize(nsteps);
 

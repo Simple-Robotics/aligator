@@ -8,8 +8,10 @@ namespace proxddp {
 
 template <typename Scalar>
 SolverFDDP<Scalar>::SolverFDDP(const Scalar tol, VerboseLevel verbose,
-                               const Scalar reg_init)
-    : target_tol_(tol), reg_init(reg_init), verbose_(verbose) {}
+                               const Scalar reg_init,
+                               const std::size_t max_iters)
+    : target_tol_(tol), reg_init(reg_init), verbose_(verbose),
+      MAX_ITERS(max_iters) {}
 
 template <typename Scalar>
 void SolverFDDP<Scalar>::setup(const Problem &problem) {
@@ -50,7 +52,7 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
 
   {
     const Manifold &space = problem.stages_[0]->xspace();
-    space.integrate(results.xs_[0], alpha * fs[0], xs_try[0]);
+    space.integrate(results.xs[0], alpha * fs[0], xs_try[0]);
   }
   Scalar traj_cost_ = 0.;
 
@@ -61,8 +63,8 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
     ConstVectorRef ff = results.getFeedforward(i);
     ConstMatrixRef fb = results.getFeedback(i);
 
-    sm.xspace().difference(results.xs_[i], xs_try[i], workspace.dxs_[i]);
-    sm.uspace().integrate(results.us_[i], alpha * ff + fb * workspace.dxs_[i],
+    sm.xspace().difference(results.xs[i], xs_try[i], workspace.dxs_[i]);
+    sm.uspace().integrate(results.us[i], alpha * ff + fb * workspace.dxs_[i],
                           us_try[i]);
     sm.evaluate(xs_try[i], us_try[i], xs_try[i + 1], sd);
     const ExpData &dd = stage_get_dynamics_data(sd);
@@ -76,7 +78,7 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
   problem.term_cost_->evaluate(xs_try.back(), us_try.back(), cd_term);
   traj_cost_ += cd_term.value_;
   const Manifold &space = problem.stages_.back()->xspace();
-  space.difference(results.xs_[nsteps], xs_try[nsteps], workspace.dxs_[nsteps]);
+  space.difference(results.xs[nsteps], xs_try[nsteps], workspace.dxs_[nsteps]);
 #ifndef NDEBUG
   if (alpha == 0.)
     assert(math::infty_norm(workspace.dxs_) <=
@@ -125,9 +127,6 @@ void SolverFDDP<Scalar>::directionalDerivativeCorrection(const Problem &problem,
     const VectorXs &ftVxx = workspace.ftVxx_[i];
     dv += ftVxx.dot(workspace.dxs_[i]);
   }
-#ifndef NDEBUG
-  fmt::print("dv = {:.5g}\n", dv);
-#endif
 
   d1 += -dv;
   d2 += 2 * dv;
@@ -266,7 +265,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
   Results &results = *results_;
   Workspace &workspace = *workspace_;
 
-  checkTrajectoryAndAssign(problem, xs_init, us_init, results.xs_, results.us_);
+  checkTrajectoryAndAssign(problem, xs_init, us_init, results.xs, results.us);
 
   logger.active = verbose_ > 0;
   logger.start();
@@ -276,9 +275,6 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
 
   auto linesearch_fun = [&](const Scalar alpha) {
     return forwardPass(problem, results, workspace, alpha);
-    // problem.evaluate(workspace.trial_xs, workspace.trial_us,
-    //                  workspace.trial_prob_data);
-    // return computeTrajectoryCost(problem, workspace.trial_prob_data);
   };
 
   LogRecord record;
@@ -290,12 +286,11 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
 
     record.iter = iter + 1;
 
-    problem.evaluate(results.xs_, results.us_, workspace.problem_data);
+    problem.evaluate(results.xs, results.us, workspace.problem_data);
     results.traj_cost_ = computeTrajectoryCost(problem, workspace.problem_data);
     results.primal_infeasibility =
-        computeInfeasibility(problem, results.xs_, results.us_, workspace);
-    problem.computeDerivatives(results.xs_, results.us_,
-                               workspace.problem_data);
+        computeInfeasibility(problem, results.xs, results.us, workspace);
+    problem.computeDerivatives(results.xs, results.us, workspace.problem_data);
 
     backwardPass(problem, workspace, results);
     computeCriterion(workspace, results);
@@ -332,10 +327,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     {
       const Scalar fd_eps = 1e-7;
       Scalar phi_eps = linesearch_fun(fd_eps);
-      fmt::print("phi_eps = {:.5g}\n", phi_eps);
       Scalar finite_diff_d1 = (phi_eps - phi0) / fd_eps;
-      fmt::print("finite_diff = {:.5g} vs an = {:.5g} (err = {:.5g})\n",
-                 finite_diff_d1, d1_phi, d1_phi - finite_diff_d1);
       assert(math::scalar_close(finite_diff_d1, d1_phi, std::pow(fd_eps, 0.5)));
     }
 #endif
@@ -361,8 +353,8 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     record.merit = phi_new;
     record.dM = phi_new - phi0;
 
-    results.xs_ = workspace.trial_xs;
-    results.us_ = workspace.trial_us;
+    results.xs = workspace.trial_xs;
+    results.us = workspace.trial_us;
     if (d1_small) {
       results.conv = true;
       logger.log(record);

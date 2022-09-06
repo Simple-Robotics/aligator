@@ -25,11 +25,11 @@ template <typename _Scalar> struct ResultsBaseTpl {
   /// Riccati gains
   std::vector<MatrixXs> gains_;
   /// States
-  std::vector<VectorXs> xs_;
+  std::vector<VectorXs> xs;
   /// Controls
-  std::vector<VectorXs> us_;
+  std::vector<VectorXs> us;
   /// Problem Lagrange multipliers
-  std::vector<VectorXs> lams_;
+  std::vector<VectorXs> lams;
   /// Dynamics' co-states
   std::vector<VectorRef> co_state_;
 
@@ -64,10 +64,10 @@ template <typename _Scalar> struct ResultsTpl : ResultsBaseTpl<_Scalar> {
   using Base::co_state_;
   using Base::conv;
   using Base::gains_;
-  using Base::lams_;
+  using Base::lams;
   using Base::num_iters;
-  using Base::us_;
-  using Base::xs_;
+  using Base::us;
+  using Base::xs;
 
   std::size_t al_iter = 0;
 

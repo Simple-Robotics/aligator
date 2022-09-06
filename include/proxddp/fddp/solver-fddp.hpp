@@ -71,7 +71,7 @@ template <typename Scalar> struct SolverFDDP {
 
   VerboseLevel verbose_;
   /// Maximum number of iterations for the solver.
-  std::size_t MAX_ITERS = 200;
+  std::size_t MAX_ITERS;
 
   ::proxddp::BaseLogger logger{};
 
@@ -83,7 +83,7 @@ template <typename Scalar> struct SolverFDDP {
 
   SolverFDDP(const Scalar tol = 1e-6,
              VerboseLevel verbose = VerboseLevel::QUIET,
-             const Scalar reg_init = 1e-9);
+             const Scalar reg_init = 1e-9, const std::size_t max_iters = 200);
 
   const Results &getResults() const { return *results_; }
   const Workspace &getWorkspace() const { return *workspace_; }

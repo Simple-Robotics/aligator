@@ -145,11 +145,9 @@ public:
     compute_dx0(problem, workspace, results);
 
     {
-      workspace.dxs_[0] *= alpha; // scale by alpha
-      workspace.dlams_[0] *= alpha;
-      const StageModel &stage0 = *problem.stages_[0];
-      stage0.xspace().integrate(results.xs_[0], workspace.dxs_[0], xs[0]);
-      lams[0] = results.lams_[0] + workspace.dlams_[0];
+      const StageModel &stage = *problem.stages_[0];
+      stage.xspace().integrate(results.xs[0], alpha * workspace.dxs_[0], xs[0]);
+      lams[0] = results.lams[0] + alpha * workspace.dlams_[0];
     }
 
     for (std::size_t i = 0; i < nsteps; i++) {
@@ -158,8 +156,8 @@ public:
       const int nu = stage.nu();
       const int ndual = stage.numDual();
 
-      auto ff = results.gains_[i].col(0);
-      auto fb = results.gains_[i].rightCols(stage.ndx1());
+      auto ff = results.getFeedforward(i);
+      auto fb = results.getFeedback(i);
       auto ff_u = ff.head(nu);
       auto fb_u = fb.topRows(nu);
       auto ff_lm = ff.tail(ndual);
@@ -168,11 +166,11 @@ public:
       const VectorRef &dx = workspace.dxs_[i];
       VectorRef &du = workspace.dus_[i];
       du.head(nu) = alpha * ff_u + fb_u * dx;
-      stage.uspace().integrate(results.us_[i], du, us[i]);
+      stage.uspace().integrate(results.us[i], du, us[i]);
 
       VectorRef &dlam = workspace.dlams_[i + 1];
       dlam.head(ndual) = alpha * ff_lm + fb_lm * dx;
-      lams[i + 1].head(ndual) = results.lams_[i + 1] + dlam;
+      lams[i + 1].head(ndual) = results.lams[i + 1] + dlam;
 
       const DynamicsModelTpl<Scalar> &dm = stage.dyn_model();
       DynamicsDataTpl<Scalar> &dd =
@@ -183,22 +181,24 @@ public:
       const ConstVectorRef dynprevlam =
           cstr_mgr.getConstSegmentByConstraint(workspace.prev_lams[i + 1], 0);
       VectorXs gap = this->mu_scaled() * (dynprevlam - dynlam);
-      forwardDynamics(dm, xs[i], us[i], dd, xs[i + 1], 2, gap);
+      PROXDDP_RAISE_IF_NAN_NAME(gap, fmt::format("gap[{:d}]", i));
+      forwardDynamics(dm, xs[i], us[i], dd, xs[i + 1], 1, gap);
 
       VectorRef dx_next = workspace.dxs_[i + 1].head(stage.ndx2());
-      stage.xspace_next().difference(results.xs_[i + 1], xs[i + 1], dx_next);
+      stage.xspace_next().difference(results.xs[i + 1], xs[i + 1], dx_next);
 
       PROXDDP_RAISE_IF_NAN_NAME(xs[i + 1], fmt::format("xs[{:d}]", i + 1));
       PROXDDP_RAISE_IF_NAN_NAME(us[i], fmt::format("us[{:d}]", i));
       PROXDDP_RAISE_IF_NAN_NAME(lams[i + 1], fmt::format("lams[{:d}]", i + 1));
     }
     if (problem.term_constraint_) {
-      const MatrixXs &Gterm = results.gains_[nsteps];
       const int ndx = (*problem.term_constraint_).func->ndx1;
-      VectorRef dlam = workspace.dlams_.back();
-      const VectorRef dx = workspace.dxs_.back();
-      dlam = alpha * Gterm.col(0) + Gterm.rightCols(ndx) * dx;
-      lams.back() = results.lams_.back() + dlam;
+      VectorRef &dlam = workspace.dlams_.back();
+      const VectorRef &dx = workspace.dxs_.back();
+      auto ff = results.getFeedforward(nsteps);
+      auto fb = results.getFeedback(nsteps);
+      dlam = alpha * ff + fb * dx;
+      lams.back() = results.lams.back() + dlam;
     }
   }
 

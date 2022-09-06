@@ -35,9 +35,9 @@ template <typename Scalar> struct history_callback : base_callback<Scalar> {
 
   void call(const Workspace &workspace, const Results &results) {
     if (store_primal_dual_vars_) {
-      storage.xs.push_back(results.xs_);
-      storage.us.push_back(results.us_);
-      storage.lams.push_back(results.lams_);
+      storage.xs.push_back(results.xs);
+      storage.us.push_back(results.us);
+      storage.lams.push_back(results.lams);
     }
     if (store_values_) {
       storage.values.push_back(results.traj_cost_);

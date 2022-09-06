@@ -75,9 +75,9 @@ void exposeBase() {
                     "Number of solver iterations.")
       .def_readonly("conv", &ResultsBase::conv)
       .def_readonly("gains", &ResultsBase::gains_)
-      .def_readonly("xs", &ResultsBase::xs_)
-      .def_readonly("us", &ResultsBase::us_)
-      .def_readonly("lams", &ResultsBase::lams_)
+      .def_readonly("xs", &ResultsBase::xs)
+      .def_readonly("us", &ResultsBase::us)
+      .def_readonly("lams", &ResultsBase::lams)
       .def_readonly("co_state", &ResultsBase::co_state_)
       .def_readonly("primal_infeas", &ResultsBase::primal_infeasibility)
       .def_readonly("dual_infeas", &ResultsBase::dual_infeasibility)
@@ -120,8 +120,8 @@ void exposeFDDP() {
 
   bp::class_<SolverType, boost::noncopyable>(
       "SolverFDDP", "An implementation of the FDDP solver from Crocoddyl.",
-      bp::init<Scalar, bp::optional<VerboseLevel, Scalar>>(
-          bp::args("self", "tol", "verbose", "reg_init")))
+      bp::init<Scalar, bp::optional<VerboseLevel, Scalar, std::size_t>>(
+          bp::args("self", "tol", "verbose", "reg_init", "max_iters")))
       .def_readwrite("reg_min", &SolverType::reg_min_)
       .def_readwrite("reg_max", &SolverType::reg_max_)
       .def_readwrite("xreg", &SolverType::xreg_)

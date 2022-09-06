@@ -71,10 +71,10 @@ BOOST_AUTO_TEST_CASE(lqr) {
   ::proxddp::TrajOptProblemTpl<double> prox_problem =
       pcroc::convertCrocoddylProblem(croc_problem);
 
-  const double solver_mu0 = 1e-5;
-  ::proxddp::SolverProxDDP<double> prox_solver(TOL, solver_mu0);
+  const double mu_init = 1e-6;
+  ::proxddp::SolverProxDDP<double> prox_solver(TOL, mu_init);
   prox_solver.verbose_ = ::proxddp::VerboseLevel::VERBOSE;
-  prox_solver.MAX_ITERS = 5;
+  prox_solver.MAX_ITERS = 8;
 
   std::vector<Eigen::VectorXd> xs_init(nsteps + 1, x0);
   std::vector<Eigen::VectorXd> us_init(nsteps, u0);
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(lqr) {
   BOOST_TEST_CHECK(conv2);
 
   for (std::size_t i = 0; i < nsteps; i++) {
-    BOOST_TEST_CHECK(results.xs_[i].isApprox(croc_xs[i], 1e-4));
+    BOOST_TEST_CHECK(results.xs[i].isApprox(croc_xs[i], 1e-4));
   }
 }
 
