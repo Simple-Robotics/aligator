@@ -62,6 +62,7 @@ rho_init = 1e-8
 solver = proxddp.SolverProxDDP(
     tol, mu_init=mu_init, rho_init=rho_init, verbose=proxddp.VerboseLevel.VERBOSE
 )
+# solver.rol_type = proxddp.RolloutType.NONLINEAR
 solver.setup(problem)
 
 us_init = [np.zeros(nu) for _ in range(nsteps)]

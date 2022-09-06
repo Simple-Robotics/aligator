@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from proxddp import constraints, manifolds, dynamics
 from pinocchio.visualize import MeshcatVisualizer
 
-from common import ArgsBase
+from common import ArgsBase, get_endpoint_traj
 
 plt.rcParams["lines.linewidth"] = 1.0
 
@@ -154,19 +154,7 @@ plt.ylim(ylim)
 plt.title("Controls")
 
 
-def get_endpoint(q: np.ndarray):
-    pin.framesForwardKinematics(rmodel, rdata, q)
-    return rdata.oMf[tool_id].translation.copy()
-
-
-def get_endpoint_traj(xs: list[np.ndarray]):
-    pts = []
-    for i in range(len(xs)):
-        pts.append(get_endpoint(q=xs[i][: rmodel.nq]))
-    return np.array(pts)
-
-
-pts = get_endpoint_traj(xs_opt)
+pts = get_endpoint_traj(rmodel, rdata, xs_opt, tool_id)
 
 ax = plt.subplot(gs[:, 1], projection="3d")
 ax.plot(*pts.T, lw=1.0)

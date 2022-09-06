@@ -26,3 +26,10 @@ def get_endpoint_traj(rmodel, rdata, xs: list[np.ndarray], tool_id: int):
     for i in range(len(xs)):
         pts.append(get_endpoint(rmodel, rdata, xs[i][: rmodel.nq], tool_id))
     return np.array(pts)
+
+
+def compute_quasistatic(model: pin.Model, data: pin.Data, x0, acc):
+    nq = model.nq
+    q0 = x0[:nq]
+    v0 = x0[nq:]
+    return pin.rnea(model, data, q0, v0, acc)

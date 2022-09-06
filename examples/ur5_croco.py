@@ -1,3 +1,8 @@
+"""
+Define a problem on UR5 using Crocoddyl, convert to proxddp problem and solve using our FDDP.
+@Author  :   manifold
+@License :   (C)Copyright 2021-2022, INRIA
+"""
 import crocoddyl as croc
 import proxddp
 
