@@ -159,7 +159,7 @@ u_min = -25.0 * np.ones(nu)
 u_max = +25.0 * np.ones(nu)
 ctrl_box = proxddp.ControlBoxFunction(ndx, u_min, u_max)
 
-nsteps = 1000
+nsteps = 200
 Tf = nsteps * time_step
 problem = proxddp.TrajOptProblem(x0, nu, space, term_cost)
 
