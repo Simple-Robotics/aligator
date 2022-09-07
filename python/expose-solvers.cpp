@@ -120,8 +120,10 @@ void exposeFDDP() {
 
   bp::class_<SolverType, boost::noncopyable>(
       "SolverFDDP", "An implementation of the FDDP solver from Crocoddyl.",
-      bp::init<Scalar, bp::optional<VerboseLevel, Scalar, std::size_t>>(
-          bp::args("self", "tol", "verbose", "reg_init", "max_iters")))
+      bp::init<Scalar, VerboseLevel, Scalar, std::size_t>(
+          (bp::arg("self"), bp::arg("tol"),
+           bp::arg("verbose") = VerboseLevel::QUIET, bp::arg("reg_init") = 1e-9,
+           bp::arg("max_iters") = 1000)))
       .def_readwrite("reg_min", &SolverType::reg_min_)
       .def_readwrite("reg_max", &SolverType::reg_max_)
       .def_readwrite("xreg", &SolverType::xreg_)
