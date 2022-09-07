@@ -79,8 +79,8 @@ public:
   Scalar xreg_ = reg_init;
   Scalar ureg_ = xreg_;
 
-  const Scalar inner_tol0 = 1.;
-  const Scalar prim_tol0 = 1.;
+  Scalar inner_tol0 = 1.;
+  Scalar prim_tol0 = 1.;
 
   ::proxddp::BaseLogger logger{};
 
@@ -100,8 +100,8 @@ public:
   std::size_t MAX_AL_ITERS = MAX_ITERS;
 
   /// Minimum possible tolerance asked from the solver.
-  const Scalar TOL_MIN = 1e-8;
-  const Scalar MU_MIN = 1e-8;
+  Scalar TOL_MIN = 1e-8;
+  Scalar MU_MIN = 1e-8;
 
   /// Callbacks
   std::vector<CallbackPtr> callbacks_;

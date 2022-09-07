@@ -33,7 +33,6 @@ void SolverProxDDP<Scalar>::linearRollout(const Problem &problem,
   const std::size_t nsteps = workspace.nsteps;
 
   for (std::size_t i = 0; i < nsteps; i++) {
-    const StageModel &stage = *problem.stages_[i];
     VectorXs &pd_step = workspace.pd_step_[i + 1];
     const auto ff = results.getFeedforward(i);
     const auto fb = results.getFeedback(i);
@@ -41,8 +40,6 @@ void SolverProxDDP<Scalar>::linearRollout(const Problem &problem,
     pd_step = ff + fb * workspace.dxs_[i];
   }
   if (problem.term_constraint_) {
-    const MatrixXs &Gterm = results.gains_[nsteps];
-    const int ndx = problem.term_constraint_.value().func->ndx1;
     const auto ff = results.getFeedforward(nsteps);
     const auto fb = results.getFeedback(nsteps);
     workspace.dlams_.back() = ff + fb * workspace.dxs_[nsteps];
@@ -89,13 +86,13 @@ void SolverProxDDP<Scalar>::compute_dx0(const Problem &problem,
   const VectorXs &lamin0 = results.lams[0];
   // const VectorXs &prevlam0 = workspace.prev_lams[0];
   const CostData &proxdata0 = *workspace.prox_datas[0];
-  auto &kkt_mat = workspace.kkt_matrix_buf_[0];
-  auto &kkt_rhs = workspace.kkt_rhs_buf_[0];
-  auto kkt_rhs_0 = kkt_rhs.col(0);
+  MatrixXs &kkt_mat = workspace.kkt_matrix_buf_[0];
+  VectorRef kkt_rhs_0 = workspace.kkt_rhs_buf_[0].col(0);
 
-  kkt_rhs_0.head(ndx0) =
-      vp.Vx() + init_data.Jx_ * lamin0 + rho() * proxdata0.Lx_;
-  kkt_rhs_0.tail(ndual0) = mu() * (workspace.lams_plus[0] - lamin0);
+  auto kktx = kkt_rhs_0.head(ndx0);
+  auto kktl = kkt_rhs_0.tail(ndual0);
+  kktx = vp.Vx() + init_data.Jx_ * lamin0 + rho() * proxdata0.Lx_;
+  kktl = mu() * (workspace.lams_plus[0] - lamin0);
   // {
   //   workspace.pd_step_[0].setZero();
   //   workspace.trial_xs[0] = problem.getInitState();
@@ -116,9 +113,12 @@ void SolverProxDDP<Scalar>::compute_dx0(const Problem &problem,
   workspace.pd_step_[0] = -kkt_rhs_0;
   ldlt.solveInPlace(workspace.pd_step_[0]);
   const ProxData &proxdata = *workspace.prox_datas[0];
+  workspace.inner_criterion_x = math::infty_norm(kktx);
+  workspace.inner_criterion_u = 0.;
+  workspace.inner_criterion_l = math::infty_norm(kktl);
   workspace.inner_criterion_by_stage(0) = math::infty_norm(kkt_rhs_0);
   workspace.dual_infeas_by_stage(0) =
-      math::infty_norm(kkt_rhs_0.head(ndx0) - rho() * proxdata.Lx_);
+      math::infty_norm(kktx - rho() * proxdata.Lx_);
 }
 
 template <typename Scalar>
@@ -244,6 +244,9 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
       cdata.hess_ + rho() * proxdata.hess_;
   qparam.hess_.bottomRightCorner(ndx2, ndx2) = vnext.Vxx();
 
+  qparam.Quu_.diagonal().array() += ureg_;
+  qparam.Qyy_.diagonal().array() += xreg_;
+
   // self-adjoint view to (nprim + ndual) sized block of kkt buffer
   MatrixXs &kkt_mat = workspace.kkt_matrix_buf_[t + 1];
   MatrixXs &kkt_rhs = workspace.kkt_rhs_buf_[t + 1];
@@ -335,8 +338,18 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
 
   /* Value function */
   VParams &vp = workspace.value_params[t];
-  vp.storage = qparam.storage.topLeftCorner(ndx1 + 1, ndx1 + 1) +
-               kkt_rhs.transpose() * gains;
+  // vp.storage = qparam.storage.topLeftCorner(ndx1 + 1, ndx1 + 1) +
+  //              kkt_rhs.transpose() * gains;
+  auto Qxw = kkt_rhs_fb.transpose();
+  auto ff = results.getFeedforward(t);
+  auto fb = results.getFeedback(t);
+#ifndef NDEBUG
+  fmt::print("V'_x = {}\n", vnext.Vx().transpose());
+  fmt::print("lamga= {}\n", ff.tail(ndual).transpose());
+#endif
+  vp.Vx() = qparam.Qx_ + Qxw * ff;
+  vp.Vxx() = qparam.Qxx_ + Qxw * fb;
+  vp.storage = vp.storage.template selfadjointView<Eigen::Lower>();
 }
 
 template <typename Scalar>
@@ -507,7 +520,25 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
         continue;
       }
     }
+
+    computeInfeasibilities(problem, workspace, results, false);
+    // Scalar scale_x = math::infty_norm(results.xs);
+    // Scalar scale_u = math::infty_norm(results.us);
+    // Scalar scale_l = math::infty_norm(results.lams);
+    // Scalar rscale = std::max({scale_x, scale_u, scale_l});
+    // bool inner_conv =
+    //     (workspace.inner_criterion_x < (1 + scale_x) * inner_tol_) &&
+    //     (workspace.inner_criterion_u < (1 + scale_u) * inner_tol_) &&
+    //     (workspace.inner_criterion_l < (1 + scale_l) * inner_tol_);
+    bool inner_conv = (workspace.inner_criterion < inner_tol_);
+    if (inner_conv) {
+      return true;
+    }
+
     linearRollout(problem, workspace, results);
+    Scalar step_norm[3] = {math::infty_norm(workspace.dxs_),
+                           math::infty_norm(workspace.dus_),
+                           math::infty_norm(workspace.dlams_)};
 
     phieps = merit_eval_lin(fd_eps);
     dphi0 = (phieps - phi0) / fd_eps;
@@ -558,8 +589,6 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
       this->increase_reg();
     }
 
-    computeInfeasibilities(problem, workspace, results, false);
-
     LogRecord iter_log;
     iter_log.iter = k + 1;
     iter_log.xreg = xreg_;
@@ -575,18 +604,6 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
     if (std::abs(dphi0) <= ls_params.dphi_thresh)
       return true;
-
-    bool inner_conv = workspace.inner_criterion < inner_tol_;
-    if (inner_conv) {
-      return true;
-    } else {
-      bool inner_acceptable = workspace.inner_criterion < target_tol_;
-      if (inner_acceptable &&
-          (std::max(results.dual_infeasibility, results.primal_infeasibility) <
-           target_tol_)) {
-        return true;
-      }
-    }
 
     invokeCallbacks(workspace, results);
 
@@ -636,19 +653,21 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
       const int nu = st.nu();
       const int ndx2 = st.ndx2();
       const int ndual = st.numDual();
+      auto kktu = kkt_rhs_0.head(nu);
       auto kktxnext = kkt_rhs_0.segment(nu, ndx2);
+      auto kktlam = kkt_rhs_0.tail(ndx2);
+
+      Scalar ru = math::infty_norm(kktu);
+      Scalar ry = math::infty_norm(kktxnext);
+      Scalar rl = math::infty_norm(kktlam);
+
+      workspace.inner_criterion_x = std::max(workspace.inner_criterion_x, ry);
+      workspace.inner_criterion_u = std::max(workspace.inner_criterion_u, ru);
+      workspace.inner_criterion_l = std::max(workspace.inner_criterion_l, rl);
 #ifndef NDEBUG
-      fmt::print("[{:>3d}] kkt: (u = {:.3e}, y = {:.3e}, lam = {:.3e})\n", i,
-                 math::infty_norm(kkt_rhs_0.head(nu)),
-                 math::infty_norm(kktxnext),
-                 math::infty_norm(kkt_rhs_0.tail(ndual)));
-      if (i == nsteps) {
-        QParams &qN = workspace.q_params.back();
-        VParams &vN = workspace.value_params.back();
-        const ConstraintContainer<Scalar> &csmgr =
-            problem.stages_.back()->constraints_;
-        auto lam = csmgr.getConstSegmentByConstraint(results.lams_[nsteps], 0);
-      }
+      fmt::print(
+          "[{:>3d}] kkt: (u = {:.2e}, y = {:.2e}, lam = {:.2e}) | kkty = {}\n",
+          i, ru, ry, rl, kktxnext.transpose());
 #endif
       workspace.inner_criterion_by_stage(long(i)) = math::infty_norm(kkt_rhs_0);
       {
