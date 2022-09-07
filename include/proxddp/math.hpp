@@ -26,7 +26,7 @@ using namespace proxnlp::math;
 
 /// @brief  Check if a numerical value or vector contains NaNs or infinite
 /// elements. Returns true if so.
-template <typename T, typename = std::enable_if_t<std::is_scalar_v<T>>>
+template <typename T, typename = std::enable_if_t<std::is_scalar<T>::value>>
 bool check_numerical_value(const T &s) {
   return ::proxnlp::math::checkScalar(s);
 }
