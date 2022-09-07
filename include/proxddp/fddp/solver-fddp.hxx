@@ -377,6 +377,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
   }
 
   logger.finish(results.conv);
+  invokeCallbacks(workspace, results);
   return results.conv;
 }
 } // namespace proxddp
