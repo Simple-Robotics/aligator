@@ -27,7 +27,7 @@ BOOST_PYTHON_MODULE(pyproxddp) {
     exposeODEs();
     exposeDynamics();
 
-#ifdef WITH_PINOCCHIO_SUPPORT
+#ifdef PROXDDP_WITH_PINOCCHIO
     exposeFreeFwdDynamics();
     exposeConstraintFwdDynamics();
 #endif
