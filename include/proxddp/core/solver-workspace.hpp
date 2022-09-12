@@ -83,7 +83,7 @@ template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
   std::vector<VectorRef> dlams_;
 
   /// Buffer for KKT matrix
-  std::vector<MatrixXs> kkt_matrix_buf_;
+  std::vector<MatrixXs> kkt_mat_buf_;
   /// LDLT decompositions
   std::vector<Eigen::LDLT<MatrixXs, Eigen::Lower>> ldlts_;
   /// Buffer for KKT right hand side

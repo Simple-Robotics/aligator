@@ -408,7 +408,8 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
     }
     bool inner_conv = innerLoop(problem, workspace, results);
     if (!inner_conv) {
-      fmt::print("Inner loop failed to converge.\n");
+      fmt::print(fmt::fg(fmt::color::red), "Inner loop failed to converge.");
+      fmt::print("\n");
       return false;
     }
 
@@ -521,15 +522,8 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
       }
     }
 
-    computeInfeasibilities(problem, workspace, results, false);
-    // Scalar scale_x = math::infty_norm(results.xs);
-    // Scalar scale_u = math::infty_norm(results.us);
-    // Scalar scale_l = math::infty_norm(results.lams);
-    // Scalar rscale = std::max({scale_x, scale_u, scale_l});
-    // bool inner_conv =
-    //     (workspace.inner_criterion_x < (1 + scale_x) * inner_tol_) &&
-    //     (workspace.inner_criterion_u < (1 + scale_u) * inner_tol_) &&
-    //     (workspace.inner_criterion_l < (1 + scale_l) * inner_tol_);
+    computeInfeasibilities(problem, workspace, results);
+
     bool inner_conv = (workspace.inner_criterion < inner_tol_);
     if (inner_conv) {
       return true;
@@ -549,6 +543,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     Scalar phi_new = proxnlp::ArmijoLinesearch<Scalar>(ls_params).run(
         merit_eval_fun, phi0, dphi0, alpha_opt);
     results.traj_cost_ = merit_fun.traj_cost;
+    results.merit_value_ = phi_new;
 
 #ifndef NDEBUG
     {

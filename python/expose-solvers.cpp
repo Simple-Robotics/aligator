@@ -145,7 +145,7 @@ void exposeProxDDP() {
   bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>>(
       "Workspace", "Workspace for ProxDDP.",
       bp::init<const TrajOptProblem &>(bp::args("self", "problem")))
-      .def_readonly("kkt_matrix_", &Workspace::kkt_matrix_buf_)
+      .def_readonly("kkt_mat_", &Workspace::kkt_mat_buf_)
       .def_readonly("kkt_rhs_", &Workspace::kkt_rhs_buf_)
       .def_readonly("trial_lams", &Workspace::trial_lams)
       .def_readonly("inner_crit", &Workspace::inner_criterion)

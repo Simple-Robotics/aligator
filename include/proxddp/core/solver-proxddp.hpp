@@ -101,6 +101,7 @@ public:
 
   /// Minimum possible tolerance asked from the solver.
   Scalar TOL_MIN = 1e-8;
+  /// Minimum possible penalty parameter.
   Scalar MU_MIN = 1e-8;
 
   /// Callbacks
@@ -392,6 +393,8 @@ protected:
     mu_penal_ = std::max(new_mu, MU_MIN);
     mu_inverse_ = 1. / new_mu;
   }
+
+  void setRho(Scalar new_rho) { rho_penal_ = new_rho; }
 
   /// Update the dual proximal penalty according to BCL.
   void bclUpdateALPenalty() {
