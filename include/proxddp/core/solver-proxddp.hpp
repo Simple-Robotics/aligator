@@ -16,13 +16,9 @@
 
 namespace proxddp {
 
-enum class MultiplierUpdateMode : unsigned int {
-  NEWTON = 0,
-  PRIMAL = 1,
-  PRIMAL_DUAL = 2
-};
+enum class MultiplierUpdateMode { NEWTON, PRIMAL, PRIMAL_DUAL };
 
-enum class RolloutType { LINEAR = 0, NONLINEAR = 1 };
+enum class RolloutType { LINEAR, NONLINEAR };
 
 template <typename Scalar> struct BCLParams {
 
@@ -88,10 +84,9 @@ public:
   /// Linesearch options, as in proxnlp.
   LSOptions ls_params;
   LinesearchStrategy ls_strat = LinesearchStrategy::ARMIJO;
-  MultiplierUpdateMode multiplier_update_mode =
-      MultiplierUpdateMode::PRIMAL_DUAL;
+  MultiplierUpdateMode multiplier_update_mode = MultiplierUpdateMode::NEWTON;
   LinesearchMode ls_mode = LinesearchMode::PRIMAL_DUAL;
-  RolloutType rol_type = RolloutType::LINEAR;
+  RolloutType rollout_type = RolloutType::LINEAR;
   BCLParams<Scalar> bcl_params;
 
   /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.

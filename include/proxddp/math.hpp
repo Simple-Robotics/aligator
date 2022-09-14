@@ -28,7 +28,7 @@ using namespace proxnlp::math;
 /// elements. Returns true if so.
 template <typename T, typename = std::enable_if_t<std::is_scalar<T>::value>>
 bool check_numerical_value(const T &s) {
-  return ::proxnlp::math::checkScalar(s);
+  return ::proxnlp::math::check_scalar(s);
 }
 
 /// @copybrief check_numerical_value()

@@ -211,7 +211,7 @@ void exposeProxDDP() {
       .def_readwrite("rho_init", &SolverType::rho_init,
                      "Initial proximal regularization.")
       .def_readwrite("ls_mode", &SolverType::ls_mode, "Linesearch mode.")
-      .def_readwrite("rol_type", &SolverType::rol_type, "Rollout type.")
+      .def_readwrite("rollout_type", &SolverType::rollout_type, "Rollout type.")
       .def(SolverVisitor<SolverType>())
       .def("run", &SolverType::run,
            prox_run_overloads(
