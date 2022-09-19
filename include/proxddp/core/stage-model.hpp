@@ -52,6 +52,13 @@ public:
     assert(constraints_.numConstraints() > 0);
     return dynamic_cast<const Dynamics &>(*constraints_[0].func);
   }
+
+  const Constraint &getConstraint(std::size_t j) const {
+    if (j >= constraints_.numConstraints())
+      proxddp_runtime_error("Maximum index exceeded.");
+    return constraints_[j];
+  }
+
   virtual const Cost &cost() const { return *cost_; }
 
   int nx1() const { return xspace_->nx(); }
