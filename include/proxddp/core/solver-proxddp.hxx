@@ -79,14 +79,13 @@ void SolverProxDDP<Scalar>::compute_dx0(const Problem &problem,
                                         const Results &results) const {
   // compute direction dx0
   const VParams &vp = workspace.value_params[0];
-  const StageModel &stage0 = *problem.stages_[0];
   const FunctionData &init_data = *workspace.problem_data.init_data;
   const int ndual0 = problem.init_state_error.nr;
-  const int ndx0 = stage0.ndx1();
+  const int ndx0 = problem.init_state_error.ndx1;
   const VectorXs &lamin0 = results.lams[0];
   // const VectorXs &prevlam0 = workspace.prev_lams[0];
   const CostData &proxdata0 = *workspace.prox_datas[0];
-  MatrixXs &kkt_mat = workspace.kkt_matrix_buf_[0];
+  MatrixXs &kkt_mat = workspace.kkt_mat_buf_[0];
   VectorRef kkt_rhs_0 = workspace.kkt_rhs_buf_[0].col(0);
 
   auto kktx = kkt_rhs_0.head(ndx0);
@@ -237,18 +236,19 @@ void SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   // to fill in the Q-function derivatives
   qparam.storage.setZero();
 
-  qparam.q_2() = 2 * cdata.value_;
+  qparam.q_2() = 2 * (cdata.value_ + rho() * proxdata.value_);
   qparam.grad_.head(ndx1 + nu) = cdata.grad_ + rho() * proxdata.grad_;
-  qparam.grad_.tail(ndx2) = vnext.Vx();
   qparam.hess_.topLeftCorner(ndx1 + nu, ndx1 + nu) =
       cdata.hess_ + rho() * proxdata.hess_;
-  qparam.hess_.bottomRightCorner(ndx2, ndx2) = vnext.Vxx();
+
+  qparam.Qy_ = vnext.Vx();
+  qparam.Qyy_ = vnext.Vxx();
 
   qparam.Quu_.diagonal().array() += ureg_;
   qparam.Qyy_.diagonal().array() += xreg_;
 
   // self-adjoint view to (nprim + ndual) sized block of kkt buffer
-  MatrixXs &kkt_mat = workspace.kkt_matrix_buf_[t + 1];
+  MatrixXs &kkt_mat = workspace.kkt_mat_buf_[t + 1];
   MatrixXs &kkt_rhs = workspace.kkt_rhs_buf_[t + 1];
   auto kkt_jac = kkt_mat.block(nprim, 0, ndual, nprim);
   auto kkt_low_right = kkt_mat.bottomRightCorner(ndual, ndual).diagonal();

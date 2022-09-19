@@ -217,12 +217,11 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
     // TODO: implement second-order derivatives for the Q-function
     qparam.grad_.noalias() += J_x_u.transpose() * vnext.Vx();
     qparam.hess_.noalias() += J_x_u.transpose() * vnext.Vxx() * J_x_u;
-    qparam.Qxx_.diagonal().array() += xreg_;
     qparam.Quu_.diagonal().array() += ureg_;
     qparam.storage = qparam.storage.template selfadjointView<Eigen::Lower>();
 
     /* Compute gains */
-    // MatrixXs &kkt_mat = workspace.kkt_matrix_bufs[i];
+    // MatrixXs &kkt_mat = workspace.kkt_mat_bufs[i];
     MatrixXs &kkt_rhs = workspace.kkt_rhs_bufs[i];
 
     // kkt_mat = qparam.Quu_;
