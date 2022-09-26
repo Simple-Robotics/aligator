@@ -188,7 +188,6 @@ public:
       PROXDDP_RAISE_IF_NAN_NAME(lams[i + 1], fmt::format("lams[{:d}]", i + 1));
     }
     if (problem.term_constraint_) {
-      const int ndx = (*problem.term_constraint_).func->ndx1;
       VectorRef &dlam = workspace.dlams_.back();
       const VectorRef &dx = workspace.dxs_.back();
       auto ff = results.getFeedforward(nsteps);

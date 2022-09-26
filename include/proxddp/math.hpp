@@ -10,11 +10,11 @@
 #include <type_traits>
 
 #define PROXDDP_RAISE_IF_NAN(value)                                            \
-  if (::proxddp::math::check_numerical_value(value))                           \
-  proxddp_runtime_error("Ecountered NaN.\n")
+  if (::proxddp::math::check_value(value))                                     \
+  proxddp_runtime_error("Encountered NaN.\n")
 
 #define PROXDDP_RAISE_IF_NAN_NAME(value, name)                                 \
-  if (::proxddp::math::check_numerical_value(value))                           \
+  if (::proxddp::math::check_value(value))                                     \
   proxddp_runtime_error(                                                       \
       fmt::format("Encountered NaN for variable {:s}\n", name))
 
@@ -22,26 +22,28 @@ namespace proxddp {
 /// Math utilities
 namespace math {
 
-using namespace proxnlp::math;
+using proxnlp::math::check_scalar;
+using proxnlp::math::infty_norm;
+using proxnlp::math::scalar_close;
 
 /// @brief  Check if a numerical value or vector contains NaNs or infinite
 /// elements. Returns true if so.
 template <typename T, typename = std::enable_if_t<std::is_scalar<T>::value>>
-bool check_numerical_value(const T &s) {
-  return ::proxnlp::math::check_scalar(s);
+bool check_value(const T &s) {
+  return check_scalar(s);
 }
 
-/// @copybrief check_numerical_value()
+/// @copybrief check_value()
 template <typename MatrixType>
-bool check_numerical_value(const Eigen::MatrixBase<MatrixType> &x) {
+bool check_value(const Eigen::MatrixBase<MatrixType> &x) {
   return (x.hasNaN() || (!x.allFinite()));
 }
 
 /// @brief    Check if a std::vector of numerical objects has invalid values.
-template <typename T> bool check_numerical_value(const std::vector<T> &xs) {
+template <typename T> bool check_value(const std::vector<T> &xs) {
   const std::size_t n = xs.size();
   for (std::size_t i = 0; i < n; i++) {
-    if (check_numerical_value<T>(xs[i]))
+    if (check_value<T>(xs[i]))
       return true;
   }
   return false;
