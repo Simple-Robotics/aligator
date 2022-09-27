@@ -4,6 +4,7 @@
 #include "proxddp/fwd.hpp"
 #include "proxddp/core/traj-opt-problem.hpp"
 #include "proxddp/core/solver-workspace.hpp"
+#include "proxddp/core/solver-results.hpp"
 
 namespace proxddp {
 
@@ -69,7 +70,20 @@ template <typename _Scalar> struct PDALFunction {
   /// Weight of dual penalty. Values different from 1 not supported yet.
   Scalar dual_weight_ = 1.;
 
-  PDALFunction(SolverProxDDP<Scalar> const *solver) : solver(solver) {}
+  Scalar mu_min = 1e-7;
+  Scalar mu_max = 1. / mu_min;
+
+  Scalar mu() const { return std::max(mu_min, solver->mu()); }
+
+  Scalar mu_inv() const { return std::max(mu_max, solver->mu_inv()); }
+
+  Scalar mu_scaled() const { return std::max(mu_min, solver->mu_scaled()); }
+
+  Scalar mu_inv_scaled() const {
+    return std::min(mu_max, solver->mu_inv_scaled());
+  }
+
+  PDALFunction(SolverProxDDP<Scalar> const *solver);
 
   /// @brief    Compute the merit function at the trial point.
   /// @warning  Evaluate the problem and proximal terms first!
