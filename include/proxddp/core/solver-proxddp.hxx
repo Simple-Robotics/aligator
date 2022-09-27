@@ -28,7 +28,7 @@ template <typename Scalar>
 void SolverProxDDP<Scalar>::linearRollout(const Problem &problem,
                                           Workspace &workspace,
                                           const Results &results) const {
-  compute_dx0(problem, workspace, results);
+  computeDirX0(problem, workspace, results);
 
   const std::size_t nsteps = workspace.nsteps;
 
@@ -74,9 +74,9 @@ void SolverProxDDP<Scalar>::tryStep(const Problem &problem,
 }
 
 template <typename Scalar>
-void SolverProxDDP<Scalar>::compute_dx0(const Problem &problem,
-                                        Workspace &workspace,
-                                        const Results &results) const {
+void SolverProxDDP<Scalar>::computeDirX0(const Problem &problem,
+                                         Workspace &workspace,
+                                         const Results &results) const {
   // compute direction dx0
   const VParams &vp = workspace.value_params[0];
   const FunctionData &init_data = *workspace.problem_data.init_data;
@@ -149,7 +149,7 @@ void SolverProxDDP<Scalar>::setup(const Problem &problem) {
 }
 
 template <typename Scalar>
-void SolverProxDDP<Scalar>::backwardPass(const Problem &problem,
+bool SolverProxDDP<Scalar>::backwardPass(const Problem &problem,
                                          Workspace &workspace,
                                          Results &results) const {
   /* Terminal node */
@@ -157,8 +157,14 @@ void SolverProxDDP<Scalar>::backwardPass(const Problem &problem,
 
   const std::size_t nsteps = problem.numSteps();
   for (std::size_t i = 0; i < nsteps; i++) {
-    computeGains(problem, workspace, results, nsteps - i - 1);
+    std::size_t t = nsteps - i - 1;
+    updateHamiltonian(problem, t, results, workspace);
+    bool b = computeGains(problem, workspace, results, t);
+    if (!b) {
+      return false;
+    }
   }
+  return true;
 }
 
 template <typename Scalar>
@@ -472,7 +478,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
                               workspace.trial_prob_data);
   };
   auto merit_eval_fun = [&](Scalar a0) {
-    switch (this->rol_type) {
+    switch (this->rollout_type) {
     case RolloutType::LINEAR:
       return merit_eval_lin(a0);
       break;
@@ -575,14 +581,9 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     results.xs = workspace.trial_xs;
     results.us = workspace.trial_us;
     results.lams = workspace.trial_lams;
-    results.merit_value_ = phi_new;
     PROXDDP_RAISE_IF_NAN_NAME(alpha_opt, "alpha_opt");
     PROXDDP_RAISE_IF_NAN_NAME(results.merit_value_, "results.merit_value");
     PROXDDP_RAISE_IF_NAN_NAME(results.traj_cost_, "results.traj_cost");
-
-    if (alpha_opt == ls_params.alpha_min) {
-      this->increase_reg();
-    }
 
     LogRecord iter_log;
     iter_log.iter = k + 1;
@@ -599,6 +600,8 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
     if (std::abs(dphi0) <= ls_params.dphi_thresh)
       return true;
+    if (alpha_opt == ls_params.alpha_min)
+      this->increase_reg();
 
     invokeCallbacks(workspace, results);
 
@@ -618,6 +621,9 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
     const FunctionData &init_data = prob_data.getInitData();
     workspace.primal_infeas_by_stage(0) = math::infty_norm(init_data.value_);
   }
+#ifndef NDEBUG
+  std::FILE *fi = std::fopen("pddp.log", "a");
+#endif
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];

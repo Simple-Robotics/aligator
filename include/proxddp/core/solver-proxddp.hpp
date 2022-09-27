@@ -138,7 +138,7 @@ public:
     std::vector<VectorXs> &lams = workspace.trial_lams;
     TrajOptDataTpl<Scalar> &pd = workspace.trial_prob_data;
 
-    compute_dx0(problem, workspace, results);
+    computeDirX0(problem, workspace, results);
 
     {
       const StageModel &stage = *problem.stages_[0];
@@ -197,8 +197,8 @@ public:
     }
   }
 
-  void compute_dx0(const Problem &problem, Workspace &workspace,
-                   const Results &results) const;
+  void computeDirX0(const Problem &problem, Workspace &workspace,
+                    const Results &results) const;
 
   /// @brief    Terminal node.
   void computeTerminalValue(const Problem &problem, Workspace &workspace,
@@ -207,7 +207,7 @@ public:
   /// @brief    Perform the Riccati backward pass.
   ///
   /// @pre  Compute the derivatives first!
-  void backwardPass(const Problem &problem, Workspace &workspace,
+  bool backwardPass(const Problem &problem, Workspace &workspace,
                     Results &results) const;
 
   /// @brief Allocate new workspace and results instances according to the
@@ -241,6 +241,60 @@ public:
                                              *workspace.prox_datas[nsteps]);
     prox_penalties_[nsteps].computeHessians(xs[nsteps], us[nsteps - 1],
                                             *workspace.prox_datas[nsteps]);
+  }
+
+  /// Compute the Hamiltonian parameters at time @param t.
+  void updateHamiltonian(const Problem &problem, const std::size_t t,
+                         const Results &results, Workspace &workspace) const {
+
+    const StageModel &stage = *problem.stages_[t];
+
+    const VParams &vnext = workspace.value_params[t + 1];
+    QParams &qparam = workspace.q_params[t];
+
+    StageData &stage_data = workspace.problem_data.getStageData(t);
+    const CostData &cdata = *stage_data.cost_data;
+    const CostData &proxdata = *workspace.prox_datas[t];
+
+    const int ndx1 = stage.ndx1();
+    const int nu = stage.nu();
+    const int ndx2 = stage.ndx2();
+
+    assert(vnext.storage.rows() == ndx2 + 1);
+    assert(vnext.storage.cols() == ndx2 + 1);
+
+    // Use the contiguous full gradient/jacobian/hessian buffers
+    // to fill in the Q-function derivatives
+    qparam.storage.setZero();
+    qparam.q_2() = 2 * (cdata.value_ + rho() * proxdata.value_);
+    qparam.Qx = cdata.Lx_ + rho() * proxdata.Lx_;
+    qparam.Qu = cdata.Lu_ + rho() * proxdata.Lu_;
+    qparam.Qy = vnext.Vx();
+
+    qparam.hess_.topLeftCorner(ndx1 + nu, ndx1 + nu) =
+        cdata.hess_ + rho() * proxdata.hess_;
+    qparam.Qyy = vnext.Vxx();
+    qparam.Quu.diagonal().array() += ureg_;
+    qparam.Qyy.diagonal().array() += xreg_;
+
+    const VectorXs &lam_inn = results.lams[t + 1];
+    const VectorXs &lamplus = workspace.lams_plus[t + 1];
+
+    const ConstraintContainer<Scalar> &cstr_mgr = stage.constraints_;
+
+    // Loop over constraints
+    for (std::size_t j = 0; j < cstr_mgr.numConstraints(); j++) {
+      FunctionData &cstr_data = *stage_data.constraint_data[j];
+
+      const auto lam_inn_j = cstr_mgr.getConstSegmentByConstraint(lam_inn, j);
+      const auto lamplus_j = cstr_mgr.getConstSegmentByConstraint(lamplus, j);
+
+      qparam.Qx.noalias() += cstr_data.Jx_.transpose() * lam_inn_j;
+      qparam.Qu.noalias() += cstr_data.Ju_.transpose() * lam_inn_j;
+      qparam.Qy.noalias() += cstr_data.Jy_.transpose() * lam_inn_j;
+      // qparam.hess_ += cstr_data.vhp_buffer_;
+    }
+    qparam.storage = qparam.storage.template selfadjointView<Eigen::Lower>();
   }
 
   /// @brief Run the numerical solver.
