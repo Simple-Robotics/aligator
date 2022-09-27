@@ -556,13 +556,18 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
       int nalph = 80;
       Scalar a = 0.;
       Scalar da = 1. / (nalph + 1);
-      const auto fname = fmt::format(LS_DEBUG_TPL, k + 1);
-      std::FILE *file = std::fopen(fname.c_str(), "w");
-      fmt::print(file, "alpha,phi\n");
-      const char *fmtstr = "{:.4e}, {:.5e}\n";
+      const auto fname = LS_DEBUG_TPL;
+      std::FILE *file = 0;
+      if (k == 0) {
+        file = std::fopen(fname, "w");
+        fmt::print(file, "k,alpha,phi\n");
+      } else {
+        file = std::fopen(fname, "a");
+      }
+      const char *fmtstr = "{:d}, {:.4e}, {:.5e}\n";
       for (int i = 0; i <= nalph + 1; i++) {
         Scalar p = merit_eval_fun(a);
-        fmt::print(file, fmtstr, a, p);
+        fmt::print(file, fmtstr, k, a, p);
         a += da;
       }
       if (alpha_opt < da) {
@@ -570,10 +575,10 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
         VectorXs als;
         als.setLinSpaced(nalph, 0., 2 * alpha_opt);
         for (int i = 1; i < als.size(); i++) {
-          fmt::print(file, fmtstr, als(i), merit_eval_fun(als(i)));
+          fmt::print(file, fmtstr, k, als(i), merit_eval_fun(als(i)));
         }
       }
-      fmt::print(file, fmtstr, alpha_opt, merit_eval_fun(alpha_opt));
+      fmt::print(file, fmtstr, k, alpha_opt, merit_eval_fun(alpha_opt));
       std::fclose(file);
     }
 #endif

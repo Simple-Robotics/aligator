@@ -418,6 +418,7 @@ public:
   /// Scaled inverse penalty parameter.
   Scalar mu_inv_scaled() const { return 1. / mu_scaled(); }
 
+  /// Proximal parameter.
   Scalar rho() const { return rho_penal_; }
 
 protected:
