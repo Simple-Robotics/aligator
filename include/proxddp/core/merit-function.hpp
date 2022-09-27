@@ -20,10 +20,27 @@ Scalar computeProxPenalty(const WorkspaceTpl<Scalar> &workspace,
                           const Scalar rho) {
   Scalar res = 0.;
   const std::size_t nsteps = workspace.nsteps;
-  for (std::size_t i = 0; i < nsteps + 1; i++) {
+  for (std::size_t i = 0; i <= nsteps; i++) {
     res += rho * workspace.prox_datas[i]->value_;
   }
   return res;
+}
+
+template <typename Scalar>
+Scalar costDirectionalDerivative(const WorkspaceTpl<Scalar> &workspace,
+                                 const TrajOptDataTpl<Scalar> &prob_data) {
+  Scalar d1 = 0.;
+  const std::size_t nsteps = workspace.nsteps;
+  for (std::size_t i = 0; i < nsteps; i++) {
+    const StageDataTpl<Scalar> &sd = prob_data.getStageData(i);
+    const CostDataAbstractTpl<Scalar> &cd = *sd.cost_data;
+    d1 += cd.Lx_.dot(workspace.dxs_[i]);
+    d1 += cd.Lu_.dot(workspace.dus_[i]);
+  }
+
+  const CostDataAbstractTpl<Scalar> &tcd = *prob_data.term_cost_data;
+  d1 += tcd.Lx_.dot(workspace.dxs_[nsteps]);
+  return d1;
 }
 
 /** @brief Primal-dual augmented Lagrangian merit function.
