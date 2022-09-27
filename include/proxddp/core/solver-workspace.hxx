@@ -80,6 +80,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     value_params.emplace_back(ndx2);
   }
 
+  value_params_prev = value_params;
+
   if (problem.term_constraint_) {
     const StageConstraintTpl<Scalar> &tc = *problem.term_constraint_;
     const int ndx1 = tc.func->ndx1;

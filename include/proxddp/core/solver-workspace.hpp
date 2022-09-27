@@ -60,6 +60,7 @@ template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
   using ProxData = typename ProxPenalty::Data;
   using StageModel = StageModelTpl<Scalar>;
   using Base = WorkspaceBaseTpl<Scalar>;
+  using value_storage_t = internal::value_storage<Scalar>;
 
   using Base::co_state_;
   using Base::nsteps;
@@ -69,6 +70,8 @@ template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
   using Base::trial_us;
   using Base::trial_xs;
   using Base::value_params;
+
+  std::vector<value_storage_t> value_params_prev;
 
   /// Proximal penalty data.
   std::vector<shared_ptr<ProxData>> prox_datas;
