@@ -27,6 +27,8 @@ template <typename Scalar> struct WorkspaceBaseTpl {
   TrajOptDataTpl<Scalar> trial_prob_data;
   std::vector<VectorXs> trial_xs;
   std::vector<VectorXs> trial_us;
+  /// Dynamics' co-states
+  std::vector<VectorXs> co_state_;
 
   /// @name Value function and Hamiltonian.
   /// Value function parameter storage
@@ -59,6 +61,7 @@ template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
   using StageModel = StageModelTpl<Scalar>;
   using Base = WorkspaceBaseTpl<Scalar>;
 
+  using Base::co_state_;
   using Base::nsteps;
   using Base::problem_data;
   using Base::q_params;

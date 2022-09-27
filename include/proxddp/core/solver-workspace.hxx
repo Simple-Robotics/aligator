@@ -34,6 +34,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   dxs_.reserve(nsteps + 1);
   dus_.reserve(nsteps);
   dlams_.reserve(nsteps + 1);
+  co_state_.reserve(nsteps);
 
   {
     const int ndx1 = problem.stages_[0]->ndx1();
@@ -71,6 +72,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     dus_.emplace_back(pd_step_[i + 1].head(nu));
     dxs_.emplace_back(pd_step_[i + 1].segment(nu, ndx2));
     dlams_.emplace_back(pd_step_[i + 1].tail(ndual));
+    co_state_.push_back(dlams_[i + 1].head(ndx2));
   }
 
   {

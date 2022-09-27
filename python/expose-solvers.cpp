@@ -78,7 +78,6 @@ void exposeBase() {
       .def_readonly("xs", &ResultsBase::xs)
       .def_readonly("us", &ResultsBase::us)
       .def_readonly("lams", &ResultsBase::lams)
-      .def_readonly("co_state", &ResultsBase::co_state_)
       .def_readonly("primal_infeas", &ResultsBase::primal_infeasibility)
       .def_readonly("dual_infeas", &ResultsBase::dual_infeasibility)
       .def_readonly("traj_cost", &ResultsBase::traj_cost_, "Trajectory cost.")

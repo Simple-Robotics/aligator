@@ -30,8 +30,6 @@ template <typename _Scalar> struct ResultsBaseTpl {
   std::vector<VectorXs> us;
   /// Problem Lagrange multipliers
   std::vector<VectorXs> lams;
-  /// Dynamics' co-states
-  std::vector<VectorRef> co_state_;
 
   decltype(auto) getFeedforward(std::size_t i) {
     return this->gains_[i].col(0);
@@ -50,7 +48,9 @@ template <typename _Scalar> struct ResultsBaseTpl {
   }
 
 private:
-  int get_ndx1(std::size_t i) const { return this->gains_[i].cols() - 1; }
+  Eigen::Index get_ndx1(std::size_t i) const {
+    return this->gains_[i].cols() - 1;
+  }
 };
 
 template <typename Scalar>
@@ -61,7 +61,6 @@ template <typename _Scalar> struct ResultsTpl : ResultsBaseTpl<_Scalar> {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ResultsBaseTpl<Scalar>;
-  using Base::co_state_;
   using Base::conv;
   using Base::gains_;
   using Base::lams;

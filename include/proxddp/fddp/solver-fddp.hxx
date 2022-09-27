@@ -101,7 +101,7 @@ void SolverFDDP<Scalar>::computeDirectionalDerivatives(Workspace &workspace,
   assert(workspace.value_params.size() == (nsteps + 1));
   for (std::size_t i = 0; i < nsteps; i++) {
     const QParams &qpar = workspace.q_params[i];
-    ConstVectorRef Qu = qpar.Qu_;
+    ConstVectorRef Qu = qpar.Qu;
     ConstVectorRef ff = results.getFeedforward(i);
     dgrad += Qu.dot(ff);
     dquad += ff.dot(workspace.Quuks_[i]);
@@ -161,7 +161,12 @@ void SolverFDDP<Scalar>::computeCriterion(Workspace &workspace,
   const std::size_t nsteps = workspace.nsteps;
   std::vector<ConstVectorRef> Qus;
   for (std::size_t i = 0; i < nsteps; i++) {
-    Qus.push_back(workspace.q_params[i].Qu_);
+    Qus.push_back(workspace.q_params[i].Qu);
+#ifndef NDEBUG
+    std::FILE *fi = std::fopen("fddp.log", "a");
+    fmt::print(fi, "Qu[{:d}]={:.3e}\n", i, math::infty_norm(Qus.back()));
+    std::fclose(fi);
+#endif
   }
   results.dual_infeasibility = math::infty_norm(Qus);
 }
@@ -217,30 +222,39 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
     // TODO: implement second-order derivatives for the Q-function
     qparam.grad_.noalias() += J_x_u.transpose() * vnext.Vx();
     qparam.hess_.noalias() += J_x_u.transpose() * vnext.Vxx() * J_x_u;
-    qparam.Quu_.diagonal().array() += ureg_;
+    qparam.Quu.diagonal().array() += ureg_;
     qparam.storage = qparam.storage.template selfadjointView<Eigen::Lower>();
 
     /* Compute gains */
     // MatrixXs &kkt_mat = workspace.kkt_mat_bufs[i];
     MatrixXs &kkt_rhs = workspace.kkt_rhs_bufs[i];
 
-    // kkt_mat = qparam.Quu_;
+    // kkt_mat = qparam.Quu;
     VectorRef ffwd = results.getFeedforward(i);
     MatrixRef fback = results.getFeedback(i);
-    ffwd = -qparam.Qu_;
-    fback = -qparam.Qxu_.transpose();
+    ffwd = -qparam.Qu;
+    fback = -qparam.Qxu.transpose();
     kkt_rhs = results.gains_[i];
 
     Eigen::LLT<MatrixXs> &llt = workspace.llts_[i];
-    llt.compute(qparam.Quu_);
+    llt.compute(qparam.Quu);
     llt.solveInPlace(results.gains_[i]);
 
-    workspace.Quuks_[i] = qparam.Quu_ * ffwd;
+    workspace.Quuks_[i] = qparam.Quu * ffwd;
+#ifndef NDEBUG
+    auto ff = results.getFeedforward(i);
+    std::FILE *fi = std::fopen("fddp.log", "a");
+    if (i == workspace.nsteps - 1)
+      fmt::print(fi, "[backward {:d}]\n", results.num_iters + 1);
+    fmt::print(fi, "uff[{:d}]={}\n", i, ff.head(nu).transpose());
+    fmt::print(fi, "V'x[{:d}]={}\n", i, vnext.Vx().transpose());
+    std::fclose(fi);
+#endif
 
     /* Compute value function */
     VParams &vp = workspace.value_params[i];
-    vp.Vx() = qparam.Qx_ + fback.transpose() * qparam.Qu_;
-    vp.Vxx() = qparam.Qxx_ + qparam.Qxu_ * fback;
+    vp.Vx() = qparam.Qx + fback.transpose() * qparam.Qu;
+    vp.Vxx() = qparam.Qxx + qparam.Qxu * fback;
     vp.Vxx().diagonal().array() += xreg_;
     VectorXs &ftVxx = workspace.ftVxx_[i];
     ftVxx.noalias() = vp.Vxx() * fs[i];
@@ -256,6 +270,11 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
                              const std::vector<VectorXs> &us_init) {
   xreg_ = reg_init;
   ureg_ = xreg_;
+
+#ifndef NDEBUG
+  std::FILE *fi = std::fopen("fddp.log", "w");
+  std::fclose(fi);
+#endif
 
   if (results_ == 0 || workspace_ == 0) {
     proxddp_runtime_error(

@@ -28,7 +28,6 @@ ResultsTpl<Scalar>::ResultsTpl(const TrajOptProblemTpl<Scalar> &problem) {
   xs_default_init(problem, xs);
   us_default_init(problem, us);
   lams.reserve(nsteps + 1);
-  co_state_.reserve(nsteps);
   {
     const int ndual = problem.init_state_error.nr;
     lams.push_back(VectorXs::Zero(ndual));
@@ -39,8 +38,6 @@ ResultsTpl<Scalar>::ResultsTpl(const TrajOptProblemTpl<Scalar> &problem) {
     const int ndual = stage.numDual();
     gains_.push_back(MatrixXs::Zero(nprim + ndual, stage.ndx1() + 1));
     lams.push_back(VectorXs::Zero(ndual));
-    const int nr = stage.ndx2();
-    co_state_.push_back(lams[i + 1].head(nr));
   }
 
   if (problem.term_constraint_) {
