@@ -91,6 +91,11 @@ template <typename _Scalar> struct PDALFunction {
                   const std::vector<VectorXs> &lams,
                   WorkspaceTpl<Scalar> &workspace,
                   TrajOptDataTpl<Scalar> &prob_data);
+
+  Scalar directionalDerivative(const TrajOptProblemTpl<Scalar> &problem,
+                               const std::vector<VectorXs> &lams,
+                               WorkspaceTpl<Scalar> &workspace,
+                               TrajOptDataTpl<Scalar> &prob_data);
 };
 
 } // namespace proxddp

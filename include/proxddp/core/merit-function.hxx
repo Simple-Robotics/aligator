@@ -71,4 +71,8 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblemTpl<Scalar> &problem,
   value_ = traj_cost + prox_value + penalty_value;
   return value_;
 }
+template <typename Scalar>
+Scalar PDALFunction<Scalar>::directionalDerivative(
+    const TrajOptProblemTpl<Scalar> &problem, const std::vector<VectorXs> &lams,
+    WorkspaceTpl<Scalar> &workspace, TrajOptDataTpl<Scalar> &prob_data) {}
 } // namespace proxddp
