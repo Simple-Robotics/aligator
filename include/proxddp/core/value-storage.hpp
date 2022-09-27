@@ -68,28 +68,28 @@ template <typename Scalar> struct q_storage {
   VectorRef grad_;
   MatrixRef hess_;
 
-  VectorRef Qx_;
-  VectorRef Qu_;
-  VectorRef Qy_;
+  VectorRef Qx;
+  VectorRef Qu;
+  VectorRef Qy;
 
-  MatrixRef Qxx_;
-  MatrixRef Qxu_;
-  MatrixRef Qxy_;
-  MatrixRef Quu_;
-  MatrixRef Quy_;
-  MatrixRef Qyy_;
+  MatrixRef Qxx;
+  MatrixRef Qxu;
+  MatrixRef Qxy;
+  MatrixRef Quu;
+  MatrixRef Quy;
+  MatrixRef Qyy;
 
   q_storage(const int ndx1, const int nu, const int ndx2)
       : ntot(ndx1 + nu + ndx2), storage(MatrixXs::Zero(ntot + 1, ntot + 1)),
         grad_(storage.col(0).tail(ntot)),
-        hess_(storage.bottomRightCorner(ntot, ntot)), Qx_(grad_.head(ndx1)),
-        Qu_(grad_.segment(ndx1, nu)), Qy_(grad_.tail(ndx2)),
-        Qxx_(hess_.topLeftCorner(ndx1, ndx1)),
-        Qxu_(hess_.block(0, ndx1, ndx1, nu)),
-        Qxy_(hess_.topRightCorner(ndx1, ndx2)),
-        Quu_(hess_.block(ndx1, ndx1, nu, nu)),
-        Quy_(hess_.block(ndx1, ndx1 + nu, nu, ndx2)),
-        Qyy_(hess_.bottomRightCorner(ndx2, ndx2)) {
+        hess_(storage.bottomRightCorner(ntot, ntot)), Qx(grad_.head(ndx1)),
+        Qu(grad_.segment(ndx1, nu)), Qy(grad_.tail(ndx2)),
+        Qxx(hess_.topLeftCorner(ndx1, ndx1)),
+        Qxu(hess_.block(0, ndx1, ndx1, nu)),
+        Qxy(hess_.topRightCorner(ndx1, ndx2)),
+        Quu(hess_.block(ndx1, ndx1, nu, nu)),
+        Quy(hess_.block(ndx1, ndx1 + nu, nu, ndx2)),
+        Qyy(hess_.bottomRightCorner(ndx2, ndx2)) {
     assert(hess_.rows() == ntot);
     assert(hess_.cols() == ntot);
     assert(grad_.rows() == ntot);
