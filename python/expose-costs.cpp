@@ -8,6 +8,9 @@
 namespace proxddp {
 namespace python {
 
+// fwd declaration
+void exposeCostStack();
+
 void exposeCosts() {
   using context::CostBase;
   using context::CostData;
@@ -93,7 +96,6 @@ void exposeCosts() {
 
   using CompositeData = CompositeCostDataTpl<Scalar>;
   using QuadResCost = QuadraticResidualCostTpl<Scalar>;
-  bp::register_ptr_to_python<shared_ptr<QuadResCost>>();
 
   bp::class_<QuadResCost, bp::bases<CostBase>>(
       "QuadraticResidualCost", "Weighted 2-norm of a given residual function.",
@@ -103,13 +105,32 @@ void exposeCosts() {
       .def_readwrite("weights", &QuadResCost::weights_)
       .def(CopyableVisitor<QuadResCost>());
 
+  using LogResCost = LogResidualCostTpl<Scalar>;
+  bp::class_<LogResCost, bp::bases<CostBase>>(
+      "LogResidualCost", "Weighted log-cost composite cost.",
+      bp::init<shared_ptr<StageFunction>, context::VectorXs>(
+          bp::args("self", "function", "barrier_weights")))
+      .def(bp::init<shared_ptr<StageFunction>, Scalar>(
+          bp::args("self", "function", "scale")))
+      .def_readwrite("residual", &LogResCost::residual_)
+      .def_readwrite("weights", &LogResCost::barrier_weights_)
+      .def(CopyableVisitor<LogResCost>());
+
   bp::register_ptr_to_python<shared_ptr<CompositeData>>();
-  bp::class_<CompositeData, bp::bases<CostData>>("CompositeCostData",
-                                                 bp::init<int, int>())
+  bp::class_<CompositeData, bp::bases<CostData>>(
+      "CompositeCostData",
+      bp::init<int, int, shared_ptr<context::StageFunctionData>>(
+          bp::args("self", "ndx", "nu", "rdata")))
       .def_readwrite("residual_data", &CompositeData::residual_data);
 
   /* Cost stack */
+  exposeCostStack();
+}
 
+void exposeCostStack() {
+  using context::CostBase;
+  using context::CostData;
+  using context::Scalar;
   using CostStack = CostStackTpl<Scalar>;
   using CostStackData = CostStackDataTpl<Scalar>;
 

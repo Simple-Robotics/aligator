@@ -292,7 +292,6 @@ public:
       FunctionData &cstr_data = *stage_data.constraint_data[j];
 
       const auto lam_inn_j = cstr_mgr.getConstSegmentByConstraint(lam_inn, j);
-      const auto lamplus_j = cstr_mgr.getConstSegmentByConstraint(lamplus, j);
 
       qparam.Qx.noalias() += cstr_data.Jx_.transpose() * lam_inn_j;
       qparam.Qu.noalias() += cstr_data.Ju_.transpose() * lam_inn_j;

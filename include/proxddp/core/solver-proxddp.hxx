@@ -510,7 +510,6 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     phi0 = merit_fun.evaluate(problem, results.lams, workspace,
                               workspace.problem_data);
 
-
     while (true) {
       bool success = backwardPass(problem, workspace, results);
       if (success) {
@@ -531,7 +530,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
       return true;
     }
 
-    this->linearRollout(problem, workspace, results);
+    linearRollout(problem, workspace, results);
     phieps = merit_eval_lin(fd_eps);
     dphi0 = (phieps - phi0) / fd_eps;
 
@@ -654,7 +653,6 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
 
     decltype(auto) gu = qpar.Qu;
     decltype(auto) gy = qpar.Qy;
-    // auto gy = qpar.Qy - vp.Vx() + workspace.value_params_prev[i].Vx();
     ru = math::infty_norm(gu);
     ry = math::infty_norm(gy);
     rl = math::infty_norm(kktlam);
