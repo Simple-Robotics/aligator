@@ -196,13 +196,9 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
     const VectorXs &lamin = results.lams[nsteps + 1];
 
     const MatrixRef &cJx = cstr_data.Jx_;
-    // auto l_expr = lamprev + mu_inv() * cv;
-    // const ConstraintSetBase<Scalar> &cstr_set = *term_cstr.set;
-    // cstr_set.applyNormalConeProjectionJacobian(l_expr, cJx);
-    // cstr_set.normalConeProjection(l_expr, lamplus);
 
-    auto ff = gains.col(0);
-    auto fb = gains.rightCols(ndx);
+    auto ff = results.getFeedforward(nsteps);
+    auto fb = results.getFeedback(nsteps);
     ff = lamplus - lamin;
     fb = mu_inv() * cJx;
 
