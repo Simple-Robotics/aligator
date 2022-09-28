@@ -23,7 +23,7 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblemTpl<Scalar> &problem,
   {
     penalty_value += .5 * mu() * workspace.lams_plus[0].squaredNorm();
     if (with_primal_dual_terms) {
-      penalty_value += .5 * dual_weight_ * mu() *
+      penalty_value += .5 * dual_weight() * mu() *
                        (workspace.lams_plus[0] - lams[0]).squaredNorm();
     }
   }
@@ -50,7 +50,7 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblemTpl<Scalar> &problem,
           cstr_set, c_s_expr, lamplus_j * mu_scaled(), mu_inv_scaled());
     }
     if (with_primal_dual_terms) {
-      penalty_value += .5 * dual_weight_ * mu_scaled() *
+      penalty_value += .5 * dual_weight() * mu_scaled() *
                        (workspace.lams_plus[i + 1] - lams[i + 1]).squaredNorm();
     }
   }
@@ -63,8 +63,8 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblemTpl<Scalar> &problem,
     penalty_value += proxnlp::evaluateMoreauEnvelope(*tc.set, c_s_expr,
                                                      lamplus * mu(), mu_inv());
     if (with_primal_dual_terms) {
-      penalty_value +=
-          .5 * dual_weight_ * mu() * (lamplus - lams[nsteps + 1]).squaredNorm();
+      penalty_value += .5 * dual_weight() * mu() *
+                       (lamplus - lams[nsteps + 1]).squaredNorm();
     }
   }
 
@@ -93,9 +93,7 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
   {
     const FunctionData &fd = prob_data.getInitData();
     auto &lampdal = workspace.lams_pdal[0];
-    d1 += mu_inv() * lampdal.dot(fd.Jx_ * workspace.dxs_[0]);
-    d1 += mu_inv() * lampdal.dot(fd.Ju_ * workspace.dus_[0]);
-    d1 += mu_inv() * lampdal.dot(fd.Jy_ * workspace.dxs_[1]);
+    d1 += lampdal.dot(fd.Jx_ * workspace.dxs_[0]);
   }
 
   for (std::size_t i = 0; i < nsteps; i++) {
@@ -114,16 +112,26 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
       const FunctionData &cd = *stage_data.constraint_data[j];
       auto lampdal_j = cstr_mgr.getConstSegmentByConstraint(lampdal, j);
 
-      d1 += mu_inv_scaled() * lampdal_j.dot(cd.Jx_ * dx);
-      d1 += mu_inv_scaled() * lampdal_j.dot(cd.Ju_ * du);
-      d1 += mu_inv_scaled() * lampdal_j.dot(cd.Jy_ * dy);
+      d1 += lampdal_j.dot(cd.Jx_ * dx);
+      d1 += lampdal_j.dot(cd.Ju_ * du);
+      d1 += lampdal_j.dot(cd.Jy_ * dy);
     }
   }
 
-  for (std::size_t i = 0; i <= nsteps; i++) {
-    auto &laminnr = workspace.trial_lams[i];
-    auto &lamplus = workspace.lams_plus[i];
-    d1 += mu_inv_scaled() * (lamplus - laminnr).dot(workspace.dlams_[i]);
+  if (problem.term_constraint_) {
+    const FunctionData &tcd = *prob_data.term_cstr_data;
+    auto &lampdal = workspace.lams_pdal[nsteps + 1];
+    auto &dx = workspace.dxs_.back();
+
+    d1 += lampdal.dot(tcd.Jx_ * dx);
   }
+
+  std::size_t nmul = lams.size();
+  for (std::size_t i = 0; i < nmul; i++) {
+    auto &laminnr = lams[i];
+    auto &lamplus = workspace.lams_plus[i];
+    d1 += -mu() * (lamplus - laminnr).dot(workspace.dlams_[i]);
+  }
+  return d1;
 }
 } // namespace proxddp

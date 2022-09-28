@@ -86,6 +86,8 @@ public:
   LinesearchStrategy ls_strat = LinesearchStrategy::ARMIJO;
   MultiplierUpdateMode multiplier_update_mode = MultiplierUpdateMode::NEWTON;
   LinesearchMode ls_mode = LinesearchMode::PRIMAL_DUAL;
+  /// @brief Weight of the dual variables in the primal-dual linesearch.
+  Scalar dual_weight = 1.0;
   RolloutType rollout_type = RolloutType::LINEAR;
   BCLParams<Scalar> bcl_params;
 
@@ -362,7 +364,7 @@ public:
       FunctionData &data = pd.getInitData();
       auto expr = plam0 + mu_inv() * data.value_;
       cstr->normalConeProjection(expr, lams_plus[0]);
-      lams_pdal[0] = 2 * lams_plus[0] - lam0;
+      lams_pdal[0] = (1 + dual_weight) * lams_plus[0] - dual_weight * lam0;
       if (update_jacobians)
         cstr->applyNormalConeProjectionJacobian(expr, data.jac_buffer_);
     }
@@ -375,7 +377,8 @@ public:
       FunctionData &data = *pd.term_cstr_data;
       auto expr = plamN + mu_inv() * data.value_;
       cstr.normalConeProjection(expr, lams_plus.back());
-      lams_pdal.back() = 2 * lams_plus.back() - lamN;
+      lams_pdal.back() =
+          (1 + dual_weight) * lams_plus.back() - dual_weight * lamN;
       if (update_jacobians)
         cstr.applyNormalConeProjectionJacobian(expr, data.jac_buffer_);
     }
@@ -399,7 +402,7 @@ public:
         FunctionData &data = *sdata.constraint_data[k];
         auto expr = plami_k + mu_inv_scaled() * data.value_;
         set.normalConeProjection(expr, lamplus_k);
-        lampdal_k = 2 * lamplus_k - lami_k;
+        lampdal_k = (1 + dual_weight) * lamplus_k - dual_weight * lami_k;
         if (update_jacobians)
           set.applyNormalConeProjectionJacobian(expr, data.jac_buffer_);
       };

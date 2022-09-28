@@ -85,10 +85,11 @@ template <typename _Scalar> struct PDALFunction {
   Scalar prox_value = 0.;
   Scalar value_ = 0.;
   /// Weight of dual penalty. Values different from 1 not supported yet.
-  Scalar dual_weight_ = 1.;
 
   Scalar mu_min = 1e-7;
   Scalar mu_max = 1. / mu_min;
+
+  Scalar dual_weight() { return solver->dual_weight; }
 
   Scalar mu() const { return std::max(mu_min, solver->mu()); }
 

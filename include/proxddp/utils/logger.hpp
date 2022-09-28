@@ -6,9 +6,9 @@
 
 namespace proxddp {
 
-const std::vector<std::string> BASIC_KEYS{"iter",     "step_size", "inner_crit",
-                                          "prim_err", "dual_err",  "xreg",
-                                          "dphi0",    "merit",     "dM"};
+const std::vector<std::string> BASIC_KEYS{"iter",     "alpha",    "inner_crit",
+                                          "prim_err", "dual_err", "xreg",
+                                          "dphi0",    "merit",    "dM"};
 constexpr char int_format[] = "{: >{}d}";
 constexpr char sci_format[] = "{: > {}.{}e}";
 constexpr char dbl_format[] = "{: > {}.{}g}";

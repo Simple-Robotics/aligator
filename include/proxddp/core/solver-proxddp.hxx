@@ -190,7 +190,6 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
     /* check number of multipliers */
     assert(results.lams.size() == (nsteps + 2));
     assert(results.gains_.size() == (nsteps + 1));
-    const Constraint &term_cstr = *problem.term_constraint_;
     const FunctionData &cstr_data = *prob_data.term_cstr_data;
 
     VectorXs &lamplus = workspace.lams_plus[nsteps + 1];
@@ -534,11 +533,22 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     phieps = merit_eval_lin(fd_eps);
     dphi0 = (phieps - phi0) / fd_eps;
 
+    Scalar dphi0_analytical = merit_fun.directionalDerivative(
+        problem, results.lams, workspace, workspace.problem_data);
+#ifndef NDEBUG
+    {
+      std::FILE *fi = std::fopen("pddp.log", "a");
+      fmt::print(fi, " dphi0_ana={:.3e} / dphi0_fd={:.3e} / fd-a={:.3e}\n",
+                 dphi0_analytical, dphi0, dphi0 - dphi0_analytical);
+      std::fclose(fi);
+    }
+#endif
+
     // otherwise continue linesearch
     Scalar alpha_opt = 1;
 
     Scalar phi_new = proxnlp::ArmijoLinesearch<Scalar>(ls_params).run(
-        merit_eval_fun, phi0, dphi0, alpha_opt);
+        merit_eval_fun, phi0, dphi0_analytical, alpha_opt);
     results.traj_cost_ = merit_fun.traj_cost;
     results.merit_value_ = phi_new;
 
@@ -551,14 +561,13 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
       std::FILE *file = 0;
       if (k == 0) {
         file = std::fopen(fname, "w");
-        fmt::print(file, "k,alpha,phi\n");
+        fmt::print(file, "k,alpha,phi,dphi0\n");
       } else {
         file = std::fopen(fname, "a");
       }
-      const char *fmtstr = "{:d}, {:.4e}, {:.5e}\n";
+      const char *fmtstr = "{:d}, {:.4e}, {:.5e}, {:.5e}\n";
       for (int i = 0; i <= nalph + 1; i++) {
-        Scalar p = merit_eval_fun(a);
-        fmt::print(file, fmtstr, k, a, p);
+        fmt::print(file, fmtstr, k, a, merit_eval_fun(a), dphi0_analytical);
         a += da;
       }
       if (alpha_opt < da) {
@@ -566,10 +575,12 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
         VectorXs als;
         als.setLinSpaced(nalph, 0., 2 * alpha_opt);
         for (int i = 1; i < als.size(); i++) {
-          fmt::print(file, fmtstr, k, als(i), merit_eval_fun(als(i)));
+          fmt::print(file, fmtstr, k, als(i), merit_eval_fun(als(i)),
+                     dphi0_analytical);
         }
       }
-      fmt::print(file, fmtstr, k, alpha_opt, merit_eval_fun(alpha_opt));
+      fmt::print(file, fmtstr, k, alpha_opt, merit_eval_fun(alpha_opt),
+                 dphi0_analytical);
       std::fclose(file);
     }
 #endif
@@ -646,6 +657,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
     const int ndual = st.numDual();
     Scalar ru, ry, rl;
     const auto kkt_rhs_0 = workspace.kkt_rhs_buf_[i].col(0);
+    const auto &kkt_mat = workspace.kkt_mat_buf_[i];
     const auto kktlam = kkt_rhs_0.tail(ndual);
 
     const VParams &vp = workspace.value_params[i];
@@ -671,8 +683,11 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
       ru_bis_wtf_cmon = math::infty_norm(gu_bis);
     }
     std::FILE *fi = std::fopen("pddp.log", "a");
+    auto ff = results.getFeedforward(i - 1);
+    Scalar quad_norm_rhs = std::sqrt(kkt_rhs_0.dot(-ff));
     fmt::print(fi, "[{:>3d}]ru={:.2e},ry={:.2e},rl={:.2e},", i, ru, ry, rl);
-    fmt::print(fi, " ru_other={:.3e}\n", ru_bis_wtf_cmon);
+    fmt::print(fi, " ru_other={:.3e} / quad_rhs_norm={:.3e}\n", ru_bis_wtf_cmon,
+               quad_norm_rhs);
     std::fclose(fi);
 #endif
     {
