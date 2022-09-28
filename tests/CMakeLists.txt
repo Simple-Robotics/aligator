@@ -45,6 +45,7 @@ endfunction(add_proxddp_test)
 set(TEST_NAMES
     integrators
     problem
+    costs
     continuous
     utils
     solver-storage)

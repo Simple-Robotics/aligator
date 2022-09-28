@@ -10,7 +10,8 @@ def test_cost_stack():
     nx = 2
     nu = 2
     cost_stack = CostStack(nx, nu)
-    Q = np.eye(nx)
+    Q = np.random.randn(4, nx)
+    Q = Q.T @ Q / nx
     R = np.eye(nu)
     rcost = QuadraticCost(Q, R)
 
@@ -34,22 +35,67 @@ def test_cost_stack():
         assert np.allclose(data1.grad, data2.grad)
         assert np.allclose(data1.hess, data2.hess)
 
+        assert np.allclose(data1.Lxx, Q)
+        assert np.allclose(data1.Luu, R)
+
 
 def test_composite_cost():
-    space = manifolds.SE2()
+    space = manifolds.VectorSpace(3)
+    ndx = space.ndx
+    x0 = space.rand()
+
     nu = space.ndx
+    u0 = np.ones(nu)
     target = space.rand()
     fun = proxddp.StateErrorResidual(space, nu, target)
-    weights = np.eye(fun.nr)
+    # for debug
+    fd = fun.createData()
+    fun.evaluate(x0, u0, x0, fd)
+    fun.computeJacobians(x0, u0, x0, fd)
+
+    # costs
+
+    weights = np.random.randn(4, fun.nr)
+    weights = weights.T @ weights
     cost = proxddp.QuadraticResidualCost(fun, weights)
+    assert np.array_equal(weights, cost.weights)
 
     data = cost.createData()
     print("Composite data:", data)
     assert isinstance(data, proxddp.CompositeCostData)
 
+    cost.evaluate(x0, u0, data)
+    cost.computeGradients(x0, u0, data)
+    cost.computeHessians(x0, u0, data)
 
-# Should raise RuntimeError due to wrong use.
+    J = fd.jac_buffer_[:, : ndx + nu]
+    ref_grad = J.T @ weights @ fd.value
+    ref_hess = J.T @ weights @ J
+
+    print("QuadCost:")
+    print(data.value)
+    print(data.grad)
+    print(data.hess)
+    assert np.allclose(data.grad, ref_grad)
+    assert np.allclose(data.hess, ref_hess)
+    print("----")
+
+    weights = np.ones(fun.nr)
+    log_cost = proxddp.LogResidualCost(fun, weights)
+    data = log_cost.createData()
+    print(data)
+    assert isinstance(data, proxddp.CompositeCostData)
+
+    log_cost.evaluate(x0, u0, data)
+    log_cost.computeGradients(x0, u0, data)
+    print("LogCost:")
+    print(data.value)
+    print(data.grad)
+    print("----")
+
+
 def test_stack_error():
+    # Should raise RuntimeError due to wrong use.
     nx = 2
     nu = 2
     cost_stack = CostStack(nx, nu)
