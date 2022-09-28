@@ -115,9 +115,7 @@ void SolverFDDP<Scalar>::computeDirectionalDerivatives(Workspace &workspace,
 }
 
 template <typename Scalar>
-void SolverFDDP<Scalar>::directionalDerivativeCorrection(const Problem &problem,
-                                                         Workspace &workspace,
-                                                         Results &results,
+void SolverFDDP<Scalar>::directionalDerivativeCorrection(Workspace &workspace,
                                                          Scalar &d1,
                                                          Scalar &d2) {
   const std::size_t nsteps = workspace.nsteps;
@@ -340,8 +338,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     PROXDDP_RAISE_IF_NAN(d2_phi);
 #ifndef NDEBUG
     linearRollout(problem, workspace, results);
-    directionalDerivativeCorrection(problem, workspace, results, d1_phi,
-                                    d2_phi);
+    directionalDerivativeCorrection(workspace, d1_phi, d2_phi);
     {
       const Scalar fd_eps = 1e-7;
       Scalar phi_eps = linesearch_fun(fd_eps);
@@ -355,7 +352,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     auto ls_model = [=, &problem, &workspace, &results](const Scalar alpha) {
       Scalar d1 = d1_phi;
       Scalar d2 = d2_phi;
-      directionalDerivativeCorrection(problem, workspace, results, d1, d2);
+      directionalDerivativeCorrection(workspace, d1, d2);
       return phi0 + alpha * (d1 + 0.5 * d2 * alpha);
     };
 

@@ -112,9 +112,7 @@ template <typename Scalar> struct SolverFDDP {
    * @details  This will re-compute the gap between the results trajectory and
    * the trial trajectory.
    */
-  static void directionalDerivativeCorrection(const Problem &problem,
-                                              Workspace &workspace,
-                                              Results &results, Scalar &d1,
+  static void directionalDerivativeCorrection(Workspace &workspace, Scalar &d1,
                                               Scalar &d2);
 
   /**
