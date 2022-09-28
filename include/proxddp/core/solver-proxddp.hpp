@@ -145,12 +145,16 @@ public:
       stage.xspace().integrate(results.xs[0], alpha * workspace.dxs_[0], xs[0]);
       lams[0] = results.lams[0] + alpha * workspace.dlams_[0];
     }
+#ifndef NDEBUG
+    std::FILE *fi = std::fopen("pddp.log", "a");
+#endif
 
     for (std::size_t i = 0; i < nsteps; i++) {
       const StageModel &stage = *problem.stages_[i];
       StageData &data = pd.getStageData(i);
       const int nu = stage.nu();
       const int ndual = stage.numDual();
+      const int ndx2 = stage.ndx2();
 
       auto ff = results.getFeedforward(i);
       auto fb = results.getFeedback(i);
@@ -169,18 +173,16 @@ public:
       lams[i + 1].head(ndual) = results.lams[i + 1] + dlam;
 
       const DynamicsModelTpl<Scalar> &dm = stage.dyn_model();
-      DynamicsDataTpl<Scalar> &dd =
-          dynamic_cast<DynamicsDataTpl<Scalar> &>(*data.constraint_data[0]);
+      DynamicsDataTpl<Scalar> &dd = data.dyn_data();
       const ConstraintContainer<Scalar> &cstr_mgr = stage.constraints_;
       const ConstVectorRef dynlam =
           cstr_mgr.getConstSegmentByConstraint(lams[i + 1], 0);
       const ConstVectorRef dynprevlam =
           cstr_mgr.getConstSegmentByConstraint(workspace.prev_lams[i + 1], 0);
       VectorXs gap = this->mu_scaled() * (dynprevlam - dynlam);
-      PROXDDP_RAISE_IF_NAN_NAME(gap, fmt::format("gap[{:d}]", i));
       forwardDynamics(dm, xs[i], us[i], dd, xs[i + 1], 1, gap);
 
-      VectorRef dx_next = workspace.dxs_[i + 1].head(stage.ndx2());
+      VectorRef dx_next = workspace.dxs_[i + 1].head(ndx2);
       stage.xspace_next().difference(results.xs[i + 1], xs[i + 1], dx_next);
 
       PROXDDP_RAISE_IF_NAN_NAME(xs[i + 1], fmt::format("xs[{:d}]", i + 1));
@@ -195,6 +197,9 @@ public:
       dlam = alpha * ff + fb * dx;
       lams.back() = results.lams.back() + dlam;
     }
+#ifndef NDEBUG
+    std::fclose(fi);
+#endif
   }
 
   void computeDirX0(const Problem &problem, Workspace &workspace,
@@ -319,7 +324,7 @@ public:
   /// normal cone in-place).
   ///           Compute anything which accesses these before!
   void computeInfeasibilities(const Problem &problem, Workspace &workspace,
-                              Results &results, bool primal_only) const;
+                              Results &results) const;
 
   /// @name callbacks
   /// \{
@@ -330,6 +335,7 @@ public:
   /// @brief    Remove all callbacks from the instance.
   void clearCallbacks() { callbacks_.clear(); }
 
+  /// @brief    Invoke callbacks.
   void invokeCallbacks(Workspace &workspace, Results &results) {
     for (auto &cb : callbacks_) {
       cb->call(workspace, results);
@@ -424,7 +430,7 @@ public:
 protected:
   /// @brief  Put together the Q-function parameters and compute the Riccati
   /// gains.
-  inline void computeGains(const Problem &problem, Workspace &workspace,
+  inline bool computeGains(const Problem &problem, Workspace &workspace,
                            Results &results, const std::size_t step) const;
 
   void updateTolerancesOnFailure() {

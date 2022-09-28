@@ -105,6 +105,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 
   math::setZero(kkt_mat_buf_);
   math::setZero(kkt_rhs_buf_);
+  kkt_resdls_ = kkt_rhs_buf_;
 
   inner_criterion_by_stage.setZero();
   primal_infeas_by_stage.setZero();

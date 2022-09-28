@@ -210,7 +210,7 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
     assert(qparam.grad_.size() == nt);
 
     const CostData &cd = *sd.cost_data;
-    DynamicsDataTpl<Scalar> &dd = stage_get_dynamics_data(sd);
+    DynamicsDataTpl<Scalar> &dd = sd.dyn_data();
 
     /* Assemble Q-function */
     ConstMatrixRef J_x_u = dd.jac_buffer_.leftCols(ndx1 + nu);

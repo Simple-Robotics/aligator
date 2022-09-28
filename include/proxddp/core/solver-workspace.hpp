@@ -94,6 +94,8 @@ template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
   std::vector<Eigen::LDLT<MatrixXs, Eigen::Lower>> ldlts_;
   /// Buffer for KKT right hand side
   std::vector<MatrixXs> kkt_rhs_buf_;
+  /// Linear system residual buffers
+  std::vector<MatrixXs> kkt_resdls_;
 
   /// @name Previous proximal iterates
 

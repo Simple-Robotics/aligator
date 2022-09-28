@@ -145,6 +145,13 @@ struct StageDataTpl : public Cloneable<StageDataTpl<_Scalar>> {
 
   virtual ~StageDataTpl() = default;
 
+  decltype(auto) dyn_data() {
+    return static_cast<DynamicsData &>(*constraint_data[0]);
+  }
+  decltype(auto) dyn_data() const {
+    return static_cast<const DynamicsData &>(*constraint_data[0]);
+  }
+
   /// @brief Check data integrity.
   virtual void checkData() {
     const char msg[] = "StageData integrity check failed.";
@@ -155,7 +162,7 @@ struct StageDataTpl : public Cloneable<StageDataTpl<_Scalar>> {
       proxddp_runtime_error(fmt::format("{} (cost_data is nullptr)", msg));
     }
     const DynamicsData *dd =
-        static_cast<const DynamicsData *>(constraint_data[0].get());
+        dynamic_cast<const DynamicsData *>(constraint_data[0].get());
     if (dd == nullptr) {
       proxddp_runtime_error(
           fmt::format("{} (constraint_data[0] should be dynamics data)", msg));

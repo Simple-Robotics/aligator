@@ -34,14 +34,14 @@ BOOST_AUTO_TEST_CASE(prox_storage) {
   BOOST_TEST_MESSAGE("Checking Q-function");
   BOOST_CHECK_EQUAL(qstore.storage.cols(), NX * 2 + NU + 1);
   fmt::print("{} < qstore\n", qstore.storage);
-  fmt::print("{} < Qx\n", qstore.Qx_);
-  fmt::print("{} < Qu\n", qstore.Qu_);
-  fmt::print("{} < Qy\n", qstore.Qy_);
-  fmt::print("{} < Qxx\n", qstore.Qxx_);
-  fmt::print("{} < Qxu\n", qstore.Qxu_);
-  fmt::print("{} < Qxy\n", qstore.Qxy_);
-  fmt::print("{} < Quu\n", qstore.Quu_);
-  fmt::print("{} < Qyy\n", qstore.Qyy_);
+  fmt::print("{} < Qx\n", qstore.Qx);
+  fmt::print("{} < Qu\n", qstore.Qu);
+  fmt::print("{} < Qy\n", qstore.Qy);
+  fmt::print("{} < Qxx\n", qstore.Qxx);
+  fmt::print("{} < Qxu\n", qstore.Qxu);
+  fmt::print("{} < Qxy\n", qstore.Qxy);
+  fmt::print("{} < Quu\n", qstore.Quu);
+  fmt::print("{} < Qyy\n", qstore.Qyy);
 }
 
 BOOST_AUTO_TEST_CASE(fddp_storage) {}
