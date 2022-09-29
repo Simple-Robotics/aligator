@@ -4,7 +4,12 @@ Common definitions for examples.
 import tap
 import numpy as np
 import pinocchio as pin
+import matplotlib.pyplot as plt
 from typing import Literal
+
+
+plt.rcParams["lines.linewidth"] = 1.0
+plt.rcParams["lines.markersize"] = 5
 
 integrator_choices = Literal["euler", "semieuler", "midpoint", "rk2"]
 
