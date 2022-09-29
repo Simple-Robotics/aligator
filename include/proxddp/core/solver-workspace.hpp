@@ -112,9 +112,6 @@ template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
 
   /// Overall subproblem termination criterion.
   Scalar inner_criterion = 0.;
-  Scalar inner_criterion_x = 0.;
-  Scalar inner_criterion_u = 0.;
-  Scalar inner_criterion_l = 0.;
 
   explicit WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem);
 

@@ -81,12 +81,11 @@ void SolverProxDDP<Scalar>::computeDirX0(const Problem &problem,
                                          const Results &results) const {
   // compute direction dx0
   const VParams &vp = workspace.value_params[0];
-  const FunctionData &init_data = *workspace.problem_data.init_data;
+  const FunctionData &init_data = workspace.problem_data.getInitData();
   const int ndual0 = problem.init_state_error.nr;
   const int ndx0 = problem.init_state_error.ndx1;
   const VectorXs &lampl0 = workspace.lams_plus[0];
   const VectorXs &lamin0 = results.lams[0];
-  // const VectorXs &prevlam0 = workspace.prev_lams[0];
   const CostData &proxdata0 = *workspace.prox_datas[0];
   MatrixXs &kkt_mat = workspace.kkt_mat_buf_[0];
   VectorRef kkt_rhs_0 = workspace.kkt_rhs_buf_[0].col(0);
@@ -100,6 +99,7 @@ void SolverProxDDP<Scalar>::computeDirX0(const Problem &problem,
     workspace.trial_xs[0] = problem.getInitState();
     workspace.trial_lams[0].setZero();
     kkt_rhs_0.setZero();
+    workspace.inner_criterion_by_stage(0) = 0.;
     workspace.dual_infeas_by_stage(0) = 0.;
     return;
   }
@@ -115,9 +115,6 @@ void SolverProxDDP<Scalar>::computeDirX0(const Problem &problem,
   workspace.pd_step_[0] = -kkt_rhs_0;
   ldlt.solveInPlace(workspace.pd_step_[0]);
   const ProxData &proxdata = *workspace.prox_datas[0];
-  workspace.inner_criterion_x = math::infty_norm(kktx);
-  workspace.inner_criterion_u = 0.;
-  workspace.inner_criterion_l = math::infty_norm(kktl);
   workspace.inner_criterion_by_stage(0) = math::infty_norm(kkt_rhs_0);
   workspace.dual_infeas_by_stage(0) =
       math::infty_norm(kktx - rho() * proxdata.Lx_);
@@ -682,15 +679,15 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
                                                    Results &results) const {
   const TrajOptDataTpl<Scalar> &prob_data = workspace.problem_data;
   const std::size_t nsteps = problem.numSteps();
-  {
-    const FunctionData &init_data = prob_data.getInitData();
-    workspace.primal_infeas_by_stage(0) = math::infty_norm(init_data.value_);
-  }
+
+  const FunctionData &init_data = prob_data.getInitData();
+  workspace.primal_infeas_by_stage(0) = math::infty_norm(init_data.value_);
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
     const StageData &stage_data = prob_data.getStageData(i);
-    Scalar infeas_over_j = 0.;
+    Scalar &infeas_over_j = workspace.primal_infeas_by_stage(long(i + 1));
+    infeas_over_j = 0.;
     for (std::size_t j = 0; j < stage.numConstraints(); j++) {
       const ConstraintSetBase<Scalar> &cstr_set =
           stage.constraints_.getConstraintSet(j);
@@ -698,7 +695,6 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
       cstr_set.normalConeProjection(v, v);
       infeas_over_j = std::max(infeas_over_j, math::infty_norm(v));
     }
-    workspace.primal_infeas_by_stage(long(i + 1)) = infeas_over_j;
   }
   if (problem.term_constraint_) {
     const FunctionData &data = *prob_data.term_cstr_data;
@@ -723,6 +719,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
     const QParams &qpar = workspace.q_params[i - 1];
 
     Scalar scale_dual = vp.Vx().template lpNorm<1>();
+    scale_dual = 1.;
 
     decltype(auto) gu = qpar.Qu;
     decltype(auto) gy = qpar.Qy;
@@ -730,9 +727,6 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
     ry = math::infty_norm(gy / scale_dual);
     rl = math::infty_norm(kktlam);
     workspace.inner_criterion_by_stage(long(i)) = std::max({ru, ry, rl});
-    workspace.inner_criterion_x = std::max(workspace.inner_criterion_x, ry);
-    workspace.inner_criterion_u = std::max(workspace.inner_criterion_u, ru);
-    workspace.inner_criterion_l = std::max(workspace.inner_criterion_l, rl);
 #ifndef NDEBUG
     Scalar ru_bis_ddp;
     {
@@ -742,10 +736,8 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
       ru_bis_ddp = math::infty_norm(gu_bis);
     }
     std::FILE *fi = std::fopen("pddp.log", "a");
-    auto ff = results.getFeedforward(i - 1);
     fmt::print(fi, "[{:>3d}]ru={:.2e},ry={:.2e},rl={:.2e},", i, ru, ry, rl);
-    fmt::print(fi, " ru_other={:.3e} / scale_d={:.3e}\n", ru_bis_ddp,
-               scale_dual);
+    fmt::print(fi, " ru_other={:.3e}, s_d={:.3e}\n", ru_bis_ddp, scale_dual);
     std::fclose(fi);
 #endif
     {
