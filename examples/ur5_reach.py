@@ -6,12 +6,10 @@ import meshcat_utils as msu
 import example_robot_data as erd
 import matplotlib.pyplot as plt
 
-from proxddp import constraints, manifolds, dynamics
+from proxddp import constraints, manifolds, dynamics  # noqa
 from pinocchio.visualize import MeshcatVisualizer
 
 from common import ArgsBase, get_endpoint_traj
-
-plt.rcParams["lines.linewidth"] = 1.0
 
 
 class Args(ArgsBase):
@@ -48,8 +46,8 @@ vizer.display(q0)
 
 B_mat = np.eye(nu)
 
-Tf = 1.2
 dt = 0.01
+Tf = 10 * dt
 nsteps = int(Tf / dt)
 
 ode = dynamics.MultibodyFreeFwdDynamics(space, B_mat)
@@ -107,23 +105,28 @@ for i in range(nsteps):
     rcost.addCost(proxddp.QuadraticCost(wt_x * dt, wt_u * dt))
 
     stm = proxddp.StageModel(space, nu, rcost, discrete_dynamics)
-    stm.addConstraint(ctrl_box, constraints.NegativeOrthant())
+    # stm.addConstraint(ctrl_box, constraints.NegativeOrthant())
     stages.append(stm)
 
 
 problem = proxddp.TrajOptProblem(x0, stages, term_cost=term_cost)
-problem.setTerminalConstraint(
-    proxddp.StageConstraint(frame_fn, constraints.EqualityConstraintSet())
-)
-tol = 1e-3
+# problem.setTerminalConstraint(
+#     proxddp.StageConstraint(frame_fn, constraints.EqualityConstraintSet())
+# )
+tol = 1e-7
 
-mu_init = 1e-4
-rho_init = 1e-8
-
+mu_init = 1e-7
+rho_init = 0.0
+verbose = proxddp.VerboseLevel.VERBOSE
+max_iters = 40
 solver = proxddp.SolverProxDDP(
-    tol, mu_init, rho_init, verbose=proxddp.VerboseLevel.VERBOSE, max_iters=200
+    tol, mu_init, rho_init, max_iters=max_iters, verbose=verbose
 )
-solver.rol_type = proxddp.RolloutType.NONLINEAR
+solver.rollout_type = proxddp.RolloutType.NONLINEAR
+solver.dual_weight = 0.0
+# solver = proxddp.SolverFDDP(tol, verbose, max_iters=max_iters)
+cb = proxddp.HistoryCallback()
+solver.registerCallback(cb)
 solver.setup(problem)
 solver.run(problem, init_xs, init_us)
 
@@ -163,6 +166,19 @@ ax.scatter(*target_pos, marker="^", c="r")
 ax.set_xlabel("$x$")
 ax.set_ylabel("$y$")
 ax.set_zlabel("$z$")
+plt.tight_layout()
+
+plt.figure()
+
+cb_store: proxddp.HistoryCallback.history_storage = cb.storage
+
+nrang = range(results.num_iters + 1)
+ax: plt.Axes = plt.gca()
+plt.plot(nrang, cb_store.prim_infeas, ls="--", marker=".", label="primal err")
+plt.plot(nrang, cb_store.dual_infeas, ls="--", marker=".", label="dual err")
+ax.set_xlabel("iter")
+ax.set_yscale("log")
+plt.legend()
 plt.tight_layout()
 plt.show()
 

@@ -8,7 +8,7 @@
 namespace proxddp {
 
 #ifndef NDEBUG
-const char *LS_DEBUG_LOG_PATH = "assets/linesearch_iter.txt";
+const char *LS_DEBUG_LOG_PATH = "linesearch_iter.csv";
 #endif
 
 template <typename Scalar>
@@ -104,7 +104,6 @@ void SolverProxDDP<Scalar>::computeDirX0(const Problem &problem,
     return;
   }
 
-  kkt_mat.setZero();
   kkt_mat.topLeftCorner(ndx0, ndx0) = vp.Vxx() + rho() * proxdata0.Lxx_;
   // kkt_mat.topLeftCorner(ndx0, ndx0) += init_data.Hxx_;
   kkt_mat.topRightCorner(ndx0, ndual0) = init_data.Jx_.transpose();
@@ -169,6 +168,61 @@ bool SolverProxDDP<Scalar>::backwardPass(const Problem &problem,
     }
   }
   return true;
+}
+
+template <typename Scalar>
+void SolverProxDDP<Scalar>::updateHamiltonian(const Problem &problem,
+                                              const std::size_t t,
+                                              const Results &results,
+                                              Workspace &workspace) const {
+
+  const StageModel &stage = *problem.stages_[t];
+
+  const VParams &vnext = workspace.value_params[t + 1];
+  QParams &qparam = workspace.q_params[t];
+
+  StageData &stage_data = workspace.problem_data.getStageData(t);
+  const CostData &cdata = *stage_data.cost_data;
+  const CostData &proxdata = *workspace.prox_datas[t];
+
+  const int ndx1 = stage.ndx1();
+  const int nu = stage.nu();
+  const int ndx2 = stage.ndx2();
+
+  assert(vnext.storage.rows() == ndx2 + 1);
+  assert(vnext.storage.cols() == ndx2 + 1);
+
+  // Use the contiguous full gradient/jacobian/hessian buffers
+  // to fill in the Q-function derivatives
+  qparam.storage.setZero();
+  qparam.q_2() = 2 * (cdata.value_ + rho() * proxdata.value_);
+  qparam.Qx = cdata.Lx_ + rho() * proxdata.Lx_;
+  qparam.Qu = cdata.Lu_ + rho() * proxdata.Lu_;
+  qparam.Qy = vnext.Vx();
+
+  qparam.hess_.topLeftCorner(ndx1 + nu, ndx1 + nu) =
+      cdata.hess_ + rho() * proxdata.hess_;
+  qparam.Qyy = vnext.Vxx();
+  qparam.Quu.diagonal().array() += ureg_;
+  qparam.Qyy.diagonal().array() += xreg_;
+
+  const VectorXs &lam_inn = results.lams[t + 1];
+  const VectorXs &lamplus = workspace.lams_plus[t + 1];
+
+  const ConstraintContainer<Scalar> &cstr_mgr = stage.constraints_;
+
+  // Loop over constraints
+  for (std::size_t j = 0; j < cstr_mgr.numConstraints(); j++) {
+    FunctionData &cstr_data = *stage_data.constraint_data[j];
+
+    const auto lam_inn_j = cstr_mgr.getConstSegmentByConstraint(lam_inn, j);
+
+    qparam.Qx.noalias() += cstr_data.Jx_.transpose() * lam_inn_j;
+    qparam.Qu.noalias() += cstr_data.Ju_.transpose() * lam_inn_j;
+    qparam.Qy.noalias() += cstr_data.Jy_.transpose() * lam_inn_j;
+    // qparam.hess_ += cstr_data.vhp_buffer_;
+  }
+  qparam.storage = qparam.storage.template selfadjointView<Eigen::Lower>();
 }
 
 template <typename Scalar>
@@ -494,7 +548,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
   Scalar phi0 = 0.;
   const Scalar fd_eps = 1e-9;
-  Scalar phieps = 0., dphi0 = 0.;
+  Scalar phieps = 0., dphi0_fd = 0.;
 
   logger.active = (verbose_ > 0);
 
@@ -530,16 +584,21 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     }
 
     linearRollout(problem, workspace, results);
-    phieps = merit_eval_lin(fd_eps);
-    dphi0 = (phieps - phi0) / fd_eps;
+
+    Scalar du_norm = math::infty_norm(workspace.dus_);
+    Scalar dl_norm = math::infty_norm(workspace.dlams_);
 
     Scalar dphi0_analytical = merit_fun.directionalDerivative(
         problem, results.lams, workspace, workspace.problem_data);
+
+    phieps = merit_eval_lin(fd_eps);
+    dphi0_fd = (phieps - phi0) / fd_eps;
 #ifndef NDEBUG
     {
       std::FILE *fi = std::fopen("pddp.log", "a");
       fmt::print(fi, " dphi0_ana={:.3e} / dphi0_fd={:.3e} / fd-a={:.3e}\n",
-                 dphi0_analytical, dphi0, dphi0 - dphi0_analytical);
+                 dphi0_analytical, dphi0_fd, dphi0_fd - dphi0_analytical);
+      fmt::print(fi, " |du|={:.4e},  |dl|={:.4e}\n", du_norm, dl_norm);
       std::fclose(fi);
     }
 #endif
@@ -548,7 +607,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     Scalar alpha_opt = 1;
 
     Scalar phi_new = proxnlp::ArmijoLinesearch<Scalar>(ls_params).run(
-        merit_eval_fun, phi0, dphi0_analytical, alpha_opt);
+        merit_eval_fun, phi0, dphi0_fd, alpha_opt);
     results.traj_cost_ = merit_fun.traj_cost;
     results.merit_value_ = phi_new;
 
@@ -561,13 +620,14 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
       std::FILE *file = 0;
       if (k == 0) {
         file = std::fopen(fname, "w");
-        fmt::print(file, "k,alpha,phi,dphi0\n");
+        fmt::print(file, "k,alpha,phi,dphi0,dphi0_fd\n");
       } else {
         file = std::fopen(fname, "a");
       }
-      const char *fmtstr = "{:d}, {:.4e}, {:.5e}, {:.5e}\n";
+      const char *fmtstr = "{:d}, {:.4e}, {:.5e}, {:.5e}, {:.5e}\n";
       for (int i = 0; i <= nalph + 1; i++) {
-        fmt::print(file, fmtstr, k, a, merit_eval_fun(a), dphi0_analytical);
+        fmt::print(file, fmtstr, k, a, merit_eval_fun(a), dphi0_analytical,
+                   dphi0_fd);
         a += da;
       }
       if (alpha_opt < da) {
@@ -576,11 +636,11 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
         als.setLinSpaced(nalph, 0., 2 * alpha_opt);
         for (int i = 1; i < als.size(); i++) {
           fmt::print(file, fmtstr, k, als(i), merit_eval_fun(als(i)),
-                     dphi0_analytical);
+                     dphi0_analytical, dphi0_fd);
         }
       }
       fmt::print(file, fmtstr, k, alpha_opt, merit_eval_fun(alpha_opt),
-                 dphi0_analytical);
+                 dphi0_analytical, dphi0_fd);
       std::fclose(file);
     }
 #endif
@@ -592,6 +652,9 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     PROXDDP_RAISE_IF_NAN_NAME(results.merit_value_, "results.merit_value");
     PROXDDP_RAISE_IF_NAN_NAME(results.traj_cost_, "results.traj_cost");
 
+    if (std::abs(dphi0_fd) <= ls_params.dphi_thresh)
+      return true;
+
     LogRecord iter_log;
     iter_log.iter = k + 1;
     iter_log.xreg = xreg_;
@@ -599,18 +662,15 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     iter_log.prim_err = results.primal_infeasibility;
     iter_log.dual_err = results.dual_infeasibility;
     iter_log.step_size = alpha_opt;
-    iter_log.dphi0 = dphi0;
+    iter_log.dphi0 = dphi0_fd;
     iter_log.merit = results.merit_value_;
     iter_log.dM = results.merit_value_ - phi0;
 
-    logger.log(iter_log);
-
-    if (std::abs(dphi0) <= ls_params.dphi_thresh)
-      return true;
     if (alpha_opt == ls_params.alpha_min)
       this->increase_reg();
 
     invokeCallbacks(workspace, results);
+    logger.log(iter_log);
 
     k++;
   }
