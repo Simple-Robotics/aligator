@@ -107,11 +107,11 @@ ndx = space.ndx
 cont_dyn = proxddp.dynamics.MultibodyFreeFwdDynamics(space, act_mat)
 disc_dyn = proxddp.dynamics.IntegratorSemiImplEuler(cont_dyn, time_step)
 
+np.random.seed(1)
 nq = model.nq
 nv = model.nv
 x0 = space.neutral()
-np.random.seed(1)
-x0[0] = np.random.uniform(-1, 1, 1) * np.pi
+x0[0] = np.pi
 
 target_pos = np.array([0.0, 0.0, 1.0])
 frame_id = model.getFrameId("end_effector_frame")
@@ -155,8 +155,8 @@ term_cost.addCost(
 )
 
 # box constraint on control
-u_min = -25.0 * np.ones(nu)
-u_max = +25.0 * np.ones(nu)
+u_min = -20.0 * np.ones(nu)
+u_max = +20.0 * np.ones(nu)
 ctrl_box = proxddp.ControlBoxFunction(ndx, u_min, u_max)
 
 nsteps = 200
@@ -174,17 +174,17 @@ term_fun = proxddp.FrameTranslationResidual(ndx, nu, model, target_pos, frame_id
 term_cstr = proxddp.StageConstraint(
     term_fun, proxnlp.constraints.EqualityConstraintSet()
 )
-# problem.setTerminalConstraint(term_cstr)
+problem.setTerminalConstraint(term_cstr)
 
-mu_init = 4e-2
+mu_init = 0.5
 rho_init = 1e-6
 verbose = proxddp.VerboseLevel.VERBOSE
 TOL = 1e-4
-MAX_ITER = 300
+MAX_ITER = 200
 solver = proxddp.SolverProxDDP(
     TOL, mu_init, rho_init=rho_init, max_iters=MAX_ITER, verbose=verbose
 )
-# solver.rol_type = proxddp.RolloutType.NONLINEAR
+solver.rollout_type = proxddp.RolloutType.NONLINEAR
 callback = proxddp.HistoryCallback()
 solver.registerCallback(callback)
 
@@ -229,8 +229,9 @@ plt.hlines(
     label=r"$\bar{u}$"
 )
 plt.title("Controls $u(t)$")
-
 plt.legend()
+plt.tight_layout()
+plt.savefig("assets/pendulum_controls.png")
 
 if True:
     from proxnlp.utils import plot_pd_errs
@@ -251,15 +252,17 @@ if True:
 
     ax.vlines(al_change_idx, *ax.get_ylim(), colors="gray", lw=4.0, alpha=0.5)
     ax.legend(["Prim. err $p$", "Dual err $d$", "Prim tol $\\eta_k$", "AL iters"])
+    plt.tight_layout()
+    plt.savefig("assets/pendulum_convergence")
 
 
-plt.tight_layout()
 plt.show()
 
 if args.display:
     vizer = MeshcatVisualizer(model, geom_model, geom_model)
     vizer.initViewer(open=args.display, loadModel=True)
     viz_util = msu.VizUtil(vizer)
+    viz_util.set_bg_color()
 
     numrep = 2
     cp = [2.0, 0.0, 0.8]
