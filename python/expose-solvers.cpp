@@ -217,6 +217,11 @@ void exposeProxDDP() {
       .def_readwrite("rollout_type", &SolverType::rollout_type, "Rollout type.")
       .def_readwrite("dual_weight", &SolverType::dual_weight,
                      "Dual penalty weight.")
+#ifndef NDEBUG
+      .def_readwrite("dump_linesearch_plot", &SolverType::dump_linesearch_plot,
+                     "[Debug] Dump a plot of the linesearch support function "
+                     "at every iteration.")
+#endif
       .def(SolverVisitor<SolverType>())
       .def("run", &SolverType::run,
            prox_run_overloads(

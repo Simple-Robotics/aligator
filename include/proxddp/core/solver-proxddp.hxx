@@ -608,7 +608,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     results.merit_value_ = phi_new;
 
 #ifndef NDEBUG
-    {
+    if (this->dump_linesearch_plot) {
       int nalph = 80;
       Scalar a = 0.;
       Scalar da = 1. / (nalph + 1);

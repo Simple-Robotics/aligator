@@ -79,6 +79,9 @@ public:
   Scalar prim_tol0 = 1.;
 
   ::proxddp::BaseLogger logger{};
+#ifndef NDEBUG
+  bool dump_linesearch_plot = false;
+#endif
 
   VerboseLevel verbose_;
   /// Linesearch options, as in proxnlp.
