@@ -366,12 +366,6 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   for (std::size_t n = 0; n < MAX_REFINEMENT_STEPS; n++) {
     resdl = -(kkt_mat * gains + kkt_rhs);
     resdl_norm = math::infty_norm(resdl);
-#ifndef NDEBUG
-    std::FILE *fi = std::fopen("pddp.log", "a");
-    fmt::print(fi, "[{:d}] Linear solve (try {:d}) resdl={:.3e}\n", t + 1, n,
-               resdl_norm);
-    std::fclose(fi);
-#endif
     if (resdl_norm < resdl_thresh)
       break;
     ldlt.solveInPlace(resdl);
@@ -578,7 +572,12 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
     computeInfeasibilities(problem, workspace, results);
 
-    bool inner_conv = (workspace.inner_criterion < inner_tol_);
+    if (std::max(results.dual_infeasibility, results.primal_infeasibility) <=
+        target_tol_) {
+      return true; // exit
+    }
+
+    bool inner_conv = (workspace.inner_criterion <= inner_tol_);
     if (inner_conv && (k >= 1)) {
       return true;
     }
@@ -723,31 +722,30 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
     const VParams &vp = workspace.value_params[i];
     const QParams &qpar = workspace.q_params[i - 1];
 
+    Scalar scale_dual = vp.Vx().template lpNorm<1>();
+
     decltype(auto) gu = qpar.Qu;
     decltype(auto) gy = qpar.Qy;
     ru = math::infty_norm(gu);
-    ry = math::infty_norm(gy);
+    ry = math::infty_norm(gy / scale_dual);
     rl = math::infty_norm(kktlam);
     workspace.inner_criterion_by_stage(long(i)) = std::max({ru, ry, rl});
     workspace.inner_criterion_x = std::max(workspace.inner_criterion_x, ry);
     workspace.inner_criterion_u = std::max(workspace.inner_criterion_u, ru);
     workspace.inner_criterion_l = std::max(workspace.inner_criterion_l, rl);
 #ifndef NDEBUG
-    Scalar ru_bis_wtf_cmon;
+    Scalar ru_bis_ddp;
     {
       const StageData &sd = prob_data.getStageData(i - 1);
-      auto gu_bis = sd.cost_data->Lu_;
-
       const DynamicsDataTpl<Scalar> &dd = sd.dyn_data();
-      gu_bis += dd.Ju_.transpose() * vp.Vx();
-      ru_bis_wtf_cmon = math::infty_norm(gu_bis);
+      auto gu_bis = sd.cost_data->Lu_ + dd.Ju_.transpose() * vp.Vx();
+      ru_bis_ddp = math::infty_norm(gu_bis);
     }
     std::FILE *fi = std::fopen("pddp.log", "a");
     auto ff = results.getFeedforward(i - 1);
-    Scalar quad_norm_rhs = std::sqrt(kkt_rhs_0.dot(-ff));
     fmt::print(fi, "[{:>3d}]ru={:.2e},ry={:.2e},rl={:.2e},", i, ru, ry, rl);
-    fmt::print(fi, " ru_other={:.3e} / quad_rhs_norm={:.3e}\n", ru_bis_wtf_cmon,
-               quad_norm_rhs);
+    fmt::print(fi, " ru_other={:.3e} / scale_d={:.3e}\n", ru_bis_ddp,
+               scale_dual);
     std::fclose(fi);
 #endif
     {
@@ -756,7 +754,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
       auto gu_non_reg = gu - rho() * proxdata.Lu_;
       auto gy_non_reg = gy - rho() * proxnext.Lx_;
       Scalar dual_res_u = math::infty_norm(gu_non_reg);
-      Scalar dual_res_y = math::infty_norm(gy_non_reg);
+      Scalar dual_res_y = math::infty_norm(gy_non_reg / scale_dual);
       workspace.dual_infeas_by_stage(long(i)) =
           std::max(dual_res_u, dual_res_y);
     }

@@ -56,7 +56,7 @@ def main(roltype, mu_init):
         tol, mu_init, verbose=proxddp.VerboseLevel.QUIET, max_iters=400
     )
     solver.setup(problem)
-    solver.rol_type = roltype
+    solver.rollout_type = roltype
 
     xs_init = [x0] * (nsteps + 1)
     us_init = [np.zeros(nu) for _ in range(nsteps)]
