@@ -55,6 +55,7 @@ public:
   using ProxPenaltyType = ProximalPenaltyTpl<Scalar>;
   using ProxData = typename ProxPenaltyType::Data;
   using CallbackPtr = shared_ptr<helpers::base_callback<Scalar>>;
+  using ConstraintStack = ConstraintStackTpl<Scalar>;
   using LSOptions = typename proxnlp::Linesearch<Scalar>::Options;
 
   std::vector<ProxPenaltyType> prox_penalties_;
@@ -179,7 +180,7 @@ public:
 
       const DynamicsModelTpl<Scalar> &dm = stage.dyn_model();
       DynamicsDataTpl<Scalar> &dd = data.dyn_data();
-      const ConstraintContainer<Scalar> &cstr_mgr = stage.constraints_;
+      const ConstraintStack &cstr_mgr = stage.constraints_;
       const ConstVectorRef dynlam =
           cstr_mgr.getConstSegmentByConstraint(lams[i + 1], 0);
       const ConstVectorRef dynprevlam =
@@ -341,7 +342,7 @@ public:
     for (std::size_t i = 0; i < nsteps; i++) {
       const StageModel &stage = *problem.stages_[i];
       const StageData &sdata = pd.getStageData(i);
-      const ConstraintContainer<Scalar> &mgr = stage.constraints_;
+      const ConstraintStack &mgr = stage.constraints_;
 
       // enumerate the constraints and perform projection
       auto cstr_callback = [&](auto mgr, std::size_t k, const VectorXs &lami,

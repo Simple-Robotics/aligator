@@ -43,7 +43,7 @@ public:
   /// Stage cost function.
   shared_ptr<Cost> cost_;
   /// Constraint manager.
-  ConstraintContainer<Scalar> constraints_;
+  ConstraintStackTpl<Scalar> constraints_;
 
   const Manifold &xspace() const { return *xspace_; }
   const Manifold &uspace() const { return *uspace_; }

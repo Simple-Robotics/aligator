@@ -206,7 +206,7 @@ void SolverProxDDP<Scalar>::updateHamiltonian(const Problem &problem,
   const VectorXs &lam_inn = results.lams[t + 1];
   const VectorXs &lamplus = workspace.lams_plus[t + 1];
 
-  const ConstraintContainer<Scalar> &cstr_mgr = stage.constraints_;
+  const ConstraintStack &cstr_mgr = stage.constraints_;
 
   // Loop over constraints
   for (std::size_t j = 0; j < cstr_mgr.numConstraints(); j++) {
@@ -306,7 +306,7 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   // KKT matrix: (u, y)-block = bottom right of q hessian
   kkt_top_left = qparam.hess_.bottomRightCorner(nprim, nprim);
 
-  const ConstraintContainer<Scalar> &cstr_mgr = stage.constraints_;
+  const ConstraintStack &cstr_mgr = stage.constraints_;
 
   // Loop over constraints
   for (std::size_t j = 0; j < stage.numConstraints(); j++) {
@@ -727,14 +727,21 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
     ry = math::infty_norm(gy / scale_dual);
     rl = math::infty_norm(kktlam);
     workspace.inner_criterion_by_stage(long(i)) = std::max({ru, ry, rl});
-#ifndef NDEBUG
+    const ConstraintStack &cstr_mgr = st.constraints_;
+
+    VectorXs gu_bis;
     Scalar ru_bis_ddp;
     {
       const StageData &sd = prob_data.getStageData(i - 1);
       const DynamicsDataTpl<Scalar> &dd = sd.dyn_data();
-      auto gu_bis = sd.cost_data->Lu_ + dd.Ju_.transpose() * vp.Vx();
+      auto lam_head = cstr_mgr.getConstSegmentByConstraint(results.lams[i], 0);
+      gu_bis = gu + dd.Ju_.transpose() * (vp.Vx() - lam_head);
       ru_bis_ddp = math::infty_norm(gu_bis);
     }
+    /// TODO: replace this, not valid for implicit-dynamics problems
+    // workspace.inner_criterion_by_stage(long(i)) = ru_bis_ddp;
+
+#ifndef NDEBUG
     std::FILE *fi = std::fopen("pddp.log", "a");
     fmt::print(fi, "[{:>3d}]ru={:.2e},ry={:.2e},rl={:.2e},", i, ru, ry, rl);
     fmt::print(fi, " ru_other={:.3e}, s_d={:.3e}\n", ru_bis_ddp, scale_dual);
@@ -749,6 +756,8 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
       Scalar dual_res_y = math::infty_norm(gy_non_reg / scale_dual);
       workspace.dual_infeas_by_stage(long(i)) =
           std::max(dual_res_u, dual_res_y);
+      // workspace.dual_infeas_by_stage(long(i)) =
+      //     math::infty_norm(gu_bis - rho() * proxnext.Lu_);
     }
   }
   workspace.inner_criterion =

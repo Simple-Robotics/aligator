@@ -78,6 +78,7 @@ template <typename _Scalar> struct PDALFunction {
   using StageData = StageDataTpl<Scalar>;
   using FunctionData = FunctionDataTpl<Scalar>;
   using CstrSet = ConstraintSetBase<Scalar>;
+  using ConstraintStack = ConstraintStackTpl<Scalar>;
 
   SolverProxDDP<Scalar> const *solver;
   Scalar traj_cost = 0.;

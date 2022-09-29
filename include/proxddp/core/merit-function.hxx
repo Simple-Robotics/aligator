@@ -34,7 +34,7 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblemTpl<Scalar> &problem,
     const StageModel &stage = *problem.stages_[i];
     const StageData &stage_data = prob_data.getStageData(i);
 
-    const ConstraintContainer<Scalar> &cstr_mgr = stage.constraints_;
+    const ConstraintStack &cstr_mgr = stage.constraints_;
     const std::size_t num_c = cstr_mgr.numConstraints();
     // loop over constraints
     // get corresponding multipliers from allocated memory
@@ -100,7 +100,7 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
     const StageModel &stage = *problem.stages_[i];
     const StageData &stage_data = prob_data.getStageData(i);
 
-    const ConstraintContainer<Scalar> &cstr_mgr = stage.constraints_;
+    const ConstraintStack &cstr_mgr = stage.constraints_;
     const std::size_t num_c = cstr_mgr.numConstraints();
 
     auto &lampdal = workspace.lams_pdal[i + 1];

@@ -14,10 +14,10 @@ template <typename Scalar> struct StageConstraintTpl {
 };
 
 /// @brief Convenience class to manage a stack of constraints.
-template <typename Scalar> struct ConstraintContainer {
+template <typename Scalar> struct ConstraintStackTpl {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using ConstraintType = StageConstraintTpl<Scalar>;
-  ConstraintContainer() : cursors_({0}){};
+  ConstraintStackTpl() : cursors_({0}){};
 
   std::size_t numConstraints() const { return storage_.size(); }
 
