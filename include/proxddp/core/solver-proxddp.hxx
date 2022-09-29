@@ -39,12 +39,12 @@ void SolverProxDDP<Scalar>::linearRollout(const Problem &problem,
     const auto ff = results.getFeedforward(i);
     const auto fb = results.getFeedback(i);
 
-    pd_step = ff + fb * workspace.dxs_[i];
+    pd_step = ff + fb * workspace.dxs[i];
   }
   if (problem.term_constraint_) {
     const auto ff = results.getFeedforward(nsteps);
     const auto fb = results.getFeedback(nsteps);
-    workspace.dlams_.back() = ff + fb * workspace.dxs_[nsteps];
+    workspace.dlams.back() = ff + fb * workspace.dxs[nsteps];
   }
 }
 
@@ -57,18 +57,18 @@ void SolverProxDDP<Scalar>::tryStep(const Problem &problem,
   const std::size_t nsteps = problem.numSteps();
 
   for (std::size_t i = 0; i <= nsteps; i++)
-    workspace.trial_lams[i] = results.lams[i] + alpha * workspace.dlams_[i];
+    workspace.trial_lams[i] = results.lams[i] + alpha * workspace.dlams[i];
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
-    stage.xspace_->integrate(results.xs[i], alpha * workspace.dxs_[i],
+    stage.xspace_->integrate(results.xs[i], alpha * workspace.dxs[i],
                              workspace.trial_xs[i]);
-    stage.uspace_->integrate(results.us[i], alpha * workspace.dus_[i],
+    stage.uspace_->integrate(results.us[i], alpha * workspace.dus[i],
                              workspace.trial_us[i]);
   }
   const StageModel &stage = *problem.stages_[nsteps - 1];
   stage.xspace_next_->integrate(results.xs[nsteps],
-                                alpha * workspace.dxs_[nsteps],
+                                alpha * workspace.dxs[nsteps],
                                 workspace.trial_xs[nsteps]);
 
   problem.evaluate(workspace.trial_xs, workspace.trial_us,
@@ -581,8 +581,8 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
     linearRollout(problem, workspace, results);
 
-    Scalar du_norm = math::infty_norm(workspace.dus_);
-    Scalar dl_norm = math::infty_norm(workspace.dlams_);
+    Scalar du_norm = math::infty_norm(workspace.dus);
+    Scalar dl_norm = math::infty_norm(workspace.dlams);
 
     Scalar dphi0_analytical = merit_fun.directionalDerivative(
         problem, results.lams, workspace, workspace.problem_data);

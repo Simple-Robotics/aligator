@@ -148,8 +148,8 @@ public:
 
     {
       const StageModel &stage = *problem.stages_[0];
-      stage.xspace().integrate(results.xs[0], alpha * workspace.dxs_[0], xs[0]);
-      lams[0] = results.lams[0] + alpha * workspace.dlams_[0];
+      stage.xspace().integrate(results.xs[0], alpha * workspace.dxs[0], xs[0]);
+      lams[0] = results.lams[0] + alpha * workspace.dlams[0];
     }
 #ifndef NDEBUG
     std::FILE *fi = std::fopen("pddp.log", "a");
@@ -169,12 +169,12 @@ public:
       auto ff_lm = ff.tail(ndual);
       auto fb_lm = fb.bottomRows(ndual);
 
-      const VectorRef &dx = workspace.dxs_[i];
-      VectorRef &du = workspace.dus_[i];
+      const VectorRef &dx = workspace.dxs[i];
+      VectorRef &du = workspace.dus[i];
       du.head(nu) = alpha * ff_u + fb_u * dx;
       stage.uspace().integrate(results.us[i], du, us[i]);
 
-      VectorRef &dlam = workspace.dlams_[i + 1];
+      VectorRef &dlam = workspace.dlams[i + 1];
       dlam.head(ndual) = alpha * ff_lm + fb_lm * dx;
       lams[i + 1].head(ndual) = results.lams[i + 1] + dlam;
 
@@ -188,7 +188,7 @@ public:
       VectorXs gap = this->mu_scaled() * (dynprevlam - dynlam);
       forwardDynamics(dm, xs[i], us[i], dd, xs[i + 1], 1, gap);
 
-      VectorRef dx_next = workspace.dxs_[i + 1].head(ndx2);
+      VectorRef dx_next = workspace.dxs[i + 1].head(ndx2);
       stage.xspace_next().difference(results.xs[i + 1], xs[i + 1], dx_next);
 
       PROXDDP_RAISE_IF_NAN_NAME(xs[i + 1], fmt::format("xs[{:d}]", i + 1));
@@ -196,8 +196,8 @@ public:
       PROXDDP_RAISE_IF_NAN_NAME(lams[i + 1], fmt::format("lams[{:d}]", i + 1));
     }
     if (problem.term_constraint_) {
-      VectorRef &dlam = workspace.dlams_.back();
-      const VectorRef &dx = workspace.dxs_.back();
+      VectorRef &dlam = workspace.dlams.back();
+      const VectorRef &dx = workspace.dxs.back();
       auto ff = results.getFeedforward(nsteps);
       auto fb = results.getFeedback(nsteps);
       dlam = alpha * ff + fb * dx;

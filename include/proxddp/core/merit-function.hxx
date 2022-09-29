@@ -84,16 +84,16 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
   const Scalar rho = solver->rho();
   for (std::size_t i = 0; i <= nsteps; i++) {
     const ProximalDataTpl<Scalar> &pdata = *prox_datas[i];
-    d1 += rho * pdata.Lx_.dot(workspace.dxs_[i]);
+    d1 += rho * pdata.Lx_.dot(workspace.dxs[i]);
     if (i < nsteps)
-      d1 += rho * pdata.Lu_.dot(workspace.dus_[i]);
+      d1 += rho * pdata.Lu_.dot(workspace.dus[i]);
   }
 
   // constraints
   {
     const FunctionData &fd = prob_data.getInitData();
     auto &lampdal = workspace.lams_pdal[0];
-    d1 += lampdal.dot(fd.Jx_ * workspace.dxs_[0]);
+    d1 += lampdal.dot(fd.Jx_ * workspace.dxs[0]);
   }
 
   for (std::size_t i = 0; i < nsteps; i++) {
@@ -104,9 +104,9 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
     const std::size_t num_c = cstr_mgr.numConstraints();
 
     auto &lampdal = workspace.lams_pdal[i + 1];
-    auto &dx = workspace.dxs_[i];
-    auto &du = workspace.dus_[i];
-    auto &dy = workspace.dxs_[i + 1];
+    auto &dx = workspace.dxs[i];
+    auto &du = workspace.dus[i];
+    auto &dy = workspace.dxs[i + 1];
 
     for (std::size_t j = 0; j < num_c; j++) {
       const FunctionData &cd = *stage_data.constraint_data[j];
@@ -121,7 +121,7 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
   if (problem.term_constraint_) {
     const FunctionData &tcd = *prob_data.term_cstr_data;
     auto &lampdal = workspace.lams_pdal[nsteps + 1];
-    auto &dx = workspace.dxs_.back();
+    auto &dx = workspace.dxs.back();
 
     d1 += lampdal.dot(tcd.Jx_ * dx);
   }
@@ -130,7 +130,7 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
   for (std::size_t i = 0; i < nmul; i++) {
     auto &laminnr = lams[i];
     auto &lamplus = workspace.lams_plus[i];
-    d1 += -mu() * (lamplus - laminnr).dot(workspace.dlams_[i]);
+    d1 += -mu() * (lamplus - laminnr).dot(workspace.dlams[i]);
   }
   return d1;
 }

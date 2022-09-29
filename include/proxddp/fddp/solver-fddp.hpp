@@ -164,8 +164,8 @@ template <typename Scalar> struct SolverFDDP {
   static void linearRollout(const Problem &problem, Workspace &workspace,
                             const Results &results) {
     const auto &fs = workspace.feas_gaps_;
-    auto &dxs = workspace.dxs_;
-    auto &dus = workspace.dus_;
+    auto &dxs = workspace.dxs;
+    auto &dus = workspace.dus;
     dxs[0] = fs[0];
     const std::size_t nsteps = workspace.nsteps;
     for (std::size_t i = 0; i < nsteps; i++) {

@@ -31,9 +31,9 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 
   lams_plus.resize(nsteps + 1);
   pd_step_.resize(nsteps + 1);
-  dxs_.reserve(nsteps + 1);
-  dus_.reserve(nsteps);
-  dlams_.reserve(nsteps + 1);
+  dxs.reserve(nsteps + 1);
+  dus.reserve(nsteps);
+  dlams.reserve(nsteps + 1);
   co_state_.reserve(nsteps);
 
   {
@@ -48,8 +48,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 
     lams_plus[0] = VectorXs::Zero(ndual);
     pd_step_[0] = VectorXs::Zero(ntot);
-    dxs_.emplace_back(pd_step_[0].head(ndx1));
-    dlams_.emplace_back(pd_step_[0].tail(ndual));
+    dxs.emplace_back(pd_step_[0].head(ndx1));
+    dlams.emplace_back(pd_step_[0].tail(ndual));
   }
 
   for (std::size_t i = 0; i < nsteps; i++) {
@@ -69,10 +69,10 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 
     lams_plus[i + 1] = VectorXs::Zero(ndual);
     pd_step_[i + 1] = VectorXs::Zero(ntot);
-    dus_.emplace_back(pd_step_[i + 1].head(nu));
-    dxs_.emplace_back(pd_step_[i + 1].segment(nu, ndx2));
-    dlams_.emplace_back(pd_step_[i + 1].tail(ndual));
-    co_state_.push_back(dlams_[i + 1].head(ndx2));
+    dus.emplace_back(pd_step_[i + 1].head(nu));
+    dxs.emplace_back(pd_step_[i + 1].segment(nu, ndx2));
+    dlams.emplace_back(pd_step_[i + 1].tail(ndual));
+    co_state_.push_back(dlams[i + 1].head(ndx2));
   }
 
   {
@@ -96,7 +96,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 
     lams_plus.push_back(VectorXs::Zero(ndual));
     pd_step_.push_back(VectorXs::Zero(ndual));
-    dlams_.push_back(pd_step_.back().tail(ndual));
+    dlams.push_back(pd_step_.back().tail(ndual));
   }
 
   lams_pdal = lams_plus;
@@ -112,8 +112,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   dual_infeas_by_stage.setZero();
 
   assert(value_params.size() == nsteps + 1);
-  assert(dxs_.size() == nsteps + 1);
-  assert(dus_.size() == nsteps);
+  assert(dxs.size() == nsteps + 1);
+  assert(dus.size() == nsteps);
 }
 
 template <typename Scalar>

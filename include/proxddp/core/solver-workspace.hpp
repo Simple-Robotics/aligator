@@ -84,9 +84,9 @@ template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
   /// @name Riccati gains and buffers for primal-dual steps
 
   std::vector<VectorXs> pd_step_;
-  std::vector<VectorRef> dxs_;
-  std::vector<VectorRef> dus_;
-  std::vector<VectorRef> dlams_;
+  std::vector<VectorRef> dxs;
+  std::vector<VectorRef> dus;
+  std::vector<VectorRef> dlams;
 
   /// Buffer for KKT matrix
   std::vector<MatrixXs> kkt_mat_buf_;

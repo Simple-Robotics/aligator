@@ -99,8 +99,8 @@ void exposeFDDP() {
 
   bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>>("WorkspaceFDDP",
                                                              bp::no_init)
-      .def_readonly("dxs", &Workspace::dxs_)
-      .def_readonly("dus", &Workspace::dus_);
+      .def_readonly("dxs", &Workspace::dxs)
+      .def_readonly("dus", &Workspace::dus);
 
   bp::class_<Results, bp::bases<ResultsBaseTpl<Scalar>>>(
       "ResultsFDDP",

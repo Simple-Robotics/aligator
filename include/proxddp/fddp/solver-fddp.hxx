@@ -63,8 +63,8 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
     ConstVectorRef ff = results.getFeedforward(i);
     ConstMatrixRef fb = results.getFeedback(i);
 
-    sm.xspace().difference(results.xs[i], xs_try[i], workspace.dxs_[i]);
-    sm.uspace().integrate(results.us[i], alpha * ff + fb * workspace.dxs_[i],
+    sm.xspace().difference(results.xs[i], xs_try[i], workspace.dxs[i]);
+    sm.uspace().integrate(results.us[i], alpha * ff + fb * workspace.dxs[i],
                           us_try[i]);
     sm.evaluate(xs_try[i], us_try[i], xs_try[i + 1], sd);
     const ExpData &dd = stage_get_dynamics_data(sd);
@@ -78,10 +78,10 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
   problem.term_cost_->evaluate(xs_try.back(), us_try.back(), cd_term);
   traj_cost_ += cd_term.value_;
   const Manifold &space = problem.stages_.back()->xspace();
-  space.difference(results.xs[nsteps], xs_try[nsteps], workspace.dxs_[nsteps]);
+  space.difference(results.xs[nsteps], xs_try[nsteps], workspace.dxs[nsteps]);
 #ifndef NDEBUG
   if (alpha == 0.)
-    assert(math::infty_norm(workspace.dxs_) <=
+    assert(math::infty_norm(workspace.dxs) <=
            std::numeric_limits<Scalar>::epsilon());
 #endif
   return traj_cost_;
@@ -123,7 +123,7 @@ void SolverFDDP<Scalar>::directionalDerivativeCorrection(Workspace &workspace,
   Scalar dv = 0.;
   for (std::size_t i = 0; i <= nsteps; i++) {
     const VectorXs &ftVxx = workspace.ftVxx_[i];
-    dv += ftVxx.dot(workspace.dxs_[i]);
+    dv += ftVxx.dot(workspace.dxs[i]);
   }
 
   d1 += -dv;

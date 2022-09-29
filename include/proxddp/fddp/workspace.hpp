@@ -18,9 +18,9 @@ template <typename Scalar> struct WorkspaceFDDPTpl : WorkspaceBaseTpl<Scalar> {
   /// Feasibility gaps
   std::vector<VectorXs> feas_gaps_;
   /// State increment
-  std::vector<VectorXs> dxs_;
+  std::vector<VectorXs> dxs;
   /// Control increment
-  std::vector<VectorXs> dus_;
+  std::vector<VectorXs> dus;
   std::vector<VectorXs> Quuks_;
   std::vector<VectorXs> ftVxx_;
   /// Buffer for KKT matrices.
@@ -43,8 +43,8 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
 
   xnexts_.resize(nsteps + 1);
   feas_gaps_.resize(nsteps + 1);
-  dxs_.resize(nsteps + 1);
-  dus_.resize(nsteps);
+  dxs.resize(nsteps + 1);
+  dus.resize(nsteps);
   Quuks_.resize(nsteps);
   ftVxx_.resize(nsteps + 1);
   kkt_mat_bufs.resize(nsteps);
@@ -64,8 +64,8 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
 
     xnexts_[i] = sm.xspace().neutral();
     feas_gaps_[i + 1] = VectorXs::Zero(sm.ndx2());
-    dxs_[i] = VectorXs::Zero(ndx);
-    dus_[i] = VectorXs::Zero(nu);
+    dxs[i] = VectorXs::Zero(ndx);
+    dus[i] = VectorXs::Zero(nu);
 
     Quuks_[i] = VectorXs::Zero(sm.nu());
     ftVxx_[i + 1] = VectorXs::Zero(sm.ndx2());
@@ -74,7 +74,7 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
     llts_.emplace_back(nu);
   }
   const StageModelTpl<Scalar> &sm = *problem.stages_.back();
-  dxs_[nsteps] = VectorXs::Zero(sm.ndx2());
+  dxs[nsteps] = VectorXs::Zero(sm.ndx2());
   xnexts_[nsteps] = sm.xspace_next().neutral();
   value_params.emplace_back(sm.ndx2());
 
