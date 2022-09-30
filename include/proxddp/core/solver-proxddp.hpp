@@ -137,76 +137,7 @@ public:
   /// @brief    Policy rollout using the full nonlinear dynamics. The feedback
   /// gains need to be computed first.
   void nonlinearRollout(const Problem &problem, Workspace &workspace,
-                        const Results &results, const Scalar alpha) const {
-    const std::size_t nsteps = workspace.nsteps;
-    std::vector<VectorXs> &xs = workspace.trial_xs;
-    std::vector<VectorXs> &us = workspace.trial_us;
-    std::vector<VectorXs> &lams = workspace.trial_lams;
-    TrajOptDataTpl<Scalar> &pd = workspace.trial_prob_data;
-
-    computeDirX0(problem, workspace, results);
-
-    {
-      const StageModel &stage = *problem.stages_[0];
-      stage.xspace().integrate(results.xs[0], alpha * workspace.dxs[0], xs[0]);
-      lams[0] = results.lams[0] + alpha * workspace.dlams[0];
-    }
-#ifndef NDEBUG
-    std::FILE *fi = std::fopen("pddp.log", "a");
-#endif
-
-    for (std::size_t i = 0; i < nsteps; i++) {
-      const StageModel &stage = *problem.stages_[i];
-      StageData &data = pd.getStageData(i);
-      const int nu = stage.nu();
-      const int ndual = stage.numDual();
-      const int ndx2 = stage.ndx2();
-
-      auto ff = results.getFeedforward(i);
-      auto fb = results.getFeedback(i);
-      auto ff_u = ff.head(nu);
-      auto fb_u = fb.topRows(nu);
-      auto ff_lm = ff.tail(ndual);
-      auto fb_lm = fb.bottomRows(ndual);
-
-      const VectorRef &dx = workspace.dxs[i];
-      VectorRef &du = workspace.dus[i];
-      du.head(nu) = alpha * ff_u + fb_u * dx;
-      stage.uspace().integrate(results.us[i], du, us[i]);
-
-      VectorRef &dlam = workspace.dlams[i + 1];
-      dlam.head(ndual) = alpha * ff_lm + fb_lm * dx;
-      lams[i + 1].head(ndual) = results.lams[i + 1] + dlam;
-
-      const DynamicsModelTpl<Scalar> &dm = stage.dyn_model();
-      DynamicsDataTpl<Scalar> &dd = data.dyn_data();
-      const ConstraintStack &cstr_mgr = stage.constraints_;
-      const ConstVectorRef dynlam =
-          cstr_mgr.getConstSegmentByConstraint(lams[i + 1], 0);
-      const ConstVectorRef dynprevlam =
-          cstr_mgr.getConstSegmentByConstraint(workspace.prev_lams[i + 1], 0);
-      VectorXs gap = this->mu_scaled() * (dynprevlam - dynlam);
-      forwardDynamics(dm, xs[i], us[i], dd, xs[i + 1], 1, gap);
-
-      VectorRef dx_next = workspace.dxs[i + 1].head(ndx2);
-      stage.xspace_next().difference(results.xs[i + 1], xs[i + 1], dx_next);
-
-      PROXDDP_RAISE_IF_NAN_NAME(xs[i + 1], fmt::format("xs[{:d}]", i + 1));
-      PROXDDP_RAISE_IF_NAN_NAME(us[i], fmt::format("us[{:d}]", i));
-      PROXDDP_RAISE_IF_NAN_NAME(lams[i + 1], fmt::format("lams[{:d}]", i + 1));
-    }
-    if (problem.term_constraint_) {
-      VectorRef &dlam = workspace.dlams.back();
-      const VectorRef &dx = workspace.dxs.back();
-      auto ff = results.getFeedforward(nsteps);
-      auto fb = results.getFeedback(nsteps);
-      dlam = alpha * ff + fb * dx;
-      lams.back() = results.lams.back() + dlam;
-    }
-#ifndef NDEBUG
-    std::fclose(fi);
-#endif
-  }
+                        const Results &results, const Scalar alpha) const;
 
   void computeDirX0(const Problem &problem, Workspace &workspace,
                     const Results &results) const;

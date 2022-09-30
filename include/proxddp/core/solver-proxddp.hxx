@@ -104,20 +104,20 @@ void SolverProxDDP<Scalar>::computeDirX0(const Problem &problem,
     return;
   }
 
-  kkt_mat.topLeftCorner(ndx0, ndx0) = vp.Vxx() + rho() * proxdata0.Lxx_;
+  // kkt_mat.topLeftCorner(ndx0, ndx0) = vp.Vxx() + rho() * proxdata0.Lxx_;
   // kkt_mat.topLeftCorner(ndx0, ndx0) += init_data.Hxx_;
-  kkt_mat.topRightCorner(ndx0, ndual0) = init_data.Jx_.transpose();
-  kkt_mat.bottomLeftCorner(ndual0, ndx0) = init_data.Jx_;
-  kkt_mat.bottomRightCorner(ndual0, ndual0).diagonal().array() = -mu();
-  Eigen::LDLT<MatrixXs, Eigen::Lower> &ldlt = workspace.ldlts_[0];
-  ldlt.compute(kkt_mat);
-  assert(workspace.pd_step_[0].size() == kkt_rhs_0.size());
-  workspace.pd_step_[0] = -kkt_rhs_0;
-  ldlt.solveInPlace(workspace.pd_step_[0]);
-  const ProxData &proxdata = *workspace.prox_datas[0];
-  workspace.inner_criterion_by_stage(0) = math::infty_norm(kkt_rhs_0);
-  workspace.dual_infeas_by_stage(0) =
-      math::infty_norm(kktx - rho() * proxdata.Lx_);
+  // kkt_mat.topRightCorner(ndx0, ndual0) = init_data.Jx_.transpose();
+  // kkt_mat.bottomLeftCorner(ndual0, ndx0) = init_data.Jx_;
+  // kkt_mat.bottomRightCorner(ndual0, ndual0).diagonal().array() = -mu();
+  // Eigen::LDLT<MatrixXs, Eigen::Lower> &ldlt = workspace.ldlts_[0];
+  // ldlt.compute(kkt_mat);
+  // assert(workspace.pd_step_[0].size() == kkt_rhs_0.size());
+  // workspace.pd_step_[0] = -kkt_rhs_0;
+  // ldlt.solveInPlace(workspace.pd_step_[0]);
+  // const ProxData &proxdata = *workspace.prox_datas[0];
+  // workspace.inner_criterion_by_stage(0) = math::infty_norm(kkt_rhs_0);
+  // workspace.dual_infeas_by_stage(0) =
+  //     math::infty_norm(kktx - rho() * proxdata.Lx_);
 }
 
 template <typename Scalar>
@@ -201,7 +201,6 @@ void SolverProxDDP<Scalar>::updateHamiltonian(const Problem &problem,
       cdata.hess_ + rho() * proxdata.hess_;
   qparam.Qyy = vnext.Vxx();
   qparam.Quu.diagonal().array() += ureg_;
-  qparam.Qyy.diagonal().array() += xreg_;
 
   const VectorXs &lam_inn = results.lams[t + 1];
   const VectorXs &lamplus = workspace.lams_plus[t + 1];
@@ -226,7 +225,7 @@ template <typename Scalar>
 void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
                                                  Workspace &workspace,
                                                  Results &results) const {
-  const std::size_t nsteps = problem.numSteps();
+  const std::size_t nsteps = workspace.nsteps;
 
   const TrajOptDataTpl<Scalar> &prob_data = workspace.problem_data;
   const CostData &term_cost_data = *prob_data.term_cost_data;
@@ -389,6 +388,75 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   vp.Vxx() = qparam.Qxx + Qxw * fb;
   vp.storage = vp.storage.template selfadjointView<Eigen::Lower>();
   return true;
+}
+
+template <typename Scalar>
+void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
+                                             Workspace &workspace,
+                                             const Results &results,
+                                             const Scalar alpha) const {
+  const std::size_t nsteps = workspace.nsteps;
+  std::vector<VectorXs> &xs = workspace.trial_xs;
+  std::vector<VectorXs> &us = workspace.trial_us;
+  std::vector<VectorXs> &lams = workspace.trial_lams;
+  TrajOptDataTpl<Scalar> &pd = workspace.trial_prob_data;
+
+  computeDirX0(problem, workspace, results);
+
+  {
+    const StageModel &stage = *problem.stages_[0];
+    stage.xspace().integrate(results.xs[0], alpha * workspace.dxs[0], xs[0]);
+    lams[0] = results.lams[0] + alpha * workspace.dlams[0];
+  }
+
+  for (std::size_t i = 0; i < nsteps; i++) {
+    const StageModel &stage = *problem.stages_[i];
+    StageData &data = pd.getStageData(i);
+    const int nu = stage.nu();
+    const int ndual = stage.numDual();
+    const int ndx2 = stage.ndx2();
+
+    auto ff = results.getFeedforward(i);
+    auto fb = results.getFeedback(i);
+    auto ff_u = ff.head(nu);
+    auto fb_u = fb.topRows(nu);
+    auto ff_lm = ff.tail(ndual);
+    auto fb_lm = fb.bottomRows(ndual);
+
+    const VectorRef &dx = workspace.dxs[i];
+    VectorRef &du = workspace.dus[i];
+    du.head(nu) = alpha * ff_u + fb_u * dx;
+    stage.uspace().integrate(results.us[i], du, us[i]);
+
+    VectorRef &dlam = workspace.dlams[i + 1];
+    dlam.head(ndual) = alpha * ff_lm + fb_lm * dx;
+    lams[i + 1].head(ndual) = results.lams[i + 1] + dlam;
+
+    const DynamicsModelTpl<Scalar> &dm = stage.dyn_model();
+    DynamicsDataTpl<Scalar> &dd = data.dyn_data();
+    const ConstraintStack &cstr_mgr = stage.constraints_;
+    const ConstVectorRef dynlam =
+        cstr_mgr.getConstSegmentByConstraint(lams[i + 1], 0);
+    const ConstVectorRef dynprevlam =
+        cstr_mgr.getConstSegmentByConstraint(workspace.prev_lams[i + 1], 0);
+    VectorXs gap = this->mu_scaled() * (dynprevlam - dynlam);
+    forwardDynamics(dm, xs[i], us[i], dd, xs[i + 1], 1, gap);
+
+    VectorRef dx_next = workspace.dxs[i + 1].head(ndx2);
+    stage.xspace_next().difference(results.xs[i + 1], xs[i + 1], dx_next);
+
+    PROXDDP_RAISE_IF_NAN_NAME(xs[i + 1], fmt::format("xs[{:d}]", i + 1));
+    PROXDDP_RAISE_IF_NAN_NAME(us[i], fmt::format("us[{:d}]", i));
+    PROXDDP_RAISE_IF_NAN_NAME(lams[i + 1], fmt::format("lams[{:d}]", i + 1));
+  }
+  if (problem.term_constraint_) {
+    VectorRef &dlam = workspace.dlams.back();
+    const VectorRef &dx = workspace.dxs.back();
+    auto ff = results.getFeedforward(nsteps);
+    auto fb = results.getFeedback(nsteps);
+    dlam = alpha * ff + fb * dx;
+    lams.back() = results.lams.back() + dlam;
+  }
 }
 
 template <typename Scalar>
