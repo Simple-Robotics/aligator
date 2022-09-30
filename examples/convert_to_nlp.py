@@ -1,6 +1,5 @@
 import proxnlp
 import proxddp
-import numpy as np
 from proxnlp import manifolds, constraints
 
 from proxddp import TrajOptProblem, StageModel
@@ -135,10 +134,6 @@ def convert_problem_to_proxnlp(problem: TrajOptProblem):
     cost = ProxnlpCostFromProblem(problem)
     v = cost.call(x)
     assert v == cost(x)[0]
-    g = np.zeros(product_space.ndx)
-    cost.computeGradient(x, g)
-    H = np.zeros((product_space.ndx, product_space.ndx))
-    cost.computeHessian(x, H)
 
     st_idx, en_idx = _get_start_end_idx(problem)
     prnlp_constraints = []
