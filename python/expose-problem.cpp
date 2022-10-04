@@ -38,23 +38,25 @@ void exposeProblem() {
                     bp::make_function(&TrajOptProblem::getInitState,
                                       bp::return_internal_reference<>()),
                     &TrajOptProblem::setInitState, "Initial state.")
+      .add_property("init_cstr", &TrajOptProblem::init_state_error,
+                    "Get initial state constraint.")
       .def("setTerminalConstraint", &TrajOptProblem::setTerminalConstraint,
            bp::args("self", "constraint"), "Set terminal constraint.")
       .def("evaluate", &TrajOptProblem::evaluate,
            bp::args("self", "xs", "us", "prob_data"),
-           "Rollout the problem costs, dynamics, and constraints.")
+           "Evaluate the problem costs, dynamics, and constraints.")
       .def("computeDerivatives", &TrajOptProblem::computeDerivatives,
            bp::args("self", "xs", "us", "prob_data"),
-           "Rollout the problem derivatives.");
+           "Evaluate the problem derivatives. Call `evaluate()` first.");
 
   bp::register_ptr_to_python<shared_ptr<TrajOptData>>();
   bp::class_<TrajOptData>(
       "TrajOptData", "Data struct for shooting problems.",
       bp::init<const TrajOptProblem &>(bp::args("self", "problem")))
-      .def_readonly("term_cost", &TrajOptData::term_cost_data,
-                    "Terminal cost data.")
-      .def_readonly("term_constraint", &TrajOptData::term_cstr_data,
-                    "Terminal constraint data.")
+      .def_readwrite("term_cost", &TrajOptData::term_cost_data,
+                     "Terminal cost data.")
+      .def_readwrite("term_constraint", &TrajOptData::term_cstr_data,
+                     "Terminal constraint data.")
       .add_property(
           "stage_data",
           bp::make_getter(&TrajOptData::stage_data,

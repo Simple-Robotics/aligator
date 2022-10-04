@@ -43,21 +43,26 @@ class ProxnlpCostFromProblem(proxnlp.costs.CostFunctionBase):
             gs[2 * i][:] = cd.Lx
             gs[2 * i + 1][:] = cd.Lu
         tcd: proxddp.CostData = self.prob_data.term_cost
-        gs[-1][:] = tcd.Lx
-        gs.append(tcd.Lx)
+        gs[2 * N][:] = tcd.Lx
 
     def computeHessian(self, x, Hout):
         N = self.problem.num_steps
+        prob_data = self.prob_data
         xs, us = _split_state_control(self.space, x.copy(), N)
+        self.problem.evaluate(xs, us, prob_data)
+        self.problem.computeDerivatives(xs, us, prob_data)
         k = 0
         for i in range(N):
-            sd: proxddp.StageData = self.prob_data.stage_data[i]
+            sd: proxddp.StageData = prob_data.stage_data[i]
             cd: proxddp.CostData = sd.cost_data
             sm: proxddp.StageModel = self.problem.stages[i]
             nx_u = sm.ndx1 + sm.nu
             xr = slice(k, k + nx_u)
             Hout[xr, xr] = cd.hess
             k += nx_u
+        tcd: proxddp.CostData = prob_data.term_cost
+        xr = slice(k, k + tcd.Lx.size)
+        Hout[xr, xr] = tcd.Lxx
 
 
 def _get_start_end_idx(problem: TrajOptProblem):
@@ -125,15 +130,12 @@ def _get_product_space(problem: TrajOptProblem):
 
 
 def convert_problem_to_proxnlp(problem: TrajOptProblem):
+    import numpy as np
+
     product_space = _get_product_space(problem)
     N = problem.num_steps
-    x = product_space.rand()
-    sp_x = product_space.split(x).tolist()
-    assert len(sp_x) == (N + 1) + N
 
     cost = ProxnlpCostFromProblem(problem)
-    v = cost.call(x)
-    assert v == cost(x)[0]
 
     st_idx, en_idx = _get_start_end_idx(problem)
     prnlp_constraints = []
@@ -145,6 +147,23 @@ def convert_problem_to_proxnlp(problem: TrajOptProblem):
         )
         prnlp_constraints.append(constraints.create_equality_constraint(cstr_fun))
 
+    def make_init_cstr(x0):
+        ndx = problem.init_cstr.nr
+        p_ndx = product_space.ndx
+        row = np.zeros((ndx, p_ndx))
+        row[:, :ndx] = np.eye(ndx)
+        b = np.zeros(ndx)
+        pad_x0 = product_space.neutral()
+        pad_x0[:ndx] = x0
+        init_fun = proxnlp.residuals.LinearFunctionDifferenceToPoint(
+            product_space, pad_x0, row, b
+        )
+        print(init_fun(pad_x0))
+        if2 = proxnlp.residuals.ManifoldDifferenceToPoint(product_space, pad_x0)
+        print(if2(pad_x0))
+        return constraints.create_equality_constraint(init_fun)
+
+    prnlp_constraints.append(make_init_cstr(problem.x0_init))
+
     p2 = proxnlp.Problem(cost, prnlp_constraints)
-    print(p2.total_constraint_dim)
     return product_space, p2
