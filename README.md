@@ -23,7 +23,7 @@ This package provides
 Python:
 
 * [typed-argument-parser](https://github.com/swansonk14/typed-argument-parser)
-* [pin-meshcat-utils](https://gitlab.inria.fr/wjallet/pin-meshcat-utils)
+* [pin-meshcat-utils](https://github.com/Simple-Robotics/pin-meshcat-utils)
 
 ### Build from source
 
