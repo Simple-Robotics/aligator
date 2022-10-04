@@ -56,6 +56,7 @@ public:
   using ProxData = typename ProxPenaltyType::Data;
   using CallbackPtr = shared_ptr<helpers::base_callback<Scalar>>;
   using ConstraintStack = ConstraintStackTpl<Scalar>;
+  using TrajOptData = TrajOptDataTpl<Scalar>;
   using LSOptions = typename proxnlp::Linesearch<Scalar>::Options;
 
   std::vector<ProxPenaltyType> prox_penalties_;
@@ -232,8 +233,7 @@ public:
 
   /// Evaluate the ALM/pdALM multiplier estimates.
   void computeMultipliers(const Problem &problem, Workspace &workspace,
-                          const std::vector<VectorXs> &lams,
-                          TrajOptDataTpl<Scalar> &pd,
+                          const std::vector<VectorXs> &lams, TrajOptData &pd,
                           bool update_jacobians = false) const {
     ;
     using CstrSet = ConstraintSetBase<Scalar>;

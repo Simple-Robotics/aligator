@@ -227,7 +227,7 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
                                                  Results &results) const {
   const std::size_t nsteps = workspace.nsteps;
 
-  const TrajOptDataTpl<Scalar> &prob_data = workspace.problem_data;
+  const TrajOptData &prob_data = workspace.problem_data;
   const CostData &term_cost_data = *prob_data.term_cost_data;
   VParams &term_value = workspace.value_params[nsteps];
   const CostData &proxdata = *workspace.prox_datas[nsteps];
@@ -235,6 +235,7 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
   term_value.v_2() = 2 * (term_cost_data.value_ + rho() * proxdata.value_);
   term_value.Vx() = term_cost_data.Lx_ + rho() * proxdata.Lx_;
   term_value.Vxx() = term_cost_data.Lxx_ + rho() * proxdata.Lxx_;
+  term_value.Vxx().diagonal().array() += xreg_;
 
   if (problem.term_constraint_) {
     /* check number of multipliers */
@@ -386,6 +387,7 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
 #endif
   vp.Vx() = qparam.Qx + Qxw * ff;
   vp.Vxx() = qparam.Qxx + Qxw * fb;
+  vp.Vxx().diagonal().array() += xreg_;
   vp.storage = vp.storage.template selfadjointView<Eigen::Lower>();
   return true;
 }
@@ -399,7 +401,7 @@ void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
   std::vector<VectorXs> &xs = workspace.trial_xs;
   std::vector<VectorXs> &us = workspace.trial_us;
   std::vector<VectorXs> &lams = workspace.trial_lams;
-  TrajOptDataTpl<Scalar> &pd = workspace.trial_prob_data;
+  TrajOptData &pd = workspace.trial_prob_data;
 
   computeDirX0(problem, workspace, results);
 
@@ -516,13 +518,15 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
                  "inner_tol {:.2e} | "
                  "prim_tol  {:.2e} | "
                  "mu  {:.2g} | "
-                 "rho {:.2g} )\n",
-                 inner_tol_, prim_tol_, mu(), rho());
+                 "rho {:.2g} | d={:.3e} | p={:.3e} )\n",
+                 inner_tol_, prim_tol_, mu(), rho(), results.dual_infeasibility,
+                 results.primal_infeasibility);
     }
     bool inner_conv = innerLoop(problem, workspace, results);
     if (!inner_conv) {
       fmt::print(fmt::fg(fmt::color::red), "Inner loop failed to converge.");
       fmt::print("\n");
+      al_iter++;
       break;
     }
 
@@ -547,8 +551,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
         break;
       }
 
-      if (std::max(results.primal_infeasibility, results.dual_infeasibility) <=
-          target_tol_) {
+      if (results.primal_infeasibility <= target_tol_) {
         conv = true;
         break;
       }
@@ -567,7 +570,6 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   }
 
   logger.finish(conv);
-  invokeCallbacks(workspace, results);
   return conv;
 }
 
@@ -622,6 +624,9 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     phi0 = merit_fun.evaluate(problem, results.lams, workspace,
                               workspace.problem_data);
 
+    results.traj_cost_ = merit_fun.traj_cost;
+    results.merit_value_ = phi0;
+
     while (true) {
       bool success = backwardPass(problem, workspace, results);
       if (success) {
@@ -643,7 +648,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     }
 
     bool inner_conv = (workspace.inner_criterion <= inner_tol_);
-    if (inner_conv && (k >= 1)) {
+    if (inner_conv) {
       return true;
     }
 
@@ -667,13 +672,14 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     }
 #endif
 
+    if (std::abs(dphi0_fd) <= ls_params.dphi_thresh)
+      return true;
+
     // otherwise continue linesearch
     Scalar alpha_opt = 1;
-
     Scalar phi_new = proxnlp::ArmijoLinesearch<Scalar>(ls_params).run(
         merit_eval_fun, phi0, dphi0_fd, alpha_opt);
-    results.traj_cost_ = merit_fun.traj_cost;
-    results.merit_value_ = phi_new;
+    Scalar new_cost = merit_fun.traj_cost;
 
 #ifndef NDEBUG
     if (this->dump_linesearch_plot) {
@@ -716,9 +722,6 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     PROXDDP_RAISE_IF_NAN_NAME(results.merit_value_, "results.merit_value");
     PROXDDP_RAISE_IF_NAN_NAME(results.traj_cost_, "results.traj_cost");
 
-    if (std::abs(dphi0_fd) <= ls_params.dphi_thresh)
-      return true;
-
     LogRecord iter_log;
     iter_log.iter = k + 1;
     iter_log.xreg = xreg_;
@@ -727,8 +730,8 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     iter_log.dual_err = results.dual_infeasibility;
     iter_log.step_size = alpha_opt;
     iter_log.dphi0 = dphi0_fd;
-    iter_log.merit = results.merit_value_;
-    iter_log.dM = results.merit_value_ - phi0;
+    iter_log.merit = phi_new;
+    iter_log.dM = phi_new - phi0;
 
     if (alpha_opt == ls_params.alpha_min)
       this->increase_reg();
@@ -745,7 +748,7 @@ template <typename Scalar>
 void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
                                                    Workspace &workspace,
                                                    Results &results) const {
-  const TrajOptDataTpl<Scalar> &prob_data = workspace.problem_data;
+  const TrajOptData &prob_data = workspace.problem_data;
   const std::size_t nsteps = problem.numSteps();
 
   const FunctionData &init_data = prob_data.getInitData();
