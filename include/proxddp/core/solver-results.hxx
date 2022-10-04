@@ -9,10 +9,9 @@ namespace proxddp {
 template <typename Scalar>
 std::ostream &operator<<(std::ostream &oss,
                          const ResultsBaseTpl<Scalar> &self) {
-  oss << "Results {";
-  oss << fmt::format("\n  numiters   :  {:d},", self.num_iters)
-      << fmt::format("\n  converged  :  {},", self.conv)
-      << fmt::format("\n  traj. cost :  {:.3e},", self.traj_cost_)
+  oss << "Results {" << fmt::format("\n  num_iters:    {:d},", self.num_iters)
+      << fmt::format("\n  converged:    {},", self.conv)
+      << fmt::format("\n  traj. cost:   {:.3e},", self.traj_cost_)
       << fmt::format("\n  merit.value:  {:.3e},", self.merit_value_)
       << fmt::format("\n  prim_infeas:  {:.3e},", self.primal_infeasibility)
       << fmt::format("\n  dual_infeas:  {:.3e},", self.dual_infeasibility);

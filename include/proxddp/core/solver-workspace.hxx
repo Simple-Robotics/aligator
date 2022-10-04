@@ -118,8 +118,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 
 template <typename Scalar>
 std::ostream &operator<<(std::ostream &oss, const WorkspaceTpl<Scalar> &self) {
-  oss << "Workspace {";
-  oss << fmt::format("\n  nsteps       :  {:d}", self.nsteps)
+  oss << "Workspace {" << fmt::format("\n  nsteps:         {:d}", self.nsteps)
       << fmt::format("\n  n_multipliers:  {:d}", self.lams_pdal.size());
   oss << "\n}";
   return oss;
