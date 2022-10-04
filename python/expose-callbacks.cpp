@@ -23,7 +23,8 @@ void exposeCallbacks() {
   bp::register_ptr_to_python<shared_ptr<callback_t>>();
 
   bp::class_<CallbackWrapper, shared_ptr<CallbackWrapper>, boost::noncopyable>(
-      "BaseCallback", "Base callback for solvers.", bp::init<>())
+      "BaseCallback", "Base callback for solvers.",
+      bp::init<>(bp::args("self")))
       .def("call", bp::pure_virtual(&CallbackWrapper::call),
            bp::args("self", "workspace", "results"));
 
@@ -34,7 +35,8 @@ void exposeCallbacks() {
     bp::scope in_history =
         bp::class_<helpers::history_callback<Scalar>, bp::bases<callback_t>>(
             "HistoryCallback", "Store the history of solver's variables.",
-            bp::init<bool, bool, bool>((bp::arg("store_pd_vars") = true,
+            bp::init<bool, bool, bool>((bp::arg("self"),
+                                        bp::arg("store_pd_vars") = true,
                                         bp::arg("store_values") = true,
                                         bp::arg("store_residuals") = true)))
             .def_readonly("storage",
