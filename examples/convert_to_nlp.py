@@ -165,5 +165,5 @@ def convert_problem_to_proxnlp(problem: TrajOptProblem):
 
     prnlp_constraints.append(make_init_cstr(problem.x0_init))
 
-    p2 = proxnlp.Problem(cost, prnlp_constraints)
+    p2 = proxnlp.Problem(product_space, cost, prnlp_constraints)
     return product_space, p2
