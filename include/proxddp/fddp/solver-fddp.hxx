@@ -349,7 +349,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     record.dphi0 = d1_phi;
 
     // quadratic model lambda; captures by copy
-    auto ls_model = [=, &problem, &workspace](const Scalar alpha) {
+    auto ls_model = [=, &workspace](Scalar alpha) {
       Scalar d1 = d1_phi;
       Scalar d2 = d2_phi;
       directionalDerivativeCorrection(workspace, d1, d2);
