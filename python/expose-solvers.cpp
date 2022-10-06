@@ -207,6 +207,8 @@ void exposeProxDDP() {
            bp::arg("rho_init") = 0., bp::arg("max_iters") = 1000,
            bp::arg("verbose") = VerboseLevel::QUIET)))
       .def_readwrite("bcl_params", &SolverType::bcl_params, "BCL parameters.")
+      .def_readwrite("is_x0_fixed", &SolverType::is_x0_fixed,
+                     "Set x0 to be fixed to the initial condition.")
       .def_readwrite("multiplier_update_mode",
                      &SolverType::multiplier_update_mode)
       .def_readwrite("mu_init", &SolverType::mu_init,

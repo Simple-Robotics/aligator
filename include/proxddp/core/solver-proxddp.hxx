@@ -90,34 +90,35 @@ void SolverProxDDP<Scalar>::computeDirX0(const Problem &problem,
   MatrixXs &kkt_mat = workspace.kkt_mat_buf_[0];
   VectorRef kkt_rhs_0 = workspace.kkt_rhs_buf_[0].col(0);
 
-  auto kktx = kkt_rhs_0.head(ndx0);
-  auto kktl = kkt_rhs_0.tail(ndual0);
-  kktx = vp.Vx() + init_data.Jx_.transpose() * lamin0 + rho() * proxdata0.Lx_;
-  kktl = mu() * (lampl0 - lamin0);
-  {
+  if (is_x0_fixed) {
     workspace.pd_step_[0].setZero();
     workspace.trial_xs[0] = problem.getInitState();
     workspace.trial_lams[0].setZero();
     kkt_rhs_0.setZero();
     workspace.inner_criterion_by_stage(0) = 0.;
     workspace.dual_infeas_by_stage(0) = 0.;
-    return;
-  }
 
-  // kkt_mat.topLeftCorner(ndx0, ndx0) = vp.Vxx() + rho() * proxdata0.Lxx_;
-  // kkt_mat.topLeftCorner(ndx0, ndx0) += init_data.Hxx_;
-  // kkt_mat.topRightCorner(ndx0, ndual0) = init_data.Jx_.transpose();
-  // kkt_mat.bottomLeftCorner(ndual0, ndx0) = init_data.Jx_;
-  // kkt_mat.bottomRightCorner(ndual0, ndual0).diagonal().array() = -mu();
-  // Eigen::LDLT<MatrixXs, Eigen::Lower> &ldlt = workspace.ldlts_[0];
-  // ldlt.compute(kkt_mat);
-  // assert(workspace.pd_step_[0].size() == kkt_rhs_0.size());
-  // workspace.pd_step_[0] = -kkt_rhs_0;
-  // ldlt.solveInPlace(workspace.pd_step_[0]);
-  // const ProxData &proxdata = *workspace.prox_datas[0];
-  // workspace.inner_criterion_by_stage(0) = math::infty_norm(kkt_rhs_0);
-  // workspace.dual_infeas_by_stage(0) =
-  //     math::infty_norm(kktx - rho() * proxdata.Lx_);
+  } else {
+    auto kktx = kkt_rhs_0.head(ndx0);
+    auto kktl = kkt_rhs_0.tail(ndual0);
+    kktx = vp.Vx() + init_data.Jx_.transpose() * lamin0 + rho() * proxdata0.Lx_;
+    kktl = mu() * (lampl0 - lamin0);
+
+    kkt_mat.topLeftCorner(ndx0, ndx0) = vp.Vxx() + rho() * proxdata0.Lxx_;
+    kkt_mat.topLeftCorner(ndx0, ndx0) += init_data.Hxx_;
+    kkt_mat.topRightCorner(ndx0, ndual0) = init_data.Jx_.transpose();
+    kkt_mat.bottomLeftCorner(ndual0, ndx0) = init_data.Jx_;
+    kkt_mat.bottomRightCorner(ndual0, ndual0).diagonal().array() = -mu();
+    Eigen::LDLT<MatrixXs, Eigen::Lower> &ldlt = workspace.ldlts_[0];
+    ldlt.compute(kkt_mat);
+    assert(workspace.pd_step_[0].size() == kkt_rhs_0.size());
+    workspace.pd_step_[0] = -kkt_rhs_0;
+    ldlt.solveInPlace(workspace.pd_step_[0]);
+    const ProxData &proxdata = *workspace.prox_datas[0];
+    workspace.inner_criterion_by_stage(0) = math::infty_norm(kkt_rhs_0);
+    workspace.dual_infeas_by_stage(0) =
+        math::infty_norm(kktx - rho() * proxdata.Lx_);
+  }
 }
 
 template <typename Scalar>
@@ -662,6 +663,8 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
     phieps = merit_eval_lin(fd_eps);
     dphi0_fd = (phieps - phi0) / fd_eps;
+
+    Scalar dphi0 = dphi0_analytical; // value used for LS & logging
 #ifndef NDEBUG
     {
       std::FILE *fi = std::fopen("pddp.log", "a");
@@ -678,7 +681,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     // otherwise continue linesearch
     Scalar alpha_opt = 1;
     Scalar phi_new = proxnlp::ArmijoLinesearch<Scalar>(ls_params).run(
-        merit_eval_fun, phi0, dphi0_fd, alpha_opt);
+        merit_eval_fun, phi0, dphi0, alpha_opt);
     Scalar new_cost = merit_fun.traj_cost;
 
 #ifndef NDEBUG
@@ -729,7 +732,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     iter_log.prim_err = results.primal_infeasibility;
     iter_log.dual_err = results.dual_infeasibility;
     iter_log.step_size = alpha_opt;
-    iter_log.dphi0 = dphi0_fd;
+    iter_log.dphi0 = dphi0;
     iter_log.merit = phi_new;
     iter_log.dM = phi_new - phi0;
 
@@ -809,8 +812,6 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
       gu_bis = gu + dd.Ju_.transpose() * (vp.Vx() - lam_head);
       ru_bis_ddp = math::infty_norm(gu_bis);
     }
-    /// TODO: replace this, not valid for implicit-dynamics problems
-    // workspace.inner_criterion_by_stage(long(i)) = ru_bis_ddp;
 
 #ifndef NDEBUG
     std::FILE *fi = std::fopen("pddp.log", "a");

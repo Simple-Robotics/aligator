@@ -96,6 +96,8 @@ public:
   RolloutType rollout_type = RolloutType::LINEAR;
   BCLParams<Scalar> bcl_params;
 
+  bool is_x0_fixed = true;
+
   /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.
   std::size_t MAX_ITERS;
   /// Maximum number of ALM iterations.
