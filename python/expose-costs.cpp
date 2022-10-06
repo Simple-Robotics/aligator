@@ -78,15 +78,22 @@ void exposeCosts() {
       "ConstantCost", "A constant cost term.",
       bp::init<int, int, Scalar>(bp::args("self", "ndx", "nu", "value")))
       .def_readwrite("value", &ConstantCostTpl<Scalar>::value_)
-      .def(CopyableVisitor<QuadraticCostTpl<Scalar>>());
+      .def(CopyableVisitor<ConstantCostTpl<Scalar>>());
 
-  bp::class_<QuadraticCostTpl<Scalar>, bp::bases<CostBase>>(
+  using QuadraticCost = QuadraticCostTpl<Scalar>;
+
+  bp::class_<QuadraticCost, bp::bases<CostBase>>(
       "QuadraticCost", "Quadratic cost in both state and control.",
       bp::init<const MatrixXs &, const MatrixXs &, const VectorXs &,
                const VectorXs &>(
           bp::args("self", "w_x", "w_u", "interp_x", "interp_u")))
       .def(bp::init<const MatrixXs &, const MatrixXs &>(
           "Constructor with just weights.", bp::args("self", "w_x", "w_u")))
+      .def_readwrite("w_x", &QuadraticCost::weights_x, "Weights on the state.")
+      .def_readwrite("w_u", &QuadraticCost::weights_u,
+                     "Weights on the control.")
+      .def_readwrite("interp_x", &QuadraticCost::interp_x)
+      .def_readwrite("interp_u", &QuadraticCost::interp_u)
       .def(CopyableVisitor<QuadraticCostTpl<Scalar>>());
 
   bp::class_<QuadraticCostDataTpl<Scalar>, bp::bases<CostData>>(
