@@ -11,7 +11,7 @@ SolverFDDP<Scalar>::SolverFDDP(const Scalar tol, VerboseLevel verbose,
                                const Scalar reg_init,
                                const std::size_t max_iters)
     : target_tol_(tol), reg_init(reg_init), verbose_(verbose),
-      MAX_ITERS(max_iters) {}
+      max_iters(max_iters) {}
 
 template <typename Scalar>
 void SolverFDDP<Scalar>::setup(const Problem &problem) {
@@ -298,7 +298,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
   record.dual_err = 0.;
   record.dphi0 = 0.;
   std::size_t &iter = results.num_iters;
-  for (iter = 0; iter <= MAX_ITERS; ++iter) {
+  for (iter = 0; iter <= max_iters; ++iter) {
 
     record.iter = iter + 1;
 
@@ -326,7 +326,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
       break;
     }
 
-    if (iter >= MAX_ITERS) {
+    if (iter >= max_iters) {
       break;
     }
 

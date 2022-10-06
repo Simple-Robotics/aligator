@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(lqr) {
   const double mu_init = 1e-6;
   ::proxddp::SolverProxDDP<double> prox_solver(TOL, mu_init);
   prox_solver.verbose_ = ::proxddp::VerboseLevel::VERBOSE;
-  prox_solver.MAX_ITERS = 8;
+  prox_solver.max_iters = 8;
 
   std::vector<Eigen::VectorXd> xs_init(nsteps + 1, x0);
   std::vector<Eigen::VectorXd> us_init(nsteps, u0);

@@ -100,10 +100,9 @@ void BM_lqr(benchmark::State &state, const TrajOptProblemTpl<double> &problem,
     }
     if (run_fddp) {
       SolverFDDP<double> fddp(TOL, verbose);
-      fddp.MAX_ITERS = max_iters;
+      fddp.max_iters = max_iters;
       fddp.setup(problem);
       fddp.run(problem, xs_init, us_init);
-      const ResultsFDDPTpl<double> &res_fddp = fddp.getResults();
     }
   }
 }

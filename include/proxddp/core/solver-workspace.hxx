@@ -16,8 +16,8 @@ template <typename T> void setZero(std::vector<T> &mats) {
 
 template <typename Scalar>
 WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
-    : Base(problem), inner_criterion_by_stage(nsteps + 1),
-      primal_infeas_by_stage(nsteps + 1), dual_infeas_by_stage(nsteps + 1) {
+    : Base(problem), stage_inner_crits(nsteps + 1),
+      stage_prim_infeas(nsteps + 1), stage_dual_infeas(nsteps + 1) {
 
   value_params.reserve(nsteps + 1);
   q_params.reserve(nsteps);
@@ -88,8 +88,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     const int nprim = ndx1;
     const int ndual = tc.func->nr;
     const int ntot = nprim + ndual;
-    const Eigen::Index nc = primal_infeas_by_stage.size();
-    primal_infeas_by_stage.conservativeResize(nc + 1);
+    const Eigen::Index nc = stage_prim_infeas.size();
+    stage_prim_infeas.conservativeResize(nc + 1);
     kkt_mat_buf_.emplace_back(ntot, ntot);
     kkt_rhs_buf_.emplace_back(ntot, ndx1 + 1);
     ldlts_.emplace_back(kkt_mat_buf_[nsteps]);
@@ -107,9 +107,9 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   math::setZero(kkt_rhs_buf_);
   kkt_resdls_ = kkt_rhs_buf_;
 
-  inner_criterion_by_stage.setZero();
-  primal_infeas_by_stage.setZero();
-  dual_infeas_by_stage.setZero();
+  stage_inner_crits.setZero();
+  stage_prim_infeas.setZero();
+  stage_dual_infeas.setZero();
 
   assert(value_params.size() == nsteps + 1);
   assert(dxs.size() == nsteps + 1);

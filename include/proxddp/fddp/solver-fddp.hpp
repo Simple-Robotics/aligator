@@ -71,7 +71,7 @@ template <typename Scalar> struct SolverFDDP {
 
   VerboseLevel verbose_;
   /// Maximum number of iterations for the solver.
-  std::size_t MAX_ITERS;
+  std::size_t max_iters;
 
   ::proxddp::BaseLogger logger{};
 

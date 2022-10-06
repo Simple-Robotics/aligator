@@ -19,8 +19,6 @@ from proxnlp import constraints
 
 from common import ArgsBase
 
-# np.random.seed(1234567)
-np.set_printoptions(precision=3, linewidth=250)
 robot = erd.load("hector")
 rmodel = robot.model
 rdata = robot.data
@@ -137,7 +135,7 @@ def main(args: Args):
     ode_dynamics = proxddp.dynamics.MultibodyFreeFwdDynamics(space, QUAD_ACT_MATRIX)
 
     dt = 0.033
-    Tf = 2.0
+    Tf = 33 * dt
     nsteps = int(Tf / dt)
     print("nsteps: {:d}".format(nsteps))
 
@@ -288,15 +286,16 @@ def main(args: Args):
 
     _, x_term = task_fun(nsteps)
     problem = setup()
-    tol = 1e-3
-    mu_init = 1e-3
-    rho_init = 1e-3
+    tol = 1e-4
+    mu_init = 1e-1
+    rho_init = 0.0
     verbose = proxddp.VerboseLevel.VERBOSE
     history_cb = proxddp.HistoryCallback()
-    solver = proxddp.SolverProxDDP(
-        tol, mu_init, rho_init, verbose=verbose, max_iters=300
-    )
-    # solver.rol_type = proxddp.RolloutType.NONLINEAR
+    solver = proxddp.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
+    solver.rollout_type = proxddp.RolloutType.NONLINEAR
+    if args.fddp:
+        solver = proxddp.SolverFDDP(tol, verbose=verbose)
+    solver.max_iters = 60
     solver.registerCallback(history_cb)
     solver.setup(problem)
     solver.run(problem, xs_init, us_init)
@@ -310,9 +309,9 @@ def main(args: Args):
     val_grad = [vp.Vx for vp in workspace.value_params]
 
     def plot_costate_value() -> plt.Figure:
-        lams_stack = np.stack(results.lams.tolist()).T
-        costate_stack = lams_stack[:, : nsteps + 1]
-        vx_stack = np.stack(val_grad).T
+        lams_stack = np.stack([la[: space.ndx] for la in results.lams]).T
+        costate_stack = lams_stack[:, 1 : nsteps + 1]
+        vx_stack = np.stack(val_grad).T[:, 1:]
         plt.figure()
         plt.subplot(131)
         mmin = min(np.min(costate_stack), np.min(vx_stack))
@@ -332,7 +331,8 @@ def main(args: Args):
         plt.title("$\\nabla_xV$")
 
         plt.subplot(133)
-        plt.imshow((costate_stack - vx_stack), aspect="auto")
+        err = np.abs(costate_stack - vx_stack)
+        plt.imshow(err, cmap="Reds", aspect="auto")
         plt.title("$\\lambda - V'_x$")
         plt.colorbar()
         plt.tight_layout()
@@ -353,24 +353,34 @@ def main(args: Args):
         if len(results.lams) > 0:
             plot_costate_value()
 
+        nplot = 4
         fig: plt.Figure = plt.figure(figsize=(9.6, 5.4))
-        ax0: plt.Axes = fig.add_subplot(131)
+        ax0: plt.Axes = fig.add_subplot(1, nplot, 1)
         ax0.plot(times[:-1], us_opt)
         ax0.hlines((u_min[0], u_max[0]), *times[[0, -1]], colors="k", alpha=0.3, lw=1.4)
         ax0.set_title("Controls")
         ax0.set_xlabel("Time")
-        ax1: plt.Axes = fig.add_subplot(132)
+        ax1: plt.Axes = fig.add_subplot(1, nplot, 2)
         ax1.plot(times, root_pt_opt)
         plt.legend(["$x$", "$y$", "$z$"])
         ax1.scatter([times_wp[-1]] * 3, x_term[:3], marker=".", c=["C0", "C1", "C2"])
-        ax2: plt.Axes = fig.add_subplot(133)
-        n_iter = list(range(len(history_cb.storage.prim_infeas.tolist())))
+        ax2: plt.Axes = fig.add_subplot(1, nplot, 3)
+        n_iter = np.arange(len(history_cb.storage.prim_infeas.tolist()))
         ax2.semilogy(
             n_iter[1:], history_cb.storage.prim_infeas.tolist()[1:], label="Primal err."
         )
         ax2.semilogy(n_iter, history_cb.storage.dual_infeas.tolist(), label="Dual err.")
         ax2.set_xlabel("Iterations")
         ax2.legend()
+
+        ax: plt.Axes = fig.add_subplot(1, nplot, 4)
+        dms_ = -np.diff(history_cb.storage.merit_values)
+        dcs_ = -np.diff(history_cb.storage.values)
+        print(dms_)
+        ax.semilogy(n_iter[1:], dms_, label="merit")
+        ax.semilogy(n_iter[1:], dcs_, label="cost")
+        ax.legend()
+
         fig.tight_layout()
         for ext in ["png", "pdf"]:
             fig.savefig("assets/{}.{}".format(TAG, ext))

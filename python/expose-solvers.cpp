@@ -11,7 +11,7 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
   template <typename PyClass> void visit(PyClass &obj) const {
     obj.def_readwrite("verbose", &SolverType::verbose_,
                       "Verbosity level of the solver.")
-        .def_readwrite("max_iters", &SolverType::MAX_ITERS,
+        .def_readwrite("max_iters", &SolverType::max_iters,
                        "Maximum number of iterations.")
         .def_readwrite("ls_params", &SolverType::ls_params,
                        "Linesearch parameters.")
@@ -152,10 +152,9 @@ void exposeProxDDP() {
       .def_readonly("kkt_rhs_", &Workspace::kkt_rhs_buf_)
       .def_readonly("trial_lams", &Workspace::trial_lams)
       .def_readonly("inner_crit", &Workspace::inner_criterion)
-      .def_readonly("prim_infeas_by_stage", &Workspace::primal_infeas_by_stage)
-      .def_readonly("dual_infeas_by_stage", &Workspace::dual_infeas_by_stage)
-      .def_readonly("inner_criterion_by_stage",
-                    &Workspace::inner_criterion_by_stage)
+      .def_readonly("stage_prim_infeas", &Workspace::stage_prim_infeas)
+      .def_readonly("stage_dual_infeas", &Workspace::stage_dual_infeas)
+      .def_readonly("stage_inner_crits", &Workspace::stage_inner_crits)
       .def_readonly("prox_datas", &Workspace::prox_datas)
       .def(PrintableVisitor<Workspace>());
 

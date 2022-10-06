@@ -7,31 +7,32 @@ from proxddp import manifolds, dynamics
 
 nx = 2
 space = manifolds.VectorSpace(nx)
+pin.seed(0)
 
 A = np.array([[1.0, -0.2], [10.0, 1.0]])
 B = np.eye(nx)
 nu = nx
 c = np.zeros(nx)
 
-timestep = 0.03
+dt = 0.001
 ode = dynamics.LinearODE(A, B, c)
-dyn_model = dynamics.IntegratorEuler(ode, timestep)
+dyn_model = dynamics.IntegratorEuler(ode, dt)
 
 w_x = 0.1 * np.eye(nx)
 w_u = 1e-3 * np.eye(nu)
-rcost = proxddp.QuadraticCost(w_x * timestep, w_u * timestep)
+rcost = proxddp.CostStack(nx, nu)
+rcost.addCost(proxddp.QuadraticCost(w_x * dt, w_u * dt))
 
 nsteps = 20
-Tf = nsteps * timestep
+Tf = nsteps * dt
 
 stm = proxddp.StageModel(space, nu, rcost, dyn_model)
 stages = [stm] * nsteps
 
 term_cost = rcost.copy()
-term_cost.w_x /= timestep
-term_cost.w_u /= timestep
+term_cost.w_x /= dt
+term_cost.w_u /= dt
 
-pin.seed(0)
 x0 = space.rand()
 problem = proxddp.TrajOptProblem(x0, stages, term_cost)
 

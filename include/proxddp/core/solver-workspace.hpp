@@ -104,11 +104,11 @@ template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
   std::vector<VectorXs> prev_lams;
 
   /// Subproblem termination criterion for each stage.
-  VectorXs inner_criterion_by_stage;
+  VectorXs stage_inner_crits;
   /// Constraint violation for each stage of the TrajOptProblemTpl.
-  VectorXs primal_infeas_by_stage;
+  VectorXs stage_prim_infeas;
   /// Dual infeasibility for each stage of the TrajOptProblemTpl.
-  VectorXs dual_infeas_by_stage;
+  VectorXs stage_dual_infeas;
 
   /// Overall subproblem termination criterion.
   Scalar inner_criterion = 0.;

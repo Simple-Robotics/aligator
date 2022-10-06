@@ -86,9 +86,9 @@ public:
   bool is_x0_fixed = true;
 
   /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.
-  std::size_t MAX_ITERS;
+  std::size_t max_iters;
   /// Maximum number of ALM iterations.
-  std::size_t MAX_AL_ITERS = MAX_ITERS;
+  std::size_t max_al_iters = max_iters;
 
   /// Minimum possible tolerance asked from the solver.
   Scalar TOL_MIN = 1e-8;
