@@ -13,6 +13,7 @@
 #include "proxddp/utils/rollout.hpp"
 
 #include <proxnlp/constraint-base.hpp>
+#include <proxnlp/bcl-params.hpp>
 
 namespace proxddp {
 
@@ -20,21 +21,7 @@ enum class MultiplierUpdateMode { NEWTON, PRIMAL, PRIMAL_DUAL };
 
 enum class RolloutType { LINEAR, NONLINEAR };
 
-template <typename Scalar> struct BCLParams {
-
-  /// Log-factor \f$\alpha_\eta\f$ for primal tolerance (failure)
-  Scalar prim_alpha = 0.1;
-  /// Log-factor \f$\beta_\eta\f$ for primal tolerance (success)
-  Scalar prim_beta = 0.9;
-  /// Log-factor \f$\alpha_\eta\f$ for dual tolerance (failure)
-  Scalar dual_alpha = 1.;
-  /// Log-factor \f$\beta_\eta\f$ for dual tolerance (success)
-  Scalar dual_beta = 1.;
-  /// Scale factor for the dual proximal penalty.
-  Scalar mu_update_factor = 0.01;
-  /// Scale factor for the primal proximal penalty.
-  Scalar rho_update_factor = 0.1;
-};
+using proxnlp::BCLParams;
 
 /// @brief Solver.
 template <typename _Scalar> struct SolverProxDDP {
@@ -57,7 +44,7 @@ public:
   using CallbackPtr = shared_ptr<helpers::base_callback<Scalar>>;
   using ConstraintStack = ConstraintStackTpl<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
-  using LSOptions = typename proxnlp::Linesearch<Scalar>::Options;
+  using LinesearchOptions = typename proxnlp::Linesearch<Scalar>::Options;
 
   std::vector<ProxPenaltyType> prox_penalties_;
   /// Subproblem tolerance
@@ -87,7 +74,7 @@ public:
 
   VerboseLevel verbose_;
   /// Linesearch options, as in proxnlp.
-  LSOptions ls_params;
+  LinesearchOptions ls_params;
   LinesearchStrategy ls_strat = LinesearchStrategy::ARMIJO;
   MultiplierUpdateMode multiplier_update_mode = MultiplierUpdateMode::NEWTON;
   LinesearchMode ls_mode = LinesearchMode::PRIMAL_DUAL;

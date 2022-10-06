@@ -9,7 +9,7 @@ from proxnlp import (
     manifolds,
     VerboseLevel,
     LinesearchStrategy,
-    LSOptions,
+    LinesearchOptions,
     LSInterpolation,
 )
 

@@ -145,7 +145,7 @@ def convert_problem_to_proxnlp(problem: TrajOptProblem):
         cstr_fun = ProxnlpConstraintFromProblem(
             product_space, fun, i, N, st_idx[i], en_idx[i]
         )
-        prnlp_constraints.append(constraints.create_equality_constraint(cstr_fun))
+        prnlp_constraints.append(constraints.createEqualityConstraint(cstr_fun))
 
     def make_init_cstr(x0):
         ndx = problem.init_cstr.nr
@@ -161,7 +161,7 @@ def convert_problem_to_proxnlp(problem: TrajOptProblem):
         print(init_fun(pad_x0))
         if2 = proxnlp.residuals.ManifoldDifferenceToPoint(product_space, pad_x0)
         print(if2(pad_x0))
-        return constraints.create_equality_constraint(init_fun)
+        return constraints.createEqualityConstraint(init_fun)
 
     prnlp_constraints.append(make_init_cstr(problem.x0_init))
 

@@ -180,20 +180,6 @@ void exposeProxDDP() {
       .value("LINEAR", RolloutType::LINEAR)
       .value("NONLINEAR", RolloutType::NONLINEAR);
 
-  {
-    using BCLType = BCLParams<Scalar>;
-    bp::class_<BCLType>("BCLParams",
-                        "Parameters for the bound-constrained Lagrangian (BCL) "
-                        "penalty update strategy.",
-                        bp::init<>(bp::args("self")))
-        .def_readwrite("prim_alpha", &BCLType::prim_alpha)
-        .def_readwrite("prim_beta", &BCLType::prim_beta)
-        .def_readwrite("dual_alpha", &BCLType::dual_alpha)
-        .def_readwrite("dual_beta", &BCLType::dual_beta)
-        .def_readwrite("mu_factor", &BCLType::mu_update_factor)
-        .def_readwrite("rho_factor", &BCLType::rho_update_factor);
-  }
-
   bp::class_<SolverType, boost::noncopyable>(
       "SolverProxDDP",
       "A primal-dual augmented Lagrangian solver, based on DDP to compute "
