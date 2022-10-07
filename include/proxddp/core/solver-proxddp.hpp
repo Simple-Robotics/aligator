@@ -210,7 +210,7 @@ public:
   void registerCallback(const CallbackPtr &cb) { callbacks_.push_back(cb); }
 
   /// @brief    Remove all callbacks from the instance.
-  void clearCallbacks() { callbacks_.clear(); }
+  void clearCallbacks() noexcept { callbacks_.clear(); }
 
   /// @brief    Invoke callbacks.
   void invokeCallbacks(Workspace &workspace, Results &results) {
