@@ -601,7 +601,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
   Scalar phi0 = 0.;
   const Scalar fd_eps = 1e-9;
-  Scalar phieps = 0., dphi0_fd = 0.;
+  Scalar phieps = 0.;
 
   logger.active = (verbose_ > 0);
 
@@ -632,33 +632,26 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
       }
     }
 
-    // for (std::size_t i = 0; i <= problem.numSteps(); i++)
-    //   results.lams[i] = workspace.value_params[i].Vx();
     computeInfeasibilities(problem, workspace, results);
 
     Scalar outer_crit =
         std::max(results.dual_infeasibility, results.primal_infeasibility);
     if (outer_crit <= target_tol_) {
-      fmt::print("early stop (in inner loop)\n");
       return true;
     }
 
     bool inner_conv = (workspace.inner_criterion <= inner_tol_);
     if (inner_conv) {
-      fmt::print("inner loop conv\n");
       return true;
     }
 
     linearRollout(problem, workspace, results);
 
-    Scalar du_norm = math::infty_norm(workspace.dus);
-    Scalar dl_norm = math::infty_norm(workspace.dlams);
-
     Scalar dphi0_analytical = merit_fun.directionalDerivative(
         problem, results.lams, workspace, workspace.problem_data);
 
     phieps = merit_eval_lin(fd_eps);
-    dphi0_fd = (phieps - phi0) / fd_eps;
+    Scalar dphi0_fd = (phieps - phi0) / fd_eps;
 
     Scalar dphi0 = dphi0_analytical; // value used for LS & logging
 #ifndef NDEBUG
@@ -666,7 +659,6 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
       std::FILE *fi = std::fopen("pddp.log", "a");
       fmt::print(fi, " dphi0_ana={:.3e} / dphi0_fd={:.3e} / fd-a={:.3e}\n",
                  dphi0_analytical, dphi0_fd, dphi0_fd - dphi0_analytical);
-      fmt::print(fi, " |du|={:.4e},  |dl|={:.4e}\n", du_norm, dl_norm);
       std::fclose(fi);
     }
 #endif
