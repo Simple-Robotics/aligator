@@ -1,23 +1,22 @@
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "proxddp/python/modelling/dynamics.hpp"
+#include "proxddp/python/eigen_member.hpp"
 
 #include "proxddp/modelling/linear-discrete-dynamics.hpp"
 
 namespace proxddp {
 namespace python {
 
+void exposeExplicitDynamics();
 void exposeDynamicsImplementations();
 
 void exposeDynamics() {
   using context::DynamicsModel;
-  using context::Manifold;
   using context::Scalar;
   using context::StageFunction;
   using ManifoldPtr = shared_ptr<context::Manifold>;
-  using context::ExplicitDynamics;
-  using internal::PyExplicitDynamics;
-  using internal::PyStageFunction;
 
-  using PyDynamicsModel = PyStageFunction<DynamicsModel>;
+  using PyDynamicsModel = internal::PyStageFunction<DynamicsModel>;
 
   bp::class_<PyDynamicsModel, bp::bases<StageFunction>, boost::noncopyable>(
       "DynamicsModel",
@@ -31,6 +30,19 @@ void exposeDynamics() {
       .add_property("nx1", &DynamicsModel::nx1)
       .add_property("nx2", &DynamicsModel::nx2)
       .def(CreateDataPythonVisitor<DynamicsModel>());
+
+  exposeExplicitDynamics();
+  exposeDynamicsImplementations();
+}
+
+void exposeExplicitDynamics() {
+  using context::DynamicsModel;
+  using context::ExplicitDynamics;
+  using context::ExplicitDynData;
+  using internal::PyExplicitDynamics;
+
+  using PyDynamicsModel = internal::PyStageFunction<DynamicsModel>;
+  using ManifoldPtr = shared_ptr<context::Manifold>;
 
   bp::class_<PyExplicitDynamics<>, bp::bases<DynamicsModel>,
              boost::noncopyable>(
@@ -52,19 +64,12 @@ void exposeDynamics() {
 
   bp::register_ptr_to_python<shared_ptr<context::ExplicitDynData>>();
 
-  bp::class_<context::ExplicitDynData, bp::bases<context::StageFunctionData>>(
+  bp::class_<ExplicitDynData, bp::bases<context::FunctionData>>(
       "ExplicitDynamicsData", "Data struct for explicit dynamics models.",
       bp::no_init)
-      .add_property(
-          "dx", bp::make_getter(&context::ExplicitDynData::dxref_,
-                                bp::return_value_policy<bp::return_by_value>()))
-      .add_property(
-          "xnext",
-          bp::make_getter(&context::ExplicitDynData::xnextref_,
-                          bp::return_value_policy<bp::return_by_value>()))
-      .def(PrintableVisitor<context::ExplicitDynData>());
-
-  exposeDynamicsImplementations();
+      .add_property("dx", make_getter_eigen_ref(&ExplicitDynData::dx_))
+      .add_property("xnext", make_getter_eigen_ref(&ExplicitDynData::xnext_))
+      .def(PrintableVisitor<ExplicitDynData>());
 }
 
 void exposeDynamicsImplementations() {

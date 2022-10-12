@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
 #include "proxddp/core/dynamics.hpp"
@@ -62,9 +63,6 @@ struct ExplicitDynamicsDataTpl : FunctionDataTpl<_Scalar> {
   VectorXs xnext_;
   VectorXs dx_;
   MatrixXs Jtmp_xnext;
-
-  VectorRef xnextref_;
-  VectorRef dxref_;
 
   ExplicitDynamicsDataTpl(const int ndx1, const int nu, const int nx2,
                           const int ndx2);

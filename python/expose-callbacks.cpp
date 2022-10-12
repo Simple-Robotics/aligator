@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "proxddp/python/fwd.hpp"
 #include "proxddp/core/helpers-base.hpp"
 #include "proxddp/core/helpers/history-callback.hpp"

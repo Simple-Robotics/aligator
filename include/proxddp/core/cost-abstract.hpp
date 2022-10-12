@@ -1,7 +1,7 @@
-#pragma once
 /// @file costs.hpp
 /// @brief Define cost functions.
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+#pragma once
 
 #include "proxddp/fwd.hpp"
 #include "proxddp/core/clone.hpp"

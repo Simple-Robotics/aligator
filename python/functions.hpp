@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
 #include "proxddp/python/fwd.hpp"
@@ -47,6 +48,5 @@ struct PyStageFunction : FunctionBase, bp::wrapper<FunctionBase> {
 };
 
 } // namespace internal
-
 } // namespace python
 } // namespace proxddp

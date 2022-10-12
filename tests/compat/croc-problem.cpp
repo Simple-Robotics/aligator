@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "proxddp/compat/crocoddyl/context.hpp"
 #include "proxddp/compat/crocoddyl/problem-wrap.hpp"
 
@@ -80,10 +81,10 @@ BOOST_AUTO_TEST_CASE(lqr) {
   prox_solver.verbose_ = proxddp::VerboseLevel::VERBOSE;
   prox_solver.max_iters = 8;
   prox_solver.dump_linesearch_plot = true;
-  prox_solver.rollout_type = proxddp::RolloutType::NONLINEAR;
+  // prox_solver.rollout_type = proxddp::RolloutType::NONLINEAR;
 
-  std::vector<Eigen::VectorXd> xs_init(nsteps + 1, x0);
-  std::vector<Eigen::VectorXd> us_init(nsteps, u0);
+  std::vector<VectorXd> xs_init(nsteps + 1, x0);
+  std::vector<VectorXd> us_init(nsteps, u0);
 
   prox_solver.setup(prox_problem);
   bool conv2 = prox_solver.run(prox_problem, xs_init, us_init);

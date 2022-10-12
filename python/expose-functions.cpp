@@ -1,4 +1,6 @@
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "proxddp/python/fwd.hpp"
+#include "proxddp/python/eigen_member.hpp"
 
 #include "proxddp/python/functions.hpp"
 #include "proxddp/modelling/state-error.hpp"
@@ -46,75 +48,73 @@ void exposeFunctions() {
       .def_readonly("nr", &StageFunction::nr, "Function codimension.")
       .def(CreateDataPythonVisitor<StageFunction>());
 
-  bp::register_ptr_to_python<shared_ptr<context::StageFunctionData>>();
+  bp::register_ptr_to_python<shared_ptr<context::FunctionData>>();
 
-  bp::class_<context::StageFunctionData>(
+  bp::class_<context::FunctionData>(
       "FunctionData", "Data struct for holding data about functions.",
       bp::init<int, int, int, int>(
           bp::args("self", "ndx1", "nu", "ndx2", "nr")))
-      .add_property(
-          "value",
-          bp::make_getter(&context::StageFunctionData::valref_,
-                          bp::return_value_policy<bp::return_by_value>()),
-          "Function value.")
-      .def_readonly("jac_buffer_", &context::StageFunctionData::jac_buffer_,
+      .add_property("value",
+                    make_getter_eigen_ref(&context::FunctionData::value_),
+                    "Function value.")
+      .def_readonly("jac_buffer_", &context::FunctionData::jac_buffer_,
                     "Buffer of the full function Jacobian wrt (x,u,y).")
       .def_readonly(
-          "vhp_buffer", &context::StageFunctionData::vhp_buffer_,
+          "vhp_buffer", &context::FunctionData::vhp_buffer_,
           "Buffer of the full function vector-Hessian product wrt (x,u,y).")
       .add_property(
           "Jx",
-          bp::make_getter(&context::StageFunctionData::Jx_,
+          bp::make_getter(&context::FunctionData::Jx_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Jacobian with respect to $x$.")
       .add_property(
           "Ju",
-          bp::make_getter(&context::StageFunctionData::Ju_,
+          bp::make_getter(&context::FunctionData::Ju_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Jacobian with respect to $u$.")
       .add_property(
           "Jy",
-          bp::make_getter(&context::StageFunctionData::Jy_,
+          bp::make_getter(&context::FunctionData::Jy_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Jacobian with respect to $y$.")
       .add_property(
           "Hxx",
-          bp::make_getter(&context::StageFunctionData::Hxx_,
+          bp::make_getter(&context::FunctionData::Hxx_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Hessian with respect to $(x, x)$.")
       .add_property(
           "Hxu",
-          bp::make_getter(&context::StageFunctionData::Hxu_,
+          bp::make_getter(&context::FunctionData::Hxu_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Hessian with respect to $(x, u)$.")
       .add_property(
           "Hxy",
-          bp::make_getter(&context::StageFunctionData::Hxy_,
+          bp::make_getter(&context::FunctionData::Hxy_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Hessian with respect to $(x, y)$.")
       .add_property(
           "Huu",
-          bp::make_getter(&context::StageFunctionData::Huu_,
+          bp::make_getter(&context::FunctionData::Huu_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Hessian with respect to $(u, u)$.")
       .add_property(
           "Huy",
-          bp::make_getter(&context::StageFunctionData::Huy_,
+          bp::make_getter(&context::FunctionData::Huy_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Hessian with respect to $(x, y)$.")
       .add_property(
           "Hyy",
-          bp::make_getter(&context::StageFunctionData::Hyy_,
+          bp::make_getter(&context::FunctionData::Hyy_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Hessian with respect to $(y, y)$.")
-      .def(PrintableVisitor<context::StageFunctionData>())
-      .def(ClonePythonVisitor<context::StageFunctionData>());
+      .def(PrintableVisitor<context::FunctionData>())
+      .def(ClonePythonVisitor<context::FunctionData>());
 
   pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<StageFunction>>,
                                 true>::expose("StdVec_StageFunction",
                                               "Vector of function objects.");
   pinpy::StdVectorPythonVisitor<
-      std::vector<shared_ptr<context::StageFunctionData>>,
+      std::vector<shared_ptr<context::FunctionData>>,
       true>::expose("StdVec_FunctionData", "Vector of function data objects.");
 
   bp::class_<StateErrorResidualTpl<Scalar>, bp::bases<StageFunction>>(
@@ -193,7 +193,7 @@ void exposePinocchioFunctions() {
 
   bp::register_ptr_to_python<shared_ptr<FramePlacementData>>();
 
-  bp::class_<FramePlacementData, bp::bases<context::StageFunctionData>>(
+  bp::class_<FramePlacementData, bp::bases<context::FunctionData>>(
       "FramePlacementData", "Data struct for FramePlacementResidual.",
       bp::no_init)
       .def_readonly("rMf", &FramePlacementData::rMf_, "Frame placement error.")
@@ -216,7 +216,7 @@ void exposePinocchioFunctions() {
 
   bp::register_ptr_to_python<shared_ptr<FrameVelocityData>>();
 
-  bp::class_<FrameVelocityData, bp::bases<context::StageFunctionData>>(
+  bp::class_<FrameVelocityData, bp::bases<context::FunctionData>>(
       "FrameVelocityData", "Data struct for FrameVelocityResidual.",
       bp::no_init)
       .def_readonly("pin_data", &FrameVelocityData::pin_data_,
@@ -237,7 +237,7 @@ void exposePinocchioFunctions() {
 
   bp::register_ptr_to_python<shared_ptr<FrameTranslationData>>();
 
-  bp::class_<FrameTranslationData, bp::bases<context::StageFunctionData>>(
+  bp::class_<FrameTranslationData, bp::bases<context::FunctionData>>(
       "FrameTranslationData", "Data struct for FrameTranslationResidual.",
       bp::no_init)
       .def_readonly("fJf", &FrameTranslationData::fJf_)

@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
 #include "proxddp/core/function-abstract.hpp"
@@ -38,7 +39,7 @@ FunctionDataTpl<Scalar>::FunctionDataTpl(const int ndx1, const int nu,
       Hxy_(vhp_buffer_.topRightCorner(ndx1, ndx2)),
       Huu_(vhp_buffer_.middleRows(ndx1, nu).middleCols(ndx1, nu)),
       Huy_(vhp_buffer_.middleRows(ndx1, nu).rightCols(ndx2)),
-      Hyy_(vhp_buffer_.bottomRightCorner(ndx2, ndx2)), valref_(value_) {
+      Hyy_(vhp_buffer_.bottomRightCorner(ndx2, ndx2)) {
   value_.setZero();
   jac_buffer_.setZero();
   vhp_buffer_.setZero();

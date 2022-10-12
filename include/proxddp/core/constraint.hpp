@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 /// @file constraint.hpp
 /// @brief Defines the constraint object for this library.
 #pragma once

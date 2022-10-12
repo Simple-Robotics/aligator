@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 /// @file function-abstract.hpp
 /// @brief  Base definitions for ternary functions.
 #pragma once
@@ -25,7 +26,6 @@ public:
   const int ndx2;
   /// @brief Function codimension
   const int nr;
-  const int nvar = ndx1 + nu + ndx2;
 
   StageFunctionTpl(const int ndx1, const int nu, const int ndx2, const int nr);
 
@@ -82,7 +82,6 @@ public:
 /// @brief  Struct to hold function data.
 template <typename _Scalar>
 struct FunctionDataTpl : Cloneable<FunctionDataTpl<_Scalar>> {
-public:
   using Scalar = _Scalar;
   PROXNLP_FUNCTION_TYPEDEFS(Scalar);
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -91,6 +90,7 @@ public:
   const int nu;
   const int ndx2;
   const int nr;
+  /// @brief Total number of variables.
   const int nvar = ndx1 + nu + ndx2;
 
   /// Function value.
@@ -114,8 +114,6 @@ public:
   MatrixRef Huu_;
   MatrixRef Huy_;
   MatrixRef Hyy_;
-
-  VectorRef valref_;
 
   /// @brief Default constructor.
   FunctionDataTpl(const int ndx1, const int nu, const int ndx2, const int nr);

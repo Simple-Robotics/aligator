@@ -126,7 +126,7 @@ void exposeCosts() {
   bp::register_ptr_to_python<shared_ptr<CompositeData>>();
   bp::class_<CompositeData, bp::bases<CostData>>(
       "CompositeCostData",
-      bp::init<int, int, shared_ptr<context::StageFunctionData>>(
+      bp::init<int, int, shared_ptr<context::FunctionData>>(
           bp::args("self", "ndx", "nu", "rdata")))
       .def_readwrite("residual_data", &CompositeData::residual_data);
 
