@@ -67,8 +67,8 @@ void exposeExplicitDynamics() {
   bp::class_<ExplicitDynData, bp::bases<context::FunctionData>>(
       "ExplicitDynamicsData", "Data struct for explicit dynamics models.",
       bp::no_init)
-      .add_property("dx", make_getter_eigen_ref(&ExplicitDynData::dx_))
-      .add_property("xnext", make_getter_eigen_ref(&ExplicitDynData::xnext_))
+      .add_property("dx", make_getter_eigen_matrix(&ExplicitDynData::dx_))
+      .add_property("xnext", make_getter_eigen_matrix(&ExplicitDynData::xnext_))
       .def(PrintableVisitor<ExplicitDynData>());
 }
 

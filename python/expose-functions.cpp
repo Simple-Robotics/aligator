@@ -55,12 +55,15 @@ void exposeFunctions() {
       bp::init<int, int, int, int>(
           bp::args("self", "ndx1", "nu", "ndx2", "nr")))
       .add_property("value",
-                    make_getter_eigen_ref(&context::FunctionData::value_),
+                    make_getter_eigen_matrix(&context::FunctionData::value_),
                     "Function value.")
-      .def_readonly("jac_buffer_", &context::FunctionData::jac_buffer_,
-                    "Buffer of the full function Jacobian wrt (x,u,y).")
-      .def_readonly(
-          "vhp_buffer", &context::FunctionData::vhp_buffer_,
+      .add_property(
+          "jac_buffer_",
+          make_getter_eigen_matrix(&context::FunctionData::jac_buffer_),
+          "Buffer of the full function Jacobian wrt (x,u,y).")
+      .add_property(
+          "vhp_buffer",
+          make_getter_eigen_matrix(&context::FunctionData::vhp_buffer_),
           "Buffer of the full function vector-Hessian product wrt (x,u,y).")
       .add_property(
           "Jx",
