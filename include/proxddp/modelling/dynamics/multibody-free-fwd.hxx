@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
 #include "proxddp/modelling/dynamics/multibody-free-fwd.hpp"
@@ -9,19 +10,28 @@
 
 namespace proxddp {
 namespace dynamics {
+
 template <typename Scalar>
 MultibodyFreeFwdDynamicsTpl<Scalar>::MultibodyFreeFwdDynamicsTpl(
     const ManifoldPtr &state, const MatrixXs &actuation)
     : Base(state, (int)actuation.cols()), space_(state),
-      actuation_matrix_(actuation) {
-  const int nv = state->getModel().nv;
+      actuation_matrix_(actuation), lu_decomp(actuation_matrix_) {
+  const int nv = space().getModel().nv;
   if (nv != actuation.rows()) {
     throw std::domain_error(
         fmt::format("actuation matrix should have number of rows = pinocchio "
                     "model nv ({} and {}).",
                     actuation.rows(), nv));
   }
+  act_matrix_rank = lu_decomp.rank();
 }
+
+template <typename Scalar>
+MultibodyFreeFwdDynamicsTpl<Scalar>::MultibodyFreeFwdDynamicsTpl(
+    const ManifoldPtr &state)
+    : MultibodyFreeFwdDynamicsTpl(
+          state,
+          MatrixXs::Identity(state->getModel().nv, state->getModel().nv)) {}
 
 template <typename Scalar>
 void MultibodyFreeFwdDynamicsTpl<Scalar>::forward(const ConstVectorRef &x,
