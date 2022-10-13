@@ -54,7 +54,7 @@ template <typename Scalar> struct FunctionSliceXprTpl;
 /* STAGE MODEL */
 
 // fwd StageModelTpl
-template <typename Scalar> class StageModelTpl;
+template <typename Scalar> struct StageModelTpl;
 
 template <typename Scalar> struct StageDataTpl;
 

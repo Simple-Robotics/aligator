@@ -22,7 +22,7 @@ namespace proxddp {
  *            polymorphism.
  */
 template <typename _Scalar>
-class StageModelTpl : public Cloneable<StageModelTpl<_Scalar>> {
+struct StageModelTpl : Cloneable<StageModelTpl<_Scalar>> {
 public:
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
