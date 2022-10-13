@@ -10,6 +10,7 @@
 #include "proxddp/modelling/multibody/frame-velocity.hpp"
 #include "proxddp/modelling/multibody/frame-translation.hpp"
 #include "proxddp/modelling/function-xpr-slice.hpp"
+#include "proxddp/modelling/function-compose.hpp"
 
 namespace proxddp {
 namespace python {
@@ -273,6 +274,35 @@ void exposeFunctionExpresions() {
              boost::noncopyable>("FunctionSliceData", bp::no_init)
       .def_readonly("sub_data", &FunctionSliceXpr::OwnData::sub_data,
                     "Underlying function's data.");
+
+  bp::class_<LinearFunctionCompositionTpl<Scalar>, bp::bases<StageFunction>>(
+      "LinearFunctionComposition",
+      "Function composition :math:`r(x) = Af(x) + b`.",
+      bp::init<shared_ptr<StageFunction>, const context::MatrixXs,
+               const context::VectorXs>(
+          "Construct a composition from the underlying function, weight matrix "
+          ":math:`A` and bias :math:`b`.",
+          bp::args("self", "func", "A", "b")))
+      .def(bp::init<shared_ptr<StageFunction>, const context::MatrixXs>(
+          "Constructor where the bias :math:`b` is assumed to be zero.",
+          bp::args("self", "func", "A")))
+      .def_readonly("func", &LinearFunctionCompositionTpl<Scalar>::func,
+                    "The underlying function.")
+      .add_property(
+          "A",
+          make_getter_eigen_matrix(&LinearFunctionCompositionTpl<Scalar>::A),
+          "Weight matrix.")
+      .add_property(
+          "b",
+          make_getter_eigen_matrix(&LinearFunctionCompositionTpl<Scalar>::A),
+          "Bias vector.");
+
+  {
+    using Data = LinearFunctionCompositionTpl<Scalar>::OwnData;
+    bp::class_<Data, bp::bases<FunctionData>, boost::noncopyable>(
+        "LinearFunctionCompositionData", bp::no_init)
+        .def_readonly("sub_data", &Data::sub_data);
+  }
 }
 
 } // namespace python

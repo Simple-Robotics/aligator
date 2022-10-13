@@ -38,6 +38,22 @@ def test_manifold_diff():
     fun_slice.computeJacobians(x, u, y, data2)
     assert np.allclose(data2.jac_buffer_[: len(idx)], data.jac_buffer_[idx])
 
+    # TEST LINEAR COMPOSE
+    A = np.array([[1.0, 1.0, 0.0]])
+    b = np.array([0.0])
+    assert A.shape[1] == fun.nr
+    fun_lin = proxddp.LinearFunctionComposition(fun, A, b)
+    assert fun_lin.nr == A.shape[0]
+    data3 = fun_lin.createData()
+    sd3 = data3.sub_data
+    fun_lin.evaluate(x, u, y, data3)
+    print("d3 value:", data3.value)
+    print(sd3.value)
+    assert np.allclose(data3.value, A @ sd3.value + b)
+
+    fun_lin.computeJacobians(x, u, y, data3)
+    assert np.allclose(data3.jac_buffer_, A @ sd3.jac_buffer_)
+
 
 if __name__ == "__main__":
     import sys
