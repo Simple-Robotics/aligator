@@ -794,7 +794,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     iter_log.merit = phi_new;
     iter_log.dM = phi_new - phi0;
 
-    if (alpha_opt == ls_params.alpha_min)
+    if (alpha_opt <= ls_params.alpha_min)
       this->increase_reg();
 
     invokeCallbacks(workspace, results);
