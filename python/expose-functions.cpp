@@ -9,11 +9,13 @@
 #include "proxddp/modelling/multibody/frame-placement.hpp"
 #include "proxddp/modelling/multibody/frame-velocity.hpp"
 #include "proxddp/modelling/multibody/frame-translation.hpp"
+#include "proxddp/modelling/function-xpr-slice.hpp"
 
 namespace proxddp {
 namespace python {
 
 void exposePinocchioFunctions();
+void exposeFunctionExpresions();
 
 void exposeFunctions() {
   using context::ConstMatrixRef;
@@ -161,6 +163,7 @@ void exposeFunctions() {
           bp::args("self", "ndx", "nu", "umin", "umax")));
 
   exposePinocchioFunctions();
+  exposeFunctionExpresions();
 }
 
 void exposePinocchioFunctions() {
@@ -246,6 +249,30 @@ void exposePinocchioFunctions() {
       .def_readonly("fJf", &FrameTranslationData::fJf_)
       .def_readonly("pin_data", &FrameTranslationData::pin_data_,
                     "Pinocchio data struct.");
+}
+
+void exposeFunctionExpresions() {
+  using context::FunctionData;
+  using context::Scalar;
+  using context::StageFunction;
+
+  using FunctionPtr = shared_ptr<StageFunction>;
+  using FunctionSliceXpr = FunctionSliceXprTpl<Scalar>;
+
+  bp::class_<FunctionSliceXpr, bp::bases<StageFunction>>(
+      "FunctionSliceXpr",
+      "Represents a slice of an expression according to either a single index "
+      "or an array of indices.",
+      bp::init<FunctionPtr, std::vector<int>>(
+          bp::args("self", "func", "indices")))
+      .def(bp::init<FunctionPtr, const int>("Constructor from a single index.",
+                                            bp::args("self", "func", "idx")))
+      .def(CreateDataPythonVisitor<FunctionSliceXpr>());
+
+  bp::class_<FunctionSliceXpr::OwnData, bp::bases<FunctionData>,
+             boost::noncopyable>("FunctionSliceData", bp::no_init)
+      .def_readonly("sub_data", &FunctionSliceXpr::OwnData::sub_data,
+                    "Underlying function's data.");
 }
 
 } // namespace python

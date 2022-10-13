@@ -12,7 +12,9 @@
 namespace proxddp {
 
 /// @brief    Class representing ternary functions \f$f(x,u,x')\f$.
-template <typename _Scalar> struct StageFunctionTpl {
+template <typename _Scalar>
+struct StageFunctionTpl
+    : std::enable_shared_from_this<StageFunctionTpl<_Scalar>> {
 public:
   using Scalar = _Scalar;
   PROXNLP_FUNCTION_TYPEDEFS(Scalar);
@@ -29,6 +31,7 @@ public:
 
   StageFunctionTpl(const int ndx1, const int nu, const int ndx2, const int nr);
 
+  /// Constructor where ndx2 = ndx1.
   StageFunctionTpl(const int ndx, const int nu, const int nr);
 
   /**
@@ -122,6 +125,17 @@ struct FunctionDataTpl : Cloneable<FunctionDataTpl<_Scalar>> {
   template <typename T>
   friend std::ostream &operator<<(std::ostream &oss,
                                   const FunctionDataTpl<T> &self);
+
+  shared_ptr<FunctionSliceXprTpl<Scalar>> operator[](const int idx) {
+    auto self_ptr = this->shared_from_this();
+    return std::make_shared<FunctionSliceXprTpl<Scalar>>(self_ptr, idx);
+  }
+
+  shared_ptr<FunctionSliceXprTpl<Scalar>>
+  operator[](const std::vector<int> indices) {
+    auto self_ptr = this->shared_from_this();
+    return std::make_shared<FunctionSliceXprTpl<Scalar>>(self_ptr, indices);
+  }
 };
 
 } // namespace proxddp

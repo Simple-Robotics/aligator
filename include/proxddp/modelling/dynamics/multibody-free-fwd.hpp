@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
 #include "proxddp/modelling/dynamics/ode-abstract.hpp"

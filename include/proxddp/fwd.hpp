@@ -46,6 +46,11 @@ template <typename Scalar> struct ExplicitDynamicsModelTpl;
 // fwd declaration of ExplicitDynamicsDataTpl
 template <typename Scalar> struct ExplicitDynamicsDataTpl;
 
+/* FUNCTION EXPRESSIONS */
+
+// fwd declaration of FunctionSliceXprTpl
+template <typename Scalar> struct FunctionSliceXprTpl;
+
 /* STAGE MODEL */
 
 // fwd StageModelTpl
