@@ -67,6 +67,7 @@ public:
   int nx2() const { return xspace_next_->nx(); }
   int ndx2() const { return xspace_next_->ndx(); }
 
+  /// Number of constraints (constraint objects).
   std::size_t numConstraints() const { return constraints_.numConstraints(); }
 
   /// Number of primal optimization variables.
