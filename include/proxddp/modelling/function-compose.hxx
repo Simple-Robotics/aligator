@@ -23,4 +23,31 @@ LinearFunctionCompositionTpl<Scalar>::LinearFunctionCompositionTpl(
     shared_ptr<Base> func, const ConstMatrixRef A)
     : LinearFunctionCompositionTpl(func, A, VectorXs::Zero(A.rows())) {}
 
+template <typename Scalar>
+void LinearFunctionCompositionTpl<Scalar>::evaluate(const ConstVectorRef &x,
+                                                    const ConstVectorRef &u,
+                                                    const ConstVectorRef &y,
+                                                    Data &data) const {
+  OwnData &d = static_cast<OwnData &>(data);
+
+  func->evaluate(x, u, y, *d.sub_data);
+  data.value_ = A * d.sub_data->value_ + b;
+}
+
+template <typename Scalar>
+void LinearFunctionCompositionTpl<Scalar>::computeJacobians(
+    const ConstVectorRef &x, const ConstVectorRef &u, const ConstVectorRef &y,
+    Data &data) const {
+  OwnData &d = static_cast<OwnData &>(data);
+
+  func->computeJacobians(x, u, y, *d.sub_data);
+  data.jac_buffer_ = A * d.sub_data->jac_buffer_;
+}
+
+template <typename Scalar>
+shared_ptr<FunctionDataTpl<Scalar>>
+LinearFunctionCompositionTpl<Scalar>::createData() const {
+  return shared_ptr<Data>(new OwnData(this));
+}
+
 } // namespace proxddp

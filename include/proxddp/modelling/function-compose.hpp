@@ -27,24 +27,12 @@ struct LinearFunctionCompositionTpl : StageFunctionTpl<Scalar> {
   LinearFunctionCompositionTpl(shared_ptr<Base> func, const ConstMatrixRef A);
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                const ConstVectorRef &y, Data &data) const {
-    OwnData &d = static_cast<OwnData &>(data);
-
-    func->evaluate(x, u, y, *d.sub_data);
-    data.value_ = A * d.sub_data->value_ + b;
-  }
+                const ConstVectorRef &y, Data &data) const;
 
   void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
-                        const ConstVectorRef &y, Data &data) const {
-    OwnData &d = static_cast<OwnData &>(data);
+                        const ConstVectorRef &y, Data &data) const;
 
-    func->computeJacobians(x, u, y, *d.sub_data);
-    data.jac_buffer_ = A * d.sub_data->jac_buffer_;
-  }
-
-  shared_ptr<Data> createData() const {
-    return shared_ptr<Data>(new OwnData(this));
-  }
+  shared_ptr<Data> createData() const;
 };
 
 } // namespace proxddp
