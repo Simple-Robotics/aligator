@@ -33,6 +33,7 @@ space = manifolds.MultibodyPhaseSpace(rmodel)
 vizer = MeshcatVisualizer(rmodel, robot.collision_model, robot.visual_model, data=rdata)
 vizer.initViewer(open=args.display, loadModel=True)
 viz_util = msu.VizUtil(vizer)
+viz_util.set_bg_color()
 
 
 x0 = space.neutral()
@@ -47,7 +48,7 @@ vizer.display(q0)
 B_mat = np.eye(nu)
 
 dt = 0.01
-Tf = 10 * dt
+Tf = 100 * dt
 nsteps = int(Tf / dt)
 
 ode = dynamics.MultibodyFreeFwdDynamics(space, B_mat)
@@ -122,7 +123,7 @@ max_iters = 40
 solver = proxddp.SolverProxDDP(
     tol, mu_init, rho_init, max_iters=max_iters, verbose=verbose
 )
-solver.rollout_type = proxddp.RolloutType.NONLINEAR
+solver.rollout_type = proxddp.ROLLOUT_NONLINEAR
 solver.dual_weight = 0.0
 # solver = proxddp.SolverFDDP(tol, verbose, max_iters=max_iters)
 cb = proxddp.HistoryCallback()
@@ -172,7 +173,7 @@ plt.figure()
 
 cb_store: proxddp.HistoryCallback.history_storage = cb.storage
 
-nrang = range(results.num_iters + 1)
+nrang = range(1, results.num_iters + 1)
 ax: plt.Axes = plt.gca()
 plt.plot(nrang, cb_store.prim_infeas, ls="--", marker=".", label="primal err")
 plt.plot(nrang, cb_store.dual_infeas, ls="--", marker=".", label="dual err")

@@ -1,7 +1,6 @@
 import numpy as np
 import proxddp
 import pinocchio as pin
-import meshcat
 import meshcat_utils as msu
 import example_robot_data as erd
 import matplotlib.pyplot as plt
@@ -14,6 +13,7 @@ from common import get_endpoint_traj, compute_quasistatic, ArgsBase
 
 class Args(ArgsBase):
     tcp: str = None
+    bounds: bool = True
 
 
 def loadTalos():
@@ -36,6 +36,18 @@ nu = nv
 print("nq:", nq)
 print("nv:", nv)
 
+
+if args.display:
+    vizer = pin.visualize.MeshcatVisualizer(
+        rmodel, robot.collision_model, robot.visual_model, data=rdata
+    )
+    vizer.initViewer(open=True, loadModel=True)
+    vizer.display(pin.neutral(rmodel))
+
+    vizutil = msu.VizUtil(vizer)
+    vizutil.set_bg_color()
+else:
+    vizutil = None
 
 space = manifolds.MultibodyPhaseSpace(rmodel)
 
@@ -70,9 +82,10 @@ rcost.addCost(frame_fn_cost.copy(), 0.01 * dt)
 stm = proxddp.StageModel(space, nu, rcost, dyn_model)
 umax = rmodel.effortLimit
 umin = -umax
-stm.addConstraint(
-    proxddp.ControlBoxFunction(space.ndx, umin, umax), constraints.NegativeOrthant()
-)
+if args.bounds:
+    stm.addConstraint(
+        proxddp.ControlBoxFunction(space.ndx, umin, umax), constraints.NegativeOrthant()
+    )
 
 term_cost = proxddp.CostStack(space.ndx, nu)
 term_cost.addCost(
@@ -86,14 +99,13 @@ problem = proxddp.TrajOptProblem(x0, stages, term_cost)
 
 
 TOL = 1e-5
-mu_init = 0.001
+mu_init = 1e-3
 rho_init = 0.0
 max_iters = 200
 verbose = proxddp.VerboseLevel.VERBOSE
 solver = proxddp.SolverProxDDP(TOL, mu_init, rho_init, verbose=verbose)
-solver.rollout_type = proxddp.RolloutType.NONLINEAR
+solver.rollout_type = proxddp.ROLLOUT_NONLINEAR
 # solver = proxddp.SolverFDDP(TOL, verbose=verbose)
-solver.reg_init = 1e-8
 solver.max_iters = max_iters
 solver.setup(problem)
 
@@ -125,10 +137,10 @@ us_opt = np.array(results.us)
 ls = plt.plot(times[1:], results.us)
 mask_where_ctrl_saturate = np.any((us_opt <= umin) | (us_opt >= umax), axis=0)
 idx_hit = np.argwhere(mask_where_ctrl_saturate).flatten()
-ls[idx_hit[0]].set_label("u{}".format(idx_hit[0]))
-print("Ctrl dims where controls saturate:", idx_hit)
-plt.hlines(umin[idx_hit], *times[[0, -1]], colors="r", linestyles="--")
-plt.hlines(umax[idx_hit], *times[[0, -1]], colors="b", linestyles="--")
+if len(idx_hit) > 0:
+    ls[idx_hit[0]].set_label("u{}".format(idx_hit[0]))
+    plt.hlines(umin[idx_hit], *times[[0, -1]], colors="r", linestyles="--")
+    plt.hlines(umax[idx_hit], *times[[0, -1]], colors="b", linestyles="--")
 plt.title("Controls trajectory")
 plt.legend()
 plt.tight_layout()
@@ -144,24 +156,9 @@ plt.ylabel("Dimension $\\partial V_t/\\partial x_i$")
 plt.tight_layout()
 plt.show()
 
-
 if args.display:
-
-    vizer = pin.visualize.MeshcatVisualizer(
-        rmodel, robot.collision_model, robot.visual_model, data=rdata
-    )
-    if args.tcp:
-        viewer = meshcat.Visualizer(zmq_url=args.tcp)
-        vizer.initViewer(viewer, loadModel=True)
-    else:
-        vizer.initViewer(open=True, loadModel=True)
-    vizutil = msu.VizUtil(vizer)
     vizutil.set_cam_pos([1.2, 0.0, 1.2])
     vizutil.set_cam_target([0.0, 0.0, 1.0])
-    vizutil.set_bg_color()
-
-    q0 = x0[: rmodel.nq]
-    vizer.display(q0)
 
     for _ in range(3):
         vizutil.play_trajectory(results.xs, results.us, timestep=dt)

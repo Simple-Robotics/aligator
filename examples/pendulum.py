@@ -5,7 +5,6 @@
 """
 
 import pinocchio as pin
-from pinocchio.visualize import MeshcatVisualizer
 import numpy as np
 import proxddp
 import proxnlp
@@ -14,10 +13,13 @@ import tap
 import matplotlib.pyplot as plt
 import meshcat_utils as msu
 
+from pinocchio.visualize import MeshcatVisualizer
+from proxddp import constraints
+
 
 class Args(tap.Tap):
     display: bool = False
-    use_term_cstr: bool = False
+    use_term_cstr: bool = True
     record: bool = False
 
     def process_args(self):
@@ -97,15 +99,13 @@ def create_pendulum(N, sincos=False):
 
 
 model, geom_model, data, geom_data, ddl = create_pendulum(1)
-time_step = 0.01
-nu = 1
-act_mat = np.zeros((1, nu))
-act_mat[0, 0] = 1.0
+dt = 0.01
+nu = model.nv
 space = proxnlp.manifolds.MultibodyPhaseSpace(model)
 nx = space.nx
 ndx = space.ndx
-cont_dyn = proxddp.dynamics.MultibodyFreeFwdDynamics(space, act_mat)
-disc_dyn = proxddp.dynamics.IntegratorSemiImplEuler(cont_dyn, time_step)
+cont_dyn = proxddp.dynamics.MultibodyFreeFwdDynamics(space)
+dyn_model = proxddp.dynamics.IntegratorSemiImplEuler(cont_dyn, dt)
 
 np.random.seed(1)
 nq = model.nq
@@ -118,10 +118,10 @@ frame_id = model.getFrameId("end_effector_frame")
 
 # running cost regularizes the control input
 rcost = proxddp.CostStack(ndx, nu)
-wu = np.ones(nu) * 1e-3
+w_u = np.ones(nu) * 1e-3
 rcost.addCost(
     proxddp.QuadraticResidualCost(
-        proxddp.ControlErrorResidual(ndx, np.zeros(nu)), np.diag(wu) * time_step
+        proxddp.ControlErrorResidual(ndx, np.zeros(nu)), np.diag(w_u) * dt
     )
 )
 # wx = np.zeros(ndx)
@@ -147,34 +147,34 @@ weights_frame_place[:3] = np.ones(3) * 1.0
 # weights_frame_place[2] = np.ones(1) * 1.0
 # weights_frame_place[:3] = 1.0
 rcost.addCost(
-    proxddp.QuadraticResidualCost(frame_err, np.diag(weights_frame_place) * time_step)
+    proxddp.QuadraticResidualCost(frame_err, np.diag(weights_frame_place) * dt)
 )
 term_cost = proxddp.CostStack(ndx, nu)
 term_cost.addCost(
-    proxddp.QuadraticResidualCost(frame_err, np.diag(weights_frame_place) * time_step)
+    proxddp.QuadraticResidualCost(frame_err, np.diag(weights_frame_place) * dt)
 )
 
 # box constraint on control
-u_min = -20.0 * np.ones(nu)
-u_max = +20.0 * np.ones(nu)
-ctrl_box = proxddp.ControlBoxFunction(ndx, u_min, u_max)
+umin = -20.0 * np.ones(nu)
+umax = +20.0 * np.ones(nu)
+ctrl_fn = proxddp.ControlErrorResidual(ndx, np.zeros(nu))
+box_cstr = proxddp.StageConstraint(ctrl_fn, constraints.BoxConstraint(umin, umax))
+# ctrl_fn = proxddp.ControlBoxFunction(ndx, umin, umax)
+# box_cstr = proxddp.StageConstraint(ctrl_fn, constraints.NegativeOrthant())
 
 nsteps = 200
-Tf = nsteps * time_step
+Tf = nsteps * dt
 problem = proxddp.TrajOptProblem(x0, nu, space, term_cost)
 
 for i in range(nsteps):
-    stage = proxddp.StageModel(space, nu, rcost, disc_dyn)
-    stage.addConstraint(
-        proxddp.StageConstraint(ctrl_box, proxnlp.constraints.NegativeOrthant())
-    )
+    stage = proxddp.StageModel(space, nu, rcost, dyn_model)
+    stage.addConstraint(box_cstr)
     problem.addStage(stage)
 
 term_fun = proxddp.FrameTranslationResidual(ndx, nu, model, target_pos, frame_id)
-term_cstr = proxddp.StageConstraint(
-    term_fun, proxnlp.constraints.EqualityConstraintSet()
-)
-problem.setTerminalConstraint(term_cstr)
+if args.use_term_cstr:
+    term_cstr = proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet())
+    problem.setTerminalConstraint(term_cstr)
 
 mu_init = 0.5
 rho_init = 1e-6
@@ -184,14 +184,13 @@ MAX_ITER = 200
 solver = proxddp.SolverProxDDP(
     TOL, mu_init, rho_init=rho_init, max_iters=MAX_ITER, verbose=verbose
 )
-solver.rollout_type = proxddp.RolloutType.NONLINEAR
+solver.rollout_type = proxddp.ROLLOUT_NONLINEAR
 callback = proxddp.HistoryCallback()
 solver.registerCallback(callback)
 
-u0 = np.zeros(nu)
-u0 = pin.rnea(model, data, np.array([x0[0]]), np.array([x0[1]]), np.zeros(nv))
+u0 = pin.rnea(model, data, x0[:1], x0[1:], np.zeros(nv))
 us_i = [u0] * nsteps
-xs_i = proxddp.rollout(disc_dyn, x0, us_i)
+xs_i = proxddp.rollout(dyn_model, x0, us_i)
 
 solver.setup(problem)
 solver.run(problem, xs_i, us_i)
@@ -220,7 +219,7 @@ plt.xlabel("Time $i$")
 plt.subplot(122)
 plt.plot(trange[:-1], res.us, **lstyle)
 plt.hlines(
-    np.concatenate([u_min, u_max]),
+    np.concatenate([umin, umax]),
     *trange[[0, -1]],
     ls="-",
     colors="k",
@@ -267,7 +266,7 @@ if args.display:
     numrep = 2
     cp = [2.0, 0.0, 0.8]
     cps_ = [cp.copy() for _ in range(numrep)]
-    vidrecord = msu.VideoRecorder("examples/ur5_reach_ctrlbox.mp4", fps=1.0 / time_step)
+    vidrecord = msu.VideoRecorder("examples/ur5_reach_ctrlbox.mp4", fps=1.0 / dt)
     input("[Press enter]")
 
     for i in range(numrep):
@@ -277,7 +276,7 @@ if args.display:
             res.xs.tolist(),
             res.us.tolist(),
             frame_ids=[frame_id],
-            timestep=time_step,
+            timestep=dt,
             record=args.record,
             recorder=vidrecord,
         )

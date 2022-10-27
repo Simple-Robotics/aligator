@@ -57,12 +57,12 @@ term_cstr = proxddp.StageConstraint(
 problem.setTerminalConstraint(term_cstr)
 
 tol = 1e-3
-mu_init = 1e-4
+mu_init = 1e-2
 rho_init = 1e-8
 solver = proxddp.SolverProxDDP(
     tol, mu_init=mu_init, rho_init=rho_init, verbose=proxddp.VerboseLevel.VERBOSE
 )
-# solver.rollout_type = proxddp.RolloutType.NONLINEAR
+solver.rollout_type = proxddp.ROLLOUT_NONLINEAR
 solver.setup(problem)
 
 us_init = [np.zeros(nu) for _ in range(nsteps)]

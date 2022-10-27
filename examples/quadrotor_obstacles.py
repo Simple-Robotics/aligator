@@ -28,6 +28,7 @@ nv = rmodel.nv
 
 class Args(ArgsBase):
     integrator = "semieuler"
+    bounds: bool = False
     """Use control bounds"""
     plot: bool = False  # Plot the trajectories
     display: bool = False
@@ -41,20 +42,18 @@ class Args(ArgsBase):
             self.display = True
 
 
-class HalfspaceZ(proxddp.StageFunction):
-    def __init__(self, ndx, nu, offset: float = 0.0, neg: bool = False) -> None:
-        super().__init__(ndx, nu, 1)
-        self.ndx = ndx
-        self.offset = offset
-        self.sign = -1.0 if neg else 1.0
-
-    def evaluate(self, x, u, y, data):
-        res = self.sign * (x[2] - self.offset)
-        data.value[:] = res
-
-    def computeJacobians(self, x, u, y, data):
-        data.Jx[2] = self.sign
-        data.Ju[:] = 0.0
+def create_halfspace_z(ndx, nu, offset: float = 0.0, neg: bool = False):
+    r"""
+    Constraint :math:`z \geq offset`.
+    """
+    root_frame_id = 1
+    p_ref = np.zeros(3)
+    frame_fun = proxddp.FrameTranslationResidual(ndx, nu, rmodel, p_ref, root_frame_id)
+    A = np.array([[0.0, 0.0, 1.0]])
+    b = np.array([-offset])
+    sign = -1.0 if neg else 1.0
+    frame_fun_z = proxddp.LinearFunctionComposition(frame_fun, sign * A, sign * b)
+    return frame_fun_z
 
 
 class Column(proxddp.StageFunction):
@@ -88,7 +87,7 @@ def main(args: Args):
 
     if args.obstacles:  # we add the obstacles to the geometric model
         R = np.eye(3)
-        cyl_radius = 0.28
+        cyl_radius = 0.22
         cylinder = fcl.Cylinder(cyl_radius, 10.0)
         center_column1 = np.array([-0.45, 0.8, 0.0])
         geom_cyl1 = pin.GeometryObject(
@@ -134,7 +133,7 @@ def main(args: Args):
     ode_dynamics = proxddp.dynamics.MultibodyFreeFwdDynamics(space, QUAD_ACT_MATRIX)
 
     dt = 0.033
-    Tf = 1.0
+    Tf = 1.5
     nsteps = int(Tf / dt)
     print("nsteps: {:d}".format(nsteps))
 
@@ -197,7 +196,7 @@ def main(args: Args):
     def make_task():
         if args.obstacles:
             weights = np.zeros(space.ndx)
-            weights[:3] = 1.0
+            weights[:3] = 0.1
             weights[3:6] = 1e-2
             weights[nv:] = 1e-3
 
@@ -230,9 +229,13 @@ def main(args: Args):
 
         w_u = np.eye(nu) * 1e-2
 
-        ceiling = HalfspaceZ(space.ndx, nu, 2.0)
-        floor = HalfspaceZ(space.ndx, nu, 0.0, True)
+        ceiling = create_halfspace_z(space.ndx, nu, 2.0)
+        floor = create_halfspace_z(space.ndx, nu, 0.0, True)
         stages = []
+        if args.bounds:
+            u_identity_fn = proxddp.ControlErrorResidual(space.ndx, np.zeros(nu))
+            box_set = constraints.BoxConstraint(u_min, u_max)
+            ctrl_cstr = proxddp.StageConstraint(u_identity_fn, box_set)
 
         for i in range(nsteps):
 
@@ -250,6 +253,8 @@ def main(args: Args):
             rcost.addCost(ucost)
 
             stage = proxddp.StageModel(space, nu, rcost, dynmodel)
+            if args.bounds:
+                stage.addConstraint(ctrl_cstr)
             if args.obstacles:  # add obstacles' constraints
                 column1 = Column(
                     space.ndx, nu, center_column1[:2], cyl_radius, quad_radius
@@ -283,16 +288,16 @@ def main(args: Args):
 
     _, x_term = task_fun(nsteps)
     problem = setup()
-    tol = 1e-4
+    tol = 1e-3
     mu_init = 1e-2
-    rho_init = 1e-8
+    rho_init = 1e-4
     verbose = proxddp.VerboseLevel.VERBOSE
     history_cb = proxddp.HistoryCallback()
     solver = proxddp.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
-    solver.rollout_type = proxddp.RolloutType.NONLINEAR
+    solver.rollout_type = proxddp.ROLLOUT_NONLINEAR
     if args.fddp:
         solver = proxddp.SolverFDDP(tol, verbose=verbose)
-    solver.max_iters = 60
+    solver.max_iters = 200
     solver.registerCallback(history_cb)
     solver.setup(problem)
     solver.run(problem, xs_init, us_init)
@@ -352,7 +357,7 @@ def main(args: Args):
         if len(results.lams) > 0:
             plot_costate_value()
 
-        nplot = 4
+        nplot = 3
         fig: plt.Figure = plt.figure(figsize=(9.6, 5.4))
         ax0: plt.Axes = fig.add_subplot(1, nplot, 1)
         ax0.plot(times[:-1], us_opt)
@@ -371,14 +376,6 @@ def main(args: Args):
         ax2.semilogy(n_iter, history_cb.storage.dual_infeas.tolist(), label="Dual err.")
         ax2.set_xlabel("Iterations")
         ax2.legend()
-
-        ax: plt.Axes = fig.add_subplot(1, nplot, 4)
-        dms_ = -np.diff(history_cb.storage.merit_values)
-        dcs_ = -np.diff(history_cb.storage.values)
-        print(dms_)
-        ax.semilogy(n_iter[1:], dms_, label="merit")
-        ax.semilogy(n_iter[1:], dcs_, label="cost")
-        ax.legend()
 
         fig.tight_layout()
         for ext in ["png", "pdf"]:
@@ -423,7 +420,7 @@ def main(args: Args):
                 record=args.record,
                 timestep=dt,
                 show_vel=True,
-                frame_sphere_size=quad_radius,
+                # frame_sphere_size=quad_radius,
                 recorder=vid_recorder,
                 post_callback=get_callback(i),
             )
