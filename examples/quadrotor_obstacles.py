@@ -27,8 +27,7 @@ nv = rmodel.nv
 
 
 class Args(ArgsBase):
-    integrator = "euler"
-    no_u_bounds: bool = False
+    integrator = "semieuler"
     """Use control bounds"""
     plot: bool = False  # Plot the trajectories
     display: bool = False
@@ -89,9 +88,9 @@ def main(args: Args):
 
     if args.obstacles:  # we add the obstacles to the geometric model
         R = np.eye(3)
-        cyl_radius = 0.2
+        cyl_radius = 0.28
         cylinder = fcl.Cylinder(cyl_radius, 10.0)
-        center_column1 = np.array([-0.5, 0.8, 0.0])
+        center_column1 = np.array([-0.45, 0.8, 0.0])
         geom_cyl1 = pin.GeometryObject(
             "column1", 0, 0, pin.SE3(R, center_column1), cylinder
         )
@@ -112,7 +111,7 @@ def main(args: Args):
     vizer = pin.visualize.MeshcatVisualizer(
         rmodel, robot.collision_model, robot.visual_model, data=rdata
     )
-    vizer.initViewer(viewer, open=args.display, loadModel=True)
+    vizer.initViewer(viewer, loadModel=True)
     vizer.displayCollisions(True)
 
     space = manifolds.MultibodyPhaseSpace(rmodel)
@@ -135,7 +134,7 @@ def main(args: Args):
     ode_dynamics = proxddp.dynamics.MultibodyFreeFwdDynamics(space, QUAD_ACT_MATRIX)
 
     dt = 0.033
-    Tf = 33 * dt
+    Tf = 1.0
     nsteps = int(Tf / dt)
     print("nsteps: {:d}".format(nsteps))
 
@@ -186,7 +185,7 @@ def main(args: Args):
     x_tar2 = space.neutral()
     x_tar2[:3] = (1.4, -0.6, 1.0)
     x_tar3 = space.neutral()
-    x_tar3[:3] = (-0.4, 2.6, 1.0)
+    x_tar3[:3] = (-0.1, 3.2, 1.0)
 
     u_max = u_lim * np.ones(nu)
     u_min = np.zeros(nu)
@@ -198,7 +197,7 @@ def main(args: Args):
     def make_task():
         if args.obstacles:
             weights = np.zeros(space.ndx)
-            weights[:3] = 1e-1
+            weights[:3] = 1.0
             weights[3:6] = 1e-2
             weights[nv:] = 1e-3
 
@@ -251,9 +250,6 @@ def main(args: Args):
             rcost.addCost(ucost)
 
             stage = proxddp.StageModel(space, nu, rcost, dynmodel)
-            if not args.no_u_bounds:
-                ctrl_box = proxddp.ControlBoxFunction(space.ndx, u_min, u_max)
-                stage.addConstraint(ctrl_box, constraints.NegativeOrthant())
             if args.obstacles:  # add obstacles' constraints
                 column1 = Column(
                     space.ndx, nu, center_column1[:2], cyl_radius, quad_radius
@@ -271,7 +267,8 @@ def main(args: Args):
             stage.evaluate(x0, u0, x1, sd)
 
         weights, x_tar = task_fun(nsteps)
-        weights *= 5.0
+        if not args.term_cstr:
+            weights *= 10.0
         term_cost = proxddp.QuadraticResidualCost(
             proxddp.StateErrorResidual(space, nu, x_tar), np.diag(weights)
         )
@@ -287,8 +284,8 @@ def main(args: Args):
     _, x_term = task_fun(nsteps)
     problem = setup()
     tol = 1e-4
-    mu_init = 1e-1
-    rho_init = 0.0
+    mu_init = 1e-2
+    rho_init = 1e-8
     verbose = proxddp.VerboseLevel.VERBOSE
     history_cb = proxddp.HistoryCallback()
     solver = proxddp.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
@@ -299,6 +296,8 @@ def main(args: Args):
     solver.registerCallback(history_cb)
     solver.setup(problem)
     solver.run(problem, xs_init, us_init)
+    if args.display:
+        vizer.viewer.open()
 
     results = solver.getResults()
     workspace = solver.getWorkspace()
@@ -398,6 +397,7 @@ def main(args: Args):
 
         vid_uri = "assets/{}.mp4".format(TAG)
         vid_recorder = msu.VideoRecorder(vid_uri, fps=1.0 / dt)
+        vid_recorder = None
         if args.obstacles:
             viz_util.draw_objectives([x_tar3], prefix="obj")
         else:
@@ -419,11 +419,11 @@ def main(args: Args):
             viz_util.play_trajectory(
                 xs_opt,
                 us_opt,
-                # frame_ids=[rmodel.getFrameId("base_link")],
+                frame_ids=[rmodel.getFrameId("base_link")],
                 record=args.record,
                 timestep=dt,
                 show_vel=True,
-                # frame_sphere_size=quad_radius,
+                frame_sphere_size=quad_radius,
                 recorder=vid_recorder,
                 post_callback=get_callback(i),
             )
