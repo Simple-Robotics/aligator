@@ -6,6 +6,8 @@
 #include <boost/python/class.hpp>
 #include <boost/python/return_value_policy.hpp>
 
+#include <fmt/ostream.h>
+
 namespace proxddp {
 namespace python {
 
@@ -18,12 +20,14 @@ namespace internal {
 /// @see   \ref boost/python/data_members.hpp (struct member)
 template <typename MatrixType, typename Class> struct eigen_member {
 public:
+  typedef Eigen::Ref<const MatrixType> ConstMatRef;
+
   eigen_member(MatrixType Class::*which) : m_which(which) {}
 
   Eigen::Ref<MatrixType> operator()(Class &c) const { return c.*m_which; }
 
   void operator()(Class &c,
-                  typename bp::detail::value_arg<MatrixType>::type d) const {
+                  typename bp::detail::value_arg<ConstMatRef>::type d) const {
     c.*m_which = d;
   }
 
@@ -40,10 +44,26 @@ private:
 template <class C, class MatrixType>
 bp::object make_getter_eigen_matrix(MatrixType C::*v) {
   typedef Eigen::Ref<MatrixType> RefType;
-  return bp::make_function(internal::eigen_member<MatrixType, C>(v),
-                           bp::return_value_policy<bp::return_by_value>(),
-                           boost::mpl::vector2<RefType, C &>());
-} // namespace internal
+  return bp::make_function(
+      internal::eigen_member<MatrixType, C>(v),
+      bp::return_value_policy<bp::return_by_value,
+                              bp::with_custodian_and_ward_postcall<0UL, 1UL>>(),
+      boost::mpl::vector2<RefType, C &>());
+}
+
+template <class C, class MatrixType, class Policies>
+bp::object make_setter_eigen_matrix(MatrixType C::*v,
+                                    Policies const &policies) {
+  typedef Eigen::Ref<const MatrixType> ConstRefType;
+  return bp::make_function(
+      internal::eigen_member<MatrixType, C>(v), policies,
+      boost::mpl::vector3<void, C &, const ConstRefType>());
+}
+
+template <class C, class MatrixType>
+bp::object make_setter_eigen_matrix(MatrixType C::*v) {
+  return make_setter_eigen_matrix(v, bp::default_call_policies());
+}
 
 } // namespace python
 } // namespace proxddp
