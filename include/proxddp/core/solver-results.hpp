@@ -16,11 +16,10 @@ template <typename _Scalar> struct ResultsBaseTpl {
 
   Scalar traj_cost_ = 0.;
   Scalar merit_value_ = 0.;
-  /// Overall primal infeasibility/constraint violation for the
-  /// TrajOptProblemTpl.
-  Scalar primal_infeasibility = 0.;
-  /// Overall dual infeasibility measure for the TrajOptProblemTpl.
-  Scalar dual_infeasibility = 0.;
+  /// Overall primal infeasibility measure/constraint violation.
+  Scalar prim_infeas = 0.;
+  /// Overall dual infeasibility measure.
+  Scalar dual_infeas = 0.;
 
   /// Riccati gains
   std::vector<MatrixXs> gains_;

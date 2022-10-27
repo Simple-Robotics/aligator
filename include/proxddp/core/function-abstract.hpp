@@ -98,6 +98,7 @@ struct FunctionDataTpl : Cloneable<FunctionDataTpl<_Scalar>> {
 
   /// Function value.
   VectorXs value_;
+  VectorRef valref_;
   /// Full Jacobian.
   MatrixXs jac_buffer_;
   /// Vector-Hessian product buffer.

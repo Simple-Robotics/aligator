@@ -15,15 +15,11 @@ template <typename Scalar>
 SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
                                      const Scalar rho_init,
                                      const std::size_t max_iters,
-                                     const VerboseLevel verbose)
+                                     VerboseLevel verbose,
+                                     HessianApprox hess_approx)
     : target_tol_(tol), mu_init(mu_init), rho_init(rho_init), verbose_(verbose),
-      max_iters(max_iters), merit_fun(this) {
-  ls_params.alpha_min = 1e-7;
+      hess_approx(hess_approx), max_iters(max_iters), merit_fun(this) {
   ls_params.interp_type = proxnlp::LSInterpolation::CUBIC;
-  if (mu_init >= 1.) {
-    proxddp_runtime_error(
-        fmt::format("Penalty value mu_init={:g}>=1!", mu_init));
-  }
 }
 
 template <typename Scalar>
@@ -171,52 +167,59 @@ bool SolverProxDDP<Scalar>::backwardPass(const Problem &problem,
 template <typename Scalar>
 void SolverProxDDP<Scalar>::computeMultipliers(
     const Problem &problem, Workspace &workspace,
-    const std::vector<VectorXs> &lams, TrajOptData &pd,
+    const std::vector<VectorXs> &lams, TrajOptData &prob_data,
     bool update_jacobians) const {
 
-  using CstrSet = ConstraintSetBase<Scalar>;
   const std::size_t nsteps = workspace.nsteps;
 
+  std::vector<VectorXs> &lams_prev = workspace.lams_prev;
   std::vector<VectorXs> &lams_plus = workspace.lams_plus;
   std::vector<VectorXs> &lams_pdal = workspace.lams_pdal;
+  std::vector<VectorXs> &shifted_cvals = workspace.shifted_constraints;
 
+  // initial constraint
   {
     const VectorXs &lam0 = lams[0];
-    const VectorXs &plam0 = workspace.prev_lams[0];
-    shared_ptr<CstrSet> cstr =
-        std::make_shared<proxnlp::EqualityConstraint<Scalar>>();
-    FunctionData &data = pd.getInitData();
-    auto expr = plam0 + mu_inv() * data.value_;
-    cstr->normalConeProjection(expr, lams_plus[0]);
+    const VectorXs &plam0 = lams_prev[0];
+    FunctionData &data = prob_data.getInitData();
+    shifted_cvals[0] = data.value_ + mu() * plam0;
+    lams_plus[0] = shifted_cvals[0] * mu_inv();
     lams_pdal[0] = (1 + dual_weight) * lams_plus[0] - dual_weight * lam0;
-    if (update_jacobians)
-      cstr->applyNormalConeProjectionJacobian(expr, data.jac_buffer_);
+    /// TODO: generalize to the other types of initial constraint (non-equality)
   }
 
   if (problem.term_constraint_) {
     const VectorXs &lamN = lams.back();
-    const VectorXs &plamN = workspace.prev_lams.back();
+    const VectorXs &plamN = lams_prev.back();
     const Constraint &termcstr = problem.term_constraint_.get();
-    const CstrSet &cstr = *termcstr.set;
-    FunctionData &data = *pd.term_cstr_data;
-    auto expr = plamN + mu_inv() * data.value_;
-    cstr.normalConeProjection(expr, lams_plus.back());
+    const CstrSet &set = *termcstr.set;
+    FunctionData &data = prob_data.getTermData();
+    VectorXs &scval = shifted_cvals.back();
+    scval = data.value_ + mu() * plamN;
+    if (update_jacobians)
+      set.applyNormalConeProjectionJacobian(scval, data.jac_buffer_);
+
+    set.normalConeProjection(scval, scval);
+    lams_plus.back() = scval * mu_inv();
     lams_pdal.back() =
         (1 + dual_weight) * lams_plus.back() - dual_weight * lamN;
-    if (update_jacobians)
-      cstr.applyNormalConeProjectionJacobian(expr, data.jac_buffer_);
+    /// TODO: replace single term constraint by a ConstraintStackTpl
   }
 
   // loop over the stages
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
-    const StageData &sdata = pd.getStageData(i);
+    const StageData &sdata = prob_data.getStageData(i);
     const ConstraintStack &mgr = stage.constraints_;
 
-    // enumerate the constraints and perform projection
-    auto cstr_callback = [&](auto mgr, std::size_t k, const VectorXs &lami,
-                             const VectorXs &plami, VectorXs &lamplusi,
-                             VectorXs &lampdali) {
+    auto &lami = lams[i + 1];
+    auto &plami = lams_prev[i + 1];
+    auto &lamplusi = lams_plus[i + 1];
+    auto &lampdali = lams_pdal[i + 1];
+    auto &shift_cval = shifted_cvals[i + 1];
+
+    for (std::size_t k = 0; k < mgr.numConstraints(); k++) {
+      auto scval_k = mgr.getSegmentByConstraint(shift_cval, k);
       const auto lami_k = mgr.getConstSegmentByConstraint(lami, k);
       const auto plami_k = mgr.getConstSegmentByConstraint(plami, k);
       auto lamplus_k = mgr.getSegmentByConstraint(lamplusi, k);
@@ -224,16 +227,16 @@ void SolverProxDDP<Scalar>::computeMultipliers(
 
       const CstrSet &set = mgr.getConstraintSet(k);
       FunctionData &data = *sdata.constraint_data[k];
-      auto expr = plami_k + mu_inv_scaled() * data.value_;
-      set.normalConeProjection(expr, lamplus_k);
-      lampdal_k = (1 + dual_weight) * lamplus_k - dual_weight * lami_k;
-      if (update_jacobians)
-        set.applyNormalConeProjectionJacobian(expr, data.jac_buffer_);
-    };
 
-    for (std::size_t k = 0; k < mgr.numConstraints(); k++) {
-      cstr_callback(mgr, k, lams[i + 1], workspace.prev_lams[i + 1],
-                    lams_plus[i + 1], lams_pdal[i + 1]);
+      scval_k = data.value_ + mu_scaled(k) * plami_k;
+      if (update_jacobians)
+        set.applyNormalConeProjectionJacobian(scval_k, data.jac_buffer_);
+
+      set.normalConeProjection(scval_k, scval_k);
+
+      // set multiplier = 1/mu * normal_proj(shifted_cstr)
+      lamplus_k = mu_inv_scaled(k) * scval_k;
+      lampdal_k = (1 + dual_weight) * lamplus_k - dual_weight * lami_k;
     }
   }
 }
@@ -274,7 +277,6 @@ void SolverProxDDP<Scalar>::updateHamiltonian(const Problem &problem,
   qparam.Quu.diagonal().array() += ureg_;
 
   const VectorXs &lam_inn = results.lams[t + 1];
-  const VectorXs &lamplus = workspace.lams_plus[t + 1];
 
   const ConstraintStack &cstr_mgr = stage.constraints_;
 
@@ -287,7 +289,9 @@ void SolverProxDDP<Scalar>::updateHamiltonian(const Problem &problem,
     qparam.Qx.noalias() += cstr_data.Jx_.transpose() * lam_inn_j;
     qparam.Qu.noalias() += cstr_data.Ju_.transpose() * lam_inn_j;
     qparam.Qy.noalias() += cstr_data.Jy_.transpose() * lam_inn_j;
-    // qparam.hess_ += cstr_data.vhp_buffer_;
+    if (hess_approx == HessianApprox::EXACT) {
+      qparam.hess_ += cstr_data.vhp_buffer_;
+    }
   }
   qparam.storage = qparam.storage.template selfadjointView<Eigen::Lower>();
 }
@@ -312,10 +316,10 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
     /* check number of multipliers */
     assert(results.lams.size() == (nsteps + 2));
     assert(results.gains_.size() == (nsteps + 1));
-    const FunctionData &cstr_data = *prob_data.term_cstr_data;
+    const FunctionData &cstr_data = prob_data.getTermData();
 
     VectorXs &lamplus = workspace.lams_plus[nsteps + 1];
-    // const VectorXs &lamprev = workspace.prev_lams[nsteps + 1];
+    // const VectorXs &lamprev = workspace.lams_prev[nsteps + 1];
     const VectorXs &lamin = results.lams[nsteps + 1];
     const MatrixRef &cJx = cstr_data.Jx_;
 
@@ -391,9 +395,9 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
     cstr_mgr.getBlockByConstraint(kkt_rhs_fb.bottomRows(ndual), j) =
         cstr_data.Jx_;
     cstr_mgr.getSegmentByConstraint(kkt_rhs_ff.tail(ndual), j) =
-        mu_scaled() * (lamplus_j - laminnr_j);
+        mu_scaled(j) * (lamplus_j - laminnr_j);
 
-    kkt_low_right.array() = -mu_scaled();
+    kkt_low_right.array() = -mu_scaled(j);
   }
 
   /* Compute gains with LDLT */
@@ -459,12 +463,16 @@ void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
                                              Workspace &workspace,
                                              const Results &results,
                                              const Scalar alpha) const {
+  using ExplicitDynData = ExplicitDynamicsDataTpl<Scalar>;
+
   const std::size_t nsteps = workspace.nsteps;
   std::vector<VectorXs> &xs = workspace.trial_xs;
   std::vector<VectorXs> &us = workspace.trial_us;
   std::vector<VectorXs> &lams = workspace.trial_lams;
   TrajOptData &prob_data = workspace.trial_prob_data;
 
+  problem.init_state_error.evaluate(xs[0], us[0], xs[1],
+                                    prob_data.getInitData());
   computeDirX0(problem, workspace, results);
   const StageModel &stage = *problem.stages_[0];
   stage.xspace().integrate(results.xs[0], alpha * workspace.dxs[0], xs[0]);
@@ -473,12 +481,13 @@ void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
     StageData &data = prob_data.getStageData(i);
+
     const int nu = stage.nu();
     const int ndual = stage.numDual();
     const int ndx2 = stage.ndx2();
 
-    auto ff = results.getFeedforward(i);
-    auto fb = results.getFeedback(i);
+    ConstVectorRef ff = results.getFeedforward(i);
+    ConstMatrixRef fb = results.getFeedback(i);
     auto ff_u = ff.head(nu);
     auto fb_u = fb.topRows(nu);
     auto ff_lm = ff.tail(ndual);
@@ -493,15 +502,27 @@ void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
     dlam.head(ndual) = alpha * ff_lm + fb_lm * dx;
     lams[i + 1].head(ndual) = results.lams[i + 1] + dlam;
 
-    const DynamicsModelTpl<Scalar> &dm = stage.dyn_model();
-    DynamicsDataTpl<Scalar> &dd = data.dyn_data();
+    stage.evaluate(xs[i], us[i], xs[i + 1], data);
+    shared_ptr<ExplicitDynData> exp_dd =
+        std::dynamic_pointer_cast<ExplicitDynData>(data.constraint_data[0]);
+
+    // compute multiple-shooting gap
     const ConstraintStack &cstr_mgr = stage.constraints_;
     const ConstVectorRef dynlam =
         cstr_mgr.getConstSegmentByConstraint(lams[i + 1], 0);
     const ConstVectorRef dynprevlam =
-        cstr_mgr.getConstSegmentByConstraint(workspace.prev_lams[i + 1], 0);
-    VectorXs gap = mu_scaled() * (dynprevlam - dynlam);
-    forwardDynamics(dm, xs[i], us[i], dd, xs[i + 1], 1, gap);
+        cstr_mgr.getConstSegmentByConstraint(workspace.lams_prev[i + 1], 0);
+    VectorXs gap = mu_scaled(0) * (dynprevlam - dynlam);
+
+    if (exp_dd != 0) {
+      xs[i + 1] = exp_dd->xnext_;
+      stage.xspace_next().integrate(xs[i + 1], gap);
+    } else {
+      // in this case, compute the forward dynamics through Newton-Raphson
+      const DynamicsModelTpl<Scalar> &dm = stage.dyn_model();
+      DynamicsDataTpl<Scalar> &dd = data.dyn_data();
+      forwardDynamics(dm, xs[i], us[i], dd, xs[i + 1], 1, gap);
+    }
 
     VectorRef dx_next = workspace.dxs[i + 1].head(ndx2);
     stage.xspace_next().difference(results.xs[i + 1], xs[i + 1], dx_next);
@@ -511,7 +532,15 @@ void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
     PROXDDP_RAISE_IF_NAN_NAME(lams[i + 1], fmt::format("lams[{:d}]", i + 1));
   }
 
+  problem.term_cost_->evaluate(xs[nsteps], problem.dummy_term_u0,
+                               *prob_data.term_cost_data);
+
   if (problem.term_constraint_) {
+
+    const StageConstraintTpl<Scalar> &tc = *problem.term_constraint_;
+    FunctionData &td = prob_data.getTermData();
+    tc.func->evaluate(xs[nsteps], us[nsteps], xs[nsteps], td);
+
     VectorRef &dlam = workspace.dlams.back();
     const VectorRef &dx = workspace.dxs.back();
     auto ff = results.getFeedforward(nsteps);
@@ -555,7 +584,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
 
   workspace.prev_xs = results.xs;
   workspace.prev_us = results.us;
-  workspace.prev_lams = results.lams;
+  workspace.lams_prev = results.lams;
 
   inner_tol_ = inner_tol0;
   prim_tol_ = prim_tol0;
@@ -575,14 +604,22 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
       fmt::print(fmt::emphasis::bold | fmt::fg(colout), "[AL iter {:>2d}]",
                  al_iter + 1);
       fmt::print(" ("
-                 "inner_tol {:.2e} | "
-                 "prim_tol  {:.2e} | "
-                 "mu  {:.2g} | "
-                 "rho {:.2g} | d={:.3e} | p={:.3e} )\n",
-                 inner_tol_, prim_tol_, mu(), rho(), results.dual_infeasibility,
-                 results.primal_infeasibility);
+                 "inner_tol {:.2e} ｜ "
+                 "prim_tol {:.2e} ｜ "
+                 "mu {:<5.2g} ｜"
+                 "rho {: > 4.2g} ｜ d={:.2e} ｜ p={:.2e} )\n",
+                 inner_tol_, prim_tol_, mu(), rho(), results.dual_infeas,
+                 results.prim_infeas);
     }
     bool inner_conv = innerLoop(problem, workspace, results);
+#ifndef NDEBUG
+    {
+      std::FILE *fi = std::fopen("pddp.log", "a");
+      fmt::print(fi, "  p={:5.3e} | d={:5.3e}\n", results.prim_infeas,
+                 results.dual_infeas);
+      std::fclose(fi);
+    }
+#endif
     if (!inner_conv) {
       fmt::print(fmt::fg(fmt::color::red), "Inner loop failed to converge.");
       fmt::print("\n");
@@ -594,34 +631,38 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
     workspace.prev_xs = results.xs;
     workspace.prev_us = results.us;
 
-    if (results.primal_infeasibility <= prim_tol_) {
+    if (results.prim_infeas <= prim_tol_) {
       updateTolerancesOnSuccess();
 
       switch (multiplier_update_mode) {
       case MultiplierUpdateMode::NEWTON:
-        workspace.prev_lams = results.lams;
+        workspace.lams_prev = results.lams;
         break;
       case MultiplierUpdateMode::PRIMAL:
-        workspace.prev_lams = workspace.lams_plus;
+        workspace.lams_prev = workspace.lams_plus;
         break;
       case MultiplierUpdateMode::PRIMAL_DUAL:
-        workspace.prev_lams = workspace.lams_pdal;
+        workspace.lams_prev = workspace.lams_pdal;
         break;
       default:
         break;
       }
 
-      Scalar criterion =
-          std::max(results.dual_infeasibility, results.primal_infeasibility);
+      Scalar criterion = std::max(results.dual_infeas, results.prim_infeas);
       if (criterion <= target_tol_) {
         conv = true;
         break;
       }
       colout = fmt::color::dodger_blue;
     } else {
+      Scalar old_mu = mu_penal_;
       bclUpdateALPenalty();
       updateTolerancesOnFailure();
       colout = fmt::color::red;
+      if (math::scalar_close(old_mu, mu_penal_)) {
+        // reset penalty to initial value
+        setPenalty(mu_init);
+      }
     }
     rho_penal_ *= bcl_params.rho_update_factor;
 
@@ -648,25 +689,26 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     return merit_fun.evaluate(problem, workspace.trial_lams, workspace,
                               workspace.trial_prob_data);
   };
+
   auto merit_eval_fun = [&](Scalar a0) {
     switch (this->rollout_type) {
     case RolloutType::LINEAR:
-      return merit_eval_lin(a0);
+      tryStep(problem, workspace, results, a0);
       break;
     case RolloutType::NONLINEAR:
       nonlinearRollout(problem, workspace, results, a0);
-      problem.evaluate(workspace.trial_xs, workspace.trial_us,
-                       workspace.trial_prob_data);
-      computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
-      computeMultipliers(problem, workspace, workspace.trial_lams,
-                         workspace.trial_prob_data, false);
-      return merit_fun.evaluate(problem, workspace.trial_lams, workspace,
-                                workspace.trial_prob_data);
       break;
     default:
       proxddp_runtime_error("RolloutType unrecognized.");
       break;
     }
+    problem.evaluate(workspace.trial_xs, workspace.trial_us,
+                     workspace.trial_prob_data);
+    computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
+    computeMultipliers(problem, workspace, workspace.trial_lams,
+                       workspace.trial_prob_data, false);
+    return merit_fun.evaluate(problem, workspace.trial_lams, workspace,
+                              workspace.trial_prob_data);
   };
 
   Scalar phi0 = 0.;
@@ -675,7 +717,11 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
   logger.active = (verbose_ > 0);
 
+  using proxnlp::ArmijoLinesearch;
+  ArmijoLinesearch<Scalar> linesearch(ls_params);
+
   std::size_t &k = results.num_iters;
+  std::size_t inner_step = 0;
   while (k < max_iters) {
     problem.evaluate(results.xs, results.us, workspace.problem_data);
     problem.computeDerivatives(results.xs, results.us, workspace.problem_data);
@@ -686,7 +732,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     phi0 = merit_fun.evaluate(problem, results.lams, workspace,
                               workspace.problem_data);
 
-    results.traj_cost_ = merit_fun.traj_cost;
+    results.traj_cost_ = merit_fun.traj_cost_;
     results.merit_value_ = phi0;
 
     while (true) {
@@ -704,14 +750,13 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
     computeInfeasibilities(problem, workspace, results);
 
-    Scalar outer_crit =
-        std::max(results.dual_infeasibility, results.primal_infeasibility);
+    Scalar outer_crit = std::max(results.dual_infeas, results.prim_infeas);
     if (outer_crit <= target_tol_) {
       return true;
     }
 
     bool inner_conv = (workspace.inner_criterion <= inner_tol_);
-    if (inner_conv) {
+    if (inner_conv && (inner_step > 0)) {
       return true;
     }
 
@@ -720,31 +765,34 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     Scalar dphi0_analytical = merit_fun.directionalDerivative(
         problem, results.lams, workspace, workspace.problem_data);
 
-    phieps = merit_eval_lin(fd_eps);
+    phieps = merit_eval_fun(fd_eps);
     Scalar dphi0_fd = (phieps - phi0) / fd_eps;
 
-    Scalar dphi0 = dphi0_analytical; // value used for LS & logging
+    // Scalar dphi0 = dphi0_analytical; // value used for LS & logging
+    Scalar dphi0 = dphi0_fd; // value used for LS & logging
 #ifndef NDEBUG
     {
+      Scalar rel_err =
+          std::abs((dphi0_fd - dphi0_analytical) / dphi0_analytical);
       std::FILE *fi = std::fopen("pddp.log", "a");
-      fmt::print(fi, " dphi0_ana={:.3e} / dphi0_fd={:.3e} / fd-a={:.3e}\n",
-                 dphi0_analytical, dphi0_fd, dphi0_fd - dphi0_analytical);
+      fmt::print(
+          fi,
+          " dphi0_ana={:.3e} / dphi0_fd={:.3e} / fd-a={:.3e} / rel={:.3e}\n",
+          dphi0_analytical, dphi0_fd, dphi0_fd - dphi0_analytical, rel_err);
       std::fclose(fi);
     }
 #endif
 
-    if (std::abs(dphi0_fd) <= ls_params.dphi_thresh)
+    if (std::abs(dphi0) <= ls_params.dphi_thresh)
       return true;
 
     // otherwise continue linesearch
     Scalar alpha_opt = 1;
-    Scalar phi_new = proxnlp::ArmijoLinesearch<Scalar>(ls_params).run(
-        merit_eval_fun, phi0, dphi0, alpha_opt);
-    Scalar new_cost = merit_fun.traj_cost;
+    Scalar phi_new = linesearch.run(merit_eval_fun, phi0, dphi0, alpha_opt);
 
 #ifndef NDEBUG
     if (this->dump_linesearch_plot) {
-      int nalph = 80;
+      int nalph = 50;
       Scalar a = 0.;
       Scalar da = 1. / (nalph + 1);
       const auto fname = LS_DEBUG_LOG_PATH;
@@ -762,9 +810,9 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
         a += da;
       }
       if (alpha_opt < da) {
-        nalph = 40.;
+        nalph = 80.;
         VectorXs als;
-        als.setLinSpaced(nalph, 0., 2 * alpha_opt);
+        als.setLinSpaced(nalph, 0., 0.5 * da);
         for (int i = 1; i < als.size(); i++) {
           fmt::print(file, fmtstr, k, als(i), merit_eval_fun(als(i)),
                      dphi0_analytical, dphi0_fd);
@@ -787,8 +835,8 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     iter_log.iter = k + 1;
     iter_log.xreg = xreg_;
     iter_log.inner_crit = workspace.inner_criterion;
-    iter_log.prim_err = results.primal_infeasibility;
-    iter_log.dual_err = results.dual_infeasibility;
+    iter_log.prim_err = results.prim_infeas;
+    iter_log.dual_err = results.dual_infeas;
     iter_log.step_size = alpha_opt;
     iter_log.dphi0 = dphi0;
     iter_log.merit = phi_new;
@@ -801,6 +849,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     logger.log(iter_log);
 
     k++;
+    inner_step++;
   }
   return false;
 }
@@ -813,28 +862,40 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
   const std::size_t nsteps = problem.numSteps();
 
   const FunctionData &init_data = prob_data.getInitData();
-  workspace.stage_prim_infeas(0) = math::infty_norm(init_data.value_);
+  long nr0 = init_data.nr;
+  workspace.stage_prim_infeas[0](0) = math::infty_norm(init_data.value_);
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
+    const ConstraintStack &cstr_stck = stage.constraints_;
     const StageData &stage_data = prob_data.getStageData(i);
-    Scalar &infeas_over_j = workspace.stage_prim_infeas(long(i + 1));
-    infeas_over_j = 0.;
+    auto &stage_infeas = workspace.stage_prim_infeas[i + 1];
+
+    // compute infeasibility of all stage constraints
     for (std::size_t j = 0; j < stage.numConstraints(); j++) {
-      const ConstraintSetBase<Scalar> &cstr_set =
-          stage.constraints_.getConstraintSet(j);
-      auto &v = stage_data.constraint_data[j]->value_;
-      cstr_set.normalConeProjection(v, v);
-      infeas_over_j = std::max(infeas_over_j, math::infty_norm(v));
+      const CstrSet &cstr_set = cstr_stck.getConstraintSet(j);
+
+      // compute and project displaced constraint
+      auto lam_i =
+          cstr_stck.getConstSegmentByConstraint(results.lams[i + 1], j);
+      VectorXs &v = stage_data.constraint_data[j]->value_;
+      /// TODO: remove this allocation
+      VectorXs cd = v + mu_scaled(j) * lam_i;
+      cstr_set.projection(cd, cd); // apply projection
+      stage_infeas(j) = math::infty_norm(v - cd);
     }
   }
   if (problem.term_constraint_) {
-    const FunctionData &data = *prob_data.term_cstr_data;
-    workspace.stage_prim_infeas((long)nsteps + 1) =
-        math::infty_norm(data.value_);
+    const FunctionData &data = prob_data.getTermData();
+    const CstrSet &cstr_set = *problem.term_constraint_->set;
+    auto &v = data.value_;
+    auto lam_term = results.lams.back();
+    VectorXs cd = v + mu() * lam_term;
+    cstr_set.projection(cd, cd);
+    workspace.stage_prim_infeas.back()(0) = math::infty_norm(v - cd);
   }
 
-  results.primal_infeasibility = math::infty_norm(workspace.stage_prim_infeas);
+  results.prim_infeas = math::infty_norm(workspace.stage_prim_infeas);
 
   for (std::size_t i = 1; i <= nsteps; i++) {
     const StageModel &st = *problem.stages_[i - 1];
@@ -842,7 +903,6 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
     const int ndual = st.numDual();
     Scalar ru, ry, rl;
     const auto kkt_rhs_0 = workspace.kkt_rhs_buf_[i].col(0);
-    const auto &kkt_mat = workspace.kkt_mat_buf_[i];
     const auto kktlam = kkt_rhs_0.tail(ndual);
 
     const VParams &vp = workspace.value_params[i];
@@ -871,8 +931,8 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
 #ifndef NDEBUG
     std::FILE *fi = std::fopen("pddp.log", "a");
     fmt::print(fi, "[{:>3d}]ru={:.2e},ry={:.2e},rl={:.2e},", i, ru, ry, rl);
-    fmt::print(fi, " ru_other={:.3e}", ru_bis_ddp);
-    fmt::print(fi, " |Qu-Quddp|={:.3e}\n", math::infty_norm(gu - gu_bis));
+    fmt::print(fi, "ru_other={:.3e},", ru_bis_ddp);
+    fmt::print(fi, "|Qu-Quddp|={:.3e}\n", math::infty_norm(gu - gu_bis));
     std::fclose(fi);
 #endif
     gu = gu_bis;
@@ -888,14 +948,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
     }
   }
   workspace.inner_criterion = math::infty_norm(workspace.stage_inner_crits);
-  results.dual_infeasibility = math::infty_norm(workspace.stage_dual_infeas);
-
-#ifndef NDEBUG
-  std::FILE *fi = std::fopen("pddp.log", "a");
-  fmt::print(fi, " INNER_CRIT = {:.4e}\n", workspace.inner_criterion);
-  std::fclose(fi);
-#endif
-  return;
+  results.dual_infeas = math::infty_norm(workspace.stage_dual_infeas);
 }
 
 } // namespace proxddp

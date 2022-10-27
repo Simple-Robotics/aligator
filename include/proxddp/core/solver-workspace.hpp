@@ -61,6 +61,7 @@ template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
   using StageModel = StageModelTpl<Scalar>;
   using Base = WorkspaceBaseTpl<Scalar>;
   using value_storage_t = internal::value_storage<Scalar>;
+  using ldlt_t = Eigen::LDLT<MatrixXs, Eigen::Lower>;
 
   using Base::co_state_;
   using Base::nsteps;
@@ -80,6 +81,8 @@ template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
   std::vector<VectorXs> trial_lams;
   std::vector<VectorXs> lams_plus;
   std::vector<VectorXs> lams_pdal;
+  /// Shifted constraints the projection operators should be applied to.
+  std::vector<VectorXs> shifted_constraints;
 
   /// @name Riccati gains and buffers for primal-dual steps
 
@@ -91,7 +94,7 @@ template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
   /// Buffer for KKT matrix
   std::vector<MatrixXs> kkt_mat_buf_;
   /// LDLT decompositions
-  std::vector<Eigen::LDLT<MatrixXs, Eigen::Lower>> ldlts_;
+  std::vector<ldlt_t> ldlts_;
   /// Buffer for KKT right hand side
   std::vector<MatrixXs> kkt_rhs_buf_;
   /// Linear system residual buffers
@@ -101,12 +104,13 @@ template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
 
   std::vector<VectorXs> prev_xs;
   std::vector<VectorXs> prev_us;
-  std::vector<VectorXs> prev_lams;
+  std::vector<VectorXs> lams_prev;
 
   /// Subproblem termination criterion for each stage.
   VectorXs stage_inner_crits;
-  /// Constraint violation for each stage of the TrajOptProblemTpl.
-  VectorXs stage_prim_infeas;
+  /// Constraint violation for each stage and each constraint of the
+  /// TrajOptProblemTpl.
+  std::vector<VectorXs> stage_prim_infeas;
   /// Dual infeasibility for each stage of the TrajOptProblemTpl.
   VectorXs stage_dual_infeas;
 

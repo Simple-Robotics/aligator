@@ -13,8 +13,8 @@ std::ostream &operator<<(std::ostream &oss,
       << fmt::format("\n  converged:    {},", self.conv)
       << fmt::format("\n  traj. cost:   {:.3e},", self.traj_cost_)
       << fmt::format("\n  merit.value:  {:.3e},", self.merit_value_)
-      << fmt::format("\n  prim_infeas:  {:.3e},", self.primal_infeasibility)
-      << fmt::format("\n  dual_infeas:  {:.3e},", self.dual_infeasibility);
+      << fmt::format("\n  prim_infeas:  {:.3e},", self.prim_infeas)
+      << fmt::format("\n  dual_infeas:  {:.3e},", self.dual_infeas);
   oss << "\n}";
   return oss;
 }

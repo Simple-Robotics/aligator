@@ -1,6 +1,6 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "proxddp/python/modelling/dynamics.hpp"
-#include "proxddp/python/eigen_member.hpp"
+#include "proxddp/python/eigen-member.hpp"
 
 #include "proxddp/modelling/linear-discrete-dynamics.hpp"
 

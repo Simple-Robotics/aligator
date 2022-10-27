@@ -45,8 +45,8 @@ template <typename Scalar> struct history_callback : base_callback<Scalar> {
       storage.merit_values.push_back(results.merit_value_);
     }
     if (store_residuals_) {
-      storage.prim_infeas.push_back(results.primal_infeasibility);
-      storage.dual_infeas.push_back(results.dual_infeasibility);
+      storage.prim_infeas.push_back(results.prim_infeas);
+      storage.dual_infeas.push_back(results.dual_infeas);
     }
     // if (auto w = dynamic_cast<const WorkspaceTpl<Scalar> *>(&workspace)) {
     //   storage.inner_crits.push_back(w->inner_criterion);

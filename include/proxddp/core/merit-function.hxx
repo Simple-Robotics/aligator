@@ -12,19 +12,19 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblemTpl<Scalar> &problem,
                                       WorkspaceTpl<Scalar> &workspace,
                                       TrajOptDataTpl<Scalar> &prob_data) {
 
-  traj_cost = computeTrajectoryCost(problem, prob_data);
-  prox_value = computeProxPenalty(workspace, solver->rho());
-  penalty_value = 0.;
+  traj_cost_ = computeTrajectoryCost(problem, prob_data);
+  Scalar prox_value = computeProxPenalty(workspace, solver->rho());
+  penalty_value_ = 0.;
   auto ls_mode = solver->ls_mode;
 
   bool with_primal_dual_terms = ls_mode == LinesearchMode::PRIMAL_DUAL;
 
   // initial constraint
   {
-    penalty_value += .5 * mu() * workspace.lams_plus[0].squaredNorm();
+    penalty_value_ += .5 * mu() * workspace.lams_plus[0].squaredNorm();
     if (with_primal_dual_terms) {
-      penalty_value += .5 * dual_weight() * mu() *
-                       (workspace.lams_plus[0] - lams[0]).squaredNorm();
+      penalty_value_ += .5 * dual_weight() * mu() *
+                        (workspace.lams_plus[0] - lams[0]).squaredNorm();
     }
   }
 
@@ -36,39 +36,38 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblemTpl<Scalar> &problem,
 
     const ConstraintStack &cstr_mgr = stage.constraints_;
     const std::size_t num_c = cstr_mgr.numConstraints();
+
     // loop over constraints
-    // get corresponding multipliers from allocated memory
     for (std::size_t j = 0; j < num_c; j++) {
       const CstrSet &cstr_set = cstr_mgr.getConstraintSet(j);
       const FunctionData &cstr_data = *stage_data.constraint_data[j];
+
       auto lamplus_j =
           cstr_mgr.getSegmentByConstraint(workspace.lams_plus[i + 1], j);
-      auto lamprev_j =
-          cstr_mgr.getConstSegmentByConstraint(workspace.prev_lams[i + 1], j);
-      auto c_s_expr = cstr_data.value_ + mu_scaled() * lamprev_j;
-      penalty_value += proxnlp::evaluateMoreauEnvelope(
-          cstr_set, c_s_expr, lamplus_j * mu_scaled(), mu_inv_scaled());
-    }
-    if (with_primal_dual_terms) {
-      penalty_value += .5 * dual_weight() * mu_scaled() *
-                       (workspace.lams_plus[i + 1] - lams[i + 1]).squaredNorm();
+      penalty_value_ += .5 * mu_scaled(j) * lamplus_j.squaredNorm();
+
+      if (with_primal_dual_terms) {
+        auto lamin_j = cstr_mgr.getConstSegmentByConstraint(lams[i + 1], j);
+        penalty_value_ += .5 * dual_weight() * mu_scaled(j) *
+                          (lamplus_j - lamin_j).squaredNorm();
+      }
     }
   }
 
   if (problem.term_constraint_) {
-    const StageConstraintTpl<Scalar> &tc = *problem.term_constraint_;
-    const FunctionData &cstr_data = *prob_data.term_cstr_data;
+    const CstrSet &set = *problem.term_constraint_->set;
+    const FunctionData &cstr_data = prob_data.getTermData();
+
     VectorXs &lamplus = workspace.lams_plus[nsteps + 1];
-    auto c_s_expr = cstr_data.value_ + mu() * workspace.prev_lams[nsteps + 1];
-    penalty_value += proxnlp::evaluateMoreauEnvelope(*tc.set, c_s_expr,
-                                                     lamplus * mu(), mu_inv());
+    penalty_value_ += .5 * mu() * lamplus.squaredNorm();
+
     if (with_primal_dual_terms) {
-      penalty_value += .5 * dual_weight() * mu() *
-                       (lamplus - lams[nsteps + 1]).squaredNorm();
+      penalty_value_ += .5 * dual_weight() * mu() *
+                        (lamplus - lams[nsteps + 1]).squaredNorm();
     }
   }
 
-  value_ = traj_cost + prox_value + penalty_value;
+  value_ = traj_cost_ + prox_value + penalty_value_;
   return value_;
 }
 
@@ -119,7 +118,7 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
   }
 
   if (problem.term_constraint_) {
-    const FunctionData &tcd = *prob_data.term_cstr_data;
+    const FunctionData &tcd = prob_data.getTermData();
     auto &lampdal = workspace.lams_pdal[nsteps + 1];
     auto &dx = workspace.dxs.back();
 

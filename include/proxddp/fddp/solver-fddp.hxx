@@ -166,7 +166,7 @@ void SolverFDDP<Scalar>::computeCriterion(Workspace &workspace,
     std::fclose(fi);
 #endif
   }
-  results.dual_infeasibility = math::infty_norm(Qus);
+  results.dual_infeas = math::infty_norm(Qus);
 }
 
 template <typename Scalar>
@@ -304,23 +304,23 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
 
     problem.evaluate(results.xs, results.us, workspace.problem_data);
     results.traj_cost_ = computeTrajectoryCost(problem, workspace.problem_data);
-    results.primal_infeasibility =
+    results.prim_infeas =
         computeInfeasibility(problem, results.xs, results.us, workspace);
     problem.computeDerivatives(results.xs, results.us, workspace.problem_data);
 
     backwardPass(problem, workspace, results);
     computeCriterion(workspace, results);
 
-    PROXDDP_RAISE_IF_NAN(results.primal_infeasibility);
-    PROXDDP_RAISE_IF_NAN(results.dual_infeasibility);
-    record.prim_err = results.primal_infeasibility;
-    record.dual_err = results.dual_infeasibility;
+    PROXDDP_RAISE_IF_NAN(results.prim_infeas);
+    PROXDDP_RAISE_IF_NAN(results.dual_infeas);
+    record.prim_err = results.prim_infeas;
+    record.dual_err = results.dual_infeas;
     record.merit = results.traj_cost_;
     record.inner_crit = 0.;
     record.xreg = xreg_;
 
     Scalar stopping_criterion =
-        std::max(results.primal_infeasibility, results.dual_infeasibility);
+        std::max(results.prim_infeas, results.dual_infeas);
     if (stopping_criterion < target_tol_) {
       results.conv = true;
       break;

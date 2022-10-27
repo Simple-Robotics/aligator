@@ -82,8 +82,8 @@ void exposeBase() {
       .def_readonly("xs", &ResultsBase::xs)
       .def_readonly("us", &ResultsBase::us)
       .def_readonly("lams", &ResultsBase::lams)
-      .def_readonly("primal_infeas", &ResultsBase::primal_infeasibility)
-      .def_readonly("dual_infeas", &ResultsBase::dual_infeasibility)
+      .def_readonly("primal_infeas", &ResultsBase::prim_infeas)
+      .def_readonly("dual_infeas", &ResultsBase::dual_infeas)
       .def_readonly("traj_cost", &ResultsBase::traj_cost_, "Trajectory cost.")
       .def_readonly("merit_value", &ResultsBase::merit_value_,
                     "Merit function value.")
@@ -176,30 +176,48 @@ void exposeProxDDP() {
       .value("PRIMAL_DUAL", LinesearchMode::PRIMAL_DUAL);
 
   bp::enum_<RolloutType>("RolloutType", "Rollout type.")
-      .value("LINEAR", RolloutType::LINEAR)
-      .value("NONLINEAR", RolloutType::NONLINEAR);
+      .value("ROLLOUT_LINEAR", RolloutType::LINEAR)
+      .value("ROLLOUT_NONLINEAR", RolloutType::NONLINEAR)
+      .export_values();
+
+  bp::enum_<HessianApprox>("HessianApprox",
+                           "Level of approximation for te Hessian.")
+      .value("HESSIAN_EXACT", HessianApprox::EXACT)
+      .value("HESSIAN_GAUSS_NEWTON", HessianApprox::GAUSS_NEWTON)
+      .export_values();
 
   bp::class_<SolverType, boost::noncopyable>(
       "SolverProxDDP",
-      "A primal-dual augmented Lagrangian solver, based on DDP to compute "
-      "search directions."
+      "A proximal, augmented Lagrangian solver, using a DDP-type scheme to "
+      "compute "
+      "search directions and feedforward, feedback gains."
       " The solver instance initializes both a Workspace and Results which "
       "can "
       "be retrieved"
       " through the `getWorkspace` and `getResults` methods, respectively.",
-      bp::init<Scalar, Scalar, Scalar, std::size_t, VerboseLevel>(
+      bp::init<Scalar, Scalar, Scalar, std::size_t, VerboseLevel,
+               HessianApprox>(
           (bp::arg("self"), bp::arg("tol"), bp::arg("mu_init") = 1e-2,
            bp::arg("rho_init") = 0., bp::arg("max_iters") = 1000,
-           bp::arg("verbose") = VerboseLevel::QUIET)))
+           bp::arg("verbose") = VerboseLevel::QUIET,
+           bp::arg("hess_approx") = HessianApprox::GAUSS_NEWTON)))
       .def_readwrite("bcl_params", &SolverType::bcl_params, "BCL parameters.")
       .def_readwrite("is_x0_fixed", &SolverType::is_x0_fixed,
                      "Set x0 to be fixed to the initial condition.")
       .def_readwrite("multiplier_update_mode",
                      &SolverType::multiplier_update_mode)
       .def_readwrite("mu_init", &SolverType::mu_init,
-                     "Initial dual regularization/ALM parameter.")
+                     "Initial AL penalty parameter.")
       .def_readwrite("rho_init", &SolverType::rho_init,
                      "Initial proximal regularization.")
+      .def_readwrite(
+          "mu_dyn_scale", &SolverType::mu_dyn_scale,
+          "Scale factor for the dynamics' augmented Lagrangian penalty.")
+      .def_readwrite(
+          "mu_stage_scale", &SolverType::mu_stage_scale,
+          "Scale factor for the AL penalty on stagewise constraints.")
+      .def_readwrite("mu_min", &SolverType::MU_MIN,
+                     "Lower bound on the AL penalty parameter.")
       .def_readwrite("ls_mode", &SolverType::ls_mode, "Linesearch mode.")
       .def_readwrite("rollout_type", &SolverType::rollout_type, "Rollout type.")
       .def_readwrite("dual_weight", &SolverType::dual_weight,

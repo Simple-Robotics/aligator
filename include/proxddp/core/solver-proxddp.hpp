@@ -21,11 +21,22 @@ enum class MultiplierUpdateMode { NEWTON, PRIMAL, PRIMAL_DUAL };
 
 enum class RolloutType { LINEAR, NONLINEAR };
 
+enum InertiaFlag {
+  INERTIA_OK,
+  INERTIA_BAD,
+  INERTIA_CRITICAL // has zeros
+};
+
+enum class HessianApprox { EXACT, GAUSS_NEWTON };
+
 using proxnlp::BCLParams;
 
-/// @brief Solver.
+/// @brief A proximal, augmented Lagrangian-type solver for trajectory
+/// optimization.
 template <typename _Scalar> struct SolverProxDDP {
 public:
+  // typedefs
+
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using BlockXs = typename MatrixXs::BlockXpr;
@@ -43,6 +54,7 @@ public:
   using ProxData = typename ProxPenaltyType::Data;
   using CallbackPtr = shared_ptr<helpers::base_callback<Scalar>>;
   using ConstraintStack = ConstraintStackTpl<Scalar>;
+  using CstrSet = ConstraintSetBase<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
   using LinesearchOptions = typename proxnlp::Linesearch<Scalar>::Options;
 
@@ -58,21 +70,31 @@ public:
   Scalar mu_init = 0.01;
   Scalar rho_init = 0.;
 
-  Scalar reg_min = 1e-9;
+  //// Inertia-correcting heuristic
+
+  Scalar reg_min = 1e-10;
   Scalar reg_max = 1e9;
   Scalar reg_init = 1e-9;
+  Scalar reg_init_nonzero = 1e-4;
+  Scalar reg_inc_k = 8.;
+  Scalar reg_inc_critical = 100.;
+  Scalar reg_dec_k = 1. / 3.;
+
   Scalar xreg_ = reg_init;
   Scalar ureg_ = xreg_;
+
+  //// Initial BCL tolerances
 
   Scalar inner_tol0 = 1.;
   Scalar prim_tol0 = 1.;
 
-  ::proxddp::BaseLogger logger{};
+  BaseLogger logger{};
 #ifndef NDEBUG
   bool dump_linesearch_plot = false;
 #endif
 
   VerboseLevel verbose_;
+  HessianApprox hess_approx = HessianApprox::GAUSS_NEWTON;
   /// Linesearch options, as in proxnlp.
   LinesearchOptions ls_params;
   LinesearchStrategy ls_strat = LinesearchStrategy::ARMIJO;
@@ -88,10 +110,8 @@ public:
   /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.
   std::size_t max_iters;
   /// Maximum number of ALM iterations.
-  std::size_t max_al_iters = max_iters;
+  std::size_t max_al_iters = 100;
 
-  /// Minimum possible tolerance asked from the solver.
-  Scalar TOL_MIN = 1e-8;
   /// Minimum possible penalty parameter.
   Scalar MU_MIN = 1e-8;
 
@@ -106,7 +126,8 @@ public:
 
   SolverProxDDP(const Scalar tol = 1e-6, const Scalar mu_init = 0.01,
                 const Scalar rho_init = 0., const std::size_t max_iters = 1000,
-                const VerboseLevel verbose = VerboseLevel::QUIET);
+                VerboseLevel verbose = VerboseLevel::QUIET,
+                HessianApprox hess_approx = HessianApprox::GAUSS_NEWTON);
 
   /// @brief Compute the linear search direction, i.e. the (regularized) SQP
   /// step.
@@ -231,14 +252,27 @@ public:
   /// @copydoc mu_inverse_
   inline Scalar mu_inv() const { return mu_inverse_; }
 
-  /// Scaled penalty parameter.
-  Scalar mu_scaled() const { return mu(); }
-
-  /// Scaled inverse penalty parameter.
-  Scalar mu_inv_scaled() const { return 1. / mu_scaled(); }
-
   /// Proximal parameter.
   Scalar rho() const { return rho_penal_; }
+
+  //// Scaled variants
+
+  /// AL penalty scale factor for the dynamical constraints.
+  Scalar mu_dyn_scale = 1e-3;
+  /// AL penalty scale factor for stagewise constraints.
+  Scalar mu_stage_scale = 1.0;
+
+  /// Scaled penalty parameter, for stagewise constraints.
+  Scalar mu_scaled(std::size_t j) const {
+    if (j == 0)
+      return mu_dynamics();
+    return mu() * mu_stage_scale;
+  }
+
+  /// Scaled inverse penalty parameter.
+  Scalar mu_inv_scaled(std::size_t j) const { return 1. / mu_scaled(j); }
+
+  inline Scalar mu_dynamics() const { return mu() * mu_dyn_scale; }
 
 protected:
   /// @brief  Put together the Q-function parameters and compute the Riccati
@@ -291,13 +325,13 @@ protected:
 
 private:
   /// Dual proximal/ALM penalty parameter \f$\mu\f$
+  /// This is the global parameter: scales may be applied for stagewise
+  /// constraints, dynamical constraints, etc...
   Scalar mu_penal_ = mu_init;
   /// Inverse ALM penalty parameter.
   Scalar mu_inverse_ = 1. / mu_penal_;
   /// Primal proximal parameter \f$\rho > 0\f$
   Scalar rho_penal_ = rho_init;
-  /// Scale for the dynamical constraint
-  Scalar mu_scale_0 = 0.01;
   PDALFunction<Scalar> merit_fun;
 };
 

@@ -70,6 +70,9 @@ Scalar costDirectionalDerivative(const WorkspaceTpl<Scalar> &workspace,
  *    \right\|^2
  * \f]
  * where \f$(*)\f$ is the expression within the norm in \f$\mathscr{P}\f$ above.
+ *
+ * Some of the parameters of this function are obtained from the linked the
+ * SolverProxDDP<Scalar> instance.
  */
 template <typename _Scalar> struct PDALFunction {
   using Scalar = _Scalar;
@@ -80,10 +83,9 @@ template <typename _Scalar> struct PDALFunction {
   using CstrSet = ConstraintSetBase<Scalar>;
   using ConstraintStack = ConstraintStackTpl<Scalar>;
 
-  SolverProxDDP<Scalar> const *solver;
-  Scalar traj_cost = 0.;
-  Scalar penalty_value = 0.;
-  Scalar prox_value = 0.;
+  const SolverProxDDP<Scalar> const *solver;
+  Scalar traj_cost_ = 0.;
+  Scalar penalty_value_ = 0.;
   Scalar value_ = 0.;
   /// Weight of dual penalty. Values different from 1 not supported yet.
 
@@ -96,13 +98,15 @@ template <typename _Scalar> struct PDALFunction {
 
   Scalar mu_inv() const { return std::max(mu_max, solver->mu_inv()); }
 
-  Scalar mu_scaled() const { return std::max(mu_min, solver->mu_scaled()); }
+  PDALFunction(SolverProxDDP<Scalar> const *solver);
 
-  Scalar mu_inv_scaled() const {
-    return std::min(mu_max, solver->mu_inv_scaled());
+  Scalar mu_scaled(std::size_t j) const {
+    return std::max(mu_min, solver->mu_scaled(j));
   }
 
-  PDALFunction(SolverProxDDP<Scalar> const *solver);
+  Scalar mu_inv_scaled(std::size_t j) const {
+    return std::min(mu_max, solver->mu_inv_scaled(j));
+  }
 
   /// @brief    Compute the merit function at the trial point.
   /// @warning  Evaluate the problem and proximal terms first!

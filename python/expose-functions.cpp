@@ -1,6 +1,6 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "proxddp/python/fwd.hpp"
-#include "proxddp/python/eigen_member.hpp"
+#include "proxddp/python/eigen-member.hpp"
 
 #include "proxddp/python/functions.hpp"
 #include "proxddp/modelling/state-error.hpp"
@@ -22,6 +22,7 @@ void exposeFunctions() {
   using context::ConstMatrixRef;
   using context::ConstVectorRef;
   using context::DynamicsModel;
+  using context::FunctionData;
   using context::MatrixXs;
   using context::Scalar;
   using context::StageFunction;
@@ -51,77 +52,76 @@ void exposeFunctions() {
       .def_readonly("nr", &StageFunction::nr, "Function codimension.")
       .def(CreateDataPythonVisitor<StageFunction>());
 
-  bp::register_ptr_to_python<shared_ptr<context::FunctionData>>();
+  bp::register_ptr_to_python<shared_ptr<FunctionData>>();
 
-  bp::class_<context::FunctionData>(
-      "FunctionData", "Data struct for holding data about functions.",
-      bp::init<int, int, int, int>(
-          bp::args("self", "ndx1", "nu", "ndx2", "nr")))
-      .add_property("value",
-                    make_getter_eigen_matrix(&context::FunctionData::value_),
-                    "Function value.")
+  bp::class_<FunctionData>("FunctionData",
+                           "Data struct for holding data about functions.",
+                           bp::init<int, int, int, int>(
+                               bp::args("self", "ndx1", "nu", "ndx2", "nr")))
       .add_property(
-          "jac_buffer_",
-          make_getter_eigen_matrix(&context::FunctionData::jac_buffer_),
-          "Buffer of the full function Jacobian wrt (x,u,y).")
+          "value",
+          bp::make_getter(&FunctionData::valref_,
+                          bp::return_value_policy<bp::return_by_value>()),
+          "Function value.")
+      .add_property("jac_buffer_",
+                    make_getter_eigen_matrix(&FunctionData::jac_buffer_),
+                    "Buffer of the full function Jacobian wrt (x,u,y).")
       .add_property(
-          "vhp_buffer",
-          make_getter_eigen_matrix(&context::FunctionData::vhp_buffer_),
+          "vhp_buffer", make_getter_eigen_matrix(&FunctionData::vhp_buffer_),
           "Buffer of the full function vector-Hessian product wrt (x,u,y).")
       .add_property(
           "Jx",
-          bp::make_getter(&context::FunctionData::Jx_,
+          bp::make_getter(&FunctionData::Jx_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Jacobian with respect to $x$.")
       .add_property(
           "Ju",
-          bp::make_getter(&context::FunctionData::Ju_,
+          bp::make_getter(&FunctionData::Ju_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Jacobian with respect to $u$.")
       .add_property(
           "Jy",
-          bp::make_getter(&context::FunctionData::Jy_,
+          bp::make_getter(&FunctionData::Jy_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Jacobian with respect to $y$.")
       .add_property(
           "Hxx",
-          bp::make_getter(&context::FunctionData::Hxx_,
+          bp::make_getter(&FunctionData::Hxx_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Hessian with respect to $(x, x)$.")
       .add_property(
           "Hxu",
-          bp::make_getter(&context::FunctionData::Hxu_,
+          bp::make_getter(&FunctionData::Hxu_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Hessian with respect to $(x, u)$.")
       .add_property(
           "Hxy",
-          bp::make_getter(&context::FunctionData::Hxy_,
+          bp::make_getter(&FunctionData::Hxy_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Hessian with respect to $(x, y)$.")
       .add_property(
           "Huu",
-          bp::make_getter(&context::FunctionData::Huu_,
+          bp::make_getter(&FunctionData::Huu_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Hessian with respect to $(u, u)$.")
       .add_property(
           "Huy",
-          bp::make_getter(&context::FunctionData::Huy_,
+          bp::make_getter(&FunctionData::Huy_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Hessian with respect to $(x, y)$.")
       .add_property(
           "Hyy",
-          bp::make_getter(&context::FunctionData::Hyy_,
+          bp::make_getter(&FunctionData::Hyy_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Hessian with respect to $(y, y)$.")
-      .def(PrintableVisitor<context::FunctionData>())
-      .def(ClonePythonVisitor<context::FunctionData>());
+      .def(PrintableVisitor<FunctionData>())
+      .def(ClonePythonVisitor<FunctionData>());
 
   pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<StageFunction>>,
                                 true>::expose("StdVec_StageFunction",
                                               "Vector of function objects.");
-  pinpy::StdVectorPythonVisitor<
-      std::vector<shared_ptr<context::FunctionData>>,
-      true>::expose("StdVec_FunctionData", "Vector of function data objects.");
+  pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<FunctionData>>, true>::
+      expose("StdVec_FunctionData", "Vector of function data objects.");
 
   bp::class_<StateErrorResidualTpl<Scalar>, bp::bases<StageFunction>>(
       "StateErrorResidual", bp::init<const shared_ptr<context::Manifold> &,

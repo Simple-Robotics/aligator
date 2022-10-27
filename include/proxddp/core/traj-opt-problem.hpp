@@ -103,14 +103,20 @@ template <typename _Scalar> struct TrajOptDataTpl {
   TrajOptDataTpl() = delete;
   TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem);
 
-  /// Get stage data for a given stage by time index.
+  /// Get stage data for a stage by time index.
   StageData &getStageData(std::size_t i) { return *stage_data[i]; }
   /// @copydoc getStageData()
   const StageData &getStageData(std::size_t i) const { return *stage_data[i]; }
+
   /// Get initial constraint function data.
   FunctionData &getInitData() { return *init_data; }
   /// @copydoc getInitData()
   const FunctionData &getInitData() const { return *init_data; }
+
+  /// Get terminal constraint data.
+  FunctionData &getTermData() { return *term_cstr_data; }
+  /// @copydoc getTermData()
+  const FunctionData &getTermData() const { return *term_cstr_data; }
 };
 
 /**

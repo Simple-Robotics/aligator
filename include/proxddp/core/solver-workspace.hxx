@@ -17,7 +17,7 @@ template <typename T> void setZero(std::vector<T> &mats) {
 template <typename Scalar>
 WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     : Base(problem), stage_inner_crits(nsteps + 1),
-      stage_prim_infeas(nsteps + 1), stage_dual_infeas(nsteps + 1) {
+      stage_dual_infeas(nsteps + 1) {
 
   value_params.reserve(nsteps + 1);
   q_params.reserve(nsteps);
@@ -27,6 +27,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   prev_us = trial_us;
   kkt_mat_buf_.reserve(nsteps + 1);
   kkt_rhs_buf_.reserve(nsteps + 1);
+  stage_prim_infeas.reserve(nsteps + 1);
   ldlts_.reserve(nsteps + 1);
 
   lams_plus.resize(nsteps + 1);
@@ -36,6 +37,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   dlams.reserve(nsteps + 1);
   co_state_.reserve(nsteps);
 
+  // initial condition
   {
     const int ndx1 = problem.stages_[0]->ndx1();
     const int nprim = ndx1;
@@ -44,6 +46,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 
     kkt_mat_buf_.emplace_back(ntot, ntot);
     kkt_rhs_buf_.emplace_back(ntot, ndx1 + 1);
+    stage_prim_infeas.emplace_back(1);
     ldlts_.emplace_back(kkt_mat_buf_[0]);
 
     lams_plus[0] = VectorXs::Zero(ndual);
@@ -59,12 +62,14 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     const int nprim = stage.numPrimal();
     const int ndual = stage.numDual();
     const int ntot = nprim + ndual;
+    const int ncb = stage.numConstraints();
 
     value_params.emplace_back(ndx1);
     q_params.emplace_back(ndx1, nu, ndx2);
 
     kkt_mat_buf_.emplace_back(ntot, ntot);
     kkt_rhs_buf_.emplace_back(ntot, ndx1 + 1);
+    stage_prim_infeas.emplace_back(ncb);
     ldlts_.emplace_back(kkt_mat_buf_[i + 1]);
 
     lams_plus[i + 1] = VectorXs::Zero(ndual);
@@ -88,10 +93,9 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     const int nprim = ndx1;
     const int ndual = tc.func->nr;
     const int ntot = nprim + ndual;
-    const Eigen::Index nc = stage_prim_infeas.size();
-    stage_prim_infeas.conservativeResize(nc + 1);
     kkt_mat_buf_.emplace_back(ntot, ntot);
     kkt_rhs_buf_.emplace_back(ntot, ndx1 + 1);
+    stage_prim_infeas.emplace_back(1);
     ldlts_.emplace_back(kkt_mat_buf_[nsteps]);
 
     lams_plus.push_back(VectorXs::Zero(ndual));
@@ -101,14 +105,14 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 
   lams_pdal = lams_plus;
   trial_lams = lams_plus;
-  prev_lams = lams_plus;
+  lams_prev = lams_plus;
+  shifted_constraints = lams_plus;
 
   math::setZero(kkt_mat_buf_);
   math::setZero(kkt_rhs_buf_);
   kkt_resdls_ = kkt_rhs_buf_;
 
   stage_inner_crits.setZero();
-  stage_prim_infeas.setZero();
   stage_dual_infeas.setZero();
 
   assert(value_params.size() == nsteps + 1);
