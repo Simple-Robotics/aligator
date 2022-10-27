@@ -47,11 +47,11 @@ stage = proxddp.StageModel(space, nu, rcost, dynmodel)
 if args.bounds:
     u_min = -0.15 * np.ones(nu)
     u_max = +0.15 * np.ones(nu)
-    ctrl_box = proxddp.ControlBoxFunction(nx, u_min, u_max)
-    stage.addConstraint(ctrl_box, constraints.NegativeOrthant())
+    ctrl_fn = proxddp.ControlErrorResidual(nx, np.zeros(nu))
+    stage.addConstraint(ctrl_fn, constraints.BoxConstraint(u_min, u_max))
 
 
-nsteps = 2
+nsteps = 20
 problem = proxddp.TrajOptProblem(x0, nu, space, term_cost)
 
 for i in range(nsteps):
@@ -65,13 +65,12 @@ if args.term_cstr:
         proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet())
     )
 
-mu_init = 1e-5
+mu_init = 1e-1
 rho_init = 0.0
 verbose = proxddp.VerboseLevel.VERBOSE
 tol = 1e-6
 solver = proxddp.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
-# solver.rollout_type = proxddp.RolloutType.NONLINEAR
-# solver = proxddp.SolverFDDP(tol, verbose=verbose)
+solver.rollout_type = proxddp.ROLLOUT_NONLINEAR
 his_cb = proxddp.HistoryCallback()
 solver.registerCallback(his_cb)
 solver.max_iters = 20
