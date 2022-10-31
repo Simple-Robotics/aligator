@@ -3,7 +3,7 @@
 
 #include "proxddp/core/helpers-base.hpp"
 #include "proxddp/core/workspace.hpp"
-#include "proxddp/core/solver-results.hpp"
+#include "proxddp/core/results.hpp"
 
 namespace proxddp {
 namespace helpers {
