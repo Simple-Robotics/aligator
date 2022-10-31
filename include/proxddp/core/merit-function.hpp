@@ -4,7 +4,7 @@
 #include "proxddp/fwd.hpp"
 #include "proxddp/core/traj-opt-problem.hpp"
 #include "proxddp/core/workspace.hpp"
-#include "proxddp/core/solver-results.hpp"
+#include "proxddp/core/results.hpp"
 
 namespace proxddp {
 

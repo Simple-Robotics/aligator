@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/core/solver-results.hpp"
+#include "proxddp/core/results.hpp"
 
 namespace proxddp {
 

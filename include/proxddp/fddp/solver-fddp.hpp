@@ -5,8 +5,6 @@
 #pragma once
 
 #include "proxddp/core/solver-util.hpp"
-#include "proxddp/core/solver-results.hpp"
-#include "proxddp/core/linesearch.hpp"
 #include "proxddp/core/helpers-base.hpp"
 #include "proxddp/core/explicit-dynamics.hpp"
 
@@ -14,13 +12,10 @@
 #include "proxddp/fddp/workspace.hpp"
 #include "proxddp/fddp/linesearch.hpp"
 
-#include "proxddp/utils/exceptions.hpp"
 #include "proxddp/utils/logger.hpp"
 #include "proxddp/utils/rollout.hpp"
 
 #include <fmt/ostream.h>
-
-#include <Eigen/Cholesky>
 
 #define proxddp_fddp_warning(msg)                                              \
   fmt::print(fmt::fg(fmt::color::yellow), "[SolverFDDP] ({}) warning: {}",     \

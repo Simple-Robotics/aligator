@@ -1,5 +1,5 @@
 #include "proxddp/core/traj-opt-problem.hpp"
-#include "proxddp/core/solver-results.hpp"
+#include "proxddp/core/results.hpp"
 #include "proxddp/core/workspace.hpp"
 #include "proxddp/utils/rollout.hpp"
 

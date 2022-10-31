@@ -76,4 +76,4 @@ template <typename _Scalar> struct ResultsTpl : ResultsBaseTpl<_Scalar> {
 
 } // namespace proxddp
 
-#include "proxddp/core/solver-results.hxx"
+#include "proxddp/core/results.hxx"
