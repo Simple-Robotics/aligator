@@ -683,15 +683,6 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
                                       Workspace &workspace, Results &results) {
 
   // merit function evaluation
-  auto merit_eval_lin = [&](Scalar a0) {
-    tryStep(problem, workspace, results, a0);
-    computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
-    computeMultipliers(problem, workspace, workspace.trial_lams,
-                       workspace.trial_prob_data, false);
-    return merit_fun.evaluate(problem, workspace.trial_lams, workspace,
-                              workspace.trial_prob_data);
-  };
-
   auto merit_eval_fun = [&](Scalar a0) {
     switch (this->rollout_type) {
     case RolloutType::LINEAR:
