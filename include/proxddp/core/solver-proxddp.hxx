@@ -513,16 +513,17 @@ void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
         cstr_mgr.getConstSegmentByConstraint(lams[i + 1], 0);
     const ConstVectorRef dynprevlam =
         cstr_mgr.getConstSegmentByConstraint(workspace.lams_prev[i + 1], 0);
-    VectorXs gap = mu_scaled(0) * (dynprevlam - dynlam);
+    workspace.dyn_slacks[i] = mu_scaled(0) * (dynprevlam - dynlam);
 
     if (exp_dd != 0) {
       xs[i + 1] = exp_dd->xnext_;
-      stage.xspace_next().integrate(xs[i + 1], gap);
+      stage.xspace_next().integrate(xs[i + 1], workspace.dyn_slacks[i]);
     } else {
       // in this case, compute the forward dynamics through Newton-Raphson
       const DynamicsModelTpl<Scalar> &dm = stage.dyn_model();
       DynamicsDataTpl<Scalar> &dd = data.dyn_data();
-      forwardDynamics(dm, xs[i], us[i], dd, xs[i + 1], 1, gap);
+      forwardDynamics(dm, xs[i], us[i], dd, xs[i + 1], 1,
+                      &workspace.dyn_slacks[i]);
     }
 
     VectorRef dx_next = workspace.dxs[i + 1].head(ndx2);

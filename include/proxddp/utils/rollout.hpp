@@ -5,8 +5,6 @@
 #include "proxddp/utils/newton-raphson.hpp"
 #include "proxddp/utils/exceptions.hpp"
 
-#include <boost/optional.hpp>
-
 #include <type_traits>
 
 namespace proxddp {
@@ -19,11 +17,12 @@ struct __forward_dyn {
   template <typename T>
   using ConstVectorRef = typename math_types<T>::ConstVectorRef;
   template <typename T> using Vector = typename math_types<T>::VectorXs;
+
   template <typename T>
   void operator()(const DynamicsModelTpl<T> &model, const ConstVectorRef<T> &x,
                   const ConstVectorRef<T> &u, DynamicsDataTpl<T> &data,
                   VectorRef<T> xout, const std::size_t max_iters = 1000,
-                  boost::optional<Vector<T>> gap = boost::none) const {
+                  Vector<T> *gap = 0) const {
     using ExpModel = ExplicitDynamicsModelTpl<T>;
     using ExpData = ExplicitDynamicsDataTpl<T>;
     const ExpModel *model_ptr_cast = dynamic_cast<const ExpModel *>(&model);
@@ -32,15 +31,13 @@ struct __forward_dyn {
     bool is_model_explicit =
         (model_ptr_cast != nullptr) && (data_ptr_cast != nullptr);
     if (is_model_explicit) {
-      // model_ptr_cast->forward(x, u, *data_ptr_cast);
-      // xout = data_ptr_cast->xnext_;
       this->operator()(*model_ptr_cast, x, u, *data_ptr_cast, xout, max_iters,
                        gap);
     } else {
       auto fun = [&](const ConstVectorRef<T> &xnext) -> Vector<T> {
         model.evaluate(x, u, xnext, data);
-        if (gap) {
-          return data.value_ + gap.value();
+        if (gap != 0) {
+          return data.value_ + *gap;
         } else {
           return data.value_;
         }
@@ -58,12 +55,11 @@ struct __forward_dyn {
   void operator()(const ExplicitDynamicsModelTpl<T> &model,
                   const ConstVectorRef<T> &x, const ConstVectorRef<T> &u,
                   ExplicitDynamicsDataTpl<T> &data, VectorRef<T> xout,
-                  const std::size_t = 0,
-                  boost::optional<Vector<T>> gap = boost::none) const {
+                  const std::size_t = 0, Vector<T> *gap = 0) const {
     model.forward(x, u, data);
     xout = data.xnext_;
-    if (gap) {
-      model.space_next().integrate(xout, gap.value(), xout);
+    if (gap != 0) {
+      model.space_next().integrate(xout, *gap, xout);
     }
   }
 };
