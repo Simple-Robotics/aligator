@@ -275,7 +275,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
 #endif
 
   if (results_ == 0 || workspace_ == 0) {
-    proxddp_runtime_error(
+    PROXDDP_RUNTIME_ERROR(
         "Either results or workspace not allocated. Call setup() first!");
   }
   Results &results = *results_;

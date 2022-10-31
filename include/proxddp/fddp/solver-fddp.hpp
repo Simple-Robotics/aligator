@@ -181,7 +181,7 @@ template <typename Scalar> struct SolverFDDP {
     try {
       return dynamic_cast<ExpData &>(*sd.constraint_data[0]);
     } catch (const std::bad_cast &e) {
-      proxddp_runtime_error(
+      PROXDDP_RUNTIME_ERROR(
           fmt::format("{}: failed to cast to ExplicitDynamicsData.", e.what()));
     }
   }
@@ -191,7 +191,7 @@ template <typename Scalar> struct SolverFDDP {
     try {
       return dynamic_cast<const ExpData &>(*sd.constraint_data[0]);
     } catch (const std::bad_cast &e) {
-      proxddp_runtime_error(
+      PROXDDP_RUNTIME_ERROR(
           fmt::format("{}: failed to cast to ExplicitDynamicsData.", e.what()));
     }
   }

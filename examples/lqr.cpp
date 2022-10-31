@@ -95,7 +95,7 @@ void BM_lqr(benchmark::State &state, const TrajOptProblemTpl<double> &problem,
       solver.run(problem, xs_init, us_init);
       const auto &results = solver.getResults();
       if (!results.conv) {
-        proxddp_runtime_error("Solver did not converge.\n");
+        PROXDDP_RUNTIME_ERROR("Solver did not converge.\n");
       }
     }
     if (run_fddp) {

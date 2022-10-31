@@ -8,13 +8,13 @@ LinearFunctionCompositionTpl<Scalar>::LinearFunctionCompositionTpl(
     : Base(func->ndx1, func->nu, func->ndx2, (int)A.rows()), func(func), A(A),
       b(b) {
   if (func == 0) {
-    proxddp_runtime_error("Underlying function cannot be nullptr.");
+    PROXDDP_RUNTIME_ERROR("Underlying function cannot be nullptr.");
   }
   if (A.rows() != b.rows()) {
-    proxddp_runtime_error("Incompatible dimensions: A.rows() != b.rows()");
+    PROXDDP_RUNTIME_ERROR("Incompatible dimensions: A.rows() != b.rows()");
   }
   if (A.cols() != func->nr) {
-    proxddp_runtime_error("Incompatible dimensions: A.cols() != func.nr");
+    PROXDDP_RUNTIME_ERROR("Incompatible dimensions: A.cols() != func.nr");
   }
 }
 

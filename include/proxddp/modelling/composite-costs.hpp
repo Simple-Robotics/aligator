@@ -96,13 +96,13 @@ template <typename Scalar> struct LogResidualCostTpl : CostAbstractTpl<Scalar> {
       : Base(function->ndx1, function->nu), barrier_weights_(scale),
         residual_(function) {
     if (scale.size() != function->nr) {
-      proxddp_runtime_error(fmt::format(
+      PROXDDP_RUNTIME_ERROR(fmt::format(
           "scale argument dimension ({:d}) != function codimension ({:d})",
           scale.size(), function->nr));
     }
     bool negs = (scale.array() <= 0.0).any();
     if (negs) {
-      proxddp_runtime_error("scale coefficients must be > 0.");
+      PROXDDP_RUNTIME_ERROR("scale coefficients must be > 0.");
     }
   }
 

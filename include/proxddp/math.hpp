@@ -11,11 +11,11 @@
 
 #define PROXDDP_RAISE_IF_NAN(value)                                            \
   if (::proxddp::math::check_value(value))                                     \
-  proxddp_runtime_error("Encountered NaN.\n")
+  PROXDDP_RUNTIME_ERROR("Encountered NaN.\n")
 
 #define PROXDDP_RAISE_IF_NAN_NAME(value, name)                                 \
   if (::proxddp::math::check_value(value))                                     \
-  proxddp_runtime_error(                                                       \
+  PROXDDP_RUNTIME_ERROR(                                                       \
       fmt::format("Encountered NaN for variable {:s}\n", name))
 
 namespace proxddp {
@@ -84,7 +84,7 @@ void compute_inertia(const VectorType &v, unsigned int *output) {
       numzer++;
       break;
     default:
-      proxddp_runtime_error("Vector sign() should be -1, 0, or 1.");
+      PROXDDP_RUNTIME_ERROR("Vector sign() should be -1, 0, or 1.");
     }
   }
 }

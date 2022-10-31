@@ -29,7 +29,7 @@ void TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
   const std::size_t nsteps = numSteps();
   const bool sizes_correct = (xs.size() == nsteps + 1) && (us.size() == nsteps);
   if (!sizes_correct) {
-    proxddp_runtime_error(fmt::format(
+    PROXDDP_RUNTIME_ERROR(fmt::format(
         "Wrong size for xs or us, expected us.size = {:d}", nsteps));
   }
 
@@ -55,7 +55,7 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
   const std::size_t nsteps = numSteps();
   const bool sizes_correct = (xs.size() == nsteps + 1) && (us.size() == nsteps);
   if (!sizes_correct) {
-    proxddp_runtime_error(fmt::format(
+    PROXDDP_RUNTIME_ERROR(fmt::format(
         "Wrong size for xs or us, expected us.size = {:d}", nsteps));
   }
 

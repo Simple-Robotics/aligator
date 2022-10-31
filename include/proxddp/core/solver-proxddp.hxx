@@ -558,7 +558,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
                                 const std::vector<VectorXs> &us_init,
                                 const std::vector<VectorXs> &lams_init) {
   if (workspace_ == 0 || results_ == 0) {
-    proxddp_runtime_error("workspace and results were not allocated yet!");
+    PROXDDP_RUNTIME_ERROR("workspace and results were not allocated yet!");
   }
   Workspace &workspace = *workspace_;
   Results &results = *results_;
@@ -692,7 +692,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
       nonlinearRollout(problem, workspace, results, a0);
       break;
     default:
-      proxddp_runtime_error("RolloutType unrecognized.");
+      PROXDDP_RUNTIME_ERROR("RolloutType unrecognized.");
       break;
     }
     problem.evaluate(workspace.trial_xs, workspace.trial_us,

@@ -55,7 +55,7 @@ public:
 
   const Constraint &getConstraint(std::size_t j) const {
     if (j >= constraints_.numConstraints())
-      proxddp_runtime_error("Maximum index exceeded.");
+      PROXDDP_RUNTIME_ERROR("Maximum index exceeded.");
     return constraints_[j];
   }
 
@@ -157,15 +157,15 @@ struct StageDataTpl : public Cloneable<StageDataTpl<_Scalar>> {
   virtual void checkData() {
     const char msg[] = "StageData integrity check failed.";
     if (constraint_data.size() == 0) {
-      proxddp_runtime_error(fmt::format("{} (constraint_data empty)", msg));
+      PROXDDP_RUNTIME_ERROR(fmt::format("{} (constraint_data empty)", msg));
     }
     if (cost_data == 0) {
-      proxddp_runtime_error(fmt::format("{} (cost_data is nullptr)", msg));
+      PROXDDP_RUNTIME_ERROR(fmt::format("{} (cost_data is nullptr)", msg));
     }
-    const DynamicsData *dd =
-        dynamic_cast<const DynamicsData *>(constraint_data[0].get());
+    shared_ptr<const DynamicsData> dd =
+        std::dynamic_pointer_cast<const DynamicsData>(constraint_data[0]);
     if (dd == nullptr) {
-      proxddp_runtime_error(
+      PROXDDP_RUNTIME_ERROR(
           fmt::format("{} (constraint_data[0] should be dynamics data)", msg));
     }
   }
