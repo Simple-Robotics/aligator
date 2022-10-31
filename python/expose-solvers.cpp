@@ -67,6 +67,8 @@ void exposeBase() {
   bp::class_<WorkspaceBase>("WorkspaceBase", bp::no_init)
       .def_readonly("nsteps", &WorkspaceBase::nsteps)
       .def_readonly("problem_data", &WorkspaceBase::problem_data)
+      .def_readonly("co_states", &WorkspaceBase::co_states_,
+                    "Co-state variable.")
       .def_readonly("trial_prob_data", &WorkspaceBase::trial_prob_data)
       .def_readonly("trial_xs", &WorkspaceBase::trial_xs)
       .def_readonly("trial_us", &WorkspaceBase::trial_us)
