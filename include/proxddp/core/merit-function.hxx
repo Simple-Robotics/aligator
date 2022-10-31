@@ -39,8 +39,6 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblemTpl<Scalar> &problem,
 
     // loop over constraints
     for (std::size_t j = 0; j < num_c; j++) {
-      const CstrSet &cstr_set = cstr_mgr.getConstraintSet(j);
-      const FunctionData &cstr_data = *stage_data.constraint_data[j];
 
       auto lamplus_j =
           cstr_mgr.getSegmentByConstraint(workspace.lams_plus[i + 1], j);
@@ -55,8 +53,6 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblemTpl<Scalar> &problem,
   }
 
   if (problem.term_constraint_) {
-    const CstrSet &set = *problem.term_constraint_->set;
-    const FunctionData &cstr_data = prob_data.getTermData();
 
     VectorXs &lamplus = workspace.lams_plus[nsteps + 1];
     penalty_value_ += .5 * mu() * lamplus.squaredNorm();
