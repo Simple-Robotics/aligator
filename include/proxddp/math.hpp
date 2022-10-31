@@ -49,13 +49,20 @@ template <typename T> bool check_value(const std::vector<T> &xs) {
   return false;
 }
 
+template <typename T> void setZero(std::vector<T> &mats) {
+  for (std::size_t i = 0; i < mats.size(); i++) {
+    mats[i].setZero();
+  }
+}
+
 /// @brief Computes the inertia of a diagonal matrix \f$D\f$ represented by its
 /// diagonal vector.
 /// @param[out] output Triplet (n+, n0, n-) of number of positive, zero or
 /// negative eigenvalues.
 template <typename VectorType>
 void compute_inertia(const VectorType &v, unsigned int *output) {
-  static_assert(VectorType::ColsAtCompileTime == 1);
+  static_assert(VectorType::ColsAtCompileTime == 1,
+                "VectorType should be a vector.");
   unsigned int &numpos = output[0];
   unsigned int &numzer = output[1];
   unsigned int &numneg = output[2];

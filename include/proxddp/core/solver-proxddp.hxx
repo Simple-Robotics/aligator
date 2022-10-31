@@ -4,6 +4,7 @@
 #pragma once
 
 #include <fmt/color.h>
+#include <array>
 
 namespace proxddp {
 

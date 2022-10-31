@@ -1,5 +1,5 @@
 /**
- * @file    solver-workspace.hpp
+ * @file    workspace.hpp
  * @brief   Define workspace for the ProxDDP solver.
  * @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
  */
@@ -13,28 +13,33 @@
 
 namespace proxddp {
 
+/// Base workspace struct for the algorithms.
 template <typename Scalar> struct WorkspaceBaseTpl {
-  using value_storage_t = internal::value_storage<Scalar>;
-  using q_storage_t = internal::q_storage<Scalar>;
+  using VParamsType = internal::value_storage<Scalar>;
+  using QParamsType = internal::q_storage<Scalar>;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
   /// Number of steps in the problem.
   const std::size_t nsteps;
   /// Problem data.
   TrajOptDataTpl<Scalar> problem_data;
+
   /// @name Linesearch data
+  /// @{
+
   /// Problem data instance for linesearch.
   TrajOptDataTpl<Scalar> trial_prob_data;
   std::vector<VectorXs> trial_xs;
   std::vector<VectorXs> trial_us;
-  /// Dynamics' co-states
-  std::vector<VectorXs> co_state_;
+  /// @}
 
-  /// @name Value function and Hamiltonian.
+  /// Dynamics' co-states
+  std::vector<VectorXs> co_states_;
+
   /// Value function parameter storage
-  std::vector<value_storage_t> value_params;
+  std::vector<VParamsType> value_params;
   /// Q-function storage
-  std::vector<q_storage_t> q_params;
+  std::vector<QParamsType> q_params;
 
   explicit WorkspaceBaseTpl(const TrajOptProblemTpl<Scalar> &problem)
       : nsteps(problem.numSteps()), problem_data(problem),
@@ -44,26 +49,23 @@ template <typename Scalar> struct WorkspaceBaseTpl {
     xs_default_init(problem, trial_xs);
     us_default_init(problem, trial_us);
   }
-
-  // virtual ~WorkspaceBaseTpl() = default;
 };
 
-/** @brief Workspace for the solver.
+/** @brief Workspace for solver SolverProxDDP.
  *
  * @details This struct holds data for the Riccati forward and backward passes,
  *          the primal-dual steps, problem data...
  */
-template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
-  using Scalar = _Scalar;
+template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using ProxPenalty = ProximalPenaltyTpl<Scalar>;
   using ProxData = typename ProxPenalty::Data;
   using StageModel = StageModelTpl<Scalar>;
   using Base = WorkspaceBaseTpl<Scalar>;
-  using value_storage_t = internal::value_storage<Scalar>;
-  using ldlt_t = Eigen::LDLT<MatrixXs, Eigen::Lower>;
+  using VParamsType = internal::value_storage<Scalar>;
+  using LDLT = Eigen::LDLT<MatrixXs, Eigen::Lower>;
 
-  using Base::co_state_;
+  using Base::co_states_;
   using Base::nsteps;
   using Base::problem_data;
   using Base::q_params;
@@ -71,8 +73,6 @@ template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
   using Base::trial_us;
   using Base::trial_xs;
   using Base::value_params;
-
-  std::vector<value_storage_t> value_params_prev;
 
   /// Proximal penalty data.
   std::vector<shared_ptr<ProxData>> prox_datas;
@@ -83,9 +83,10 @@ template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
   std::vector<VectorXs> lams_pdal;
   /// Shifted constraints the projection operators should be applied to.
   std::vector<VectorXs> shifted_constraints;
+  std::vector<VectorXs> dyn_slacks;
 
   /// @name Riccati gains and buffers for primal-dual steps
-
+  /// @{
   std::vector<VectorXs> pd_step_;
   std::vector<VectorRef> dxs;
   std::vector<VectorRef> dus;
@@ -94,17 +95,21 @@ template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
   /// Buffer for KKT matrix
   std::vector<MatrixXs> kkt_mat_buf_;
   /// LDLT decompositions
-  std::vector<ldlt_t> ldlts_;
+  std::vector<LDLT> ldlts_;
   /// Buffer for KKT right hand side
   std::vector<MatrixXs> kkt_rhs_buf_;
   /// Linear system residual buffers
   std::vector<MatrixXs> kkt_resdls_;
+  /// @}
 
-  /// @name Previous proximal iterates
+  /// @name Previous external/proximal iterates
+  /// @{
 
   std::vector<VectorXs> prev_xs;
   std::vector<VectorXs> prev_us;
   std::vector<VectorXs> lams_prev;
+
+  /// @}
 
   /// Subproblem termination criterion for each stage.
   VectorXs stage_inner_crits;
@@ -126,4 +131,4 @@ template <typename _Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<_Scalar> {
 
 } // namespace proxddp
 
-#include "proxddp/core/solver-workspace.hxx"
+#include "proxddp/core/workspace.hxx"

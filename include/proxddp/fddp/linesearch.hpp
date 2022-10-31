@@ -13,9 +13,11 @@ template <typename Scalar> struct FDDPGoldsteinLinesearch {
 
   template <typename F, typename M>
   static void run(F phi, M model, Scalar phi0, VerboseLevel verbose,
-                  LinesearchOptions<Scalar> &ls_params, Scalar &alpha_opt) {
+                  typename Linesearch<Scalar>::Options &ls_params,
+                  Scalar &alpha_opt) {
     static Scalar th_accept_step_ = 0.1;
     static Scalar th_accept_neg_step_ = 2.0;
+    Scalar beta = ls_params.contraction_min;
     Scalar atry = 1.;
 
     // backtrack until going under alpha_min
@@ -31,7 +33,7 @@ template <typename Scalar> struct FDDPGoldsteinLinesearch {
         if (dVreal >= th_accept_neg_step_ * dVmodel)
           break;
       }
-      atry *= ls_params.ls_beta;
+      atry *= beta;
     } while (atry >= ls_params.alpha_min);
     alpha_opt = std::max(ls_params.alpha_min, atry);
   }

@@ -67,7 +67,7 @@ template <typename Scalar> struct SolverFDDP {
   Scalar th_step_dec_ = 0.5;
   Scalar th_step_inc_ = 0.01;
 
-  LinesearchOptions<Scalar> ls_params;
+  typename Linesearch<Scalar>::Options ls_params;
 
   VerboseLevel verbose_;
   /// Maximum number of iterations for the solver.

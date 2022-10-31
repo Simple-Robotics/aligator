@@ -2,7 +2,7 @@
 #pragma once
 
 #include "proxddp/core/helpers-base.hpp"
-#include "proxddp/core/solver-workspace.hpp"
+#include "proxddp/core/workspace.hpp"
 #include "proxddp/core/solver-results.hpp"
 
 namespace proxddp {

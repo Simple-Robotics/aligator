@@ -4,15 +4,7 @@
 
 namespace proxddp {
 
-namespace math {
-
-template <typename T> void setZero(std::vector<T> &mats) {
-  for (std::size_t i = 0; i < mats.size(); i++) {
-    mats[i].setZero();
-  }
-}
-
-} // namespace math
+namespace math {} // namespace math
 
 template <typename Scalar>
 WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
@@ -35,7 +27,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   dxs.reserve(nsteps + 1);
   dus.reserve(nsteps);
   dlams.reserve(nsteps + 1);
-  co_state_.reserve(nsteps);
+  co_states_.reserve(nsteps);
 
   // initial condition
   {
@@ -62,7 +54,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     const int nprim = stage.numPrimal();
     const int ndual = stage.numDual();
     const int ntot = nprim + ndual;
-    const int ncb = stage.numConstraints();
+    const std::size_t ncb = stage.numConstraints();
 
     value_params.emplace_back(ndx1);
     q_params.emplace_back(ndx1, nu, ndx2);
@@ -77,15 +69,13 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     dus.emplace_back(pd_step_[i + 1].head(nu));
     dxs.emplace_back(pd_step_[i + 1].segment(nu, ndx2));
     dlams.emplace_back(pd_step_[i + 1].tail(ndual));
-    co_state_.push_back(dlams[i + 1].head(ndx2));
+    co_states_.push_back(dlams[i + 1].head(ndx2));
   }
 
   {
     const int ndx2 = problem.stages_.back()->ndx2();
     value_params.emplace_back(ndx2);
   }
-
-  value_params_prev = value_params;
 
   if (problem.term_constraint_) {
     const StageConstraintTpl<Scalar> &tc = *problem.term_constraint_;
@@ -107,6 +97,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   trial_lams = lams_plus;
   lams_prev = lams_plus;
   shifted_constraints = lams_plus;
+  dyn_slacks = co_states_;
 
   math::setZero(kkt_mat_buf_);
   math::setZero(kkt_rhs_buf_);

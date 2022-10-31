@@ -3,7 +3,7 @@
 
 #include "proxddp/fwd.hpp"
 #include "proxddp/core/traj-opt-problem.hpp"
-#include "proxddp/core/solver-workspace.hpp"
+#include "proxddp/core/workspace.hpp"
 #include "proxddp/core/solver-results.hpp"
 
 namespace proxddp {
@@ -83,7 +83,7 @@ template <typename _Scalar> struct PDALFunction {
   using CstrSet = ConstraintSetBase<Scalar>;
   using ConstraintStack = ConstraintStackTpl<Scalar>;
 
-  const SolverProxDDP<Scalar> const *solver;
+  SolverProxDDP<Scalar> const *solver;
   Scalar traj_cost_ = 0.;
   Scalar penalty_value_ = 0.;
   Scalar value_ = 0.;

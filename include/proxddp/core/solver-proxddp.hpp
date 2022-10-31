@@ -56,7 +56,7 @@ public:
   using ConstraintStack = ConstraintStackTpl<Scalar>;
   using CstrSet = ConstraintSetBase<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
-  using LinesearchOptions = typename proxnlp::Linesearch<Scalar>::Options;
+  using LinesearchOptions = typename Linesearch<Scalar>::Options;
 
   std::vector<ProxPenaltyType> prox_penalties_;
   /// Subproblem tolerance
