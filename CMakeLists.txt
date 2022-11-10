@@ -88,7 +88,6 @@ endif(BUILD_WITH_CASADI_SUPPORT)
 
 if(BUILD_WITH_OPENMP_SUPPORT)
   ADD_PROJECT_DEPENDENCY(OpenMP REQUIRED)
-  add_definitions(-DPROXDDP_MULTITHREADING)
 endif(BUILD_WITH_OPENMP_SUPPORT)
 
 set(BOOST_REQUIRED_COMPONENTS filesystem serialization system)
@@ -156,12 +155,17 @@ function(create_library)
   endif()
 
   if(BUILD_WITH_PINOCCHIO_SUPPORT)
-    add_definitions(-DPROXDDP_WITH_PINOCCHIO)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC -DPROXDDP_WITH_PINOCCHIO)
     target_link_libraries(${PROJECT_NAME} PUBLIC pinocchio::pinocchio)
   endif(BUILD_WITH_PINOCCHIO_SUPPORT)
+
+  if(BUILD_WITH_OPENMP_SUPPORT)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC -DPROXDDP_MULTITHREADING)
+  endif(BUILD_WITH_OPENMP_SUPPORT)
+
   target_link_libraries(${PROJECT_NAME} PUBLIC proxnlp::proxnlp)
   target_link_libraries(${PROJECT_NAME} PUBLIC Boost::filesystem Boost::system Boost::serialization)
-  target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
+  target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt)
   target_include_directories(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:include>)
 
   foreach(headerFile ${LIB_HEADERS})
@@ -185,7 +189,7 @@ install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
 
 if(BUILD_CROCODDYL_COMPAT)
-  add_definitions(-DWITH_CROCODDYL_COMPAT)
+  target_compile_definitions(${PROJECT_NAME} PUBLIC -DWITH_CROCODDYL_COMPAT)
   add_subdirectory(include/proxddp/compat/crocoddyl)
 endif()
 

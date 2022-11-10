@@ -18,7 +18,7 @@ foreach(exfile ${EXAMPLES_CPP})
   target_include_directories(${exname} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
   target_link_libraries(${exname} PUBLIC ${PROJECT_NAME})
-  target_link_libraries(${exname} PRIVATE fmt::fmt benchmark::benchmark)
+  target_link_libraries(${exname} PRIVATE benchmark::benchmark)
 endforeach(exfile)
 
 file(GLOB EXAMPLES_PY *.py)
