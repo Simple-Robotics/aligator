@@ -156,8 +156,7 @@ template <typename Scalar> struct SolverFDDP {
    * @brief   Perform a linear rollout recovering the Newton step.
    * @details This is useful for debugging purposes.
    */
-  static void linearRollout(const Problem &problem, Workspace &workspace,
-                            const Results &results) {
+  static void linearRollout(Workspace &workspace, const Results &results) {
     const auto &fs = workspace.feas_gaps_;
     auto &dxs = workspace.dxs;
     auto &dus = workspace.dus;

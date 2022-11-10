@@ -337,7 +337,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     PROXDDP_RAISE_IF_NAN(d1_phi);
     PROXDDP_RAISE_IF_NAN(d2_phi);
 #ifndef NDEBUG
-    linearRollout(problem, workspace, results);
+    linearRollout(workspace, results);
     directionalDerivativeCorrection(workspace, d1_phi, d2_phi);
     {
       const Scalar fd_eps = 1e-7;
@@ -392,7 +392,6 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
   }
 
   logger.finish(results.conv);
-  invokeCallbacks(workspace, results);
   return results.conv;
 }
 } // namespace proxddp
