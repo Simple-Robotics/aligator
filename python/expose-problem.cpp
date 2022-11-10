@@ -7,6 +7,7 @@ void exposeProblem() {
   using context::CostBase;
   using context::Manifold;
   using context::Scalar;
+  using context::StageData;
   using context::StageModel;
   using context::TrajOptData;
   using context::TrajOptProblem;
@@ -47,7 +48,20 @@ void exposeProblem() {
            "Evaluate the problem costs, dynamics, and constraints.")
       .def("computeDerivatives", &TrajOptProblem::computeDerivatives,
            bp::args("self", "xs", "us", "prob_data"),
-           "Evaluate the problem derivatives. Call `evaluate()` first.");
+           "Evaluate the problem derivatives. Call `evaluate()` first.")
+      .def(
+          "replaceStageCircular",
+          +[](TrajOptProblem &m, TrajOptData &data) {
+            m.replaceStageCircular(data);
+          },
+          bp::args("self", "data"),
+          "Circularly replace the last stage in the problem.")
+      .def(
+          "replaceStageCircular",
+          +[](TrajOptProblem &m, shared_ptr<StageModel> &sm,
+              shared_ptr<StageData> &sd,
+              TrajOptData &data) { m.replaceStageCircular(sm, sd, data); },
+          bp::args("self", "stage_model", "stage_data", "data"));
 
   bp::register_ptr_to_python<shared_ptr<TrajOptData>>();
   bp::class_<TrajOptData>(

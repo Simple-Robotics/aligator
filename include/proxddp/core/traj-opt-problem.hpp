@@ -8,6 +8,14 @@
 #include <boost/optional.hpp>
 
 namespace proxddp {
+
+namespace {
+template <typename T> void rot_left(T &v) {
+  std::rotate(v.begin(), v.begin() + 1, v.end());
+};
+
+} // namespace
+
 /**
  * @brief    Shooting problem, consisting in a succession of nodes.
  *
@@ -83,6 +91,31 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   void computeDerivatives(const std::vector<VectorXs> &xs,
                           const std::vector<VectorXs> &us,
                           Data &prob_data) const;
+
+  /// @brief Pop out the first StageModel and replace by the supplied one;
+  /// updates the supplied Data object.
+  void replaceStageCircular(const shared_ptr<StageModel> &model,
+                            const shared_ptr<typename StageModel::Data> &sd,
+                            Data &data) {
+    addStage(model);
+    data.stage_data.push_back(sd);
+
+    assert(!stages_.empty());
+    assert(!data.stage_data.empty());
+
+    rot_left(stages_);
+    rot_left(data.stage_data);
+    stages_.pop_back();
+    data.stage_data.pop_back();
+  }
+
+  /// @copybrief replaceStageCircular(). This variant adds the first StageModel
+  /// instance and associated data to the end.
+  void replaceStageCircular(Data &data) {
+    // use std::rotate to the left
+    rot_left(stages_);
+    rot_left(data.stage_data);
+  }
 };
 
 /// @brief Problem data struct.

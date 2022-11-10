@@ -23,6 +23,7 @@ using CostBase = CostAbstractTpl<Scalar>;
 using CostData = CostDataAbstractTpl<Scalar>;
 using DynamicsModel = DynamicsModelTpl<Scalar>;
 using StageModel = StageModelTpl<Scalar>;
+using StageData = StageDataTpl<Scalar>;
 
 using TrajOptProblem = TrajOptProblemTpl<Scalar>;
 using TrajOptData = TrajOptDataTpl<Scalar>;
