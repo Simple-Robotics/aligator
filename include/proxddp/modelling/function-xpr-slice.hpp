@@ -14,10 +14,11 @@ struct FunctionSliceXprTpl : StageFunctionTpl<Scalar> {
   struct OwnData : BaseData {
     /// @brief Base residual's data object.
     shared_ptr<BaseData> sub_data;
+    VectorXs lbda_sub;
 
     OwnData(FunctionSliceXprTpl<Scalar> const *obj)
         : BaseData(obj->ndx1, obj->nu, obj->ndx2, obj->nr),
-          sub_data(obj->func->createData()) {}
+          sub_data(obj->func->createData()), lbda_sub(obj->nr) {}
   };
 
   using Base = StageFunctionTpl<Scalar>;
@@ -29,6 +30,7 @@ struct FunctionSliceXprTpl : StageFunctionTpl<Scalar> {
   FunctionSliceXprTpl(shared_ptr<Base> func, std::vector<int> indices)
       : Base(func->ndx1, func->nu, func->ndx2, (int)indices.size()), func(func),
         indices(indices) {}
+
   FunctionSliceXprTpl(shared_ptr<Base> func, int idx)
       : FunctionSliceXprTpl(func, std::vector<int>({idx})) {}
 
@@ -69,12 +71,12 @@ struct FunctionSliceXprTpl : StageFunctionTpl<Scalar> {
     assert(d.sub_data != 0);
     BaseData &sub_data = *d.sub_data;
 
-    VectorXs lbda_sub = lbda; // copy
+    d.lbda_sub = lbda;
     for (long j = 0; j < (long)indices.size(); j++) {
-      lbda_sub(indices[j]) = 0.;
+      d.lbda_sub(indices[j]) = 0.;
     }
 
-    func->computeVectorHessianProducts(x, u, y, lbda_sub, sub_data);
+    func->computeVectorHessianProducts(x, u, y, d.lbda_sub, sub_data);
   }
 
   shared_ptr<BaseData> createData() const {

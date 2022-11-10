@@ -37,4 +37,4 @@ struct LinearFunctionCompositionTpl : StageFunctionTpl<Scalar> {
 
 } // namespace proxddp
 
-#include "proxddp/modelling/function-compose.hxx"
+#include "proxddp/modelling/linear-function-composition.hxx"
