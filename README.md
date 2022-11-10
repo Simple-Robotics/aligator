@@ -53,7 +53,7 @@ and use `$CONDA_PREFIX` as your install folder.
 * [Antoine Bambade](https://bambade.github.io/)
 * [Justin Carpentier](https://jcarpent.github.io/)
 * [Wilson Jallet](https://manifoldfr.github.io/)
-* Sarah Kazdadi
+* [Sarah Kazdadi](https://github.com/sarah-ek/)
 * [Quentin Le Lidec](https://quentinll.github.io/)
 * Nicolas Mansard
 * Guilhem Saurel
