@@ -345,7 +345,6 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
                                          const std::size_t t) const {
   const StageModel &stage = *problem.stages_[t];
 
-  const VParams &vnext = workspace.value_params[t + 1];
   const QParams &qparam = workspace.q_params[t];
 
   StageData &stage_data = workspace.problem_data.getStageData(t);
@@ -504,8 +503,6 @@ void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
     lams[i + 1].head(ndual) = results.lams[i + 1] + dlam;
 
     stage.evaluate(xs[i], us[i], xs[i + 1], data);
-    shared_ptr<ExplicitDynData> exp_dd =
-        std::dynamic_pointer_cast<ExplicitDynData>(data.constraint_data[0]);
 
     // compute multiple-shooting gap
     const ConstraintStack &cstr_mgr = stage.constraints_;
@@ -513,8 +510,11 @@ void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
         cstr_mgr.getConstSegmentByConstraint(lams[i + 1], 0);
     const ConstVectorRef dynprevlam =
         cstr_mgr.getConstSegmentByConstraint(workspace.lams_prev[i + 1], 0);
-    workspace.dyn_slacks[i] = mu_scaled(0) * (dynprevlam - dynlam);
+    workspace.dyn_slacks[i].head(ndx2) = mu_scaled(0) * (dynprevlam - dynlam);
 
+    shared_ptr<ExplicitDynData> exp_dd =
+        std::dynamic_pointer_cast<ExplicitDynData>(data.constraint_data[0]);
+    // if explicit dynamics: get next state from data
     if (exp_dd != 0) {
       xs[i + 1] = exp_dd->xnext_;
       stage.xspace_next().integrate(xs[i + 1], workspace.dyn_slacks[i]);
@@ -901,41 +901,35 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
     const VParams &vp = workspace.value_params[i];
     const QParams &qpar = workspace.q_params[i - 1];
 
-    decltype(auto) gu = qpar.Qu;
-    // decltype(auto) gy = qpar.Qy;
+    VectorXs gu = qpar.Qu;
     ru = math::infty_norm(gu);
     rl = math::infty_norm(kktlam);
     const ConstraintStack &cstr_mgr = st.constraints_;
 
-    VectorXs gu_bis;
-    Scalar ru_bis_ddp;
+    Scalar ru_bis_ddp = 0.;
     auto lam_head = cstr_mgr.getConstSegmentByConstraint(results.lams[i], 0);
     decltype(auto) gy = -lam_head + vp.Vx();
     ry = math::infty_norm(gy);
     {
       const StageData &sd = prob_data.getStageData(i - 1);
       const DynamicsDataTpl<Scalar> &dd = sd.dyn_data();
-      gu_bis = gu + dd.Ju_.transpose() * (vp.Vx() - lam_head);
-      ru_bis_ddp = math::infty_norm(gu_bis);
+      auto dguerr = dd.Ju_.transpose() * (vp.Vx() - lam_head);
+      gu = gu + dguerr;
+      ru_bis_ddp = math::infty_norm(gu);
     }
-    // workspace.stage_inner_crits(long(i)) = std::max({ru, ry, rl});
     workspace.stage_inner_crits(long(i)) = std::max({ru_bis_ddp, 0., rl});
 
 #ifndef NDEBUG
     std::FILE *fi = std::fopen("pddp.log", "a");
     fmt::print(fi, "[{:>3d}]ru={:.2e},ry={:.2e},rl={:.2e},", i, ru, ry, rl);
     fmt::print(fi, "ru_other={:.3e},", ru_bis_ddp);
-    fmt::print(fi, "|Qu-Quddp|={:.3e}\n", math::infty_norm(gu - gu_bis));
     std::fclose(fi);
 #endif
-    gu = gu_bis;
     {
       const CostData &proxdata = *workspace.prox_datas[i - 1];
       const CostData &proxnext = *workspace.prox_datas[i];
       auto gu_non_reg = gu - rho() * proxdata.Lu_;
-      auto gy_non_reg = gy - rho() * proxnext.Lx_;
       Scalar dual_res_u = math::infty_norm(gu_non_reg);
-      Scalar dual_res_y = math::infty_norm(gy_non_reg);
       workspace.stage_dual_infeas(long(i)) = std::max(dual_res_u, 0.);
       // std::max(dual_res_u, dual_res_y * 0);
     }
