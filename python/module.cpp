@@ -41,6 +41,9 @@ BOOST_PYTHON_MODULE(pyproxddp) {
   exposeAutodiff();
 
 #ifdef WITH_CROCODDYL_COMPAT
-  exposeCrocoddylCompat();
+  {
+    bp::scope croc_ns = get_namespace("croc");
+    exposeCrocoddylCompat();
+  }
 #endif
 }

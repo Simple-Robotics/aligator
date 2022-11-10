@@ -14,21 +14,6 @@ template <typename Scalar> struct ResultsFDDPTpl : ResultsBaseTpl<Scalar> {
   using Base::us;
   using Base::xs;
 
-  decltype(auto) getFeedforward(std::size_t i) { return gains_[i].col(0); }
-  decltype(auto) getFeedforward(std::size_t i) const {
-    return gains_[i].col(0);
-  }
-
-  decltype(auto) getFeedback(std::size_t i) {
-    const long ndx = this->gains_[i].cols() - 1;
-    return gains_[i].rightCols(ndx);
-  }
-
-  decltype(auto) getFeedback(std::size_t i) const {
-    const long ndx = this->gains_[i].cols() - 1;
-    return gains_[i].rightCols(ndx);
-  }
-
   explicit ResultsFDDPTpl(const TrajOptProblemTpl<Scalar> &problem);
 };
 

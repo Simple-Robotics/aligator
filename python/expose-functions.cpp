@@ -6,19 +6,18 @@
 #include "proxddp/modelling/state-error.hpp"
 #include "proxddp/modelling/linear-function.hpp"
 #include "proxddp/modelling/control-box-function.hpp"
+#include "proxddp/modelling/function-xpr-slice.hpp"
+#include "proxddp/modelling/linear-function-composition.hpp"
+#ifdef PROXDDP_WITH_PINOCCHIO
 #include "proxddp/modelling/multibody/frame-placement.hpp"
 #include "proxddp/modelling/multibody/frame-velocity.hpp"
 #include "proxddp/modelling/multibody/frame-translation.hpp"
-#include "proxddp/modelling/function-xpr-slice.hpp"
-#include "proxddp/modelling/function-compose.hpp"
+#endif
 
 namespace proxddp {
 namespace python {
 
-void exposePinocchioFunctions();
-void exposeFunctionExpresions();
-
-void exposeFunctions() {
+void exposeFunctionBase() {
   using context::ConstMatrixRef;
   using context::ConstVectorRef;
   using context::DynamicsModel;
@@ -28,8 +27,9 @@ void exposeFunctions() {
   using context::StageFunction;
   using context::VectorXs;
   using internal::PyStageFunction;
+  using FunctionPtr = shared_ptr<StageFunction>;
 
-  bp::register_ptr_to_python<shared_ptr<StageFunction>>();
+  bp::register_ptr_to_python<FunctionPtr>();
 
   bp::class_<PyStageFunction<>, boost::noncopyable>(
       "StageFunction",
@@ -117,9 +117,8 @@ void exposeFunctions() {
       .def(PrintableVisitor<FunctionData>())
       .def(ClonePythonVisitor<FunctionData>());
 
-  pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<StageFunction>>,
-                                true>::expose("StdVec_StageFunction",
-                                              "Vector of function objects.");
+  pinpy::StdVectorPythonVisitor<std::vector<FunctionPtr>, true>::expose(
+      "StdVec_StageFunction", "Vector of function objects.");
   pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<FunctionData>>, true>::
       expose("StdVec_FunctionData", "Vector of function data objects.");
 
@@ -162,11 +161,9 @@ void exposeFunctions() {
           bp::args("self", "ndx", "umin", "umax")))
       .def(bp::init<const int, const int, const Scalar, const Scalar>(
           bp::args("self", "ndx", "nu", "umin", "umax")));
-
-  exposePinocchioFunctions();
-  exposeFunctionExpresions();
 }
 
+#ifdef PROXDDP_WITH_PINOCCHIO
 void exposePinocchioFunctions() {
   using context::Manifold;
   using context::Scalar;
@@ -251,13 +248,17 @@ void exposePinocchioFunctions() {
       .def_readonly("pin_data", &FrameTranslationData::pin_data_,
                     "Pinocchio data struct.");
 }
+#endif
 
-void exposeFunctionExpresions() {
+void exposeFunctionExpressions() {
   using context::FunctionData;
   using context::Scalar;
   using context::StageFunction;
 
   using FunctionPtr = shared_ptr<StageFunction>;
+
+  // FUNCTION SLICE
+
   using FunctionSliceXpr = FunctionSliceXprTpl<Scalar>;
 
   bp::class_<FunctionSliceXpr, bp::bases<StageFunction>>(
@@ -275,34 +276,38 @@ void exposeFunctionExpresions() {
       .def_readonly("sub_data", &FunctionSliceXpr::OwnData::sub_data,
                     "Underlying function's data.");
 
-  bp::class_<LinearFunctionCompositionTpl<Scalar>, bp::bases<StageFunction>>(
+  /// FUNCTION LINEAR COMPOSE
+
+  using LinearFunctionComposition = LinearFunctionCompositionTpl<Scalar>;
+
+  bp::class_<LinearFunctionComposition, bp::bases<StageFunction>>(
       "LinearFunctionComposition",
       "Function composition :math:`r(x) = Af(x) + b`.",
-      bp::init<shared_ptr<StageFunction>, const context::MatrixXs,
-               const context::VectorXs>(
+      bp::init<FunctionPtr, const context::MatrixXs, const context::VectorXs>(
           "Construct a composition from the underlying function, weight matrix "
           ":math:`A` and bias :math:`b`.",
           bp::args("self", "func", "A", "b")))
-      .def(bp::init<shared_ptr<StageFunction>, const context::MatrixXs>(
+      .def(bp::init<FunctionPtr, const context::MatrixXs>(
           "Constructor where the bias :math:`b` is assumed to be zero.",
           bp::args("self", "func", "A")))
-      .def_readonly("func", &LinearFunctionCompositionTpl<Scalar>::func,
+      .def_readonly("func", &LinearFunctionComposition::func,
                     "The underlying function.")
-      .add_property(
-          "A",
-          make_getter_eigen_matrix(&LinearFunctionCompositionTpl<Scalar>::A),
-          "Weight matrix.")
-      .add_property(
-          "b",
-          make_getter_eigen_matrix(&LinearFunctionCompositionTpl<Scalar>::A),
-          "Bias vector.");
+      .add_property("A",
+                    make_getter_eigen_matrix(&LinearFunctionComposition::A),
+                    "Weight matrix.")
+      .add_property("b",
+                    make_getter_eigen_matrix(&LinearFunctionComposition::A),
+                    "Bias vector.");
 
-  {
-    using Data = LinearFunctionCompositionTpl<Scalar>::OwnData;
-    bp::class_<Data, bp::bases<FunctionData>, boost::noncopyable>(
-        "LinearFunctionCompositionData", bp::no_init)
-        .def_readonly("sub_data", &Data::sub_data);
-  }
+  bp::class_<LinearFunctionComposition::OwnData, bp::bases<FunctionData>,
+             boost::noncopyable>("LinearFunctionCompositionData", bp::no_init)
+      .def_readonly("sub_data", &LinearFunctionComposition::OwnData::sub_data);
+}
+
+void exposeFunctions() {
+  exposeFunctionBase();
+  exposePinocchioFunctions();
+  exposeFunctionExpressions();
 }
 
 } // namespace python

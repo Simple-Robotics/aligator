@@ -2,12 +2,12 @@
 
 #include "proxddp/python/context.hpp"
 #include "proxddp/python/macros.hpp"
+#include "proxddp/python/visitors.hpp"
 
 #include <pinocchio/fwd.hpp>
 #include <pinocchio/bindings/python/utils/std-vector.hpp>
 
 #include <eigenpy/eigenpy.hpp>
-#include "proxddp/python/visitors.hpp"
 
 namespace proxddp {
 /// @brief  The Python bindings.
@@ -28,6 +28,7 @@ void exposeConstraintFwdDynamics();
 void exposeDynamics();
 /// Expose integrators
 void exposeIntegrators();
+void exposeFDDP();
 void exposeSolvers();
 void exposeCallbacks();
 void exposeAutodiff();

@@ -3,8 +3,6 @@
 #include "proxddp/core/helpers-base.hpp"
 #include "proxddp/helpers/history-callback.hpp"
 
-#include <pinocchio/bindings/python/utils/std-vector.hpp>
-
 namespace proxddp {
 namespace python {
 
@@ -55,10 +53,9 @@ void exposeCallbacks() {
         .def_readonly("prim_tols", &history_storage_t::prim_tols)
         .def_readonly("dual_tols", &history_storage_t::dual_tols);
 
-    pinocchio::python::StdVectorPythonVisitor<
-        std::vector<context::VectorOfVectors>,
-        true>::expose("StdVecVec_VectorXs",
-                      "std::vector of std::vector of Eigen::MatrixX.");
+    pinpy::StdVectorPythonVisitor<std::vector<context::VectorOfVectors>, true>::
+        expose("StdVecVec_VectorXs",
+               "std::vector of std::vector of Eigen::MatrixX.");
   }
 }
 } // namespace python

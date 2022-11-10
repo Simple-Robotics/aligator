@@ -1,39 +1,10 @@
 #include "proxddp/python/fwd.hpp"
+#include "proxddp/python/visitors.hpp"
 
 #include "proxddp/core/solver-proxddp.hpp"
-#include "proxddp/fddp/solver-fddp.hpp"
 
 namespace proxddp {
 namespace python {
-
-template <typename SolverType>
-struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
-  template <typename PyClass> void visit(PyClass &obj) const {
-    obj.def_readwrite("verbose", &SolverType::verbose_,
-                      "Verbosity level of the solver.")
-        .def_readwrite("max_iters", &SolverType::max_iters,
-                       "Maximum number of iterations.")
-        .def_readwrite("ls_params", &SolverType::ls_params,
-                       "Linesearch parameters.")
-        .def_readwrite("target_tol", &SolverType::target_tol_,
-                       "Target tolerance.")
-        .def_readwrite("xreg", &SolverType::xreg_,
-                       "Newton regularization parameter.")
-        .def_readwrite("ureg", &SolverType::ureg_,
-                       "Newton regularization parameter.")
-        .def_readwrite("reg_init", &SolverType::reg_init)
-        .def("getResults", &SolverType::getResults, bp::args("self"),
-             bp::return_internal_reference<>(), "Get the results instance.")
-        .def("getWorkspace", &SolverType::getWorkspace, bp::args("self"),
-             bp::return_internal_reference<>(), "Get the workspace instance.")
-        .def("setup", &SolverType::setup, bp::args("self", "problem"),
-             "Allocate solver workspace and results data for the problem.")
-        .def("registerCallback", &SolverType::registerCallback,
-             bp::args("self", "cb"), "Add a callback to the solver.")
-        .def("clearCallbacks", &SolverType::clearCallbacks, bp::args("self"),
-             "Clear callbacks.");
-  }
-};
 
 void exposeBase() {
   using context::Scalar;
@@ -89,54 +60,11 @@ void exposeBase() {
       .def_readonly("traj_cost", &ResultsBase::traj_cost_, "Trajectory cost.")
       .def_readonly("merit_value", &ResultsBase::merit_value_,
                     "Merit function value.")
+      .add_property("ctrl_feedbacks", &ResultsBase::getCtrlFeedbacks,
+                    "Get the control feedback matrices.")
+      .add_property("ctrl_feedforwards", &ResultsBase::getCtrlFeedforwards,
+                    "Get the control feedforward gains.")
       .def(PrintableVisitor<ResultsBase>());
-}
-
-void exposeFDDP() {
-  using context::Manifold;
-  using context::Scalar;
-  using SolverType = SolverFDDP<Scalar>;
-  using Workspace = WorkspaceFDDPTpl<Scalar>;
-  using Results = ResultsFDDPTpl<Scalar>;
-
-  bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>>("WorkspaceFDDP",
-                                                             bp::no_init)
-      .def_readonly("dxs", &Workspace::dxs)
-      .def_readonly("dus", &Workspace::dus);
-
-  bp::class_<Results, bp::bases<ResultsBaseTpl<Scalar>>>(
-      "ResultsFDDP",
-      bp::init<const context::TrajOptProblem &>(bp::args("self", "problem")))
-      .def("getFeedforward",
-           bp::make_function(
-               +[](const Results &m, std::size_t i) {
-                 return m.getFeedforward(i);
-               },
-               bp::return_value_policy<bp::return_by_value>(),
-               bp::args("self", "i")),
-           "Get the feedforward gain at time index :math:`i`.")
-      .def(
-          "getFeedback",
-          bp::make_function(
-              +[](const Results &m, std::size_t i) { return m.getFeedback(i); },
-              bp::return_value_policy<bp::return_by_value>(),
-              bp::args("self", "i")),
-          "Get the feedback gain at time index :math:`i`.");
-
-  bp::class_<SolverType, boost::noncopyable>(
-      "SolverFDDP", "An implementation of the FDDP solver from Crocoddyl.",
-      bp::init<Scalar, VerboseLevel, Scalar, std::size_t>(
-          (bp::arg("self"), bp::arg("tol"),
-           bp::arg("verbose") = VerboseLevel::QUIET, bp::arg("reg_init") = 1e-9,
-           bp::arg("max_iters") = 1000)))
-      .def_readwrite("reg_min", &SolverType::reg_min_)
-      .def_readwrite("reg_max", &SolverType::reg_max_)
-      .def_readwrite("xreg", &SolverType::xreg_)
-      .def_readwrite("ureg", &SolverType::ureg_)
-      .def(SolverVisitor<SolverType>())
-      .def("run", &SolverType::run,
-           (bp::arg("self"), bp::arg("problem"), bp::arg("xs_init"),
-            bp::arg("us_init")));
 }
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(prox_run_overloads, run, 1, 4)
