@@ -30,20 +30,44 @@ template <typename _Scalar> struct ResultsBaseTpl {
   /// Problem Lagrange multipliers
   std::vector<VectorXs> lams;
 
+  /// @brief Get column expression of the primal-dual feedforward gain.
   decltype(auto) getFeedforward(std::size_t i) {
     return this->gains_[i].col(0);
   }
 
+  /// @copybrief getFeedforward()
   decltype(auto) getFeedforward(std::size_t i) const {
     return this->gains_[i].col(0);
   }
 
+  /// @brief Get expression of the primal-dual feedback gains.
   decltype(auto) getFeedback(std::size_t i) {
     return this->gains_[i].rightCols(this->get_ndx1(i));
   }
 
+  /// @copybrief getFeedback()
   decltype(auto) getFeedback(std::size_t i) const {
     return this->gains_[i].rightCols(this->get_ndx1(i));
+  }
+
+  std::vector<MatrixXs> getCtrlFeedbacks() const {
+    const std::size_t N = this->gains_.size();
+    std::vector<MatrixXs> out;
+    for (std::size_t i = 0; i < N; i++) {
+      const Eigen::Index nu = us[i].rows();
+      out.emplace_back(getFeedback(i).topRows(nu));
+    }
+    return out;
+  }
+
+  std::vector<VectorXs> getCtrlFeedforwards() const {
+    const std::size_t N = this->gains_.size();
+    std::vector<VectorXs> out;
+    for (std::size_t i = 0; i < N; i++) {
+      const Eigen::Index nu = us[i].rows();
+      out.emplace_back(getFeedforward(i).head(nu));
+    }
+    return out;
   }
 
 private:
