@@ -122,4 +122,4 @@ struct CrocActionDataWrapperTpl : public StageDataTpl<Scalar> {
 } // namespace compat
 } // namespace proxddp
 
-#include "proxddp/compat/crocoddyl/action-model.hxx"
+#include "proxddp/compat/crocoddyl/action-model-wrap.hxx"

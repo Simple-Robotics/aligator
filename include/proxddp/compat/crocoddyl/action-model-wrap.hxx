@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/compat/crocoddyl/action-model.hpp"
+#include "proxddp/compat/crocoddyl/action-model-wrap.hpp"
 
 namespace proxddp {
 namespace compat {

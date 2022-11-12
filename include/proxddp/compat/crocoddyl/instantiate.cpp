@@ -4,7 +4,7 @@
  */
 
 #include "proxddp/compat/crocoddyl/cost-wrap.hpp"
-#include "proxddp/compat/crocoddyl/action-model.hpp"
+#include "proxddp/compat/crocoddyl/action-model-wrap.hpp"
 #include "proxddp/compat/crocoddyl/problem-wrap.hpp"
 #include "proxddp/compat/crocoddyl/context.hpp"
 

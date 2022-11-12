@@ -3,22 +3,23 @@
 #include <crocoddyl/core/optctrl/shooting.hpp>
 #include "proxddp/core/traj-opt-problem.hpp"
 #include "proxddp/compat/crocoddyl/cost-wrap.hpp"
-#include "proxddp/compat/crocoddyl/action-model.hpp"
+#include "proxddp/compat/crocoddyl/action-model-wrap.hpp"
 
 namespace proxddp {
 namespace compat {
 namespace croc {
 
 /**
- * @brief This function converts a Crocoddyl shooting problem to a
+ * @brief   This function converts a crocoddyl::ShootingProblemTpl to a proxddp
  * TrajOptProblemTpl.
  *
+ * @details
  */
 template <typename Scalar>
 TrajOptProblemTpl<Scalar> convertCrocoddylProblem(
     const boost::shared_ptr<crocoddyl::ShootingProblemTpl<Scalar>>
         &croc_problem) {
-  const auto &cpb = *croc_problem;
+  const crocoddyl::ShootingProblemTpl<Scalar> &cpb = *croc_problem;
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using StageModel = StageModelTpl<Scalar>;
   using ActionModelWrapper = CrocActionModelWrapperTpl<Scalar>;
@@ -28,6 +29,8 @@ TrajOptProblemTpl<Scalar> convertCrocoddylProblem(
 
   const auto &running_models = cpb.get_runningModels();
 
+  // construct the std::vector of StageModel to provide the proxddp
+  // TrajOptProblem.
   std::vector<shared_ptr<StageModel>> stages;
   stages.reserve(nsteps);
   for (std::size_t i = 0; i < nsteps; i++) {
