@@ -12,6 +12,8 @@
 
 \newcommand{\bfx}{\mathbf{x}}
 \newcommand{\bfu}{\mathbf{u}}
+\newcommand{\bmx}{\boldsymbol{x}}
+\newcommand{\bmu}{\boldsymbol{u}}
 \newcommand{\bmlam}{\boldsymbol{\lambda}}
 \newcommand{\bmLam}{\boldsymbol{\Lambda}}
 

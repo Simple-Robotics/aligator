@@ -1,12 +1,11 @@
 import proxddp
-
-from proxddp import dynamics, manifolds
-from proxnlp import constraints
+import tap
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-import tap
+from proxddp import dynamics, manifolds
+from proxnlp import constraints
 
 
 class Args(tap.Tap):
