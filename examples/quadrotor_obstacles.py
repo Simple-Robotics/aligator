@@ -165,6 +165,7 @@ def main(args: Args):
         return translation
 
     x0 = np.concatenate([robot.q0, np.zeros(nv)])
+    x0[2] = 0.18
     if args.random and args.obstacles:
         x0[:3] = sample_feasible_translation(
             [center_column1, center_column2], cyl_radius, quad_radius
@@ -302,7 +303,18 @@ def main(args: Args):
     solver.setup(problem)
     solver.run(problem, xs_init, us_init)
     if args.display:
+        viz_util = msu.VizUtil(vizer)
+        viz_util.draw_plane(
+            8, 6, transform=meshcat.transformations.translation_matrix([0.0, 2.0, 0.0])
+        )
+        viz_util.set_bg_color()
+        if args.obstacles:
+            viz_util.draw_objectives([x_tar3], prefix="obj")
+        else:
+            viz_util.draw_objectives([x_tar1, x_tar2], prefix="obj")
         vizer.viewer.open()
+    else:
+        viz_util = None
 
     results = solver.getResults()
     workspace = solver.getWorkspace()
@@ -383,7 +395,6 @@ def main(args: Args):
         plt.show()
 
     if args.display:
-        viz_util = msu.VizUtil(vizer)
         cam_dist = 2.0
         directions_ = [np.array([1.0, 1.0, 0.5])]
         directions_.append(np.array([1.0, -1.0, 0.8]))
@@ -395,10 +406,6 @@ def main(args: Args):
         vid_uri = "assets/{}.mp4".format(TAG)
         vid_recorder = msu.VideoRecorder(vid_uri, fps=1.0 / dt)
         vid_recorder = None
-        if args.obstacles:
-            viz_util.draw_objectives([x_tar3], prefix="obj")
-        else:
-            viz_util.draw_objectives([x_tar1, x_tar2], prefix="obj")
 
         def get_callback(i: int):
             def _callback(t):
