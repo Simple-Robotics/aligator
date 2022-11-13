@@ -15,10 +15,21 @@ void exposeCrocoddylCompat() {
           "Convert a Crocoddyl problem to a ProxDDP problem.");
 
   using CrocActionModel = crocoddyl::ActionModelAbstractTpl<Scalar>;
-  bp::class_<ns_croc::CrocActionModelWrapperTpl<Scalar>,
-             bp::bases<context::StageModel>>(
+  using ActionModelWrapper = ns_croc::CrocActionModelWrapperTpl<Scalar>;
+  using ActionDataWrapper = ns_croc::CrocActionDataWrapperTpl<Scalar>;
+
+  bp::register_ptr_to_python<shared_ptr<ActionModelWrapper>>();
+  bp::class_<ActionModelWrapper, bp::bases<context::StageModel>>(
       "ActionModelWrapper", "Wrapper for Crocoddyl action models.",
-      bp::init<boost::shared_ptr<CrocActionModel>>(bp::args("action_model")));
+      bp::init<boost::shared_ptr<CrocActionModel>>(bp::args("action_model")))
+      .def_readonly("action_model", &ActionModelWrapper::action_model_,
+                    "Underlying Crocoddyl ActionModel.");
+
+  bp::register_ptr_to_python<shared_ptr<ActionDataWrapper>>();
+  bp::class_<ActionDataWrapper, bp::bases<context::StageData>>(
+      "ActionDataWrapper", bp::no_init)
+      .def_readonly("croc_data", &ActionDataWrapper::croc_data,
+                    "Underlying Crocoddyl action data.");
 }
 
 } // namespace python
