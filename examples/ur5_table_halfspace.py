@@ -193,10 +193,11 @@ if args.display:
     planehoz()
     vizutil.draw_objective(target=p_ref_term)
 
-    play_dt = 0.5 * dt
-    play_dt = None
+    slow_factor = 2.0
+    play_dt = dt / slow_factor
+    vizutil.set_cam_angle_preset("preset1")
+    input("[enter to play]")
     for i in range(4):
-        input("[enter to play]")
         vizutil.play_trajectory(
             rs.xs, rs.us, frame_ids=[frame_id], timestep=play_dt, recorder=recorder
         )
