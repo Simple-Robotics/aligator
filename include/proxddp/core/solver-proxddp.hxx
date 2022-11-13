@@ -19,7 +19,8 @@ SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
                                      VerboseLevel verbose,
                                      HessianApprox hess_approx)
     : target_tol_(tol), mu_init(mu_init), rho_init(rho_init), verbose_(verbose),
-      hess_approx(hess_approx), max_iters(max_iters), merit_fun(this) {
+      rollout_type(RolloutType::NONLINEAR), hess_approx(hess_approx),
+      max_iters(max_iters), merit_fun(this) {
   ls_params.interp_type = proxnlp::LSInterpolation::CUBIC;
 }
 

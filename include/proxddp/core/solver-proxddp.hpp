@@ -92,7 +92,8 @@ public:
   LinesearchMode ls_mode = LinesearchMode::PRIMAL_DUAL;
   /// @brief Weight of the dual variables in the primal-dual linesearch.
   Scalar dual_weight = 1.0;
-  RolloutType rollout_type = RolloutType::LINEAR;
+  /// @brief Type of rollout for the forward pass.
+  RolloutType rollout_type;
   BCLParams<Scalar> bcl_params;
 
   bool is_x0_fixed = true;
