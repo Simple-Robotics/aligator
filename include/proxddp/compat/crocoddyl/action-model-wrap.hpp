@@ -45,7 +45,7 @@ struct CrocActionModelWrapperTpl : public StageModelTpl<Scalar> {
   }
 
   const Dynamics &dyn_model() const {
-    PROXDDP_RUNTIME_ERROR("There is not dyn_model() for this class.");
+    PROXDDP_RUNTIME_ERROR("There is no dyn_model() for this class.");
   }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
@@ -99,24 +99,23 @@ struct CrocActionDataWrapperTpl : public StageDataTpl<Scalar> {
   using Base = StageDataTpl<Scalar>;
   using CrocActionModel = crocoddyl::ActionModelAbstractTpl<Scalar>;
   using CrocActionData = crocoddyl::ActionDataAbstractTpl<Scalar>;
-  using Base::constraint_data;
-  using Base::cost_data;
 
   boost::shared_ptr<CrocActionData> croc_data;
 
   CrocActionDataWrapperTpl(const CrocActionModel *croc_action_model,
                            const boost::shared_ptr<CrocActionData> &action_data)
       : Base(), croc_data(action_data) {
-    constraint_data = {
+    this->constraint_data = {
         std::make_shared<DynamicsDataWrapperTpl<Scalar>>(croc_action_model)};
-    cost_data = std::make_shared<CrocCostDataWrapperTpl<Scalar>>(croc_data);
+    this->cost_data =
+        std::make_shared<CrocCostDataWrapperTpl<Scalar>>(croc_data);
     checkData();
   }
 
   void checkData() {
     Base::checkData();
     if (croc_data == 0)
-      std::domain_error("[StageData] integrity check failed.");
+      PROXDDP_RUNTIME_ERROR("[StageData] integrity check failed.");
   }
 };
 
