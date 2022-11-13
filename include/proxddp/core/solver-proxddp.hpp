@@ -19,16 +19,6 @@ namespace proxddp {
 
 enum class MultiplierUpdateMode { NEWTON, PRIMAL, PRIMAL_DUAL };
 
-enum class RolloutType { LINEAR, NONLINEAR };
-
-enum InertiaFlag {
-  INERTIA_OK,
-  INERTIA_BAD,
-  INERTIA_CRITICAL // has zeros
-};
-
-enum class HessianApprox { EXACT, GAUSS_NEWTON };
-
 using proxnlp::BCLParams;
 
 /// @brief A proximal, augmented Lagrangian-type solver for trajectory
@@ -207,10 +197,9 @@ public:
   /// @param lams_init  Initial multiplier guess.
   /// @pre  You must call SolverProxDDP::setup beforehand to allocate a
   /// workspace and results.
-  bool run(const Problem &problem,
-           const std::vector<VectorXs> &xs_init = DEFAULT_VECTOR<Scalar>,
-           const std::vector<VectorXs> &us_init = DEFAULT_VECTOR<Scalar>,
-           const std::vector<VectorXs> &lams_init = DEFAULT_VECTOR<Scalar>);
+  bool run(const Problem &problem, const std::vector<VectorXs> &xs_init = {},
+           const std::vector<VectorXs> &us_init = {},
+           const std::vector<VectorXs> &lams_init = {});
 
   /// @brief    Perform the inner loop of the algorithm (augmented Lagrangian
   /// minimization).

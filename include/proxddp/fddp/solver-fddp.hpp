@@ -172,9 +172,8 @@ template <typename Scalar> struct SolverFDDP {
     }
   }
 
-  bool run(const Problem &problem,
-           const std::vector<VectorXs> &xs_init = DEFAULT_VECTOR<Scalar>,
-           const std::vector<VectorXs> &us_init = DEFAULT_VECTOR<Scalar>);
+  bool run(const Problem &problem, const std::vector<VectorXs> &xs_init = {},
+           const std::vector<VectorXs> &us_init = {});
 
   static ExpData &stage_get_dynamics_data(StageDataTpl<Scalar> &sd) {
     try {
