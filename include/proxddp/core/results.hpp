@@ -1,6 +1,7 @@
+/// @file
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/fwd.hpp"
 #include "proxddp/core/traj-opt-problem.hpp"
 
 #include <ostream>

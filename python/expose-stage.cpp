@@ -1,3 +1,5 @@
+/// @file
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "proxddp/python/fwd.hpp"
 
 #include "proxddp/core/stage-model.hpp"
@@ -27,7 +29,8 @@ void exposeStage() {
   pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<StageModel>>,
                                 true>::expose("StdVec_StageModel");
 
-  bp::class_<StageModel, shared_ptr<StageModel>>(
+  bp::register_ptr_to_python<shared_ptr<StageModel>>();
+  bp::class_<StageModel>(
       "StageModel",
       "A stage of the control problem. Holds costs, dynamics, and constraints.",
       bp::init<const ManifoldPtr &, const int, const ManifoldPtr &,
@@ -94,6 +97,8 @@ void exposeStage() {
       .def_readonly("cost_data", &StageData::cost_data)
       .def_readwrite("constraint_data", &StageData::constraint_data)
       .def(ClonePythonVisitor<StageData>());
+
+  // STAGE CONSTRAINT
 
   bp::class_<context::StageConstraint>(
       "StageConstraint",

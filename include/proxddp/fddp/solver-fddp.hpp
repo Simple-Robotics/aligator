@@ -1,7 +1,8 @@
-/**
- * @page fddp_intro The FDDP algorithm
- * @htmlinclude fddp.html
- */
+/// @file
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+///
+/// @page fddp_intro The FDDP algorithm
+/// @htmlinclude fddp.html
 #pragma once
 
 #include "proxddp/core/solver-util.hpp"
