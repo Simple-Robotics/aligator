@@ -1,6 +1,5 @@
 #pragma once
 
-#include "proxddp/fwd.hpp"
 #include "proxddp/core/stage-model.hpp"
 
 #include "proxddp/modelling/state-error.hpp"
@@ -24,7 +23,7 @@ template <typename T> void rot_left(T &v) {
  * \f[
  *   \begin{aligned}
  *     \min_{\bmx,\bmu}~& \sum_{i=0}^{N-1} \ell_i(x_i, u_i) + \ell_N(x_N)  \\
- *     \subjectto & \varphi(x_i, u_i, x_{i+1}) = 0, \ i \in [ 0, N-1 ] \\
+ *     \subjectto & \varphi(x_i, u_i, x_{i+1}) = 0, \ 0 \leq i < N \\
  *                & g(x_i, u_i) \in \calC_i
  *   \end{aligned}
  * \f]
@@ -148,7 +147,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
                           Data &prob_data) const;
 
   /// @brief Pop out the first StageModel and replace by the supplied one;
-  /// updates the supplied Data object.
+  /// updates the supplied problem data (TrajOptDataTpl) object.
   void replaceStageCircular(const shared_ptr<StageModel> &model,
                             const shared_ptr<typename StageModel::Data> &sd,
                             Data &data) {
@@ -162,6 +161,12 @@ template <typename _Scalar> struct TrajOptProblemTpl {
     rot_left(data.stage_data);
     stages_.pop_back();
     data.stage_data.pop_back();
+  }
+
+  /// @copybrief replaceStageCircular(). The stage data object will be created
+  /// on-the-fly.
+  void replaceStageCircular(const shared_ptr<StageModel> &model, Data &data) {
+    replaceStageCircular(model, model->createData(), data);
   }
 
   /// @copybrief replaceStageCircular(). This variant adds the first StageModel

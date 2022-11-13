@@ -58,10 +58,15 @@ void exposeProblem() {
           "Circularly replace the last stage in the problem.")
       .def(
           "replaceStageCircular",
-          +[](TrajOptProblem &m, shared_ptr<StageModel> &sm,
-              shared_ptr<StageData> &sd,
+          +[](TrajOptProblem &m, const shared_ptr<StageModel> &sm,
+              const shared_ptr<StageData> &sd,
               TrajOptData &data) { m.replaceStageCircular(sm, sd, data); },
-          bp::args("self", "stage_model", "stage_data", "data"));
+          bp::args("self", "stage_model", "stage_data", "data"))
+      .def(
+          "replaceStageCircular",
+          +[](TrajOptProblem &m, const shared_ptr<StageModel> &sm,
+              TrajOptData &data) { m.replaceStageCircular(sm, data); },
+          bp::args("self", "stage_model", "data"));
 
   bp::register_ptr_to_python<shared_ptr<TrajOptData>>();
   bp::class_<TrajOptData>(
