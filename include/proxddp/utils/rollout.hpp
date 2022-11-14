@@ -73,7 +73,7 @@ struct __forward_dyn {
  * dynamics type then this function will use the
  * ExplicitDynamicsModelTpl::forward() method.
  */
-inline constexpr internal::__forward_dyn forwardDynamics{};
+constexpr internal::__forward_dyn forwardDynamics{};
 
 /// @brief Perform a rollout of the supplied dynamical models.
 template <typename Scalar>
