@@ -32,7 +32,6 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblemTpl<Scalar> &problem,
   const std::size_t nsteps = problem.numSteps();
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
-    const StageData &stage_data = prob_data.getStageData(i);
 
     const ConstraintStack &cstr_mgr = stage.constraints_;
     const std::size_t num_c = cstr_mgr.numConstraints();

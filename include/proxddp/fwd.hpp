@@ -17,8 +17,11 @@ using proxnlp::ConstraintSetBase;
 using proxnlp::VerboseLevel;
 using std::shared_ptr;
 
-template <typename T> void rotate_vec_left(T &v) {
-  std::rotate(v.begin(), v.begin() + 1, v.end());
+template <typename T, typename Alloc>
+void rotate_vec_left(std::vector<T, Alloc> &v) {
+  if (v.size() > 0) {
+    std::rotate(v.begin(), v.begin() + 1, v.end());
+  }
 };
 
 /// 1 BASE TYPES
