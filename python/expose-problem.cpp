@@ -51,24 +51,10 @@ void exposeProblem() {
       .def("computeDerivatives", &TrajOptProblem::computeDerivatives,
            bp::args("self", "xs", "us", "prob_data"),
            "Evaluate the problem derivatives. Call `evaluate()` first.")
-      .def(
-          "replaceStageCircular",
-          +[](TrajOptProblem &m, TrajOptData &data) {
-            m.replaceStageCircular(data);
-          },
-          bp::args("self", "data"),
-          "Circularly replace the last stage in the problem.")
-      .def(
-          "replaceStageCircular",
-          +[](TrajOptProblem &m, const shared_ptr<StageModel> &sm,
-              const shared_ptr<StageData> &sd,
-              TrajOptData &data) { m.replaceStageCircular(sm, sd, data); },
-          bp::args("self", "stage_model", "stage_data", "data"))
-      .def(
-          "replaceStageCircular",
-          +[](TrajOptProblem &m, const shared_ptr<StageModel> &sm,
-              TrajOptData &data) { m.replaceStageCircular(sm, data); },
-          bp::args("self", "stage_model", "data"));
+      .def("replaceStageCircular", &TrajOptProblem::replaceStageCircular,
+           bp::args("self", "model"),
+           "Circularly replace the last stage in the problem, dropping the "
+           "first stage.");
 
   bp::register_ptr_to_python<shared_ptr<TrajOptData>>();
   bp::class_<TrajOptData>(

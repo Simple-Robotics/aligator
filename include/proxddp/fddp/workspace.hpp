@@ -16,8 +16,6 @@ template <typename Scalar> struct WorkspaceFDDPTpl : WorkspaceBaseTpl<Scalar> {
 
   /// Value of `f(x_i, u_i)`
   std::vector<VectorXs> xnexts_;
-  /// Feasibility gaps
-  std::vector<VectorXs> feas_gaps_;
   /// State increment
   std::vector<VectorXs> dxs;
   /// Control increment
@@ -32,6 +30,8 @@ template <typename Scalar> struct WorkspaceFDDPTpl : WorkspaceBaseTpl<Scalar> {
   std::vector<Eigen::LLT<MatrixXs>> llts_;
 
   explicit WorkspaceFDDPTpl(const TrajOptProblemTpl<Scalar> &problem);
+
+  void cycle_left() override;
 };
 
 } // namespace proxddp

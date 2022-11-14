@@ -11,7 +11,7 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
   q_params.reserve(nsteps);
 
   xnexts_.resize(nsteps + 1);
-  feas_gaps_.resize(nsteps + 1);
+  this->dyn_slacks.resize(nsteps + 1);
   dxs.resize(nsteps + 1);
   dus.resize(nsteps);
   Quuks_.resize(nsteps);
@@ -20,7 +20,7 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
   kkt_rhs_bufs.resize(nsteps);
   llts_.reserve(nsteps);
 
-  feas_gaps_[0] = VectorXs::Zero(problem.stages_[0]->ndx1());
+  this->dyn_slacks[0] = VectorXs::Zero(problem.stages_[0]->ndx1());
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModelTpl<Scalar> &sm = *problem.stages_[i];
@@ -32,7 +32,7 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
     q_params.emplace_back(ndx, nu, 0);
 
     xnexts_[i] = sm.xspace().neutral();
-    feas_gaps_[i + 1] = VectorXs::Zero(sm.ndx2());
+    this->dyn_slacks[i + 1] = VectorXs::Zero(sm.ndx2());
     dxs[i] = VectorXs::Zero(ndx);
     dus[i] = VectorXs::Zero(nu);
 
@@ -50,4 +50,16 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
   assert(llts_.size() == nsteps);
 }
 
+template <typename Scalar> void WorkspaceFDDPTpl<Scalar>::cycle_left() {
+  Base::cycle_left();
+
+  rotate_vec_left(xnexts_);
+  rotate_vec_left(dxs);
+  rotate_vec_left(dus);
+  rotate_vec_left(Quuks_);
+  rotate_vec_left(ftVxx_);
+  rotate_vec_left(kkt_mat_bufs);
+  rotate_vec_left(kkt_rhs_bufs);
+  rotate_vec_left(llts_);
+}
 } // namespace proxddp

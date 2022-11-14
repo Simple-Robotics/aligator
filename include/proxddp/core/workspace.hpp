@@ -33,6 +33,9 @@ template <typename Scalar> struct WorkspaceBaseTpl {
   std::vector<VectorXs> trial_us;
   /// @}
 
+  /// Feasibility gaps
+  std::vector<VectorXs> dyn_slacks;
+
   /// Dynamics' co-states
   std::vector<VectorXs> co_states_;
 
@@ -48,6 +51,21 @@ template <typename Scalar> struct WorkspaceBaseTpl {
     trial_us.resize(nsteps);
     xs_default_init(problem, trial_xs);
     us_default_init(problem, trial_us);
+  }
+
+  /// @brief Cycle the workspace data to the left (useful for MPC).
+  virtual void cycle_left();
+
+  /// @brief Same as cycle_left(), but add a StageDataTpl to problem_data.
+  /// @details The implementation pushes back on top of the vector of
+  /// StageDataTpl, rotates left, then pops the first element back out.
+  void cycle_append(const shared_ptr<StageModelTpl<Scalar>> &stage) {
+    auto sd = stage->createData();
+    problem_data.stage_data.push_back(sd);
+    trial_prob_data.stage_data.push_back(sd);
+    this->cycle_left();
+    problem_data.stage_data.pop_back();
+    trial_prob_data.stage_data.pop_back();
   }
 };
 
@@ -66,6 +84,7 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using LDLT = Eigen::LDLT<MatrixXs, Eigen::Lower>;
 
   using Base::co_states_;
+  using Base::dyn_slacks;
   using Base::nsteps;
   using Base::problem_data;
   using Base::q_params;
@@ -83,9 +102,8 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   std::vector<VectorXs> lams_pdal;
   /// Shifted constraints the projection operators should be applied to.
   std::vector<VectorXs> shifted_constraints;
-  std::vector<VectorXs> dyn_slacks;
 
-  /// @name Riccati gains and buffers for primal-dual steps
+  /// @name Riccati gains, memory buffers for primal-dual steps
   /// @{
   std::vector<VectorXs> pd_step_;
   std::vector<VectorRef> dxs;
@@ -94,12 +112,13 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
 
   /// Buffer for KKT matrix
   std::vector<MatrixXs> kkt_mat_buf_;
-  /// LDLT decompositions
-  std::vector<LDLT> ldlts_;
   /// Buffer for KKT right hand side
   std::vector<MatrixXs> kkt_rhs_buf_;
   /// Linear system residual buffers
   std::vector<MatrixXs> kkt_resdls_;
+  /// LDLT decompositions
+  std::vector<LDLT> ldlts_;
+
   /// @}
 
   /// @name Previous external/proximal iterates
@@ -123,6 +142,8 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   Scalar inner_criterion = 0.;
 
   explicit WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem);
+
+  void cycle_left() override;
 
   template <typename T>
   friend std::ostream &operator<<(std::ostream &oss,

@@ -47,7 +47,7 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
   std::vector<VectorXs> &xs_try = workspace.trial_xs;
   std::vector<VectorXs> &us_try = workspace.trial_us;
   std::vector<VectorXs> &xnexts = workspace.xnexts_;
-  const std::vector<VectorXs> &fs = workspace.feas_gaps_;
+  const std::vector<VectorXs> &fs = workspace.dyn_slacks;
   ProblemData &pd = workspace.problem_data;
 
   {
@@ -93,7 +93,7 @@ void SolverFDDP<Scalar>::computeDirectionalDerivatives(Workspace &workspace,
                                                        Scalar &dgrad,
                                                        Scalar &dquad) const {
   const std::size_t nsteps = workspace.nsteps;
-  const std::vector<VectorXs> &fs = workspace.feas_gaps_;
+  const std::vector<VectorXs> &fs = workspace.dyn_slacks;
   dgrad = 0.; // cost directional derivative
   dquad = 0.;
 
@@ -138,7 +138,7 @@ Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem,
   const std::size_t nsteps = workspace.nsteps;
   const ProblemData &pd = workspace.problem_data;
   std::vector<VectorXs> &xnexts = workspace.xnexts_;
-  std::vector<VectorXs> &fs = workspace.feas_gaps_;
+  std::vector<VectorXs> &fs = workspace.dyn_slacks;
 
   const VectorXs &x0 = problem.getInitState();
   const Manifold &space = problem.stages_[0]->xspace();
@@ -150,7 +150,7 @@ Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem,
     xnexts[i + 1] = dd.xnext_;
     sm.xspace().difference(xs[i + 1], xnexts[i + 1], fs[i + 1]);
   }
-  return math::infty_norm(workspace.feas_gaps_);
+  return math::infty_norm(workspace.dyn_slacks);
 }
 
 template <typename Scalar>
@@ -175,7 +175,7 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
                                       Results &results) const {
 
   const std::size_t nsteps = workspace.nsteps;
-  const std::vector<VectorXs> &fs = workspace.feas_gaps_;
+  const std::vector<VectorXs> &fs = workspace.dyn_slacks;
 
   ProblemData &prob_data = workspace.problem_data;
   {

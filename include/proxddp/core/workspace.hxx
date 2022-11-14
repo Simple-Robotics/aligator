@@ -4,7 +4,19 @@
 
 namespace proxddp {
 
-namespace math {} // namespace math
+template <typename Scalar> void WorkspaceBaseTpl<Scalar>::cycle_left() {
+  rotate_vec_left(problem_data.stage_data);
+  rotate_vec_left(trial_prob_data.stage_data);
+
+  rotate_vec_left(trial_xs);
+  rotate_vec_left(trial_us);
+
+  rotate_vec_left(dyn_slacks);
+
+  rotate_vec_left(co_states_);
+  rotate_vec_left(value_params);
+  rotate_vec_left(q_params);
+}
 
 template <typename Scalar>
 WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
@@ -109,6 +121,28 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   assert(value_params.size() == nsteps + 1);
   assert(dxs.size() == nsteps + 1);
   assert(dus.size() == nsteps);
+}
+
+template <typename Scalar> void WorkspaceTpl<Scalar>::cycle_left() {
+  Base::cycle_left();
+
+  rotate_vec_left(prox_datas);
+  rotate_vec_left(lams_plus);
+  rotate_vec_left(lams_pdal);
+  rotate_vec_left(shifted_constraints);
+  rotate_vec_left(pd_step_);
+  rotate_vec_left(dxs);
+  rotate_vec_left(dus);
+  rotate_vec_left(dlams);
+
+  rotate_vec_left(kkt_mat_buf_);
+  rotate_vec_left(kkt_rhs_buf_);
+  rotate_vec_left(kkt_resdls_);
+  rotate_vec_left(ldlts_);
+
+  rotate_vec_left(prev_xs);
+  rotate_vec_left(prev_us);
+  rotate_vec_left(lams_prev);
 }
 
 template <typename Scalar>

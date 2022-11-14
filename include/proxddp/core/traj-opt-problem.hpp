@@ -10,13 +10,6 @@
 
 namespace proxddp {
 
-namespace {
-template <typename T> void rot_left(T &v) {
-  std::rotate(v.begin(), v.begin() + 1, v.end());
-};
-
-} // namespace
-
 /**
  * @brief    Trajectory optimization problem.
  * @tparam   Scalar the scalar type.
@@ -150,33 +143,10 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 
   /// @brief Pop out the first StageModel and replace by the supplied one;
   /// updates the supplied problem data (TrajOptDataTpl) object.
-  void replaceStageCircular(const shared_ptr<StageModel> &model,
-                            const shared_ptr<typename StageModel::Data> &sd,
-                            Data &data) {
+  void replaceStageCircular(const shared_ptr<StageModel> &model) {
     addStage(model);
-    data.stage_data.push_back(sd);
-
-    assert(!stages_.empty());
-    assert(!data.stage_data.empty());
-
-    rot_left(stages_);
-    rot_left(data.stage_data);
+    rotate_vec_left(stages_);
     stages_.pop_back();
-    data.stage_data.pop_back();
-  }
-
-  /// @copybrief replaceStageCircular(). The stage data object will be created
-  /// on-the-fly.
-  void replaceStageCircular(const shared_ptr<StageModel> &model, Data &data) {
-    replaceStageCircular(model, model->createData(), data);
-  }
-
-  /// @copybrief replaceStageCircular(). This variant adds the first StageModel
-  /// instance and associated data to the end.
-  void replaceStageCircular(Data &data) {
-    // use std::rotate to the left
-    rot_left(stages_);
-    rot_left(data.stage_data);
   }
 };
 

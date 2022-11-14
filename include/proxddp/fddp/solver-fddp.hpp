@@ -158,7 +158,7 @@ template <typename Scalar> struct SolverFDDP {
    * @details This is useful for debugging purposes.
    */
   static void linearRollout(Workspace &workspace, const Results &results) {
-    const auto &fs = workspace.feas_gaps_;
+    const auto &fs = workspace.dyn_slacks;
     auto &dxs = workspace.dxs;
     auto &dus = workspace.dus;
     dxs[0] = fs[0];

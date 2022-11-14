@@ -44,7 +44,16 @@ void exposeBase() {
       .def_readonly("trial_xs", &WorkspaceBase::trial_xs)
       .def_readonly("trial_us", &WorkspaceBase::trial_us)
       .def_readonly("value_params", &WorkspaceBase::value_params)
-      .def_readonly("q_params", &WorkspaceBase::q_params);
+      .def_readonly("q_params", &WorkspaceBase::q_params)
+      .def_readonly("dyn_slacks", &WorkspaceBase::dyn_slacks,
+                    "Expose dynamics' slack variables (e.g. feasibility gaps).")
+      .def("cycle_left", &WorkspaceBase::cycle_left, bp::args("self"),
+           "Cycle the workspace data to the left (useful for MPC).")
+      .def("cycle_append", &WorkspaceBase::cycle_append,
+           bp::args("self", "stage_model"),
+           "From a StageModel object, allocate its data object, rotate the "
+           "workspace (using `cycle_left()`) and insert the allocated data "
+           "(useful for MPC).");
 
   using ResultsBase = ResultsBaseTpl<Scalar>;
   bp::class_<ResultsBase>("ResultsBase", "Base results struct.", bp::no_init)
