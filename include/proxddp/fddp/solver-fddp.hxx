@@ -63,6 +63,8 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
     ConstVectorRef ff = results.getFeedforward(i);
     ConstMatrixRef fb = results.getFeedback(i);
 
+    // WARNING: this is the reverse of crocoddyl
+    // which has its gains' sign flipped
     sm.xspace().difference(results.xs[i], xs_try[i], workspace.dxs[i]);
     sm.uspace().integrate(results.us[i], alpha * ff + fb * workspace.dxs[i],
                           us_try[i]);
@@ -72,6 +74,10 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
     sm.xspace_next().integrate(xnexts[i + 1], fs[i + 1] * (alpha - 1.),
                                xs_try[i + 1]);
     const CostData &cd = *sd.cost_data;
+
+    PROXDDP_RAISE_IF_NAN_NAME(xs_try[i + 1], fmt::format("xs[{}]", i + 1));
+    PROXDDP_RAISE_IF_NAN_NAME(us_try[i], fmt::format("us[{}]", i));
+
     traj_cost_ += cd.value_;
   }
   CostData &cd_term = *pd.term_cost_data;
@@ -79,11 +85,6 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
   traj_cost_ += cd_term.value_;
   const Manifold &space = problem.stages_.back()->xspace();
   space.difference(results.xs[nsteps], xs_try[nsteps], workspace.dxs[nsteps]);
-#ifndef NDEBUG
-  if (alpha == 0.)
-    assert(math::infty_norm(workspace.dxs) <=
-           std::numeric_limits<Scalar>::epsilon());
-#endif
   return traj_cost_;
 }
 
@@ -186,8 +187,7 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
     vp.Vxx() = term_cost_data.Lxx_;
     vp.Vxx().diagonal().array() += xreg_;
     VectorXs &ftVxx = workspace.ftVxx_[nsteps];
-    ftVxx.noalias() = vp.Vxx() * fs[nsteps];
-    vp.Vx() += ftVxx;
+    vp.Vx() += vp.Vxx() * fs[nsteps];
     vp.storage = vp.storage.template selfadjointView<Eigen::Lower>();
   }
 
@@ -202,10 +202,9 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
 
     const int nu = sm.nu();
     const int ndx1 = sm.ndx1();
-    const int nt = ndx1 + nu;
-    assert((qparam.storage.cols() == nt + 1) &&
-           (qparam.storage.rows() == nt + 1));
-    assert(qparam.grad_.size() == nt);
+    assert((qparam.storage.cols() == ndx + nu + 1) &&
+           (qparam.storage.rows() == ndx + nu + 1));
+    assert(qparam.grad_.size() == ndx + nu);
 
     const CostData &cd = *sd.cost_data;
     DynamicsDataTpl<Scalar> &dd = sd.dyn_data();
@@ -254,12 +253,9 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
     vp.Vx() = qparam.Qx + fback.transpose() * qparam.Qu;
     vp.Vxx() = qparam.Qxx + qparam.Qxu * fback;
     vp.Vxx().diagonal().array() += xreg_;
-    VectorXs &ftVxx = workspace.ftVxx_[i];
-    ftVxx.noalias() = vp.Vxx() * fs[i];
-    vp.Vx() += ftVxx;
+    vp.Vx() += vp.Vxx() * fs[i];
     vp.storage = vp.storage.template selfadjointView<Eigen::Lower>();
   }
-  assert(i == 0);
 }
 
 template <typename Scalar>
@@ -332,21 +328,20 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
 
     Scalar phi0 = results.traj_cost_;
     PROXDDP_RAISE_IF_NAN(phi0);
-    Scalar d1_phi, d2_phi;
+    Scalar d1_phi = 0., d2_phi = 0.;
     computeDirectionalDerivatives(workspace, results, d1_phi, d2_phi);
     PROXDDP_RAISE_IF_NAN(d1_phi);
     PROXDDP_RAISE_IF_NAN(d2_phi);
 #ifndef NDEBUG
-    linearRollout(workspace, results);
-    directionalDerivativeCorrection(workspace, d1_phi, d2_phi);
     {
+      expectedImprovement(workspace, d1_phi, d2_phi);
       const Scalar fd_eps = 1e-7;
       Scalar phi_eps = linesearch_fun(fd_eps);
       Scalar finite_diff_d1 = (phi_eps - phi0) / fd_eps;
       assert(math::scalar_close(finite_diff_d1, d1_phi, std::pow(fd_eps, 0.5)));
+      d1_phi = finite_diff_d1;
     }
 #endif
-    record.dphi0 = d1_phi;
 
     // quadratic model lambda; captures by copy
     auto ls_model = [=, &workspace](Scalar alpha) {
@@ -357,20 +352,18 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     };
 
     Scalar alpha_opt = 1;
-    bool d1_small = std::abs(d1_phi) < th_grad_;
-    if (!d1_small) {
-      FDDPGoldsteinLinesearch<Scalar>::run(linesearch_fun, ls_model, phi0,
-                                           ls_params, alpha_opt);
-      record.step_size = alpha_opt;
-    }
+    alpha_opt = FDDPGoldsteinLinesearch<Scalar>::run(
+        linesearch_fun, ls_model, phi0, ls_params, d1_phi, th_grad_);
+    record.step_size = alpha_opt;
     Scalar phi_new = linesearch_fun(alpha_opt);
     PROXDDP_RAISE_IF_NAN(phi_new);
     record.merit = phi_new;
     record.dM = phi_new - phi0;
+    record.dphi0 = d1_phi;
 
     results.xs = workspace.trial_xs;
     results.us = workspace.trial_us;
-    if (d1_small) {
+    if (std::abs(d1_phi) < th_grad_) {
       results.conv = true;
       logger.log(record);
       break;
