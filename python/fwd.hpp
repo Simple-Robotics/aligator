@@ -23,16 +23,20 @@ void exposeProblem();
 
 /// Expose continuous dynamics models.
 void exposeODEs();
-void exposeFreeFwdDynamics();
-void exposeConstraintFwdDynamics();
 void exposeDynamics();
 /// Expose integrators
 void exposeIntegrators();
-void exposeFDDP();
 void exposeSolvers();
+void exposeFDDP();
 void exposeCallbacks();
 void exposeAutodiff();
 void exposeUtils();
+
+#ifdef PROXDDP_WITH_PINOCCHIO
+void exposePinocchioFunctions();
+void exposeFreeFwdDynamics();
+void exposeConstraintFwdDynamics();
+#endif
 
 } // namespace python
 } // namespace proxddp

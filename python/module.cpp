@@ -20,6 +20,9 @@ BOOST_PYTHON_MODULE(pyproxddp) {
   bp::import("proxnlp");
 
   exposeFunctions();
+#ifdef PROXDDP_WITH_PINOCCHIO
+  exposePinocchioFunctions();
+#endif
   exposeCosts();
   exposeStage();
   exposeProblem();
