@@ -4,9 +4,18 @@
 
 namespace proxddp {
 
+template <typename Scalar>
+WorkspaceBaseTpl<Scalar>::WorkspaceBaseTpl(
+    const TrajOptProblemTpl<Scalar> &problem)
+    : nsteps(problem.numSteps()), problem_data(problem) {
+  trial_xs.resize(nsteps + 1);
+  trial_us.resize(nsteps);
+  xs_default_init(problem, trial_xs);
+  us_default_init(problem, trial_us);
+}
+
 template <typename Scalar> void WorkspaceBaseTpl<Scalar>::cycle_left() {
   rotate_vec_left(problem_data.stage_data);
-  rotate_vec_left(trial_prob_data.stage_data);
 
   rotate_vec_left(trial_xs);
   rotate_vec_left(trial_us);
@@ -19,7 +28,7 @@ template <typename Scalar> void WorkspaceBaseTpl<Scalar>::cycle_left() {
 
 template <typename Scalar>
 WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
-    : Base(problem), stage_inner_crits(nsteps + 1),
+    : Base(problem), trial_prob_data(problem), stage_inner_crits(nsteps + 1),
       stage_dual_infeas(nsteps + 1) {
 
   value_params.reserve(nsteps + 1);
@@ -125,6 +134,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 
 template <typename Scalar> void WorkspaceTpl<Scalar>::cycle_left() {
   Base::cycle_left();
+
+  rotate_vec_left(trial_prob_data.stage_data);
 
   rotate_vec_left(co_states_);
   rotate_vec_left(prox_datas);

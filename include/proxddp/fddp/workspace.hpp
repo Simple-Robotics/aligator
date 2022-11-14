@@ -29,9 +29,23 @@ template <typename Scalar> struct WorkspaceFDDPTpl : WorkspaceBaseTpl<Scalar> {
   /// LLT struct for each KKT system.
   std::vector<Eigen::LLT<MatrixXs>> llts_;
 
+  Scalar dg_ = 0.;
+  Scalar dq_ = 0.;
+  Scalar dv_ = 0.;
+
   explicit WorkspaceFDDPTpl(const TrajOptProblemTpl<Scalar> &problem);
 
-  void cycle_left() override;
+  void cycle_left();
+
+  /// @brief Same as cycle_left(), but add a StageDataTpl to problem_data.
+  /// @details The implementation pushes back on top of the vector of
+  /// StageDataTpl, rotates left, then pops the first element back out.
+  void cycle_append(const shared_ptr<StageModelTpl<Scalar>> &stage) {
+    auto sd = stage->createData();
+    this->problem_data.stage_data.push_back(sd);
+    this->cycle_left();
+    this->problem_data.stage_data.pop_back();
+  }
 };
 
 } // namespace proxddp

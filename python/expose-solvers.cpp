@@ -35,23 +35,16 @@ void exposeBase() {
       "StdVec_VParams");
 
   using WorkspaceBase = WorkspaceBaseTpl<Scalar>;
-  bp::class_<WorkspaceBase>("WorkspaceBase", bp::no_init)
+  bp::class_<WorkspaceBase>("WorkspaceBase", "Base workspace struct.",
+                            bp::no_init)
       .def_readonly("nsteps", &WorkspaceBase::nsteps)
       .def_readonly("problem_data", &WorkspaceBase::problem_data)
-      .def_readonly("trial_prob_data", &WorkspaceBase::trial_prob_data)
       .def_readonly("trial_xs", &WorkspaceBase::trial_xs)
       .def_readonly("trial_us", &WorkspaceBase::trial_us)
-      .def_readonly("value_params", &WorkspaceBase::value_params)
-      .def_readonly("q_params", &WorkspaceBase::q_params)
       .def_readonly("dyn_slacks", &WorkspaceBase::dyn_slacks,
                     "Expose dynamics' slack variables (e.g. feasibility gaps).")
-      .def("cycle_left", &WorkspaceBase::cycle_left, bp::args("self"),
-           "Cycle the workspace data to the left (useful for MPC).")
-      .def("cycle_append", &WorkspaceBase::cycle_append,
-           bp::args("self", "stage_model"),
-           "From a StageModel object, allocate its data object, rotate the "
-           "workspace (using `cycle_left()`) and insert the allocated data "
-           "(useful for MPC).");
+      .def_readonly("value_params", &WorkspaceBase::value_params)
+      .def_readonly("q_params", &WorkspaceBase::q_params);
 
   using ResultsBase = ResultsBaseTpl<Scalar>;
   bp::class_<ResultsBase>("ResultsBase", "Base results struct.", bp::no_init)
@@ -85,6 +78,7 @@ void exposeProxDDP() {
   bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>>(
       "Workspace", "Workspace for ProxDDP.",
       bp::init<const TrajOptProblem &>(bp::args("self", "problem")))
+      .def_readonly("trial_prob_data", &Workspace::trial_prob_data)
       .def_readonly("co_states", &Workspace::co_states_, "Co-state variable.")
       .def_readonly("prox_datas", &Workspace::prox_datas)
       .def_readonly("kkt_mat_", &Workspace::kkt_mat_buf_)
@@ -94,6 +88,11 @@ void exposeProxDDP() {
       .def_readonly("stage_prim_infeas", &Workspace::stage_prim_infeas)
       .def_readonly("stage_dual_infeas", &Workspace::stage_dual_infeas)
       .def_readonly("stage_inner_crits", &Workspace::stage_inner_crits)
+      .def("cycle_append", &Workspace::cycle_append,
+           bp::args("self", "stage_model"),
+           "From a StageModel object, allocate its data object, rotate the "
+           "workspace (using `cycle_left()`) and insert the allocated data "
+           "(useful for MPC).")
       .def(PrintableVisitor<Workspace>());
 
   bp::class_<Results, bp::bases<ResultsBaseTpl<Scalar>>>(

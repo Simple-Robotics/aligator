@@ -16,7 +16,12 @@ void exposeFDDP() {
   bp::class_<Workspace, bp::bases<Workspace::Base>>("WorkspaceFDDP",
                                                     bp::no_init)
       .def_readonly("dxs", &Workspace::dxs)
-      .def_readonly("dus", &Workspace::dus);
+      .def_readonly("dus", &Workspace::dus)
+      .def("cycle_append", &Workspace::cycle_append,
+           bp::args("self", "stage_model"),
+           "From a StageModel object, allocate its data object, rotate the "
+           "workspace (using `cycle_left()`) and insert the allocated data "
+           "(useful for MPC).");
 
   bp::class_<Results, bp::bases<Results::Base>>(
       "ResultsFDDP",

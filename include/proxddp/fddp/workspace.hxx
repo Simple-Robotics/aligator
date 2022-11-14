@@ -26,7 +26,6 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
     const StageModelTpl<Scalar> &sm = *problem.stages_[i];
     const int ndx = sm.ndx1();
     const int nu = sm.nu();
-    const int ndual = sm.numDual();
 
     value_params.emplace_back(ndx);
     q_params.emplace_back(ndx, nu, 0);

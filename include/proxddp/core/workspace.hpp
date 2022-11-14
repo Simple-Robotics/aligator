@@ -27,8 +27,6 @@ template <typename Scalar> struct WorkspaceBaseTpl {
   /// @name Linesearch data
   /// @{
 
-  /// Problem data instance for linesearch.
-  TrajOptDataTpl<Scalar> trial_prob_data;
   std::vector<VectorXs> trial_xs;
   std::vector<VectorXs> trial_us;
   /// @}
@@ -41,31 +39,9 @@ template <typename Scalar> struct WorkspaceBaseTpl {
   /// Q-function storage
   std::vector<QParamsType> q_params;
 
-  explicit WorkspaceBaseTpl(const TrajOptProblemTpl<Scalar> &problem)
-      : nsteps(problem.numSteps()), problem_data(problem),
-        trial_prob_data(problem) {
-    trial_xs.resize(nsteps + 1);
-    trial_us.resize(nsteps);
-    xs_default_init(problem, trial_xs);
-    us_default_init(problem, trial_us);
-  }
+  explicit WorkspaceBaseTpl(const TrajOptProblemTpl<Scalar> &problem);
 
-  virtual ~WorkspaceBaseTpl() = default;
-
-  /// @brief Cycle the workspace data to the left (useful for MPC).
-  virtual void cycle_left();
-
-  /// @brief Same as cycle_left(), but add a StageDataTpl to problem_data.
-  /// @details The implementation pushes back on top of the vector of
-  /// StageDataTpl, rotates left, then pops the first element back out.
-  void cycle_append(const shared_ptr<StageModelTpl<Scalar>> &stage) {
-    auto sd = stage->createData();
-    problem_data.stage_data.push_back(sd);
-    trial_prob_data.stage_data.push_back(sd);
-    this->cycle_left();
-    problem_data.stage_data.pop_back();
-    trial_prob_data.stage_data.pop_back();
-  }
+  void cycle_left();
 };
 
 /** @brief Workspace for solver SolverProxDDP.
@@ -85,10 +61,12 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using Base::nsteps;
   using Base::problem_data;
   using Base::q_params;
-  using Base::trial_prob_data;
   using Base::trial_us;
   using Base::trial_xs;
   using Base::value_params;
+
+  /// Problem data instance for linesearch.
+  TrajOptDataTpl<Scalar> trial_prob_data;
 
   /// Dynamics' co-states
   std::vector<VectorXs> co_states_;
@@ -143,7 +121,19 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
 
   explicit WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem);
 
-  void cycle_left() override;
+  void cycle_left();
+
+  /// @brief Same as cycle_left(), but add a StageDataTpl to problem_data.
+  /// @details The implementation pushes back on top of the vector of
+  /// StageDataTpl, rotates left, then pops the first element back out.
+  void cycle_append(const shared_ptr<StageModelTpl<Scalar>> &stage) {
+    auto sd = stage->createData();
+    problem_data.stage_data.push_back(sd);
+    trial_prob_data.stage_data.push_back(sd);
+    this->cycle_left();
+    problem_data.stage_data.pop_back();
+    trial_prob_data.stage_data.pop_back();
+  }
 
   template <typename T>
   friend std::ostream &operator<<(std::ostream &oss,
