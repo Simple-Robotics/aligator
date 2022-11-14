@@ -360,7 +360,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     bool d1_small = std::abs(d1_phi) < th_grad_;
     if (!d1_small) {
       FDDPGoldsteinLinesearch<Scalar>::run(linesearch_fun, ls_model, phi0,
-                                           verbose_, ls_params, alpha_opt);
+                                           ls_params, alpha_opt);
       record.step_size = alpha_opt;
     }
     Scalar phi_new = linesearch_fun(alpha_opt);

@@ -12,7 +12,7 @@ template <typename Scalar> struct FDDPGoldsteinLinesearch {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
   template <typename F, typename M>
-  static void run(F phi, M model, Scalar phi0, VerboseLevel verbose,
+  static void run(F phi, M model, Scalar phi0,
                   typename Linesearch<Scalar>::Options &ls_params,
                   Scalar &alpha_opt) {
     static Scalar th_accept_step_ = 0.1;
