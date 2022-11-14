@@ -34,7 +34,7 @@ template <typename Scalar> struct history_callback : base_callback<Scalar> {
     std::vector<Scalar> dual_tols;
   } storage;
 
-  void call(const Workspace &workspace, const Results &results) {
+  void call(const Workspace & /*workspace*/, const Results &results) {
     if (store_primal_dual_vars_) {
       storage.xs.push_back(results.xs);
       storage.us.push_back(results.us);

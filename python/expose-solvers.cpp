@@ -38,8 +38,6 @@ void exposeBase() {
   bp::class_<WorkspaceBase>("WorkspaceBase", bp::no_init)
       .def_readonly("nsteps", &WorkspaceBase::nsteps)
       .def_readonly("problem_data", &WorkspaceBase::problem_data)
-      .def_readonly("co_states", &WorkspaceBase::co_states_,
-                    "Co-state variable.")
       .def_readonly("trial_prob_data", &WorkspaceBase::trial_prob_data)
       .def_readonly("trial_xs", &WorkspaceBase::trial_xs)
       .def_readonly("trial_us", &WorkspaceBase::trial_us)
@@ -87,6 +85,8 @@ void exposeProxDDP() {
   bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>>(
       "Workspace", "Workspace for ProxDDP.",
       bp::init<const TrajOptProblem &>(bp::args("self", "problem")))
+      .def_readonly("co_states", &Workspace::co_states_, "Co-state variable.")
+      .def_readonly("prox_datas", &Workspace::prox_datas)
       .def_readonly("kkt_mat_", &Workspace::kkt_mat_buf_)
       .def_readonly("kkt_rhs_", &Workspace::kkt_rhs_buf_)
       .def_readonly("trial_lams", &Workspace::trial_lams)
@@ -94,7 +94,6 @@ void exposeProxDDP() {
       .def_readonly("stage_prim_infeas", &Workspace::stage_prim_infeas)
       .def_readonly("stage_dual_infeas", &Workspace::stage_dual_infeas)
       .def_readonly("stage_inner_crits", &Workspace::stage_inner_crits)
-      .def_readonly("prox_datas", &Workspace::prox_datas)
       .def(PrintableVisitor<Workspace>());
 
   bp::class_<Results, bp::bases<ResultsBaseTpl<Scalar>>>(
