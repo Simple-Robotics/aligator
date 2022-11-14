@@ -18,7 +18,7 @@
 
 #include <fmt/ostream.h>
 
-#define proxddp_fddp_warning(msg)                                              \
+#define PROXDDP_FDDP_WARNING(msg)                                              \
   fmt::print(fmt::fg(fmt::color::yellow), "[SolverFDDP] ({}) warning: {}",     \
              __FUNCTION__, msg)
 
@@ -100,16 +100,18 @@ template <typename Scalar> struct SolverFDDP {
   static Scalar forwardPass(const Problem &problem, const Results &results,
                             Workspace &workspace, const Scalar alpha);
 
-  void computeDirectionalDerivatives(Workspace &workspace, Results &results,
-                                     Scalar &d1, Scalar &d2) const;
+  /**
+   * @brief     Pre-compute the improvement model params.
+   * @details   Inspired from Crocoddyl.
+   */
+  void updateExpectedImprovement(Workspace &workspace, Results &results) const;
 
   /**
    * @brief    Correct the directional derivatives.
    * @details  This will re-compute the gap between the results trajectory and
    * the trial trajectory.
    */
-  static void directionalDerivativeCorrection(Workspace &workspace, Scalar &d1,
-                                              Scalar &d2);
+  void expectedImprovement(Workspace &workspace, Scalar &d1, Scalar &d2) const;
 
   /**
    * @brief   Computes dynamical feasibility gaps.
@@ -119,7 +121,6 @@ template <typename Scalar> struct SolverFDDP {
    */
   static Scalar computeInfeasibility(const Problem &problem,
                                      const std::vector<VectorXs> &xs,
-                                     const std::vector<VectorXs> &us,
                                      Workspace &workspace);
 
   /// @brief   Perform the backward pass and compute Riccati gains.
@@ -150,26 +151,6 @@ template <typename Scalar> struct SolverFDDP {
   void invokeCallbacks(Workspace &workspace, Results &results) {
     for (auto &cb : callbacks_) {
       cb->call(workspace, results);
-    }
-  }
-
-  /**
-   * @brief   Perform a linear rollout recovering the Newton step.
-   * @details This is useful for debugging purposes.
-   */
-  static void linearRollout(Workspace &workspace, const Results &results) {
-    const auto &fs = workspace.dyn_slacks;
-    auto &dxs = workspace.dxs;
-    auto &dus = workspace.dus;
-    dxs[0] = fs[0];
-    const std::size_t nsteps = workspace.nsteps;
-    for (std::size_t i = 0; i < nsteps; i++) {
-      const StageData &sd = workspace.problem_data.getStageData(i);
-      const ExpData &dd = stage_get_dynamics_data(sd);
-      auto ff = results.getFeedforward(i);
-      auto fb = results.getFeedback(i);
-      dus[i] = ff + fb * dxs[i];
-      dxs[i + 1] = fs[i + 1] + dd.Jx_ * dxs[i] + dd.Ju_ * dus[i];
     }
   }
 

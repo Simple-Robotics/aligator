@@ -26,14 +26,14 @@ void SolverFDDP<Scalar>::setup(const Problem &problem) {
     }
   }
   if (idx_where_constraints.size() > 0) {
-    proxddp_fddp_warning(
+    PROXDDP_FDDP_WARNING(
         fmt::format("problem stages [{}] have constraints, "
                     "which this solver cannot handle. "
                     "Please use a penalized cost formulation.\n",
                     fmt::join(idx_where_constraints, ", ")));
   }
   if (problem.term_constraint_) {
-    proxddp_fddp_warning(
+    PROXDDP_FDDP_WARNING(
         "problem has a terminal constraint, which this solver cannot "
         "handle.\n");
   }
@@ -89,52 +89,57 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
 }
 
 template <typename Scalar>
-void SolverFDDP<Scalar>::computeDirectionalDerivatives(Workspace &workspace,
-                                                       Results &results,
-                                                       Scalar &dgrad,
-                                                       Scalar &dquad) const {
+void SolverFDDP<Scalar>::expectedImprovement(Workspace &workspace, Scalar &d1,
+                                             Scalar &d2) const {
+  // equivalent to expectedImprovement() in crocoddyl
+  Scalar &dg_ = workspace.dg_;
+  Scalar &dq_ = workspace.dq_;
+  Scalar &dv_ = workspace.dv_;
+  dv_ = 0.;
   const std::size_t nsteps = workspace.nsteps;
   const std::vector<VectorXs> &fs = workspace.dyn_slacks;
-  dgrad = 0.; // cost directional derivative
-  dquad = 0.;
 
-  assert(workspace.q_params.size() == nsteps);
-  assert(workspace.value_params.size() == (nsteps + 1));
-  for (std::size_t i = 0; i < nsteps; i++) {
-    const QParams &qpar = workspace.q_params[i];
-    ConstVectorRef Qu = qpar.Qu;
-    ConstVectorRef ff = results.getFeedforward(i);
-    dgrad += Qu.dot(ff);
-    dquad += ff.dot(workspace.Quuks_[i]);
-  }
   for (std::size_t i = 0; i <= nsteps; i++) {
-    const VParams &vpar = workspace.value_params[i];
-    const VectorXs &ftVxx = workspace.ftVxx_[i];
-    dgrad += vpar.Vx().dot(fs[i]);
-    dquad -= ftVxx.dot(fs[i]);
+    const VParams &vp = workspace.value_params[i];
+    VectorXs &ftVxx = workspace.ftVxx_[i];
+    ftVxx.noalias() = vp.Vxx() * workspace.dxs[i];
+    dv_ -= fs[i].dot(ftVxx);
   }
+
+  d1 = dg_ + dv_;
+  d2 = dq_ + 2 * dv_;
 }
 
 template <typename Scalar>
-void SolverFDDP<Scalar>::directionalDerivativeCorrection(Workspace &workspace,
-                                                         Scalar &d1,
-                                                         Scalar &d2) {
+void SolverFDDP<Scalar>::updateExpectedImprovement(Workspace &workspace,
+                                                   Results &results) const {
+  // equivalent to updateExpectedImprovement() in crocoddyl
+  Scalar &dg_ = workspace.dg_;
+  Scalar &dq_ = workspace.dq_;
+  dg_ = 0.; // cost directional derivative
+  dq_ = 0.; // cost 2nd direct. derivative
+  const std::vector<VectorXs> &fs = workspace.dyn_slacks;
   const std::size_t nsteps = workspace.nsteps;
 
-  Scalar dv = 0.;
+  // in croco: feedback/feedforward sign is flipped
   for (std::size_t i = 0; i <= nsteps; i++) {
-    const VectorXs &ftVxx = workspace.ftVxx_[i];
-    dv += ftVxx.dot(workspace.dxs[i]);
+    if (i < nsteps) {
+      const QParams &qpar = workspace.q_params[i];
+      ConstVectorRef ff = results.getFeedforward(i);
+      dg_ += qpar.Qu.dot(ff);
+      dq_ += ff.dot(workspace.Quuks_[i]);
+    }
+    const VParams &vpar = workspace.value_params[i];
+    dg_ += vpar.Vx().dot(fs[i]);
+    VectorXs &ftVxx = workspace.ftVxx_[i];
+    ftVxx.noalias() = vpar.Vxx() * fs[i];
+    dq_ -= ftVxx.dot(fs[i]);
   }
-
-  d1 += -dv;
-  d2 += 2 * dv;
 }
 
 template <typename Scalar>
 Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem,
                                                 const std::vector<VectorXs> &xs,
-                                                const std::vector<VectorXs> &us,
                                                 Workspace &workspace) {
   const std::size_t nsteps = workspace.nsteps;
   const ProblemData &pd = workspace.problem_data;
@@ -300,8 +305,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
 
     problem.evaluate(results.xs, results.us, workspace.problem_data);
     results.traj_cost_ = computeTrajectoryCost(problem, workspace.problem_data);
-    results.prim_infeas =
-        computeInfeasibility(problem, results.xs, results.us, workspace);
+    results.prim_infeas = computeInfeasibility(problem, results.xs, workspace);
     problem.computeDerivatives(results.xs, results.us, workspace.problem_data);
 
     backwardPass(problem, workspace, results);
@@ -329,7 +333,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     Scalar phi0 = results.traj_cost_;
     PROXDDP_RAISE_IF_NAN(phi0);
     Scalar d1_phi = 0., d2_phi = 0.;
-    computeDirectionalDerivatives(workspace, results, d1_phi, d2_phi);
+    updateExpectedImprovement(workspace, results);
     PROXDDP_RAISE_IF_NAN(d1_phi);
     PROXDDP_RAISE_IF_NAN(d2_phi);
 #ifndef NDEBUG
@@ -344,11 +348,9 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
 #endif
 
     // quadratic model lambda; captures by copy
-    auto ls_model = [=, &workspace](Scalar alpha) {
-      Scalar d1 = d1_phi;
-      Scalar d2 = d2_phi;
-      directionalDerivativeCorrection(workspace, d1, d2);
-      return phi0 + alpha * (d1 + 0.5 * d2 * alpha);
+    auto ls_model = [&](Scalar alpha) {
+      expectedImprovement(workspace, d1_phi, d2_phi);
+      return phi0 + alpha * (d1_phi + 0.5 * d2_phi * alpha);
     };
 
     Scalar alpha_opt = 1;
