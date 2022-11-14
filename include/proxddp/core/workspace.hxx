@@ -13,7 +13,6 @@ template <typename Scalar> void WorkspaceBaseTpl<Scalar>::cycle_left() {
 
   rotate_vec_left(dyn_slacks);
 
-  rotate_vec_left(co_states_);
   rotate_vec_left(value_params);
   rotate_vec_left(q_params);
 }
@@ -40,6 +39,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   dus.reserve(nsteps);
   dlams.reserve(nsteps + 1);
   co_states_.reserve(nsteps);
+  this->dyn_slacks.reserve(nsteps);
 
   // initial condition
   {
@@ -81,7 +81,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     dus.emplace_back(pd_step_[i + 1].head(nu));
     dxs.emplace_back(pd_step_[i + 1].segment(nu, ndx2));
     dlams.emplace_back(pd_step_[i + 1].tail(ndual));
-    co_states_.push_back(dlams[i + 1].head(ndx2));
+    this->dyn_slacks.push_back(dlams[i + 1].head(ndx2));
   }
 
   {
@@ -109,7 +109,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   trial_lams = lams_plus;
   lams_prev = lams_plus;
   shifted_constraints = lams_plus;
-  dyn_slacks = co_states_;
+  this->co_states_ = this->dyn_slacks;
 
   math::setZero(kkt_mat_buf_);
   math::setZero(kkt_rhs_buf_);
@@ -126,6 +126,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 template <typename Scalar> void WorkspaceTpl<Scalar>::cycle_left() {
   Base::cycle_left();
 
+  rotate_vec_left(co_states_);
   rotate_vec_left(prox_datas);
   rotate_vec_left(lams_plus);
   rotate_vec_left(lams_pdal);

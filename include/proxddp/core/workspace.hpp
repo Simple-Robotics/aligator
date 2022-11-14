@@ -36,9 +36,6 @@ template <typename Scalar> struct WorkspaceBaseTpl {
   /// Feasibility gaps
   std::vector<VectorXs> dyn_slacks;
 
-  /// Dynamics' co-states
-  std::vector<VectorXs> co_states_;
-
   /// Value function parameter storage
   std::vector<VParamsType> value_params;
   /// Q-function storage
@@ -52,6 +49,8 @@ template <typename Scalar> struct WorkspaceBaseTpl {
     xs_default_init(problem, trial_xs);
     us_default_init(problem, trial_us);
   }
+
+  virtual ~WorkspaceBaseTpl() = default;
 
   /// @brief Cycle the workspace data to the left (useful for MPC).
   virtual void cycle_left();
@@ -83,8 +82,6 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using VParamsType = internal::value_storage<Scalar>;
   using LDLT = Eigen::LDLT<MatrixXs, Eigen::Lower>;
 
-  using Base::co_states_;
-  using Base::dyn_slacks;
   using Base::nsteps;
   using Base::problem_data;
   using Base::q_params;
@@ -92,6 +89,9 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using Base::trial_us;
   using Base::trial_xs;
   using Base::value_params;
+
+  /// Dynamics' co-states
+  std::vector<VectorXs> co_states_;
 
   /// Proximal penalty data.
   std::vector<shared_ptr<ProxData>> prox_datas;
