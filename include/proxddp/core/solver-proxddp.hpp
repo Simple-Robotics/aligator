@@ -162,30 +162,11 @@ public:
 
   void computeProxTerms(const std::vector<VectorXs> &xs,
                         const std::vector<VectorXs> &us,
-                        Workspace &workspace) const {
-    const std::size_t nsteps = workspace.nsteps;
-    for (std::size_t i = 0; i < nsteps; i++) {
-      prox_penalties_[i].evaluate(xs[i], us[i], *workspace.prox_datas[i]);
-    }
-    prox_penalties_[nsteps].evaluate(xs[nsteps], us[nsteps - 1],
-                                     *workspace.prox_datas[nsteps]);
-  }
+                        Workspace &workspace) const;
 
   void computeProxDerivatives(const std::vector<VectorXs> &xs,
                               const std::vector<VectorXs> &us,
-                              Workspace &workspace) const {
-    const std::size_t nsteps = workspace.nsteps;
-    for (std::size_t i = 0; i < nsteps; i++) {
-      prox_penalties_[i].computeGradients(xs[i], us[i],
-                                          *workspace.prox_datas[i]);
-      prox_penalties_[i].computeHessians(xs[i], us[i],
-                                         *workspace.prox_datas[i]);
-    }
-    prox_penalties_[nsteps].computeGradients(xs[nsteps], us[nsteps - 1],
-                                             *workspace.prox_datas[nsteps]);
-    prox_penalties_[nsteps].computeHessians(xs[nsteps], us[nsteps - 1],
-                                            *workspace.prox_datas[nsteps]);
-  }
+                              Workspace &workspace) const;
 
   /// Compute the Hamiltonian parameters at time @param t.
   void updateHamiltonian(const Problem &problem, const std::size_t t,
@@ -264,21 +245,14 @@ public:
 
   inline Scalar mu_dynamics() const { return mu() * mu_dyn_scale; }
 
-protected:
   /// @brief  Put together the Q-function parameters and compute the Riccati
   /// gains.
   inline bool computeGains(const Problem &problem, Workspace &workspace,
                            Results &results, const std::size_t step) const;
 
-  void updateTolerancesOnFailure() {
-    prim_tol_ = prim_tol0 * std::pow(mu_penal_, bcl_params.prim_alpha);
-    inner_tol_ = inner_tol0 * std::pow(mu_penal_, bcl_params.dual_alpha);
-  }
-
-  void updateTolerancesOnSuccess() {
-    prim_tol_ = prim_tol_ * std::pow(mu_penal_, bcl_params.prim_beta);
-    inner_tol_ = inner_tol_ * std::pow(mu_penal_, bcl_params.dual_beta);
-  }
+protected:
+  void updateTolerancesOnFailure();
+  void updateTolerancesOnSuccess();
 
   /// Set dual proximal/ALM penalty parameter.
   void setPenalty(Scalar new_mu) {
@@ -316,7 +290,7 @@ protected:
 private:
   /// Dual proximal/ALM penalty parameter \f$\mu\f$
   /// This is the global parameter: scales may be applied for stagewise
-  /// constraints, dynamical constraints, etc...
+  /// constraints, dynamicals...
   Scalar mu_penal_ = mu_init;
   /// Inverse ALM penalty parameter.
   Scalar mu_inverse_ = 1. / mu_penal_;

@@ -19,7 +19,7 @@ SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
                                      VerboseLevel verbose,
                                      HessianApprox hess_approx)
     : target_tol_(tol), mu_init(mu_init), rho_init(rho_init), verbose_(verbose),
-      rollout_type(RolloutType::NONLINEAR), hess_approx(hess_approx),
+      hess_approx(hess_approx), rollout_type(RolloutType::NONLINEAR),
       max_iters(max_iters), merit_fun(this) {
   ls_params.interp_type = proxnlp::LSInterpolation::CUBIC;
 }
@@ -68,9 +68,6 @@ void SolverProxDDP<Scalar>::tryStep(const Problem &problem,
   stage.xspace_next_->integrate(results.xs[nsteps],
                                 alpha * workspace.dxs[nsteps],
                                 workspace.trial_xs[nsteps]);
-
-  problem.evaluate(workspace.trial_xs, workspace.trial_us,
-                   workspace.trial_prob_data);
 }
 
 template <typename Scalar>
@@ -145,6 +142,33 @@ void SolverProxDDP<Scalar>::setup(const Problem &problem) {
 
   assert(prox_penalties_.size() == (nsteps + 1));
   assert(ws.prox_datas.size() == (nsteps + 1));
+}
+
+template <typename Scalar>
+void SolverProxDDP<Scalar>::computeProxTerms(const std::vector<VectorXs> &xs,
+                                             const std::vector<VectorXs> &us,
+                                             Workspace &workspace) const {
+  const std::size_t nsteps = workspace.nsteps;
+  for (std::size_t i = 0; i < nsteps; i++) {
+    prox_penalties_[i].evaluate(xs[i], us[i], *workspace.prox_datas[i]);
+  }
+  prox_penalties_[nsteps].evaluate(xs[nsteps], us[nsteps - 1],
+                                   *workspace.prox_datas[nsteps]);
+}
+
+template <typename Scalar>
+void SolverProxDDP<Scalar>::computeProxDerivatives(
+    const std::vector<VectorXs> &xs, const std::vector<VectorXs> &us,
+    Workspace &workspace) const {
+  const std::size_t nsteps = workspace.nsteps;
+  for (std::size_t i = 0; i < nsteps; i++) {
+    prox_penalties_[i].computeGradients(xs[i], us[i], *workspace.prox_datas[i]);
+    prox_penalties_[i].computeHessians(xs[i], us[i], *workspace.prox_datas[i]);
+  }
+  prox_penalties_[nsteps].computeGradients(xs[nsteps], us[nsteps - 1],
+                                           *workspace.prox_datas[nsteps]);
+  prox_penalties_[nsteps].computeHessians(xs[nsteps], us[nsteps - 1],
+                                          *workspace.prox_datas[nsteps]);
 }
 
 template <typename Scalar>
@@ -356,14 +380,16 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   const int nu = stage.nu();
   const int ndx2 = stage.ndx2();
 
-  assert(vnext.storage.rows() == ndx2 + 1);
-  assert(vnext.storage.cols() == ndx2 + 1);
-
   const VectorXs &laminnr = results.lams[t + 1];
   const VectorXs &lamplus = workspace.lams_plus[t + 1];
 
   MatrixXs &kkt_mat = workspace.kkt_mat_buf_[t + 1];
   MatrixXs &kkt_rhs = workspace.kkt_rhs_buf_[t + 1];
+
+  assert(kkt_mat.rows() == (nprim + ndual));
+  assert(kkt_rhs.rows() == (nprim + ndual));
+  assert(kkt_rhs.cols() == (ndx1 + 1));
+
   BlockXs kkt_jac = kkt_mat.block(nprim, 0, ndual, nprim);
   BlockXs kkt_top_left = kkt_mat.topLeftCorner(nprim, nprim);
   Eigen::Diagonal<BlockXs> kkt_low_right =
@@ -677,6 +703,18 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
 
   logger.finish(conv);
   return conv;
+}
+
+template <typename Scalar>
+void SolverProxDDP<Scalar>::updateTolerancesOnFailure() {
+  prim_tol_ = prim_tol0 * std::pow(mu_penal_, bcl_params.prim_alpha);
+  inner_tol_ = inner_tol0 * std::pow(mu_penal_, bcl_params.dual_alpha);
+}
+
+template <typename Scalar>
+void SolverProxDDP<Scalar>::updateTolerancesOnSuccess() {
+  prim_tol_ = prim_tol_ * std::pow(mu_penal_, bcl_params.prim_beta);
+  inner_tol_ = inner_tol_ * std::pow(mu_penal_, bcl_params.dual_beta);
 }
 
 template <typename Scalar>
