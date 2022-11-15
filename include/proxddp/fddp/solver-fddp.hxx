@@ -207,9 +207,9 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
 
     const int nu = sm.nu();
     const int ndx1 = sm.ndx1();
-    assert((qparam.storage.cols() == ndx + nu + 1) &&
-           (qparam.storage.rows() == ndx + nu + 1));
-    assert(qparam.grad_.size() == ndx + nu);
+    assert((qparam.storage.cols() == ndx1 + nu + 1) &&
+           (qparam.storage.rows() == ndx1 + nu + 1));
+    assert(qparam.grad_.size() == ndx1 + nu);
 
     const CostData &cd = *sd.cost_data;
     DynamicsDataTpl<Scalar> &dd = sd.dyn_data();
@@ -336,16 +336,6 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     updateExpectedImprovement(workspace, results);
     PROXDDP_RAISE_IF_NAN(d1_phi);
     PROXDDP_RAISE_IF_NAN(d2_phi);
-#ifndef NDEBUG
-    {
-      expectedImprovement(workspace, d1_phi, d2_phi);
-      const Scalar fd_eps = 1e-7;
-      Scalar phi_eps = linesearch_fun(fd_eps);
-      Scalar finite_diff_d1 = (phi_eps - phi0) / fd_eps;
-      assert(math::scalar_close(finite_diff_d1, d1_phi, std::pow(fd_eps, 0.5)));
-      d1_phi = finite_diff_d1;
-    }
-#endif
 
     // quadratic model lambda; captures by copy
     auto ls_model = [&](Scalar alpha) {
