@@ -19,8 +19,8 @@ BOOST_AUTO_TEST_CASE(lqr) {
   using crocoddyl::ActionModelLQR;
   using pcroc::context::ActionDataWrapper;
   using pcroc::context::ActionModelWrapper;
-  std::size_t nx = 4;
-  std::size_t nu = 3;
+  long nx = 4;
+  long nu = 3;
   crocoddyl::StateVector state(nx);
   Eigen::VectorXd x0 = state.zero();
   Eigen::VectorXd x1 = state.rand();
