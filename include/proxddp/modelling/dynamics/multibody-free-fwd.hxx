@@ -38,7 +38,7 @@ void MultibodyFreeFwdDynamicsTpl<Scalar>::forward(const ConstVectorRef &x,
                                                   const ConstVectorRef &u,
                                                   BaseData &data) const {
   Data &d = static_cast<Data &>(data);
-  d.tau_ = actuation_matrix_ * u;
+  d.tau_.noalias() = actuation_matrix_ * u;
   const pinocchio::ModelTpl<Scalar> &model = space_->getModel();
   const int nq = model.nq;
   const int nv = model.nv;
