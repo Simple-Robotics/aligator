@@ -127,7 +127,7 @@ protected:
 template <typename _Scalar>
 struct StageDataTpl : public Cloneable<StageDataTpl<_Scalar>> {
   using Scalar = _Scalar;
-  PROXNLP_FUNCTION_TYPEDEFS(Scalar);
+  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
   using StageModel = StageModelTpl<Scalar>;
   using CostDataAbstract = CostDataAbstractTpl<Scalar>;

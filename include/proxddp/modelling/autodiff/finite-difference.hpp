@@ -30,7 +30,7 @@ struct finite_difference_impl;
 template <typename _Scalar>
 struct finite_difference_impl<_Scalar, TOC1>
     : virtual StageFunctionTpl<_Scalar> {
-  PROXNLP_FUNCTION_TYPEDEFS(_Scalar);
+  PROXNLP_DYNAMIC_TYPEDEFS(_Scalar);
   using Base = StageFunctionTpl<_Scalar>;
   using BaseData = FunctionDataTpl<_Scalar>;
 
@@ -130,7 +130,7 @@ struct finite_difference_wrapper<_Scalar, TOC1>
   using Base::computeVectorHessianProducts;
   using Base::evaluate;
 
-  PROXNLP_FUNCTION_TYPEDEFS(_Scalar);
+  PROXNLP_DYNAMIC_TYPEDEFS(_Scalar);
 
   finite_difference_wrapper(const ManifoldAbstractTpl<Scalar> &space,
                             const InputType &func, const Scalar fd_eps)

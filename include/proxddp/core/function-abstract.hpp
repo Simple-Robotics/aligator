@@ -17,7 +17,7 @@ struct StageFunctionTpl
     : std::enable_shared_from_this<StageFunctionTpl<_Scalar>> {
 public:
   using Scalar = _Scalar;
-  PROXNLP_FUNCTION_TYPEDEFS(Scalar);
+  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Data = FunctionDataTpl<Scalar>;
 
   /// @brief Current state dimension
@@ -86,7 +86,7 @@ public:
 template <typename _Scalar>
 struct FunctionDataTpl : Cloneable<FunctionDataTpl<_Scalar>> {
   using Scalar = _Scalar;
-  PROXNLP_FUNCTION_TYPEDEFS(Scalar);
+  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   const int ndx1;

@@ -19,7 +19,7 @@ template <typename _Scalar>
 struct ExplicitDynamicsModelTpl : DynamicsModelTpl<_Scalar> {
 public:
   using Scalar = _Scalar;
-  PROXNLP_FUNCTION_TYPEDEFS(Scalar);
+  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = DynamicsModelTpl<Scalar>;
   using BaseData = DynamicsDataTpl<Scalar>;
   using Data = ExplicitDynamicsDataTpl<Scalar>;
@@ -54,7 +54,7 @@ template <typename _Scalar>
 struct ExplicitDynamicsDataTpl : FunctionDataTpl<_Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
-  PROXNLP_FUNCTION_TYPEDEFS(Scalar);
+  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = FunctionDataTpl<Scalar>;
   using Base::Ju_;
   using Base::Jx_;

@@ -22,16 +22,19 @@ template <typename _Scalar> struct value_storage {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   int ndx;
-  MatrixXs storage;
-  Scalar &v_2() { return storage.coeffRef(0, 0); }
+  VectorXs Vx_;
+  MatrixXs Vxx_;
+  Scalar v_;
 
-  value_storage(const int ndx)
-      : ndx(ndx), storage(MatrixXs::Zero(ndx + 1, ndx + 1)) {}
+  value_storage(const int ndx) : ndx(ndx), Vx_(ndx), Vxx_(ndx, ndx) {
+    Vx_.setZero();
+    Vxx_.setZero();
+  }
 
-  decltype(auto) Vx() { return storage.col(0).tail(ndx); }
-  decltype(auto) Vx() const { return storage.col(0).tail(ndx); }
-  decltype(auto) Vxx() { return storage.bottomRightCorner(ndx, ndx); }
-  decltype(auto) Vxx() const { return storage.bottomRightCorner(ndx, ndx); }
+  decltype(auto) Vx() { return Vx_; }
+  decltype(auto) Vx() const { return Vx_; }
+  decltype(auto) Vxx() { return Vxx_; }
+  decltype(auto) Vxx() const { return Vxx_; }
 
   friend std::ostream &operator<<(std::ostream &oss,
                                   const value_storage &store) {
