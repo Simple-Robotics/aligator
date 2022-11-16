@@ -53,7 +53,7 @@ void exposeCallbacks() {
         .def_readonly("prim_tols", &history_storage_t::prim_tols)
         .def_readonly("dual_tols", &history_storage_t::dual_tols);
 
-    pinpy::StdVectorPythonVisitor<std::vector<context::VectorOfVectors>, true>::
+    pp::StdVectorPythonVisitor<std::vector<context::VectorOfVectors>, true>::
         expose("StdVecVec_VectorXs",
                "std::vector of std::vector of Eigen::MatrixX.");
   }

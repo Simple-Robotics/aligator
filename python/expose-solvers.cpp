@@ -23,15 +23,14 @@ void exposeBase() {
                           bp::return_value_policy<bp::return_by_value>()));
 
   bp::class_<VParams>("VParams", "Value function parameters.", bp::no_init)
-      .def_readonly("storage", &VParams::storage)
       .add_property(
           "Vx", +[](const VParams &m) { return context::VectorXs(m.Vx()); })
       .add_property(
           "Vxx", +[](const VParams &m) { return context::MatrixXs(m.Vxx()); });
 
-  pinpy::StdVectorPythonVisitor<std::vector<QParams>, true>::expose(
+  pp::StdVectorPythonVisitor<std::vector<QParams>, true>::expose(
       "StdVec_QParams");
-  pinpy::StdVectorPythonVisitor<std::vector<VParams>, true>::expose(
+  pp::StdVectorPythonVisitor<std::vector<VParams>, true>::expose(
       "StdVec_VParams");
 
   using WorkspaceBase = WorkspaceBaseTpl<Scalar>;

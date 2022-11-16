@@ -12,7 +12,7 @@
 namespace proxddp {
 /// @brief  The Python bindings.
 namespace python {
-namespace pinpy = pinocchio::python;
+namespace pp = pinocchio::python;
 namespace bp = boost::python;
 
 /// Expose ternary functions

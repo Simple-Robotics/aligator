@@ -57,10 +57,10 @@ void exposeExplicitDynamics() {
            bp::args("self", "x", "u", "data"),
            "Compute the derivatives of forward discrete dynamics.");
 
-  pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<PyDynamicsModel>>,
-                                true>::expose("StdVec_Dynamics");
-  pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<PyExplicitDynamics<>>>,
-                                true>::expose("StdVec_ExplicitDynamics");
+  pp::StdVectorPythonVisitor<std::vector<shared_ptr<PyDynamicsModel>>,
+                             true>::expose("StdVec_Dynamics");
+  pp::StdVectorPythonVisitor<std::vector<shared_ptr<PyExplicitDynamics<>>>,
+                             true>::expose("StdVec_ExplicitDynamics");
 
   bp::register_ptr_to_python<shared_ptr<context::ExplicitDynData>>();
 

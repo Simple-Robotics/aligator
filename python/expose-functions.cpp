@@ -111,10 +111,11 @@ void exposeFunctionBase() {
       .def(PrintableVisitor<FunctionData>())
       .def(ClonePythonVisitor<FunctionData>());
 
-  pinpy::StdVectorPythonVisitor<std::vector<FunctionPtr>, true>::expose(
+  pp::StdVectorPythonVisitor<std::vector<FunctionPtr>, true>::expose(
       "StdVec_StageFunction", "Vector of function objects.");
-  pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<FunctionData>>, true>::
-      expose("StdVec_FunctionData", "Vector of function data objects.");
+  pp::StdVectorPythonVisitor<std::vector<shared_ptr<FunctionData>>,
+                             true>::expose("StdVec_FunctionData",
+                                           "Vector of function data objects.");
 
   bp::class_<StateErrorResidualTpl<Scalar>, bp::bases<StageFunction>>(
       "StateErrorResidual", bp::init<const shared_ptr<context::Manifold> &,
