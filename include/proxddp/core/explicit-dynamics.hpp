@@ -24,11 +24,12 @@ public:
   using BaseData = DynamicsDataTpl<Scalar>;
   using Data = ExplicitDynamicsDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
-  using Base::space_next_;
+  using ManifoldPtr = shared_ptr<Manifold>;
+
+  bool is_explicit() const { return true; }
 
   /// Constructor requires providing the next state's manifold.
-  ExplicitDynamicsModelTpl(const shared_ptr<Manifold> &next_state,
-                           const int nu);
+  ExplicitDynamicsModelTpl(ManifoldPtr next_state, const int nu);
   virtual ~ExplicitDynamicsModelTpl() = default;
 
   /// @brief Evaluate the forward discrete dynamics.

@@ -22,13 +22,15 @@ void exposeDynamics() {
       "DynamicsModel",
       "Dynamics models are specific ternary functions f(x,u,x') which map "
       "to the tangent bundle of the next state variable x'.",
-      bp::init<ManifoldPtr, const int, const int>(
-          bp::args("self", "space", "nu", "ndx2")))
-      .def(bp::init<ManifoldPtr, const int>(bp::args("self", "space", "nu")))
+      bp::init<ManifoldPtr, int>(bp::args("self", "space", "nu")))
+      .def(bp::init<ManifoldPtr, int, ManifoldPtr>(
+          bp::args("self", "space", "nu", "space2")))
       .def_readonly("space", &DynamicsModel::space_)
       .def_readonly("space_next", &DynamicsModel::space_next_)
       .add_property("nx1", &DynamicsModel::nx1)
       .add_property("nx2", &DynamicsModel::nx2)
+      .add_property("is_explicit", &DynamicsModel::is_explicit,
+                    "Return whether the current model is explicit.")
       .def(CreateDataPythonVisitor<DynamicsModel>());
 
   exposeExplicitDynamics();
@@ -47,7 +49,7 @@ void exposeExplicitDynamics() {
   bp::class_<PyExplicitDynamics<>, bp::bases<DynamicsModel>,
              boost::noncopyable>(
       "ExplicitDynamicsModel", "Base class for explicit dynamics.",
-      bp::init<const ManifoldPtr &, const int>(
+      bp::init<ManifoldPtr, const int>(
           "Constructor with state space and control dimension.",
           bp::args("self", "space", "nu")))
       .def("forward", bp::pure_virtual(&ExplicitDynamics::forward),

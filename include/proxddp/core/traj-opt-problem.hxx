@@ -117,6 +117,7 @@ TrajOptDataTpl<Scalar>::TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem)
 template <typename Scalar>
 Scalar computeTrajectoryCost(const TrajOptProblemTpl<Scalar> &problem,
                              const TrajOptDataTpl<Scalar> &problem_data) {
+  PROXDDP_EIGEN_ALLOW_MALLOC(false);
   Scalar traj_cost = 0.;
 
   const std::size_t nsteps = problem.numSteps();
@@ -126,6 +127,7 @@ Scalar computeTrajectoryCost(const TrajOptProblemTpl<Scalar> &problem,
   }
   traj_cost += problem_data.term_cost_data->value_;
 
+  PROXDDP_EIGEN_ALLOW_MALLOC(true);
   return traj_cost;
 }
 
