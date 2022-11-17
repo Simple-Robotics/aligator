@@ -55,6 +55,6 @@ and use `$CONDA_PREFIX` as your install folder.
 * [Wilson Jallet](https://manifoldfr.github.io/)
 * [Sarah Kazdadi](https://github.com/sarah-ek/)
 * [Quentin Le Lidec](https://quentinll.github.io/)
-* Nicolas Mansard
-* Guilhem Saurel
-* Fabian Schramm
+* [Nicolas Mansard](https://gepettoweb.laas.fr/index.php/Members/NicolasMansard)
+* [Guilhem Saurel](https://github.com/nim65s)
+* [Fabian Schramm](https://github.com/fabinsch)
