@@ -140,7 +140,7 @@ template <typename Scalar> struct SolverFDDP {
   }
 
   /// @brief Compute the dual feasibility of the problem.
-  void computeCriterion(Workspace &workspace, Results &results);
+  Scalar computeCriterion(Workspace &workspace);
 
   /// @brief    Add a callback to the solver instance.
   void registerCallback(const CallbackPtr &cb) { callbacks_.push_back(cb); }
@@ -157,22 +157,14 @@ template <typename Scalar> struct SolverFDDP {
   bool run(const Problem &problem, const std::vector<VectorXs> &xs_init = {},
            const std::vector<VectorXs> &us_init = {});
 
-  static ExpData &stage_get_dynamics_data(StageDataTpl<Scalar> &sd) {
-    try {
-      return dynamic_cast<ExpData &>(*sd.constraint_data[0]);
-    } catch (const std::bad_cast &e) {
-      PROXDDP_RUNTIME_ERROR(
-          fmt::format("{}: failed to cast to ExplicitDynamicsData.", e.what()));
-    }
-  }
-
   static const ExpData &
   stage_get_dynamics_data(const StageDataTpl<Scalar> &sd) {
+    const auto &dd = sd.dyn_data();
     try {
-      return dynamic_cast<const ExpData &>(*sd.constraint_data[0]);
-    } catch (const std::bad_cast &e) {
-      PROXDDP_RUNTIME_ERROR(
-          fmt::format("{}: failed to cast to ExplicitDynamicsData.", e.what()));
+      return static_cast<const ExpData &>(dd);
+    } catch (std::bad_cast &e) {
+      PROXDDP_RUNTIME_ERROR(fmt::format(
+          "Failed to cast to ExplicitDynamicsData ({}).", e.what()));
     }
   }
 };

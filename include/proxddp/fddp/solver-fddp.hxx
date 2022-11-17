@@ -160,8 +160,7 @@ Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem,
 }
 
 template <typename Scalar>
-void SolverFDDP<Scalar>::computeCriterion(Workspace &workspace,
-                                          Results &results) {
+Scalar SolverFDDP<Scalar>::computeCriterion(Workspace &workspace) {
   const std::size_t nsteps = workspace.nsteps;
   std::vector<ConstVectorRef> Qus;
   for (std::size_t i = 0; i < nsteps; i++) {
@@ -172,7 +171,7 @@ void SolverFDDP<Scalar>::computeCriterion(Workspace &workspace,
     std::fclose(fi);
 #endif
   }
-  results.dual_infeas = math::infty_norm(Qus);
+  return math::infty_norm(Qus);
 }
 
 template <typename Scalar>
@@ -309,7 +308,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     problem.computeDerivatives(results.xs, results.us, workspace.problem_data);
 
     backwardPass(problem, workspace, results);
-    computeCriterion(workspace, results);
+    results.dual_infeas = computeCriterion(workspace);
 
     PROXDDP_RAISE_IF_NAN(results.prim_infeas);
     PROXDDP_RAISE_IF_NAN(results.dual_infeas);
