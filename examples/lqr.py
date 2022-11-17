@@ -4,8 +4,7 @@ import tap
 import numpy as np
 import matplotlib.pyplot as plt
 
-from proxddp import dynamics, manifolds
-from proxnlp import constraints
+from proxddp import dynamics, constraints, manifolds
 
 
 class Args(tap.Tap):
@@ -42,7 +41,7 @@ rcost0 = proxddp.QuadraticCost(Q, R)
 rcost = proxddp.CostStack(nx, nu, [rcost0], [1.0])
 term_cost = proxddp.QuadraticCost(Qf, R)
 dynmodel = dynamics.LinearDiscreteDynamics(A, B, c)
-stage = proxddp.StageModel(space, nu, rcost, dynmodel)
+stage = proxddp.StageModel(rcost, dynmodel)
 if args.bounds:
     u_min = -0.15 * np.ones(nu)
     u_max = +0.15 * np.ones(nu)
@@ -68,8 +67,9 @@ mu_init = 1e-1
 rho_init = 0.0
 verbose = proxddp.VerboseLevel.VERBOSE
 tol = 1e-6
-solver = proxddp.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
-solver.rollout_type = proxddp.ROLLOUT_NONLINEAR
+# solver = proxddp.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
+# solver.rollout_type = proxddp.ROLLOUT_NONLINEAR
+solver = proxddp.SolverFDDP(tol, verbose=verbose)
 his_cb = proxddp.HistoryCallback()
 solver.registerCallback(his_cb)
 solver.max_iters = 20

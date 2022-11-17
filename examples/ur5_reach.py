@@ -5,6 +5,7 @@ import pinocchio as pin
 import meshcat_utils as msu
 import example_robot_data as erd
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 
 from proxddp import constraints, manifolds, dynamics  # noqa
 from pinocchio.visualize import MeshcatVisualizer
@@ -14,6 +15,8 @@ from common import ArgsBase, get_endpoint_traj
 
 class Args(ArgsBase):
     plot: bool = True
+    fddp: bool = False
+    bounds: bool = False
 
     def process_args(self):
         if self.record:
@@ -38,6 +41,7 @@ viz_util.set_bg_color()
 
 x0 = space.neutral()
 
+ndx = space.ndx
 nq = rmodel.nq
 nv = rmodel.nv
 nu = nv
@@ -54,7 +58,7 @@ nsteps = int(Tf / dt)
 ode = dynamics.MultibodyFreeFwdDynamics(space, B_mat)
 discrete_dynamics = dynamics.IntegratorSemiImplEuler(ode, dt)
 
-wt_x = 1e-4 * np.ones(space.ndx)
+wt_x = 1e-4 * np.ones(ndx)
 wt_x[nv:] = 1e-2
 wt_x = np.diag(wt_x)
 wt_u = 1e-4 * np.eye(nu)
@@ -65,26 +69,29 @@ tool_id = rmodel.getFrameId(tool_name)
 target_pos = np.array([0.15, 0.65, 0.5])
 print(target_pos)
 
-frame_fn = proxddp.FrameTranslationResidual(space.ndx, nu, rmodel, target_pos, tool_id)
+frame_fn = proxddp.FrameTranslationResidual(ndx, nu, rmodel, target_pos, tool_id)
 v_ref = pin.Motion()
 v_ref.np[:] = 0.0
-frame_vel_fn = proxddp.FrameVelocityResidual(
-    space.ndx, nu, rmodel, v_ref, tool_id, pin.LOCAL
-)
+frame_vel_fn = proxddp.FrameVelocityResidual(ndx, nu, rmodel, v_ref, tool_id, pin.LOCAL)
 wt_x_term = wt_x.copy()
 wt_x_term[:] = 1e-4
 wt_frame_pos = 10.0 * np.eye(frame_fn.nr)
 wt_frame_vel = 100.0 * np.ones(frame_vel_fn.nr)
 wt_frame_vel = np.diag(wt_frame_vel)
 
-term_cost = proxddp.CostStack(space.ndx, nu)
+term_cost = proxddp.CostStack(ndx, nu)
 term_cost.addCost(proxddp.QuadraticCost(wt_x_term, wt_u * 0))
 term_cost.addCost(proxddp.QuadraticResidualCost(frame_fn, wt_frame_pos))
 term_cost.addCost(proxddp.QuadraticResidualCost(frame_vel_fn, wt_frame_vel))
 
 u_max = rmodel.effortLimit
 u_min = -u_max
-ctrl_box = proxddp.ControlBoxFunction(space.ndx, u_min, u_max)
+
+
+def make_control_bounds():
+    fun = proxddp.ControlErrorResidual(ndx, nu)
+    cstr_set = constraints.BoxConstraint(u_min, u_max)
+    return proxddp.StageConstraint(fun, cstr_set)
 
 
 def computeQuasistatic(model: pin.Model, x0, a):
@@ -102,18 +109,16 @@ init_xs = proxddp.rollout(discrete_dynamics, x0, init_us)
 stages = []
 
 for i in range(nsteps):
-    rcost = proxddp.CostStack(space.ndx, nu)
+    rcost = proxddp.CostStack(ndx, nu)
     rcost.addCost(proxddp.QuadraticCost(wt_x * dt, wt_u * dt))
 
-    stm = proxddp.StageModel(space, nu, rcost, discrete_dynamics)
-    # stm.addConstraint(ctrl_box, constraints.NegativeOrthant())
+    stm = proxddp.StageModel(rcost, discrete_dynamics)
+    if args.bounds:
+        stm.addConstraint(make_control_bounds())
     stages.append(stm)
 
 
 problem = proxddp.TrajOptProblem(x0, stages, term_cost=term_cost)
-# problem.setTerminalConstraint(
-#     proxddp.StageConstraint(frame_fn, constraints.EqualityConstraintSet())
-# )
 tol = 1e-7
 
 mu_init = 1e-7
@@ -124,8 +129,9 @@ solver = proxddp.SolverProxDDP(
     tol, mu_init, rho_init, max_iters=max_iters, verbose=verbose
 )
 solver.rollout_type = proxddp.ROLLOUT_NONLINEAR
-solver.dual_weight = 0.0
-# solver = proxddp.SolverFDDP(tol, verbose, max_iters=max_iters)
+
+if args.fddp:
+    solver = proxddp.SolverFDDP(tol, verbose, max_iters=max_iters)
 cb = proxddp.HistoryCallback()
 solver.registerCallback(cb)
 solver.setup(problem)
@@ -141,33 +147,50 @@ us_opt = np.asarray(results.us.tolist())
 
 times = np.linspace(0.0, Tf, nsteps + 1)
 
-gs = plt.GridSpec(2, 2)
+fig: plt.Figure = plt.figure(constrained_layout=True)
+fig.set_size_inches(6.4, 6.4)
+
+gs = gridspec.GridSpec(2, 2, figure=fig, height_ratios=[1, 2])
+_u_ncol = 2
+_u_nrow, rmdr = divmod(nu, _u_ncol)
+if rmdr > 0:
+    _u_nrow += 1
+gs1 = gs[1, :].subgridspec(_u_nrow, _u_ncol)
 
 plt.subplot(gs[0, 0])
 plt.plot(times, xs_opt)
 plt.title("States")
 
-plt.subplot(gs[1, 0])
-ls = plt.plot(times[1:], us_opt)
-ylim = plt.ylim()
-for i in range(nu):
-    plt.hlines(
-        (u_min[i], u_max[i]), *times[[0, -1]], linestyles="--", colors=ls[i].get_color()
-    )
-plt.ylim(ylim)
-plt.title("Controls")
+axarr = gs1.subplots(sharex=True)
+handles_ = []
+lss_ = []
 
+for i in range(nu):
+    ax: plt.Axes = axarr.flat[i]
+    (ls,) = ax.plot(times[1:], us_opt[:, i])
+    lss_.append(ls)
+    if args.bounds:
+        col = lss_[i].get_color()
+        hl = ax.hlines(
+            (u_min[i], u_max[i]), *times[[0, -1]], linestyles="--", colors=col
+        )
+        handles_.append(hl)
+    fontsize = 7
+    ax.set_ylabel("$u_{{%d}}$" % (i + 1), fontsize=fontsize)
+    ax.tick_params(axis="both", labelsize=fontsize)
+    ax.tick_params(axis="y", rotation=90)
+    if i + 1 == nu - 1:
+        ax.set_xlabel("time", loc="left", fontsize=fontsize)
 
 pts = get_endpoint_traj(rmodel, rdata, xs_opt, tool_id)
 
-ax = plt.subplot(gs[:, 1], projection="3d")
+ax = plt.subplot(gs[0, 1], projection="3d")
 ax.plot(*pts.T, lw=1.0)
 ax.scatter(*target_pos, marker="^", c="r")
 
 ax.set_xlabel("$x$")
 ax.set_ylabel("$y$")
 ax.set_zlabel("$z$")
-plt.tight_layout()
 
 plt.figure()
 

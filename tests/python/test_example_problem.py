@@ -74,7 +74,7 @@ class TestClass:
     x0 = space.neutral()
     dynmodel = TwistModelExplicit(dt)
     cost = MyQuadCost(W=np.eye(space.ndx), x_ref=x1)
-    stage_model = proxddp.StageModel(space, nu, cost, dynmodel)
+    stage_model = proxddp.StageModel(cost, dynmodel)
 
     def test_dyn(self, nsteps):
         dyn_data = self.dynmodel.createData()

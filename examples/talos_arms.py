@@ -79,7 +79,7 @@ rcost = proxddp.CostStack(space.ndx, nu)
 rcost.addCost(proxddp.QuadraticCost(w_x, w_u), dt)
 rcost.addCost(frame_fn_cost.copy(), 0.01 * dt)
 
-stm = proxddp.StageModel(space, nu, rcost, dyn_model)
+stm = proxddp.StageModel(rcost, dyn_model)
 umax = rmodel.effortLimit
 umin = -umax
 if args.bounds:

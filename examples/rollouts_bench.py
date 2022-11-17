@@ -45,7 +45,7 @@ def main(roltype, mu_init):
         w_term_ee,
     )
 
-    stage_model = proxddp.StageModel(space, nu, rcost, dyn_model)
+    stage_model = proxddp.StageModel(rcost, dyn_model)
     stages = [stage_model for _ in range(nsteps)]
 
     x0 = space.neutral()

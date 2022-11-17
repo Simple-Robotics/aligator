@@ -78,7 +78,7 @@ def make_ee_residual():
 w_x = np.ones(ndx) * 0.01
 w_x[:nv] = 1e-6
 w_x = np.diag(w_x)
-w_u = np.eye(nu) * 0.001
+w_u = 1e-3 * np.eye(nu)
 
 rcost = proxddp.CostStack(ndx, nu)
 rcost.addCost(proxddp.QuadraticCost(w_x * dt, w_u * dt))
@@ -87,21 +87,23 @@ rcost.addCost(proxddp.QuadraticCost(w_x * dt, w_u * dt))
 
 weights_ee = 5.0 * np.eye(3)
 weights_ee_term = 10.0 * np.eye(3)
-p_ref_term = np.array([0.2, 0.3, table_height + 0.1])
-frame_obj_fn = proxddp.FrameTranslationResidual(ndx, nu, rmodel, p_ref_term, frame_id)
+p_ref = np.array([0.2, 0.3, table_height + 0.1])
+frame_obj_fn = proxddp.FrameTranslationResidual(ndx, nu, rmodel, p_ref, frame_id)
 
 rcost.addCost(proxddp.QuadraticResidualCost(frame_obj_fn, weights_ee * dt))
 
 term_cost = proxddp.CostStack(ndx, nu)
 term_cost.addCost(proxddp.QuadraticResidualCost(frame_obj_fn, weights_ee_term))
 
-time_idx_require_above_table = int(0.4 * nsteps)
 frame_fn_z = make_ee_residual()
 frame_cstr = proxddp.StageConstraint(frame_fn_z, constraints.NegativeOrthant())
+
+
+time_idx_below_ = int(0.3 * nsteps)
 stages = []
 for i in range(nsteps):
-    stm = proxddp.StageModel(space, nu, rcost, dyn_model)
-    if i >= time_idx_require_above_table:
+    stm = proxddp.StageModel(rcost, dyn_model)
+    if i > time_idx_below_:
         stm.addConstraint(frame_cstr)
     stages.append(stm)
 
@@ -110,13 +112,12 @@ problem = proxddp.TrajOptProblem(x0, stages, term_cost)
 problem.setTerminalConstraint(frame_cstr)
 
 
-tol = 1e-3
+tol = 1e-4
 mu_init = 0.1
 max_iters = 50
 verbose = proxddp.VerboseLevel.VERBOSE
 solver = proxddp.SolverProxDDP(tol, mu_init, max_iters=max_iters)
 solver.verbose = verbose
-solver.rollout_type = proxddp.ROLLOUT_NONLINEAR
 # solver.dump_linesearch_plot = True
 
 solver.setup(problem)
@@ -146,7 +147,8 @@ for i in range(nsteps):
 
 times = np.linspace(0.0, Tf, nsteps + 1)
 plt.subplot(131)
-plt.plot(times[time_idx_require_above_table:-1], ineq_cstr_values)
+n = len(ineq_cstr_values)
+plt.plot(times[-n:], ineq_cstr_values)
 plt.title("Inequality constraint values")
 plt.xlabel("Time")
 plt.subplot(132)
@@ -191,7 +193,7 @@ if args.display:
         vizer.viewer["plane_y2"].set_transform(_M3)
 
     planehoz()
-    vizutil.draw_objective(target=p_ref_term)
+    vizutil.draw_objective(target=p_ref)
 
     slow_factor = 2.0
     play_dt = dt / slow_factor

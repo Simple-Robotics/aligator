@@ -167,7 +167,7 @@ Tf = nsteps * dt
 problem = proxddp.TrajOptProblem(x0, nu, space, term_cost)
 
 for i in range(nsteps):
-    stage = proxddp.StageModel(space, nu, rcost, dyn_model)
+    stage = proxddp.StageModel(rcost, dyn_model)
     stage.addConstraint(box_cstr)
     problem.addStage(stage)
 

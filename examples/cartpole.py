@@ -89,7 +89,7 @@ Tf = nsteps * time_step
 problem = proxddp.TrajOptProblem(x0, nu, space, term_cost)
 
 for i in range(nsteps):
-    stage = proxddp.StageModel(space, nu, rcost, disc_dyn)
+    stage = proxddp.StageModel(rcost, disc_dyn)
     stage.addConstraint(
         proxddp.StageConstraint(ctrl_box, proxnlp.constraints.NegativeOrthant())
     )

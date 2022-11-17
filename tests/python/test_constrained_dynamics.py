@@ -284,7 +284,7 @@ def test_constrained_dynamics():
         ucost = proxddp.QuadraticResidualCost(u_err, w_u * dt)
         rcost.addCost(ucost)
 
-        stage = proxddp.StageModel(space, nu, rcost, discrete_dynamics)
+        stage = proxddp.StageModel(rcost, discrete_dynamics)
 
         stages.append(stage)
 

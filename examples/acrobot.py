@@ -48,7 +48,7 @@ nsteps = int(Tf / timestep)
 
 stages = []
 for i in range(nsteps):
-    stages.append(proxddp.StageModel(space, nu, cost, dyn_model))
+    stages.append(proxddp.StageModel(cost, dyn_model))
 
 problem = proxddp.TrajOptProblem(x0, stages, term_cost)
 term_cstr = proxddp.StageConstraint(

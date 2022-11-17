@@ -62,7 +62,7 @@ struct MyFixture {
       : space(std::make_shared<Manifold>()), nx(space->nx()), nu(space->ndx()),
         dyn_model(std::make_shared<MyModel>(space)),
         cost(std::make_shared<MyCost>(nx, nu)),
-        stage(new StageModel(space, nu, cost, dyn_model)),
+        stage(std::make_shared<StageModel>(cost, dyn_model)),
         problem(space->neutral(), nu, space, cost) {
     problem.addStage(stage);
     problem.addStage(stage);

@@ -253,7 +253,7 @@ def main(args: Args):
             ucost = proxddp.QuadraticResidualCost(u_err, w_u * dt)
             rcost.addCost(ucost)
 
-            stage = proxddp.StageModel(space, nu, rcost, dynmodel)
+            stage = proxddp.StageModel(rcost, dynmodel)
             if args.bounds:
                 stage.addConstraint(ctrl_cstr)
             if args.obstacles:  # add obstacles' constraints

@@ -29,18 +29,22 @@ public:
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
   using Manifold = ManifoldAbstractTpl<Scalar>;
+  using ManifoldPtr = shared_ptr<Manifold>;
   using Dynamics = DynamicsModelTpl<Scalar>;
+  using DynamicsPtr = shared_ptr<Dynamics>;
+  using FunctionPtr = shared_ptr<StageFunctionTpl<Scalar>>;
+  using ConstraintSetPtr = shared_ptr<ConstraintSetBase<Scalar>>;
   using Constraint = StageConstraintTpl<Scalar>;
   using Cost = CostAbstractTpl<Scalar>;
   using Data = StageDataTpl<Scalar>;
   using VectorSpace = proxnlp::VectorSpaceTpl<Scalar>;
 
   /// State space for the current state \f$x_k\f$.
-  shared_ptr<Manifold> xspace_;
+  ManifoldPtr xspace_;
   /// State space for the next state \f$x_{k+1}\f$.
-  shared_ptr<Manifold> xspace_next_;
+  ManifoldPtr xspace_next_;
   /// Control vector space -- by default, a simple Euclidean space.
-  shared_ptr<Manifold> uspace_;
+  ManifoldPtr uspace_;
   /// Stage cost function.
   shared_ptr<Cost> cost_;
   /// Constraint manager.
@@ -51,7 +55,13 @@ public:
   const Manifold &xspace_next() const { return *xspace_next_; }
   virtual const Dynamics &dyn_model() const {
     assert(constraints_.numConstraints() > 0);
-    return dynamic_cast<const Dynamics &>(*constraints_[0].func);
+    auto dyn_ptr = std::static_pointer_cast<Dynamics>(constraints_[0].func);
+    if (dyn_ptr == 0) {
+      PROXDDP_RUNTIME_ERROR(
+          "First element of constraints_ array should be a DynamicsModel.");
+    } else {
+      return *dyn_ptr;
+    }
   }
 
   const Constraint &getConstraint(std::size_t j) const {
@@ -76,18 +86,9 @@ public:
   /// Number of dual variables, i.e. Lagrange multipliers.
   int numDual() const;
 
-  /// Default constructor: assumes the control space is a Euclidean space of
+  /// Constructor assumes the control space is a Euclidean space of
   /// dimension \p nu.
-  StageModelTpl(const shared_ptr<Manifold> &space1, const int nu,
-                const shared_ptr<Manifold> &space2,
-                const shared_ptr<Cost> &cost,
-                const shared_ptr<Dynamics> &dyn_model);
-
-  /// Secondary constructor: use a single manifold.
-  StageModelTpl(const shared_ptr<Manifold> &space, const int nu,
-                const shared_ptr<Cost> &cost,
-                const shared_ptr<Dynamics> &dyn_model);
-
+  StageModelTpl(shared_ptr<Cost> cost, DynamicsPtr dyn_model);
   virtual ~StageModelTpl() = default;
 
   /// @brief    Add a constraint to the stage.
@@ -95,8 +96,7 @@ public:
 
   /// @copybrief  addConstraint().
   /// @details    Adds a constraint by allocating a new StageConstraintTpl.
-  void addConstraint(const shared_ptr<StageFunctionTpl<Scalar>> &func,
-                     const shared_ptr<ConstraintSetBase<Scalar>> &cstr_set);
+  void addConstraint(FunctionPtr func, ConstraintSetPtr cstr_set);
 
   /* Evaluate costs, constraints, ... */
 
@@ -118,9 +118,7 @@ public:
                                   const StageModelTpl<S> &stage);
 
 protected:
-  StageModelTpl(const shared_ptr<Manifold> &space, const int nu)
-      : xspace_(space), xspace_next_(space),
-        uspace_(std::make_shared<VectorSpace>(nu)) {}
+  StageModelTpl(ManifoldPtr space, const int nu);
 };
 
 /// @brief    Data struct for stage models StageModelTpl.
@@ -147,10 +145,11 @@ struct StageDataTpl : public Cloneable<StageDataTpl<_Scalar>> {
 
   virtual ~StageDataTpl() = default;
 
-  decltype(auto) dyn_data() {
+  DynamicsData &dyn_data() {
     return static_cast<DynamicsData &>(*constraint_data[0]);
   }
-  decltype(auto) dyn_data() const {
+
+  const DynamicsData &dyn_data() const {
     return static_cast<const DynamicsData &>(*constraint_data[0]);
   }
 
@@ -172,7 +171,7 @@ struct StageDataTpl : public Cloneable<StageDataTpl<_Scalar>> {
   }
 
 protected:
-  StageDataTpl(){};
+  StageDataTpl() = default;
 };
 
 } // namespace proxddp

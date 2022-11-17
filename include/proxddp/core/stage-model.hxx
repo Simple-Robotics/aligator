@@ -8,26 +8,39 @@
 
 namespace proxddp {
 
+namespace {
+
+using proxnlp::VectorSpaceTpl;
+template <typename T>
+shared_ptr<VectorSpaceTpl<T>> make_vector_space(const int n) {
+  return std::make_shared<VectorSpaceTpl<T>>(n);
+}
+
+} // namespace
+
 /* StageModelTpl */
 
 template <typename Scalar>
-StageModelTpl<Scalar>::StageModelTpl(const shared_ptr<Manifold> &space1,
-                                     const int nu,
-                                     const shared_ptr<Manifold> &space2,
-                                     const shared_ptr<Cost> &cost,
-                                     const shared_ptr<Dynamics> &dyn_model)
-    : xspace_(space1), xspace_next_(space2),
-      uspace_(std::make_shared<VectorSpace>(nu)), cost_(cost) {
+StageModelTpl<Scalar>::StageModelTpl(shared_ptr<Cost> cost,
+                                     DynamicsPtr dyn_model)
+    : xspace_(dyn_model->space_), xspace_next_(dyn_model->space_next_),
+      uspace_(make_vector_space<Scalar>(dyn_model->nu)), cost_(cost) {
+
+  if (cost->nu != dyn_model->nu) {
+    PROXDDP_RUNTIME_ERROR(fmt::format("Control dimensions cost.nu ({:d}) and "
+                                      "dyn_model.nu ({;d}) are inconsistent.",
+                                      cost->nu, dyn_model->nu));
+  }
+
   using EqualitySet = proxnlp::EqualityConstraint<Scalar>;
   constraints_.push_back(
       Constraint{dyn_model, std::make_shared<EqualitySet>()});
 }
 
 template <typename Scalar>
-StageModelTpl<Scalar>::StageModelTpl(const shared_ptr<Manifold> &space,
-                                     const int nu, const shared_ptr<Cost> &cost,
-                                     const shared_ptr<Dynamics> &dyn_model)
-    : StageModelTpl(space, nu, space, cost, dyn_model) {}
+StageModelTpl<Scalar>::StageModelTpl(ManifoldPtr space, const int nu)
+    : xspace_(space), xspace_next_(space),
+      uspace_(make_vector_space<Scalar>(nu)) {}
 
 template <typename Scalar> inline int StageModelTpl<Scalar>::numPrimal() const {
   return this->nu() + this->ndx2();
@@ -50,9 +63,8 @@ void StageModelTpl<Scalar>::addConstraint(T &&cstr) {
 }
 
 template <typename Scalar>
-void StageModelTpl<Scalar>::addConstraint(
-    const shared_ptr<StageFunctionTpl<Scalar>> &func,
-    const shared_ptr<ConstraintSetBase<Scalar>> &cstr_set) {
+void StageModelTpl<Scalar>::addConstraint(FunctionPtr func,
+                                          ConstraintSetPtr cstr_set) {
   if (func->nu != this->nu()) {
     PROXDDP_RUNTIME_ERROR(fmt::format(
         "Function has the wrong dimension for u: got {:d}, expected {:d}",

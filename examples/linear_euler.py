@@ -26,7 +26,7 @@ rcost.addCost(proxddp.QuadraticCost(w_x * dt, w_u * dt))
 nsteps = 20
 Tf = nsteps * dt
 
-stm = proxddp.StageModel(space, nu, rcost, dyn_model)
+stm = proxddp.StageModel(rcost, dyn_model)
 stages = [stm] * nsteps
 
 term_cost = rcost.copy()

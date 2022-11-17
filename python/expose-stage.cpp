@@ -15,15 +15,14 @@ make_constraint_wrap(const shared_ptr<context::StageFunction> &f,
 
 void exposeStage() {
   using context::ConstraintSet;
-  using context::DynamicsModel;
   using context::Manifold;
   using context::Scalar;
   using context::StageModel;
   using StageData = StageDataTpl<Scalar>;
 
   using CostPtr = shared_ptr<context::CostBase>;
+  using DynamicsPtr = shared_ptr<context::DynamicsModel>;
   using FunctionPtr = shared_ptr<context::StageFunction>;
-  using ManifoldPtr = shared_ptr<Manifold>;
   using CstrSetPtr = shared_ptr<ConstraintSet>;
 
   pp::StdVectorPythonVisitor<std::vector<shared_ptr<StageModel>>, true>::expose(
@@ -33,17 +32,12 @@ void exposeStage() {
   bp::class_<StageModel>(
       "StageModel",
       "A stage of the control problem. Holds costs, dynamics, and constraints.",
-      bp::init<const ManifoldPtr &, const int, const ManifoldPtr &,
-               const CostPtr &, const shared_ptr<DynamicsModel> &>(
-          bp::args("self", "space1", "nu", "space2", "cost", "dyn_model")))
-      .def(bp::init<const ManifoldPtr &, const int, const CostPtr &,
-                    const shared_ptr<DynamicsModel> &>(
-          bp::args("self", "space", "nu", "cost", "dyn_model")))
+      bp::init<CostPtr, DynamicsPtr>(bp::args("self", "cost", "dyn_model")))
       .def<void (StageModel::*)(const context::StageConstraint &)>(
           "addConstraint", &StageModel::addConstraint,
           bp::args("self", "constraint"),
           "Add an existing constraint to the stage.")
-      .def<void (StageModel::*)(const FunctionPtr &, const CstrSetPtr &)>(
+      .def<void (StageModel::*)(FunctionPtr, CstrSetPtr)>(
           "addConstraint", &StageModel::addConstraint,
           bp::args("self", "func", "cstr_set"),
           "Constructs a new constraint (from the underlying function and set) "

@@ -17,6 +17,7 @@
 using namespace proxddp;
 
 constexpr double TOL = 1e-7;
+using StageModel = StageModelTpl<double>;
 
 void define_problem(shared_ptr<TrajOptProblemTpl<double>> &problemptr) {
 
@@ -45,8 +46,7 @@ void define_problem(shared_ptr<TrajOptProblemTpl<double>> &problemptr) {
   // Define stage
 
   double u_bound = 0.2;
-  auto stage =
-      std::make_shared<StageModelTpl<double>>(spaceptr, nu, rcost, dynptr);
+  auto stage = std::make_shared<StageModel>(rcost, dynptr);
   auto ctrl_bounds_fun = std::make_shared<ControlBoxFunctionTpl<double>>(
       dim, nu, -u_bound, u_bound);
 
