@@ -82,6 +82,9 @@ template <typename _Scalar> struct PDALFunction {
   using FunctionData = FunctionDataTpl<Scalar>;
   using CstrSet = ConstraintSetBase<Scalar>;
   using ConstraintStack = ConstraintStackTpl<Scalar>;
+  using Workspace = WorkspaceTpl<Scalar>;
+  using TrajOptProblem = TrajOptProblemTpl<Scalar>;
+  using TrajOptData = TrajOptDataTpl<Scalar>;
 
   SolverProxDDP<Scalar> const *solver;
   Scalar traj_cost_ = 0.;

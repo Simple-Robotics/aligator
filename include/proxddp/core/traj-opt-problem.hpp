@@ -31,7 +31,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using CostAbstract = CostAbstractTpl<Scalar>;
   using Constraint = StageConstraintTpl<Scalar>;
-  using InitCstrType = StateErrorResidualTpl<Scalar>;
+  using StateErrorResidual = StateErrorResidualTpl<Scalar>;
 
   /**
    * @page trajoptproblem Trajectory optimization problems
@@ -90,7 +90,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
   /// Initial condition
-  InitCstrType init_state_error;
+  StateErrorResidual init_state_error;
   /// Stages of the control problem.
   std::vector<shared_ptr<StageModel>> stages_;
   /// Terminal cost.
@@ -108,7 +108,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
                     const shared_ptr<Manifold> &space,
                     const shared_ptr<CostAbstract> &term_cost);
 
-  TrajOptProblemTpl(const InitCstrType &resdl, const int nu,
+  TrajOptProblemTpl(const StateErrorResidual &resdl, const int nu,
                     const shared_ptr<CostAbstract> &term_cost)
       : init_state_error(resdl), term_cost_(term_cost), dummy_term_u0(nu) {
     dummy_term_u0.setZero();
@@ -128,8 +128,8 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   std::size_t numSteps() const;
 
   /// @brief Rollout the problem costs, constraints, dynamics, stage per stage.
-  void evaluate(const std::vector<VectorXs> &xs,
-                const std::vector<VectorXs> &us, Data &prob_data) const;
+  Scalar evaluate(const std::vector<VectorXs> &xs,
+                  const std::vector<VectorXs> &us, Data &prob_data) const;
 
   /**
    * @brief Rollout the problem derivatives, stage per stage.
@@ -143,11 +143,12 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 
   /// @brief Pop out the first StageModel and replace by the supplied one;
   /// updates the supplied problem data (TrajOptDataTpl) object.
-  void replaceStageCircular(const shared_ptr<StageModel> &model) {
-    addStage(model);
-    rotate_vec_left(stages_);
-    stages_.pop_back();
-  }
+  void replaceStageCircular(const shared_ptr<StageModel> &model);
+
+  /// @brief Compute the trajectory cost.
+  /// @warning Helper meant for internal use. Call TrajOptProblemTpl::evaluate()
+  /// first!
+  Scalar computeTrajectoryCost(const Data &problem_data) const;
 };
 
 /// @brief Problem data struct.
@@ -157,6 +158,10 @@ template <typename _Scalar> struct TrajOptDataTpl {
   using FunctionData = FunctionDataTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
 
+  /// Current cost in the TO problem.
+  Scalar cost_ = 0.;
+
+  /// Data for the initial condition.
   shared_ptr<FunctionData> init_data;
   /// Data structs for each stage of the problem.
   std::vector<shared_ptr<StageData>> stage_data;
@@ -183,15 +188,6 @@ template <typename _Scalar> struct TrajOptDataTpl {
   /// @copydoc getTermData()
   const FunctionData &getTermData() const { return *term_cstr_data; }
 };
-
-/**
- * @brief Compute the trajectory cost.
- *
- * @warning Call TrajOptProblemTpl::evaluate() first!
- */
-template <typename Scalar>
-Scalar computeTrajectoryCost(const TrajOptProblemTpl<Scalar> &problem,
-                             const TrajOptDataTpl<Scalar> &problem_data);
 
 } // namespace proxddp
 

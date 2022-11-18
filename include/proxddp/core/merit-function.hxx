@@ -1,5 +1,7 @@
 #pragma once
 
+#include "proxddp/core/merit-function.hpp"
+
 namespace proxddp {
 
 template <typename Scalar>
@@ -7,22 +9,22 @@ PDALFunction<Scalar>::PDALFunction(SolverProxDDP<Scalar> const *solver)
     : solver(solver) {}
 
 template <typename Scalar>
-Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblemTpl<Scalar> &problem,
+Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblem &problem,
                                       const std::vector<VectorXs> &lams,
-                                      WorkspaceTpl<Scalar> &workspace,
-                                      TrajOptDataTpl<Scalar> &prob_data) {
+                                      Workspace &workspace,
+                                      TrajOptData &prob_data) {
 
-  traj_cost_ = computeTrajectoryCost(problem, prob_data);
+  traj_cost_ = workspace.problem_data.cost_;
   Scalar prox_value = computeProxPenalty(workspace, solver->rho());
   penalty_value_ = 0.;
   auto ls_mode = solver->ls_mode;
 
-  bool with_primal_dual_terms = ls_mode == LinesearchMode::PRIMAL_DUAL;
+  bool use_dual_terms = ls_mode == LinesearchMode::PRIMAL_DUAL;
 
   // initial constraint
   {
     penalty_value_ += .5 * mu() * workspace.lams_plus[0].squaredNorm();
-    if (with_primal_dual_terms) {
+    if (use_dual_terms) {
       penalty_value_ += .5 * dual_weight() * mu() *
                         (workspace.lams_plus[0] - lams[0]).squaredNorm();
     }
@@ -43,7 +45,7 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblemTpl<Scalar> &problem,
           cstr_mgr.getSegmentByConstraint(workspace.lams_plus[i + 1], j);
       penalty_value_ += .5 * mu_scaled(j) * lamplus_j.squaredNorm();
 
-      if (with_primal_dual_terms) {
+      if (use_dual_terms) {
         auto lamin_j = cstr_mgr.getConstSegmentByConstraint(lams[i + 1], j);
         penalty_value_ += .5 * dual_weight() * mu_scaled(j) *
                           (lamplus_j - lamin_j).squaredNorm();
@@ -56,7 +58,7 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblemTpl<Scalar> &problem,
     VectorXs &lamplus = workspace.lams_plus[nsteps + 1];
     penalty_value_ += .5 * mu() * lamplus.squaredNorm();
 
-    if (with_primal_dual_terms) {
+    if (use_dual_terms) {
       penalty_value_ += .5 * dual_weight() * mu() *
                         (lamplus - lams[nsteps + 1]).squaredNorm();
     }
@@ -68,8 +70,8 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblemTpl<Scalar> &problem,
 
 template <typename Scalar>
 Scalar PDALFunction<Scalar>::directionalDerivative(
-    const TrajOptProblemTpl<Scalar> &problem, const std::vector<VectorXs> &lams,
-    WorkspaceTpl<Scalar> &workspace, TrajOptDataTpl<Scalar> &prob_data) {
+    const TrajOptProblem &problem, const std::vector<VectorXs> &lams,
+    Workspace &workspace, TrajOptData &prob_data) {
   Scalar d1 = costDirectionalDerivative(workspace, prob_data);
 
   const std::size_t nsteps = workspace.nsteps;

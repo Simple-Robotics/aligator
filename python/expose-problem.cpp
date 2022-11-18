@@ -60,6 +60,8 @@ void exposeProblem() {
   bp::class_<TrajOptData>(
       "TrajOptData", "Data struct for shooting problems.",
       bp::init<const TrajOptProblem &>(bp::args("self", "problem")))
+      .def_readwrite("cost", &TrajOptData::cost_,
+                     "Current cost of the TO problem.")
       .def_readwrite("term_cost", &TrajOptData::term_cost_data,
                      "Terminal cost data.")
       .def_readwrite("term_constraint", &TrajOptData::term_cstr_data,
@@ -69,11 +71,6 @@ void exposeProblem() {
           bp::make_getter(&TrajOptData::stage_data,
                           bp::return_value_policy<bp::return_by_value>()),
           "Data for each stage.");
-
-  bp::def("computeTrajectoryCost", &computeTrajectoryCost<context::Scalar>,
-          bp::args("problem", "data"),
-          "Compute the cost of the trajectory. NOTE: problem.evaluate() must "
-          "be called beforehand!");
 }
 
 } // namespace python

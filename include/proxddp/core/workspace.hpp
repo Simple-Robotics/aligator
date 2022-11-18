@@ -26,14 +26,12 @@ template <typename Scalar> struct WorkspaceBaseTpl {
 
   /// @name Linesearch data
   /// @{
-
   std::vector<VectorXs> trial_xs;
   std::vector<VectorXs> trial_us;
   /// @}
 
   /// Feasibility gaps
   std::vector<VectorXs> dyn_slacks;
-
   /// Value function parameter storage
   std::vector<VParamsType> value_params;
   /// Q-function storage
@@ -58,7 +56,6 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using VParamsType = internal::value_storage<Scalar>;
   using LDLT = Eigen::LDLT<MatrixXs, Eigen::Lower>;
 
-  using Base::nsteps;
   using Base::problem_data;
   using Base::q_params;
   using Base::trial_us;
