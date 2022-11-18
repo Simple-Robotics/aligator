@@ -34,7 +34,7 @@ target_frame: pin.SE3 = pin.SE3.Identity()
 target_frame.translation[:] = (-0.75, 0.1, 0.5)
 
 # --- OCP hyperparams
-Tf = 1.2
+Tf = 0.6
 dt = 0.01
 nsteps = int(Tf / dt)
 tol = 1e-4
@@ -108,13 +108,14 @@ solver.solve(init_xs, init_us, 300)
 
 # --- Results
 print(
-    f"""Results [
+    "Results {"
+    f"""
   converged  :  {solver.isFeasible and solver.stop<solver.th_stop},
   traj. cost :  {solver.cost},
   merit.value:  0,
   prim_infeas:  { sum([ sum(f**2) for f in solver.fs]) },
-  dual_infeas:  { np.max(np.array([ np.max(np.abs(q)) for q in solver.Qu])) },
-]"""
+  dual_infeas:  { np.max(np.array([ np.max(np.abs(q)) for q in solver.Qu])) }\n"""
+    "}"
 )
 
 xs_opt = solver.xs.tolist()
@@ -122,15 +123,12 @@ us_opt = solver.us.tolist()
 # np.save(open(f"urcroco.npy", "wb"),{'xs': xs_opt, 'us': us_opt})
 
 pb_prox = proxddp.croc.convertCrocoddylProblem(problem)
-# solver2 = proxddp.SolverFDDP(1e-6, verbose=proxddp.VerboseLevel.VERBOSE)
+verbose = proxddp.VerboseLevel.VERBOSE
+solver2 = proxddp.SolverFDDP(1e-6, verbose=verbose)
 mu_init = 1e-8
 rho_init = 1e-9
 
-solver2 = proxddp.SolverProxDDP(
-    tol / nsteps, mu_init, rho_init, verbose=proxddp.VerboseLevel.VERBOSE
-)
-solver2.rollout_type = proxddp.ROLLOUT_NONLINEAR
-solver2.max_iters = 20
+# solver2 = proxddp.SolverProxDDP(tol / nsteps, mu_init, rho_init, verbose=verbose)
 solver2.setup(pb_prox)
 conv = solver2.run(pb_prox, init_xs, init_us)
 results = solver2.getResults()
