@@ -1,11 +1,14 @@
 #pragma once
 
+#include "proxddp/fddp/workspace.hpp"
+
 namespace proxddp {
 
 template <typename Scalar>
 WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
     const TrajOptProblemTpl<Scalar> &problem)
     : Base(problem) {
+  const std::size_t nsteps = this->nsteps;
 
   value_params.reserve(nsteps + 1);
   q_params.reserve(nsteps);
@@ -19,6 +22,7 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
   kkt_mat_bufs.resize(nsteps);
   kkt_rhs_bufs.resize(nsteps);
   llts_.reserve(nsteps);
+  JtH_temp_.reserve(nsteps);
 
   this->dyn_slacks[0] = VectorXs::Zero(problem.stages_[0]->ndx1());
 
@@ -40,6 +44,8 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
     kkt_mat_bufs[i] = MatrixXs::Zero(nu, nu);
     kkt_rhs_bufs[i] = MatrixXs::Zero(nu, ndx + 1);
     llts_.emplace_back(nu);
+    JtH_temp_.emplace_back(ndx + nu, ndx);
+    JtH_temp_.back().setZero();
   }
   const StageModelTpl<Scalar> &sm = *problem.stages_.back();
   dxs[nsteps] = VectorXs::Zero(sm.ndx2());
@@ -52,11 +58,11 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
 template <typename Scalar> void WorkspaceFDDPTpl<Scalar>::cycle_left() {
   Base::cycle_left();
 
-  rotate_vec_left(xnexts_);
+  rotate_vec_left(xnexts_, 1);
   rotate_vec_left(dxs);
   rotate_vec_left(dus);
   rotate_vec_left(Quuks_);
-  rotate_vec_left(ftVxx_);
+  rotate_vec_left(ftVxx_, 1);
   rotate_vec_left(kkt_mat_bufs);
   rotate_vec_left(kkt_rhs_bufs);
   rotate_vec_left(llts_);

@@ -15,8 +15,8 @@ template <typename Scalar> struct FDDPGoldsteinLinesearch {
   static Scalar run(F phi, M model, Scalar phi0,
                     typename Linesearch<Scalar>::Options &ls_params, Scalar d1,
                     Scalar th_grad) {
-    static Scalar th_accept_step_ = 0.1;
-    static Scalar th_accept_neg_step_ = 2.0;
+    Scalar th_accept_step_ = 0.1;
+    Scalar th_accept_neg_step_ = 2.0;
     Scalar beta = ls_params.contraction_min;
     Scalar atry = 1.;
 
@@ -25,18 +25,18 @@ template <typename Scalar> struct FDDPGoldsteinLinesearch {
       Scalar dVreal = 0.;
       try {
         dVreal = phi(atry) - phi0;
-      } catch (const std::runtime_error &) {
+      } catch (const ::proxddp::RuntimeError &) {
         atry *= beta;
         continue;
       }
       Scalar dVmodel = model(atry) - phi0;
       // check if descent direction
       if (dVmodel <= 0.) {
-        if (std::abs(d1) < th_grad || dVreal <= th_accept_step_ * dVmodel)
+        if (-d1 < th_grad || dVreal < th_accept_step_ * dVmodel)
           break;
       } else {
         // accept a small increase in cost
-        if (dVreal >= th_accept_neg_step_ * dVmodel)
+        if (dVreal <= th_accept_neg_step_ * dVmodel)
           break;
       }
       atry *= beta;

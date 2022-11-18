@@ -8,7 +8,6 @@ namespace proxddp {
 template <typename Scalar> struct WorkspaceFDDPTpl : WorkspaceBaseTpl<Scalar> {
   using Base = WorkspaceBaseTpl<Scalar>;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-  using Base::nsteps;
   using Base::q_params;
   using Base::trial_us;
   using Base::trial_xs;
@@ -28,6 +27,10 @@ template <typename Scalar> struct WorkspaceFDDPTpl : WorkspaceBaseTpl<Scalar> {
   std::vector<MatrixXs> kkt_rhs_bufs;
   /// LLT struct for each KKT system.
   std::vector<Eigen::LLT<MatrixXs>> llts_;
+
+  /// Temporary storage for jacobian transpose-Q-hessian product
+  using RowMatrixXs = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
+  std::vector<RowMatrixXs> JtH_temp_;
 
   Scalar dg_ = 0.;
   Scalar dq_ = 0.;

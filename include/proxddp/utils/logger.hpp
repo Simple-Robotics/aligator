@@ -14,6 +14,7 @@ static const std::vector<std::string> BASIC_KEYS{
 constexpr char int_format[] = "{: >{}d}";
 constexpr char sci_format[] = "{: > {}.{}e}";
 constexpr char dbl_format[] = "{: > {}.{}g}";
+constexpr char flt_format[] = "{: > {}.{}f}";
 
 struct LogRecord {
   unsigned long iter;
@@ -30,6 +31,7 @@ struct LogRecord {
 /// @brief  A logging utility.
 struct BaseLogger {
   unsigned int COL_WIDTH_0 = 4;
+  unsigned int COL_WIDTH_1 = 6;
   unsigned int COL_WIDTH = 10;
   bool active = true;
   const std::string join_str = "｜";
@@ -41,7 +43,9 @@ struct BaseLogger {
     std::vector<std::string> v;
     auto it = BASIC_KEYS.begin();
     v.push_back(fmt::format(fstr, *it, COL_WIDTH_0));
-    for (it = BASIC_KEYS.begin() + 1; it != BASIC_KEYS.end(); ++it) {
+    it++;
+    v.push_back(fmt::format(fstr, *it, COL_WIDTH_1));
+    for (it = BASIC_KEYS.begin() + 2; it != BASIC_KEYS.end(); ++it) {
       v.push_back(fmt::format(fstr, *it, COL_WIDTH));
     }
     fmt::print(fmt::emphasis::bold, "{}\n", fmt::join(v, join_str));
@@ -57,7 +61,7 @@ struct BaseLogger {
     if (values.iter % 25 == 0)
       start();
     v.push_back(format(int_format, values.iter, COL_WIDTH_0));
-    v.push_back(format(sci_format, values.step_size, COL_WIDTH, sci_prec));
+    v.push_back(format(flt_format, values.step_size, COL_WIDTH, dbl_prec));
     v.push_back(format(sci_format, values.inner_crit, COL_WIDTH, sci_prec));
     v.push_back(format(sci_format, values.prim_err, COL_WIDTH, sci_prec));
     v.push_back(format(sci_format, values.dual_err, COL_WIDTH, sci_prec));

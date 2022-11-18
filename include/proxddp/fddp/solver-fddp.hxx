@@ -3,6 +3,7 @@
 #include "proxddp/fddp/solver-fddp.hpp"
 
 namespace proxddp {
+const Eigen::IOFormat myfmt(5, 0, ",", "\n", "[", "]");
 
 /* SolverFDDP<Scalar> */
 
@@ -47,12 +48,14 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
   std::vector<VectorXs> &xs_try = workspace.trial_xs;
   std::vector<VectorXs> &us_try = workspace.trial_us;
   std::vector<VectorXs> &xnexts = workspace.xnexts_;
-  const std::vector<VectorXs> &fs = workspace.dyn_slacks;
+  std::vector<VectorXs> &fs = workspace.dyn_slacks;
   ProblemData &pd = workspace.problem_data;
 
+  PROXDDP_EIGEN_ALLOW_MALLOC(false);
   {
     const Manifold &space = problem.stages_[0]->xspace();
-    space.integrate(results.xs[0], alpha * fs[0], xs_try[0]);
+    workspace.dxs[0] = alpha * fs[0];
+    space.integrate(results.xs[0], workspace.dxs[0], xs_try[0]);
   }
   Scalar traj_cost_ = 0.;
 
@@ -60,31 +63,47 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
     const StageModel &sm = *problem.stages_[i];
     StageData &sd = pd.getStageData(i);
 
-    ConstVectorRef ff = results.getFeedforward(i);
-    ConstMatrixRef fb = results.getFeedback(i);
+    auto ff = results.getFeedforward(i);
+    auto fb = results.getFeedback(i);
 
-    // WARNING: this is the reverse of crocoddyl
-    // which has its gains' sign flipped
-    sm.xspace().difference(results.xs[i], xs_try[i], workspace.dxs[i]);
-    sm.uspace().integrate(results.us[i], alpha * ff + fb * workspace.dxs[i],
-                          us_try[i]);
+    workspace.dus[i] = alpha * ff;
+    workspace.dus[i].noalias() += fb * workspace.dxs[i];
+
+    sm.uspace().integrate(results.us[i], workspace.dus[i], us_try[i]);
+
+    PROXDDP_EIGEN_ALLOW_MALLOC(true);
     sm.evaluate(xs_try[i], us_try[i], xs_try[i + 1], sd);
+    PROXDDP_EIGEN_ALLOW_MALLOC(false);
+
     const ExpData &dd = stage_get_dynamics_data(sd);
     xnexts[i + 1] = dd.xnext_;
+
+    PROXDDP_EIGEN_ALLOW_MALLOC(true);
     sm.xspace_next().integrate(xnexts[i + 1], fs[i + 1] * (alpha - 1.),
                                xs_try[i + 1]);
+    PROXDDP_EIGEN_ALLOW_MALLOC(false);
     const CostData &cd = *sd.cost_data;
 
     PROXDDP_RAISE_IF_NAN_NAME(xs_try[i + 1], fmt::format("xs[{}]", i + 1));
     PROXDDP_RAISE_IF_NAN_NAME(us_try[i], fmt::format("us[{}]", i));
 
+    // WARNING: this is the reverse of crocoddyl
+    // which has its gains' sign flipped
+    sm.xspace().difference(results.xs[i + 1], xs_try[i + 1],
+                           workspace.dxs[i + 1]);
+
     traj_cost_ += cd.value_;
   }
   CostData &cd_term = *pd.term_cost_data;
+
+  PROXDDP_EIGEN_ALLOW_MALLOC(true);
   problem.term_cost_->evaluate(xs_try.back(), us_try.back(), cd_term);
+  PROXDDP_EIGEN_ALLOW_MALLOC(false);
+
   traj_cost_ += cd_term.value_;
   const Manifold &space = problem.stages_.back()->xspace();
   space.difference(results.xs[nsteps], xs_try[nsteps], workspace.dxs[nsteps]);
+  PROXDDP_EIGEN_ALLOW_MALLOC(true);
   return traj_cost_;
 }
 
@@ -102,9 +121,11 @@ void SolverFDDP<Scalar>::expectedImprovement(Workspace &workspace, Scalar &d1,
   for (std::size_t i = 0; i <= nsteps; i++) {
     const VParams &vp = workspace.value_params[i];
     VectorXs &ftVxx = workspace.ftVxx_[i];
-    ftVxx.noalias() = vp.Vxx() * workspace.dxs[i];
+    ftVxx.noalias() = vp.Vxx_ * workspace.dxs[i];
     dv_ -= fs[i].dot(ftVxx);
   }
+  // fmt::print("dg = {:.5e} / dq = {:.5e} / dv = {:.5e} / d1 = {:.5e}\n", dg_,
+  // dq_, dv_, d1);
 
   d1 = dg_ + dv_;
   d2 = dq_ + 2 * dv_;
@@ -124,16 +145,18 @@ void SolverFDDP<Scalar>::updateExpectedImprovement(Workspace &workspace,
   // in croco: feedback/feedforward sign is flipped
   for (std::size_t i = 0; i <= nsteps; i++) {
     if (i < nsteps) {
-      const QParams &qpar = workspace.q_params[i];
-      ConstVectorRef ff = results.getFeedforward(i);
-      dg_ += qpar.Qu.dot(ff);
+      const QParams &qparam = workspace.q_params[i];
+      auto ff = results.getFeedforward(i);
+      dg_ += qparam.Qu.dot(ff);
       dq_ += ff.dot(workspace.Quuks_[i]);
     }
     const VParams &vpar = workspace.value_params[i];
-    dg_ += vpar.Vx().dot(fs[i]);
+    dg_ += vpar.Vx_.dot(fs[i]);
     VectorXs &ftVxx = workspace.ftVxx_[i];
-    ftVxx.noalias() = vpar.Vxx() * fs[i];
+    ftVxx.noalias() = vpar.Vxx_ * fs[i];
     dq_ -= ftVxx.dot(fs[i]);
+    // fmt::print("eI[{:d}] ", i);
+    // fmt::print("dg = {:.5e} / dq = {:.5e}\n", dg_, dq_);
   }
 }
 
@@ -141,6 +164,7 @@ template <typename Scalar>
 Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem,
                                                 const std::vector<VectorXs> &xs,
                                                 Workspace &workspace) {
+  PROXDDP_EIGEN_ALLOW_MALLOC(false);
   const std::size_t nsteps = workspace.nsteps;
   const ProblemData &pd = workspace.problem_data;
   std::vector<VectorXs> &xnexts = workspace.xnexts_;
@@ -152,32 +176,38 @@ Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem,
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &sm = *problem.stages_[i];
-    const ExpData &dd = stage_get_dynamics_data(pd.getStageData(i));
+    const auto &sd = pd.getStageData(i);
+    const ExpData &dd = stage_get_dynamics_data(sd);
     xnexts[i + 1] = dd.xnext_;
     sm.xspace().difference(xs[i + 1], xnexts[i + 1], fs[i + 1]);
   }
-  return math::infty_norm(workspace.dyn_slacks);
+  Scalar res = math::infty_norm(workspace.dyn_slacks);
+  PROXDDP_EIGEN_ALLOW_MALLOC(true);
+  return res;
 }
 
 template <typename Scalar>
 Scalar SolverFDDP<Scalar>::computeCriterion(Workspace &workspace) {
   const std::size_t nsteps = workspace.nsteps;
-  std::vector<ConstVectorRef> Qus;
+  Scalar v = 0.;
   for (std::size_t i = 0; i < nsteps; i++) {
-    Qus.push_back(workspace.q_params[i].Qu);
+    Scalar s = math::infty_norm(workspace.q_params[i].Qu);
+    v = std::max(v, s);
 #ifndef NDEBUG
     std::FILE *fi = std::fopen("fddp.log", "a");
-    fmt::print(fi, "Qu[{:d}]={:.3e}\n", i, math::infty_norm(Qus.back()));
+    fmt::print(fi, "Qu[{:d}]={:.3e}\n", i, s);
     std::fclose(fi);
 #endif
   }
-  return math::infty_norm(Qus);
+  return v;
 }
 
 template <typename Scalar>
 void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
                                       Workspace &workspace,
                                       Results &results) const {
+
+  PROXDDP_EIGEN_ALLOW_MALLOC(false);
 
   const std::size_t nsteps = workspace.nsteps;
   const std::vector<VectorXs> &fs = workspace.dyn_slacks;
@@ -186,18 +216,14 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
   {
     const CostData &term_cost_data = *prob_data.term_cost_data;
     VParams &vp = workspace.value_params[nsteps];
-    vp.v_2() = 2 * term_cost_data.value_;
-    vp.Vx() = term_cost_data.Lx_;
-    vp.Vxx() = term_cost_data.Lxx_;
-    vp.Vxx().diagonal().array() += xreg_;
-    VectorXs &ftVxx = workspace.ftVxx_[nsteps];
-    vp.Vx() += vp.Vxx() * fs[nsteps];
-    vp.storage = vp.storage.template selfadjointView<Eigen::Lower>();
+    vp.v_ = term_cost_data.value_;
+    vp.Vx_ = term_cost_data.Lx_;
+    vp.Vxx_ = term_cost_data.Lxx_;
+    vp.Vxx_.diagonal().array() += xreg_;
+    vp.Vx_.noalias() += vp.Vxx_ * fs[nsteps];
   }
 
-  std::size_t i;
-  for (std::size_t k = 0; k < nsteps; k++) {
-    i = nsteps - k - 1;
+  for (std::size_t i = nsteps; i-- > 0;) {
     const VParams &vnext = workspace.value_params[i + 1];
     QParams &qparam = workspace.q_params[i];
 
@@ -214,52 +240,59 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
     DynamicsDataTpl<Scalar> &dd = sd.dyn_data();
 
     /* Assemble Q-function */
-    ConstMatrixRef J_x_u = dd.jac_buffer_.leftCols(ndx1 + nu);
+    auto J_x_u = dd.jac_buffer_.leftCols(ndx1 + nu);
 
     qparam.q_2() = 2 * cd.value_;
     qparam.grad_ = cd.grad_;
     qparam.hess_ = cd.hess_;
 
     // TODO: implement second-order derivatives for the Q-function
-    qparam.grad_.noalias() += J_x_u.transpose() * vnext.Vx();
-    qparam.hess_.noalias() += J_x_u.transpose() * vnext.Vxx() * J_x_u;
+    qparam.grad_.noalias() += J_x_u.transpose() * vnext.Vx_;
+    workspace.JtH_temp_[i].noalias() = J_x_u.transpose() * vnext.Vxx_;
+    qparam.hess_.noalias() += workspace.JtH_temp_[i] * J_x_u;
     qparam.Quu.diagonal().array() += ureg_;
-    qparam.storage = qparam.storage.template selfadjointView<Eigen::Lower>();
 
     /* Compute gains */
     // MatrixXs &kkt_mat = workspace.kkt_mat_bufs[i];
     MatrixXs &kkt_rhs = workspace.kkt_rhs_bufs[i];
 
     // kkt_mat = qparam.Quu;
-    VectorRef ffwd = results.getFeedforward(i);
-    MatrixRef fback = results.getFeedback(i);
-    ffwd = -qparam.Qu;
-    fback = -qparam.Qxu.transpose();
-    kkt_rhs = results.gains_[i];
+    auto ff = results.getFeedforward(i);
+    auto fb = results.getFeedback(i);
+    kkt_rhs.col(0) = qparam.Qu;
+    kkt_rhs.rightCols(ndx1) = qparam.Qxu.transpose();
+    results.gains_[i] = -kkt_rhs;
 
     Eigen::LLT<MatrixXs> &llt = workspace.llts_[i];
     llt.compute(qparam.Quu);
     llt.solveInPlace(results.gains_[i]);
 
-    workspace.Quuks_[i] = qparam.Quu * ffwd;
 #ifndef NDEBUG
-    auto ff = results.getFeedforward(i);
-    std::FILE *fi = std::fopen("fddp.log", "a");
-    if (i == workspace.nsteps - 1)
-      fmt::print(fi, "[backward {:d}]\n", results.num_iters + 1);
-    fmt::print(fi, "uff[{:d}]={}\n", i, ff.head(nu).transpose());
-    fmt::print(fi, "V'x[{:d}]={}\n", i, vnext.Vx().transpose());
-    std::fclose(fi);
+    {
+      PROXDDP_EIGEN_ALLOW_MALLOC(true);
+      std::FILE *fi = std::fopen("fddp.log", "a");
+      if (i == workspace.nsteps - 1)
+        fmt::print(fi, "[backward {:d}]\n", results.num_iters + 1);
+      fmt::print(fi, "uff[{:d}]={}\n", i, ff.head(nu).transpose());
+      fmt::print(fi, "V'x[{:d}]={}\n", i, vnext.Vx_.transpose());
+      std::fclose(fi);
+      PROXDDP_EIGEN_ALLOW_MALLOC(false);
+    }
 #endif
+    workspace.Quuks_[i].noalias() = qparam.Quu * ff;
 
     /* Compute value function */
     VParams &vp = workspace.value_params[i];
-    vp.Vx() = qparam.Qx + fback.transpose() * qparam.Qu;
-    vp.Vxx() = qparam.Qxx + qparam.Qxu * fback;
-    vp.Vxx().diagonal().array() += xreg_;
-    vp.Vx() += vp.Vxx() * fs[i];
-    vp.storage = vp.storage.template selfadjointView<Eigen::Lower>();
+    vp.Vx_ = qparam.Qx;
+    vp.Vx_.noalias() += fb.transpose() * qparam.Qu;
+    vp.Vxx_ = qparam.Qxx;
+    vp.Vxx_.noalias() += qparam.Qxu * fb;
+    vp.Vxx_ = vp.Vxx_.template selfadjointView<Eigen::Lower>();
+    vp.Vxx_.diagonal().array() += xreg_;
+    vp.Vx_.noalias() += vp.Vxx_ * fs[i];
   }
+
+  PROXDDP_EIGEN_ALLOW_MALLOC(true);
 }
 
 template <typename Scalar>
@@ -287,7 +320,8 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
   logger.start();
 
   // in Crocoddyl, linesearch xs is primed to use problem x0
-  workspace.xnexts_[0] = problem.getInitState();
+  auto &x0 = problem.getInitState();
+  workspace.xnexts_[0] = x0;
 
   auto linesearch_fun = [&](const Scalar alpha) {
     return forwardPass(problem, results, workspace, alpha);
@@ -298,14 +332,14 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
   record.dual_err = 0.;
   record.dphi0 = 0.;
   std::size_t &iter = results.num_iters;
-  for (iter = 0; iter <= max_iters; ++iter) {
+  for (iter = 0; iter < max_iters; ++iter) {
 
     record.iter = iter + 1;
 
-    problem.evaluate(results.xs, results.us, workspace.problem_data);
-    results.traj_cost_ = computeTrajectoryCost(problem, workspace.problem_data);
-    results.prim_infeas = computeInfeasibility(problem, results.xs, workspace);
+    results.traj_cost_ =
+        problem.evaluate(results.xs, results.us, workspace.problem_data);
     problem.computeDerivatives(results.xs, results.us, workspace.problem_data);
+    results.prim_infeas = computeInfeasibility(problem, results.xs, workspace);
 
     backwardPass(problem, workspace, results);
     results.dual_infeas = computeCriterion(workspace);
@@ -356,7 +390,6 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     results.us = workspace.trial_us;
     if (std::abs(d1_phi) < th_grad_) {
       results.conv = true;
-      logger.log(record);
       break;
     }
 
@@ -375,6 +408,8 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     logger.log(record);
   }
 
+  if (iter < max_iters)
+    logger.log(record);
   logger.finish(results.conv);
   return results.conv;
 }
