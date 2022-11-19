@@ -175,7 +175,6 @@ void exposeProxDDP() {
 void exposeSolvers() {
   exposeBase();
   exposeProxDDP();
-  exposeFDDP();
 }
 
 } // namespace python
