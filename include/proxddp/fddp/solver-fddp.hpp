@@ -69,7 +69,7 @@ template <typename Scalar> struct SolverFDDP {
   /// Maximum number of iterations for the solver.
   std::size_t max_iters;
 
-  ::proxddp::BaseLogger logger{};
+  BaseLogger logger{false};
 
   /// Callbacks
   std::vector<CallbackPtr> callbacks_;

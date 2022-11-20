@@ -135,7 +135,8 @@ endif(BUILD_PYTHON_INTERFACE)
 
 ADD_PROJECT_DEPENDENCY(proxnlp 0.2.3 REQUIRED)
 
-set(LIB_SOURCES)
+set(LIB_SOURCES
+    src/utils/logger.cpp)
 
 file(GLOB_RECURSE LIB_HEADERS
      ${PROJECT_SOURCE_DIR}/include/proxddp/*.hpp
