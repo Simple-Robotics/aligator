@@ -45,8 +45,11 @@ struct BaseLogger {
   const bool inner_crit;
   const std::size_t print_outline_every = 25;
   const char *join_str = "｜";
+  std::vector<std::string> v;
 
-  BaseLogger(bool inner_crit = true) : inner_crit(inner_crit) {}
+  BaseLogger(bool inner_crit = true) : inner_crit(inner_crit) {
+    v.reserve(BASIC_KEYS.size());
+  }
 
   void start();
   template <typename T> void log(const LogRecordTpl<T> &values);
@@ -56,7 +59,6 @@ struct BaseLogger {
 template <typename T> void BaseLogger::log(const LogRecordTpl<T> &values) {
   if (!active)
     return;
-  std::vector<std::string> v;
   int sci_prec = 3;
   int dbl_prec = 3;
   using fmt::format;
@@ -83,6 +85,7 @@ template <typename T> void BaseLogger::log(const LogRecordTpl<T> &values) {
   v.push_back(format(dbl_format, values.dM, it->second, dbl_prec));
 
   fmt::print("{}\n", fmt::join(v, join_str));
+  v.clear();
 }
 
 } // namespace proxddp
