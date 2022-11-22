@@ -8,7 +8,7 @@ void BaseLogger::start() {
   static constexpr char fstr[] = "{:^{}s}";
   std::vector<std::string> v;
   v.reserve(BASIC_KEYS.size());
-  for (auto it = BASIC_KEYS.begin(); it != BASIC_KEYS.end(); ++it) {
+  for (auto it = BASIC_KEYS.cbegin(); it != BASIC_KEYS.cend(); ++it) {
     if (it->first == "inner_crit" && (!inner_crit))
       continue;
     v.push_back(fmt::format(fstr, it->first, it->second));

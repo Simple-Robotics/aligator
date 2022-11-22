@@ -31,11 +31,6 @@ template <typename _Scalar> struct value_storage {
     Vxx_.setZero();
   }
 
-  decltype(auto) Vx() { return Vx_; }
-  decltype(auto) Vx() const { return Vx_; }
-  decltype(auto) Vxx() { return Vxx_; }
-  decltype(auto) Vxx() const { return Vxx_; }
-
   friend std::ostream &operator<<(std::ostream &oss,
                                   const value_storage &store) {
     Eigen::IOFormat CleanFmt(3, 0, ", ", "\n", "  [", "]");

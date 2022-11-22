@@ -2,6 +2,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
+#include <array>
 #include <vector>
 #include <utility>
 #include <fmt/color.h>
@@ -9,10 +10,16 @@
 
 namespace proxddp {
 
-static const std::vector<std::pair<std::string, unsigned int>> BASIC_KEYS{
-    {"iter", 4U},      {"alpha", 7U},     {"inner_crit", 10U},
-    {"prim_err", 10U}, {"dual_err", 10U}, {"xreg", 10U},
-    {"dphi0", 10U},    {"merit", 10U},    {"delta_M", 10U}};
+using log_pair_t = std::pair<fmt::string_view, unsigned int>;
+static const std::array<log_pair_t, 9> BASIC_KEYS = {{{"iter", 4U},
+                                                      {"alpha", 7U},
+                                                      {"inner_crit", 10U},
+                                                      {"prim_err", 10U},
+                                                      {"dual_err", 10U},
+                                                      {"xreg", 10U},
+                                                      {"dphi0", 10U},
+                                                      {"merit", 10U},
+                                                      {"delta_M", 10U}}};
 constexpr char int_format[] = "{: >{}d}";
 constexpr char sci_format[] = "{: > {}.{}e}";
 constexpr char dbl_format[] = "{: > {}.{}g}";
@@ -36,7 +43,8 @@ using LogRecord = LogRecordTpl<double>;
 struct BaseLogger {
   bool active = true;
   const bool inner_crit;
-  const std::string join_str = "｜";
+  const std::size_t print_outline_every = 25;
+  const char *join_str = "｜";
 
   BaseLogger(bool inner_crit = true) : inner_crit(inner_crit) {}
 
@@ -52,7 +60,7 @@ template <typename T> void BaseLogger::log(const LogRecordTpl<T> &values) {
   int sci_prec = 3;
   int dbl_prec = 3;
   using fmt::format;
-  if (values.iter % 25 == 0)
+  if (values.iter % print_outline_every == 0)
     start();
   decltype(BASIC_KEYS)::const_iterator it = BASIC_KEYS.cbegin();
   v.push_back(format(int_format, values.iter, it->second));

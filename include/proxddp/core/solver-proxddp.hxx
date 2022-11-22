@@ -96,10 +96,10 @@ void SolverProxDDP<Scalar>::computeDirX0(const Problem &problem,
   } else {
     auto kktx = kkt_rhs_0.head(ndx0);
     auto kktl = kkt_rhs_0.tail(ndual0);
-    kktx = vp.Vx() + init_data.Jx_.transpose() * lamin0 + rho() * proxdata0.Lx_;
+    kktx = vp.Vx_ + init_data.Jx_.transpose() * lamin0 + rho() * proxdata0.Lx_;
     kktl = mu() * (lampl0 - lamin0);
 
-    kkt_mat.topLeftCorner(ndx0, ndx0) = vp.Vxx() + rho() * proxdata0.Lxx_;
+    kkt_mat.topLeftCorner(ndx0, ndx0) = vp.Vxx_ + rho() * proxdata0.Lxx_;
     kkt_mat.topLeftCorner(ndx0, ndx0) += init_data.Hxx_;
     kkt_mat.topRightCorner(ndx0, ndual0) = init_data.Jx_.transpose();
     kkt_mat.bottomLeftCorner(ndual0, ndx0) = init_data.Jx_;
@@ -286,20 +286,17 @@ void SolverProxDDP<Scalar>::updateHamiltonian(const Problem &problem,
   const int nu = stage.nu();
   const int ndx2 = stage.ndx2();
 
-  assert(vnext.storage.rows() == ndx2 + 1);
-  assert(vnext.storage.cols() == ndx2 + 1);
-
   // Use the contiguous full gradient/jacobian/hessian buffers
   // to fill in the Q-function derivatives
   qparam.storage.setZero();
   qparam.q_2() = 2 * (cdata.value_ + rho() * proxdata.value_);
   qparam.Qx = cdata.Lx_ + rho() * proxdata.Lx_;
   qparam.Qu = cdata.Lu_ + rho() * proxdata.Lu_;
-  qparam.Qy = vnext.Vx();
+  qparam.Qy = vnext.Vx_;
 
   qparam.hess_.topLeftCorner(ndx1 + nu, ndx1 + nu) =
       cdata.hess_ + rho() * proxdata.hess_;
-  qparam.Qyy = vnext.Vxx();
+  qparam.Qyy = vnext.Vxx_;
   qparam.Quu.diagonal().array() += ureg_;
 
   const VectorXs &lam_inn = results.lams[t + 1];
@@ -319,7 +316,6 @@ void SolverProxDDP<Scalar>::updateHamiltonian(const Problem &problem,
       qparam.hess_ += cstr_data.vhp_buffer_;
     }
   }
-  qparam.storage = qparam.storage.template selfadjointView<Eigen::Lower>();
 }
 
 template <typename Scalar>
@@ -333,10 +329,10 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
   VParams &term_value = workspace.value_params[nsteps];
   const CostData &proxdata = *workspace.prox_datas[nsteps];
 
-  term_value.v_2() = 2 * (term_cost_data.value_ + rho() * proxdata.value_);
-  term_value.Vx() = term_cost_data.Lx_ + rho() * proxdata.Lx_;
-  term_value.Vxx() = term_cost_data.Lxx_ + rho() * proxdata.Lxx_;
-  term_value.Vxx().diagonal().array() += xreg_;
+  term_value.v_ = term_cost_data.value_ + rho() * proxdata.value_;
+  term_value.Vx_ = term_cost_data.Lx_ + rho() * proxdata.Lx_;
+  term_value.Vxx_ = term_cost_data.Lxx_ + rho() * proxdata.Lxx_;
+  term_value.Vxx_.diagonal().array() += xreg_;
 
   if (problem.term_constraint_) {
     /* check number of multipliers */
@@ -354,14 +350,11 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
     ff = lamplus - lamin;
     fb = mu_inv() * cJx;
 
-    term_value.v_2() += mu_inv() * lamplus.squaredNorm();
-    term_value.Vx().noalias() += cJx.transpose() * lamplus;
-    term_value.Vxx() += cstr_data.Hxx_;
-    term_value.Vxx().noalias() += cJx.transpose() * fb;
+    term_value.v_ += 0.5 * mu_inv() * lamplus.squaredNorm();
+    term_value.Vx_.noalias() += cJx.transpose() * lamplus;
+    term_value.Vxx_ += cstr_data.Hxx_;
+    term_value.Vxx_.noalias() += cJx.transpose() * fb;
   }
-
-  term_value.storage =
-      term_value.storage.template selfadjointView<Eigen::Lower>();
 }
 
 template <typename Scalar>
@@ -436,9 +429,6 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   {
     std::array<unsigned int, 3> inertia;
     math::compute_inertia(ldlt.vectorD(), inertia.data());
-    const bool inertia_ok = (inertia[0] == (unsigned)nprim) &&
-                            (inertia[1] == 0U) &&
-                            (inertia[2] == (unsigned)ndual);
     if (inertia[1] > 0U) {
       return false;
     }
@@ -471,17 +461,17 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   auto fb = results.getFeedback(t);
 
 #ifndef NDEBUG
+  const VParams &vnext = workspace.value_params[t + 1];
   std::FILE *fi = std::fopen("pddp.log", "a");
   if (t == workspace.nsteps - 1)
     fmt::print(fi, "[backward {:d}]\n", results.num_iters + 1);
   fmt::print(fi, "uff[{:d}]={}\n", t, ff.head(nu).transpose());
-  fmt::print(fi, "V'x[{:d}]={}\n", t, vnext.Vx().transpose());
+  fmt::print(fi, "V'x[{:d}]={}\n", t, vnext.Vx_.transpose());
   std::fclose(fi);
 #endif
-  vp.Vx() = qparam.Qx + Qxw * ff;
-  vp.Vxx() = qparam.Qxx + Qxw * fb;
-  vp.Vxx().diagonal().array() += xreg_;
-  vp.storage = vp.storage.template selfadjointView<Eigen::Lower>();
+  vp.Vx_ = qparam.Qx + Qxw * ff;
+  vp.Vxx_ = qparam.Qxx + Qxw * fb;
+  vp.Vxx_.diagonal().array() += xreg_;
   return true;
 }
 
@@ -496,7 +486,7 @@ void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
   std::vector<VectorXs> &xs = workspace.trial_xs;
   std::vector<VectorXs> &us = workspace.trial_us;
   std::vector<VectorXs> &lams = workspace.trial_lams;
-  TrajOptData &prob_data = workspace.trial_prob_data;
+  TrajOptData &prob_data = workspace.problem_data;
 
   problem.init_state_error.evaluate(xs[0], us[0], xs[1],
                                     prob_data.getInitData());
@@ -650,8 +640,6 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
     }
 #endif
     if (!inner_conv) {
-      fmt::print(fmt::fg(fmt::color::red), "Inner loop failed to converge.");
-      fmt::print("\n");
       al_iter++;
       break;
     }
@@ -735,12 +723,12 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
       break;
     }
     problem.evaluate(workspace.trial_xs, workspace.trial_us,
-                     workspace.trial_prob_data);
+                     workspace.problem_data);
     computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
     computeMultipliers(problem, workspace, workspace.trial_lams,
-                       workspace.trial_prob_data, false);
+                       workspace.problem_data, false);
     return merit_fun.evaluate(problem, workspace.trial_lams, workspace,
-                              workspace.trial_prob_data);
+                              workspace.problem_data);
   };
 
   Scalar phi0 = 0.;
@@ -894,7 +882,6 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
   const std::size_t nsteps = problem.numSteps();
 
   const FunctionData &init_data = prob_data.getInitData();
-  long nr0 = init_data.nr;
   workspace.stage_prim_infeas[0](0) = math::infty_norm(init_data.value_);
 
   for (std::size_t i = 0; i < nsteps; i++) {
@@ -914,7 +901,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
       /// TODO: remove this allocation
       VectorXs cd = v + mu_scaled(j) * lam_i;
       cstr_set.projection(cd, cd); // apply projection
-      stage_infeas(j) = math::infty_norm(v - cd);
+      stage_infeas((long)j) = math::infty_norm(v - cd);
     }
   }
   if (problem.term_constraint_) {
@@ -947,12 +934,12 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
 
     Scalar ru_bis_ddp = 0.;
     auto lam_head = cstr_mgr.getConstSegmentByConstraint(results.lams[i], 0);
-    decltype(auto) gy = -lam_head + vp.Vx();
+    decltype(auto) gy = -lam_head + vp.Vx_;
     ry = math::infty_norm(gy);
     {
       const StageData &sd = prob_data.getStageData(i - 1);
       const DynamicsDataTpl<Scalar> &dd = sd.dyn_data();
-      auto dguerr = dd.Ju_.transpose() * (vp.Vx() - lam_head);
+      auto dguerr = dd.Ju_.transpose() * (vp.Vx_ - lam_head);
       gu = gu + dguerr;
       ru_bis_ddp = math::infty_norm(gu);
     }

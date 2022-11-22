@@ -14,7 +14,7 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblem &problem,
                                       Workspace &workspace,
                                       TrajOptData &prob_data) {
 
-  traj_cost_ = workspace.problem_data.cost_;
+  traj_cost_ = prob_data.cost_;
   Scalar prox_value = computeProxPenalty(workspace, solver->rho());
   penalty_value_ = 0.;
   auto ls_mode = solver->ls_mode;

@@ -24,9 +24,9 @@ void exposeBase() {
 
   bp::class_<VParams>("VParams", "Value function parameters.", bp::no_init)
       .add_property(
-          "Vx", +[](const VParams &m) { return context::VectorXs(m.Vx()); })
+          "Vx", +[](const VParams &m) { return context::VectorXs(m.Vx_); })
       .add_property(
-          "Vxx", +[](const VParams &m) { return context::MatrixXs(m.Vxx()); });
+          "Vxx", +[](const VParams &m) { return context::MatrixXs(m.Vxx_); });
 
   pp::StdVectorPythonVisitor<std::vector<QParams>, true>::expose(
       "StdVec_QParams");

@@ -20,12 +20,12 @@ BOOST_AUTO_TEST_CASE(prox_storage) {
   map_q.setLinSpaced(0., (double)qstore.storage.size() - 1.);
 
   BOOST_TEST_MESSAGE("Checking value function");
-  BOOST_CHECK_EQUAL(vstore.Vx().cols(), 1);
-  BOOST_CHECK_EQUAL(vstore.Vx().rows(), NX);
-  BOOST_CHECK_EQUAL(vstore.Vxx().rows(), NX);
-  BOOST_CHECK_EQUAL(vstore.Vxx().cols(), NX);
-  fmt::print("{} < Vx\n", vstore.Vx());
-  fmt::print("{} < Vxx\n", vstore.Vxx());
+  BOOST_CHECK_EQUAL(vstore.Vx_.cols(), 1);
+  BOOST_CHECK_EQUAL(vstore.Vx_.rows(), NX);
+  BOOST_CHECK_EQUAL(vstore.Vxx_.rows(), NX);
+  BOOST_CHECK_EQUAL(vstore.Vxx_.cols(), NX);
+  fmt::print("{} < Vx\n", vstore.Vx_);
+  fmt::print("{} < Vxx\n", vstore.Vxx_);
 
   BOOST_TEST_MESSAGE("Checking Q-function");
   BOOST_CHECK_EQUAL(qstore.storage.cols(), NX * 2 + NU + 1);
