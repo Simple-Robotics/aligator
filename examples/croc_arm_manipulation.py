@@ -47,7 +47,7 @@ framePlacementResidual = crocoddyl.ResidualModelFramePlacement(
     pinocchio.SE3(np.eye(3), np.array([0.0, 0.0, 0.4])),
 )
 uResidual = crocoddyl.ResidualModelControl(state)
-xResidual = crocoddyl.ResidualModelControl(state)
+xResidual = crocoddyl.ResidualModelState(state)
 goalTrackingCost = crocoddyl.CostModelResidual(state, framePlacementResidual)
 xRegCost = crocoddyl.CostModelResidual(state, xResidual)
 uRegCost = crocoddyl.CostModelResidual(state, uResidual)
@@ -136,7 +136,7 @@ if True:
         solver.setCallbacks([crocoddyl.CallbackVerbose()])
 
     # Solving it with the DDP algorithm
-    solver.th_grad = TOLERANCE**2
+    solver.th_stop = TOLERANCE**2 * T
     solver.solve(xs_i, us_i)
 
     # Plotting the solution and the DDP convergence
@@ -166,7 +166,7 @@ if True:
     croc_us = solver.us
 
     croc_dual_err = np.max([np.linalg.norm(q, np.inf) for q in solver.Qu])
-    print("Croc dual err:", croc_dual_err)
+    print("Croc inf. err: {:.4e}".format(croc_dual_err))
 
 if True:
     import proxddp
@@ -174,12 +174,11 @@ if True:
     print("running proxddp")
     prox_problem = convertCrocoddylProblem(problem)
 
-    mu_init = 1e-7
-    rho_init = 1e-10
+    # mu_init = 1e-7
+    # rho_init = 1e-10
     # solver = proxddp.SolverProxDDP(TOLERANCE, mu_init, rho_init=rho_init, max_iters=300)
     proxsolver = proxddp.SolverFDDP(tol=croc_dual_err)
     proxsolver.verbose = proxddp.VerboseLevel.VERBOSE
-    # solver.bcl_params.rho_factor = 0.1
     proxsolver.setup(prox_problem)
     proxsolver.run(prox_problem, xs_i, us_i)
 

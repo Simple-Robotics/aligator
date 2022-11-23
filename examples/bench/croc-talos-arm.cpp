@@ -1,5 +1,6 @@
 /// @file
 /// @brief Benchmark proxddp::SolverFDDP against Crocoddyl on a simple example
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
 #include "proxddp/compat/crocoddyl/problem-wrap.hpp"
 #include <pinocchio/parsers/urdf.hpp>
@@ -12,6 +13,7 @@
 #include <crocoddyl/core/integrator/euler.hpp>
 #include <crocoddyl/core/costs/cost-sum.hpp>
 #include <crocoddyl/core/costs/residual.hpp>
+#include <crocoddyl/core/utils/callbacks.hpp>
 #include <crocoddyl/multibody/residuals/frame-placement.hpp>
 #include <crocoddyl/multibody/residuals/state.hpp>
 #include <crocoddyl/core/residuals/control.hpp>
@@ -21,9 +23,8 @@
 
 #include <benchmark/benchmark.h>
 
-constexpr double TOL = 1e-4;
-constexpr double TOL_proxddp = 2.2231e-4;
-constexpr std::size_t maxiters = 100;
+constexpr double TOL = 1e-16;
+constexpr std::size_t maxiters = 15;
 
 namespace pin = pinocchio;
 namespace croc = crocoddyl;
@@ -38,7 +39,8 @@ void makeTalosArm(pin::Model &model) {
 
 /// This reimplements the Crocoddyl problem defined in
 /// examples/croc_arm_manipulation.py.
-boost::shared_ptr<croc::ShootingProblem> defineCrocoddylProblem() {
+boost::shared_ptr<croc::ShootingProblem>
+defineCrocoddylProblem(std::size_t nsteps = 50) {
   using croc::ActuationModelFull;
   using croc::CostModelResidual;
   using croc::CostModelSum;
@@ -95,8 +97,6 @@ boost::shared_ptr<croc::ShootingProblem> defineCrocoddylProblem() {
   auto terminalModel =
       boost::make_shared<IntegratedActionModelEuler>(termContDyn, 0.0);
 
-  const std::size_t nsteps = 50;
-
   VectorXd q0(rmodel->nq);
   q0 << 0.173046, 1.0, -0.52366, 0.0, 0.0, 0.1, -0.005;
   VectorXd x0(state->get_nx());
@@ -116,50 +116,44 @@ void getInitialGuesses(
 
   const auto nsteps = croc_problem->get_T();
   const auto &x0 = croc_problem->get_x0();
-  const auto nu = croc_problem->get_nu_max();
+  const long nu = (long)croc_problem->get_nu_max();
   VectorXd u0 = VectorXd::Zero(nu);
 
   xs_i.assign(nsteps + 1, x0);
   us_i.assign(nsteps, u0);
 }
 
-static void
-BM_croc_fddp(benchmark::State &state,
-             const boost::shared_ptr<croc::ShootingProblem> &croc_problem) {
-  state.PauseTiming();
+static void BM_croc_fddp(benchmark::State &state) {
+  const std::size_t nsteps = (std::size_t)state.range(0);
+  auto croc_problem = defineCrocoddylProblem(nsteps);
+
   std::vector<VectorXd> xs_i;
   std::vector<VectorXd> us_i;
   getInitialGuesses(croc_problem, xs_i, us_i);
-  const std::size_t nsteps = croc_problem->get_T();
 
   croc::SolverFDDP solver(croc_problem);
   const double croc_tol = TOL * TOL * (double)nsteps;
   solver.set_th_stop(croc_tol);
-
-  state.ResumeTiming();
 
   for (auto _ : state) {
     solver.solve(xs_i, us_i, maxiters);
   }
 }
 
-static void
-BM_prox_fddp(benchmark::State &state,
-             const boost::shared_ptr<croc::ShootingProblem> &croc_problem) {
-  namespace compat = proxddp::compat::croc;
-
-  state.PauseTiming();
-  auto prob_wrap = compat::convertCrocoddylProblem(croc_problem);
+static void BM_prox_fddp(benchmark::State &state) {
+  const std::size_t nsteps = (std::size_t)state.range(0);
+  using proxddp::VerboseLevel;
+  auto croc_problem = defineCrocoddylProblem(nsteps);
+  auto prob_wrap = proxddp::compat::croc::convertCrocoddylProblem(croc_problem);
 
   std::vector<VectorXd> xs_i;
   std::vector<VectorXd> us_i;
   getInitialGuesses(croc_problem, xs_i, us_i);
 
-  auto verbose = proxddp::VerboseLevel::QUIET;
-  proxddp::SolverFDDP<double> solver(TOL_proxddp, verbose);
+  auto verbose = VerboseLevel::QUIET;
+  proxddp::SolverFDDP<double> solver(TOL, verbose);
+  solver.max_iters = maxiters;
   solver.setup(prob_wrap);
-
-  state.ResumeTiming();
 
   for (auto _ : state) {
     solver.run(prob_wrap, xs_i, us_i);
@@ -167,12 +161,14 @@ BM_prox_fddp(benchmark::State &state,
 }
 
 int main(int argc, char **argv) {
-  auto croc_problem = defineCrocoddylProblem();
 
+  constexpr long nmax = 250;
   auto unit = benchmark::kMillisecond;
-  benchmark::RegisterBenchmark("croc::FDDP", &BM_croc_fddp, croc_problem)
+  benchmark::RegisterBenchmark("croc::FDDP", &BM_croc_fddp)
+      ->DenseRange(50, nmax, 50)
       ->Unit(unit);
-  benchmark::RegisterBenchmark("proxddp::FDDP", &BM_prox_fddp, croc_problem)
+  benchmark::RegisterBenchmark("proxddp::FDDP", &BM_prox_fddp)
+      ->DenseRange(50, nmax, 50)
       ->Unit(unit);
   benchmark::Initialize(&argc, argv);
   if (benchmark::ReportUnrecognizedArguments(argc, argv)) {
