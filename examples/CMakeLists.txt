@@ -6,10 +6,9 @@ ADD_PROJECT_DEPENDENCY(benchmark REQUIRED PKG_CONFIG_REQUIRES "benchmark >= 1.5.
 
 cmake_policy(SET CMP0057 NEW)
 
-file(GLOB EXAMPLES_CPP
-     lqr.cpp)
+file(GLOB EXAMPLES_CPP)
 
-list(APPEND CROC_BENCH_CPP "bench/croc-talos-arm.cpp")
+list(APPEND CROC_BENCH_CPP "bench/croc-talos-arm.cpp" "bench/lqr.cpp")
 list(APPEND EXAMPLES_CPP ${CROC_BENCH_CPP})
 
 
