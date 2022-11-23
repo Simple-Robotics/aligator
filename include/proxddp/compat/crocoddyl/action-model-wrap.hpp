@@ -34,54 +34,17 @@ struct CrocActionModelWrapperTpl : public StageModelTpl<Scalar> {
   boost::shared_ptr<CrocActionModel> action_model_;
 
   explicit CrocActionModelWrapperTpl(
-      boost::shared_ptr<CrocActionModel> action_model)
-      : Base(std::make_shared<StateWrapper>(action_model->get_state()),
-             (int)action_model->get_nu()),
-        action_model_(action_model) {
-    using EqualitySet = proxnlp::EqualityConstraint<Scalar>;
-    const int nr = (int)action_model->get_state()->get_ndx();
-    this->constraints_.push_back(
-        ConstraintType{nullptr, std::make_shared<EqualitySet>()}, nr);
-  }
+      boost::shared_ptr<CrocActionModel> action_model);
 
   const Dynamics &dyn_model() const {
     PROXDDP_RUNTIME_ERROR("There is no dyn_model() for this class.");
   }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                const ConstVectorRef &y, Data &data) const {
-    ActionDataWrap &d = static_cast<ActionDataWrap &>(data);
-    CrocActionModel &m = *action_model_;
-    m.calc(d.croc_data, x, u);
-    d.cost_data->value_ = d.croc_data->cost;
-
-    using dyn_data_t = DynamicsDataWrapperTpl<Scalar>;
-    dyn_data_t &dyn_data = static_cast<dyn_data_t &>(*d.constraint_data[0]);
-    dyn_data.xnext_ = d.croc_data->xnext;
-    this->xspace_next_->difference(y, dyn_data.xnext_, dyn_data.value_);
-  }
+                const ConstVectorRef &y, Data &data) const;
 
   void computeDerivatives(const ConstVectorRef &x, const ConstVectorRef &u,
-                          const ConstVectorRef &y, Data &data) const {
-    ActionDataWrap &d = static_cast<ActionDataWrap &>(data);
-    CrocActionModel &m = *action_model_;
-    m.calcDiff(d.croc_data, x, u);
-    d.cost_data->Lx_ = d.croc_data->Lx;
-    d.cost_data->Lu_ = d.croc_data->Lu;
-    d.cost_data->Lxx_ = d.croc_data->Lxx;
-    d.cost_data->Lxu_ = d.croc_data->Lxu;
-    d.cost_data->Luu_ = d.croc_data->Luu;
-
-    /* handle dynamics */
-    using dyn_data_t = DynamicsDataWrapperTpl<Scalar>;
-    dyn_data_t &dyn_data = static_cast<dyn_data_t &>(*d.constraint_data[0]);
-    dyn_data.Jx_ = d.croc_data->Fx;
-    dyn_data.Ju_ = d.croc_data->Fu;
-    this->xspace_next_->Jdifference(y, dyn_data.xnext_, dyn_data.Jy_, 0);
-    this->xspace_next_->Jdifference(y, dyn_data.xnext_, dyn_data.Jtmp_xnext, 1);
-    dyn_data.Jx_ = dyn_data.Jtmp_xnext * dyn_data.Jx_;
-    dyn_data.Ju_ = dyn_data.Jtmp_xnext * dyn_data.Ju_;
-  }
+                          const ConstVectorRef &y, Data &data) const;
 
   shared_ptr<Data> createData() const {
     using CrocActionData = crocoddyl::ActionDataAbstractTpl<Scalar>;
@@ -102,21 +65,11 @@ struct CrocActionDataWrapperTpl : public StageDataTpl<Scalar> {
 
   boost::shared_ptr<CrocActionData> croc_data;
 
-  CrocActionDataWrapperTpl(const CrocActionModel *croc_action_model,
-                           const boost::shared_ptr<CrocActionData> &action_data)
-      : Base(), croc_data(action_data) {
-    this->constraint_data = {
-        std::make_shared<DynamicsDataWrapperTpl<Scalar>>(croc_action_model)};
-    this->cost_data =
-        std::make_shared<CrocCostDataWrapperTpl<Scalar>>(croc_data);
-    checkData();
-  }
+  CrocActionDataWrapperTpl(
+      const CrocActionModel *croc_action_model,
+      const boost::shared_ptr<CrocActionData> &action_data);
 
-  void checkData() {
-    Base::checkData();
-    if (croc_data == 0)
-      PROXDDP_RUNTIME_ERROR("[StageData] integrity check failed.");
-  }
+  void checkData();
 };
 
 } // namespace croc
