@@ -1,3 +1,5 @@
+/// @file
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
 #include "proxddp/fwd.hpp"
@@ -12,9 +14,9 @@ template <typename Scalar> struct FDDPGoldsteinLinesearch {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
   template <typename F, typename M>
-  static Scalar run(F phi, M model, Scalar phi0,
-                    typename Linesearch<Scalar>::Options &ls_params, Scalar d1,
-                    Scalar th_grad) {
+  inline static Scalar run(const F &phi, const M &model, Scalar phi0,
+                           typename Linesearch<Scalar>::Options &ls_params,
+                           Scalar d1, Scalar th_grad) {
     Scalar th_accept_step_ = 0.1;
     Scalar th_accept_neg_step_ = 2.0;
     Scalar beta = ls_params.contraction_min;
