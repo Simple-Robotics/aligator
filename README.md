@@ -48,6 +48,20 @@ export CMAKE_PREFIX_PATH=$CONDA_PREFIX
 
 and use `$CONDA_PREFIX` as your install folder.
 
+## Benchmarking
+
+```bash
+./scripts/runbench.sh
+```
+
+We also provide a [shorthand](scripts/make_flamegraph.sh) script for using [Flame Graphs](https://github.com/brendangregg/FlameGraph).
+
+If you have the Rust toolchain and `cargo` installed, however, we advise you install [cargo-flamegraph](https://github.com/flamegraph-rs/flamegraph) instead. Then, you can create a flame graph in a one-liner, e.g.:
+
+```bash
+flamegraph -o my_flamegraph.svg -- ./build/examples/example-croc-talos-arm
+```
+
 ## Contributors
 
 * [Antoine Bambade](https://bambade.github.io/)
