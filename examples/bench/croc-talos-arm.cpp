@@ -162,7 +162,7 @@ static void BM_prox_fddp(benchmark::State &state) {
 
 int main(int argc, char **argv) {
 
-  constexpr long nmax = 250;
+  constexpr long nmax = 300;
   auto unit = benchmark::kMillisecond;
   benchmark::RegisterBenchmark("croc::FDDP", &BM_croc_fddp)
       ->DenseRange(50, nmax, 50)
