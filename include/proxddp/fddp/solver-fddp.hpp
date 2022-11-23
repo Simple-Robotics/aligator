@@ -160,12 +160,7 @@ template <typename Scalar> struct SolverFDDP {
   static const ExpData &
   stage_get_dynamics_data(const StageDataTpl<Scalar> &sd) {
     const auto &dd = sd.dyn_data();
-    try {
-      return static_cast<const ExpData &>(dd);
-    } catch (std::bad_cast &e) {
-      PROXDDP_RUNTIME_ERROR(fmt::format(
-          "Failed to cast to ExplicitDynamicsData ({}).", e.what()));
-    }
+    return static_cast<const ExpData &>(dd);
   }
 };
 
