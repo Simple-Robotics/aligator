@@ -13,8 +13,6 @@ template <typename Scalar> struct WorkspaceFDDPTpl : WorkspaceBaseTpl<Scalar> {
   using Base::trial_xs;
   using Base::value_params;
 
-  /// Value of `f(x_i, u_i)`
-  std::vector<VectorXs> xnexts_;
   /// State increment
   std::vector<VectorXs> dxs;
   /// Control increment

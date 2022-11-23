@@ -13,7 +13,6 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
   value_params.reserve(nsteps + 1);
   q_params.reserve(nsteps);
 
-  xnexts_.resize(nsteps + 1);
   this->dyn_slacks.resize(nsteps + 1);
   dxs.resize(nsteps + 1);
   dus.resize(nsteps);
@@ -34,7 +33,6 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
     value_params.emplace_back(ndx);
     q_params.emplace_back(ndx, nu, 0);
 
-    xnexts_[i] = sm.xspace().neutral();
     this->dyn_slacks[i + 1] = VectorXs::Zero(sm.ndx2());
     dxs[i] = VectorXs::Zero(ndx);
     dus[i] = VectorXs::Zero(nu);
@@ -49,7 +47,6 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
   }
   const StageModelTpl<Scalar> &sm = *problem.stages_.back();
   dxs[nsteps] = VectorXs::Zero(sm.ndx2());
-  xnexts_[nsteps] = sm.xspace_next().neutral();
   value_params.emplace_back(sm.ndx2());
 
   assert(llts_.size() == nsteps);
@@ -58,7 +55,6 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
 template <typename Scalar> void WorkspaceFDDPTpl<Scalar>::cycle_left() {
   Base::cycle_left();
 
-  rotate_vec_left(xnexts_, 1);
   rotate_vec_left(dxs);
   rotate_vec_left(dus);
   rotate_vec_left(Quuks_);

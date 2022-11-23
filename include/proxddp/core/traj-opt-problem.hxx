@@ -39,9 +39,8 @@ Scalar TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
     stages_[i]->evaluate(xs[i], us[i], xs[i + 1], prob_data.getStageData(i));
   }
 
-  if (term_cost_) {
-    term_cost_->evaluate(xs[nsteps], dummy_term_u0, *prob_data.term_cost_data);
-  }
+  term_cost_->evaluate(xs[nsteps], dummy_term_u0, *prob_data.term_cost_data);
+
   if (term_constraint_) {
     term_constraint_->func->evaluate(xs[nsteps], dummy_term_u0, xs[nsteps],
                                      prob_data.getTermData());
