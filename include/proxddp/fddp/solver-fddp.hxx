@@ -46,13 +46,13 @@ template <typename Scalar>
 Scalar
 SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
                                 Workspace &workspace, const Scalar alpha) {
+  PROXDDP_NOMALLOC_BEGIN;
   const std::size_t nsteps = workspace.nsteps;
   std::vector<VectorXs> &xs_try = workspace.trial_xs;
   std::vector<VectorXs> &us_try = workspace.trial_us;
   std::vector<VectorXs> &fs = workspace.dyn_slacks;
   ProblemData &pd = workspace.problem_data;
 
-  PROXDDP_EIGEN_ALLOW_MALLOC(false);
   {
     const auto &space = problem.stages_[0]->xspace_;
     workspace.dxs[0] = alpha * fs[0];
@@ -71,9 +71,9 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
     workspace.dus[i].noalias() += fb * workspace.dxs[i];
     sm.uspace().integrate(results.us[i], workspace.dus[i], us_try[i]);
 
-    PROXDDP_EIGEN_ALLOW_MALLOC(true);
+    PROXDDP_NOMALLOC_END;
     sm.evaluate(xs_try[i], us_try[i], xs_try[i + 1], sd);
-    PROXDDP_EIGEN_ALLOW_MALLOC(false);
+    PROXDDP_NOMALLOC_BEGIN;
 
     const ExpData &dd = stage_get_dynamics_data(sd);
 
@@ -93,40 +93,41 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
   }
   CostData &cd_term = *pd.term_cost_data;
 
-  PROXDDP_EIGEN_ALLOW_MALLOC(true);
+  PROXDDP_NOMALLOC_END;
   problem.term_cost_->evaluate(xs_try.back(), us_try.back(), cd_term);
-  PROXDDP_EIGEN_ALLOW_MALLOC(false);
+  PROXDDP_NOMALLOC_BEGIN;
 
   traj_cost_ += cd_term.value_;
   const auto &space = problem.stages_.back()->xspace_;
   space->difference(results.xs[nsteps], xs_try[nsteps], workspace.dxs[nsteps]);
-  PROXDDP_EIGEN_ALLOW_MALLOC(true);
+  PROXDDP_NOMALLOC_END;
   return traj_cost_;
 }
 
 template <typename Scalar>
 void SolverFDDP<Scalar>::expectedImprovement(Workspace &workspace, Scalar &d1,
                                              Scalar &d2) const {
-  // equivalent to expectedImprovement() in crocoddyl
-  Scalar &dg_ = workspace.dg_;
-  Scalar &dq_ = workspace.dq_;
-  Scalar &dv_ = workspace.dv_;
-  dv_ = 0.;
+  PROXDDP_NOMALLOC_BEGIN;
+  Scalar &dg = workspace.dg_;
+  Scalar &dq = workspace.dq_;
+  Scalar &dv = workspace.dv_;
+  dv = 0.;
   const std::size_t nsteps = workspace.nsteps;
 
   for (std::size_t i = 0; i <= nsteps; i++) {
     VectorXs &ftVxx = workspace.ftVxx_[i];
-    dv_ -= workspace.dxs[i].dot(ftVxx);
+    dv -= workspace.dxs[i].dot(ftVxx);
   }
 
-  d1 = dg_ + dv_;
-  d2 = dq_ + 2 * dv_;
+  d1 = dg + dv;
+  d2 = dq + 2 * dv;
+  PROXDDP_NOMALLOC_END;
 }
 
 template <typename Scalar>
 void SolverFDDP<Scalar>::updateExpectedImprovement(Workspace &workspace,
                                                    Results &results) const {
-  // equivalent to updateExpectedImprovement() in crocoddyl
+  PROXDDP_NOMALLOC_BEGIN;
   Scalar &dg = workspace.dg_;
   Scalar &dq = workspace.dq_;
   dg = 0.; // cost directional derivative
@@ -149,13 +150,14 @@ void SolverFDDP<Scalar>::updateExpectedImprovement(Workspace &workspace,
     ftVxx.noalias() = vpar.Vxx_ * fs[i];
     dq -= ftVxx.dot(fs[i]);
   }
+  PROXDDP_NOMALLOC_END;
 }
 
 template <typename Scalar>
 Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem,
                                                 const std::vector<VectorXs> &xs,
                                                 Workspace &workspace) const {
-  PROXDDP_EIGEN_ALLOW_MALLOC(false);
+  PROXDDP_NOMALLOC_BEGIN;
   const std::size_t nsteps = workspace.nsteps;
   const ProblemData &pd = workspace.problem_data;
   std::vector<VectorXs> &fs = workspace.dyn_slacks;
@@ -171,12 +173,13 @@ Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem,
     sm.xspace_->difference(xs[i + 1], dd.xnext_, fs[i + 1]);
   }
   Scalar res = math::infty_norm(workspace.dyn_slacks);
-  PROXDDP_EIGEN_ALLOW_MALLOC(true);
+  PROXDDP_NOMALLOC_END;
   return res;
 }
 
 template <typename Scalar>
 Scalar SolverFDDP<Scalar>::computeCriterion(Workspace &workspace) {
+  PROXDDP_NOMALLOC_BEGIN;
   const std::size_t nsteps = workspace.nsteps;
   Scalar v = 0.;
   for (std::size_t i = 0; i < nsteps; i++) {
@@ -188,6 +191,7 @@ Scalar SolverFDDP<Scalar>::computeCriterion(Workspace &workspace) {
     std::fclose(fi);
 #endif
   }
+  PROXDDP_NOMALLOC_END;
   return v;
 }
 
@@ -195,8 +199,7 @@ template <typename Scalar>
 void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
                                       Workspace &workspace,
                                       Results &results) const {
-
-  PROXDDP_EIGEN_ALLOW_MALLOC(false);
+  PROXDDP_NOMALLOC_BEGIN;
 
   const std::size_t nsteps = workspace.nsteps;
   const std::vector<VectorXs> &fs = workspace.dyn_slacks;
@@ -254,14 +257,14 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
 
 #ifndef NDEBUG
     {
-      PROXDDP_EIGEN_ALLOW_MALLOC(true);
+      PROXDDP_NOMALLOC_END;
       std::FILE *fi = std::fopen("fddp.log", "a");
       if (i == workspace.nsteps - 1)
         fmt::print(fi, "[backward {:d}]\n", results.num_iters + 1);
       fmt::print(fi, "uff[{:d}]={}\n", i, ff.head(nu).transpose());
       fmt::print(fi, "V'x[{:d}]={}\n", i, vnext.Vx_.transpose());
       std::fclose(fi);
-      PROXDDP_EIGEN_ALLOW_MALLOC(false);
+      PROXDDP_NOMALLOC_BEGIN;
     }
 #endif
     workspace.Quuks_[i].noalias() = qparam.Quu * ff;
@@ -277,7 +280,7 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
     vp.Vx_.noalias() += vp.Vxx_ * fs[i];
   }
 
-  PROXDDP_EIGEN_ALLOW_MALLOC(true);
+  PROXDDP_NOMALLOC_END;
 }
 
 template <typename Scalar>
@@ -371,10 +374,8 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     record.dM = phi_new - phi0;
     record.dphi0 = d1_phi;
 
-    PROXDDP_EIGEN_ALLOW_MALLOC(false);
     results.xs = workspace.trial_xs;
     results.us = workspace.trial_us;
-    PROXDDP_EIGEN_ALLOW_MALLOC(true);
     if (std::abs(d1_phi) < th_grad_) {
       results.conv = true;
       break;

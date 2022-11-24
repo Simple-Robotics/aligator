@@ -106,7 +106,7 @@ void TrajOptProblemTpl<Scalar>::replaceStageCircular(
 template <typename Scalar>
 Scalar TrajOptProblemTpl<Scalar>::computeTrajectoryCost(
     const Data &problem_data) const {
-  PROXDDP_EIGEN_ALLOW_MALLOC(false);
+  PROXDDP_NOMALLOC_BEGIN;
   Scalar traj_cost = 0.;
 
   const std::size_t nsteps = numSteps();
@@ -116,7 +116,7 @@ Scalar TrajOptProblemTpl<Scalar>::computeTrajectoryCost(
   }
   traj_cost += problem_data.term_cost_data->value_;
 
-  PROXDDP_EIGEN_ALLOW_MALLOC(true);
+  PROXDDP_NOMALLOC_END;
   return traj_cost;
 }
 

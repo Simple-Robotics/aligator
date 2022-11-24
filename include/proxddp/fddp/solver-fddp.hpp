@@ -18,6 +18,7 @@
 
 #include <fmt/ostream.h>
 
+/// @brief  A warning for the FDDP module.
 #define PROXDDP_FDDP_WARNING(msg)                                              \
   fmt::print(fmt::fg(fmt::color::yellow), "[SolverFDDP] ({}) warning: {}",     \
              __FUNCTION__, msg)
@@ -25,7 +26,8 @@
 namespace proxddp {
 
 /**
- * @brief The feasible DDP (FDDP) algorithm
+ * @brief   The feasible DDP (FDDP) algorithm, from Mastalli et al. (2020).
+ * @details The implementation very similar to Crocoddyl's SolverFDDP.
  *
  */
 template <typename Scalar> struct SolverFDDP {
@@ -81,7 +83,9 @@ template <typename Scalar> struct SolverFDDP {
              VerboseLevel verbose = VerboseLevel::QUIET,
              const Scalar reg_init = 1e-9, const std::size_t max_iters = 200);
 
+  /// @brief  Get the solver results.
   const Results &getResults() const { return *results_; }
+  /// @brief  Get a const reference to the solver's workspace.
   const Workspace &getWorkspace() const { return *workspace_; }
 
   /// @brief Allocate workspace and results structs.
@@ -101,15 +105,18 @@ template <typename Scalar> struct SolverFDDP {
                             Workspace &workspace, const Scalar alpha);
 
   /**
-   * @brief     Pre-compute the improvement model params.
-   * @details   Inspired from Crocoddyl.
+   * @brief     Pre-compute parts of the directional derivatives -- this is done
+   * before linesearch.
+   * @details   Inspired from Crocoddyl's own function,
+   * crocoddyl::SolverFDDP::updateExpectedImprovement
    */
   void updateExpectedImprovement(Workspace &workspace, Results &results) const;
 
   /**
-   * @brief    Correct the directional derivatives.
-   * @details  This will re-compute the gap between the results trajectory and
-   * the trial trajectory.
+   * @brief    Finish computing the directional derivatives -- this is done
+   * *within* linesearch.
+   * @details  Inspired from Crocoddyl's own function,
+   * crocoddyl::SolverFDDP::expectedImprovement
    */
   void expectedImprovement(Workspace &workspace, Scalar &d1, Scalar &d2) const;
 
@@ -127,13 +134,13 @@ template <typename Scalar> struct SolverFDDP {
   void backwardPass(const Problem &problem, Workspace &workspace,
                     Results &results) const;
 
-  void increaseRegularization() {
+  inline void increaseRegularization() {
     xreg_ *= reg_inc_factor_;
     xreg_ = std::min(xreg_, reg_max_);
     ureg_ = xreg_;
   }
 
-  void decreaseRegularization() {
+  inline void decreaseRegularization() {
     xreg_ *= reg_dec_factor_;
     xreg_ = std::max(xreg_, reg_min_);
     ureg_ = xreg_;

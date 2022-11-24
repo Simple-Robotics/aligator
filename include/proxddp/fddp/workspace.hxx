@@ -23,7 +23,11 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
   llts_.reserve(nsteps);
   JtH_temp_.reserve(nsteps);
 
-  this->dyn_slacks[0] = VectorXs::Zero(problem.stages_[0]->ndx1());
+  {
+    const int ndx = problem.stages_[0]->ndx1();
+    this->dyn_slacks[0] = VectorXs::Zero(ndx);
+    ftVxx_[0] = VectorXs::Zero(ndx);
+  }
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModelTpl<Scalar> &sm = *problem.stages_[i];
