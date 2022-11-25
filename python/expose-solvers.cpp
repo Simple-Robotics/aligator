@@ -20,7 +20,13 @@ void exposeBase() {
       .add_property(
           "hess_",
           bp::make_getter(&QParams::hess_,
-                          bp::return_value_policy<bp::return_by_value>()));
+                          bp::return_value_policy<bp::return_by_value>()))
+      .add_property(
+          "Qx", bp::make_getter(&QParams::Qx,
+                                bp::return_value_policy<bp::return_by_value>()))
+      .add_property("Qu", bp::make_getter(
+                              &QParams::Qu,
+                              bp::return_value_policy<bp::return_by_value>()));
 
   bp::class_<VParams>("VParams", "Value function parameters.", bp::no_init)
       .add_property(
