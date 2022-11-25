@@ -13,10 +13,6 @@ namespace proxddp {
 namespace internal {
 
 /// @brief  Contiguous storage for the value function parameters.
-///
-/// @details This provides storage for the matrix \f[
-///     \begin{bmatrix} 2v & V_x^\top \\ V_x & V_{xx} \end{bmatrix}
-/// \f]
 template <typename _Scalar> struct value_storage {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
@@ -41,19 +37,8 @@ template <typename _Scalar> struct value_storage {
   }
 };
 
-/** @brief  Contiguous storage for Q-function parameters with corresponding
- *          sub-matrix views.
- *
- * @details  The storage layout is as follows:
- * \f[
- *    \begin{bmatrix}
- *      2q    & Q_x^\top  & Q_u^top & Q_y^\top  \\
- *      Q_x   & Q_{xx}    & Q_{xu}  & Q_{xy}    \\
- *      Q_u   & Q_{ux}    & Q_{uu}  & Q_{uy}    \\
- *      Q_y   & Q_{yx}    & Q_{yu}  & Q_{yy}
- *    \end{bmatrix}
- * ]\f
- */
+/// @brief  Contiguous storage for Q-function parameters with corresponding
+/// sub-matrix views.
 template <typename Scalar> struct q_storage {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
