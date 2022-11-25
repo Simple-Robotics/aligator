@@ -42,9 +42,9 @@ struct FunctionSliceXprTpl : StageFunctionTpl<Scalar> {
     // evaluate base
     func->evaluate(x, u, y, sub_data);
 
-    for (long j = 0; j < (long)indices.size(); j++) {
+    for (std::size_t j = 0; j < indices.size(); j++) {
       int i = indices[j];
-      d.value_(j) = sub_data.value_(i);
+      d.value_((long)j) = sub_data.value_(i);
     }
   }
 
@@ -56,9 +56,9 @@ struct FunctionSliceXprTpl : StageFunctionTpl<Scalar> {
     // evaluate base
     func->computeJacobians(x, u, y, sub_data);
 
-    for (long j = 0; j < (long)indices.size(); j++) {
+    for (std::size_t j = 0; j < indices.size(); j++) {
       int i = indices[j];
-      d.jac_buffer_.row(j) = sub_data.jac_buffer_.row(i);
+      d.jac_buffer_.row((long)j) = sub_data.jac_buffer_.row(i);
     }
   }
 
@@ -72,7 +72,7 @@ struct FunctionSliceXprTpl : StageFunctionTpl<Scalar> {
     BaseData &sub_data = *d.sub_data;
 
     d.lbda_sub = lbda;
-    for (long j = 0; j < (long)indices.size(); j++) {
+    for (std::size_t j = 0; j < indices.size(); j++) {
       d.lbda_sub(indices[j]) = 0.;
     }
 
