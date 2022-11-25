@@ -48,9 +48,7 @@ template <typename Scalar> struct q_storage {
   int ndy_;
   int ntot = ndx_ + nu_ + ndy_;
 
-  Scalar q_2_ = 0.;
-
-  Scalar &q_2() { return q_2_; }
+  Scalar q_ = 0.;
 
   VectorXs grad_;
   MatrixXs hess_;

@@ -291,8 +291,7 @@ void SolverProxDDP<Scalar>::updateHamiltonian(const Problem &problem,
 
   // Use the contiguous full gradient/jacobian/hessian buffers
   // to fill in the Q-function derivatives
-  qparam.storage.setZero();
-  qparam.q_2() = 2 * (cdata.value_ + rho() * proxdata.value_);
+  qparam.q_ = cdata.value_ + rho() * proxdata.value_;
   qparam.Qx = cdata.Lx_ + rho() * proxdata.Lx_;
   qparam.Qu = cdata.Lu_ + rho() * proxdata.Lu_;
   qparam.Qy = vnext.Vx_;

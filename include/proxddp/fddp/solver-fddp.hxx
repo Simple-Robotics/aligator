@@ -232,7 +232,7 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
     /* Assemble Q-function */
     auto J_x_u = dd.jac_buffer_.leftCols(ndx1 + nu);
 
-    qparam.q_2() = 2 * cd.value_;
+    qparam.q_ = cd.value_;
     qparam.grad_ = cd.grad_;
     qparam.grad_.noalias() += J_x_u.transpose() * vnext.Vx_;
 
