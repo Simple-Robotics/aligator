@@ -21,12 +21,12 @@ template <typename _Scalar> struct value_storage {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-  int ndx;
+  int ndx_;
   VectorXs Vx_;
   MatrixXs Vxx_;
   Scalar v_;
 
-  value_storage(const int ndx) : ndx(ndx), Vx_(ndx), Vxx_(ndx, ndx) {
+  value_storage(const int ndx) : ndx_(ndx), Vx_(ndx), Vxx_(ndx, ndx) {
     Vx_.setZero();
     Vxx_.setZero();
   }
@@ -35,7 +35,7 @@ template <typename _Scalar> struct value_storage {
                                   const value_storage &store) {
     Eigen::IOFormat CleanFmt(3, 0, ", ", "\n", "  [", "]");
     oss << "value_storage {\n";
-    oss << store.storage.format(CleanFmt);
+    oss << fmt::format("\tndx: {:d}", store.ndx_);
     oss << "\n}";
     return oss;
   }
@@ -58,13 +58,17 @@ template <typename Scalar> struct q_storage {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
-  int ntot;
-  MatrixXs storage;
+  int ndx_;
+  int nu_;
+  int ndy_;
+  int ntot = ndx_ + nu_ + ndy_;
 
-  Scalar &q_2() { return storage.coeffRef(0, 0); }
+  Scalar q_2_ = 0.;
 
-  VectorRef grad_;
-  MatrixRef hess_;
+  Scalar &q_2() { return q_2_; }
+
+  VectorXs grad_;
+  MatrixXs hess_;
 
   VectorRef Qx;
   VectorRef Qu;
@@ -77,21 +81,26 @@ template <typename Scalar> struct q_storage {
   MatrixRef Quy;
   MatrixRef Qyy;
 
-  q_storage(const int ndx1, const int nu, const int ndx2)
-      : ntot(ndx1 + nu + ndx2), storage(MatrixXs::Zero(ntot + 1, ntot + 1)),
-        grad_(storage.col(0).tail(ntot)),
-        hess_(storage.bottomRightCorner(ntot, ntot)), Qx(grad_.head(ndx1)),
-        Qu(grad_.segment(ndx1, nu)), Qy(grad_.tail(ndx2)),
-        Qxx(hess_.topLeftCorner(ndx1, ndx1)),
-        Qxu(hess_.block(0, ndx1, ndx1, nu)),
-        Qxy(hess_.topRightCorner(ndx1, ndx2)),
-        Quu(hess_.block(ndx1, ndx1, nu, nu)),
-        Quy(hess_.block(ndx1, ndx1 + nu, nu, ndx2)),
-        Qyy(hess_.bottomRightCorner(ndx2, ndx2)) {
+  q_storage(const int ndx, const int nu, const int ndy)
+      : ndx_(ndx), nu_(nu), ndy_(ndy), grad_(ntot), hess_(ntot, ntot),
+        Qx(grad_.head(ndx)), Qu(grad_.segment(ndx, nu)), Qy(grad_.tail(ndy)),
+        Qxx(hess_.topLeftCorner(ndx, ndx)), Qxu(hess_.block(0, ndx, ndx, nu)),
+        Qxy(hess_.topRightCorner(ndx, ndy)), Quu(hess_.block(ndx, ndx, nu, nu)),
+        Quy(hess_.block(ndx, ndx + nu, nu, ndy)),
+        Qyy(hess_.bottomRightCorner(ndy, ndy)) {
     assert(hess_.rows() == ntot);
     assert(hess_.cols() == ntot);
     assert(grad_.rows() == ntot);
     assert(grad_.cols() == 1);
+  }
+
+  friend std::ostream &operator<<(std::ostream &oss, const q_storage &store) {
+    Eigen::IOFormat CleanFmt(3, 0, ", ", "\n", "  [", "]");
+    oss << "q_storage {\n";
+    oss << fmt::format("ndx: {:d}, nu: {:d}, ndy: {:d}", store.ndx_, store.nu_,
+                       store.ndy_);
+    oss << "\n}";
+    return oss;
   }
 };
 

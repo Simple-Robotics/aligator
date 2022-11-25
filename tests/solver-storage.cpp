@@ -15,10 +15,6 @@ BOOST_AUTO_TEST_CASE(prox_storage) {
   auto vstore = value_store_t(NX);
   auto qstore = q_store_t(NX, NU, NX);
 
-  Eigen::Map<Eigen::VectorXd> map_q(qstore.storage.data(),
-                                    qstore.storage.size());
-  map_q.setLinSpaced(0., (double)qstore.storage.size() - 1.);
-
   BOOST_TEST_MESSAGE("Checking value function");
   BOOST_CHECK_EQUAL(vstore.Vx_.cols(), 1);
   BOOST_CHECK_EQUAL(vstore.Vx_.rows(), NX);
@@ -28,8 +24,6 @@ BOOST_AUTO_TEST_CASE(prox_storage) {
   fmt::print("{} < Vxx\n", vstore.Vxx_);
 
   BOOST_TEST_MESSAGE("Checking Q-function");
-  BOOST_CHECK_EQUAL(qstore.storage.cols(), NX * 2 + NU + 1);
-  fmt::print("{} < qstore\n", qstore.storage);
   fmt::print("{} < Qx\n", qstore.Qx);
   fmt::print("{} < Qu\n", qstore.Qu);
   fmt::print("{} < Qy\n", qstore.Qy);
