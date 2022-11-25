@@ -224,8 +224,6 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
 
     const int nu = sm.nu();
     const int ndx1 = sm.ndx1();
-    assert((qparam.storage.cols() == ndx1 + nu + 1) &&
-           (qparam.storage.rows() == ndx1 + nu + 1));
     assert(qparam.grad_.size() == ndx1 + nu);
 
     const CostData &cd = *sd.cost_data;

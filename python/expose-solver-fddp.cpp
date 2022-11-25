@@ -1,5 +1,4 @@
 #include "proxddp/python/fwd.hpp"
-#include "proxddp/python/visitors.hpp"
 
 #include "proxddp/fddp/solver-fddp.hpp"
 

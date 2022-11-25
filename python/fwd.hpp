@@ -15,6 +15,8 @@ namespace python {
 namespace pp = pinocchio::python;
 namespace bp = boost::python;
 
+using pp::StdVectorPythonVisitor;
+
 /// Expose ternary functions
 void exposeFunctions();
 void exposeCosts();
@@ -26,8 +28,9 @@ void exposeODEs();
 void exposeDynamics();
 /// Expose integrators
 void exposeIntegrators();
+
+/// Expose solvers
 void exposeSolvers();
-void exposeFDDP();
 void exposeCallbacks();
 void exposeAutodiff();
 void exposeUtils();

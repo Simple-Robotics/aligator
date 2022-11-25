@@ -41,7 +41,6 @@ BOOST_PYTHON_MODULE(pyproxddp) {
   exposeUtils();
 
   exposeSolvers();
-  exposeFDDP();
   exposeCallbacks();
   exposeAutodiff();
 

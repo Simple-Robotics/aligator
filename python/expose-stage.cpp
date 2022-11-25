@@ -25,7 +25,7 @@ void exposeStage() {
   using FunctionPtr = shared_ptr<context::StageFunction>;
   using CstrSetPtr = shared_ptr<ConstraintSet>;
 
-  pp::StdVectorPythonVisitor<std::vector<shared_ptr<StageModel>>, true>::expose(
+  StdVectorPythonVisitor<std::vector<shared_ptr<StageModel>>, true>::expose(
       "StdVec_StageModel");
 
   bp::register_ptr_to_python<shared_ptr<StageModel>>();
@@ -83,7 +83,7 @@ void exposeStage() {
       .def(PrintableVisitor<StageModel>());
 
   bp::register_ptr_to_python<shared_ptr<StageData>>();
-  pp::StdVectorPythonVisitor<std::vector<shared_ptr<StageData>>, true>::expose(
+  StdVectorPythonVisitor<std::vector<shared_ptr<StageData>>, true>::expose(
       "StdVec_StageData");
 
   bp::class_<StageData>("StageData", "Data struct for StageModel objects.",

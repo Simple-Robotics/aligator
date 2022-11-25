@@ -1,76 +1,9 @@
 #include "proxddp/python/fwd.hpp"
-#include "proxddp/python/visitors.hpp"
 
 #include "proxddp/core/solver-proxddp.hpp"
 
 namespace proxddp {
 namespace python {
-
-void exposeBase() {
-  using context::Scalar;
-
-  using QParams = proxddp::internal::q_storage<Scalar>;
-  using VParams = proxddp::internal::value_storage<Scalar>;
-  bp::class_<QParams>("QParams", "Q-function parameters.", bp::no_init)
-      .def_readonly("storage", &QParams::storage)
-      .add_property(
-          "grad_",
-          bp::make_getter(&QParams::grad_,
-                          bp::return_value_policy<bp::return_by_value>()))
-      .add_property(
-          "hess_",
-          bp::make_getter(&QParams::hess_,
-                          bp::return_value_policy<bp::return_by_value>()))
-      .add_property(
-          "Qx", bp::make_getter(&QParams::Qx,
-                                bp::return_value_policy<bp::return_by_value>()))
-      .add_property("Qu", bp::make_getter(
-                              &QParams::Qu,
-                              bp::return_value_policy<bp::return_by_value>()));
-
-  bp::class_<VParams>("VParams", "Value function parameters.", bp::no_init)
-      .add_property(
-          "Vx", +[](const VParams &m) { return context::VectorXs(m.Vx_); })
-      .add_property(
-          "Vxx", +[](const VParams &m) { return context::MatrixXs(m.Vxx_); });
-
-  pp::StdVectorPythonVisitor<std::vector<QParams>, true>::expose(
-      "StdVec_QParams");
-  pp::StdVectorPythonVisitor<std::vector<VParams>, true>::expose(
-      "StdVec_VParams");
-
-  using WorkspaceBase = WorkspaceBaseTpl<Scalar>;
-  bp::class_<WorkspaceBase>("WorkspaceBase", "Base workspace struct.",
-                            bp::no_init)
-      .def_readonly("nsteps", &WorkspaceBase::nsteps)
-      .def_readonly("problem_data", &WorkspaceBase::problem_data)
-      .def_readonly("trial_xs", &WorkspaceBase::trial_xs)
-      .def_readonly("trial_us", &WorkspaceBase::trial_us)
-      .def_readonly("dyn_slacks", &WorkspaceBase::dyn_slacks,
-                    "Expose dynamics' slack variables (e.g. feasibility gaps).")
-      .def_readonly("value_params", &WorkspaceBase::value_params)
-      .def_readonly("q_params", &WorkspaceBase::q_params);
-
-  using ResultsBase = ResultsBaseTpl<Scalar>;
-  bp::class_<ResultsBase>("ResultsBase", "Base results struct.", bp::no_init)
-      .def_readonly("num_iters", &ResultsBase::num_iters,
-                    "Number of solver iterations.")
-      .def_readonly("conv", &ResultsBase::conv)
-      .def_readonly("gains", &ResultsBase::gains_)
-      .def_readonly("xs", &ResultsBase::xs)
-      .def_readonly("us", &ResultsBase::us)
-      .def_readonly("lams", &ResultsBase::lams)
-      .def_readonly("primal_infeas", &ResultsBase::prim_infeas)
-      .def_readonly("dual_infeas", &ResultsBase::dual_infeas)
-      .def_readonly("traj_cost", &ResultsBase::traj_cost_, "Trajectory cost.")
-      .def_readonly("merit_value", &ResultsBase::merit_value_,
-                    "Merit function value.")
-      .add_property("ctrl_feedbacks", &ResultsBase::getCtrlFeedbacks,
-                    "Get the control feedback matrices.")
-      .add_property("ctrl_feedforwards", &ResultsBase::getCtrlFeedforwards,
-                    "Get the control feedforward gains.")
-      .def(PrintableVisitor<ResultsBase>());
-}
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(prox_run_overloads, run, 1, 4)
 
@@ -176,11 +109,6 @@ void exposeProxDDP() {
                 bp::arg("us_init"), bp::arg("lams_init")),
                "Run the algorithm. Can receive initial guess for "
                "multiplier trajectory."));
-}
-
-void exposeSolvers() {
-  exposeBase();
-  exposeProxDDP();
 }
 
 } // namespace python

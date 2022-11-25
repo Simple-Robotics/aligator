@@ -67,9 +67,9 @@ void exposeCosts() {
           bp::make_getter(&CostData::hess_,
                           bp::return_value_policy<bp::return_by_value>()));
 
-  pp::StdVectorPythonVisitor<std::vector<shared_ptr<CostBase>>, true>::expose(
+  StdVectorPythonVisitor<std::vector<shared_ptr<CostBase>>, true>::expose(
       "StdVec_CostAbstract", "Vector of cost objects.");
-  pp::StdVectorPythonVisitor<std::vector<shared_ptr<CostData>>, true>::expose(
+  StdVectorPythonVisitor<std::vector<shared_ptr<CostData>>, true>::expose(
       "StdVec_CostData", "Vector of CostData objects.");
 
   bp::class_<ConstantCostTpl<Scalar>, bp::bases<CostBase>>(
