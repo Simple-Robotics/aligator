@@ -37,12 +37,15 @@ void SolverProxDDP<Scalar>::linearRollout(const Problem &problem,
     const auto ff = results.getFeedforward(i);
     const auto fb = results.getFeedback(i);
 
-    pd_step = ff + fb * workspace.dxs[i];
+    pd_step = ff;
+    pd_step.noalias() += fb * workspace.dxs[i];
   }
   if (problem.term_constraint_) {
     const auto ff = results.getFeedforward(nsteps);
     const auto fb = results.getFeedback(nsteps);
-    workspace.dlams.back() = ff + fb * workspace.dxs[nsteps];
+    VectorRef &dl = workspace.dlams.back();
+    dl = ff;
+    dl.noalias() += fb * workspace.dxs[nsteps];
   }
 }
 
@@ -480,6 +483,7 @@ void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
                                              Workspace &workspace,
                                              const Results &results,
                                              const Scalar alpha) const {
+  PROXDDP_NOMALLOC_BEGIN;
   using ExplicitDynData = ExplicitDynamicsDataTpl<Scalar>;
 
   const std::size_t nsteps = workspace.nsteps;
@@ -488,12 +492,17 @@ void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
   std::vector<VectorXs> &lams = workspace.trial_lams;
   TrajOptData &prob_data = workspace.problem_data;
 
-  problem.init_state_error.evaluate(xs[0], us[0], xs[1],
-                                    prob_data.getInitData());
-  computeDirX0(problem, workspace, results);
-  const StageModel &stage = *problem.stages_[0];
-  stage.xspace().integrate(results.xs[0], alpha * workspace.dxs[0], xs[0]);
-  lams[0] = results.lams[0] + alpha * workspace.dlams[0];
+  {
+    problem.init_state_error.evaluate(xs[0], us[0], xs[1],
+                                      prob_data.getInitData());
+    compute_dir_x0(problem, workspace, results);
+    const StageModel &stage = *problem.stages_[0];
+    // use lams[0] as a temp var for alpha * dx0
+    lams[0] = alpha * workspace.dxs[0];
+    stage.xspace().integrate(results.xs[0], lams[0], xs[0]);
+    // now set lams[0] to its actual value
+    lams[0] = results.lams[0] + alpha * workspace.dlams[0];
+  }
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
@@ -512,12 +521,14 @@ void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
 
     const VectorRef &dx = workspace.dxs[i];
     VectorRef &du = workspace.dus[i];
-    du.head(nu) = alpha * ff_u + fb_u * dx;
+    du = alpha * ff_u;
+    du.noalias() += fb_u * dx;
     stage.uspace().integrate(results.us[i], du, us[i]);
 
     VectorRef &dlam = workspace.dlams[i + 1];
-    dlam.head(ndual) = alpha * ff_lm + fb_lm * dx;
-    lams[i + 1].head(ndual) = results.lams[i + 1] + dlam;
+    dlam = alpha * ff_lm;
+    dlam.noalias() += fb_lm * dx;
+    lams[i + 1] = results.lams[i + 1] + dlam;
 
     stage.evaluate(xs[i], us[i], xs[i + 1], data);
 
@@ -527,7 +538,7 @@ void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
         cstr_mgr.getConstSegmentByConstraint(lams[i + 1], 0);
     const ConstVectorRef dynprevlam =
         cstr_mgr.getConstSegmentByConstraint(workspace.lams_prev[i + 1], 0);
-    workspace.dyn_slacks[i].head(ndx2) = mu_scaled(0) * (dynprevlam - dynlam);
+    workspace.dyn_slacks[i] = mu_scaled(0) * (dynprevlam - dynlam);
 
     shared_ptr<ExplicitDynData> exp_dd =
         std::dynamic_pointer_cast<ExplicitDynData>(data.constraint_data[0]);
@@ -543,7 +554,7 @@ void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
                       &workspace.dyn_slacks[i]);
     }
 
-    VectorRef dx_next = workspace.dxs[i + 1].head(ndx2);
+    VectorRef &dx_next = workspace.dxs[i + 1];
     stage.xspace_next().difference(results.xs[i + 1], xs[i + 1], dx_next);
 
     PROXDDP_RAISE_IF_NAN_NAME(xs[i + 1], fmt::format("xs[{:d}]", i + 1));
@@ -555,7 +566,6 @@ void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
                                *prob_data.term_cost_data);
 
   if (problem.term_constraint_) {
-
     const StageConstraintTpl<Scalar> &tc = *problem.term_constraint_;
     FunctionData &td = prob_data.getTermData();
     tc.func->evaluate(xs[nsteps], us[nsteps], xs[nsteps], td);
@@ -564,9 +574,11 @@ void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
     const VectorRef &dx = workspace.dxs.back();
     auto ff = results.getFeedforward(nsteps);
     auto fb = results.getFeedback(nsteps);
-    dlam = alpha * ff + fb * dx;
+    dlam = alpha * ff;
+    dlam.noalias() += fb * dx;
     lams.back() = results.lams.back() + dlam;
   }
+  PROXDDP_NOMALLOC_END;
 }
 
 template <typename Scalar>
@@ -771,14 +783,12 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     computeInfeasibilities(problem, workspace, results);
 
     Scalar outer_crit = std::max(results.dual_infeas, results.prim_infeas);
-    if (outer_crit <= target_tol_) {
+    if (outer_crit <= target_tol_)
       return true;
-    }
 
     bool inner_conv = (workspace.inner_criterion <= inner_tol_);
-    if (inner_conv && (inner_step > 0)) {
+    if (inner_conv && (inner_step > 0))
       return true;
-    }
 
     linearRollout(problem, workspace, results);
 
