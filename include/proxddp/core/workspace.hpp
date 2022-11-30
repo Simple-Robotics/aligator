@@ -123,14 +123,7 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   /// @brief Same as cycle_left(), but add a StageDataTpl to problem_data.
   /// @details The implementation pushes back on top of the vector of
   /// StageDataTpl, rotates left, then pops the first element back out.
-  void cycle_append(const shared_ptr<StageModelTpl<Scalar>> &stage) {
-    auto sd = stage->createData();
-    problem_data.stage_data.push_back(sd);
-    trial_prob_data.stage_data.push_back(sd);
-    this->cycle_left();
-    problem_data.stage_data.pop_back();
-    trial_prob_data.stage_data.pop_back();
-  }
+  void cycle_append(const shared_ptr<StageModel> &stage);
 
   template <typename T>
   friend std::ostream &operator<<(std::ostream &oss,

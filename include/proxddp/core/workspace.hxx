@@ -159,6 +159,16 @@ template <typename Scalar> void WorkspaceTpl<Scalar>::cycle_left() {
 }
 
 template <typename Scalar>
+void WorkspaceTpl<Scalar>::cycle_append(const shared_ptr<StageModel> &stage) {
+  auto sd = stage->createData();
+  problem_data.stage_data.push_back(sd);
+  trial_prob_data.stage_data.push_back(sd);
+  this->cycle_left();
+  problem_data.stage_data.pop_back();
+  trial_prob_data.stage_data.pop_back();
+}
+
+template <typename Scalar>
 std::ostream &operator<<(std::ostream &oss, const WorkspaceTpl<Scalar> &self) {
   oss << "Workspace {" << fmt::format("\n  nsteps:         {:d}", self.nsteps)
       << fmt::format("\n  n_multipliers:  {:d}", self.lams_pdal.size());

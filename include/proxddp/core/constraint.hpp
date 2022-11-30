@@ -1,6 +1,6 @@
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 /// @file constraint.hpp
 /// @brief Defines the constraint object for this library.
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
 #include "proxddp/core/function-abstract.hpp"
@@ -22,18 +22,15 @@ template <typename Scalar> struct ConstraintStackTpl {
 
   std::size_t numConstraints() const { return storage_.size(); }
 
-  void push_back(const ConstraintType &el) {
-    assert(el.func != 0 && "member func can't be called with nullptr");
-    this->push_back(el, el.func->nr);
+  inline void push_back(const ConstraintType &el) {
+    assert(el.func != 0 &&
+           "constraint must have non-null underlying function.");
+    assert(el.set != 0 && "constraint must have non-null underlying set.");
+    const int nr = el.func->nr;
+    push_back(el, nr);
   }
 
-  void push_back(const ConstraintType &el, const int nr) {
-    const int last_cursor = cursors_.back();
-    storage_.push_back(el);
-    cursors_.push_back(last_cursor + nr);
-    dims_.push_back(nr);
-    total_dim += nr;
-  }
+  void push_back(const ConstraintType &el, const int nr);
 
   int getIndex(const std::size_t i) const { return cursors_[i]; }
 
@@ -68,8 +65,8 @@ template <typename Scalar> struct ConstraintStackTpl {
   Eigen::Block<Derived, -1, -1>
   getBlockByConstraint(const Eigen::MatrixBase<Derived> &J_,
                        const std::size_t i) const {
-    using M = Eigen::MatrixBase<Derived>;
-    M &J = const_cast<M &>(J_);
+    using MatrixType = Eigen::MatrixBase<Derived>;
+    MatrixType &J = const_cast<MatrixType &>(J_);
     assert(J.rows() == totalDim());
     return J.middleRows(getIndex(i), getDim(i));
   }
@@ -95,3 +92,5 @@ protected:
 };
 
 } // namespace proxddp
+
+#include "proxddp/core/constraint.hxx"
