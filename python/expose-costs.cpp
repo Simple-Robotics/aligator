@@ -125,7 +125,7 @@ void exposeCosts() {
       bp::init<const int, const int>(bp::args("self", "ndx", "nu")))
       .def("evaluate", bp::pure_virtual(&CostBase::evaluate),
            bp::args("self", "x", "u", "data"), "Evaluate the cost function.")
-      .def("computeGradients", bp::pure_virtual(&CostBase::evaluate),
+      .def("computeGradients", bp::pure_virtual(&CostBase::computeGradients),
            bp::args("self", "x", "u", "data"),
            "Compute the cost function gradients.")
       .def("computeHessians", bp::pure_virtual(&CostBase::computeHessians),
