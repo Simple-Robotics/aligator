@@ -29,7 +29,6 @@ template <typename _Scalar> struct value_storage {
 
   friend std::ostream &operator<<(std::ostream &oss,
                                   const value_storage &store) {
-    Eigen::IOFormat CleanFmt(3, 0, ", ", "\n", "  [", "]");
     oss << "value_storage {\n";
     oss << fmt::format("\tndx: {:d}", store.ndx_);
     oss << "\n}";
@@ -71,6 +70,8 @@ template <typename Scalar> struct q_storage {
         Qxy(hess_.topRightCorner(ndx, ndy)), Quu(hess_.block(ndx, ndx, nu, nu)),
         Quy(hess_.block(ndx, ndx + nu, nu, ndy)),
         Qyy(hess_.bottomRightCorner(ndy, ndy)) {
+    grad_.setZero();
+    hess_.setZero();
     assert(hess_.rows() == ntot);
     assert(hess_.cols() == ntot);
     assert(grad_.rows() == ntot);
