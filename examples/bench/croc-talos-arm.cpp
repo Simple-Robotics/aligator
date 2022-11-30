@@ -20,6 +20,7 @@
 #include <crocoddyl/core/solvers/fddp.hpp>
 
 #include "proxddp/fddp/solver-fddp.hpp"
+#include "proxddp/core/solver-proxddp.hpp"
 
 #include <benchmark/benchmark.h>
 
@@ -160,6 +161,27 @@ static void BM_prox_fddp(benchmark::State &state) {
   }
 }
 
+/// Benchmark the full PROXDDP algorithm (proxddp::SolverProxDDP)
+static void BM_proxddp(benchmark::State &state) {
+  const std::size_t nsteps = (std::size_t)state.range(0);
+  using proxddp::VerboseLevel;
+  auto croc_problem = defineCrocoddylProblem(nsteps);
+  auto prob_wrap = proxddp::compat::croc::convertCrocoddylProblem(croc_problem);
+
+  std::vector<VectorXd> xs_i;
+  std::vector<VectorXd> us_i;
+  getInitialGuesses(croc_problem, xs_i, us_i);
+
+  auto verbose = VerboseLevel::QUIET;
+  const double mu0 = 1e-4;
+  proxddp::SolverProxDDP<double> solver(TOL, mu0, 0., maxiters, verbose);
+  solver.setup(prob_wrap);
+
+  for (auto _ : state) {
+    solver.run(prob_wrap, xs_i, us_i);
+  }
+}
+
 int main(int argc, char **argv) {
 
   constexpr long nmax = 300;
@@ -169,6 +191,9 @@ int main(int argc, char **argv) {
       ->Unit(unit);
   benchmark::RegisterBenchmark("proxddp::FDDP", &BM_prox_fddp)
       ->DenseRange(50, nmax, 50)
+      ->Unit(unit);
+  benchmark::RegisterBenchmark("proxddp::PROXDDP", &BM_proxddp)
+      ->Arg(50)
       ->Unit(unit);
   benchmark::Initialize(&argc, argv);
   if (benchmark::ReportUnrecognizedArguments(argc, argv)) {
