@@ -473,7 +473,6 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   if (t == workspace.nsteps - 1)
     fmt::print(fi, "[backward {:d}]\n", results.num_iters + 1);
   fmt::print(fi, "uff[{:d}]={}\n", t, ff.head(nu).transpose());
-  fmt::print(fi, "V'x[{:d}]={}\n", t, vnext.Vx_.transpose());
   std::fclose(fi);
 #endif
   vp.Vx_ = qparam.Qx + Qxw * ff;
@@ -487,7 +486,6 @@ void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
                                              Workspace &workspace,
                                              const Results &results,
                                              const Scalar alpha) const {
-  PROXDDP_NOMALLOC_BEGIN;
   using ExplicitDynData = ExplicitDynamicsDataTpl<Scalar>;
 
   const std::size_t nsteps = workspace.nsteps;
@@ -582,7 +580,6 @@ void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
     dlam.noalias() += fb * dx;
     lams.back() = results.lams.back() + dlam;
   }
-  PROXDDP_NOMALLOC_END;
 }
 
 template <typename Scalar>
@@ -753,8 +750,13 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
   std::size_t &k = results.num_iters;
   std::size_t inner_step = 0;
   while (k < max_iters) {
-    results.traj_cost_ =
-        problem.evaluate(results.xs, results.us, workspace.problem_data);
+    // ASSUMPTION: last evaluation in previous iterate
+    // was during linesearch, at the current candidate solution (x,u).
+    /// TODO: make this smarter using e.g. some caching mechanism
+    if (k == 0) {
+      results.traj_cost_ =
+          problem.evaluate(results.xs, results.us, workspace.problem_data);
+    }
     problem.computeDerivatives(results.xs, results.us, workspace.problem_data);
     computeProxTerms(results.xs, results.us, workspace);
     computeProxDerivatives(results.xs, results.us, workspace);
@@ -854,6 +856,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     results.xs = workspace.trial_xs;
     results.us = workspace.trial_us;
     results.lams = workspace.trial_lams;
+    results.traj_cost_ = merit_fun.traj_cost_;
     PROXDDP_RAISE_IF_NAN_NAME(alpha_opt, "alpha_opt");
     PROXDDP_RAISE_IF_NAN_NAME(results.merit_value_, "results.merit_value");
     PROXDDP_RAISE_IF_NAN_NAME(results.traj_cost_, "results.traj_cost");
@@ -922,7 +925,8 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
     const CstrSet &cstr_set = *problem.term_constraint_->set;
     auto &v = data.value_;
     auto &lam = results.lams[nsteps];
-    VectorXs cd = v + mu() * lam;
+    auto &cd = shifted_constraints.back();
+    cd = v + mu() * lam;
     cstr_set.projection(cd, cd);
     workspace.stage_prim_infeas[nsteps](0) = math::infty_norm(v - cd);
   }
@@ -942,7 +946,6 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
     const auto kktlam = kkt_rhs.tail(ndual); // dual residual
 
     VParams &vp = workspace.value_params[i];
-    VectorXs &Vx = vp.Vx_;
     const QParams &qpar = workspace.q_params[i - 1];
 
     VectorRef gu = kktu;
@@ -955,19 +958,19 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
     const DynamicsDataTpl<Scalar> &dd = sd.dyn_data();
     auto lam_head = cstr_mgr.getConstSegmentByConstraint(results.lams[i], 0);
 
-    Vx -= lam_head;
-    gu.noalias() += dd.Ju_.transpose() * Vx;
-    Vx += lam_head;
+    vp.Vx_ -= lam_head;
+    gu.noalias() += dd.Ju_.transpose() * vp.Vx_;
+    vp.Vx_ += lam_head;
     ru_ddp = math::infty_norm(gu);
 
-    auto gy = -lam_head + Vx;
+    auto gy = -lam_head + vp.Vx_;
     Scalar ry = math::infty_norm(gy);
     workspace.stage_inner_crits(long(i)) = std::max({ru_ddp, 0., rlam});
 
 #ifndef NDEBUG
     std::FILE *fi = std::fopen("pddp.log", "a");
     fmt::print(fi, "[{:>3d}]ru={:.2e},ry={:.2e},rlam={:.2e},", i, ru, ry, rlam);
-    fmt::print(fi, "ru_other={:.3e},", ru_ddp);
+    fmt::print(fi, "ru_other={:.3e}\n", ru_ddp);
     std::fclose(fi);
 #endif
     {
