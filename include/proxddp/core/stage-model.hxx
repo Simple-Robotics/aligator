@@ -1,10 +1,12 @@
+/// @file
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
 #include "proxddp/core/stage-model.hpp"
+#include "proxddp/utils/exceptions.hpp"
 
 #include <proxnlp/modelling/constraints/equality-constraint.hpp>
-
-#include "proxddp/utils/exceptions.hpp"
+#include <proxnlp/modelling/spaces/vector-space.hpp>
 
 namespace proxddp {
 
@@ -21,8 +23,7 @@ shared_ptr<VectorSpaceTpl<T>> make_vector_space(const int n) {
 /* StageModelTpl */
 
 template <typename Scalar>
-StageModelTpl<Scalar>::StageModelTpl(shared_ptr<Cost> cost,
-                                     DynamicsPtr dyn_model)
+StageModelTpl<Scalar>::StageModelTpl(CostPtr cost, DynamicsPtr dyn_model)
     : xspace_(dyn_model->space_), xspace_next_(dyn_model->space_next_),
       uspace_(make_vector_space<Scalar>(dyn_model->nu)), cost_(cost) {
 
@@ -131,11 +132,11 @@ template <typename Scalar>
 StageDataTpl<Scalar>::StageDataTpl(const StageModel &stage_model)
     : constraint_data(stage_model.numConstraints()),
       cost_data(stage_model.cost_->createData()) {
+  using Function = StageFunctionTpl<Scalar>;
   const std::size_t nc = stage_model.numConstraints();
   constraint_data.reserve(nc);
   for (std::size_t j = 0; j < nc; j++) {
-    const shared_ptr<StageFunctionTpl<Scalar>> &func =
-        stage_model.constraints_[j].func;
+    const shared_ptr<Function> &func = stage_model.constraints_[j].func;
     constraint_data[j] = func->createData();
   }
 }

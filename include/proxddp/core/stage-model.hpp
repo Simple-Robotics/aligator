@@ -4,8 +4,6 @@
 
 #include "proxddp/core/function-abstract.hpp"
 
-#include <proxnlp/modelling/spaces/vector-space.hpp>
-
 #include "proxddp/core/cost-abstract.hpp"
 #include "proxddp/core/dynamics.hpp"
 #include "proxddp/core/constraint.hpp"
@@ -36,8 +34,8 @@ public:
   using ConstraintSetPtr = shared_ptr<ConstraintSetBase<Scalar>>;
   using Constraint = StageConstraintTpl<Scalar>;
   using Cost = CostAbstractTpl<Scalar>;
+  using CostPtr = shared_ptr<Cost>;
   using Data = StageDataTpl<Scalar>;
-  using VectorSpace = proxnlp::VectorSpaceTpl<Scalar>;
 
   /// State space for the current state \f$x_k\f$.
   ManifoldPtr xspace_;
@@ -46,23 +44,18 @@ public:
   /// Control vector space -- by default, a simple Euclidean space.
   ManifoldPtr uspace_;
   /// Stage cost function.
-  shared_ptr<Cost> cost_;
+  CostPtr cost_;
   /// Constraint manager.
   ConstraintStackTpl<Scalar> constraints_;
+
+  /// Constructor assumes the control space is a Euclidean space of
+  /// dimension @p nu.
+  StageModelTpl(CostPtr cost, DynamicsPtr dyn_model);
+  virtual ~StageModelTpl() = default;
 
   const Manifold &xspace() const { return *xspace_; }
   const Manifold &uspace() const { return *uspace_; }
   const Manifold &xspace_next() const { return *xspace_next_; }
-  virtual const Dynamics &dyn_model() const {
-    assert(constraints_.numConstraints() > 0);
-    auto dyn_ptr = std::static_pointer_cast<Dynamics>(constraints_[0].func);
-    if (dyn_ptr == 0) {
-      PROXDDP_RUNTIME_ERROR(
-          "First element of constraints_ array should be a DynamicsModel.");
-    } else {
-      return *dyn_ptr;
-    }
-  }
 
   const Constraint &getConstraint(std::size_t j) const {
     if (j >= constraints_.numConstraints())
@@ -70,7 +63,12 @@ public:
     return constraints_[j];
   }
 
-  virtual const Cost &cost() const { return *cost_; }
+  const Cost &cost() const { return *cost_; }
+  virtual const Dynamics &dyn_model() const {
+    assert(constraints_.numConstraints() > 0);
+    auto dyn_ptr = std::static_pointer_cast<Dynamics>(constraints_[0].func);
+    return *dyn_ptr;
+  }
 
   int nx1() const { return xspace_->nx(); }
   int ndx1() const { return xspace_->ndx(); }
@@ -85,11 +83,6 @@ public:
   int numPrimal() const;
   /// Number of dual variables, i.e. Lagrange multipliers.
   int numDual() const;
-
-  /// Constructor assumes the control space is a Euclidean space of
-  /// dimension \p nu.
-  StageModelTpl(shared_ptr<Cost> cost, DynamicsPtr dyn_model);
-  virtual ~StageModelTpl() = default;
 
   /// @brief    Add a constraint to the stage.
   template <typename T> void addConstraint(T &&cstr);

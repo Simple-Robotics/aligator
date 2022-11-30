@@ -141,8 +141,8 @@ public:
   void nonlinearRollout(const Problem &problem, Workspace &workspace,
                         const Results &results, const Scalar alpha) const;
 
-  void computeDirX0(const Problem &problem, Workspace &workspace,
-                    const Results &results) const;
+  inline void compute_dir_x0(const Problem &problem, Workspace &workspace,
+                             const Results &results) const;
 
   /// @brief    Terminal node.
   void computeTerminalValue(const Problem &problem, Workspace &workspace,
@@ -241,7 +241,7 @@ public:
   }
 
   /// Scaled inverse penalty parameter.
-  Scalar mu_inv_scaled(std::size_t j) const { return 1. / mu_scaled(j); }
+  inline Scalar mu_inv_scaled(std::size_t j) const { return 1. / mu_scaled(j); }
 
   inline Scalar mu_dynamics() const { return mu() * mu_dyn_scale; }
 
@@ -255,20 +255,20 @@ protected:
   void updateTolerancesOnSuccess();
 
   /// Set dual proximal/ALM penalty parameter.
-  void setPenalty(Scalar new_mu) {
+  inline void setPenalty(Scalar new_mu) {
     mu_penal_ = std::max(new_mu, MU_MIN);
     mu_inverse_ = 1. / new_mu;
   }
 
-  void setRho(Scalar new_rho) { rho_penal_ = new_rho; }
+  inline void setRho(Scalar new_rho) { rho_penal_ = new_rho; }
 
   /// Update the dual proximal penalty according to BCL.
-  void bclUpdateALPenalty() {
+  inline void bclUpdateALPenalty() {
     setPenalty(mu_penal_ * bcl_params.mu_update_factor);
   }
 
   /// Increase Tikhonov regularization.
-  void increase_reg() {
+  inline void increase_reg() {
     if (xreg_ == 0.) {
       xreg_ = reg_min;
     } else {
@@ -279,7 +279,7 @@ protected:
   }
 
   /// Decrease Tikhonov regularization.
-  void decrease_reg() {
+  inline void decrease_reg() {
     xreg_ *= 0.1;
     if (xreg_ < reg_min) {
       xreg_ = 0.;
@@ -297,6 +297,9 @@ private:
   /// Primal proximal parameter \f$\rho > 0\f$
   Scalar rho_penal_ = rho_init;
   PDALFunction<Scalar> merit_fun;
+
+  using linesearch_t = proxnlp::ArmijoLinesearch<Scalar>;
+  std::unique_ptr<linesearch_t> linesearch_;
 };
 
 } // namespace proxddp
