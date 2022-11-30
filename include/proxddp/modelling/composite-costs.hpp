@@ -8,13 +8,25 @@
 #include <fmt/ostream.h>
 
 namespace proxddp {
+
 /// Data struct for composite costs.
 template <typename Scalar>
 struct CompositeCostDataTpl : CostDataAbstractTpl<Scalar> {
-  shared_ptr<FunctionDataTpl<Scalar>> residual_data;
+  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  using Base = CostDataAbstractTpl<Scalar>;
+  using FunctionData = FunctionDataTpl<Scalar>;
+  using RowMatrixXs = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
+
+  shared_ptr<FunctionData> residual_data;
+  RowMatrixXs JtW_buf;
+  VectorXs Wv_buf;
   CompositeCostDataTpl(const int ndx, const int nu,
-                       const shared_ptr<FunctionDataTpl<Scalar>> &rdata)
-      : CostDataAbstractTpl<Scalar>(ndx, nu), residual_data(rdata) {}
+                       shared_ptr<FunctionData> rdata)
+      : Base(ndx, nu), residual_data(rdata), JtW_buf(ndx + nu, rdata->nr),
+        Wv_buf(rdata->nr) {
+    JtW_buf.setZero();
+    Wv_buf.setZero();
+  }
 };
 
 /** @brief Quadratic composite of an underlying function.
@@ -57,26 +69,26 @@ struct QuadraticResidualCostTpl : CostAbstractTpl<_Scalar> {
     residual_->computeJacobians(x, u, x, under_data);
     const Eigen::Index size = data.grad_.size();
     MatrixRef J = under_data.jac_buffer_.leftCols(size);
-    data.grad_ = J.transpose() * (weights_ * under_data.value_);
+    data.Wv_buf.noalias() = weights_ * under_data.value_;
+    data.grad_.noalias() = J.transpose() * data.Wv_buf;
   }
 
   void computeHessians(const ConstVectorRef &x, const ConstVectorRef &u,
                        CostDataAbstract &data_) const {
-    auto &data = static_cast<Data &>(data_);
+    Data &data = static_cast<Data &>(data_);
     FunctionDataTpl<Scalar> &under_data = *data.residual_data;
     const Eigen::Index size = data.grad_.size();
     MatrixRef J = under_data.jac_buffer_.leftCols(size);
-    data.hess_ = J.transpose() * (weights_ * J);
+    data.JtW_buf.noalias() = J.transpose() * weights_;
+    data.hess_ = data.JtW_buf * J;
     if (!gauss_newton) {
-      residual_->computeVectorHessianProducts(
-          x, u, x, weights_ * under_data.value_, under_data);
-      data.hess_.noalias() += under_data.vhp_buffer_;
+      residual_->computeVectorHessianProducts(x, u, x, data.Wv_buf, under_data);
+      data.hess_ = under_data.vhp_buffer_;
     }
   }
 
   shared_ptr<CostDataAbstract> createData() const {
-    return shared_ptr<CostDataAbstract>(
-        new Data(this->ndx, this->nu, residual_->createData()));
+    return std::make_shared<Data>(this->ndx, this->nu, residual_->createData());
   }
 };
 
@@ -147,8 +159,7 @@ template <typename Scalar> struct LogResidualCostTpl : CostAbstractTpl<Scalar> {
   }
 
   shared_ptr<CostDataAbstract> createData() const {
-    return shared_ptr<CostDataAbstract>(
-        new Data(this->ndx, this->nu, residual_->createData()));
+    return std::make_shared<Data>(this->ndx, this->nu, residual_->createData());
   }
 };
 

@@ -55,6 +55,8 @@ def test_composite_cost():
 
     # costs
 
+    np.random.seed(40)
+
     weights = np.random.randn(4, fun.nr)
     weights = weights.T @ weights
     cost = proxddp.QuadraticResidualCost(fun, weights)
@@ -88,9 +90,11 @@ def test_composite_cost():
 
     log_cost.evaluate(x0, u0, data)
     log_cost.computeGradients(x0, u0, data)
+    log_cost.computeHessians(x0, u0, data)
     print("LogCost:")
     print(data.value)
     print(data.grad)
+    print(data.hess)
     print("----")
 
 
