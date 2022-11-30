@@ -16,103 +16,110 @@
 
 using namespace proxddp;
 
-constexpr double TOL = 1e-7;
-using StageModel = StageModelTpl<double>;
+using T = double;
+constexpr T TOL = 1e-7;
+auto verbose = VerboseLevel::QUIET;
+using StageModel = StageModelTpl<T>;
+using TrajOptProblem = TrajOptProblemTpl<T>;
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
 
-void define_problem(shared_ptr<TrajOptProblemTpl<double>> &problemptr) {
+const std::size_t max_iters = 1;
 
+TrajOptProblem define_problem(const std::size_t nsteps) {
   const int dim = 2;
   const int nu = 2;
-  Eigen::MatrixXd A(dim, dim);
-  Eigen::MatrixXd B(dim, nu);
-  Eigen::VectorXd c_(dim);
+  MatrixXd A(dim, dim);
+  MatrixXd B(dim, nu);
+  VectorXd c_(dim);
   A.setIdentity();
   B << -0.6, 0.3, 0., 1.;
   c_ << 0.1, 0.;
 
-  Eigen::MatrixXd w_x(dim, dim), w_u(nu, nu);
-  w_x.setIdentity();
+  MatrixXd w_x(dim, dim), w_u(nu, nu);
+  w_x << 2., 0., 0., 1.;
   w_u.setIdentity();
-  w_x(0, 0) = 2.;
   w_u *= 1e-2;
 
   using dynamics::LinearDiscreteDynamicsTpl;
-  auto dynptr = std::make_shared<LinearDiscreteDynamicsTpl<double>>(A, B, c_);
-  auto &dynamics = *dynptr;
-  auto spaceptr = dynamics.space_next_;
+  auto dynptr = std::make_shared<LinearDiscreteDynamicsTpl<T>>(A, B, c_);
+  auto spaceptr = dynptr->space_next_;
 
-  auto rcost = std::make_shared<QuadraticCostTpl<double>>(w_x, w_u);
+  auto rcost = std::make_shared<QuadraticCostTpl<T>>(w_x, w_u);
 
-  // Define stage
-
-  double u_bound = 0.2;
+  T u_bound = 0.2;
   auto stage = std::make_shared<StageModel>(rcost, dynptr);
-  auto ctrl_bounds_fun = std::make_shared<ControlBoxFunctionTpl<double>>(
-      dim, nu, -u_bound, u_bound);
+  auto ctrl_bounds_fun =
+      std::make_shared<ControlBoxFunctionTpl<T>>(dim, nu, -u_bound, u_bound);
 
   const bool HAS_CONTROL_BOUNDS = false;
 
   if (HAS_CONTROL_BOUNDS) {
-    using InequalitySet = proxnlp::NegativeOrthant<double>;
+    using InequalitySet = proxnlp::NegativeOrthant<T>;
     stage->addConstraint(ctrl_bounds_fun, std::make_shared<InequalitySet>());
   }
 
-  Eigen::VectorXd x0(2);
+  VectorXd x0(dim);
   x0 << 1., -0.1;
 
   auto &term_cost = rcost;
-  problemptr =
-      std::make_shared<TrajOptProblemTpl<double>>(x0, nu, spaceptr, term_cost);
-
-  std::size_t nsteps = 10;
-
+  TrajOptProblem problem(x0, nu, spaceptr, term_cost);
   for (std::size_t i = 0; i < nsteps; i++) {
-    problemptr->addStage(stage);
+    problem.addStage(stage);
   }
+  return problem;
 }
 
-void BM_lqr(benchmark::State &state, const TrajOptProblemTpl<double> &problem,
-            bool run_fddp) {
+#define SETUP_PROBLEM_VARS(state)                                              \
+  auto problem = define_problem((std::size_t)state.range(0));                  \
+  const auto &dynamics = problem.stages_[0]->dyn_model();                      \
+  const VectorXd &x0 = problem.getInitState();                                 \
+  std::vector<VectorXd> us_init;                                               \
+  us_default_init(problem, us_init);                                           \
+  std::vector<VectorXd> xs_init = rollout(dynamics, x0, us_init)
+
+static void BM_lqr_prox(benchmark::State &state) {
+  SETUP_PROBLEM_VARS(state);
+  const T mu_init = 1e-6;
+  const T rho_init = 0.;
+  SolverProxDDP<T> solver(TOL, mu_init, rho_init, max_iters, verbose);
+  solver.setup(problem);
 
   for (auto _ : state) {
-
-    const auto &dynamics = problem.stages_[0]->dyn_model();
-    const auto &x0 = problem.getInitState();
-    std::vector<Eigen::VectorXd> us_init;
-    us_default_init(problem, us_init);
-    const auto xs_init = rollout(dynamics, x0, us_init);
-
-    auto verbose = VerboseLevel::QUIET;
-
-    const std::size_t max_iters = 4;
-    if (!run_fddp) {
-      const double mu_init = 1e-6;
-      const double rho_init = 0.;
-
-      SolverProxDDP<double> solver(TOL, mu_init, rho_init, max_iters, verbose);
-
-      solver.setup(problem);
-      solver.run(problem, xs_init, us_init);
-      const auto &results = solver.getResults();
-      if (!results.conv) {
-        PROXDDP_RUNTIME_ERROR("Solver did not converge.\n");
-      }
-    }
-    if (run_fddp) {
-      SolverFDDP<double> fddp(TOL, verbose);
-      fddp.max_iters = max_iters;
-      fddp.setup(problem);
-      fddp.run(problem, xs_init, us_init);
-    }
+    bool conv = solver.run(problem, xs_init, us_init);
+    if (!conv)
+      state.SkipWithError("solver did not converge.");
   }
+  state.SetComplexityN(state.range(0));
 }
 
-int main(int argc, char **argv) {
-  shared_ptr<TrajOptProblemTpl<double>> problemptr;
-  define_problem(problemptr);
+static void BM_lqr_fddp(benchmark::State &state) {
+  SETUP_PROBLEM_VARS(state);
+  SolverFDDP<T> fddp(TOL, verbose);
+  fddp.max_iters = max_iters;
+  fddp.setup(problem);
 
-  benchmark::RegisterBenchmark("PROXDDP", &BM_lqr, *problemptr, false);
-  benchmark::RegisterBenchmark("FDDP", &BM_lqr, *problemptr, true);
+  for (auto _ : state) {
+    bool conv = fddp.run(problem, xs_init, us_init);
+    if (!conv)
+      state.SkipWithError("solver did not converge.");
+  }
+  state.SetComplexityN(state.range(0));
+}
+
+const auto unit = benchmark::kMicrosecond;
+
+int main(int argc, char **argv) {
+  benchmark::RegisterBenchmark("PROXDDP", &BM_lqr_prox)
+      ->RangeMultiplier(2)
+      ->Range(1 << 3, 1 << 9)
+      ->Complexity()
+      ->Unit(unit);
+  benchmark::RegisterBenchmark("FDDP", &BM_lqr_fddp)
+      ->RangeMultiplier(2)
+      ->Range(1 << 3, 1 << 9)
+      ->Complexity()
+      ->Unit(unit);
 
   benchmark::Initialize(&argc, argv);
   if (benchmark::ReportUnrecognizedArguments(argc, argv)) {

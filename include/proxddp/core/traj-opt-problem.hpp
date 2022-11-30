@@ -145,9 +145,9 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// updates the supplied problem data (TrajOptDataTpl) object.
   void replaceStageCircular(const shared_ptr<StageModel> &model);
 
-  /// @brief Compute the trajectory cost.
-  /// @warning Helper meant for internal use. Call TrajOptProblemTpl::evaluate()
-  /// first!
+  /// @brief Helper for computing the trajectory cost (from pre-computed problem
+  /// data).
+  /// @warning Call TrajOptProblemTpl::evaluate() first!
   Scalar computeTrajectoryCost(const Data &problem_data) const;
 };
 

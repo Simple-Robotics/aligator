@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(lqr) {
 
   long nx = 4;
   long nu = 3;
-  crocoddyl::StateVector state(nx);
+  crocoddyl::StateVector state((std::size_t)nx);
   VectorXd x0 = state.rand();
   VectorXd x1 = state.rand();
   VectorXd u0 = VectorXd::Random(nu);

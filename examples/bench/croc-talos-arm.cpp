@@ -159,6 +159,7 @@ static void BM_prox_fddp(benchmark::State &state) {
   for (auto _ : state) {
     solver.run(prob_wrap, xs_i, us_i);
   }
+  state.SetComplexityN(state.range(0));
 }
 
 /// Benchmark the full PROXDDP algorithm (proxddp::SolverProxDDP)
@@ -180,21 +181,27 @@ static void BM_proxddp(benchmark::State &state) {
   for (auto _ : state) {
     solver.run(prob_wrap, xs_i, us_i);
   }
+  state.SetComplexityN(state.range(0));
 }
 
 int main(int argc, char **argv) {
 
-  constexpr long nmax = 300;
+  constexpr long nmin = 50;
+  constexpr long nmax = 450;
+  constexpr long ns = 50;
   auto unit = benchmark::kMillisecond;
   benchmark::RegisterBenchmark("croc::FDDP", &BM_croc_fddp)
-      ->DenseRange(50, nmax, 50)
-      ->Unit(unit);
+      ->DenseRange(nmin, nmax, ns)
+      ->Unit(unit)
+      ->Complexity();
   benchmark::RegisterBenchmark("proxddp::FDDP", &BM_prox_fddp)
-      ->DenseRange(50, nmax, 50)
-      ->Unit(unit);
+      ->DenseRange(nmin, nmax, ns)
+      ->Unit(unit)
+      ->Complexity();
   benchmark::RegisterBenchmark("proxddp::PROXDDP", &BM_proxddp)
-      ->Arg(50)
-      ->Unit(unit);
+      ->DenseRange(nmin, nmax, ns)
+      ->Unit(unit)
+      ->Complexity();
   benchmark::Initialize(&argc, argv);
   if (benchmark::ReportUnrecognizedArguments(argc, argv)) {
     return 1;

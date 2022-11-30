@@ -35,7 +35,7 @@ actuation = crocoddyl.ActuationModelFloatingBase(state)
 
 # Set integration time
 DT = 5e-2
-nsteps = 4
+nsteps = 10
 target = np.array([0.4, 0, 1.2])
 
 # Initialize reference state, target and reference CoM
@@ -189,7 +189,7 @@ solver.setCallbacks(cbs)
 # Solving it with the FDDP algorithm
 xs_init = [x0] * (solver.problem.T + 1)
 us_init = solver.problem.quasiStatic([x0] * solver.problem.T)
-reg_init = 0.1
+reg_init = 1e-9
 tol = 1e-5
 solver.th_stop = tol**2
 
@@ -230,10 +230,10 @@ if WITHPLOT:
 
 
 pb_prox = proxddp.croc.convertCrocoddylProblem(problem)
-verbose = proxddp.VerboseLevel.QUIET
-# solver2 = proxddp.SolverProxDDP(1e-4 / T, 1e-4)
-# solver2.rollout_type = proxddp.ROLLOUT_NONLINEAR
-solver2 = proxddp.SolverFDDP(croc_inf_norm)
+verbose = proxddp.VerboseLevel.VERBOSE
+solver2 = proxddp.SolverProxDDP(croc_inf_norm, 1e-1, verbose=verbose)
+solver2.rollout_type = proxddp.ROLLOUT_NONLINEAR
+# solver2 = proxddp.SolverFDDP(croc_inf_norm, verbose=verbose)
 solver2.verbose = verbose
 solver2.setup(pb_prox)
 solver2.max_iters = max_iters
