@@ -11,24 +11,9 @@ namespace proxddp {
 /// Whether to use merit functions in primal or primal-dual mode.
 enum class LinesearchMode : unsigned int { PRIMAL = 0, PRIMAL_DUAL = 1 };
 
-/**
- * @brief   Compute the proximal penalty in the state-control trajectory.
- * @warning Compute the proximal penalty for each timestep first.
- */
 template <typename Scalar>
-Scalar computeProxPenalty(const WorkspaceTpl<Scalar> &workspace,
-                          const Scalar rho) {
-  Scalar res = 0.;
-  const std::size_t nsteps = workspace.nsteps;
-  for (std::size_t i = 0; i <= nsteps; i++) {
-    res += rho * workspace.prox_datas[i]->value_;
-  }
-  return res;
-}
-
-template <typename Scalar>
-Scalar costDirectionalDerivative(const WorkspaceTpl<Scalar> &workspace,
-                                 const TrajOptDataTpl<Scalar> &prob_data) {
+Scalar cost_directional_derivative(const WorkspaceTpl<Scalar> &workspace,
+                                   const TrajOptDataTpl<Scalar> &prob_data) {
   Scalar d1 = 0.;
   const std::size_t nsteps = workspace.nsteps;
   for (std::size_t i = 0; i < nsteps; i++) {
@@ -113,15 +98,27 @@ template <typename _Scalar> struct PDALFunction {
 
   /// @brief    Compute the merit function at the trial point.
   /// @warning  Evaluate the problem and proximal terms first!
-  Scalar evaluate(const TrajOptProblemTpl<Scalar> &problem,
-                  const std::vector<VectorXs> &lams,
-                  WorkspaceTpl<Scalar> &workspace,
-                  TrajOptDataTpl<Scalar> &prob_data);
+  Scalar evaluate(const TrajOptProblem &problem,
+                  const std::vector<VectorXs> &lams, Workspace &workspace,
+                  TrajOptData &prob_data);
 
-  Scalar directionalDerivative(const TrajOptProblemTpl<Scalar> &problem,
+  Scalar directionalDerivative(const TrajOptProblem &problem,
                                const std::vector<VectorXs> &lams,
-                               WorkspaceTpl<Scalar> &workspace,
-                               TrajOptDataTpl<Scalar> &prob_data);
+                               Workspace &workspace, TrajOptData &prob_data);
+
+  /**
+   * @brief   Compute the proximal penalty in the state-control trajectory.
+   * @warning Compute the proximal penalty for each timestep first.
+   */
+  Scalar computeProxPenalty(const Workspace &workspace) {
+    Scalar res = 0.;
+    const Scalar rho = solver->rho();
+    const std::size_t nsteps = workspace.nsteps;
+    for (std::size_t i = 0; i <= nsteps; i++) {
+      res += rho * workspace.prox_datas[i]->value_;
+    }
+    return res;
+  }
 };
 
 } // namespace proxddp

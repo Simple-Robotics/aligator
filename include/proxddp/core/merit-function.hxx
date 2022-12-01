@@ -15,7 +15,10 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblem &problem,
                                       TrajOptData &prob_data) {
 
   traj_cost_ = prob_data.cost_;
-  Scalar prox_value = computeProxPenalty(workspace, solver->rho());
+  Scalar prox_value = 0.;
+  if (solver->rho() > 0) {
+    prox_value = computeProxPenalty(workspace);
+  }
   penalty_value_ = 0.;
   auto ls_mode = solver->ls_mode;
 
@@ -72,7 +75,7 @@ template <typename Scalar>
 Scalar PDALFunction<Scalar>::directionalDerivative(
     const TrajOptProblem &problem, const std::vector<VectorXs> &lams,
     Workspace &workspace, TrajOptData &prob_data) {
-  Scalar d1 = costDirectionalDerivative(workspace, prob_data);
+  Scalar d1 = cost_directional_derivative(workspace, prob_data);
 
   const std::size_t nsteps = workspace.nsteps;
   // prox terms
