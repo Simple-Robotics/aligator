@@ -147,7 +147,7 @@ template <typename Scalar> struct SolverFDDP {
   }
 
   /// @brief Compute the dual feasibility of the problem.
-  Scalar computeCriterion(Workspace &workspace);
+  inline Scalar computeCriterion(Workspace &workspace);
 
   /// @brief    Add a callback to the solver instance.
   void registerCallback(const CallbackPtr &cb) { callbacks_.push_back(cb); }

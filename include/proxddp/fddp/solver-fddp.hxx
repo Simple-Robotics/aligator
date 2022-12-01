@@ -5,7 +5,6 @@
 #include "proxddp/fddp/solver-fddp.hpp"
 
 namespace proxddp {
-const Eigen::IOFormat myfmt(5, 0, ",", "\n", "[", "]");
 
 /* SolverFDDP<Scalar> */
 
@@ -50,8 +49,8 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
   const std::size_t nsteps = workspace.nsteps;
   std::vector<VectorXs> &xs_try = workspace.trial_xs;
   std::vector<VectorXs> &us_try = workspace.trial_us;
-  std::vector<VectorXs> &fs = workspace.dyn_slacks;
-  ProblemData &pd = workspace.problem_data;
+  const std::vector<VectorXs> &fs = workspace.dyn_slacks;
+  ProblemData &prob_data = workspace.problem_data;
 
   {
     const auto &space = problem.stages_[0]->xspace_;
@@ -62,7 +61,7 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &sm = *problem.stages_[i];
-    StageData &sd = pd.getStageData(i);
+    StageData &sd = prob_data.getStageData(i);
 
     auto ff = results.getFeedforward(i);
     auto fb = results.getFeedback(i);
@@ -84,22 +83,22 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
     PROXDDP_RAISE_IF_NAN_NAME(xs_try[i + 1], fmt::format("xs[{}]", i + 1));
     PROXDDP_RAISE_IF_NAN_NAME(us_try[i], fmt::format("us[{}]", i));
 
-    // WARNING: this is the reverse of crocoddyl
-    // which has its gains' sign flipped
     sm.xspace_->difference(results.xs[i + 1], xs_try[i + 1],
                            workspace.dxs[i + 1]);
 
     traj_cost_ += cd.value_;
   }
-  CostData &cd_term = *pd.term_cost_data;
+  CostData &cd_term = *prob_data.term_cost_data;
 
   PROXDDP_NOMALLOC_END;
   problem.term_cost_->evaluate(xs_try.back(), us_try.back(), cd_term);
   PROXDDP_NOMALLOC_BEGIN;
 
   traj_cost_ += cd_term.value_;
-  const auto &space = problem.stages_.back()->xspace_;
+  const auto &space = problem.stages_.back()->xspace_next_;
   space->difference(results.xs[nsteps], xs_try[nsteps], workspace.dxs[nsteps]);
+
+  prob_data.cost_ = traj_cost_;
   PROXDDP_NOMALLOC_END;
   return traj_cost_;
 }
@@ -115,7 +114,7 @@ void SolverFDDP<Scalar>::expectedImprovement(Workspace &workspace, Scalar &d1,
   const std::size_t nsteps = workspace.nsteps;
 
   for (std::size_t i = 0; i <= nsteps; i++) {
-    VectorXs &ftVxx = workspace.ftVxx_[i];
+    const VectorXs &ftVxx = workspace.ftVxx_[i];
     dv -= workspace.dxs[i].dot(ftVxx);
   }
 
@@ -146,8 +145,8 @@ void SolverFDDP<Scalar>::updateExpectedImprovement(Workspace &workspace,
   for (std::size_t i = 0; i <= nsteps; i++) {
     const VParams &vpar = workspace.value_params[i];
     dg += vpar.Vx_.dot(fs[i]);
-    VectorXs &ftVxx = workspace.ftVxx_[i];
-    ftVxx.noalias() = vpar.Vxx_ * fs[i];
+    const VectorXs &ftVxx = workspace.ftVxx_[i];
+    // ftVxx.noalias() = vpar.Vxx_ * fs[i];
     dq -= ftVxx.dot(fs[i]);
   }
   PROXDDP_NOMALLOC_END;
@@ -172,7 +171,7 @@ Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem,
     const ExpData &dd = stage_get_dynamics_data(sd);
     sm.xspace_->difference(xs[i + 1], dd.xnext_, fs[i + 1]);
   }
-  Scalar res = math::infty_norm(workspace.dyn_slacks);
+  Scalar res = math::infty_norm(fs);
   PROXDDP_NOMALLOC_END;
   return res;
 }
@@ -185,11 +184,6 @@ Scalar SolverFDDP<Scalar>::computeCriterion(Workspace &workspace) {
   for (std::size_t i = 0; i < nsteps; i++) {
     Scalar s = math::infty_norm(workspace.q_params[i].Qu);
     v = std::max(v, s);
-#ifndef NDEBUG
-    std::FILE *fi = std::fopen("fddp.log", "a");
-    fmt::print(fi, "Qu[{:d}]={:.3e}\n", i, s);
-    std::fclose(fi);
-#endif
   }
   PROXDDP_NOMALLOC_END;
   return v;
@@ -212,7 +206,9 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
     vp.Vx_ = term_cost_data.Lx_;
     vp.Vxx_ = term_cost_data.Lxx_;
     vp.Vxx_.diagonal().array() += xreg_;
-    vp.Vx_.noalias() += vp.Vxx_ * fs[nsteps];
+    VectorXs &ftVxx = workspace.ftVxx_[nsteps];
+    ftVxx.noalias() = vp.Vxx_ * fs[nsteps];
+    vp.Vx_ += ftVxx;
   }
 
   for (std::size_t i = nsteps; i-- > 0;) {
@@ -275,7 +271,9 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
     vp.Vxx_.noalias() += qparam.Qxu * fb;
     vp.Vxx_ = vp.Vxx_.template selfadjointView<Eigen::Lower>();
     vp.Vxx_.diagonal().array() += xreg_;
-    vp.Vx_.noalias() += vp.Vxx_ * fs[i];
+    VectorXs &ftVxx = workspace.ftVxx_[i];
+    ftVxx.noalias() = vp.Vxx_ * fs[i];
+    vp.Vx_ += ftVxx;
   }
 
   PROXDDP_NOMALLOC_END;
@@ -308,22 +306,19 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
   // in Crocoddyl, linesearch xs is primed to use problem x0
 
   const auto linesearch_fun = [&](const Scalar alpha) {
-    auto res = forwardPass(problem, results, workspace, alpha);
-    workspace.problem_data.cost_ = res;
-    return res;
+    return forwardPass(problem, results, workspace, alpha);
   };
 
   Scalar d1_phi = 0., d2_phi = 0.;
   Scalar phi0;
+  // linesearch model oracle
   const auto ls_model = [&](const Scalar alpha) {
     expectedImprovement(workspace, d1_phi, d2_phi);
     return phi0 + alpha * (d1_phi + 0.5 * d2_phi * alpha);
   };
 
   LogRecord record;
-  record.inner_crit = 0.;
-  record.dual_err = 0.;
-  record.dphi0 = 0.;
+
   std::size_t &iter = results.num_iters;
   for (iter = 0; iter <= max_iters; ++iter) {
 
@@ -335,20 +330,12 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     }
     problem.computeDerivatives(results.xs, results.us, workspace.problem_data);
     results.prim_infeas = computeInfeasibility(problem, results.xs, workspace);
+    PROXDDP_RAISE_IF_NAN(results.prim_infeas);
 
     backwardPass(problem, workspace, results);
     results.dual_infeas = computeCriterion(workspace);
-
-    phi0 = results.traj_cost_;
-    PROXDDP_RAISE_IF_NAN(phi0);
-
-    PROXDDP_RAISE_IF_NAN(results.prim_infeas);
     PROXDDP_RAISE_IF_NAN(results.dual_infeas);
-    record.prim_err = results.prim_infeas;
     record.dual_err = results.dual_infeas;
-    record.merit = phi0;
-    record.inner_crit = 0.;
-    record.xreg = xreg_;
 
     Scalar stopping_criterion =
         std::max(results.prim_infeas, results.dual_infeas);
@@ -357,24 +344,23 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
       break;
     }
 
-    if (iter == max_iters) {
+    if (iter == max_iters)
       break;
-    }
+
+    phi0 = results.traj_cost_;
+    PROXDDP_RAISE_IF_NAN(phi0);
 
     updateExpectedImprovement(workspace, results);
 
-    auto p = FDDPGoldsteinLinesearch<Scalar>::run(
-        linesearch_fun, ls_model, phi0, ls_params, d1_phi, th_grad_);
+    Scalar alpha_opt;
+    Scalar phi_new = FDDPGoldsteinLinesearch<Scalar>::run(
+        linesearch_fun, ls_model, phi0, ls_params, th_grad_, d1_phi, alpha_opt);
 
-    Scalar alpha_opt = p.first;
-    Scalar phi_new = p.second;
-    record.step_size = alpha_opt;
     results.traj_cost_ = phi_new;
     PROXDDP_RAISE_IF_NAN(alpha_opt);
     PROXDDP_RAISE_IF_NAN(phi_new);
-    record.merit = phi_new;
+    record.step_size = alpha_opt;
     record.dM = phi_new - phi0;
-    record.dphi0 = d1_phi;
 
     results.xs = workspace.trial_xs;
     results.us = workspace.trial_us;
@@ -394,12 +380,15 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
       }
     }
 
+    record.merit = phi_new;
+    record.dphi0 = d1_phi;
+    record.prim_err = results.prim_infeas;
+    record.xreg = xreg_;
+
     invokeCallbacks(workspace, results);
     logger.log(record);
   }
 
-  if (iter < max_iters)
-    logger.log(record);
   logger.finish(results.conv);
   return results.conv;
 }

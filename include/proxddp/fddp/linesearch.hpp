@@ -14,16 +14,15 @@ template <typename Scalar> struct FDDPGoldsteinLinesearch {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
   template <typename F, typename M>
-  inline static std::pair<Scalar, Scalar>
-  run(const F &phi, const M &model, Scalar phi0,
-      typename Linesearch<Scalar>::Options &ls_params, Scalar d1,
-      Scalar th_grad) {
+  inline static Scalar run(const F &phi, const M &model, Scalar phi0,
+                           typename Linesearch<Scalar>::Options &ls_params,
+                           Scalar th_grad, Scalar &d1, Scalar &alpha_opt) {
     Scalar th_accept_step_ = 0.1;
     Scalar th_accept_neg_step_ = 2.0;
     Scalar beta = ls_params.contraction_min;
     Scalar atry = 1.;
     Scalar phitry = phi0;
-    Scalar dVreal = 0.;
+    Scalar dVreal, dVmodel;
 
     // backtrack until going under alpha_min
     do {
@@ -34,7 +33,7 @@ template <typename Scalar> struct FDDPGoldsteinLinesearch {
         atry *= beta;
         continue;
       }
-      Scalar dVmodel = model(atry) - phi0;
+      dVmodel = model(atry) - phi0;
       // check if descent direction
       if (dVmodel <= 0.) {
         if (-d1 < th_grad || dVreal < th_accept_step_ * dVmodel)
@@ -50,7 +49,8 @@ template <typename Scalar> struct FDDPGoldsteinLinesearch {
       atry = ls_params.alpha_min;
       phitry = phi(atry);
     }
-    return std::make_pair(atry, phitry);
+    alpha_opt = atry;
+    return phitry;
   }
 };
 
