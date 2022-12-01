@@ -5,6 +5,10 @@
 
 #include <proxnlp/fwd.hpp>
 
+#ifdef PROXDDP_WITH_PINOCCHIO
+#include "pinocchio/container/boost-container-limits.hpp"
+#endif
+
 /// Main package namespace.
 namespace proxddp {
 /// TYPEDEFS FROM PROXNLP
