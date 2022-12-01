@@ -1,5 +1,5 @@
 /**
- * @file    value_storage.hpp
+ * @file    value_function.hpp
  * @brief   Define storage for Q-function and value-function parameters.
  * @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
  */
@@ -10,10 +10,9 @@
 #include <ostream>
 
 namespace proxddp {
-namespace internal {
 
-/// @brief  Contiguous storage for the value function parameters.
-template <typename _Scalar> struct value_storage {
+/// @brief  Storage for the value function model parameters.
+template <typename _Scalar> struct value_function {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
@@ -22,23 +21,24 @@ template <typename _Scalar> struct value_storage {
   MatrixXs Vxx_;
   Scalar v_;
 
-  value_storage(const int ndx) : ndx_(ndx), Vx_(ndx), Vxx_(ndx, ndx) {
+  value_function(const int ndx) : ndx_(ndx), Vx_(ndx), Vxx_(ndx, ndx) {
     Vx_.setZero();
     Vxx_.setZero();
   }
 
   friend std::ostream &operator<<(std::ostream &oss,
-                                  const value_storage &store) {
-    oss << "value_storage {\n";
+                                  const value_function &store) {
+    oss << "value_function {\n";
     oss << fmt::format("\tndx: {:d}", store.ndx_);
     oss << "\n}";
     return oss;
   }
 };
 
-/// @brief  Contiguous storage for Q-function parameters with corresponding
-/// sub-matrix views.
-template <typename Scalar> struct q_storage {
+/// @brief   Q-function model parameters
+/// @details This struct also provides views for the blocks of interest \f$Q_x,
+/// Q_u, Q_y\ldots\f$.
+template <typename Scalar> struct q_function {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
@@ -63,7 +63,7 @@ template <typename Scalar> struct q_storage {
   MatrixRef Quy;
   MatrixRef Qyy;
 
-  q_storage(const int ndx, const int nu, const int ndy)
+  q_function(const int ndx, const int nu, const int ndy)
       : ndx_(ndx), nu_(nu), ndy_(ndy), grad_(ntot), hess_(ntot, ntot),
         Qx(grad_.head(ndx)), Qu(grad_.segment(ndx, nu)), Qy(grad_.tail(ndy)),
         Qxx(hess_.topLeftCorner(ndx, ndx)), Qxu(hess_.block(0, ndx, ndx, nu)),
@@ -78,9 +78,9 @@ template <typename Scalar> struct q_storage {
     assert(grad_.cols() == 1);
   }
 
-  friend std::ostream &operator<<(std::ostream &oss, const q_storage &store) {
+  friend std::ostream &operator<<(std::ostream &oss, const q_function &store) {
     Eigen::IOFormat CleanFmt(3, 0, ", ", "\n", "  [", "]");
-    oss << "q_storage {\n";
+    oss << "q_function {\n";
     oss << fmt::format("ndx: {:d}, nu: {:d}, ndy: {:d}", store.ndx_, store.nu_,
                        store.ndy_);
     oss << "\n}";
@@ -88,5 +88,4 @@ template <typename Scalar> struct q_storage {
   }
 };
 
-} // namespace internal
 } // namespace proxddp

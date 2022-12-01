@@ -6,7 +6,7 @@
 #pragma once
 
 #include "proxddp/fwd.hpp"
-#include "proxddp/core/value-storage.hpp"
+#include "proxddp/core/value-function.hpp"
 #include "proxddp/core/proximal-penalty.hpp"
 
 #include <Eigen/Cholesky>
@@ -15,8 +15,8 @@ namespace proxddp {
 
 /// Base workspace struct for the algorithms.
 template <typename Scalar> struct WorkspaceBaseTpl {
-  using VParamsType = internal::value_storage<Scalar>;
-  using QParamsType = internal::q_storage<Scalar>;
+  using VParams = value_function<Scalar>;
+  using QParams = q_function<Scalar>;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
   /// Number of steps in the problem.
@@ -33,12 +33,14 @@ template <typename Scalar> struct WorkspaceBaseTpl {
   /// Feasibility gaps
   std::vector<VectorXs> dyn_slacks;
   /// Value function parameter storage
-  std::vector<VParamsType> value_params;
+  std::vector<VParams> value_params;
   /// Q-function storage
-  std::vector<QParamsType> q_params;
+  std::vector<QParams> q_params;
 
   explicit WorkspaceBaseTpl(const TrajOptProblemTpl<Scalar> &problem);
 
+  /// @brief   Cycle the workspace data to the left.
+  /// @details Useful in model-predictive control (MPC) applications.
   void cycle_left();
 };
 
@@ -53,7 +55,6 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using ProxData = typename ProxPenalty::Data;
   using StageModel = StageModelTpl<Scalar>;
   using Base = WorkspaceBaseTpl<Scalar>;
-  using VParamsType = internal::value_storage<Scalar>;
   using LDLT = Eigen::LDLT<MatrixXs, Eigen::Lower>;
 
   using Base::problem_data;
@@ -61,12 +62,6 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using Base::trial_us;
   using Base::trial_xs;
   using Base::value_params;
-
-  /// Problem data instance for linesearch.
-  TrajOptDataTpl<Scalar> trial_prob_data;
-
-  /// Dynamics' co-states
-  std::vector<VectorXs> co_states_;
 
   /// Proximal penalty data.
   std::vector<shared_ptr<ProxData>> prox_datas;

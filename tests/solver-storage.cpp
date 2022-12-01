@@ -8,12 +8,12 @@
 BOOST_AUTO_TEST_SUITE(solver_workspace)
 
 BOOST_AUTO_TEST_CASE(prox_storage) {
-  using value_store_t = proxddp::internal::value_storage<double>;
-  using q_store_t = proxddp::internal::q_storage<double>;
+  using VParams = proxddp::value_function<double>;
+  using QParams = proxddp::q_function<double>;
   const int NX = 3;
   const int NU = 2;
-  auto vstore = value_store_t(NX);
-  auto qstore = q_store_t(NX, NU, NX);
+  VParams vstore(NX);
+  QParams qstore(NX, NU, NX);
 
   BOOST_TEST_MESSAGE("Checking value function");
   BOOST_CHECK_EQUAL(vstore.Vx_.cols(), 1);

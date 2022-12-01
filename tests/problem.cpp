@@ -54,6 +54,7 @@ BOOST_AUTO_TEST_CASE(test_workspace) {
   Workspace workspace(f.problem);
   fmt::print("{}", workspace);
   const std::size_t nsteps = f.problem.numSteps();
+  BOOST_CHECK_EQUAL(workspace.nsteps, nsteps);
   BOOST_CHECK_EQUAL(workspace.trial_xs.size(), nsteps + 1);
 
   for (std::size_t i = 0; i < nsteps; i++) {

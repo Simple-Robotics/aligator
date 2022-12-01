@@ -57,7 +57,7 @@ void exposeFunctionBase() {
           bp::make_getter(&FunctionData::valref_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Function value.")
-      .add_property("jac_buffer_",
+      .add_property("jac_buffer",
                     make_getter_eigen_matrix(&FunctionData::jac_buffer_),
                     "Buffer of the full function Jacobian wrt (x,u,y).")
       .add_property(

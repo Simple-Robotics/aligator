@@ -15,13 +15,13 @@ void exposeProxDDP();
 void exposeBase() {
   using context::Scalar;
 
-  using QParams = proxddp::internal::q_storage<Scalar>;
-  using VParams = proxddp::internal::value_storage<Scalar>;
+  using QParams = proxddp::q_function<Scalar>;
+  using VParams = proxddp::value_function<Scalar>;
   bp::class_<QParams>(
       "QParams", "Q-function parameters.",
       bp::init<int, int, int>(bp::args("self", "ndx", "nu", "ndy")))
-      .def_readonly("grad_", &QParams::grad_)
-      .def_readonly("hess_", &QParams::hess_)
+      .def_readonly("grad", &QParams::grad_)
+      .def_readonly("hess", &QParams::hess_)
       .add_property(
           "Qx", bp::make_getter(&QParams::Qx,
                                 bp::return_value_policy<bp::return_by_value>()))

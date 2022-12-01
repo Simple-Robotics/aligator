@@ -66,5 +66,6 @@ template <typename Scalar> void WorkspaceFDDPTpl<Scalar>::cycle_left() {
   rotate_vec_left(kkt_mat_bufs);
   rotate_vec_left(kkt_rhs_bufs);
   rotate_vec_left(llts_);
+  rotate_vec_left(JtH_temp_);
 }
 } // namespace proxddp

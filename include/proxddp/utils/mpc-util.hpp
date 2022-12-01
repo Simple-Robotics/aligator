@@ -15,7 +15,7 @@ template <typename T, typename Alloc>
 void rotate_vec_left(std::vector<T, Alloc> &v,
                      typename std::vector<T, Alloc>::iterator end,
                      long n_head = 0) {
-  auto beg = v.begin() + n_head;
+  auto beg = std::next(v.begin(), n_head);
   std::rotate(beg, beg + 1, end);
 }
 

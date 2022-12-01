@@ -16,11 +16,9 @@ void exposeProxDDP() {
   bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>>(
       "Workspace", "Workspace for ProxDDP.",
       bp::init<const TrajOptProblem &>(bp::args("self", "problem")))
-      .def_readonly("trial_prob_data", &Workspace::trial_prob_data)
-      .def_readonly("co_states", &Workspace::co_states_, "Co-state variable.")
       .def_readonly("prox_datas", &Workspace::prox_datas)
-      .def_readonly("kkt_mat_", &Workspace::kkt_mat_buf_)
-      .def_readonly("kkt_rhs_", &Workspace::kkt_rhs_buf_)
+      .def_readonly("kkt_mat", &Workspace::kkt_mat_buf_)
+      .def_readonly("kkt_rhs", &Workspace::kkt_rhs_buf_)
       .def_readonly("trial_lams", &Workspace::trial_lams)
       .def_readonly("inner_crit", &Workspace::inner_criterion)
       .def_readonly("stage_prim_infeas", &Workspace::stage_prim_infeas)

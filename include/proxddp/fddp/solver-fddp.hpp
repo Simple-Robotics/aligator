@@ -39,8 +39,8 @@ template <typename Scalar> struct SolverFDDP {
   using Results = ResultsFDDPTpl<Scalar>;
   using Workspace = WorkspaceFDDPTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
-  using VParams = internal::value_storage<Scalar>;
-  using QParams = internal::q_storage<Scalar>;
+  using VParams = value_function<Scalar>;
+  using QParams = q_function<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using ExpModel = ExplicitDynamicsModelTpl<Scalar>;
   using ExpData = ExplicitDynamicsDataTpl<Scalar>;

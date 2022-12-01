@@ -23,21 +23,21 @@ template <typename Scalar> void WorkspaceBaseTpl<Scalar>::cycle_left() {
   rotate_vec_left(dyn_slacks, 1);
 
   rotate_vec_left(value_params);
-  rotate_vec_left(q_params);
+  // rotate_vec_left(q_params);
 }
 
 template <typename Scalar>
 WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
-    : Base(problem), trial_prob_data(problem),
-      stage_inner_crits(this->nsteps + 1), stage_dual_infeas(this->nsteps + 1) {
+    : Base(problem), stage_inner_crits(this->nsteps + 1),
+      stage_dual_infeas(this->nsteps + 1) {
   const std::size_t nsteps = this->nsteps;
 
   value_params.reserve(nsteps + 1);
   q_params.reserve(nsteps);
   prox_datas.reserve(nsteps + 1);
 
-  prev_xs = trial_xs;
-  prev_us = trial_us;
+  prev_xs = this->trial_xs;
+  prev_us = this->trial_us;
   kkt_mat_buf_.reserve(nsteps + 1);
   kkt_rhs_buf_.reserve(nsteps + 1);
   stage_prim_infeas.reserve(nsteps + 1);
@@ -48,7 +48,6 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   dxs.reserve(nsteps + 1);
   dus.reserve(nsteps);
   dlams.reserve(nsteps + 1);
-  co_states_.reserve(nsteps);
   this->dyn_slacks.reserve(nsteps);
 
   // initial condition
@@ -119,7 +118,6 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   trial_lams = lams_plus;
   lams_prev = lams_plus;
   shifted_constraints = lams_plus;
-  this->co_states_ = this->dyn_slacks;
 
   math::setZero(kkt_mat_buf_);
   math::setZero(kkt_rhs_buf_);
@@ -136,14 +134,11 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 template <typename Scalar> void WorkspaceTpl<Scalar>::cycle_left() {
   Base::cycle_left();
 
-  rotate_vec_left(trial_prob_data.stage_data);
-
-  rotate_vec_left(co_states_);
   rotate_vec_left(prox_datas);
   rotate_vec_left(lams_plus, 1);
   rotate_vec_left(lams_pdal, 1);
   rotate_vec_left(shifted_constraints, 1);
-  rotate_vec_left(pd_step_);
+  rotate_vec_left(pd_step_, 1);
   rotate_vec_left(dxs);
   rotate_vec_left(dus);
   rotate_vec_left(dlams);
@@ -162,10 +157,8 @@ template <typename Scalar>
 void WorkspaceTpl<Scalar>::cycle_append(const shared_ptr<StageModel> &stage) {
   auto sd = stage->createData();
   problem_data.stage_data.push_back(sd);
-  trial_prob_data.stage_data.push_back(sd);
   this->cycle_left();
   problem_data.stage_data.pop_back();
-  trial_prob_data.stage_data.pop_back();
 }
 
 template <typename Scalar>

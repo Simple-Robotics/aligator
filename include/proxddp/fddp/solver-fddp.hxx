@@ -299,6 +299,8 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
   Workspace &workspace = *workspace_;
 
   checkTrajectoryAndAssign(problem, xs_init, us_init, results.xs, results.us);
+  results.xs[0] = problem.getInitState();
+  results.conv = false;
 
   logger.active = verbose_ > 0;
   logger.start();
@@ -331,6 +333,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     problem.computeDerivatives(results.xs, results.us, workspace.problem_data);
     results.prim_infeas = computeInfeasibility(problem, results.xs, workspace);
     PROXDDP_RAISE_IF_NAN(results.prim_infeas);
+    record.prim_err = results.prim_infeas;
 
     backwardPass(problem, workspace, results);
     results.dual_infeas = computeCriterion(workspace);
@@ -361,6 +364,9 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     PROXDDP_RAISE_IF_NAN(phi_new);
     record.step_size = alpha_opt;
     record.dM = phi_new - phi0;
+    record.merit = phi_new;
+    record.dphi0 = d1_phi;
+    record.xreg = xreg_;
 
     results.xs = workspace.trial_xs;
     results.us = workspace.trial_us;
@@ -380,15 +386,12 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
       }
     }
 
-    record.merit = phi_new;
-    record.dphi0 = d1_phi;
-    record.prim_err = results.prim_infeas;
-    record.xreg = xreg_;
-
     invokeCallbacks(workspace, results);
     logger.log(record);
   }
 
+  if (iter < max_iters)
+    logger.log(record);
   logger.finish(results.conv);
   return results.conv;
 }
