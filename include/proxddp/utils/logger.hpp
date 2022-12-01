@@ -12,7 +12,7 @@ namespace proxddp {
 
 using log_pair_t = std::pair<fmt::string_view, unsigned int>;
 static const std::array<log_pair_t, 9> BASIC_KEYS = {{{"iter", 4U},
-                                                      {"alpha", 7U},
+                                                      {"alpha", 10U},
                                                       {"inner_crit", 10U},
                                                       {"prim_err", 10U},
                                                       {"dual_err", 10U},
@@ -23,18 +23,17 @@ static const std::array<log_pair_t, 9> BASIC_KEYS = {{{"iter", 4U},
 constexpr char int_format[] = "{: >{}d}";
 constexpr char sci_format[] = "{: > {}.{}e}";
 constexpr char dbl_format[] = "{: > {}.{}g}";
-constexpr char flt_format[] = "{: > {}.{}f}";
 
 template <typename T> struct LogRecordTpl {
   unsigned long iter;
-  T step_size;
-  T inner_crit;
-  T prim_err;
-  T dual_err;
-  T xreg;
-  T dphi0;
-  T merit;
-  T dM;
+  T step_size = 0.;
+  T inner_crit = 0.;
+  T prim_err = 0.;
+  T dual_err = 0.;
+  T xreg = 0.;
+  T dphi0 = 0.;
+  T merit = 0.;
+  T dM = 0.;
 };
 
 using LogRecord = LogRecordTpl<double>;
@@ -67,7 +66,7 @@ template <typename T> void BaseLogger::log(const LogRecordTpl<T> &values) {
   decltype(BASIC_KEYS)::const_iterator it = BASIC_KEYS.cbegin();
   v.push_back(format(int_format, values.iter, it->second));
   ++it;
-  v.push_back(format(flt_format, values.step_size, it->second, 4));
+  v.push_back(format(sci_format, values.step_size, it->second, sci_prec));
   ++it;
   if (inner_crit)
     v.push_back(format(sci_format, values.inner_crit, it->second, sci_prec));
