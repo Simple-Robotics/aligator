@@ -131,8 +131,17 @@ template <typename Scalar> struct SolverFDDP {
                                      Workspace &workspace) const;
 
   /// @brief   Perform the backward pass and compute Riccati gains.
-  void backwardPass(const Problem &problem, Workspace &workspace,
-                    Results &results) const;
+  void backwardPass(const Problem &problem, Workspace &workspace) const;
+
+  /// @brief   Accept the gains computed in the last backwardPass().
+  /// @details This is called if the convergence check after computeCriterion()
+  /// did not exit.
+  void acceptGains(const Workspace &workspace, Results &results) const {
+    assert(workspace.kkt_rhs_bufs.size() == results.gains_.size());
+    PROXDDP_NOMALLOC_BEGIN;
+    results.gains_ = workspace.kkt_rhs_bufs;
+    PROXDDP_NOMALLOC_END;
+  }
 
   inline void increaseRegularization() {
     xreg_ *= reg_inc_factor_;

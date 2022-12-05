@@ -13,7 +13,9 @@ SolverFDDP<Scalar>::SolverFDDP(const Scalar tol, VerboseLevel verbose,
                                const Scalar reg_init,
                                const std::size_t max_iters)
     : target_tol_(tol), reg_init(reg_init), verbose_(verbose),
-      max_iters(max_iters) {}
+      max_iters(max_iters) {
+  ls_params.alpha_min = pow(2., -10.);
+}
 
 template <typename Scalar>
 void SolverFDDP<Scalar>::setup(const Problem &problem) {
@@ -63,11 +65,11 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
     const StageModel &sm = *problem.stages_[i];
     StageData &sd = prob_data.getStageData(i);
 
-    auto ff = results.getFeedforward(i);
-    auto fb = results.getFeedback(i);
+    auto kkt_ff = results.getFeedforward(i);
+    auto kkt_fb = results.getFeedback(i);
 
-    workspace.dus[i] = alpha * ff;
-    workspace.dus[i].noalias() += fb * workspace.dxs[i];
+    workspace.dus[i] = alpha * kkt_ff;
+    workspace.dus[i].noalias() += kkt_fb * workspace.dxs[i];
     sm.uspace().integrate(results.us[i], workspace.dus[i], us_try[i]);
 
     PROXDDP_NOMALLOC_END;
@@ -119,7 +121,7 @@ void SolverFDDP<Scalar>::expectedImprovement(Workspace &workspace, Scalar &d1,
   }
 
   d1 = dg + dv;
-  d2 = dq + 2 * dv;
+  d2 = dq - 2 * dv;
   PROXDDP_NOMALLOC_END;
 }
 
@@ -137,9 +139,9 @@ void SolverFDDP<Scalar>::updateExpectedImprovement(Workspace &workspace,
   // in croco: feedback/feedforward sign is flipped
   for (std::size_t i = 0; i < nsteps; i++) {
     const QParams &qparam = workspace.q_params[i];
-    auto ff = results.getFeedforward(i);
-    dg += qparam.Qu.dot(ff);
-    dq += ff.dot(workspace.Quuks_[i]);
+    auto kkt_ff = results.getFeedforward(i);
+    dg += qparam.Qu.dot(kkt_ff);
+    dq += kkt_ff.dot(workspace.Quuks_[i]);
   }
 
   for (std::size_t i = 0; i <= nsteps; i++) {
@@ -191,8 +193,7 @@ Scalar SolverFDDP<Scalar>::computeCriterion(Workspace &workspace) {
 
 template <typename Scalar>
 void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
-                                      Workspace &workspace,
-                                      Results &results) const {
+                                      Workspace &workspace) const {
   PROXDDP_NOMALLOC_BEGIN;
 
   const std::size_t nsteps = workspace.nsteps;
@@ -240,35 +241,35 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
 
     /* Compute gains */
 
-    auto ff = results.getFeedforward(i);
-    auto fb = results.getFeedback(i);
-    ff = -qparam.Qu;
-    fb = -qparam.Qxu.transpose();
+    MatrixXs &kkt_rhs = workspace.kkt_rhs_bufs[i];
+    auto kkt_ff = kkt_rhs.col(0);
+    auto kkt_fb = kkt_rhs.rightCols(ndx1);
+
+    kkt_ff = -qparam.Qu;
+    kkt_fb = -qparam.Qxu.transpose();
 
     Eigen::LLT<MatrixXs> &llt = workspace.llts_[i];
     llt.compute(qparam.Quu);
-    llt.solveInPlace(results.gains_[i]);
+    llt.solveInPlace(kkt_rhs);
 
 #ifndef NDEBUG
     {
       PROXDDP_NOMALLOC_END;
       std::FILE *fi = std::fopen("fddp.log", "a");
-      if (i == workspace.nsteps - 1)
-        fmt::print(fi, "[backward {:d}]\n", results.num_iters + 1);
-      fmt::print(fi, "uff[{:d}]={}\n", i, ff.head(nu).transpose());
+      fmt::print(fi, "uff[{:d}]={}\n", i, kkt_ff.head(nu).transpose());
       fmt::print(fi, "V'x[{:d}]={}\n", i, vnext.Vx_.transpose());
       std::fclose(fi);
       PROXDDP_NOMALLOC_BEGIN;
     }
 #endif
-    workspace.Quuks_[i].noalias() = qparam.Quu * ff;
+    workspace.Quuks_[i].noalias() = qparam.Quu * kkt_ff;
 
     /* Compute value function */
     VParams &vp = workspace.value_params[i];
     vp.Vx_ = qparam.Qx;
-    vp.Vx_.noalias() += fb.transpose() * qparam.Qu;
+    vp.Vx_.noalias() += kkt_fb.transpose() * qparam.Qu;
     vp.Vxx_ = qparam.Qxx;
-    vp.Vxx_.noalias() += qparam.Qxu * fb;
+    vp.Vxx_.noalias() += qparam.Qxu * kkt_fb;
     vp.Vxx_ = vp.Vxx_.template selfadjointView<Eigen::Lower>();
     vp.Vxx_.diagonal().array() += xreg_;
     VectorXs &ftVxx = workspace.ftVxx_[i];
@@ -298,8 +299,8 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
   Results &results = *results_;
   Workspace &workspace = *workspace_;
 
-  checkTrajectoryAndAssign(problem, xs_init, us_init, results.xs, results.us);
-  results.xs[0] = problem.getInitState();
+  check_trajectory_and_assign(problem, xs_init, us_init, results.xs,
+                              results.us);
   results.conv = false;
 
   logger.active = verbose_ > 0;
@@ -322,7 +323,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
   LogRecord record;
 
   std::size_t &iter = results.num_iters;
-  for (iter = 0; iter <= max_iters; ++iter) {
+  for (iter = 0; iter < max_iters; ++iter) {
 
     record.iter = iter + 1;
 
@@ -335,7 +336,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     PROXDDP_RAISE_IF_NAN(results.prim_infeas);
     record.prim_err = results.prim_infeas;
 
-    backwardPass(problem, workspace, results);
+    backwardPass(problem, workspace);
     results.dual_infeas = computeCriterion(workspace);
     PROXDDP_RAISE_IF_NAN(results.dual_infeas);
     record.dual_err = results.dual_infeas;
@@ -347,17 +348,16 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
       break;
     }
 
-    if (iter == max_iters)
-      break;
+    acceptGains(workspace, results);
 
     phi0 = results.traj_cost_;
     PROXDDP_RAISE_IF_NAN(phi0);
 
     updateExpectedImprovement(workspace, results);
 
-    Scalar alpha_opt;
-    Scalar phi_new = FDDPGoldsteinLinesearch<Scalar>::run(
-        linesearch_fun, ls_model, phi0, ls_params, th_grad_, d1_phi, alpha_opt);
+    Scalar alpha_opt, phi_new;
+    std::tie(alpha_opt, phi_new) = FDDPGoldsteinLinesearch<Scalar>::run(
+        linesearch_fun, ls_model, phi0, ls_params, th_grad_, d1_phi);
 
     results.traj_cost_ = phi_new;
     PROXDDP_RAISE_IF_NAN(alpha_opt);

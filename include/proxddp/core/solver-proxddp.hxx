@@ -593,7 +593,8 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   Workspace &workspace = *workspace_;
   Results &results = *results_;
 
-  checkTrajectoryAndAssign(problem, xs_init, us_init, results.xs, results.us);
+  check_trajectory_and_assign(problem, xs_init, us_init, results.xs,
+                              results.us);
   if (lams_init.size() == results.lams.size()) {
     for (std::size_t i = 0; i < lams_init.size(); i++) {
       long size = std::min(lams_init[i].rows(), results.lams[i].rows());

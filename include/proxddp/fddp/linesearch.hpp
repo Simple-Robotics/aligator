@@ -12,11 +12,13 @@ namespace proxddp {
 /// conditions.
 template <typename Scalar> struct FDDPGoldsteinLinesearch {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  using result_t = std::tuple<Scalar, Scalar>;
 
+  /// @return an std::pair
   template <typename F, typename M>
-  inline static Scalar run(const F &phi, const M &model, Scalar phi0,
-                           typename Linesearch<Scalar>::Options &ls_params,
-                           Scalar th_grad, Scalar &d1, Scalar &alpha_opt) {
+  inline static result_t run(const F &phi, const M &model, Scalar phi0,
+                             typename Linesearch<Scalar>::Options &ls_params,
+                             Scalar th_grad, Scalar &d1) {
     Scalar th_accept_step_ = 0.1;
     Scalar th_accept_neg_step_ = 2.0;
     Scalar beta = ls_params.contraction_min;
@@ -49,8 +51,7 @@ template <typename Scalar> struct FDDPGoldsteinLinesearch {
       atry = ls_params.alpha_min;
       phitry = phi(atry);
     }
-    alpha_opt = atry;
-    return phitry;
+    return {atry, phitry};
   }
 };
 

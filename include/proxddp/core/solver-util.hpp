@@ -52,15 +52,15 @@ void us_default_init(const TrajOptProblemTpl<Scalar> &problem,
 /// @brief Check the input state-control trajectory is a consistent warm-start
 /// for the output.
 template <typename Scalar>
-void checkTrajectoryAndAssign(
+void check_trajectory_and_assign(
     const TrajOptProblemTpl<Scalar> &problem,
     const typename math_types<Scalar>::VectorOfVectors &xs_init,
     const typename math_types<Scalar>::VectorOfVectors &us_init,
     typename math_types<Scalar>::VectorOfVectors &xs_out,
     typename math_types<Scalar>::VectorOfVectors &us_out) {
   const std::size_t nsteps = problem.numSteps();
-  xs_out.resize(nsteps + 1);
-  us_out.resize(nsteps);
+  xs_out.reserve(nsteps + 1);
+  us_out.reserve(nsteps);
   if (xs_init.size() == 0) {
     xs_default_init(problem, xs_out);
   } else {
