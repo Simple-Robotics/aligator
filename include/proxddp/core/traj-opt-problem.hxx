@@ -3,7 +3,7 @@
 #include "proxddp/core/traj-opt-problem.hpp"
 #include "proxddp/utils/exceptions.hpp"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 namespace proxddp {
 

@@ -2,7 +2,7 @@
 
 #include "proxddp/core/solver-util.hpp"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 namespace proxddp {
 

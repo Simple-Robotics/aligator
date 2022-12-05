@@ -79,7 +79,6 @@ template <typename Scalar> struct q_function {
   }
 
   friend std::ostream &operator<<(std::ostream &oss, const q_function &store) {
-    Eigen::IOFormat CleanFmt(3, 0, ", ", "\n", "  [", "]");
     oss << "q_function {\n";
     oss << fmt::format("ndx: {:d}, nu: {:d}, ndy: {:d}", store.ndx_, store.nu_,
                        store.ndy_);
