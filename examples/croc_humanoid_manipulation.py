@@ -20,6 +20,19 @@ import proxddp
 import time
 
 import matplotlib.pyplot as plt
+import argparse
+
+
+parser = argparse.ArgumentParser(add_help=True)
+parser.add_argument(
+    "--solver",
+    help="Choice of the second solver",
+    choices=["fddp", "proxddp"],
+    required=True,
+)
+
+
+args = parser.parse_args()
 
 WITHDISPLAY = "display" in sys.argv or "CROCODDYL_DISPLAY" in os.environ
 WITHPLOT = "plot" in sys.argv or "CROCODDYL_PLOT" in os.environ
@@ -157,12 +170,8 @@ problem = crocoddyl.ShootingProblem(x0, [runningModel] * nsteps, terminalModel)
 
 # Creating the DDP solver for this OC problem, defining a logger
 max_iters = 30
-solver = crocoddyl.SolverFDDP(
-    problem,
-)
-cbs = [
-    # crocoddyl.CallbackVerbose()
-]
+solver = crocoddyl.SolverFDDP(problem)
+cbs = [crocoddyl.CallbackVerbose()]
 if WITHDISPLAY and WITHPLOT:
     cbs.extend(
         [
@@ -231,9 +240,13 @@ if WITHPLOT:
 
 pb_prox = proxddp.croc.convertCrocoddylProblem(problem)
 verbose = proxddp.VerboseLevel.VERBOSE
-solver2 = proxddp.SolverProxDDP(croc_inf_norm, 1e-1, verbose=verbose)
-solver2.rollout_type = proxddp.ROLLOUT_NONLINEAR
-# solver2 = proxddp.SolverFDDP(croc_inf_norm, verbose=verbose)
+if args.solver == "proxddp":
+    solver2 = proxddp.SolverProxDDP(croc_inf_norm, 1e-1, verbose=verbose)
+    solver2.rollout_type = proxddp.ROLLOUT_NONLINEAR
+elif args.solver == "fddp":
+    solver2 = proxddp.SolverFDDP(croc_inf_norm, verbose=verbose)
+else:
+    raise ValueError("unknown choice of second solver ({})".format(args.solver))
 solver2.verbose = verbose
 solver2.setup(pb_prox)
 solver2.max_iters = max_iters
