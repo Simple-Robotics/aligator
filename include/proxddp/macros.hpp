@@ -11,3 +11,5 @@
 #define PROXDDP_NOMALLOC_BEGIN PROXDDP_EIGEN_ALLOW_MALLOC(false)
 /// @brief Exiting performance-critical code.
 #define PROXDDP_NOMALLOC_END PROXDDP_EIGEN_ALLOW_MALLOC(true)
+
+#define PROX_INLINE inline __attribute__((always_inline))

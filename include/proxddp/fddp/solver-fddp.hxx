@@ -109,8 +109,6 @@ template <typename Scalar>
 void SolverFDDP<Scalar>::expectedImprovement(Workspace &workspace, Scalar &d1,
                                              Scalar &d2) const {
   PROXDDP_NOMALLOC_BEGIN;
-  Scalar &dg = workspace.dg_;
-  Scalar &dq = workspace.dq_;
   Scalar &dv = workspace.dv_;
   dv = 0.;
   const std::size_t nsteps = workspace.nsteps;
@@ -120,8 +118,8 @@ void SolverFDDP<Scalar>::expectedImprovement(Workspace &workspace, Scalar &d1,
     dv -= workspace.dxs[i].dot(ftVxx);
   }
 
-  d1 = dg + dv;
-  d2 = dq - 2 * dv;
+  d1 = workspace.dg_ + dv;
+  d2 = workspace.dq_ - 2 * dv;
   PROXDDP_NOMALLOC_END;
 }
 
@@ -148,7 +146,6 @@ void SolverFDDP<Scalar>::updateExpectedImprovement(Workspace &workspace,
     const VParams &vpar = workspace.value_params[i];
     dg += vpar.Vx_.dot(fs[i]);
     const VectorXs &ftVxx = workspace.ftVxx_[i];
-    // ftVxx.noalias() = vpar.Vxx_ * fs[i];
     dq -= ftVxx.dot(fs[i]);
   }
   PROXDDP_NOMALLOC_END;
@@ -356,7 +353,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     updateExpectedImprovement(workspace, results);
 
     Scalar alpha_opt, phi_new;
-    std::tie(alpha_opt, phi_new) = FDDPGoldsteinLinesearch<Scalar>::run(
+    std::tie(alpha_opt, phi_new) = fddp_goldstein_linesearch(
         linesearch_fun, ls_model, phi0, ls_params, th_grad_, d1_phi);
 
     results.traj_cost_ = phi_new;

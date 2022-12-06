@@ -136,7 +136,8 @@ template <typename Scalar> struct SolverFDDP {
   /// @brief   Accept the gains computed in the last backwardPass().
   /// @details This is called if the convergence check after computeCriterion()
   /// did not exit.
-  void acceptGains(const Workspace &workspace, Results &results) const {
+  PROX_INLINE void acceptGains(const Workspace &workspace,
+                               Results &results) const {
     assert(workspace.kkt_rhs_bufs.size() == results.gains_.size());
     PROXDDP_NOMALLOC_BEGIN;
     results.gains_ = workspace.kkt_rhs_bufs;
