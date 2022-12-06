@@ -2,15 +2,11 @@
 /// @brief Linear-quadratic regulator
 
 #include "proxddp/core/solver-proxddp.hpp"
+#include "proxddp/fddp/solver-fddp.hpp"
 #include "proxddp/utils/rollout.hpp"
 #include "proxddp/modelling/quad-costs.hpp"
 
-#include "proxddp/fddp/solver-fddp.hpp"
-
-#include <proxnlp/modelling/constraints/negative-orthant.hpp>
-
 #include "proxddp/modelling/linear-discrete-dynamics.hpp"
-#include "proxddp/modelling/control-box-function.hpp"
 
 #include <benchmark/benchmark.h>
 
@@ -24,7 +20,7 @@ using TrajOptProblem = TrajOptProblemTpl<T>;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-const std::size_t max_iters = 1;
+const std::size_t max_iters = 2;
 
 TrajOptProblem define_problem(const std::size_t nsteps) {
   const int dim = 2;
@@ -46,18 +42,7 @@ TrajOptProblem define_problem(const std::size_t nsteps) {
   auto spaceptr = dynptr->space_next_;
 
   auto rcost = std::make_shared<QuadraticCostTpl<T>>(w_x, w_u);
-
-  T u_bound = 0.2;
   auto stage = std::make_shared<StageModel>(rcost, dynptr);
-  auto ctrl_bounds_fun =
-      std::make_shared<ControlBoxFunctionTpl<T>>(dim, nu, -u_bound, u_bound);
-
-  const bool HAS_CONTROL_BOUNDS = false;
-
-  if (HAS_CONTROL_BOUNDS) {
-    using InequalitySet = proxnlp::NegativeOrthant<T>;
-    stage->addConstraint(ctrl_bounds_fun, std::make_shared<InequalitySet>());
-  }
 
   VectorXd x0(dim);
   x0 << 1., -0.1;
