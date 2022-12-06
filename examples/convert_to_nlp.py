@@ -29,8 +29,7 @@ class ProxnlpCostFromProblem(proxnlp.costs.CostFunctionBase):
         xs, us = _split_state_control(self.space, x.copy(), N)
         assert len(xs) == N + 1
         assert len(us) == N
-        self.problem.evaluate(xs, us, self.prob_data)
-        return proxddp.computeTrajectoryCost(self.problem, self.prob_data)
+        return self.problem.evaluate(xs, us, self.prob_data)
 
     def computeGradient(self, x, gout):
         N = self.problem.num_steps
