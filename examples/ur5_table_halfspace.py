@@ -54,11 +54,8 @@ Tf = 1.2
 nsteps = int(Tf / dt)
 
 nu = rmodel.nv
-print(nu)
-print(ode.nu)
 assert nu == ode.nu
 dyn_model = dynamics.IntegratorSemiImplEuler(ode, dt)
-print(dyn_model)
 
 frame_id = rmodel.getFrameId("tool0")
 table_height = 0.65
@@ -116,8 +113,9 @@ tol = 1e-4
 mu_init = 0.1
 max_iters = 50
 verbose = proxddp.VerboseLevel.VERBOSE
-solver = proxddp.SolverProxDDP(tol, mu_init, max_iters=max_iters)
-solver.verbose = verbose
+solver = proxddp.SolverProxDDP(tol, mu_init, max_iters=max_iters, verbose=verbose)
+cb = proxddp.HistoryCallback()
+solver.registerCallback(cb)
 # solver.dump_linesearch_plot = True
 
 solver.setup(problem)
@@ -159,6 +157,21 @@ ee_traj = get_endpoint_traj(rmodel, rdata, xs_opt, frame_id)
 plt.plot(times, np.array(ee_traj), label=["x", "y", "z"])
 plt.hlines(table_height, *times[[0, -1]], colors="k")
 plt.legend()
+
+
+cb_store: proxddp.HistoryCallback.storage = cb.storage
+prim_infeas = cb_store.prim_infeas
+dual_infeas = cb_store.dual_infeas
+plt.figure()
+plt.subplot(121)
+plt.plot(prim_infeas)
+plt.yscale("log")
+plt.title("Primal infeasibility")
+
+plt.subplot(122)
+plt.plot(dual_infeas)
+plt.yscale("log")
+plt.title("Dual infeasibility")
 plt.show()
 
 if args.display:
