@@ -21,11 +21,11 @@ namespace croc {
  * This data structure rewires an ActionModel into a StageModel object.
  */
 template <typename Scalar>
-struct CrocActionModelWrapperTpl : public StageModelTpl<Scalar> {
+struct CrocActionModelWrapperTpl : StageModelTpl<Scalar> {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageModelTpl<Scalar>;
   using Data = StageDataTpl<Scalar>;
-  using ConstraintType = typename Base::Constraint;
+  using Constraint = StageConstraintTpl<Scalar>;
   using Dynamics = typename Base::Dynamics;
   using CrocActionModel = crocoddyl::ActionModelAbstractTpl<Scalar>;
   using StateWrapper = StateWrapperTpl<Scalar>;
@@ -36,6 +36,7 @@ struct CrocActionModelWrapperTpl : public StageModelTpl<Scalar> {
   explicit CrocActionModelWrapperTpl(
       boost::shared_ptr<CrocActionModel> action_model);
 
+  bool has_dyn_model() const { return false; }
   const Dynamics &dyn_model() const {
     PROXDDP_RUNTIME_ERROR("There is no dyn_model() for this class.");
   }
@@ -46,11 +47,7 @@ struct CrocActionModelWrapperTpl : public StageModelTpl<Scalar> {
   void computeDerivatives(const ConstVectorRef &x, const ConstVectorRef &u,
                           const ConstVectorRef &y, Data &data) const;
 
-  shared_ptr<Data> createData() const {
-    using CrocActionData = crocoddyl::ActionDataAbstractTpl<Scalar>;
-    boost::shared_ptr<CrocActionData> cd = action_model_->createData();
-    return std::make_shared<ActionDataWrap>(action_model_.get(), std::move(cd));
-  }
+  shared_ptr<Data> createData() const;
 };
 
 /**

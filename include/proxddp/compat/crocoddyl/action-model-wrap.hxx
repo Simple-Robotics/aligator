@@ -17,7 +17,7 @@ CrocActionModelWrapperTpl<Scalar>::CrocActionModelWrapperTpl(
   using EqualitySet = proxnlp::EqualityConstraint<Scalar>;
   const int nr = (int)action_model->get_state()->get_ndx();
   this->constraints_.push_back(
-      ConstraintType{nullptr, std::make_shared<EqualitySet>()}, nr);
+      Constraint{nullptr, std::make_shared<EqualitySet>()}, nr);
 }
 
 template <typename Scalar>
@@ -60,6 +60,14 @@ void CrocActionModelWrapperTpl<Scalar>::computeDerivatives(
   dyn_data.Ju_ = d.croc_data->Fu;
   this->xspace_next_->Jdifference(y, dyn_data.xnext_, dyn_data.Jy_, 0);
   PROXDDP_NOMALLOC_END;
+}
+
+template <typename Scalar>
+shared_ptr<StageDataTpl<Scalar>>
+CrocActionModelWrapperTpl<Scalar>::createData() const {
+  using CrocActionData = crocoddyl::ActionDataAbstractTpl<Scalar>;
+  boost::shared_ptr<CrocActionData> cd = action_model_->createData();
+  return std::make_shared<ActionDataWrap>(action_model_.get(), std::move(cd));
 }
 
 template <typename Scalar>

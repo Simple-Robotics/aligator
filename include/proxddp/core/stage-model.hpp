@@ -64,6 +64,10 @@ public:
   }
 
   const Cost &cost() const { return *cost_; }
+  /// Whether the stage's dynamics model can be accessed.
+  /// This boolean allows flexibility in solvers when dealing
+  /// with different frontends e.g. Crocoddyl's API.
+  virtual bool has_dyn_model() const { return true; }
   virtual const Dynamics &dyn_model() const {
     assert(constraints_.numConstraints() > 0);
     auto dyn_ptr = std::static_pointer_cast<Dynamics>(constraints_[0].func);
