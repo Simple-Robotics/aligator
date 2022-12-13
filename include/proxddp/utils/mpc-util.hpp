@@ -1,6 +1,7 @@
 /// @file
 /// @brief Utils for model-predictive control.
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+#pragma once
 
 #include <vector>
 #include <algorithm>

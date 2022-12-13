@@ -101,7 +101,9 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem,
   } else {
     auto kktx = kkt_rhs_0.head(ndx0);
     auto kktl = kkt_rhs_0.tail(ndual0);
-    kktx = vp.Vx_ + init_data.Jx_.transpose() * lamin0 + rho() * proxdata0.Lx_;
+    kktx = vp.Vx_;
+    // kktx += rho() * proxdata0.Lx_;
+    kktx.noalias() += init_data.Jx_.transpose() * lamin0;
     kktl = mu() * (lampl0 - lamin0);
 
     kkt_mat.topLeftCorner(ndx0, ndx0) = vp.Vxx_ + rho() * proxdata0.Lxx_;
@@ -109,7 +111,7 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem,
     kkt_mat.topRightCorner(ndx0, ndual0) = init_data.Jx_.transpose();
     kkt_mat.bottomLeftCorner(ndual0, ndx0) = init_data.Jx_;
     kkt_mat.bottomRightCorner(ndual0, ndual0).diagonal().array() = -mu();
-    Eigen::LDLT<MatrixXs, Eigen::Lower> &ldlt = workspace.ldlts_[0];
+    auto &ldlt = workspace.ldlts_[0];
     ldlt.compute(kkt_mat);
     assert(workspace.pd_step_[0].size() == kkt_rhs_0.size());
     workspace.pd_step_[0] = -kkt_rhs_0;
@@ -129,7 +131,7 @@ void SolverProxDDP<Scalar>::setup(const Problem &problem) {
 
   Workspace &ws = *workspace_;
   prox_penalties_.clear();
-  const std::size_t nsteps = problem.numSteps();
+  const std::size_t nsteps = ws.nsteps;
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &sm = *problem.stages_[i];
     prox_penalties_.emplace_back(sm.xspace_, sm.uspace_, ws.prev_xs[i],
@@ -429,7 +431,7 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
 
   /* Compute gains with LDLT */
   kkt_mat = kkt_mat.template selfadjointView<Eigen::Lower>();
-  Eigen::LDLT<MatrixXs, Eigen::Lower> &ldlt = workspace.ldlts_[t + 1];
+  auto &ldlt = workspace.ldlts_[t + 1];
   ldlt.compute(kkt_mat);
 
   // check inertia
@@ -858,6 +860,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     results.us = workspace.trial_us;
     results.lams = workspace.trial_lams;
     results.traj_cost_ = merit_fun.traj_cost_;
+    results.merit_value_ = phi_new;
     PROXDDP_RAISE_IF_NAN_NAME(alpha_opt, "alpha_opt");
     PROXDDP_RAISE_IF_NAN_NAME(results.merit_value_, "results.merit_value");
     PROXDDP_RAISE_IF_NAN_NAME(results.traj_cost_, "results.traj_cost");
@@ -891,7 +894,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
   // modifying quantities such as Qu, Qy... is allowed
   PROXDDP_NOMALLOC_BEGIN;
   const TrajOptData &prob_data = workspace.problem_data;
-  const std::size_t nsteps = problem.numSteps();
+  const std::size_t nsteps = workspace.nsteps;
 
   // PRIMAL INFEASIBILITIES
 
@@ -938,7 +941,6 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
 
   for (std::size_t i = 1; i <= nsteps; i++) {
     const StageModel &st = *problem.stages_[i - 1];
-    const int ndx2 = st.ndx2();
     const int nu = st.nu();
     const int ndual = st.numDual();
     Scalar ru;
@@ -947,7 +949,6 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
     const auto kktlam = kkt_rhs.tail(ndual); // dual residual
 
     VParams &vp = workspace.value_params[i];
-    const QParams &qpar = workspace.q_params[i - 1];
 
     VectorRef gu = kktu;
     ru = math::infty_norm(gu);
@@ -955,8 +956,8 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
     const ConstraintStack &cstr_mgr = st.constraints_;
 
     Scalar ru_ddp = 0.;
-    const StageData &sd = prob_data.getStageData(i - 1);
-    const DynamicsDataTpl<Scalar> &dd = sd.dyn_data();
+    const StageData &data = prob_data.getStageData(i - 1);
+    const DynamicsDataTpl<Scalar> &dd = data.dyn_data();
     auto lam_head = cstr_mgr.getConstSegmentByConstraint(results.lams[i], 0);
 
     vp.Vx_ -= lam_head;
@@ -976,12 +977,11 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
 #endif
     {
       const CostData &proxdata = *workspace.prox_datas[i - 1];
-      const CostData &proxnext = *workspace.prox_datas[i];
+      // const CostData &proxnext = *workspace.prox_datas[i];
       if (rho() > 0)
         gu -= -rho() * proxdata.Lu_;
       Scalar dual_res_u = math::infty_norm(gu);
       workspace.stage_dual_infeas(long(i)) = std::max(dual_res_u, 0.);
-      // std::max(dual_res_u, dual_res_y * 0);
     }
   }
   workspace.inner_criterion = math::infty_norm(workspace.stage_inner_crits);

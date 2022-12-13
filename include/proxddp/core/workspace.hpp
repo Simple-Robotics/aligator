@@ -10,6 +10,9 @@
 #include "proxddp/core/proximal-penalty.hpp"
 
 #include <Eigen/Cholesky>
+#if PROXDDP_CUSTOM_LDLT
+#include <proxnlp/blocks.hpp>
+#endif
 
 namespace proxddp {
 
@@ -55,7 +58,11 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using ProxData = typename ProxPenalty::Data;
   using StageModel = StageModelTpl<Scalar>;
   using Base = WorkspaceBaseTpl<Scalar>;
+#if PROXDDP_CUSTOM_LDLT
+  using LDLT = ::proxnlp::block_chol::DenseLDLT;
+#else
   using LDLT = Eigen::LDLT<MatrixXs, Eigen::Lower>;
+#endif
 
   using Base::problem_data;
   using Base::q_params;

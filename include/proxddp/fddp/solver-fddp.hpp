@@ -175,8 +175,8 @@ template <typename Scalar> struct SolverFDDP {
            const std::vector<VectorXs> &us_init = {});
 
   static const ExpData &
-  stage_get_dynamics_data(const StageDataTpl<Scalar> &sd) {
-    const auto &dd = sd.dyn_data();
+  stage_get_dynamics_data(const StageDataTpl<Scalar> &data) {
+    const DynamicsDataTpl<Scalar> &dd = data.dyn_data();
     return static_cast<const ExpData &>(dd);
   }
 };

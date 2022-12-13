@@ -146,7 +146,8 @@ template <typename Scalar> void WorkspaceTpl<Scalar>::cycle_left() {
   rotate_vec_left(kkt_mat_buf_, 1);
   rotate_vec_left(kkt_rhs_buf_, 1);
   rotate_vec_left(kkt_resdls_, 1);
-  rotate_vec_left(ldlts_, 1);
+  // rotate_vec_left(ldlts_, 1);
+  std::rotate(ldlts_.begin(), ldlts_.begin() + 2, ldlts_.end());
 
   rotate_vec_left(prev_xs);
   rotate_vec_left(prev_us);
