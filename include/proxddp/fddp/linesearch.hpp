@@ -12,7 +12,7 @@ namespace proxddp {
 /// conditions.
 /// @return an std::pair
 template <typename Scalar, typename F, typename M>
-PROX_INLINE std::pair<Scalar, Scalar>
+PROXDDP_INLINE std::pair<Scalar, Scalar>
 fddp_goldstein_linesearch(F &&phi, M &&model, const Scalar phi0,
                           const typename Linesearch<Scalar>::Options &ls_params,
                           Scalar th_grad, Scalar &d1) {

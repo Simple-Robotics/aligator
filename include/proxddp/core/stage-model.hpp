@@ -57,9 +57,7 @@ public:
   const Manifold &uspace() const { return *uspace_; }
   const Manifold &xspace_next() const { return *xspace_next_; }
 
-  const Constraint &getConstraint(std::size_t j) const {
-    if (j >= constraints_.numConstraints())
-      PROXDDP_RUNTIME_ERROR("Maximum index exceeded.");
+  PROXDDP_INLINE const Constraint &getConstraint(std::size_t j) const {
     return constraints_[j];
   }
 

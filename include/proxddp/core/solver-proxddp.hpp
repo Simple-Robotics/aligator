@@ -141,7 +141,7 @@ public:
   void nonlinearRollout(const Problem &problem, Workspace &workspace,
                         const Results &results, const Scalar alpha) const;
 
-  inline void compute_dir_x0(const Problem &problem, Workspace &workspace,
+  PROXDDP_INLINE void compute_dir_x0(const Problem &problem, Workspace &workspace,
                              const Results &results) const;
 
   /// @brief    Terminal node.
@@ -218,13 +218,13 @@ public:
                           bool update_jacobians = false) const;
 
   /// @copydoc mu_penal_
-  inline Scalar mu() const { return mu_penal_; }
+  PROXDDP_INLINE Scalar mu() const { return mu_penal_; }
 
   /// @copydoc mu_inverse_
-  inline Scalar mu_inv() const { return mu_inverse_; }
+  PROXDDP_INLINE Scalar mu_inv() const { return mu_inverse_; }
 
   /// Proximal parameter.
-  Scalar rho() const { return rho_penal_; }
+  PROXDDP_INLINE Scalar rho() const { return rho_penal_; }
 
   //// Scaled variants
 
@@ -241,9 +241,9 @@ public:
   }
 
   /// Scaled inverse penalty parameter.
-  inline Scalar mu_inv_scaled(std::size_t j) const { return 1. / mu_scaled(j); }
+  PROXDDP_INLINE Scalar mu_inv_scaled(std::size_t j) const { return 1. / mu_scaled(j); }
 
-  inline Scalar mu_dynamics() const { return mu() * mu_dyn_scale; }
+  PROXDDP_INLINE Scalar mu_dynamics() const { return mu() * mu_dyn_scale; }
 
   /// @brief  Put together the Q-function parameters and compute the Riccati
   /// gains.
@@ -260,10 +260,10 @@ protected:
     mu_inverse_ = 1. / new_mu;
   }
 
-  inline void setRho(Scalar new_rho) { rho_penal_ = new_rho; }
+  PROXDDP_INLINE void setRho(Scalar new_rho) { rho_penal_ = new_rho; }
 
   /// Update the dual proximal penalty according to BCL.
-  inline void bclUpdateALPenalty() {
+  PROXDDP_INLINE void bclUpdateALPenalty() {
     setPenalty(mu_penal_ * bcl_params.mu_update_factor);
   }
 

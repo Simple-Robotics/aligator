@@ -32,12 +32,12 @@ template <typename Scalar> struct ConstraintStackTpl {
 
   void push_back(const ConstraintType &el, const int nr);
 
-  int getIndex(const std::size_t i) const { return cursors_[i]; }
+  int getIndex(const std::size_t j) const { return cursors_[j]; }
 
-  int getDim(const std::size_t i) const { return dims_[i]; }
+  int getDim(const std::size_t j) const { return dims_[j]; }
 
-  const ConstraintSetBase<Scalar> &getConstraintSet(const std::size_t i) const {
-    return *this->storage_[i].set;
+  const ConstraintSetBase<Scalar> &getConstraintSet(const std::size_t j) const {
+    return *this->storage_[j].set;
   }
 
   /// Get corresponding segment of a vector corresponding
@@ -45,43 +45,43 @@ template <typename Scalar> struct ConstraintStackTpl {
   template <typename Derived>
   Eigen::VectorBlock<Derived, -1>
   getSegmentByConstraint(const Eigen::MatrixBase<Derived> &lambda,
-                         const std::size_t i) const {
+                         const std::size_t j) const {
     using MatrixType = Eigen::MatrixBase<Derived>;
     MatrixType &lam_cast = const_cast<MatrixType &>(lambda);
     assert(lambda.size() == totalDim());
-    return lam_cast.segment(getIndex(i), getDim(i));
+    return lam_cast.segment(getIndex(j), getDim(j));
   }
 
   template <typename Derived>
   Eigen::VectorBlock<const Derived, -1>
   getConstSegmentByConstraint(const Eigen::MatrixBase<Derived> &lambda,
-                              const std::size_t i) const {
+                              const std::size_t j) const {
     assert(lambda.size() == totalDim());
-    return lambda.segment(getIndex(i), getDim(i));
+    return lambda.segment(getIndex(j), getDim(j));
   }
 
   /// Get a row-wise block of a matrix by constraint index.
   template <typename Derived>
   Eigen::Block<Derived, -1, -1>
   getBlockByConstraint(const Eigen::MatrixBase<Derived> &J_,
-                       const std::size_t i) const {
+                       const std::size_t j) const {
     using MatrixType = Eigen::MatrixBase<Derived>;
     MatrixType &J = const_cast<MatrixType &>(J_);
     assert(J.rows() == totalDim());
-    return J.middleRows(getIndex(i), getDim(i));
+    return J.middleRows(getIndex(j), getDim(j));
   }
 
   int totalDim() const { return total_dim; }
 
   /// Get the i-th constraint.
-  ConstraintType &operator[](std::size_t i) {
-    assert((i < this->storage_.size()) && "i exceeds number of constraints!");
-    return storage_[i];
+  ConstraintType &operator[](std::size_t j) {
+    assert((j < this->storage_.size()) && "i exceeds number of constraints!");
+    return storage_[j];
   }
 
-  const ConstraintType &operator[](std::size_t i) const {
-    assert((i < this->storage_.size()) && "i exceeds number of constraints!");
-    return storage_[i];
+  const ConstraintType &operator[](std::size_t j) const {
+    assert((j < this->storage_.size()) && "i exceeds number of constraints!");
+    return storage_[j];
   }
 
 protected:
