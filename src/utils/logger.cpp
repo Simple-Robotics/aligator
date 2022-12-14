@@ -1,13 +1,16 @@
 #include "proxddp/utils/logger.hpp"
 
 namespace proxddp {
+BaseLogger::BaseLogger(bool solver_is_prox) : is_prox_(solver_is_prox) {
+  v.reserve(BASIC_KEYS.size());
+}
 
 void BaseLogger::start() {
   if (!active)
     return;
   static constexpr char fstr[] = "{:^{}s}";
   for (auto it = BASIC_KEYS.cbegin(); it != BASIC_KEYS.cend(); ++it) {
-    if (it->first == "inner_crit" && (!inner_crit))
+    if (it->first == "inner_crit" && (!is_prox_))
       continue;
     v.push_back(fmt::format(fstr, it->first, it->second));
   }

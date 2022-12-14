@@ -11,15 +11,17 @@
 namespace proxddp {
 
 using log_pair_t = std::pair<fmt::string_view, unsigned int>;
-static const std::array<log_pair_t, 9> BASIC_KEYS = {{{"iter", 4U},
-                                                      {"alpha", 10U},
-                                                      {"inner_crit", 10U},
-                                                      {"prim_err", 10U},
-                                                      {"dual_err", 10U},
-                                                      {"xreg", 10U},
-                                                      {"dphi0", 10U},
-                                                      {"merit", 10U},
-                                                      {"delta_M", 10U}}};
+static constexpr int NKEYS = 10;
+static const std::array<log_pair_t, NKEYS> BASIC_KEYS = {{{"iter", 4U},
+                                                          {"alpha", 10U},
+                                                          {"inner_crit", 10U},
+                                                          {"prim_err", 10U},
+                                                          {"dual_err", 10U},
+                                                          {"xreg", 10U},
+                                                          {"dphi0", 10U},
+                                                          {"merit", 10U},
+                                                          {"delta_M", 10U},
+                                                          {"al_iter", 4U}}};
 constexpr char int_format[] = "{: >{}d}";
 constexpr char sci_format[] = "{: > {}.{}e}";
 constexpr char dbl_format[] = "{: > {}.{}g}";
@@ -34,6 +36,7 @@ template <typename T> struct LogRecordTpl {
   T dphi0 = 0.;
   T merit = 0.;
   T dM = 0.;
+  unsigned long al_iter = 0;
 };
 
 using LogRecord = LogRecordTpl<double>;
@@ -41,14 +44,12 @@ using LogRecord = LogRecordTpl<double>;
 /// @brief  A logging utility.
 struct BaseLogger {
   bool active = true;
-  const bool inner_crit;
+  const bool is_prox_;
   const std::size_t print_outline_every = 25;
   const char *join_str = "｜";
   std::vector<std::string> v;
 
-  BaseLogger(bool inner_crit = true) : inner_crit(inner_crit) {
-    v.reserve(BASIC_KEYS.size());
-  }
+  BaseLogger(bool solver_is_prox = true);
 
   void start();
   template <typename T> void log(const LogRecordTpl<T> &values);
@@ -68,7 +69,7 @@ template <typename T> void BaseLogger::log(const LogRecordTpl<T> &values) {
   ++it;
   v.push_back(format(sci_format, values.step_size, it->second, sci_prec));
   ++it;
-  if (inner_crit)
+  if (is_prox_)
     v.push_back(format(sci_format, values.inner_crit, it->second, sci_prec));
   ++it;
   v.push_back(format(sci_format, values.prim_err, it->second, sci_prec));
@@ -82,6 +83,9 @@ template <typename T> void BaseLogger::log(const LogRecordTpl<T> &values) {
   v.push_back(format(sci_format, values.merit, it->second, sci_prec));
   ++it;
   v.push_back(format(dbl_format, values.dM, it->second, dbl_prec));
+  ++it;
+  if (is_prox_)
+    v.push_back(format(int_format, values.al_iter, it->second));
 
   fmt::print("{}\n", fmt::join(v, join_str));
   v.clear();
