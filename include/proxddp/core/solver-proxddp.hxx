@@ -3,7 +3,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include <fmt/color.h>
+#include "proxddp/core/solver-proxddp.hpp"
 #include <array>
 
 namespace proxddp {
@@ -522,16 +522,19 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
 }
 
 template <typename Scalar>
-void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
-                                             Workspace &workspace,
-                                             const Results &results,
-                                             const Scalar alpha) const {
+Scalar SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
+                                               Workspace &workspace,
+                                               const Results &results,
+                                               const Scalar alpha) const {
   using ExplicitDynData = ExplicitDynamicsDataTpl<Scalar>;
+  using DynamicsModel = DynamicsModelTpl<Scalar>;
+  using DynamicsData = DynamicsDataTpl<Scalar>;
 
   const std::size_t nsteps = workspace.nsteps;
   std::vector<VectorXs> &xs = workspace.trial_xs;
   std::vector<VectorXs> &us = workspace.trial_us;
   std::vector<VectorXs> &lams = workspace.trial_lams;
+  std::vector<VectorXs> &dyn_slacks = workspace.dyn_slacks;
   TrajOptData &prob_data = workspace.problem_data;
 
   {
@@ -539,10 +542,9 @@ void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
                                       prob_data.getInitData());
     compute_dir_x0(problem, workspace, results);
     const StageModel &stage = *problem.stages_[0];
-    // use lams[0] as a temp var for alpha * dx0
+    // use lams[0] as a tmp var for alpha * dx0
     lams[0] = alpha * workspace.dxs[0];
     stage.xspace().integrate(results.xs[0], lams[0], xs[0]);
-    // now set lams[0] to its actual value
     lams[0] = results.lams[0] + alpha * workspace.dlams[0];
   }
 
@@ -552,7 +554,6 @@ void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
 
     const int nu = stage.nu();
     const int ndual = stage.numDual();
-    const int ndx2 = stage.ndx2();
 
     ConstVectorRef ff = results.getFeedforward(i);
     ConstMatrixRef fb = results.getFeedback(i);
@@ -580,20 +581,28 @@ void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
         cstr_mgr.getConstSegmentByConstraint(lams[i + 1], 0);
     const ConstVectorRef dynprevlam =
         cstr_mgr.getConstSegmentByConstraint(workspace.lams_prev[i + 1], 0);
-    workspace.dyn_slacks[i] = mu_scaled(0) * (dynprevlam - dynlam);
+    dyn_slacks[i] = mu_scaled(0) * (dynprevlam - dynlam);
 
-    shared_ptr<ExplicitDynData> exp_dd =
-        std::dynamic_pointer_cast<ExplicitDynData>(data.constraint_data[0]);
-    // if explicit dynamics: get next state from data
-    if (exp_dd != 0) {
-      xs[i + 1] = exp_dd->xnext_;
-      stage.xspace_next().integrate(xs[i + 1], workspace.dyn_slacks[i]);
+    DynamicsData &dd = data.dyn_data();
+
+    // lambda to be called in both branches
+    auto explicit_model_update_xnext = [&]() {
+      ExplicitDynData &exp_dd = static_cast<ExplicitDynData &>(dd);
+      stage.xspace_next().integrate(exp_dd.xnext_, dyn_slacks[i], xs[i + 1]);
+      // at xs[i+1], the dynamics gap = the slack dyn_slack[i].
+      exp_dd.value_ = dyn_slacks[i];
+    };
+
+    if (stage.has_dyn_model()) {
+      const DynamicsModel &dm = stage.dyn_model();
+      if (dm.is_explicit()) {
+        explicit_model_update_xnext();
+      } else {
+        forwardDynamics(dm, xs[i], us[i], dd, xs[i + 1], 1, &dyn_slacks[i]);
+      }
     } else {
-      // in this case, compute the forward dynamics through Newton-Raphson
-      const DynamicsModelTpl<Scalar> &dm = stage.dyn_model();
-      DynamicsDataTpl<Scalar> &dd = data.dyn_data();
-      forwardDynamics(dm, xs[i], us[i], dd, xs[i + 1], 1,
-                      &workspace.dyn_slacks[i]);
+      // otherwise assume explicit dynamics model
+      explicit_model_update_xnext();
     }
 
     VectorRef &dx_next = workspace.dxs[i + 1];
