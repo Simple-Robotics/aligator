@@ -9,7 +9,7 @@
 #include "pinocchio/container/boost-container-limits.hpp"
 #endif
 
-/// Main package namespace.
+/// @brief  Main package namespace.
 namespace proxddp {
 /// TYPEDEFS FROM PROXNLP
 
@@ -92,3 +92,4 @@ template <typename Scalar> struct ResultsTpl;
 
 #include "proxddp/math.hpp"
 #include "proxddp/macros.hpp"
+#include "proxddp/config.hpp"

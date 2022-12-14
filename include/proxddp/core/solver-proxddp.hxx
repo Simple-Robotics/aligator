@@ -52,14 +52,14 @@ void SolverProxDDP<Scalar>::linearRollout(const Problem &problem,
 }
 
 template <typename Scalar>
-void SolverProxDDP<Scalar>::tryStep(const Problem &problem,
-                                    Workspace &workspace,
-                                    const Results &results,
-                                    const Scalar alpha) const {
+Scalar SolverProxDDP<Scalar>::tryStep(const Problem &problem,
+                                      Workspace &workspace,
+                                      const Results &results,
+                                      const Scalar alpha) const {
 
-  const std::size_t nsteps = problem.numSteps();
+  const std::size_t nsteps = workspace.nsteps;
 
-  for (std::size_t i = 0; i <= nsteps; i++)
+  for (std::size_t i = 0; i <= results.lams.size(); i++)
     workspace.trial_lams[i] = results.lams[i] + alpha * workspace.dlams[i];
 
   for (std::size_t i = 0; i < nsteps; i++) {
@@ -73,6 +73,10 @@ void SolverProxDDP<Scalar>::tryStep(const Problem &problem,
   stage.xspace_next_->integrate(results.xs[nsteps],
                                 alpha * workspace.dxs[nsteps],
                                 workspace.trial_xs[nsteps]);
+  TrajOptData &prob_data = workspace.problem_data;
+  problem.evaluate(workspace.trial_xs, workspace.trial_us, prob_data);
+  prob_data.cost_ = problem.computeTrajectoryCost(prob_data);
+  return prob_data.cost_;
 }
 
 template <typename Scalar>
@@ -186,7 +190,7 @@ bool SolverProxDDP<Scalar>::backwardPass(const Problem &problem,
   /* Terminal node */
   computeTerminalValue(problem, workspace, results);
 
-  const std::size_t nsteps = problem.numSteps();
+  const std::size_t nsteps = workspace.nsteps;
   for (std::size_t i = 0; i < nsteps; i++) {
     std::size_t t = nsteps - i - 1;
     updateHamiltonian(problem, t, results, workspace);
@@ -201,9 +205,9 @@ bool SolverProxDDP<Scalar>::backwardPass(const Problem &problem,
 template <typename Scalar>
 void SolverProxDDP<Scalar>::computeMultipliers(
     const Problem &problem, Workspace &workspace,
-    const std::vector<VectorXs> &lams, TrajOptData &prob_data,
-    bool update_jacobians) const {
+    const std::vector<VectorXs> &lams) const {
 
+  TrajOptData &prob_data = workspace.problem_data;
   const std::size_t nsteps = workspace.nsteps;
 
   std::vector<VectorXs> &lams_prev = workspace.lams_prev;
@@ -220,24 +224,6 @@ void SolverProxDDP<Scalar>::computeMultipliers(
     lams_plus[0] = shifted_constraints[0] * mu_inv();
     lams_pdal[0] = (1 + dual_weight) * lams_plus[0] - dual_weight * lam0;
     /// TODO: generalize to the other types of initial constraint (non-equality)
-  }
-
-  if (problem.term_constraint_) {
-    const VectorXs &lamN = lams.back();
-    const VectorXs &plamN = lams_prev.back();
-    const Constraint &termcstr = problem.term_constraint_.get();
-    const CstrSet &set = *termcstr.set;
-    FunctionData &data = prob_data.getTermData();
-    VectorXs &scval = shifted_constraints.back();
-    scval = data.value_ + mu() * plamN;
-    if (update_jacobians)
-      set.applyNormalConeProjectionJacobian(scval, data.jac_buffer_);
-
-    set.normalConeProjection(scval, scval);
-    lams_plus.back() = scval * mu_inv();
-    lams_pdal.back() =
-        (1 + dual_weight) * lams_plus.back() - dual_weight * lamN;
-    /// TODO: replace single term constraint by a ConstraintStackTpl
   }
 
   // loop over the stages
@@ -263,14 +249,68 @@ void SolverProxDDP<Scalar>::computeMultipliers(
       FunctionData &data = *sdata.constraint_data[j];
 
       scval_k = data.value_ + mu_scaled(j) * plami_k;
-      if (update_jacobians)
-        set.applyNormalConeProjectionJacobian(scval_k, data.jac_buffer_);
+      lamplus_k = scval_k;
 
-      set.normalConeProjection(scval_k, scval_k);
+      set.normalConeProjection(lamplus_k, lamplus_k);
 
       // set multiplier = 1/mu * normal_proj(shifted_cstr)
-      lamplus_k = mu_inv_scaled(j) * scval_k;
+      lamplus_k *= mu_inv_scaled(j);
       lampdal_k = (1 + dual_weight) * lamplus_k - dual_weight * lami_k;
+    }
+  }
+
+  if (problem.term_constraint_) {
+    const VectorXs &lamN = lams.back();
+    const VectorXs &plamN = lams_prev.back();
+    const Constraint &termcstr = problem.term_constraint_.get();
+    const CstrSet &set = *termcstr.set;
+    FunctionData &data = prob_data.getTermData();
+    VectorXs &scval = shifted_constraints.back();
+    scval = data.value_ + mu() * plamN;
+    lams_plus.back() = scval;
+
+    set.normalConeProjection(lams_plus.back(), lams_plus.back());
+    lams_plus.back() *= mu_inv();
+    lams_pdal.back() =
+        (1 + dual_weight) * lams_plus.back() - dual_weight * lamN;
+    /// TODO: replace single term constraint by a ConstraintStackTpl
+  }
+}
+
+template <typename Scalar>
+void SolverProxDDP<Scalar>::projectJacobians(const Problem &problem,
+                                             Workspace &workspace) const {
+  TrajOptData &prob_data = workspace.problem_data;
+
+  const std::size_t nsteps = workspace.nsteps;
+
+  const std::vector<VectorXs> &shifted_constraints =
+      workspace.shifted_constraints;
+
+  if (problem.term_constraint_) {
+    const Constraint &termcstr = problem.term_constraint_.get();
+    const CstrSet &set = *termcstr.set;
+    FunctionData &data = prob_data.getTermData();
+    const VectorXs &scval = shifted_constraints.back();
+    set.applyNormalConeProjectionJacobian(scval, data.jac_buffer_);
+    /// TODO: replace single term constraint by a ConstraintStackTpl
+  }
+
+  // loop over the stages
+  for (std::size_t i = 0; i < nsteps; i++) {
+    const StageModel &stage = *problem.stages_[i];
+    const StageData &sdata = prob_data.getStageData(i);
+    const ConstraintStack &cmgr = stage.constraints_;
+
+    const VectorXs &shift_cval = shifted_constraints[i + 1];
+
+    for (std::size_t j = 0; j < cmgr.numConstraints(); j++) {
+      const auto scval_k = cmgr.getConstSegmentByConstraint(shift_cval, j);
+
+      const CstrSet &set = cmgr.getConstraintSet(j);
+      FunctionData &data = *sdata.constraint_data[j];
+
+      set.applyNormalConeProjectionJacobian(scval_k, data.jac_buffer_);
     }
   }
 }
@@ -293,7 +333,6 @@ void SolverProxDDP<Scalar>::updateHamiltonian(const Problem &problem,
 
   const int ndx1 = stage.ndx1();
   const int nu = stage.nu();
-  const int ndx2 = stage.ndx2();
 
   // Use the contiguous full gradient/jacobian/hessian buffers
   // to fill in the Q-function derivatives
@@ -470,7 +509,6 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   auto fb = results.getFeedback(t);
 
 #ifndef NDEBUG
-  const VParams &vnext = workspace.value_params[t + 1];
   std::FILE *fi = std::fopen("pddp.log", "a");
   if (t == workspace.nsteps - 1)
     fmt::print(fi, "[backward {:d}]\n", results.num_iters + 1);
@@ -572,7 +610,7 @@ void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
   if (problem.term_constraint_) {
     const StageConstraintTpl<Scalar> &tc = *problem.term_constraint_;
     FunctionData &td = prob_data.getTermData();
-    tc.func->evaluate(xs[nsteps], us[nsteps], xs[nsteps], td);
+    tc.func->evaluate(xs[nsteps], problem.dummy_term_u0, xs[nsteps], td);
 
     VectorRef &dlam = workspace.dlams.back();
     const VectorRef &dx = workspace.dxs.back();
@@ -582,6 +620,9 @@ void SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
     dlam.noalias() += fb * dx;
     lams.back() = results.lams.back() + dlam;
   }
+
+  prob_data.cost_ = problem.computeTrajectoryCost(prob_data);
+  return prob_data.cost_;
 }
 
 template <typename Scalar>
@@ -711,20 +752,18 @@ template <typename Scalar>
 bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
                                       Workspace &workspace, Results &results) {
 
-  // merit function evaluation
-  auto merit_linear_eval = [&](Scalar a0) {
+#ifndef NDEBUG
+  const auto merit_linear_eval = [&](Scalar a0) {
     tryStep(problem, workspace, results, a0);
-    problem.evaluate(workspace.trial_xs, workspace.trial_us,
-                     workspace.problem_data);
     computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
-    computeMultipliers(problem, workspace, workspace.trial_lams,
-                       workspace.problem_data, false);
+    computeMultipliers(problem, workspace, workspace.trial_lams);
     return merit_fun.evaluate(problem, workspace.trial_lams, workspace,
                               workspace.problem_data);
   };
+#endif
 
   auto merit_eval_fun = [&](Scalar a0) {
-    switch (this->rollout_type) {
+    switch (rollout_type) {
     case RolloutType::LINEAR:
       tryStep(problem, workspace, results, a0);
       break;
@@ -732,19 +771,16 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
       nonlinearRollout(problem, workspace, results, a0);
       break;
     default:
-      PROXDDP_RUNTIME_ERROR("RolloutType unrecognized.");
+      assert(false && "unknown RolloutType!");
       break;
     }
     problem.evaluate(workspace.trial_xs, workspace.trial_us,
                      workspace.problem_data);
-    computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
-    computeMultipliers(problem, workspace, workspace.trial_lams,
-                       workspace.problem_data, false);
+    // computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
+    computeMultipliers(problem, workspace, workspace.trial_lams);
     return merit_fun.evaluate(problem, workspace.trial_lams, workspace,
                               workspace.problem_data);
   };
-
-  Scalar phi0 = 0.;
 
   logger.active = (verbose_ > 0);
 
@@ -752,23 +788,21 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
   std::size_t &k = results.num_iters;
   std::size_t inner_step = 0;
+  results.traj_cost_ =
+      problem.evaluate(results.xs, results.us, workspace.problem_data);
+  computeMultipliers(problem, workspace, results.lams);
+  results.merit_value_ = merit_fun.evaluate(problem, results.lams, workspace,
+                                            workspace.problem_data);
+
   while (k < max_iters) {
     // ASSUMPTION: last evaluation in previous iterate
     // was during linesearch, at the current candidate solution (x,u).
     /// TODO: make this smarter using e.g. some caching mechanism
-    if (k == 0) {
-      results.traj_cost_ =
-          problem.evaluate(results.xs, results.us, workspace.problem_data);
-    }
     problem.computeDerivatives(results.xs, results.us, workspace.problem_data);
-    computeProxTerms(results.xs, results.us, workspace);
-    computeProxDerivatives(results.xs, results.us, workspace);
-    computeMultipliers(problem, workspace, results.lams, workspace.problem_data,
-                       true);
-    phi0 = merit_fun.evaluate(problem, results.lams, workspace,
-                              workspace.problem_data);
-
-    results.merit_value_ = phi0;
+    projectJacobians(problem, workspace);
+    // computeProxTerms(results.xs, results.us, workspace);
+    // computeProxDerivatives(results.xs, results.us, workspace);
+    Scalar phi0 = results.merit_value_;
 
     while (true) {
       bool success = backwardPass(problem, workspace, results);
@@ -793,8 +827,9 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     if (inner_conv && (inner_step > 0))
       return true;
 
+    /// TODO: remove these expensive computations
+    /// only use Q-function params etc
     linearRollout(problem, workspace, results);
-
     Scalar dphi0_analytical = merit_fun.directionalDerivative(
         problem, results.lams, workspace, workspace.problem_data);
     Scalar dphi0 = dphi0_analytical; // value used for LS & logging
@@ -859,13 +894,14 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     results.xs = workspace.trial_xs;
     results.us = workspace.trial_us;
     results.lams = workspace.trial_lams;
-    results.traj_cost_ = merit_fun.traj_cost_;
+    results.traj_cost_ = merit_fun.traj_cost;
     results.merit_value_ = phi_new;
     PROXDDP_RAISE_IF_NAN_NAME(alpha_opt, "alpha_opt");
     PROXDDP_RAISE_IF_NAN_NAME(results.merit_value_, "results.merit_value");
     PROXDDP_RAISE_IF_NAN_NAME(results.traj_cost_, "results.traj_cost");
 
     iter_log.iter = k + 1;
+    iter_log.al_iter = results.al_iter + 1;
     iter_log.xreg = xreg_;
     iter_log.inner_crit = workspace.inner_criterion;
     iter_log.prim_err = results.prim_infeas;

@@ -72,9 +72,7 @@ template <typename _Scalar> struct PDALFunction {
   using TrajOptData = TrajOptDataTpl<Scalar>;
 
   SolverProxDDP<Scalar> const *solver;
-  Scalar traj_cost_ = 0.;
-  Scalar penalty_value_ = 0.;
-  Scalar value_ = 0.;
+  Scalar traj_cost;
   /// Weight of dual penalty. Values different from 1 not supported yet.
 
   Scalar mu_min = 1e-7;

@@ -133,16 +133,20 @@ public:
   /// @returns  A primal-dual trial point
   ///           \f$(\bfx \oplus\alpha\delta\bfx, \bfu+\alpha\delta\bfu,
   ///           \bmlam+\alpha\delta\bmlam)\f$
-  void tryStep(const Problem &problem, Workspace &workspace,
-               const Results &results, const Scalar alpha) const;
+  /// @returns  The trajectory cost.
+  Scalar tryStep(const Problem &problem, Workspace &workspace,
+                 const Results &results, const Scalar alpha) const;
 
   /// @brief    Policy rollout using the full nonlinear dynamics. The feedback
-  /// gains need to be computed first.
-  void nonlinearRollout(const Problem &problem, Workspace &workspace,
-                        const Results &results, const Scalar alpha) const;
+  /// gains need to be computed first. This will evaluate all the terms in the
+  /// problem into the problem data, similar to TrajOptProblemTpl::evaluate().
+  /// @returns  The trajectory cost.
+  Scalar nonlinearRollout(const Problem &problem, Workspace &workspace,
+                          const Results &results, const Scalar alpha) const;
 
-  PROXDDP_INLINE void compute_dir_x0(const Problem &problem, Workspace &workspace,
-                             const Results &results) const;
+  PROXDDP_INLINE void compute_dir_x0(const Problem &problem,
+                                     Workspace &workspace,
+                                     const Results &results) const;
 
   /// @brief    Terminal node.
   void computeTerminalValue(const Problem &problem, Workspace &workspace,
@@ -214,8 +218,9 @@ public:
 
   /// Evaluate the ALM/pdALM multiplier estimates.
   void computeMultipliers(const Problem &problem, Workspace &workspace,
-                          const std::vector<VectorXs> &lams, TrajOptData &pd,
-                          bool update_jacobians = false) const;
+                          const std::vector<VectorXs> &lams) const;
+
+  void projectJacobians(const Problem &problem, Workspace &workspace) const;
 
   /// @copydoc mu_penal_
   PROXDDP_INLINE Scalar mu() const { return mu_penal_; }
@@ -241,7 +246,9 @@ public:
   }
 
   /// Scaled inverse penalty parameter.
-  PROXDDP_INLINE Scalar mu_inv_scaled(std::size_t j) const { return 1. / mu_scaled(j); }
+  PROXDDP_INLINE Scalar mu_inv_scaled(std::size_t j) const {
+    return 1. / mu_scaled(j);
+  }
 
   PROXDDP_INLINE Scalar mu_dynamics() const { return mu() * mu_dyn_scale; }
 

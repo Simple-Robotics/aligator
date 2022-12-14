@@ -14,22 +14,23 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblem &problem,
                                       Workspace &workspace,
                                       TrajOptData &prob_data) {
 
-  traj_cost_ = prob_data.cost_;
+  traj_cost = prob_data.cost_;
   Scalar prox_value = 0.;
   if (solver->rho() > 0) {
     prox_value = computeProxPenalty(workspace);
   }
-  penalty_value_ = 0.;
+  Scalar penalty_value = 0.;
   auto ls_mode = solver->ls_mode;
-
   bool use_dual_terms = ls_mode == LinesearchMode::PRIMAL_DUAL;
+
+  const std::vector<VectorXs> &lams_plus = workspace.lams_plus;
 
   // initial constraint
   {
-    penalty_value_ += .5 * mu() * workspace.lams_plus[0].squaredNorm();
+    penalty_value += .5 * mu() * workspace.lams_plus[0].squaredNorm();
     if (use_dual_terms) {
-      penalty_value_ += .5 * dual_weight() * mu() *
-                        (workspace.lams_plus[0] - lams[0]).squaredNorm();
+      penalty_value +=
+          .5 * dual_weight() * mu() * (lams_plus[0] - lams[0]).squaredNorm();
     }
   }
 
@@ -39,36 +40,35 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblem &problem,
     const StageModel &stage = *problem.stages_[i];
 
     const ConstraintStack &cstr_mgr = stage.constraints_;
-    const std::size_t num_c = cstr_mgr.numConstraints();
 
     // loop over constraints
-    for (std::size_t j = 0; j < num_c; j++) {
+    for (std::size_t j = 0; j < cstr_mgr.numConstraints(); j++) {
 
-      auto lamplus_j =
-          cstr_mgr.getSegmentByConstraint(workspace.lams_plus[i + 1], j);
-      penalty_value_ += .5 * mu_scaled(j) * lamplus_j.squaredNorm();
+      const auto lamplus_j =
+          cstr_mgr.getConstSegmentByConstraint(lams_plus[i + 1], j);
+      penalty_value += .5 * mu_scaled(j) * lamplus_j.squaredNorm();
 
       if (use_dual_terms) {
-        auto lamin_j = cstr_mgr.getConstSegmentByConstraint(lams[i + 1], j);
-        penalty_value_ += .5 * dual_weight() * mu_scaled(j) *
-                          (lamplus_j - lamin_j).squaredNorm();
+        const auto lamin_j =
+            cstr_mgr.getConstSegmentByConstraint(lams[i + 1], j);
+        penalty_value += .5 * dual_weight() * mu_scaled(j) *
+                         (lamplus_j - lamin_j).squaredNorm();
       }
     }
   }
 
   if (problem.term_constraint_) {
 
-    VectorXs &lamplus = workspace.lams_plus[nsteps + 1];
-    penalty_value_ += .5 * mu() * lamplus.squaredNorm();
+    const VectorXs &lamplus = lams_plus[nsteps + 1];
+    penalty_value += .5 * mu() * lamplus.squaredNorm();
 
     if (use_dual_terms) {
-      penalty_value_ += .5 * dual_weight() * mu() *
-                        (lamplus - lams[nsteps + 1]).squaredNorm();
+      penalty_value += .5 * dual_weight() * mu() *
+                       (lamplus - lams[nsteps + 1]).squaredNorm();
     }
   }
 
-  value_ = traj_cost_ + prox_value + penalty_value_;
-  return value_;
+  return traj_cost + prox_value + penalty_value;
 }
 
 template <typename Scalar>
