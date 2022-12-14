@@ -166,7 +166,8 @@ function(create_library)
   endif(USE_CUSTOM_LDLT)
 
   if(BUILD_WITH_OPENMP_SUPPORT)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC -DPROXDDP_MULTITHREADING)
+    add_compile_definitions(PROXDDP_MULTITHREADING)
+    link_libraries(OpenMP::OpenMP_CXX)
   endif(BUILD_WITH_OPENMP_SUPPORT)
 
   target_link_libraries(${PROJECT_NAME} PUBLIC proxnlp::proxnlp)
