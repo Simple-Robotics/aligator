@@ -10,8 +10,10 @@ void BaseLogger::start() {
     return;
   static constexpr char fstr[] = "{:^{}s}";
   for (auto it = BASIC_KEYS.cbegin(); it != BASIC_KEYS.cend(); ++it) {
-    if (it->first == "inner_crit" && (!is_prox_))
-      continue;
+    if (!is_prox_) {
+      if (it->first == "inner_crit" || it->first == "al_iter")
+        continue;
+    }
     v.push_back(fmt::format(fstr, it->first, it->second));
   }
   fmt::print(fmt::emphasis::bold, "{}\n", fmt::join(v, join_str));
