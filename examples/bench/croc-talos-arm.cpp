@@ -2,10 +2,7 @@
 /// @brief Benchmark proxddp::SolverFDDP against Crocoddyl on a simple example
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
-#include "proxddp/compat/crocoddyl/problem-wrap.hpp"
-#include <pinocchio/parsers/urdf.hpp>
-#include <pinocchio/algorithm/model.hpp>
-#include <example-robot-data/path.hpp>
+#include "croc-talos-arm.hpp"
 
 #include <crocoddyl/multibody/states/multibody.hpp>
 #include <crocoddyl/multibody/actuations/full.hpp>
@@ -31,12 +28,6 @@ namespace pin = pinocchio;
 namespace croc = crocoddyl;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
-
-void makeTalosArm(pin::Model &model) {
-  const std::string talos_arm_path =
-      EXAMPLE_ROBOT_DATA_MODEL_DIR "/talos_data/robots/talos_left_arm.urdf";
-  pin::urdf::buildModel(talos_arm_path, model);
-}
 
 /// This reimplements the Crocoddyl problem defined in
 /// examples/croc_arm_manipulation.py.
