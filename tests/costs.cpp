@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_CASE(quad_state) {
   using SE2 = proxnlp::SETpl<2, T>;
   auto space = std::make_shared<SE2>();
 
-  std::size_t ndx = space->ndx();
+  std::size_t ndx = (std::size_t)space->ndx();
   std::size_t nu = 1UL;
   Eigen::VectorXd u0(nu);
   u0.setZero();
