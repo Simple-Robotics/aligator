@@ -109,8 +109,8 @@ public:
   /// Callbacks
   std::vector<CallbackPtr> callbacks_;
 
-  std::unique_ptr<Workspace> workspace_;
-  std::unique_ptr<Results> results_;
+  unique_ptr<Workspace> workspace_;
+  unique_ptr<Results> results_;
 
   Results &getResults() { return *results_; }
   Workspace &getWorkspace() { return *workspace_; }
@@ -306,7 +306,7 @@ private:
   PDALFunction<Scalar> merit_fun;
 
   using linesearch_t = proxnlp::ArmijoLinesearch<Scalar>;
-  std::unique_ptr<linesearch_t> linesearch_;
+  unique_ptr<linesearch_t> linesearch_;
 };
 
 } // namespace proxddp

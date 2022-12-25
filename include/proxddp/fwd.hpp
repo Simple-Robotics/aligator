@@ -20,6 +20,7 @@ using proxnlp::math_types;
 using proxnlp::ConstraintSetBase;
 using proxnlp::VerboseLevel;
 using std::shared_ptr;
+using std::unique_ptr;
 
 /// 1 BASE TYPES
 

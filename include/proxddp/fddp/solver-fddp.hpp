@@ -76,8 +76,8 @@ template <typename Scalar> struct SolverFDDP {
   /// Callbacks
   std::vector<CallbackPtr> callbacks_;
 
-  std::unique_ptr<Results> results_;
-  std::unique_ptr<Workspace> workspace_;
+  unique_ptr<Results> results_;
+  unique_ptr<Workspace> workspace_;
 
   SolverFDDP(const Scalar tol = 1e-6,
              VerboseLevel verbose = VerboseLevel::QUIET,
