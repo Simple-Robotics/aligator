@@ -48,7 +48,7 @@ template <typename Scalar> inline int StageModelTpl<Scalar>::numPrimal() const {
 }
 
 template <typename Scalar> inline int StageModelTpl<Scalar>::numDual() const {
-  return constraints_.totalDim();
+  return (int)constraints_.totalDim();
 }
 
 template <typename Scalar>

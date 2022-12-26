@@ -18,7 +18,7 @@ template <typename Scalar> struct StageConstraintTpl {
 template <typename Scalar> struct ConstraintStackTpl {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using ConstraintType = StageConstraintTpl<Scalar>;
-  ConstraintStackTpl() : cursors_({0}){};
+  ConstraintStackTpl() : indices_({0}){};
 
   std::size_t numConstraints() const { return storage_.size(); }
 
@@ -26,15 +26,19 @@ template <typename Scalar> struct ConstraintStackTpl {
     assert(el.func != 0 &&
            "constraint must have non-null underlying function.");
     assert(el.set != 0 && "constraint must have non-null underlying set.");
-    const int nr = el.func->nr;
+    const long nr = el.func->nr;
     push_back(el, nr);
   }
 
-  void push_back(const ConstraintType &el, const int nr);
+  void push_back(const ConstraintType &el, const long nr);
 
-  int getIndex(const std::size_t j) const { return cursors_[j]; }
+  long getIndex(const std::size_t j) const { return indices_[j]; }
 
-  int getDim(const std::size_t j) const { return dims_[j]; }
+  /// @brief Get the dimension of each the @p j-th constraint.
+  long getDim(const std::size_t j) const { return dims_[j]; }
+
+  /// @brief Get the set of dimensions for each constraint in the stack.
+  const std::vector<long> &getDims() const { return dims_; }
 
   const ConstraintSetBase<Scalar> &getConstraintSet(const std::size_t j) const {
     return *this->storage_[j].set;
@@ -71,7 +75,7 @@ template <typename Scalar> struct ConstraintStackTpl {
     return J.middleRows(getIndex(j), getDim(j));
   }
 
-  int totalDim() const { return total_dim; }
+  long totalDim() const { return total_dim; }
 
   /// Get the i-th constraint.
   ConstraintType &operator[](std::size_t j) {
@@ -86,9 +90,9 @@ template <typename Scalar> struct ConstraintStackTpl {
 
 protected:
   std::vector<ConstraintType> storage_;
-  std::vector<int> cursors_;
-  std::vector<int> dims_;
-  int total_dim = 0;
+  std::vector<long> indices_;
+  std::vector<long> dims_;
+  long total_dim = 0;
 };
 
 } // namespace proxddp
