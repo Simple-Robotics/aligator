@@ -11,7 +11,7 @@ template <typename Scalar>
 TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     const VectorXs &x0, const std::vector<shared_ptr<StageModel>> &stages,
     const shared_ptr<CostAbstract> &term_cost)
-    : init_state_error(stages[0]->xspace_, stages[0]->nu(), x0),
+    : init_state_error_(stages[0]->xspace_, stages[0]->nu(), x0),
       stages_(stages), term_cost_(term_cost), dummy_term_u0(stages[0]->nu()) {
   dummy_term_u0.setZero();
 }
@@ -33,7 +33,7 @@ Scalar TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
         "Wrong size for xs or us, expected us.size = {:d}", nsteps));
   }
 
-  init_state_error.evaluate(xs[0], us[0], xs[1], prob_data.getInitData());
+  init_state_error_.evaluate(xs[0], us[0], xs[1], prob_data.getInitData());
 
   for (std::size_t i = 0; i < nsteps; i++) {
     stages_[i]->evaluate(xs[i], us[i], xs[i + 1], prob_data.getStageData(i));
@@ -60,8 +60,8 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
         "Wrong size for xs or us, expected us.size = {:d}", nsteps));
   }
 
-  init_state_error.computeJacobians(xs[0], us[0], xs[1],
-                                    prob_data.getInitData());
+  init_state_error_.computeJacobians(xs[0], us[0], xs[1],
+                                     prob_data.getInitData());
 
   for (std::size_t i = 0; i < nsteps; i++) {
     stages_[i]->computeDerivatives(xs[i], us[i], xs[i + 1],
@@ -124,7 +124,7 @@ Scalar TrajOptProblemTpl<Scalar>::computeTrajectoryCost(
 
 template <typename Scalar>
 TrajOptDataTpl<Scalar>::TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem)
-    : init_data(problem.init_state_error.createData()) {
+    : init_data(problem.init_state_error_.createData()) {
   stage_data.reserve(problem.numSteps());
   for (std::size_t i = 0; i < problem.numSteps(); i++) {
     stage_data.push_back(problem.stages_[i]->createData());

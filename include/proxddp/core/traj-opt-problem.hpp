@@ -90,7 +90,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
   /// Initial condition
-  StateErrorResidual init_state_error;
+  StateErrorResidual init_state_error_;
   /// Stages of the control problem.
   std::vector<shared_ptr<StageModel>> stages_;
   /// Terminal cost.
@@ -110,7 +110,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 
   TrajOptProblemTpl(const StateErrorResidual &resdl, const int nu,
                     const shared_ptr<CostAbstract> &term_cost)
-      : init_state_error(resdl), term_cost_(term_cost), dummy_term_u0(nu) {
+      : init_state_error_(resdl), term_cost_(term_cost), dummy_term_u0(nu) {
     dummy_term_u0.setZero();
   }
 
@@ -118,9 +118,9 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   void addStage(const shared_ptr<StageModel> &stage);
 
   /// @brief Get initial state constraint.
-  const VectorXs &getInitState() const { return init_state_error.target_; }
+  const VectorXs &getInitState() const { return init_state_error_.target_; }
   /// @brief Set initial state constraint.
-  void setInitState(const ConstVectorRef x0) { init_state_error.target_ = x0; }
+  void setInitState(const ConstVectorRef x0) { init_state_error_.target_ = x0; }
 
   /// @brief Set a terminal constraint for the model.
   void setTerminalConstraint(const Constraint &cstr);
