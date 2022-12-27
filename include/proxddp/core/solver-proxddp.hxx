@@ -92,7 +92,7 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem,
   const VectorXs &lamin0 = results.lams[0];
   const CostData &proxdata0 = *workspace.prox_datas[0];
   MatrixXs &kkt_mat = workspace.kkt_mat_buf_[0];
-  VectorRef kkt_rhs_0 = workspace.kkt_rhs_buf_[0].col(0);
+  VectorRef kkt_rhs_0 = workspace.kkt_rhs_[0].col(0);
 
   if (is_x0_fixed) {
     workspace.pd_step_[0].setZero();
@@ -106,7 +106,6 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem,
     auto kktx = kkt_rhs_0.head(ndx0);
     auto kktl = kkt_rhs_0.tail(ndual0);
     kktx = vp.Vx_;
-    // kktx += rho() * proxdata0.Lx_;
     kktx.noalias() += init_data.Jx_.transpose() * lamin0;
     kktl = mu() * (lampl0 - lamin0);
 
@@ -118,8 +117,10 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem,
     auto &ldlt = workspace.ldlts_[0];
     ldlt.compute(kkt_mat);
     assert(workspace.pd_step_[0].size() == kkt_rhs_0.size());
-    workspace.pd_step_[0] = -kkt_rhs_0;
-    ldlt.solveInPlace(workspace.pd_step_[0]);
+
+    iterative_refine_impl(ldlt, kkt_mat, kkt_rhs_0, workspace.kkt_resdls_[0],
+                          workspace.pd_step_[0]);
+
     const ProxData &proxdata = *workspace.prox_datas[0];
     workspace.stage_inner_crits(0) = math::infty_norm(kkt_rhs_0);
     workspace.stage_dual_infeas(0) =
@@ -470,7 +471,7 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
 
   /* Compute gains with LDLT */
   kkt_mat = kkt_mat.template selfadjointView<Eigen::Lower>();
-  auto &ldlt = workspace.ldlts_[t + 1];
+  typename Workspace::LDLT &ldlt = workspace.ldlts_[t + 1];
   ldlt.compute(kkt_mat);
 
   // check inertia
@@ -486,21 +487,8 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   }
 
   MatrixXs &gains = results.gains_[t];
-  gains = -kkt_rhs;
-  ldlt.solveInPlace(gains);
-
-  const Scalar resdl_thresh = 1e-10;
-  const std::size_t MAX_REFINEMENT_STEPS = 5;
   MatrixXs &resdl = workspace.kkt_resdls_[t + 1];
-  Scalar resdl_norm = 0.;
-  for (std::size_t n = 0; n < MAX_REFINEMENT_STEPS; n++) {
-    resdl = -(kkt_mat * gains + kkt_rhs);
-    resdl_norm = math::infty_norm(resdl);
-    if (resdl_norm < resdl_thresh)
-      break;
-    ldlt.solveInPlace(resdl);
-    gains += resdl;
-  }
+  iterative_refine_impl(ldlt, kkt_mat, kkt_rhs, resdl, gains);
 
   /* Value function */
   VParams &vp = workspace.value_params[t];
@@ -783,15 +771,11 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
       assert(false && "unknown RolloutType!");
       break;
     }
-    problem.evaluate(workspace.trial_xs, workspace.trial_us,
-                     workspace.problem_data);
     // computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
     computeMultipliers(problem, workspace, workspace.trial_lams);
     return merit_fun.evaluate(problem, workspace.trial_lams, workspace,
                               workspace.problem_data);
   };
-
-  logger.active = (verbose_ > 0);
 
   LogRecord iter_log;
 

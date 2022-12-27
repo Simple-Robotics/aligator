@@ -98,6 +98,12 @@ public:
 
   bool is_x0_fixed = true;
 
+  /// @name Linear algebra options
+  /// \{
+  std::size_t MAX_REFINEMENT_STEPS = 5;
+  Scalar REFINEMENT_THRESHOLD = 1e-13;
+  /// \}
+
   /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.
   std::size_t max_iters;
   /// Maximum number of ALM iterations.
@@ -198,6 +204,27 @@ public:
   ///           Compute anything which accesses these before!
   void computeInfeasibilities(const Problem &problem, Workspace &workspace,
                               Results &results) const;
+
+  template <typename LDLT_t, typename OutType>
+  inline bool iterative_refine_impl(const LDLT_t &ldlt, const MatrixXs &mat,
+                                    const MatrixXs &rhs, MatrixXs &resdl,
+                                    OutType &Xout) const {
+    // attempt refining once
+    Xout = -rhs;
+    ldlt.solveInPlace(Xout);
+
+    for (std::size_t n = 0; n < MAX_REFINEMENT_STEPS; ++n) {
+      // kkt error = rhs + mat * Xout
+      resdl = rhs;
+      resdl.noalias() += mat * Xout;
+      Scalar err_norm = math::infty_norm(resdl);
+      if (err_norm < REFINEMENT_THRESHOLD)
+        return true;
+      ldlt.solveInPlace(resdl);
+      Xout -= resdl;
+    }
+    return false;
+  }
 
   /// @name callbacks
   /// \{
