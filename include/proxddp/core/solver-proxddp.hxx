@@ -194,7 +194,7 @@ bool SolverProxDDP<Scalar>::backwardPass(const Problem &problem,
   const std::size_t nsteps = workspace.nsteps;
   for (std::size_t i = 0; i < nsteps; i++) {
     std::size_t t = nsteps - i - 1;
-    updateHamiltonian(problem, t, results, workspace);
+    updateHamiltonian(problem, results, workspace, t);
     bool b = computeGains(problem, workspace, results, t);
     if (!b) {
       return false;
@@ -318,9 +318,9 @@ void SolverProxDDP<Scalar>::projectJacobians(const Problem &problem,
 
 template <typename Scalar>
 void SolverProxDDP<Scalar>::updateHamiltonian(const Problem &problem,
-                                              const std::size_t t,
                                               const Results &results,
-                                              Workspace &workspace) const {
+                                              Workspace &workspace,
+                                              const std::size_t t) const {
   PROXDDP_NOMALLOC_BEGIN;
 
   const StageModel &stage = *problem.stages_[t];

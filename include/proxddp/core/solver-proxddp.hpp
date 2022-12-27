@@ -53,7 +53,6 @@ public:
   Scalar inner_tol_;
   /// Desired primal feasibility
   Scalar prim_tol_;
-
   /// Solver tolerance \f$\epsilon > 0\f$.
   Scalar target_tol_ = 1e-6;
 
@@ -179,8 +178,8 @@ public:
                               Workspace &workspace) const;
 
   /// Compute the Hamiltonian parameters at time @param t.
-  void updateHamiltonian(const Problem &problem, const std::size_t t,
-                         const Results &results, Workspace &workspace) const;
+  void updateHamiltonian(const Problem &problem, const Results &results,
+                         Workspace &workspace, const std::size_t) const;
 
   /// @brief Run the numerical solver.
   /// @param problem  The trajectory optimization problem to solve.
