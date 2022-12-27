@@ -91,20 +91,20 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem,
   const VectorXs &lampl0 = workspace.lams_plus[0];
   const VectorXs &lamin0 = results.lams[0];
   const CostData &proxdata0 = *workspace.prox_datas[0];
-  MatrixXs &kkt_mat = workspace.kkt_mat_buf_[0];
-  VectorRef kkt_rhs_0 = workspace.kkt_rhs_[0].col(0);
+  MatrixXs &kkt_mat = workspace.kkt_mats_[0];
+  VectorRef kkt_rhs = workspace.kkt_rhs_[0].col(0);
 
   if (is_x0_fixed) {
     workspace.pd_step_[0].setZero();
     workspace.trial_xs[0] = problem.getInitState();
     workspace.trial_lams[0].setZero();
-    kkt_rhs_0.setZero();
+    kkt_rhs.setZero();
     workspace.stage_inner_crits(0) = 0.;
     workspace.stage_dual_infeas(0) = 0.;
 
   } else {
-    auto kktx = kkt_rhs_0.head(ndx0);
-    auto kktl = kkt_rhs_0.tail(ndual0);
+    auto kktx = kkt_rhs.head(ndx0);
+    auto kktl = kkt_rhs.tail(ndual0);
     kktx = vp.Vx_;
     kktx.noalias() += init_data.Jx_.transpose() * lamin0;
     kktl = mu() * (lampl0 - lamin0);
@@ -118,11 +118,11 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem,
     ldlt.compute(kkt_mat);
     assert(workspace.pd_step_[0].size() == kkt_rhs_0.size());
 
-    iterative_refine_impl(ldlt, kkt_mat, kkt_rhs_0, workspace.kkt_resdls_[0],
+    iterative_refine_impl(ldlt, kkt_mat, kkt_rhs, workspace.kkt_resdls_[0],
                           workspace.pd_step_[0]);
 
     const ProxData &proxdata = *workspace.prox_datas[0];
-    workspace.stage_inner_crits(0) = math::infty_norm(kkt_rhs_0);
+    workspace.stage_inner_crits(0) = math::infty_norm(kkt_rhs);
     workspace.stage_dual_infeas(0) =
         math::infty_norm(kktx - rho() * proxdata.Lx_);
   }
@@ -425,8 +425,8 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   const VectorXs &laminnr = results.lams[t + 1];
   const VectorXs &lamplus = workspace.lams_plus[t + 1];
 
-  MatrixXs &kkt_mat = workspace.kkt_mat_buf_[t + 1];
-  MatrixXs &kkt_rhs = workspace.kkt_rhs_buf_[t + 1];
+  MatrixXs &kkt_mat = workspace.kkt_mats_[t + 1];
+  MatrixXs &kkt_rhs = workspace.kkt_rhs_[t + 1];
 
   assert(kkt_mat.rows() == (nprim + ndual));
   assert(kkt_rhs.rows() == (nprim + ndual));
@@ -973,7 +973,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
     const int nu = st.nu();
     const int ndual = st.numDual();
     Scalar ru;
-    auto kkt_rhs = workspace.kkt_rhs_buf_[i].col(0);
+    auto kkt_rhs = workspace.kkt_rhs_[i].col(0);
     auto kktu = kkt_rhs.head(nu);
     const auto kktlam = kkt_rhs.tail(ndual); // dual residual
 

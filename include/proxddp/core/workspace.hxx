@@ -1,30 +1,10 @@
+/// @file
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include <fmt/ostream.h>
+#include "proxddp/core/workspace.hpp"
 
 namespace proxddp {
-
-template <typename Scalar>
-WorkspaceBaseTpl<Scalar>::WorkspaceBaseTpl(
-    const TrajOptProblemTpl<Scalar> &problem)
-    : nsteps(problem.numSteps()), problem_data(problem) {
-  trial_xs.resize(nsteps + 1);
-  trial_us.resize(nsteps);
-  xs_default_init(problem, trial_xs);
-  us_default_init(problem, trial_us);
-}
-
-template <typename Scalar> void WorkspaceBaseTpl<Scalar>::cycle_left() {
-  rotate_vec_left(problem_data.stage_data);
-
-  rotate_vec_left(trial_xs);
-  rotate_vec_left(trial_us);
-
-  rotate_vec_left(dyn_slacks, 1);
-
-  rotate_vec_left(value_params);
-  // rotate_vec_left(q_params);
-}
 
 template <typename Scalar>
 WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
@@ -38,8 +18,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 
   prev_xs = this->trial_xs;
   prev_us = this->trial_us;
-  kkt_mat_buf_.reserve(nsteps + 1);
-  kkt_rhs_buf_.reserve(nsteps + 1);
+  kkt_mats_.reserve(nsteps + 1);
+  kkt_rhs_.reserve(nsteps + 1);
   stage_prim_infeas.reserve(nsteps + 1);
   ldlts_.reserve(nsteps + 1);
 
@@ -57,8 +37,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     const int ndual = problem.init_state_error.nr;
     const int ntot = nprim + ndual;
 
-    kkt_mat_buf_.emplace_back(ntot, ntot);
-    kkt_rhs_buf_.emplace_back(ntot, ndx1 + 1);
+    kkt_mats_.emplace_back(ntot, ntot);
+    kkt_rhs_.emplace_back(ntot, ndx1 + 1);
     stage_prim_infeas.emplace_back(1);
     ldlts_.emplace_back(kkt_mat_buf_[0]);
 
@@ -80,8 +60,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     value_params.emplace_back(ndx1);
     q_params.emplace_back(ndx1, nu, ndx2);
 
-    kkt_mat_buf_.emplace_back(ntot, ntot);
-    kkt_rhs_buf_.emplace_back(ntot, ndx1 + 1);
+    kkt_mats_.emplace_back(ntot, ntot);
+    kkt_rhs_.emplace_back(ntot, ndx1 + 1);
     stage_prim_infeas.emplace_back(ncb);
     ldlts_.emplace_back(kkt_mat_buf_[i + 1]);
 
@@ -104,8 +84,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     const int nprim = ndx1;
     const int ndual = tc.func->nr;
     const int ntot = nprim + ndual;
-    kkt_mat_buf_.emplace_back(ntot, ntot);
-    kkt_rhs_buf_.emplace_back(ntot, ndx1 + 1);
+    kkt_mats_.emplace_back(ntot, ntot);
+    kkt_rhs_.emplace_back(ntot, ndx1 + 1);
     stage_prim_infeas.emplace_back(1);
     ldlts_.emplace_back(kkt_mat_buf_[nsteps]);
 
@@ -119,9 +99,9 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   lams_prev = lams_plus;
   shifted_constraints = lams_plus;
 
-  math::setZero(kkt_mat_buf_);
-  math::setZero(kkt_rhs_buf_);
-  kkt_resdls_ = kkt_rhs_buf_;
+  math::setZero(kkt_mats_);
+  math::setZero(kkt_rhs_);
+  kkt_resdls_ = kkt_rhs_;
 
   stage_inner_crits.setZero();
   stage_dual_infeas.setZero();
@@ -143,8 +123,8 @@ template <typename Scalar> void WorkspaceTpl<Scalar>::cycle_left() {
   rotate_vec_left(dus);
   rotate_vec_left(dlams);
 
-  rotate_vec_left(kkt_mat_buf_, 1);
-  rotate_vec_left(kkt_rhs_buf_, 1);
+  rotate_vec_left(kkt_mats_, 1);
+  rotate_vec_left(kkt_rhs_, 1);
   rotate_vec_left(kkt_resdls_, 1);
   // rotate_vec_left(ldlts_, 1);
   std::rotate(ldlts_.begin(), ldlts_.begin() + 2, ldlts_.end());

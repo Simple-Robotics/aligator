@@ -1,12 +1,9 @@
-/**
- * @file    workspace.hpp
- * @brief   Define workspace for the ProxDDP solver.
- * @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
- */
+/// @file    workspace.hpp
+/// @brief   Define workspace for the ProxDDP solver.
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/fwd.hpp"
-#include "proxddp/core/value-function.hpp"
+#include "proxddp/core/workspace-common.hpp"
 #include "proxddp/core/proximal-penalty.hpp"
 
 #include <Eigen/Cholesky>
@@ -16,36 +13,7 @@
 
 namespace proxddp {
 
-/// Base workspace struct for the algorithms.
-template <typename Scalar> struct WorkspaceBaseTpl {
-  using VParams = value_function<Scalar>;
-  using QParams = q_function<Scalar>;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-
-  /// Number of steps in the problem.
-  const std::size_t nsteps;
-  /// Problem data.
-  TrajOptDataTpl<Scalar> problem_data;
-
-  /// @name Linesearch data
-  /// @{
-  std::vector<VectorXs> trial_xs;
-  std::vector<VectorXs> trial_us;
-  /// @}
-
-  /// Feasibility gaps
-  std::vector<VectorXs> dyn_slacks;
-  /// Value function parameter storage
-  std::vector<VParams> value_params;
-  /// Q-function storage
-  std::vector<QParams> q_params;
-
-  explicit WorkspaceBaseTpl(const TrajOptProblemTpl<Scalar> &problem);
-
-  /// @brief   Cycle the workspace data to the left.
-  /// @details Useful in model-predictive control (MPC) applications.
-  void cycle_left();
-};
+namespace chol = proxnlp::block_chol;
 
 /** @brief Workspace for solver SolverProxDDP.
  *
@@ -88,10 +56,10 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   std::vector<VectorRef> dlams;
 
   /// Buffer for KKT matrix
-  std::vector<MatrixXs> kkt_mat_buf_;
+  std::vector<MatrixXs> kkt_mats_;
   /// Buffer for KKT right hand side
-  std::vector<MatrixXs> kkt_rhs_buf_;
-  /// Linear system residual buffers
+  std::vector<MatrixXs> kkt_rhs_;
+  /// Linear system residual buffers: used for iterative refinement
   std::vector<MatrixXs> kkt_resdls_;
   /// LDLT decompositions
   std::vector<LDLT> ldlts_;
