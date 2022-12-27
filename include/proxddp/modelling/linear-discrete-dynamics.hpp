@@ -19,6 +19,7 @@ struct LinearDiscreteDynamicsTpl : ExplicitDynamicsModelTpl<_Scalar> {
   const VectorXs c_;
 
   using Base = ExplicitDynamicsModelTpl<Scalar>;
+  using DynData = DynamicsDataTpl<Scalar>;
   using Data = ExplicitDynamicsDataTpl<Scalar>;
   using VectorSpaceType = proxnlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
 
@@ -33,10 +34,14 @@ struct LinearDiscreteDynamicsTpl : ExplicitDynamicsModelTpl<_Scalar> {
     data.xnext_ = A_ * x + B_ * u + c_;
   }
 
-  void dForward(const ConstVectorRef &, const ConstVectorRef &,
-                Data &data) const {
-    data.Jx_ = A_;
-    data.Ju_ = B_;
+  void dForward(const ConstVectorRef &, const ConstVectorRef &, Data &) const {}
+
+  shared_ptr<DynData> createData() const {
+    auto data =
+        std::make_shared<Data>(this->ndx1, this->nu, this->nx2(), this->ndx2);
+    data->Jx_ = A_;
+    data->Ju_ = B_;
+    return data;
   }
 };
 

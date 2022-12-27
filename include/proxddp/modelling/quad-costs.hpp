@@ -47,13 +47,12 @@ template <typename _Scalar> struct QuadraticCostTpl : CostAbstractTpl<_Scalar> {
   }
 
   void computeHessians(const ConstVectorRef &, const ConstVectorRef &,
-                       CostData &data) const {
-    data.Lxx_ = weights_x;
-    data.Luu_ = weights_u;
-  }
+                       CostData &) const {}
 
   shared_ptr<CostData> createData() const {
     auto data = std::make_shared<Data>(this->ndx, this->nu);
+    data->Lxx_ = weights_x;
+    data->Luu_ = weights_u;
     return data;
   }
 };
