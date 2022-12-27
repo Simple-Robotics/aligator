@@ -42,10 +42,10 @@ template <typename Scalar> struct q_function {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
-  int ndx_;
-  int nu_;
-  int ndy_;
-  int ntot = ndx_ + nu_ + ndy_;
+  long ndx_;
+  long nu_;
+  long ndy_;
+  long ntot = ndx_ + nu_ + ndy_;
 
   Scalar q_ = 0.;
 
@@ -63,7 +63,7 @@ template <typename Scalar> struct q_function {
   MatrixRef Quy;
   MatrixRef Qyy;
 
-  q_function(const int ndx, const int nu, const int ndy)
+  q_function(const long ndx, const long nu, const long ndy)
       : ndx_(ndx), nu_(nu), ndy_(ndy), grad_(ntot), hess_(ntot, ntot),
         Qx(grad_.head(ndx)), Qu(grad_.segment(ndx, nu)), Qy(grad_.tail(ndy)),
         Qxx(hess_.topLeftCorner(ndx, ndx)), Qxu(hess_.block(0, ndx, ndx, nu)),
@@ -84,6 +84,36 @@ template <typename Scalar> struct q_function {
                        store.ndy_);
     oss << "\n}";
     return oss;
+  }
+
+  friend void swap(q_function &qa, q_function &qb) {
+    using std::swap;
+
+    swap(qa.ndx_, qb.ndx_);
+    swap(qa.nu_, qb.nu_);
+    swap(qa.ndy_, qb.ndy_);
+    swap(qa.q_, qb.q_);
+    swap(qa.grad_, qb.grad_);
+    swap(qa.hess_, qb.hess_);
+
+    auto redef_refs = [](q_function &q) {
+      auto ndx = q.ndx_;
+      auto nu = q.nu_;
+      auto ndy = q.ndy_;
+      new (&q.Qx) VectorRef(q.grad_.head(ndx));
+      new (&q.Qu) VectorRef(q.grad_.segment(ndx, nu));
+      new (&q.Qy) VectorRef(q.grad_.tail(ndy));
+
+      new (&q.Qxx) MatrixRef(q.hess_.topLeftCorner(ndx, ndx));
+      new (&q.Qxu) MatrixRef(q.hess_.block(0, ndx, ndx, nu));
+      new (&q.Qxy) MatrixRef(q.hess_.topRightCorner(ndx, ndy));
+      new (&q.Quu) MatrixRef(q.hess_.block(ndx, ndx, nu, nu));
+      new (&q.Quy) MatrixRef(q.hess_.block(ndx, ndx + nu, nu, ndy));
+      new (&q.Qyy) MatrixRef(q.hess_.bottomRightCorner(ndy, ndy));
+    };
+
+    redef_refs(qa);
+    redef_refs(qb);
   }
 };
 
