@@ -19,7 +19,8 @@ SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
                                      VerboseLevel verbose,
                                      HessianApprox hess_approx)
     : target_tol_(tol), mu_init(mu_init), rho_init(rho_init), verbose_(verbose),
-      hess_approx(hess_approx), rollout_type(RolloutType::NONLINEAR),
+      hess_approx_(hess_approx), rollout_type_(RolloutType::NONLINEAR),
+      is_x0_fixed_(true), ldlt_algo_choice_(LDLTChoice::DENSE),
       max_iters(max_iters), merit_fun(this) {
   ls_params.interp_type = proxnlp::LSInterpolation::CUBIC;
 }
@@ -130,7 +131,7 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem,
 
 template <typename Scalar>
 void SolverProxDDP<Scalar>::setup(const Problem &problem) {
-  workspace_ = std::make_unique<Workspace>(problem);
+  workspace_ = std::make_unique<Workspace>(problem, ldlt_algo_choice_);
   results_ = std::make_unique<Results>(problem);
   linesearch_ = std::make_unique<linesearch_t>(ls_params);
 

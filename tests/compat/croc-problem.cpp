@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(lqr) {
 #ifndef NDEBUG
   prox_solver.dump_linesearch_plot = true;
 #endif
-  prox_solver.rollout_type = proxddp::RolloutType::NONLINEAR;
+  prox_solver.rollout_type_ = proxddp::RolloutType::NONLINEAR;
 
   std::vector<VectorXd> xs_init(nsteps + 1, x0);
   std::vector<VectorXd> us_init(nsteps, u0);

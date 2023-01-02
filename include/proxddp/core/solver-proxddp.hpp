@@ -77,30 +77,41 @@ public:
   Scalar inner_tol0 = 1.;
   Scalar prim_tol0 = 1.;
 
+  /// Logger
   BaseLogger logger{};
 #ifndef NDEBUG
   bool dump_linesearch_plot = false;
 #endif
 
+  /// Solver verbosity level.
   VerboseLevel verbose_;
-  HessianApprox hess_approx = HessianApprox::GAUSS_NEWTON;
+  /// Type of Hessian approximation. Default is Gauss-Newton.
+  HessianApprox hess_approx_ = HessianApprox::GAUSS_NEWTON;
   /// Linesearch options, as in proxnlp.
   LinesearchOptions ls_params;
+  /// Type of linesearch strategy. Default is Armijo.
   LinesearchStrategy ls_strat = LinesearchStrategy::ARMIJO;
+  /// Type of Lagrange multiplier update.
   MultiplierUpdateMode multiplier_update_mode = MultiplierUpdateMode::NEWTON;
-  LinesearchMode ls_mode = LinesearchMode::PRIMAL_DUAL;
-  /// @brief Weight of the dual variables in the primal-dual linesearch.
+  /// Linesearch mode.
+  LinesearchMode ls_mode = LinesearchMode::PRIMAL;
+  /// Weight of the dual variables in the primal-dual linesearch.
   Scalar dual_weight = 1.0;
-  /// @brief Type of rollout for the forward pass.
-  RolloutType rollout_type;
+  /// Type of rollout for the forward pass.
+  RolloutType rollout_type_;
+  /// Parameters for the BCL outer loop of the augmented Lagrangian algorithm.
   BCLParams<Scalar> bcl_params;
 
-  bool is_x0_fixed = true;
+  /// Force the initial state @f$ x_0 @f$ to be fixed to the problem initial
+  /// condition.
+  bool is_x0_fixed_;
 
   /// @name Linear algebra options
   /// \{
   std::size_t MAX_REFINEMENT_STEPS = 5;
   Scalar REFINEMENT_THRESHOLD = 1e-13;
+  /// Choice of factorization routine.
+  LDLTChoice ldlt_algo_choice_;
   /// \}
 
   /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.

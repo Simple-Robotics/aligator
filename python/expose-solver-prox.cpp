@@ -13,9 +13,11 @@ void exposeProxDDP() {
   using Workspace = WorkspaceTpl<Scalar>;
   using Results = ResultsTpl<Scalar>;
 
-  bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>>(
+  bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>,
+             boost::noncopyable>(
       "Workspace", "Workspace for ProxDDP.",
-      bp::init<const TrajOptProblem &>(bp::args("self", "problem")))
+      bp::init<const TrajOptProblem &, bp::optional<LDLTChoice>>(
+          bp::args("self", "problem", "ldlt_choice")))
       .def_readonly("prox_datas", &Workspace::prox_datas)
       .def_readonly("kkt_mat", &Workspace::kkt_mats_)
       .def_readonly("kkt_rhs", &Workspace::kkt_rhs_)
@@ -75,8 +77,12 @@ void exposeProxDDP() {
            bp::arg("verbose") = VerboseLevel::QUIET,
            bp::arg("hess_approx") = HessianApprox::GAUSS_NEWTON)))
       .def_readwrite("bcl_params", &SolverType::bcl_params, "BCL parameters.")
-      .def_readwrite("is_x0_fixed", &SolverType::is_x0_fixed,
+      .def_readwrite("is_x0_fixed", &SolverType::is_x0_fixed_,
                      "Set x0 to be fixed to the initial condition.")
+      .def_readwrite("max_refinement_steps", &SolverType::MAX_REFINEMENT_STEPS)
+      .def_readwrite("refinement_threshold", &SolverType::REFINEMENT_THRESHOLD)
+      .def_readwrite("ldlt_algo_choice", &SolverType::ldlt_algo_choice_,
+                     "Choice of LDLT algorithm.")
       .def_readwrite("multiplier_update_mode",
                      &SolverType::multiplier_update_mode)
       .def_readwrite("mu_init", &SolverType::mu_init,
@@ -92,7 +98,8 @@ void exposeProxDDP() {
       .def_readwrite("mu_min", &SolverType::MU_MIN,
                      "Lower bound on the AL penalty parameter.")
       .def_readwrite("ls_mode", &SolverType::ls_mode, "Linesearch mode.")
-      .def_readwrite("rollout_type", &SolverType::rollout_type, "Rollout type.")
+      .def_readwrite("rollout_type", &SolverType::rollout_type_,
+                     "Rollout type.")
       .def_readwrite("dual_weight", &SolverType::dual_weight,
                      "Dual penalty weight.")
 #ifndef NDEBUG
