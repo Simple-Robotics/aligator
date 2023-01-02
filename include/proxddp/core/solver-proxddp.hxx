@@ -53,15 +53,17 @@ void SolverProxDDP<Scalar>::linearRollout(const Problem &problem,
 }
 
 template <typename Scalar>
-Scalar SolverProxDDP<Scalar>::tryStep(const Problem &problem,
-                                      Workspace &workspace,
-                                      const Results &results,
-                                      const Scalar alpha) const {
+Scalar SolverProxDDP<Scalar>::forward_linear(const Problem &problem,
+                                             Workspace &workspace,
+                                             const Results &results,
+                                             const Scalar alpha) const {
 
   const std::size_t nsteps = workspace.nsteps;
 
-  for (std::size_t i = 0; i <= results.lams.size(); i++)
-    workspace.trial_lams[i] = results.lams[i] + alpha * workspace.dlams[i];
+  for (std::size_t i = 0; i < results.lams.size(); i++) {
+    workspace.trial_lams[i] = results.lams[i];
+    workspace.trial_lams[i] += alpha * workspace.dlams[i];
+  }
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
@@ -84,18 +86,19 @@ template <typename Scalar>
 void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem,
                                            Workspace &workspace,
                                            const Results &results) const {
+  PROXDDP_NOMALLOC_BEGIN;
   // compute direction dx0
   const VParams &vp = workspace.value_params[0];
   const FunctionData &init_data = workspace.problem_data.getInitData();
-  const int ndual0 = problem.init_state_error.nr;
-  const int ndx0 = problem.init_state_error.ndx1;
+  const int ndual0 = problem.init_state_error_.nr;
+  const int ndx0 = problem.init_state_error_.ndx1;
   const VectorXs &lampl0 = workspace.lams_plus[0];
   const VectorXs &lamin0 = results.lams[0];
   const CostData &proxdata0 = *workspace.prox_datas[0];
   MatrixXs &kkt_mat = workspace.kkt_mats_[0];
   VectorRef kkt_rhs = workspace.kkt_rhs_[0].col(0);
 
-  if (is_x0_fixed) {
+  if (is_x0_fixed_) {
     workspace.pd_step_[0].setZero();
     workspace.trial_xs[0] = problem.getInitState();
     workspace.trial_lams[0].setZero();
@@ -115,10 +118,8 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem,
     kkt_mat.topRightCorner(ndx0, ndual0) = init_data.Jx_.transpose();
     kkt_mat.bottomLeftCorner(ndual0, ndx0) = init_data.Jx_;
     kkt_mat.bottomRightCorner(ndual0, ndual0).diagonal().array() = -mu();
-    auto &ldlt = workspace.ldlts_[0];
+    typename Workspace::LDLT &ldlt = *workspace.ldlts_[0];
     ldlt.compute(kkt_mat);
-    assert(workspace.pd_step_[0].size() == kkt_rhs_0.size());
-
     iterative_refine_impl(ldlt, kkt_mat, kkt_rhs, workspace.kkt_resdls_[0],
                           workspace.pd_step_[0]);
 
@@ -127,6 +128,7 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem,
     workspace.stage_dual_infeas(0) =
         math::infty_norm(kktx - rho() * proxdata.Lx_);
   }
+  PROXDDP_NOMALLOC_END;
 }
 
 template <typename Scalar>
@@ -282,6 +284,7 @@ void SolverProxDDP<Scalar>::computeMultipliers(
 template <typename Scalar>
 void SolverProxDDP<Scalar>::projectJacobians(const Problem &problem,
                                              Workspace &workspace) const {
+  PROXDDP_NOMALLOC_BEGIN;
   TrajOptData &prob_data = workspace.problem_data;
 
   const std::size_t nsteps = workspace.nsteps;
@@ -315,6 +318,7 @@ void SolverProxDDP<Scalar>::projectJacobians(const Problem &problem,
       set.applyNormalConeProjectionJacobian(scval_k, data.jac_buffer_);
     }
   }
+  PROXDDP_NOMALLOC_END;
 }
 
 template <typename Scalar>
@@ -372,6 +376,7 @@ template <typename Scalar>
 void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
                                                  Workspace &workspace,
                                                  Results &results) const {
+  PROXDDP_NOMALLOC_BEGIN;
   const std::size_t nsteps = workspace.nsteps;
 
   const TrajOptData &prob_data = workspace.problem_data;
@@ -405,6 +410,7 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
     term_value.Vxx_ += cstr_data.Hxx_;
     term_value.Vxx_.noalias() += cJx.transpose() * fb;
   }
+  PROXDDP_NOMALLOC_END;
 }
 
 template <typename Scalar>
@@ -472,7 +478,7 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
 
   /* Compute gains with LDLT */
   kkt_mat = kkt_mat.template selfadjointView<Eigen::Lower>();
-  typename Workspace::LDLT &ldlt = workspace.ldlts_[t + 1];
+  typename Workspace::LDLT &ldlt = *workspace.ldlts_[t + 1];
   ldlt.compute(kkt_mat);
 
   // check inertia
@@ -489,6 +495,7 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
 
   MatrixXs &gains = results.gains_[t];
   MatrixXs &resdl = workspace.kkt_resdls_[t + 1];
+
   iterative_refine_impl(ldlt, kkt_mat, kkt_rhs, resdl, gains);
 
   /* Value function */
@@ -527,8 +534,8 @@ Scalar SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
   TrajOptData &prob_data = workspace.problem_data;
 
   {
-    problem.init_state_error.evaluate(xs[0], us[0], xs[1],
-                                      prob_data.getInitData());
+    problem.init_state_error_.evaluate(xs[0], us[0], xs[1],
+                                       prob_data.getInitData());
     compute_dir_x0(problem, workspace, results);
     const StageModel &stage = *problem.stages_[0];
     // use lams[0] as a tmp var for alpha * dx0
@@ -579,7 +586,7 @@ Scalar SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
       ExplicitDynData &exp_dd = static_cast<ExplicitDynData &>(dd);
       stage.xspace_next().integrate(exp_dd.xnext_, dyn_slacks[i], xs[i + 1]);
       // at xs[i+1], the dynamics gap = the slack dyn_slack[i].
-      exp_dd.value_ = dyn_slacks[i];
+      exp_dd.value_ = -dyn_slacks[i];
     };
 
     if (stage.has_dyn_model()) {
@@ -750,20 +757,10 @@ template <typename Scalar>
 bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
                                       Workspace &workspace, Results &results) {
 
-#ifndef NDEBUG
-  const auto merit_linear_eval = [&](Scalar a0) {
-    tryStep(problem, workspace, results, a0);
-    computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
-    computeMultipliers(problem, workspace, workspace.trial_lams);
-    return merit_fun.evaluate(problem, workspace.trial_lams, workspace,
-                              workspace.problem_data);
-  };
-#endif
-
   auto merit_eval_fun = [&](Scalar a0) {
-    switch (rollout_type) {
+    switch (rollout_type_) {
     case RolloutType::LINEAR:
-      tryStep(problem, workspace, results, a0);
+      forward_linear(problem, workspace, results, a0);
       break;
     case RolloutType::NONLINEAR:
       nonlinearRollout(problem, workspace, results, a0);
@@ -796,10 +793,10 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     projectJacobians(problem, workspace);
     // computeProxTerms(results.xs, results.us, workspace);
     // computeProxDerivatives(results.xs, results.us, workspace);
-    Scalar phi0 = results.merit_value_;
+    const Scalar phi0 = results.merit_value_;
 
     while (true) {
-      bool success = backwardPass(problem, workspace, results);
+      const bool success = backwardPass(problem, workspace, results);
       if (success) {
         break;
       } else {
@@ -812,6 +809,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     }
 
     computeInfeasibilities(problem, workspace, results);
+    computeCriterion(problem, workspace, results);
 
     Scalar outer_crit = std::max(results.dual_infeas, results.prim_infeas);
     if (outer_crit <= target_tol_)
@@ -967,21 +965,29 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
 
   results.prim_infeas = math::infty_norm(workspace.stage_prim_infeas);
 
+  PROXDDP_NOMALLOC_END;
+}
+
+template <typename Scalar>
+void SolverProxDDP<Scalar>::computeCriterion(const Problem &problem,
+                                             Workspace &workspace,
+                                             Results &results) const {
   // DUAL INFEASIBILITIES
+
+  const std::size_t nsteps = workspace.nsteps;
+  TrajOptData &prob_data = workspace.problem_data;
 
   for (std::size_t i = 1; i <= nsteps; i++) {
     const StageModel &st = *problem.stages_[i - 1];
     const int nu = st.nu();
     const int ndual = st.numDual();
-    Scalar ru;
     auto kkt_rhs = workspace.kkt_rhs_[i].col(0);
     auto kktu = kkt_rhs.head(nu);
     const auto kktlam = kkt_rhs.tail(ndual); // dual residual
 
     VParams &vp = workspace.value_params[i];
 
-    VectorRef gu = kktu;
-    ru = math::infty_norm(gu);
+    Scalar ru = math::infty_norm(kktu);
     Scalar rlam = math::infty_norm(kktlam);
     const ConstraintStack &cstr_mgr = st.constraints_;
 
@@ -991,32 +997,30 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
     auto lam_head = cstr_mgr.getConstSegmentByConstraint(results.lams[i], 0);
 
     vp.Vx_ -= lam_head;
-    gu.noalias() += dd.Ju_.transpose() * vp.Vx_;
+    kktu.noalias() += dd.Ju_.transpose() * vp.Vx_;
     vp.Vx_ += lam_head;
-    ru_ddp = math::infty_norm(gu);
-
-    auto gy = -lam_head + vp.Vx_;
-    Scalar ry = math::infty_norm(gy);
-    workspace.stage_inner_crits(long(i)) = std::max({ru_ddp, 0., rlam});
+    ru_ddp = math::infty_norm(kktu);
 
 #ifndef NDEBUG
+    auto gy = -lam_head + vp.Vx_;
+    Scalar ry = math::infty_norm(gy);
     std::FILE *fi = std::fopen("pddp.log", "a");
     fmt::print(fi, "[{:>3d}]ru={:.2e},ry={:.2e},rlam={:.2e},", i, ru, ry, rlam);
     fmt::print(fi, "ru_other={:.3e}\n", ru_ddp);
     std::fclose(fi);
 #endif
+    workspace.stage_inner_crits(long(i)) = std::max({ru_ddp, 0., rlam});
     {
       const CostData &proxdata = *workspace.prox_datas[i - 1];
       // const CostData &proxnext = *workspace.prox_datas[i];
       if (rho() > 0)
-        gu -= -rho() * proxdata.Lu_;
-      Scalar dual_res_u = math::infty_norm(gu);
+        kktu -= -rho() * proxdata.Lu_;
+      Scalar dual_res_u = math::infty_norm(kktu);
       workspace.stage_dual_infeas(long(i)) = std::max(dual_res_u, 0.);
     }
   }
   workspace.inner_criterion = math::infty_norm(workspace.stage_inner_crits);
   results.dual_infeas = math::infty_norm(workspace.stage_dual_infeas);
-  PROXDDP_NOMALLOC_END;
 }
 
 } // namespace proxddp

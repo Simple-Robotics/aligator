@@ -150,8 +150,8 @@ public:
   ///           \f$(\bfx \oplus\alpha\delta\bfx, \bfu+\alpha\delta\bfu,
   ///           \bmlam+\alpha\delta\bmlam)\f$
   /// @returns  The trajectory cost.
-  Scalar tryStep(const Problem &problem, Workspace &workspace,
-                 const Results &results, const Scalar alpha) const;
+  Scalar forward_linear(const Problem &problem, Workspace &workspace,
+                        const Results &results, const Scalar alpha) const;
 
   /// @brief    Policy rollout using the full nonlinear dynamics. The feedback
   /// gains need to be computed first. This will evaluate all the terms in the
@@ -160,9 +160,8 @@ public:
   Scalar nonlinearRollout(const Problem &problem, Workspace &workspace,
                           const Results &results, const Scalar alpha) const;
 
-  PROXDDP_INLINE void compute_dir_x0(const Problem &problem,
-                                     Workspace &workspace,
-                                     const Results &results) const;
+  void compute_dir_x0(const Problem &problem, Workspace &workspace,
+                      const Results &results) const;
 
   /// @brief    Terminal node.
   void computeTerminalValue(const Problem &problem, Workspace &workspace,
@@ -215,6 +214,9 @@ public:
   void computeInfeasibilities(const Problem &problem, Workspace &workspace,
                               Results &results) const;
 
+  void computeCriterion(const Problem &problem, Workspace &workspace,
+                        Results &results) const;
+
   template <typename LDLT_t, typename OutType>
   inline bool iterative_refine_impl(const LDLT_t &ldlt, const MatrixXs &mat,
                                     const MatrixXs &rhs, MatrixXs &resdl,
@@ -265,7 +267,7 @@ public:
   /// @copydoc mu_inverse_
   PROXDDP_INLINE Scalar mu_inv() const { return mu_inverse_; }
 
-  /// Proximal parameter.
+  /// @copydoc rho_penal_
   PROXDDP_INLINE Scalar rho() const { return rho_penal_; }
 
   //// Scaled variants
@@ -299,15 +301,15 @@ protected:
   void updateTolerancesOnSuccess();
 
   /// Set dual proximal/ALM penalty parameter.
-  inline void setPenalty(Scalar new_mu) {
+  inline void setPenalty(Scalar new_mu) noexcept {
     mu_penal_ = std::max(new_mu, MU_MIN);
     mu_inverse_ = 1. / new_mu;
   }
 
-  PROXDDP_INLINE void setRho(Scalar new_rho) { rho_penal_ = new_rho; }
+  PROXDDP_INLINE void setRho(Scalar new_rho) noexcept { rho_penal_ = new_rho; }
 
   /// Update the dual proximal penalty according to BCL.
-  PROXDDP_INLINE void bclUpdateALPenalty() {
+  PROXDDP_INLINE void bclUpdateALPenalty() noexcept {
     setPenalty(mu_penal_ * bcl_params.mu_update_factor);
   }
 
