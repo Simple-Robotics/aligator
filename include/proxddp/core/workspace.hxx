@@ -6,8 +6,13 @@
 
 namespace proxddp {
 
+namespace {
+using proxnlp::allocate_ldlt_from_sizes;
+}
+
 template <typename Scalar>
-WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
+WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
+                                   LDLTChoice ldlt_choice)
     : Base(problem), stage_inner_crits(this->nsteps + 1),
       stage_dual_infeas(this->nsteps + 1) {
   const std::size_t nsteps = this->nsteps;
@@ -34,13 +39,14 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   {
     const int ndx1 = problem.stages_[0]->ndx1();
     const int nprim = ndx1;
-    const int ndual = problem.init_state_error.nr;
+    const int ndual = problem.init_state_error_.nr;
     const int ntot = nprim + ndual;
 
     kkt_mats_.emplace_back(ntot, ntot);
     kkt_rhs_.emplace_back(ntot, ndx1 + 1);
     stage_prim_infeas.emplace_back(1);
-    ldlts_.emplace_back(kkt_mat_buf_[0]);
+    ldlts_.emplace_back(
+        allocate_ldlt_from_sizes<Scalar>(nprim, {ndual}, ldlt_choice));
 
     lams_plus[0] = VectorXs::Zero(ndual);
     pd_step_[0] = VectorXs::Zero(ntot);
@@ -62,8 +68,9 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 
     kkt_mats_.emplace_back(ntot, ntot);
     kkt_rhs_.emplace_back(ntot, ndx1 + 1);
+    ldlts_.emplace_back(allocate_ldlt_from_sizes<Scalar>(
+        nprim, stage.constraints_.getDims(), ldlt_choice));
     stage_prim_infeas.emplace_back(ncb);
-    ldlts_.emplace_back(kkt_mat_buf_[i + 1]);
 
     lams_plus[i + 1] = VectorXs::Zero(ndual);
     pd_step_[i + 1] = VectorXs::Zero(ntot);
@@ -87,7 +94,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     kkt_mats_.emplace_back(ntot, ntot);
     kkt_rhs_.emplace_back(ntot, ndx1 + 1);
     stage_prim_infeas.emplace_back(1);
-    ldlts_.emplace_back(kkt_mat_buf_[nsteps]);
+    ldlts_.emplace_back(
+        allocate_ldlt_from_sizes<Scalar>(nprim, {ndual}, ldlt_choice));
 
     lams_plus.push_back(VectorXs::Zero(ndual));
     pd_step_.push_back(VectorXs::Zero(ndual));
@@ -127,7 +135,7 @@ template <typename Scalar> void WorkspaceTpl<Scalar>::cycle_left() {
   rotate_vec_left(kkt_rhs_, 1);
   rotate_vec_left(kkt_resdls_, 1);
   // rotate_vec_left(ldlts_, 1);
-  std::rotate(ldlts_.begin(), ldlts_.begin() + 2, ldlts_.end());
+  // std::rotate(ldlts_.begin(), ldlts_.begin() + 2, ldlts_.end());
 
   rotate_vec_left(prev_xs);
   rotate_vec_left(prev_us);

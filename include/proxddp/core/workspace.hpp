@@ -6,14 +6,15 @@
 #include "proxddp/core/workspace-common.hpp"
 #include "proxddp/core/proximal-penalty.hpp"
 
-#include <Eigen/Cholesky>
 #if PROXDDP_CUSTOM_LDLT
-#include <proxnlp/blocks.hpp>
+#include <proxnlp/ldlt-allocator.hpp>
+#else
+#include <Eigen/Cholesky>
 #endif
 
 namespace proxddp {
 
-namespace chol = proxnlp::block_chol;
+using proxnlp::LDLTChoice;
 
 /** @brief Workspace for solver SolverProxDDP.
  *
@@ -26,11 +27,6 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using ProxData = typename ProxPenalty::Data;
   using StageModel = StageModelTpl<Scalar>;
   using Base = WorkspaceBaseTpl<Scalar>;
-#if PROXDDP_CUSTOM_LDLT
-  using LDLT = ::proxnlp::block_chol::DenseLDLT;
-#else
-  using LDLT = Eigen::LDLT<MatrixXs, Eigen::Lower>;
-#endif
 
   using Base::problem_data;
   using Base::q_params;
@@ -61,8 +57,16 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   std::vector<MatrixXs> kkt_rhs_;
   /// Linear system residual buffers: used for iterative refinement
   std::vector<MatrixXs> kkt_resdls_;
-  /// LDLT decompositions
+
+#ifndef PROXDDP_CUSTOM_LDLT
+  using LDLT = Eigen::LDLT<MatrixXs, Eigen::Lower>;
+  /// LDLT solvers
   std::vector<LDLT> ldlts_;
+#else
+  using LDLT = proxnlp::linalg::ldlt_base<Scalar>;
+  /// LDLT solvers
+  std::vector<unique_ptr<LDLT>> ldlts_;
+#endif
 
   /// @}
 
@@ -86,7 +90,8 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   /// Overall subproblem termination criterion.
   Scalar inner_criterion = 0.;
 
-  explicit WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem);
+  WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
+               LDLTChoice ldlt_choice = LDLTChoice::DENSE);
 
   void cycle_left();
 
