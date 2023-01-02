@@ -1,14 +1,18 @@
 #pragma once
 
-#include "proxddp/math.hpp"
 #include <stdexcept>
-#include <fmt/core.h>
+#include <fmt/format.h>
 
-#define proxddp_runtime_error(msg)                                             \
-  throw std::runtime_error(fmt::format("{}({}): {}", __FILE__, __LINE__, msg))
+#define PROXDDP_RUNTIME_ERROR(msg)                                             \
+  throw proxddp::RuntimeError(                                                 \
+      fmt::format("{}({}): {}", __FILE__, __LINE__, msg))
 
-#define PROXDDP_RAISE_IF_NAN(value)                                            \
-  if (::proxddp::math::checkScalar(value))                                     \
-  proxddp_runtime_error("encountered NaN.\n")
+namespace proxddp {
 
-namespace proxddp {} // namespace proxddp
+class RuntimeError : public std::runtime_error {
+public:
+  explicit RuntimeError(const std::string &what = "")
+      : std::runtime_error(what) {}
+};
+
+} // namespace proxddp

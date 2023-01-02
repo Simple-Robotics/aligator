@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
 #include "proxddp/core/function-abstract.hpp"
@@ -30,15 +31,16 @@ StageFunctionTpl<Scalar>::createData() const {
 template <typename Scalar>
 FunctionDataTpl<Scalar>::FunctionDataTpl(const int ndx1, const int nu,
                                          const int ndx2, const int nr)
-    : ndx1(ndx1), nu(nu), ndx2(ndx2), nr(nr), value_(nr), jac_buffer_(nr, nvar),
-      vhp_buffer_(nvar, nvar), Jx_(jac_buffer_.leftCols(ndx1)),
-      Ju_(jac_buffer_.middleCols(ndx1, nu)), Jy_(jac_buffer_.rightCols(ndx2)),
+    : ndx1(ndx1), nu(nu), ndx2(ndx2), nr(nr), value_(nr), valref_(value_),
+      jac_buffer_(nr, nvar), vhp_buffer_(nvar, nvar),
+      Jx_(jac_buffer_.leftCols(ndx1)), Ju_(jac_buffer_.middleCols(ndx1, nu)),
+      Jy_(jac_buffer_.rightCols(ndx2)),
       Hxx_(vhp_buffer_.topLeftCorner(ndx1, ndx1)),
       Hxu_(vhp_buffer_.topRows(ndx1).middleCols(ndx1, nu)),
       Hxy_(vhp_buffer_.topRightCorner(ndx1, ndx2)),
       Huu_(vhp_buffer_.middleRows(ndx1, nu).middleCols(ndx1, nu)),
       Huy_(vhp_buffer_.middleRows(ndx1, nu).rightCols(ndx2)),
-      Hyy_(vhp_buffer_.bottomRightCorner(ndx2, ndx2)), valref_(value_) {
+      Hyy_(vhp_buffer_.bottomRightCorner(ndx2, ndx2)) {
   value_.setZero();
   jac_buffer_.setZero();
   vhp_buffer_.setZero();

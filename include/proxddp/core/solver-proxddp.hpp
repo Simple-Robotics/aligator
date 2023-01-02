@@ -10,36 +10,23 @@
 #include "proxddp/core/helpers-base.hpp"
 #include "proxddp/utils/exceptions.hpp"
 #include "proxddp/utils/logger.hpp"
+#include "proxddp/utils/rollout.hpp"
 
 #include <proxnlp/constraint-base.hpp>
+#include <proxnlp/bcl-params.hpp>
 
 namespace proxddp {
 
-enum class MultiplierUpdateMode : unsigned int {
-  NEWTON = 0,
-  PRIMAL = 1,
-  PRIMAL_DUAL = 2
-};
+enum class MultiplierUpdateMode { NEWTON, PRIMAL, PRIMAL_DUAL };
 
-template <typename Scalar> struct BCLParams {
+using proxnlp::BCLParams;
 
-  /// Log-factor \f$\alpha_\eta\f$ for primal tolerance (failure)
-  Scalar prim_alpha = 0.1;
-  /// Log-factor \f$\beta_\eta\f$ for primal tolerance (success)
-  Scalar prim_beta = 0.9;
-  /// Log-factor \f$\alpha_\eta\f$ for dual tolerance (failure)
-  Scalar dual_alpha = 1.;
-  /// Log-factor \f$\beta_\eta\f$ for dual tolerance (success)
-  Scalar dual_beta = 1.;
-  /// Scale factor for the dual proximal penalty.
-  Scalar mu_update_factor = 0.01;
-  /// Scale factor for the primal proximal penalty.
-  Scalar rho_update_factor = 0.1;
-};
-
-/// @brief Solver.
+/// @brief A proximal, augmented Lagrangian-type solver for trajectory
+/// optimization.
 template <typename _Scalar> struct SolverProxDDP {
 public:
+  // typedefs
+
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using BlockXs = typename MatrixXs::BlockXpr;
@@ -51,80 +38,130 @@ public:
   using StageModel = StageModelTpl<Scalar>;
   using Constraint = StageConstraintTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
-  using VParams = typename Workspace::value_storage_t;
-  using QParams = typename Workspace::q_storage_t;
+  using VParams = value_function<Scalar>;
+  using QParams = q_function<Scalar>;
   using ProxPenaltyType = ProximalPenaltyTpl<Scalar>;
   using ProxData = typename ProxPenaltyType::Data;
   using CallbackPtr = shared_ptr<helpers::base_callback<Scalar>>;
-  using LSOptions = typename proxnlp::Linesearch<Scalar>::Options;
+  using ConstraintStack = ConstraintStackTpl<Scalar>;
+  using CstrSet = ConstraintSetBase<Scalar>;
+  using TrajOptData = TrajOptDataTpl<Scalar>;
+  using LinesearchOptions = typename Linesearch<Scalar>::Options;
 
   std::vector<ProxPenaltyType> prox_penalties_;
   /// Subproblem tolerance
   Scalar inner_tol_;
   /// Desired primal feasibility
   Scalar prim_tol_;
-
   /// Solver tolerance \f$\epsilon > 0\f$.
   Scalar target_tol_ = 1e-6;
 
   Scalar mu_init = 0.01;
   Scalar rho_init = 0.;
 
-  Scalar reg_min = 1e-9;
-  Scalar reg_max = 1e8;
-  Scalar xreg_ = reg_min;
+  //// Inertia-correcting heuristic
+
+  Scalar reg_min = 1e-10;
+  Scalar reg_max = 1e9;
+  Scalar reg_init = 1e-9;
+  Scalar reg_init_nonzero = 1e-4;
+  Scalar reg_inc_k = 8.;
+  Scalar reg_inc_critical = 100.;
+  Scalar reg_dec_k = 1. / 3.;
+
+  Scalar xreg_ = reg_init;
   Scalar ureg_ = xreg_;
 
-  const Scalar inner_tol0 = 1.;
-  const Scalar prim_tol0 = 1.;
+  //// Initial BCL tolerances
 
-  ::proxddp::BaseLogger logger{};
+  Scalar inner_tol0 = 1.;
+  Scalar prim_tol0 = 1.;
 
+  /// Logger
+  BaseLogger logger{};
+#ifndef NDEBUG
+  bool dump_linesearch_plot = false;
+#endif
+
+  /// Solver verbosity level.
   VerboseLevel verbose_;
+  /// Type of Hessian approximation. Default is Gauss-Newton.
+  HessianApprox hess_approx_ = HessianApprox::GAUSS_NEWTON;
   /// Linesearch options, as in proxnlp.
-  LSOptions ls_params;
+  LinesearchOptions ls_params;
+  /// Type of linesearch strategy. Default is Armijo.
   LinesearchStrategy ls_strat = LinesearchStrategy::ARMIJO;
-  MultiplierUpdateMode multiplier_update_mode =
-      MultiplierUpdateMode::PRIMAL_DUAL;
-  LinesearchMode ls_mode = LinesearchMode::PRIMAL_DUAL;
+  /// Type of Lagrange multiplier update.
+  MultiplierUpdateMode multiplier_update_mode = MultiplierUpdateMode::NEWTON;
+  /// Linesearch mode.
+  LinesearchMode ls_mode = LinesearchMode::PRIMAL;
+  /// Weight of the dual variables in the primal-dual linesearch.
+  Scalar dual_weight = 1.0;
+  /// Type of rollout for the forward pass.
+  RolloutType rollout_type_;
+  /// Parameters for the BCL outer loop of the augmented Lagrangian algorithm.
   BCLParams<Scalar> bcl_params;
 
-  /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.
-  std::size_t MAX_ITERS;
-  /// Maximum number of ALM iterations.
-  std::size_t MAX_AL_ITERS = MAX_ITERS;
+  /// Force the initial state @f$ x_0 @f$ to be fixed to the problem initial
+  /// condition.
+  bool is_x0_fixed_;
 
-  /// Minimum possible tolerance asked from the solver.
-  const Scalar TOL_MIN = 1e-8;
-  const Scalar MU_MIN = 1e-8;
+  /// @name Linear algebra options
+  /// \{
+  std::size_t MAX_REFINEMENT_STEPS = 5;
+  Scalar REFINEMENT_THRESHOLD = 1e-13;
+  /// Choice of factorization routine.
+  LDLTChoice ldlt_algo_choice_;
+  /// \}
+
+  /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.
+  std::size_t max_iters;
+  /// Maximum number of ALM iterations.
+  std::size_t max_al_iters = 100;
+
+  /// Minimum possible penalty parameter.
+  Scalar MU_MIN = 1e-8;
 
   /// Callbacks
   std::vector<CallbackPtr> callbacks_;
 
-  std::unique_ptr<Workspace> workspace_;
-  std::unique_ptr<Results> results_;
+  unique_ptr<Workspace> workspace_;
+  unique_ptr<Results> results_;
 
   Results &getResults() { return *results_; }
   Workspace &getWorkspace() { return *workspace_; }
 
   SolverProxDDP(const Scalar tol = 1e-6, const Scalar mu_init = 0.01,
                 const Scalar rho_init = 0., const std::size_t max_iters = 1000,
-                const VerboseLevel verbose = VerboseLevel::QUIET);
+                VerboseLevel verbose = VerboseLevel::QUIET,
+                HessianApprox hess_approx = HessianApprox::GAUSS_NEWTON);
 
-  /// @brief Compute the search direction.
+  /// @brief Compute the linear search direction, i.e. the (regularized) SQP
+  /// step.
   ///
   /// @pre This function assumes \f$\delta x_0\f$ has already been computed!
   /// @returns This computes the primal-dual step \f$(\delta \bfx,\delta
   /// \bfu,\delta\bmlam)\f$
-  void computeDirection(const Problem &problem, Workspace &workspace,
-                        const Results &results) const;
+  void linearRollout(const Problem &problem, Workspace &workspace,
+                     const Results &results) const;
 
   /// @brief    Try a step of size \f$\alpha\f$.
   /// @returns  A primal-dual trial point
   ///           \f$(\bfx \oplus\alpha\delta\bfx, \bfu+\alpha\delta\bfu,
   ///           \bmlam+\alpha\delta\bmlam)\f$
-  void tryStep(const Problem &problem, Workspace &workspace,
-               const Results &results, const Scalar alpha) const;
+  /// @returns  The trajectory cost.
+  Scalar forward_linear(const Problem &problem, Workspace &workspace,
+                        const Results &results, const Scalar alpha) const;
+
+  /// @brief    Policy rollout using the full nonlinear dynamics. The feedback
+  /// gains need to be computed first. This will evaluate all the terms in the
+  /// problem into the problem data, similar to TrajOptProblemTpl::evaluate().
+  /// @returns  The trajectory cost.
+  Scalar nonlinearRollout(const Problem &problem, Workspace &workspace,
+                          const Results &results, const Scalar alpha) const;
+
+  void compute_dir_x0(const Problem &problem, Workspace &workspace,
+                      const Results &results) const;
 
   /// @brief    Terminal node.
   void computeTerminalValue(const Problem &problem, Workspace &workspace,
@@ -133,7 +170,7 @@ public:
   /// @brief    Perform the Riccati backward pass.
   ///
   /// @pre  Compute the derivatives first!
-  void backwardPass(const Problem &problem, Workspace &workspace,
+  bool backwardPass(const Problem &problem, Workspace &workspace,
                     Results &results) const;
 
   /// @brief Allocate new workspace and results instances according to the
@@ -144,30 +181,15 @@ public:
 
   void computeProxTerms(const std::vector<VectorXs> &xs,
                         const std::vector<VectorXs> &us,
-                        Workspace &workspace) const {
-    const std::size_t nsteps = workspace.nsteps;
-    for (std::size_t i = 0; i < nsteps; i++) {
-      prox_penalties_[i].evaluate(xs[i], us[i], *workspace.prox_datas[i]);
-    }
-    prox_penalties_[nsteps].evaluate(xs[nsteps], us[nsteps - 1],
-                                     *workspace.prox_datas[nsteps]);
-  }
+                        Workspace &workspace) const;
 
   void computeProxDerivatives(const std::vector<VectorXs> &xs,
                               const std::vector<VectorXs> &us,
-                              Workspace &workspace) const {
-    const std::size_t nsteps = workspace.nsteps;
-    for (std::size_t i = 0; i < nsteps; i++) {
-      prox_penalties_[i].computeGradients(xs[i], us[i],
-                                          *workspace.prox_datas[i]);
-      prox_penalties_[i].computeHessians(xs[i], us[i],
-                                         *workspace.prox_datas[i]);
-    }
-    prox_penalties_[nsteps].computeGradients(xs[nsteps], us[nsteps - 1],
-                                             *workspace.prox_datas[nsteps]);
-    prox_penalties_[nsteps].computeHessians(xs[nsteps], us[nsteps - 1],
-                                            *workspace.prox_datas[nsteps]);
-  }
+                              Workspace &workspace) const;
+
+  /// Compute the Hamiltonian parameters at time @param t.
+  void updateHamiltonian(const Problem &problem, const Results &results,
+                         Workspace &workspace, const std::size_t) const;
 
   /// @brief Run the numerical solver.
   /// @param problem  The trajectory optimization problem to solve.
@@ -176,14 +198,13 @@ public:
   /// @param lams_init  Initial multiplier guess.
   /// @pre  You must call SolverProxDDP::setup beforehand to allocate a
   /// workspace and results.
-  bool run(const Problem &problem,
-           const std::vector<VectorXs> &xs_init = DEFAULT_VECTOR<Scalar>,
-           const std::vector<VectorXs> &us_init = DEFAULT_VECTOR<Scalar>,
-           const std::vector<VectorXs> &lams_init = DEFAULT_VECTOR<Scalar>);
+  bool run(const Problem &problem, const std::vector<VectorXs> &xs_init = {},
+           const std::vector<VectorXs> &us_init = {},
+           const std::vector<VectorXs> &lams_init = {});
 
   /// @brief    Perform the inner loop of the algorithm (augmented Lagrangian
   /// minimization).
-  void innerLoop(const Problem &problem, Workspace &workspace,
+  bool innerLoop(const Problem &problem, Workspace &workspace,
                  Results &results);
 
   /// @brief    Compute the primal infeasibility measures.
@@ -193,6 +214,30 @@ public:
   void computeInfeasibilities(const Problem &problem, Workspace &workspace,
                               Results &results) const;
 
+  void computeCriterion(const Problem &problem, Workspace &workspace,
+                        Results &results) const;
+
+  template <typename LDLT_t, typename OutType>
+  inline bool iterative_refine_impl(const LDLT_t &ldlt, const MatrixXs &mat,
+                                    const MatrixXs &rhs, MatrixXs &resdl,
+                                    OutType &Xout) const {
+    // attempt refining once
+    Xout = -rhs;
+    ldlt.solveInPlace(Xout);
+
+    for (std::size_t n = 0; n < MAX_REFINEMENT_STEPS; ++n) {
+      // kkt error = rhs + mat * Xout
+      resdl = rhs;
+      resdl.noalias() += mat * Xout;
+      Scalar err_norm = math::infty_norm(resdl);
+      if (err_norm < REFINEMENT_THRESHOLD)
+        return true;
+      ldlt.solveInPlace(resdl);
+      Xout -= resdl;
+    }
+    return false;
+  }
+
   /// @name callbacks
   /// \{
 
@@ -200,8 +245,9 @@ public:
   void registerCallback(const CallbackPtr &cb) { callbacks_.push_back(cb); }
 
   /// @brief    Remove all callbacks from the instance.
-  void clearCallbacks() { callbacks_.clear(); }
+  void clearCallbacks() noexcept { callbacks_.clear(); }
 
+  /// @brief    Invoke callbacks.
   void invokeCallbacks(Workspace &workspace, Results &results) {
     for (auto &cb : callbacks_) {
       cb->call(workspace, results);
@@ -211,117 +257,64 @@ public:
 
   /// Evaluate the ALM/pdALM multiplier estimates.
   void computeMultipliers(const Problem &problem, Workspace &workspace,
-                          const std::vector<VectorXs> &lams,
-                          bool update_jacobians = false) const {
-    ;
-    using CstrSet = ConstraintSetBase<Scalar>;
-    using ProblemData = TrajOptDataTpl<Scalar>;
-    const std::size_t nsteps = workspace.nsteps;
-    ProblemData &pd = workspace.problem_data;
+                          const std::vector<VectorXs> &lams) const;
 
-    std::vector<VectorXs> &lams_plus = workspace.lams_plus;
-    std::vector<VectorXs> &lams_pdal = workspace.lams_pdal;
-
-    {
-      const VectorXs &lam0 = lams[0];
-      const VectorXs &plam0 = workspace.prev_lams[0];
-      shared_ptr<CstrSet> cstr =
-          std::make_shared<proxnlp::EqualityConstraint<Scalar>>();
-      FunctionData &data = pd.getInitData();
-      auto expr = plam0 + mu_inv() * data.value_;
-      cstr->normalConeProjection(expr, lams_plus[0]);
-      lams_pdal[0] = 2 * lams_plus[0] - lam0;
-      if (update_jacobians)
-        cstr->applyNormalConeProjectionJacobian(expr, data.jac_buffer_);
-    }
-
-    if (problem.term_constraint_) {
-      const VectorXs &lamN = lams.back();
-      const VectorXs &plamN = workspace.prev_lams.back();
-      const Constraint &termcstr = problem.term_constraint_.get();
-      const CstrSet &cstr = *termcstr.set_;
-      FunctionData &data = *pd.term_cstr_data;
-      auto expr = plamN + mu_inv() * data.value_;
-      cstr.normalConeProjection(expr, lams_plus.back());
-      lams_pdal.back() = 2 * lams_plus.back() - lamN;
-      if (update_jacobians)
-        cstr.applyNormalConeProjectionJacobian(expr, data.jac_buffer_);
-    }
-
-    // loop over the stages
-    for (std::size_t i = 0; i < nsteps; i++) {
-      const StageModel &stage = *problem.stages_[i];
-      const StageData &sdata = pd.getStageData(i);
-      const ConstraintContainer<Scalar> &mgr = stage.constraints_;
-
-      // enumerate the constraints and perform projection
-      auto cstr_callback = [&](auto mgr, std::size_t k, const VectorXs &lami,
-                               const VectorXs &plami, VectorXs &lamplusi,
-                               VectorXs &lampdali) {
-        const auto lami_k = mgr.getConstSegmentByConstraint(lami, k);
-        const auto plami_k = mgr.getConstSegmentByConstraint(plami, k);
-        auto lamplus_k = mgr.getSegmentByConstraint(lamplusi, k);
-        auto lampdal_k = mgr.getSegmentByConstraint(lampdali, k);
-
-        const CstrSet &set = mgr.getConstraintSet(k);
-        FunctionData &data = *sdata.constraint_data[k];
-        auto expr = plami_k + mu_inv_scaled() * data.value_;
-        set.normalConeProjection(expr, lamplus_k);
-        lampdal_k = 2 * lamplus_k - lami_k;
-        if (update_jacobians)
-          set.applyNormalConeProjectionJacobian(expr, data.jac_buffer_);
-      };
-
-      for (std::size_t k = 0; k < mgr.numConstraints(); k++) {
-        cstr_callback(mgr, k, lams[i + 1], workspace.prev_lams[i + 1],
-                      workspace.lams_plus[i + 1], workspace.lams_pdal[i + 1]);
-      }
-    }
-  }
+  void projectJacobians(const Problem &problem, Workspace &workspace) const;
 
   /// @copydoc mu_penal_
-  inline Scalar mu() const { return mu_penal_; }
+  PROXDDP_INLINE Scalar mu() const { return mu_penal_; }
 
   /// @copydoc mu_inverse_
-  inline Scalar mu_inv() const { return mu_inverse_; }
+  PROXDDP_INLINE Scalar mu_inv() const { return mu_inverse_; }
 
-  /// Scaled penalty parameter.
-  Scalar mu_scaled() const { return this->mu(); }
+  /// @copydoc rho_penal_
+  PROXDDP_INLINE Scalar rho() const { return rho_penal_; }
+
+  //// Scaled variants
+
+  /// AL penalty scale factor for the dynamical constraints.
+  Scalar mu_dyn_scale = 1e-3;
+  /// AL penalty scale factor for stagewise constraints.
+  Scalar mu_stage_scale = 1.0;
+
+  /// Scaled penalty parameter, for stagewise constraints.
+  Scalar mu_scaled(std::size_t j) const {
+    if (j == 0)
+      return mu_dynamics();
+    return mu() * mu_stage_scale;
+  }
 
   /// Scaled inverse penalty parameter.
-  Scalar mu_inv_scaled() const { return 1. / mu_scaled(); }
+  PROXDDP_INLINE Scalar mu_inv_scaled(std::size_t j) const {
+    return 1. / mu_scaled(j);
+  }
 
-  Scalar rho() const { return rho_penal_; }
+  PROXDDP_INLINE Scalar mu_dynamics() const { return mu() * mu_dyn_scale; }
 
-protected:
   /// @brief  Put together the Q-function parameters and compute the Riccati
   /// gains.
-  inline void computeGains(const Problem &problem, Workspace &workspace,
+  inline bool computeGains(const Problem &problem, Workspace &workspace,
                            Results &results, const std::size_t step) const;
 
-  void updateTolerancesOnFailure() {
-    prim_tol_ = prim_tol0 * std::pow(mu_penal_, bcl_params.prim_alpha);
-    inner_tol_ = inner_tol0 * std::pow(mu_penal_, bcl_params.dual_alpha);
-  }
-
-  void updateTolerancesOnSuccess() {
-    prim_tol_ = prim_tol_ * std::pow(mu_penal_, bcl_params.prim_beta);
-    inner_tol_ = inner_tol_ * std::pow(mu_penal_, bcl_params.dual_beta);
-  }
+protected:
+  void updateTolerancesOnFailure();
+  void updateTolerancesOnSuccess();
 
   /// Set dual proximal/ALM penalty parameter.
-  void setPenalty(Scalar new_mu) {
+  inline void setPenalty(Scalar new_mu) noexcept {
     mu_penal_ = std::max(new_mu, MU_MIN);
     mu_inverse_ = 1. / new_mu;
   }
 
+  PROXDDP_INLINE void setRho(Scalar new_rho) noexcept { rho_penal_ = new_rho; }
+
   /// Update the dual proximal penalty according to BCL.
-  void bclUpdateALPenalty() {
+  PROXDDP_INLINE void bclUpdateALPenalty() noexcept {
     setPenalty(mu_penal_ * bcl_params.mu_update_factor);
   }
 
   /// Increase Tikhonov regularization.
-  void increase_reg() {
+  inline void increase_reg() {
     if (xreg_ == 0.) {
       xreg_ = reg_min;
     } else {
@@ -332,7 +325,7 @@ protected:
   }
 
   /// Decrease Tikhonov regularization.
-  void decrease_reg() {
+  inline void decrease_reg() {
     xreg_ *= 0.1;
     if (xreg_ < reg_min) {
       xreg_ = 0.;
@@ -342,12 +335,17 @@ protected:
 
 private:
   /// Dual proximal/ALM penalty parameter \f$\mu\f$
+  /// This is the global parameter: scales may be applied for stagewise
+  /// constraints, dynamicals...
   Scalar mu_penal_ = mu_init;
   /// Inverse ALM penalty parameter.
   Scalar mu_inverse_ = 1. / mu_penal_;
-
   /// Primal proximal parameter \f$\rho > 0\f$
   Scalar rho_penal_ = rho_init;
+  PDALFunction<Scalar> merit_fun;
+
+  using linesearch_t = proxnlp::ArmijoLinesearch<Scalar>;
+  unique_ptr<linesearch_t> linesearch_;
 };
 
 } // namespace proxddp

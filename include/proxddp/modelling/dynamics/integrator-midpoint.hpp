@@ -9,8 +9,6 @@ template <typename Scalar> struct IntegratorMidpointDataTpl;
 /**
  * @brief Midpoint integration rule.
  *
- * @todo finish implementing computeJacobians()
- *
  * @details The rule is described, for general DAEs, as
  *          \f[
  *             \phi(x_k, u_k, x_{k+1}) =

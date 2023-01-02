@@ -17,23 +17,25 @@ namespace proxddp {
 template <typename _Scalar>
 struct DynamicsModelTpl : StageFunctionTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXNLP_FUNCTION_TYPEDEFS(Scalar);
+  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageFunctionTpl<Scalar>;
-  using Base::ndx1;
-  using Base::ndx2;
-  using Base::nu;
-
   using Manifold = ManifoldAbstractTpl<Scalar>;
+  using ManifoldPtr = shared_ptr<Manifold>;
+
   /// State space for the input.
-  shared_ptr<Manifold> space_;
-  /// State space for the output of this dynamics model; by default, the same
-  /// space as the input.
-  shared_ptr<Manifold> space_next_ = space_;
+  ManifoldPtr space_;
+  /// State space for the output of this dynamics model.
+  ManifoldPtr space_next_;
 
   /// @copybrief space_
   const Manifold &space() const { return *space_; }
   /// @copybrief space_next_
   const Manifold &space_next() const { return *space_next_; }
+  /// @brief Check if this dynamics model is implicit or explicit.
+  virtual bool is_explicit() const { return false; }
+
+  inline int nx1() const { return space_->nx(); }
+  inline int nx2() const { return space_next_->nx(); }
 
   /**
    * @brief  Constructor for dynamics.
@@ -42,9 +44,7 @@ struct DynamicsModelTpl : StageFunctionTpl<_Scalar> {
    * @param   nu    Control dimension
    * @param   ndx2  Next state space dimension.
    */
-  DynamicsModelTpl(const shared_ptr<Manifold> &space, const int nu,
-                   const int ndx2)
-      : Base(space->ndx(), nu, ndx2, ndx2), space_(space) {}
+  DynamicsModelTpl(ManifoldPtr space, const int nu);
 
   /**
    * @copybrief DynamicsModelTpl This constructor assumes same dimension for the
@@ -53,8 +53,9 @@ struct DynamicsModelTpl : StageFunctionTpl<_Scalar> {
    * @param   space State space for the current, and next node.
    * @param   nu    Control dimension
    */
-  DynamicsModelTpl(const shared_ptr<Manifold> &space, const int nu)
-      : DynamicsModelTpl<Scalar>(space, nu, space->ndx()) {}
+  DynamicsModelTpl(ManifoldPtr space, const int nu, ManifoldPtr space2);
 };
 
 } // namespace proxddp
+
+#include "proxddp/core/dynamics.hxx"

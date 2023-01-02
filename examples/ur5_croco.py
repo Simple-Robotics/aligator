@@ -1,3 +1,8 @@
+"""
+Define a problem on UR5 using Crocoddyl, convert to proxddp problem and solve using our FDDP.
+@Author  :   manifold
+@License :   (C)Copyright 2021-2022, INRIA
+"""
 import crocoddyl as croc
 import proxddp
 
@@ -29,12 +34,10 @@ target_frame: pin.SE3 = pin.SE3.Identity()
 target_frame.translation[:] = (-0.75, 0.1, 0.5)
 
 # --- OCP hyperparams
-Tf = 1.2
+Tf = 0.6
 dt = 0.01
 nsteps = int(Tf / dt)
 tol = 1e-4
-mu_init = 0.001
-rho_init = 1e-7
 
 wt_x = 1e-5 * np.ones(rmodel.nv * 2)
 wt_x[nv:] = 2e-4
@@ -44,7 +47,7 @@ wt_frame = 8.0 * np.ones(6)
 wt_frame[3:] = 0.0
 
 # --- Reference solution (computed by prox @ nmsd)
-sol_ref = np.load("examples/urprox.npy", allow_pickle=True)[()]
+# sol_ref = np.load("examples/urprox.npy", allow_pickle=True)[()]
 
 # --- OCP
 state = croc.StateMultibody(rmodel)
@@ -105,13 +108,14 @@ solver.solve(init_xs, init_us, 300)
 
 # --- Results
 print(
-    f"""Results [
+    "Results {"
+    f"""
   converged  :  {solver.isFeasible and solver.stop<solver.th_stop},
   traj. cost :  {solver.cost},
   merit.value:  0,
   prim_infeas:  { sum([ sum(f**2) for f in solver.fs]) },
-  dual_infeas:  { np.max(np.array([ np.max(np.abs(q)) for q in solver.Qu])) },
-]"""
+  dual_infeas:  { np.max(np.array([ np.max(np.abs(q)) for q in solver.Qu])) }\n"""
+    "}"
 )
 
 xs_opt = solver.xs.tolist()
@@ -119,11 +123,16 @@ us_opt = solver.us.tolist()
 # np.save(open(f"urcroco.npy", "wb"),{'xs': xs_opt, 'us': us_opt})
 
 pb_prox = proxddp.croc.convertCrocoddylProblem(problem)
-fddp2 = proxddp.SolverFDDP(1e-6, verbose=proxddp.VerboseLevel.VERBOSE)
-fddp2.setup(pb_prox)
-conv = fddp2.run(pb_prox, init_xs, init_us)
-rs = fddp2.getResults()
-print("ourFDDP:", rs)
-print("cost", rs.traj_cost)
+verbose = proxddp.VerboseLevel.VERBOSE
+solver2 = proxddp.SolverFDDP(1e-6, verbose=verbose)
+mu_init = 1e-8
+rho_init = 1e-9
 
-print("cost_ours - cost_croc:", rs.traj_cost - solver.cost)
+# solver2 = proxddp.SolverProxDDP(tol / nsteps, mu_init, rho_init, verbose=verbose)
+solver2.setup(pb_prox)
+conv = solver2.run(pb_prox, init_xs, init_us)
+results = solver2.getResults()
+print("ourFDDP:", results)
+print("cost", results.traj_cost)
+
+print("cost_ours - cost_croc:", results.traj_cost - solver.cost)

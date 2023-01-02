@@ -20,7 +20,7 @@ struct IntegratorSemiImplEulerTpl : ExplicitIntegratorAbstractTpl<_Scalar> {
   using BaseData = ExplicitDynamicsDataTpl<Scalar>;
   using Data = IntegratorSemiImplDataTpl<Scalar>;
   using ODEType = ODEAbstractTpl<Scalar>;
-  using Base::next_state_;
+  using Base::space_next_;
 
   /// Integration time step \f$h\f$.
   Scalar timestep_;

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "proxddp/core/dynamics.hpp"
 #include "proxddp/core/explicit-dynamics.hpp"
 
 #include "proxddp/utils/newton-raphson.hpp"
@@ -12,49 +11,55 @@ namespace proxddp {
 
 namespace internal {
 
-struct __forward_dyn {
-  double EPS = 1e-6;
+struct __forward_dyn final {
+
   template <typename T>
-  void operator()(const DynamicsModelTpl<T> &model,
-                  const typename math_types<T>::ConstVectorRef &x,
-                  const typename math_types<T>::ConstVectorRef &u,
-                  DynamicsDataTpl<T> &data,
-                  typename math_types<T>::VectorRef xout,
-                  const std::size_t max_iters = 1000) const {
+  using ConstVectorRef = typename math_types<T>::ConstVectorRef;
+  template <typename T> using Vector = typename math_types<T>::VectorXs;
+
+  template <typename T>
+  void operator()(const DynamicsModelTpl<T> &model, const ConstVectorRef<T> &x,
+                  const ConstVectorRef<T> &u, DynamicsDataTpl<T> &data,
+                  Eigen::Ref<Vector<T>> xout,
+                  const std::size_t max_iters = 1000, Vector<T> *gap = 0,
+                  double EPS = 1e-6) const {
     using ExpModel = ExplicitDynamicsModelTpl<T>;
     using ExpData = ExplicitDynamicsDataTpl<T>;
-    const ExpModel *model_ptr_cast = dynamic_cast<const ExpModel *>(&model);
-    ExpData *data_ptr_cast = dynamic_cast<ExpData *>(&data);
-    const ManifoldAbstractTpl<T> &space = model.space();
-    bool is_model_explicit =
-        (model_ptr_cast != nullptr) && (data_ptr_cast != nullptr);
-    if (is_model_explicit) {
-      model_ptr_cast->forward(x, u, *data_ptr_cast);
-      xout = data_ptr_cast->xnext_;
+
+    if (model.is_explicit()) {
+      const auto &model_cast = static_cast<const ExpModel &>(model);
+      auto &data_cast = static_cast<ExpData &>(data);
+      (*this)(model_cast, x, u, data_cast, xout, max_iters, gap);
     } else {
-      using ConstVectorRef = typename math_types<T>::ConstVectorRef;
-      auto fun = [&](const ConstVectorRef &xnext) {
+      const auto fun = [&](const ConstVectorRef<T> &xnext) -> Vector<T> {
         model.evaluate(x, u, xnext, data);
-        return data.value_;
+        if (gap != 0) {
+          return data.value_ + *gap;
+        } else {
+          return data.value_;
+        }
       };
-      auto Jfun = [&](const ConstVectorRef &xnext) {
+
+      const auto Jfun = [&](const ConstVectorRef<T> &xnext) {
         model.computeJacobians(x, u, xnext, data);
         return data.Jy_;
       };
-      NewtonRaphson<T>::run(space, fun, Jfun, x, xout, EPS, max_iters);
+
+      NewtonRaphson<T>::run(model.space_next(), fun, Jfun, x, xout, EPS,
+                            max_iters);
     }
   }
 
-  /// Override; falls back to the standard behaviour.
   template <typename T>
   void operator()(const ExplicitDynamicsModelTpl<T> &model,
-                  const typename math_types<T>::ConstVectorRef &x,
-                  const typename math_types<T>::ConstVectorRef &u,
-                  ExplicitDynamicsDataTpl<T> &data,
-                  typename math_types<T>::VectorRef xout,
-                  const std::size_t) const {
+                  const ConstVectorRef<T> &x, const ConstVectorRef<T> &u,
+                  ExplicitDynamicsDataTpl<T> &data, Eigen::Ref<Vector<T>> xout,
+                  const std::size_t = 0, Vector<T> *gap = 0) const {
     model.forward(x, u, data);
     xout = data.xnext_;
+    if (gap != 0) {
+      model.space_next().integrate(xout, *gap, xout);
+    }
   }
 };
 
@@ -67,7 +72,7 @@ struct __forward_dyn {
  * dynamics type then this function will use the
  * ExplicitDynamicsModelTpl::forward() method.
  */
-inline constexpr internal::__forward_dyn forwardDynamics{};
+constexpr internal::__forward_dyn forwardDynamics{};
 
 /// @brief Perform a rollout of the supplied dynamical models.
 template <typename Scalar>
@@ -79,7 +84,7 @@ rollout(const std::vector<shared_ptr<DynamicsModelTpl<Scalar>>> &dyn_models,
   using Data = DynamicsDataTpl<Scalar>;
   const std::size_t N = us.size();
   if (dyn_models.size() != N) {
-    proxddp_runtime_error(
+    PROXDDP_RUNTIME_ERROR(
         "Number of controls should be the same as number of dynamical models!");
   }
   xout.resize(N + 1);
@@ -128,7 +133,7 @@ void rollout(
   xout.resize(N + 1);
   xout[0] = x0;
   if (dyn_models.size() != N) {
-    proxddp_runtime_error(
+    PROXDDP_RUNTIME_ERROR(
         fmt::format("Number of controls ({}) should be the same as number of "
                     "dynamical models ({})!",
                     N, dyn_models.size()));

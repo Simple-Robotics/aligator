@@ -30,7 +30,7 @@ struct finite_difference_impl;
 template <typename _Scalar>
 struct finite_difference_impl<_Scalar, TOC1>
     : virtual StageFunctionTpl<_Scalar> {
-  PROXNLP_FUNCTION_TYPEDEFS(_Scalar);
+  PROXNLP_DYNAMIC_TYPEDEFS(_Scalar);
   using Base = StageFunctionTpl<_Scalar>;
   using BaseData = FunctionDataTpl<_Scalar>;
 
@@ -44,13 +44,12 @@ struct finite_difference_impl<_Scalar, TOC1>
         fd_eps(fd_eps) {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                const ConstVectorRef &y, BaseData &data) const override {
+                const ConstVectorRef &y, BaseData &data) const {
     func.evaluate(x, u, y, data);
   }
 
   void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
-                        const ConstVectorRef &y,
-                        BaseData &data) const override {
+                        const ConstVectorRef &y, BaseData &data) const {
     VectorXs exi(func.ndx1);
     VectorXs xplus = x;
     VectorXs xminus = x;
@@ -131,7 +130,7 @@ struct finite_difference_wrapper<_Scalar, TOC1>
   using Base::computeVectorHessianProducts;
   using Base::evaluate;
 
-  PROXNLP_FUNCTION_TYPEDEFS(_Scalar);
+  PROXNLP_DYNAMIC_TYPEDEFS(_Scalar);
 
   finite_difference_wrapper(const ManifoldAbstractTpl<Scalar> &space,
                             const InputType &func, const Scalar fd_eps)

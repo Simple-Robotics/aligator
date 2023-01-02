@@ -1,6 +1,7 @@
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "proxddp/python/fwd.hpp"
 #include "proxddp/core/helpers-base.hpp"
-#include "proxddp/core/helpers/history-callback.hpp"
+#include "proxddp/helpers/history-callback.hpp"
 
 namespace proxddp {
 namespace python {
@@ -21,7 +22,8 @@ void exposeCallbacks() {
   bp::register_ptr_to_python<shared_ptr<callback_t>>();
 
   bp::class_<CallbackWrapper, shared_ptr<CallbackWrapper>, boost::noncopyable>(
-      "BaseCallback", "Base callback for solvers.", bp::init<>())
+      "BaseCallback", "Base callback for solvers.",
+      bp::init<>(bp::args("self")))
       .def("call", bp::pure_virtual(&CallbackWrapper::call),
            bp::args("self", "workspace", "results"));
 
@@ -32,7 +34,8 @@ void exposeCallbacks() {
     bp::scope in_history =
         bp::class_<helpers::history_callback<Scalar>, bp::bases<callback_t>>(
             "HistoryCallback", "Store the history of solver's variables.",
-            bp::init<bool, bool, bool>((bp::arg("store_pd_vars") = true,
+            bp::init<bool, bool, bool>((bp::arg("self"),
+                                        bp::arg("store_pd_vars") = true,
                                         bp::arg("store_values") = true,
                                         bp::arg("store_residuals") = true)))
             .def_readonly("storage",
@@ -49,6 +52,9 @@ void exposeCallbacks() {
         .def_readonly("al_iters", &history_storage_t::al_index)
         .def_readonly("prim_tols", &history_storage_t::prim_tols)
         .def_readonly("dual_tols", &history_storage_t::dual_tols);
+
+    StdVectorPythonVisitor<std::vector<context::VectorOfVectors>, true>::expose(
+        "StdVecVec_VectorXs", "std::vector of std::vector of Eigen::MatrixX.");
   }
 }
 } // namespace python

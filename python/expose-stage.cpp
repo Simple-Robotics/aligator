@@ -1,3 +1,5 @@
+/// @file
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "proxddp/python/fwd.hpp"
 
 #include "proxddp/core/stage-model.hpp"
@@ -13,38 +15,36 @@ make_constraint_wrap(const shared_ptr<context::StageFunction> &f,
 
 void exposeStage() {
   using context::ConstraintSet;
-  using context::DynamicsModel;
   using context::Manifold;
   using context::Scalar;
   using context::StageModel;
   using StageData = StageDataTpl<Scalar>;
 
   using CostPtr = shared_ptr<context::CostBase>;
+  using DynamicsPtr = shared_ptr<context::DynamicsModel>;
   using FunctionPtr = shared_ptr<context::StageFunction>;
-  using ManifoldPtr = shared_ptr<Manifold>;
   using CstrSetPtr = shared_ptr<ConstraintSet>;
 
-  pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<StageModel>>,
-                                true>::expose("StdVec_StageModel");
+  StdVectorPythonVisitor<std::vector<shared_ptr<StageModel>>, true>::expose(
+      "StdVec_StageModel");
 
-  bp::class_<StageModel, shared_ptr<StageModel>>(
+  bp::register_ptr_to_python<shared_ptr<StageModel>>();
+  bp::class_<StageModel>(
       "StageModel",
       "A stage of the control problem. Holds costs, dynamics, and constraints.",
-      bp::init<const ManifoldPtr &, const int, const ManifoldPtr &,
-               const CostPtr &, const shared_ptr<DynamicsModel> &>(
-          bp::args("self", "space1", "nu", "space2", "cost", "dyn_model")))
-      .def(bp::init<const ManifoldPtr &, const int, const CostPtr &,
-                    const shared_ptr<DynamicsModel> &>(
-          bp::args("self", "space", "nu", "cost", "dyn_model")))
+      bp::init<CostPtr, DynamicsPtr>(bp::args("self", "cost", "dyn_model")))
       .def<void (StageModel::*)(const context::StageConstraint &)>(
           "addConstraint", &StageModel::addConstraint,
           bp::args("self", "constraint"),
           "Add an existing constraint to the stage.")
-      .def<void (StageModel::*)(const FunctionPtr &, const CstrSetPtr &)>(
+      .def<void (StageModel::*)(FunctionPtr, CstrSetPtr)>(
           "addConstraint", &StageModel::addConstraint,
           bp::args("self", "func", "cstr_set"),
           "Constructs a new constraint (from the underlying function and set) "
           "and adds it to the stage.")
+      .def("getConstraint", &StageModel::getConstraint,
+           bp::return_internal_reference<>(), bp::args("self", "j"),
+           "Get the j-th constraint.")
       .add_property("xspace",
                     bp::make_function(&StageModel::xspace,
                                       bp::return_internal_reference<>()),
@@ -83,14 +83,16 @@ void exposeStage() {
       .def(PrintableVisitor<StageModel>());
 
   bp::register_ptr_to_python<shared_ptr<StageData>>();
-  pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<StageData>>,
-                                true>::expose("StdVec_StageData");
+  StdVectorPythonVisitor<std::vector<shared_ptr<StageData>>, true>::expose(
+      "StdVec_StageData");
 
   bp::class_<StageData>("StageData", "Data struct for StageModel objects.",
                         bp::init<const StageModel &>())
       .def_readonly("cost_data", &StageData::cost_data)
       .def_readwrite("constraint_data", &StageData::constraint_data)
       .def(ClonePythonVisitor<StageData>());
+
+  // STAGE CONSTRAINT
 
   bp::class_<context::StageConstraint>(
       "StageConstraint",
@@ -104,8 +106,8 @@ void exposeStage() {
                                 bp::args("func", "cstr_set")),
            "Contruct a StageConstraint from a StageFunction and a constraint "
            "set.")
-      .def_readwrite("func", &context::StageConstraint::func_)
-      .def_readwrite("cstr_set", &context::StageConstraint::set_);
+      .def_readwrite("func", &context::StageConstraint::func)
+      .def_readwrite("set", &context::StageConstraint::set);
 }
 
 } // namespace python

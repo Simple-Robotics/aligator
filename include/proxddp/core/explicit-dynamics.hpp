@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
 #include "proxddp/core/dynamics.hpp"
@@ -18,26 +19,18 @@ template <typename _Scalar>
 struct ExplicitDynamicsModelTpl : DynamicsModelTpl<_Scalar> {
 public:
   using Scalar = _Scalar;
-  PROXNLP_FUNCTION_TYPEDEFS(Scalar);
+  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = DynamicsModelTpl<Scalar>;
   using BaseData = DynamicsDataTpl<Scalar>;
   using Data = ExplicitDynamicsDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
+  using ManifoldPtr = shared_ptr<Manifold>;
 
-  shared_ptr<Manifold> next_state_;
-  int nx2;
+  bool is_explicit() const { return true; }
 
-  /// The constructor requires providing the next state's manifold.
-  ExplicitDynamicsModelTpl(const int ndx1, const int nu,
-                           const shared_ptr<Manifold> &next_state);
-  /// Constructor with current (same as next) state space, and control space
-  /// dimension.
-  ExplicitDynamicsModelTpl(const shared_ptr<Manifold> &next_state,
-                           const int nu);
+  /// Constructor requires providing the next state's manifold.
+  ExplicitDynamicsModelTpl(ManifoldPtr next_state, const int nu);
   virtual ~ExplicitDynamicsModelTpl() = default;
-
-  /// @return Reference to output state space.
-  const Manifold &out_space() const { return *next_state_; }
 
   /// @brief Evaluate the forward discrete dynamics.
   void virtual forward(const ConstVectorRef &x, const ConstVectorRef &u,
@@ -62,7 +55,7 @@ template <typename _Scalar>
 struct ExplicitDynamicsDataTpl : FunctionDataTpl<_Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
-  PROXNLP_FUNCTION_TYPEDEFS(Scalar);
+  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = FunctionDataTpl<Scalar>;
   using Base::Ju_;
   using Base::Jx_;
@@ -71,9 +64,6 @@ struct ExplicitDynamicsDataTpl : FunctionDataTpl<_Scalar> {
   VectorXs xnext_;
   VectorXs dx_;
   MatrixXs Jtmp_xnext;
-
-  VectorRef xnextref_;
-  VectorRef dxref_;
 
   ExplicitDynamicsDataTpl(const int ndx1, const int nu, const int nx2,
                           const int ndx2);

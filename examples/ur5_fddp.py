@@ -50,7 +50,7 @@ stages = []
 Tf = 1.0
 nsteps = int(Tf / timestep)
 for i in range(nsteps):
-    st = proxddp.StageModel(space, nu, rcost, discrete_dyn)
+    st = proxddp.StageModel(rcost, discrete_dyn)
     stages.append(st)
 
 wx_term = np.eye(3) * 6.0
@@ -79,21 +79,17 @@ results = solver.getResults()
 assert results.conv
 print(results)
 
-vizer = pin.visualize.MeshcatVisualizer(
-    rmodel, robot.collision_model, robot.visual_model, data=rdata
-)
-vizer.initViewer(open=args.display, loadModel=True)
-viz_util = msu.VizUtil(vizer)
-q0 = pin.neutral(rmodel)
-vizer.display(q0)
-viz_util.draw_objective(p_ref)
-
-# try resolve
-solver.run(problem, xs_init, us_init)
-assert solver.getResults().conv
-
 if args.display:
+    vizer = pin.visualize.MeshcatVisualizer(
+        rmodel, robot.collision_model, robot.visual_model, data=rdata
+    )
+    vizer.initViewer(open=args.display, loadModel=True)
+    viz_util = msu.VizUtil(vizer)
+    q0 = pin.neutral(rmodel)
+    vizer.display(q0)
+    viz_util.draw_objective(p_ref)
     viz_util.set_cam_angle_preset("preset1")
+
     input("[press enter]")
     for _ in range(3):
         viz_util.play_trajectory(

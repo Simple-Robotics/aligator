@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "proxddp/python/fwd.hpp"
 
 #include "proxddp/modelling/dynamics/multibody-free-fwd.hpp"
@@ -11,16 +12,30 @@ void exposeFreeFwdDynamics() {
   using ODEAbstract = ODEAbstractTpl<Scalar>;
   using MultibodyFreeFwdData = MultibodyFreeFwdDataTpl<Scalar>;
   using MultibodyFreeFwdDynamics = MultibodyFreeFwdDynamicsTpl<Scalar>;
+  using proxnlp::MultibodyPhaseSpace;
+
+  using StateManifoldPtr = shared_ptr<MultibodyPhaseSpace<Scalar>>;
 
   bp::class_<MultibodyFreeFwdDynamics, bp::bases<ODEAbstract>>(
       "MultibodyFreeFwdDynamics",
       "Free-space forward dynamics on multibodies using Pinocchio's ABA "
       "algorithm.",
-      bp::init<const shared_ptr<proxnlp::MultibodyPhaseSpace<Scalar>> &,
-               const context::MatrixXs &>(
+      bp::init<StateManifoldPtr, const context::MatrixXs &>(
+          "Constructor where the actuation matrix is provided.",
           bp::args("self", "space", "actuation_matrix")))
+      .def(bp::init<StateManifoldPtr>(
+          "Constructor without actuation matrix (assumed to be the (nu,nu) "
+          "identity matrix).",
+          bp::args("self", "space")))
       .add_property("ntau", &MultibodyFreeFwdDynamics::ntau,
-                    "Torque dimension.");
+                    "Torque dimension.")
+      .add_property(
+          "isUnderactuated", &MultibodyFreeFwdDynamics::isUnderactuated,
+          "Whether the system is underactuated, i.e. if the actuation matrix "
+          "rank is lower than the acceleration vector's dimension.")
+      .add_property("actuationMatrixRank",
+                    &MultibodyFreeFwdDynamics::getActuationMatrixRank,
+                    "Get the rank of the actuation matrix.");
 
   bp::register_ptr_to_python<shared_ptr<MultibodyFreeFwdData>>();
 

@@ -1,5 +1,6 @@
 INPUT                   = @CMAKE_SOURCE_DIR@/doc \
                           @CMAKE_SOURCE_DIR@/include \
+                          @CMAKE_SOURCE_DIR@/python \
                           @CMAKE_SOURCE_DIR@/README.md
 
 RECURSIVE               = YES
@@ -19,9 +20,8 @@ ENABLE_PREPROCESSING    = YES
 MACRO_EXPANSION         = YES
 EXPAND_ONLY_PREDEF      = YES
 PREDEFINED              += EIGEN_MAKE_ALIGNED_OPERATOR_NEW \
-                           PROXNLP_FUNCTION_TYPEDEFS \
                            PROXNLP_DYNAMIC_TYPEDEFS \
-                           proxddp_runtime_error \
+                           PROXDDP_RUNTIME_ERROR \
                            PROXDDP_RAISE_IF_NAN
 
 FULL_PATH_NAMES         = YES
@@ -65,4 +65,3 @@ USE_MDFILE_AS_MAINPAGE  = README.md
 BUILTIN_STL_SUPPORT     = YES
 HAVE_DOT                = YES
 DOT_IMAGE_FORMAT        = SVG
-DOT_TRANSPARENT         = YES

@@ -18,7 +18,7 @@ void IntegratorEulerTpl<Scalar>::forward(
       static_cast<ODEDataTpl<Scalar> &>(*d.continuous_data);
   this->ode_->forward(x, u, cdata);
   d.dx_ = timestep_ * cdata.xdot_;
-  this->out_space().integrate(x, d.dx_, d.xnext_);
+  this->space_next().integrate(x, d.dx_, d.xnext_);
 }
 
 template <typename Scalar>
@@ -34,10 +34,10 @@ void IntegratorEulerTpl<Scalar>::dForward(
   this->ode_->dForward(x, u, cdata);
   d.Jx_ = timestep_ * cdata.Jx_; // ddx_dx
   d.Ju_ = timestep_ * cdata.Ju_; // ddx_du
-  this->out_space().JintegrateTransport(x, d.dx_, d.Jx_, 1);
-  this->out_space().JintegrateTransport(x, d.dx_, d.Ju_, 1);
+  this->space_next().JintegrateTransport(x, d.dx_, d.Jx_, 1);
+  this->space_next().JintegrateTransport(x, d.dx_, d.Ju_, 1);
 
-  this->out_space().Jintegrate(x, d.dx_, d.Jtmp_xnext, 0);
+  this->space_next().Jintegrate(x, d.dx_, d.Jtmp_xnext, 0);
   d.Jx_ += d.Jtmp_xnext;
 }
 } // namespace dynamics

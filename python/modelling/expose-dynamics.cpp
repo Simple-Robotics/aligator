@@ -1,41 +1,55 @@
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "proxddp/python/modelling/dynamics.hpp"
+#include "proxddp/python/eigen-member.hpp"
 
 #include "proxddp/modelling/linear-discrete-dynamics.hpp"
 
 namespace proxddp {
 namespace python {
 
+void exposeExplicitDynamics();
 void exposeDynamicsImplementations();
 
 void exposeDynamics() {
   using context::DynamicsModel;
-  using context::Manifold;
   using context::Scalar;
   using context::StageFunction;
   using ManifoldPtr = shared_ptr<context::Manifold>;
-  using context::ExplicitDynamics;
-  using internal::PyExplicitDynamics;
-  using internal::PyStageFunction;
 
-  using PyDynamicsModel = PyStageFunction<DynamicsModel>;
+  using PyDynamicsModel = internal::PyStageFunction<DynamicsModel>;
 
   bp::class_<PyDynamicsModel, bp::bases<StageFunction>, boost::noncopyable>(
       "DynamicsModel",
       "Dynamics models are specific ternary functions f(x,u,x') which map "
       "to the tangent bundle of the next state variable x'.",
-      bp::init<ManifoldPtr, const int, const int>(
-          bp::args("self", "space", "nu", "ndx2")))
-      .def(bp::init<ManifoldPtr, const int>(bp::args("self", "space", "nu")))
+      bp::init<ManifoldPtr, int>(bp::args("self", "space", "nu")))
+      .def(bp::init<ManifoldPtr, int, ManifoldPtr>(
+          bp::args("self", "space", "nu", "space2")))
+      .def_readonly("space", &DynamicsModel::space_)
+      .def_readonly("space_next", &DynamicsModel::space_next_)
+      .add_property("nx1", &DynamicsModel::nx1)
+      .add_property("nx2", &DynamicsModel::nx2)
+      .add_property("is_explicit", &DynamicsModel::is_explicit,
+                    "Return whether the current model is explicit.")
       .def(CreateDataPythonVisitor<DynamicsModel>());
+
+  exposeExplicitDynamics();
+  exposeDynamicsImplementations();
+}
+
+void exposeExplicitDynamics() {
+  using context::DynamicsModel;
+  using context::ExplicitDynamics;
+  using context::ExplicitDynData;
+  using internal::PyExplicitDynamics;
+
+  using PyDynamicsModel = internal::PyStageFunction<DynamicsModel>;
+  using ManifoldPtr = shared_ptr<context::Manifold>;
 
   bp::class_<PyExplicitDynamics<>, bp::bases<DynamicsModel>,
              boost::noncopyable>(
       "ExplicitDynamicsModel", "Base class for explicit dynamics.",
-      bp::init<const int, const int, const ManifoldPtr &>(
-          "Construtor with current state dimension, control dimension and "
-          "output state space.",
-          bp::args("self", "ndx1", "nu", "next_space")))
-      .def(bp::init<const ManifoldPtr &, const int>(
+      bp::init<ManifoldPtr, const int>(
           "Constructor with state space and control dimension.",
           bp::args("self", "space", "nu")))
       .def("forward", bp::pure_virtual(&ExplicitDynamics::forward),
@@ -43,32 +57,21 @@ void exposeDynamics() {
            "Call for forward discrete dynamics.")
       .def("dForward", bp::pure_virtual(&ExplicitDynamics::dForward),
            bp::args("self", "x", "u", "data"),
-           "Compute the derivatives of forward discrete dynamics.")
-      .add_property("space",
-                    bp::make_function(&ExplicitDynamics::out_space,
-                                      bp::return_internal_reference<>()),
-                    "Output space.");
+           "Compute the derivatives of forward discrete dynamics.");
 
-  pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<PyDynamicsModel>>,
-                                true>::expose("StdVec_Dynamics");
-  pinpy::StdVectorPythonVisitor<std::vector<shared_ptr<PyExplicitDynamics<>>>,
-                                true>::expose("StdVec_ExplicitDynamics");
+  StdVectorPythonVisitor<std::vector<shared_ptr<PyDynamicsModel>>,
+                         true>::expose("StdVec_Dynamics");
+  StdVectorPythonVisitor<std::vector<shared_ptr<PyExplicitDynamics<>>>,
+                         true>::expose("StdVec_ExplicitDynamics");
 
   bp::register_ptr_to_python<shared_ptr<context::ExplicitDynData>>();
 
-  bp::class_<context::ExplicitDynData, bp::bases<context::StageFunctionData>>(
+  bp::class_<ExplicitDynData, bp::bases<context::FunctionData>>(
       "ExplicitDynamicsData", "Data struct for explicit dynamics models.",
       bp::no_init)
-      .add_property(
-          "dx", bp::make_getter(&context::ExplicitDynData::dxref_,
-                                bp::return_value_policy<bp::return_by_value>()))
-      .add_property(
-          "xnext",
-          bp::make_getter(&context::ExplicitDynData::xnextref_,
-                          bp::return_value_policy<bp::return_by_value>()))
-      .def(PrintableVisitor<context::ExplicitDynData>());
-
-  exposeDynamicsImplementations();
+      .add_property("dx", make_getter_eigen_matrix(&ExplicitDynData::dx_))
+      .add_property("xnext", make_getter_eigen_matrix(&ExplicitDynData::xnext_))
+      .def(PrintableVisitor<ExplicitDynData>());
 }
 
 void exposeDynamicsImplementations() {

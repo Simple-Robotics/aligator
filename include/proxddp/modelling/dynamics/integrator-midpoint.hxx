@@ -11,7 +11,7 @@ IntegratorMidpointTpl<Scalar>::IntegratorMidpointTpl(
     const shared_ptr<ContinuousDynamics> &cont_dynamics, const Scalar timestep)
     : Base(cont_dynamics), timestep_(timestep) {
   if (timestep <= 0.) {
-    proxddp_runtime_error("Timestep must be positive!");
+    PROXDDP_RUNTIME_ERROR("Timestep must be positive!");
   }
 }
 
@@ -23,7 +23,7 @@ void IntegratorMidpointTpl<Scalar>::evaluate(
       static_cast<IntegratorMidpointDataTpl<Scalar> &>(data);
   const ContinuousDynamics &contdyn = *this->continuous_dynamics_;
   const Manifold &space = contdyn.space();
-  ContinuousDynamicsDataTpl<Scalar> *contdata = d.continuous_data.get();
+  auto &contdata = d.continuous_data;
   // define xdot = (y-x) / timestep
   space.difference(x, y, d.xdot_);
   d.dx1_ = d.xdot_ * 0.5;
@@ -43,7 +43,7 @@ void IntegratorMidpointTpl<Scalar>::computeJacobians(
       static_cast<IntegratorMidpointDataTpl<Scalar> &>(data);
   const ContinuousDynamics &contdyn = *this->continuous_dynamics_;
   const Manifold &space = contdyn.space();
-  ContinuousDynamicsDataTpl<Scalar> *contdata = d.continuous_data.get();
+  auto &contdata = d.continuous_data;
 
   auto dx = d.dx1_ * 2;
   // jacobians of xdot estimate

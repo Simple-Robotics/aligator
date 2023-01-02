@@ -21,7 +21,7 @@ def test_fddp_lqr():
     problem = proxddp.TrajOptProblem(x0, nu, space, cost)
     nsteps = 10
     for i in range(nsteps):
-        stage = proxddp.StageModel(space, nu, cost, dyn)
+        stage = proxddp.StageModel(cost, dyn)
         problem.addStage(stage)
 
     tol = 1e-6

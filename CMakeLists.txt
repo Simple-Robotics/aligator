@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.1)
 
 set(PROJECT_NAME proxddp)
 set(PROJECT_DESCRIPTION "A primal-dual augmented Lagrangian-type solver for nonlinear trajectory optimization.")
-set(PROJECT_URL "https://gitlab.inria.fr/wjallet/proxddp")
+set(PROJECT_URL "https://github.com/Simple-Robotics/proxddp")
 set(PROJECT_CUSTOM_HEADER_EXTENSION "hpp")
 set(PROJECT_USE_KEYWORD_LINK_LIBRARIES True)
 
@@ -35,9 +35,17 @@ else(WIN32)
   set(LINK create_symlink)
 endif(WIN32)
 
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "Setting build type to 'Release' as none was specified.")
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+  # Set the possible values of build type for cmake-gui
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
+
 # --- OPTIONS ----------------------------------------
 option(BUILD_PYTHON_INTERFACE "Build the Python bindings" ON)
 option(BUILD_WITH_VERSION_SUFFIX "Build libraries with version appended to suffix" OFF)
+option(USE_CUSTOM_LDLT "Use our custom LDLT solver" ON)
 
 # --- OPTIONAL DEPENDENCIES -------------------------
 option(BUILD_WITH_PINOCCHIO_SUPPORT "Build the library with support for Pinocchio" ON)
@@ -91,7 +99,7 @@ ADD_PROJECT_DEPENDENCY(Boost REQUIRED COMPONENTS ${BOOST_REQUIRED_COMPONENTS})
 
 if(BUILD_PYTHON_INTERFACE)
   set(PYTHON_COMPONENTS Interpreter Development.Module NumPy Development)
-  ADD_PROJECT_DEPENDENCY(eigenpy 2.7.10 REQUIRED)
+  ADD_PROJECT_DEPENDENCY(eigenpy 2.8.0 REQUIRED PKG_CONFIG_REQUIRES "eigenpy >= 2.8.0")
   set(PYLIB_NAME "py${PROJECT_NAME}")
   set(${PYLIB_NAME}_INSTALL_DIR ${PYTHON_SITELIB}/${PROJECT_NAME})
 
@@ -128,7 +136,8 @@ endif(BUILD_PYTHON_INTERFACE)
 
 ADD_PROJECT_DEPENDENCY(proxnlp 0.2.3 REQUIRED)
 
-set(LIB_SOURCES)
+set(LIB_SOURCES
+    src/utils/logger.cpp)
 
 file(GLOB_RECURSE LIB_HEADERS
      ${PROJECT_SOURCE_DIR}/include/proxddp/*.hpp
@@ -148,12 +157,22 @@ function(create_library)
   endif()
 
   if(BUILD_WITH_PINOCCHIO_SUPPORT)
-    add_definitions(-DWITH_PINOCCHIO_SUPPORT)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC -DPROXDDP_WITH_PINOCCHIO)
     target_link_libraries(${PROJECT_NAME} PUBLIC pinocchio::pinocchio)
   endif(BUILD_WITH_PINOCCHIO_SUPPORT)
+
+  if(USE_CUSTOM_LDLT)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC -DPROXDDP_CUSTOM_LDLT)
+  endif(USE_CUSTOM_LDLT)
+
+  if(BUILD_WITH_OPENMP_SUPPORT)
+    add_compile_definitions(PROXDDP_MULTITHREADING)
+    link_libraries(OpenMP::OpenMP_CXX)
+  endif(BUILD_WITH_OPENMP_SUPPORT)
+
   target_link_libraries(${PROJECT_NAME} PUBLIC proxnlp::proxnlp)
   target_link_libraries(${PROJECT_NAME} PUBLIC Boost::filesystem Boost::system Boost::serialization)
-  target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
+  target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt)
   target_include_directories(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:include>)
 
   foreach(headerFile ${LIB_HEADERS})
@@ -177,7 +196,7 @@ install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
 
 if(BUILD_CROCODDYL_COMPAT)
-  add_definitions(-DWITH_CROCODDYL_COMPAT)
+  target_compile_definitions(${PROJECT_NAME} PUBLIC -DWITH_CROCODDYL_COMPAT)
   add_subdirectory(include/proxddp/compat/crocoddyl)
 endif()
 

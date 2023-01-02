@@ -25,7 +25,6 @@ function(make_bindings)
   endif()
 
   target_link_libraries(${PYLIB_NAME} PUBLIC ${PROJECT_NAME} eigenpy::eigenpy)
-  target_link_libraries(${PYLIB_NAME} PRIVATE fmt::fmt)
   target_link_boost_python(${PYLIB_NAME} PUBLIC)
   install(TARGETS ${PYLIB_NAME}
           EXPORT ${TARGETS_EXPORT_NAME}

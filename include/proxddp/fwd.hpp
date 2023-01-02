@@ -5,7 +5,11 @@
 
 #include <proxnlp/fwd.hpp>
 
-/// Main package namespace.
+#ifdef PROXDDP_WITH_PINOCCHIO
+#include "pinocchio/container/boost-container-limits.hpp"
+#endif
+
+/// @brief  Main package namespace.
 namespace proxddp {
 /// TYPEDEFS FROM PROXNLP
 
@@ -16,6 +20,7 @@ using proxnlp::math_types;
 using proxnlp::ConstraintSetBase;
 using proxnlp::VerboseLevel;
 using std::shared_ptr;
+using std::unique_ptr;
 
 /// 1 BASE TYPES
 
@@ -46,10 +51,15 @@ template <typename Scalar> struct ExplicitDynamicsModelTpl;
 // fwd declaration of ExplicitDynamicsDataTpl
 template <typename Scalar> struct ExplicitDynamicsDataTpl;
 
+/* FUNCTION EXPRESSIONS */
+
+// fwd declaration of FunctionSliceXprTpl
+template <typename Scalar> struct FunctionSliceXprTpl;
+
 /* STAGE MODEL */
 
 // fwd StageModelTpl
-template <typename Scalar> class StageModelTpl;
+template <typename Scalar> struct StageModelTpl;
 
 template <typename Scalar> struct StageDataTpl;
 
@@ -82,3 +92,5 @@ template <typename Scalar> struct ResultsTpl;
 } // namespace proxddp
 
 #include "proxddp/math.hpp"
+#include "proxddp/macros.hpp"
+#include "proxddp/config.hpp"

@@ -4,16 +4,19 @@ import numpy as np
 import pinocchio as pin
 import meshcat_utils as msu
 import example_robot_data as erd
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 
-from proxddp import constraints, manifolds, dynamics
+from proxddp import constraints, manifolds, dynamics  # noqa
 from pinocchio.visualize import MeshcatVisualizer
 
-import tap
+from common import ArgsBase, get_endpoint_traj
 
 
-class Args(tap.Tap):
-    display: bool = False
-    record: bool = False
+class Args(ArgsBase):
+    plot: bool = True
+    fddp: bool = False
+    bounds: bool = False
 
     def process_args(self):
         if self.record:
@@ -27,15 +30,18 @@ print(args)
 
 robot = erd.load("ur5")
 rmodel: pin.Model = robot.model
+rdata: pin.Data = robot.data
 space = manifolds.MultibodyPhaseSpace(rmodel)
 
-vizer = MeshcatVisualizer(rmodel, robot.collision_model, robot.visual_model)
+vizer = MeshcatVisualizer(rmodel, robot.collision_model, robot.visual_model, data=rdata)
 vizer.initViewer(open=args.display, loadModel=True)
 viz_util = msu.VizUtil(vizer)
+viz_util.set_bg_color()
 
 
 x0 = space.neutral()
 
+ndx = space.ndx
 nq = rmodel.nq
 nv = rmodel.nv
 nu = nv
@@ -43,43 +49,49 @@ q0 = x0[:nq]
 
 vizer.display(q0)
 
-wt_x = 1e-5 * np.ones(space.ndx)
-wt_x[nv:] = 2e-4
-wt_x = np.diag(wt_x)
-wt_u = 5e-6 * np.eye(nu)
-wt_x_term = wt_x.copy()
-wt_frame = 8.0 * np.eye(6)
-wt_frame[3:] = 0.0
-print(wt_frame)
-
-
-idTool = rmodel.getFrameId("tool0")
-target_frame: pin.SE3 = pin.SE3.Identity()
-target_frame.translation[:] = (-0.75, 0.1, 0.5)
-print(target_frame)
-
-frame_fun = proxddp.FramePlacementResidual(space.ndx, nu, rmodel, target_frame, idTool)
-assert wt_frame.shape[0] == frame_fun.nr
-
 B_mat = np.eye(nu)
 
-Tf = 1.2
 dt = 0.01
+Tf = 100 * dt
 nsteps = int(Tf / dt)
 
-rcost_ = proxddp.CostStack(space.ndx, nu)
-rcost_.addCost(proxddp.QuadraticCost(wt_x, wt_u))
+ode = dynamics.MultibodyFreeFwdDynamics(space, B_mat)
+discrete_dynamics = dynamics.IntegratorSemiImplEuler(ode, dt)
 
-term_cost_ = proxddp.CostStack(space.ndx, nu)
-term_cost_.addCost(proxddp.QuadraticCost(wt_x_term, wt_u))
-term_cost_.addCost(proxddp.QuadraticResidualCost(frame_fun, wt_frame))
+wt_x = 1e-4 * np.ones(ndx)
+wt_x[nv:] = 1e-2
+wt_x = np.diag(wt_x)
+wt_u = 1e-4 * np.eye(nu)
 
-continuous_dynamics = dynamics.MultibodyFreeFwdDynamics(space, B_mat)
-discrete_dynamics = dynamics.IntegratorSemiImplEuler(continuous_dynamics, dt)
+
+tool_name = "tool0"
+tool_id = rmodel.getFrameId(tool_name)
+target_pos = np.array([0.15, 0.65, 0.5])
+print(target_pos)
+
+frame_fn = proxddp.FrameTranslationResidual(ndx, nu, rmodel, target_pos, tool_id)
+v_ref = pin.Motion()
+v_ref.np[:] = 0.0
+frame_vel_fn = proxddp.FrameVelocityResidual(ndx, nu, rmodel, v_ref, tool_id, pin.LOCAL)
+wt_x_term = wt_x.copy()
+wt_x_term[:] = 1e-4
+wt_frame_pos = 10.0 * np.eye(frame_fn.nr)
+wt_frame_vel = 100.0 * np.ones(frame_vel_fn.nr)
+wt_frame_vel = np.diag(wt_frame_vel)
+
+term_cost = proxddp.CostStack(ndx, nu)
+term_cost.addCost(proxddp.QuadraticCost(wt_x_term, wt_u * 0))
+term_cost.addCost(proxddp.QuadraticResidualCost(frame_fn, wt_frame_pos))
+term_cost.addCost(proxddp.QuadraticResidualCost(frame_vel_fn, wt_frame_vel))
 
 u_max = rmodel.effortLimit
 u_min = -u_max
-ctrl_box = proxddp.ControlBoxFunction(space.ndx, u_min, u_max)
+
+
+def make_control_bounds():
+    fun = proxddp.ControlErrorResidual(ndx, nu)
+    cstr_set = constraints.BoxConstraint(u_min, u_max)
+    return proxddp.StageConstraint(fun, cstr_set)
 
 
 def computeQuasistatic(model: pin.Model, x0, a):
@@ -94,28 +106,35 @@ init_us = [computeQuasistatic(rmodel, x0, a=np.zeros(nv)) for _ in range(nsteps)
 init_xs = proxddp.rollout(discrete_dynamics, x0, init_us)
 
 
-stages_ = []
+stages = []
 
 for i in range(nsteps):
-    stm = proxddp.StageModel(space, nu, rcost_, discrete_dynamics)
-    stm.addConstraint(ctrl_box, constraints.NegativeOrthant())
-    print("Stage {: 4d}: {}".format(i, stm))
+    rcost = proxddp.CostStack(ndx, nu)
+    rcost.addCost(proxddp.QuadraticCost(wt_x * dt, wt_u * dt))
 
-    stages_.append(stm)
+    stm = proxddp.StageModel(rcost, discrete_dynamics)
+    if args.bounds:
+        stm.addConstraint(make_control_bounds())
+    stages.append(stm)
 
 
-problem = proxddp.TrajOptProblem(x0, stages_, term_cost=term_cost_)
-tol = 1e-3
+problem = proxddp.TrajOptProblem(x0, stages, term_cost=term_cost)
+tol = 1e-7
 
-mu_init = 0.001
-rho_init = 1e-7
-
+mu_init = 1e-7
+rho_init = 0.0
+verbose = proxddp.VerboseLevel.VERBOSE
+max_iters = 40
 solver = proxddp.SolverProxDDP(
-    tol, mu_init, rho_init, verbose=proxddp.VerboseLevel.VERBOSE, max_iters=300
+    tol, mu_init, rho_init, max_iters=max_iters, verbose=verbose
 )
+solver.rollout_type = proxddp.ROLLOUT_NONLINEAR
 
+if args.fddp:
+    solver = proxddp.SolverFDDP(tol, verbose, max_iters=max_iters)
+cb = proxddp.HistoryCallback()
+solver.registerCallback(cb)
 solver.setup(problem)
-
 solver.run(problem, init_xs, init_us)
 
 
@@ -123,25 +142,90 @@ results = solver.getResults()
 print(results)
 
 xs_opt = results.xs.tolist()
-us_opt = results.us.tolist()
+us_opt = np.asarray(results.us.tolist())
 
 
-numrep = 3
-cp = [0.8, 0.8, 0.8]
-cps_ = [cp.copy() for _ in range(numrep)]
-cps_[1][1] = -0.4
-vidrecord = msu.VideoRecorder("examples/ur5_reach_ctrlbox.mp4", fps=1.0 / dt)
+times = np.linspace(0.0, Tf, nsteps + 1)
+
+fig: plt.Figure = plt.figure(constrained_layout=True)
+fig.set_size_inches(6.4, 6.4)
+
+gs = gridspec.GridSpec(2, 2, figure=fig, height_ratios=[1, 2])
+_u_ncol = 2
+_u_nrow, rmdr = divmod(nu, _u_ncol)
+if rmdr > 0:
+    _u_nrow += 1
+gs1 = gs[1, :].subgridspec(_u_nrow, _u_ncol)
+
+plt.subplot(gs[0, 0])
+plt.plot(times, xs_opt)
+plt.title("States")
+
+axarr = gs1.subplots(sharex=True)
+handles_ = []
+lss_ = []
+
+for i in range(nu):
+    ax: plt.Axes = axarr.flat[i]
+    (ls,) = ax.plot(times[1:], us_opt[:, i])
+    lss_.append(ls)
+    if args.bounds:
+        col = lss_[i].get_color()
+        hl = ax.hlines(
+            (u_min[i], u_max[i]), *times[[0, -1]], linestyles="--", colors=col
+        )
+        handles_.append(hl)
+    fontsize = 7
+    ax.set_ylabel("$u_{{%d}}$" % (i + 1), fontsize=fontsize)
+    ax.tick_params(axis="both", labelsize=fontsize)
+    ax.tick_params(axis="y", rotation=90)
+    if i + 1 == nu - 1:
+        ax.set_xlabel("time", loc="left", fontsize=fontsize)
+
+pts = get_endpoint_traj(rmodel, rdata, xs_opt, tool_id)
+
+ax = plt.subplot(gs[0, 1], projection="3d")
+ax.plot(*pts.T, lw=1.0)
+ax.scatter(*target_pos, marker="^", c="r")
+
+ax.set_xlabel("$x$")
+ax.set_ylabel("$y$")
+ax.set_zlabel("$z$")
+
+plt.figure()
+
+cb_store: proxddp.HistoryCallback.history_storage = cb.storage
+
+nrang = range(1, results.num_iters + 1)
+ax: plt.Axes = plt.gca()
+plt.plot(nrang, cb_store.prim_infeas, ls="--", marker=".", label="primal err")
+plt.plot(nrang, cb_store.dual_infeas, ls="--", marker=".", label="dual err")
+ax.set_xlabel("iter")
+ax.set_yscale("log")
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+
 if args.display:
-    input("[Press enter]")
+    import time
 
-    for i in range(numrep):
+    input("[Press enter]")
+    num_repeat = 3
+    cp = np.array([0.8, 0.8, 0.8])
+    cps_ = [cp.copy() for _ in range(num_repeat)]
+    cps_[1][1] = -0.4
+    vidrecord = msu.VideoRecorder("examples/ur5_reach_ctrlbox.mp4", fps=1.0 / dt)
+
+    for i in range(num_repeat):
         viz_util.set_cam_pos(cps_[i])
-        viz_util.draw_objective(target_frame.translation)
+        viz_util.draw_objective(target_pos)
         viz_util.play_trajectory(
             xs_opt,
             us_opt,
-            frame_ids=[idTool],
+            frame_ids=[tool_id],
             timestep=dt,
             record=args.record,
             recorder=vidrecord,
         )
+        time.sleep(0.5)

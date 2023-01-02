@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 /// @file function-abstract.hpp
 /// @brief  Base definitions for ternary functions.
 #pragma once
@@ -11,10 +12,12 @@
 namespace proxddp {
 
 /// @brief    Class representing ternary functions \f$f(x,u,x')\f$.
-template <typename _Scalar> struct StageFunctionTpl {
+template <typename _Scalar>
+struct StageFunctionTpl
+    : std::enable_shared_from_this<StageFunctionTpl<_Scalar>> {
 public:
   using Scalar = _Scalar;
-  PROXNLP_FUNCTION_TYPEDEFS(Scalar);
+  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Data = FunctionDataTpl<Scalar>;
 
   /// @brief Current state dimension
@@ -25,10 +28,10 @@ public:
   const int ndx2;
   /// @brief Function codimension
   const int nr;
-  const int nvar = ndx1 + nu + ndx2;
 
   StageFunctionTpl(const int ndx1, const int nu, const int ndx2, const int nr);
 
+  /// Constructor where ndx2 = ndx1.
   StageFunctionTpl(const int ndx, const int nu, const int nr);
 
   /**
@@ -82,19 +85,20 @@ public:
 /// @brief  Struct to hold function data.
 template <typename _Scalar>
 struct FunctionDataTpl : Cloneable<FunctionDataTpl<_Scalar>> {
-public:
   using Scalar = _Scalar;
-  PROXNLP_FUNCTION_TYPEDEFS(Scalar);
+  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   const int ndx1;
   const int nu;
   const int ndx2;
   const int nr;
+  /// @brief Total number of variables.
   const int nvar = ndx1 + nu + ndx2;
 
   /// Function value.
   VectorXs value_;
+  VectorRef valref_;
   /// Full Jacobian.
   MatrixXs jac_buffer_;
   /// Vector-Hessian product buffer.
@@ -115,8 +119,6 @@ public:
   MatrixRef Huy_;
   MatrixRef Hyy_;
 
-  VectorRef valref_;
-
   /// @brief Default constructor.
   FunctionDataTpl(const int ndx1, const int nu, const int ndx2, const int nr);
   virtual ~FunctionDataTpl() = default;
@@ -124,6 +126,17 @@ public:
   template <typename T>
   friend std::ostream &operator<<(std::ostream &oss,
                                   const FunctionDataTpl<T> &self);
+
+  shared_ptr<FunctionSliceXprTpl<Scalar>> operator[](const int idx) {
+    auto self_ptr = this->shared_from_this();
+    return std::make_shared<FunctionSliceXprTpl<Scalar>>(self_ptr, idx);
+  }
+
+  shared_ptr<FunctionSliceXprTpl<Scalar>>
+  operator[](const std::vector<int> indices) {
+    auto self_ptr = this->shared_from_this();
+    return std::make_shared<FunctionSliceXprTpl<Scalar>>(self_ptr, indices);
+  }
 };
 
 } // namespace proxddp

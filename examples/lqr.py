@@ -1,17 +1,15 @@
 import proxddp
-
-from proxddp import dynamics, manifolds
-from proxnlp import constraints
+import tap
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-import tap
-import pprint
+from proxddp import dynamics, constraints, manifolds
 
 
 class Args(tap.Tap):
-    use_term_cstr: bool = False
+    term_cstr: bool = False
+    bounds: bool = False
 
 
 args = Args().parse_args()
@@ -22,48 +20,59 @@ nx = 3
 nu = 3
 space = manifolds.VectorSpace(nx)
 x0 = space.neutral() + (0.2, 0.3, -0.1)
-x0 = np.clip(x0, -10, 10)
 
 A = np.eye(nx)
+A[0, 1] = -0.2
+A[1, 0] = 0.2
 B = np.eye(nx)[:, :nu]
 B[2, :] = 0.4
 c = np.zeros(nx)
+c[:] = (0.0, 0.0, 0.1)
 
-Qroot = np.random.randn(20, nx)
-Q = Qroot.T @ Qroot / 20 * 1e-2
+Q = 1e-2 * np.eye(nx)
 R = 1e-2 * np.eye(nu)
 
 Qf = np.eye(nx)
+if args.term_cstr:
+    Qf[:, :] = 0.0
 
 
-rcost = proxddp.QuadraticCost(Q, R)
-rcost = proxddp.CostStack(nx, nu, [rcost], [1.0])
+rcost0 = proxddp.QuadraticCost(Q, R)
+rcost = proxddp.CostStack(nx, nu, [rcost0], [1.0])
 term_cost = proxddp.QuadraticCost(Qf, R)
 dynmodel = dynamics.LinearDiscreteDynamics(A, B, c)
-stage = proxddp.StageModel(space, nu, rcost, dynmodel)
-u_min = -0.17 * np.ones(nu)
-u_max = +0.17 * np.ones(nu)
-ctrl_box = proxddp.ControlBoxFunction(nx, u_min, u_max)
-stage.addConstraint(ctrl_box, constraints.NegativeOrthant())
+stage = proxddp.StageModel(rcost, dynmodel)
+if args.bounds:
+    u_min = -0.15 * np.ones(nu)
+    u_max = +0.15 * np.ones(nu)
+    ctrl_fn = proxddp.ControlErrorResidual(nx, np.zeros(nu))
+    stage.addConstraint(ctrl_fn, constraints.BoxConstraint(u_min, u_max))
 
 
-nsteps = 10
+nsteps = 20
 problem = proxddp.TrajOptProblem(x0, nu, space, term_cost)
 
 for i in range(nsteps):
     problem.addStage(stage)
 
-if args.use_term_cstr:
-    xtar = 0.1 * np.ones(nx)
-    term_fun = proxddp.StateErrorResidual(space, nu, xtar)
+xtar = space.neutral()
+xtar2 = 0.1 * np.ones(nx)
+if args.term_cstr:
+    term_fun = proxddp.StateErrorResidual(space, nu, xtar2)
     problem.setTerminalConstraint(
         proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet())
     )
 
-mu_init = 1e-2
+mu_init = 1e-1
+rho_init = 0.0
 verbose = proxddp.VerboseLevel.VERBOSE
-solver = proxddp.SolverProxDDP(1e-6, mu_init, verbose=verbose)
-solver.max_iters = 100
+tol = 1e-6
+# solver = proxddp.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
+# solver.rollout_type = proxddp.ROLLOUT_NONLINEAR
+solver = proxddp.SolverFDDP(tol, verbose=verbose)
+his_cb = proxddp.HistoryCallback()
+solver.registerCallback(his_cb)
+solver.max_iters = 20
 
 u0 = np.zeros(nu)
 us_i = [u0] * nsteps
@@ -76,42 +85,61 @@ solver.run(problem, xs_i, us_i)
 res = solver.getResults()
 
 print(res)
-print("xs")
-pprint.pprint(res.xs.tolist())
-print("us")
-pprint.pprint(res.us.tolist())
 
 plt.subplot(121)
 lstyle = {"lw": 0.9, "marker": ".", "markersize": 5}
 trange = np.arange(nsteps + 1)
 plt.plot(res.xs, ls="-", **lstyle)
-if args.use_term_cstr:
+
+plt.hlines(
+    xtar,
+    *trange[[0, -1]],
+    ls="-",
+    lw=1.0,
+    colors="k",
+    alpha=0.4,
+    label=r"$x_\mathrm{tar}$"
+)
+if args.term_cstr:
     plt.hlines(
-        xtar,
+        xtar2,
         *trange[[0, -1]],
         ls="-",
         lw=1.0,
         colors="k",
         alpha=0.4,
-        label=r"$x_{tar}$"
+        label=r"$x_\mathrm{tar}$"
     )
-plt.legend()
 plt.xlabel("Time $i$")
+plt.title("State trajectory $x(t)$")
+plt.legend(frameon=False)
 
 plt.subplot(122)
 plt.plot(res.us, **lstyle)
-plt.hlines(
-    np.concatenate([u_min, u_max]),
-    *trange[[0, -1]],
-    ls="-",
-    colors="k",
-    lw=1.5,
-    alpha=0.2,
-    label=r"$\bar{u}$"
-)
+if args.bounds:
+    plt.hlines(
+        np.concatenate([u_min, u_max]),
+        *trange[[0, -1]],
+        ls="-",
+        colors="k",
+        lw=1.5,
+        alpha=0.2,
+        label=r"$\bar{u}$"
+    )
 plt.title("Controls $u(t)$")
-
-plt.legend()
-
+plt.legend(frameon=False)
 plt.tight_layout()
+
+
+plt.figure()
+prim_infeas = his_cb.storage.prim_infeas
+dual_infeas = his_cb.storage.dual_infeas
+plt.plot(prim_infeas)
+plt.plot(dual_infeas)
+ax = plt.gca()
+ax.set_yscale("log")
+ax.set_xlabel("Iter")
+ax.set_ylabel("Residuals")
+plt.tight_layout()
+
 plt.show()

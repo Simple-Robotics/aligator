@@ -16,13 +16,13 @@ struct MyModel : ExplicitDynamicsModelTpl<double> {
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                ExplicitData &data) const {
-    out_space().integrate(x, u, data.xnext_);
+    space_next().integrate(x, u, data.xnext_);
   }
 
   void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
                 ExplicitData &data) const {
-    out_space().Jintegrate(x, u, data.Jx_, 0);
-    out_space().Jintegrate(x, u, data.Ju_, 1);
+    space_next().Jintegrate(x, u, data.Jx_, 0);
+    space_next().Jintegrate(x, u, data.Ju_, 1);
   }
 };
 
@@ -62,7 +62,7 @@ struct MyFixture {
       : space(std::make_shared<Manifold>()), nx(space->nx()), nu(space->ndx()),
         dyn_model(std::make_shared<MyModel>(space)),
         cost(std::make_shared<MyCost>(nx, nu)),
-        stage(new StageModel(space, nu, cost, dyn_model)),
+        stage(std::make_shared<StageModel>(cost, dyn_model)),
         problem(space->neutral(), nu, space, cost) {
     problem.addStage(stage);
     problem.addStage(stage);

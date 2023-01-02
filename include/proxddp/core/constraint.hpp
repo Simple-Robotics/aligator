@@ -1,5 +1,6 @@
 /// @file constraint.hpp
 /// @brief Defines the constraint object for this library.
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
 #include "proxddp/core/function-abstract.hpp"
@@ -9,37 +10,38 @@ namespace proxddp {
 /// @brief Simple struct holding together a function and set, to describe a
 /// constraint.
 template <typename Scalar> struct StageConstraintTpl {
-  shared_ptr<StageFunctionTpl<Scalar>> func_;
-  shared_ptr<ConstraintSetBase<Scalar>> set_;
+  shared_ptr<StageFunctionTpl<Scalar>> func;
+  shared_ptr<ConstraintSetBase<Scalar>> set;
 };
 
 /// @brief Convenience class to manage a stack of constraints.
-template <typename Scalar> struct ConstraintContainer {
+template <typename Scalar> struct ConstraintStackTpl {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using ConstraintType = StageConstraintTpl<Scalar>;
-  ConstraintContainer() : cursors_({0}){};
+  ConstraintStackTpl() : indices_({0}){};
 
   std::size_t numConstraints() const { return storage_.size(); }
 
-  void push_back(const ConstraintType &el) {
-    assert(el.func_ != 0 && "member func can't be called with nullptr");
-    this->push_back(el, el.func_->nr);
+  inline void push_back(const ConstraintType &el) {
+    assert(el.func != 0 &&
+           "constraint must have non-null underlying function.");
+    assert(el.set != 0 && "constraint must have non-null underlying set.");
+    const long nr = el.func->nr;
+    push_back(el, nr);
   }
 
-  void push_back(const ConstraintType &el, const int nr) {
-    const int last_cursor = cursors_.back();
-    storage_.push_back(el);
-    cursors_.push_back(last_cursor + nr);
-    dims_.push_back(nr);
-    total_dim += nr;
-  }
+  void push_back(const ConstraintType &el, const long nr);
 
-  int getIndex(const std::size_t i) const { return cursors_[i]; }
+  long getIndex(const std::size_t j) const { return indices_[j]; }
 
-  int getDim(const std::size_t i) const { return dims_[i]; }
+  /// @brief Get the dimension of each the @p j-th constraint.
+  long getDim(const std::size_t j) const { return dims_[j]; }
 
-  const ConstraintSetBase<Scalar> &getConstraintSet(const std::size_t i) const {
-    return *this->storage_[i].set_;
+  /// @brief Get the set of dimensions for each constraint in the stack.
+  const std::vector<long> &getDims() const { return dims_; }
+
+  const ConstraintSetBase<Scalar> &getConstraintSet(const std::size_t j) const {
+    return *this->storage_[j].set;
   }
 
   /// Get corresponding segment of a vector corresponding
@@ -47,50 +49,52 @@ template <typename Scalar> struct ConstraintContainer {
   template <typename Derived>
   Eigen::VectorBlock<Derived, -1>
   getSegmentByConstraint(const Eigen::MatrixBase<Derived> &lambda,
-                         const std::size_t i) const {
+                         const std::size_t j) const {
     using MatrixType = Eigen::MatrixBase<Derived>;
     MatrixType &lam_cast = const_cast<MatrixType &>(lambda);
     assert(lambda.size() == totalDim());
-    return lam_cast.segment(getIndex(i), getDim(i));
+    return lam_cast.segment(getIndex(j), getDim(j));
   }
 
   template <typename Derived>
   Eigen::VectorBlock<const Derived, -1>
   getConstSegmentByConstraint(const Eigen::MatrixBase<Derived> &lambda,
-                              const std::size_t i) const {
+                              const std::size_t j) const {
     assert(lambda.size() == totalDim());
-    return lambda.segment(getIndex(i), getDim(i));
+    return lambda.segment(getIndex(j), getDim(j));
   }
 
   /// Get a row-wise block of a matrix by constraint index.
   template <typename Derived>
   Eigen::Block<Derived, -1, -1>
   getBlockByConstraint(const Eigen::MatrixBase<Derived> &J_,
-                       const std::size_t i) const {
-    using M = Eigen::MatrixBase<Derived>;
-    M &J = const_cast<M &>(J_);
+                       const std::size_t j) const {
+    using MatrixType = Eigen::MatrixBase<Derived>;
+    MatrixType &J = const_cast<MatrixType &>(J_);
     assert(J.rows() == totalDim());
-    return J.middleRows(getIndex(i), getDim(i));
+    return J.middleRows(getIndex(j), getDim(j));
   }
 
-  int totalDim() const { return total_dim; }
+  long totalDim() const { return total_dim; }
 
   /// Get the i-th constraint.
-  ConstraintType &operator[](std::size_t i) {
-    assert((i < this->storage_.size()) && "i exceeds number of constraints!");
-    return storage_[i];
+  ConstraintType &operator[](std::size_t j) {
+    assert((j < this->storage_.size()) && "i exceeds number of constraints!");
+    return storage_[j];
   }
 
-  const ConstraintType &operator[](std::size_t i) const {
-    assert((i < this->storage_.size()) && "i exceeds number of constraints!");
-    return storage_[i];
+  const ConstraintType &operator[](std::size_t j) const {
+    assert((j < this->storage_.size()) && "i exceeds number of constraints!");
+    return storage_[j];
   }
 
 protected:
   std::vector<ConstraintType> storage_;
-  std::vector<int> cursors_;
-  std::vector<int> dims_;
-  int total_dim = 0;
+  std::vector<long> indices_;
+  std::vector<long> dims_;
+  long total_dim = 0;
 };
 
 } // namespace proxddp
+
+#include "proxddp/core/constraint.hxx"

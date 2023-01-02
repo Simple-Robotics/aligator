@@ -1,6 +1,5 @@
 #pragma once
 
-#include "proxddp/fwd.hpp"
 #include "proxddp/core/function-abstract.hpp"
 #include <proxnlp/modelling/spaces/vector-space.hpp>
 
@@ -27,8 +26,7 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
 
   /// @brief Constructor using the state space, control dimension and state
   /// target.
-  template <unsigned int N = arg,
-            typename = typename std::enable_if<N == 0 || N == 2>::type>
+  template <unsigned int N = arg, typename = std::enable_if_t<N == 0 || N == 2>>
   StateOrControlErrorResidual(const shared_ptr<Manifold> &xspace, const int nu,
                               const ConstVectorRef &target)
       : Base(xspace->ndx(), nu, xspace->ndx()), space_(xspace),
@@ -38,8 +36,7 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
    * @brief Constructor using the state space dimension, control manifold and
    *        control target.
    */
-  template <unsigned int N = arg,
-            typename = typename std::enable_if<N == 1>::type>
+  template <unsigned int N = arg, typename = std::enable_if_t<N == 1>>
   StateOrControlErrorResidual(const int ndx, const shared_ptr<Manifold> &uspace,
                               const ConstVectorRef &target)
       : Base(ndx, uspace->nx(), uspace->ndx()), space_(uspace),
@@ -49,14 +46,12 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
    * @brief Constructor using state space and control space dimensions,
    *        the control space is assumed to be Euclidean.
    */
-  template <unsigned int N = arg,
-            typename = typename std::enable_if<N == 1>::type>
+  template <unsigned int N = arg, typename = std::enable_if_t<N == 1>>
   StateOrControlErrorResidual(const int ndx, const ConstVectorRef &target)
       : StateOrControlErrorResidual(
             ndx, std::make_shared<VectorSpace>(target.size()), target) {}
 
-  template <unsigned int N = arg,
-            typename = typename std::enable_if<N == 1>::type>
+  template <unsigned int N = arg, typename = std::enable_if_t<N == 1>>
   StateOrControlErrorResidual(const int ndx, const int nu)
       : Base(ndx, nu, ndx, nu), space_(std::make_shared<VectorSpace>(nu)),
         target_(space_->neutral()) {}

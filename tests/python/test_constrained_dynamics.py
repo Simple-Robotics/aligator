@@ -284,7 +284,7 @@ def test_constrained_dynamics():
         ucost = proxddp.QuadraticResidualCost(u_err, w_u * dt)
         rcost.addCost(ucost)
 
-        stage = proxddp.StageModel(space, nu, rcost, discrete_dynamics)
+        stage = proxddp.StageModel(rcost, discrete_dynamics)
 
         stages.append(stage)
 
@@ -294,13 +294,13 @@ def test_constrained_dynamics():
 
     problem = proxddp.TrajOptProblem(x0, stages, term_cost=term_cost)
 
-    tol = 1e-6
-    mu_init = 0.1
+    tol = 1e-5
+    mu_init = 0.01
     verbose = proxddp.VerboseLevel.VERBOSE
-    rho_init = 0.003
+    rho_init = 0.001
     history_cb = proxddp.HistoryCallback()
     solver = proxddp.SolverProxDDP(
-        tol, mu_init, rho_init, verbose=verbose, max_iters=300
+        tol, mu_init, rho_init, verbose=verbose, max_iters=200
     )
     solver.registerCallback(history_cb)
     solver.setup(problem)

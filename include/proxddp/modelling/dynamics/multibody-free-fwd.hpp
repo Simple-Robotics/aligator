@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
 #include "proxddp/modelling/dynamics/ode-abstract.hpp"
@@ -31,14 +32,30 @@ struct MultibodyFreeFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using Manifold = proxnlp::MultibodyPhaseSpace<Scalar>;
   using ManifoldPtr = shared_ptr<Manifold>;
 
+  using Base::nu_;
+
   ManifoldPtr space_;
   MatrixXs actuation_matrix_;
+  Eigen::FullPivLU<MatrixXs> lu_decomp;
 
   const Manifold &space() const { return *space_; }
   int ntau() const { return space_->getModel().nv; }
 
   MultibodyFreeFwdDynamicsTpl(const ManifoldPtr &state,
                               const MatrixXs &actuation);
+  MultibodyFreeFwdDynamicsTpl(const ManifoldPtr &state);
+
+  /**
+   * @brief  Determine whether the system is underactuated.
+   * @details This is the case when the actuation matrix rank is lower to the
+   * velocity dimension.
+   */
+  bool isUnderactuated() const {
+    long nv = space().getModel().nv;
+    return act_matrix_rank < nv;
+  }
+
+  Eigen::Index getActuationMatrixRank() const { return act_matrix_rank; }
 
   virtual void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                        BaseData &data) const;
@@ -46,6 +63,9 @@ struct MultibodyFreeFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
                         BaseData &data) const;
 
   shared_ptr<ContDataAbstract> createData() const;
+
+private:
+  Eigen::Index act_matrix_rank;
 };
 
 template <typename Scalar> struct MultibodyFreeFwdDataTpl : ODEDataTpl<Scalar> {

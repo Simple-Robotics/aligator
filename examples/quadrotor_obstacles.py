@@ -19,8 +19,6 @@ from proxnlp import constraints
 
 from common import ArgsBase
 
-
-np.set_printoptions(precision=3, linewidth=250)
 robot = erd.load("hector")
 rmodel = robot.model
 rdata = robot.data
@@ -29,32 +27,33 @@ nv = rmodel.nv
 
 
 class Args(ArgsBase):
-    integrator = "euler"
-    u_bounds: bool = True
+    integrator = "semieuler"
+    bounds: bool = False
     """Use control bounds"""
-    plot: bool = False
-    viz_open: bool = False
-    obstacles: bool = False
+    plot: bool = False  # Plot the trajectories
+    display: bool = False
+    obstacles: bool = False  # Obstacles in the environment
+    random: bool = False
+    term_cstr: bool = False
+    fddp: bool = False
 
     def process_args(self):
         if self.record:
             self.display = True
 
 
-class HalfspaceZ(proxddp.StageFunction):
-    def __init__(self, ndx, nu, offset: float = 0.0, neg: bool = False) -> None:
-        super().__init__(ndx, nu, 1)
-        self.ndx = ndx
-        self.offset = offset
-        self.sign = -1.0 if neg else 1.0
-
-    def evaluate(self, x, u, y, data):
-        res = self.sign * (x[2] - self.offset)
-        data.value[:] = res
-
-    def computeJacobians(self, x, u, y, data):
-        data.Jx[2] = self.sign
-        data.Ju[:] = 0.0
+def create_halfspace_z(ndx, nu, offset: float = 0.0, neg: bool = False):
+    r"""
+    Constraint :math:`z \geq offset`.
+    """
+    root_frame_id = 1
+    p_ref = np.zeros(3)
+    frame_fun = proxddp.FrameTranslationResidual(ndx, nu, rmodel, p_ref, root_frame_id)
+    A = np.array([[0.0, 0.0, 1.0]])
+    b = np.array([-offset])
+    sign = -1.0 if neg else 1.0
+    frame_fun_z = proxddp.LinearFunctionComposition(frame_fun, sign * A, sign * b)
+    return frame_fun_z
 
 
 class Column(proxddp.StageFunction):
@@ -88,9 +87,9 @@ def main(args: Args):
 
     if args.obstacles:  # we add the obstacles to the geometric model
         R = np.eye(3)
-        cyl_radius = 0.2
+        cyl_radius = 0.22
         cylinder = fcl.Cylinder(cyl_radius, 10.0)
-        center_column1 = np.array([-0.5, 0.8, 0.0])
+        center_column1 = np.array([-0.45, 0.8, 0.0])
         geom_cyl1 = pin.GeometryObject(
             "column1", 0, 0, pin.SE3(R, center_column1), cylinder
         )
@@ -107,11 +106,11 @@ def main(args: Args):
     robot.collision_model.geometryObjects[0].geometry.computeLocalAABB()
     quad_radius = robot.collision_model.geometryObjects[0].geometry.aabb_radius
 
-    viewer = meshcat.Visualizer(zmq_url="tcp://127.0.0.1:6000")
+    viewer = meshcat.Visualizer()
     vizer = pin.visualize.MeshcatVisualizer(
         rmodel, robot.collision_model, robot.visual_model, data=rdata
     )
-    vizer.initViewer(viewer, open=args.viz_open, loadModel=True)
+    vizer.initViewer(viewer, loadModel=True)
     vizer.displayCollisions(True)
 
     space = manifolds.MultibodyPhaseSpace(rmodel)
@@ -134,7 +133,7 @@ def main(args: Args):
     ode_dynamics = proxddp.dynamics.MultibodyFreeFwdDynamics(space, QUAD_ACT_MATRIX)
 
     dt = 0.033
-    Tf = 2.0
+    Tf = 1.5
     nsteps = int(Tf / dt)
     print("nsteps: {:d}".format(nsteps))
 
@@ -161,14 +160,16 @@ def main(args: Args):
         translation = np.random.uniform([-1.5, 0.0, 0.2], [2.0, 2.0, 1.0], 3)
         feas = is_feasible(translation, centers, radius, margin)
         while not feas:
-            translation[:2] = np.random.uniform([-1.0, 0.0, 0.2], [2.0, 2.0, 1.0], 3)
+            translation = np.random.uniform([-1.0, 0.0, 0.2], [2.0, 2.0, 1.0], 3)
             feas = is_feasible(translation, centers, radius, margin)
         return translation
 
     x0 = np.concatenate([robot.q0, np.zeros(nv)])
-    x0[:3] = sample_feasible_translation(
-        [center_column1, center_column2], cyl_radius, quad_radius
-    )
+    x0[2] = 0.18
+    if args.random and args.obstacles:
+        x0[:3] = sample_feasible_translation(
+            [center_column1, center_column2], cyl_radius, quad_radius
+        )
 
     tau = pin.rnea(rmodel, rdata, robot.q0, np.zeros(nv), np.zeros(nv))
     u0, _, _, _ = np.linalg.lstsq(QUAD_ACT_MATRIX, tau)
@@ -184,10 +185,10 @@ def main(args: Args):
     x_tar2 = space.neutral()
     x_tar2[:3] = (1.4, -0.6, 1.0)
     x_tar3 = space.neutral()
-    x_tar3[:3] = (-0.4, 2.6, 1.0)
+    x_tar3[:3] = (-0.1, 3.2, 1.0)
 
     u_max = u_lim * np.ones(nu)
-    u_min = -u_max
+    u_min = np.zeros(nu)
 
     times = np.linspace(0, Tf, nsteps + 1)
     idx_switch = int(0.7 * nsteps)
@@ -196,7 +197,7 @@ def main(args: Args):
     def make_task():
         if args.obstacles:
             weights = np.zeros(space.ndx)
-            weights[:3] = 1e-1
+            weights[:3] = 0.1
             weights[3:6] = 1e-2
             weights[nv:] = 1e-3
 
@@ -229,9 +230,13 @@ def main(args: Args):
 
         w_u = np.eye(nu) * 1e-2
 
-        ceiling = HalfspaceZ(space.ndx, nu, 2.0)
-        floor = HalfspaceZ(space.ndx, nu, 0.0, True)
+        ceiling = create_halfspace_z(space.ndx, nu, 2.0)
+        floor = create_halfspace_z(space.ndx, nu, 0.0, True)
         stages = []
+        if args.bounds:
+            u_identity_fn = proxddp.ControlErrorResidual(space.ndx, np.zeros(nu))
+            box_set = constraints.BoxConstraint(u_min, u_max)
+            ctrl_cstr = proxddp.StageConstraint(u_identity_fn, box_set)
 
         for i in range(nsteps):
 
@@ -248,16 +253,15 @@ def main(args: Args):
             ucost = proxddp.QuadraticResidualCost(u_err, w_u * dt)
             rcost.addCost(ucost)
 
-            stage = proxddp.StageModel(space, nu, rcost, dynmodel)
-            if args.u_bounds:
-                ctrl_box = proxddp.ControlBoxFunction(space.ndx, u_min, u_max)
-                stage.addConstraint(ctrl_box, constraints.NegativeOrthant())
+            stage = proxddp.StageModel(rcost, dynmodel)
+            if args.bounds:
+                stage.addConstraint(ctrl_cstr)
             if args.obstacles:  # add obstacles' constraints
                 column1 = Column(
-                    space.ndx, nu, center_column1[:2], cyl_radius, margin=quad_radius
+                    space.ndx, nu, center_column1[:2], cyl_radius, quad_radius
                 )
                 column2 = Column(
-                    space.ndx, nu, center_column2[:2], cyl_radius, margin=quad_radius
+                    space.ndx, nu, center_column2[:2], cyl_radius, quad_radius
                 )
                 stage.addConstraint(ceiling, constraints.NegativeOrthant())
                 stage.addConstraint(floor, constraints.NegativeOrthant())
@@ -268,36 +272,87 @@ def main(args: Args):
             sd = stage.createData()
             stage.evaluate(x0, u0, x1, sd)
 
-        term_cstr = proxddp.StageConstraint(
-            proxddp.StateErrorResidual(space, nu, x_tar),
-            constraints.EqualityConstraintSet(),
-        )
-        # stages[-1].addConstraint(term_cstr)
+        weights, x_tar = task_fun(nsteps)
+        if not args.term_cstr:
+            weights *= 10.0
         term_cost = proxddp.QuadraticResidualCost(
             proxddp.StateErrorResidual(space, nu, x_tar), np.diag(weights)
         )
         prob = proxddp.TrajOptProblem(x0, stages, term_cost=term_cost)
-        prob.setTerminalConstraint(term_cstr)
+        if args.term_cstr:
+            term_cstr = proxddp.StageConstraint(
+                proxddp.StateErrorResidual(space, nu, x_tar),
+                constraints.EqualityConstraintSet(),
+            )
+            prob.setTerminalConstraint(term_cstr)
         return prob
 
     _, x_term = task_fun(nsteps)
     problem = setup()
     tol = 1e-3
-    mu_init = 1e-1
-    rho_init = 1e-8
+    mu_init = 1e-2
+    rho_init = 1e-4
     verbose = proxddp.VerboseLevel.VERBOSE
     history_cb = proxddp.HistoryCallback()
-    solver = proxddp.SolverProxDDP(
-        tol, mu_init, rho_init, verbose=verbose, max_iters=300
-    )
+    solver = proxddp.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
+    solver.rollout_type = proxddp.ROLLOUT_NONLINEAR
+    if args.fddp:
+        solver = proxddp.SolverFDDP(tol, verbose=verbose)
+    solver.max_iters = 200
     solver.registerCallback(history_cb)
     solver.setup(problem)
     solver.run(problem, xs_init, us_init)
+    if args.display:
+        viz_util = msu.VizUtil(vizer)
+        viz_util.draw_plane(
+            8, 6, transform=meshcat.transformations.translation_matrix([0.0, 2.0, 0.0])
+        )
+        viz_util.set_bg_color()
+        if args.obstacles:
+            viz_util.draw_objectives([x_tar3], prefix="obj")
+        else:
+            viz_util.draw_objectives([x_tar1, x_tar2], prefix="obj")
+        vizer.viewer.open()
+    else:
+        viz_util = None
 
     results = solver.getResults()
+    workspace = solver.getWorkspace()
     print(results)
     xs_opt = results.xs.tolist()
     us_opt = results.us.tolist()
+
+    val_grad = [vp.Vx for vp in workspace.value_params]
+
+    def plot_costate_value() -> plt.Figure:
+        lams_stack = np.stack([la[: space.ndx] for la in results.lams]).T
+        costate_stack = lams_stack[:, 1 : nsteps + 1]
+        vx_stack = np.stack(val_grad).T[:, 1:]
+        plt.figure()
+        plt.subplot(131)
+        mmin = min(np.min(costate_stack), np.min(vx_stack))
+        mmax = max(np.max(costate_stack), np.max(vx_stack))
+        plt.imshow(costate_stack, vmin=mmin, vmax=mmax, aspect="auto")
+        plt.vlines(idx_switch, *plt.ylim(), colors="r", label="switch")
+        plt.legend()
+
+        plt.xlabel("Time $t$")
+        plt.ylabel("Dimension")
+        plt.title("Multipliers")
+        plt.subplot(132)
+        plt.imshow(vx_stack, vmin=mmin, vmax=mmax, aspect="auto")
+        plt.colorbar()
+        plt.xlabel("Time $t$")
+        plt.ylabel("Dimension")
+        plt.title("$\\nabla_xV$")
+
+        plt.subplot(133)
+        err = np.abs(costate_stack - vx_stack)
+        plt.imshow(err, cmap="Reds", aspect="auto")
+        plt.title("$\\lambda - V'_x$")
+        plt.colorbar()
+        plt.tight_layout()
+        return plt.gcf()
 
     def test_results():
         assert results.num_iters == 91
@@ -310,30 +365,36 @@ def main(args: Args):
 
     root_pt_opt = np.stack(xs_opt)[:, :3]
     if args.plot:
+
+        if len(results.lams) > 0:
+            plot_costate_value()
+
+        nplot = 3
         fig: plt.Figure = plt.figure(figsize=(9.6, 5.4))
-        ax0: plt.Axes = fig.add_subplot(131)
+        ax0: plt.Axes = fig.add_subplot(1, nplot, 1)
         ax0.plot(times[:-1], us_opt)
         ax0.hlines((u_min[0], u_max[0]), *times[[0, -1]], colors="k", alpha=0.3, lw=1.4)
         ax0.set_title("Controls")
         ax0.set_xlabel("Time")
-        ax1: plt.Axes = fig.add_subplot(132)
+        ax1: plt.Axes = fig.add_subplot(1, nplot, 2)
         ax1.plot(times, root_pt_opt)
         plt.legend(["$x$", "$y$", "$z$"])
         ax1.scatter([times_wp[-1]] * 3, x_term[:3], marker=".", c=["C0", "C1", "C2"])
-        ax2: plt.Axes = fig.add_subplot(133)
-        n_iter = list(range(len(history_cb.storage.prim_infeas.tolist())))
+        ax2: plt.Axes = fig.add_subplot(1, nplot, 3)
+        n_iter = np.arange(len(history_cb.storage.prim_infeas.tolist()))
         ax2.semilogy(
             n_iter[1:], history_cb.storage.prim_infeas.tolist()[1:], label="Primal err."
         )
         ax2.semilogy(n_iter, history_cb.storage.dual_infeas.tolist(), label="Dual err.")
         ax2.set_xlabel("Iterations")
         ax2.legend()
+
         fig.tight_layout()
         for ext in ["png", "pdf"]:
             fig.savefig("assets/{}.{}".format(TAG, ext))
+        plt.show()
 
     if args.display:
-        viz_util = msu.VizUtil(vizer)
         cam_dist = 2.0
         directions_ = [np.array([1.0, 1.0, 0.5])]
         directions_.append(np.array([1.0, -1.0, 0.8]))
@@ -344,10 +405,7 @@ def main(args: Args):
 
         vid_uri = "assets/{}.mp4".format(TAG)
         vid_recorder = msu.VideoRecorder(vid_uri, fps=1.0 / dt)
-        if args.obstacles:
-            viz_util.draw_objectives([x_tar3], prefix="obj")
-        else:
-            viz_util.draw_objectives([x_tar1, x_tar2], prefix="obj")
+        vid_recorder = None
 
         def get_callback(i: int):
             def _callback(t):
@@ -369,13 +427,10 @@ def main(args: Args):
                 record=args.record,
                 timestep=dt,
                 show_vel=True,
-                frame_sphere_size=quad_radius,
+                # frame_sphere_size=quad_radius,
                 recorder=vid_recorder,
                 post_callback=get_callback(i),
             )
-
-    if args.plot:
-        plt.show()
 
 
 if __name__ == "__main__":

@@ -10,11 +10,8 @@ namespace proxddp {
 namespace compat {
 namespace croc {
 
-/**
- * @brief Wraps a crocoddyl::StateAbstractTpl to a proxnlp manifold
- * (proxnlp::ManifoldAbstractTpl).
- *
- */
+/// @brief Wraps a crocoddyl::StateAbstractTpl to a proxnlp manifold
+/// (proxnlp::ManifoldAbstractTpl).
 template <typename _Scalar>
 struct StateWrapperTpl : ManifoldAbstractTpl<_Scalar> {
   using Scalar = _Scalar;

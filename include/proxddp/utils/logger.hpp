@@ -1,82 +1,94 @@
+/// @file
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include <algorithm>
+#include <array>
 #include <vector>
+#include <utility>
 #include <fmt/color.h>
 #include <fmt/ranges.h>
 
 namespace proxddp {
 
-const std::vector<std::string> BASIC_KEYS{"iter",     "step_size", "inner_crit",
-                                          "prim_err", "dual_err",  "xreg",
-                                          "dphi0",    "merit",     "dM"};
+using log_pair_t = std::pair<fmt::string_view, unsigned int>;
+static constexpr int NKEYS = 10;
+static const std::array<log_pair_t, NKEYS> BASIC_KEYS = {{{"iter", 4U},
+                                                          {"alpha", 10U},
+                                                          {"inner_crit", 10U},
+                                                          {"prim_err", 10U},
+                                                          {"dual_err", 10U},
+                                                          {"xreg", 10U},
+                                                          {"dphi0", 10U},
+                                                          {"merit", 10U},
+                                                          {"delta_M", 10U},
+                                                          {"al_iter", 4U}}};
 constexpr char int_format[] = "{: >{}d}";
 constexpr char sci_format[] = "{: > {}.{}e}";
 constexpr char dbl_format[] = "{: > {}.{}g}";
 
-struct LogRecord {
-  unsigned int iter;
-  double step_size;
-  double inner_crit;
-  double prim_err;
-  double dual_err;
-  double xreg;
-  double dphi0;
-  double merit;
-  double dM;
+template <typename T> struct LogRecordTpl {
+  unsigned long iter;
+  T step_size = 0.;
+  T inner_crit = 0.;
+  T prim_err = 0.;
+  T dual_err = 0.;
+  T xreg = 0.;
+  T dphi0 = 0.;
+  T merit = 0.;
+  T dM = 0.;
+  unsigned long al_iter = 0;
 };
+
+using LogRecord = LogRecordTpl<double>;
 
 /// @brief  A logging utility.
 struct BaseLogger {
-  unsigned int COL_WIDTH_0 = 4;
-  unsigned int COL_WIDTH = 10;
   bool active = true;
-  const std::string join_str = "｜";
+  const bool is_prox_;
+  const std::size_t print_outline_every = 25;
+  const char *join_str = "｜";
+  std::vector<std::string> v;
 
-  void start() {
-    if (!active)
-      return;
-    static constexpr char fstr[] = "{:^{}s}";
-    std::vector<std::string> v;
-    auto it = BASIC_KEYS.begin();
-    v.push_back(fmt::format(fstr, *it, COL_WIDTH_0));
-    for (it = BASIC_KEYS.begin() + 1; it != BASIC_KEYS.end(); ++it) {
-      v.push_back(fmt::format(fstr, *it, COL_WIDTH));
-    }
-    fmt::print(fmt::emphasis::bold, "{}\n", fmt::join(v, join_str));
-  }
+  BaseLogger(bool solver_is_prox = true);
 
-  template <typename T> void log(const T &values) {
-    if (!active)
-      return;
-    std::vector<std::string> v;
-    int sci_prec = 3;
-    int dbl_prec = 3;
-    using fmt::format;
-    if (values.iter % 25 == 0)
-      start();
-    v.push_back(format(int_format, values.iter, COL_WIDTH_0));
-    v.push_back(format(sci_format, values.step_size, COL_WIDTH, sci_prec));
-    v.push_back(format(sci_format, values.inner_crit, COL_WIDTH, sci_prec));
-    v.push_back(format(sci_format, values.prim_err, COL_WIDTH, sci_prec));
-    v.push_back(format(sci_format, values.dual_err, COL_WIDTH, sci_prec));
-    v.push_back(format(sci_format, values.xreg, COL_WIDTH, sci_prec));
-    v.push_back(format(sci_format, values.dphi0, COL_WIDTH, dbl_prec));
-    v.push_back(format(sci_format, values.merit, COL_WIDTH, sci_prec));
-    v.push_back(format(dbl_format, values.dM, COL_WIDTH, dbl_prec));
-
-    fmt::print("{}\n", fmt::join(v, join_str));
-  }
-
-  void finish(bool conv) {
-    if (!active)
-      return;
-    if (conv)
-      fmt::print(fmt::fg(fmt::color::dodger_blue), "Successfully converged.");
-    else
-      fmt::print(fmt::fg(fmt::color::red), "Convergence failure.");
-    fmt::print("\n");
-  }
+  void start();
+  template <typename T> void log(const LogRecordTpl<T> &values);
+  void finish(bool conv);
 };
+
+template <typename T> void BaseLogger::log(const LogRecordTpl<T> &values) {
+  if (!active)
+    return;
+  int sci_prec = 3;
+  int dbl_prec = 3;
+  using fmt::format;
+  if (values.iter % print_outline_every == 0)
+    start();
+  decltype(BASIC_KEYS)::const_iterator it = BASIC_KEYS.cbegin();
+  v.push_back(format(int_format, values.iter, it->second));
+  ++it;
+  v.push_back(format(sci_format, values.step_size, it->second, sci_prec));
+  ++it;
+  if (is_prox_)
+    v.push_back(format(sci_format, values.inner_crit, it->second, sci_prec));
+  ++it;
+  v.push_back(format(sci_format, values.prim_err, it->second, sci_prec));
+  ++it;
+  v.push_back(format(sci_format, values.dual_err, it->second, sci_prec));
+  ++it;
+  v.push_back(format(sci_format, values.xreg, it->second, sci_prec));
+  ++it;
+  v.push_back(format(sci_format, values.dphi0, it->second, dbl_prec));
+  ++it;
+  v.push_back(format(sci_format, values.merit, it->second, sci_prec));
+  ++it;
+  v.push_back(format(dbl_format, values.dM, it->second, dbl_prec));
+  ++it;
+  if (is_prox_)
+    v.push_back(format(int_format, values.al_iter, it->second));
+
+  fmt::print("{}\n", fmt::join(v, join_str));
+  v.clear();
+}
 
 } // namespace proxddp

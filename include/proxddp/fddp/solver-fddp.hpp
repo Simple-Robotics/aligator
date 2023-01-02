@@ -1,12 +1,11 @@
-/**
- * @page fddp_intro The FDDP algorithm
- * @htmlinclude fddp.html
- */
+/// @file
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+///
+/// @page fddp_intro The FDDP algorithm
+/// @htmlinclude fddp.html
 #pragma once
 
 #include "proxddp/core/solver-util.hpp"
-#include "proxddp/core/solver-results.hpp"
-#include "proxddp/core/linesearch.hpp"
 #include "proxddp/core/helpers-base.hpp"
 #include "proxddp/core/explicit-dynamics.hpp"
 
@@ -14,22 +13,21 @@
 #include "proxddp/fddp/workspace.hpp"
 #include "proxddp/fddp/linesearch.hpp"
 
-#include "proxddp/utils/exceptions.hpp"
 #include "proxddp/utils/logger.hpp"
 #include "proxddp/utils/rollout.hpp"
 
 #include <fmt/ostream.h>
 
-#include <Eigen/Cholesky>
-
-#define proxddp_fddp_warning(msg)                                              \
+/// @brief  A warning for the FDDP module.
+#define PROXDDP_FDDP_WARNING(msg)                                              \
   fmt::print(fmt::fg(fmt::color::yellow), "[SolverFDDP] ({}) warning: {}",     \
              __FUNCTION__, msg)
 
 namespace proxddp {
 
 /**
- * @brief The feasible DDP (FDDP) algorithm
+ * @brief   The feasible DDP (FDDP) algorithm, from Mastalli et al. (2020).
+ * @details The implementation very similar to Crocoddyl's SolverFDDP.
  *
  */
 template <typename Scalar> struct SolverFDDP {
@@ -41,8 +39,8 @@ template <typename Scalar> struct SolverFDDP {
   using Results = ResultsFDDPTpl<Scalar>;
   using Workspace = WorkspaceFDDPTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
-  using VParams = internal::value_storage<Scalar>;
-  using QParams = internal::q_storage<Scalar>;
+  using VParams = value_function<Scalar>;
+  using QParams = q_function<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using ExpModel = ExplicitDynamicsModelTpl<Scalar>;
   using ExpData = ExplicitDynamicsDataTpl<Scalar>;
@@ -67,23 +65,27 @@ template <typename Scalar> struct SolverFDDP {
   Scalar th_step_dec_ = 0.5;
   Scalar th_step_inc_ = 0.01;
 
-  LinesearchOptions<Scalar> ls_params;
+  typename Linesearch<Scalar>::Options ls_params;
 
   VerboseLevel verbose_;
   /// Maximum number of iterations for the solver.
-  std::size_t MAX_ITERS = 200;
+  std::size_t max_iters;
+
+  BaseLogger logger{false};
 
   /// Callbacks
   std::vector<CallbackPtr> callbacks_;
 
-  std::unique_ptr<Results> results_;
-  std::unique_ptr<Workspace> workspace_;
+  unique_ptr<Results> results_;
+  unique_ptr<Workspace> workspace_;
 
   SolverFDDP(const Scalar tol = 1e-6,
              VerboseLevel verbose = VerboseLevel::QUIET,
-             const Scalar reg_init = 1e-9);
+             const Scalar reg_init = 1e-9, const std::size_t max_iters = 200);
 
+  /// @brief  Get the solver results.
   const Results &getResults() const { return *results_; }
+  /// @brief  Get a const reference to the solver's workspace.
   const Workspace &getWorkspace() const { return *workspace_; }
 
   /// @brief Allocate workspace and results structs.
@@ -102,18 +104,21 @@ template <typename Scalar> struct SolverFDDP {
   static Scalar forwardPass(const Problem &problem, const Results &results,
                             Workspace &workspace, const Scalar alpha);
 
-  void computeDirectionalDerivatives(Workspace &workspace, Results &results,
-                                     Scalar &d1, Scalar &d2) const;
+  /**
+   * @brief     Pre-compute parts of the directional derivatives -- this is done
+   * before linesearch.
+   * @details   Inspired from Crocoddyl's own function,
+   * crocoddyl::SolverFDDP::updateExpectedImprovement
+   */
+  void updateExpectedImprovement(Workspace &workspace, Results &results) const;
 
   /**
-   * @brief    Correct the directional derivatives.
-   * @details  This will re-compute the gap between the results trajectory and
-   * the trial trajectory.
+   * @brief    Finish computing the directional derivatives -- this is done
+   * *within* linesearch.
+   * @details  Inspired from Crocoddyl's own function,
+   * crocoddyl::SolverFDDP::expectedImprovement
    */
-  static void directionalDerivativeCorrection(const Problem &problem,
-                                              Workspace &workspace,
-                                              Results &results, Scalar &d1,
-                                              Scalar &d2);
+  void expectedImprovement(Workspace &workspace, Scalar &d1, Scalar &d2) const;
 
   /**
    * @brief   Computes dynamical feasibility gaps.
@@ -121,29 +126,38 @@ template <typename Scalar> struct SolverFDDP {
    * well as the residual of initial condition. This function will compute the
    * forward dynamics at every step to compute the forward map $f(x_i, u_i)$.
    */
-  static Scalar computeInfeasibility(const Problem &problem,
+  inline Scalar computeInfeasibility(const Problem &problem,
                                      const std::vector<VectorXs> &xs,
-                                     const std::vector<VectorXs> &us,
-                                     Workspace &workspace);
+                                     Workspace &workspace) const;
 
   /// @brief   Perform the backward pass and compute Riccati gains.
-  void backwardPass(const Problem &problem, Workspace &workspace,
-                    Results &results) const;
+  void backwardPass(const Problem &problem, Workspace &workspace) const;
 
-  void increaseRegularization() {
+  /// @brief   Accept the gains computed in the last backwardPass().
+  /// @details This is called if the convergence check after computeCriterion()
+  /// did not exit.
+  PROXDDP_INLINE void acceptGains(const Workspace &workspace,
+                                  Results &results) const {
+    assert(workspace.kkt_rhs_bufs.size() == results.gains_.size());
+    PROXDDP_NOMALLOC_BEGIN;
+    results.gains_ = workspace.kkt_rhs_bufs;
+    PROXDDP_NOMALLOC_END;
+  }
+
+  inline void increaseRegularization() {
     xreg_ *= reg_inc_factor_;
     xreg_ = std::min(xreg_, reg_max_);
     ureg_ = xreg_;
   }
 
-  void decreaseRegularization() {
+  inline void decreaseRegularization() {
     xreg_ *= reg_dec_factor_;
     xreg_ = std::max(xreg_, reg_min_);
     ureg_ = xreg_;
   }
 
   /// @brief Compute the dual feasibility of the problem.
-  void computeCriterion(Workspace &workspace, Results &results);
+  inline Scalar computeCriterion(Workspace &workspace);
 
   /// @brief    Add a callback to the solver instance.
   void registerCallback(const CallbackPtr &cb) { callbacks_.push_back(cb); }
@@ -157,49 +171,13 @@ template <typename Scalar> struct SolverFDDP {
     }
   }
 
-  /**
-   * @brief   Perform a linear rollout recovering the Newton step.
-   * @details This is useful for debugging purposes.
-   */
-  static void linearRollout(const Problem &problem, Workspace &workspace,
-                            const Results &results) {
-    const auto &fs = workspace.feas_gaps_;
-    auto &dxs = workspace.dxs_;
-    auto &dus = workspace.dus_;
-    const Manifold &space = problem.stages_[0]->xspace();
-    dxs[0] = fs[0];
-    const std::size_t nsteps = workspace.nsteps;
-    for (std::size_t i = 0; i < nsteps; i++) {
-      const StageData &sd = workspace.problem_data.getStageData(i);
-      const ExpData &dd = stage_get_dynamics_data(sd);
-      auto ff = results.getFeedforward(i);
-      auto fb = results.getFeedback(i);
-      dus[i] = ff + fb * dxs[i];
-      dxs[i + 1] = fs[i + 1] + dd.Jx_ * dxs[i] + dd.Ju_ * dus[i];
-    }
-  }
-
-  bool run(const Problem &problem,
-           const std::vector<VectorXs> &xs_init = DEFAULT_VECTOR<Scalar>,
-           const std::vector<VectorXs> &us_init = DEFAULT_VECTOR<Scalar>);
-
-  static ExpData &stage_get_dynamics_data(StageDataTpl<Scalar> &sd) {
-    try {
-      return dynamic_cast<ExpData &>(*sd.constraint_data[0]);
-    } catch (const std::bad_cast &e) {
-      proxddp_runtime_error(
-          fmt::format("{}: failed to cast to ExplicitDynamicsData.", e.what()));
-    }
-  }
+  bool run(const Problem &problem, const std::vector<VectorXs> &xs_init = {},
+           const std::vector<VectorXs> &us_init = {});
 
   static const ExpData &
-  stage_get_dynamics_data(const StageDataTpl<Scalar> &sd) {
-    try {
-      return dynamic_cast<const ExpData &>(*sd.constraint_data[0]);
-    } catch (const std::bad_cast &e) {
-      proxddp_runtime_error(
-          fmt::format("{}: failed to cast to ExplicitDynamicsData.", e.what()));
-    }
+  stage_get_dynamics_data(const StageDataTpl<Scalar> &data) {
+    const DynamicsDataTpl<Scalar> &dd = data.dyn_data();
+    return static_cast<const ExpData &>(dd);
   }
 };
 

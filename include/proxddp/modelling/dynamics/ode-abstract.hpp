@@ -1,6 +1,7 @@
 #pragma once
 /// @file ode-abstract.hpp
 /// @brief Defines a class representing ODEs.
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
 #include "proxddp/modelling/dynamics/continuous-base.hpp"
 

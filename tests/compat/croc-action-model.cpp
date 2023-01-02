@@ -1,4 +1,5 @@
-#include "proxddp/compat/crocoddyl/action-model.hpp"
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+#include "proxddp/compat/crocoddyl/action-model-wrap.hpp"
 #include "proxddp/compat/crocoddyl/context.hpp"
 
 #include <crocoddyl/core/states/euclidean.hpp>
@@ -18,9 +19,9 @@ BOOST_AUTO_TEST_CASE(lqr) {
   using crocoddyl::ActionModelLQR;
   using pcroc::context::ActionDataWrapper;
   using pcroc::context::ActionModelWrapper;
-  std::size_t nx = 4;
-  std::size_t nu = 3;
-  crocoddyl::StateVector state(nx);
+  long nx = 4;
+  long nu = 3;
+  crocoddyl::StateVector state((std::size_t)nx);
   Eigen::VectorXd x0 = state.zero();
   Eigen::VectorXd x1 = state.rand();
   Eigen::VectorXd u0(nu);

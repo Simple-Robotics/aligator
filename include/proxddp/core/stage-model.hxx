@@ -1,48 +1,62 @@
+/// @file
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
 #include "proxddp/core/stage-model.hpp"
-
-#include <proxnlp/modelling/constraints/equality-constraint.hpp>
-
 #include "proxddp/utils/exceptions.hpp"
 
+#include <proxnlp/modelling/constraints/equality-constraint.hpp>
+#include <proxnlp/modelling/spaces/vector-space.hpp>
+
 namespace proxddp {
+
+namespace {
+
+using proxnlp::VectorSpaceTpl;
+template <typename T>
+shared_ptr<VectorSpaceTpl<T>> make_vector_space(const int n) {
+  return std::make_shared<VectorSpaceTpl<T>>(n);
+}
+
+} // namespace
 
 /* StageModelTpl */
 
 template <typename Scalar>
-StageModelTpl<Scalar>::StageModelTpl(const shared_ptr<Manifold> &space1,
-                                     const int nu,
-                                     const shared_ptr<Manifold> &space2,
-                                     const shared_ptr<Cost> &cost,
-                                     const shared_ptr<Dynamics> &dyn_model)
-    : xspace_(space1), xspace_next_(space2),
-      uspace_(std::make_shared<VectorSpace>(nu)), cost_(cost) {
+StageModelTpl<Scalar>::StageModelTpl(CostPtr cost, DynamicsPtr dyn_model)
+    : xspace_(dyn_model->space_), xspace_next_(dyn_model->space_next_),
+      uspace_(make_vector_space<Scalar>(dyn_model->nu)), cost_(cost) {
+
+  if (cost->nu != dyn_model->nu) {
+    PROXDDP_RUNTIME_ERROR(fmt::format("Control dimensions cost.nu ({:d}) and "
+                                      "dyn_model.nu ({;d}) are inconsistent.",
+                                      cost->nu, dyn_model->nu));
+  }
+
   using EqualitySet = proxnlp::EqualityConstraint<Scalar>;
   constraints_.push_back(
       Constraint{dyn_model, std::make_shared<EqualitySet>()});
 }
 
 template <typename Scalar>
-StageModelTpl<Scalar>::StageModelTpl(const shared_ptr<Manifold> &space,
-                                     const int nu, const shared_ptr<Cost> &cost,
-                                     const shared_ptr<Dynamics> &dyn_model)
-    : StageModelTpl(space, nu, space, cost, dyn_model) {}
+StageModelTpl<Scalar>::StageModelTpl(ManifoldPtr space, const int nu)
+    : xspace_(space), xspace_next_(space),
+      uspace_(make_vector_space<Scalar>(nu)) {}
 
 template <typename Scalar> inline int StageModelTpl<Scalar>::numPrimal() const {
   return this->nu() + this->ndx2();
 }
 
 template <typename Scalar> inline int StageModelTpl<Scalar>::numDual() const {
-  return constraints_.totalDim();
+  return (int)constraints_.totalDim();
 }
 
 template <typename Scalar>
 template <typename T>
 void StageModelTpl<Scalar>::addConstraint(T &&cstr) {
-  const int c_nu = cstr.func_->nu;
+  const int c_nu = cstr.func->nu;
   if (c_nu != this->nu()) {
-    proxddp_runtime_error(fmt::format(
+    PROXDDP_RUNTIME_ERROR(fmt::format(
         "Function has the wrong dimension for u: got {:d}, expected {:d}", c_nu,
         this->nu()));
   }
@@ -50,11 +64,10 @@ void StageModelTpl<Scalar>::addConstraint(T &&cstr) {
 }
 
 template <typename Scalar>
-void StageModelTpl<Scalar>::addConstraint(
-    const shared_ptr<StageFunctionTpl<Scalar>> &func,
-    const shared_ptr<ConstraintSetBase<Scalar>> &cstr_set) {
+void StageModelTpl<Scalar>::addConstraint(FunctionPtr func,
+                                          ConstraintSetPtr cstr_set) {
   if (func->nu != this->nu()) {
-    proxddp_runtime_error(fmt::format(
+    PROXDDP_RUNTIME_ERROR(fmt::format(
         "Function has the wrong dimension for u: got {:d}, expected {:d}",
         func->nu, this->nu()));
   }
@@ -68,7 +81,7 @@ void StageModelTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                      Data &data) const {
   for (std::size_t j = 0; j < numConstraints(); j++) {
     const Constraint &cstr = constraints_[j];
-    cstr.func_->evaluate(x, u, y, *data.constraint_data[j]);
+    cstr.func->evaluate(x, u, y, *data.constraint_data[j]);
   }
   cost_->evaluate(x, u, *data.cost_data);
 }
@@ -80,7 +93,7 @@ void StageModelTpl<Scalar>::computeDerivatives(const ConstVectorRef &x,
                                                Data &data) const {
   for (std::size_t j = 0; j < numConstraints(); j++) {
     const Constraint &cstr = constraints_[j];
-    cstr.func_->computeJacobians(x, u, y, *data.constraint_data[j]);
+    cstr.func->computeJacobians(x, u, y, *data.constraint_data[j]);
   }
   cost_->computeGradients(x, u, *data.cost_data);
   cost_->computeHessians(x, u, *data.cost_data);
@@ -119,11 +132,11 @@ template <typename Scalar>
 StageDataTpl<Scalar>::StageDataTpl(const StageModel &stage_model)
     : constraint_data(stage_model.numConstraints()),
       cost_data(stage_model.cost_->createData()) {
+  using Function = StageFunctionTpl<Scalar>;
   const std::size_t nc = stage_model.numConstraints();
   constraint_data.reserve(nc);
   for (std::size_t j = 0; j < nc; j++) {
-    const shared_ptr<StageFunctionTpl<Scalar>> &func =
-        stage_model.constraints_[j].func_;
+    const shared_ptr<Function> &func = stage_model.constraints_[j].func;
     constraint_data[j] = func->createData();
   }
 }

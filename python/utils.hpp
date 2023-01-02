@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include <proxnlp/python/utils/namespace.hpp>
 
 namespace proxddp {

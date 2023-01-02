@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "proxddp/python/fwd.hpp"
 #include "proxddp/python/utils.hpp"
 
@@ -19,6 +20,9 @@ BOOST_PYTHON_MODULE(pyproxddp) {
   bp::import("proxnlp");
 
   exposeFunctions();
+#ifdef PROXDDP_WITH_PINOCCHIO
+  exposePinocchioFunctions();
+#endif
   exposeCosts();
   exposeStage();
   exposeProblem();
@@ -27,7 +31,7 @@ BOOST_PYTHON_MODULE(pyproxddp) {
     exposeODEs();
     exposeDynamics();
 
-#ifdef WITH_PINOCCHIO_SUPPORT
+#ifdef PROXDDP_WITH_PINOCCHIO
     exposeFreeFwdDynamics();
     exposeConstraintFwdDynamics();
 #endif
@@ -35,11 +39,15 @@ BOOST_PYTHON_MODULE(pyproxddp) {
     exposeIntegrators();
   }
   exposeUtils();
+
   exposeSolvers();
   exposeCallbacks();
   exposeAutodiff();
 
 #ifdef WITH_CROCODDYL_COMPAT
-  exposeCrocoddylCompat();
+  {
+    bp::scope croc_ns = get_namespace("croc");
+    exposeCrocoddylCompat();
+  }
 #endif
 }

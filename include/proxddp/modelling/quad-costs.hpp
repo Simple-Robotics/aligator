@@ -4,28 +4,6 @@
 
 namespace proxddp {
 
-/// @brief Constant cost.
-template <typename _Scalar> struct ConstantCostTpl : CostAbstractTpl<_Scalar> {
-  using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-  using Base = CostAbstractTpl<Scalar>;
-  using CostData = CostDataAbstractTpl<Scalar>;
-
-  Scalar value_;
-  ConstantCostTpl(const int ndx, const int nu, const Scalar value)
-      : Base(ndx, nu), value_(value) {}
-  void evaluate(const ConstVectorRef &, const ConstVectorRef &,
-                CostData &data) const {
-    data.value_ = value_;
-  }
-
-  void computeGradients(const ConstVectorRef &, const ConstVectorRef &,
-                        CostData &) const {}
-
-  void computeHessians(const ConstVectorRef &, const ConstVectorRef &,
-                       CostData &) const {}
-};
-
 template <typename Scalar> struct QuadraticCostDataTpl;
 
 /// @brief Euclidean quadratic cost.
@@ -61,7 +39,7 @@ template <typename _Scalar> struct QuadraticCostTpl : CostAbstractTpl<_Scalar> {
                   Scalar(0.5) * u.dot(d.w_times_u_ + 2 * interp_u);
   }
 
-  void computeGradients(const ConstVectorRef &x, const ConstVectorRef &u,
+  void computeGradients(const ConstVectorRef &, const ConstVectorRef &,
                         CostData &data) const {
     Data &d = static_cast<Data &>(data);
     d.Lx_ = d.w_times_x_ + interp_x;
@@ -69,13 +47,12 @@ template <typename _Scalar> struct QuadraticCostTpl : CostAbstractTpl<_Scalar> {
   }
 
   void computeHessians(const ConstVectorRef &, const ConstVectorRef &,
-                       CostData &data) const {
-    data.Lxx_ = weights_x;
-    data.Luu_ = weights_u;
-  }
+                       CostData &) const {}
 
   shared_ptr<CostData> createData() const {
     auto data = std::make_shared<Data>(this->ndx, this->nu);
+    data->Lxx_ = weights_x;
+    data->Luu_ = weights_u;
     return data;
   }
 };

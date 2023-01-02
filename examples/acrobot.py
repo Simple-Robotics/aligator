@@ -48,7 +48,7 @@ nsteps = int(Tf / timestep)
 
 stages = []
 for i in range(nsteps):
-    stages.append(proxddp.StageModel(space, nu, cost, dyn_model))
+    stages.append(proxddp.StageModel(cost, dyn_model))
 
 problem = proxddp.TrajOptProblem(x0, stages, term_cost)
 term_cstr = proxddp.StageConstraint(
@@ -57,11 +57,12 @@ term_cstr = proxddp.StageConstraint(
 problem.setTerminalConstraint(term_cstr)
 
 tol = 1e-3
-mu_init = 1e-4
+mu_init = 1e-2
 rho_init = 1e-8
 solver = proxddp.SolverProxDDP(
     tol, mu_init=mu_init, rho_init=rho_init, verbose=proxddp.VerboseLevel.VERBOSE
 )
+solver.rollout_type = proxddp.ROLLOUT_NONLINEAR
 solver.setup(problem)
 
 us_init = [np.zeros(nu) for _ in range(nsteps)]
