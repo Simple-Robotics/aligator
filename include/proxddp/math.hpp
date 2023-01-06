@@ -60,12 +60,12 @@ template <typename T> void setZero(std::vector<T> &mats) {
 /// @param[out] output Triplet (n+, n0, n-) of number of positive, zero or
 /// negative eigenvalues.
 template <typename VectorType>
-void compute_inertia(const VectorType &v, unsigned int *output) {
+void compute_inertia(const VectorType &v, std::size_t *inertia) {
   static_assert(VectorType::ColsAtCompileTime == 1,
                 "VectorType should be a vector.");
-  unsigned int &numpos = output[0];
-  unsigned int &numzer = output[1];
-  unsigned int &numneg = output[2];
+  std::size_t &numpos = inertia[0];
+  std::size_t &numzer = inertia[1];
+  std::size_t &numneg = inertia[2];
   numpos = 0;
   numzer = 0;
   numneg = 0;

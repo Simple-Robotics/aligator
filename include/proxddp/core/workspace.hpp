@@ -6,6 +6,8 @@
 #include "proxddp/core/workspace-common.hpp"
 #include "proxddp/core/proximal-penalty.hpp"
 
+#include <array>
+
 #if PROXDDP_CUSTOM_LDLT
 #include <proxnlp/ldlt-allocator.hpp>
 #else
@@ -57,6 +59,8 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   std::vector<MatrixXs> kkt_rhs_;
   /// Linear system residual buffers: used for iterative refinement
   std::vector<MatrixXs> kkt_resdls_;
+  /// Inertia for KKT matrix checks.
+  std::array<std::size_t, 3> inertia;
 
 #ifndef PROXDDP_CUSTOM_LDLT
   using LDLT = Eigen::LDLT<MatrixXs, Eigen::Lower>;

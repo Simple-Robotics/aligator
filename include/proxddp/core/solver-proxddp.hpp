@@ -108,7 +108,7 @@ public:
 
   /// @name Linear algebra options
   /// \{
-  std::size_t MAX_REFINEMENT_STEPS = 5;
+  std::size_t max_refinement_steps_ = 5;
   Scalar REFINEMENT_THRESHOLD = 1e-13;
   /// Choice of factorization routine.
   LDLTChoice ldlt_algo_choice_;
@@ -217,26 +217,10 @@ public:
   void computeCriterion(const Problem &problem, Workspace &workspace,
                         Results &results) const;
 
-  template <typename LDLT_t, typename OutType>
-  inline bool iterative_refine_impl(const LDLT_t &ldlt, const MatrixXs &mat,
-                                    const MatrixXs &rhs, MatrixXs &resdl,
-                                    OutType &Xout) const {
-    // attempt refining once
-    Xout = -rhs;
-    ldlt.solveInPlace(Xout);
-
-    for (std::size_t n = 0; n < MAX_REFINEMENT_STEPS; ++n) {
-      // kkt error = rhs + mat * Xout
-      resdl = rhs;
-      resdl.noalias() += mat * Xout;
-      Scalar err_norm = math::infty_norm(resdl);
-      if (err_norm < REFINEMENT_THRESHOLD)
-        return true;
-      ldlt.solveInPlace(resdl);
-      Xout -= resdl;
-    }
-    return false;
-  }
+  template <typename LdltType, typename OutType>
+  bool iterative_refinement_impl(const LdltType &ldlt, const MatrixXs &mat,
+                                 const MatrixXs &rhs, MatrixXs &err,
+                                 OutType &Xout) const;
 
   /// @name callbacks
   /// \{

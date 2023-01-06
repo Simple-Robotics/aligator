@@ -46,7 +46,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
     kkt_rhs_.emplace_back(ntot, ndx1 + 1);
     stage_prim_infeas.emplace_back(1);
     ldlts_.emplace_back(
-        allocate_ldlt_from_sizes<Scalar>(nprim, {ndual}, ldlt_choice));
+        allocate_ldlt_from_sizes<Scalar>({ndx1}, {ndual}, ldlt_choice));
 
     lams_plus[0] = VectorXs::Zero(ndual);
     pd_step_[0] = VectorXs::Zero(ntot);
@@ -56,7 +56,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
-    const int ndx1 = stage.ndx1(), nu = stage.nu();
+    const int ndx1 = stage.ndx1();
+    const int nu = stage.nu();
     const int ndx2 = stage.ndx2();
     const int nprim = stage.numPrimal();
     const int ndual = stage.numDual();
@@ -69,7 +70,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
     kkt_mats_.emplace_back(ntot, ntot);
     kkt_rhs_.emplace_back(ntot, ndx1 + 1);
     ldlts_.emplace_back(allocate_ldlt_from_sizes<Scalar>(
-        nprim, stage.constraints_.getDims(), ldlt_choice));
+        {nprim}, stage.constraints_.getDims(), ldlt_choice));
     stage_prim_infeas.emplace_back(ncb);
 
     lams_plus[i + 1] = VectorXs::Zero(ndual);
@@ -95,7 +96,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
     kkt_rhs_.emplace_back(ntot, ndx1 + 1);
     stage_prim_infeas.emplace_back(1);
     ldlts_.emplace_back(
-        allocate_ldlt_from_sizes<Scalar>(nprim, {ndual}, ldlt_choice));
+        allocate_ldlt_from_sizes<Scalar>({nprim}, {ndual}, ldlt_choice));
 
     lams_plus.push_back(VectorXs::Zero(ndual));
     pd_step_.push_back(VectorXs::Zero(ndual));

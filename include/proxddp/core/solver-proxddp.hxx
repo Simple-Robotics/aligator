@@ -4,7 +4,6 @@
 #pragma once
 
 #include "proxddp/core/solver-proxddp.hpp"
-#include <array>
 
 namespace proxddp {
 
@@ -119,9 +118,12 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem,
     kkt_mat.bottomLeftCorner(ndual0, ndx0) = init_data.Jx_;
     kkt_mat.bottomRightCorner(ndual0, ndual0).diagonal().array() = -mu();
     typename Workspace::LDLT &ldlt = *workspace.ldlts_[0];
+    PROXDDP_NOMALLOC_END;
     ldlt.compute(kkt_mat);
-    iterative_refine_impl(ldlt, kkt_mat, kkt_rhs, workspace.kkt_resdls_[0],
-                          workspace.pd_step_[0]);
+    PROXDDP_NOMALLOC_BEGIN;
+
+    iterative_refinement_impl(ldlt, kkt_mat, kkt_rhs, workspace.kkt_resdls_[0],
+                              workspace.pd_step_[0]);
 
     const ProxData &proxdata = *workspace.prox_datas[0];
     workspace.stage_inner_crits(0) = math::infty_norm(kkt_rhs);
@@ -479,16 +481,15 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   /* Compute gains with LDLT */
   kkt_mat = kkt_mat.template selfadjointView<Eigen::Lower>();
   typename Workspace::LDLT &ldlt = *workspace.ldlts_[t + 1];
+  PROXDDP_NOMALLOC_END;
   ldlt.compute(kkt_mat);
+  PROXDDP_NOMALLOC_BEGIN;
 
   // check inertia
   {
-    std::array<unsigned int, 3> inertia;
-    math::compute_inertia(ldlt.vectorD(), inertia.data());
-    if (inertia[1] > 0U) {
-      return false;
-    }
-    if (inertia[2] != (unsigned)ndual) {
+    math::compute_inertia(ldlt.vectorD(), workspace.inertia.data());
+    if ((workspace.inertia[1] > 0U) ||
+        (workspace.inertia[2] != (std::size_t)ndual)) {
       return false;
     }
   }
@@ -496,7 +497,7 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   MatrixXs &gains = results.gains_[t];
   MatrixXs &resdl = workspace.kkt_resdls_[t + 1];
 
-  iterative_refine_impl(ldlt, kkt_mat, kkt_rhs, resdl, gains);
+  iterative_refinement_impl(ldlt, kkt_mat, kkt_rhs, resdl, gains);
 
   /* Value function */
   VParams &vp = workspace.value_params[t];
@@ -1021,6 +1022,43 @@ void SolverProxDDP<Scalar>::computeCriterion(const Problem &problem,
   }
   workspace.inner_criterion = math::infty_norm(workspace.stage_inner_crits);
   results.dual_infeas = math::infty_norm(workspace.stage_dual_infeas);
+}
+
+template <typename Scalar>
+template <typename LdltType, typename OutType>
+bool SolverProxDDP<Scalar>::iterative_refinement_impl(const LdltType &ldlt,
+                                                      const MatrixXs &mat,
+                                                      const MatrixXs &rhs,
+                                                      MatrixXs &err,
+                                                      OutType &Xout) const {
+  PROXDDP_NOMALLOC_END;
+  std::size_t it = 0;
+
+  Xout = -rhs;
+  ldlt.solveInPlace(Xout);
+
+  auto mat_sa_view = mat.template selfadjointView<Eigen::Lower>();
+
+  err = -rhs;
+  err.noalias() -= mat_sa_view * Xout;
+
+  while (math::infty_norm(err) > REFINEMENT_THRESHOLD) {
+
+    if (it >= max_refinement_steps_) {
+      return false;
+    }
+
+    ldlt.solveInPlace(err);
+    Xout += err;
+
+    // update residual
+    err = -rhs;
+    err.noalias() -= mat_sa_view * Xout;
+
+    it++;
+  }
+  PROXDDP_NOMALLOC_BEGIN;
+  return true;
 }
 
 } // namespace proxddp
