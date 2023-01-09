@@ -205,7 +205,9 @@ if(BUILD_PYTHON_INTERFACE)
 endif()
 
 add_subdirectory(examples)
-add_subdirectory(tests)
+IF(BUILD_TESTING)
+  add_subdirectory(tests)
+ENDIF()
 
 # --- PACKAGING ----------------------------------------------------------------
 macro(EXPORT_VARIABLE var_name var_value)
