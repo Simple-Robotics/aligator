@@ -40,11 +40,14 @@ make_bindings()
 
 # symlink the headers here
 
-file(MAKE_DIRECTORY
-     ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python
-     ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python/compat
-     ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python/modelling
-     ${CMAKE_CURRENT_BINARY_DIR}/examples)
+set(SYMLINKS
+    ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python
+    ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python/modelling
+    ${CMAKE_CURRENT_BINARY_DIR}/examples)
+IF(BUILD_CROCODDYL_COMPAT)
+    list(APPEND SYMLINKS ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python/compat)
+ENDIF()
+file(MAKE_DIRECTORY ${SYMLINKS})
 
 foreach(pyheader ${PY_HEADERS})
   string(REGEX REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" pyheader ${pyheader})
