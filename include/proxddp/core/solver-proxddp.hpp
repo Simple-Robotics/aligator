@@ -150,15 +150,35 @@ public:
   ///           \f$(\bfx \oplus\alpha\delta\bfx, \bfu+\alpha\delta\bfu,
   ///           \bmlam+\alpha\delta\bmlam)\f$
   /// @returns  The trajectory cost.
-  Scalar forward_linear(const Problem &problem, Workspace &workspace,
-                        const Results &results, const Scalar alpha) const;
+  Scalar forward_linear_impl(const Problem &problem, Workspace &workspace,
+                             const Results &results, const Scalar alpha) const;
 
   /// @brief    Policy rollout using the full nonlinear dynamics. The feedback
   /// gains need to be computed first. This will evaluate all the terms in the
   /// problem into the problem data, similar to TrajOptProblemTpl::evaluate().
   /// @returns  The trajectory cost.
-  Scalar nonlinearRollout(const Problem &problem, Workspace &workspace,
-                          const Results &results, const Scalar alpha) const;
+  Scalar nonlinear_rollout_impl(const Problem &problem, Workspace &workspace,
+                                const Results &results,
+                                const Scalar alpha) const;
+
+  Scalar forwardPass(const Problem &problem, Workspace &workspace,
+                     const Results &results, const Scalar alpha) {
+    switch (rollout_type_) {
+    case RolloutType::LINEAR:
+      forward_linear_impl(problem, workspace, results, alpha);
+      break;
+    case RolloutType::NONLINEAR:
+      nonlinear_rollout_impl(problem, workspace, results, alpha);
+      break;
+    default:
+      assert(false && "unknown RolloutType!");
+      break;
+    }
+    // computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
+    computeMultipliers(problem, workspace, workspace.trial_lams);
+    return merit_fun.evaluate(problem, workspace.trial_lams, workspace,
+                              workspace.problem_data);
+  }
 
   void compute_dir_x0(const Problem &problem, Workspace &workspace,
                       const Results &results) const;

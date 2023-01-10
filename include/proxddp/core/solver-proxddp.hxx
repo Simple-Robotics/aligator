@@ -52,10 +52,10 @@ void SolverProxDDP<Scalar>::linearRollout(const Problem &problem,
 }
 
 template <typename Scalar>
-Scalar SolverProxDDP<Scalar>::forward_linear(const Problem &problem,
-                                             Workspace &workspace,
-                                             const Results &results,
-                                             const Scalar alpha) const {
+Scalar SolverProxDDP<Scalar>::forward_linear_impl(const Problem &problem,
+                                                  Workspace &workspace,
+                                                  const Results &results,
+                                                  const Scalar alpha) const {
 
   const std::size_t nsteps = workspace.nsteps;
 
@@ -95,7 +95,7 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem,
   const VectorXs &lamin0 = results.lams[0];
   const CostData &proxdata0 = *workspace.prox_datas[0];
   MatrixXs &kkt_mat = workspace.kkt_mats_[0];
-  VectorRef kkt_rhs = workspace.kkt_rhs_[0].col(0);
+  auto kkt_rhs = workspace.kkt_rhs_[0].col(0);
 
   if (is_x0_fixed_) {
     workspace.pd_step_[0].setZero();
@@ -516,10 +516,10 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
 }
 
 template <typename Scalar>
-Scalar SolverProxDDP<Scalar>::nonlinearRollout(const Problem &problem,
-                                               Workspace &workspace,
-                                               const Results &results,
-                                               const Scalar alpha) const {
+Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
+                                                     Workspace &workspace,
+                                                     const Results &results,
+                                                     const Scalar alpha) const {
   using ExplicitDynData = ExplicitDynamicsDataTpl<Scalar>;
   using DynamicsModel = DynamicsModelTpl<Scalar>;
   using DynamicsData = DynamicsDataTpl<Scalar>;
@@ -756,21 +756,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
                                       Workspace &workspace, Results &results) {
 
   auto merit_eval_fun = [&](Scalar a0) {
-    switch (rollout_type_) {
-    case RolloutType::LINEAR:
-      forward_linear(problem, workspace, results, a0);
-      break;
-    case RolloutType::NONLINEAR:
-      nonlinearRollout(problem, workspace, results, a0);
-      break;
-    default:
-      assert(false && "unknown RolloutType!");
-      break;
-    }
-    // computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
-    computeMultipliers(problem, workspace, workspace.trial_lams);
-    return merit_fun.evaluate(problem, workspace.trial_lams, workspace,
-                              workspace.problem_data);
+    return this->forwardPass(problem, workspace, results, a0);
   };
 
   LogRecord iter_log;
@@ -824,6 +810,13 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
         problem, results.lams, workspace, workspace.problem_data);
     Scalar dphi0 = dphi0_analytical; // value used for LS & logging
 #ifndef NDEBUG
+    const auto merit_linear_eval = [&](Scalar a0) {
+      forward_linear_impl(problem, workspace, results, a0);
+      // computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
+      computeMultipliers(problem, workspace, workspace.trial_lams);
+      return merit_fun.evaluate(problem, workspace.trial_lams, workspace,
+                                workspace.problem_data);
+    };
     const Scalar fd_eps = 1e-9;
     Scalar phieps = merit_linear_eval(fd_eps);
     Scalar dphi0_fd = (phieps - phi0) / fd_eps;
