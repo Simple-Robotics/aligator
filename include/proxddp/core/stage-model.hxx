@@ -34,8 +34,7 @@ StageModelTpl<Scalar>::StageModelTpl(CostPtr cost, DynamicsPtr dyn_model)
   }
 
   using EqualitySet = proxnlp::EqualityConstraint<Scalar>;
-  constraints_.push_back(
-      Constraint{dyn_model, std::make_shared<EqualitySet>()});
+  constraints_.pushBack(Constraint{dyn_model, std::make_shared<EqualitySet>()});
 }
 
 template <typename Scalar>
@@ -60,7 +59,7 @@ void StageModelTpl<Scalar>::addConstraint(T &&cstr) {
         "Function has the wrong dimension for u: got {:d}, expected {:d}", c_nu,
         this->nu()));
   }
-  constraints_.push_back(std::forward<T>(cstr));
+  constraints_.pushBack(std::forward<T>(cstr));
 }
 
 template <typename Scalar>
@@ -71,7 +70,7 @@ void StageModelTpl<Scalar>::addConstraint(FunctionPtr func,
         "Function has the wrong dimension for u: got {:d}, expected {:d}",
         func->nu, this->nu()));
   }
-  constraints_.push_back(Constraint{func, cstr_set});
+  constraints_.pushBack(Constraint{func, cstr_set});
 }
 
 template <typename Scalar>

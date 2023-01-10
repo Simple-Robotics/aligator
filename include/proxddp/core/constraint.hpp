@@ -22,16 +22,17 @@ template <typename Scalar> struct ConstraintStackTpl {
 
   std::size_t numConstraints() const { return storage_.size(); }
 
-  inline void push_back(const ConstraintType &el) {
+  inline void pushBack(const ConstraintType &el) {
     assert(el.func != 0 &&
            "constraint must have non-null underlying function.");
     assert(el.set != 0 && "constraint must have non-null underlying set.");
     const long nr = el.func->nr;
-    push_back(el, nr);
+    pushBack(el, nr);
   }
 
-  void push_back(const ConstraintType &el, const long nr);
+  void pushBack(const ConstraintType &el, const long nr);
 
+  /// @brief Get start index in an array.
   long getIndex(const std::size_t j) const { return indices_[j]; }
 
   /// @brief Get the dimension of each the @p j-th constraint.

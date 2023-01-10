@@ -5,8 +5,8 @@
 namespace proxddp {
 
 template <typename Scalar>
-void ConstraintStackTpl<Scalar>::push_back(const ConstraintType &el,
-                                           const long nr) {
+void ConstraintStackTpl<Scalar>::pushBack(const ConstraintType &el,
+                                          const long nr) {
   const long last_cursor = indices_.back();
   storage_.push_back(el);
   indices_.push_back(last_cursor + nr);
