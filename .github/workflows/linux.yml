@@ -16,6 +16,16 @@ jobs:
         fetch-depth: 0
         submodules: recursive
 
+    - name: Config for main
+      if: github.ref == 'refs/heads/main'
+      run: |
+        echo "PROXNLP_BRANCH=main" >> $GITHUB_ENV
+
+    - name: Config for others
+      if: github.ref != 'refs/heads/main'
+      run: |
+        echo "PROXNLP_BRANCH=devel" >> $GITHUB_ENV
+
     - name: Setup ccache
       uses: actions/cache@v3
       with:
@@ -38,10 +48,10 @@ jobs:
     - name: Debug
       run: echo ${{ env.BRANCH_NAME }}
 
-    - name: Checkout proxNLP
+    - name: Checkout proxnlp
       uses: actions/checkout@v3
       with:
-        ref: main
+        ref: ${{ env.PROXNLP_BRANCH }}
         fetch-depth: 0
         path: ./proxnlp
         submodules: recursive
