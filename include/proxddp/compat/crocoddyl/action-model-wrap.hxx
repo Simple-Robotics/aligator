@@ -16,7 +16,7 @@ CrocActionModelWrapperTpl<Scalar>::CrocActionModelWrapperTpl(
       action_model_(action_model) {
   using EqualitySet = proxnlp::EqualityConstraint<Scalar>;
   const int nr = (int)action_model->get_state()->get_ndx();
-  this->constraints_.push_back(
+  this->constraints_.pushBack(
       Constraint{nullptr, std::make_shared<EqualitySet>()}, nr);
 }
 
@@ -25,14 +25,13 @@ void CrocActionModelWrapperTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                                  const ConstVectorRef &u,
                                                  const ConstVectorRef &y,
                                                  Data &data) const {
-  using dyn_data_t = DynamicsDataWrapperTpl<Scalar>;
   ActionDataWrap &d = static_cast<ActionDataWrap &>(data);
   CrocActionModel &m = *action_model_;
   m.calc(d.croc_data, x, u);
 
   PROXDDP_NOMALLOC_BEGIN;
   d.cost_data->value_ = d.croc_data->cost;
-  dyn_data_t &dyn_data = static_cast<dyn_data_t &>(*d.constraint_data[0]);
+  DynDataWrap &dyn_data = static_cast<DynDataWrap &>(*d.constraint_data[0]);
   dyn_data.xnext_ = d.croc_data->xnext;
   this->xspace_next_->difference(y, dyn_data.xnext_, dyn_data.value_);
   PROXDDP_NOMALLOC_END;
@@ -42,7 +41,6 @@ template <typename Scalar>
 void CrocActionModelWrapperTpl<Scalar>::computeDerivatives(
     const ConstVectorRef &x, const ConstVectorRef &u, const ConstVectorRef &y,
     Data &data) const {
-  using dyn_data_t = DynamicsDataWrapperTpl<Scalar>;
   ActionDataWrap &d = static_cast<ActionDataWrap &>(data);
   CrocActionModel &m = *action_model_;
   m.calcDiff(d.croc_data, x, u);
@@ -55,7 +53,7 @@ void CrocActionModelWrapperTpl<Scalar>::computeDerivatives(
   d.cost_data->Luu_ = d.croc_data->Luu;
 
   /* handle dynamics */
-  dyn_data_t &dyn_data = static_cast<dyn_data_t &>(*d.constraint_data[0]);
+  DynDataWrap &dyn_data = static_cast<DynDataWrap &>(*d.constraint_data[0]);
   dyn_data.Jx_ = d.croc_data->Fx;
   dyn_data.Ju_ = d.croc_data->Fu;
   this->xspace_next_->Jdifference(y, dyn_data.xnext_, dyn_data.Jy_, 0);
@@ -65,9 +63,8 @@ void CrocActionModelWrapperTpl<Scalar>::computeDerivatives(
 template <typename Scalar>
 shared_ptr<StageDataTpl<Scalar>>
 CrocActionModelWrapperTpl<Scalar>::createData() const {
-  using CrocActionData = crocoddyl::ActionDataAbstractTpl<Scalar>;
-  boost::shared_ptr<CrocActionData> cd = action_model_->createData();
-  return std::make_shared<ActionDataWrap>(action_model_.get(), std::move(cd));
+  return std::make_shared<ActionDataWrap>(action_model_.get(),
+                                          action_model_->createData());
 }
 
 template <typename Scalar>

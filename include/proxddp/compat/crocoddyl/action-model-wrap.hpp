@@ -30,6 +30,7 @@ struct CrocActionModelWrapperTpl : StageModelTpl<Scalar> {
   using CrocActionModel = crocoddyl::ActionModelAbstractTpl<Scalar>;
   using StateWrapper = StateWrapperTpl<Scalar>;
   using ActionDataWrap = CrocActionDataWrapperTpl<Scalar>;
+  using DynDataWrap = DynamicsDataWrapperTpl<Scalar>;
 
   boost::shared_ptr<CrocActionModel> action_model_;
 
