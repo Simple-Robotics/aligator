@@ -105,6 +105,7 @@ max_iters = 200
 verbose = proxddp.VerboseLevel.VERBOSE
 solver = proxddp.SolverProxDDP(TOL, mu_init, rho_init, verbose=verbose)
 solver.rollout_type = proxddp.ROLLOUT_NONLINEAR
+print("LDLT algo choice:", solver.ldlt_algo_choice)
 # solver = proxddp.SolverFDDP(TOL, verbose=verbose)
 solver.max_iters = max_iters
 solver.setup(problem)

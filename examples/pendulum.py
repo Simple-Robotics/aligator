@@ -21,6 +21,7 @@ class Args(tap.Tap):
     display: bool = False
     use_term_cstr: bool = True
     record: bool = False
+    bounds: bool = False  # add control bounds
 
     def process_args(self):
         if self.record:
@@ -159,8 +160,6 @@ umin = -20.0 * np.ones(nu)
 umax = +20.0 * np.ones(nu)
 ctrl_fn = proxddp.ControlErrorResidual(ndx, np.zeros(nu))
 box_cstr = proxddp.StageConstraint(ctrl_fn, constraints.BoxConstraint(umin, umax))
-# ctrl_fn = proxddp.ControlBoxFunction(ndx, umin, umax)
-# box_cstr = proxddp.StageConstraint(ctrl_fn, constraints.NegativeOrthant())
 
 nsteps = 200
 Tf = nsteps * dt
@@ -168,7 +167,8 @@ problem = proxddp.TrajOptProblem(x0, nu, space, term_cost)
 
 for i in range(nsteps):
     stage = proxddp.StageModel(rcost, dyn_model)
-    stage.addConstraint(box_cstr)
+    if args.bounds:
+        stage.addConstraint(box_cstr)
     problem.addStage(stage)
 
 term_fun = proxddp.FrameTranslationResidual(ndx, nu, model, target_pos, frame_id)
@@ -176,15 +176,15 @@ if args.use_term_cstr:
     term_cstr = proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet())
     problem.setTerminalConstraint(term_cstr)
 
-mu_init = 0.5
-rho_init = 1e-6
+mu_init = 0.8
+rho_init = 0.0
 verbose = proxddp.VerboseLevel.VERBOSE
 TOL = 1e-4
 MAX_ITER = 200
 solver = proxddp.SolverProxDDP(
     TOL, mu_init, rho_init=rho_init, max_iters=MAX_ITER, verbose=verbose
 )
-solver.rollout_type = proxddp.ROLLOUT_NONLINEAR
+solver.reg_init = 1e-9
 callback = proxddp.HistoryCallback()
 solver.registerCallback(callback)
 
@@ -238,13 +238,12 @@ if True:
     plt.figure(figsize=(6.4, 4.8))
     prim_errs = callback.storage.prim_infeas
     dual_errs = callback.storage.dual_infeas
-    prim_tols = np.array(callback.storage.prim_tols)
-    al_iters = np.array(callback.storage.al_iters)
+    prim_tols = np.array(callback.storage.prim_tols.tolist())
+    al_iters = np.array(callback.storage.al_iters.tolist())
 
     ax: plt.Axes = plt.subplot(111)
     plot_pd_errs(ax, prim_errs, dual_errs)
     itrange = np.arange(len(al_iters))
-    print(prim_tols)
     ax.step(itrange, prim_tols, c="green", alpha=0.9, lw=1.1)
     al_change = al_iters[1:] - al_iters[:-1]
     al_change_idx = itrange[:-1][al_change > 0]
