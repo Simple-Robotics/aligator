@@ -6,7 +6,7 @@ namespace proxddp {
 
 template <typename Scalar>
 PDALFunction<Scalar>::PDALFunction(SolverProxDDP<Scalar> const *solver)
-    : solver(solver) {}
+    : solver_(solver) {}
 
 template <typename Scalar>
 Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblem &problem,
@@ -14,13 +14,13 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblem &problem,
                                       Workspace &workspace,
                                       TrajOptData &prob_data) {
 
-  traj_cost = prob_data.cost_;
+  traj_cost_ = prob_data.cost_;
   Scalar prox_value = 0.;
-  if (solver->rho() > 0) {
+  if (solver_->rho() > 0) {
     prox_value = computeProxPenalty(workspace);
   }
   Scalar penalty_value = 0.;
-  auto ls_mode = solver->ls_mode;
+  auto ls_mode = solver_->ls_mode;
   bool use_dual_terms = ls_mode == LinesearchMode::PRIMAL_DUAL;
 
   const std::vector<VectorXs> &lams_plus = workspace.lams_plus;
@@ -68,7 +68,7 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblem &problem,
     }
   }
 
-  return traj_cost + prox_value + penalty_value;
+  return traj_cost_ + prox_value + penalty_value;
 }
 
 template <typename Scalar>
@@ -80,7 +80,7 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
   const std::size_t nsteps = workspace.nsteps;
   // prox terms
   const auto &prox_datas = workspace.prox_datas;
-  const Scalar rho = solver->rho();
+  const Scalar rho = solver_->rho();
   for (std::size_t i = 0; i <= nsteps; i++) {
     const ProximalDataTpl<Scalar> &pdata = *prox_datas[i];
     d1 += rho * pdata.Lx_.dot(workspace.dxs[i]);

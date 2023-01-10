@@ -71,27 +71,27 @@ template <typename _Scalar> struct PDALFunction {
   using TrajOptProblem = TrajOptProblemTpl<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
 
-  SolverProxDDP<Scalar> const *solver;
-  Scalar traj_cost;
+  SolverProxDDP<Scalar> const *solver_;
+  Scalar traj_cost_;
   /// Weight of dual penalty. Values different from 1 not supported yet.
 
   Scalar mu_min = 1e-7;
   Scalar mu_max = 1. / mu_min;
 
-  Scalar dual_weight() { return solver->dual_weight; }
+  Scalar dual_weight() { return solver_->dual_weight; }
 
-  Scalar mu() const { return std::max(mu_min, solver->mu()); }
+  Scalar mu() const { return std::max(mu_min, solver_->mu()); }
 
-  Scalar mu_inv() const { return std::max(mu_max, solver->mu_inv()); }
+  Scalar mu_inv() const { return std::max(mu_max, solver_->mu_inv()); }
 
   PDALFunction(SolverProxDDP<Scalar> const *solver);
 
   Scalar mu_scaled(std::size_t j) const {
-    return std::max(mu_min, solver->mu_scaled(j));
+    return std::max(mu_min, solver_->mu_scaled(j));
   }
 
   Scalar mu_inv_scaled(std::size_t j) const {
-    return std::min(mu_max, solver->mu_inv_scaled(j));
+    return std::min(mu_max, solver_->mu_inv_scaled(j));
   }
 
   /// @brief    Compute the merit function at the trial point.
@@ -110,7 +110,7 @@ template <typename _Scalar> struct PDALFunction {
    */
   Scalar computeProxPenalty(const Workspace &workspace) {
     Scalar res = 0.;
-    const Scalar rho = solver->rho();
+    const Scalar rho = solver_->rho();
     const std::size_t nsteps = workspace.nsteps;
     for (std::size_t i = 0; i <= nsteps; i++) {
       res += rho * workspace.prox_datas[i]->value_;

@@ -884,7 +884,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     results.xs = workspace.trial_xs;
     results.us = workspace.trial_us;
     results.lams = workspace.trial_lams;
-    results.traj_cost_ = merit_fun.traj_cost;
+    results.traj_cost_ = merit_fun.traj_cost_;
     results.merit_value_ = phi_new;
     PROXDDP_RAISE_IF_NAN_NAME(alpha_opt, "alpha_opt");
     PROXDDP_RAISE_IF_NAN_NAME(results.merit_value_, "results.merit_value");
