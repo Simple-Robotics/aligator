@@ -20,7 +20,7 @@ SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
     : target_tol_(tol), mu_init(mu_init), rho_init(rho_init), verbose_(verbose),
       hess_approx_(hess_approx), rollout_type_(RolloutType::NONLINEAR),
       is_x0_fixed_(true), ldlt_algo_choice_(LDLTChoice::DENSE),
-      max_iters(max_iters), merit_fun(this) {
+      max_iters(max_iters), merit_fun(this), linesearch_(ls_params) {
   ls_params.interp_type = proxnlp::LSInterpolation::CUBIC;
 }
 
@@ -137,7 +137,7 @@ template <typename Scalar>
 void SolverProxDDP<Scalar>::setup(const Problem &problem) {
   workspace_ = std::make_unique<Workspace>(problem, ldlt_algo_choice_);
   results_ = std::make_unique<Results>(problem);
-  linesearch_ = std::make_unique<linesearch_t>(ls_params);
+  linesearch_.setOptions(ls_params);
 
   Workspace &ws = *workspace_;
   prox_penalties_.clear();
@@ -848,7 +848,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
     // otherwise continue linesearch
     Scalar alpha_opt = 1;
-    Scalar phi_new = linesearch_->run(merit_eval_fun, phi0, dphi0, alpha_opt);
+    Scalar phi_new = linesearch_.run(merit_eval_fun, phi0, dphi0, alpha_opt);
 
 #ifndef NDEBUG
     if (this->dump_linesearch_plot) {

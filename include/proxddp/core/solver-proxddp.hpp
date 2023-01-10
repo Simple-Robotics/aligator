@@ -329,7 +329,7 @@ private:
   PDALFunction<Scalar> merit_fun;
 
   using linesearch_t = proxnlp::ArmijoLinesearch<Scalar>;
-  unique_ptr<linesearch_t> linesearch_;
+  linesearch_t linesearch_;
 };
 
 } // namespace proxddp
