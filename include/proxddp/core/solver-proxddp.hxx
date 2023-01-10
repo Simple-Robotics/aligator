@@ -354,7 +354,7 @@ void SolverProxDDP<Scalar>::updateHamiltonian(const Problem &problem,
   qparam.Qyy = vnext.Vxx_;
   qparam.Quu.diagonal().array() += ureg_;
 
-  const VectorXs &lam_inn = results.lams[t + 1];
+  const VectorXs &lam = results.lams[t + 1];
 
   const ConstraintStack &cstr_mgr = stage.constraints_;
 
@@ -362,12 +362,9 @@ void SolverProxDDP<Scalar>::updateHamiltonian(const Problem &problem,
   for (std::size_t j = 0; j < cstr_mgr.numConstraints(); j++) {
     FunctionData &cstr_data = *stage_data.constraint_data[j];
 
-    const auto lam_inn_j = cstr_mgr.getConstSegmentByConstraint(lam_inn, j);
-
-    qparam.Qx.noalias() += cstr_data.Jx_.transpose() * lam_inn_j;
-    qparam.Qu.noalias() += cstr_data.Ju_.transpose() * lam_inn_j;
-    qparam.Qy.noalias() += cstr_data.Jy_.transpose() * lam_inn_j;
-    if (hess_approx == HessianApprox::EXACT) {
+    const auto lam_j = cstr_mgr.getConstSegmentByConstraint(lam, j);
+    qparam.grad_.noalias() += cstr_data.jac_buffer_.transpose() * lam_j;
+    if (hess_approx_ == HessianApprox::EXACT) {
       qparam.hess_ += cstr_data.vhp_buffer_;
     }
   }
