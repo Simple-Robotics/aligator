@@ -344,17 +344,23 @@ void SolverProxDDP<Scalar>::updateHamiltonian(const Problem &problem,
 
   // Use the contiguous full gradient/jacobian/hessian buffers
   // to fill in the Q-function derivatives
-  qparam.q_ = cdata.value_ + rho() * proxdata.value_;
-  qparam.Qx = cdata.Lx_ + rho() * proxdata.Lx_;
-  qparam.Qu = cdata.Lu_ + rho() * proxdata.Lu_;
+  qparam.q_ = cdata.value_; // rho() * proxdata.value_;
+  qparam.Qx = cdata.Lx_;    // rho() * proxdata.Lx_;
+  qparam.Qu = cdata.Lu_;    //+ rho() * proxdata.Lu_;
   qparam.Qy = vnext.Vx_;
 
-  qparam.hess_.topLeftCorner(ndx1 + nu, ndx1 + nu) =
-      cdata.hess_ + rho() * proxdata.hess_;
+  auto qpar_xu = qparam.hess_.topLeftCorner(ndx1 + nu, ndx1 + nu);
+  qpar_xu = cdata.hess_; //+ rho() * proxdata.hess_;
   qparam.Qyy = vnext.Vxx_;
   qparam.Quu.diagonal().array() += ureg_;
 
   const VectorXs &lam = results.lams[t + 1];
+  if (rho() > 0) {
+    qparam.q_ += rho() * proxdata.value_;
+    qparam.Qx += rho() * proxdata.Lx_;
+    qparam.Qu += rho() * proxdata.Lu_;
+    qpar_xu += rho() * proxdata.hess_;
+  }
 
   const ConstraintStack &cstr_mgr = stage.constraints_;
 
@@ -383,10 +389,16 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
   VParams &term_value = workspace.value_params[nsteps];
   const CostData &proxdata = *workspace.prox_datas[nsteps];
 
-  term_value.v_ = term_cost_data.value_ + rho() * proxdata.value_;
-  term_value.Vx_ = term_cost_data.Lx_ + rho() * proxdata.Lx_;
-  term_value.Vxx_ = term_cost_data.Lxx_ + rho() * proxdata.Lxx_;
+  term_value.v_ = term_cost_data.value_; // + rho() * proxdata.value_;
+  term_value.Vx_ = term_cost_data.Lx_;   // + rho() * proxdata.Lx_;
+  term_value.Vxx_ = term_cost_data.Lxx_; //+ rho() * proxdata.Lxx_;
   term_value.Vxx_.diagonal().array() += xreg_;
+
+  if (rho() > 0.) {
+    term_value.v_ += rho() * proxdata.value_;
+    term_value.Vx_ += rho() * proxdata.Lx_;
+    term_value.Vxx_ += rho() * proxdata.Lxx_;
+  }
 
   if (problem.term_constraint_) {
     /* check number of multipliers */
@@ -416,6 +428,7 @@ template <typename Scalar>
 bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
                                          Workspace &workspace, Results &results,
                                          const std::size_t t) const {
+  PROXDDP_NOMALLOC_BEGIN;
   const StageModel &stage = *problem.stages_[t];
 
   const QParams &qparam = workspace.q_params[t];
@@ -444,7 +457,7 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
       kkt_mat.bottomRightCorner(ndual, ndual).diagonal();
 
   typename MatrixXs::ColXpr kkt_rhs_ff = kkt_rhs.col(0);
-  auto kkt_rhs_fb = kkt_rhs.rightCols(ndx1);
+  typename MatrixXs::ColsBlockXpr kkt_rhs_fb = kkt_rhs.rightCols(ndx1);
 
   // blocks: u, y, and dual
   kkt_rhs_ff.head(nu) = qparam.Qu;
@@ -503,15 +516,22 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   auto fb = results.getFeedback(t);
 
 #ifndef NDEBUG
-  std::FILE *fi = std::fopen("pddp.log", "a");
-  if (t == workspace.nsteps - 1)
-    fmt::print(fi, "[backward {:d}]\n", results.num_iters + 1);
-  fmt::print(fi, "uff[{:d}]={}\n", t, ff.head(nu).transpose());
-  std::fclose(fi);
+  {
+    PROXDDP_NOMALLOC_END;
+    std::FILE *fi = std::fopen("pddp.log", "a");
+    if (t == workspace.nsteps - 1)
+      fmt::print(fi, "[backward {:d}]\n", results.num_iters + 1);
+    fmt::print(fi, "uff[{:d}]={}\n", t, ff.head(nu).transpose());
+    std::fclose(fi);
+    PROXDDP_NOMALLOC_BEGIN;
+  }
 #endif
-  vp.Vx_ = qparam.Qx + Qxw * ff;
-  vp.Vxx_ = qparam.Qxx + Qxw * fb;
+  vp.Vx_ = qparam.Qx;
+  vp.Vx_.noalias() += Qxw * ff;
+  vp.Vxx_ = qparam.Qxx;
+  vp.Vxx_.noalias() += Qxw * fb;
   vp.Vxx_.diagonal().array() += xreg_;
+  PROXDDP_NOMALLOC_END;
   return true;
 }
 
@@ -978,7 +998,6 @@ void SolverProxDDP<Scalar>::computeCriterion(const Problem &problem,
 
     VParams &vp = workspace.value_params[i];
 
-    Scalar ru = math::infty_norm(kktu);
     Scalar rlam = math::infty_norm(kktlam);
     const ConstraintStack &cstr_mgr = st.constraints_;
 
@@ -993,6 +1012,7 @@ void SolverProxDDP<Scalar>::computeCriterion(const Problem &problem,
     ru_ddp = math::infty_norm(kktu);
 
 #ifndef NDEBUG
+    Scalar ru = math::infty_norm(kktu);
     auto gy = -lam_head + vp.Vx_;
     Scalar ry = math::infty_norm(gy);
     std::FILE *fi = std::fopen("pddp.log", "a");
@@ -1027,10 +1047,8 @@ bool SolverProxDDP<Scalar>::iterative_refinement_impl(const LdltType &ldlt,
   Xout = -rhs;
   ldlt.solveInPlace(Xout);
 
-  auto mat_sa_view = mat.template selfadjointView<Eigen::Lower>();
-
   err = -rhs;
-  err.noalias() -= mat_sa_view * Xout;
+  err.noalias() -= mat * Xout;
 
   while (math::infty_norm(err) > REFINEMENT_THRESHOLD) {
 
@@ -1043,7 +1061,7 @@ bool SolverProxDDP<Scalar>::iterative_refinement_impl(const LdltType &ldlt,
 
     // update residual
     err = -rhs;
-    err.noalias() -= mat_sa_view * Xout;
+    err.noalias() -= mat * Xout;
 
     it++;
   }
