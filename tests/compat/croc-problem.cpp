@@ -14,6 +14,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <fmt/core.h>
+#include <fmt/ostream.h>
 
 BOOST_AUTO_TEST_SUITE(crocoddyl_problem)
 
