@@ -5,17 +5,14 @@
 #include "proxddp/python/visitors.hpp"
 
 #include <pinocchio/fwd.hpp>
-#include <pinocchio/bindings/python/utils/std-vector.hpp>
-
 #include <eigenpy/eigenpy.hpp>
+#include <eigenpy/std-vector.hpp>
 
 namespace proxddp {
 /// @brief  The Python bindings.
 namespace python {
-namespace pp = pinocchio::python;
 namespace bp = boost::python;
-
-using pp::StdVectorPythonVisitor;
+using eigenpy::StdVectorPythonVisitor;
 
 /// Expose ternary functions
 void exposeFunctions();

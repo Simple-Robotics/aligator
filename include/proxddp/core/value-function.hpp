@@ -13,7 +13,6 @@ namespace proxddp {
 
 /// @brief  Storage for the value function model parameters.
 template <typename _Scalar> struct value_function {
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   int ndx_;
@@ -24,6 +23,11 @@ template <typename _Scalar> struct value_function {
   value_function(const int ndx) : ndx_(ndx), Vx_(ndx), Vxx_(ndx, ndx) {
     Vx_.setZero();
     Vxx_.setZero();
+  }
+
+  bool operator==(const value_function &other) {
+    return (ndx_ == other.ndx_) && Vx_.isApprox(other.Vx_) &&
+           Vxx_.isApprox(other.Vxx_) && math::scalar_close(v_, other.v_);
   }
 
   friend std::ostream &operator<<(std::ostream &oss,
@@ -39,7 +43,6 @@ template <typename _Scalar> struct value_function {
 /// @details This struct also provides views for the blocks of interest \f$Q_x,
 /// Q_u, Q_y\ldots\f$.
 template <typename Scalar> struct q_function {
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
   long ndx_;
@@ -77,6 +80,8 @@ template <typename Scalar> struct q_function {
     assert(grad_.rows() == ntot);
     assert(grad_.cols() == 1);
   }
+
+  bool operator==(const q_function &) { return false; }
 
   friend std::ostream &operator<<(std::ostream &oss, const q_function &store) {
     oss << "q_function {\n";
