@@ -33,7 +33,9 @@ BOOST_PYTHON_MODULE(pyproxddp) {
 
 #ifdef PROXDDP_WITH_PINOCCHIO
     exposeFreeFwdDynamics();
+#if PINOCCHIO_VERSION_AT_LEAST(2, 9, 2)
     exposeConstraintFwdDynamics();
+#endif
 #endif
 
     exposeIntegrators();

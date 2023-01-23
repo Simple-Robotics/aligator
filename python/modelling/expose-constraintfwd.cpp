@@ -1,5 +1,7 @@
 #include "proxddp/python/fwd.hpp"
 
+#if PINOCCHIO_VERSION_AT_LEAST(2, 9, 2)
+
 #include "proxddp/modelling/dynamics/multibody-constraint-fwd.hpp"
 
 namespace proxddp {
@@ -53,3 +55,5 @@ void exposeConstraintFwdDynamics() {
 }
 } // namespace python
 } // namespace proxddp
+
+#endif

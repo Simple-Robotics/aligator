@@ -35,7 +35,9 @@ void exposeUtils();
 #ifdef PROXDDP_WITH_PINOCCHIO
 void exposePinocchioFunctions();
 void exposeFreeFwdDynamics();
+#if PINOCCHIO_VERSION_AT_LEAST(2, 9, 2)
 void exposeConstraintFwdDynamics();
+#endif
 #endif
 
 } // namespace python
