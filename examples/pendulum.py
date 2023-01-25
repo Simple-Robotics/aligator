@@ -11,7 +11,6 @@ import proxnlp
 import hppfcl as fcl
 import tap
 import matplotlib.pyplot as plt
-import meshcat_utils as msu
 
 from pinocchio.visualize import MeshcatVisualizer
 from proxddp import constraints
@@ -257,25 +256,27 @@ if True:
 plt.show()
 
 if args.display:
+    import hppfcl
+
+    vis_model = geom_model.clone()
+    sp_obj = pin.GeometryObject("objective", 0, frame_place_target, hppfcl.Sphere(0.05))
+    vis_model.addGeometryObject(sp_obj)
     vizer = MeshcatVisualizer(model, geom_model, geom_model)
     vizer.initViewer(open=args.display, loadModel=True)
-    viz_util = msu.VizUtil(vizer)
-    viz_util.set_bg_color()
+    vizer.setBackgroundColor()
 
     numrep = 2
     cp = [2.0, 0.0, 0.8]
     cps_ = [cp.copy() for _ in range(numrep)]
-    vidrecord = msu.VideoRecorder("examples/ur5_reach_ctrlbox.mp4", fps=1.0 / dt)
     input("[Press enter]")
 
+    qs = [x[:nq] for x in res.xs]
+    vs = [x[nq:] for x in res.xs]
+
+    def viz_callback(i: int):
+        pin.forwardKinematics(model, vizer.data, qs[i], vs[i])
+        vizer.drawFrameVelocities(frame_id)
+
     for i in range(numrep):
-        viz_util.set_cam_pos(cps_[i])
-        viz_util.draw_objective(frame_place_target.translation)
-        viz_util.play_trajectory(
-            res.xs.tolist(),
-            res.us.tolist(),
-            frame_ids=[frame_id],
-            timestep=dt,
-            record=args.record,
-            recorder=vidrecord,
-        )
+        vizer.setCameraPosition(cps_[i])
+        vizer.play(qs, dt, viz_callback)

@@ -13,7 +13,6 @@ import crocoddyl
 import pinocchio
 import numpy as np
 import example_robot_data
-import meshcat_utils as msu
 from pinocchio.visualize import MeshcatVisualizer
 
 
@@ -93,11 +92,9 @@ if WITHDISPLAY:
         data=talos_arm.data,
     )
     vizer.initViewer(loadModel=True, open=True)
-    viz_util = msu.VizUtil(vizer)
     vizer.display(q0)
 else:
     vizer = None
-    viz_util = None
 fid_display = robot_model.getFrameId("gripper_left_joint")
 
 t_f = T * dt
@@ -155,12 +152,18 @@ if True:
 
     # Visualizing the solution in gepetto-viewer
     if WITHDISPLAY:
+        import pinocchio as pin
+
+        def vis_callback(i: int):
+            pin.forwardKinematics(robot_model, vizer.data, qs[i], vs[i])
+            vizer.drawFrameVelocities(fid_display)
+
         # display = crocoddyl.MeshcatDisplay(talos_arm, 4, 4)
         input("[enter to play]")
         # display.displayFromSolver(solver)
-        viz_util.play_trajectory(
-            solver.xs.tolist(), solver.us.tolist(), timestep=dt, frame_ids=[fid_display]
-        )
+        nq = robot_model.nq
+        qs = [x[:nq] for x in solver.xs]
+        vizer.play(qs, dt, vis_callback)
 
     croc_xs = solver.xs
     croc_us = solver.us
@@ -205,11 +208,11 @@ if True:
 
     if WITHDISPLAY:
 
+        qs = [x[:nq] for x in prox_xs]
+        vs = [x[nq:] for x in prox_xs]
         input("[press enter to play]")
         for i in range(3):
-            viz_util.play_trajectory(
-                prox_xs, prox_us, timestep=dt, frame_ids=[fid_display], show_vel=True
-            )
+            vizer.play(qs, dt, vis_callback)
 
 
 croc_xs = np.stack(croc_xs.tolist())
