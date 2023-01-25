@@ -4,6 +4,7 @@
 
 #include "proxddp/fwd.hpp"
 #include "proxddp/core/value-function.hpp"
+#include "proxddp/core/solver-util.hpp"
 
 namespace proxddp {
 

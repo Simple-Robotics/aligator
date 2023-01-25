@@ -80,3 +80,7 @@ void check_trajectory_and_assign(
 }
 
 } // namespace proxddp
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/core/solver-util.txx"
+#endif

@@ -4,7 +4,6 @@
 #include "proxddp/fwd.hpp"
 
 namespace proxddp {
-namespace python {
 namespace context {
 
 using Scalar = double;
@@ -31,6 +30,8 @@ using TrajOptData = TrajOptDataTpl<Scalar>;
 using ExplicitDynamics = ExplicitDynamicsModelTpl<Scalar>;
 using ExplicitDynData = ExplicitDynamicsDataTpl<Scalar>;
 
+using SolverProxDDP = ::proxddp::SolverProxDDP<Scalar>;
+using SolverFDDP = ::proxddp::SolverFDDP<Scalar>;
+
 } // namespace context
-} // namespace python
 } // namespace proxddp

@@ -4,6 +4,7 @@
  *
  */
 #include "proxddp/compat/crocoddyl/fwd.hpp"
+#include "proxddp/context.hpp"
 
 namespace proxddp {
 namespace compat {
@@ -11,7 +12,7 @@ namespace croc {
 
 namespace context {
 
-using Scalar = double;
+using Scalar = ::proxddp::context::Scalar;
 
 using StateWrapper = StateWrapperTpl<Scalar>;
 using CostModelWrapper = CrocCostModelWrapperTpl<Scalar>;

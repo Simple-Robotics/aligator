@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/python/context.hpp"
+#include "proxddp/context.hpp"
 #include "proxddp/python/macros.hpp"
 #include "proxddp/python/visitors.hpp"
 

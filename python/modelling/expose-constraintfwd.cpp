@@ -6,25 +6,25 @@
 
 namespace proxddp {
 namespace python {
-namespace context {
+namespace {
 
-using RigidConstraintModel = pinocchio::RigidConstraintModelTpl<Scalar, 0>;
-using RigidConstraintData = pinocchio::RigidConstraintDataTpl<Scalar, 0>;
+using RigidConstraintModel =
+    pinocchio::RigidConstraintModelTpl<context::Scalar, 0>;
+using RigidConstraintData =
+    pinocchio::RigidConstraintDataTpl<context::Scalar, 0>;
 
 using RigidConstraintModelVector =
-    PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(context::RigidConstraintModel);
+    PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(RigidConstraintModel);
 using RigidConstraintDataVector =
-    PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(context::RigidConstraintData);
+    PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(RigidConstraintData);
 
-} // namespace context
+} // namespace
 
 void exposeConstraintFwdDynamics() {
   using namespace proxddp::dynamics;
   using context::Scalar;
   using ODEData = ODEDataTpl<Scalar>;
   using ODEAbstract = ODEAbstractTpl<Scalar>;
-  using context::RigidConstraintDataVector;
-  using context::RigidConstraintModelVector;
   using MultibodyConstraintFwdData = MultibodyConstraintFwdDataTpl<Scalar>;
   using MultibodyConstraintFwdDynamics =
       MultibodyConstraintFwdDynamicsTpl<Scalar>;

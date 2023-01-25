@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
 #include "proxddp/core/traj-opt-problem.hpp"
@@ -102,3 +102,7 @@ template <typename _Scalar> struct ResultsTpl : ResultsBaseTpl<_Scalar> {
 } // namespace proxddp
 
 #include "proxddp/core/results.hxx"
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/core/results.txx"
+#endif
