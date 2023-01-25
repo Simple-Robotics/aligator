@@ -3,7 +3,6 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/core/solver-util.hpp"
 #include "proxddp/core/merit-function.hpp"
 #include "proxddp/core/proximal-penalty.hpp"
 #include "proxddp/core/linesearch.hpp"
@@ -355,3 +354,7 @@ private:
 } // namespace proxddp
 
 #include "proxddp/core/solver-proxddp.hxx"
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/core/solver-proxddp.txx"
+#endif

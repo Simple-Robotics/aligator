@@ -5,7 +5,6 @@
 /// @htmlinclude fddp.html
 #pragma once
 
-#include "proxddp/core/solver-util.hpp"
 #include "proxddp/core/helpers-base.hpp"
 #include "proxddp/core/explicit-dynamics.hpp"
 
@@ -184,3 +183,7 @@ template <typename Scalar> struct SolverFDDP {
 } // namespace proxddp
 
 #include "proxddp/fddp/solver-fddp.hxx"
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/fddp/solver-fddp.txx"
+#endif

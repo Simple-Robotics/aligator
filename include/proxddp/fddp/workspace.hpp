@@ -1,6 +1,7 @@
 #pragma once
 
 #include "proxddp/core/workspace-common.hpp"
+#include <Eigen/Cholesky>
 
 namespace proxddp {
 
@@ -52,3 +53,7 @@ template <typename Scalar> struct WorkspaceFDDPTpl : WorkspaceBaseTpl<Scalar> {
 } // namespace proxddp
 
 #include "proxddp/fddp/workspace.hxx"
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/fddp/workspace.txx"
+#endif

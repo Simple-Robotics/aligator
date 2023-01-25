@@ -112,3 +112,7 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
 } // namespace proxddp
 
 #include "proxddp/core/workspace.hxx"
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/core/workspace.txx"
+#endif

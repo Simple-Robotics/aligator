@@ -192,3 +192,7 @@ template <typename _Scalar> struct TrajOptDataTpl {
 } // namespace proxddp
 
 #include "proxddp/core/traj-opt-problem.hxx"
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/core/traj-opt-problem.txx"
+#endif

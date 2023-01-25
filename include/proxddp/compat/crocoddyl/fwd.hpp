@@ -1,5 +1,7 @@
 #pragma once
 
+#include <crocoddyl/core/fwd.hpp>
+
 namespace proxddp {
 /// @brief Headers for compatibility modules.
 namespace compat {

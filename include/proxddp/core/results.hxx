@@ -1,23 +1,13 @@
+/// @file
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
+#include "proxddp/core/results.hpp"
 #include "proxddp/core/solver-util.hpp"
 
 #include <fmt/format.h>
 
 namespace proxddp {
-
-template <typename Scalar>
-std::ostream &operator<<(std::ostream &oss,
-                         const ResultsBaseTpl<Scalar> &self) {
-  oss << "Results {" << fmt::format("\n  num_iters:    {:d},", self.num_iters)
-      << fmt::format("\n  converged:    {},", self.conv)
-      << fmt::format("\n  traj. cost:   {:.3e},", self.traj_cost_)
-      << fmt::format("\n  merit.value:  {:.3e},", self.merit_value_)
-      << fmt::format("\n  prim_infeas:  {:.3e},", self.prim_infeas)
-      << fmt::format("\n  dual_infeas:  {:.3e},", self.dual_infeas);
-  oss << "\n}";
-  return oss;
-}
 
 template <typename Scalar>
 ResultsTpl<Scalar>::ResultsTpl(const TrajOptProblemTpl<Scalar> &problem) {

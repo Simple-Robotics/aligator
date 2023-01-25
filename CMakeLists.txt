@@ -46,6 +46,7 @@ endif()
 option(BUILD_PYTHON_INTERFACE "Build the Python bindings" ON)
 option(BUILD_WITH_VERSION_SUFFIX "Build libraries with version appended to suffix" OFF)
 option(USE_CUSTOM_LDLT "Use our custom LDLT solver" ON)
+option(ENABLE_TEMPLATE_INSTANTIATION "Template instantiation of the main library" ON)
 
 # --- OPTIONAL DEPENDENCIES -------------------------
 option(BUILD_WITH_PINOCCHIO_SUPPORT "Build the library with support for Pinocchio" ON)
@@ -69,6 +70,10 @@ if(CHECK_RUNTIME_MALLOC)
   add_definitions(-DPROXDDP_EIGEN_CHECK_MALLOC)
   add_definitions(-DEIGEN_RUNTIME_NO_MALLOC)
 endif(CHECK_RUNTIME_MALLOC)
+
+if(ENABLE_TEMPLATE_INSTANTIATION)
+  add_definitions(-DPROXDDP_ENABLE_TEMPLATE_INSTANTIATION)
+endif(ENABLE_TEMPLATE_INSTANTIATION)
 
 macro(TAG_LIBRARY_VERSION target)
   set_target_properties(${target} PROPERTIES SOVERSION ${PROJECT_VERSION})
@@ -143,6 +148,20 @@ file(GLOB_RECURSE LIB_HEADERS
      ${PROJECT_SOURCE_DIR}/include/proxddp/*.hpp
      ${PROJECT_SOURCE_DIR}/include/proxddp/*.hxx
      )
+
+if(ENABLE_TEMPLATE_INSTANTIATION)
+
+  file(GLOB_RECURSE LIB_TEMPLATE_SOURCES
+       ${PROJECT_SOURCE_DIR}/src/*.cpp
+       )
+  file(GLOB_RECURSE LIB_TEMPLATE_DECLARATIONS
+       ${PROJECT_SOURCE_DIR}/include/proxddp/*.txx
+       )
+  list(APPEND LIB_HEADERS ${LIB_TEMPLATE_DECLARATIONS})
+  list(APPEND LIB_SOURCES ${LIB_TEMPLATE_SOURCES})
+
+endif(ENABLE_TEMPLATE_INSTANTIATION)
+
 list(FILTER LIB_HEADERS EXCLUDE REGEX ${PROJECT_SOURCE_DIR}/include/proxddp/compat/*)
 
 function(create_library)
@@ -188,6 +207,7 @@ endfunction()
 create_library()
 
 ADD_HEADER_GROUP(LIB_HEADERS)
+ADD_SOURCE_GROUP(LIB_SOURCES)
 
 install(TARGETS ${PROJECT_NAME}
         EXPORT ${TARGETS_EXPORT_NAME}

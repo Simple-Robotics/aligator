@@ -16,11 +16,12 @@ struct CrocCostModelWrapperTpl : CostAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using CrocCostModel = crocoddyl::CostModelAbstractTpl<Scalar>;
+  using CrocActionModel = crocoddyl::ActionModelAbstractTpl<Scalar>;
   using Base = CostAbstractTpl<Scalar>;
   using BaseData = CostDataAbstractTpl<Scalar>;
 
   boost::shared_ptr<CrocCostModel> croc_cost_;
-  boost::shared_ptr<crocoddyl::ActionModelAbstractTpl<Scalar>> action_model_;
+  boost::shared_ptr<CrocActionModel> action_model_;
 
   /// Constructor from a crocoddyl cost model.
   explicit CrocCostModelWrapperTpl(boost::shared_ptr<CrocCostModel> cost)
@@ -29,7 +30,7 @@ struct CrocCostModelWrapperTpl : CostAbstractTpl<_Scalar> {
 
   /// Constructor using a terminal action model.
   explicit CrocCostModelWrapperTpl(
-      boost::shared_ptr<crocoddyl::ActionModelAbstractTpl<Scalar>> action_model)
+      boost::shared_ptr<CrocActionModel> action_model)
       : Base((int)action_model->get_state()->get_ndx(),
              (int)action_model->get_nu()),
         action_model_(action_model) {}
