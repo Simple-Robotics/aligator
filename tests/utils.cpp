@@ -15,17 +15,15 @@ PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
 BOOST_AUTO_TEST_CASE(newton_raphson) {
   const long nx = 4;
-  MatrixXs jacobian_(nx, nx);
-  auto fun = [](const ConstVectorRef &x) {
+  using NR_t = NewtonRaphson<Scalar>;
+  auto fun = [](const ConstVectorRef &x, auto &out) {
     fmt::print("x = {}\n", x.transpose());
-    VectorXs out = x.array() * x.array() - 1.;
+    out = x.array() * x.array() - 1.;
     fmt::print("out = {}\n", out.transpose());
-    return out;
   };
-  auto Jfun = [&](const ConstVectorRef &x) {
-    jacobian_.setIdentity();
-    jacobian_.diagonal().array() *= 2. * x.array();
-    return jacobian_;
+  auto jac_fun = [&](const ConstVectorRef &x, auto &out) {
+    out.setIdentity();
+    out.diagonal().array() *= 2. * x.array();
   };
 
   VectorXs xinit(nx);
@@ -33,9 +31,17 @@ BOOST_AUTO_TEST_CASE(newton_raphson) {
   xinit *= 0.1;
   VectorXs xout(xinit);
   proxnlp::VectorSpaceTpl<Scalar> space(nx);
+  // buffer for evaluating the function
+  VectorXs err(nx);
+  err.setZero();
+  // buffer for direction
+  VectorXs dx = err;
+  // buffer for jacobian
+  MatrixXs jacobian_(nx, nx);
   Scalar eps = 1e-6;
-  bool conv =
-      NewtonRaphson<Scalar>::run(space, fun, Jfun, xinit, xout, eps, 10);
+  NR_t::DataView data{err, dx, jacobian_};
+  bool conv = NewtonRaphson<Scalar>::run(space, fun, jac_fun, xinit, xout, data,
+                                         eps, 10);
 
   VectorXs x_ans(nx);
   x_ans.setOnes();
