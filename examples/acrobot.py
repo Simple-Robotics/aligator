@@ -76,16 +76,15 @@ print(result)
 
 if args.display:
     from pinocchio.visualize import MeshcatVisualizer
-    import meshcat_utils as msu
 
     vizer = MeshcatVisualizer(
         rmodel, robot.collision_model, robot.visual_model, data=robot.data
     )
     vizer.initViewer(open=True, loadModel=True)
 
-    viz_util = msu.VizUtil(vizer)
-    viz_util.set_cam_angle_preset("acrobot")
+    vizer.setCameraPreset("acrobot")
+    qs = [x[:nq] for x in result.xs]
 
     print("[press enter]")
     for i in range(4):
-        viz_util.play_trajectory(result.xs, result.us, timestep=timestep)
+        vizer.play(qs, timestep)
