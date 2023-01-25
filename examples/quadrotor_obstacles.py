@@ -8,7 +8,6 @@ import hppfcl as fcl
 import example_robot_data as erd
 
 import numpy as np
-import meshcat_utils as msu
 import matplotlib.pyplot as plt
 
 import os
@@ -85,33 +84,37 @@ def main(args: Args):
     os.makedirs("assets", exist_ok=True)
     print(args)
 
+    R_nul = np.eye(3)
     if args.obstacles:  # we add the obstacles to the geometric model
-        R = np.eye(3)
         cyl_radius = 0.22
         cylinder = fcl.Cylinder(cyl_radius, 10.0)
         center_column1 = np.array([-0.45, 0.8, 0.0])
         geom_cyl1 = pin.GeometryObject(
-            "column1", 0, 0, pin.SE3(R, center_column1), cylinder
+            "column1", 0, pin.SE3(R_nul, center_column1), cylinder
         )
         center_column2 = np.array([0.3, 2.4, 0.0])
         geom_cyl2 = pin.GeometryObject(
-            "column2", 0, 0, pin.SE3(R, center_column2), cylinder
+            "column2", 0, pin.SE3(R_nul, center_column2), cylinder
         )
-        geom_cyl1.meshColor = np.array([2.0, 0.2, 1.0, 0.6])
-        geom_cyl2.meshColor = np.array([2.0, 0.2, 1.0, 0.6])
+        cyl_color = np.array([2.0, 0.2, 1.0, 0.4])
+        geom_cyl1.meshColor = cyl_color
+        geom_cyl2.meshColor = cyl_color
         robot.collision_model.addGeometryObject(geom_cyl1)
         robot.visual_model.addGeometryObject(geom_cyl1)
         robot.collision_model.addGeometryObject(geom_cyl2)
         robot.visual_model.addGeometryObject(geom_cyl2)
+
+    if args.display:
+        # 1st arg is the plane normal
+        # 2nd arg is offset from origin
+        plane = fcl.Plane(np.array([0.0, 0.0, 1.0]), 0.0)
+        plane_obj = pin.GeometryObject("plane", 0, pin.SE3.Identity(), plane)
+        plane_obj.meshColor[:] = [1.0, 1.0, 0.95, 1.0]
+        robot.visual_model.addGeometryObject(plane_obj)
+        robot.collision_model.addGeometryObject(plane_obj)
+
     robot.collision_model.geometryObjects[0].geometry.computeLocalAABB()
     quad_radius = robot.collision_model.geometryObjects[0].geometry.aabb_radius
-
-    viewer = meshcat.Visualizer()
-    vizer = pin.visualize.MeshcatVisualizer(
-        rmodel, robot.collision_model, robot.visual_model, data=rdata
-    )
-    vizer.initViewer(viewer, loadModel=True)
-    vizer.displayCollisions(True)
 
     space = manifolds.MultibodyPhaseSpace(rmodel)
 
@@ -173,7 +176,6 @@ def main(args: Args):
 
     tau = pin.rnea(rmodel, rdata, robot.q0, np.zeros(nv), np.zeros(nv))
     u0, _, _, _ = np.linalg.lstsq(QUAD_ACT_MATRIX, tau)
-    vizer.display(x0[:nq])
 
     x1 = space.rand()
 
@@ -289,9 +291,36 @@ def main(args: Args):
 
     _, x_term = task_fun(nsteps)
     problem = setup()
+
+    objective_color = np.array([5, 104, 143, 200]) / 255.0
+    if args.obstacles:
+        sp1_obj = pin.GeometryObject(
+            "obj1", 0, pin.SE3(R_nul, x_tar3[:3]), fcl.Sphere(0.05)
+        )
+        sp1_obj.meshColor[:] = objective_color
+        robot.visual_model.addGeometryObject(sp1_obj)
+    else:
+        sp1_obj = pin.GeometryObject(
+            "obj1", 0, pin.SE3(R_nul, x_tar1[:3]), fcl.Sphere(0.05)
+        )
+        sp2_obj = pin.GeometryObject(
+            "obj2", 0, pin.SE3(R_nul, x_tar2[:3]), fcl.Sphere(0.05)
+        )
+        sp1_obj.meshColor[:] = objective_color
+        sp2_obj.meshColor[:] = objective_color
+        robot.visual_model.addGeometryObject(sp1_obj)
+        robot.visual_model.addGeometryObject(sp2_obj)
+
+    viewer = meshcat.Visualizer()
+    vizer = pin.visualize.MeshcatVisualizer(
+        rmodel, robot.collision_model, robot.visual_model, data=rdata
+    )
+    vizer.initViewer(viewer, loadModel=True, open=args.display)
+    vizer.displayCollisions(True)
+
     tol = 1e-3
-    mu_init = 1e-2
-    rho_init = 1e-4
+    mu_init = 1e-1
+    rho_init = 0.0
     verbose = proxddp.VerboseLevel.VERBOSE
     history_cb = proxddp.HistoryCallback()
     solver = proxddp.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
@@ -302,19 +331,6 @@ def main(args: Args):
     solver.registerCallback(history_cb)
     solver.setup(problem)
     solver.run(problem, xs_init, us_init)
-    if args.display:
-        viz_util = msu.VizUtil(vizer)
-        viz_util.draw_plane(
-            8, 6, transform=meshcat.transformations.translation_matrix([0.0, 2.0, 0.0])
-        )
-        viz_util.set_bg_color()
-        if args.obstacles:
-            viz_util.draw_objectives([x_tar3], prefix="obj")
-        else:
-            viz_util.draw_objectives([x_tar1, x_tar2], prefix="obj")
-        vizer.viewer.open()
-    else:
-        viz_util = None
 
     results = solver.getResults()
     workspace = solver.getWorkspace()
@@ -404,8 +420,8 @@ def main(args: Args):
             d /= np.linalg.norm(d)
 
         vid_uri = "assets/{}.mp4".format(TAG)
-        vid_recorder = msu.VideoRecorder(vid_uri, fps=1.0 / dt)
-        vid_recorder = None
+        qs_opt = [x[:nq] for x in xs_opt]
+        base_link_id = rmodel.getFrameId("base_link")
 
         def get_callback(i: int):
             def _callback(t):
@@ -413,24 +429,24 @@ def main(args: Args):
                 n = min(t, n)
                 rp = root_pt_opt[n]
                 pos = rp + directions_[i] * cam_dist
-                viz_util.set_cam_pos(pos)
-                viz_util.set_cam_target(rp)
+                vizer.setCameraPosition(pos)
+                vizer.setCameraTarget(rp)
+                vel = xs_opt[t][nq:]
+                pin.forwardKinematics(rmodel, vizer.data, qs_opt[t], vel)
+                vizer.drawFrameVelocities(base_link_id)
 
             return _callback
 
         input("[enter to play]")
-        for i in range(4):
-            viz_util.play_trajectory(
-                xs_opt,
-                us_opt,
-                frame_ids=[rmodel.getFrameId("base_link")],
-                record=args.record,
-                timestep=dt,
-                show_vel=True,
-                # frame_sphere_size=quad_radius,
-                recorder=vid_recorder,
-                post_callback=get_callback(i),
-            )
+        if args.record:
+            ctx = vizer.create_video_ctx(vid_uri, fps=30)
+        else:
+            import contextlib
+
+            ctx = contextlib.nullcontext()
+        with ctx:
+            for i in range(4):
+                vizer.play(qs_opt, dt, get_callback(i))
 
 
 if __name__ == "__main__":
