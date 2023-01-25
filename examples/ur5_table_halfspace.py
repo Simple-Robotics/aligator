@@ -3,7 +3,6 @@ import numpy as np
 
 import pinocchio as pin
 
-import meshcat_utils as msu
 import example_robot_data as erd
 import matplotlib.pyplot as plt
 
@@ -26,18 +25,6 @@ robot = erd.load("ur5")
 rmodel = robot.model
 rdata = robot.data
 nv = rmodel.nv
-
-if args.display:
-    vizer = pin.visualize.MeshcatVisualizer(
-        rmodel, robot.collision_model, robot.visual_model, data=rdata
-    )
-    vizer.initViewer(open=True, loadModel=True)
-    q0 = pin.neutral(rmodel)
-    vizer.display(q0)
-    vizutil = msu.VizUtil(vizer)
-    vizutil.set_bg_color()
-else:
-    vizutil = None
 
 space = manifolds.MultibodyPhaseSpace(rmodel)
 ndx = space.ndx
@@ -177,11 +164,12 @@ plt.show()
 if args.display:
     import meshcat.geometry as mgeom
     import meshcat.transformations as mtransf
+    import contextlib
+    import hppfcl
 
     video_fps = 0.5 / dt
-    recorder = msu.VideoRecorder("assets/ur5_halfspace_under.mp4", fps=video_fps)
 
-    def planehoz():
+    def planehoz(vizer):
         p_height = table_height
         p_width = table_side_y_r - table_side_y_l
         p_center = (table_side_y_l + table_side_y_r) / 2.0
@@ -205,14 +193,37 @@ if args.display:
         vizer.viewer["plane_y2"].set_object(plane_v, material)
         vizer.viewer["plane_y2"].set_transform(_M3)
 
-    planehoz()
-    vizutil.draw_objective(target=p_ref)
+    sphere = hppfcl.Sphere(0.05)
+    sphereobj = pin.GeometryObject("objective", 0, pin.SE3.Identity(), sphere)
+    sphereobj.placement.translation[:] = p_ref
+
+    vizer = pin.visualize.MeshcatVisualizer(
+        rmodel, robot.collision_model, robot.visual_model, data=rdata
+    )
+    vizer.initViewer(open=True, loadModel=True)
+    vizer.display(robot.q0)
+    vizer.setBackgroundColor()
+
+    planehoz(vizer)
+
+    ctx = (
+        vizer.create_video_ctx("assets/ur5_halfspace_under.mp4", fps=video_fps)
+        if args.record
+        else contextlib.nullcontext()
+    )
 
     slow_factor = 2.0
     play_dt = dt / slow_factor
-    vizutil.set_cam_angle_preset("preset1")
+    vizer.setCameraPreset("preset1")
     input("[enter to play]")
-    for i in range(4):
-        vizutil.play_trajectory(
-            rs.xs, rs.us, frame_ids=[frame_id], timestep=play_dt, recorder=recorder
-        )
+    nq = rmodel.nq
+    qs = [x[:nq] for x in rs.xs]
+    vs = [x[nq:] for x in rs.xs]
+
+    def callback(i):
+        pin.forwardKinematics(rmodel, vizer.data, qs[i], vs[i])
+        vizer.drawFrameVelocities(frame_id)
+
+    with ctx:
+        for i in range(4):
+            vizer.play(qs, dt, callback)

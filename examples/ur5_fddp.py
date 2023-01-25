@@ -7,7 +7,6 @@ from proxddp import manifolds, dynamics, SolverFDDP
 import numpy as np
 import example_robot_data as erd
 import pinocchio as pin
-import meshcat_utils as msu
 
 import tap
 
@@ -54,11 +53,11 @@ for i in range(nsteps):
     stages.append(st)
 
 wx_term = np.eye(3) * 6.0
-rid = rmodel.getFrameId("tool0")
+frame_id = rmodel.getFrameId("tool0")
 term_cost = proxddp.CostStack(space.ndx, nu)
 term_cost.addCost(
     proxddp.QuadraticResidualCost(
-        proxddp.FrameTranslationResidual(ndx, nu, rmodel, p_ref, rid), wx_term
+        proxddp.FrameTranslationResidual(ndx, nu, rmodel, p_ref, frame_id), wx_term
     )
 )
 problem = proxddp.TrajOptProblem(x0, stages, term_cost)
@@ -84,14 +83,18 @@ if args.display:
         rmodel, robot.collision_model, robot.visual_model, data=rdata
     )
     vizer.initViewer(open=args.display, loadModel=True)
-    viz_util = msu.VizUtil(vizer)
     q0 = pin.neutral(rmodel)
     vizer.display(q0)
-    viz_util.draw_objective(p_ref)
-    viz_util.set_cam_angle_preset("preset1")
+    vizer.setCameraPreset("preset1")
+
+    nq = rmodel.nq
+    qs = [x[:nq] for x in results.xs]
+
+    def callback(i: int):
+        v = results.xs[i][nq:]
+        pin.forwardKinematics(rmodel, vizer.data, qs[i], v)
+        vizer.drawFrameVelocities(frame_id)
 
     input("[press enter]")
     for _ in range(3):
-        viz_util.play_trajectory(
-            results.xs, results.us, frame_ids=[rid], timestep=timestep, show_vel=True
-        )
+        vizer.play(qs, timestep, callback)

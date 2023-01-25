@@ -2,7 +2,6 @@ import proxddp
 import numpy as np
 
 import pinocchio as pin
-import meshcat_utils as msu
 import example_robot_data as erd
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
@@ -35,8 +34,7 @@ space = manifolds.MultibodyPhaseSpace(rmodel)
 
 vizer = MeshcatVisualizer(rmodel, robot.collision_model, robot.visual_model, data=rdata)
 vizer.initViewer(open=args.display, loadModel=True)
-viz_util = msu.VizUtil(vizer)
-viz_util.set_bg_color()
+vizer.setBackgroundColor()
 
 
 x0 = space.neutral()
@@ -209,23 +207,29 @@ plt.show()
 
 if args.display:
     import time
+    import contextlib
 
     input("[Press enter]")
     num_repeat = 3
     cp = np.array([0.8, 0.8, 0.8])
     cps_ = [cp.copy() for _ in range(num_repeat)]
     cps_[1][1] = -0.4
-    vidrecord = msu.VideoRecorder("examples/ur5_reach_ctrlbox.mp4", fps=1.0 / dt)
+    ctx = (
+        vizer.create_video_ctx("examples/ur5_reach_ctrlbox.mp4", fps=1.0 / dt)
+        if args.record
+        else contextlib.nullcontext()
+    )
 
-    for i in range(num_repeat):
-        viz_util.set_cam_pos(cps_[i])
-        viz_util.draw_objective(target_pos)
-        viz_util.play_trajectory(
-            xs_opt,
-            us_opt,
-            frame_ids=[tool_id],
-            timestep=dt,
-            record=args.record,
-            recorder=vidrecord,
-        )
-        time.sleep(0.5)
+    qs = [x[:nq] for x in xs_opt]
+    vs = [x[nq:] for x in xs_opt]
+
+    def callback(i: int):
+        pin.forwardKinematics(rmodel, vizer.data, qs[i], vs[i])
+        vizer.drawFrameVelocities(tool_id)
+
+    with ctx:
+        for i in range(num_repeat):
+            vizer.setCameraPosition(cps_[i])
+            vizer.play(qs, dt, callback)
+
+            time.sleep(0.5)
