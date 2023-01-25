@@ -85,19 +85,3 @@ for params in opts:
 
 
 pprint.pprint(d)
-
-"""
-import meshcat_utils as msu
-from pinocchio.visualize import MeshcatVisualizer
-
-vizer = MeshcatVisualizer(rmodel, robot.collision_model, robot.visual_model, data=rdata)
-vizer.initViewer(open=True, loadModel=True)
-vizutil = msu.VizUtil(vizer)
-
-
-xs_opt = res.xs
-us_opt = res.us
-
-for _ in range(4):
-    vizutil.play_trajectory(xs_opt, us_opt, frame_ids=[tool_id], timestep=dt)
-"""

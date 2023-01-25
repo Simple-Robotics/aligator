@@ -1,7 +1,6 @@
 import numpy as np
 import proxddp
 import pinocchio as pin
-import meshcat_utils as msu
 import example_robot_data as erd
 import matplotlib.pyplot as plt
 
@@ -43,11 +42,7 @@ if args.display:
     )
     vizer.initViewer(open=True, loadModel=True)
     vizer.display(pin.neutral(rmodel))
-
-    vizutil = msu.VizUtil(vizer)
-    vizutil.set_bg_color()
-else:
-    vizutil = None
+    vizer.setBackgroundColor()
 
 space = manifolds.MultibodyPhaseSpace(rmodel)
 
@@ -158,9 +153,10 @@ plt.tight_layout()
 plt.show()
 
 if args.display:
-    vizutil.set_cam_pos([1.2, 0.0, 1.2])
-    vizutil.set_cam_target([0.0, 0.0, 1.0])
+    vizer.setCameraPosition([1.2, 0.0, 1.2])
+    vizer.setCameraTarget([0.0, 0.0, 1.0])
+    qs = [x[:nq] for x in results.xs.tolist()]
 
     for _ in range(3):
-        vizutil.play_trajectory(results.xs, results.us, timestep=dt)
+        vizer.play(qs, dt)
         time.sleep(0.5)

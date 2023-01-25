@@ -18,6 +18,7 @@ actuation_matrix = np.eye(rmodel.nv)
 ode_dynamics = MultibodyFreeFwdDynamics(space, actuation_matrix)
 x0 = space.rand()
 nsteps = 500
+nq = rmodel.nq
 dt = 0.01
 times_ = np.linspace(0.0, dt * nsteps, nsteps + 1)
 
@@ -26,23 +27,23 @@ DISPLAY = False
 
 if DISPLAY:
     from pinocchio.visualize import MeshcatVisualizer
-    import meshcat_utils as msu
 
     vizer = MeshcatVisualizer(
         rmodel, robot.collision_model, robot.visual_model, data=rdata
     )
     vizer.initViewer(open=True, loadModel=True)
-    viz_util = msu.VizUtil(vizer)
     q0 = pin.neutral(rmodel)
     vizer.display(q0)
 
 
-def display(xs, us, dt):
+def display(xs, dt):
     import time
 
     time.sleep(1)
+    qs = [x[:nq] for x in xs]
+
     for i in range(3):
-        viz_util.play_trajectory(xs, us, timestep=dt)
+        vizer.play(qs, dt)
 
 
 def computeMechanicalEnergy(rmodel, rdata, xs):
@@ -78,7 +79,7 @@ def test_rk2(setup_fig):
     us = [u0] * nsteps
     xs = proxddp.rollout(discrete_dyn, x0, us).tolist()
     if DISPLAY:
-        display(xs, us, dt)
+        display(xs, dt)
     e = computeMechanicalEnergy(rmodel, rdata, xs)
     plt.plot(times_, e, label="RK2")
 
@@ -89,7 +90,7 @@ def test_midpoint(setup_fig):
     us = [u0] * nsteps
     xs = proxddp.rollout_implicit(discrete_dyn, x0, us).tolist()
     if DISPLAY:
-        display(xs, us, dt)
+        display(xs, dt)
     e = computeMechanicalEnergy(rmodel, rdata, xs)
     plt.plot(times_, e, label="midpoint")
 
