@@ -1,6 +1,7 @@
+set(INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/compat/crocoddyl)
 
 file(GLOB_RECURSE HEADERS
-     ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
+     ${INCLUDE_DIR}/*.hpp)
 set(SOURCES)
 
 if(ENABLE_TEMPLATE_INSTANTIATION)
@@ -9,11 +10,9 @@ if(ENABLE_TEMPLATE_INSTANTIATION)
   list(APPEND SOURCES ${SOURCES_TEMPL})
 
   file(GLOB HEADERS_TEMPL
-      ${CMAKE_CURRENT_SOURCE_DIR}/*.txx)
+      ${INCLUDE_DIR}/*.txx)
   list(APPEND HEADERS ${HEADERS_TEMPL})
 endif()
-
-set(LIB_HEADERS ${LIB_HEADERS} ${HEADERS})
 
 message(STATUS "Compat module: headers ${HEADERS}")
 message(STATUS "Compat module: sources ${SOURCES}")
