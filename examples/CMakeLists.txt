@@ -6,11 +6,14 @@ ADD_PROJECT_DEPENDENCY(benchmark REQUIRED PKG_CONFIG_REQUIRES "benchmark >= 1.5.
 
 cmake_policy(SET CMP0057 NEW)
 
-file(GLOB EXAMPLES_CPP)
+set(EXAMPLES_CPP
+    "se2-car.cpp"
+    "bench/lqr.cpp")
 
-list(APPEND CROC_BENCH_CPP "bench/croc-talos-arm.cpp" "bench/lqr.cpp")
-list(APPEND EXAMPLES_CPP ${CROC_BENCH_CPP})
+set(EXAMPLES_WITH_CROC_CPP "bench/croc-talos-arm.cpp")
+list(APPEND EXAMPLES_CPP ${EXAMPLES_WITH_CROC_CPP})
 
+message(STATUS "Examples CPP: ${EXAMPLES_CPP}")
 
 foreach(exfile ${EXAMPLES_CPP})
   get_filename_component(exname ${exfile} NAME_WE)
@@ -24,8 +27,8 @@ foreach(exfile ${EXAMPLES_CPP})
   target_link_libraries(${exname} PUBLIC ${PROJECT_NAME})
   target_link_libraries(${exname} PRIVATE benchmark::benchmark)
 
-  if (${exfile} IN_LIST CROC_BENCH_CPP)
-    find_package(crocoddyl REQUIRED)
+  if (${exfile} IN_LIST EXAMPLES_WITH_CROC_CPP)
+    ADD_PROJECT_DEPENDENCY(crocoddyl REQUIRED)
     target_link_libraries(${exname} PRIVATE crocoddyl::crocoddyl)
   endif()
 endforeach(exfile)
