@@ -11,6 +11,10 @@ from proxnlp import (
     LinesearchStrategy,
     LinesearchOptions,
     LSInterpolation,
+    LDLTChoice,
+    LDLT_BLOCKED,
+    LDLT_DENSE,
+    LDLT_EIGEN,
 )
 
 
