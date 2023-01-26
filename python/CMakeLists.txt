@@ -8,10 +8,10 @@ file(GLOB_RECURSE ${PYLIB_NAME}_HEADERS
 
 set(PY_HEADERS ${${PYLIB_NAME}_HEADERS})
 set(PY_SOURCES ${${PYLIB_NAME}_SOURCES})
-IF(NOT BUILD_CROCODDYL_COMPAT)
+if(NOT BUILD_CROCODDYL_COMPAT)
     list(FILTER PY_HEADERS EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/compat/croco.hpp)
     list(FILTER PY_SOURCES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/compat/expose-croco-compat.cpp)
-ENDIF()
+endif()
 
 function(make_bindings)
   add_library(${PYLIB_NAME} SHARED ${PY_HEADERS} ${PY_SOURCES})
@@ -30,6 +30,11 @@ function(make_bindings)
 
   target_link_libraries(${PYLIB_NAME} PUBLIC ${PROJECT_NAME} eigenpy::eigenpy)
   target_link_boost_python(${PYLIB_NAME} PUBLIC)
+
+  if(BUILD_CROCODDYL_COMPAT)
+    target_link_libraries(${PYLIB_NAME} PUBLIC ${CROC_COMPAT_LIB_NAME})
+  endif(BUILD_CROCODDYL_COMPAT)
+
   install(TARGETS ${PYLIB_NAME}
           EXPORT ${TARGETS_EXPORT_NAME}
           DESTINATION ${${PYLIB_NAME}_INSTALL_DIR})
@@ -44,9 +49,9 @@ set(SYMLINKS
     ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python
     ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python/modelling
     ${CMAKE_CURRENT_BINARY_DIR}/examples)
-IF(BUILD_CROCODDYL_COMPAT)
+if(BUILD_CROCODDYL_COMPAT)
     list(APPEND SYMLINKS ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python/compat)
-ENDIF()
+endif(BUILD_CROCODDYL_COMPAT)
 file(MAKE_DIRECTORY ${SYMLINKS})
 
 foreach(pyheader ${PY_HEADERS})
