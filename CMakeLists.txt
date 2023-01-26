@@ -152,7 +152,8 @@ file(GLOB_RECURSE LIB_HEADERS
 if(ENABLE_TEMPLATE_INSTANTIATION)
 
   file(GLOB_RECURSE LIB_TEMPLATE_SOURCES
-       ${PROJECT_SOURCE_DIR}/src/*.cpp
+       ${PROJECT_SOURCE_DIR}/src/core/*.cpp
+       ${PROJECT_SOURCE_DIR}/src/fddp/*.cpp
        )
   file(GLOB_RECURSE LIB_TEMPLATE_DECLARATIONS
        ${PROJECT_SOURCE_DIR}/include/proxddp/*.txx
@@ -169,6 +170,7 @@ function(create_library)
   set_target_properties(${PROJECT_NAME}
     PROPERTIES
     LINKER_LANGUAGE CXX
+    LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
     VERSION ${PROJECT_VERSION})
 
   if(BUILD_LIBRARY_WITH_VERSION_SUFFIX)
@@ -217,6 +219,7 @@ install(TARGETS ${PROJECT_NAME}
 
 if(BUILD_CROCODDYL_COMPAT)
   target_compile_definitions(${PROJECT_NAME} PUBLIC -DWITH_CROCODDYL_COMPAT)
+  set(CROC_COMPAT_LIB_NAME ${PROJECT_NAME}_croc_compat)
   add_subdirectory(include/proxddp/compat/crocoddyl)
 endif()
 
