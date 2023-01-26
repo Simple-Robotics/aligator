@@ -3,6 +3,10 @@
 #include "proxddp/python/compat/croco.hpp"
 #include "proxddp/python/utils.hpp"
 
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/compat/crocoddyl/instantiate.txx"
+#endif
+
 namespace proxddp {
 namespace python {
 
