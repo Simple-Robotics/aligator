@@ -21,6 +21,10 @@ using DynamicsDataWrapper = DynamicsDataWrapperTpl<Scalar>;
 using ActionModelWrapper = CrocActionModelWrapperTpl<Scalar>;
 using ActionDataWrapper = CrocActionDataWrapperTpl<Scalar>;
 
+using CrocCostModel = crocoddyl::CostModelAbstractTpl<Scalar>;
+using CrocActionModel = crocoddyl::ActionModelAbstractTpl<Scalar>;
+using CrocShootingProblem = crocoddyl::ShootingProblemTpl<Scalar>;
+
 } // namespace context
 } // namespace croc
 
