@@ -108,7 +108,7 @@ public:
   /// @name Linear algebra options
   /// \{
   std::size_t max_refinement_steps_ = 5;
-  Scalar REFINEMENT_THRESHOLD = 1e-13;
+  Scalar refinement_threshold_ = 1e-13;
   /// Choice of factorization routine.
   LDLTChoice ldlt_algo_choice_;
   /// \}

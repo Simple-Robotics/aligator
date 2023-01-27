@@ -1050,7 +1050,7 @@ bool SolverProxDDP<Scalar>::iterative_refinement_impl(const LdltType &ldlt,
   err = -rhs;
   err.noalias() -= mat * Xout;
 
-  while (math::infty_norm(err) > REFINEMENT_THRESHOLD) {
+  while (math::infty_norm(err) > refinement_threshold_) {
 
     if (it >= max_refinement_steps_) {
       return false;

@@ -80,7 +80,7 @@ void exposeProxDDP() {
       .def_readwrite("is_x0_fixed", &SolverType::is_x0_fixed_,
                      "Set x0 to be fixed to the initial condition.")
       .def_readwrite("max_refinement_steps", &SolverType::max_refinement_steps_)
-      .def_readwrite("refinement_threshold", &SolverType::REFINEMENT_THRESHOLD)
+      .def_readwrite("refinement_threshold", &SolverType::refinement_threshold_)
       .def_readwrite("ldlt_algo_choice", &SolverType::ldlt_algo_choice_,
                      "Choice of LDLT algorithm.")
       .def_readwrite("multiplier_update_mode",
