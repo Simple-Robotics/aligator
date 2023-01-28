@@ -1,16 +1,18 @@
-include(${PROJECT_SOURCE_DIR}/cmake/stubs.cmake)
+if(GENERATE_PYTHON_STUBS)
+  include(${PROJECT_SOURCE_DIR}/cmake/stubs.cmake)
+endif(GENERATE_PYTHON_STUBS)
 
 file(GLOB_RECURSE ${PYLIB_NAME}_SOURCES
      ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
 file(GLOB_RECURSE ${PYLIB_NAME}_HEADERS
-     ${CMAKE_CURRENT_SOURCE_DIR}/**.hpp)
+     ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
 
 set(PY_HEADERS ${${PYLIB_NAME}_HEADERS})
 set(PY_SOURCES ${${PYLIB_NAME}_SOURCES})
 if(NOT BUILD_CROCODDYL_COMPAT)
-    list(FILTER PY_HEADERS EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/compat/croco.hpp)
-    list(FILTER PY_SOURCES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/compat/expose-croco-compat.cpp)
+    list(FILTER PY_HEADERS EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/compat/*.hpp)
+    list(FILTER PY_SOURCES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/compat/*.cpp)
 endif()
 
 function(make_bindings)
@@ -29,7 +31,6 @@ function(make_bindings)
   endif()
 
   target_link_libraries(${PYLIB_NAME} PUBLIC ${PROJECT_NAME} eigenpy::eigenpy)
-  target_link_boost_python(${PYLIB_NAME} PUBLIC)
 
   if(BUILD_CROCODDYL_COMPAT)
     target_link_libraries(${PYLIB_NAME} PUBLIC ${CROC_COMPAT_LIB_NAME})

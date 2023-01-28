@@ -194,13 +194,15 @@ function(create_library)
   target_link_libraries(${PROJECT_NAME} PUBLIC proxnlp::proxnlp)
   target_link_libraries(${PROJECT_NAME} PUBLIC Boost::filesystem Boost::system Boost::serialization)
   target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt)
+  # set the install-tree include dirs
+  # used by dependent projects to consume this target
   target_include_directories(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:include>)
 
   foreach(headerFile ${LIB_HEADERS})
     string(REGEX REPLACE "${PROJECT_SOURCE_DIR}/" "" headerFileRelative ${headerFile})
     get_filename_component(headerPath ${headerFileRelative} PATH)
     install(FILES ${headerFileRelative}
-            DESTINATION ${CMAKE_INSTALL_PREFIX}/${headerPath}
+            DESTINATION ${headerPath}
             PERMISSIONS OWNER_READ GROUP_READ WORLD_READ OWNER_WRITE)
   endforeach(headerFile ${LIB_HEADERS})
 
@@ -213,7 +215,6 @@ ADD_SOURCE_GROUP(LIB_SOURCES)
 
 install(TARGETS ${PROJECT_NAME}
         EXPORT ${TARGETS_EXPORT_NAME}
-        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}
         INCLUDES DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
 

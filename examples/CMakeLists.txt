@@ -29,7 +29,7 @@ foreach(exfile ${EXAMPLES_CPP})
 
   if (${exfile} IN_LIST EXAMPLES_WITH_CROC_CPP)
     ADD_PROJECT_DEPENDENCY(crocoddyl REQUIRED)
-    target_link_libraries(${exname} PRIVATE crocoddyl::crocoddyl)
+    target_link_libraries(${exname} PRIVATE ${CROC_COMPAT_LIB_NAME})
   endif()
 endforeach(exfile)
 
