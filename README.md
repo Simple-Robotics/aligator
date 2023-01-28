@@ -4,7 +4,7 @@ A primal-dual augmented Lagrangian-type trajectory optimization solver.
 
 ## Features
 
-This package provides
+This is a templated library, which provides
 
 * a modelling interface for optimal control problems, node-per-node
 * an efficient solver algorithm
@@ -39,6 +39,7 @@ Options:
 
 * For developers, add the `-DCMAKE_EXPORT_COMPILE_COMMANDS=1` when working with language servers e.g. clangd.
 * To use the Crocoddyl interface, add `-DBUILD_CROCODDYL_COMPAT=ON`
+* By default, building the library will instantiate the templates for the `double` scalar type.
 
 **Building against conda:** define
 
