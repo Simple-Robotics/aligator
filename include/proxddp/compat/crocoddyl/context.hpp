@@ -1,8 +1,6 @@
-/**
- * @file  context.hpp
- * @brief Defines the context for instantiating the templates.
- *
- */
+/// @file  context.hpp
+/// @brief Defines the context for instantiating the templates.
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "proxddp/compat/crocoddyl/fwd.hpp"
 #include "proxddp/context.hpp"
 
@@ -22,7 +20,9 @@ using ActionModelWrapper = CrocActionModelWrapperTpl<Scalar>;
 using ActionDataWrapper = CrocActionDataWrapperTpl<Scalar>;
 
 using CrocCostModel = crocoddyl::CostModelAbstractTpl<Scalar>;
+using CrocCostData = crocoddyl::CostDataAbstractTpl<Scalar>;
 using CrocActionModel = crocoddyl::ActionModelAbstractTpl<Scalar>;
+using CrocActionData = crocoddyl::ActionDataAbstractTpl<Scalar>;
 using CrocShootingProblem = crocoddyl::ShootingProblemTpl<Scalar>;
 
 } // namespace context
