@@ -4,6 +4,7 @@
 #pragma once
 
 #include "proxddp/core/solver-proxddp.hpp"
+#include "proxddp/core/linalg.hpp"
 
 namespace proxddp {
 
@@ -120,10 +121,10 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem,
     typename Workspace::LDLT &ldlt = *workspace.ldlts_[0];
     PROXDDP_NOMALLOC_END;
     ldlt.compute(kkt_mat);
+    iterative_refinement_impl<Scalar>::run(
+        ldlt, kkt_mat, kkt_rhs, workspace.kkt_resdls_[0], workspace.pd_step_[0],
+        refinement_threshold_, max_refinement_steps_);
     PROXDDP_NOMALLOC_BEGIN;
-
-    iterative_refinement_impl(ldlt, kkt_mat, kkt_rhs, workspace.kkt_resdls_[0],
-                              workspace.pd_step_[0]);
 
     const ProxData &proxdata = *workspace.prox_datas[0];
     workspace.stage_inner_crits(0) = math::infty_norm(kkt_rhs);
@@ -507,7 +508,11 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   MatrixXs &gains = results.gains_[t];
   MatrixXs &resdl = workspace.kkt_resdls_[t + 1];
 
-  iterative_refinement_impl(ldlt, kkt_mat, kkt_rhs, resdl, gains);
+  PROXDDP_NOMALLOC_END;
+  bool lin_solved = iterative_refinement_impl<Scalar>::run(
+      ldlt, kkt_mat, kkt_rhs, resdl, gains, refinement_threshold_,
+      max_refinement_steps_);
+  PROXDDP_NOMALLOC_BEGIN;
 
   /* Value function */
   VParams &vp = workspace.value_params[t];
@@ -772,6 +777,27 @@ void SolverProxDDP<Scalar>::updateTolerancesOnSuccess() {
 }
 
 template <typename Scalar>
+Scalar
+SolverProxDDP<Scalar>::forwardPass(const Problem &problem, Workspace &workspace,
+                                   const Results &results, const Scalar alpha) {
+  switch (rollout_type_) {
+  case RolloutType::LINEAR:
+    forward_linear_impl(problem, workspace, results, alpha);
+    break;
+  case RolloutType::NONLINEAR:
+    nonlinear_rollout_impl(problem, workspace, results, alpha);
+    break;
+  default:
+    assert(false && "unknown RolloutType!");
+    break;
+  }
+  // computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
+  computeMultipliers(problem, workspace, workspace.trial_lams);
+  return merit_fun.evaluate(problem, workspace.trial_lams, workspace,
+                            workspace.problem_data);
+}
+
+template <typename Scalar>
 bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
                                       Workspace &workspace, Results &results) {
 
@@ -1032,41 +1058,6 @@ void SolverProxDDP<Scalar>::computeCriterion(const Problem &problem,
   }
   workspace.inner_criterion = math::infty_norm(workspace.stage_inner_crits);
   results.dual_infeas = math::infty_norm(workspace.stage_dual_infeas);
-}
-
-template <typename Scalar>
-template <typename LdltType, typename OutType>
-bool SolverProxDDP<Scalar>::iterative_refinement_impl(const LdltType &ldlt,
-                                                      const MatrixXs &mat,
-                                                      const MatrixXs &rhs,
-                                                      MatrixXs &err,
-                                                      OutType &Xout) const {
-  PROXDDP_NOMALLOC_END;
-  std::size_t it = 0;
-
-  Xout = -rhs;
-  ldlt.solveInPlace(Xout);
-
-  err = -rhs;
-  err.noalias() -= mat * Xout;
-
-  while (math::infty_norm(err) > refinement_threshold_) {
-
-    if (it >= max_refinement_steps_) {
-      return false;
-    }
-
-    ldlt.solveInPlace(err);
-    Xout += err;
-
-    // update residual
-    err = -rhs;
-    err.noalias() -= mat * Xout;
-
-    it++;
-  }
-  PROXDDP_NOMALLOC_BEGIN;
-  return true;
 }
 
 } // namespace proxddp

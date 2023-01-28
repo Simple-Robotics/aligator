@@ -161,23 +161,7 @@ public:
                                 const Scalar alpha) const;
 
   Scalar forwardPass(const Problem &problem, Workspace &workspace,
-                     const Results &results, const Scalar alpha) {
-    switch (rollout_type_) {
-    case RolloutType::LINEAR:
-      forward_linear_impl(problem, workspace, results, alpha);
-      break;
-    case RolloutType::NONLINEAR:
-      nonlinear_rollout_impl(problem, workspace, results, alpha);
-      break;
-    default:
-      assert(false && "unknown RolloutType!");
-      break;
-    }
-    // computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
-    computeMultipliers(problem, workspace, workspace.trial_lams);
-    return merit_fun.evaluate(problem, workspace.trial_lams, workspace,
-                              workspace.problem_data);
-  }
+                     const Results &results, const Scalar alpha);
 
   void compute_dir_x0(const Problem &problem, Workspace &workspace,
                       const Results &results) const;
@@ -235,11 +219,6 @@ public:
 
   void computeCriterion(const Problem &problem, Workspace &workspace,
                         Results &results) const;
-
-  template <typename LdltType, typename OutType>
-  bool iterative_refinement_impl(const LdltType &ldlt, const MatrixXs &mat,
-                                 const MatrixXs &rhs, MatrixXs &err,
-                                 OutType &Xout) const;
 
   /// @name callbacks
   /// \{
