@@ -33,5 +33,8 @@ using ExplicitDynData = ExplicitDynamicsDataTpl<Scalar>;
 using SolverProxDDP = ::proxddp::SolverProxDDP<Scalar>;
 using SolverFDDP = ::proxddp::SolverFDDP<Scalar>;
 
+using Workspace = WorkspaceTpl<Scalar>;
+using Results = ResultsTpl<Scalar>;
+
 } // namespace context
 } // namespace proxddp

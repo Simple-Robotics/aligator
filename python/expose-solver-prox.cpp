@@ -8,10 +8,10 @@ namespace python {
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(prox_run_overloads, run, 1, 4)
 
 void exposeProxDDP() {
+  using context::Results;
   using context::Scalar;
   using context::TrajOptProblem;
-  using Workspace = WorkspaceTpl<Scalar>;
-  using Results = ResultsTpl<Scalar>;
+  using context::Workspace;
 
   bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>,
              boost::noncopyable>(
