@@ -68,6 +68,8 @@ static void BM_lqr_prox(benchmark::State &state) {
   const T mu_init = 1e-6;
   const T rho_init = 0.;
   SolverProxDDP<T> solver(TOL, mu_init, rho_init, max_iters, verbose);
+  solver.ldlt_algo_choice_ = static_cast<LDLTChoice>(state.range(1));
+  solver.max_refinement_steps_ = 0;
   solver.setup(problem);
 
   for (auto _ : state) {
@@ -92,19 +94,25 @@ static void BM_lqr_fddp(benchmark::State &state) {
   state.SetComplexityN(state.range(0));
 }
 
-const auto unit = benchmark::kMicrosecond;
-
 int main(int argc, char **argv) {
-  benchmark::RegisterBenchmark("PROXDDP", &BM_lqr_prox)
-      ->RangeMultiplier(2)
-      ->Range(1 << 3, 1 << 9)
-      ->Complexity()
-      ->Unit(unit);
-  benchmark::RegisterBenchmark("FDDP", &BM_lqr_fddp)
-      ->RangeMultiplier(2)
-      ->Range(1 << 3, 1 << 9)
-      ->Complexity()
-      ->Unit(unit);
+
+  auto registerOpts = [&](auto name, auto fn) {
+    return benchmark::RegisterBenchmark(name, fn)
+        ->ArgNames({"nsteps", "ldlt_choice"})
+        ->Complexity()
+        ->Unit(benchmark::kMicrosecond);
+  };
+
+  registerOpts("PROXDDP", &BM_lqr_prox)->Apply([](auto p) {
+    for (LDLTChoice ch :
+         {LDLTChoice::DENSE, LDLTChoice::EIGEN, LDLTChoice::BLOCKED}) {
+      for (std::size_t i = 3; i < 9; ++i) {
+        p = p->Args({1 << i, (long)ch});
+      }
+    }
+  });
+
+  registerOpts("FDDP", &BM_lqr_fddp)->RangeMultiplier(2)->Range(1 << 3, 1 << 9);
 
   benchmark::Initialize(&argc, argv);
   if (benchmark::ReportUnrecognizedArguments(argc, argv)) {

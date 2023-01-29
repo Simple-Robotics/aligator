@@ -1,13 +1,85 @@
 /// @file
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
 #include "proxddp/core/workspace.hpp"
 
 namespace proxddp {
 
-namespace {
-using proxnlp::allocate_ldlt_from_sizes;
+inline isize get_total_dim_helper(const std::vector<isize> &nprims,
+                                  const std::vector<isize> &nduals) {
+  return std::accumulate(nprims.begin(), nprims.end(), 0) +
+         std::accumulate(nduals.begin(), nduals.end(), 0);
+}
+
+template <typename Scalar> struct custom_block_ldlt_allocator {
+  using BlockLDLT = proxnlp::linalg::BlockLDLT<Scalar>;
+
+  static BlockLDLT *create(const std::vector<isize> &nprims,
+                           const std::vector<isize> &nduals,
+                           bool primal_is_block_diagonal) {
+    using proxnlp::linalg::BlockKind;
+    using proxnlp::linalg::SymbolicBlockMatrix;
+
+    SymbolicBlockMatrix structure =
+        proxnlp::create_default_block_structure(nprims, nduals);
+
+    if (primal_is_block_diagonal) {
+
+      for (uint i = 0; i < nprims.size(); ++i) {
+        for (uint j = 0; j < nprims.size(); ++j) {
+          if (i != j) {
+            structure(i, j) = BlockKind::Zero;
+            structure(j, i) = BlockKind::Zero;
+          }
+        }
+      }
+    }
+    isize size = get_total_dim_helper(nprims, nduals);
+    return new BlockLDLT(size, structure);
+  }
+};
+
+template <typename Scalar>
+unique_ptr<ldlt_base<Scalar>>
+allocate_ldlt_algorithm(const std::vector<isize> &nprims,
+                        const std::vector<isize> &nduals, LDLTChoice choice) {
+  using proxnlp::linalg::BlockLDLT;
+  using proxnlp::linalg::DenseLDLT;
+  using proxnlp::linalg::EigenLDLTWrapper;
+  using proxnlp::linalg::SymbolicBlockMatrix;
+  using ldlt_ptr = unique_ptr<ldlt_base<Scalar>>;
+
+  isize size = get_total_dim_helper(nprims, nduals);
+
+  switch (choice) {
+  case LDLTChoice::DENSE:
+    return ldlt_ptr(new DenseLDLT<Scalar>(size));
+  case LDLTChoice::EIGEN:
+    return ldlt_ptr(new EigenLDLTWrapper<Scalar>(size));
+  case LDLTChoice::BLOCKED: {
+
+    BlockLDLT<Scalar> *block_ptr =
+        custom_block_ldlt_allocator<Scalar>::create(nprims, nduals, true);
+
+    std::size_t nblocks = block_ptr->nblocks();
+    std::vector<isize> perm((std::size_t)nblocks);
+    std::iota(perm.begin(), perm.end(), 0);
+    if (nprims.size() > 1) {
+      std::rotate(perm.begin(), perm.begin() + 1, perm.end());
+    }
+#ifndef NDEBUG
+    fmt::print("[block-ldlt] prior structure:\n");
+    proxnlp::linalg::print_sparsity_pattern(block_ptr->structure());
+    fmt::print("[block-ldlt] setting permutation = ({})\n",
+               fmt::join(perm, ","));
+#endif
+    block_ptr->setPermutation(perm.data());
+    return ldlt_ptr(block_ptr);
+  }
+  default:
+    return nullptr;
+  }
 }
 
 template <typename Scalar>
@@ -46,7 +118,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
     kkt_rhs_.emplace_back(ntot, ndx1 + 1);
     stage_prim_infeas.emplace_back(1);
     ldlts_.emplace_back(
-        allocate_ldlt_from_sizes<Scalar>({ndx1}, {ndual}, ldlt_choice));
+        allocate_ldlt_algorithm<Scalar>({ndx1}, {ndual}, ldlt_choice));
 
     lams_plus[0] = VectorXs::Zero(ndual);
     pd_step_[0] = VectorXs::Zero(ntot);
@@ -69,8 +141,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
 
     kkt_mats_.emplace_back(ntot, ntot);
     kkt_rhs_.emplace_back(ntot, ndx1 + 1);
-    ldlts_.emplace_back(allocate_ldlt_from_sizes<Scalar>(
-        {nprim}, stage.constraints_.getDims(), ldlt_choice));
+    ldlts_.emplace_back(allocate_ldlt_algorithm<Scalar>(
+        {nu, ndx2}, stage.constraints_.getDims(), ldlt_choice));
     stage_prim_infeas.emplace_back(ncb);
 
     lams_plus[i + 1] = VectorXs::Zero(ndual);
@@ -96,7 +168,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
     kkt_rhs_.emplace_back(ntot, ndx1 + 1);
     stage_prim_infeas.emplace_back(1);
     ldlts_.emplace_back(
-        allocate_ldlt_from_sizes<Scalar>({nprim}, {ndual}, ldlt_choice));
+        allocate_ldlt_algorithm<Scalar>({nprim}, {ndual}, ldlt_choice));
 
     lams_plus.push_back(VectorXs::Zero(ndual));
     pd_step_.push_back(VectorXs::Zero(ndual));

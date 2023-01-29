@@ -109,6 +109,19 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
                                   const WorkspaceTpl<T> &self);
 };
 
+namespace {
+using proxnlp::linalg::isize;
+using proxnlp::linalg::ldlt_base;
+} // namespace
+
+// fwd declaration
+
+/// Allocate an LDLT solver, perform no analysis.
+template <typename Scalar>
+unique_ptr<ldlt_base<Scalar>>
+allocate_ldlt_algorithm(const std::vector<isize> &nprims,
+                        const std::vector<isize> &nduals, LDLTChoice choice);
+
 } // namespace proxddp
 
 #include "proxddp/core/workspace.hxx"
