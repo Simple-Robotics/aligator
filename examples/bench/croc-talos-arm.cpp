@@ -9,13 +9,36 @@
 
 #include <benchmark/benchmark.h>
 
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
+using proxddp::LDLTChoice;
+using proxddp::SolverFDDP;
+using proxddp::SolverProxDDP;
+using proxddp::VerboseLevel;
+
 constexpr double TOL = 1e-16;
 constexpr std::size_t maxiters = 10;
 
-bool verbose = true;
+const static Eigen::IOFormat CSVFormat(Eigen::StreamPrecision,
+                                       Eigen::DontAlignCols, ", ", "\n");
 
-using Eigen::MatrixXd;
-using Eigen::VectorXd;
+const bool verbose = false;
+
+struct extract_kkt_matrix_callback : proxddp::helpers::base_callback<double> {
+  std::string filepath;
+  extract_kkt_matrix_callback(std::string const &filepath)
+      : filepath(filepath) {}
+  void call(const Workspace &ws_, const Results &) {
+    const auto &ws = static_cast<const proxddp::context::Workspace &>(ws_);
+    std::ofstream file(filepath);
+    for (std::size_t t = 0; t < ws.kkt_mats_.size(); t++) {
+      MatrixXd const &w = ws.kkt_mats_[t];
+
+      file << w.format(CSVFormat);
+      file << "\n\n";
+    }
+  }
+};
 
 void getInitialGuesses(
     const boost::shared_ptr<croc::ShootingProblem> &croc_problem,
@@ -49,9 +72,12 @@ static void BM_croc_fddp(benchmark::State &state) {
   }
 }
 
+auto get_verbose_flag(bool verbose) {
+  return verbose ? VerboseLevel::VERBOSE : VerboseLevel::QUIET;
+}
+
 static void BM_prox_fddp(benchmark::State &state) {
   const std::size_t nsteps = (std::size_t)state.range(0);
-  using proxddp::VerboseLevel;
   auto croc_problem = defineCrocoddylProblem(nsteps);
   auto prob_wrap = proxddp::compat::croc::convertCrocoddylProblem(croc_problem);
 
@@ -59,8 +85,7 @@ static void BM_prox_fddp(benchmark::State &state) {
   std::vector<VectorXd> us_i;
   getInitialGuesses(croc_problem, xs_i, us_i);
 
-  auto verbose = VerboseLevel::QUIET;
-  proxddp::SolverFDDP<double> solver(TOL, verbose);
+  SolverFDDP<double> solver(TOL, get_verbose_flag(verbose));
   solver.max_iters = maxiters;
   solver.setup(prob_wrap);
 
@@ -71,11 +96,9 @@ static void BM_prox_fddp(benchmark::State &state) {
 }
 
 /// Benchmark the full PROXDDP algorithm (proxddp::SolverProxDDP)
-static void BM_proxddp(benchmark::State &state) {
+template <LDLTChoice choice> static void BM_proxddp(benchmark::State &state) {
   const std::size_t nsteps = (std::size_t)state.range(0);
   using proxddp::LDLTChoice;
-  using proxddp::SolverProxDDP;
-  using proxddp::VerboseLevel;
   auto croc_problem = defineCrocoddylProblem(nsteps);
   auto prob_wrap = proxddp::compat::croc::convertCrocoddylProblem(croc_problem);
 
@@ -85,11 +108,13 @@ static void BM_proxddp(benchmark::State &state) {
 
   const double mu0 = 1e-4;
   SolverProxDDP<double> solver(TOL, mu0, 0., maxiters,
-                               verbose ? VerboseLevel::VERBOSE
-                                       : VerboseLevel::QUIET);
-  solver.ldlt_algo_choice_ = LDLTChoice::DENSE;
+                               get_verbose_flag(verbose));
+  solver.ldlt_algo_choice_ = choice;
   solver.max_refinement_steps_ = 0;
   solver.setup(prob_wrap);
+
+  // solver.registerCallback(
+  //     std::make_shared<extract_kkt_matrix_callback>("stupid_eigen_files.csv"));
 
   for (auto _ : state) {
     solver.run(prob_wrap, xs_i, us_i);
@@ -105,13 +130,19 @@ int main(int argc, char **argv) {
   auto unit = benchmark::kMillisecond;
   auto registerWithOpts = [&](auto name, auto fn) {
     benchmark::RegisterBenchmark(name, fn)
+        ->Arg(5)
+        ->Arg(20)
         ->DenseRange(nmin, nmax, ns)
         ->Unit(unit)
-        ->Complexity();
+        ->ArgName("nsteps")
+        ->Complexity()
+        ->UseRealTime();
   };
   registerWithOpts("croc::FDDP", &BM_croc_fddp);
   registerWithOpts("proxddp::FDDP", &BM_prox_fddp);
-  registerWithOpts("proxddp::PROXDDP", &BM_proxddp);
+  registerWithOpts("proxddp::PROXDDP_DENSE", &BM_proxddp<LDLTChoice::DENSE>);
+  registerWithOpts("proxddp::PROXDDP_BLOCK", &BM_proxddp<LDLTChoice::BLOCKED>);
+  registerWithOpts("proxddp::PROXDDP_EIGLDL", &BM_proxddp<LDLTChoice::EIGEN>);
 
   benchmark::Initialize(&argc, argv);
   if (benchmark::ReportUnrecognizedArguments(argc, argv)) {

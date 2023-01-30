@@ -67,9 +67,7 @@ mu_init = 1e-1
 rho_init = 0.0
 verbose = proxddp.VerboseLevel.VERBOSE
 tol = 1e-6
-# solver = proxddp.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
-# solver.rollout_type = proxddp.ROLLOUT_NONLINEAR
-solver = proxddp.SolverFDDP(tol, verbose=verbose)
+solver = proxddp.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
 his_cb = proxddp.HistoryCallback()
 solver.registerCallback(his_cb)
 solver.max_iters = 20

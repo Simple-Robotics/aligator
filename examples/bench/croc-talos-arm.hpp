@@ -28,10 +28,13 @@ inline void makeTalosArm(pin::Model &model) {
   pin::urdf::buildModel(talos_arm_path, model);
 }
 
+boost::shared_ptr<croc::ShootingProblem> inline defineCrocoddylProblem(
+    std::size_t nsteps);
+
 /// This reimplements the Crocoddyl problem defined in
 /// examples/croc_arm_manipulation.py.
-boost::shared_ptr<croc::ShootingProblem> inline defineCrocoddylProblem(
-    std::size_t nsteps = 50) {
+boost::shared_ptr<croc::ShootingProblem>
+defineCrocoddylProblem(std::size_t nsteps) {
   using croc::ActuationModelFull;
   using croc::CostModelResidual;
   using croc::CostModelSum;
