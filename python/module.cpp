@@ -3,6 +3,7 @@
 #include "proxddp/python/utils.hpp"
 
 #include "proxddp/version.hpp"
+#include "proxddp/threads.hpp"
 
 #ifdef WITH_CROCODDYL_COMPAT
 #include "proxddp/python/compat/croco.hpp"
@@ -14,6 +15,10 @@ BOOST_PYTHON_MODULE(pyproxddp) {
   bp::docstring_options module_docstring_options(true, true, true);
 
   bp::scope().attr("__version__") = proxddp::printVersion();
+  bp::def("get_available_threads", &proxddp::getNumAvailableThreads,
+          "Get the number of available threads.");
+  bp::def("get_num_threads", &proxddp::getCurrentThreads,
+          "Get the current number of threads.");
   eigenpy::enableEigenPy();
 
   bp::import("warnings");
