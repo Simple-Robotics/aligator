@@ -15,6 +15,9 @@ from proxnlp import (
     LDLT_BLOCKED,
     LDLT_DENSE,
     LDLT_EIGEN,
+    QUIET,
+    VERBOSE,
+    VERYVERBOSE,
 )
 
 
