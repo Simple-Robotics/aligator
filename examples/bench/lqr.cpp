@@ -29,7 +29,7 @@ TrajOptProblem define_problem(const std::size_t nsteps, const int dim = 2,
   VectorXd c_(dim);
   A.setIdentity();
   B << -0.6, 0.3, 0., 1.;
-  c_ << 0.1, 0.;
+  c_ << 0.1, -0.2;
 
   MatrixXd w_x(dim, dim), w_u(nu, nu);
   w_x << 2., 0., 0., 1.;
@@ -102,7 +102,8 @@ int main(int argc, char **argv) {
         ->RangeMultiplier(2)
         ->Range(1 << 3, 1 << 9)
         ->Complexity()
-        ->Unit(benchmark::kMicrosecond);
+        ->Unit(benchmark::kMicrosecond)
+        ->UseRealTime();
   };
 
   registerOpts("PROXDDP_BLOCKED", &BM_lqr_prox<LDLTChoice::BLOCKED>);

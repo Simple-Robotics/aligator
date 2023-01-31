@@ -14,44 +14,11 @@ using Eigen::VectorXd;
 using proxddp::LDLTChoice;
 using proxddp::SolverFDDP;
 using proxddp::SolverProxDDP;
-using proxddp::VerboseLevel;
 
 constexpr double TOL = 1e-16;
 constexpr std::size_t maxiters = 10;
 
-const static Eigen::IOFormat CSVFormat(Eigen::StreamPrecision,
-                                       Eigen::DontAlignCols, ", ", "\n");
-
 const bool verbose = false;
-
-struct extract_kkt_matrix_callback : proxddp::helpers::base_callback<double> {
-  std::string filepath;
-  extract_kkt_matrix_callback(std::string const &filepath)
-      : filepath(filepath) {}
-  void call(const Workspace &ws_, const Results &) {
-    const auto &ws = static_cast<const proxddp::context::Workspace &>(ws_);
-    std::ofstream file(filepath);
-    for (std::size_t t = 0; t < ws.kkt_mats_.size(); t++) {
-      MatrixXd const &w = ws.kkt_mats_[t];
-
-      file << w.format(CSVFormat);
-      file << "\n\n";
-    }
-  }
-};
-
-void getInitialGuesses(
-    const boost::shared_ptr<croc::ShootingProblem> &croc_problem,
-    std::vector<VectorXd> &xs_i, std::vector<VectorXd> &us_i) {
-
-  const std::size_t nsteps = croc_problem->get_T();
-  const auto &x0 = croc_problem->get_x0();
-  const long nu = (long)croc_problem->get_nu_max();
-  VectorXd u0 = VectorXd::Zero(nu);
-
-  xs_i.assign(nsteps + 1, x0);
-  us_i.assign(nsteps, u0);
-}
 
 static void BM_croc_fddp(benchmark::State &state) {
   const std::size_t nsteps = (std::size_t)state.range(0);
@@ -73,7 +40,7 @@ static void BM_croc_fddp(benchmark::State &state) {
 }
 
 auto get_verbose_flag(bool verbose) {
-  return verbose ? VerboseLevel::VERBOSE : VerboseLevel::QUIET;
+  return verbose ? proxddp::VERBOSE : proxddp::QUIET;
 }
 
 static void BM_prox_fddp(benchmark::State &state) {
@@ -112,9 +79,6 @@ template <LDLTChoice choice> static void BM_proxddp(benchmark::State &state) {
   solver.ldlt_algo_choice_ = choice;
   solver.max_refinement_steps_ = 0;
   solver.setup(prob_wrap);
-
-  // solver.registerCallback(
-  //     std::make_shared<extract_kkt_matrix_callback>("stupid_eigen_files.csv"));
 
   for (auto _ : state) {
     solver.run(prob_wrap, xs_i, us_i);
