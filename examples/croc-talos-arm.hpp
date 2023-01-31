@@ -28,12 +28,9 @@ inline void makeTalosArm(pin::Model &model) {
   pin::urdf::buildModel(talos_arm_path, model);
 }
 
-boost::shared_ptr<croc::ShootingProblem> inline defineCrocoddylProblem(
-    std::size_t nsteps);
-
 /// This reimplements the Crocoddyl problem defined in
 /// examples/croc_arm_manipulation.py.
-boost::shared_ptr<croc::ShootingProblem>
+inline boost::shared_ptr<croc::ShootingProblem>
 defineCrocoddylProblem(std::size_t nsteps) {
   using croc::ActuationModelFull;
   using croc::CostModelResidual;
@@ -55,8 +52,9 @@ defineCrocoddylProblem(std::size_t nsteps) {
   auto terminalCost = boost::make_shared<CostModelSum>(state);
 
   pin::JointIndex joint_id = rmodel->getFrameId("gripper_left_joint");
-  pin::SE3 target_frame(Eigen::Matrix3d::Identity(),
-                        Eigen::Vector3d{0., 0., 0.4});
+  pin::SE3 target_frame;
+  target_frame.setIdentity();
+  target_frame.translation() << 0., 0., 0.4;
 
   auto framePlacementResidual = boost::make_shared<ResidualModelFramePlacement>(
       state, joint_id, target_frame);
@@ -103,4 +101,19 @@ defineCrocoddylProblem(std::size_t nsteps) {
   auto shooting_problem = boost::make_shared<croc::ShootingProblem>(
       x0, running_models, terminalModel);
   return shooting_problem;
+}
+
+inline void
+getInitialGuesses(const boost::shared_ptr<croc::ShootingProblem> &croc_problem,
+                  std::vector<Eigen::VectorXd> &xs_i,
+                  std::vector<Eigen::VectorXd> &us_i) {
+  using Eigen::VectorXd;
+
+  const std::size_t nsteps = croc_problem->get_T();
+  const auto &x0 = croc_problem->get_x0();
+  const long nu = (long)croc_problem->get_nu_max();
+  VectorXd u0 = VectorXd::Zero(nu);
+
+  xs_i.assign(nsteps + 1, x0);
+  us_i.assign(nsteps, u0);
 }

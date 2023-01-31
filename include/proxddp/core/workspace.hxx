@@ -74,7 +74,9 @@ allocate_ldlt_algorithm(const std::vector<isize> &nprims,
     fmt::print("[block-ldlt] setting permutation = ({})\n",
                fmt::join(perm, ","));
 #endif
+    auto in = block_ptr->structure().copy();
     block_ptr->setPermutation(perm.data());
+    block_ptr->updateBlockPermutationMatrix(in);
     return ldlt_ptr(block_ptr);
   }
   default:
