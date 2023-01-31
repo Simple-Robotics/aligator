@@ -275,15 +275,16 @@ public:
 
   /// @brief  Put together the Q-function parameters and compute the Riccati
   /// gains.
-  inline bool computeGains(const Problem &problem, Workspace &workspace,
-                           Results &results, const std::size_t step) const;
+  PROXDDP_INLINE bool computeGains(const Problem &problem, Workspace &workspace,
+                                   Results &results,
+                                   const std::size_t step) const;
 
 protected:
   void updateTolerancesOnFailure();
   void updateTolerancesOnSuccess();
 
   /// Set dual proximal/ALM penalty parameter.
-  inline void setPenalty(Scalar new_mu) noexcept {
+  PROXDDP_INLINE void setPenalty(Scalar new_mu) noexcept {
     mu_penal_ = std::max(new_mu, MU_MIN);
     mu_inverse_ = 1. / new_mu;
   }

@@ -512,6 +512,7 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   bool lin_solved = iterative_refinement_impl<Scalar>::run(
       ldlt, kkt_mat, kkt_rhs, resdl, gains, refinement_threshold_,
       max_refinement_steps_);
+  (void)lin_solved;
   PROXDDP_NOMALLOC_BEGIN;
 
   /* Value function */
