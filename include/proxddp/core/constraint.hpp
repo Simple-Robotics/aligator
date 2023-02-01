@@ -1,6 +1,7 @@
 /// @file constraint.hpp
-/// @brief Defines the constraint object for this library.
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @brief Defines the constraint object and constraint stack manager for this
+/// library.
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
 #include "proxddp/core/function-abstract.hpp"
@@ -20,17 +21,10 @@ template <typename Scalar> struct ConstraintStackTpl {
   using ConstraintType = StageConstraintTpl<Scalar>;
   ConstraintStackTpl() : indices_({0}){};
 
-  std::size_t numConstraints() const { return storage_.size(); }
-
-  inline void pushBack(const ConstraintType &el) {
-    assert(el.func != 0 &&
-           "constraint must have non-null underlying function.");
-    assert(el.set != 0 && "constraint must have non-null underlying set.");
-    const long nr = el.func->nr;
-    pushBack(el, nr);
-  }
+  std::size_t size() const { return storage_.size(); }
 
   void pushBack(const ConstraintType &el, const long nr);
+  void pushBack(const ConstraintType &el);
 
   /// @brief Get start index in an array.
   long getIndex(const std::size_t j) const { return indices_[j]; }
@@ -76,14 +70,15 @@ template <typename Scalar> struct ConstraintStackTpl {
     return J.middleRows(getIndex(j), getDim(j));
   }
 
-  long totalDim() const { return total_dim; }
+  long totalDim() const { return total_dim_; }
 
-  /// Get the i-th constraint.
+  /// @brief Get the i-th constraint.
   ConstraintType &operator[](std::size_t j) {
     assert((j < this->storage_.size()) && "i exceeds number of constraints!");
     return storage_[j];
   }
 
+  /// @copybrief operator[]()
   const ConstraintType &operator[](std::size_t j) const {
     assert((j < this->storage_.size()) && "i exceeds number of constraints!");
     return storage_[j];
@@ -93,9 +88,13 @@ protected:
   std::vector<ConstraintType> storage_;
   std::vector<long> indices_;
   std::vector<long> dims_;
-  long total_dim = 0;
+  long total_dim_ = 0;
 };
 
 } // namespace proxddp
 
 #include "proxddp/core/constraint.hxx"
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/core/constraint.txx"
+#endif
