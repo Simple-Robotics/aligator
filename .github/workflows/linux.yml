@@ -9,6 +9,7 @@ jobs:
 
     env:
       CCACHE_DIR: /github/home/.ccache
+      CMAKE_PREFIX_PATH: ~/custom_install
 
     steps:
     - uses: actions/checkout@v3
