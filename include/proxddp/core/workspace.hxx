@@ -160,12 +160,11 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
     value_params.emplace_back(ndx2);
   }
 
-  if (problem.term_constraint_) {
-    const StageConstraintTpl<Scalar> &tc = *problem.term_constraint_;
-    const int ndx1 = tc.func->ndx1;
+  if (problem.term_cstrs_.size() > 0) {
+    const int ndx1 = problem.stages_.back()->ndx2();
     const int nprim = ndx1;
-    const int ndual = tc.func->nr;
-    const int ntot = nprim + ndual;
+    const long ndual = problem.term_cstrs_.totalDim();
+    const long ntot = nprim + ndual;
     kkt_mats_.emplace_back(ntot, ntot);
     kkt_rhs_.emplace_back(ntot, ndx1 + 1);
     stage_prim_infeas.emplace_back(1);
