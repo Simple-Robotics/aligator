@@ -71,6 +71,9 @@ template <typename Scalar> struct StageDataTpl;
 
 /* SHOOTING PROBLEM */
 
+// fwd ConstraintStackTpl
+template <typename Scalar> struct ConstraintStackTpl;
+
 // fwd TrajOptProblemTpl
 template <typename Scalar> struct TrajOptProblemTpl;
 
@@ -100,3 +103,4 @@ template <typename Scalar> struct ResultsTpl;
 #include "proxddp/math.hpp"
 #include "proxddp/macros.hpp"
 #include "proxddp/config.hpp"
+#include "proxddp/deprecated.hpp"

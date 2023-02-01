@@ -26,6 +26,7 @@ using StageData = StageDataTpl<Scalar>;
 
 using TrajOptProblem = TrajOptProblemTpl<Scalar>;
 using TrajOptData = TrajOptDataTpl<Scalar>;
+using ConstraintStack = ConstraintStackTpl<Scalar>;
 
 using ExplicitDynamics = ExplicitDynamicsModelTpl<Scalar>;
 using ExplicitDynData = ExplicitDynamicsDataTpl<Scalar>;
