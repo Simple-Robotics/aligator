@@ -8,7 +8,7 @@
 
 namespace proxddp {
 
-extern template
-ResultsTpl<context::Scalar>::ResultsTpl(const context::TrajOptProblem &);
+extern template struct
+ResultsTpl<context::Scalar>;
 
 } // namespace proxddp
