@@ -93,7 +93,7 @@ for i in range(nsteps):
 
 
 problem = proxddp.TrajOptProblem(x0, stages, term_cost)
-problem.setTerminalConstraint(frame_cstr)
+problem.addTerminalConstraint(frame_cstr)
 
 
 tol = 1e-4

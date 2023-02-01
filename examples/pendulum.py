@@ -124,13 +124,6 @@ rcost.addCost(
         proxddp.ControlErrorResidual(ndx, np.zeros(nu)), np.diag(w_u) * dt
     )
 )
-# wx = np.zeros(ndx)
-# wx[1] = 5e-1
-# rcost.addCost(
-#     proxddp.QuadraticResidualCost(
-#         proxddp.StateErrorResidual(space, nu, np.zeros(nx)), np.diag(wx)
-#     )
-# )
 frame_place_target = pin.SE3.Identity()
 frame_place_target.translation = target_pos
 frame_err = proxddp.FramePlacementResidual(
@@ -173,7 +166,7 @@ for i in range(nsteps):
 term_fun = proxddp.FrameTranslationResidual(ndx, nu, model, target_pos, frame_id)
 if args.use_term_cstr:
     term_cstr = proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet())
-    problem.setTerminalConstraint(term_cstr)
+    problem.addTerminalConstraint(term_cstr)
 
 mu_init = 0.8
 rho_init = 0.0
@@ -191,6 +184,7 @@ u0 = pin.rnea(model, data, x0[:1], x0[1:], np.zeros(nv))
 us_i = [u0] * nsteps
 xs_i = proxddp.rollout(dyn_model, x0, us_i)
 
+problem.num_threads = 2
 solver.setup(problem)
 solver.run(problem, xs_i, us_i)
 res = solver.getResults()

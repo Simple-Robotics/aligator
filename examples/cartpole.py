@@ -110,7 +110,7 @@ for i in range(nsteps):
 
 term_fun = proxddp.FrameTranslationResidual(ndx, nu, model, target_pos, frame_id)
 term_cstr = proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet())
-problem.setTerminalConstraint(term_cstr)
+problem.addTerminalConstraint(term_cstr)
 
 mu_init = 0.1
 rho_init = 0.0

@@ -35,7 +35,7 @@ public:
   using FunctionData = FunctionDataTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using StageModel = StageModelTpl<Scalar>;
-  using Constraint = StageConstraintTpl<Scalar>;
+  using ConstraintType = StageConstraintTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
   using VParams = value_function<Scalar>;
   using QParams = q_function<Scalar>;
@@ -46,6 +46,7 @@ public:
   using CstrSet = ConstraintSetBase<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
   using LinesearchOptions = typename Linesearch<Scalar>::Options;
+  using CstrALWeightStrat = ConstraintALWeightStrategy<Scalar>;
 
   std::vector<ProxPenaltyType> prox_penalties_;
   /// Subproblem tolerance

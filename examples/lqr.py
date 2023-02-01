@@ -59,7 +59,7 @@ xtar = space.neutral()
 xtar2 = 0.1 * np.ones(nx)
 if args.term_cstr:
     term_fun = proxddp.StateErrorResidual(space, nu, xtar2)
-    problem.setTerminalConstraint(
+    problem.addTerminalConstraint(
         proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet())
     )
 
