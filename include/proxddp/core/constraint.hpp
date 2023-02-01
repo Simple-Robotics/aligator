@@ -22,6 +22,13 @@ template <typename Scalar> struct ConstraintStackTpl {
   ConstraintStackTpl() : indices_({0}){};
 
   std::size_t size() const { return storage_.size(); }
+  bool empty() const { return size() == 0; }
+  void clear() {
+    storage_.clear();
+    indices_ = {0};
+    dims_.clear();
+    total_dim_ = 0;
+  }
 
   void pushBack(const ConstraintType &el, const long nr);
   void pushBack(const ConstraintType &el);
