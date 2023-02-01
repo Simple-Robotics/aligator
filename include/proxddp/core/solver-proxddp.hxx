@@ -42,7 +42,7 @@ void SolverProxDDP<Scalar>::linearRollout(const Problem &problem,
     pd_step = ff;
     pd_step.noalias() += fb * workspace.dxs[i];
   }
-  if (problem.term_constraint_) {
+  if (!problem.term_cstrs_.empty()) {
     const auto ff = results.getFeedforward(nsteps);
     const auto fb = results.getFeedback(nsteps);
     VectorRef &dlam = workspace.dlams.back();
@@ -233,54 +233,59 @@ void SolverProxDDP<Scalar>::computeMultipliers(
     /// TODO: generalize to the other types of initial constraint (non-equality)
   }
 
+  using FuncDataVec = std::vector<shared_ptr<FunctionData>>;
+  auto execute_on_stack =
+      [dual_weight = dual_weight](
+          const ConstraintStack &stack, const VectorXs &lambda,
+          const VectorXs &prevlam, VectorXs &lamplus, VectorXs &lampdal,
+          VectorXs &shift_cvals, const FuncDataVec &constraint_data,
+          CstrALWeightStrat &&weights) {
+        // k: constraint count variable
+        for (std::size_t k = 0; k < stack.size(); k++) {
+          const auto lami_k = stack.getConstSegmentByConstraint(lambda, k);
+          const auto plami_k = stack.getConstSegmentByConstraint(prevlam, k);
+          auto lamplus_k = stack.getSegmentByConstraint(lamplus, k);
+          auto lampdal_k = stack.getSegmentByConstraint(lampdal, k);
+          auto scval_k = stack.getSegmentByConstraint(shift_cvals, k);
+          const CstrSet &set = stack.getConstraintSet(k);
+          const FunctionData &data = *constraint_data[k];
+
+          scval_k = data.value_ + weights.get(k) * plami_k;
+          lamplus_k = scval_k;
+
+          set.normalConeProjection(lamplus_k, lamplus_k);
+
+          // set multiplier = 1/mu * normal_proj(shifted_cstr)
+          lamplus_k *= weights.inv(k);
+          lampdal_k = (1 + dual_weight) * lamplus_k - dual_weight * lami_k;
+        }
+      };
+
   // loop over the stages
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
-    const StageData &sdata = prob_data.getStageData(i);
-    const ConstraintStack &mgr = stage.constraints_;
+    const StageData &sdata = *prob_data.stage_data[i];
+    const ConstraintStack &cstr_stack = stage.constraints_;
 
-    auto &lami = lams[i + 1];
-    auto &plami = lams_prev[i + 1];
-    auto &lamplusi = lams_plus[i + 1];
-    auto &lampdali = lams_pdal[i + 1];
-    auto &shift_cval = shifted_constraints[i + 1];
+    const VectorXs &lami = lams[i + 1];
+    const VectorXs &plami = lams_prev[i + 1];
+    VectorXs &lamplusi = lams_plus[i + 1];
+    VectorXs &lampdali = lams_pdal[i + 1];
+    VectorXs &shiftcvali = shifted_constraints[i + 1];
 
-    for (std::size_t j = 0; j < mgr.numConstraints(); j++) {
-      auto scval_k = mgr.getSegmentByConstraint(shift_cval, j);
-      const auto lami_k = mgr.getConstSegmentByConstraint(lami, j);
-      const auto plami_k = mgr.getConstSegmentByConstraint(plami, j);
-      auto lamplus_k = mgr.getSegmentByConstraint(lamplusi, j);
-      auto lampdal_k = mgr.getSegmentByConstraint(lampdali, j);
-
-      const CstrSet &set = mgr.getConstraintSet(j);
-      FunctionData &data = *sdata.constraint_data[j];
-
-      scval_k = data.value_ + mu_scaled(j) * plami_k;
-      lamplus_k = scval_k;
-
-      set.normalConeProjection(lamplus_k, lamplus_k);
-
-      // set multiplier = 1/mu * normal_proj(shifted_cstr)
-      lamplus_k *= mu_inv_scaled(j);
-      lampdal_k = (1 + dual_weight) * lamplus_k - dual_weight * lami_k;
-    }
+    execute_on_stack(cstr_stack, lami, plami, lamplusi, lampdali, shiftcvali,
+                     sdata.constraint_data, CstrALWeightStrat(mu_penal_, true));
   }
 
-  if (problem.term_constraint_) {
+  if (!problem.term_cstrs_.empty()) {
     const VectorXs &lamN = lams.back();
     const VectorXs &plamN = lams_prev.back();
-    const Constraint &termcstr = problem.term_constraint_.get();
-    const CstrSet &set = *termcstr.set;
-    FunctionData &data = prob_data.getTermData();
+    VectorXs &lamplusN = lams_plus.back();
+    VectorXs &lampdalN = lams_pdal.back();
     VectorXs &scval = shifted_constraints.back();
-    scval = data.value_ + mu() * plamN;
-    lams_plus.back() = scval;
-
-    set.normalConeProjection(lams_plus.back(), lams_plus.back());
-    lams_plus.back() *= mu_inv();
-    lams_pdal.back() =
-        (1 + dual_weight) * lams_plus.back() - dual_weight * lamN;
-    /// TODO: replace single term constraint by a ConstraintStackTpl
+    execute_on_stack(problem.term_cstrs_, lamN, plamN, lamplusN, lampdalN,
+                     scval, prob_data.term_cstr_data,
+                     CstrALWeightStrat(mu_penal_, false));
   }
 }
 
@@ -295,31 +300,30 @@ void SolverProxDDP<Scalar>::projectJacobians(const Problem &problem,
   const std::vector<VectorXs> &shifted_constraints =
       workspace.shifted_constraints;
 
-  if (problem.term_constraint_) {
-    const Constraint &termcstr = problem.term_constraint_.get();
-    const CstrSet &set = *termcstr.set;
-    FunctionData &data = prob_data.getTermData();
-    const VectorXs &scval = shifted_constraints.back();
-    set.applyNormalConeProjectionJacobian(scval, data.jac_buffer_);
-    /// TODO: replace single term constraint by a ConstraintStackTpl
-  }
+  using FuncDataVec = std::vector<shared_ptr<FunctionData>>;
+  auto execute_on_stack = [](const ConstraintStack &stack,
+                             const VectorXs &shift_cvals,
+                             FuncDataVec &constraint_data) {
+    for (std::size_t k = 0; k < stack.size(); ++k) {
+      const auto scval_k = stack.getConstSegmentByConstraint(shift_cvals, k);
+      const CstrSet &set = stack.getConstraintSet(k);
+      FunctionData &data = *constraint_data[k];
+      set.applyNormalConeProjectionJacobian(scval_k, data.jac_buffer_);
+    }
+  };
 
   // loop over the stages
   for (std::size_t i = 0; i < nsteps; i++) {
-    const StageModel &stage = *problem.stages_[i];
-    const StageData &sdata = prob_data.getStageData(i);
-    const ConstraintStack &cmgr = stage.constraints_;
-
+    const ConstraintStack &cstr_stack = problem.stages_[i]->constraints_;
+    StageData &sdata = prob_data.getStageData(i);
     const VectorXs &shift_cval = shifted_constraints[i + 1];
+    execute_on_stack(cstr_stack, shift_cval, sdata.constraint_data);
+  }
 
-    for (std::size_t j = 0; j < cmgr.numConstraints(); j++) {
-      const auto scval_k = cmgr.getConstSegmentByConstraint(shift_cval, j);
-
-      const CstrSet &set = cmgr.getConstraintSet(j);
-      FunctionData &data = *sdata.constraint_data[j];
-
-      set.applyNormalConeProjectionJacobian(scval_k, data.jac_buffer_);
-    }
+  // terminal node
+  if (!problem.term_cstrs_.empty()) {
+    execute_on_stack(problem.term_cstrs_, shifted_constraints.back(),
+                     prob_data.term_cstr_data);
   }
   PROXDDP_NOMALLOC_END;
 }
@@ -363,13 +367,11 @@ void SolverProxDDP<Scalar>::updateHamiltonian(const Problem &problem,
     qpar_xu += rho() * proxdata.hess_;
   }
 
-  const ConstraintStack &cstr_mgr = stage.constraints_;
+  const ConstraintStack &cstr_stack = stage.constraints_;
+  for (std::size_t k = 0; k < cstr_stack.size(); k++) {
+    FunctionData &cstr_data = *stage_data.constraint_data[k];
 
-  // Loop over constraints
-  for (std::size_t j = 0; j < cstr_mgr.numConstraints(); j++) {
-    FunctionData &cstr_data = *stage_data.constraint_data[j];
-
-    const auto lam_j = cstr_mgr.getConstSegmentByConstraint(lam, j);
+    const auto lam_j = cstr_stack.getConstSegmentByConstraint(lam, k);
     qparam.grad_.noalias() += cstr_data.jac_buffer_.transpose() * lam_j;
     if (hess_approx_ == HessianApprox::EXACT) {
       qparam.hess_ += cstr_data.vhp_buffer_;
@@ -390,9 +392,9 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
   VParams &term_value = workspace.value_params[nsteps];
   const CostData &proxdata = *workspace.prox_datas[nsteps];
 
-  term_value.v_ = term_cost_data.value_; // + rho() * proxdata.value_;
-  term_value.Vx_ = term_cost_data.Lx_;   // + rho() * proxdata.Lx_;
-  term_value.Vxx_ = term_cost_data.Lxx_; //+ rho() * proxdata.Lxx_;
+  term_value.v_ = term_cost_data.value_;
+  term_value.Vx_ = term_cost_data.Lx_;
+  term_value.Vxx_ = term_cost_data.Lxx_;
   term_value.Vxx_.diagonal().array() += xreg_;
 
   if (rho() > 0.) {
@@ -401,26 +403,28 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
     term_value.Vxx_ += rho() * proxdata.Lxx_;
   }
 
-  if (problem.term_constraint_) {
+  if (!problem.term_cstrs_.empty()) {
     /* check number of multipliers */
     assert(results.lams.size() == (nsteps + 2));
     assert(results.gains_.size() == (nsteps + 1));
-    const FunctionData &cstr_data = prob_data.getTermData();
+  }
 
-    VectorXs &lamplus = workspace.lams_plus[nsteps + 1];
-    // const VectorXs &lamprev = workspace.lams_prev[nsteps + 1];
+  for (std::size_t k = 0; k < problem.term_cstrs_.size(); ++k) {
+    const FunctionData &cstr_data = *prob_data.term_cstr_data[k];
+
+    const VectorXs &lamplus = workspace.lams_plus[nsteps + 1];
     const VectorXs &lamin = results.lams[nsteps + 1];
-    const MatrixRef &cJx = cstr_data.Jx_;
+    const MatrixRef &constraint_Jx = cstr_data.Jx_;
 
     auto ff = results.getFeedforward(nsteps);
     auto fb = results.getFeedback(nsteps);
     ff = lamplus - lamin;
-    fb = mu_inv() * cJx;
+    fb = mu_inv() * constraint_Jx;
 
     term_value.v_ += 0.5 * mu_inv() * lamplus.squaredNorm();
-    term_value.Vx_.noalias() += cJx.transpose() * lamplus;
+    term_value.Vx_.noalias() += constraint_Jx.transpose() * lamplus;
     term_value.Vxx_ += cstr_data.Hxx_;
-    term_value.Vxx_.noalias() += cJx.transpose() * fb;
+    term_value.Vxx_.noalias() += constraint_Jx.transpose() * fb;
   }
   PROXDDP_NOMALLOC_END;
 }
@@ -478,15 +482,16 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
     const auto laminnr_j = cstr_mgr.getConstSegmentByConstraint(laminnr, j);
     const auto lamplus_j = cstr_mgr.getConstSegmentByConstraint(lamplus, j);
 
+    CstrALWeightStrat weight_strat(mu_penal_, true);
     // update the KKT jacobian columns
     cstr_mgr.getBlockByConstraint(kkt_jac, j) =
         cstr_data.jac_buffer_.rightCols(nprim);
     cstr_mgr.getBlockByConstraint(kkt_rhs_fb.bottomRows(ndual), j) =
         cstr_data.Jx_;
     cstr_mgr.getSegmentByConstraint(kkt_rhs_ff.tail(ndual), j) =
-        mu_scaled(j) * (lamplus_j - laminnr_j);
+        weight_strat.get(j) * (lamplus_j - laminnr_j);
 
-    kkt_low_right.array() = -mu_scaled(j);
+    kkt_low_right.array() = -weight_strat.get(j);
   }
 
   /* Compute gains with LDLT */
@@ -596,12 +601,13 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
     stage.evaluate(xs[i], us[i], xs[i + 1], data);
 
     // compute multiple-shooting gap
-    const ConstraintStack &cstr_mgr = stage.constraints_;
+    CstrALWeightStrat weight_strat(mu_penal_, true);
+    const ConstraintStack &cstr_stack = stage.constraints_;
     const ConstVectorRef dynlam =
-        cstr_mgr.getConstSegmentByConstraint(lams[i + 1], 0);
+        cstr_stack.getConstSegmentByConstraint(lams[i + 1], 0);
     const ConstVectorRef dynprevlam =
-        cstr_mgr.getConstSegmentByConstraint(workspace.lams_prev[i + 1], 0);
-    dyn_slacks[i] = mu_scaled(0) * (dynprevlam - dynlam);
+        cstr_stack.getConstSegmentByConstraint(workspace.lams_prev[i + 1], 0);
+    dyn_slacks[i] = weight_strat.get(0) * (dynprevlam - dynlam);
 
     DynamicsData &dd = data.dyn_data();
 
@@ -633,14 +639,18 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
     PROXDDP_RAISE_IF_NAN_NAME(lams[i + 1], fmt::format("lams[{:d}]", i + 1));
   }
 
+  // TERMINAL NODE
   problem.term_cost_->evaluate(xs[nsteps], problem.dummy_term_u0,
                                *prob_data.term_cost_data);
 
-  if (problem.term_constraint_) {
-    const StageConstraintTpl<Scalar> &tc = *problem.term_constraint_;
-    FunctionData &td = prob_data.getTermData();
+  for (std::size_t k = 0; k < problem.term_cstrs_.size(); ++k) {
+    const ConstraintType &tc = problem.term_cstrs_[k];
+    FunctionData &td = *prob_data.term_cstr_data[k];
     tc.func->evaluate(xs[nsteps], problem.dummy_term_u0, xs[nsteps], td);
+  }
 
+  // update multiplier
+  if (!problem.term_cstrs_.empty()) {
     VectorRef &dlam = workspace.dlams.back();
     const VectorRef &dx = workspace.dxs.back();
     auto ff = results.getFeedforward(nsteps);
@@ -969,36 +979,41 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
   const FunctionData &init_data = prob_data.getInitData();
   workspace.stage_prim_infeas[0](0) = math::infty_norm(init_data.value_);
 
+  using FuncDataVec = std::vector<shared_ptr<FunctionData>>;
+  auto execute_on_stack =
+      [](const ConstraintStack &stack, const VectorXs &shift_cvals,
+         const VectorXs &lambda, VectorXs &stage_infeas,
+         const FuncDataVec &constraint_data, CstrALWeightStrat &&weight_strat) {
+        for (std::size_t k = 0; k < stack.size(); k++) {
+          const CstrSet &set = stack.getConstraintSet(k);
+
+          // compute and project displaced constraint
+          auto scval_k = stack.getSegmentByConstraint(shift_cvals, k);
+          auto lam_i = stack.getConstSegmentByConstraint(lambda, k);
+          VectorXs &v = constraint_data[k]->value_;
+          scval_k = v + weight_strat.get(k) * lam_i;
+          set.projection(scval_k, scval_k); // apply projection
+          stage_infeas((long)k) = math::infty_norm(v - scval_k);
+        }
+      };
+
+  // compute infeasibility of all stage constraints
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
-    const ConstraintStack &constraints = stage.constraints_;
     const StageData &stage_data = prob_data.getStageData(i);
-    auto &stage_infeas = workspace.stage_prim_infeas[i + 1];
-
-    // compute infeasibility of all stage constraints
-    for (std::size_t j = 0; j < stage.numConstraints(); j++) {
-      const CstrSet &cstr_set = constraints.getConstraintSet(j);
-
-      // compute and project displaced constraint
-      auto lam_i =
-          constraints.getConstSegmentByConstraint(results.lams[i + 1], j);
-      VectorXs &v = stage_data.constraint_data[j]->value_;
-      VectorXs &cd_buf = shifted_constraints[i + 1];
-      auto cd = constraints.getSegmentByConstraint(cd_buf, j);
-      cd = v + mu_scaled(j) * lam_i;
-      cstr_set.projection(cd, cd); // apply projection
-      stage_infeas((long)j) = math::infty_norm(v - cd);
-    }
+    VectorXs &stage_infeas = workspace.stage_prim_infeas[i + 1];
+    execute_on_stack(stage.constraints_, shifted_constraints[i + 1],
+                     results.lams[i + 1], stage_infeas,
+                     stage_data.constraint_data,
+                     CstrALWeightStrat(mu_penal_, true));
   }
-  if (problem.term_constraint_) {
-    const FunctionData &data = prob_data.getTermData();
-    const CstrSet &cstr_set = *problem.term_constraint_->set;
-    auto &v = data.value_;
-    auto &lam = results.lams[nsteps];
-    auto &cd = shifted_constraints.back();
-    cd = v + mu() * lam;
-    cstr_set.projection(cd, cd);
-    workspace.stage_prim_infeas[nsteps](0) = math::infty_norm(v - cd);
+
+  // compute infeasibility of terminal constraints
+  if (!problem.term_cstrs_.empty()) {
+    execute_on_stack(problem.term_cstrs_, shifted_constraints.back(),
+                     results.lams.back(), workspace.stage_prim_infeas.back(),
+                     prob_data.term_cstr_data,
+                     CstrALWeightStrat(mu_penal_, true));
   }
 
   results.prim_infeas = math::infty_norm(workspace.stage_prim_infeas);
@@ -1043,8 +1058,8 @@ void SolverProxDDP<Scalar>::computeCriterion(const Problem &problem,
     auto gy = -lam_head + vp.Vx_;
     Scalar ry = math::infty_norm(gy);
     std::FILE *fi = std::fopen("pddp.log", "a");
-    fmt::print(fi, "[{:>3d}]ru={:.2e},ry={:.2e},rlam={:.2e},", i, ru, ry, rlam);
-    fmt::print(fi, "ru_other={:.3e}\n", ru_ddp);
+    fmt::print(fi, "[{:>3d}]ru={:.2e},ry={:.2e},rlam={:.2e},ru_other={:.2e}\n",
+               i, ru, ry, rlam, ru_ddp);
     std::fclose(fi);
 #endif
     workspace.stage_inner_crits(long(i)) = std::max({ru_ddp, 0., rlam});
