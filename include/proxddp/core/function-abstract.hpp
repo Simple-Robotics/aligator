@@ -142,3 +142,7 @@ struct FunctionDataTpl : Cloneable<FunctionDataTpl<_Scalar>> {
 } // namespace proxddp
 
 #include "proxddp/core/function-abstract.hxx"
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/core/function-abstract.txx"
+#endif

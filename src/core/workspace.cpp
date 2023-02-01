@@ -8,7 +8,6 @@ template unique_ptr<ldlt_base<context::Scalar>>
 allocate_ldlt_algorithm(const std::vector<isize> &nprims,
                         const std::vector<isize> &nduals, LDLTChoice choice);
 
-template WorkspaceTpl<context::Scalar>::WorkspaceTpl(
-    const context::TrajOptProblem &, LDLTChoice);
+template struct WorkspaceTpl<context::Scalar>;
 
 } // namespace proxddp

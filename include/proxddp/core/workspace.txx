@@ -11,7 +11,6 @@ allocate_ldlt_algorithm(const std::vector<isize> &,
                             const std::vector<isize> &,
                             LDLTChoice);
 
-extern template
-WorkspaceTpl<context::Scalar>::WorkspaceTpl(const context::TrajOptProblem &, LDLTChoice);
+extern template struct WorkspaceTpl<context::Scalar>;
 
 } // namespace proxddp

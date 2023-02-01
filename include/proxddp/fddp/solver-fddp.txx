@@ -6,10 +6,6 @@
 
 namespace proxddp {
 
-// instantiate constructor
-
-extern template
-SolverFDDP<context::Scalar>::SolverFDDP(const context::Scalar, VerboseLevel, const context::Scalar, const std::size_t);
-
+extern template struct SolverFDDP<context::Scalar>;
 
 }

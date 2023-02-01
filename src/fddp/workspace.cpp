@@ -2,7 +2,6 @@
 
 namespace proxddp {
 
-template WorkspaceFDDPTpl<context::Scalar>::WorkspaceFDDPTpl(
-    const context::TrajOptProblem &);
+template struct WorkspaceFDDPTpl<context::Scalar>;
 
 } // namespace proxddp

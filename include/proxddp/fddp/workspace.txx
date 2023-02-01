@@ -5,7 +5,6 @@
 
 namespace proxddp {
 
-extern template
-WorkspaceFDDPTpl<context::Scalar>::WorkspaceFDDPTpl(const context::TrajOptProblem &);
+extern template struct WorkspaceFDDPTpl<context::Scalar>;
 
 }

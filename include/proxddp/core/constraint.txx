@@ -7,8 +7,7 @@
 
 namespace proxddp {
 
-extern template struct
-StageConstraintTpl<context::Scalar>;
+extern template struct StageConstraintTpl<context::Scalar>;
 
 extern template struct ConstraintStackTpl<context::Scalar>;
 
