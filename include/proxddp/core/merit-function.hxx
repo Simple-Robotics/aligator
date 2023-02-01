@@ -27,12 +27,32 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblem &problem,
 
   // initial constraint
   {
-    penalty_value += .5 * mu() * workspace.lams_plus[0].squaredNorm();
+    CstrALWeights weight_strat(mu, false);
+    penalty_value += .5 * weight_strat.get(0) * lams_plus[0].squaredNorm();
     if (use_dual_terms) {
-      penalty_value +=
-          .5 * dual_weight() * mu() * (lams_plus[0] - lams[0]).squaredNorm();
+      penalty_value += .5 * dual_weight() * weight_strat.get(0) *
+                       (lams_plus[0] - lams[0]).squaredNorm();
     }
   }
+
+  // local lambda function, defining the op to run on each constraint stack.
+  auto execute_on_stack = [this, use_dual_terms](const ConstraintStack &stack,
+                                                 const VectorXs &lambda,
+                                                 const VectorXs &lambda_plus,
+                                                 CstrALWeights &&weight_strat) {
+    Scalar r = 0.;
+    for (std::size_t k = 0; k < stack.size(); ++k) {
+      const auto lamplus_k = stack.getConstSegmentByConstraint(lambda_plus, k);
+      const auto laminnr_k = stack.getConstSegmentByConstraint(lambda, k);
+      r += .5 * weight_strat.get(k) * lamplus_k.squaredNorm();
+
+      if (use_dual_terms) {
+        r += .5 * dual_weight() * weight_strat.get(k) *
+             (lamplus_k - laminnr_k).squaredNorm();
+      }
+    }
+    return r;
+  };
 
   // stage-per-stage
   const std::size_t nsteps = problem.numSteps();
@@ -41,31 +61,16 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblem &problem,
 
     const ConstraintStack &cstr_mgr = stage.constraints_;
 
-    // loop over constraints
-    for (std::size_t j = 0; j < cstr_mgr.numConstraints(); j++) {
-
-      const auto lamplus_j =
-          cstr_mgr.getConstSegmentByConstraint(lams_plus[i + 1], j);
-      penalty_value += .5 * mu_scaled(j) * lamplus_j.squaredNorm();
-
-      if (use_dual_terms) {
-        const auto lamin_j =
-            cstr_mgr.getConstSegmentByConstraint(lams[i + 1], j);
-        penalty_value += .5 * dual_weight() * mu_scaled(j) *
-                         (lamplus_j - lamin_j).squaredNorm();
-      }
-    }
+    penalty_value += execute_on_stack(cstr_mgr, lams[i + 1], lams_plus[i + 1],
+                                      CstrALWeights(mu, true));
   }
 
-  if (problem.term_constraint_) {
-
-    const VectorXs &lamplus = lams_plus[nsteps + 1];
-    penalty_value += .5 * mu() * lamplus.squaredNorm();
-
-    if (use_dual_terms) {
-      penalty_value += .5 * dual_weight() * mu() *
-                       (lamplus - lams[nsteps + 1]).squaredNorm();
-    }
+  if (!problem.term_cstrs_.empty()) {
+    assert(lams.size() == nsteps + 2);
+    assert(lams_plus.size() == nsteps + 2);
+    penalty_value +=
+        execute_on_stack(problem.term_cstrs_, lams.back(), lams_plus.back(),
+                         CstrALWeights(mu, false));
   }
 
   return traj_cost_ + prox_value + penalty_value;
@@ -88,49 +93,70 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
       d1 += rho * pdata.Lu_.dot(workspace.dus[i]);
   }
 
+  const Scalar mu = solver_->mu();
+  const auto &dlams = workspace.dlams;
+  const auto &lams_plus = workspace.lams_plus;
+  const auto &lams_pdal = workspace.lams_pdal;
+
   // constraints
   {
     const FunctionData &fd = prob_data.getInitData();
-    auto &lampdal = workspace.lams_pdal[0];
+    const auto &lampdal = workspace.lams_pdal[0];
     d1 += lampdal.dot(fd.Jx_ * workspace.dxs[0]);
+    d1 -= CstrALWeights(mu, false).get(0) *
+          (lams_plus[0] - lams[0]).dot(dlams[0]);
   }
+
+  auto execute_on_stack =
+      [](const auto &stack, const auto &dx, const auto &du, const auto &dy,
+         const auto &dlam, const auto &lam, const auto &lamplus,
+         const auto &lampdal,
+         const std::vector<shared_ptr<FunctionData>> &constraint_data,
+         CstrALWeights &&weight_strat) {
+        Scalar r = 0.;
+        for (std::size_t k = 0; k < stack.size(); k++) {
+          const FunctionData &cd = *constraint_data[k];
+          auto lampdal_k = stack.getConstSegmentByConstraint(lampdal, k);
+          auto laminnr_k = stack.getConstSegmentByConstraint(lam, k);
+          auto lamplus_k = stack.getConstSegmentByConstraint(lamplus, k);
+
+          r += lampdal_k.dot(cd.Jx_ * dx);
+          r += lampdal_k.dot(cd.Ju_ * du);
+          r += lampdal_k.dot(cd.Jy_ * dy);
+
+          r -= weight_strat.get(k) * (lamplus_k - laminnr_k).dot(dlam);
+        }
+        return r;
+      };
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
     const StageData &stage_data = prob_data.getStageData(i);
+    const ConstraintStack &cstr_stack = stage.constraints_;
 
-    const ConstraintStack &cstr_mgr = stage.constraints_;
-    const std::size_t num_c = cstr_mgr.numConstraints();
+    const auto &dx = workspace.dxs[i];
+    const auto &du = workspace.dus[i];
+    const auto &dy = workspace.dxs[i + 1];
 
-    auto &lampdal = workspace.lams_pdal[i + 1];
-    auto &dx = workspace.dxs[i];
-    auto &du = workspace.dus[i];
-    auto &dy = workspace.dxs[i + 1];
-
-    for (std::size_t j = 0; j < num_c; j++) {
-      const FunctionData &cd = *stage_data.constraint_data[j];
-      auto lampdal_j = cstr_mgr.getConstSegmentByConstraint(lampdal, j);
-
-      d1 += lampdal_j.dot(cd.Jx_ * dx);
-      d1 += lampdal_j.dot(cd.Ju_ * du);
-      d1 += lampdal_j.dot(cd.Jy_ * dy);
-    }
+    d1 += execute_on_stack(cstr_stack, dx, du, dy, dlams[i + 1], lams[i + 1],
+                           lams_plus[i + 1], lams_pdal[i + 1],
+                           stage_data.constraint_data, CstrALWeights(mu, true));
   }
 
-  if (problem.term_constraint_) {
-    const FunctionData &tcd = prob_data.getTermData();
-    auto &lampdal = workspace.lams_pdal[nsteps + 1];
-    auto &dx = workspace.dxs.back();
+  const ConstraintStack &term_stack = problem.term_cstrs_;
+  for (std::size_t k = 0; k < term_stack.size(); ++k) {
+    const FunctionData &tcd = *prob_data.term_cstr_data[k];
+    const auto lpdl =
+        term_stack.getConstSegmentByConstraint(lams_pdal.back(), k);
+    const auto l = term_stack.getConstSegmentByConstraint(lams.back(), k);
+    const auto lp = term_stack.getConstSegmentByConstraint(lams_plus.back(), k);
+    const auto dl = term_stack.getConstSegmentByConstraint(dlams.back(), k);
+    const auto &dx = workspace.dxs.back();
 
-    d1 += lampdal.dot(tcd.Jx_ * dx);
+    d1 += lpdl.dot(tcd.Jx_ * dx);
+    d1 -= CstrALWeights(mu, false).get(k) * (lp - l).dot(dl);
   }
 
-  std::size_t nmul = lams.size();
-  for (std::size_t i = 0; i < nmul; i++) {
-    auto &laminnr = lams[i];
-    auto &lamplus = workspace.lams_plus[i];
-    d1 += -mu() * (lamplus - laminnr).dot(workspace.dlams[i]);
-  }
   return d1;
 }
 } // namespace proxddp
