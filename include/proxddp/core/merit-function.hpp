@@ -70,6 +70,7 @@ template <typename _Scalar> struct PDALFunction {
   using Workspace = WorkspaceTpl<Scalar>;
   using TrajOptProblem = TrajOptProblemTpl<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
+  using CstrALWeights = ConstraintALWeightStrategy<Scalar>;
 
   SolverProxDDP<Scalar> const *solver_;
   Scalar traj_cost_;
@@ -80,19 +81,7 @@ template <typename _Scalar> struct PDALFunction {
 
   Scalar dual_weight() { return solver_->dual_weight; }
 
-  Scalar mu() const { return std::max(mu_min, solver_->mu()); }
-
-  Scalar mu_inv() const { return std::max(mu_max, solver_->mu_inv()); }
-
   PDALFunction(SolverProxDDP<Scalar> const *solver);
-
-  Scalar mu_scaled(std::size_t j) const {
-    return std::max(mu_min, solver_->mu_scaled(j));
-  }
-
-  Scalar mu_inv_scaled(std::size_t j) const {
-    return std::min(mu_max, solver_->mu_inv_scaled(j));
-  }
 
   /// @brief    Compute the merit function at the trial point.
   /// @warning  Evaluate the problem and proximal terms first!

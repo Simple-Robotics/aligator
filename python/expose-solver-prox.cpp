@@ -89,12 +89,6 @@ void exposeProxDDP() {
                      "Initial AL penalty parameter.")
       .def_readwrite("rho_init", &SolverType::rho_init,
                      "Initial proximal regularization.")
-      .def_readwrite(
-          "mu_dyn_scale", &SolverType::mu_dyn_scale,
-          "Scale factor for the dynamics' augmented Lagrangian penalty.")
-      .def_readwrite(
-          "mu_stage_scale", &SolverType::mu_stage_scale,
-          "Scale factor for the AL penalty on stagewise constraints.")
       .def_readwrite("mu_min", &SolverType::MU_MIN,
                      "Lower bound on the AL penalty parameter.")
       .def_readwrite("ls_mode", &SolverType::ls_mode, "Linesearch mode.")

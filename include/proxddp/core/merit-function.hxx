@@ -22,7 +22,7 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblem &problem,
   Scalar penalty_value = 0.;
   auto ls_mode = solver_->ls_mode;
   bool use_dual_terms = ls_mode == LinesearchMode::PRIMAL_DUAL;
-
+  const Scalar mu = solver_->mu();
   const std::vector<VectorXs> &lams_plus = workspace.lams_plus;
 
   // initial constraint
