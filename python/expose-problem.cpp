@@ -43,8 +43,11 @@ void exposeProblem() {
                     &TrajOptProblem::setInitState, "Initial state.")
       .add_property("init_cstr", &TrajOptProblem::init_state_error_,
                     "Get initial state constraint.")
-      .def("setTerminalConstraint", &TrajOptProblem::setTerminalConstraint,
-           bp::args("self", "constraint"), "Set terminal constraint.")
+      .def("addTerminalConstraint", &TrajOptProblem::addTerminalConstraint,
+           bp::args("self", "constraint"), "Add a terminal constraint.")
+      .def("removeTerminalConstraint",
+           &TrajOptProblem::removeTerminalConstraints, bp::args("self"),
+           "Remove all terminal constraints.")
       .def("evaluate", &TrajOptProblem::evaluate,
            bp::args("self", "xs", "us", "prob_data"),
            "Evaluate the problem costs, dynamics, and constraints.")

@@ -6,8 +6,6 @@
 #include "proxddp/utils/mpc-util.hpp"
 #include "proxddp/modelling/state-error.hpp"
 
-#include <boost/optional.hpp>
-
 namespace proxddp {
 
 /**
@@ -30,7 +28,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   using Data = TrajOptDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using CostAbstract = CostAbstractTpl<Scalar>;
-  using Constraint = StageConstraintTpl<Scalar>;
+  using ConstraintType = StageConstraintTpl<Scalar>;
   using StateErrorResidual = StateErrorResidualTpl<Scalar>;
 
   /**
@@ -95,8 +93,10 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   std::vector<shared_ptr<StageModel>> stages_;
   /// Terminal cost.
   shared_ptr<CostAbstract> term_cost_;
-  /// (Optional) terminal constraint.
-  boost::optional<Constraint> term_constraint_ = boost::none;
+  /// Terminal constraints.
+  ConstraintStackTpl<Scalar> term_cstrs_;
+
+  int num_threads_ = 1;
 
   VectorXs dummy_term_u0;
 
@@ -123,7 +123,12 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   void setInitState(const ConstVectorRef x0) { init_state_error_.target_ = x0; }
 
   /// @brief Set a terminal constraint for the model.
-  void setTerminalConstraint(const Constraint &cstr);
+  PROXDDP_DEPRECATED_MESSAGE("Use addTerminalConstraint instead.")
+  void setTerminalConstraint(const ConstraintType &cstr);
+  /// @brief Add a terminal constraint for the model.
+  void addTerminalConstraint(const ConstraintType &cstr);
+  /// @brief Remove all terminal constraints.
+  void removeTerminalConstraints() { term_cstrs_.clear(); }
 
   std::size_t numSteps() const;
 
@@ -156,6 +161,7 @@ template <typename _Scalar> struct TrajOptDataTpl {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using FunctionData = FunctionDataTpl<Scalar>;
+  using ConstraintType = StageConstraintTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
 
   /// Current cost in the TO problem.
@@ -168,7 +174,7 @@ template <typename _Scalar> struct TrajOptDataTpl {
   /// Terminal cost data.
   shared_ptr<CostDataAbstractTpl<Scalar>> term_cost_data;
   /// Terminal constraint data.
-  shared_ptr<FunctionDataTpl<Scalar>> term_cstr_data;
+  std::vector<shared_ptr<FunctionData>> term_cstr_data;
 
   TrajOptDataTpl() = delete;
   TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem);
@@ -182,11 +188,6 @@ template <typename _Scalar> struct TrajOptDataTpl {
   FunctionData &getInitData() { return *init_data; }
   /// @copydoc getInitData()
   const FunctionData &getInitData() const { return *init_data; }
-
-  /// Get terminal constraint data.
-  FunctionData &getTermData() { return *term_cstr_data; }
-  /// @copydoc getTermData()
-  const FunctionData &getTermData() const { return *term_cstr_data; }
 };
 
 } // namespace proxddp

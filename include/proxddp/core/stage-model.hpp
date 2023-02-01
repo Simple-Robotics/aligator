@@ -67,7 +67,7 @@ public:
   /// with different frontends e.g. Crocoddyl's API.
   virtual bool has_dyn_model() const { return true; }
   virtual const Dynamics &dyn_model() const {
-    assert(constraints_.numConstraints() > 0);
+    assert(numConstraints() > 0);
     auto dyn_ptr = std::static_pointer_cast<Dynamics>(constraints_[0].func);
     return *dyn_ptr;
   }
@@ -79,7 +79,7 @@ public:
   int ndx2() const { return xspace_next_->ndx(); }
 
   /// Number of constraints (constraint objects).
-  std::size_t numConstraints() const { return constraints_.numConstraints(); }
+  std::size_t numConstraints() const { return constraints_.size(); }
 
   /// Number of primal optimization variables.
   int numPrimal() const;
