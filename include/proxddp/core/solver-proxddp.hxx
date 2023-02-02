@@ -704,7 +704,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   inner_tol_ = std::max(inner_tol_, target_tol_);
   prim_tol_ = std::max(prim_tol_, target_tol_);
 
-  bool &conv = results.conv;
+  bool &conv = results.conv = false;
 
   results.al_iter = 0;
   results.num_iters = 0;
