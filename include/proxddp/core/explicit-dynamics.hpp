@@ -87,3 +87,7 @@ std::ostream &operator<<(std::ostream &oss,
 } // namespace proxddp
 
 #include "proxddp/core/explicit-dynamics.hxx"
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/core/explicit-dynamics.txx"
+#endif

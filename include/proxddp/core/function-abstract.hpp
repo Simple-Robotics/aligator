@@ -12,9 +12,7 @@
 namespace proxddp {
 
 /// @brief    Class representing ternary functions \f$f(x,u,x')\f$.
-template <typename _Scalar>
-struct StageFunctionTpl
-    : std::enable_shared_from_this<StageFunctionTpl<_Scalar>> {
+template <typename _Scalar> struct StageFunctionTpl {
 public:
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
