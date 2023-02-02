@@ -68,4 +68,12 @@ template <typename Scalar> void WorkspaceFDDPTpl<Scalar>::cycle_left() {
   rotate_vec_left(llts_);
   rotate_vec_left(JtH_temp_);
 }
+
+template <typename Scalar>
+void WorkspaceFDDPTpl<Scalar>::cycle_append(
+    const shared_ptr<StageModelTpl<Scalar>> &stage) {
+  this->problem_data.stage_data.push_back(stage->createData());
+  this->cycle_left();
+  this->problem_data.stage_data.pop_back();
+}
 } // namespace proxddp

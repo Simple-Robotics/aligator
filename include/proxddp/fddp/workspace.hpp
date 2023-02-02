@@ -42,12 +42,7 @@ template <typename Scalar> struct WorkspaceFDDPTpl : WorkspaceBaseTpl<Scalar> {
   /// @brief Same as cycle_left(), but add a StageDataTpl to problem_data.
   /// @details The implementation pushes back on top of the vector of
   /// StageDataTpl, rotates left, then pops the first element back out.
-  void cycle_append(const shared_ptr<StageModelTpl<Scalar>> &stage) {
-    auto sd = stage->createData();
-    this->problem_data.stage_data.push_back(sd);
-    this->cycle_left();
-    this->problem_data.stage_data.pop_back();
-  }
+  void cycle_append(const shared_ptr<StageModelTpl<Scalar>> &stage);
 };
 
 } // namespace proxddp

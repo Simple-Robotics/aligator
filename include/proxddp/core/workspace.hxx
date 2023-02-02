@@ -218,8 +218,7 @@ template <typename Scalar> void WorkspaceTpl<Scalar>::cycle_left() {
 
 template <typename Scalar>
 void WorkspaceTpl<Scalar>::cycle_append(const shared_ptr<StageModel> &stage) {
-  auto sd = stage->createData();
-  problem_data.stage_data.push_back(sd);
+  problem_data.stage_data.emplace_back(stage->createData());
   this->cycle_left();
   problem_data.stage_data.pop_back();
 }
