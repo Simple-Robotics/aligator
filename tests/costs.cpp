@@ -47,11 +47,10 @@ BOOST_AUTO_TEST_CASE(quad_state) {
     fun->evaluate(x0, u0, x0, *fd);
     fun->computeJacobians(x0, u0, x0, *fd);
 
-    auto n = ndx + nu;
+    auto n = (long)(ndx + nu);
     auto J = fd->jac_buffer_.leftCols(n);
-    const auto &r = fd->value_;
 
-    auto grad_ref = J.transpose() * weights * r;
+    auto grad_ref = J.transpose() * weights * fd->value_;
     auto hess_ref = J.transpose() * weights * J;
     fmt::print("grad_ref: {}\n", grad_ref.transpose());
     fmt::print("hess_ref:\n{}\n", hess_ref);

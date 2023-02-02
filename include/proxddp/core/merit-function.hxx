@@ -22,7 +22,7 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblem &problem,
   Scalar penalty_value = 0.;
   auto ls_mode = solver_->ls_mode;
   bool use_dual_terms = ls_mode == LinesearchMode::PRIMAL_DUAL;
-  const Scalar mu = solver_->mu();
+  const Scalar dual_weight = solver_->dual_weight;
   const std::vector<VectorXs> &lams_plus = workspace.lams_plus;
 
   // initial constraint
@@ -30,29 +30,30 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblem &problem,
     CstrALWeights weight_strat(mu, false);
     penalty_value += .5 * weight_strat.get(0) * lams_plus[0].squaredNorm();
     if (use_dual_terms) {
-      penalty_value += .5 * dual_weight() * weight_strat.get(0) *
+      penalty_value += .5 * dual_weight * weight_strat.get(0) *
                        (lams_plus[0] - lams[0]).squaredNorm();
     }
   }
 
   // local lambda function, defining the op to run on each constraint stack.
-  auto execute_on_stack = [this, use_dual_terms](const ConstraintStack &stack,
-                                                 const VectorXs &lambda,
-                                                 const VectorXs &lambda_plus,
-                                                 CstrALWeights &&weight_strat) {
-    Scalar r = 0.;
-    for (std::size_t k = 0; k < stack.size(); ++k) {
-      const auto lamplus_k = stack.getConstSegmentByConstraint(lambda_plus, k);
-      const auto laminnr_k = stack.getConstSegmentByConstraint(lambda, k);
-      r += .5 * weight_strat.get(k) * lamplus_k.squaredNorm();
+  auto execute_on_stack =
+      [use_dual_terms = use_dual_terms, dual_weight = dual_weight](
+          const ConstraintStack &stack, const VectorXs &lambda,
+          const VectorXs &lambda_plus, CstrALWeights &&weight_strat) {
+        Scalar r = 0.;
+        for (std::size_t k = 0; k < stack.size(); ++k) {
+          const auto lamplus_k =
+              stack.getConstSegmentByConstraint(lambda_plus, k);
+          const auto laminnr_k = stack.getConstSegmentByConstraint(lambda, k);
+          r += .5 * weight_strat.get(k) * lamplus_k.squaredNorm();
 
-      if (use_dual_terms) {
-        r += .5 * dual_weight() * weight_strat.get(k) *
-             (lamplus_k - laminnr_k).squaredNorm();
-      }
-    }
-    return r;
-  };
+          if (use_dual_terms) {
+            r += .5 * dual_weight * weight_strat.get(k) *
+                 (lamplus_k - laminnr_k).squaredNorm();
+          }
+        }
+        return r;
+      };
 
   // stage-per-stage
   const std::size_t nsteps = problem.numSteps();

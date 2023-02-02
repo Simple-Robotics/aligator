@@ -76,11 +76,6 @@ template <typename _Scalar> struct PDALFunction {
   Scalar traj_cost_;
   /// Weight of dual penalty. Values different from 1 not supported yet.
 
-  Scalar mu_min = 1e-7;
-  Scalar mu_max = 1. / mu_min;
-
-  Scalar dual_weight() { return solver_->dual_weight; }
-
   PDALFunction(SolverProxDDP<Scalar> const *solver);
 
   /// @brief    Compute the merit function at the trial point.
