@@ -4,7 +4,6 @@
 
 namespace proxddp {
 
-extern template
-SolverProxDDP<context::Scalar>::SolverProxDDP(const context::Scalar, const context::Scalar, const context::Scalar, const std::size_t, VerboseLevel, HessianApprox);
+extern template struct SolverProxDDP<context::Scalar>;
 
 } // namespace proxddp

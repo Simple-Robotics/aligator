@@ -41,9 +41,10 @@ Scalar TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
 
   term_cost_->evaluate(xs[nsteps], dummy_term_u0, *prob_data.term_cost_data);
 
-  if (term_constraint_) {
-    term_constraint_->func->evaluate(xs[nsteps], dummy_term_u0, xs[nsteps],
-                                     prob_data.getTermData());
+  for (std::size_t k = 0; k < term_cstrs_.size(); ++k) {
+    const ConstraintType &tc = term_cstrs_[k];
+    auto &td = prob_data.term_cstr_data[k];
+    tc.func->evaluate(xs[nsteps], dummy_term_u0, xs[nsteps], *td);
   }
   prob_data.cost_ = computeTrajectoryCost(prob_data);
   return prob_data.cost_;
@@ -74,9 +75,11 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
     term_cost_->computeHessians(xs[nsteps], dummy_term_u0,
                                 *prob_data.term_cost_data);
   }
-  if (term_constraint_) {
-    term_constraint_->func->computeJacobians(
-        xs[nsteps], dummy_term_u0, xs[nsteps], prob_data.getTermData());
+
+  for (std::size_t k = 0; k < term_cstrs_.size(); ++k) {
+    const ConstraintType &tc = term_cstrs_[k];
+    auto &td = prob_data.term_cstr_data[k];
+    tc.func->computeJacobians(xs[nsteps], dummy_term_u0, xs[nsteps], *td);
   }
 }
 
@@ -86,8 +89,16 @@ void TrajOptProblemTpl<Scalar>::addStage(const shared_ptr<StageModel> &stage) {
 }
 
 template <typename Scalar>
-void TrajOptProblemTpl<Scalar>::setTerminalConstraint(const Constraint &cstr) {
-  this->term_constraint_ = cstr;
+void TrajOptProblemTpl<Scalar>::setTerminalConstraint(
+    const ConstraintType &cstr) {
+  removeTerminalConstraints();
+  addTerminalConstraint(cstr);
+}
+
+template <typename Scalar>
+void TrajOptProblemTpl<Scalar>::addTerminalConstraint(
+    const ConstraintType &cstr) {
+  term_cstrs_.pushBack(cstr);
 }
 
 template <typename Scalar>
@@ -135,8 +146,11 @@ TrajOptDataTpl<Scalar>::TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem)
     term_cost_data = problem.term_cost_->createData();
   }
 
-  if (problem.term_constraint_) {
-    term_cstr_data = problem.term_constraint_.value().func->createData();
+  if (!problem.term_cstrs_.empty())
+    term_cstr_data.reserve(problem.term_cstrs_.size());
+  for (std::size_t k = 0; k < problem.term_cstrs_.size(); k++) {
+    const ConstraintType &tc = problem.term_cstrs_[k];
+    term_cstr_data.push_back(tc.func->createData());
   }
 }
 

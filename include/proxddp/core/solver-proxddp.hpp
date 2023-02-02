@@ -35,7 +35,7 @@ public:
   using FunctionData = FunctionDataTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using StageModel = StageModelTpl<Scalar>;
-  using Constraint = StageConstraintTpl<Scalar>;
+  using ConstraintType = StageConstraintTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
   using VParams = value_function<Scalar>;
   using QParams = q_function<Scalar>;
@@ -46,6 +46,7 @@ public:
   using CstrSet = ConstraintSetBase<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
   using LinesearchOptions = typename Linesearch<Scalar>::Options;
+  using CstrALWeightStrat = ConstraintALWeightStrategy<Scalar>;
 
   std::vector<ProxPenaltyType> prox_penalties_;
   /// Subproblem tolerance
@@ -253,25 +254,6 @@ public:
   PROXDDP_INLINE Scalar rho() const { return rho_penal_; }
 
   //// Scaled variants
-
-  /// AL penalty scale factor for the dynamical constraints.
-  Scalar mu_dyn_scale = 1e-3;
-  /// AL penalty scale factor for stagewise constraints.
-  Scalar mu_stage_scale = 1.0;
-
-  /// Scaled penalty parameter, for stagewise constraints.
-  Scalar mu_scaled(std::size_t j) const {
-    if (j == 0)
-      return mu_dynamics();
-    return mu() * mu_stage_scale;
-  }
-
-  /// Scaled inverse penalty parameter.
-  PROXDDP_INLINE Scalar mu_inv_scaled(std::size_t j) const {
-    return 1. / mu_scaled(j);
-  }
-
-  PROXDDP_INLINE Scalar mu_dynamics() const { return mu() * mu_dyn_scale; }
 
   /// @brief  Put together the Q-function parameters and compute the Riccati
   /// gains.

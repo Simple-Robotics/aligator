@@ -286,7 +286,7 @@ def main(args: Args):
                 proxddp.StateErrorResidual(space, nu, x_tar),
                 constraints.EqualityConstraintSet(),
             )
-            prob.setTerminalConstraint(term_cstr)
+            prob.addTerminalConstraint(term_cstr)
         return prob
 
     _, x_term = task_fun(nsteps)

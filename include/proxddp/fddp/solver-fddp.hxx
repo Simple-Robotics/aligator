@@ -36,10 +36,10 @@ void SolverFDDP<Scalar>::setup(const Problem &problem) {
                     "Please use a penalized cost formulation.\n",
                     fmt::join(idx_where_constraints, ", ")));
   }
-  if (problem.term_constraint_) {
-    PROXDDP_FDDP_WARNING(
-        "problem has a terminal constraint, which this solver cannot "
-        "handle.\n");
+  if (!problem.term_cstrs_.empty()) {
+    PROXDDP_FDDP_WARNING("problem has at least one terminal constraint, which "
+                         "this solver cannot "
+                         "handle.\n");
   }
 }
 

@@ -80,3 +80,7 @@ public:
 };
 
 } // namespace proxddp
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/core/cost-abstract.txx"
+#endif

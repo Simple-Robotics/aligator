@@ -29,10 +29,9 @@ ResultsTpl<Scalar>::ResultsTpl(const TrajOptProblemTpl<Scalar> &problem) {
     lams.push_back(VectorXs::Zero(ndual));
   }
 
-  if (problem.term_constraint_) {
-    const StageConstraintTpl<Scalar> &tc = *problem.term_constraint_;
-    const int ndx = tc.func->ndx1;
-    const int ndual = tc.func->nr;
+  if (!problem.term_cstrs_.empty()) {
+    const long ndx = (long)problem.stages_.back()->ndx2();
+    const long ndual = problem.term_cstrs_.totalDim();
     lams.push_back(VectorXs::Zero(ndual));
     gains_.push_back(MatrixXs::Zero(ndual, ndx + 1));
   }

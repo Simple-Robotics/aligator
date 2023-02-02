@@ -4,6 +4,6 @@
 
 namespace proxddp {
 
-extern template struct PDALFunction<context::Scalar>;
+extern template struct StageModelTpl<context::Scalar>;
 
 }

@@ -4,7 +4,6 @@
 
 namespace proxddp {
 
-template ResultsTpl<context::Scalar>::ResultsTpl(
-    const context::TrajOptProblem &);
+template struct ResultsTpl<context::Scalar>;
 
 } // namespace proxddp

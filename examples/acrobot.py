@@ -54,7 +54,7 @@ problem = proxddp.TrajOptProblem(x0, stages, term_cost)
 term_cstr = proxddp.StageConstraint(
     proxddp.StateErrorResidual(space, nu, target), constraints.EqualityConstraintSet()
 )
-problem.setTerminalConstraint(term_cstr)
+problem.addTerminalConstraint(term_cstr)
 
 tol = 1e-3
 mu_init = 1e-2

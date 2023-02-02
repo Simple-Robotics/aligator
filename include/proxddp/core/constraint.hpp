@@ -1,6 +1,7 @@
 /// @file constraint.hpp
-/// @brief Defines the constraint object for this library.
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @brief Defines the constraint object and constraint stack manager for this
+/// library.
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
 #include "proxddp/core/function-abstract.hpp"
@@ -20,17 +21,17 @@ template <typename Scalar> struct ConstraintStackTpl {
   using ConstraintType = StageConstraintTpl<Scalar>;
   ConstraintStackTpl() : indices_({0}){};
 
-  std::size_t numConstraints() const { return storage_.size(); }
-
-  inline void pushBack(const ConstraintType &el) {
-    assert(el.func != 0 &&
-           "constraint must have non-null underlying function.");
-    assert(el.set != 0 && "constraint must have non-null underlying set.");
-    const long nr = el.func->nr;
-    pushBack(el, nr);
+  std::size_t size() const { return storage_.size(); }
+  bool empty() const { return size() == 0; }
+  void clear() {
+    storage_.clear();
+    indices_ = {0};
+    dims_.clear();
+    total_dim_ = 0;
   }
 
   void pushBack(const ConstraintType &el, const long nr);
+  void pushBack(const ConstraintType &el);
 
   /// @brief Get start index in an array.
   long getIndex(const std::size_t j) const { return indices_[j]; }
@@ -76,14 +77,15 @@ template <typename Scalar> struct ConstraintStackTpl {
     return J.middleRows(getIndex(j), getDim(j));
   }
 
-  long totalDim() const { return total_dim; }
+  long totalDim() const { return total_dim_; }
 
-  /// Get the i-th constraint.
+  /// @brief Get the i-th constraint.
   ConstraintType &operator[](std::size_t j) {
     assert((j < this->storage_.size()) && "i exceeds number of constraints!");
     return storage_[j];
   }
 
+  /// @copybrief operator[]()
   const ConstraintType &operator[](std::size_t j) const {
     assert((j < this->storage_.size()) && "i exceeds number of constraints!");
     return storage_[j];
@@ -93,9 +95,41 @@ protected:
   std::vector<ConstraintType> storage_;
   std::vector<long> indices_;
   std::vector<long> dims_;
-  long total_dim = 0;
+  long total_dim_ = 0;
+};
+
+/// @brief  Weighting strategy for the constraints in a stack.
+template <typename Scalar> struct ConstraintALWeightStrategy {
+  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+
+  ConstraintALWeightStrategy(Scalar mu, bool weighted)
+      : mu_(mu), dyn_weight_(1e-3), weighted_(weighted) {}
+
+  Scalar get(std::size_t j) {
+    if (!weighted_)
+      return mu_;
+    else if (j == 0) {
+      return dyn_weight_ * mu_;
+    } else {
+      return mu_;
+    }
+  }
+
+  Scalar inv(std::size_t j) { return 1. / get(j); }
+
+  inline void enable() { weighted_ = true; }
+  inline void disable() { weighted_ = false; }
+
+private:
+  Scalar mu_;
+  Scalar dyn_weight_; // weighting for dynamical constraints (index j == 0)
+  bool weighted_;     // whether weighting is activated
 };
 
 } // namespace proxddp
 
 #include "proxddp/core/constraint.hxx"
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/core/constraint.txx"
+#endif
