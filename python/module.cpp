@@ -15,9 +15,9 @@ BOOST_PYTHON_MODULE(pyproxddp) {
   bp::docstring_options module_docstring_options(true, true, true);
 
   bp::scope().attr("__version__") = proxddp::printVersion();
-  bp::def("get_available_threads", &proxddp::getNumAvailableThreads,
+  bp::def("get_available_threads", &proxddp::omp::get_available_threads,
           "Get the number of available threads.");
-  bp::def("get_num_threads", &proxddp::getCurrentThreads,
+  bp::def("get_current_threads", &proxddp::omp::get_current_threads,
           "Get the current number of threads.");
   eigenpy::enableEigenPy();
 
