@@ -65,6 +65,9 @@ struct ExplicitDynamicsDataTpl : FunctionDataTpl<_Scalar> {
   VectorXs dx_;
   MatrixXs Jtmp_xnext;
 
+  VectorRef xnext_ref;
+  VectorRef dx_ref;
+
   ExplicitDynamicsDataTpl(const int ndx1, const int nu, const int nx2,
                           const int ndx2);
   virtual ~ExplicitDynamicsDataTpl() = default;

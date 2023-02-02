@@ -7,16 +7,30 @@
 namespace proxddp {
 namespace python {
 
+void exposeDynamicsBase();
 void exposeExplicitDynamics();
 void exposeDynamicsImplementations();
 
 void exposeDynamics() {
+  exposeDynamicsBase();
+  exposeExplicitDynamics();
+  exposeDynamicsImplementations();
+}
+
+using context::DynamicsModel;
+using context::ExplicitDynamics;
+using context::Manifold;
+using context::Scalar;
+using ManifoldPtr = shared_ptr<context::Manifold>;
+
+void exposeDynamicsBase() {
   using context::DynamicsModel;
-  using context::Scalar;
   using context::StageFunction;
-  using ManifoldPtr = shared_ptr<context::Manifold>;
 
   using PyDynamicsModel = internal::PyStageFunction<DynamicsModel>;
+
+  StdVectorPythonVisitor<std::vector<shared_ptr<DynamicsModel>>, true>::expose(
+      "StdVec_Dynamics");
 
   bp::class_<PyDynamicsModel, bp::bases<StageFunction>, boost::noncopyable>(
       "DynamicsModel",
@@ -32,19 +46,14 @@ void exposeDynamics() {
       .add_property("is_explicit", &DynamicsModel::is_explicit,
                     "Return whether the current model is explicit.")
       .def(CreateDataPythonVisitor<DynamicsModel>());
-
-  exposeExplicitDynamics();
-  exposeDynamicsImplementations();
 }
 
 void exposeExplicitDynamics() {
-  using context::DynamicsModel;
-  using context::ExplicitDynamics;
   using context::ExplicitDynData;
   using internal::PyExplicitDynamics;
 
-  using PyDynamicsModel = internal::PyStageFunction<DynamicsModel>;
-  using ManifoldPtr = shared_ptr<context::Manifold>;
+  StdVectorPythonVisitor<std::vector<shared_ptr<ExplicitDynamics>>,
+                         true>::expose("StdVec_ExplicitDynamics");
 
   bp::class_<PyExplicitDynamics<>, bp::bases<DynamicsModel>,
              boost::noncopyable>(
@@ -59,24 +68,26 @@ void exposeExplicitDynamics() {
            bp::args("self", "x", "u", "data"),
            "Compute the derivatives of forward discrete dynamics.");
 
-  StdVectorPythonVisitor<std::vector<shared_ptr<PyDynamicsModel>>,
-                         true>::expose("StdVec_Dynamics");
-  StdVectorPythonVisitor<std::vector<shared_ptr<PyExplicitDynamics<>>>,
-                         true>::expose("StdVec_ExplicitDynamics");
-
   bp::register_ptr_to_python<shared_ptr<context::ExplicitDynData>>();
 
   bp::class_<ExplicitDynData, bp::bases<context::FunctionData>>(
       "ExplicitDynamicsData", "Data struct for explicit dynamics models.",
       bp::no_init)
-      .add_property("dx", make_getter_eigen_matrix(&ExplicitDynData::dx_))
-      .add_property("xnext", make_getter_eigen_matrix(&ExplicitDynData::xnext_))
+      // .add_property("dx", make_getter_eigen_matrix(&ExplicitDynData::dx_))
+      // .add_property("xnext",
+      // make_getter_eigen_matrix(&ExplicitDynData::xnext_))
+      .add_property(
+          "xnext",
+          bp::make_getter(&ExplicitDynData::xnext_ref,
+                          bp::return_value_policy<bp::return_by_value>()))
+      .add_property(
+          "dx", bp::make_getter(&ExplicitDynData::dx_ref,
+                                bp::return_value_policy<bp::return_by_value>()))
       .def(PrintableVisitor<ExplicitDynData>());
 }
 
 void exposeDynamicsImplementations() {
   using context::MatrixXs;
-  using context::Scalar;
   using context::VectorXs;
   using namespace proxddp::dynamics;
 
