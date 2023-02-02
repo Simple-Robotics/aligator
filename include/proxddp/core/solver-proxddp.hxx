@@ -688,8 +688,8 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   logger.active = (verbose_ > 0);
   logger.start();
 
-  setPenalty(mu_init);
-  setRho(rho_init);
+  set_penalty_mu(mu_init);
+  set_rho(rho_init);
   xreg_ = reg_init;
   ureg_ = reg_init;
 
@@ -699,7 +699,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
 
   inner_tol_ = inner_tol0;
   prim_tol_ = prim_tol0;
-  updateTolerancesOnFailure();
+  update_tols_on_success();
 
   inner_tol_ = std::max(inner_tol_, target_tol_);
   prim_tol_ = std::max(prim_tol_, target_tol_);
@@ -729,7 +729,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
     workspace.prev_us = results.us;
 
     if (results.prim_infeas <= prim_tol_) {
-      updateTolerancesOnSuccess();
+      update_tols_on_success();
 
       switch (multiplier_update_mode) {
       case MultiplierUpdateMode::NEWTON:
@@ -752,11 +752,11 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
       }
     } else {
       Scalar old_mu = mu_penal_;
-      bclUpdateALPenalty();
-      updateTolerancesOnFailure();
+      bcl_update_alm_penalty();
+      update_tols_on_success();
       if (math::scalar_close(old_mu, mu_penal_)) {
         // reset penalty to initial value
-        setPenalty(mu_init);
+        set_penalty_mu(mu_init);
       }
     }
     rho_penal_ *= bcl_params.rho_update_factor;
@@ -772,13 +772,12 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
 }
 
 template <typename Scalar>
-void SolverProxDDP<Scalar>::updateTolerancesOnFailure() {
+void SolverProxDDP<Scalar>::update_tols_on_success() {
   prim_tol_ = prim_tol0 * std::pow(mu_penal_, bcl_params.prim_alpha);
   inner_tol_ = inner_tol0 * std::pow(mu_penal_, bcl_params.dual_alpha);
 }
 
-template <typename Scalar>
-void SolverProxDDP<Scalar>::updateTolerancesOnSuccess() {
+template <typename Scalar> void SolverProxDDP<Scalar>::update_tols_on_succes() {
   prim_tol_ = prim_tol_ * std::pow(mu_penal_, bcl_params.prim_beta);
   inner_tol_ = inner_tol_ * std::pow(mu_penal_, bcl_params.dual_beta);
 }

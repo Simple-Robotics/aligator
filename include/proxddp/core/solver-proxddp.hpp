@@ -267,20 +267,20 @@ public:
   auto getLinesearchMu() const { return std::max(mu(), min_mu_linesearch_); }
 
 protected:
-  void updateTolerancesOnFailure();
-  void updateTolerancesOnSuccess();
+  void update_tols_on_success();
+  void update_tols_on_succes();
 
   /// Set dual proximal/ALM penalty parameter.
-  PROXDDP_INLINE void setPenalty(Scalar new_mu) noexcept {
+  PROXDDP_INLINE void set_penalty_mu(Scalar new_mu) noexcept {
     mu_penal_ = std::max(new_mu, MU_MIN);
     mu_inverse_ = 1. / new_mu;
   }
 
-  PROXDDP_INLINE void setRho(Scalar new_rho) noexcept { rho_penal_ = new_rho; }
+  PROXDDP_INLINE void set_rho(Scalar new_rho) noexcept { rho_penal_ = new_rho; }
 
   /// Update the dual proximal penalty according to BCL.
-  PROXDDP_INLINE void bclUpdateALPenalty() noexcept {
-    setPenalty(mu_penal_ * bcl_params.mu_update_factor);
+  PROXDDP_INLINE void bcl_update_alm_penalty() noexcept {
+    set_penalty_mu(mu_penal_ * bcl_params.mu_update_factor);
   }
 
   /// Increase Tikhonov regularization.

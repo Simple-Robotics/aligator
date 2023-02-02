@@ -6,8 +6,8 @@ In this script, we demonstrate use the Python Crocoddyl API, by defining
 a manipulation problem using Crocoddyl and converting it to a proxddp problem.
 """
 
-import os
-import sys
+import tap
+import time
 
 import crocoddyl
 import pinocchio
@@ -15,11 +15,19 @@ import numpy as np
 import example_robot_data
 from pinocchio.visualize import MeshcatVisualizer
 
-
 from proxddp.croc import convertCrocoddylProblem
 
-WITHDISPLAY = "display" in sys.argv or "CROCODDYL_DISPLAY" in os.environ
-WITHPLOT = "plot" in sys.argv or "CROCODDYL_PLOT" in os.environ
+
+class Args(tap.Tap):
+    display: bool = False
+    plot: bool = False
+
+
+parser = Args("croc_arm_manipulation")
+args = parser.parse_args()
+
+WITHDISPLAY = args.display
+WITHPLOT = args.plot
 
 # In this example test, we will solve the reaching-goal task with the Talos arm.
 # For that, we use the forward dynamics (with its analytical derivatives)
@@ -134,7 +142,11 @@ if True:
 
     # Solving it with the DDP algorithm
     solver.th_stop = TOLERANCE**2 * T
+
+    elapsed_time = time.time()
     solver.solve(xs_i, us_i)
+    elapsed_time = time.time() - elapsed_time
+    print(f"CROCODDYL TIME = {elapsed_time:.4g}")
 
     # Plotting the solution and the DDP convergence
     if WITHPLOT:
@@ -183,7 +195,11 @@ if True:
     proxsolver = proxddp.SolverFDDP(tol=croc_dual_err)
     proxsolver.verbose = proxddp.VerboseLevel.VERBOSE
     proxsolver.setup(prox_problem)
+
+    elapsed_time = time.time()
     proxsolver.run(prox_problem, xs_i, us_i)
+    elapsed_time = time.time() - elapsed_time
+    print(f"PROXDDP TIME = {elapsed_time:.4g}")
 
     results = proxsolver.getResults()
     assert results.num_iters <= 24

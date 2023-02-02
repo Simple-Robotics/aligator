@@ -5,8 +5,6 @@ https://github.com/loco-3d/crocoddyl/blob/master/examples/humanoid_manipulation.
 In this script, we demonstrate use the Python Crocoddyl API, by defining
 a manipulation problem using Crocoddyl and converting it to a proxddp problem.
 """
-from __future__ import print_function
-
 import os
 import sys
 
@@ -166,11 +164,11 @@ terminalModel = crocoddyl.IntegratedActionModelEuler(dmodelTerminal, 0)
 
 # Problem definition
 x0 = np.concatenate([q0, pinocchio.utils.zero(state.nv)])
-problem = crocoddyl.ShootingProblem(x0, [runningModel] * nsteps, terminalModel)
+croc_problem = crocoddyl.ShootingProblem(x0, [runningModel] * nsteps, terminalModel)
 
 # Creating the DDP solver for this OC problem, defining a logger
 max_iters = 30
-solver = crocoddyl.SolverFDDP(problem)
+solver = crocoddyl.SolverFDDP(croc_problem)
 cbs = [crocoddyl.CallbackVerbose()]
 if WITHDISPLAY and WITHPLOT:
     cbs.extend(
@@ -202,9 +200,9 @@ reg_init = 1e-9
 tol = 1e-5
 solver.th_stop = tol**2
 
-t_croc = time.time()
+elapsed_time_croc = time.time()
 solver.solve(xs_init, us_init, max_iters, False, reg_init)
-t_croc = time.time() - t_croc
+elapsed_time_croc = time.time() - elapsed_time_croc
 
 croc_inf_norm = max([np.linalg.norm(q, np.inf) for q in solver.Qu])
 print("Croc final norm: {}".format(croc_inf_norm))
@@ -238,37 +236,37 @@ if WITHPLOT:
     )
 
 
-pb_prox = proxddp.croc.convertCrocoddylProblem(problem)
+prox_problem = proxddp.croc.convertCrocoddylProblem(croc_problem)
 verbose = proxddp.VerboseLevel.VERBOSE
 if args.solver == "proxddp":
-    solver2 = proxddp.SolverProxDDP(croc_inf_norm, 1e-1, verbose=verbose)
-    solver2.rollout_type = proxddp.ROLLOUT_NONLINEAR
+    mu_init = 1e-4
+    solver2 = proxddp.SolverProxDDP(croc_inf_norm, mu_init, verbose=verbose)
 elif args.solver == "fddp":
     solver2 = proxddp.SolverFDDP(croc_inf_norm, verbose=verbose)
 else:
     raise ValueError("unknown choice of second solver ({})".format(args.solver))
 solver2.verbose = verbose
-solver2.setup(pb_prox)
+solver2.setup(prox_problem)
 solver2.max_iters = max_iters
 solver2.reg_init = reg_init
 
-t_prox = time.time()
-solver2.run(pb_prox, xs_init, us_init)
-t_prox = time.time() - t_prox
+elapsed_time_prox = time.time()
+solver2.run(prox_problem, xs_init, us_init)
+elapsed_time_prox = time.time() - elapsed_time_prox
 
 rs = solver2.getResults()
 ws = solver2.getWorkspace()
 print(rs)
 
-print("CROC TIME = {:.4e}".format(t_croc))
-print("PROX TIME = {:.4e}".format(t_prox))
+print("CROC TIME = {:.4e}".format(elapsed_time_croc))
+print("PROX TIME = {:.4e}".format(elapsed_time_prox))
 
 x_err_v = [np.max(abs(solver.xs[t] - rs.xs[t])) for t in range(nsteps + 1)]
 print("xerr = {}".format(max(x_err_v)))
 u_err_v = [np.max(abs(solver.us[t] - rs.us[t])) for t in range(nsteps)]
 print("uerr = {}".format(max(u_err_v)))
 
-print("cost diff = {}".format(problem.calc(solver.xs, solver.us) - rs.traj_cost))
+print("cost diff = {}".format(croc_problem.calc(solver.xs, solver.us) - rs.traj_cost))
 
 
 nu = actuation.nu
