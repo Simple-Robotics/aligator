@@ -1,6 +1,6 @@
 #include "proxddp/python/fwd.hpp"
 
-#if PINOCCHIO_VERSION_AT_LEAST(2, 9, 2)
+#ifdef PROXDDP_PINOCCHIO_V3
 
 #include "proxddp/modelling/dynamics/multibody-constraint-fwd.hpp"
 

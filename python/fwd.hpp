@@ -8,6 +8,10 @@
 #include <eigenpy/eigenpy.hpp>
 #include <eigenpy/std-vector.hpp>
 
+#if PINOCCHIO_VERSION_AT_LEAST(2, 9, 2)
+#define PROXDDP_PINOCCHIO_V3
+#endif
+
 namespace proxddp {
 /// @brief  The Python bindings.
 namespace python {
@@ -35,9 +39,11 @@ void exposeUtils();
 #ifdef PROXDDP_WITH_PINOCCHIO
 void exposePinocchioFunctions();
 void exposeFreeFwdDynamics();
-#if PINOCCHIO_VERSION_AT_LEAST(2, 9, 2)
+
+#ifdef PROXDDP_PINOCCHIO_V3
 void exposeConstraintFwdDynamics();
 #endif
+
 #endif
 
 } // namespace python

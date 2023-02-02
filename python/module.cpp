@@ -5,7 +5,7 @@
 #include "proxddp/version.hpp"
 #include "proxddp/threads.hpp"
 
-#ifdef WITH_CROCODDYL_COMPAT
+#ifdef PROXDDP_WITH_CROCODDYL_COMPAT
 #include "proxddp/python/compat/croco.hpp"
 #endif
 
@@ -38,7 +38,7 @@ BOOST_PYTHON_MODULE(pyproxddp) {
 
 #ifdef PROXDDP_WITH_PINOCCHIO
     exposeFreeFwdDynamics();
-#if PINOCCHIO_VERSION_AT_LEAST(2, 9, 2)
+#ifdef PROXDDP_PINOCCHIO_V3
     exposeConstraintFwdDynamics();
 #endif
 #endif
@@ -51,7 +51,7 @@ BOOST_PYTHON_MODULE(pyproxddp) {
   exposeCallbacks();
   exposeAutodiff();
 
-#ifdef WITH_CROCODDYL_COMPAT
+#ifdef PROXDDP_WITH_CROCODDYL_COMPAT
   {
     bp::scope croc_ns = get_namespace("croc");
     exposeCrocoddylCompat();
