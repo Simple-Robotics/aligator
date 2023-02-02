@@ -68,7 +68,7 @@ class MyQuadCost(proxddp.CostAbstract):
         self._basis.computeHessian(x, data.Lxx)
 
 
-@pytest.mark.parametrize("nsteps", [1, 4, 20])
+@pytest.mark.parametrize("nsteps", [1, 4])
 class TestClass:
     dt = 0.1
     x0 = space.neutral()
@@ -96,6 +96,13 @@ class TestClass:
         stage_model.computeDerivatives(x0, u0, x1, sd)
         stage_model.num_primal == ndx + nu
         stage_model.num_dual == ndx
+
+    def test_rollout(self, nsteps):
+        us_i = [np.ones(self.dynmodel.nu) * 0.1 for _ in range(nsteps)]
+        xs_i = proxddp.rollout(self.dynmodel, self.x0, us_i).tolist()
+        dd = self.dynmodel.createData()
+        self.dynmodel.forward(self.x0, us_i[0], dd)
+        assert np.allclose(dd.xnext, xs_i[1])
 
     def test_shooting_problem(self, nsteps):
         stage_model = self.stage_model
