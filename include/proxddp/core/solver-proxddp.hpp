@@ -261,6 +261,11 @@ public:
                                    Results &results,
                                    const std::size_t step) const;
 
+  auto getLinesearchMuLowerBound() const { return min_mu_linesearch_; }
+  void setLinesearchMuLowerBound(Scalar mu) { min_mu_linesearch_ = mu; }
+  /// @brief  Get the penalty parameter for linesearch.
+  auto getLinesearchMu() const { return std::max(mu(), min_mu_linesearch_); }
+
 protected:
   void updateTolerancesOnFailure();
   void updateTolerancesOnSuccess();
@@ -303,14 +308,15 @@ private:
   /// This is the global parameter: scales may be applied for stagewise
   /// constraints, dynamicals...
   Scalar mu_penal_ = mu_init;
+  Scalar min_mu_linesearch_ = 1e-6;
   /// Inverse ALM penalty parameter.
   Scalar mu_inverse_ = 1. / mu_penal_;
   /// Primal proximal parameter \f$\rho > 0\f$
   Scalar rho_penal_ = rho_init;
   PDALFunction<Scalar> merit_fun;
 
-  using linesearch_t = proxnlp::ArmijoLinesearch<Scalar>;
-  linesearch_t linesearch_;
+  using LinesearchType = proxnlp::ArmijoLinesearch<Scalar>;
+  LinesearchType linesearch_;
 };
 
 } // namespace proxddp

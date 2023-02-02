@@ -96,6 +96,10 @@ void exposeProxDDP() {
                      "Rollout type.")
       .def_readwrite("dual_weight", &SolverType::dual_weight,
                      "Dual penalty weight.")
+      .def("get_linesearch_mu", &SolverType::getLinesearchMu, bp::args("self"))
+      .def("set_linesearch_mu_lower_bound",
+           &SolverType::setLinesearchMuLowerBound, bp::args("self", "mu_lb"),
+           "Set an appropriate lower bound for mu during linesearch.")
 #ifndef NDEBUG
       .def_readwrite("dump_linesearch_plot", &SolverType::dump_linesearch_plot,
                      "[Debug] Dump a plot of the linesearch support function "

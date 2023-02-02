@@ -22,6 +22,7 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblem &problem,
   Scalar penalty_value = 0.;
   auto ls_mode = solver_->ls_mode;
   bool use_dual_terms = ls_mode == LinesearchMode::PRIMAL_DUAL;
+  const Scalar mu = solver_->getLinesearchMu();
   const Scalar dual_weight = solver_->dual_weight;
   const std::vector<VectorXs> &lams_plus = workspace.lams_plus;
 
@@ -94,7 +95,7 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
       d1 += rho * pdata.Lu_.dot(workspace.dus[i]);
   }
 
-  const Scalar mu = solver_->mu();
+  const Scalar mu = solver_->getLinesearchMu();
   const auto &dlams = workspace.dlams;
   const auto &lams_plus = workspace.lams_plus;
   const auto &lams_pdal = workspace.lams_pdal;
