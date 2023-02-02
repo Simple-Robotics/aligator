@@ -9,7 +9,7 @@
 #include "proxddp/core/helpers-base.hpp"
 #include "proxddp/utils/exceptions.hpp"
 #include "proxddp/utils/logger.hpp"
-#include "proxddp/utils/rollout.hpp"
+#include "proxddp/utils/forward-dyn.hpp"
 
 #include <proxnlp/constraint-base.hpp>
 #include <proxnlp/bcl-params.hpp>

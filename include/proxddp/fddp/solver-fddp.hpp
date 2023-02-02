@@ -13,7 +13,6 @@
 #include "proxddp/fddp/linesearch.hpp"
 
 #include "proxddp/utils/logger.hpp"
-#include "proxddp/utils/rollout.hpp"
 
 #include <fmt/ostream.h>
 
