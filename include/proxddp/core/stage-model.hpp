@@ -172,3 +172,7 @@ protected:
 } // namespace proxddp
 
 #include "proxddp/core/stage-model.hxx"
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/core/stage-model.txx"
+#endif
