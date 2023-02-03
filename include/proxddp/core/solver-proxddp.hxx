@@ -86,8 +86,8 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem,
   // compute direction dx0
   const VParams &vp = workspace.value_params[0];
   const FunctionData &init_data = workspace.problem_data.getInitData();
-  const int ndual0 = problem.init_state_error_.nr;
-  const int ndx0 = problem.init_state_error_.ndx1;
+  const int ndual0 = problem.init_state_error_->nr;
+  const int ndx0 = problem.init_state_error_->ndx1;
   const VectorXs &lampl0 = workspace.lams_plus[0];
   const VectorXs &lamin0 = results.lams[0];
   const CostData &proxdata0 = *workspace.prox_datas[0];
@@ -145,8 +145,7 @@ void SolverProxDDP<Scalar>::setup(const Problem &problem) {
                                  ws.prev_us[i], false);
     if (i == nsteps - 1) {
       prox_penalties_.emplace_back(sm.xspace_next_, sm.uspace_,
-                                   ws.prev_xs[nsteps], problem.dummy_term_u0,
-                                   true);
+                                   ws.prev_xs[nsteps], problem.unone_, true);
     }
   }
 
@@ -559,8 +558,8 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
   TrajOptData &prob_data = workspace.problem_data;
 
   {
-    problem.init_state_error_.evaluate(xs[0], us[0], xs[1],
-                                       prob_data.getInitData());
+    problem.init_state_error_->evaluate(xs[0], us[0], xs[1],
+                                        prob_data.getInitData());
     compute_dir_x0(problem, workspace, results);
     const StageModel &stage = *problem.stages_[0];
     // use lams[0] as a tmp var for alpha * dx0
@@ -636,13 +635,13 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
   }
 
   // TERMINAL NODE
-  problem.term_cost_->evaluate(xs[nsteps], problem.dummy_term_u0,
+  problem.term_cost_->evaluate(xs[nsteps], problem.unone_,
                                *prob_data.term_cost_data);
 
   for (std::size_t k = 0; k < problem.term_cstrs_.size(); ++k) {
     const ConstraintType &tc = problem.term_cstrs_[k];
     FunctionData &td = *prob_data.term_cstr_data[k];
-    tc.func->evaluate(xs[nsteps], problem.dummy_term_u0, xs[nsteps], td);
+    tc.func->evaluate(xs[nsteps], problem.unone_, xs[nsteps], td);
   }
 
   // update multiplier

@@ -19,16 +19,15 @@ void exposeProblem() {
       "TrajOptProblem", "Define a shooting problem.",
       bp::init<const context::VectorXs &,
                const std::vector<shared_ptr<StageModel>> &,
-               const shared_ptr<CostBase> &>(
+               shared_ptr<CostBase>>(
           bp::args("self", "x0", "stages", "term_cost")))
       .def(bp::init<const context::VectorXs &, const int,
-                    const shared_ptr<context::Manifold> &,
-                    const shared_ptr<CostBase> &>(
+                    shared_ptr<context::Manifold>, shared_ptr<CostBase>>(
           bp::args("self", "x0", "nu", "space", "term_cost")))
       .def<void (TrajOptProblem::*)(const shared_ptr<StageModel> &)>(
           "addStage", &TrajOptProblem::addStage, bp::args("self", "new_stage"),
           "Add a stage to the problem.")
-      .def(bp::init<InitCstrType, int, shared_ptr<CostBase>>(
+      .def(bp::init<shared_ptr<InitCstrType>, int, shared_ptr<CostBase>>(
           "Constructor adding the initial constraint explicitly.",
           bp::args("self", "init_constraint", "nu", "term_cost")))
       .def_readonly("stages", &TrajOptProblem::stages_,

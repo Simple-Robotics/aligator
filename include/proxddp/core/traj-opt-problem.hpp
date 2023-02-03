@@ -87,39 +87,40 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
   /// Initial condition
-  StateErrorResidual init_state_error_;
+  shared_ptr<StateErrorResidual> init_state_error_;
   /// Stages of the control problem.
   std::vector<shared_ptr<StageModel>> stages_;
   /// Terminal cost.
   shared_ptr<CostAbstract> term_cost_;
   /// Terminal constraints.
   ConstraintStackTpl<Scalar> term_cstrs_;
-
-  int num_threads_ = 1;
-
-  VectorXs dummy_term_u0;
+  /// Dummy, "neutral" control value.
+  VectorXs unone_;
 
   TrajOptProblemTpl(const VectorXs &x0,
                     const std::vector<shared_ptr<StageModel>> &stages,
-                    const shared_ptr<CostAbstract> &term_cost);
+                    shared_ptr<CostAbstract> term_cost);
 
   TrajOptProblemTpl(const VectorXs &x0, const int nu,
-                    const shared_ptr<Manifold> &space,
-                    const shared_ptr<CostAbstract> &term_cost);
+                    shared_ptr<Manifold> space,
+                    shared_ptr<CostAbstract> term_cost);
 
-  TrajOptProblemTpl(const StateErrorResidual &resdl, const int nu,
-                    const shared_ptr<CostAbstract> &term_cost)
-      : init_state_error_(resdl), term_cost_(term_cost), dummy_term_u0(nu) {
-    dummy_term_u0.setZero();
+  TrajOptProblemTpl(shared_ptr<StateErrorResidual> resdl, const int nu,
+                    shared_ptr<CostAbstract> term_cost)
+      : init_state_error_(resdl), term_cost_(term_cost), unone_(nu),
+        num_threads_(1) {
+    unone_.setZero();
   }
 
   /// @brief Add a stage to the control problem.
   void addStage(const shared_ptr<StageModel> &stage);
 
   /// @brief Get initial state constraint.
-  const VectorXs &getInitState() const { return init_state_error_.target_; }
+  const VectorXs &getInitState() const { return init_state_error_->target_; }
   /// @brief Set initial state constraint.
-  void setInitState(const ConstVectorRef x0) { init_state_error_.target_ = x0; }
+  void setInitState(const ConstVectorRef x0) {
+    init_state_error_->target_ = x0;
+  }
 
   /// @brief Set a terminal constraint for the model.
   PROXDDP_DEPRECATED_MESSAGE("Use addTerminalConstraint instead.")
