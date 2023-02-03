@@ -23,6 +23,7 @@ rmodel = robot.model
 rdata = robot.data
 nq = rmodel.nq
 nv = rmodel.nv
+ROT_NULL = np.eye(3)
 
 
 class Args(ArgsBase):
@@ -78,23 +79,40 @@ class Column(proxddp.StageFunction):
         data.Jx[:nv] = -2 * J[:2].T @ err
 
 
+def is_feasible(point, centers, radius, margin):
+    if len(centers) >= 1 and radius > 0:
+        for i in range(len(centers)):
+            dist = np.linalg.norm(point[:2] - centers[i][:2])
+            if dist < radius + margin:
+                return False
+    return True
+
+
+def sample_feasible_translation(centers, radius, margin):
+    translation = np.random.uniform([-1.5, 0.0, 0.2], [2.0, 2.0, 1.0], 3)
+    feas = is_feasible(translation, centers, radius, margin)
+    while not feas:
+        translation = np.random.uniform([-1.0, 0.0, 0.2], [2.0, 2.0, 1.0], 3)
+        feas = is_feasible(translation, centers, radius, margin)
+    return translation
+
+
 def main(args: Args):
     import meshcat
 
     os.makedirs("assets", exist_ok=True)
     print(args)
 
-    R_nul = np.eye(3)
     if args.obstacles:  # we add the obstacles to the geometric model
         cyl_radius = 0.22
         cylinder = fcl.Cylinder(cyl_radius, 10.0)
         center_column1 = np.array([-0.45, 0.8, 0.0])
         geom_cyl1 = pin.GeometryObject(
-            "column1", 0, pin.SE3(R_nul, center_column1), cylinder
+            "column1", 0, pin.SE3(ROT_NULL, center_column1), cylinder
         )
         center_column2 = np.array([0.3, 2.4, 0.0])
         geom_cyl2 = pin.GeometryObject(
-            "column2", 0, pin.SE3(R_nul, center_column2), cylinder
+            "column2", 0, pin.SE3(ROT_NULL, center_column2), cylinder
         )
         cyl_color = np.array([2.0, 0.2, 1.0, 0.4])
         geom_cyl1.meshColor = cyl_color
@@ -110,8 +128,30 @@ def main(args: Args):
         plane = fcl.Plane(np.array([0.0, 0.0, 1.0]), 0.0)
         plane_obj = pin.GeometryObject("plane", 0, pin.SE3.Identity(), plane)
         plane_obj.meshColor[:] = [1.0, 1.0, 0.95, 1.0]
+        plane_obj.meshScale[:] = 2.0
         robot.visual_model.addGeometryObject(plane_obj)
         robot.collision_model.addGeometryObject(plane_obj)
+
+    def add_objective_vis_models(x_tar1, x_tar2, x_tar3):
+        """Add visual guides for the objectives."""
+        objective_color = np.array([5, 104, 143, 200]) / 255.0
+        if args.obstacles:
+            sp1_obj = pin.GeometryObject(
+                "obj1", 0, pin.SE3(ROT_NULL, x_tar3[:3]), fcl.Sphere(0.05)
+            )
+            sp1_obj.meshColor[:] = objective_color
+            robot.visual_model.addGeometryObject(sp1_obj)
+        else:
+            sp1_obj = pin.GeometryObject(
+                "obj1", 0, pin.SE3(ROT_NULL, x_tar1[:3]), fcl.Sphere(0.05)
+            )
+            sp2_obj = pin.GeometryObject(
+                "obj2", 0, pin.SE3(ROT_NULL, x_tar2[:3]), fcl.Sphere(0.05)
+            )
+            sp1_obj.meshColor[:] = objective_color
+            sp2_obj.meshColor[:] = objective_color
+            robot.visual_model.addGeometryObject(sp1_obj)
+            robot.visual_model.addGeometryObject(sp2_obj)
 
     robot.collision_model.geometryObjects[0].geometry.computeLocalAABB()
     quad_radius = robot.collision_model.geometryObjects[0].geometry.aabb_radius
@@ -151,22 +191,6 @@ def main(args: Args):
     else:
         raise ValueError()
 
-    def is_feasible(point, centers, radius, margin):
-        if len(centers) >= 1 and radius > 0:
-            for i in range(len(centers)):
-                dist = np.linalg.norm(point[:2] - centers[i][:2])
-                if dist < radius + margin:
-                    return False
-        return True
-
-    def sample_feasible_translation(centers, radius, margin):
-        translation = np.random.uniform([-1.5, 0.0, 0.2], [2.0, 2.0, 1.0], 3)
-        feas = is_feasible(translation, centers, radius, margin)
-        while not feas:
-            translation = np.random.uniform([-1.0, 0.0, 0.2], [2.0, 2.0, 1.0], 3)
-            feas = is_feasible(translation, centers, radius, margin)
-        return translation
-
     x0 = np.concatenate([robot.q0, np.zeros(nv)])
     x0[2] = 0.18
     if args.random and args.obstacles:
@@ -177,8 +201,6 @@ def main(args: Args):
     tau = pin.rnea(rmodel, rdata, robot.q0, np.zeros(nv), np.zeros(nv))
     u0, _, _, _ = np.linalg.lstsq(QUAD_ACT_MATRIX, tau)
 
-    x1 = space.rand()
-
     us_init = [u0] * nsteps
     xs_init = [x0] * (nsteps + 1)
 
@@ -188,6 +210,7 @@ def main(args: Args):
     x_tar2[:3] = (1.4, -0.6, 1.0)
     x_tar3 = space.neutral()
     x_tar3[:3] = (-0.1, 3.2, 1.0)
+    add_objective_vis_models(x_tar1, x_tar2, x_tar3)
 
     u_max = u_lim * np.ones(nu)
     u_min = np.zeros(nu)
@@ -196,7 +219,7 @@ def main(args: Args):
     idx_switch = int(0.7 * nsteps)
     times_wp = [times[idx_switch], times[-1]]
 
-    def make_task():
+    def get_task_schedule():
         if args.obstacles:
             weights = np.zeros(space.ndx)
             weights[:3] = 0.1
@@ -226,7 +249,7 @@ def main(args: Args):
 
         return weight_target_selector
 
-    task_fun = make_task()
+    task_schedule = get_task_schedule()
 
     def setup():
 
@@ -244,7 +267,7 @@ def main(args: Args):
 
             rcost = proxddp.CostStack(space.ndx, nu)
 
-            weights, x_tar = task_fun(i)
+            weights, x_tar = task_schedule(i)
 
             state_err = proxddp.StateErrorResidual(space, nu, x_tar)
             xreg_cost = proxddp.QuadraticResidualCost(state_err, np.diag(weights) * dt)
@@ -271,10 +294,7 @@ def main(args: Args):
                 stage.addConstraint(column2, constraints.NegativeOrthant())
             stages.append(stage)
 
-            sd = stage.createData()
-            stage.evaluate(x0, u0, x1, sd)
-
-        weights, x_tar = task_fun(nsteps)
+        weights, x_tar = task_schedule(nsteps)
         if not args.term_cstr:
             weights *= 10.0
         term_cost = proxddp.QuadraticResidualCost(
@@ -289,27 +309,8 @@ def main(args: Args):
             prob.addTerminalConstraint(term_cstr)
         return prob
 
-    _, x_term = task_fun(nsteps)
+    _, x_term = task_schedule(nsteps)
     problem = setup()
-
-    objective_color = np.array([5, 104, 143, 200]) / 255.0
-    if args.obstacles:
-        sp1_obj = pin.GeometryObject(
-            "obj1", 0, pin.SE3(R_nul, x_tar3[:3]), fcl.Sphere(0.05)
-        )
-        sp1_obj.meshColor[:] = objective_color
-        robot.visual_model.addGeometryObject(sp1_obj)
-    else:
-        sp1_obj = pin.GeometryObject(
-            "obj1", 0, pin.SE3(R_nul, x_tar1[:3]), fcl.Sphere(0.05)
-        )
-        sp2_obj = pin.GeometryObject(
-            "obj2", 0, pin.SE3(R_nul, x_tar2[:3]), fcl.Sphere(0.05)
-        )
-        sp1_obj.meshColor[:] = objective_color
-        sp2_obj.meshColor[:] = objective_color
-        robot.visual_model.addGeometryObject(sp1_obj)
-        robot.visual_model.addGeometryObject(sp2_obj)
 
     viewer = meshcat.Visualizer()
     vizer = pin.visualize.MeshcatVisualizer(
@@ -317,6 +318,7 @@ def main(args: Args):
     )
     vizer.initViewer(viewer, loadModel=True, open=args.display)
     vizer.displayCollisions(True)
+    vizer.display(x0[:nq])
 
     tol = 1e-3
     mu_init = 1e-1
@@ -335,6 +337,27 @@ def main(args: Args):
     results = solver.getResults()
     workspace = solver.getWorkspace()
     print(results)
+
+    def test_check_numiters(results):
+        if args.bounds:
+            if args.obstacles:
+                if args.term_cstr:
+                    pass
+                else:
+                    assert results.num_iters == 50
+            else:
+                if args.term_cstr:
+                    assert results.num_iters == 129
+                else:
+                    assert results.num_iters == 33
+        elif args.term_cstr:
+            if args.obstacles:
+                assert results.num_iters == 39
+            else:
+                assert results.num_iters == 20
+
+    test_check_numiters(results)
+
     xs_opt = results.xs.tolist()
     us_opt = results.us.tolist()
 
