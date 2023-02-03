@@ -2,6 +2,7 @@
 
 #include "proxddp/core/traj-opt-problem.hpp"
 #include "proxddp/utils/exceptions.hpp"
+#include "proxddp/utils/mpc-util.hpp"
 
 #include <fmt/format.h>
 

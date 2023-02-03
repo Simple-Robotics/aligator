@@ -3,7 +3,6 @@
 #pragma once
 
 #include "proxddp/core/stage-model.hpp"
-#include "proxddp/utils/mpc-util.hpp"
 #include "proxddp/modelling/state-error.hpp"
 
 namespace proxddp {
