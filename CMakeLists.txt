@@ -186,10 +186,10 @@ function(create_library)
     target_compile_definitions(${PROJECT_NAME} PUBLIC -DPROXDDP_CUSTOM_LDLT)
   endif(USE_CUSTOM_LDLT)
 
-  if(BUILD_WITH_OPENMP_SUPPORT)
+  if(OpenMP_CXX_FOUND)
     add_compile_definitions(PROXDDP_MULTITHREADING)
-    link_libraries(OpenMP::OpenMP_CXX)
-  endif(BUILD_WITH_OPENMP_SUPPORT)
+    target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
+  endif()
 
   target_link_libraries(${PROJECT_NAME} PUBLIC proxnlp::proxnlp)
   target_link_libraries(${PROJECT_NAME} PUBLIC Boost::filesystem Boost::system Boost::serialization)
