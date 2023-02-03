@@ -314,7 +314,6 @@ private:
   Scalar mu_inverse_ = 1. / mu_penal_;
   /// Primal proximal parameter \f$\rho > 0\f$
   Scalar rho_penal_ = rho_init;
-  PDALFunction<Scalar> merit_fun;
   /// Linesearch function
   LinesearchType linesearch_;
 };

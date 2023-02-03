@@ -17,7 +17,7 @@ SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
     : target_tol_(tol), mu_init(mu_init), rho_init(rho_init), verbose_(verbose),
       hess_approx_(hess_approx), rollout_type_(RolloutType::NONLINEAR),
       is_x0_fixed_(true), ldlt_algo_choice_(LDLTChoice::DENSE),
-      max_iters(max_iters), merit_fun(this), linesearch_(ls_params) {
+      max_iters(max_iters), linesearch_(ls_params) {
   ls_params.interp_type = proxnlp::LSInterpolation::CUBIC;
 }
 
@@ -509,10 +509,9 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   MatrixXs &resdl = workspace.kkt_resdls_[t + 1];
 
   PROXDDP_NOMALLOC_END;
-  bool lin_solved = iterative_refinement_impl<Scalar>::run(
-      ldlt, kkt_mat, kkt_rhs, resdl, gains, refinement_threshold_,
-      max_refinement_steps_);
-  (void)lin_solved;
+  iterative_refinement_impl<Scalar>::run(ldlt, kkt_mat, kkt_rhs, resdl, gains,
+                                         refinement_threshold_,
+                                         max_refinement_steps_);
   PROXDDP_NOMALLOC_BEGIN;
 
   /* Value function */
@@ -799,8 +798,8 @@ SolverProxDDP<Scalar>::forwardPass(const Problem &problem, Workspace &workspace,
   }
   // computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
   computeMultipliers(problem, workspace, workspace.trial_lams);
-  return merit_fun.evaluate(problem, workspace.trial_lams, workspace,
-                            workspace.problem_data);
+  return PDALFunction<Scalar>::evaluate(this, problem, workspace.trial_lams,
+                                        workspace);
 }
 
 template <typename Scalar>
@@ -818,8 +817,8 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
   results.traj_cost_ =
       problem.evaluate(results.xs, results.us, workspace.problem_data);
   computeMultipliers(problem, workspace, results.lams);
-  results.merit_value_ = merit_fun.evaluate(problem, results.lams, workspace,
-                                            workspace.problem_data);
+  results.merit_value_ =
+      PDALFunction<Scalar>::evaluate(this, problem, results.lams, workspace);
 
   while (k < max_iters) {
     // ASSUMPTION: last evaluation in previous iterate
@@ -858,8 +857,8 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     /// TODO: remove these expensive computations
     /// only use Q-function params etc
     linearRollout(problem, workspace, results);
-    Scalar dphi0_analytical = merit_fun.directionalDerivative(
-        problem, results.lams, workspace, workspace.problem_data);
+    Scalar dphi0_analytical = PDALFunction<Scalar>::directionalDerivative(
+        this, problem, results.lams, workspace);
     Scalar dphi0 = dphi0_analytical; // value used for LS & logging
 #ifndef NDEBUG
     const auto merit_linear_eval = [&](Scalar a0) {
@@ -931,7 +930,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     results.xs = workspace.trial_xs;
     results.us = workspace.trial_us;
     results.lams = workspace.trial_lams;
-    results.traj_cost_ = merit_fun.traj_cost_;
+    results.traj_cost_ = workspace.problem_data.cost_;
     results.merit_value_ = phi_new;
     PROXDDP_RAISE_IF_NAN_NAME(alpha_opt, "alpha_opt");
     PROXDDP_RAISE_IF_NAN_NAME(results.merit_value_, "results.merit_value");
