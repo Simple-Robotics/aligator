@@ -12,10 +12,12 @@ set(EXAMPLES_CPP
 
 set(BENCHMARKS_CPP
     "bench/lqr.cpp"
+    "bench/multithreading.cpp"
     "bench/croc-talos-arm.cpp")
 
 set(EXAMPLES_WITH_CROC_CPP
     "bench/croc-talos-arm.cpp"
+    "bench/multithreading.cpp"
     "talos-arm.cpp"
     )
 
