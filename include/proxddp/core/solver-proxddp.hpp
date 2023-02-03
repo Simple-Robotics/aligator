@@ -47,6 +47,7 @@ public:
   using TrajOptData = TrajOptDataTpl<Scalar>;
   using LinesearchOptions = typename Linesearch<Scalar>::Options;
   using CstrALWeightStrat = ConstraintALWeightStrategy<Scalar>;
+  using LinesearchType = proxnlp::ArmijoLinesearch<Scalar>;
 
   std::vector<ProxPenaltyType> prox_penalties_;
   /// Subproblem tolerance
@@ -314,8 +315,7 @@ private:
   /// Primal proximal parameter \f$\rho > 0\f$
   Scalar rho_penal_ = rho_init;
   PDALFunction<Scalar> merit_fun;
-
-  using LinesearchType = proxnlp::ArmijoLinesearch<Scalar>;
+  /// Linesearch function
   LinesearchType linesearch_;
 };
 
