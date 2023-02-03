@@ -699,7 +699,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
 
   inner_tol_ = inner_tol0;
   prim_tol_ = prim_tol0;
-  update_tols_on_success();
+  update_tols_on_failure();
 
   inner_tol_ = std::max(inner_tol_, target_tol_);
   prim_tol_ = std::max(prim_tol_, target_tol_);
@@ -753,7 +753,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
     } else {
       Scalar old_mu = mu_penal_;
       bcl_update_alm_penalty();
-      update_tols_on_success();
+      update_tols_on_failure();
       if (math::scalar_close(old_mu, mu_penal_)) {
         // reset penalty to initial value
         set_penalty_mu(mu_init);
@@ -772,12 +772,13 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
 }
 
 template <typename Scalar>
-void SolverProxDDP<Scalar>::update_tols_on_success() {
+void SolverProxDDP<Scalar>::update_tols_on_failure() {
   prim_tol_ = prim_tol0 * std::pow(mu_penal_, bcl_params.prim_alpha);
   inner_tol_ = inner_tol0 * std::pow(mu_penal_, bcl_params.dual_alpha);
 }
 
-template <typename Scalar> void SolverProxDDP<Scalar>::update_tols_on_succes() {
+template <typename Scalar>
+void SolverProxDDP<Scalar>::update_tols_on_success() {
   prim_tol_ = prim_tol_ * std::pow(mu_penal_, bcl_params.prim_beta);
   inner_tol_ = inner_tol_ * std::pow(mu_penal_, bcl_params.dual_beta);
 }

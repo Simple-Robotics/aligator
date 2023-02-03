@@ -267,8 +267,8 @@ public:
   auto getLinesearchMu() const { return std::max(mu(), min_mu_linesearch_); }
 
 protected:
+  void update_tols_on_failure();
   void update_tols_on_success();
-  void update_tols_on_succes();
 
   /// Set dual proximal/ALM penalty parameter.
   PROXDDP_INLINE void set_penalty_mu(Scalar new_mu) noexcept {
@@ -308,7 +308,7 @@ private:
   /// This is the global parameter: scales may be applied for stagewise
   /// constraints, dynamicals...
   Scalar mu_penal_ = mu_init;
-  Scalar min_mu_linesearch_ = 1e-6;
+  Scalar min_mu_linesearch_ = 1e-8;
   /// Inverse ALM penalty parameter.
   Scalar mu_inverse_ = 1. / mu_penal_;
   /// Primal proximal parameter \f$\rho > 0\f$
