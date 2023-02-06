@@ -119,12 +119,13 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
           auto lampdal_k = stack.getConstSegmentByConstraint(lampdal, k);
           auto laminnr_k = stack.getConstSegmentByConstraint(lam, k);
           auto lamplus_k = stack.getConstSegmentByConstraint(lamplus, k);
+          auto dlam_k = stack.getConstSegmentByConstraint(dlam, k);
 
           r += lampdal_k.dot(cd.Jx_ * dx);
           r += lampdal_k.dot(cd.Ju_ * du);
           r += lampdal_k.dot(cd.Jy_ * dy);
 
-          r -= weight_strat.get(k) * (lamplus_k - laminnr_k).dot(dlam);
+          r -= weight_strat.get(k) * (lamplus_k - laminnr_k).dot(dlam_k);
         }
         return r;
       };
