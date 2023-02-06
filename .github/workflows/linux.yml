@@ -77,7 +77,7 @@ jobs:
         cd $GITHUB_WORKSPACE
         mkdir build
         cd build
-        cmake .. -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=~/custom_install -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DINSTALL_DOCUMENTATION=OFF -DBUILD_CROCODDYL_COMPAT=ON
+        cmake .. -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=~/custom_install -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DINSTALL_DOCUMENTATION=OFF -DGENERATE_PYTHON_STUBS=OFF -DBUILD_CROCODDYL_COMPAT=ON
         make -j3 install
         make test
 
