@@ -8,10 +8,6 @@
 
 namespace proxddp {
 
-#ifndef NDEBUG
-const char *LS_DEBUG_LOG_PATH = "linesearch_iter.csv";
-#endif
-
 template <typename Scalar>
 SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
                                      const Scalar rho_init,
@@ -902,6 +898,8 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
       int nalph = 50;
       Scalar a = 0.;
       Scalar da = 1. / (nalph + 1);
+      const char *LS_DEBUG_LOG_PATH = "linesearch_iter.csv";
+
       const auto fname = LS_DEBUG_LOG_PATH;
       std::FILE *file = 0;
       if (k == 0) {
