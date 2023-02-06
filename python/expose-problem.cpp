@@ -34,6 +34,10 @@ void exposeProblem() {
                     "Stages of the shooting problem.")
       .def_readwrite("term_cost", &TrajOptProblem::term_cost_,
                      "Problem terminal cost.")
+      .def("getNumThreads", &TrajOptProblem::getNumThreads,
+           "Get the number of threads.")
+      .def("setNumThreads", &TrajOptProblem::setNumThreads,
+           "Set the number of threads for evaluation.")
       .add_property("num_steps", &TrajOptProblem::numSteps,
                     "Number of stages in the problem.")
       .add_property("x0_init",
