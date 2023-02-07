@@ -82,3 +82,7 @@ template <typename _Scalar> struct ContinuousDynamicsDataTpl {
 } // namespace proxddp
 
 #include "proxddp/modelling/dynamics/continuous-base.hxx"
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/modelling/dynamics/continuous-base.txx"
+#endif
