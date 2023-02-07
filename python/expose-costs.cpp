@@ -26,7 +26,8 @@ void exposeQuadCost() {
   using QuadraticCost = QuadraticCostTpl<Scalar>;
 
   bp::class_<QuadraticCost, bp::bases<CostBase>>(
-      "QuadraticCost", "Quadratic cost in both state and control.",
+      "QuadraticCost",
+      "Quadratic cost in both state and control - only for Euclidean spaces.",
       bp::init<const MatrixXs &, const MatrixXs &, const VectorXs &,
                const VectorXs &>(
           bp::args("self", "w_x", "w_u", "interp_x", "interp_u")))

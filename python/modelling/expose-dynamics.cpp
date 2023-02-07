@@ -1,3 +1,4 @@
+/// @file
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "proxddp/python/modelling/dynamics.hpp"
 #include "proxddp/python/eigen-member.hpp"
@@ -94,7 +95,8 @@ void exposeDynamicsImplementations() {
   bp::class_<LinearDiscreteDynamicsTpl<Scalar>,
              bp::bases<context::ExplicitDynamics>>(
       "LinearDiscreteDynamics",
-      "Linear discrete dynamics x[t+1] = Ax[t] + Bu[t] in Euclidean space, or "
+      "Linear discrete dynamics :math:`x[t+1] = Ax[t] + Bu[t] + c[t]` in "
+      "Euclidean space, or "
       "on the tangent state space.",
       bp::init<const MatrixXs &, const MatrixXs &, const VectorXs &>(
           bp::args("self", "A", "B", "c")))
