@@ -13,4 +13,4 @@ extern template struct ConstraintStackTpl<context::Scalar>;
 
 extern template struct ConstraintALWeightStrategy<context::Scalar>;
 
-}
+} // namespace proxddp

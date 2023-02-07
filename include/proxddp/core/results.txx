@@ -5,10 +5,8 @@
 #include "proxddp/context.hpp"
 #include "proxddp/core/results.hpp"
 
-
 namespace proxddp {
 
-extern template struct
-ResultsTpl<context::Scalar>;
+extern template struct ResultsTpl<context::Scalar>;
 
 } // namespace proxddp

@@ -2,7 +2,6 @@
 
 #include "proxddp/context.hpp"
 
-
 namespace proxddp {
 
 extern template struct ExplicitDynamicsModelTpl<context::Scalar>;

@@ -10,4 +10,4 @@ extern template struct CostAbstractTpl<context::Scalar>;
 
 extern template struct CostDataAbstractTpl<context::Scalar>;
 
-}
+} // namespace proxddp
