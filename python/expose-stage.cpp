@@ -36,9 +36,6 @@ void exposeStage() {
           bp::args("self", "func", "cstr_set"),
           "Constructs a new constraint (from the underlying function and set) "
           "and adds it to the stage.")
-      .def("getConstraint", &StageModel::getConstraint,
-           bp::return_internal_reference<>(), bp::args("self", "j"),
-           "Get the j-th constraint.")
       .def_readonly("constraints", &StageModel::constraints_,
                     "Get the set of constraints.")
       .add_property("xspace",
