@@ -34,6 +34,8 @@ void exposeProblem() {
                     "Stages of the shooting problem.")
       .def_readwrite("term_cost", &TrajOptProblem::term_cost_,
                      "Problem terminal cost.")
+      .def_readwrite("term_constraints", &TrajOptProblem::term_cstrs_,
+                     "Set of terminal constraints.")
       .def("getNumThreads", &TrajOptProblem::getNumThreads,
            "Get the number of threads.")
       .def("setNumThreads", &TrajOptProblem::setNumThreads,
