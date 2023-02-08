@@ -147,7 +147,7 @@ def convert_problem_to_proxnlp(problem: TrajOptProblem):
         prnlp_constraints.append(constraints.createEqualityConstraint(cstr_fun))
 
     def make_init_cstr(x0):
-        ndx = problem.init_cstr.nr
+        ndx = problem.init_constraint.nr
         p_ndx = product_space.ndx
         row = np.zeros((ndx, p_ndx))
         row[:, :ndx] = np.eye(ndx)

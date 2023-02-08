@@ -44,7 +44,7 @@ void exposeProblem() {
                     bp::make_function(&TrajOptProblem::getInitState,
                                       bp::return_internal_reference<>()),
                     &TrajOptProblem::setInitState, "Initial state.")
-      .add_property("init_cstr", &TrajOptProblem::init_state_error_,
+      .add_property("init_constraint", &TrajOptProblem::init_state_error_,
                     "Get initial state constraint.")
       .def("addTerminalConstraint", &TrajOptProblem::addTerminalConstraint,
            bp::args("self", "constraint"), "Add a terminal constraint.")
