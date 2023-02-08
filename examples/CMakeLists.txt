@@ -40,19 +40,22 @@ foreach(exfile ${EXAMPLES_CPP})
   set_target_properties(${exname} PROPERTIES LINKER_LANGUAGE CXX)
   target_include_directories(${exname} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-  target_link_libraries(${exname} ${PROJECT_NAME})
+  target_link_libraries(${exname} PUBLIC ${PROJECT_NAME})
+  if(BUILD_WITH_OPENMP_SUPPORT)
+    target_link_libraries(${exname} PRIVATE OpenMP::OpenMP_CXX)
+  endif()
 
   if (${exfile} IN_LIST BENCHMARKS_CPP)
-    target_link_libraries(${exname} benchmark::benchmark)
+    target_link_libraries(${exname} PRIVATE benchmark::benchmark)
   endif()
 
   if (${exfile} IN_LIST EXAMPLES_WITH_CROC_CPP)
     ADD_PROJECT_DEPENDENCY(crocoddyl REQUIRED)
-    target_link_libraries(${exname} ${CROC_COMPAT_LIB_NAME})
+    target_link_libraries(${exname} PUBLIC ${CROC_COMPAT_LIB_NAME})
   endif()
 endforeach(exfile)
 
-target_link_libraries(example-talos-arm proxnlp::cnpy)
+target_link_libraries(example-talos-arm PUBLIC proxnlp::cnpy)
 
 
 file(GLOB EXAMPLES_PY *.py)
