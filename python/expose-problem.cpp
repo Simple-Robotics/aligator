@@ -72,11 +72,8 @@ void exposeProblem() {
                      "Terminal cost data.")
       .def_readwrite("term_constraint", &TrajOptData::term_cstr_data,
                      "Terminal constraint data.")
-      .add_property(
-          "stage_data",
-          bp::make_getter(&TrajOptData::stage_data,
-                          bp::return_value_policy<bp::return_by_value>()),
-          "Data for each stage.");
+      .def_readonly("stage_data", &TrajOptData::stage_data,
+                    "Data for each stage.");
 }
 
 } // namespace python
