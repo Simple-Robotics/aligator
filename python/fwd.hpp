@@ -4,7 +4,10 @@
 #include "proxddp/python/macros.hpp"
 #include "proxddp/python/visitors.hpp"
 
+#ifdef PROXDDP_WITH_PINOCCHIO
 #include <pinocchio/fwd.hpp>
+#endif
+
 #include <eigenpy/eigenpy.hpp>
 #include <eigenpy/std-vector.hpp>
 
@@ -20,13 +23,19 @@ using eigenpy::StdVectorPythonVisitor;
 
 /// Expose ternary functions
 void exposeFunctions();
+/// Expose cost functions
 void exposeCosts();
+/// Expose constraints
+void exposeConstraint();
+/// Expose StageModel and StageData
 void exposeStage();
+/// Expose TrajOptProblem
 void exposeProblem();
 
-/// Expose continuous dynamics models.
-void exposeODEs();
+/// Expose discrete dynamics
 void exposeDynamics();
+/// Expose continuous dynamics
+void exposeODEs();
 /// Expose integrators
 void exposeIntegrators();
 
@@ -37,13 +46,7 @@ void exposeAutodiff();
 void exposeUtils();
 
 #ifdef PROXDDP_WITH_PINOCCHIO
-void exposePinocchioFunctions();
-void exposeFreeFwdDynamics();
-
-#ifdef PROXDDP_PINOCCHIO_V3
-void exposeConstraintFwdDynamics();
-#endif
-
+void exposePinocchioFeatures();
 #endif
 
 } // namespace python

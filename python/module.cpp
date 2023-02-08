@@ -25,24 +25,14 @@ BOOST_PYTHON_MODULE(pyproxddp) {
   bp::import("proxnlp");
 
   exposeFunctions();
-#ifdef PROXDDP_WITH_PINOCCHIO
-  exposePinocchioFunctions();
-#endif
   exposeCosts();
+  exposeConstraint();
   exposeStage();
   exposeProblem();
   {
     bp::scope dynamics = get_namespace("dynamics");
     exposeODEs();
     exposeDynamics();
-
-#ifdef PROXDDP_WITH_PINOCCHIO
-    exposeFreeFwdDynamics();
-#ifdef PROXDDP_PINOCCHIO_V3
-    exposeConstraintFwdDynamics();
-#endif
-#endif
-
     exposeIntegrators();
   }
   exposeUtils();
@@ -50,6 +40,10 @@ BOOST_PYTHON_MODULE(pyproxddp) {
   exposeSolvers();
   exposeCallbacks();
   exposeAutodiff();
+
+#ifdef PROXDDP_WITH_PINOCCHIO
+  exposePinocchioFeatures();
+#endif
 
 #ifdef PROXDDP_WITH_CROCODDYL_COMPAT
   {

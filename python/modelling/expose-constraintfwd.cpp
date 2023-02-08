@@ -20,7 +20,7 @@ using RigidConstraintDataVector =
 
 } // namespace
 
-void exposeConstraintFwdDynamics() {
+void exposeConstrainedFwdDynamics() {
   using namespace proxddp::dynamics;
   using context::Scalar;
   using ODEData = ODEDataTpl<Scalar>;
