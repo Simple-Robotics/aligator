@@ -14,9 +14,10 @@ make_constraint_wrap(const shared_ptr<context::StageFunction> &f,
 
 void exposeConstraint() {
   using context::ConstraintSet;
+  using context::ConstraintStack;
   using context::StageConstraint;
 
-  bp::class_<context::StageConstraint>(
+  bp::class_<StageConstraint>(
       "StageConstraint",
       "A stage-wise constraint, of the form :math:`c(x,u) \\leq 0 c(x,u)`.\n"
       ":param f: underlying function\n"
@@ -28,11 +29,19 @@ void exposeConstraint() {
                                 bp::args("func", "cstr_set")),
            "Contruct a StageConstraint from a StageFunction and a constraint "
            "set.")
-      .def_readwrite("func", &context::StageConstraint::func)
-      .def_readwrite("set", &context::StageConstraint::set);
+      .def_readwrite("func", &StageConstraint::func)
+      .def_readwrite("set", &StageConstraint::set);
 
-  bp::class_<context::ConstraintStack>("ConstraintStack",
-                                       "The stack of constraint.", bp::no_init);
+  bp::class_<ConstraintStack>("ConstraintStack", "The stack of constraint.",
+                              bp::no_init)
+      .add_property("size", &ConstraintStack::size,
+                    "Get number of individual constraints.")
+      .add_property("dims",
+                    bp::make_function(&ConstraintStack::getDims,
+                                      bp::return_internal_reference<>()),
+                    "Get the individual dimensions of all constraints.")
+      .add_property("total_dim", &ConstraintStack::totalDim,
+                    "Get total dimension of all constraints.");
 }
 
 } // namespace python
