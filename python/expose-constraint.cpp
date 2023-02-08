@@ -40,6 +40,8 @@ void exposeConstraint() {
                     bp::make_function(&ConstraintStack::getDims,
                                       bp::return_internal_reference<>()),
                     "Get the individual dimensions of all constraints.")
+      .def(eigenpy::details::overload_base_get_item_for_std_vector<
+           ConstraintStack>())
       .add_property("total_dim", &ConstraintStack::totalDim,
                     "Get total dimension of all constraints.");
 }
