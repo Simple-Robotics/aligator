@@ -3,6 +3,7 @@
 #include "proxddp/core/traj-opt-problem.hpp"
 #include "proxddp/utils/exceptions.hpp"
 #include "proxddp/utils/mpc-util.hpp"
+#include "proxddp/threads.hpp"
 
 #include <fmt/format.h>
 
@@ -73,9 +74,7 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
   prob_data.xs_copy = xs;
   auto &sds = prob_data.stage_data;
 
-  // #pragma omp parallel for num_threads(num_threads_)
-  omp::set_default_options(num_threads_);
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for num_threads(num_threads_)
   for (std::size_t i = 0; i < nsteps; i++) {
     stages_[i]->computeDerivatives(xs[i], us[i], prob_data.xs_copy[i + 1],
                                    *sds[i]);
@@ -131,9 +130,11 @@ Scalar TrajOptProblemTpl<Scalar>::computeTrajectoryCost(
   Scalar traj_cost = 0.;
 
   const std::size_t nsteps = numSteps();
-  for (std::size_t step = 0; step < nsteps; step++) {
-    const StageDataTpl<Scalar> &sd = problem_data.getStageData(step);
-    traj_cost += sd.cost_data->value_;
+  const auto &sds = problem_data.stage_data;
+
+#pragma omp simd reduction(+ : traj_cost)
+  for (std::size_t i = 0; i < nsteps; i++) {
+    traj_cost += sds[i]->cost_data->value_;
   }
   traj_cost += problem_data.term_cost_data->value_;
 

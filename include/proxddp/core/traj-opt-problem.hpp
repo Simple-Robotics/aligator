@@ -184,6 +184,9 @@ template <typename _Scalar> struct TrajOptDataTpl {
   /// Terminal constraint data.
   std::vector<shared_ptr<FunctionData>> term_cstr_data;
 
+  /// Copy of xs to fill in (for data parallelism)
+  std::vector<VectorXs> xs_copy;
+
   TrajOptDataTpl() = delete;
   TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem);
 

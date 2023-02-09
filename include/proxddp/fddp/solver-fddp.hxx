@@ -164,6 +164,7 @@ Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem,
   const auto &space = problem.stages_[0]->xspace_;
   space->difference(xs[0], x0, fs[0]);
 
+#pragma omp parallel for num_threads(problem.getNumThreads())
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &sm = *problem.stages_[i];
     const auto &sd = pd.getStageData(i);

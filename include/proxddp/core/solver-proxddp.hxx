@@ -257,6 +257,7 @@ void SolverProxDDP<Scalar>::computeMultipliers(
       };
 
   // loop over the stages
+#pragma omp parallel for num_threads(problem.getNumThreads())
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
     const StageData &sdata = *prob_data.stage_data[i];
@@ -308,6 +309,7 @@ void SolverProxDDP<Scalar>::projectJacobians(const Problem &problem,
   };
 
   // loop over the stages
+#pragma omp parallel for num_threads(problem.getNumThreads())
   for (std::size_t i = 0; i < nsteps; i++) {
     const ConstraintStack &cstr_stack = problem.stages_[i]->constraints_;
     StageData &sdata = prob_data.getStageData(i);
@@ -994,6 +996,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
       };
 
   // compute infeasibility of all stage constraints
+#pragma omp parallel for num_threads(problem.getNumThreads())
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
     const StageData &stage_data = prob_data.getStageData(i);
