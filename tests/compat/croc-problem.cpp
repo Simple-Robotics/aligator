@@ -3,8 +3,6 @@
 #include "proxddp/compat/crocoddyl/problem-wrap.hpp"
 
 #include <crocoddyl/core/optctrl/shooting.hpp>
-#include <crocoddyl/core/costs/cost-sum.hpp>
-#include <crocoddyl/core/costs/control.hpp>
 #include <crocoddyl/core/actions/lqr.hpp>
 #include <crocoddyl/core/solvers/ddp.hpp>
 #include <crocoddyl/core/utils/callbacks.hpp>
