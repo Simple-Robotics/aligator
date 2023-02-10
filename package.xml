@@ -17,4 +17,5 @@
   <buildtool_depend>cmake</buildtool_depend>
   <export>
     <build_type>cmake</build_type>
+  </export>
 </package>
