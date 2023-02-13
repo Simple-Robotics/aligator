@@ -10,15 +10,19 @@ import proxddp
 import proxnlp
 import hppfcl as fcl
 import tap
+import os
 import matplotlib.pyplot as plt
 
 from pinocchio.visualize import MeshcatVisualizer
 from proxddp import constraints
 
 
+os.makedirs("assets/", exist_ok=True)
+
+
 class Args(tap.Tap):
     display: bool = False
-    use_term_cstr: bool = True
+    term_cstr: bool = True
     record: bool = False
     bounds: bool = False  # add control bounds
 
@@ -164,7 +168,7 @@ for i in range(nsteps):
     problem.addStage(stage)
 
 term_fun = proxddp.FrameTranslationResidual(ndx, nu, model, target_pos, frame_id)
-if args.use_term_cstr:
+if args.term_cstr:
     term_cstr = proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet())
     problem.addTerminalConstraint(term_cstr)
 
@@ -184,9 +188,12 @@ u0 = pin.rnea(model, data, x0[:1], x0[1:], np.zeros(nv))
 us_i = [u0] * nsteps
 xs_i = proxddp.rollout(dyn_model, x0, us_i)
 
-problem.num_threads = 2
+max_threads = proxddp.get_available_threads()
+print("Max threads:", max_threads)
+problem.setNumThreads(max_threads)
 solver.setup(problem)
 solver.run(problem, xs_i, us_i)
+print("last set no. of threads:", proxddp.get_current_threads())
 res = solver.getResults()
 print(res)
 xtar = space.neutral()
@@ -197,7 +204,7 @@ lstyle = {"lw": 0.9}
 trange = np.linspace(0, Tf, nsteps + 1)
 plt.plot(trange, res.xs, ls="-", **lstyle)
 plt.title("State $x(t)$")
-if args.use_term_cstr:
+if args.term_cstr:
     plt.hlines(
         xtar,
         *trange[[0, -1]],
@@ -244,7 +251,7 @@ if True:
     ax.vlines(al_change_idx, *ax.get_ylim(), colors="gray", lw=4.0, alpha=0.5)
     ax.legend(["Prim. err $p$", "Dual err $d$", "Prim tol $\\eta_k$", "AL iters"])
     plt.tight_layout()
-    plt.savefig("assets/pendulum_convergence")
+    plt.savefig("assets/pendulum_convergence.png")
 
 
 plt.show()

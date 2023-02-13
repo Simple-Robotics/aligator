@@ -326,7 +326,6 @@ def main(args: Args):
     verbose = proxddp.VerboseLevel.VERBOSE
     history_cb = proxddp.HistoryCallback()
     solver = proxddp.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
-    solver.rollout_type = proxddp.ROLLOUT_NONLINEAR
     if args.fddp:
         solver = proxddp.SolverFDDP(tol, verbose=verbose)
     solver.max_iters = 200
