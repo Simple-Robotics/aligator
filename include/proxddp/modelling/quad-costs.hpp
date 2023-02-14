@@ -71,3 +71,7 @@ struct QuadraticCostDataTpl : CostDataAbstractTpl<Scalar> {
 };
 
 } // namespace proxddp
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/modelling/quad-costs.txx"
+#endif
