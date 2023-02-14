@@ -523,17 +523,6 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   auto ff = results.getFeedforward(t);
   auto fb = results.getFeedback(t);
 
-#ifndef NDEBUG
-  {
-    PROXDDP_NOMALLOC_END;
-    std::FILE *fi = std::fopen("pddp.log", "a");
-    if (t == workspace.nsteps - 1)
-      fmt::print(fi, "[backward {:d}]\n", results.num_iters + 1);
-    fmt::print(fi, "uff[{:d}]={}\n", t, ff.head(nu).transpose());
-    std::fclose(fi);
-    PROXDDP_NOMALLOC_BEGIN;
-  }
-#endif
   vp.Vx_ = qparam.Qx;
   vp.Vx_.noalias() += Qxw * ff;
   vp.Vxx_ = qparam.Qxx;
