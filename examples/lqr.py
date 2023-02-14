@@ -31,13 +31,21 @@ c[:] = (0.0, 0.0, 0.1)
 
 Q = 1e-2 * np.eye(nx)
 R = 1e-2 * np.eye(nu)
+N = 1e-5 * np.eye(nx, nu)
 
 Qf = np.eye(nx)
 if args.term_cstr:
     Qf[:, :] = 0.0
 
 
-rcost0 = proxddp.QuadraticCost(Q, R)
+rcost0 = proxddp.QuadraticCost(Q, R, N)
+print(rcost0.w_x)
+print(rcost0.w_u)
+print(rcost0.weights_cross)
+assert np.allclose(rcost0.w_x, Q)
+assert np.allclose(rcost0.w_u, R)
+assert np.allclose(rcost0.weights_cross, N)
+assert rcost0.has_cross_term
 rcost = proxddp.CostStack(nx, nu, [rcost0], [1.0])
 term_cost = proxddp.QuadraticCost(Qf, R)
 dynmodel = dynamics.LinearDiscreteDynamics(A, B, c)
@@ -63,7 +71,7 @@ if args.term_cstr:
         proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet())
     )
 
-mu_init = 1e-1
+mu_init = 1e-6
 rho_init = 0.0
 verbose = proxddp.VerboseLevel.VERBOSE
 tol = 1e-6

@@ -10,12 +10,12 @@ namespace proxddp {
 namespace python {
 
 void exposeQuadCost() {
+  using context::ConstMatrixRef;
+  using context::ConstVectorRef;
   using context::CostBase;
   using context::CostData;
-  using context::MatrixXs;
   using context::Scalar;
-  using context::StageFunction;
-  using context::VectorXs;
+  using QuadraticCost = QuadraticCostTpl<Scalar>;
 
   bp::class_<ConstantCostTpl<Scalar>, bp::bases<CostBase>>(
       "ConstantCost", "A constant cost term.",
@@ -23,20 +23,29 @@ void exposeQuadCost() {
       .def_readwrite("value", &ConstantCostTpl<Scalar>::value_)
       .def(CopyableVisitor<ConstantCostTpl<Scalar>>());
 
-  using QuadraticCost = QuadraticCostTpl<Scalar>;
-
   bp::class_<QuadraticCost, bp::bases<CostBase>>(
-      "QuadraticCost", "Quadratic cost in both state and control.",
-      bp::init<const MatrixXs &, const MatrixXs &, const VectorXs &,
-               const VectorXs &>(
+      "QuadraticCost", "Quadratic cost in both state and control.", bp::no_init)
+      .def(bp::init<ConstMatrixRef, ConstMatrixRef, ConstMatrixRef,
+                    ConstVectorRef, ConstVectorRef>(
+          bp::args("self", "w_x", "w_u", "w_cross", "interp_x", "interp_u")))
+      .def(bp::init<ConstMatrixRef, ConstMatrixRef, ConstVectorRef,
+                    ConstVectorRef>(
           bp::args("self", "w_x", "w_u", "interp_x", "interp_u")))
-      .def(bp::init<const MatrixXs &, const MatrixXs &>(
-          "Constructor with just weights.", bp::args("self", "w_x", "w_u")))
+      .def(bp::init<ConstMatrixRef, ConstMatrixRef>(
+          "Constructor with just weights (no cross-term).",
+          bp::args("self", "w_x", "w_u")))
+      .def(bp::init<ConstMatrixRef, ConstMatrixRef, ConstMatrixRef>(
+          "Constructor with just weights (with cross-term).",
+          bp::args("self", "w_x", "w_u", "w_cross")))
       .def_readwrite("w_x", &QuadraticCost::weights_x, "Weights on the state.")
       .def_readwrite("w_u", &QuadraticCost::weights_u,
                      "Weights on the control.")
       .def_readwrite("interp_x", &QuadraticCost::interp_x)
       .def_readwrite("interp_u", &QuadraticCost::interp_u)
+      .add_property("has_cross_term", &QuadraticCost::hasCrossTerm,
+                    "Whether there is a cross term.")
+      .add_property("weights_cross", &QuadraticCost::getCrossWeights,
+                    &QuadraticCost::setCrossWeight, "Cross term weight.")
       .def(CopyableVisitor<QuadraticCostTpl<Scalar>>());
 
   bp::class_<QuadraticCost::Data, bp::bases<CostData>>(
@@ -85,11 +94,12 @@ void exposeCostStack() {
   using context::CostData;
   using context::Scalar;
   using CostStack = CostStackTpl<Scalar>;
+  using CostPtr = CostStack::CostPtr;
   using CostStackData = CostStackDataTpl<Scalar>;
 
   bp::class_<CostStack, bp::bases<CostBase>>(
       "CostStack", "A weighted sum of other cost functions.",
-      bp::init<const int, const int, const std::vector<shared_ptr<CostBase>> &,
+      bp::init<int, int, const std::vector<CostPtr> &,
                const std::vector<Scalar> &>((
           bp::arg("self"), bp::arg("ndx"), bp::arg("nu"),
           bp::arg("components") = bp::list(), bp::arg("weights") = bp::list())))
