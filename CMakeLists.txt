@@ -153,6 +153,7 @@ if(ENABLE_TEMPLATE_INSTANTIATION)
   file(GLOB_RECURSE LIB_TEMPLATE_SOURCES
        ${PROJECT_SOURCE_DIR}/src/core/*.cpp
        ${PROJECT_SOURCE_DIR}/src/fddp/*.cpp
+       ${PROJECT_SOURCE_DIR}/src/modelling/*.cpp
        )
   file(GLOB_RECURSE LIB_TEMPLATE_DECLARATIONS
        ${PROJECT_SOURCE_DIR}/include/proxddp/*.txx
