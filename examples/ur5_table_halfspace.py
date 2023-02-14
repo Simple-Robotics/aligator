@@ -94,6 +94,7 @@ for i in range(nsteps):
 
 problem = proxddp.TrajOptProblem(x0, stages, term_cost)
 problem.addTerminalConstraint(frame_cstr)
+problem.setNumThreads(4)
 
 
 tol = 1e-4
@@ -118,7 +119,7 @@ print(rs)
 xs_opt = np.array(rs.xs)
 ws = solver.getWorkspace()
 
-stage_datas: list[proxddp.StageData] = ws.problem_data.stage_data
+stage_datas = ws.problem_data.stage_data
 ineq_cstr_datas = []
 ineq_cstr_values = []
 dyn_cstr_values = []

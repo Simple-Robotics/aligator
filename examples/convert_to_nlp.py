@@ -140,7 +140,7 @@ def convert_problem_to_proxnlp(problem: TrajOptProblem):
     prnlp_constraints = []
     for i in range(N):
         sm: proxddp.StageModel = problem.stages[i]
-        fun = sm.getConstraint(0).func
+        fun = sm.constraints[0].func
         cstr_fun = ProxnlpConstraintFromProblem(
             product_space, fun, i, N, st_idx[i], en_idx[i]
         )
