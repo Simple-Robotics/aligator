@@ -75,12 +75,12 @@ rcost.addCost(proxddp.QuadraticCost(w_x, w_u), dt)
 rcost.addCost(frame_fn_cost.copy(), 0.01 * dt)
 
 stm = proxddp.StageModel(rcost, dyn_model)
-umax = rmodel.effortLimit
-umin = -umax
 if args.bounds:
-    stm.addConstraint(
-        proxddp.ControlBoxFunction(space.ndx, umin, umax), constraints.NegativeOrthant()
-    )
+    umax = rmodel.effortLimit
+    umin = -umax
+    # fun: u -> u
+    ctrl_fn = proxddp.ControlErrorResidual(space.ndx, np.zeros(nu))
+    stm.addConstraint(ctrl_fn, constraints.BoxConstraint(umin, umax))
 
 term_cost = proxddp.CostStack(space.ndx, nu)
 term_cost.addCost(

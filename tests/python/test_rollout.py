@@ -68,6 +68,9 @@ def setup_fig():
     yield fig
     plt.legend()
     try:
+        import os
+
+        os.makedirs("assets/", exist_ok=True)
         plt.savefig("assets/ur5_rollout_energy.png")
     except FileNotFoundError:
         pass

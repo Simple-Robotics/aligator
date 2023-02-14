@@ -1,0 +1,13 @@
+/// @file
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
+#include "proxddp/modelling/dynamics/continuous-base.hpp"
+#include <proxnlp/manifold-base.hpp>
+
+namespace proxddp {
+namespace dynamics {
+
+template struct ContinuousDynamicsAbstractTpl<context::Scalar>;
+template struct ContinuousDynamicsDataTpl<context::Scalar>;
+
+} // namespace dynamics
+} // namespace proxddp

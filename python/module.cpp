@@ -5,7 +5,7 @@
 #include "proxddp/version.hpp"
 #include "proxddp/threads.hpp"
 
-#ifdef WITH_CROCODDYL_COMPAT
+#ifdef PROXDDP_WITH_CROCODDYL_COMPAT
 #include "proxddp/python/compat/croco.hpp"
 #endif
 
@@ -15,9 +15,9 @@ BOOST_PYTHON_MODULE(pyproxddp) {
   bp::docstring_options module_docstring_options(true, true, true);
 
   bp::scope().attr("__version__") = proxddp::printVersion();
-  bp::def("get_available_threads", &proxddp::getNumAvailableThreads,
+  bp::def("get_available_threads", &proxddp::omp::get_available_threads,
           "Get the number of available threads.");
-  bp::def("get_num_threads", &proxddp::getCurrentThreads,
+  bp::def("get_current_threads", &proxddp::omp::get_current_threads,
           "Get the current number of threads.");
   eigenpy::enableEigenPy();
 
@@ -25,24 +25,14 @@ BOOST_PYTHON_MODULE(pyproxddp) {
   bp::import("proxnlp");
 
   exposeFunctions();
-#ifdef PROXDDP_WITH_PINOCCHIO
-  exposePinocchioFunctions();
-#endif
   exposeCosts();
+  exposeConstraint();
   exposeStage();
   exposeProblem();
   {
     bp::scope dynamics = get_namespace("dynamics");
     exposeODEs();
     exposeDynamics();
-
-#ifdef PROXDDP_WITH_PINOCCHIO
-    exposeFreeFwdDynamics();
-#if PINOCCHIO_VERSION_AT_LEAST(2, 9, 2)
-    exposeConstraintFwdDynamics();
-#endif
-#endif
-
     exposeIntegrators();
   }
   exposeUtils();
@@ -51,7 +41,11 @@ BOOST_PYTHON_MODULE(pyproxddp) {
   exposeCallbacks();
   exposeAutodiff();
 
-#ifdef WITH_CROCODDYL_COMPAT
+#ifdef PROXDDP_WITH_PINOCCHIO
+  exposePinocchioFeatures();
+#endif
+
+#ifdef PROXDDP_WITH_CROCODDYL_COMPAT
   {
     bp::scope croc_ns = get_namespace("croc");
     exposeCrocoddylCompat();

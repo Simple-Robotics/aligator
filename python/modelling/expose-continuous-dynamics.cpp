@@ -1,4 +1,5 @@
-#include "proxddp/python/fwd.hpp"
+/// @file
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "proxddp/python/modelling/continuous.hpp"
 #include "proxddp/modelling/dynamics/linear-ode.hpp"
 
@@ -19,7 +20,7 @@ void exposeODEs() {
   bp::class_<PyContinuousDynamics<>, boost::noncopyable>(
       "ContinuousDynamicsBase",
       "Base class for continuous-time dynamical models (DAEs and ODEs).",
-      bp::init<const ManifoldPtr &, int>(
+      bp::init<ManifoldPtr, int>(
           "Default constructor: provide the working manifold and control space "
           "dimension.",
           bp::args("self", "space", "nu")))

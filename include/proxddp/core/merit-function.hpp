@@ -65,41 +65,31 @@ template <typename _Scalar> struct PDALFunction {
   using StageModel = StageModelTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
   using FunctionData = FunctionDataTpl<Scalar>;
-  using CstrSet = ConstraintSetBase<Scalar>;
   using ConstraintStack = ConstraintStackTpl<Scalar>;
   using Workspace = WorkspaceTpl<Scalar>;
   using TrajOptProblem = TrajOptProblemTpl<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
   using CstrALWeights = ConstraintALWeightStrategy<Scalar>;
-
-  SolverProxDDP<Scalar> const *solver_;
-  Scalar traj_cost_;
-  /// Weight of dual penalty. Values different from 1 not supported yet.
-
-  Scalar mu_min = 1e-7;
-  Scalar mu_max = 1. / mu_min;
-
-  Scalar dual_weight() { return solver_->dual_weight; }
-
-  PDALFunction(SolverProxDDP<Scalar> const *solver);
+  using SolverType = ::proxddp::SolverProxDDP<Scalar>;
 
   /// @brief    Compute the merit function at the trial point.
   /// @warning  Evaluate the problem and proximal terms first!
-  Scalar evaluate(const TrajOptProblem &problem,
-                  const std::vector<VectorXs> &lams, Workspace &workspace,
-                  TrajOptData &prob_data);
+  static Scalar evaluate(const SolverType *solver,
+                         const TrajOptProblem &problem,
+                         const std::vector<VectorXs> &lams,
+                         Workspace &workspace);
 
-  Scalar directionalDerivative(const TrajOptProblem &problem,
-                               const std::vector<VectorXs> &lams,
-                               Workspace &workspace, TrajOptData &prob_data);
+  static Scalar directionalDerivative(const SolverType *solver,
+                                      const TrajOptProblem &problem,
+                                      const std::vector<VectorXs> &lams,
+                                      Workspace &workspace);
 
-  /**
-   * @brief   Compute the proximal penalty in the state-control trajectory.
-   * @warning Compute the proximal penalty for each timestep first.
-   */
-  Scalar computeProxPenalty(const Workspace &workspace) {
+  /// @brief   Compute the proximal penalty in the state-control trajectory.
+  /// @warning Compute the proximal penalty for each timestep first.
+  static Scalar computeProxPenalty(const SolverType *solver,
+                                   const Workspace &workspace) {
     Scalar res = 0.;
-    const Scalar rho = solver_->rho();
+    const Scalar rho = solver->rho();
     const std::size_t nsteps = workspace.nsteps;
     for (std::size_t i = 0; i <= nsteps; i++) {
       res += rho * workspace.prox_datas[i]->value_;

@@ -90,6 +90,20 @@ solver.setup(problem)
 solver.run(problem, xs_i, us_i)
 res = solver.getResults()
 
+
+def test_check_num_iters(res):
+    if args.bounds and args.term_cstr:
+        assert res.num_iters == 10
+    elif args.bounds:
+        assert res.num_iters == 7
+    elif args.term_cstr:
+        assert res.num_iters == 3
+    else:
+        assert res.num_iters == 1
+
+
+test_check_num_iters(res)
+
 print(res)
 
 plt.subplot(121)

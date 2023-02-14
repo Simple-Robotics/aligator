@@ -57,10 +57,6 @@ public:
   const Manifold &uspace() const { return *uspace_; }
   const Manifold &xspace_next() const { return *xspace_next_; }
 
-  PROXDDP_INLINE const Constraint &getConstraint(std::size_t j) const {
-    return constraints_[j];
-  }
-
   const Cost &cost() const { return *cost_; }
   /// Whether the stage's dynamics model can be accessed.
   /// This boolean allows flexibility in solvers when dealing

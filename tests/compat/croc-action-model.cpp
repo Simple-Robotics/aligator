@@ -43,8 +43,7 @@ BOOST_AUTO_TEST_CASE(lqr) {
 
   auto act_wrapper =
       std::make_shared<pcroc::context::ActionModelWrapper>(lqr_model);
-  std::shared_ptr<ActionDataWrapper> act_wrap_data =
-      std::static_pointer_cast<ActionDataWrapper>(act_wrapper->createData());
+  auto act_wrap_data = act_wrapper->createData();
 
   act_wrapper->evaluate(x0, u0, x0, *act_wrap_data);
   act_wrapper->computeDerivatives(x0, u0, x0, *act_wrap_data);

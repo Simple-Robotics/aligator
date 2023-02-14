@@ -7,7 +7,6 @@
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-using proxddp::LDLTChoice;
 using proxddp::SolverProxDDP;
 
 constexpr double TOL = 1e-4;
@@ -82,7 +81,7 @@ void factorize_some_kkt(std::string &fname, std::string &frhs) {
   //
 }
 
-int main(int argc, char **argv) {
+int main(int, char **) {
 
   auto croc_problem = defineCrocoddylProblem(nsteps);
   auto problem = proxddp::compat::croc::convertCrocoddylProblem(croc_problem);

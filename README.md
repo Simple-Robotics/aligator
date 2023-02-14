@@ -4,7 +4,7 @@ A primal-dual augmented Lagrangian-type trajectory optimization solver.
 
 ## Features
 
-This is a templated library, which provides
+This is a C++14 template library, which provides
 
 * a modelling interface for optimal control problems, node-per-node
 * an efficient solver algorithm
@@ -23,7 +23,6 @@ This is a templated library, which provides
 Python:
 
 * [typed-argument-parser](https://github.com/swansonk14/typed-argument-parser)
-* [pin-meshcat-utils](https://github.com/Simple-Robotics/pin-meshcat-utils)
 
 ### Build from source
 

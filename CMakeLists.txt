@@ -27,6 +27,13 @@ project(${PROJECT_NAME} ${PROJECT_ARGS})
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/boost.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/ide.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/apple.cmake)
+if(APPLE) # Use the handmade approach
+  set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/find-external/OpenMP ${CMAKE_MODULE_PATH})
+elseif(UNIX)
+  if(${CMAKE_VERSION} VERSION_GREATER "3.20.0" OR ${CMAKE_VERSION} VERSION_EQUAL "3.20.0")
+    set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/find-external/OpenMP ${CMAKE_MODULE_PATH})
+  endif()
+endif(APPLE)
 include(CMakeDependentOption)
 
 if(WIN32)
@@ -92,7 +99,7 @@ if(BUILD_WITH_CASADI_SUPPORT)
 endif(BUILD_WITH_CASADI_SUPPORT)
 
 if(BUILD_WITH_OPENMP_SUPPORT)
-  ADD_PROJECT_DEPENDENCY(OpenMP REQUIRED)
+  find_package(OpenMP REQUIRED)
 endif(BUILD_WITH_OPENMP_SUPPORT)
 
 set(BOOST_REQUIRED_COMPONENTS filesystem serialization system)
@@ -188,7 +195,7 @@ function(create_library)
 
   if(BUILD_WITH_OPENMP_SUPPORT)
     add_compile_definitions(PROXDDP_MULTITHREADING)
-    link_libraries(OpenMP::OpenMP_CXX)
+    target_link_libraries(${PROJECT_NAME} PRIVATE OpenMP::OpenMP_CXX)
   endif(BUILD_WITH_OPENMP_SUPPORT)
 
   target_link_libraries(${PROJECT_NAME} PUBLIC proxnlp::proxnlp)
@@ -219,7 +226,7 @@ install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
 
 if(BUILD_CROCODDYL_COMPAT)
-  target_compile_definitions(${PROJECT_NAME} PUBLIC -DWITH_CROCODDYL_COMPAT)
+  target_compile_definitions(${PROJECT_NAME} PUBLIC -DPROXDDP_WITH_CROCODDYL_COMPAT)
   set(CROC_COMPAT_LIB_NAME ${PROJECT_NAME}_croc_compat)
   add_subdirectory(compat/crocoddyl)
 endif()

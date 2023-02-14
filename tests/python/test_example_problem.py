@@ -75,6 +75,9 @@ class TestClass:
     dynmodel = TwistModelExplicit(dt)
     cost = MyQuadCost(W=np.eye(space.ndx), x_ref=x1)
     stage_model = proxddp.StageModel(cost, dynmodel)
+    tol = 1e-5
+    mu_init = 1e-2
+    solver = proxddp.SolverProxDDP(tol, mu_init, 0.0)
 
     def test_dyn(self, nsteps):
         dyn_data = self.dynmodel.createData()
@@ -130,22 +133,16 @@ class TestClass:
         problem.evaluate(xs_out, us_init, problem_data)
         problem.computeDerivatives(xs_out, us_init, problem_data)
 
-        tol = 1e-5
-        mu_init = 1e-2
-        rho_init = 0.0
-
-        solver = proxddp.SolverProxDDP(tol, mu_init, rho_init)
+        solver = self.solver
 
         assert solver.bcl_params.prim_alpha == 0.1
         assert solver.bcl_params.prim_beta == 0.9
         assert solver.bcl_params.dual_alpha == 1.0
         assert solver.bcl_params.dual_beta == 1.0
 
-        solver.rho_factor = 0.1
-        assert solver.rho_factor == 0.1
-
         solver.multiplier_update_mode = proxddp.MultiplierUpdateMode.NEWTON
         solver.setup(problem)
+        solver.setLinesearchMuLowerBound(1e-9)
         solver.run(problem, xs_out, us_init)
 
 

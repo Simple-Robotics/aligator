@@ -140,14 +140,14 @@ def convert_problem_to_proxnlp(problem: TrajOptProblem):
     prnlp_constraints = []
     for i in range(N):
         sm: proxddp.StageModel = problem.stages[i]
-        fun = sm.getConstraint(0).func
+        fun = sm.constraints[0].func
         cstr_fun = ProxnlpConstraintFromProblem(
             product_space, fun, i, N, st_idx[i], en_idx[i]
         )
         prnlp_constraints.append(constraints.createEqualityConstraint(cstr_fun))
 
     def make_init_cstr(x0):
-        ndx = problem.init_cstr.nr
+        ndx = problem.init_constraint.nr
         p_ndx = product_space.ndx
         row = np.zeros((ndx, p_ndx))
         row[:, :ndx] = np.eye(ndx)

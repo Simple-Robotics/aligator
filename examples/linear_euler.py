@@ -20,8 +20,7 @@ dyn_model = dynamics.IntegratorEuler(ode, dt)
 
 w_x = 0.1 * np.eye(nx)
 w_u = 1e-3 * np.eye(nu)
-rcost = proxddp.CostStack(nx, nu)
-rcost.addCost(proxddp.QuadraticCost(w_x * dt, w_u * dt))
+rcost = proxddp.QuadraticCost(w_x * dt, w_u * dt)
 
 nsteps = 20
 Tf = nsteps * dt

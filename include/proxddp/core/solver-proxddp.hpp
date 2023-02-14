@@ -47,6 +47,7 @@ public:
   using TrajOptData = TrajOptDataTpl<Scalar>;
   using LinesearchOptions = typename Linesearch<Scalar>::Options;
   using CstrALWeightStrat = ConstraintALWeightStrategy<Scalar>;
+  using LinesearchType = proxnlp::ArmijoLinesearch<Scalar>;
 
   std::vector<ProxPenaltyType> prox_penalties_;
   /// Subproblem tolerance
@@ -261,21 +262,26 @@ public:
                                    Results &results,
                                    const std::size_t step) const;
 
+  auto getLinesearchMuLowerBound() const { return min_mu_linesearch_; }
+  void setLinesearchMuLowerBound(Scalar mu) { min_mu_linesearch_ = mu; }
+  /// @brief  Get the penalty parameter for linesearch.
+  auto getLinesearchMu() const { return std::max(mu(), min_mu_linesearch_); }
+
 protected:
-  void updateTolerancesOnFailure();
-  void updateTolerancesOnSuccess();
+  void update_tols_on_failure();
+  void update_tols_on_success();
 
   /// Set dual proximal/ALM penalty parameter.
-  PROXDDP_INLINE void setPenalty(Scalar new_mu) noexcept {
+  PROXDDP_INLINE void set_penalty_mu(Scalar new_mu) noexcept {
     mu_penal_ = std::max(new_mu, MU_MIN);
     mu_inverse_ = 1. / new_mu;
   }
 
-  PROXDDP_INLINE void setRho(Scalar new_rho) noexcept { rho_penal_ = new_rho; }
+  PROXDDP_INLINE void set_rho(Scalar new_rho) noexcept { rho_penal_ = new_rho; }
 
   /// Update the dual proximal penalty according to BCL.
-  PROXDDP_INLINE void bclUpdateALPenalty() noexcept {
-    setPenalty(mu_penal_ * bcl_params.mu_update_factor);
+  PROXDDP_INLINE void bcl_update_alm_penalty() noexcept {
+    set_penalty_mu(mu_penal_ * bcl_params.mu_update_factor);
   }
 
   /// Increase Tikhonov regularization.
@@ -303,14 +309,13 @@ private:
   /// This is the global parameter: scales may be applied for stagewise
   /// constraints, dynamicals...
   Scalar mu_penal_ = mu_init;
+  Scalar min_mu_linesearch_ = 1e-8;
   /// Inverse ALM penalty parameter.
   Scalar mu_inverse_ = 1. / mu_penal_;
   /// Primal proximal parameter \f$\rho > 0\f$
   Scalar rho_penal_ = rho_init;
-  PDALFunction<Scalar> merit_fun;
-
-  using linesearch_t = proxnlp::ArmijoLinesearch<Scalar>;
-  linesearch_t linesearch_;
+  /// Linesearch function
+  LinesearchType linesearch_;
 };
 
 } // namespace proxddp

@@ -19,7 +19,14 @@ template <typename Scalar> struct StageConstraintTpl {
 template <typename Scalar> struct ConstraintStackTpl {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using ConstraintType = StageConstraintTpl<Scalar>;
+  using value_type = ConstraintType;
+  using data_type = ConstraintType;
+  using iterator = typename std::vector<ConstraintType>::iterator;
+
   ConstraintStackTpl() : indices_({0}){};
+
+  auto begin() { return storage_.begin(); }
+  auto end() { return storage_.end(); }
 
   std::size_t size() const { return storage_.size(); }
   bool empty() const { return size() == 0; }

@@ -59,3 +59,7 @@ struct DynamicsModelTpl : StageFunctionTpl<_Scalar> {
 } // namespace proxddp
 
 #include "proxddp/core/dynamics.hxx"
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/core/dynamics.txx"
+#endif

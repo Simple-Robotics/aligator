@@ -6,7 +6,7 @@ namespace proxddp {
 namespace dynamics {
 template <typename Scalar>
 ContinuousDynamicsAbstractTpl<Scalar>::ContinuousDynamicsAbstractTpl(
-    const ManifoldPtr &space, const int nu)
+    ManifoldPtr space, const int nu)
     : space_(space), nu_(nu) {}
 
 template <typename Scalar>

@@ -5,6 +5,9 @@
 
 #include "proxddp/core/solver-proxddp.hpp"
 #include "proxddp/core/linalg.hpp"
+#ifndef NDEBUG
+#include <fmt/ostream.h>
+#endif
 
 namespace proxddp {
 
@@ -17,7 +20,7 @@ SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
     : target_tol_(tol), mu_init(mu_init), rho_init(rho_init), verbose_(verbose),
       hess_approx_(hess_approx), rollout_type_(RolloutType::NONLINEAR),
       is_x0_fixed_(true), ldlt_algo_choice_(LDLTChoice::DENSE),
-      max_iters(max_iters), merit_fun(this), linesearch_(ls_params) {
+      max_iters(max_iters), linesearch_(ls_params) {
   ls_params.interp_type = proxnlp::LSInterpolation::CUBIC;
 }
 
@@ -86,8 +89,8 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem,
   // compute direction dx0
   const VParams &vp = workspace.value_params[0];
   const FunctionData &init_data = workspace.problem_data.getInitData();
-  const int ndual0 = problem.init_state_error_.nr;
-  const int ndx0 = problem.init_state_error_.ndx1;
+  const int ndual0 = problem.init_state_error_->nr;
+  const int ndx0 = problem.init_state_error_->ndx1;
   const VectorXs &lampl0 = workspace.lams_plus[0];
   const VectorXs &lamin0 = results.lams[0];
   const CostData &proxdata0 = *workspace.prox_datas[0];
@@ -145,8 +148,7 @@ void SolverProxDDP<Scalar>::setup(const Problem &problem) {
                                  ws.prev_us[i], false);
     if (i == nsteps - 1) {
       prox_penalties_.emplace_back(sm.xspace_next_, sm.uspace_,
-                                   ws.prev_xs[nsteps], problem.dummy_term_u0,
-                                   true);
+                                   ws.prev_xs[nsteps], problem.unone_, true);
     }
   }
 
@@ -258,6 +260,7 @@ void SolverProxDDP<Scalar>::computeMultipliers(
       };
 
   // loop over the stages
+#pragma omp parallel for num_threads(problem.getNumThreads())
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
     const StageData &sdata = *prob_data.stage_data[i];
@@ -309,6 +312,7 @@ void SolverProxDDP<Scalar>::projectJacobians(const Problem &problem,
   };
 
   // loop over the stages
+#pragma omp parallel for num_threads(problem.getNumThreads())
   for (std::size_t i = 0; i < nsteps; i++) {
     const ConstraintStack &cstr_stack = problem.stages_[i]->constraints_;
     StageData &sdata = prob_data.getStageData(i);
@@ -511,10 +515,9 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   MatrixXs &resdl = workspace.kkt_resdls_[t + 1];
 
   PROXDDP_NOMALLOC_END;
-  bool lin_solved = iterative_refinement_impl<Scalar>::run(
-      ldlt, kkt_mat, kkt_rhs, resdl, gains, refinement_threshold_,
-      max_refinement_steps_);
-  (void)lin_solved;
+  iterative_refinement_impl<Scalar>::run(ldlt, kkt_mat, kkt_rhs, resdl, gains,
+                                         refinement_threshold_,
+                                         max_refinement_steps_);
   PROXDDP_NOMALLOC_BEGIN;
 
   /* Value function */
@@ -549,8 +552,8 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
   TrajOptData &prob_data = workspace.problem_data;
 
   {
-    problem.init_state_error_.evaluate(xs[0], us[0], xs[1],
-                                       prob_data.getInitData());
+    problem.init_state_error_->evaluate(xs[0], us[0], xs[1],
+                                        prob_data.getInitData());
     compute_dir_x0(problem, workspace, results);
     const StageModel &stage = *problem.stages_[0];
     // use lams[0] as a tmp var for alpha * dx0
@@ -626,13 +629,13 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
   }
 
   // TERMINAL NODE
-  problem.term_cost_->evaluate(xs[nsteps], problem.dummy_term_u0,
+  problem.term_cost_->evaluate(xs[nsteps], problem.unone_,
                                *prob_data.term_cost_data);
 
   for (std::size_t k = 0; k < problem.term_cstrs_.size(); ++k) {
     const ConstraintType &tc = problem.term_cstrs_[k];
     FunctionData &td = *prob_data.term_cstr_data[k];
-    tc.func->evaluate(xs[nsteps], problem.dummy_term_u0, xs[nsteps], td);
+    tc.func->evaluate(xs[nsteps], problem.unone_, xs[nsteps], td);
   }
 
   // update multiplier
@@ -678,8 +681,8 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   logger.active = (verbose_ > 0);
   logger.start();
 
-  setPenalty(mu_init);
-  setRho(rho_init);
+  set_penalty_mu(mu_init);
+  set_rho(rho_init);
   xreg_ = reg_init;
   ureg_ = reg_init;
 
@@ -689,12 +692,12 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
 
   inner_tol_ = inner_tol0;
   prim_tol_ = prim_tol0;
-  updateTolerancesOnFailure();
+  update_tols_on_failure();
 
   inner_tol_ = std::max(inner_tol_, target_tol_);
   prim_tol_ = std::max(prim_tol_, target_tol_);
 
-  bool &conv = results.conv;
+  bool &conv = results.conv = false;
 
   results.al_iter = 0;
   results.num_iters = 0;
@@ -719,7 +722,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
     workspace.prev_us = results.us;
 
     if (results.prim_infeas <= prim_tol_) {
-      updateTolerancesOnSuccess();
+      update_tols_on_success();
 
       switch (multiplier_update_mode) {
       case MultiplierUpdateMode::NEWTON:
@@ -742,11 +745,11 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
       }
     } else {
       Scalar old_mu = mu_penal_;
-      bclUpdateALPenalty();
-      updateTolerancesOnFailure();
+      bcl_update_alm_penalty();
+      update_tols_on_failure();
       if (math::scalar_close(old_mu, mu_penal_)) {
         // reset penalty to initial value
-        setPenalty(mu_init);
+        set_penalty_mu(mu_init);
       }
     }
     rho_penal_ *= bcl_params.rho_update_factor;
@@ -762,13 +765,13 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
 }
 
 template <typename Scalar>
-void SolverProxDDP<Scalar>::updateTolerancesOnFailure() {
+void SolverProxDDP<Scalar>::update_tols_on_failure() {
   prim_tol_ = prim_tol0 * std::pow(mu_penal_, bcl_params.prim_alpha);
   inner_tol_ = inner_tol0 * std::pow(mu_penal_, bcl_params.dual_alpha);
 }
 
 template <typename Scalar>
-void SolverProxDDP<Scalar>::updateTolerancesOnSuccess() {
+void SolverProxDDP<Scalar>::update_tols_on_success() {
   prim_tol_ = prim_tol_ * std::pow(mu_penal_, bcl_params.prim_beta);
   inner_tol_ = inner_tol_ * std::pow(mu_penal_, bcl_params.dual_beta);
 }
@@ -790,8 +793,8 @@ SolverProxDDP<Scalar>::forwardPass(const Problem &problem, Workspace &workspace,
   }
   // computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
   computeMultipliers(problem, workspace, workspace.trial_lams);
-  return merit_fun.evaluate(problem, workspace.trial_lams, workspace,
-                            workspace.problem_data);
+  return PDALFunction<Scalar>::evaluate(this, problem, workspace.trial_lams,
+                                        workspace);
 }
 
 template <typename Scalar>
@@ -809,8 +812,8 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
   results.traj_cost_ =
       problem.evaluate(results.xs, results.us, workspace.problem_data);
   computeMultipliers(problem, workspace, results.lams);
-  results.merit_value_ = merit_fun.evaluate(problem, results.lams, workspace,
-                                            workspace.problem_data);
+  results.merit_value_ =
+      PDALFunction<Scalar>::evaluate(this, problem, results.lams, workspace);
 
   while (k < max_iters) {
     // ASSUMPTION: last evaluation in previous iterate
@@ -849,8 +852,8 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     /// TODO: remove these expensive computations
     /// only use Q-function params etc
     linearRollout(problem, workspace, results);
-    Scalar dphi0_analytical = merit_fun.directionalDerivative(
-        problem, results.lams, workspace, workspace.problem_data);
+    Scalar dphi0_analytical = PDALFunction<Scalar>::directionalDerivative(
+        this, problem, results.lams, workspace);
     Scalar dphi0 = dphi0_analytical; // value used for LS & logging
 #ifndef NDEBUG
     const auto merit_linear_eval = [&](Scalar a0) {
@@ -922,7 +925,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     results.xs = workspace.trial_xs;
     results.us = workspace.trial_us;
     results.lams = workspace.trial_lams;
-    results.traj_cost_ = merit_fun.traj_cost_;
+    results.traj_cost_ = workspace.problem_data.cost_;
     results.merit_value_ = phi_new;
     PROXDDP_RAISE_IF_NAN_NAME(alpha_opt, "alpha_opt");
     PROXDDP_RAISE_IF_NAN_NAME(results.merit_value_, "results.merit_value");
@@ -986,6 +989,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
       };
 
   // compute infeasibility of all stage constraints
+#pragma omp parallel for num_threads(problem.getNumThreads())
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
     const StageData &stage_data = prob_data.getStageData(i);

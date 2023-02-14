@@ -19,29 +19,34 @@ void exposeProblem() {
       "TrajOptProblem", "Define a shooting problem.",
       bp::init<const context::VectorXs &,
                const std::vector<shared_ptr<StageModel>> &,
-               const shared_ptr<CostBase> &>(
+               shared_ptr<CostBase>>(
           bp::args("self", "x0", "stages", "term_cost")))
       .def(bp::init<const context::VectorXs &, const int,
-                    const shared_ptr<context::Manifold> &,
-                    const shared_ptr<CostBase> &>(
+                    shared_ptr<context::Manifold>, shared_ptr<CostBase>>(
           bp::args("self", "x0", "nu", "space", "term_cost")))
       .def<void (TrajOptProblem::*)(const shared_ptr<StageModel> &)>(
           "addStage", &TrajOptProblem::addStage, bp::args("self", "new_stage"),
           "Add a stage to the problem.")
-      .def(bp::init<InitCstrType, int, shared_ptr<CostBase>>(
+      .def(bp::init<shared_ptr<InitCstrType>, int, shared_ptr<CostBase>>(
           "Constructor adding the initial constraint explicitly.",
           bp::args("self", "init_constraint", "nu", "term_cost")))
       .def_readonly("stages", &TrajOptProblem::stages_,
                     "Stages of the shooting problem.")
       .def_readwrite("term_cost", &TrajOptProblem::term_cost_,
                      "Problem terminal cost.")
+      .def_readwrite("term_constraints", &TrajOptProblem::term_cstrs_,
+                     "Set of terminal constraints.")
+      .def("getNumThreads", &TrajOptProblem::getNumThreads,
+           "Get the number of threads.")
+      .def("setNumThreads", &TrajOptProblem::setNumThreads,
+           "Set the number of threads for evaluation.")
       .add_property("num_steps", &TrajOptProblem::numSteps,
                     "Number of stages in the problem.")
       .add_property("x0_init",
                     bp::make_function(&TrajOptProblem::getInitState,
                                       bp::return_internal_reference<>()),
                     &TrajOptProblem::setInitState, "Initial state.")
-      .add_property("init_cstr", &TrajOptProblem::init_state_error_,
+      .add_property("init_constraint", &TrajOptProblem::init_state_error_,
                     "Get initial state constraint.")
       .def("addTerminalConstraint", &TrajOptProblem::addTerminalConstraint,
            bp::args("self", "constraint"), "Add a terminal constraint.")
@@ -69,11 +74,8 @@ void exposeProblem() {
                      "Terminal cost data.")
       .def_readwrite("term_constraint", &TrajOptData::term_cstr_data,
                      "Terminal constraint data.")
-      .add_property(
-          "stage_data",
-          bp::make_getter(&TrajOptData::stage_data,
-                          bp::return_value_policy<bp::return_by_value>()),
-          "Data for each stage.");
+      .def_readonly("stage_data", &TrajOptData::stage_data,
+                    "Data for each stage.");
 }
 
 } // namespace python

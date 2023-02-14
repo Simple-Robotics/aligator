@@ -24,7 +24,9 @@ void exposeQuadCost() {
       .def(CopyableVisitor<ConstantCostTpl<Scalar>>());
 
   bp::class_<QuadraticCost, bp::bases<CostBase>>(
-      "QuadraticCost", "Quadratic cost in both state and control.", bp::no_init)
+      "QuadraticCost",
+      "Quadratic cost in both state and control - only for Euclidean spaces.",
+      bp::no_init)
       .def(bp::init<ConstMatrixRef, ConstMatrixRef, ConstMatrixRef,
                     ConstVectorRef, ConstVectorRef>(
           bp::args("self", "w_x", "w_u", "w_cross", "interp_x", "interp_u")))

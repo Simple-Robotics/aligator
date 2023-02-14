@@ -5,24 +5,20 @@
 namespace proxddp {
 
 template <typename Scalar>
-PDALFunction<Scalar>::PDALFunction(SolverProxDDP<Scalar> const *solver)
-    : solver_(solver) {}
-
-template <typename Scalar>
-Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblem &problem,
+Scalar PDALFunction<Scalar>::evaluate(const SolverType *solver,
+                                      const TrajOptProblem &problem,
                                       const std::vector<VectorXs> &lams,
-                                      Workspace &workspace,
-                                      TrajOptData &prob_data) {
-
-  traj_cost_ = prob_data.cost_;
+                                      Workspace &workspace) {
+  TrajOptData &prob_data = workspace.problem_data;
   Scalar prox_value = 0.;
-  if (solver_->rho() > 0) {
-    prox_value = computeProxPenalty(workspace);
+  if (solver->rho() > 0) {
+    prox_value = computeProxPenalty(solver, workspace);
   }
   Scalar penalty_value = 0.;
-  auto ls_mode = solver_->ls_mode;
+  auto ls_mode = solver->ls_mode;
   bool use_dual_terms = ls_mode == LinesearchMode::PRIMAL_DUAL;
-  const Scalar mu = solver_->mu();
+  const Scalar mu = solver->getLinesearchMu();
+  const Scalar dual_weight = solver->dual_weight;
   const std::vector<VectorXs> &lams_plus = workspace.lams_plus;
 
   // initial constraint
@@ -30,29 +26,30 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblem &problem,
     CstrALWeights weight_strat(mu, false);
     penalty_value += .5 * weight_strat.get(0) * lams_plus[0].squaredNorm();
     if (use_dual_terms) {
-      penalty_value += .5 * dual_weight() * weight_strat.get(0) *
+      penalty_value += .5 * dual_weight * weight_strat.get(0) *
                        (lams_plus[0] - lams[0]).squaredNorm();
     }
   }
 
   // local lambda function, defining the op to run on each constraint stack.
-  auto execute_on_stack = [this, use_dual_terms](const ConstraintStack &stack,
-                                                 const VectorXs &lambda,
-                                                 const VectorXs &lambda_plus,
-                                                 CstrALWeights &&weight_strat) {
-    Scalar r = 0.;
-    for (std::size_t k = 0; k < stack.size(); ++k) {
-      const auto lamplus_k = stack.getConstSegmentByConstraint(lambda_plus, k);
-      const auto laminnr_k = stack.getConstSegmentByConstraint(lambda, k);
-      r += .5 * weight_strat.get(k) * lamplus_k.squaredNorm();
+  auto execute_on_stack =
+      [use_dual_terms = use_dual_terms, dual_weight = dual_weight](
+          const ConstraintStack &stack, const VectorXs &lambda,
+          const VectorXs &lambda_plus, CstrALWeights &&weight_strat) {
+        Scalar r = 0.;
+        for (std::size_t k = 0; k < stack.size(); ++k) {
+          const auto lamplus_k =
+              stack.getConstSegmentByConstraint(lambda_plus, k);
+          const auto laminnr_k = stack.getConstSegmentByConstraint(lambda, k);
+          r += .5 * weight_strat.get(k) * lamplus_k.squaredNorm();
 
-      if (use_dual_terms) {
-        r += .5 * dual_weight() * weight_strat.get(k) *
-             (lamplus_k - laminnr_k).squaredNorm();
-      }
-    }
-    return r;
-  };
+          if (use_dual_terms) {
+            r += .5 * dual_weight * weight_strat.get(k) *
+                 (lamplus_k - laminnr_k).squaredNorm();
+          }
+        }
+        return r;
+      };
 
   // stage-per-stage
   const std::size_t nsteps = problem.numSteps();
@@ -73,27 +70,30 @@ Scalar PDALFunction<Scalar>::evaluate(const TrajOptProblem &problem,
                          CstrALWeights(mu, false));
   }
 
-  return traj_cost_ + prox_value + penalty_value;
+  return prob_data.cost_ + prox_value + penalty_value;
 }
 
 template <typename Scalar>
 Scalar PDALFunction<Scalar>::directionalDerivative(
-    const TrajOptProblem &problem, const std::vector<VectorXs> &lams,
-    Workspace &workspace, TrajOptData &prob_data) {
+    const SolverType *solver, const TrajOptProblem &problem,
+    const std::vector<VectorXs> &lams, Workspace &workspace) {
+  TrajOptData &prob_data = workspace.problem_data;
   Scalar d1 = cost_directional_derivative(workspace, prob_data);
 
   const std::size_t nsteps = workspace.nsteps;
   // prox terms
   const auto &prox_datas = workspace.prox_datas;
-  const Scalar rho = solver_->rho();
-  for (std::size_t i = 0; i <= nsteps; i++) {
-    const ProximalDataTpl<Scalar> &pdata = *prox_datas[i];
-    d1 += rho * pdata.Lx_.dot(workspace.dxs[i]);
-    if (i < nsteps)
-      d1 += rho * pdata.Lu_.dot(workspace.dus[i]);
+  const Scalar rho = solver->rho();
+  if (rho > 0) {
+    for (std::size_t i = 0; i <= nsteps; i++) {
+      const ProximalDataTpl<Scalar> &pdata = *prox_datas[i];
+      d1 += rho * pdata.Lx_.dot(workspace.dxs[i]);
+      if (i < nsteps)
+        d1 += rho * pdata.Lu_.dot(workspace.dus[i]);
+    }
   }
 
-  const Scalar mu = solver_->mu();
+  const Scalar mu = solver->getLinesearchMu();
   const auto &dlams = workspace.dlams;
   const auto &lams_plus = workspace.lams_plus;
   const auto &lams_pdal = workspace.lams_pdal;

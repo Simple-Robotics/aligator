@@ -49,7 +49,6 @@ int main() {
 
   const T dt = 0.01;
 
-  using CostBase = CostAbstractTpl<T>;
   auto rcost = std::make_shared<CostStackTpl<T>>(space.ndx(), nu);
   auto rc1 = std::make_shared<QuadResidualCost>(state_err, w_x * dt);
   auto rc2 = std::make_shared<QuadResidualCost>(
