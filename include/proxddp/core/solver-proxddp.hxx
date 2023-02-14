@@ -5,6 +5,9 @@
 
 #include "proxddp/core/solver-proxddp.hpp"
 #include "proxddp/core/linalg.hpp"
+#ifndef NDEBUG
+#include <fmt/ostream.h>
+#endif
 
 namespace proxddp {
 
