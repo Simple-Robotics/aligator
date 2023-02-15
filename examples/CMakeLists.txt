@@ -58,7 +58,9 @@ foreach(exfile ${EXAMPLES_CPP})
   endif()
 endforeach(exfile)
 
-target_link_libraries(example-talos-arm PUBLIC proxnlp::cnpy)
+if(BUILD_CROCODDYL_COMPAT)
+  target_link_libraries(example-talos-arm PUBLIC proxnlp::cnpy)
+endif()
 
 
 file(GLOB EXAMPLES_PY *.py)
