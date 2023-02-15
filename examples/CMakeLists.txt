@@ -11,9 +11,7 @@ set(EXAMPLES_CPP
     "se2-car.cpp")
 
 set(BENCHMARKS_CPP
-    "bench/lqr.cpp"
-    "bench/multithreading.cpp"
-    "bench/croc-talos-arm.cpp")
+    "bench/lqr.cpp")
 
 set(EXAMPLES_WITH_CROC_CPP
     "bench/croc-talos-arm.cpp"
@@ -25,6 +23,8 @@ list(APPEND EXAMPLES_CPP ${BENCHMARKS_CPP})
 
 if(BUILD_CROCODDYL_COMPAT)
   list(APPEND EXAMPLES_CPP ${EXAMPLES_WITH_CROC_CPP})
+  list(APPEND BENCHMARKS_CPP "bench/croc-talos-arm.cpp")
+  list(APPEND BENCHMARKS_CPP "bench/multithreading.cpp")
 endif(BUILD_CROCODDYL_COMPAT)
 list(REMOVE_DUPLICATES EXAMPLES_CPP)
 
