@@ -156,7 +156,14 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   Scalar computeTrajectoryCost(const Data &problem_data) const;
 
   /// @brief  Set the number of threads for multithreaded evaluation.
-  void setNumThreads(std::size_t num_threads) { num_threads_ = num_threads; }
+  void setNumThreads(std::size_t num_threads) {
+#ifndef PROXDDP_MULTITHREADING
+    fmt::print("{} does nothing: PROXDDP was not compiled with multithreading "
+               "support.\n",
+               __FUNC__);
+#endif
+    num_threads_ = num_threads;
+  }
   /// @brief  Get the number of threads.
   std::size_t getNumThreads() const { return num_threads_; }
 
