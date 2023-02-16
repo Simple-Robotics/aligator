@@ -70,7 +70,7 @@ def test_composite_cost():
     cost.computeGradients(x0, u0, data)
     cost.computeHessians(x0, u0, data)
 
-    J = fd.jac_buffer_[:, : ndx + nu]
+    J = fd.jac_buffer[:, : ndx + nu]
     ref_grad = J.T @ weights @ fd.value
     ref_hess = J.T @ weights @ J
 

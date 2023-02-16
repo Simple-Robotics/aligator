@@ -1,7 +1,12 @@
 import proxddp
 
 from proxnlp.manifolds import MultibodyPhaseSpace
-from proxddp.dynamics import MultibodyFreeFwdDynamics, IntegratorRK2, IntegratorMidpoint
+from proxddp.dynamics import (
+    MultibodyFreeFwdDynamics,
+    IntegratorEuler,
+    IntegratorRK2,
+    IntegratorMidpoint,
+)
 
 import numpy as np
 import pinocchio as pin
@@ -74,6 +79,17 @@ def setup_fig():
         plt.savefig("assets/ur5_rollout_energy.png")
     except FileNotFoundError:
         pass
+
+
+def test_euler(setup_fig):
+    discrete_dyn = IntegratorEuler(ode_dynamics, dt)
+    u0 = np.zeros(discrete_dyn.nu)
+    us = [u0] * nsteps
+    xs = proxddp.rollout(discrete_dyn, x0, us).tolist()
+    if DISPLAY:
+        display(xs, dt)
+    e = computeMechanicalEnergy(rmodel, rdata, xs)
+    plt.plot(times_, e, label="RK2")
 
 
 def test_rk2(setup_fig):

@@ -38,7 +38,7 @@ def test_custom_controlbox():
     print(data1.value)
     print(data1.Ju)
     assert np.allclose(data1.value, data2.value)
-    assert np.allclose(data1.jac_buffer_, data2.jac_buffer_)
+    assert np.allclose(data1.jac_buffer, data2.jac_buffer)
 
     # expected behavior: initial value of vhp_buffer is 0
     assert np.allclose(data1.vhp_buffer, 0.0)

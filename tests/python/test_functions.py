@@ -36,7 +36,7 @@ def test_manifold_diff():
     assert np.allclose(data2.value[: len(idx)], data.value[idx])
 
     fun_slice.computeJacobians(x, u, y, data2)
-    assert np.allclose(data2.jac_buffer_[: len(idx)], data.jac_buffer_[idx])
+    assert np.allclose(data2.jac_buffer[: len(idx)], data.jac_buffer[idx])
 
     # TEST LINEAR COMPOSE
     A = np.array([[1.0, 1.0, 0.0]])
@@ -52,7 +52,7 @@ def test_manifold_diff():
     assert np.allclose(data3.value, A @ sd3.value + b)
 
     fun_lin.computeJacobians(x, u, y, data3)
-    assert np.allclose(data3.jac_buffer_, A @ sd3.jac_buffer_)
+    assert np.allclose(data3.jac_buffer, A @ sd3.jac_buffer)
 
 
 if __name__ == "__main__":
