@@ -324,7 +324,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
   results.traj_cost_ =
       problem.evaluate(results.xs, results.us, workspace.problem_data);
 
-  for (iter = 0; iter <= max_iters; ++iter) {
+  for (iter = 0; iter < max_iters; ++iter) {
     record.iter = iter + 1;
 
     problem.computeDerivatives(results.xs, results.us, workspace.problem_data);
@@ -343,9 +343,6 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
       results.conv = true;
       break;
     }
-
-    if (iter >= max_iters)
-      break;
 
     acceptGains(workspace, results);
 

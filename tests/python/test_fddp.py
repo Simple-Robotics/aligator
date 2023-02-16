@@ -27,7 +27,7 @@ def test_fddp_lqr():
     tol = 1e-6
     solver = SolverFDDP(tol, proxddp.VerboseLevel.VERBOSE)
     solver.setup(problem)
-    solver.max_iters = 1
+    solver.max_iters = 2
     xs_init = [x0] * (nsteps + 1)
     us_init = [np.zeros(nu)] * nsteps
     conv = solver.run(problem, xs_init, us_init)
