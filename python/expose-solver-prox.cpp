@@ -36,7 +36,8 @@ void exposeProxDDP() {
   bp::class_<Results, bp::bases<ResultsBaseTpl<Scalar>>>(
       "Results", "Results struct for proxDDP.",
       bp::init<const TrajOptProblem &>())
-      .def_readonly("al_iter", &Results::al_iter);
+      .def_readonly("al_iter", &Results::al_iter)
+      .def(PrintableVisitor<Results>());
 
   using SolverType = SolverProxDDP<Scalar>;
 

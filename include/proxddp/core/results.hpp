@@ -25,6 +25,13 @@ template <typename _Scalar> struct ResultsTpl : ResultsBaseTpl<_Scalar> {
   explicit ResultsTpl(const TrajOptProblemTpl<Scalar> &problem);
 };
 
+template <typename Scalar>
+std::ostream &operator<<(std::ostream &oss, const ResultsTpl<Scalar> &self) {
+  oss << "Results {";
+  self.printBase(oss);
+  return oss << fmt::format("\n  al_iters:     {:d},", self.al_iter) << "\n}";
+}
+
 } // namespace proxddp
 
 #include "proxddp/core/results.hxx"
