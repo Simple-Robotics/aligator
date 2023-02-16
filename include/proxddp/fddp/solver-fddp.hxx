@@ -321,14 +321,12 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
   LogRecord record;
 
   std::size_t &iter = results.num_iters;
-  for (iter = 0; iter < max_iters; ++iter) {
+  results.traj_cost_ =
+      problem.evaluate(results.xs, results.us, workspace.problem_data);
 
+  for (iter = 0; iter <= max_iters; ++iter) {
     record.iter = iter + 1;
 
-    if (iter == 0) {
-      results.traj_cost_ =
-          problem.evaluate(results.xs, results.us, workspace.problem_data);
-    }
     problem.computeDerivatives(results.xs, results.us, workspace.problem_data);
     results.prim_infeas = computeInfeasibility(problem, results.xs, workspace);
     PROXDDP_RAISE_IF_NAN(results.prim_infeas);
@@ -345,6 +343,9 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
       results.conv = true;
       break;
     }
+
+    if (iter >= max_iters)
+      break;
 
     acceptGains(workspace, results);
 
