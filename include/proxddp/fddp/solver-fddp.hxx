@@ -13,7 +13,7 @@ SolverFDDP<Scalar>::SolverFDDP(const Scalar tol, VerboseLevel verbose,
                                const Scalar reg_init,
                                const std::size_t max_iters)
     : target_tol_(tol), reg_init(reg_init), verbose_(verbose),
-      max_iters(max_iters) {
+      max_iters(max_iters), force_initial_condition_(false) {
   ls_params.alpha_min = pow(2., -10.);
 }
 
@@ -300,7 +300,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
                               results.us);
   // optionally override xs[0]
   if (force_initial_condition_) {
-    results.xs[0] = problem.getInitState();
+    workspace.trial_xs[0] = problem.getInitState();
   }
   results.conv = false;
 
