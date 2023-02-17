@@ -16,6 +16,8 @@ void exposeFDDP() {
                                                     bp::no_init)
       .def_readonly("dxs", &Workspace::dxs)
       .def_readonly("dus", &Workspace::dus)
+      .def_readonly("d1", &Workspace::d1_)
+      .def_readonly("d2", &Workspace::d2_)
       .def("cycle_append", &Workspace::cycle_append,
            bp::args("self", "stage_model"),
            "From a StageModel object, allocate its data object, rotate the "

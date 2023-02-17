@@ -313,7 +313,8 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     return forwardPass(problem, results, workspace, alpha);
   };
 
-  Scalar d1_phi = 0., d2_phi = 0.;
+  Scalar &d1_phi = workspace.d1_;
+  Scalar &d2_phi = workspace.d2_;
   Scalar phi0;
   // linesearch model oracle
   const auto ls_model = [&](const Scalar alpha) {

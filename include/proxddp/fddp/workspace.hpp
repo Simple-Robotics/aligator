@@ -34,6 +34,8 @@ template <typename Scalar> struct WorkspaceFDDPTpl : WorkspaceBaseTpl<Scalar> {
   Scalar dg_ = 0.;
   Scalar dq_ = 0.;
   Scalar dv_ = 0.;
+  Scalar d1_ = 0.;
+  Scalar d2_ = 0.;
 
   explicit WorkspaceFDDPTpl(const TrajOptProblemTpl<Scalar> &problem);
 
