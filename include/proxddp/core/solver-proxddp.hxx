@@ -807,7 +807,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
 
   LogRecord iter_log;
 
-  std::size_t &k = results.num_iters;
+  std::size_t &iter = results.num_iters;
   std::size_t inner_step = 0;
   results.traj_cost_ =
       problem.evaluate(results.xs, results.us, workspace.problem_data);
@@ -815,7 +815,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
   results.merit_value_ =
       PDALFunction<Scalar>::evaluate(this, problem, results.lams, workspace);
 
-  while (k < max_iters) {
+  while (iter < max_iters) {
     // ASSUMPTION: last evaluation in previous iterate
     // was during linesearch, at the current candidate solution (x,u).
     /// TODO: make this smarter using e.g. some caching mechanism
@@ -855,28 +855,6 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     Scalar dphi0_analytical = PDALFunction<Scalar>::directionalDerivative(
         this, problem, results.lams, workspace);
     Scalar dphi0 = dphi0_analytical; // value used for LS & logging
-#ifndef NDEBUG
-    const auto merit_linear_eval = [&](Scalar a0) {
-      forward_linear_impl(problem, workspace, results, a0);
-      // computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
-      computeMultipliers(problem, workspace, workspace.trial_lams);
-      return merit_fun.evaluate(problem, workspace.trial_lams, workspace,
-                                workspace.problem_data);
-    };
-    const Scalar fd_eps = 1e-9;
-    Scalar phieps = merit_linear_eval(fd_eps);
-    Scalar dphi0_fd = (phieps - phi0) / fd_eps;
-    {
-      Scalar rel_err =
-          std::abs((dphi0_fd - dphi0_analytical) / dphi0_analytical);
-      std::FILE *fi = std::fopen("pddp.log", "a");
-      fmt::print(
-          fi,
-          " dphi0_ana={:.3e} / dphi0_fd={:.3e} / fd-a={:.3e} / rel={:.3e}\n",
-          dphi0_analytical, dphi0_fd, dphi0_fd - dphi0_analytical, rel_err);
-      std::fclose(fi);
-    }
-#endif
 
     // check if we can early stop
     if (std::abs(dphi0) <= ls_params.dphi_thresh)
@@ -886,41 +864,6 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     Scalar alpha_opt = 1;
     Scalar phi_new = linesearch_.run(merit_eval_fun, phi0, dphi0, alpha_opt);
 
-#ifndef NDEBUG
-    if (this->dump_linesearch_plot) {
-      int nalph = 50;
-      Scalar a = 0.;
-      Scalar da = 1. / (nalph + 1);
-      const char *LS_DEBUG_LOG_PATH = "linesearch_iter.csv";
-
-      const auto fname = LS_DEBUG_LOG_PATH;
-      std::FILE *file = 0;
-      if (k == 0) {
-        file = std::fopen(fname, "w");
-        fmt::print(file, "k,alpha,phi,dphi0,dphi0_fd\n");
-      } else {
-        file = std::fopen(fname, "a");
-      }
-      const char *fmtstr = "{:d}, {:.4e}, {:.5e}, {:.5e}, {:.5e}\n";
-      for (int i = 0; i <= nalph + 1; i++) {
-        fmt::print(file, fmtstr, k, a, merit_eval_fun(a), dphi0_analytical,
-                   dphi0_fd);
-        a += da;
-      }
-      if (alpha_opt < da) {
-        nalph = 80.;
-        VectorXs als;
-        als.setLinSpaced(nalph, 0., 0.5 * da);
-        for (int i = 1; i < als.size(); i++) {
-          fmt::print(file, fmtstr, k, als(i), merit_eval_fun(als(i)),
-                     dphi0_analytical, dphi0_fd);
-        }
-      }
-      fmt::print(file, fmtstr, k, alpha_opt, merit_eval_fun(alpha_opt),
-                 dphi0_analytical, dphi0_fd);
-      std::fclose(file);
-    }
-#endif
     // accept the step
     results.xs = workspace.trial_xs;
     results.us = workspace.trial_us;
@@ -931,7 +874,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     PROXDDP_RAISE_IF_NAN_NAME(results.merit_value_, "results.merit_value");
     PROXDDP_RAISE_IF_NAN_NAME(results.traj_cost_, "results.traj_cost");
 
-    iter_log.iter = k + 1;
+    iter_log.iter = iter + 1;
     iter_log.al_iter = results.al_iter + 1;
     iter_log.xreg = xreg_;
     iter_log.inner_crit = workspace.inner_criterion;
@@ -948,7 +891,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     invokeCallbacks(workspace, results);
     logger.log(iter_log);
 
-    k++;
+    iter++;
     inner_step++;
   }
   return false;
