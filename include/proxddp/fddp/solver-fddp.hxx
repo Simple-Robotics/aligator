@@ -14,7 +14,7 @@ SolverFDDP<Scalar>::SolverFDDP(const Scalar tol, VerboseLevel verbose,
                                const std::size_t max_iters)
     : target_tol_(tol), reg_init(reg_init), verbose_(verbose),
       max_iters(max_iters), force_initial_condition_(false) {
-  ls_params.alpha_min = pow(2., -10.);
+  ls_params.alpha_min = pow(2., -9.);
 }
 
 template <typename Scalar>
