@@ -99,7 +99,6 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem,
 
   if (is_x0_fixed_) {
     workspace.pd_step_[0].setZero();
-    workspace.trial_xs[0] = problem.getInitState();
     workspace.trial_lams[0].setZero();
     kkt_rhs.setZero();
     workspace.stage_inner_crits(0) = 0.;
@@ -557,9 +556,11 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
     compute_dir_x0(problem, workspace, results);
     const StageModel &stage = *problem.stages_[0];
     // use lams[0] as a tmp var for alpha * dx0
-    lams[0] = alpha * workspace.dxs[0];
-    stage.xspace().integrate(results.xs[0], lams[0], xs[0]);
-    lams[0] = results.lams[0] + alpha * workspace.dlams[0];
+    if (!is_x0_fixed_) {
+      lams[0] = alpha * workspace.dxs[0];
+      stage.xspace().integrate(results.xs[0], lams[0], xs[0]);
+      lams[0] = results.lams[0] + alpha * workspace.dlams[0];
+    }
   }
 
   for (std::size_t i = 0; i < nsteps; i++) {
@@ -673,10 +674,9 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
     }
   }
 
-#ifndef NDEBUG
-  std::FILE *fi = std::fopen("pddp.log", "w");
-  std::fclose(fi);
-#endif
+  if (is_x0_fixed_) {
+    workspace.trial_xs[0] = problem.getInitState();
+  }
 
   logger.active = (verbose_ > 0);
   logger.start();
