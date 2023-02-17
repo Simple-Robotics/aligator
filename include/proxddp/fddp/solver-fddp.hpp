@@ -68,6 +68,10 @@ template <typename Scalar> struct SolverFDDP {
   VerboseLevel verbose_;
   /// Maximum number of iterations for the solver.
   std::size_t max_iters;
+  /// Crocoddyl's FDDP implementation forces the initial guess to satisfy the
+  /// initial condition. This flag switches between that behaviour and not
+  /// tampering with the given initial guess.
+  bool force_initial_condition_ = true;
 
   BaseLogger logger{false};
 

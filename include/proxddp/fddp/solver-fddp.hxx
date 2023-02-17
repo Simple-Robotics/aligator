@@ -160,9 +160,8 @@ Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem,
   const ProblemData &pd = workspace.problem_data;
   std::vector<VectorXs> &fs = workspace.dyn_slacks;
 
-  const VectorXs &x0 = problem.getInitState();
   const auto &space = problem.stages_[0]->xspace_;
-  space->difference(xs[0], x0, fs[0]);
+  space->difference(xs[0], problem.getInitState(), fs[0]);
 
 #pragma omp parallel for num_threads(problem.getNumThreads())
   for (std::size_t i = 0; i < nsteps; i++) {
@@ -299,6 +298,10 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
 
   check_trajectory_and_assign(problem, xs_init, us_init, results.xs,
                               results.us);
+  // optionally override xs[0]
+  if (force_initial_condition_) {
+    results.xs[0] = problem.getInitState();
+  }
   results.conv = false;
 
   logger.active = verbose_ > 0;
