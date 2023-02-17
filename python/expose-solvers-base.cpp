@@ -64,10 +64,10 @@ void exposeBase() {
       .def_readonly("traj_cost", &ResultsBase::traj_cost_, "Trajectory cost.")
       .def_readonly("merit_value", &ResultsBase::merit_value_,
                     "Merit function value.")
-      .def("controlFeedbacks", &ResultsBase::getCtrlFeedbacks,
+      .def("controlFeedbacks", &ResultsBase::getCtrlFeedbacks, bp::args("self"),
            "Get the control feedback matrices.")
       .def("controlFeedforwards", &ResultsBase::getCtrlFeedforwards,
-           "Get the control feedforward gains.")
+           bp::args("self"), "Get the control feedforward gains.")
       .def(PrintableVisitor<ResultsBase>());
 }
 
