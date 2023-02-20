@@ -8,9 +8,12 @@ cmake_policy(SET CMP0057 NEW)
 
 # handle cpp examples
 set(EXAMPLES_CPP
+    "talos-arm.cpp"
     "se2-car.cpp")
 
 set(BENCHMARKS_CPP
+    "bench/croc-talos-arm.cpp"
+    "bench/multithreading.cpp"
     "bench/lqr.cpp")
 
 set(EXAMPLES_WITH_CROC_CPP
@@ -19,24 +22,14 @@ set(EXAMPLES_WITH_CROC_CPP
     "talos-arm.cpp"
     )
 
-list(APPEND EXAMPLES_CPP ${BENCHMARKS_CPP})
-
-if(BUILD_CROCODDYL_COMPAT)
-  list(APPEND EXAMPLES_CPP ${EXAMPLES_WITH_CROC_CPP})
-  list(APPEND BENCHMARKS_CPP "bench/croc-talos-arm.cpp")
-  list(APPEND BENCHMARKS_CPP "bench/multithreading.cpp")
-endif(BUILD_CROCODDYL_COMPAT)
-list(REMOVE_DUPLICATES EXAMPLES_CPP)
-
 message(STATUS "Examples CPP: ${EXAMPLES_CPP}")
+message(STATUS "Benchmarks CPP: ${BENCHMARKS_CPP}")
 
-foreach(exfile ${EXAMPLES_CPP})
-  get_filename_component(exname ${exfile} NAME_WE)
-  if (${exfile} IN_LIST BENCHMARKS_CPP)
-    set(exname "bench-${exname}")
-  else()
-    set(exname "example-${exname}")
-  endif()
+if(BUILD_WITH_CROCODDYL_SUPPORT)
+  ADD_PROJECT_DEPENDENCY(crocoddyl REQUIRED)
+endif()
+
+macro(create_ex_or_bench exfile exname)
 
   ADD_UNIT_TEST(${exname} ${exfile})
   message(STATUS "Adding cpp example ${exname}")
@@ -47,15 +40,38 @@ foreach(exfile ${EXAMPLES_CPP})
   if(BUILD_WITH_OPENMP_SUPPORT)
     target_link_libraries(${exname} PRIVATE OpenMP::OpenMP_CXX)
   endif()
+endmacro()
 
-  if (${exfile} IN_LIST BENCHMARKS_CPP)
-    target_link_libraries(${exname} PRIVATE benchmark::benchmark)
-  endif()
+# Create an example
+function(create_example exfile)
+  get_filename_component(exname ${exfile} NAME_WE)
+  set(exname "example-${exname}")
+  create_ex_or_bench(${exfile} ${exname})
 
   if (${exfile} IN_LIST EXAMPLES_WITH_CROC_CPP)
-    ADD_PROJECT_DEPENDENCY(crocoddyl REQUIRED)
     target_link_libraries(${exname} PUBLIC ${CROC_COMPAT_LIB_NAME})
   endif()
+endfunction()
+
+# Create a benchmark
+function(create_bench exfile)
+  get_filename_component(exname ${exfile} NAME_WE)
+  set(exname "bench-${exname}")
+  create_ex_or_bench(${exfile} ${exname})
+
+  target_link_libraries(${exname} PRIVATE benchmark::benchmark)
+
+  if (${exfile} IN_LIST EXAMPLES_WITH_CROC_CPP)
+    target_link_libraries(${exname} PUBLIC ${CROC_COMPAT_LIB_NAME})
+  endif()
+endfunction()
+
+foreach(exfile ${EXAMPLES_CPP})
+  create_example(${exfile})
+endforeach(exfile)
+
+foreach(exfile ${BENCHMARKS_CPP})
+  create_bench(${exfile})
 endforeach(exfile)
 
 if(BUILD_CROCODDYL_COMPAT)
