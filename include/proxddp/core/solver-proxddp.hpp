@@ -7,6 +7,7 @@
 #include "proxddp/core/proximal-penalty.hpp"
 #include "proxddp/core/linesearch.hpp"
 #include "proxddp/core/helpers-base.hpp"
+#include "proxddp/core/enums.hpp"
 #include "proxddp/utils/exceptions.hpp"
 #include "proxddp/utils/logger.hpp"
 #include "proxddp/utils/forward-dyn.hpp"
@@ -15,8 +16,6 @@
 #include <proxnlp/bcl-params.hpp>
 
 namespace proxddp {
-
-enum class MultiplierUpdateMode { NEWTON, PRIMAL, PRIMAL_DUAL };
 
 using proxnlp::BCLParams;
 

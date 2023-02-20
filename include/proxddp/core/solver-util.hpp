@@ -9,17 +9,6 @@
 
 namespace proxddp {
 
-enum class RolloutType {
-  /// Linear rollout
-  LINEAR,
-  /// Nonlinear rollout, using the full dynamics
-  NONLINEAR
-};
-
-enum InertiaFlag { INERTIA_OK, INERTIA_BAD, INERTIA_CRITICAL };
-
-enum class HessianApprox { EXACT, GAUSS_NEWTON };
-
 /// @brief Default-intialize a trajectory to the neutral states for each state
 /// space at each stage.
 template <typename Scalar>

@@ -5,11 +5,9 @@
 #include "proxddp/core/traj-opt-problem.hpp"
 #include "proxddp/core/workspace.hpp"
 #include "proxddp/core/results.hpp"
+#include "proxddp/core/enums.hpp"
 
 namespace proxddp {
-
-/// Whether to use merit functions in primal or primal-dual mode.
-enum class LinesearchMode { PRIMAL = 0, PRIMAL_DUAL = 1 };
 
 template <typename Scalar>
 Scalar cost_directional_derivative(const WorkspaceTpl<Scalar> &workspace,

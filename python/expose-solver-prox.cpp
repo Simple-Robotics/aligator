@@ -41,27 +41,6 @@ void exposeProxDDP() {
 
   using SolverType = SolverProxDDP<Scalar>;
 
-  bp::enum_<MultiplierUpdateMode>(
-      "MultiplierUpdateMode", "Enum for the kind of multiplier update to use.")
-      .value("NEWTON", MultiplierUpdateMode::NEWTON)
-      .value("PRIMAL", MultiplierUpdateMode::PRIMAL)
-      .value("PRIMAL_DUAL", MultiplierUpdateMode::PRIMAL_DUAL);
-
-  bp::enum_<LinesearchMode>("LinesearchMode", "Linesearch mode.")
-      .value("PRIMAL", LinesearchMode::PRIMAL)
-      .value("PRIMAL_DUAL", LinesearchMode::PRIMAL_DUAL);
-
-  bp::enum_<RolloutType>("RolloutType", "Rollout type.")
-      .value("ROLLOUT_LINEAR", RolloutType::LINEAR)
-      .value("ROLLOUT_NONLINEAR", RolloutType::NONLINEAR)
-      .export_values();
-
-  bp::enum_<HessianApprox>("HessianApprox",
-                           "Level of approximation for te Hessian.")
-      .value("HESSIAN_EXACT", HessianApprox::EXACT)
-      .value("HESSIAN_GAUSS_NEWTON", HessianApprox::GAUSS_NEWTON)
-      .export_values();
-
   bp::class_<SolverType, boost::noncopyable>(
       "SolverProxDDP",
       "A proximal, augmented Lagrangian solver, using a DDP-type scheme to "
