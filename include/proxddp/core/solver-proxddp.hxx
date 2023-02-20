@@ -1,6 +1,6 @@
 /// @file solver-proxddp.hxx
 /// @brief  Implementations for the trajectory optimization algorithm.
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
 #include "proxddp/core/solver-proxddp.hpp"
@@ -95,24 +95,29 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem,
   const VectorXs &lamin0 = results.lams[0];
   const CostData &proxdata0 = *workspace.prox_datas[0];
   MatrixXs &kkt_mat = workspace.kkt_mats_[0];
-  auto kkt_rhs = workspace.kkt_rhs_[0].col(0);
+  VectorRef kkt_rhs = workspace.kkt_rhs_[0].col(0);
+  auto kktx = kkt_rhs.head(ndx0);
+  assert(kkt_rhs.size() == ndx0 + ndual0);
+  assert(kkt_mat.cols() == ndx0 + ndual0);
 
   if (is_x0_fixed_) {
     workspace.pd_step_[0].setZero();
     workspace.trial_lams[0].setZero();
     kkt_rhs.setZero();
-    workspace.stage_inner_crits(0) = 0.;
-    workspace.stage_dual_infeas(0) = 0.;
 
   } else {
-    auto kktx = kkt_rhs.head(ndx0);
     auto kktl = kkt_rhs.tail(ndual0);
     kktx = vp.Vx_;
     kktx.noalias() += init_data.Jx_.transpose() * lamin0;
     kktl = mu() * (lampl0 - lamin0);
 
-    kkt_mat.topLeftCorner(ndx0, ndx0) = vp.Vxx_ + rho() * proxdata0.Lxx_;
-    kkt_mat.topLeftCorner(ndx0, ndx0) += init_data.Hxx_;
+    auto kxx = kkt_mat.topLeftCorner(ndx0, ndx0);
+
+    kktx = vp.Vxx_;
+    kktx += init_data.Hxx_;
+    if (rho() > 0)
+      kktx += rho() * proxdata0.Lxx_;
+
     kkt_mat.topRightCorner(ndx0, ndual0) = init_data.Jx_.transpose();
     kkt_mat.bottomLeftCorner(ndual0, ndx0) = init_data.Jx_;
     kkt_mat.bottomRightCorner(ndual0, ndual0).diagonal().array() = -mu();
@@ -123,11 +128,6 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem,
         ldlt, kkt_mat, kkt_rhs, workspace.kkt_resdls_[0], workspace.pd_step_[0],
         refinement_threshold_, max_refinement_steps_);
     PROXDDP_NOMALLOC_BEGIN;
-
-    const ProxData &proxdata = *workspace.prox_datas[0];
-    workspace.stage_inner_crits(0) = math::infty_norm(kkt_rhs);
-    workspace.stage_dual_infeas(0) =
-        math::infty_norm(kktx - rho() * proxdata.Lx_);
   }
   PROXDDP_NOMALLOC_END;
 }
@@ -964,6 +964,21 @@ void SolverProxDDP<Scalar>::computeCriterion(const Problem &problem,
 
   const std::size_t nsteps = workspace.nsteps;
   TrajOptData &prob_data = workspace.problem_data;
+
+  {
+    const int ndx = problem.init_state_error_->ndx1;
+    VectorRef kkt_rhs = workspace.kkt_rhs_[0].col(0);
+    auto kktx = kkt_rhs.head(ndx);
+    if (is_x0_fixed_) {
+      workspace.stage_inner_crits(0) = 0.;
+      workspace.stage_dual_infeas(0) = 0.;
+    } else {
+      const ProxData &proxdata = *workspace.prox_datas[0];
+      workspace.stage_inner_crits(0) = math::infty_norm(kkt_rhs);
+      workspace.stage_dual_infeas(0) =
+          math::infty_norm(kktx - rho() * proxdata.Lx_);
+    }
+  }
 
   for (std::size_t i = 1; i <= nsteps; i++) {
     const StageModel &st = *problem.stages_[i - 1];

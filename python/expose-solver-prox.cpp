@@ -80,11 +80,6 @@ void exposeProxDDP() {
       .def("setLinesearchMuLowerBound", &SolverType::setLinesearchMuLowerBound,
            bp::args("self", "mu_lower_bound"),
            "Set an appropriate lower bound for mu during linesearch.")
-#ifndef NDEBUG
-      .def_readwrite("dump_linesearch_plot", &SolverType::dump_linesearch_plot,
-                     "[Debug] Dump a plot of the linesearch support function "
-                     "at every iteration.")
-#endif
       .def(SolverVisitor<SolverType>())
       .def("run", &SolverType::run,
            prox_run_overloads(
