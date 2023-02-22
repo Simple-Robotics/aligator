@@ -32,6 +32,18 @@ void exposeProxDDP() {
       .def_readonly("kkt_rhs", &Workspace::kkt_rhs_)
       .def_readonly("trial_lams", &Workspace::trial_lams)
       .def_readonly("inner_crit", &Workspace::inner_criterion)
+      .def(
+          "get_ldlt",
+          +[](const Workspace &ws,
+              std::size_t i) -> proxnlp::linalg::ldlt_base<Scalar> const & {
+            if (i >= ws.ldlts_.size()) {
+              PyErr_SetString(PyExc_IndexError, "Index out of bounds.");
+              bp::throw_error_already_set();
+            }
+            return *ws.ldlts_[(std::size_t)i];
+          },
+          bp::return_internal_reference<>(), bp::args("self", "i"),
+          "Get the LDLT algorithm for the i-th linear problem.")
       .def_readonly("stage_prim_infeas", &Workspace::stage_prim_infeas)
       .def_readonly("stage_dual_infeas", &Workspace::stage_dual_infeas)
       .def_readonly("stage_inner_crits", &Workspace::stage_inner_crits)
