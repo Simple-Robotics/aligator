@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "proxddp"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "numpy",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-cov",
+]
+examples = [
+    "matplotlib",
+    "casadi",
+    "typed-argument-parser",
+    "meshcat @ git+https://github.com/inria-paris-robotic-lab/meshcat-python"
+]
+
+[tool.setuptools]
+packages = ["proxddp"]
+package-dir = {"" = "python"}
+
+[tool.ruff]
+select = ["E", "F"]
+ignore = ["E501"]
+exclude = [".git", "build*", "cmake"]
+fixable = ["E"]
+
+[tool.ruff.per-file-ignores]
+"python/proxddp/__init__.py" = ["F401", "F403"]

@@ -26,7 +26,9 @@ repos:
     rev: 22.8.0
     hooks:
     -   id: black
--   repo: https://github.com/PyCQA/flake8
-    rev: 5.0.4
+-   repo: https://github.com/charliermarsh/ruff-pre-commit
+    # Ruff version.
+    rev: 'v0.0.245'
     hooks:
-    -   id: flake8
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
