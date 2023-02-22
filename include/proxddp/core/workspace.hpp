@@ -55,8 +55,6 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   std::vector<MatrixXs> kkt_rhs_;
   /// Linear system residual buffers: used for iterative refinement
   std::vector<MatrixXs> kkt_resdls_;
-  /// Inertia for KKT matrix checks.
-  std::array<std::size_t, 3> inertia;
 
   using LDLT = proxnlp::linalg::ldlt_base<Scalar>;
   /// LDLT solvers

@@ -501,9 +501,9 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   // check inertia
   {
     PROXDDP_RAISE_IF_NAN_NAME(ldlt.vectorD(), "ldlt.vectorD()");
-    math::compute_inertia(ldlt.vectorD(), workspace.inertia.data());
-    if ((workspace.inertia[1] > 0U) ||
-        (workspace.inertia[2] != (std::size_t)ndual)) {
+    std::array<std::size_t, 3> inertia;
+    math::compute_inertia(ldlt.vectorD(), inertia.data());
+    if ((inertia[1] > 0U) || (inertia[2] != (std::size_t)ndual)) {
       return false;
     }
   }
