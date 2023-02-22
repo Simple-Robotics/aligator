@@ -7,17 +7,6 @@ from . import utils
 from proxnlp import (
     constraints,
     manifolds,
-    VerboseLevel,
-    LinesearchStrategy,
-    LinesearchOptions,
-    LSInterpolation,
-    LDLTChoice,
-    LDLT_BLOCKED,
-    LDLT_DENSE,
-    LDLT_EIGEN,
-    QUIET,
-    VERBOSE,
-    VERYVERBOSE,
 )
 
 

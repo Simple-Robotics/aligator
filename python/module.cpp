@@ -1,8 +1,8 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "proxddp/python/fwd.hpp"
-#include "proxddp/core/enums.hpp"
 #include "proxddp/python/utils.hpp"
 
+#include "proxddp/core/enums.hpp"
 #include "proxddp/version.hpp"
 #include "proxddp/threads.hpp"
 
@@ -13,6 +13,8 @@
 namespace proxddp {
 namespace python {
 void exposeEnums() {
+  register_enum_symlink<VerboseLevel>(true);
+
   bp::enum_<MultiplierUpdateMode>(
       "MultiplierUpdateMode", "Enum for the kind of multiplier update to use.")
       .value("NEWTON", MultiplierUpdateMode::NEWTON)
@@ -29,7 +31,7 @@ void exposeEnums() {
       .export_values();
 
   bp::enum_<HessianApprox>("HessianApprox",
-                           "Level of approximation for te Hessian.")
+                           "Level of approximation for the Hessian.")
       .value("HESSIAN_EXACT", HessianApprox::EXACT)
       .value("HESSIAN_GAUSS_NEWTON", HessianApprox::GAUSS_NEWTON)
       .export_values();

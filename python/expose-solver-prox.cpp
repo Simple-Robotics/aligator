@@ -1,4 +1,5 @@
 #include "proxddp/python/fwd.hpp"
+#include "proxddp/python/utils.hpp"
 
 #include "proxddp/core/solver-proxddp.hpp"
 
@@ -12,6 +13,14 @@ void exposeProxDDP() {
   using context::Scalar;
   using context::TrajOptProblem;
   using context::Workspace;
+
+  register_enum_symlink<proxnlp::LDLTChoice>(true);
+  eigenpy::register_symbolic_link_to_registered_type<
+      Linesearch<Scalar>::Options>();
+  eigenpy::register_symbolic_link_to_registered_type<LinesearchStrategy>();
+  eigenpy::register_symbolic_link_to_registered_type<
+      proxnlp::LSInterpolation>();
+  eigenpy::register_symbolic_link_to_registered_type<BCLParams<Scalar>>();
 
   bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>,
              boost::noncopyable>(

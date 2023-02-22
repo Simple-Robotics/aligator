@@ -2,7 +2,7 @@
 
 namespace proxddp {
 
-enum class RolloutType {
+enum struct RolloutType {
   /// Linear rollout
   LINEAR,
   /// Nonlinear rollout, using the full dynamics
