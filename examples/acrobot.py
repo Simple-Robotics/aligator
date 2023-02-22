@@ -2,19 +2,20 @@ import example_robot_data as erd
 import proxddp
 from proxddp import manifolds, dynamics, constraints
 import numpy as np
+import pinocchio as pin
 
 from common import ArgsBase
 
 
 class Args(ArgsBase):
-    pass
+    bounds: bool = False
 
 
 args = Args().parse_args()
 print(args)
 
 robot = erd.load("double_pendulum_continuous")
-rmodel = robot.model
+rmodel: pin.Model = robot.model
 nq = rmodel.nq
 nv = rmodel.nv
 
@@ -46,9 +47,19 @@ term_cost = proxddp.CostStack(space.ndx, nu)
 Tf = 1.0
 nsteps = int(Tf / timestep)
 
+ubound = 6.0
+umin = -ubound * np.ones(nu)
+umax = +ubound * np.ones(nu)
+
 stages = []
 for i in range(nsteps):
-    stages.append(proxddp.StageModel(cost, dyn_model))
+    stm = proxddp.StageModel(cost, dyn_model)
+    if args.bounds:
+        stm.addConstraint(
+            func=proxddp.ControlErrorResidual(space.ndx, nu),
+            cstr_set=constraints.BoxConstraint(umin, umax),
+        )
+    stages.append(stm)
 
 problem = proxddp.TrajOptProblem(x0, stages, term_cost)
 term_cstr = proxddp.StageConstraint(
@@ -57,21 +68,28 @@ term_cstr = proxddp.StageConstraint(
 problem.addTerminalConstraint(term_cstr)
 
 tol = 1e-3
-mu_init = 1e-2
-rho_init = 1e-8
-solver = proxddp.SolverProxDDP(
-    tol, mu_init=mu_init, rho_init=rho_init, verbose=proxddp.VerboseLevel.VERBOSE
-)
-solver.rollout_type = proxddp.ROLLOUT_NONLINEAR
+mu_init = 1e-1
+solver = proxddp.SolverProxDDP(tol, mu_init=mu_init, verbose=proxddp.VERBOSE)
+solver.max_iters = 200
 solver.setup(problem)
 
 us_init = [np.zeros(nu) for _ in range(nsteps)]
 xs_init = proxddp.rollout(dyn_model, x0, us_init).tolist()
 conv = solver.run(problem, xs_init, us_init)
-assert conv
 
-result = solver.getResults()
-print(result)
+res = solver.getResults()
+print(res)
+
+if args.plot:
+    import matplotlib.pyplot as plt
+
+    times = np.linspace(0, Tf, nsteps)
+    plt.plot(times, res.us)
+    if args.bounds:
+        plt.axhline(-ubound, *plt.xlim(), ls="--", c="k")
+        plt.axhline(+ubound, *plt.xlim(), ls="--", c="k")
+        plt.title("Controls")
+    plt.show()
 
 
 if args.display:
@@ -83,7 +101,8 @@ if args.display:
     vizer.initViewer(open=True, loadModel=True)
 
     vizer.setCameraPreset("acrobot")
-    qs = [x[:nq] for x in result.xs]
+    vizer.setBackgroundColor()
+    qs = [x[:nq] for x in res.xs]
 
     print("[press enter]")
     for i in range(4):
