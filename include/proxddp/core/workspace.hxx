@@ -79,6 +79,14 @@ allocate_ldlt_algorithm(const std::vector<isize> &nprims,
     block_ptr->updateBlockPermutationMatrix(in);
     return ldlt_ptr(block_ptr);
   }
+  case LDLTChoice::PROXSUITE: {
+#ifdef PROXNLP_ENABLE_PROXSUITE_LDLT
+    return ldlt_ptr(
+        new proxnlp::linalg::ProxSuiteLDLTWrapper<Scalar>(size, nprims[0] + 2));
+#else
+    PROXDDP_RUNTIME_ERROR("ProxNLP was not compiled with ProxSuite support.");
+#endif
+  }
   default:
     return nullptr;
   }
