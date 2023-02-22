@@ -8,11 +8,7 @@
 
 #include <array>
 
-#if PROXDDP_CUSTOM_LDLT
 #include <proxnlp/ldlt-allocator.hpp>
-#else
-#include <Eigen/Cholesky>
-#endif
 
 namespace proxddp {
 
@@ -62,15 +58,9 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   /// Inertia for KKT matrix checks.
   std::array<std::size_t, 3> inertia;
 
-#ifndef PROXDDP_CUSTOM_LDLT
-  using LDLT = Eigen::LDLT<MatrixXs, Eigen::Lower>;
-  /// LDLT solvers
-  std::vector<LDLT> ldlts_;
-#else
   using LDLT = proxnlp::linalg::ldlt_base<Scalar>;
   /// LDLT solvers
   std::vector<unique_ptr<LDLT>> ldlts_;
-#endif
 
   /// @}
 

@@ -17,7 +17,8 @@ template <typename Scalar> struct custom_block_ldlt_allocator {
 
   static BlockLDLT *create(const std::vector<isize> &nprims,
                            const std::vector<isize> &nduals,
-                           bool primal_is_block_diagonal) {
+                           bool primal_is_block_diagonal,
+                           bool explicit_dynamics_block = true) {
     using proxnlp::linalg::BlockKind;
     using proxnlp::linalg::SymbolicBlockMatrix;
 
@@ -34,6 +35,10 @@ template <typename Scalar> struct custom_block_ldlt_allocator {
           }
         }
       }
+    }
+    if (explicit_dynamics_block && structure.nsegments() >= 3) {
+      structure(2, 1) = BlockKind::Diag;
+      structure(1, 2) = BlockKind::Diag;
     }
     isize size = get_total_dim_helper(nprims, nduals);
     return new BlockLDLT(size, structure);
