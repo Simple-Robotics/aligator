@@ -52,7 +52,6 @@ endif()
 # --- OPTIONS ----------------------------------------
 option(BUILD_PYTHON_INTERFACE "Build the Python bindings" ON)
 option(BUILD_WITH_VERSION_SUFFIX "Build libraries with version appended to suffix" OFF)
-option(USE_CUSTOM_LDLT "Use our custom LDLT solver" ON)
 option(ENABLE_TEMPLATE_INSTANTIATION "Template instantiation of the main library" ON)
 
 # --- OPTIONAL DEPENDENCIES -------------------------
@@ -189,12 +188,8 @@ function(create_library)
     target_link_libraries(${PROJECT_NAME} PUBLIC pinocchio::pinocchio)
   endif(BUILD_WITH_PINOCCHIO_SUPPORT)
 
-  if(USE_CUSTOM_LDLT)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC -DPROXDDP_CUSTOM_LDLT)
-  endif(USE_CUSTOM_LDLT)
-
   if(BUILD_WITH_OPENMP_SUPPORT)
-    add_compile_definitions(PROXDDP_MULTITHREADING)
+    add_definitions(-DPROXDDP_MULTITHREADING)
     target_link_libraries(${PROJECT_NAME} PRIVATE OpenMP::OpenMP_CXX)
   endif(BUILD_WITH_OPENMP_SUPPORT)
 
