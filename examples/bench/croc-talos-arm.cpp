@@ -110,6 +110,10 @@ int main(int argc, char **argv) {
   registerWithOpts("proxddp::PROXDDP_DENSE", &BM_proxddp<LDLTChoice::DENSE>);
   registerWithOpts("proxddp::PROXDDP_BLOCK", &BM_proxddp<LDLTChoice::BLOCKED>);
   registerWithOpts("proxddp::PROXDDP_EIGLDL", &BM_proxddp<LDLTChoice::EIGEN>);
+#ifdef PROXNLP_ENABLE_PROXSUITE_LDLT
+  registerWithOpts("proxddp::PROXDDP_PSUITE",
+                   &BM_proxddp<LDLTChoice::PROXSUITE>);
+#endif
 
   benchmark::Initialize(&argc, argv);
   if (benchmark::ReportUnrecognizedArguments(argc, argv)) {
