@@ -17,14 +17,16 @@ using proxddp::SolverProxDDP;
 
 constexpr double TOL = 1e-16;
 constexpr std::size_t maxiters = 10;
-constexpr std::size_t DEFAULT_NUM_THREADS = 1;
+#define DEFAULT_NUM_THREADS = 1;
 
 const bool verbose = false;
 
 static void BM_croc_fddp(benchmark::State &state) {
   const std::size_t nsteps = (std::size_t)state.range(0);
   auto croc_problem = defineCrocoddylProblem(nsteps);
+#ifdef CROCODDYL_WITH_MULTITHREADING
   croc_problem->set_nthreads((int)DEFAULT_NUM_THREADS);
+#endif
 
   std::vector<VectorXd> xs_i;
   std::vector<VectorXd> us_i;
@@ -49,7 +51,9 @@ static void BM_prox_fddp(benchmark::State &state) {
   const std::size_t nsteps = (std::size_t)state.range(0);
   auto croc_problem = defineCrocoddylProblem(nsteps);
   auto prob_wrap = proxddp::compat::croc::convertCrocoddylProblem(croc_problem);
+#ifdef PROXDDP_MULTITHREADING
   prob_wrap.setNumThreads(DEFAULT_NUM_THREADS);
+#endif
 
   std::vector<VectorXd> xs_i;
   std::vector<VectorXd> us_i;
@@ -71,7 +75,9 @@ template <LDLTChoice choice> static void BM_proxddp(benchmark::State &state) {
   using proxddp::LDLTChoice;
   auto croc_problem = defineCrocoddylProblem(nsteps);
   auto prob_wrap = proxddp::compat::croc::convertCrocoddylProblem(croc_problem);
+#ifdef PROXDDP_MULTITHREADING
   prob_wrap.setNumThreads(DEFAULT_NUM_THREADS);
+#endif
 
   std::vector<VectorXd> xs_i;
   std::vector<VectorXd> us_i;
