@@ -160,7 +160,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 #ifndef PROXDDP_MULTITHREADING
     fmt::print("{} does nothing: PROXDDP was not compiled with multithreading "
                "support.\n",
-               __FUNC__);
+               __FUNCTION__);
 #endif
     num_threads_ = num_threads;
   }
