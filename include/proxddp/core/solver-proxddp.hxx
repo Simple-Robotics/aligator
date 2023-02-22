@@ -96,7 +96,7 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem,
   const CostData &proxdata0 = *workspace.prox_datas[0];
   MatrixXs &kkt_mat = workspace.kkt_mats_[0];
   VectorRef kkt_rhs = workspace.kkt_rhs_[0].col(0);
-  auto kktx = kkt_rhs.head(ndx0);
+  VectorRef kktx = kkt_rhs.head(ndx0);
   assert(kkt_rhs.size() == ndx0 + ndual0);
   assert(kkt_mat.cols() == ndx0 + ndual0);
 
@@ -111,12 +111,10 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem,
     kktx.noalias() += init_data.Jx_.transpose() * lamin0;
     kktl = mu() * (lampl0 - lamin0);
 
-    auto kxx = kkt_mat.topLeftCorner(ndx0, ndx0);
-
-    kktx = vp.Vxx_;
-    kktx += init_data.Hxx_;
+    auto kkt_xx = kkt_mat.topLeftCorner(ndx0, ndx0);
+    kkt_xx = vp.Vxx_ + init_data.Hxx_;
     if (rho() > 0)
-      kktx += rho() * proxdata0.Lxx_;
+      kkt_xx += rho() * proxdata0.Lxx_;
 
     kkt_mat.topRightCorner(ndx0, ndual0) = init_data.Jx_.transpose();
     kkt_mat.bottomLeftCorner(ndual0, ndx0) = init_data.Jx_;
