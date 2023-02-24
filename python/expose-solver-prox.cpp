@@ -32,7 +32,6 @@ void exposeProxDDP() {
       .def_readonly("kkt_rhs", &Workspace::kkt_rhs_)
       .def_readonly("trial_lams", &Workspace::trial_lams)
       .def_readonly("inner_crit", &Workspace::inner_criterion)
-      .def_readonly("Qus_ddp", &Workspace::Qus_ddp_)
       .def(
           "get_ldlt",
           +[](const Workspace &ws,
