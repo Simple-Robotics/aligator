@@ -22,17 +22,18 @@ using Eigen::VectorXd;
 
 const std::size_t max_iters = 2;
 
-TrajOptProblem define_problem(const std::size_t nsteps, const int dim = 2,
-                              const int nu = 2) {
+TrajOptProblem define_problem(const std::size_t nsteps, const int dim = 20,
+                              const int nu = 20) {
   MatrixXd A(dim, dim);
   MatrixXd B(dim, nu);
   VectorXd c_(dim);
   A.setIdentity();
-  B << -0.6, 0.3, 0., 1.;
-  c_ << 0.1, -0.2;
+  B.setIdentity();
+  c_.setConstant(0.1);
 
   MatrixXd w_x(dim, dim), w_u(nu, nu);
-  w_x << 2., 0., 0., 1.;
+  w_x.setIdentity();
+  w_x(0, 0) = 2.;
   w_u.setIdentity();
   w_u *= 1e-2;
 
@@ -46,7 +47,7 @@ TrajOptProblem define_problem(const std::size_t nsteps, const int dim = 2,
   auto term_cost = rcost;
 
   VectorXd x0(dim);
-  x0 << 1., -0.1;
+  x0.setRandom();
 
   TrajOptProblem problem(x0, nu, space, term_cost);
   for (std::size_t i = 0; i < nsteps; i++) {
@@ -95,6 +96,7 @@ static void BM_lqr_fddp(benchmark::State &state) {
 }
 
 int main(int argc, char **argv) {
+  constexpr auto unit = benchmark::kMillisecond;
 
   auto registerOpts = [&](auto name, auto fn) {
     return benchmark::RegisterBenchmark(name, fn)
@@ -102,7 +104,7 @@ int main(int argc, char **argv) {
         ->RangeMultiplier(2)
         ->Range(1 << 3, 1 << 9)
         ->Complexity()
-        ->Unit(benchmark::kMicrosecond)
+        ->Unit(unit)
         ->UseRealTime();
   };
 
