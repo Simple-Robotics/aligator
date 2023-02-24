@@ -18,8 +18,7 @@ SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
                                      VerboseLevel verbose,
                                      HessianApprox hess_approx)
     : target_tol_(tol), mu_init(mu_init), rho_init(rho_init), verbose_(verbose),
-      hess_approx_(hess_approx), rollout_type_(RolloutType::NONLINEAR),
-      is_x0_fixed_(true), ldlt_algo_choice_(LDLTChoice::DENSE),
+      hess_approx_(hess_approx), ldlt_algo_choice_(LDLTChoice::DENSE),
       max_iters(max_iters), linesearch_(ls_params) {
   ls_params.interp_type = proxnlp::LSInterpolation::CUBIC;
 }
@@ -100,7 +99,7 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem,
   assert(kkt_rhs.size() == ndx0 + ndual0);
   assert(kkt_mat.cols() == ndx0 + ndual0);
 
-  if (is_x0_fixed_) {
+  if (force_initial_condition_) {
     workspace.pd_step_[0].setZero();
     workspace.trial_lams[0].setZero();
     kkt_rhs.setZero();
@@ -555,7 +554,7 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
     compute_dir_x0(problem, workspace, results);
     const StageModel &stage = *problem.stages_[0];
     // use lams[0] as a tmp var for alpha * dx0
-    if (!is_x0_fixed_) {
+    if (!force_initial_condition_) {
       lams[0] = alpha * workspace.dxs[0];
       stage.xspace().integrate(results.xs[0], lams[0], xs[0]);
       lams[0] = results.lams[0] + alpha * workspace.dlams[0];
@@ -671,7 +670,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
     }
   }
 
-  if (is_x0_fixed_) {
+  if (force_initial_condition_) {
     workspace_.trial_xs[0] = problem.getInitState();
   }
 
@@ -966,7 +965,7 @@ void SolverProxDDP<Scalar>::computeCriterion(const Problem &problem,
     const int ndx = problem.init_state_error_->ndx1;
     VectorRef kkt_rhs = workspace.kkt_rhs_[0].col(0);
     auto kktx = kkt_rhs.head(ndx);
-    if (is_x0_fixed_) {
+    if (force_initial_condition_) {
       workspace.stage_inner_crits(0) = 0.;
       workspace.stage_dual_infeas(0) = 0.;
     } else {
