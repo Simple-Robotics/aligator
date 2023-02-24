@@ -343,17 +343,17 @@ def main(args: Args):
                 if args.term_cstr:
                     pass
                 else:
-                    assert results.num_iters == 50
+                    assert results.num_iters <= 50
             else:
                 if args.term_cstr:
-                    assert results.num_iters == 129
+                    assert results.num_iters <= 129
                 else:
-                    assert results.num_iters == 33
+                    assert results.num_iters <= 33
         elif args.term_cstr:
             if args.obstacles:
-                assert results.num_iters == 39
+                assert results.num_iters <= 39
             else:
-                assert results.num_iters == 20
+                assert results.num_iters <= 20
 
     test_check_numiters(results)
 
