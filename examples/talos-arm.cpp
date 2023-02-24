@@ -69,9 +69,7 @@ void factorize_some_kkt(std::string &fname, std::string &frhs) {
   auto &block_ldlt = *p_blk_chol;
 
   long perm[3] = {1, 2, 0};
-  auto sym = block_ldlt.structure().copy();
-  block_ldlt.setPermutation(perm);
-  block_ldlt.updateBlockPermutationMatrix(sym);
+  block_ldlt.setBlockPermutation(perm);
 
   block_ldlt.compute(mat);
   double block_err = compute_reconstr_err(block_ldlt, mat);
