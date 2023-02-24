@@ -17,7 +17,7 @@ using proxddp::SolverProxDDP;
 
 constexpr double TOL = 1e-16;
 constexpr std::size_t maxiters = 10;
-#define DEFAULT_NUM_THREADS = 1;
+constexpr int DEFAULT_NUM_THREADS = 1;
 
 const bool verbose = false;
 
