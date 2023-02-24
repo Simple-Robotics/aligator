@@ -683,6 +683,9 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   set_rho(rho_init);
   xreg_ = reg_init;
   ureg_ = reg_init;
+  if (reg_init >= reg_init_nonzero) {
+    reg_init_nonzero = reg_inc_first_k_ * reg_init;
+  } // handle case where user supplied reg_init exceeds ref. nonzero value
 
   workspace_.prev_xs = results_.xs;
   workspace_.prev_us = results_.us;
