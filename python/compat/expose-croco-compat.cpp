@@ -1,5 +1,6 @@
 /// @file
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+#ifdef PROXDDP_WITH_CROCODDYL_COMPAT
 #include "proxddp/python/compat/croco.hpp"
 #include "proxddp/python/utils.hpp"
 
@@ -38,3 +39,4 @@ void exposeCrocoddylCompat() {
 
 } // namespace python
 } // namespace proxddp
+#endif
