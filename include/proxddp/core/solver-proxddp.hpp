@@ -48,6 +48,8 @@ public:
   using CstrALWeightStrat = ConstraintALWeightStrategy<Scalar>;
   using LinesearchType = proxnlp::ArmijoLinesearch<Scalar>;
 
+  enum BackwardRet { BWD_SUCCESS, BWD_WRONG_INERTIA };
+
   std::vector<ProxPenaltyType> prox_penalties_;
   /// Subproblem tolerance
   Scalar inner_tol_;
@@ -61,16 +63,17 @@ public:
 
   //// Inertia-correcting heuristic
 
-  Scalar reg_min = 1e-10;
+  Scalar reg_min = 1e-10; //< Minimal nonzero regularization
   Scalar reg_max = 1e9;
-  Scalar reg_init = 1e-9;
-  Scalar reg_init_nonzero = 1e-4;
-  Scalar reg_inc_k = 8.;
-  Scalar reg_inc_critical = 100.;
-  Scalar reg_dec_k = 1. / 3.;
+  Scalar reg_init = 1e-9;         //< Initial regularization value (can be zero)
+  Scalar reg_init_nonzero = 1e-5; //< Initial (bigger) regularization value
+  Scalar reg_inc_k_ = 10.;        //< Regularization increase factor
+  Scalar reg_inc_first_k_ = 100.; //< Regularization increase (critical)
+  Scalar reg_dec_k_ = 1. / 3.;    //< Regularization decrease factor
 
   Scalar xreg_ = reg_init;
   Scalar ureg_ = xreg_;
+  Scalar xreg_last_ = 0.;
 
   //// Initial BCL tolerances
 
@@ -108,7 +111,9 @@ public:
 
   /// @name Linear algebra options
   /// \{
+  /// Maximum number of linear system refinement iterations
   std::size_t max_refinement_steps_ = 5;
+  /// Target tolerance for solving the KKT system.
   Scalar refinement_threshold_ = 1e-13;
   /// Choice of factorization routine.
   LDLTChoice ldlt_algo_choice_;
@@ -174,8 +179,8 @@ public:
   /// @brief    Perform the Riccati backward pass.
   ///
   /// @pre  Compute the derivatives first!
-  bool backwardPass(const Problem &problem, Workspace &workspace,
-                    Results &results) const;
+  BackwardRet backwardPass(const Problem &problem, Workspace &workspace,
+                           Results &results);
 
   /// @brief Allocate new workspace and results instances according to the
   /// specifications of @p problem.
@@ -257,9 +262,9 @@ public:
 
   /// @brief  Put together the Q-function parameters and compute the Riccati
   /// gains.
-  PROXDDP_INLINE bool computeGains(const Problem &problem, Workspace &workspace,
-                                   Results &results,
-                                   const std::size_t step) const;
+  inline BackwardRet computeGains(const Problem &problem, Workspace &workspace,
+                                  Results &results,
+                                  const std::size_t step) const;
 
   auto getLinesearchMuLowerBound() const { return min_mu_linesearch_; }
   void setLinesearchMuLowerBound(Scalar mu) { min_mu_linesearch_ = mu; }
@@ -284,19 +289,25 @@ protected:
   }
 
   /// Increase Tikhonov regularization.
-  inline void increase_reg() {
-    if (xreg_ == 0.) {
-      xreg_ = reg_min;
+  inline void select_regularization() {
+    if (xreg_ == reg_init) {
+      if (xreg_last_ == reg_init) {
+        xreg_ = reg_init_nonzero;
+      } else {
+        xreg_ = std::max(reg_min, xreg_last_ * reg_dec_k_);
+      }
     } else {
-      xreg_ *= 10.;
-      xreg_ = std::min(xreg_, reg_max);
+      if (xreg_last_ == reg_init)
+        xreg_ *= reg_inc_first_k_;
+      else
+        xreg_ *= reg_inc_k_;
     }
     ureg_ = xreg_;
   }
 
   /// Decrease Tikhonov regularization.
   inline void decrease_reg() {
-    xreg_ *= 0.1;
+    xreg_ *= reg_dec_k_;
     if (xreg_ < reg_min) {
       xreg_ = 0.;
     }

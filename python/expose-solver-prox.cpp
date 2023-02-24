@@ -32,6 +32,7 @@ void exposeProxDDP() {
       .def_readonly("kkt_rhs", &Workspace::kkt_rhs_)
       .def_readonly("trial_lams", &Workspace::trial_lams)
       .def_readonly("inner_crit", &Workspace::inner_criterion)
+      .def_readonly("Qus_ddp", &Workspace::Qus_ddp_)
       .def(
           "get_ldlt",
           +[](const Workspace &ws,
@@ -75,7 +76,7 @@ void exposeProxDDP() {
            bp::arg("verbose") = VerboseLevel::QUIET,
            bp::arg("hess_approx") = HessianApprox::GAUSS_NEWTON)))
       .def_readwrite("bcl_params", &SolverType::bcl_params, "BCL parameters.")
-      .def_readwrite("is_x0_fixed", &SolverType::is_x0_fixed_,
+      .def_readwrite("is_x0_fixed", &SolverType::force_initial_condition_,
                      "Set x0 to be fixed to the initial condition.")
       .def_readwrite("max_refinement_steps", &SolverType::max_refinement_steps_)
       .def_readwrite("refinement_threshold", &SolverType::refinement_threshold_)
@@ -94,6 +95,10 @@ void exposeProxDDP() {
                      "Rollout type.")
       .def_readwrite("dual_weight", &SolverType::dual_weight,
                      "Dual penalty weight.")
+      .def_readwrite("reg_min", &SolverType::reg_min,
+                     "Minimum regularization value.")
+      .def_readwrite("reg_max", &SolverType::reg_max,
+                     "Maximum regularization value.")
       .def("getLinesearchMu", &SolverType::getLinesearchMu, bp::args("self"))
       .def("setLinesearchMuLowerBound", &SolverType::setLinesearchMuLowerBound,
            bp::args("self", "mu_lower_bound"),

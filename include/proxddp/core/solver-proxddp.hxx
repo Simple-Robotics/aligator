@@ -186,9 +186,9 @@ void SolverProxDDP<Scalar>::computeProxDerivatives(
 }
 
 template <typename Scalar>
-bool SolverProxDDP<Scalar>::backwardPass(const Problem &problem,
-                                         Workspace &workspace,
-                                         Results &results) const {
+auto SolverProxDDP<Scalar>::backwardPass(const Problem &problem,
+                                         Workspace &workspace, Results &results)
+    -> BackwardRet {
   /* Terminal node */
   computeTerminalValue(problem, workspace, results);
 
@@ -196,12 +196,13 @@ bool SolverProxDDP<Scalar>::backwardPass(const Problem &problem,
   for (std::size_t i = 0; i < nsteps; i++) {
     std::size_t t = nsteps - i - 1;
     updateHamiltonian(problem, results, workspace, t);
-    bool b = computeGains(problem, workspace, results, t);
-    if (!b) {
-      return false;
+    BackwardRet b = computeGains(problem, workspace, results, t);
+    if (b != BWD_SUCCESS) {
+      return b;
     }
   }
-  return true;
+  xreg_last_ = xreg_; // update last "correct" reg
+  return BWD_SUCCESS;
 }
 
 template <typename Scalar>
@@ -427,9 +428,10 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem,
 }
 
 template <typename Scalar>
-bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
+auto SolverProxDDP<Scalar>::computeGains(const Problem &problem,
                                          Workspace &workspace, Results &results,
-                                         const std::size_t t) const {
+                                         const std::size_t t) const
+    -> BackwardRet {
   PROXDDP_NOMALLOC_BEGIN;
   const StageModel &stage = *problem.stages_[t];
 
@@ -504,7 +506,7 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
     std::array<std::size_t, 3> inertia;
     math::compute_inertia(ldlt.vectorD(), inertia.data());
     if ((inertia[1] > 0U) || (inertia[2] != (std::size_t)ndual)) {
-      return false;
+      return BWD_WRONG_INERTIA;
     }
   }
 
@@ -529,7 +531,7 @@ bool SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   vp.Vxx_.noalias() += Qxw * fb;
   vp.Vxx_.diagonal().array() += xreg_;
   PROXDDP_NOMALLOC_END;
-  return true;
+  return BWD_SUCCESS;
 }
 
 template <typename Scalar>
@@ -822,16 +824,18 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     const Scalar phi0 = results.merit_value_;
 
     while (true) {
-      const bool success = backwardPass(problem, workspace, results);
-      if (success) {
+      BackwardRet b = backwardPass(problem, workspace, results);
+      switch (b) {
+      case BWD_SUCCESS:
         break;
-      } else {
-        if (xreg_ == this->reg_max) {
+      case BWD_WRONG_INERTIA: {
+        if (xreg_ >= reg_max)
           return false;
-        }
-        this->increase_reg();
+        select_regularization();
         continue;
       }
+      }
+      break; // if you broke from the switch
     }
 
     computeInfeasibilities(problem, workspace, results);
@@ -881,9 +885,11 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     iter_log.merit = phi_new;
     iter_log.dM = phi_new - phi0;
 
-    if (alpha_opt <= ls_params.alpha_min)
-      this->increase_reg();
-
+    if (alpha_opt <= ls_params.alpha_min) {
+      select_regularization();
+      if (xreg_ >= reg_max)
+        return false;
+    }
     invokeCallbacks(workspace, results);
     logger.log(iter_log);
 
