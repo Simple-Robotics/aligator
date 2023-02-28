@@ -112,7 +112,7 @@ class ProxnlpConstraintFromProblem(proxnlp.C2Function):
         yid = min(i + 1, self.N)
         self.func.computeJacobians(xs[i], us[i], xs[yid], self.data)
         xr = slice(self.start_idx, self.end_idx)
-        Jout[:, xr] = self.data.jac_buffer_
+        Jout[:, xr] = self.data.jac_buffer
 
 
 def _get_product_space(problem: TrajOptProblem):
