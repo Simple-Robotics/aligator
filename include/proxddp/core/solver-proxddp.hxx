@@ -149,13 +149,14 @@ void SolverProxDDP<Scalar>::setup(const Problem &problem) {
     }
   }
 
-  for (std::size_t i = 0; i < nsteps + 1; i++) {
-    const ProxPenaltyType *penal = &prox_penalties_[i];
-    workspace_.prox_datas.push_back(std::make_shared<ProxData>(penal));
+  for (std::size_t i = 0; i < nsteps; i++) {
+    workspace_.prox_datas.push_back(
+        std::make_shared<ProxData>(&prox_penalties_[i]));
+    if (i == nsteps - 1) {
+      workspace_.prox_datas.push_back(
+          std::make_shared<ProxData>(&prox_penalties_[nsteps]));
+    }
   }
-
-  assert(prox_penalties_.size() == (nsteps + 1));
-  assert(ws.prox_datas.size() == (nsteps + 1));
 }
 
 template <typename Scalar>
@@ -703,8 +704,8 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
 #ifndef NDEBUG
     {
       std::FILE *fi = std::fopen("pddp.log", "a");
-      fmt::print(fi, "  p={:5.3e} | d={:5.3e}\n", results.prim_infeas,
-                 results.dual_infeas);
+      fmt::print(fi, "  p={:5.3e} | d={:5.3e}\n", results_.prim_infeas,
+                 results_.dual_infeas);
       std::fclose(fi);
     }
 #endif

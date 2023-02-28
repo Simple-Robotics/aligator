@@ -17,9 +17,7 @@
 #include <fmt/ostream.h>
 
 /// @brief  A warning for the FDDP module.
-#define PROXDDP_FDDP_WARNING(msg)                                              \
-  fmt::print(fmt::fg(fmt::color::yellow), "[SolverFDDP] ({}) warning: {}",     \
-             __FUNCTION__, msg)
+#define PROXDDP_FDDP_WARNING(msg) PROXDDP_WARNING("SolverFDDP", msg)
 
 namespace proxddp {
 

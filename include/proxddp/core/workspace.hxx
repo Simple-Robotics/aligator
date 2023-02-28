@@ -121,7 +121,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
   this->dyn_slacks.reserve(nsteps);
 
   // initial condition
-  {
+  if (nsteps > 0) {
     const int ndx1 = problem.stages_[0]->ndx1();
     const int nprim = ndx1;
     const int ndual = problem.init_state_error_->nr;
@@ -137,6 +137,11 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
     pd_step_[0] = VectorXs::Zero(ntot);
     dxs.emplace_back(pd_step_[0].head(ndx1));
     dlams.emplace_back(pd_step_[0].tail(ndual));
+  } else {
+    PROXDDP_WARNING("[Workspace]",
+                    "Initialized a workspace for an empty problem (no nodes).");
+    this->m_isInitialized = false;
+    return;
   }
 
   for (std::size_t i = 0; i < nsteps; i++) {

@@ -23,10 +23,15 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
   llts_.reserve(nsteps);
   JtH_temp_.reserve(nsteps);
 
-  {
+  if (nsteps > 0) {
     const int ndx = problem.stages_[0]->ndx1();
     this->dyn_slacks[0] = VectorXs::Zero(ndx);
     ftVxx_[0] = VectorXs::Zero(ndx);
+  } else {
+    PROXDDP_WARNING("[WorkspaceFDDP]",
+                    "Initialized a workspace for an empty problem (no nodes).");
+    this->m_isInitialized = false;
+    return;
   }
 
   for (std::size_t i = 0; i < nsteps; i++) {
