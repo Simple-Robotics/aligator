@@ -8,10 +8,38 @@
 import sys
 
 import example_robot_data as erd
-from proxddp.manifolds import MultibodyPhaseSpace
+from proxddp.manifolds import VectorSpace, MultibodyPhaseSpace
 import numpy as np
 import proxddp
 import pytest
+
+
+def test_fddp_lqr():
+    nx = 3
+    nu = 2
+    space = VectorSpace(nx)
+    x0 = space.rand()
+    A = np.eye(nx)
+    B = np.ones((nx, nu))
+    c = np.zeros(nx)
+    dyn = proxddp.dynamics.LinearDiscreteDynamics(A, B, c)
+    w_x = np.eye(nx)
+    w_u = np.eye(nu)
+    cost = proxddp.QuadraticCost(w_x, w_u)
+    problem = proxddp.TrajOptProblem(x0, nu, space, cost)
+    nsteps = 10
+    for i in range(nsteps):
+        stage = proxddp.StageModel(cost, dyn)
+        problem.addStage(stage)
+
+    tol = 1e-6
+    solver = proxddp.SolverFDDP(tol, proxddp.VerboseLevel.VERBOSE)
+    solver.setup(problem)
+    solver.max_iters = 2
+    xs_init = [x0] * (nsteps + 1)
+    us_init = [np.zeros(nu)] * nsteps
+    conv = solver.run(problem, xs_init, us_init)
+    assert conv
 
 
 def test_no_node():
