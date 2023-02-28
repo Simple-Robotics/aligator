@@ -3,7 +3,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/core/workspace-common.hpp"
+#include "proxddp/core/workspace-base.hpp"
 #include "proxddp/core/proximal-penalty.hpp"
 
 #include <array>

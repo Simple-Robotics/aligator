@@ -14,8 +14,13 @@ template <typename Scalar> struct WorkspaceBaseTpl {
   using QParams = q_function<Scalar>;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
+protected:
+  // Whether the workspace was initialized.
+  bool m_isInitialized;
+
+public:
   /// Number of steps in the problem.
-  const std::size_t nsteps;
+  std::size_t nsteps;
   /// Problem data.
   TrajOptDataTpl<Scalar> problem_data;
 
@@ -32,7 +37,11 @@ template <typename Scalar> struct WorkspaceBaseTpl {
   /// Q-function storage
   std::vector<QParams> q_params;
 
+  WorkspaceBaseTpl() : m_isInitialized(false), problem_data() {}
+
   explicit WorkspaceBaseTpl(const TrajOptProblemTpl<Scalar> &problem);
+
+  bool isInitialized() const { return m_isInitialized; }
 
   /// @brief   Cycle the workspace data to the left.
   /// @details Useful in model-predictive control (MPC) applications.
@@ -44,7 +53,7 @@ template <typename Scalar> struct WorkspaceBaseTpl {
 template <typename Scalar>
 WorkspaceBaseTpl<Scalar>::WorkspaceBaseTpl(
     const TrajOptProblemTpl<Scalar> &problem)
-    : nsteps(problem.numSteps()), problem_data(problem) {
+    : m_isInitialized(true), nsteps(problem.numSteps()), problem_data(problem) {
   trial_xs.resize(nsteps + 1);
   trial_us.resize(nsteps);
   xs_default_init(problem, trial_xs);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/core/workspace-common.hpp"
+#include "proxddp/core/workspace-base.hpp"
 #include <Eigen/Cholesky>
 
 namespace proxddp {

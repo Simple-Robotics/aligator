@@ -1,6 +1,6 @@
 #include "proxddp/python/fwd.hpp"
 
-#include "proxddp/core/workspace-common.hpp"
+#include "proxddp/core/workspace-base.hpp"
 #include "proxddp/core/results.hpp"
 
 namespace proxddp {
