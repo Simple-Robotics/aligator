@@ -10,6 +10,11 @@ template <typename _Scalar> struct ResultsBaseTpl {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
+protected:
+  // Whether the results struct was initialized.
+  bool m_isInitialized;
+
+public:
   std::size_t num_iters = 0;
   bool conv = false;
 
@@ -28,6 +33,9 @@ template <typename _Scalar> struct ResultsBaseTpl {
   std::vector<VectorXs> us;
   /// Problem Lagrange multipliers
   std::vector<VectorXs> lams;
+
+  ResultsBaseTpl() : m_isInitialized(false) {}
+  bool isInitialized() const { return m_isInitialized; }
 
   /// @brief Get column expression of the primal-dual feedforward gain.
   decltype(auto) getFeedforward(std::size_t i) {

@@ -82,6 +82,7 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   /// Overall subproblem termination criterion.
   Scalar inner_criterion = 0.;
 
+  WorkspaceTpl() : Base() {}
   WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
                LDLTChoice ldlt_choice = LDLTChoice::DENSE);
 

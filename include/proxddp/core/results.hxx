@@ -37,5 +37,7 @@ ResultsTpl<Scalar>::ResultsTpl(const TrajOptProblemTpl<Scalar> &problem) {
   }
   assert(xs.size() == nsteps + 1);
   assert(us.size() == nsteps);
+
+  this->m_isInitialized = true;
 }
 } // namespace proxddp
