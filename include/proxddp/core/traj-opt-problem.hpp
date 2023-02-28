@@ -194,7 +194,7 @@ template <typename _Scalar> struct TrajOptDataTpl {
   /// Copy of xs to fill in (for data parallelism)
   std::vector<VectorXs> xs_copy;
 
-  TrajOptDataTpl() = delete;
+  TrajOptDataTpl() = default;
   TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem);
 
   /// Get stage data for a stage by time index.
