@@ -14,15 +14,13 @@ namespace proxddp {
 template <typename Scalar>
 void xs_default_init(const TrajOptProblemTpl<Scalar> &problem,
                      std::vector<typename math_types<Scalar>::VectorXs> &xs) {
-  using Manifold = ManifoldAbstractTpl<Scalar>;
   const std::size_t nsteps = problem.numSteps();
   xs.resize(nsteps + 1);
+  xs[0] = problem.getInitState();
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModelTpl<Scalar> &sm = *problem.stages_[i];
-    xs[i] = sm.xspace().neutral();
+    xs[i + 1] = sm.xspace_next().neutral();
   }
-  const Manifold &space = problem.stages_.back()->xspace_next();
-  xs[nsteps] = space.neutral();
 }
 
 /// @brief Default-initialize a controls trajectory from the neutral element of
