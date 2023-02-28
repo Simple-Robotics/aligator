@@ -132,26 +132,26 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem,
 
 template <typename Scalar>
 void SolverProxDDP<Scalar>::setup(const Problem &problem) {
-  workspace_ = std::make_unique<Workspace>(problem, ldlt_algo_choice_);
-  results_ = std::make_unique<Results>(problem);
+  workspace_ = Workspace(problem, ldlt_algo_choice_);
+  results_ = Results(problem);
   linesearch_.setOptions(ls_params);
 
-  Workspace &ws = *workspace_;
   prox_penalties_.clear();
-  const std::size_t nsteps = ws.nsteps;
+  const std::size_t nsteps = workspace_.nsteps;
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &sm = *problem.stages_[i];
-    prox_penalties_.emplace_back(sm.xspace_, sm.uspace_, ws.prev_xs[i],
-                                 ws.prev_us[i], false);
+    prox_penalties_.emplace_back(sm.xspace_, sm.uspace_, workspace_.prev_xs[i],
+                                 workspace_.prev_us[i], false);
     if (i == nsteps - 1) {
       prox_penalties_.emplace_back(sm.xspace_next_, sm.uspace_,
-                                   ws.prev_xs[nsteps], problem.unone_, true);
+                                   workspace_.prev_xs[nsteps], problem.unone_,
+                                   true);
     }
   }
 
   for (std::size_t i = 0; i < nsteps + 1; i++) {
     const ProxPenaltyType *penal = &prox_penalties_[i];
-    ws.prox_datas.push_back(std::make_shared<ProxData>(penal));
+    workspace_.prox_datas.push_back(std::make_shared<ProxData>(penal));
   }
 
   assert(prox_penalties_.size() == (nsteps + 1));
@@ -657,23 +657,21 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
                                 const std::vector<VectorXs> &xs_init,
                                 const std::vector<VectorXs> &us_init,
                                 const std::vector<VectorXs> &lams_init) {
-  if (workspace_ == 0 || results_ == 0) {
+  if (!workspace_.isInitialized() || !results_.isInitialized()) {
     PROXDDP_RUNTIME_ERROR("workspace and results were not allocated yet!");
   }
-  Workspace &workspace = *workspace_;
-  Results &results = *results_;
 
-  check_trajectory_and_assign(problem, xs_init, us_init, results.xs,
-                              results.us);
-  if (lams_init.size() == results.lams.size()) {
+  check_trajectory_and_assign(problem, xs_init, us_init, results_.xs,
+                              results_.us);
+  if (lams_init.size() == results_.lams.size()) {
     for (std::size_t i = 0; i < lams_init.size(); i++) {
-      long size = std::min(lams_init[i].rows(), results.lams[i].rows());
-      results.lams[i].head(size) = lams_init[i].head(size);
+      long size = std::min(lams_init[i].rows(), results_.lams[i].rows());
+      results_.lams[i].head(size) = lams_init[i].head(size);
     }
   }
 
   if (is_x0_fixed_) {
-    workspace.trial_xs[0] = problem.getInitState();
+    workspace_.trial_xs[0] = problem.getInitState();
   }
 
   logger.active = (verbose_ > 0);
@@ -684,9 +682,9 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   xreg_ = reg_init;
   ureg_ = reg_init;
 
-  workspace.prev_xs = results.xs;
-  workspace.prev_us = results.us;
-  workspace.lams_prev = results.lams;
+  workspace_.prev_xs = results_.xs;
+  workspace_.prev_us = results_.us;
+  workspace_.lams_prev = results_.lams;
 
   inner_tol_ = inner_tol0;
   prim_tol_ = prim_tol0;
@@ -695,13 +693,13 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   inner_tol_ = std::max(inner_tol_, target_tol_);
   prim_tol_ = std::max(prim_tol_, target_tol_);
 
-  bool &conv = results.conv = false;
+  bool &conv = results_.conv = false;
 
-  results.al_iter = 0;
-  results.num_iters = 0;
-  std::size_t &al_iter = results.al_iter;
-  while ((al_iter < max_al_iters) && (results.num_iters < max_iters)) {
-    bool inner_conv = innerLoop(problem, workspace, results);
+  results_.al_iter = 0;
+  results_.num_iters = 0;
+  std::size_t &al_iter = results_.al_iter;
+  while ((al_iter < max_al_iters) && (results_.num_iters < max_iters)) {
+    bool inner_conv = innerLoop(problem, workspace_, results_);
 #ifndef NDEBUG
     {
       std::FILE *fi = std::fopen("pddp.log", "a");
@@ -716,27 +714,27 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
     }
 
     // accept primal updates
-    workspace.prev_xs = results.xs;
-    workspace.prev_us = results.us;
+    workspace_.prev_xs = results_.xs;
+    workspace_.prev_us = results_.us;
 
-    if (results.prim_infeas <= prim_tol_) {
+    if (results_.prim_infeas <= prim_tol_) {
       update_tols_on_success();
 
       switch (multiplier_update_mode) {
       case MultiplierUpdateMode::NEWTON:
-        workspace.lams_prev = results.lams;
+        workspace_.lams_prev = results_.lams;
         break;
       case MultiplierUpdateMode::PRIMAL:
-        workspace.lams_prev = workspace.lams_plus;
+        workspace_.lams_prev = workspace_.lams_plus;
         break;
       case MultiplierUpdateMode::PRIMAL_DUAL:
-        workspace.lams_prev = workspace.lams_pdal;
+        workspace_.lams_prev = workspace_.lams_pdal;
         break;
       default:
         break;
       }
 
-      Scalar criterion = std::max(results.dual_infeas, results.prim_infeas);
+      Scalar criterion = std::max(results_.dual_infeas, results_.prim_infeas);
       if (criterion <= target_tol_) {
         conv = true;
         break;

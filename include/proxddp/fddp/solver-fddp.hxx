@@ -19,8 +19,8 @@ SolverFDDP<Scalar>::SolverFDDP(const Scalar tol, VerboseLevel verbose,
 
 template <typename Scalar>
 void SolverFDDP<Scalar>::setup(const Problem &problem) {
-  results_ = std::make_unique<Results>(problem);
-  workspace_ = std::make_unique<Workspace>(problem);
+  results_ = Results(problem);
+  workspace_ = Workspace(problem);
   // check if there are any constraints other than dynamics and throw a warning
   std::vector<std::size_t> idx_where_constraints;
   for (std::size_t i = 0; i < problem.numSteps(); i++) {
@@ -289,20 +289,18 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
   std::fclose(fi);
 #endif
 
-  if (results_ == 0 || workspace_ == 0) {
+  if (!results_.isInitialized() || !workspace_.isInitialized()) {
     PROXDDP_RUNTIME_ERROR(
         "Either results or workspace not allocated. Call setup() first!");
   }
-  Results &results = *results_;
-  Workspace &workspace = *workspace_;
 
-  check_trajectory_and_assign(problem, xs_init, us_init, results.xs,
-                              results.us);
+  check_trajectory_and_assign(problem, xs_init, us_init, results_.xs,
+                              results_.us);
   // optionally override xs[0]
   if (force_initial_condition_) {
-    workspace.trial_xs[0] = problem.getInitState();
+    workspace_.trial_xs[0] = problem.getInitState();
   }
-  results.conv = false;
+  results_.conv = false;
 
   logger.active = verbose_ > 0;
   logger.start();
@@ -310,56 +308,58 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
   // in Crocoddyl, linesearch xs is primed to use problem x0
 
   const auto linesearch_fun = [&](const Scalar alpha) {
-    return forwardPass(problem, results, workspace, alpha);
+    return forwardPass(problem, results_, workspace_, alpha);
   };
 
-  Scalar &d1_phi = workspace.d1_;
-  Scalar &d2_phi = workspace.d2_;
+  Scalar &d1_phi = workspace_.d1_;
+  Scalar &d2_phi = workspace_.d2_;
   Scalar phi0;
   // linesearch model oracle
   const auto ls_model = [&](const Scalar alpha) {
-    expectedImprovement(workspace, d1_phi, d2_phi);
+    expectedImprovement(workspace_, d1_phi, d2_phi);
     return phi0 + alpha * (d1_phi + 0.5 * d2_phi * alpha);
   };
 
   LogRecord record;
 
-  std::size_t &iter = results.num_iters;
-  results.traj_cost_ =
-      problem.evaluate(results.xs, results.us, workspace.problem_data);
+  std::size_t &iter = results_.num_iters;
+  results_.traj_cost_ =
+      problem.evaluate(results_.xs, results_.us, workspace_.problem_data);
 
   for (iter = 0; iter < max_iters; ++iter) {
     record.iter = iter + 1;
 
-    problem.computeDerivatives(results.xs, results.us, workspace.problem_data);
-    results.prim_infeas = computeInfeasibility(problem, results.xs, workspace);
-    PROXDDP_RAISE_IF_NAN(results.prim_infeas);
-    record.prim_err = results.prim_infeas;
+    problem.computeDerivatives(results_.xs, results_.us,
+                               workspace_.problem_data);
+    results_.prim_infeas =
+        computeInfeasibility(problem, results_.xs, workspace_);
+    PROXDDP_RAISE_IF_NAN(results_.prim_infeas);
+    record.prim_err = results_.prim_infeas;
 
-    backwardPass(problem, workspace);
-    results.dual_infeas = computeCriterion(workspace);
-    PROXDDP_RAISE_IF_NAN(results.dual_infeas);
-    record.dual_err = results.dual_infeas;
+    backwardPass(problem, workspace_);
+    results_.dual_infeas = computeCriterion(workspace_);
+    PROXDDP_RAISE_IF_NAN(results_.dual_infeas);
+    record.dual_err = results_.dual_infeas;
 
     Scalar stopping_criterion =
-        std::max(results.prim_infeas, results.dual_infeas);
+        std::max(results_.prim_infeas, results_.dual_infeas);
     if (stopping_criterion < target_tol_) {
-      results.conv = true;
+      results_.conv = true;
       break;
     }
 
-    acceptGains(workspace, results);
+    acceptGains(workspace_, results_);
 
-    phi0 = results.traj_cost_;
+    phi0 = results_.traj_cost_;
     PROXDDP_RAISE_IF_NAN(phi0);
 
-    updateExpectedImprovement(workspace, results);
+    updateExpectedImprovement(workspace_, results_);
 
     Scalar alpha_opt, phi_new;
     std::tie(alpha_opt, phi_new) = fddp_goldstein_linesearch(
         linesearch_fun, ls_model, phi0, ls_params, th_grad_, d1_phi);
 
-    results.traj_cost_ = phi_new;
+    results_.traj_cost_ = phi_new;
     PROXDDP_RAISE_IF_NAN(alpha_opt);
     PROXDDP_RAISE_IF_NAN(phi_new);
     record.step_size = alpha_opt;
@@ -368,10 +368,10 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     record.dphi0 = d1_phi;
     record.xreg = xreg_;
 
-    results.xs = workspace.trial_xs;
-    results.us = workspace.trial_us;
+    results_.xs = workspace_.trial_xs;
+    results_.us = workspace_.trial_us;
     if (std::abs(d1_phi) < th_grad_) {
-      results.conv = true;
+      results_.conv = true;
       break;
     }
 
@@ -381,18 +381,18 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     if (alpha_opt <= th_step_inc_) {
       increaseRegularization();
       if (xreg_ == reg_max_) {
-        results.conv = false;
+        results_.conv = false;
         break;
       }
     }
 
-    invokeCallbacks(workspace, results);
+    invokeCallbacks(workspace_, results_);
     logger.log(record);
   }
 
   if (iter < max_iters)
     logger.log(record);
-  logger.finish(results.conv);
-  return results.conv;
+  logger.finish(results_.conv);
+  return results_.conv;
 }
 } // namespace proxddp

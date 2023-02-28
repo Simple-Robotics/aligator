@@ -20,6 +20,8 @@ template <typename Scalar> struct ResultsFDDPTpl : ResultsBaseTpl<Scalar> {
 
 } // namespace proxddp
 
+#include "proxddp/fddp/results.hxx"
+
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/fddp/results.txx"
 #endif

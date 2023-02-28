@@ -78,17 +78,17 @@ template <typename Scalar> struct SolverFDDP {
   /// Callbacks
   std::vector<CallbackPtr> callbacks_;
 
-  unique_ptr<Results> results_;
-  unique_ptr<Workspace> workspace_;
+  Results results_;
+  Workspace workspace_;
 
   SolverFDDP(const Scalar tol = 1e-6,
              VerboseLevel verbose = VerboseLevel::QUIET,
              const Scalar reg_init = 1e-9, const std::size_t max_iters = 200);
 
   /// @brief  Get the solver results.
-  const Results &getResults() const { return *results_; }
+  const Results &getResults() const { return results_; }
   /// @brief  Get a const reference to the solver's workspace.
-  const Workspace &getWorkspace() const { return *workspace_; }
+  const Workspace &getWorkspace() const { return workspace_; }
 
   /// @brief Allocate workspace and results structs.
   void setup(const Problem &problem);
