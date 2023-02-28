@@ -56,7 +56,6 @@ option(ENABLE_TEMPLATE_INSTANTIATION "Template instantiation of the main library
 
 # --- OPTIONAL DEPENDENCIES -------------------------
 option(BUILD_WITH_PINOCCHIO_SUPPORT "Build the library with support for Pinocchio" ON)
-option(BUILD_WITH_CASADI_SUPPORT "Build the library with the support of CASADI" OFF)
 option(BUILD_CROCODDYL_COMPAT "Build the Crocoddyl compatibility module" OFF)
 option(BUILD_WITH_OPENMP_SUPPORT "Build the library with the OpenMP support" ON)
 cmake_dependent_option(GENERATE_PYTHON_STUBS "Generate the Python stubs associated to the Python library" ON BUILD_PYTHON_INTERFACE OFF)
@@ -92,10 +91,6 @@ ADD_PROJECT_DEPENDENCY(fmt 6.1.2 REQUIRED PKG_CONFIG_REQUIRES "fmt >= 6.1.2")
 
 # Variable containing all the cflags definition relative to optional dependencies
 set(CFLAGS_DEPENDENCIES)
-
-if(BUILD_WITH_CASADI_SUPPORT)
-  ADD_PROJECT_DEPENDENCY(casadi 3.4.5 REQUIRED PKG_CONFIG_REQUIRES "casadi >= 3.4.5")
-endif(BUILD_WITH_CASADI_SUPPORT)
 
 if(BUILD_WITH_OPENMP_SUPPORT)
   find_package(OpenMP REQUIRED)
