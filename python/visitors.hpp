@@ -1,6 +1,9 @@
+/// @file
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include <boost/python.hpp>
+#include <eigenpy/fwd.hpp>
+#include "proxddp/python/utils/deprecation.hpp"
 
 namespace proxddp {
 namespace python {
@@ -55,9 +58,17 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
                        "Newton regularization parameter.")
         .def_readwrite("reg_init", &SolverType::reg_init)
         .def("getResults", &SolverType::getResults, bp::args("self"),
-             bp::return_internal_reference<>(), "Get the results instance.")
+             deprecated_member<bp::return_internal_reference<>>(
+                 "This getter is deprecated. Access the results using "
+                 "`solver.results` instead."),
+             "Get the results instance.")
         .def("getWorkspace", &SolverType::getWorkspace, bp::args("self"),
-             bp::return_internal_reference<>(), "Get the workspace instance.")
+             deprecated_member<bp::return_internal_reference<>>(
+                 "This getter is deprecated. Access the workspace using "
+                 "`solver.workspace` instead."),
+             "Get the workspace instance.")
+        .def_readonly("results", &SolverType::results_, "Solver results.")
+        .def_readonly("workspace", &SolverType::workspace_, "Solver workspace.")
         .def("setup", &SolverType::setup, bp::args("self", "problem"),
              "Allocate solver workspace and results data for the problem.")
         .def("registerCallback", &SolverType::registerCallback,

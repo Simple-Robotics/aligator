@@ -84,9 +84,11 @@ template <typename Scalar> struct SolverFDDP {
              const Scalar reg_init = 1e-9, const std::size_t max_iters = 200);
 
   /// @brief  Get the solver results.
-  const Results &getResults() const { return results_; }
+  PROXDDP_DEPRECATED const Results &getResults() const { return results_; }
   /// @brief  Get a const reference to the solver's workspace.
-  const Workspace &getWorkspace() const { return workspace_; }
+  PROXDDP_DEPRECATED const Workspace &getWorkspace() const {
+    return workspace_;
+  }
 
   /// @brief Allocate workspace and results structs.
   void setup(const Problem &problem);

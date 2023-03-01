@@ -1,6 +1,6 @@
 /// @file solver-proxddp.hpp
 /// @brief  Definitions for the proximal trajectory optimization algorithm.
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
 #include "proxddp/core/merit-function.hpp"
@@ -128,13 +128,13 @@ public:
   Workspace workspace_;
   Results results_;
 
-  Results &getResults() { return results_; }
-  Workspace &getWorkspace() { return workspace_; }
-
   SolverProxDDP(const Scalar tol = 1e-6, const Scalar mu_init = 0.01,
                 const Scalar rho_init = 0., const std::size_t max_iters = 1000,
                 VerboseLevel verbose = VerboseLevel::QUIET,
                 HessianApprox hess_approx = HessianApprox::GAUSS_NEWTON);
+
+  PROXDDP_DEPRECATED const Results &getResults() { return results_; }
+  PROXDDP_DEPRECATED const Workspace &getWorkspace() { return workspace_; }
 
   /// @brief Compute the linear search direction, i.e. the (regularized) SQP
   /// step.

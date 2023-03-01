@@ -67,10 +67,7 @@ void exposeProxDDP() {
       "A proximal, augmented Lagrangian solver, using a DDP-type scheme to "
       "compute "
       "search directions and feedforward, feedback gains."
-      " The solver instance initializes both a Workspace and Results which "
-      "can "
-      "be retrieved"
-      " through the `getWorkspace` and `getResults` methods, respectively.",
+      " The solver instance initializes both a Workspace and a Results struct.",
       bp::init<Scalar, Scalar, Scalar, std::size_t, VerboseLevel,
                HessianApprox>(
           (bp::arg("self"), bp::arg("tol"), bp::arg("mu_init") = 1e-2,
