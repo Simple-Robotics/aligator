@@ -52,9 +52,10 @@ make_bindings()
 # symlink the headers here
 
 file(MAKE_DIRECTORY
-    ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python
-    ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python/modelling
-    ${CMAKE_CURRENT_BINARY_DIR}/examples)
+     ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python
+     ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python/modelling
+     ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python/utils
+     ${CMAKE_CURRENT_BINARY_DIR}/examples)
 if(BUILD_CROCODDYL_COMPAT)
     file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python/compat)
 endif(BUILD_CROCODDYL_COMPAT)
