@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <package format="3">
+  <name>proxddp</name>
   <version>0.3.0</version>
   <maintainer email="wilson.jallet@laas.fr">Wilson Jallet</maintainer>
 
