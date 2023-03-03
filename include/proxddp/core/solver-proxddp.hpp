@@ -6,7 +6,7 @@
 #include "proxddp/core/merit-function.hpp"
 #include "proxddp/core/proximal-penalty.hpp"
 #include "proxddp/core/linesearch.hpp"
-#include "proxddp/core/helpers-base.hpp"
+#include "proxddp/core/callback-base.hpp"
 #include "proxddp/core/enums.hpp"
 #include "proxddp/utils/exceptions.hpp"
 #include "proxddp/utils/logger.hpp"

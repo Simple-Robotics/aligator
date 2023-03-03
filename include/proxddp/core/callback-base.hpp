@@ -5,6 +5,7 @@
 namespace proxddp {
 namespace helpers {
 
+/// Base callback class.
 template <typename Scalar> struct base_callback {
   using Workspace = WorkspaceBaseTpl<Scalar>;
   using Results = ResultsBaseTpl<Scalar>;
