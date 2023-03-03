@@ -900,9 +900,9 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     iter_log.dM = phi_new - phi0;
 
     if (alpha_opt <= ls_params.alpha_min) {
-      select_regularization();
       if (xreg_ >= reg_max)
         return false;
+      select_regularization();
     }
     invokeCallbacks(workspace, results);
     logger.log(iter_log);
@@ -964,7 +964,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem,
     execute_on_stack(problem.term_cstrs_, shifted_constraints.back(),
                      results.lams.back(), workspace.stage_prim_infeas.back(),
                      prob_data.term_cstr_data,
-                     CstrALWeightStrat(mu_penal_, true));
+                     CstrALWeightStrat(mu_penal_, false));
   }
 
   results.prim_infeas = math::infty_norm(workspace.stage_prim_infeas);
