@@ -2,6 +2,7 @@
 #include "proxddp/python/fwd.hpp"
 #include "proxddp/core/callback-base.hpp"
 #include "proxddp/helpers/history-callback.hpp"
+#include "proxddp/helpers/linesearch-callback.hpp"
 
 namespace proxddp {
 namespace python {
@@ -52,9 +53,30 @@ void exposeCallbacks() {
                                                   "Base callback for solvers.",
                                                   bp::init<>(bp::args("self")))
       .def("call", bp::pure_virtual(&CallbackWrapper::call),
-           bp::args("self", "workspace", "results"));
+           bp::args("self", "workspace", "results"))
+      .def("post_linesearch_callback", &CallbackWrapper::post_linesearch_call,
+           bp::args("self", "input"));
 
   exposeHistoryCallback();
+  using LSCallback = LinesearchCallback<Scalar>;
+  using LSData = LSCallback::Data;
+  eigenpy::enableEigenPySpecific<LSData::Matrix2Xs>();
+  bp::class_<LSCallback, bp::bases<CallbackBase>>("LinesearchCallback",
+                                                  bp::no_init)
+      .def_readwrite("alpha_min", &LSCallback::alpha_min)
+      .def_readwrite("alpha_max", &LSCallback::alpha_max)
+      .def(
+          "get",
+          +[](const LSCallback &m, std::size_t t) {
+            if (t >= m.storage_.size()) {
+              PyErr_SetString(
+                  PyExc_IndexError,
+                  fmt::format("Index {} is out of bounds.", t).c_str());
+              bp::throw_error_already_set();
+            }
+            return m.get(t);
+          },
+          bp::args("self", "t"));
 }
 } // namespace python
 } // namespace proxddp

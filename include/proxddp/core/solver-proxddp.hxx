@@ -5,11 +5,14 @@
 
 #include "proxddp/core/solver-proxddp.hpp"
 #include "proxddp/core/linalg.hpp"
+#include "proxddp/helpers/linesearch-callback.hpp"
 #ifndef NDEBUG
 #include <fmt/ostream.h>
 #endif
 
 namespace proxddp {
+
+static const std::string LS_DEBUG_KEY = "ls_debug";
 
 template <typename Scalar>
 SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
@@ -21,6 +24,8 @@ SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
       hess_approx_(hess_approx), ldlt_algo_choice_(LDLTChoice::DENSE),
       max_iters(max_iters), linesearch_(ls_params) {
   ls_params.interp_type = proxnlp::LSInterpolation::CUBIC;
+  auto cb = std::make_shared<LinesearchCallback<Scalar>>();
+  registerCallback(LS_DEBUG_KEY, cb);
 }
 
 template <typename Scalar>
@@ -778,32 +783,34 @@ void SolverProxDDP<Scalar>::update_tols_on_success() {
 }
 
 template <typename Scalar>
-Scalar
-SolverProxDDP<Scalar>::forwardPass(const Problem &problem, Workspace &workspace,
-                                   const Results &results, const Scalar alpha) {
+Scalar SolverProxDDP<Scalar>::forwardPass(const Problem &problem,
+                                          const Scalar alpha) {
   switch (rollout_type_) {
   case RolloutType::LINEAR:
-    forward_linear_impl(problem, workspace, results, alpha);
+    forward_linear_impl(problem, workspace_, results_, alpha);
     break;
   case RolloutType::NONLINEAR:
-    nonlinear_rollout_impl(problem, workspace, results, alpha);
+    nonlinear_rollout_impl(problem, workspace_, results_, alpha);
     break;
   default:
     assert(false && "unknown RolloutType!");
     break;
   }
   // computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
-  computeMultipliers(problem, workspace, workspace.trial_lams);
-  return PDALFunction<Scalar>::evaluate(this, problem, workspace.trial_lams,
-                                        workspace);
+  computeMultipliers(problem, workspace_, workspace_.trial_lams);
+  return PDALFunction<Scalar>::evaluate(this, problem, workspace_.trial_lams,
+                                        workspace_);
 }
 
 template <typename Scalar>
 bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
                                       Workspace &workspace, Results &results) {
 
+  DataLinesearchDebug<Scalar> ls_data;
   auto merit_eval_fun = [&](Scalar a0) {
-    return this->forwardPass(problem, workspace, results, a0);
+    Scalar res = forwardPass(problem, a0);
+    ls_data.push(a0, res);
+    return res;
   };
 
   LogRecord iter_log;
@@ -864,8 +871,25 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
       return true;
 
     // otherwise continue linesearch
+    auto ls_cb_maybe = callbacks_.find(LS_DEBUG_KEY);
+    if (ls_cb_maybe != callbacks_.end()) {
+      auto ls_cb = std::static_pointer_cast<LinesearchCallback<Scalar>>(
+          ls_cb_maybe->second);
+      ls_data.clear();
+      fmt::print("[Found a linesearch debug callback]\n");
+      std::size_t num_alpha = 100;
+      Scalar da = 1. / static_cast<Scalar>(num_alpha);
+      Scalar a = ls_cb->alpha_min;
+      while (a <= ls_cb->alpha_max) {
+        merit_eval_fun(a);
+        a += da;
+      }
+    }
     Scalar alpha_opt = 1;
     Scalar phi_new = linesearch_.run(merit_eval_fun, phi0, dphi0, alpha_opt);
+    if (ls_cb_maybe != callbacks_.end()) {
+      ls_cb_maybe->second->post_linesearch_call(ls_data);
+    }
 
     // accept the step
     results.xs = workspace.trial_xs;

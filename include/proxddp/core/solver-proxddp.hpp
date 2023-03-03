@@ -242,6 +242,7 @@ public:
   void clearCallbacks() noexcept { callbacks_.clear(); }
 
   const CallbackMap &getCallbacks() const { return callbacks_; }
+  void removeCallback(const std::string &name) { callbacks_.erase(name); }
 
   /// @brief    Invoke callbacks.
   void invokeCallbacks(Workspace &workspace, Results &results) {

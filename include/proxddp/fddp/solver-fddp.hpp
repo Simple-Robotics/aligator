@@ -171,6 +171,7 @@ public:
   }
 
   const CallbackMap &getCallbacks() const { return callbacks_; }
+  void removeCallback(const std::string &name) { callbacks_.erase(name); }
 
   /// @brief    Remove all callbacks from the instance.
   void clearCallbacks() { callbacks_.clear(); }

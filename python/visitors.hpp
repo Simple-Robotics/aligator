@@ -84,6 +84,8 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
              "Allocate solver workspace and results data for the problem.")
         .def("registerCallback", &SolverType::registerCallback,
              bp::args("self", "name", "cb"), "Add a callback to the solver.")
+        .def("removeCallback", &SolverType::removeCallback,
+             bp::args("self", "key"), "Remove a callback.")
         .def("getCallback", getCallback, bp::args("self", "key"))
         .def("clearCallbacks", &SolverType::clearCallbacks, bp::args("self"),
              "Clear callbacks.");
