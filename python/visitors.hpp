@@ -50,7 +50,7 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
     auto cb = cbs.find(name);
     if (cb == cbs.end()) {
       PyErr_SetString(PyExc_KeyError,
-                      fmt::format("Key {} not found.", cb->first).c_str());
+                      fmt::format("Key {} not found.", name).c_str());
       bp::throw_error_already_set();
     }
     return cb->second;
