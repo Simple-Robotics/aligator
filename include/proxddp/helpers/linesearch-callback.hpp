@@ -29,7 +29,7 @@ struct LinesearchCallback : helpers::base_callback<Scalar> {
   private:
     Scalar dphi_;
     Matrix2Xs data_;
-    friend struct LinesearchCallback;
+    friend LinesearchCallback;
   };
 
   LinesearchCallback() : storage_(), alpha_min(0.), alpha_max(1.) {}
