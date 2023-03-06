@@ -18,3 +18,7 @@ template <typename Scalar> struct base_callback {
 
 } // namespace helpers
 } // namespace proxddp
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/core/callback-base.txx"
+#endif
