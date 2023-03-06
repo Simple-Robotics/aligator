@@ -73,7 +73,7 @@ template <typename Scalar> struct SolverFDDP {
   /// off.
   bool force_initial_condition_;
 
-  BaseLogger logger{false};
+  BaseLogger logger{};
 
 private:
   /// Callbacks

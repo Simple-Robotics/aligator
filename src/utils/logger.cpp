@@ -1,11 +1,9 @@
 #include "proxddp/utils/logger.hpp"
 
 namespace proxddp {
-BaseLogger::BaseLogger(bool solver_is_prox) : is_prox_(solver_is_prox) {
-  v.reserve(BASIC_KEYS.size());
-}
+BaseLogger::BaseLogger() { cols.reserve(BASIC_KEYS.size()); }
 
-void BaseLogger::start() {
+void BaseLogger::printHeadline() {
   if (!active)
     return;
   static constexpr char fstr[] = "{:^{}s}";
@@ -14,10 +12,10 @@ void BaseLogger::start() {
       if (it->first == "inner_crit" || it->first == "al_iter")
         continue;
     }
-    v.push_back(fmt::format(fstr, it->first, it->second));
+    cols.push_back(fmt::format(fstr, it->first, it->second));
   }
-  fmt::print(fmt::emphasis::bold, "{}\n", fmt::join(v, join_str));
-  v.clear();
+  fmt::print(fmt::emphasis::bold, "{}\n", fmt::join(cols, join_str));
+  cols.clear();
 }
 
 void BaseLogger::finish(bool conv) {
@@ -32,6 +30,6 @@ void BaseLogger::finish(bool conv) {
 
 // instantiate
 
-template void BaseLogger::log(const LogRecord &);
+template struct LogRecordTpl<double>;
 
 } // namespace proxddp

@@ -24,8 +24,6 @@ SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
       hess_approx_(hess_approx), ldlt_algo_choice_(LDLTChoice::DENSE),
       max_iters(max_iters), linesearch_(ls_params) {
   ls_params.interp_type = proxnlp::LSInterpolation::CUBIC;
-  auto cb = std::make_shared<LinesearchCallback<Scalar>>();
-  registerCallback(LS_DEBUG_KEY, cb);
 }
 
 template <typename Scalar>
@@ -685,7 +683,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   }
 
   logger.active = (verbose_ > 0);
-  logger.start();
+  logger.printHeadline();
 
   set_penalty_mu(mu_init);
   set_rho(rho_init);
@@ -902,6 +900,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     iter_log.dphi0 = dphi0;
     iter_log.merit = phi_new;
     iter_log.dM = phi_new - phi0;
+    iter_log.mu = mu();
 
     if (alpha_opt <= ls_params.alpha_min) {
       if (xreg_ >= reg_max)

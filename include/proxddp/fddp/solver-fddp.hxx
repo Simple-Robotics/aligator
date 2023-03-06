@@ -303,7 +303,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
   results_.conv = false;
 
   logger.active = verbose_ > 0;
-  logger.start();
+  logger.printHeadline();
 
   // in Crocoddyl, linesearch xs is primed to use problem x0
 
