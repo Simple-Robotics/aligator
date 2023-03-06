@@ -67,8 +67,8 @@ template <typename _Scalar> struct PDALFunction {
   using Workspace = WorkspaceTpl<Scalar>;
   using TrajOptProblem = TrajOptProblemTpl<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
-  using CstrALWeights = ConstraintALWeightStrategy<Scalar>;
-  using SolverType = ::proxddp::SolverProxDDP<Scalar>;
+  using CstrALWeightStrat = ConstraintALWeightStrategy<Scalar>;
+  using SolverType = SolverProxDDP<Scalar>;
 
   /// @brief    Compute the merit function at the trial point.
   /// @warning  Evaluate the problem and proximal terms first!

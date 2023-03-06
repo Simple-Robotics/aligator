@@ -1,7 +1,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/core/helpers-base.hpp"
+#include "proxddp/core/callback-base.hpp"
 #include "proxddp/core/workspace.hpp"
 #include "proxddp/core/results.hpp"
 

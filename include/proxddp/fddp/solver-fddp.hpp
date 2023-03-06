@@ -5,7 +5,7 @@
 /// @htmlinclude fddp.html
 #pragma once
 
-#include "proxddp/core/helpers-base.hpp"
+#include "proxddp/core/callback-base.hpp"
 #include "proxddp/core/explicit-dynamics.hpp"
 
 #include "proxddp/fddp/results.hpp"
@@ -15,6 +15,7 @@
 #include "proxddp/utils/logger.hpp"
 
 #include <fmt/ostream.h>
+#include <unordered_map>
 
 /// @brief  A warning for the FDDP module.
 #define PROXDDP_FDDP_WARNING(msg) PROXDDP_WARNING("SolverFDDP", msg)
@@ -41,6 +42,7 @@ template <typename Scalar> struct SolverFDDP {
   using ExpModel = ExplicitDynamicsModelTpl<Scalar>;
   using ExpData = ExplicitDynamicsDataTpl<Scalar>;
   using CallbackPtr = shared_ptr<helpers::base_callback<Scalar>>;
+  using CallbackMap = std::unordered_map<std::string, CallbackPtr>;
 
   Scalar target_tol_;
 
@@ -73,9 +75,11 @@ template <typename Scalar> struct SolverFDDP {
 
   BaseLogger logger{false};
 
+private:
   /// Callbacks
-  std::vector<CallbackPtr> callbacks_;
+  CallbackMap callbacks_;
 
+public:
   Results results_;
   Workspace workspace_;
 
@@ -162,14 +166,26 @@ template <typename Scalar> struct SolverFDDP {
   inline Scalar computeCriterion(Workspace &workspace);
 
   /// @brief    Add a callback to the solver instance.
-  void registerCallback(const CallbackPtr &cb) { callbacks_.push_back(cb); }
+  void registerCallback(const std::string &name, CallbackPtr cb) {
+    callbacks_[name] = cb;
+  }
+
+  const CallbackMap &getCallbacks() const { return callbacks_; }
+  void removeCallback(const std::string &name) { callbacks_.erase(name); }
+  auto getCallback(const std::string &name) -> CallbackPtr {
+    auto cb = callbacks_.find(name);
+    if (cb != end(callbacks_)) {
+      return cb->second;
+    }
+    return nullptr;
+  }
 
   /// @brief    Remove all callbacks from the instance.
   void clearCallbacks() { callbacks_.clear(); }
 
   void invokeCallbacks(Workspace &workspace, Results &results) {
-    for (auto &cb : callbacks_) {
-      cb->call(workspace, results);
+    for (const auto &cb : callbacks_) {
+      cb.second->call(workspace, results);
     }
   }
 

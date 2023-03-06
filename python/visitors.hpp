@@ -3,6 +3,7 @@
 #pragma once
 
 #include <eigenpy/fwd.hpp>
+#include <fmt/format.h>
 #include "proxddp/python/utils/deprecation.hpp"
 
 namespace proxddp {
@@ -43,6 +44,18 @@ struct PrintableVisitor : bp::def_visitor<PrintableVisitor<T>> {
 
 template <typename SolverType>
 struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
+  static auto getCallback(const SolverType &obj, const std::string &name) ->
+      typename SolverType::CallbackPtr {
+    const auto &cbs = obj.getCallbacks();
+    auto cb = cbs.find(name);
+    if (cb == cbs.end()) {
+      PyErr_SetString(PyExc_KeyError,
+                      fmt::format("Key {} not found.", name).c_str());
+      bp::throw_error_already_set();
+    }
+    return cb->second;
+  }
+
   template <typename PyClass> void visit(PyClass &obj) const {
     obj.def_readwrite("verbose", &SolverType::verbose_,
                       "Verbosity level of the solver.")
@@ -72,7 +85,10 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
         .def("setup", &SolverType::setup, bp::args("self", "problem"),
              "Allocate solver workspace and results data for the problem.")
         .def("registerCallback", &SolverType::registerCallback,
-             bp::args("self", "cb"), "Add a callback to the solver.")
+             bp::args("self", "name", "cb"), "Add a callback to the solver.")
+        .def("removeCallback", &SolverType::removeCallback,
+             bp::args("self", "key"), "Remove a callback.")
+        .def("getCallback", getCallback, bp::args("self", "key"))
         .def("clearCallbacks", &SolverType::clearCallbacks, bp::args("self"),
              "Clear callbacks.");
   }

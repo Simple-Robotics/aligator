@@ -88,7 +88,7 @@ int main(int, char **) {
   SolverProxDDP<double> solver(TOL, mu_init, 0., max_iters, proxddp::VERBOSE);
   std::string fpath_base = "kkt_matrices";
   solver.registerCallback(
-      std::make_shared<extract_kkt_matrix_callback>(fpath_base));
+      "kktcb", std::make_shared<extract_kkt_matrix_callback>(fpath_base));
 
   std::vector<VectorXd> xs_i, us_i;
   getInitialGuesses(croc_problem, xs_i, us_i);

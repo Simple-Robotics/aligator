@@ -77,7 +77,7 @@ verbose = proxddp.VerboseLevel.VERBOSE
 tol = 1e-6
 solver = proxddp.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
 his_cb = proxddp.HistoryCallback()
-solver.registerCallback(his_cb)
+solver.registerCallback("his", his_cb)
 solver.max_iters = 20
 
 u0 = np.zeros(nu)

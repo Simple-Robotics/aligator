@@ -6,7 +6,7 @@
 #include "proxddp/core/merit-function.hpp"
 #include "proxddp/core/proximal-penalty.hpp"
 #include "proxddp/core/linesearch.hpp"
-#include "proxddp/core/helpers-base.hpp"
+#include "proxddp/core/callback-base.hpp"
 #include "proxddp/core/enums.hpp"
 #include "proxddp/utils/exceptions.hpp"
 #include "proxddp/utils/logger.hpp"
@@ -14,6 +14,8 @@
 
 #include <proxnlp/constraint-base.hpp>
 #include <proxnlp/bcl-params.hpp>
+
+#include <unordered_map>
 
 namespace proxddp {
 
@@ -41,6 +43,7 @@ public:
   using ProxPenaltyType = ProximalPenaltyTpl<Scalar>;
   using ProxData = typename ProxPenaltyType::Data;
   using CallbackPtr = shared_ptr<helpers::base_callback<Scalar>>;
+  using CallbackMap = std::unordered_map<std::string, CallbackPtr>;
   using ConstraintStack = ConstraintStackTpl<Scalar>;
   using CstrSet = ConstraintSetBase<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
@@ -81,9 +84,6 @@ public:
 
   /// Logger
   BaseLogger logger{};
-#ifndef NDEBUG
-  bool dump_linesearch_plot = false;
-#endif
 
   /// Solver verbosity level.
   VerboseLevel verbose_;
@@ -126,9 +126,11 @@ public:
   /// Minimum possible penalty parameter.
   Scalar MU_MIN = 1e-8;
 
+private:
   /// Callbacks
-  std::vector<CallbackPtr> callbacks_;
+  CallbackMap callbacks_;
 
+public:
   Workspace workspace_;
   Results results_;
 
@@ -165,8 +167,7 @@ public:
                                 const Results &results,
                                 const Scalar alpha) const;
 
-  Scalar forwardPass(const Problem &problem, Workspace &workspace,
-                     const Results &results, const Scalar alpha);
+  Scalar forwardPass(const Problem &problem, const Scalar alpha);
 
   void compute_dir_x0(const Problem &problem, Workspace &workspace,
                       const Results &results) const;
@@ -229,15 +230,27 @@ public:
   /// \{
 
   /// @brief    Add a callback to the solver instance.
-  void registerCallback(const CallbackPtr &cb) { callbacks_.push_back(cb); }
+  void registerCallback(const std::string &name, CallbackPtr cb) {
+    callbacks_[name] = cb;
+  }
 
   /// @brief    Remove all callbacks from the instance.
   void clearCallbacks() noexcept { callbacks_.clear(); }
 
+  const CallbackMap &getCallbacks() const { return callbacks_; }
+  void removeCallback(const std::string &name) { callbacks_.erase(name); }
+  auto getCallback(const std::string &name) -> CallbackPtr {
+    auto cb = callbacks_.find(name);
+    if (cb != end(callbacks_)) {
+      return cb->second;
+    }
+    return nullptr;
+  }
+
   /// @brief    Invoke callbacks.
   void invokeCallbacks(Workspace &workspace, Results &results) {
-    for (auto &cb : callbacks_) {
-      cb->call(workspace, results);
+    for (const auto &cb : callbacks_) {
+      cb.second->call(workspace, results);
     }
   }
   /// \}
