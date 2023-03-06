@@ -329,7 +329,7 @@ def main(args: Args):
     if args.fddp:
         solver = proxddp.SolverFDDP(tol, verbose=verbose)
     solver.max_iters = 200
-    solver.registerCallback(history_cb)
+    solver.registerCallback("his", history_cb)
     solver.setup(problem)
     solver.run(problem, xs_init, us_init)
 
