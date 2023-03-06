@@ -506,6 +506,9 @@ auto SolverProxDDP<Scalar>::computeGains(const Problem &problem,
     std::array<std::size_t, 3> inertia;
     math::compute_inertia(ldlt.vectorD(), inertia.data());
     if ((inertia[1] > 0U) || (inertia[2] != (std::size_t)ndual)) {
+      if (verbose_ > VERYVERBOSE)
+        fmt::print("[{}] found incorrect inertia ({})\n", __func__,
+                   fmt::join(inertia, ", "));
       return BWD_WRONG_INERTIA;
     }
   }
@@ -683,9 +686,6 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   set_rho(rho_init);
   xreg_ = reg_init;
   ureg_ = reg_init;
-  if (reg_init >= reg_init_nonzero) {
-    reg_init_nonzero = reg_inc_first_k_ * reg_init;
-  } // handle case where user supplied reg_init exceeds ref. nonzero value
 
   workspace_.prev_xs = results_.xs;
   workspace_.prev_us = results_.us;
@@ -826,6 +826,9 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     // computeProxDerivatives(results.xs, results.us, workspace);
     const Scalar phi0 = results.merit_value_;
 
+    // attempt backward pass until successful
+    // i.e. no inertia problems
+    initialize_regularization();
     while (true) {
       BackwardRet b = backwardPass(problem, workspace, results);
       switch (b) {
@@ -834,7 +837,8 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
       case BWD_WRONG_INERTIA: {
         if (xreg_ >= reg_max)
           return false;
-        select_regularization();
+        increase_regularization();
+        xreg_last_ = xreg_ * reg_inc_k_;
         continue;
       }
       }
@@ -889,9 +893,9 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
     iter_log.dM = phi_new - phi0;
 
     if (alpha_opt <= ls_params.alpha_min) {
-      select_regularization();
       if (xreg_ >= reg_max)
         return false;
+      increase_regularization();
     }
     invokeCallbacks(workspace, results);
     logger.log(iter_log);

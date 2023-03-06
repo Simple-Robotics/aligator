@@ -66,14 +66,13 @@ public:
   Scalar reg_min = 1e-10; //< Minimal nonzero regularization
   Scalar reg_max = 1e9;
   Scalar reg_init = 1e-9;         //< Initial regularization value (can be zero)
-  Scalar reg_init_nonzero = 1e-5; //< Initial (bigger) regularization value
   Scalar reg_inc_k_ = 10.;        //< Regularization increase factor
   Scalar reg_inc_first_k_ = 100.; //< Regularization increase (critical)
   Scalar reg_dec_k_ = 1. / 3.;    //< Regularization decrease factor
 
   Scalar xreg_ = reg_init;
   Scalar ureg_ = xreg_;
-  Scalar xreg_last_ = 0.;
+  Scalar xreg_last_ = 0.; //< Last "good" regularization value
 
   //// Initial BCL tolerances
 
@@ -288,29 +287,24 @@ protected:
     set_penalty_mu(mu_penal_ * bcl_params.mu_update_factor);
   }
 
-  /// Increase Tikhonov regularization.
-  inline void select_regularization() {
-    if (xreg_ == reg_init) {
-      if (xreg_last_ == reg_init) {
-        xreg_ = reg_init_nonzero;
-      } else {
-        xreg_ = std::max(reg_min, xreg_last_ * reg_dec_k_);
-      }
+  // See sec. 3.1 of the IPOPT paper [Wächter, Biegler 2006]
+  // called before first bwd pass attempt
+  inline void initialize_regularization() {
+    if (xreg_last_ == 0.) {
+      // this is the 1st iteration
+      xreg_ = reg_init;
     } else {
-      if (xreg_last_ == reg_init)
-        xreg_ *= reg_inc_first_k_;
-      else
-        xreg_ *= reg_inc_k_;
+      // attempt decrease from last "good" value
+      xreg_ = std::max(reg_min, xreg_last_ * reg_dec_k_);
     }
-    ureg_ = xreg_;
+    xreg_ = ureg_;
   }
 
-  /// Decrease Tikhonov regularization.
-  inline void decrease_reg() {
-    xreg_ *= reg_dec_k_;
-    if (xreg_ < reg_min) {
-      xreg_ = 0.;
-    }
+  inline void increase_regularization() {
+    if (xreg_last_ == 0.)
+      xreg_ *= reg_inc_first_k_;
+    else
+      xreg_ *= reg_inc_k_;
     ureg_ = xreg_;
   }
 
