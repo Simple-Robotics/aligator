@@ -53,16 +53,14 @@ void exposeCallbacks() {
                                                   "Base callback for solvers.",
                                                   bp::init<>(bp::args("self")))
       .def("call", bp::pure_virtual(&CallbackWrapper::call),
-           bp::args("self", "workspace", "results"))
-      .def("post_linesearch_callback", &CallbackWrapper::post_linesearch_call,
-           bp::args("self", "input"));
+           bp::args("self", "workspace", "results"));
 
   exposeHistoryCallback();
   using LSCallback = LinesearchCallback<Scalar>;
   using LSData = LSCallback::Data;
   eigenpy::enableEigenPySpecific<LSData::Matrix2Xs>();
   bp::class_<LSCallback, bp::bases<CallbackBase>>("LinesearchCallback",
-                                                  bp::no_init)
+                                                  bp::init<>(bp::args("self")))
       .def_readwrite("alpha_min", &LSCallback::alpha_min)
       .def_readwrite("alpha_max", &LSCallback::alpha_max)
       .def(
@@ -76,7 +74,8 @@ void exposeCallbacks() {
             }
             return m.get(t);
           },
-          bp::args("self", "t"));
+          bp::args("self", "t"))
+      .def("get_d", &LSCallback::get_dphi, bp::args("self", "t"));
 }
 } // namespace python
 } // namespace proxddp

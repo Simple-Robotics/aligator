@@ -103,7 +103,7 @@ max_iters = 50
 verbose = proxddp.VerboseLevel.VERBOSE
 solver = proxddp.SolverProxDDP(tol, mu_init, max_iters=max_iters, verbose=verbose)
 cb = proxddp.HistoryCallback()
-solver.registerCallback(cb)
+solver.registerCallback("his", cb)
 # solver.dump_linesearch_plot = True
 
 solver.setup(problem)

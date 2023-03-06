@@ -85,9 +85,6 @@ public:
 
   /// Logger
   BaseLogger logger{};
-#ifndef NDEBUG
-  bool dump_linesearch_plot = false;
-#endif
 
   /// Solver verbosity level.
   VerboseLevel verbose_;
@@ -243,6 +240,13 @@ public:
 
   const CallbackMap &getCallbacks() const { return callbacks_; }
   void removeCallback(const std::string &name) { callbacks_.erase(name); }
+  auto getCallback(const std::string &name) -> CallbackPtr {
+    auto cb = callbacks_.find(name);
+    if (cb != end(callbacks_)) {
+      return cb->second;
+    }
+    return nullptr;
+  }
 
   /// @brief    Invoke callbacks.
   void invokeCallbacks(Workspace &workspace, Results &results) {

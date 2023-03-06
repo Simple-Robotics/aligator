@@ -806,11 +806,8 @@ template <typename Scalar>
 bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
                                       Workspace &workspace, Results &results) {
 
-  DataLinesearchDebug<Scalar> ls_data;
-  auto merit_eval_fun = [&](Scalar a0) {
-    Scalar res = forwardPass(problem, a0);
-    ls_data.push(a0, res);
-    return res;
+  auto merit_eval_fun = [&](Scalar a0) -> Scalar {
+    return forwardPass(problem, a0);
   };
 
   LogRecord iter_log;
@@ -871,24 +868,14 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem,
       return true;
 
     // otherwise continue linesearch
-    auto ls_cb_maybe = callbacks_.find(LS_DEBUG_KEY);
-    if (ls_cb_maybe != callbacks_.end()) {
-      auto ls_cb = std::static_pointer_cast<LinesearchCallback<Scalar>>(
-          ls_cb_maybe->second);
-      ls_data.clear();
-      fmt::print("[Found a linesearch debug callback]\n");
-      std::size_t num_alpha = 100;
-      Scalar da = 1. / static_cast<Scalar>(num_alpha);
-      Scalar a = ls_cb->alpha_min;
-      while (a <= ls_cb->alpha_max) {
-        merit_eval_fun(a);
-        a += da;
-      }
-    }
     Scalar alpha_opt = 1;
     Scalar phi_new = linesearch_.run(merit_eval_fun, phi0, dphi0, alpha_opt);
-    if (ls_cb_maybe != callbacks_.end()) {
-      ls_cb_maybe->second->post_linesearch_call(ls_data);
+    // post linesearch calls
+    CallbackPtr ls_cb_maybe = getCallback(LS_DEBUG_KEY);
+    if (ls_cb_maybe != 0) {
+      std::function<Scalar(Scalar)> fptr = merit_eval_fun;
+      ls_cb_maybe->post_linesearch_call(
+          std::make_tuple(fptr, dphi0, alpha_opt));
     }
 
     // accept the step

@@ -3,6 +3,7 @@
 #pragma once
 
 #include <eigenpy/fwd.hpp>
+#include <fmt/format.h>
 #include "proxddp/python/utils/deprecation.hpp"
 
 namespace proxddp {
@@ -48,7 +49,8 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
     const auto &cbs = obj.getCallbacks();
     auto cb = cbs.find(name);
     if (cb == cbs.end()) {
-      PyErr_SetString(PyExc_KeyError, "Key not found.");
+      PyErr_SetString(PyExc_KeyError,
+                      fmt::format("Key {} not found.", cb->first).c_str());
       bp::throw_error_already_set();
     }
     return cb->second;
