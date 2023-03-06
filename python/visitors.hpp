@@ -44,8 +44,9 @@ struct PrintableVisitor : bp::def_visitor<PrintableVisitor<T>> {
 
 template <typename SolverType>
 struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
-  static auto getCallback(const SolverType &obj, const std::string &name) ->
-      typename SolverType::CallbackPtr {
+  using CallbackPtr = typename SolverType::CallbackPtr;
+  static auto getCallback(const SolverType &obj, const std::string &name)
+      -> CallbackPtr {
     const auto &cbs = obj.getCallbacks();
     auto cb = cbs.find(name);
     if (cb == cbs.end()) {
@@ -55,6 +56,8 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
     }
     return cb->second;
   }
+
+  static void registerCallback_old(const SolverType &, const CallbackPtr &) {}
 
   template <typename PyClass> void visit(PyClass &obj) const {
     obj.def_readwrite("verbose", &SolverType::verbose_,
@@ -86,6 +89,12 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
              "Allocate solver workspace and results data for the problem.")
         .def("registerCallback", &SolverType::registerCallback,
              bp::args("self", "name", "cb"), "Add a callback to the solver.")
+        .def("registerCallback", registerCallback_old,
+             deprecated_member<bp::default_call_policies,
+                               DeprecationTypes::DEPRECATION>(
+                 "This signature for registerCallback() has been deprecated "
+                 "and does nothing. It will be removed in the future."),
+             bp::args("self", "cb"))
         .def("removeCallback", &SolverType::removeCallback,
              bp::args("self", "key"), "Remove a callback.")
         .def("getCallback", getCallback, bp::args("self", "key"))
