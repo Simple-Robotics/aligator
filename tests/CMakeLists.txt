@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022 LAAS-CNRS, INRIA
+# Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #
 
 set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR})
@@ -57,21 +57,7 @@ endforeach(test_name)
 
 # PYTHON TESTS
 if (BUILD_PYTHON_INTERFACE)
-  file(GLOB PYTHON_TESTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} python/test_*.py)
-  if (NOT BUILD_CROCODDYL_COMPAT)
-    list(REMOVE_ITEM PYTHON_TESTS python/test_compat_croc.py)
-  endif()
-  if (NOT BUILD_WITH_PINOCCHIO_PYTHON_BINDINGS)
-    list(REMOVE_ITEM PYTHON_TESTS python/test_constrained_dynamics.py)
-    list(REMOVE_ITEM PYTHON_TESTS python/test_frames.py)
-  endif()
-  message(STATUS "Python tests: ${PYTHON_TESTS}")
-  make_directory(${CMAKE_CURRENT_BINARY_DIR}/python)
-
-  foreach(pyfile ${PYTHON_TESTS})
-    get_filename_component(pyfile_name ${pyfile} NAME)
-    ADD_PYTHON_UNIT_TEST(${pyfile_name} "tests/${pyfile}")
-  endforeach()
+  add_subdirectory(python)
 endif()
 
 if(BUILD_CROCODDYL_COMPAT)
