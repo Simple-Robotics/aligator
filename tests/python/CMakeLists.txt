@@ -18,3 +18,24 @@ foreach(pyfile ${PYTHON_TESTS})
   ADD_PYTHON_UNIT_TEST(${pyfile_name} "tests/python/${pyfile}" "tests/python")
   set_tests_properties("${pyfile_name}" PROPERTIES DEPENDS ${PYLIB_NAME})
 endforeach()
+
+
+function(add_test_binding_lib test_name)
+  create_ctest_build_tests_target()
+
+  add_library(${test_name} SHARED "${test_name}.cpp")
+  target_link_libraries(${test_name} PUBLIC ${PYLIB_NAME})
+  set_target_properties(${test_name} PROPERTIES
+    PREFIX ""
+    SUFFIX ${PYTHON_EXT_SUFFIX})
+  # test for possible import segfault
+  add_test(NAME ${test_name} COMMAND ${PYTHON_EXECUTABLE} -c "import ${test_name}")
+  message(STATUS "Adding Python/C++ test ${test_name}")
+
+  add_dependencies(build_tests ${test_name})
+  if (NOT BUILD_TESTING)
+    set_tests_properties(${test_name} PROPERTIES DEPENDS ctest_build_tests)
+  endif()
+endfunction()
+
+add_test_binding_lib(bind_optional)
