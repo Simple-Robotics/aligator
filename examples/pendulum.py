@@ -235,23 +235,24 @@ plt.savefig("assets/pendulum_controls.png")
 if True:
     from proxnlp.utils import plot_pd_errs
 
-    plt.figure(figsize=(6.4, 4.8))
     prim_errs = callback.storage.prim_infeas
     dual_errs = callback.storage.dual_infeas
-    prim_tols = np.array(callback.storage.prim_tols.tolist())
-    al_iters = np.array(callback.storage.al_iters.tolist())
+    if len(prim_errs) != 0:
+        plt.figure(figsize=(6.4, 4.8))
+        prim_tols = np.array(callback.storage.prim_tols.tolist())
+        al_iters = np.array(callback.storage.al_iters.tolist())
 
-    ax: plt.Axes = plt.subplot(111)
-    plot_pd_errs(ax, prim_errs, dual_errs)
-    itrange = np.arange(len(al_iters))
-    ax.step(itrange, prim_tols, c="green", alpha=0.9, lw=1.1)
-    al_change = al_iters[1:] - al_iters[:-1]
-    al_change_idx = itrange[:-1][al_change > 0]
+        ax: plt.Axes = plt.subplot(111)
+        plot_pd_errs(ax, prim_errs, dual_errs)
+        itrange = np.arange(len(al_iters))
+        ax.step(itrange, prim_tols, c="green", alpha=0.9, lw=1.1)
+        al_change = al_iters[1:] - al_iters[:-1]
+        al_change_idx = itrange[:-1][al_change > 0]
 
-    ax.vlines(al_change_idx, *ax.get_ylim(), colors="gray", lw=4.0, alpha=0.5)
-    ax.legend(["Prim. err $p$", "Dual err $d$", "Prim tol $\\eta_k$", "AL iters"])
-    plt.tight_layout()
-    plt.savefig("assets/pendulum_convergence.png")
+        ax.vlines(al_change_idx, *ax.get_ylim(), colors="gray", lw=4.0, alpha=0.5)
+        ax.legend(["Prim. err $p$", "Dual err $d$", "Prim tol $\\eta_k$", "AL iters"])
+        plt.tight_layout()
+        plt.savefig("assets/pendulum_convergence.png")
 
 
 plt.show()
