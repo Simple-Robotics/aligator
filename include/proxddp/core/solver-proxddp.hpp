@@ -148,39 +148,36 @@ public:
   /// @pre This function assumes \f$\delta x_0\f$ has already been computed!
   /// @returns This computes the primal-dual step \f$(\delta \bfx,\delta
   /// \bfu,\delta\bmlam)\f$
-  void linearRollout(const Problem &problem, Workspace &workspace,
-                     const Results &results) const;
+  void linearRollout(const Problem &problem);
 
   /// @brief    Try a step of size \f$\alpha\f$.
   /// @returns  A primal-dual trial point
   ///           \f$(\bfx \oplus\alpha\delta\bfx, \bfu+\alpha\delta\bfu,
   ///           \bmlam+\alpha\delta\bmlam)\f$
   /// @returns  The trajectory cost.
-  Scalar forward_linear_impl(const Problem &problem, Workspace &workspace,
-                             const Results &results, const Scalar alpha) const;
+  static Scalar forward_linear_impl(const Problem &problem,
+                                    Workspace &workspace,
+                                    const Results &results, const Scalar alpha);
 
   /// @brief    Policy rollout using the full nonlinear dynamics. The feedback
   /// gains need to be computed first. This will evaluate all the terms in the
   /// problem into the problem data, similar to TrajOptProblemTpl::evaluate().
   /// @returns  The trajectory cost.
-  Scalar nonlinear_rollout_impl(const Problem &problem, Workspace &workspace,
-                                const Results &results,
-                                const Scalar alpha) const;
+  Scalar nonlinear_rollout_impl(const Problem &problem, const Scalar alpha);
 
   Scalar forwardPass(const Problem &problem, const Scalar alpha);
 
-  void compute_dir_x0(const Problem &problem, Workspace &workspace,
-                      const Results &results) const;
+  void compute_dir_x0(const Problem &problem);
 
   /// @brief    Terminal node.
-  void computeTerminalValue(const Problem &problem, Workspace &workspace,
-                            Results &results) const;
+  void computeTerminalValue(const Problem &problem);
+
+  /// @brief    Compute the Hamiltonian parameters at time @param t.
+  void updateHamiltonian(const Problem &problem, const std::size_t);
 
   /// @brief    Perform the Riccati backward pass.
-  ///
   /// @pre  Compute the derivatives first!
-  BackwardRet backwardPass(const Problem &problem, Workspace &workspace,
-                           Results &results);
+  BackwardRet backwardPass(const Problem &problem);
 
   /// @brief Allocate new workspace and results instances according to the
   /// specifications of @p problem.
@@ -196,10 +193,6 @@ public:
                               const std::vector<VectorXs> &us,
                               Workspace &workspace) const;
 
-  /// Compute the Hamiltonian parameters at time @param t.
-  void updateHamiltonian(const Problem &problem, const Results &results,
-                         Workspace &workspace, const std::size_t) const;
-
   /// @brief Run the numerical solver.
   /// @param problem  The trajectory optimization problem to solve.
   /// @param xs_init  Initial trajectory guess.
@@ -213,18 +206,15 @@ public:
 
   /// @brief    Perform the inner loop of the algorithm (augmented Lagrangian
   /// minimization).
-  bool innerLoop(const Problem &problem, Workspace &workspace,
-                 Results &results);
+  bool innerLoop(const Problem &problem);
 
   /// @brief    Compute the primal infeasibility measures.
   /// @warning  This will alter the constraint values (by projecting on the
   /// normal cone in-place).
   ///           Compute anything which accesses these before!
-  void computeInfeasibilities(const Problem &problem, Workspace &workspace,
-                              Results &results) const;
-
-  void computeCriterion(const Problem &problem, Workspace &workspace,
-                        Results &results) const;
+  void computeInfeasibilities(const Problem &problem);
+  /// @brief Compute stationarity criterion.
+  void computeCriterion(const Problem &problem);
 
   /// @name callbacks
   /// \{
@@ -259,7 +249,7 @@ public:
   void computeMultipliers(const Problem &problem, Workspace &workspace,
                           const std::vector<VectorXs> &lams) const;
 
-  void projectJacobians(const Problem &problem, Workspace &workspace) const;
+  void projectJacobians(const Problem &problem);
 
   /// @copydoc mu_penal_
   PROXDDP_INLINE Scalar mu() const { return mu_penal_; }
@@ -274,9 +264,8 @@ public:
 
   /// @brief  Put together the Q-function parameters and compute the Riccati
   /// gains.
-  inline BackwardRet computeGains(const Problem &problem, Workspace &workspace,
-                                  Results &results,
-                                  const std::size_t step) const;
+  inline BackwardRet computeGains(const Problem &problem,
+                                  const std::size_t step);
 
   auto getLinesearchMuLowerBound() const { return min_mu_linesearch_; }
   void setLinesearchMuLowerBound(Scalar mu) { min_mu_linesearch_ = mu; }
