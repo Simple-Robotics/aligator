@@ -32,3 +32,10 @@ repos:
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
+-   repo: https://github.com/cheshirekow/cmake-format-precommit
+    rev: v0.6.10
+    hooks:
+    -   id: cmake-format
+        additional_dependencies: [pyyaml>=5.1]
+    -   id: cmake-lint
+        additional_dependencies: [pyyaml>=5.1]
