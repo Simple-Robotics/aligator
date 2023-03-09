@@ -1,9 +1,6 @@
 set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-set(TEST_NAMES
-    croc-problem
-    croc-action-model
-    )
+set(TEST_NAMES croc-problem croc-action-model)
 
 find_package(crocoddyl REQUIRED)
 
