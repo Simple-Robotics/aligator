@@ -1,14 +1,14 @@
 #include "proxddp/python/fwd.hpp"
 #include "proxddp/python/utils/optional.hpp"
 
-using opt_flt = boost::optional<float>;
+using opt_dbl = boost::optional<double>;
 
 struct mystruct {
   boost::optional<int> a;
-  opt_flt b;
+  opt_dbl b;
   boost::optional<std::string> msg{"i am struct"};
   mystruct() : a(boost::none), b(boost::none) {}
-  mystruct(int a, const opt_flt &b = boost::none) : a(a), b(b) {}
+  mystruct(int a, const opt_dbl &b = boost::none) : a(a), b(b) {}
 };
 
 boost::optional<int> none_if_zero(int i) {
@@ -18,7 +18,7 @@ boost::optional<int> none_if_zero(int i) {
     return i;
 }
 
-boost::optional<mystruct> create_if_true(bool flag, opt_flt b = boost::none) {
+boost::optional<mystruct> create_if_true(bool flag, opt_dbl b = boost::none) {
   if (flag) {
     return mystruct(0, b);
   } else {
@@ -29,13 +29,13 @@ boost::optional<mystruct> create_if_true(bool flag, opt_flt b = boost::none) {
 BOOST_PYTHON_MODULE(bind_optional) {
   using namespace proxddp::python;
   OptionalConverter<int>::registration();
-  OptionalConverter<float>::registration();
+  OptionalConverter<double>::registration();
   OptionalConverter<std::string>::registration();
   OptionalConverter<mystruct>::registration();
 
   bp::class_<mystruct>("mystruct", bp::no_init)
       .def(bp::init<>(bp::args("self")))
-      .def(bp::init<int, bp::optional<const opt_flt &>>(
+      .def(bp::init<int, bp::optional<const opt_dbl &>>(
           bp::args("self", "a", "b")))
       .add_property(
           "a",

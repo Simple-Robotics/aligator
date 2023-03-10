@@ -44,9 +44,9 @@ def test_struct_setters():
 
 
 def test_factory():
-    struct = bind_optional.create_if_true(False)
+    struct = bind_optional.create_if_true(False, None)
     assert struct is None
-    struct = bind_optional.create_if_true(True)
+    struct = bind_optional.create_if_true(True, None)
     assert struct.a == 0
     assert struct.b is None
 
