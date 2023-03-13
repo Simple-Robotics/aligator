@@ -3,6 +3,8 @@
   <name>proxddp</name>
   <version>0.3.0</version>
   <maintainer email="wilson.jallet@laas.fr">Wilson Jallet</maintainer>
+  <description>A primal-dual augmented Lagrangian-type solver for trajectory optimization.</description>
+  <license>tbd</license>
 
   <build_depend>git</build_depend>
   <build_depend>doxygen</build_depend>
