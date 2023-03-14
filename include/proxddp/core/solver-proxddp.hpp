@@ -299,7 +299,7 @@ protected:
       // attempt decrease from last "good" value
       xreg_ = std::max(reg_min, xreg_last_ * reg_dec_k_);
     }
-    xreg_ = ureg_;
+    ureg_ = xreg_;
   }
 
   inline void increase_regularization() {
