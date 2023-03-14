@@ -22,6 +22,8 @@ void exposeFunctionBase() {
   using context::VectorXs;
   using internal::PyStageFunction;
   using FunctionPtr = shared_ptr<StageFunction>;
+  using StateErrorResidual = StateErrorResidualTpl<Scalar>;
+  using ControlErrorResidual = ControlErrorResidualTpl<Scalar>;
 
   bp::register_ptr_to_python<FunctionPtr>();
 
@@ -116,14 +118,14 @@ void exposeFunctionBase() {
   StdVectorPythonVisitor<std::vector<shared_ptr<FunctionData>>, true>::expose(
       "StdVec_FunctionData", "Vector of function data objects.");
 
-  bp::class_<StateErrorResidualTpl<Scalar>, bp::bases<StageFunction>>(
+  bp::class_<StateErrorResidual, bp::bases<StageFunction>>(
       "StateErrorResidual", bp::init<const shared_ptr<context::Manifold> &,
                                      const int, const context::VectorXs &>(
                                 bp::args("self", "space", "nu", "target")))
-      .def_readonly("space", &StateErrorResidualTpl<Scalar>::space_)
-      .def_readwrite("target", &StateErrorResidualTpl<Scalar>::target_);
+      .def_readonly("space", &StateErrorResidual::space_)
+      .def_readwrite("target", &StateErrorResidual::target_);
 
-  bp::class_<ControlErrorResidual<Scalar>, bp::bases<StageFunction>>(
+  bp::class_<ControlErrorResidual, bp::bases<StageFunction>>(
       "ControlErrorResidual",
       bp::init<const int, const shared_ptr<context::Manifold> &,
                const context::VectorXs &>(
@@ -131,8 +133,8 @@ void exposeFunctionBase() {
       .def(bp::init<const int, const context::VectorXs &>(
           bp::args("self", "ndx", "target")))
       .def(bp::init<int, int>(bp::args("self", "ndx", "nu")))
-      .def_readonly("space", &ControlErrorResidual<Scalar>::space_)
-      .def_readwrite("target", &ControlErrorResidual<Scalar>::target_);
+      .def_readonly("space", &ControlErrorResidual::space_)
+      .def_readwrite("target", &ControlErrorResidual::target_);
 
   bp::class_<LinearFunctionTpl<Scalar>, bp::bases<StageFunction>>(
       "LinearFunction", bp::init<const int, const int, const int, const int>(
