@@ -110,6 +110,8 @@ template <typename _Scalar> struct TrajOptProblemTpl {
       : init_state_error_(resdl), term_cost_(term_cost), unone_(nu),
         num_threads_(1) {
     unone_.setZero();
+    if (init_state_error_ == nullptr)
+      PROXDDP_RUNTIME_ERROR("Provided init residual is null.");
   }
 
   /// @brief Add a stage to the control problem.
@@ -169,6 +171,8 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 
 protected:
   std::size_t num_threads_;
+  /// @brief Check if all stages are non-null.
+  void checkStages() const;
 };
 
 /// @brief Problem data struct.

@@ -17,6 +17,7 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
           stages[0]->xspace_, stages[0]->nu(), x0)),
       stages_(stages), term_cost_(term_cost), unone_(stages[0]->nu()),
       num_threads_(1) {
+  checkStages();
   unone_.setZero();
 }
 
@@ -94,7 +95,18 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
 
 template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::addStage(const shared_ptr<StageModel> &stage) {
+  if (stage == nullptr)
+    PROXDDP_RUNTIME_ERROR("Input stage is null.");
   stages_.push_back(stage);
+}
+
+template <typename Scalar> void TrajOptProblemTpl<Scalar>::checkStages() const {
+  for (auto st = begin(stages_); st != end(stages_); ++st) {
+    if (*st == nullptr) {
+      long d = std::distance(stages_.begin(), st);
+      PROXDDP_RUNTIME_ERROR(fmt::format("Stage {:d} is null.", d));
+    }
+  }
 }
 
 template <typename Scalar>
