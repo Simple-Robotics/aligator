@@ -191,7 +191,7 @@ if True:
 
     # mu_init = 1e-7
     # rho_init = 1e-10
-    # solver = proxddp.SolverProxDDP(TOLERANCE, mu_init, rho_init=rho_init, max_iters=300)
+    # proxsolver = proxddp.SolverProxDDP(croc_dual_err * 0.8, 0.001, max_iters=300)
     proxsolver = proxddp.SolverFDDP(tol=croc_dual_err)
     proxsolver.verbose = proxddp.VerboseLevel.VERBOSE
     proxsolver.setup(prox_problem)
