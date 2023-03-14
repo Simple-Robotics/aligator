@@ -291,7 +291,7 @@ protected:
 
   // See sec. 3.1 of the IPOPT paper [Wächter, Biegler 2006]
   // called before first bwd pass attempt
-  inline void initialize_regularization() {
+  inline void initialize_regularization() noexcept {
     if (xreg_last_ == 0.) {
       // this is the 1st iteration
       xreg_ = reg_init;
@@ -302,7 +302,7 @@ protected:
     ureg_ = xreg_;
   }
 
-  inline void increase_regularization() {
+  inline void increase_regularization() noexcept {
     if (xreg_last_ == 0.)
       xreg_ *= reg_inc_first_k_;
     else
