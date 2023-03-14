@@ -199,7 +199,6 @@ auto SolverProxDDP<Scalar>::backwardPass(const Problem &problem)
       return b;
     }
   }
-  xreg_last_ = xreg_; // update last "correct" reg
   return BWD_SUCCESS;
 }
 
@@ -672,8 +671,6 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
 
   set_penalty_mu(mu_init);
   set_rho(rho_init);
-  xreg_ = reg_init;
-  ureg_ = reg_init;
 
   workspace_.prev_xs = results_.xs;
   workspace_.prev_us = results_.us;
@@ -825,7 +822,6 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
         if (xreg_ >= reg_max)
           return false;
         increase_regularization();
-        xreg_last_ = xreg_ * reg_inc_k_;
         continue;
       }
       }
@@ -895,6 +891,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
     invokeCallbacks(workspace_, results_);
     logger.log(iter_log);
 
+    xreg_last_ = xreg_;
     iter++;
     inner_step++;
   }
