@@ -25,18 +25,26 @@ protected:
   /// Weight N for term @f$ x^\top N u @f$
   MatrixXs weights_cross_;
 
+  static void check_dim_equal(long n, long m, const std::string &msg = "") {
+    if (n != m)
+      PROXDDP_RUNTIME_ERROR(fmt::format(
+          "Dimensions inconsistent: got {:d} and {:d}{}.\n", n, m, msg));
+  }
+
+  void debug_check_dims() const {
+    check_dim_equal(weights_x.rows(), weights_x.cols(), " for x weights");
+    check_dim_equal(weights_u.rows(), weights_u.cols(), " for u weights");
+    check_dim_equal(weights_cross_.rows(), this->ndx, " for cross-term weight");
+    check_dim_equal(weights_cross_.cols(), this->nu, " for cross-term weight");
+    check_dim_equal(interp_x.rows(), weights_x.rows(),
+                    " for x weights and intercept");
+    check_dim_equal(interp_u.rows(), weights_u.rows(),
+                    " for u weights and intercept");
+  }
+
 public:
   VectorXs interp_x;
   VectorXs interp_u;
-
-  void debug_check_dims() const {
-    assert(weights_x.rows() == weights_x.cols());
-    assert(weights_u.rows() == weights_u.cols());
-    assert(weights_cross_.rows() == this->ndx);
-    assert(weights_cross_.cols() == this->nu);
-    assert(interp_x.rows() == weights_x.rows());
-    assert(interp_u.rows() == weights_u.rows());
-  }
 
   QuadraticCostTpl(const ConstMatrixRef &w_x, const ConstMatrixRef &w_u,
                    const ConstVectorRef &interp_x,
