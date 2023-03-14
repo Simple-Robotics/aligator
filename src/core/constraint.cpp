@@ -6,6 +6,4 @@ template struct StageConstraintTpl<context::Scalar>;
 
 template struct ConstraintStackTpl<context::Scalar>;
 
-template struct ConstraintALWeightStrategy<context::Scalar>;
-
 } // namespace proxddp

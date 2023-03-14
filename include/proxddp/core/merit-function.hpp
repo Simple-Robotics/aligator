@@ -6,6 +6,7 @@
 #include "proxddp/core/workspace.hpp"
 #include "proxddp/core/results.hpp"
 #include "proxddp/core/enums.hpp"
+#include "proxddp/core/alm-weights.hpp"
 
 namespace proxddp {
 
