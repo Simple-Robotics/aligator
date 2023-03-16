@@ -10,9 +10,9 @@ namespace croc {
 
 template <typename Scalar> struct StateWrapperTpl;
 
-template <typename Scalar> struct CrocCostDataWrapperTpl;
-
 template <typename Scalar> struct CrocCostModelWrapperTpl;
+
+template <typename Scalar> struct CrocCostDataWrapperTpl;
 
 template <typename Scalar> struct DynamicsDataWrapperTpl;
 
