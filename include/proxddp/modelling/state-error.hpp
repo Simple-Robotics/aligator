@@ -95,9 +95,20 @@ template <typename Scalar>
 struct ErrorResidualData : FunctionDataTpl<Scalar> {};
 
 template <typename Scalar>
-using StateErrorResidualTpl = detail::StateOrControlErrorResidual<Scalar, 0>;
+struct StateErrorResidualTpl : detail::StateOrControlErrorResidual<Scalar, 0> {
+  using Base = detail::StateOrControlErrorResidual<Scalar, 0>;
+  using Base::Base;
+};
 
 template <typename Scalar>
-using ControlErrorResidualTpl = detail::StateOrControlErrorResidual<Scalar, 1>;
+struct ControlErrorResidualTpl
+    : detail::StateOrControlErrorResidual<Scalar, 1> {
+  using Base = detail::StateOrControlErrorResidual<Scalar, 1>;
+  using Base::Base;
+};
 
 } // namespace proxddp
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/modelling/state-error.txx"
+#endif
