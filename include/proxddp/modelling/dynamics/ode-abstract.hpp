@@ -63,3 +63,7 @@ struct ODEDataTpl : ContinuousDynamicsDataTpl<_Scalar> {
 } // namespace proxddp
 
 #include "proxddp/modelling/dynamics/ode-abstract.hxx"
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/modelling/dynamics/ode-abstract.txx"
+#endif
