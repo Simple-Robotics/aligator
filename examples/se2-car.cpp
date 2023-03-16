@@ -52,7 +52,7 @@ int main() {
   auto rcost = std::make_shared<CostStackTpl<T>>(space.ndx(), nu);
   auto rc1 = std::make_shared<QuadResidualCost>(state_err, w_x * dt);
   auto rc2 = std::make_shared<QuadResidualCost>(
-      std::make_shared<ControlErrorResidual<T>>(space.ndx(), nu), w_u * dt);
+      std::make_shared<ControlErrorResidualTpl<T>>(space.ndx(), nu), w_u * dt);
   rcost->addCost(rc1);
   rcost->addCost(rc2);
 

@@ -73,6 +73,9 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
         .def_readwrite("ureg", &SolverType::ureg_,
                        "Newton regularization parameter.")
         .def_readwrite("reg_init", &SolverType::reg_init)
+        .def_readwrite("force_initial_condition",
+                       &SolverType::force_initial_condition_,
+                       "Set x0 to be fixed to the initial condition.")
         .def("getResults", &SolverType::getResults, bp::args("self"),
              deprecated_member<bp::return_internal_reference<>>(
                  "This getter is deprecated. Access the results using "

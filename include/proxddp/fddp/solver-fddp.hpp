@@ -132,9 +132,7 @@ public:
    * well as the residual of initial condition. This function will compute the
    * forward dynamics at every step to compute the forward map $f(x_i, u_i)$.
    */
-  inline Scalar computeInfeasibility(const Problem &problem,
-                                     const std::vector<VectorXs> &xs,
-                                     Workspace &workspace) const;
+  inline Scalar computeInfeasibility(const Problem &problem);
 
   /// @brief   Perform the backward pass and compute Riccati gains.
   void backwardPass(const Problem &problem, Workspace &workspace) const;

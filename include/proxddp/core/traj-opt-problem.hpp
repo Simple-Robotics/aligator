@@ -182,6 +182,7 @@ template <typename _Scalar> struct TrajOptDataTpl {
   using FunctionData = FunctionDataTpl<Scalar>;
   using ConstraintType = StageConstraintTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
+  using CostData = CostDataAbstractTpl<Scalar>;
 
   /// Current cost in the TO problem.
   Scalar cost_ = 0.;
@@ -191,7 +192,7 @@ template <typename _Scalar> struct TrajOptDataTpl {
   /// Data structs for each stage of the problem.
   std::vector<shared_ptr<StageData>> stage_data;
   /// Terminal cost data.
-  shared_ptr<CostDataAbstractTpl<Scalar>> term_cost_data;
+  shared_ptr<CostData> term_cost_data;
   /// Terminal constraint data.
   std::vector<shared_ptr<FunctionData>> term_cstr_data;
 

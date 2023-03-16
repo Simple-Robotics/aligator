@@ -17,12 +17,12 @@ message(STATUS "Compat module: sources ${SOURCES}")
 
 add_project_dependency(crocoddyl REQUIRED)
 
-add_library(${CROC_COMPAT_LIB_NAME} SHARED ${HEADERS} ${SOURCES})
+add_library(${CROC_COMPAT_LIB_NAME} STATIC ${HEADERS} ${SOURCES})
 set_target_properties(
   ${CROC_COMPAT_LIB_NAME}
   PROPERTIES LINKER_LANGUAGE CXX LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR} PUBLIC_HEADER
                                                                                 "${HEADERS}"
-             VERSION ${PROJECT_VERSION})
+             POSITION_INDEPENDENT_CODE ON VERSION ${PROJECT_VERSION})
 
 target_link_libraries(${CROC_COMPAT_LIB_NAME} PUBLIC ${PROJECT_NAME} crocoddyl::crocoddyl)
 

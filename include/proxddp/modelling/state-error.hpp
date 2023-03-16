@@ -5,12 +5,14 @@
 
 namespace proxddp {
 
-/**
- * @brief Residual \f$r(z) = z \ominus z_{tar} \f$
- * @details The arg parameter decides with respect to which the error
- * computation operates -- state `x` or control `u`.. We use SFINAE to enable or
- * disable the relevant constructors.
- */
+namespace detail {
+
+///
+/// @brief Residual \f$r(z) = z \ominus z_{tar} \f$
+/// @details The arg parameter decides with respect to which the error
+/// computation operates -- state `x` or control `u`.. We use SFINAE to enable
+/// or disable the relevant constructors.
+///
 template <typename _Scalar, unsigned int arg>
 struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
   static_assert(arg <= 2, "arg value must be 0, 1 or 2!");
@@ -32,20 +34,16 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
       : Base(xspace->ndx(), nu, xspace->ndx()), space_(xspace),
         target_(target) {}
 
-  /**
-   * @brief Constructor using the state space dimension, control manifold and
-   *        control target.
-   */
+  /// @brief Constructor using the state space dimension, control manifold and
+  ///        control target.
   template <unsigned int N = arg, typename = std::enable_if_t<N == 1>>
   StateOrControlErrorResidual(const int ndx, const shared_ptr<Manifold> &uspace,
                               const ConstVectorRef &target)
       : Base(ndx, uspace->nx(), uspace->ndx()), space_(uspace),
         target_(target) {}
 
-  /**
-   * @brief Constructor using state space and control space dimensions,
-   *        the control space is assumed to be Euclidean.
-   */
+  /// @brief Constructor using state space and control space dimensions,
+  ///        the control space is assumed to be Euclidean.
   template <unsigned int N = arg, typename = std::enable_if_t<N == 1>>
   StateOrControlErrorResidual(const int ndx, const ConstVectorRef &target)
       : StateOrControlErrorResidual(
@@ -91,14 +89,26 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
   }
 };
 
-template <typename Scalar> struct ErrorResidualData : FunctionDataTpl<Scalar> {
-  using VectorXs = typename math_types<Scalar>::VectorXs;
+} // namespace detail
+
+template <typename Scalar>
+struct ErrorResidualData : FunctionDataTpl<Scalar> {};
+
+template <typename Scalar>
+struct StateErrorResidualTpl : detail::StateOrControlErrorResidual<Scalar, 0> {
+  using Base = detail::StateOrControlErrorResidual<Scalar, 0>;
+  using Base::Base;
 };
 
 template <typename Scalar>
-using StateErrorResidualTpl = StateOrControlErrorResidual<Scalar, 0>;
-
-template <typename Scalar>
-using ControlErrorResidual = StateOrControlErrorResidual<Scalar, 1>;
+struct ControlErrorResidualTpl
+    : detail::StateOrControlErrorResidual<Scalar, 1> {
+  using Base = detail::StateOrControlErrorResidual<Scalar, 1>;
+  using Base::Base;
+};
 
 } // namespace proxddp
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/modelling/state-error.txx"
+#endif

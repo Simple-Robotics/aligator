@@ -18,45 +18,64 @@ template <typename Scalar> struct NewtonRaphson {
     MatrixRef J0;  // fun jacobian
   };
 
+  struct Options {
+    Scalar alpha_min = 1e-4;
+    Scalar ls_beta = 0.7071;
+    Scalar armijo_c1 = 1e-2;
+  };
+
   template <typename Fun, typename JacFun>
   static bool run(const Manifold &space, Fun &&fun, JacFun &&jac_fun,
                   const ConstVectorRef &xinit, VectorRef xout, DataView &data,
                   Scalar eps = 1e-6, std::size_t max_iters = 1000,
-                  VerboseLevel = VerboseLevel::QUIET) {
-    const Scalar alpha_min = 1e-4;
-    const Scalar ls_beta = 0.8;
-    const Scalar ar_c1 = 1e-2;
+                  Options options = Options{}) {
 
     xout = xinit;
     VectorRef &f0 = data.f0;
     VectorRef &dx = data.dx0;
     MatrixRef &Jf0 = data.J0;
+
     fun(xout, f0);
 
-    Scalar err = f0.norm();
-    bool conv = false;
-    for (std::size_t i = 0; i < max_iters; i++) {
-      if (err <= eps) {
-        conv = true;
-        break;
-      }
-      dx = Jf0.lu().solve(-f0);
+    // workspace
+    VectorXs dx_ls = dx;
+    VectorXs xcand = xout;
 
-      Scalar alpha = 1.;
-      while (alpha > alpha_min) {
-        space.integrate(xout, alpha * dx, xout);
-        fun(xout, f0);
-        err = f0.norm();
-        if (err <= (1. - ar_c1) * err) {
-          break;
-        }
-        alpha *= ls_beta;
+    Scalar err = f0.norm();
+    std::size_t iter = 0;
+    while (true) {
+
+      if (err <= eps) {
+        return true;
+      } else if (iter >= max_iters) {
+        return false;
       }
 
       jac_fun(xout, Jf0);
+      dx = Jf0.lu().solve(-f0);
+
+      // linesearch
+      Scalar alpha = 1.;
+      while (alpha > options.alpha_min) {
+        dx_ls = alpha * dx; // avoid malloc in ls
+        space.integrate(xout, dx_ls, xcand);
+        fun(xcand, f0);
+        Scalar cand_err = f0.norm();
+        if (cand_err <= (1. - options.armijo_c1) * err) {
+          xout = xcand;
+          err = cand_err;
+          break;
+        }
+        alpha *= options.ls_beta;
+      }
+
+      iter++;
     }
-    return conv;
   }
 };
 
 } // namespace proxddp
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/utils/newton-raphson.txx"
+#endif

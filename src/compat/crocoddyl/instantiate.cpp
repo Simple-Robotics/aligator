@@ -12,20 +12,15 @@ template ::proxddp::context::TrajOptProblem
 convertCrocoddylProblem<context::Scalar>(
     const boost::shared_ptr<context::CrocShootingProblem> &);
 
-template CrocCostModelWrapperTpl<context::Scalar>::CrocCostModelWrapperTpl(
-    boost::shared_ptr<context::CrocCostModel>);
+template struct StateWrapperTpl<context::Scalar>;
 
-template CrocCostModelWrapperTpl<context::Scalar>::CrocCostModelWrapperTpl(
-    boost::shared_ptr<context::CrocActionModel>);
+template struct CrocCostModelWrapperTpl<context::Scalar>;
+template struct CrocCostDataWrapperTpl<context::Scalar>;
 
-template DynamicsDataWrapperTpl<context::Scalar>::DynamicsDataWrapperTpl(
-    const context::CrocActionModel *);
+template struct DynamicsDataWrapperTpl<context::Scalar>;
 
-template CrocCostDataWrapperTpl<context::Scalar>::CrocCostDataWrapperTpl(
-    const boost::shared_ptr<context::CrocCostData> &);
-
-template CrocCostDataWrapperTpl<context::Scalar>::CrocCostDataWrapperTpl(
-    const boost::shared_ptr<context::CrocActionData> &);
+template struct CrocActionModelWrapperTpl<context::Scalar>;
+template struct CrocActionDataWrapperTpl<context::Scalar>;
 
 } // namespace croc
 } // namespace compat

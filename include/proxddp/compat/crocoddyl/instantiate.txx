@@ -15,20 +15,16 @@ extern template ::proxddp::context::TrajOptProblem
 convertCrocoddylProblem<context::Scalar>(
     const boost::shared_ptr<context::CrocShootingProblem> &);
 
-extern template CrocCostModelWrapperTpl<context::Scalar>::
-    CrocCostModelWrapperTpl(boost::shared_ptr<context::CrocCostModel>);
+extern template struct StateWrapperTpl<context::Scalar>;
 
-extern template CrocCostModelWrapperTpl<context::Scalar>::
-    CrocCostModelWrapperTpl(boost::shared_ptr<context::CrocActionModel>);
+extern template struct CrocCostModelWrapperTpl<context::Scalar>;
+extern template struct CrocCostDataWrapperTpl<context::Scalar>;
 
-extern template DynamicsDataWrapperTpl<context::Scalar>::DynamicsDataWrapperTpl(
-    const context::CrocActionModel *);
+extern template struct DynamicsDataWrapperTpl<context::Scalar>;
 
-extern template CrocCostDataWrapperTpl<context::Scalar>::CrocCostDataWrapperTpl(
-    const boost::shared_ptr<context::CrocCostData> &);
+extern template struct CrocActionModelWrapperTpl<context::Scalar>;
+extern template struct CrocActionDataWrapperTpl<context::Scalar>;
 
-extern template CrocCostDataWrapperTpl<context::Scalar>::CrocCostDataWrapperTpl(
-    const boost::shared_ptr<context::CrocActionData> &);
 
 } // namespace croc
 } // namespace compat

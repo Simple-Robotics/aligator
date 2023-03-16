@@ -30,6 +30,8 @@ void exposeProxDDP() {
       .def_readonly("prox_datas", &Workspace::prox_datas)
       .def_readonly("kkt_mat", &Workspace::kkt_mats_)
       .def_readonly("kkt_rhs", &Workspace::kkt_rhs_)
+      .def_readonly("dxs", &Workspace::dxs)
+      .def_readonly("dus", &Workspace::dus)
       .def_readonly("trial_lams", &Workspace::trial_lams)
       .def_readonly("inner_crit", &Workspace::inner_criterion)
       .def(
@@ -40,18 +42,13 @@ void exposeProxDDP() {
               PyErr_SetString(PyExc_IndexError, "Index out of bounds.");
               bp::throw_error_already_set();
             }
-            return *ws.ldlts_[(std::size_t)i];
+            return *ws.ldlts_[i];
           },
           bp::return_internal_reference<>(), bp::args("self", "i"),
           "Get the LDLT algorithm for the i-th linear problem.")
       .def_readonly("stage_prim_infeas", &Workspace::stage_prim_infeas)
       .def_readonly("stage_dual_infeas", &Workspace::stage_dual_infeas)
       .def_readonly("stage_inner_crits", &Workspace::stage_inner_crits)
-      .def("cycle_append", &Workspace::cycle_append,
-           bp::args("self", "stage_model"),
-           "From a StageModel object, allocate its data object, rotate the "
-           "workspace (using `cycle_left()`) and insert the allocated data "
-           "(useful for MPC).")
       .def(PrintableVisitor<Workspace>());
 
   bp::class_<Results, bp::bases<ResultsBaseTpl<Scalar>>>(
@@ -75,8 +72,6 @@ void exposeProxDDP() {
            bp::arg("verbose") = VerboseLevel::QUIET,
            bp::arg("hess_approx") = HessianApprox::GAUSS_NEWTON)))
       .def_readwrite("bcl_params", &SolverType::bcl_params, "BCL parameters.")
-      .def_readwrite("is_x0_fixed", &SolverType::force_initial_condition_,
-                     "Set x0 to be fixed to the initial condition.")
       .def_readwrite("max_refinement_steps", &SolverType::max_refinement_steps_)
       .def_readwrite("refinement_threshold", &SolverType::refinement_threshold_)
       .def_readwrite("ldlt_algo_choice", &SolverType::ldlt_algo_choice_,
@@ -102,6 +97,10 @@ void exposeProxDDP() {
       .def("setLinesearchMuLowerBound", &SolverType::setLinesearchMuLowerBound,
            bp::args("self", "mu_lower_bound"),
            "Set an appropriate lower bound for mu during linesearch.")
+      .def("computeCriterion", &SolverType::computeCriterion,
+           bp::args("self", "problem"), "Compute problem stationarity.")
+      .def("computeInfeasibilities", &SolverType::computeInfeasibilities,
+           bp::args("self", "problem"), "Compute problem infeasibilities.")
       .def(SolverVisitor<SolverType>())
       .def("run", &SolverType::run,
            prox_run_overloads(

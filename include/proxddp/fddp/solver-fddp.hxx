@@ -152,13 +152,12 @@ void SolverFDDP<Scalar>::updateExpectedImprovement(Workspace &workspace,
 }
 
 template <typename Scalar>
-Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem,
-                                                const std::vector<VectorXs> &xs,
-                                                Workspace &workspace) const {
+Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem) {
   PROXDDP_NOMALLOC_BEGIN;
-  const std::size_t nsteps = workspace.nsteps;
-  const ProblemData &pd = workspace.problem_data;
-  std::vector<VectorXs> &fs = workspace.dyn_slacks;
+  const std::size_t nsteps = problem.numSteps();
+  const ProblemData &pd = workspace_.problem_data;
+  const auto &xs = results_.xs;
+  std::vector<VectorXs> &fs = workspace_.dyn_slacks;
 
   const auto &space = problem.stages_[0]->xspace_;
   space->difference(xs[0], problem.getInitState(), fs[0]);
@@ -331,8 +330,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
 
     problem.computeDerivatives(results_.xs, results_.us,
                                workspace_.problem_data);
-    results_.prim_infeas =
-        computeInfeasibility(problem, results_.xs, workspace_);
+    results_.prim_infeas = computeInfeasibility(problem);
     PROXDDP_RAISE_IF_NAN(results_.prim_infeas);
     record.prim_err = results_.prim_infeas;
 

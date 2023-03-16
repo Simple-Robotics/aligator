@@ -24,7 +24,11 @@ function(make_bindings)
     set_target_properties(${PYLIB_NAME} PROPERTIES INSTALL_RPATH "\$ORIGIN/../../..")
   endif()
 
+  # deprecated functions are exposed up until they are removed. remove warnings.
+  target_compile_options(${PYLIB_NAME} PRIVATE "-Wno-deprecated-declarations")
+
   target_link_libraries(${PYLIB_NAME} PUBLIC ${PROJECT_NAME} eigenpy::eigenpy)
+  target_link_boost_python(${PYLIB_NAME} PUBLIC)
 
   if(BUILD_CROCODDYL_COMPAT)
     target_link_libraries(${PYLIB_NAME} PUBLIC ${CROC_COMPAT_LIB_NAME})
@@ -73,7 +77,8 @@ endif()
 # --- GENERATE STUBS
 if(GENERATE_PYTHON_STUBS)
   load_stubgen()
-  generate_stubs(${CMAKE_CURRENT_BINARY_DIR} ${PROJECT_NAME} ${ABSOLUTE_PYTHON_SITELIB})
+  generate_stubs(${CMAKE_CURRENT_BINARY_DIR} ${PROJECT_NAME} ${ABSOLUTE_PYTHON_SITELIB}
+                 ${PYLIB_NAME})
 endif(GENERATE_PYTHON_STUBS)
 
 set(${PYLIB_NAME}_PYFILES __init__.py utils.py)

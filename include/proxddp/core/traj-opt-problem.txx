@@ -5,10 +5,8 @@
 
 namespace proxddp {
 
-namespace {
-using StateErrorResidual = StateErrorResidualTpl<context::Scalar>;
-}
-
 extern template struct TrajOptProblemTpl<context::Scalar>;
+
+extern template struct TrajOptDataTpl<context::Scalar>;
 
 } // namespace proxddp

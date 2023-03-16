@@ -48,7 +48,7 @@ template <typename Scalar> struct q_function {
   long ndx_;
   long nu_;
   long ndy_;
-  long ntot = ndx_ + nu_ + ndy_;
+  long ntot() const { return ndx_ + nu_ + ndy_; }
 
   Scalar q_ = 0.;
 
@@ -67,7 +67,7 @@ template <typename Scalar> struct q_function {
   MatrixRef Qyy;
 
   q_function(const long ndx, const long nu, const long ndy)
-      : ndx_(ndx), nu_(nu), ndy_(ndy), grad_(ntot), hess_(ntot, ntot),
+      : ndx_(ndx), nu_(nu), ndy_(ndy), grad_(ntot()), hess_(ntot(), ntot()),
         Qx(grad_.head(ndx)), Qu(grad_.segment(ndx, nu)), Qy(grad_.tail(ndy)),
         Qxx(hess_.topLeftCorner(ndx, ndx)), Qxu(hess_.block(0, ndx, ndx, nu)),
         Qxy(hess_.topRightCorner(ndx, ndy)), Quu(hess_.block(ndx, ndx, nu, nu)),
@@ -75,13 +75,42 @@ template <typename Scalar> struct q_function {
         Qyy(hess_.bottomRightCorner(ndy, ndy)) {
     grad_.setZero();
     hess_.setZero();
-    assert(hess_.rows() == ntot);
-    assert(hess_.cols() == ntot);
-    assert(grad_.rows() == ntot);
+    assert(hess_.rows() == ntot());
+    assert(hess_.cols() == ntot());
+    assert(grad_.rows() == ntot());
     assert(grad_.cols() == 1);
   }
 
   bool operator==(const q_function &) { return false; }
+  q_function(const q_function &qf) : q_function(qf.ndx_, qf.nu_, qf.ndy_) {
+    ndx_ = qf.ndx_;
+    nu_ = qf.nu_;
+    ndy_ = qf.ndy_;
+    q_ = qf.q_;
+    grad_ = qf.grad_;
+    hess_ = qf.hess_;
+
+    redef_refs(*this);
+  }
+
+  q_function(q_function &&qf) : q_function(0, 0, 0) { swap(*this, qf); }
+
+  q_function &operator=(q_function &&qf) {
+    swap(*this, qf);
+    return *this;
+  }
+
+  q_function &operator=(const q_function &qf) {
+    ndx_ = qf.ndx_;
+    nu_ = qf.nu_;
+    ndy_ = qf.ndy_;
+    q_ = qf.q_;
+    grad_ = qf.grad_;
+    hess_ = qf.hess_;
+
+    redef_refs(*this);
+    return *this;
+  }
 
   friend std::ostream &operator<<(std::ostream &oss, const q_function &store) {
     oss << "q_function {\n";
@@ -101,25 +130,31 @@ template <typename Scalar> struct q_function {
     swap(qa.grad_, qb.grad_);
     swap(qa.hess_, qb.hess_);
 
-    auto redef_refs = [](q_function &q) {
-      auto ndx = q.ndx_;
-      auto nu = q.nu_;
-      auto ndy = q.ndy_;
-      new (&q.Qx) VectorRef(q.grad_.head(ndx));
-      new (&q.Qu) VectorRef(q.grad_.segment(ndx, nu));
-      new (&q.Qy) VectorRef(q.grad_.tail(ndy));
-
-      new (&q.Qxx) MatrixRef(q.hess_.topLeftCorner(ndx, ndx));
-      new (&q.Qxu) MatrixRef(q.hess_.block(0, ndx, ndx, nu));
-      new (&q.Qxy) MatrixRef(q.hess_.topRightCorner(ndx, ndy));
-      new (&q.Quu) MatrixRef(q.hess_.block(ndx, ndx, nu, nu));
-      new (&q.Quy) MatrixRef(q.hess_.block(ndx, ndx + nu, nu, ndy));
-      new (&q.Qyy) MatrixRef(q.hess_.bottomRightCorner(ndy, ndy));
-    };
-
     redef_refs(qa);
     redef_refs(qb);
+  }
+
+protected:
+  // reinitialize Ref members
+  static void redef_refs(q_function &q) {
+    auto ndx = q.ndx_;
+    auto nu = q.nu_;
+    auto ndy = q.ndy_;
+    new (&q.Qx) VectorRef(q.grad_.head(ndx));
+    new (&q.Qu) VectorRef(q.grad_.segment(ndx, nu));
+    new (&q.Qy) VectorRef(q.grad_.tail(ndy));
+
+    new (&q.Qxx) MatrixRef(q.hess_.topLeftCorner(ndx, ndx));
+    new (&q.Qxu) MatrixRef(q.hess_.block(0, ndx, ndx, nu));
+    new (&q.Qxy) MatrixRef(q.hess_.topRightCorner(ndx, ndy));
+    new (&q.Quu) MatrixRef(q.hess_.block(ndx, ndx, nu, nu));
+    new (&q.Quy) MatrixRef(q.hess_.block(ndx, ndx + nu, nu, ndy));
+    new (&q.Qyy) MatrixRef(q.hess_.bottomRightCorner(ndy, ndy));
   }
 };
 
 } // namespace proxddp
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/core/value-function.txx"
+#endif

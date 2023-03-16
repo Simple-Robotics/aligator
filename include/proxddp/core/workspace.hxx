@@ -102,8 +102,6 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
       stage_dual_infeas(this->nsteps + 1) {
   const std::size_t nsteps = this->nsteps;
 
-  value_params.reserve(nsteps + 1);
-  q_params.reserve(nsteps);
   prox_datas.reserve(nsteps + 1);
 
   prev_xs = this->trial_xs;
@@ -209,8 +207,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
   assert(dus.size() == nsteps);
 }
 
-template <typename Scalar> void WorkspaceTpl<Scalar>::cycle_left() {
-  Base::cycle_left();
+template <typename Scalar> void WorkspaceTpl<Scalar>::cycleLeft() {
+  Base::cycleLeft();
 
   rotate_vec_left(prox_datas);
   rotate_vec_left(lams_plus, 1);
@@ -230,13 +228,6 @@ template <typename Scalar> void WorkspaceTpl<Scalar>::cycle_left() {
   rotate_vec_left(prev_xs);
   rotate_vec_left(prev_us);
   rotate_vec_left(lams_prev);
-}
-
-template <typename Scalar>
-void WorkspaceTpl<Scalar>::cycle_append(const shared_ptr<StageModel> &stage) {
-  problem_data.stage_data.emplace_back(stage->createData());
-  this->cycle_left();
-  problem_data.stage_data.pop_back();
 }
 
 template <typename Scalar>

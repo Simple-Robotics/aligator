@@ -39,8 +39,8 @@ void exposeBase() {
   StdVectorPythonVisitor<std::vector<VParams>, true>::expose("StdVec_VParams");
 
   using WorkspaceBase = WorkspaceBaseTpl<Scalar>;
-  bp::class_<WorkspaceBase>("WorkspaceBase", "Base workspace struct.",
-                            bp::no_init)
+  bp::class_<WorkspaceBase, boost::noncopyable>(
+      "WorkspaceBase", "Base workspace struct.", bp::no_init)
       .def_readonly("nsteps", &WorkspaceBase::nsteps)
       .def_readonly("problem_data", &WorkspaceBase::problem_data)
       .def_readonly("trial_xs", &WorkspaceBase::trial_xs)
@@ -48,7 +48,14 @@ void exposeBase() {
       .def_readonly("dyn_slacks", &WorkspaceBase::dyn_slacks,
                     "Expose dynamics' slack variables (e.g. feasibility gaps).")
       .def_readonly("value_params", &WorkspaceBase::value_params)
-      .def_readonly("q_params", &WorkspaceBase::q_params);
+      .def_readonly("q_params", &WorkspaceBase::q_params)
+      .def("cycleLeft", &WorkspaceBase::cycleLeft, bp::args("self"),
+           "Cycle the workspace to the left: this will rotate all the data "
+           "(states, controls, multipliers) forward by one rank.")
+      .def("cycleAppend", &WorkspaceBase::cycleAppend, bp::args("self", "data"),
+           "Insert a StageData object and cycle the "
+           "workspace left (using `cycleLeft()`) and insert the allocated data "
+           "(useful for MPC).");
 
   using ResultsBase = ResultsBaseTpl<Scalar>;
   bp::class_<ResultsBase>("ResultsBase", "Base results struct.", bp::no_init)

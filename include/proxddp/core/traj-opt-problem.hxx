@@ -41,10 +41,9 @@ Scalar TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
 
   init_state_error_->evaluate(xs[0], us[0], xs[1], prob_data.getInitData());
 
-  prob_data.xs_copy = xs;
   auto &sds = prob_data.stage_data;
   for (std::size_t i = 0; i < nsteps; i++) {
-    stages_[i]->evaluate(xs[i], us[i], prob_data.xs_copy[i + 1], *sds[i]);
+    stages_[i]->evaluate(xs[i], us[i], xs[i + 1], *sds[i]);
   }
 
   term_cost_->evaluate(xs[nsteps], unone_, *prob_data.term_cost_data);

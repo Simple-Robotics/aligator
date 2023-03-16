@@ -110,3 +110,7 @@ struct CostStackDataTpl : CostDataAbstractTpl<_Scalar> {
 } // namespace proxddp
 
 #include "proxddp/modelling/sum-of-costs.hxx"
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/modelling/sum-of-costs.txx"
+#endif
