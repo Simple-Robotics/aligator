@@ -1,3 +1,5 @@
+/// @file
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
 #include "proxddp/fwd.hpp"
@@ -42,16 +44,17 @@ struct QuadraticResidualCostTpl : CostAbstractTpl<_Scalar> {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using CostDataAbstract = CostDataAbstractTpl<Scalar>;
   using Data = CompositeCostDataTpl<Scalar>;
+  using StageFunction = StageFunctionTpl<Scalar>;
 
   MatrixXs weights_;
-  shared_ptr<StageFunctionTpl<Scalar>> residual_;
+  shared_ptr<StageFunction> residual_;
   bool gauss_newton = true;
 
-  QuadraticResidualCostTpl(const shared_ptr<StageFunctionTpl<Scalar>> &function,
+  QuadraticResidualCostTpl(shared_ptr<StageFunction> function,
                            const MatrixXs &weights)
       : CostAbstractTpl<Scalar>(function->ndx1, function->nu),
         weights_(weights), residual_(function) {
-    assert(residual_->nr == weights.cols());
+    debug_dims();
   }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
@@ -90,6 +93,14 @@ struct QuadraticResidualCostTpl : CostAbstractTpl<_Scalar> {
   shared_ptr<CostDataAbstract> createData() const {
     return std::make_shared<Data>(this->ndx, this->nu, residual_->createData());
   }
+
+private:
+  void debug_dims() const {
+    if (residual_->nr != weights_.cols()) {
+      PROXDDP_RUNTIME_ERROR(
+          "Weight matrix and residual codimension are inconsistent.");
+    }
+  }
 };
 
 /// @brief  Log-barrier of an underlying cost function.
@@ -103,8 +114,7 @@ template <typename Scalar> struct LogResidualCostTpl : CostAbstractTpl<Scalar> {
   VectorXs barrier_weights_;
   shared_ptr<StageFunction> residual_;
 
-  LogResidualCostTpl(const shared_ptr<StageFunction> &function,
-                     const VectorXs scale)
+  LogResidualCostTpl(shared_ptr<StageFunction> function, const VectorXs &scale)
       : Base(function->ndx1, function->nu), barrier_weights_(scale),
         residual_(function) {
     if (scale.size() != function->nr) {
@@ -118,8 +128,7 @@ template <typename Scalar> struct LogResidualCostTpl : CostAbstractTpl<Scalar> {
     }
   }
 
-  LogResidualCostTpl(const shared_ptr<StageFunction> &function,
-                     const Scalar scale)
+  LogResidualCostTpl(shared_ptr<StageFunction> function, const Scalar scale)
       : LogResidualCostTpl(function, VectorXs::Constant(function->nr, scale)) {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,

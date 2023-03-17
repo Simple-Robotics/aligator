@@ -98,6 +98,39 @@ def test_composite_cost():
     print("----")
 
 
+def test_quad_state():
+    space = manifolds.SE2()
+    ndx = space.ndx
+    nu = space.ndx
+    x0 = space.neutral()
+    x1 = space.rand()
+    weights = np.eye(ndx)
+    cost = proxddp.QuadraticStateCost(space, nu, x0, weights)
+
+    data = cost.createData()
+
+    print("x0", x0)
+    print("x1", x1)
+    u0 = np.zeros(nu)
+
+    cost.evaluate(x0, u0, data)
+    print(data.value)
+    assert data.value == 0.0
+    cost.computeGradients(x0, u0, data)
+    print(data.grad)
+    cost.computeHessians(x0, u0, data)
+    print(data.Lxx)
+
+    e = space.difference(x1, x0)
+    print("err:", e)
+    cost.evaluate(x1, u0, data)
+    print(data.value)
+    cost.computeGradients(x1, u0, data)
+    print(data.Lx)
+    cost.computeHessians(x1, u0, data)
+    print(data.Lxx)
+
+
 def test_stack_error():
     # Should raise RuntimeError due to wrong use.
     nx = 2

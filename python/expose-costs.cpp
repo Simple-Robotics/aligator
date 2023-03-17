@@ -1,3 +1,4 @@
+/// @file
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "proxddp/python/costs.hpp"
 
@@ -5,17 +6,26 @@
 #include "proxddp/modelling/composite-costs.hpp"
 #include "proxddp/modelling/constant-cost.hpp"
 #include "proxddp/modelling/sum-of-costs.hpp"
+#include "proxddp/modelling/quad-state-cost.hpp"
 
 namespace proxddp {
 namespace python {
+using context::ConstMatrixRef;
+using context::ConstVectorRef;
+using context::CostBase;
+using context::CostData;
+using context::Manifold;
+using context::MatrixXs;
+using context::Scalar;
+using context::StageFunction;
+using context::VectorXs;
+using QuadStateCost = QuadraticStateCostTpl<Scalar>;
+using QuadControlCost = QuadraticControlCostTpl<Scalar>;
+using QuadraticCost = QuadraticCostTpl<Scalar>;
+using FunctionPtr = shared_ptr<StageFunction>;
+using CostPtr = shared_ptr<CostBase>;
 
 void exposeQuadCost() {
-  using context::ConstMatrixRef;
-  using context::ConstVectorRef;
-  using context::CostBase;
-  using context::CostData;
-  using context::Scalar;
-  using QuadraticCost = QuadraticCostTpl<Scalar>;
 
   bp::class_<ConstantCostTpl<Scalar>, bp::bases<CostBase>>(
       "ConstantCost", "A constant cost term.",
@@ -54,20 +64,15 @@ void exposeQuadCost() {
       "QuadraticCostData", "Quadratic cost data.", bp::no_init);
 }
 
+/// Composite cost functions.
 void exposeComposites() {
-  using context::CostBase;
-  using context::CostData;
-  using context::MatrixXs;
-  using context::Scalar;
-  using context::StageFunction;
-  using context::VectorXs;
 
   using CompositeData = CompositeCostDataTpl<Scalar>;
   using QuadResCost = QuadraticResidualCostTpl<Scalar>;
 
   bp::class_<QuadResCost, bp::bases<CostBase>>(
       "QuadraticResidualCost", "Weighted 2-norm of a given residual function.",
-      bp::init<const shared_ptr<StageFunction> &, const context::MatrixXs &>(
+      bp::init<FunctionPtr, const MatrixXs &>(
           bp::args("self", "function", "weights")))
       .def_readwrite("residual", &QuadResCost::residual_)
       .def_readwrite("weights", &QuadResCost::weights_)
@@ -76,10 +81,9 @@ void exposeComposites() {
   using LogResCost = LogResidualCostTpl<Scalar>;
   bp::class_<LogResCost, bp::bases<CostBase>>(
       "LogResidualCost", "Weighted log-cost composite cost.",
-      bp::init<shared_ptr<StageFunction>, context::VectorXs>(
+      bp::init<FunctionPtr, const VectorXs &>(
           bp::args("self", "function", "barrier_weights")))
-      .def(bp::init<shared_ptr<StageFunction>, Scalar>(
-          bp::args("self", "function", "scale")))
+      .def(bp::init<FunctionPtr, Scalar>(bp::args("self", "function", "scale")))
       .def_readwrite("residual", &LogResCost::residual_)
       .def_readwrite("weights", &LogResCost::barrier_weights_)
       .def(CopyableVisitor<LogResCost>());
@@ -89,14 +93,36 @@ void exposeComposites() {
       bp::init<int, int, shared_ptr<context::FunctionData>>(
           bp::args("self", "ndx", "nu", "rdata")))
       .def_readwrite("residual_data", &CompositeData::residual_data);
+
+  bp::class_<QuadStateCost, bp::bases<QuadResCost>>(
+      "QuadraticStateCost",
+      "Quadratic distance over the state manifold. This is a shortcut to "
+      "create a `QuadraticResidualCost` over a state error residual.",
+      bp::no_init)
+      .def(bp::init<shared_ptr<QuadStateCost::Error>, const MatrixXs &>(
+          bp::args("self", "resdl", "weights")))
+      .def(bp::init<const shared_ptr<Manifold> &, const int,
+                    const ConstVectorRef &, const MatrixXs &>(
+          bp::args("self", "space", "nu", "target", "weights")))
+      .add_property("target", &QuadStateCost::getTarget,
+                    &QuadStateCost::setTarget,
+                    "Target of the quadratic distance.");
+
+  bp::class_<QuadControlCost, bp::bases<QuadResCost>>(
+      "QuadraticControlCost", "Quadratic control cost.", bp::no_init)
+      .def(bp::init<shared_ptr<QuadControlCost::Error>, const MatrixXs &>(
+          bp::args("self", "resdl", "weights")))
+      .def(bp::init<int, int, const MatrixXs &>(
+          bp::args("ndx", "nu", "weights")))
+      .def(bp::init<int, ConstVectorRef, const MatrixXs &>(
+          bp::args("ndx", "nu", "weights")))
+      .add_property("target", &QuadControlCost::getTarget,
+                    &QuadControlCost::setTarget,
+                    "Reference of the control cost.");
 }
 
 void exposeCostStack() {
-  using context::CostBase;
-  using context::CostData;
-  using context::Scalar;
   using CostStack = CostStackTpl<Scalar>;
-  using CostPtr = CostStack::CostPtr;
   using CostStackData = CostStackDataTpl<Scalar>;
 
   bp::class_<CostStack, bp::bases<CostBase>>(
@@ -125,12 +151,9 @@ void exposeCostStack() {
 }
 
 void exposeCosts() {
-  using context::CostBase;
-  using context::CostData;
-  using context::Scalar;
   using context::StageFunction;
 
-  bp::register_ptr_to_python<shared_ptr<CostBase>>();
+  bp::register_ptr_to_python<CostPtr>();
 
   bp::class_<internal::PyCostFunction<>, boost::noncopyable>(
       "CostAbstract", "Base class for cost functions.",
@@ -173,7 +196,7 @@ void exposeCosts() {
                                &CostData::Luu_,
                                bp::return_value_policy<bp::return_by_value>()));
 
-  StdVectorPythonVisitor<std::vector<shared_ptr<CostBase>>, true>::expose(
+  StdVectorPythonVisitor<std::vector<CostPtr>, true>::expose(
       "StdVec_CostAbstract", "Vector of cost objects.");
   StdVectorPythonVisitor<std::vector<shared_ptr<CostData>>, true>::expose(
       "StdVec_CostData", "Vector of CostData objects.");
