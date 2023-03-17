@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(lqr) {
   prox_solver.setup(prox_problem);
   bool conv2 = prox_solver.run(prox_problem, xs_init, us_init);
 
-  const auto &results = prox_solver.getResults();
+  const auto &results = prox_solver.results_;
   fmt::print("{}\n", results);
 
   BOOST_TEST_CHECK(conv2);
