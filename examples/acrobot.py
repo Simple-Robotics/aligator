@@ -9,6 +9,7 @@ from common import ArgsBase
 
 class Args(ArgsBase):
     bounds: bool = False
+    term_cstr: bool = False
 
 
 args = Args().parse_args()
@@ -23,26 +24,21 @@ space = manifolds.MultibodyPhaseSpace(rmodel)
 actuation_matrix = np.array([[0.0], [1.0]])
 nu = actuation_matrix.shape[1]
 
-vf = dynamics.MultibodyFreeFwdDynamics(space, actuation_matrix)
 timestep = 0.01
 target = space.neutral()
-x0 = target.copy()
-x0[:2] *= -1
-dyn_model = dynamics.IntegratorRK2(vf, timestep)
+x0 = space.neutral()
+x0[0] = -1.0
+
+dyn_model = dynamics.IntegratorRK2(
+    dynamics.MultibodyFreeFwdDynamics(space, actuation_matrix), timestep
+)
 w_x = np.eye(space.ndx) * 1e-4
 w_u = np.eye(nu) * 1e-2
 cost = proxddp.CostStack(space.ndx, nu)
-cost.addCost(
-    proxddp.QuadraticResidualCost(
-        proxddp.StateErrorResidual(space, nu, target), w_x * timestep
-    )
-)
-cost.addCost(
-    proxddp.QuadraticResidualCost(
-        proxddp.ControlErrorResidual(space.ndx, nu), w_u * timestep
-    )
-)
+cost.addCost(proxddp.QuadraticStateCost(space, nu, target, w_x * timestep))
+cost.addCost(proxddp.QuadraticControlCost(space.ndx, nu, w_u * timestep))
 term_cost = proxddp.CostStack(space.ndx, nu)
+term_cost.addCost(proxddp.QuadraticStateCost(space, nu, target, np.eye(space.ndx) * 10))
 
 Tf = 1.0
 nsteps = int(Tf / timestep)
@@ -62,10 +58,12 @@ for i in range(nsteps):
     stages.append(stm)
 
 problem = proxddp.TrajOptProblem(x0, stages, term_cost)
-term_cstr = proxddp.StageConstraint(
-    proxddp.StateErrorResidual(space, nu, target), constraints.EqualityConstraintSet()
-)
-problem.addTerminalConstraint(term_cstr)
+if args.term_cstr:
+    term_cstr = proxddp.StageConstraint(
+        proxddp.StateErrorResidual(space, nu, target),
+        constraints.EqualityConstraintSet(),
+    )
+    problem.addTerminalConstraint(term_cstr)
 
 tol = 1e-3
 mu_init = 1e-1
@@ -83,8 +81,13 @@ print(res)
 if args.plot:
     import matplotlib.pyplot as plt
 
-    times = np.linspace(0, Tf, nsteps)
-    plt.plot(times, res.us)
+    times = np.linspace(0, Tf, nsteps + 1)
+    plt.figure()
+    plt.plot(times[1:], res.us)
+    plt.figure()
+    xs = np.stack(res.xs)
+    plt.plot(times, xs[:, nq:])
+    plt.title("Velocities")
     if args.bounds:
         plt.axhline(-ubound, *plt.xlim(), ls="--", c="k")
         plt.axhline(+ubound, *plt.xlim(), ls="--", c="k")
@@ -99,11 +102,15 @@ if args.display:
         rmodel, robot.collision_model, robot.visual_model, data=robot.data
     )
     vizer.initViewer(open=True, loadModel=True)
+    import ipdb
+
+    ipdb.set_trace()
+    vizer.display(x0[:nq])
 
     vizer.setCameraPreset("acrobot")
     vizer.setBackgroundColor()
     qs = [x[:nq] for x in res.xs]
 
-    print("[press enter]")
+    input("[press enter]")
     for i in range(4):
         vizer.play(qs, timestep)

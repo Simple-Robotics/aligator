@@ -1,3 +1,5 @@
+/// @file
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
 #include "proxddp/fwd.hpp"
@@ -42,12 +44,13 @@ struct QuadraticResidualCostTpl : CostAbstractTpl<_Scalar> {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using CostDataAbstract = CostDataAbstractTpl<Scalar>;
   using Data = CompositeCostDataTpl<Scalar>;
+  using StageFunction = StageFunctionTpl<Scalar>;
 
   MatrixXs weights_;
-  shared_ptr<StageFunctionTpl<Scalar>> residual_;
+  shared_ptr<StageFunction> residual_;
   bool gauss_newton = true;
 
-  QuadraticResidualCostTpl(shared_ptr<StageFunctionTpl<Scalar>> function,
+  QuadraticResidualCostTpl(shared_ptr<StageFunction> function,
                            const MatrixXs &weights)
       : CostAbstractTpl<Scalar>(function->ndx1, function->nu),
         weights_(weights), residual_(function) {

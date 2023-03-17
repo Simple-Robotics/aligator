@@ -1,3 +1,6 @@
+/// @file
+/// Convenience classes to define quadratic state or control cost functions.
+/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 
 #include "proxddp/modelling/state-error.hpp"
@@ -21,15 +24,12 @@ struct QuadraticStateCostTpl : QuadraticResidualCostTpl<Scalar> {
       : QuadraticStateCostTpl(std::make_shared<Error>(xspace, nu, target),
                               weights) {}
 
-  void setTarget(const ConstMatrixRef target) {
-    getResidual().target_ = target;
-  }
+  void setTarget(const ConstVectorRef target) { residual().target_ = target; }
+  ConstVectorRef getTarget() const { return residual().target_; }
 
-  ConstMatrixRef getTarget() const { return getResidual().target_; }
-
-private:
-  Error &getResidual() { return static_cast<Error &>(*this->residual_); }
-  const Error &getResidual() const {
+protected:
+  Error &residual() { return static_cast<Error &>(*this->residual_); }
+  const Error &residual() const {
     return static_cast<const Error &>(*this->residual_);
   }
 };
@@ -43,9 +43,22 @@ struct QuadraticControlCostTpl : QuadraticResidualCostTpl<Scalar> {
   QuadraticControlCostTpl(shared_ptr<Error> resdl, const MatrixXs &weights)
       : Base(resdl, weights) {}
 
-  template <typename... Args>
-  QuadraticControlCostTpl(Args... args, const MatrixXs &weights)
-      : Base(std::make_shared<Error>(std::forward<Args>(args)...), weights) {}
+  QuadraticControlCostTpl(int ndx, int nu, const MatrixXs &weights)
+      : QuadraticControlCostTpl(std::make_shared<Error>(ndx, nu), weights) {}
+
+  QuadraticControlCostTpl(int ndx, const ConstVectorRef target,
+                          const MatrixXs &weights)
+      : QuadraticControlCostTpl(std::make_shared<Error>(ndx, target), weights) {
+  }
+
+  void setTarget(const ConstVectorRef target) { residual().target_ = target; }
+  ConstVectorRef getTarget() const { return residual().target_; }
+
+protected:
+  Error &residual() { return static_cast<Error &>(*this->residual_); }
+  const Error &residual() const {
+    return static_cast<const Error &>(*this->residual_);
+  }
 };
 
 } // namespace proxddp
