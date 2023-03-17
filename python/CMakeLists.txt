@@ -24,6 +24,9 @@ function(make_bindings)
     set_target_properties(${PYLIB_NAME} PROPERTIES INSTALL_RPATH "\$ORIGIN/../../..")
   endif()
 
+  # deprecated functions are exposed up until they are removed. remove warnings.
+  target_compile_options(${PYLIB_NAME} PRIVATE "-Wno-deprecated-declarations")
+
   target_link_libraries(${PYLIB_NAME} PUBLIC ${PROJECT_NAME} eigenpy::eigenpy)
   target_link_boost_python(${PYLIB_NAME} PUBLIC)
 
