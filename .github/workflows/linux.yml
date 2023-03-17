@@ -78,7 +78,7 @@ jobs:
         mkdir build
         cd build
         cmake .. -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=~/custom_install -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DINSTALL_DOCUMENTATION:BOOL=OFF -DGENERATE_PYTHON_STUBS:BOOL=OFF -DBUILD_CROCODDYL_COMPAT:BOOL=ON -DBUILD_WITH_OPENMP_SUPPORT:BOOL=OFF
-        make -j3 install
+        make install
         make test
 
     # - name: Uninstall project
