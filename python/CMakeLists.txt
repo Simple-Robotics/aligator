@@ -25,6 +25,7 @@ function(make_bindings)
   endif()
 
   target_link_libraries(${PYLIB_NAME} PUBLIC ${PROJECT_NAME} eigenpy::eigenpy)
+  target_link_boost_python(${PYLIB_NAME} PUBLIC)
 
   if(BUILD_CROCODDYL_COMPAT)
     target_link_libraries(${PYLIB_NAME} PUBLIC ${CROC_COMPAT_LIB_NAME})
