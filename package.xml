@@ -16,6 +16,8 @@
   <depend>eigenpy</depend>
   <depend>fmtlib</depend>
   <depend>proxnlp</depend>
+  <depend>pinocchio</depend>
+  <depend>crocoddyl</depend>
 
   <buildtool_depend>cmake</buildtool_depend>
   <export>
