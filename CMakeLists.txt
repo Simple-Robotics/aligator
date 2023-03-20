@@ -37,6 +37,8 @@ elseif(UNIX)
 endif(APPLE)
 include(CMakeDependentOption)
 
+apply_default_apple_configuration()
+
 if(WIN32)
   set(LINK copy_if_different)
 else(WIN32)
