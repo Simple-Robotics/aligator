@@ -71,7 +71,10 @@ if args.term_cstr:
         proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet())
     )
 
-mu_init = 1e-6
+if args.bounds:
+    mu_init = 1e-1
+else:
+    mu_init = 1e-6
 rho_init = 0.0
 verbose = proxddp.VerboseLevel.VERBOSE
 tol = 1e-6
@@ -97,7 +100,7 @@ def test_check_num_iters(res):
     elif args.bounds:
         assert res.num_iters == 7
     elif args.term_cstr:
-        assert res.num_iters == 3
+        assert res.num_iters == 1
     else:
         assert res.num_iters == 1
 
