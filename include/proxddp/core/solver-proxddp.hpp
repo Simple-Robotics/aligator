@@ -108,7 +108,9 @@ public:
 
   /// @name Linear algebra options
   /// \{
-  std::size_t max_refinement_steps_ = 5;
+  /// Maximum number of linear system refinement iterations
+  std::size_t max_refinement_steps_ = 0;
+  /// Target tolerance for solving the KKT system.
   Scalar refinement_threshold_ = 1e-13;
   /// Choice of factorization routine.
   LDLTChoice ldlt_algo_choice_;

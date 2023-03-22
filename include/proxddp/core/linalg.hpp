@@ -21,25 +21,23 @@ template <typename Scalar> struct iterative_refinement_impl {
     Xout = -rhs;
     ldlt.solveInPlace(Xout);
 
-    err = -rhs;
-    err.noalias() -= mat * Xout;
+    while (true) {
 
-    while (math::infty_norm(err) > refinement_threshold) {
-
-      if (it >= max_refinement_steps) {
+      if (it >= max_refinement_steps)
         return false;
-      }
-
-      ldlt.solveInPlace(err);
-      Xout += err;
 
       // update residual
       err = -rhs;
       err.noalias() -= mat * Xout;
 
+      if (math::infty_norm(err) > refinement_threshold)
+        return true;
+
+      ldlt.solveInPlace(err);
+      Xout += err;
+
       it++;
     }
-    return true;
   }
 };
 
