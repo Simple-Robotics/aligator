@@ -102,8 +102,6 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
       stage_dual_infeas(this->nsteps + 1) {
   const std::size_t nsteps = this->nsteps;
 
-  value_params.reserve(nsteps + 1);
-  q_params.reserve(nsteps);
   prox_datas.reserve(nsteps + 1);
 
   prev_xs = this->trial_xs;

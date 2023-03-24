@@ -10,9 +10,6 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
     : Base(problem) {
   const std::size_t nsteps = this->nsteps;
 
-  value_params.reserve(nsteps + 1);
-  q_params.reserve(nsteps);
-
   this->dyn_slacks.resize(nsteps + 1);
   dxs.resize(nsteps + 1);
   dus.resize(nsteps);
