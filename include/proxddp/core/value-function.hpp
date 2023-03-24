@@ -123,3 +123,7 @@ template <typename Scalar> struct q_function {
 };
 
 } // namespace proxddp
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/core/value-function.txx"
+#endif
