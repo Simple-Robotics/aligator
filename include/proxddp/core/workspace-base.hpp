@@ -41,12 +41,25 @@ public:
 
   explicit WorkspaceBaseTpl(const TrajOptProblemTpl<Scalar> &problem);
 
+  virtual ~WorkspaceBaseTpl() = 0;
+
   bool isInitialized() const { return m_isInitialized; }
 
   /// @brief   Cycle the workspace data to the left.
   /// @details Useful in model-predictive control (MPC) applications.
-  void cycle_left();
+  virtual void cycleLeft();
+
+  /// @brief Same as cycleLeft(), but add a StageDataTpl to problem_data.
+  /// @details The implementation pushes back on top of the vector of
+  /// StageDataTpl, rotates left, then pops the first element back out.
+  void cycleAppend(shared_ptr<StageDataTpl<Scalar>> data) {
+    problem_data.stage_data.emplace_back(data);
+    this->cycleLeft();
+    problem_data.stage_data.pop_back();
+  }
 };
+
+template <typename Scalar> WorkspaceBaseTpl<Scalar>::~WorkspaceBaseTpl() {}
 
 /* impl */
 
@@ -60,7 +73,7 @@ WorkspaceBaseTpl<Scalar>::WorkspaceBaseTpl(
   us_default_init(problem, trial_us);
 }
 
-template <typename Scalar> void WorkspaceBaseTpl<Scalar>::cycle_left() {
+template <typename Scalar> void WorkspaceBaseTpl<Scalar>::cycleLeft() {
   rotate_vec_left(problem_data.stage_data);
 
   rotate_vec_left(trial_xs);

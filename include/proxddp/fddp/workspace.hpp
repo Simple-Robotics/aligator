@@ -39,13 +39,13 @@ template <typename Scalar> struct WorkspaceFDDPTpl : WorkspaceBaseTpl<Scalar> {
 
   WorkspaceFDDPTpl() : Base() {}
   explicit WorkspaceFDDPTpl(const TrajOptProblemTpl<Scalar> &problem);
+  ~WorkspaceFDDPTpl() = default;
+  WorkspaceFDDPTpl(const WorkspaceFDDPTpl &) = default;
+  WorkspaceFDDPTpl &operator=(const WorkspaceFDDPTpl &) = default;
+  WorkspaceFDDPTpl(WorkspaceFDDPTpl &&) = default;
+  WorkspaceFDDPTpl &operator=(WorkspaceFDDPTpl &&) = default;
 
-  void cycle_left();
-
-  /// @brief Same as cycle_left(), but add a StageDataTpl to problem_data.
-  /// @details The implementation pushes back on top of the vector of
-  /// StageDataTpl, rotates left, then pops the first element back out.
-  void cycle_append(const shared_ptr<StageModelTpl<Scalar>> &stage);
+  void cycleLeft() override;
 };
 
 } // namespace proxddp

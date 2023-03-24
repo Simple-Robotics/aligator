@@ -46,7 +46,7 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
     dxs[i] = VectorXs::Zero(ndx);
     dus[i] = VectorXs::Zero(nu);
 
-    Quuks_[i] = VectorXs::Zero(sm.nu());
+    Quuks_[i] = VectorXs::Zero(nu);
     ftVxx_[i + 1] = VectorXs::Zero(sm.ndx2());
     kkt_mat_bufs[i] = MatrixXs::Zero(nu, nu);
     kkt_rhs_bufs[i] = MatrixXs::Zero(nu, ndx + 1);
@@ -61,8 +61,8 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
   assert(llts_.size() == nsteps);
 }
 
-template <typename Scalar> void WorkspaceFDDPTpl<Scalar>::cycle_left() {
-  Base::cycle_left();
+template <typename Scalar> void WorkspaceFDDPTpl<Scalar>::cycleLeft() {
+  Base::cycleLeft();
 
   rotate_vec_left(dxs);
   rotate_vec_left(dus);
@@ -74,11 +74,4 @@ template <typename Scalar> void WorkspaceFDDPTpl<Scalar>::cycle_left() {
   rotate_vec_left(JtH_temp_);
 }
 
-template <typename Scalar>
-void WorkspaceFDDPTpl<Scalar>::cycle_append(
-    const shared_ptr<StageModelTpl<Scalar>> &stage) {
-  this->problem_data.stage_data.push_back(stage->createData());
-  this->cycle_left();
-  this->problem_data.stage_data.pop_back();
-}
 } // namespace proxddp

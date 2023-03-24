@@ -85,13 +85,13 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   WorkspaceTpl() : Base() {}
   WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
                LDLTChoice ldlt_choice = LDLTChoice::DENSE);
+  ~WorkspaceTpl() = default;
+  WorkspaceTpl(const WorkspaceTpl &) = default;
+  WorkspaceTpl &operator=(const WorkspaceTpl &) = default;
+  WorkspaceTpl(WorkspaceTpl &&) = default;
+  WorkspaceTpl &operator=(WorkspaceTpl &&) = default;
 
-  void cycle_left();
-
-  /// @brief Same as cycle_left(), but add a StageDataTpl to problem_data.
-  /// @details The implementation pushes back on top of the vector of
-  /// StageDataTpl, rotates left, then pops the first element back out.
-  void cycle_append(const shared_ptr<StageModel> &stage);
+  void cycleLeft() override;
 
   template <typename T>
   friend std::ostream &operator<<(std::ostream &oss,

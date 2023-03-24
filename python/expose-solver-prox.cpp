@@ -40,18 +40,13 @@ void exposeProxDDP() {
               PyErr_SetString(PyExc_IndexError, "Index out of bounds.");
               bp::throw_error_already_set();
             }
-            return *ws.ldlts_[(std::size_t)i];
+            return *ws.ldlts_[i];
           },
           bp::return_internal_reference<>(), bp::args("self", "i"),
           "Get the LDLT algorithm for the i-th linear problem.")
       .def_readonly("stage_prim_infeas", &Workspace::stage_prim_infeas)
       .def_readonly("stage_dual_infeas", &Workspace::stage_dual_infeas)
       .def_readonly("stage_inner_crits", &Workspace::stage_inner_crits)
-      .def("cycle_append", &Workspace::cycle_append,
-           bp::args("self", "stage_model"),
-           "From a StageModel object, allocate its data object, rotate the "
-           "workspace (using `cycle_left()`) and insert the allocated data "
-           "(useful for MPC).")
       .def(PrintableVisitor<Workspace>());
 
   bp::class_<Results, bp::bases<ResultsBaseTpl<Scalar>>>(
