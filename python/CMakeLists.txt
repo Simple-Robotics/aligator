@@ -77,7 +77,8 @@ endif()
 # --- GENERATE STUBS
 if(GENERATE_PYTHON_STUBS)
   load_stubgen()
-  generate_stubs(${CMAKE_CURRENT_BINARY_DIR} ${PROJECT_NAME} ${ABSOLUTE_PYTHON_SITELIB})
+  generate_stubs(${CMAKE_CURRENT_BINARY_DIR} ${PROJECT_NAME} ${ABSOLUTE_PYTHON_SITELIB}
+                 ${PYLIB_NAME})
 endif(GENERATE_PYTHON_STUBS)
 
 set(${PYLIB_NAME}_PYFILES __init__.py utils.py)
