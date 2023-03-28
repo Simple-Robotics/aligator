@@ -30,6 +30,8 @@ void exposeProxDDP() {
       .def_readonly("prox_datas", &Workspace::prox_datas)
       .def_readonly("kkt_mat", &Workspace::kkt_mats_)
       .def_readonly("kkt_rhs", &Workspace::kkt_rhs_)
+      .def_readonly("dxs", &Workspace::dxs)
+      .def_readonly("dus", &Workspace::dus)
       .def_readonly("trial_lams", &Workspace::trial_lams)
       .def_readonly("inner_crit", &Workspace::inner_criterion)
       .def(
