@@ -167,6 +167,7 @@ public:
 
   Scalar forwardPass(const Problem &problem, const Scalar alpha);
 
+  /// @brief    Compute search direction in the first state variable \f$x_0\f$.
   void compute_dir_x0(const Problem &problem);
 
   /// @brief    Terminal node.

@@ -86,7 +86,7 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem) {
   PROXDDP_NOMALLOC_BEGIN;
   // compute direction dx0
   const VParams &vp = workspace_.value_params[0];
-  const FunctionData &init_data = workspace_.problem_data.getInitData();
+  FunctionData &init_data = workspace_.problem_data.getInitData();
   const int ndual0 = problem.init_state_error_->nr;
   const int ndx0 = problem.init_state_error_->ndx1;
   const VectorXs &lampl0 = workspace_.lams_plus[0];
@@ -98,8 +98,13 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem) {
   assert(kkt_rhs.size() == ndx0 + ndual0);
   assert(kkt_mat.cols() == ndx0 + ndual0);
 
+  // computes cur_x0 - x0_target
+  problem.init_state_error_->evaluate(results_.xs[0], results_.us[0],
+                                      results_.xs[0], init_data);
+
   if (force_initial_condition_) {
     workspace_.pd_step_[0].setZero();
+    workspace_.dxs[0] = -init_data.value_;
     workspace_.trial_lams[0].setZero();
     kkt_rhs.setZero();
 
@@ -545,16 +550,12 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
   TrajOptData &prob_data = workspace_.problem_data;
 
   {
-    problem.init_state_error_->evaluate(xs[0], us[0], xs[1],
-                                        prob_data.getInitData());
     compute_dir_x0(problem);
     const StageModel &stage = *problem.stages_[0];
     // use lams[0] as a tmp var for alpha * dx0
-    if (!force_initial_condition_) {
-      lams[0] = alpha * workspace_.dxs[0];
-      stage.xspace().integrate(results_.xs[0], lams[0], xs[0]);
-      lams[0] = results_.lams[0] + alpha * workspace_.dlams[0];
-    }
+    lams[0] = alpha * workspace_.dxs[0];
+    stage.xspace().integrate(results_.xs[0], lams[0], xs[0]);
+    lams[0] = results_.lams[0] + alpha * workspace_.dlams[0];
   }
 
   for (std::size_t i = 0; i < nsteps; i++) {
@@ -585,13 +586,15 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
     stage.evaluate(xs[i], us[i], xs[i + 1], data);
 
     // compute multiple-shooting gap
-    CstrALWeightStrat weight_strat(mu_penal_, true);
-    const ConstraintStack &cstr_stack = stage.constraints_;
-    const ConstVectorRef dynlam =
-        cstr_stack.getConstSegmentByConstraint(lams[i + 1], 0);
-    const ConstVectorRef dynprevlam =
-        cstr_stack.getConstSegmentByConstraint(workspace_.lams_prev[i + 1], 0);
-    dyn_slacks[i] = weight_strat.get(0) * (dynprevlam - dynlam);
+    {
+      CstrALWeightStrat weight_strat(mu_penal_, true);
+      const ConstraintStack &cstr_stack = stage.constraints_;
+      const ConstVectorRef dynlam =
+          cstr_stack.getConstSegmentByConstraint(lams[i + 1], 0);
+      const ConstVectorRef dynprevlam = cstr_stack.getConstSegmentByConstraint(
+          workspace_.lams_prev[i + 1], 0);
+      dyn_slacks[i] = weight_strat.get(0) * (dynprevlam - dynlam);
+    }
 
     DynamicsData &dd = data.dyn_data();
 
