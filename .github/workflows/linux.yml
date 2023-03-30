@@ -1,22 +1,14 @@
 name: CI - Linux via CMake
 
-on: [push,pull_request]
+on: push
+env:
+  CCACHE_DIR: /github/home/.ccache
+  CMAKE_PREFIX_PATH: ~/custom_install
 
 jobs:
-  proxddp:
-
+  build-proxnlp:
     runs-on: self-hosted
-
-    env:
-      CCACHE_DIR: /github/home/.ccache
-      CMAKE_PREFIX_PATH: ~/custom_install
-
     steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-        submodules: recursive
-
     - name: Config for main
       if: github.ref == 'refs/heads/main'
       run: |
@@ -33,22 +25,6 @@ jobs:
         key: ${{ runner.os }}
         path: ${{ env.CCACHE_DIR }}
 
-    # extract branch name
-    - name: Get branch name (merge)
-      if: github.event_name != 'pull_request'
-      shell: bash
-      run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
-
-    # extract branch name on pull request
-    - name: Get branch name (pull request)
-      if: github.event_name == 'pull_request'
-      shell: bash
-      run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF})" >> $GITHUB_ENV
-
-    # print branch name
-    - name: Debug
-      run: echo ${{ env.BRANCH_NAME }}
-
     - name: Checkout proxnlp
       uses: actions/checkout@v3
       with:
@@ -59,7 +35,6 @@ jobs:
         repository: Simple-Robotics/proxnlp
         token: ${{ secrets.PROXNLP_TOKEN }}
 
-
     - name: Install proxnlp
       run: |
         cd $GITHUB_WORKSPACE/proxnlp
@@ -68,18 +43,33 @@ jobs:
         cmake .. -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=~/custom_install -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DINSTALL_DOCUMENTATION:BOOL=OFF
         make -j3 install
 
-        echo "PYTHONPATH=/builds/custom_install/lib/python3/dist-packages/" >> $GITHUB_ENV
-        echo "CTEST_OUTPUT_ON_FAILURE=1" >> $GITHUB_ENV
-        echo "CTEST_PARALLEL_LEVEL=4" >> $GITHUB_ENV
+  build:
+    needs: build-proxnlp
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        submodules: recursive
 
-    - name: Build proxddp and test
+    - name: Build and install proxddp
       run: |
         cd $GITHUB_WORKSPACE
         mkdir build
         cd build
+        echo "PYTHONPATH=/builds/custom_install/lib/python3/dist-packages/" >> $GITHUB_ENV
+        echo "CTEST_OUTPUT_ON_FAILURE=1" >> $GITHUB_ENV
+        echo "CTEST_PARALLEL_LEVEL=4" >> $GITHUB_ENV
         cmake .. -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=~/custom_install -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DINSTALL_DOCUMENTATION:BOOL=OFF -DGENERATE_PYTHON_STUBS:BOOL=OFF -DBUILD_CROCODDYL_COMPAT:BOOL=ON -DBUILD_WITH_OPENMP_SUPPORT:BOOL=OFF
         make install
-        make test
+  test:
+    needs: build
+    runs-on: self-hosted
+    name: Run tests
+    steps:
+      - run: |
+          cd $GITHUB_WORKSPACE/build
+          make test
 
     # - name: Uninstall project
     #   run: |
