@@ -10,6 +10,8 @@ env:
   CCACHE_DIR: /github/home/.ccache
   CMAKE_PREFIX_PATH: ~/custom_install
   PYTHONPATH: /builds/custom_install/lib/python3/dist-packages
+  CTEST_OUTPUT_ON_FAILURE: 1
+  CTEST_PARALLEL_LEVEL: 4
 
 jobs:
   build-proxnlp:
@@ -64,8 +66,7 @@ jobs:
         cd $GITHUB_WORKSPACE
         mkdir build
         cd build
-        echo "CTEST_OUTPUT_ON_FAILURE=1" >> $GITHUB_ENV
-        echo "CTEST_PARALLEL_LEVEL=4" >> $GITHUB_ENV
+        echo "PYTHONPATH=/builds/custom_install/lib/python3/dist-packages/" >> $GITHUB_ENV
         cmake .. -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=~/custom_install -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DINSTALL_DOCUMENTATION:BOOL=OFF -DGENERATE_PYTHON_STUBS:BOOL=OFF -DBUILD_CROCODDYL_COMPAT:BOOL=ON -DBUILD_WITH_OPENMP_SUPPORT:BOOL=OFF
         make install
   test:
