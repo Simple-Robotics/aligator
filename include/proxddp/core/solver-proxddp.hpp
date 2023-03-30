@@ -104,7 +104,7 @@ public:
 
   /// Force the initial state @f$ x_0 @f$ to be fixed to the problem initial
   /// condition.
-  bool is_x0_fixed_;
+  bool force_initial_condition_;
 
   /// @name Linear algebra options
   /// \{
