@@ -16,19 +16,15 @@ PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 BOOST_AUTO_TEST_CASE(newton_raphson) {
   const long nx = 4;
   using NR_t = NewtonRaphson<Scalar>;
-  auto fun = [](const ConstVectorRef &x, auto &out) {
-    fmt::print("x = {}\n", x.transpose());
+  auto fun = [](const ConstVectorRef &x, VectorRef out) {
     out = x.array() * x.array() - 1.;
-    fmt::print("out = {}\n", out.transpose());
   };
-  auto jac_fun = [&](const ConstVectorRef &x, auto &out) {
-    out.setIdentity();
-    out.diagonal().array() *= 2. * x.array();
+  auto jac_fun = [](const ConstVectorRef &x, MatrixRef out) {
+    out.setZero();
+    out.diagonal().array() = 2. * x.array();
   };
 
-  VectorXs xinit(nx);
-  xinit.setOnes();
-  xinit *= 0.1;
+  VectorXs xinit = 0.1 * VectorXs::Constant(nx, 0.1);
   VectorXs xout(xinit);
   proxnlp::VectorSpaceTpl<Scalar> space(nx);
   // buffer for evaluating the function
@@ -37,20 +33,23 @@ BOOST_AUTO_TEST_CASE(newton_raphson) {
   // buffer for direction
   VectorXs dx = err;
   // buffer for jacobian
-  MatrixXs jacobian_(nx, nx);
+  MatrixXs jacobian(nx, nx);
+  jacobian.setZero();
+  // desired precision
   Scalar eps = 1e-6;
-  NR_t::DataView data{err, dx, jacobian_};
-  bool conv = NewtonRaphson<Scalar>::run(space, fun, jac_fun, xinit, xout, data,
-                                         eps, 10);
+  // data buffer for the algorithm
+  NR_t::DataView data{err, dx, jacobian};
 
-  VectorXs x_ans(nx);
-  x_ans.setOnes();
+  bool conv = NR_t::run(space, fun, jac_fun, xinit, xout, data, eps, 10);
+
+  // actual answer
+  VectorXs xans = VectorXs::Ones(nx);
 
   fmt::print("Found answer: {}\n", xout.transpose());
-  fmt::print("True answer: {}\n", x_ans.transpose());
+  fmt::print("True answer: {}\n", xans.transpose());
 
   BOOST_TEST_CHECK(conv);
-  BOOST_TEST_CHECK(xout.isApprox(x_ans, eps));
+  BOOST_TEST_CHECK(xout.isApprox(xans, eps));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
