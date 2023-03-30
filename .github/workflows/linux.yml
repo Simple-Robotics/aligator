@@ -3,8 +3,12 @@ name: CI - Linux via CMake
 on: [push,pull_request]
 
 jobs:
+  call-proxnlp-linux-workflow:
+    uses: Simple-Robotics/proxnlp/.github/workflows/linux.yml@devel
+
   proxddp:
 
+    needs: call-proxnlp-linux-workflow
     runs-on: self-hosted
 
     env:
@@ -17,57 +21,14 @@ jobs:
         fetch-depth: 0
         submodules: recursive
 
-    - name: Config for main
-      if: github.ref == 'refs/heads/main'
-      run: |
-        echo "PROXNLP_BRANCH=main" >> $GITHUB_ENV
-
-    - name: Config for others
-      if: github.ref != 'refs/heads/main'
-      run: |
-        echo "PROXNLP_BRANCH=devel" >> $GITHUB_ENV
-
     - name: Setup ccache
       uses: actions/cache@v3
       with:
         key: ${{ runner.os }}
         path: ${{ env.CCACHE_DIR }}
 
-    # extract branch name
-    - name: Get branch name (merge)
-      if: github.event_name != 'pull_request'
-      shell: bash
-      run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
-
-    # extract branch name on pull request
-    - name: Get branch name (pull request)
-      if: github.event_name == 'pull_request'
-      shell: bash
-      run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF})" >> $GITHUB_ENV
-
-    # print branch name
-    - name: Debug
-      run: echo ${{ env.BRANCH_NAME }}
-
-    - name: Checkout proxnlp
-      uses: actions/checkout@v3
-      with:
-        ref: ${{ env.PROXNLP_BRANCH }}
-        fetch-depth: 0
-        path: ./proxnlp
-        submodules: recursive
-        repository: Simple-Robotics/proxnlp
-        token: ${{ secrets.PROXNLP_TOKEN }}
-
-
-    - name: Install proxnlp
+    - name: Set env variables
       run: |
-        cd $GITHUB_WORKSPACE/proxnlp
-        mkdir build
-        cd build
-        cmake .. -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=~/custom_install -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DINSTALL_DOCUMENTATION:BOOL=OFF
-        make -j3 install
-
         echo "PYTHONPATH=/builds/custom_install/lib/python3/dist-packages/" >> $GITHUB_ENV
         echo "CTEST_OUTPUT_ON_FAILURE=1" >> $GITHUB_ENV
         echo "CTEST_PARALLEL_LEVEL=4" >> $GITHUB_ENV
