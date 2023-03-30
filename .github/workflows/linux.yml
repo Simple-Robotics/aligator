@@ -1,6 +1,11 @@
 name: CI - Linux via CMake
 
-on: push
+on:
+  push:
+    branches:
+      - main
+      - devel
+  pull_request:
 env:
   CCACHE_DIR: /github/home/.ccache
   CMAKE_PREFIX_PATH: ~/custom_install
