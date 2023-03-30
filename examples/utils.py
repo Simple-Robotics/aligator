@@ -1,6 +1,7 @@
 import numpy as np
 import pinocchio as pin
 import hppfcl as fcl
+import example_robot_data as erd
 
 
 def create_cartpole(N):
@@ -137,3 +138,13 @@ def make_npendulum(N, ub=True, lengths=None):
         joint_placement = body_placement.copy()
 
     return model, geom_model, geom_model
+
+
+def load_talos_upper_body():
+    robot = erd.load("talos")
+    qref = robot.model.referenceConfigurations["half_sitting"]
+    locked_joints = list(range(1, 14))
+    locked_joints += [23, 31]
+    locked_joints += [32, 33]
+    red_bot = robot.buildReducedRobot(locked_joints, qref)
+    return red_bot

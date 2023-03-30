@@ -1,13 +1,13 @@
 import numpy as np
 import proxddp
 import pinocchio as pin
-import example_robot_data as erd
 import matplotlib.pyplot as plt
 
 import time
 
 from proxddp import manifolds, dynamics, constraints
 from common import get_endpoint_traj, compute_quasistatic, ArgsBase
+from utils import load_talos_upper_body
 
 
 class Args(ArgsBase):
@@ -15,18 +15,8 @@ class Args(ArgsBase):
     bounds: bool = True
 
 
-def loadTalos():
-    robot = erd.load("talos")
-    qref = robot.model.referenceConfigurations["half_sitting"]
-    locked_joints = list(range(1, 14))
-    locked_joints += [23, 31]
-    locked_joints += [32, 33]
-    red_bot = robot.buildReducedRobot(locked_joints, qref)
-    return red_bot
-
-
 args = Args().parse_args()
-robot = loadTalos()
+robot = load_talos_upper_body()
 rmodel: pin.Model = robot.model
 rdata: pin.Data = robot.data
 nq = rmodel.nq
