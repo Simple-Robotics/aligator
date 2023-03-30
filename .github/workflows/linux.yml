@@ -9,6 +9,7 @@ on:
 env:
   CCACHE_DIR: /github/home/.ccache
   CMAKE_PREFIX_PATH: ~/custom_install
+  PYTHONPATH: /builds/custom_install/lib/python3/dist-packages
 
 jobs:
   build-proxnlp:
@@ -47,6 +48,7 @@ jobs:
         cd build
         cmake .. -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=~/custom_install -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DINSTALL_DOCUMENTATION:BOOL=OFF
         make -j3 install
+        python3 -c "import proxnlp"
 
   build:
     needs: build-proxnlp
@@ -62,7 +64,6 @@ jobs:
         cd $GITHUB_WORKSPACE
         mkdir build
         cd build
-        echo "PYTHONPATH=/builds/custom_install/lib/python3/dist-packages/" >> $GITHUB_ENV
         echo "CTEST_OUTPUT_ON_FAILURE=1" >> $GITHUB_ENV
         echo "CTEST_PARALLEL_LEVEL=4" >> $GITHUB_ENV
         cmake .. -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=~/custom_install -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DINSTALL_DOCUMENTATION:BOOL=OFF -DGENERATE_PYTHON_STUBS:BOOL=OFF -DBUILD_CROCODDYL_COMPAT:BOOL=ON -DBUILD_WITH_OPENMP_SUPPORT:BOOL=OFF
