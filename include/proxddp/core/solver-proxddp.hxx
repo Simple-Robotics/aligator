@@ -240,7 +240,6 @@ void SolverProxDDP<Scalar>::computeMultipliers(
           CstrALWeightStrat &&weights) {
         // k: constraint count variable
         for (std::size_t k = 0; k < stack.size(); k++) {
-          const auto lami_k = stack.getConstSegmentByConstraint(lambda, k);
           const auto plami_k = stack.getConstSegmentByConstraint(prevlam, k);
           auto lamplus_k = stack.getSegmentByConstraint(lamplus, k);
           auto scval_k = stack.getSegmentByConstraint(shift_cvals, k);
