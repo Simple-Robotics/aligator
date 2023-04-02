@@ -20,8 +20,9 @@ function(make_bindings)
   set_target_properties(
     ${PYLIB_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_NAME} PREFIX ""
                              SUFFIX ${PYTHON_EXT_SUFFIX} VERSION ${PROJECT_VERSION})
-  if(UNIX AND NOT APPLE)
-    set_target_properties(${PYLIB_NAME} PROPERTIES INSTALL_RPATH "\$ORIGIN/../../..")
+  if(UNIX)
+    get_relative_rpath(${${PYLIB_NAME}_INSTALL_DIR} PYLIB_INSTALL_RPATH)
+    set_target_properties(${PYLIB_NAME} PROPERTIES INSTALL_RPATH "${PYLIB_INSTALL_RPATH}")
   endif()
 
   # deprecated functions are exposed up until they are removed. remove warnings.
