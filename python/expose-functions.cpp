@@ -47,7 +47,8 @@ void exposeFunctionBase() {
       .def_readonly("ndx2", &StageFunction::ndx2, "Next state space.")
       .def_readonly("nu", &StageFunction::nu, "Control dimension.")
       .def_readonly("nr", &StageFunction::nr, "Function codimension.")
-      .def(CreateDataPolymorphicPythonVisitor<PyStageFunction<>>());
+      .def(CreateDataPolymorphicPythonVisitor<StageFunction,
+                                              PyStageFunction<>>());
 
   bp::register_ptr_to_python<shared_ptr<FunctionData>>();
 

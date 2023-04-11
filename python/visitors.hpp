@@ -29,11 +29,13 @@ struct CreateDataPythonVisitor : bp::def_visitor<CreateDataPythonVisitor<T>> {
 /// overridden from Python.
 /// @sa CreateDataPythonVisitor
 /// @sa StageFunctionTpl
-template <typename TWrapper>
+/// @tparam T The wrapped class
+/// @tparam TWrapper The wrapper class
+template <typename T, typename TWrapper>
 struct CreateDataPolymorphicPythonVisitor
-    : bp::def_visitor<CreateDataPolymorphicPythonVisitor<TWrapper>> {
+    : bp::def_visitor<CreateDataPolymorphicPythonVisitor<T, TWrapper>> {
   template <typename PyClass> void visit(PyClass &obj) const {
-    obj.def("createData", &TWrapper::createData, &TWrapper::default_createData,
+    obj.def("createData", &T::createData, &TWrapper::default_createData,
             bp::args("self"), "Create a data object.");
   }
 };

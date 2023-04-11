@@ -16,7 +16,7 @@ struct PyContinuousDynamics : T, bp::wrapper<T> {
   using Data = dynamics::ContinuousDynamicsDataTpl<context::Scalar>;
   PROXNLP_DYNAMIC_TYPEDEFS(context::Scalar);
 
-  using T::T;
+  template <class... Args> PyContinuousDynamics(Args &&...args) : T(args...) {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &xdot, Data &data) const override {
@@ -42,7 +42,7 @@ struct PyODEAbstract : T, bp::wrapper<T> {
   using ODEData = dynamics::ODEDataTpl<context::Scalar>;
   using Data = dynamics::ContinuousDynamicsDataTpl<context::Scalar>;
 
-  using T::T;
+  template <class... Args> PyODEAbstract(Args &&...args) : T(args...) {}
 
   virtual void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                        ODEData &data) const override {

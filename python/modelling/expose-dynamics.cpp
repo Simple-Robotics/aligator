@@ -21,13 +21,14 @@ void exposeDynamics() {
 
 using context::DynamicsModel;
 using context::ExplicitDynamics;
+using context::ExplicitDynData;
 using context::Manifold;
 using context::Scalar;
 using ManifoldPtr = shared_ptr<context::Manifold>;
+using context::StageFunction;
+using internal::PyExplicitDynamics;
 
 void exposeDynamicsBase() {
-  using context::DynamicsModel;
-  using context::StageFunction;
 
   using PyDynamicsModel = internal::PyStageFunction<DynamicsModel>;
 
@@ -50,8 +51,6 @@ void exposeDynamicsBase() {
 }
 
 void exposeExplicitDynamics() {
-  using context::ExplicitDynData;
-  using internal::PyExplicitDynamics;
 
   StdVectorPythonVisitor<std::vector<shared_ptr<ExplicitDynamics>>,
                          true>::expose("StdVec_ExplicitDynamics");
@@ -68,7 +67,8 @@ void exposeExplicitDynamics() {
       .def("dForward", bp::pure_virtual(&ExplicitDynamics::dForward),
            bp::args("self", "x", "u", "data"),
            "Compute the derivatives of forward discrete dynamics.")
-      .def(CreateDataPolymorphicPythonVisitor<PyExplicitDynamics<>>());
+      .def(CreateDataPolymorphicPythonVisitor<ExplicitDynamics,
+                                              PyExplicitDynamics<>>());
 
   bp::register_ptr_to_python<shared_ptr<context::ExplicitDynData>>();
 

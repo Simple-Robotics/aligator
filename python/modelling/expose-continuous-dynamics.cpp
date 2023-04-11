@@ -39,7 +39,8 @@ void exposeODEs() {
                     bp::make_function(&ContinuousDynamicsBase::space,
                                       bp::return_internal_reference<>()),
                     "Get the state space.")
-      .def(CreateDataPolymorphicPythonVisitor<PyContinuousDynamics<>>());
+      .def(CreateDataPolymorphicPythonVisitor<ContinuousDynamicsBase,
+                                              PyContinuousDynamics<>>());
 
   bp::register_ptr_to_python<shared_ptr<ContinuousDynamicsData>>();
   bp::class_<ContinuousDynamicsData>(
@@ -77,7 +78,8 @@ void exposeODEs() {
       .def("dForward", bp::pure_virtual(&ODEAbstract::dForward),
            bp::args("self", "x", "u", "data"),
            "Compute the derivatives of the ODE vector field with respect "
-           "to the state-control pair :math:`(x, u)`.");
+           "to the state-control pair :math:`(x, u)`.")
+      .def(CreateDataPolymorphicPythonVisitor<ODEAbstract, PyODEAbstract<>>());
 
   bp::register_ptr_to_python<shared_ptr<ODEData>>();
   bp::class_<ODEData, bp::bases<ContinuousDynamicsData>>(
