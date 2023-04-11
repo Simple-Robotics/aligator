@@ -2,10 +2,7 @@
 # Copyright (C) 2023 LAAS-CNRS, INRIA
 #
 
-file(
-  GLOB PYTHON_TESTS
-  RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-  test_*.py)
+file(GLOB PYTHON_TESTS test_*.py)
 if(NOT BUILD_CROCODDYL_COMPAT)
   list(REMOVE_ITEM PYTHON_TESTS test_compat_croc.py)
 endif()
@@ -17,6 +14,8 @@ make_directory(${CMAKE_CURRENT_BINARY_DIR})
 
 foreach(pyfile ${PYTHON_TESTS})
   get_filename_component(pyfile_name ${pyfile} NAME)
+  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${pyfile}
+                          ${CMAKE_CURRENT_BINARY_DIR}/${pyfile_name})
   message(STATUS "Adding Python test: ${pyfile_name}")
   add_python_unit_test(${pyfile_name} "tests/python/${pyfile}" "tests/python")
   set_tests_properties("${pyfile_name}" PROPERTIES DEPENDS ${PYLIB_NAME})
