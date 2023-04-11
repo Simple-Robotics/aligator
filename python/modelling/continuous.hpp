@@ -13,7 +13,6 @@ namespace internal {
 
 template <class T = dynamics::ContinuousDynamicsAbstractTpl<context::Scalar>>
 struct PyContinuousDynamics : T, bp::wrapper<T> {
-  using bp::wrapper<T>::get_override;
   using Data = dynamics::ContinuousDynamicsDataTpl<context::Scalar>;
   PROXNLP_DYNAMIC_TYPEDEFS(context::Scalar);
 
@@ -38,7 +37,6 @@ struct PyContinuousDynamics : T, bp::wrapper<T> {
 
 template <class T = dynamics::ODEAbstractTpl<context::Scalar>>
 struct PyODEAbstract : T, bp::wrapper<T> {
-  using bp::wrapper<T>::get_override;
   using Scalar = context::Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using ODEData = dynamics::ODEDataTpl<context::Scalar>;
