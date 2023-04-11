@@ -11,6 +11,7 @@ template <class ExplicitBase = ExplicitDynamicsModelTpl<context::Scalar>>
 struct PyExplicitDynamics : ExplicitBase, bp::wrapper<ExplicitBase> {
   using Scalar = context::Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  // All functions in the interface take this type for output
   using BaseData = ExplicitDynamicsDataTpl<Scalar>;
 
   template <typename... Args>
