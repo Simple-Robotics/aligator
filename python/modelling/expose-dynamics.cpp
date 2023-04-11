@@ -2,6 +2,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "proxddp/python/modelling/explicit-dynamics.hpp"
 #include "proxddp/python/eigen-member.hpp"
+#include "proxddp/python/visitors.hpp"
 
 #include "proxddp/modelling/linear-discrete-dynamics.hpp"
 
@@ -45,8 +46,7 @@ void exposeDynamicsBase() {
       .add_property("nx1", &DynamicsModel::nx1)
       .add_property("nx2", &DynamicsModel::nx2)
       .add_property("is_explicit", &DynamicsModel::is_explicit,
-                    "Return whether the current model is explicit.")
-      .def(CreateDataPythonVisitor<DynamicsModel>());
+                    "Return whether the current model is explicit.");
 }
 
 void exposeExplicitDynamics() {
@@ -67,14 +67,16 @@ void exposeExplicitDynamics() {
            "Call for forward discrete dynamics.")
       .def("dForward", bp::pure_virtual(&ExplicitDynamics::dForward),
            bp::args("self", "x", "u", "data"),
-           "Compute the derivatives of forward discrete dynamics.");
+           "Compute the derivatives of forward discrete dynamics.")
+      .def(CreateDataPolymorphicPythonVisitor<PyExplicitDynamics<>>());
 
   bp::register_ptr_to_python<shared_ptr<context::ExplicitDynData>>();
 
-  bp::class_<ExplicitDynData, bp::bases<context::FunctionData>>(
-      "ExplicitDynamicsData", "Data struct for explicit dynamics models.",
-      bp::init<int, int, int, int>(
-          bp::args("self", "ndx1", "nu", "nx2", "ndx2")))
+  bp::class_<ExplicitDynData, bp::bases<context::FunctionData>,
+             boost::noncopyable>("ExplicitDynamicsData",
+                                 "Data struct for explicit dynamics models.",
+                                 bp::init<int, int, int, int>(bp::args(
+                                     "self", "ndx1", "nu", "nx2", "ndx2")))
       .add_property(
           "xnext",
           bp::make_getter(&ExplicitDynData::xnext_ref,

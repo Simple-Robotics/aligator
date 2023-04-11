@@ -50,10 +50,10 @@ void exposeFunctionBase() {
 
   bp::register_ptr_to_python<shared_ptr<FunctionData>>();
 
-  bp::class_<FunctionData>("FunctionData",
-                           "Data struct for holding data about functions.",
-                           bp::init<int, int, int, int>(
-                               bp::args("self", "ndx1", "nu", "ndx2", "nr")))
+  bp::class_<FunctionData, boost::noncopyable>(
+      "FunctionData", "Data struct for holding data about functions.",
+      bp::init<int, int, int, int>(
+          bp::args("self", "ndx1", "nu", "ndx2", "nr")))
       .add_property(
           "value",
           bp::make_getter(&FunctionData::valref_,
