@@ -1,7 +1,7 @@
 
 #include "proxddp/python/fwd.hpp"
 #include "proxddp/python/functions.hpp"
-#include "proxddp/python/modelling/dynamics.hpp"
+#include "proxddp/python/modelling/explicit-dynamics.hpp"
 
 #include "proxddp/modelling/dynamics/integrator-abstract.hpp"
 #include "proxddp/modelling/dynamics/integrator-euler.hpp"
