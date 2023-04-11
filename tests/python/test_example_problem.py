@@ -17,6 +17,7 @@ import pytest
 np.set_printoptions(precision=4, linewidth=250)
 
 space = manifolds.SE2()
+nx = space.nx
 ndx = space.ndx
 nu = space.ndx
 
@@ -36,6 +37,7 @@ class TwistModelExplicit(proxddp.dynamics.ExplicitDynamicsModel):
         super().__init__(space, nu)
 
     def forward(self, x, u, data: proxddp.dynamics.ExplicitDynamicsData):
+        assert data.good
         space.integrate(x, self.dt * self.B @ u, data.xnext)
 
     def dForward(self, x, u, data: proxddp.dynamics.ExplicitDynamicsData):
@@ -47,6 +49,15 @@ class TwistModelExplicit(proxddp.dynamics.ExplicitDynamicsModel):
         space.Jintegrate(x, v_, Jx, 0)
         Jxnext_dv = space.Jintegrate(x, v_, 1)
         Ju[:, :] = Jxnext_dv @ dv_du
+
+    def createData(self):
+        return TwistData()
+
+
+class TwistData(proxddp.dynamics.ExplicitDynamicsData):
+    def __init__(self):
+        super().__init__(nx, nu, nx, ndx)
+        self.good = True
 
 
 class MyQuadCost(proxddp.CostAbstract):
@@ -81,6 +92,7 @@ class TestClass:
 
     def test_dyn(self, nsteps):
         dyn_data = self.dynmodel.createData()
+        assert isinstance(dyn_data, TwistData)
         dyn_data.Jx[:, :] = np.arange(ndx**2).reshape(ndx, ndx)
         dyn_data.Ju[:, :] = np.arange(ndx**2, ndx**2 + ndx * nu).reshape(ndx, nu)
         self.dynmodel.evaluate(x0, u0, x1, dyn_data)
