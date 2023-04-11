@@ -4,7 +4,7 @@
 
 #include <type_traits>
 #include <fmt/format.h>
-#include <stdexcept>
+#include "proxddp/utils/exceptions.hpp"
 
 namespace proxddp {
 namespace python {
@@ -28,7 +28,7 @@ suppress_if_void(T &&o) {
 #define PROXDDP_PYTHON_OVERRIDE_IMPL(ret_type, pyname, ...)                    \
   do {                                                                         \
     if (bp::override fo = this->get_override(pyname)) {                        \
-      auto o = fo(__VA_ARGS__);                                                \
+      decltype(auto) o = fo(__VA_ARGS__);                                      \
       return ::proxddp::python::internal::suppress_if_void<ret_type>(          \
           std::move(o));                                                       \
     }                                                                          \
@@ -41,7 +41,7 @@ suppress_if_void(T &&o) {
  */
 #define PROXDDP_PYTHON_OVERRIDE_PURE(ret_type, pyname, ...)                    \
   PROXDDP_PYTHON_OVERRIDE_IMPL(ret_type, pyname, __VA_ARGS__);                 \
-  throw std::runtime_error(                                                    \
+  PROXDDP_RUNTIME_ERROR(                                                       \
       fmt::format("Tried to call pure virtual function {:s}.", pyname))
 
 /**
