@@ -25,6 +25,19 @@ struct CreateDataPythonVisitor : bp::def_visitor<CreateDataPythonVisitor<T>> {
   }
 };
 
+/// Visitor for exposing a polymorphic factory for data classes that can be
+/// overridden from Python.
+/// @sa CreateDataPythonVisitor
+/// @sa StageFunctionTpl
+template <typename TWrapper>
+struct CreateDataPolymorphicPythonVisitor
+    : bp::def_visitor<CreateDataPolymorphicPythonVisitor<TWrapper>> {
+  template <typename PyClass> void visit(PyClass &obj) const {
+    obj.def("createData", &TWrapper::createData, &TWrapper::default_createData,
+            bp::args("self"), "Create a data object.");
+  }
+};
+
 template <typename T>
 struct CopyableVisitor : bp::def_visitor<CopyableVisitor<T>> {
   template <typename PyClass> void visit(PyClass &obj) const {

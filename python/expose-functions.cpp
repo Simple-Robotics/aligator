@@ -46,7 +46,7 @@ void exposeFunctionBase() {
       .def_readonly("ndx2", &StageFunction::ndx2, "Next state space.")
       .def_readonly("nu", &StageFunction::nu, "Control dimension.")
       .def_readonly("nr", &StageFunction::nr, "Function codimension.")
-      .def(CreateDataPythonVisitor<StageFunction>());
+      .def(CreateDataPolymorphicPythonVisitor<PyStageFunction<>>());
 
   bp::register_ptr_to_python<shared_ptr<FunctionData>>();
 
@@ -177,8 +177,7 @@ void exposeFunctionExpressions() {
       bp::init<FunctionPtr, std::vector<int>>(
           bp::args("self", "func", "indices")))
       .def(bp::init<FunctionPtr, const int>("Constructor from a single index.",
-                                            bp::args("self", "func", "idx")))
-      .def(CreateDataPythonVisitor<FunctionSliceXpr>());
+                                            bp::args("self", "func", "idx")));
 
   bp::class_<FunctionSliceXpr::OwnData, bp::bases<FunctionData>,
              boost::noncopyable>("FunctionSliceData", bp::no_init)
