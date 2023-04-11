@@ -11,19 +11,20 @@
 namespace proxddp {
 namespace python {
 
+using context::ConstMatrixRef;
+using context::ConstVectorRef;
+using context::DynamicsModel;
+using context::FunctionData;
+using context::MatrixXs;
+using context::Scalar;
+using context::StageFunction;
+using context::VectorXs;
+using internal::PyStageFunction;
+using FunctionPtr = shared_ptr<StageFunction>;
+using StateErrorResidual = StateErrorResidualTpl<Scalar>;
+using ControlErrorResidual = ControlErrorResidualTpl<Scalar>;
+
 void exposeFunctionBase() {
-  using context::ConstMatrixRef;
-  using context::ConstVectorRef;
-  using context::DynamicsModel;
-  using context::FunctionData;
-  using context::MatrixXs;
-  using context::Scalar;
-  using context::StageFunction;
-  using context::VectorXs;
-  using internal::PyStageFunction;
-  using FunctionPtr = shared_ptr<StageFunction>;
-  using StateErrorResidual = StateErrorResidualTpl<Scalar>;
-  using ControlErrorResidual = ControlErrorResidualTpl<Scalar>;
 
   bp::register_ptr_to_python<FunctionPtr>();
 
@@ -160,12 +161,6 @@ void exposeFunctionBase() {
 }
 
 void exposeFunctionExpressions() {
-  using context::FunctionData;
-  using context::Scalar;
-  using context::StageFunction;
-
-  using FunctionPtr = shared_ptr<StageFunction>;
-
   // FUNCTION SLICE
 
   using FunctionSliceXpr = FunctionSliceXprTpl<Scalar>;
