@@ -79,9 +79,6 @@ BOOST_AUTO_TEST_CASE(lqr) {
   proxddp::SolverProxDDP<double> prox_solver(TOL, mu_init);
   prox_solver.verbose_ = proxddp::VerboseLevel::VERBOSE;
   prox_solver.max_iters = 8;
-#ifndef NDEBUG
-  prox_solver.dump_linesearch_plot = true;
-#endif
   prox_solver.rollout_type_ = proxddp::RolloutType::NONLINEAR;
 
   std::vector<VectorXd> xs_init(nsteps + 1, x0);

@@ -398,8 +398,8 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem) {
 
   if (!problem.term_cstrs_.empty()) {
     /* check number of multipliers */
-    assert(results.lams.size() == (nsteps + 2));
-    assert(results.gains_.size() == (nsteps + 1));
+    assert(results_.lams.size() == (nsteps + 2));
+    assert(results_.gains_.size() == (nsteps + 1));
   }
 
   for (std::size_t k = 0; k < problem.term_cstrs_.size(); ++k) {
