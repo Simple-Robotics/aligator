@@ -36,7 +36,6 @@ struct MultibodyFreeFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
 
   ManifoldPtr space_;
   MatrixXs actuation_matrix_;
-  Eigen::FullPivLU<MatrixXs> lu_decomp;
 
   const Manifold &space() const { return *space_; }
   int ntau() const { return space_->getModel().nv; }
@@ -65,6 +64,7 @@ struct MultibodyFreeFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   shared_ptr<ContDataAbstract> createData() const;
 
 private:
+  Eigen::FullPivLU<MatrixXs> lu_decomp_;
   Eigen::Index act_matrix_rank;
 };
 

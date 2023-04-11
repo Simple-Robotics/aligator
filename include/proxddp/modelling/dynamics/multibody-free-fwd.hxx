@@ -15,7 +15,7 @@ template <typename Scalar>
 MultibodyFreeFwdDynamicsTpl<Scalar>::MultibodyFreeFwdDynamicsTpl(
     const ManifoldPtr &state, const MatrixXs &actuation)
     : Base(state, (int)actuation.cols()), space_(state),
-      actuation_matrix_(actuation), lu_decomp(actuation_matrix_) {
+      actuation_matrix_(actuation), lu_decomp_(actuation_matrix_) {
   const int nv = space().getModel().nv;
   if (nv != actuation.rows()) {
     throw std::domain_error(
@@ -23,7 +23,7 @@ MultibodyFreeFwdDynamicsTpl<Scalar>::MultibodyFreeFwdDynamicsTpl(
                     "model nv ({} and {}).",
                     actuation.rows(), nv));
   }
-  act_matrix_rank = lu_decomp.rank();
+  act_matrix_rank = lu_decomp_.rank();
 }
 
 template <typename Scalar>
