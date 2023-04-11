@@ -73,10 +73,8 @@ void exposeExplicitDynamics() {
 
   bp::class_<ExplicitDynData, bp::bases<context::FunctionData>>(
       "ExplicitDynamicsData", "Data struct for explicit dynamics models.",
-      bp::no_init)
-      // .add_property("dx", make_getter_eigen_matrix(&ExplicitDynData::dx_))
-      // .add_property("xnext",
-      // make_getter_eigen_matrix(&ExplicitDynData::xnext_))
+      bp::init<int, int, int, int>(
+          bp::args("self", "ndx1", "nu", "nx2", "ndx2")))
       .add_property(
           "xnext",
           bp::make_getter(&ExplicitDynData::xnext_ref,
