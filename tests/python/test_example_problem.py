@@ -90,6 +90,13 @@ class TestClass:
     mu_init = 1e-2
     solver = proxddp.SolverProxDDP(tol, mu_init, 0.0)
 
+    def test_ext_create_data(self, nsteps):
+        import create_data_ext
+
+        dyn_data = create_data_ext.my_create_data(self.dynmodel)
+        assert isinstance(dyn_data, TwistData)
+        print(dyn_data)
+
     def test_dyn(self, nsteps):
         dyn_data = self.dynmodel.createData()
         assert isinstance(dyn_data, TwistData)
