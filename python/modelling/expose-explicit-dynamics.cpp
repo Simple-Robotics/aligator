@@ -9,7 +9,7 @@ namespace python {
 
 using context::DynamicsModel;
 using context::ExplicitDynamics;
-using context::ExplicitDynData;
+using context::ExplicitDynamicsData;
 using context::Scalar;
 using ManifoldPtr = shared_ptr<context::Manifold>;
 using internal::PyExplicitDynamics;
@@ -45,21 +45,21 @@ void exposeExplicitBase() {
       .def(CreateDataPolymorphicPythonVisitor<ExplicitDynamics,
                                               PyExplicitDynamics<>>());
 
-  bp::register_ptr_to_python<shared_ptr<context::ExplicitDynData>>();
+  bp::register_ptr_to_python<shared_ptr<context::ExplicitDynamicsData>>();
 
-  bp::class_<ExplicitDynData, bp::bases<context::FunctionData>,
+  bp::class_<ExplicitDynamicsData, bp::bases<context::FunctionData>,
              boost::noncopyable>("ExplicitDynamicsData",
                                  "Data struct for explicit dynamics models.",
                                  bp::init<int, int, int, int>(bp::args(
                                      "self", "ndx1", "nu", "nx2", "ndx2")))
       .add_property(
           "xnext",
-          bp::make_getter(&ExplicitDynData::xnext_ref,
+          bp::make_getter(&ExplicitDynamicsData::xnext_ref,
                           bp::return_value_policy<bp::return_by_value>()))
       .add_property(
-          "dx", bp::make_getter(&ExplicitDynData::dx_ref,
+          "dx", bp::make_getter(&ExplicitDynamicsData::dx_ref,
                                 bp::return_value_policy<bp::return_by_value>()))
-      .def(PrintableVisitor<ExplicitDynData>());
+      .def(PrintableVisitor<ExplicitDynamicsData>());
 }
 
 void exposeLinearDiscreteDynamics() {
