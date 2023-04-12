@@ -21,7 +21,7 @@ namespace python {
 namespace bp = boost::python;
 using eigenpy::StdVectorPythonVisitor;
 
-/// Expose ternary functions
+/// Expose stagewise function classes
 void exposeFunctions();
 /// Expose cost functions
 void exposeCosts();
@@ -36,16 +36,19 @@ void exposeProblem();
 void exposeDynamics();
 /// Expose continuous dynamics
 void exposeODEs();
-/// Expose integrators
+/// Expose numerical integrators
 void exposeIntegrators();
 
 /// Expose solvers
 void exposeSolvers();
+/// Expose solver callbacks
 void exposeCallbacks();
+/// Expose autodiff helpers
 void exposeAutodiff();
 void exposeUtils();
 
 #ifdef PROXDDP_WITH_PINOCCHIO
+/// Expose features using the Pinocchio rigid dynamics library
 void exposePinocchioFeatures();
 #endif
 

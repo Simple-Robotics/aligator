@@ -12,7 +12,7 @@ void exposeFDDP();
 void exposeProxDDP();
 
 /// Expose base solver elements
-void exposeBase() {
+void exposeSolverCommon() {
   using context::Scalar;
 
   using QParams = proxddp::q_function<Scalar>;
@@ -79,7 +79,7 @@ void exposeBase() {
 }
 
 void exposeSolvers() {
-  exposeBase();
+  exposeSolverCommon();
   exposeFDDP();
   exposeProxDDP();
 }
