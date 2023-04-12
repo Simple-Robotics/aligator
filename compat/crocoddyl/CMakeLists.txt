@@ -12,9 +12,6 @@ if(ENABLE_TEMPLATE_INSTANTIATION)
   list(APPEND HEADERS ${HEADERS_TEMPL})
 endif()
 
-message(STATUS "Compat module: headers ${HEADERS}")
-message(STATUS "Compat module: sources ${SOURCES}")
-
 add_project_dependency(crocoddyl REQUIRED)
 
 add_library(${CROC_COMPAT_LIB_NAME} STATIC ${HEADERS} ${SOURCES})
