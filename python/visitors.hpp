@@ -52,8 +52,19 @@ private:
 
 template <typename T>
 struct PrintableVisitor : bp::def_visitor<PrintableVisitor<T>> {
-  template <typename Pyclass> void visit(Pyclass &obj) const {
+  template <typename PyClass> void visit(PyClass &obj) const {
     obj.def(bp::self_ns::str(bp::self)).def(bp::self_ns::repr(bp::self));
+  }
+};
+
+template <typename T>
+struct PrintAddressVisitor : bp::def_visitor<PrintAddressVisitor<T>> {
+  template <typename PyClass> void visit(PyClass &obj) const {
+    obj.def("printAddress", printAddress, bp::args("self"));
+  }
+  static void *getAddress(const T &a) { return (void *)&a; }
+  static void printAddress(const T &a) {
+    printf("Address: %p\n", getAddress(a));
   }
 };
 
