@@ -43,4 +43,5 @@ function(add_test_binding_lib test_name)
 endfunction()
 
 add_test_binding_lib(bind_optional)
+add_test_binding_lib(bind_virtual_factory)
 add_test_binding_lib(create_data_ext)
