@@ -56,7 +56,7 @@ class TwistModelExplicit(proxddp.dynamics.ExplicitDynamicsModel):
 
 class TwistData(proxddp.dynamics.ExplicitDynamicsData):
     def __init__(self):
-        super().__init__(nx, nu, nx, ndx)
+        super().__init__(ndx, nu, nx, ndx)
         self.good = True
 
 
