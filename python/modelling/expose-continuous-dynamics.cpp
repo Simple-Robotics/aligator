@@ -43,7 +43,7 @@ void exposeODEs() {
                                               PyContinuousDynamics<>>());
 
   bp::register_ptr_to_python<shared_ptr<ContinuousDynamicsData>>();
-  bp::class_<ContinuousDynamicsData>(
+  bp::class_<ContinuousDynamicsData, boost::noncopyable>(
       "ContinuousDynamicsData",
       "Data struct for continuous dynamics/DAE models.",
       bp::init<int, int>(bp::args("self", "ndx", "nu")))
@@ -82,7 +82,7 @@ void exposeODEs() {
       .def(CreateDataPolymorphicPythonVisitor<ODEAbstract, PyODEAbstract<>>());
 
   bp::register_ptr_to_python<shared_ptr<ODEData>>();
-  bp::class_<ODEData, bp::bases<ContinuousDynamicsData>>(
+  bp::class_<ODEData, bp::bases<ContinuousDynamicsData>, boost::noncopyable>(
       "ODEData", "Data struct for ODE models.",
       bp::init<int, int>(bp::args("self", "ndx", "nu")))
       .add_property("xdot", bp::make_getter(&ODEData::xdot_,
