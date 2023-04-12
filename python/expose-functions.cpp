@@ -113,6 +113,7 @@ void exposeFunctionBase() {
                           bp::return_value_policy<bp::return_by_value>()),
           "Hessian with respect to $(y, y)$.")
       .def(PrintableVisitor<FunctionData>())
+      .def(PrintAddressVisitor<FunctionData>())
       .def(ClonePythonVisitor<FunctionData>());
 
   StdVectorPythonVisitor<std::vector<FunctionPtr>, true>::expose(
