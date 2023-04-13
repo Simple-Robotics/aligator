@@ -16,20 +16,20 @@ struct PyExplicitDynamics : ExplicitBase, bp::wrapper<ExplicitBase> {
   using Scalar = context::Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   // All functions in the interface take this type for output
-  using BaseData = ExplicitDynamicsDataTpl<Scalar>;
+  using Data = ExplicitDynamicsDataTpl<Scalar>;
   using FunctionData = FunctionDataTpl<Scalar>;
 
   template <typename... Args>
   PyExplicitDynamics(Args &&...args) : ExplicitBase(args...) {}
 
   virtual void forward(const ConstVectorRef &x, const ConstVectorRef &u,
-                       BaseData &data) const {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "forward", x, u, data);
+                       Data &data) const {
+    PROXDDP_PYTHON_OVERRIDE_PURE(void, "forward", x, u, boost::ref(data));
   }
 
   virtual void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
-                        BaseData &data) const {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, data);
+                        Data &data) const {
+    PROXDDP_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, boost::ref(data));
   }
 
   shared_ptr<FunctionData> createData() const {
