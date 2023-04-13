@@ -5,14 +5,26 @@
 
 namespace proxddp {
 namespace python {
+using namespace ::proxddp::dynamics;
+using context::MatrixXs;
+using context::Scalar;
+using context::VectorXs;
+using ContinuousDynamicsBase = ContinuousDynamicsAbstractTpl<Scalar>;
+using ContinuousDynamicsData = ContinuousDynamicsDataTpl<Scalar>;
+using ODEAbstract = ODEAbstractTpl<Scalar>;
+using ODEData = ODEDataTpl<Scalar>;
+
+struct DAEDataWrapper : ContinuousDynamicsData,
+                        bp::wrapper<ContinuousDynamicsData> {
+  using ContinuousDynamicsData::ContinuousDynamicsData;
+};
+
+struct ODEDataWrapper : ODEData, bp::wrapper<ODEData> {
+  using ODEData::ODEData;
+};
+
 void exposeODEs() {
-  using namespace proxddp::dynamics;
-  using context::Scalar;
   using ManifoldPtr = shared_ptr<context::Manifold>;
-  using ContinuousDynamicsBase = ContinuousDynamicsAbstractTpl<Scalar>;
-  using ContinuousDynamicsData = ContinuousDynamicsDataTpl<Scalar>;
-  using ODEAbstract = ODEAbstractTpl<Scalar>;
-  using ODEData = ODEDataTpl<Scalar>;
   using internal::PyContinuousDynamics;
   using internal::PyODEAbstract;
 
@@ -43,7 +55,7 @@ void exposeODEs() {
                                               PyContinuousDynamics<>>());
 
   bp::register_ptr_to_python<shared_ptr<ContinuousDynamicsData>>();
-  bp::class_<ContinuousDynamicsData, boost::noncopyable>(
+  bp::class_<DAEDataWrapper, boost::noncopyable>(
       "ContinuousDynamicsData",
       "Data struct for continuous dynamics/DAE models.",
       bp::init<int, int>(bp::args("self", "ndx", "nu")))
@@ -82,15 +94,14 @@ void exposeODEs() {
       .def(CreateDataPolymorphicPythonVisitor<ODEAbstract, PyODEAbstract<>>());
 
   bp::register_ptr_to_python<shared_ptr<ODEData>>();
-  bp::class_<ODEData, bp::bases<ContinuousDynamicsData>, boost::noncopyable>(
+  bp::class_<ODEDataWrapper, bp::bases<ContinuousDynamicsData>,
+             boost::noncopyable>(
       "ODEData", "Data struct for ODE models.",
       bp::init<int, int>(bp::args("self", "ndx", "nu")))
       .add_property("xdot", bp::make_getter(&ODEData::xdot_,
                                             bp::return_internal_reference<>()));
 
   //// EXPOSE SOME
-  using context::MatrixXs;
-  using context::VectorXs;
   bp::class_<LinearODETpl<Scalar>, bp::bases<ODEAbstract>>(
       "LinearODE",
       "Linear ordinary differential equation, :math:`\\dot{x} = Ax + Bu`.",

@@ -20,12 +20,14 @@ struct PyContinuousDynamics : T, bp::wrapper<T> {
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &xdot, Data &data) const override {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "evaluate", x, u, xdot, data);
+    PROXDDP_PYTHON_OVERRIDE_PURE(void, "evaluate", x, u, xdot,
+                                 boost::ref(data));
   }
 
   void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
                         const ConstVectorRef &xdot, Data &data) const override {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeJacobians", x, u, xdot, data);
+    PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeJacobians", x, u, xdot,
+                                 boost::ref(data));
   }
 
   shared_ptr<Data> createData() const override {
@@ -46,12 +48,12 @@ struct PyODEAbstract : T, bp::wrapper<T> {
 
   virtual void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                        ODEData &data) const override {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "forward", x, u, data);
+    PROXDDP_PYTHON_OVERRIDE_PURE(void, "forward", x, u, boost::ref(data));
   }
 
   virtual void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
                         ODEData &data) const override {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, data);
+    PROXDDP_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, boost::ref(data));
   }
 
   shared_ptr<Data> createData() const override {
