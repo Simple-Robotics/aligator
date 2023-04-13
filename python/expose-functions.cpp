@@ -24,6 +24,11 @@ using FunctionPtr = shared_ptr<StageFunction>;
 using StateErrorResidual = StateErrorResidualTpl<Scalar>;
 using ControlErrorResidual = ControlErrorResidualTpl<Scalar>;
 
+/// Required trampoline class
+struct FunctionDataWrapper : FunctionData, bp::wrapper<FunctionData> {
+  using FunctionData::FunctionData;
+};
+
 void exposeFunctionBase() {
 
   bp::register_ptr_to_python<FunctionPtr>();
@@ -52,7 +57,7 @@ void exposeFunctionBase() {
 
   bp::register_ptr_to_python<shared_ptr<FunctionData>>();
 
-  bp::class_<FunctionData, boost::noncopyable>(
+  bp::class_<FunctionDataWrapper, boost::noncopyable>(
       "FunctionData", "Data struct for holding data about functions.",
       bp::init<int, int, int, int>(
           bp::args("self", "ndx1", "nu", "ndx2", "nr")))

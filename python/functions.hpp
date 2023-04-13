@@ -27,12 +27,13 @@ struct PyStageFunction : FunctionBase, bp::wrapper<FunctionBase> {
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &y, Data &data) const override {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "evaluate", x, u, y, data);
+    PROXDDP_PYTHON_OVERRIDE_PURE(void, "evaluate", x, u, y, boost::ref(data));
   }
 
   void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
                         const ConstVectorRef &y, Data &data) const override {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeJacobians", x, u, y, data);
+    PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeJacobians", x, u, y,
+                                 boost::ref(data));
   }
 
   void computeVectorHessianProducts(const ConstVectorRef &x,
@@ -41,7 +42,7 @@ struct PyStageFunction : FunctionBase, bp::wrapper<FunctionBase> {
                                     const ConstVectorRef &lbda,
                                     Data &data) const override {
     PROXDDP_PYTHON_OVERRIDE(void, FunctionBase, computeVectorHessianProducts, x,
-                            u, y, lbda, data);
+                            u, y, lbda, boost::ref(data));
   }
 
   shared_ptr<Data> createData() const override {
