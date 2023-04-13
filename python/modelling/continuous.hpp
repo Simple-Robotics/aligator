@@ -13,20 +13,21 @@ namespace internal {
 
 template <class T = dynamics::ContinuousDynamicsAbstractTpl<context::Scalar>>
 struct PyContinuousDynamics : T, bp::wrapper<T> {
-  using bp::wrapper<T>::get_override;
   using Data = dynamics::ContinuousDynamicsDataTpl<context::Scalar>;
   PROXNLP_DYNAMIC_TYPEDEFS(context::Scalar);
 
-  using T::T;
+  template <class... Args> PyContinuousDynamics(Args &&...args) : T(args...) {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &xdot, Data &data) const override {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "evaluate", x, u, xdot, data);
+    PROXDDP_PYTHON_OVERRIDE_PURE(void, "evaluate", x, u, xdot,
+                                 boost::ref(data));
   }
 
   void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
                         const ConstVectorRef &xdot, Data &data) const override {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeJacobians", x, u, xdot, data);
+    PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeJacobians", x, u, xdot,
+                                 boost::ref(data));
   }
 
   shared_ptr<Data> createData() const override {
@@ -38,22 +39,21 @@ struct PyContinuousDynamics : T, bp::wrapper<T> {
 
 template <class T = dynamics::ODEAbstractTpl<context::Scalar>>
 struct PyODEAbstract : T, bp::wrapper<T> {
-  using bp::wrapper<T>::get_override;
   using Scalar = context::Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using ODEData = dynamics::ODEDataTpl<context::Scalar>;
   using Data = dynamics::ContinuousDynamicsDataTpl<context::Scalar>;
 
-  using T::T;
+  template <class... Args> PyODEAbstract(Args &&...args) : T(args...) {}
 
   virtual void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                        ODEData &data) const override {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "forward", x, u, data);
+    PROXDDP_PYTHON_OVERRIDE_PURE(void, "forward", x, u, boost::ref(data));
   }
 
   virtual void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
                         ODEData &data) const override {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, data);
+    PROXDDP_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, boost::ref(data));
   }
 
   shared_ptr<Data> createData() const override {

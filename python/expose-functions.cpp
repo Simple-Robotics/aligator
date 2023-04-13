@@ -11,19 +11,25 @@
 namespace proxddp {
 namespace python {
 
+using context::ConstMatrixRef;
+using context::ConstVectorRef;
+using context::DynamicsModel;
+using context::FunctionData;
+using context::MatrixXs;
+using context::Scalar;
+using context::StageFunction;
+using context::VectorXs;
+using internal::PyStageFunction;
+using FunctionPtr = shared_ptr<StageFunction>;
+using StateErrorResidual = StateErrorResidualTpl<Scalar>;
+using ControlErrorResidual = ControlErrorResidualTpl<Scalar>;
+
+/// Required trampoline class
+struct FunctionDataWrapper : FunctionData, bp::wrapper<FunctionData> {
+  using FunctionData::FunctionData;
+};
+
 void exposeFunctionBase() {
-  using context::ConstMatrixRef;
-  using context::ConstVectorRef;
-  using context::DynamicsModel;
-  using context::FunctionData;
-  using context::MatrixXs;
-  using context::Scalar;
-  using context::StageFunction;
-  using context::VectorXs;
-  using internal::PyStageFunction;
-  using FunctionPtr = shared_ptr<StageFunction>;
-  using StateErrorResidual = StateErrorResidualTpl<Scalar>;
-  using ControlErrorResidual = ControlErrorResidualTpl<Scalar>;
 
   bp::register_ptr_to_python<FunctionPtr>();
 
@@ -46,14 +52,15 @@ void exposeFunctionBase() {
       .def_readonly("ndx2", &StageFunction::ndx2, "Next state space.")
       .def_readonly("nu", &StageFunction::nu, "Control dimension.")
       .def_readonly("nr", &StageFunction::nr, "Function codimension.")
-      .def(CreateDataPythonVisitor<StageFunction>());
+      .def(CreateDataPolymorphicPythonVisitor<StageFunction,
+                                              PyStageFunction<>>());
 
   bp::register_ptr_to_python<shared_ptr<FunctionData>>();
 
-  bp::class_<FunctionData>("FunctionData",
-                           "Data struct for holding data about functions.",
-                           bp::init<int, int, int, int>(
-                               bp::args("self", "ndx1", "nu", "ndx2", "nr")))
+  bp::class_<FunctionDataWrapper, boost::noncopyable>(
+      "FunctionData", "Data struct for holding data about functions.",
+      bp::init<int, int, int, int>(
+          bp::args("self", "ndx1", "nu", "ndx2", "nr")))
       .add_property(
           "value",
           bp::make_getter(&FunctionData::valref_,
@@ -111,6 +118,7 @@ void exposeFunctionBase() {
                           bp::return_value_policy<bp::return_by_value>()),
           "Hessian with respect to $(y, y)$.")
       .def(PrintableVisitor<FunctionData>())
+      .def(PrintAddressVisitor<FunctionData>())
       .def(ClonePythonVisitor<FunctionData>());
 
   StdVectorPythonVisitor<std::vector<FunctionPtr>, true>::expose(
@@ -160,12 +168,6 @@ void exposeFunctionBase() {
 }
 
 void exposeFunctionExpressions() {
-  using context::FunctionData;
-  using context::Scalar;
-  using context::StageFunction;
-
-  using FunctionPtr = shared_ptr<StageFunction>;
-
   // FUNCTION SLICE
 
   using FunctionSliceXpr = FunctionSliceXprTpl<Scalar>;
@@ -177,8 +179,7 @@ void exposeFunctionExpressions() {
       bp::init<FunctionPtr, std::vector<int>>(
           bp::args("self", "func", "indices")))
       .def(bp::init<FunctionPtr, const int>("Constructor from a single index.",
-                                            bp::args("self", "func", "idx")))
-      .def(CreateDataPythonVisitor<FunctionSliceXpr>());
+                                            bp::args("self", "func", "idx")));
 
   bp::class_<FunctionSliceXpr::OwnData, bp::bases<FunctionData>,
              boost::noncopyable>("FunctionSliceData", bp::no_init)

@@ -143,12 +143,13 @@ template <typename Scalar> struct LogResidualCostTpl : CostAbstractTpl<Scalar> {
                         CostDataAbstract &data) const {
     Data &d = static_cast<Data &>(data);
     FunctionDataTpl<Scalar> &under_d = *d.residual_data;
+    MatrixRef J = under_d.jac_buffer_.leftCols(data.grad_.size());
     residual_->computeJacobians(x, u, x, under_d);
     d.grad_.setZero();
     VectorXs &v = under_d.value_;
     const int nrows = residual_->nr;
     for (int i = 0; i < nrows; i++) {
-      auto g_i = under_d.jac_buffer_.row(i);
+      auto g_i = J.row(i);
       d.grad_.noalias() += barrier_weights_(i) * g_i / v(i);
     }
   }
@@ -158,10 +159,11 @@ template <typename Scalar> struct LogResidualCostTpl : CostAbstractTpl<Scalar> {
     Data &d = static_cast<Data &>(data);
     FunctionDataTpl<Scalar> &under_d = *d.residual_data;
     d.hess_.setZero();
+    MatrixRef J = under_d.jac_buffer_.leftCols(data.grad_.size());
     VectorXs &v = under_d.value_;
     const int nrows = residual_->nr;
     for (int i = 0; i < nrows; i++) {
-      auto g_i = under_d.jac_buffer_.row(i); // row vector
+      auto g_i = J.row(i); // row vector
       d.hess_.noalias() +=
           barrier_weights_(i) * (g_i.transpose() * g_i) / (v(i) * v(i));
     }

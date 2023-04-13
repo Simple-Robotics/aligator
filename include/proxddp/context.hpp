@@ -29,7 +29,7 @@ using TrajOptData = TrajOptDataTpl<Scalar>;
 using ConstraintStack = ConstraintStackTpl<Scalar>;
 
 using ExplicitDynamics = ExplicitDynamicsModelTpl<Scalar>;
-using ExplicitDynData = ExplicitDynamicsDataTpl<Scalar>;
+using ExplicitDynamicsData = ExplicitDynamicsDataTpl<Scalar>;
 
 using SolverProxDDP = ::proxddp::SolverProxDDP<Scalar>;
 using SolverFDDP = ::proxddp::SolverFDDP<Scalar>;

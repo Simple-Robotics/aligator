@@ -21,18 +21,20 @@ struct PyCostFunction : T, bp::wrapper<T> {
 
   virtual void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                         CostData &data) const override {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "evaluate", x, u, data);
+    PROXDDP_PYTHON_OVERRIDE_PURE(void, "evaluate", x, u, boost::ref(data));
   }
 
   virtual void computeGradients(const ConstVectorRef &x,
                                 const ConstVectorRef &u,
                                 CostData &data) const override {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeGradients", x, u, data);
+    PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeGradients", x, u,
+                                 boost::ref(data));
   }
 
   virtual void computeHessians(const ConstVectorRef &x, const ConstVectorRef &u,
                                CostData &data) const override {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeHessians", x, u, data);
+    PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeHessians", x, u,
+                                 boost::ref(data));
   }
 
   virtual shared_ptr<CostData> createData() const override {

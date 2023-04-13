@@ -5,7 +5,7 @@
 file(
   GLOB PYTHON_TESTS
   RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-  test_*.py)
+  CONFIGURE_DEPENDS test_*.py)
 if(NOT BUILD_CROCODDYL_COMPAT)
   list(REMOVE_ITEM PYTHON_TESTS test_compat_croc.py)
 endif()
@@ -16,10 +16,14 @@ endif()
 make_directory(${CMAKE_CURRENT_BINARY_DIR})
 
 foreach(pyfile ${PYTHON_TESTS})
-  get_filename_component(pyfile_name ${pyfile} NAME)
-  message(STATUS "Adding Python test: ${pyfile_name}")
-  add_python_unit_test(${pyfile_name} "tests/python/${pyfile}" "tests/python")
-  set_tests_properties("${pyfile_name}" PROPERTIES DEPENDS ${PYLIB_NAME})
+  get_filename_component(test_name ${pyfile} NAME_WE)
+  string(REGEX REPLACE "^test_" "test-py-" test_name ${test_name})
+  string(REGEX REPLACE "_" "-" test_name ${test_name})
+  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/${pyfile}
+                          ${CMAKE_CURRENT_BINARY_DIR}/${pyfile})
+  message(STATUS "Adding Python test: ${test_name}")
+  add_python_unit_test(${test_name} "tests/python/${pyfile}" "tests/python")
+  set_tests_properties("${test_name}" PROPERTIES DEPENDS ${PYLIB_NAME})
 endforeach()
 
 function(add_test_binding_lib test_name)
@@ -39,4 +43,5 @@ function(add_test_binding_lib test_name)
 endfunction()
 
 add_test_binding_lib(bind_optional)
+add_test_binding_lib(bind_virtual_factory)
 add_test_binding_lib(create_data_ext)

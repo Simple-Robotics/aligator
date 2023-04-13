@@ -8,11 +8,13 @@
 namespace proxddp {
 namespace python {
 namespace internal {
-/// Wrapper from StageFunction objects and their children that does
-/// not require the child wrappers to create more virtual function overrides.
+/// Wrapper for the StageFunction class and any virtual children that avoids
+/// having to redeclare Python overrides for these children.
 ///
-/// Using a templating technique from Pybind11's docs:
+/// This implements the "trampoline" technique from Pybind11's docs:
 /// https://pybind11.readthedocs.io/en/stable/advanced/classes.html#combining-virtual-functions-and-inheritance
+///
+/// @tparam FunctionBase The virtual class to expose.
 template <class FunctionBase = context::StageFunction>
 struct PyStageFunction : FunctionBase, bp::wrapper<FunctionBase> {
   using Scalar = typename FunctionBase::Scalar;
@@ -25,12 +27,13 @@ struct PyStageFunction : FunctionBase, bp::wrapper<FunctionBase> {
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &y, Data &data) const override {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "evaluate", x, u, y, data);
+    PROXDDP_PYTHON_OVERRIDE_PURE(void, "evaluate", x, u, y, boost::ref(data));
   }
 
   void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
                         const ConstVectorRef &y, Data &data) const override {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeJacobians", x, u, y, data);
+    PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeJacobians", x, u, y,
+                                 boost::ref(data));
   }
 
   void computeVectorHessianProducts(const ConstVectorRef &x,
@@ -39,11 +42,15 @@ struct PyStageFunction : FunctionBase, bp::wrapper<FunctionBase> {
                                     const ConstVectorRef &lbda,
                                     Data &data) const override {
     PROXDDP_PYTHON_OVERRIDE(void, FunctionBase, computeVectorHessianProducts, x,
-                            u, y, lbda, data);
+                            u, y, lbda, boost::ref(data));
   }
 
   shared_ptr<Data> createData() const override {
     PROXDDP_PYTHON_OVERRIDE(shared_ptr<Data>, FunctionBase, createData, );
+  }
+
+  shared_ptr<Data> default_createData() const {
+    return FunctionBase::createData();
   }
 };
 
