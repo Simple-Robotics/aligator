@@ -60,6 +60,11 @@ class TwistData(proxddp.dynamics.ExplicitDynamicsData):
         self.good = True
 
 
+class MyCostData(proxddp.CostData):
+    def __init__(self):
+        super().__init__(space.ndx, nu)
+
+
 class MyQuadCost(proxddp.CostAbstract):
     def __init__(self, W: np.ndarray, x_ref: np.ndarray):
         self.x_ref = x_ref
@@ -68,15 +73,22 @@ class MyQuadCost(proxddp.CostAbstract):
         self._basis = costs.QuadraticDistanceCost(space, self.x_ref, self.W)
 
     def evaluate(self, x, u, data):
+        assert isinstance(data, MyCostData)
         data.value = self._basis.call(x)
 
     def computeGradients(self, x, u, data):
+        assert isinstance(data, MyCostData)
         self._basis.computeGradient(x, data.Lx)
         data.Lu[:] = 0.0
 
     def computeHessians(self, x, u, data):
+        assert isinstance(data, MyCostData)
+        self._basis.computeGradient(x, data.Lx)
         data.hess[:, :] = 0.0
         self._basis.computeHessian(x, data.Lxx)
+
+    def createData(self):
+        return MyCostData()
 
 
 @pytest.mark.parametrize("nsteps", [1, 4])
@@ -95,6 +107,7 @@ class TestClass:
 
         dyn_data = create_data_ext.my_create_data(self.dynmodel)
         assert isinstance(dyn_data, TwistData)
+        assert dyn_data.good
         print(dyn_data)
 
     def test_dyn(self, nsteps):
