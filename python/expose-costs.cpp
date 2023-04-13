@@ -19,11 +19,16 @@ using context::MatrixXs;
 using context::Scalar;
 using context::StageFunction;
 using context::VectorXs;
+using internal::PyCostFunction;
 using QuadStateCost = QuadraticStateCostTpl<Scalar>;
 using QuadControlCost = QuadraticControlCostTpl<Scalar>;
 using QuadraticCost = QuadraticCostTpl<Scalar>;
 using FunctionPtr = shared_ptr<StageFunction>;
 using CostPtr = shared_ptr<CostBase>;
+
+struct CostDataWrapper : CostData, bp::wrapper<CostData> {
+  using CostData::CostData;
+};
 
 void exposeQuadCost() {
 
@@ -150,12 +155,10 @@ void exposeCostStack() {
                           bp::return_value_policy<bp::return_by_value>()));
 }
 
-void exposeCosts() {
-  using context::StageFunction;
-
+void exposeCostBase() {
   bp::register_ptr_to_python<CostPtr>();
 
-  bp::class_<internal::PyCostFunction<>, boost::noncopyable>(
+  bp::class_<PyCostFunction<>, boost::noncopyable>(
       "CostAbstract", "Base class for cost functions.",
       bp::init<const int, const int>(bp::args("self", "ndx", "nu")))
       .def("evaluate", bp::pure_virtual(&CostBase::evaluate),
@@ -171,7 +174,7 @@ void exposeCosts() {
       .def(CreateDataPythonVisitor<CostBase>());
 
   bp::register_ptr_to_python<shared_ptr<CostData>>();
-  bp::class_<CostData>(
+  bp::class_<CostDataWrapper, boost::noncopyable>(
       "CostData", "Cost function data struct.",
       bp::init<const int, const int>(bp::args("self", "ndx", "nu")))
       .def_readwrite("value", &CostData::value_)
@@ -200,7 +203,10 @@ void exposeCosts() {
       "StdVec_CostAbstract", "Vector of cost objects.");
   StdVectorPythonVisitor<std::vector<shared_ptr<CostData>>, true>::expose(
       "StdVec_CostData", "Vector of CostData objects.");
+}
 
+void exposeCosts() {
+  exposeCostBase();
   exposeCostStack();
   exposeQuadCost();
   exposeComposites();
