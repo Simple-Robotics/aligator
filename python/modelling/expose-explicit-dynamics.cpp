@@ -45,7 +45,7 @@ void exposeExplicitBase() {
       .def(CreateDataPolymorphicPythonVisitor<ExplicitDynamics,
                                               PyExplicitDynamics<>>());
 
-  bp::register_ptr_to_python<shared_ptr<context::ExplicitDynamicsData>>();
+  bp::register_ptr_to_python<shared_ptr<ExplicitDynamicsData>>();
 
   bp::class_<ExplicitDynamicsData, bp::bases<context::FunctionData>,
              boost::noncopyable>("ExplicitDynamicsData",
