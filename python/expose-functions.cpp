@@ -181,9 +181,9 @@ void exposeFunctionExpressions() {
       .def(bp::init<FunctionPtr, const int>("Constructor from a single index.",
                                             bp::args("self", "func", "idx")));
 
-  bp::class_<FunctionSliceXpr::OwnData, bp::bases<FunctionData>,
+  bp::class_<FunctionSliceXpr::Data, bp::bases<FunctionData>,
              boost::noncopyable>("FunctionSliceData", bp::no_init)
-      .def_readonly("sub_data", &FunctionSliceXpr::OwnData::sub_data,
+      .def_readonly("sub_data", &FunctionSliceXpr::Data::sub_data,
                     "Underlying function's data.");
 
   /// FUNCTION LINEAR COMPOSE

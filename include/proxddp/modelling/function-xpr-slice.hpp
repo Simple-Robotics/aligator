@@ -11,18 +11,9 @@ template <typename Scalar>
 struct FunctionSliceXprTpl : StageFunctionTpl<Scalar> {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using BaseData = FunctionDataTpl<Scalar>;
-
-  struct OwnData : BaseData {
-    /// @brief Base residual's data object.
-    shared_ptr<BaseData> sub_data;
-    VectorXs lbda_sub;
-
-    OwnData(FunctionSliceXprTpl<Scalar> const *obj)
-        : BaseData(obj->ndx1, obj->nu, obj->ndx2, obj->nr),
-          sub_data(obj->func->createData()), lbda_sub(obj->nr) {}
-  };
-
   using Base = StageFunctionTpl<Scalar>;
+
+  struct Data;
 
   shared_ptr<Base> func;
   /// @brief
@@ -37,7 +28,7 @@ struct FunctionSliceXprTpl : StageFunctionTpl<Scalar> {
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &y, BaseData &data) const {
-    OwnData &d = static_cast<OwnData &>(data);
+    Data &d = static_cast<Data &>(data);
     assert(d.sub_data != 0);
     BaseData &sub_data = *d.sub_data;
     // evaluate base
@@ -51,7 +42,7 @@ struct FunctionSliceXprTpl : StageFunctionTpl<Scalar> {
 
   void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
                         const ConstVectorRef &y, BaseData &data) const {
-    OwnData &d = static_cast<OwnData &>(data);
+    Data &d = static_cast<Data &>(data);
     assert(d.sub_data != 0);
     BaseData &sub_data = *d.sub_data;
     // evaluate base
@@ -68,7 +59,7 @@ struct FunctionSliceXprTpl : StageFunctionTpl<Scalar> {
                                     const ConstVectorRef &y,
                                     const ConstVectorRef &lbda,
                                     BaseData &data) const {
-    OwnData &d = static_cast<OwnData &>(data);
+    Data &d = static_cast<Data &>(data);
     assert(d.sub_data != 0);
     BaseData &sub_data = *d.sub_data;
 
@@ -81,8 +72,22 @@ struct FunctionSliceXprTpl : StageFunctionTpl<Scalar> {
   }
 
   shared_ptr<BaseData> createData() const {
-    return std::static_pointer_cast<BaseData>(std::make_shared<OwnData>(this));
+    return std::static_pointer_cast<BaseData>(std::make_shared<Data>(this));
   }
 };
 
+template <typename Scalar> struct FunctionSliceXprTpl<Scalar>::Data : BaseData {
+  /// @brief Base residual's data object.
+  shared_ptr<BaseData> sub_data;
+  VectorXs lbda_sub;
+
+  Data(FunctionSliceXprTpl<Scalar> const *obj)
+      : BaseData(obj->ndx1, obj->nu, obj->ndx2, obj->nr),
+        sub_data(obj->func->createData()), lbda_sub(obj->nr) {}
+};
+
 } // namespace proxddp
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/modelling/function-xpr-slice.txx"
+#endif
