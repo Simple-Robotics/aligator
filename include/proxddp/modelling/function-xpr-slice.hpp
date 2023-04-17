@@ -1,4 +1,5 @@
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @file
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
 #include "proxddp/core/function-abstract.hpp"
