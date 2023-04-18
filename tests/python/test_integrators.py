@@ -2,6 +2,7 @@ import numpy as np
 import proxddp
 from proxddp import dynamics, manifolds
 import pytest
+from utils import create_linear_ode, create_multibody_ode
 
 EPSILON = 1e-5
 ATOL = EPSILON**0.5
@@ -82,37 +83,6 @@ def finite_difference_explicit_dyn(dyn: dynamics.IntegratorAbstract, x0, u0, eps
         Ju_nd[:, i] = space.difference(y0, yplus) / eps
         ei[:] = 0.0
     return Jx_nd, Ju_nd
-
-
-def create_multibody_ode():
-    try:
-        import pinocchio as pin
-
-        model = pin.buildSampleModelHumanoid()
-        space = manifolds.MultibodyPhaseSpace(model)
-        nu = model.nv
-        B = np.eye(nu)
-        ode = dynamics.MultibodyFreeFwdDynamics(space, B)
-        data = ode.createData()
-        assert isinstance(data, dynamics.MultibodyFreeFwdData)
-        return ode
-    except ImportError:
-        return None
-
-
-def create_linear_ode(nx, nu):
-    n = min(nx, nu)
-    A = np.eye(nx)
-    A[1, 0] = 0.1
-    B = np.zeros((nx, nu))
-    B[range(n), range(n)] = 1.0
-    B[0, 1] = 0.5
-    c = np.zeros(nx)
-    ode = dynamics.LinearODE(A, B, c)
-    cd = ode.createData()
-    assert np.allclose(ode.A, cd.Jx)
-    assert np.allclose(ode.B, cd.Ju)
-    return ode
 
 
 @pytest.mark.parametrize("ode", [create_linear_ode(4, 2), create_multibody_ode()])

@@ -17,12 +17,15 @@ using internal::PyExplicitDynamics;
 // fwd declaration
 void exposeExplicitBase();
 void exposeLinearDiscreteDynamics();
+// fwd declaration, see expose-direct-sum.cpp
+void exposeExplicitDynDirectSum();
 
 //// impl
 
 void exposeExplicitDynamics() {
   exposeExplicitBase();
   exposeLinearDiscreteDynamics();
+  exposeExplicitDynDirectSum();
 }
 
 struct ExplicitDataWrapper : ExplicitDynamicsData,

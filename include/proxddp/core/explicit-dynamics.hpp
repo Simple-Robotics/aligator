@@ -62,8 +62,11 @@ struct ExplicitDynamicsDataTpl : FunctionDataTpl<_Scalar> {
   using Base::Jx_;
   using Base::Jy_;
   using Base::value_;
+  /// Model next state.
   VectorXs xnext_;
+  /// Difference vector between current state `x` and xnext_.
   VectorXs dx_;
+  /// Jacobian
   MatrixXs Jtmp_xnext;
 
   VectorRef xnext_ref;

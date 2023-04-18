@@ -17,7 +17,7 @@ class MyODE(dynamics.ODEAbstract):
 
     def forward(self, x, u, data: dynamics.ODEData):
         assert isinstance(data, MyODEData)
-        p, R_quat = x[:3], x[3:]  # R is quat
+        _, R_quat = x[:3], x[3:]  # R is quat
         R_quat = Quaternion(R_quat)
         R = R_quat.toRotationMatrix()
         data.xdot[:3] = R @ data.v0
@@ -60,7 +60,6 @@ def test_abstract():
 
 def test_custom_ode():
     ode = MyODE()
-    d = ode.createData()
     itg = dynamics.IntegratorEuler(ode, 0.01)
     x0 = space.rand()
     us = [np.zeros(0) for _ in range(10)]
