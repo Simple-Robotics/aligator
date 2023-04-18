@@ -107,16 +107,12 @@ w_xreg = np.diag([1e-3] * nv + [1e-3] * nv)
 w_xreg[range(3), range(3)] = base_weight
 
 w_ureg = np.eye(nu) * 1e-3
-ureg_cost = proxddp.QuadraticResidualCost(
-    proxddp.ControlErrorResidual(space.ndx, u0), w_ureg * timestep
-)
+ureg_cost = proxddp.QuadraticControlCost(space, u0, w_ureg * timestep)
 
 stages = []
 for i in range(nsteps):
-    x_cost = proxddp.QuadraticResidualCost(
-        proxddp.StateErrorResidual(space, nu, X_TARGETS[i]), w_xreg * timestep
-    )
-    rcost = proxddp.CostStack(space.ndx, nu)
+    x_cost = proxddp.QuadraticStateCost(space, nu, X_TARGETS[i], w_xreg * timestep)
+    rcost = proxddp.CostStack(space, nu)
     rcost.addCost(x_cost)
     rcost.addCost(ureg_cost)
     stm = proxddp.StageModel(rcost, dyn_model)
@@ -124,9 +120,7 @@ for i in range(nsteps):
 
 w_xterm = np.diag([1e-3] * nv + [1e-3] * nv)
 w_xterm[range(3), range(3)] = base_weight
-xreg_term = proxddp.QuadraticResidualCost(
-    proxddp.StateErrorResidual(space, nu, X_TARGETS[nsteps]), w_xterm
-)
+xreg_term = proxddp.QuadraticStateCost(space, nu, X_TARGETS[nsteps], w_xterm)
 term_cost = xreg_term
 
 

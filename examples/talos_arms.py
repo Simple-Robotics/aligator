@@ -60,7 +60,7 @@ frame_fn_lh = proxddp.FrameTranslationResidual(
 w_x_ee = 10.0 * np.eye(3)
 frame_fn_cost = proxddp.QuadraticResidualCost(frame_fn_lh, w_x_ee)
 
-rcost = proxddp.CostStack(space.ndx, nu)
+rcost = proxddp.CostStack(space, nu)
 rcost.addCost(proxddp.QuadraticCost(w_x, w_u), dt)
 rcost.addCost(frame_fn_cost.copy(), 0.01 * dt)
 
@@ -72,10 +72,8 @@ if args.bounds:
     ctrl_fn = proxddp.ControlErrorResidual(space.ndx, np.zeros(nu))
     stm.addConstraint(ctrl_fn, constraints.BoxConstraint(umin, umax))
 
-term_cost = proxddp.CostStack(space.ndx, nu)
-term_cost.addCost(
-    proxddp.QuadraticResidualCost(proxddp.StateErrorResidual(space, nu, x0), w_x)
-)
+term_cost = proxddp.CostStack(space, nu)
+term_cost.addCost(proxddp.QuadraticStateCost(space, nu, x0, w_x))
 term_cost.addCost(frame_fn_cost)
 
 

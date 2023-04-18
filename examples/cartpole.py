@@ -49,13 +49,9 @@ target_pos = np.array([0.0, 0.0, 1.0])
 frame_id = model.getFrameId("end_effector_frame")
 
 # running cost regularizes the control input
-rcost = proxddp.CostStack(ndx, nu)
+rcost = proxddp.CostStack(space, nu)
 wu = np.ones(nu) * 1e-2
-rcost.addCost(
-    proxddp.QuadraticResidualCost(
-        proxddp.ControlErrorResidual(ndx, np.zeros(nu)), np.diag(wu) * dt
-    )
-)
+rcost.addCost(proxddp.QuadraticControlCost(space, np.zeros(nu), np.diag(wu) * dt))
 frame_place_target = pin.SE3.Identity()
 frame_place_target.translation[:] = target_pos
 frame_err = proxddp.FramePlacementResidual(
@@ -72,15 +68,15 @@ weights_frame_place[:3] = 1.0
 # weights_frame_place[2] = np.ones(1) * 1.0
 # weights_frame_place[:3] = 1.0
 weights_frame_place = np.diag(weights_frame_place)
-rcost.addCost(proxddp.QuadraticResidualCost(frame_err, weights_frame_place * dt))
-term_cost = proxddp.CostStack(ndx, nu)
+rcost.addCost(proxddp.QuadraticResidualCost(space, frame_err, weights_frame_place * dt))
+term_cost = proxddp.CostStack(space, nu)
 
 wx_term = np.zeros(ndx)
 wx_term[nv:] = 0.001
-x_reg_cost = proxddp.QuadraticResidualCost(
-    proxddp.StateErrorResidual(space, nu, space.neutral()), np.diag(wx_term)
+x_reg_cost = proxddp.QuadraticStateCost(space, nu, space.neutral(), np.diag(wx_term))
+term_cost.addCost(
+    proxddp.QuadraticResidualCost(space, frame_err, weights_frame_place * dt)
 )
-term_cost.addCost(proxddp.QuadraticResidualCost(frame_err, weights_frame_place * dt))
 term_cost.addCost(x_reg_cost)
 
 # box constraint on control

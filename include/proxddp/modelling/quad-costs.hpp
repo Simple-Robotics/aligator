@@ -1,6 +1,7 @@
 #pragma once
 
 #include "proxddp/core/cost-abstract.hpp"
+#include <proxnlp/modelling/spaces/vector-space.hpp>
 
 namespace proxddp {
 
@@ -15,6 +16,7 @@ public:
   using CostData = CostDataAbstractTpl<Scalar>;
 
   using Data = QuadraticCostDataTpl<Scalar>;
+  using VectorSpace = proxnlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
 
   /// Weight @f$ Q @f$
   MatrixXs weights_x;
@@ -34,7 +36,8 @@ protected:
   void debug_check_dims() const {
     check_dim_equal(weights_x.rows(), weights_x.cols(), " for x weights");
     check_dim_equal(weights_u.rows(), weights_u.cols(), " for u weights");
-    check_dim_equal(weights_cross_.rows(), this->ndx, " for cross-term weight");
+    check_dim_equal(weights_cross_.rows(), this->ndx(),
+                    " for cross-term weight");
     check_dim_equal(weights_cross_.cols(), this->nu, " for cross-term weight");
     check_dim_equal(interp_x.rows(), weights_x.rows(),
                     " for x weights and intercept");
@@ -46,12 +49,16 @@ public:
   VectorXs interp_x;
   VectorXs interp_u;
 
+  static auto get_vector_space(Eigen::Index nx) {
+    return std::make_shared<VectorSpace>((int)nx);
+  }
+
   QuadraticCostTpl(const ConstMatrixRef &w_x, const ConstMatrixRef &w_u,
                    const ConstVectorRef &interp_x,
                    const ConstVectorRef &interp_u)
-      : Base((int)w_x.cols(), (int)w_u.cols()), weights_x(w_x), weights_u(w_u),
-        weights_cross_(this->ndx, this->nu), interp_x(interp_x),
-        interp_u(interp_u), has_cross_term_(false) {
+      : Base(get_vector_space(w_x.cols()), (int)w_u.cols()), weights_x(w_x),
+        weights_u(w_u), weights_cross_(this->ndx(), this->nu),
+        interp_x(interp_x), interp_u(interp_u), has_cross_term_(false) {
     debug_check_dims();
     weights_cross_.setZero();
   }
@@ -60,9 +67,9 @@ public:
                    const ConstMatrixRef &w_cross,
                    const ConstVectorRef &interp_x,
                    const ConstVectorRef &interp_u)
-      : Base((int)w_x.cols(), (int)w_u.cols()), weights_x(w_x), weights_u(w_u),
-        weights_cross_(w_cross), interp_x(interp_x), interp_u(interp_u),
-        has_cross_term_(true) {
+      : Base(get_vector_space(w_x.cols()), (int)w_u.cols()), weights_x(w_x),
+        weights_u(w_u), weights_cross_(w_cross), interp_x(interp_x),
+        interp_u(interp_u), has_cross_term_(true) {
     debug_check_dims();
   }
 
@@ -102,7 +109,7 @@ public:
                        CostData &) const {}
 
   shared_ptr<CostData> createData() const {
-    auto data = std::make_shared<Data>(this->ndx, this->nu);
+    auto data = std::make_shared<Data>(this->ndx(), this->nu);
     data->Lxx_ = weights_x;
     data->Luu_ = weights_u;
     data->Lxu_ = weights_cross_;

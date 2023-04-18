@@ -54,7 +54,7 @@ for i in range(nsteps):
 
 wx_term = np.eye(3) * 6.0
 frame_id = rmodel.getFrameId("tool0")
-term_cost = proxddp.CostStack(space.ndx, nu)
+term_cost = proxddp.CostStack(space, nu)
 term_cost.addCost(
     proxddp.QuadraticResidualCost(
         proxddp.FrameTranslationResidual(ndx, nu, rmodel, p_ref, frame_id), wx_term

@@ -77,7 +77,7 @@ wt_frame_pos = 10.0 * np.eye(frame_fn.nr)
 wt_frame_vel = 100.0 * np.ones(frame_vel_fn.nr)
 wt_frame_vel = np.diag(wt_frame_vel)
 
-term_cost = proxddp.CostStack(ndx, nu)
+term_cost = proxddp.CostStack(space, nu)
 term_cost.addCost(proxddp.QuadraticCost(wt_x_term, wt_u * 0))
 term_cost.addCost(proxddp.QuadraticResidualCost(frame_fn, wt_frame_pos))
 term_cost.addCost(proxddp.QuadraticResidualCost(frame_vel_fn, wt_frame_vel))
@@ -107,7 +107,7 @@ init_xs = proxddp.rollout(discrete_dynamics, x0, init_us)
 stages = []
 
 for i in range(nsteps):
-    rcost = proxddp.CostStack(ndx, nu)
+    rcost = proxddp.CostStack(space, nu)
     rcost.addCost(proxddp.QuadraticCost(wt_x * dt, wt_u * dt))
 
     stm = proxddp.StageModel(rcost, discrete_dynamics)

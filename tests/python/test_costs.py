@@ -9,11 +9,13 @@ import pytest
 def test_cost_stack():
     nx = 2
     nu = 2
-    cost_stack = CostStack(nx, nu)
+    space = manifolds.VectorSpace(nx)
+    cost_stack = CostStack(space, nu)
     Q = np.random.randn(4, nx)
     Q = Q.T @ Q / nx
     R = np.eye(nu)
     rcost = QuadraticCost(Q, R)
+    assert isinstance(rcost.space, manifolds.VectorSpace)
 
     cost_stack.addCost(rcost, 1.0)
     data1 = rcost.createData()
@@ -59,7 +61,7 @@ def test_composite_cost():
 
     weights = np.random.randn(4, fun.nr)
     weights = weights.T @ weights
-    cost = proxddp.QuadraticResidualCost(fun, weights)
+    cost = proxddp.QuadraticResidualCost(space, fun, weights)
     assert np.array_equal(weights, cost.weights)
 
     data = cost.createData()
@@ -83,7 +85,7 @@ def test_composite_cost():
     print("----")
 
     weights = np.ones(fun.nr)
-    log_cost = proxddp.LogResidualCost(fun, weights)
+    log_cost = proxddp.LogResidualCost(space, fun, weights)
     data = log_cost.createData()
     print(data)
     assert isinstance(data, proxddp.CompositeCostData)
@@ -135,7 +137,8 @@ def test_stack_error():
     # Should raise RuntimeError due to wrong use.
     nx = 2
     nu = 2
-    cost_stack = CostStack(nx, nu)
+    space = manifolds.VectorSpace(nx)
+    cost_stack = CostStack(space, nu)
     Q = np.eye(nx)
     R = np.eye(nu)
     R[range(nu), range(nu)] = np.random.rand(nu) * 2.0
@@ -157,11 +160,11 @@ def test_stack_error():
     print(e_info)
 
     with pytest.raises(Exception) as e_info:
-        CostStack(nx, nu, [rcost, rc2], [1.0, 1.0])
+        CostStack(space, nu, [rcost, rc2], [1.0, 1.0])
     print(e_info)
 
     with pytest.raises(Exception) as e_info:
-        CostStack(nx, nu, [rcost], [1.0, 1.0])
+        CostStack(space, nu, [rcost], [1.0, 1.0])
     print(e_info)
 
 

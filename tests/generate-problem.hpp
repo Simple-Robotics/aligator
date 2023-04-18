@@ -51,7 +51,6 @@ using StageModel = proxddp::StageModelTpl<double>;
 
 struct MyFixture {
   shared_ptr<Manifold> space;
-  const int nx;
   const int nu;
   const shared_ptr<MyModel> dyn_model;
   const shared_ptr<MyCost> cost;
@@ -59,9 +58,9 @@ struct MyFixture {
   TrajOptProblemTpl<double> problem;
 
   MyFixture()
-      : space(std::make_shared<Manifold>()), nx(space->nx()), nu(space->ndx()),
+      : space(std::make_shared<Manifold>()), nu(space->ndx()),
         dyn_model(std::make_shared<MyModel>(space)),
-        cost(std::make_shared<MyCost>(nx, nu)),
+        cost(std::make_shared<MyCost>(space, nu)),
         stage(std::make_shared<StageModel>(cost, dyn_model)),
         problem(space->neutral(), nu, space, cost) {
     problem.addStage(stage);

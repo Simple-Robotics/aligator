@@ -265,18 +265,16 @@ def main(args: Args):
 
         for i in range(nsteps):
 
-            rcost = proxddp.CostStack(space.ndx, nu)
+            rcost = proxddp.CostStack(space, nu)
 
             weights, x_tar = task_schedule(i)
 
-            state_err = proxddp.StateErrorResidual(space, nu, x_tar)
-            xreg_cost = proxddp.QuadraticResidualCost(state_err, np.diag(weights) * dt)
-
+            xreg_cost = proxddp.QuadraticStateCost(
+                space, nu, x_tar, np.diag(weights) * dt
+            )
             rcost.addCost(xreg_cost)
-
-            u_err = proxddp.ControlErrorResidual(space.ndx, nu)
-            ucost = proxddp.QuadraticResidualCost(u_err, w_u * dt)
-            rcost.addCost(ucost)
+            ureg_cost = proxddp.QuadraticControlCost(space, nu, w_u * dt)
+            rcost.addCost(ureg_cost)
 
             stage = proxddp.StageModel(rcost, dynmodel)
             if args.bounds:
@@ -297,9 +295,7 @@ def main(args: Args):
         weights, x_tar = task_schedule(nsteps)
         if not args.term_cstr:
             weights *= 10.0
-        term_cost = proxddp.QuadraticResidualCost(
-            proxddp.StateErrorResidual(space, nu, x_tar), np.diag(weights)
-        )
+        term_cost = proxddp.QuadraticStateCost(space, nu, x_tar, np.diag(weights))
         prob = proxddp.TrajOptProblem(x0, stages, term_cost=term_cost)
         if args.term_cstr:
             term_cstr = proxddp.StageConstraint(

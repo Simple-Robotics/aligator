@@ -69,7 +69,7 @@ class MyQuadCost(proxddp.CostAbstract):
     def __init__(self, W: np.ndarray, x_ref: np.ndarray):
         self.x_ref = x_ref
         self.W = W
-        super().__init__(space.ndx, nu)
+        super().__init__(space, nu)
         self._basis = costs.QuadraticDistanceCost(space, self.x_ref, self.W)
 
     def evaluate(self, x, u, data):

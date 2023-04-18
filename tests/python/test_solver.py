@@ -54,7 +54,7 @@ def test_no_node():
     verbose = proxddp.VERBOSE
     TOL = 1e-4
     MAX_ITER = 200
-    terminal_cost = proxddp.CostStack(space.ndx, nu)
+    terminal_cost = proxddp.CostStack(space, nu)
     problem = proxddp.TrajOptProblem(x0, nu, space, terminal_cost)
     solver = proxddp.SolverProxDDP(
         TOL, mu_init, rho_init=rho_init, max_iters=MAX_ITER, verbose=verbose

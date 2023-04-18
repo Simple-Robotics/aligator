@@ -64,7 +64,7 @@ w_x[:nv] = 1e-6
 w_x = np.diag(w_x)
 w_u = 1e-3 * np.eye(nu)
 
-rcost = proxddp.CostStack(ndx, nu)
+rcost = proxddp.CostStack(space, nu)
 rcost.addCost(proxddp.QuadraticCost(w_x * dt, w_u * dt))
 
 # define the terminal cost
@@ -76,7 +76,7 @@ frame_obj_fn = proxddp.FrameTranslationResidual(ndx, nu, rmodel, p_ref, frame_id
 
 rcost.addCost(proxddp.QuadraticResidualCost(frame_obj_fn, weights_ee * dt))
 
-term_cost = proxddp.CostStack(ndx, nu)
+term_cost = proxddp.CostStack(space, nu)
 term_cost.addCost(proxddp.QuadraticResidualCost(frame_obj_fn, weights_ee_term))
 
 frame_fn_z = make_ee_residual()
