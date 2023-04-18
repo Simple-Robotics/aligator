@@ -168,6 +168,51 @@ def test_stack_error():
     print(e_info)
 
 
+def test_direct_sum():
+    import pinocchio as pin
+
+    model: pin.Model = pin.buildSampleModelManipulator()
+    data: pin.Data = model.createData()
+    config_space = manifolds.MultibodyConfiguration(model)
+    nv = config_space.ndx
+    frame_name = "effector_body"
+    frame_id = model.getFrameId(frame_name)
+    q0 = config_space.neutral()
+    pin.framesForwardKinematics(model, data, q0)
+    p_ref = data.oMf[frame_id].translation
+    frame_fn = proxddp.FrameTranslationResidual(
+        config_space.ndx, nv, model, p_ref, frame_id
+    )
+    print(frame_fn.nr)
+    frame_cost = proxddp.QuadraticResidualCost(config_space, frame_fn, np.eye(3))
+
+    cam_space = manifolds.SE3()
+    cam_cost = proxddp.QuadraticStateCost(
+        cam_space, cam_space.ndx, cam_space.neutral(), np.eye(6) * 0.01
+    )
+
+    # direct sum
+    direct_sum = proxddp.directSum(cam_cost, frame_cost)
+    data = direct_sum.createData()
+    assert isinstance(data, proxddp.DirectSumCostData)
+    d1 = data.data1
+    d2 = data.data2
+    space = direct_sum.space
+    assert isinstance(space, manifolds.CartesianProduct)
+    assert space.num_components == 2
+
+    x0 = space.rand()
+    u0 = np.random.randn(direct_sum.nu)
+    direct_sum.evaluate(x0, u0, data)
+    direct_sum.computeGradients(x0, u0, data)
+    np.set_printoptions(precision=5, linewidth=250)
+    print(data.Lx)
+    print(d1.Lx, d2.Lx)
+    assert np.allclose(data.value, d1.value + d2.value)
+    assert np.allclose(data.Lx[:nv], d1.Lx)
+    assert np.allclose(data.Lx[nv:], d2.Lx)
+
+
 if __name__ == "__main__":
     import sys
 
