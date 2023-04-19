@@ -80,7 +80,7 @@ public:
   virtual shared_ptr<Data> createData() const;
 };
 
-/// @brief  Struct to hold function data.
+/// @brief  Base struct for function data.
 template <typename _Scalar>
 struct FunctionDataTpl : Cloneable<FunctionDataTpl<_Scalar>> {
   using Scalar = _Scalar;
@@ -134,6 +134,11 @@ struct FunctionDataTpl : Cloneable<FunctionDataTpl<_Scalar>> {
   operator[](const std::vector<int> indices) {
     auto self_ptr = this->shared_from_this();
     return std::make_shared<FunctionSliceXprTpl<Scalar>>(self_ptr, indices);
+  }
+
+protected:
+  virtual FunctionDataTpl *clone_impl() const {
+    return new FunctionDataTpl(*this);
   }
 };
 

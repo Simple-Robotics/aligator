@@ -110,11 +110,14 @@ public:
 
 protected:
   StageModelTpl(ManifoldPtr space, const int nu);
+  virtual StageModelTpl *clone_impl() const override {
+    return new StageModelTpl(*this);
+  }
 };
 
 /// @brief    Data struct for stage models StageModelTpl.
 template <typename _Scalar>
-struct StageDataTpl : public Cloneable<StageDataTpl<_Scalar>> {
+struct StageDataTpl : Cloneable<StageDataTpl<_Scalar>> {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
@@ -163,6 +166,9 @@ struct StageDataTpl : public Cloneable<StageDataTpl<_Scalar>> {
 
 protected:
   StageDataTpl() = default;
+  virtual StageDataTpl *clone_impl() const override {
+    return new StageDataTpl(*this);
+  }
 };
 
 } // namespace proxddp
