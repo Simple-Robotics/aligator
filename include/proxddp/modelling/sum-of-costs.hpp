@@ -20,6 +20,7 @@ template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
   using CostData = CostDataAbstractTpl<Scalar>;
   using CostPtr = shared_ptr<CostBase>;
   using SumCostData = CostStackDataTpl<Scalar>;
+  using Manifold = ManifoldAbstractTpl<Scalar>;
 
   std::vector<CostPtr> components_;
   std::vector<Scalar> weights_;
@@ -31,7 +32,7 @@ template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
 
   /// @brief  Constructor with a specified dimension, and optional vector of
   /// components and weights.
-  CostStackTpl(const int ndx, const int nu,
+  CostStackTpl(shared_ptr<Manifold> space, const int nu,
                const std::vector<CostPtr> &comps = {},
                const std::vector<Scalar> &weights = {});
 

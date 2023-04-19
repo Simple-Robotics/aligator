@@ -7,10 +7,10 @@
 
 namespace proxddp {
 template <typename Scalar>
-CostStackTpl<Scalar>::CostStackTpl(const int ndx, const int nu,
+CostStackTpl<Scalar>::CostStackTpl(shared_ptr<Manifold> space, const int nu,
                                    const std::vector<CostPtr> &comps,
                                    const std::vector<Scalar> &weights)
-    : CostBase(ndx, nu), components_(comps), weights_(weights) {
+    : CostBase(space, nu), components_(comps), weights_(weights) {
   if (comps.size() != weights.size()) {
     std::string msg = fmt::format(
         "Inconsistent number of components ({:d}) and weights ({:d}).",
@@ -22,7 +22,7 @@ CostStackTpl<Scalar>::CostStackTpl(const int ndx, const int nu,
         std::string msg = fmt::format(
             "Component #{:d} has wrong input dimensions ({:d}, {:d}) (expected "
             "({:d}, {:d}))",
-            i, comps[i]->ndx, comps[i]->nu, this->ndx, this->nu);
+            i, comps[i]->ndx(), comps[i]->nu, this->ndx(), this->nu);
         throw RuntimeError(msg);
       }
     }
@@ -31,11 +31,12 @@ CostStackTpl<Scalar>::CostStackTpl(const int ndx, const int nu,
 
 template <typename Scalar>
 CostStackTpl<Scalar>::CostStackTpl(const CostPtr &cost)
-    : CostStackTpl(cost->ndx, cost->nu, {cost}, {1.}) {}
+    : CostStackTpl(cost->space, cost->nu, {cost}, {1.}) {}
 
 template <typename Scalar>
 bool CostStackTpl<Scalar>::checkDimension(const CostBase *comp) const {
-  return (comp->ndx == this->ndx) && (comp->nu == this->nu);
+  return (comp->nx() == this->nx()) && (comp->ndx() == this->ndx()) &&
+         (comp->nu == this->nu);
 }
 
 template <typename Scalar> std::size_t CostStackTpl<Scalar>::size() const {
@@ -48,7 +49,7 @@ void CostStackTpl<Scalar>::addCost(const CostPtr &cost, const Scalar weight) {
     throw RuntimeError(fmt::format(
         "Cannot add new component due to inconsistent input dimensions "
         "(got ({:d}, {:d}), expected ({:d}, {:d}))",
-        cost->ndx, cost->nu, this->ndx, this->nu));
+        cost->ndx(), cost->nu, this->ndx(), this->nu));
   }
   components_.push_back(cost);
   weights_.push_back(weight);
@@ -100,7 +101,7 @@ CostStackTpl<Scalar>::createData() const {
 
 template <typename Scalar>
 CostStackDataTpl<Scalar>::CostStackDataTpl(const CostStackTpl<Scalar> *obj)
-    : CostData(obj->ndx, obj->nu) {
+    : CostData(obj->ndx(), obj->nu) {
   for (std::size_t i = 0; i < obj->size(); i++) {
     sub_cost_data.push_back(obj->components_[i]->createData());
   }

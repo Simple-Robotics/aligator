@@ -275,22 +275,18 @@ def test_constrained_dynamics():
     w_u = np.eye(nu) * 1e-3
 
     for i in range(nsteps):
-        rcost = proxddp.CostStack(space.ndx, nu)
-        state_err = proxddp.StateErrorResidual(space, nu, x_target)
-        xreg_cost = proxddp.QuadraticResidualCost(state_err, np.diag(w_x) * dt)
+        rcost = proxddp.CostStack(space, nu)
+        xreg_cost = proxddp.QuadraticStateCost(space, nu, x_target, np.diag(w_x) * dt)
         rcost.addCost(xreg_cost)
 
-        u_err = proxddp.ControlErrorResidual(space.ndx, nu)
-        ucost = proxddp.QuadraticResidualCost(u_err, w_u * dt)
+        ucost = proxddp.QuadraticControlCost(space, nu, w_u * dt)
         rcost.addCost(ucost)
 
         stage = proxddp.StageModel(rcost, discrete_dynamics)
 
         stages.append(stage)
 
-    term_cost = proxddp.QuadraticResidualCost(
-        proxddp.StateErrorResidual(space, nu, x_target), np.diag(w_x)
-    )
+    term_cost = proxddp.QuadraticStateCost(space, nu, x_target, np.diag(w_x))
 
     problem = proxddp.TrajOptProblem(x0, stages, term_cost=term_cost)
 

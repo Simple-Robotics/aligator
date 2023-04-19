@@ -21,19 +21,20 @@ struct CrocCostModelWrapperTpl : CostAbstractTpl<_Scalar> {
   using CrocActionModel = crocoddyl::ActionModelAbstractTpl<Scalar>;
   using Base = CostAbstractTpl<Scalar>;
   using BaseData = CostDataAbstractTpl<Scalar>;
+  using StateWrap = StateWrapperTpl<Scalar>;
 
   boost::shared_ptr<CrocCostModel> croc_cost_;
   boost::shared_ptr<CrocActionModel> action_model_;
 
   /// Constructor from a crocoddyl cost model.
   explicit CrocCostModelWrapperTpl(boost::shared_ptr<CrocCostModel> cost)
-      : Base((int)cost->get_state()->get_ndx(), (int)cost->get_nu()),
+      : Base(get_state_wrap(cost->get_state()), (int)cost->get_nu()),
         croc_cost_(cost) {}
 
   /// Constructor using a terminal action model.
   explicit CrocCostModelWrapperTpl(
       boost::shared_ptr<CrocActionModel> action_model)
-      : Base((int)action_model->get_state()->get_ndx(),
+      : Base(get_state_wrap(action_model->get_state()),
              (int)action_model->get_nu()),
         action_model_(action_model) {}
 
@@ -91,6 +92,12 @@ struct CrocCostModelWrapperTpl : CostAbstractTpl<_Scalar> {
       throw std::domain_error("Invalid call. Cannot build Data from"
                               "crocoddyl cost model only.");
     }
+  }
+
+private:
+  static auto
+  get_state_wrap(boost::shared_ptr<crocoddyl::StateAbstractTpl<Scalar>> state) {
+    return std::make_shared<StateWrap>(state);
   }
 };
 

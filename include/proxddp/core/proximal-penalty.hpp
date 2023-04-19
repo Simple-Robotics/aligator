@@ -25,7 +25,7 @@ struct ProximalPenaltyTpl : CostAbstractTpl<_Scalar> {
   using CostData = CostDataAbstractTpl<Scalar>;
   using Data = ProximalDataTpl<Scalar>;
 
-  const ManifoldPtr xspace_, uspace_;
+  const ManifoldPtr uspace_;
   const VectorXs &x_ref, u_ref;
   /// Whether to exclude the control term of the penalty. Switch to true e.g.
   /// for terminal node.
@@ -34,14 +34,14 @@ struct ProximalPenaltyTpl : CostAbstractTpl<_Scalar> {
   ProximalPenaltyTpl(const ManifoldPtr &xspace, const ManifoldPtr &uspace,
                      const VectorXs &xt, const VectorXs &ut,
                      const bool no_ctrl_term)
-      : Base(xspace->ndx(), uspace->ndx()), xspace_(xspace), uspace_(uspace),
-        x_ref(xt), u_ref(ut), no_ctrl_term(no_ctrl_term) {}
+      : Base(xspace, uspace->ndx()), uspace_(uspace), x_ref(xt), u_ref(ut),
+        no_ctrl_term(no_ctrl_term) {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 CostData &data) const {
     Data &d = static_cast<Data &>(data);
     // x (-) x_ref
-    xspace_->difference(x_ref, x, d.dx_);
+    this->space->difference(x_ref, x, d.dx_);
     d.value_ = 0.5 * d.dx_.squaredNorm();
     if (this->no_ctrl_term)
       return;
@@ -52,7 +52,7 @@ struct ProximalPenaltyTpl : CostAbstractTpl<_Scalar> {
   void computeGradients(const ConstVectorRef &x, const ConstVectorRef &u,
                         CostData &data) const {
     Data &d = static_cast<Data &>(data);
-    xspace_->Jdifference(x_ref, x, d.Jx_, 1);
+    this->space->Jdifference(x_ref, x, d.Jx_, 1);
     d.Lx_ = d.Jx_.transpose() * d.dx_;
     if (this->no_ctrl_term)
       return;

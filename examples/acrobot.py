@@ -34,10 +34,10 @@ dyn_model = dynamics.IntegratorRK2(
 )
 w_x = np.eye(space.ndx) * 1e-4
 w_u = np.eye(nu) * 1e-2
-cost = proxddp.CostStack(space.ndx, nu)
+cost = proxddp.CostStack(space, nu)
 cost.addCost(proxddp.QuadraticStateCost(space, nu, target, w_x * timestep))
 cost.addCost(proxddp.QuadraticControlCost(space.ndx, nu, w_u * timestep))
-term_cost = proxddp.CostStack(space.ndx, nu)
+term_cost = proxddp.CostStack(space, nu)
 term_cost.addCost(proxddp.QuadraticStateCost(space, nu, target, np.eye(space.ndx) * 10))
 
 Tf = 1.0

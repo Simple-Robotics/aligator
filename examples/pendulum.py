@@ -121,11 +121,11 @@ target_pos = np.array([0.0, 0.0, 1.0])
 frame_id = model.getFrameId("end_effector_frame")
 
 # running cost regularizes the control input
-rcost = proxddp.CostStack(ndx, nu)
+rcost = proxddp.CostStack(space, nu)
 w_u = np.ones(nu) * 1e-3
 rcost.addCost(
     proxddp.QuadraticResidualCost(
-        proxddp.ControlErrorResidual(ndx, np.zeros(nu)), np.diag(w_u) * dt
+        space, proxddp.ControlErrorResidual(ndx, np.zeros(nu)), np.diag(w_u) * dt
     )
 )
 frame_place_target = pin.SE3.Identity()
@@ -144,11 +144,11 @@ weights_frame_place[:3] = np.ones(3) * 1.0
 # weights_frame_place[2] = np.ones(1) * 1.0
 # weights_frame_place[:3] = 1.0
 rcost.addCost(
-    proxddp.QuadraticResidualCost(frame_err, np.diag(weights_frame_place) * dt)
+    proxddp.QuadraticResidualCost(space, frame_err, np.diag(weights_frame_place) * dt)
 )
-term_cost = proxddp.CostStack(ndx, nu)
+term_cost = proxddp.CostStack(space, nu)
 term_cost.addCost(
-    proxddp.QuadraticResidualCost(frame_err, np.diag(weights_frame_place) * dt)
+    proxddp.QuadraticResidualCost(space, frame_err, np.diag(weights_frame_place) * dt)
 )
 
 # box constraint on control

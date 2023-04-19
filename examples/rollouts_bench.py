@@ -32,7 +32,7 @@ def main(roltype, mu_init):
     Tf = 1.0
     nsteps = int(Tf / dt)
 
-    rcost = proxddp.CostStack(space.ndx, nu)
+    rcost = proxddp.CostStack(space, nu)
     w_x = np.eye(space.ndx) * 1e-4
     w_x[nv:] = 1e-2
     w_u = np.eye(nu) * 1e-2

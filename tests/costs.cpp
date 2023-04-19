@@ -26,7 +26,8 @@ BOOST_AUTO_TEST_CASE(quad_state) {
 
   Eigen::MatrixXd weights(fun->nr, fun->nr);
   weights.setIdentity();
-  auto qres = std::make_shared<QuadraticResidualCostTpl<T>>(fun, weights);
+  auto qres =
+      std::make_shared<QuadraticResidualCostTpl<T>>(space, fun, weights);
 
   shared_ptr<CostDataAbstractTpl<T>> data = qres->createData();
   auto fd = fun->createData();

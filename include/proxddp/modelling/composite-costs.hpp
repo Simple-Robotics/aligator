@@ -42,56 +42,32 @@ template <typename _Scalar>
 struct QuadraticResidualCostTpl : CostAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-  using CostDataAbstract = CostDataAbstractTpl<Scalar>;
+  using Base = CostAbstractTpl<Scalar>;
+  using CostData = CostDataAbstractTpl<Scalar>;
   using Data = CompositeCostDataTpl<Scalar>;
   using StageFunction = StageFunctionTpl<Scalar>;
+  using Manifold = ManifoldAbstractTpl<Scalar>;
 
   MatrixXs weights_;
   shared_ptr<StageFunction> residual_;
   bool gauss_newton = true;
 
-  QuadraticResidualCostTpl(shared_ptr<StageFunction> function,
-                           const MatrixXs &weights)
-      : CostAbstractTpl<Scalar>(function->ndx1, function->nu),
-        weights_(weights), residual_(function) {
-    debug_dims();
-  }
+  QuadraticResidualCostTpl(shared_ptr<Manifold> space,
+                           shared_ptr<StageFunction> function,
+                           const MatrixXs &weights);
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                CostDataAbstract &data_) const {
-    Data &data = static_cast<Data &>(data_);
-    FunctionDataTpl<Scalar> &under_data = *data.residual_data;
-    residual_->evaluate(x, u, x, under_data);
-    data.value_ = .5 * under_data.value_.dot(weights_ * under_data.value_);
-  }
+                CostData &data_) const;
 
   void computeGradients(const ConstVectorRef &x, const ConstVectorRef &u,
-                        CostDataAbstract &data_) const {
-    Data &data = static_cast<Data &>(data_);
-    FunctionDataTpl<Scalar> &under_data = *data.residual_data;
-    residual_->computeJacobians(x, u, x, under_data);
-    const Eigen::Index size = data.grad_.size();
-    MatrixRef J = under_data.jac_buffer_.leftCols(size);
-    data.Wv_buf.noalias() = weights_ * under_data.value_;
-    data.grad_.noalias() = J.transpose() * data.Wv_buf;
-  }
+                        CostData &data_) const;
 
   void computeHessians(const ConstVectorRef &x, const ConstVectorRef &u,
-                       CostDataAbstract &data_) const {
-    Data &data = static_cast<Data &>(data_);
-    FunctionDataTpl<Scalar> &under_data = *data.residual_data;
-    const Eigen::Index size = data.grad_.size();
-    MatrixRef J = under_data.jac_buffer_.leftCols(size);
-    data.JtW_buf.noalias() = J.transpose() * weights_;
-    data.hess_ = data.JtW_buf * J;
-    if (!gauss_newton) {
-      residual_->computeVectorHessianProducts(x, u, x, data.Wv_buf, under_data);
-      data.hess_ = under_data.vhp_buffer_;
-    }
-  }
+                       CostData &data_) const;
 
-  shared_ptr<CostDataAbstract> createData() const {
-    return std::make_shared<Data>(this->ndx, this->nu, residual_->createData());
+  shared_ptr<CostData> createData() const {
+    return std::make_shared<Data>(this->ndx(), this->nu,
+                                  residual_->createData());
   }
 
 private:
@@ -110,68 +86,38 @@ template <typename Scalar> struct LogResidualCostTpl : CostAbstractTpl<Scalar> {
   using Data = CompositeCostDataTpl<Scalar>;
   using StageFunction = StageFunctionTpl<Scalar>;
   using Base = CostAbstractTpl<Scalar>;
+  using Manifold = ManifoldAbstractTpl<Scalar>;
 
   VectorXs barrier_weights_;
   shared_ptr<StageFunction> residual_;
 
-  LogResidualCostTpl(shared_ptr<StageFunction> function, const VectorXs &scale)
-      : Base(function->ndx1, function->nu), barrier_weights_(scale),
-        residual_(function) {
-    if (scale.size() != function->nr) {
-      PROXDDP_RUNTIME_ERROR(fmt::format(
-          "scale argument dimension ({:d}) != function codimension ({:d})",
-          scale.size(), function->nr));
-    }
-    bool negs = (scale.array() <= 0.0).any();
-    if (negs) {
-      PROXDDP_RUNTIME_ERROR("scale coefficients must be > 0.");
-    }
-  }
+  LogResidualCostTpl(shared_ptr<Manifold> space,
+                     shared_ptr<StageFunction> function, const VectorXs &scale);
 
-  LogResidualCostTpl(shared_ptr<StageFunction> function, const Scalar scale)
-      : LogResidualCostTpl(function, VectorXs::Constant(function->nr, scale)) {}
+  LogResidualCostTpl(shared_ptr<Manifold> space,
+                     shared_ptr<StageFunction> function, const Scalar scale);
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                CostDataAbstract &data) const {
-    Data &d = static_cast<Data &>(data);
-    residual_->evaluate(x, u, x, *d.residual_data);
-    d.value_ =
-        barrier_weights_.dot(d.residual_data->value_.array().log().matrix());
-  }
+                CostDataAbstract &data) const;
 
   void computeGradients(const ConstVectorRef &x, const ConstVectorRef &u,
-                        CostDataAbstract &data) const {
-    Data &d = static_cast<Data &>(data);
-    FunctionDataTpl<Scalar> &under_d = *d.residual_data;
-    MatrixRef J = under_d.jac_buffer_.leftCols(data.grad_.size());
-    residual_->computeJacobians(x, u, x, under_d);
-    d.grad_.setZero();
-    VectorXs &v = under_d.value_;
-    const int nrows = residual_->nr;
-    for (int i = 0; i < nrows; i++) {
-      auto g_i = J.row(i);
-      d.grad_.noalias() += barrier_weights_(i) * g_i / v(i);
-    }
-  }
+                        CostDataAbstract &data) const;
 
   void computeHessians(const ConstVectorRef &, const ConstVectorRef &,
-                       CostDataAbstract &data) const {
-    Data &d = static_cast<Data &>(data);
-    FunctionDataTpl<Scalar> &under_d = *d.residual_data;
-    d.hess_.setZero();
-    MatrixRef J = under_d.jac_buffer_.leftCols(data.grad_.size());
-    VectorXs &v = under_d.value_;
-    const int nrows = residual_->nr;
-    for (int i = 0; i < nrows; i++) {
-      auto g_i = J.row(i); // row vector
-      d.hess_.noalias() +=
-          barrier_weights_(i) * (g_i.transpose() * g_i) / (v(i) * v(i));
-    }
-  }
+                       CostDataAbstract &data) const;
 
   shared_ptr<CostDataAbstract> createData() const {
-    return std::make_shared<Data>(this->ndx, this->nu, residual_->createData());
+    return std::make_shared<Data>(this->ndx(), this->nu,
+                                  residual_->createData());
   }
 };
 
 } // namespace proxddp
+
+// Implementation files
+#include "proxddp/modelling/quad-residual-cost.hxx"
+#include "proxddp/modelling/log-residual-cost.hxx"
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "./composite-costs.txx"
+#endif

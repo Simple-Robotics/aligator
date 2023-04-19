@@ -20,16 +20,15 @@ using StateError = StateErrorResidualTpl<T>;
 using QuadResidualCost = QuadraticResidualCostTpl<T>;
 
 int main() {
-  shared_ptr<SE2> spaceptr = std::make_shared<SE2>();
-  const SE2 &space = *spaceptr;
-  const int nu = space.ndx();
+  auto space = std::make_shared<SE2>();
+  const int nu = space->ndx();
 
-  const Eigen::VectorXd x0 = space.rand();
+  const Eigen::VectorXd x0 = space->rand();
   Eigen::VectorXd u0(nu);
   u0.setRandom();
-  const Eigen::VectorXd x_target = space.neutral();
+  const Eigen::VectorXd x_target = space->neutral();
 
-  auto state_err = std::make_shared<StateError>(spaceptr, nu, x_target);
+  auto state_err = std::make_shared<StateError>(space, nu, x_target);
   /* test */
   {
     auto state_err_data = state_err->createData();
@@ -49,10 +48,11 @@ int main() {
 
   const T dt = 0.01;
 
-  auto rcost = std::make_shared<CostStackTpl<T>>(space.ndx(), nu);
-  auto rc1 = std::make_shared<QuadResidualCost>(state_err, w_x * dt);
-  auto rc2 = std::make_shared<QuadResidualCost>(
-      std::make_shared<ControlErrorResidualTpl<T>>(space.ndx(), nu), w_u * dt);
+  auto rcost = std::make_shared<CostStackTpl<T>>(space, nu);
+  auto rc1 = std::make_shared<QuadResidualCost>(space, state_err, w_x * dt);
+  auto control_err =
+      std::make_shared<ControlErrorResidualTpl<T>>(space->ndx(), nu);
+  auto rc2 = std::make_shared<QuadResidualCost>(space, control_err, w_u * dt);
   rcost->addCost(rc1);
   rcost->addCost(rc2);
 
@@ -64,7 +64,7 @@ int main() {
     fmt::print("cost val(xtar): {:.3e}\n", cd1->value_);
   }
 
-  auto term_cost = std::make_shared<QuadResidualCost>(state_err, w_term);
+  auto term_cost = std::make_shared<QuadResidualCost>(space, state_err, w_term);
 
   return 0;
 }
