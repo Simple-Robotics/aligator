@@ -3,8 +3,6 @@
 #include "proxddp/core/explicit-dynamics.hpp"
 #include <proxnlp/modelling/spaces/vector-space.hpp>
 
-#include "boost/optional.hpp"
-
 namespace proxddp {
 
 namespace dynamics {

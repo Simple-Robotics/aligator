@@ -42,5 +42,4 @@ function(add_test_binding_lib test_name)
   endif()
 endfunction()
 
-add_test_binding_lib(bind_optional)
 add_test_binding_lib(create_data_ext)
