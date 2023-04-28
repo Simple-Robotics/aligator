@@ -12,7 +12,9 @@
 namespace proxddp {
 
 /// @brief    Class representing ternary functions \f$f(x,u,x')\f$.
-template <typename _Scalar> struct StageFunctionTpl {
+template <typename _Scalar>
+struct StageFunctionTpl
+    : std::enable_shared_from_this<StageFunctionTpl<_Scalar>> {
 public:
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
@@ -78,6 +80,11 @@ public:
 
   /// @brief Instantiate a Data object.
   virtual shared_ptr<Data> createData() const;
+
+  using FunctionSlice = FunctionSliceXprTpl<Scalar>;
+
+  shared_ptr<FunctionSlice> operator[](const int idx);
+  shared_ptr<FunctionSlice> operator[](const std::vector<int> &indices);
 };
 
 /// @brief  Base struct for function data.
@@ -124,17 +131,6 @@ struct FunctionDataTpl : Cloneable<FunctionDataTpl<_Scalar>> {
   template <typename T>
   friend std::ostream &operator<<(std::ostream &oss,
                                   const FunctionDataTpl<T> &self);
-
-  shared_ptr<FunctionSliceXprTpl<Scalar>> operator[](const int idx) {
-    auto self_ptr = this->shared_from_this();
-    return std::make_shared<FunctionSliceXprTpl<Scalar>>(self_ptr, idx);
-  }
-
-  shared_ptr<FunctionSliceXprTpl<Scalar>>
-  operator[](const std::vector<int> indices) {
-    auto self_ptr = this->shared_from_this();
-    return std::make_shared<FunctionSliceXprTpl<Scalar>>(self_ptr, indices);
-  }
 
 protected:
   virtual FunctionDataTpl *clone_impl() const {

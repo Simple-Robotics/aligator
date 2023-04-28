@@ -19,61 +19,23 @@ struct FunctionSliceXprTpl : StageFunctionTpl<Scalar> {
   /// @brief
   std::vector<int> indices;
 
-  FunctionSliceXprTpl(shared_ptr<Base> func, std::vector<int> indices)
-      : Base(func->ndx1, func->nu, func->ndx2, (int)indices.size()), func(func),
-        indices(indices) {}
+  FunctionSliceXprTpl(shared_ptr<Base> func, std::vector<int> const &indices);
 
-  FunctionSliceXprTpl(shared_ptr<Base> func, int idx)
-      : FunctionSliceXprTpl(func, std::vector<int>({idx})) {}
+  FunctionSliceXprTpl(shared_ptr<Base> func, int idx);
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                const ConstVectorRef &y, BaseData &data) const {
-    Data &d = static_cast<Data &>(data);
-    assert(d.sub_data != 0);
-    BaseData &sub_data = *d.sub_data;
-    // evaluate base
-    func->evaluate(x, u, y, sub_data);
-
-    for (std::size_t j = 0; j < indices.size(); j++) {
-      int i = indices[j];
-      d.value_((long)j) = sub_data.value_(i);
-    }
-  }
+                const ConstVectorRef &y, BaseData &data) const;
 
   void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
-                        const ConstVectorRef &y, BaseData &data) const {
-    Data &d = static_cast<Data &>(data);
-    assert(d.sub_data != 0);
-    BaseData &sub_data = *d.sub_data;
-    // evaluate base
-    func->computeJacobians(x, u, y, sub_data);
-
-    for (std::size_t j = 0; j < indices.size(); j++) {
-      int i = indices[j];
-      d.jac_buffer_.row((long)j) = sub_data.jac_buffer_.row(i);
-    }
-  }
+                        const ConstVectorRef &y, BaseData &data) const;
 
   void computeVectorHessianProducts(const ConstVectorRef &x,
                                     const ConstVectorRef &u,
                                     const ConstVectorRef &y,
                                     const ConstVectorRef &lbda,
-                                    BaseData &data) const {
-    Data &d = static_cast<Data &>(data);
-    assert(d.sub_data != 0);
-    BaseData &sub_data = *d.sub_data;
+                                    BaseData &data) const;
 
-    d.lbda_sub = lbda;
-    for (std::size_t j = 0; j < indices.size(); j++) {
-      d.lbda_sub(indices[j]) = 0.;
-    }
-
-    func->computeVectorHessianProducts(x, u, y, d.lbda_sub, sub_data);
-  }
-
-  shared_ptr<BaseData> createData() const {
-    return std::static_pointer_cast<BaseData>(std::make_shared<Data>(this));
-  }
+  shared_ptr<BaseData> createData() const;
 };
 
 template <typename Scalar> struct FunctionSliceXprTpl<Scalar>::Data : BaseData {
@@ -81,12 +43,14 @@ template <typename Scalar> struct FunctionSliceXprTpl<Scalar>::Data : BaseData {
   shared_ptr<BaseData> sub_data;
   VectorXs lbda_sub;
 
-  Data(FunctionSliceXprTpl<Scalar> const *obj)
-      : BaseData(obj->ndx1, obj->nu, obj->ndx2, obj->nr),
-        sub_data(obj->func->createData()), lbda_sub(obj->nr) {}
+  Data(FunctionSliceXprTpl<Scalar> const &obj)
+      : BaseData(obj.ndx1, obj.nu, obj.ndx2, obj.nr),
+        sub_data(obj.func->createData()), lbda_sub(obj.nr) {}
 };
 
 } // namespace proxddp
+
+#include "proxddp/modelling/function-xpr-slice.hxx"
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/modelling/function-xpr-slice.txx"

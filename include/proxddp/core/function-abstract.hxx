@@ -2,6 +2,7 @@
 #pragma once
 
 #include "proxddp/core/function-abstract.hpp"
+#include "proxddp/modelling/function-xpr-slice.hpp"
 
 namespace proxddp {
 
@@ -63,5 +64,19 @@ std::ostream &operator<<(std::ostream &oss, const FunctionDataTpl<T> &self) {
   oss << fmt::format("nr:   {:d}", self.nr);
   oss << " }";
   return oss;
+}
+
+template <typename Scalar>
+auto StageFunctionTpl<Scalar>::operator[](const int idx)
+    -> shared_ptr<FunctionSlice> {
+  auto self_ptr = this->shared_from_this();
+  return std::make_shared<FunctionSlice>(self_ptr, idx);
+}
+
+template <typename Scalar>
+auto StageFunctionTpl<Scalar>::operator[](const std::vector<int> &indices)
+    -> shared_ptr<FunctionSlice> {
+  auto self_ptr = this->shared_from_this();
+  return std::make_shared<FunctionSlice>(self_ptr, indices);
 }
 } // namespace proxddp
