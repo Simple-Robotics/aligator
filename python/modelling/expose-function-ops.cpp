@@ -19,14 +19,18 @@ void exposeFunctionExpressions() {
 
   using FunctionSliceXpr = FunctionSliceXprTpl<Scalar>;
 
+  bp::register_ptr_to_python<shared_ptr<FunctionSliceXpr>>();
   bp::class_<FunctionSliceXpr, bp::bases<StageFunction>>(
       "FunctionSliceXpr",
       "Represents a slice of an expression according to either a single index "
       "or an array of indices.",
-      bp::init<FunctionPtr, std::vector<int>>(
+      bp::init<FunctionPtr, std::vector<int> const &>(
           bp::args("self", "func", "indices")))
       .def(bp::init<FunctionPtr, const int>("Constructor from a single index.",
-                                            bp::args("self", "func", "idx")));
+                                            bp::args("self", "func", "idx")))
+      .def_readonly("func", &FunctionSliceXpr::func, "Underlying function.")
+      .def_readonly("indices", &FunctionSliceXpr::indices,
+                    "Indices of the slice.");
 
   bp::class_<FunctionSliceXpr::Data, bp::bases<FunctionData>,
              boost::noncopyable>("FunctionSliceData", bp::no_init)

@@ -29,6 +29,45 @@ struct FunctionDataWrapper : FunctionData, bp::wrapper<FunctionData> {
   using FunctionData::FunctionData;
 };
 
+template <typename Class>
+struct SlicingVisitor : bp::def_visitor<SlicingVisitor<Class>> {
+  using FS = FunctionSliceXprTpl<Scalar>;
+
+  template <typename Iterator, typename Fn>
+  static auto do_with_slice(Fn &&fun, bp::slice::range<Iterator> &range) {
+    while (range.start != range.stop) {
+      fun(*range.start);
+      std::advance(range.start, range.step);
+    }
+    fun(*range.start);
+  }
+
+  static auto get_slice(shared_ptr<Class> const &fn, bp::slice slice_obj) {
+    std::vector<int> indices(fn->nr);
+    std::iota(indices.begin(), indices.end(), 0);
+    auto bounds = slice_obj.get_indices(indices.cbegin(), indices.cend());
+    std::vector<int> out{};
+
+    do_with_slice([&](int i) { out.push_back(i); }, bounds);
+    return std::make_shared<FS>(fn, out);
+  }
+
+  static auto get_from_index(shared_ptr<Class> const &fn, const int idx) {
+    return std::make_shared<FS>(fn, idx);
+  }
+
+  static auto get_from_indices(shared_ptr<Class> const &fn,
+                               std::vector<int> const &indices) {
+    return std::make_shared<FS>(fn, indices);
+  }
+
+  template <typename... Args> void visit(bp::class_<Args...> &cl) const {
+    cl.def("__getitem__", &get_from_index, bp::args("self", "idx"))
+        .def("__getitem__", &get_from_indices, bp::args("self", "indices"))
+        .def("__getitem__", &get_slice, bp::args("self", "sl"));
+  }
+};
+
 void exposeFunctionBase() {
 
   bp::register_ptr_to_python<FunctionPtr>();
@@ -52,6 +91,7 @@ void exposeFunctionBase() {
       .def_readonly("ndx2", &StageFunction::ndx2, "Next state space.")
       .def_readonly("nu", &StageFunction::nu, "Control dimension.")
       .def_readonly("nr", &StageFunction::nr, "Function codimension.")
+      .def(SlicingVisitor<StageFunction>())
       .def(CreateDataPolymorphicPythonVisitor<StageFunction,
                                               PyStageFunction<>>());
 
@@ -144,7 +184,8 @@ void exposeFunctionBase() {
       .def_readonly("space", &ControlErrorResidual::space_)
       .def_readwrite("target", &ControlErrorResidual::target_);
 
-  bp::class_<LinearFunctionTpl<Scalar>, bp::bases<StageFunction>>(
+  using LinearFunction = LinearFunctionTpl<Scalar>;
+  bp::class_<LinearFunction, bp::bases<StageFunction>>(
       "LinearFunction", bp::init<const int, const int, const int, const int>(
                             bp::args("self", "ndx1", "nu", "ndx2", "nr")))
       .def(bp::init<const ConstMatrixRef, const ConstMatrixRef,
@@ -154,10 +195,10 @@ void exposeFunctionBase() {
       .def(bp::init<const ConstMatrixRef, const ConstMatrixRef,
                     const ConstVectorRef>("Constructor with C=0.",
                                           bp::args("self", "A", "B", "d")))
-      .def_readonly("A", &LinearFunctionTpl<Scalar>::A_)
-      .def_readonly("B", &LinearFunctionTpl<Scalar>::B_)
-      .def_readonly("C", &LinearFunctionTpl<Scalar>::C_)
-      .def_readonly("d", &LinearFunctionTpl<Scalar>::d_);
+      .def_readonly("A", &LinearFunction::A_)
+      .def_readonly("B", &LinearFunction::B_)
+      .def_readonly("C", &LinearFunction::C_)
+      .def_readonly("d", &LinearFunction::d_);
 
   bp::class_<ControlBoxFunctionTpl<Scalar>, bp::bases<StageFunction>>(
       "ControlBoxFunction",
