@@ -69,3 +69,7 @@ struct FrameTranslationDataTpl : FunctionDataTpl<Scalar> {
 } // namespace proxddp
 
 #include "proxddp/modelling/multibody/frame-translation.hxx"
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "./frame-translation.txx"
+#endif

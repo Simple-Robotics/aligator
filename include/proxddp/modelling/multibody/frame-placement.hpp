@@ -76,3 +76,7 @@ struct FramePlacementDataTpl : FunctionDataTpl<Scalar> {
 } // namespace proxddp
 
 #include "proxddp/modelling/multibody/frame-placement.hxx"
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/modelling/multibody/frame-placement.txx"
+#endif

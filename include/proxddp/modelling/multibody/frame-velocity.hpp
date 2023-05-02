@@ -70,3 +70,7 @@ struct FrameVelocityDataTpl : FunctionDataTpl<Scalar> {
 } // namespace proxddp
 
 #include "proxddp/modelling/multibody/frame-velocity.hxx"
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "./frame-velocity.txx"
+#endif
