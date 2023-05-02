@@ -33,6 +33,9 @@ using std::unique_ptr;
 // fwd StageFunctionTpl
 template <typename Scalar> struct StageFunctionTpl;
 
+// fwd UnaryFunctionTpl
+template <typename Scalar> struct UnaryFunctionTpl;
+
 // fwd FunctionDataTpl
 template <typename Scalar> struct FunctionDataTpl;
 

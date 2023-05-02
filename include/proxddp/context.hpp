@@ -13,6 +13,7 @@ PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 using Manifold = ManifoldAbstractTpl<Scalar>;
 
 using StageFunction = StageFunctionTpl<Scalar>;
+using UnaryFunction = UnaryFunctionTpl<Scalar>;
 using FunctionData = FunctionDataTpl<Scalar>;
 using StageConstraint = StageConstraintTpl<Scalar>;
 
