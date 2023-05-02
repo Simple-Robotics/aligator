@@ -3,9 +3,11 @@
 #pragma once
 
 #include "proxddp/context.hpp"
+#include "./function-xpr-slice.hpp"
 
 namespace proxddp {
 
-extern template struct FunctionSliceXprTpl<context::Scalar>;
+extern template struct FunctionSliceXprTpl<context::Scalar, context::StageFunction>;
+extern template struct FunctionSliceXprTpl<context::Scalar, context::UnaryFunction>;
 
 } // namespace proxddp

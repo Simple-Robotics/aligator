@@ -59,6 +59,7 @@ template <typename UFunction = context::UnaryFunction>
 struct PyUnaryFunction : UFunction, bp::wrapper<UFunction> {
   using Scalar = typename UFunction::Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_UNARY_FUNCTION_INTERFACE(Scalar);
   using Data = FunctionDataTpl<Scalar>;
 
   using UFunction::UFunction;
@@ -84,7 +85,7 @@ struct PyUnaryFunction : UFunction, bp::wrapper<UFunction> {
 template <typename Class>
 struct SlicingVisitor : bp::def_visitor<SlicingVisitor<Class>> {
   using Scalar = typename Class::Scalar;
-  using FS = FunctionSliceXprTpl<Scalar>;
+  using FS = FunctionSliceXprTpl<Scalar, Class>;
 
   template <typename Iterator, typename Fn>
   static auto do_with_slice(Fn &&fun, bp::slice::range<Iterator> &range) {
