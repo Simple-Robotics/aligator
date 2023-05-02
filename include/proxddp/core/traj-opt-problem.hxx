@@ -11,18 +11,21 @@ namespace proxddp {
 
 template <typename Scalar>
 TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
-    const VectorXs &x0, const std::vector<shared_ptr<StageModel>> &stages,
+    const ConstVectorRef &x0, const std::vector<shared_ptr<StageModel>> &stages,
     shared_ptr<CostAbstract> term_cost)
-    : init_state_error_(std::make_shared<StateErrorResidual>(
-          stages[0]->xspace_, stages[0]->nu(), x0)),
-      stages_(stages), term_cost_(term_cost), unone_(stages[0]->nu()),
-      num_threads_(1) {
+    : init_condition_(), stages_(stages), term_cost_(term_cost),
+      unone_(stages[0]->nu()), init_state_error_(), num_threads_(1) {
+  auto resdl = std::make_shared<StateErrorResidual>(stages[0]->xspace_,
+                                                    stages[0]->nu(), x0);
+  init_condition_ = resdl;
+  init_state_error_ = resdl.get();
   checkStages();
   unone_.setZero();
 }
 
 template <typename Scalar>
-TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(const VectorXs &x0, const int nu,
+TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(const ConstVectorRef &x0,
+                                             const int nu,
                                              shared_ptr<Manifold> space,
                                              shared_ptr<CostAbstract> term_cost)
     : TrajOptProblemTpl(std::make_shared<StateErrorResidual>(space, nu, x0), nu,
@@ -39,7 +42,7 @@ Scalar TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
         "Wrong size for xs or us, expected us.size = {:d}", nsteps));
   }
 
-  init_state_error_->evaluate(xs[0], us[0], xs[1], prob_data.getInitData());
+  init_condition_->evaluate(xs[0], prob_data.getInitData());
 
   auto &sds = prob_data.stage_data;
   for (std::size_t i = 0; i < nsteps; i++) {
@@ -68,8 +71,7 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
         "Wrong size for xs or us, expected us.size = {:d}", nsteps));
   }
 
-  init_state_error_->computeJacobians(xs[0], us[0], xs[1],
-                                      prob_data.getInitData());
+  init_condition_->computeJacobians(xs[0], prob_data.getInitData());
 
   prob_data.xs_copy = xs;
   auto &sds = prob_data.stage_data;
@@ -157,7 +159,7 @@ Scalar TrajOptProblemTpl<Scalar>::computeTrajectoryCost(
 
 template <typename Scalar>
 TrajOptDataTpl<Scalar>::TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem)
-    : init_data(problem.init_state_error_->createData()) {
+    : init_data(problem.init_condition_->createData()) {
   stage_data.reserve(problem.numSteps());
   for (std::size_t i = 0; i < problem.numSteps(); i++) {
     stage_data.push_back(problem.stages_[i]->createData());

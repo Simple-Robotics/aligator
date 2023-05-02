@@ -6,6 +6,7 @@
 namespace proxddp {
 namespace python {
 void exposeProblem() {
+  using context::ConstVectorRef;
   using context::CostBase;
   using context::Manifold;
   using context::Scalar;
@@ -13,21 +14,20 @@ void exposeProblem() {
   using context::StageModel;
   using context::TrajOptData;
   using context::TrajOptProblem;
-  using InitCstrType = StateErrorResidualTpl<Scalar>;
+  using context::UnaryFunction;
 
   bp::class_<TrajOptProblem>(
       "TrajOptProblem", "Define a shooting problem.",
-      bp::init<const context::VectorXs &,
-               const std::vector<shared_ptr<StageModel>> &,
+      bp::init<ConstVectorRef, const std::vector<shared_ptr<StageModel>> &,
                shared_ptr<CostBase>>(
           bp::args("self", "x0", "stages", "term_cost")))
-      .def(bp::init<const context::VectorXs &, const int,
-                    shared_ptr<context::Manifold>, shared_ptr<CostBase>>(
+      .def(bp::init<ConstVectorRef, const int, shared_ptr<context::Manifold>,
+                    shared_ptr<CostBase>>(
           bp::args("self", "x0", "nu", "space", "term_cost")))
       .def<void (TrajOptProblem::*)(const shared_ptr<StageModel> &)>(
           "addStage", &TrajOptProblem::addStage, bp::args("self", "new_stage"),
           "Add a stage to the problem.")
-      .def(bp::init<shared_ptr<InitCstrType>, int, shared_ptr<CostBase>>(
+      .def(bp::init<shared_ptr<UnaryFunction>, int, shared_ptr<CostBase>>(
           "Constructor adding the initial constraint explicitly.",
           bp::args("self", "init_constraint", "nu", "term_cost")))
       .def_readonly("stages", &TrajOptProblem::stages_,
@@ -42,11 +42,9 @@ void exposeProblem() {
            "Set the number of threads for evaluation.")
       .add_property("num_steps", &TrajOptProblem::numSteps,
                     "Number of stages in the problem.")
-      .add_property("x0_init",
-                    bp::make_function(&TrajOptProblem::getInitState,
-                                      bp::return_internal_reference<>()),
+      .add_property("x0_init", &TrajOptProblem::getInitState,
                     &TrajOptProblem::setInitState, "Initial state.")
-      .add_property("init_constraint", &TrajOptProblem::init_state_error_,
+      .add_property("init_constraint", &TrajOptProblem::init_condition_,
                     "Get initial state constraint.")
       .def("addTerminalConstraint", &TrajOptProblem::addTerminalConstraint,
            bp::args("self", "constraint"), "Add a terminal constraint.")
