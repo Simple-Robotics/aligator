@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/core/function-abstract.hpp"
+#include "proxddp/core/unary-function.hpp"
 
 #include <pinocchio/multibody/model.hpp>
 #include <pinocchio/multibody/frame.hpp>
@@ -10,12 +10,12 @@ namespace proxddp {
 template <typename Scalar> struct FramePlacementDataTpl;
 
 template <typename _Scalar>
-struct FramePlacementResidualTpl : StageFunctionTpl<_Scalar> {
+struct FramePlacementResidualTpl : UnaryFunctionTpl<_Scalar> {
 public:
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-  using Base = StageFunctionTpl<Scalar>;
-  using BaseData = typename Base::Data;
+  PROXDDP_UNARY_FUNCTION_INTERFACE(Scalar);
+  using BaseData = FunctionDataTpl<Scalar>;
   using Model = pinocchio::ModelTpl<Scalar>;
   using ManifoldPtr = shared_ptr<ManifoldAbstractTpl<Scalar>>;
   using SE3 = pinocchio::SE3Tpl<Scalar>;
@@ -39,11 +39,9 @@ public:
     p_ref_inverse_ = p_new.inverse();
   }
 
-  void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                const ConstVectorRef &y, BaseData &data) const;
+  void evaluate(const ConstVectorRef &x, BaseData &data) const;
 
-  void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
-                        const ConstVectorRef &y, BaseData &data) const;
+  void computeJacobians(const ConstVectorRef &x, BaseData &data) const;
 
   shared_ptr<BaseData> createData() const {
     return std::make_shared<Data>(*this);

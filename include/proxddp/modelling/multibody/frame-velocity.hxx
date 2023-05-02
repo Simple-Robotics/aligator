@@ -9,8 +9,6 @@ namespace proxddp {
 
 template <typename Scalar>
 void FrameVelocityResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
-                                                const ConstVectorRef &,
-                                                const ConstVectorRef &,
                                                 BaseData &data) const {
   Data &d = static_cast<Data &>(data);
   const Model &model = *pin_model_;
@@ -23,8 +21,6 @@ void FrameVelocityResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
 
 template <typename Scalar>
 void FrameVelocityResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
-                                                        const ConstVectorRef &,
-                                                        const ConstVectorRef &,
                                                         BaseData &data) const {
   Data &d = static_cast<Data &>(data);
   const Model &model = *pin_model_;

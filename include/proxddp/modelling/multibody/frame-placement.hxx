@@ -8,8 +8,6 @@ namespace proxddp {
 
 template <typename Scalar>
 void FramePlacementResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
-                                                 const ConstVectorRef &,
-                                                 const ConstVectorRef &,
                                                  BaseData &data) const {
   Data &d = static_cast<Data &>(data);
   const Model &model = *pin_model_;
@@ -23,8 +21,6 @@ void FramePlacementResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
 
 template <typename Scalar>
 void FramePlacementResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
-                                                         const ConstVectorRef &,
-                                                         const ConstVectorRef &,
                                                          BaseData &data) const {
   Data &d = static_cast<Data &>(data);
   const Model &model = *pin_model_;

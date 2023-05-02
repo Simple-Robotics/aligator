@@ -134,7 +134,7 @@ void exposeFunctionBase() {
 
   exposeUnaryFunctions();
 
-  bp::class_<StateErrorResidual, bp::bases<StageFunction>>(
+  bp::class_<StateErrorResidual, bp::bases<context::UnaryFunction>>(
       "StateErrorResidual", bp::init<const shared_ptr<context::Manifold> &,
                                      const int, const context::VectorXs &>(
                                 bp::args("self", "space", "nu", "target")))

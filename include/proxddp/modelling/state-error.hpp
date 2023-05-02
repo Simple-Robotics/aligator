@@ -1,21 +1,50 @@
 #pragma once
 
 #include "proxddp/core/function-abstract.hpp"
+#include "proxddp/core/unary-function.hpp"
 #include <proxnlp/modelling/spaces/vector-space.hpp>
 
 namespace proxddp {
 
 namespace detail {
 
-///
 /// @brief Residual \f$r(z) = z \ominus z_{tar} \f$
 /// @details The arg parameter decides with respect to which the error
 /// computation operates -- state `x` or control `u`.. We use SFINAE to enable
 /// or disable the relevant constructors.
-///
+template <typename _Scalar, unsigned int arg>
+struct StateOrControlErrorResidual;
+
+/// @brief Pure state residual.
+template <typename _Scalar>
+struct StateOrControlErrorResidual<_Scalar, 0> : UnaryFunctionTpl<_Scalar> {
+  using Scalar = _Scalar;
+  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_UNARY_FUNCTION_INTERFACE(Scalar);
+  using Data = FunctionDataTpl<Scalar>;
+  using Manifold = ManifoldAbstractTpl<Scalar>;
+  using VectorSpace = proxnlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
+
+  shared_ptr<Manifold> space_;
+  VectorXs target_;
+
+  StateOrControlErrorResidual(const shared_ptr<Manifold> &xspace, const int nu,
+                              const ConstVectorRef &target)
+      : Base(xspace->ndx(), nu, xspace->ndx()), space_(xspace),
+        target_(target) {}
+
+  void evaluate(const ConstVectorRef &x, Data &data) const override {
+    space_->difference(target_, x, data.value_);
+  }
+
+  void computeJacobians(const ConstVectorRef &x, Data &data) const override {
+    space_->Jdifference(target_, x, data.Jx_, 1);
+  }
+};
+
 template <typename _Scalar, unsigned int arg>
 struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
-  static_assert(arg <= 2, "arg value must be 0, 1 or 2!");
+  static_assert(arg > 0 && arg <= 2, "arg value must be 1 or 2!");
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageFunctionTpl<Scalar>;
@@ -28,11 +57,9 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
 
   /// @brief Constructor using the state space, control dimension and state
   /// target.
-  template <unsigned int N = arg, typename = std::enable_if_t<N == 0 || N == 2>>
+  template <unsigned int N = arg, typename = std::enable_if_t<N == 2>>
   StateOrControlErrorResidual(const shared_ptr<Manifold> &xspace, const int nu,
-                              const ConstVectorRef &target)
-      : Base(xspace->ndx(), nu, xspace->ndx()), space_(xspace),
-        target_(target) {}
+                              const ConstVectorRef &target);
 
   /// @brief Constructor using the state space dimension, control manifold and
   ///        control target.
@@ -54,12 +81,9 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
       : Base(ndx, nu, ndx, nu), space_(std::make_shared<VectorSpace>(nu)),
         target_(space_->neutral()) {}
 
-  void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
+  void evaluate(const ConstVectorRef &, const ConstVectorRef &u,
                 const ConstVectorRef &y, Data &data) const {
     switch (arg) {
-    case 0:
-      space_->difference(target_, x, data.value_);
-      break;
     case 1:
       space_->difference(target_, u, data.value_);
       break;
@@ -71,12 +95,9 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
     }
   }
 
-  void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
+  void computeJacobians(const ConstVectorRef &, const ConstVectorRef &u,
                         const ConstVectorRef &y, Data &data) const {
     switch (arg) {
-    case 0:
-      space_->Jdifference(target_, x, data.Jx_, 1);
-      break;
     case 1:
       space_->Jdifference(target_, u, data.Ju_, 1);
       break;
@@ -89,10 +110,13 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
   }
 };
 
+template <typename Scalar, unsigned int arg>
+template <unsigned int N, typename>
+StateOrControlErrorResidual<Scalar, arg>::StateOrControlErrorResidual(
+    const shared_ptr<Manifold> &xspace, const int nu,
+    const ConstVectorRef &target)
+    : Base(xspace->ndx(), nu, xspace->ndx()), space_(xspace), target_(target) {}
 } // namespace detail
-
-template <typename Scalar>
-struct ErrorResidualData : FunctionDataTpl<Scalar> {};
 
 template <typename Scalar>
 struct StateErrorResidualTpl : detail::StateOrControlErrorResidual<Scalar, 0> {
