@@ -180,8 +180,14 @@ void exposeFunctionBase() {
 void exposeUnaryFunctions() {
   using unary_eval_t =
       void (UnaryFunction::*)(const ConstVectorRef &, FunctionData &) const;
+  using full_eval_t =
+      void (UnaryFunction::*)(const ConstVectorRef &, const ConstVectorRef &,
+                              const ConstVectorRef &, FunctionData &) const;
   using unary_vhp_t = void (UnaryFunction::*)(
       const ConstVectorRef &, const ConstVectorRef &, FunctionData &) const;
+  using full_vhp_t = void (UnaryFunction::*)(
+      const ConstVectorRef &, const ConstVectorRef &, const ConstVectorRef &,
+      const ConstVectorRef &, FunctionData &) const;
   bp::register_ptr_to_python<shared_ptr<UnaryFunction>>();
   bp::class_<PyUnaryFunction<>, bp::bases<StageFunction>, boost::noncopyable>(
       "UnaryFunction",
@@ -189,12 +195,23 @@ void exposeUnaryFunctions() {
       bp::no_init)
       .def(bp::init<const int, const int, const int, const int>(
           bp::args("self", "ndx1", "nu", "ndx2", "nr")))
-      .def("evaluate", bp::pure_virtual<unary_eval_t>(&UnaryFunction::evaluate))
+      .def("evaluate", bp::pure_virtual<unary_eval_t>(&UnaryFunction::evaluate),
+           bp::args("self", "x", "data"))
+      .def<full_eval_t>("evaluate", &UnaryFunction::evaluate,
+                        bp::args("self", "x", "u", "y", "data"))
       .def("computeJacobians",
-           bp::pure_virtual<unary_eval_t>(&UnaryFunction::computeJacobians))
+           bp::pure_virtual<unary_eval_t>(&UnaryFunction::computeJacobians),
+           bp::args("self", "x", "data"))
+      .def<full_eval_t>("computeJacobians", &UnaryFunction::computeJacobians,
+                        bp::args("self", "x", "u", "y", "data"))
       .def("computeVectorHessianProducts",
            bp::pure_virtual<unary_vhp_t>(
-               &UnaryFunction::computeVectorHessianProducts));
+               &UnaryFunction::computeVectorHessianProducts),
+           bp::args("self", "x", "lbda", "data"))
+      .def<full_vhp_t>("computeVectorHessianProducts",
+                       &UnaryFunction::computeVectorHessianProducts,
+                       bp::args("self", "x", "u", "y", "lbda", "data"))
+      .def(SlicingVisitor<UnaryFunction>());
 }
 
 // fwd declaration
