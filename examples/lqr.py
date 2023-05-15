@@ -46,7 +46,7 @@ assert np.allclose(rcost0.w_x, Q)
 assert np.allclose(rcost0.w_u, R)
 assert np.allclose(rcost0.weights_cross, N)
 assert rcost0.has_cross_term
-rcost = proxddp.CostStack(nx, nu, [rcost0], [1.0])
+rcost = proxddp.CostStack(space, nu, [rcost0], [1.0])
 term_cost = proxddp.QuadraticCost(Qf, R)
 dynmodel = dynamics.LinearDiscreteDynamics(A, B, c)
 stage = proxddp.StageModel(rcost, dynmodel)
