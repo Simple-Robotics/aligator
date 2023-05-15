@@ -81,10 +81,10 @@ public:
   /// @brief Instantiate a Data object.
   virtual shared_ptr<Data> createData() const;
 
-  using FunctionSlice = FunctionSliceXprTpl<Scalar>;
+  // using FunctionSlice = FunctionSliceXprTpl<Scalar, StageFunctionTpl>;
 
-  shared_ptr<FunctionSlice> operator[](const int idx);
-  shared_ptr<FunctionSlice> operator[](const std::vector<int> &indices);
+  // shared_ptr<FunctionSlice> operator[](const int idx);
+  // shared_ptr<FunctionSlice> operator[](const std::vector<int> &indices);
 };
 
 /// @brief  Base struct for function data.

@@ -12,29 +12,37 @@ namespace python {
 using context::FunctionData;
 using context::Scalar;
 using context::StageFunction;
+using context::UnaryFunction;
 using FunctionPtr = shared_ptr<StageFunction>;
 
-void exposeFunctionExpressions() {
+template <typename Base> void exposeSliceExpression(const char *name) {
   // FUNCTION SLICE
 
-  using FunctionSliceXpr = FunctionSliceXprTpl<Scalar>;
+  using FunctionSliceXpr = FunctionSliceXprTpl<Scalar, Base>;
 
   bp::register_ptr_to_python<shared_ptr<FunctionSliceXpr>>();
-  bp::class_<FunctionSliceXpr, bp::bases<StageFunction>>(
-      "FunctionSliceXpr",
+  bp::class_<FunctionSliceXpr, bp::bases<Base>>(
+      name,
       "Represents a slice of an expression according to either a single index "
       "or an array of indices.",
-      bp::init<FunctionPtr, std::vector<int> const &>(
+      bp::init<shared_ptr<Base>, std::vector<int> const &>(
           bp::args("self", "func", "indices")))
-      .def(bp::init<FunctionPtr, const int>("Constructor from a single index.",
-                                            bp::args("self", "func", "idx")))
+      .def(bp::init<shared_ptr<Base>, const int>(
+          "Constructor from a single index.", bp::args("self", "func", "idx")))
       .def_readonly("func", &FunctionSliceXpr::func, "Underlying function.")
       .def_readonly("indices", &FunctionSliceXpr::indices,
                     "Indices of the slice.");
+}
 
-  bp::class_<FunctionSliceXpr::Data, bp::bases<FunctionData>,
-             boost::noncopyable>("FunctionSliceData", bp::no_init)
-      .def_readonly("sub_data", &FunctionSliceXpr::Data::sub_data,
+void exposeFunctionExpressions() {
+
+  exposeSliceExpression<StageFunction>("StageFunctionSliceXpr");
+  exposeSliceExpression<UnaryFunction>("UnaryFunctionSliceXpr");
+
+  using FunctionSliceData = FunctionSliceDataTpl<Scalar>;
+  bp::class_<FunctionSliceData, bp::bases<FunctionData>, boost::noncopyable>(
+      "FunctionSliceData", bp::no_init)
+      .def_readonly("sub_data", &FunctionSliceData::sub_data,
                     "Underlying function's data.");
 
   /// FUNCTION LINEAR COMPOSE

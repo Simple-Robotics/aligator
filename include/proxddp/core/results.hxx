@@ -18,7 +18,7 @@ ResultsTpl<Scalar>::ResultsTpl(const TrajOptProblemTpl<Scalar> &problem) {
   us_default_init(problem, us);
   lams.reserve(nsteps + 1);
   {
-    const int ndual = problem.init_state_error_->nr;
+    const int ndual = problem.init_condition_->nr;
     lams.push_back(VectorXs::Zero(ndual));
   }
   for (std::size_t i = 0; i < nsteps; i++) {

@@ -16,7 +16,17 @@ void xs_default_init(const TrajOptProblemTpl<Scalar> &problem,
                      std::vector<typename math_types<Scalar>::VectorXs> &xs) {
   const std::size_t nsteps = problem.numSteps();
   xs.resize(nsteps + 1);
-  xs[0] = problem.getInitState();
+  try {
+    xs[0] = problem.getInitState();
+  } catch (RuntimeError const &e) {
+    if (problem.stages_.size() > 0) {
+      xs[0] = problem.stages_[0]->xspace().neutral();
+    } else {
+      PROXDDP_RUNTIME_ERROR(
+          "The problem should have either a StateErrorResidual as an initial "
+          "condition or at least one stage.");
+    }
+  }
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModelTpl<Scalar> &sm = *problem.stages_[i];
     xs[i + 1] = sm.xspace_next().neutral();

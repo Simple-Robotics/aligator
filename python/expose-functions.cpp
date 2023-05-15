@@ -18,8 +18,10 @@ using context::FunctionData;
 using context::MatrixXs;
 using context::Scalar;
 using context::StageFunction;
+using context::UnaryFunction;
 using context::VectorXs;
 using internal::PyStageFunction;
+using internal::PyUnaryFunction;
 using FunctionPtr = shared_ptr<StageFunction>;
 using StateErrorResidual = StateErrorResidualTpl<Scalar>;
 using ControlErrorResidual = ControlErrorResidualTpl<Scalar>;
@@ -29,44 +31,7 @@ struct FunctionDataWrapper : FunctionData, bp::wrapper<FunctionData> {
   using FunctionData::FunctionData;
 };
 
-template <typename Class>
-struct SlicingVisitor : bp::def_visitor<SlicingVisitor<Class>> {
-  using FS = FunctionSliceXprTpl<Scalar>;
-
-  template <typename Iterator, typename Fn>
-  static auto do_with_slice(Fn &&fun, bp::slice::range<Iterator> &range) {
-    while (range.start != range.stop) {
-      fun(*range.start);
-      std::advance(range.start, range.step);
-    }
-    fun(*range.start);
-  }
-
-  static auto get_slice(shared_ptr<Class> const &fn, bp::slice slice_obj) {
-    std::vector<int> indices(fn->nr);
-    std::iota(indices.begin(), indices.end(), 0);
-    auto bounds = slice_obj.get_indices(indices.cbegin(), indices.cend());
-    std::vector<int> out{};
-
-    do_with_slice([&](int i) { out.push_back(i); }, bounds);
-    return std::make_shared<FS>(fn, out);
-  }
-
-  static auto get_from_index(shared_ptr<Class> const &fn, const int idx) {
-    return std::make_shared<FS>(fn, idx);
-  }
-
-  static auto get_from_indices(shared_ptr<Class> const &fn,
-                               std::vector<int> const &indices) {
-    return std::make_shared<FS>(fn, indices);
-  }
-
-  template <typename... Args> void visit(bp::class_<Args...> &cl) const {
-    cl.def("__getitem__", &get_from_index, bp::args("self", "idx"))
-        .def("__getitem__", &get_from_indices, bp::args("self", "indices"))
-        .def("__getitem__", &get_slice, bp::args("self", "sl"));
-  }
-};
+void exposeUnaryFunctions();
 
 void exposeFunctionBase() {
 
@@ -75,7 +40,8 @@ void exposeFunctionBase() {
   bp::class_<PyStageFunction<>, boost::noncopyable>(
       "StageFunction",
       "Base class for ternary functions f(x,u,x') on a stage of the problem.",
-      bp::init<const int, const int, const int, const int>(
+      bp::no_init)
+      .def(bp::init<const int, const int, const int, const int>(
           bp::args("self", "ndx1", "nu", "ndx2", "nr")))
       .def(bp::init<const int, const int, const int>(
           bp::args("self", "ndx", "nu", "nr")))
@@ -166,7 +132,9 @@ void exposeFunctionBase() {
   StdVectorPythonVisitor<std::vector<shared_ptr<FunctionData>>, true>::expose(
       "StdVec_FunctionData", "Vector of function data objects.");
 
-  bp::class_<StateErrorResidual, bp::bases<StageFunction>>(
+  exposeUnaryFunctions();
+
+  bp::class_<StateErrorResidual, bp::bases<context::UnaryFunction>>(
       "StateErrorResidual", bp::init<const shared_ptr<context::Manifold> &,
                                      const int, const context::VectorXs &>(
                                 bp::args("self", "space", "nu", "target")))
@@ -206,6 +174,44 @@ void exposeFunctionBase() {
           bp::args("self", "ndx", "umin", "umax")))
       .def(bp::init<const int, const int, const Scalar, const Scalar>(
           bp::args("self", "ndx", "nu", "umin", "umax")));
+}
+
+/// Expose the UnaryFunction type and its member function overloads.
+void exposeUnaryFunctions() {
+  using unary_eval_t =
+      void (UnaryFunction::*)(const ConstVectorRef &, FunctionData &) const;
+  using full_eval_t =
+      void (UnaryFunction::*)(const ConstVectorRef &, const ConstVectorRef &,
+                              const ConstVectorRef &, FunctionData &) const;
+  using unary_vhp_t = void (UnaryFunction::*)(
+      const ConstVectorRef &, const ConstVectorRef &, FunctionData &) const;
+  using full_vhp_t = void (UnaryFunction::*)(
+      const ConstVectorRef &, const ConstVectorRef &, const ConstVectorRef &,
+      const ConstVectorRef &, FunctionData &) const;
+  bp::register_ptr_to_python<shared_ptr<UnaryFunction>>();
+  bp::class_<PyUnaryFunction<>, bp::bases<StageFunction>, boost::noncopyable>(
+      "UnaryFunction",
+      "Base class for unary functions of the form :math:`x \\mapsto f(x)`.",
+      bp::no_init)
+      .def(bp::init<const int, const int, const int, const int>(
+          bp::args("self", "ndx1", "nu", "ndx2", "nr")))
+      .def("evaluate", bp::pure_virtual<unary_eval_t>(&UnaryFunction::evaluate),
+           bp::args("self", "x", "data"))
+      .def<full_eval_t>("evaluate", &UnaryFunction::evaluate,
+                        bp::args("self", "x", "u", "y", "data"))
+      .def("computeJacobians",
+           bp::pure_virtual<unary_eval_t>(&UnaryFunction::computeJacobians),
+           bp::args("self", "x", "data"))
+      .def<full_eval_t>("computeJacobians", &UnaryFunction::computeJacobians,
+                        bp::args("self", "x", "u", "y", "data"))
+      .def("computeVectorHessianProducts",
+           bp::pure_virtual<unary_vhp_t>(
+               &UnaryFunction::computeVectorHessianProducts),
+           bp::args("self", "x", "lbda", "data"))
+      .def<full_vhp_t>("computeVectorHessianProducts",
+                       &UnaryFunction::computeVectorHessianProducts,
+                       bp::args("self", "x", "u", "y", "lbda", "data"))
+      .def(SlicingVisitor<UnaryFunction>());
 }
 
 // fwd declaration

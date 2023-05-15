@@ -122,7 +122,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
   if (nsteps > 0) {
     const int ndx1 = problem.stages_[0]->ndx1();
     const int nprim = ndx1;
-    const int ndual = problem.init_state_error_->nr;
+    const int ndual = problem.init_condition_->nr;
     const int ntot = nprim + ndual;
 
     kkt_mats_.emplace_back(ntot, ntot);

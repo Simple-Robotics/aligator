@@ -87,8 +87,8 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem) {
   // compute direction dx0
   const VParams &vp = workspace_.value_params[0];
   FunctionData &init_data = workspace_.problem_data.getInitData();
-  const int ndual0 = problem.init_state_error_->nr;
-  const int ndx0 = problem.init_state_error_->ndx1;
+  const int ndual0 = problem.init_condition_->nr;
+  const int ndx0 = problem.init_condition_->ndx1;
   const VectorXs &lampl0 = workspace_.lams_plus[0];
   const VectorXs &lamin0 = results_.lams[0];
   const CostData &proxdata0 = *workspace_.prox_datas[0];
@@ -99,8 +99,7 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem) {
   assert(kkt_mat.cols() == ndx0 + ndual0);
 
   // computes cur_x0 - x0_target
-  problem.init_state_error_->evaluate(results_.xs[0], results_.us[0],
-                                      results_.xs[0], init_data);
+  problem.init_condition_->evaluate(results_.xs[0], init_data);
 
   if (force_initial_condition_) {
     workspace_.pd_step_[0].setZero();
@@ -969,7 +968,7 @@ void SolverProxDDP<Scalar>::computeCriterion(const Problem &problem) {
   TrajOptData &prob_data = workspace_.problem_data;
 
   {
-    const int ndx = problem.init_state_error_->ndx1;
+    const int ndx = problem.init_condition_->ndx1;
     VectorRef kkt_rhs = workspace_.kkt_rhs_[0].col(0);
     auto kktx = kkt_rhs.head(ndx);
     if (force_initial_condition_) {

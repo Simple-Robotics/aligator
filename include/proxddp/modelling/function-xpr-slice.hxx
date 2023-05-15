@@ -3,27 +3,25 @@
 #include "./function-xpr-slice.hpp"
 
 namespace proxddp {
+namespace detail {
 
-template <typename Scalar>
-FunctionSliceXprTpl<Scalar>::FunctionSliceXprTpl(
-    shared_ptr<Base> func, std::vector<int> const &indices)
-    : Base(func->ndx1, func->nu, func->ndx2, (int)indices.size()), func(func),
-      indices(indices) {}
+template <typename Base>
+slice_impl_tpl<Base>::slice_impl_tpl(shared_ptr<Base> func,
+                                     std::vector<int> const &indices)
+    : func(func), indices(indices) {}
 
-template <typename Scalar>
-FunctionSliceXprTpl<Scalar>::FunctionSliceXprTpl(shared_ptr<Base> func, int idx)
-    : FunctionSliceXprTpl(func, std::vector<int>({idx})) {}
+template <typename Base>
+slice_impl_tpl<Base>::slice_impl_tpl(shared_ptr<Base> func, int idx)
+    : slice_impl_tpl(func, std::vector<int>({idx})) {}
 
-template <typename Scalar>
-void FunctionSliceXprTpl<Scalar>::evaluate(const ConstVectorRef &x,
-                                           const ConstVectorRef &u,
-                                           const ConstVectorRef &y,
-                                           BaseData &data) const {
+template <typename Base>
+template <typename... Args>
+void slice_impl_tpl<Base>::evaluate_impl(BaseData &data, Args &&...args) const {
   Data &d = static_cast<Data &>(data);
   assert(d.sub_data != 0);
   BaseData &sub_data = *d.sub_data;
   // evaluate base
-  func->evaluate(x, u, y, sub_data);
+  func->evaluate(std::forward<Args>(args)..., sub_data);
 
   for (std::size_t j = 0; j < indices.size(); j++) {
     int i = indices[j];
@@ -31,16 +29,15 @@ void FunctionSliceXprTpl<Scalar>::evaluate(const ConstVectorRef &x,
   }
 }
 
-template <typename Scalar>
-void FunctionSliceXprTpl<Scalar>::computeJacobians(const ConstVectorRef &x,
-                                                   const ConstVectorRef &u,
-                                                   const ConstVectorRef &y,
-                                                   BaseData &data) const {
+template <typename Base>
+template <typename... Args>
+void slice_impl_tpl<Base>::computeJacobians_impl(BaseData &data,
+                                                 Args &&...args) const {
   Data &d = static_cast<Data &>(data);
   assert(d.sub_data != 0);
   BaseData &sub_data = *d.sub_data;
   // evaluate base
-  func->computeJacobians(x, u, y, sub_data);
+  func->computeJacobians(std::forward<Args>(args)..., sub_data);
 
   for (std::size_t j = 0; j < indices.size(); j++) {
     int i = indices[j];
@@ -48,10 +45,10 @@ void FunctionSliceXprTpl<Scalar>::computeJacobians(const ConstVectorRef &x,
   }
 }
 
-template <typename Scalar>
-void FunctionSliceXprTpl<Scalar>::computeVectorHessianProducts(
-    const ConstVectorRef &x, const ConstVectorRef &u, const ConstVectorRef &y,
-    const ConstVectorRef &lbda, BaseData &data) const {
+template <typename Base>
+template <typename... Args>
+void slice_impl_tpl<Base>::computeVectorHessianProducts_impl(
+    BaseData &data, const ConstVectorRef &lbda, Args &&...args) const {
   Data &d = static_cast<Data &>(data);
   assert(d.sub_data != 0);
   BaseData &sub_data = *d.sub_data;
@@ -61,11 +58,10 @@ void FunctionSliceXprTpl<Scalar>::computeVectorHessianProducts(
     d.lbda_sub(indices[j]) = 0.;
   }
 
-  func->computeVectorHessianProducts(x, u, y, d.lbda_sub, sub_data);
+  func->computeVectorHessianProducts(std::forward<Args>(args)..., d.lbda_sub,
+                                     sub_data);
 }
 
-template <typename Scalar>
-auto FunctionSliceXprTpl<Scalar>::createData() const -> shared_ptr<BaseData> {
-  return std::make_shared<Data>(*this);
-}
+} // namespace detail
+
 } // namespace proxddp

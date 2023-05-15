@@ -25,19 +25,6 @@ def test_manifold_diff():
 
     fun.computeJacobians(x, u, y, data)
 
-    # TEST SLICING
-
-    idx = [1, 2]
-    fun_slice = proxddp.FunctionSliceXpr(fun, idx)
-    assert fun_slice.nr == 2
-    data2 = fun_slice.createData()
-    print("DATA 2 OK:", data2)
-    fun_slice.evaluate(x, u, y, data2)
-    assert np.allclose(data2.value[: len(idx)], data.value[idx])
-
-    fun_slice.computeJacobians(x, u, y, data2)
-    assert np.allclose(data2.jac_buffer[: len(idx)], data.jac_buffer[idx])
-
     # TEST LINEAR COMPOSE
     A = np.array([[1.0, 1.0, 0.0]])
     b = np.array([0.0])

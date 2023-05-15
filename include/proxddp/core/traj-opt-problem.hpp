@@ -23,7 +23,7 @@ namespace proxddp {
 template <typename _Scalar> struct TrajOptProblemTpl {
   using Scalar = _Scalar;
   using StageModel = StageModelTpl<Scalar>;
-  using Function = StageFunctionTpl<Scalar>;
+  using UnaryFunction = UnaryFunctionTpl<Scalar>;
   using Data = TrajOptDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using CostAbstract = CostAbstractTpl<Scalar>;
@@ -87,7 +87,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
   /// Initial condition
-  shared_ptr<StateErrorResidual> init_state_error_;
+  shared_ptr<UnaryFunction> init_condition_;
   /// Stages of the control problem.
   std::vector<shared_ptr<StageModel>> stages_;
   /// Terminal cost.
@@ -97,30 +97,43 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// Dummy, "neutral" control value.
   VectorXs unone_;
 
-  TrajOptProblemTpl(const VectorXs &x0,
+  TrajOptProblemTpl(const ConstVectorRef &x0,
                     const std::vector<shared_ptr<StageModel>> &stages,
                     shared_ptr<CostAbstract> term_cost);
 
-  TrajOptProblemTpl(const VectorXs &x0, const int nu,
+  TrajOptProblemTpl(const ConstVectorRef &x0, const int nu,
                     shared_ptr<Manifold> space,
                     shared_ptr<CostAbstract> term_cost);
 
-  TrajOptProblemTpl(shared_ptr<StateErrorResidual> resdl, const int nu,
+  TrajOptProblemTpl(shared_ptr<UnaryFunction> resdl, const int nu,
                     shared_ptr<CostAbstract> term_cost)
-      : init_state_error_(resdl), term_cost_(term_cost), unone_(nu),
-        num_threads_(1) {
+      : init_condition_(resdl), term_cost_(term_cost), unone_(nu),
+        init_state_error_(nullptr), num_threads_(1) {
     unone_.setZero();
-    if (init_state_error_ == nullptr)
-      PROXDDP_RUNTIME_ERROR("Provided init residual is null.");
+    if (auto se =
+            std::dynamic_pointer_cast<StateErrorResidual>(init_condition_)) {
+      init_state_error_ = se.get();
+    }
   }
+
+  bool initCondIsStateError() const { return init_state_error_ != nullptr; }
 
   /// @brief Add a stage to the control problem.
   void addStage(const shared_ptr<StageModel> &stage);
 
   /// @brief Get initial state constraint.
-  const VectorXs &getInitState() const { return init_state_error_->target_; }
+  ConstVectorRef getInitState() const {
+    if (!initCondIsStateError()) {
+      PROXDDP_RUNTIME_ERROR("Initial condition is not a StateErrorResidual.\n");
+    }
+    return init_state_error_->target_;
+  }
+
   /// @brief Set initial state constraint.
   void setInitState(const ConstVectorRef x0) {
+    if (!initCondIsStateError()) {
+      PROXDDP_RUNTIME_ERROR("Initial condition is not a StateErrorResidual.\n");
+    }
     init_state_error_->target_ = x0;
   }
 
@@ -170,6 +183,8 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   std::size_t getNumThreads() const { return num_threads_; }
 
 protected:
+  /// Pointer to underlying state error residual
+  StateErrorResidual *init_state_error_;
   std::size_t num_threads_;
   /// @brief Check if all stages are non-null.
   void checkStages() const;

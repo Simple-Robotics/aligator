@@ -12,7 +12,7 @@ namespace python {
 void exposePinocchioFunctions() {
   using context::Manifold;
   using context::Scalar;
-  using context::StageFunction;
+  using context::UnaryFunction;
   using Model = pinocchio::ModelTpl<Scalar>;
   using PinData = pinocchio::DataTpl<Scalar>;
   using SE3 = pinocchio::SE3Tpl<Scalar>;
@@ -29,7 +29,7 @@ void exposePinocchioFunctions() {
 
   bp::register_ptr_to_python<shared_ptr<PinData>>();
 
-  bp::class_<FramePlacement, bp::bases<StageFunction>>(
+  bp::class_<FramePlacement, bp::bases<UnaryFunction>>(
       "FramePlacementResidual", "Frame placement residual function.",
       bp::init<int, int, shared_ptr<Model>, const SE3 &, pinocchio::FrameIndex>(
           bp::args("self", "ndx", "nu", "model", "p_ref", "id")))
@@ -51,7 +51,7 @@ void exposePinocchioFunctions() {
       .def_readonly("pin_data", &FramePlacementData::pin_data_,
                     "Pinocchio data struct.");
 
-  bp::class_<FrameVelocity, bp::bases<StageFunction>>(
+  bp::class_<FrameVelocity, bp::bases<UnaryFunction>>(
       "FrameVelocityResidual", "Frame velocity residual function.",
       bp::init<int, int, shared_ptr<Model>, const Motion &,
                pinocchio::FrameIndex, pinocchio::ReferenceFrame>(bp::args(
@@ -71,7 +71,7 @@ void exposePinocchioFunctions() {
       .def_readonly("pin_data", &FrameVelocityData::pin_data_,
                     "Pinocchio data struct.");
 
-  bp::class_<FrameTranslation, bp::bases<StageFunction>>(
+  bp::class_<FrameTranslation, bp::bases<UnaryFunction>>(
       "FrameTranslationResidual", "Frame placement residual function.",
       bp::init<int, int, shared_ptr<Model>, const context::VectorXs &,
                pinocchio::FrameIndex>(
