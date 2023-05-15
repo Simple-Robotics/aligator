@@ -12,14 +12,15 @@ set(BENCHMARKS_CPP "bench/lqr.cpp")
 
 set(EXAMPLES_WITH_CROC_CPP "bench/croc-talos-arm.cpp" "bench/multithreading.cpp" "talos-arm.cpp")
 
+message(STATUS "Crocoddyl support: ${BUILD_CROCODDYL_COMPAT}")
+if(BUILD_CROCODDYL_COMPAT)
+  add_project_dependency(crocoddyl REQUIRED)
+  list(APPEND BENCHMARKS_CPP bench/croc-talos-arm.cpp bench/multithreading.cpp)
+  list(APPEND EXAMPLES_CPP talos-arm.cpp)
+endif()
+
 message(STATUS "Examples CPP: ${EXAMPLES_CPP}")
 message(STATUS "Benchmarks CPP: ${BENCHMARKS_CPP}")
-
-if(BUILD_WITH_CROCODDYL_SUPPORT)
-  add_project_dependency(crocoddyl REQUIRED)
-  list(APPEND BENCHMARKS_CPP "bench/croc-talos-arm.cpp" "bench/multithreading.cpp")
-  list(APPEND EXAMPLES_CPP "talos-arm.cpp")
-endif()
 
 macro(create_ex_or_bench exfile exname)
 
