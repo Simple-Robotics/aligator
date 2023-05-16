@@ -13,6 +13,7 @@ namespace python {
 /// Expose finite difference helpers.
 void expose_finite_differences() {
   using namespace autodiff;
+  using context::FunctionData;
   using context::Manifold;
   using context::Scalar;
   using context::StageFunction;
@@ -22,13 +23,18 @@ void expose_finite_differences() {
       .value("ToC1", FDLevel::TOC1)
       .value("ToC2", FDLevel::TOC2);
 
-  bp::class_<finite_difference_wrapper<Scalar, FDLevel::TOC1>,
-             bp::bases<StageFunction>>(
-      "FiniteDifferenceHelper",
-      "Make a function into a differentiable function using"
-      " finite differences.",
-      bp::init<shared_ptr<Manifold>, shared_ptr<StageFunction>, Scalar>(
-          bp::args("self", "func", "eps")));
+  using fdiff_wrapper = finite_difference_wrapper<Scalar, FDLevel::TOC1>;
+
+  {
+    bp::scope _ = bp::class_<fdiff_wrapper, bp::bases<StageFunction>>(
+        "FiniteDifferenceHelper",
+        "Make a function into a differentiable function using"
+        " finite differences.",
+        bp::init<shared_ptr<Manifold>, shared_ptr<StageFunction>, Scalar>(
+            bp::args("self", "func", "eps")));
+    bp::class_<fdiff_wrapper::Data, bp::bases<FunctionData>>("Data",
+                                                             bp::no_init);
+  }
 }
 
 void exposeAutodiff() { expose_finite_differences(); }
