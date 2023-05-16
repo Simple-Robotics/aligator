@@ -1,6 +1,7 @@
 #pragma once
 
 #include "proxddp/core/unary-function.hpp"
+#include "./fwd.hpp"
 
 #include <pinocchio/multibody/model.hpp>
 #include <pinocchio/multibody/frame.hpp>
@@ -10,7 +11,7 @@ namespace proxddp {
 template <typename Scalar> struct FrameTranslationDataTpl;
 
 template <typename _Scalar>
-struct FrameTranslationResidualTpl : UnaryFunctionTpl<_Scalar> {
+struct FrameTranslationResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
 public:
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
@@ -22,17 +23,14 @@ public:
   using Data = FrameTranslationDataTpl<Scalar>;
 
   shared_ptr<Model> pin_model_;
-  pinocchio::FrameIndex pin_frame_id_;
 
   FrameTranslationResidualTpl(const int ndx, const int nu,
                               const shared_ptr<Model> &model,
                               const VectorXs &frame_trans,
-                              const pinocchio::FrameIndex id)
-      : Base(ndx, nu, 3), pin_model_(model), pin_frame_id_(id),
-        p_ref_(frame_trans) {}
-
-  pinocchio::FrameIndex getFrameId() const { return pin_frame_id_; }
-  void setFrameId(const std::size_t id) { pin_frame_id_ = id; }
+                              const pinocchio::FrameIndex frame_id)
+      : Base(ndx, nu, 3), pin_model_(model), p_ref_(frame_trans) {
+    pin_frame_id_ = frame_id;
+  }
 
   const VectorXs &getReference() const { return p_ref_; }
   void setReference(const VectorXs &p_new) { p_ref_ = p_new; }

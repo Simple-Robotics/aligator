@@ -27,7 +27,7 @@ void expose_finite_differences() {
       "FiniteDifferenceHelper",
       "Make a function into a differentiable function using"
       " finite differences.",
-      bp::init<const Manifold &, const StageFunction &, const Scalar>(
+      bp::init<shared_ptr<Manifold>, shared_ptr<StageFunction>, Scalar>(
           bp::args("self", "func", "eps")));
 }
 

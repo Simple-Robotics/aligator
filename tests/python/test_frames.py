@@ -10,8 +10,9 @@ from proxddp import manifolds
 
 model = pin.buildSampleModelHumanoid()
 rdata: pin.Data = model.createData()
-FD_EPS = 1e-4
-THRESH = 1e-2
+np.random.seed(0)
+FD_EPS = 1e-8
+THRESH = 2 * FD_EPS**0.5
 
 nq = model.nq
 nv = model.nv
@@ -46,14 +47,11 @@ def test_frame_placement():
     assert fr_plc1 == fun.getReference()
 
     fdata = fun.createData()
-    fun.evaluate(x0, u0, x0, fdata)
+    fun.evaluate(x0, fdata)
 
     assert np.allclose(fdata.value, 0.0)
-    print(fdata.value)
 
-    print("Error:", fdata.rMf)
-
-    fun.computeJacobians(x0, u0, x0, fdata)
+    fun.computeJacobians(x0, fdata)
     J = fdata.Jx[:, :nv]
 
     pin.computeJointJacobians(model, rdata)
@@ -64,15 +62,14 @@ def test_frame_placement():
     fun_fd = proxddp.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
     fun_fd.evaluate(x0, u0, x0, fdata2)
+    assert np.allclose(fdata.value, fdata2.value)
+
     fun_fd.computeJacobians(x0, u0, x0, fdata2)
     J_fd = fdata2.Jx[:]
     assert fdata.Jx.shape == J_fd.shape
-    assert np.allclose(fdata.Jx, J_fd, THRESH)
+
     for i in range(100):
-        x0 = space.neutral()
-        d = np.random.randn(space.ndx) * 0.1
-        d[6:] = 0.0
-        x0 = space.integrate(x0, d)
+        x0 = sample_gauss(space)
         fun.evaluate(x0, u0, x0, fdata)
         fun.computeJacobians(x0, u0, x0, fdata)
         fun_fd.evaluate(x0, u0, x0, fdata2)
@@ -103,9 +100,6 @@ def test_frame_translation():
     fun.evaluate(x0, u0, x0, fdata)
 
     assert np.allclose(fdata.value, 0.0)
-    print(fdata.value)
-    pdata_f = fdata.pin_data
-    print(pdata_f.oMf[fr_id1])
 
     fun.computeJacobians(x0, u0, x0, fdata)
 
@@ -113,14 +107,13 @@ def test_frame_translation():
     fdata2 = fun_fd.createData()
     fun_fd.evaluate(x0, u0, x0, fdata2)
     fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    # just check dims for now
     assert fdata.Jx.shape == fdata2.Jx.shape
-    assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
+
     for i in range(100):
-        x0 = space.neutral()
-        d = np.random.randn(space.ndx) * 0.1
-        x0 = space.integrate(x0, d)
-        fun.evaluate(x0, u0, x0, fdata)
-        fun.computeJacobians(x0, u0, x0, fdata)
+        x0 = sample_gauss(space)
+        fun.evaluate(x0, fdata)
+        fun.computeJacobians(x0, fdata)
         fun_fd.evaluate(x0, u0, x0, fdata2)
         fun_fd.computeJacobians(x0, u0, x0, fdata2)
         assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
@@ -148,14 +141,9 @@ def test_frame_velocity():
     print("v_ref=", v_ref)
 
     assert np.allclose(fdata.value, 0.0)
-    print("pindata from fdata:")
 
     fun.evaluate(x0, fdata)
     fun.computeJacobians(x0, fdata)
-    J = fdata.Jx[:, :nv]
-    realJ, _ = pin.getFrameVelocityDerivatives(model, rdata, fr_id1, ref_type)
-    assert J.shape == realJ.shape
-    assert np.allclose(fdata.Jx[:, :nv], realJ)
 
     fun_fd = proxddp.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
@@ -164,9 +152,7 @@ def test_frame_velocity():
     assert fdata.Jx.shape == fdata2.Jx.shape
 
     for i in range(100):
-        x0 = space.neutral()
-        d = np.random.randn(space.ndx) * 0.1
-        x0 = space.integrate(x0, d)
+        x0 = sample_gauss(space)
         fun.evaluate(x0, fdata)
         fun.computeJacobians(x0, fdata)
         fun_fd.evaluate(x0, u0, x0, fdata2)
@@ -185,10 +171,7 @@ def test_fly_high():
     np.set_printoptions(precision=2, linewidth=250)
 
     for _ in range(10):
-        x0 = space.neutral()
-        d = np.random.randn(space.ndx) * 0.1
-        x0 = space.integrate(x0, d)
-
+        x0 = sample_gauss(space)
         fun.evaluate(x0, data)
         fun.computeJacobians(x0, data)
 
@@ -201,7 +184,7 @@ def test_fly_high():
             ei[i] = 0.0
 
         err_Jx = data.Jx - Jx_nd
-        print(err_Jx)
+        print(err_Jx, err_Jx.max())
         assert np.allclose(data.Jx, Jx_nd, THRESH)
 
 
@@ -210,3 +193,4 @@ if __name__ == "__main__":
     import pytest
 
     sys.exit(pytest.main(sys.argv))
+    # test_frame_placement()

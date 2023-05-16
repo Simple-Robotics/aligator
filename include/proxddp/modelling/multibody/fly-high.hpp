@@ -1,8 +1,8 @@
 #pragma once
 
 #include "proxddp/core/unary-function.hpp"
+#include "./fwd.hpp"
 #include <proxnlp/modelling/spaces/multibody.hpp>
-#include <pinocchio/algorithm/frames.hpp>
 #include <pinocchio/algorithm/frames-derivatives.hpp>
 
 namespace proxddp {
@@ -13,7 +13,7 @@ namespace pin = pinocchio;
 
 /// A port of sobec's ResidualModelFlyHighTpl.
 template <typename _Scalar>
-struct FlyHighResidualTpl : UnaryFunctionTpl<_Scalar> {
+struct FlyHighResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   static constexpr int NR = 2;
@@ -35,12 +35,8 @@ struct FlyHighResidualTpl : UnaryFunctionTpl<_Scalar> {
     return std::make_shared<Data>(*this);
   }
 
-  pinocchio::FrameIndex getFrameId() const { return frame_id_; }
-  void setFrameId(const std::size_t id) { frame_id_ = id; }
-
   const auto &getModel() const { return pmodel_; }
 
-  pin::FrameIndex frame_id_;
   Scalar slope_;
 
 private:
