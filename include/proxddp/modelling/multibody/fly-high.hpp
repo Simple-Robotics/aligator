@@ -25,8 +25,7 @@ struct FlyHighResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
   struct Data;
 
   FlyHighResidualTpl(shared_ptr<PhaseSpace> space,
-                     const pin::FrameIndex frame_id, Scalar slope,
-                     std::size_t nu);
+                     const pin::FrameIndex frame_id, Scalar slope, int nu);
 
   void evaluate(const ConstVectorRef &x, BaseData &data) const;
   void computeJacobians(const ConstVectorRef &x, BaseData &data) const;

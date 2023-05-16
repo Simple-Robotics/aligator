@@ -8,7 +8,7 @@ namespace proxddp {
 template <typename Scalar>
 FlyHighResidualTpl<Scalar>::FlyHighResidualTpl(shared_ptr<PhaseSpace> state,
                                                const pin::FrameIndex frame_id,
-                                               Scalar slope, std::size_t nu)
+                                               Scalar slope, int nu)
     : Base(state->ndx(), nu, NR), slope_(slope), pmodel_(state->getModel()) {
   pin_frame_id_ = frame_id;
 }
