@@ -41,6 +41,7 @@ def main(roltype, mu_init):
     w_term_ee = np.eye(3) * 5.0
     p_ref = np.array([0.2, 0.6, 0.4])
     term_cost = proxddp.QuadraticResidualCost(
+        space,
         proxddp.FrameTranslationResidual(space.ndx, nu, rmodel, p_ref, tool_id),
         w_term_ee,
     )

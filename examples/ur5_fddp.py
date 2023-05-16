@@ -57,7 +57,9 @@ frame_id = rmodel.getFrameId("tool0")
 term_cost = proxddp.CostStack(space, nu)
 term_cost.addCost(
     proxddp.QuadraticResidualCost(
-        proxddp.FrameTranslationResidual(ndx, nu, rmodel, p_ref, frame_id), wx_term
+        space,
+        proxddp.FrameTranslationResidual(ndx, nu, rmodel, p_ref, frame_id),
+        wx_term,
     )
 )
 problem = proxddp.TrajOptProblem(x0, stages, term_cost)

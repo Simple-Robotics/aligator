@@ -80,8 +80,8 @@ term_cost.addCost(
 term_cost.addCost(x_reg_cost)
 
 # box constraint on control
-u_min = -25.0 * np.ones(nu)
-u_max = +25.0 * np.ones(nu)
+u_min = -8.0 * np.ones(nu)
+u_max = +8.0 * np.ones(nu)
 
 
 def get_box_cstr():
@@ -108,7 +108,7 @@ term_fun = proxddp.FrameTranslationResidual(ndx, nu, model, target_pos, frame_id
 term_cstr = proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet())
 problem.addTerminalConstraint(term_cstr)
 
-mu_init = 0.1
+mu_init = 0.9
 rho_init = 0.0
 verbose = proxddp.VerboseLevel.VERBOSE
 TOL = 1e-4
@@ -116,9 +116,9 @@ MAX_ITER = 100
 solver = proxddp.SolverProxDDP(
     TOL, mu_init, rho_init, max_iters=MAX_ITER, verbose=verbose
 )
-solver.reg_init = 1e-5
+solver.reg_init = 1e-6
 callback = proxddp.HistoryCallback()
-solver.registerCallback(callback)
+solver.registerCallback("his", callback)
 
 u0 = np.zeros(nu)
 us_i = [u0] * nsteps
