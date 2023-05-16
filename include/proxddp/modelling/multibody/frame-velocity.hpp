@@ -32,7 +32,12 @@ public:
                            const pinocchio::FrameIndex id,
                            const pinocchio::ReferenceFrame type)
       : Base(ndx, nu, 6), pin_model_(model), pin_frame_id_(id),
-        v_ref_(velocity), type_(type) {}
+        v_ref_(velocity), type_(type) {
+    if (ndx < model->nv * 2) {
+      PROXDDP_RUNTIME_ERROR("Specified manifold dimension is incompatible. It "
+                            "needs to be at least 2 * nv.");
+    }
+  }
 
   pinocchio::FrameIndex getFrameId() const { return pin_frame_id_; }
   void setFrameId(const std::size_t id) { pin_frame_id_ = id; }

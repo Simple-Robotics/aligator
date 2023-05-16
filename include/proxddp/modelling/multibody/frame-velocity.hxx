@@ -12,10 +12,12 @@ void FrameVelocityResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                                 BaseData &data) const {
   Data &d = static_cast<Data &>(data);
   const Model &model = *pin_model_;
-  pinocchio::DataTpl<Scalar> &pdata = d.pin_data_;
-  pinocchio::forwardKinematics(model, pdata, x.head(model.nq));
+  auto q = x.head(model.nq);
+  auto v = x.segment(model.nq, model.nv);
+  pinocchio::forwardKinematics(model, d.pin_data_, q, v);
   d.value_ =
-      (pinocchio::getFrameVelocity(model, pdata, pin_frame_id_, type_) - v_ref_)
+      (pinocchio::getFrameVelocity(model, d.pin_data_, pin_frame_id_, type_) -
+       v_ref_)
           .toVector();
 }
 
@@ -24,9 +26,8 @@ void FrameVelocityResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
                                                         BaseData &data) const {
   Data &d = static_cast<Data &>(data);
   const Model &model = *pin_model_;
-  pinocchio::DataTpl<Scalar> &pdata = d.pin_data_;
-  pinocchio::getFrameVelocityDerivatives(model, pdata, pin_frame_id_, type_,
-                                         d.Jx_.leftCols(model.nv),
+  pinocchio::getFrameVelocityDerivatives(model, d.pin_data_, pin_frame_id_,
+                                         type_, d.Jx_.leftCols(model.nv),
                                          d.Jx_.rightCols(model.nv));
 }
 
