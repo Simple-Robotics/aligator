@@ -1,3 +1,5 @@
+/// @file
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #include "proxddp/python/fwd.hpp"
 
 #ifdef PROXDDP_PINOCCHIO_V3
