@@ -1,7 +1,10 @@
+/// @file
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
+#ifdef PROXDDP_WITH_PINOCCHIO
 #include "proxddp/fwd.hpp"
 #include "proxddp/python/functions.hpp"
+#include "proxddp/python/modelling/multibody-utils.hpp"
 
-#ifdef PROXDDP_WITH_PINOCCHIO
 #include "proxddp/modelling/multibody/frame-placement.hpp"
 #include "proxddp/modelling/multibody/frame-velocity.hpp"
 #include "proxddp/modelling/multibody/frame-translation.hpp"
@@ -9,7 +12,10 @@
 namespace proxddp {
 namespace python {
 
-void exposePinocchioFunctions() {
+// fwd declaration, see expose-fly-high.cpp
+void exposeFlyHigh();
+
+void exposeFrameFunctions() {
   using context::Manifold;
   using context::Scalar;
   using context::UnaryFunction;
@@ -33,8 +39,7 @@ void exposePinocchioFunctions() {
       "FramePlacementResidual", "Frame placement residual function.",
       bp::init<int, int, shared_ptr<Model>, const SE3 &, pinocchio::FrameIndex>(
           bp::args("self", "ndx", "nu", "model", "p_ref", "id")))
-      .add_property("frame_id", &FramePlacement::getFrameId,
-                    &FramePlacement::setFrameId)
+      .def(FrameAPIVisitor<FramePlacement>())
       .def("getReference", &FramePlacement::getReference, bp::args("self"),
            bp::return_internal_reference<>(), "Get the target frame in SE3.")
       .def("setReference", &FramePlacement::setReference,
@@ -56,8 +61,7 @@ void exposePinocchioFunctions() {
       bp::init<int, int, shared_ptr<Model>, const Motion &,
                pinocchio::FrameIndex, pinocchio::ReferenceFrame>(bp::args(
           "self", "ndx", "nu", "model", "v_ref", "id", "reference_frame")))
-      .add_property("frame_id", &FrameVelocity::getFrameId,
-                    &FrameVelocity::setFrameId)
+      .def(FrameAPIVisitor<FrameVelocity>())
       .def("getReference", &FrameVelocity::getReference, bp::args("self"),
            bp::return_internal_reference<>(), "Get the target frame velocity.")
       .def("setReference", &FrameVelocity::setReference,
@@ -76,8 +80,7 @@ void exposePinocchioFunctions() {
       bp::init<int, int, shared_ptr<Model>, const context::VectorXs &,
                pinocchio::FrameIndex>(
           bp::args("self", "ndx", "nu", "model", "p_ref", "id")))
-      .add_property("frame_id", &FrameTranslation::getFrameId,
-                    &FrameTranslation::setFrameId)
+      .def(FrameAPIVisitor<FrameTranslation>())
       .def("getReference", &FrameTranslation::getReference, bp::args("self"),
            bp::return_internal_reference<>(),
            "Get the target frame translation.")
@@ -94,6 +97,10 @@ void exposePinocchioFunctions() {
                     "Pinocchio data struct.");
 }
 
+void exposePinocchioFunctions() {
+  exposeFrameFunctions();
+  exposeFlyHigh();
+}
 } // namespace python
 } // namespace proxddp
 
