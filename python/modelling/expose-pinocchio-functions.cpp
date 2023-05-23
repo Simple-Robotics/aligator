@@ -77,7 +77,7 @@ void exposeFrameFunctions() {
 
   bp::class_<FrameTranslation, bp::bases<UnaryFunction>>(
       "FrameTranslationResidual", "Frame placement residual function.",
-      bp::init<int, int, shared_ptr<Model>, const context::VectorXs &,
+      bp::init<int, int, shared_ptr<Model>, const context::Vector3s &,
                pinocchio::FrameIndex>(
           bp::args("self", "ndx", "nu", "model", "p_ref", "id")))
       .def(FrameAPIVisitor<FrameTranslation>())
