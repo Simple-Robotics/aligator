@@ -31,7 +31,12 @@ struct StateOrControlErrorResidual<_Scalar, 0> : UnaryFunctionTpl<_Scalar> {
   StateOrControlErrorResidual(const shared_ptr<Manifold> &xspace, const int nu,
                               const ConstVectorRef &target)
       : Base(xspace->ndx(), nu, xspace->ndx()), space_(xspace),
-        target_(target) {}
+        target_(target) {
+    if (!xspace->isNormalized(target)) {
+      PROXDDP_RUNTIME_ERROR(
+          "Target parameter invalid (not a viable element of state manifold.)");
+    }
+  }
 
   void evaluate(const ConstVectorRef &x, Data &data) const override {
     space_->difference(target_, x, data.value_);
@@ -67,7 +72,9 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
   StateOrControlErrorResidual(const int ndx, const shared_ptr<Manifold> &uspace,
                               const ConstVectorRef &target)
       : Base(ndx, uspace->nx(), uspace->ndx()), space_(uspace),
-        target_(target) {}
+        target_(target) {
+    check_target_viable();
+  }
 
   /// @brief Constructor using state space and control space dimensions,
   ///        the control space is assumed to be Euclidean.
@@ -79,7 +86,9 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
   template <unsigned int N = arg, typename = std::enable_if_t<N == 1>>
   StateOrControlErrorResidual(const int ndx, const int nu)
       : Base(ndx, nu, ndx, nu), space_(std::make_shared<VectorSpace>(nu)),
-        target_(space_->neutral()) {}
+        target_(space_->neutral()) {
+    check_target_viable();
+  }
 
   void evaluate(const ConstVectorRef &, const ConstVectorRef &u,
                 const ConstVectorRef &y, Data &data) const {
@@ -108,6 +117,14 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
       break;
     }
   }
+
+private:
+  inline void check_target_viable() const {
+    if (!space_->isNormalized(target_)) {
+      PROXDDP_RUNTIME_ERROR(
+          "Target parameter invalid (not a viable element of state manifold.)");
+    }
+  }
 };
 
 template <typename Scalar, unsigned int arg>
@@ -115,7 +132,9 @@ template <unsigned int N, typename>
 StateOrControlErrorResidual<Scalar, arg>::StateOrControlErrorResidual(
     const shared_ptr<Manifold> &xspace, const int nu,
     const ConstVectorRef &target)
-    : Base(xspace->ndx(), nu, xspace->ndx()), space_(xspace), target_(target) {}
+    : Base(xspace->ndx(), nu, xspace->ndx()), space_(xspace), target_(target) {
+  check_target_viable();
+}
 } // namespace detail
 
 template <typename Scalar>
