@@ -41,6 +41,11 @@ def test_manifold_diff():
     fun_lin.computeJacobians(x, u, y, data3)
     assert np.allclose(data3.jac_buffer, A @ sd3.jac_buffer)
 
+    # TEST UNARY COMPOSE W/ FUNCTION CALL
+    fun_lin = proxddp.linear_compose(fun, A, b)
+    assert isinstance(fun_lin, proxddp.UnaryFunction)
+    fun_lin.evaluate(x, data3)
+
 
 def test_slicing():
     space = manifolds.R4()

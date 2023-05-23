@@ -10,10 +10,11 @@ namespace proxddp {
 namespace python {
 
 using context::FunctionData;
+using context::MatrixXs;
 using context::Scalar;
 using context::StageFunction;
 using context::UnaryFunction;
-using FunctionPtr = shared_ptr<StageFunction>;
+using context::VectorXs;
 
 template <typename Base> void exposeSliceExpression(const char *name) {
   // FUNCTION SLICE
@@ -34,6 +35,36 @@ template <typename Base> void exposeSliceExpression(const char *name) {
                     "Indices of the slice.");
 }
 
+template <typename LFC>
+struct LinFunctionCompositionVisitor
+    : bp::def_visitor<LinFunctionCompositionVisitor<LFC>> {
+  using FunType = typename LFC::Base;
+
+  template <class PyClass> void visit(PyClass &cl) const {
+    cl.def(bp::init<shared_ptr<FunType>, const MatrixXs, const VectorXs>(
+               "Construct a composition from the underlying function, weight "
+               "matrix "
+               ":math:`A` and bias :math:`b`.",
+               bp::args("self", "func", "A", "b")))
+        .def(bp::init<shared_ptr<FunType>, const context::MatrixXs>(
+            "Constructor where the bias :math:`b` is assumed to be zero.",
+            bp::args("self", "func", "A")))
+        .def_readonly("func", &LFC::func, "The underlying function.")
+        .def_readonly("A", &LFC::A, "Weight matrix.")
+        .def_readonly("b", &LFC::b, "Bias vector.");
+    bp::class_<typename LFC::Data, bp::bases<FunctionData>, boost::noncopyable>(
+        "LFC", bp::no_init)
+        .def_readonly("sub_data", &LFC::Data::sub_data);
+
+    bp::def(
+        "linear_compose",
+        +[](shared_ptr<FunType> func, const MatrixXs &A, const VectorXs &b) {
+          return linear_compose(func, A, b);
+        },
+        bp::args("func", "A", "b"));
+  }
+};
+
 void exposeFunctionExpressions() {
 
   exposeSliceExpression<StageFunction>("StageFunctionSliceXpr");
@@ -48,29 +79,21 @@ void exposeFunctionExpressions() {
   /// FUNCTION LINEAR COMPOSE
 
   using LinearFunctionComposition = LinearFunctionCompositionTpl<Scalar>;
+  using LinearUnaryFunctionComposition =
+      LinearUnaryFunctionCompositionTpl<Scalar>;
 
+  bp::register_ptr_to_python<shared_ptr<LinearFunctionComposition>>();
   bp::class_<LinearFunctionComposition, bp::bases<StageFunction>>(
       "LinearFunctionComposition",
-      "Function composition :math:`r(x) = Af(x) + b`.",
-      bp::init<FunctionPtr, const context::MatrixXs, const context::VectorXs>(
-          "Construct a composition from the underlying function, weight matrix "
-          ":math:`A` and bias :math:`b`.",
-          bp::args("self", "func", "A", "b")))
-      .def(bp::init<FunctionPtr, const context::MatrixXs>(
-          "Constructor where the bias :math:`b` is assumed to be zero.",
-          bp::args("self", "func", "A")))
-      .def_readonly("func", &LinearFunctionComposition::func,
-                    "The underlying function.")
-      .add_property("A",
-                    make_getter_eigen_matrix(&LinearFunctionComposition::A),
-                    "Weight matrix.")
-      .add_property("b",
-                    make_getter_eigen_matrix(&LinearFunctionComposition::A),
-                    "Bias vector.");
+      "Function composition :math:`r(x) = Af(x, u, y) + b`.", bp::no_init)
+      .def(LinFunctionCompositionVisitor<LinearFunctionComposition>());
 
-  bp::class_<LinearFunctionComposition::OwnData, bp::bases<FunctionData>,
-             boost::noncopyable>("LinearFunctionCompositionData", bp::no_init)
-      .def_readonly("sub_data", &LinearFunctionComposition::OwnData::sub_data);
+  bp::register_ptr_to_python<shared_ptr<LinearUnaryFunctionComposition>>();
+  bp::class_<LinearUnaryFunctionComposition, bp::bases<UnaryFunction>>(
+      "LinearUnaryFunctionComposition",
+      "Function composition for unary functions: :math:`r(x) = Af(x) + b`.",
+      bp::no_init)
+      .def(LinFunctionCompositionVisitor<LinearUnaryFunctionComposition>());
 }
 
 } // namespace python
