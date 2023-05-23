@@ -29,7 +29,7 @@ StageModelTpl<Scalar>::StageModelTpl(CostPtr cost, DynamicsPtr dyn_model)
 
   if (cost->nu != dyn_model->nu) {
     PROXDDP_RUNTIME_ERROR(fmt::format("Control dimensions cost.nu ({:d}) and "
-                                      "dyn_model.nu ({;d}) are inconsistent.",
+                                      "dyn_model.nu ({:d}) are inconsistent.",
                                       cost->nu, dyn_model->nu));
   }
 
