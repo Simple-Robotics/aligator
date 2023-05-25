@@ -29,7 +29,7 @@ xtarget = space.neutral()
 xtarget[1] = 0.0
 term_cost = proxddp.QuadraticStateCost(space, nu, xtarget, np.eye(ndx))
 
-problem = proxddp.TrajOptProblem(init_cond, nu, term_cost)
+problem = proxddp.TrajOptProblem(init_cond, term_cost)
 
 dm = dynamics.LinearDiscreteDynamics(A, B, c=np.zeros(2))
 cost = proxddp.QuadraticControlCost(space, nu, np.eye(nu) * 1e-3)
