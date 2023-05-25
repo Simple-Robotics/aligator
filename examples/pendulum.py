@@ -212,7 +212,7 @@ if args.term_cstr:
         lw=1.3,
         colors="k",
         alpha=0.8,
-        label=r"$x_\mathrm{tar}$"
+        label=r"$x_\mathrm{tar}$",
     )
 plt.xlabel("Time $i$")
 
@@ -225,7 +225,7 @@ plt.hlines(
     colors="k",
     lw=2.5,
     alpha=0.4,
-    label=r"$\bar{u}$"
+    label=r"$\bar{u}$",
 )
 plt.title("Controls $u(t)$")
 plt.legend()

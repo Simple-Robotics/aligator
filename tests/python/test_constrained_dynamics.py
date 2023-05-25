@@ -250,7 +250,6 @@ def test_constrained_dynamics():
     u = np.zeros((model.nv))
     x = x0.copy()
     while t <= T_sim:
-
         discrete_dynamics.forward(x, u, data)
         x = data.xnext.copy()
         t += dt

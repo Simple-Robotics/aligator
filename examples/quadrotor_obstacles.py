@@ -252,7 +252,6 @@ def main(args: Args):
     task_schedule = get_task_schedule()
 
     def setup():
-
         w_u = np.eye(nu) * 1e-2
 
         ceiling = create_halfspace_z(space.ndx, nu, 2.0)
@@ -264,7 +263,6 @@ def main(args: Args):
             ctrl_cstr = proxddp.StageConstraint(u_identity_fn, box_set)
 
         for i in range(nsteps):
-
             rcost = proxddp.CostStack(space, nu)
 
             weights, x_tar = task_schedule(i)
@@ -399,7 +397,6 @@ def main(args: Args):
 
     root_pt_opt = np.stack(xs_opt)[:, :3]
     if args.plot:
-
         if len(results.lams) > 0:
             plot_costate_value()
 

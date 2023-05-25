@@ -223,7 +223,6 @@ if True:
         plt.show()
 
     if WITHDISPLAY:
-
         qs = [x[:nq] for x in prox_xs]
         vs = [x[nq:] for x in prox_xs]
         input("[press enter to play]")

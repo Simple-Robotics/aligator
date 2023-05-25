@@ -78,7 +78,6 @@ class TestLinear:
     ldd = dynamics.LinearDiscreteDynamics(A, B, c)
 
     def test_linear(self):
-
         space = self.ldd.space
 
         x0 = space.neutral()

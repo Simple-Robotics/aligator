@@ -85,7 +85,6 @@ u_max = +8.0 * np.ones(nu)
 
 
 def get_box_cstr():
-
     ctrl_lin_fun = proxddp.LinearFunction(ndx, nu, ndx, nu)
     ctrl_lin_fun.B[:] = np.eye(nu)
     return proxddp.StageConstraint(

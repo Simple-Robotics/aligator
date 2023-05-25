@@ -121,7 +121,7 @@ plt.hlines(
     lw=1.0,
     colors="k",
     alpha=0.4,
-    label=r"$x_\mathrm{tar}$"
+    label=r"$x_\mathrm{tar}$",
 )
 if args.term_cstr:
     plt.hlines(
@@ -131,7 +131,7 @@ if args.term_cstr:
         lw=1.0,
         colors="k",
         alpha=0.4,
-        label=r"$x_\mathrm{tar}$"
+        label=r"$x_\mathrm{tar}$",
     )
 plt.xlabel("Time $i$")
 plt.title("State trajectory $x(t)$")
@@ -147,7 +147,7 @@ if args.bounds:
         colors="k",
         lw=1.5,
         alpha=0.2,
-        label=r"$\bar{u}$"
+        label=r"$\bar{u}$",
     )
 plt.title("Controls $u(t)$")
 plt.legend(frameon=False)
