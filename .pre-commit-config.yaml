@@ -2,7 +2,7 @@ ci:
     autoupdate_branch: main
 repos:
 -   repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v14.0.6
+    rev: v16.0.4
     hooks:
     -   id: clang-format
         args: ['--style={BasedOnStyle: LLVM, SortIncludes: false}']
@@ -11,7 +11,7 @@ repos:
                 doc/doxygen-awesome.*
             )$
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.3.0
+    rev: v4.4.0
     hooks:
     -   id: detect-private-key
     -   id: end-of-file-fixer
@@ -23,17 +23,17 @@ repos:
                 doc/doxygen-awesome.*
             )$
 -   repo: https://github.com/psf/black
-    rev: 22.8.0
+    rev: 23.3.0
     hooks:
     -   id: black
 -   repo: https://github.com/charliermarsh/ruff-pre-commit
     # Ruff version.
-    rev: 'v0.0.245'
+    rev: 'v0.0.270'
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
 -   repo: https://github.com/cheshirekow/cmake-format-precommit
-    rev: v0.6.10
+    rev: v0.6.13
     hooks:
     -   id: cmake-format
         additional_dependencies: [pyyaml>=5.1]
