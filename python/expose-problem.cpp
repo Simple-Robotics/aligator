@@ -16,20 +16,29 @@ void exposeProblem() {
   using context::TrajOptProblem;
   using context::UnaryFunction;
 
-  bp::class_<TrajOptProblem>(
-      "TrajOptProblem", "Define a shooting problem.",
-      bp::init<ConstVectorRef, const std::vector<shared_ptr<StageModel>> &,
-               shared_ptr<CostBase>>(
-          bp::args("self", "x0", "stages", "term_cost")))
-      .def(bp::init<ConstVectorRef, const int, shared_ptr<context::Manifold>,
+  bp::class_<TrajOptProblem>("TrajOptProblem", "Define a shooting problem.",
+                             bp::no_init)
+      .def(bp::init<shared_ptr<UnaryFunction>,
+                    const std::vector<shared_ptr<StageModel>> &,
                     shared_ptr<CostBase>>(
+          "Constructor adding the initial constraint explicitly.",
+          bp::args("self", "init_constraint", "stages", "term_cost")))
+      .def(bp::init<ConstVectorRef, const std::vector<shared_ptr<StageModel>> &,
+                    shared_ptr<CostBase>>(
+          "Constructor for an initial value problem.",
+          bp::args("self", "x0", "stages", "term_cost")))
+      .def(bp::init<shared_ptr<UnaryFunction>, shared_ptr<CostBase>>(
+          "Constructor adding the initial constraint explicitly (without "
+          "stages).",
+          bp::args("self", "init_constraint", "term_cost")))
+      .def(bp::init<ConstVectorRef, const int, shared_ptr<Manifold>,
+                    shared_ptr<CostBase>>(
+          "Constructor for an initial value problem (without pre-allocated "
+          "stages).",
           bp::args("self", "x0", "nu", "space", "term_cost")))
       .def<void (TrajOptProblem::*)(const shared_ptr<StageModel> &)>(
           "addStage", &TrajOptProblem::addStage, bp::args("self", "new_stage"),
           "Add a stage to the problem.")
-      .def(bp::init<shared_ptr<UnaryFunction>, int, shared_ptr<CostBase>>(
-          "Constructor adding the initial constraint explicitly.",
-          bp::args("self", "init_constraint", "nu", "term_cost")))
       .def_readonly("stages", &TrajOptProblem::stages_,
                     "Stages of the shooting problem.")
       .def_readwrite("term_cost", &TrajOptProblem::term_cost_,

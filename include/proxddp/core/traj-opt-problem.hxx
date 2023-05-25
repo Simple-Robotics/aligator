@@ -11,16 +11,40 @@ namespace proxddp {
 
 template <typename Scalar>
 TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
+    shared_ptr<UnaryFunction> init_constraint,
+    const std::vector<shared_ptr<StageModel>> &stages,
+    shared_ptr<CostAbstract> term_cost)
+    : init_condition_(init_constraint), stages_(stages), term_cost_(term_cost),
+      unone_(term_cost->nu), num_threads_(1) {
+  unone_.setZero();
+  checkStages();
+  if (auto se =
+          std::dynamic_pointer_cast<StateErrorResidual>(init_condition_)) {
+    init_state_error_ = se.get();
+  }
+}
+
+template <typename Scalar>
+TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     const ConstVectorRef &x0, const std::vector<shared_ptr<StageModel>> &stages,
     shared_ptr<CostAbstract> term_cost)
-    : init_condition_(), stages_(stages), term_cost_(term_cost),
-      unone_(stages[0]->nu()), init_state_error_(), num_threads_(1) {
-  auto resdl = std::make_shared<StateErrorResidual>(stages[0]->xspace_,
-                                                    stages[0]->nu(), x0);
-  init_condition_ = resdl;
-  init_state_error_ = resdl.get();
-  checkStages();
+    : TrajOptProblemTpl(
+          createStateError(x0, stages[0]->xspace_, stages[0]->nu()), stages,
+          term_cost) {
+  init_state_error_ = static_cast<StateErrorResidual *>(init_condition_.get());
+}
+
+template <typename Scalar>
+TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
+    shared_ptr<UnaryFunction> init_constraint,
+    shared_ptr<CostAbstract> term_cost)
+    : init_condition_(init_constraint), term_cost_(term_cost),
+      unone_(term_cost->nu), init_state_error_(nullptr), num_threads_(1) {
   unone_.setZero();
+  if (auto se =
+          std::dynamic_pointer_cast<StateErrorResidual>(init_condition_)) {
+    init_state_error_ = se.get();
+  }
 }
 
 template <typename Scalar>
@@ -28,8 +52,7 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(const ConstVectorRef &x0,
                                              const int nu,
                                              shared_ptr<Manifold> space,
                                              shared_ptr<CostAbstract> term_cost)
-    : TrajOptProblemTpl(std::make_shared<StateErrorResidual>(space, nu, x0), nu,
-                        term_cost) {}
+    : TrajOptProblemTpl(createStateError(x0, space, nu), term_cost) {}
 
 template <typename Scalar>
 Scalar TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,

@@ -97,24 +97,30 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// Dummy, "neutral" control value.
   VectorXs unone_;
 
+  /// @defgroup ctor1 Constructors with pre-allocated stages
+
+  /// @ingroup ctor1
+  TrajOptProblemTpl(shared_ptr<UnaryFunction> init_constraint,
+                    const std::vector<shared_ptr<StageModel>> &stages,
+                    shared_ptr<CostAbstract> term_cost);
+
+  /// @ingroup ctor1
+  /// @brief Constructor for an initial value problem.
   TrajOptProblemTpl(const ConstVectorRef &x0,
                     const std::vector<shared_ptr<StageModel>> &stages,
                     shared_ptr<CostAbstract> term_cost);
 
+  /// @defgroup ctor2 Constructors without pre-allocated stages
+
+  /// @ingroup ctor2
+  TrajOptProblemTpl(shared_ptr<UnaryFunction> init_constraint,
+                    shared_ptr<CostAbstract> term_cost);
+
+  /// @ingroup ctor2
+  /// @brief Constructor for an initial value problem.
   TrajOptProblemTpl(const ConstVectorRef &x0, const int nu,
                     shared_ptr<Manifold> space,
                     shared_ptr<CostAbstract> term_cost);
-
-  TrajOptProblemTpl(shared_ptr<UnaryFunction> resdl, const int nu,
-                    shared_ptr<CostAbstract> term_cost)
-      : init_condition_(resdl), term_cost_(term_cost), unone_(nu),
-        init_state_error_(nullptr), num_threads_(1) {
-    unone_.setZero();
-    if (auto se =
-            std::dynamic_pointer_cast<StateErrorResidual>(init_condition_)) {
-      init_state_error_ = se.get();
-    }
-  }
 
   bool initCondIsStateError() const { return init_state_error_ != nullptr; }
 
@@ -188,6 +194,13 @@ protected:
   std::size_t num_threads_;
   /// @brief Check if all stages are non-null.
   void checkStages() const;
+
+private:
+  static auto createStateError(const ConstVectorRef &x0,
+                               const shared_ptr<Manifold> &space,
+                               const int nu) {
+    return std::make_shared<StateErrorResidual>(space, nu, x0);
+  }
 };
 
 /// @brief Problem data struct.
