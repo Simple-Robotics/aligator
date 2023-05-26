@@ -33,4 +33,18 @@ def create_ground_contact_model(rmodel: pin.Model):
     return constraint_models
 
 
+def add_plane(robot):
+    import hppfcl as fcl
+    import numpy as np
+
+    plane = fcl.Plane(np.array([0.0, 0.0, 1.0]), 0.0)
+    plane_obj = pin.GeometryObject("plane", 0, pin.SE3.Identity(), plane)
+
+    meshColor = np.array((239, 173, 143, 200))
+    plane_obj.meshColor[:] = meshColor / 255.0
+    plane_obj.meshScale[:] = 0.1
+    robot.visual_model.addGeometryObject(plane_obj)
+    robot.collision_model.addGeometryObject(plane_obj)
+
+
 __all__ = ["robot", "rmodel", "rdata", "q0", "FOOT_FRAME_IDS", "FOOT_JOINT_IDS"]

@@ -1,6 +1,14 @@
 import proxddp
 import pinocchio as pin
-from solo_utils import robot, rmodel, rdata, q0, create_ground_contact_model
+from solo_utils import (
+    robot,
+    rmodel,
+    rdata,
+    q0,
+    create_ground_contact_model,
+    add_plane,
+    FOOT_FRAME_IDS,  # noqa
+)
 
 import numpy as np
 
@@ -73,7 +81,7 @@ for k in range(nsteps):
 term_cost = proxddp.QuadraticStateCost(space, nu, target=x0_ref, weights=w_x)
 
 problem = proxddp.TrajOptProblem(x0_ref, stages, term_cost)
-mu_init = 1e-2
+mu_init = 0.1
 solver = proxddp.SolverProxDDP(1e-3, mu_init)
 solver.setup(problem)
 
@@ -81,23 +89,8 @@ solver.setup(problem)
 xs_init = [x0_ref] * (nsteps + 1)
 us_init = [np.zeros(nu) for _ in range(nsteps)]
 
-solver.run(problem, xs_init, us_init)
-workspace = solver.workspace
-res = solver.results
 
-
-def addPlane():
-    import hppfcl as fcl
-
-    plane = fcl.Plane(np.array([0.0, 0.0, 1.0]), 0.0)
-    plane_obj = pin.GeometryObject("plane", 0, pin.SE3.Identity(), plane)
-    plane_obj.meshColor[:] = [1.0, 1.0, 0.95, 1.0]
-    plane_obj.meshScale[:] = 2.0
-    robot.visual_model.addGeometryObject(plane_obj)
-    robot.collision_model.addGeometryObject(plane_obj)
-
-
-addPlane()
+add_plane(robot)
 vizer = MeshcatVisualizer(
     rmodel,
     collision_model=robot.collision_model,
@@ -109,11 +102,16 @@ vizer = MeshcatVisualizer(
 def main():
     vizer.initViewer(loadModel=True, open=True)
     vizer.display(q0)
-    vizer.setBackgroundColor()
 
-    input()
+    solver.run(problem, xs_init, us_init)
+    res = solver.results
+    print(res)
+
+    input("[display]")
     qs = [x[:nq] for x in res.xs]
-    vizer.play(qs, dt)
+    while True:
+        vizer.play(qs, dt)
+        input("[replay]")
 
 
 main()
