@@ -6,15 +6,23 @@ from solo_utils import (
     rdata,
     q0,
     create_ground_contact_model,
+    manage_lights,
     add_plane,
     FOOT_FRAME_IDS,
 )
 
 import numpy as np
+import tap
 
 from proxddp import manifolds, dynamics
 from pinocchio.visualize import MeshcatVisualizer
 
+
+class Args(tap.Tap):
+    record: bool = True
+
+
+args = Args().parse_args()
 pin.framesForwardKinematics(rmodel, rdata, q0)
 
 
@@ -24,7 +32,7 @@ nu = nv - 6
 space = manifolds.MultibodyPhaseSpace(rmodel)
 act_matrix = np.eye(nv, nu, -6)
 
-constraint_models = create_ground_contact_model(rmodel, Kd=70.0)
+constraint_models = create_ground_contact_model(rmodel, (0, 0, 100), 50)
 prox_settings = pin.ProximalSettings(1e-9, 1e-10, 10)
 ode1 = dynamics.MultibodyConstraintFwdDynamics(
     space, act_matrix, constraint_models, prox_settings
@@ -59,7 +67,10 @@ times = np.linspace(0, tf, nsteps + 1)
 mask = (switch_t0 <= times) & (times < switch_t1)
 
 x0_ref = np.concatenate((q0, np.zeros(nv)))
-w_x = np.eye(space.ndx) * 1e-3
+w_x = np.ones(space.ndx) * 1e-3
+w_x[:6] = 0.0
+w_x[nv : nv + 6] = 0.0
+w_x = np.diag(w_x)
 w_u = np.eye(nu) * 1e-4
 
 
@@ -135,8 +146,11 @@ vizer = MeshcatVisualizer(
 )
 
 
-def main():
+if __name__ == "__main__":
     vizer.initViewer(loadModel=True, open=True)
+    custom_color = np.asarray((53, 144, 243)) / 255.0
+    vizer.setBackgroundColor(col_bot=list(custom_color), col_top=(1, 1, 1, 1))
+    manage_lights(vizer)
     vizer.display(q0)
 
     solver.run(problem, xs_init, us_init)
@@ -145,9 +159,20 @@ def main():
 
     input("[display]")
     qs = [x[:nq] for x in res.xs]
+    vs = [x[nq:] for x in res.xs]
+
+    FPS = 1.0 / dt * 0.5
+
+    def callback(i: int):
+        pin.forwardKinematics(rmodel, rdata, qs[i], vs[i])
+        for fid in FOOT_FRAME_IDS.values():
+            vizer.drawFrameVelocities(fid)
+
+    if args.record:
+        with vizer.create_video_ctx("examples/solo_jump.mp4", fps=FPS):
+            print("[Recording video]")
+            vizer.play(qs, dt, callback=callback)
+
     while True:
-        vizer.play(qs, dt)
+        vizer.play(qs, dt, callback=callback)
         input("[replay]")
-
-
-main()
