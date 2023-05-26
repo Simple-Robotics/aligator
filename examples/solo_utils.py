@@ -17,7 +17,7 @@ FOOT_JOINT_IDS = {
 }
 
 
-def create_ground_contact_model(rmodel: pin.Model):
+def create_ground_contact_model(rmodel: pin.Model, Kp=0.0, Kd=100.0):
     """Create a list of pinocchio.RigidConstraintModel objects corresponding to ground contact."""
     constraint_models = []
     for fname, fid in FOOT_FRAME_IDS.items():
@@ -27,8 +27,8 @@ def create_ground_contact_model(rmodel: pin.Model):
         cm = pin.RigidConstraintModel(
             pin.ContactType.CONTACT_3D, rmodel, joint_id, pl1, 0, pl2
         )
-        cm.corrector.Kp = 20.0
-        cm.corrector.Kd = 2 * cm.corrector.Kp**0.5
+        cm.corrector.Kp = Kp
+        cm.corrector.Kd = Kd
         constraint_models.append(cm)
     return constraint_models
 

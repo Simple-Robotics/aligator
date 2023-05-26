@@ -7,7 +7,7 @@ from solo_utils import (
     q0,
     create_ground_contact_model,
     add_plane,
-    FOOT_FRAME_IDS,  # noqa
+    FOOT_FRAME_IDS,
 )
 
 import numpy as np
@@ -24,7 +24,7 @@ nu = nv - 6
 space = manifolds.MultibodyPhaseSpace(rmodel)
 act_matrix = np.eye(nv, nu, -6)
 
-constraint_models = create_ground_contact_model(rmodel)
+constraint_models = create_ground_contact_model(rmodel, Kd=70.0)
 prox_settings = pin.ProximalSettings(1e-9, 1e-10, 10)
 ode1 = dynamics.MultibodyConstraintFwdDynamics(
     space, act_matrix, constraint_models, prox_settings
@@ -46,12 +46,14 @@ def test():
 test()
 
 
-dt = 40e-3  # 40 ms
+dt = 20e-3  # 20 ms
 tf = 1.0  # in seconds
 nsteps = int(tf / dt)
 
-switch_t0 = 0.4
+switch_t0 = 0.3
 switch_t1 = 0.8  # landing time
+k0 = int(switch_t0 / dt)
+k1 = int(switch_t1 / dt)
 
 times = np.linspace(0, tf, nsteps + 1)
 mask = (switch_t0 <= times) & (times < switch_t1)
@@ -61,28 +63,62 @@ w_x = np.eye(space.ndx) * 1e-3
 w_u = np.eye(nu) * 1e-4
 
 
+def create_fly_high_cost(costs: proxddp.CostStack, slope=50):
+    fly_high_w = 1.0
+    for fname, fid in FOOT_FRAME_IDS.items():
+        fn = proxddp.FlyHighResidual(space, fid, slope, nu)
+        fl_cost = proxddp.QuadraticResidualCost(space, fn, np.eye(2) * dt)
+        costs.addCost(fl_cost, fly_high_w / len(FOOT_FRAME_IDS))
+
+
+def create_land_fns():
+    out = {}
+    for fname, fid in FOOT_FRAME_IDS.items():
+        p_ref = rdata.oMf[fid].translation
+        fn = proxddp.FrameTranslationResidual(space.ndx, nu, rmodel, p_ref, fid)
+        fn = fn[2]
+        out[fid] = fn
+    return out
+
+
+def create_land_cost(costs, w):
+    fns = create_land_fns()
+    land_cost_w = np.eye(1)
+    for fid, fn in fns.items():
+        land_cost = proxddp.QuadraticResidualCost(space, fn, land_cost_w)
+        costs.addCost(land_cost, w / len(FOOT_FRAME_IDS))
+
+
 stages = []
 for k in range(nsteps):
-    _vf = ode1
+    vf = ode1
     if mask[k]:
-        _vf = ode2
+        vf = ode2
 
-    xreg_cost = proxddp.QuadraticStateCost(space, nu, target=x0_ref, weights=w_x * dt)
+    wxlocal_k = w_x * dt
+    xreg_cost = proxddp.QuadraticStateCost(space, nu, x0_ref, weights=wxlocal_k)
     ureg_cost = proxddp.QuadraticControlCost(space, nu, weights=w_u * dt)
     cost = proxddp.CostStack(space, nu)
     cost.addCost(xreg_cost)
     cost.addCost(ureg_cost)
+    fly_high_cost = create_fly_high_cost(cost)
 
-    dyn_model = dynamics.IntegratorRK2(_vf, timestep=dt)
+    dyn_model = dynamics.IntegratorSemiImplEuler(vf, dt)
     stm = proxddp.StageModel(cost, dyn_model)
+
+    if k == k1:
+        fns = create_land_fns()
+        for fid, fn in fns.items():
+            stm.addConstraint(fn, proxddp.constraints.EqualityConstraintSet())
+
     stages.append(stm)
 
 
-term_cost = proxddp.QuadraticStateCost(space, nu, target=x0_ref, weights=w_x)
+term_cost = proxddp.QuadraticStateCost(space, nu, x0_ref, weights=w_x)
 
 problem = proxddp.TrajOptProblem(x0_ref, stages, term_cost)
 mu_init = 0.1
-solver = proxddp.SolverProxDDP(1e-3, mu_init)
+solver = proxddp.SolverProxDDP(1e-3, mu_init, verbose=proxddp.VERBOSE)
 solver.setup(problem)
 
 
