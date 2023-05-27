@@ -22,7 +22,7 @@ TrajOptProblemTpl<Scalar> convertCrocoddylProblem(
   const crocoddyl::ShootingProblemTpl<Scalar> &cpb = *croc_problem;
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using StageModel = StageModelTpl<Scalar>;
-  using ActionModelWrapper = CrocActionModelWrapperTpl<Scalar>;
+  using ActionModelWrapper = ActionModelWrapperTpl<Scalar>;
 
   const std::size_t nsteps = cpb.get_T();
   const VectorXs &x0 = cpb.get_x0();

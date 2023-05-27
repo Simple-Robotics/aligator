@@ -21,7 +21,7 @@ namespace croc {
  * This data structure rewires an ActionModel into a StageModel object.
  */
 template <typename Scalar>
-struct CrocActionModelWrapperTpl : StageModelTpl<Scalar> {
+struct ActionModelWrapperTpl : StageModelTpl<Scalar> {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageModelTpl<Scalar>;
   using Data = StageDataTpl<Scalar>;
@@ -29,12 +29,12 @@ struct CrocActionModelWrapperTpl : StageModelTpl<Scalar> {
   using Dynamics = typename Base::Dynamics;
   using CrocActionModel = crocoddyl::ActionModelAbstractTpl<Scalar>;
   using StateWrapper = StateWrapperTpl<Scalar>;
-  using ActionDataWrap = CrocActionDataWrapperTpl<Scalar>;
+  using ActionDataWrap = ActionDataWrapperTpl<Scalar>;
   using DynDataWrap = DynamicsDataWrapperTpl<Scalar>;
 
   boost::shared_ptr<CrocActionModel> action_model_;
 
-  explicit CrocActionModelWrapperTpl(
+  explicit ActionModelWrapperTpl(
       boost::shared_ptr<CrocActionModel> action_model);
 
   bool has_dyn_model() const { return false; }
@@ -56,18 +56,23 @@ struct CrocActionModelWrapperTpl : StageModelTpl<Scalar> {
  * to the right places.
  */
 template <typename Scalar>
-struct CrocActionDataWrapperTpl : public StageDataTpl<Scalar> {
+struct ActionDataWrapperTpl : public StageDataTpl<Scalar> {
   using Base = StageDataTpl<Scalar>;
   using CrocActionModel = crocoddyl::ActionModelAbstractTpl<Scalar>;
   using CrocActionData = crocoddyl::ActionDataAbstractTpl<Scalar>;
+  using DynamicsDataWrapper = DynamicsDataWrapperTpl<Scalar>;
 
   boost::shared_ptr<CrocActionData> croc_data;
 
-  CrocActionDataWrapperTpl(
-      const CrocActionModel *croc_action_model,
-      const boost::shared_ptr<CrocActionData> &action_data);
+  ActionDataWrapperTpl(const CrocActionModel *croc_action_model,
+                       const boost::shared_ptr<CrocActionData> &action_data);
 
   void checkData();
+
+protected:
+  // utility pointer
+  shared_ptr<DynamicsDataWrapper> dynamics_data;
+  friend ActionModelWrapperTpl<Scalar>;
 };
 
 } // namespace croc

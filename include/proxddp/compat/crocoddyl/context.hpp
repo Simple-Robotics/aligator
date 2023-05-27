@@ -16,8 +16,8 @@ using StateWrapper = StateWrapperTpl<Scalar>;
 using CostModelWrapper = CrocCostModelWrapperTpl<Scalar>;
 using CostDataWrapper = CrocCostDataWrapperTpl<Scalar>;
 using DynamicsDataWrapper = DynamicsDataWrapperTpl<Scalar>;
-using ActionModelWrapper = CrocActionModelWrapperTpl<Scalar>;
-using ActionDataWrapper = CrocActionDataWrapperTpl<Scalar>;
+using ActionModelWrapper = ActionModelWrapperTpl<Scalar>;
+using ActionDataWrapper = ActionDataWrapperTpl<Scalar>;
 
 using CrocCostModel = crocoddyl::CostModelAbstractTpl<Scalar>;
 using CrocCostData = crocoddyl::CostDataAbstractTpl<Scalar>;

@@ -16,9 +16,9 @@ template <typename Scalar> struct CrocCostDataWrapperTpl;
 
 template <typename Scalar> struct DynamicsDataWrapperTpl;
 
-template <typename Scalar> struct CrocActionModelWrapperTpl;
+template <typename Scalar> struct ActionModelWrapperTpl;
 
-template <typename Scalar> struct CrocActionDataWrapperTpl;
+template <typename Scalar> struct ActionDataWrapperTpl;
 
 } // namespace croc
 } // namespace compat

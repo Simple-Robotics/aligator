@@ -22,8 +22,8 @@ extern template struct CrocCostDataWrapperTpl<context::Scalar>;
 
 extern template struct DynamicsDataWrapperTpl<context::Scalar>;
 
-extern template struct CrocActionModelWrapperTpl<context::Scalar>;
-extern template struct CrocActionDataWrapperTpl<context::Scalar>;
+extern template struct ActionModelWrapperTpl<context::Scalar>;
+extern template struct ActionDataWrapperTpl<context::Scalar>;
 
 
 } // namespace croc
