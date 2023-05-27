@@ -6,3 +6,5 @@ build*/
 *.log
 .cache/
 .clang-format
+
+*.mp4
