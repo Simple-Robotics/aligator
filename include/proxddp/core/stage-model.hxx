@@ -99,7 +99,7 @@ void StageModelTpl<Scalar>::computeDerivatives(const ConstVectorRef &x,
 }
 
 template <typename Scalar>
-shared_ptr<StageDataTpl<Scalar>> StageModelTpl<Scalar>::createData() const {
+auto StageModelTpl<Scalar>::createData() const -> shared_ptr<Data> {
   return std::make_shared<Data>(*this);
 }
 
@@ -138,5 +138,6 @@ StageDataTpl<Scalar>::StageDataTpl(const StageModel &stage_model)
     const shared_ptr<Function> &func = stage_model.constraints_[j].func;
     constraint_data[j] = func->createData();
   }
+  dynamics_data = std::dynamic_pointer_cast<DynamicsData>(constraint_data[0]);
 }
 } // namespace proxddp

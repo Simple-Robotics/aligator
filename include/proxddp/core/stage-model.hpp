@@ -139,13 +139,9 @@ struct StageDataTpl : Cloneable<StageDataTpl<_Scalar>> {
 
   virtual ~StageDataTpl() = default;
 
-  DynamicsData &dyn_data() {
-    return static_cast<DynamicsData &>(*constraint_data[0]);
-  }
+  DynamicsData &dyn_data() { return *dynamics_data; }
 
-  const DynamicsData &dyn_data() const {
-    return static_cast<const DynamicsData &>(*constraint_data[0]);
-  }
+  const DynamicsData &dyn_data() const { return *dynamics_data; }
 
   /// @brief Check data integrity.
   virtual void checkData() {
@@ -156,15 +152,16 @@ struct StageDataTpl : Cloneable<StageDataTpl<_Scalar>> {
     if (cost_data == 0) {
       PROXDDP_RUNTIME_ERROR(fmt::format("{} (cost_data is nullptr)", msg));
     }
-    shared_ptr<const DynamicsData> dd =
-        std::dynamic_pointer_cast<const DynamicsData>(constraint_data[0]);
-    if (dd == nullptr) {
+
+    if (dynamics_data == nullptr) {
       PROXDDP_RUNTIME_ERROR(
           fmt::format("{} (constraint_data[0] should be dynamics data)", msg));
     }
   }
 
 protected:
+  // Shortcut pointer to dynamics' data.
+  shared_ptr<DynamicsData> dynamics_data;
   StageDataTpl() = default;
   virtual StageDataTpl *clone_impl() const override {
     return new StageDataTpl(*this);
