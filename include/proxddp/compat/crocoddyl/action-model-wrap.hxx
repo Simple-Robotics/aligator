@@ -3,6 +3,7 @@
 #pragma once
 
 #include "proxddp/compat/crocoddyl/action-model-wrap.hpp"
+#include "proxddp/core/stage-data.hpp"
 
 namespace proxddp {
 namespace compat {

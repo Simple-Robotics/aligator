@@ -6,6 +6,4 @@ namespace proxddp {
 
 extern template struct StageModelTpl<context::Scalar>;
 
-extern template struct StageDataTpl<context::Scalar>;
-
-}
+} // namespace proxddp

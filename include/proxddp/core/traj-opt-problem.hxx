@@ -1,6 +1,7 @@
 #pragma once
 
 #include "proxddp/core/traj-opt-problem.hpp"
+#include "proxddp/core/stage-data.hpp"
 #include "proxddp/utils/exceptions.hpp"
 #include "proxddp/utils/mpc-util.hpp"
 #include "proxddp/threads.hpp"

@@ -3,6 +3,7 @@
 #include "proxddp/python/fwd.hpp"
 
 #include "proxddp/core/stage-model.hpp"
+#include "proxddp/core/stage-data.hpp"
 
 namespace proxddp {
 namespace python {
