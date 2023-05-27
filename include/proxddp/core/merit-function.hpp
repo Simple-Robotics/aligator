@@ -12,20 +12,7 @@ namespace proxddp {
 
 template <typename Scalar>
 Scalar cost_directional_derivative(const WorkspaceTpl<Scalar> &workspace,
-                                   const TrajOptDataTpl<Scalar> &prob_data) {
-  Scalar d1 = 0.;
-  const std::size_t nsteps = workspace.nsteps;
-  for (std::size_t i = 0; i < nsteps; i++) {
-    const StageDataTpl<Scalar> &sd = prob_data.getStageData(i);
-    const CostDataAbstractTpl<Scalar> &cd = *sd.cost_data;
-    d1 += cd.Lx_.dot(workspace.dxs[i]);
-    d1 += cd.Lu_.dot(workspace.dus[i]);
-  }
-
-  const CostDataAbstractTpl<Scalar> &tcd = *prob_data.term_cost_data;
-  d1 += tcd.Lx_.dot(workspace.dxs[nsteps]);
-  return d1;
-}
+                                   const TrajOptDataTpl<Scalar> &prob_data);
 
 /** @brief Primal-dual augmented Lagrangian merit function.
  *
@@ -86,15 +73,7 @@ template <typename _Scalar> struct PDALFunction {
   /// @brief   Compute the proximal penalty in the state-control trajectory.
   /// @warning Compute the proximal penalty for each timestep first.
   static Scalar computeProxPenalty(const SolverType *solver,
-                                   const Workspace &workspace) {
-    Scalar res = 0.;
-    const Scalar rho = solver->rho();
-    const std::size_t nsteps = workspace.nsteps;
-    for (std::size_t i = 0; i <= nsteps; i++) {
-      res += rho * workspace.prox_datas[i]->value_;
-    }
-    return res;
-  }
+                                   const Workspace &workspace);
 };
 
 } // namespace proxddp

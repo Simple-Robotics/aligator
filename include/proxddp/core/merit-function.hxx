@@ -5,6 +5,23 @@
 namespace proxddp {
 
 template <typename Scalar>
+Scalar cost_directional_derivative(const WorkspaceTpl<Scalar> &workspace,
+                                   const TrajOptDataTpl<Scalar> &prob_data) {
+  Scalar d1 = 0.;
+  const std::size_t nsteps = workspace.nsteps;
+  for (std::size_t i = 0; i < nsteps; i++) {
+    const StageDataTpl<Scalar> &sd = prob_data.getStageData(i);
+    const CostDataAbstractTpl<Scalar> &cd = *sd.cost_data;
+    d1 += cd.Lx_.dot(workspace.dxs[i]);
+    d1 += cd.Lu_.dot(workspace.dus[i]);
+  }
+
+  const CostDataAbstractTpl<Scalar> &tcd = *prob_data.term_cost_data;
+  d1 += tcd.Lx_.dot(workspace.dxs[nsteps]);
+  return d1;
+}
+
+template <typename Scalar>
 Scalar PDALFunction<Scalar>::evaluate(const SolverType *solver,
                                       const TrajOptProblem &problem,
                                       const std::vector<VectorXs> &lams,
@@ -160,5 +177,17 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
   }
 
   return d1;
+}
+
+template <typename Scalar>
+Scalar PDALFunction<Scalar>::computeProxPenalty(const SolverType *solver,
+                                                const Workspace &workspace) {
+  Scalar res = 0.;
+  const Scalar rho = solver->rho();
+  const std::size_t nsteps = workspace.nsteps;
+  for (std::size_t i = 0; i <= nsteps; i++) {
+    res += rho * workspace.prox_datas[i]->value_;
+  }
+  return res;
 }
 } // namespace proxddp
