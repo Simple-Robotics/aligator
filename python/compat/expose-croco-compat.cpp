@@ -23,6 +23,7 @@ void exposeCrocoddylCompat() {
   using StateAbstract = crocoddyl::StateAbstractTpl<Scalar>;
   using ns_croc::context::ActionDataWrapper;
   using ns_croc::context::ActionModelWrapper;
+  using ns_croc::context::DynamicsDataWrapper;
   using ns_croc::context::StateWrapper;
 
   bp::register_ptr_to_python<shared_ptr<ActionModelWrapper>>();
@@ -35,8 +36,14 @@ void exposeCrocoddylCompat() {
   bp::register_ptr_to_python<shared_ptr<ActionDataWrapper>>();
   bp::class_<ActionDataWrapper, bp::bases<context::StageData>>(
       "ActionDataWrapper", bp::no_init)
-      .def_readonly("croc_data", &ActionDataWrapper::croc_data,
+      .def(bp::init<const boost::shared_ptr<CrocActionModel> &>(
+          bp::args("self", "croc_action_model")))
+      .def_readonly("croc_action_data", &ActionDataWrapper::croc_action_data,
                     "Underlying Crocoddyl action data.");
+
+  bp::class_<DynamicsDataWrapper, bp::bases<context::FunctionData>>(
+      "DynamicsDataWrapper", bp::no_init)
+      .def(bp::init<const CrocActionModel &>(bp::args("self", "action_model")));
 
   bp::class_<StateWrapper, bp::bases<context::Manifold>>(
       "StateWrapper", "Wrapper for a Crocoddyl state.", bp::no_init)

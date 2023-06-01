@@ -62,10 +62,10 @@ struct ActionDataWrapperTpl : public StageDataTpl<Scalar> {
   using CrocActionData = crocoddyl::ActionDataAbstractTpl<Scalar>;
   using DynamicsDataWrapper = DynamicsDataWrapperTpl<Scalar>;
 
-  boost::shared_ptr<CrocActionData> croc_data;
+  boost::shared_ptr<CrocActionData> croc_action_data;
 
-  ActionDataWrapperTpl(const CrocActionModel *croc_action_model,
-                       const boost::shared_ptr<CrocActionData> &action_data);
+  ActionDataWrapperTpl(
+      const boost::shared_ptr<CrocActionModel> &croc_action_model);
 
   void checkData();
 
