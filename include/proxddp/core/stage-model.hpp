@@ -116,6 +116,10 @@ protected:
 
 } // namespace proxddp
 
+template <typename Scalar>
+struct fmt::formatter<proxddp::StageModelTpl<Scalar>> : fmt::ostream_formatter {
+};
+
 #include "proxddp/core/stage-model.hxx"
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION

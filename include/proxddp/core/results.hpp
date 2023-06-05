@@ -35,6 +35,9 @@ std::ostream &operator<<(std::ostream &oss, const ResultsTpl<Scalar> &self) {
 
 } // namespace proxddp
 
+template <typename Scalar>
+struct fmt::formatter<proxddp::ResultsTpl<Scalar>> : fmt::ostream_formatter {};
+
 #include "proxddp/core/results.hxx"
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION

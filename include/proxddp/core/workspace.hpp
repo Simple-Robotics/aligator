@@ -113,6 +113,10 @@ allocate_ldlt_algorithm(const std::vector<isize> &nprims,
 
 } // namespace proxddp
 
+template <typename Scalar>
+struct fmt::formatter<proxddp::WorkspaceTpl<Scalar>> : fmt::ostream_formatter {
+};
+
 #include "proxddp/core/workspace.hxx"
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
