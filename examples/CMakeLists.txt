@@ -14,7 +14,8 @@ set(EXAMPLES_WITH_CROC_CPP "bench/croc-talos-arm.cpp" "bench/multithreading.cpp"
 
 message(STATUS "Crocoddyl support: ${BUILD_CROCODDYL_COMPAT}")
 if(BUILD_CROCODDYL_COMPAT)
-  add_project_dependency(crocoddyl REQUIRED)
+  find_package(crocoddyl REQUIRED)
+  find_package(example-robot-data REQUIRED)
   list(APPEND BENCHMARKS_CPP bench/croc-talos-arm.cpp bench/multithreading.cpp)
   list(APPEND EXAMPLES_CPP talos-arm.cpp)
 endif()
@@ -30,6 +31,7 @@ macro(create_ex_or_bench exfile exname)
   target_include_directories(${exname} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
   target_link_libraries(${exname} PUBLIC ${PROJECT_NAME})
+  target_link_libraries(${exname} PUBLIC example-robot-data::example-robot-data)
   if(BUILD_WITH_OPENMP_SUPPORT)
     target_link_libraries(${exname} PRIVATE OpenMP::OpenMP_CXX)
   endif()
@@ -69,6 +71,7 @@ endforeach(exfile)
 
 if(BUILD_CROCODDYL_COMPAT)
   target_link_libraries(example-talos-arm PUBLIC proxnlp::cnpy)
+  target_link_libraries(example-talos-arm PUBLIC example-robot-data::example-robot-data)
 endif()
 
 file(GLOB EXAMPLES_PY *.py)
