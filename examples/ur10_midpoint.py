@@ -47,8 +47,8 @@ ee_pos_target = np.array([1.0, 0.0, 1.0]) * 0.707
 
 
 def define_cost():
-    w_x = np.ones(ndx) * 1e-3
-    w_x[nv:] = 6e-2
+    w_x = np.ones(ndx) * 1e-4
+    w_x[nv:] = 1e-2
     w_u = 1e-3
     costs = proxddp.CostStack(space, nu)
     xreg = proxddp.QuadraticStateCost(space, nu, space.neutral(), np.diag(w_x) * dt)
@@ -70,6 +70,10 @@ def define_cost():
 
 running_cost, term_cost = define_cost()
 stm = proxddp.StageModel(running_cost, dyn_model)
+ctrl_fn = proxddp.ControlErrorResidual(ndx, np.zeros(nu))
+stm.addConstraint(
+    ctrl_fn, proxddp.constraints.BoxConstraint(-rmodel.effortLimit, rmodel.effortLimit)
+)
 stages = [stm] * nsteps
 problem = proxddp.TrajOptProblem(x0, stages, term_cost)
 
@@ -77,6 +81,7 @@ problem = proxddp.TrajOptProblem(x0, stages, term_cost)
 if __name__ == "__main__":
     from meshcat import Visualizer
     import hppfcl
+    import matplotlib.pyplot as plt
 
     obj_placement = pin.SE3.Identity()
     obj_placement.translation = ee_pos_target
@@ -95,7 +100,7 @@ if __name__ == "__main__":
     viz.play(qs_i, dt)
 
     solver = proxddp.SolverProxDDP(1e-3, 0.01, verbose=proxddp.VERBOSE)
-    solver.rollout_max_iters = 4
+    solver.rollout_max_iters = 10
     solver.max_iters = 200
     solver.setup(problem)
     solver.run(problem, xs_i, us_i)
@@ -107,3 +112,13 @@ if __name__ == "__main__":
     us_opt = results.us
     qs_opt = [x[:nq] for x in results.xs]
     viz.play(qs_opt, dt)
+
+    times = np.linspace(0.0, tf, nsteps + 1)
+    fig, axes = plt.subplots(2, 3)
+    axes = axes.flatten()
+    for i in range(nu):
+        plt.sca(axes[i])
+        plt.plot(times[:-1], np.stack(us_opt)[:, i])
+        plt.hlines(-rmodel.effortLimit[i], 0.0, tf, colors="k", linestyles="--")
+        plt.hlines(+rmodel.effortLimit[i], 0.0, tf, colors="k", linestyles="--")
+    plt.show()
