@@ -12,12 +12,6 @@ template <typename Scalar> struct NewtonRaphson {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Manifold = ManifoldAbstractTpl<Scalar>;
 
-  struct DataView {
-    VectorRef f0;  // fun value
-    VectorRef dx0; // workspace for the newton step
-    MatrixRef J0;  // fun jacobian
-  };
-
   struct Options {
     Scalar alpha_min = 1e-4;
     Scalar ls_beta = 0.7071;
@@ -26,14 +20,11 @@ template <typename Scalar> struct NewtonRaphson {
 
   template <typename Fun, typename JacFun>
   static bool run(const Manifold &space, Fun &&fun, JacFun &&jac_fun,
-                  const ConstVectorRef &xinit, VectorRef xout, DataView &data,
-                  Scalar eps = 1e-6, std::size_t max_iters = 1000,
-                  Options options = Options{}) {
+                  const ConstVectorRef &xinit, VectorRef xout, VectorRef f0,
+                  VectorRef dx, MatrixRef Jf0, Scalar eps = 1e-6,
+                  std::size_t max_iters = 1000, Options options = Options{}) {
 
     xout = xinit;
-    VectorRef &f0 = data.f0;
-    VectorRef &dx = data.dx0;
-    MatrixRef &Jf0 = data.J0;
 
     fun(xout, f0);
 

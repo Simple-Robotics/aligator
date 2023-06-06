@@ -31,8 +31,6 @@ struct __forward_dyn final {
       // create NewtonRaph algo's data
       Vector<T> dx0buf(model.ndx2);
       dx0buf.setZero();
-      typename NewtonRaphson<T>::DataView nr_data{data.value_, dx0buf,
-                                                  data.Jy_};
       NewtonRaphson<T>::run(
           model.space_next(),
           [&](const ConstVectorRef<T> &xnext, VectorRef<T> out) {
@@ -45,7 +43,7 @@ struct __forward_dyn final {
             model.computeJacobians(x, u, xnext, data);
             Jout = data.Jy_;
           },
-          x, xout, nr_data, EPS, max_iters);
+          x, xout, data.value_, dx0buf, data.Jy_, EPS, max_iters);
     }
   }
 

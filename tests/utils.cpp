@@ -37,10 +37,9 @@ BOOST_AUTO_TEST_CASE(newton_raphson) {
   jacobian.setZero();
   // desired precision
   Scalar eps = 1e-6;
-  // data buffer for the algorithm
-  NR_t::DataView data{err, dx, jacobian};
 
-  bool conv = NR_t::run(space, fun, jac_fun, xinit, xout, data, eps, 10);
+  bool conv =
+      NR_t::run(space, fun, jac_fun, xinit, xout, err, dx, jacobian, eps, 10);
 
   // actual answer
   VectorXs xans = VectorXs::Ones(nx);
