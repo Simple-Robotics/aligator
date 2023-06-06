@@ -38,8 +38,8 @@ print(f"nv={nv}")
 
 tf = 1.0
 nsteps = int(tf / dt)
-u0 = np.zeros(nu)
 x0 = space.neutral()
+u0 = pin.rnea(rmodel, rdata, q=x0[:nq], v=x0[nq:], a=np.zeros(nv))
 us_i = [u0] * nsteps
 xs_i = proxddp.rollout_implicit(dyn_model, x0, us_i)
 qs_i = [x[:nq] for x in xs_i]
@@ -47,19 +47,20 @@ ee_pos_target = np.array([1.0, 0.0, 1.0]) * 0.707
 
 
 def define_cost():
-    w_x = 1e-3
+    w_x = np.ones(ndx) * 1e-3
+    w_x[nv:] = 6e-2
     w_u = 1e-3
     costs = proxddp.CostStack(space, nu)
-    xreg = proxddp.QuadraticStateCost(space, nu, space.neutral(), np.eye(ndx) * dt)
+    xreg = proxddp.QuadraticStateCost(space, nu, space.neutral(), np.diag(w_x) * dt)
     ureg = proxddp.QuadraticControlCost(space, nu, np.eye(nu) * dt)
-    costs.addCost(xreg, w_x)
+    costs.addCost(xreg)
     costs.addCost(ureg, w_u)
 
     frame_name = "ee_link"
     ee_id = rmodel.getFrameId(frame_name)
     frame_err = proxddp.FrameTranslationResidual(ndx, nu, rmodel, ee_pos_target, ee_id)
 
-    w_frame = np.eye(3) * 4.0
+    w_frame = np.eye(3) * 6.0
     term_cost = proxddp.CostStack(space, nu)
     frame_cost = proxddp.QuadraticResidualCost(space, frame_err, w_frame)
     term_cost.addCost(frame_cost)
@@ -88,12 +89,14 @@ if __name__ == "__main__":
     viz = MeshcatVisualizer(rmodel, robot.collision_model, visual_model, data=rdata)
     viz.initViewer(viewer_, loadModel=True)
     viz.setBackgroundColor()
+    viz.display(qs_i[0])
 
     input("[press enter]")
     viz.play(qs_i, dt)
 
     solver = proxddp.SolverProxDDP(1e-3, 0.01, verbose=proxddp.VERBOSE)
     solver.rollout_max_iters = 4
+    solver.max_iters = 200
     solver.setup(problem)
     solver.run(problem, xs_i, us_i)
 
