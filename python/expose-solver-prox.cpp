@@ -84,6 +84,9 @@ void exposeProxDDP() {
                      "Initial proximal regularization.")
       .def_readwrite("mu_min", &SolverType::MU_MIN,
                      "Lower bound on the AL penalty parameter.")
+      .def_readwrite(
+          "rollout_max_iters", &SolverType::rollout_max_iters,
+          "Maximum number of iterations when solving the forward dynamics.")
       .def_readwrite("ls_mode", &SolverType::ls_mode, "Linesearch mode.")
       .def_readwrite("rollout_type", &SolverType::rollout_type_,
                      "Rollout type.")

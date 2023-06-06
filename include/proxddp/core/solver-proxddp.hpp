@@ -126,6 +126,9 @@ public:
   /// Minimum possible penalty parameter.
   Scalar MU_MIN = 1e-8;
 
+  /// Nonlinear rollout options
+  uint rollout_max_iters;
+
 private:
   /// Callbacks
   CallbackMap callbacks_;

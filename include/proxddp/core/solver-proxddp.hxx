@@ -22,7 +22,7 @@ SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
                                      HessianApprox hess_approx)
     : target_tol_(tol), mu_init(mu_init), rho_init(rho_init), verbose_(verbose),
       hess_approx_(hess_approx), ldlt_algo_choice_(LDLTChoice::DENSE),
-      max_iters(max_iters), linesearch_(ls_params) {
+      max_iters(max_iters), rollout_max_iters(1), linesearch_(ls_params) {
   ls_params.interp_type = proxnlp::LSInterpolation::CUBIC;
 }
 
@@ -609,7 +609,8 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
       if (dm.is_explicit()) {
         explicit_model_update_xnext();
       } else {
-        forwardDynamics(dm, xs[i], us[i], dd, xs[i + 1], 1, &dyn_slacks[i]);
+        forwardDynamics(dm, xs[i], us[i], dd, xs[i + 1], rollout_max_iters,
+                        &dyn_slacks[i]);
       }
     } else {
       // otherwise assume explicit dynamics model
