@@ -2,6 +2,7 @@
 
 #include "proxddp/core/explicit-dynamics.hpp"
 #include "proxddp/utils/newton-raphson.hpp"
+#include <boost/optional.hpp>
 
 namespace proxddp {
 
@@ -17,8 +18,9 @@ struct __forward_dyn final {
   template <typename T>
   void operator()(const DynamicsModelTpl<T> &model, const ConstVectorRef<T> &x,
                   const ConstVectorRef<T> &u, DynamicsDataTpl<T> &data,
-                  VectorRef<T> xout, const std::size_t max_iters = 1000,
-                  Vector<T> *gap = 0, double EPS = 1e-6) const {
+                  VectorRef<T> xout,
+                  const boost::optional<ConstVectorRef<T>> &gap = boost::none,
+                  const uint max_iters = 1000, const T EPS = 1e-6) const {
     using ExpModel = ExplicitDynamicsModelTpl<T>;
     using ExpData = ExplicitDynamicsDataTpl<T>;
     using MatrixRef = typename math_types<T>::MatrixRef;
@@ -26,7 +28,7 @@ struct __forward_dyn final {
     if (model.is_explicit()) {
       const auto &model_cast = static_cast<const ExpModel &>(model);
       auto &data_cast = static_cast<ExpData &>(data);
-      (*this)(model_cast, x, u, data_cast, xout, max_iters, gap);
+      (*this)(model_cast, x, u, data_cast, xout, gap);
     } else {
       // create NewtonRaph algo's data
       Vector<T> dx0buf(model.ndx2);
@@ -36,7 +38,7 @@ struct __forward_dyn final {
           [&](const ConstVectorRef<T> &xnext, VectorRef<T> out) {
             model.evaluate(x, u, xnext, data);
             out = data.value_;
-            if (gap != 0)
+            if (gap.has_value())
               out += *gap;
           },
           [&](const ConstVectorRef<T> &xnext, MatrixRef Jout) {
@@ -48,13 +50,14 @@ struct __forward_dyn final {
   }
 
   template <typename T>
-  void operator()(const ExplicitDynamicsModelTpl<T> &model,
-                  const ConstVectorRef<T> &x, const ConstVectorRef<T> &u,
-                  ExplicitDynamicsDataTpl<T> &data, VectorRef<T> xout,
-                  const std::size_t = 0, Vector<T> *gap = 0) const {
+  void operator()(
+      const ExplicitDynamicsModelTpl<T> &model, const ConstVectorRef<T> &x,
+      const ConstVectorRef<T> &u, ExplicitDynamicsDataTpl<T> &data,
+      VectorRef<T> xout,
+      const boost::optional<ConstVectorRef<T>> &gap = boost::none) const {
     model.forward(x, u, data);
     xout = data.xnext_;
-    if (gap != 0) {
+    if (gap.has_value()) {
       model.space_next().integrate(xout, *gap, xout);
     }
   }

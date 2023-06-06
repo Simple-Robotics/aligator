@@ -609,8 +609,8 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
       if (dm.is_explicit()) {
         explicit_model_update_xnext();
       } else {
-        forwardDynamics(dm, xs[i], us[i], dd, xs[i + 1], rollout_max_iters,
-                        &dyn_slacks[i]);
+        ConstVectorRef ds = dyn_slacks[i];
+        forwardDynamics(dm, xs[i], us[i], dd, xs[i + 1], ds, rollout_max_iters);
       }
     } else {
       // otherwise assume explicit dynamics model
