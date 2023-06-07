@@ -12,10 +12,10 @@ set(BENCHMARKS_CPP "bench/lqr.cpp")
 
 set(EXAMPLES_WITH_CROC_CPP "bench/croc-talos-arm.cpp" "bench/multithreading.cpp" "talos-arm.cpp")
 
+find_package(example-robot-data REQUIRED)
 message(STATUS "Crocoddyl support: ${BUILD_CROCODDYL_COMPAT}")
 if(BUILD_CROCODDYL_COMPAT)
   find_package(crocoddyl REQUIRED)
-  find_package(example-robot-data REQUIRED)
   list(APPEND BENCHMARKS_CPP bench/croc-talos-arm.cpp bench/multithreading.cpp)
   list(APPEND EXAMPLES_CPP talos-arm.cpp)
 endif()
@@ -71,7 +71,6 @@ endforeach(exfile)
 
 if(BUILD_CROCODDYL_COMPAT)
   target_link_libraries(example-talos-arm PUBLIC proxnlp::cnpy)
-  target_link_libraries(example-talos-arm PUBLIC example-robot-data::example-robot-data)
 endif()
 
 file(GLOB EXAMPLES_PY *.py)
