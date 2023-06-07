@@ -7,7 +7,7 @@ import example_robot_data as erd
 import matplotlib.pyplot as plt
 
 from proxddp import manifolds, constraints, dynamics
-from common import ArgsBase, compute_quasistatic, get_endpoint_traj
+from utils import ArgsBase, compute_quasistatic, get_endpoint_traj
 
 
 class Args(ArgsBase):

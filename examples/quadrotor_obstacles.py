@@ -16,7 +16,7 @@ import proxddp
 from proxddp import manifolds
 from proxnlp import constraints
 
-from common import ArgsBase
+from utils import ArgsBase
 
 robot = erd.load("hector")
 rmodel = robot.model

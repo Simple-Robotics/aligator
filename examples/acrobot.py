@@ -4,7 +4,7 @@ from proxddp import manifolds, dynamics, constraints
 import numpy as np
 import pinocchio as pin
 
-from common import ArgsBase
+from utils import ArgsBase
 
 
 class Args(ArgsBase):

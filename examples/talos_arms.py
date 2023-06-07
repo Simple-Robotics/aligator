@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import time
 
 from proxddp import manifolds, dynamics, constraints
-from common import get_endpoint_traj, compute_quasistatic, ArgsBase
+from utils import get_endpoint_traj, compute_quasistatic, ArgsBase
 from utils import load_talos_upper_body
 
 

@@ -9,7 +9,7 @@ import matplotlib.gridspec as gridspec
 from proxddp import constraints, manifolds, dynamics  # noqa
 from pinocchio.visualize import MeshcatVisualizer
 
-from common import ArgsBase, get_endpoint_traj
+from utils import ArgsBase, get_endpoint_traj
 
 
 class Args(ArgsBase):

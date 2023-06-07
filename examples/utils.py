@@ -1,7 +1,61 @@
+"""
+Common utilities for examples.
+"""
 import numpy as np
 import pinocchio as pin
 import hppfcl as fcl
 import example_robot_data as erd
+import tap
+
+import matplotlib.pyplot as plt
+from typing import Literal, List
+
+
+plt.rcParams["lines.linewidth"] = 1.0
+plt.rcParams["lines.markersize"] = 5
+
+integrator_choices = Literal["euler", "semieuler", "midpoint", "rk2"]
+
+
+class ArgsBase(tap.Tap):
+    display: bool = False  # Display the trajectory using meshcat
+    record: bool = False  # record video
+    plot: bool = False
+    integrator: integrator_choices = "semieuler"
+    """Numerical integrator to use"""
+
+
+def plot_se2_pose(q: np.ndarray, ax: plt.Axes, alpha=0.5, fc="tab:blue"):
+    from matplotlib import transforms
+
+    w = 1.0
+    h = 0.4
+    center = (q[0] - 0.5 * w, q[1] - 0.5 * h)
+    rect = plt.Rectangle(center, w, h, fc=fc, alpha=alpha)
+    theta = np.arctan2(q[3], q[2])
+    transform_ = transforms.Affine2D().rotate_around(*q[:2], -theta) + ax.transData
+    rect.set_transform(transform_)
+    ax.add_patch(rect)
+    return rect
+
+
+def get_endpoint(rmodel, rdata, q: np.ndarray, tool_id: int):
+    pin.framesForwardKinematics(rmodel, rdata, q)
+    return rdata.oMf[tool_id].translation.copy()
+
+
+def get_endpoint_traj(rmodel, rdata, xs: List[np.ndarray], tool_id: int):
+    pts = []
+    for i in range(len(xs)):
+        pts.append(get_endpoint(rmodel, rdata, xs[i][: rmodel.nq], tool_id))
+    return np.array(pts)
+
+
+def compute_quasistatic(model: pin.Model, data: pin.Data, x0, acc):
+    nq = model.nq
+    q0 = x0[:nq]
+    v0 = x0[nq:]
+    return pin.rnea(model, data, q0, v0, acc)
 
 
 def create_cartpole(N):
