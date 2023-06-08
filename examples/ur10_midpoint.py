@@ -18,13 +18,10 @@ class Args(tap.Tap):
 robot = erd.load("ur10_limited")
 rmodel: pin.Model = robot.model
 visual_model = robot.visual_model
-rdata: pin.Data = robot.data
-
 space = manifolds.MultibodyPhaseSpace(rmodel)
 
 # 20 ms
 args = Args().parse_args()
-
 dt = args.dt
 ode = dynamics.MultibodyFreeFwdDynamics(space)
 dyn_model = dynamics.IntegratorMidpoint(ode, dt)
@@ -39,20 +36,19 @@ print(f"nv={nv}")
 tf = 1.0
 nsteps = int(tf / dt)
 x0 = space.neutral()
-u0 = pin.rnea(rmodel, rdata, q=x0[:nq], v=x0[nq:], a=np.zeros(nv))
+u0 = pin.rnea(rmodel, robot.data, q=x0[:nq], v=x0[nq:], a=np.zeros(nv))
 us_i = [u0] * nsteps
 xs_i = proxddp.rollout_implicit(dyn_model, x0, us_i)
-qs_i = [x[:nq] for x in xs_i]
-ee_pos_target = np.array([1.0, 0.0, 1.0]) * 0.707
+ee_pos_target = np.array([0.5, 0.7, 1.2]) * 0.707
 
 
 def define_cost():
-    w_x = np.ones(ndx) * 1e-4
-    w_x[nv:] = 1e-2
+    w_x = np.ones(ndx) * 1e-6
+    w_x[nv:] = 5e-2
     w_u = 1e-3
     costs = proxddp.CostStack(space, nu)
     xreg = proxddp.QuadraticStateCost(space, nu, space.neutral(), np.diag(w_x) * dt)
-    ureg = proxddp.QuadraticControlCost(space, nu, np.eye(nu) * dt)
+    ureg = proxddp.QuadraticControlCost(space, u0, np.eye(nu) * dt)
     costs.addCost(xreg)
     costs.addCost(ureg, w_u)
 
@@ -82,6 +78,9 @@ if __name__ == "__main__":
     from meshcat import Visualizer
     import hppfcl
     import matplotlib.pyplot as plt
+    import seaborn as sns
+
+    sns.set_theme("paper", "ticks")
 
     obj_placement = pin.SE3.Identity()
     obj_placement.translation = ee_pos_target
@@ -90,16 +89,17 @@ if __name__ == "__main__":
     obj_geom.meshColor /= 255.0
     visual_model.addGeometryObject(obj_geom)
 
-    viewer_ = Visualizer(zmq_url=args.zmq_url)
-    viz = MeshcatVisualizer(rmodel, robot.collision_model, visual_model, data=rdata)
-    viz.initViewer(viewer_, loadModel=True)
-    viz.setBackgroundColor()
-    viz.display(qs_i[0])
+    if args.display:
+        viewer_ = Visualizer(zmq_url=args.zmq_url)
+        viz = MeshcatVisualizer(
+            rmodel, robot.collision_model, visual_model, data=robot.data
+        )
+        viz.initViewer(viewer_, loadModel=True)
+        viz.setBackgroundColor()
+        viz.display(robot.q0)
 
-    input("[press enter]")
-    viz.play(qs_i, dt)
-
-    solver = proxddp.SolverProxDDP(1e-3, 0.01, verbose=proxddp.VERBOSE)
+    tol = 1e-3
+    solver = proxddp.SolverProxDDP(tol, 0.01, verbose=proxddp.VERBOSE)
     solver.rollout_max_iters = 10
     solver.max_iters = 200
     solver.setup(problem)
@@ -107,18 +107,26 @@ if __name__ == "__main__":
 
     results: proxddp.Results = solver.results
     print(results)
-
-    input("[press enter - optimized trajectory]")
     us_opt = results.us
-    qs_opt = [x[:nq] for x in results.xs]
-    viz.play(qs_opt, dt)
+
+    if args.display:
+        input("[press enter - optimized trajectory]")
+        qs_opt = [x[:nq] for x in results.xs]
+        viz.play(qs_opt, dt)
 
     times = np.linspace(0.0, tf, nsteps + 1)
-    fig, axes = plt.subplots(2, 3)
+    fig, axes = plt.subplots(3, 2, sharex="col", figsize=(6.4, 6.4))
     axes = axes.flatten()
     for i in range(nu):
         plt.sca(axes[i])
-        plt.plot(times[:-1], np.stack(us_opt)[:, i])
+        plt.step(times[:-1], np.stack(us_opt)[:, i])
+        ylim = plt.ylim()
         plt.hlines(-rmodel.effortLimit[i], 0.0, tf, colors="k", linestyles="--")
         plt.hlines(+rmodel.effortLimit[i], 0.0, tf, colors="k", linestyles="--")
+        plt.ylim(*ylim)
+        joint_name = rmodel.names[i]
+        plt.ylabel(joint_name.lower())
+    fig.supxlabel("Time $t$")
+    plt.suptitle("Controls trajectory")
+    plt.tight_layout()
     plt.show()

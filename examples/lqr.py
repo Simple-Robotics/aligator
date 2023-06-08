@@ -110,6 +110,8 @@ test_check_num_iters(res)
 print(res)
 
 plt.subplot(121)
+fig: plt.Figure = plt.gcf()
+
 lstyle = {"lw": 0.9, "marker": ".", "markersize": 5}
 trange = np.arange(nsteps + 1)
 plt.plot(res.xs, ls="-", **lstyle)
@@ -133,8 +135,8 @@ if args.term_cstr:
         alpha=0.4,
         label=r"$x_\mathrm{tar}$",
     )
-plt.xlabel("Time $i$")
 plt.title("State trajectory $x(t)$")
+plt.xlabel("Time $i$")
 plt.legend(frameon=False)
 
 plt.subplot(122)
@@ -149,12 +151,13 @@ if args.bounds:
         alpha=0.2,
         label=r"$\bar{u}$",
     )
+plt.xlabel("Time $i$")
 plt.title("Controls $u(t)$")
 plt.legend(frameon=False)
 plt.tight_layout()
 
 
-plt.figure()
+fig: plt.Figure = plt.figure()
 prim_infeas = his_cb.storage.prim_infeas
 dual_infeas = his_cb.storage.dual_infeas
 plt.plot(prim_infeas)
