@@ -202,3 +202,25 @@ def load_talos_upper_body():
     locked_joints += [32, 33]
     red_bot = robot.buildReducedRobot(locked_joints, qref)
     return red_bot
+
+
+def add_namespace_prefix_to_models(model, collision_model, visual_model, namespace):
+    """
+    Lifted from this GitHub discussion:
+    https://github.com/stack-of-tasks/pinocchio/discussions/1841
+    """
+    # Rename geometry objects in collision model:
+    for geom in collision_model.geometryObjects:
+        geom.name = f"{namespace}/{geom.name}"
+
+    # Rename geometry objects in visual model:
+    for geom in visual_model.geometryObjects:
+        geom.name = f"{namespace}/{geom.name}"
+
+    # Rename frames in model:
+    for f in model.frames:
+        f.name = f"{namespace}/{f.name}"
+
+    # Rename joints in model:
+    for k in range(len(model.names)):
+        model.names[k] = f"{namespace}/{model.names[k]}"
