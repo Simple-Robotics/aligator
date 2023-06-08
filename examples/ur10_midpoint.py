@@ -5,6 +5,7 @@ import proxddp
 import tap
 
 from proxddp import dynamics, manifolds
+from utils import plot_controls_traj
 from pinocchio.visualize import MeshcatVisualizer
 
 
@@ -115,18 +116,5 @@ if __name__ == "__main__":
         viz.play(qs_opt, dt)
 
     times = np.linspace(0.0, tf, nsteps + 1)
-    fig, axes = plt.subplots(3, 2, sharex="col", figsize=(6.4, 6.4))
-    axes = axes.flatten()
-    for i in range(nu):
-        plt.sca(axes[i])
-        plt.step(times[:-1], np.stack(us_opt)[:, i])
-        ylim = plt.ylim()
-        plt.hlines(-rmodel.effortLimit[i], 0.0, tf, colors="k", linestyles="--")
-        plt.hlines(+rmodel.effortLimit[i], 0.0, tf, colors="k", linestyles="--")
-        plt.ylim(*ylim)
-        joint_name = rmodel.names[i]
-        plt.ylabel(joint_name.lower())
-    fig.supxlabel("Time $t$")
-    plt.suptitle("Controls trajectory")
-    plt.tight_layout()
+    plot_controls_traj(times, us_opt, rmodel=rmodel)
     plt.show()

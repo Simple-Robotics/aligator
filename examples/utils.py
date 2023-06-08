@@ -224,3 +224,43 @@ def add_namespace_prefix_to_models(model, collision_model, visual_model, namespa
     # Rename joints in model:
     for k in range(len(model.names)):
         model.names[k] = f"{namespace}/{model.names[k]}"
+
+
+def plot_controls_traj(
+    times,
+    us,
+    ncols=2,
+    axes=None,
+    effort_limit=None,
+    joint_names=None,
+    rmodel: pin.Model = None,
+):
+    tf = times[-1]
+    us = np.asarray(us)
+    nu = us.shape[1]
+    nrows, r = divmod(nu, ncols)
+    nrows += int(r > 0)
+    if axes is None:
+        fig, axes = plt.subplots(nrows, ncols, sharex="col", figsize=(6.4, 6.4))
+    else:
+        fig = axes[0].get_figure()
+
+    if rmodel is not None:
+        effort_limit = rmodel.effortLimit
+        joint_names = rmodel.names
+
+    axes = axes.flatten()
+    for i in range(nu):
+        ax: plt.Axes = axes[i]
+        ax.step(times[:-1], us[:, i])
+        if effort_limit is not None:
+            ylim = ax.get_ylim()
+            ax.hlines(-effort_limit[i], 0.0, tf, colors="k", linestyles="--")
+            ax.hlines(+effort_limit[i], 0.0, tf, colors="k", linestyles="--")
+            ax.set_ylim(*ylim)
+        if joint_names is not None:
+            joint_name = joint_names[i].lower()
+            ax.set_ylabel(joint_name)
+    fig.supxlabel("Time $t$")
+    fig.suptitle("Controls trajectory")
+    fig.tight_layout()
