@@ -208,16 +208,15 @@ auto SolverProxDDP<Scalar>::backwardPass(const Problem &problem)
 
 template <typename Scalar>
 void SolverProxDDP<Scalar>::computeMultipliers(
-    const Problem &problem, Workspace &workspace,
-    const std::vector<VectorXs> &lams) const {
+    const Problem &problem, const std::vector<VectorXs> &lams) {
 
-  TrajOptData &prob_data = workspace.problem_data;
-  const std::size_t nsteps = workspace.nsteps;
+  TrajOptData &prob_data = workspace_.problem_data;
+  const std::size_t nsteps = workspace_.nsteps;
 
-  std::vector<VectorXs> &lams_prev = workspace.lams_prev;
-  std::vector<VectorXs> &lams_plus = workspace.lams_plus;
-  std::vector<VectorXs> &lams_pdal = workspace.lams_pdal;
-  std::vector<VectorXs> &shifted_constraints = workspace.shifted_constraints;
+  std::vector<VectorXs> &lams_prev = workspace_.lams_prev;
+  std::vector<VectorXs> &lams_plus = workspace_.lams_plus;
+  std::vector<VectorXs> &lams_pdal = workspace_.lams_pdal;
+  std::vector<VectorXs> &shifted_constraints = workspace_.shifted_constraints;
 
   // initial constraint
   {
@@ -286,7 +285,8 @@ void SolverProxDDP<Scalar>::computeMultipliers(
 }
 
 template <typename Scalar>
-void SolverProxDDP<Scalar>::projectJacobians(const Problem &problem) {
+void SolverProxDDP<Scalar>::computeConstraintJacobianProjections(
+    const Problem &problem) {
   PROXDDP_NOMALLOC_BEGIN;
   TrajOptData &prob_data = workspace_.problem_data;
 
@@ -783,7 +783,7 @@ Scalar SolverProxDDP<Scalar>::forwardPass(const Problem &problem,
     break;
   }
   // computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
-  computeMultipliers(problem, workspace_, workspace_.trial_lams);
+  computeMultipliers(problem, workspace_.trial_lams);
   return PDALFunction<Scalar>::evaluate(*this, problem, workspace_.trial_lams,
                                         workspace_);
 }
@@ -801,7 +801,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
   std::size_t inner_step = 0;
   results_.traj_cost_ =
       problem.evaluate(results_.xs, results_.us, workspace_.problem_data);
-  computeMultipliers(problem, workspace_, results_.lams);
+  computeMultipliers(problem, results_.lams);
   results_.merit_value_ =
       PDALFunction<Scalar>::evaluate(*this, problem, results_.lams, workspace_);
 
@@ -811,7 +811,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
     /// TODO: make this smarter using e.g. some caching mechanism
     problem.computeDerivatives(results_.xs, results_.us,
                                workspace_.problem_data);
-    projectJacobians(problem);
+    computeConstraintJacobianProjections(problem);
     // computeProxTerms(results.xs, results.us, workspace);
     // computeProxDerivatives(results.xs, results.us, workspace);
     const Scalar phi0 = results_.merit_value_;

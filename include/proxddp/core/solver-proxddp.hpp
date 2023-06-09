@@ -249,11 +249,14 @@ public:
   }
   /// \}
 
-  /// Evaluate the ALM/pdALM multiplier estimates.
-  void computeMultipliers(const Problem &problem, Workspace &workspace,
-                          const std::vector<VectorXs> &lams) const;
+  /// Compute the merit function and stopping criterion dual terms:
+  /// first-order Lagrange multiplier estimates, shifted and
+  /// projected constraints.
+  void computeMultipliers(const Problem &problem,
+                          const std::vector<VectorXs> &lams);
 
-  void projectJacobians(const Problem &problem);
+  /// Compute the projections of the constraint Jacobians on their active sets.
+  void computeConstraintJacobianProjections(const Problem &problem);
 
   /// @copydoc mu_penal_
   PROXDDP_INLINE Scalar mu() const { return mu_penal_; }
