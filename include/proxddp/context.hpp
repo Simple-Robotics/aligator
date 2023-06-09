@@ -12,6 +12,7 @@ PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
 using Manifold = ManifoldAbstractTpl<Scalar>;
 
+using BCLParams = proxnlp::BCLParamsTpl<Scalar>;
 using StageFunction = StageFunctionTpl<Scalar>;
 using UnaryFunction = UnaryFunctionTpl<Scalar>;
 using FunctionData = FunctionDataTpl<Scalar>;

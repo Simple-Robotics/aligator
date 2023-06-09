@@ -20,7 +20,7 @@ void exposeProxDDP() {
   eigenpy::register_symbolic_link_to_registered_type<LinesearchStrategy>();
   eigenpy::register_symbolic_link_to_registered_type<
       proxnlp::LSInterpolation>();
-  eigenpy::register_symbolic_link_to_registered_type<BCLParams<Scalar>>();
+  eigenpy::register_symbolic_link_to_registered_type<context::BCLParams>();
 
   bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>,
              boost::noncopyable>(

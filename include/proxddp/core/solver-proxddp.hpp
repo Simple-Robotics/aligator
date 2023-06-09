@@ -19,7 +19,7 @@
 
 namespace proxddp {
 
-using proxnlp::BCLParams;
+using proxnlp::BCLParamsTpl;
 
 /// @brief A proximal, augmented Lagrangian-type solver for trajectory
 /// optimization.
@@ -102,7 +102,7 @@ public:
   /// Type of rollout for the forward pass.
   RolloutType rollout_type_ = RolloutType::NONLINEAR;
   /// Parameters for the BCL outer loop of the augmented Lagrangian algorithm.
-  BCLParams<Scalar> bcl_params;
+  BCLParamsTpl<Scalar> bcl_params;
 
   /// Force the initial state @f$ x_0 @f$ to be fixed to the problem initial
   /// condition.
