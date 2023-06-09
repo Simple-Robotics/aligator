@@ -784,7 +784,7 @@ Scalar SolverProxDDP<Scalar>::forwardPass(const Problem &problem,
   }
   // computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
   computeMultipliers(problem, workspace_, workspace_.trial_lams);
-  return PDALFunction<Scalar>::evaluate(this, problem, workspace_.trial_lams,
+  return PDALFunction<Scalar>::evaluate(*this, problem, workspace_.trial_lams,
                                         workspace_);
 }
 
@@ -803,7 +803,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
       problem.evaluate(results_.xs, results_.us, workspace_.problem_data);
   computeMultipliers(problem, workspace_, results_.lams);
   results_.merit_value_ =
-      PDALFunction<Scalar>::evaluate(this, problem, results_.lams, workspace_);
+      PDALFunction<Scalar>::evaluate(*this, problem, results_.lams, workspace_);
 
   while (iter < max_iters) {
     // ASSUMPTION: last evaluation in previous iterate
@@ -849,7 +849,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
     /// only use Q-function params etc
     linearRollout(problem);
     Scalar dphi0_analytical = PDALFunction<Scalar>::directionalDerivative(
-        this, problem, results_.lams, workspace_);
+        *this, problem, results_.lams, workspace_);
     Scalar dphi0 = dphi0_analytical; // value used for LS & logging
 
     // check if we can early stop

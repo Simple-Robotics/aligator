@@ -60,19 +60,19 @@ template <typename _Scalar> struct PDALFunction {
 
   /// @brief    Compute the merit function at the trial point.
   /// @warning  Evaluate the problem and proximal terms first!
-  static Scalar evaluate(const SolverType *solver,
+  static Scalar evaluate(const SolverType &solver,
                          const TrajOptProblem &problem,
                          const std::vector<VectorXs> &lams,
                          Workspace &workspace);
 
-  static Scalar directionalDerivative(const SolverType *solver,
+  static Scalar directionalDerivative(const SolverType &solver,
                                       const TrajOptProblem &problem,
                                       const std::vector<VectorXs> &lams,
                                       Workspace &workspace);
 
   /// @brief   Compute the proximal penalty in the state-control trajectory.
   /// @warning Compute the proximal penalty for each timestep first.
-  static Scalar computeProxPenalty(const SolverType *solver,
+  static Scalar computeProxPenalty(const SolverType &solver,
                                    const Workspace &workspace);
 };
 

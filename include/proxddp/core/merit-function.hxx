@@ -22,20 +22,19 @@ Scalar cost_directional_derivative(const WorkspaceTpl<Scalar> &workspace,
 }
 
 template <typename Scalar>
-Scalar PDALFunction<Scalar>::evaluate(const SolverType *solver,
+Scalar PDALFunction<Scalar>::evaluate(const SolverType &solver,
                                       const TrajOptProblem &problem,
                                       const std::vector<VectorXs> &lams,
                                       Workspace &workspace) {
   TrajOptData &prob_data = workspace.problem_data;
   Scalar prox_value = 0.;
-  if (solver->rho() > 0) {
+  if (solver.rho() > 0) {
     prox_value = computeProxPenalty(solver, workspace);
   }
   Scalar penalty_value = 0.;
-  auto ls_mode = solver->ls_mode;
-  bool use_dual_terms = ls_mode == LinesearchMode::PRIMAL_DUAL;
-  const Scalar mu = solver->getLinesearchMu();
-  const Scalar dual_weight = solver->dual_weight;
+  bool use_dual_terms = solver.ls_mode == LinesearchMode::PRIMAL_DUAL;
+  const Scalar mu = solver.getLinesearchMu();
+  const Scalar dual_weight = solver.dual_weight;
   const std::vector<VectorXs> &lams_plus = workspace.lams_plus;
 
   // initial constraint
@@ -92,7 +91,7 @@ Scalar PDALFunction<Scalar>::evaluate(const SolverType *solver,
 
 template <typename Scalar>
 Scalar PDALFunction<Scalar>::directionalDerivative(
-    const SolverType *solver, const TrajOptProblem &problem,
+    const SolverType &solver, const TrajOptProblem &problem,
     const std::vector<VectorXs> &lams, Workspace &workspace) {
   TrajOptData &prob_data = workspace.problem_data;
   Scalar d1 = cost_directional_derivative(workspace, prob_data);
@@ -100,7 +99,7 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
   const std::size_t nsteps = workspace.nsteps;
   // prox terms
   const auto &prox_datas = workspace.prox_datas;
-  const Scalar rho = solver->rho();
+  const Scalar rho = solver.rho();
   if (rho > 0) {
     for (std::size_t i = 0; i <= nsteps; i++) {
       const ProximalDataTpl<Scalar> &pdata = *prox_datas[i];
@@ -110,7 +109,7 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
     }
   }
 
-  const Scalar mu = solver->getLinesearchMu();
+  const Scalar mu = solver.getLinesearchMu();
   const auto &dlams = workspace.dlams;
   const auto &lams_plus = workspace.lams_plus;
   const auto &lams_pdal = workspace.lams_pdal;
@@ -180,10 +179,10 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
 }
 
 template <typename Scalar>
-Scalar PDALFunction<Scalar>::computeProxPenalty(const SolverType *solver,
+Scalar PDALFunction<Scalar>::computeProxPenalty(const SolverType &solver,
                                                 const Workspace &workspace) {
   Scalar res = 0.;
-  const Scalar rho = solver->rho();
+  const Scalar rho = solver.rho();
   const std::size_t nsteps = workspace.nsteps;
   for (std::size_t i = 0; i <= nsteps; i++) {
     res += rho * workspace.prox_datas[i]->value_;
