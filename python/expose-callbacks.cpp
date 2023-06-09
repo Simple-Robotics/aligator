@@ -14,7 +14,7 @@ struct CallbackWrapper : CallbackBase, bp::wrapper<CallbackBase> {
   CallbackWrapper() = default;
   void call(const WorkspaceBaseTpl<context::Scalar> &w,
             const ResultsBaseTpl<context::Scalar> &r) {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "call", w, r);
+    PROXDDP_PYTHON_OVERRIDE_PURE(void, "call", boost::cref(w), boost::cref(r));
   }
 };
 
@@ -33,6 +33,7 @@ void exposeHistoryCallback() {
 
   bp::class_<history_storage_t>("history_storage")
       .def_readonly("xs", &history_storage_t::xs)
+      .def_readonly("us", &history_storage_t::us)
       .def_readonly("lams", &history_storage_t::lams)
       .def_readonly("values", &history_storage_t::values)
       .def_readonly("merit_values", &history_storage_t::merit_values)
