@@ -264,3 +264,33 @@ def plot_controls_traj(
     fig.supxlabel("Time $t$")
     fig.suptitle("Controls trajectory")
     fig.tight_layout()
+    return fig
+
+
+def plot_velocity_traj(times, vs, rmodel: pin.Model, ncols=2):
+    vs = np.asarray(vs)
+    nv = vs.shape[1]
+    idx_to_joint_id_map = {}
+    jid = 0
+    for i in range(nv):
+        if i in rmodel.idx_vs.tolist():
+            jid += 1
+        idx_to_joint_id_map[i] = jid
+    print(idx_to_joint_id_map)
+    nrows, r = divmod(nv, ncols)
+    nrows += int(r > 0)
+
+    fig, axes = plt.subplots(nrows, ncols)
+    fig: plt.Figure
+    axes = axes.flatten()
+    for i in range(nv):
+        ax: plt.Axes = axes[i]
+        ax.plot(times, vs[:, i])
+        jid = idx_to_joint_id_map[i]
+        joint_name = rmodel.names[jid].lower()
+        ax.set_ylabel(joint_name)
+
+    fig.supxlabel("Time $t$")
+    fig.suptitle("Velocity trajectory")
+    fig.tight_layout()
+    return fig

@@ -10,10 +10,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from typing import Tuple
 from pinocchio.visualize import MeshcatVisualizer
-from utils import (
-    add_namespace_prefix_to_models,
-    plot_controls_traj,
-)
+from utils import add_namespace_prefix_to_models, plot_controls_traj, plot_velocity_traj
 from proxddp import dynamics, manifolds, constraints
 
 
@@ -220,11 +217,14 @@ flag = solver.run(problem, xs_i, us_i)
 print(flag)
 print(solver.results)
 
-qs = [x[:nq] for x in solver.results.xs]
-viz.play(qs, dt)
+xs = solver.results.xs
+qs = [x[:nq] for x in xs]
 
 
 times = np.linspace(0.0, tf, nsteps + 1)
 _joint_names = rmodel.names[2:]
 plot_controls_traj(times, solver.results.us, joint_names=_joint_names)
+
+vs = [x[nq + 6 :] for x in xs]
+plot_velocity_traj(times, vs, rmodel=robot.model)
 plt.show()
