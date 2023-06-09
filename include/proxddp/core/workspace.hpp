@@ -25,6 +25,7 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using ProxData = typename ProxPenalty::Data;
   using StageModel = StageModelTpl<Scalar>;
   using Base = WorkspaceBaseTpl<Scalar>;
+  using VecBool = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
 
   using Base::problem_data;
   using Base::q_params;
@@ -41,6 +42,8 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   std::vector<VectorXs> lams_pdal;
   /// Shifted constraints the projection operators should be applied to.
   std::vector<VectorXs> shifted_constraints;
+  std::vector<VectorXs> proj_constraints;
+  std::vector<VecBool> active_constraints;
 
   /// @name Riccati gains, memory buffers for primal-dual steps
   /// @{

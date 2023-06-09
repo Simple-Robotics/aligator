@@ -34,6 +34,7 @@ void exposeProxDDP() {
       .def_readonly("dus", &Workspace::dus)
       .def_readonly("trial_lams", &Workspace::trial_lams)
       .def_readonly("inner_crit", &Workspace::inner_criterion)
+      .def_readonly("active_constraints", &Workspace::active_constraints)
       .def(
           "get_ldlt",
           +[](const Workspace &ws,

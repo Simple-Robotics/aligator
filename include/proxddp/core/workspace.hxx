@@ -111,6 +111,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
   stage_prim_infeas.reserve(nsteps + 1);
   ldlts_.reserve(nsteps + 1);
 
+  active_constraints.resize(nsteps + 1);
   lams_plus.resize(nsteps + 1);
   pd_step_.resize(nsteps + 1);
   dxs.reserve(nsteps + 1);
@@ -132,6 +133,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
         allocate_ldlt_algorithm<Scalar>({ndx1}, {ndual}, ldlt_choice));
 
     lams_plus[0] = VectorXs::Zero(ndual);
+    active_constraints[0] = VecBool::Zero(ndual);
     pd_step_[0] = VectorXs::Zero(ntot);
     dxs.emplace_back(pd_step_[0].head(ndx1));
     dlams.emplace_back(pd_step_[0].tail(ndual));
@@ -162,6 +164,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
     stage_prim_infeas.emplace_back(ncb);
 
     lams_plus[i + 1] = VectorXs::Zero(ndual);
+    active_constraints[i + 1] = VecBool::Zero(ndual);
     pd_step_[i + 1] = VectorXs::Zero(ntot);
     dus.emplace_back(pd_step_[i + 1].head(nu));
     dxs.emplace_back(pd_step_[i + 1].segment(nu, ndx2));
@@ -186,6 +189,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
         allocate_ldlt_algorithm<Scalar>({nprim}, {ndual}, ldlt_choice));
 
     lams_plus.push_back(VectorXs::Zero(ndual));
+    active_constraints.push_back(VecBool::Zero(ndual));
     pd_step_.push_back(VectorXs::Zero(ndual));
     dlams.push_back(pd_step_.back().tail(ndual));
   }
@@ -194,6 +198,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
   trial_lams = lams_plus;
   lams_prev = lams_plus;
   shifted_constraints = lams_plus;
+  proj_constraints = shifted_constraints;
 
   math::setZero(kkt_mats_);
   math::setZero(kkt_rhs_);

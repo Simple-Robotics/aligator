@@ -234,17 +234,19 @@ void SolverProxDDP<Scalar>::computeMultipliers(
       [dual_weight = dual_weight](
           const ConstraintStack &stack, const VectorXs &lambda,
           const VectorXs &prevlam, VectorXs &lamplus, VectorXs &lampdal,
-          VectorXs &shift_cvals, const FuncDataVec &constraint_data,
-          CstrALWeightStrat &&weights) {
+          VectorXs &shift_cvals, typename Workspace::VecBool &active_cstr,
+          const FuncDataVec &constraint_data, CstrALWeightStrat &&weights) {
         // k: constraint count variable
         for (std::size_t k = 0; k < stack.size(); k++) {
           const auto plami_k = stack.getConstSegmentByConstraint(prevlam, k);
           auto lamplus_k = stack.getSegmentByConstraint(lamplus, k);
           auto scval_k = stack.getSegmentByConstraint(shift_cvals, k);
+          auto active_k = stack.getSegmentByConstraint(active_cstr, k);
           const CstrSet &set = stack.getConstraintSet(k);
           const FunctionData &data = *constraint_data[k];
 
           scval_k = data.value_ + weights.get(k) * plami_k;
+          set.computeActiveSet(scval_k, active_k);
           lamplus_k = scval_k;
 
           set.normalConeProjection(lamplus_k, lamplus_k);
@@ -269,18 +271,16 @@ void SolverProxDDP<Scalar>::computeMultipliers(
     VectorXs &shiftcvali = shifted_constraints[i + 1];
 
     execute_on_stack(cstr_stack, lami, plami, lamplusi, lampdali, shiftcvali,
+                     workspace_.active_constraints[i + 1],
                      sdata.constraint_data, CstrALWeightStrat(mu_penal_, true));
   }
 
   if (!problem.term_cstrs_.empty()) {
-    const VectorXs &lamN = lams.back();
-    const VectorXs &plamN = lams_prev.back();
-    VectorXs &lamplusN = lams_plus.back();
-    VectorXs &lampdalN = lams_pdal.back();
-    VectorXs &scval = shifted_constraints.back();
-    execute_on_stack(problem.term_cstrs_, lamN, plamN, lamplusN, lampdalN,
-                     scval, prob_data.term_cstr_data,
-                     CstrALWeightStrat(mu_penal_, false));
+    execute_on_stack(
+        problem.term_cstrs_, lams.back(), lams_prev.back(), lams_plus.back(),
+        lams_pdal.back(), shifted_constraints.back(),
+        workspace_.active_constraints.back(), prob_data.term_cstr_data,
+        CstrALWeightStrat(mu_penal_, false));
   }
 }
 
