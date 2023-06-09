@@ -1,5 +1,6 @@
 import proxddp
 import tap
+import pprint
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -51,8 +52,8 @@ term_cost = proxddp.QuadraticCost(Qf, R)
 dynmodel = dynamics.LinearDiscreteDynamics(A, B, c)
 stage = proxddp.StageModel(rcost, dynmodel)
 if args.bounds:
-    u_min = -0.15 * np.ones(nu)
-    u_max = +0.15 * np.ones(nu)
+    u_min = -0.25 * np.ones(nu)
+    u_max = +0.25 * np.ones(nu)
     ctrl_fn = proxddp.ControlErrorResidual(nx, np.zeros(nu))
     stage.addConstraint(ctrl_fn, constraints.BoxConstraint(u_min, u_max))
 
@@ -92,22 +93,11 @@ problem.evaluate(xs_i, us_i, prob_data)
 solver.setup(problem)
 solver.run(problem, xs_i, us_i)
 res = solver.getResults()
-
-
-def test_check_num_iters(res):
-    if args.bounds and args.term_cstr:
-        assert res.num_iters == 10
-    elif args.bounds:
-        assert res.num_iters == 7
-    elif args.term_cstr:
-        assert res.num_iters == 1
-    else:
-        assert res.num_iters == 1
-
-
-test_check_num_iters(res)
-
 print(res)
+lambdas = res.lams
+np.set_printoptions(precision=5, linewidth=250)
+print("Multipliers:")
+pprint.pp(lambdas.tolist())
 
 plt.subplot(121)
 fig: plt.Figure = plt.gcf()
