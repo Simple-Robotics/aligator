@@ -12,7 +12,7 @@
 #include "proxddp/utils/logger.hpp"
 #include "proxddp/utils/forward-dyn.hpp"
 
-#include <proxnlp/constraint-base.hpp>
+#include <proxnlp/modelling/constraints.hpp>
 #include <proxnlp/bcl-params.hpp>
 
 #include <unordered_map>
