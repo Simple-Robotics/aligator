@@ -235,6 +235,7 @@ def plot_controls_traj(
     joint_names=None,
     rmodel: pin.Model = None,
 ):
+    t0 = times[0]
     tf = times[-1]
     us = np.asarray(us)
     nu = us.shape[1]
@@ -255,8 +256,8 @@ def plot_controls_traj(
         ax.step(times[:-1], us[:, i])
         if effort_limit is not None:
             ylim = ax.get_ylim()
-            ax.hlines(-effort_limit[i], 0.0, tf, colors="k", linestyles="--")
-            ax.hlines(+effort_limit[i], 0.0, tf, colors="k", linestyles="--")
+            ax.hlines(-effort_limit[i], t0, tf, colors="k", linestyles="--")
+            ax.hlines(+effort_limit[i], t0, tf, colors="r", linestyles="dashdot")
             ax.set_ylim(*ylim)
         if joint_names is not None:
             joint_name = joint_names[i].lower()
@@ -280,6 +281,10 @@ def plot_velocity_traj(times, vs, rmodel: pin.Model, ncols=2):
     nrows, r = divmod(nv, ncols)
     nrows += int(r > 0)
 
+    vel_limit = rmodel.velocityLimit
+    t0 = times[0]
+    tf = times[-1]
+
     fig, axes = plt.subplots(nrows, ncols)
     fig: plt.Figure
     axes = axes.flatten()
@@ -288,6 +293,10 @@ def plot_velocity_traj(times, vs, rmodel: pin.Model, ncols=2):
         ax.plot(times, vs[:, i])
         jid = idx_to_joint_id_map[i]
         joint_name = rmodel.names[jid].lower()
+        ylim = ax.get_ylim()
+        ax.hlines(-vel_limit[i], t0, tf, colors="k", linestyles="--")
+        ax.hlines(+vel_limit[i], t0, tf, colors="r", linestyles="dashdot")
+        ax.set_ylim(*ylim)
         ax.set_ylabel(joint_name)
 
     fig.supxlabel("Time $t$")
