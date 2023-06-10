@@ -242,7 +242,7 @@ void SolverProxDDP<Scalar>::computeMultipliers(
           auto lamplus_k = stack.getSegmentByConstraint(lamplus, k);
           auto scval_k = stack.getSegmentByConstraint(shift_cvals, k);
           auto active_k = stack.getSegmentByConstraint(active_cstr, k);
-          const CstrSet &set = stack.getConstraintSet(k);
+          const CstrSet &set = *stack[k].set;
           const FunctionData &data = *constraint_data[k];
 
           scval_k = data.value_ + weights.get(k) * plami_k;
@@ -301,7 +301,7 @@ void SolverProxDDP<Scalar>::computeConstraintJacobianProjections(
                              FuncDataVec &constraint_data) {
     for (std::size_t k = 0; k < stack.size(); ++k) {
       const auto scval_k = stack.getConstSegmentByConstraint(shift_cvals, k);
-      const CstrSet &set = stack.getConstraintSet(k);
+      const CstrSet &set = *stack[k].set;
       FunctionData &data = *constraint_data[k];
       set.applyNormalConeProjectionJacobian(scval_k, data.jac_buffer_);
     }
@@ -924,7 +924,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem) {
          const VectorXs &lambda, VectorXs &stage_infeas,
          const FuncDataVec &constraint_data, CstrALWeightStrat &&weight_strat) {
         for (std::size_t k = 0; k < stack.size(); k++) {
-          const CstrSet &set = stack.getConstraintSet(k);
+          const CstrSet &set = *stack[k].set;
 
           // compute and project displaced constraint
           auto scval_k = stack.getSegmentByConstraint(shift_cvals, k);

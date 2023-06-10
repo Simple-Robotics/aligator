@@ -49,12 +49,8 @@ template <typename Scalar> struct ConstraintStackTpl {
   /// @brief Get the set of dimensions for each constraint in the stack.
   const std::vector<long> &getDims() const { return dims_; }
 
-  const ConstraintSetBase<Scalar> &getConstraintSet(const std::size_t j) const {
-    return *this->storage_[j].set;
-  }
-
-  /// Get corresponding segment of a vector corresponding
-  /// to the @p i-th constraint.
+  /// @brief Get corresponding segment of a vector corresponding to the @p i-th
+  /// constraint.
   template <typename Derived>
   Eigen::VectorBlock<Derived, -1>
   getSegmentByConstraint(const Eigen::MatrixBase<Derived> &lambda,
@@ -65,6 +61,7 @@ template <typename Scalar> struct ConstraintStackTpl {
     return lam_cast.segment(getIndex(j), getDim(j));
   }
 
+  /// @copybrief getSegmentByConstraint()
   template <typename Derived>
   Eigen::VectorBlock<const Derived, -1>
   getConstSegmentByConstraint(const Eigen::MatrixBase<Derived> &lambda,
