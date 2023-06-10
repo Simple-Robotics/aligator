@@ -159,6 +159,8 @@ void SolverProxDDP<Scalar>::setup(const Problem &problem) {
           std::make_shared<ProxData>(&prox_penalties_[nsteps]));
     }
   }
+
+  workspace_.configureScalers(problem, mu_penal_);
 }
 
 template <typename Scalar>
@@ -235,7 +237,7 @@ void SolverProxDDP<Scalar>::computeMultipliers(
           const ConstraintStack &stack, const VectorXs &lambda,
           const VectorXs &prevlam, VectorXs &lamplus, VectorXs &lampdal,
           VectorXs &shift_cvals, typename Workspace::VecBool &active_cstr,
-          const FuncDataVec &constraint_data, CstrALWeightStrat &&weights) {
+          const FuncDataVec &constraint_data, CstrProximalScaler &weights) {
         // k: constraint count variable
         for (std::size_t k = 0; k < stack.size(); k++) {
           const auto plami_k = stack.getConstSegmentByConstraint(prevlam, k);
@@ -272,15 +274,15 @@ void SolverProxDDP<Scalar>::computeMultipliers(
 
     execute_on_stack(cstr_stack, lami, plami, lamplusi, lampdali, shiftcvali,
                      workspace_.active_constraints[i + 1],
-                     sdata.constraint_data, CstrALWeightStrat(mu_penal_, true));
+                     sdata.constraint_data, workspace_.cstr_scalers[i]);
   }
 
   if (!problem.term_cstrs_.empty()) {
-    execute_on_stack(
-        problem.term_cstrs_, lams.back(), lams_prev.back(), lams_plus.back(),
-        lams_pdal.back(), shifted_constraints.back(),
-        workspace_.active_constraints.back(), prob_data.term_cstr_data,
-        CstrALWeightStrat(mu_penal_, false));
+    execute_on_stack(problem.term_cstrs_, lams.back(), lams_prev.back(),
+                     lams_plus.back(), lams_pdal.back(),
+                     shifted_constraints.back(),
+                     workspace_.active_constraints.back(),
+                     prob_data.term_cstr_data, workspace_.cstr_scalers.back());
   }
 }
 
@@ -473,7 +475,7 @@ auto SolverProxDDP<Scalar>::computeGains(const Problem &problem,
     const auto laminnr_j = cstr_mgr.getConstSegmentByConstraint(laminnr, j);
     const auto lamplus_j = cstr_mgr.getConstSegmentByConstraint(lamplus, j);
 
-    CstrALWeightStrat weight_strat(mu_penal_, true);
+    auto &weight_strat = workspace_.cstr_scalers[j];
     // update the KKT jacobian columns
     cstr_mgr.getBlockByConstraint(kkt_jac, j) =
         cstr_data.jac_buffer_.rightCols(nprim);
@@ -585,7 +587,7 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
 
     // compute multiple-shooting gap
     {
-      CstrALWeightStrat weight_strat(mu_penal_, true);
+      auto &weight_strat = workspace_.cstr_scalers[i];
       const ConstraintStack &cstr_stack = stage.constraints_;
       const ConstVectorRef dynlam =
           cstr_stack.getConstSegmentByConstraint(lams[i + 1], 0);
@@ -922,7 +924,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem) {
   auto execute_on_stack =
       [](const ConstraintStack &stack, const VectorXs &shift_cvals,
          const VectorXs &lambda, VectorXs &stage_infeas,
-         const FuncDataVec &constraint_data, CstrALWeightStrat &&weight_strat) {
+         const FuncDataVec &constraint_data, CstrProximalScaler &scaler) {
         for (std::size_t k = 0; k < stack.size(); k++) {
           const CstrSet &set = *stack[k].set;
 
@@ -930,7 +932,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem) {
           auto scval_k = stack.getSegmentByConstraint(shift_cvals, k);
           auto lam_i = stack.getConstSegmentByConstraint(lambda, k);
           VectorXs &v = constraint_data[k]->value_;
-          scval_k = v + weight_strat.get(k) * lam_i;
+          scval_k = v + scaler.get(k) * lam_i;
           set.projection(scval_k, scval_k); // apply projection
           stage_infeas((long)k) = math::infty_norm(v - scval_k);
         }
@@ -944,16 +946,14 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem) {
     VectorXs &stage_infeas = workspace_.stage_prim_infeas[i + 1];
     execute_on_stack(stage.constraints_, shifted_constraints[i + 1],
                      results_.lams[i + 1], stage_infeas,
-                     stage_data.constraint_data,
-                     CstrALWeightStrat(mu_penal_, true));
+                     stage_data.constraint_data, workspace_.cstr_scalers[i]);
   }
 
   // compute infeasibility of terminal constraints
   if (!problem.term_cstrs_.empty()) {
     execute_on_stack(problem.term_cstrs_, shifted_constraints.back(),
                      results_.lams.back(), workspace_.stage_prim_infeas.back(),
-                     prob_data.term_cstr_data,
-                     CstrALWeightStrat(mu_penal_, false));
+                     prob_data.term_cstr_data, workspace_.cstr_scalers.back());
   }
 
   results_.prim_infeas = math::infty_norm(workspace_.stage_prim_infeas);

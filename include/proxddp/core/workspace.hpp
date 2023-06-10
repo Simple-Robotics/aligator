@@ -5,6 +5,7 @@
 
 #include "proxddp/core/workspace-base.hpp"
 #include "proxddp/core/proximal-penalty.hpp"
+#include "proxddp/core/alm-weights.hpp"
 
 #include <array>
 
@@ -26,7 +27,9 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using StageModel = StageModelTpl<Scalar>;
   using Base = WorkspaceBaseTpl<Scalar>;
   using VecBool = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
+  using CstrProxScaler = ConstraintProximalScalerTpl<Scalar>;
 
+  using Base::nsteps;
   using Base::problem_data;
   using Base::q_params;
   using Base::trial_us;
@@ -35,6 +38,9 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
 
   /// Proximal penalty data.
   std::vector<shared_ptr<ProxData>> prox_datas;
+
+  /// Proximal algo scalers for the constraints
+  std::vector<CstrProxScaler> cstr_scalers;
 
   /// Lagrange multipliers for ALM & linesearch.
   std::vector<VectorXs> trial_lams;
@@ -99,6 +105,24 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   template <typename T>
   friend std::ostream &operator<<(std::ostream &oss,
                                   const WorkspaceTpl<T> &self);
+
+  void configureScalers(const TrajOptProblemTpl<Scalar> &problem,
+                        const Scalar &mu) {
+    cstr_scalers.reserve(nsteps + 1);
+
+    for (std::size_t t = 0; t < nsteps; t++) {
+      const StageModel &stage = *problem.stages_[t];
+      cstr_scalers.emplace_back(stage.constraints_, mu);
+      cstr_scalers[t].applyDefaultStrategy();
+    }
+
+    const ConstraintStackTpl<Scalar> &term_stack = problem.term_cstrs_;
+    if (!term_stack.empty()) {
+      cstr_scalers.emplace_back(term_stack, mu);
+      // workspace_.cstr_scalers.back().applyDefaultStrategy(); // does not
+      // apply to terminal nodes
+    }
+  }
 };
 
 namespace {

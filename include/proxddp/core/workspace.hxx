@@ -98,14 +98,13 @@ allocate_ldlt_algorithm(const std::vector<isize> &nprims,
 template <typename Scalar>
 WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
                                    LDLTChoice ldlt_choice)
-    : Base(problem), stage_inner_crits(this->nsteps + 1),
-      stage_dual_infeas(this->nsteps + 1) {
-  const std::size_t nsteps = this->nsteps;
+    : Base(problem), stage_inner_crits(nsteps + 1),
+      stage_dual_infeas(nsteps + 1) {
 
   prox_datas.reserve(nsteps + 1);
 
-  prev_xs = this->trial_xs;
-  prev_us = this->trial_us;
+  prev_xs = trial_xs;
+  prev_us = trial_us;
   kkt_mats_.reserve(nsteps + 1);
   kkt_rhs_.reserve(nsteps + 1);
   stage_prim_infeas.reserve(nsteps + 1);

@@ -1,36 +1,46 @@
 #pragma once
 
-#include "proxddp/math.hpp"
+#include "proxddp/fwd.hpp"
 
 namespace proxddp {
 
 /// @brief  Weighting strategy for the constraints in a stack.
-template <typename Scalar> struct ConstraintALWeightStrategy {
+template <typename Scalar> struct ConstraintProximalScalerTpl {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  using ConstraintStack = ConstraintStackTpl<Scalar>;
 
-  ConstraintALWeightStrategy(Scalar mu, bool weighted)
-      : mu_(mu), dyn_weight_(1e-3), weighted_(weighted) {}
-
-  Scalar get(std::size_t j) {
-    if (!weighted_)
-      return mu_;
-    else if (j == 0) {
-      return dyn_weight_ * mu_;
-    } else {
-      return mu_;
-    }
+  ConstraintProximalScalerTpl(const ConstraintStack &constraints,
+                              const Scalar &mu)
+      : constraints_(constraints), mu_(mu), weights(constraints.size()) {
+    weights.setOnes();
   }
 
-  Scalar inv(std::size_t j) { return 1. / get(j); }
+  Scalar get(std::size_t j) const { return weights[(long)j] * mu_; }
 
-  inline void enable() { weighted_ = true; }
-  inline void disable() { weighted_ = false; }
+  Scalar inv(std::size_t j) const { return 1. / get(j); }
+  void set_weight(const Scalar w, long j) {
+    assert(j < weights.size());
+    weights[j] = w;
+  }
+
+  /// For problem stages. Scale down non-dynamical constraints by 100.
+  void applyDefaultStrategy();
+
+  const VectorXs &getWeights() const { return weights; }
 
 private:
-  Scalar mu_;
-  Scalar dyn_weight_; // weighting for dynamical constraints (index j == 0)
-  bool weighted_;     // whether weighting is activated
+  const ConstraintStack &constraints_;
+  const Scalar &mu_;
+  VectorXs weights;
 };
+
+template <typename Scalar>
+void ConstraintProximalScalerTpl<Scalar>::applyDefaultStrategy() {
+  weights[0] = 1e-3;
+  for (long j = 1; j < (long)constraints_.size(); j++) {
+    weights[j] = 100.;
+  }
+}
 
 } // namespace proxddp
 

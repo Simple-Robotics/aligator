@@ -48,7 +48,7 @@ public:
   using CstrSet = ConstraintSetBase<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
   using LinesearchOptions = typename Linesearch<Scalar>::Options;
-  using CstrALWeightStrat = ConstraintALWeightStrategy<Scalar>;
+  using CstrProximalScaler = ConstraintProximalScalerTpl<Scalar>;
   using LinesearchType = proxnlp::ArmijoLinesearch<Scalar>;
 
   enum BackwardRet { BWD_SUCCESS, BWD_WRONG_INERTIA };
