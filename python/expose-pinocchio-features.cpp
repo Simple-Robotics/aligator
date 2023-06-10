@@ -17,6 +17,7 @@ void exposeConstrainedFwdDynamics();
 #endif
 
 void exposePinocchioFeatures() {
+  bp::import("pinocchio");
   exposePinocchioFunctions();
 
   {

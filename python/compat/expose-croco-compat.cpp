@@ -12,6 +12,8 @@ namespace proxddp {
 namespace python {
 
 void exposeCrocoddylCompat() {
+  bp::import("crocoddyl");
+
   using context::Scalar;
   namespace ns_croc = ::proxddp::compat::croc;
   bp::def("convertCrocoddylProblem",
