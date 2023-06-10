@@ -303,3 +303,32 @@ def plot_velocity_traj(times, vs, rmodel: pin.Model, ncols=2):
     fig.suptitle("Velocity trajectory")
     fig.tight_layout()
     return fig
+
+
+def underactuated_inv_dyn(
+    model: pin.Model,
+    data: pin.Data,
+    q,
+    v,
+    B: np.ndarray,
+    rcm: pin.RigidConstraintModel,
+    reference_frame: pin.ReferenceFrame,
+):
+    nu = B.shape[1]
+
+    pin.computeAllTerms(model, data, q, v)
+    nle = data.nle.copy()
+    print("rhs={}".format(nle))
+
+    # 6x12
+    rcd = rcm.createData()
+    J = pin.getConstraintJacobian(model, data, rcm, rcd)
+
+    mat = np.hstack([B, -J.T])
+    ret = np.linalg.lstsq(mat, nle, rcond=None)
+    err = mat @ ret[0] - nle
+    err_norm = np.linalg.norm(err, np.inf)
+    print("err norm = {}".format(err_norm))
+
+    tau, fc = np.split(ret[0], [nu])
+    return tau, fc
