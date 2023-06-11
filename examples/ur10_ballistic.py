@@ -165,7 +165,6 @@ u0, lam_c = underactuated_inv_dyn(
     v0,
     B=actuation_matrix,
     rcm=rcm,
-    reference_frame=CONTACT_REF_FRAME,
 )
 assert u0.shape == (nu,)
 

@@ -312,7 +312,6 @@ def underactuated_inv_dyn(
     v,
     B: np.ndarray,
     rcm: pin.RigidConstraintModel,
-    reference_frame: pin.ReferenceFrame,
 ):
     nu = B.shape[1]
 
