@@ -16,7 +16,6 @@ from utils import (
     add_namespace_prefix_to_models,
     plot_controls_traj,
     plot_velocity_traj,
-    underactuated_inv_dyn,
 )
 from proxddp import dynamics, manifolds, constraints
 
@@ -158,13 +157,8 @@ dyn_model2 = dynamics.IntegratorSemiImplEuler(ode2, dt)
 q0 = x0[:nq]
 v0 = x0[nq:]
 u0_now = pin.rnea(robot.model, robot.data, robot.q0, robot.v0, robot.v0)
-u0, lam_c = underactuated_inv_dyn(
-    rmodel,
-    rdata,
-    q0,
-    v0,
-    B=actuation_matrix,
-    rcm=rcm,
+u0, lam_c = proxddp.underactuatedConstrainedInverseDynamics(
+    rmodel, rdata, q0, v0, actuation_matrix, rcm, rcm.createData()
 )
 assert u0.shape == (nu,)
 
