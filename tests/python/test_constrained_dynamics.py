@@ -128,8 +128,8 @@ def createFourBarLinkages():
         constraint1_joint2_placement,
     )
     # model.jointPlacements[base_joint_id])
-    constraint_model.corrector.Kp = 10.0
-    constraint_model.corrector.Kd = 2.0 * np.sqrt(constraint_model.corrector.Kp)
+    constraint_model.corrector.Kp[:] = 10.0
+    constraint_model.corrector.Kd[:] = 2.0 * np.sqrt(constraint_model.corrector.Kp)
     constraint_data = constraint_model.createData()
     constraint_dim = constraint_model.size()
 
@@ -177,6 +177,25 @@ def createFourBarLinkages():
     if DISPLAY:
         viz.display(q_sol)
     return model, constraint_model, viz
+
+
+def test_inv_dyn():
+    model, rcm, viz = createFourBarLinkages()
+    data = model.createData()
+    rcd = rcm.createData()
+    q0 = model.q_init.copy()
+    v0 = np.zeros(model.nv)
+    nu = model.nv
+    B = np.eye(nu)
+    tau0, _fc = proxddp.underactuatedConstrainedInverseDynamics(
+        model, data, q0, v0, B, rcm, rcd
+    )
+
+    # test the resulting acceleration is zero
+    pin.initConstraintDynamics(model, data, [rcm])
+    prox = pin.ProximalSettings(1e-12, 1e-10, 3)
+    a0 = pin.constraintDynamics(model, data, q0, v0, tau0, [rcm], [rcd], prox)
+    assert np.allclose(a0, 0.0)
 
 
 def test_constrained_dynamics():
