@@ -27,7 +27,6 @@ void ExplicitDynamicsModelTpl<Scalar>::computeJacobians(const ConstVectorRef &x,
                                                         const ConstVectorRef &y,
                                                         BaseData &data) const {
   Data &data_ = static_cast<Data &>(data);
-  this->forward(x, u, data_);
   this->dForward(x, u, data_);
   // compose by jacobians of log (xout - y)
   this->space_next_->Jdifference(y, data_.xnext_, data_.Jy_, 0);
