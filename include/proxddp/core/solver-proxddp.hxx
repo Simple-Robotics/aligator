@@ -200,6 +200,7 @@ auto SolverProxDDP<Scalar>::backwardPass(const Problem &problem)
   for (std::size_t i = 0; i < nsteps; i++) {
     std::size_t t = nsteps - i - 1;
     updateHamiltonian(problem, t);
+    assembleKktSystem(problem, t);
     BackwardRet b = computeGains(problem, t);
     if (b != BWD_SUCCESS) {
       return b;
@@ -287,46 +288,6 @@ void SolverProxDDP<Scalar>::computeMultipliers(
 }
 
 template <typename Scalar>
-void SolverProxDDP<Scalar>::computeConstraintJacobianProjections(
-    const Problem &problem) {
-  PROXDDP_NOMALLOC_BEGIN;
-  TrajOptData &prob_data = workspace_.problem_data;
-
-  const std::size_t nsteps = workspace_.nsteps;
-
-  const std::vector<VectorXs> &shifted_constraints =
-      workspace_.shifted_constraints;
-
-  using FuncDataVec = std::vector<shared_ptr<FunctionData>>;
-  auto execute_on_stack = [](const ConstraintStack &stack,
-                             const VectorXs &shift_cvals,
-                             FuncDataVec &constraint_data) {
-    for (std::size_t k = 0; k < stack.size(); ++k) {
-      const auto scval_k = stack.getConstSegmentByConstraint(shift_cvals, k);
-      const CstrSet &set = *stack[k].set;
-      FunctionData &data = *constraint_data[k];
-      set.applyNormalConeProjectionJacobian(scval_k, data.jac_buffer_);
-    }
-  };
-
-  // loop over the stages
-#pragma omp parallel for num_threads(problem.getNumThreads())
-  for (std::size_t i = 0; i < nsteps; i++) {
-    const ConstraintStack &cstr_stack = problem.stages_[i]->constraints_;
-    StageData &sdata = prob_data.getStageData(i);
-    const VectorXs &shift_cval = shifted_constraints[i + 1];
-    execute_on_stack(cstr_stack, shift_cval, sdata.constraint_data);
-  }
-
-  // terminal node
-  if (!problem.term_cstrs_.empty()) {
-    execute_on_stack(problem.term_cstrs_, shifted_constraints.back(),
-                     prob_data.term_cstr_data);
-  }
-  PROXDDP_NOMALLOC_END;
-}
-
-template <typename Scalar>
 void SolverProxDDP<Scalar>::updateHamiltonian(const Problem &problem,
                                               const std::size_t t) {
   PROXDDP_NOMALLOC_BEGIN;
@@ -397,18 +358,26 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem) {
     term_value.Vxx_ += rho() * proxdata.Lxx_;
   }
 
-  if (!problem.term_cstrs_.empty()) {
+  const ConstraintStack &cstr_mgr = problem.term_cstrs_;
+  if (!cstr_mgr.empty()) {
     /* check number of multipliers */
     assert(results_.lams.size() == (nsteps + 2));
     assert(results_.gains_.size() == (nsteps + 1));
   }
 
-  for (std::size_t k = 0; k < problem.term_cstrs_.size(); ++k) {
+  for (std::size_t k = 0; k < cstr_mgr.size(); ++k) {
+    const VectorXs &shift_cstr_v = workspace_.shifted_constraints.back();
+    const CstrSet &cstr_set = *cstr_mgr[k].set;
     const FunctionData &cstr_data = *prob_data.term_cstr_data[k];
 
     const VectorXs &lamplus = workspace_.lams_plus[nsteps + 1];
     const VectorXs &lamin = results_.lams[nsteps + 1];
-    const MatrixRef &constraint_Jx = cstr_data.Jx_;
+    auto scval_k = cstr_mgr.getConstSegmentByConstraint(shift_cstr_v, k);
+    MatrixXs &constraint_Jx = workspace_.proj_jacobians.back();
+    constraint_Jx = cstr_data.Jx_;
+    assert(constraint_Jx.rows() == cstr_mgr[k].nr());
+    assert(constraint_Jx.cols() == cstr_mgr[k].func->ndx1);
+    cstr_set.applyNormalConeProjectionJacobian(scval_k, constraint_Jx);
 
     auto ff = results_.getFeedforward(nsteps);
     auto fb = results_.getFeedback(nsteps);
@@ -424,15 +393,16 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem) {
 }
 
 template <typename Scalar>
-auto SolverProxDDP<Scalar>::computeGains(const Problem &problem,
-                                         const std::size_t t) -> BackwardRet {
+void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
+                                              const std::size_t t) {
   PROXDDP_NOMALLOC_BEGIN;
+  using ColXpr = typename MatrixXs::ColXpr;
+  using ColsBlockXpr = typename MatrixXs::ColsBlockXpr;
   const StageModel &stage = *problem.stages_[t];
 
   const QParams &qparam = workspace_.q_params[t];
 
-  StageData &stage_data = workspace_.problem_data.getStageData(t);
-
+  const StageData &stage_data = workspace_.problem_data.getStageData(t);
   const int nprim = stage.numPrimal();
   const int ndual = stage.numDual();
   const int ndx1 = stage.ndx1();
@@ -441,6 +411,7 @@ auto SolverProxDDP<Scalar>::computeGains(const Problem &problem,
 
   const VectorXs &laminnr = results_.lams[t + 1];
   const VectorXs &lamplus = workspace_.lams_plus[t + 1];
+  const VectorXs &shift_cstr = workspace_.shifted_constraints[t + 1];
 
   MatrixXs &kkt_mat = workspace_.kkt_mats_[t + 1];
   MatrixXs &kkt_rhs = workspace_.kkt_rhs_[t + 1];
@@ -454,8 +425,8 @@ auto SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   Eigen::Diagonal<BlockXs> kkt_low_right =
       kkt_mat.bottomRightCorner(ndual, ndual).diagonal();
 
-  typename MatrixXs::ColXpr kkt_rhs_ff = kkt_rhs.col(0);
-  typename MatrixXs::ColsBlockXpr kkt_rhs_fb = kkt_rhs.rightCols(ndx1);
+  ColXpr kkt_rhs_ff(kkt_rhs.col(0));
+  ColsBlockXpr kkt_rhs_fb(kkt_rhs.rightCols(ndx1));
 
   // blocks: u, y, and dual
   kkt_rhs_ff.head(nu) = qparam.Qu;
@@ -467,28 +438,62 @@ auto SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   // KKT matrix: (u, y)-block = bottom right of q hessian
   kkt_top_left = qparam.hess_.bottomRightCorner(nprim, nprim);
 
+  auto kkt_rhs_dual_ff = kkt_rhs_ff.tail(ndual);
+  auto kkt_rhs_dual_fb = kkt_rhs_fb.bottomRows(ndual);
+  // memory buffer for the projected Jacobian matrix
+  MatrixXs &proj_jac = workspace_.proj_jacobians[t + 1];
   const ConstraintStack &cstr_mgr = stage.constraints_;
+  auto &weight_strat = workspace_.cstr_scalers[t];
 
   // Loop over constraints
   for (std::size_t j = 0; j < stage.numConstraints(); j++) {
-    FunctionData &cstr_data = *stage_data.constraint_data[j];
+    const CstrSet &cstr_set = *cstr_mgr[j].set;
+    const FunctionData &cstr_data = *stage_data.constraint_data[j];
+    const auto shift_cstr_j =
+        cstr_mgr.getConstSegmentByConstraint(shift_cstr, j);
     const auto laminnr_j = cstr_mgr.getConstSegmentByConstraint(laminnr, j);
     const auto lamplus_j = cstr_mgr.getConstSegmentByConstraint(lamplus, j);
 
-    auto &weight_strat = workspace_.cstr_scalers[j];
+    // project constraint jacobian
+    auto jac_proj_j = cstr_mgr.getRowsByConstraint(proj_jac, j);
+    jac_proj_j = cstr_data.jac_buffer_;
+    cstr_set.applyNormalConeProjectionJacobian(shift_cstr_j, jac_proj_j);
+    auto Jx_proj = jac_proj_j.leftCols(ndx1);
+    auto Juy_proj = jac_proj_j.rightCols(nprim);
+
     // update the KKT jacobian columns
-    cstr_mgr.getBlockByConstraint(kkt_jac, j) =
-        cstr_data.jac_buffer_.rightCols(nprim);
-    cstr_mgr.getBlockByConstraint(kkt_rhs_fb.bottomRows(ndual), j) =
-        cstr_data.Jx_;
-    cstr_mgr.getSegmentByConstraint(kkt_rhs_ff.tail(ndual), j) =
+    cstr_mgr.getRowsByConstraint(kkt_jac, j) = Juy_proj;
+    // set j-th rhs x-Jacobian block
+    cstr_mgr.getRowsByConstraint(kkt_rhs_dual_fb, j) = Jx_proj;
+
+    // get j-th rhs dual gradient
+    cstr_mgr.getSegmentByConstraint(kkt_rhs_dual_ff, j) =
         weight_strat.get(j) * (lamplus_j - laminnr_j);
 
     kkt_low_right.array() = -weight_strat.get(j);
+    auto Juy_orig = cstr_data.jac_buffer_.rightCols(nprim);
+    // // add correction to kkt rhs ff
+    auto kkt_rhs_prim = kkt_rhs_ff.head(nprim);
+    kkt_rhs_prim -= Juy_orig.transpose() * laminnr_j;
+    kkt_rhs_prim += Juy_proj.transpose() * laminnr_j;
   }
-
-  /* Compute gains with LDLT */
   kkt_mat = kkt_mat.template selfadjointView<Eigen::Lower>();
+  PROXDDP_NOMALLOC_END;
+}
+
+template <typename Scalar>
+auto SolverProxDDP<Scalar>::computeGains(const Problem &problem,
+                                         const std::size_t t) -> BackwardRet {
+  PROXDDP_NOMALLOC_BEGIN;
+  const StageModel &stage = *problem.stages_[t];
+  const QParams &qparam = workspace_.q_params[t];
+  const int ndx1 = stage.ndx1();
+  const int ndual = stage.numDual();
+  MatrixXs &kkt_mat = workspace_.kkt_mats_[t + 1];
+  MatrixXs &kkt_rhs = workspace_.kkt_rhs_[t + 1];
+  MatrixXs &resdl = workspace_.kkt_resdls_[t + 1];
+  MatrixXs &gains = results_.gains_[t];
+
   typename Workspace::LDLT &ldlt = *workspace_.ldlts_[t + 1];
   PROXDDP_NOMALLOC_END;
   ldlt.compute(kkt_mat);
@@ -511,9 +516,6 @@ auto SolverProxDDP<Scalar>::computeGains(const Problem &problem,
     }
   }
 
-  MatrixXs &gains = results_.gains_[t];
-  MatrixXs &resdl = workspace_.kkt_resdls_[t + 1];
-
   PROXDDP_NOMALLOC_END;
   iterative_refinement_impl<Scalar>::run(ldlt, kkt_mat, kkt_rhs, resdl, gains,
                                          refinement_threshold_,
@@ -522,6 +524,7 @@ auto SolverProxDDP<Scalar>::computeGains(const Problem &problem,
 
   /* Value function */
   VParams &vp = workspace_.value_params[t];
+  auto kkt_rhs_fb = kkt_rhs.rightCols(ndx1);
   auto Qxw = kkt_rhs_fb.transpose();
   auto ff = results_.getFeedforward(t);
   auto fb = results_.getFeedback(t);
@@ -805,7 +808,6 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
     /// TODO: make this smarter using e.g. some caching mechanism
     problem.computeDerivatives(results_.xs, results_.us,
                                workspace_.problem_data);
-    computeConstraintJacobianProjections(problem);
     // computeProxTerms(results.xs, results.us, workspace);
     // computeProxDerivatives(results.xs, results.us, workspace);
     const Scalar phi0 = results_.merit_value_;
@@ -976,10 +978,12 @@ void SolverProxDDP<Scalar>::computeCriterion(const Problem &problem) {
 
   for (std::size_t i = 1; i <= nsteps; i++) {
     const StageModel &st = *problem.stages_[i - 1];
+    const QParams &qparam = workspace_.q_params[i - 1];
     const int nu = st.nu();
     const int ndual = st.numDual();
     auto kkt_rhs = workspace_.kkt_rhs_[i].col(0);
-    auto kktu = kkt_rhs.head(nu);
+    auto kktu = qparam.Qu;
+    auto kkty = qparam.Qy;
     const auto kktlam = kkt_rhs.tail(ndual); // dual residual
 
     VParams &vp = workspace_.value_params[i];
@@ -987,26 +991,20 @@ void SolverProxDDP<Scalar>::computeCriterion(const Problem &problem) {
     Scalar rlam = math::infty_norm(kktlam);
     const ConstraintStack &cstr_mgr = st.constraints_;
 
-    Scalar ru_ddp = 0.;
     const StageData &data = prob_data.getStageData(i - 1);
     const DynamicsDataTpl<Scalar> &dd = data.dyn_data();
     auto lam_head = cstr_mgr.getConstSegmentByConstraint(results_.lams[i], 0);
 
     vp.Vx_ -= lam_head;
     kktu.noalias() += dd.Ju_.transpose() * vp.Vx_;
+    Scalar ru_ddp = math::infty_norm(kktu);
+    kktu.noalias() -= dd.Ju_.transpose() * vp.Vx_;
     vp.Vx_ += lam_head;
-    ru_ddp = math::infty_norm(kktu);
 
-#ifndef NDEBUG
-    Scalar ru = math::infty_norm(kktu);
-    auto gy = -lam_head + vp.Vx_;
-    Scalar ry = math::infty_norm(gy);
-    std::FILE *fi = std::fopen("pddp.log", "a");
-    fmt::print(fi, "[{:>3d}]ru={:.2e},ry={:.2e},rlam={:.2e},ru_other={:.2e}\n",
-               i, ru, ry, rlam, ru_ddp);
-    std::fclose(fi);
-#endif
-    workspace_.stage_inner_crits(long(i)) = std::max({ru_ddp, 0., rlam});
+    Scalar ry = math::infty_norm(kkty);
+    ry = 0.;
+
+    workspace_.stage_inner_crits(long(i)) = std::max({ru_ddp, ry, rlam});
     {
       const CostData &proxdata = *workspace_.prox_datas[i - 1];
       // const CostData &proxnext = *workspace.prox_datas[i];

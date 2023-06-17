@@ -179,6 +179,9 @@ public:
   /// @brief    Compute the Hamiltonian parameters at time @param t.
   void updateHamiltonian(const Problem &problem, const std::size_t);
 
+  /// Assemble the right-hand side of the KKT system.
+  void assembleKktSystem(const Problem &problem, const std::size_t t);
+
   /// @brief    Perform the Riccati backward pass.
   /// @pre  Compute the derivatives first!
   BackwardRet backwardPass(const Problem &problem);
@@ -254,9 +257,6 @@ public:
   /// projected constraints.
   void computeMultipliers(const Problem &problem,
                           const std::vector<VectorXs> &lams);
-
-  /// Compute the projections of the constraint Jacobians on their active sets.
-  void computeConstraintJacobianProjections(const Problem &problem);
 
   /// @copydoc mu_penal_
   PROXDDP_INLINE Scalar mu() const { return mu_penal_; }
