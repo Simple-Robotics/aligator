@@ -26,8 +26,16 @@ void exposeProxDDP() {
   bp::class_<ProxScaler, boost::noncopyable>("ProxScaler", bp::no_init)
       .def("applyDefaultStrategy", &ProxScaler::applyDefaultStrategy,
            bp::args("self"))
-      .def("set_weight", &ProxScaler::set_weight,
-           bp::args("self", "value", "j"))
+      .def(
+          "set_weight",
+          +[](ProxScaler &s, Scalar v, std::size_t j) {
+            if (j >= s.size()) {
+              PyErr_SetString(PyExc_IndexError, "Index out of bounds.");
+              bp::throw_error_already_set();
+            }
+            s.set_weight(v, (long)j);
+          },
+          bp::args("self", "value", "j"))
       .add_property("size", &ProxScaler::size,
                     "Get the number of constraint blocks.")
       .add_property("weights",
