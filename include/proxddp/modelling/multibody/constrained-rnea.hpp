@@ -32,13 +32,13 @@ void underactuatedConstrainedInverseDynamics(
 
   long nu = actMatrix.cols();
   long nv = model.nv;
-  assert(res.size() == nu + d);
   assert(nv == actMatrix.rows() && "Actuation matrix dimension inconsistent.");
 
   pin::computeAllTerms(model, data, q, v);
   const auto &nle = data.nle;
 
   long d = (long)constraint_model.size();
+  assert(res.size() == nu + d);
   MatrixXs work(nv, nu + d);
 
   work.leftCols(nu) = actMatrix;
