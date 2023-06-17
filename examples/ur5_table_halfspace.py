@@ -94,7 +94,7 @@ problem.setNumThreads(4)
 
 
 tol = 1e-4
-mu_init = 0.01
+mu_init = 0.001
 max_iters = 50
 verbose = proxddp.VerboseLevel.VERBOSE
 solver = proxddp.SolverProxDDP(tol, mu_init, max_iters=max_iters, verbose=verbose)
