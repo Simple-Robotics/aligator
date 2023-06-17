@@ -319,10 +319,10 @@ def main(args: Args):
     solver.max_iters = 200
     solver.registerCallback("his", history_cb)
     solver.setup(problem)
+    workspace: proxddp.Workspace = solver.workspace
     solver.run(problem, xs_init, us_init)
 
-    results = solver.getResults()
-    workspace = solver.getWorkspace()
+    results = solver.results
     print(results)
 
     def test_check_numiters(results):
