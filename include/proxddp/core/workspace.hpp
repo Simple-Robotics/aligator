@@ -48,7 +48,7 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   std::vector<VectorXs> lams_pdal;
   /// Shifted constraints the projection operators should be applied to.
   std::vector<VectorXs> shifted_constraints;
-  std::vector<VectorXs> proj_constraints;
+  std::vector<MatrixXs> proj_jacobians;
   std::vector<VecBool> active_constraints;
 
   /// @name Riccati gains, memory buffers for primal-dual steps
