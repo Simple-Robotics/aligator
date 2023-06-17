@@ -842,9 +842,8 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
     /// TODO: remove these expensive computations
     /// only use Q-function params etc
     linearRollout(problem);
-    Scalar dphi0_analytical = PDALFunction<Scalar>::directionalDerivative(
+    Scalar dphi0 = PDALFunction<Scalar>::directionalDerivative(
         *this, problem, results_.lams, workspace_);
-    Scalar dphi0 = dphi0_analytical; // value used for LS & logging
 
     // check if we can early stop
     if (std::abs(dphi0) <= ls_params.dphi_thresh)
