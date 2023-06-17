@@ -8,13 +8,14 @@ import example_robot_data as erd
 import tap
 
 import matplotlib.pyplot as plt
-from typing import Literal, List
+from typing import Literal, List, Optional
 
 
 plt.rcParams["lines.linewidth"] = 1.0
 plt.rcParams["lines.markersize"] = 5
 
 integrator_choices = Literal["euler", "semieuler", "midpoint", "rk2"]
+MESHCAT_ZMQ_DEFAULT = "tcp://127.0.0.1:6000"
 
 
 class ArgsBase(tap.Tap):
@@ -23,6 +24,13 @@ class ArgsBase(tap.Tap):
     plot: bool = False
     integrator: integrator_choices = "semieuler"
     """Numerical integrator to use"""
+    zmq_url: Optional[str] = MESHCAT_ZMQ_DEFAULT
+
+    def process_args(self):
+        if self.record:
+            self.display = True
+        if self.zmq_url is not None and self.zmq_url.lower() == "none":
+            self.zmq_url = None
 
 
 def plot_se2_pose(q: np.ndarray, ax: plt.Axes, alpha=0.5, fc="tab:blue"):

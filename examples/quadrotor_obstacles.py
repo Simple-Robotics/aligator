@@ -30,16 +30,10 @@ class Args(ArgsBase):
     integrator = "semieuler"
     bounds: bool = False
     """Use control bounds"""
-    plot: bool = False  # Plot the trajectories
-    display: bool = False
     obstacles: bool = False  # Obstacles in the environment
     random: bool = False
     term_cstr: bool = False
     fddp: bool = False
-
-    def process_args(self):
-        if self.record:
-            self.display = True
 
 
 def create_halfspace_z(ndx, nu, offset: float = 0.0, neg: bool = False):
@@ -306,7 +300,7 @@ def main(args: Args):
     _, x_term = task_schedule(nsteps)
     problem = setup()
 
-    viewer = meshcat.Visualizer()
+    viewer = meshcat.Visualizer(zmq_url=args.zmq_url)
     vizer = pin.visualize.MeshcatVisualizer(
         rmodel, robot.collision_model, robot.visual_model, data=rdata
     )

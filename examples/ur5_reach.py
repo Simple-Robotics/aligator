@@ -17,10 +17,6 @@ class Args(ArgsBase):
     fddp: bool = False
     bounds: bool = False
 
-    def process_args(self):
-        if self.record:
-            self.display = True
-
 
 args = Args().parse_args()
 

@@ -2,18 +2,14 @@ import example_robot_data as erd
 import pinocchio as pin
 import numpy as np
 import proxddp
-import tap
 
 from proxddp import dynamics, manifolds
-from utils import plot_controls_traj
+from utils import plot_controls_traj, ArgsBase
 from pinocchio.visualize import MeshcatVisualizer
 
 
-class Args(tap.Tap):
-    display: bool = False
-    record: bool = False
+class Args(ArgsBase):
     dt: float = 0.02
-    zmq_url = "tcp://127.0.0.1:6000"
 
 
 robot = erd.load("ur10_limited")

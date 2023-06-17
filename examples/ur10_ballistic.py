@@ -7,7 +7,6 @@ import proxddp
 import hppfcl
 import matplotlib.pyplot as plt
 import contextlib
-import tap
 
 from pathlib import Path
 from typing import Tuple
@@ -16,12 +15,13 @@ from utils import (
     add_namespace_prefix_to_models,
     plot_controls_traj,
     plot_velocity_traj,
+    ArgsBase,
 )
 from proxddp import dynamics, manifolds, constraints
 
 
-class Args(tap.Tap):
-    record: bool = False
+class Args(ArgsBase):
+    pass
 
 
 args = Args().parse_args()
@@ -124,7 +124,7 @@ def configure_viz(target_pos):
     )
     gobj.meshColor[:] = np.array([200, 100, 100, 200]) / 255.0
 
-    viewer = meshcat.Visualizer("tcp://127.0.0.1:6000")
+    viewer = meshcat.Visualizer(args.zmq_url)
     viz = MeshcatVisualizer(
         model=rmodel, collision_model=cmodel, visual_model=vmodel, data=rdata
     )
