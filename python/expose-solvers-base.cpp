@@ -28,6 +28,27 @@ void exposeSolverCommon() {
       .add_property(
           "Qu", bp::make_getter(&QParams::Qu,
                                 bp::return_value_policy<bp::return_by_value>()))
+      .add_property(
+          "Qy", bp::make_getter(&QParams::Qy,
+                                bp::return_value_policy<bp::return_by_value>()))
+      .add_property("Qxx", bp::make_getter(
+                               &QParams::Qxx,
+                               bp::return_value_policy<bp::return_by_value>()))
+      .add_property("Qxu", bp::make_getter(
+                               &QParams::Qxu,
+                               bp::return_value_policy<bp::return_by_value>()))
+      .add_property("Qxy", bp::make_getter(
+                               &QParams::Qxy,
+                               bp::return_value_policy<bp::return_by_value>()))
+      .add_property("Quu", bp::make_getter(
+                               &QParams::Quu,
+                               bp::return_value_policy<bp::return_by_value>()))
+      .add_property("Quy", bp::make_getter(
+                               &QParams::Quy,
+                               bp::return_value_policy<bp::return_by_value>()))
+      .add_property("Qyy", bp::make_getter(
+                               &QParams::Qyy,
+                               bp::return_value_policy<bp::return_by_value>()))
       .def(PrintableVisitor<QParams>());
 
   bp::class_<VParams>("VParams", "Value function parameters.", bp::no_init)
