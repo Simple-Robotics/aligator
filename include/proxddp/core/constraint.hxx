@@ -6,6 +6,13 @@
 
 namespace proxddp {
 
+template <typename Scalar> void ConstraintStackTpl<Scalar>::clear() {
+  storage_.clear();
+  indices_ = {0};
+  dims_.clear();
+  total_dim_ = 0;
+}
+
 template <typename Scalar>
 void ConstraintStackTpl<Scalar>::pushBack(const ConstraintType &el,
                                           const long nr) {
@@ -20,8 +27,17 @@ template <typename Scalar>
 void ConstraintStackTpl<Scalar>::pushBack(const ConstraintType &el) {
   assert(el.func != 0 && "constraint must have non-null underlying function.");
   assert(el.set != 0 && "constraint must have non-null underlying set.");
-  const long nr = el.func->nr;
-  pushBack(el, nr);
+  pushBack(el, el.nr());
+}
+
+template <typename Scalar>
+template <typename Derived>
+auto ConstraintStackTpl<Scalar>::getRowsByConstraint(
+    const Eigen::MatrixBase<Derived> &J_, const std::size_t j) const {
+  using MatrixType = Eigen::MatrixBase<Derived>;
+  MatrixType &J = const_cast<MatrixType &>(J_);
+  assert(J.rows() == totalDim());
+  return J.middleRows(getIndex(j), getDim(j));
 }
 
 } // namespace proxddp
