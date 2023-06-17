@@ -15,6 +15,7 @@ template <typename Scalar> struct ConstraintProximalScalerTpl {
     weights.setOnes();
   }
 
+  std::size_t size() const { return constraints_.size(); }
   Scalar get(std::size_t j) const { return weights[(long)j] * mu_; }
 
   Scalar inv(std::size_t j) const { return 1. / get(j); }

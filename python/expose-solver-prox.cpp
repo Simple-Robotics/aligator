@@ -28,6 +28,8 @@ void exposeProxDDP() {
            bp::args("self"))
       .def("set_weight", &ProxScaler::set_weight,
            bp::args("self", "value", "j"))
+      .add_property("size", &ProxScaler::size,
+                    "Get the number of constraint blocks.")
       .add_property("weights",
                     bp::make_function(&ProxScaler::getWeights,
                                       bp::return_internal_reference<>()));
