@@ -698,14 +698,6 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
   std::size_t &al_iter = results_.al_iter;
   while ((al_iter < max_al_iters) && (results_.num_iters < max_iters)) {
     bool inner_conv = innerLoop(problem);
-#ifndef NDEBUG
-    {
-      std::FILE *fi = std::fopen("pddp.log", "a");
-      fmt::print(fi, "  p={:5.3e} | d={:5.3e}\n", results_.prim_infeas,
-                 results_.dual_infeas);
-      std::fclose(fi);
-    }
-#endif
     if (!inner_conv) {
       al_iter++;
       break;
