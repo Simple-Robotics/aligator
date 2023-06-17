@@ -100,7 +100,8 @@ if __name__ == "__main__":
         viz.display(robot.q0)
 
     tol = 1e-3
-    solver = proxddp.SolverProxDDP(tol, 0.01, verbose=proxddp.VERBOSE)
+    mu_init = 0.001
+    solver = proxddp.SolverProxDDP(tol, mu_init, verbose=proxddp.VERBOSE)
     solver.rollout_max_iters = 10
     solver.max_iters = 200
     solver.setup(problem)
