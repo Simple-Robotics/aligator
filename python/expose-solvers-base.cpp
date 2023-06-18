@@ -20,6 +20,7 @@ void exposeSolverCommon() {
   bp::class_<QParams>(
       "QParams", "Q-function parameters.",
       bp::init<int, int, int>(bp::args("self", "ndx", "nu", "ndy")))
+      .add_property("ntot", &QParams::ntot)
       .def_readonly("grad", &QParams::grad_)
       .def_readonly("hess", &QParams::hess_)
       .add_property(
@@ -49,6 +50,7 @@ void exposeSolverCommon() {
       .add_property("Qyy", bp::make_getter(
                                &QParams::Qyy,
                                bp::return_value_policy<bp::return_by_value>()))
+      .def(bp::self == bp::self)
       .def(PrintableVisitor<QParams>());
 
   bp::class_<VParams>("VParams", "Value function parameters.", bp::no_init)
