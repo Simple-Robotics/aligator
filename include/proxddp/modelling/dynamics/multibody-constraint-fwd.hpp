@@ -82,3 +82,7 @@ struct MultibodyConstraintFwdDataTpl : ODEDataTpl<Scalar> {
 } // namespace proxddp
 
 #include "proxddp/modelling/dynamics/multibody-constraint-fwd.hxx"
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "proxddp/modelling/dynamics/multibody-constraint-fwd.txx"
+#endif
