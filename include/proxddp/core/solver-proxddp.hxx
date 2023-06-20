@@ -543,7 +543,6 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
                                                      const Scalar alpha) {
   using ExplicitDynData = ExplicitDynamicsDataTpl<Scalar>;
   using DynamicsModel = DynamicsModelTpl<Scalar>;
-  using DynamicsData = DynamicsDataTpl<Scalar>;
 
   const std::size_t nsteps = workspace_.nsteps;
   std::vector<VectorXs> &xs = workspace_.trial_xs;
@@ -991,9 +990,7 @@ void SolverProxDDP<Scalar>::computeCriterion(const Problem &problem) {
     Scalar rlam = math::infty_norm(kktlam);
     const ConstraintStack &cstr_mgr = st.constraints_;
 
-    const StageData &data = prob_data.getStageData(i - 1);
-    const DynamicsDataTpl<Scalar> &dd = data.dyn_data();
-    auto lam_head = cstr_mgr.getConstSegmentByConstraint(results_.lams[i], 0);
+    const DynamicsData &dd = data.dyn_data();
 
     vp.Vx_ -= lam_head;
     kktu.noalias() += dd.Ju_.transpose() * vp.Vx_;

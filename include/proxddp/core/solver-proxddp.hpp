@@ -34,6 +34,7 @@ public:
   using Workspace = WorkspaceTpl<Scalar>;
   using Results = ResultsTpl<Scalar>;
   using FunctionData = FunctionDataTpl<Scalar>;
+  using DynamicsData = DynamicsDataTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using StageModel = StageModelTpl<Scalar>;
   using ConstraintType = StageConstraintTpl<Scalar>;
