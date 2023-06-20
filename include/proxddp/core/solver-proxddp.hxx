@@ -830,6 +830,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
     }
 
     computeInfeasibilities(problem);
+    computeLagrangianDerivatives(problem);
     computeCriterion(problem);
 
     Scalar outer_crit = std::max(results_.dual_infeas, results_.prim_infeas);
@@ -1013,6 +1014,56 @@ void SolverProxDDP<Scalar>::computeCriterion(const Problem &problem) {
   }
   workspace_.inner_criterion = math::infty_norm(workspace_.stage_inner_crits);
   results_.dual_infeas = math::infty_norm(workspace_.stage_dual_infeas);
+}
+
+template <typename Scalar>
+void SolverProxDDP<Scalar>::computeLagrangianDerivatives(
+    const Problem &problem) {
+  TrajOptData const &pd = workspace_.problem_data;
+  std::vector<VectorXs> &Lxs = workspace_.Lxs_;
+  std::vector<VectorXs> &Lus = workspace_.Lus_;
+  std::vector<VectorXs> const &lams = results_.lams;
+
+  math::setZero(Lxs);
+  math::setZero(Lus);
+  {
+    FunctionData const &ind = pd.getInitData();
+    Lxs[0] = ind.Jx_.transpose() * lams[0];
+  }
+
+  {
+    CostData const &cdterm = *pd.term_cost_data;
+    Lxs.back() = cdterm.Lx_;
+    ConstraintStack const &stack = problem.term_cstrs_;
+    VectorXs const &lamN = lams.back();
+    for (std::size_t j = 0; j < stack.size(); j++) {
+      FunctionData const &cstr_data = *pd.term_cstr_data[j];
+      auto lam_j = stack.getConstSegmentByConstraint(lamN, j);
+      Lxs.back() += cstr_data.Jx_.transpose() * lam_j;
+    }
+  }
+
+  for (std::size_t i = 0; i < workspace_.nsteps; i++) {
+    StageModel const &sm = *problem.stages_[i];
+    StageData const &sd = pd.getStageData(i);
+    ConstraintStack const &stack = sm.constraints_;
+    Lxs[i] = sd.cost_data->Lx_;
+    Lus[i] = sd.cost_data->Lu_;
+
+    assert(sd.constraint_data.size() == sm.numConstraints());
+
+    for (std::size_t j = 0; j < stack.size(); j++) {
+      FunctionData const &cstr_data = *sd.constraint_data[j];
+      ConstVectorRef lam_j = stack.getConstSegmentByConstraint(lams[i + 1], j);
+      Lxs[i] += cstr_data.Jx_.transpose() * lam_j;
+      Lus[i] += cstr_data.Ju_.transpose() * lam_j;
+
+      assert((i + 1) <= workspace_.nsteps);
+      // add contribution to the next node
+      if (j == 0)
+        Lxs[i + 1] += cstr_data.Jy_.transpose() * lam_j;
+    }
+  }
 }
 
 } // namespace proxddp

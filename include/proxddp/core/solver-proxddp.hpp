@@ -223,6 +223,7 @@ public:
   void computeInfeasibilities(const Problem &problem);
   /// @brief Compute stationarity criterion.
   void computeCriterion(const Problem &problem);
+  void computeLagrangianDerivatives(const Problem &problem);
 
   /// @name callbacks
   /// \{

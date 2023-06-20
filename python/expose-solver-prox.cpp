@@ -61,6 +61,8 @@ void exposeProxDDP() {
           "Scalers of the constraints in the proximal algorithm.")
       .def_readonly("kkt_mat", &Workspace::kkt_mats_)
       .def_readonly("kkt_rhs", &Workspace::kkt_rhs_)
+      .def_readonly("Lxs", &Workspace::Lxs_)
+      .def_readonly("Lus", &Workspace::Lus_)
       .def_readonly("dxs", &Workspace::dxs)
       .def_readonly("dus", &Workspace::dus)
       .def_readonly("trial_lams", &Workspace::trial_lams)
@@ -134,6 +136,10 @@ void exposeProxDDP() {
            "Set an appropriate lower bound for mu during linesearch.")
       .def("computeCriterion", &SolverType::computeCriterion,
            bp::args("self", "problem"), "Compute problem stationarity.")
+      .def("computeLagrangianDerivatives",
+           &SolverType::computeLagrangianDerivatives,
+           bp::args("self", "problem"),
+           "Compute the derivatives of the Lagrangian.")
       .def("computeInfeasibilities", &SolverType::computeInfeasibilities,
            bp::args("self", "problem"), "Compute problem infeasibilities.")
       .def(SolverVisitor<SolverType>())
