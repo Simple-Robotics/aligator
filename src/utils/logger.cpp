@@ -14,7 +14,8 @@ void BaseLogger::printHeadline() {
     }
     cols.push_back(fmt::format(fstr, it->first, it->second));
   }
-  fmt::print(fmt::emphasis::bold, "{}\n", fmt::join(cols, join_str));
+  fmt::print(fmt::emphasis::bold, "{}", fmt::join(cols, join_str));
+  fmt::print("\n");
   cols.clear();
 }
 
