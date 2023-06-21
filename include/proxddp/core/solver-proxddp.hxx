@@ -297,23 +297,17 @@ void SolverProxDDP<Scalar>::updateHamiltonian(const Problem &problem,
 
   // Use the contiguous full gradient/jacobian/hessian buffers
   // to fill in the Q-function derivatives
-  qparam.q_ = cdata.value_; // rho() * proxdata.value_;
-  qparam.Qx = cdata.Lx_;    // rho() * proxdata.Lx_;
-  qparam.Qu = cdata.Lu_;    //+ rho() * proxdata.Lu_;
+  qparam.q_ = cdata.value_;
+  qparam.Qx = cdata.Lx_;
+  qparam.Qu = cdata.Lu_;
   qparam.Qy = vnext.Vx_;
 
   auto qpar_xu = qparam.hess_.topLeftCorner(ndx1 + nu, ndx1 + nu);
-  qpar_xu = cdata.hess_; //+ rho() * proxdata.hess_;
+  qpar_xu = cdata.hess_;
   qparam.Qyy = vnext.Vxx_;
   qparam.Quu.diagonal().array() += ureg_;
 
   const VectorXs &lam = results_.lams[t + 1];
-  if (rho() > 0) {
-    qparam.q_ += rho() * proxdata.value_;
-    qparam.Qx += rho() * proxdata.Lx_;
-    qparam.Qu += rho() * proxdata.Lu_;
-    qpar_xu += rho() * proxdata.hess_;
-  }
 
   const ConstraintStack &cstr_stack = stage.constraints_;
   for (std::size_t k = 0; k < cstr_stack.size(); k++) {
@@ -343,12 +337,6 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem) {
   term_value.Vxx_ = term_cost_data.Lxx_;
   term_value.Vxx_.diagonal().array() += xreg_;
 
-  if (rho() > 0.) {
-    term_value.v_ += rho() * proxdata.value_;
-    term_value.Vx_ += rho() * proxdata.Lx_;
-    term_value.Vxx_ += rho() * proxdata.Lxx_;
-  }
-
   const ConstraintStack &cstr_mgr = problem.term_cstrs_;
   if (!cstr_mgr.empty()) {
     /* check number of multipliers */
@@ -364,21 +352,21 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem) {
     const VectorXs &lamplus = workspace_.lams_plus[nsteps + 1];
     const VectorXs &lamin = results_.lams[nsteps + 1];
     auto scval_k = cstr_mgr.getConstSegmentByConstraint(shift_cstr_v, k);
-    MatrixXs &constraint_Jx = workspace_.proj_jacobians.back();
-    constraint_Jx = cstr_data.Jx_;
-    assert(constraint_Jx.rows() == cstr_mgr[k].nr());
-    assert(constraint_Jx.cols() == cstr_mgr[k].func->ndx1);
-    cstr_set.applyNormalConeProjectionJacobian(scval_k, constraint_Jx);
+    MatrixXs &cJx = workspace_.proj_jacobians.back();
+    cJx = cstr_data.Jx_;
+    assert(cJx.rows() == cstr_mgr[k].nr());
+    assert(cJx.cols() == cstr_mgr[k].func->ndx1);
+    cstr_set.applyNormalConeProjectionJacobian(scval_k, cJx);
 
     auto ff = results_.getFeedforward(nsteps);
     auto fb = results_.getFeedback(nsteps);
     ff = lamplus - lamin;
-    fb = mu_inv() * constraint_Jx;
+    fb = mu_inv() * cJx;
 
     term_value.v_ += 0.5 * mu_inv() * lamplus.squaredNorm();
-    term_value.Vx_.noalias() += constraint_Jx.transpose() * lamplus;
+    term_value.Vx_.noalias() += cJx.transpose() * lamplus;
     term_value.Vxx_ += cstr_data.Hxx_;
-    term_value.Vxx_.noalias() += constraint_Jx.transpose() * fb;
+    term_value.Vxx_.noalias() += cJx.transpose() * fb;
   }
   PROXDDP_NOMALLOC_END;
 }
@@ -792,7 +780,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
   results_.merit_value_ =
       PDALFunction<Scalar>::evaluate(*this, problem, results_.lams, workspace_);
 
-  while (iter < max_iters) {
+  for (; iter < max_iters; iter++) {
     // ASSUMPTION: last evaluation in previous iterate
     // was during linesearch, at the current candidate solution (x,u).
     /// TODO: make this smarter using e.g. some caching mechanism
@@ -884,7 +872,6 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
     logger.log(iter_log);
 
     xreg_last_ = xreg_;
-    iter++;
     inner_step++;
   }
   return false;
