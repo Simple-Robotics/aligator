@@ -721,7 +721,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
     }
     rho_penal_ *= bcl_params.rho_update_factor;
 
-    inner_tol_ = std::max(inner_tol_, target_tol_);
+    inner_tol_ = std::max(inner_tol_, 0.01 * target_tol_);
     prim_tol_ = std::max(prim_tol_, target_tol_);
 
     al_iter++;
