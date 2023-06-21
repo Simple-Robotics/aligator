@@ -60,8 +60,7 @@ Scalar SolverProxDDP<Scalar>::forward_linear_impl(const Problem &problem,
   const std::size_t nsteps = workspace.nsteps;
 
   for (std::size_t i = 0; i < results.lams.size(); i++) {
-    workspace.trial_lams[i] = results.lams[i];
-    workspace.trial_lams[i] += alpha * workspace.dlams[i];
+    workspace.trial_lams[i] = results.lams[i] + alpha * workspace.dlams[i];
   }
 
   for (std::size_t i = 0; i < nsteps; i++) {
@@ -91,32 +90,25 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem) {
   const int ndx0 = problem.init_condition_->ndx1;
   const VectorXs &lampl0 = workspace_.lams_plus[0];
   const VectorXs &lamin0 = results_.lams[0];
-  const CostData &proxdata0 = *workspace_.prox_datas[0];
   MatrixXs &kkt_mat = workspace_.kkt_mats_[0];
   VectorRef kkt_rhs = workspace_.kkt_rhs_[0].col(0);
   VectorRef kktx = kkt_rhs.head(ndx0);
   assert(kkt_rhs.size() == ndx0 + ndual0);
   assert(kkt_mat.cols() == ndx0 + ndual0);
 
-  // computes cur_x0 - x0_target
-  problem.init_condition_->evaluate(results_.xs[0], init_data);
-
   if (force_initial_condition_) {
     workspace_.pd_step_[0].setZero();
     workspace_.dxs[0] = -init_data.value_;
-    workspace_.trial_lams[0].setZero();
+    workspace_.dlams[0] = -results_.lams[0];
     kkt_rhs.setZero();
-
   } else {
     auto kktl = kkt_rhs.tail(ndual0);
     kktx = vp.Vx_;
     kktx.noalias() += init_data.Jx_.transpose() * lamin0;
     kktl = mu() * (lampl0 - lamin0);
 
-    auto kkt_xx = kkt_mat.topLeftCorner(ndx0, ndx0);
+    BlockXs kkt_xx = kkt_mat.topLeftCorner(ndx0, ndx0);
     kkt_xx = vp.Vxx_ + init_data.Hxx_;
-    if (rho() > 0)
-      kkt_xx += rho() * proxdata0.Lxx_;
 
     kkt_mat.topRightCorner(ndx0, ndual0) = init_data.Jx_.transpose();
     kkt_mat.bottomLeftCorner(ndual0, ndx0) = init_data.Jx_;
@@ -127,7 +119,6 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem) {
     iterative_refinement_impl<Scalar>::run(
         ldlt, kkt_mat, kkt_rhs, workspace_.kkt_resdls_[0],
         workspace_.pd_step_[0], refinement_threshold_, max_refinement_steps_);
-    PROXDDP_NOMALLOC_BEGIN;
   }
   PROXDDP_NOMALLOC_END;
 }
