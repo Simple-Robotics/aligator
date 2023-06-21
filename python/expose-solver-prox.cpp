@@ -61,6 +61,8 @@ void exposeProxDDP() {
           "Scalers of the constraints in the proximal algorithm.")
       .def_readonly("kkt_mat", &Workspace::kkt_mats_)
       .def_readonly("kkt_rhs", &Workspace::kkt_rhs_)
+      .def_readonly("kkt_residuals", &Workspace::kkt_resdls_,
+                    "KKT system residuals.")
       .def_readonly("Lxs", &Workspace::Lxs_)
       .def_readonly("Lus", &Workspace::Lus_)
       .def_readonly("dxs", &Workspace::dxs)
