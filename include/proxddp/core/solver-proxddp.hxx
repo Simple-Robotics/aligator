@@ -1024,31 +1024,33 @@ void SolverProxDDP<Scalar>::computeLagrangianDerivatives(
   std::vector<VectorXs> &Lus = workspace_.Lus_;
   std::vector<VectorXs> const &lams = results_.lams;
 
+  std::size_t nsteps = workspace_.nsteps;
+
   math::setZero(Lxs);
   math::setZero(Lus);
   {
     FunctionData const &ind = pd.getInitData();
-    Lxs[0] = ind.Jx_.transpose() * lams[0];
+    Lxs[0] += ind.Jx_.transpose() * lams[0];
   }
 
   {
     CostData const &cdterm = *pd.term_cost_data;
-    Lxs.back() = cdterm.Lx_;
+    Lxs[nsteps] = cdterm.Lx_;
     ConstraintStack const &stack = problem.term_cstrs_;
     VectorXs const &lamN = lams.back();
     for (std::size_t j = 0; j < stack.size(); j++) {
       FunctionData const &cstr_data = *pd.term_cstr_data[j];
       auto lam_j = stack.getConstSegmentByConstraint(lamN, j);
-      Lxs.back() += cstr_data.Jx_.transpose() * lam_j;
+      Lxs[nsteps] += cstr_data.Jx_.transpose() * lam_j;
     }
   }
 
-  for (std::size_t i = 0; i < workspace_.nsteps; i++) {
+  for (std::size_t i = 0; i < nsteps; i++) {
     StageModel const &sm = *problem.stages_[i];
     StageData const &sd = pd.getStageData(i);
     ConstraintStack const &stack = sm.constraints_;
-    Lxs[i] = sd.cost_data->Lx_;
-    Lus[i] = sd.cost_data->Lu_;
+    Lxs[i] += sd.cost_data->Lx_;
+    Lus[i] += sd.cost_data->Lu_;
 
     assert(sd.constraint_data.size() == sm.numConstraints());
 
