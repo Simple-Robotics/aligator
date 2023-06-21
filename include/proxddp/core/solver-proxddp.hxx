@@ -939,57 +939,40 @@ void SolverProxDDP<Scalar>::computeCriterion(const Problem &problem) {
   const std::size_t nsteps = workspace_.nsteps;
   TrajOptData &prob_data = workspace_.problem_data;
 
-  {
-    const int ndx = problem.init_condition_->ndx1;
-    VectorRef kkt_rhs = workspace_.kkt_rhs_[0].col(0);
-    auto kktx = kkt_rhs.head(ndx);
-    if (force_initial_condition_) {
-      workspace_.stage_inner_crits(0) = 0.;
-      workspace_.stage_dual_infeas(0) = 0.;
-    } else {
-      const ProxData &proxdata = *workspace_.prox_datas[0];
-      workspace_.stage_inner_crits(0) = math::infty_norm(kkt_rhs);
-      workspace_.stage_dual_infeas(0) =
-          math::infty_norm(kktx - rho() * proxdata.Lx_);
-    }
+  workspace_.stage_inner_crits.setZero();
+  workspace_.stage_dual_infeas.setZero();
+  Scalar x_residuals = 0.;
+  Scalar u_residuals = 0.;
+  Scalar rx = math::infty_norm(workspace_.Lxs_[0]);
+  if (!force_initial_condition_) {
+    x_residuals = std::max(x_residuals, rx);
+    VectorRef kkt_rhs = workspace_.kkt_mats_[0].col(0);
+    workspace_.stage_inner_crits(0) = math::infty_norm(kkt_rhs);
+    workspace_.stage_dual_infeas(0) = rx;
   }
 
-  for (std::size_t i = 1; i <= nsteps; i++) {
-    const StageModel &st = *problem.stages_[i - 1];
-    const QParams &qparam = workspace_.q_params[i - 1];
-    const int nu = st.nu();
+  for (std::size_t i = 0; i < nsteps; i++) {
+    const StageModel &st = *problem.stages_[i];
     const int ndual = st.numDual();
-    auto kkt_rhs = workspace_.kkt_rhs_[i].col(0);
-    auto kktu = qparam.Qu;
-    auto kkty = qparam.Qy;
-    const auto kktlam = kkt_rhs.tail(ndual); // dual residual
-
-    VParams &vp = workspace_.value_params[i];
+    ConstVectorRef kkt_rhs = workspace_.kkt_rhs_[i + 1].col(0);
+    ConstVectorRef kktlam = kkt_rhs.tail(ndual); // dual residual
 
     Scalar rlam = math::infty_norm(kktlam);
-    const ConstraintStack &cstr_mgr = st.constraints_;
+    Scalar rx = math::infty_norm(workspace_.Lxs_[i + 1]);
+    Scalar ru = math::infty_norm(workspace_.Lus_[i]);
+    x_residuals = std::max(x_residuals, rx);
+    u_residuals = std::max(u_residuals, ru);
 
     const DynamicsData &dd = data.dyn_data();
 
-    vp.Vx_ -= lam_head;
-    kktu.noalias() += dd.Ju_.transpose() * vp.Vx_;
-    Scalar ru_ddp = math::infty_norm(kktu);
-    kktu.noalias() -= dd.Ju_.transpose() * vp.Vx_;
-    vp.Vx_ += lam_head;
+    rx *= 1e-3;
+    workspace_.stage_inner_crits(long(i + 1)) = std::max({rx, ru, rlam});
+    workspace_.stage_dual_infeas(long(i + 1)) = std::max(rx, ru);
+  }
 
     Scalar ry = math::infty_norm(kkty);
     ry = 0.;
 
-    workspace_.stage_inner_crits(long(i)) = std::max({ru_ddp, ry, rlam});
-    {
-      const CostData &proxdata = *workspace_.prox_datas[i - 1];
-      // const CostData &proxnext = *workspace.prox_datas[i];
-      if (rho() > 0)
-        kktu -= -rho() * proxdata.Lu_;
-      Scalar dual_res_u = math::infty_norm(kktu);
-      workspace_.stage_dual_infeas(long(i)) = std::max(dual_res_u, 0.);
-    }
-  }
   workspace_.inner_criterion = math::infty_norm(workspace_.stage_inner_crits);
   results_.dual_infeas = math::infty_norm(workspace_.stage_dual_infeas);
 }
@@ -1040,8 +1023,7 @@ void SolverProxDDP<Scalar>::computeLagrangianDerivatives(
 
       assert((i + 1) <= workspace_.nsteps);
       // add contribution to the next node
-      if (j == 0)
-        Lxs[i + 1] += cstr_data.Jy_.transpose() * lam_j;
+      Lxs[i + 1] += cstr_data.Jy_.transpose() * lam_j;
     }
   }
 }
