@@ -196,7 +196,7 @@ def main(args: Args):
     u0, _, _, _ = np.linalg.lstsq(QUAD_ACT_MATRIX, tau)
 
     us_init = [u0] * nsteps
-    xs_init = [x0] * (nsteps + 1)
+    xs_init = proxddp.rollout(dynmodel, x0, us_init)
 
     x_tar1 = space.neutral()
     x_tar1[:3] = (0.9, 0.8, 1.0)
@@ -265,7 +265,7 @@ def main(args: Args):
                 space, nu, x_tar, np.diag(weights) * dt
             )
             rcost.addCost(xreg_cost)
-            ureg_cost = proxddp.QuadraticControlCost(space, nu, w_u * dt)
+            ureg_cost = proxddp.QuadraticControlCost(space, u0, w_u * dt)
             rcost.addCost(ureg_cost)
 
             stage = proxddp.StageModel(rcost, dynmodel)
@@ -304,7 +304,7 @@ def main(args: Args):
     vizer = pin.visualize.MeshcatVisualizer(
         rmodel, robot.collision_model, robot.visual_model, data=rdata
     )
-    vizer.initViewer(viewer, loadModel=True, open=args.display)
+    vizer.initViewer(viewer, loadModel=True)
     vizer.displayCollisions(True)
     vizer.display(x0[:nq])
 
