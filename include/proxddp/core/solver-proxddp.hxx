@@ -809,7 +809,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
     }
 
     computeInfeasibilities(problem);
-    computeLagrangianDerivatives(problem);
+    computeLagrangianDerivatives(problem, workspace_, results_.lams);
     computeCriterion(problem);
 
     Scalar outer_crit = std::max(results_.dual_infeas, results_.prim_infeas);
@@ -950,6 +950,8 @@ void SolverProxDDP<Scalar>::computeCriterion(const Problem &problem) {
     workspace_.stage_inner_crits(0) = math::infty_norm(kkt_rhs);
     workspace_.stage_dual_infeas(0) = rx;
   }
+  // fmt::print("i={:>3d} Lxi = {} | |Lxi| = {:.4e}\n", 0,
+  // workspace_.Lxs_[0].transpose(), rx);
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &st = *problem.stages_[i];
@@ -963,69 +965,20 @@ void SolverProxDDP<Scalar>::computeCriterion(const Problem &problem) {
     x_residuals = std::max(x_residuals, rx);
     u_residuals = std::max(u_residuals, ru);
 
-    const DynamicsData &dd = data.dyn_data();
+    // fmt::print("i={:>3d} Lui = {} | |Lui| = {:.4e}\n", i,
+    // workspace_.Lus_[i].transpose(), ru); fmt::print("i={:>3d} Lxi = {} |
+    // |Lxi| = {:.4e}\n", i+1, workspace_.Lxs_[i+1].transpose(), rx);
 
     rx *= 1e-3;
     workspace_.stage_inner_crits(long(i + 1)) = std::max({rx, ru, rlam});
     workspace_.stage_dual_infeas(long(i + 1)) = std::max(rx, ru);
   }
 
-    Scalar ry = math::infty_norm(kkty);
-    ry = 0.;
+  // fmt::print("max|Lx| = {:.4e}\n", x_residuals);
+  // fmt::print("max|Lu| = {:.4e}\n", u_residuals);
 
   workspace_.inner_criterion = math::infty_norm(workspace_.stage_inner_crits);
   results_.dual_infeas = math::infty_norm(workspace_.stage_dual_infeas);
-}
-
-template <typename Scalar>
-void SolverProxDDP<Scalar>::computeLagrangianDerivatives(
-    const Problem &problem) {
-  TrajOptData const &pd = workspace_.problem_data;
-  std::vector<VectorXs> &Lxs = workspace_.Lxs_;
-  std::vector<VectorXs> &Lus = workspace_.Lus_;
-  std::vector<VectorXs> const &lams = results_.lams;
-
-  std::size_t nsteps = workspace_.nsteps;
-
-  math::setZero(Lxs);
-  math::setZero(Lus);
-  {
-    FunctionData const &ind = pd.getInitData();
-    Lxs[0] += ind.Jx_.transpose() * lams[0];
-  }
-
-  {
-    CostData const &cdterm = *pd.term_cost_data;
-    Lxs[nsteps] = cdterm.Lx_;
-    ConstraintStack const &stack = problem.term_cstrs_;
-    VectorXs const &lamN = lams.back();
-    for (std::size_t j = 0; j < stack.size(); j++) {
-      FunctionData const &cstr_data = *pd.term_cstr_data[j];
-      auto lam_j = stack.getConstSegmentByConstraint(lamN, j);
-      Lxs[nsteps] += cstr_data.Jx_.transpose() * lam_j;
-    }
-  }
-
-  for (std::size_t i = 0; i < nsteps; i++) {
-    StageModel const &sm = *problem.stages_[i];
-    StageData const &sd = pd.getStageData(i);
-    ConstraintStack const &stack = sm.constraints_;
-    Lxs[i] += sd.cost_data->Lx_;
-    Lus[i] += sd.cost_data->Lu_;
-
-    assert(sd.constraint_data.size() == sm.numConstraints());
-
-    for (std::size_t j = 0; j < stack.size(); j++) {
-      FunctionData const &cstr_data = *sd.constraint_data[j];
-      ConstVectorRef lam_j = stack.getConstSegmentByConstraint(lams[i + 1], j);
-      Lxs[i] += cstr_data.Jx_.transpose() * lam_j;
-      Lus[i] += cstr_data.Ju_.transpose() * lam_j;
-
-      assert((i + 1) <= workspace_.nsteps);
-      // add contribution to the next node
-      Lxs[i + 1] += cstr_data.Jy_.transpose() * lam_j;
-    }
-  }
 }
 
 } // namespace proxddp

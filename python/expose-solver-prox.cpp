@@ -138,10 +138,6 @@ void exposeProxDDP() {
            "Set an appropriate lower bound for mu during linesearch.")
       .def("computeCriterion", &SolverType::computeCriterion,
            bp::args("self", "problem"), "Compute problem stationarity.")
-      .def("computeLagrangianDerivatives",
-           &SolverType::computeLagrangianDerivatives,
-           bp::args("self", "problem"),
-           "Compute the derivatives of the Lagrangian.")
       .def("computeInfeasibilities", &SolverType::computeInfeasibilities,
            bp::args("self", "problem"), "Compute problem infeasibilities.")
       .def(SolverVisitor<SolverType>())
@@ -151,6 +147,10 @@ void exposeProxDDP() {
                 bp::arg("us_init"), bp::arg("lams_init")),
                "Run the algorithm. Can receive initial guess for "
                "multiplier trajectory."));
+
+  bp::def("computeLagrangianDerivatives", computeLagrangianDerivatives<Scalar>,
+          bp::args("problem", "workspace", "lams"),
+          "Compute the derivatives of the problem Lagrangian.");
 }
 
 } // namespace python
