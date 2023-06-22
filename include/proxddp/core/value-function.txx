@@ -3,6 +3,6 @@
 #include "proxddp/core/value-function.hpp"
 
 namespace proxddp {
-  extern template struct value_function<context::Scalar>;
-  extern template struct q_function<context::Scalar>;
+  extern template struct ValueFunctionTpl<context::Scalar>;
+  extern template struct QFunctionTpl<context::Scalar>;
 }

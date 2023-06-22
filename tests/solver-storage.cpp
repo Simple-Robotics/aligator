@@ -8,8 +8,8 @@
 BOOST_AUTO_TEST_SUITE(solver_workspace)
 
 BOOST_AUTO_TEST_CASE(prox_storage) {
-  using VParams = proxddp::value_function<double>;
-  using QParams = proxddp::q_function<double>;
+  using VParams = proxddp::ValueFunctionTpl<double>;
+  using QParams = proxddp::QFunctionTpl<double>;
   const int NX = 3;
   const int NU = 2;
   VParams vstore(NX);

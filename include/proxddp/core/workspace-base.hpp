@@ -10,8 +10,8 @@ namespace proxddp {
 
 /// Base workspace struct for the algorithms.
 template <typename Scalar> struct WorkspaceBaseTpl {
-  using VParams = value_function<Scalar>;
-  using QParams = q_function<Scalar>;
+  using VParams = ValueFunctionTpl<Scalar>;
+  using QParams = QFunctionTpl<Scalar>;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
 protected:

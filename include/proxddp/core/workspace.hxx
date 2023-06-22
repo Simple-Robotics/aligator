@@ -264,8 +264,6 @@ void WorkspaceTpl<Scalar>::configureScalers(
   const ConstraintStackTpl<Scalar> &term_stack = problem.term_cstrs_;
   if (!term_stack.empty()) {
     cstr_scalers.emplace_back(term_stack, mu);
-    // workspace_.cstr_scalers.back().applyDefaultStrategy(); // does not
-    // apply to terminal nodes
   }
 }
 

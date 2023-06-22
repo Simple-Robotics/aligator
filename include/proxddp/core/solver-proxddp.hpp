@@ -39,8 +39,8 @@ public:
   using StageModel = StageModelTpl<Scalar>;
   using ConstraintType = StageConstraintTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
-  using VParams = value_function<Scalar>;
-  using QParams = q_function<Scalar>;
+  using VParams = ValueFunctionTpl<Scalar>;
+  using QParams = QFunctionTpl<Scalar>;
   using ProxPenaltyType = ProximalPenaltyTpl<Scalar>;
   using ProxData = typename ProxPenaltyType::Data;
   using CallbackPtr = shared_ptr<helpers::base_callback<Scalar>>;

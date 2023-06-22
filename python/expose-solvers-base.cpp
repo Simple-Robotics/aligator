@@ -15,8 +15,8 @@ void exposeProxDDP();
 void exposeSolverCommon() {
   using context::Scalar;
 
-  using QParams = proxddp::q_function<Scalar>;
-  using VParams = proxddp::value_function<Scalar>;
+  using QParams = proxddp::QFunctionTpl<Scalar>;
+  using VParams = proxddp::ValueFunctionTpl<Scalar>;
   bp::class_<QParams>(
       "QParams", "Q-function parameters.",
       bp::init<int, int, int>(bp::args("self", "ndx", "nu", "ndy")))
