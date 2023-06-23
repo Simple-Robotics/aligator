@@ -16,9 +16,9 @@ void xs_default_init(const TrajOptProblemTpl<Scalar> &problem,
                      std::vector<typename math_types<Scalar>::VectorXs> &xs) {
   const std::size_t nsteps = problem.numSteps();
   xs.resize(nsteps + 1);
-  try {
+  if (problem.initCondIsStateError()) {
     xs[0] = problem.getInitState();
-  } catch (RuntimeError const &e) {
+  } else {
     if (problem.stages_.size() > 0) {
       xs[0] = problem.stages_[0]->xspace().neutral();
     } else {
