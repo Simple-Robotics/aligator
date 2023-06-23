@@ -174,7 +174,7 @@ public:
   /// @brief    Compute search direction in the first state variable \f$x_0\f$.
   void compute_dir_x0(const Problem &problem);
 
-  /// @brief    Terminal node.
+  /// @brief    Initialize the Riccati equations at the terminal stage.
   void computeTerminalValue(const Problem &problem);
 
   /// @brief    Compute the Hamiltonian parameters at time @param t.

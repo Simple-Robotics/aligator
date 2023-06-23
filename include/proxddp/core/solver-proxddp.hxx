@@ -232,10 +232,10 @@ void SolverProxDDP<Scalar>::computeMultipliers(
           const FuncDataVec &constraint_data, CstrProximalScaler &weights) {
         // k: constraint count variable
         for (std::size_t k = 0; k < stack.size(); k++) {
-          const auto plami_k = stack.getConstSegmentByConstraint(prevlam, k);
-          auto lamplus_k = stack.getSegmentByConstraint(lamplus, k);
-          auto scval_k = stack.getSegmentByConstraint(shift_cvals, k);
-          auto active_k = stack.getSegmentByConstraint(active_cstr, k);
+          const auto plami_k = stack.constSegmentByConstraint(prevlam, k);
+          auto lamplus_k = stack.segmentByConstraint(lamplus, k);
+          auto scval_k = stack.segmentByConstraint(shift_cvals, k);
+          auto active_k = stack.segmentByConstraint(active_cstr, k);
           const CstrSet &set = *stack[k].set;
           const FunctionData &data = *constraint_data[k];
 
@@ -284,19 +284,12 @@ void SolverProxDDP<Scalar>::updateHamiltonian(const Problem &problem,
   PROXDDP_NOMALLOC_BEGIN;
 
   const StageModel &stage = *problem.stages_[t];
-
   const VParams &vnext = workspace_.value_params[t + 1];
   QParams &qparam = workspace_.q_params[t];
 
   StageData &stage_data = workspace_.problem_data.getStageData(t);
   const CostData &cdata = *stage_data.cost_data;
-  const CostData &proxdata = *workspace_.prox_datas[t];
 
-  const int ndx1 = stage.ndx1();
-  const int nu = stage.nu();
-
-  // Use the contiguous full gradient/jacobian/hessian buffers
-  // to fill in the Q-function derivatives
   qparam.q_ = cdata.value_;
   qparam.Qx = cdata.Lx_;
   qparam.Qu = cdata.Lu_;
@@ -327,11 +320,11 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem) {
   PROXDDP_NOMALLOC_BEGIN;
   const std::size_t nsteps = workspace_.nsteps;
 
-  const TrajOptData &prob_data = workspace_.problem_data;
-  const CostData &term_cost_data = *prob_data.term_cost_data;
-  VParams &term_value = workspace_.value_params[nsteps];
-  const CostData &proxdata = *workspace_.prox_datas[nsteps];
+  const CostData &term_cost_data = *workspace_.problem_data.term_cost_data;
+  const std::vector<shared_ptr<FunctionData>> &cstr_datas =
+      workspace_.problem_data.term_cstr_data;
 
+  VParams &term_value = workspace_.value_params[nsteps];
   term_value.v_ = term_cost_data.value_;
   term_value.Vx_ = term_cost_data.Lx_;
   term_value.Vxx_ = term_cost_data.Lxx_;
@@ -428,25 +421,22 @@ void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
   for (std::size_t j = 0; j < stage.numConstraints(); j++) {
     const CstrSet &cstr_set = *cstr_mgr[j].set;
     const FunctionData &cstr_data = *stage_data.constraint_data[j];
-    const auto shift_cstr_j =
-        cstr_mgr.getConstSegmentByConstraint(shift_cstr, j);
-    const auto laminnr_j = cstr_mgr.getConstSegmentByConstraint(laminnr, j);
-    const auto lamplus_j = cstr_mgr.getConstSegmentByConstraint(lamplus, j);
+    const auto shift_cstr_j = cstr_mgr.constSegmentByConstraint(shift_cstr, j);
+    const auto laminnr_j = cstr_mgr.constSegmentByConstraint(laminnr, j);
+    const auto lamplus_j = cstr_mgr.constSegmentByConstraint(lamplus, j);
 
     // project constraint jacobian
-    auto jac_proj_j = cstr_mgr.getRowsByConstraint(proj_jac, j);
+    auto jac_proj_j = cstr_mgr.rowsByConstraint(proj_jac, j);
     jac_proj_j = cstr_data.jac_buffer_;
     cstr_set.applyNormalConeProjectionJacobian(shift_cstr_j, jac_proj_j);
     auto Jx_proj = jac_proj_j.leftCols(ndx1);
     auto Juy_proj = jac_proj_j.rightCols(nprim);
 
-    // update the KKT jacobian columns
-    cstr_mgr.getRowsByConstraint(kkt_jac, j) = Juy_proj;
-    // set j-th rhs x-Jacobian block
-    cstr_mgr.getRowsByConstraint(kkt_rhs_dual_fb, j) = Jx_proj;
+    cstr_mgr.rowsByConstraint(kkt_rhs_dual_fb, j) = Jx_proj;
+    cstr_mgr.rowsByConstraint(kkt_jac, j) = Juy_proj;
 
     // get j-th rhs dual gradient
-    cstr_mgr.getSegmentByConstraint(kkt_rhs_dual_ff, j) =
+    cstr_mgr.segmentByConstraint(kkt_rhs_dual_ff, j) =
         weight_strat.get(j) * (lamplus_j - laminnr_j);
 
     kkt_low_right.array() = -weight_strat.get(j);
@@ -501,7 +491,9 @@ auto SolverProxDDP<Scalar>::computeGains(const Problem &problem,
                                          max_refinement_steps_);
   PROXDDP_NOMALLOC_BEGIN;
 
-  /* Value function */
+  /// Value function/Riccati update:
+  /// provided by the Schur complement.
+
   VParams &vp = workspace_.value_params[t];
   auto kkt_rhs_fb = kkt_rhs.rightCols(ndx1);
   auto Qxw = kkt_rhs_fb.transpose();
@@ -571,9 +563,9 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
       auto &weight_strat = workspace_.cstr_scalers[i];
       const ConstraintStack &cstr_stack = stage.constraints_;
       const ConstVectorRef dynlam =
-          cstr_stack.getConstSegmentByConstraint(lams[i + 1], 0);
-      const ConstVectorRef dynprevlam = cstr_stack.getConstSegmentByConstraint(
-          workspace_.lams_prev[i + 1], 0);
+          cstr_stack.constSegmentByConstraint(lams[i + 1], 0);
+      const ConstVectorRef dynprevlam =
+          cstr_stack.constSegmentByConstraint(workspace_.lams_prev[i + 1], 0);
       dyn_slacks[i] = weight_strat.get(0) * (dynprevlam - dynlam);
     }
 
@@ -900,8 +892,8 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem) {
           const CstrSet &set = *stack[k].set;
 
           // compute and project displaced constraint
-          auto scval_k = stack.getSegmentByConstraint(shift_cvals, k);
-          auto lam_i = stack.getConstSegmentByConstraint(lambda, k);
+          auto scval_k = stack.segmentByConstraint(shift_cvals, k);
+          auto lam_i = stack.constSegmentByConstraint(lambda, k);
           VectorXs &v = constraint_data[k]->value_;
           scval_k = v + scaler.get(k) * lam_i;
           set.projection(scval_k, scval_k); // apply projection
@@ -935,9 +927,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem) {
 template <typename Scalar>
 void SolverProxDDP<Scalar>::computeCriterion(const Problem &problem) {
   // DUAL INFEASIBILITIES
-
   const std::size_t nsteps = workspace_.nsteps;
-  TrajOptData &prob_data = workspace_.problem_data;
 
   workspace_.stage_inner_crits.setZero();
   workspace_.stage_dual_infeas.setZero();

@@ -49,26 +49,19 @@ template <typename Scalar> struct ConstraintStackTpl {
   /// constraint.
   template <typename Derived>
   Eigen::VectorBlock<Derived, -1>
-  getSegmentByConstraint(const Eigen::MatrixBase<Derived> &lambda,
-                         const std::size_t j) const {
-    Derived &lam_cast = lambda.const_cast_derived();
-    assert(lambda.size() == totalDim());
-    return lam_cast.segment(getIndex(j), getDim(j));
-  }
+  segmentByConstraint(const Eigen::MatrixBase<Derived> &lambda,
+                      const std::size_t j) const;
 
   /// @copybrief getSegmentByConstraint()
   template <typename Derived>
   Eigen::VectorBlock<const Derived, -1>
-  getConstSegmentByConstraint(const Eigen::MatrixBase<Derived> &lambda,
-                              const std::size_t j) const {
-    assert(lambda.size() == totalDim());
-    return lambda.segment(getIndex(j), getDim(j));
-  }
+  constSegmentByConstraint(const Eigen::MatrixBase<Derived> &lambda,
+                           const std::size_t j) const;
 
   /// Get a row-wise block of a matrix by constraint index.
   template <typename Derived>
-  auto getRowsByConstraint(const Eigen::MatrixBase<Derived> &J_,
-                           const std::size_t j) const;
+  auto rowsByConstraint(const Eigen::MatrixBase<Derived> &J_,
+                        const std::size_t j) const;
 
   long totalDim() const { return total_dim_; }
 

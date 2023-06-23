@@ -110,7 +110,7 @@ void computeLagrangianDerivatives(
     VectorXs const &lamN = lams.back();
     for (std::size_t j = 0; j < stack.size(); j++) {
       FunctionData const &cstr_data = *pd.term_cstr_data[j];
-      auto lam_j = stack.getConstSegmentByConstraint(lamN, j);
+      auto lam_j = stack.constSegmentByConstraint(lamN, j);
       Lxs[nsteps] += cstr_data.Jx_.transpose() * lam_j;
     }
   }
@@ -126,7 +126,7 @@ void computeLagrangianDerivatives(
 
     for (std::size_t j = 0; j < stack.size(); j++) {
       FunctionData const &cstr_data = *sd.constraint_data[j];
-      ConstVectorRef lam_j = stack.getConstSegmentByConstraint(lams[i + 1], j);
+      ConstVectorRef lam_j = stack.constSegmentByConstraint(lams[i + 1], j);
       Lxs[i] += cstr_data.Jx_.transpose() * lam_j;
       Lus[i] += cstr_data.Ju_.transpose() * lam_j;
 

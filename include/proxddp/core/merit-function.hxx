@@ -53,9 +53,8 @@ Scalar PDALFunction<Scalar>::evaluate(const SolverType &solver,
           const VectorXs &lambda_plus, CstrProximalScaler &weight_strat) {
         Scalar r = 0.;
         for (std::size_t k = 0; k < stack.size(); ++k) {
-          const auto lamplus_k =
-              stack.getConstSegmentByConstraint(lambda_plus, k);
-          const auto laminnr_k = stack.getConstSegmentByConstraint(lambda, k);
+          const auto lamplus_k = stack.constSegmentByConstraint(lambda_plus, k);
+          const auto laminnr_k = stack.constSegmentByConstraint(lambda, k);
           r += .5 * weight_strat.get(k) * lamplus_k.squaredNorm();
 
           if (use_dual_terms) {
@@ -122,18 +121,18 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
   }
 
   auto execute_on_stack =
-      [](const auto &stack, const auto &dx, const auto &du, const auto &dy,
-         const auto &dlam, const auto &lam, const auto &lamplus,
+      [](const ConstraintStack &stack, const auto &dx, const auto &du,
+         const auto &dy, const auto &dlam, const auto &lam, const auto &lamplus,
          const auto &lampdal,
          const std::vector<shared_ptr<FunctionData>> &constraint_data,
          CstrProximalScaler &weight_strat) {
         Scalar r = 0.;
         for (std::size_t k = 0; k < stack.size(); k++) {
           const FunctionData &cd = *constraint_data[k];
-          auto lampdal_k = stack.getConstSegmentByConstraint(lampdal, k);
-          auto laminnr_k = stack.getConstSegmentByConstraint(lam, k);
-          auto lamplus_k = stack.getConstSegmentByConstraint(lamplus, k);
-          auto dlam_k = stack.getConstSegmentByConstraint(dlam, k);
+          auto lampdal_k = stack.constSegmentByConstraint(lampdal, k);
+          auto laminnr_k = stack.constSegmentByConstraint(lam, k);
+          auto lamplus_k = stack.constSegmentByConstraint(lamplus, k);
+          auto dlam_k = stack.constSegmentByConstraint(dlam, k);
 
           r += lampdal_k.dot(cd.Jx_ * dx);
           r += lampdal_k.dot(cd.Ju_ * du);
@@ -162,11 +161,10 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
   const ConstraintStack &term_stack = problem.term_cstrs_;
   for (std::size_t k = 0; k < term_stack.size(); ++k) {
     const FunctionData &tcd = *prob_data.term_cstr_data[k];
-    const auto lpdl =
-        term_stack.getConstSegmentByConstraint(lams_pdal.back(), k);
-    const auto l = term_stack.getConstSegmentByConstraint(lams.back(), k);
-    const auto lp = term_stack.getConstSegmentByConstraint(lams_plus.back(), k);
-    const auto dl = term_stack.getConstSegmentByConstraint(dlams.back(), k);
+    const auto lpdl = term_stack.constSegmentByConstraint(lams_pdal.back(), k);
+    const auto l = term_stack.constSegmentByConstraint(lams.back(), k);
+    const auto lp = term_stack.constSegmentByConstraint(lams_plus.back(), k);
+    const auto dl = term_stack.constSegmentByConstraint(dlams.back(), k);
     const auto &dx = workspace.dxs.back();
 
     d1 += lpdl.dot(tcd.Jx_ * dx);
