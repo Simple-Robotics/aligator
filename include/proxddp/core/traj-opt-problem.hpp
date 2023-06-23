@@ -136,16 +136,13 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   }
 
   /// @brief Set initial state constraint.
-  void setInitState(const ConstVectorRef x0) {
+  void setInitState(const ConstVectorRef &x0) {
     if (!initCondIsStateError()) {
       PROXDDP_RUNTIME_ERROR("Initial condition is not a StateErrorResidual.\n");
     }
     init_state_error_->target_ = x0;
   }
 
-  /// @brief Set a terminal constraint for the model.
-  PROXDDP_DEPRECATED_MESSAGE("Use addTerminalConstraint instead.")
-  void setTerminalConstraint(const ConstraintType &cstr);
   /// @brief Add a terminal constraint for the model.
   void addTerminalConstraint(const ConstraintType &cstr);
   /// @brief Remove all terminal constraints.
