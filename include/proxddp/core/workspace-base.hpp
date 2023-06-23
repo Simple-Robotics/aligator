@@ -90,3 +90,7 @@ template <typename Scalar> void WorkspaceBaseTpl<Scalar>::cycleLeft() {
 }
 
 } // namespace proxddp
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "./workspace-base.txx"
+#endif
