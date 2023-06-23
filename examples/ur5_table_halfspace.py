@@ -110,10 +110,10 @@ xs_init = proxddp.rollout(dyn_model, x0, us_init).tolist()
 
 solver.run(problem, xs_init, us_init)
 
-rs = solver.getResults()
+rs = solver.results
 print(rs)
 xs_opt = np.array(rs.xs)
-ws = solver.getWorkspace()
+ws = solver.workspace
 
 stage_datas = ws.problem_data.stage_data
 ineq_cstr_datas = []
