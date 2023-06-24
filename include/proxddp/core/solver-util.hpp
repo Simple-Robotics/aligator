@@ -130,7 +130,7 @@ void computeLagrangianDerivatives(
       Lxs[i] += cstr_data.Jx_.transpose() * lam_j;
       Lus[i] += cstr_data.Ju_.transpose() * lam_j;
 
-      assert((i + 1) <= workspace_.nsteps);
+      assert((i + 1) <= nsteps);
       // add contribution to the next node
       Lxs[i + 1] += cstr_data.Jy_.transpose() * lam_j;
     }
