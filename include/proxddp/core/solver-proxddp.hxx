@@ -891,20 +891,21 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem) {
 
   // PRIMAL INFEASIBILITIES
 
-  std::vector<VectorXs> &shifted_constraints = workspace_.shifted_constraints;
+  std::vector<VectorXs> &lams_plus = workspace_.lams_plus;
+  std::vector<VectorXs> &lams_prev = workspace_.lams_prev;
 
   const FunctionData &init_data = prob_data.getInitData();
   workspace_.stage_prim_infeas[0](0) = math::infty_norm(init_data.value_);
 
   auto execute_on_stack = [](const ConstraintStack &stack,
-                             const VectorXs &lams_plus, const VectorXs &lambda,
-                             VectorXs &stage_infeas,
+                             const VectorXs &lams_plus,
+                             const VectorXs &prev_lams, VectorXs &stage_infeas,
                              CstrProximalScaler &scaler) {
     for (std::size_t k = 0; k < stack.size(); k++) {
       auto lplus_k = stack.constSegmentByConstraint(lams_plus, k);
-      auto lam_k = stack.constSegmentByConstraint(lambda, k);
+      auto plam_k = stack.constSegmentByConstraint(prev_lams, k);
       Scalar m = scaler.get(k);
-      stage_infeas((long)k) = math::infty_norm((lam_k - lplus_k) * m);
+      stage_infeas((long)k) = math::infty_norm((plam_k - lplus_k) * m);
     }
   };
 
@@ -913,15 +914,14 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem) {
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
     VectorXs &stage_infeas = workspace_.stage_prim_infeas[i + 1];
-    execute_on_stack(stage.constraints_, shifted_constraints[i + 1],
-                     results_.lams[i + 1], stage_infeas,
-                     workspace_.cstr_scalers[i]);
+    execute_on_stack(stage.constraints_, lams_plus[i + 1], lams_prev[i + 1],
+                     stage_infeas, workspace_.cstr_scalers[i]);
   }
 
   // compute infeasibility of terminal constraints
   if (!problem.term_cstrs_.empty()) {
-    execute_on_stack(problem.term_cstrs_, shifted_constraints.back(),
-                     results_.lams.back(), workspace_.stage_prim_infeas.back(),
+    execute_on_stack(problem.term_cstrs_, lams_plus.back(), lams_prev.back(),
+                     workspace_.stage_prim_infeas.back(),
                      workspace_.cstr_scalers.back());
   }
 
