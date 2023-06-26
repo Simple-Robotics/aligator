@@ -42,7 +42,8 @@ template <typename _Scalar> struct ValueFunctionTpl {
 /// @brief   Q-function model parameters
 /// @details This struct also provides views for the blocks of interest \f$Q_x,
 /// Q_u, Q_y\ldots\f$.
-template <typename Scalar> struct QFunctionTpl {
+template <typename _Scalar> struct QFunctionTpl {
+  using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
   long ndx_;
