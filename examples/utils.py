@@ -9,6 +9,7 @@ import tap
 
 import matplotlib.pyplot as plt
 from typing import Literal, List, Optional
+from proxddp import HistoryCallback, Results
 
 
 plt.rcParams["lines.linewidth"] = 1.0
@@ -16,6 +17,19 @@ plt.rcParams["lines.markersize"] = 5
 
 integrator_choices = Literal["euler", "semieuler", "midpoint", "rk2"]
 MESHCAT_ZMQ_DEFAULT = "tcp://127.0.0.1:6000"
+
+
+def plot_convergence(cb: HistoryCallback, ax: plt.Axes, res: Results = None):
+    from proxnlp.utils import plot_pd_errs
+
+    prim_infeas = cb.storage.prim_infeas.tolist()
+    dual_infeas = cb.storage.dual_infeas.tolist()
+    if res is not None:
+        prim_infeas.append(res.primal_infeas)
+        dual_infeas.append(res.dual_infeas)
+    plot_pd_errs(ax, prim_infeas, dual_infeas)
+    ax.grid(axis="y", which="major")
+    return
 
 
 class ArgsBase(tap.Tap):
