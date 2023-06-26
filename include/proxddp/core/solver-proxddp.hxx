@@ -932,11 +932,14 @@ void SolverProxDDP<Scalar>::computeCriterion(const Problem &problem) {
   workspace_.stage_dual_infeas.setZero();
   Scalar x_residuals = 0.;
   Scalar u_residuals = 0.;
-  Scalar rx = math::infty_norm(workspace_.Lxs_[0]);
   if (!force_initial_condition_) {
-    x_residuals = std::max(x_residuals, rx);
+    const int ndual = problem.stages_[0]->numDual();
+    Scalar rx = math::infty_norm(workspace_.Lxs_[0]);
     VectorRef kkt_rhs = workspace_.kkt_mats_[0].col(0);
-    workspace_.stage_inner_crits(0) = math::infty_norm(kkt_rhs);
+    auto kktlam = kkt_rhs.tail(ndual);
+    Scalar rlam = math::infty_norm(kktlam);
+    x_residuals = std::max(x_residuals, rx);
+    workspace_.stage_inner_crits(0) = std::max(rx, rlam);
     workspace_.stage_dual_infeas(0) = rx;
   }
   // fmt::print("i={:>3d} Lxi = {} | |Lxi| = {:.4e}\n", 0,
