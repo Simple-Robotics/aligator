@@ -194,12 +194,10 @@ public:
   void setup(const Problem &problem);
 
   void computeProxTerms(const std::vector<VectorXs> &xs,
-                        const std::vector<VectorXs> &us,
-                        Workspace &workspace) const;
+                        const std::vector<VectorXs> &us);
 
   void computeProxDerivatives(const std::vector<VectorXs> &xs,
-                              const std::vector<VectorXs> &us,
-                              Workspace &workspace) const;
+                              const std::vector<VectorXs> &us);
 
   /// @brief Run the numerical solver.
   /// @param problem  The trajectory optimization problem to solve.

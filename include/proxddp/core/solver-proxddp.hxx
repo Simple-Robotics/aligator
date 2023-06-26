@@ -156,29 +156,28 @@ void SolverProxDDP<Scalar>::setup(const Problem &problem) {
 
 template <typename Scalar>
 void SolverProxDDP<Scalar>::computeProxTerms(const std::vector<VectorXs> &xs,
-                                             const std::vector<VectorXs> &us,
-                                             Workspace &workspace) const {
-  const std::size_t nsteps = workspace.nsteps;
+                                             const std::vector<VectorXs> &us) {
+  const std::size_t nsteps = workspace_.nsteps;
   for (std::size_t i = 0; i < nsteps; i++) {
-    prox_penalties_[i].evaluate(xs[i], us[i], *workspace.prox_datas[i]);
+    prox_penalties_[i].evaluate(xs[i], us[i], *workspace_.prox_datas[i]);
   }
   prox_penalties_[nsteps].evaluate(xs[nsteps], us[nsteps - 1],
-                                   *workspace.prox_datas[nsteps]);
+                                   *workspace_.prox_datas[nsteps]);
 }
 
 template <typename Scalar>
 void SolverProxDDP<Scalar>::computeProxDerivatives(
-    const std::vector<VectorXs> &xs, const std::vector<VectorXs> &us,
-    Workspace &workspace) const {
-  const std::size_t nsteps = workspace.nsteps;
+    const std::vector<VectorXs> &xs, const std::vector<VectorXs> &us) {
+  const std::size_t nsteps = workspace_.nsteps;
   for (std::size_t i = 0; i < nsteps; i++) {
-    prox_penalties_[i].computeGradients(xs[i], us[i], *workspace.prox_datas[i]);
-    prox_penalties_[i].computeHessians(xs[i], us[i], *workspace.prox_datas[i]);
+    prox_penalties_[i].computeGradients(xs[i], us[i],
+                                        *workspace_.prox_datas[i]);
+    prox_penalties_[i].computeHessians(xs[i], us[i], *workspace_.prox_datas[i]);
   }
   prox_penalties_[nsteps].computeGradients(xs[nsteps], us[nsteps - 1],
-                                           *workspace.prox_datas[nsteps]);
+                                           *workspace_.prox_datas[nsteps]);
   prox_penalties_[nsteps].computeHessians(xs[nsteps], us[nsteps - 1],
-                                          *workspace.prox_datas[nsteps]);
+                                          *workspace_.prox_datas[nsteps]);
 }
 
 template <typename Scalar>
