@@ -209,6 +209,7 @@ void SolverProxDDP<Scalar>::computeMultipliers(
   std::vector<VectorXs> &lams_prev = workspace_.lams_prev;
   std::vector<VectorXs> &lams_plus = workspace_.lams_plus;
   std::vector<VectorXs> &lams_pdal = workspace_.lams_pdal;
+  std::vector<VectorXs> &Lds = workspace_.Lds_;
   std::vector<VectorXs> &shifted_constraints = workspace_.shifted_constraints;
 
   // initial constraint
@@ -223,32 +224,37 @@ void SolverProxDDP<Scalar>::computeMultipliers(
   }
 
   using FuncDataVec = std::vector<shared_ptr<FunctionData>>;
-  auto execute_on_stack =
-      [dual_weight = dual_weight](
-          const ConstraintStack &stack, const VectorXs &lambda,
-          const VectorXs &prevlam, VectorXs &lamplus, VectorXs &lampdal,
-          VectorXs &shift_cvals, typename Workspace::VecBool &active_cstr,
-          const FuncDataVec &constraint_data, CstrProximalScaler &weights) {
-        // k: constraint count variable
-        for (std::size_t k = 0; k < stack.size(); k++) {
-          const auto plami_k = stack.constSegmentByConstraint(prevlam, k);
-          auto lamplus_k = stack.segmentByConstraint(lamplus, k);
-          auto scval_k = stack.segmentByConstraint(shift_cvals, k);
-          auto active_k = stack.segmentByConstraint(active_cstr, k);
-          const CstrSet &set = *stack[k].set;
-          const FunctionData &data = *constraint_data[k];
+  auto execute_on_stack = [dual_weight = dual_weight](
+                              const ConstraintStack &stack,
+                              const VectorXs &lambda, const VectorXs &prevlam,
+                              VectorXs &lamplus, VectorXs &lampdal,
+                              VectorXs &ld, VectorXs &shift_cvals,
+                              typename Workspace::VecBool &active_cstr,
+                              const FuncDataVec &constraint_data,
+                              CstrProximalScaler &weights) {
+    // k: constraint count variable
+    for (std::size_t k = 0; k < stack.size(); k++) {
+      const auto plam_k = stack.constSegmentByConstraint(prevlam, k);
+      const auto lam_k = stack.constSegmentByConstraint(lambda, k);
+      auto lamplus_k = stack.segmentByConstraint(lamplus, k);
+      auto scval_k = stack.segmentByConstraint(shift_cvals, k);
+      auto active_k = stack.segmentByConstraint(active_cstr, k);
+      const CstrSet &set = *stack[k].set;
+      const FunctionData &data = *constraint_data[k];
 
-          scval_k = data.value_ + weights.get(k) * plami_k;
-          set.computeActiveSet(scval_k, active_k);
-          lamplus_k = scval_k;
+      scval_k = data.value_ + weights.get(k) * plam_k;
+      set.computeActiveSet(scval_k, active_k);
+      lamplus_k = scval_k;
 
-          set.normalConeProjection(lamplus_k, lamplus_k);
+      set.normalConeProjection(scval_k, lamplus_k);
 
-          // set multiplier = 1/mu * normal_proj(shifted_cstr)
-          lamplus_k *= weights.inv(k);
-        }
-        lampdal = (1 + dual_weight) * lamplus - dual_weight * lambda;
-      };
+      // set multiplier = 1/mu * normal_proj(shifted_cstr)
+      lamplus_k *= weights.inv(k);
+      // compute prox Lagrangian dual gradient
+      stack.segmentByConstraint(ld, k) = weights.get(k) * (lamplus_k - lam_k);
+    }
+    lampdal = (1 + dual_weight) * lamplus - dual_weight * lambda;
+  };
 
   // loop over the stages
 #pragma omp parallel for num_threads(problem.getNumThreads())
@@ -263,14 +269,14 @@ void SolverProxDDP<Scalar>::computeMultipliers(
     VectorXs &lampdali = lams_pdal[i + 1];
     VectorXs &shiftcvali = shifted_constraints[i + 1];
 
-    execute_on_stack(cstr_stack, lami, plami, lamplusi, lampdali, shiftcvali,
-                     workspace_.active_constraints[i + 1],
+    execute_on_stack(cstr_stack, lami, plami, lamplusi, lampdali, Lds[i + 1],
+                     shiftcvali, workspace_.active_constraints[i + 1],
                      sdata.constraint_data, workspace_.cstr_scalers[i]);
   }
 
   if (!problem.term_cstrs_.empty()) {
     execute_on_stack(problem.term_cstrs_, lams.back(), lams_prev.back(),
-                     lams_plus.back(), lams_pdal.back(),
+                     lams_plus.back(), lams_pdal.back(), Lds.back(),
                      shifted_constraints.back(),
                      workspace_.active_constraints.back(),
                      prob_data.term_cstr_data, workspace_.cstr_scalers.back());
@@ -290,23 +296,20 @@ void SolverProxDDP<Scalar>::updateHamiltonian(const Problem &problem,
   const CostData &cdata = *stage_data.cost_data;
 
   qparam.q_ = cdata.value_;
-  qparam.Qx = cdata.Lx_;
-  qparam.Qu = cdata.Lu_;
+  qparam.Qx = workspace_.Lxs_[t];
+  qparam.Qu = workspace_.Lus_[t];
   qparam.Qy = vnext.Vx_;
 
+  int ndx1 = stage.ndx1();
+  int nu = stage.nu();
   auto qpar_xu = qparam.hess_.topLeftCorner(ndx1 + nu, ndx1 + nu);
   qpar_xu = cdata.hess_;
   qparam.Qyy = vnext.Vxx_;
   qparam.Quu.diagonal().array() += ureg_;
 
-  const VectorXs &lam = results_.lams[t + 1];
-
   const ConstraintStack &cstr_stack = stage.constraints_;
   for (std::size_t k = 0; k < cstr_stack.size(); k++) {
     FunctionData &cstr_data = *stage_data.constraint_data[k];
-
-    const auto lam_j = cstr_stack.getConstSegmentByConstraint(lam, k);
-    qparam.grad_.noalias() += cstr_data.jac_buffer_.transpose() * lam_j;
     if (hess_approx_ == HessianApprox::EXACT) {
       qparam.hess_ += cstr_data.vhp_buffer_;
     }
@@ -325,7 +328,7 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem) {
 
   VParams &term_value = workspace_.value_params[nsteps];
   term_value.v_ = term_cost_data.value_;
-  term_value.Vx_ = term_cost_data.Lx_;
+  term_value.Vx_ = workspace_.Lxs_[nsteps];
   term_value.Vxx_ = term_cost_data.Lxx_;
   term_value.Vxx_.diagonal().array() += xreg_;
 
@@ -334,31 +337,35 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem) {
     /* check number of multipliers */
     assert(results_.lams.size() == (nsteps + 2));
     assert(results_.gains_.size() == (nsteps + 1));
-  }
-
-  for (std::size_t k = 0; k < cstr_mgr.size(); ++k) {
-    const VectorXs &shift_cstr_v = workspace_.shifted_constraints.back();
-    const CstrSet &cstr_set = *cstr_mgr[k].set;
-    const FunctionData &cstr_data = *prob_data.term_cstr_data[k];
-
+    const VectorXs &shift_cstr_v = workspace_.shifted_constraints[nsteps + 1];
     const VectorXs &lamplus = workspace_.lams_plus[nsteps + 1];
     const VectorXs &lamin = results_.lams[nsteps + 1];
-    auto scval_k = cstr_mgr.getConstSegmentByConstraint(shift_cstr_v, k);
-    MatrixXs &cJx = workspace_.proj_jacobians.back();
-    cJx = cstr_data.Jx_;
-    assert(cJx.rows() == cstr_mgr[k].nr());
-    assert(cJx.cols() == cstr_mgr[k].func->ndx1);
-    cstr_set.applyNormalConeProjectionJacobian(scval_k, cJx);
-
     auto ff = results_.getFeedforward(nsteps);
     auto fb = results_.getFeedback(nsteps);
-    ff = lamplus - lamin;
-    fb = mu_inv() * cJx;
+    MatrixXs &pJx = workspace_.proj_jacobians.back();
 
-    term_value.v_ += 0.5 * mu_inv() * lamplus.squaredNorm();
-    term_value.Vx_.noalias() += cJx.transpose() * lamplus;
-    term_value.Vxx_ += cstr_data.Hxx_;
-    term_value.Vxx_.noalias() += cJx.transpose() * fb;
+    for (std::size_t k = 0; k < cstr_mgr.size(); ++k) {
+      const CstrSet &cstr_set = *cstr_mgr[k].set;
+      const FunctionData &cstr_data = *cstr_datas[k];
+
+      auto scval_k = cstr_mgr.constSegmentByConstraint(shift_cstr_v, k);
+      auto pJx_k = cstr_mgr.rowsByConstraint(pJx, k);
+      pJx_k = cstr_data.Jx_;
+      assert(pJx_k.rows() == cstr_mgr[k].nr());
+      assert(pJx_k.cols() == cstr_mgr[k].func->ndx1);
+      cstr_set.applyNormalConeProjectionJacobian(scval_k, pJx_k);
+
+      auto ffk = cstr_mgr.segmentByConstraint(ff, k);
+      auto fbk = cstr_mgr.rowsByConstraint(fb, k);
+
+      ffk = lamplus - lamin;
+      fbk = mu_inv() * pJx_k;
+
+      term_value.v_ += 0.5 * mu_inv() * lamplus.squaredNorm();
+      term_value.Vx_.noalias() += pJx_k.transpose() * ffk;
+      term_value.Vxx_ += cstr_data.Hxx_;
+      term_value.Vxx_.noalias() += pJx_k.transpose() * fbk;
+    }
   }
   PROXDDP_NOMALLOC_END;
 }
@@ -371,7 +378,8 @@ void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
   using ColsBlockXpr = typename MatrixXs::ColsBlockXpr;
   const StageModel &stage = *problem.stages_[t];
 
-  const QParams &qparam = workspace_.q_params[t];
+  QParams &qparam = workspace_.q_params[t];
+  const VParams &vnext = workspace_.value_params[t + 1];
 
   const StageData &stage_data = workspace_.problem_data.getStageData(t);
   const int nprim = stage.numPrimal();
@@ -383,6 +391,7 @@ void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
   const VectorXs &laminnr = results_.lams[t + 1];
   const VectorXs &lamplus = workspace_.lams_plus[t + 1];
   const VectorXs &shift_cstr = workspace_.shifted_constraints[t + 1];
+  const VectorXs &Ld = workspace_.Lds_[t + 1];
 
   MatrixXs &kkt_mat = workspace_.kkt_mats_[t + 1];
   MatrixXs &kkt_rhs = workspace_.kkt_rhs_[t + 1];
@@ -391,30 +400,36 @@ void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
   assert(kkt_rhs.rows() == (nprim + ndual));
   assert(kkt_rhs.cols() == (ndx1 + 1));
 
-  BlockXs kkt_jac = kkt_mat.block(nprim, 0, ndual, nprim);
-  BlockXs kkt_top_left = kkt_mat.topLeftCorner(nprim, nprim);
-  Eigen::Diagonal<BlockXs> kkt_low_right =
-      kkt_mat.bottomRightCorner(ndual, ndual).diagonal();
+  BlockXs kkt_jac = kkt_mat.bottomLeftCorner(ndual, nprim);
+  BlockXs kkt_prim = kkt_mat.topLeftCorner(nprim, nprim);
+  BlockXs kkt_dual = kkt_mat.bottomRightCorner(ndual, ndual);
+  Eigen::Diagonal<BlockXs> kkt_low_right = kkt_dual.diagonal();
 
   ColXpr kkt_rhs_ff(kkt_rhs.col(0));
   ColsBlockXpr kkt_rhs_fb(kkt_rhs.rightCols(ndx1));
 
-  // blocks: u, y, and dual
-  kkt_rhs_ff.head(nu) = qparam.Qu;
-  kkt_rhs_ff.segment(nu, ndx2) = qparam.Qy;
+  auto kkt_rhs_u = kkt_rhs_ff.head(nu);
+  auto kkt_rhs_y = kkt_rhs_ff.segment(nu, ndx2);
+  kkt_rhs_u = qparam.Qu;
+  kkt_rhs_y = qparam.Qy;
 
-  kkt_rhs_fb.topRows(nu) = qparam.Qxu.transpose();
-  kkt_rhs_fb.middleRows(nu, ndx2) = qparam.Qxy.transpose();
+  auto kkt_rhs_ux = kkt_rhs_fb.topRows(nu);
+  auto kkt_rhs_yx = kkt_rhs_fb.middleRows(nu, ndx2);
+  auto kkt_rhs_lx = kkt_rhs_fb.bottomRows(ndual);
+  kkt_rhs_ux.transpose() = qparam.Qxu;
+  kkt_rhs_yx.transpose() = qparam.Qxy;
 
   // KKT matrix: (u, y)-block = bottom right of q hessian
-  kkt_top_left = qparam.hess_.bottomRightCorner(nprim, nprim);
+  kkt_prim.topLeftCorner(nu, nu) = qparam.Quu;
+  kkt_prim.bottomLeftCorner(ndx2, nu) = qparam.Quy.transpose();
+  kkt_prim.topRightCorner(nu, ndx2) = qparam.Quy;
+  kkt_prim.bottomRightCorner(ndx2, ndx2) = vnext.Vxx_;
 
-  auto kkt_rhs_dual_ff = kkt_rhs_ff.tail(ndual);
-  auto kkt_rhs_dual_fb = kkt_rhs_fb.bottomRows(ndual);
+  auto kkt_rhs_l = kkt_rhs_ff.tail(ndual);
   // memory buffer for the projected Jacobian matrix
   MatrixXs &proj_jac = workspace_.proj_jacobians[t + 1];
   const ConstraintStack &cstr_mgr = stage.constraints_;
-  auto &weight_strat = workspace_.cstr_scalers[t];
+  const CstrProximalScaler &weight_strat = workspace_.cstr_scalers[t];
 
   // Loop over constraints
   for (std::size_t j = 0; j < stage.numConstraints(); j++) {
@@ -422,7 +437,6 @@ void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
     const FunctionData &cstr_data = *stage_data.constraint_data[j];
     const auto shift_cstr_j = cstr_mgr.constSegmentByConstraint(shift_cstr, j);
     const auto laminnr_j = cstr_mgr.constSegmentByConstraint(laminnr, j);
-    const auto lamplus_j = cstr_mgr.constSegmentByConstraint(lamplus, j);
 
     // project constraint jacobian
     auto jac_proj_j = cstr_mgr.rowsByConstraint(proj_jac, j);
@@ -431,12 +445,12 @@ void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
     auto Jx_proj = jac_proj_j.leftCols(ndx1);
     auto Juy_proj = jac_proj_j.rightCols(nprim);
 
-    cstr_mgr.rowsByConstraint(kkt_rhs_dual_fb, j) = Jx_proj;
+    cstr_mgr.rowsByConstraint(kkt_rhs_lx, j) = Jx_proj;
     cstr_mgr.rowsByConstraint(kkt_jac, j) = Juy_proj;
 
     // get j-th rhs dual gradient
-    cstr_mgr.segmentByConstraint(kkt_rhs_dual_ff, j) =
-        weight_strat.get(j) * (lamplus_j - laminnr_j);
+    auto ld_j = cstr_mgr.constSegmentByConstraint(Ld, j);
+    cstr_mgr.segmentByConstraint(kkt_rhs_l, j) = ld_j;
 
     kkt_low_right.array() = -weight_strat.get(j);
     auto Juy_orig = cstr_data.jac_buffer_.rightCols(nprim);
@@ -781,6 +795,14 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
     // computeProxDerivatives(results.xs, results.us, workspace);
     const Scalar phi0 = results_.merit_value_;
 
+    computeLagrangianDerivatives(problem, workspace_, results_.lams);
+    computeInfeasibilities(problem);
+    computeCriterion(problem);
+
+    Scalar outer_crit = std::max(results_.dual_infeas, results_.prim_infeas);
+    if (outer_crit <= target_tol_)
+      return true;
+
     // attempt backward pass until successful
     // i.e. no inertia problems
     initialize_regularization();
@@ -798,14 +820,6 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
       }
       break; // if you broke from the switch
     }
-
-    computeInfeasibilities(problem);
-    computeLagrangianDerivatives(problem, workspace_, results_.lams);
-    computeCriterion(problem);
-
-    Scalar outer_crit = std::max(results_.dual_infeas, results_.prim_infeas);
-    if (outer_crit <= target_tol_)
-      return true;
 
     bool inner_conv = (workspace_.inner_criterion <= inner_tol_);
     if (inner_conv && (inner_step > 0))
@@ -882,40 +896,33 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem) {
   const FunctionData &init_data = prob_data.getInitData();
   workspace_.stage_prim_infeas[0](0) = math::infty_norm(init_data.value_);
 
-  using FuncDataVec = std::vector<shared_ptr<FunctionData>>;
-  auto execute_on_stack =
-      [](const ConstraintStack &stack, const VectorXs &shift_cvals,
-         const VectorXs &lambda, VectorXs &stage_infeas,
-         const FuncDataVec &constraint_data, CstrProximalScaler &scaler) {
-        for (std::size_t k = 0; k < stack.size(); k++) {
-          const CstrSet &set = *stack[k].set;
-
-          // compute and project displaced constraint
-          auto scval_k = stack.segmentByConstraint(shift_cvals, k);
-          auto lam_i = stack.constSegmentByConstraint(lambda, k);
-          VectorXs &v = constraint_data[k]->value_;
-          scval_k = v + scaler.get(k) * lam_i;
-          set.projection(scval_k, scval_k); // apply projection
-          stage_infeas((long)k) = math::infty_norm(v - scval_k);
-        }
-      };
+  auto execute_on_stack = [](const ConstraintStack &stack,
+                             const VectorXs &lams_plus, const VectorXs &lambda,
+                             VectorXs &stage_infeas,
+                             CstrProximalScaler &scaler) {
+    for (std::size_t k = 0; k < stack.size(); k++) {
+      auto lplus_k = stack.constSegmentByConstraint(lams_plus, k);
+      auto lam_k = stack.constSegmentByConstraint(lambda, k);
+      Scalar m = scaler.get(k);
+      stage_infeas((long)k) = math::infty_norm((lam_k - lplus_k) * m);
+    }
+  };
 
   // compute infeasibility of all stage constraints
 #pragma omp parallel for num_threads(problem.getNumThreads())
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
-    const StageData &stage_data = prob_data.getStageData(i);
     VectorXs &stage_infeas = workspace_.stage_prim_infeas[i + 1];
     execute_on_stack(stage.constraints_, shifted_constraints[i + 1],
                      results_.lams[i + 1], stage_infeas,
-                     stage_data.constraint_data, workspace_.cstr_scalers[i]);
+                     workspace_.cstr_scalers[i]);
   }
 
   // compute infeasibility of terminal constraints
   if (!problem.term_cstrs_.empty()) {
     execute_on_stack(problem.term_cstrs_, shifted_constraints.back(),
                      results_.lams.back(), workspace_.stage_prim_infeas.back(),
-                     prob_data.term_cstr_data, workspace_.cstr_scalers.back());
+                     workspace_.cstr_scalers.back());
   }
 
   results_.prim_infeas = math::infty_norm(workspace_.stage_prim_infeas);
