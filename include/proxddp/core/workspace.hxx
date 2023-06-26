@@ -212,6 +212,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
   lams_pdal = lams_plus;
   trial_lams = lams_plus;
   lams_prev = lams_plus;
+  Lds_ = lams_prev;
   shifted_constraints = lams_plus;
 
   math::setZero(kkt_mats_);
