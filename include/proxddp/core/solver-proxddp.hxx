@@ -219,42 +219,46 @@ void SolverProxDDP<Scalar>::computeMultipliers(
     FunctionData &data = prob_data.getInitData();
     shifted_constraints[0] = data.value_ + mu() * plam0;
     lams_plus[0] = shifted_constraints[0] * mu_inv();
-    lams_pdal[0] = (1 + dual_weight) * lams_plus[0] - dual_weight * lam0;
+    lams_pdal[0] = shifted_constraints[0] - 0.5 * mu() * lam0;
+    lams_pdal[0] *= 2. * mu_inv();
     /// TODO: generalize to the other types of initial constraint (non-equality)
   }
 
   using FuncDataVec = std::vector<shared_ptr<FunctionData>>;
-  auto execute_on_stack = [dual_weight = dual_weight](
-                              const ConstraintStack &stack,
-                              const VectorXs &lambda, const VectorXs &prevlam,
-                              VectorXs &lamplus, VectorXs &lampdal,
-                              VectorXs &ld, VectorXs &shift_cvals,
-                              typename Workspace::VecBool &active_cstr,
-                              const FuncDataVec &constraint_data,
-                              CstrProximalScaler &weights) {
-    // k: constraint count variable
-    for (std::size_t k = 0; k < stack.size(); k++) {
-      const auto plam_k = stack.constSegmentByConstraint(prevlam, k);
-      const auto lam_k = stack.constSegmentByConstraint(lambda, k);
-      auto lamplus_k = stack.segmentByConstraint(lamplus, k);
-      auto scval_k = stack.segmentByConstraint(shift_cvals, k);
-      auto active_k = stack.segmentByConstraint(active_cstr, k);
-      const CstrSet &set = *stack[k].set;
-      const FunctionData &data = *constraint_data[k];
+  auto execute_on_stack =
+      [dual_weight = dual_weight](
+          const ConstraintStack &stack, const VectorXs &lambda,
+          const VectorXs &prevlam, VectorXs &lamplus, VectorXs &lampdal,
+          VectorXs &ld, VectorXs &shift_cvals,
+          typename Workspace::VecBool &active_cstr,
+          const FuncDataVec &constraint_data, CstrProximalScaler &weights) {
+        // k: constraint count variable
+        for (std::size_t k = 0; k < stack.size(); k++) {
+          const auto plam_k = stack.constSegmentByConstraint(prevlam, k);
+          const auto lam_k = stack.constSegmentByConstraint(lambda, k);
+          auto lampd_k = stack.segmentByConstraint(lampdal, k);
+          auto lamplus_k = stack.segmentByConstraint(lamplus, k);
+          auto scval_k = stack.segmentByConstraint(shift_cvals, k);
+          auto active_k = stack.segmentByConstraint(active_cstr, k);
+          const CstrSet &set = *stack[k].set;
+          const FunctionData &data = *constraint_data[k];
 
-      scval_k = data.value_ + weights.get(k) * plam_k;
-      set.computeActiveSet(scval_k, active_k);
-      lamplus_k = scval_k;
+          Scalar m = weights.get(k);
+          scval_k = data.value_ + m * plam_k;
+          lampd_k = scval_k - 0.5 * m * lam_k;
+          set.computeActiveSet(scval_k, active_k);
+          lamplus_k = scval_k;
 
-      set.normalConeProjection(scval_k, lamplus_k);
+          set.normalConeProjection(scval_k, lamplus_k);
+          set.normalConeProjection(lampd_k, lampd_k);
 
-      // set multiplier = 1/mu * normal_proj(shifted_cstr)
-      lamplus_k *= weights.inv(k);
-      // compute prox Lagrangian dual gradient
-      stack.segmentByConstraint(ld, k) = weights.get(k) * (lamplus_k - lam_k);
-    }
-    lampdal = (1 + dual_weight) * lamplus - dual_weight * lambda;
-  };
+          // set multiplier = 1/mu * normal_proj(shifted_cstr)
+          lamplus_k /= m;
+          lampd_k *= 2. / m;
+          // compute prox Lagrangian dual gradient
+          stack.segmentByConstraint(ld, k) = m * (lamplus_k - lam_k);
+        }
+      };
 
   // loop over the stages
 #pragma omp parallel for num_threads(problem.getNumThreads())
@@ -794,6 +798,9 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
     const Scalar phi0 = results_.merit_value_;
 
     computeLagrangianDerivatives(problem, workspace_, results_.lams);
+    if (force_initial_condition_) {
+      workspace_.Lxs_[0].setZero();
+    }
     computeInfeasibilities(problem);
     computeCriterion(problem);
 
