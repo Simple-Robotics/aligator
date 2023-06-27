@@ -105,3 +105,7 @@ std::ostream &operator<<(std::ostream &oss,
 }
 
 } // namespace proxddp
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "./results-base.txx"
+#endif
