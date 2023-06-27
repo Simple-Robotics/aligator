@@ -298,7 +298,6 @@ void SolverProxDDP<Scalar>::updateHamiltonian(const Problem &problem,
   qparam.q_ = cdata.value_;
   qparam.Qx = workspace_.Lxs_[t];
   qparam.Qu = workspace_.Lus_[t];
-  qparam.Qy = vnext.Vx_;
 
   int ndx1 = stage.ndx1();
   int nu = stage.nu();
@@ -389,7 +388,6 @@ void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
   const int ndx2 = stage.ndx2();
 
   const VectorXs &laminnr = results_.lams[t + 1];
-  const VectorXs &lamplus = workspace_.lams_plus[t + 1];
   const VectorXs &shift_cstr = workspace_.shifted_constraints[t + 1];
   const VectorXs &Ld = workspace_.Lds_[t + 1];
 
@@ -411,7 +409,7 @@ void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
   auto kkt_rhs_u = kkt_rhs_ff.head(nu);
   auto kkt_rhs_y = kkt_rhs_ff.segment(nu, ndx2);
   kkt_rhs_u = qparam.Qu;
-  kkt_rhs_y = qparam.Qy;
+  kkt_rhs_y = vnext.Vx_;
 
   auto kkt_rhs_ux = kkt_rhs_fb.topRows(nu);
   auto kkt_rhs_yx = kkt_rhs_fb.middleRows(nu, ndx2);
