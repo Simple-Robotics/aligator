@@ -6,18 +6,16 @@
 import pinocchio as pin
 import numpy as np
 import proxddp
-import tap
 import matplotlib.pyplot as plt
 
-from utils import create_cartpole
+from utils import create_cartpole, ArgsBase, plot_convergence, get_endpoint_traj
 from pinocchio.visualize import MeshcatVisualizer
 from proxddp import constraints, manifolds
 
 
-class Args(tap.Tap):
-    display: bool = False
-    use_term_cstr: bool = False
-    record: bool = False
+class Args(ArgsBase):
+    bounds: bool = False
+    term_cstr: bool = False
     num_replay: int = 2
 
 
@@ -59,36 +57,19 @@ frame_err = proxddp.FramePlacementResidual(
 )
 weights_frame_place = np.zeros(6)
 weights_frame_place[:3] = 1.0
-# frame_err = proxddp.FrameTranslationResidual(ndx, nu, model, target_pos, frame_id)
-# weights_frame_place = np.zeros(3)
-# weights_frame_place[2] = np.ones(1) * 1.0
-# weights_frame_place[:3] = 1.0
 weights_frame_place = np.diag(weights_frame_place)
 rcost.addCost(proxddp.QuadraticResidualCost(space, frame_err, weights_frame_place * dt))
 term_cost = proxddp.CostStack(space, nu)
 
-wx_term = np.zeros(ndx)
-wx_term[nv:] = 0.001
-x_reg_cost = proxddp.QuadraticStateCost(space, nu, space.neutral(), np.diag(wx_term))
-term_cost.addCost(
-    proxddp.QuadraticResidualCost(space, frame_err, weights_frame_place * dt)
-)
-term_cost.addCost(x_reg_cost)
-
 # box constraint on control
-u_min = -8.0 * np.ones(nu)
-u_max = +8.0 * np.ones(nu)
+u_min = -6.0 * np.ones(nu)
+u_max = +6.0 * np.ones(nu)
 
 
 def get_box_cstr():
-    ctrl_lin_fun = proxddp.LinearFunction(ndx, nu, ndx, nu)
-    ctrl_lin_fun.B[:] = np.eye(nu)
-    return proxddp.StageConstraint(
-        ctrl_lin_fun, constraints.BoxConstraint(u_min, u_max)
-    )
+    ctrl_fn = proxddp.ControlErrorResidual(ndx, nu)
+    return proxddp.StageConstraint(ctrl_fn, constraints.BoxConstraint(u_min, u_max))
 
-
-box_cstr = get_box_cstr()
 
 nsteps = 500
 Tf = nsteps * dt
@@ -96,22 +77,32 @@ problem = proxddp.TrajOptProblem(x0, nu, space, term_cost)
 
 for i in range(nsteps):
     stage = proxddp.StageModel(rcost, disc_dyn)
-    stage.addConstraint(box_cstr)
+    if args.bounds:
+        box_cstr = get_box_cstr()
+        stage.addConstraint(box_cstr)
     problem.addStage(stage)
 
 term_fun = proxddp.FrameTranslationResidual(ndx, nu, model, target_pos, frame_id)
-term_cstr = proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet())
-problem.addTerminalConstraint(term_cstr)
 
-mu_init = 0.9
+if args.term_cstr:
+    term_cstr = proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet())
+    problem.addTerminalConstraint(term_cstr)
+else:
+    term_cost.addCost(
+        proxddp.QuadraticResidualCost(space, frame_err, weights_frame_place)
+    )
+
+
+mu_init = 1e-5
+if args.bounds:
+    mu_init = 1e-5
 rho_init = 0.0
 verbose = proxddp.VerboseLevel.VERBOSE
 TOL = 1e-4
-MAX_ITER = 100
+MAX_ITER = 200
 solver = proxddp.SolverProxDDP(
     TOL, mu_init, rho_init, max_iters=MAX_ITER, verbose=verbose
 )
-solver.reg_init = 1e-6
 callback = proxddp.HistoryCallback()
 solver.registerCallback("his", callback)
 
@@ -120,64 +111,113 @@ us_i = [u0] * nsteps
 xs_i = proxddp.rollout(disc_dyn, x0, us_i)
 
 solver.setup(problem)
+workspace = solver.workspace
+for i in range(nsteps):
+    psc = workspace.getConstraintScaler(i)
+    if args.bounds:
+        psc.set_weight(10.0, 1)
 solver.run(problem, xs_i, us_i)
-res = solver.getResults()
-xtar = space.neutral()
+res = solver.results
+print(res)
 
-plt.figure(figsize=(9.6, 4.8))
-plt.subplot(121)
-lstyle = {"lw": 0.9}
+fig1 = plt.figure(figsize=(7.2, 5.4))
+
+xs_opt = np.asarray(res.xs)
 trange = np.linspace(0, Tf, nsteps + 1)
-plt.plot(trange, res.xs, ls="-", **lstyle)
-plt.title("State $x(t)$")
-if args.use_term_cstr:
+gs = plt.GridSpec(2, 1)
+gs0 = gs[0].subgridspec(1, 2)
+
+_pts = get_endpoint_traj(model, data, xs_opt, frame_id)
+_pts = _pts[:, 1:]
+
+ax1 = fig1.add_subplot(gs0[0])
+ax2 = fig1.add_subplot(gs0[1])
+lstyle = {"lw": 0.9}
+ax1.plot(trange, xs_opt[:, 0], ls="-", **lstyle)
+ax1.plot(trange, xs_opt[:, 2], ls="-", label="$\\dot{x}$", **lstyle)
+ax1.set_ylabel("$q(t)$")
+if args.term_cstr:
+    pass
+ax1.legend()
+ax2.plot(trange, xs_opt[:, 1], ls="-", **lstyle)
+ax2.plot(trange, xs_opt[:, 3], ls="-", label="$\\dot{\\theta}$", **lstyle)
+ax2.set_ylabel("Angle $\\theta(t)$")
+ax2.legend()
+
+plt.xlabel("Time $t$")
+
+gs1 = gs[1].subgridspec(1, 2, width_ratios=[1, 2])
+ax3 = plt.subplot(gs1[0])
+plt.plot(*_pts.T, ls=":")
+plt.scatter(*target_pos[1:], c="r", marker="^", zorder=2, label="EE target")
+plt.legend()
+ax3.set_aspect("equal")
+plt.title("Endpoint trajectory")
+
+plt.subplot(gs1[1])
+plt.plot(trange[:-1], res.us, label="$u(t)$", **lstyle)
+if args.bounds:
     plt.hlines(
-        xtar,
+        np.concatenate([u_min, u_max]),
         *trange[[0, -1]],
         ls="-",
-        lw=1.3,
         colors="k",
-        alpha=0.8,
-        label=r"$x_\mathrm{tar}$",
+        lw=2.5,
+        alpha=0.4,
+        label=r"$\bar{u}$",
     )
-plt.xlabel("Time $i$")
-
-plt.subplot(122)
-plt.plot(trange[:-1], res.us, **lstyle)
-plt.hlines(
-    np.concatenate([u_min, u_max]),
-    *trange[[0, -1]],
-    ls="-",
-    colors="k",
-    lw=2.5,
-    alpha=0.4,
-    label=r"$\bar{u}$",
-)
 plt.title("Controls $u(t)$")
-
 plt.legend()
+fig1.tight_layout()
 
-if True:
-    from proxnlp.utils import plot_pd_errs
+fig2 = plt.figure(figsize=(6.4, 4.8))
+ax: plt.Axes = plt.subplot(111)
+ax.hlines(TOL, 0, res.num_iters, lw=2.2, alpha=0.8, colors="k")
+plot_convergence(callback, ax, res)
+prim_tols = np.array(callback.storage.prim_tols)
+al_iters = np.array(callback.storage.al_iters)
 
-    plt.figure(figsize=(6.4, 4.8))
-    prim_errs = callback.storage.prim_infeas
-    dual_errs = callback.storage.dual_infeas
-    prim_tols = np.array(callback.storage.prim_tols)
-    al_iters = np.array(callback.storage.al_iters)
-
-    ax: plt.Axes = plt.subplot(111)
-    plot_pd_errs(ax, prim_errs, dual_errs)
-    itrange = np.arange(len(al_iters))
+itrange = np.arange(len(al_iters))
+legends_ = [
+    "$\\epsilon_\\mathrm{tol}$",
+    "Prim. err $p$",
+    "Dual err $d$",
+]
+if len(itrange) > 0:
     ax.step(itrange, prim_tols, c="green", alpha=0.9, lw=1.1)
     al_change = al_iters[1:] - al_iters[:-1]
     al_change_idx = itrange[:-1][al_change > 0]
+    legends_.extend(
+        [
+            "Prim tol $\\eta_k$",
+            "AL iters",
+        ]
+    )
 
     ax.vlines(al_change_idx, *ax.get_ylim(), colors="gray", lw=4.0, alpha=0.5)
-    ax.legend(["Prim. err $p$", "Dual err $d$", "Prim tol $\\eta_k$", "AL iters"])
+ax.legend(
+    [
+        "$\\epsilon_\\mathrm{tol}$",
+        "Prim. err $p$",
+        "Dual err $d$",
+        "Prim tol $\\eta_k$",
+        "AL iters",
+    ]
+)
+fig2.tight_layout()
 
+fig_dict = {"traj": fig1, "conv": fig2}
 
-plt.tight_layout()
+TAG = "cartpole"
+if args.bounds:
+    TAG += "_bounds"
+if args.term_cstr:
+    TAG += "_cstr"
+
+for name, fig in fig_dict.items():
+    fig.savefig(f"assets/{TAG}_{name}.png")
+    fig.savefig(f"assets/{TAG}_{name}.pdf")
+
 plt.show()
 
 if args.display:
