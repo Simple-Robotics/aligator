@@ -231,9 +231,19 @@ template <typename Scalar> void WorkspaceTpl<Scalar>::cycleLeft() {
   Base::cycleLeft();
 
   rotate_vec_left(prox_datas);
+
+  rotate_vec_left(cstr_scalers);
+  rotate_vec_left(Lxs_);
+  rotate_vec_left(Lus_);
+  rotate_vec_left(Lds_);
+
+  rotate_vec_left(trial_lams, 1);
   rotate_vec_left(lams_plus, 1);
   rotate_vec_left(lams_pdal, 1);
   rotate_vec_left(shifted_constraints, 1);
+  rotate_vec_left(proj_jacobians, 1);
+  rotate_vec_left(active_constraints, 1);
+
   rotate_vec_left(pd_step_, 1);
   rotate_vec_left(dxs);
   rotate_vec_left(dus);
@@ -248,6 +258,8 @@ template <typename Scalar> void WorkspaceTpl<Scalar>::cycleLeft() {
   rotate_vec_left(prev_xs);
   rotate_vec_left(prev_us);
   rotate_vec_left(lams_prev);
+
+  rotate_vec_left(stage_prim_infeas);
 }
 
 template <typename Scalar>

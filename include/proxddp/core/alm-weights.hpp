@@ -11,12 +11,12 @@ template <typename Scalar> struct ConstraintProximalScalerTpl {
 
   ConstraintProximalScalerTpl(const ConstraintStack &constraints,
                               const Scalar &mu)
-      : constraints_(constraints), mu_(mu), weights(constraints.size()) {
+      : constraints_(&constraints), mu_(&mu), weights(constraints.size()) {
     weights.setOnes();
   }
 
-  std::size_t size() const { return constraints_.size(); }
-  Scalar get(std::size_t j) const { return weights[(long)j] * mu_; }
+  std::size_t size() const { return constraints_->size(); }
+  Scalar get(std::size_t j) const { return weights[(long)j] * mu(); }
 
   Scalar inv(std::size_t j) const { return 1. / get(j); }
   void set_weight(const Scalar w, long j) {
@@ -30,15 +30,16 @@ template <typename Scalar> struct ConstraintProximalScalerTpl {
   const VectorXs &getWeights() const { return weights; }
 
 private:
-  const ConstraintStack &constraints_;
-  const Scalar &mu_;
+  Scalar mu() const { return *mu_; }
+  const ConstraintStack *constraints_;
+  const Scalar *mu_;
   VectorXs weights;
 };
 
 template <typename Scalar>
 void ConstraintProximalScalerTpl<Scalar>::applyDefaultStrategy() {
   weights[0] = 1e-3;
-  for (long j = 1; j < (long)constraints_.size(); j++) {
+  for (long j = 1; j < (long)constraints_->size(); j++) {
     weights[j] = 100.;
   }
 }
