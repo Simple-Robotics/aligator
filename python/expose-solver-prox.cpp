@@ -84,6 +84,9 @@ void exposeProxDDP() {
           },
           bp::return_internal_reference<>(), bp::args("self", "i"),
           "Get the LDLT algorithm for the i-th linear problem.")
+      .def_readonly("prev_xs", &Workspace::prev_xs)
+      .def_readonly("prev_us", &Workspace::prev_us)
+      .def_readonly("prev_lams", &Workspace::prev_lams)
       .def_readonly("stage_prim_infeas", &Workspace::stage_prim_infeas)
       .def_readonly("stage_dual_infeas", &Workspace::stage_dual_infeas)
       .def_readonly("stage_inner_crits", &Workspace::stage_inner_crits)

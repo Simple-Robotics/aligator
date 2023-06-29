@@ -206,7 +206,7 @@ void SolverProxDDP<Scalar>::computeMultipliers(
   TrajOptData &prob_data = workspace_.problem_data;
   const std::size_t nsteps = workspace_.nsteps;
 
-  std::vector<VectorXs> &lams_prev = workspace_.lams_prev;
+  std::vector<VectorXs> &lams_prev = workspace_.prev_lams;
   std::vector<VectorXs> &lams_plus = workspace_.lams_plus;
   std::vector<VectorXs> &lams_pdal = workspace_.lams_pdal;
   std::vector<VectorXs> &Lds = workspace_.Lds_;
@@ -580,7 +580,7 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
       const ConstVectorRef dynlam =
           cstr_stack.constSegmentByConstraint(lams[i + 1], 0);
       const ConstVectorRef dynprevlam =
-          cstr_stack.constSegmentByConstraint(workspace_.lams_prev[i + 1], 0);
+          cstr_stack.constSegmentByConstraint(workspace_.prev_lams[i + 1], 0);
       dyn_slacks[i] = weight_strat.get(0) * (dynprevlam - dynlam);
     }
 
@@ -670,7 +670,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
 
   workspace_.prev_xs = results_.xs;
   workspace_.prev_us = results_.us;
-  workspace_.lams_prev = results_.lams;
+  workspace_.prev_lams = results_.lams;
 
   inner_tol_ = inner_tol0;
   prim_tol_ = prim_tol0;
@@ -700,13 +700,13 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
 
       switch (multiplier_update_mode) {
       case MultiplierUpdateMode::NEWTON:
-        workspace_.lams_prev = results_.lams;
+        workspace_.prev_lams = results_.lams;
         break;
       case MultiplierUpdateMode::PRIMAL:
-        workspace_.lams_prev = workspace_.lams_plus;
+        workspace_.prev_lams = workspace_.lams_plus;
         break;
       case MultiplierUpdateMode::PRIMAL_DUAL:
-        workspace_.lams_prev = workspace_.lams_pdal;
+        workspace_.prev_lams = workspace_.lams_pdal;
         break;
       default:
         break;
@@ -897,7 +897,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem) {
   // PRIMAL INFEASIBILITIES
 
   std::vector<VectorXs> &lams_plus = workspace_.lams_plus;
-  std::vector<VectorXs> &lams_prev = workspace_.lams_prev;
+  std::vector<VectorXs> &lams_prev = workspace_.prev_lams;
 
   const FunctionData &init_data = prob_data.getInitData();
   workspace_.stage_prim_infeas[0](0) = math::infty_norm(init_data.value_);
