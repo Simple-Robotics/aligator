@@ -254,8 +254,8 @@ elapsed_time_prox = time.time()
 solver2.run(prox_problem, xs_init, us_init)
 elapsed_time_prox = time.time() - elapsed_time_prox
 
-rs = solver2.getResults()
-ws = solver2.getWorkspace()
+rs = solver2.results
+ws = solver2.workspace
 print(rs)
 
 print("CROC TIME = {:.4e}".format(elapsed_time_croc))
