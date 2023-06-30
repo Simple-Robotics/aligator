@@ -31,6 +31,7 @@ function(add_test_binding_lib test_name)
 
   add_library(${test_name} SHARED "${test_name}.cpp")
   target_link_libraries(${test_name} PUBLIC ${PYLIB_NAME})
+  target_link_libraries(${test_name} PUBLIC eigenpy::eigenpy)
   set_target_properties(${test_name} PROPERTIES PREFIX "" SUFFIX ${PYTHON_EXT_SUFFIX})
   # test for possible import segfault
   add_test(NAME ${test_name} COMMAND ${PYTHON_EXECUTABLE} -c "import ${test_name}")

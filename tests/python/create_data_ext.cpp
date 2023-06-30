@@ -1,5 +1,5 @@
 #include "proxddp/core/explicit-dynamics.hpp"
-#include <eigenpy/eigenpy.hpp>
+#include <boost/python.hpp>
 
 using proxddp::context::ExplicitDynamics;
 
