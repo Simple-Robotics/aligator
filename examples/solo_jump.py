@@ -147,7 +147,7 @@ vizer = MeshcatVisualizer(
 
 
 if __name__ == "__main__":
-    vizer.initViewer(loadModel=True, open=True)
+    vizer.initViewer(loadModel=True, zmq_url=args.zmq_url)
     custom_color = np.asarray((53, 144, 243)) / 255.0
     vizer.setBackgroundColor(col_bot=list(custom_color), col_top=(1, 1, 1, 1))
     manage_lights(vizer)

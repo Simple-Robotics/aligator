@@ -72,7 +72,6 @@ problem = proxddp.TrajOptProblem(x0, stages, term_cost)
 
 
 if __name__ == "__main__":
-    from meshcat import Visualizer
     import hppfcl
     import matplotlib.pyplot as plt
     import seaborn as sns
@@ -87,11 +86,10 @@ if __name__ == "__main__":
     visual_model.addGeometryObject(obj_geom)
 
     if args.display:
-        viewer_ = Visualizer(zmq_url=args.zmq_url)
         viz = MeshcatVisualizer(
             rmodel, robot.collision_model, visual_model, data=robot.data
         )
-        viz.initViewer(viewer_, loadModel=True)
+        viz.initViewer(loadModel=True, zmq_url=args.zmq_url)
         viz.setBackgroundColor()
         viz.display(robot.q0)
 

@@ -135,9 +135,6 @@ if args.display:
         rmodel, robot.collision_model, robot.visual_model, data=robot.data
     )
     vizer.initViewer(open=True, loadModel=True)
-    import ipdb
-
-    ipdb.set_trace()
     vizer.display(x0[:nq])
 
     vizer.setCameraPreset("acrobot")

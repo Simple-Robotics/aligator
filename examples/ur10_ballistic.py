@@ -1,7 +1,6 @@
 import example_robot_data as erd
 import pybullet_data
 import pinocchio as pin
-import meshcat
 import numpy as np
 import proxddp
 import hppfcl
@@ -124,11 +123,10 @@ def configure_viz(target_pos):
     )
     gobj.meshColor[:] = np.array([200, 100, 100, 200]) / 255.0
 
-    viewer = meshcat.Visualizer(args.zmq_url)
     viz = MeshcatVisualizer(
         model=rmodel, collision_model=cmodel, visual_model=vmodel, data=rdata
     )
-    viz.initViewer(viewer, loadModel=True)
+    viz.initViewer(loadModel=True, zmq_url=args.zmq_url)
     viz.addGeometryObject(gobj)
     viz.setBackgroundColor()
     viz.setCameraZoom(1.8)

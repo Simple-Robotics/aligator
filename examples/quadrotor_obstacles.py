@@ -92,8 +92,6 @@ def sample_feasible_translation(centers, radius, margin):
 
 
 def main(args: Args):
-    import meshcat
-
     os.makedirs("assets", exist_ok=True)
     print(args)
 
@@ -300,11 +298,10 @@ def main(args: Args):
     _, x_term = task_schedule(nsteps)
     problem = setup()
 
-    viewer = meshcat.Visualizer(zmq_url=args.zmq_url)
     vizer = pin.visualize.MeshcatVisualizer(
         rmodel, robot.collision_model, robot.visual_model, data=rdata
     )
-    vizer.initViewer(viewer, loadModel=True)
+    vizer.initViewer(loadModel=True, zmq_url=args.zmq_url)
     vizer.displayCollisions(True)
     vizer.display(x0[:nq])
 
