@@ -594,17 +594,12 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
       exp_dd.value_ = -dyn_slacks[i];
     };
 
-    if (stage.has_dyn_model()) {
-      const DynamicsModel &dm = stage.dyn_model();
-      if (dm.is_explicit()) {
-        explicit_model_update_xnext();
-      } else {
-        ConstVectorRef ds = dyn_slacks[i];
-        forwardDynamics(dm, xs[i], us[i], dd, xs[i + 1], ds, rollout_max_iters);
-      }
-    } else {
-      // otherwise assume explicit dynamics model
+    if (!stage.has_dyn_model() || stage.dyn_model().is_explicit()) {
       explicit_model_update_xnext();
+    } else {
+      ConstVectorRef slack = dyn_slacks[i];
+      forwardDynamics<Scalar>::run(stage.dyn_model(), xs[i], us[i], dd,
+                                   xs[i + 1], slack, rollout_max_iters);
     }
 
     VectorRef &dx_next = workspace_.dxs[i + 1];
