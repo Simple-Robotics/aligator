@@ -106,7 +106,7 @@ struct CostStackDataTpl : CostDataAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
   using CostData = CostDataAbstractTpl<Scalar>;
   std::vector<shared_ptr<CostData>> sub_cost_data;
-  CostStackDataTpl(const CostStackTpl<Scalar> *obj);
+  CostStackDataTpl(const CostStackTpl<Scalar> &obj);
 };
 } // namespace proxddp
 

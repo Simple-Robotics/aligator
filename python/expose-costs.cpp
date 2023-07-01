@@ -90,10 +90,7 @@ void exposeCostStack() {
   bp::register_ptr_to_python<shared_ptr<CostStackData>>();
   bp::class_<CostStackData, bp::bases<CostData>>(
       "CostStackData", "Data struct for CostStack.", bp::no_init)
-      .add_property(
-          "sub_cost_data",
-          bp::make_getter(&CostStackData::sub_cost_data,
-                          bp::return_value_policy<bp::return_by_value>()));
+      .def_readonly("sub_cost_data", &CostStackData::sub_cost_data);
 }
 
 void exposeCostBase() {

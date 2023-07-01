@@ -94,16 +94,16 @@ void CostStackTpl<Scalar>::computeHessians(const ConstVectorRef &x,
 template <typename Scalar>
 shared_ptr<CostDataAbstractTpl<Scalar>>
 CostStackTpl<Scalar>::createData() const {
-  return std::make_shared<SumCostData>(this);
+  return std::make_shared<SumCostData>(*this);
 }
 
 /* SumCostData */
 
 template <typename Scalar>
-CostStackDataTpl<Scalar>::CostStackDataTpl(const CostStackTpl<Scalar> *obj)
-    : CostData(obj->ndx(), obj->nu) {
-  for (std::size_t i = 0; i < obj->size(); i++) {
-    sub_cost_data.push_back(obj->components_[i]->createData());
+CostStackDataTpl<Scalar>::CostStackDataTpl(const CostStackTpl<Scalar> &obj)
+    : CostData(obj.ndx(), obj.nu) {
+  for (std::size_t i = 0; i < obj.size(); i++) {
+    sub_cost_data.push_back(obj.components_[i]->createData());
   }
 }
 
