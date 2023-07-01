@@ -47,7 +47,8 @@ def plot_controls_traj(
     effort_limit=None,
     joint_names=None,
     rmodel=None,
-):
+    figsize=(6.4, 6.4),
+) -> plt.Figure:
     t0 = times[0]
     tf = times[-1]
     us = np.asarray(us)
@@ -55,7 +56,7 @@ def plot_controls_traj(
     nrows, r = divmod(nu, ncols)
     nrows += int(r > 0)
     if axes is None:
-        fig, axes = plt.subplots(nrows, ncols, sharex="col", figsize=(6.4, 6.4))
+        fig, axes = plt.subplots(nrows, ncols, sharex="col", figsize=figsize)
     else:
         fig = axes.flat[0].get_figure()
     axes = _axes_flatten_if_ndarray(axes)
@@ -81,7 +82,9 @@ def plot_controls_traj(
     return fig
 
 
-def plot_velocity_traj(times, vs, rmodel, axes=None, ncols=2):
+def plot_velocity_traj(
+    times, vs, rmodel, axes=None, ncols=2, figsize=(6.4, 6.4)
+) -> plt.Figure:
     vs = np.asarray(vs)
     nv = vs.shape[1]
     idx_to_joint_id_map = {}
@@ -98,7 +101,7 @@ def plot_velocity_traj(times, vs, rmodel, axes=None, ncols=2):
     tf = times[-1]
 
     if axes is None:
-        fig, axes = plt.subplots(nrows, ncols)
+        fig, axes = plt.subplots(nrows, ncols, figsize=figsize)
         fig: plt.Figure
     else:
         fig = axes.flat[0].get_figure()
