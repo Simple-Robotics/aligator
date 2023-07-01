@@ -58,7 +58,7 @@ public:
   }
 
   std::vector<MatrixXs> getCtrlFeedbacks() const {
-    const std::size_t N = this->gains_.size();
+    const std::size_t N = us.size();
     std::vector<MatrixXs> out;
     for (std::size_t i = 0; i < N; i++) {
       const Eigen::Index nu = us[i].rows();
@@ -68,7 +68,7 @@ public:
   }
 
   std::vector<VectorXs> getCtrlFeedforwards() const {
-    const std::size_t N = this->gains_.size();
+    const std::size_t N = us.size();
     std::vector<VectorXs> out;
     for (std::size_t i = 0; i < N; i++) {
       const Eigen::Index nu = us[i].rows();
