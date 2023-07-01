@@ -18,6 +18,7 @@ plt.rcParams["lines.markersize"] = 5
 
 integrator_choices = Literal["euler", "semieuler", "midpoint", "rk2"]
 MESHCAT_ZMQ_DEFAULT = "tcp://127.0.0.1:6000"
+IMAGEIO_KWARGS = {"macro_block_size": 8, "quality": 9}
 
 
 class ArgsBase(tap.Tap):
