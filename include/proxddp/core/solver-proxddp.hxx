@@ -405,7 +405,7 @@ void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
   BlockXs kkt_jac = kkt_mat.bottomLeftCorner(ndual, nprim);
   BlockXs kkt_prim = kkt_mat.topLeftCorner(nprim, nprim);
   BlockXs kkt_dual = kkt_mat.bottomRightCorner(ndual, ndual);
-  Eigen::Diagonal<BlockXs> kkt_low_right = kkt_dual.diagonal();
+  Eigen::Diagonal<BlockXs> kkt_dual_d = kkt_dual.diagonal();
 
   ColXpr kkt_rhs_ff(kkt_rhs.col(0));
   ColsBlockXpr kkt_rhs_fb(kkt_rhs.rightCols(ndx1));
@@ -454,12 +454,14 @@ void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
     auto ld_j = cstr_mgr.constSegmentByConstraint(Ld, j);
     cstr_mgr.segmentByConstraint(kkt_rhs_l, j) = ld_j;
 
-    kkt_low_right.array() = -weight_strat.get(j);
+    auto kkt_dual_j = cstr_mgr.segmentByConstraint(kkt_dual_d, j);
+    kkt_dual_j.array() = -weight_strat.get(j);
+    auto Jx_orig = cstr_data.jac_buffer_.leftCols(ndx1);
     auto Juy_orig = cstr_data.jac_buffer_.rightCols(nprim);
     // // add correction to kkt rhs ff
     auto kkt_rhs_prim = kkt_rhs_ff.head(nprim);
-    kkt_rhs_prim -= Juy_orig.transpose() * laminnr_j;
-    kkt_rhs_prim += Juy_proj.transpose() * laminnr_j;
+    kkt_rhs_prim.noalias() += (Juy_orig - Juy_proj).transpose() * ld_j;
+    qparam.Qx.noalias() += (Jx_orig - Jx_proj).transpose() * ld_j;
   }
   kkt_mat = kkt_mat.template selfadjointView<Eigen::Lower>();
   PROXDDP_NOMALLOC_END;
@@ -949,8 +951,6 @@ void SolverProxDDP<Scalar>::computeCriterion(const Problem &problem) {
     workspace_.stage_inner_crits(0) = std::max(rx, rlam);
     workspace_.stage_dual_infeas(0) = rx;
   }
-  // fmt::print("i={:>3d} Lxi = {} | |Lxi| = {:.4e}\n", 0,
-  // workspace_.Lxs_[0].transpose(), rx);
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &st = *problem.stages_[i];
@@ -964,17 +964,10 @@ void SolverProxDDP<Scalar>::computeCriterion(const Problem &problem) {
     x_residuals = std::max(x_residuals, rx);
     u_residuals = std::max(u_residuals, ru);
 
-    // fmt::print("i={:>3d} Lui = {} | |Lui| = {:.4e}\n", i,
-    // workspace_.Lus_[i].transpose(), ru); fmt::print("i={:>3d} Lxi = {} |
-    // |Lxi| = {:.4e}\n", i+1, workspace_.Lxs_[i+1].transpose(), rx);
-
     rx *= 1e-3;
     workspace_.stage_inner_crits(long(i + 1)) = std::max({rx, ru, rlam});
     workspace_.stage_dual_infeas(long(i + 1)) = std::max(rx, ru);
   }
-
-  // fmt::print("max|Lx| = {:.4e}\n", x_residuals);
-  // fmt::print("max|Lu| = {:.4e}\n", u_residuals);
 
   workspace_.inner_criterion = math::infty_norm(workspace_.stage_inner_crits);
   results_.dual_infeas = math::infty_norm(workspace_.stage_dual_infeas);
