@@ -6,7 +6,7 @@ namespace proxddp {
 namespace helpers {
 
 template <typename Scalar>
-struct LinesearchCallback : helpers::base_callback<Scalar> {
+struct LinesearchCallback : helpers::CallbackBaseTpl<Scalar> {
   using Workspace = WorkspaceBaseTpl<Scalar>;
   using Results = ResultsBaseTpl<Scalar>;
   using InputType = std::tuple<std::function<Scalar(Scalar)>, Scalar, Scalar>;

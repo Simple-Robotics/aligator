@@ -5,7 +5,7 @@
 namespace proxddp {
 namespace python {
 
-using CallbackBase = helpers::base_callback<context::Scalar>;
+using CallbackBase = helpers::CallbackBaseTpl<context::Scalar>;
 
 struct CallbackWrapper : CallbackBase, bp::wrapper<CallbackBase> {
   CallbackWrapper() = default;

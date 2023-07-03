@@ -3,7 +3,7 @@
 namespace proxddp {
 namespace helpers {
 
-template struct base_callback<context::Scalar>;
+template struct CallbackBaseTpl<context::Scalar>;
 
 } // namespace helpers
 } // namespace proxddp

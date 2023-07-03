@@ -9,7 +9,7 @@ namespace proxddp {
 namespace helpers {
 
 /// @brief  Store the history of results.
-template <typename Scalar> struct HistoryCallback : base_callback<Scalar> {
+template <typename Scalar> struct HistoryCallback : CallbackBaseTpl<Scalar> {
   using Workspace = WorkspaceBaseTpl<Scalar>;
   using Results = ResultsBaseTpl<Scalar>;
   HistoryCallback(bool store_pd_vars = false, bool store_values = true,

@@ -6,7 +6,7 @@
 namespace proxddp {
 namespace helpers {
 
-extern template struct base_callback<context::Scalar>;
+extern template struct CallbackBaseTpl<context::Scalar>;
 
 } // namespace helpers
 } // namespace proxddp

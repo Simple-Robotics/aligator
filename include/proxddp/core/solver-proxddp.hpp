@@ -43,7 +43,7 @@ public:
   using QParams = QFunctionTpl<Scalar>;
   using ProxPenaltyType = ProximalPenaltyTpl<Scalar>;
   using ProxData = typename ProxPenaltyType::Data;
-  using CallbackPtr = shared_ptr<helpers::base_callback<Scalar>>;
+  using CallbackPtr = shared_ptr<helpers::CallbackBaseTpl<Scalar>>;
   using CallbackMap = std::unordered_map<std::string, CallbackPtr>;
   using ConstraintStack = ConstraintStackTpl<Scalar>;
   using CstrSet = ConstraintSetBase<Scalar>;
