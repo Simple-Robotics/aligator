@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from proxddp import dynamics, constraints, manifolds
-from utils import plot_convergence
+from proxddp.utils.plotting import plot_convergence
 
 
 class Args(tap.Tap):
@@ -74,7 +74,7 @@ else:
     mu_init = 1e-6
 rho_init = 0.0
 verbose = proxddp.VerboseLevel.VERBOSE
-tol = 1e-6
+tol = 1e-8
 solver = proxddp.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
 
 
@@ -194,10 +194,10 @@ ax.hlines(
     colors="k",
     linestyles="-",
     linewidth=2.0,
-    label="$\\epsilon_\\mathrm{tol}$",
 )
 plot_convergence(his_cb, ax, res)
 ax.set_title("Convergence (constrained LQR)")
+ax.legend(["Tolerance $\\epsilon_\\mathrm{tol}$", "Primal error $p$", "Dual error $d$"])
 fig2.tight_layout()
 
 plt.show()
