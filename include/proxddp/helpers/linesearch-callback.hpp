@@ -3,6 +3,7 @@
 #include "proxddp/core/callback-base.hpp"
 
 namespace proxddp {
+namespace helpers {
 
 template <typename Scalar>
 struct LinesearchCallback : helpers::base_callback<Scalar> {
@@ -66,4 +67,5 @@ struct LinesearchCallback : helpers::base_callback<Scalar> {
   Scalar da = 0.01;
 };
 
+} // namespace helpers
 } // namespace proxddp

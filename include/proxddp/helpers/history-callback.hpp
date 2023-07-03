@@ -8,13 +8,12 @@
 namespace proxddp {
 namespace helpers {
 
-/** @brief  Store the history of results.
- */
-template <typename Scalar> struct history_callback : base_callback<Scalar> {
+/// @brief  Store the history of results.
+template <typename Scalar> struct HistoryCallback : base_callback<Scalar> {
   using Workspace = WorkspaceBaseTpl<Scalar>;
   using Results = ResultsBaseTpl<Scalar>;
-  history_callback(bool store_pd_vars = false, bool store_values = true,
-                   bool store_residuals = true)
+  HistoryCallback(bool store_pd_vars = false, bool store_values = true,
+                  bool store_residuals = true)
       : store_primal_dual_vars_(store_pd_vars), store_values_(store_values),
         store_residuals_(store_residuals) {}
 
@@ -63,3 +62,7 @@ template <typename Scalar> struct history_callback : base_callback<Scalar> {
 
 } // namespace helpers
 } // namespace proxddp
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "./history-callback.txx"
+#endif

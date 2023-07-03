@@ -1,6 +1,5 @@
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
-#include "proxddp/python/fwd.hpp"
-#include "proxddp/core/callback-base.hpp"
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
+#include "proxddp/python/callbacks.hpp"
 #include "proxddp/helpers/history-callback.hpp"
 #include "proxddp/helpers/linesearch-callback.hpp"
 
@@ -8,28 +7,19 @@ namespace proxddp {
 namespace python {
 
 using context::Scalar;
-using CallbackBase = helpers::base_callback<Scalar>;
-
-struct CallbackWrapper : CallbackBase, bp::wrapper<CallbackBase> {
-  CallbackWrapper() = default;
-  void call(const WorkspaceBaseTpl<context::Scalar> &w,
-            const ResultsBaseTpl<context::Scalar> &r) {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "call", boost::cref(w), boost::cref(r));
-  }
-};
 
 void exposeHistoryCallback() {
-  using history_callback_t = helpers::history_callback<Scalar>;
-  using history_storage_t = decltype(history_callback_t::storage);
+  using HistoryCallback = helpers::HistoryCallback<Scalar>;
+  using history_storage_t = decltype(HistoryCallback::storage);
 
   bp::scope in_history =
-      bp::class_<history_callback_t, bp::bases<CallbackBase>>(
+      bp::class_<HistoryCallback, bp::bases<CallbackBase>>(
           "HistoryCallback", "Store the history of solver's variables.",
           bp::init<bool, bool, bool>((bp::arg("self"),
                                       bp::arg("store_pd_vars") = true,
                                       bp::arg("store_values") = true,
                                       bp::arg("store_residuals") = true)))
-          .def_readonly("storage", &helpers::history_callback<Scalar>::storage);
+          .def_readonly("storage", &helpers::HistoryCallback<Scalar>::storage);
 
   bp::class_<history_storage_t>("history_storage")
       .def_readonly("xs", &history_storage_t::xs)
@@ -47,17 +37,8 @@ void exposeHistoryCallback() {
       "StdVecVec_VectorXs", "std::vector of std::vector of Eigen::MatrixX.");
 }
 
-void exposeCallbacks() {
-  bp::register_ptr_to_python<shared_ptr<CallbackBase>>();
-
-  bp::class_<CallbackWrapper, boost::noncopyable>("BaseCallback",
-                                                  "Base callback for solvers.",
-                                                  bp::init<>(bp::args("self")))
-      .def("call", bp::pure_virtual(&CallbackWrapper::call),
-           bp::args("self", "workspace", "results"));
-
-  exposeHistoryCallback();
-  using LSCallback = LinesearchCallback<Scalar>;
+void exposeLinesearchCallback() {
+  using LSCallback = helpers::LinesearchCallback<Scalar>;
   using LSData = LSCallback::Data;
   eigenpy::enableEigenPySpecific<LSData::Matrix2Xs>();
   bp::class_<LSCallback, bp::bases<CallbackBase>>("LinesearchCallback",
@@ -77,6 +58,19 @@ void exposeCallbacks() {
           },
           bp::args("self", "t"))
       .def("get_d", &LSCallback::get_dphi, bp::args("self", "t"));
+}
+
+void exposeCallbacks() {
+  bp::register_ptr_to_python<shared_ptr<CallbackBase>>();
+
+  bp::class_<CallbackWrapper, boost::noncopyable>("BaseCallback",
+                                                  "Base callback for solvers.",
+                                                  bp::init<>(bp::args("self")))
+      .def("call", bp::pure_virtual(&CallbackWrapper::call),
+           bp::args("self", "workspace", "results"));
+
+  exposeHistoryCallback();
+  exposeLinesearchCallback();
 }
 } // namespace python
 } // namespace proxddp
