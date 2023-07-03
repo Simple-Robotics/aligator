@@ -530,12 +530,14 @@ template <typename Scalar>
 Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
                                                      const Scalar alpha) {
   using ExplicitDynData = ExplicitDynamicsDataTpl<Scalar>;
-  using DynamicsModel = DynamicsModelTpl<Scalar>;
 
   const std::size_t nsteps = workspace_.nsteps;
   std::vector<VectorXs> &xs = workspace_.trial_xs;
   std::vector<VectorXs> &us = workspace_.trial_us;
   std::vector<VectorXs> &lams = workspace_.trial_lams;
+  std::vector<VectorRef> &dxs = workspace_.dxs;
+  std::vector<VectorRef> &dus = workspace_.dus;
+  const std::vector<VectorXs> &lams_prev = workspace_.prev_lams;
   std::vector<VectorXs> &dyn_slacks = workspace_.dyn_slacks;
   TrajOptData &prob_data = workspace_.problem_data;
 
@@ -543,9 +545,11 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
     compute_dir_x0(problem);
     const StageModel &stage = *problem.stages_[0];
     // use lams[0] as a tmp var for alpha * dx0
-    lams[0] = alpha * workspace_.dxs[0];
+    lams[0] = alpha * dxs[0];
     stage.xspace().integrate(results_.xs[0], lams[0], xs[0]);
     lams[0] = results_.lams[0] + alpha * workspace_.dlams[0];
+
+    PROXDDP_RAISE_IF_NAN_NAME(xs[0], fmt::format("xs[{:d}]", 0));
   }
 
   for (std::size_t i = 0; i < nsteps; i++) {
@@ -562,27 +566,25 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
     auto ff_lm = ff.tail(ndual);
     auto fb_lm = fb.bottomRows(ndual);
 
-    const VectorRef &dx = workspace_.dxs[i];
-    VectorRef &du = workspace_.dus[i];
-    du = alpha * ff_u;
-    du.noalias() += fb_u * dx;
-    stage.uspace().integrate(results_.us[i], du, us[i]);
+    dus[i] = alpha * ff_u;
+    dus[i].noalias() += fb_u * dxs[i];
+    stage.uspace().integrate(results_.us[i], dus[i], us[i]);
 
     VectorRef &dlam = workspace_.dlams[i + 1];
     dlam = alpha * ff_lm;
-    dlam.noalias() += fb_lm * dx;
+    dlam.noalias() += fb_lm * dxs[i];
     lams[i + 1] = results_.lams[i + 1] + dlam;
 
     stage.evaluate(xs[i], us[i], xs[i + 1], data);
 
-    // compute multiple-shooting gap
+    // compute desired multiple-shooting gap from the multipliers
     {
-      auto &weight_strat = workspace_.cstr_scalers[i];
+      const auto &weight_strat = workspace_.cstr_scalers[i];
       const ConstraintStack &cstr_stack = stage.constraints_;
       const ConstVectorRef dynlam =
           cstr_stack.constSegmentByConstraint(lams[i + 1], 0);
       const ConstVectorRef dynprevlam =
-          cstr_stack.constSegmentByConstraint(workspace_.prev_lams[i + 1], 0);
+          cstr_stack.constSegmentByConstraint(lams_prev[i + 1], 0);
       dyn_slacks[i] = weight_strat.get(0) * (dynprevlam - dynlam);
     }
 
@@ -604,8 +606,7 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
                                    xs[i + 1], slack, rollout_max_iters);
     }
 
-    VectorRef &dx_next = workspace_.dxs[i + 1];
-    stage.xspace_next().difference(results_.xs[i + 1], xs[i + 1], dx_next);
+    stage.xspace_next().difference(results_.xs[i + 1], xs[i + 1], dxs[i + 1]);
 
     PROXDDP_RAISE_IF_NAN_NAME(xs[i + 1], fmt::format("xs[{:d}]", i + 1));
     PROXDDP_RAISE_IF_NAN_NAME(us[i], fmt::format("us[{:d}]", i));
