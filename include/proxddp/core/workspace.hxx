@@ -98,25 +98,29 @@ allocate_ldlt_algorithm(const std::vector<isize> &nprims,
 template <typename Scalar>
 WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
                                    LDLTChoice ldlt_choice)
-    : Base(problem), stage_inner_crits(this->nsteps + 1),
-      stage_dual_infeas(this->nsteps + 1) {
-  const std::size_t nsteps = this->nsteps;
+    : Base(problem), stage_inner_crits(nsteps + 1),
+      stage_dual_infeas(nsteps + 1) {
 
   prox_datas.reserve(nsteps + 1);
 
-  prev_xs = this->trial_xs;
-  prev_us = this->trial_us;
+  Lxs_.reserve(nsteps + 1);
+  Lus_.reserve(nsteps);
+
+  prev_xs = trial_xs;
+  prev_us = trial_us;
   kkt_mats_.reserve(nsteps + 1);
   kkt_rhs_.reserve(nsteps + 1);
   stage_prim_infeas.reserve(nsteps + 1);
   ldlts_.reserve(nsteps + 1);
 
+  active_constraints.resize(nsteps + 1);
   lams_plus.resize(nsteps + 1);
+  proj_jacobians.reserve(nsteps + 2);
   pd_step_.resize(nsteps + 1);
   dxs.reserve(nsteps + 1);
   dus.reserve(nsteps);
   dlams.reserve(nsteps + 1);
-  this->dyn_slacks.reserve(nsteps);
+  dyn_slacks.reserve(nsteps);
 
   // initial condition
   if (nsteps > 0) {
@@ -132,6 +136,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
         allocate_ldlt_algorithm<Scalar>({ndx1}, {ndual}, ldlt_choice));
 
     lams_plus[0] = VectorXs::Zero(ndual);
+    proj_jacobians.emplace_back(ndual, ndx1);
+    active_constraints[0] = VecBool::Zero(ndual);
     pd_step_[0] = VectorXs::Zero(ntot);
     dxs.emplace_back(pd_step_[0].head(ndx1));
     dlams.emplace_back(pd_step_[0].tail(ndual));
@@ -149,8 +155,12 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
     const int ndx2 = stage.ndx2();
     const int nprim = stage.numPrimal();
     const int ndual = stage.numDual();
+    // total matrix system dim
     const int ntot = nprim + ndual;
     const std::size_t ncb = stage.numConstraints();
+
+    Lxs_.emplace_back(ndx1);
+    Lus_.emplace_back(nu);
 
     value_params.emplace_back(ndx1);
     q_params.emplace_back(ndx1, nu, ndx2);
@@ -162,15 +172,18 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
     stage_prim_infeas.emplace_back(ncb);
 
     lams_plus[i + 1] = VectorXs::Zero(ndual);
+    proj_jacobians.emplace_back(ndual, ndx1 + nprim);
+    active_constraints[i + 1] = VecBool::Zero(ndual);
     pd_step_[i + 1] = VectorXs::Zero(ntot);
     dus.emplace_back(pd_step_[i + 1].head(nu));
     dxs.emplace_back(pd_step_[i + 1].segment(nu, ndx2));
     dlams.emplace_back(pd_step_[i + 1].tail(ndual));
-    this->dyn_slacks.push_back(dlams[i + 1].head(ndx2));
+    dyn_slacks.push_back(dlams[i + 1].head(ndx2));
   }
 
   {
     const int ndx2 = problem.stages_.back()->ndx2();
+    Lxs_.emplace_back(ndx2);
     value_params.emplace_back(ndx2);
   }
 
@@ -186,10 +199,16 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
         allocate_ldlt_algorithm<Scalar>({nprim}, {ndual}, ldlt_choice));
 
     lams_plus.push_back(VectorXs::Zero(ndual));
+    proj_jacobians.emplace_back(ndual, ndx1);
+    active_constraints.push_back(VecBool::Zero(ndual));
     pd_step_.push_back(VectorXs::Zero(ndual));
     dlams.push_back(pd_step_.back().tail(ndual));
   }
 
+  math::setZero(Lxs_);
+  math::setZero(Lus_);
+
+  math::setZero(lams_plus);
   lams_pdal = lams_plus;
   trial_lams = lams_plus;
   lams_prev = lams_plus;
@@ -197,6 +216,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
 
   math::setZero(kkt_mats_);
   math::setZero(kkt_rhs_);
+  math::setZero(proj_jacobians);
   kkt_resdls_ = kkt_rhs_;
 
   stage_inner_crits.setZero();
@@ -228,6 +248,23 @@ template <typename Scalar> void WorkspaceTpl<Scalar>::cycleLeft() {
   rotate_vec_left(prev_xs);
   rotate_vec_left(prev_us);
   rotate_vec_left(lams_prev);
+}
+
+template <typename Scalar>
+void WorkspaceTpl<Scalar>::configureScalers(
+    const TrajOptProblemTpl<Scalar> &problem, const Scalar &mu) {
+  cstr_scalers.reserve(nsteps + 1);
+
+  for (std::size_t t = 0; t < nsteps; t++) {
+    const StageModel &stage = *problem.stages_[t];
+    cstr_scalers.emplace_back(stage.constraints_, mu);
+    cstr_scalers[t].applyDefaultStrategy();
+  }
+
+  const ConstraintStackTpl<Scalar> &term_stack = problem.term_cstrs_;
+  if (!term_stack.empty()) {
+    cstr_scalers.emplace_back(term_stack, mu);
+  }
 }
 
 template <typename Scalar>

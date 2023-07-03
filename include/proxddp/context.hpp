@@ -7,6 +7,7 @@ namespace proxddp {
 namespace context {
 
 using Scalar = double;
+static constexpr int Options = 0;
 
 PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 

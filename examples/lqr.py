@@ -1,6 +1,5 @@
 import proxddp
 import tap
-import pprint
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -52,8 +51,8 @@ term_cost = proxddp.QuadraticCost(Qf, R)
 dynmodel = dynamics.LinearDiscreteDynamics(A, B, c)
 stage = proxddp.StageModel(rcost, dynmodel)
 if args.bounds:
-    u_min = -0.25 * np.ones(nu)
-    u_max = +0.25 * np.ones(nu)
+    u_min = -0.15 * np.ones(nu)
+    u_max = +0.15 * np.ones(nu)
     ctrl_fn = proxddp.ControlErrorResidual(nx, np.zeros(nu))
     stage.addConstraint(ctrl_fn, constraints.BoxConstraint(u_min, u_max))
 
@@ -76,10 +75,38 @@ if args.bounds:
     mu_init = 1e-1
 else:
     mu_init = 1e-6
+mu_init = 1e-3
 rho_init = 0.0
 verbose = proxddp.VerboseLevel.VERBOSE
 tol = 1e-6
 solver = proxddp.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
+
+
+class CustomCallback(proxddp.BaseCallback):
+    def __init__(self):
+        super().__init__()
+        self.active_sets = []
+        self.x_dirs = []
+        self.u_dirs = []
+        self.lams = []
+        self.Qus = []
+        self.kkts = []
+
+    def call(self, workspace: proxddp.Workspace, results: proxddp.Results):
+        import copy
+
+        self.active_sets.append(workspace.active_constraints.tolist())
+        self.x_dirs.append(copy.deepcopy(workspace.dxs.tolist()))
+        self.u_dirs.append(copy.deepcopy(workspace.dus.tolist()))
+        self.lams.append(copy.deepcopy(results.lams.tolist()))
+        Qus = [qq.Qu.copy() for qq in workspace.q_params]
+        self.Qus.append(Qus)
+        kkts = workspace.kkt_mat
+        self.kkts.append(copy.deepcopy(kkts))
+
+
+cus_cb = CustomCallback()
+solver.registerCallback("cus", cus_cb)
 his_cb = proxddp.HistoryCallback()
 solver.registerCallback("his", his_cb)
 solver.max_iters = 20
@@ -91,13 +118,12 @@ prob_data = proxddp.TrajOptData(problem)
 problem.evaluate(xs_i, us_i, prob_data)
 
 solver.setup(problem)
+# for i in range(nsteps):
+#     psc = solver.workspace.getConstraintScaler(i)
+#     psc.set_weight(2000.0, 1)
 solver.run(problem, xs_i, us_i)
 res = solver.getResults()
 print(res)
-lambdas = res.lams
-np.set_printoptions(precision=5, linewidth=250)
-print("Multipliers:")
-pprint.pp(lambdas.tolist())
 
 plt.subplot(121)
 fig: plt.Figure = plt.gcf()

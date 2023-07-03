@@ -16,9 +16,9 @@ void xs_default_init(const TrajOptProblemTpl<Scalar> &problem,
                      std::vector<typename math_types<Scalar>::VectorXs> &xs) {
   const std::size_t nsteps = problem.numSteps();
   xs.resize(nsteps + 1);
-  try {
+  if (problem.initCondIsStateError()) {
     xs[0] = problem.getInitState();
-  } catch (RuntimeError const &e) {
+  } else {
     if (problem.stages_.size() > 0) {
       xs[0] = problem.stages_[0]->xspace().neutral();
     } else {
@@ -73,6 +73,67 @@ void check_trajectory_and_assign(
       PROXDDP_RUNTIME_ERROR("warm-start for us has wrong size!");
     }
     us_out = us_init;
+  }
+}
+
+/// @brief  Compute the derivatives of the problem Lagrangian.
+template <typename Scalar>
+void computeLagrangianDerivatives(
+    const TrajOptProblemTpl<Scalar> &problem, WorkspaceTpl<Scalar> &workspace,
+    const typename math_types<Scalar>::VectorOfVectors &lams) {
+  using TrajOptData = TrajOptDataTpl<Scalar>;
+  using ConstraintStack = ConstraintStackTpl<Scalar>;
+  using FunctionData = FunctionDataTpl<Scalar>;
+  using CostData = CostDataAbstractTpl<Scalar>;
+  using StageModel = StageModelTpl<Scalar>;
+  using StageData = StageDataTpl<Scalar>;
+  using VectorXs = typename math_types<Scalar>::VectorXs;
+  using ConstVectorRef = typename math_types<Scalar>::ConstVectorRef;
+
+  TrajOptData const &pd = workspace.problem_data;
+  std::vector<VectorXs> &Lxs = workspace.Lxs_;
+  std::vector<VectorXs> &Lus = workspace.Lus_;
+
+  std::size_t nsteps = workspace.nsteps;
+
+  math::setZero(Lxs);
+  math::setZero(Lus);
+  {
+    FunctionData const &ind = pd.getInitData();
+    Lxs[0] += ind.Jx_.transpose() * lams[0];
+  }
+
+  {
+    CostData const &cdterm = *pd.term_cost_data;
+    Lxs[nsteps] = cdterm.Lx_;
+    ConstraintStack const &stack = problem.term_cstrs_;
+    VectorXs const &lamN = lams.back();
+    for (std::size_t j = 0; j < stack.size(); j++) {
+      FunctionData const &cstr_data = *pd.term_cstr_data[j];
+      auto lam_j = stack.getConstSegmentByConstraint(lamN, j);
+      Lxs[nsteps] += cstr_data.Jx_.transpose() * lam_j;
+    }
+  }
+
+  for (std::size_t i = 0; i < nsteps; i++) {
+    StageModel const &sm = *problem.stages_[i];
+    StageData const &sd = pd.getStageData(i);
+    ConstraintStack const &stack = sm.constraints_;
+    Lxs[i] += sd.cost_data->Lx_;
+    Lus[i] += sd.cost_data->Lu_;
+
+    assert(sd.constraint_data.size() == sm.numConstraints());
+
+    for (std::size_t j = 0; j < stack.size(); j++) {
+      FunctionData const &cstr_data = *sd.constraint_data[j];
+      ConstVectorRef lam_j = stack.getConstSegmentByConstraint(lams[i + 1], j);
+      Lxs[i] += cstr_data.Jx_.transpose() * lam_j;
+      Lus[i] += cstr_data.Ju_.transpose() * lam_j;
+
+      assert((i + 1) <= nsteps);
+      // add contribution to the next node
+      Lxs[i + 1] += cstr_data.Jy_.transpose() * lam_j;
+    }
   }
 }
 

@@ -13,6 +13,7 @@ namespace proxddp {
 template <typename Scalar> struct StageConstraintTpl {
   shared_ptr<StageFunctionTpl<Scalar>> func;
   shared_ptr<ConstraintSetBase<Scalar>> set;
+  long nr() const { return func->nr; }
 };
 
 /// @brief Convenience class to manage a stack of constraints.
@@ -30,12 +31,7 @@ template <typename Scalar> struct ConstraintStackTpl {
 
   std::size_t size() const { return storage_.size(); }
   bool empty() const { return size() == 0; }
-  void clear() {
-    storage_.clear();
-    indices_ = {0};
-    dims_.clear();
-    total_dim_ = 0;
-  }
+  void clear();
 
   void pushBack(const ConstraintType &el, const long nr);
   void pushBack(const ConstraintType &el);
@@ -49,22 +45,18 @@ template <typename Scalar> struct ConstraintStackTpl {
   /// @brief Get the set of dimensions for each constraint in the stack.
   const std::vector<long> &getDims() const { return dims_; }
 
-  const ConstraintSetBase<Scalar> &getConstraintSet(const std::size_t j) const {
-    return *this->storage_[j].set;
-  }
-
-  /// Get corresponding segment of a vector corresponding
-  /// to the @p i-th constraint.
+  /// @brief Get corresponding segment of a vector corresponding to the @p i-th
+  /// constraint.
   template <typename Derived>
   Eigen::VectorBlock<Derived, -1>
   getSegmentByConstraint(const Eigen::MatrixBase<Derived> &lambda,
                          const std::size_t j) const {
-    using MatrixType = Eigen::MatrixBase<Derived>;
-    MatrixType &lam_cast = const_cast<MatrixType &>(lambda);
+    Derived &lam_cast = lambda.const_cast_derived();
     assert(lambda.size() == totalDim());
     return lam_cast.segment(getIndex(j), getDim(j));
   }
 
+  /// @copybrief getSegmentByConstraint()
   template <typename Derived>
   Eigen::VectorBlock<const Derived, -1>
   getConstSegmentByConstraint(const Eigen::MatrixBase<Derived> &lambda,
@@ -75,14 +67,8 @@ template <typename Scalar> struct ConstraintStackTpl {
 
   /// Get a row-wise block of a matrix by constraint index.
   template <typename Derived>
-  Eigen::Block<Derived, -1, -1>
-  getBlockByConstraint(const Eigen::MatrixBase<Derived> &J_,
-                       const std::size_t j) const {
-    using MatrixType = Eigen::MatrixBase<Derived>;
-    MatrixType &J = const_cast<MatrixType &>(J_);
-    assert(J.rows() == totalDim());
-    return J.middleRows(getIndex(j), getDim(j));
-  }
+  auto getRowsByConstraint(const Eigen::MatrixBase<Derived> &J_,
+                           const std::size_t j) const;
 
   long totalDim() const { return total_dim_; }
 

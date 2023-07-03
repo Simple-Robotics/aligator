@@ -35,3 +35,4 @@ fixable = ["E"]
 
 [tool.ruff.per-file-ignores]
 "python/proxddp/__init__.py" = ["F401", "F403"]
+"python/proxddp/utils/__init__.py" = ["F401", "F403"]

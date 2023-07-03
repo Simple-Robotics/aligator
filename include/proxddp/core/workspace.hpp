@@ -5,6 +5,7 @@
 
 #include "proxddp/core/workspace-base.hpp"
 #include "proxddp/core/proximal-penalty.hpp"
+#include "proxddp/core/alm-weights.hpp"
 
 #include <array>
 
@@ -25,7 +26,11 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using ProxData = typename ProxPenalty::Data;
   using StageModel = StageModelTpl<Scalar>;
   using Base = WorkspaceBaseTpl<Scalar>;
+  using VecBool = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
+  using CstrProxScaler = ConstraintProximalScalerTpl<Scalar>;
 
+  using Base::dyn_slacks;
+  using Base::nsteps;
   using Base::problem_data;
   using Base::q_params;
   using Base::trial_us;
@@ -35,12 +40,23 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   /// Proximal penalty data.
   std::vector<shared_ptr<ProxData>> prox_datas;
 
+  /// Proximal algo scalers for the constraints
+  std::vector<CstrProxScaler> cstr_scalers;
+
+  /// @name Lagrangian Gradients
+  /// @{
+  std::vector<VectorXs> Lxs_;
+  std::vector<VectorXs> Lus_;
+  /// @}
+
   /// Lagrange multipliers for ALM & linesearch.
   std::vector<VectorXs> trial_lams;
   std::vector<VectorXs> lams_plus;
   std::vector<VectorXs> lams_pdal;
   /// Shifted constraints the projection operators should be applied to.
   std::vector<VectorXs> shifted_constraints;
+  std::vector<MatrixXs> proj_jacobians;
+  std::vector<VecBool> active_constraints;
 
   /// @name Riccati gains, memory buffers for primal-dual steps
   /// @{
@@ -85,10 +101,11 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   WorkspaceTpl() : Base() {}
   WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
                LDLTChoice ldlt_choice = LDLTChoice::DENSE);
-  ~WorkspaceTpl() = default;
   WorkspaceTpl(const WorkspaceTpl &) = default;
-  WorkspaceTpl &operator=(const WorkspaceTpl &) = default;
   WorkspaceTpl(WorkspaceTpl &&) = default;
+  ~WorkspaceTpl() = default;
+
+  WorkspaceTpl &operator=(const WorkspaceTpl &) = default;
   WorkspaceTpl &operator=(WorkspaceTpl &&) = default;
 
   void cycleLeft() override;
@@ -96,6 +113,9 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   template <typename T>
   friend std::ostream &operator<<(std::ostream &oss,
                                   const WorkspaceTpl<T> &self);
+
+  void configureScalers(const TrajOptProblemTpl<Scalar> &problem,
+                        const Scalar &mu);
 };
 
 namespace {

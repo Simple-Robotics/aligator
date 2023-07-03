@@ -88,8 +88,13 @@ if(GENERATE_PYTHON_STUBS)
                  ${PYLIB_NAME})
 endif(GENERATE_PYTHON_STUBS)
 
-set(${PYLIB_NAME}_PYFILES __init__.py utils.py)
+set(${PYLIB_NAME}_PYFILES __init__.py)
+set(${PYLIB_NAME}_PYFILES_UTILS __init__.py plotting.py)
 
 foreach(pyfile ${${PYLIB_NAME}_PYFILES})
   python_install_on_site(${PROJECT_NAME} ${pyfile})
+endforeach()
+
+foreach(pyfile ${${PYLIB_NAME}_PYFILES_UTILS})
+  python_install_on_site(${PROJECT_NAME}/utils ${pyfile})
 endforeach()

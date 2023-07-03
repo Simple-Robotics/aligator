@@ -30,7 +30,8 @@ void exposeConstraint() {
            "Contruct a StageConstraint from a StageFunction and a constraint "
            "set.")
       .def_readwrite("func", &StageConstraint::func)
-      .def_readwrite("set", &StageConstraint::set);
+      .def_readwrite("set", &StageConstraint::set)
+      .add_property("nr", &StageConstraint::nr, "Get constraint dimension.");
 
   bp::class_<ConstraintStack>("ConstraintStack", "The stack of constraint.",
                               bp::no_init)

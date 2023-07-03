@@ -30,16 +30,10 @@ class Args(ArgsBase):
     integrator = "semieuler"
     bounds: bool = False
     """Use control bounds"""
-    plot: bool = False  # Plot the trajectories
-    display: bool = False
     obstacles: bool = False  # Obstacles in the environment
     random: bool = False
     term_cstr: bool = False
     fddp: bool = False
-
-    def process_args(self):
-        if self.record:
-            self.display = True
 
 
 def create_halfspace_z(ndx, nu, offset: float = 0.0, neg: bool = False):
@@ -202,7 +196,7 @@ def main(args: Args):
     u0, _, _, _ = np.linalg.lstsq(QUAD_ACT_MATRIX, tau)
 
     us_init = [u0] * nsteps
-    xs_init = [x0] * (nsteps + 1)
+    xs_init = proxddp.rollout(dynmodel, x0, us_init)
 
     x_tar1 = space.neutral()
     x_tar1[:3] = (0.9, 0.8, 1.0)
@@ -271,7 +265,7 @@ def main(args: Args):
                 space, nu, x_tar, np.diag(weights) * dt
             )
             rcost.addCost(xreg_cost)
-            ureg_cost = proxddp.QuadraticControlCost(space, nu, w_u * dt)
+            ureg_cost = proxddp.QuadraticControlCost(space, u0, w_u * dt)
             rcost.addCost(ureg_cost)
 
             stage = proxddp.StageModel(rcost, dynmodel)
@@ -306,11 +300,11 @@ def main(args: Args):
     _, x_term = task_schedule(nsteps)
     problem = setup()
 
-    viewer = meshcat.Visualizer()
+    viewer = meshcat.Visualizer(zmq_url=args.zmq_url)
     vizer = pin.visualize.MeshcatVisualizer(
         rmodel, robot.collision_model, robot.visual_model, data=rdata
     )
-    vizer.initViewer(viewer, loadModel=True, open=args.display)
+    vizer.initViewer(viewer, loadModel=True)
     vizer.displayCollisions(True)
     vizer.display(x0[:nq])
 
@@ -325,10 +319,10 @@ def main(args: Args):
     solver.max_iters = 200
     solver.registerCallback("his", history_cb)
     solver.setup(problem)
+    workspace: proxddp.Workspace = solver.workspace
     solver.run(problem, xs_init, us_init)
 
-    results = solver.getResults()
-    workspace = solver.getWorkspace()
+    results = solver.results
     print(results)
 
     def test_check_numiters(results):

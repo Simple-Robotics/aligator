@@ -8,9 +8,14 @@
 #include "proxddp/modelling/multibody/frame-placement.hpp"
 #include "proxddp/modelling/multibody/frame-velocity.hpp"
 #include "proxddp/modelling/multibody/frame-translation.hpp"
+#include "proxddp/modelling/multibody/constrained-rnea.hpp"
 
 namespace proxddp {
 namespace python {
+using context::ConstMatrixRef;
+using context::ConstVectorRef;
+using context::PinData;
+using context::PinModel;
 
 // fwd declaration, see expose-fly-high.cpp
 void exposeFlyHigh();
@@ -19,8 +24,6 @@ void exposeFrameFunctions() {
   using context::Manifold;
   using context::Scalar;
   using context::UnaryFunction;
-  using Model = pinocchio::ModelTpl<Scalar>;
-  using PinData = pinocchio::DataTpl<Scalar>;
   using SE3 = pinocchio::SE3Tpl<Scalar>;
   using Motion = pinocchio::MotionTpl<Scalar>;
 
@@ -37,7 +40,8 @@ void exposeFrameFunctions() {
 
   bp::class_<FramePlacement, bp::bases<UnaryFunction>>(
       "FramePlacementResidual", "Frame placement residual function.",
-      bp::init<int, int, shared_ptr<Model>, const SE3 &, pinocchio::FrameIndex>(
+      bp::init<int, int, shared_ptr<PinModel>, const SE3 &,
+               pinocchio::FrameIndex>(
           bp::args("self", "ndx", "nu", "model", "p_ref", "id")))
       .def(FrameAPIVisitor<FramePlacement>())
       .def("getReference", &FramePlacement::getReference, bp::args("self"),
@@ -58,7 +62,7 @@ void exposeFrameFunctions() {
 
   bp::class_<FrameVelocity, bp::bases<UnaryFunction>>(
       "FrameVelocityResidual", "Frame velocity residual function.",
-      bp::init<int, int, shared_ptr<Model>, const Motion &,
+      bp::init<int, int, shared_ptr<PinModel>, const Motion &,
                pinocchio::FrameIndex, pinocchio::ReferenceFrame>(bp::args(
           "self", "ndx", "nu", "model", "v_ref", "id", "reference_frame")))
       .def(FrameAPIVisitor<FrameVelocity>())
@@ -77,7 +81,7 @@ void exposeFrameFunctions() {
 
   bp::class_<FrameTranslation, bp::bases<UnaryFunction>>(
       "FrameTranslationResidual", "Frame placement residual function.",
-      bp::init<int, int, shared_ptr<Model>, const context::Vector3s &,
+      bp::init<int, int, shared_ptr<PinModel>, const context::Vector3s &,
                pinocchio::FrameIndex>(
           bp::args("self", "ndx", "nu", "model", "p_ref", "id")))
       .def(FrameAPIVisitor<FrameTranslation>())
@@ -97,9 +101,32 @@ void exposeFrameFunctions() {
                     "Pinocchio data struct.");
 }
 
+auto underactuatedConstraintInvDyn_proxy(const PinModel &model, PinData &data,
+                                         const ConstVectorRef &q,
+                                         const ConstVectorRef &v,
+                                         const ConstMatrixRef &actMatrix,
+                                         const context::RCM &constraint_model,
+                                         context::RCD &constraint_data) {
+  long nu = actMatrix.cols();
+  long d = (long)constraint_model.size();
+  context::VectorXs out(nu + d);
+  underactuatedConstrainedInverseDynamics(
+      model, data, q, v, actMatrix, constraint_model, constraint_data, out);
+
+  return bp::make_tuple((context::VectorXs)out.head(nu),
+                        (context::VectorXs)out.tail(d));
+}
+
 void exposePinocchioFunctions() {
   exposeFrameFunctions();
   exposeFlyHigh();
+
+  bp::def("underactuatedConstrainedInverseDynamics",
+          underactuatedConstraintInvDyn_proxy,
+          bp::args("model", "data", "q", "v", "actMatrix", "constraint_model",
+                   "constraint_data"),
+          "Compute the gravity-compensating torque for a pinocchio Model under "
+          "a rigid constraint.");
 }
 } // namespace python
 } // namespace proxddp

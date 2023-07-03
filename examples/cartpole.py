@@ -20,10 +20,6 @@ class Args(tap.Tap):
     record: bool = False
     num_replay: int = 2
 
-    def process_args(self):
-        if self.record:
-            self.display = True
-
 
 args = Args().parse_args()
 

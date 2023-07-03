@@ -39,11 +39,10 @@ Scalar PDALFunction<Scalar>::evaluate(const SolverType &solver,
 
   // initial constraint
   {
-    CstrALWeightStrat weight_strat(mu, false);
-    penalty_value += .5 * weight_strat.get(0) * lams_plus[0].squaredNorm();
+    penalty_value += .5 * mu * lams_plus[0].squaredNorm();
     if (use_dual_terms) {
-      penalty_value += .5 * dual_weight * weight_strat.get(0) *
-                       (lams_plus[0] - lams[0]).squaredNorm();
+      penalty_value +=
+          .5 * dual_weight * mu * (lams_plus[0] - lams[0]).squaredNorm();
     }
   }
 
@@ -51,7 +50,7 @@ Scalar PDALFunction<Scalar>::evaluate(const SolverType &solver,
   auto execute_on_stack =
       [use_dual_terms = use_dual_terms, dual_weight = dual_weight](
           const ConstraintStack &stack, const VectorXs &lambda,
-          const VectorXs &lambda_plus, CstrALWeightStrat &&weight_strat) {
+          const VectorXs &lambda_plus, CstrProximalScaler &weight_strat) {
         Scalar r = 0.;
         for (std::size_t k = 0; k < stack.size(); ++k) {
           const auto lamplus_k =
@@ -75,7 +74,7 @@ Scalar PDALFunction<Scalar>::evaluate(const SolverType &solver,
     const ConstraintStack &cstr_mgr = stage.constraints_;
 
     penalty_value += execute_on_stack(cstr_mgr, lams[i + 1], lams_plus[i + 1],
-                                      CstrALWeightStrat(mu, true));
+                                      workspace.cstr_scalers[i]);
   }
 
   if (!problem.term_cstrs_.empty()) {
@@ -83,7 +82,7 @@ Scalar PDALFunction<Scalar>::evaluate(const SolverType &solver,
     assert(lams_plus.size() == nsteps + 2);
     penalty_value +=
         execute_on_stack(problem.term_cstrs_, lams.back(), lams_plus.back(),
-                         CstrALWeightStrat(mu, false));
+                         workspace.cstr_scalers.back());
   }
 
   return prob_data.cost_ + prox_value + penalty_value;
@@ -119,8 +118,7 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
     const FunctionData &fd = prob_data.getInitData();
     const auto &lampdal = workspace.lams_pdal[0];
     d1 += lampdal.dot(fd.Jx_ * workspace.dxs[0]);
-    d1 -= CstrALWeightStrat(mu, false).get(0) *
-          (lams_plus[0] - lams[0]).dot(dlams[0]);
+    d1 -= mu * (lams_plus[0] - lams[0]).dot(dlams[0]);
   }
 
   auto execute_on_stack =
@@ -128,7 +126,7 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
          const auto &dlam, const auto &lam, const auto &lamplus,
          const auto &lampdal,
          const std::vector<shared_ptr<FunctionData>> &constraint_data,
-         CstrALWeightStrat &&weight_strat) {
+         CstrProximalScaler &weight_strat) {
         Scalar r = 0.;
         for (std::size_t k = 0; k < stack.size(); k++) {
           const FunctionData &cd = *constraint_data[k];
@@ -155,10 +153,10 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
     const auto &du = workspace.dus[i];
     const auto &dy = workspace.dxs[i + 1];
 
-    d1 += execute_on_stack(cstr_stack, dx, du, dy, dlams[i + 1], lams[i + 1],
-                           lams_plus[i + 1], lams_pdal[i + 1],
-                           stage_data.constraint_data,
-                           CstrALWeightStrat(mu, true));
+    d1 +=
+        execute_on_stack(cstr_stack, dx, du, dy, dlams[i + 1], lams[i + 1],
+                         lams_plus[i + 1], lams_pdal[i + 1],
+                         stage_data.constraint_data, workspace.cstr_scalers[i]);
   }
 
   const ConstraintStack &term_stack = problem.term_cstrs_;
@@ -172,7 +170,7 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
     const auto &dx = workspace.dxs.back();
 
     d1 += lpdl.dot(tcd.Jx_ * dx);
-    d1 -= CstrALWeightStrat(mu, false).get(k) * (lp - l).dot(dl);
+    d1 -= workspace.cstr_scalers.back().get(k) * (lp - l).dot(dl);
   }
 
   return d1;

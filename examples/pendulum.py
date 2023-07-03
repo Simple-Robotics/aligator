@@ -26,10 +26,6 @@ class Args(tap.Tap):
     record: bool = False
     bounds: bool = False  # add control bounds
 
-    def process_args(self):
-        if self.record:
-            self.display = True
-
 
 args = Args().parse_args()
 

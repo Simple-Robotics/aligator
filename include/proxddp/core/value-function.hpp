@@ -1,5 +1,5 @@
 /**
- * @file    value_function.hpp
+ * @file    ValueFunctionTpl.hpp
  * @brief   Define storage for Q-function and value-function parameters.
  * @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
  */
@@ -12,7 +12,7 @@
 namespace proxddp {
 
 /// @brief  Storage for the value function model parameters.
-template <typename _Scalar> struct value_function {
+template <typename _Scalar> struct ValueFunctionTpl {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   int ndx_;
@@ -20,19 +20,19 @@ template <typename _Scalar> struct value_function {
   MatrixXs Vxx_;
   Scalar v_;
 
-  value_function(const int ndx) : ndx_(ndx), Vx_(ndx), Vxx_(ndx, ndx) {
+  ValueFunctionTpl(const int ndx) : ndx_(ndx), Vx_(ndx), Vxx_(ndx, ndx) {
     Vx_.setZero();
     Vxx_.setZero();
   }
 
-  bool operator==(const value_function &other) {
+  bool operator==(const ValueFunctionTpl &other) {
     return (ndx_ == other.ndx_) && Vx_.isApprox(other.Vx_) &&
            Vxx_.isApprox(other.Vxx_) && math::scalar_close(v_, other.v_);
   }
 
   friend std::ostream &operator<<(std::ostream &oss,
-                                  const value_function &store) {
-    oss << "value_function {\n";
+                                  const ValueFunctionTpl &store) {
+    oss << "ValueFunction {\n";
     oss << fmt::format("\tndx: {:d}", store.ndx_);
     oss << "\n}";
     return oss;
@@ -42,7 +42,8 @@ template <typename _Scalar> struct value_function {
 /// @brief   Q-function model parameters
 /// @details This struct also provides views for the blocks of interest \f$Q_x,
 /// Q_u, Q_y\ldots\f$.
-template <typename Scalar> struct q_function {
+template <typename _Scalar> struct QFunctionTpl {
+  using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
   long ndx_;
@@ -66,7 +67,7 @@ template <typename Scalar> struct q_function {
   MatrixRef Quy;
   MatrixRef Qyy;
 
-  q_function(const long ndx, const long nu, const long ndy)
+  QFunctionTpl(const long ndx, const long nu, const long ndy)
       : ndx_(ndx), nu_(nu), ndy_(ndy), grad_(ntot()), hess_(ntot(), ntot()),
         Qx(grad_.head(ndx)), Qu(grad_.segment(ndx, nu)), Qy(grad_.tail(ndy)),
         Qxx(hess_.topLeftCorner(ndx, ndx)), Qxu(hess_.block(0, ndx, ndx, nu)),
@@ -81,8 +82,9 @@ template <typename Scalar> struct q_function {
     assert(grad_.cols() == 1);
   }
 
-  bool operator==(const q_function &) { return false; }
-  q_function(const q_function &qf) : q_function(qf.ndx_, qf.nu_, qf.ndy_) {
+  bool operator==(const QFunctionTpl &) { return false; }
+  QFunctionTpl(const QFunctionTpl &qf)
+      : QFunctionTpl(qf.ndx_, qf.nu_, qf.ndy_) {
     ndx_ = qf.ndx_;
     nu_ = qf.nu_;
     ndy_ = qf.ndy_;
@@ -93,14 +95,14 @@ template <typename Scalar> struct q_function {
     redef_refs(*this);
   }
 
-  q_function(q_function &&qf) : q_function(0, 0, 0) { swap(*this, qf); }
+  QFunctionTpl(QFunctionTpl &&qf) : QFunctionTpl(0, 0, 0) { swap(*this, qf); }
 
-  q_function &operator=(q_function &&qf) {
+  QFunctionTpl &operator=(QFunctionTpl &&qf) {
     swap(*this, qf);
     return *this;
   }
 
-  q_function &operator=(const q_function &qf) {
+  QFunctionTpl &operator=(const QFunctionTpl &qf) {
     ndx_ = qf.ndx_;
     nu_ = qf.nu_;
     ndy_ = qf.ndy_;
@@ -112,15 +114,16 @@ template <typename Scalar> struct q_function {
     return *this;
   }
 
-  friend std::ostream &operator<<(std::ostream &oss, const q_function &store) {
-    oss << "q_function {\n";
+  friend std::ostream &operator<<(std::ostream &oss,
+                                  const QFunctionTpl &store) {
+    oss << "QFunction {\n";
     oss << fmt::format("ndx: {:d}, nu: {:d}, ndy: {:d}", store.ndx_, store.nu_,
                        store.ndy_);
     oss << "\n}";
     return oss;
   }
 
-  friend void swap(q_function &qa, q_function &qb) {
+  friend void swap(QFunctionTpl &qa, QFunctionTpl &qb) {
     using std::swap;
 
     swap(qa.ndx_, qb.ndx_);
@@ -136,7 +139,7 @@ template <typename Scalar> struct q_function {
 
 protected:
   // reinitialize Ref members
-  static void redef_refs(q_function &q) {
+  static void redef_refs(QFunctionTpl &q) {
     auto ndx = q.ndx_;
     auto nu = q.nu_;
     auto ndy = q.ndy_;

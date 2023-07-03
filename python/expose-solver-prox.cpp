@@ -22,18 +22,54 @@ void exposeProxDDP() {
       proxnlp::LSInterpolation>();
   eigenpy::register_symbolic_link_to_registered_type<context::BCLParams>();
 
+  using ProxScaler = ConstraintProximalScalerTpl<Scalar>;
+  bp::class_<ProxScaler, boost::noncopyable>("ProxScaler", bp::no_init)
+      .def("applyDefaultStrategy", &ProxScaler::applyDefaultStrategy,
+           bp::args("self"))
+      .def(
+          "set_weight",
+          +[](ProxScaler &s, Scalar v, std::size_t j) {
+            if (j >= s.size()) {
+              PyErr_SetString(PyExc_IndexError, "Index out of bounds.");
+              bp::throw_error_already_set();
+            }
+            s.set_weight(v, (long)j);
+          },
+          bp::args("self", "value", "j"))
+      .add_property("size", &ProxScaler::size,
+                    "Get the number of constraint blocks.")
+      .add_property("weights",
+                    bp::make_function(&ProxScaler::getWeights,
+                                      bp::return_internal_reference<>()));
+
   bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>,
              boost::noncopyable>(
       "Workspace", "Workspace for ProxDDP.",
       bp::init<const TrajOptProblem &, bp::optional<LDLTChoice>>(
           bp::args("self", "problem", "ldlt_choice")))
       .def_readonly("prox_datas", &Workspace::prox_datas)
+      .def(
+          "getConstraintScaler",
+          +[](const Workspace &ws, std::size_t j) -> const ProxScaler & {
+            if (j >= ws.cstr_scalers.size()) {
+              PyErr_SetString(PyExc_IndexError, "Index out of bounds.");
+              bp::throw_error_already_set();
+            }
+            return ws.cstr_scalers[j];
+          },
+          bp::args("self", "j"), bp::return_internal_reference<>(),
+          "Scalers of the constraints in the proximal algorithm.")
       .def_readonly("kkt_mat", &Workspace::kkt_mats_)
       .def_readonly("kkt_rhs", &Workspace::kkt_rhs_)
+      .def_readonly("kkt_residuals", &Workspace::kkt_resdls_,
+                    "KKT system residuals.")
+      .def_readonly("Lxs", &Workspace::Lxs_)
+      .def_readonly("Lus", &Workspace::Lus_)
       .def_readonly("dxs", &Workspace::dxs)
       .def_readonly("dus", &Workspace::dus)
       .def_readonly("trial_lams", &Workspace::trial_lams)
       .def_readonly("inner_crit", &Workspace::inner_criterion)
+      .def_readonly("active_constraints", &Workspace::active_constraints)
       .def(
           "get_ldlt",
           +[](const Workspace &ws,
@@ -111,6 +147,10 @@ void exposeProxDDP() {
                 bp::arg("us_init"), bp::arg("lams_init")),
                "Run the algorithm. Can receive initial guess for "
                "multiplier trajectory."));
+
+  bp::def("computeLagrangianDerivatives", computeLagrangianDerivatives<Scalar>,
+          bp::args("problem", "workspace", "lams"),
+          "Compute the derivatives of the problem Lagrangian.");
 }
 
 } // namespace python

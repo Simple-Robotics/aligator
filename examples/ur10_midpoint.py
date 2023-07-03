@@ -2,18 +2,14 @@ import example_robot_data as erd
 import pinocchio as pin
 import numpy as np
 import proxddp
-import tap
 
 from proxddp import dynamics, manifolds
-from utils import plot_controls_traj
+from utils import plot_controls_traj, ArgsBase
 from pinocchio.visualize import MeshcatVisualizer
 
 
-class Args(tap.Tap):
-    display: bool = False
-    record: bool = False
+class Args(ArgsBase):
     dt: float = 0.02
-    zmq_url = "tcp://127.0.0.1:6000"
 
 
 robot = erd.load("ur10_limited")
@@ -100,7 +96,8 @@ if __name__ == "__main__":
         viz.display(robot.q0)
 
     tol = 1e-3
-    solver = proxddp.SolverProxDDP(tol, 0.01, verbose=proxddp.VERBOSE)
+    mu_init = 0.001
+    solver = proxddp.SolverProxDDP(tol, mu_init, verbose=proxddp.VERBOSE)
     solver.rollout_max_iters = 10
     solver.max_iters = 200
     solver.setup(problem)

@@ -12,7 +12,7 @@
 #include "proxddp/utils/logger.hpp"
 #include "proxddp/utils/forward-dyn.hpp"
 
-#include <proxnlp/constraint-base.hpp>
+#include <proxnlp/modelling/constraints.hpp>
 #include <proxnlp/bcl-params.hpp>
 
 #include <unordered_map>
@@ -34,12 +34,13 @@ public:
   using Workspace = WorkspaceTpl<Scalar>;
   using Results = ResultsTpl<Scalar>;
   using FunctionData = FunctionDataTpl<Scalar>;
+  using DynamicsData = DynamicsDataTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using StageModel = StageModelTpl<Scalar>;
   using ConstraintType = StageConstraintTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
-  using VParams = value_function<Scalar>;
-  using QParams = q_function<Scalar>;
+  using VParams = ValueFunctionTpl<Scalar>;
+  using QParams = QFunctionTpl<Scalar>;
   using ProxPenaltyType = ProximalPenaltyTpl<Scalar>;
   using ProxData = typename ProxPenaltyType::Data;
   using CallbackPtr = shared_ptr<helpers::base_callback<Scalar>>;
@@ -48,7 +49,7 @@ public:
   using CstrSet = ConstraintSetBase<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
   using LinesearchOptions = typename Linesearch<Scalar>::Options;
-  using CstrALWeightStrat = ConstraintALWeightStrategy<Scalar>;
+  using CstrProximalScaler = ConstraintProximalScalerTpl<Scalar>;
   using LinesearchType = proxnlp::ArmijoLinesearch<Scalar>;
 
   enum BackwardRet { BWD_SUCCESS, BWD_WRONG_INERTIA };
@@ -179,6 +180,9 @@ public:
   /// @brief    Compute the Hamiltonian parameters at time @param t.
   void updateHamiltonian(const Problem &problem, const std::size_t);
 
+  /// Assemble the right-hand side of the KKT system.
+  void assembleKktSystem(const Problem &problem, const std::size_t t);
+
   /// @brief    Perform the Riccati backward pass.
   /// @pre  Compute the derivatives first!
   BackwardRet backwardPass(const Problem &problem);
@@ -254,9 +258,6 @@ public:
   /// projected constraints.
   void computeMultipliers(const Problem &problem,
                           const std::vector<VectorXs> &lams);
-
-  /// Compute the projections of the constraint Jacobians on their active sets.
-  void computeConstraintJacobianProjections(const Problem &problem);
 
   /// @copydoc mu_penal_
   PROXDDP_INLINE Scalar mu() const { return mu_penal_; }

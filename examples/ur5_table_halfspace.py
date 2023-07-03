@@ -13,10 +13,6 @@ from utils import ArgsBase, compute_quasistatic, get_endpoint_traj
 class Args(ArgsBase):
     plot: bool = True
 
-    def process_args(self):
-        if self.record:
-            self.display = True
-
 
 args = Args().parse_args()
 print(args)
@@ -74,10 +70,10 @@ weights_ee_term = 10.0 * np.eye(3)
 p_ref = np.array([0.2, 0.3, table_height + 0.1])
 frame_obj_fn = proxddp.FrameTranslationResidual(ndx, nu, rmodel, p_ref, frame_id)
 
-rcost.addCost(proxddp.QuadraticResidualCost(frame_obj_fn, weights_ee * dt))
+rcost.addCost(proxddp.QuadraticResidualCost(space, frame_obj_fn, weights_ee * dt))
 
 term_cost = proxddp.CostStack(space, nu)
-term_cost.addCost(proxddp.QuadraticResidualCost(frame_obj_fn, weights_ee_term))
+term_cost.addCost(proxddp.QuadraticResidualCost(space, frame_obj_fn, weights_ee_term))
 
 frame_fn_z = make_ee_residual()
 frame_cstr = proxddp.StageConstraint(frame_fn_z, constraints.NegativeOrthant())
@@ -98,7 +94,7 @@ problem.setNumThreads(4)
 
 
 tol = 1e-4
-mu_init = 0.01
+mu_init = 0.001
 max_iters = 50
 verbose = proxddp.VerboseLevel.VERBOSE
 solver = proxddp.SolverProxDDP(tol, mu_init, max_iters=max_iters, verbose=verbose)
@@ -114,10 +110,10 @@ xs_init = proxddp.rollout(dyn_model, x0, us_init).tolist()
 
 solver.run(problem, xs_init, us_init)
 
-rs = solver.getResults()
+rs = solver.results
 print(rs)
 xs_opt = np.array(rs.xs)
-ws = solver.getWorkspace()
+ws = solver.workspace
 
 stage_datas = ws.problem_data.stage_data
 ineq_cstr_datas = []

@@ -15,11 +15,12 @@ void exposeProxDDP();
 void exposeSolverCommon() {
   using context::Scalar;
 
-  using QParams = proxddp::q_function<Scalar>;
-  using VParams = proxddp::value_function<Scalar>;
+  using QParams = proxddp::QFunctionTpl<Scalar>;
+  using VParams = proxddp::ValueFunctionTpl<Scalar>;
   bp::class_<QParams>(
       "QParams", "Q-function parameters.",
       bp::init<int, int, int>(bp::args("self", "ndx", "nu", "ndy")))
+      .add_property("ntot", &QParams::ntot)
       .def_readonly("grad", &QParams::grad_)
       .def_readonly("hess", &QParams::hess_)
       .add_property(
@@ -28,6 +29,28 @@ void exposeSolverCommon() {
       .add_property(
           "Qu", bp::make_getter(&QParams::Qu,
                                 bp::return_value_policy<bp::return_by_value>()))
+      .add_property(
+          "Qy", bp::make_getter(&QParams::Qy,
+                                bp::return_value_policy<bp::return_by_value>()))
+      .add_property("Qxx", bp::make_getter(
+                               &QParams::Qxx,
+                               bp::return_value_policy<bp::return_by_value>()))
+      .add_property("Qxu", bp::make_getter(
+                               &QParams::Qxu,
+                               bp::return_value_policy<bp::return_by_value>()))
+      .add_property("Qxy", bp::make_getter(
+                               &QParams::Qxy,
+                               bp::return_value_policy<bp::return_by_value>()))
+      .add_property("Quu", bp::make_getter(
+                               &QParams::Quu,
+                               bp::return_value_policy<bp::return_by_value>()))
+      .add_property("Quy", bp::make_getter(
+                               &QParams::Quy,
+                               bp::return_value_policy<bp::return_by_value>()))
+      .add_property("Qyy", bp::make_getter(
+                               &QParams::Qyy,
+                               bp::return_value_policy<bp::return_by_value>()))
+      .def(bp::self == bp::self)
       .def(PrintableVisitor<QParams>());
 
   bp::class_<VParams>("VParams", "Value function parameters.", bp::no_init)

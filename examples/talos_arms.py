@@ -102,8 +102,8 @@ solver.run(
     xs_init,
     us_init,
 )
-workspace = solver.getWorkspace()
-results = solver.getResults()
+workspace = solver.workspace
+results = solver.results
 print(results)
 
 
