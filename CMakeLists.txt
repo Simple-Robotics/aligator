@@ -64,6 +64,7 @@ option(ENABLE_TEMPLATE_INSTANTIATION "Template instantiation of the main library
 option(BUILD_WITH_PINOCCHIO_SUPPORT "Build the library with support for Pinocchio" ON)
 option(BUILD_CROCODDYL_COMPAT "Build the Crocoddyl compatibility module" OFF)
 option(BUILD_WITH_OPENMP_SUPPORT "Build the library with the OpenMP support" ON)
+option(BUILD_EXAMPLES "Build examples" ON)
 cmake_dependent_option(
   GENERATE_PYTHON_STUBS "Generate the Python stubs associated to the Python library" ON
   BUILD_PYTHON_INTERFACE OFF)
@@ -217,7 +218,9 @@ if(BUILD_PYTHON_INTERFACE)
   add_subdirectory(python)
 endif()
 
-add_subdirectory(examples)
+if(BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
 if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
