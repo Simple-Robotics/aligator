@@ -66,7 +66,3 @@ template <typename Scalar> struct NewtonRaphson {
 };
 
 } // namespace proxddp
-
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/utils/newton-raphson.txx"
-#endif
