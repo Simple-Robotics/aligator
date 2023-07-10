@@ -1,7 +1,7 @@
 /**
- * @file    ValueFunctionTpl.hpp
+ * @file    value-function.hpp
  * @brief   Define storage for Q-function and value-function parameters.
- * @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+ * @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
  */
 #pragma once
 
@@ -58,7 +58,6 @@ template <typename _Scalar> struct QFunctionTpl {
 
   VectorRef Qx;
   VectorRef Qu;
-  VectorRef Qy;
 
   MatrixRef Qxx;
   MatrixRef Qxu;
@@ -68,8 +67,8 @@ template <typename _Scalar> struct QFunctionTpl {
   MatrixRef Qyy;
 
   QFunctionTpl(const long ndx, const long nu, const long ndy)
-      : ndx_(ndx), nu_(nu), ndy_(ndy), grad_(ntot()), hess_(ntot(), ntot()),
-        Qx(grad_.head(ndx)), Qu(grad_.segment(ndx, nu)), Qy(grad_.tail(ndy)),
+      : ndx_(ndx), nu_(nu), ndy_(ndy), grad_(ndx_ + nu_), hess_(ntot(), ntot()),
+        Qx(grad_.head(ndx)), Qu(grad_.segment(ndx, nu)),
         Qxx(hess_.topLeftCorner(ndx, ndx)), Qxu(hess_.block(0, ndx, ndx, nu)),
         Qxy(hess_.topRightCorner(ndx, ndy)), Quu(hess_.block(ndx, ndx, nu, nu)),
         Quy(hess_.block(ndx, ndx + nu, nu, ndy)),
@@ -78,8 +77,6 @@ template <typename _Scalar> struct QFunctionTpl {
     hess_.setZero();
     assert(hess_.rows() == ntot());
     assert(hess_.cols() == ntot());
-    assert(grad_.rows() == ntot());
-    assert(grad_.cols() == 1);
   }
 
   bool operator==(const QFunctionTpl &) { return false; }
@@ -145,7 +142,6 @@ protected:
     auto ndy = q.ndy_;
     new (&q.Qx) VectorRef(q.grad_.head(ndx));
     new (&q.Qu) VectorRef(q.grad_.segment(ndx, nu));
-    new (&q.Qy) VectorRef(q.grad_.tail(ndy));
 
     new (&q.Qxx) MatrixRef(q.hess_.topLeftCorner(ndx, ndx));
     new (&q.Qxu) MatrixRef(q.hess_.block(0, ndx, ndx, nu));

@@ -65,11 +65,14 @@ void exposeProxDDP() {
                     "KKT system residuals.")
       .def_readonly("Lxs", &Workspace::Lxs_)
       .def_readonly("Lus", &Workspace::Lus_)
+      .def_readonly("Lds", &Workspace::Lds_)
       .def_readonly("dxs", &Workspace::dxs)
       .def_readonly("dus", &Workspace::dus)
+      .def_readonly("dlams", &Workspace::dlams)
       .def_readonly("trial_lams", &Workspace::trial_lams)
       .def_readonly("lams_plus", &Workspace::lams_plus)
       .def_readonly("shifted_constraints", &Workspace::shifted_constraints)
+      .def_readonly("proj_jacobians", &Workspace::proj_jacobians)
       .def_readonly("inner_crit", &Workspace::inner_criterion)
       .def_readonly("active_constraints", &Workspace::active_constraints)
       .def(
@@ -84,6 +87,9 @@ void exposeProxDDP() {
           },
           bp::return_internal_reference<>(), bp::args("self", "i"),
           "Get the LDLT algorithm for the i-th linear problem.")
+      .def_readonly("prev_xs", &Workspace::prev_xs)
+      .def_readonly("prev_us", &Workspace::prev_us)
+      .def_readonly("prev_lams", &Workspace::prev_lams)
       .def_readonly("stage_prim_infeas", &Workspace::stage_prim_infeas)
       .def_readonly("stage_dual_infeas", &Workspace::stage_dual_infeas)
       .def_readonly("stage_inner_crits", &Workspace::stage_inner_crits)

@@ -31,6 +31,14 @@ def plot_se2_pose(q: np.ndarray, ax: plt.Axes, alpha=0.5, fc="tab:blue"):
     return rect
 
 
+def _axes_flatten_if_ndarray(axes):
+    if isinstance(axes, np.ndarray):
+        axes = axes.flatten()
+    elif not isinstance(axes, list):
+        axes = [axes]
+    return axes
+
+
 def plot_controls_traj(
     times,
     us,
@@ -39,7 +47,8 @@ def plot_controls_traj(
     effort_limit=None,
     joint_names=None,
     rmodel=None,
-):
+    figsize=(6.4, 6.4),
+) -> plt.Figure:
     t0 = times[0]
     tf = times[-1]
     us = np.asarray(us)
@@ -47,15 +56,15 @@ def plot_controls_traj(
     nrows, r = divmod(nu, ncols)
     nrows += int(r > 0)
     if axes is None:
-        fig, axes = plt.subplots(nrows, ncols, sharex="col", figsize=(6.4, 6.4))
+        fig, axes = plt.subplots(nrows, ncols, sharex="col", figsize=figsize)
     else:
-        fig = axes[0].get_figure()
+        fig = axes.flat[0].get_figure()
+    axes = _axes_flatten_if_ndarray(axes)
 
     if rmodel is not None:
         effort_limit = rmodel.effortLimit
         joint_names = rmodel.names
 
-    axes = axes.flatten()
     for i in range(nu):
         ax: plt.Axes = axes[i]
         ax.step(times[:-1], us[:, i])
@@ -68,12 +77,14 @@ def plot_controls_traj(
             joint_name = joint_names[i].lower()
             ax.set_ylabel(joint_name)
     fig.supxlabel("Time $t$")
-    fig.suptitle("Controls trajectory")
+    fig.suptitle("Control trajectories")
     fig.tight_layout()
     return fig
 
 
-def plot_velocity_traj(times, vs, rmodel, ncols=2):
+def plot_velocity_traj(
+    times, vs, rmodel, axes=None, ncols=2, figsize=(6.4, 6.4)
+) -> plt.Figure:
     vs = np.asarray(vs)
     nv = vs.shape[1]
     idx_to_joint_id_map = {}
@@ -82,7 +93,6 @@ def plot_velocity_traj(times, vs, rmodel, ncols=2):
         if i in rmodel.idx_vs.tolist():
             jid += 1
         idx_to_joint_id_map[i] = jid
-    print(idx_to_joint_id_map)
     nrows, r = divmod(nv, ncols)
     nrows += int(r > 0)
 
@@ -90,9 +100,13 @@ def plot_velocity_traj(times, vs, rmodel, ncols=2):
     t0 = times[0]
     tf = times[-1]
 
-    fig, axes = plt.subplots(nrows, ncols)
-    fig: plt.Figure
-    axes = axes.flatten()
+    if axes is None:
+        fig, axes = plt.subplots(nrows, ncols, figsize=figsize)
+        fig: plt.Figure
+    else:
+        fig = axes.flat[0].get_figure()
+    axes = _axes_flatten_if_ndarray(axes)
+
     for i in range(nv):
         ax: plt.Axes = axes[i]
         ax.plot(times, vs[:, i])
@@ -105,6 +119,6 @@ def plot_velocity_traj(times, vs, rmodel, ncols=2):
         ax.set_ylabel(joint_name)
 
     fig.supxlabel("Time $t$")
-    fig.suptitle("Velocity trajectory")
+    fig.suptitle("Velocity trajectories")
     fig.tight_layout()
     return fig

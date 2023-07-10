@@ -29,9 +29,6 @@ void exposeSolverCommon() {
       .add_property(
           "Qu", bp::make_getter(&QParams::Qu,
                                 bp::return_value_policy<bp::return_by_value>()))
-      .add_property(
-          "Qy", bp::make_getter(&QParams::Qy,
-                                bp::return_value_policy<bp::return_by_value>()))
       .add_property("Qxx", bp::make_getter(
                                &QParams::Qxx,
                                bp::return_value_policy<bp::return_by_value>()))

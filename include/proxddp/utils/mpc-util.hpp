@@ -12,20 +12,13 @@ namespace proxddp {
 /// @tparam T
 /// @tparam Alloc
 /// @param  n_head The length of the vector (at the head) to keep.
+/// @param  n_tail The length of the vector (at the tail ) to keep.
 template <typename T, typename Alloc>
-void rotate_vec_left(std::vector<T, Alloc> &v,
-                     typename std::vector<T, Alloc>::iterator end,
-                     long n_head = 0) {
+void rotate_vec_left(std::vector<T, Alloc> &v, long n_head = 0,
+                     long n_tail = 0) {
   auto beg = std::next(v.begin(), n_head);
+  auto end = std::prev(v.end(), n_tail);
   std::rotate(beg, beg + 1, end);
-}
-
-/// @overload rotate_vec_left
-/// This overload supposes we want to rotate the std::vector until its
-/// termination.
-template <typename T, typename Alloc>
-void rotate_vec_left(std::vector<T, Alloc> &v, long n_head = 0) {
-  rotate_vec_left(v, v.end(), n_head);
 }
 
 } // namespace proxddp

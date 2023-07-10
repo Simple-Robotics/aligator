@@ -47,6 +47,7 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   /// @{
   std::vector<VectorXs> Lxs_;
   std::vector<VectorXs> Lus_;
+  std::vector<VectorXs> Lds_;
   /// @}
 
   /// Lagrange multipliers for ALM & linesearch.
@@ -83,7 +84,7 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
 
   std::vector<VectorXs> prev_xs;
   std::vector<VectorXs> prev_us;
-  std::vector<VectorXs> lams_prev;
+  std::vector<VectorXs> prev_lams;
 
   /// @}
 

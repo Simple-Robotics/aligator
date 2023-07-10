@@ -64,6 +64,7 @@ option(ENABLE_TEMPLATE_INSTANTIATION "Template instantiation of the main library
 option(BUILD_WITH_PINOCCHIO_SUPPORT "Build the library with support for Pinocchio" ON)
 option(BUILD_CROCODDYL_COMPAT "Build the Crocoddyl compatibility module" OFF)
 option(BUILD_WITH_OPENMP_SUPPORT "Build the library with the OpenMP support" ON)
+option(BUILD_BENCHMARKS "Build benchmarks" ON)
 option(BUILD_EXAMPLES "Build examples" ON)
 cmake_dependent_option(
   GENERATE_PYTHON_STUBS "Generate the Python stubs associated to the Python library" ON
@@ -91,7 +92,7 @@ endif(ENABLE_TEMPLATE_INSTANTIATION)
 # --- DEPENDENCIES -----------------------------------
 # ----------------------------------------------------
 add_project_dependency(Eigen3 3.3.7 REQUIRED PKG_CONFIG_REQUIRES "eigen3 >= 3.3.7")
-add_project_dependency(fmt "9.1.0...10" REQUIRED PKG_CONFIG_REQUIRES "fmt >= 9.1.0")
+add_project_dependency(fmt "9.1.0...<11" REQUIRED PKG_CONFIG_REQUIRES "fmt >= 9.1.0")
 
 # Variable containing all the cflags definition relative to optional dependencies
 set(CFLAGS_DEPENDENCIES)
@@ -218,9 +219,30 @@ if(BUILD_PYTHON_INTERFACE)
   add_subdirectory(python)
 endif()
 
+# benchmarks, examples, and tests
+
+macro(create_ex_or_bench exfile exname)
+
+  add_unit_test(${exname} ${exfile})
+  message(STATUS "Adding cpp example ${exname}")
+  set_target_properties(${exname} PROPERTIES LINKER_LANGUAGE CXX)
+  target_include_directories(${exname} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+  target_link_libraries(${exname} PUBLIC ${PROJECT_NAME})
+  target_link_libraries(${exname} PUBLIC example-robot-data::example-robot-data)
+  if(BUILD_WITH_OPENMP_SUPPORT)
+    target_link_libraries(${exname} PRIVATE OpenMP::OpenMP_CXX)
+  endif()
+endmacro()
+
 if(BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
+
+if(BUILD_BENCHMARKS)
+  add_subdirectory(bench)
+endif()
+
 if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()

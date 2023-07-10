@@ -270,8 +270,7 @@ public:
 
   /// @brief  Put together the Q-function parameters and compute the Riccati
   /// gains.
-  inline BackwardRet computeGains(const Problem &problem,
-                                  const std::size_t step);
+  inline BackwardRet computeGains(const Problem &problem, const std::size_t t);
 
   auto getLinesearchMuLowerBound() const { return min_mu_linesearch_; }
   void setLinesearchMuLowerBound(Scalar mu) { min_mu_linesearch_ = mu; }

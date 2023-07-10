@@ -26,7 +26,6 @@ BOOST_AUTO_TEST_CASE(prox_storage) {
   BOOST_TEST_MESSAGE("Checking Q-function");
   fmt::print("{} < Qx\n", qstore.Qx);
   fmt::print("{} < Qu\n", qstore.Qu);
-  fmt::print("{} < Qy\n", qstore.Qy);
   fmt::print("{} < Qxx\n", qstore.Qxx);
   fmt::print("{} < Qxu\n", qstore.Qxu);
   fmt::print("{} < Qxy\n", qstore.Qxy);

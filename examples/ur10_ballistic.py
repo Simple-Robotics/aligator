@@ -1,7 +1,6 @@
 import example_robot_data as erd
 import pybullet_data
 import pinocchio as pin
-import meshcat
 import numpy as np
 import proxddp
 import hppfcl
@@ -11,12 +10,8 @@ import contextlib
 from pathlib import Path
 from typing import Tuple
 from pinocchio.visualize import MeshcatVisualizer
-from utils import (
-    add_namespace_prefix_to_models,
-    plot_controls_traj,
-    plot_velocity_traj,
-    ArgsBase,
-)
+from proxddp.utils.plotting import plot_controls_traj, plot_velocity_traj
+from utils import add_namespace_prefix_to_models, ArgsBase, IMAGEIO_KWARGS
 from proxddp import dynamics, manifolds, constraints
 
 
@@ -124,11 +119,10 @@ def configure_viz(target_pos):
     )
     gobj.meshColor[:] = np.array([200, 100, 100, 200]) / 255.0
 
-    viewer = meshcat.Visualizer(args.zmq_url)
     viz = MeshcatVisualizer(
         model=rmodel, collision_model=cmodel, visual_model=vmodel, data=rdata
     )
-    viz.initViewer(viewer, loadModel=True)
+    viz.initViewer(loadModel=True, zmq_url=args.zmq_url)
     viz.addGeometryObject(gobj)
     viz.setBackgroundColor()
     viz.setCameraZoom(1.8)
@@ -269,7 +263,8 @@ term_constraint = create_term_constraint(target_pos=target_pos)
 problem = proxddp.TrajOptProblem(x0, stages, term_cost)
 problem.addTerminalConstraint(term_constraint)
 tol = 1e-3
-solver = proxddp.SolverProxDDP(tol, 0.01, max_iters=200, verbose=proxddp.VERBOSE)
+mu_init = 1e-4
+solver = proxddp.SolverProxDDP(tol, mu_init, max_iters=200, verbose=proxddp.VERBOSE)
 solver.reg_min = 1e-8
 his_cb = proxddp.HistoryCallback()
 solver.registerCallback("his", his_cb)
@@ -286,32 +281,39 @@ print(solver.results)
 
 xs = solver.results.xs
 us = solver.results.us
-if not flag:
-    xs = his_cb.storage.xs[-2]
-    us = his_cb.storage.us[-2]
 qs = [x[:nq] for x in xs]
+vs = [x[nq:] for x in xs]
+vs = np.asarray(vs)
+proj_frame_id = rmodel.getFrameId("ball/root_joint")
+
+
+def get_frame_vel(k: int):
+    pin.forwardKinematics(rmodel, rdata, qs[i], vs[i])
+    return pin.getFrameVelocity(rmodel, rdata, proj_frame_id)
+
+
+vf_before_launch = get_frame_vel(t_contact)
+vf_launch_t = get_frame_vel(t_contact + 1)
+print("Before launch  :", vf_before_launch.np)
+print("Launch velocity:", vf_launch_t.np)
 
 
 def viz_callback(i: int):
-    proj_frame_id = rmodel.getFrameId("ball/root_joint")
     pin.forwardKinematics(rmodel, rdata, qs[i], xs[i][nq:])
     viz.drawFrameVelocities(proj_frame_id, v_scale=0.06)
 
 
 exp_name = "ur10_mug_throw"
 VID_FPS = 1.0 / dt
-vid_ctx = viz.create_video_ctx(f"assets/{exp_name}.mp4", fps=VID_FPS)
+vid_ctx = viz.create_video_ctx(f"assets/{exp_name}.mp4", fps=VID_FPS, **IMAGEIO_KWARGS)
 with vid_ctx if args.record else contextlib.nullcontext():
     viz.play(qs, dt, callback=viz_callback)
 
 times = np.linspace(0.0, tf, nsteps + 1)
 _joint_names = rmodel.names[2:]
 _eff = robot.model.effortLimit
-# _eff = None
 fig1 = plot_controls_traj(times, us, joint_names=_joint_names, effort_limit=_eff)
-
-vs = [x[nq + 6 :] for x in xs]
-fig2 = plot_velocity_traj(times, vs, rmodel=robot.model)
+fig2 = plot_velocity_traj(times, vs[:, 6:], rmodel=robot.model)
 
 for fig, name in [(fig1, "controls"), (fig2, "velocity")]:
     PLOTDIR = Path("assets")

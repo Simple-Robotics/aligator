@@ -9,25 +9,35 @@ import numpy as np
 import proxddp
 import proxnlp
 import hppfcl as fcl
-import tap
-import os
 import matplotlib.pyplot as plt
 
+from pathlib import Path
 from pinocchio.visualize import MeshcatVisualizer
 from proxddp import constraints
+from utils import ArgsBase
 
 
-os.makedirs("assets/", exist_ok=True)
+Path("assets/").mkdir(exist_ok=True)
 
 
-class Args(tap.Tap):
-    display: bool = False
-    term_cstr: bool = True
-    record: bool = False
+class Args(ArgsBase):
+    term_cstr: bool = False
     bounds: bool = False  # add control bounds
 
 
 args = Args().parse_args()
+
+
+def get_tag():
+    out = ""
+    if args.bounds:
+        out += "_bounds"
+    if args.term_cstr:
+        out += "_termcstr"
+    return out
+
+
+TAG = get_tag()
 
 
 def create_pendulum(N, sincos=False):
@@ -118,12 +128,12 @@ frame_id = model.getFrameId("end_effector_frame")
 
 # running cost regularizes the control input
 rcost = proxddp.CostStack(space, nu)
+w_x = np.zeros(ndx)
+w_x[nv:] = 1e-2
 w_u = np.ones(nu) * 1e-3
-rcost.addCost(
-    proxddp.QuadraticResidualCost(
-        space, proxddp.ControlErrorResidual(ndx, np.zeros(nu)), np.diag(w_u) * dt
-    )
-)
+
+rcost.addCost(proxddp.QuadraticStateCost(space, nu, space.neutral(), np.diag(w_x) * dt))
+rcost.addCost(proxddp.QuadraticControlCost(space, np.zeros(nu), np.diag(w_u) * dt))
 frame_place_target = pin.SE3.Identity()
 frame_place_target.translation = target_pos
 frame_err = proxddp.FramePlacementResidual(
@@ -135,17 +145,10 @@ frame_err = proxddp.FramePlacementResidual(
 )
 weights_frame_place = np.zeros(6)
 weights_frame_place[:3] = np.ones(3) * 1.0
-# frame_err = proxddp.FrameTranslationResidual(ndx, nu, model, target_pos, frame_id)
-# weights_frame_place = np.zeros(3)
-# weights_frame_place[2] = np.ones(1) * 1.0
-# weights_frame_place[:3] = 1.0
 rcost.addCost(
     proxddp.QuadraticResidualCost(space, frame_err, np.diag(weights_frame_place) * dt)
 )
 term_cost = proxddp.CostStack(space, nu)
-term_cost.addCost(
-    proxddp.QuadraticResidualCost(space, frame_err, np.diag(weights_frame_place) * dt)
-)
 
 # box constraint on control
 umin = -20.0 * np.ones(nu)
@@ -167,6 +170,10 @@ term_fun = proxddp.FrameTranslationResidual(ndx, nu, model, target_pos, frame_id
 if args.term_cstr:
     term_cstr = proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet())
     problem.addTerminalConstraint(term_cstr)
+else:
+    term_cost.addCost(
+        proxddp.QuadraticResidualCost(space, frame_err, np.diag(weights_frame_place))
+    )
 
 mu_init = 0.8
 rho_init = 0.0
@@ -176,9 +183,8 @@ MAX_ITER = 200
 solver = proxddp.SolverProxDDP(
     TOL, mu_init, rho_init=rho_init, max_iters=MAX_ITER, verbose=verbose
 )
-solver.reg_init = 1e-9
 callback = proxddp.HistoryCallback()
-solver.registerCallback(callback)
+solver.registerCallback("his", callback)
 
 u0 = pin.rnea(model, data, x0[:1], x0[1:], np.zeros(nv))
 us_i = [u0] * nsteps
@@ -189,8 +195,7 @@ print("Max threads:", max_threads)
 problem.setNumThreads(max_threads)
 solver.setup(problem)
 solver.run(problem, xs_i, us_i)
-print("last set no. of threads:", proxddp.get_current_threads())
-res = solver.getResults()
+res = solver.results
 print(res)
 xtar = space.neutral()
 
@@ -226,7 +231,8 @@ plt.hlines(
 plt.title("Controls $u(t)$")
 plt.legend()
 plt.tight_layout()
-plt.savefig("assets/pendulum_controls.png")
+plt.savefig("assets/pendulum_controls{}.png".format(TAG))
+plt.savefig("assets/pendulum_controls{}.pdf".format(TAG))
 
 if True:
     from proxnlp.utils import plot_pd_errs
@@ -248,10 +254,24 @@ if True:
         ax.vlines(al_change_idx, *ax.get_ylim(), colors="gray", lw=4.0, alpha=0.5)
         ax.legend(["Prim. err $p$", "Dual err $d$", "Prim tol $\\eta_k$", "AL iters"])
         plt.tight_layout()
-        plt.savefig("assets/pendulum_convergence.png")
+        plt.savefig("assets/pendulum_convergence{}.png".format(TAG))
+        plt.savefig("assets/pendulum_convergence{}.pdf".format(TAG))
 
 
 plt.show()
+
+
+def get_ctx(vizer):
+    vid_uri = Path("assets/pendulum{}.mp4".format(TAG))
+    if args.record:
+        return vizer.create_video_ctx(
+            vid_uri, format="ffmpeg", fps=30, quality=None, bitrate=6000
+        )
+    else:
+        import contextlib
+
+        return contextlib.nullcontext()
+
 
 if args.display:
     import hppfcl
@@ -263,9 +283,7 @@ if args.display:
     vizer.initViewer(open=args.display, loadModel=True)
     vizer.setBackgroundColor()
 
-    numrep = 2
     cp = [2.0, 0.0, 0.8]
-    cps_ = [cp.copy() for _ in range(numrep)]
     input("[Press enter]")
 
     qs = [x[:nq] for x in res.xs]
@@ -275,6 +293,6 @@ if args.display:
         pin.forwardKinematics(model, vizer.data, qs[i], vs[i])
         vizer.drawFrameVelocities(frame_id)
 
-    for i in range(numrep):
-        vizer.setCameraPosition(cps_[i])
+    with get_ctx(vizer):
+        vizer.setCameraPosition(cp)
         vizer.play(qs, dt, viz_callback)

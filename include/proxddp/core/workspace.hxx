@@ -187,17 +187,11 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
     value_params.emplace_back(ndx2);
   }
 
-  if (problem.term_cstrs_.size() > 0) {
+  // terminal node: always allocate data, even with dim 0
+  if (!problem.term_cstrs_.empty()) {
     const int ndx1 = problem.stages_.back()->ndx2();
-    const int nprim = ndx1;
     const long ndual = problem.term_cstrs_.totalDim();
-    const long ntot = nprim + ndual;
-    kkt_mats_.emplace_back(ntot, ntot);
-    kkt_rhs_.emplace_back(ntot, ndx1 + 1);
     stage_prim_infeas.emplace_back(1);
-    ldlts_.emplace_back(
-        allocate_ldlt_algorithm<Scalar>({nprim}, {ndual}, ldlt_choice));
-
     lams_plus.push_back(VectorXs::Zero(ndual));
     proj_jacobians.emplace_back(ndual, ndx1);
     active_constraints.push_back(VecBool::Zero(ndual));
@@ -211,7 +205,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
   math::setZero(lams_plus);
   lams_pdal = lams_plus;
   trial_lams = lams_plus;
-  lams_prev = lams_plus;
+  prev_lams = lams_plus;
+  Lds_ = prev_lams;
   shifted_constraints = lams_plus;
 
   math::setZero(kkt_mats_);
@@ -237,17 +232,23 @@ template <typename Scalar> void WorkspaceTpl<Scalar>::cycleLeft() {
   rotate_vec_left(Lus_);
   rotate_vec_left(Lds_);
 
-  rotate_vec_left(trial_lams, 1);
-  rotate_vec_left(lams_plus, 1);
-  rotate_vec_left(lams_pdal, 1);
-  rotate_vec_left(shifted_constraints, 1);
-  rotate_vec_left(proj_jacobians, 1);
-  rotate_vec_left(active_constraints, 1);
+  // number of "tail" multipliers that shouldn't be in the cycle
+  long n_tail = 1;
+  if (lams_plus.size() < (nsteps + 2)) {
+    n_tail = 0;
+  }
 
-  rotate_vec_left(pd_step_, 1);
+  rotate_vec_left(trial_lams, 1, n_tail);
+  rotate_vec_left(lams_plus, 1, n_tail);
+  rotate_vec_left(lams_pdal, 1, n_tail);
+  rotate_vec_left(shifted_constraints, 1, n_tail);
+  rotate_vec_left(proj_jacobians, 1, n_tail);
+  rotate_vec_left(active_constraints, 1, n_tail);
+
+  rotate_vec_left(pd_step_, 1, n_tail);
   rotate_vec_left(dxs);
   rotate_vec_left(dus);
-  rotate_vec_left(dlams);
+  rotate_vec_left(dlams, 1, n_tail);
 
   rotate_vec_left(kkt_mats_, 1);
   rotate_vec_left(kkt_rhs_, 1);
@@ -257,9 +258,9 @@ template <typename Scalar> void WorkspaceTpl<Scalar>::cycleLeft() {
 
   rotate_vec_left(prev_xs);
   rotate_vec_left(prev_us);
-  rotate_vec_left(lams_prev);
+  rotate_vec_left(prev_lams, 1, n_tail);
 
-  rotate_vec_left(stage_prim_infeas);
+  rotate_vec_left(stage_prim_infeas, 1, n_tail);
 }
 
 template <typename Scalar>

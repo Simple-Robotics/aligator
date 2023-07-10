@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from proxddp import dynamics, constraints, manifolds
+from proxddp.utils.plotting import plot_convergence
 
 
 class Args(tap.Tap):
@@ -39,20 +40,16 @@ if args.term_cstr:
 
 
 rcost0 = proxddp.QuadraticCost(Q, R, N)
-print(rcost0.w_x)
-print(rcost0.w_u)
-print(rcost0.weights_cross)
 assert np.allclose(rcost0.w_x, Q)
 assert np.allclose(rcost0.w_u, R)
 assert np.allclose(rcost0.weights_cross, N)
 assert rcost0.has_cross_term
-rcost = proxddp.CostStack(space, nu, [rcost0], [1.0])
 term_cost = proxddp.QuadraticCost(Qf, R)
 dynmodel = dynamics.LinearDiscreteDynamics(A, B, c)
-stage = proxddp.StageModel(rcost, dynmodel)
+stage = proxddp.StageModel(rcost0, dynmodel)
 if args.bounds:
-    u_min = -0.15 * np.ones(nu)
-    u_max = +0.15 * np.ones(nu)
+    u_min = -0.18 * np.ones(nu)
+    u_max = +0.18 * np.ones(nu)
     ctrl_fn = proxddp.ControlErrorResidual(nx, np.zeros(nu))
     stage.addConstraint(ctrl_fn, constraints.BoxConstraint(u_min, u_max))
 
@@ -72,13 +69,12 @@ if args.term_cstr:
     )
 
 if args.bounds:
-    mu_init = 1e-1
+    mu_init = 1e-3
 else:
     mu_init = 1e-6
-mu_init = 1e-3
 rho_init = 0.0
 verbose = proxddp.VerboseLevel.VERBOSE
-tol = 1e-6
+tol = 1e-8
 solver = proxddp.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
 
 
@@ -104,6 +100,18 @@ class CustomCallback(proxddp.BaseCallback):
         kkts = workspace.kkt_mat
         self.kkts.append(copy.deepcopy(kkts))
 
+        def infNorm(xs):
+            return max([np.linalg.norm(x, np.inf) for x in xs])
+
+        print("Lxs: ", end="")
+        Lxs = workspace.Lxs.tolist()
+        if solver.force_initial_condition:
+            Lxs = Lxs[1:]
+        print("norm = {}".format(infNorm(Lxs)))
+        Lus = workspace.Lus.tolist()
+        print("Lus: ", end="")
+        print("norm = {}".format(infNorm(Lus)))
+
 
 cus_cb = CustomCallback()
 solver.registerCallback("cus", cus_cb)
@@ -118,29 +126,23 @@ prob_data = proxddp.TrajOptData(problem)
 problem.evaluate(xs_i, us_i, prob_data)
 
 solver.setup(problem)
-# for i in range(nsteps):
-#     psc = solver.workspace.getConstraintScaler(i)
-#     psc.set_weight(2000.0, 1)
+for i in range(nsteps):
+    psc = solver.workspace.getConstraintScaler(i)
+    if args.bounds:
+        psc.set_weight(100, 1)
 solver.run(problem, xs_i, us_i)
-res = solver.getResults()
+res = solver.results
+ws = solver.workspace
+
 print(res)
 
 plt.subplot(121)
-fig: plt.Figure = plt.gcf()
+fig1: plt.Figure = plt.gcf()
 
 lstyle = {"lw": 0.9, "marker": ".", "markersize": 5}
 trange = np.arange(nsteps + 1)
 plt.plot(res.xs, ls="-", **lstyle)
 
-plt.hlines(
-    xtar,
-    *trange[[0, -1]],
-    ls="-",
-    lw=1.0,
-    colors="k",
-    alpha=0.4,
-    label=r"$x_\mathrm{tar}$",
-)
 if args.term_cstr:
     plt.hlines(
         xtar2,
@@ -151,6 +153,15 @@ if args.term_cstr:
         alpha=0.4,
         label=r"$x_\mathrm{tar}$",
     )
+plt.hlines(
+    0.0,
+    *trange[[0, -1]],
+    ls=":",
+    lw=0.6,
+    colors="k",
+    alpha=0.4,
+    label=r"$x=0$",
+)
 plt.title("State trajectory $x(t)$")
 plt.xlabel("Time $i$")
 plt.legend(frameon=False)
@@ -162,26 +173,41 @@ if args.bounds:
         np.concatenate([u_min, u_max]),
         *trange[[0, -1]],
         ls="-",
-        colors="k",
-        lw=1.5,
-        alpha=0.2,
+        colors="tab:red",
+        lw=1.8,
+        alpha=0.4,
         label=r"$\bar{u}$",
     )
 plt.xlabel("Time $i$")
 plt.title("Controls $u(t)$")
-plt.legend(frameon=False)
+plt.legend(frameon=False, loc="lower right")
 plt.tight_layout()
 
 
-fig: plt.Figure = plt.figure()
-prim_infeas = his_cb.storage.prim_infeas
-dual_infeas = his_cb.storage.dual_infeas
-plt.plot(prim_infeas)
-plt.plot(dual_infeas)
-ax = plt.gca()
-ax.set_yscale("log")
-ax.set_xlabel("Iter")
-ax.set_ylabel("Residuals")
-plt.tight_layout()
+fig2: plt.Figure = plt.figure()
+ax: plt.Axes = fig2.add_subplot()
+niter = res.num_iters
+ax.hlines(
+    tol,
+    0,
+    niter,
+    colors="k",
+    linestyles="-",
+    linewidth=2.0,
+)
+plot_convergence(his_cb, ax, res)
+ax.set_title("Convergence (constrained LQR)")
+ax.legend(["Tolerance $\\epsilon_\\mathrm{tol}$", "Primal error $p$", "Dual error $d$"])
+fig2.tight_layout()
 
 plt.show()
+
+fig_dict = {"traj": fig1, "conv": fig2}
+TAG = "LQR"
+if args.bounds:
+    TAG += "_bounded"
+if args.term_cstr:
+    TAG += "_cstr"
+for name, fig in fig_dict.items():
+    fig.savefig(f"assets/{TAG}_{name}.png")
+    fig.savefig(f"assets/{TAG}_{name}.pdf")

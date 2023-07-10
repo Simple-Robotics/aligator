@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 
 from proxddp import manifolds, constraints, dynamics
 from utils import ArgsBase, compute_quasistatic, get_endpoint_traj
+from proxddp.utils.plotting import plot_convergence
 
 
 class Args(ArgsBase):
@@ -61,7 +62,8 @@ w_x = np.diag(w_x)
 w_u = 1e-3 * np.eye(nu)
 
 rcost = proxddp.CostStack(space, nu)
-rcost.addCost(proxddp.QuadraticCost(w_x * dt, w_u * dt))
+rcost.addCost(proxddp.QuadraticStateCost(space, nu, space.neutral(), w_x * dt))
+rcost.addCost(proxddp.QuadraticControlCost(space, nu, w_u * dt))
 
 # define the terminal cost
 
@@ -100,7 +102,6 @@ verbose = proxddp.VerboseLevel.VERBOSE
 solver = proxddp.SolverProxDDP(tol, mu_init, max_iters=max_iters, verbose=verbose)
 cb = proxddp.HistoryCallback()
 solver.registerCallback("his", cb)
-# solver.dump_linesearch_plot = True
 
 solver.setup(problem)
 
@@ -141,21 +142,13 @@ ee_traj = get_endpoint_traj(rmodel, rdata, xs_opt, frame_id)
 plt.plot(times, np.array(ee_traj), label=["x", "y", "z"])
 plt.hlines(table_height, *times[[0, -1]], colors="k")
 plt.legend()
+plt.tight_layout()
 
 
-cb_store: proxddp.HistoryCallback.storage = cb.storage
-prim_infeas = cb_store.prim_infeas
-dual_infeas = cb_store.dual_infeas
 plt.figure()
-plt.subplot(121)
-plt.plot(prim_infeas)
-plt.yscale("log")
-plt.title("Primal infeasibility")
-
-plt.subplot(122)
-plt.plot(dual_infeas)
-plt.yscale("log")
-plt.title("Dual infeasibility")
+ax = plt.subplot(111)
+plot_convergence(cb, ax, rs)
+plt.tight_layout()
 plt.show()
 
 if args.display:
