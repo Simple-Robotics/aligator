@@ -92,7 +92,7 @@ endif(ENABLE_TEMPLATE_INSTANTIATION)
 # --- DEPENDENCIES -----------------------------------
 # ----------------------------------------------------
 add_project_dependency(Eigen3 3.3.7 REQUIRED PKG_CONFIG_REQUIRES "eigen3 >= 3.3.7")
-add_project_dependency(fmt "9.1.0...10" REQUIRED PKG_CONFIG_REQUIRES "fmt >= 9.1.0")
+add_project_dependency(fmt "9.1.0...<11" REQUIRED PKG_CONFIG_REQUIRES "fmt >= 9.1.0")
 
 # Variable containing all the cflags definition relative to optional dependencies
 set(CFLAGS_DEPENDENCIES)
