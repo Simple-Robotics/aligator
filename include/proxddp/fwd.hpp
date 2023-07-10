@@ -6,7 +6,10 @@
 #include <proxnlp/fwd.hpp>
 
 #ifdef PROXDDP_WITH_PINOCCHIO
-#include "pinocchio/container/boost-container-limits.hpp"
+#include <pinocchio/fwd.hpp>
+#if PINOCCHIO_VERSION_AT_LEAST(2, 9, 2)
+#define PROXDDP_PINOCCHIO_V3
+#endif
 #endif
 
 /// @brief  Main package namespace.

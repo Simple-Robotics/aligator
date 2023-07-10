@@ -4,16 +4,8 @@
 #include "proxddp/python/macros.hpp"
 #include "proxddp/python/visitors.hpp"
 
-#ifdef PROXDDP_WITH_PINOCCHIO
-#include <pinocchio/fwd.hpp>
-#endif
-
 #include <eigenpy/eigenpy.hpp>
 #include <eigenpy/std-vector.hpp>
-
-#if PINOCCHIO_VERSION_AT_LEAST(2, 9, 2)
-#define PROXDDP_PINOCCHIO_V3
-#endif
 
 namespace proxddp {
 /// @brief  The Python bindings.
