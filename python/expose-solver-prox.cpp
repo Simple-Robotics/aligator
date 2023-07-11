@@ -131,6 +131,8 @@ void exposeProxDDP() {
       .def_readwrite(
           "rollout_max_iters", &SolverType::rollout_max_iters,
           "Maximum number of iterations when solving the forward dynamics.")
+      .def_readwrite("max_al_iters", &SolverType::max_al_iters,
+                     "Maximum number of AL iterations.")
       .def_readwrite("ls_mode", &SolverType::ls_mode, "Linesearch mode.")
       .def_readwrite("rollout_type", &SolverType::rollout_type_,
                      "Rollout type.")
