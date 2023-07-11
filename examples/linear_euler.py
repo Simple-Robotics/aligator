@@ -48,6 +48,6 @@ solver = proxddp.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
 
 solver.setup(problem)
 solver.run(problem, xs_init, us_init)
-results = solver.getResults()
+results = solver.results
 
 print(results)

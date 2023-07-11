@@ -131,7 +131,7 @@ rho_init = 1e-9
 # solver2 = proxddp.SolverProxDDP(tol / nsteps, mu_init, rho_init, verbose=verbose)
 solver2.setup(pb_prox)
 conv = solver2.run(pb_prox, init_xs, init_us)
-results = solver2.getResults()
+results = solver2.results
 print("ourFDDP:", results)
 print("cost", results.traj_cost)
 

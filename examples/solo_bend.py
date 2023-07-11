@@ -124,7 +124,7 @@ def main():
     flag = solver.run(problem, xs_i, us_i)
     print(flag)
 
-    rs = solver.getResults()
+    rs = solver.results
     qs_opt = [x[:nq] for x in rs.xs]
     input("[display?]")
 

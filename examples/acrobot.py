@@ -87,7 +87,7 @@ us_init = [np.zeros(nu) for _ in range(nsteps)]
 xs_init = proxddp.rollout(dyn_model, x0, us_init).tolist()
 conv = solver.run(problem, xs_init, us_init)
 
-res = solver.getResults()
+res = solver.results
 print(res)
 
 tag = "acrobot"

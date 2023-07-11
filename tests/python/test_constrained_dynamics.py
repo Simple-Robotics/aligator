@@ -319,7 +319,7 @@ def test_constrained_dynamics():
     solver.setup(problem)
     conv = solver.run(problem, xs_init, us_init)
 
-    results = solver.getResults()
+    results = solver.results
     print(results)
     xs_opt = results.xs.tolist()
     if DISPLAY:

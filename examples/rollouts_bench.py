@@ -64,7 +64,7 @@ def main(roltype, mu_init):
 
     solver.run(problem, xs_init, us_init)
 
-    res = solver.getResults()
+    res = solver.results
     print(roltype, mu_init)
     print(res)
     return res

@@ -132,7 +132,7 @@ solver.setup(problem)
 solver.run(problem, init_xs, init_us)
 
 
-results = solver.getResults()
+results = solver.results
 print(results)
 
 xs_opt = results.xs.tolist()

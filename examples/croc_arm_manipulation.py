@@ -201,7 +201,7 @@ if True:
     elapsed_time = time.time() - elapsed_time
     print(f"PROXDDP TIME = {elapsed_time:.4g}")
 
-    results = proxsolver.getResults()
+    results = proxsolver.results
     assert results.num_iters <= 24
     print("Results {}".format(results))
     prox_xs = results.xs

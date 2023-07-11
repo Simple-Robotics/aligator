@@ -96,7 +96,7 @@ int main(int, char **) {
   solver.setup(problem);
   solver.run(problem, xs_i, us_i);
 
-  auto &res = solver.getResults();
+  auto &res = solver.results_;
   fmt::print("Results: {}\n", res);
 
   for (std::size_t i = 1; i < nsteps; ++i) {
