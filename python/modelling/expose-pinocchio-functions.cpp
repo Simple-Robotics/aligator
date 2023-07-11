@@ -8,7 +8,9 @@
 #include "proxddp/modelling/multibody/frame-placement.hpp"
 #include "proxddp/modelling/multibody/frame-velocity.hpp"
 #include "proxddp/modelling/multibody/frame-translation.hpp"
+#ifdef PROXDDP_PINOCCHIO_V3
 #include "proxddp/modelling/multibody/constrained-rnea.hpp"
+#endif
 
 namespace proxddp {
 namespace python {
@@ -101,6 +103,7 @@ void exposeFrameFunctions() {
                     "Pinocchio data struct.");
 }
 
+#ifdef PROXDDP_PINOCCHIO_V3
 auto underactuatedConstraintInvDyn_proxy(const PinModel &model, PinData &data,
                                          const ConstVectorRef &q,
                                          const ConstVectorRef &v,
@@ -116,17 +119,20 @@ auto underactuatedConstraintInvDyn_proxy(const PinModel &model, PinData &data,
   return bp::make_tuple((context::VectorXs)out.head(nu),
                         (context::VectorXs)out.tail(d));
 }
+#endif
 
 void exposePinocchioFunctions() {
   exposeFrameFunctions();
   exposeFlyHigh();
 
+#ifdef PROXDDP_PINOCCHIO_V3
   bp::def("underactuatedConstrainedInverseDynamics",
           underactuatedConstraintInvDyn_proxy,
           bp::args("model", "data", "q", "v", "actMatrix", "constraint_model",
                    "constraint_data"),
           "Compute the gravity-compensating torque for a pinocchio Model under "
           "a rigid constraint.");
+#endif
 }
 } // namespace python
 } // namespace proxddp

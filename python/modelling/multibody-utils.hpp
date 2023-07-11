@@ -2,19 +2,10 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include <pinocchio/fwd.hpp>
 #include "proxddp/python/fwd.hpp"
-#include <proxnlp/modelling/spaces/multibody.hpp>
+#include "proxddp/modelling/multibody/context.hpp"
 
 namespace proxddp {
-
-namespace context {
-
-using MultibodyConfiguration = proxnlp::MultibodyConfiguration<Scalar>;
-using MultibodyPhaseSpace = proxnlp::MultibodyPhaseSpace<Scalar>;
-
-} // namespace context
-
 namespace python {
 
 template <typename Class>
