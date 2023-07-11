@@ -23,6 +23,7 @@ This is a C++14 template library, which provides
 Python:
 
 * [typed-argument-parser](https://github.com/swansonk14/typed-argument-parser)
+* [matplotlib](https://matplotlib.org)
 
 ### Build from source
 
@@ -54,9 +55,8 @@ and use `$CONDA_PREFIX` as your install folder.
 ./scripts/runbench.sh
 ```
 
-We also provide a [shorthand](scripts/make_flamegraph.sh) script for using [Flame Graphs](https://github.com/brendangregg/FlameGraph).
-
-If you have the Rust toolchain and `cargo` installed, however, we advise you install [cargo-flamegraph](https://github.com/flamegraph-rs/flamegraph) instead. Then, you can create a flame graph in a one-liner, e.g.:
+For evaluating performance, we would recommend using [Flame Graphs](https://github.com/brendangregg/FlameGraph).
+If you have the Rust toolchain and `cargo` installed, we suggest you install [cargo-flamegraph](https://github.com/flamegraph-rs/flamegraph). Then, you can create a flame graph with the following command:
 
 ```bash
 flamegraph -o my_flamegraph.svg -- ./build/examples/example-croc-talos-arm
