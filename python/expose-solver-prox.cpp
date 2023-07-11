@@ -71,6 +71,7 @@ void exposeProxDDP() {
       .def_readonly("dlams", &Workspace::dlams)
       .def_readonly("trial_lams", &Workspace::trial_lams)
       .def_readonly("lams_plus", &Workspace::lams_plus)
+      .def_readonly("lams_pdal", &Workspace::lams_pdal)
       .def_readonly("shifted_constraints", &Workspace::shifted_constraints)
       .def_readonly("proj_jacobians", &Workspace::proj_jacobians)
       .def_readonly("inner_crit", &Workspace::inner_criterion)
