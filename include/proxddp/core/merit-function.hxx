@@ -5,8 +5,8 @@
 namespace proxddp {
 
 template <typename Scalar>
-Scalar cost_directional_derivative(const WorkspaceTpl<Scalar> &workspace,
-                                   const TrajOptDataTpl<Scalar> &prob_data) {
+Scalar costDirectionalDerivative(const WorkspaceTpl<Scalar> &workspace,
+                                 const TrajOptDataTpl<Scalar> &prob_data) {
   Scalar d1 = 0.;
   const std::size_t nsteps = workspace.nsteps;
   for (std::size_t i = 0; i < nsteps; i++) {
@@ -88,7 +88,7 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
   TrajOptData &prob_data = workspace.problem_data;
   const std::size_t nsteps = workspace.nsteps;
 
-  Scalar d1 = cost_directional_derivative(workspace, prob_data);
+  Scalar d1 = costDirectionalDerivative(workspace, prob_data);
 
   const auto &prox_datas = workspace.prox_datas;
   const Scalar rho = solver.rho();
