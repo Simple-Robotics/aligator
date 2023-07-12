@@ -33,14 +33,24 @@ void exposeProxDDP() {
               PyErr_SetString(PyExc_IndexError, "Index out of bounds.");
               bp::throw_error_already_set();
             }
-            s.set_weight(v, (long)j);
+            s.setWeight(v, j);
           },
           bp::args("self", "value", "j"))
       .add_property("size", &ProxScaler::size,
                     "Get the number of constraint blocks.")
-      .add_property("weights",
-                    bp::make_function(&ProxScaler::getWeights,
-                                      bp::return_internal_reference<>()));
+      .add_property(
+          "weights",
+          bp::make_function(&ProxScaler::getWeights,
+                            bp::return_internal_reference<>()),
+          +[](ProxScaler &s, const context::VectorXs &w) {
+            if (s.getWeights().size() != w.size()) {
+              PyErr_SetString(PyExc_ValueError, "Input has wrong dimension.");
+            }
+            s.setWeights(w);
+          })
+      .add_property(
+          "matrix",
+          +[](const ProxScaler &psc) { return psc.matrix().toDenseMatrix(); });
 
   bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>,
              boost::noncopyable>(
