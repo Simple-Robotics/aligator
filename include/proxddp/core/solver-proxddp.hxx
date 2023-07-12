@@ -552,40 +552,40 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
     PROXDDP_RAISE_IF_NAN_NAME(xs[0], fmt::format("xs[{:d}]", 0));
   }
 
-  for (std::size_t i = 0; i < nsteps; i++) {
-    const StageModel &stage = *problem.stages_[i];
-    StageData &data = prob_data.getStageData(i);
+  for (std::size_t t = 0; t < nsteps; t++) {
+    const StageModel &stage = *problem.stages_[t];
+    StageData &data = prob_data.getStageData(t);
 
     const int nu = stage.nu();
     const int ndual = stage.numDual();
 
-    ConstVectorRef ff = results_.getFeedforward(i);
-    ConstMatrixRef fb = results_.getFeedback(i);
+    ConstVectorRef ff = results_.getFeedforward(t);
+    ConstMatrixRef fb = results_.getFeedback(t);
     auto ff_u = ff.head(nu);
     auto fb_u = fb.topRows(nu);
     auto ff_lm = ff.tail(ndual);
     auto fb_lm = fb.bottomRows(ndual);
 
-    dus[i] = alpha * ff_u;
-    dus[i].noalias() += fb_u * dxs[i];
-    stage.uspace().integrate(results_.us[i], dus[i], us[i]);
+    dus[t] = alpha * ff_u;
+    dus[t].noalias() += fb_u * dxs[t];
+    stage.uspace().integrate(results_.us[t], dus[t], us[t]);
 
-    VectorRef &dlam = workspace_.dlams[i + 1];
+    VectorRef &dlam = workspace_.dlams[t + 1];
     dlam = alpha * ff_lm;
-    dlam.noalias() += fb_lm * dxs[i];
-    lams[i + 1] = results_.lams[i + 1] + dlam;
+    dlam.noalias() += fb_lm * dxs[t];
+    lams[t + 1] = results_.lams[t + 1] + dlam;
 
-    stage.evaluate(xs[i], us[i], xs[i + 1], data);
+    stage.evaluate(xs[t], us[t], xs[t + 1], data);
 
     // compute desired multiple-shooting gap from the multipliers
     {
-      const auto &weight_strat = workspace_.cstr_scalers[i];
+      const auto &weight_strat = workspace_.cstr_scalers[t];
       const ConstraintStack &cstr_stack = stage.constraints_;
       const ConstVectorRef dynlam =
-          cstr_stack.constSegmentByConstraint(lams[i + 1], 0);
+          cstr_stack.constSegmentByConstraint(lams[t + 1], 0);
       const ConstVectorRef dynprevlam =
-          cstr_stack.constSegmentByConstraint(lams_prev[i + 1], 0);
-      dyn_slacks[i] = weight_strat.get(0) * (dynprevlam - dynlam);
+          cstr_stack.constSegmentByConstraint(lams_prev[t + 1], 0);
+      dyn_slacks[t] = weight_strat.get(0) * (dynprevlam - dynlam);
     }
 
     DynamicsData &dd = data.dyn_data();
@@ -593,24 +593,24 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
     // lambda to be called in both branches
     auto explicit_model_update_xnext = [&]() {
       ExplicitDynData &exp_dd = static_cast<ExplicitDynData &>(dd);
-      stage.xspace_next().integrate(exp_dd.xnext_, dyn_slacks[i], xs[i + 1]);
+      stage.xspace_next().integrate(exp_dd.xnext_, dyn_slacks[t], xs[t + 1]);
       // at xs[i+1], the dynamics gap = the slack dyn_slack[i].
-      exp_dd.value_ = -dyn_slacks[i];
+      exp_dd.value_ = -dyn_slacks[t];
     };
 
     if (!stage.has_dyn_model() || stage.dyn_model().is_explicit()) {
       explicit_model_update_xnext();
     } else {
-      ConstVectorRef slack = dyn_slacks[i];
-      forwardDynamics<Scalar>::run(stage.dyn_model(), xs[i], us[i], dd,
-                                   xs[i + 1], slack, rollout_max_iters);
+      ConstVectorRef slack = dyn_slacks[t];
+      forwardDynamics<Scalar>::run(stage.dyn_model(), xs[t], us[t], dd,
+                                   xs[t + 1], slack, rollout_max_iters);
     }
 
-    stage.xspace_next().difference(results_.xs[i + 1], xs[i + 1], dxs[i + 1]);
+    stage.xspace_next().difference(results_.xs[t + 1], xs[t + 1], dxs[t + 1]);
 
-    PROXDDP_RAISE_IF_NAN_NAME(xs[i + 1], fmt::format("xs[{:d}]", i + 1));
-    PROXDDP_RAISE_IF_NAN_NAME(us[i], fmt::format("us[{:d}]", i));
-    PROXDDP_RAISE_IF_NAN_NAME(lams[i + 1], fmt::format("lams[{:d}]", i + 1));
+    PROXDDP_RAISE_IF_NAN_NAME(xs[t + 1], fmt::format("xs[{:d}]", t + 1));
+    PROXDDP_RAISE_IF_NAN_NAME(us[t], fmt::format("us[{:d}]", t));
+    PROXDDP_RAISE_IF_NAN_NAME(lams[t + 1], fmt::format("lams[{:d}]", t + 1));
   }
 
   // TERMINAL NODE
