@@ -405,7 +405,6 @@ void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
   BlockXs kkt_jac = kkt_mat.bottomLeftCorner(ndual, nprim);
   BlockXs kkt_prim = kkt_mat.topLeftCorner(nprim, nprim);
   BlockXs kkt_dual = kkt_mat.bottomRightCorner(ndual, ndual);
-  Eigen::Diagonal<BlockXs> kkt_dual_d = kkt_dual.diagonal();
 
   ColXpr kkt_rhs_ff(kkt_rhs.col(0));
   ColsBlockXpr kkt_rhs_fb(kkt_rhs.rightCols(ndx1));
@@ -431,7 +430,9 @@ void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
   // memory buffer for the projected Jacobian matrix
   MatrixXs &proj_jac = workspace_.proj_jacobians[t + 1];
   const ConstraintStack &cstr_mgr = stage.constraints_;
+  assert(cstr_mgr.totalDim() == ndual);
   const CstrProximalScaler &weight_strat = workspace_.cstr_scalers[t];
+  kkt_dual.diagonal() = -weight_strat.matrix().diagonal();
 
   // Loop over constraints
   for (std::size_t j = 0; j < stage.numConstraints(); j++) {
@@ -454,8 +455,6 @@ void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
     auto ld_j = cstr_mgr.constSegmentByConstraint(Ld, j);
     cstr_mgr.segmentByConstraint(kkt_rhs_l, j) = ld_j;
 
-    auto kkt_dual_j = cstr_mgr.segmentByConstraint(kkt_dual_d, j);
-    kkt_dual_j.array() = -weight_strat.get(j);
     auto Jx_orig = cstr_data.jac_buffer_.leftCols(ndx1);
     auto Juy_orig = cstr_data.jac_buffer_.rightCols(nprim);
     // // add correction to kkt rhs ff
@@ -904,11 +903,10 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem) {
                              const VectorXs &lams_plus,
                              const VectorXs &prev_lams, VectorXs &stage_infeas,
                              CstrProximalScaler &scaler) {
-    for (std::size_t k = 0; k < stack.size(); k++) {
-      auto lplus_k = stack.constSegmentByConstraint(lams_plus, k);
-      auto plam_k = stack.constSegmentByConstraint(prev_lams, k);
-      Scalar m = scaler.get(k);
-      stage_infeas((long)k) = math::infty_norm((plam_k - lplus_k) * m);
+    auto e = scaler.matrix() * (prev_lams - lams_plus);
+    for (std::size_t j = 0; j < stack.size(); j++) {
+      stage_infeas((long)j) =
+          math::infty_norm(stack.constSegmentByConstraint(e, j));
     }
   };
 
