@@ -45,20 +45,16 @@ Scalar PDALFunction<Scalar>::evaluate(const SolverType &solver,
   }
 
   // local lambda function, defining the op to run on each constraint stack.
-  auto execute_on_stack =
-      [use_dual_terms = use_dual_terms, dual_weight = dual_weight](
-          const ConstraintStack &stack, const VectorXs &lambda,
-          const VectorXs &lams_pdal, CstrProximalScaler &weight_strat) {
-        Scalar r = 0.;
-        for (std::size_t k = 0; k < stack.size(); ++k) {
-          const auto lampd_k = stack.constSegmentByConstraint(lams_pdal, k);
-          const auto lam_k = stack.constSegmentByConstraint(lambda, k);
-          Scalar m = weight_strat.get(k);
-          auto e = 0.5 * m * lampd_k;
-          r += 1. / m * e.squaredNorm() + 0.25 * m * lam_k.squaredNorm();
-        }
-        return r;
-      };
+  auto execute_on_stack = [use_dual_terms = use_dual_terms,
+                           dual_weight = dual_weight](
+                              const VectorXs &lambda, const VectorXs &lams_pdal,
+                              CstrProximalScaler &weight_strat) {
+    auto e1 = weight_strat.matrix() * lams_pdal;
+    auto e2 = weight_strat.matrix() * lambda;
+    Scalar r = 0.25 * e1.dot(lams_pdal);
+    r += 0.25 * e2.dot(lambda);
+    return r;
+  };
 
   // stage-per-stage
   const std::size_t nsteps = problem.numSteps();
@@ -67,15 +63,14 @@ Scalar PDALFunction<Scalar>::evaluate(const SolverType &solver,
 
     const ConstraintStack &cstr_mgr = stage.constraints_;
 
-    penalty_value += execute_on_stack(cstr_mgr, lams[i + 1], lams_pdal[i + 1],
+    penalty_value += execute_on_stack(lams[i + 1], lams_pdal[i + 1],
                                       workspace.cstr_scalers[i]);
   }
 
   if (!problem.term_cstrs_.empty()) {
     assert(lams.size() == nsteps + 2);
-    penalty_value +=
-        execute_on_stack(problem.term_cstrs_, lams.back(), lams_pdal.back(),
-                         workspace.cstr_scalers.back());
+    penalty_value += execute_on_stack(lams.back(), lams_pdal.back(),
+                                      workspace.cstr_scalers.back());
   }
 
   return prob_data.cost_ + prox_value + penalty_value;
@@ -120,20 +115,11 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
     d1 += e.dot(dlams[0]);
   }
 
-  auto execute_on_stack = [](const ConstraintStack &stack, const auto &dlam,
-                             const VectorXs &lam, const VectorXs &lampdal,
+  auto execute_on_stack = [](const auto &dlam, const VectorXs &lam,
+                             const VectorXs &lampdal,
                              CstrProximalScaler &weight_strat) {
-    Scalar r = 0.;
-    for (std::size_t k = 0; k < stack.size(); k++) {
-      auto lampd_k = stack.constSegmentByConstraint(lampdal, k);
-      auto lam_k = stack.constSegmentByConstraint(lam, k);
-      auto dlam_k = stack.constSegmentByConstraint(dlam, k);
-
-      Scalar m = weight_strat.get(k);
-      auto e = 0.5 * m * (lam_k - lampd_k);
-      r += e.dot(dlam_k);
-    }
-    return r;
+    auto e = 0.5 * weight_strat.matrix() * (lam - lampdal);
+    return e.dot(dlam);
   };
 
   for (std::size_t i = 0; i < nsteps; i++) {
@@ -142,16 +128,16 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
 
     d1 += workspace.Lxs_[i + 1].dot(dxs[i + 1]);
     d1 += workspace.Lus_[i].dot(dus[i]);
-    d1 += execute_on_stack(cstr_stack, dlams[i + 1], lams[i + 1],
-                           lams_pdal[i + 1], workspace.cstr_scalers[i]);
+    d1 += execute_on_stack(dlams[i + 1], lams[i + 1], lams_pdal[i + 1],
+                           workspace.cstr_scalers[i]);
   }
 
   d1 += workspace.Lxs_[nsteps].dot(dxs[nsteps]);
 
   const ConstraintStack &term_stack = problem.term_cstrs_;
   if (!term_stack.empty()) {
-    d1 += execute_on_stack(term_stack, dlams.back(), lams.back(),
-                           lams_pdal.back(), workspace.cstr_scalers.back());
+    d1 += execute_on_stack(dlams.back(), lams.back(), lams_pdal.back(),
+                           workspace.cstr_scalers.back());
   }
 
   return d1;
