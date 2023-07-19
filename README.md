@@ -17,7 +17,7 @@ This is a C++14 template library, which provides
 * [proxnlp](https://github.com/Simple-Robotics/proxnlp.git)
 * [Eigen3](https://eigen.tuxfamily.org) >= 3.3.7
 * [Boost](https://www.boost.org) >= 1.71.0
-* [eigenpy](https://github.com/stack-of-tasks/eigenpy)>=2.9.0 | [conda](https://anaconda.org/conda-forge/eigenpy)
+* [eigenpy](https://github.com/stack-of-tasks/eigenpy)>=3.1.0 | [conda](https://anaconda.org/conda-forge/eigenpy)
 * (optional) [Crocoddyl](https://github.com/loco-3d/crocoddyl)
 
 Python:
