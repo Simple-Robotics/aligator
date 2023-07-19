@@ -11,8 +11,8 @@
 namespace proxddp {
 
 template <typename Scalar>
-Scalar cost_directional_derivative(const WorkspaceTpl<Scalar> &workspace,
-                                   const TrajOptDataTpl<Scalar> &prob_data);
+Scalar costDirectionalDerivative(const WorkspaceTpl<Scalar> &workspace,
+                                 const TrajOptDataTpl<Scalar> &prob_data);
 
 /** @brief Primal-dual augmented Lagrangian merit function.
  *
