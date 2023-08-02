@@ -39,9 +39,6 @@ struct MultibodyConstraintFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
 
   const Manifold &space() const { return *space_; }
   int ntau() const { return space_->getModel().nv; }
-  const RigidConstraintModelVector &getConstraintModelVector() const {
-    return constraint_models_;
-  }
 
   MultibodyConstraintFwdDynamicsTpl(
       const ManifoldPtr &state, const MatrixXs &actuation,
@@ -61,21 +58,18 @@ struct MultibodyConstraintFwdDataTpl : ODEDataTpl<Scalar> {
   using Base = ODEDataTpl<Scalar>;
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
-  using RigidConstraintModelVector = PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(
-      pinocchio::RigidConstraintModel);
   using RigidConstraintDataVector =
       PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(pinocchio::RigidConstraintData);
 
   VectorXs tau_;
   MatrixXs dtau_dx_;
   MatrixXs dtau_du_;
-  RigidConstraintModelVector constraint_models_;
   RigidConstraintDataVector constraint_datas_;
   pinocchio::ProximalSettingsTpl<Scalar> settings;
   /// shared_ptr to the underlying pinocchio::DataTpl object.
   shared_ptr<pinocchio::DataTpl<Scalar>> pin_data_;
   MultibodyConstraintFwdDataTpl(
-      const MultibodyConstraintFwdDynamicsTpl<Scalar> *cont_dyn);
+      const MultibodyConstraintFwdDynamicsTpl<Scalar> &cont_dyn);
 };
 
 } // namespace dynamics

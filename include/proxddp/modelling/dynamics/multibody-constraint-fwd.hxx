@@ -60,25 +60,23 @@ void MultibodyConstraintFwdDynamicsTpl<Scalar>::dForward(const ConstVectorRef &,
 template <typename Scalar>
 shared_ptr<ContinuousDynamicsDataTpl<Scalar>>
 MultibodyConstraintFwdDynamicsTpl<Scalar>::createData() const {
-  return std::make_shared<Data>(this);
+  return std::make_shared<Data>(*this);
 }
 
 template <typename Scalar>
 MultibodyConstraintFwdDataTpl<Scalar>::MultibodyConstraintFwdDataTpl(
-    const MultibodyConstraintFwdDynamicsTpl<Scalar> *cont_dyn)
-    : Base(cont_dyn->ndx(), cont_dyn->nu()),
-      tau_(cont_dyn->space_->getModel().nv),
-      dtau_dx_(cont_dyn->ntau(), cont_dyn->ndx()),
-      dtau_du_(cont_dyn->actuation_matrix_),
-      constraint_models_(cont_dyn->getConstraintModelVector()),
-      settings(cont_dyn->prox_settings_) {
+    const MultibodyConstraintFwdDynamicsTpl<Scalar> &cont_dyn)
+    : Base(cont_dyn.ndx(), cont_dyn.nu()), tau_(cont_dyn.space_->getModel().nv),
+      dtau_dx_(cont_dyn.ntau(), cont_dyn.ndx()),
+      dtau_du_(cont_dyn.actuation_matrix_), settings(cont_dyn.prox_settings_) {
   tau_.setZero();
 
-  const pinocchio::ModelTpl<Scalar> &model = cont_dyn->space_->getModel();
+  const pinocchio::ModelTpl<Scalar> &model = cont_dyn.space_->getModel();
   pin_data_ = std::make_shared<pinocchio::DataTpl<Scalar>>(model);
-  pinocchio::initConstraintDynamics(model, *pin_data_, constraint_models_);
-  for (auto cm = std::begin(constraint_models_);
-       cm != std::end(constraint_models_); ++cm) {
+  pinocchio::initConstraintDynamics(model, *pin_data_,
+                                    cont_dyn.constraint_models_);
+  for (auto cm = std::begin(cont_dyn.constraint_models_);
+       cm != std::end(cont_dyn.constraint_models_); ++cm) {
     constraint_datas_.push_back(
         pinocchio::RigidConstraintDataTpl<Scalar, 0>(*cm));
   }

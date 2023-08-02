@@ -39,6 +39,8 @@ void exposeConstrainedFwdDynamics() {
                const pinocchio::ProximalSettingsTpl<Scalar> &>(
           bp::args("self", "space", "actuation_matrix", "constraint_models",
                    "prox_settings")))
+      .def_readwrite("constraint_models",
+                     &MultibodyConstraintFwdDynamics::constraint_models_)
       .add_property("ntau", &MultibodyConstraintFwdDynamics::ntau,
                     "Torque dimension.")
       .def(CreateDataPythonVisitor<MultibodyConstraintFwdDynamics>());
@@ -48,10 +50,9 @@ void exposeConstrainedFwdDynamics() {
   bp::class_<MultibodyConstraintFwdData, bp::bases<ODEData>>(
       "MultibodyConstraintFwdData", bp::no_init)
       .def_readwrite("tau", &MultibodyConstraintFwdData::tau_)
+      .def_readwrite("dtau_dx", &MultibodyConstraintFwdData::dtau_dx_)
       .def_readwrite("dtau_du", &MultibodyConstraintFwdData::dtau_du_)
       .def_readwrite("pin_data", &MultibodyConstraintFwdData::pin_data_)
-      .def_readwrite("constraint_models",
-                     &MultibodyConstraintFwdData::constraint_models_)
       .def_readwrite("constraint_datas",
                      &MultibodyConstraintFwdData::constraint_datas_);
 }
