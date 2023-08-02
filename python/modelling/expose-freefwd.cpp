@@ -42,6 +42,7 @@ void exposeFreeFwdDynamics() {
   bp::class_<MultibodyFreeFwdData, bp::bases<ODEData>>("MultibodyFreeFwdData",
                                                        bp::no_init)
       .def_readwrite("tau", &MultibodyFreeFwdData::tau_)
+      .def_readwrite("dtau_dx", &MultibodyFreeFwdData::dtau_dx_)
       .def_readwrite("dtau_du", &MultibodyFreeFwdData::dtau_du_)
       .def_readwrite("pin_data", &MultibodyFreeFwdData::pin_data_);
 }
