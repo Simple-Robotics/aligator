@@ -5,31 +5,31 @@
 cmake_policy(SET CMP0057 NEW)
 
 # handle cpp examples
-set(EXAMPLES_CPP "se2-car.cpp")
 set(EXAMPLES_WITH_CROC_CPP "talos-arm.cpp")
 
 find_package(example-robot-data 4.0.7 REQUIRED)
 if(BUILD_CROCODDYL_COMPAT)
   find_package(crocoddyl REQUIRED)
-  list(APPEND EXAMPLES_CPP talos-arm.cpp)
 endif()
 
-message(STATUS "Examples CPP: ${EXAMPLES_CPP}")
-
 # Create an example
-function(create_example exfile)
+macro(create_example exfile)
   get_filename_component(exname ${exfile} NAME_WE)
   set(exname "example-${exname}")
   create_ex_or_bench(${exfile} ${exname})
+endmacro()
 
-  if(${exfile} IN_LIST EXAMPLES_WITH_CROC_CPP)
-    target_link_libraries(${exname} PUBLIC ${CROC_COMPAT_LIB_NAME})
-  endif()
+function(create_example_with_croco exfile)
+  create_example(${exfile})
+  target_link_libraries(${exname} PUBLIC ${CROC_COMPAT_LIB_NAME})
 endfunction()
 
-foreach(exfile ${EXAMPLES_CPP})
-  create_example(${exfile})
-endforeach(exfile)
+create_example(se2-car.cpp)
+create_example(parallel-lqr.cpp)
+
+if(BUILD_CROCODDYL_COMPAT)
+  create_example_with_croco(talos-arm.cpp)
+endif()
 
 if(BUILD_CROCODDYL_COMPAT)
   target_link_libraries(example-talos-arm PUBLIC proxnlp::cnpy)
