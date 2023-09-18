@@ -207,5 +207,10 @@ struct cost_finite_difference_wrapper : CostAbstractTpl<Scalar> {
   Scalar fd_eps;
 };
 
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct finite_difference_wrapper<context::Scalar>;
+extern template struct cost_finite_difference_wrapper<context::Scalar>;
+#endif
+
 } // namespace autodiff
 } // namespace proxddp
