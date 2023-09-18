@@ -26,6 +26,7 @@ set(TEST_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/generate-problem.hpp)
 function(add_proxddp_test name)
   get_cpp_test_name(${name} ${CMAKE_CURRENT_SOURCE_DIR} test_name)
   set(test_file ${name}.cpp)
+  message(STATUS "Adding C++ test: ${test_file}")
 
   add_unit_test(${test_name} ${test_file} ${TEST_HEADERS})
   set_target_properties(${test_name} PROPERTIES LINKER_LANGUAGE CXX)
@@ -44,7 +45,14 @@ function(add_proxddp_test name)
   target_link_libraries(${test_name} PRIVATE Boost::unit_test_framework benchmark::benchmark)
 endfunction(add_proxddp_test)
 
-set(TEST_NAMES integrators problem costs continuous utils solver-storage)
+set(TEST_NAMES
+    integrators
+    problem
+    costs
+    continuous
+    utils
+    solver-storage
+    parallel-lqr)
 
 foreach(test_name ${TEST_NAMES})
   add_proxddp_test(${test_name})
