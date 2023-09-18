@@ -80,6 +80,9 @@ template <typename _Scalar> struct CostDataAbstractTpl {
     hess_.setZero();
   }
 
+  CostDataAbstractTpl(const CostAbstractTpl<Scalar> &cost)
+      : CostDataAbstractTpl(cost.ndx(), cost.nu) {}
+
   virtual ~CostDataAbstractTpl() = default;
 };
 

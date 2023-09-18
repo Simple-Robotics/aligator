@@ -97,8 +97,8 @@ void exposeCostBase() {
   bp::register_ptr_to_python<CostPtr>();
 
   bp::class_<PyCostFunction<>, boost::noncopyable>(
-      "CostAbstract", "Base class for cost functions.",
-      bp::init<shared_ptr<Manifold>, const int>(
+      "CostAbstract", "Base class for cost functions.", bp::no_init)
+      .def(bp::init<shared_ptr<Manifold>, const int>(
           bp::args("self", "space", "nu")))
       .def("evaluate", bp::pure_virtual(&CostBase::evaluate),
            bp::args("self", "x", "u", "data"), "Evaluate the cost function.")
@@ -116,8 +116,9 @@ void exposeCostBase() {
 
   bp::register_ptr_to_python<shared_ptr<CostData>>();
   bp::class_<CostDataWrapper, boost::noncopyable>(
-      "CostData", "Cost function data struct.",
-      bp::init<const int, const int>(bp::args("self", "ndx", "nu")))
+      "CostData", "Cost function data struct.", bp::no_init)
+      .def(bp::init<const int, const int>(bp::args("self", "ndx", "nu")))
+      .def(bp::init<const CostBase &>(bp::args("self", "cost")))
       .def_readwrite("value", &CostData::value_)
       .def_readwrite("grad", &CostData::grad_)
       .def_readwrite("hess", &CostData::hess_)
