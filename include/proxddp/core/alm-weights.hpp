@@ -23,7 +23,7 @@ template <typename Scalar> struct ConstraintProximalScalerTpl {
 
   Scalar inv(std::size_t j) const { return 1. / get(j); }
   void setWeight(const Scalar w, std::size_t j) {
-    assert(j < weights.size());
+    assert(j < weights_.size());
     weights_[(long)j] = w;
     auto &d = dmatrix_.diagonal();
     constraints_->segmentByConstraint(d, j).setConstant(get(j));
