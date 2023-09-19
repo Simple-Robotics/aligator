@@ -1,5 +1,7 @@
 from proxddp import (
     FiniteDifferenceHelper,
+    CostFiniteDifference,
+    QuadraticStateCost,
     ControlBoxFunction,
     StateErrorResidual,
     manifolds,
@@ -55,6 +57,27 @@ def test_compute_jac_multibody():
         return
     except ImportError:
         pass
+
+
+def test_compute_cost_se3():
+    space = manifolds.SE3()
+    x0 = space.neutral()
+    weights = np.eye(space.ndx)
+    cost = QuadraticStateCost(space, space.ndx, x0, weights)
+    data = cost.createData()
+    cost_fd = CostFiniteDifference(cost, fd_eps=1e-6)
+    data_fd = cost_fd.createData()
+    for i in range(100):
+        x0 = space.rand()
+        u0 = 0.6 * np.ones(space.ndx)
+        cost.evaluate(x0, u0, data)
+        cost_fd.evaluate(x0, u0, data_fd)
+        assert np.allclose(data.value, data_fd.value, 1e-2)
+        cost.computeGradients(x0, u0, data)
+        cost_fd.computeGradients(x0, u0, data_fd)
+        assert np.allclose(data.Lx, data_fd.Lx, 1e-2)
+        assert np.allclose(data.Lu, data_fd.Lu, 1e-2)
+
 
 
 if __name__ == "__main__":
