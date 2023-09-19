@@ -167,6 +167,8 @@ struct cost_finite_difference_wrapper : CostAbstractTpl<Scalar> {
                 CostData &data_) const override {
     Data &d = static_cast<Data &>(data_);
     cost_->evaluate(x, u, *d.c1);
+
+    d.value_ = d.c1->value_;
   }
 
   void computeGradients(const ConstVectorRef &x, const ConstVectorRef &u,

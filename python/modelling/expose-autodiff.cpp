@@ -42,7 +42,9 @@ void exposeAutodiff() {
             bp::no_init)
             .def(bp::init<shared_ptr<CostBase>, Scalar>(
                 bp::args("self", "cost", "fd_eps")));
-    bp::class_<cost_fdiff::Data, bp::bases<CostData>>("Data", bp::no_init);
+    bp::class_<cost_fdiff::Data, bp::bases<CostData>>("Data", bp::no_init)
+        .def_readonly("c1", &cost_fdiff::Data::c1)
+        .def_readonly("c2", &cost_fdiff::Data::c2);
   }
 }
 
