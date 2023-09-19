@@ -203,6 +203,10 @@ struct cost_finite_difference_wrapper : CostAbstractTpl<Scalar> {
     Data &data = static_cast<Data &>(data_);
   }
 
+  shared_ptr<CostData> createData() const override {
+    return std::make_shared<Data>(*this);
+  }
+
   shared_ptr<CostBase> cost_;
   Scalar fd_eps;
 };
