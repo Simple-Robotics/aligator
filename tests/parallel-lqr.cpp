@@ -1,3 +1,4 @@
+/// Test routines for the parallel LQR solver.
 #include <boost/test/unit_test.hpp>
 
 #include "aligator/parlqr/parlqr.hpp"
@@ -5,6 +6,27 @@
 using namespace aligator;
 
 using T = double;
+
+BOOST_AUTO_TEST_CASE(factor) {
+  uint nx = 2, nu = 2, nc = 1;
+
+  LQRFactor<T> fac{nx, nu, nc, 2};
+
+  fac.X.setConstant(0.1);
+  fac.X(1, 1) = -1.41;
+  fac.U.setRandom();
+  fac.Lambda.setIdentity();
+  fac.Nu.setConstant(-3.14);
+
+  fmt::print("{}\n", fac.X);
+  fmt::print("{}\n", fac.U);
+  fmt::print("{}\n", fac.Lambda);
+  fmt::print("{}\n", fac.Nu);
+
+  auto row_mat_concat = fac.data;
+  fmt::print("===\n");
+  fmt::print("Concat matrix:\n{}\n", row_mat_concat);
+}
 
 BOOST_AUTO_TEST_CASE(lqrtree) {
   uint nx = 2;
