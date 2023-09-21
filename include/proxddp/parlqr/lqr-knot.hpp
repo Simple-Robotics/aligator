@@ -22,9 +22,22 @@ template <typename Scalar> struct LQRKnot {
         //
         A(nx, nx), B(nx, nu), E(nx, nx), f(nx),
         //
-        C(nc, nx), D(nc, nu), d(nc) {}
+        C(nc, nx), D(nc, nu), d(nc) {
+    Q.setZero();
+    S.setZero();
+    R.setZero();
+    q.setZero();
+    r.setZero();
 
-  uint ntot() const { return nx + nu + nc; }
+    A.setZero();
+    B.setZero();
+    E.setZero();
+    f.setZero();
+
+    C.setZero();
+    D.setZero();
+    d.setZero();
+  }
 };
 
 } // namespace proxddp
