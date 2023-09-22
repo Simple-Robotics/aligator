@@ -1,4 +1,6 @@
 /// Test routines for the parallel LQR solver.
+#define EIGEN_DEFAULT_IO_FORMAT Eigen::IOFormat(4, 0, ",", "\n", "[", "]")
+
 #include <boost/test/unit_test.hpp>
 
 #include "aligator/parlqr/parlqr.hpp"
@@ -6,6 +8,9 @@
 using namespace aligator;
 
 using T = double;
+PROXNLP_DYNAMIC_TYPEDEFS(T);
+using problem_t = LQRProblem<T>;
+using solver_t = LQRTreeSolver<T>;
 
 BOOST_AUTO_TEST_CASE(factor) {
   uint nx = 2, nu = 2, nc = 1;
@@ -45,7 +50,7 @@ BOOST_AUTO_TEST_CASE(lqrtree) {
   std::vector<LQRKnot<T>> knots;
   knots.assign(N_NODES, node);
 
-  LQRTree<T> tree{knots};
+  LQRTree tree(N_NODES);
 
   fmt::print("tree total depth {:d}\n", tree.maxDepth());
   BOOST_CHECK_EQUAL(tree.maxDepth(), (size_t)std::log2(N_NODES));
@@ -83,4 +88,59 @@ BOOST_AUTO_TEST_CASE(lqrtree) {
   print_parent(4);
   print_parent(14);
   print_parent(15);
+}
+
+void printSolverRhsOrSolution(solver_t const &solver) {
+  for (size_t i = 0; i < solver.horz; ++i) {
+    fmt::print("{}=\n{}\n", i, solver.rhsAndSol[i].data);
+  }
+}
+
+void printSolverLhs(solver_t const &solver) {
+  for (size_t i = 0; i < solver.horz; ++i) {
+    fmt::print("{}=\n{}\n", i, solver.ldlts[i].mat);
+  }
+}
+
+BOOST_AUTO_TEST_CASE(lqrsolve) {
+
+  uint nx = 2;
+  uint nu = 1;
+  uint nc = 0;
+  LQRKnot<T> node(nx, nu, nc);
+  node.Q.setIdentity();
+  node.q.setConstant(10.);
+  node.R.setConstant(-1.);
+  node.r.setConstant(-2.);
+
+  auto node2 = node;
+  node2.Q(0, 0) = 10.;
+  node2.r << 0.1;
+
+  std::vector<LQRKnot<T>> knots = {node, node2};
+
+  problem_t prob{knots};
+  solver_t solver(prob);
+
+  fmt::print("lhs:\n");
+  printSolverLhs(solver);
+
+  fmt::print("before solve:\n");
+  printSolverRhsOrSolution(solver);
+
+  solver.solve();
+
+  fmt::print("sols:\n");
+  printSolverRhsOrSolution(solver);
+
+  VectorXs Xsol(nx), Usol(nu);
+  Xsol << 10., 10.;
+  Usol << 2.;
+  BOOST_CHECK_EQUAL(solver.rhsAndSol[0].X, Xsol);
+  BOOST_CHECK_EQUAL(solver.rhsAndSol[0].U, Usol);
+
+  Xsol(0) = 1.;
+  Usol << -0.1;
+  BOOST_CHECK_EQUAL(solver.rhsAndSol[1].X, Xsol);
+  BOOST_CHECK_EQUAL(solver.rhsAndSol[1].U, Usol);
 }

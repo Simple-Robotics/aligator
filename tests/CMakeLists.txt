@@ -44,7 +44,15 @@ function(add_aligator_test name)
   target_link_libraries(${test_name} PRIVATE Boost::unit_test_framework)
 endfunction(add_aligator_test)
 
-set(TEST_NAMES integrators problem costs continuous utils solver-storage)
+set(TEST_NAMES
+    integrators
+    problem
+    costs
+    continuous
+    utils
+    solver-storage
+    parallel-lqr
+    schur3x3)
 
 foreach(test_name ${TEST_NAMES})
   add_aligator_test(${test_name})
@@ -58,3 +66,5 @@ endif()
 if(BUILD_CROCODDYL_COMPAT)
   add_subdirectory(compat)
 endif()
+
+target_link_libraries(test-cpp-schur3x3 PRIVATE OpenMP::OpenMP_CXX)
