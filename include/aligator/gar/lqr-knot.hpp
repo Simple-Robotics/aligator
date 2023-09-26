@@ -16,12 +16,9 @@ template <typename Scalar> struct LQRKnot {
   VectorXs d;
 
   LQRKnot(uint nx, uint nu, uint nc)
-      : nx(nx), nu(nu), nc(nc),
-        //
-        Q(nx, nx), S(nx, nu), R(nu, nu), q(nx), r(nu),
-        //
-        A(nx, nx), B(nx, nu), E(nx, nx), f(nx),
-        //
+      : nx(nx), nu(nu), nc(nc),                        //
+        Q(nx, nx), S(nx, nu), R(nu, nu), q(nx), r(nu), //
+        A(nx, nx), B(nx, nu), E(nx, nx), f(nx),        //
         C(nc, nx), D(nc, nu), d(nc) {
     Q.setZero();
     S.setZero();
@@ -40,4 +37,15 @@ template <typename Scalar> struct LQRKnot {
   }
 };
 
+template <typename T> struct LQRProblem {
+  // last stage should have nu = 0
+  std::vector<LQRKnot<T>> stages;
+
+  size_t horizon() const noexcept { return stages.size(); }
+};
+
 } // namespace aligator
+
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+#include "./lqr-knot.txx"
+#endif

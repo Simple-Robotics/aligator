@@ -110,27 +110,28 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
     pd_step_.push_back(VectorXs::Zero(ndual));
     dlams.push_back(pd_step_.back().tail(ndual));
 
-  math::setZero(Lxs_);
-  math::setZero(Lus_);
+    math::setZero(Lxs_);
+    math::setZero(Lus_);
 
-  math::setZero(lams_plus);
-  lams_pdal = lams_plus;
-  trial_lams = lams_plus;
-  prev_lams = lams_plus;
-  Lds_ = prev_lams;
-  shifted_constraints = lams_plus;
+    math::setZero(lams_plus);
+    lams_pdal = lams_plus;
+    trial_lams = lams_plus;
+    prev_lams = lams_plus;
+    Lds_ = prev_lams;
+    shifted_constraints = lams_plus;
 
-  math::setZero(kkt_mats_);
-  math::setZero(kkt_rhs_);
-  math::setZero(proj_jacobians);
-  kkt_resdls_ = kkt_rhs_;
+    math::setZero(kkt_mats_);
+    math::setZero(kkt_rhs_);
+    math::setZero(proj_jacobians);
+    kkt_resdls_ = kkt_rhs_;
 
-  stage_inner_crits.setZero();
-  stage_dual_infeas.setZero();
+    stage_inner_crits.setZero();
+    stage_dual_infeas.setZero();
 
-  assert(value_params.size() == nsteps + 1);
-  assert(dxs.size() == nsteps + 1);
-  assert(dus.size() == nsteps);
+    assert(value_params.size() == nsteps + 1);
+    assert(dxs.size() == nsteps + 1);
+    assert(dus.size() == nsteps);
+  }
 }
 
 template <typename Scalar> void WorkspaceTpl<Scalar>::cycleLeft() {

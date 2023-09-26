@@ -4,7 +4,8 @@
 # GAR (General Augmented lagrangian Riccati) is a set of algorithms for the
 # fast solving of proximal and constrained LQR-type linear systems.
 
-set(SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/riccati.cpp)
+set(SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/lqr-knot.cpp ${CMAKE_CURRENT_SOURCE_DIR}/parlqr.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/riccati.cpp)
 
 file(GLOB HEADERS ${PROJECT_SOURCE_DIR}/include/aligator/gar/*.hpp)
 
@@ -14,7 +15,8 @@ target_link_libraries(aligator_gar PUBLIC proxnlp::proxnlp)
 add_library(aligator::gar ALIAS aligator_gar)
 
 if(ENABLE_TEMPLATE_INSTANTIATION)
-  target_sources(aligator_gar PRIVATE ${SOURCES})
+  file(GLOB TEMPL_DECL_HEADERS ${PROJECT_SOURCE_DIR}/include/aligator/gar/*.txx)
+  target_sources(aligator_gar PRIVATE ${SOURCES} ${TEMPL_DECL_HEADERS})
 endif(ENABLE_TEMPLATE_INSTANTIATION)
 
 install(
