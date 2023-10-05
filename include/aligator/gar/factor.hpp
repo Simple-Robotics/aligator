@@ -1,6 +1,6 @@
-#include "proxddp/math.hpp"
+#include "aligator/math.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 /// A factor can represent the problem right-hand side data,
 /// the problem matrix data, or parts of the matrix (e.g. the Jacobians)
@@ -37,4 +37,4 @@ template <typename T> struct LQRFactor {
   Eigen::Ref<RowMat> Lambda;
 };
 
-} // namespace proxddp
+} // namespace aligator

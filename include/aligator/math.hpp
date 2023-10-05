@@ -1,7 +1,7 @@
-#pragma once
 /// @file math.hpp
 /// @brief Math utilities.
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
+#pragma once
 
 #include "aligator/utils/exceptions.hpp"
 #include <proxsuite-nlp/math.hpp>

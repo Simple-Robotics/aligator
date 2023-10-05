@@ -4,17 +4,17 @@
 #include <array>
 #include <cmath>
 
-namespace proxddp {
+namespace aligator {
 using std::size_t;
 
 struct LQRTree {
-  using int_pair = std::array<size_t, 2>;
+  using size2 = std::array<size_t, 2>;
 
-  LQRTree(size_t length) : T_(length) { buildTree(); }
+  LQRTree(size_t length) : horz_(length) { buildTree(); }
 
   /// Build the tree structure, allocate the data...
   /// TODO: point the data to somewhere else
-  void buildTree() { maxDepth_ = (size_t)std::ceil(std::log2(T_)); }
+  void buildTree() { maxDepth_ = intLog2(horz_); }
 
   size_t maxDepth() const { return maxDepth_; }
 
@@ -23,11 +23,11 @@ struct LQRTree {
     return s - 1 + i;
   }
 
-  size_t getIndexDepth(size_t index) const { return (size_t)std::log2(index); }
+  size_t getIndexDepth(size_t index) const { return intLog2(index); }
 
   size_t getLeafIndex(size_t i) const { return getIndex(maxDepth_ - 1, i); }
 
-  int_pair getChildren(size_t index) const {
+  size2 getChildren(size_t index) const {
     return {2 * index + 1, 2 * index + 2};
   }
 
@@ -45,8 +45,8 @@ struct LQRTree {
   }
 
 private:
-  size_t T_;
+  size_t horz_;
   size_t maxDepth_;
 };
 
-} // namespace proxddp
+} // namespace aligator

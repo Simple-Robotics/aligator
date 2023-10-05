@@ -3,12 +3,12 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "aligator/parlqr/parlqr.hpp"
+#include "aligator/gar/parlqr.hpp"
 
 using namespace aligator;
 
 using T = double;
-PROXNLP_DYNAMIC_TYPEDEFS(T);
+ALIGATOR_DYNAMIC_TYPEDEFS(T);
 using problem_t = LQRProblem<T>;
 using solver_t = LQRTreeSolver<T>;
 

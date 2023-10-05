@@ -1,11 +1,11 @@
 #pragma once
 
-#include "proxddp/math.hpp"
+#include "aligator/math.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar> struct LQRKnot {
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   uint nx, nu, nc;
   MatrixXs Q, S, R;
@@ -40,4 +40,4 @@ template <typename Scalar> struct LQRKnot {
   }
 };
 
-} // namespace proxddp
+} // namespace aligator

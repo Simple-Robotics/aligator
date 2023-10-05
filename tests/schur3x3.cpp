@@ -4,11 +4,11 @@
 #include <boost/test/unit_test.hpp>
 
 #include <chrono>
-#include "proxddp/context.hpp"
-#include "proxddp/threads.hpp"
+#include "aligator/context.hpp"
+#include "aligator/threads.hpp"
 #include <Eigen/Cholesky>
 
-using namespace proxddp::context;
+using namespace aligator::context;
 using namespace std::chrono;
 namespace utf = boost::unit_test;
 
@@ -53,7 +53,7 @@ constexpr int kNumThreads = 2;
 /// Solve \f$ M [x;y;z] = [b;c;d]\f$ in-place.
 template <typename RhsType>
 auto structuredSolve(const Band3x3Matrix &M, RhsType &rhsAndX) {
-  using namespace proxddp::omp;
+  using namespace aligator::omp;
   // 1. split the rhs
   auto x = rhsAndX.topRows(M.nx);
   auto y = rhsAndX.middleRows(M.nx, M.ny);
@@ -199,8 +199,8 @@ BOOST_AUTO_TEST_CASE(band3x3_full) {
 
 int main(int argc, char **argv) {
   printf("NUMBER OF AVAILABLE THREADS: %lu\n",
-         proxddp::omp::get_available_threads());
-  proxddp::omp::set_default_options(kNumThreads);
+         aligator::omp::get_available_threads());
+  aligator::omp::set_default_options(kNumThreads);
 
   int ret = utf::unit_test_main(&init_unit_test, argc, argv);
 

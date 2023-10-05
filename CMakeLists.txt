@@ -194,8 +194,7 @@ if(ENABLE_TEMPLATE_INSTANTIATION)
     ${PROJECT_SOURCE_DIR}/src/core/*.cpp
     ${PROJECT_SOURCE_DIR}/src/solvers/fddp/*.cpp
     ${PROJECT_SOURCE_DIR}/src/solvers/proxddp/*.cpp
-    ${PROJECT_SOURCE_DIR}/src/modelling/*.cpp
-    ${PROJECT_SOURCE_DIR}/src/parlqr/*.cpp)
+    ${PROJECT_SOURCE_DIR}/src/modelling/*.cpp)
   file(GLOB_RECURSE LIB_TEMPLATE_DECLARATIONS ${PROJECT_SOURCE_DIR}/include/aligator/*.txx)
   list(APPEND LIB_HEADERS ${LIB_TEMPLATE_DECLARATIONS})
   list(APPEND LIB_SOURCES ${LIB_TEMPLATE_SOURCES})
@@ -203,6 +202,8 @@ if(ENABLE_TEMPLATE_INSTANTIATION)
 endif(ENABLE_TEMPLATE_INSTANTIATION)
 
 list(FILTER LIB_HEADERS EXCLUDE REGEX ${PROJECT_SOURCE_DIR}/include/aligator/compat/*)
+
+add_subdirectory(src/gar)
 
 # Create the main shared library.
 function(create_library)
@@ -212,6 +213,8 @@ function(create_library)
     PROPERTIES LINKER_LANGUAGE CXX
                VERSION ${PROJECT_VERSION}
                INSTALL_RPATH "\$ORIGIN")
+
+  target_link_libraries(${PROJECT_NAME} PUBLIC aligator::gar)
 
   if(BUILD_WITH_PINOCCHIO_SUPPORT)
     target_link_libraries(${PROJECT_NAME} PUBLIC pinocchio::pinocchio)
