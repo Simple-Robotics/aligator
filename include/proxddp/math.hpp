@@ -22,9 +22,11 @@ namespace proxddp {
 /// Math utilities
 namespace math {
 
+// NOLINTBEGIN(misc-unused-using-decls)
 using proxnlp::math::check_scalar;
 using proxnlp::math::infty_norm;
 using proxnlp::math::scalar_close;
+// NOLINTEND(misc-unused-using-decls)
 
 /// @brief  Check if a numerical value or vector contains NaNs or infinite
 /// elements. Returns true if so.

@@ -13,7 +13,7 @@ PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
 using Manifold = ManifoldAbstractTpl<Scalar>;
 
-using BCLParams = proxnlp::BCLParamsTpl<Scalar>;
+using BCLParams = BCLParamsTpl<Scalar>;
 using StageFunction = StageFunctionTpl<Scalar>;
 using UnaryFunction = UnaryFunctionTpl<Scalar>;
 using FunctionData = FunctionDataTpl<Scalar>;
@@ -34,8 +34,8 @@ using ConstraintStack = ConstraintStackTpl<Scalar>;
 using ExplicitDynamics = ExplicitDynamicsModelTpl<Scalar>;
 using ExplicitDynamicsData = ExplicitDynamicsDataTpl<Scalar>;
 
-using SolverProxDDP = ::proxddp::SolverProxDDP<Scalar>;
-using SolverFDDP = ::proxddp::SolverFDDP<Scalar>;
+using SolverProxDDP = SolverProxDDP<Scalar>;
+using SolverFDDP = SolverFDDP<Scalar>;
 
 using Workspace = WorkspaceTpl<Scalar>;
 using Results = ResultsTpl<Scalar>;

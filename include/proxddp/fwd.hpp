@@ -16,12 +16,14 @@
 namespace proxddp {
 /// TYPEDEFS FROM PROXNLP
 
+// NOLINTBEGIN(misc-unused-using-decls)
+
 // Use the shared_ptr used in proxnlp.
+using proxnlp::BCLParamsTpl;
+using proxnlp::ConstraintSetBase;
 using proxnlp::ManifoldAbstractTpl;
 // Use the math_types template from proxnlp.
 using proxnlp::math_types;
-// Using the constraint set from proxnlp
-using proxnlp::ConstraintSetBase;
 using proxnlp::VerboseLevel;
 
 using VerboseLevel::QUIET;
@@ -31,7 +33,7 @@ using VerboseLevel::VERYVERBOSE;
 using std::shared_ptr;
 using std::unique_ptr;
 
-/// 1 BASE TYPES
+// NOLINTEND(misc-unused-using-decls)
 
 // fwd StageFunctionTpl
 template <typename Scalar> struct StageFunctionTpl;
