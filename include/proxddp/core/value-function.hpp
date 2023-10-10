@@ -25,11 +25,6 @@ template <typename _Scalar> struct ValueFunctionTpl {
     Vxx_.setZero();
   }
 
-  bool operator==(const ValueFunctionTpl &other) {
-    return (ndx_ == other.ndx_) && Vx_.isApprox(other.Vx_) &&
-           Vxx_.isApprox(other.Vxx_) && math::scalar_close(v_, other.v_);
-  }
-
   friend std::ostream &operator<<(std::ostream &oss,
                                   const ValueFunctionTpl &store) {
     oss << "ValueFunction {\n";
@@ -79,7 +74,6 @@ template <typename _Scalar> struct QFunctionTpl {
     assert(hess_.cols() == ntot());
   }
 
-  bool operator==(const QFunctionTpl &) { return false; }
   QFunctionTpl(const QFunctionTpl &qf)
       : QFunctionTpl(qf.ndx_, qf.nu_, qf.ndy_) {
     ndx_ = qf.ndx_;

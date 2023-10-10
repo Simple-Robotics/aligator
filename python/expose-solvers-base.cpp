@@ -1,7 +1,26 @@
 #include "proxddp/python/fwd.hpp"
 
-#include "proxddp/core/workspace-base.hpp"
 #include "proxddp/core/results.hpp"
+#include "proxddp/core/workspace-base.hpp"
+
+namespace proxddp {
+namespace python {
+using context::Scalar;
+using QParams = QFunctionTpl<Scalar>;
+using VParams = ValueFunctionTpl<Scalar>;
+} // namespace python
+} // namespace proxddp
+
+namespace eigenpy {
+namespace internal {
+
+template <>
+struct has_operator_equal<::proxddp::python::QParams> : boost::false_type {};
+template <>
+struct has_operator_equal<::proxddp::python::VParams> : boost::false_type {};
+
+} // namespace internal
+} // namespace eigenpy
 
 namespace proxddp {
 namespace python {
@@ -15,8 +34,6 @@ void exposeProxDDP();
 void exposeSolverCommon() {
   using context::Scalar;
 
-  using QParams = proxddp::QFunctionTpl<Scalar>;
-  using VParams = proxddp::ValueFunctionTpl<Scalar>;
   bp::class_<QParams>(
       "QParams", "Q-function parameters.",
       bp::init<int, int, int>(bp::args("self", "ndx", "nu", "ndy")))
@@ -47,7 +64,6 @@ void exposeSolverCommon() {
       .add_property("Qyy", bp::make_getter(
                                &QParams::Qyy,
                                bp::return_value_policy<bp::return_by_value>()))
-      .def(bp::self == bp::self)
       .def(PrintableVisitor<QParams>());
 
   bp::class_<VParams>("VParams", "Value function parameters.", bp::no_init)
