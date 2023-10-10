@@ -10,7 +10,7 @@ using T = double;
 using prox_ric_bwd_t = gar::ProximalRiccatiSolverBackward<T>;
 using prox_ric_fwd_t = gar::ProximalRiccatiSolverForward<T>;
 using knot_t = LQRKnot<T>;
-PROXNLP_DYNAMIC_TYPEDEFS(T);
+ALIGATOR_DYNAMIC_TYPEDEFS(T);
 
 BOOST_AUTO_TEST_CASE(inplace_llt) {
   uint N = 7;

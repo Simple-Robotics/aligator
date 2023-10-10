@@ -2,6 +2,7 @@
 
 namespace aligator::gar {
 
-template class ProximalRiccatiSolver<context::Scalar>;
+template class ProximalRiccatiSolverBackward<context::Scalar>;
+template class ProximalRiccatiSolverForward<context::Scalar>;
 
-}
+} // namespace proxddp::gar

@@ -11,7 +11,7 @@ file(GLOB HEADERS ${PROJECT_SOURCE_DIR}/include/aligator/gar/*.hpp)
 
 add_library(aligator_gar SHARED ${HEADERS})
 target_include_directories(aligator_gar PRIVATE ${PROJECT_SOURCE_DIR}/include/aligator)
-target_link_libraries(aligator_gar PUBLIC proxnlp::proxnlp)
+target_link_libraries(aligator_gar PUBLIC proxsuite-nlp::proxsuite-nlp)
 add_library(aligator::gar ALIAS aligator_gar)
 
 if(ENABLE_TEMPLATE_INSTANTIATION)

@@ -15,7 +15,7 @@ namespace aligator {
 
 template <typename T> class LQRTreeSolver {
 public:
-  PROXNLP_DYNAMIC_TYPEDEFS(T);
+  ALIGATOR_DYNAMIC_TYPEDEFS(T);
   struct ldlt_t {
     MatrixXs mat;
     Eigen::LDLT<MatrixXs> fac;
@@ -106,7 +106,7 @@ public:
   }
 };
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 extern template struct LQRKnot<context::Scalar>;
 extern template struct LQRFactor<context::Scalar>;
 extern template class LQRTreeSolver<context::Scalar>;

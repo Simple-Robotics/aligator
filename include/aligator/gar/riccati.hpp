@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 #include "aligator/context.hpp"
 #include "./lqr-knot.hpp"
@@ -9,7 +10,7 @@ namespace gar {
 
 /// A sequential, regularized Riccati algorithm
 // for proximal-regularized, constrained LQ problems.
-template <typename Scalar> class ProximalRiccatiSolver {
+template <typename Scalar> class ProximalRiccatiSolverBackward {
 public:
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using RowMatrixXs = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
@@ -165,9 +166,13 @@ public:
   Scalar mu;
 };
 
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-extern template class ProximalRiccatiSolver<context::Scalar>;
-#endif
+template <typename Scalar> class ProximalRiccatiSolverForward {
+public:
+};
 
 } // namespace gar
 } // namespace aligator
+
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+#include "./riccati.txx"
+#endif
