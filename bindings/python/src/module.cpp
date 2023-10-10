@@ -57,6 +57,7 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
   bp::import("warnings");
   bp::import("proxsuite_nlp");
 
+  exposeGAR();
   exposeEnums();
   exposeFunctions();
   exposeCosts();

@@ -117,7 +117,7 @@ public:
 
     // terminal node
     {
-      ALIGATOR_NOMALLOC_BEGIN
+      ALIGATOR_NOMALLOC_BEGIN;
       Data &dN = datas.back();
       const knot_t &term = knots.back();
       // fill cost-to-go matrix
@@ -126,12 +126,12 @@ public:
 
       dN.pvec.noalias() = term.C.transpose() * term.d;
       dN.pvec = term.q + dN.pvec / mu;
-      ALIGATOR_NOMALLOC_END
+      ALIGATOR_NOMALLOC_END;
     }
 
     int t = horizon();
     for (; t >= 0; --t) {
-      ALIGATOR_NOMALLOC_BEGIN
+      ALIGATOR_NOMALLOC_BEGIN;
       Data &d = datas[t + 1];
       const knot_t &model = knots[t];
       // compute decomposition in-place
@@ -151,7 +151,7 @@ public:
 
       // fill in hamiltonian
       computeKktTerms(model, d);
-      ALIGATOR_NOMALLOC_END
+      ALIGATOR_NOMALLOC_END;
 
       d.Mmat.Rt = d.hmlt.Rhat;
       d.Mmat.Ct = model.C;

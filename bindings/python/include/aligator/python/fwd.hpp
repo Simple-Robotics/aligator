@@ -13,6 +13,8 @@ namespace python {
 namespace bp = boost::python;
 using eigenpy::StdVectorPythonVisitor;
 
+/// Expose GAR module
+void exposeGAR();
 /// Expose stagewise function classes
 void exposeFunctions();
 /// Expose cost functions

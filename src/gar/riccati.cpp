@@ -5,4 +5,4 @@ namespace aligator::gar {
 template class ProximalRiccatiSolverBackward<context::Scalar>;
 template class ProximalRiccatiSolverForward<context::Scalar>;
 
-} // namespace proxddp::gar
+} // namespace aligator::gar
