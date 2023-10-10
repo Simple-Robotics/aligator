@@ -19,8 +19,6 @@
 
 namespace proxddp {
 
-using proxnlp::BCLParamsTpl;
-
 /// @brief A proximal, augmented Lagrangian-type solver for trajectory
 /// optimization.
 template <typename _Scalar> struct SolverProxDDP {

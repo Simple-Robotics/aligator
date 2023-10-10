@@ -494,9 +494,6 @@ auto SolverProxDDP<Scalar>::computeGains(const Problem &problem,
     std::array<std::size_t, 3> inertia;
     math::compute_inertia(ldlt.vectorD(), inertia.data());
     if ((inertia[1] > 0U) || (inertia[2] != (std::size_t)ndual)) {
-      if (verbose_ > VERYVERBOSE)
-        fmt::print("[{}] found incorrect inertia ({})\n", __func__,
-                   fmt::join(inertia, ", "));
       return BWD_WRONG_INERTIA;
     }
   }
