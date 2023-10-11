@@ -5,10 +5,11 @@
 #include "aligator/gar/riccati.hpp"
 
 using namespace aligator;
+using namespace gar;
 
 using T = double;
-using prox_ric_bwd_t = gar::ProximalRiccatiSolverBackward<T>;
-using prox_ric_fwd_t = gar::ProximalRiccatiSolverForward<T>;
+using prox_ric_bwd_t = ProximalRiccatiSolverBackward<T>;
+using prox_ric_fwd_t = ProximalRiccatiSolverForward<T>;
 using knot_t = LQRKnot<T>;
 ALIGATOR_DYNAMIC_TYPEDEFS(T);
 
@@ -81,9 +82,9 @@ BOOST_AUTO_TEST_CASE(proxriccati) {
     fmt::print("us[{:d}] = {}\n", t, us[t].transpose());
   }
   for (uint t = 0; t <= N; t++) {
-    fmt::print("λ[{:d}] = {}\n", t, lbdas[t].transpose());
-  }
-  for (uint t = 0; t <= N; t++) {
     fmt::print("ν[{:d}] = {}\n", t, vs[t].transpose());
+  }
+  for (uint t = 0; t < N; t++) {
+    fmt::print("λ[{:d}] = {}\n", t, lbdas[t].transpose());
   }
 }

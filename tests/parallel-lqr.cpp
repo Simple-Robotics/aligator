@@ -9,8 +9,9 @@ using namespace aligator;
 
 using T = double;
 ALIGATOR_DYNAMIC_TYPEDEFS(T);
-using problem_t = LQRProblem<T>;
+using problem_t = gar::LQRProblem<T>;
 using solver_t = LQRTreeSolver<T>;
+using knot_t = gar::LQRKnot<T>;
 
 BOOST_AUTO_TEST_CASE(factor) {
   uint nx = 2, nu = 2, nc = 1;
@@ -37,7 +38,7 @@ BOOST_AUTO_TEST_CASE(lqrtree) {
   uint nx = 2;
   uint nu = 2;
   uint nc = 0;
-  LQRKnot<T> node(nx, nu, nc);
+  knot_t node(nx, nu, nc);
   node.C.setZero();
   node.A.setIdentity();
   node.B.setIdentity();
@@ -47,7 +48,7 @@ BOOST_AUTO_TEST_CASE(lqrtree) {
 
   size_t N_NODES = 16;
 
-  std::vector<LQRKnot<T>> knots;
+  std::vector<knot_t> knots;
   knots.assign(N_NODES, node);
 
   LQRTree tree(N_NODES);
@@ -107,7 +108,7 @@ BOOST_AUTO_TEST_CASE(lqrsolve) {
   uint nx = 2;
   uint nu = 1;
   uint nc = 0;
-  LQRKnot<T> node(nx, nu, nc);
+  knot_t node(nx, nu, nc);
   node.Q.setIdentity();
   node.q.setConstant(10.);
   node.R.setConstant(-1.);
@@ -117,7 +118,7 @@ BOOST_AUTO_TEST_CASE(lqrsolve) {
   node2.Q(0, 0) = 10.;
   node2.r << 0.1;
 
-  std::vector<LQRKnot<T>> knots = {node, node2};
+  std::vector<knot_t> knots = {node, node2};
 
   problem_t prob{knots};
   solver_t solver(prob);

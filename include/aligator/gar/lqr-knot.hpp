@@ -4,6 +4,7 @@
 #include "aligator/math.hpp"
 
 namespace aligator {
+namespace gar {
 
 template <typename Scalar> struct LQRKnot {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
@@ -45,6 +46,7 @@ template <typename T> struct LQRProblem {
   size_t horizon() const noexcept { return stages.size(); }
 };
 
+} // namespace gar
 } // namespace aligator
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION

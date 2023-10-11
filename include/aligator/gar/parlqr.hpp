@@ -22,8 +22,8 @@ public:
     ldlt_t(size_t dim) : mat(dim, dim), fac(mat) {}
   };
   using factor_t = LQRFactor<T>;
-  using problem_t = LQRProblem<T>;
-  using knot_t = LQRKnot<T>;
+  using problem_t = gar::LQRProblem<T>;
+  using knot_t = gar::LQRKnot<T>;
 
   size_t horz;
   LQRTree tree;
@@ -106,9 +106,8 @@ public:
   }
 };
 
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-extern template struct LQRKnot<context::Scalar>;
-extern template struct LQRFactor<context::Scalar>;
-extern template class LQRTreeSolver<context::Scalar>;
-#endif
 } // namespace aligator
+
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+#include "./parlqr.txx"
+#endif

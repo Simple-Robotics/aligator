@@ -6,8 +6,10 @@
 
 namespace aligator {
 namespace python {
-using riccati_bwd_t = gar::ProximalRiccatiSolverBackward<context::Scalar>;
-using riccati_fwd_t = gar::ProximalRiccatiSolverForward<context::Scalar>;
+using namespace gar;
+
+using riccati_bwd_t = ProximalRiccatiSolverBackward<context::Scalar>;
+using riccati_fwd_t = ProximalRiccatiSolverForward<context::Scalar>;
 using knot_t = LQRKnot<context::Scalar>;
 using stage_solve_data_t = riccati_bwd_t::stage_solve_data_t;
 } // namespace python
