@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(proxriccati) {
   vs[0].resize(knots[0].nc);
   vs[N].resize(knots[N].nc);
 
-  std::vector<VectorXs> lbdas{N + 1, VectorXs::Zero(nx)};
+  std::vector<VectorXs> lbdas{N, VectorXs::Zero(nx)};
 
   bool ret = prox_ric_fwd_t::run(bwd, xs, us, vs, lbdas);
   BOOST_CHECK(ret);

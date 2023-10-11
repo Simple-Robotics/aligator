@@ -2,8 +2,6 @@
 # Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #
 
-set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 
 macro(ADD_TEST_CFLAGS test_name flag)
@@ -14,13 +12,14 @@ macro(ADD_TEST_CFLAGS test_name flag)
 endmacro()
 
 function(get_cpp_test_name name dir out_var)
-  string(REPLACE "${TEST_DIR}" "" prefix ${dir})
+  string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}" "" prefix ${dir})
   set(${out_var}
       "test-cpp-${prefix}${name}"
       PARENT_SCOPE)
 endfunction(get_cpp_test_name)
 
-set(TEST_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/generate-problem.hpp)
+file(GLOB TEST_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
+message(STATUS "Test headers: ${TEST_HEADERS}")
 
 function(add_aligator_test name)
   get_cpp_test_name(${name} ${CMAKE_CURRENT_SOURCE_DIR} test_name)
@@ -52,6 +51,7 @@ set(TEST_NAMES
     utils
     solver-storage
     parallel-lqr
+    gar-riccati
     schur3x3)
 
 foreach(test_name ${TEST_NAMES})
