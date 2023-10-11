@@ -5,6 +5,5 @@ build*/
 *.aux
 *.log
 .cache/
-.clang-format
 
 *.mp4
