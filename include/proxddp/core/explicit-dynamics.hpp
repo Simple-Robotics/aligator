@@ -6,7 +6,7 @@
 
 #include <proxnlp/manifold-base.hpp>
 
-#include <fmt/format.h>
+#include <fmt/core.h>
 
 namespace proxddp {
 

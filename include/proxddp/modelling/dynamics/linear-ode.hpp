@@ -3,9 +3,6 @@
 #include "proxddp/modelling/dynamics/ode-abstract.hpp"
 #include <proxnlp/modelling/spaces/vector-space.hpp>
 
-#include <stdexcept>
-#include <fmt/format.h>
-
 namespace proxddp {
 namespace dynamics {
 /**
@@ -30,14 +27,14 @@ template <typename _Scalar> struct LinearODETpl : ODEAbstractTpl<_Scalar> {
                const VectorXs &c)
       : Base(space, (int)B.cols()), A_(A), B_(B), c_(c) {
     if (A.cols() != space->ndx()) {
-      throw std::domain_error(fmt::format(
+      PROXDDP_DOMAIN_ERROR(fmt::format(
           "A.cols() should be equal to space.ndx()! (got {:d} and {:d})",
           A.cols(), space->ndx()));
     }
     bool rows_ok = (A.rows() == space->ndx()) && (B.rows() == space->ndx()) &&
                    (c.rows() == space->ndx());
     if (!rows_ok) {
-      throw std::domain_error("Input matrices have wrong number of rows.");
+      PROXDDP_DOMAIN_ERROR("Input matrices have wrong number of rows.");
     }
   }
 

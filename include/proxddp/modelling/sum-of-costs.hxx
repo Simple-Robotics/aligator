@@ -2,9 +2,6 @@
 
 #include "proxddp/modelling/sum-of-costs.hpp"
 
-#include <stdexcept>
-#include <fmt/format.h>
-
 namespace proxddp {
 template <typename Scalar>
 CostStackTpl<Scalar>::CostStackTpl(shared_ptr<Manifold> space, const int nu,
@@ -12,18 +9,18 @@ CostStackTpl<Scalar>::CostStackTpl(shared_ptr<Manifold> space, const int nu,
                                    const std::vector<Scalar> &weights)
     : CostBase(space, nu), components_(comps), weights_(weights) {
   if (comps.size() != weights.size()) {
-    std::string msg = fmt::format(
+    auto msg = fmt::format(
         "Inconsistent number of components ({:d}) and weights ({:d}).",
         comps.size(), weights.size());
-    throw RuntimeError(msg);
+    PROXDDP_RUNTIME_ERROR(msg);
   } else {
     for (std::size_t i = 0; i < comps.size(); i++) {
       if (!this->checkDimension(comps[i].get())) {
-        std::string msg = fmt::format(
+        auto msg = fmt::format(
             "Component #{:d} has wrong input dimensions ({:d}, {:d}) (expected "
             "({:d}, {:d}))",
             i, comps[i]->ndx(), comps[i]->nu, this->ndx(), this->nu);
-        throw RuntimeError(msg);
+        PROXDDP_RUNTIME_ERROR(msg);
       }
     }
   }
@@ -46,7 +43,7 @@ template <typename Scalar> std::size_t CostStackTpl<Scalar>::size() const {
 template <typename Scalar>
 void CostStackTpl<Scalar>::addCost(const CostPtr &cost, const Scalar weight) {
   if (!this->checkDimension(cost.get())) {
-    throw RuntimeError(fmt::format(
+    PROXDDP_DOMAIN_ERROR(fmt::format(
         "Cannot add new component due to inconsistent input dimensions "
         "(got ({:d}, {:d}), expected ({:d}, {:d}))",
         cost->ndx(), cost->nu, this->ndx(), this->nu));

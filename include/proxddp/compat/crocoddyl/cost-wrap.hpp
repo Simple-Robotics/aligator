@@ -7,8 +7,6 @@
 #include <crocoddyl/core/cost-base.hpp>
 #include <crocoddyl/core/action-base.hpp>
 
-#include <stdexcept>
-
 namespace proxddp {
 namespace compat {
 namespace croc {
@@ -89,8 +87,8 @@ struct CrocCostModelWrapperTpl : CostAbstractTpl<_Scalar> {
           action_model_->createData();
       return std::make_shared<CrocCostDataWrapperTpl<Scalar>>(am_data);
     } else {
-      throw std::domain_error("Invalid call. Cannot build Data from"
-                              "crocoddyl cost model only.");
+      PROXDDP_DOMAIN_ERROR("Invalid call. Cannot build Data from"
+                           "crocoddyl cost model only.");
     }
   }
 

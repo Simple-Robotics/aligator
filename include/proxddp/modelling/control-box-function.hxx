@@ -1,7 +1,6 @@
 #pragma once
 
 #include "proxddp/modelling/control-box-function.hpp"
-#include <stdexcept>
 
 namespace proxddp {
 template <typename Scalar>
@@ -11,7 +10,7 @@ ControlBoxFunctionTpl<Scalar>::ControlBoxFunctionTpl(const int ndx,
     : Base(ndx, (int)umin.size(), ndx, 2 * (int)umin.size()), umin_(umin),
       umax_(umax) {
   if (umin.size() != umax.size()) {
-    throw std::domain_error("Size of umin and umax should be the same!");
+    PROXDDP_DOMAIN_ERROR("Size of umin and umax should be the same!");
   }
 }
 

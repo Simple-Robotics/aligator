@@ -5,8 +5,6 @@
 #include <pinocchio/algorithm/constrained-dynamics.hpp>
 #include <pinocchio/algorithm/constrained-dynamics-derivatives.hpp>
 
-#include <stdexcept>
-
 namespace proxddp {
 namespace dynamics {
 template <typename Scalar>
@@ -19,7 +17,7 @@ MultibodyConstraintFwdDynamicsTpl<Scalar>::MultibodyConstraintFwdDynamicsTpl(
       prox_settings_(prox_settings) {
   const int nv = state->getModel().nv;
   if (nv != actuation.rows()) {
-    throw std::domain_error(
+    PROXDDP_DOMAIN_ERROR(
         fmt::format("actuation matrix should have number of rows = pinocchio "
                     "model nv ({} and {}).",
                     actuation.rows(), nv));

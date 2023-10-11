@@ -6,8 +6,6 @@
 #include <pinocchio/algorithm/aba.hpp>
 #include <pinocchio/algorithm/aba-derivatives.hpp>
 
-#include <stdexcept>
-
 namespace proxddp {
 namespace dynamics {
 
@@ -18,7 +16,7 @@ MultibodyFreeFwdDynamicsTpl<Scalar>::MultibodyFreeFwdDynamicsTpl(
       actuation_matrix_(actuation), lu_decomp_(actuation_matrix_) {
   const int nv = space().getModel().nv;
   if (nv != actuation.rows()) {
-    throw std::domain_error(
+    PROXDDP_DOMAIN_ERROR(
         fmt::format("actuation matrix should have number of rows = pinocchio "
                     "model nv ({} and {}).",
                     actuation.rows(), nv));
