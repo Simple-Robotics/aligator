@@ -18,6 +18,8 @@ extern template void check_trajectory_and_assign<context::Scalar>(
     const std::vector<context::VectorXs> &, std::vector<context::VectorXs> &,
     std::vector<context::VectorXs> &);
 
-extern template void computeLagrangianDerivatives<context::Scalar>(const context::TrajOptProblem &problem, context::Workspace &workspace, const context::VectorOfVectors &lams);
+extern template void computeLagrangianDerivatives<context::Scalar>(
+    const context::TrajOptProblem &problem, context::Workspace &workspace,
+    const context::VectorOfVectors &lams);
 
 } // namespace proxddp

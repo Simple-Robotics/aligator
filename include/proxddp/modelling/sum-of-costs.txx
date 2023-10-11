@@ -3,7 +3,6 @@
 #include "proxddp/context.hpp"
 #include "proxddp/modelling/sum-of-costs.hpp"
 
-
 namespace proxddp {
 
 extern template struct CostStackTpl<context::Scalar>;

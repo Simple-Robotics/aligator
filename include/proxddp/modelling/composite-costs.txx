@@ -13,4 +13,4 @@ extern template struct QuadraticResidualCostTpl<context::Scalar>;
 
 extern template struct LogResidualCostTpl<context::Scalar>;
 
-}
+} // namespace proxddp

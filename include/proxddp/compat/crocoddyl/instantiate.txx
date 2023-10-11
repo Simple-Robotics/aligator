@@ -25,7 +25,6 @@ extern template struct DynamicsDataWrapperTpl<context::Scalar>;
 extern template struct ActionModelWrapperTpl<context::Scalar>;
 extern template struct ActionDataWrapperTpl<context::Scalar>;
 
-
 } // namespace croc
 } // namespace compat
 } // namespace proxddp

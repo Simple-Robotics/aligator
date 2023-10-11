@@ -7,7 +7,9 @@
 
 namespace proxddp {
 
-extern template struct FunctionSliceXprTpl<context::Scalar, context::StageFunction>;
-extern template struct FunctionSliceXprTpl<context::Scalar, context::UnaryFunction>;
+extern template struct FunctionSliceXprTpl<context::Scalar,
+                                           context::StageFunction>;
+extern template struct FunctionSliceXprTpl<context::Scalar,
+                                           context::UnaryFunction>;
 
 } // namespace proxddp

@@ -9,4 +9,4 @@ namespace proxddp {
 extern template struct QuadraticCostTpl<context::Scalar>;
 extern template struct QuadraticCostDataTpl<context::Scalar>;
 
-}
+} // namespace proxddp
