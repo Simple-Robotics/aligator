@@ -5,6 +5,9 @@ repos:
     rev: v17.0.2
     hooks:
     -   id: clang-format
+        types_or: []
+        types: [text]
+        files: '\.(cpp|cxx|c|h|hpp|hxx|txx)$'
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
