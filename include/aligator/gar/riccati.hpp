@@ -2,6 +2,7 @@
 #pragma once
 #include "aligator/context.hpp"
 #include "./lqr-knot.hpp"
+#include "./BlkMatrix.hpp"
 
 #include <Eigen/Cholesky>
 
@@ -28,17 +29,17 @@ public:
           Vmat(nx, nx), vvec(nx), chol(nx) {}
   };
 
-  struct kkt_t {
-    uint nu, nc;
-    MatrixXs data;
+  struct kkt_t : BlkMatrix<MatrixXs, 2> {
+    using Base = BlkMatrix<MatrixXs, 2>;
+    using Base::data;
+    using Base::m_totalRows;
     Eigen::LDLT<MatrixXs> chol;
-    kkt_t(uint nu, uint nc)
-        : nu(nu), nc(nc), data(nu + nc, nu + nc), chol(nu + nc) {
-      data.setZero();
+    kkt_t(uint nu, uint nc) : Base({nu, nc}), chol(m_totalRows) {
+      this->setZero();
     }
-    MatrixRef R() { return data.topLeftCorner(nu, nu); };
-    MatrixRef D() { return data.bottomLeftCorner(nc, nu); };
-    auto dual() { return data.bottomRightCorner(nc, nc).diagonal(); }
+    MatrixRef R() { return (*this)(0, 0); };
+    MatrixRef D() { return (*this)(1, 0); };
+    auto dual() { return (*this)(1, 1).diagonal(); }
   };
 
   struct hmlt_t {
@@ -50,20 +51,30 @@ public:
         : Qhat(nx, nx), Rhat(nu, nu), Shat(nx, nu), //
           qhat(nx), rhat(nu), AtV(nx, nx), BtV(nu, nx) {}
   };
+  struct error_t {
+    Scalar lbda;
+    Scalar pm;
+    Scalar pv;
+    Scalar fferr;
+    Scalar fberr;
+  };
 
   /// Per-node struct for all computations in the factorization.
   struct stage_solve_data_t {
     stage_solve_data_t(uint nx, uint nu, uint nc)
-        : ff(nu + nc), fb(nu + nc, nx), Mmat(nu, nc), hmlt(nx, nu), vm(nx),
+        : ff(nu + nc), fb(nu + nc, nx), kkt(nu, nc), hmlt(nx, nu), vm(nx),
           PinvEt(nx, nx), wvec(nx) {}
 
-    VectorXs ff;     //< feedforward gain
-    MatrixXs fb;     //< feedback gain
-    kkt_t Mmat;      //< KKT matrix buffer
+    VectorXs ff;
+    MatrixXs fb;
+    VectorXs ffRhs;
+    MatrixXs fbRhs;
+    kkt_t kkt;       //< KKT matrix buffer
     hmlt_t hmlt;     //< stage system data
     value_t vm;      //< cost-to-go parameters
     MatrixXs PinvEt; //< tmp buffer for \f$EP^{-1}\f$
     VectorXs wvec;   //< tmp buffer for \f$-P^{-1}p\f$
+    error_t err;     //< numerical errors
   };
 
   ProximalRiccatiSolverBackward(const std::vector<knot_t> &knots)

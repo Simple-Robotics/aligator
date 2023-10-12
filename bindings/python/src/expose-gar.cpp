@@ -50,7 +50,7 @@ void exposeGAR() {
   bp::class_<stage_solve_data_t>("stage_solve_data", bp::no_init)
       .def_readonly("ff", &stage_solve_data_t::ff)
       .def_readonly("fb", &stage_solve_data_t::fb)
-      .def_readonly("Mmat", &stage_solve_data_t::Mmat)
+      .def_readonly("kkt", &stage_solve_data_t::kkt)
       .def_readonly("vm", &stage_solve_data_t::vm);
 
   StdVectorPythonVisitor<std::vector<stage_solve_data_t>, true>::expose(

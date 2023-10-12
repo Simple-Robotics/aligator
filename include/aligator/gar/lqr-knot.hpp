@@ -115,6 +115,33 @@ auto lqrDenseMatrix(const std::vector<LQRKnot<Scalar>> &knots, Scalar mudyn,
   return std::make_pair(mat, rhs);
 }
 
+template <typename Scalar>
+std::ostream &operator<<(std::ostream &oss, const LQRKnot<Scalar> &self) {
+  oss << "LQRKnot {";
+#ifdef NDEBUG
+  oss << fmt::format("\n  nx: {:d}", self.nx) //
+      << fmt::format("\n  nu: {:d}", self.nu) //
+      << fmt::format("\n  nc: {:d}", self.nc);
+#else
+  oss << eigenPrintWithPreamble(self.Q, "\n  Q: ") //
+      << eigenPrintWithPreamble(self.S, "\n  S: ") //
+      << eigenPrintWithPreamble(self.R, "\n  R: ") //
+      << eigenPrintWithPreamble(self.q, "\n  q: ") //
+      << eigenPrintWithPreamble(self.r, "\n  r: ");
+
+  oss << eigenPrintWithPreamble(self.A, "\n  A: ") //
+      << eigenPrintWithPreamble(self.B, "\n  B: ") //
+      << eigenPrintWithPreamble(self.E, "\n  E: ") //
+      << eigenPrintWithPreamble(self.f, "\n  f: ");
+
+  oss << eigenPrintWithPreamble(self.C, "\n  C: ") //
+      << eigenPrintWithPreamble(self.D, "\n  D: ") //
+      << eigenPrintWithPreamble(self.d, "\n  d: ");
+#endif
+  oss << "\n}";
+  return oss;
+}
+
 } // namespace gar
 } // namespace aligator
 

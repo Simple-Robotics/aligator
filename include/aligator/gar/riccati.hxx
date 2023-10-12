@@ -11,8 +11,9 @@ bool ProximalRiccatiSolverBackward<Scalar>::run(Scalar mudyn, Scalar mueq) {
 
   ALIGATOR_NOMALLOC_BEGIN;
   // terminal node
+  size_t N = (size_t)horizon();
   {
-    stage_solve_data_t &d = datas[horizon()];
+    stage_solve_data_t &d = datas[N];
     value_t &vc = d.vm;
     const knot_t &model = knots.back();
     // fill cost-to-go matrix
@@ -28,7 +29,7 @@ bool ProximalRiccatiSolverBackward<Scalar>::run(Scalar mudyn, Scalar mueq) {
     vc.pvec.noalias() = model.q + Ct * zff;
   }
 
-  size_t t = size_t(horizon() - 1);
+  size_t t = N - 1;
   while (true) {
     stage_solve_data_t &d = datas[t];
     value_t &vn = datas[t + 1].vm;
@@ -44,11 +45,11 @@ bool ProximalRiccatiSolverBackward<Scalar>::run(Scalar mudyn, Scalar mueq) {
     {
       auto pmatrecerr =
           math::infty_norm(vn.Pmat - vn.chol.reconstructedMatrix());
-      auto pinverr = math::infty_norm(vn.Pmat * d.PinvEt - model.E.transpose());
-      auto wvecerr = math::infty_norm(vn.Pmat * d.wvec + vn.pvec);
+      d.err.pm = math::infty_norm(vn.Pmat * d.PinvEt - model.E.transpose());
+      d.err.pv = math::infty_norm(vn.Pmat * d.wvec + vn.pvec);
       fmt::print("Pmatrec = {:4.3e}\n", pmatrecerr);
-      fmt::print("Pinverr = {:4.3e}\n", pinverr);
-      fmt::print("wvecerr = {:4.3e}\n", wvecerr);
+      fmt::print("Pinverr = {:4.3e}\n", d.err.pm);
+      fmt::print("wvecerr = {:4.3e}\n", d.err.pv);
     }
     ALIGATOR_NOMALLOC_BEGIN;
 
@@ -62,9 +63,8 @@ bool ProximalRiccatiSolverBackward<Scalar>::run(Scalar mudyn, Scalar mueq) {
     vn.vvec.noalias() = model.f + model.E * d.wvec;
     ALIGATOR_NOMALLOC_END;
     {
-      auto lbmatrecerr =
-          math::infty_norm(vn.Lbmat - vn.chol.reconstructedMatrix());
-      fmt::print("recerr  = {:4.3e}\n", lbmatrecerr);
+      d.err.lbda = math::infty_norm(vn.Lbmat - vn.chol.reconstructedMatrix());
+      fmt::print("recerr  = {:4.3e}\n", d.err.lbda);
     }
     ALIGATOR_NOMALLOC_BEGIN;
 
@@ -72,12 +72,12 @@ bool ProximalRiccatiSolverBackward<Scalar>::run(Scalar mudyn, Scalar mueq) {
     computeKktTerms(model, d, vn);
 
     // fill feedback system
-    d.Mmat.R() = d.hmlt.Rhat;
-    d.Mmat.D() = model.D;
-    d.Mmat.dual().setConstant(-mueq);
-    d.Mmat.data = d.Mmat.data.template selfadjointView<Eigen::Lower>();
-    Eigen::LDLT<MatrixXs> &ldlt = d.Mmat.chol;
-    ldlt.compute(d.Mmat.data);
+    d.kkt.R() = d.hmlt.Rhat;
+    d.kkt.D() = model.D;
+    d.kkt.dual().setConstant(-mueq);
+    d.kkt.data = d.kkt.data.template selfadjointView<Eigen::Lower>();
+    Eigen::LDLT<MatrixXs> &ldlt = d.kkt.chol;
+    ldlt.compute(d.kkt.data);
 
     value_t &vc = d.vm;
     VectorRef kff = d.ff.head(model.nu);
@@ -89,28 +89,17 @@ bool ProximalRiccatiSolverBackward<Scalar>::run(Scalar mudyn, Scalar mueq) {
     MatrixRef Z = d.fb.bottomRows(model.nc);
     K = -d.hmlt.Shat.transpose();
     Z = -model.C;
-#ifdef NDEBUG
-    ldlt.solveInPlace(d.ff);
-    ldlt.solveInPlace(d.fb);
-#else
+#ifndef NDEBUG
     ALIGATOR_NOMALLOC_END;
-    VectorXs sff = ldlt.solve(d.ff);
-    MatrixXs sfb = ldlt.solve(d.fb);
     {
-      fmt::print("reduced KKT system:\n{}\n", d.Mmat.data);
-      fmt::print("KKT rhs:\n{}\n{}\n", d.ff, d.fb);
-      auto fferr = math::infty_norm(d.Mmat.data * sff + d.ff);
-      auto fberr = math::infty_norm(d.Mmat.data * sfb + d.fb);
-      fmt::print("ff sol.\n{}\n", sff);
-      fmt::print("fb sol.\n{}\n", sfb);
-      fmt::print("fferr = {:4.3e}\n", fferr);
-      fmt::print("fberr = {:4.3e}\n", fberr);
-      auto ldltErr = math::infty_norm(d.Mmat.data - ldlt.reconstructedMatrix());
-      fmt::print("ldlterr = {:4.3e}\n", ldltErr);
+      d.err.fferr = math::infty_norm(d.kkt.data * d.ff.data - d.ffRhs);
+      d.err.fberr = math::infty_norm(d.kkt.data * d.fb.data - d.fbRhs);
+      fmt::print("ff_err = {:4.3e}\n", d.err.fferr);
+      fmt::print("fb_err = {:4.3e}\n", d.err.fberr);
+      auto ldltErr = math::infty_norm(d.kkt.data - ldlt.reconstructedMatrix());
+      fmt::print("ldlerr = {:4.3e}\n", ldltErr);
     }
     ALIGATOR_NOMALLOC_BEGIN;
-    d.ff = sff;
-    d.fb = sfb;
 #endif
 
     auto Ct = model.C.transpose();
@@ -167,8 +156,6 @@ bool ProximalRiccatiSolverForward<Scalar>::run(bwd_algo_t &bwd, vecvec_t &xs,
   {
     stage_solve_data_t &d0 = bwd.datas[0];
     xs[0] = d0.vm.chol.solve(-d0.vm.pvec);
-    auto err = math::infty_norm(d0.vm.pvec + d0.vm.Pmat * xs[0]);
-    fmt::print("err[x0] = {:4.3e}\n", err);
   }
   ALIGATOR_NOMALLOC_BEGIN;
 
