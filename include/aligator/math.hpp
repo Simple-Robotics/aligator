@@ -25,6 +25,24 @@ namespace aligator {
 using proxsuite::nlp::math_types;
 // NOLINTEND(misc-unused-using-decls)
 
+/// Prints an Eigen object using Eigen::IOFormat
+/// with a piece of text prepended and all rows shifted
+/// by the length of that text.
+template <typename D>
+auto eigenPrintWithPreamble(const Eigen::EigenBase<D> &mat,
+                            const std::string &text) {
+  Eigen::IOFormat ft = EIGEN_DEFAULT_IO_FORMAT;
+  ft.matPrefix = text;
+  ft.rowSpacer = "";
+  int i = int(text.length()) - 1;
+  while (i >= 0) {
+    if (text[size_t(i)] != '\n')
+      ft.rowSpacer += ' ';
+    i--;
+  }
+  return mat.derived().format(ft);
+}
+
 /// Math utilities
 namespace math {
 
