@@ -23,7 +23,6 @@ using proxnlp::BCLParamsTpl;
 using proxnlp::ConstraintSetBase;
 using proxnlp::ManifoldAbstractTpl;
 // Use the math_types template from proxnlp.
-using proxnlp::math_types;
 using proxnlp::VerboseLevel;
 
 using VerboseLevel::QUIET;

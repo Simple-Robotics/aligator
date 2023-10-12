@@ -19,6 +19,11 @@
       fmt::format("Encountered NaN for variable {:s}\n", name))
 
 namespace proxddp {
+
+// NOLINTBEGIN(misc-unused-using-decls)
+using proxnlp::math_types;
+// NOLINTEND(misc-unused-using-decls)
+
 /// Math utilities
 namespace math {
 
