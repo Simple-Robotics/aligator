@@ -14,6 +14,9 @@ target_include_directories(aligator_gar PRIVATE ${PROJECT_SOURCE_DIR}/include/al
 target_link_libraries(aligator_gar PUBLIC proxsuite-nlp::proxsuite-nlp)
 add_library(aligator::gar ALIAS aligator_gar)
 
+set_target_properties(proxddp_gar PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+                                             VERSION ${PROJECT_VERSION})
+
 if(ENABLE_TEMPLATE_INSTANTIATION)
   file(GLOB TEMPL_DECL_HEADERS ${PROJECT_SOURCE_DIR}/include/aligator/gar/*.txx)
   target_sources(aligator_gar PRIVATE ${SOURCES} ${TEMPL_DECL_HEADERS})
