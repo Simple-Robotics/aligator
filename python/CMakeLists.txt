@@ -39,7 +39,7 @@ function(make_bindings)
   target_link_boost_python(${PYLIB_NAME} PUBLIC)
 
   if(BUILD_CROCODDYL_COMPAT)
-    target_link_libraries(${PYLIB_NAME} PUBLIC ${CROC_COMPAT_LIB_NAME})
+    target_link_libraries(${PYLIB_NAME} PUBLIC proxddp::croc_compat)
   endif(BUILD_CROCODDYL_COMPAT)
 
   if(BUILD_WITH_OPENMP_SUPPORT)

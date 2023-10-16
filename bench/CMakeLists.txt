@@ -16,7 +16,7 @@ function(create_bench exfile croc)
   target_include_directories(${exname} PRIVATE ${CMAKE_SOURCE_DIR}/examples)
   target_link_libraries(${exname} PRIVATE benchmark::benchmark)
   if(croc)
-    target_link_libraries(${exname} PUBLIC ${CROC_COMPAT_LIB_NAME})
+    target_link_libraries(${exname} PUBLIC proxddp::croc_compat)
   endif(croc)
 endfunction()
 

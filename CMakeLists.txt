@@ -214,7 +214,6 @@ install(
 
 if(BUILD_CROCODDYL_COMPAT)
   target_compile_definitions(${PROJECT_NAME} PUBLIC -DPROXDDP_WITH_CROCODDYL_COMPAT)
-  set(CROC_COMPAT_LIB_NAME ${PROJECT_NAME}_croc_compat)
   add_subdirectory(src/compat/crocoddyl)
 endif()
 
