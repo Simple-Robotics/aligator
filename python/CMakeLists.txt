@@ -18,6 +18,7 @@ endif()
 
 function(make_bindings)
   add_library(${PYLIB_NAME} SHARED ${PY_HEADERS} ${PY_SOURCES})
+  add_library(proxddp::python ALIAS ${PYLIB_NAME})
 
   target_include_directories(${PYLIB_NAME} SYSTEM PRIVATE ${PYTHON_INCLUDE_DIRS})
   set_target_properties(
