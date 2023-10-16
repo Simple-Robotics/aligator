@@ -79,7 +79,6 @@ def test_compute_cost_se3():
         assert np.allclose(data.Lu, data_fd.Lu, 1e-2)
 
 
-
 if __name__ == "__main__":
     import pytest
     import sys
