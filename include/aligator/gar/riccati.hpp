@@ -62,11 +62,15 @@ public:
   /// Per-node struct for all computations in the factorization.
   struct stage_solve_data_t {
     stage_solve_data_t(uint nx, uint nu, uint nc)
-        : ff(nu + nc), fb(nu + nc, nx), kkt(nu, nc), hmlt(nx, nu), vm(nx),
-          PinvEt(nx, nx), wvec(nx) {}
+        : ff({nu, nc}, {1}), fb({nu, nc}, {nx}), ffRhs(nu + nc),
+          fbRhs(nu + nc, nx), kkt(nu, nc), hmlt(nx, nu), vm(nx), PinvEt(nx, nx),
+          wvec(nx) {
+      ff.setZero();
+      fb.setZero();
+    }
 
-    VectorXs ff;
-    MatrixXs fb;
+    BlkMatrix<VectorXs, 2, 1> ff; //< feedforward gain
+    BlkMatrix<MatrixXs, 2, 1> fb; //< feedback gain
     VectorXs ffRhs;
     MatrixXs fbRhs;
     kkt_t kkt;       //< KKT matrix buffer

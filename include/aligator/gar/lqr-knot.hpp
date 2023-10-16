@@ -6,6 +6,22 @@
 namespace aligator {
 namespace gar {
 
+/// @brief Struct describing a stage of a constrained LQ problem.
+///
+/// A LQ knot corresponding to cost
+/// \f\[
+///   \frac{1}{2}
+///   \begin{bmatrix}x \\ u\end{bmatrix}^\top
+///   \begin{bmatrix}Q & S \\ S^\top & R\end{bmatrix}
+///   \begin{bmatrix}x \\ u\end{bmatrix}
+///   + q^\top x + r^\top u
+/// \f\]
+/// and constraints
+/// \f\[
+///   Ex' + Ax + Bu + f = 0, \quad
+///   Cx + Du + d = 0.
+/// \f\]
+///
 template <typename Scalar> struct LQRKnot {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 

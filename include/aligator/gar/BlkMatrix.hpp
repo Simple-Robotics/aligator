@@ -5,7 +5,8 @@
 
 namespace aligator {
 
-/// Block matrix class, with a fixed-size number of row and column blocks.
+/// @brief Block matrix class, with a fixed-size number of row and column
+/// blocks.
 template <typename _MatrixType, size_t _N, size_t _M = _N> class BlkMatrix {
 public:
   using MatrixType = _MatrixType;

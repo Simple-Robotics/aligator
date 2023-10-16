@@ -15,10 +15,10 @@ bool ProximalRiccatiSolverBackward<Scalar>::run(Scalar mudyn, Scalar mueq) {
   {
     stage_solve_data_t &d = datas[N];
     value_t &vc = d.vm;
-    const knot_t &model = knots.back();
+    const knot_t &model = knots[N];
     // fill cost-to-go matrix
-    VectorRef zff = d.ff.tail(model.nc);
-    MatrixRef Z = d.fb.bottomRows(model.nc);
+    VectorRef zff = d.ff.blockSegment(1);
+    MatrixRef Z = d.fb.blockRow(1);
 
     auto Ct = model.C.transpose();
 
@@ -34,9 +34,7 @@ bool ProximalRiccatiSolverBackward<Scalar>::run(Scalar mudyn, Scalar mueq) {
     stage_solve_data_t &d = datas[t];
     value_t &vn = datas[t + 1].vm;
     const knot_t &model = knots[t];
-    fmt::print("[bwd] t={:>2d}\n", t);
 
-    // compute decomposition in-place
     vn.chol.compute(vn.Pmat);
     d.PinvEt = model.E.transpose();
     vn.chol.solveInPlace(d.PinvEt);
@@ -56,7 +54,6 @@ bool ProximalRiccatiSolverBackward<Scalar>::run(Scalar mudyn, Scalar mueq) {
     vn.Lbmat.noalias() = model.E * d.PinvEt;
     vn.Lbmat.diagonal().array() += mudyn;
 
-    // compute decomposition in-place
     vn.chol.compute(vn.Lbmat);
     vn.Vmat.setIdentity();
     vn.chol.solveInPlace(vn.Vmat); // evaluate inverse of Lambda
@@ -80,15 +77,19 @@ bool ProximalRiccatiSolverBackward<Scalar>::run(Scalar mudyn, Scalar mueq) {
     ldlt.compute(d.kkt.data);
 
     value_t &vc = d.vm;
-    VectorRef kff = d.ff.head(model.nu);
-    VectorRef zff = d.ff.tail(model.nc);
+    VectorRef kff = d.ff.blockSegment(0);
+    VectorRef zff = d.ff.blockSegment(1);
     kff = -d.hmlt.rhat;
     zff = -model.d;
 
-    MatrixRef K = d.fb.topRows(model.nu);
-    MatrixRef Z = d.fb.bottomRows(model.nc);
+    MatrixRef K = d.fb.blockRow(0);
+    MatrixRef Z = d.fb.blockRow(1);
     K = -d.hmlt.Shat.transpose();
     Z = -model.C;
+    d.ffRhs = d.ff.data;
+    d.fbRhs = d.fb.data;
+    ldlt.solveInPlace(d.ff.data);
+    ldlt.solveInPlace(d.fb.data);
 #ifndef NDEBUG
     ALIGATOR_NOMALLOC_END;
     {
@@ -103,8 +104,8 @@ bool ProximalRiccatiSolverBackward<Scalar>::run(Scalar mudyn, Scalar mueq) {
 #endif
 
     auto Ct = model.C.transpose();
-    vc.Pmat.noalias() = d.hmlt.Qhat + model.S * K + Ct * Z;
-    vc.pvec.noalias() = d.hmlt.qhat + model.S * kff + Ct * zff;
+    vc.Pmat.noalias() = d.hmlt.Qhat + d.hmlt.Shat * K + Ct * Z;
+    vc.pvec.noalias() = d.hmlt.qhat + d.hmlt.Shat * kff + Ct * zff;
 
     if (t == 0)
       break;
@@ -118,13 +119,6 @@ bool ProximalRiccatiSolverBackward<Scalar>::run(Scalar mudyn, Scalar mueq) {
   vinit.chol.compute(vinit.Pmat);
 
   ALIGATOR_NOMALLOC_END;
-  {
-    auto P0err =
-        math::infty_norm(vinit.Pmat - vinit.chol.reconstructedMatrix());
-    fmt::print("P0err = {:4.3e}\n", P0err);
-    fmt::print("P0 =\n{}\n", vinit.Pmat);
-    fmt::print("p0 =\n{}\n", vinit.pvec);
-  }
 
   return true;
 }
@@ -153,11 +147,11 @@ bool ProximalRiccatiSolverForward<Scalar>::run(bwd_algo_t &bwd, vecvec_t &xs,
   const std::vector<knot_t> &knots = bwd.knots;
 
   // solve initial stage
+  ALIGATOR_NOMALLOC_BEGIN;
   {
     stage_solve_data_t &d0 = bwd.datas[0];
     xs[0] = d0.vm.chol.solve(-d0.vm.pvec);
   }
-  ALIGATOR_NOMALLOC_BEGIN;
 
   size_t N = (size_t)bwd.horizon();
   for (size_t t = 0; t <= N; t++) {
@@ -165,10 +159,10 @@ bool ProximalRiccatiSolverForward<Scalar>::run(bwd_algo_t &bwd, vecvec_t &xs,
     typename bwd_algo_t::value_t &vnext = bwd.datas[t + 1].vm;
     const knot_t &model = knots[t];
 
-    MatrixRef K = d.fb.topRows(model.nu);    // control feedback
-    MatrixRef Z = d.fb.bottomRows(model.nc); // multiplier feedback
-    VectorRef kff = d.ff.head(model.nu);
-    VectorRef zff = d.ff.tail(model.nc);
+    MatrixRef K = d.fb.blockRow(0); // control feedback
+    MatrixRef Z = d.fb.blockRow(1); // multiplier feedback
+    VectorRef kff = d.ff.blockSegment(0);
+    VectorRef zff = d.ff.blockSegment(1);
 
     vs[t].noalias() = zff + Z * xs[t];
 
