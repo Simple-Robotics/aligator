@@ -21,6 +21,7 @@ using context::PinModel;
 
 // fwd declaration, see expose-fly-high.cpp
 void exposeFlyHigh();
+void exposeCenterOfMassFunctions();
 
 void exposeFrameFunctions() {
   using context::Manifold;
@@ -124,6 +125,7 @@ auto underactuatedConstraintInvDyn_proxy(const PinModel &model, PinData &data,
 void exposePinocchioFunctions() {
   exposeFrameFunctions();
   exposeFlyHigh();
+  exposeCenterOfMassFunctions();
 
 #ifdef PROXDDP_PINOCCHIO_V3
   bp::def("underactuatedConstrainedInverseDynamics",
