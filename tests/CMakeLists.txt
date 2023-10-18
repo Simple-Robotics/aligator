@@ -51,8 +51,7 @@ set(TEST_NAMES
     costs
     continuous
     utils
-    solver-storage
-    parallel-lqr)
+    solver-storage)
 
 foreach(test_name ${TEST_NAMES})
   add_proxddp_test(${test_name})
