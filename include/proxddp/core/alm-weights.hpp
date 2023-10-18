@@ -8,12 +8,11 @@ namespace proxddp {
 template <typename Scalar> struct ConstraintProximalScalerTpl {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using ConstraintStack = ConstraintStackTpl<Scalar>;
-  using DiagonalMatrix = Eigen::DiagonalMatrix<Scalar, Eigen::Dynamic>;
 
   ConstraintProximalScalerTpl(const ConstraintStack &constraints,
                               const Scalar &mu)
       : constraints_(&constraints), mu_(&mu), weights_(constraints.size()),
-        dmatrix_(constraints.totalDim()) {
+        scaleMatDiag_(constraints.totalDim()) {
     weights_.setOnes();
     initMatrix();
   }
@@ -23,10 +22,9 @@ template <typename Scalar> struct ConstraintProximalScalerTpl {
 
   Scalar inv(std::size_t j) const { return 1. / get(j); }
   void setWeight(const Scalar w, std::size_t j) {
-    assert(j < weights_.size());
+    assert(j < (std::size_t)weights_.size());
     weights_[(long)j] = w;
-    auto &d = dmatrix_.diagonal();
-    constraints_->segmentByConstraint(d, j).setConstant(get(j));
+    constraints_->segmentByConstraint(scaleMatDiag_, j).setConstant(get(j));
   }
 
   /// Set all weights at once
@@ -41,22 +39,26 @@ template <typename Scalar> struct ConstraintProximalScalerTpl {
 
   const VectorXs &getWeights() const { return weights_; }
 
-  /// Get the diagonal matrix corresponding to the ALM parameters.
-  const DiagonalMatrix &matrix() const { return dmatrix_; }
+  template <typename MatrixType>
+  auto apply(const Eigen::MatrixBase<MatrixType> &m) const {
+    return scaleMatDiag_.asDiagonal() * m;
+  }
+
+  auto matrix() { return scaleMatDiag_.asDiagonal(); }
+  auto matrix() const { return scaleMatDiag_.asDiagonal(); }
 
 private:
   void initMatrix() {
-    const ConstraintStack &stack = *constraints_;
-    auto &d = dmatrix_.diagonal();
-    for (std::size_t j = 0; j < stack.size(); ++j) {
-      stack.segmentByConstraint(d, j).setConstant(get(j));
+    for (std::size_t j = 0; j < constraints_->size(); ++j) {
+      constraints_->segmentByConstraint(scaleMatDiag_, j).setConstant(get(j));
     }
   }
   Scalar mu() const { return *mu_; }
   const ConstraintStack *constraints_;
   const Scalar *mu_;
   VectorXs weights_;
-  DiagonalMatrix dmatrix_;
+  /// Diagonal for the scaling matrix
+  VectorXs scaleMatDiag_;
 };
 
 template <typename Scalar>

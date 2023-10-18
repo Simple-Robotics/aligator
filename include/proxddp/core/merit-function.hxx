@@ -49,8 +49,8 @@ Scalar PDALFunction<Scalar>::evaluate(const SolverType &solver,
                            dual_weight = dual_weight](
                               const VectorXs &lambda, const VectorXs &lams_pdal,
                               CstrProximalScaler &weight_strat) {
-    auto e1 = weight_strat.matrix() * lams_pdal;
-    auto e2 = weight_strat.matrix() * lambda;
+    auto e1 = weight_strat.apply(lams_pdal);
+    auto e2 = weight_strat.apply(lambda);
     Scalar r = 0.25 * e1.dot(lams_pdal);
     r += 0.25 * e2.dot(lambda);
     return r;
@@ -118,7 +118,7 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
   auto execute_on_stack = [](const auto &dlam, const VectorXs &lam,
                              const VectorXs &lampdal,
                              CstrProximalScaler &weight_strat) {
-    auto e = 0.5 * weight_strat.matrix() * (lam - lampdal);
+    auto e = 0.5 * weight_strat.apply(lam - lampdal);
     return e.dot(dlam);
   };
 

@@ -231,7 +231,7 @@ void SolverProxDDP<Scalar>::computeMultipliers(
           const VectorXs &prevlam, VectorXs &lamplus, VectorXs &lampdal,
           VectorXs &ld, VectorXs &shift_cvals,
           typename Workspace::VecBool &active_cstr,
-          const FuncDataVec &constraint_data, CstrProximalScaler &weights) {
+          const FuncDataVec &constraint_data, CstrProximalScaler &scaler) {
         // k: constraint count variable
         for (std::size_t k = 0; k < stack.size(); k++) {
           const auto plam_k = stack.constSegmentByConstraint(prevlam, k);
@@ -243,7 +243,7 @@ void SolverProxDDP<Scalar>::computeMultipliers(
           const CstrSet &set = *stack[k].set;
           const FunctionData &data = *constraint_data[k];
 
-          Scalar m = weights.get(k);
+          Scalar m = scaler.get(k);
           scval_k = data.value_ + m * plam_k;
           lampd_k = scval_k - 0.5 * m * lam_k;
           set.computeActiveSet(scval_k, active_k);
@@ -900,7 +900,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem) {
                              const VectorXs &lams_plus,
                              const VectorXs &prev_lams, VectorXs &stage_infeas,
                              CstrProximalScaler &scaler) {
-    auto e = scaler.matrix() * (prev_lams - lams_plus);
+    auto e = scaler.apply(prev_lams - lams_plus);
     for (std::size_t j = 0; j < stack.size(); j++) {
       stage_infeas((long)j) =
           math::infty_norm(stack.constSegmentByConstraint(e, j));
