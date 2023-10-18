@@ -9,10 +9,9 @@ namespace aligator {
 namespace python {
 using namespace gar;
 
-using riccati_bwd_t = ProximalRiccatiSolverBackward<context::Scalar>;
-using riccati_fwd_t = ProximalRiccatiSolverForward<context::Scalar>;
+using prox_riccati_t = ProximalRiccatiSolver<context::Scalar>;
 using knot_t = LQRKnot<context::Scalar>;
-using stage_solve_data_t = riccati_bwd_t::stage_solve_data_t;
+using stage_solve_data_t = prox_riccati_t::stage_solve_data_t;
 } // namespace python
 } // namespace aligator
 
@@ -109,17 +108,17 @@ void exposeGAR() {
   BlkMatrixPythonVisitor<BMT21>::expose("BlockMatrix21");
   BlkMatrixPythonVisitor<BVT2>::expose("BlockVector2");
 
-  bp::class_<riccati_bwd_t::value_t>("value_data", bp::no_init)
-      .def_readonly("Pmat", &riccati_bwd_t::value_t::Pmat)
-      .def_readonly("pvec", &riccati_bwd_t::value_t::pvec)
-      .def_readonly("Vmat", &riccati_bwd_t::value_t::Vmat)
-      .def_readonly("vvec", &riccati_bwd_t::value_t::vvec);
+  bp::class_<prox_riccati_t::value_t>("value_data", bp::no_init)
+      .def_readonly("Pmat", &prox_riccati_t::value_t::Pmat)
+      .def_readonly("pvec", &prox_riccati_t::value_t::pvec)
+      .def_readonly("Vmat", &prox_riccati_t::value_t::Vmat)
+      .def_readonly("vvec", &prox_riccati_t::value_t::vvec);
 
-  bp::class_<riccati_bwd_t::kkt_t, bp::bases<BMT22>>("kkt_data", bp::no_init)
-      .def_readonly("data", &riccati_bwd_t::kkt_t::data)
-      .def_readonly("chol", &riccati_bwd_t::kkt_t::chol)
-      .add_property("R", &riccati_bwd_t::kkt_t::R)
-      .add_property("D", &riccati_bwd_t::kkt_t::D);
+  bp::class_<prox_riccati_t::kkt_t, bp::bases<BMT22>>("kkt_data", bp::no_init)
+      .def_readonly("data", &prox_riccati_t::kkt_t::data)
+      .def_readonly("chol", &prox_riccati_t::kkt_t::chol)
+      .add_property("R", &prox_riccati_t::kkt_t::R)
+      .add_property("D", &prox_riccati_t::kkt_t::D);
 
   bp::class_<stage_solve_data_t>("stage_solve_data", bp::no_init)
       .def_readonly("ff", &stage_solve_data_t::ff)
@@ -157,18 +156,15 @@ void exposeGAR() {
   StdVectorPythonVisitor<knot_vec_t, true>::expose("LQRKnotVec");
 
   using context::Scalar;
-  bp::class_<riccati_bwd_t, boost::noncopyable>(
+  bp::class_<prox_riccati_t, boost::noncopyable>(
       "ProximalRiccatiBwd", "Proximal Riccati backward pass.", bp::no_init)
       .def(bp::init<const knot_vec_t &>(bp::args("self", "knots")))
-      .add_property("horizon", &riccati_bwd_t::horizon)
-      .def_readonly("datas", &riccati_bwd_t::datas)
-      .def("run", &riccati_bwd_t::run, bp::args("self", "mu", "mueq"));
-
-  bp::class_<riccati_fwd_t>("ProximalRiccatiFwd",
-                            "Proximal Riccati forward pass.", bp::no_init)
-      .def("run", &riccati_fwd_t::run,
-           bp::args("bwd_pass", "xs", "us", "vs", "lbdas"))
-      .staticmethod("run");
+      .add_property("horizon", &prox_riccati_t::horizon)
+      .def_readonly("datas", &prox_riccati_t::datas)
+      .def("backward", &prox_riccati_t::backward,
+           bp::args("self", "mu", "mueq"))
+      .def("forward", &prox_riccati_t::forward,
+           bp::args("self", "xs", "us", "vs", "lbdas"));
 
   bp::def(
       "lqrDenseMatrix",

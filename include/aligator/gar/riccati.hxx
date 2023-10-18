@@ -5,7 +5,7 @@
 namespace aligator {
 namespace gar {
 template <typename Scalar>
-bool ProximalRiccatiSolverBackward<Scalar>::run(Scalar mudyn, Scalar mueq) {
+bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
   if (horizon() < 0)
     return false;
 
@@ -124,8 +124,9 @@ bool ProximalRiccatiSolverBackward<Scalar>::run(Scalar mudyn, Scalar mueq) {
 }
 
 template <typename Scalar>
-void ProximalRiccatiSolverBackward<Scalar>::computeKktTerms(
-    const knot_t &model, stage_solve_data_t &d, const value_t &vnext) {
+void ProximalRiccatiSolver<Scalar>::computeKktTerms(const knot_t &model,
+                                                    stage_solve_data_t &d,
+                                                    const value_t &vnext) {
   hmlt_t &hmlt = d.hmlt;
   hmlt.AtV.noalias() = model.A.transpose() * vnext.Vmat;
   hmlt.BtV.noalias() = model.B.transpose() * vnext.Vmat;
@@ -139,24 +140,19 @@ void ProximalRiccatiSolverBackward<Scalar>::computeKktTerms(
 }
 
 template <typename Scalar>
-bool ProximalRiccatiSolverForward<Scalar>::run(bwd_algo_t &bwd, vecvec_t &xs,
-                                               vecvec_t &us, vecvec_t &vs,
-                                               vecvec_t &lbdas) {
-  using stage_solve_data_t = typename bwd_algo_t::stage_solve_data_t;
-
-  const std::vector<knot_t> &knots = bwd.knots;
-
+bool ProximalRiccatiSolver<Scalar>::forward(vecvec_t &xs, vecvec_t &us,
+                                            vecvec_t &vs, vecvec_t &lbdas) {
   // solve initial stage
   ALIGATOR_NOMALLOC_BEGIN;
   {
-    stage_solve_data_t &d0 = bwd.datas[0];
+    stage_solve_data_t &d0 = datas[0];
     xs[0] = d0.vm.chol.solve(-d0.vm.pvec);
   }
 
-  size_t N = (size_t)bwd.horizon();
+  size_t N = (size_t)horizon();
   for (size_t t = 0; t <= N; t++) {
-    stage_solve_data_t &d = bwd.datas[t];
-    typename bwd_algo_t::value_t &vnext = bwd.datas[t + 1].vm;
+    stage_solve_data_t &d = datas[t];
+    value_t &vnext = datas[t + 1].vm;
     const knot_t &model = knots[t];
 
     MatrixRef K = d.fb.blockRow(0); // control feedback

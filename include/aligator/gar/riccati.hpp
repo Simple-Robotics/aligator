@@ -11,11 +11,12 @@ namespace gar {
 
 /// A sequential, regularized Riccati algorithm
 // for proximal-regularized, constrained LQ problems.
-template <typename Scalar> class ProximalRiccatiSolverBackward {
+template <typename Scalar> class ProximalRiccatiSolver {
 public:
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using RowMatrixXs = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
   using knot_t = LQRKnot<Scalar>;
+  using vecvec_t = std::vector<VectorXs>;
 
   struct value_t {
     MatrixXs Pmat;  //< Riccati matrix
@@ -81,8 +82,7 @@ public:
     error_t err;     //< numerical errors
   };
 
-  ProximalRiccatiSolverBackward(const std::vector<knot_t> &knots)
-      : knots(knots) {
+  ProximalRiccatiSolver(const std::vector<knot_t> &knots) : knots(knots) {
     assert(knots.size() > 0);
     auto N = size_t(horizon());
     datas.reserve(N + 1);
@@ -97,22 +97,13 @@ public:
   void computeKktTerms(const knot_t &model, stage_solve_data_t &d,
                        const value_t &vnext);
 
-  bool run(Scalar mudyn, Scalar mueq);
+  /// Backward sweep.
+  bool backward(Scalar mudyn, Scalar mueq);
+  /// Forward sweep.
+  bool forward(vecvec_t &xs, vecvec_t &us, vecvec_t &vs, vecvec_t &lbdas);
 
   std::vector<knot_t> knots;
   std::vector<stage_solve_data_t> datas;
-};
-
-/// Forward sweep algorithm.
-template <typename Scalar> class ProximalRiccatiSolverForward {
-public:
-  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using bwd_algo_t = ProximalRiccatiSolverBackward<Scalar>;
-  using vecvec_t = std::vector<VectorXs>;
-  using knot_t = LQRKnot<Scalar>;
-
-  static bool run(bwd_algo_t &bwd, vecvec_t &xs, vecvec_t &us, vecvec_t &vs,
-                  vecvec_t &lbdas);
 };
 
 } // namespace gar

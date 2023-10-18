@@ -8,8 +8,7 @@ using namespace aligator;
 using namespace gar;
 
 using T = double;
-using prox_ric_bwd_t = ProximalRiccatiSolverBackward<T>;
-using prox_ric_fwd_t = ProximalRiccatiSolverForward<T>;
+using prox_riccati_t = ProximalRiccatiSolver<T>;
 using knot_t = LQRKnot<T>;
 ALIGATOR_DYNAMIC_TYPEDEFS(T);
 
@@ -60,9 +59,9 @@ BOOST_AUTO_TEST_CASE(proxriccati) {
   std::vector<knot_t> knots(N + 1, base_knot);
   knots[0] = knot0;
   knots[N] = knot1;
-  prox_ric_bwd_t bwd{knots};
-  fmt::print("Horizon: {:d}\n", bwd.horizon());
-  BOOST_CHECK(bwd.run(mu, mueq));
+  prox_riccati_t solver{knots};
+  fmt::print("Horizon: {:d}\n", solver.horizon());
+  BOOST_CHECK(solver.backward(mu, mueq));
 
   std::vector<VectorXs> xs{N + 1, VectorXs(nx)};
   std::vector<VectorXs> us{N, VectorXs(nu)};
@@ -72,7 +71,7 @@ BOOST_AUTO_TEST_CASE(proxriccati) {
 
   std::vector<VectorXs> lbdas{N, VectorXs::Zero(nx)};
 
-  bool ret = prox_ric_fwd_t::run(bwd, xs, us, vs, lbdas);
+  bool ret = solver.forward(xs, us, vs, lbdas);
   BOOST_CHECK(ret);
 
   for (uint t = 0; t <= N; t++) {
