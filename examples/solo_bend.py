@@ -6,7 +6,7 @@ import hppfcl
 from proxddp import manifolds, dynamics
 from pinocchio.visualize import MeshcatVisualizer
 from pinocchio.visualize.meshcat_visualizer import COLOR_PRESETS
-from .solo_utils import rmodel, rdata, robot, q0, create_ground_contact_model
+from utils.solo import rmodel, rdata, robot, q0, create_ground_contact_model
 
 COLOR_PRESETS["white"] = ([1, 1, 1], [1, 1, 1])
 
@@ -92,14 +92,6 @@ xreg_term = proxddp.QuadraticStateCost(space, nu, X_TARGETS[nsteps], w_xterm)
 term_cost = xreg_term
 
 
-def forward_sim(nsteps):
-    us = [u0] * nsteps
-    xs = proxddp.rollout(dyn_model, x0, us)
-
-    qs = [x[:nq] for x in xs]
-    vizer.play(qs, timestep)
-
-
 def main():
     vizer.initViewer(loadModel=True, open=True)
     vizer.display(q0)
@@ -110,8 +102,6 @@ def main():
     sphere.meshColor[:] = 217, 101, 38, 120
     sphere.meshColor /= 255.0
     vizer.addGeometryObject(sphere)
-
-    forward_sim(nsteps)
 
     xs_i = [x0] * (nsteps + 1)
     us_i = [u0] * nsteps

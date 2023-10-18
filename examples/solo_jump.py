@@ -1,6 +1,6 @@
 import proxddp
 import pinocchio as pin
-from solo_utils import (
+from utils.solo import (
     robot,
     rmodel,
     rdata,
