@@ -27,6 +27,7 @@ set(DOXYGEN_USE_TEMPLATE_CSS YES)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/base.cmake)
 compute_project_args(PROJECT_ARGS LANGUAGES CXX)
 project(${PROJECT_NAME} ${PROJECT_ARGS})
+set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/boost.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/ide.cmake)
