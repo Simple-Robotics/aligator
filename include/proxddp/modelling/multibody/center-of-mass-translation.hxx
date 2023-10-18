@@ -23,7 +23,8 @@ void CenterOfMassTranslationResidualTpl<Scalar>::computeJacobians(
   const Model &model = *pin_model_;
   pinocchio::DataTpl<Scalar> &pdata = d.pin_data_;
   pinocchio::jacobianCenterOfMass(model, pdata, x.head(model.nq));
-  d.Jx_ = pdata.Jcom;
+
+  d.Jx_.leftCols(model.nv) = pdata.Jcom;
 }
 
 template <typename Scalar>
