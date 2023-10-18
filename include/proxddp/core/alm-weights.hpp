@@ -68,7 +68,3 @@ void ConstraintProximalScalerTpl<Scalar>::applyDefaultStrategy() {
 }
 
 } // namespace proxddp
-
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/core/alm-weights.txx"
-#endif
