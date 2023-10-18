@@ -1,5 +1,4 @@
 import pytest
-import time
 
 import pinocchio as pin
 import numpy as np
@@ -7,10 +6,7 @@ import hppfcl as fcl
 import proxddp
 
 from proxddp import manifolds, dynamics
-from pinocchio.visualize import MeshcatVisualizer
 
-IS_MAIN = __name__ == "__main__"
-DISPLAY = True & IS_MAIN
 TOL = 1e-4
 
 
@@ -58,7 +54,7 @@ def createFourBarLinkages():
         shape_link_A,
         pin.SE3(
             pin.Quaternion.FromTwoVectors(pin.ZAxis, pin.XAxis).matrix(),
-            np.zeros((3)),
+            np.zeros(3),
         ),
     )
     geom_obj0.meshColor = TRANS_COLOR
@@ -100,14 +96,7 @@ def createFourBarLinkages():
     geom_obj3.meshColor = RED_COLOR
     collision_model.addGeometryObject(geom_obj3)
 
-    visual_model = collision_model
     q0 = pin.neutral(model)
-
-    viz = MeshcatVisualizer(model, collision_model, visual_model)
-    if DISPLAY:
-        viz.initViewer(loadModel=True)
-        viz.viewer.open()
-        viz.display(q0)
 
     data = model.createData()
     pin.forwardKinematics(model, data, q0)
@@ -174,13 +163,11 @@ def createFourBarLinkages():
 
     q_sol = (q[:] + np.pi) % np.pi - np.pi
     model.q_init = q_sol
-    if DISPLAY:
-        viz.display(q_sol)
-    return model, constraint_model, viz
+    return model, constraint_model
 
 
 def test_inv_dyn():
-    model, rcm, viz = createFourBarLinkages()
+    model, rcm = createFourBarLinkages()
     data = model.createData()
     rcd = rcm.createData()
     q0 = model.q_init.copy()
@@ -228,7 +215,7 @@ def test_constrained_dynamics():
 
         return Jx, Ju
 
-    model, constraint_model, viz = createFourBarLinkages()
+    model, constraint_model = createFourBarLinkages()
 
     # check derivatives
     space = manifolds.MultibodyPhaseSpace(model)
@@ -260,20 +247,9 @@ def test_constrained_dynamics():
     assert err_Jx < TOL and err_Ju < TOL
 
     # Perform forward simulation of free swinging
-    t = 0
     dt = 5e-3
-    T_sim = 2.0
     discrete_dynamics = dynamics.IntegratorSemiImplEuler(ode, dt)
     data = discrete_dynamics.createData()
-    u = np.zeros((model.nv))
-    x = x0.copy()
-    while t <= T_sim:
-        discrete_dynamics.forward(x, u, data)
-        x = data.xnext.copy()
-        t += dt
-        if DISPLAY:
-            viz.display(x[: model.nq])
-            time.sleep(dt)
 
     # target is following config
     # 0----0
@@ -321,15 +297,10 @@ def test_constrained_dynamics():
 
     results = solver.results
     print(results)
-    xs_opt = results.xs.tolist()
-    if DISPLAY:
-        for i in range(nsteps):
-            viz.display(xs_opt[i][: model.nq])
-            time.sleep(dt * 3)
     assert conv
 
 
-if IS_MAIN:
+if __name__ == "__main__":
     import sys
 
     sys.exit(pytest.main(sys.argv))
