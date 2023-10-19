@@ -52,6 +52,7 @@ set(TEST_NAMES
     solver-storage
     parallel-lqr
     gar-riccati
+    block-matrix
     schur3x3)
 
 foreach(test_name ${TEST_NAMES})
