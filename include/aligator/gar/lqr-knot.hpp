@@ -63,24 +63,11 @@ template <typename T> struct LQRProblem {
 };
 
 template <typename Scalar>
-auto lqrDenseMatrix(const std::vector<LQRKnot<Scalar>> &knots, Scalar mudyn,
-                    Scalar mueq) {
-
-  using MatrixXs = typename math_types<Scalar>::MatrixXs;
-  using VectorXs = typename math_types<Scalar>::VectorXs;
+void lqrDenseMatrix(const std::vector<LQRKnot<Scalar>> &knots, Scalar mudyn,
+                    Scalar mueq, typename math_types<Scalar>::MatrixXs &mat,
+                    typename math_types<Scalar>::VectorXs &rhs) {
   using knot_t = LQRKnot<Scalar>;
   size_t N = knots.size() - 1UL;
-  uint nrows = 0;
-  for (size_t t = 0; t < knots.size(); t++) {
-    const knot_t &model = knots[t];
-    nrows += model.nx + model.nu + model.nc;
-    if (t != N)
-      nrows += model.nx;
-  }
-
-  MatrixXs mat(nrows, nrows);
-  mat.setZero();
-  VectorXs rhs(nrows);
 
   uint idx = 0;
   for (size_t t = 0; t <= N; t++) {
@@ -128,6 +115,29 @@ auto lqrDenseMatrix(const std::vector<LQRKnot<Scalar>> &knots, Scalar mudyn,
       idx += model.nx + n;
     }
   }
+}
+
+template <typename Scalar>
+auto lqrDenseMatrix(const std::vector<LQRKnot<Scalar>> &knots, Scalar mudyn,
+                    Scalar mueq) {
+
+  using MatrixXs = typename math_types<Scalar>::MatrixXs;
+  using VectorXs = typename math_types<Scalar>::VectorXs;
+  using knot_t = LQRKnot<Scalar>;
+  size_t N = knots.size() - 1UL;
+  uint nrows = 0;
+  for (size_t t = 0; t <= N; t++) {
+    const knot_t &model = knots[t];
+    nrows += model.nx + model.nu + model.nc;
+    if (t != N)
+      nrows += model.nx;
+  }
+
+  MatrixXs mat(nrows, nrows);
+  mat.setZero();
+  VectorXs rhs(nrows);
+
+  lqrDenseMatrix(knots, mudyn, mueq, mat, rhs);
   return std::make_pair(mat, rhs);
 }
 
