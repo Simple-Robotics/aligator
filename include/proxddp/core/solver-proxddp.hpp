@@ -39,8 +39,6 @@ public:
   using StageData = StageDataTpl<Scalar>;
   using VParams = ValueFunctionTpl<Scalar>;
   using QParams = QFunctionTpl<Scalar>;
-  using ProxPenaltyType = ProximalPenaltyTpl<Scalar>;
-  using ProxData = typename ProxPenaltyType::Data;
   using CallbackPtr = shared_ptr<CallbackBaseTpl<Scalar>>;
   using CallbackMap = std::unordered_map<std::string, CallbackPtr>;
   using ConstraintStack = ConstraintStackTpl<Scalar>;
@@ -52,7 +50,6 @@ public:
 
   enum BackwardRet { BWD_SUCCESS, BWD_WRONG_INERTIA };
 
-  std::vector<ProxPenaltyType> prox_penalties_;
   /// Subproblem tolerance
   Scalar inner_tol_;
   /// Desired primal feasibility
@@ -190,12 +187,6 @@ public:
   /// @param problem  The problem instance with respect to which memory will be
   /// allocated.
   void setup(const Problem &problem);
-
-  void computeProxTerms(const std::vector<VectorXs> &xs,
-                        const std::vector<VectorXs> &us);
-
-  void computeProxDerivatives(const std::vector<VectorXs> &xs,
-                              const std::vector<VectorXs> &us);
 
   /// @brief Run the numerical solver.
   /// @param problem  The trajectory optimization problem to solve.

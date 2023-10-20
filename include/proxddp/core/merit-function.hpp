@@ -69,11 +69,6 @@ template <typename _Scalar> struct PDALFunction {
                                       const TrajOptProblem &problem,
                                       const std::vector<VectorXs> &lams,
                                       Workspace &workspace);
-
-  /// @brief   Compute the proximal penalty in the state-control trajectory.
-  /// @warning Compute the proximal penalty for each timestep first.
-  static Scalar computeProxPenalty(const SolverType &solver,
-                                   const Workspace &workspace);
 };
 
 } // namespace proxddp

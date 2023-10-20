@@ -131,55 +131,7 @@ void SolverProxDDP<Scalar>::setup(const Problem &problem) {
   results_ = Results(problem);
   linesearch_.setOptions(ls_params);
 
-  prox_penalties_.clear();
-  const std::size_t nsteps = workspace_.nsteps;
-  for (std::size_t i = 0; i < nsteps; i++) {
-    const StageModel &sm = *problem.stages_[i];
-    prox_penalties_.emplace_back(sm.xspace_, sm.uspace_, workspace_.prev_xs[i],
-                                 workspace_.prev_us[i], false);
-    if (i == nsteps - 1) {
-      prox_penalties_.emplace_back(sm.xspace_next_, sm.uspace_,
-                                   workspace_.prev_xs[nsteps], problem.unone_,
-                                   true);
-    }
-  }
-
-  for (std::size_t i = 0; i < nsteps; i++) {
-    workspace_.prox_datas.push_back(
-        std::make_shared<ProxData>(&prox_penalties_[i]));
-    if (i == nsteps - 1) {
-      workspace_.prox_datas.push_back(
-          std::make_shared<ProxData>(&prox_penalties_[nsteps]));
-    }
-  }
-
   workspace_.configureScalers(problem, mu_penal_);
-}
-
-template <typename Scalar>
-void SolverProxDDP<Scalar>::computeProxTerms(const std::vector<VectorXs> &xs,
-                                             const std::vector<VectorXs> &us) {
-  const std::size_t nsteps = workspace_.nsteps;
-  for (std::size_t i = 0; i < nsteps; i++) {
-    prox_penalties_[i].evaluate(xs[i], us[i], *workspace_.prox_datas[i]);
-  }
-  prox_penalties_[nsteps].evaluate(xs[nsteps], us[nsteps - 1],
-                                   *workspace_.prox_datas[nsteps]);
-}
-
-template <typename Scalar>
-void SolverProxDDP<Scalar>::computeProxDerivatives(
-    const std::vector<VectorXs> &xs, const std::vector<VectorXs> &us) {
-  const std::size_t nsteps = workspace_.nsteps;
-  for (std::size_t i = 0; i < nsteps; i++) {
-    prox_penalties_[i].computeGradients(xs[i], us[i],
-                                        *workspace_.prox_datas[i]);
-    prox_penalties_[i].computeHessians(xs[i], us[i], *workspace_.prox_datas[i]);
-  }
-  prox_penalties_[nsteps].computeGradients(xs[nsteps], us[nsteps - 1],
-                                           *workspace_.prox_datas[nsteps]);
-  prox_penalties_[nsteps].computeHessians(xs[nsteps], us[nsteps - 1],
-                                          *workspace_.prox_datas[nsteps]);
 }
 
 template <typename Scalar>
@@ -759,7 +711,6 @@ Scalar SolverProxDDP<Scalar>::forwardPass(const Problem &problem,
     assert(false && "unknown RolloutType!");
     break;
   }
-  // computeProxTerms(workspace.trial_xs, workspace.trial_us, workspace);
   computeMultipliers(problem, workspace_.trial_lams);
   return PDALFunction<Scalar>::evaluate(*this, problem, workspace_.trial_lams,
                                         workspace_);
@@ -788,8 +739,6 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
     /// TODO: make this smarter using e.g. some caching mechanism
     problem.computeDerivatives(results_.xs, results_.us,
                                workspace_.problem_data);
-    // computeProxTerms(results.xs, results.us, workspace);
-    // computeProxDerivatives(results.xs, results.us, workspace);
     const Scalar phi0 = results_.merit_value_;
 
     computeLagrangianDerivatives(problem, workspace_, results_.lams);

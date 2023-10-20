@@ -57,7 +57,6 @@ void exposeProxDDP() {
       "Workspace", "Workspace for ProxDDP.",
       bp::init<const TrajOptProblem &, bp::optional<LDLTChoice>>(
           bp::args("self", "problem", "ldlt_choice")))
-      .def_readonly("prox_datas", &Workspace::prox_datas)
       .def(
           "getConstraintScaler",
           +[](const Workspace &ws, std::size_t j) -> const ProxScaler & {

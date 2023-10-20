@@ -21,8 +21,6 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
     : Base(problem), stage_inner_crits(nsteps + 1),
       stage_dual_infeas(nsteps + 1) {
 
-  prox_datas.reserve(nsteps + 1);
-
   Lxs_.reserve(nsteps + 1);
   Lus_.reserve(nsteps);
 
@@ -144,8 +142,6 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
 
 template <typename Scalar> void WorkspaceTpl<Scalar>::cycleLeft() {
   Base::cycleLeft();
-
-  rotate_vec_left(prox_datas);
 
   rotate_vec_left(cstr_scalers);
   rotate_vec_left(Lxs_);

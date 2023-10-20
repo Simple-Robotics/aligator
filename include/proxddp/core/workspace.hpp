@@ -11,6 +11,8 @@
 
 #include <proxnlp/ldlt-allocator.hpp>
 
+#include <array>
+
 namespace proxddp {
 
 using proxnlp::LDLTChoice;
@@ -22,8 +24,6 @@ using proxnlp::LDLTChoice;
  */
 template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-  using ProxPenalty = ProximalPenaltyTpl<Scalar>;
-  using ProxData = typename ProxPenalty::Data;
   using StageModel = StageModelTpl<Scalar>;
   using Base = WorkspaceBaseTpl<Scalar>;
   using VecBool = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
@@ -36,9 +36,6 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using Base::trial_us;
   using Base::trial_xs;
   using Base::value_params;
-
-  /// Proximal penalty data.
-  std::vector<shared_ptr<ProxData>> prox_datas;
 
   /// Proximal algo scalers for the constraints
   std::vector<CstrProxScaler> cstr_scalers;
