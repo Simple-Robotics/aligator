@@ -1,12 +1,11 @@
 /// @file
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
 #include "aligator/core/function-abstract.hpp"
 #include "aligator/core/cost-abstract.hpp"
 #include "aligator/core/dynamics.hpp"
 #include "aligator/core/constraint.hpp"
-#include "aligator/utils/exceptions.hpp"
 
 #include "aligator/core/clone.hpp"
 
@@ -63,8 +62,7 @@ public:
   virtual bool has_dyn_model() const { return true; }
   virtual const Dynamics &dyn_model() const {
     assert(numConstraints() > 0);
-    auto dyn_ptr = std::static_pointer_cast<Dynamics>(constraints_[0].func);
-    return *dyn_ptr;
+    return static_cast<const Dynamics &>(*constraints_[0].func);
   }
 
   int nx1() const { return xspace_->nx(); }
@@ -73,13 +71,13 @@ public:
   int nx2() const { return xspace_next_->nx(); }
   int ndx2() const { return xspace_next_->ndx(); }
 
-  /// Number of constraints (constraint objects).
+  /// Number of constraint objects.
   std::size_t numConstraints() const { return constraints_.size(); }
 
   /// Number of primal optimization variables.
-  int numPrimal() const;
+  int numPrimal() const { return nu() + ndx2(); }
   /// Number of dual variables, i.e. Lagrange multipliers.
-  int numDual() const;
+  int numDual() const { return (int)constraints_.totalDim(); }
 
   /// @brief    Add a constraint to the stage.
   template <typename T> void addConstraint(T &&cstr);
@@ -100,7 +98,7 @@ public:
                                   const ConstVectorRef &u,
                                   const ConstVectorRef &y, Data &data) const;
 
-  /// @brief    Create a Data object.
+  /// @brief    Create a StageData object.
   virtual shared_ptr<Data> createData() const;
 
   friend std::ostream &operator<<(std::ostream &oss,

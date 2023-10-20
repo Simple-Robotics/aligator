@@ -75,6 +75,8 @@ void exposeProblem() {
   bp::class_<TrajOptData>(
       "TrajOptData", "Data struct for shooting problems.",
       bp::init<const TrajOptProblem &>(bp::args("self", "problem")))
+      .def_readwrite("init_data", &TrajOptData::init_data,
+                     "Initial stage contraint data.")
       .def_readwrite("cost", &TrajOptData::cost_,
                      "Current cost of the TO problem.")
       .def_readwrite("term_cost", &TrajOptData::term_cost_data,

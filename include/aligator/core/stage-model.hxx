@@ -42,14 +42,6 @@ StageModelTpl<Scalar>::StageModelTpl(ManifoldPtr space, const int nu)
     : xspace_(space), xspace_next_(space),
       uspace_(make_vector_space<Scalar>(nu)) {}
 
-template <typename Scalar> inline int StageModelTpl<Scalar>::numPrimal() const {
-  return this->nu() + this->ndx2();
-}
-
-template <typename Scalar> inline int StageModelTpl<Scalar>::numDual() const {
-  return (int)constraints_.totalDim();
-}
-
 template <typename Scalar>
 template <typename T>
 void StageModelTpl<Scalar>::addConstraint(T &&cstr) {

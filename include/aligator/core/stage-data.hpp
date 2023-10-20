@@ -22,6 +22,8 @@ struct StageDataTpl : Cloneable<StageDataTpl<_Scalar>> {
   std::vector<shared_ptr<StageFunctionData>> constraint_data;
   /// Data for the running costs.
   shared_ptr<CostDataAbstract> cost_data;
+  // Shortcut pointer to dynamics' data.
+  shared_ptr<DynamicsData> dynamics_data;
 
   /// @brief    Constructor.
   ///
@@ -31,29 +33,10 @@ struct StageDataTpl : Cloneable<StageDataTpl<_Scalar>> {
 
   virtual ~StageDataTpl() = default;
 
-  DynamicsData &dyn_data() { return *dynamics_data; }
-
-  const DynamicsData &dyn_data() const { return *dynamics_data; }
-
   /// @brief Check data integrity.
-  virtual void checkData() {
-    const char msg[] = "StageData integrity check failed.";
-    if (constraint_data.size() == 0) {
-      ALIGATOR_RUNTIME_ERROR(fmt::format("{} (constraint_data empty)", msg));
-    }
-    if (cost_data == 0) {
-      ALIGATOR_RUNTIME_ERROR(fmt::format("{} (cost_data is nullptr)", msg));
-    }
-
-    if (dynamics_data == nullptr) {
-      ALIGATOR_RUNTIME_ERROR(
-          fmt::format("{} (constraint_data[0] should be dynamics data)", msg));
-    }
-  }
+  virtual void checkData();
 
 protected:
-  // Shortcut pointer to dynamics' data.
-  shared_ptr<DynamicsData> dynamics_data;
   StageDataTpl() = default;
   virtual StageDataTpl *clone_impl() const override {
     return new StageDataTpl(*this);

@@ -12,7 +12,7 @@ Scalar costDirectionalDerivative(const WorkspaceTpl<Scalar> &workspace,
   Scalar d1 = 0.;
   const std::size_t nsteps = workspace.nsteps;
   for (std::size_t i = 0; i < nsteps; i++) {
-    const StageDataTpl<Scalar> &sd = prob_data.getStageData(i);
+    const StageDataTpl<Scalar> &sd = *prob_data.stage_data[i];
     const CostDataAbstractTpl<Scalar> &cd = *sd.cost_data;
     d1 += cd.Lx_.dot(workspace.dxs[i]);
     d1 += cd.Lu_.dot(workspace.dus[i]);

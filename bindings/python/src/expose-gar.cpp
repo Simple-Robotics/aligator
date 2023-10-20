@@ -157,9 +157,10 @@ void exposeGAR() {
 
   using context::Scalar;
   bp::class_<prox_riccati_t, boost::noncopyable>(
-      "ProximalRiccatiBwd", "Proximal Riccati backward pass.", bp::no_init)
+      "ProximalRiccatiSolver", "Proximal Riccati solver.", bp::no_init)
       .def(bp::init<const knot_vec_t &>(bp::args("self", "knots")))
       .add_property("horizon", &prox_riccati_t::horizon)
+      .def_readwrite("knots", &prox_riccati_t::knots)
       .def_readonly("datas", &prox_riccati_t::datas)
       .def("backward", &prox_riccati_t::backward,
            bp::args("self", "mu", "mueq"))

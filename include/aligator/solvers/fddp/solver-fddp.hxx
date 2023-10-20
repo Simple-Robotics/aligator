@@ -63,7 +63,7 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &sm = *problem.stages_[i];
-    StageData &sd = prob_data.getStageData(i);
+    StageData &sd = *prob_data.stage_data[i];
 
     auto kkt_ff = results.getFeedforward(i);
     auto kkt_fb = results.getFeedback(i);
@@ -165,7 +165,7 @@ Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem) {
 #pragma omp parallel for num_threads(problem.getNumThreads())
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &sm = *problem.stages_[i];
-    const auto &sd = pd.getStageData(i);
+    const auto &sd = *pd.stage_data[i];
     const ExpData &dd = stage_get_dynamics_data(sd);
     sm.xspace_->difference(xs[i + 1], dd.xnext_, fs[i + 1]);
   }
@@ -213,14 +213,14 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
     QParams &qparam = workspace.q_params[i];
 
     StageModel &sm = *problem.stages_[i];
-    StageData &sd = prob_data.getStageData(i);
+    StageData &sd = *prob_data.stage_data[i];
 
     const int nu = sm.nu();
     const int ndx1 = sm.ndx1();
     assert(qparam.grad_.size() == ndx1 + nu);
 
     const CostData &cd = *sd.cost_data;
-    const DynamicsDataTpl<Scalar> &dd = sd.dyn_data();
+    const DynamicsDataTpl<Scalar> &dd = *sd.dynamics_data;
 
     /* Assemble Q-function */
     auto J_x_u = dd.jac_buffer_.leftCols(ndx1 + nu);

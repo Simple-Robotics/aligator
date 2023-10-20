@@ -192,7 +192,7 @@ public:
 
   static const ExpData &
   stage_get_dynamics_data(const StageDataTpl<Scalar> &data) {
-    const DynamicsDataTpl<Scalar> &dd = data.dyn_data();
+    const DynamicsDataTpl<Scalar> &dd = *data.dynamics_data;
     return static_cast<const ExpData &>(dd);
   }
 };

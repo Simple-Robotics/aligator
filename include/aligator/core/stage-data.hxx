@@ -24,4 +24,15 @@ StageDataTpl<Scalar>::StageDataTpl(const StageModel &stage_model)
   dynamics_data = std::dynamic_pointer_cast<DynamicsData>(constraint_data[0]);
 }
 
+template <typename Scalar> void StageDataTpl<Scalar>::checkData() {
+  const char msg[] = "StageData integrity check failed.";
+  if (constraint_data.size() == 0)
+    ALIGATOR_RUNTIME_ERROR(fmt::format("{} (constraint_data empty)", msg));
+  if (cost_data == 0)
+    ALIGATOR_RUNTIME_ERROR(fmt::format("{} (cost_data is nullptr)", msg));
+  if (dynamics_data == nullptr)
+    ALIGATOR_RUNTIME_ERROR(
+        fmt::format("{} (constraint_data[0] should be dynamics data)", msg));
+}
+
 } // namespace aligator

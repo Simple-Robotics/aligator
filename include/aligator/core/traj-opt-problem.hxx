@@ -66,7 +66,7 @@ Scalar TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
         "Wrong size for xs or us, expected us.size = {:d}", nsteps));
   }
 
-  init_condition_->evaluate(xs[0], prob_data.getInitData());
+  init_condition_->evaluate(xs[0], *prob_data.init_data);
 
   auto &sds = prob_data.stage_data;
   for (std::size_t i = 0; i < nsteps; i++) {
@@ -95,7 +95,7 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
         "Wrong size for xs or us, expected us.size = {:d}", nsteps));
   }
 
-  init_condition_->computeJacobians(xs[0], prob_data.getInitData());
+  init_condition_->computeJacobians(xs[0], *prob_data.init_data);
 
   prob_data.xs_copy = xs;
   auto &sds = prob_data.stage_data;

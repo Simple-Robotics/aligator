@@ -83,7 +83,7 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem) {
   ALIGATOR_NOMALLOC_BEGIN;
   // compute direction dx0
   const VParams &vp = workspace_.value_params[0];
-  StageFunctionData &init_data = workspace_.problem_data.getInitData();
+  const StageFunctionData &init_data = *workspace_.problem_data.init_data;
   const int ndual0 = problem.init_condition_->nr;
   const int ndx0 = problem.init_condition_->ndx1;
   const VectorXs &lampl0 = workspace_.lams_plus[0];
@@ -171,7 +171,7 @@ void SolverProxDDP<Scalar>::computeMultipliers(
   {
     const VectorXs &lam0 = lams[0];
     const VectorXs &plam0 = lams_prev[0];
-    StageFunctionData &data = prob_data.getInitData();
+    StageFunctionData &data = *prob_data.init_data;
     shifted_constraints[0] = data.value_ + mu() * plam0;
     lams_plus[0] = shifted_constraints[0] * mu_inv();
     lams_pdal[0] = shifted_constraints[0] - 0.5 * mu() * lam0;
@@ -247,11 +247,12 @@ void SolverProxDDP<Scalar>::updateHamiltonian(const Problem &problem,
                                               const std::size_t t) {
   ALIGATOR_NOMALLOC_BEGIN;
 
+  TrajOptData &pd = workspace_.problem_data;
   const StageModel &stage = *problem.stages_[t];
   const VParams &vnext = workspace_.value_params[t + 1];
   QParams &qparam = workspace_.q_params[t];
 
-  StageData &stage_data = workspace_.problem_data.getStageData(t);
+  StageData &stage_data = *pd.stage_data[t];
   const CostData &cdata = *stage_data.cost_data;
 
   qparam.q_ = cdata.value_;
@@ -335,11 +336,12 @@ void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
   using ColXpr = typename MatrixXs::ColXpr;
   using ColsBlockXpr = typename MatrixXs::ColsBlockXpr;
   const StageModel &stage = *problem.stages_[t];
+  TrajOptData &pd = workspace_.problem_data;
 
   QParams &qparam = workspace_.q_params[t];
   const VParams &vnext = workspace_.value_params[t + 1];
 
-  const StageData &stage_data = workspace_.problem_data.getStageData(t);
+  const StageData &stage_data = *pd.stage_data[t];
   const int nprim = stage.numPrimal();
   const int ndual = stage.numDual();
   const int ndx1 = stage.ndx1();
@@ -505,7 +507,7 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
 
   for (std::size_t t = 0; t < nsteps; t++) {
     const StageModel &stage = *problem.stages_[t];
-    StageData &data = prob_data.getStageData(t);
+    StageData &data = *prob_data.stage_data[t];
 
     const int nu = stage.nu();
     const int ndual = stage.numDual();
@@ -539,7 +541,7 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
       dyn_slacks[t] = weight_strat.get(0) * (dynprevlam - dynlam);
     }
 
-    DynamicsData &dd = data.dyn_data();
+    DynamicsData &dd = *data.dynamics_data;
 
     // lambda to be called in both branches
     auto explicit_model_update_xnext = [&]() {
@@ -838,7 +840,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem) {
   std::vector<VectorXs> &lams_plus = workspace_.lams_plus;
   std::vector<VectorXs> &lams_prev = workspace_.prev_lams;
 
-  const StageFunctionData &init_data = prob_data.getInitData();
+  const StageFunctionData &init_data = *prob_data.init_data;
   workspace_.stage_prim_infeas[0](0) = math::infty_norm(init_data.value_);
 
   auto execute_on_stack = [](const ConstraintStack &stack,

@@ -99,7 +99,7 @@ void computeLagrangianDerivatives(
   math::setZero(Lxs);
   math::setZero(Lus);
   {
-    StageFunctionData const &ind = pd.getInitData();
+    StageFunctionData const &ind = *pd.init_data;
     Lxs[0] += ind.Jx_.transpose() * lams[0];
   }
 
@@ -117,7 +117,7 @@ void computeLagrangianDerivatives(
 
   for (std::size_t i = 0; i < nsteps; i++) {
     StageModel const &sm = *problem.stages_[i];
-    StageData const &sd = pd.getStageData(i);
+    StageData const &sd = *pd.stage_data[i];
     ConstraintStack const &stack = sm.constraints_;
     Lxs[i] += sd.cost_data->Lx_;
     Lus[i] += sd.cost_data->Lu_;

@@ -1,10 +1,10 @@
 #include <boost/test/unit_test.hpp>
 
-#include "proxddp/context.hpp"
-#include "proxddp/gar/BlkMatrix.hpp"
+#include "aligator/context.hpp"
+#include "aligator/gar/BlkMatrix.hpp"
 
-using namespace proxddp;
-using namespace proxddp::context;
+using namespace aligator;
+using namespace aligator::context;
 
 using MatrixXs = math_types<Scalar>::MatrixXs;
 using VectorXs = math_types<Scalar>::VectorXs;

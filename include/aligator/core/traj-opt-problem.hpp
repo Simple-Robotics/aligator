@@ -228,16 +228,6 @@ template <typename _Scalar> struct TrajOptDataTpl {
 
   TrajOptDataTpl() = default;
   TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem);
-
-  /// Get stage data for a stage by time index.
-  StageData &getStageData(std::size_t i) { return *stage_data[i]; }
-  /// @copydoc getStageData()
-  const StageData &getStageData(std::size_t i) const { return *stage_data[i]; }
-
-  /// Get initial constraint function data.
-  StageFunctionData &getInitData() { return *init_data; }
-  /// @copydoc getInitData()
-  const StageFunctionData &getInitData() const { return *init_data; }
 };
 
 } // namespace aligator

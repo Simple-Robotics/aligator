@@ -125,7 +125,7 @@ for i in range(nsteps):
         icd: aligator.StageFunctionData = stage_datas[i].constraint_data[1]
         ineq_cstr_datas.append(icd)
         ineq_cstr_values.append(icd.value.copy())
-    dcd = stage_datas[i].constraint_data[0]
+    dcd = stage_datas[i].dynamics_data
     dyn_cstr_values.append(dcd.value.copy())
 
 times = np.linspace(0.0, Tf, nsteps + 1)
