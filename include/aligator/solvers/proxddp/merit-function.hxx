@@ -54,8 +54,6 @@ Scalar PDALFunction<Scalar>::evaluate(const SolverType &solver,
   // stage-per-stage
   const std::size_t nsteps = problem.numSteps();
   for (std::size_t i = 0; i < nsteps; i++) {
-    const StageModel &stage = *problem.stages_[i];
-
     penalty_value += execute_on_stack(lams[i + 1], lams_pdal[i + 1],
                                       workspace.cstr_scalers[i]);
   }
@@ -105,8 +103,6 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
   };
 
   for (std::size_t i = 0; i < nsteps; i++) {
-    const StageModel &stage = *problem.stages_[i];
-
     d1 += workspace.Lxs_[i + 1].dot(dxs[i + 1]);
     d1 += workspace.Lus_[i].dot(dus[i]);
     d1 += execute_on_stack(dlams[i + 1], lams[i + 1], lams_pdal[i + 1],
