@@ -82,14 +82,13 @@ public:
     error_t err;     //< numerical errors
   };
 
-  ProximalRiccatiSolver(const std::vector<knot_t> &knots) : knots(knots) {
-    assert(knots.size() > 0);
-    auto N = size_t(horizon());
-    datas.reserve(N + 1);
-    for (size_t t = 0; t <= N; t++) {
-      const knot_t &knot = knots[t];
-      datas.emplace_back(knot.nx, knot.nu, knot.nc);
-    }
+  explicit ProximalRiccatiSolver(const std::vector<knot_t> &knots)
+      : knots(knots) {
+    initialize();
+  }
+
+  explicit ProximalRiccatiSolver(std::vector<knot_t> &&knots) : knots(knots) {
+    initialize();
   }
 
   inline long horizon() const noexcept { return long(knots.size()) - 1; }
@@ -104,6 +103,17 @@ public:
 
   std::vector<knot_t> knots;
   std::vector<stage_solve_data_t> datas;
+
+protected:
+  void initialize() {
+    assert(knots.size() > 0);
+    auto N = size_t(horizon());
+    datas.reserve(N + 1);
+    for (size_t t = 0; t <= N; t++) {
+      const knot_t &knot = knots[t];
+      datas.emplace_back(knot.nx, knot.nu, knot.nc);
+    }
+  }
 };
 
 } // namespace gar
