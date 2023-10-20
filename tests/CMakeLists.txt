@@ -45,13 +45,7 @@ function(add_proxddp_test name)
   target_link_libraries(${test_name} PRIVATE Boost::unit_test_framework benchmark::benchmark)
 endfunction(add_proxddp_test)
 
-set(TEST_NAMES
-    integrators
-    problem
-    costs
-    continuous
-    utils
-    solver-storage)
+set(TEST_NAMES integrators problem costs continuous utils solver-storage)
 
 foreach(test_name ${TEST_NAMES})
   add_proxddp_test(${test_name})

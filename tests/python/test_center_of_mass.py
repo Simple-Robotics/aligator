@@ -111,6 +111,7 @@ def test_frame_velocity():
         print(fdata.Jx)
         assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
 
+
 if __name__ == "__main__":
     import sys
     import pytest

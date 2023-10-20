@@ -23,9 +23,9 @@ public:
   shared_ptr<Model> pin_model_;
 
   CenterOfMassVelocityResidualTpl(const int ndx, const int nu,
-                                     const shared_ptr<Model> &model,
-                                     const Vector3s &frame_vel)
-      : Base(ndx, nu, 3), pin_model_(model), v_ref_(frame_vel){}
+                                  const shared_ptr<Model> &model,
+                                  const Vector3s &frame_vel)
+      : Base(ndx, nu, 3), pin_model_(model), v_ref_(frame_vel) {}
 
   const Vector3s &getReference() const { return v_ref_; }
   void setReference(const Eigen::Ref<const Vector3s> &v_new) { v_ref_ = v_new; }
@@ -53,7 +53,8 @@ struct CenterOfMassVelocityDataTpl : FunctionDataTpl<Scalar> {
   /// Jacobian of the error
   typename math_types<Scalar>::Matrix3Xs fJf_;
 
-  CenterOfMassVelocityDataTpl(const CenterOfMassVelocityResidualTpl<Scalar> *model);
+  CenterOfMassVelocityDataTpl(
+      const CenterOfMassVelocityResidualTpl<Scalar> *model);
 };
 
 } // namespace proxddp

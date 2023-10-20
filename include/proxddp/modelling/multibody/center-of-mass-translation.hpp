@@ -10,7 +10,8 @@ namespace proxddp {
 template <typename Scalar> struct CenterOfMassTranslationDataTpl;
 
 template <typename _Scalar>
-struct CenterOfMassTranslationResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
+struct CenterOfMassTranslationResidualTpl : UnaryFunctionTpl<_Scalar>,
+                                            frame_api {
 public:
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
@@ -25,7 +26,7 @@ public:
   CenterOfMassTranslationResidualTpl(const int ndx, const int nu,
                                      const shared_ptr<Model> &model,
                                      const Vector3s &frame_trans)
-      : Base(ndx, nu, 3), pin_model_(model), p_ref_(frame_trans){}
+      : Base(ndx, nu, 3), pin_model_(model), p_ref_(frame_trans) {}
 
   const Vector3s &getReference() const { return p_ref_; }
   void setReference(const Eigen::Ref<const Vector3s> &p_new) { p_ref_ = p_new; }
@@ -51,7 +52,8 @@ struct CenterOfMassTranslationDataTpl : FunctionDataTpl<Scalar> {
   /// Pinocchio data object.
   PinData pin_data_;
 
-  CenterOfMassTranslationDataTpl(const CenterOfMassTranslationResidualTpl<Scalar> *model);
+  CenterOfMassTranslationDataTpl(
+      const CenterOfMassTranslationResidualTpl<Scalar> *model);
 };
 
 } // namespace proxddp

@@ -6,8 +6,8 @@
 namespace proxddp {
 
 template <typename Scalar>
-void CenterOfMassTranslationResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
-                                                   BaseData &data) const {
+void CenterOfMassTranslationResidualTpl<Scalar>::evaluate(
+    const ConstVectorRef &x, BaseData &data) const {
   Data &d = static_cast<Data &>(data);
   const Model &model = *pin_model_;
   pinocchio::DataTpl<Scalar> &pdata = d.pin_data_;
@@ -31,7 +31,6 @@ template <typename Scalar>
 CenterOfMassTranslationDataTpl<Scalar>::CenterOfMassTranslationDataTpl(
     const CenterOfMassTranslationResidualTpl<Scalar> *model)
     : Base(model->ndx1, model->nu, model->ndx2, 3),
-      pin_data_(*model->pin_model_) {
-}
+      pin_data_(*model->pin_model_) {}
 
 } // namespace proxddp
