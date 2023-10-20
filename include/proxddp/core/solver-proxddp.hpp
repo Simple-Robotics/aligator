@@ -27,7 +27,6 @@ public:
 
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-  using BlockXs = typename MatrixXs::BlockXpr;
   using Problem = TrajOptProblemTpl<Scalar>;
   using Workspace = WorkspaceTpl<Scalar>;
   using Results = ResultsTpl<Scalar>;

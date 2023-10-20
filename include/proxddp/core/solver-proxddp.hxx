@@ -105,7 +105,7 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem) {
     kktx.noalias() += init_data.Jx_.transpose() * lamin0;
     kktl = mu() * (lampl0 - lamin0);
 
-    BlockXs kkt_xx = kkt_mat.topLeftCorner(ndx0, ndx0);
+    auto kkt_xx = kkt_mat.topLeftCorner(ndx0, ndx0);
     kkt_xx = vp.Vxx_ + init_data.Hxx_;
 
     kkt_mat.topRightCorner(ndx0, ndual0) = init_data.Jx_.transpose();
@@ -356,9 +356,9 @@ void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
   assert(kkt_rhs.rows() == (nprim + ndual));
   assert(kkt_rhs.cols() == (ndx1 + 1));
 
-  BlockXs kkt_jac = kkt_mat.bottomLeftCorner(ndual, nprim);
-  BlockXs kkt_prim = kkt_mat.topLeftCorner(nprim, nprim);
-  BlockXs kkt_dual = kkt_mat.bottomRightCorner(ndual, ndual);
+  auto kkt_jac = kkt_mat.bottomLeftCorner(ndual, nprim);
+  auto kkt_prim = kkt_mat.topLeftCorner(nprim, nprim);
+  auto kkt_dual = kkt_mat.bottomRightCorner(ndual, ndual);
 
   ColXpr kkt_rhs_ff(kkt_rhs.col(0));
   ColsBlockXpr kkt_rhs_fb(kkt_rhs.rightCols(ndx1));
