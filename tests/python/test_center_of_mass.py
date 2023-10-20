@@ -116,4 +116,3 @@ if __name__ == "__main__":
     import pytest
 
     sys.exit(pytest.main(sys.argv))
-    # test_frame_placement()
