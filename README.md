@@ -72,3 +72,4 @@ flamegraph -o my_flamegraph.svg -- ./build/examples/example-croc-talos-arm
 * [Nicolas Mansard](https://gepettoweb.laas.fr/index.php/Members/NicolasMansard)
 * [Guilhem Saurel](https://github.com/nim65s)
 * [Fabian Schramm](https://github.com/fabinsch)
+* [Ludovic De Matteïs](https://github.com/LudovicDeMatteis)
