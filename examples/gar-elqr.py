@@ -1,7 +1,7 @@
 """
-Tests for GAR module in the proxddp Python bindings.
+Tests for GAR module in the aligator Python bindings.
 """
-from proxddp import gar
+from aligator import gar
 import numpy as np
 import pprint
 
@@ -69,7 +69,8 @@ def make_interm_node(t0):
     return kn
 
 
-knots = [knot0]
+prob = gar.LQRProblem([knot0], 0)
+knots = prob.stages
 for t in range(T - 1):
     if args.mid and t == t0:
         kn = make_interm_node(t)
@@ -81,7 +82,7 @@ knots.append(knot1)
 # print(f"{knots[0]}")
 # print(f"{knots[1]}")
 
-ricsolve = gar.ProximalRiccatiBwd(knots)
+ricsolve = gar.ProximalRiccatiSolver(knots)
 
 assert ricsolve.horizon == T
 mu = 1e-5
@@ -95,7 +96,7 @@ def inftyNorm(x):
 
 
 def get_np_solution():
-    matrix, rhs = gar.lqrDenseMatrix(knots, mu, mueq)
+    matrix, rhs = gar.lqrDenseMatrix(prob, mu, mueq)
     print(f"Problem matrix:\n{matrix}")
     print(f"Problem rhs:\n{rhs}")
 

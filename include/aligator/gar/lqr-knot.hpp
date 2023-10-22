@@ -63,6 +63,7 @@ template <typename Scalar> struct LQRProblem {
   VectorXs g0;
 
   long horizon() const noexcept { return long(stages.size()) - 1L; }
+  long nc0() const noexcept { return g0.rows(); }
 
   LQRProblem(const std::vector<knot_t> &knots, long nc0)
       : stages(knots), G0(), g0(nc0) {
@@ -73,13 +74,25 @@ template <typename Scalar> struct LQRProblem {
 };
 
 template <typename Scalar>
-void lqrDenseMatrix(const std::vector<LQRKnot<Scalar>> &knots, Scalar mudyn,
+void lqrDenseMatrix(const LQRProblem<Scalar> &problem, Scalar mudyn,
                     Scalar mueq, typename math_types<Scalar>::MatrixXs &mat,
                     typename math_types<Scalar>::VectorXs &rhs) {
   using knot_t = LQRKnot<Scalar>;
+  const std::vector<knot_t> &knots = problem.stages;
   size_t N = knots.size() - 1UL;
 
   uint idx = 0;
+  {
+    long nc0 = problem.nc0();
+    uint nx0 = problem.stages[0].nx;
+    mat.block(nc0, 0, nx0, nc0) = problem.G0.transpose();
+    mat.block(0, nc0, nc0, nx0) = problem.G0;
+    mat.topLeftCorner(nc0, nc0).diagonal().setConstant(-mudyn);
+
+    rhs.head(nc0) = problem.g0;
+    idx += (uint)nc0;
+  }
+
   for (size_t t = 0; t <= N; t++) {
     const knot_t &model = knots[t];
     // get block for current variables
@@ -128,14 +141,16 @@ void lqrDenseMatrix(const std::vector<LQRKnot<Scalar>> &knots, Scalar mudyn,
 }
 
 template <typename Scalar>
-auto lqrDenseMatrix(const std::vector<LQRKnot<Scalar>> &knots, Scalar mudyn,
+auto lqrDenseMatrix(const LQRProblem<Scalar> &problem, Scalar mudyn,
                     Scalar mueq) {
 
+  decltype(auto) knots = problem.stages;
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using knot_t = LQRKnot<Scalar>;
+  long nc0 = problem.nc0();
   size_t N = knots.size() - 1UL;
-  uint nrows = 0;
+  uint nrows = (uint)nc0;
   for (size_t t = 0; t <= N; t++) {
     const knot_t &model = knots[t];
     nrows += model.nx + model.nu + model.nc;
@@ -147,7 +162,7 @@ auto lqrDenseMatrix(const std::vector<LQRKnot<Scalar>> &knots, Scalar mudyn,
   mat.setZero();
   VectorXs rhs(nrows);
 
-  lqrDenseMatrix(knots, mudyn, mueq, mat, rhs);
+  lqrDenseMatrix(problem, mudyn, mueq, mat, rhs);
   return std::make_pair(mat, rhs);
 }
 

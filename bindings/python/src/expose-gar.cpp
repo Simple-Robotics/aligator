@@ -10,9 +10,11 @@ namespace aligator {
 namespace python {
 using namespace gar;
 
-using prox_riccati_t = ProximalRiccatiSolver<context::Scalar>;
-using knot_t = LQRKnot<context::Scalar>;
+using context::Scalar;
+using prox_riccati_t = ProximalRiccatiSolver<Scalar>;
+using knot_t = LQRKnot<Scalar>;
 using stage_solve_data_t = prox_riccati_t::stage_solve_data_t;
+using lqr_t = LQRProblem<Scalar>;
 } // namespace python
 } // namespace aligator
 
@@ -92,7 +94,14 @@ void exposeGAR() {
 
   StdVectorPythonVisitor<knot_vec_t, true>::expose("LQRKnotVec");
 
-  using context::Scalar;
+  bp::class_<lqr_t>("LQRProblem", bp::no_init)
+      .def(
+          bp::init<const knot_vec_t &, long>(bp::args("self", "stages", "nc0")))
+      .def_readwrite("stages", &lqr_t::stages)
+      .add_property("horizon", &lqr_t::horizon)
+      .def_readwrite("G0", &lqr_t::G0)
+      .def_readwrite("g0", &lqr_t::g0);
+
   bp::class_<prox_riccati_t, boost::noncopyable>(
       "ProximalRiccatiSolver", "Proximal Riccati solver.", bp::no_init)
       .def(bp::init<const knot_vec_t &>(bp::args("self", "knots")))
@@ -106,8 +115,8 @@ void exposeGAR() {
 
   bp::def(
       "lqrDenseMatrix",
-      +[](const knot_vec_t &knots, Scalar mudyn, Scalar mueq) {
-        auto mat_rhs = lqrDenseMatrix(knots, mudyn, mueq);
+      +[](const lqr_t &problem, Scalar mudyn, Scalar mueq) {
+        auto mat_rhs = lqrDenseMatrix(problem, mudyn, mueq);
         return bp::make_tuple(std::get<0>(mat_rhs), std::get<1>(mat_rhs));
       },
       bp::args("self", "mudyn", "mueq"));

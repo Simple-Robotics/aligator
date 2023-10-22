@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(lqrsolve) {
 
   std::vector<knot_t> knots = {node, node2};
 
-  problem_t prob{knots};
+  problem_t prob{knots, 0};
   solver_t solver(prob);
 
   fmt::print("lhs:\n");
