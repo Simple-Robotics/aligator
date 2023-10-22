@@ -73,6 +73,9 @@ public:
   const col_dim_t &colDims() const { return m_colDims; }
   const col_dim_t &colIndices() const { return m_colIndices; }
 
+  long rows() const { return m_totalRows; }
+  long cols() const { return m_totalCols; }
+
 protected:
   row_dim_t m_rowDims;
   col_dim_t m_colDims;
