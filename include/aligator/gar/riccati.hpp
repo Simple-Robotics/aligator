@@ -30,17 +30,15 @@ public:
           Vmat(nx, nx), vvec(nx), chol(nx) {}
   };
 
-  struct kkt_t : BlkMatrix<MatrixXs, 2> {
-    using Base = BlkMatrix<MatrixXs, 2>;
-    using Base::data;
-    using Base::m_totalRows;
+  struct kkt_t {
+    BlkMatrix<MatrixXs, 2, 2> matrix;
     Eigen::LDLT<MatrixXs> chol;
-    kkt_t(uint nu, uint nc) : Base({nu, nc}), chol(m_totalRows) {
-      this->setZero();
+    kkt_t(uint nu, uint nc) : matrix({nu, nc}), chol(matrix.rows()) {
+      matrix.setZero();
     }
-    MatrixRef R() { return (*this)(0, 0); };
-    MatrixRef D() { return (*this)(1, 0); };
-    auto dual() { return (*this)(1, 1).diagonal(); }
+    MatrixRef R() { return matrix(0, 0); };
+    MatrixRef D() { return matrix(1, 0); };
+    auto dual() { return matrix(1, 1).diagonal(); }
   };
 
   struct hmlt_t {

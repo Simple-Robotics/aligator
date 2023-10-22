@@ -1,5 +1,6 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #include "aligator/python/fwd.hpp"
+#include "aligator/python/gar-visitors.hpp"
 #include "aligator/gar/riccati.hpp"
 
 #include "aligator/python/utils.hpp"
@@ -28,70 +29,6 @@ struct has_operator_equal<::aligator::python::stage_solve_data_t>
 namespace aligator {
 namespace python {
 
-template <typename BlockMatrixType>
-struct BlkMatrixPythonVisitor
-    : bp::def_visitor<BlkMatrixPythonVisitor<BlockMatrixType>> {
-
-  enum { N = BlockMatrixType::N, M = BlockMatrixType::M };
-  using MatrixType = typename BlockMatrixType::MatrixType;
-
-  using Self = BlkMatrixPythonVisitor<BlockMatrixType>;
-  template <size_t k> using long_arr = std::array<long, k>;
-
-  static context::MatrixRef get_block(BlockMatrixType &bmt, size_t i,
-                                      size_t j) {
-    return bmt(i, j);
-  }
-
-  static auto ctor1(const std::vector<long> &_dims) {
-    long_arr<M> dims;
-    std::copy_n(_dims.begin(), M, dims.begin());
-    return std::make_shared<BlockMatrixType>(dims, dims);
-  }
-
-  static auto ctor2(const std::vector<long> &_rowDims,
-                    const std::vector<long> &_colDims) {
-    long_arr<N> rowDims;
-    std::copy_n(_rowDims.begin(), N, rowDims.begin());
-    long_arr<M> colDims;
-    std::copy_n(_colDims.begin(), M, colDims.begin());
-    return std::make_shared<BlockMatrixType>(rowDims, colDims);
-  }
-
-  template <size_t k> static auto stdArrToList(const std::array<long, k> &s) {
-    bp::list out;
-    for (size_t i = 0; i < s.size(); i++)
-      out.append(s[i]);
-    return out;
-  }
-
-  static auto rowDims(const BlockMatrixType &mat) {
-    return stdArrToList(mat.rowDims());
-  }
-  static auto colDims(const BlockMatrixType &mat) {
-    return stdArrToList(mat.colDims());
-  }
-
-  template <class... Args> void visit(bp::class_<Args...> &obj) const {
-    obj.def("__init__",
-            bp::make_constructor(&ctor2, bp::default_call_policies(),
-                                 bp::args("rowDims", "colDims")))
-        .def_readwrite("data", &BlockMatrixType::data)
-        .add_property("rowDims", rowDims)
-        .add_property("colDims", colDims)
-        .def("__call__", get_block, bp::args("self", "i", "j"));
-    if constexpr (N == M) {
-      obj.def("__init__",
-              bp::make_constructor(&ctor1, bp::default_call_policies(),
-                                   bp::args("dims")));
-    }
-  }
-
-  static void expose(const char *name) {
-    bp::class_<BlockMatrixType>(name, "", bp::no_init).def(Self());
-  }
-};
-
 using knot_vec_t = std::vector<knot_t>;
 
 void exposeGAR() {
@@ -114,8 +51,8 @@ void exposeGAR() {
       .def_readonly("Vmat", &prox_riccati_t::value_t::Vmat)
       .def_readonly("vvec", &prox_riccati_t::value_t::vvec);
 
-  bp::class_<prox_riccati_t::kkt_t, bp::bases<BMT22>>("kkt_data", bp::no_init)
-      .def_readonly("data", &prox_riccati_t::kkt_t::data)
+  bp::class_<prox_riccati_t::kkt_t>("kkt_data", bp::no_init)
+      .def_readonly("matrix", &prox_riccati_t::kkt_t::matrix)
       .def_readonly("chol", &prox_riccati_t::kkt_t::chol)
       .add_property("R", &prox_riccati_t::kkt_t::R)
       .add_property("D", &prox_riccati_t::kkt_t::D);

@@ -32,6 +32,7 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
   size_t t = N - 1;
   while (true) {
     stage_solve_data_t &d = datas[t];
+    kkt_t &kkt = d.kkt;
     value_t &vn = datas[t + 1].vm;
     const knot_t &model = knots[t];
 
@@ -69,12 +70,12 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
     computeKktTerms(model, d, vn);
 
     // fill feedback system
-    d.kkt.R() = d.hmlt.Rhat;
-    d.kkt.D() = model.D;
-    d.kkt.dual().setConstant(-mueq);
-    d.kkt.data = d.kkt.data.template selfadjointView<Eigen::Lower>();
-    Eigen::LDLT<MatrixXs> &ldlt = d.kkt.chol;
-    ldlt.compute(d.kkt.data);
+    kkt.R() = d.hmlt.Rhat;
+    kkt.D() = model.D;
+    kkt.dual().setConstant(-mueq);
+    kkt.matrix.data = kkt.matrix.data.template selfadjointView<Eigen::Lower>();
+    Eigen::LDLT<MatrixXs> &ldlt = kkt.chol;
+    ldlt.compute(kkt.matrix.data);
 
     value_t &vc = d.vm;
     VectorRef kff = d.ff.blockSegment(0);
@@ -93,11 +94,11 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
 #ifndef NDEBUG
     ALIGATOR_NOMALLOC_END;
     {
-      d.err.fferr = math::infty_norm(d.kkt.data * d.ff.data - d.ffRhs);
-      d.err.fberr = math::infty_norm(d.kkt.data * d.fb.data - d.fbRhs);
+      d.err.fferr = math::infty_norm(kkt.data * d.ff.data - d.ffRhs);
+      d.err.fberr = math::infty_norm(kkt.data * d.fb.data - d.fbRhs);
       fmt::print("ff_err = {:4.3e}\n", d.err.fferr);
       fmt::print("fb_err = {:4.3e}\n", d.err.fberr);
-      auto ldltErr = math::infty_norm(d.kkt.data - ldlt.reconstructedMatrix());
+      auto ldltErr = math::infty_norm(kkt.data - ldlt.reconstructedMatrix());
       fmt::print("ldlerr = {:4.3e}\n", ldltErr);
     }
     ALIGATOR_NOMALLOC_BEGIN;
