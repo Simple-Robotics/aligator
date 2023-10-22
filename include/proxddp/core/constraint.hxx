@@ -36,7 +36,7 @@ Eigen::VectorBlock<Derived, -1> ConstraintStackTpl<Scalar>::segmentByConstraint(
     const Eigen::MatrixBase<Derived> &lambda, const std::size_t j) const {
   Derived &lam_cast = lambda.const_cast_derived();
   assert(lambda.size() == totalDim());
-  return lam_cast.segment(getIndex(j), getDim(j));
+  return lam_cast.segment(indices_[j], dims_[j]);
 }
 
 template <typename Scalar>
@@ -45,7 +45,7 @@ Eigen::VectorBlock<const Derived, -1>
 ConstraintStackTpl<Scalar>::constSegmentByConstraint(
     const Eigen::MatrixBase<Derived> &lambda, const std::size_t j) const {
   assert(lambda.size() == totalDim());
-  return lambda.segment(getIndex(j), getDim(j));
+  return lambda.segment(indices_[j], dims_[j]);
 }
 
 template <typename Scalar>
@@ -55,7 +55,7 @@ auto ConstraintStackTpl<Scalar>::rowsByConstraint(
   using MatrixType = Eigen::MatrixBase<Derived>;
   MatrixType &J = const_cast<MatrixType &>(J_);
   assert(J.rows() == totalDim());
-  return J.middleRows(getIndex(j), getDim(j));
+  return J.middleRows(indices_[j], dims_[j]);
 }
 
 } // namespace proxddp

@@ -36,12 +36,6 @@ template <typename Scalar> struct ConstraintStackTpl {
   void pushBack(const ConstraintType &el, const long nr);
   void pushBack(const ConstraintType &el);
 
-  /// @brief Get start index in an array.
-  long getIndex(const std::size_t j) const { return indices_[j]; }
-
-  /// @brief Get the dimension of each the @p j-th constraint.
-  long getDim(const std::size_t j) const { return dims_[j]; }
-
   /// @brief Get the set of dimensions for each constraint in the stack.
   const std::vector<long> &getDims() const { return dims_; }
 
