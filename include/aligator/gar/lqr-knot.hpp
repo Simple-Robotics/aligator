@@ -55,11 +55,21 @@ template <typename Scalar> struct LQRKnot {
   }
 };
 
-template <typename T> struct LQRProblem {
-  // last stage should have nu = 0
-  std::vector<LQRKnot<T>> stages;
+template <typename Scalar> struct LQRProblem {
+  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  using knot_t = LQRKnot<Scalar>;
+  std::vector<knot_t> stages;
+  MatrixXs G0;
+  VectorXs g0;
 
-  size_t horizon() const noexcept { return stages.size(); }
+  long horizon() const noexcept { return long(stages.size()) - 1L; }
+
+  LQRProblem(const std::vector<knot_t> &knots, long nc0)
+      : stages(knots), G0(), g0(nc0) {
+    assert(stages.size() > 0);
+    auto nx0 = stages[0].nx;
+    G0.resize(nc0, nx0);
+  }
 };
 
 template <typename Scalar>
