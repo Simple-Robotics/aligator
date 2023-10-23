@@ -5,16 +5,19 @@ on:
     branches:
       - main
       - devel
+      - 'topic/**'
   pull_request:
 env:
-  CCACHE_DIR: /github/home/.ccache
-  CMAKE_PREFIX_PATH: ~/custom_install
-  PYTHONPATH: /builds/custom_install/lib/python3/dist-packages
+  CCACHE_DIR: ~/.ccache
   CTEST_OUTPUT_ON_FAILURE: 1
   CTEST_PARALLEL_LEVEL: 4
 
+defaults:
+  run:
+    shell: bash -leo pipefail {0} {0}
 jobs:
   build-proxnlp:
+    name: Build proxnlp
     runs-on: self-hosted
     steps:
     - name: Config for main
@@ -27,14 +30,12 @@ jobs:
       run: |
         echo "PROXNLP_BRANCH=devel" >> $GITHUB_ENV
 
-    - name: Setup ccache
-      uses: actions/cache@v3
+    - uses: actions/cache@v3
       with:
         key: ${{ runner.os }}
         path: ${{ env.CCACHE_DIR }}
 
-    - name: Checkout proxnlp
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         ref: ${{ env.PROXNLP_BRANCH }}
         fetch-depth: 0
@@ -45,30 +46,40 @@ jobs:
 
     - name: Install proxnlp
       run: |
+        micromamba activate
+
         cd $GITHUB_WORKSPACE/proxnlp
-        mkdir build
-        cd build
-        cmake .. -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=~/custom_install -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DINSTALL_DOCUMENTATION:BOOL=OFF
-        make -j3 install
+        mkdir build && cd build
+
+        cmake .. -DBUILD_DOCUMENTATION=OFF \
+          -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX \
+          -DCMAKE_BUILD_TYPE=Release
+        make -j6 install
         python3 -c "import proxnlp"
 
   build:
+    name: Build proxddp
     needs: build-proxnlp
     runs-on: self-hosted
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
         submodules: recursive
 
     - name: Build and install proxddp
       run: |
+        micromamba activate
+
         cd $GITHUB_WORKSPACE
-        mkdir build
-        cd build
-        echo "PYTHONPATH=/builds/custom_install/lib/python3/dist-packages/" >> $GITHUB_ENV
-        cmake .. -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=~/custom_install -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DINSTALL_DOCUMENTATION:BOOL=OFF -DGENERATE_PYTHON_STUBS:BOOL=OFF -DBUILD_CROCODDYL_COMPAT:BOOL=ON -DBUILD_WITH_OPENMP_SUPPORT:BOOL=OFF
-        make install
+        mkdir build && cd build
+
+        cmake .. -DBUILD_DOCUMENTATION=OFF \
+          -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DBUILD_CROCODDYL_COMPAT:BOOL=ON \
+          -DBUILD_WITH_OPENMP_SUPPORT:BOOL=OFF
+        make -j4 install
   test:
     needs: build
     runs-on: self-hosted
