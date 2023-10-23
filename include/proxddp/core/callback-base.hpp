@@ -4,7 +4,6 @@
 #include <boost/any.hpp>
 
 namespace proxddp {
-namespace helpers {
 
 /// Base callback class.
 template <typename Scalar> struct CallbackBaseTpl {
@@ -16,7 +15,6 @@ template <typename Scalar> struct CallbackBaseTpl {
   virtual ~CallbackBaseTpl() = default;
 };
 
-} // namespace helpers
 } // namespace proxddp
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION

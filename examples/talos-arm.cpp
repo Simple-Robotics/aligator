@@ -15,7 +15,7 @@ constexpr std::size_t max_iters = 10;
 const std::size_t nsteps = 30;
 #define KKTFILEFORMAT "{}.{:03d}.npy"
 
-struct extract_kkt_matrix_callback : proxddp::helpers::CallbackBaseTpl<double> {
+struct extract_kkt_matrix_callback : proxddp::CallbackBaseTpl<double> {
   std::string filepath;
   extract_kkt_matrix_callback(std::string const &filepath)
       : filepath(filepath) {}

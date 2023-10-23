@@ -41,7 +41,7 @@ template <typename Scalar> struct SolverFDDP {
   using CostData = CostDataAbstractTpl<Scalar>;
   using ExpModel = ExplicitDynamicsModelTpl<Scalar>;
   using ExpData = ExplicitDynamicsDataTpl<Scalar>;
-  using CallbackPtr = shared_ptr<helpers::CallbackBaseTpl<Scalar>>;
+  using CallbackPtr = shared_ptr<CallbackBaseTpl<Scalar>>;
   using CallbackMap = std::unordered_map<std::string, CallbackPtr>;
 
   Scalar target_tol_;

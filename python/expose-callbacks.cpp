@@ -1,7 +1,6 @@
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #include "proxddp/python/callbacks.hpp"
 #include "proxddp/helpers/history-callback.hpp"
-#include "proxddp/helpers/linesearch-callback.hpp"
 
 namespace proxddp {
 namespace python {
@@ -9,7 +8,7 @@ namespace python {
 using context::Scalar;
 
 void exposeHistoryCallback() {
-  using HistoryCallback = helpers::HistoryCallback<Scalar>;
+  using HistoryCallback = HistoryCallbackTpl<Scalar>;
   using history_storage_t = decltype(HistoryCallback::storage);
 
   bp::scope in_history =
@@ -19,7 +18,7 @@ void exposeHistoryCallback() {
                                       bp::arg("store_pd_vars") = true,
                                       bp::arg("store_values") = true,
                                       bp::arg("store_residuals") = true)))
-          .def_readonly("storage", &helpers::HistoryCallback<Scalar>::storage);
+          .def_readonly("storage", &HistoryCallback::storage);
 
   bp::class_<history_storage_t>("history_storage")
       .def_readonly("xs", &history_storage_t::xs)
@@ -37,29 +36,6 @@ void exposeHistoryCallback() {
       "StdVecVec_VectorXs", "std::vector of std::vector of Eigen::MatrixX.");
 }
 
-void exposeLinesearchCallback() {
-  using LSCallback = helpers::LinesearchCallback<Scalar>;
-  using LSData = LSCallback::Data;
-  eigenpy::enableEigenPySpecific<LSData::Matrix2Xs>();
-  bp::class_<LSCallback, bp::bases<CallbackBase>>("LinesearchCallback",
-                                                  bp::init<>(bp::args("self")))
-      .def_readwrite("alpha_min", &LSCallback::alpha_min)
-      .def_readwrite("alpha_max", &LSCallback::alpha_max)
-      .def(
-          "get",
-          +[](const LSCallback &m, std::size_t t) {
-            if (t >= m.storage_.size()) {
-              PyErr_SetString(
-                  PyExc_IndexError,
-                  fmt::format("Index {} is out of bounds.", t).c_str());
-              bp::throw_error_already_set();
-            }
-            return m.get(t);
-          },
-          bp::args("self", "t"))
-      .def("get_d", &LSCallback::get_dphi, bp::args("self", "t"));
-}
-
 void exposeCallbacks() {
   bp::register_ptr_to_python<shared_ptr<CallbackBase>>();
 
@@ -70,7 +46,6 @@ void exposeCallbacks() {
            bp::args("self", "workspace", "results"));
 
   exposeHistoryCallback();
-  exposeLinesearchCallback();
 }
 } // namespace python
 } // namespace proxddp

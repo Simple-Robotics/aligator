@@ -27,6 +27,8 @@ using DynamicsModel = DynamicsModelTpl<Scalar>;
 using StageModel = StageModelTpl<Scalar>;
 using StageData = StageDataTpl<Scalar>;
 
+using CallbackBase = CallbackBaseTpl<Scalar>;
+
 using TrajOptProblem = TrajOptProblemTpl<Scalar>;
 using TrajOptData = TrajOptDataTpl<Scalar>;
 using ConstraintStack = ConstraintStackTpl<Scalar>;

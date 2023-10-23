@@ -1,10 +1,10 @@
+#pragma once
+
 #include "proxddp/context.hpp"
 #include "./history-callback.hpp"
 
 namespace proxddp {
-namespace helpers {
 
-extern template struct HistoryCallback<context::Scalar>;
+extern template struct HistoryCallbackTpl<context::Scalar>;
 
-} // namespace helpers
 } // namespace proxddp

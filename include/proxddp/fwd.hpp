@@ -74,7 +74,11 @@ template <typename Scalar, typename Base> struct FunctionSliceXprTpl;
 // fwd StageModelTpl
 template <typename Scalar> struct StageModelTpl;
 
+// fwd StageDataTpl
 template <typename Scalar> struct StageDataTpl;
+
+// fwd CallbackBaseTpl
+template <typename Scalar> struct CallbackBaseTpl;
 
 /* SHOOTING PROBLEM */
 

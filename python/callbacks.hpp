@@ -1,11 +1,13 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
+#pragma once
+
 #include "proxddp/python/fwd.hpp"
 #include "proxddp/core/callback-base.hpp"
 
 namespace proxddp {
 namespace python {
 
-using CallbackBase = helpers::CallbackBaseTpl<context::Scalar>;
+using context::CallbackBase;
 
 struct CallbackWrapper : CallbackBase, bp::wrapper<CallbackBase> {
   CallbackWrapper() = default;

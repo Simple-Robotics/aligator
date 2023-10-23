@@ -6,14 +6,13 @@
 #include "proxddp/core/results.hpp"
 
 namespace proxddp {
-namespace helpers {
 
 /// @brief  Store the history of results.
-template <typename Scalar> struct HistoryCallback : CallbackBaseTpl<Scalar> {
+template <typename Scalar> struct HistoryCallbackTpl : CallbackBaseTpl<Scalar> {
   using Workspace = WorkspaceBaseTpl<Scalar>;
   using Results = ResultsBaseTpl<Scalar>;
-  HistoryCallback(bool store_pd_vars = false, bool store_values = true,
-                  bool store_residuals = true)
+  HistoryCallbackTpl(bool store_pd_vars = false, bool store_values = true,
+                     bool store_residuals = true)
       : store_primal_dual_vars_(store_pd_vars), store_values_(store_values),
         store_residuals_(store_residuals) {}
 
@@ -60,7 +59,6 @@ template <typename Scalar> struct HistoryCallback : CallbackBaseTpl<Scalar> {
   bool store_residuals_;
 };
 
-} // namespace helpers
 } // namespace proxddp
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION

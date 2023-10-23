@@ -5,14 +5,11 @@
 
 #include "proxddp/core/solver-proxddp.hpp"
 #include "proxddp/core/linalg.hpp"
-#include "proxddp/helpers/linesearch-callback.hpp"
 #ifndef NDEBUG
 #include <fmt/ostream.h>
 #endif
 
 namespace proxddp {
-
-static const std::string LS_DEBUG_KEY = "ls_debug";
 
 template <typename Scalar>
 SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
@@ -837,13 +834,6 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
     // otherwise continue linesearch
     Scalar alpha_opt = 1;
     Scalar phi_new = linesearch_.run(merit_eval_fun, phi0, dphi0, alpha_opt);
-    // post linesearch calls
-    CallbackPtr ls_cb_maybe = getCallback(LS_DEBUG_KEY);
-    if (ls_cb_maybe != 0) {
-      std::function<Scalar(Scalar)> fptr = merit_eval_fun;
-      ls_cb_maybe->post_linesearch_call(
-          std::make_tuple(fptr, dphi0, alpha_opt));
-    }
 
     // accept the step
     results_.xs = workspace_.trial_xs;
