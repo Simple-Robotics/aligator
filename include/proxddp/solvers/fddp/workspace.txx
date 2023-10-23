@@ -1,7 +1,7 @@
 #pragma once
 
 #include "proxddp/context.hpp"
-#include "proxddp/fddp/workspace.hpp"
+#include "./workspace.hpp"
 
 namespace proxddp {
 

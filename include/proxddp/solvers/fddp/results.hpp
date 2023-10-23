@@ -1,8 +1,22 @@
 #pragma once
 
-#include "proxddp/fddp/results.hpp"
+#include "proxddp/core/results-base.hpp"
 
 namespace proxddp {
+
+template <typename Scalar> struct ResultsFDDPTpl : ResultsBaseTpl<Scalar> {
+
+  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  using Base = ResultsBaseTpl<Scalar>;
+  using BlockXs = Eigen::Block<MatrixXs, -1, -1>;
+
+  using Base::gains_;
+  using Base::us;
+  using Base::xs;
+
+  ResultsFDDPTpl() : Base() {}
+  explicit ResultsFDDPTpl(const TrajOptProblemTpl<Scalar> &problem);
+};
 
 template <typename Scalar>
 ResultsFDDPTpl<Scalar>::ResultsFDDPTpl(
@@ -30,3 +44,7 @@ ResultsFDDPTpl<Scalar>::ResultsFDDPTpl(
 }
 
 } // namespace proxddp
+
+#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#include "./results.txx"
+#endif

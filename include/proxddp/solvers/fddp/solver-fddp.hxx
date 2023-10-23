@@ -2,7 +2,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/fddp/solver-fddp.hpp"
+#include "./solver-fddp.hpp"
 
 namespace proxddp {
 

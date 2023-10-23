@@ -8,9 +8,9 @@
 #include "proxddp/core/callback-base.hpp"
 #include "proxddp/core/explicit-dynamics.hpp"
 
-#include "proxddp/fddp/results.hpp"
-#include "proxddp/fddp/workspace.hpp"
-#include "proxddp/fddp/linesearch.hpp"
+#include "./results.hpp"
+#include "./workspace.hpp"
+#include "./linesearch.hpp"
 
 #include "proxddp/utils/logger.hpp"
 
@@ -199,8 +199,8 @@ public:
 
 } // namespace proxddp
 
-#include "proxddp/fddp/solver-fddp.hxx"
+#include "./solver-fddp.hxx"
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/fddp/solver-fddp.txx"
+#include "./solver-fddp.txx"
 #endif

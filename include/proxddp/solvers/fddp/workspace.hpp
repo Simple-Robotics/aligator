@@ -50,8 +50,8 @@ template <typename Scalar> struct WorkspaceFDDPTpl : WorkspaceBaseTpl<Scalar> {
 
 } // namespace proxddp
 
-#include "proxddp/fddp/workspace.hxx"
+#include "./workspace.hxx"
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/fddp/workspace.txx"
+#include "./workspace.txx"
 #endif

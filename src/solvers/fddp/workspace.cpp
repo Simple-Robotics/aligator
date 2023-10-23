@@ -1,4 +1,4 @@
-#include "proxddp/fddp/workspace.hpp"
+#include "proxddp/solvers/fddp/workspace.hpp"
 
 namespace proxddp {
 

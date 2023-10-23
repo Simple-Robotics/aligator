@@ -1,4 +1,4 @@
-#include "proxddp/fddp/solver-fddp.hpp"
+#include "proxddp/solvers/fddp/solver-fddp.hpp"
 
 namespace proxddp {
 

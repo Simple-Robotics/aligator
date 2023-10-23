@@ -2,7 +2,7 @@
 
 #include "proxddp/context.hpp"
 
-#include "proxddp/fddp/solver-fddp.hpp"
+#include "./solver-fddp.hpp"
 
 namespace proxddp {
 

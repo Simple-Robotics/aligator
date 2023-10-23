@@ -158,7 +158,7 @@ file(GLOB_RECURSE LIB_HEADERS ${PROJECT_SOURCE_DIR}/include/proxddp/*.hpp
 if(ENABLE_TEMPLATE_INSTANTIATION)
 
   file(GLOB_RECURSE LIB_TEMPLATE_SOURCES ${PROJECT_SOURCE_DIR}/src/core/*.cpp
-       ${PROJECT_SOURCE_DIR}/src/fddp/*.cpp ${PROJECT_SOURCE_DIR}/src/modelling/*.cpp
+       ${PROJECT_SOURCE_DIR}/src/solvers/fddp/*.cpp ${PROJECT_SOURCE_DIR}/src/modelling/*.cpp
        ${PROJECT_SOURCE_DIR}/src/parlqr/*.cpp)
   file(GLOB_RECURSE LIB_TEMPLATE_DECLARATIONS ${PROJECT_SOURCE_DIR}/include/proxddp/*.txx)
   list(APPEND LIB_HEADERS ${LIB_TEMPLATE_DECLARATIONS})

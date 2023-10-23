@@ -1,6 +1,6 @@
 #include "proxddp/python/fwd.hpp"
 
-#include "proxddp/fddp/solver-fddp.hpp"
+#include "proxddp/solvers/fddp/solver-fddp.hpp"
 
 namespace proxddp {
 namespace python {
@@ -40,5 +40,4 @@ void exposeFDDP() {
 }
 
 } // namespace python
-
 } // namespace proxddp
