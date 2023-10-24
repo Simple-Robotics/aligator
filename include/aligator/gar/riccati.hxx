@@ -94,11 +94,12 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
 #ifndef NDEBUG
     ALIGATOR_NOMALLOC_END;
     {
-      d.err.fferr = math::infty_norm(kkt.data * d.ff.data - d.ffRhs);
-      d.err.fberr = math::infty_norm(kkt.data * d.fb.data - d.fbRhs);
+      d.err.fferr = math::infty_norm(kkt.matrix.data * d.ff.data - d.ffRhs);
+      d.err.fberr = math::infty_norm(kkt.matrix.data * d.fb.data - d.fbRhs);
       fmt::print("ff_err = {:4.3e}\n", d.err.fferr);
       fmt::print("fb_err = {:4.3e}\n", d.err.fberr);
-      auto ldltErr = math::infty_norm(kkt.data - ldlt.reconstructedMatrix());
+      auto ldltErr =
+          math::infty_norm(kkt.matrix.data - ldlt.reconstructedMatrix());
       fmt::print("ldlerr = {:4.3e}\n", ldltErr);
     }
     ALIGATOR_NOMALLOC_BEGIN;

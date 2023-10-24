@@ -106,7 +106,6 @@ public:
 
 protected:
   void initialize() {
-    assert(knots.size() > 0);
     auto N = size_t(problem.horizon());
     auto &knots = problem.stages;
     datas.reserve(N + 1);

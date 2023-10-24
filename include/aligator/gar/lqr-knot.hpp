@@ -65,6 +65,8 @@ template <typename Scalar> struct LQRProblem {
   long horizon() const noexcept { return long(stages.size()) - 1L; }
   long nc0() const noexcept { return g0.rows(); }
 
+  LQRProblem() : stages(), G0(), g0() {}
+
   LQRProblem(const std::vector<knot_t> &knots, long nc0)
       : stages(knots), G0(), g0(nc0) {
     assert(stages.size() > 0);
