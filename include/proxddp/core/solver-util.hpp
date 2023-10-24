@@ -138,7 +138,3 @@ void computeLagrangianDerivatives(
 }
 
 } // namespace proxddp
-
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/core/solver-util.txx"
-#endif
