@@ -217,7 +217,7 @@ function(create_library)
   endif(BUILD_WITH_PINOCCHIO_SUPPORT)
 
   if(BUILD_WITH_OPENMP_SUPPORT)
-    target_link_libraries(${PROJECT_NAME} PRIVATE OpenMP::OpenMP_CXX)
+    target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
   endif(BUILD_WITH_OPENMP_SUPPORT)
 
   target_link_libraries(${PROJECT_NAME} PUBLIC proxsuite-nlp::proxsuite-nlp)
@@ -266,10 +266,7 @@ macro(create_ex_or_bench exfile exname)
   target_include_directories(${exname} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
   target_link_libraries(${exname} PUBLIC ${PROJECT_NAME})
-  target_link_libraries(${exname} PUBLIC Boost::filesystem)
-  if(BUILD_WITH_OPENMP_SUPPORT)
-    target_link_libraries(${exname} PRIVATE OpenMP::OpenMP_CXX)
-  endif()
+  target_link_libraries(${exname} PUBLIC example-robot-data::example-robot-data)
 endmacro()
 
 macro(target_add_example_robot_data target_name)

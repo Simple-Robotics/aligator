@@ -44,11 +44,6 @@ function(make_bindings)
     target_link_libraries(${PYLIB_NAME} PUBLIC aligator::croc_compat)
   endif(BUILD_CROCODDYL_COMPAT)
 
-  if(BUILD_WITH_OPENMP_SUPPORT)
-    target_link_libraries(${PYLIB_NAME} PRIVATE OpenMP::OpenMP_CXX)
-    target_compile_options(${PYLIB_NAME} PRIVATE ${OpenMP_CXX_FLAGS})
-  endif(BUILD_WITH_OPENMP_SUPPORT)
-
   install(
     TARGETS ${PYLIB_NAME}
     EXPORT ${TARGETS_EXPORT_NAME}

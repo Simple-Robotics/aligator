@@ -41,9 +41,6 @@ function(add_aligator_test name)
 
   target_link_libraries(${test_name} PUBLIC ${PROJECT_NAME})
   target_link_libraries(${test_name} PRIVATE Boost::unit_test_framework benchmark::benchmark)
-  if(BUILD_WITH_OPENMP_SUPPORT)
-    target_link_libraries(${test_name} PRIVATE OpenMP::OpenMP_CXX)
-  endif()
 endfunction(add_aligator_test)
 
 set(TEST_NAMES
