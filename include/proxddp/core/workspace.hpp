@@ -8,10 +8,7 @@
 #include "proxddp/core/alm-weights.hpp"
 
 #include <array>
-
 #include <proxnlp/ldlt-allocator.hpp>
-
-#include <array>
 
 namespace proxddp {
 
@@ -122,8 +119,8 @@ template <typename Scalar>
 struct fmt::formatter<proxddp::WorkspaceTpl<Scalar>> : fmt::ostream_formatter {
 };
 
-#include "proxddp/core/workspace.hxx"
+#include "./workspace.hxx"
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/core/workspace.txx"
+#include "./workspace.txx"
 #endif

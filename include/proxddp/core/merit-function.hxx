@@ -1,6 +1,8 @@
 #pragma once
 
-#include "proxddp/core/merit-function.hpp"
+#include "./merit-function.hpp"
+#include "./workspace.hpp"
+#include "./results.hpp"
 
 namespace proxddp {
 

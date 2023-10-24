@@ -2,7 +2,7 @@
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/core/workspace.hpp"
+#include "./workspace.hpp"
 
 namespace proxddp {
 

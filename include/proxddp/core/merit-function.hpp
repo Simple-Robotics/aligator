@@ -3,8 +3,6 @@
 
 #include "proxddp/fwd.hpp"
 #include "proxddp/core/traj-opt-problem.hpp"
-#include "proxddp/core/workspace.hpp"
-#include "proxddp/core/results.hpp"
 #include "proxddp/core/enums.hpp"
 #include "proxddp/core/alm-weights.hpp"
 
@@ -73,8 +71,8 @@ template <typename _Scalar> struct PDALFunction {
 
 } // namespace proxddp
 
-#include "proxddp/core/merit-function.hxx"
+#include "./merit-function.hxx"
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/core/merit-function.txx"
+#include "./merit-function.txx"
 #endif

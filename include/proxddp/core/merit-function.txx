@@ -6,4 +6,4 @@ namespace proxddp {
 
 extern template struct PDALFunction<context::Scalar>;
 
-}
+} // namespace proxddp

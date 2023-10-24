@@ -2,7 +2,7 @@
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/core/results.hpp"
+#include "./results.hpp"
 #include "proxddp/core/solver-util.hpp"
 
 #include <fmt/format.h>

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "proxddp/context.hpp"
-#include "proxddp/core/results.hpp"
+#include "./results.hpp"
 
 namespace proxddp {
 

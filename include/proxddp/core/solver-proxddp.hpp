@@ -3,7 +3,6 @@
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/core/merit-function.hpp"
 #include "proxddp/core/proximal-penalty.hpp"
 #include "proxddp/core/linesearch.hpp"
 #include "proxddp/core/callback-base.hpp"
@@ -11,6 +10,8 @@
 #include "proxddp/utils/exceptions.hpp"
 #include "proxddp/utils/logger.hpp"
 #include "proxddp/utils/forward-dyn.hpp"
+#include "./workspace.hpp"
+#include "./results.hpp"
 
 #include <proxnlp/modelling/constraints.hpp>
 #include <proxnlp/bcl-params.hpp>
@@ -319,8 +320,8 @@ private:
 
 } // namespace proxddp
 
-#include "proxddp/core/solver-proxddp.hxx"
+#include "./solver-proxddp.hxx"
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/core/solver-proxddp.txx"
+#include "./solver-proxddp.txx"
 #endif

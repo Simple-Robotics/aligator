@@ -38,8 +38,8 @@ std::ostream &operator<<(std::ostream &oss, const ResultsTpl<Scalar> &self) {
 template <typename Scalar>
 struct fmt::formatter<proxddp::ResultsTpl<Scalar>> : fmt::ostream_formatter {};
 
-#include "proxddp/core/results.hxx"
+#include "./results.hxx"
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/core/results.txx"
+#include "./results.txx"
 #endif
