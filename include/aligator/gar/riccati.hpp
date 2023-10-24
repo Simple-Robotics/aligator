@@ -80,16 +80,13 @@ public:
     error_t err;     //< numerical errors
   };
 
-  explicit ProximalRiccatiSolver(const std::vector<knot_t> &knots)
-      : knots(knots) {
+  explicit ProximalRiccatiSolver(const LQRProblem<Scalar> &problem)
+      : datas(), kkt0(problem.stages[0].nx, (uint)problem.nc0()),
+        problem(problem) {
     initialize();
   }
 
-  explicit ProximalRiccatiSolver(std::vector<knot_t> &&knots) : knots(knots) {
-    initialize();
-  }
-
-  inline long horizon() const noexcept { return long(knots.size()) - 1; }
+  ProximalRiccatiSolver(LQRProblem<Scalar> &&problem) = delete;
 
   void computeKktTerms(const knot_t &model, stage_solve_data_t &d,
                        const value_t &vnext);
@@ -97,21 +94,30 @@ public:
   /// Backward sweep.
   bool backward(Scalar mudyn, Scalar mueq);
   /// Forward sweep.
-  bool forward(vecvec_t &xs, vecvec_t &us, vecvec_t &vs, vecvec_t &lbdas);
+  bool forward(vecvec_t &xs, vecvec_t &us, vecvec_t &vs, vecvec_t &lbdas) const;
 
-  std::vector<knot_t> knots;
   std::vector<stage_solve_data_t> datas;
+  struct kkt0_t {
+    BlkMatrix<MatrixXs, 2, 2> mat;
+    BlkMatrix<VectorXs, 2, 1> rhs{mat.rowDims()};
+    Eigen::LDLT<MatrixXs> chol{mat.rows()};
+    kkt0_t(uint nx, uint nc) : mat({nx, nc}) {}
+  } kkt0;
 
 protected:
   void initialize() {
     assert(knots.size() > 0);
-    auto N = size_t(horizon());
+    auto N = size_t(problem.horizon());
+    auto &knots = problem.stages;
     datas.reserve(N + 1);
     for (size_t t = 0; t <= N; t++) {
       const knot_t &knot = knots[t];
       datas.emplace_back(knot.nx, knot.nu, knot.nc);
     }
   }
+
+private:
+  const LQRProblem<Scalar> &problem;
 };
 
 } // namespace gar

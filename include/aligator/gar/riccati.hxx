@@ -6,16 +6,16 @@ namespace aligator {
 namespace gar {
 template <typename Scalar>
 bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
-  if (horizon() < 0)
+  if (problem.horizon() < 0)
     return false;
 
   ALIGATOR_NOMALLOC_BEGIN;
   // terminal node
-  size_t N = (size_t)horizon();
+  size_t N = (size_t)problem.horizon();
   {
     stage_solve_data_t &d = datas[N];
     value_t &vc = d.vm;
-    const knot_t &model = knots[N];
+    const knot_t &model = problem.stages[N];
     // fill cost-to-go matrix
     VectorRef zff = d.ff.blockSegment(1);
     MatrixRef Z = d.fb.blockRow(1);
@@ -34,7 +34,7 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
     stage_solve_data_t &d = datas[t];
     kkt_t &kkt = d.kkt;
     value_t &vn = datas[t + 1].vm;
-    const knot_t &model = knots[t];
+    const knot_t &model = problem.stages[t];
 
     vn.chol.compute(vn.Pmat);
     d.PinvEt = model.E.transpose();
@@ -117,7 +117,17 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
   value_t &vinit = d0.vm;
   vinit.Vmat = vinit.Pmat;
   vinit.vvec = vinit.pvec;
-  vinit.chol.compute(vinit.Pmat);
+
+  // initial stage
+  kkt0.mat(0, 0) = vinit.Vmat;
+  kkt0.mat(1, 0) = problem.G0;
+  kkt0.mat(0, 1) = problem.G0.transpose();
+  kkt0.mat(1, 1).diagonal().setConstant(-mudyn);
+  kkt0.rhs.blockSegment(0) = -vinit.vvec;
+  kkt0.rhs.blockSegment(1) = -problem.g0;
+
+  kkt0.chol.compute(kkt0.mat.data);
+  kkt0.chol.solveInPlace(kkt0.rhs.data);
 
   ALIGATOR_NOMALLOC_END;
 
@@ -142,24 +152,25 @@ void ProximalRiccatiSolver<Scalar>::computeKktTerms(const knot_t &model,
 
 template <typename Scalar>
 bool ProximalRiccatiSolver<Scalar>::forward(vecvec_t &xs, vecvec_t &us,
-                                            vecvec_t &vs, vecvec_t &lbdas) {
+                                            vecvec_t &vs,
+                                            vecvec_t &lbdas) const {
   // solve initial stage
   ALIGATOR_NOMALLOC_BEGIN;
   {
-    stage_solve_data_t &d0 = datas[0];
-    xs[0] = d0.vm.chol.solve(-d0.vm.pvec);
+    xs[0] = kkt0.rhs.blockSegment(0);
+    lbdas[0] = kkt0.rhs.blockSegment(1);
   }
 
-  size_t N = (size_t)horizon();
+  size_t N = (size_t)problem.horizon();
   for (size_t t = 0; t <= N; t++) {
-    stage_solve_data_t &d = datas[t];
-    value_t &vnext = datas[t + 1].vm;
-    const knot_t &model = knots[t];
+    const stage_solve_data_t &d = datas[t];
+    const value_t &vnext = datas[t + 1].vm;
+    const knot_t &model = problem.stages[t];
 
-    MatrixRef K = d.fb.blockRow(0); // control feedback
-    MatrixRef Z = d.fb.blockRow(1); // multiplier feedback
-    VectorRef kff = d.ff.blockSegment(0);
-    VectorRef zff = d.ff.blockSegment(1);
+    ConstMatrixRef K = d.fb.blockRow(0); // control feedback
+    ConstMatrixRef Z = d.fb.blockRow(1); // multiplier feedback
+    ConstVectorRef kff = d.ff.blockSegment(0);
+    ConstVectorRef zff = d.ff.blockSegment(1);
 
     vs[t].noalias() = zff + Z * xs[t];
 
@@ -170,10 +181,10 @@ bool ProximalRiccatiSolver<Scalar>::forward(vecvec_t &xs, vecvec_t &us,
     // next costate
     // use xnext as a tmp buffer
     xs[t + 1].noalias() = vnext.vvec + model.A * xs[t] + model.B * us[t];
-    lbdas[t].noalias() = vnext.Vmat * xs[t + 1];
+    lbdas[t + 1].noalias() = vnext.Vmat * xs[t + 1];
 
     auto Wmat = -d.PinvEt;
-    xs[t + 1].noalias() = d.wvec + Wmat * lbdas[t];
+    xs[t + 1].noalias() = d.wvec + Wmat * lbdas[t + 1];
   }
 
   ALIGATOR_NOMALLOC_END;

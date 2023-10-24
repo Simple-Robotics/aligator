@@ -59,8 +59,9 @@ BOOST_AUTO_TEST_CASE(proxriccati) {
   std::vector<knot_t> knots(N + 1, base_knot);
   knots[0] = knot0;
   knots[N] = knot1;
-  prox_riccati_t solver{knots};
-  fmt::print("Horizon: {:d}\n", solver.horizon());
+  LQRProblem<T> prob(knots, 0);
+  prox_riccati_t solver{prob};
+  fmt::print("Horizon: {:d}\n", prob.horizon());
   BOOST_CHECK(solver.backward(mu, mueq));
 
   std::vector<VectorXs> xs{N + 1, VectorXs(nx)};
