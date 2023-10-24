@@ -2,7 +2,7 @@
 #include "croc-talos-arm.hpp"
 
 #include "proxddp/core/solver-proxddp.hpp"
-#include "proxddp/fddp/solver-fddp.hpp"
+#include "proxddp/solvers/fddp/solver-fddp.hpp"
 
 #include <benchmark/benchmark.h>
 
