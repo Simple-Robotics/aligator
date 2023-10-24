@@ -103,26 +103,4 @@ auto StageModelTpl<Scalar>::createData() const -> shared_ptr<Data> {
   return std::make_shared<Data>(*this);
 }
 
-template <typename Scalar>
-std::ostream &operator<<(std::ostream &oss,
-                         const StageModelTpl<Scalar> &stage) {
-  oss << "StageModel { ";
-  if (stage.ndx1() == stage.ndx2()) {
-    oss << "ndx: " << stage.ndx1() << ", "
-        << "nu:  " << stage.nu();
-  } else {
-    oss << "ndx1:" << stage.ndx1() << ", "
-        << "nu:  " << stage.nu() << ", "
-        << "ndx2:" << stage.ndx2();
-  }
-
-  if (stage.numConstraints() > 0) {
-    oss << ", ";
-    oss << "nc: " << stage.numConstraints();
-  }
-
-  oss << " }";
-  return oss;
-}
-
 } // namespace proxddp

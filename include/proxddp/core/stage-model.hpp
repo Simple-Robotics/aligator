@@ -103,9 +103,26 @@ public:
   /// @brief    Create a Data object.
   virtual shared_ptr<Data> createData() const;
 
-  template <typename S>
   friend std::ostream &operator<<(std::ostream &oss,
-                                  const StageModelTpl<S> &stage);
+                                  const StageModelTpl &stage) {
+    oss << "StageModel { ";
+    if (stage.ndx1() == stage.ndx2()) {
+      oss << "ndx: " << stage.ndx1() << ", "
+          << "nu:  " << stage.nu();
+    } else {
+      oss << "ndx1:" << stage.ndx1() << ", "
+          << "nu:  " << stage.nu() << ", "
+          << "ndx2:" << stage.ndx2();
+    }
+
+    if (stage.numConstraints() > 0) {
+      oss << ", ";
+      oss << "nc: " << stage.numConstraints();
+    }
+
+    oss << " }";
+    return oss;
+  }
 
 protected:
   StageModelTpl(ManifoldPtr space, const int nu);
