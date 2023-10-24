@@ -31,9 +31,7 @@ Scalar PDALFunction<Scalar>::evaluate(const SolverType &solver,
   TrajOptData &prob_data = workspace.problem_data;
   Scalar prox_value = 0.;
   Scalar penalty_value = 0.;
-  bool use_dual_terms = solver.ls_mode == LinesearchMode::PRIMAL_DUAL;
   const Scalar mu = solver.getLinesearchMu();
-  const Scalar dual_weight = solver.dual_weight;
   const std::vector<VectorXs> &lams_pdal = workspace.lams_pdal;
 
   // initial constraint
@@ -44,10 +42,6 @@ Scalar PDALFunction<Scalar>::evaluate(const SolverType &solver,
   }
 
   // local lambda function, defining the op to run on each constraint stack.
-  auto execute_on_stack = [use_dual_terms = use_dual_terms,
-                           dual_weight = dual_weight](
-                              const VectorXs &lambda, const VectorXs &lams_pdal,
-                              CstrProximalScaler &weight_strat) {
     auto e1 = weight_strat.apply(lams_pdal);
     auto e2 = weight_strat.apply(lambda);
     Scalar r = 0.25 * e1.dot(lams_pdal);

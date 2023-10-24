@@ -1,4 +1,4 @@
-#include "proxddp/core/workspace.hpp"
+#include "proxddp/solvers/proxddp/workspace.hpp"
 
 #include <boost/test/unit_test.hpp>
 

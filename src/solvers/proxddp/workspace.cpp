@@ -1,9 +1,9 @@
 /// @file
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
-#include "proxddp/core/results.hpp"
+#include "proxddp/solvers/proxddp/workspace.hpp"
 
 namespace proxddp {
 
-template struct ResultsTpl<context::Scalar>;
+template struct WorkspaceTpl<context::Scalar>;
 
 } // namespace proxddp

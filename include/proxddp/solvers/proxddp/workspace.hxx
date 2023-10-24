@@ -40,8 +40,6 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
   dlams.reserve(nsteps + 1);
   dyn_slacks.reserve(nsteps);
 
-  // initial condition
-  if (nsteps > 0) {
     const int ndx1 = problem.stages_[0]->ndx1();
     const int nprim = ndx1;
     const int ndual = problem.init_condition_->nr;
@@ -59,11 +57,6 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
     pd_step_[0] = VectorXs::Zero(ntot);
     dxs.emplace_back(pd_step_[0].head(ndx1));
     dlams.emplace_back(pd_step_[0].tail(ndual));
-  } else {
-    PROXDDP_WARNING("[Workspace]",
-                    "Initialized a workspace for an empty problem (no nodes).");
-    this->m_isInitialized = false;
-    return;
   }
 
   for (std::size_t i = 0; i < nsteps; i++) {
@@ -107,7 +100,6 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
 
   // terminal node: always allocate data, even with dim 0
   if (!problem.term_cstrs_.empty()) {
-    const int ndx1 = problem.stages_.back()->ndx2();
     const long ndual = problem.term_cstrs_.totalDim();
     stage_prim_infeas.emplace_back(1);
     lams_plus.push_back(VectorXs::Zero(ndual));
@@ -115,7 +107,6 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
     active_constraints.push_back(VecBool::Zero(ndual));
     pd_step_.push_back(VectorXs::Zero(ndual));
     dlams.push_back(pd_step_.back().tail(ndual));
-  }
 
   math::setZero(Lxs_);
   math::setZero(Lus_);

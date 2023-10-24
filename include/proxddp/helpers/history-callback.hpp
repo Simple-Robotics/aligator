@@ -2,8 +2,8 @@
 #pragma once
 
 #include "proxddp/core/callback-base.hpp"
-#include "proxddp/core/workspace.hpp"
-#include "proxddp/core/results.hpp"
+#include "proxddp/core/workspace-base.hpp"
+#include "proxddp/core/results-base.hpp"
 
 namespace proxddp {
 

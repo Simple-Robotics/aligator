@@ -1,6 +1,6 @@
 #include "croc-talos-arm.hpp"
 
-#include "proxddp/core/solver-proxddp.hpp"
+#include "proxddp/solvers/proxddp/solver-proxddp.hpp"
 #include <proxnlp/tests/cnpy.hpp>
 #include <fmt/ostream.h>
 

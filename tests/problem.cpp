@@ -1,6 +1,6 @@
 #include "proxddp/core/traj-opt-problem.hpp"
-#include "proxddp/core/results.hpp"
-#include "proxddp/core/workspace.hpp"
+#include "proxddp/solvers/proxddp/results.hpp"
+#include "proxddp/solvers/proxddp/workspace.hpp"
 #include "proxddp/utils/rollout.hpp"
 
 #include "generate-problem.hpp"

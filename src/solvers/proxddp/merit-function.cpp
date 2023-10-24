@@ -1,8 +1,8 @@
 /// @file
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
-#include "proxddp/core/merit-function.hpp"
-#include "proxddp/core/solver-proxddp.hpp"
+#include "proxddp/solvers/proxddp/merit-function.hpp"
+#include "proxddp/solvers/proxddp/solver-proxddp.hpp"
 
 namespace proxddp {
 

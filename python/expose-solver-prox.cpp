@@ -1,7 +1,7 @@
 #include "proxddp/python/fwd.hpp"
 #include "proxddp/python/utils.hpp"
 
-#include "proxddp/core/solver-proxddp.hpp"
+#include "proxddp/solvers/proxddp/solver-proxddp.hpp"
 
 namespace proxddp {
 namespace python {
@@ -152,6 +152,8 @@ void exposeProxDDP() {
                      "Minimum regularization value.")
       .def_readwrite("reg_max", &SolverType::reg_max,
                      "Maximum regularization value.")
+      .def("updateLqrSubproblem", &SolverType::updateLqrSubproblem,
+           bp::args("self"))
       .def("getLinesearchMu", &SolverType::getLinesearchMu, bp::args("self"))
       .def("setLinesearchMuLowerBound", &SolverType::setLinesearchMuLowerBound,
            bp::args("self", "mu_lower_bound"),

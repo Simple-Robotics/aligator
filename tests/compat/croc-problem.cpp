@@ -7,7 +7,7 @@
 #include <crocoddyl/core/solvers/ddp.hpp>
 #include <crocoddyl/core/utils/callbacks.hpp>
 
-#include "proxddp/core/solver-proxddp.hpp"
+#include "proxddp/solvers/proxddp/solver-proxddp.hpp"
 
 #include <boost/test/unit_test.hpp>
 
