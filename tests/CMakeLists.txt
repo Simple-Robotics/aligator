@@ -40,7 +40,10 @@ function(add_aligator_test name)
   add_test_cflags(${test_name} "-DBOOST_TEST_MODULE=${MODULE_NAME}")
 
   target_link_libraries(${test_name} PUBLIC ${PROJECT_NAME})
-  target_link_libraries(${test_name} PRIVATE Boost::unit_test_framework)
+  target_link_libraries(${test_name} PRIVATE Boost::unit_test_framework benchmark::benchmark)
+  if(BUILD_WITH_OPENMP_SUPPORT)
+    target_link_libraries(${test_name} PRIVATE OpenMP::OpenMP_CXX)
+  endif()
 endfunction(add_aligator_test)
 
 set(TEST_NAMES
@@ -67,5 +70,3 @@ endif()
 if(BUILD_CROCODDYL_COMPAT)
   add_subdirectory(compat)
 endif()
-
-target_link_libraries(test-cpp-schur3x3 PRIVATE OpenMP::OpenMP_CXX)
