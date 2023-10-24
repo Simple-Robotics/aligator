@@ -109,7 +109,6 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
     active_constraints.push_back(VecBool::Zero(ndual));
     pd_step_.push_back(VectorXs::Zero(ndual));
     dlams.push_back(pd_step_.back().tail(ndual));
-  }
 
   math::setZero(Lxs_);
   math::setZero(Lus_);

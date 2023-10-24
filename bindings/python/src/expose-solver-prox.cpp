@@ -71,6 +71,15 @@ void exposeProxDDP() {
           },
           bp::args("self", "j"), bp::return_internal_reference<>(),
           "Scalers of the constraints in the proximal algorithm.")
+      .def_readwrite("lqrData", &Workspace::lqrData,
+                     "Data buffer for the underlying LQ problem.")
+      .add_property("lqrSolver",
+                    bp::make_function(
+                        +[](const Workspace &work)
+                            -> gar::ProximalRiccatiSolver<Scalar> * {
+                          return work.lqrSolver.get();
+                        },
+                        bp::return_internal_reference<>()))
       .def_readonly("kkt_mat", &Workspace::kkt_mats_)
       .def_readonly("kkt_rhs", &Workspace::kkt_rhs_)
       .def_readonly("kkt_residuals", &Workspace::kkt_resdls_,
@@ -156,6 +165,8 @@ void exposeProxDDP() {
                      "Minimum regularization value.")
       .def_readwrite("reg_max", &SolverType::reg_max,
                      "Maximum regularization value.")
+      .def("updateLqrSubproblem", &SolverType::updateLqrSubproblem,
+           bp::args("self"))
       .def("getLinesearchMu", &SolverType::getLinesearchMu, bp::args("self"))
       .def("setLinesearchMuLowerBound", &SolverType::setLinesearchMuLowerBound,
            bp::args("self", "mu_lower_bound"),
