@@ -19,7 +19,7 @@ struct FlyHighResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
   static constexpr int NR = 2;
 
   using Base = UnaryFunctionTpl<Scalar>;
-  using BaseData = FunctionDataTpl<Scalar>;
+  using BaseData = StageFunctionDataTpl<Scalar>;
   using PhaseSpace = proxnlp::MultibodyPhaseSpace<Scalar>;
 
   struct Data;
@@ -46,7 +46,7 @@ template <typename Scalar>
 using FlyHighResidualDataTpl = typename FlyHighResidualTpl<Scalar>::Data;
 
 template <typename Scalar>
-struct FlyHighResidualTpl<Scalar>::Data : FunctionDataTpl<Scalar> {
+struct FlyHighResidualTpl<Scalar>::Data : StageFunctionDataTpl<Scalar> {
   using BaseData::ndx1;
   using BaseData::nr;
   using BaseData::nu;

@@ -9,7 +9,7 @@
 namespace proxddp {
 namespace python {
 
-using context::FunctionData;
+using context::StageFunctionData;
 using context::MatrixXs;
 using context::Scalar;
 using context::StageFunction;
@@ -52,7 +52,7 @@ struct LinFunctionCompositionVisitor
         .def_readonly("func", &LFC::func, "The underlying function.")
         .def_readonly("A", &LFC::A, "Weight matrix.")
         .def_readonly("b", &LFC::b, "Bias vector.");
-    bp::class_<typename LFC::Data, bp::bases<FunctionData>, boost::noncopyable>(
+    bp::class_<typename LFC::Data, bp::bases<StageFunctionData>, boost::noncopyable>(
         "LFC", bp::no_init)
         .def_readonly("sub_data", &LFC::Data::sub_data);
 
@@ -71,7 +71,7 @@ void exposeFunctionExpressions() {
   exposeSliceExpression<UnaryFunction>("UnaryFunctionSliceXpr");
 
   using FunctionSliceData = FunctionSliceDataTpl<Scalar>;
-  bp::class_<FunctionSliceData, bp::bases<FunctionData>, boost::noncopyable>(
+  bp::class_<FunctionSliceData, bp::bases<StageFunctionData>, boost::noncopyable>(
       "FunctionSliceData", bp::no_init)
       .def_readonly("sub_data", &FunctionSliceData::sub_data,
                     "Underlying function's data.");

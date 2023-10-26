@@ -82,7 +82,7 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem) {
   PROXDDP_NOMALLOC_BEGIN;
   // compute direction dx0
   const VParams &vp = workspace_.value_params[0];
-  FunctionData &init_data = workspace_.problem_data.getInitData();
+  StageFunctionData &init_data = workspace_.problem_data.getInitData();
   const int ndual0 = problem.init_condition_->nr;
   const int ndx0 = problem.init_condition_->ndx1;
   const VectorXs &lampl0 = workspace_.lams_plus[0];
@@ -213,7 +213,7 @@ void SolverProxDDP<Scalar>::computeMultipliers(
   {
     const VectorXs &lam0 = lams[0];
     const VectorXs &plam0 = lams_prev[0];
-    FunctionData &data = prob_data.getInitData();
+    StageFunctionData &data = prob_data.getInitData();
     shifted_constraints[0] = data.value_ + mu() * plam0;
     lams_plus[0] = shifted_constraints[0] * mu_inv();
     lams_pdal[0] = shifted_constraints[0] - 0.5 * mu() * lam0;
@@ -221,7 +221,7 @@ void SolverProxDDP<Scalar>::computeMultipliers(
     /// TODO: generalize to the other types of initial constraint (non-equality)
   }
 
-  using FuncDataVec = std::vector<shared_ptr<FunctionData>>;
+  using FuncDataVec = std::vector<shared_ptr<StageFunctionData>>;
   auto execute_on_stack =
       [dual_weight = dual_weight](
           const ConstraintStack &stack, const VectorXs &lambda,
@@ -238,7 +238,7 @@ void SolverProxDDP<Scalar>::computeMultipliers(
           auto scval_k = stack.segmentByConstraint(shift_cvals, k);
           auto active_k = stack.segmentByConstraint(active_cstr, k);
           const CstrSet &set = *stack[k].set;
-          const FunctionData &data = *constraint_data[k];
+          const StageFunctionData &data = *constraint_data[k];
 
           Scalar m = scaler.get(k);
           scval_k = data.value_ + m * plam_k;
@@ -309,7 +309,7 @@ void SolverProxDDP<Scalar>::updateHamiltonian(const Problem &problem,
 
   const ConstraintStack &cstr_stack = stage.constraints_;
   for (std::size_t k = 0; k < cstr_stack.size(); k++) {
-    FunctionData &cstr_data = *stage_data.constraint_data[k];
+    StageFunctionData &cstr_data = *stage_data.constraint_data[k];
     if (hess_approx_ == HessianApprox::EXACT) {
       qparam.hess_ += cstr_data.vhp_buffer_;
     }
@@ -323,7 +323,7 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem) {
   const std::size_t nsteps = workspace_.nsteps;
 
   const CostData &term_cost_data = *workspace_.problem_data.term_cost_data;
-  const std::vector<shared_ptr<FunctionData>> &cstr_datas =
+  const std::vector<shared_ptr<StageFunctionData>> &cstr_datas =
       workspace_.problem_data.term_cstr_data;
 
   VParams &term_value = workspace_.value_params[nsteps];
@@ -346,7 +346,7 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem) {
 
     for (std::size_t k = 0; k < cstr_mgr.size(); ++k) {
       const CstrSet &cstr_set = *cstr_mgr[k].set;
-      const FunctionData &cstr_data = *cstr_datas[k];
+      const StageFunctionData &cstr_data = *cstr_datas[k];
 
       auto scval_k = cstr_mgr.constSegmentByConstraint(shift_cstr_v, k);
       auto pJx_k = cstr_mgr.rowsByConstraint(pJx, k);
@@ -434,7 +434,7 @@ void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
   // Loop over constraints
   for (std::size_t j = 0; j < stage.numConstraints(); j++) {
     const CstrSet &cstr_set = *cstr_mgr[j].set;
-    const FunctionData &cstr_data = *stage_data.constraint_data[j];
+    const StageFunctionData &cstr_data = *stage_data.constraint_data[j];
     const auto shift_cstr_j = cstr_mgr.constSegmentByConstraint(shift_cstr, j);
     const auto laminnr_j = cstr_mgr.constSegmentByConstraint(laminnr, j);
 
@@ -612,7 +612,7 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
 
   for (std::size_t k = 0; k < problem.term_cstrs_.size(); ++k) {
     const ConstraintType &tc = problem.term_cstrs_[k];
-    FunctionData &td = *prob_data.term_cstr_data[k];
+    StageFunctionData &td = *prob_data.term_cstr_data[k];
     tc.func->evaluate(xs[nsteps], problem.unone_, xs[nsteps], td);
   }
 
@@ -883,7 +883,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem) {
   std::vector<VectorXs> &lams_plus = workspace_.lams_plus;
   std::vector<VectorXs> &lams_prev = workspace_.prev_lams;
 
-  const FunctionData &init_data = prob_data.getInitData();
+  const StageFunctionData &init_data = prob_data.getInitData();
   workspace_.stage_prim_infeas[0](0) = math::infty_norm(init_data.value_);
 
   auto execute_on_stack = [](const ConstraintStack &stack,

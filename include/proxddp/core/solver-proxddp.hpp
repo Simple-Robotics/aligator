@@ -31,7 +31,7 @@ public:
   using Problem = TrajOptProblemTpl<Scalar>;
   using Workspace = WorkspaceTpl<Scalar>;
   using Results = ResultsTpl<Scalar>;
-  using FunctionData = FunctionDataTpl<Scalar>;
+  using StageFunctionData = StageFunctionDataTpl<Scalar>;
   using DynamicsData = DynamicsDataTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using StageModel = StageModelTpl<Scalar>;

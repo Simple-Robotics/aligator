@@ -19,7 +19,7 @@ void QuadraticResidualCostTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                                 const ConstVectorRef &u,
                                                 CostData &data_) const {
   Data &data = static_cast<Data &>(data_);
-  FunctionDataTpl<Scalar> &under_data = *data.residual_data;
+  StageFunctionDataTpl<Scalar> &under_data = *data.residual_data;
   residual_->evaluate(x, u, x, under_data);
   data.value_ = .5 * under_data.value_.dot(weights_ * under_data.value_);
 }
@@ -29,7 +29,7 @@ void QuadraticResidualCostTpl<Scalar>::computeGradients(const ConstVectorRef &x,
                                                         const ConstVectorRef &u,
                                                         CostData &data_) const {
   Data &data = static_cast<Data &>(data_);
-  FunctionDataTpl<Scalar> &under_data = *data.residual_data;
+  StageFunctionDataTpl<Scalar> &under_data = *data.residual_data;
   residual_->computeJacobians(x, u, x, under_data);
   const Eigen::Index size = data.grad_.size();
   MatrixRef J = under_data.jac_buffer_.leftCols(size);
@@ -42,7 +42,7 @@ void QuadraticResidualCostTpl<Scalar>::computeHessians(const ConstVectorRef &x,
                                                        const ConstVectorRef &u,
                                                        CostData &data_) const {
   Data &data = static_cast<Data &>(data_);
-  FunctionDataTpl<Scalar> &under_data = *data.residual_data;
+  StageFunctionDataTpl<Scalar> &under_data = *data.residual_data;
   const Eigen::Index size = data.grad_.size();
   MatrixRef J = under_data.jac_buffer_.leftCols(size);
   data.JtW_buf.noalias() = J.transpose() * weights_;

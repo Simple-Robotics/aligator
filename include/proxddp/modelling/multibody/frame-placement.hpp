@@ -16,7 +16,7 @@ public:
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   PROXDDP_UNARY_FUNCTION_INTERFACE(Scalar);
-  using BaseData = FunctionDataTpl<Scalar>;
+  using BaseData = StageFunctionDataTpl<Scalar>;
   using Model = pinocchio::ModelTpl<Scalar>;
   using ManifoldPtr = shared_ptr<ManifoldAbstractTpl<Scalar>>;
   using SE3 = pinocchio::SE3Tpl<Scalar>;
@@ -52,9 +52,9 @@ protected:
 };
 
 template <typename Scalar>
-struct FramePlacementDataTpl : FunctionDataTpl<Scalar> {
+struct FramePlacementDataTpl : StageFunctionDataTpl<Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  using Base = FunctionDataTpl<Scalar>;
+  using Base = StageFunctionDataTpl<Scalar>;
   using PinData = pinocchio::DataTpl<Scalar>;
   using SE3 = pinocchio::SE3Tpl<Scalar>;
 

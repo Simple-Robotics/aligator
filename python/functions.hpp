@@ -19,7 +19,7 @@ namespace internal {
 template <class FunctionBase = context::StageFunction>
 struct PyStageFunction : FunctionBase, bp::wrapper<FunctionBase> {
   using Scalar = typename FunctionBase::Scalar;
-  using Data = FunctionDataTpl<Scalar>;
+  using Data = StageFunctionDataTpl<Scalar>;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
   // Use perfect forwarding to the FunctionBase constructors.
@@ -60,7 +60,7 @@ struct PyUnaryFunction : UFunction, bp::wrapper<UFunction> {
   using Scalar = typename UFunction::Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   PROXDDP_UNARY_FUNCTION_INTERFACE(Scalar);
-  using Data = FunctionDataTpl<Scalar>;
+  using Data = StageFunctionDataTpl<Scalar>;
 
   using UFunction::UFunction;
 

@@ -16,14 +16,14 @@ template <typename Scalar>
 struct CompositeCostDataTpl : CostDataAbstractTpl<Scalar> {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = CostDataAbstractTpl<Scalar>;
-  using FunctionData = FunctionDataTpl<Scalar>;
+  using StageFunctionData = StageFunctionDataTpl<Scalar>;
   using RowMatrixXs = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
 
-  shared_ptr<FunctionData> residual_data;
+  shared_ptr<StageFunctionData> residual_data;
   RowMatrixXs JtW_buf;
   VectorXs Wv_buf;
   CompositeCostDataTpl(const int ndx, const int nu,
-                       shared_ptr<FunctionData> rdata)
+                       shared_ptr<StageFunctionData> rdata)
       : Base(ndx, nu), residual_data(rdata), JtW_buf(ndx + nu, rdata->nr),
         Wv_buf(rdata->nr) {
     JtW_buf.setZero();

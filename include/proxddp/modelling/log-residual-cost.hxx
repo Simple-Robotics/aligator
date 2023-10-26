@@ -44,7 +44,7 @@ void LogResidualCostTpl<Scalar>::computeGradients(
     const ConstVectorRef &x, const ConstVectorRef &u,
     CostDataAbstract &data) const {
   Data &d = static_cast<Data &>(data);
-  FunctionDataTpl<Scalar> &under_d = *d.residual_data;
+  StageFunctionDataTpl<Scalar> &under_d = *d.residual_data;
   MatrixRef J = under_d.jac_buffer_.leftCols(data.grad_.size());
   residual_->computeJacobians(x, u, x, under_d);
   d.grad_.setZero();
@@ -61,7 +61,7 @@ void LogResidualCostTpl<Scalar>::computeHessians(const ConstVectorRef &,
                                                  const ConstVectorRef &,
                                                  CostDataAbstract &data) const {
   Data &d = static_cast<Data &>(data);
-  FunctionDataTpl<Scalar> &under_d = *d.residual_data;
+  StageFunctionDataTpl<Scalar> &under_d = *d.residual_data;
   d.hess_.setZero();
   MatrixRef J = under_d.jac_buffer_.leftCols(data.grad_.size());
   VectorXs &v = under_d.value_;

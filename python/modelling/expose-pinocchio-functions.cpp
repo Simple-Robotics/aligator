@@ -54,7 +54,7 @@ void exposeFrameFunctions() {
 
   bp::register_ptr_to_python<shared_ptr<FramePlacementData>>();
 
-  bp::class_<FramePlacementData, bp::bases<context::FunctionData>>(
+  bp::class_<FramePlacementData, bp::bases<context::StageFunctionData>>(
       "FramePlacementData", "Data struct for FramePlacementResidual.",
       bp::no_init)
       .def_readonly("rMf", &FramePlacementData::rMf_, "Frame placement error.")
@@ -76,7 +76,7 @@ void exposeFrameFunctions() {
 
   bp::register_ptr_to_python<shared_ptr<FrameVelocityData>>();
 
-  bp::class_<FrameVelocityData, bp::bases<context::FunctionData>>(
+  bp::class_<FrameVelocityData, bp::bases<context::StageFunctionData>>(
       "FrameVelocityData", "Data struct for FrameVelocityResidual.",
       bp::no_init)
       .def_readonly("pin_data", &FrameVelocityData::pin_data_,
@@ -96,7 +96,7 @@ void exposeFrameFunctions() {
 
   bp::register_ptr_to_python<shared_ptr<FrameTranslationData>>();
 
-  bp::class_<FrameTranslationData, bp::bases<context::FunctionData>>(
+  bp::class_<FrameTranslationData, bp::bases<context::StageFunctionData>>(
       "FrameTranslationData", "Data struct for FrameTranslationResidual.",
       bp::no_init)
       .def_readonly("fJf", &FrameTranslationData::fJf_)
