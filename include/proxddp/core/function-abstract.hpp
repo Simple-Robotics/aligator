@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 /// @file function-abstract.hpp
 /// @brief  Base definitions for ternary functions.
 #pragma once
@@ -80,11 +80,6 @@ public:
 
   /// @brief Instantiate a Data object.
   virtual shared_ptr<Data> createData() const;
-
-  // using FunctionSlice = FunctionSliceXprTpl<Scalar, StageFunctionTpl>;
-
-  // shared_ptr<FunctionSlice> operator[](const int idx);
-  // shared_ptr<FunctionSlice> operator[](const std::vector<int> &indices);
 };
 
 /// @brief  Base struct for function data.
