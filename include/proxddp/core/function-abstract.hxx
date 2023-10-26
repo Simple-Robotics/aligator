@@ -30,7 +30,7 @@ StageFunctionTpl<Scalar>::createData() const {
 
 template <typename Scalar>
 StageFunctionDataTpl<Scalar>::StageFunctionDataTpl(const int ndx1, const int nu,
-                                         const int ndx2, const int nr)
+                                                   const int ndx2, const int nr)
     : ndx1(ndx1), nu(nu), ndx2(ndx2), nr(nr), value_(nr), valref_(value_),
       jac_buffer_(nr, nvar), vhp_buffer_(nvar, nvar),
       Jx_(jac_buffer_.leftCols(ndx1)), Ju_(jac_buffer_.middleCols(ndx1, nu)),
@@ -47,7 +47,8 @@ StageFunctionDataTpl<Scalar>::StageFunctionDataTpl(const int ndx1, const int nu,
 }
 
 template <typename T>
-std::ostream &operator<<(std::ostream &oss, const StageFunctionDataTpl<T> &self) {
+std::ostream &operator<<(std::ostream &oss,
+                         const StageFunctionDataTpl<T> &self) {
   oss << "FunctionData { ";
   if (self.ndx1 == self.ndx2) {
     oss << fmt::format("ndx : {:d}", self.ndx1);
@@ -65,17 +66,4 @@ std::ostream &operator<<(std::ostream &oss, const StageFunctionDataTpl<T> &self)
   return oss;
 }
 
-// template <typename Scalar>
-// auto StageFunctionTpl<Scalar>::operator[](const int idx)
-//     -> shared_ptr<FunctionSlice> {
-//   auto self_ptr = this->shared_from_this();
-//   return std::make_shared<FunctionSlice>(self_ptr, idx);
-// }
-
-// template <typename Scalar>
-// auto StageFunctionTpl<Scalar>::operator[](const std::vector<int> &indices)
-//     -> shared_ptr<FunctionSlice> {
-//   auto self_ptr = this->shared_from_this();
-//   return std::make_shared<FunctionSlice>(self_ptr, indices);
-// }
 } // namespace proxddp

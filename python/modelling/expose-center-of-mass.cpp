@@ -12,10 +12,10 @@
 namespace proxddp {
 namespace python {
 
-using context::StageFunctionData;
 using context::PinData;
 using context::PinModel;
 using context::Scalar;
+using context::StageFunctionData;
 using context::UnaryFunction;
 
 void exposeCenterOfMassFunctions() {

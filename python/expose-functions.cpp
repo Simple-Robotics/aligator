@@ -14,10 +14,10 @@ namespace python {
 using context::ConstMatrixRef;
 using context::ConstVectorRef;
 using context::DynamicsModel;
-using context::StageFunctionData;
 using context::MatrixXs;
 using context::Scalar;
 using context::StageFunction;
+using context::StageFunctionData;
 using context::UnaryFunction;
 using context::VectorXs;
 using internal::PyStageFunction;
@@ -76,7 +76,8 @@ void exposeFunctionBase() {
                     make_getter_eigen_matrix(&StageFunctionData::jac_buffer_),
                     "Buffer of the full function Jacobian wrt (x,u,y).")
       .add_property(
-          "vhp_buffer", make_getter_eigen_matrix(&StageFunctionData::vhp_buffer_),
+          "vhp_buffer",
+          make_getter_eigen_matrix(&StageFunctionData::vhp_buffer_),
           "Buffer of the full function vector-Hessian product wrt (x,u,y).")
       .add_property(
           "Jx",
@@ -129,8 +130,9 @@ void exposeFunctionBase() {
 
   StdVectorPythonVisitor<std::vector<FunctionPtr>, true>::expose(
       "StdVec_StageFunction", "Vector of function objects.");
-  StdVectorPythonVisitor<std::vector<shared_ptr<StageFunctionData>>, true>::expose(
-      "StdVec_StageFunctionData", "Vector of function data objects.");
+  StdVectorPythonVisitor<std::vector<shared_ptr<StageFunctionData>>,
+                         true>::expose("StdVec_StageFunctionData",
+                                       "Vector of function data objects.");
 
   exposeUnaryFunctions();
 
@@ -178,13 +180,15 @@ void exposeFunctionBase() {
 
 /// Expose the UnaryFunction type and its member function overloads.
 void exposeUnaryFunctions() {
-  using unary_eval_t =
-      void (UnaryFunction::*)(const ConstVectorRef &, StageFunctionData &) const;
+  using unary_eval_t = void (UnaryFunction::*)(const ConstVectorRef &,
+                                               StageFunctionData &) const;
   using full_eval_t =
       void (UnaryFunction::*)(const ConstVectorRef &, const ConstVectorRef &,
-                              const ConstVectorRef &, StageFunctionData &) const;
-  using unary_vhp_t = void (UnaryFunction::*)(
-      const ConstVectorRef &, const ConstVectorRef &, StageFunctionData &) const;
+                              const ConstVectorRef &, StageFunctionData &)
+          const;
+  using unary_vhp_t =
+      void (UnaryFunction::*)(const ConstVectorRef &, const ConstVectorRef &,
+                              StageFunctionData &) const;
   using full_vhp_t = void (UnaryFunction::*)(
       const ConstVectorRef &, const ConstVectorRef &, const ConstVectorRef &,
       const ConstVectorRef &, StageFunctionData &) const;

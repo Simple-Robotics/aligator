@@ -10,10 +10,10 @@ void exposeAutodiff() {
   using namespace autodiff;
   using context::CostBase;
   using context::CostData;
-  using context::StageFunctionData;
   using context::Manifold;
   using context::Scalar;
   using context::StageFunction;
+  using context::StageFunctionData;
 
   bp::enum_<FDLevel>("FDLevel", "Finite difference level (to compute Jacobians "
                                 "or both Jacobians and Hessians).")
@@ -30,7 +30,7 @@ void exposeAutodiff() {
         bp::init<shared_ptr<Manifold>, shared_ptr<StageFunction>, Scalar>(
             bp::args("self", "space", "func", "eps")));
     bp::class_<fdiff_wrapper::Data, bp::bases<StageFunctionData>>("Data",
-                                                             bp::no_init);
+                                                                  bp::no_init);
   }
 
   using cost_fdiff = cost_finite_difference_wrapper<Scalar>;

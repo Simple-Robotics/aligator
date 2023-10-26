@@ -125,7 +125,8 @@ struct StageFunctionDataTpl : Cloneable<StageFunctionDataTpl<_Scalar>> {
   MatrixRef Hyy_;
 
   /// @brief Default constructor.
-  StageFunctionDataTpl(const int ndx1, const int nu, const int ndx2, const int nr);
+  StageFunctionDataTpl(const int ndx1, const int nu, const int ndx2,
+                       const int nr);
   virtual ~StageFunctionDataTpl() = default;
 
   template <typename T>

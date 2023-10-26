@@ -9,9 +9,9 @@
 namespace proxddp {
 namespace python {
 
-using context::StageFunctionData;
 using context::MultibodyPhaseSpace;
 using context::Scalar;
+using context::StageFunctionData;
 using context::UnaryFunction;
 
 void exposeFlyHigh() {
