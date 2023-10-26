@@ -49,7 +49,7 @@ StageFunctionDataTpl<Scalar>::StageFunctionDataTpl(const int ndx1, const int nu,
 template <typename T>
 std::ostream &operator<<(std::ostream &oss,
                          const StageFunctionDataTpl<T> &self) {
-  oss << "FunctionData { ";
+  oss << "StageFunctionData { ";
   if (self.ndx1 == self.ndx2) {
     oss << fmt::format("ndx : {:d}", self.ndx1);
     oss << ",  ";

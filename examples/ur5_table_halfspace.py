@@ -122,7 +122,7 @@ ineq_cstr_values = []
 dyn_cstr_values = []
 for i in range(nsteps):
     if len(stage_datas[i].constraint_data) > 1:
-        icd: proxddp.FunctionData = stage_datas[i].constraint_data[1]
+        icd: proxddp.StageFunctionData = stage_datas[i].constraint_data[1]
         ineq_cstr_datas.append(icd)
         ineq_cstr_values.append(icd.value.copy())
     dcd = stage_datas[i].constraint_data[0]
