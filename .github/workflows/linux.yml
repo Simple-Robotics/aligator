@@ -12,6 +12,7 @@ env:
   CCACHE_DIR: ~/.ccache
   CTEST_OUTPUT_ON_FAILURE: 1
   CTEST_PARALLEL_LEVEL: 4
+  NJOBS: 8
 
 defaults:
   run:
@@ -55,7 +56,7 @@ jobs:
         cmake .. -DBUILD_DOCUMENTATION=OFF \
           -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX \
           -DCMAKE_BUILD_TYPE=Release
-        make -j6 install
+        make -j$NJOBS install
         python3 -c "import proxnlp"
 
   build:
@@ -65,6 +66,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
+        path: ./proxddp
         fetch-depth: 0
         submodules: recursive
 
@@ -72,7 +74,7 @@ jobs:
       run: |
         micromamba activate
 
-        cd $GITHUB_WORKSPACE
+        cd $GITHUB_WORKSPACE/proxddp
         mkdir build && cd build
 
         cmake .. -DBUILD_DOCUMENTATION=OFF \
@@ -80,17 +82,24 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           -DBUILD_CROCODDYL_COMPAT:BOOL=ON \
           -DBUILD_WITH_OPENMP_SUPPORT:BOOL=OFF
-        make -j4 install
-  test:
+        make -j$NJOBS install
+
+    - name: Run tests
+      run: |
+        micromamba activate
+        cd $GITHUB_WORKSPACE/proxddp
+        cd build && ctest
+
+  cleanup:
+    name: Cleanup
     needs: build
     runs-on: self-hosted
-    name: Run tests
+    if: always()
     steps:
-      - run: |
-          cd $GITHUB_WORKSPACE/build
-          make test
-
-    # - name: Uninstall project
-    #   run: |
-    #     cd build
-    #     sudo make uninstall
+    - run: |
+        cd $GITHUB_WORKSPACE/proxddp
+        cd build/ && make uninstall
+        cd .. && rm -r build/
+        cd $GITHUB_WORKSPACE/proxnlp
+        cd build/ && make uninstall
+        cd .. && rm -r build/
