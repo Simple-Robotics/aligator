@@ -42,5 +42,3 @@ function(add_test_binding_lib test_name)
     set_tests_properties(${test_name} PROPERTIES DEPENDS ctest_build_tests)
   endif()
 endfunction()
-
-add_test_binding_lib(create_data_ext)
