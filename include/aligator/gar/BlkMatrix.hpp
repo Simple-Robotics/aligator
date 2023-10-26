@@ -76,6 +76,10 @@ public:
   long rows() const { return m_totalRows; }
   long cols() const { return m_totalCols; }
 
+  friend std::ostream &operator<<(std::ostream &oss, const BlkMatrix &self) {
+    return oss << self.data;
+  }
+
 protected:
   row_dim_t m_rowDims;
   col_dim_t m_colDims;
