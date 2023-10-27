@@ -745,7 +745,9 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
                                workspace_.problem_data);
     const Scalar phi0 = results_.merit_value_;
 
-    computeLagrangianDerivatives(problem, workspace_, results_.lams);
+    LagrangianDerivatives<Scalar>::compute(problem, workspace_.problem_data,
+                                           results_.lams, workspace_.Lxs_,
+                                           workspace_.Lus_);
     if (force_initial_condition_) {
       workspace_.Lxs_[0].setZero();
     }

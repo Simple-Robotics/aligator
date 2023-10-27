@@ -81,7 +81,9 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
   const std::vector<VectorRef> &dus = workspace.dus;
   const std::vector<VectorRef> &dlams = workspace.dlams;
   const std::vector<VectorXs> &lams_pdal = workspace.lams_pdal;
-  computeLagrangianDerivatives(problem, workspace, lams_pdal);
+  LagrangianDerivatives<Scalar>::compute(problem, workspace.problem_data,
+                                         lams_pdal, workspace.Lxs_,
+                                         workspace.Lus_);
   if (solver.force_initial_condition_) {
     workspace.Lxs_[0].setZero();
   }

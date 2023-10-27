@@ -77,64 +77,60 @@ void check_trajectory_and_assign(
 }
 
 /// @brief  Compute the derivatives of the problem Lagrangian.
-template <typename Scalar>
-void computeLagrangianDerivatives(
-    const TrajOptProblemTpl<Scalar> &problem, WorkspaceTpl<Scalar> &workspace,
-    const typename math_types<Scalar>::VectorOfVectors &lams) {
+template <typename Scalar> struct LagrangianDerivatives {
+  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  using TrajOptProblem = TrajOptProblemTpl<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
-  using ConstraintStack = ConstraintStackTpl<Scalar>;
-  using StageFunctionData = StageFunctionDataTpl<Scalar>;
-  using CostData = CostDataAbstractTpl<Scalar>;
-  using StageModel = StageModelTpl<Scalar>;
-  using StageData = StageDataTpl<Scalar>;
-  using VectorXs = typename math_types<Scalar>::VectorXs;
-  using ConstVectorRef = typename math_types<Scalar>::ConstVectorRef;
 
-  TrajOptData const &pd = workspace.problem_data;
-  std::vector<VectorXs> &Lxs = workspace.Lxs_;
-  std::vector<VectorXs> &Lus = workspace.Lus_;
+  static void compute(const TrajOptProblem &problem, const TrajOptData &pd,
+                      const std::vector<VectorXs> &lams,
+                      std::vector<VectorXs> &Lxs, std::vector<VectorXs> &Lus) {
+    using ConstraintStack = ConstraintStackTpl<Scalar>;
+    using StageFunctionData = StageFunctionDataTpl<Scalar>;
+    using CostData = CostDataAbstractTpl<Scalar>;
+    using StageModel = StageModelTpl<Scalar>;
+    using StageData = StageDataTpl<Scalar>;
+    std::size_t nsteps = problem.numSteps();
 
-  std::size_t nsteps = workspace.nsteps;
+    math::setZero(Lxs);
+    math::setZero(Lus);
+    {
+      StageFunctionData const &ind = *pd.init_data;
+      Lxs[0] += ind.Jx_.transpose() * lams[0];
+    }
 
-  math::setZero(Lxs);
-  math::setZero(Lus);
-  {
-    StageFunctionData const &ind = *pd.init_data;
-    Lxs[0] += ind.Jx_.transpose() * lams[0];
-  }
+    {
+      CostData const &cdterm = *pd.term_cost_data;
+      Lxs[nsteps] = cdterm.Lx_;
+      ConstraintStack const &stack = problem.term_cstrs_;
+      VectorXs const &lamN = lams.back();
+      for (std::size_t j = 0; j < stack.size(); j++) {
+        StageFunctionData const &cstr_data = *pd.term_cstr_data[j];
+        auto lam_j = stack.constSegmentByConstraint(lamN, j);
+        Lxs[nsteps] += cstr_data.Jx_.transpose() * lam_j;
+      }
+    }
 
-  {
-    CostData const &cdterm = *pd.term_cost_data;
-    Lxs[nsteps] = cdterm.Lx_;
-    ConstraintStack const &stack = problem.term_cstrs_;
-    VectorXs const &lamN = lams.back();
-    for (std::size_t j = 0; j < stack.size(); j++) {
-      StageFunctionData const &cstr_data = *pd.term_cstr_data[j];
-      auto lam_j = stack.constSegmentByConstraint(lamN, j);
-      Lxs[nsteps] += cstr_data.Jx_.transpose() * lam_j;
+    for (std::size_t i = 0; i < nsteps; i++) {
+      StageModel const &sm = *problem.stages_[i];
+      StageData const &sd = *pd.stage_data[i];
+      ConstraintStack const &stack = sm.constraints_;
+      Lxs[i] += sd.cost_data->Lx_;
+      Lus[i] += sd.cost_data->Lu_;
+
+      assert(sd.constraint_data.size() == sm.numConstraints());
+
+      for (std::size_t j = 0; j < stack.size(); j++) {
+        StageFunctionData const &cstr_data = *sd.constraint_data[j];
+        ConstVectorRef lam_j = stack.constSegmentByConstraint(lams[i + 1], j);
+        Lxs[i] += cstr_data.Jx_.transpose() * lam_j;
+        Lus[i] += cstr_data.Ju_.transpose() * lam_j;
+
+        assert((i + 1) <= nsteps);
+        // add contribution to the next node
+        Lxs[i + 1] += cstr_data.Jy_.transpose() * lam_j;
+      }
     }
   }
-
-  for (std::size_t i = 0; i < nsteps; i++) {
-    StageModel const &sm = *problem.stages_[i];
-    StageData const &sd = *pd.stage_data[i];
-    ConstraintStack const &stack = sm.constraints_;
-    Lxs[i] += sd.cost_data->Lx_;
-    Lus[i] += sd.cost_data->Lu_;
-
-    assert(sd.constraint_data.size() == sm.numConstraints());
-
-    for (std::size_t j = 0; j < stack.size(); j++) {
-      StageFunctionData const &cstr_data = *sd.constraint_data[j];
-      ConstVectorRef lam_j = stack.constSegmentByConstraint(lams[i + 1], j);
-      Lxs[i] += cstr_data.Jx_.transpose() * lam_j;
-      Lus[i] += cstr_data.Ju_.transpose() * lam_j;
-
-      assert((i + 1) <= nsteps);
-      // add contribution to the next node
-      Lxs[i + 1] += cstr_data.Jy_.transpose() * lam_j;
-    }
-  }
-}
-
+};
 } // namespace aligator

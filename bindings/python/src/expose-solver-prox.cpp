@@ -182,10 +182,6 @@ void exposeProxDDP() {
                 bp::arg("us_init"), bp::arg("lams_init")),
                "Run the algorithm. Can receive initial guess for "
                "multiplier trajectory."));
-
-  bp::def("computeLagrangianDerivatives", computeLagrangianDerivatives<Scalar>,
-          bp::args("problem", "workspace", "lams"),
-          "Compute the derivatives of the problem Lagrangian.");
 }
 
 } // namespace python
