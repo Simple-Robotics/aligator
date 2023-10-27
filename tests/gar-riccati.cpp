@@ -9,7 +9,7 @@ using namespace gar;
 
 using T = double;
 using prox_riccati_t = ProximalRiccatiSolver<T>;
-using knot_t = LQRKnot<T>;
+using knot_t = LQRKnotTpl<T>;
 ALIGATOR_DYNAMIC_TYPEDEFS(T);
 
 BOOST_AUTO_TEST_CASE(inplace_llt) {
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(proxriccati) {
   std::vector<knot_t> knots(N + 1, base_knot);
   knots[0] = knot0;
   knots[N] = knot1;
-  LQRProblem<T> prob(knots, 0);
+  LQRProblemTpl<T> prob(knots, 0);
   prox_riccati_t solver{prob};
   fmt::print("Horizon: {:d}\n", prob.horizon());
   BOOST_CHECK(solver.backward(mu, mueq));

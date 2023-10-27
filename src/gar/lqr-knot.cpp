@@ -2,10 +2,10 @@
 
 namespace aligator {
 namespace gar {
-template struct LQRKnot<context::Scalar>;
-template struct LQRProblem<context::Scalar>;
+template struct LQRKnotTpl<context::Scalar>;
+template struct LQRProblemTpl<context::Scalar>;
 template auto
-lqrDenseMatrix<context::Scalar>(const LQRProblem<context::Scalar> &,
+lqrDenseMatrix<context::Scalar>(const LQRProblemTpl<context::Scalar> &,
                                 context::Scalar, context::Scalar);
 } // namespace gar
 

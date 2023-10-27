@@ -12,9 +12,9 @@ using namespace gar;
 
 using context::Scalar;
 using prox_riccati_t = ProximalRiccatiSolver<Scalar>;
-using knot_t = LQRKnot<Scalar>;
+using knot_t = LQRKnotTpl<Scalar>;
 using stage_solve_data_t = prox_riccati_t::stage_solve_data_t;
-using lqr_t = LQRProblem<Scalar>;
+using lqr_t = LQRProblemTpl<Scalar>;
 } // namespace python
 } // namespace aligator
 

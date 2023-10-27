@@ -22,8 +22,8 @@ public:
     ldlt_t(size_t dim) : mat(dim, dim), fac(mat) {}
   };
   using factor_t = LQRFactor<T>;
-  using problem_t = gar::LQRProblem<T>;
-  using knot_t = gar::LQRKnot<T>;
+  using problem_t = gar::LQRProblemTpl<T>;
+  using knot_t = gar::LQRKnotTpl<T>;
 
   size_t horz;
   LQRTree tree;

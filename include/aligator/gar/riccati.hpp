@@ -15,7 +15,7 @@ template <typename Scalar> class ProximalRiccatiSolver {
 public:
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using RowMatrixXs = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
-  using knot_t = LQRKnot<Scalar>;
+  using knot_t = LQRKnotTpl<Scalar>;
   using vecvec_t = std::vector<VectorXs>;
 
   struct value_t {
@@ -80,13 +80,13 @@ public:
     error_t err;     //< numerical errors
   };
 
-  explicit ProximalRiccatiSolver(const LQRProblem<Scalar> &problem)
+  explicit ProximalRiccatiSolver(const LQRProblemTpl<Scalar> &problem)
       : datas(), kkt0(problem.stages[0].nx, (uint)problem.nc0()),
         problem(problem) {
     initialize();
   }
 
-  ProximalRiccatiSolver(LQRProblem<Scalar> &&problem) = delete;
+  ProximalRiccatiSolver(LQRProblemTpl<Scalar> &&problem) = delete;
 
   void computeKktTerms(const knot_t &model, stage_solve_data_t &d,
                        const value_t &vnext);
@@ -116,7 +116,7 @@ protected:
   }
 
 private:
-  const LQRProblem<Scalar> &problem;
+  const LQRProblemTpl<Scalar> &problem;
 };
 
 } // namespace gar

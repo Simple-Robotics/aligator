@@ -9,9 +9,9 @@ using namespace aligator;
 
 using T = double;
 ALIGATOR_DYNAMIC_TYPEDEFS(T);
-using problem_t = gar::LQRProblem<T>;
+using problem_t = gar::LQRProblemTpl<T>;
 using solver_t = LQRTreeSolver<T>;
-using knot_t = gar::LQRKnot<T>;
+using knot_t = gar::LQRKnotTpl<T>;
 
 BOOST_AUTO_TEST_CASE(factor) {
   uint nx = 2, nu = 2, nc = 1;

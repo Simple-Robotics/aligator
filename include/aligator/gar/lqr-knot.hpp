@@ -22,7 +22,7 @@ namespace gar {
 ///   Cx + Du + d = 0.
 /// \f\]
 ///
-template <typename Scalar> struct LQRKnot {
+template <typename Scalar> struct LQRKnotTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   uint nx, nu, nc;
@@ -33,7 +33,7 @@ template <typename Scalar> struct LQRKnot {
   MatrixXs C, D;
   VectorXs d;
 
-  LQRKnot(uint nx, uint nu, uint nc)
+  LQRKnotTpl(uint nx, uint nu, uint nc)
       : nx(nx), nu(nu), nc(nc),                        //
         Q(nx, nx), S(nx, nu), R(nu, nu), q(nx), r(nu), //
         A(nx, nx), B(nx, nu), E(nx, nx), f(nx),        //
@@ -55,9 +55,9 @@ template <typename Scalar> struct LQRKnot {
   }
 };
 
-template <typename Scalar> struct LQRProblem {
+template <typename Scalar> struct LQRProblemTpl {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-  using knot_t = LQRKnot<Scalar>;
+  using knot_t = LQRKnotTpl<Scalar>;
   std::vector<knot_t> stages;
   MatrixXs G0;
   VectorXs g0;
@@ -65,9 +65,9 @@ template <typename Scalar> struct LQRProblem {
   long horizon() const noexcept { return long(stages.size()) - 1L; }
   long nc0() const noexcept { return g0.rows(); }
 
-  LQRProblem() : stages(), G0(), g0() {}
+  LQRProblemTpl() : stages(), G0(), g0() {}
 
-  LQRProblem(const std::vector<knot_t> &knots, long nc0)
+  LQRProblemTpl(const std::vector<knot_t> &knots, long nc0)
       : stages(knots), G0(), g0(nc0) {
     assert(stages.size() > 0);
     auto nx0 = stages[0].nx;
@@ -76,10 +76,10 @@ template <typename Scalar> struct LQRProblem {
 };
 
 template <typename Scalar>
-void lqrDenseMatrix(const LQRProblem<Scalar> &problem, Scalar mudyn,
+void lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
                     Scalar mueq, typename math_types<Scalar>::MatrixXs &mat,
                     typename math_types<Scalar>::VectorXs &rhs) {
-  using knot_t = LQRKnot<Scalar>;
+  using knot_t = LQRKnotTpl<Scalar>;
   const std::vector<knot_t> &knots = problem.stages;
   size_t N = knots.size() - 1UL;
 
@@ -143,13 +143,13 @@ void lqrDenseMatrix(const LQRProblem<Scalar> &problem, Scalar mudyn,
 }
 
 template <typename Scalar>
-auto lqrDenseMatrix(const LQRProblem<Scalar> &problem, Scalar mudyn,
+auto lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
                     Scalar mueq) {
 
   decltype(auto) knots = problem.stages;
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
   using VectorXs = typename math_types<Scalar>::VectorXs;
-  using knot_t = LQRKnot<Scalar>;
+  using knot_t = LQRKnotTpl<Scalar>;
   long nc0 = problem.nc0();
   size_t N = knots.size() - 1UL;
   uint nrows = (uint)nc0;
@@ -169,7 +169,7 @@ auto lqrDenseMatrix(const LQRProblem<Scalar> &problem, Scalar mudyn,
 }
 
 template <typename Scalar>
-std::ostream &operator<<(std::ostream &oss, const LQRKnot<Scalar> &self) {
+std::ostream &operator<<(std::ostream &oss, const LQRKnotTpl<Scalar> &self) {
   oss << "LQRKnot {";
 #ifdef NDEBUG
   oss << fmt::format("\n  nx: {:d}", self.nx) //
