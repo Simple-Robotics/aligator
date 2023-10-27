@@ -16,7 +16,7 @@ using Manifold = ManifoldAbstractTpl<Scalar>;
 using BCLParams = BCLParamsTpl<Scalar>;
 using StageFunction = StageFunctionTpl<Scalar>;
 using UnaryFunction = UnaryFunctionTpl<Scalar>;
-using FunctionData = FunctionDataTpl<Scalar>;
+using StageFunctionData = StageFunctionDataTpl<Scalar>;
 using StageConstraint = StageConstraintTpl<Scalar>;
 
 using ConstraintSet = ConstraintSetBase<Scalar>;

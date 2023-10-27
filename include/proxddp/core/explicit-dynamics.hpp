@@ -53,11 +53,11 @@ public:
 /// @brief    Specific data struct for explicit dynamics
 /// ExplicitDynamicsModelTpl.
 template <typename _Scalar>
-struct ExplicitDynamicsDataTpl : FunctionDataTpl<_Scalar> {
+struct ExplicitDynamicsDataTpl : StageFunctionDataTpl<_Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-  using Base = FunctionDataTpl<Scalar>;
+  using Base = StageFunctionDataTpl<Scalar>;
   using Base::Ju_;
   using Base::Jx_;
   using Base::Jy_;

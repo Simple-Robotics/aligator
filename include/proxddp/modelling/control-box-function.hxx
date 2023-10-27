@@ -40,7 +40,7 @@ void ControlBoxFunctionTpl<Scalar>::computeJacobians(const ConstVectorRef &,
 }
 
 template <typename Scalar>
-shared_ptr<FunctionDataTpl<Scalar>>
+shared_ptr<StageFunctionDataTpl<Scalar>>
 ControlBoxFunctionTpl<Scalar>::createData() const {
   auto data =
       std::make_shared<Data>(this->ndx1, this->nu, this->ndx2, this->nr);

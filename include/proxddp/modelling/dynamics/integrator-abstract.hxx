@@ -11,7 +11,7 @@ IntegratorAbstractTpl<Scalar>::IntegratorAbstractTpl(
       continuous_dynamics_(cont_dynamics) {}
 
 template <typename Scalar>
-shared_ptr<FunctionDataTpl<Scalar>>
+shared_ptr<StageFunctionDataTpl<Scalar>>
 IntegratorAbstractTpl<Scalar>::createData() const {
   return std::make_shared<IntegratorDataTpl<Scalar>>(this);
 }

@@ -9,9 +9,9 @@
 namespace proxddp {
 namespace python {
 
-using context::FunctionData;
 using context::MultibodyPhaseSpace;
 using context::Scalar;
+using context::StageFunctionData;
 using context::UnaryFunction;
 
 void exposeFlyHigh() {
@@ -28,7 +28,7 @@ void exposeFlyHigh() {
       .def_readwrite("slope", &FlyHighResidual::slope_,
                      "The slope parameter of the function.");
 
-  bp::class_<FlyHighResidual::Data, bp::bases<FunctionData>>(
+  bp::class_<FlyHighResidual::Data, bp::bases<StageFunctionData>>(
       "FlyHighResidualData", bp::no_init)
       .def_readonly("ez", &FlyHighResidual::Data::ez)
       .def_readonly("pin_data", &FlyHighResidual::Data::pdata_);

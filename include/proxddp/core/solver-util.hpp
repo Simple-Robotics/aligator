@@ -83,7 +83,7 @@ void computeLagrangianDerivatives(
     const typename math_types<Scalar>::VectorOfVectors &lams) {
   using TrajOptData = TrajOptDataTpl<Scalar>;
   using ConstraintStack = ConstraintStackTpl<Scalar>;
-  using FunctionData = FunctionDataTpl<Scalar>;
+  using StageFunctionData = StageFunctionDataTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using StageModel = StageModelTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
@@ -99,7 +99,7 @@ void computeLagrangianDerivatives(
   math::setZero(Lxs);
   math::setZero(Lus);
   {
-    FunctionData const &ind = pd.getInitData();
+    StageFunctionData const &ind = pd.getInitData();
     Lxs[0] += ind.Jx_.transpose() * lams[0];
   }
 
@@ -109,7 +109,7 @@ void computeLagrangianDerivatives(
     ConstraintStack const &stack = problem.term_cstrs_;
     VectorXs const &lamN = lams.back();
     for (std::size_t j = 0; j < stack.size(); j++) {
-      FunctionData const &cstr_data = *pd.term_cstr_data[j];
+      StageFunctionData const &cstr_data = *pd.term_cstr_data[j];
       auto lam_j = stack.constSegmentByConstraint(lamN, j);
       Lxs[nsteps] += cstr_data.Jx_.transpose() * lam_j;
     }
@@ -125,7 +125,7 @@ void computeLagrangianDerivatives(
     assert(sd.constraint_data.size() == sm.numConstraints());
 
     for (std::size_t j = 0; j < stack.size(); j++) {
-      FunctionData const &cstr_data = *sd.constraint_data[j];
+      StageFunctionData const &cstr_data = *sd.constraint_data[j];
       ConstVectorRef lam_j = stack.constSegmentByConstraint(lams[i + 1], j);
       Lxs[i] += cstr_data.Jx_.transpose() * lam_j;
       Lus[i] += cstr_data.Ju_.transpose() * lam_j;

@@ -11,7 +11,7 @@ template <typename _FunType> struct linear_func_composition_impl : _FunType {
   using FunType = _FunType;
   using Scalar = typename FunType::Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-  using BaseData = FunctionDataTpl<Scalar>;
+  using BaseData = StageFunctionDataTpl<Scalar>;
 
   shared_ptr<FunType> func;
   MatrixXs A;
@@ -56,7 +56,7 @@ struct LinearFunctionCompositionTpl
   using Impl = detail::linear_func_composition_impl<StageFunctionTpl<Scalar>>;
   using Base = typename Impl::FunType;
   using Data = typename Impl::Data;
-  using BaseData = FunctionDataTpl<Scalar>;
+  using BaseData = StageFunctionDataTpl<Scalar>;
 
   using Impl::A;
   using Impl::b;
@@ -79,7 +79,7 @@ struct LinearUnaryFunctionCompositionTpl
   PROXDDP_UNARY_FUNCTION_INTERFACE(Scalar);
   using Impl = detail::linear_func_composition_impl<Base>;
   using Data = typename Impl::Data;
-  using BaseData = FunctionDataTpl<Scalar>;
+  using BaseData = StageFunctionDataTpl<Scalar>;
 
   using Impl::A;
   using Impl::b;

@@ -19,7 +19,7 @@ template <typename Scalar> struct FunctionSliceDataTpl;
 template <typename Scalar, typename Base = StageFunctionTpl<Scalar>>
 struct FunctionSliceXprTpl : Base, detail::slice_impl_tpl<Base> {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-  using BaseData = FunctionDataTpl<Scalar>;
+  using BaseData = StageFunctionDataTpl<Scalar>;
   using SliceImpl = detail::slice_impl_tpl<StageFunctionTpl<Scalar>>;
   using Data = FunctionSliceDataTpl<Scalar>;
 
@@ -60,7 +60,7 @@ struct FunctionSliceXprTpl<Scalar, UnaryFunctionTpl<Scalar>>
     : UnaryFunctionTpl<Scalar>,
       detail::slice_impl_tpl<UnaryFunctionTpl<Scalar>> {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-  using BaseData = FunctionDataTpl<Scalar>;
+  using BaseData = StageFunctionDataTpl<Scalar>;
   using Data = FunctionSliceDataTpl<Scalar>;
   PROXDDP_UNARY_FUNCTION_INTERFACE(Scalar);
   using SliceImpl = detail::slice_impl_tpl<UnaryFunctionTpl<Scalar>>;
@@ -94,9 +94,9 @@ struct FunctionSliceXprTpl<Scalar, UnaryFunctionTpl<Scalar>>
 };
 
 template <typename Scalar>
-struct FunctionSliceDataTpl : FunctionDataTpl<Scalar> {
+struct FunctionSliceDataTpl : StageFunctionDataTpl<Scalar> {
   /// @brief Base residual's data object.
-  using BaseData = FunctionDataTpl<Scalar>;
+  using BaseData = StageFunctionDataTpl<Scalar>;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   shared_ptr<BaseData> sub_data;
   VectorXs lbda_sub;
@@ -112,7 +112,7 @@ namespace detail {
 template <typename Base> struct slice_impl_tpl {
   using Scalar = typename Base::Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-  using BaseData = FunctionDataTpl<Scalar>;
+  using BaseData = StageFunctionDataTpl<Scalar>;
 
   using Data = FunctionSliceDataTpl<Scalar>;
 

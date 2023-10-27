@@ -19,7 +19,7 @@ struct PyExplicitDynamics : ExplicitBase, bp::wrapper<ExplicitBase> {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   // All functions in the interface take this type for output
   using Data = ExplicitDynamicsDataTpl<Scalar>;
-  using FunctionData = FunctionDataTpl<Scalar>;
+  using StageFunctionData = StageFunctionDataTpl<Scalar>;
 
   template <typename... Args>
   PyExplicitDynamics(Args &&...args) : ExplicitBase(args...) {}
@@ -34,12 +34,12 @@ struct PyExplicitDynamics : ExplicitBase, bp::wrapper<ExplicitBase> {
     PROXDDP_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, boost::ref(data));
   }
 
-  shared_ptr<FunctionData> createData() const {
-    PROXDDP_PYTHON_OVERRIDE(shared_ptr<FunctionData>, ExplicitBase,
+  shared_ptr<StageFunctionData> createData() const {
+    PROXDDP_PYTHON_OVERRIDE(shared_ptr<StageFunctionData>, ExplicitBase,
                             createData, );
   }
 
-  shared_ptr<FunctionData> default_createData() const {
+  shared_ptr<StageFunctionData> default_createData() const {
     return ExplicitBase::createData();
   }
 };

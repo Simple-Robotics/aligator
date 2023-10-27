@@ -44,7 +44,7 @@ void exposeComposites() {
 
   bp::class_<CompositeData, bp::bases<CostData>>(
       "CompositeCostData",
-      bp::init<int, int, shared_ptr<context::FunctionData>>(
+      bp::init<int, int, shared_ptr<context::StageFunctionData>>(
           bp::args("self", "ndx", "nu", "rdata")))
       .def_readwrite("residual_data", &CompositeData::residual_data);
 

@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 /// @file function-abstract.hpp
 /// @brief  Base definitions for ternary functions.
 #pragma once
@@ -18,7 +18,7 @@ struct StageFunctionTpl
 public:
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-  using Data = FunctionDataTpl<Scalar>;
+  using Data = StageFunctionDataTpl<Scalar>;
 
   /// @brief Current state dimension
   const int ndx1;
@@ -80,16 +80,11 @@ public:
 
   /// @brief Instantiate a Data object.
   virtual shared_ptr<Data> createData() const;
-
-  // using FunctionSlice = FunctionSliceXprTpl<Scalar, StageFunctionTpl>;
-
-  // shared_ptr<FunctionSlice> operator[](const int idx);
-  // shared_ptr<FunctionSlice> operator[](const std::vector<int> &indices);
 };
 
 /// @brief  Base struct for function data.
 template <typename _Scalar>
-struct FunctionDataTpl : Cloneable<FunctionDataTpl<_Scalar>> {
+struct StageFunctionDataTpl : Cloneable<StageFunctionDataTpl<_Scalar>> {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -125,16 +120,17 @@ struct FunctionDataTpl : Cloneable<FunctionDataTpl<_Scalar>> {
   MatrixRef Hyy_;
 
   /// @brief Default constructor.
-  FunctionDataTpl(const int ndx1, const int nu, const int ndx2, const int nr);
-  virtual ~FunctionDataTpl() = default;
+  StageFunctionDataTpl(const int ndx1, const int nu, const int ndx2,
+                       const int nr);
+  virtual ~StageFunctionDataTpl() = default;
 
   template <typename T>
   friend std::ostream &operator<<(std::ostream &oss,
-                                  const FunctionDataTpl<T> &self);
+                                  const StageFunctionDataTpl<T> &self);
 
 protected:
-  virtual FunctionDataTpl *clone_impl() const {
-    return new FunctionDataTpl(*this);
+  virtual StageFunctionDataTpl *clone_impl() const {
+    return new StageFunctionDataTpl(*this);
   }
 };
 

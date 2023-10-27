@@ -13,7 +13,7 @@ struct UnaryFunctionTpl : StageFunctionTpl<_Scalar> {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageFunctionTpl<Scalar>;
-  using Data = FunctionDataTpl<Scalar>;
+  using Data = StageFunctionDataTpl<Scalar>;
 
   using Base::Base;
 

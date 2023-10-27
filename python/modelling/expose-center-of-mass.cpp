@@ -12,10 +12,10 @@
 namespace proxddp {
 namespace python {
 
-using context::FunctionData;
 using context::PinData;
 using context::PinModel;
 using context::Scalar;
+using context::StageFunctionData;
 using context::UnaryFunction;
 
 void exposeCenterOfMassFunctions() {
@@ -41,7 +41,7 @@ void exposeCenterOfMassFunctions() {
 
   bp::register_ptr_to_python<shared_ptr<CenterOfMassTranslationData>>();
 
-  bp::class_<CenterOfMassTranslationData, bp::bases<FunctionData>>(
+  bp::class_<CenterOfMassTranslationData, bp::bases<StageFunctionData>>(
       "CenterOfMassTranslationResidualData",
       "Data Structure for CenterOfMassTranslation", bp::no_init)
       .def_readonly("pin_data", &CenterOfMassTranslationData::pin_data_,
@@ -63,7 +63,7 @@ void exposeCenterOfMassFunctions() {
 
   bp::register_ptr_to_python<shared_ptr<CenterOfMassVelocityData>>();
 
-  bp::class_<CenterOfMassVelocityData, bp::bases<FunctionData>>(
+  bp::class_<CenterOfMassVelocityData, bp::bases<StageFunctionData>>(
       "CenterOfMassVelocityResidualData",
       "Data Structure for CenterOfMassVelocity", bp::no_init)
       .def_readonly("pin_data", &CenterOfMassVelocityData::pin_data_,

@@ -14,10 +14,10 @@ namespace python {
 using context::ConstMatrixRef;
 using context::ConstVectorRef;
 using context::DynamicsModel;
-using context::FunctionData;
 using context::MatrixXs;
 using context::Scalar;
 using context::StageFunction;
+using context::StageFunctionData;
 using context::UnaryFunction;
 using context::VectorXs;
 using internal::PyStageFunction;
@@ -27,8 +27,8 @@ using StateErrorResidual = StateErrorResidualTpl<Scalar>;
 using ControlErrorResidual = ControlErrorResidualTpl<Scalar>;
 
 /// Required trampoline class
-struct FunctionDataWrapper : FunctionData, bp::wrapper<FunctionData> {
-  using FunctionData::FunctionData;
+struct FunctionDataWrapper : StageFunctionData, bp::wrapper<StageFunctionData> {
+  using StageFunctionData::StageFunctionData;
 };
 
 void exposeUnaryFunctions();
@@ -61,76 +61,78 @@ void exposeFunctionBase() {
       .def(CreateDataPolymorphicPythonVisitor<StageFunction,
                                               PyStageFunction<>>());
 
-  bp::register_ptr_to_python<shared_ptr<FunctionData>>();
+  bp::register_ptr_to_python<shared_ptr<StageFunctionData>>();
 
   bp::class_<FunctionDataWrapper, boost::noncopyable>(
-      "FunctionData", "Data struct for holding data about functions.",
+      "StageFunctionData", "Data struct for holding data about functions.",
       bp::init<int, int, int, int>(
           bp::args("self", "ndx1", "nu", "ndx2", "nr")))
       .add_property(
           "value",
-          bp::make_getter(&FunctionData::valref_,
+          bp::make_getter(&StageFunctionData::valref_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Function value.")
       .add_property("jac_buffer",
-                    make_getter_eigen_matrix(&FunctionData::jac_buffer_),
+                    make_getter_eigen_matrix(&StageFunctionData::jac_buffer_),
                     "Buffer of the full function Jacobian wrt (x,u,y).")
       .add_property(
-          "vhp_buffer", make_getter_eigen_matrix(&FunctionData::vhp_buffer_),
+          "vhp_buffer",
+          make_getter_eigen_matrix(&StageFunctionData::vhp_buffer_),
           "Buffer of the full function vector-Hessian product wrt (x,u,y).")
       .add_property(
           "Jx",
-          bp::make_getter(&FunctionData::Jx_,
+          bp::make_getter(&StageFunctionData::Jx_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Jacobian with respect to $x$.")
       .add_property(
           "Ju",
-          bp::make_getter(&FunctionData::Ju_,
+          bp::make_getter(&StageFunctionData::Ju_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Jacobian with respect to $u$.")
       .add_property(
           "Jy",
-          bp::make_getter(&FunctionData::Jy_,
+          bp::make_getter(&StageFunctionData::Jy_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Jacobian with respect to $y$.")
       .add_property(
           "Hxx",
-          bp::make_getter(&FunctionData::Hxx_,
+          bp::make_getter(&StageFunctionData::Hxx_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Hessian with respect to $(x, x)$.")
       .add_property(
           "Hxu",
-          bp::make_getter(&FunctionData::Hxu_,
+          bp::make_getter(&StageFunctionData::Hxu_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Hessian with respect to $(x, u)$.")
       .add_property(
           "Hxy",
-          bp::make_getter(&FunctionData::Hxy_,
+          bp::make_getter(&StageFunctionData::Hxy_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Hessian with respect to $(x, y)$.")
       .add_property(
           "Huu",
-          bp::make_getter(&FunctionData::Huu_,
+          bp::make_getter(&StageFunctionData::Huu_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Hessian with respect to $(u, u)$.")
       .add_property(
           "Huy",
-          bp::make_getter(&FunctionData::Huy_,
+          bp::make_getter(&StageFunctionData::Huy_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Hessian with respect to $(x, y)$.")
       .add_property(
           "Hyy",
-          bp::make_getter(&FunctionData::Hyy_,
+          bp::make_getter(&StageFunctionData::Hyy_,
                           bp::return_value_policy<bp::return_by_value>()),
           "Hessian with respect to $(y, y)$.")
-      .def(PrintableVisitor<FunctionData>())
-      .def(PrintAddressVisitor<FunctionData>())
-      .def(ClonePythonVisitor<FunctionData>());
+      .def(PrintableVisitor<StageFunctionData>())
+      .def(PrintAddressVisitor<StageFunctionData>())
+      .def(ClonePythonVisitor<StageFunctionData>());
 
   StdVectorPythonVisitor<std::vector<FunctionPtr>, true>::expose(
       "StdVec_StageFunction", "Vector of function objects.");
-  StdVectorPythonVisitor<std::vector<shared_ptr<FunctionData>>, true>::expose(
-      "StdVec_FunctionData", "Vector of function data objects.");
+  StdVectorPythonVisitor<std::vector<shared_ptr<StageFunctionData>>,
+                         true>::expose("StdVec_StageFunctionData",
+                                       "Vector of function data objects.");
 
   exposeUnaryFunctions();
 
@@ -178,16 +180,18 @@ void exposeFunctionBase() {
 
 /// Expose the UnaryFunction type and its member function overloads.
 void exposeUnaryFunctions() {
-  using unary_eval_t =
-      void (UnaryFunction::*)(const ConstVectorRef &, FunctionData &) const;
+  using unary_eval_t = void (UnaryFunction::*)(const ConstVectorRef &,
+                                               StageFunctionData &) const;
   using full_eval_t =
       void (UnaryFunction::*)(const ConstVectorRef &, const ConstVectorRef &,
-                              const ConstVectorRef &, FunctionData &) const;
-  using unary_vhp_t = void (UnaryFunction::*)(
-      const ConstVectorRef &, const ConstVectorRef &, FunctionData &) const;
+                              const ConstVectorRef &, StageFunctionData &)
+          const;
+  using unary_vhp_t =
+      void (UnaryFunction::*)(const ConstVectorRef &, const ConstVectorRef &,
+                              StageFunctionData &) const;
   using full_vhp_t = void (UnaryFunction::*)(
       const ConstVectorRef &, const ConstVectorRef &, const ConstVectorRef &,
-      const ConstVectorRef &, FunctionData &) const;
+      const ConstVectorRef &, StageFunctionData &) const;
   bp::register_ptr_to_python<shared_ptr<UnaryFunction>>();
   bp::class_<PyUnaryFunction<>, bp::bases<StageFunction>, boost::noncopyable>(
       "UnaryFunction",

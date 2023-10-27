@@ -25,7 +25,7 @@ struct finite_difference_impl<_Scalar, TOC1>
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageFunctionTpl<Scalar>;
-  using BaseData = FunctionDataTpl<Scalar>;
+  using BaseData = StageFunctionDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
 
   shared_ptr<Manifold> space_;

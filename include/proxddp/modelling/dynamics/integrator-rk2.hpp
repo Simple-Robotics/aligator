@@ -33,7 +33,7 @@ struct IntegratorRK2Tpl : ExplicitIntegratorAbstractTpl<_Scalar> {
   void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
                 BaseData &data) const;
 
-  shared_ptr<FunctionDataTpl<Scalar>> createData() const {
+  shared_ptr<StageFunctionDataTpl<Scalar>> createData() const {
     return std::make_shared<Data>(this);
   }
 

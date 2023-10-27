@@ -15,11 +15,11 @@ struct StageDataTpl : Cloneable<StageDataTpl<_Scalar>> {
 
   using StageModel = StageModelTpl<Scalar>;
   using CostDataAbstract = CostDataAbstractTpl<Scalar>;
-  using FunctionData = FunctionDataTpl<Scalar>;
+  using StageFunctionData = StageFunctionDataTpl<Scalar>;
   using DynamicsData = DynamicsDataTpl<Scalar>;
 
   /// Data structs for the functions involved in the constraints.
-  std::vector<shared_ptr<FunctionData>> constraint_data;
+  std::vector<shared_ptr<StageFunctionData>> constraint_data;
   /// Data for the running costs.
   shared_ptr<CostDataAbstract> cost_data;
 

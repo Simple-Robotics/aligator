@@ -43,9 +43,9 @@ protected:
 };
 
 template <typename Scalar>
-struct CenterOfMassVelocityDataTpl : FunctionDataTpl<Scalar> {
+struct CenterOfMassVelocityDataTpl : StageFunctionDataTpl<Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  using Base = FunctionDataTpl<Scalar>;
+  using Base = StageFunctionDataTpl<Scalar>;
   using PinData = pinocchio::DataTpl<Scalar>;
 
   /// Pinocchio data object.

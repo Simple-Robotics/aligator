@@ -40,8 +40,8 @@ template <typename Scalar> struct StageFunctionTpl;
 // fwd UnaryFunctionTpl
 template <typename Scalar> struct UnaryFunctionTpl;
 
-// fwd FunctionDataTpl
-template <typename Scalar> struct FunctionDataTpl;
+// fwd StageFunctionDataTpl
+template <typename Scalar> struct StageFunctionDataTpl;
 
 // fwd CostAbstractTpl
 template <typename Scalar> struct CostAbstractTpl;
@@ -53,7 +53,7 @@ template <typename Scalar> struct CostDataAbstractTpl;
 template <typename Scalar> struct DynamicsModelTpl;
 
 // fwd DynamicsDataTpl
-template <typename Scalar> using DynamicsDataTpl = FunctionDataTpl<Scalar>;
+template <typename Scalar> using DynamicsDataTpl = StageFunctionDataTpl<Scalar>;
 
 // fwd StageConstraintTpl
 template <typename Scalar> struct StageConstraintTpl;

@@ -50,7 +50,7 @@ template <typename _Scalar> struct PDALFunction {
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using StageModel = StageModelTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
-  using FunctionData = FunctionDataTpl<Scalar>;
+  using StageFunctionData = StageFunctionDataTpl<Scalar>;
   using ConstraintStack = ConstraintStackTpl<Scalar>;
   using Workspace = WorkspaceTpl<Scalar>;
   using TrajOptProblem = TrajOptProblemTpl<Scalar>;

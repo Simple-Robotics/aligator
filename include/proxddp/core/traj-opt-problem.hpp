@@ -204,7 +204,7 @@ private:
 template <typename _Scalar> struct TrajOptDataTpl {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-  using FunctionData = FunctionDataTpl<Scalar>;
+  using StageFunctionData = StageFunctionDataTpl<Scalar>;
   using ConstraintType = StageConstraintTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
@@ -213,13 +213,13 @@ template <typename _Scalar> struct TrajOptDataTpl {
   Scalar cost_ = 0.;
 
   /// Data for the initial condition.
-  shared_ptr<FunctionData> init_data;
+  shared_ptr<StageFunctionData> init_data;
   /// Data structs for each stage of the problem.
   std::vector<shared_ptr<StageData>> stage_data;
   /// Terminal cost data.
   shared_ptr<CostData> term_cost_data;
   /// Terminal constraint data.
-  std::vector<shared_ptr<FunctionData>> term_cstr_data;
+  std::vector<shared_ptr<StageFunctionData>> term_cstr_data;
 
   /// Copy of xs to fill in (for data parallelism)
   std::vector<VectorXs> xs_copy;
@@ -233,9 +233,9 @@ template <typename _Scalar> struct TrajOptDataTpl {
   const StageData &getStageData(std::size_t i) const { return *stage_data[i]; }
 
   /// Get initial constraint function data.
-  FunctionData &getInitData() { return *init_data; }
+  StageFunctionData &getInitData() { return *init_data; }
   /// @copydoc getInitData()
-  const FunctionData &getInitData() const { return *init_data; }
+  const StageFunctionData &getInitData() const { return *init_data; }
 };
 
 } // namespace proxddp

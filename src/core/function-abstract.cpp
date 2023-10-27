@@ -3,5 +3,6 @@
 namespace proxddp {
 
 template struct StageFunctionTpl<context::Scalar>;
+template struct StageFunctionDataTpl<context::Scalar>;
 
-}
+} // namespace proxddp

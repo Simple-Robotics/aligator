@@ -43,7 +43,7 @@ void exposeCrocoddylCompat() {
       .def_readonly("croc_action_data", &ActionDataWrapper::croc_action_data,
                     "Underlying Crocoddyl action data.");
 
-  bp::class_<DynamicsDataWrapper, bp::bases<context::FunctionData>>(
+  bp::class_<DynamicsDataWrapper, bp::bases<context::StageFunctionData>>(
       "DynamicsDataWrapper", bp::no_init)
       .def(bp::init<const CrocActionModel &>(bp::args("self", "action_model")));
 

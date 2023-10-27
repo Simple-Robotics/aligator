@@ -55,7 +55,7 @@ void exposeExplicitBase() {
 
   bp::register_ptr_to_python<shared_ptr<ExplicitDynamicsData>>();
 
-  bp::class_<ExplicitDataWrapper, bp::bases<context::FunctionData>,
+  bp::class_<ExplicitDataWrapper, bp::bases<context::StageFunctionData>,
              boost::noncopyable>("ExplicitDynamicsData",
                                  "Data struct for explicit dynamics models.",
                                  bp::init<int, int, int, int>(bp::args(
