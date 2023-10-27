@@ -42,6 +42,8 @@ Scalar PDALFunction<Scalar>::evaluate(const SolverType &solver,
   }
 
   // local lambda function, defining the op to run on each constraint stack.
+  auto execute_on_stack = [](const VectorXs &lambda, const VectorXs &lams_pdal,
+                             CstrProximalScaler &weight_strat) {
     auto e1 = weight_strat.apply(lams_pdal);
     auto e2 = weight_strat.apply(lambda);
     Scalar r = 0.25 * e1.dot(lams_pdal);
