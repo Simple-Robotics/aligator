@@ -226,6 +226,8 @@ template <typename _Scalar> struct TrajOptDataTpl {
   /// Copy of xs to fill in (for data parallelism)
   std::vector<VectorXs> xs_copy;
 
+  inline std::size_t numSteps() const { return stage_data.size(); }
+
   TrajOptDataTpl() = default;
   TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem);
 };
