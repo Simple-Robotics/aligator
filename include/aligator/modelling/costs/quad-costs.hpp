@@ -19,34 +19,18 @@ public:
   using VectorSpace = proxsuite::nlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
 
   /// Weight @f$ Q @f$
-  MatrixXs weights_x;
+  MatrixXs Wxx_;
   /// Weight @f$ R @f$
-  MatrixXs weights_u;
+  MatrixXs Wuu_;
 
 protected:
   /// Weight N for term @f$ x^\top N u @f$
-  MatrixXs weights_cross_;
-
-  static void check_dim_equal(long n, long m, const std::string &msg = "") {
-    if (n != m)
-      ALIGATOR_RUNTIME_ERROR(fmt::format(
-          "Dimensions inconsistent: got {:d} and {:d}{}.\n", n, m, msg));
-  }
-
-  void debug_check_dims() const {
-    check_dim_equal(weights_x.rows(), weights_x.cols(), " for x weights");
-    check_dim_equal(weights_u.rows(), weights_u.cols(), " for u weights");
-    check_dim_equal(weights_cross_.rows(), this->ndx(),
-                    " for cross-term weight");
-    check_dim_equal(weights_cross_.cols(), this->nu, " for cross-term weight");
-    check_dim_equal(interp_x.rows(), weights_x.rows(),
-                    " for x weights and intercept");
-    check_dim_equal(interp_u.rows(), weights_u.rows(),
-                    " for u weights and intercept");
-  }
+  MatrixXs Wxu_;
 
 public:
+  /// Affine term in @f$ x@f$
   VectorXs interp_x;
+  /// Affine term in @f$ u@f$
   VectorXs interp_u;
 
   static auto get_vector_space(Eigen::Index nx) {
@@ -56,20 +40,20 @@ public:
   QuadraticCostTpl(const ConstMatrixRef &w_x, const ConstMatrixRef &w_u,
                    const ConstVectorRef &interp_x,
                    const ConstVectorRef &interp_u)
-      : Base(get_vector_space(w_x.cols()), (int)w_u.cols()), weights_x(w_x),
-        weights_u(w_u), weights_cross_(this->ndx(), this->nu),
-        interp_x(interp_x), interp_u(interp_u), has_cross_term_(false) {
+      : Base(get_vector_space(w_x.cols()), (int)w_u.cols()), Wxx_(w_x),
+        Wuu_(w_u), Wxu_(this->ndx(), this->nu), interp_x(interp_x),
+        interp_u(interp_u), has_cross_term_(false) {
     debug_check_dims();
-    weights_cross_.setZero();
+    Wxu_.setZero();
   }
 
   QuadraticCostTpl(const ConstMatrixRef &w_x, const ConstMatrixRef &w_u,
                    const ConstMatrixRef &w_cross,
                    const ConstVectorRef &interp_x,
                    const ConstVectorRef &interp_u)
-      : Base(get_vector_space(w_x.cols()), (int)w_u.cols()), weights_x(w_x),
-        weights_u(w_u), weights_cross_(w_cross), interp_x(interp_x),
-        interp_u(interp_u), has_cross_term_(true) {
+      : Base(get_vector_space(w_x.cols()), (int)w_u.cols()), Wxx_(w_x),
+        Wuu_(w_u), Wxu_(w_cross), interp_x(interp_x), interp_u(interp_u),
+        has_cross_term_(true) {
     debug_check_dims();
   }
 
@@ -85,11 +69,11 @@ public:
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 CostData &data) const {
     Data &d = static_cast<Data &>(data);
-    d.w_times_x_.noalias() = weights_x * x;
-    d.w_times_u_.noalias() = weights_u * u;
+    d.w_times_x_.noalias() = Wxx_ * x;
+    d.w_times_u_.noalias() = Wuu_ * u;
     if (has_cross_term_) {
-      d.cross_x_.noalias() = weights_cross_ * u;
-      d.cross_u_.noalias() = weights_cross_.transpose() * x;
+      d.cross_x_.noalias() = Wxu_ * u;
+      d.cross_u_.noalias() = Wxu_.transpose() * x;
 
       d.w_times_x_ += d.cross_x_;
       d.w_times_u_ += d.cross_u_;
@@ -110,16 +94,16 @@ public:
 
   shared_ptr<CostData> createData() const {
     auto data = std::make_shared<Data>(this->ndx(), this->nu);
-    data->Lxx_ = weights_x;
-    data->Luu_ = weights_u;
-    data->Lxu_ = weights_cross_;
-    data->Lux_ = weights_cross_.transpose();
+    data->Lxx_ = Wxx_;
+    data->Luu_ = Wuu_;
+    data->Lxu_ = Wxu_;
+    data->Lux_ = Wxu_.transpose();
     return data;
   }
 
-  const ConstMatrixRef getCrossWeights() const { return weights_cross_; }
+  ConstMatrixRef getCrossWeights() const { return Wxu_; }
   void setCrossWeight(const ConstMatrixRef &w) {
-    weights_cross_ = w;
+    Wxu_ = w;
     has_cross_term_ = true;
     debug_check_dims();
   }
@@ -130,6 +114,24 @@ public:
 protected:
   /// Whether a cross term exists
   bool has_cross_term_;
+
+private:
+  static void _check_dim_equal(long n, long m, const std::string &msg = "") {
+    if (n != m)
+      ALIGATOR_RUNTIME_ERROR(fmt::format(
+          "Dimensions inconsistent: got {:d} and {:d}{}.\n", n, m, msg));
+  }
+
+  void debug_check_dims() const {
+    _check_dim_equal(Wxx_.rows(), Wxx_.cols(), " for x weights");
+    _check_dim_equal(Wuu_.rows(), Wuu_.cols(), " for u weights");
+    _check_dim_equal(Wxu_.rows(), this->ndx(), " for cross-term weight");
+    _check_dim_equal(Wxu_.cols(), this->nu, " for cross-term weight");
+    _check_dim_equal(interp_x.rows(), Wxx_.rows(),
+                     " for x weights and intercept");
+    _check_dim_equal(interp_u.rows(), Wuu_.rows(),
+                     " for u weights and intercept");
+  }
 };
 
 template <typename Scalar>
@@ -151,5 +153,5 @@ struct QuadraticCostDataTpl : CostDataAbstractTpl<Scalar> {
 } // namespace aligator
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/modelling/quad-costs.txx"
+#include "./quad-costs.txx"
 #endif

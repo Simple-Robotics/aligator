@@ -1,4 +1,4 @@
-#include "aligator/modelling/quad-costs.hpp"
+#include "aligator/modelling/costs/quad-costs.hpp"
 
 namespace aligator {
 

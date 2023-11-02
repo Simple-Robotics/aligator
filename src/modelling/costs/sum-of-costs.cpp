@@ -1,4 +1,4 @@
-#include "aligator/modelling/sum-of-costs.hpp"
+#include "aligator/modelling/costs/sum-of-costs.hpp"
 
 namespace aligator {
 

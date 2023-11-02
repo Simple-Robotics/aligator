@@ -1,6 +1,6 @@
 /// @file
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
-#include "aligator/modelling/cost-direct-sum.hpp"
+#include "aligator/modelling/costs/cost-direct-sum.hpp"
 
 #include "aligator/python/fwd.hpp"
 

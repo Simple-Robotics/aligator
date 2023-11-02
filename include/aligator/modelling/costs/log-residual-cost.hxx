@@ -2,7 +2,7 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "./composite-costs.hpp"
+#include "./log-residual-cost.hpp"
 
 namespace aligator {
 

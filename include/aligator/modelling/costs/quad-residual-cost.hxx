@@ -2,7 +2,7 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "aligator/modelling/composite-costs.hpp"
+#include "./quad-residual-cost.hpp"
 
 namespace aligator {
 

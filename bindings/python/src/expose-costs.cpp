@@ -2,9 +2,9 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "aligator/python/costs.hpp"
 
-#include "aligator/modelling/quad-costs.hpp"
-#include "aligator/modelling/constant-cost.hpp"
-#include "aligator/modelling/sum-of-costs.hpp"
+#include "aligator/modelling/costs/quad-costs.hpp"
+#include "aligator/modelling/costs/constant-cost.hpp"
+#include "aligator/modelling/costs/sum-of-costs.hpp"
 
 namespace aligator {
 namespace python {
@@ -49,9 +49,8 @@ void exposeQuadCost() {
       .def(bp::init<ConstMatrixRef, ConstMatrixRef, ConstMatrixRef>(
           "Constructor with just weights (with cross-term).",
           bp::args("self", "w_x", "w_u", "w_cross")))
-      .def_readwrite("w_x", &QuadraticCost::weights_x, "Weights on the state.")
-      .def_readwrite("w_u", &QuadraticCost::weights_u,
-                     "Weights on the control.")
+      .def_readwrite("w_x", &QuadraticCost::Wxx_, "Weights on the state.")
+      .def_readwrite("w_u", &QuadraticCost::Wuu_, "Weights on the control.")
       .def_readwrite("interp_x", &QuadraticCost::interp_x)
       .def_readwrite("interp_u", &QuadraticCost::interp_u)
       .add_property("has_cross_term", &QuadraticCost::hasCrossTerm,

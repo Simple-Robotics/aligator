@@ -5,10 +5,10 @@
 
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
 #include "aligator/core/explicit-dynamics.hpp"
-#include "aligator/modelling/quad-costs.hpp"
+#include "aligator/modelling/costs/quad-costs.hpp"
 #include "aligator/modelling/state-error.hpp"
-#include "aligator/modelling/composite-costs.hpp"
-#include "aligator/modelling/sum-of-costs.hpp"
+#include "aligator/modelling/costs/composite-costs.hpp"
+#include "aligator/modelling/costs/sum-of-costs.hpp"
 
 using T = double;
 using pinocchio::SpecialEuclideanOperationTpl;

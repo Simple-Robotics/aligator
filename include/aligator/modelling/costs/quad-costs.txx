@@ -2,7 +2,7 @@
 
 #include "aligator/context.hpp"
 
-#include "aligator/modelling/quad-costs.hpp"
+#include "./quad-costs.hpp"
 
 namespace aligator {
 

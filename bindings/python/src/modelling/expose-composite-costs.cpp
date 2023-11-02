@@ -1,7 +1,7 @@
 #include "aligator/python/fwd.hpp"
 
-#include "aligator/modelling/composite-costs.hpp"
-#include "aligator/modelling/quad-state-cost.hpp"
+#include "aligator/modelling/costs/composite-costs.hpp"
+#include "aligator/modelling/costs/quad-state-cost.hpp"
 
 namespace aligator {
 namespace python {

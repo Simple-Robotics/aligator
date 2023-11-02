@@ -4,7 +4,7 @@
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
 #include "aligator/solvers/fddp/solver-fddp.hpp"
 #include "aligator/utils/rollout.hpp"
-#include "aligator/modelling/quad-costs.hpp"
+#include "aligator/modelling/costs/quad-costs.hpp"
 
 #include "aligator/modelling/linear-discrete-dynamics.hpp"
 

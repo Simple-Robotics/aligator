@@ -4,7 +4,7 @@
 #pragma once
 
 #include "aligator/modelling/state-error.hpp"
-#include "aligator/modelling/composite-costs.hpp"
+#include "aligator/modelling/costs/composite-costs.hpp"
 
 namespace aligator {
 
@@ -70,5 +70,5 @@ protected:
 } // namespace aligator
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/modelling/quad-state-cost.txx"
+#include "./quad-state-cost.txx"
 #endif

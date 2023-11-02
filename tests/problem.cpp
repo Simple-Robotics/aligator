@@ -3,7 +3,6 @@
 #include "aligator/solvers/proxddp/workspace.hpp"
 #include "aligator/core/explicit-dynamics.hpp"
 #include "aligator/utils/rollout.hpp"
-#include "aligator/core/trajectory.hpp"
 #include "aligator/modelling/state-error.hpp"
 #include <proxsuite-nlp/modelling/spaces/pinocchio-groups.hpp>
 
@@ -52,9 +51,9 @@ struct MyCost : CostAbstractTpl<double> {
   }
 };
 
-using Manifold = proxnlp::SETpl<3, double>;
+using Manifold = proxsuite::nlp::SETpl<3, double>;
 using StageModel = aligator::StageModelTpl<double>;
-using proxnlp::EqualityConstraint;
+using proxsuite::nlp::EqualityConstraint;
 
 struct MyFixture {
   shared_ptr<Manifold> space;

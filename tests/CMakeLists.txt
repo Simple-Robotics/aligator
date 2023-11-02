@@ -40,7 +40,7 @@ function(add_aligator_test name)
   add_test_cflags(${test_name} "-DBOOST_TEST_MODULE=${MODULE_NAME}")
 
   target_link_libraries(${test_name} PUBLIC ${PROJECT_NAME})
-  target_link_libraries(${test_name} PRIVATE Boost::unit_test_framework benchmark::benchmark)
+  target_link_libraries(${test_name} PRIVATE Boost::unit_test_framework)
 endfunction(add_aligator_test)
 
 set(TEST_NAMES

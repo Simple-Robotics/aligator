@@ -3,7 +3,7 @@
 #pragma once
 
 #include "aligator/context.hpp"
-#include "aligator/modelling/cost-direct-sum.hpp"
+#include "./cost-direct-sum.hpp"
 
 namespace aligator {
 
