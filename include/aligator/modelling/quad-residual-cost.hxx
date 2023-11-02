@@ -9,9 +9,12 @@ namespace aligator {
 template <typename Scalar>
 QuadraticResidualCostTpl<Scalar>::QuadraticResidualCostTpl(
     shared_ptr<Manifold> space, shared_ptr<StageFunction> function,
-    const MatrixXs &weights)
+    const ConstMatrixRef &weights)
     : Base(space, function->nu), weights_(weights), residual_(function) {
-  debug_dims();
+  if (residual_->nr != weights_.cols()) {
+    ALIGATOR_RUNTIME_ERROR(
+        "Weight matrix and residual codimension are inconsistent.");
+  }
 }
 
 template <typename Scalar>

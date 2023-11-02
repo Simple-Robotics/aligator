@@ -5,6 +5,7 @@
 
 namespace aligator {
 namespace python {
+using context::ConstMatrixRef;
 using context::ConstVectorRef;
 using context::CostBase;
 using context::CostData;
@@ -12,7 +13,6 @@ using context::Manifold;
 using context::MatrixXs;
 using context::Scalar;
 using context::StageFunction;
-using context::VectorXs;
 using FunctionPtr = shared_ptr<StageFunction>;
 using ManifoldPtr = shared_ptr<Manifold>;
 
@@ -22,19 +22,19 @@ void exposeComposites() {
   using QuadResCost = QuadraticResidualCostTpl<Scalar>;
   using QuadStateCost = QuadraticStateCostTpl<Scalar>;
   using QuadControlCost = QuadraticControlCostTpl<Scalar>;
+  using LogResCost = LogResidualCostTpl<Scalar>;
 
   bp::class_<QuadResCost, bp::bases<CostBase>>(
       "QuadraticResidualCost", "Weighted 2-norm of a given residual function.",
-      bp::init<ManifoldPtr, FunctionPtr, const MatrixXs &>(
+      bp::init<ManifoldPtr, FunctionPtr, const ConstMatrixRef &>(
           bp::args("self", "space", "function", "weights")))
       .def_readwrite("residual", &QuadResCost::residual_)
       .def_readwrite("weights", &QuadResCost::weights_)
       .def(CopyableVisitor<QuadResCost>());
 
-  using LogResCost = LogResidualCostTpl<Scalar>;
   bp::class_<LogResCost, bp::bases<CostBase>>(
       "LogResidualCost", "Weighted log-cost composite cost.",
-      bp::init<ManifoldPtr, FunctionPtr, const VectorXs &>(
+      bp::init<ManifoldPtr, FunctionPtr, const ConstVectorRef &>(
           bp::args("self", "space", "function", "barrier_weights")))
       .def(bp::init<ManifoldPtr, FunctionPtr, Scalar>(
           bp::args("self", "function", "scale")))

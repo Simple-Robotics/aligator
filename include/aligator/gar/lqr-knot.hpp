@@ -56,7 +56,7 @@ template <typename Scalar> struct LQRKnotTpl {
 };
 
 template <typename Scalar> struct LQRProblemTpl {
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using knot_t = LQRKnotTpl<Scalar>;
   std::vector<knot_t> stages;
   MatrixXs G0;

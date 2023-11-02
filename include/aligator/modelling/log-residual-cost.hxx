@@ -9,7 +9,7 @@ namespace aligator {
 template <typename Scalar>
 LogResidualCostTpl<Scalar>::LogResidualCostTpl(
     shared_ptr<Manifold> space, shared_ptr<StageFunction> function,
-    const VectorXs &scale)
+    const ConstVectorRef &scale)
     : Base(space, function->nu), barrier_weights_(scale), residual_(function) {
   if (scale.size() != function->nr) {
     ALIGATOR_RUNTIME_ERROR(fmt::format(
@@ -44,11 +44,11 @@ void LogResidualCostTpl<Scalar>::computeGradients(
     const ConstVectorRef &x, const ConstVectorRef &u,
     CostDataAbstract &data) const {
   Data &d = static_cast<Data &>(data);
-  StageFunctionDataTpl<Scalar> &under_d = *d.residual_data;
-  MatrixRef J = under_d.jac_buffer_.leftCols(data.grad_.size());
-  residual_->computeJacobians(x, u, x, under_d);
+  StageFunctionDataTpl<Scalar> &res_data = *d.residual_data;
+  MatrixRef J = res_data.jac_buffer_.leftCols(data.grad_.size());
+  residual_->computeJacobians(x, u, x, res_data);
   d.grad_.setZero();
-  VectorXs &v = under_d.value_;
+  VectorXs &v = res_data.value_;
   const int nrows = residual_->nr;
   for (int i = 0; i < nrows; i++) {
     auto g_i = J.row(i);
@@ -61,10 +61,11 @@ void LogResidualCostTpl<Scalar>::computeHessians(const ConstVectorRef &,
                                                  const ConstVectorRef &,
                                                  CostDataAbstract &data) const {
   Data &d = static_cast<Data &>(data);
-  StageFunctionDataTpl<Scalar> &under_d = *d.residual_data;
+  StageFunctionDataTpl<Scalar> &res_data = *d.residual_data;
+  const Eigen::Index size = data.grad_.size();
   d.hess_.setZero();
-  MatrixRef J = under_d.jac_buffer_.leftCols(data.grad_.size());
-  VectorXs &v = under_d.value_;
+  MatrixRef J = res_data.jac_buffer_.leftCols(size);
+  VectorXs &v = res_data.value_;
   const int nrows = residual_->nr;
   for (int i = 0; i < nrows; i++) {
     auto g_i = J.row(i); // row vector

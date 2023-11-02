@@ -31,92 +31,10 @@ struct CompositeCostDataTpl : CostDataAbstractTpl<Scalar> {
   }
 };
 
-/** @brief Quadratic composite of an underlying function.
- *
- * @details This is defined as
- * \f[
- *      c(x, u) \overset{\triangle}{=} \frac{1}{2} \|r(x, u)\|_W^2.
- * \f]
- */
-template <typename _Scalar>
-struct QuadraticResidualCostTpl : CostAbstractTpl<_Scalar> {
-  using Scalar = _Scalar;
-  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using Base = CostAbstractTpl<Scalar>;
-  using CostData = CostDataAbstractTpl<Scalar>;
-  using Data = CompositeCostDataTpl<Scalar>;
-  using StageFunction = StageFunctionTpl<Scalar>;
-  using Manifold = ManifoldAbstractTpl<Scalar>;
-
-  MatrixXs weights_;
-  shared_ptr<StageFunction> residual_;
-  bool gauss_newton = true;
-
-  QuadraticResidualCostTpl(shared_ptr<Manifold> space,
-                           shared_ptr<StageFunction> function,
-                           const MatrixXs &weights);
-
-  void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                CostData &data_) const;
-
-  void computeGradients(const ConstVectorRef &x, const ConstVectorRef &u,
-                        CostData &data_) const;
-
-  void computeHessians(const ConstVectorRef &x, const ConstVectorRef &u,
-                       CostData &data_) const;
-
-  shared_ptr<CostData> createData() const {
-    return std::make_shared<Data>(this->ndx(), this->nu,
-                                  residual_->createData());
-  }
-
-private:
-  void debug_dims() const {
-    if (residual_->nr != weights_.cols()) {
-      ALIGATOR_RUNTIME_ERROR(
-          "Weight matrix and residual codimension are inconsistent.");
-    }
-  }
-};
-
-/// @brief  Log-barrier of an underlying cost function.
-template <typename Scalar> struct LogResidualCostTpl : CostAbstractTpl<Scalar> {
-  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using CostDataAbstract = CostDataAbstractTpl<Scalar>;
-  using Data = CompositeCostDataTpl<Scalar>;
-  using StageFunction = StageFunctionTpl<Scalar>;
-  using Base = CostAbstractTpl<Scalar>;
-  using Manifold = ManifoldAbstractTpl<Scalar>;
-
-  VectorXs barrier_weights_;
-  shared_ptr<StageFunction> residual_;
-
-  LogResidualCostTpl(shared_ptr<Manifold> space,
-                     shared_ptr<StageFunction> function, const VectorXs &scale);
-
-  LogResidualCostTpl(shared_ptr<Manifold> space,
-                     shared_ptr<StageFunction> function, const Scalar scale);
-
-  void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                CostDataAbstract &data) const;
-
-  void computeGradients(const ConstVectorRef &x, const ConstVectorRef &u,
-                        CostDataAbstract &data) const;
-
-  void computeHessians(const ConstVectorRef &, const ConstVectorRef &,
-                       CostDataAbstract &data) const;
-
-  shared_ptr<CostDataAbstract> createData() const {
-    return std::make_shared<Data>(this->ndx(), this->nu,
-                                  residual_->createData());
-  }
-};
-
 } // namespace aligator
 
-// Implementation files
-#include "aligator/modelling/quad-residual-cost.hxx"
-#include "aligator/modelling/log-residual-cost.hxx"
+#include "./quad-residual-cost.hpp"
+#include "./log-residual-cost.hpp"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./composite-costs.txx"

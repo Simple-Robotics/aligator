@@ -78,7 +78,7 @@ void check_trajectory_and_assign(
 
 /// @brief  Compute the derivatives of the problem Lagrangian.
 template <typename Scalar> struct LagrangianDerivatives {
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using TrajOptProblem = TrajOptProblemTpl<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
 
