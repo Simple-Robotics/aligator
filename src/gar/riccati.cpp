@@ -1,7 +1,9 @@
 #include "aligator/gar/riccati.hpp"
 
-namespace aligator::gar {
+namespace aligator {
+namespace gar {
 
 template class ProximalRiccatiSolver<context::Scalar>;
 
-} // namespace aligator::gar
+} // namespace gar
+} // namespace aligator

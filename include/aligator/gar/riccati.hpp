@@ -19,37 +19,31 @@ public:
   using vecvec_t = std::vector<VectorXs>;
 
   struct value_t {
-    MatrixXs Pmat;  //< Riccati matrix
-    VectorXs pvec;  //< Riccati bias
-    MatrixXs Lbmat; //< Dual-space system matrix
-    MatrixXs Vmat;  //< "cost-to-go" matrix
-    VectorXs vvec;
-    Eigen::LLT<MatrixXs> chol;
+    MatrixXs Pmat;               //< Riccati matrix
+    VectorXs pvec;               //< Riccati bias
+    MatrixXs Lbmat;              //< Dual-space Schur matrix
+    MatrixXs Vmat;               //< "cost-to-go" matrix
+    VectorXs vvec;               //< "cost-to-go" gradient
+    Eigen::LLT<MatrixXs> Pchol;  //< Cholesky decomposition of Pmat
+    Eigen::LLT<MatrixXs> Lbchol; //< Cholesky decomposition of Lbmat
     value_t(uint nx)
         : Pmat(nx, nx), pvec(nx), Lbmat(nx, nx), //
-          Vmat(nx, nx), vvec(nx), chol(nx) {}
-  };
-
-  struct kkt_t {
-    BlkMatrix<MatrixXs, 2, 2> matrix;
-    Eigen::LDLT<MatrixXs> chol;
-    kkt_t(uint nu, uint nc) : matrix({nu, nc}), chol(matrix.rows()) {
-      matrix.setZero();
-    }
-    MatrixRef R() { return matrix(0, 0); };
-    MatrixRef D() { return matrix(1, 0); };
-    auto dual() { return matrix(1, 1).diagonal(); }
+          Vmat(nx, nx), vvec(nx), Pchol(nx), Lbchol(nx) {}
   };
 
   struct hmlt_t {
-    MatrixXs Qhat, Rhat, Shat;
-    VectorXs qhat, rhat;
+    MatrixXs Qhat;
+    MatrixXs Rhat;
+    MatrixXs Shat;
+    VectorXs qhat;
+    VectorXs rhat;
     RowMatrixXs AtV;
     RowMatrixXs BtV;
     hmlt_t(uint nx, uint nu)
         : Qhat(nx, nx), Rhat(nu, nu), Shat(nx, nu), //
           qhat(nx), rhat(nu), AtV(nx, nx), BtV(nu, nx) {}
   };
+
   struct error_t {
     Scalar lbda;
     Scalar pm;
@@ -59,25 +53,25 @@ public:
   };
 
   /// Per-node struct for all computations in the factorization.
-  struct stage_solve_data_t {
-    stage_solve_data_t(uint nx, uint nu, uint nc)
-        : ff({nu, nc}, {1}), fb({nu, nc}, {nx}), ffRhs(nu + nc),
-          fbRhs(nu + nc, nx), kkt(nu, nc), hmlt(nx, nu), vm(nx), PinvEt(nx, nx),
-          wvec(nx) {
+  struct stage_factor_t {
+    stage_factor_t(uint nx, uint nu, uint nc)
+        : ff({nu, nc}, {1}), fb({nu, nc}, {nx}), kktMat({nu, nc}),
+          kktChol(kktMat.rows()), hmlt(nx, nu), vm(nx), //
+          PinvEt(nx, nx), Pinvp(nx)
       ff.setZero();
       fb.setZero();
+      kktMat.setZero();
     }
 
-    BlkMatrix<VectorXs, 2, 1> ff; //< feedforward gain
-    BlkMatrix<MatrixXs, 2, 1> fb; //< feedback gain
-    VectorXs ffRhs;
-    MatrixXs fbRhs;
-    kkt_t kkt;       //< KKT matrix buffer
-    hmlt_t hmlt;     //< stage system data
-    value_t vm;      //< cost-to-go parameters
-    MatrixXs PinvEt; //< tmp buffer for \f$EP^{-1}\f$
-    VectorXs wvec;   //< tmp buffer for \f$-P^{-1}p\f$
-    error_t err;     //< numerical errors
+    BlkMatrix<VectorXs, 2, 1> ff;     //< feedforward gain
+    BlkMatrix<MatrixXs, 2, 1> fb;     //< feedback gain
+    BlkMatrix<MatrixXs, 2, 2> kktMat; //< KKT matrix buffer
+    Eigen::LDLT<MatrixXs> kktChol;    //< KKT LDLT solver
+    hmlt_t hmlt;                      //< stage system data
+    value_t vm;                       //< cost-to-go parameters
+    MatrixXs PinvEt;                  //< tmp buffer for \f$P^{-1}E^\top\f$
+    VectorXs Pinvp;                   //< tmp buffer for \f$P^{-1}p\f$
+    error_t err;                      //< numerical errors
   };
 
   explicit ProximalRiccatiSolver(const LQRProblemTpl<Scalar> &problem)
@@ -88,15 +82,15 @@ public:
 
   ProximalRiccatiSolver(LQRProblemTpl<Scalar> &&problem) = delete;
 
-  void computeKktTerms(const knot_t &model, stage_solve_data_t &d,
-                       const value_t &vnext);
+  static void computeKktTerms(const knot_t &model, stage_factor_t &d,
+                              const value_t &vnext);
 
   /// Backward sweep.
   bool backward(Scalar mudyn, Scalar mueq);
   /// Forward sweep.
   bool forward(vecvec_t &xs, vecvec_t &us, vecvec_t &vs, vecvec_t &lbdas) const;
 
-  std::vector<stage_solve_data_t> datas;
+  std::vector<stage_factor_t> datas;
   struct kkt0_t {
     BlkMatrix<MatrixXs, 2, 2> mat;
     BlkMatrix<VectorXs, 2, 1> rhs{mat.rowDims()};
@@ -115,7 +109,6 @@ protected:
     }
   }
 
-private:
   const LQRProblemTpl<Scalar> &problem;
 };
 

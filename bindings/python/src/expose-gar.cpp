@@ -13,7 +13,7 @@ using namespace gar;
 using context::Scalar;
 using prox_riccati_t = ProximalRiccatiSolver<Scalar>;
 using knot_t = LQRKnotTpl<Scalar>;
-using stage_solve_data_t = prox_riccati_t::stage_solve_data_t;
+using stage_factor_t = prox_riccati_t::stage_factor_t;
 using lqr_t = LQRProblemTpl<Scalar>;
 } // namespace python
 } // namespace aligator
@@ -23,7 +23,7 @@ namespace internal {
 template <>
 struct has_operator_equal<::aligator::python::knot_t> : boost::false_type {};
 template <>
-struct has_operator_equal<::aligator::python::stage_solve_data_t>
+struct has_operator_equal<::aligator::python::stage_factor_t>
     : boost::false_type {};
 } // namespace internal
 } // namespace eigenpy
@@ -53,19 +53,14 @@ void exposeGAR() {
       .def_readonly("Vmat", &prox_riccati_t::value_t::Vmat)
       .def_readonly("vvec", &prox_riccati_t::value_t::vvec);
 
-  bp::class_<prox_riccati_t::kkt_t>("kkt_data", bp::no_init)
-      .def_readonly("matrix", &prox_riccati_t::kkt_t::matrix)
-      .def_readonly("chol", &prox_riccati_t::kkt_t::chol)
-      .add_property("R", &prox_riccati_t::kkt_t::R)
-      .add_property("D", &prox_riccati_t::kkt_t::D);
+  bp::class_<stage_factor_t>("stage_solve_data", bp::no_init)
+      .def_readonly("ff", &stage_factor_t::ff)
+      .def_readonly("fb", &stage_factor_t::fb)
+      .def_readonly("kktMat", &stage_factor_t::kktMat)
+      .def_readonly("kktChol", &stage_factor_t::kktChol)
+      .def_readonly("vm", &stage_factor_t::vm);
 
-  bp::class_<stage_solve_data_t>("stage_solve_data", bp::no_init)
-      .def_readonly("ff", &stage_solve_data_t::ff)
-      .def_readonly("fb", &stage_solve_data_t::fb)
-      .def_readonly("kkt", &stage_solve_data_t::kkt)
-      .def_readonly("vm", &stage_solve_data_t::vm);
-
-  StdVectorPythonVisitor<std::vector<stage_solve_data_t>, true>::expose(
+  StdVectorPythonVisitor<std::vector<stage_factor_t>, true>::expose(
       "stage_solve_data_Vec");
 
   bp::class_<knot_t>("LQRKnot", bp::no_init)

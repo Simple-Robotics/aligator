@@ -36,11 +36,13 @@ public:
   explicit BlkMatrix(const row_dim_t &dims)
       : BlkMatrix(dims, std::integral_constant<bool, M != 1>()) {}
 
+  /// @brief Get the block in position ( @p i, @p j )
   inline auto operator()(size_t i, size_t j) {
     return data.block(m_rowIndices[i], m_colIndices[j], m_rowDims[i],
                       m_colDims[j]);
   }
 
+  /// @copybrief operator()
   inline auto operator()(size_t i, size_t j) const {
     return data.block(m_rowIndices[i], m_colIndices[j], m_rowDims[i],
                       m_colDims[j]);
