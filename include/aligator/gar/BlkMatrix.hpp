@@ -2,6 +2,7 @@
 
 #include "aligator/math.hpp"
 #include <array>
+#include <numeric>
 
 namespace aligator {
 
@@ -10,8 +11,9 @@ namespace aligator {
 template <typename _MatrixType, int _N, int _M = _N> class BlkMatrix {
 public:
   using MatrixType = _MatrixType;
+  using PlainObject = typename MatrixType::PlainObject;
   using Scalar = typename MatrixType::Scalar;
-  enum { N = _N, M = _M, Options = MatrixType::Options };
+  enum { N = _N, M = _M, Options = PlainObject::Options };
 
   using row_dim_t = std::conditional_t<N != -1, std::array<long, size_t(N)>,
                                        std::vector<long>>;
@@ -26,10 +28,18 @@ public:
                 "Compile-time vector cannot have more than one column block.");
 
   BlkMatrix(const row_dim_t &rowDims, const col_dim_t &colDims)
-      : data(),                                 //
-        m_rowDims(rowDims), m_colDims(colDims), //
-        m_rowIndices(rowDims), m_colIndices(colDims), m_totalRows(0),
-        m_totalCols(0) {
+      : data(), //
+        m_rowDims(rowDims), m_colDims(colDims), m_rowIndices(rowDims),
+        m_colIndices(colDims), m_totalRows(0), m_totalCols(0) {
+    initialize();
+  }
+
+  template <typename Other>
+  BlkMatrix(const Eigen::MatrixBase<Other> &data, const row_dim_t &rowDims,
+            const col_dim_t &colDims)
+      : data(data), //
+        m_rowDims(rowDims), m_colDims(colDims), m_rowIndices(rowDims),
+        m_colIndices(colDims), m_totalRows(0), m_totalCols(0) {
     initialize();
   }
 
@@ -107,5 +117,32 @@ protected:
     data.resize(m_totalRows, m_totalCols);
   }
 };
+
+template <class T, int N, int M>
+auto topBlkRows(size_t n, BlkMatrix<T, N, M> &mat) {
+  using RefType = Eigen::Ref<T>;
+  using OutType = BlkMatrix<RefType, -1, M>;
+  const auto &rowDims = mat.rowDims();
+  const auto &colDims = mat.colDims();
+  std::vector<long> subRowDims;
+  subRowDims.resize(n);
+  std::copy_n(rowDims.cbegin(), n, subRowDims.begin());
+  auto ntr = std::accumulate(subRowDims.begin(), subRowDims.end(), 0);
+  return OutType(mat.data.topRows(ntr), subRowDims, colDims);
+}
+
+template <size_t n, class T, int N, int M>
+auto topBlkRows(BlkMatrix<T, N, M> &mat) {
+  static_assert(n <= N,
+                "Cannot take n block rows of matrix with <n block rows.");
+  using RefType = Eigen::Ref<T>;
+  using OutType = BlkMatrix<RefType, n, M>;
+  const auto &rowDims = mat.rowDims();
+  const auto &colDims = mat.colDims();
+  std::array<long, n> subRowDims;
+  std::copy_n(rowDims.cbegin(), n, subRowDims.begin());
+  auto ntr = std::accumulate(subRowDims.begin(), subRowDims.end(), 0);
+  return OutType(mat.data.topRows(ntr), subRowDims, colDims);
+}
 
 } // namespace aligator

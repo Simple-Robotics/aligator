@@ -39,10 +39,6 @@ def knot_get_default(nx, nu, nc):
 
 knot_base = knot_get_default(nx, nu, 0)
 
-knot0 = knot_get_default(nx, nu, nx)
-knot0.C[:] = -np.eye(nx, nx)
-knot0.d = x0
-
 print(f"xf = {xterm}")
 print(f"x0 = {x0}")
 
@@ -57,7 +53,7 @@ else:
     knot1.Q[:] = np.eye(nx) * 0.1
     knot1.q = -knot1.Q @ xterm
 
-T = 20
+T = 30
 t0 = T // 2
 
 
@@ -69,7 +65,9 @@ def make_interm_node(t0):
     return kn
 
 
-prob = gar.LQRProblem([knot0], 0)
+prob = gar.LQRProblem([knot_base], nx)
+prob.G0 = -np.eye(nx)
+prob.g0 = x0
 knots = prob.stages
 for t in range(T - 1):
     if args.mid and t == t0:
@@ -82,9 +80,9 @@ knots.append(knot1)
 # print(f"{knots[0]}")
 # print(f"{knots[1]}")
 
-ricsolve = gar.ProximalRiccatiSolver(knots)
+ricsolve = gar.ProximalRiccatiSolver(prob)
 
-assert ricsolve.horizon == T
+assert prob.horizon == T
 mu = 1e-5
 # mueq = 0.01
 mueq = mu
@@ -107,8 +105,10 @@ def get_np_solution():
     xs = []
     us = []
     vs = []
-    lbdas = []
-    i = 0
+    nc0 = prob.g0.size
+    lbdas = [_sol_np[:nc0]]
+
+    i = prob.g0.size
     for t in range(T + 1):
         knot = knots[t]
         nx = knot.nx
@@ -134,10 +134,15 @@ sol_dense = get_np_solution()
 xs_out = [np.zeros(nx) for _ in range(T + 1)]
 us_out = [np.zeros(nu) for _ in range(T)]
 vs_out = [np.zeros(knot.nc) for knot in knots]
-lbdas_out = [np.zeros(knots[t].nx) for t in range(T)]
+lbdas_out = [np.zeros(prob.g0.size)] + [np.zeros(knots[t].nx) for t in range(T)]
 sol_gar = {"xs": xs_out, "us": us_out, "vs": vs_out, "lbdas": lbdas_out}
 
 ricsolve.forward(**sol_gar)
+
+for t in range(T):
+    d = ricsolve.datas[t]
+    print(d.ff)
+    print(d.fb)
 
 pprint.pp(sol_gar, indent=2)
 
@@ -152,7 +157,7 @@ def checkAllErrors(sol: dict, knots):
         x = xs[t]
         u = us[t]
         v = vs[t]
-        lbda = lbdas[t]
+        lbda = lbdas[t + 1]
         xn = xs[t + 1]
         knot = knots[t]
         rdl = knot.E @ xn + knot.A @ x + knot.B @ u + knot.f - mu * lbda
@@ -169,7 +174,7 @@ def checkAllErrors(sol: dict, knots):
         }
         gx = knot.q + knot.Q @ x + knot.S @ u + knot.A.T @ lbda + knot.C.T @ v
         if t > 0:
-            gx += knots[t - 1].E.T @ lbdas[t - 1]
+            gx += knots[t - 1].E.T @ lbdas[t]
         d["x"] = inftyNorm(gx)
         _ds.append(d)
     pprint.pp(_ds)
@@ -182,7 +187,8 @@ checkAllErrors(sol_gar, knots)
 
 # Plot solution
 
-plt.figure()
+plt.figure(figsize=(8.0, 4.0))
+plt.subplot(121)
 xss = np.stack(xs_out)
 xsd = np.stack(sol_dense["xs"])
 times = np.arange(T + 1)
@@ -194,5 +200,16 @@ plt.scatter(times[T], xterm[i], c="r", s=14, zorder=2, label="$x_\\mathrm{f}$")
 plt.grid(True)
 plt.legend()
 plt.title("State $x_t$")
+
+plt.subplot(122)
+
+lss = np.stack(lbdas_out)
+lsd = np.stack(sol_dense["lbdas"])
+plt.plot(times, lss[:, i], marker=".", ls="--", markersize=10, alpha=0.7, label="gar")
+plt.plot(times, lsd[:, i], marker=".", ls="--", markersize=10, alpha=0.7, label="dense")
+plt.grid(True)
+plt.legend()
+plt.title("Co-state $\\lambda_t$")
+plt.tight_layout()
 
 plt.show()

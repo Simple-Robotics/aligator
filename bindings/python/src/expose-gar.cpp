@@ -30,6 +30,8 @@ struct has_operator_equal<::aligator::python::stage_factor_t>
 
 namespace aligator {
 namespace python {
+using context::MatrixXs;
+using context::VectorXs;
 
 using knot_vec_t = std::vector<knot_t>;
 
@@ -39,13 +41,9 @@ void exposeGAR() {
 
   StdVectorPythonVisitor<std::vector<long>, true>::expose("StdVec_long");
 
-  using BMT22 = BlkMatrix<context::MatrixXs, 2, 2>;
-  using BMT21 = BlkMatrix<context::MatrixXs, 2, 1>;
-  using BVT2 = BlkMatrix<context::VectorXs, 2, 1>;
-
-  BlkMatrixPythonVisitor<BMT22>::expose("BlockMatrix22");
-  BlkMatrixPythonVisitor<BMT21>::expose("BlockMatrix21");
-  BlkMatrixPythonVisitor<BVT2>::expose("BlockVector2");
+  BlkMatrixPythonVisitor<BlkMatrix<MatrixXs, 2, 2>>::expose("BlockMatrix22");
+  BlkMatrixPythonVisitor<BlkMatrix<MatrixXs, 4, 1>>::expose("BlockMatrix41");
+  BlkMatrixPythonVisitor<BlkMatrix<VectorXs, 4, 1>>::expose("BlockVector4");
 
   bp::class_<prox_riccati_t::value_t>("value_data", bp::no_init)
       .def_readonly("Pmat", &prox_riccati_t::value_t::Pmat)

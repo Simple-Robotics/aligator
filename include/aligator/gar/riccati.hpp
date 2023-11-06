@@ -55,23 +55,25 @@ public:
   /// Per-node struct for all computations in the factorization.
   struct stage_factor_t {
     stage_factor_t(uint nx, uint nu, uint nc)
-        : ff({nu, nc}, {1}), fb({nu, nc}, {nx}), kktMat({nu, nc}),
-          kktChol(kktMat.rows()), hmlt(nx, nu), vm(nx), //
-          PinvEt(nx, nx), Pinvp(nx)
+        : ff({nu, nc, nx, nx}, {1}), fb({nu, nc, nx, nx}, {nx}),
+          kktMat({nu, nc}), kktChol(kktMat.rows()), hmlt(nx, nu), vm(nx), //
+          PinvEt(nx, nx), Pinvp(nx),                                      //
+          tmpClp(nx, nx) {
       ff.setZero();
       fb.setZero();
       kktMat.setZero();
     }
 
-    BlkMatrix<VectorXs, 2, 1> ff;     //< feedforward gain
-    BlkMatrix<MatrixXs, 2, 1> fb;     //< feedback gain
-    BlkMatrix<MatrixXs, 2, 2> kktMat; //< KKT matrix buffer
-    Eigen::LDLT<MatrixXs> kktChol;    //< KKT LDLT solver
+    BlkMatrix<VectorXs, 4, 1> ff;     //< feedforward gains
+    BlkMatrix<MatrixXs, 4, 1> fb;     //< feedback gains
+    BlkMatrix<MatrixXs, 2, 2> kktMat; //< reduced KKT matrix buffer
+    Eigen::LDLT<MatrixXs> kktChol;    //< reduced KKT LDLT solver
     hmlt_t hmlt;                      //< stage system data
     value_t vm;                       //< cost-to-go parameters
     MatrixXs PinvEt;                  //< tmp buffer for \f$P^{-1}E^\top\f$
     VectorXs Pinvp;                   //< tmp buffer for \f$P^{-1}p\f$
     error_t err;                      //< numerical errors
+    MatrixXs tmpClp;                  //< tmp buffer for state/co-state params
   };
 
   explicit ProximalRiccatiSolver(const LQRProblemTpl<Scalar> &problem)
