@@ -73,8 +73,8 @@ template <typename Scalar> struct LQRProblemTpl {
     auto nx0 = stages[0].nx;
     G0.resize(nc0, nx0);
   }
+  bool isInitialized() const { return !stages.empty(); }
 };
-
 template <typename Scalar>
 void lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
                     Scalar mueq, typename math_types<Scalar>::MatrixXs &mat,
