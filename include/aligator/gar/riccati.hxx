@@ -18,7 +18,7 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
     const knot_t &model = problem.stages[N];
     // fill cost-to-go matrix
     VectorRef zff = d.ff.blockSegment(1);
-    MatrixRef Z = d.fb.blockRow(1);
+    RowMatrixRef Z = d.fb.blockRow(1);
 
     auto Ct = model.C.transpose();
 
@@ -72,12 +72,12 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
     kff = -d.hmlt.rhat;
     zff = -model.d;
 
-    MatrixRef K = d.fb.blockRow(0);
-    MatrixRef Z = d.fb.blockRow(1);
+    RowMatrixRef K = d.fb.blockRow(0);
+    RowMatrixRef Z = d.fb.blockRow(1);
     K = -d.hmlt.Shat.transpose();
     Z = -model.C;
     BlkMatrix<VectorRef, 2, 1> ffview = topBlkRows<2>(d.ff);
-    BlkMatrix<MatrixRef, 2, 1> fbview = topBlkRows<2>(d.fb);
+    BlkMatrix<RowMatrixRef, 2, 1> fbview = topBlkRows<2>(d.fb);
     d.kktChol.solveInPlace(ffview.data);
     d.kktChol.solveInPlace(fbview.data);
 
@@ -162,23 +162,23 @@ bool ProximalRiccatiSolver<Scalar>::forward(vecvec_t &xs, vecvec_t &us,
   for (uint t = 0; t <= N; t++) {
     const stage_factor_t &d = datas[t];
 
-    ConstMatrixRef Z = d.fb.blockRow(1); // multiplier feedback
+    Eigen::Ref<const RowMatrixXs> Z = d.fb.blockRow(1); // multiplier feedback
     ConstVectorRef zff = d.ff.blockSegment(1);
     vs[t].noalias() = zff + Z * xs[t];
 
     if (t == N)
       break;
 
-    ConstMatrixRef K = d.fb.blockRow(0); // control feedback
+    Eigen::Ref<const RowMatrixXs> K = d.fb.blockRow(0); // control feedback
     ConstVectorRef kff = d.ff.blockSegment(0);
     us[t].noalias() = kff + K * xs[t];
 
     ConstVectorRef xi = d.ff.blockSegment(2);
-    ConstMatrixRef Xi = d.fb.blockRow(2);
+    Eigen::Ref<const RowMatrixXs> Xi = d.fb.blockRow(2);
     lbdas[t + 1].noalias() = xi + Xi * xs[t];
 
     ConstVectorRef a = d.ff.blockSegment(3);
-    ConstMatrixRef A = d.fb.blockRow(3);
+    Eigen::Ref<const RowMatrixXs> A = d.fb.blockRow(3);
     xs[t + 1].noalias() = a + A * xs[t];
   }
 

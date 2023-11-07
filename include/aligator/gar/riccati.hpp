@@ -15,6 +15,7 @@ template <typename Scalar> class ProximalRiccatiSolver {
 public:
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using RowMatrixXs = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
+  using RowMatrixRef = Eigen::Ref<RowMatrixXs>;
   using knot_t = LQRKnotTpl<Scalar>;
   using vecvec_t = std::vector<VectorXs>;
 
@@ -65,7 +66,7 @@ public:
     }
 
     BlkMatrix<VectorXs, 4, 1> ff;     //< feedforward gains
-    BlkMatrix<MatrixXs, 4, 1> fb;     //< feedback gains
+    BlkMatrix<RowMatrixXs, 4, 1> fb;  //< feedback gains
     BlkMatrix<MatrixXs, 2, 2> kktMat; //< reduced KKT matrix buffer
     Eigen::LDLT<MatrixXs> kktChol;    //< reduced KKT LDLT solver
     hmlt_t hmlt;                      //< stage system data
