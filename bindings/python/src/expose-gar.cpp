@@ -84,6 +84,11 @@ void exposeGAR() {
       .def_readwrite("D", &knot_t::D)
       .def_readwrite("d", &knot_t::d)
       //
+      .def_readwrite("Gammath", &knot_t::Gammath)
+      .def_readwrite("Gammax", &knot_t::Gammax)
+      .def_readwrite("Gammau", &knot_t::Gammau)
+      .def_readwrite("gamma", &knot_t::gamma)
+      //
       .def(CopyableVisitor<knot_t>())
       .def(PrintableVisitor<knot_t>());
 
@@ -95,7 +100,13 @@ void exposeGAR() {
       .def_readwrite("stages", &lqr_t::stages)
       .add_property("horizon", &lqr_t::horizon)
       .def_readwrite("G0", &lqr_t::G0)
-      .def_readwrite("g0", &lqr_t::g0);
+      .def_readwrite("g0", &lqr_t::g0)
+      .add_property("isInitialized", &lqr_t::isInitialized,
+                    "Whether the problem is initialized.")
+      .add_property("isParameterized", &lqr_t::isParameterized,
+                    "Whether the problem is parameterized.")
+      .def("addParameterization", &lqr_t::addParameterization,
+           bp::args("self", "nth"));
 
   bp::class_<prox_riccati_t, boost::noncopyable>(
       "ProximalRiccatiSolver", "Proximal Riccati solver.", bp::no_init)

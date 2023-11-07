@@ -33,11 +33,17 @@ template <typename Scalar> struct LQRKnotTpl {
   MatrixXs C, D;
   VectorXs d;
 
+  uint nth;
+  MatrixXs Gammath;
+  MatrixXs Gammax;
+  MatrixXs Gammau;
+  VectorXs gamma;
+
   LQRKnotTpl(uint nx, uint nu, uint nc)
       : nx(nx), nu(nu), nc(nc),                        //
         Q(nx, nx), S(nx, nu), R(nu, nu), q(nx), r(nu), //
         A(nx, nx), B(nx, nu), E(nx, nx), f(nx),        //
-        C(nc, nx), D(nc, nu), d(nc) {
+        C(nc, nx), D(nc, nu), d(nc), nth(0) {
     Q.setZero();
     S.setZero();
     R.setZero();
@@ -52,6 +58,14 @@ template <typename Scalar> struct LQRKnotTpl {
     C.setZero();
     D.setZero();
     d.setZero();
+  }
+
+  void addParameterization(uint nth) {
+    this->nth = nth;
+    Gammath.setZero(nth, nth);
+    Gammax.setZero(nx, nth);
+    Gammau.setZero(nu, nth);
+    gamma.setZero(nth);
   }
 };
 
@@ -73,8 +87,17 @@ template <typename Scalar> struct LQRProblemTpl {
     auto nx0 = stages[0].nx;
     G0.resize(nc0, nx0);
   }
+
+  void addParameterization(uint nth) {
+    for (int i = 0; i < horizon(); i++) {
+      stages[i].addParameterization(nth);
+    }
+  }
+
+  bool isParameterized() const { return !stages.empty() && stages[0].nth > 0; }
   bool isInitialized() const { return !stages.empty(); }
 };
+
 template <typename Scalar>
 void lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
                     Scalar mueq, typename math_types<Scalar>::MatrixXs &mat,
