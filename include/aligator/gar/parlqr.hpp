@@ -5,7 +5,7 @@
 #include "aligator/math.hpp"
 
 #include "./factor.hpp"
-#include "./lqr-knot.hpp"
+#include "./lqr-problem.hpp"
 #include "./lqr-tree.hpp"
 #include "./util.hpp"
 

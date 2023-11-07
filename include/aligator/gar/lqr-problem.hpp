@@ -71,8 +71,7 @@ template <typename Scalar> struct LQRKnotTpl {
 
 template <typename Scalar> struct LQRProblemTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using knot_t = LQRKnotTpl<Scalar>;
-  std::vector<knot_t> stages;
+  std::vector<LQRKnotTpl<Scalar>> stages;
   MatrixXs G0;
   VectorXs g0;
 
@@ -81,7 +80,7 @@ template <typename Scalar> struct LQRProblemTpl {
 
   LQRProblemTpl() : stages(), G0(), g0() {}
 
-  LQRProblemTpl(const std::vector<knot_t> &knots, long nc0)
+  LQRProblemTpl(const std::vector<LQRKnotTpl<Scalar>> &knots, long nc0)
       : stages(knots), G0(), g0(nc0) {
     assert(stages.size() > 0);
     auto nx0 = stages[0].nx;
@@ -98,13 +97,19 @@ template <typename Scalar> struct LQRProblemTpl {
   bool isInitialized() const { return !stages.empty(); }
 };
 
+/// @brief Fill in a KKT constraint matrix and vector for the given LQ problem
+/// with the given dual-regularization parameters @p mudyn and @p mueq.
+/// @returns Whether the matrices were successfully allocated.
 template <typename Scalar>
-void lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
+bool lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
                     Scalar mueq, typename math_types<Scalar>::MatrixXs &mat,
                     typename math_types<Scalar>::VectorXs &rhs) {
   using knot_t = LQRKnotTpl<Scalar>;
   const std::vector<knot_t> &knots = problem.stages;
-  size_t N = knots.size() - 1UL;
+  size_t N = (size_t)problem.horizon();
+
+  if (!problem.isInitialized())
+    return false;
 
   mat.setZero();
 
@@ -165,8 +170,10 @@ void lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
       idx += model.nx + n;
     }
   }
+  return true;
 }
 
+/// @copybrief lqrDenseMatrix()
 template <typename Scalar>
 auto lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
                     Scalar mueq) {
@@ -188,7 +195,9 @@ auto lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
   MatrixXs mat(nrows, nrows);
   VectorXs rhs(nrows);
 
-  lqrDenseMatrix(problem, mudyn, mueq, mat, rhs);
+  if (!lqrDenseMatrix(problem, mudyn, mueq, mat, rhs)) {
+    ALIGATOR_RUNTIME_ERROR("Problem was not initialized.");
+  }
   return std::make_pair(mat, rhs);
 }
 
@@ -222,5 +231,5 @@ std::ostream &operator<<(std::ostream &oss, const LQRKnotTpl<Scalar> &self) {
 } // namespace aligator
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./lqr-knot.txx"
+#include "./lqr-problem.txx"
 #endif

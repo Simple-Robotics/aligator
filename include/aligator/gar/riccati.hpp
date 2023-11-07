@@ -1,7 +1,7 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
-#include "aligator/context.hpp"
-#include "./lqr-knot.hpp"
+
+#include "./lqr-problem.hpp"
 #include "./BlkMatrix.hpp"
 
 #include <Eigen/Cholesky>

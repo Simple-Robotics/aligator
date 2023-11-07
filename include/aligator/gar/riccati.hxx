@@ -6,7 +6,7 @@ namespace aligator {
 namespace gar {
 template <typename Scalar>
 bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
-  if (problem.horizon() < 0)
+  if (!problem.isInitialized())
     return false;
 
   ALIGATOR_NOMALLOC_BEGIN;
