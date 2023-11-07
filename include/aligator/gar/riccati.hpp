@@ -102,10 +102,10 @@ public:
 
 protected:
   void initialize() {
-    auto N = size_t(problem.horizon());
+    auto N = uint(problem.horizon());
     auto &knots = problem.stages;
     datas.reserve(N + 1);
-    for (size_t t = 0; t <= N; t++) {
+    for (uint t = 0; t <= N; t++) {
       const knot_t &knot = knots[t];
       datas.emplace_back(knot.nx, knot.nu, knot.nc);
     }

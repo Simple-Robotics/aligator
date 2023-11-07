@@ -62,8 +62,8 @@ template <typename Scalar> struct LQRProblemTpl {
   MatrixXs G0;
   VectorXs g0;
 
-  long horizon() const noexcept { return long(stages.size()) - 1L; }
-  long nc0() const noexcept { return g0.rows(); }
+  int horizon() const noexcept { return int(stages.size()) - 1; }
+  uint nc0() const noexcept { return (uint)g0.rows(); }
 
   LQRProblemTpl() : stages(), G0(), g0() {}
 
@@ -83,16 +83,18 @@ void lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
   const std::vector<knot_t> &knots = problem.stages;
   size_t N = knots.size() - 1UL;
 
+  mat.setZero();
+
   uint idx = 0;
   {
-    long nc0 = problem.nc0();
+    uint nc0 = problem.nc0();
     uint nx0 = problem.stages[0].nx;
     mat.block(nc0, 0, nx0, nc0) = problem.G0.transpose();
     mat.block(0, nc0, nc0, nx0) = problem.G0;
     mat.topLeftCorner(nc0, nc0).diagonal().setConstant(-mudyn);
 
     rhs.head(nc0) = problem.g0;
-    idx += (uint)nc0;
+    idx += nc0;
   }
 
   for (size_t t = 0; t <= N; t++) {
@@ -150,9 +152,9 @@ auto lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using knot_t = LQRKnotTpl<Scalar>;
-  long nc0 = problem.nc0();
+  uint nc0 = problem.nc0();
   size_t N = knots.size() - 1UL;
-  uint nrows = (uint)nc0;
+  uint nrows = nc0;
   for (size_t t = 0; t <= N; t++) {
     const knot_t &model = knots[t];
     nrows += model.nx + model.nu + model.nc;
@@ -161,7 +163,6 @@ auto lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
   }
 
   MatrixXs mat(nrows, nrows);
-  mat.setZero();
   VectorXs rhs(nrows);
 
   lqrDenseMatrix(problem, mudyn, mueq, mat, rhs);
@@ -171,11 +172,10 @@ auto lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
 template <typename Scalar>
 std::ostream &operator<<(std::ostream &oss, const LQRKnotTpl<Scalar> &self) {
   oss << "LQRKnot {";
-#ifdef NDEBUG
   oss << fmt::format("\n  nx: {:d}", self.nx) //
       << fmt::format("\n  nu: {:d}", self.nu) //
       << fmt::format("\n  nc: {:d}", self.nc);
-#else
+#ifndef NDEBUG
   oss << eigenPrintWithPreamble(self.Q, "\n  Q: ") //
       << eigenPrintWithPreamble(self.S, "\n  S: ") //
       << eigenPrintWithPreamble(self.R, "\n  R: ") //

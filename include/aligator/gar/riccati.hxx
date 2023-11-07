@@ -11,7 +11,7 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
 
   ALIGATOR_NOMALLOC_BEGIN;
   // terminal node
-  size_t N = (size_t)problem.horizon();
+  uint N = (uint)problem.horizon();
   {
     stage_factor_t &d = datas[N];
     value_t &vc = d.vm;
@@ -29,7 +29,7 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
     vc.pvec.noalias() = model.q + Ct * zff;
   }
 
-  size_t t = N - 1;
+  uint t = N - 1;
   while (true) {
     stage_factor_t &d = datas[t];
     value_t &vn = datas[t + 1].vm;
@@ -158,8 +158,8 @@ bool ProximalRiccatiSolver<Scalar>::forward(vecvec_t &xs, vecvec_t &us,
     lbdas[0] = kkt0.rhs.blockSegment(1);
   }
 
-  size_t N = (size_t)problem.horizon();
-  for (size_t t = 0; t <= N; t++) {
+  uint N = (uint)problem.horizon();
+  for (uint t = 0; t <= N; t++) {
     const stage_factor_t &d = datas[t];
 
     ConstMatrixRef Z = d.fb.blockRow(1); // multiplier feedback
