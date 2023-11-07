@@ -7,6 +7,7 @@ using namespace aligator;
 using namespace aligator::context;
 
 using MatrixXs = math_types<Scalar>::MatrixXs;
+using MatrixRef = Eigen::Ref<MatrixXs>;
 using VectorXs = math_types<Scalar>::VectorXs;
 
 BOOST_AUTO_TEST_CASE(blk22) {
@@ -17,12 +18,19 @@ BOOST_AUTO_TEST_CASE(blk22) {
   blk(1, 0).setRandom();
 
   fmt::print("mat:\n{}\n", blk.data);
+  BOOST_CHECK_EQUAL(blk.rows(), 10);
+  BOOST_CHECK_EQUAL(blk.cols(), 10);
+
+  BlkMatrix<MatrixRef, 1, 2> b12 = topBlkRows<1>(blk);
+  fmt::print("b12:\n{}\n", b12.data);
+
+  BOOST_CHECK_EQUAL(b12.rows(), 4);
+  BOOST_CHECK_EQUAL(b12.cols(), 10);
 }
 
 BOOST_AUTO_TEST_CASE(dynamicblkvec) {
-  std::vector<long> dims{2, 5};
+  std::vector<long> dims{2, 5, 2};
   BlkMatrix<VectorXs, -1, 1> vec(dims);
-  vec.setZero();
   vec.blockSegment(0).setRandom();
   vec.blockSegment(1).setConstant(42.);
   fmt::print("rowDims: {}\n", vec.rowDims());
@@ -31,4 +39,7 @@ BOOST_AUTO_TEST_CASE(dynamicblkvec) {
   fmt::print("colIdx: {}\n", vec.colIndices());
 
   fmt::print("vec:\n{}\n", vec.data);
+
+  BlkMatrix<Eigen::Ref<VectorXs>, -1, 1> bvtop2 = topBlkRows(2, vec);
+  BOOST_CHECK_EQUAL(bvtop2.rows(), 7);
 }
