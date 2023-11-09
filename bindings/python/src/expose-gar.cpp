@@ -47,15 +47,17 @@ void exposeGAR() {
   BlkMatrixPythonVisitor<BlkMatrix<RowMatrixXs, 4, 1>>::expose(
       "BlockRowMatrix41");
 
-  bp::class_<prox_riccati_t::value_t>("value_data", bp::no_init)
-      .def_readonly("Pmat", &prox_riccati_t::value_t::Pmat)
-      .def_readonly("pvec", &prox_riccati_t::value_t::pvec)
-      .def_readonly("Vmat", &prox_riccati_t::value_t::Vmat)
-      .def_readonly("vvec", &prox_riccati_t::value_t::vvec);
+  using value_t = prox_riccati_t::value_t;
+  bp::class_<value_t>("value_data", bp::no_init)
+      .def_readonly("Pmat", &value_t::Pmat)
+      .def_readonly("pvec", &value_t::pvec)
+      .def_readonly("Vmat", &value_t::Vmat)
+      .def_readonly("vvec", &value_t::vvec);
 
   bp::class_<stage_factor_t>("stage_solve_data", bp::no_init)
       .def_readonly("ff", &stage_factor_t::ff)
       .def_readonly("fb", &stage_factor_t::fb)
+      .def_readonly("fth", &stage_factor_t::fth)
       .def_readonly("kktMat", &stage_factor_t::kktMat)
       .def_readonly("kktChol", &stage_factor_t::kktChol)
       .def_readonly("vm", &stage_factor_t::vm);
@@ -68,6 +70,7 @@ void exposeGAR() {
       .def_readonly("nx", &knot_t::nx)
       .def_readonly("nu", &knot_t::nu)
       .def_readonly("nc", &knot_t::nc)
+      .def_readonly("nth", &knot_t::nth)
       //
       .def_readwrite("Q", &knot_t::Q)
       .def_readwrite("S", &knot_t::S)
