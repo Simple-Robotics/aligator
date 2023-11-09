@@ -33,7 +33,27 @@ public:
           Vmat(nx, nx), vvec(nx), Pchol(nx), Lbchol(nx) {}
   };
 
-  struct hmlt_t {
+  /// Per-node struct for all computations in the factorization.
+  struct stage_factor_t {
+    stage_factor_t(uint nx, uint nu, uint nc, uint nth)
+        : Qhat(nx, nx), Rhat(nu, nu), Shat(nx, nu), qhat(nx), rhat(nu),
+          AtV(nx, nx), BtV(nu, nx), //
+          ff({nu, nc, nx, nx}, {1}), fb({nu, nc, nx, nx}, {nx}),
+          fth({nu, nc, nx, nx}, {nth}),             //
+          kktMat({nu, nc}), kktChol(kktMat.rows()), //
+          vm(nx), PinvEt(nx, nx) {
+      Qhat.setZero();
+      Rhat.setZero();
+      Shat.setZero();
+      qhat.setZero();
+      rhat.setZero();
+
+      ff.setZero();
+      fb.setZero();
+      kktMat.setZero();
+      fth.setZero();
+    }
+
     MatrixXs Qhat;
     MatrixXs Rhat;
     MatrixXs Shat;
@@ -41,36 +61,12 @@ public:
     VectorXs rhat;
     RowMatrixXs AtV;
     RowMatrixXs BtV;
-    hmlt_t(uint nx, uint nu)
-        : Qhat(nx, nx), Rhat(nu, nu), Shat(nx, nu), //
-          qhat(nx), rhat(nu), AtV(nx, nx), BtV(nu, nx) {}
-  };
-
-  struct error_t {
-    Scalar lbda;
-    Scalar pm;
-    Scalar pv;
-    Scalar fferr;
-    Scalar fberr;
-  };
-
-  /// Per-node struct for all computations in the factorization.
-  struct stage_factor_t {
-    stage_factor_t(uint nx, uint nu, uint nc)
-        : ff({nu, nc, nx, nx}, {1}), fb({nu, nc, nx, nx}, {nx}),
-          kktMat({nu, nc}), kktChol(kktMat.rows()), hmlt(nx, nu), vm(nx), //
-          PinvEt(nx, nx), Pinvp(nx),                                      //
-          tmpClp(nx, nx) {
-      ff.setZero();
-      fb.setZero();
-      kktMat.setZero();
-    }
 
     BlkMatrix<VectorXs, 4, 1> ff;     //< feedforward gains
     BlkMatrix<RowMatrixXs, 4, 1> fb;  //< feedback gains
+    BlkMatrix<RowMatrixXs, 4, 1> fth; //< parameter feedback gains
     BlkMatrix<MatrixXs, 2, 2> kktMat; //< reduced KKT matrix buffer
     Eigen::LDLT<MatrixXs> kktChol;    //< reduced KKT LDLT solver
-    hmlt_t hmlt;                      //< stage system data
     value_t vm;                       //< cost-to-go parameters
     MatrixXs PinvEt;                  //< tmp buffer for \f$P^{-1}E^\top\f$
     VectorXs Pinvp;                   //< tmp buffer for \f$P^{-1}p\f$
@@ -109,7 +105,7 @@ protected:
     datas.reserve(N + 1);
     for (uint t = 0; t <= N; t++) {
       const knot_t &knot = knots[t];
-      datas.emplace_back(knot.nx, knot.nu, knot.nc);
+      datas.emplace_back(knot.nx, knot.nu, knot.nc, knot.nth);
     }
   }
 

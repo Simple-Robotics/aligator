@@ -35,46 +35,45 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
     value_t &vn = datas[t + 1].vm;
     const knot_t &model = problem.stages[t];
 
-    vn.Pchol.compute(vn.Pmat);
-    d.PinvEt = vn.Pchol.solve(model.E.transpose());
-    d.Pinvp = vn.Pchol.solve(vn.pvec);
+    VectorRef kff = d.ff.blockSegment(0);
+    VectorRef zff = d.ff.blockSegment(1);
+    VectorRef xi = d.ff.blockSegment(2);
+    VectorRef a = d.ff.blockSegment(3);
 
-    ALIGATOR_NOMALLOC_END;
+    // compute matrix expressions for the inverse
     {
-      d.err.pm = math::infty_norm(vn.Pmat * d.PinvEt - model.E.transpose());
-      d.err.pv = math::infty_norm(vn.Pmat * d.Pinvp + vn.pvec);
+      vn.Pchol.compute(vn.Pmat);
+      d.PinvEt = vn.Pchol.solve(model.E.transpose());
+      vn.Lbmat.noalias() = model.E * d.PinvEt;
+      vn.Lbmat.diagonal().array() += mudyn;
+      vn.Lbchol.compute(vn.Lbmat);
+      // evaluate inverse of Lbmat
+      vn.Vmat.setIdentity();
+      vn.Lbchol.solveInPlace(vn.Vmat);
     }
-    ALIGATOR_NOMALLOC_BEGIN;
 
-    vn.Lbmat.noalias() = model.E * d.PinvEt;
-    vn.Lbmat.diagonal().array() += mudyn;
+    a = vn.Pchol.solve(-vn.pvec);
 
-    vn.Lbchol.compute(vn.Lbmat);
-    vn.Vmat.setIdentity();
-    vn.Lbchol.solveInPlace(vn.Vmat); // evaluate inverse of Lambda
-    vn.vvec.noalias() = model.f - model.E * d.Pinvp;
-    ALIGATOR_NOMALLOC_END;
-    d.err.lbda = math::infty_norm(vn.Lbmat - vn.Lbchol.reconstructedMatrix());
-    ALIGATOR_NOMALLOC_BEGIN;
+    vn.vvec.noalias() = model.f + model.E * a;
 
     // fill in hamiltonian
     computeKktTerms(model, d, vn);
 
     // fill feedback system
-    d.kktMat(0, 0) = d.hmlt.Rhat;
+    d.kktMat(0, 0) = d.Rhat;
     d.kktMat(1, 0) = model.D;
     d.kktMat(1, 1).diagonal().setConstant(-mueq);
     d.kktMat.data = d.kktMat.data.template selfadjointView<Eigen::Lower>();
     d.kktChol.compute(d.kktMat.data);
 
-    VectorRef kff = d.ff.blockSegment(0);
-    VectorRef zff = d.ff.blockSegment(1);
-    kff = -d.hmlt.rhat;
+    kff = -d.rhat;
     zff = -model.d;
 
     RowMatrixRef K = d.fb.blockRow(0);
     RowMatrixRef Z = d.fb.blockRow(1);
-    K = -d.hmlt.Shat.transpose();
+    RowMatrixRef Xi = d.fb.blockRow(2);
+    RowMatrixRef A = d.fb.blockRow(3);
+    K = -d.Shat.transpose();
     Z = -model.C;
     BlkMatrix<VectorRef, 2, 1> ffview = topBlkRows<2>(d.ff);
     BlkMatrix<RowMatrixRef, 2, 1> fbview = topBlkRows<2>(d.fb);
@@ -83,27 +82,23 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
 
     // set closed loop dynamics
     {
-      auto xi = d.ff.blockSegment(2);
-      auto a = d.ff.blockSegment(3);
-      auto Xi = d.fb.blockRow(2);
-      auto A = d.fb.blockRow(3);
+      xi.noalias() = vn.Vmat * vn.vvec;
+      xi.noalias() += d.BtV.transpose() * kff;
 
-      VectorRef tmpxivec = d.tmpClp.col(0);
-      tmpxivec.noalias() = vn.vvec + model.B * kff;
-      xi.noalias() = vn.Vmat * tmpxivec;
+      Xi.noalias() = vn.Vmat * model.A;
+      Xi.noalias() += d.BtV.transpose() * K;
 
-      MatrixRef tmpximat = d.tmpClp;
-      tmpximat.noalias() = model.A + model.B * K;
-      Xi.noalias() = vn.Vmat * tmpximat;
-
-      a.noalias() = -d.Pinvp - d.PinvEt * xi;
+      a.noalias() += -d.PinvEt * xi;
       A.noalias() = -d.PinvEt * Xi;
     }
 
+    // TODO: set parameter feedback gains
+    {}
+
     value_t &vc = d.vm;
     auto Ct = model.C.transpose();
-    vc.Pmat.noalias() = d.hmlt.Qhat + d.hmlt.Shat * K + Ct * Z;
-    vc.pvec.noalias() = d.hmlt.qhat + d.hmlt.Shat * kff + Ct * zff;
+    vc.Pmat.noalias() = d.Qhat + d.Shat * K + Ct * Z;
+    vc.pvec.noalias() = d.qhat + d.Shat * kff + Ct * zff;
 
     if (t == 0)
       break;
@@ -135,16 +130,15 @@ template <typename Scalar>
 void ProximalRiccatiSolver<Scalar>::computeKktTerms(const knot_t &model,
                                                     stage_factor_t &d,
                                                     const value_t &vnext) {
-  hmlt_t &hmlt = d.hmlt;
-  hmlt.AtV.noalias() = model.A.transpose() * vnext.Vmat;
-  hmlt.BtV.noalias() = model.B.transpose() * vnext.Vmat;
+  d.AtV.noalias() = model.A.transpose() * vnext.Vmat;
+  d.BtV.noalias() = model.B.transpose() * vnext.Vmat;
 
-  hmlt.Qhat.noalias() = model.Q + hmlt.AtV * model.A;
-  hmlt.Rhat.noalias() = model.R + hmlt.BtV * model.B;
-  hmlt.Shat.noalias() = model.S + hmlt.AtV * model.B;
+  d.Qhat.noalias() = model.Q + d.AtV * model.A;
+  d.Rhat.noalias() = model.R + d.BtV * model.B;
+  d.Shat.noalias() = model.S + d.AtV * model.B;
 
-  hmlt.qhat.noalias() = model.q + hmlt.AtV * vnext.vvec;
-  hmlt.rhat.noalias() = model.r + hmlt.BtV * vnext.vvec;
+  d.qhat.noalias() = model.q + d.AtV * vnext.vvec;
+  d.rhat.noalias() = model.r + d.BtV * vnext.vvec;
 }
 
 template <typename Scalar>
