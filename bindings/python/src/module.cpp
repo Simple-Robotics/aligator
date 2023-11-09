@@ -6,6 +6,8 @@
 #include "aligator/version.hpp"
 #include "aligator/threads.hpp"
 
+#include <eigenpy/optional.hpp>
+
 #ifdef ALIGATOR_WITH_CROCODDYL_COMPAT
 #include "aligator/python/compat/croco.hpp"
 #endif
@@ -53,6 +55,8 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
           "Get the current number of threads.");
 #endif
   eigenpy::enableEigenPy();
+
+  eigenpy::OptionalConverter<proxddp::context::ConstVectorRef>::registration();
 
   bp::import("warnings");
   bp::import("proxsuite_nlp");
