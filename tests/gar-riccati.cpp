@@ -88,3 +88,8 @@ BOOST_AUTO_TEST_CASE(proxriccati) {
     fmt::print("λ[{:d}] = {}\n", t, lbdas[t].transpose());
   }
 }
+
+BOOST_AUTO_TEST_CASE(parametric) {
+  // TODO: implement a parametric problem and solve it
+  BOOST_CHECK(true);
+}
