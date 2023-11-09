@@ -16,6 +16,7 @@ public:
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using RowMatrixXs = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
   using RowMatrixRef = Eigen::Ref<RowMatrixXs>;
+  using ConstRowMatrixRef = Eigen::Ref<const RowMatrixXs>;
   using knot_t = LQRKnotTpl<Scalar>;
   using vecvec_t = std::vector<VectorXs>;
 

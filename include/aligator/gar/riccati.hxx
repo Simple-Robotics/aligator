@@ -162,23 +162,23 @@ bool ProximalRiccatiSolver<Scalar>::forward(vecvec_t &xs, vecvec_t &us,
   for (uint t = 0; t <= N; t++) {
     const stage_factor_t &d = datas[t];
 
-    Eigen::Ref<const RowMatrixXs> Z = d.fb.blockRow(1); // multiplier feedback
+    ConstRowMatrixRef Z = d.fb.blockRow(1); // multiplier feedback
     ConstVectorRef zff = d.ff.blockSegment(1);
     vs[t].noalias() = zff + Z * xs[t];
 
     if (t == N)
       break;
 
-    Eigen::Ref<const RowMatrixXs> K = d.fb.blockRow(0); // control feedback
+    ConstRowMatrixRef K = d.fb.blockRow(0); // control feedback
     ConstVectorRef kff = d.ff.blockSegment(0);
     us[t].noalias() = kff + K * xs[t];
 
+    ConstRowMatrixRef Xi = d.fb.blockRow(2);
     ConstVectorRef xi = d.ff.blockSegment(2);
-    Eigen::Ref<const RowMatrixXs> Xi = d.fb.blockRow(2);
     lbdas[t + 1].noalias() = xi + Xi * xs[t];
 
+    ConstRowMatrixRef A = d.fb.blockRow(3);
     ConstVectorRef a = d.ff.blockSegment(3);
-    Eigen::Ref<const RowMatrixXs> A = d.fb.blockRow(3);
     xs[t + 1].noalias() = a + A * xs[t];
   }
 
