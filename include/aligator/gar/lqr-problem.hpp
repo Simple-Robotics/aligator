@@ -60,7 +60,7 @@ template <typename Scalar> struct LQRKnotTpl {
     d.setZero();
   }
 
-  void addParameterization(uint nth) {
+  inline void addParameterization(uint nth) {
     this->nth = nth;
     Gammath.setZero(nth, nth);
     Gammax.setZero(nx, nth);
@@ -75,8 +75,8 @@ template <typename Scalar> struct LQRProblemTpl {
   MatrixXs G0;
   VectorXs g0;
 
-  int horizon() const noexcept { return int(stages.size()) - 1; }
-  uint nc0() const noexcept { return (uint)g0.rows(); }
+  inline int horizon() const noexcept { return int(stages.size()) - 1; }
+  inline uint nc0() const noexcept { return (uint)g0.rows(); }
 
   LQRProblemTpl() : stages(), G0(), g0() {}
 
@@ -88,13 +88,16 @@ template <typename Scalar> struct LQRProblemTpl {
   }
 
   void addParameterization(uint nth) {
-    for (int i = 0; i < horizon(); i++) {
+    for (uint i = 0; i <= horizon(); i++) {
       stages[i].addParameterization(nth);
     }
   }
 
-  bool isParameterized() const { return !stages.empty() && stages[0].nth > 0; }
-  bool isInitialized() const { return !stages.empty(); }
+  inline bool isParameterized() const {
+    return isInitialized() && (stages[0].nth > 0);
+  }
+
+  inline bool isInitialized() const { return !stages.empty(); }
 };
 
 /// @brief Fill in a KKT constraint matrix and vector for the given LQ problem
@@ -204,9 +207,12 @@ auto lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
 template <typename Scalar>
 std::ostream &operator<<(std::ostream &oss, const LQRKnotTpl<Scalar> &self) {
   oss << "LQRKnot {";
-  oss << fmt::format("\n  nx: {:d}", self.nx) //
-      << fmt::format("\n  nu: {:d}", self.nu) //
-      << fmt::format("\n  nc: {:d}", self.nc);
+  oss << fmt::format("\n  nx:  {:d}", self.nx) //
+      << fmt::format("\n  nu:  {:d}", self.nu) //
+      << fmt::format("\n  nc:  {:d}", self.nc);
+  if (self.nth > 0) {
+    oss << fmt::format("\n  nth: {:d}", self.nth);
+  }
 #ifndef NDEBUG
   oss << eigenPrintWithPreamble(self.Q, "\n  Q: ") //
       << eigenPrintWithPreamble(self.S, "\n  S: ") //
@@ -222,6 +228,11 @@ std::ostream &operator<<(std::ostream &oss, const LQRKnotTpl<Scalar> &self) {
   oss << eigenPrintWithPreamble(self.C, "\n  C: ") //
       << eigenPrintWithPreamble(self.D, "\n  D: ") //
       << eigenPrintWithPreamble(self.d, "\n  d: ");
+  if (self.nth > 0) {
+    oss << eigenPrintWithPreamble(self.Gammax, "\n  Gammax: ") //
+        << eigenPrintWithPreamble(self.Gammau, "\n  Gammau: ") //
+        << eigenPrintWithPreamble(self.gamma, "\n  gamma: ");
+  }
 #endif
   oss << "\n}";
   return oss;
