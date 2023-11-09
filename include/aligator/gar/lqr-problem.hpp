@@ -98,6 +98,8 @@ template <typename Scalar> struct LQRProblemTpl {
   }
 
   inline bool isInitialized() const { return !stages.empty(); }
+
+  inline uint ntheta() const { return stages[0].nth; }
 };
 
 /// @brief Fill in a KKT constraint matrix and vector for the given LQ problem

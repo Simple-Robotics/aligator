@@ -52,9 +52,12 @@ void exposeGAR() {
       .def_readonly("Pmat", &value_t::Pmat)
       .def_readonly("pvec", &value_t::pvec)
       .def_readonly("Vmat", &value_t::Vmat)
-      .def_readonly("vvec", &value_t::vvec);
+      .def_readonly("vvec", &value_t::vvec)
+      .def_readonly("Lmat", &value_t::Lmat)
+      .def_readonly("Psi", &value_t::Psi)
+      .def_readonly("svec", &value_t::svec);
 
-  bp::class_<stage_factor_t>("stage_solve_data", bp::no_init)
+  bp::class_<stage_factor_t>("stage_factor", bp::no_init)
       .def_readonly("ff", &stage_factor_t::ff)
       .def_readonly("fb", &stage_factor_t::fb)
       .def_readonly("fth", &stage_factor_t::fth)
@@ -95,7 +98,7 @@ void exposeGAR() {
       .def(CopyableVisitor<knot_t>())
       .def(PrintableVisitor<knot_t>());
 
-  StdVectorPythonVisitor<knot_vec_t, true>::expose("LQRKnotVec");
+  StdVectorPythonVisitor<knot_vec_t>::expose("LQRKnotVec");
 
   bp::class_<lqr_t>("LQRProblem", bp::no_init)
       .def(
@@ -109,16 +112,20 @@ void exposeGAR() {
       .add_property("isParameterized", &lqr_t::isParameterized,
                     "Whether the problem is parameterized.")
       .def("addParameterization", &lqr_t::addParameterization,
-           bp::args("self", "nth"));
+           bp::args("self", "nth"))
+      .add_property("ntheta", &lqr_t::ntheta);
 
   bp::class_<prox_riccati_t, boost::noncopyable>(
       "ProximalRiccatiSolver", "Proximal Riccati solver.", bp::no_init)
       .def(bp::init<const lqr_t &>(bp::args("self", "knots")))
       .def_readonly("datas", &prox_riccati_t::datas)
+      .def_readonly("thGrad", &prox_riccati_t::thGrad, "Value gradient")
+      .def_readonly("thHess", &prox_riccati_t::thHess, "Value Hessian")
       .def("backward", &prox_riccati_t::backward,
            bp::args("self", "mu", "mueq"))
       .def("forward", &prox_riccati_t::forward,
-           bp::args("self", "xs", "us", "vs", "lbdas"));
+           (bp::arg("self"), bp::arg("xs"), bp::arg("us"), bp::arg("vs"),
+            bp::arg("lbdas"), bp::arg("theta") = boost::none));
 
   bp::def(
       "lqrDenseMatrix",
