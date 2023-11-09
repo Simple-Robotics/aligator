@@ -50,7 +50,6 @@ set(TEST_NAMES
     continuous
     utils
     solver-storage
-    parallel-lqr
     gar-riccati
     block-matrix
     schur3x3)

@@ -4,8 +4,7 @@
 # GAR (General Augmented lagrangian Riccati) is a set of algorithms for the
 # fast solving of proximal and constrained LQR-type linear systems.
 
-set(SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/lqr-problem.cpp ${CMAKE_CURRENT_SOURCE_DIR}/parlqr.cpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/riccati.cpp)
+set(SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/lqr-problem.cpp ${CMAKE_CURRENT_SOURCE_DIR}/riccati.cpp)
 
 file(GLOB HEADERS ${PROJECT_SOURCE_DIR}/include/aligator/gar/*.hpp)
 
