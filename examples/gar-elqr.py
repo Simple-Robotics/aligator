@@ -11,6 +11,8 @@ import eigenpy
 
 np.random.seed(42)
 np.set_printoptions(precision=3, linewidth=250)
+plt.rcParams["lines.linewidth"] = 1.0
+plt.rcParams["lines.markersize"] = 5
 
 
 class Args(tap.Tap):
@@ -22,14 +24,13 @@ args = Args().parse_args()
 nx = 1
 nu = 1
 x0 = 1.0 * np.ones(nx)
-xbar = np.ones(nx) * 0.2
-xterm = np.array([-1.5])
+xterm = np.array([0.0])
 
 
 def knot_get_default(nx, nu, nc):
     knot = gar.LQRKnot(nx, nu, nc)
     knot.Q[:] = np.eye(nx, nx) * 0.1
-    knot.q[:] = -knot.Q @ xbar
+    knot.q[:] = 0.0
     knot.R[:] = np.eye(nu) * 0.1
     knot.A[:] = 1.2 * np.eye(nx)
     knot.B = np.eye(nx, nu)
@@ -51,9 +52,9 @@ if args.term:
 else:
     knot1 = knot_get_default(nx, 0, 0)
     knot1.Q[:] = np.eye(nx) * 0.1
-    knot1.q = -knot1.Q @ xterm
+    knot1.q[:] = -knot1.Q @ xterm
 
-T = 30
+T = 5
 t0 = T // 2
 
 
@@ -65,26 +66,25 @@ def make_interm_node(t0):
     return kn
 
 
-prob = gar.LQRProblem([knot_base], nx)
-prob.G0 = -np.eye(nx)
-prob.g0 = x0
-knots = prob.stages
+knots = [knot_base]
 for t in range(T - 1):
     if args.mid and t == t0:
-        kn = make_interm_node(t)
+        knot_mid = make_interm_node(t)
     else:
-        kn = knot_base.copy()
-    knots.append(kn)
+        knot_mid = knot_base.copy()
+    knots.append(knot_mid)
 knots.append(knot1)
+# constructor creates a copy
+prob = gar.LQRProblem(knots, nx)
+prob.G0 = -np.eye(nx)
+prob.g0 = x0
+del knots
 
-# print(f"{knots[0]}")
-# print(f"{knots[1]}")
-
+print("Is problem parameterized? {}".format(prob.isParameterized))
 ricsolve = gar.ProximalRiccatiSolver(prob)
 
 assert prob.horizon == T
 mu = 1e-5
-# mueq = 0.01
 mueq = mu
 ricsolve.backward(mu, mueq)
 
@@ -95,9 +95,7 @@ def inftyNorm(x):
 
 def get_np_solution():
     matrix, rhs = gar.lqrDenseMatrix(prob, mu, mueq)
-    print(f"Problem matrix:\n{matrix}")
-    print(f"Problem rhs:\n{rhs}")
-
+    knots = prob.stages
     ldlt = eigenpy.LDLT(matrix)
     _sol_np = ldlt.solve(-rhs)
     err = rhs + matrix @ _sol_np
@@ -124,7 +122,6 @@ def get_np_solution():
         i += n + nx
 
     out = dict(xs=xs, us=us, vs=vs, lbdas=lbdas)
-    pprint.pp(out, indent=2)
     print("=======")
     return out
 
@@ -133,18 +130,11 @@ sol_dense = get_np_solution()
 
 xs_out = [np.zeros(nx) for _ in range(T + 1)]
 us_out = [np.zeros(nu) for _ in range(T)]
-vs_out = [np.zeros(knot.nc) for knot in knots]
-lbdas_out = [np.zeros(prob.g0.size)] + [np.zeros(knots[t].nx) for t in range(T)]
+vs_out = [np.zeros(knot.nc) for knot in prob.stages]
+lbdas_out = [np.zeros(prob.g0.size)] + [np.zeros(prob.stages[t].nx) for t in range(T)]
 sol_gar = {"xs": xs_out, "us": us_out, "vs": vs_out, "lbdas": lbdas_out}
 
 ricsolve.forward(**sol_gar)
-
-for t in range(T):
-    d = ricsolve.datas[t]
-    print(d.ff)
-    print(d.fb)
-
-pprint.pp(sol_gar, indent=2)
 
 
 def checkAllErrors(sol: dict, knots):
@@ -181,9 +171,9 @@ def checkAllErrors(sol: dict, knots):
 
 
 print("dense:")
-checkAllErrors(sol_dense, knots)
+checkAllErrors(sol_dense, prob.stages)
 print("gar:")
-checkAllErrors(sol_gar, knots)
+checkAllErrors(sol_gar, prob.stages)
 
 # Plot solution
 
@@ -211,5 +201,58 @@ plt.grid(True)
 plt.legend()
 plt.title("Co-state $\\lambda_t$")
 plt.tight_layout()
+
+plt.show()
+
+
+PARAM_DIM = nx
+prob.addParameterization(PARAM_DIM)
+
+knot1 = prob.stages[-1]
+knot1.Gammax[:] = -knot1.Q
+knot1.Gammath[:] = knot1.Q
+# knot1.q[:] = 0.0
+print("Terminal knot:", knot1)
+# prob.stages[-1] = knot1
+
+print("Is problem parameterized? {}".format(prob.isParameterized))
+ricsolve = gar.ProximalRiccatiSolver(prob)
+ricsolve.backward(mu, mueq)
+
+vm0: gar.value_data = ricsolve.datas[0].vm
+thGrad = ricsolve.thGrad
+thHess = ricsolve.thHess
+print(thGrad)
+print(thHess)
+
+ths_ = []
+
+
+def parametric_solve(v):
+    import copy
+
+    param_sol = copy.deepcopy(sol_gar)
+    _theta = np.array([v])
+    ths_.append(_theta)
+    ricsolve.forward(theta=_theta, **param_sol)
+
+    xss = np.stack(param_sol["xs"])
+    plt.plot(times, xss[:, 0], marker=".", lw=1.0, label="{:.2e}".format(_theta[0]))
+
+
+iids = np.linspace(-1.0, 1.0, 17, endpoint=True)
+for v in iids:
+    parametric_solve(v)
+plt.hlines(xterm[0], times[0], times[-1], colors="r", linestyles="--")
+plt.grid(True)
+plt.legend(title="$\\theta$", fontsize="x-small", ncols=2)
+
+plt.figure()
+plt.title("Value curve $V^\\star(\\theta)$")
+ths_ = np.array(ths_)
+vths_ = [t.dot(thGrad) + 0.5 * t.dot(thHess @ t) for t in ths_]
+plt.hlines(0.0, ths_.min(), ths_.max(), ls="--", colors="k")
+plt.plot(ths_, vths_, marker=".")
+plt.xlabel("$\\theta$")
 
 plt.show()
