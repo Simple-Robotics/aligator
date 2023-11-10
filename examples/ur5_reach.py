@@ -75,8 +75,8 @@ wt_frame_vel = np.diag(wt_frame_vel)
 
 term_cost = proxddp.CostStack(space, nu)
 term_cost.addCost(proxddp.QuadraticCost(wt_x_term, wt_u * 0))
-term_cost.addCost(proxddp.QuadraticResidualCost(frame_fn, wt_frame_pos))
-term_cost.addCost(proxddp.QuadraticResidualCost(frame_vel_fn, wt_frame_vel))
+term_cost.addCost(proxddp.QuadraticResidualCost(space, frame_fn, wt_frame_pos))
+term_cost.addCost(proxddp.QuadraticResidualCost(space, frame_vel_fn, wt_frame_vel))
 
 u_max = rmodel.effortLimit
 u_min = -u_max
@@ -127,7 +127,7 @@ solver.rollout_type = proxddp.ROLLOUT_NONLINEAR
 if args.fddp:
     solver = proxddp.SolverFDDP(tol, verbose, max_iters=max_iters)
 cb = proxddp.HistoryCallback()
-solver.registerCallback(cb)
+solver.registerCallback("his", cb)
 solver.setup(problem)
 solver.run(problem, init_xs, init_us)
 
