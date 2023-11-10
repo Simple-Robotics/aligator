@@ -109,13 +109,16 @@ auto underactuatedConstraintInvDyn_proxy(const PinModel &model, PinData &data,
                                          const ConstVectorRef &q,
                                          const ConstVectorRef &v,
                                          const ConstMatrixRef &actMatrix,
-                                         const context::RCM &constraint_model,
-                                         context::RCD &constraint_data) {
+                                         const StdVectorEigenAligned<context::RCM> &constraint_models,
+                                         StdVectorEigenAligned<context::RCD> &constraint_datas) {
   long nu = actMatrix.cols();
-  long d = (long)constraint_model.size();
+  int d = 0;
+  for ( size_t k = 0; k < constraint_models.size(); ++k) {
+    d += (int)constraint_models[k].size();
+  }
   context::VectorXs out(nu + d);
   underactuatedConstrainedInverseDynamics(
-      model, data, q, v, actMatrix, constraint_model, constraint_data, out);
+      model, data, q, v, actMatrix, constraint_models, constraint_datas, out);
 
   return bp::make_tuple((context::VectorXs)out.head(nu),
                         (context::VectorXs)out.tail(d));
