@@ -71,8 +71,8 @@ void exposeSolverCommon() {
       .def_readonly("Vxx", &VParams::Vxx_)
       .def(PrintableVisitor<VParams>());
 
-  StdVectorPythonVisitor<std::vector<QParams>, true>::expose("StdVec_QParams");
-  StdVectorPythonVisitor<std::vector<VParams>, true>::expose("StdVec_VParams");
+  StdVectorPythonVisitor<std::vector<QParams>>::expose("StdVec_QParams");
+  StdVectorPythonVisitor<std::vector<VParams>>::expose("StdVec_VParams");
 
   using WorkspaceBase = WorkspaceBaseTpl<Scalar>;
   bp::class_<WorkspaceBase, boost::noncopyable>(
