@@ -109,9 +109,14 @@ template <typename Scalar> struct WorkspaceTpl;
 // fwd ResultsTpl
 template <typename Scalar> struct ResultsTpl;
 
-// fwd StdVectorEigenAligned
 template <typename T>
 using StdVectorEigenAligned = std::vector<T, Eigen::aligned_allocator<T>>;
+
+template <typename T, typename... Args>
+inline auto allocate_shared_eigen_aligned(Args &&...args) {
+  return std::allocate_shared<T>(Eigen::aligned_allocator<T>(),
+                                 std::forward<Args>(args)...);
+}
 
 } // namespace proxddp
 
