@@ -152,7 +152,7 @@ q0 = x0[:nq]
 v0 = x0[nq:]
 u0_now = pin.rnea(robot.model, robot.data, robot.q0, robot.v0, robot.v0)
 u0, lam_c = proxddp.underactuatedConstrainedInverseDynamics(
-    rmodel, rdata, q0, v0, actuation_matrix, rcm, rcm.createData()
+    rmodel, rdata, q0, v0, actuation_matrix, [rcm], [rcm.createData()]
 )
 assert u0.shape == (nu,)
 

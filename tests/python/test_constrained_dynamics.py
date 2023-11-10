@@ -175,7 +175,7 @@ def test_inv_dyn():
     nu = model.nv
     B = np.eye(nu)
     tau0, _fc = proxddp.underactuatedConstrainedInverseDynamics(
-        model, data, q0, v0, B, rcm, rcd
+        model, data, q0, v0, B, [rcm], [rcd]
     )
 
     # test the resulting acceleration is zero
