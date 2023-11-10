@@ -113,7 +113,11 @@ void exposeGAR() {
                     "Whether the problem is parameterized.")
       .def("addParameterization", &lqr_t::addParameterization,
            bp::args("self", "nth"))
-      .add_property("ntheta", &lqr_t::ntheta);
+      .add_property("ntheta", &lqr_t::ntheta)
+      .def("evaluate", &lqr_t::evaluate,
+           (bp::arg("self"), bp::arg("xs"), bp::arg("us"),
+            bp::arg("theta") = boost::none),
+           "Evaluate the problem objective.");
 
   bp::class_<prox_riccati_t, boost::noncopyable>(
       "ProximalRiccatiSolver", "Proximal Riccati solver.", bp::no_init)

@@ -3,7 +3,6 @@
 
 #include "./lqr-problem.hpp"
 #include "./BlkMatrix.hpp"
-#include <boost/optional.hpp>
 
 #include <Eigen/Cholesky>
 
