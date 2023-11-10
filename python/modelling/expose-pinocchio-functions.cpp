@@ -105,15 +105,14 @@ void exposeFrameFunctions() {
 }
 
 #ifdef PROXDDP_PINOCCHIO_V3
-auto underactuatedConstraintInvDyn_proxy(const PinModel &model, PinData &data,
-                                         const ConstVectorRef &q,
-                                         const ConstVectorRef &v,
-                                         const ConstMatrixRef &actMatrix,
-                                         const StdVectorEigenAligned<context::RCM> &constraint_models,
-                                         StdVectorEigenAligned<context::RCD> &constraint_datas) {
+auto underactuatedConstraintInvDyn_proxy(
+    const PinModel &model, PinData &data, const ConstVectorRef &q,
+    const ConstVectorRef &v, const ConstMatrixRef &actMatrix,
+    const StdVectorEigenAligned<context::RCM> &constraint_models,
+    StdVectorEigenAligned<context::RCD> &constraint_datas) {
   long nu = actMatrix.cols();
   int d = 0;
-  for ( size_t k = 0; k < constraint_models.size(); ++k) {
+  for (size_t k = 0; k < constraint_models.size(); ++k) {
     d += (int)constraint_models[k].size();
   }
   context::VectorXs out(nu + d);

@@ -14,7 +14,7 @@ extern template void underactuatedConstrainedInverseDynamics<
     const Eigen::MatrixBase<context::ConstVectorRef> &,
     const Eigen::MatrixBase<context::ConstMatrixRef> &,
     const StdVectorEigenAligned<context::RCM> &,
-    StdVectorEigenAligned<context::RCD> &, 
+    StdVectorEigenAligned<context::RCD> &,
     const Eigen::MatrixBase<context::VectorRef> &);
 
 } // namespace proxddp
