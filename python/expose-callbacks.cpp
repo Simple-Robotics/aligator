@@ -31,9 +31,6 @@ void exposeHistoryCallback() {
       .def_readonly("al_iters", &history_storage_t::al_index)
       .def_readonly("prim_tols", &history_storage_t::prim_tols)
       .def_readonly("dual_tols", &history_storage_t::dual_tols);
-
-  StdVectorPythonVisitor<std::vector<context::VectorOfVectors>, true>::expose(
-      "StdVecVec_VectorXs", "std::vector of std::vector of Eigen::MatrixX.");
 }
 
 void exposeCallbacks() {

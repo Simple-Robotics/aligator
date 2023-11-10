@@ -142,9 +142,9 @@ void exposeCostBase() {
                                bp::return_value_policy<bp::return_by_value>()));
 
   StdVectorPythonVisitor<std::vector<CostPtr>, true>::expose(
-      "StdVec_CostAbstract", "Vector of cost objects.");
+      "StdVec_CostAbstract");
   StdVectorPythonVisitor<std::vector<shared_ptr<CostData>>, true>::expose(
-      "StdVec_CostData", "Vector of CostData objects.");
+      "StdVec_CostData");
 }
 
 void exposeCostOps();

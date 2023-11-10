@@ -129,10 +129,9 @@ void exposeFunctionBase() {
       .def(ClonePythonVisitor<StageFunctionData>());
 
   StdVectorPythonVisitor<std::vector<FunctionPtr>, true>::expose(
-      "StdVec_StageFunction", "Vector of function objects.");
+      "StdVec_StageFunction");
   StdVectorPythonVisitor<std::vector<shared_ptr<StageFunctionData>>,
-                         true>::expose("StdVec_StageFunctionData",
-                                       "Vector of function data objects.");
+                         true>::expose("StdVec_StageFunctionData");
 
   exposeUnaryFunctions();
 
