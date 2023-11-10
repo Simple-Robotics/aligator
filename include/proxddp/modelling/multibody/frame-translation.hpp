@@ -12,7 +12,7 @@ template <typename Scalar> struct FrameTranslationDataTpl;
 
 template <typename _Scalar>
 struct FrameTranslationResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
-public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   PROXDDP_UNARY_FUNCTION_INTERFACE(Scalar);
@@ -40,7 +40,7 @@ public:
   void computeJacobians(const ConstVectorRef &x, BaseData &data) const;
 
   shared_ptr<BaseData> createData() const {
-    return std::make_shared<Data>(this);
+    return allocate_shared_eigen_aligned<Data>(*this);
   }
 
 protected:
@@ -59,7 +59,7 @@ struct FrameTranslationDataTpl : StageFunctionDataTpl<Scalar> {
   /// Jacobian of the error, local frame
   typename math_types<Scalar>::Matrix6Xs fJf_;
 
-  FrameTranslationDataTpl(const FrameTranslationResidualTpl<Scalar> *model);
+  FrameTranslationDataTpl(const FrameTranslationResidualTpl<Scalar> &model);
 };
 
 } // namespace proxddp

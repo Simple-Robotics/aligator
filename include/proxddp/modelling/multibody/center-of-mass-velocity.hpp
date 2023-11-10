@@ -35,7 +35,7 @@ public:
   void computeJacobians(const ConstVectorRef &x, BaseData &data) const;
 
   shared_ptr<BaseData> createData() const {
-    return std::make_shared<Data>(this);
+    return allocate_shared_eigen_aligned<Data>(*this);
   }
 
 protected:
@@ -54,7 +54,7 @@ struct CenterOfMassVelocityDataTpl : StageFunctionDataTpl<Scalar> {
   typename math_types<Scalar>::Matrix3Xs fJf_;
 
   CenterOfMassVelocityDataTpl(
-      const CenterOfMassVelocityResidualTpl<Scalar> *model);
+      const CenterOfMassVelocityResidualTpl<Scalar> &model);
 };
 
 } // namespace proxddp

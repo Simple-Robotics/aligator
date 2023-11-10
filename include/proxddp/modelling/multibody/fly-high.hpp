@@ -31,7 +31,7 @@ struct FlyHighResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
   void computeJacobians(const ConstVectorRef &x, BaseData &data) const;
 
   shared_ptr<BaseData> createData() const {
-    return std::make_shared<Data>(*this);
+    return allocate_shared_eigen_aligned<Data>(*this);
   }
 
   const auto &getModel() const { return pmodel_; }
@@ -47,6 +47,7 @@ using FlyHighResidualDataTpl = typename FlyHighResidualTpl<Scalar>::Data;
 
 template <typename Scalar>
 struct FlyHighResidualTpl<Scalar>::Data : StageFunctionDataTpl<Scalar> {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using BaseData::ndx1;
   using BaseData::nr;
   using BaseData::nu;

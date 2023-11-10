@@ -13,6 +13,7 @@ template <typename Scalar> struct FramePlacementDataTpl;
 template <typename _Scalar>
 struct FramePlacementResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   PROXDDP_UNARY_FUNCTION_INTERFACE(Scalar);
