@@ -298,12 +298,15 @@ def main(args: Args):
     _, x_term = task_schedule(nsteps)
     problem = setup()
 
-    vizer = pin.visualize.MeshcatVisualizer(
-        rmodel, robot.collision_model, robot.visual_model, data=rdata
-    )
-    vizer.initViewer(loadModel=True, zmq_url=args.zmq_url)
-    vizer.displayCollisions(True)
-    vizer.display(x0[:nq])
+    if args.display:
+        vizer = pin.visualize.MeshcatVisualizer(
+            rmodel, robot.collision_model, robot.visual_model, data=rdata
+        )
+        vizer.initViewer(loadModel=True, zmq_url=args.zmq_url)
+        vizer.displayCollisions(True)
+        vizer.display(x0[:nq])
+    else:
+        vizer = None
 
     tol = 1e-3
     mu_init = 1e-1
