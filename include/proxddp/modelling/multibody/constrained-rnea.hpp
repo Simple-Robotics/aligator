@@ -1,6 +1,7 @@
 #pragma once
 
 #include "./fwd.hpp"
+#include "proxddp/fwd.hpp"
 
 #include <pinocchio/algorithm/compute-all-terms.hpp>
 #include <pinocchio/algorithm/contact-jacobian.hpp>
@@ -22,11 +23,12 @@ void underactuatedConstrainedInverseDynamics(
     const ModelTpl<Scalar, Options> &model, DataTpl<Scalar, Options> &data,
     const Eigen::MatrixBase<ConfigType> &q, Eigen::MatrixBase<VelType> const &v,
     const Eigen::MatrixBase<MatrixType> &actMatrix,
-    const RigidConstraintModelTpl<Scalar, Options> &constraint_model,
-    RigidConstraintDataTpl<Scalar, Options> &constraint_data,
+    const StdVectorEigenAligned<RigidConstraintModelTpl<Scalar, Options> > &constraint_models,
+    StdVectorEigenAligned<RigidConstraintDataTpl<Scalar, Options> > &constraint_datas,
     const Eigen::MatrixBase<OutType> &res_) {
   namespace pin = pinocchio;
   using MatrixXs = Eigen::Matrix<Scalar, -1, -1>;
+  assert(constraint_models.size() == constraint_datas.size() && "constraint_models and constraint_datas do not have the same size");
 
   OutType &res = res_.const_cast_derived();
 
@@ -37,19 +39,23 @@ void underactuatedConstrainedInverseDynamics(
   pin::computeAllTerms(model, data, q, v);
   const auto &nle = data.nle;
 
-  long d = (long)constraint_model.size();
+  int d = 0;
+  for ( size_t k = 0; k < constraint_models.size(); ++k) {
+    d += (int)constraint_models[k].size();
+  }
+
   assert(res.size() == nu + d);
   MatrixXs work(nv, nu + d);
 
   work.leftCols(nu) = actMatrix;
   auto JacT = work.rightCols(d);
-  pin::getConstraintJacobian(model, data, constraint_model, constraint_data,
-                             JacT.transpose());
+  pin::getConstraintsJacobian(model, data, constraint_models, constraint_datas,
+                            JacT.transpose());
   JacT = -JacT;
 
-  Eigen::ColPivHouseholderQR<MatrixXs> lu(work);
+  Eigen::ColPivHouseholderQR<MatrixXs> qr(work);
 
-  res = lu.solve(nle);
+  res = qr.solve(nle);
 }
 
 } // namespace proxddp

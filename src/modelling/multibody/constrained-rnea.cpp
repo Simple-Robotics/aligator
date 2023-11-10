@@ -10,8 +10,10 @@ template void underactuatedConstrainedInverseDynamics<
     const context::PinModel &, context::PinData &,
     const Eigen::MatrixBase<context::ConstVectorRef> &,
     const Eigen::MatrixBase<context::ConstVectorRef> &,
-    const Eigen::MatrixBase<context::ConstMatrixRef> &, const context::RCM &,
-    context::RCD &, const Eigen::MatrixBase<context::VectorRef> &);
+    const Eigen::MatrixBase<context::ConstMatrixRef> &, 
+    const StdVectorEigenAligned<context::RCM> &,
+    StdVectorEigenAligned<context::RCD> &, 
+    const Eigen::MatrixBase<context::VectorRef> &);
 
 } // namespace proxddp
 #endif
