@@ -128,11 +128,11 @@ def get_np_solution():
 
 sol_dense = get_np_solution()
 
-xs_out = [np.zeros(nx) for _ in range(T + 1)]
-us_out = [np.zeros(nu) for _ in range(T)]
-vs_out = [np.zeros(knot.nc) for knot in prob.stages]
-lbdas_out = [np.zeros(prob.g0.size)] + [np.zeros(prob.stages[t].nx) for t in range(T)]
-sol_gar = {"xs": xs_out, "us": us_out, "vs": vs_out, "lbdas": lbdas_out}
+sol_gar = gar.getInitProblemTraj(prob)
+xs_out = sol_gar["xs"]
+us_out = sol_gar["us"]
+vs_out = sol_gar["vs"]
+lbdas_out = sol_gar["lbdas"]
 
 ricsolve.forward(**sol_gar)
 

@@ -36,6 +36,27 @@ using context::VectorXs;
 
 using knot_vec_t = std::vector<knot_t>;
 
+bp::dict get_zero_traj(const lqr_t &problem) {
+  bp::dict out;
+  std::vector<VectorXs> xs, us, vs, lbdas;
+  auto zero = [](uint n) { return VectorXs::Zero(n); };
+  lbdas.emplace_back(zero(problem.nc0()));
+  for (uint i = 0; i <= (uint)problem.horizon(); i++) {
+    const knot_t &kn = problem.stages[i];
+    xs.emplace_back(zero(kn.nx));
+    vs.emplace_back(zero(kn.nc));
+    if (i == (uint)problem.horizon())
+      break;
+    us.emplace_back(zero(kn.nu));
+    lbdas.emplace_back(zero(kn.nx));
+  }
+  out["xs"] = xs;
+  out["us"] = us;
+  out["vs"] = vs;
+  out["lbdas"] = lbdas;
+  return out;
+}
+
 void exposeGAR() {
 
   bp::scope ns = get_namespace("gar");
@@ -121,7 +142,7 @@ void exposeGAR() {
 
   bp::class_<prox_riccati_t, boost::noncopyable>(
       "ProximalRiccatiSolver", "Proximal Riccati solver.", bp::no_init)
-      .def(bp::init<const lqr_t &>(bp::args("self", "knots")))
+      .def(bp::init<const lqr_t &>(bp::args("self", "problem")))
       .def_readonly("datas", &prox_riccati_t::datas)
       .def_readonly("thGrad", &prox_riccati_t::thGrad, "Value gradient")
       .def_readonly("thHess", &prox_riccati_t::thHess, "Value Hessian")
@@ -137,7 +158,9 @@ void exposeGAR() {
         auto mat_rhs = lqrDenseMatrix(problem, mudyn, mueq);
         return bp::make_tuple(std::get<0>(mat_rhs), std::get<1>(mat_rhs));
       },
-      bp::args("self", "mudyn", "mueq"));
+      bp::args("problem", "mudyn", "mueq"));
+
+  bp::def("getInitProblemTraj", get_zero_traj, bp::args("problem"));
 }
 
 } // namespace python
