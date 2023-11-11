@@ -3,12 +3,11 @@ Common utilities for examples.
 """
 import numpy as np
 import pinocchio as pin
-import hppfcl as fcl
-import example_robot_data as erd
 import tap
 
 import matplotlib.pyplot as plt
 
+from pathlib import Path
 from aligator.utils.plotting import *  # noqa
 from typing import Literal, List, Optional
 
@@ -16,7 +15,10 @@ from typing import Literal, List, Optional
 plt.rcParams["lines.linewidth"] = 1.0
 plt.rcParams["lines.markersize"] = 5
 
-integrator_choices = Literal["euler", "semieuler", "midpoint", "rk2"]
+ASSET_DIR = Path("assets/")
+ASSET_DIR.mkdir(exist_ok=True)
+
+_integrator_choices = Literal["euler", "semieuler", "midpoint", "rk2"]
 MESHCAT_ZMQ_DEFAULT = "tcp://127.0.0.1:6000"
 IMAGEIO_KWARGS = {"macro_block_size": 8, "quality": 9}
 
@@ -25,7 +27,7 @@ class ArgsBase(tap.Tap):
     display: bool = False  # Display the trajectory using meshcat
     record: bool = False  # record video
     plot: bool = False
-    integrator: integrator_choices = "semieuler"
+    integrator: _integrator_choices = "semieuler"
     """Numerical integrator to use"""
     zmq_url: Optional[str] = MESHCAT_ZMQ_DEFAULT
 
@@ -56,6 +58,8 @@ def compute_quasistatic(model: pin.Model, data: pin.Data, x0, acc):
 
 
 def create_cartpole(N):
+    import hppfcl as fcl
+
     model = pin.Model()
     geom_model = pin.GeometryModel()
 
@@ -140,6 +144,8 @@ def create_cartpole(N):
 
 
 def make_npendulum(N, ub=True, lengths=None):
+    import hppfcl as fcl
+
     model = pin.Model()
     geom_model = pin.GeometryModel()
 
@@ -192,6 +198,8 @@ def make_npendulum(N, ub=True, lengths=None):
 
 
 def load_talos_upper_body():
+    import example_robot_data as erd
+
     robot = erd.load("talos")
     qref = robot.model.referenceConfigurations["half_sitting"]
     locked_joints = list(range(1, 14))

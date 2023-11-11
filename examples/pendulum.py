@@ -14,10 +14,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from pinocchio.visualize import MeshcatVisualizer
 from aligator import constraints
-from utils import ArgsBase
-
-
-Path("assets/").mkdir(exist_ok=True)
+from utils import ArgsBase, ASSET_DIR
 
 
 class Args(ArgsBase):
@@ -233,8 +230,8 @@ plt.hlines(
 plt.title("Controls $u(t)$")
 plt.legend()
 plt.tight_layout()
-plt.savefig("assets/pendulum_controls{}.png".format(TAG))
-plt.savefig("assets/pendulum_controls{}.pdf".format(TAG))
+plt.savefig(ASSET_DIR / "pendulum_controls{}.png".format(TAG))
+plt.savefig(ASSET_DIR / "pendulum_controls{}.pdf".format(TAG))
 
 if True:
     from proxsuite_nlp.utils import plot_pd_errs
@@ -264,7 +261,7 @@ plt.show()
 
 
 def get_ctx(vizer):
-    vid_uri = Path("assets/pendulum{}.mp4".format(TAG))
+    vid_uri = Path(ASSET_DIR / "pendulum{}.mp4".format(TAG))
     if args.record:
         return vizer.create_video_ctx(
             vid_uri, format="ffmpeg", fps=30, quality=None, bitrate=6000

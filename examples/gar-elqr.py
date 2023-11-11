@@ -9,10 +9,10 @@ import matplotlib.pyplot as plt
 import tap
 import eigenpy
 
+import utils  # noqa
+
 np.random.seed(42)
 np.set_printoptions(precision=3, linewidth=250)
-plt.rcParams["lines.linewidth"] = 1.0
-plt.rcParams["lines.markersize"] = 5
 
 
 class Args(tap.Tap):
@@ -54,7 +54,7 @@ else:
     knot1.Q[:] = np.eye(nx) * 0.1
     knot1.q[:] = -knot1.Q @ xterm
 
-T = 5
+T = 7
 t0 = T // 2
 
 
@@ -175,6 +175,9 @@ checkAllErrors(sol_dense, prob.stages)
 print("gar:")
 checkAllErrors(sol_gar, prob.stages)
 
+print("Optimal value (dense):", prob.evaluate(sol_gar["xs"], sol_gar["us"]))
+print("Optimal value (gar):  ", prob.evaluate(sol_dense["xs"], sol_dense["us"]))
+
 # Plot solution
 
 plt.figure(figsize=(8.0, 4.0))
@@ -226,6 +229,7 @@ print(thGrad)
 print(thHess)
 
 ths_ = []
+vths_calc_ = []
 
 
 def parametric_solve(v):
@@ -239,20 +243,33 @@ def parametric_solve(v):
     xss = np.stack(param_sol["xs"])
     plt.plot(times, xss[:, 0], marker=".", lw=1.0, label="{:.2e}".format(_theta[0]))
 
+    vths_calc_.append(prob.evaluate(param_sol["xs"], param_sol["us"], theta=_theta))
 
+
+plt.figure(figsize=(9.6, 4.8))
+plt.subplot(121)
 iids = np.linspace(-1.0, 1.0, 17, endpoint=True)
 for v in iids:
     parametric_solve(v)
-plt.hlines(xterm[0], times[0], times[-1], colors="r", linestyles="--")
+plt.hlines(xterm[0], times[0], times[-1], colors="r", linestyles="-", lw=1.4, zorder=2)
+plt.title("State $x_t$")
+plt.xlabel("Discrete time $t$")
 plt.grid(True)
 plt.legend(title="$\\theta$", fontsize="x-small", ncols=2)
 
-plt.figure()
+plt.subplot(122)
 plt.title("Value curve $V^\\star(\\theta)$")
 ths_ = np.array(ths_)
-vths_ = [t.dot(thGrad) + 0.5 * t.dot(thHess @ t) for t in ths_]
-plt.hlines(0.0, ths_.min(), ths_.max(), ls="--", colors="k")
-plt.plot(ths_, vths_, marker=".")
+vths_calc_ = np.array(vths_calc_)
+vths_pred_ = [t.dot(thGrad) + 0.5 * t.dot(thHess @ t) for t in ths_]
+_dv = vths_calc_[0] - vths_pred_[0]
+vths_pred_ += _dv
+
+plt.hlines(_dv, ths_.min(), ths_.max(), ls="--", colors="k")
+plt.plot(ths_, vths_pred_, marker="+", alpha=0.6, label="predicted")
+plt.plot(ths_, vths_calc_, marker=".", alpha=0.6, label="evaluate (forward)")
+plt.legend()
 plt.xlabel("$\\theta$")
+plt.tight_layout()
 
 plt.show()

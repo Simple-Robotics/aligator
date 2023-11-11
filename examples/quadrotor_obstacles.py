@@ -10,7 +10,6 @@ import example_robot_data as erd
 import numpy as np
 import matplotlib.pyplot as plt
 
-import os
 import aligator
 
 from aligator import manifolds
@@ -43,6 +42,8 @@ def create_halfspace_z(ndx, nu, offset: float = 0.0, neg: bool = False):
     root_frame_id = 1
     p_ref = np.zeros(3)
     frame_fun = aligator.FrameTranslationResidual(ndx, nu, rmodel, p_ref, root_frame_id)
+    print("SOME CREATE DATA LOL")
+    print("DATA:::", frame_fun.createData())
     A = np.array([[0.0, 0.0, 1.0]])
     b = np.array([-offset])
     sign = -1.0 if neg else 1.0
@@ -92,7 +93,8 @@ def sample_feasible_translation(centers, radius, margin):
 
 
 def main(args: Args):
-    os.makedirs("assets", exist_ok=True)
+    from utils import ASSET_DIR
+
     print(args)
 
     if args.obstacles:  # we add the obstacles to the geometric model
@@ -318,7 +320,9 @@ def main(args: Args):
         solver = aligator.SolverFDDP(tol, verbose=verbose)
     solver.max_iters = 200
     solver.registerCallback("his", history_cb)
+    print("==== SETUP HERE ====")
     solver.setup(problem)
+    print("==== SETUP DONE ====")
     workspace: aligator.Workspace = solver.workspace
     solver.run(problem, xs_init, us_init)
 
@@ -416,7 +420,7 @@ def main(args: Args):
 
         fig.tight_layout()
         for ext in ["png", "pdf"]:
-            fig.savefig("assets/{}.{}".format(TAG, ext))
+            fig.savefig(ASSET_DIR / "{}.{}".format(TAG, ext))
         plt.show()
 
     if args.display:
@@ -428,7 +432,7 @@ def main(args: Args):
         for d in directions_:
             d /= np.linalg.norm(d)
 
-        vid_uri = "assets/{}.mp4".format(TAG)
+        vid_uri = ASSET_DIR / "{}.mp4".format(TAG)
         qs_opt = [x[:nq] for x in xs_opt]
         base_link_id = rmodel.getFrameId("base_link")
 
