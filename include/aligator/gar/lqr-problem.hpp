@@ -90,7 +90,9 @@ template <typename Scalar> struct LQRProblemTpl {
   }
 
   void addParameterization(uint nth) {
-    for (uint i = 0; i <= horizon(); i++) {
+    if (!isInitialized())
+      return;
+    for (uint i = 0; i <= (uint)horizon(); i++) {
       stages[i].addParameterization(nth);
     }
   }
