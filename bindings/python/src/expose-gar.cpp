@@ -146,18 +146,27 @@ void exposeGAR() {
            "Evaluate the problem objective.")
       .def(CopyableVisitor<lqr_t>());
 
-
-  bp::class_<prox_riccati_t, boost::noncopyable>(
-      "ProximalRiccatiSolver", "Proximal Riccati solver.", bp::no_init)
-      .def(bp::init<const lqr_t &>(bp::args("self", "problem")))
-      .def_readonly("datas", &prox_riccati_t::datas)
-      .def_readonly("thGrad", &prox_riccati_t::thGrad, "Value gradient")
-      .def_readonly("thHess", &prox_riccati_t::thHess, "Value Hessian")
-      .def("backward", &prox_riccati_t::backward,
-           bp::args("self", "mu", "mueq"))
-      .def("forward", &prox_riccati_t::forward,
-           (bp::arg("self"), bp::arg("xs"), bp::arg("us"), bp::arg("vs"),
-            bp::arg("lbdas"), bp::arg("theta") = boost::none));
+  {
+    bp::scope _ =
+        bp::class_<prox_riccati_t, boost::noncopyable>(
+            "ProximalRiccatiSolver", "Proximal Riccati solver.", bp::no_init)
+            .def(bp::init<const lqr_t &>(bp::args("self", "problem")))
+            .def_readonly("datas", &prox_riccati_t::datas)
+            .def_readonly("thGrad", &prox_riccati_t::thGrad, "Value gradient")
+            .def_readonly("thHess", &prox_riccati_t::thHess, "Value Hessian")
+            .def_readonly("kkt0", &prox_riccati_t::kkt0,
+                          "Initial stage KKT system")
+            .def("backward", &prox_riccati_t::backward,
+                 bp::args("self", "mu", "mueq"))
+            .def("forward", &prox_riccati_t::forward,
+                 (bp::arg("self"), bp::arg("xs"), bp::arg("us"), bp::arg("vs"),
+                  bp::arg("lbdas"), bp::arg("theta") = boost::none));
+    bp::class_<prox_riccati_t::kkt0_t>("kkt0_t", bp::no_init)
+        .def_readonly("ff", &prox_riccati_t::kkt0_t::ff)
+        .def_readonly("fth", &prox_riccati_t::kkt0_t::fth)
+        .def_readonly("mat", &prox_riccati_t::kkt0_t::mat)
+        .def_readonly("chol", &prox_riccati_t::kkt0_t::chol);
+  }
 
   bp::def(
       "lqrDenseMatrix",
