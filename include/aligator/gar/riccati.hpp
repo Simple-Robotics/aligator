@@ -112,11 +112,11 @@ public:
   std::vector<stage_factor_t> datas;
   struct kkt0_t {
     BlkMatrix<MatrixXs, 2, 2> mat;
-    BlkMatrix<VectorXs, 2, 1> rhs;
+    BlkMatrix<VectorXs, 2, 1> ff;
     BlkMatrix<RowMatrixXs, 2, 1> fth;
     Eigen::LDLT<MatrixXs> chol{mat.rows()};
     kkt0_t(uint nx, uint nc, uint nth)
-        : mat({nx, nc}), rhs(mat.rowDims()), fth(mat.rowDims(), {nth}) {}
+        : mat({nx, nc}), ff(mat.rowDims()), fth(mat.rowDims(), {nth}) {}
   } kkt0;
 
   VectorXs thGrad; //< optimal value gradient wrt parameter

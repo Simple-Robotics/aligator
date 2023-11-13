@@ -136,15 +136,15 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
   kkt0.mat(1, 1).diagonal().setConstant(-mudyn);
   kkt0.chol.compute(kkt0.mat.data);
 
-  kkt0.rhs.blockSegment(0) = -vinit.vvec;
-  kkt0.rhs.blockSegment(1) = -problem.g0;
-  kkt0.chol.solveInPlace(kkt0.rhs.data);
+  kkt0.ff.blockSegment(0) = -vinit.vvec;
+  kkt0.ff.blockSegment(1) = -problem.g0;
+  kkt0.chol.solveInPlace(kkt0.ff.data);
   kkt0.fth.blockRow(0) = vinit.Lmat;
   kkt0.fth.blockRow(1).setZero();
   kkt0.chol.solveInPlace(kkt0.fth.data);
 
   thGrad.noalias() =
-      vinit.svec + vinit.Lmat.transpose() * kkt0.rhs.blockSegment(0);
+      vinit.svec + vinit.Lmat.transpose() * kkt0.ff.blockSegment(0);
   thHess.noalias() = vinit.Psi + vinit.Lmat.transpose() * kkt0.fth.blockRow(0);
 
   ALIGATOR_NOMALLOC_END;
@@ -189,8 +189,8 @@ bool ProximalRiccatiSolver<Scalar>::forward(
   ALIGATOR_NOMALLOC_BEGIN;
   // solve initial stage
   {
-    xs[0] = kkt0.rhs.blockSegment(0);
-    lbdas[0] = kkt0.rhs.blockSegment(1);
+    xs[0] = kkt0.ff.blockSegment(0);
+    lbdas[0] = kkt0.ff.blockSegment(1);
     if (theta_.has_value()) {
       xs[0].noalias() += kkt0.fth.blockRow(0) * theta_.value();
       lbdas[0].noalias() += kkt0.fth.blockRow(1) * theta_.value();
