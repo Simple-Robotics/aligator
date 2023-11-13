@@ -291,7 +291,7 @@ def test_constrained_dynamics():
     solver = proxddp.SolverProxDDP(
         tol, mu_init, rho_init, verbose=verbose, max_iters=200
     )
-    solver.registerCallback(history_cb)
+    solver.registerCallback("his", history_cb)
     solver.setup(problem)
     conv = solver.run(problem, xs_init, us_init)
 
