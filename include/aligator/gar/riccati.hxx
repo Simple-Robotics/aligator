@@ -139,7 +139,7 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
   kkt0.ff.blockSegment(0) = -vinit.vvec;
   kkt0.ff.blockSegment(1) = -problem.g0;
   kkt0.chol.solveInPlace(kkt0.ff.data);
-  kkt0.fth.blockRow(0) = vinit.Lmat;
+  kkt0.fth.blockRow(0) = -vinit.Lmat;
   kkt0.fth.blockRow(1).setZero();
   kkt0.chol.solveInPlace(kkt0.fth.data);
 
