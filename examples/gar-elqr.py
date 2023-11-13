@@ -11,7 +11,6 @@ import eigenpy
 
 import utils  # noqa
 
-np.random.seed(42)
 np.set_printoptions(precision=3, linewidth=250)
 
 
