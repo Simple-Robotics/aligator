@@ -57,16 +57,21 @@ bp::dict get_zero_traj(const lqr_t &problem) {
   return out;
 }
 
+static void exposeBlockMatrices() {
+  BlkMatrixPythonVisitor<BlkMatrix<MatrixXs, 2, 2>>::expose("BlockMatrix22");
+  BlkMatrixPythonVisitor<BlkMatrix<VectorXs, 4, 1>>::expose("BlockVector4");
+  BlkMatrixPythonVisitor<BlkMatrix<VectorXs, 2, 1>>::expose("BlockVector2");
+  BlkMatrixPythonVisitor<BlkMatrix<RowMatrixXs, 4, 1>>::expose(
+      "BlockRowMatrix41");
+  BlkMatrixPythonVisitor<BlkMatrix<RowMatrixXs, 2, 1>>::expose(
+      "BlockRowMatrix21");
+}
+
 void exposeGAR() {
 
   bp::scope ns = get_namespace("gar");
 
-  StdVectorPythonVisitor<std::vector<long>, true>::expose("StdVec_long");
-
-  BlkMatrixPythonVisitor<BlkMatrix<MatrixXs, 2, 2>>::expose("BlockMatrix22");
-  BlkMatrixPythonVisitor<BlkMatrix<VectorXs, 4, 1>>::expose("BlockVector4");
-  BlkMatrixPythonVisitor<BlkMatrix<RowMatrixXs, 4, 1>>::expose(
-      "BlockRowMatrix41");
+  exposeBlockMatrices();
 
   using value_t = prox_riccati_t::value_t;
   bp::class_<value_t>("value_data", bp::no_init)
@@ -87,7 +92,7 @@ void exposeGAR() {
       .def_readonly("vm", &stage_factor_t::vm);
 
   StdVectorPythonVisitor<std::vector<stage_factor_t>, true>::expose(
-      "stage_solve_data_Vec");
+      "StdVec_stage_factor");
 
   bp::class_<knot_t>("LQRKnot", bp::no_init)
       .def(bp::init<uint, uint, uint>(bp::args("nx", "nu", "nc")))
@@ -119,7 +124,7 @@ void exposeGAR() {
       .def(CopyableVisitor<knot_t>())
       .def(PrintableVisitor<knot_t>());
 
-  StdVectorPythonVisitor<knot_vec_t>::expose("LQRKnotVec");
+  StdVectorPythonVisitor<knot_vec_t>::expose("StdVec_LQRKnot");
 
   bp::class_<lqr_t>("LQRProblem", bp::no_init)
       .def(
@@ -138,7 +143,9 @@ void exposeGAR() {
       .def("evaluate", &lqr_t::evaluate,
            (bp::arg("self"), bp::arg("xs"), bp::arg("us"),
             bp::arg("theta") = boost::none),
-           "Evaluate the problem objective.");
+           "Evaluate the problem objective.")
+      .def(CopyableVisitor<lqr_t>());
+
 
   bp::class_<prox_riccati_t, boost::noncopyable>(
       "ProximalRiccatiSolver", "Proximal Riccati solver.", bp::no_init)

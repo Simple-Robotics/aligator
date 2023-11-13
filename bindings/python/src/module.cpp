@@ -14,7 +14,8 @@
 
 namespace aligator {
 namespace python {
-void exposeEnums() {
+
+static void exposeEnums() {
   register_enum_symlink<VerboseLevel>(true);
 
   bp::enum_<MultiplierUpdateMode>(
@@ -39,6 +40,10 @@ void exposeEnums() {
       .export_values();
 }
 
+static void exposeContainers() {
+  StdVectorPythonVisitor<std::vector<long>, true>::expose("StdVec_long");
+}
+
 } // namespace python
 } // namespace aligator
 
@@ -61,6 +66,7 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
   bp::import("warnings");
   bp::import("proxsuite_nlp");
 
+  exposeContainers();
   exposeGAR();
   exposeEnums();
   exposeFunctions();
