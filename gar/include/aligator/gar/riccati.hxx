@@ -220,7 +220,8 @@ void ProximalRiccatiSolver<Scalar>::computeMatrixTerms(const knot_t &model,
 
 template <typename Scalar>
 bool ProximalRiccatiSolver<Scalar>::forward(
-    vecvec_t &xs, vecvec_t &us, vecvec_t &vs, vecvec_t &lbdas,
+    std::vector<VectorXs> &xs, std::vector<VectorXs> &us,
+    std::vector<VectorXs> &vs, std::vector<VectorXs> &lbdas,
     const boost::optional<ConstVectorRef> &theta_) const {
   ALIGATOR_NOMALLOC_BEGIN;
   // solve initial stage
@@ -237,16 +238,19 @@ bool ProximalRiccatiSolver<Scalar>::forward(
   for (uint t = 0; t <= N; t++) {
     const stage_factor_t &d = datas[t];
     const knot_t &model = problem.stages[t];
-
-    ConstRowMatrixRef Z = d.fb.blockRow(1); // multiplier feedback
-    ConstVectorRef zff = d.ff.blockSegment(1);
-    vs[t].noalias() = zff + Z * xs[t];
+    assert(xs[t].size() == model.nx);
+    assert(vs[t].size() == model.nc);
 
     ConstRowMatrixRef K = d.fb.blockRow(0); // control feedback
     ConstVectorRef kff = d.ff.blockSegment(0);
     if (model.nu > 0) {
+      assert(us[t].size() == model.nu);
       us[t].noalias() = kff + K * xs[t];
     }
+
+    ConstRowMatrixRef Z = d.fb.blockRow(1); // multiplier feedback
+    ConstVectorRef zff = d.ff.blockSegment(1);
+    vs[t].noalias() = zff + Z * xs[t];
 
     if (problem.isParameterized() && theta_.has_value()) {
       ConstVectorRef theta = *theta_;
@@ -260,6 +264,8 @@ bool ProximalRiccatiSolver<Scalar>::forward(
 
     if (t == N)
       break;
+
+    assert(lbdas[t + 1].size() == model.f.size());
 
     ConstRowMatrixRef Xi = d.fb.blockRow(2);
     ConstVectorRef xi = d.ff.blockSegment(2);

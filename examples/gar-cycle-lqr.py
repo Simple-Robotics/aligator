@@ -57,7 +57,7 @@ solver = gar.ProximalRiccatiSolver(prob)
 mu = 1e-8
 solver.backward(mu, mu)
 
-sol_ = gar.getInitProblemTraj(prob)
+sol_ = gar.lqrInitializeSolution(prob)
 
 
 th_grad = solver.thGrad

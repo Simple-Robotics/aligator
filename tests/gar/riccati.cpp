@@ -3,6 +3,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "aligator/gar/riccati.hpp"
+#include "aligator/gar/helpers.hpp"
 
 using namespace aligator;
 using namespace gar;
@@ -64,13 +65,11 @@ BOOST_AUTO_TEST_CASE(proxriccati) {
   fmt::print("Horizon: {:d}\n", prob.horizon());
   BOOST_CHECK(solver.backward(mu, mueq));
 
-  std::vector<VectorXs> xs{N + 1, VectorXs(nx)};
-  std::vector<VectorXs> us{N, VectorXs(nu)};
-  std::vector<VectorXs> vs{N + 1, VectorXs::Zero(0)};
-  vs[0].resize(knots[0].nc);
-  vs[N].resize(knots[N].nc);
-
-  std::vector<VectorXs> lbdas{N, VectorXs::Zero(nx)};
+  auto _sol = lqrInitializeSolution(prob);
+  std::vector<VectorXs> &xs = _sol[0];
+  std::vector<VectorXs> &us = _sol[1];
+  std::vector<VectorXs> &vs = _sol[2];
+  std::vector<VectorXs> &lbdas = _sol[3];
 
   bool ret = solver.forward(xs, us, vs, lbdas);
   BOOST_CHECK(ret);

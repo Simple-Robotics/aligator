@@ -127,7 +127,7 @@ def get_np_solution():
 
 sol_dense = get_np_solution()
 
-sol_gar = gar.getInitProblemTraj(prob)
+sol_gar = gar.lqrInitializeSolution(prob)
 xs_out = sol_gar["xs"]
 us_out = sol_gar["us"]
 vs_out = sol_gar["vs"]

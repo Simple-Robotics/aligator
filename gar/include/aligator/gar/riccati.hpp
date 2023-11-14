@@ -18,7 +18,6 @@ public:
   using RowMatrixRef = Eigen::Ref<RowMatrixXs>;
   using ConstRowMatrixRef = Eigen::Ref<const RowMatrixXs>;
   using knot_t = LQRKnotTpl<Scalar>;
-  using vecvec_t = std::vector<VectorXs>;
 
   struct value_t {
     MatrixXs Pmat;               //< Riccati matrix
@@ -106,7 +105,8 @@ public:
   bool backward(Scalar mudyn, Scalar mueq);
   /// Forward sweep.
   bool
-  forward(vecvec_t &xs, vecvec_t &us, vecvec_t &vs, vecvec_t &lbdas,
+  forward(std::vector<VectorXs> &xs, std::vector<VectorXs> &us,
+          std::vector<VectorXs> &vs, std::vector<VectorXs> &lbdas,
           const boost::optional<ConstVectorRef> &theta = boost::none) const;
 
   std::vector<stage_factor_t> datas;

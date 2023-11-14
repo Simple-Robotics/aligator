@@ -49,6 +49,7 @@ static void exposeContainers() {
 
 BOOST_PYTHON_MODULE(MODULE_NAME) {
   using namespace aligator::python;
+  using aligator::context::ConstVectorRef;
 
   bp::docstring_options module_docstring_options(true, true, true);
 
@@ -61,7 +62,7 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
 #endif
   eigenpy::enableEigenPy();
 
-  eigenpy::OptionalConverter<proxddp::context::ConstVectorRef>::registration();
+  eigenpy::OptionalConverter<ConstVectorRef>::registration();
 
   bp::import("warnings");
   bp::import("proxsuite_nlp");

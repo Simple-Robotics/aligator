@@ -37,26 +37,13 @@ using context::VectorXs;
 
 using knot_vec_t = std::vector<knot_t>;
 
-bp::dict get_zero_traj(const lqr_t &problem) {
+bp::dict lqr_sol_initialize_wrap(const lqr_t &problem) {
   bp::dict out;
-  std::vector<VectorXs> xs, us, vs, lbdas;
-  auto zero = [](uint n) { return VectorXs::Zero(n); };
-  lbdas.emplace_back(zero(problem.nc0()));
-  for (uint i = 0; i <= (uint)problem.horizon(); i++) {
-    const knot_t &kn = problem.stages[i];
-    xs.emplace_back(zero(kn.nx));
-    vs.emplace_back(zero(kn.nc));
-    if (kn.nu > 0) {
-      us.emplace_back(zero(kn.nu));
-    }
-    if (i == (uint)problem.horizon())
-      break;
-    lbdas.emplace_back(zero(kn.nx));
-  }
-  out["xs"] = xs;
-  out["us"] = us;
-  out["vs"] = vs;
-  out["lbdas"] = lbdas;
+  auto ss = lqrInitializeSolution(problem);
+  out["xs"] = ss[0];
+  out["us"] = ss[1];
+  out["vs"] = ss[2];
+  out["lbdas"] = ss[3];
   return out;
 }
 
@@ -179,7 +166,8 @@ void exposeGAR() {
       },
       bp::args("problem", "mudyn", "mueq"));
 
-  bp::def("getInitProblemTraj", get_zero_traj, bp::args("problem"));
+  bp::def("lqrInitializeSolution", lqr_sol_initialize_wrap,
+          bp::args("problem"));
 }
 
 } // namespace python
