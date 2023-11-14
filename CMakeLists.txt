@@ -199,7 +199,7 @@ endif(ENABLE_TEMPLATE_INSTANTIATION)
 
 list(FILTER LIB_HEADERS EXCLUDE REGEX ${PROJECT_SOURCE_DIR}/include/aligator/compat/*)
 
-add_subdirectory(src/gar)
+add_subdirectory(gar)
 
 # Create the main shared library.
 function(create_library)

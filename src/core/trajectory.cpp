@@ -1,4 +1,4 @@
-#include "proxddp/core/trajectory.hpp"
+#include "aligator/core/trajectory.hpp"
 
 namespace aligator {
 
