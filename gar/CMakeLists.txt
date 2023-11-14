@@ -2,7 +2,7 @@
 # Copyright (C) 2023 LAAS-CNRS, INRIA
 #
 
-set(SOURCES src/lqr-problem.cpp src/riccati.cpp)
+set(SOURCES src/lqr-problem.cpp src/riccati.cpp src/helpers.cpp)
 
 file(GLOB HEADERS include/aligator/gar/*.hpp)
 

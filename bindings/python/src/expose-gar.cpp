@@ -2,6 +2,7 @@
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/gar-visitors.hpp"
 #include "aligator/gar/riccati.hpp"
+#include "aligator/gar/helpers.hpp"
 
 #include "aligator/python/utils.hpp"
 #include "aligator/python/visitors.hpp"
@@ -45,9 +46,11 @@ bp::dict get_zero_traj(const lqr_t &problem) {
     const knot_t &kn = problem.stages[i];
     xs.emplace_back(zero(kn.nx));
     vs.emplace_back(zero(kn.nc));
+    if (kn.nu > 0) {
+      us.emplace_back(zero(kn.nu));
+    }
     if (i == (uint)problem.horizon())
       break;
-    us.emplace_back(zero(kn.nu));
     lbdas.emplace_back(zero(kn.nx));
   }
   out["xs"] = xs;
