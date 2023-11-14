@@ -1,5 +1,11 @@
-set(TEST_NAMES riccati parallel)
+add_library(gar_test_utils STATIC util.cpp)
+target_link_libraries(gar_test_utils PRIVATE proxddp::gar)
 
-foreach(test_name ${TEST_NAMES})
-  add_gar_test(${test_name})
-endforeach(test_name ${TEST_NAMES})
+set(_gar_test_deps proxddp::gar gar_test_utils)
+
+function(add_gar_test name)
+  _add_test_prototype(${name} "gar-" "${_gar_test_deps}")
+endfunction(add_gar_test)
+
+add_gar_test(riccati)
+add_gar_test(parallel proxddp)

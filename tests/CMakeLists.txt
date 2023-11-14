@@ -14,7 +14,7 @@ endmacro()
 file(GLOB TEST_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
 message(STATUS "Test headers: ${TEST_HEADERS}")
 
-function(_add_test_prototype name dependencies prefix)
+function(_add_test_prototype name prefix dependencies)
   set(test_name "test-cpp-${prefix}${name}")
   set(test_file ${name}.cpp)
   message(STATUS "Adding C++ test: ${test_file} (${test_name})")
@@ -37,12 +37,8 @@ function(_add_test_prototype name dependencies prefix)
 endfunction(_add_test_prototype)
 
 function(add_aligator_test name)
-  _add_test_prototype(${name} ${PROJECT_NAME} "")
+  _add_test_prototype(${name} "" ${PROJECT_NAME})
 endfunction(add_aligator_test)
-
-function(add_gar_test name)
-  _add_test_prototype(${name} aligator::gar "gar-")
-endfunction(add_gar_test)
 
 set(TEST_NAMES
     integrators

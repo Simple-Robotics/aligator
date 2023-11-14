@@ -7,6 +7,8 @@
 
 using namespace aligator::gar;
 
+BOOST_AUTO_TEST_SUITE(prox_riccati)
+
 BOOST_AUTO_TEST_CASE(inplace_llt) {
   uint N = 7;
   MatrixXs a(N, N);
@@ -20,7 +22,7 @@ BOOST_AUTO_TEST_CASE(inplace_llt) {
   fmt::print("Factor L=\n{}\n", L);
 }
 
-BOOST_AUTO_TEST_CASE(proxriccati) {
+BOOST_AUTO_TEST_CASE(short_horz_pb) {
   // dual regularization parameters
   const double mu = 1e-14;
   const double mueq = mu;
@@ -60,11 +62,7 @@ BOOST_AUTO_TEST_CASE(proxriccati) {
   fmt::print("Horizon: {:d}\n", prob.horizon());
   BOOST_CHECK(solver.backward(mu, mueq));
 
-  auto _sol = lqrInitializeSolution(prob);
-  std::vector<VectorXs> &xs = _sol[0];
-  std::vector<VectorXs> &us = _sol[1];
-  std::vector<VectorXs> &vs = _sol[2];
-  std::vector<VectorXs> &lbdas = _sol[3];
+  auto [xs, us, vs, lbdas] = lqrInitializeSolution(prob);
 
   bool ret = solver.forward(xs, us, vs, lbdas);
   BOOST_CHECK(ret);
@@ -76,10 +74,32 @@ BOOST_AUTO_TEST_CASE(proxriccati) {
   fmt::print("cstr error: {:.3e}\n", err.cstr);
   fmt::print("dual error: {:.3e}\n", err.dual);
 
-  BOOST_CHECK_LE(max_kkt_error(err), 1e-8);
+  BOOST_CHECK_LE(err.max, 1e-9);
+}
+
+BOOST_AUTO_TEST_CASE(random_long_problem) {
+  Eigen::Vector2d x0 = {0.1, 1.0};
+  uint nx = 2;
+  uint nu = 3;
+  auto prob = generate_problem(x0, 100, nx, nu);
+  prox_riccati_t solver{prob};
+  double mu = 1e-14;
+  solver.backward(mu, mu);
+
+  auto [xs, us, vs, lbdas] = lqrInitializeSolution(prob);
+  solver.forward(xs, us, vs, lbdas);
+
+  KktError err = compute_kkt_error(prob, xs, us, vs, lbdas);
+  fmt::print("dyn  error: {:.3e}\n", err.dyn);
+  fmt::print("cstr error: {:.3e}\n", err.cstr);
+  fmt::print("dual error: {:.3e}\n", err.dual);
+
+  BOOST_CHECK_LE(err.max, 1e-9);
 }
 
 BOOST_AUTO_TEST_CASE(parametric) {
   // TODO: implement a parametric problem and solve it
   BOOST_CHECK(true);
 }
+
+BOOST_AUTO_TEST_SUITE_END()
