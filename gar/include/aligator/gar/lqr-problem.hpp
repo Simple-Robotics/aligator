@@ -82,11 +82,14 @@ template <typename Scalar> struct LQRProblemTpl {
 
   LQRProblemTpl() : stages(), G0(), g0() {}
 
+  LQRProblemTpl(std::vector<LQRKnotTpl<Scalar>> &&knots, long nc0)
+      : stages(knots), G0(), g0(nc0) {
+    initialize();
+  }
+
   LQRProblemTpl(const std::vector<LQRKnotTpl<Scalar>> &knots, long nc0)
       : stages(knots), G0(), g0(nc0) {
-    assert(stages.size() > 0);
-    auto nx0 = stages[0].nx;
-    G0.resize(nc0, nx0);
+    initialize();
   }
 
   void addParameterization(uint nth) {
@@ -108,6 +111,13 @@ template <typename Scalar> struct LQRProblemTpl {
   /// Evaluate the quadratic objective.
   Scalar evaluate(const VectorOfVectors &xs, const VectorOfVectors &us,
                   const boost::optional<ConstVectorRef> &theta_) const;
+
+protected:
+  void initialize() {
+    assert(isInitialized());
+    auto nx0 = stages[0].nx;
+    G0.resize(nc0(), nx0);
+  }
 };
 
 template <typename Scalar>
