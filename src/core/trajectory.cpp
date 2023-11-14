@@ -1,6 +1,6 @@
 #include "proxddp/core/trajectory.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template struct TrajectoryTpl<context::Scalar>;
 

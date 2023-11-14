@@ -5,7 +5,7 @@
 
 #include <boost/optional.hpp>
 
-namespace proxddp {
+namespace aligator {
 namespace gar {
 
 /// @brief Struct describing a stage of a constrained LQ problem.
@@ -109,10 +109,10 @@ template <typename Scalar> struct LQRProblemTpl {
   Scalar evaluate(const VectorOfVectors &xs, const VectorOfVectors &us,
                   const boost::optional<ConstVectorRef> &theta_) const {
     if ((int)xs.size() != horizon() + 1)
-      PROXDDP_RUNTIME_ERROR(fmt::format(
+      ALIGATOR_RUNTIME_ERROR(fmt::format(
           "Wrong size for vector xs (expected {:d}).", horizon() + 1));
     if ((int)us.size() < horizon())
-      PROXDDP_RUNTIME_ERROR(
+      ALIGATOR_RUNTIME_ERROR(
           fmt::format("Wrong size for vector us (expected {:d}).", horizon()));
 
     if (!isInitialized())

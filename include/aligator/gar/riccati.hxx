@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 
 #include "./riccati.hpp"
@@ -17,21 +18,56 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
     value_t &vc = d.vm;
     const knot_t &model = problem.stages[N];
     // fill cost-to-go matrix
+    VectorRef kff = d.ff.blockSegment(0);
     VectorRef zff = d.ff.blockSegment(1);
+    RowMatrixRef K = d.fb.blockRow(0);
     RowMatrixRef Z = d.fb.blockRow(1);
+    RowMatrixRef Kth = d.fth.blockRow(0);
+    RowMatrixRef Zth = d.fth.blockRow(1);
 
     auto Ct = model.C.transpose();
 
-    Z.noalias() = model.C / mueq;
-    zff.noalias() = model.d / mueq;
+    if (model.nu == 0) {
+      Z = model.C / mueq;
+      zff = model.d / mueq;
+      Zth.setZero();
+    } else {
+      d.kktMat(0, 0) = model.R;
+      d.kktMat(0, 1) = model.D.transpose();
+      d.kktMat(1, 0) = model.D;
+      d.kktMat(1, 1).diagonal().setConstant(-mueq);
+      d.kktChol.compute(d.kktMat.data);
+
+      kff = -model.r;
+      zff = -model.d;
+      K = -model.S.transpose();
+      Z = -model.C;
+
+      auto ffview = topBlkRows<2>(d.ff);
+      auto fbview = topBlkRows<2>(d.fb);
+      d.kktChol.solveInPlace(ffview.data);
+      d.kktChol.solveInPlace(fbview.data);
+
+      if (problem.isParameterized()) {
+        Kth = -model.Gammau;
+        Zth.setZero();
+        auto fthview = topBlkRows<2>(d.fth);
+        d.kktChol.solveInPlace(fthview.data);
+      }
+    }
 
     vc.Pmat.noalias() = model.Q + Ct * Z;
     vc.pvec.noalias() = model.q + Ct * zff;
 
+    if (model.nu > 0) {
+      vc.Pmat.noalias() += model.S * K;
+      vc.pvec.noalias() += model.S * kff;
+    }
+
     if (problem.isParameterized()) {
-      vc.Lmat = model.Gammax;
-      vc.Psi = model.Gammath;
-      vc.svec = model.gamma;
+      vc.Lmat.noalias() = model.Gammax + K.transpose() * model.Gammau;
+      vc.Psi.noalias() = model.Gammath + model.Gammau.transpose() * Kth;
+      vc.svec.noalias() = model.gamma + model.B * kff;
     }
   }
 
@@ -200,17 +236,30 @@ bool ProximalRiccatiSolver<Scalar>::forward(
   uint N = (uint)problem.horizon();
   for (uint t = 0; t <= N; t++) {
     const stage_factor_t &d = datas[t];
+    const knot_t &model = problem.stages[t];
 
     ConstRowMatrixRef Z = d.fb.blockRow(1); // multiplier feedback
     ConstVectorRef zff = d.ff.blockSegment(1);
     vs[t].noalias() = zff + Z * xs[t];
 
-    if (t == N)
-      break;
-
     ConstRowMatrixRef K = d.fb.blockRow(0); // control feedback
     ConstVectorRef kff = d.ff.blockSegment(0);
-    us[t].noalias() = kff + K * xs[t];
+    if (model.nu > 0) {
+      us[t].noalias() = kff + K * xs[t];
+    }
+
+    if (problem.isParameterized() && theta_.has_value()) {
+      ConstVectorRef theta = *theta_;
+      ConstRowMatrixRef Kth = d.fth.blockRow(0);
+      ConstRowMatrixRef Zth = d.fth.blockRow(1);
+
+      if (model.nu > 0)
+        us[t].noalias() += Kth * theta;
+      vs[t].noalias() += Zth * theta;
+    }
+
+    if (t == N)
+      break;
 
     ConstRowMatrixRef Xi = d.fb.blockRow(2);
     ConstVectorRef xi = d.ff.blockSegment(2);
@@ -222,14 +271,9 @@ bool ProximalRiccatiSolver<Scalar>::forward(
 
     if (problem.isParameterized() && theta_.has_value()) {
       ConstVectorRef theta = *theta_;
-      assert(theta.rows() == problem.stages[0].nth);
-      ConstRowMatrixRef Kth = d.fth.blockRow(0);
-      ConstRowMatrixRef Zth = d.fth.blockRow(1);
       ConstRowMatrixRef Xith = d.fth.blockRow(2);
       ConstRowMatrixRef Ath = d.fth.blockRow(3);
 
-      us[t].noalias() += Kth * theta;
-      vs[t].noalias() += Zth * theta;
       lbdas[t + 1].noalias() += Xith * theta;
       xs[t + 1].noalias() += Ath * theta;
     }
