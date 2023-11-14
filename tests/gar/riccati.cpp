@@ -1,17 +1,11 @@
+/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #define EIGEN_DEFAULT_IO_FORMAT Eigen::IOFormat(4, 0, ",", "\n", "[", "]")
 
 #include <boost/test/unit_test.hpp>
 
-#include "aligator/gar/riccati.hpp"
-#include "aligator/gar/helpers.hpp"
+#include "./util.hpp"
 
-using namespace aligator;
-using namespace gar;
-
-using T = double;
-using prox_riccati_t = ProximalRiccatiSolver<T>;
-using knot_t = LQRKnotTpl<T>;
-ALIGATOR_DYNAMIC_TYPEDEFS(T);
+using namespace aligator::gar;
 
 BOOST_AUTO_TEST_CASE(inplace_llt) {
   uint N = 7;
@@ -27,28 +21,28 @@ BOOST_AUTO_TEST_CASE(inplace_llt) {
 }
 
 BOOST_AUTO_TEST_CASE(proxriccati) {
-  const T mu = 1e-7;
-  const T mueq = 1e-6;
+  // dual regularization parameters
+  const double mu = 1e-14;
+  const double mueq = mu;
+
   uint nx = 2, nu = 2;
   VectorXs x0 = VectorXs::Ones(nx);
   VectorXs x1 = -VectorXs::Ones(nx);
-  knot_t knot0{nx, nu, nx};
-  knot_t base_knot{nx, nu, 0};
-  auto init_knot = [](knot_t &knot) {
-    knot.A << 0.1, 0., -0.1, 0.;
-    knot.B.setIdentity();
+  auto init_knot = [&]() {
+    knot_t knot(nx, nu, 0);
+    knot.A << 0.1, 0., -0.1, 0.01;
+    knot.B.setRandom();
     knot.E.setIdentity();
     knot.E *= -1;
+    knot.f.setRandom();
     knot.Q.setIdentity();
     knot.Q *= 0.01;
     knot.R.setIdentity();
     knot.R *= 0.1;
+    return knot;
   };
-  init_knot(base_knot);
-  init_knot(knot0);
-  knot0.C.setIdentity();
-  knot0.d = -x0;
-  auto knot1 = knot0;
+  auto base_knot = init_knot();
+  auto knot1 = base_knot;
   // knot1.d = -x1;
   {
     knot1.Q.setIdentity();
@@ -58,9 +52,10 @@ BOOST_AUTO_TEST_CASE(proxriccati) {
   uint N = 8;
 
   std::vector<knot_t> knots(N + 1, base_knot);
-  knots[0] = knot0;
   knots[N] = knot1;
-  LQRProblemTpl<T> prob(knots, 0);
+  LQRProblemTpl<double> prob(knots, nx);
+  prob.g0 = -x0;
+  prob.G0.setIdentity();
   prox_riccati_t solver{prob};
   fmt::print("Horizon: {:d}\n", prob.horizon());
   BOOST_CHECK(solver.backward(mu, mueq));
@@ -74,18 +69,14 @@ BOOST_AUTO_TEST_CASE(proxriccati) {
   bool ret = solver.forward(xs, us, vs, lbdas);
   BOOST_CHECK(ret);
 
-  for (uint t = 0; t <= N; t++) {
-    fmt::print("xs[{:d}] = {}\n", t, xs[t].transpose());
-  }
-  for (uint t = 0; t < N; t++) {
-    fmt::print("us[{:d}] = {}\n", t, us[t].transpose());
-  }
-  for (uint t = 0; t <= N; t++) {
-    fmt::print("ν[{:d}] = {}\n", t, vs[t].transpose());
-  }
-  for (uint t = 0; t < N; t++) {
-    fmt::print("λ[{:d}] = {}\n", t, lbdas[t].transpose());
-  }
+  // check error
+  KktError err = compute_kkt_error(prob, xs, us, vs, lbdas);
+
+  fmt::print("dyn  error: {:.3e}\n", err.dyn);
+  fmt::print("cstr error: {:.3e}\n", err.cstr);
+  fmt::print("dual error: {:.3e}\n", err.dual);
+
+  BOOST_CHECK_LE(max_kkt_error(err), 1e-8);
 }
 
 BOOST_AUTO_TEST_CASE(parametric) {

@@ -1,4 +1,4 @@
-from proxddp import gar
+from aligator import gar
 
 import numpy as np
 
