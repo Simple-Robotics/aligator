@@ -63,6 +63,9 @@ BOOST_AUTO_TEST_CASE(short_horz_pb) {
   BOOST_CHECK(solver.backward(mu, mueq));
 
   auto [xs, us, vs, lbdas] = lqrInitializeSolution(prob);
+  BOOST_CHECK_EQUAL(xs.size(), prob.horizon() + 1);
+  BOOST_CHECK_EQUAL(vs.size(), prob.horizon() + 1);
+  BOOST_CHECK_EQUAL(lbdas.size(), prob.horizon() + 1);
 
   bool ret = solver.forward(xs, us, vs, lbdas);
   BOOST_CHECK(ret);

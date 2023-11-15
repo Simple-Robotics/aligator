@@ -11,6 +11,7 @@ target_include_directories(aligator_gar PRIVATE ${PROJECT_SOURCE_DIR}/include/al
 target_include_directories(aligator_gar PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                                               $<INSTALL_INTERFACE:include/aligator/gar>)
 target_link_libraries(aligator_gar PUBLIC proxsuite-nlp::proxsuite-nlp)
+target_link_libraries(aligator_gar PUBLIC OpenMP::OpenMP_CXX)
 add_library(aligator::gar ALIAS aligator_gar)
 
 if(ENABLE_TEMPLATE_INSTANTIATION)

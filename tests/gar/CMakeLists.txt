@@ -1,5 +1,6 @@
 add_library(gar_test_utils STATIC util.cpp)
 target_link_libraries(gar_test_utils PRIVATE proxddp::gar)
+set_target_properties(gar_test_utils PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "../")
 
 set(_gar_test_deps proxddp::gar gar_test_utils)
 
