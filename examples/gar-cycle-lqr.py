@@ -15,16 +15,19 @@ nu = 1
 
 def create_knot(nx, nu):
     knot = gar.LQRKnot(nx, nu, 0)
-    knot.Q[:] = np.eye(nx) * 0.008
+    knot.Q[:] = np.eye(nx) * 0.01
     knot.R[:] = np.eye(nu) * 0.01
+    knot.r[:] = (2 * np.random.rand(nx) - 1) * 0.01
     knot.A[:] = 1.2
     knot.B[:] = np.eye(nx, nu)
     knot.E[:] = -np.eye(nx)
+    knot.f[:] = (2 * np.random.rand(nx) - 1) * 0.1
     return knot
 
 
 T = 30
-knots = [create_knot(nx, nu) for _ in range(T)]
+base_knot = create_knot(nx, nu)
+knots = [base_knot for _ in range(T)]
 knots.append(create_knot(nx, 0))
 prob = gar.LQRProblem(knots, 0)
 

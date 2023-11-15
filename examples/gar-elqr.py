@@ -11,7 +11,7 @@ import eigenpy
 
 import utils  # noqa
 
-np.set_printoptions(precision=3, linewidth=250)
+np.set_printoptions(precision=5, linewidth=250)
 
 
 class Args(tap.Tap):
@@ -32,6 +32,7 @@ def knot_get_default(nx, nu, nc):
     knot.q[:] = 0.0
     knot.R[:] = np.eye(nu) * 0.1
     knot.A[:] = 1.2 * np.eye(nx)
+    knot.f[:] = 0.01 * np.ones(nx)
     knot.B = np.eye(nx, nu)
     knot.E[:] = -np.eye(nx)
     return knot
@@ -213,9 +214,7 @@ prob.addParameterization(PARAM_DIM)
 knot1 = prob.stages[-1]
 knot1.Gammax[:] = -knot1.Q
 knot1.Gammath[:] = knot1.Q
-# knot1.q[:] = 0.0
 print("Terminal knot:", knot1)
-# prob.stages[-1] = knot1
 
 print("Is problem parameterized? {}".format(prob.isParameterized))
 ricsolve = gar.ProximalRiccatiSolver(prob)
@@ -224,8 +223,8 @@ ricsolve.backward(mu, mueq)
 vm0: gar.value_data = ricsolve.datas[0].vm
 thGrad = ricsolve.thGrad
 thHess = ricsolve.thHess
-print(thGrad)
-print(thHess)
+print("grad:", thGrad[0])
+print("hess:", thHess[0, 0])
 
 ths_ = []
 vths_calc_ = []
