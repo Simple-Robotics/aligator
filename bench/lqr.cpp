@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
 
   auto registerOpts = [&](auto name, auto fn) {
     return benchmark::RegisterBenchmark(name, fn)
-        ->ArgNames({"nsteps"})
+        ->ArgName("nsteps")
         ->RangeMultiplier(2)
         ->Range(1 << 3, 1 << 9)
         ->Complexity()

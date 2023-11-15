@@ -123,18 +123,7 @@ public:
   MatrixXs thHess; //< optimal value Hessian wrt parameter
 
 protected:
-  void initialize() {
-    auto N = uint(problem.horizon());
-    auto &knots = problem.stages;
-    datas.reserve(N + 1);
-    for (uint t = 0; t <= N; t++) {
-      const knot_t &knot = knots[t];
-      datas.emplace_back(knot.nx, knot.nu, knot.nc, knot.nth);
-    }
-    thGrad.setZero();
-    thHess.setZero();
-  }
-
+  void initialize();
   const LQRProblemTpl<Scalar> &problem;
 };
 

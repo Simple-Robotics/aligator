@@ -149,10 +149,18 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
 
       // update s, L, Psi
       vc.svec = vn.svec + model.gamma;
-      vc.svec.noalias() += d.Guhat.transpose() * kff;
-      vc.Lmat.noalias() = d.Gxhat + K.transpose() * d.Guhat;
+      // vc.svec.noalias() += d.Guhat.transpose() * kff;
+      vc.svec.noalias() += model.Gammau.transpose() * kff;
+      vc.svec.noalias() += vn.Lmat.transpose() * a;
+
+      // vc.Lmat.noalias() = d.Gxhat + K.transpose() * d.Guhat;
+      vc.Lmat = model.Gammax;
+      vc.Lmat.noalias() += K.transpose() * model.Gammau;
+      vc.Lmat.noalias() += A.transpose() * vn.Lmat;
+
       vc.Psi = model.Gammath + vn.Psi;
-      vc.Psi.noalias() += d.Guhat.transpose() * Kth;
+      vc.Psi.noalias() += model.Gammau.transpose() * Kth;
+      vc.Psi.noalias() += vn.Lmat.transpose() * Ath;
     }
 
     if (t == 0)
@@ -287,6 +295,18 @@ bool ProximalRiccatiSolver<Scalar>::forward(
 
   ALIGATOR_NOMALLOC_END;
   return true;
+}
+
+template <typename Scalar> void ProximalRiccatiSolver<Scalar>::initialize() {
+  auto N = uint(problem.horizon());
+  auto &knots = problem.stages;
+  datas.reserve(N + 1);
+  for (uint t = 0; t <= N; t++) {
+    const knot_t &knot = knots[t];
+    datas.emplace_back(knot.nx, knot.nu, knot.nc, knot.nth);
+  }
+  thGrad.setZero();
+  thHess.setZero();
 }
 
 } // namespace gar
