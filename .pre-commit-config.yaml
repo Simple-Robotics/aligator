@@ -2,7 +2,7 @@ ci:
     autoupdate_branch: main
 repos:
 -   repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v17.0.2
+    rev: v17.0.5
     hooks:
     -   id: clang-format
         types_or: []
@@ -21,12 +21,12 @@ repos:
                 doc/doxygen-awesome.*
             )$
 -   repo: https://github.com/psf/black
-    rev: 23.9.1
+    rev: 23.11.0
     hooks:
     -   id: black
 -   repo: https://github.com/charliermarsh/ruff-pre-commit
     # Ruff version.
-    rev: 'v0.0.292'
+    rev: 'v0.1.6'
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
