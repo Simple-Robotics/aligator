@@ -6,7 +6,6 @@
 #include "proxddp/utils/exceptions.hpp"
 #include <proxnlp/math.hpp>
 
-#include <cmath>
 #include <type_traits>
 
 #define PROXDDP_RAISE_IF_NAN(value)                                            \
@@ -29,22 +28,10 @@ namespace math {
 
 // NOLINTBEGIN(misc-unused-using-decls)
 using proxnlp::math::check_scalar;
+using proxnlp::math::check_value;
 using proxnlp::math::infty_norm;
 using proxnlp::math::scalar_close;
 // NOLINTEND(misc-unused-using-decls)
-
-/// @brief  Check if a numerical value or vector contains NaNs or infinite
-/// elements. Returns true if so.
-template <typename T, typename = std::enable_if_t<std::is_scalar<T>::value>>
-bool check_value(const T &s) {
-  return check_scalar(s);
-}
-
-/// @copybrief check_value()
-template <typename MatrixType>
-bool check_value(const Eigen::MatrixBase<MatrixType> &x) {
-  return (x.hasNaN() || (!x.allFinite()));
-}
 
 /// @brief    Check if a std::vector of numerical objects has invalid values.
 template <typename T> bool check_value(const std::vector<T> &xs) {
