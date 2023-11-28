@@ -53,12 +53,12 @@ BOOST_AUTO_TEST_CASE(parallel) {
   Eigen::LDLT<MatrixXs> hessChol(nx);
 
   fmt::print("Available threads: {:d}\n",
-             proxddp::omp::get_available_threads());
+             aligator::omp::get_available_threads());
 
 #pragma omp parallel sections num_threads(2)
   // #pragma omp sections
   {
-    fmt::print("Current threads: {:d}\n", proxddp::omp::get_current_threads());
+    fmt::print("Current threads: {:d}\n", aligator::omp::get_current_threads());
 
 #pragma omp section
     subSolve1.backward(mu, mu);

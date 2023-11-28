@@ -1,5 +1,5 @@
 #include "fwd.hpp"
-#include "aligator/gar/BlkMatrix.hpp"
+#include "aligator/gar/blk-matrix.hpp"
 
 namespace aligator {
 namespace python {

@@ -1,7 +1,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "aligator/context.hpp"
-#include "aligator/gar/BlkMatrix.hpp"
+#include "aligator/gar/blk-matrix.hpp"
 
 using namespace aligator;
 using namespace aligator::context;

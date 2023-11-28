@@ -2,7 +2,7 @@
 #pragma once
 
 #include "./lqr-problem.hpp"
-#include "./BlkMatrix.hpp"
+#include "./blk-matrix.hpp"
 
 #include <Eigen/Cholesky>
 
