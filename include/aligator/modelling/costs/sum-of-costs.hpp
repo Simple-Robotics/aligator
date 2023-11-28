@@ -71,14 +71,14 @@ template <typename T>
 shared_ptr<CostStackTpl<T>> operator+(shared_ptr<CostStackTpl<T>> &&c1,
                                       const CostPtr<T> &c2) {
   c1->addCost(c2, 1.);
-  return std::move(c1);
+  return c1;
 }
 
 template <typename T>
 shared_ptr<CostStackTpl<T>> operator+(shared_ptr<CostStackTpl<T>> &&c1,
                                       CostPtr<T> &&c2) {
   c1->addCost(std::move(c2), 1.);
-  return std::move(c1);
+  return c1;
 }
 
 template <typename T>
@@ -98,7 +98,7 @@ shared_ptr<CostStackTpl<T>> operator*(T u, shared_ptr<CostStackTpl<T>> &&c1) {
   for (std::size_t i = 0; i < c1->size(); i++) {
     c1->weights_[i] *= u;
   }
-  return std::move(c1);
+  return c1;
 }
 
 template <typename _Scalar>
