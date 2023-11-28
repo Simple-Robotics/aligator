@@ -37,8 +37,8 @@ void MultibodyConstraintFwdDynamicsTpl<Scalar>::forward(const ConstVectorRef &x,
   const auto v = x.segment(nq, nv);
   d.xdot_.head(nv) = v;
   d.xdot_.segment(nv, nv) = pinocchio::constraintDynamics(
-      model, *d.pin_data_, q, v, d.tau_, constraint_models_,
-      d.constraint_datas_, d.settings);
+      model, d.pin_data_, q, v, d.tau_, constraint_models_, d.constraint_datas_,
+      d.settings);
 }
 
 template <typename Scalar>
@@ -49,16 +49,16 @@ void MultibodyConstraintFwdDynamicsTpl<Scalar>::dForward(const ConstVectorRef &,
   const pinocchio::ModelTpl<Scalar> &model = space_->getModel();
   const int nv = model.nv;
   pinocchio::computeConstraintDynamicsDerivatives(
-      model, *d.pin_data_, constraint_models_, d.constraint_datas_, d.settings);
-  d.Jx_.bottomRows(nv).leftCols(nv) = d.pin_data_->ddq_dq;
-  d.Jx_.bottomRows(nv).rightCols(nv) = d.pin_data_->ddq_dv;
-  d.Ju_.bottomRows(nv) = d.pin_data_->ddq_dtau * d.dtau_du_;
+      model, d.pin_data_, constraint_models_, d.constraint_datas_, d.settings);
+  d.Jx_.bottomRows(nv).leftCols(nv) = d.pin_data_.ddq_dq;
+  d.Jx_.bottomRows(nv).rightCols(nv) = d.pin_data_.ddq_dv;
+  d.Ju_.bottomRows(nv) = d.pin_data_.ddq_dtau * d.dtau_du_;
 }
 
 template <typename Scalar>
 shared_ptr<ContinuousDynamicsDataTpl<Scalar>>
 MultibodyConstraintFwdDynamicsTpl<Scalar>::createData() const {
-  return std::make_shared<Data>(*this);
+  return allocate_shared_eigen_aligned<Data>(*this);
 }
 
 template <typename Scalar>
@@ -66,12 +66,13 @@ MultibodyConstraintFwdDataTpl<Scalar>::MultibodyConstraintFwdDataTpl(
     const MultibodyConstraintFwdDynamicsTpl<Scalar> &cont_dyn)
     : Base(cont_dyn.ndx(), cont_dyn.nu()), tau_(cont_dyn.space_->getModel().nv),
       dtau_dx_(cont_dyn.ntau(), cont_dyn.ndx()),
-      dtau_du_(cont_dyn.actuation_matrix_), settings(cont_dyn.prox_settings_) {
+      dtau_du_(cont_dyn.actuation_matrix_), settings(cont_dyn.prox_settings_),
+      pin_data_() {
   tau_.setZero();
 
   const pinocchio::ModelTpl<Scalar> &model = cont_dyn.space_->getModel();
-  pin_data_ = std::make_shared<pinocchio::DataTpl<Scalar>>(model);
-  pinocchio::initConstraintDynamics(model, *pin_data_,
+  pin_data_ = PinDataType(model);
+  pinocchio::initConstraintDynamics(model, pin_data_,
                                     cont_dyn.constraint_models_);
   for (auto cm = std::begin(cont_dyn.constraint_models_);
        cm != std::end(cont_dyn.constraint_models_); ++cm) {

@@ -6,9 +6,9 @@
 namespace proxddp {
 
 template <typename Scalar>
-FlyHighResidualTpl<Scalar>::FlyHighResidualTpl(shared_ptr<PhaseSpace> state,
-                                               const pin::FrameIndex frame_id,
-                                               Scalar slope, int nu)
+FlyHighResidualTpl<Scalar>::FlyHighResidualTpl(
+    shared_ptr<PhaseSpace> state, const pinocchio::FrameIndex frame_id,
+    Scalar slope, int nu)
     : Base(state->ndx(), nu, NR), slope_(slope), pmodel_(state->getModel()) {
   pin_frame_id_ = frame_id;
 }
@@ -19,11 +19,11 @@ void FlyHighResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
   Data &d = static_cast<Data &>(data);
   auto q = x.head(pmodel_.nq);
   auto v = x.segment(pmodel_.nq, pmodel_.nv);
-  pin::forwardKinematics(pmodel_, d.pdata_, q, v);
-  pin::updateFramePlacement(pmodel_, d.pdata_, pin_frame_id_);
+  pinocchio::forwardKinematics(pmodel_, d.pdata_, q, v);
+  pinocchio::updateFramePlacement(pmodel_, d.pdata_, pin_frame_id_);
 
-  d.value_ = pin::getFrameVelocity(pmodel_, d.pdata_, pin_frame_id_,
-                                   pin::LOCAL_WORLD_ALIGNED)
+  d.value_ = pinocchio::getFrameVelocity(pmodel_, d.pdata_, pin_frame_id_,
+                                         pinocchio::LOCAL_WORLD_ALIGNED)
                  .linear()
                  .template head<2>();
 
@@ -41,16 +41,17 @@ void FlyHighResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &x,
   auto v = x.segment(pmodel_.nq, nv);
   auto a = VectorXs::Zero(nv);
 
-  pin::computeForwardKinematicsDerivatives(pmodel_, d.pdata_, q, v, a);
-  pin::getFrameVelocityDerivatives(pmodel_, d.pdata_, pin_frame_id_, pin::LOCAL,
-                                   d.l_dnu_dq, d.l_dnu_dv);
-  const Vector3s &vf =
-      pin::getFrameVelocity(pmodel_, d.pdata_, pin_frame_id_, pin::LOCAL)
-          .linear();
+  pinocchio::computeForwardKinematicsDerivatives(pmodel_, d.pdata_, q, v, a);
+  pinocchio::getFrameVelocityDerivatives(pmodel_, d.pdata_, pin_frame_id_,
+                                         pinocchio::LOCAL, d.l_dnu_dq,
+                                         d.l_dnu_dv);
+  const Vector3s &vf = pinocchio::getFrameVelocity(
+                           pmodel_, d.pdata_, pin_frame_id_, pinocchio::LOCAL)
+                           .linear();
   using Matrix3s = Eigen::Matrix<Scalar, 3, 3>;
   const Matrix3s &R = d.pdata_.oMf[pin_frame_id_].rotation();
 
-  d.vxJ.noalias() = pin::skew(-vf) * d.l_dnu_dv.template bottomRows<3>();
+  d.vxJ.noalias() = pinocchio::skew(-vf) * d.l_dnu_dv.template bottomRows<3>();
   d.vxJ += d.l_dnu_dq.template topRows<3>();
   d.o_dv_dq.noalias() = R * d.vxJ;
   d.o_dv_dv.noalias() = R * d.l_dnu_dv.template topRows<3>();

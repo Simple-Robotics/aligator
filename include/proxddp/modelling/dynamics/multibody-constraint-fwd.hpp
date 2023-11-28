@@ -58,6 +58,7 @@ struct MultibodyConstraintFwdDataTpl : ODEDataTpl<Scalar> {
   using Base = ODEDataTpl<Scalar>;
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
+  using PinDataType = pinocchio::DataTpl<Scalar>;
   using RigidConstraintDataVector =
       PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(pinocchio::RigidConstraintData);
 
@@ -67,7 +68,7 @@ struct MultibodyConstraintFwdDataTpl : ODEDataTpl<Scalar> {
   RigidConstraintDataVector constraint_datas_;
   pinocchio::ProximalSettingsTpl<Scalar> settings;
   /// shared_ptr to the underlying pinocchio::DataTpl object.
-  shared_ptr<pinocchio::DataTpl<Scalar>> pin_data_;
+  PinDataType pin_data_;
   MultibodyConstraintFwdDataTpl(
       const MultibodyConstraintFwdDynamicsTpl<Scalar> &cont_dyn);
 };

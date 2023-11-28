@@ -76,7 +76,7 @@ template <typename Scalar> struct MultibodyFreeFwdDataTpl : ODEDataTpl<Scalar> {
   VectorXs tau_;
   MatrixXs dtau_dx_;
   MatrixXs dtau_du_;
-  shared_ptr<PinDataType> pin_data_;
+  PinDataType pin_data_;
   MultibodyFreeFwdDataTpl(const MultibodyFreeFwdDynamicsTpl<Scalar> *cont_dyn);
 };
 

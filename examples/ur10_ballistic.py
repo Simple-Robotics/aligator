@@ -1,5 +1,4 @@
 import example_robot_data as erd
-import pybullet_data
 import pinocchio as pin
 import numpy as np
 import proxddp
@@ -21,8 +20,6 @@ class Args(ArgsBase):
 
 args = Args().parse_args()
 
-PYBULLET_URDF_PATH = Path(pybullet_data.getDataPath())
-
 robot = erd.load("ur10")
 q0_ref_arm = np.array([0.0, np.deg2rad(-120), 2 * np.pi / 3, np.deg2rad(-45), 0.0, 0.0])
 robot.q0[:] = q0_ref_arm
@@ -32,7 +29,6 @@ print("Velocity limit (before): {}".format(robot.model.velocityLimit))
 def load_projectile_model():
     ball_urdf = Path("models") / "mug.urdf"
     packages_dirs = [
-        str(PYBULLET_URDF_PATH),
         "models",
     ]
     ball_scale = 1.0
@@ -41,6 +37,7 @@ def load_projectile_model():
         package_dirs=packages_dirs,
         root_joint=pin.JointModelFreeFlyer(),
     )
+    print("Projectile model:\n", model)
     for geom in cmodel.geometryObjects:
         geom.meshScale *= ball_scale
     for geom in vmodel.geometryObjects:

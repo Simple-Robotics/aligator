@@ -7,10 +7,6 @@
 
 namespace proxddp {
 
-namespace {
-namespace pin = pinocchio;
-}
-
 /// A port of sobec's ResidualModelFlyHighTpl.
 template <typename _Scalar>
 struct FlyHighResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
@@ -25,7 +21,8 @@ struct FlyHighResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
   struct Data;
 
   FlyHighResidualTpl(shared_ptr<PhaseSpace> space,
-                     const pin::FrameIndex frame_id, Scalar slope, int nu);
+                     const pinocchio::FrameIndex frame_id, Scalar slope,
+                     int nu);
 
   void evaluate(const ConstVectorRef &x, BaseData &data) const;
   void computeJacobians(const ConstVectorRef &x, BaseData &data) const;
@@ -39,7 +36,7 @@ struct FlyHighResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
   Scalar slope_;
 
 private:
-  pin::ModelTpl<Scalar> pmodel_;
+  pinocchio::ModelTpl<Scalar> pmodel_;
 };
 
 template <typename Scalar>
@@ -67,7 +64,7 @@ struct FlyHighResidualTpl<Scalar>::Data : StageFunctionDataTpl<Scalar> {
     vxJ.setZero();
   }
 
-  pin::DataTpl<Scalar> pdata_;
+  pinocchio::DataTpl<Scalar> pdata_;
   Matrix6Xs d_dq, d_dv;
   Matrix6Xs l_dnu_dq, l_dnu_dv;
   Matrix3Xs o_dv_dq, o_dv_dv, vxJ;
