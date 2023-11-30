@@ -15,9 +15,9 @@ struct normal_unary_op {
 std::mt19937 normal_unary_op::rng{};
 
 static KktError
-compute_kkt_error_impl(const problem_t &problem, const vecvec_t &xs,
-                       const vecvec_t &us, const vecvec_t &vs,
-                       const vecvec_t &lbdas,
+compute_kkt_error_impl(const problem_t &problem, const VectorOfVectors &xs,
+                       const VectorOfVectors &us, const VectorOfVectors &vs,
+                       const VectorOfVectors &lbdas,
                        const boost::optional<ConstVectorRef> &theta_) {
   uint N = (uint)problem.horizon();
 
@@ -149,14 +149,15 @@ problem_t generate_problem(const ConstVectorRef &x0, uint horz, uint nx,
   return prob;
 }
 
-KktError compute_kkt_error(const problem_t &problem, const vecvec_t &xs,
-                           const vecvec_t &us, const vecvec_t &vs,
-                           const vecvec_t &lbdas) {
+KktError compute_kkt_error(const problem_t &problem, const VectorOfVectors &xs,
+                           const VectorOfVectors &us, const VectorOfVectors &vs,
+                           const VectorOfVectors &lbdas) {
   return compute_kkt_error_impl(problem, xs, us, vs, lbdas, boost::none);
 }
 
-KktError compute_kkt_error(const problem_t &problem, const vecvec_t &xs,
-                           const vecvec_t &us, const vecvec_t &vs,
-                           const vecvec_t &lbdas, const ConstVectorRef &theta) {
+KktError compute_kkt_error(const problem_t &problem, const VectorOfVectors &xs,
+                           const VectorOfVectors &us, const VectorOfVectors &vs,
+                           const VectorOfVectors &lbdas,
+                           const ConstVectorRef &theta) {
   return compute_kkt_error_impl(problem, xs, us, vs, lbdas, theta);
 }

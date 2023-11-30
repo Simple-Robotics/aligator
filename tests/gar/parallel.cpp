@@ -101,10 +101,10 @@ BOOST_AUTO_TEST_CASE(parallel) {
 
   uint t1 = horizon - t0;
 
-  vecvec_t xs_merge = mergeStdVectors(xs1, xs2);
-  vecvec_t us_merge = mergeStdVectors(us1, us2);
-  vecvec_t vs_merge = mergeStdVectors(vs1, vs2);
-  vecvec_t lbdas_merge;
+  VectorOfVectors xs_merge = mergeStdVectors(xs1, xs2);
+  VectorOfVectors us_merge = mergeStdVectors(us1, us2);
+  VectorOfVectors vs_merge = mergeStdVectors(vs1, vs2);
+  VectorOfVectors lbdas_merge;
   {
     for (size_t i = 0; i < lbdas1.size(); i++) {
       lbdas_merge.push_back(lbdas1[i]);

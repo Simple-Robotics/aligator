@@ -113,13 +113,13 @@ auto lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
 template <typename Scalar>
 auto lqrInitializeSolution(const LQRProblemTpl<Scalar> &problem) {
   using VectorXs = typename math_types<Scalar>::VectorXs;
+  using VectorOfVectors = typename math_types<Scalar>::VectorOfVectors;
   using knot_t = LQRKnotTpl<Scalar>;
-  using vecvec_t = std::vector<VectorXs>;
-  std::array<vecvec_t, 4> out;
-  vecvec_t &xs = out[0];
-  vecvec_t &us = out[1];
-  vecvec_t &vs = out[2];
-  vecvec_t &lbdas = out[3];
+  std::array<VectorOfVectors, 4> out;
+  VectorOfVectors &xs = out[0];
+  VectorOfVectors &us = out[1];
+  VectorOfVectors &vs = out[2];
+  VectorOfVectors &lbdas = out[3];
   const uint N = (uint)problem.horizon();
   auto zero = [](uint n) { return VectorXs::Zero(n); };
   lbdas.emplace_back(zero(problem.nc0()));

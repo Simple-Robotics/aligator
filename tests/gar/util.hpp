@@ -5,7 +5,6 @@
 #include "aligator/gar/helpers.hpp"
 
 ALIGATOR_DYNAMIC_TYPEDEFS(double);
-using vecvec_t = std::vector<VectorXs>;
 using prox_riccati_t = aligator::gar::ProximalRiccatiSolver<double>;
 using problem_t = aligator::gar::LQRProblemTpl<double>;
 using knot_t = aligator::gar::LQRKnotTpl<double>;
@@ -20,13 +19,14 @@ struct KktError {
   double max;
 };
 
-KktError compute_kkt_error(const problem_t &problem, const vecvec_t &xs,
-                           const vecvec_t &us, const vecvec_t &vs,
-                           const vecvec_t &lbdas);
+KktError compute_kkt_error(const problem_t &problem, const VectorOfVectors &xs,
+                           const VectorOfVectors &us, const VectorOfVectors &vs,
+                           const VectorOfVectors &lbdas);
 
-KktError compute_kkt_error(const problem_t &problem, const vecvec_t &xs,
-                           const vecvec_t &us, const vecvec_t &vs,
-                           const vecvec_t &lbdas, const ConstVectorRef &theta);
+KktError compute_kkt_error(const problem_t &problem, const VectorOfVectors &xs,
+                           const VectorOfVectors &us, const VectorOfVectors &vs,
+                           const VectorOfVectors &lbdas,
+                           const ConstVectorRef &theta);
 
 MatrixXs wishart_dist_matrix(uint n, uint p);
 
