@@ -16,11 +16,23 @@ if(BUILD_CROCODDYL_COMPAT)
   list(APPEND PY_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/compat/expose-croco-compat.cpp)
 endif()
 
+file(
+  MAKE_DIRECTORY
+  ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python
+  ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python/compat
+  ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python/modelling
+  ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python/utils)
+foreach(pyheader ${PY_HEADERS})
+  message(STATUS "creating symlink for file ${pyheader}")
+  file(RELATIVE_PATH pyhead_local ${CMAKE_CURRENT_SOURCE_DIR} ${pyheader})
+  execute_process(COMMAND ${CMAKE_COMMAND} -E ${LINK} ${pyheader}
+                          ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python/${pyhead_local})
+endforeach()
+
 function(make_bindings)
   add_library(${PYLIB_NAME} SHARED ${PY_HEADERS} ${PY_SOURCES})
   add_library(proxddp::python ALIAS ${PYLIB_NAME})
 
-  target_include_directories(${PYLIB_NAME} SYSTEM PRIVATE ${PYTHON_INCLUDE_DIRS})
   set_target_properties(
     ${PYLIB_NAME}
     PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_NAME}
