@@ -8,10 +8,13 @@ file(GLOB HEADERS include/aligator/gar/*.hpp)
 
 add_library(aligator_gar SHARED ${HEADERS})
 target_include_directories(aligator_gar PRIVATE ${PROJECT_SOURCE_DIR}/include/aligator)
-target_include_directories(aligator_gar PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-                                              $<INSTALL_INTERFACE:include/aligator/gar>)
-target_link_libraries(aligator_gar PUBLIC proxsuite-nlp::proxsuite-nlp)
-target_link_libraries(aligator_gar PUBLIC OpenMP::OpenMP_CXX)
+target_include_directories(
+  aligator_gar PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                      $<INSTALL_INTERFACE:include/aligator/gar>)
+target_link_libraries(aligator_gar PUBLIC proxnlp::proxnlp)
+if(BUILD_WITH_OPENMP_SUPPORT)
+  target_link_libraries(aligator_gar PUBLIC OpenMP::OpenMP_CXX)
+endif(BUILD_WITH_OPENMP_SUPPORT)
 add_library(aligator::gar ALIAS aligator_gar)
 
 if(ENABLE_TEMPLATE_INSTANTIATION)
