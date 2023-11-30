@@ -62,7 +62,11 @@ BOOST_AUTO_TEST_CASE(short_horz_pb) {
   fmt::print("Horizon: {:d}\n", prob.horizon());
   BOOST_CHECK(solver.backward(mu, mueq));
 
-  auto [xs, us, vs, lbdas] = lqrInitializeSolution(prob);
+  auto _traj = lqrInitializeSolution(prob);
+  vecvec_t xs = std::move(_traj[0]);
+  vecvec_t us = std::move(_traj[1]);
+  vecvec_t vs = std::move(_traj[2]);
+  vecvec_t lbdas = std::move(_traj[3]);
   BOOST_CHECK_EQUAL(xs.size(), prob.horizon() + 1);
   BOOST_CHECK_EQUAL(vs.size(), prob.horizon() + 1);
   BOOST_CHECK_EQUAL(lbdas.size(), prob.horizon() + 1);
@@ -89,7 +93,11 @@ BOOST_AUTO_TEST_CASE(random_long_problem) {
   double mu = 1e-14;
   solver.backward(mu, mu);
 
-  auto [xs, us, vs, lbdas] = lqrInitializeSolution(prob);
+  auto _traj = lqrInitializeSolution(prob);
+  vecvec_t xs = std::move(_traj[0]);
+  vecvec_t us = std::move(_traj[1]);
+  vecvec_t vs = std::move(_traj[2]);
+  vecvec_t lbdas = std::move(_traj[3]);
   solver.forward(xs, us, vs, lbdas);
 
   KktError err = compute_kkt_error(prob, xs, us, vs, lbdas);
