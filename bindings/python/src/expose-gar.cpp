@@ -114,7 +114,7 @@ void exposeGAR() {
       .def(CopyableVisitor<knot_t>())
       .def(PrintableVisitor<knot_t>());
 
-  StdVectorPythonVisitor<knot_vec_t>::expose("StdVec_LQRKnot");
+  StdVectorPythonVisitor<knot_vec_t, false>::expose("StdVec_LQRKnot");
 
   bp::class_<lqr_t>("LQRProblem", bp::no_init)
       .def(
@@ -139,7 +139,7 @@ void exposeGAR() {
     bp::scope _ =
         bp::class_<prox_riccati_t, boost::noncopyable>(
             "ProximalRiccatiSolver", "Proximal Riccati solver.", bp::no_init)
-            .def(bp::init<const lqr_t &>(bp::args("self", "problem")))
+            .def(bp::init<const lqr_t &>(("self"_a, "problem")))
             .def_readonly("datas", &prox_riccati_t::datas)
             .def_readonly("thGrad", &prox_riccati_t::thGrad, "Value gradient")
             .def_readonly("thHess", &prox_riccati_t::thHess, "Value Hessian")
