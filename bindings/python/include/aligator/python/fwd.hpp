@@ -13,6 +13,11 @@ namespace python {
 namespace bp = boost::python;
 using eigenpy::StdVectorPythonVisitor;
 
+/// User-defined literal for defining boost::python::arg
+inline bp::arg operator""_a(const char *argname, std::size_t) {
+  return bp::arg(argname);
+}
+
 /// Expose GAR module
 void exposeGAR();
 /// Expose stagewise function classes

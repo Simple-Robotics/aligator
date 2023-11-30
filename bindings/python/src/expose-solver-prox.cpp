@@ -133,11 +133,10 @@ void exposeProxDDP() {
       "search directions and feedforward, feedback gains."
       " The solver instance initializes both a Workspace and a Results struct.",
       bp::init<Scalar, Scalar, Scalar, std::size_t, VerboseLevel,
-               HessianApprox>(
-          (bp::arg("self"), bp::arg("tol"), bp::arg("mu_init") = 1e-2,
-           bp::arg("rho_init") = 0., bp::arg("max_iters") = 1000,
-           bp::arg("verbose") = VerboseLevel::QUIET,
-           bp::arg("hess_approx") = HessianApprox::GAUSS_NEWTON)))
+               HessianApprox>(("self"_a, "tol", "mu_init"_a = 1e-2,
+                               "rho_init"_a = 0., "max_iters"_a = 1000,
+                               "verbose"_a = VerboseLevel::QUIET,
+                               "hess_approx"_a = HessianApprox::GAUSS_NEWTON)))
       .def_readwrite("bcl_params", &SolverType::bcl_params, "BCL parameters.")
       .def_readwrite("max_refinement_steps", &SolverType::max_refinement_steps_)
       .def_readwrite("refinement_threshold", &SolverType::refinement_threshold_)

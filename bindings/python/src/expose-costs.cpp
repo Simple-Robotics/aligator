@@ -73,15 +73,14 @@ void exposeCostStack() {
   bp::class_<CostStack, bp::bases<CostBase>>(
       "CostStack", "A weighted sum of other cost functions.",
       bp::init<shared_ptr<Manifold>, int, const std::vector<CostPtr> &,
-               const std::vector<Scalar> &>((
-          bp::arg("self"), bp::arg("space"), bp::arg("nu"),
-          bp::arg("components") = bp::list(), bp::arg("weights") = bp::list())))
+               const std::vector<Scalar> &>(("self"_a, "space", "nu",
+                                             "components"_a = bp::list(),
+                                             "weights"_a = bp::list())))
       .def_readwrite("components", &CostStack::components_,
                      "Components of this cost stack.")
       .def_readonly("weights", &CostStack::weights_,
                     "Weights of this cost stack.")
-      .def("addCost", &CostStack::addCost,
-           (bp::arg("self"), bp::arg("cost"), bp::arg("weight") = 1.),
+      .def("addCost", &CostStack::addCost, ("self"_a, "cost", "weight"_a = 1.),
            "Add a cost to the stack of costs.")
       .def("size", &CostStack::size, "Get the number of cost components.")
       .def(CopyableVisitor<CostStack>());

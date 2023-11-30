@@ -85,7 +85,7 @@ void exposeGAR() {
       "StdVec_stage_factor");
 
   bp::class_<knot_t>("LQRKnot", bp::no_init)
-      .def(bp::init<uint, uint, uint>(bp::args("nx", "nu", "nc")))
+      .def(bp::init<uint, uint, uint>(("nx"_a, "nu", "nc")))
       .def_readonly("nx", &knot_t::nx)
       .def_readonly("nu", &knot_t::nu)
       .def_readonly("nc", &knot_t::nc)
@@ -128,11 +128,10 @@ void exposeGAR() {
       .add_property("isParameterized", &lqr_t::isParameterized,
                     "Whether the problem is parameterized.")
       .def("addParameterization", &lqr_t::addParameterization,
-           bp::args("self", "nth"))
+           ("self"_a, "nth"))
       .add_property("ntheta", &lqr_t::ntheta)
       .def("evaluate", &lqr_t::evaluate,
-           (bp::arg("self"), bp::arg("xs"), bp::arg("us"),
-            bp::arg("theta") = boost::none),
+           ("self"_a, "xs", "us", "theta"_a = boost::none),
            "Evaluate the problem objective.")
       .def(CopyableVisitor<lqr_t>());
 
@@ -147,10 +146,9 @@ void exposeGAR() {
             .def_readonly("kkt0", &prox_riccati_t::kkt0,
                           "Initial stage KKT system")
             .def("backward", &prox_riccati_t::backward,
-                 bp::args("self", "mu", "mueq"))
+                 ("self"_a, "mu", "mueq"))
             .def("forward", &prox_riccati_t::forward,
-                 (bp::arg("self"), bp::arg("xs"), bp::arg("us"), bp::arg("vs"),
-                  bp::arg("lbdas"), bp::arg("theta") = boost::none));
+                 ("self"_a, "xs", "us", "vs", "lbdas", "theta"_a = boost::none));
     bp::class_<prox_riccati_t::kkt0_t>("kkt0_t", bp::no_init)
         .def_readonly("ff", &prox_riccati_t::kkt0_t::ff)
         .def_readonly("fth", &prox_riccati_t::kkt0_t::fth)
@@ -164,10 +162,9 @@ void exposeGAR() {
         auto mat_rhs = lqrDenseMatrix(problem, mudyn, mueq);
         return bp::make_tuple(std::get<0>(mat_rhs), std::get<1>(mat_rhs));
       },
-      bp::args("problem", "mudyn", "mueq"));
+      ("problem"_a, "mudyn", "mueq"));
 
-  bp::def("lqrInitializeSolution", lqr_sol_initialize_wrap,
-          bp::args("problem"));
+  bp::def("lqrInitializeSolution", lqr_sol_initialize_wrap, ("problem"_a));
 }
 
 } // namespace python
