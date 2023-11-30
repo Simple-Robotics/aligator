@@ -49,7 +49,7 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
       d.kktChol.solveInPlace(fbview.data);
 
       if (problem.isParameterized()) {
-        Kth = -model.Gammau;
+        Kth = -model.Gu;
         Zth.setZero();
         auto fthview = topBlkRows<2>(d.fth);
         d.kktChol.solveInPlace(fthview.data);
@@ -65,8 +65,8 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
     }
 
     if (problem.isParameterized()) {
-      vc.Lmat.noalias() = model.Gammax + K.transpose() * model.Gammau;
-      vc.Psi.noalias() = model.Gammath + model.Gammau.transpose() * Kth;
+      vc.Lmat.noalias() = model.Gx + K.transpose() * model.Gu;
+      vc.Psi.noalias() = model.Gth + model.Gu.transpose() * Kth;
       vc.svec.noalias() = model.gamma + model.B * kff;
     }
   }
@@ -133,8 +133,8 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
       // store -V * E * Pinv * L
       Xith.noalias() = model.E * Ath;
 
-      d.Gxhat.noalias() = model.Gammax + d.AtV * Xith;
-      d.Guhat.noalias() = model.Gammau + d.BtV * Xith;
+      d.Gxhat.noalias() = model.Gx + d.AtV * Xith;
+      d.Guhat.noalias() = model.Gu + d.BtV * Xith;
 
       // set rhs of 2x2 block system and solve
       Kth = -d.Guhat;
@@ -144,22 +144,22 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
 
       // substitute into Xith, Ath gains
       Xith += model.B * Kth;
-      vn.Lbchol.solveInPlace(Xith);
+      vn.schurChol.solveInPlace(Xith);
       Ath += -d.PinvEt * Xith;
 
       // update s, L, Psi
       vc.svec = vn.svec + model.gamma;
       // vc.svec.noalias() += d.Guhat.transpose() * kff;
-      vc.svec.noalias() += model.Gammau.transpose() * kff;
+      vc.svec.noalias() += model.Gu.transpose() * kff;
       vc.svec.noalias() += vn.Lmat.transpose() * a;
 
       // vc.Lmat.noalias() = d.Gxhat + K.transpose() * d.Guhat;
-      vc.Lmat = model.Gammax;
-      vc.Lmat.noalias() += K.transpose() * model.Gammau;
+      vc.Lmat = model.Gx;
+      vc.Lmat.noalias() += K.transpose() * model.Gu;
       vc.Lmat.noalias() += A.transpose() * vn.Lmat;
 
-      vc.Psi = model.Gammath + vn.Psi;
-      vc.Psi.noalias() += model.Gammau.transpose() * Kth;
+      vc.Psi = model.Gth + vn.Psi;
+      vc.Psi.noalias() += model.Gu.transpose() * Kth;
       vc.Psi.noalias() += vn.Lmat.transpose() * Ath;
     }
 
@@ -204,12 +204,12 @@ void ProximalRiccatiSolver<Scalar>::computeMatrixTerms(const knot_t &model,
                                                        stage_factor_t &d) {
   vnext.Pchol.compute(vnext.Pmat);
   d.PinvEt = vnext.Pchol.solve(model.E.transpose());
-  vnext.Lbmat.noalias() = model.E * d.PinvEt;
-  vnext.Lbmat.diagonal().array() += mudyn;
-  vnext.Lbchol.compute(vnext.Lbmat);
-  // evaluate inverse of Lbmat
+  vnext.schurMat.noalias() = model.E * d.PinvEt;
+  vnext.schurMat.diagonal().array() += mudyn;
+  vnext.schurChol.compute(vnext.schurMat);
+  // evaluate inverse of schurMat
   vnext.Vmat.setIdentity();
-  vnext.Lbchol.solveInPlace(vnext.Vmat);
+  vnext.schurChol.solveInPlace(vnext.Vmat);
 
   d.AtV.noalias() = model.A.transpose() * vnext.Vmat;
   d.BtV.noalias() = model.B.transpose() * vnext.Vmat;

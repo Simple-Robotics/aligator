@@ -70,10 +70,10 @@ inline std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem,
   p1.addParameterization(nx_t0);
   {
     knot_t &p1_last = p1.stages.back();
-    p1_last.Gammax = kn1_last.A.transpose();
-    p1_last.Gammau = kn1_last.B.transpose();
+    p1_last.Gx = kn1_last.A.transpose();
+    p1_last.Gu = kn1_last.B.transpose();
     p1_last.gamma = kn1_last.f;
-    p1_last.Gammath.diagonal().setConstant(-mu);
+    p1_last.Gth.diagonal().setConstant(-mu);
     kn1_last.A.setZero();
     kn1_last.B.setZero();
     kn1_last.f.setZero();
@@ -83,7 +83,7 @@ inline std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem,
   p2.addParameterization(nx_t0);
   {
     knot_t &p2_first = p2.stages[0];
-    p2_first.Gammax = kn1_last.E.transpose();
+    p2_first.Gx = kn1_last.E.transpose();
   }
 
   return {p1, p2};

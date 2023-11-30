@@ -106,9 +106,9 @@ void exposeGAR() {
       .def_readwrite("D", &knot_t::D)
       .def_readwrite("d", &knot_t::d)
       //
-      .def_readwrite("Gammath", &knot_t::Gammath)
-      .def_readwrite("Gammax", &knot_t::Gammax)
-      .def_readwrite("Gammau", &knot_t::Gammau)
+      .def_readwrite("Gth", &knot_t::Gth)
+      .def_readwrite("Gx", &knot_t::Gx)
+      .def_readwrite("Gu", &knot_t::Gu)
       .def_readwrite("gamma", &knot_t::gamma)
       //
       .def(CopyableVisitor<knot_t>())
@@ -147,8 +147,9 @@ void exposeGAR() {
                           "Initial stage KKT system")
             .def("backward", &prox_riccati_t::backward,
                  ("self"_a, "mu", "mueq"))
-            .def("forward", &prox_riccati_t::forward,
-                 ("self"_a, "xs", "us", "vs", "lbdas", "theta"_a = boost::none));
+            .def(
+                "forward", &prox_riccati_t::forward,
+                ("self"_a, "xs", "us", "vs", "lbdas", "theta"_a = boost::none));
     bp::class_<prox_riccati_t::kkt0_t>("kkt0_t", bp::no_init)
         .def_readonly("ff", &prox_riccati_t::kkt0_t::ff)
         .def_readonly("fth", &prox_riccati_t::kkt0_t::fth)

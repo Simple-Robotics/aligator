@@ -53,9 +53,9 @@ prob1.G0 = -np.eye(nx)
 prob1.g0 = x0
 prob1.addParameterization(nx)
 knots1 = prob1.stages
-knots1[-1].Gammath = -mu * np.eye(nx)
-knots1[-1].Gammax = A_.T
-knots1[-1].Gammau = B_.T
+knots1[-1].Gth = -mu * np.eye(nx)
+knots1[-1].Gx = A_.T
+knots1[-1].Gu = B_.T
 knots1[-1].gamma = f_
 
 solver1 = gar.ProximalRiccatiSolver(prob1)
@@ -66,7 +66,7 @@ knots.append(knot_get_default(nx, 0, 0))
 prob2 = gar.LQRProblem(knots, 0)
 prob2.addParameterization(nx)
 knots2 = prob2.stages
-knots2[0].Gammax = E_.T
+knots2[0].Gx = E_.T
 knots2[-1].Q[:] = Qf_
 knots2[-1].q[:] = -Qf_ @ xf
 

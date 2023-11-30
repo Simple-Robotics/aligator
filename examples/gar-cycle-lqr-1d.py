@@ -53,8 +53,8 @@ add_mid(t1, -0.1)
 
 print(prob.stages[0])
 print(prob.stages[T])
-prob.stages[0].Gammax[:] = +np.eye(nx)
-prob.stages[T].Gammax[:] = -np.eye(nx)
+prob.stages[0].Gx[:] = +np.eye(nx)
+prob.stages[T].Gx[:] = -np.eye(nx)
 
 solver = gar.ProximalRiccatiSolver(prob)
 mu = 1e-8
@@ -88,9 +88,10 @@ plt.hlines(
 ax = plt.gca()
 ax.xaxis.set_major_locator(plt.MultipleLocator(2))
 
-plt.title("$x_t$ (cyclic)")
+plt.title("$x_t$ (cyclic LQ problem)")
 plt.legend()
 plt.tight_layout()
 plt.savefig(ASSET_DIR / "gar-cyclic-lqr-1d.png")
+plt.savefig(ASSET_DIR / "gar-cyclic-lqr-1d.pdf")
 
 plt.show()

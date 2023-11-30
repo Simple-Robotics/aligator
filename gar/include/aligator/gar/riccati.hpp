@@ -20,20 +20,20 @@ public:
   using knot_t = LQRKnotTpl<Scalar>;
 
   struct value_t {
-    MatrixXs Pmat;               //< Riccati matrix
-    VectorXs pvec;               //< Riccati bias
-    MatrixXs Lbmat;              //< Dual-space Schur matrix
-    MatrixXs Vmat;               //< "cost-to-go" matrix
-    VectorXs vvec;               //< "cost-to-go" gradient
-    Eigen::LLT<MatrixXs> Pchol;  //< Cholesky decomposition of Pmat
-    Eigen::LLT<MatrixXs> Lbchol; //< Cholesky decomposition of Lbmat
+    MatrixXs Pmat;                  //< Riccati matrix
+    VectorXs pvec;                  //< Riccati bias
+    MatrixXs schurMat;              //< Dual-space Schur matrix
+    MatrixXs Vmat;                  //< "cost-to-go" matrix
+    VectorXs vvec;                  //< "cost-to-go" gradient
+    Eigen::LLT<MatrixXs> Pchol;     //< Cholesky decomposition of Pmat
+    Eigen::LLT<MatrixXs> schurChol; //< Cholesky decomposition of Schur matrix
     MatrixXs Lmat;
     MatrixXs Psi;
     VectorXs svec;
 
     value_t(uint nx, uint nth)
-        : Pmat(nx, nx), pvec(nx), Lbmat(nx, nx), //
-          Vmat(nx, nx), vvec(nx), Pchol(nx), Lbchol(nx), Lmat(nx, nth),
+        : Pmat(nx, nx), pvec(nx), schurMat(nx, nx), //
+          Vmat(nx, nx), vvec(nx), Pchol(nx), schurChol(nx), Lmat(nx, nth),
           Psi(nth, nth), svec(nth) {
       Lmat.setZero();
       Psi.setZero();

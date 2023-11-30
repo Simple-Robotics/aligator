@@ -36,9 +36,9 @@ template <typename Scalar> struct LQRKnotTpl {
   VectorXs d;
 
   uint nth;
-  MatrixXs Gammath;
-  MatrixXs Gammax;
-  MatrixXs Gammau;
+  MatrixXs Gth;
+  MatrixXs Gx;
+  MatrixXs Gu;
   VectorXs gamma;
 
   LQRKnotTpl(uint nx, uint nu, uint nc)
@@ -64,9 +64,9 @@ template <typename Scalar> struct LQRKnotTpl {
 
   inline void addParameterization(uint nth) {
     this->nth = nth;
-    Gammath.setZero(nth, nth);
-    Gammax.setZero(nx, nth);
-    Gammau.setZero(nu, nth);
+    Gth.setZero(nth, nth);
+    Gx.setZero(nx, nth);
+    Gu.setZero(nu, nth);
     gamma.setZero(nth);
   }
 };
@@ -151,12 +151,12 @@ Scalar LQRProblemTpl<Scalar>::evaluate(
     ConstVectorRef th = theta_.value();
     for (uint i = 0; i <= (uint)horizon(); i++) {
       const LQRKnotTpl<Scalar> &knot = stages[i];
-      ret += 0.5 * th.dot(knot.Gammath * th);
-      ret += th.dot(knot.Gammax.transpose() * xs[i]);
+      ret += 0.5 * th.dot(knot.Gth * th);
+      ret += th.dot(knot.Gx.transpose() * xs[i]);
       ret += th.dot(knot.gamma);
       if (i == (uint)horizon())
         break;
-      ret += th.dot(knot.Gammau.transpose() * us[i]);
+      ret += th.dot(knot.Gu.transpose() * us[i]);
     }
   }
 
@@ -188,8 +188,9 @@ std::ostream &operator<<(std::ostream &oss, const LQRKnotTpl<Scalar> &self) {
       << eigenPrintWithPreamble(self.D, "\n  D: ") //
       << eigenPrintWithPreamble(self.d, "\n  d: ");
   if (self.nth > 0) {
-    oss << eigenPrintWithPreamble(self.Gammax, "\n  Gammax: ") //
-        << eigenPrintWithPreamble(self.Gammau, "\n  Gammau: ") //
+    oss << eigenPrintWithPreamble(self.Gth, "\n  Gth: ") //
+        << eigenPrintWithPreamble(self.Gx, "\n  Gx: ")   //
+        << eigenPrintWithPreamble(self.Gu, "\n  Gu: ")   //
         << eigenPrintWithPreamble(self.gamma, "\n  gamma: ");
   }
 #endif

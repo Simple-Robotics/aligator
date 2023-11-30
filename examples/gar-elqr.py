@@ -212,8 +212,8 @@ PARAM_DIM = nx
 prob.addParameterization(PARAM_DIM)
 
 knot1 = prob.stages[-1]
-knot1.Gammax[:] = -knot1.Q
-knot1.Gammath[:] = knot1.Q
+knot1.Gx[:] = -knot1.Q
+knot1.Gth[:] = knot1.Q
 print("Terminal knot:", knot1)
 
 print("Is problem parameterized? {}".format(prob.isParameterized))

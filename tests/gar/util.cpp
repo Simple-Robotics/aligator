@@ -78,13 +78,13 @@ compute_kkt_error_impl(const problem_t &problem, const vecvec_t &xs,
 
     if (theta_.has_value()) {
       ConstVectorRef th = theta_.value();
-      _gx.noalias() += kn.Gammax * th;
-      _gu.noalias() += kn.Gammau * th;
+      _gx.noalias() += kn.Gx * th;
+      _gu.noalias() += kn.Gu * th;
       _gt = kn.gamma;
-      _gt.noalias() += kn.Gammax.transpose() * xs[t];
+      _gt.noalias() += kn.Gx.transpose() * xs[t];
       if (kn.nu > 0)
-        _gt.noalias() += kn.Gammau.transpose() * us[t];
-      _gt.noalias() += kn.Gammath * th;
+        _gt.noalias() += kn.Gu.transpose() * us[t];
+      _gt.noalias() += kn.Gth * th;
       thNorm = infty_norm(_gt);
       fmt::print("|gt| = {:.3e} | ", thNorm);
     }
