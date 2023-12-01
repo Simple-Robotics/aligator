@@ -1,7 +1,7 @@
-#pragma once
 /// @file fwd.hpp
 /// @brief Forward declarations.
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+#pragma once
 
 #include <proxsuite-nlp/fwd.hpp>
 
@@ -11,6 +11,11 @@
 #define ALIGATOR_PINOCCHIO_V3
 #endif
 #endif
+
+#include "aligator/math.hpp"
+#include "aligator/macros.hpp"
+#include "aligator/config.hpp"
+#include "aligator/deprecated.hpp"
 
 /// @brief  Main package namespace.
 namespace aligator {
@@ -119,8 +124,3 @@ inline auto allocate_shared_eigen_aligned(Args &&...args) {
 }
 
 } // namespace aligator
-
-#include "aligator/math.hpp"
-#include "aligator/macros.hpp"
-#include "aligator/config.hpp"
-#include "aligator/deprecated.hpp"

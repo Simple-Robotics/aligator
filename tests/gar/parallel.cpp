@@ -4,7 +4,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "./util.hpp"
-#include "proxddp/threads.hpp"
+#include "aligator/threads.hpp"
 
 using namespace aligator::gar;
 
