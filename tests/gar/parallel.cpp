@@ -3,7 +3,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "./util.hpp"
+#include "./test_util.hpp"
 #include "aligator/threads.hpp"
 
 using namespace aligator::gar;
@@ -25,7 +25,10 @@ BOOST_AUTO_TEST_CASE(parallel) {
 
   auto _sol_full = lqrInitializeSolution(problem);
   {
-    auto &[xs, us, vs, lbdas] = _sol_full;
+    auto &xs = _sol_full[0];
+    auto &us = _sol_full[1];
+    auto &vs = _sol_full[2];
+    auto &lbdas = _sol_full[3];
     bool ret = solver_full_horz.forward(xs, us, vs, lbdas);
     BOOST_CHECK(ret);
     KktError err_full = compute_kkt_error(problem, xs, us, vs, lbdas);

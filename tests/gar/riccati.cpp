@@ -3,7 +3,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "./util.hpp"
+#include "./test_util.hpp"
 
 using namespace aligator::gar;
 

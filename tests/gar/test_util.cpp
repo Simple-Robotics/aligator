@@ -1,5 +1,5 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
-#include "./util.hpp"
+#include "./test_util.hpp"
 #include <random>
 
 struct normal_unary_op {
