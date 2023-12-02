@@ -2,6 +2,7 @@
 Copyright (C) 2022 LAAS-CNRS, INRIA
 """
 from .pyproxddp import *
+from .pyproxddp import __version__
 from . import utils
 
 from proxnlp import (
