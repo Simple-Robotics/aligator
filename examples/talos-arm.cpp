@@ -31,54 +31,6 @@ struct extract_kkt_matrix_callback : proxddp::CallbackBaseTpl<double> {
   }
 };
 
-template <typename Algo, typename MatType>
-auto compute_reconstr_err(Algo &chol, MatType &mat) {
-  return proxddp::math::infty_norm(chol.reconstructedMatrix() - mat);
-}
-
-template <typename Algo, typename MatType, typename Rhs>
-auto compute_solve_err(Algo &chol, MatType &mat, Rhs &rhs) {
-  auto sol = rhs;
-  chol.solveInPlace(sol);
-  return proxnlp::math::infty_norm(rhs - (mat * sol));
-}
-
-void factorize_some_kkt(std::string &fname, std::string &frhs) {
-  using proxnlp::linalg::BlockLDLT;
-  using proxnlp::linalg::DenseLDLT;
-
-  auto mat = cnpy::npy_load_mat<double>(fname);
-  auto rhs = cnpy::npy_load_mat<double>(frhs);
-
-  // dense ldlt
-  DenseLDLT<double> dense_ldlt(mat);
-  double dense_err = compute_reconstr_err(dense_ldlt, mat);
-  fmt::print("DenseLDLT: {:.4e}", dense_err);
-  fmt::print(" /solve: {:.4e}\n", compute_solve_err(dense_ldlt, mat, rhs));
-
-  Eigen::LDLT<MatrixXd> eigen_ldlt(mat);
-  double eig_err = compute_reconstr_err(eigen_ldlt, mat);
-  fmt::print("EigenLDLT: {:.4e}", eig_err);
-  fmt::print(" /solve: {:.4e}\n", compute_solve_err(eigen_ldlt, mat, rhs));
-
-  auto nprims = {7L, 14L};
-  auto nduals = {14L};
-  proxddp::unique_ptr<BlockLDLT<double>> p_blk_chol(
-      proxddp::custom_block_ldlt_allocator<double>::create(nprims, nduals,
-                                                           true));
-  auto &block_ldlt = *p_blk_chol;
-
-  long perm[3] = {1, 2, 0};
-  block_ldlt.setBlockPermutation(perm);
-
-  block_ldlt.compute(mat);
-  double block_err = compute_reconstr_err(block_ldlt, mat);
-  fmt::print("BlockLDLT: {:.4e}", block_err);
-  fmt::print(" /solve: {:.4e}\n", compute_solve_err(block_ldlt, mat, rhs));
-
-  //
-}
-
 int main(int, char **) {
 
   auto croc_problem = defineCrocoddylProblem(nsteps);
@@ -98,11 +50,4 @@ int main(int, char **) {
 
   auto &res = solver.results_;
   fmt::print("Results: {}\n", res);
-
-  for (std::size_t i = 1; i < nsteps; ++i) {
-    auto fpath = fmt::format(KKTFILEFORMAT, fpath_base, i);
-    fmt::print("Facto kkt from file {}\n", fpath);
-    auto fp2vec = fmt::format(KKTFILEFORMAT, "kkt_vecs", i);
-    factorize_some_kkt(fpath, fp2vec);
-  }
 }
