@@ -109,7 +109,8 @@ int main(int argc, char **argv) {
   };
 
   registerOpts("FDDP", &BM_lqr_fddp);
-  registerOpts("PROXDDP_BLOCKED", &BM_lqr_prox<LDLTChoice::BLOCKED>);
+  registerOpts("PROXDDP_BLOCKED", &BM_lqr_prox<LDLTChoice::BLOCKSPARSE>);
+  registerOpts("PROXDDP_BUNCHKAUFMAN", &BM_lqr_prox<LDLTChoice::BUNCHKAUFMAN>);
   registerOpts("PROXDDP_DENSE", &BM_lqr_prox<LDLTChoice::DENSE>);
   registerOpts("PROXDDP_EIGLDL", &BM_lqr_prox<LDLTChoice::EIGEN>);
 #ifdef PROXNLP_ENABLE_PROXSUITE_LDLT

@@ -62,39 +62,5 @@ template <typename T> void setZero(std::vector<T> &mats) {
   }
 }
 
-/// @brief Computes the inertia of a diagonal matrix \f$D\f$ represented by its
-/// diagonal vector.
-/// @param[out] output Triplet (n+, n0, n-) of number of positive, zero or
-/// negative eigenvalues.
-template <typename VectorType>
-void compute_inertia(const VectorType &v, std::size_t *inertia) {
-  static_assert(VectorType::ColsAtCompileTime == 1,
-                "VectorType should be a vector.");
-  std::size_t &numpos = inertia[0];
-  std::size_t &numzer = inertia[1];
-  std::size_t &numneg = inertia[2];
-  numpos = 0;
-  numzer = 0;
-  numneg = 0;
-  const Eigen::Index n = v.size();
-  auto s = v.cwiseSign().template cast<int>();
-
-  for (Eigen::Index i = 0; i < n; i++) {
-    switch (s(i)) {
-    case 1:
-      numpos++;
-      break;
-    case -1:
-      numneg++;
-      break;
-    case 0:
-      numzer++;
-      break;
-    default:
-      PROXDDP_RUNTIME_ERROR("Vector sign() should be -1, 0, or 1.");
-    }
-  }
-}
-
 } // namespace math
 } // namespace proxddp

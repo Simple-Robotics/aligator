@@ -6,15 +6,11 @@
 
 namespace proxddp {
 
-template <typename Scalar> struct iterative_refinement_impl {
+template <typename Scalar> struct IterativeRefinementVisitor {
 
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
 
-  template <typename DecompoAlgo, typename OutputType>
-  static bool run(const DecompoAlgo &ldlt, const MatrixXs &mat,
-                  const MatrixXs &rhs, MatrixXs &err, OutputType &Xout,
-                  const Scalar refinement_threshold,
-                  const std::size_t max_refinement_steps) {
+  template <typename DecompoAlgo> bool operator()(const DecompoAlgo &ldlt) {
 
     std::size_t it = 0;
 
@@ -39,6 +35,13 @@ template <typename Scalar> struct iterative_refinement_impl {
       it++;
     }
   }
+
+  const MatrixXs &mat;
+  const MatrixXs &rhs;
+  MatrixXs &err;
+  Eigen::Ref<MatrixXs> Xout;
+  const Scalar refinement_threshold;
+  const std::size_t max_refinement_steps;
 };
 
 } // namespace proxddp

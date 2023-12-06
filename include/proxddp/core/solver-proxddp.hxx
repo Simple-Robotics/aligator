@@ -4,7 +4,8 @@
 #pragma once
 
 #include "proxddp/core/solver-proxddp.hpp"
-#include "proxddp/core/linalg.hpp"
+#include "proxddp/core/iterative-refinement.hpp"
+#include <boost/variant/apply_visitor.hpp>
 #ifndef NDEBUG
 #include <fmt/ostream.h>
 #endif
@@ -110,12 +111,16 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem) {
     kkt_mat.topRightCorner(ndx0, ndual0) = init_data.Jx_.transpose();
     kkt_mat.bottomLeftCorner(ndual0, ndx0) = init_data.Jx_;
     kkt_mat.bottomRightCorner(ndual0, ndual0).diagonal().array() = -mu();
-    typename Workspace::LDLT &ldlt = *workspace_.ldlts_[0];
+    auto &ldlt = workspace_.ldlts_[0];
     PROXDDP_NOMALLOC_END;
-    ldlt.compute(kkt_mat);
-    iterative_refinement_impl<Scalar>::run(
-        ldlt, kkt_mat, kkt_rhs, workspace_.kkt_resdls_[0],
-        workspace_.pd_step_[0], refinement_threshold_, max_refinement_steps_);
+    boost::apply_visitor([&](auto &&fac) { fac.compute(kkt_mat); }, ldlt);
+    auto &resdl = workspace_.kkt_resdls_[0];
+    auto &gains = workspace_.pd_step_[0];
+    boost::apply_visitor(
+        IterativeRefinementVisitor<Scalar>{kkt_mat, kkt_rhs, resdl, gains,
+                                           refinement_threshold_,
+                                           max_refinement_steps_},
+        ldlt);
   }
   PROXDDP_NOMALLOC_END;
 }
@@ -476,29 +481,28 @@ auto SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   MatrixXs &resdl = workspace_.kkt_resdls_[t + 1];
   MatrixXs &gains = results_.gains_[t];
 
-  typename Workspace::LDLT &ldlt = *workspace_.ldlts_[t + 1];
+  auto &ldlt = workspace_.ldlts_[t + 1];
   PROXDDP_NOMALLOC_END;
-  ldlt.compute(kkt_mat);
+  boost::apply_visitor([&](auto &&fac) { fac.compute(kkt_mat); }, ldlt);
   PROXDDP_NOMALLOC_BEGIN;
 
   // check inertia
   {
-    try {
-      PROXDDP_RAISE_IF_NAN_NAME(ldlt.vectorD(), "ldlt.vectorD()");
-    } catch (const RuntimeError &e) {
-      return BWD_WRONG_INERTIA;
-    }
-    std::array<std::size_t, 3> inertia;
-    math::compute_inertia(ldlt.vectorD(), inertia.data());
-    if ((inertia[1] > 0U) || (inertia[2] != (std::size_t)ndual)) {
+    Eigen::VectorXi signature;
+    boost::apply_visitor(proxnlp::ComputeSignatureVisitor{signature}, ldlt);
+    // (n+, n-, n0)
+    std::array<int, 3> inertia = proxnlp::computeInertiaTuple(signature);
+    if ((inertia[2] > 0) || (inertia[1] != ndual)) {
       return BWD_WRONG_INERTIA;
     }
   }
 
   PROXDDP_NOMALLOC_END;
-  iterative_refinement_impl<Scalar>::run(ldlt, kkt_mat, kkt_rhs, resdl, gains,
+  boost::apply_visitor(
+      IterativeRefinementVisitor<Scalar>{kkt_mat, kkt_rhs, resdl, gains,
                                          refinement_threshold_,
-                                         max_refinement_steps_);
+                                         max_refinement_steps_},
+      ldlt);
   PROXDDP_NOMALLOC_BEGIN;
 
   /// Value function/Riccati update:

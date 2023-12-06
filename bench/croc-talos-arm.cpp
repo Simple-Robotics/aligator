@@ -114,7 +114,10 @@ int main(int argc, char **argv) {
   registerWithOpts("croc::FDDP", &BM_croc_fddp);
   registerWithOpts("proxddp::FDDP", &BM_prox_fddp);
   registerWithOpts("proxddp::PROXDDP_DENSE", &BM_proxddp<LDLTChoice::DENSE>);
-  registerWithOpts("proxddp::PROXDDP_BLOCK", &BM_proxddp<LDLTChoice::BLOCKED>);
+  registerWithOpts("proxddp::PROXDDP_BLOCK",
+                   &BM_proxddp<LDLTChoice::BLOCKSPARSE>);
+  registerWithOpts("proxddp::PROXDDP_BUNCHKAUFMAN",
+                   &BM_proxddp<LDLTChoice::BUNCHKAUFMAN>);
   registerWithOpts("proxddp::PROXDDP_EIGLDL", &BM_proxddp<LDLTChoice::EIGEN>);
 #ifdef PROXNLP_ENABLE_PROXSUITE_LDLT
   registerWithOpts("proxddp::PROXDDP_PSUITE",

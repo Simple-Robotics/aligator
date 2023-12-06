@@ -73,9 +73,9 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   /// Linear system residual buffers: used for iterative refinement
   std::vector<MatrixXs> kkt_resdls_;
 
-  using LDLT = proxnlp::linalg::ldlt_base<Scalar>;
+  using LDLTVariant = proxnlp::LDLTVariant<Scalar>;
   /// LDLT solvers
-  std::vector<unique_ptr<LDLT>> ldlts_;
+  std::vector<LDLTVariant> ldlts_;
 
   /// @}
 
@@ -118,19 +118,6 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   void configureScalers(const TrajOptProblemTpl<Scalar> &problem,
                         const Scalar &mu);
 };
-
-namespace {
-using proxnlp::linalg::isize;
-using proxnlp::linalg::ldlt_base;
-} // namespace
-
-// fwd declaration
-
-/// Allocate an LDLT solver, perform no analysis.
-template <typename Scalar>
-unique_ptr<ldlt_base<Scalar>>
-allocate_ldlt_algorithm(const std::vector<isize> &nprims,
-                        const std::vector<isize> &nduals, LDLTChoice choice);
 
 } // namespace proxddp
 

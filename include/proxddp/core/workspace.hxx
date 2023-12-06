@@ -6,93 +6,44 @@
 
 namespace proxddp {
 
-inline isize get_total_dim_helper(const std::vector<isize> &nprims,
-                                  const std::vector<isize> &nduals) {
-  return std::accumulate(nprims.begin(), nprims.end(), 0) +
-         std::accumulate(nduals.begin(), nduals.end(), 0);
+namespace {
+template <typename T> long ncNonDyn(const ConstraintStackTpl<T> &cstrs) {
+  return std::max(cstrs.totalDim() - cstrs.getDims()[0], 0L);
 }
+using proxnlp::isize;
+} // namespace
 
-template <typename Scalar> struct custom_block_ldlt_allocator {
+using proxnlp::get_total_dim_helper;
+
+template <typename Scalar>
+auto *allocate_block_ldlt_custom(const std::vector<isize> &nprims,
+                                 const std::vector<isize> &nduals,
+                                 bool primal_is_block_diagonal,
+                                 bool explicit_dynamics_block = true) {
   using BlockLDLT = proxnlp::linalg::BlockLDLT<Scalar>;
+  using proxnlp::linalg::BlockKind;
+  using proxnlp::linalg::SymbolicBlockMatrix;
 
-  static BlockLDLT *create(const std::vector<isize> &nprims,
-                           const std::vector<isize> &nduals,
-                           bool primal_is_block_diagonal,
-                           bool explicit_dynamics_block = true) {
-    using proxnlp::linalg::BlockKind;
-    using proxnlp::linalg::SymbolicBlockMatrix;
+  SymbolicBlockMatrix structure =
+      proxnlp::create_default_block_structure(nprims, nduals);
 
-    SymbolicBlockMatrix structure =
-        proxnlp::create_default_block_structure(nprims, nduals);
+  if (primal_is_block_diagonal) {
 
-    if (primal_is_block_diagonal) {
-
-      for (uint i = 0; i < nprims.size(); ++i) {
-        for (uint j = 0; j < nprims.size(); ++j) {
-          if (i != j) {
-            structure(i, j) = BlockKind::Zero;
-            structure(j, i) = BlockKind::Zero;
-          }
+    for (uint i = 0; i < nprims.size(); ++i) {
+      for (uint j = 0; j < nprims.size(); ++j) {
+        if (i != j) {
+          structure(i, j) = BlockKind::Zero;
+          structure(j, i) = BlockKind::Zero;
         }
       }
     }
-    if (explicit_dynamics_block && structure.nsegments() >= 3) {
-      structure(2, 1) = BlockKind::Diag;
-      structure(1, 2) = BlockKind::Diag;
-    }
-    isize size = get_total_dim_helper(nprims, nduals);
-    return new BlockLDLT(size, structure);
   }
-};
-
-template <typename Scalar>
-unique_ptr<ldlt_base<Scalar>>
-allocate_ldlt_algorithm(const std::vector<isize> &nprims,
-                        const std::vector<isize> &nduals, LDLTChoice choice) {
-  using proxnlp::linalg::BlockLDLT;
-  using proxnlp::linalg::DenseLDLT;
-  using proxnlp::linalg::EigenLDLTWrapper;
-  using proxnlp::linalg::SymbolicBlockMatrix;
-  using ldlt_ptr = unique_ptr<ldlt_base<Scalar>>;
-
+  if (explicit_dynamics_block && structure.nsegments() >= 3) {
+    structure(2, 1) = BlockKind::Diag;
+    structure(1, 2) = BlockKind::Diag;
+  }
   isize size = get_total_dim_helper(nprims, nduals);
-
-  switch (choice) {
-  case LDLTChoice::DENSE:
-    return ldlt_ptr(new DenseLDLT<Scalar>(size));
-  case LDLTChoice::EIGEN:
-    return ldlt_ptr(new EigenLDLTWrapper<Scalar>(size));
-  case LDLTChoice::BLOCKED: {
-
-    BlockLDLT<Scalar> *block_ptr =
-        custom_block_ldlt_allocator<Scalar>::create(nprims, nduals, true);
-
-    std::size_t nblocks = block_ptr->nblocks();
-    std::vector<isize> perm((std::size_t)nblocks);
-    std::iota(perm.begin(), perm.end(), 0);
-    if (nprims.size() > 1) {
-      std::rotate(perm.begin(), perm.begin() + 1, perm.end());
-    }
-#ifndef NDEBUG
-    fmt::print("[block-ldlt] prior structure:\n");
-    proxnlp::linalg::print_sparsity_pattern(block_ptr->structure());
-    fmt::print("[block-ldlt] setting permutation = ({})\n",
-               fmt::join(perm, ","));
-#endif
-    block_ptr->setBlockPermutation(perm.data());
-    return ldlt_ptr(block_ptr);
-  }
-  case LDLTChoice::PROXSUITE: {
-#ifdef PROXNLP_ENABLE_PROXSUITE_LDLT
-    return ldlt_ptr(
-        new proxnlp::linalg::ProxSuiteLDLTWrapper<Scalar>(size, nprims[0] + 2));
-#else
-    PROXDDP_RUNTIME_ERROR("ProxNLP was not compiled with ProxSuite support.");
-#endif
-  }
-  default:
-    return nullptr;
-  }
+  return new BlockLDLT(size, structure);
 }
 
 template <typename Scalar>
@@ -132,8 +83,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
     kkt_mats_.emplace_back(ntot, ntot);
     kkt_rhs_.emplace_back(ntot, ndx1 + 1);
     stage_prim_infeas.emplace_back(1);
-    ldlts_.emplace_back(
-        allocate_ldlt_algorithm<Scalar>({ndx1}, {ndual}, ldlt_choice));
+    ldlts_.emplace_back(proxnlp::allocate_ldlt_from_sizes<Scalar>(
+        {ndx1}, {ndual}, ldlt_choice));
 
     lams_plus[0] = VectorXs::Zero(ndual);
     proj_jacobians.emplace_back(ndual, ndx1);
@@ -167,7 +118,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
 
     kkt_mats_.emplace_back(ntot, ntot);
     kkt_rhs_.emplace_back(ntot, ndx1 + 1);
-    ldlts_.emplace_back(allocate_ldlt_algorithm<Scalar>(
+    ldlts_.emplace_back(proxnlp::allocate_ldlt_from_sizes<Scalar>(
         {nu, ndx2}, stage.constraints_.getDims(), ldlt_choice));
     stage_prim_infeas.emplace_back(ncb);
 

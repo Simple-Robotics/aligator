@@ -4,10 +4,6 @@
 
 namespace proxddp {
 
-template unique_ptr<ldlt_base<context::Scalar>>
-allocate_ldlt_algorithm(const std::vector<isize> &nprims,
-                        const std::vector<isize> &nduals, LDLTChoice choice);
-
 template struct WorkspaceTpl<context::Scalar>;
 
 } // namespace proxddp

@@ -86,18 +86,18 @@ void exposeProxDDP() {
       .def_readonly("proj_jacobians", &Workspace::proj_jacobians)
       .def_readonly("inner_crit", &Workspace::inner_criterion)
       .def_readonly("active_constraints", &Workspace::active_constraints)
-      .def(
-          "get_ldlt",
-          +[](const Workspace &ws,
-              std::size_t i) -> proxnlp::linalg::ldlt_base<Scalar> const & {
-            if (i >= ws.ldlts_.size()) {
-              PyErr_SetString(PyExc_IndexError, "Index out of bounds.");
-              bp::throw_error_already_set();
-            }
-            return *ws.ldlts_[i];
-          },
-          bp::return_internal_reference<>(), bp::args("self", "i"),
-          "Get the LDLT algorithm for the i-th linear problem.")
+      // .def(
+      //     "get_ldlt",
+      //     +[](const Workspace &ws,
+      //         std::size_t i) -> proxnlp::linalg::ldlt_base<Scalar> const & {
+      //       if (i >= ws.ldlts_.size()) {
+      //         PyErr_SetString(PyExc_IndexError, "Index out of bounds.");
+      //         bp::throw_error_already_set();
+      //       }
+      //       return ws.ldlts_[i];
+      //     },
+      //     bp::return_internal_reference<>(), bp::args("self", "i"),
+      //     "Get the LDLT algorithm for the i-th linear problem.")
       .def_readonly("prev_xs", &Workspace::prev_xs)
       .def_readonly("prev_us", &Workspace::prev_us)
       .def_readonly("prev_lams", &Workspace::prev_lams)
