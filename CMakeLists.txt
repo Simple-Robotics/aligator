@@ -113,7 +113,7 @@ add_project_dependency(Boost REQUIRED COMPONENTS ${BOOST_REQUIRED_COMPONENTS})
 
 if(BUILD_PYTHON_INTERFACE)
   set(PYTHON_COMPONENTS Interpreter Development.Module NumPy Development)
-  add_project_dependency(eigenpy 3.1.0 REQUIRED PKG_CONFIG_REQUIRES "eigenpy >= 3.1.0")
+  add_project_dependency(eigenpy 3.1.4 REQUIRED PKG_CONFIG_REQUIRES "eigenpy >= 3.1.4")
   set(PYLIB_NAME "py${PROJECT_NAME}")
   set(${PYLIB_NAME}_INSTALL_DIR ${PYTHON_SITELIB}/${PROJECT_NAME})
 
