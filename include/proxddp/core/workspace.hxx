@@ -16,37 +16,6 @@ using proxnlp::isize;
 using proxnlp::get_total_dim_helper;
 
 template <typename Scalar>
-auto *allocate_block_ldlt_custom(const std::vector<isize> &nprims,
-                                 const std::vector<isize> &nduals,
-                                 bool primal_is_block_diagonal,
-                                 bool explicit_dynamics_block = true) {
-  using BlockLDLT = proxnlp::linalg::BlockLDLT<Scalar>;
-  using proxnlp::linalg::BlockKind;
-  using proxnlp::linalg::SymbolicBlockMatrix;
-
-  SymbolicBlockMatrix structure =
-      proxnlp::create_default_block_structure(nprims, nduals);
-
-  if (primal_is_block_diagonal) {
-
-    for (uint i = 0; i < nprims.size(); ++i) {
-      for (uint j = 0; j < nprims.size(); ++j) {
-        if (i != j) {
-          structure(i, j) = BlockKind::Zero;
-          structure(j, i) = BlockKind::Zero;
-        }
-      }
-    }
-  }
-  if (explicit_dynamics_block && structure.nsegments() >= 3) {
-    structure(2, 1) = BlockKind::Diag;
-    structure(1, 2) = BlockKind::Diag;
-  }
-  isize size = get_total_dim_helper(nprims, nduals);
-  return new BlockLDLT(size, structure);
-}
-
-template <typename Scalar>
 WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
                                    LDLTChoice ldlt_choice)
     : Base(problem), stage_inner_crits(nsteps + 1),
