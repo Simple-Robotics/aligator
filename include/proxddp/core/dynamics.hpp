@@ -19,6 +19,7 @@ struct DynamicsModelTpl : StageFunctionTpl<_Scalar> {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageFunctionTpl<Scalar>;
+  using Data = DynamicsDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using ManifoldPtr = shared_ptr<Manifold>;
 
