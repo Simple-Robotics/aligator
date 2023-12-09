@@ -110,7 +110,7 @@ template <typename Scalar> struct WorkspaceTpl;
 template <typename Scalar> struct ResultsTpl;
 
 // fwd StdVectorEigenAligned
-template <typename T> 
+template <typename T>
 using StdVectorEigenAligned = std::vector<T, Eigen::aligned_allocator<T>>;
 
 } // namespace proxddp

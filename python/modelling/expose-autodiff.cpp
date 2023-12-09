@@ -10,6 +10,7 @@ void exposeAutodiff() {
   using namespace autodiff;
   using context::CostBase;
   using context::CostData;
+  using context::DynamicsModel;
   using context::Manifold;
   using context::Scalar;
   using context::StageFunction;
@@ -20,31 +21,31 @@ void exposeAutodiff() {
       .value("ToC1", FDLevel::TOC1)
       .value("ToC2", FDLevel::TOC2);
 
-  using fdiff_wrapper = finite_difference_wrapper<Scalar, FDLevel::TOC1>;
+  using FiniteDiffType = finite_difference_wrapper<Scalar, FDLevel::TOC1>;
 
   {
-    bp::scope _ = bp::class_<fdiff_wrapper, bp::bases<StageFunction>>(
+    bp::scope _ = bp::class_<FiniteDiffType, bp::bases<StageFunction>>(
         "FiniteDifferenceHelper",
-        "Make a function into a differentiable function using"
+        "Make a function into a differentiable function/dynamics using"
         " finite differences.",
-        bp::init<shared_ptr<Manifold>, shared_ptr<StageFunction>, Scalar>(
+        bp::init<shared_ptr<Manifold>, shared_ptr<StageFunction>, const Scalar>(
             bp::args("self", "space", "func", "eps")));
-    bp::class_<fdiff_wrapper::Data, bp::bases<StageFunctionData>>("Data",
-                                                                  bp::no_init);
+    bp::class_<FiniteDiffType::Data, bp::bases<StageFunctionData>>("Data",
+                                                                   bp::no_init);
   }
 
-  using cost_fdiff = cost_finite_difference_wrapper<Scalar>;
+  using CostFDType = CostFiniteDifferenceHelper<Scalar>;
   {
     bp::scope _ =
-        bp::class_<cost_fdiff, bp::bases<CostBase>>(
+        bp::class_<CostFDType, bp::bases<CostBase>>(
             "CostFiniteDifference",
             "Define a cost function's derivatives using finite differences.",
             bp::no_init)
             .def(bp::init<shared_ptr<CostBase>, Scalar>(
                 bp::args("self", "cost", "fd_eps")));
-    bp::class_<cost_fdiff::Data, bp::bases<CostData>>("Data", bp::no_init)
-        .def_readonly("c1", &cost_fdiff::Data::c1)
-        .def_readonly("c2", &cost_fdiff::Data::c2);
+    bp::class_<CostFDType::Data, bp::bases<CostData>>("Data", bp::no_init)
+        .def_readonly("c1", &CostFDType::Data::c1)
+        .def_readonly("c2", &CostFDType::Data::c2);
   }
 }
 

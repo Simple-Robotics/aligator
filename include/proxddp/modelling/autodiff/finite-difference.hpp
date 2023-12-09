@@ -137,7 +137,7 @@ struct finite_difference_wrapper<_Scalar, TOC1>
 };
 
 template <typename Scalar>
-struct cost_finite_difference_wrapper : CostAbstractTpl<Scalar> {
+struct CostFiniteDifferenceHelper : CostAbstractTpl<Scalar> {
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using CostBase = CostAbstractTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
@@ -152,14 +152,14 @@ struct cost_finite_difference_wrapper : CostAbstractTpl<Scalar> {
     VectorXs dx, du;
     VectorXs xp, up;
 
-    Data(cost_finite_difference_wrapper const &obj)
+    Data(CostFiniteDifferenceHelper const &obj)
         : CostData(obj), dx(obj.ndx()), du(obj.nu), xp(obj.nx()), up(obj.nu) {
       c1 = obj.cost_->createData();
       c2 = obj.cost_->createData();
     }
   };
 
-  cost_finite_difference_wrapper(shared_ptr<CostBase> cost, const Scalar fd_eps)
+  CostFiniteDifferenceHelper(shared_ptr<CostBase> cost, const Scalar fd_eps)
 
       : CostBase(cost->space, cost->nu), cost_(cost), fd_eps(fd_eps) {}
 
@@ -215,7 +215,7 @@ struct cost_finite_difference_wrapper : CostAbstractTpl<Scalar> {
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
 extern template struct finite_difference_wrapper<context::Scalar>;
-extern template struct cost_finite_difference_wrapper<context::Scalar>;
+extern template struct CostFiniteDifferenceHelper<context::Scalar>;
 #endif
 
 } // namespace autodiff
