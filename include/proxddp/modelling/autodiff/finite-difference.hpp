@@ -2,30 +2,23 @@
 ///         through finite differences.
 #pragma once
 
-#include "proxddp/core/function-abstract.hpp"
+#include "proxddp/core/dynamics.hpp"
 #include "proxddp/core/cost-abstract.hpp"
 #include <proxnlp/manifold-base.hpp>
+#include <boost/mpl/bool.hpp>
 
 namespace proxddp {
 namespace autodiff {
 
-enum FDLevel {
-  TOC1 = 0, ///< Cast to a \f$C^1\f$ function.
-  TOC2 = 1  ///< Cast to a \f$C^2\f$ function.
-};
-
 namespace internal {
 
 // fwd declare the implementation of finite difference algorithms.
-template <typename _Scalar, FDLevel n> struct finite_difference_impl;
-
-template <typename _Scalar>
-struct finite_difference_impl<_Scalar, TOC1>
-    : virtual StageFunctionTpl<_Scalar> {
+template <typename _Scalar, template <typename> class _Base>
+struct finite_difference_impl : virtual _Base<_Scalar> {
   using Scalar = _Scalar;
   PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
-  using Base = StageFunctionTpl<Scalar>;
-  using BaseData = StageFunctionDataTpl<Scalar>;
+  using Base = _Base<Scalar>;
+  using BaseData = typename Base::Data;
   using Manifold = ManifoldAbstractTpl<Scalar>;
 
   shared_ptr<Manifold> space_;
@@ -54,10 +47,19 @@ struct finite_difference_impl<_Scalar, TOC1>
     }
   };
 
-  finite_difference_impl(shared_ptr<Manifold> space, shared_ptr<Base> func,
+  template <typename U = Base, class = std::enable_if_t<std::is_same<
+                                   U, StageFunctionTpl<Scalar>>::value>>
+  finite_difference_impl(shared_ptr<Manifold> space, shared_ptr<U> func,
                          const Scalar fd_eps)
       : Base(func->ndx1, func->nu, func->ndx2, func->nr), space_(space),
         func_(func), fd_eps(fd_eps), nx1(space->nx()), nx2(space->nx()) {}
+
+  template <typename U = Base, class = std::enable_if_t<std::is_same<
+                                   U, DynamicsModelTpl<Scalar>>::value>>
+  finite_difference_impl(shared_ptr<Manifold> space, shared_ptr<U> func,
+                         const Scalar fd_eps, boost::mpl::false_ = {})
+      : Base(space, func->nu, space), space_(space), func_(func),
+        fd_eps(fd_eps), nx1(space->nx()), nx2(space->nx()) {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &y, BaseData &data) const {
@@ -110,30 +112,50 @@ struct finite_difference_impl<_Scalar, TOC1>
 
 } // namespace internal
 
-template <typename _Scalar, FDLevel n = TOC1> struct finite_difference_wrapper;
+template <typename _Scalar> struct FiniteDifferenceHelper;
 
 /** @brief    Approximate the derivatives of a given function
  * using finite differences, to downcast the function to a
  * StageFunctionTpl.
  */
 template <typename _Scalar>
-struct finite_difference_wrapper<_Scalar, TOC1>
-    : internal::finite_difference_impl<_Scalar, TOC1> {
+struct FiniteDifferenceHelper
+    : internal::finite_difference_impl<_Scalar, StageFunctionTpl> {
   using Scalar = _Scalar;
 
   using StageFunction = StageFunctionTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
-  using Base = internal::finite_difference_impl<Scalar, TOC1>;
+  using Base = internal::finite_difference_impl<Scalar, StageFunctionTpl>;
   using Base::computeJacobians;
   using Base::computeVectorHessianProducts;
   using Base::evaluate;
 
   PROXNLP_DYNAMIC_TYPEDEFS(_Scalar);
 
-  finite_difference_wrapper(shared_ptr<Manifold> space,
-                            shared_ptr<StageFunction> func, const Scalar fd_eps)
+  FiniteDifferenceHelper(shared_ptr<Manifold> space,
+                         shared_ptr<StageFunction> func, const Scalar fd_eps)
       : StageFunction(func->ndx1, func->nu, func->ndx2, func->nr),
         Base(space, func, fd_eps) {}
+};
+
+template <typename _Scalar>
+struct DynamicsFiniteDifferenceHelper
+    : internal::finite_difference_impl<_Scalar, DynamicsModelTpl> {
+  using Scalar = _Scalar;
+
+  using DynamicsModel = DynamicsModelTpl<Scalar>;
+  using Manifold = ManifoldAbstractTpl<Scalar>;
+  using Base = internal::finite_difference_impl<Scalar, DynamicsModelTpl>;
+  using Base::computeJacobians;
+  using Base::computeVectorHessianProducts;
+  using Base::evaluate;
+
+  PROXNLP_DYNAMIC_TYPEDEFS(_Scalar);
+
+  DynamicsFiniteDifferenceHelper(shared_ptr<Manifold> space,
+                                 shared_ptr<DynamicsModel> func,
+                                 const Scalar fd_eps)
+      : DynamicsModel(space, func->nu, space), Base(space, func, fd_eps) {}
 };
 
 template <typename Scalar>
@@ -200,10 +222,8 @@ struct CostFiniteDifferenceHelper : CostAbstractTpl<Scalar> {
   }
 
   /// @brief Compute the cost Hessians \f$(\ell_{ij})_{i,j \in \{x,u\}}\f$
-  void computeHessians(const ConstVectorRef &x, const ConstVectorRef &u,
-                       CostData &data_) const override {
-    Data &data = static_cast<Data &>(data_);
-  }
+  void computeHessians(const ConstVectorRef &, const ConstVectorRef &,
+                       CostData &) const override {}
 
   shared_ptr<CostData> createData() const override {
     return std::make_shared<Data>(*this);
@@ -214,7 +234,8 @@ struct CostFiniteDifferenceHelper : CostAbstractTpl<Scalar> {
 };
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
-extern template struct finite_difference_wrapper<context::Scalar>;
+extern template struct FiniteDifferenceHelper<context::Scalar>;
+extern template struct DynamicsFiniteDifferenceHelper<context::Scalar>;
 extern template struct CostFiniteDifferenceHelper<context::Scalar>;
 #endif
 

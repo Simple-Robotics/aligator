@@ -16,14 +16,8 @@ void exposeAutodiff() {
   using context::StageFunction;
   using context::StageFunctionData;
 
-  bp::enum_<FDLevel>("FDLevel", "Finite difference level (to compute Jacobians "
-                                "or both Jacobians and Hessians).")
-      .value("ToC1", FDLevel::TOC1)
-      .value("ToC2", FDLevel::TOC2);
-
-  using FiniteDiffType = finite_difference_wrapper<Scalar, FDLevel::TOC1>;
-
   {
+    using FiniteDiffType = FiniteDifferenceHelper<Scalar>;
     bp::scope _ = bp::class_<FiniteDiffType, bp::bases<StageFunction>>(
         "FiniteDifferenceHelper",
         "Make a function into a differentiable function/dynamics using"
@@ -34,18 +28,28 @@ void exposeAutodiff() {
                                                                    bp::no_init);
   }
 
-  using CostFDType = CostFiniteDifferenceHelper<Scalar>;
   {
+    using DynFiniteDiffType = DynamicsFiniteDifferenceHelper<Scalar>;
+    bp::scope _ = bp::class_<DynFiniteDiffType, bp::bases<DynamicsModel>>(
+        "DynamicsFiniteDifferenceHelper",
+        bp::init<shared_ptr<Manifold>, shared_ptr<DynamicsModel>, const Scalar>(
+            bp::args("self", "space", "dyn", "eps")));
+    bp::class_<DynFiniteDiffType::Data>("Data", bp::no_init);
+  }
+
+  {
+    using CostFiniteDiffType = CostFiniteDifferenceHelper<Scalar>;
     bp::scope _ =
-        bp::class_<CostFDType, bp::bases<CostBase>>(
+        bp::class_<CostFiniteDiffType, bp::bases<CostBase>>(
             "CostFiniteDifference",
             "Define a cost function's derivatives using finite differences.",
             bp::no_init)
             .def(bp::init<shared_ptr<CostBase>, Scalar>(
                 bp::args("self", "cost", "fd_eps")));
-    bp::class_<CostFDType::Data, bp::bases<CostData>>("Data", bp::no_init)
-        .def_readonly("c1", &CostFDType::Data::c1)
-        .def_readonly("c2", &CostFDType::Data::c2);
+    bp::class_<CostFiniteDiffType::Data, bp::bases<CostData>>("Data",
+                                                              bp::no_init)
+        .def_readonly("c1", &CostFiniteDiffType::Data::c1)
+        .def_readonly("c2", &CostFiniteDiffType::Data::c2);
   }
 }
 

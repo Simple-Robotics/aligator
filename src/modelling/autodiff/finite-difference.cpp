@@ -3,7 +3,8 @@
 namespace proxddp {
 namespace autodiff {
 
-template struct finite_difference_wrapper<context::Scalar>;
+template struct FiniteDifferenceHelper<context::Scalar>;
+template struct DynamicsFiniteDifferenceHelper<context::Scalar>;
 template struct CostFiniteDifferenceHelper<context::Scalar>;
 
 } // namespace autodiff
