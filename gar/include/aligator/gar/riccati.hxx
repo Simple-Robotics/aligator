@@ -174,22 +174,25 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
   vinit.vvec = vinit.pvec;
 
   // initial stage
-  kkt0.mat(0, 0) = vinit.Vmat;
-  kkt0.mat(1, 0) = problem.G0;
-  kkt0.mat(0, 1) = problem.G0.transpose();
-  kkt0.mat(1, 1).diagonal().setConstant(-mudyn);
-  kkt0.chol.compute(kkt0.mat.data);
+  if (solveInitial) {
+    kkt0.mat(0, 0) = vinit.Vmat;
+    kkt0.mat(1, 0) = problem.G0;
+    kkt0.mat(0, 1) = problem.G0.transpose();
+    kkt0.mat(1, 1).diagonal().setConstant(-mudyn);
+    kkt0.chol.compute(kkt0.mat.data);
 
-  kkt0.ff.blockSegment(0) = -vinit.vvec;
-  kkt0.ff.blockSegment(1) = -problem.g0;
-  kkt0.chol.solveInPlace(kkt0.ff.data);
-  kkt0.fth.blockRow(0) = -vinit.Lmat;
-  kkt0.fth.blockRow(1).setZero();
-  kkt0.chol.solveInPlace(kkt0.fth.data);
+    kkt0.ff.blockSegment(0) = -vinit.vvec;
+    kkt0.ff.blockSegment(1) = -problem.g0;
+    kkt0.chol.solveInPlace(kkt0.ff.data);
+    kkt0.fth.blockRow(0) = -vinit.Lmat;
+    kkt0.fth.blockRow(1).setZero();
+    kkt0.chol.solveInPlace(kkt0.fth.data);
 
-  thGrad.noalias() =
-      vinit.svec + vinit.Lmat.transpose() * kkt0.ff.blockSegment(0);
-  thHess.noalias() = vinit.Psi + vinit.Lmat.transpose() * kkt0.fth.blockRow(0);
+    thGrad.noalias() =
+        vinit.svec + vinit.Lmat.transpose() * kkt0.ff.blockSegment(0);
+    thHess.noalias() =
+        vinit.Psi + vinit.Lmat.transpose() * kkt0.fth.blockRow(0);
+  }
 
   ALIGATOR_NOMALLOC_END;
 
@@ -233,13 +236,8 @@ bool ProximalRiccatiSolver<Scalar>::forward(
     const boost::optional<ConstVectorRef> &theta_) const {
   ALIGATOR_NOMALLOC_BEGIN;
   // solve initial stage
-  {
-    xs[0] = kkt0.ff.blockSegment(0);
-    lbdas[0] = kkt0.ff.blockSegment(1);
-    if (theta_.has_value()) {
-      xs[0].noalias() += kkt0.fth.blockRow(0) * theta_.value();
-      lbdas[0].noalias() += kkt0.fth.blockRow(1) * theta_.value();
-    }
+  if (solveInitial) {
+    computeInitial(xs[0], lbdas[0], theta_);
   }
 
   uint N = (uint)problem.horizon();

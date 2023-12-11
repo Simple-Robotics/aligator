@@ -89,10 +89,11 @@ public:
     MatrixXs PinvEt;                  //< tmp buffer for \f$P^{-1}E^\top\f$
   };
 
-  explicit ProximalRiccatiSolver(const LQRProblemTpl<Scalar> &problem)
+  explicit ProximalRiccatiSolver(const LQRProblemTpl<Scalar> &problem,
+                                 bool solve_initial = true)
       : datas(), kkt0(problem.stages[0].nx, problem.nc0(), problem.ntheta()),
         thGrad(problem.ntheta()), thHess(problem.ntheta(), problem.ntheta()),
-        problem(problem) {
+        solveInitial(solve_initial), problem(problem) {
     initialize();
   }
 
@@ -103,6 +104,19 @@ public:
 
   /// Backward sweep.
   bool backward(Scalar mudyn, Scalar mueq);
+
+  /// Solve initial stage
+  void computeInitial(VectorRef x0, VectorRef lbd0,
+                      const boost::optional<ConstVectorRef> &theta_) const {
+    assert(kkt0.chol.info() == Eigen::Success);
+    x0 = kkt0.ff.blockSegment(0);
+    lbd0 = kkt0.ff.blockSegment(1);
+    if (theta_.has_value()) {
+      x0.noalias() += kkt0.fth.blockRow(0) * theta_.value();
+      lbd0.noalias() += kkt0.fth.blockRow(1) * theta_.value();
+    }
+  }
+
   /// Forward sweep.
   bool
   forward(std::vector<VectorXs> &xs, std::vector<VectorXs> &us,
@@ -119,8 +133,9 @@ public:
         : mat({nx, nc}), ff(mat.rowDims()), fth(mat.rowDims(), {nth}) {}
   } kkt0;
 
-  VectorXs thGrad; //< optimal value gradient wrt parameter
-  MatrixXs thHess; //< optimal value Hessian wrt parameter
+  VectorXs thGrad;   //< optimal value gradient wrt parameter
+  MatrixXs thHess;   //< optimal value Hessian wrt parameter
+  bool solveInitial; //< Whether to solve the initial stage
 
 protected:
   void initialize();
