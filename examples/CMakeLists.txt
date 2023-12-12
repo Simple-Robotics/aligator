@@ -17,6 +17,7 @@ function(create_example_with_croco exfile)
 endfunction()
 
 create_example(se2-car.cpp)
+create_example(clqr.cpp)
 
 if(BUILD_CROCODDYL_COMPAT)
   create_example_with_croco(talos-arm.cpp)
