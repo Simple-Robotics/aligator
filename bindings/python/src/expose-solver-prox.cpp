@@ -52,8 +52,7 @@ void exposeProxDDP() {
           +[](ProxScaler &sc) -> ConstVectorRef { return sc.diagMatrix(); });
 
   bp::def("applyDefaultScalingStrategy", applyDefaultScalingStrategy<Scalar>,
-          bp::arg("scaler"),
-          "Apply the default strategy for scaling constraints.");
+          "scaler"_a, "Apply the default strategy for scaling constraints.");
 
   bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>,
              boost::noncopyable>(
