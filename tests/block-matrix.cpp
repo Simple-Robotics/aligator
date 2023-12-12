@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE(blk22) {
   BOOST_CHECK_EQUAL(blk.rows(), 10);
   BOOST_CHECK_EQUAL(blk.cols(), 10);
 
-  BlkMatrix<MatrixRef, 1, 2> b12 = topBlkRows<1>(blk);
+  BlkMatrix<MatrixRef, 1, 2> b12 = blk.topBlkRows<1>();
   fmt::print("b12:\n{}\n", b12.data);
 
   BOOST_CHECK_EQUAL(b12.rows(), 4);
@@ -40,6 +40,6 @@ BOOST_AUTO_TEST_CASE(dynamicblkvec) {
 
   fmt::print("vec:\n{}\n", vec.data);
 
-  BlkMatrix<Eigen::Ref<VectorXs>, -1, 1> bvtop2 = topBlkRows(2, vec);
+  BlkMatrix<Eigen::Ref<VectorXs>, -1, 1> bvtop2 = vec.topBlkRows(2);
   BOOST_CHECK_EQUAL(bvtop2.rows(), 7);
 }

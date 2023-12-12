@@ -43,15 +43,15 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
       K = -model.S.transpose();
       Z = -model.C;
 
-      auto ffview = topBlkRows<2>(d.ff);
-      auto fbview = topBlkRows<2>(d.fb);
+      auto ffview = d.ff.template topBlkRows<2>();
+      auto fbview = d.fb.template topBlkRows<2>();
       d.kktChol.solveInPlace(ffview.data);
       d.kktChol.solveInPlace(fbview.data);
 
       if (problem.isParameterized()) {
         Kth = -model.Gu;
         Zth.setZero();
-        auto fthview = topBlkRows<2>(d.fth);
+        auto fthview = d.fth.template topBlkRows<2>();
         d.kktChol.solveInPlace(fthview.data);
       }
     }
@@ -100,8 +100,8 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
     RowMatrixRef A = d.fb.blockRow(3);
     K = -d.Shat.transpose();
     Z = -model.C;
-    BlkMatrix<VectorRef, 2, 1> ffview = topBlkRows<2>(d.ff);
-    BlkMatrix<RowMatrixRef, 2, 1> fbview = topBlkRows<2>(d.fb);
+    BlkMatrix<VectorRef, 2, 1> ffview = d.ff.template topBlkRows<2>();
+    BlkMatrix<RowMatrixRef, 2, 1> fbview = d.fb.template topBlkRows<2>();
     d.kktChol.solveInPlace(ffview.data);
     d.kktChol.solveInPlace(fbview.data);
 
@@ -139,7 +139,7 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
       // set rhs of 2x2 block system and solve
       Kth = -d.Guhat;
       Zth.setZero();
-      BlkMatrix<RowMatrixRef, 2, 1> fthview = topBlkRows<2>(d.fth);
+      BlkMatrix<RowMatrixRef, 2, 1> fthview = d.fth.template topBlkRows<2>();
       d.kktChol.solveInPlace(fthview.data);
 
       // substitute into Xith, Ath gains
