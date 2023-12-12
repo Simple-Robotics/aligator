@@ -38,8 +38,6 @@ template <typename Scalar> struct ConstraintProximalScalerTpl {
   /// For problem stages. Scale down non-dynamical constraints by 100.
   void applyDefaultStrategy();
 
-  const VectorXs &getWeights() const { return weights_; }
-
   template <typename MatrixType>
   auto apply(const Eigen::MatrixBase<MatrixType> &m) const {
     return scaleMatDiag_.asDiagonal() * m;
