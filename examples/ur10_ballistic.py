@@ -300,10 +300,14 @@ def viz_callback(i: int):
     viz.drawFrameVelocities(proj_frame_id, v_scale=0.06)
 
 
-exp_name = "ur10_mug_throw"
+EXPERIMENT_NAME = "ur10_mug_throw"
 VID_FPS = 1.0 / dt
-vid_ctx = viz.create_video_ctx(f"assets/{exp_name}.mp4", fps=VID_FPS, **IMAGEIO_KWARGS)
-with vid_ctx if args.record else contextlib.nullcontext():
+vid_ctx = (
+    viz.create_video_ctx(f"assets/{EXPERIMENT_NAME}.mp4", fps=VID_FPS, **IMAGEIO_KWARGS)
+    if args.record
+    else contextlib.nullcontext()
+)
+with vid_ctx:
     viz.play(qs, dt, callback=viz_callback)
 
 times = np.linspace(0.0, tf, nsteps + 1)
@@ -315,7 +319,7 @@ fig2 = plot_velocity_traj(times, vs[:, 6:], rmodel=robot.model)
 for fig, name in [(fig1, "controls"), (fig2, "velocity")]:
     PLOTDIR = Path("assets")
     for ext in [".png", ".pdf"]:
-        figpath: Path = PLOTDIR / f"{exp_name}_{name}"
+        figpath: Path = PLOTDIR / f"{EXPERIMENT_NAME}_{name}"
         fig.savefig(figpath.with_suffix(ext))
 
 plt.show()
