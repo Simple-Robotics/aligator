@@ -182,36 +182,42 @@ void SolverProxDDP<Scalar>::computeMultipliers(
   using FuncDataVec = std::vector<shared_ptr<StageFunctionData>>;
   auto execute_on_stack =
       [dual_weight = dual_weight](
-          const ConstraintStack &stack, const VectorXs &lambda,
-          const VectorXs &prevlam, VectorXs &lamplus, VectorXs &lampdal,
-          VectorXs &ld, VectorXs &shift_cvals,
-          typename Workspace::VecBool &active_cstr,
+          const ConstraintStack &stack, const VectorXs &lambda_,
+          const VectorXs &prevlam_, VectorXs &lamplus_, VectorXs &lampdal_,
+          VectorXs &lagrGd_, VectorXs &cvals_,
+          typename Workspace::VecBool &active_,
           const FuncDataVec &constraint_data, CstrProximalScaler &scaler) {
         // k: constraint count variable
+        using BlkView = BlkMatrix<ConstVectorRef, -1, 1>;
+        using BlkViewMut = BlkMatrix<VectorRef, -1, 1>;
+        using BoolBlkView =
+            BlkMatrix<Eigen::Ref<typename Workspace::VecBool>, -1, 1>;
+        auto &dims = stack.getDims();
+        BlkView lambda(lambda_, dims);
+        BlkView prevlam(prevlam_, dims);
+        BlkViewMut lamplus(lamplus_, dims);
+        BlkViewMut lampdal(lampdal_, dims);
+        BlkViewMut lagrGd(lagrGd_, dims);
+        BlkViewMut scval(cvals_, dims);
+        BoolBlkView active(active_, dims);
         for (std::size_t k = 0; k < stack.size(); k++) {
-          const auto plam_k = stack.constSegmentByConstraint(prevlam, k);
-          const auto lam_k = stack.constSegmentByConstraint(lambda, k);
-          auto lampd_k = stack.segmentByConstraint(lampdal, k);
-          auto lamplus_k = stack.segmentByConstraint(lamplus, k);
-          auto scval_k = stack.segmentByConstraint(shift_cvals, k);
-          auto active_k = stack.segmentByConstraint(active_cstr, k);
           const CstrSet &set = *stack[k].set;
           const StageFunctionData &data = *constraint_data[k];
 
           Scalar m = scaler.get(k);
-          scval_k = data.value_ + m * plam_k;
-          lampd_k = scval_k - 0.5 * m * lam_k;
-          set.computeActiveSet(scval_k, active_k);
-          lamplus_k = scval_k;
+          scval[k] = data.value_ + m * prevlam[k];
+          lampdal[k] = scval[k] - 0.5 * m * lambda[k];
+          set.computeActiveSet(scval[k], active[k]);
+          lampdal[k] = scval[k];
 
-          set.normalConeProjection(scval_k, lamplus_k);
-          set.normalConeProjection(lampd_k, lampd_k);
+          set.normalConeProjection(scval[k], lamplus[k]);
+          set.normalConeProjection(lampdal[k], lampdal[k]);
 
           // set multiplier = 1/mu * normal_proj(shifted_cstr)
-          lamplus_k /= m;
-          lampd_k *= 2. / m;
+          lamplus[k] /= m;
+          lampdal[k] *= 2. / m;
           // compute prox Lagrangian dual gradient
-          stack.segmentByConstraint(ld, k) = m * (lamplus_k - lam_k);
+          lagrGd[k] = m * (lamplus[k] - lambda[k]);
         }
       };
 
@@ -297,34 +303,41 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem) {
     assert(results_.lams.size() == (nsteps + 2));
     assert(results_.gains_.size() == (nsteps + 1));
     const VectorXs &shift_cstr_v = workspace_.shifted_constraints[nsteps + 1];
+    const VectorXs &prevlam = workspace_.prev_lams[nsteps + 1];
     const VectorXs &lamplus = workspace_.lams_plus[nsteps + 1];
     const VectorXs &lamin = results_.lams[nsteps + 1];
     auto ff = results_.getFeedforward(nsteps);
     auto fb = results_.getFeedback(nsteps);
+    auto &dims = cstr_mgr.getDims();
     MatrixXs &pJx = workspace_.proj_jacobians.back();
+    BlkMatrix<ConstVectorRef, -1, 1> scvv(shift_cstr_v, dims);
+    BlkMatrix<MatrixRef, -1, 1> bkpJx(pJx, dims);
+    BlkMatrix<VectorRef, -1, 1> bkff(ff, dims);
+    BlkMatrix<MatrixRef, -1, 1> bkfb(fb, dims, {1});
 
     for (std::size_t k = 0; k < cstr_mgr.size(); ++k) {
       const CstrSet &cstr_set = *cstr_mgr[k].set;
       const StageFunctionData &cstr_data = *cstr_datas[k];
 
-      auto scval_k = cstr_mgr.constSegmentByConstraint(shift_cstr_v, k);
-      auto pJx_k = cstr_mgr.rowsByConstraint(pJx, k);
+      auto pJx_k = bkpJx.blockRow(k);
+      // auto pJx_k = cstr_mgr.rowsByConstraint(pJx, k);
       pJx_k = cstr_data.Jx_;
       assert(pJx_k.rows() == cstr_mgr[k].nr());
       assert(pJx_k.cols() == cstr_mgr[k].func->ndx1);
-      cstr_set.applyNormalConeProjectionJacobian(scval_k, pJx_k);
+      cstr_set.applyNormalConeProjectionJacobian(scvv[k], pJx_k);
 
-      auto ffk = cstr_mgr.segmentByConstraint(ff, k);
-      auto fbk = cstr_mgr.rowsByConstraint(fb, k);
+      auto ffk = bkff.blockSegment(k);
+      auto fbk = bkfb.blockRow(k);
 
       ffk = lamplus - lamin;
       fbk = mu_inv() * pJx_k;
 
-      term_value.v_ += 0.5 * mu_inv() * lamplus.squaredNorm();
-      term_value.Vx_.noalias() += pJx_k.transpose() * ffk;
       term_value.Vxx_ += cstr_data.Hxx_;
-      term_value.Vxx_.noalias() += pJx_k.transpose() * fbk;
     }
+    term_value.v_ +=
+        0.5 * mu_inv() * (lamplus.squaredNorm() - prevlam.squaredNorm());
+    term_value.Vx_.noalias() += pJx.transpose() * ff;
+    term_value.Vxx_.noalias() += pJx.transpose() * fb;
   }
   ALIGATOR_NOMALLOC_END;
 }
@@ -359,6 +372,7 @@ void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
   assert(kkt_rhs.rows() == (nprim + ndual));
   assert(kkt_rhs.cols() == (ndx1 + 1));
 
+  // blocks of the KKT matrix
   auto kkt_jac = kkt_mat.bottomLeftCorner(ndual, nprim);
   auto kkt_prim = kkt_mat.topLeftCorner(nprim, nprim);
   auto kkt_dual = kkt_mat.bottomRightCorner(ndual, ndual);
@@ -371,9 +385,9 @@ void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
   kkt_rhs_u = qparam.Qu;
   kkt_rhs_y = vnext.Vx_;
 
-  auto kkt_rhs_ux = kkt_rhs_fb.topRows(nu);
-  auto kkt_rhs_yx = kkt_rhs_fb.middleRows(nu, ndx2);
-  auto kkt_rhs_lx = kkt_rhs_fb.bottomRows(ndual);
+  MatrixRef kkt_rhs_ux = kkt_rhs_fb.topRows(nu);
+  MatrixRef kkt_rhs_yx = kkt_rhs_fb.middleRows(nu, ndx2);
+  MatrixRef kkt_rhs_lx = kkt_rhs_fb.bottomRows(ndual);
   kkt_rhs_ux.transpose() = qparam.Qxu;
   kkt_rhs_yx.transpose() = qparam.Qxy;
 
@@ -383,41 +397,59 @@ void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
   kkt_prim.topRightCorner(nu, ndx2) = qparam.Quy;
   kkt_prim.bottomRightCorner(ndx2, ndx2) = vnext.Vxx_;
 
-  auto kkt_rhs_l = kkt_rhs_ff.tail(ndual);
-  // memory buffer for the projected Jacobian matrix
-  MatrixXs &proj_jac = workspace_.proj_jacobians[t + 1];
+  using BlkVecView = BlkMatrix<ConstVectorRef, -1, 1>;
+  using BlkVecViewMut = BlkMatrix<VectorRef, -1, 1>;
+  using BlkMatView = BlkMatrix<MatrixRef, -1, 1>;
+
   const ConstraintStack &cstr_mgr = stage.constraints_;
+  auto &dims = cstr_mgr.getDims();
+  // memory buffer for the projected Jacobian matrix
+  MatrixXs &projectedJac = workspace_.proj_jacobians[t + 1];
   assert(cstr_mgr.totalDim() == ndual);
   const CstrProximalScaler &weight_strat = workspace_.cstr_scalers[t];
   kkt_dual.diagonal() = -weight_strat.diagMatrix();
+
+  BlkVecView lamView(laminnr, dims);
+  BlkVecView scvView(shift_cstr, dims);
+  BlkMatView projJacView(projectedJac, dims);
+  BlkMatView kktJacView(kkt_jac, dims);
+  BlkVecView lagDualView(Ld, dims);
+  BlkMatView kktRhsLxView(kkt_rhs_lx, dims);
+  BlkVecViewMut kktRhsDual(kkt_rhs_ff.tail(ndual), dims);
 
   // Loop over constraints
   for (std::size_t j = 0; j < stage.numConstraints(); j++) {
     const CstrSet &cstr_set = *cstr_mgr[j].set;
     const StageFunctionData &cstr_data = *stage_data.constraint_data[j];
-    const auto shift_cstr_j = cstr_mgr.constSegmentByConstraint(shift_cstr, j);
-    const auto laminnr_j = cstr_mgr.constSegmentByConstraint(laminnr, j);
+    // const auto shift_cstr_j = cstr_mgr.constSegmentByConstraint(shift_cval,
+    // j); const auto laminnr_j = cstr_mgr.constSegmentByConstraint(laminnr, j);
+    // auto laminnr_j = lamview[j];
 
     // project constraint jacobian
-    auto jac_proj_j = cstr_mgr.rowsByConstraint(proj_jac, j);
+    // auto jac_proj_j = cstr_mgr.rowsByConstraint(projectedJac, j);
+    auto jac_proj_j = projJacView.blockRow(j);
     jac_proj_j = cstr_data.jac_buffer_;
-    cstr_set.applyNormalConeProjectionJacobian(shift_cstr_j, jac_proj_j);
+    cstr_set.applyNormalConeProjectionJacobian(scvView[j], jac_proj_j);
     auto Jx_proj = jac_proj_j.leftCols(ndx1);
     auto Juy_proj = jac_proj_j.rightCols(nprim);
 
-    cstr_mgr.rowsByConstraint(kkt_rhs_lx, j) = Jx_proj;
-    cstr_mgr.rowsByConstraint(kkt_jac, j) = Juy_proj;
+    // cstr_mgr.rowsByConstraint(kktRhsLx, j) = Jx_proj;
+    // cstr_mgr.rowsByConstraint(kktJac, j) = Juy_proj;
+    kktRhsLxView.blockRow(j) = Jx_proj;
+    kktJacView.blockRow(j) = Juy_proj;
 
     // get j-th rhs dual gradient
-    auto ld_j = cstr_mgr.constSegmentByConstraint(Ld, j);
-    cstr_mgr.segmentByConstraint(kkt_rhs_l, j) = ld_j;
+    // auto ld_j = cstr_mgr.constSegmentByConstraint(lagDualView, j);
+    // cstr_mgr.segmentByConstraint(kktRhsDual, j) = ld_j;
+    kktRhsDual[j] = lagDualView[j];
 
     auto Jx_orig = cstr_data.jac_buffer_.leftCols(ndx1);
     auto Juy_orig = cstr_data.jac_buffer_.rightCols(nprim);
     // // add correction to kkt rhs ff
     auto kkt_rhs_prim = kkt_rhs_ff.head(nprim);
-    kkt_rhs_prim.noalias() += (Juy_orig - Juy_proj).transpose() * ld_j;
-    qparam.Qx.noalias() += (Jx_orig - Jx_proj).transpose() * ld_j;
+    kkt_rhs_prim.noalias() +=
+        (Juy_orig - Juy_proj).transpose() * lagDualView[j];
+    qparam.Qx.noalias() += (Jx_orig - Jx_proj).transpose() * lagDualView[j];
   }
   kkt_mat = kkt_mat.template selfadjointView<Eigen::Lower>();
   ALIGATOR_NOMALLOC_END;

@@ -101,7 +101,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
 
   // terminal node: always allocate data, even with dim 0
   if (!problem.term_cstrs_.empty()) {
-    int ndx1 = problem.stages_.back()->ndx1();
+    const uint ndx1 = problem.stages_.back()->ndx2();
     const long ndual = problem.term_cstrs_.totalDim();
     stage_prim_infeas.emplace_back(1);
     lams_plus.push_back(VectorXs::Zero(ndual));
@@ -109,6 +109,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
     active_constraints.push_back(VecBool::Zero(ndual));
     pd_step_.push_back(VectorXs::Zero(ndual));
     dlams.push_back(pd_step_.back().tail(ndual));
+  }
 
     math::setZero(Lxs_);
     math::setZero(Lus_);

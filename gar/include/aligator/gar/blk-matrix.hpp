@@ -77,6 +77,18 @@ public:
     return data.segment(m_rowIndices[i], m_rowDims[i]);
   }
 
+  inline auto operator[](size_t i) { return blockSegment(i); }
+
+  inline auto operator[](size_t i) const { return blockSegment(i); }
+
+  /// Set the data to be equal to some other Eigen object
+  template <typename Other>
+  BlkMatrix &operator=(const Eigen::MatrixBase<Other> &other) {
+    assert(other.rows() == data.rows());
+    assert(other.cols() == data.cols());
+    data = other;
+  }
+
   void setZero() { data.setZero(); }
 
   MatrixType data;
