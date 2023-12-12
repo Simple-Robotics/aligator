@@ -42,12 +42,13 @@ void exposeProxDDP() {
           "weights",
           bp::make_function(&ProxScaler::getWeights,
                             bp::return_internal_reference<>()),
-          +[](ProxScaler &s, const context::VectorXs &w) {
+          +[](ProxScaler &s, const context::ConstVectorRef &w) {
             if (s.getWeights().size() != w.size()) {
               PyErr_SetString(PyExc_ValueError, "Input has wrong dimension.");
             }
             s.setWeights(w);
-          })
+          },
+          "Vector of weights for each constraint in the stack.")
       .add_property(
           "matrix",
           +[](const ProxScaler &psc) { return psc.matrix().toDenseMatrix(); });

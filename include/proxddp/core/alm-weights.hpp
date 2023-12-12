@@ -20,15 +20,16 @@ template <typename Scalar> struct ConstraintProximalScalerTpl {
   std::size_t size() const { return constraints_->size(); }
   Scalar get(std::size_t j) const { return weights_[(long)j] * mu(); }
 
-  Scalar inv(std::size_t j) const { return 1. / get(j); }
   void setWeight(const Scalar w, std::size_t j) {
     assert(j < (std::size_t)weights_.size());
     weights_[(long)j] = w;
     constraints_->segmentByConstraint(scaleMatDiag_, j).setConstant(get(j));
   }
 
+  const VectorXs &getWeights() const { return weights_; }
   /// Set all weights at once
-  void setWeights(const ConstVectorRef &w) {
+  template <typename D> void setWeights(const Eigen::MatrixBase<D> &w) {
+    EIGEN_STATIC_ASSERT_VECTOR_ONLY(D)
     assert(w.size() == weights_.size());
     weights_ = w;
     initMatrix(); // reinitialize matrix
@@ -44,8 +45,7 @@ template <typename Scalar> struct ConstraintProximalScalerTpl {
     return scaleMatDiag_.asDiagonal() * m;
   }
 
-  auto matrix() { return scaleMatDiag_.asDiagonal(); }
-  auto matrix() const { return scaleMatDiag_.asDiagonal(); }
+  ConstVectorRef diagMat() const { return scaleMatDiag_; }
 
 private:
   void initMatrix() {
