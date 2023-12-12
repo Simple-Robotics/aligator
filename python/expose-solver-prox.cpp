@@ -9,9 +9,11 @@ namespace python {
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(prox_run_overloads, run, 1, 4)
 
 void exposeProxDDP() {
+  using context::ConstVectorRef;
   using context::Results;
   using context::Scalar;
   using context::TrajOptProblem;
+  using context::VectorRef;
   using context::Workspace;
 
   register_enum_symlink<proxnlp::LDLTChoice>(true);
@@ -24,8 +26,6 @@ void exposeProxDDP() {
 
   using ProxScaler = ConstraintProximalScalerTpl<Scalar>;
   bp::class_<ProxScaler, boost::noncopyable>("ProxScaler", bp::no_init)
-      .def("applyDefaultStrategy", &ProxScaler::applyDefaultStrategy,
-           bp::args("self"))
       .def(
           "set_weight",
           +[](ProxScaler &s, Scalar v, std::size_t j) {
@@ -39,10 +39,8 @@ void exposeProxDDP() {
       .add_property("size", &ProxScaler::size,
                     "Get the number of constraint blocks.")
       .add_property(
-          "weights",
-          bp::make_function(&ProxScaler::getWeights,
-                            bp::return_internal_reference<>()),
-          +[](ProxScaler &s, const context::ConstVectorRef &w) {
+          "weights", +[](ProxScaler &s) -> VectorRef { return s.getWeights(); },
+          +[](ProxScaler &s, const ConstVectorRef &w) {
             if (s.getWeights().size() != w.size()) {
               PyErr_SetString(PyExc_ValueError, "Input has wrong dimension.");
             }
@@ -51,7 +49,11 @@ void exposeProxDDP() {
           "Vector of weights for each constraint in the stack.")
       .add_property(
           "matrix",
-          +[](const ProxScaler &psc) { return psc.matrix().toDenseMatrix(); });
+          +[](ProxScaler &sc) -> ConstVectorRef { return sc.diagMatrix(); });
+
+  bp::def("applyDefaultScalingStrategy", applyDefaultScalingStrategy<Scalar>,
+          bp::arg("scaler"),
+          "Apply the default strategy for scaling constraints.");
 
   bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>,
              boost::noncopyable>(
@@ -153,8 +155,6 @@ void exposeProxDDP() {
                      "Minimum regularization value.")
       .def_readwrite("reg_max", &SolverType::reg_max,
                      "Maximum regularization value.")
-      .def("updateLqrSubproblem", &SolverType::updateLqrSubproblem,
-           bp::args("self"))
       .def("getLinesearchMu", &SolverType::getLinesearchMu, bp::args("self"))
       .def("setLinesearchMuLowerBound", &SolverType::setLinesearchMuLowerBound,
            bp::args("self", "mu_lower_bound"),

@@ -3,7 +3,7 @@
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/core/solver-proxddp.hpp"
+#include "./solver-proxddp.hpp"
 #include "proxddp/core/iterative-refinement.hpp"
 #include <boost/variant/apply_visitor.hpp>
 #ifndef NDEBUG
@@ -131,7 +131,8 @@ void SolverProxDDP<Scalar>::setup(const Problem &problem) {
   results_ = Results(problem);
   linesearch_.setOptions(ls_params);
 
-  workspace_.configureScalers(problem, mu_penal_);
+  workspace_.configureScalers(problem, mu_penal_,
+                              applyDefaultScalingStrategy<Scalar>);
 }
 
 template <typename Scalar>
@@ -386,7 +387,7 @@ void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
   const ConstraintStack &cstr_mgr = stage.constraints_;
   assert(cstr_mgr.totalDim() == ndual);
   const CstrProximalScaler &weight_strat = workspace_.cstr_scalers[t];
-  kkt_dual.diagonal() = -weight_strat.matrix().diagonal();
+  kkt_dual.diagonal() = -weight_strat.diagMatrix();
 
   // Loop over constraints
   for (std::size_t j = 0; j < stage.numConstraints(); j++) {

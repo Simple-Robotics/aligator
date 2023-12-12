@@ -40,6 +40,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
   dlams.reserve(nsteps + 1);
   dyn_slacks.reserve(nsteps);
 
+  {
     const int ndx1 = problem.stages_[0]->ndx1();
     const int nprim = ndx1;
     const int ndual = problem.init_condition_->nr;
@@ -100,6 +101,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
 
   // terminal node: always allocate data, even with dim 0
   if (!problem.term_cstrs_.empty()) {
+    int ndx1 = problem.stages_.back()->ndx1();
     const long ndual = problem.term_cstrs_.totalDim();
     stage_prim_infeas.emplace_back(1);
     lams_plus.push_back(VectorXs::Zero(ndual));
@@ -107,6 +109,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
     active_constraints.push_back(VecBool::Zero(ndual));
     pd_step_.push_back(VectorXs::Zero(ndual));
     dlams.push_back(pd_step_.back().tail(ndual));
+  }
 
   math::setZero(Lxs_);
   math::setZero(Lus_);
@@ -168,23 +171,6 @@ template <typename Scalar> void WorkspaceTpl<Scalar>::cycleLeft() {
   rotate_vec_left(prev_lams, 1, n_tail);
 
   rotate_vec_left(stage_prim_infeas, 1, n_tail);
-}
-
-template <typename Scalar>
-void WorkspaceTpl<Scalar>::configureScalers(
-    const TrajOptProblemTpl<Scalar> &problem, const Scalar &mu) {
-  cstr_scalers.reserve(nsteps + 1);
-
-  for (std::size_t t = 0; t < nsteps; t++) {
-    const StageModel &stage = *problem.stages_[t];
-    cstr_scalers.emplace_back(stage.constraints_, mu);
-    cstr_scalers[t].applyDefaultStrategy();
-  }
-
-  const ConstraintStackTpl<Scalar> &term_stack = problem.term_cstrs_;
-  if (!term_stack.empty()) {
-    cstr_scalers.emplace_back(term_stack, mu);
-  }
 }
 
 template <typename Scalar>

@@ -12,6 +12,7 @@
 #include "proxddp/utils/forward-dyn.hpp"
 #include "./workspace.hpp"
 #include "./results.hpp"
+#include "./merit-function.hpp"
 
 #include <proxnlp/modelling/constraints.hpp>
 #include <proxnlp/bcl-params.hpp>
@@ -19,6 +20,14 @@
 #include <unordered_map>
 
 namespace proxddp {
+
+/// Apply the default strategy for scaling constraints
+template <typename Scalar>
+void applyDefaultScalingStrategy(ConstraintProximalScalerTpl<Scalar> &scaler) {
+  scaler.setWeight(1e-3, 0);
+  for (std::size_t j = 1; j < scaler.size(); j++)
+    scaler.setWeight(100., j);
+}
 
 /// @brief A proximal, augmented Lagrangian-type solver for trajectory
 /// optimization.
