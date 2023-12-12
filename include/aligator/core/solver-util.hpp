@@ -105,11 +105,13 @@ template <typename Scalar> struct LagrangianDerivatives {
       CostData const &cdterm = *pd.term_cost_data;
       Lxs[nsteps] = cdterm.Lx_;
       ConstraintStack const &stack = problem.term_cstrs_;
-      VectorXs const &lamN = lams.back();
-      BlkView lview(lamN, stack.getDims());
-      for (std::size_t j = 0; j < stack.size(); j++) {
-        StageFunctionData const &cstr_data = *pd.term_cstr_data[j];
-        Lxs[nsteps] += cstr_data.Jx_.transpose() * lview[j];
+      if (!stack.empty()) {
+        VectorXs const &lamN = lams.back();
+        BlkView lview(lamN, stack.getDims());
+        for (std::size_t j = 0; j < stack.size(); j++) {
+          StageFunctionData const &cstr_data = *pd.term_cstr_data[j];
+          Lxs[nsteps] += cstr_data.Jx_.transpose() * lview[j];
+        }
       }
     }
 
