@@ -47,7 +47,6 @@ set(TEST_NAMES
     continuous
     utils
     solver-storage
-    block-matrix
     schur3x3)
 
 foreach(test_name ${TEST_NAMES})

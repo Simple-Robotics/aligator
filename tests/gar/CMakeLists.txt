@@ -9,4 +9,5 @@ function(add_gar_test name)
 endfunction(add_gar_test)
 
 add_gar_test(riccati)
+add_gar_test(block-matrix)
 add_gar_test(parallel aligator)
