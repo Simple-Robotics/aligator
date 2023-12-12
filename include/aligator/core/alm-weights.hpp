@@ -1,6 +1,7 @@
 #pragma once
 
 #include "aligator/fwd.hpp"
+#include "aligator/gar/blk-matrix.hpp"
 
 namespace aligator {
 
@@ -13,7 +14,7 @@ public:
   ConstraintProximalScalerTpl(const ConstraintStack &constraints,
                               const Scalar &mu)
       : constraints_(&constraints), mu_(&mu), weights_(constraints.size()),
-        scaleMatDiag_(constraints.totalDim()) {
+        scaleMatDiag_(constraints.getDims()) {
     weights_.setOnes();
     initMatrix();
   }
@@ -24,7 +25,7 @@ public:
   void setWeight(const Scalar w, std::size_t j) {
     assert(j < (std::size_t)weights_.size());
     weights_[(long)j] = w;
-    constraints_->segmentByConstraint(scaleMatDiag_, j).setConstant(get(j));
+    scaleMatDiag_[j].array() = get(j);
   }
 
   VectorXs &getWeights() { return weights_; }
@@ -48,9 +49,10 @@ public:
     return m.dot(diagMatrix().asDiagonal() * m);
   }
 
-  const VectorXs &diagMatrix() const { return scaleMatDiag_; }
+  const VectorXs &diagMatrix() const { return scaleMatDiag_.data; }
 
 private:
+  using BlkVec = BlkMatrix<VectorXs, -1, 1>;
   /// Initialize the penalty weight matrix
   void initMatrix();
   Scalar mu() const { return *mu_; }
@@ -58,14 +60,13 @@ private:
   const Scalar *mu_;
   VectorXs weights_;
   /// Diagonal for the scaling matrix
-  VectorXs scaleMatDiag_;
+  BlkVec scaleMatDiag_;
 };
 
 template <typename Scalar>
 void ConstraintProximalScalerTpl<Scalar>::initMatrix() {
-  for (std::size_t j = 0; j < constraints_->size(); ++j) {
-    constraints_->segmentByConstraint(scaleMatDiag_, j).setConstant(get(j));
-  }
+  for (std::size_t j = 0; j < constraints_->size(); ++j)
+    scaleMatDiag_[j].array() = get(j);
 }
 
 } // namespace aligator
