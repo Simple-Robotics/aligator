@@ -6,6 +6,7 @@
 #include "aligator/fwd.hpp"
 #include "aligator/core/traj-opt-problem.hpp"
 #include "aligator/utils/exceptions.hpp"
+#include "aligator/gar/blk-matrix.hpp"
 
 namespace aligator {
 
@@ -81,6 +82,7 @@ template <typename Scalar> struct LagrangianDerivatives {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using TrajOptProblem = TrajOptProblemTpl<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
+  using BlkView = BlkMatrix<ConstVectorRef, -1, 1>;
 
   static void compute(const TrajOptProblem &problem, const TrajOptData &pd,
                       const std::vector<VectorXs> &lams,
@@ -104,10 +106,10 @@ template <typename Scalar> struct LagrangianDerivatives {
       Lxs[nsteps] = cdterm.Lx_;
       ConstraintStack const &stack = problem.term_cstrs_;
       VectorXs const &lamN = lams.back();
+      BlkView lview(lamN, stack.getDims());
       for (std::size_t j = 0; j < stack.size(); j++) {
         StageFunctionData const &cstr_data = *pd.term_cstr_data[j];
-        auto lam_j = stack.constSegmentByConstraint(lamN, j);
-        Lxs[nsteps] += cstr_data.Jx_.transpose() * lam_j;
+        Lxs[nsteps] += cstr_data.Jx_.transpose() * lview[j];
       }
     }
 
@@ -120,15 +122,15 @@ template <typename Scalar> struct LagrangianDerivatives {
 
       assert(sd.constraint_data.size() == sm.numConstraints());
 
+      BlkView lview(lams[i + 1], stack.getDims());
       for (std::size_t j = 0; j < stack.size(); j++) {
         StageFunctionData const &cstr_data = *sd.constraint_data[j];
-        ConstVectorRef lam_j = stack.constSegmentByConstraint(lams[i + 1], j);
-        Lxs[i] += cstr_data.Jx_.transpose() * lam_j;
-        Lus[i] += cstr_data.Ju_.transpose() * lam_j;
+        Lxs[i] += cstr_data.Jx_.transpose() * lview[j];
+        Lus[i] += cstr_data.Ju_.transpose() * lview[j];
 
         assert((i + 1) <= nsteps);
         // add contribution to the next node
-        Lxs[i + 1] += cstr_data.Jy_.transpose() * lam_j;
+        Lxs[i + 1] += cstr_data.Jy_.transpose() * lview[j];
       }
     }
   }
