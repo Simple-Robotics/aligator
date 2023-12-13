@@ -4,67 +4,100 @@
 #include <pinocchio/multibody/liegroup/special-euclidean.hpp>
 
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
-#include "aligator/core/explicit-dynamics.hpp"
 #include "aligator/modelling/costs/quad-costs.hpp"
 #include "aligator/modelling/state-error.hpp"
 #include "aligator/modelling/costs/composite-costs.hpp"
 #include "aligator/modelling/costs/sum-of-costs.hpp"
+#include "aligator/modelling/dynamics/ode-abstract.hpp"
+#include "aligator/modelling/dynamics/integrator-euler.hpp"
 
 using T = double;
-using pinocchio::SpecialEuclideanOperationTpl;
-using proxsuite::nlp::PinocchioLieGroup;
-using SE2 = PinocchioLieGroup<SpecialEuclideanOperationTpl<2, T>>;
+using SE2 = proxsuite::nlp::SETpl<2, T>;
 
 using namespace aligator;
 using StateError = StateErrorResidualTpl<T>;
 using QuadResidualCost = QuadraticResidualCostTpl<T>;
+using context::StageModel;
+using context::TrajOptProblem;
+ALIGATOR_DYNAMIC_TYPEDEFS(T);
+
+struct CarDynamics : dynamics::ODEAbstractTpl<T> {
+  using Base = dynamics::ODEAbstractTpl<T>;
+  using ODEData = dynamics::ODEDataTpl<T>;
+  CarDynamics() : Base(std::make_shared<SE2>(), 2) {}
+
+  void forward(const ConstVectorRef &x, const ConstVectorRef &u,
+               ODEData &data) const override {
+    // actuation matrix
+    T s, c;
+    s = std::sin(x[2]);
+    c = std::cos(x[2]);
+    data.Ju_.col(0) << c, s, 0.;
+    data.Ju_(2, 1) = 1.;
+
+    data.xdot_.noalias() = data.Ju_ * u;
+  }
+  void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
+                ODEData &data) const override {
+    // Ju_ already computed
+    data.Jx_.setZero();
+    T v = u[0];
+    T s, c;
+    s = std::sin(x[2]);
+    c = std::cos(x[2]);
+
+    data.Jx_.col(2) << -s * v, c * v, 0.;
+  }
+};
 
 int main() {
   auto space = std::make_shared<SE2>();
-  const int nu = space->ndx();
+  const int nu = 2;
+  const int ndx = space->ndx();
 
-  const Eigen::VectorXd x0 = space->rand();
-  Eigen::VectorXd u0(nu);
-  u0.setRandom();
-  const Eigen::VectorXd x_target = space->neutral();
+  const VectorXs x0 = space->rand();
+  VectorXs utest = VectorXs::Random(nu);
+  const VectorXs x_target = space->neutral();
 
   auto state_err = std::make_shared<StateError>(space, nu, x_target);
-  /* test */
-  {
-    auto state_err_data = state_err->createData();
 
-    state_err->evaluate(x0, u0, x0, *state_err_data);
-    fmt::print("err fun eval: {}\n", state_err_data->value_.transpose());
-    state_err->evaluate(x_target, u0, x0, *state_err_data);
-    fmt::print("err fun eval: {}\n", state_err_data->value_.transpose());
-  }
-
-  const int nr = state_err->nr;
-
-  Eigen::MatrixXd w_x(nr, nr);
+  MatrixXs w_x(ndx, ndx);
   w_x.diagonal().array() = 0.01;
-  Eigen::MatrixXd w_term = w_x * 10;
-  Eigen::MatrixXd w_u = w_x;
+  MatrixXs w_term = w_x * 10;
+  MatrixXs w_u = MatrixXs::Random(nu, nu);
+  w_u = w_u.transpose() * w_u;
 
-  const T dt = 0.01;
+  const T timestep = 0.05;
 
   auto rcost = std::make_shared<CostStackTpl<T>>(space, nu);
-  auto rc1 = std::make_shared<QuadResidualCost>(space, state_err, w_x * dt);
+  auto rc1 =
+      std::make_shared<QuadResidualCost>(space, state_err, w_x * timestep);
   auto control_err =
       std::make_shared<ControlErrorResidualTpl<T>>(space->ndx(), nu);
-  auto rc2 = std::make_shared<QuadResidualCost>(space, control_err, w_u * dt);
+  auto rc2 =
+      std::make_shared<QuadResidualCost>(space, control_err, w_u * timestep);
   rcost->addCost(rc1);
   rcost->addCost(rc2);
 
-  {
-    auto cd1 = rcost->createData();
-    rcost->evaluate(x0, u0, *cd1);
-    fmt::print("cost val(x0)  : {:.3e}\n", cd1->value_);
-    rcost->evaluate(x_target, u0, *cd1);
-    fmt::print("cost val(xtar): {:.3e}\n", cd1->value_);
-  }
-
   auto term_cost = std::make_shared<QuadResidualCost>(space, state_err, w_term);
+  auto ode = std::make_shared<CarDynamics>();
+  auto discrete_dyn =
+      std::make_shared<dynamics::IntegratorEulerTpl<T>>(ode, timestep);
+
+  auto stage = std::make_shared<StageModel>(rcost, discrete_dyn);
+
+  const size_t nsteps = 40;
+  std::vector<decltype(stage)> stages(nsteps);
+  std::fill_n(stages.begin(), nsteps, stage);
+
+  TrajOptProblem problem(x0, stages, term_cost);
+  const T mu_init = 1e-4;
+  SolverProxDDP<T> solver(1e-4, mu_init);
+  solver.verbose_ = VERBOSE;
+  solver.setup(problem);
+  solver.run(problem);
+
+  fmt::print("{}\n", fmt::streamed(solver.results_));
 
   return 0;
 }
