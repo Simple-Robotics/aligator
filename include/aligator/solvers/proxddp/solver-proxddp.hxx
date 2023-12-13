@@ -320,7 +320,6 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem) {
       const StageFunctionData &cstr_data = *cstr_datas[k];
 
       auto pJx_k = bkpJx.blockRow(k);
-      // auto pJx_k = cstr_mgr.rowsByConstraint(pJx, k);
       pJx_k = cstr_data.Jx_;
       assert(pJx_k.rows() == cstr_mgr[k].nr());
       assert(pJx_k.cols() == cstr_mgr[k].func->ndx1);
@@ -421,26 +420,18 @@ void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
   for (std::size_t j = 0; j < stage.numConstraints(); j++) {
     const CstrSet &cstr_set = *cstr_mgr[j].set;
     const StageFunctionData &cstr_data = *stage_data.constraint_data[j];
-    // const auto shift_cstr_j = cstr_mgr.constSegmentByConstraint(shift_cval,
-    // j); const auto laminnr_j = cstr_mgr.constSegmentByConstraint(laminnr, j);
-    // auto laminnr_j = lamview[j];
 
     // project constraint jacobian
-    // auto jac_proj_j = cstr_mgr.rowsByConstraint(projectedJac, j);
     auto jac_proj_j = projJacView.blockRow(j);
     jac_proj_j = cstr_data.jac_buffer_;
     cstr_set.applyNormalConeProjectionJacobian(scvView[j], jac_proj_j);
     auto Jx_proj = jac_proj_j.leftCols(ndx1);
     auto Juy_proj = jac_proj_j.rightCols(nprim);
 
-    // cstr_mgr.rowsByConstraint(kktRhsLx, j) = Jx_proj;
-    // cstr_mgr.rowsByConstraint(kktJac, j) = Juy_proj;
     kktRhsLxView.blockRow(j) = Jx_proj;
     kktJacView.blockRow(j) = Juy_proj;
 
     // get j-th rhs dual gradient
-    // auto ld_j = cstr_mgr.constSegmentByConstraint(lagDualView, j);
-    // cstr_mgr.segmentByConstraint(kktRhsDual, j) = ld_j;
     kktRhsDual[j] = lagDualView[j];
 
     auto Jx_orig = cstr_data.jac_buffer_.leftCols(ndx1);
@@ -564,13 +555,12 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
 
     // compute desired multiple-shooting gap from the multipliers
     {
-      const auto &weight_strat = workspace_.cstr_scalers[t];
       const ConstraintStack &cstr_stack = stage.constraints_;
-      const ConstVectorRef dynlam =
-          cstr_stack.constSegmentByConstraint(lams[t + 1], 0);
-      const ConstVectorRef dynprevlam =
-          cstr_stack.constSegmentByConstraint(lams_prev[t + 1], 0);
-      dyn_slacks[t] = weight_strat.get(0) * (dynprevlam - dynlam);
+      using BlkView = BlkMatrix<ConstVectorRef, -1, 1>;
+      const BlkView lamview(lams[t + 1], cstr_stack.getDims());
+      const BlkView plamview(lams_prev[t + 1], cstr_stack.getDims());
+      const auto &weight_strat = workspace_.cstr_scalers[t];
+      dyn_slacks[t] = weight_strat.get(0) * (lamview[0] - plamview[0]);
     }
 
     DynamicsData &dd = *data.dynamics_data;
@@ -883,6 +873,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem) {
                              CstrProximalScaler &scaler) {
     auto e = scaler.apply(prev_lams - lams_plus);
     for (std::size_t j = 0; j < stack.size(); j++) {
+      /// TODO Find an alternative to this
       stage_infeas((long)j) =
           math::infty_norm(stack.constSegmentByConstraint(e, j));
     }
