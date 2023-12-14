@@ -119,11 +119,8 @@ add_project_dependency(Eigen3 3.3.7 REQUIRED PKG_CONFIG_REQUIRES "eigen3 >= 3.3.
 add_project_dependency(fmt "9.1.0...<11" REQUIRED PKG_CONFIG_REQUIRES "fmt >= 9.1.0")
 
 if(BUILD_WITH_OPENMP_SUPPORT)
-  message(STATUS "Building with OpenMP support.")
-  find_package(OpenMP REQUIRED)
-  add_compile_definitions(ALIGATOR_MULTITHREADING)
-  list(APPEND CFLAGS_DEPENDENCIES "-DALIGATOR_MULTITHREADING")
-endif()
+  add_project_dependency(OpenMP REQUIRED)
+endif(BUILD_WITH_OPENMP_SUPPORT)
 
 if(BUILD_WITH_PINOCCHIO_SUPPORT)
   message(STATUS "Building with Pinocchio support.")
