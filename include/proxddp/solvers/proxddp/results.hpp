@@ -9,7 +9,7 @@ namespace proxddp {
 /// @brief    Results holder struct.
 template <typename _Scalar> struct ResultsTpl : ResultsBaseTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ResultsBaseTpl<Scalar>;
   using Base::conv;
   using Base::gains_;

@@ -16,12 +16,12 @@ void exposeProxDDP() {
   using context::VectorRef;
   using context::Workspace;
 
-  register_enum_symlink<proxnlp::LDLTChoice>(true);
+  register_enum_symlink<proxsuite::nlp::LDLTChoice>(true);
   eigenpy::register_symbolic_link_to_registered_type<
       Linesearch<Scalar>::Options>();
   eigenpy::register_symbolic_link_to_registered_type<LinesearchStrategy>();
   eigenpy::register_symbolic_link_to_registered_type<
-      proxnlp::LSInterpolation>();
+      proxsuite::nlp::LSInterpolation>();
   eigenpy::register_symbolic_link_to_registered_type<context::BCLParams>();
 
   using ProxScaler = ConstraintProximalScalerTpl<Scalar>;
@@ -91,7 +91,8 @@ void exposeProxDDP() {
       // .def(
       //     "get_ldlt",
       //     +[](const Workspace &ws,
-      //         std::size_t i) -> proxnlp::linalg::ldlt_base<Scalar> const & {
+      //         std::size_t i) -> proxsuite::nlp::linalg::ldlt_base<Scalar>
+      //         const & {
       //       if (i >= ws.ldlts_.size()) {
       //         PyErr_SetString(PyExc_IndexError, "Index out of bounds.");
       //         bp::throw_error_already_set();

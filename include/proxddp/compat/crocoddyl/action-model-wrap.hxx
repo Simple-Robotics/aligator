@@ -15,7 +15,7 @@ ActionModelWrapperTpl<Scalar>::ActionModelWrapperTpl(
     : Base(std::make_shared<StateWrapper>(action_model->get_state()),
            (int)action_model->get_nu()),
       action_model_(action_model) {
-  using EqualitySet = proxnlp::EqualityConstraint<Scalar>;
+  using EqualitySet = proxsuite::nlp::EqualityConstraint<Scalar>;
   const int nr = (int)action_model->get_state()->get_ndx();
   this->constraints_.pushBack(
       Constraint{nullptr, std::make_shared<EqualitySet>()}, nr);

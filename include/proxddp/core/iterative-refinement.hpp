@@ -8,7 +8,7 @@ namespace proxddp {
 
 template <typename Scalar> struct IterativeRefinementVisitor {
 
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
 
   template <typename DecompoAlgo> bool operator()(const DecompoAlgo &ldlt) {
 

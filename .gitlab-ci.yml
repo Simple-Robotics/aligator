@@ -12,8 +12,8 @@ variables:
   script:
     - export PYTHONPATH="/usr/local/lib/python3/dist-packages:$PYTHONPATH"
     - cd $CI_PROJECT_DIR
-    - git clone --recursive https://$PROXNLP_TOKEN@github.com/Simple-Robotics/proxnlp.git
-    - cd proxnlp
+    - git clone --recursive https://$PROXNLP_TOKEN@github.com/Simple-Robotics/proxsuite-nlp.git
+    - cd proxsuite-nlp
     - mkdir build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DINSTALL_DOCUMENTATION=OFF

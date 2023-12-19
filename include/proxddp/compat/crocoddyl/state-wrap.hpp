@@ -1,7 +1,7 @@
 #pragma once
 
 #include "proxddp/fwd.hpp"
-#include <proxnlp/manifold-base.hpp>
+#include <proxsuite-nlp/manifold-base.hpp>
 
 #include <crocoddyl/core/state-base.hpp>
 #include <boost/shared_ptr.hpp>
@@ -10,12 +10,12 @@ namespace proxddp {
 namespace compat {
 namespace croc {
 
-/// @brief Wraps a crocoddyl::StateAbstractTpl to a proxnlp manifold
-/// (proxnlp::ManifoldAbstractTpl).
+/// @brief Wraps a crocoddyl::StateAbstractTpl to a manifold
+/// (proxsuite::nlp::ManifoldAbstractTpl).
 template <typename _Scalar>
 struct StateWrapperTpl : ManifoldAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using PointType = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
   using TangentVectorType = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
 

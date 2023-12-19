@@ -10,7 +10,7 @@ namespace detail {
 template <typename _FunType> struct linear_func_composition_impl : _FunType {
   using FunType = _FunType;
   using Scalar = typename FunType::Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using BaseData = StageFunctionDataTpl<Scalar>;
 
   shared_ptr<FunType> func;
@@ -52,7 +52,7 @@ template <typename _Scalar>
 struct LinearFunctionCompositionTpl
     : detail::linear_func_composition_impl<StageFunctionTpl<_Scalar>> {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Impl = detail::linear_func_composition_impl<StageFunctionTpl<Scalar>>;
   using Base = typename Impl::FunType;
   using Data = typename Impl::Data;
@@ -75,7 +75,7 @@ template <typename _Scalar>
 struct LinearUnaryFunctionCompositionTpl
     : detail::linear_func_composition_impl<UnaryFunctionTpl<_Scalar>> {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   PROXDDP_UNARY_FUNCTION_INTERFACE(Scalar);
   using Impl = detail::linear_func_composition_impl<Base>;
   using Data = typename Impl::Data;

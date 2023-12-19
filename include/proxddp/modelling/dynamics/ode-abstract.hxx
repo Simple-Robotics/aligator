@@ -4,7 +4,7 @@
 
 #include "proxddp/modelling/dynamics/ode-abstract.hpp"
 
-#include <proxnlp/manifold-base.hpp>
+#include <proxsuite-nlp/manifold-base.hpp>
 
 namespace proxddp {
 namespace dynamics {

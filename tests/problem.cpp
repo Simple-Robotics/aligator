@@ -4,7 +4,7 @@
 #include "proxddp/utils/rollout.hpp"
 
 #include "generate-problem.hpp"
-#include <proxnlp/modelling/spaces/vector-space.hpp>
+#include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
 
 #include <boost/test/unit_test.hpp>
 

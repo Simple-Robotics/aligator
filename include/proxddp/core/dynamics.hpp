@@ -17,7 +17,7 @@ namespace proxddp {
 template <typename _Scalar>
 struct DynamicsModelTpl : StageFunctionTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageFunctionTpl<Scalar>;
   using Data = DynamicsDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;

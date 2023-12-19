@@ -6,13 +6,13 @@ namespace proxddp {
 /**
  * @brief   A simple function \f$f(u) = [u_{\min} - u; u - u_{\max}]\f$.
  *
- * @details This function should be used along proxnlp::NegativeOrthant to
- * create control bound constraints \f[ -u_\min \leq u \leq u_\max. \f]
+ * @details This function should be used along proxsuite::nlp::NegativeOrthant
+ * to create control bound constraints \f[ -u_\min \leq u \leq u_\max. \f]
  */
 template <typename _Scalar>
 struct ControlBoxFunctionTpl : StageFunctionTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageFunctionTpl<Scalar>;
   using Data = StageFunctionDataTpl<Scalar>;
 

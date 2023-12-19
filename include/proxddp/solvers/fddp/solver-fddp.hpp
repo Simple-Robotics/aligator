@@ -28,7 +28,7 @@ namespace proxddp {
  *
  */
 template <typename Scalar> struct SolverFDDP {
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Problem = TrajOptProblemTpl<Scalar>;
   using StageModel = StageModelTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;

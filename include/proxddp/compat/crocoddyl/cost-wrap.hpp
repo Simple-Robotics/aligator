@@ -14,7 +14,7 @@ namespace croc {
 template <typename _Scalar>
 struct CrocCostModelWrapperTpl : CostAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using CrocCostModel = crocoddyl::CostModelAbstractTpl<Scalar>;
   using CrocActionModel = crocoddyl::ActionModelAbstractTpl<Scalar>;
   using Base = CostAbstractTpl<Scalar>;

@@ -4,7 +4,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
 #include "proxddp/utils/exceptions.hpp"
-#include <proxnlp/math.hpp>
+#include <proxsuite-nlp/math.hpp>
 
 #include <type_traits>
 
@@ -17,20 +17,22 @@
   PROXDDP_RUNTIME_ERROR(                                                       \
       fmt::format("Encountered NaN for variable {:s}\n", name))
 
+#define PROXDDP_DYNAMIC_TYPEDEFS(Scalar) PROXSUITE_NLP_DYNAMIC_TYPEDEFS(Scalar)
+
 namespace proxddp {
 
 // NOLINTBEGIN(misc-unused-using-decls)
-using proxnlp::math_types;
+using proxsuite::nlp::math_types;
 // NOLINTEND(misc-unused-using-decls)
 
 /// Math utilities
 namespace math {
 
 // NOLINTBEGIN(misc-unused-using-decls)
-using proxnlp::math::check_scalar;
-using proxnlp::math::check_value;
-using proxnlp::math::infty_norm;
-using proxnlp::math::scalar_close;
+using proxsuite::nlp::math::check_scalar;
+using proxsuite::nlp::math::check_value;
+using proxsuite::nlp::math::infty_norm;
+using proxsuite::nlp::math::scalar_close;
 // NOLINTEND(misc-unused-using-decls)
 
 /// @brief    Check if a std::vector of numerical objects has invalid values.

@@ -13,7 +13,7 @@ struct PyCostFunction : T, bp::wrapper<T> {
   using Scalar = context::Scalar;
   using bp::wrapper<T>::get_override;
   using CostData = CostDataAbstractTpl<Scalar>;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
 
   /// forwarding constructor
   template <typename... Args>

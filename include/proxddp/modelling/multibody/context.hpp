@@ -2,7 +2,7 @@
 
 #include "proxddp/context.hpp"
 
-#include <proxnlp/modelling/spaces/multibody.hpp>
+#include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 
 namespace proxddp {
 namespace context {
@@ -12,7 +12,7 @@ using PinData = pinocchio::DataTpl<Scalar, Options>;
 using RCM = pinocchio::RigidConstraintModelTpl<Scalar, Options>;
 using RCD = pinocchio::RigidConstraintDataTpl<Scalar, Options>;
 #endif
-using MultibodyConfiguration = proxnlp::MultibodyConfiguration<Scalar>;
-using MultibodyPhaseSpace = proxnlp::MultibodyPhaseSpace<Scalar>;
+using MultibodyConfiguration = proxsuite::nlp::MultibodyConfiguration<Scalar>;
+using MultibodyPhaseSpace = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
 } // namespace context
 } // namespace proxddp

@@ -12,7 +12,7 @@ void exposeFreeFwdDynamics() {
   using ODEAbstract = ODEAbstractTpl<Scalar>;
   using MultibodyFreeFwdData = MultibodyFreeFwdDataTpl<Scalar>;
   using MultibodyFreeFwdDynamics = MultibodyFreeFwdDynamicsTpl<Scalar>;
-  using proxnlp::MultibodyPhaseSpace;
+  using proxsuite::nlp::MultibodyPhaseSpace;
 
   using StateManifoldPtr = shared_ptr<MultibodyPhaseSpace<Scalar>>;
 

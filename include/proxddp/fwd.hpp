@@ -3,7 +3,7 @@
 /// @brief Forward declarations.
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
-#include <proxnlp/fwd.hpp>
+#include <proxsuite-nlp/fwd.hpp>
 
 #ifdef PROXDDP_WITH_PINOCCHIO
 #include <pinocchio/fwd.hpp>
@@ -18,12 +18,12 @@ namespace proxddp {
 
 // NOLINTBEGIN(misc-unused-using-decls)
 
-// Use the shared_ptr used in proxnlp.
-using proxnlp::BCLParamsTpl;
-using proxnlp::ConstraintSetBase;
-using proxnlp::ManifoldAbstractTpl;
-// Use the math_types template from proxnlp.
-using proxnlp::VerboseLevel;
+// Use the shared_ptr used in proxsuite-nlp.
+using proxsuite::nlp::BCLParamsTpl;
+using proxsuite::nlp::ConstraintSetBase;
+using proxsuite::nlp::ManifoldAbstractTpl;
+// Use the math_types template from proxsuite-nlp.
+using proxsuite::nlp::VerboseLevel;
 
 using VerboseLevel::QUIET;
 using VerboseLevel::VERBOSE;

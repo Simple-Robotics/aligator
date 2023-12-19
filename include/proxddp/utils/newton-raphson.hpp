@@ -9,7 +9,7 @@ namespace proxddp {
 /// @brief  Newton-Raphson procedure, e.g. to compute forward dynamics from
 /// implicit functions.
 template <typename Scalar> struct NewtonRaphson {
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Manifold = ManifoldAbstractTpl<Scalar>;
 
   struct Options {

@@ -2,7 +2,7 @@
 
 #include "proxddp/modelling/dynamics/ode-abstract.hpp"
 
-#include <proxnlp/modelling/spaces/multibody.hpp>
+#include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 #include <pinocchio/multibody/data.hpp>
 
 #include <pinocchio/algorithm/proximal.hpp>
@@ -19,7 +19,7 @@ template <typename _Scalar>
 struct MultibodyConstraintFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ODEAbstractTpl<Scalar>;
   using BaseData = ODEDataTpl<Scalar>;
   using ContDataAbstract = ContinuousDynamicsDataTpl<Scalar>;
@@ -29,7 +29,7 @@ struct MultibodyConstraintFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using RigidConstraintDataVector =
       PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(pinocchio::RigidConstraintData);
   using ProxSettings = pinocchio::ProximalSettingsTpl<Scalar>;
-  using Manifold = proxnlp::MultibodyPhaseSpace<Scalar>;
+  using Manifold = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
 
   using ManifoldPtr = shared_ptr<Manifold>;
   ManifoldPtr space_;

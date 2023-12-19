@@ -13,7 +13,7 @@ template <typename _Scalar>
 struct CenterOfMassVelocityResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
 public:
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   PROXDDP_UNARY_FUNCTION_INTERFACE(Scalar);
   using BaseData = typename Base::Data;
   using Model = pinocchio::ModelTpl<Scalar>;

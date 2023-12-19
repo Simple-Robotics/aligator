@@ -2,7 +2,7 @@
 #include "proxddp/core/traj-opt-problem.hpp"
 #include "proxddp/core/explicit-dynamics.hpp"
 
-#include <proxnlp/modelling/spaces/pinocchio-groups.hpp>
+#include <proxsuite-nlp/modelling/spaces/pinocchio-groups.hpp>
 
 using namespace proxddp;
 
@@ -44,8 +44,8 @@ struct MyCost : CostAbstractTpl<double> {
   }
 };
 
-// using Manifold = proxnlp::VectorSpaceTpl<double>;
-using Manifold = proxnlp::PinocchioLieGroup<
+// using Manifold = proxsuite::nlp::VectorSpaceTpl<double>;
+using Manifold = proxsuite::nlp::PinocchioLieGroup<
     pinocchio::SpecialEuclideanOperationTpl<3, double>>;
 using StageModel = proxddp::StageModelTpl<double>;
 

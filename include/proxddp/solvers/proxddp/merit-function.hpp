@@ -45,7 +45,7 @@ Scalar costDirectionalDerivative(const WorkspaceTpl<Scalar> &workspace,
  */
 template <typename _Scalar> struct PDALFunction {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using StageModel = StageModelTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
   using StageFunctionData = StageFunctionDataTpl<Scalar>;

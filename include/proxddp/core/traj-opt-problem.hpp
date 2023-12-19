@@ -84,7 +84,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
    *
    */
 
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
 
   /// Initial condition
   shared_ptr<UnaryFunction> init_condition_;
@@ -203,7 +203,7 @@ private:
 /// @brief Problem data struct.
 template <typename _Scalar> struct TrajOptDataTpl {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using StageFunctionData = StageFunctionDataTpl<Scalar>;
   using ConstraintType = StageConstraintTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;

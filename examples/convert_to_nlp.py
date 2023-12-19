@@ -1,6 +1,6 @@
-import proxnlp
+import proxsuite_nlp
 import proxddp
-from proxnlp import manifolds, constraints
+from proxsuite_nlp import manifolds, constraints
 
 from proxddp import TrajOptProblem, StageModel
 
@@ -17,7 +17,7 @@ def _split_state_control(space, x, N):
     return xs, us
 
 
-class ProxnlpCostFromProblem(proxnlp.costs.CostFunctionBase):
+class ProxnlpCostFromProblem(proxsuite_nlp.costs.CostFunctionBase):
     def __init__(self, problem: TrajOptProblem):
         self.problem = problem
         self.prob_data = proxddp.TrajOptData(problem)
@@ -78,7 +78,7 @@ def _get_start_end_idx(problem: TrajOptProblem):
     return st, en
 
 
-class ProxnlpConstraintFromProblem(proxnlp.C2Function):
+class ProxnlpConstraintFromProblem(proxsuite_nlp.C2Function):
     def __init__(
         self,
         space: manifolds.ManifoldAbstract,
@@ -128,7 +128,7 @@ def _get_product_space(problem: TrajOptProblem):
     return product_space
 
 
-def convert_problem_to_proxnlp(problem: TrajOptProblem):
+def convert_problem_to_proxsuite_nlp(problem: TrajOptProblem):
     import numpy as np
 
     product_space = _get_product_space(problem)
@@ -154,15 +154,15 @@ def convert_problem_to_proxnlp(problem: TrajOptProblem):
         b = np.zeros(ndx)
         pad_x0 = product_space.neutral()
         pad_x0[:ndx] = x0
-        init_fun = proxnlp.residuals.LinearFunctionDifferenceToPoint(
+        init_fun = proxsuite_nlp.residuals.LinearFunctionDifferenceToPoint(
             product_space, pad_x0, row, b
         )
         print(init_fun(pad_x0))
-        if2 = proxnlp.residuals.ManifoldDifferenceToPoint(product_space, pad_x0)
+        if2 = proxsuite_nlp.residuals.ManifoldDifferenceToPoint(product_space, pad_x0)
         print(if2(pad_x0))
         return constraints.createEqualityConstraint(init_fun)
 
     prnlp_constraints.append(make_init_cstr(problem.x0_init))
 
-    p2 = proxnlp.Problem(product_space, cost, prnlp_constraints)
+    p2 = proxsuite_nlp.Problem(product_space, cost, prnlp_constraints)
     return product_space, p2

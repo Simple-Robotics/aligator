@@ -15,15 +15,15 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
-          path: ./proxnlp
+          path: ./proxsuite-nlp
           submodules: recursive
-          repository: Simple-Robotics/proxnlp
-          token: ${{ secrets.PROXNLP_TOKEN }}
+          repository: Simple-Robotics/proxsuite-nlp
+          token: ${{ secrets.PROXSUITE_NLP_TOKEN }}
 
 
-      - name: Install proxnlp
+      - name: Install proxsuite-nlp
         run: |
-          cd $GITHUB_WORKSPACE/proxnlp
+          cd $GITHUB_WORKSPACE/proxsuite-nlp
           mkdir build
           cd build
           cmake .. -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=~/custom_install -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DINSTALL_DOCUMENTATION=OFF

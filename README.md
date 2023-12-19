@@ -14,7 +14,7 @@ This is a C++14 template library, which provides
 
 ### Dependencies
 
-* [proxnlp](https://github.com/Simple-Robotics/proxnlp.git)
+* [proxsuite-nlp](https://github.com/Simple-Robotics/proxsuite-nlp.git)
 * [Eigen3](https://eigen.tuxfamily.org) >= 3.3.7
 * [Boost](https://www.boost.org) >= 1.71.0
 * [eigenpy](https://github.com/stack-of-tasks/eigenpy)>=3.1.0 | [conda](https://anaconda.org/conda-forge/eigenpy)

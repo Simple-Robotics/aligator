@@ -15,7 +15,7 @@
   <depend>boost</depend>
   <depend>eigenpy</depend>
   <depend>fmtlib</depend>
-  <depend>proxnlp</depend>
+  <depend>proxsuite-nlp</depend>
   <depend>pinocchio</depend>
   <depend>crocoddyl</depend>
 

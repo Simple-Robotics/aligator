@@ -3,7 +3,7 @@
 #pragma once
 
 #include "proxddp/core/explicit-dynamics.hpp"
-#include <proxnlp/modelling/spaces/cartesian-product.hpp>
+#include <proxsuite-nlp/modelling/spaces/cartesian-product.hpp>
 
 namespace proxddp {
 
@@ -15,10 +15,10 @@ namespace proxddp {
 template <typename _Scalar>
 struct DirectSumExplicitDynamicsTpl : ExplicitDynamicsModelTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ExplicitDynamicsModelTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
-  using CartesianProduct = proxnlp::CartesianProductTpl<Scalar>;
+  using CartesianProduct = proxsuite::nlp::CartesianProductTpl<Scalar>;
   using BaseData = ExplicitDynamicsDataTpl<Scalar>;
 
   struct Data;

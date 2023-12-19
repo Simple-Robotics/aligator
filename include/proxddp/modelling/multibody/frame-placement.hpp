@@ -15,7 +15,7 @@ struct FramePlacementResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   PROXDDP_UNARY_FUNCTION_INTERFACE(Scalar);
   using BaseData = StageFunctionDataTpl<Scalar>;
   using Model = pinocchio::ModelTpl<Scalar>;

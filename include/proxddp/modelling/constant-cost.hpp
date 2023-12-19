@@ -7,7 +7,7 @@ namespace proxddp {
 /// @brief Constant cost.
 template <typename _Scalar> struct ConstantCostTpl : CostAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = CostAbstractTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;

@@ -20,7 +20,7 @@ template <class FunctionBase = context::StageFunction>
 struct PyStageFunction : FunctionBase, bp::wrapper<FunctionBase> {
   using Scalar = typename FunctionBase::Scalar;
   using Data = StageFunctionDataTpl<Scalar>;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
 
   // Use perfect forwarding to the FunctionBase constructors.
   template <typename... Args>
@@ -58,7 +58,7 @@ struct PyStageFunction : FunctionBase, bp::wrapper<FunctionBase> {
 template <typename UFunction = context::UnaryFunction>
 struct PyUnaryFunction : UFunction, bp::wrapper<UFunction> {
   using Scalar = typename UFunction::Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   PROXDDP_UNARY_FUNCTION_INTERFACE(Scalar);
   using Data = StageFunctionDataTpl<Scalar>;
 

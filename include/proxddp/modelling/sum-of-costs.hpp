@@ -15,7 +15,7 @@ template <typename Scalar> struct CostStackDataTpl;
  */
 template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using CostBase = CostAbstractTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using CostPtr = shared_ptr<CostBase>;

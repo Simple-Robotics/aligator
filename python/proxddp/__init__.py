@@ -5,7 +5,7 @@ from .pyproxddp import *
 from .pyproxddp import __version__
 from . import utils
 
-from proxnlp import (
+from proxsuite_nlp import (
     constraints,
     manifolds,
 )

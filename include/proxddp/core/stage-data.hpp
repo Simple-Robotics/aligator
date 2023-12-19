@@ -11,7 +11,7 @@ namespace proxddp {
 template <typename _Scalar>
 struct StageDataTpl : Cloneable<StageDataTpl<_Scalar>> {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
 
   using StageModel = StageModelTpl<Scalar>;
   using CostDataAbstract = CostDataAbstractTpl<Scalar>;

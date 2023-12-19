@@ -7,7 +7,7 @@
 import pinocchio as pin
 import numpy as np
 import proxddp
-import proxnlp
+import proxsuite_nlp
 import hppfcl as fcl
 import matplotlib.pyplot as plt
 
@@ -111,7 +111,7 @@ def create_pendulum(N, sincos=False):
 model, geom_model, data, geom_data, ddl = create_pendulum(1)
 dt = 0.01
 nu = model.nv
-space = proxnlp.manifolds.MultibodyPhaseSpace(model)
+space = proxsuite_nlp.manifolds.MultibodyPhaseSpace(model)
 nx = space.nx
 ndx = space.ndx
 cont_dyn = proxddp.dynamics.MultibodyFreeFwdDynamics(space)
@@ -235,7 +235,7 @@ plt.savefig("assets/pendulum_controls{}.png".format(TAG))
 plt.savefig("assets/pendulum_controls{}.pdf".format(TAG))
 
 if True:
-    from proxnlp.utils import plot_pd_errs
+    from proxsuite_nlp.utils import plot_pd_errs
 
     prim_errs = callback.storage.prim_infeas
     dual_errs = callback.storage.dual_infeas

@@ -18,7 +18,7 @@ template <typename Scalar> struct ProximalDataTpl;
 template <typename _Scalar>
 struct ProximalPenaltyTpl : CostAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
 
   using ManifoldPtr = shared_ptr<ManifoldAbstractTpl<Scalar>>;
   using Base = CostAbstractTpl<Scalar>;

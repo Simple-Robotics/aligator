@@ -14,7 +14,7 @@ namespace dynamics {
 template <typename _Scalar>
 struct ODEAbstractTpl : ContinuousDynamicsAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
 
   using Base = ContinuousDynamicsAbstractTpl<Scalar>;
   using ContDataAbstract = ContinuousDynamicsDataTpl<Scalar>;

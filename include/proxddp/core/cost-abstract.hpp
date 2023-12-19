@@ -5,14 +5,14 @@
 
 #include "proxddp/fwd.hpp"
 #include "proxddp/core/clone.hpp"
-#include <proxnlp/manifold-base.hpp>
+#include <proxsuite-nlp/manifold-base.hpp>
 
 namespace proxddp {
 /** @brief Stage costs \f$ \ell(x, u) \f$ for control problems.
  */
 template <typename _Scalar> struct CostAbstractTpl {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using CostData = CostDataAbstractTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
 
@@ -50,7 +50,7 @@ template <typename _Scalar> struct CostAbstractTpl {
 /// @brief  Data struct for CostAbstractTpl
 template <typename _Scalar> struct CostDataAbstractTpl {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   int ndx_, nu_;
   Scalar value_;
   VectorXs grad_;

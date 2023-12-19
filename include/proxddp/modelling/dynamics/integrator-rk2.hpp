@@ -17,7 +17,7 @@ template <typename Scalar> struct IntegratorRK2DataTpl;
 template <typename _Scalar>
 struct IntegratorRK2Tpl : ExplicitIntegratorAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ExplicitIntegratorAbstractTpl<Scalar>;
   using BaseData = ExplicitDynamicsDataTpl<Scalar>;
   using Data = IntegratorRK2DataTpl<Scalar>;
@@ -43,7 +43,7 @@ protected:
 
 template <typename Scalar>
 struct IntegratorRK2DataTpl : ExplicitIntegratorDataTpl<Scalar> {
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ExplicitIntegratorDataTpl<Scalar>;
   using ODEData = ODEDataTpl<Scalar>;
   shared_ptr<ODEData> continuous_data2;
