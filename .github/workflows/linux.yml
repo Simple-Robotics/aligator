@@ -47,8 +47,6 @@ jobs:
 
     - name: Install proxsuite-nlp
       run: |
-        micromamba activate
-
         cd $GITHUB_WORKSPACE/proxsuite-nlp
         mkdir build && cd build
 
@@ -71,8 +69,6 @@ jobs:
 
     - name: Build and install proxddp
       run: |
-        micromamba activate
-
         cd $GITHUB_WORKSPACE/proxddp
         mkdir build && cd build
 
@@ -85,7 +81,6 @@ jobs:
 
     - name: Run tests
       run: |
-        micromamba activate
         cd $GITHUB_WORKSPACE/proxddp
         cd build && ctest
 
