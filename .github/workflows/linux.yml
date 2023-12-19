@@ -44,7 +44,6 @@ jobs:
         path: ./proxsuite-nlp
         submodules: recursive
         repository: Simple-Robotics/proxsuite-nlp
-        token: ${{ secrets.PROXSUITE_NLP_TOKEN }}
 
     - name: Install proxsuite-nlp
       run: |
