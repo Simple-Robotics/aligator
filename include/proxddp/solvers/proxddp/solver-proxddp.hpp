@@ -14,8 +14,8 @@
 #include "./results.hpp"
 #include "./merit-function.hpp"
 
-#include <proxnlp/modelling/constraints.hpp>
-#include <proxnlp/bcl-params.hpp>
+#include <proxsuite-nlp/modelling/constraints.hpp>
+#include <proxsuite-nlp/bcl-params.hpp>
 
 #include <unordered_map>
 
@@ -36,7 +36,7 @@ public:
   // typedefs
 
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Problem = TrajOptProblemTpl<Scalar>;
   using Workspace = WorkspaceTpl<Scalar>;
   using Results = ResultsTpl<Scalar>;
@@ -55,7 +55,7 @@ public:
   using TrajOptData = TrajOptDataTpl<Scalar>;
   using LinesearchOptions = typename Linesearch<Scalar>::Options;
   using CstrProximalScaler = ConstraintProximalScalerTpl<Scalar>;
-  using LinesearchType = proxnlp::ArmijoLinesearch<Scalar>;
+  using LinesearchType = proxsuite::nlp::ArmijoLinesearch<Scalar>;
 
   enum BackwardRet { BWD_SUCCESS, BWD_WRONG_INERTIA };
 
@@ -94,7 +94,7 @@ public:
   VerboseLevel verbose_;
   /// Type of Hessian approximation. Default is Gauss-Newton.
   HessianApprox hess_approx_ = HessianApprox::GAUSS_NEWTON;
-  /// Linesearch options, as in proxnlp.
+  /// Linesearch options, as in proxsuite-nlp.
   LinesearchOptions ls_params;
   /// Type of linesearch strategy. Default is Armijo.
   LinesearchStrategy ls_strat = LinesearchStrategy::ARMIJO;

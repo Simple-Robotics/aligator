@@ -1,7 +1,7 @@
 #pragma once
 
 #include "proxddp/core/cost-abstract.hpp"
-#include <proxnlp/modelling/spaces/vector-space.hpp>
+#include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
 
 namespace proxddp {
 
@@ -11,12 +11,12 @@ template <typename Scalar> struct QuadraticCostDataTpl;
 template <typename _Scalar> struct QuadraticCostTpl : CostAbstractTpl<_Scalar> {
 public:
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = CostAbstractTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
 
   using Data = QuadraticCostDataTpl<Scalar>;
-  using VectorSpace = proxnlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
+  using VectorSpace = proxsuite::nlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
 
   /// Weight @f$ Q @f$
   MatrixXs weights_x;

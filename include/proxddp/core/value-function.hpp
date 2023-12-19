@@ -14,7 +14,7 @@ namespace proxddp {
 /// @brief  Storage for the value function model parameters.
 template <typename _Scalar> struct ValueFunctionTpl {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   int ndx_;
   VectorXs Vx_;
   MatrixXs Vxx_;
@@ -39,7 +39,7 @@ template <typename _Scalar> struct ValueFunctionTpl {
 /// Q_u, Q_y\ldots\f$.
 template <typename _Scalar> struct QFunctionTpl {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
 
   long ndx_;
   long nu_;

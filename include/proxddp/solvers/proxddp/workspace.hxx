@@ -10,10 +10,10 @@ namespace {
 template <typename T> long ncNonDyn(const ConstraintStackTpl<T> &cstrs) {
   return std::max(cstrs.totalDim() - cstrs.getDims()[0], 0L);
 }
-using proxnlp::isize;
+using proxsuite::nlp::isize;
 } // namespace
 
-using proxnlp::get_total_dim_helper;
+using proxsuite::nlp::get_total_dim_helper;
 
 template <typename Scalar>
 WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
@@ -49,7 +49,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
     kkt_mats_.emplace_back(ntot, ntot);
     kkt_rhs_.emplace_back(ntot, ndx1 + 1);
     stage_prim_infeas.emplace_back(1);
-    ldlts_.emplace_back(proxnlp::allocate_ldlt_from_sizes<Scalar>(
+    ldlts_.emplace_back(proxsuite::nlp::allocate_ldlt_from_sizes<Scalar>(
         {ndx1}, {ndual}, ldlt_choice));
 
     lams_plus[0] = VectorXs::Zero(ndual);
@@ -79,7 +79,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
 
     kkt_mats_.emplace_back(ntot, ntot);
     kkt_rhs_.emplace_back(ntot, ndx1 + 1);
-    ldlts_.emplace_back(proxnlp::allocate_ldlt_from_sizes<Scalar>(
+    ldlts_.emplace_back(proxsuite::nlp::allocate_ldlt_from_sizes<Scalar>(
         {nu, ndx2}, stage.constraints_.getDims(), ldlt_choice));
     stage_prim_infeas.emplace_back(ncb);
 

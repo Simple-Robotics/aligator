@@ -14,7 +14,7 @@ namespace proxddp {
 /// Data struct for composite costs.
 template <typename Scalar>
 struct CompositeCostDataTpl : CostDataAbstractTpl<Scalar> {
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = CostDataAbstractTpl<Scalar>;
   using StageFunctionData = StageFunctionDataTpl<Scalar>;
   using RowMatrixXs = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
@@ -41,7 +41,7 @@ struct CompositeCostDataTpl : CostDataAbstractTpl<Scalar> {
 template <typename _Scalar>
 struct QuadraticResidualCostTpl : CostAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = CostAbstractTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using Data = CompositeCostDataTpl<Scalar>;
@@ -81,7 +81,7 @@ private:
 
 /// @brief  Log-barrier of an underlying cost function.
 template <typename Scalar> struct LogResidualCostTpl : CostAbstractTpl<Scalar> {
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using CostDataAbstract = CostDataAbstractTpl<Scalar>;
   using Data = CompositeCostDataTpl<Scalar>;
   using StageFunction = StageFunctionTpl<Scalar>;

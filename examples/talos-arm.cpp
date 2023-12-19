@@ -1,7 +1,7 @@
 #include "croc-talos-arm.hpp"
 
 #include "proxddp/solvers/proxddp/solver-proxddp.hpp"
-#include <proxnlp/tests/cnpy.hpp>
+#include <proxsuite-nlp/tests/cnpy.hpp>
 #include <fmt/ostream.h>
 
 using Eigen::MatrixXd;

@@ -8,11 +8,11 @@
 #include "proxddp/core/alm-weights.hpp"
 
 #include <array>
-#include <proxnlp/ldlt-allocator.hpp>
+#include <proxsuite-nlp/ldlt-allocator.hpp>
 
 namespace proxddp {
 
-using proxnlp::LDLTChoice;
+using proxsuite::nlp::LDLTChoice;
 
 /** @brief Workspace for solver SolverProxDDP.
  *
@@ -20,7 +20,7 @@ using proxnlp::LDLTChoice;
  *          the primal-dual steps, problem data...
  */
 template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using StageModel = StageModelTpl<Scalar>;
   using Base = WorkspaceBaseTpl<Scalar>;
   using VecBool = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
@@ -67,7 +67,7 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   /// Linear system residual buffers: used for iterative refinement
   std::vector<MatrixXs> kkt_resdls_;
 
-  using LDLTVariant = proxnlp::LDLTVariant<Scalar>;
+  using LDLTVariant = proxsuite::nlp::LDLTVariant<Scalar>;
   /// LDLT solvers
   std::vector<LDLTVariant> ldlts_;
 

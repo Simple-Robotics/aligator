@@ -55,7 +55,7 @@ BOOST_PYTHON_MODULE(pyproxddp) {
   eigenpy::enableEigenPy();
 
   bp::import("warnings");
-  bp::import("proxnlp");
+  bp::import("proxsuite_nlp");
 
   exposeEnums();
   exposeFunctions();

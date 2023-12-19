@@ -4,7 +4,7 @@
 
 #include "proxddp/core/dynamics.hpp"
 
-#include <proxnlp/manifold-base.hpp>
+#include <proxsuite-nlp/manifold-base.hpp>
 
 #include <fmt/core.h>
 
@@ -20,7 +20,7 @@ template <typename _Scalar>
 struct ExplicitDynamicsModelTpl : DynamicsModelTpl<_Scalar> {
 public:
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = DynamicsModelTpl<Scalar>;
   using BaseData = DynamicsDataTpl<Scalar>;
   using Data = ExplicitDynamicsDataTpl<Scalar>;
@@ -56,7 +56,7 @@ template <typename _Scalar>
 struct ExplicitDynamicsDataTpl : StageFunctionDataTpl<_Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageFunctionDataTpl<Scalar>;
   using Base::Ju_;
   using Base::Jx_;

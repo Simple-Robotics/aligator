@@ -1,6 +1,6 @@
 #include "proxddp/utils/newton-raphson.hpp"
 
-#include <proxnlp/modelling/spaces/vector-space.hpp>
+#include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
 
 #include <boost/test/unit_test.hpp>
 
@@ -11,7 +11,7 @@ BOOST_AUTO_TEST_SUITE(utils)
 
 using namespace proxddp;
 using Scalar = double;
-PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
 
 BOOST_AUTO_TEST_CASE(newton_raphson) {
   const long nx = 4;
@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(newton_raphson) {
 
   VectorXs xinit = 0.1 * VectorXs::Constant(nx, 0.1);
   VectorXs xout(xinit);
-  proxnlp::VectorSpaceTpl<Scalar> space(nx);
+  proxsuite::nlp::VectorSpaceTpl<Scalar> space(nx);
   // buffer for evaluating the function
   VectorXs err(nx);
   err.setZero();

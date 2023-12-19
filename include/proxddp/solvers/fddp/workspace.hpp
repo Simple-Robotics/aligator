@@ -8,7 +8,7 @@ namespace proxddp {
 /// Workspace for solver SolverFDDP.
 template <typename Scalar> struct WorkspaceFDDPTpl : WorkspaceBaseTpl<Scalar> {
   using Base = WorkspaceBaseTpl<Scalar>;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Base::q_params;
   using Base::trial_us;
   using Base::trial_xs;

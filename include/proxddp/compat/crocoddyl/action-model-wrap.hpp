@@ -22,7 +22,7 @@ namespace croc {
  */
 template <typename Scalar>
 struct ActionModelWrapperTpl : StageModelTpl<Scalar> {
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageModelTpl<Scalar>;
   using Data = StageDataTpl<Scalar>;
   using Constraint = StageConstraintTpl<Scalar>;

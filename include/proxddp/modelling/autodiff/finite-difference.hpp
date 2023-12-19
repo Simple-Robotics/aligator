@@ -4,7 +4,7 @@
 
 #include "proxddp/core/dynamics.hpp"
 #include "proxddp/core/cost-abstract.hpp"
-#include <proxnlp/manifold-base.hpp>
+#include <proxsuite-nlp/manifold-base.hpp>
 #include <boost/mpl/bool.hpp>
 
 namespace proxddp {
@@ -16,7 +16,7 @@ namespace internal {
 template <typename _Scalar, template <typename> class _Base>
 struct finite_difference_impl : virtual _Base<_Scalar> {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = _Base<Scalar>;
   using BaseData = typename Base::Data;
   using Manifold = ManifoldAbstractTpl<Scalar>;
@@ -130,7 +130,7 @@ struct FiniteDifferenceHelper
   using Base::computeVectorHessianProducts;
   using Base::evaluate;
 
-  PROXNLP_DYNAMIC_TYPEDEFS(_Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(_Scalar);
 
   FiniteDifferenceHelper(shared_ptr<Manifold> space,
                          shared_ptr<StageFunction> func, const Scalar fd_eps)
@@ -150,7 +150,7 @@ struct DynamicsFiniteDifferenceHelper
   using Base::computeVectorHessianProducts;
   using Base::evaluate;
 
-  PROXNLP_DYNAMIC_TYPEDEFS(_Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(_Scalar);
 
   DynamicsFiniteDifferenceHelper(shared_ptr<Manifold> space,
                                  shared_ptr<DynamicsModel> func,
@@ -166,7 +166,7 @@ struct CostFiniteDifferenceHelper : CostAbstractTpl<Scalar> {
 
   using CostBase::space;
 
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
 
   struct Data : CostData {
 

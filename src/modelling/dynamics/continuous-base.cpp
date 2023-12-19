@@ -1,7 +1,7 @@
 /// @file
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #include "proxddp/modelling/dynamics/continuous-base.hpp"
-#include <proxnlp/manifold-base.hpp>
+#include <proxsuite-nlp/manifold-base.hpp>
 
 namespace proxddp {
 namespace dynamics {

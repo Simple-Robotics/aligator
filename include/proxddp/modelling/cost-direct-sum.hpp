@@ -3,13 +3,13 @@
 #pragma once
 
 #include "proxddp/core/cost-abstract.hpp"
-#include <proxnlp/modelling/spaces/cartesian-product.hpp>
+#include <proxsuite-nlp/modelling/spaces/cartesian-product.hpp>
 
 namespace proxddp {
 
 template <typename _Scalar> struct DirectSumCostTpl : CostAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using BaseCost = CostAbstractTpl<Scalar>;
   using BaseData = CostDataAbstractTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
@@ -33,7 +33,7 @@ template <typename _Scalar> struct DirectSumCostTpl : CostAbstractTpl<_Scalar> {
                        BaseData &data) const override;
 
 private:
-  using CartesianProduct = proxnlp::CartesianProductTpl<Scalar>;
+  using CartesianProduct = proxsuite::nlp::CartesianProductTpl<Scalar>;
   auto get_product_space() const {
     return static_cast<CartesianProduct const *>(this->space.get());
   }

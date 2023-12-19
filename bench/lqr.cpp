@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
   registerOpts("PROXDDP_BUNCHKAUFMAN", &BM_lqr_prox<LDLTChoice::BUNCHKAUFMAN>);
   registerOpts("PROXDDP_DENSE", &BM_lqr_prox<LDLTChoice::DENSE>);
   registerOpts("PROXDDP_EIGLDL", &BM_lqr_prox<LDLTChoice::EIGEN>);
-#ifdef PROXNLP_ENABLE_PROXSUITE_LDLT
+#ifdef PROXSUITE_NLP_ENABLE_PROXSUITE_LDLT
   registerOpts("PROXDDP_PSUITE", &BM_lqr_prox<LDLTChoice::PROXSUITE>);
 #endif
 

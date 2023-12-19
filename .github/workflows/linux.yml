@@ -18,19 +18,19 @@ defaults:
   run:
     shell: bash -leo pipefail {0} {0}
 jobs:
-  build-proxnlp:
-    name: Build proxnlp
+  build-proxsuite-nlp:
+    name: Build proxsuite-nlp
     runs-on: self-hosted
     steps:
     - name: Config for main
       if: github.ref == 'refs/heads/main'
       run: |
-        echo "PROXNLP_BRANCH=main" >> $GITHUB_ENV
+        echo "PROXSUITE_NLP_BRANCH=main" >> $GITHUB_ENV
 
     - name: Config for others
       if: github.ref != 'refs/heads/main'
       run: |
-        echo "PROXNLP_BRANCH=devel" >> $GITHUB_ENV
+        echo "PROXSUITE_NLP_BRANCH=devel" >> $GITHUB_ENV
 
     - uses: actions/cache@v3
       with:
@@ -39,29 +39,29 @@ jobs:
 
     - uses: actions/checkout@v4
       with:
-        ref: ${{ env.PROXNLP_BRANCH }}
+        ref: ${{ env.PROXSUITE_NLP_BRANCH }}
         fetch-depth: 0
-        path: ./proxnlp
+        path: ./proxsuite-nlp
         submodules: recursive
-        repository: Simple-Robotics/proxnlp
-        token: ${{ secrets.PROXNLP_TOKEN }}
+        repository: Simple-Robotics/proxsuite-nlp
+        token: ${{ secrets.PROXSUITE_NLP_TOKEN }}
 
-    - name: Install proxnlp
+    - name: Install proxsuite-nlp
       run: |
         micromamba activate
 
-        cd $GITHUB_WORKSPACE/proxnlp
+        cd $GITHUB_WORKSPACE/proxsuite-nlp
         mkdir build && cd build
 
         cmake .. -DBUILD_DOCUMENTATION=OFF \
           -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX \
           -DCMAKE_BUILD_TYPE=Release
         make -j$NJOBS install
-        python3 -c "import proxnlp"
+        python3 -c "import proxsuite_nlp"
 
   build:
     name: Build proxddp
-    needs: build-proxnlp
+    needs: build-proxsuite-nlp
     runs-on: self-hosted
     steps:
     - uses: actions/checkout@v4
@@ -100,6 +100,6 @@ jobs:
         cd $GITHUB_WORKSPACE/proxddp
         cd build/ && make uninstall
         cd .. && rm -r build/
-        cd $GITHUB_WORKSPACE/proxnlp
+        cd $GITHUB_WORKSPACE/proxsuite-nlp
         cd build/ && make uninstall
         cd .. && rm -r build/

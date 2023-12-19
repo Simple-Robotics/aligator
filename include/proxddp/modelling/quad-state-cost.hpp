@@ -11,7 +11,7 @@ namespace proxddp {
 /// Quadratic distance cost over the state manifold.
 template <typename Scalar>
 struct QuadraticStateCostTpl : QuadraticResidualCostTpl<Scalar> {
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = QuadraticResidualCostTpl<Scalar>;
   using StateError = StateErrorResidualTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
@@ -37,7 +37,7 @@ protected:
 
 template <typename Scalar>
 struct QuadraticControlCostTpl : QuadraticResidualCostTpl<Scalar> {
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = QuadraticResidualCostTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using Error = ControlErrorResidualTpl<Scalar>;

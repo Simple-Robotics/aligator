@@ -14,7 +14,7 @@ import os
 import proxddp
 
 from proxddp import manifolds
-from proxnlp import constraints
+from proxsuite_nlp import constraints
 
 from utils import ArgsBase
 

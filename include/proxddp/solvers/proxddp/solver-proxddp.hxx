@@ -21,7 +21,7 @@ SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
     : target_tol_(tol), mu_init(mu_init), rho_init(rho_init), verbose_(verbose),
       hess_approx_(hess_approx), ldlt_algo_choice_(LDLTChoice::DENSE),
       max_iters(max_iters), rollout_max_iters(1), linesearch_(ls_params) {
-  ls_params.interp_type = proxnlp::LSInterpolation::CUBIC;
+  ls_params.interp_type = proxsuite::nlp::LSInterpolation::CUBIC;
 }
 
 template <typename Scalar>
@@ -442,9 +442,10 @@ auto SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   // check inertia
   {
     Eigen::VectorXi signature;
-    boost::apply_visitor(proxnlp::ComputeSignatureVisitor{signature}, ldlt);
+    boost::apply_visitor(proxsuite::nlp::ComputeSignatureVisitor{signature},
+                         ldlt);
     // (n+, n-, n0)
-    std::array<int, 3> inertia = proxnlp::computeInertiaTuple(signature);
+    std::array<int, 3> inertia = proxsuite::nlp::computeInertiaTuple(signature);
     if ((inertia[2] > 0) || (inertia[1] != ndual)) {
       return BWD_WRONG_INERTIA;
     }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "proxddp/modelling/dynamics/ode-abstract.hpp"
-#include <proxnlp/modelling/spaces/vector-space.hpp>
+#include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
 
 namespace proxddp {
 namespace dynamics {
@@ -12,7 +12,7 @@ namespace dynamics {
  */
 template <typename _Scalar> struct LinearODETpl : ODEAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ODEAbstractTpl<Scalar>;
   using ODEData = ODEDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
@@ -43,9 +43,9 @@ template <typename _Scalar> struct LinearODETpl : ODEAbstractTpl<_Scalar> {
    * The state space is inferred to be a vector space.
    */
   LinearODETpl(const MatrixXs &A, const MatrixXs &B, const VectorXs &c)
-      : LinearODETpl(
-            std::make_shared<proxnlp::VectorSpaceTpl<Scalar>>((int)A.rows()), A,
-            B, c) {}
+      : LinearODETpl(std::make_shared<proxsuite::nlp::VectorSpaceTpl<Scalar>>(
+                         (int)A.rows()),
+                     A, B, c) {}
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                ODEData &data) const;

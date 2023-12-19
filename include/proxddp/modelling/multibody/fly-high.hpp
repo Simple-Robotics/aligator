@@ -2,7 +2,7 @@
 
 #include "proxddp/core/unary-function.hpp"
 #include "./fwd.hpp"
-#include <proxnlp/modelling/spaces/multibody.hpp>
+#include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 #include <pinocchio/algorithm/frames-derivatives.hpp>
 
 namespace proxddp {
@@ -11,12 +11,12 @@ namespace proxddp {
 template <typename _Scalar>
 struct FlyHighResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   static constexpr int NR = 2;
 
   using Base = UnaryFunctionTpl<Scalar>;
   using BaseData = StageFunctionDataTpl<Scalar>;
-  using PhaseSpace = proxnlp::MultibodyPhaseSpace<Scalar>;
+  using PhaseSpace = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
 
   struct Data;
 

@@ -11,7 +11,7 @@ BOOST_AUTO_TEST_CASE(create_data) {
   pinocchio::Model model;
   pinocchio::buildModels::humanoidRandom(model);
 
-  using StateMultibody = proxnlp::MultibodyPhaseSpace<double>;
+  using StateMultibody = proxsuite::nlp::MultibodyPhaseSpace<double>;
   auto spaceptr = std::make_shared<StateMultibody>(model);
   Eigen::MatrixXd B(model.nv, model.nv);
   B.setIdentity();

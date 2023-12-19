@@ -6,7 +6,7 @@ You can run this file using pytest:
 
 Or also as a module.
 """
-from proxnlp import costs
+from proxsuite_nlp import costs
 import proxddp
 from proxddp import manifolds
 import numpy as np

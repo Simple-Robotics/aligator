@@ -31,7 +31,7 @@ if(BUILD_CROCODDYL_COMPAT)
 endif()
 
 if(BUILD_CROCODDYL_COMPAT)
-  target_link_libraries(example-talos-arm PUBLIC proxnlp::cnpy)
+  target_link_libraries(example-talos-arm PUBLIC proxsuite-nlp::cnpy)
 endif()
 
 file(GLOB EXAMPLES_PY *.py)

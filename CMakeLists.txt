@@ -124,15 +124,15 @@ if(BUILD_PYTHON_INTERFACE)
   message(STATUS "Python compiler: ${_python_implementation_value}")
 
   execute_process(
-    COMMAND ${PYTHON_EXECUTABLE} -c "import proxnlp"
-    RESULT_VARIABLE _proxnlp_python_bindings_not_found
+    COMMAND ${PYTHON_EXECUTABLE} -c "import proxsuite_nlp"
+    RESULT_VARIABLE _proxsuite_nlp_python_bindings_not_found
     OUTPUT_QUIET ERROR_QUIET)
-  if(_proxnlp_python_bindings_not_found EQUAL 0)
-    message(STATUS "Found proxnlp Python bindings.")
+  if(_proxsuite_nlp_python_bindings_not_found EQUAL 0)
+    message(STATUS "Found proxsuite_nlp Python bindings.")
   else()
-    message(FATAL_ERROR "proxnlp Python bindings NOT found.")
+    message(FATAL_ERROR "proxsuite_nlp Python bindings NOT found.")
   endif()
-  unset(_proxnlp_python_bindings_not_found)
+  unset(_proxsuite_nlp_python_bindings_not_found)
 
   execute_process(
     COMMAND ${PYTHON_EXECUTABLE} -c "import pinocchio"
@@ -148,7 +148,7 @@ if(BUILD_PYTHON_INTERFACE)
 
 endif(BUILD_PYTHON_INTERFACE)
 
-add_project_dependency(proxnlp 0.2.3 REQUIRED)
+add_project_dependency(proxsuite-nlp 0.2.3 REQUIRED)
 
 set(LIB_SOURCES src/utils/logger.cpp)
 
@@ -188,7 +188,7 @@ function(create_library)
     target_link_libraries(${PROJECT_NAME} PRIVATE OpenMP::OpenMP_CXX)
   endif(BUILD_WITH_OPENMP_SUPPORT)
 
-  target_link_libraries(${PROJECT_NAME} PUBLIC proxnlp::proxnlp)
+  target_link_libraries(${PROJECT_NAME} PUBLIC proxsuite-nlp::proxsuite-nlp)
   target_link_libraries(${PROJECT_NAME} PUBLIC Boost::filesystem Boost::system Boost::serialization)
   target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt)
   # set the install-tree include dirs

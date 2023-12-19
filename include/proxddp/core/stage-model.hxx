@@ -5,14 +5,14 @@
 #include "proxddp/core/stage-model.hpp"
 #include "proxddp/utils/exceptions.hpp"
 
-#include <proxnlp/modelling/constraints/equality-constraint.hpp>
-#include <proxnlp/modelling/spaces/vector-space.hpp>
+#include <proxsuite-nlp/modelling/constraints/equality-constraint.hpp>
+#include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
 
 namespace proxddp {
 
 namespace {
 
-using proxnlp::VectorSpaceTpl;
+using proxsuite::nlp::VectorSpaceTpl;
 template <typename T>
 shared_ptr<VectorSpaceTpl<T>> make_vector_space(const int n) {
   return std::make_shared<VectorSpaceTpl<T>>(n);
@@ -33,7 +33,7 @@ StageModelTpl<Scalar>::StageModelTpl(CostPtr cost, DynamicsPtr dyn_model)
                                       cost->nu, dyn_model->nu));
   }
 
-  using EqualitySet = proxnlp::EqualityConstraint<Scalar>;
+  using EqualitySet = proxsuite::nlp::EqualityConstraint<Scalar>;
   constraints_.pushBack(Constraint{dyn_model, std::make_shared<EqualitySet>()});
 }
 

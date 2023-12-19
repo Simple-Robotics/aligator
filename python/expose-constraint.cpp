@@ -1,7 +1,7 @@
 #include "proxddp/python/fwd.hpp"
 
 #include "proxddp/core/constraint.hpp"
-#include <proxnlp/constraint-base.hpp>
+#include <proxsuite-nlp/constraint-base.hpp>
 
 namespace proxddp {
 namespace python {

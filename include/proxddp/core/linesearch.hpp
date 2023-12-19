@@ -1,10 +1,10 @@
 #pragma once
 
-#include <proxnlp/linesearch-base.hpp>
+#include <proxsuite-nlp/linesearch-base.hpp>
 
 namespace proxddp {
 
-using proxnlp::Linesearch;
-using proxnlp::LinesearchStrategy;
+using proxsuite::nlp::Linesearch;
+using proxsuite::nlp::LinesearchStrategy;
 
 } // namespace proxddp

@@ -12,7 +12,7 @@ namespace proxddp {
 template <typename Scalar> struct WorkspaceBaseTpl {
   using VParams = ValueFunctionTpl<Scalar>;
   using QParams = QFunctionTpl<Scalar>;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
 
 protected:
   // Whether the workspace was initialized.

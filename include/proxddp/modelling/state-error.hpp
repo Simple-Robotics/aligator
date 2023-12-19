@@ -2,7 +2,7 @@
 
 #include "proxddp/core/function-abstract.hpp"
 #include "proxddp/core/unary-function.hpp"
-#include <proxnlp/modelling/spaces/vector-space.hpp>
+#include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
 
 namespace proxddp {
 
@@ -19,11 +19,11 @@ struct StateOrControlErrorResidual;
 template <typename _Scalar>
 struct StateOrControlErrorResidual<_Scalar, 0> : UnaryFunctionTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   PROXDDP_UNARY_FUNCTION_INTERFACE(Scalar);
   using Data = StageFunctionDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
-  using VectorSpace = proxnlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
+  using VectorSpace = proxsuite::nlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
 
   shared_ptr<Manifold> space_;
   VectorXs target_;
@@ -51,11 +51,11 @@ template <typename _Scalar, unsigned int arg>
 struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
   static_assert(arg > 0 && arg <= 2, "arg value must be 1 or 2!");
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageFunctionTpl<Scalar>;
   using Data = StageFunctionDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
-  using VectorSpace = proxnlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
+  using VectorSpace = proxsuite::nlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
 
   shared_ptr<Manifold> space_;
   VectorXs target_;

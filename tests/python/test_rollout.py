@@ -1,6 +1,6 @@
 import proxddp
 
-from proxnlp.manifolds import MultibodyPhaseSpace
+from proxsuite_nlp.manifolds import MultibodyPhaseSpace
 from proxddp.dynamics import (
     MultibodyFreeFwdDynamics,
     IntegratorEuler,

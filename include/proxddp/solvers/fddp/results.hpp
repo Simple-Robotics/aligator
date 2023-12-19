@@ -6,7 +6,7 @@ namespace proxddp {
 
 template <typename Scalar> struct ResultsFDDPTpl : ResultsBaseTpl<Scalar> {
 
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ResultsBaseTpl<Scalar>;
   using BlockXs = Eigen::Block<MatrixXs, -1, -1>;
 

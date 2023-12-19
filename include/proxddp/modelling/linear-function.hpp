@@ -8,7 +8,7 @@ namespace proxddp {
  */
 template <typename Scalar> struct LinearFunctionTpl : StageFunctionTpl<Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageFunctionTpl<Scalar>;
   using Data = StageFunctionDataTpl<Scalar>;
 

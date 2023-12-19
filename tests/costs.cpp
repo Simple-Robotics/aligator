@@ -4,7 +4,7 @@
 #include "proxddp/modelling/state-error.hpp"
 #include "proxddp/modelling/composite-costs.hpp"
 
-#include <proxnlp/modelling/spaces/pinocchio-groups.hpp>
+#include <proxsuite-nlp/modelling/spaces/pinocchio-groups.hpp>
 
 BOOST_AUTO_TEST_SUITE(costs)
 
@@ -12,7 +12,7 @@ using namespace proxddp;
 using T = double;
 
 BOOST_AUTO_TEST_CASE(quad_state) {
-  using SE2 = proxnlp::SETpl<2, T>;
+  using SE2 = proxsuite::nlp::SETpl<2, T>;
   auto space = std::make_shared<SE2>();
 
   std::size_t ndx = (std::size_t)space->ndx();

@@ -5,7 +5,7 @@ from proxddp import HistoryCallback, Results
 
 
 def plot_convergence(cb: HistoryCallback, ax: plt.Axes, res: Results = None):
-    from proxnlp.utils import plot_pd_errs
+    from proxsuite_nlp.utils import plot_pd_errs
 
     prim_infeas = cb.storage.prim_infeas.tolist()
     dual_infeas = cb.storage.dual_infeas.tolist()

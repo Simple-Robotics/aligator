@@ -23,7 +23,7 @@ template <typename _Scalar>
 struct StageModelTpl : Cloneable<StageModelTpl<_Scalar>> {
 public:
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
 
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using ManifoldPtr = shared_ptr<Manifold>;

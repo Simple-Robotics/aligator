@@ -1,6 +1,6 @@
 /// A car in SE2
 
-#include <proxnlp/modelling/spaces/pinocchio-groups.hpp>
+#include <proxsuite-nlp/modelling/spaces/pinocchio-groups.hpp>
 #include <pinocchio/multibody/liegroup/special-euclidean.hpp>
 
 #include "proxddp/solvers/proxddp/solver-proxddp.hpp"
@@ -12,7 +12,7 @@
 
 using T = double;
 using pinocchio::SpecialEuclideanOperationTpl;
-using proxnlp::PinocchioLieGroup;
+using proxsuite::nlp::PinocchioLieGroup;
 using SE2 = PinocchioLieGroup<SpecialEuclideanOperationTpl<2, T>>;
 
 using namespace proxddp;

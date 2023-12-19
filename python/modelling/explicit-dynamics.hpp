@@ -16,7 +16,7 @@ namespace internal {
 template <class ExplicitBase = context::ExplicitDynamics>
 struct PyExplicitDynamics : ExplicitBase, bp::wrapper<ExplicitBase> {
   using Scalar = context::Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   // All functions in the interface take this type for output
   using Data = ExplicitDynamicsDataTpl<Scalar>;
   using StageFunctionData = StageFunctionDataTpl<Scalar>;

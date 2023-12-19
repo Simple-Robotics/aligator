@@ -14,7 +14,7 @@ template <typename _Scalar>
 struct FrameTranslationResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
   PROXDDP_UNARY_FUNCTION_INTERFACE(Scalar);
   using BaseData = typename Base::Data;
   using Model = pinocchio::ModelTpl<Scalar>;

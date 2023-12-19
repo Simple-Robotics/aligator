@@ -8,7 +8,7 @@ namespace proxddp {
 
 template <typename _Scalar> struct ResultsBaseTpl {
   using Scalar = _Scalar;
-  PROXNLP_DYNAMIC_TYPEDEFS(Scalar);
+  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
 
 protected:
   // Whether the results struct was initialized.
