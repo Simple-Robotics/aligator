@@ -29,7 +29,8 @@ struct BlkMatrixPythonVisitor
   }
 
   template <class... Args> void visit(bp::class_<Args...> &obj) const {
-    obj.def_readwrite("data", &BlockMatrixType::data)
+    obj.add_property(
+           "matrix", +[](BlockMatrixType &m) -> RefType { return m.matrix(); })
         .def_readonly("rows", &BlockMatrixType::rows)
         .def_readonly("cols", &BlockMatrixType::cols)
         .add_property("rowDims",

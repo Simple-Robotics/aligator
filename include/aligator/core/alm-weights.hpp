@@ -49,7 +49,7 @@ public:
     return m.dot(diagMatrix().asDiagonal() * m);
   }
 
-  const VectorXs &diagMatrix() const { return scaleMatDiag_.data; }
+  const VectorXs &diagMatrix() const { return scaleMatDiag_.matrix(); }
 
 private:
   using BlkVec = BlkMatrix<VectorXs, -1, 1>;

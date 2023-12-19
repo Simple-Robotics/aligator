@@ -36,7 +36,7 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
       d.kktMat(0, 1) = model.D.transpose();
       d.kktMat(1, 0) = model.D;
       d.kktMat(1, 1).diagonal().setConstant(-mueq);
-      d.kktChol.compute(d.kktMat.data);
+      d.kktChol.compute(d.kktMat.matrix());
 
       kff = -model.r;
       zff = -model.d;
@@ -45,14 +45,14 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
 
       auto ffview = d.ff.template topBlkRows<2>();
       auto fbview = d.fb.template topBlkRows<2>();
-      d.kktChol.solveInPlace(ffview.data);
-      d.kktChol.solveInPlace(fbview.data);
+      d.kktChol.solveInPlace(ffview.matrix());
+      d.kktChol.solveInPlace(fbview.matrix());
 
       if (problem.isParameterized()) {
         Kth = -model.Gu;
         Zth.setZero();
         auto fthview = d.fth.template topBlkRows<2>();
-        d.kktChol.solveInPlace(fthview.data);
+        d.kktChol.solveInPlace(fthview.matrix());
       }
     }
 
@@ -102,8 +102,8 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
     Z = -model.C;
     BlkMatrix<VectorRef, 2, 1> ffview = d.ff.template topBlkRows<2>();
     BlkMatrix<RowMatrixRef, 2, 1> fbview = d.fb.template topBlkRows<2>();
-    d.kktChol.solveInPlace(ffview.data);
-    d.kktChol.solveInPlace(fbview.data);
+    d.kktChol.solveInPlace(ffview.matrix());
+    d.kktChol.solveInPlace(fbview.matrix());
 
     // set closed loop dynamics
     {
@@ -140,7 +140,7 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
       Kth = -d.Guhat;
       Zth.setZero();
       BlkMatrix<RowMatrixRef, 2, 1> fthview = d.fth.template topBlkRows<2>();
-      d.kktChol.solveInPlace(fthview.data);
+      d.kktChol.solveInPlace(fthview.matrix());
 
       // substitute into Xith, Ath gains
       Xith += model.B * Kth;
@@ -179,14 +179,14 @@ bool ProximalRiccatiSolver<Scalar>::backward(Scalar mudyn, Scalar mueq) {
     kkt0.mat(1, 0) = problem.G0;
     kkt0.mat(0, 1) = problem.G0.transpose();
     kkt0.mat(1, 1).diagonal().setConstant(-mudyn);
-    kkt0.chol.compute(kkt0.mat.data);
+    kkt0.chol.compute(kkt0.mat.matrix());
 
     kkt0.ff.blockSegment(0) = -vinit.vvec;
     kkt0.ff.blockSegment(1) = -problem.g0;
-    kkt0.chol.solveInPlace(kkt0.ff.data);
+    kkt0.chol.solveInPlace(kkt0.ff.matrix());
     kkt0.fth.blockRow(0) = -vinit.Lmat;
     kkt0.fth.blockRow(1).setZero();
-    kkt0.chol.solveInPlace(kkt0.fth.data);
+    kkt0.chol.solveInPlace(kkt0.fth.matrix());
 
     thGrad.noalias() =
         vinit.svec + vinit.Lmat.transpose() * kkt0.ff.blockSegment(0);
@@ -226,7 +226,7 @@ void ProximalRiccatiSolver<Scalar>::computeMatrixTerms(const knot_t &model,
   d.kktMat(0, 1) = model.D.transpose();
   d.kktMat(1, 0) = model.D;
   d.kktMat(1, 1).diagonal().setConstant(-mueq);
-  d.kktChol.compute(d.kktMat.data);
+  d.kktChol.compute(d.kktMat.matrix());
 }
 
 template <typename Scalar>

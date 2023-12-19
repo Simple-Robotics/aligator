@@ -29,7 +29,7 @@ public:
                 "Compile-time vector cannot have more than one column block.");
 
   BlkMatrix(const row_dim_t &rowDims, const col_dim_t &colDims)
-      : data(), //
+      : m_data(), //
         m_rowDims(rowDims), m_colDims(colDims), m_rowIndices(rowDims),
         m_colIndices(colDims), m_totalRows(0), m_totalCols(0) {
     initialize();
@@ -38,43 +38,62 @@ public:
   template <typename Other>
   BlkMatrix(const Eigen::MatrixBase<Other> &data, const row_dim_t &rowDims,
             const col_dim_t &colDims)
-      : data(data), //
+      : m_data(data.derived()), //
         m_rowDims(rowDims), m_colDims(colDims), m_rowIndices(rowDims),
         m_colIndices(colDims), m_totalRows(0), m_totalCols(0) {
     initialize();
   }
 
-  explicit BlkMatrix(const row_dim_t &dims)
-      : BlkMatrix(dims, std::integral_constant<bool, M != 1>()) {}
+  template <typename Other>
+  BlkMatrix(Eigen::MatrixBase<Other> &data, const row_dim_t &rowDims,
+            const col_dim_t &colDims)
+      : m_data(data.derived()), //
+        m_rowDims(rowDims), m_colDims(colDims), m_rowIndices(rowDims),
+        m_colIndices(colDims), m_totalRows(0), m_totalCols(0) {
+    initialize();
+  }
+
+  /// Only-rows constructor (only for vectors)
+  template <typename Other>
+  BlkMatrix(const Eigen::MatrixBase<Other> &data, const row_dim_t &dims)
+      : BlkMatrix(data, dims, {data.cols()}) {}
+
+  /// Only-rows constructor (only for vectors)
+  template <typename Other>
+  BlkMatrix(Eigen::MatrixBase<Other> &data, const row_dim_t &dims)
+      : BlkMatrix(data, dims, {data.cols()}) {}
+
+  /// Only-rows constructor (only for vectors)
+  explicit BlkMatrix(const row_dim_t &dims) : BlkMatrix(dims, {1}) {}
 
   /// @brief Get the block in position ( @p i, @p j )
   inline auto operator()(size_t i, size_t j) {
-    return data.block(m_rowIndices[i], m_colIndices[j], m_rowDims[i],
-                      m_colDims[j]);
+    return m_data.block(m_rowIndices[i], m_colIndices[j], m_rowDims[i],
+                        m_colDims[j]);
   }
 
   /// @copybrief operator()
   inline auto operator()(size_t i, size_t j) const {
-    return data.block(m_rowIndices[i], m_colIndices[j], m_rowDims[i],
-                      m_colDims[j]);
+    return m_data.block(m_rowIndices[i], m_colIndices[j], m_rowDims[i],
+                        m_colDims[j]);
   }
 
   inline auto blockRow(size_t i) {
-    return data.middleRows(m_rowIndices[i], m_rowDims[i]);
+    return m_data.middleRows(m_rowIndices[i], m_rowDims[i]);
   }
 
   inline auto blockRow(size_t i) const {
-    return data.middleRows(m_rowIndices[i], m_rowDims[i]);
+    return m_data.middleRows(m_rowIndices[i], m_rowDims[i]);
   }
 
   auto blockSegment(size_t i) {
     EIGEN_STATIC_ASSERT_VECTOR_ONLY(MatrixType);
-    return data.segment(m_rowIndices[i], m_rowDims[i]);
+    return m_data.segment(m_rowIndices[i], m_rowDims[i]);
   }
 
   auto blockSegment(size_t i) const {
     EIGEN_STATIC_ASSERT_VECTOR_ONLY(MatrixType);
-    return data.segment(m_rowIndices[i], m_rowDims[i]);
+    return m_data.segment(m_rowIndices[i], m_rowDims[i]);
   }
 
   inline auto operator[](size_t i) { return blockSegment(i); }
@@ -86,12 +105,13 @@ public:
   BlkMatrix &operator=(const Eigen::MatrixBase<Other> &other) {
     assert(other.rows() == data.rows());
     assert(other.cols() == data.cols());
-    data = other;
+    m_data = other;
   }
 
-  void setZero() { data.setZero(); }
+  void setZero() { m_data.setZero(); }
 
-  MatrixType data;
+  MatrixType &matrix() { return m_data; }
+  const MatrixType &matrix() const { return m_data; }
 
   const row_dim_t &rowDims() const { return m_rowDims; }
   const row_dim_t &rowIndices() const { return m_rowIndices; }
@@ -101,11 +121,32 @@ public:
   long rows() const { return m_totalRows; }
   long cols() const { return m_totalCols; }
 
+  auto topBlkRows(size_t n) {
+    using OutType = BlkMatrix<Eigen::Ref<MatrixType>, -1, M>;
+    std::vector<long> subRowDims;
+    subRowDims.resize(n);
+    std::copy_n(m_rowDims.cbegin(), n, subRowDims.begin());
+    long ntr = std::accumulate(subRowDims.begin(), subRowDims.end(), 0);
+    return OutType(m_data.topRows(ntr), subRowDims, m_colDims);
+  }
+
+  template <size_t n> auto topBlkRows() {
+    static_assert(n <= N,
+                  "Cannot take n block rows of matrix with <n block rows.");
+    using RefType = Eigen::Ref<MatrixType>;
+    using OutType = BlkMatrix<RefType, n, M>;
+    std::array<long, n> subRowDims;
+    std::copy_n(m_rowDims.cbegin(), n, subRowDims.begin());
+    long ntr = std::accumulate(subRowDims.begin(), subRowDims.end(), 0);
+    return OutType(m_data.topRows(ntr), subRowDims, m_colDims);
+  }
+
   friend std::ostream &operator<<(std::ostream &oss, const BlkMatrix &self) {
-    return oss << self.data;
+    return oss << self.m_data;
   }
 
 protected:
+  MatrixType m_data;
   row_dim_t m_rowDims;
   col_dim_t m_colDims;
   row_dim_t m_rowIndices;
@@ -127,35 +168,8 @@ protected:
       m_colIndices[i] = m_totalCols;
       m_totalCols += m_colDims[i];
     }
-    data.resize(m_totalRows, m_totalCols);
+    m_data.resize(m_totalRows, m_totalCols);
   }
 };
-
-template <class T, int N, int M>
-auto topBlkRows(size_t n, BlkMatrix<T, N, M> &mat) {
-  using RefType = Eigen::Ref<T>;
-  using OutType = BlkMatrix<RefType, -1, M>;
-  const auto &rowDims = mat.rowDims();
-  const auto &colDims = mat.colDims();
-  std::vector<long> subRowDims;
-  subRowDims.resize(n);
-  std::copy_n(rowDims.cbegin(), n, subRowDims.begin());
-  auto ntr = std::accumulate(subRowDims.begin(), subRowDims.end(), 0);
-  return OutType(mat.data.topRows(ntr), subRowDims, colDims);
-}
-
-template <size_t n, class T, int N, int M>
-auto topBlkRows(BlkMatrix<T, N, M> &mat) {
-  static_assert(n <= N,
-                "Cannot take n block rows of matrix with <n block rows.");
-  using RefType = Eigen::Ref<T>;
-  using OutType = BlkMatrix<RefType, n, M>;
-  const auto &rowDims = mat.rowDims();
-  const auto &colDims = mat.colDims();
-  std::array<long, n> subRowDims;
-  std::copy_n(rowDims.cbegin(), n, subRowDims.begin());
-  auto ntr = std::accumulate(subRowDims.begin(), subRowDims.end(), 0);
-  return OutType(mat.data.topRows(ntr), subRowDims, colDims);
-}
 
 } // namespace aligator
