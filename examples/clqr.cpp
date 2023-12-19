@@ -4,16 +4,16 @@
 #include "proxddp/modelling/state-error.hpp"
 #include "proxddp/solvers/proxddp/solver-proxddp.hpp"
 
-#include <proxnlp/modelling/constraints.hpp>
+#include <proxsuite-nlp/modelling/constraints.hpp>
 #include <iostream>
 
 using namespace proxddp;
 
-using Space = proxnlp::VectorSpaceTpl<double>;
+using Space = proxsuite::nlp::VectorSpaceTpl<double>;
 using LinearDynamics = dynamics::LinearDiscreteDynamicsTpl<double>;
 using LinearFunction = LinearFunctionTpl<double>;
-using BoxConstraint = proxnlp::BoxConstraintTpl<double>;
-using Equality = proxnlp::EqualityConstraint<double>;
+using BoxConstraint = proxsuite::nlp::BoxConstraintTpl<double>;
+using Equality = proxsuite::nlp::EqualityConstraint<double>;
 using QuadraticCost = QuadraticCostTpl<double>;
 using context::CostBase;
 using context::StageModel;
