@@ -223,9 +223,7 @@ if(BUILD_CROCODDYL_COMPAT)
   add_subdirectory(src/compat/crocoddyl)
 endif()
 
-if(BUILD_PYTHON_INTERFACE)
-  add_subdirectory(python)
-endif()
+add_subdirectory(bindings)
 
 # benchmarks, examples, and tests
 
