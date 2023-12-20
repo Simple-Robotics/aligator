@@ -20,7 +20,7 @@ defaults:
 jobs:
   build-proxsuite-nlp:
     name: Build proxsuite-nlp
-    runs-on: self-hosted
+    runs-on: self-hosted-linux-x64
     steps:
     - name: Config for main
       if: github.ref == 'refs/heads/main'
