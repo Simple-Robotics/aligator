@@ -67,11 +67,11 @@ void exposeGAR() {
   bp::class_<value_t>("value_data", bp::no_init)
       .def_readonly("Pmat", &value_t::Pmat)
       .def_readonly("pvec", &value_t::pvec)
-      .def_readonly("Vmat", &value_t::Vmat)
-      .def_readonly("vvec", &value_t::vvec)
-      .def_readonly("Lmat", &value_t::Lmat)
-      .def_readonly("Psi", &value_t::Psi)
-      .def_readonly("svec", &value_t::svec);
+      .def_readonly("Vxx", &value_t::Vxx)
+      .def_readonly("vx", &value_t::vx)
+      .def_readonly("Vxt", &value_t::Vxt)
+      .def_readonly("Vtt", &value_t::Vtt)
+      .def_readonly("vt", &value_t::vt);
 
   bp::class_<stage_factor_t>("stage_factor", bp::no_init)
       .def_readonly("ff", &stage_factor_t::ff)
