@@ -40,7 +40,7 @@ void exposeEnums() {
 } // namespace python
 } // namespace proxddp
 
-BOOST_PYTHON_MODULE(pyproxddp) {
+BOOST_PYTHON_MODULE(MODULE_NAME) {
   using namespace proxddp::python;
 
   bp::docstring_options module_docstring_options(true, true, true);
