@@ -1,6 +1,6 @@
 #include "proxddp/modelling/linear-discrete-dynamics.hpp"
 #include "proxddp/modelling/linear-function.hpp"
-#include "proxddp/modelling/quad-costs.hpp"
+#include "proxddp/modelling/costs/quad-costs.hpp"
 #include "proxddp/modelling/state-error.hpp"
 #include "proxddp/solvers/proxddp/solver-proxddp.hpp"
 
