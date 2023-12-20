@@ -3,6 +3,9 @@
 
 #include <boost/test/unit_test.hpp>
 
+// used for timings, numbers are merely indicative, this *not* a benchmark
+#include <chrono>
+
 #include "./test_util.hpp"
 
 using namespace aligator::gar;
@@ -60,7 +63,13 @@ BOOST_AUTO_TEST_CASE(short_horz_pb) {
   prob.G0.setIdentity();
   prox_riccati_t solver{prob};
   fmt::print("Horizon: {:d}\n", prob.horizon());
+
+  auto bwbeg = std::chrono::system_clock::now();
   BOOST_CHECK(solver.backward(mu, mueq));
+  auto bwend = std::chrono::system_clock::now();
+  auto t_bwd =
+      std::chrono::duration_cast<std::chrono::microseconds>(bwend - bwbeg);
+  fmt::print("Elapsed time (bwd): {:d}\n", t_bwd.count());
 
   auto _traj = lqrInitializeSolution(prob);
   VectorOfVectors xs = std::move(_traj[0]);
@@ -71,7 +80,12 @@ BOOST_AUTO_TEST_CASE(short_horz_pb) {
   BOOST_CHECK_EQUAL(vs.size(), prob.horizon() + 1);
   BOOST_CHECK_EQUAL(lbdas.size(), prob.horizon() + 1);
 
+  auto fwbeg = std::chrono::system_clock::now();
   bool ret = solver.forward(xs, us, vs, lbdas);
+  auto fwend = std::chrono::system_clock::now();
+  auto t_fwd =
+      std::chrono::duration_cast<std::chrono::microseconds>(fwend - fwbeg);
+  fmt::print("Elapsed time (fwd): {:d}\n", t_fwd.count());
   BOOST_CHECK(ret);
 
   // check error
@@ -91,14 +105,24 @@ BOOST_AUTO_TEST_CASE(random_long_problem) {
   auto prob = generate_problem(x0, 100, nx, nu);
   prox_riccati_t solver{prob};
   double mu = 1e-14;
+  auto bwbeg = std::chrono::system_clock::now();
   solver.backward(mu, mu);
+  auto bwend = std::chrono::system_clock::now();
+  auto t_bwd =
+      std::chrono::duration_cast<std::chrono::microseconds>(bwend - bwbeg);
+  fmt::print("Elapsed time (bwd): {:d}\n", t_bwd.count());
 
   auto _traj = lqrInitializeSolution(prob);
   VectorOfVectors xs = std::move(_traj[0]);
   VectorOfVectors us = std::move(_traj[1]);
   VectorOfVectors vs = std::move(_traj[2]);
   VectorOfVectors lbdas = std::move(_traj[3]);
+  auto fwbeg = std::chrono::system_clock::now();
   solver.forward(xs, us, vs, lbdas);
+  auto fwend = std::chrono::system_clock::now();
+  auto t_fwd =
+      std::chrono::duration_cast<std::chrono::microseconds>(fwend - fwbeg);
+  fmt::print("Elapsed time (fwd): {:d}\n", t_fwd.count());
 
   KktError err = compute_kkt_error(prob, xs, us, vs, lbdas);
   fmt::print("dyn  error: {:.3e}\n", err.dyn);
