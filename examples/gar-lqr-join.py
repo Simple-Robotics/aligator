@@ -127,7 +127,7 @@ def computeError():
     gx += knp.E.T @ lp_
     # first leg
     vm0 = solver1.datas[0].vm
-    _L0 = vm0.Lmat
+    _L0 = vm0.Vxt
     _err = vm0.Pmat @ xs1[0] + prob1.G0.T @ ls1[0] + vm0.pvec + _L0 @ thopt
     _err0 = (
         vm0.Pmat @ solver1.kkt0.ff(0, 0) + prob1.G0.T @ solver1.kkt0.ff(1, 0) + vm0.pvec
@@ -148,8 +148,8 @@ def computeError():
     gxn += kn.E.T @ thopt
     print("gxn:", gxn)
     vm0: gar.value_data = solver2.datas[0].vm
-    _L0 = vm0.Lmat
-    _err = vm0.Pmat @ xs2[0] + vm0.pvec + _L0 @ thopt
+    _L0 = vm0.Vxt
+    _err = vm0.Vxt @ xs2[0] + vm0.pvec + _L0 @ thopt
     print("knots2::L0", _L0)
     print("knots2::initerr", _err)
 
