@@ -1,33 +1,21 @@
+#
+# Copyright (C) 2022-2023 LAAS-CNRS, INRIA
+#
 include(${PROJECT_SOURCE_DIR}/cmake/python.cmake)
 if(GENERATE_PYTHON_STUBS)
   include(${PROJECT_SOURCE_DIR}/cmake/stubs.cmake)
 endif(GENERATE_PYTHON_STUBS)
 
-file(GLOB ${PYLIB_NAME}_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
-     ${CMAKE_CURRENT_SOURCE_DIR}/modelling/*.cpp)
+file(GLOB PY_SOURCES src/*.cpp src/modelling/*.cpp)
 
-file(GLOB ${PYLIB_NAME}_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp
-     ${CMAKE_CURRENT_SOURCE_DIR}/modelling/*.hpp ${CMAKE_CURRENT_SOURCE_DIR}/utils/*.hpp)
+set(PY_HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/proxddp/python)
+file(GLOB PY_HEADERS ${PY_HEADER_DIR}/*.hpp ${PY_HEADER_DIR}/modelling/*.hpp
+     ${PY_HEADER_DIR}/utils/*.hpp)
 
-set(PY_HEADERS ${${PYLIB_NAME}_HEADERS})
-set(PY_SOURCES ${${PYLIB_NAME}_SOURCES})
 if(BUILD_CROCODDYL_COMPAT)
-  list(APPEND PY_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/compat/croco.hpp)
-  list(APPEND PY_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/compat/expose-croco-compat.cpp)
+  list(APPEND PY_HEADERS ${PY_HEADER_DIR}/compat/croco.hpp)
+  list(APPEND PY_SOURCES src/compat/expose-croco-compat.cpp)
 endif()
-
-file(
-  MAKE_DIRECTORY
-  ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python
-  ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python/compat
-  ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python/modelling
-  ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python/utils)
-foreach(pyheader ${PY_HEADERS})
-  message(STATUS "creating symlink for file ${pyheader}")
-  file(RELATIVE_PATH pyhead_local ${CMAKE_CURRENT_SOURCE_DIR} ${pyheader})
-  execute_process(COMMAND ${CMAKE_COMMAND} -E ${LINK} ${pyheader}
-                          ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python/${pyhead_local})
-endforeach()
 
 function(make_bindings)
   add_library(${PYLIB_NAME} SHARED ${PY_HEADERS} ${PY_SOURCES})
@@ -46,9 +34,11 @@ function(make_bindings)
 
   # deprecated functions are exposed up until they are removed. remove warnings.
   target_compile_options(${PYLIB_NAME} PRIVATE "-Wno-deprecated-declarations")
+  target_compile_definitions(${PYLIB_NAME} PRIVATE MODULE_NAME=${PYLIB_NAME})
+  target_include_directories(${PYLIB_NAME}
+                             PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 
   target_link_libraries(${PYLIB_NAME} PUBLIC ${PROJECT_NAME} eigenpy::eigenpy)
-  target_link_boost_python(${PYLIB_NAME} PUBLIC)
 
   if(BUILD_CROCODDYL_COMPAT)
     target_link_libraries(${PYLIB_NAME} PUBLIC proxddp::croc_compat)
@@ -68,26 +58,11 @@ endfunction()
 
 make_bindings()
 
-# symlink the headers here
-
-file(
-  MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python
-  ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python/modelling
-  ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python/utils ${CMAKE_CURRENT_BINARY_DIR}/examples)
-if(BUILD_CROCODDYL_COMPAT)
-  file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/include/${PROJECT_NAME}/python/compat)
-endif(BUILD_CROCODDYL_COMPAT)
-
-foreach(pyheader ${PY_HEADERS})
-  string(REGEX REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" pyheader ${pyheader})
-  get_filename_component(headerPath ${pyheader} PATH)
-  execute_process(COMMAND ${CMAKE_COMMAND} -E ${LINK} ${CMAKE_CURRENT_SOURCE_DIR}/${pyheader}
-                          ${${PROJECT_NAME}_BINARY_DIR}/include/${PROJECT_NAME}/python/${pyheader})
-  install(
-    FILES ${pyheader}
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}/python/${headerPath}
-    PERMISSIONS OWNER_READ GROUP_READ WORLD_READ OWNER_WRITE)
-endforeach(pyheader)
+install(
+  DIRECTORY ${PY_HEADER_DIR}
+  DESTINATION "include/${PROJECT_NAME}"
+  FILES_MATCHING
+  PATTERN "*.hpp")
 
 if(IS_ABSOLUTE ${PYTHON_SITELIB})
   set(ABSOLUTE_PYTHON_SITELIB ${PYTHON_SITELIB})
