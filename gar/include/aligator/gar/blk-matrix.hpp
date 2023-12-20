@@ -103,8 +103,8 @@ public:
   /// Set the data to be equal to some other Eigen object
   template <typename Other>
   BlkMatrix &operator=(const Eigen::MatrixBase<Other> &other) {
-    assert(other.rows() == data.rows());
-    assert(other.cols() == data.cols());
+    assert(other.rows() == m_data.rows());
+    assert(other.cols() == m_data.cols());
     m_data = other;
   }
 
