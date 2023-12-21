@@ -10,8 +10,8 @@ namespace compat {
 namespace croc {
 
 /**
- * @brief   This function converts a crocoddyl::ShootingProblemTpl to a proxddp
- * TrajOptProblemTpl.
+ * @brief   This function converts a crocoddyl::ShootingProblemTpl
+ * to an aligator::TrajOptProblemTpl
  *
  * @details
  */

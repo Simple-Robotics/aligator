@@ -19,7 +19,7 @@ void exposeCrocoddylCompat() {
   bp::def("convertCrocoddylProblem",
           &ns_croc::convertCrocoddylProblem<context::Scalar>,
           bp::args("croc_problem"),
-          "Convert a Crocoddyl problem to a ProxDDP problem.");
+          "Convert a Crocoddyl problem to an aligator problem.");
 
   using CrocActionModel = crocoddyl::ActionModelAbstractTpl<Scalar>;
   using StateAbstract = crocoddyl::StateAbstractTpl<Scalar>;
