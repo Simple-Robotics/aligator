@@ -48,7 +48,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
    *
    * ## Transcription
    * A _transcription_ translates the continuous-time OCP to a discrete-time,
-   * finite-dimensional nonlinear program. PROXDDP allows us to consider
+   * finite-dimensional nonlinear program. Aligator allows us to consider
    * transcriptions with implicit discrete dynamics: \begin{aligned}
    *     \min_{\bmx,\bmu}~& J(\bmx, \bmu) = \sum_{i=0}^{N-1} \ell_i(x_i, u_i) +
    * \ell_N(x_N) \\\\
@@ -57,7 +57,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
    *                 & h(x_i, u_i) \leq 0
    * \end{aligned}
    *
-   * In PROXDDP, trajectory optimization problems are described using the class
+   * In aligator, trajectory optimization problems are described using the class
    * TrajOptProblemTpl. Each TrajOptProblemTpl is described by a succession of
    * stages (StageModelTpl) which encompass the set of constraints and the cost
    * function (class CostAbstractTpl) for this stage.
@@ -178,7 +178,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// @brief  Set the number of threads for multithreaded evaluation.
   void setNumThreads(std::size_t num_threads) {
 #ifndef ALIGATOR_MULTITHREADING
-    fmt::print("{} does nothing: PROXDDP was not compiled with multithreading "
+    fmt::print("{} does nothing: aligator was not compiled with multithreading "
                "support.\n",
                __FUNCTION__);
 #endif
