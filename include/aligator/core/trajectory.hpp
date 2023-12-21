@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 
 #include "aligator/math.hpp"
@@ -10,14 +11,7 @@ template <typename Scalar> struct TrajectoryTpl {
   std::vector<VectorXs> us;
   std::vector<VectorXs> vs;
   std::vector<VectorXs> lbdas;
+  long horizon() const { return xs.size() - 1; }
 };
 
 } // namespace aligator
-
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/context.hpp"
-
-namespace aligator {
-extern template struct TrajectoryTpl<context::Scalar>;
-}
-#endif
