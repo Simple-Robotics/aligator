@@ -28,7 +28,7 @@ foreach(pyfile ${PYTHON_TESTS})
   execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/${pyfile}
                           ${CMAKE_CURRENT_BINARY_DIR}/${pyfile})
   message(STATUS "Adding Python test: ${test_name}")
-  add_python_unit_test(${test_name} "tests/python/${pyfile}" "tests/python")
+  add_python_unit_test(${test_name} "tests/python/${pyfile}" "tests/python" "bindings/python")
   set_tests_properties("${test_name}" PROPERTIES DEPENDS ${PYLIB_NAME})
 endforeach()
 
