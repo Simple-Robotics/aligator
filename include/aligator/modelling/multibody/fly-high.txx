@@ -1,7 +1,7 @@
 #pragma once
 
 #include "./fly-high.hpp"
-#include "proxddp/context.hpp"
+#include "aligator/context.hpp"
 
 namespace aligator {
 

@@ -4,8 +4,8 @@
 
 #include "croc-talos-arm.hpp"
 
-#include "proxddp/solvers/fddp/solver-fddp.hpp"
-#include "proxddp/solvers/proxddp/solver-proxddp.hpp"
+#include "aligator/solvers/fddp/solver-fddp.hpp"
+#include "aligator/solvers/proxddp/solver-proxddp.hpp"
 
 #include <benchmark/benchmark.h>
 

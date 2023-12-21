@@ -1,7 +1,7 @@
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/core/function-abstract.hpp"
+#include "aligator/core/function-abstract.hpp"
 
 namespace aligator {
 

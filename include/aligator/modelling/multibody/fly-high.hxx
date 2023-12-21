@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/modelling/multibody/fly-high.hpp"
+#include "aligator/modelling/multibody/fly-high.hpp"
 #include <pinocchio/algorithm/compute-all-terms.hpp>
 
 namespace aligator {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/modelling/dynamics/integrator-abstract.hpp"
+#include "aligator/modelling/dynamics/integrator-abstract.hpp"
 
 namespace aligator {
 namespace dynamics {
@@ -77,4 +77,4 @@ struct IntegratorMidpointDataTpl : IntegratorDataTpl<_Scalar> {
 } // namespace dynamics
 } // namespace aligator
 
-#include "proxddp/modelling/dynamics/integrator-midpoint.hxx"
+#include "aligator/modelling/dynamics/integrator-midpoint.hxx"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/modelling/dynamics/integrator-rk2.hpp"
+#include "aligator/modelling/dynamics/integrator-rk2.hpp"
 
 namespace aligator {
 namespace dynamics {

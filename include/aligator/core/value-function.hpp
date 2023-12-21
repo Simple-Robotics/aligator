@@ -5,7 +5,7 @@
  */
 #pragma once
 
-#include "proxddp/fwd.hpp"
+#include "aligator/fwd.hpp"
 
 #include <ostream>
 
@@ -149,5 +149,5 @@ protected:
 } // namespace aligator
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/core/value-function.txx"
+#include "aligator/core/value-function.txx"
 #endif

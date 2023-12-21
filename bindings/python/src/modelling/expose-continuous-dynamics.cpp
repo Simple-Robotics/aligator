@@ -1,7 +1,7 @@
 /// @file
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
-#include "proxddp/python/modelling/continuous.hpp"
-#include "proxddp/modelling/dynamics/linear-ode.hpp"
+#include "aligator/python/modelling/continuous.hpp"
+#include "aligator/modelling/dynamics/linear-ode.hpp"
 
 namespace aligator {
 namespace python {

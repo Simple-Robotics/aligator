@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/modelling/quad-state-cost.hpp"
+#include "aligator/modelling/quad-state-cost.hpp"
 
 namespace aligator {
 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "proxddp/context.hpp"
-#include "proxddp/python/macros.hpp"
-#include "proxddp/python/visitors.hpp"
+#include "aligator/context.hpp"
+#include "aligator/python/macros.hpp"
+#include "aligator/python/visitors.hpp"
 
 #include <eigenpy/eigenpy.hpp>
 #include <eigenpy/std-vector.hpp>

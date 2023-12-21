@@ -2,7 +2,7 @@
 /// interface for BaseODETpl.
 #pragma once
 
-#include "proxddp/modelling/dynamics/ode-abstract.hpp"
+#include "aligator/modelling/dynamics/ode-abstract.hpp"
 
 #include <proxsuite-nlp/manifold-base.hpp>
 

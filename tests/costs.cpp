@@ -1,8 +1,8 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "proxddp/modelling/state-error.hpp"
-#include "proxddp/modelling/composite-costs.hpp"
+#include "aligator/modelling/state-error.hpp"
+#include "aligator/modelling/composite-costs.hpp"
 
 #include <proxsuite-nlp/modelling/spaces/pinocchio-groups.hpp>
 

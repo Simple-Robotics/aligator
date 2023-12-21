@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/core/cost-abstract.hpp"
+#include "aligator/core/cost-abstract.hpp"
 #include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
 
 namespace aligator {
@@ -151,5 +151,5 @@ struct QuadraticCostDataTpl : CostDataAbstractTpl<Scalar> {
 } // namespace aligator
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/modelling/quad-costs.txx"
+#include "aligator/modelling/quad-costs.txx"
 #endif

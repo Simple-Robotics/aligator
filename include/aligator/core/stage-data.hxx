@@ -2,9 +2,9 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/core/stage-data.hpp"
+#include "aligator/core/stage-data.hpp"
 
-#include "proxddp/core/stage-model.hpp"
+#include "aligator/core/stage-model.hpp"
 
 namespace aligator {
 

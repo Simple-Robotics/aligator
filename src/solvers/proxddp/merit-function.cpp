@@ -1,8 +1,8 @@
 /// @file
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
-#include "proxddp/solvers/proxddp/merit-function.hpp"
-#include "proxddp/solvers/proxddp/solver-proxddp.hpp"
+#include "aligator/solvers/proxddp/merit-function.hpp"
+#include "aligator/solvers/proxddp/solver-proxddp.hpp"
 
 namespace aligator {
 

@@ -2,10 +2,10 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/python/fwd.hpp"
+#include "aligator/python/fwd.hpp"
 
-#include "proxddp/modelling/dynamics/continuous-base.hpp"
-#include "proxddp/modelling/dynamics/ode-abstract.hpp"
+#include "aligator/modelling/dynamics/continuous-base.hpp"
+#include "aligator/modelling/dynamics/ode-abstract.hpp"
 
 namespace aligator {
 namespace python {

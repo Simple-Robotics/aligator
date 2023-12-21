@@ -2,7 +2,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/math.hpp"
+#include "aligator/math.hpp"
 
 namespace aligator {
 

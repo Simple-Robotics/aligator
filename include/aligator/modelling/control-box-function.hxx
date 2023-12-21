@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/modelling/control-box-function.hpp"
+#include "aligator/modelling/control-box-function.hpp"
 
 namespace aligator {
 template <typename Scalar>

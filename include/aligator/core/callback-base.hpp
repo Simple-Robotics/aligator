@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/fwd.hpp"
+#include "aligator/fwd.hpp"
 #include <boost/any.hpp>
 
 namespace aligator {
@@ -18,5 +18,5 @@ template <typename Scalar> struct CallbackBaseTpl {
 } // namespace aligator
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/core/callback-base.txx"
+#include "aligator/core/callback-base.txx"
 #endif

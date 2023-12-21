@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/modelling/dynamics/linear-ode.hpp"
+#include "aligator/modelling/dynamics/linear-ode.hpp"
 
 namespace aligator {
 namespace dynamics {

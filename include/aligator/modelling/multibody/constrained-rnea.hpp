@@ -1,7 +1,7 @@
 #pragma once
 
 #include "./fwd.hpp"
-#include "proxddp/fwd.hpp"
+#include "aligator/fwd.hpp"
 
 #include <pinocchio/algorithm/compute-all-terms.hpp>
 #include <pinocchio/algorithm/contact-jacobian.hpp>

@@ -2,7 +2,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/core/dynamics.hpp"
+#include "aligator/core/dynamics.hpp"
 
 #include <proxsuite-nlp/manifold-base.hpp>
 
@@ -93,8 +93,8 @@ std::ostream &operator<<(std::ostream &oss,
 
 } // namespace aligator
 
-#include "proxddp/core/explicit-dynamics.hxx"
+#include "aligator/core/explicit-dynamics.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/core/explicit-dynamics.txx"
+#include "aligator/core/explicit-dynamics.txx"
 #endif

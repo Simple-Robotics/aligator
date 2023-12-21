@@ -1,8 +1,8 @@
 #pragma once
 
-#include "proxddp/context.hpp"
+#include "aligator/context.hpp"
 
-#include "proxddp/modelling/quad-costs.hpp"
+#include "aligator/modelling/quad-costs.hpp"
 
 namespace aligator {
 

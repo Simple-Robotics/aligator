@@ -1,7 +1,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/core/explicit-dynamics.hpp"
+#include "aligator/core/explicit-dynamics.hpp"
 
 namespace aligator {
 template <typename Scalar>

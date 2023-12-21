@@ -1,9 +1,9 @@
 #pragma once
 
 #include <crocoddyl/core/optctrl/shooting.hpp>
-#include "proxddp/core/traj-opt-problem.hpp"
-#include "proxddp/compat/crocoddyl/cost-wrap.hpp"
-#include "proxddp/compat/crocoddyl/action-model-wrap.hpp"
+#include "aligator/core/traj-opt-problem.hpp"
+#include "aligator/compat/crocoddyl/cost-wrap.hpp"
+#include "aligator/compat/crocoddyl/action-model-wrap.hpp"
 
 namespace aligator {
 namespace compat {

@@ -1,12 +1,12 @@
 /// @file
 /// @brief Linear-quadratic regulator
 
-#include "proxddp/solvers/proxddp/solver-proxddp.hpp"
-#include "proxddp/solvers/fddp/solver-fddp.hpp"
-#include "proxddp/utils/rollout.hpp"
-#include "proxddp/modelling/quad-costs.hpp"
+#include "aligator/solvers/proxddp/solver-proxddp.hpp"
+#include "aligator/solvers/fddp/solver-fddp.hpp"
+#include "aligator/utils/rollout.hpp"
+#include "aligator/modelling/quad-costs.hpp"
 
-#include "proxddp/modelling/linear-discrete-dynamics.hpp"
+#include "aligator/modelling/linear-discrete-dynamics.hpp"
 
 #include <benchmark/benchmark.h>
 

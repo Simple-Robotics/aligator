@@ -1,7 +1,7 @@
 #pragma once
 
-#include "proxddp/context.hpp"
-#include "proxddp/modelling/multibody/center-of-mass-velocity.hpp"
+#include "aligator/context.hpp"
+#include "aligator/modelling/multibody/center-of-mass-velocity.hpp"
 
 namespace aligator {
 

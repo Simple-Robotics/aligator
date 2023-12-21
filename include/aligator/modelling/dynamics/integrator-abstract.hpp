@@ -3,7 +3,7 @@
 /// @brief Base definitions for numerical integrators.
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
-#include "proxddp/modelling/dynamics/continuous-base.hpp"
+#include "aligator/modelling/dynamics/continuous-base.hpp"
 
 namespace aligator {
 namespace dynamics {
@@ -66,4 +66,4 @@ struct IntegratorDataTpl : DynamicsDataTpl<_Scalar> {
 } // namespace dynamics
 } // namespace aligator
 
-#include "proxddp/modelling/dynamics/integrator-abstract.hxx"
+#include "aligator/modelling/dynamics/integrator-abstract.hxx"

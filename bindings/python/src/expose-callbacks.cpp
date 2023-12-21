@@ -1,6 +1,6 @@
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
-#include "proxddp/python/callbacks.hpp"
-#include "proxddp/helpers/history-callback.hpp"
+#include "aligator/python/callbacks.hpp"
+#include "aligator/helpers/history-callback.hpp"
 
 namespace aligator {
 namespace python {

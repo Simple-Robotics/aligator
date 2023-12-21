@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/config.hpp"
+#include "aligator/config.hpp"
 
 #include <string>
 #include <sstream>

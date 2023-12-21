@@ -3,9 +3,9 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/fwd.hpp"
-#include "proxddp/core/traj-opt-problem.hpp"
-#include "proxddp/utils/exceptions.hpp"
+#include "aligator/fwd.hpp"
+#include "aligator/core/traj-opt-problem.hpp"
+#include "aligator/utils/exceptions.hpp"
 
 namespace aligator {
 

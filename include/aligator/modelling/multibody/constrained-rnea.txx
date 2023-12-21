@@ -2,7 +2,7 @@
 
 #include "./context.hpp"
 #include "./constrained-rnea.hpp"
-#include "proxddp/fwd.hpp"
+#include "aligator/fwd.hpp"
 
 namespace aligator {
 

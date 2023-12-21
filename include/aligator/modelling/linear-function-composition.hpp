@@ -1,7 +1,7 @@
 #pragma once
 
-#include "proxddp/core/function-abstract.hpp"
-#include "proxddp/core/unary-function.hpp"
+#include "aligator/core/function-abstract.hpp"
+#include "aligator/core/unary-function.hpp"
 
 namespace aligator {
 
@@ -122,4 +122,4 @@ auto linear_compose(shared_ptr<UnaryFunctionTpl<Scalar>> func,
 
 } // namespace aligator
 
-#include "proxddp/modelling/linear-function-composition.hxx"
+#include "aligator/modelling/linear-function-composition.hxx"

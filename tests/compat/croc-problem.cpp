@@ -1,13 +1,13 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
-#include "proxddp/compat/crocoddyl/context.hpp"
-#include "proxddp/compat/crocoddyl/problem-wrap.hpp"
+#include "aligator/compat/crocoddyl/context.hpp"
+#include "aligator/compat/crocoddyl/problem-wrap.hpp"
 
 #include <crocoddyl/core/optctrl/shooting.hpp>
 #include <crocoddyl/core/actions/lqr.hpp>
 #include <crocoddyl/core/solvers/ddp.hpp>
 #include <crocoddyl/core/utils/callbacks.hpp>
 
-#include "proxddp/solvers/proxddp/solver-proxddp.hpp"
+#include "aligator/solvers/proxddp/solver-proxddp.hpp"
 
 #include <boost/test/unit_test.hpp>
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "proxddp/core/explicit-dynamics.hpp"
-#include "proxddp/utils/newton-raphson.hpp"
+#include "aligator/core/explicit-dynamics.hpp"
+#include "aligator/utils/newton-raphson.hpp"
 #include <boost/optional.hpp>
 
 namespace aligator {

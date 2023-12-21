@@ -3,7 +3,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/modelling/dynamics/fwd.hpp"
+#include "aligator/modelling/dynamics/fwd.hpp"
 
 namespace aligator {
 namespace dynamics {
@@ -81,8 +81,8 @@ template <typename _Scalar> struct ContinuousDynamicsDataTpl {
 } // namespace dynamics
 } // namespace aligator
 
-#include "proxddp/modelling/dynamics/continuous-base.hxx"
+#include "aligator/modelling/dynamics/continuous-base.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/modelling/dynamics/continuous-base.txx"
+#include "aligator/modelling/dynamics/continuous-base.txx"
 #endif

@@ -1,6 +1,6 @@
 #pragma once
-#include "proxddp/core/traj-opt-problem.hpp"
-#include "proxddp/core/explicit-dynamics.hpp"
+#include "aligator/core/traj-opt-problem.hpp"
+#include "aligator/core/explicit-dynamics.hpp"
 
 #include <proxsuite-nlp/modelling/spaces/pinocchio-groups.hpp>
 

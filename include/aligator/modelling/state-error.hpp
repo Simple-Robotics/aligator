@@ -1,7 +1,7 @@
 #pragma once
 
-#include "proxddp/core/function-abstract.hpp"
-#include "proxddp/core/unary-function.hpp"
+#include "aligator/core/function-abstract.hpp"
+#include "aligator/core/unary-function.hpp"
 #include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
 
 namespace aligator {
@@ -153,5 +153,5 @@ struct ControlErrorResidualTpl
 } // namespace aligator
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/modelling/state-error.txx"
+#include "aligator/modelling/state-error.txx"
 #endif

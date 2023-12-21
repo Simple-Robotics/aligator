@@ -1,4 +1,4 @@
-#include "proxddp/solvers/proxddp/solver-proxddp.hpp"
+#include "aligator/solvers/proxddp/solver-proxddp.hpp"
 
 namespace aligator {
 

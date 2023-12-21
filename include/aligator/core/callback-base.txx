@@ -1,7 +1,7 @@
 #pragma once
 
-#include "proxddp/context.hpp"
-#include "proxddp/core/callback-base.hpp"
+#include "aligator/context.hpp"
+#include "aligator/core/callback-base.hpp"
 
 namespace aligator {
 

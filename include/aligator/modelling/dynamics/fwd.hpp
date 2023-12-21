@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/core/dynamics.hpp"
+#include "aligator/core/dynamics.hpp"
 
 namespace aligator {
 

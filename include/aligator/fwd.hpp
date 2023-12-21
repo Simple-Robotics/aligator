@@ -120,7 +120,7 @@ inline auto allocate_shared_eigen_aligned(Args &&...args) {
 
 } // namespace aligator
 
-#include "proxddp/math.hpp"
-#include "proxddp/macros.hpp"
-#include "proxddp/config.hpp"
-#include "proxddp/deprecated.hpp"
+#include "aligator/math.hpp"
+#include "aligator/macros.hpp"
+#include "aligator/config.hpp"
+#include "aligator/deprecated.hpp"

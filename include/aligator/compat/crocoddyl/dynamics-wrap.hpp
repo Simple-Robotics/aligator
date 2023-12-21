@@ -2,8 +2,8 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/compat/crocoddyl/fwd.hpp"
-#include "proxddp/core/explicit-dynamics.hpp"
+#include "aligator/compat/crocoddyl/fwd.hpp"
+#include "aligator/core/explicit-dynamics.hpp"
 #include <crocoddyl/core/action-base.hpp>
 
 namespace aligator {

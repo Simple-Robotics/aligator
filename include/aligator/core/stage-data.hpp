@@ -2,8 +2,8 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/fwd.hpp"
-#include "proxddp/core/clone.hpp"
+#include "aligator/fwd.hpp"
+#include "aligator/core/clone.hpp"
 
 namespace aligator {
 
@@ -62,8 +62,8 @@ protected:
 
 } // namespace aligator
 
-#include "proxddp/core/stage-data.hxx"
+#include "aligator/core/stage-data.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/core/stage-data.txx"
+#include "aligator/core/stage-data.txx"
 #endif

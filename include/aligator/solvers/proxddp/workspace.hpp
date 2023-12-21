@@ -3,9 +3,9 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/core/workspace-base.hpp"
-#include "proxddp/core/proximal-penalty.hpp"
-#include "proxddp/core/alm-weights.hpp"
+#include "aligator/core/workspace-base.hpp"
+#include "aligator/core/proximal-penalty.hpp"
+#include "aligator/core/alm-weights.hpp"
 
 #include <array>
 #include <proxsuite-nlp/ldlt-allocator.hpp>

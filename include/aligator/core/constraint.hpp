@@ -4,7 +4,7 @@
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/core/function-abstract.hpp"
+#include "aligator/core/function-abstract.hpp"
 
 namespace aligator {
 
@@ -80,8 +80,8 @@ protected:
 
 } // namespace aligator
 
-#include "proxddp/core/constraint.hxx"
+#include "aligator/core/constraint.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/core/constraint.txx"
+#include "aligator/core/constraint.txx"
 #endif

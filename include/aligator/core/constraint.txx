@@ -2,8 +2,8 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/context.hpp"
-#include "proxddp/core/constraint.hpp"
+#include "aligator/context.hpp"
+#include "aligator/core/constraint.hpp"
 
 namespace aligator {
 

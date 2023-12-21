@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/modelling/multibody/center-of-mass-velocity.hpp"
+#include "aligator/modelling/multibody/center-of-mass-velocity.hpp"
 #include <pinocchio/algorithm/center-of-mass.hpp>
 #include <pinocchio/algorithm/center-of-mass-derivatives.hpp>
 

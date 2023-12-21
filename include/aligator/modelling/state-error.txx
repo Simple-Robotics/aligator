@@ -1,7 +1,7 @@
 #pragma once
 
-#include "proxddp/context.hpp"
-#include "proxddp/modelling/state-error.hpp"
+#include "aligator/context.hpp"
+#include "aligator/modelling/state-error.hpp"
 
 namespace aligator {
 

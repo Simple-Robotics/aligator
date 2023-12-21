@@ -2,10 +2,10 @@
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/compat/crocoddyl/action-model-wrap.hpp"
-#include "proxddp/compat/crocoddyl/context.hpp"
-#include "proxddp/compat/crocoddyl/cost-wrap.hpp"
-#include "proxddp/compat/crocoddyl/problem-wrap.hpp"
+#include "aligator/compat/crocoddyl/action-model-wrap.hpp"
+#include "aligator/compat/crocoddyl/context.hpp"
+#include "aligator/compat/crocoddyl/cost-wrap.hpp"
+#include "aligator/compat/crocoddyl/problem-wrap.hpp"
 
 namespace aligator {
 namespace compat {

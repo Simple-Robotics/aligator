@@ -2,14 +2,14 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/compat/crocoddyl/cost-wrap.hpp"
-#include "proxddp/compat/crocoddyl/state-wrap.hpp"
-#include "proxddp/compat/crocoddyl/dynamics-wrap.hpp"
+#include "aligator/compat/crocoddyl/cost-wrap.hpp"
+#include "aligator/compat/crocoddyl/state-wrap.hpp"
+#include "aligator/compat/crocoddyl/dynamics-wrap.hpp"
 
-#include "proxddp/core/stage-model.hpp"
+#include "aligator/core/stage-model.hpp"
 #include <crocoddyl/core/action-base.hpp>
 
-#include "proxddp/utils/exceptions.hpp"
+#include "aligator/utils/exceptions.hpp"
 
 namespace aligator {
 namespace compat {
@@ -79,4 +79,4 @@ protected:
 } // namespace compat
 } // namespace aligator
 
-#include "proxddp/compat/crocoddyl/action-model-wrap.hxx"
+#include "aligator/compat/crocoddyl/action-model-wrap.hxx"

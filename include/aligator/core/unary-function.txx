@@ -1,7 +1,7 @@
 #pragma once
 
 #include "./unary-function.hpp"
-#include "proxddp/context.hpp"
+#include "aligator/context.hpp"
 
 namespace aligator {
 

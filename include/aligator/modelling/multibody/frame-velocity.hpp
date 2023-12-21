@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/core/unary-function.hpp"
+#include "aligator/core/unary-function.hpp"
 #include "./fwd.hpp"
 
 #include <pinocchio/multibody/model.hpp>
@@ -62,7 +62,7 @@ struct FrameVelocityDataTpl : StageFunctionDataTpl<Scalar> {
 
 } // namespace aligator
 
-#include "proxddp/modelling/multibody/frame-velocity.hxx"
+#include "aligator/modelling/multibody/frame-velocity.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./frame-velocity.txx"

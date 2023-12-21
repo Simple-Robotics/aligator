@@ -1,7 +1,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/modelling/dynamics/ode-abstract.hpp"
+#include "aligator/modelling/dynamics/ode-abstract.hpp"
 
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 #include <pinocchio/multibody/data.hpp>
@@ -83,8 +83,8 @@ template <typename Scalar> struct MultibodyFreeFwdDataTpl : ODEDataTpl<Scalar> {
 } // namespace dynamics
 } // namespace aligator
 
-#include "proxddp/modelling/dynamics/multibody-free-fwd.hxx"
+#include "aligator/modelling/dynamics/multibody-free-fwd.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/modelling/dynamics/multibody-free-fwd.txx"
+#include "aligator/modelling/dynamics/multibody-free-fwd.txx"
 #endif

@@ -2,8 +2,8 @@
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/compat/crocoddyl/fwd.hpp"
-#include "proxddp/core/cost-abstract.hpp"
+#include "aligator/compat/crocoddyl/fwd.hpp"
+#include "aligator/core/cost-abstract.hpp"
 #include <crocoddyl/core/cost-base.hpp>
 #include <crocoddyl/core/action-base.hpp>
 

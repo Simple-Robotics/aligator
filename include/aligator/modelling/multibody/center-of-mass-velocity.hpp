@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/core/unary-function.hpp"
+#include "aligator/core/unary-function.hpp"
 #include "./fwd.hpp"
 
 #include <pinocchio/multibody/model.hpp>
@@ -59,7 +59,7 @@ struct CenterOfMassVelocityDataTpl : StageFunctionDataTpl<Scalar> {
 
 } // namespace aligator
 
-#include "proxddp/modelling/multibody/center-of-mass-velocity.hxx"
+#include "aligator/modelling/multibody/center-of-mass-velocity.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./center-of-mass-velocity.txx"

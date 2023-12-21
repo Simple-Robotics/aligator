@@ -2,7 +2,7 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/core/cost-abstract.hpp"
+#include "aligator/core/cost-abstract.hpp"
 #include <proxsuite-nlp/modelling/spaces/cartesian-product.hpp>
 
 namespace aligator {

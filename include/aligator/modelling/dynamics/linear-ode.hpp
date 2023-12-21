@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/modelling/dynamics/ode-abstract.hpp"
+#include "aligator/modelling/dynamics/ode-abstract.hpp"
 #include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
 
 namespace aligator {
@@ -62,4 +62,4 @@ template <typename _Scalar> struct LinearODETpl : ODEAbstractTpl<_Scalar> {
 } // namespace dynamics
 } // namespace aligator
 
-#include "proxddp/modelling/dynamics/linear-ode.hxx"
+#include "aligator/modelling/dynamics/linear-ode.hxx"

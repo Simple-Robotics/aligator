@@ -1,7 +1,7 @@
 #pragma once
 
-#include "proxddp/context.hpp"
-#include "proxddp/modelling/multibody/frame-translation.hpp"
+#include "aligator/context.hpp"
+#include "aligator/modelling/multibody/frame-translation.hpp"
 
 namespace aligator {
 

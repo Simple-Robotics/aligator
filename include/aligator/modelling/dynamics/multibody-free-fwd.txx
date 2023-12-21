@@ -1,7 +1,7 @@
 #pragma once
 
-#include "proxddp/context.hpp"
-#include "proxddp/modelling/dynamics/multibody-free-fwd.hpp"
+#include "aligator/context.hpp"
+#include "aligator/modelling/dynamics/multibody-free-fwd.hpp"
 
 namespace aligator {
 namespace dynamics {

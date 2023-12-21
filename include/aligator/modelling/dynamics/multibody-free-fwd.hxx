@@ -1,7 +1,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/modelling/dynamics/multibody-free-fwd.hpp"
+#include "aligator/modelling/dynamics/multibody-free-fwd.hpp"
 
 #include <pinocchio/algorithm/aba.hpp>
 #include <pinocchio/algorithm/aba-derivatives.hpp>

@@ -5,14 +5,14 @@
 /// @htmlinclude fddp.html
 #pragma once
 
-#include "proxddp/core/callback-base.hpp"
-#include "proxddp/core/explicit-dynamics.hpp"
+#include "aligator/core/callback-base.hpp"
+#include "aligator/core/explicit-dynamics.hpp"
 
 #include "./results.hpp"
 #include "./workspace.hpp"
 #include "./linesearch.hpp"
 
-#include "proxddp/utils/logger.hpp"
+#include "aligator/utils/logger.hpp"
 
 #include <fmt/ostream.h>
 #include <unordered_map>

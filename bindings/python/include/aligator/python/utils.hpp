@@ -2,8 +2,8 @@
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/python/utils/deprecation.hpp"
-#include "proxddp/python/utils/enum.hpp"
+#include "aligator/python/utils/deprecation.hpp"
+#include "aligator/python/utils/enum.hpp"
 #include <proxsuite-nlp/python/utils/namespace.hpp>
 
 namespace aligator {

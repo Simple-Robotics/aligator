@@ -3,7 +3,7 @@
 /// @brief Defines a class representing ODEs.
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
-#include "proxddp/modelling/dynamics/continuous-base.hpp"
+#include "aligator/modelling/dynamics/continuous-base.hpp"
 
 namespace aligator {
 namespace dynamics {
@@ -62,8 +62,8 @@ struct ODEDataTpl : ContinuousDynamicsDataTpl<_Scalar> {
 } // namespace dynamics
 } // namespace aligator
 
-#include "proxddp/modelling/dynamics/ode-abstract.hxx"
+#include "aligator/modelling/dynamics/ode-abstract.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/modelling/dynamics/ode-abstract.txx"
+#include "aligator/modelling/dynamics/ode-abstract.txx"
 #endif

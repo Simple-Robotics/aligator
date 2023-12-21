@@ -4,7 +4,7 @@
 #pragma once
 
 #include "./solver-proxddp.hpp"
-#include "proxddp/core/iterative-refinement.hpp"
+#include "aligator/core/iterative-refinement.hpp"
 #include <boost/variant/apply_visitor.hpp>
 #ifndef NDEBUG
 #include <fmt/ostream.h>

@@ -1,7 +1,7 @@
 /// @file
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
-#include "proxddp/python/fwd.hpp"
-#include "proxddp/core/traj-opt-problem.hpp"
+#include "aligator/python/fwd.hpp"
+#include "aligator/core/traj-opt-problem.hpp"
 
 namespace aligator {
 namespace python {

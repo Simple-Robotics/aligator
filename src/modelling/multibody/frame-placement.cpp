@@ -1,4 +1,4 @@
-#include "proxddp/modelling/multibody/frame-placement.hpp"
+#include "aligator/modelling/multibody/frame-placement.hpp"
 
 namespace aligator {
 

@@ -1,7 +1,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/fwd.hpp"
+#include "aligator/fwd.hpp"
 
 namespace aligator {
 /// @brief Mixin which makes a class/class hierarchy cloneable.

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/modelling/multibody/frame-placement.hpp"
+#include "aligator/modelling/multibody/frame-placement.hpp"
 #include <pinocchio/algorithm/frames.hpp>
 #include <pinocchio/algorithm/kinematics.hpp>
 

@@ -2,8 +2,8 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/compat/crocoddyl/action-model-wrap.hpp"
-#include "proxddp/core/stage-data.hpp"
+#include "aligator/compat/crocoddyl/action-model-wrap.hpp"
+#include "aligator/core/stage-data.hpp"
 
 namespace aligator {
 namespace compat {

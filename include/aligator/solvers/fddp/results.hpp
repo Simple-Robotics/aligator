@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/core/results-base.hpp"
+#include "aligator/core/results-base.hpp"
 
 namespace aligator {
 

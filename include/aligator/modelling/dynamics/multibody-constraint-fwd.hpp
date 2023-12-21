@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/modelling/dynamics/ode-abstract.hpp"
+#include "aligator/modelling/dynamics/ode-abstract.hpp"
 
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 #include <pinocchio/multibody/data.hpp>
@@ -76,8 +76,8 @@ struct MultibodyConstraintFwdDataTpl : ODEDataTpl<Scalar> {
 } // namespace dynamics
 } // namespace aligator
 
-#include "proxddp/modelling/dynamics/multibody-constraint-fwd.hxx"
+#include "aligator/modelling/dynamics/multibody-constraint-fwd.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/modelling/dynamics/multibody-constraint-fwd.txx"
+#include "aligator/modelling/dynamics/multibody-constraint-fwd.txx"
 #endif

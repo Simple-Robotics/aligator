@@ -1,4 +1,4 @@
-#include "proxddp/helpers/history-callback.hpp"
+#include "aligator/helpers/history-callback.hpp"
 
 namespace aligator {
 

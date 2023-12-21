@@ -1,13 +1,13 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
-#include "proxddp/python/fwd.hpp"
-#include "proxddp/python/utils.hpp"
+#include "aligator/python/fwd.hpp"
+#include "aligator/python/utils.hpp"
 
-#include "proxddp/core/enums.hpp"
-#include "proxddp/version.hpp"
-#include "proxddp/threads.hpp"
+#include "aligator/core/enums.hpp"
+#include "aligator/version.hpp"
+#include "aligator/threads.hpp"
 
 #ifdef ALIGATOR_WITH_CROCODDYL_COMPAT
-#include "proxddp/python/compat/croco.hpp"
+#include "aligator/python/compat/croco.hpp"
 #endif
 
 namespace aligator {

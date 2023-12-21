@@ -1,5 +1,5 @@
-#include "proxddp/modelling/dynamics/integrator-euler.hpp"
-#include "proxddp/modelling/dynamics/integrator-rk2.hpp"
+#include "aligator/modelling/dynamics/integrator-euler.hpp"
+#include "aligator/modelling/dynamics/integrator-rk2.hpp"
 
 #include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
 

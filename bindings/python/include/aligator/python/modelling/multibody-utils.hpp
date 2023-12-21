@@ -2,8 +2,8 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/python/fwd.hpp"
-#include "proxddp/modelling/multibody/context.hpp"
+#include "aligator/python/fwd.hpp"
+#include "aligator/modelling/multibody/context.hpp"
 
 namespace aligator {
 namespace python {

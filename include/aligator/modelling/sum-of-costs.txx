@@ -1,7 +1,7 @@
 #pragma once
 
-#include "proxddp/context.hpp"
-#include "proxddp/modelling/sum-of-costs.hpp"
+#include "aligator/context.hpp"
+#include "aligator/modelling/sum-of-costs.hpp"
 
 namespace aligator {
 

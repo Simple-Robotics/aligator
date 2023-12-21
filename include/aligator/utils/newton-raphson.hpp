@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/fwd.hpp"
+#include "aligator/fwd.hpp"
 
 #include <Eigen/LU>
 

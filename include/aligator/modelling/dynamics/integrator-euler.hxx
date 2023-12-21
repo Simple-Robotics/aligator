@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/modelling/dynamics/integrator-euler.hpp"
+#include "aligator/modelling/dynamics/integrator-euler.hpp"
 
 namespace aligator {
 namespace dynamics {

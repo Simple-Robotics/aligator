@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/core/unary-function.hpp"
+#include "aligator/core/unary-function.hpp"
 #include "./fwd.hpp"
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 #include <pinocchio/algorithm/frames-derivatives.hpp>
@@ -73,7 +73,7 @@ struct FlyHighResidualTpl<Scalar>::Data : StageFunctionDataTpl<Scalar> {
 
 } // namespace aligator
 
-#include "proxddp/modelling/multibody/fly-high.hxx"
+#include "aligator/modelling/multibody/fly-high.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./fly-high.txx"

@@ -1,4 +1,4 @@
-#include "proxddp/modelling/function-xpr-slice.hpp"
+#include "aligator/modelling/function-xpr-slice.hpp"
 
 namespace aligator {
 

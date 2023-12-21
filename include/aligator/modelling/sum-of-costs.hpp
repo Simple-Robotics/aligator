@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/core/cost-abstract.hpp"
+#include "aligator/core/cost-abstract.hpp"
 
 namespace aligator {
 
@@ -110,8 +110,8 @@ struct CostStackDataTpl : CostDataAbstractTpl<_Scalar> {
 };
 } // namespace aligator
 
-#include "proxddp/modelling/sum-of-costs.hxx"
+#include "aligator/modelling/sum-of-costs.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/modelling/sum-of-costs.txx"
+#include "aligator/modelling/sum-of-costs.txx"
 #endif

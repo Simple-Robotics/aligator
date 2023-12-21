@@ -3,8 +3,8 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/fwd.hpp"
-#include "proxddp/core/clone.hpp"
+#include "aligator/fwd.hpp"
+#include "aligator/core/clone.hpp"
 #include <proxsuite-nlp/manifold-base.hpp>
 
 namespace aligator {
@@ -89,5 +89,5 @@ template <typename _Scalar> struct CostDataAbstractTpl {
 } // namespace aligator
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/core/cost-abstract.txx"
+#include "aligator/core/cost-abstract.txx"
 #endif

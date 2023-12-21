@@ -17,7 +17,7 @@
 #include <crocoddyl/core/residuals/control.hpp>
 #include <crocoddyl/core/solvers/fddp.hpp>
 
-#include "proxddp/compat/crocoddyl/problem-wrap.hpp"
+#include "aligator/compat/crocoddyl/problem-wrap.hpp"
 
 namespace pin = pinocchio;
 namespace croc = crocoddyl;

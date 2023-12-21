@@ -1,7 +1,7 @@
-#include "proxddp/fwd.hpp"
+#include "aligator/fwd.hpp"
 
 #ifdef ALIGATOR_PINOCCHIO_V3
-#include "proxddp/modelling/dynamics/multibody-constraint-fwd.hpp"
+#include "aligator/modelling/dynamics/multibody-constraint-fwd.hpp"
 
 namespace aligator {
 namespace dynamics {

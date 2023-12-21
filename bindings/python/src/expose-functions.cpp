@@ -1,12 +1,12 @@
 /// @file
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
-#include "proxddp/python/functions.hpp"
-#include "proxddp/python/eigen-member.hpp"
+#include "aligator/python/functions.hpp"
+#include "aligator/python/eigen-member.hpp"
 
-#include "proxddp/modelling/state-error.hpp"
-#include "proxddp/modelling/linear-function.hpp"
-#include "proxddp/modelling/control-box-function.hpp"
-#include "proxddp/modelling/function-xpr-slice.hpp"
+#include "aligator/modelling/state-error.hpp"
+#include "aligator/modelling/linear-function.hpp"
+#include "aligator/modelling/control-box-function.hpp"
+#include "aligator/modelling/function-xpr-slice.hpp"
 
 namespace aligator {
 namespace python {

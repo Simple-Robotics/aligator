@@ -2,9 +2,9 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/fwd.hpp"
-#include "proxddp/core/value-function.hpp"
-#include "proxddp/core/solver-util.hpp"
+#include "aligator/fwd.hpp"
+#include "aligator/core/value-function.hpp"
+#include "aligator/core/solver-util.hpp"
 
 namespace aligator {
 

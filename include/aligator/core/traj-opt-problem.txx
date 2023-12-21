@@ -1,7 +1,7 @@
 #pragma once
 
-#include "proxddp/context.hpp"
-#include "proxddp/core/traj-opt-problem.hpp"
+#include "aligator/context.hpp"
+#include "aligator/core/traj-opt-problem.hpp"
 
 namespace aligator {
 

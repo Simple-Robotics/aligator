@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/modelling/multibody/frame-velocity.hpp"
+#include "aligator/modelling/multibody/frame-velocity.hpp"
 #include <pinocchio/algorithm/frames.hpp>
 #include <pinocchio/algorithm/frames-derivatives.hpp>
 #include <pinocchio/algorithm/kinematics.hpp>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/core/proximal-penalty.hpp"
+#include "aligator/core/proximal-penalty.hpp"
 
 namespace aligator {
 

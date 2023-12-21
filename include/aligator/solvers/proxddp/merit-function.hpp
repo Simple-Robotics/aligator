@@ -1,10 +1,10 @@
 /// @file merit-function.hpp
 #pragma once
 
-#include "proxddp/fwd.hpp"
-#include "proxddp/core/traj-opt-problem.hpp"
-#include "proxddp/core/enums.hpp"
-#include "proxddp/core/alm-weights.hpp"
+#include "aligator/fwd.hpp"
+#include "aligator/core/traj-opt-problem.hpp"
+#include "aligator/core/enums.hpp"
+#include "aligator/core/alm-weights.hpp"
 
 namespace aligator {
 

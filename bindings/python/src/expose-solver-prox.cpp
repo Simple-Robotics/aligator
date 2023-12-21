@@ -1,7 +1,7 @@
-#include "proxddp/python/fwd.hpp"
-#include "proxddp/python/utils.hpp"
+#include "aligator/python/fwd.hpp"
+#include "aligator/python/utils.hpp"
 
-#include "proxddp/solvers/proxddp/solver-proxddp.hpp"
+#include "aligator/solvers/proxddp/solver-proxddp.hpp"
 
 namespace aligator {
 namespace python {

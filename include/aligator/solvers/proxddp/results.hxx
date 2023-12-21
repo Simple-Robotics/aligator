@@ -3,7 +3,7 @@
 #pragma once
 
 #include "./results.hpp"
-#include "proxddp/core/solver-util.hpp"
+#include "aligator/core/solver-util.hpp"
 
 #include <fmt/format.h>
 

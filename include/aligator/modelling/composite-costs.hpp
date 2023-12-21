@@ -2,10 +2,10 @@
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/fwd.hpp"
-#include "proxddp/core/function-abstract.hpp"
-#include "proxddp/core/cost-abstract.hpp"
-#include "proxddp/modelling/state-error.hpp"
+#include "aligator/fwd.hpp"
+#include "aligator/core/function-abstract.hpp"
+#include "aligator/core/cost-abstract.hpp"
+#include "aligator/modelling/state-error.hpp"
 
 #include <fmt/ostream.h>
 
@@ -115,8 +115,8 @@ template <typename Scalar> struct LogResidualCostTpl : CostAbstractTpl<Scalar> {
 } // namespace aligator
 
 // Implementation files
-#include "proxddp/modelling/quad-residual-cost.hxx"
-#include "proxddp/modelling/log-residual-cost.hxx"
+#include "aligator/modelling/quad-residual-cost.hxx"
+#include "aligator/modelling/log-residual-cost.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./composite-costs.txx"

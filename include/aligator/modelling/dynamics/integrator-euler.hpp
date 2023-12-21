@@ -2,7 +2,7 @@
 /// @file integrator-euler.hpp
 /// @brief Define the explicit Euler integrator.
 
-#include "proxddp/modelling/dynamics/integrator-explicit.hpp"
+#include "aligator/modelling/dynamics/integrator-explicit.hpp"
 
 namespace aligator {
 namespace dynamics {
@@ -33,4 +33,4 @@ struct IntegratorEulerTpl : ExplicitIntegratorAbstractTpl<_Scalar> {
 } // namespace dynamics
 } // namespace aligator
 
-#include "proxddp/modelling/dynamics/integrator-euler.hxx"
+#include "aligator/modelling/dynamics/integrator-euler.hxx"

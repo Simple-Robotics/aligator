@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/modelling/dynamics/continuous-base.hpp"
+#include "aligator/modelling/dynamics/continuous-base.hpp"
 
 namespace aligator {
 namespace dynamics {

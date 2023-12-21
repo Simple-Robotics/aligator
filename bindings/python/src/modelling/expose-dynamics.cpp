@@ -1,8 +1,8 @@
 /// @file
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
-#include "proxddp/python/modelling/explicit-dynamics.hpp"
-#include "proxddp/python/eigen-member.hpp"
-#include "proxddp/python/visitors.hpp"
+#include "aligator/python/modelling/explicit-dynamics.hpp"
+#include "aligator/python/eigen-member.hpp"
+#include "aligator/python/visitors.hpp"
 
 namespace aligator {
 namespace python {

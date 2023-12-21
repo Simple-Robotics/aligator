@@ -1,6 +1,6 @@
-#include "proxddp/python/fwd.hpp"
+#include "aligator/python/fwd.hpp"
 
-#include "proxddp/core/constraint.hpp"
+#include "aligator/core/constraint.hpp"
 #include <proxsuite-nlp/constraint-base.hpp>
 
 namespace aligator {

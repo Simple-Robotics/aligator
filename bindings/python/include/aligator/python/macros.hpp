@@ -4,7 +4,7 @@
 
 #include <type_traits>
 #include <fmt/format.h>
-#include "proxddp/utils/exceptions.hpp"
+#include "aligator/utils/exceptions.hpp"
 
 namespace aligator {
 namespace python {

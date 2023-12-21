@@ -1,10 +1,10 @@
 #pragma once
 
-#include "proxddp/core/traj-opt-problem.hpp"
-#include "proxddp/core/stage-data.hpp"
-#include "proxddp/utils/exceptions.hpp"
-#include "proxddp/utils/mpc-util.hpp"
-#include "proxddp/threads.hpp"
+#include "aligator/core/traj-opt-problem.hpp"
+#include "aligator/core/stage-data.hpp"
+#include "aligator/utils/exceptions.hpp"
+#include "aligator/utils/mpc-util.hpp"
+#include "aligator/threads.hpp"
 
 #include <fmt/format.h>
 

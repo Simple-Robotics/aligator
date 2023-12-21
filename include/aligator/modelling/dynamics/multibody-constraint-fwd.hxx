@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/modelling/dynamics/multibody-constraint-fwd.hpp"
+#include "aligator/modelling/dynamics/multibody-constraint-fwd.hpp"
 
 #include <pinocchio/algorithm/constrained-dynamics.hpp>
 #include <pinocchio/algorithm/constrained-dynamics-derivatives.hpp>

@@ -2,8 +2,8 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/fwd.hpp"
-#include "proxddp/core/linesearch.hpp"
+#include "aligator/fwd.hpp"
+#include "aligator/core/linesearch.hpp"
 
 namespace aligator {
 

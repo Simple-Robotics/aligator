@@ -1,4 +1,4 @@
-#include "proxddp/core/function-abstract.hpp"
+#include "aligator/core/function-abstract.hpp"
 
 namespace aligator {
 

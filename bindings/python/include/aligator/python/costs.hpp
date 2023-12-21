@@ -1,8 +1,8 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/python/fwd.hpp"
-#include "proxddp/core/cost-abstract.hpp"
+#include "aligator/python/fwd.hpp"
+#include "aligator/core/cost-abstract.hpp"
 
 namespace aligator {
 namespace python {

@@ -2,8 +2,8 @@
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/context.hpp"
-#include "proxddp/modelling/dynamics/continuous-base.hpp"
+#include "aligator/context.hpp"
+#include "aligator/modelling/dynamics/continuous-base.hpp"
 
 namespace aligator {
 namespace dynamics {

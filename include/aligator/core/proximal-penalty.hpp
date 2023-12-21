@@ -2,7 +2,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/fwd.hpp"
+#include "aligator/fwd.hpp"
 
 namespace aligator {
 
@@ -89,4 +89,4 @@ struct ProximalDataTpl : CostDataAbstractTpl<Scalar> {
 
 } // namespace aligator
 
-#include "proxddp/core/proximal-penalty.hxx"
+#include "aligator/core/proximal-penalty.hxx"

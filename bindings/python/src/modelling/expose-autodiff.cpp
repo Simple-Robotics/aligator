@@ -1,6 +1,6 @@
-#include "proxddp/python/fwd.hpp"
+#include "aligator/python/fwd.hpp"
 
-#include "proxddp/modelling/autodiff/finite-difference.hpp"
+#include "aligator/modelling/autodiff/finite-difference.hpp"
 
 namespace aligator {
 namespace python {

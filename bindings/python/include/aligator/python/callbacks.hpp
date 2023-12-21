@@ -1,8 +1,8 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/python/fwd.hpp"
-#include "proxddp/core/callback-base.hpp"
+#include "aligator/python/fwd.hpp"
+#include "aligator/core/callback-base.hpp"
 
 namespace aligator {
 namespace python {

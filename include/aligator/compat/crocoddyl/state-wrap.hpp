@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/fwd.hpp"
+#include "aligator/fwd.hpp"
 #include <proxsuite-nlp/manifold-base.hpp>
 
 #include <crocoddyl/core/state-base.hpp>

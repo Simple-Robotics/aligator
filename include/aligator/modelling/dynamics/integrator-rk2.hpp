@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/modelling/dynamics/integrator-explicit.hpp"
+#include "aligator/modelling/dynamics/integrator-explicit.hpp"
 
 namespace aligator {
 namespace dynamics {
@@ -63,4 +63,4 @@ struct IntegratorRK2DataTpl : ExplicitIntegratorDataTpl<Scalar> {
 } // namespace dynamics
 } // namespace aligator
 
-#include "proxddp/modelling/dynamics/integrator-rk2.hxx"
+#include "aligator/modelling/dynamics/integrator-rk2.hxx"

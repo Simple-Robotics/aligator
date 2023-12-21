@@ -3,8 +3,8 @@
 /// @brief  Base definitions for explicit integrators.
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
-#include "proxddp/core/explicit-dynamics.hpp"
-#include "proxddp/modelling/dynamics/ode-abstract.hpp"
+#include "aligator/core/explicit-dynamics.hpp"
+#include "aligator/modelling/dynamics/ode-abstract.hpp"
 
 namespace aligator {
 namespace dynamics {
@@ -57,4 +57,4 @@ struct ExplicitIntegratorDataTpl : ExplicitDynamicsDataTpl<_Scalar> {
 } // namespace dynamics
 } // namespace aligator
 
-#include "proxddp/modelling/dynamics/integrator-explicit.hxx"
+#include "aligator/modelling/dynamics/integrator-explicit.hxx"

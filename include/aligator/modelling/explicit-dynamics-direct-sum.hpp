@@ -2,7 +2,7 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/core/explicit-dynamics.hpp"
+#include "aligator/core/explicit-dynamics.hpp"
 #include <proxsuite-nlp/modelling/spaces/cartesian-product.hpp>
 
 namespace aligator {
@@ -57,7 +57,7 @@ auto directSum(shared_ptr<ExplicitDynamicsModelTpl<Scalar>> const &m1,
 
 } // namespace aligator
 
-#include "proxddp/modelling/explicit-dynamics-direct-sum.hxx"
+#include "aligator/modelling/explicit-dynamics-direct-sum.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./explicit-dynamics-direct-sum.txx"

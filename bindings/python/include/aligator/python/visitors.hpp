@@ -4,7 +4,7 @@
 
 #include <eigenpy/fwd.hpp>
 #include <fmt/format.h>
-#include "proxddp/python/utils/deprecation.hpp"
+#include "aligator/python/utils/deprecation.hpp"
 
 namespace aligator {
 namespace python {

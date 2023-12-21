@@ -2,8 +2,8 @@
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/core/function-abstract.hpp"
-#include "proxddp/core/unary-function.hpp"
+#include "aligator/core/function-abstract.hpp"
+#include "aligator/core/unary-function.hpp"
 
 namespace aligator {
 
@@ -139,8 +139,8 @@ protected:
 
 } // namespace aligator
 
-#include "proxddp/modelling/function-xpr-slice.hxx"
+#include "aligator/modelling/function-xpr-slice.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/modelling/function-xpr-slice.txx"
+#include "aligator/modelling/function-xpr-slice.txx"
 #endif

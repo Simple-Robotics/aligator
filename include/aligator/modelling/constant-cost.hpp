@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/core/cost-abstract.hpp"
+#include "aligator/core/cost-abstract.hpp"
 
 namespace aligator {
 

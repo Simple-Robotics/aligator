@@ -1,7 +1,7 @@
 #pragma once
 
-#include "proxddp/modelling/dynamics/integrator-midpoint.hpp"
-#include "proxddp/utils/exceptions.hpp"
+#include "aligator/modelling/dynamics/integrator-midpoint.hpp"
+#include "aligator/utils/exceptions.hpp"
 
 namespace aligator {
 namespace dynamics {

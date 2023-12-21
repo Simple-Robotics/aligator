@@ -3,13 +3,13 @@
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/core/proximal-penalty.hpp"
-#include "proxddp/core/linesearch.hpp"
-#include "proxddp/core/callback-base.hpp"
-#include "proxddp/core/enums.hpp"
-#include "proxddp/utils/exceptions.hpp"
-#include "proxddp/utils/logger.hpp"
-#include "proxddp/utils/forward-dyn.hpp"
+#include "aligator/core/proximal-penalty.hpp"
+#include "aligator/core/linesearch.hpp"
+#include "aligator/core/callback-base.hpp"
+#include "aligator/core/enums.hpp"
+#include "aligator/utils/exceptions.hpp"
+#include "aligator/utils/logger.hpp"
+#include "aligator/utils/forward-dyn.hpp"
 #include "./workspace.hpp"
 #include "./results.hpp"
 #include "./merit-function.hpp"

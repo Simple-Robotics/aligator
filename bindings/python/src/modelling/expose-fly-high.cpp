@@ -2,9 +2,9 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #ifdef ALIGATOR_WITH_PINOCCHIO
 
-#include "proxddp/python/fwd.hpp"
-#include "proxddp/python/modelling/multibody-utils.hpp"
-#include "proxddp/modelling/multibody/fly-high.hpp"
+#include "aligator/python/fwd.hpp"
+#include "aligator/python/modelling/multibody-utils.hpp"
+#include "aligator/modelling/multibody/fly-high.hpp"
 
 namespace aligator {
 namespace python {

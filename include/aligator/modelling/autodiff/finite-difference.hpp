@@ -2,8 +2,8 @@
 ///         through finite differences.
 #pragma once
 
-#include "proxddp/core/dynamics.hpp"
-#include "proxddp/core/cost-abstract.hpp"
+#include "aligator/core/dynamics.hpp"
+#include "aligator/core/cost-abstract.hpp"
 #include <proxsuite-nlp/manifold-base.hpp>
 #include <boost/mpl/bool.hpp>
 

@@ -2,7 +2,7 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/modelling/composite-costs.hpp"
+#include "aligator/modelling/composite-costs.hpp"
 
 namespace aligator {
 

@@ -3,7 +3,7 @@
 /// @author Quentin Le Lidec
 /// @brief Define the semi-implicit Euler integrator.
 
-#include "proxddp/modelling/dynamics/integrator-explicit.hpp"
+#include "aligator/modelling/dynamics/integrator-explicit.hpp"
 
 namespace aligator {
 namespace dynamics {
@@ -61,4 +61,4 @@ struct IntegratorSemiImplDataTpl : ExplicitIntegratorDataTpl<Scalar> {
 } // namespace dynamics
 } // namespace aligator
 
-#include "proxddp/modelling/dynamics/integrator-semi-euler.hxx"
+#include "aligator/modelling/dynamics/integrator-semi-euler.hxx"

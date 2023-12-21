@@ -1,4 +1,4 @@
-#include "proxddp/core/constraint.hpp"
+#include "aligator/core/constraint.hpp"
 
 namespace aligator {
 

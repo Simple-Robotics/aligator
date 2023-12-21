@@ -2,9 +2,9 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/python/fwd.hpp"
+#include "aligator/python/fwd.hpp"
 
-#include "proxddp/compat/crocoddyl/problem-wrap.hpp"
+#include "aligator/compat/crocoddyl/problem-wrap.hpp"
 
 namespace aligator {
 namespace python {

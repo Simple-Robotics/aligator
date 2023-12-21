@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/core/workspace-base.hpp"
+#include "aligator/core/workspace-base.hpp"
 #include <Eigen/Cholesky>
 
 namespace aligator {

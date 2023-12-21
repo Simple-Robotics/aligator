@@ -3,8 +3,8 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/modelling/state-error.hpp"
-#include "proxddp/modelling/composite-costs.hpp"
+#include "aligator/modelling/state-error.hpp"
+#include "aligator/modelling/composite-costs.hpp"
 
 namespace aligator {
 
@@ -70,5 +70,5 @@ protected:
 } // namespace aligator
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/modelling/quad-state-cost.txx"
+#include "aligator/modelling/quad-state-cost.txx"
 #endif

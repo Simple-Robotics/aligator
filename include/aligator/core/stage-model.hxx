@@ -2,8 +2,8 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/core/stage-model.hpp"
-#include "proxddp/utils/exceptions.hpp"
+#include "aligator/core/stage-model.hpp"
+#include "aligator/utils/exceptions.hpp"
 
 #include <proxsuite-nlp/modelling/constraints/equality-constraint.hpp>
 #include <proxsuite-nlp/modelling/spaces/vector-space.hpp>

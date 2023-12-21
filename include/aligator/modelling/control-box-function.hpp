@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/core/function-abstract.hpp"
+#include "aligator/core/function-abstract.hpp"
 
 namespace aligator {
 /**
@@ -46,4 +46,4 @@ struct ControlBoxFunctionTpl : StageFunctionTpl<_Scalar> {
 
 } // namespace aligator
 
-#include "proxddp/modelling/control-box-function.hxx"
+#include "aligator/modelling/control-box-function.hxx"

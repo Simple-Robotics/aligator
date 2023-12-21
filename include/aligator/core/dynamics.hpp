@@ -2,7 +2,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/core/function-abstract.hpp"
+#include "aligator/core/function-abstract.hpp"
 
 namespace aligator {
 /**
@@ -59,8 +59,8 @@ struct DynamicsModelTpl : StageFunctionTpl<_Scalar> {
 
 } // namespace aligator
 
-#include "proxddp/core/dynamics.hxx"
+#include "aligator/core/dynamics.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/core/dynamics.txx"
+#include "aligator/core/dynamics.txx"
 #endif

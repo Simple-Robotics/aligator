@@ -1,6 +1,6 @@
 #pragma once
 
-#include "proxddp/context.hpp"
+#include "aligator/context.hpp"
 #include "./workspace.hpp"
 
 namespace aligator {

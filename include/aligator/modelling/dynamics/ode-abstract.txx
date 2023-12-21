@@ -1,7 +1,7 @@
 #pragma once
 
-#include "proxddp/context.hpp"
-#include "proxddp/modelling/dynamics/ode-abstract.hpp"
+#include "aligator/context.hpp"
+#include "aligator/modelling/dynamics/ode-abstract.hpp"
 
 namespace aligator {
 namespace dynamics {

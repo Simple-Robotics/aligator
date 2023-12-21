@@ -3,8 +3,8 @@
 /// @brief  Base definitions for ternary functions.
 #pragma once
 
-#include "proxddp/fwd.hpp"
-#include "proxddp/core/clone.hpp"
+#include "aligator/fwd.hpp"
+#include "aligator/core/clone.hpp"
 
 #include <fmt/format.h>
 #include <ostream>
@@ -136,8 +136,8 @@ protected:
 
 } // namespace aligator
 
-#include "proxddp/core/function-abstract.hxx"
+#include "aligator/core/function-abstract.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/core/function-abstract.txx"
+#include "aligator/core/function-abstract.txx"
 #endif

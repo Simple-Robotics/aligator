@@ -1,6 +1,6 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
-#include "proxddp/compat/crocoddyl/action-model-wrap.hpp"
-#include "proxddp/compat/crocoddyl/context.hpp"
+#include "aligator/compat/crocoddyl/action-model-wrap.hpp"
+#include "aligator/compat/crocoddyl/context.hpp"
 
 #include <crocoddyl/core/states/euclidean.hpp>
 #include <crocoddyl/core/actions/lqr.hpp>

@@ -2,7 +2,7 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/context.hpp"
+#include "aligator/context.hpp"
 #include "./explicit-dynamics-direct-sum.hpp"
 
 namespace aligator {

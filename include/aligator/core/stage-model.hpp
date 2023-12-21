@@ -2,13 +2,13 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/core/function-abstract.hpp"
-#include "proxddp/core/cost-abstract.hpp"
-#include "proxddp/core/dynamics.hpp"
-#include "proxddp/core/constraint.hpp"
-#include "proxddp/utils/exceptions.hpp"
+#include "aligator/core/function-abstract.hpp"
+#include "aligator/core/cost-abstract.hpp"
+#include "aligator/core/dynamics.hpp"
+#include "aligator/core/constraint.hpp"
+#include "aligator/utils/exceptions.hpp"
 
-#include "proxddp/core/clone.hpp"
+#include "aligator/core/clone.hpp"
 
 namespace aligator {
 
@@ -137,8 +137,8 @@ template <typename Scalar>
 struct fmt::formatter<aligator::StageModelTpl<Scalar>>
     : fmt::ostream_formatter {};
 
-#include "proxddp/core/stage-model.hxx"
+#include "aligator/core/stage-model.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/core/stage-model.txx"
+#include "aligator/core/stage-model.txx"
 #endif

@@ -3,12 +3,12 @@
 #include <proxsuite-nlp/modelling/spaces/pinocchio-groups.hpp>
 #include <pinocchio/multibody/liegroup/special-euclidean.hpp>
 
-#include "proxddp/solvers/proxddp/solver-proxddp.hpp"
-#include "proxddp/core/explicit-dynamics.hpp"
-#include "proxddp/modelling/quad-costs.hpp"
-#include "proxddp/modelling/state-error.hpp"
-#include "proxddp/modelling/composite-costs.hpp"
-#include "proxddp/modelling/sum-of-costs.hpp"
+#include "aligator/solvers/proxddp/solver-proxddp.hpp"
+#include "aligator/core/explicit-dynamics.hpp"
+#include "aligator/modelling/quad-costs.hpp"
+#include "aligator/modelling/state-error.hpp"
+#include "aligator/modelling/composite-costs.hpp"
+#include "aligator/modelling/sum-of-costs.hpp"
 
 using T = double;
 using pinocchio::SpecialEuclideanOperationTpl;

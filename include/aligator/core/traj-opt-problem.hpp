@@ -2,8 +2,8 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "proxddp/core/stage-model.hpp"
-#include "proxddp/modelling/state-error.hpp"
+#include "aligator/core/stage-model.hpp"
+#include "aligator/modelling/state-error.hpp"
 
 namespace aligator {
 
@@ -242,8 +242,8 @@ template <typename _Scalar> struct TrajOptDataTpl {
 
 } // namespace aligator
 
-#include "proxddp/core/traj-opt-problem.hxx"
+#include "aligator/core/traj-opt-problem.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/core/traj-opt-problem.txx"
+#include "aligator/core/traj-opt-problem.txx"
 #endif
