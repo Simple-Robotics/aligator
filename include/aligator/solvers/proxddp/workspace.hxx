@@ -132,7 +132,6 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
     assert(value_params.size() == nsteps + 1);
     assert(dxs.size() == nsteps + 1);
     assert(dus.size() == nsteps);
-  }
 }
 
 template <typename Scalar> void WorkspaceTpl<Scalar>::cycleLeft() {
