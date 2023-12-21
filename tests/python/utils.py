@@ -1,6 +1,6 @@
 import numpy as np
 
-from proxddp import manifolds, dynamics
+from aligator import manifolds, dynamics
 
 
 def create_multibody_ode(humanoid=True):

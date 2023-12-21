@@ -1,15 +1,15 @@
-import proxddp
+import aligator
 import numpy as np
 import pytest
 
-from proxddp import manifolds
+from aligator import manifolds
 
 
 def test_manifold_diff():
     space = manifolds.SE2()
     nu = 2
     target = space.rand()
-    fun = proxddp.StateErrorResidual(space, nu, target)
+    fun = aligator.StateErrorResidual(space, nu, target)
 
     data = fun.createData()
 
@@ -29,7 +29,7 @@ def test_manifold_diff():
     A = np.array([[1.0, 1.0, 0.0]])
     b = np.array([0.0])
     assert A.shape[1] == fun.nr
-    fun_lin = proxddp.LinearFunctionComposition(fun, A, b)
+    fun_lin = aligator.LinearFunctionComposition(fun, A, b)
     assert fun_lin.nr == A.shape[0]
     data3 = fun_lin.createData()
     sd3 = data3.sub_data
@@ -42,8 +42,8 @@ def test_manifold_diff():
     assert np.allclose(data3.jac_buffer, A @ sd3.jac_buffer)
 
     # TEST UNARY COMPOSE W/ FUNCTION CALL
-    fun_lin = proxddp.linear_compose(fun, A, b)
-    assert isinstance(fun_lin, proxddp.UnaryFunction)
+    fun_lin = aligator.linear_compose(fun, A, b)
+    assert isinstance(fun_lin, aligator.UnaryFunction)
     fun_lin.evaluate(x, data3)
 
 
@@ -55,7 +55,7 @@ def test_slicing():
     nu = 2
     B = np.random.randn(nr, nu)
     c = np.zeros(nr)
-    fn = proxddp.LinearFunction(A, B, c)
+    fn = aligator.LinearFunction(A, B, c)
     x0 = space.rand()
     u0 = np.zeros(fn.nu)
 

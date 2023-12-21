@@ -3,9 +3,9 @@ import pytest
 import pinocchio as pin
 import numpy as np
 import hppfcl as fcl
-import proxddp
+import aligator
 
-from proxddp import manifolds, dynamics
+from aligator import manifolds, dynamics
 
 TOL = 1e-4
 
@@ -174,7 +174,7 @@ def test_inv_dyn():
     v0 = np.zeros(model.nv)
     nu = model.nv
     B = np.eye(nu)
-    tau0, _fc = proxddp.underactuatedConstrainedInverseDynamics(
+    tau0, _fc = aligator.underactuatedConstrainedInverseDynamics(
         model, data, q0, v0, B, [rcm], [rcd]
     )
 
@@ -268,27 +268,27 @@ def test_constrained_dynamics():
     w_u = np.eye(nu) * 1e-3
 
     for i in range(nsteps):
-        rcost = proxddp.CostStack(space, nu)
-        xreg_cost = proxddp.QuadraticStateCost(space, nu, x_target, np.diag(w_x) * dt)
+        rcost = aligator.CostStack(space, nu)
+        xreg_cost = aligator.QuadraticStateCost(space, nu, x_target, np.diag(w_x) * dt)
         rcost.addCost(xreg_cost)
 
-        ucost = proxddp.QuadraticControlCost(space, nu, w_u * dt)
+        ucost = aligator.QuadraticControlCost(space, nu, w_u * dt)
         rcost.addCost(ucost)
 
-        stage = proxddp.StageModel(rcost, discrete_dynamics)
+        stage = aligator.StageModel(rcost, discrete_dynamics)
 
         stages.append(stage)
 
-    term_cost = proxddp.QuadraticStateCost(space, nu, x_target, np.diag(w_x))
+    term_cost = aligator.QuadraticStateCost(space, nu, x_target, np.diag(w_x))
 
-    problem = proxddp.TrajOptProblem(x0, stages, term_cost=term_cost)
+    problem = aligator.TrajOptProblem(x0, stages, term_cost=term_cost)
 
     tol = 1e-5
     mu_init = 0.01
-    verbose = proxddp.VerboseLevel.VERBOSE
+    verbose = aligator.VerboseLevel.VERBOSE
     rho_init = 0.001
-    history_cb = proxddp.HistoryCallback()
-    solver = proxddp.SolverProxDDP(
+    history_cb = aligator.HistoryCallback()
+    solver = aligator.SolverProxDDP(
         tol, mu_init, rho_init, verbose=verbose, max_iters=200
     )
     solver.registerCallback("his", history_cb)

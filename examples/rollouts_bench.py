@@ -1,5 +1,5 @@
-import proxddp
-from proxddp import manifolds, dynamics, RolloutType
+import aligator
+from aligator import manifolds, dynamics, RolloutType
 
 import numpy as np
 
@@ -32,29 +32,29 @@ def main(roltype, mu_init):
     Tf = 1.0
     nsteps = int(Tf / dt)
 
-    rcost = proxddp.CostStack(space, nu)
+    rcost = aligator.CostStack(space, nu)
     w_x = np.eye(space.ndx) * 1e-4
     w_x[nv:] = 1e-2
     w_u = np.eye(nu) * 1e-2
-    rcost.addCost(proxddp.QuadraticCost(w_x * dt, w_u * dt))
+    rcost.addCost(aligator.QuadraticCost(w_x * dt, w_u * dt))
 
     w_term_ee = np.eye(3) * 5.0
     p_ref = np.array([0.2, 0.6, 0.4])
-    term_cost = proxddp.QuadraticResidualCost(
+    term_cost = aligator.QuadraticResidualCost(
         space,
-        proxddp.FrameTranslationResidual(space.ndx, nu, rmodel, p_ref, tool_id),
+        aligator.FrameTranslationResidual(space.ndx, nu, rmodel, p_ref, tool_id),
         w_term_ee,
     )
 
-    stage_model = proxddp.StageModel(rcost, dyn_model)
+    stage_model = aligator.StageModel(rcost, dyn_model)
     stages = [stage_model for _ in range(nsteps)]
 
     x0 = space.neutral()
-    problem = proxddp.TrajOptProblem(x0, stages, term_cost)
+    problem = aligator.TrajOptProblem(x0, stages, term_cost)
 
     tol = 1e-4
-    solver = proxddp.SolverProxDDP(
-        tol, mu_init, verbose=proxddp.VerboseLevel.QUIET, max_iters=400
+    solver = aligator.SolverProxDDP(
+        tol, mu_init, verbose=aligator.VerboseLevel.QUIET, max_iters=400
     )
     solver.setup(problem)
     solver.rollout_type = roltype

@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from proxddp import HistoryCallback, Results
+from aligator import HistoryCallback, Results
 
 
 def plot_convergence(cb: HistoryCallback, ax: plt.Axes, res: Results = None):

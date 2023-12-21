@@ -3,8 +3,8 @@ Create continuous dynamics from Python.
 """
 import pytest
 import numpy as np
-import proxddp
-from proxddp import dynamics, manifolds
+import aligator
+from aligator import dynamics, manifolds
 from pinocchio import Quaternion
 
 space = manifolds.R3() * manifolds.SO3()
@@ -63,7 +63,7 @@ def test_custom_ode():
     itg = dynamics.IntegratorEuler(ode, 0.01)
     x0 = space.rand()
     us = [np.zeros(0) for _ in range(10)]
-    xs = proxddp.rollout(itg, x0, us)
+    xs = aligator.rollout(itg, x0, us)
     print(xs.tolist())
 
 

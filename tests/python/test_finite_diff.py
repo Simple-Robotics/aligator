@@ -1,4 +1,4 @@
-from proxddp import (
+from aligator import (
     FiniteDifferenceHelper,
     CostFiniteDifference,
     QuadraticStateCost,

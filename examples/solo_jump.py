@@ -1,4 +1,4 @@
-import proxddp
+import aligator
 import pinocchio as pin
 from utils.solo import (
     robot,
@@ -15,8 +15,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from utils import ArgsBase, get_endpoint_traj, IMAGEIO_KWARGS
-from proxddp import manifolds, dynamics, constraints
-from proxddp.utils.plotting import (
+from aligator import manifolds, dynamics, constraints
+from aligator.utils.plotting import (
     plot_controls_traj,
     plot_velocity_traj,
     plot_convergence,
@@ -84,11 +84,11 @@ w_x = np.diag(w_x)
 w_u = np.eye(nu) * 1e-4
 
 
-def add_fly_high_cost(costs: proxddp.CostStack, slope):
+def add_fly_high_cost(costs: aligator.CostStack, slope):
     fly_high_w = 1.0
     for fname, fid in FOOT_FRAME_IDS.items():
-        fn = proxddp.FlyHighResidual(space, fid, slope, nu)
-        fl_cost = proxddp.QuadraticResidualCost(space, fn, np.eye(2) * dt)
+        fn = aligator.FlyHighResidual(space, fid, slope, nu)
+        fl_cost = aligator.QuadraticResidualCost(space, fn, np.eye(2) * dt)
         costs.addCost(fl_cost, fly_high_w / len(FOOT_FRAME_IDS))
 
 
@@ -96,7 +96,7 @@ def create_land_fns():
     out = {}
     for fname, fid in FOOT_FRAME_IDS.items():
         p_ref = rdata.oMf[fid].translation
-        fn = proxddp.FrameTranslationResidual(space.ndx, nu, rmodel, p_ref, fid)
+        fn = aligator.FrameTranslationResidual(space.ndx, nu, rmodel, p_ref, fid)
         fn = fn[2]
         out[fid] = fn
     return out
@@ -106,7 +106,7 @@ def create_land_cost(costs, w):
     fns = create_land_fns()
     land_cost_w = np.eye(1)
     for fid, fn in fns.items():
-        land_cost = proxddp.QuadraticResidualCost(space, fn, land_cost_w)
+        land_cost = aligator.QuadraticResidualCost(space, fn, land_cost_w)
         costs.addCost(land_cost, w / len(FOOT_FRAME_IDS))
 
 
@@ -119,19 +119,19 @@ for k in range(nsteps):
         vf = ode2
     xref = x0_ref
 
-    xreg_cost = proxddp.QuadraticStateCost(space, nu, xref, weights=wxlocal_k)
-    ureg_cost = proxddp.QuadraticControlCost(space, nu, weights=w_u * dt)
-    cost = proxddp.CostStack(space, nu)
+    xreg_cost = aligator.QuadraticStateCost(space, nu, xref, weights=wxlocal_k)
+    ureg_cost = aligator.QuadraticControlCost(space, nu, weights=w_u * dt)
+    cost = aligator.CostStack(space, nu)
     cost.addCost(xreg_cost)
     cost.addCost(ureg_cost)
     add_fly_high_cost(cost, slope=50)
 
     dyn_model = dynamics.IntegratorSemiImplEuler(vf, dt)
-    stm = proxddp.StageModel(cost, dyn_model)
+    stm = aligator.StageModel(cost, dyn_model)
 
     if args.bounds:
         stm.addConstraint(
-            proxddp.ControlErrorResidual(ndx, nu),
+            aligator.ControlErrorResidual(ndx, nu),
             constraints.BoxConstraint(-effort_limit, effort_limit),
         )
     if k == k1:
@@ -143,16 +143,16 @@ for k in range(nsteps):
 
 
 w_xterm = w_x.copy()
-term_cost = proxddp.QuadraticStateCost(space, nu, x0_ref, weights=w_x)
+term_cost = aligator.QuadraticStateCost(space, nu, x0_ref, weights=w_x)
 
-problem = proxddp.TrajOptProblem(x0_ref, stages, term_cost)
+problem = aligator.TrajOptProblem(x0_ref, stages, term_cost)
 # mu_init = 0.1
 mu_init = 1e-4
 tol = 1e-4
-solver = proxddp.SolverProxDDP(tol, mu_init, verbose=proxddp.VERBOSE, max_iters=200)
-solver.rollout_type = proxddp.ROLLOUT_LINEAR
+solver = aligator.SolverProxDDP(tol, mu_init, verbose=aligator.VERBOSE, max_iters=200)
+solver.rollout_type = aligator.ROLLOUT_LINEAR
 
-cb_ = proxddp.HistoryCallback()
+cb_ = aligator.HistoryCallback()
 solver.registerCallback("his", cb_)
 solver.setup(problem)
 
@@ -170,7 +170,7 @@ vizer = MeshcatVisualizer(
 )
 
 
-def make_plots(res: proxddp.Results):
+def make_plots(res: aligator.Results):
     fig1, axes = plt.subplots(nu // 2, 2, figsize=(9.6, 8.4))
     plot_controls_traj(times, res.us, axes=axes, rmodel=rmodel)
     fig1.suptitle("Joint torques")

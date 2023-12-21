@@ -3,7 +3,7 @@ Original script:
 https://github.com/loco-3d/crocoddyl/blob/master/examples/humanoid_manipulation.py
 
 In this script, we demonstrate use the Python Crocoddyl API, by defining
-a manipulation problem using Crocoddyl and converting it to a proxddp problem.
+a manipulation problem using Crocoddyl and converting it to a aligator problem.
 """
 import os
 import sys
@@ -14,7 +14,7 @@ import numpy as np
 import example_robot_data
 import pinocchio
 
-import proxddp
+import aligator
 import time
 
 import matplotlib.pyplot as plt
@@ -25,7 +25,7 @@ parser = argparse.ArgumentParser(add_help=True)
 parser.add_argument(
     "--solver",
     help="Choice of the second solver",
-    choices=["fddp", "proxddp"],
+    choices=["fddp", "aligator"],
     required=True,
 )
 
@@ -236,13 +236,13 @@ if WITHPLOT:
     )
 
 
-prox_problem = proxddp.croc.convertCrocoddylProblem(croc_problem)
-verbose = proxddp.VerboseLevel.VERBOSE
-if args.solver == "proxddp":
+prox_problem = aligator.croc.convertCrocoddylProblem(croc_problem)
+verbose = aligator.VerboseLevel.VERBOSE
+if args.solver == "aligator":
     mu_init = 1e-4
-    solver2 = proxddp.SolverProxDDP(croc_inf_norm, mu_init, verbose=verbose)
+    solver2 = aligator.SolverProxDDP(croc_inf_norm, mu_init, verbose=verbose)
 elif args.solver == "fddp":
-    solver2 = proxddp.SolverFDDP(croc_inf_norm, verbose=verbose)
+    solver2 = aligator.SolverFDDP(croc_inf_norm, verbose=verbose)
 else:
     raise ValueError("unknown choice of second solver ({})".format(args.solver))
 solver2.verbose = verbose

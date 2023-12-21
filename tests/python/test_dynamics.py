@@ -1,6 +1,6 @@
 import numpy as np
 
-from proxddp import dynamics, manifolds
+from aligator import dynamics, manifolds
 
 import sys
 import pytest

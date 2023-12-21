@@ -11,9 +11,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import os
-import proxddp
+import aligator
 
-from proxddp import manifolds
+from aligator import manifolds
 from proxsuite_nlp import constraints
 
 from utils import ArgsBase
@@ -42,15 +42,15 @@ def create_halfspace_z(ndx, nu, offset: float = 0.0, neg: bool = False):
     """
     root_frame_id = 1
     p_ref = np.zeros(3)
-    frame_fun = proxddp.FrameTranslationResidual(ndx, nu, rmodel, p_ref, root_frame_id)
+    frame_fun = aligator.FrameTranslationResidual(ndx, nu, rmodel, p_ref, root_frame_id)
     A = np.array([[0.0, 0.0, 1.0]])
     b = np.array([-offset])
     sign = -1.0 if neg else 1.0
-    frame_fun_z = proxddp.LinearFunctionComposition(frame_fun, sign * A, sign * b)
+    frame_fun_z = aligator.LinearFunctionComposition(frame_fun, sign * A, sign * b)
     return frame_fun_z
 
 
-class Column(proxddp.StageFunction):
+class Column(aligator.StageFunction):
     def __init__(self, ndx, nu, center, radius, margin: float = 0.0) -> None:
         super().__init__(ndx, nu, 1)
         self.ndx = ndx
@@ -165,7 +165,7 @@ def main(args: Args):
     )
     nu = QUAD_ACT_MATRIX.shape[1]  # = no. of nrotors
 
-    ode_dynamics = proxddp.dynamics.MultibodyFreeFwdDynamics(space, QUAD_ACT_MATRIX)
+    ode_dynamics = aligator.dynamics.MultibodyFreeFwdDynamics(space, QUAD_ACT_MATRIX)
 
     dt = 0.033
     Tf = 1.5
@@ -173,13 +173,13 @@ def main(args: Args):
     print("nsteps: {:d}".format(nsteps))
 
     if args.integrator == "euler":
-        dynmodel = proxddp.dynamics.IntegratorEuler(ode_dynamics, dt)
+        dynmodel = aligator.dynamics.IntegratorEuler(ode_dynamics, dt)
     elif args.integrator == "semieuler":
-        dynmodel = proxddp.dynamics.IntegratorSemiImplEuler(ode_dynamics, dt)
+        dynmodel = aligator.dynamics.IntegratorSemiImplEuler(ode_dynamics, dt)
     elif args.integrator == "rk2":
-        dynmodel = proxddp.dynamics.IntegratorRK2(ode_dynamics, dt)
+        dynmodel = aligator.dynamics.IntegratorRK2(ode_dynamics, dt)
     elif args.integrator == "midpoint":
-        dynmodel = proxddp.dynamics.IntegratorMidpoint(ode_dynamics, dt)
+        dynmodel = aligator.dynamics.IntegratorMidpoint(ode_dynamics, dt)
     else:
         raise ValueError()
 
@@ -194,7 +194,7 @@ def main(args: Args):
     u0, _, _, _ = np.linalg.lstsq(QUAD_ACT_MATRIX, tau)
 
     us_init = [u0] * nsteps
-    xs_init = proxddp.rollout(dynmodel, x0, us_init)
+    xs_init = aligator.rollout(dynmodel, x0, us_init)
 
     x_tar1 = space.neutral()
     x_tar1[:3] = (0.9, 0.8, 1.0)
@@ -250,23 +250,23 @@ def main(args: Args):
         floor = create_halfspace_z(space.ndx, nu, 0.0, True)
         stages = []
         if args.bounds:
-            u_identity_fn = proxddp.ControlErrorResidual(space.ndx, np.zeros(nu))
+            u_identity_fn = aligator.ControlErrorResidual(space.ndx, np.zeros(nu))
             box_set = constraints.BoxConstraint(u_min, u_max)
-            ctrl_cstr = proxddp.StageConstraint(u_identity_fn, box_set)
+            ctrl_cstr = aligator.StageConstraint(u_identity_fn, box_set)
 
         for i in range(nsteps):
-            rcost = proxddp.CostStack(space, nu)
+            rcost = aligator.CostStack(space, nu)
 
             weights, x_tar = task_schedule(i)
 
-            xreg_cost = proxddp.QuadraticStateCost(
+            xreg_cost = aligator.QuadraticStateCost(
                 space, nu, x_tar, np.diag(weights) * dt
             )
             rcost.addCost(xreg_cost)
-            ureg_cost = proxddp.QuadraticControlCost(space, u0, w_u * dt)
+            ureg_cost = aligator.QuadraticControlCost(space, u0, w_u * dt)
             rcost.addCost(ureg_cost)
 
-            stage = proxddp.StageModel(rcost, dynmodel)
+            stage = aligator.StageModel(rcost, dynmodel)
             if args.bounds:
                 stage.addConstraint(ctrl_cstr)
             if args.obstacles:  # add obstacles' constraints
@@ -285,11 +285,11 @@ def main(args: Args):
         weights, x_tar = task_schedule(nsteps)
         if not args.term_cstr:
             weights *= 10.0
-        term_cost = proxddp.QuadraticStateCost(space, nu, x_tar, np.diag(weights))
-        prob = proxddp.TrajOptProblem(x0, stages, term_cost=term_cost)
+        term_cost = aligator.QuadraticStateCost(space, nu, x_tar, np.diag(weights))
+        prob = aligator.TrajOptProblem(x0, stages, term_cost=term_cost)
         if args.term_cstr:
-            term_cstr = proxddp.StageConstraint(
-                proxddp.StateErrorResidual(space, nu, x_tar),
+            term_cstr = aligator.StageConstraint(
+                aligator.StateErrorResidual(space, nu, x_tar),
                 constraints.EqualityConstraintSet(),
             )
             prob.addTerminalConstraint(term_cstr)
@@ -311,15 +311,15 @@ def main(args: Args):
     tol = 1e-3
     mu_init = 1e-1
     rho_init = 0.0
-    verbose = proxddp.VerboseLevel.VERBOSE
-    history_cb = proxddp.HistoryCallback()
-    solver = proxddp.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
+    verbose = aligator.VerboseLevel.VERBOSE
+    history_cb = aligator.HistoryCallback()
+    solver = aligator.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
     if args.fddp:
-        solver = proxddp.SolverFDDP(tol, verbose=verbose)
+        solver = aligator.SolverFDDP(tol, verbose=verbose)
     solver.max_iters = 200
     solver.registerCallback("his", history_cb)
     solver.setup(problem)
-    workspace: proxddp.Workspace = solver.workspace
+    workspace: aligator.Workspace = solver.workspace
     solver.run(problem, xs_init, us_init)
 
     results = solver.results

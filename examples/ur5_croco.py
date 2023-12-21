@@ -1,10 +1,10 @@
 """
-Define a problem on UR5 using Crocoddyl, convert to proxddp problem and solve using our FDDP.
+Define a problem on UR5 using Crocoddyl, convert to aligator problem and solve using our FDDP.
 @Author  :   manifold
 @License :   (C)Copyright 2021-2022, INRIA
 """
 import crocoddyl as croc
-import proxddp
+import aligator
 
 import numpy as np
 
@@ -122,13 +122,13 @@ xs_opt = solver.xs.tolist()
 us_opt = solver.us.tolist()
 # np.save(open(f"urcroco.npy", "wb"),{'xs': xs_opt, 'us': us_opt})
 
-pb_prox = proxddp.croc.convertCrocoddylProblem(problem)
-verbose = proxddp.VerboseLevel.VERBOSE
-solver2 = proxddp.SolverFDDP(1e-6, verbose=verbose)
+pb_prox = aligator.croc.convertCrocoddylProblem(problem)
+verbose = aligator.VerboseLevel.VERBOSE
+solver2 = aligator.SolverFDDP(1e-6, verbose=verbose)
 mu_init = 1e-8
 rho_init = 1e-9
 
-# solver2 = proxddp.SolverProxDDP(tol / nsteps, mu_init, rho_init, verbose=verbose)
+# solver2 = aligator.SolverProxDDP(tol / nsteps, mu_init, rho_init, verbose=verbose)
 solver2.setup(pb_prox)
 conv = solver2.run(pb_prox, init_xs, init_us)
 results = solver2.results

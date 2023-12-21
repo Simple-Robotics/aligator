@@ -3,7 +3,7 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "proxddp"
+name = "aligator"
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
@@ -24,7 +24,7 @@ examples = [
 ]
 
 [tool.setuptools]
-packages = ["proxddp"]
+packages = ["aligator"]
 package-dir = {"" = "python"}
 
 [tool.ruff]
@@ -34,5 +34,5 @@ exclude = [".git", "build*", "cmake"]
 fixable = ["E"]
 
 [tool.ruff.per-file-ignores]
-"bindings/python/proxddp/__init__.py" = ["F401", "F403"]
-"bindings/python/proxddp/utils/__init__.py" = ["F401", "F403"]
+"bindings/python/aligator/__init__.py" = ["F401", "F403"]
+"bindings/python/aligator/utils/__init__.py" = ["F401", "F403"]

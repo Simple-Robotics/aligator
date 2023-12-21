@@ -1,7 +1,7 @@
 import crocoddyl
 import numpy as np
-import proxddp
-from proxddp import SolverProxDDP
+import aligator
+from aligator import SolverProxDDP
 
 
 nx = 3
@@ -34,8 +34,8 @@ print(solver1.stop)
 TOL = 1e-8
 
 
-prox_pb = proxddp.croc.convertCrocoddylProblem(pb)
-solver2 = SolverProxDDP(TOL, 1e-10, verbose=proxddp.VERBOSE)
+prox_pb = aligator.croc.convertCrocoddylProblem(pb)
+solver2 = SolverProxDDP(TOL, 1e-10, verbose=aligator.VERBOSE)
 solver2.setup(prox_pb)
 flag = solver2.run(prox_pb, xs_i, us_i)
 print(flag)

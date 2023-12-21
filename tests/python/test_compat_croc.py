@@ -1,3 +1,3 @@
-from proxddp.croc import convertCrocoddylProblem
+from aligator.croc import convertCrocoddylProblem
 
 help(convertCrocoddylProblem)

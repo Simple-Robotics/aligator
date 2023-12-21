@@ -1,11 +1,11 @@
 import numpy as np
-import proxddp
+import aligator
 import pinocchio as pin
 import matplotlib.pyplot as plt
 
 import time
 
-from proxddp import manifolds, dynamics, constraints
+from aligator import manifolds, dynamics, constraints
 from utils import get_endpoint_traj, compute_quasistatic, ArgsBase
 from utils import load_talos_upper_body
 
@@ -54,48 +54,48 @@ dyn_model = dynamics.IntegratorSemiImplEuler(ode, dt)
 
 tool_id_lh = rmodel.getFrameId("gripper_left_base_link")
 target_ee_pos = np.array([0.6, 0.4, 1.4])
-frame_fn_lh = proxddp.FrameTranslationResidual(
+frame_fn_lh = aligator.FrameTranslationResidual(
     space.ndx, nu, rmodel, target_ee_pos, tool_id_lh
 )
 w_x_ee = 10.0 * np.eye(3)
-frame_fn_cost = proxddp.QuadraticResidualCost(frame_fn_lh, w_x_ee)
+frame_fn_cost = aligator.QuadraticResidualCost(frame_fn_lh, w_x_ee)
 
-rcost = proxddp.CostStack(space, nu)
-rcost.addCost(proxddp.QuadraticCost(w_x, w_u), dt)
+rcost = aligator.CostStack(space, nu)
+rcost.addCost(aligator.QuadraticCost(w_x, w_u), dt)
 rcost.addCost(frame_fn_cost.copy(), 0.01 * dt)
 
-stm = proxddp.StageModel(rcost, dyn_model)
+stm = aligator.StageModel(rcost, dyn_model)
 if args.bounds:
     umax = rmodel.effortLimit
     umin = -umax
     # fun: u -> u
-    ctrl_fn = proxddp.ControlErrorResidual(space.ndx, np.zeros(nu))
+    ctrl_fn = aligator.ControlErrorResidual(space.ndx, np.zeros(nu))
     stm.addConstraint(ctrl_fn, constraints.BoxConstraint(umin, umax))
 
-term_cost = proxddp.CostStack(space, nu)
-term_cost.addCost(proxddp.QuadraticStateCost(space, nu, x0, w_x))
+term_cost = aligator.CostStack(space, nu)
+term_cost.addCost(aligator.QuadraticStateCost(space, nu, x0, w_x))
 term_cost.addCost(frame_fn_cost)
 
 
 stages = [stm] * nsteps
-problem = proxddp.TrajOptProblem(x0, stages, term_cost)
+problem = aligator.TrajOptProblem(x0, stages, term_cost)
 
 
 TOL = 1e-5
 mu_init = 1e-3
 rho_init = 0.0
 max_iters = 200
-verbose = proxddp.VerboseLevel.VERBOSE
-solver = proxddp.SolverProxDDP(TOL, mu_init, rho_init, verbose=verbose)
-solver.rollout_type = proxddp.ROLLOUT_NONLINEAR
+verbose = aligator.VerboseLevel.VERBOSE
+solver = aligator.SolverProxDDP(TOL, mu_init, rho_init, verbose=verbose)
+solver.rollout_type = aligator.ROLLOUT_NONLINEAR
 print("LDLT algo choice:", solver.ldlt_algo_choice)
-# solver = proxddp.SolverFDDP(TOL, verbose=verbose)
+# solver = aligator.SolverFDDP(TOL, verbose=verbose)
 solver.max_iters = max_iters
 solver.setup(problem)
 
 u0 = compute_quasistatic(rmodel, rdata, x0, acc=np.zeros(nv))
 us_init = [u0] * nsteps
-xs_init = proxddp.rollout(dyn_model, x0, us_init).tolist()
+xs_init = aligator.rollout(dyn_model, x0, us_init).tolist()
 
 solver.run(
     problem,
