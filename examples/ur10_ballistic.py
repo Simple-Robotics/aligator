@@ -1,7 +1,7 @@
 import example_robot_data as erd
 import pinocchio as pin
 import numpy as np
-import proxddp
+import aligator
 import hppfcl
 import matplotlib.pyplot as plt
 import contextlib
@@ -9,9 +9,9 @@ import contextlib
 from pathlib import Path
 from typing import Tuple
 from pinocchio.visualize import MeshcatVisualizer
-from proxddp.utils.plotting import plot_controls_traj, plot_velocity_traj
+from aligator.utils.plotting import plot_controls_traj, plot_velocity_traj
 from utils import add_namespace_prefix_to_models, ArgsBase, IMAGEIO_KWARGS
-from proxddp import dynamics, manifolds, constraints
+from aligator import dynamics, manifolds, constraints
 
 
 class Args(ArgsBase):
@@ -148,7 +148,7 @@ dyn_model2 = dynamics.IntegratorSemiImplEuler(ode2, dt)
 q0 = x0[:nq]
 v0 = x0[nq:]
 u0_now = pin.rnea(robot.model, robot.data, robot.q0, robot.v0, robot.v0)
-u0, lam_c = proxddp.underactuatedConstrainedInverseDynamics(
+u0, lam_c = aligator.underactuatedConstrainedInverseDynamics(
     rmodel, rdata, q0, v0, actuation_matrix, [rcm], [rcm.createData()]
 )
 assert u0.shape == (nu,)
@@ -169,7 +169,7 @@ with np.printoptions(precision=4, linewidth=200):
 
 dms = [dyn_model1] * nsteps
 us_i = [u0] * len(dms)
-xs_i = proxddp.rollout(dms, x0, us_i)
+xs_i = aligator.rollout(dms, x0, us_i)
 qs_i = [x[:nq] for x in xs_i]
 
 input("[press enter]")
@@ -177,14 +177,14 @@ viz.play(qs_i, dt=dt)
 
 
 def create_running_cost():
-    costs = proxddp.CostStack(space, nu)
+    costs = aligator.CostStack(space, nu)
     w_x = np.array([1e-6] * nv + [10.0] * nv)
     w_v = w_x[nv:]
     # no costs on mug
     w_x[:6] = 0.0
     w_v[:6] = 0.0
-    xreg = proxddp.QuadraticStateCost(space, nu, x0, np.diag(w_x) * dt)
-    ureg = proxddp.QuadraticControlCost(space, u0, np.eye(nu) * dt)
+    xreg = aligator.QuadraticStateCost(space, nu, x0, np.diag(w_x) * dt)
+    ureg = aligator.QuadraticControlCost(space, u0, np.eye(nu) * dt)
     costs.addCost(xreg)
     costs.addCost(ureg, 1e-2)
     return costs
@@ -194,55 +194,55 @@ def create_term_cost(has_frame_cost=False, w_ball=1.0):
     w_xf = np.ones(ndx)
     w_xf[:nv] = 1e-7
     w_xf[nv : nv + 6] = 1e-6
-    costs = proxddp.CostStack(space, nu)
-    xreg = proxddp.QuadraticStateCost(space, nu, x0, np.diag(w_xf))
+    costs = aligator.CostStack(space, nu)
+    xreg = aligator.QuadraticStateCost(space, nu, x0, np.diag(w_xf))
     costs.addCost(xreg)
     if has_frame_cost:
         ball_pos_fn = get_ball_fn(target_pos)
         w_ball = np.eye(ball_pos_fn.nr) * w_ball
-        ball_cost = proxddp.QuadraticResidualCost(space, ball_pos_fn, w_ball)
+        ball_cost = aligator.QuadraticResidualCost(space, ball_pos_fn, w_ball)
         costs.addCost(ball_cost)
     return costs
 
 
 def get_ball_fn(target_pos):
     fid = rmodel.getFrameId("ball/root_joint")
-    return proxddp.FrameTranslationResidual(ndx, nu, rmodel, target_pos, fid)
+    return aligator.FrameTranslationResidual(ndx, nu, rmodel, target_pos, fid)
 
 
 def create_term_constraint(target_pos):
     term_fn = get_ball_fn(target_pos)
-    return proxddp.StageConstraint(term_fn, constraints.EqualityConstraintSet())
+    return aligator.StageConstraint(term_fn, constraints.EqualityConstraintSet())
 
 
 def get_position_limit_constraint():
-    state_fn = proxddp.StateErrorResidual(space, nu, space.neutral())
+    state_fn = aligator.StateErrorResidual(space, nu, space.neutral())
     pos_fn = state_fn[7:13]
     box_cstr = constraints.BoxConstraint(
         robot.model.lowerPositionLimit, robot.model.upperPositionLimit
     )
-    return proxddp.StageConstraint(pos_fn, box_cstr)
+    return aligator.StageConstraint(pos_fn, box_cstr)
 
 
 def get_velocity_limit_constraint():
-    state_fn = proxddp.StateErrorResidual(space, nu, space.neutral())
+    state_fn = aligator.StateErrorResidual(space, nu, space.neutral())
     vel_fn = state_fn[nv + 6 :][3]
     vlim = robot.model.velocityLimit[3:4]
     box_cstr = constraints.BoxConstraint(-vlim, vlim)
-    return proxddp.StageConstraint(vel_fn, box_cstr)
+    return aligator.StageConstraint(vel_fn, box_cstr)
 
 
 def get_torque_limit_constraint():
-    ctrlfn = proxddp.ControlErrorResidual(ndx, np.zeros(nu))
+    ctrlfn = aligator.ControlErrorResidual(ndx, np.zeros(nu))
     eff = robot.model.effortLimit
     box_cstr = constraints.BoxConstraint(-eff, eff)
-    return proxddp.StageConstraint(ctrlfn, box_cstr)
+    return aligator.StageConstraint(ctrlfn, box_cstr)
 
 
 def create_stage(contact: bool):
     dm = dyn_model1 if contact else dyn_model2
     rc = create_running_cost()
-    stm = proxddp.StageModel(rc, dm)
+    stm = aligator.StageModel(rc, dm)
     stm.addConstraint(get_torque_limit_constraint())
     # stm.addConstraint(get_position_limit_constraint())
     # stm.addConstraint(get_velocity_limit_constraint())
@@ -257,13 +257,13 @@ for k in range(nsteps):
 term_cost = create_term_cost()
 term_constraint = create_term_constraint(target_pos=target_pos)
 
-problem = proxddp.TrajOptProblem(x0, stages, term_cost)
+problem = aligator.TrajOptProblem(x0, stages, term_cost)
 problem.addTerminalConstraint(term_constraint)
 tol = 1e-3
 mu_init = 1e-4
-solver = proxddp.SolverProxDDP(tol, mu_init, max_iters=200, verbose=proxddp.VERBOSE)
+solver = aligator.SolverProxDDP(tol, mu_init, max_iters=200, verbose=aligator.VERBOSE)
 solver.reg_min = 1e-8
-his_cb = proxddp.HistoryCallback()
+his_cb = aligator.HistoryCallback()
 solver.registerCallback("his", his_cb)
 solver.dual_weight = 0.0
 solver.setup(problem)

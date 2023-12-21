@@ -9,7 +9,7 @@ import tap
 
 import matplotlib.pyplot as plt
 
-from proxddp.utils.plotting import *  # noqa
+from aligator.utils.plotting import *  # noqa
 from typing import Literal, List, Optional
 
 

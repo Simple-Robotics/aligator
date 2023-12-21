@@ -1,4 +1,4 @@
-import proxddp
+import aligator
 import numpy as np
 
 import pinocchio as pin
@@ -6,9 +6,9 @@ import pinocchio as pin
 import example_robot_data as erd
 import matplotlib.pyplot as plt
 
-from proxddp import manifolds, constraints, dynamics
+from aligator import manifolds, constraints, dynamics
 from utils import ArgsBase, compute_quasistatic, get_endpoint_traj
-from proxddp.utils.plotting import plot_convergence
+from aligator.utils.plotting import plot_convergence
 
 
 class Args(ArgsBase):
@@ -51,8 +51,8 @@ def make_ee_residual():
     # creates a map -z_p(q) where p is the EE position
     A = np.array([[0.0, 0.0, 1.0]])
     b = np.array([-table_height])
-    frame_fn = proxddp.FrameTranslationResidual(ndx, nu, rmodel, np.zeros(3), frame_id)
-    frame_fn_neg_z = proxddp.LinearFunctionComposition(frame_fn, A, b)
+    frame_fn = aligator.FrameTranslationResidual(ndx, nu, rmodel, np.zeros(3), frame_id)
+    frame_fn_neg_z = aligator.LinearFunctionComposition(frame_fn, A, b)
     return frame_fn_neg_z
 
 
@@ -61,36 +61,36 @@ w_x[:nv] = 1e-6
 w_x = np.diag(w_x)
 w_u = 1e-3 * np.eye(nu)
 
-rcost = proxddp.CostStack(space, nu)
-rcost.addCost(proxddp.QuadraticStateCost(space, nu, space.neutral(), w_x * dt))
-rcost.addCost(proxddp.QuadraticControlCost(space, nu, w_u * dt))
+rcost = aligator.CostStack(space, nu)
+rcost.addCost(aligator.QuadraticStateCost(space, nu, space.neutral(), w_x * dt))
+rcost.addCost(aligator.QuadraticControlCost(space, nu, w_u * dt))
 
 # define the terminal cost
 
 weights_ee = 5.0 * np.eye(3)
 weights_ee_term = 10.0 * np.eye(3)
 p_ref = np.array([0.2, 0.3, table_height + 0.1])
-frame_obj_fn = proxddp.FrameTranslationResidual(ndx, nu, rmodel, p_ref, frame_id)
+frame_obj_fn = aligator.FrameTranslationResidual(ndx, nu, rmodel, p_ref, frame_id)
 
-rcost.addCost(proxddp.QuadraticResidualCost(space, frame_obj_fn, weights_ee * dt))
+rcost.addCost(aligator.QuadraticResidualCost(space, frame_obj_fn, weights_ee * dt))
 
-term_cost = proxddp.CostStack(space, nu)
-term_cost.addCost(proxddp.QuadraticResidualCost(space, frame_obj_fn, weights_ee_term))
+term_cost = aligator.CostStack(space, nu)
+term_cost.addCost(aligator.QuadraticResidualCost(space, frame_obj_fn, weights_ee_term))
 
 frame_fn_z = make_ee_residual()
-frame_cstr = proxddp.StageConstraint(frame_fn_z, constraints.NegativeOrthant())
+frame_cstr = aligator.StageConstraint(frame_fn_z, constraints.NegativeOrthant())
 
 
 time_idx_below_ = int(0.3 * nsteps)
 stages = []
 for i in range(nsteps):
-    stm = proxddp.StageModel(rcost, dyn_model)
+    stm = aligator.StageModel(rcost, dyn_model)
     if i > time_idx_below_:
         stm.addConstraint(frame_cstr)
     stages.append(stm)
 
 
-problem = proxddp.TrajOptProblem(x0, stages, term_cost)
+problem = aligator.TrajOptProblem(x0, stages, term_cost)
 problem.addTerminalConstraint(frame_cstr)
 problem.setNumThreads(4)
 
@@ -98,16 +98,16 @@ problem.setNumThreads(4)
 tol = 1e-4
 mu_init = 0.001
 max_iters = 50
-verbose = proxddp.VerboseLevel.VERBOSE
-solver = proxddp.SolverProxDDP(tol, mu_init, max_iters=max_iters, verbose=verbose)
-cb = proxddp.HistoryCallback()
+verbose = aligator.VerboseLevel.VERBOSE
+solver = aligator.SolverProxDDP(tol, mu_init, max_iters=max_iters, verbose=verbose)
+cb = aligator.HistoryCallback()
 solver.registerCallback("his", cb)
 
 solver.setup(problem)
 
 u0 = compute_quasistatic(rmodel, rdata, x0, acc=np.zeros(nv))
 us_init = [u0] * nsteps
-xs_init = proxddp.rollout(dyn_model, x0, us_init).tolist()
+xs_init = aligator.rollout(dyn_model, x0, us_init).tolist()
 
 solver.run(problem, xs_init, us_init)
 
@@ -122,7 +122,7 @@ ineq_cstr_values = []
 dyn_cstr_values = []
 for i in range(nsteps):
     if len(stage_datas[i].constraint_data) > 1:
-        icd: proxddp.StageFunctionData = stage_datas[i].constraint_data[1]
+        icd: aligator.StageFunctionData = stage_datas[i].constraint_data[1]
         ineq_cstr_datas.append(icd)
         ineq_cstr_values.append(icd.value.copy())
     dcd = stage_datas[i].constraint_data[0]

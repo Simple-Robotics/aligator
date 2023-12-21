@@ -1,11 +1,11 @@
-import proxddp
+import aligator
 import tap
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-from proxddp import dynamics, constraints, manifolds
-from proxddp.utils.plotting import plot_convergence
+from aligator import dynamics, constraints, manifolds
+from aligator.utils.plotting import plot_convergence
 
 
 class Args(tap.Tap):
@@ -39,23 +39,23 @@ if args.term_cstr:
     Qf[:, :] = 0.0
 
 
-rcost0 = proxddp.QuadraticCost(Q, R, N)
+rcost0 = aligator.QuadraticCost(Q, R, N)
 assert np.allclose(rcost0.w_x, Q)
 assert np.allclose(rcost0.w_u, R)
 assert np.allclose(rcost0.weights_cross, N)
 assert rcost0.has_cross_term
-term_cost = proxddp.QuadraticCost(Qf, R)
+term_cost = aligator.QuadraticCost(Qf, R)
 dynmodel = dynamics.LinearDiscreteDynamics(A, B, c)
-stage = proxddp.StageModel(rcost0, dynmodel)
+stage = aligator.StageModel(rcost0, dynmodel)
 if args.bounds:
     u_min = -0.18 * np.ones(nu)
     u_max = +0.18 * np.ones(nu)
-    ctrl_fn = proxddp.ControlErrorResidual(nx, np.zeros(nu))
+    ctrl_fn = aligator.ControlErrorResidual(nx, np.zeros(nu))
     stage.addConstraint(ctrl_fn, constraints.BoxConstraint(u_min, u_max))
 
 
 nsteps = 20
-problem = proxddp.TrajOptProblem(x0, nu, space, term_cost)
+problem = aligator.TrajOptProblem(x0, nu, space, term_cost)
 
 for i in range(nsteps):
     problem.addStage(stage)
@@ -63,9 +63,9 @@ for i in range(nsteps):
 xtar = space.neutral()
 xtar2 = 0.1 * np.ones(nx)
 if args.term_cstr:
-    term_fun = proxddp.StateErrorResidual(space, nu, xtar2)
+    term_fun = aligator.StateErrorResidual(space, nu, xtar2)
     problem.addTerminalConstraint(
-        proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet())
+        aligator.StageConstraint(term_fun, constraints.EqualityConstraintSet())
     )
 
 if args.bounds:
@@ -73,12 +73,12 @@ if args.bounds:
 else:
     mu_init = 1e-6
 rho_init = 0.0
-verbose = proxddp.VerboseLevel.VERBOSE
+verbose = aligator.VerboseLevel.VERBOSE
 tol = 1e-8
-solver = proxddp.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
+solver = aligator.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
 
 
-class CustomCallback(proxddp.BaseCallback):
+class CustomCallback(aligator.BaseCallback):
     def __init__(self):
         super().__init__()
         self.active_sets = []
@@ -88,7 +88,7 @@ class CustomCallback(proxddp.BaseCallback):
         self.Qus = []
         self.kkts = []
 
-    def call(self, workspace: proxddp.Workspace, results: proxddp.Results):
+    def call(self, workspace: aligator.Workspace, results: aligator.Results):
         import copy
 
         self.active_sets.append(workspace.active_constraints.tolist())
@@ -115,14 +115,14 @@ class CustomCallback(proxddp.BaseCallback):
 
 cus_cb = CustomCallback()
 solver.registerCallback("cus", cus_cb)
-his_cb = proxddp.HistoryCallback()
+his_cb = aligator.HistoryCallback()
 solver.registerCallback("his", his_cb)
 solver.max_iters = 20
 
 u0 = np.zeros(nu)
 us_i = [u0] * nsteps
-xs_i = proxddp.rollout(dynmodel, x0, us_i)
-prob_data = proxddp.TrajOptData(problem)
+xs_i = aligator.rollout(dynmodel, x0, us_i)
+prob_data = aligator.TrajOptData(problem)
 problem.evaluate(xs_i, us_i, prob_data)
 
 solver.setup(problem)

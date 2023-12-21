@@ -1,8 +1,8 @@
-import proxddp
+import aligator
 import numpy as np
 import pinocchio as pin
 
-from proxddp import manifolds, dynamics
+from aligator import manifolds, dynamics
 
 
 nx = 2
@@ -20,12 +20,12 @@ dyn_model = dynamics.IntegratorEuler(ode, dt)
 
 w_x = 0.1 * np.eye(nx)
 w_u = 1e-3 * np.eye(nu)
-rcost = proxddp.QuadraticCost(w_x * dt, w_u * dt)
+rcost = aligator.QuadraticCost(w_x * dt, w_u * dt)
 
 nsteps = 20
 Tf = nsteps * dt
 
-stm = proxddp.StageModel(rcost, dyn_model)
+stm = aligator.StageModel(rcost, dyn_model)
 stages = [stm] * nsteps
 
 term_cost = rcost.copy()
@@ -33,7 +33,7 @@ term_cost.w_x /= dt
 term_cost.w_u /= dt
 
 x0 = space.rand()
-problem = proxddp.TrajOptProblem(x0, stages, term_cost)
+problem = aligator.TrajOptProblem(x0, stages, term_cost)
 
 xs_init = [x0] * (nsteps + 1)
 us_init = [np.zeros(nu)] * nsteps
@@ -41,10 +41,10 @@ us_init = [np.zeros(nu)] * nsteps
 mu_init = 0.001
 rho_init = 0.0
 tol = 1e-5
-verbose = proxddp.VerboseLevel.VERBOSE
+verbose = aligator.VerboseLevel.VERBOSE
 
-solver = proxddp.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
-# solver = proxddp.SolverFDDP(tol, verbose=verbose)
+solver = aligator.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
+# solver = aligator.SolverFDDP(tol, verbose=verbose)
 
 solver.setup(problem)
 solver.run(problem, xs_init, us_init)

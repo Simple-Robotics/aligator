@@ -6,14 +6,14 @@
 
 import pinocchio as pin
 import numpy as np
-import proxddp
+import aligator
 import proxsuite_nlp
 import hppfcl as fcl
 import matplotlib.pyplot as plt
 
 from pathlib import Path
 from pinocchio.visualize import MeshcatVisualizer
-from proxddp import constraints
+from aligator import constraints
 from utils import ArgsBase
 
 
@@ -114,8 +114,8 @@ nu = model.nv
 space = proxsuite_nlp.manifolds.MultibodyPhaseSpace(model)
 nx = space.nx
 ndx = space.ndx
-cont_dyn = proxddp.dynamics.MultibodyFreeFwdDynamics(space)
-dyn_model = proxddp.dynamics.IntegratorSemiImplEuler(cont_dyn, dt)
+cont_dyn = aligator.dynamics.MultibodyFreeFwdDynamics(space)
+dyn_model = aligator.dynamics.IntegratorSemiImplEuler(cont_dyn, dt)
 
 np.random.seed(1)
 nq = model.nq
@@ -127,16 +127,18 @@ target_pos = np.array([0.0, 0.0, 1.0])
 frame_id = model.getFrameId("end_effector_frame")
 
 # running cost regularizes the control input
-rcost = proxddp.CostStack(space, nu)
+rcost = aligator.CostStack(space, nu)
 w_x = np.zeros(ndx)
 w_x[nv:] = 1e-2
 w_u = np.ones(nu) * 1e-3
 
-rcost.addCost(proxddp.QuadraticStateCost(space, nu, space.neutral(), np.diag(w_x) * dt))
-rcost.addCost(proxddp.QuadraticControlCost(space, np.zeros(nu), np.diag(w_u) * dt))
+rcost.addCost(
+    aligator.QuadraticStateCost(space, nu, space.neutral(), np.diag(w_x) * dt)
+)
+rcost.addCost(aligator.QuadraticControlCost(space, np.zeros(nu), np.diag(w_u) * dt))
 frame_place_target = pin.SE3.Identity()
 frame_place_target.translation = target_pos
-frame_err = proxddp.FramePlacementResidual(
+frame_err = aligator.FramePlacementResidual(
     ndx,
     nu,
     model,
@@ -146,51 +148,51 @@ frame_err = proxddp.FramePlacementResidual(
 weights_frame_place = np.zeros(6)
 weights_frame_place[:3] = np.ones(3) * 1.0
 rcost.addCost(
-    proxddp.QuadraticResidualCost(space, frame_err, np.diag(weights_frame_place) * dt)
+    aligator.QuadraticResidualCost(space, frame_err, np.diag(weights_frame_place) * dt)
 )
-term_cost = proxddp.CostStack(space, nu)
+term_cost = aligator.CostStack(space, nu)
 
 # box constraint on control
 umin = -20.0 * np.ones(nu)
 umax = +20.0 * np.ones(nu)
-ctrl_fn = proxddp.ControlErrorResidual(ndx, np.zeros(nu))
-box_cstr = proxddp.StageConstraint(ctrl_fn, constraints.BoxConstraint(umin, umax))
+ctrl_fn = aligator.ControlErrorResidual(ndx, np.zeros(nu))
+box_cstr = aligator.StageConstraint(ctrl_fn, constraints.BoxConstraint(umin, umax))
 
 nsteps = 200
 Tf = nsteps * dt
-problem = proxddp.TrajOptProblem(x0, nu, space, term_cost)
+problem = aligator.TrajOptProblem(x0, nu, space, term_cost)
 
 for i in range(nsteps):
-    stage = proxddp.StageModel(rcost, dyn_model)
+    stage = aligator.StageModel(rcost, dyn_model)
     if args.bounds:
         stage.addConstraint(box_cstr)
     problem.addStage(stage)
 
-term_fun = proxddp.FrameTranslationResidual(ndx, nu, model, target_pos, frame_id)
+term_fun = aligator.FrameTranslationResidual(ndx, nu, model, target_pos, frame_id)
 if args.term_cstr:
-    term_cstr = proxddp.StageConstraint(term_fun, constraints.EqualityConstraintSet())
+    term_cstr = aligator.StageConstraint(term_fun, constraints.EqualityConstraintSet())
     problem.addTerminalConstraint(term_cstr)
 else:
     term_cost.addCost(
-        proxddp.QuadraticResidualCost(space, frame_err, np.diag(weights_frame_place))
+        aligator.QuadraticResidualCost(space, frame_err, np.diag(weights_frame_place))
     )
 
 mu_init = 0.8
 rho_init = 0.0
-verbose = proxddp.VerboseLevel.VERBOSE
+verbose = aligator.VerboseLevel.VERBOSE
 TOL = 1e-4
 MAX_ITER = 200
-solver = proxddp.SolverProxDDP(
+solver = aligator.SolverProxDDP(
     TOL, mu_init, rho_init=rho_init, max_iters=MAX_ITER, verbose=verbose
 )
-callback = proxddp.HistoryCallback()
+callback = aligator.HistoryCallback()
 solver.registerCallback("his", callback)
 
 u0 = pin.rnea(model, data, x0[:1], x0[1:], np.zeros(nv))
 us_i = [u0] * nsteps
-xs_i = proxddp.rollout(dyn_model, x0, us_i)
+xs_i = aligator.rollout(dyn_model, x0, us_i)
 
-max_threads = proxddp.get_available_threads()
+max_threads = aligator.get_available_threads()
 print("Max threads:", max_threads)
 problem.setNumThreads(max_threads)
 solver.setup(problem)

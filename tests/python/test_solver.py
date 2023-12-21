@@ -8,9 +8,9 @@
 import sys
 
 import example_robot_data as erd
-from proxddp.manifolds import VectorSpace, MultibodyPhaseSpace
+from aligator.manifolds import VectorSpace, MultibodyPhaseSpace
 import numpy as np
-import proxddp
+import aligator
 import pytest
 
 
@@ -22,18 +22,18 @@ def test_fddp_lqr():
     A = np.eye(nx)
     B = np.ones((nx, nu))
     c = np.zeros(nx)
-    dyn = proxddp.dynamics.LinearDiscreteDynamics(A, B, c)
+    dyn = aligator.dynamics.LinearDiscreteDynamics(A, B, c)
     w_x = np.eye(nx)
     w_u = np.eye(nu)
-    cost = proxddp.QuadraticCost(w_x, w_u)
-    problem = proxddp.TrajOptProblem(x0, nu, space, cost)
+    cost = aligator.QuadraticCost(w_x, w_u)
+    problem = aligator.TrajOptProblem(x0, nu, space, cost)
     nsteps = 10
     for i in range(nsteps):
-        stage = proxddp.StageModel(cost, dyn)
+        stage = aligator.StageModel(cost, dyn)
         problem.addStage(stage)
 
     tol = 1e-6
-    solver = proxddp.SolverFDDP(tol, proxddp.VerboseLevel.VERBOSE)
+    solver = aligator.SolverFDDP(tol, aligator.VerboseLevel.VERBOSE)
     solver.setup(problem)
     solver.max_iters = 2
     xs_init = [x0] * (nsteps + 1)
@@ -51,12 +51,12 @@ def test_no_node():
     x0 = space.rand()
     mu_init = 4e-2
     rho_init = 1e-2
-    verbose = proxddp.VERBOSE
+    verbose = aligator.VERBOSE
     TOL = 1e-4
     MAX_ITER = 200
-    terminal_cost = proxddp.CostStack(space, nu)
-    problem = proxddp.TrajOptProblem(x0, nu, space, terminal_cost)
-    solver = proxddp.SolverProxDDP(
+    terminal_cost = aligator.CostStack(space, nu)
+    problem = aligator.TrajOptProblem(x0, nu, space, terminal_cost)
+    solver = aligator.SolverProxDDP(
         TOL, mu_init, rho_init=rho_init, max_iters=MAX_ITER, verbose=verbose
     )
     solver.setup(problem)

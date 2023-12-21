@@ -1,4 +1,4 @@
-import proxddp
+import aligator
 import numpy as np
 
 import pinocchio as pin
@@ -6,7 +6,7 @@ import example_robot_data as erd
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
-from proxddp import constraints, manifolds, dynamics  # noqa
+from aligator import constraints, manifolds, dynamics  # noqa
 from pinocchio.visualize import MeshcatVisualizer
 
 from utils import ArgsBase, get_endpoint_traj
@@ -63,29 +63,31 @@ tool_id = rmodel.getFrameId(tool_name)
 target_pos = np.array([0.15, 0.65, 0.5])
 print(target_pos)
 
-frame_fn = proxddp.FrameTranslationResidual(ndx, nu, rmodel, target_pos, tool_id)
+frame_fn = aligator.FrameTranslationResidual(ndx, nu, rmodel, target_pos, tool_id)
 v_ref = pin.Motion()
 v_ref.np[:] = 0.0
-frame_vel_fn = proxddp.FrameVelocityResidual(ndx, nu, rmodel, v_ref, tool_id, pin.LOCAL)
+frame_vel_fn = aligator.FrameVelocityResidual(
+    ndx, nu, rmodel, v_ref, tool_id, pin.LOCAL
+)
 wt_x_term = wt_x.copy()
 wt_x_term[:] = 1e-4
 wt_frame_pos = 10.0 * np.eye(frame_fn.nr)
 wt_frame_vel = 100.0 * np.ones(frame_vel_fn.nr)
 wt_frame_vel = np.diag(wt_frame_vel)
 
-term_cost = proxddp.CostStack(space, nu)
-term_cost.addCost(proxddp.QuadraticCost(wt_x_term, wt_u * 0))
-term_cost.addCost(proxddp.QuadraticResidualCost(space, frame_fn, wt_frame_pos))
-term_cost.addCost(proxddp.QuadraticResidualCost(space, frame_vel_fn, wt_frame_vel))
+term_cost = aligator.CostStack(space, nu)
+term_cost.addCost(aligator.QuadraticCost(wt_x_term, wt_u * 0))
+term_cost.addCost(aligator.QuadraticResidualCost(space, frame_fn, wt_frame_pos))
+term_cost.addCost(aligator.QuadraticResidualCost(space, frame_vel_fn, wt_frame_vel))
 
 u_max = rmodel.effortLimit
 u_min = -u_max
 
 
 def make_control_bounds():
-    fun = proxddp.ControlErrorResidual(ndx, nu)
+    fun = aligator.ControlErrorResidual(ndx, nu)
     cstr_set = constraints.BoxConstraint(u_min, u_max)
-    return proxddp.StageConstraint(fun, cstr_set)
+    return aligator.StageConstraint(fun, cstr_set)
 
 
 def computeQuasistatic(model: pin.Model, x0, a):
@@ -97,36 +99,36 @@ def computeQuasistatic(model: pin.Model, x0, a):
 
 
 init_us = [computeQuasistatic(rmodel, x0, a=np.zeros(nv)) for _ in range(nsteps)]
-init_xs = proxddp.rollout(discrete_dynamics, x0, init_us)
+init_xs = aligator.rollout(discrete_dynamics, x0, init_us)
 
 
 stages = []
 
 for i in range(nsteps):
-    rcost = proxddp.CostStack(space, nu)
-    rcost.addCost(proxddp.QuadraticCost(wt_x * dt, wt_u * dt))
+    rcost = aligator.CostStack(space, nu)
+    rcost.addCost(aligator.QuadraticCost(wt_x * dt, wt_u * dt))
 
-    stm = proxddp.StageModel(rcost, discrete_dynamics)
+    stm = aligator.StageModel(rcost, discrete_dynamics)
     if args.bounds:
         stm.addConstraint(make_control_bounds())
     stages.append(stm)
 
 
-problem = proxddp.TrajOptProblem(x0, stages, term_cost=term_cost)
+problem = aligator.TrajOptProblem(x0, stages, term_cost=term_cost)
 tol = 1e-7
 
 mu_init = 1e-7
 rho_init = 0.0
-verbose = proxddp.VerboseLevel.VERBOSE
+verbose = aligator.VerboseLevel.VERBOSE
 max_iters = 40
-solver = proxddp.SolverProxDDP(
+solver = aligator.SolverProxDDP(
     tol, mu_init, rho_init, max_iters=max_iters, verbose=verbose
 )
-solver.rollout_type = proxddp.ROLLOUT_NONLINEAR
+solver.rollout_type = aligator.ROLLOUT_NONLINEAR
 
 if args.fddp:
-    solver = proxddp.SolverFDDP(tol, verbose, max_iters=max_iters)
-cb = proxddp.HistoryCallback()
+    solver = aligator.SolverFDDP(tol, verbose, max_iters=max_iters)
+cb = aligator.HistoryCallback()
 solver.registerCallback("his", cb)
 solver.setup(problem)
 solver.run(problem, init_xs, init_us)
@@ -188,7 +190,7 @@ ax.set_zlabel("$z$")
 
 plt.figure()
 
-cb_store: proxddp.HistoryCallback.history_storage = cb.storage
+cb_store: aligator.HistoryCallback.history_storage = cb.storage
 
 nrang = range(1, results.num_iters + 1)
 ax: plt.Axes = plt.gca()

@@ -3,7 +3,7 @@ Original script:
 https://github.com/loco-3d/crocoddyl/blob/master/examples/arm_manipulation.py
 
 In this script, we demonstrate use the Python Crocoddyl API, by defining
-a manipulation problem using Crocoddyl and converting it to a proxddp problem.
+a manipulation problem using Crocoddyl and converting it to a aligator problem.
 """
 
 import tap
@@ -15,7 +15,7 @@ import numpy as np
 import example_robot_data
 from pinocchio.visualize import MeshcatVisualizer
 
-from proxddp.croc import convertCrocoddylProblem
+from aligator.croc import convertCrocoddylProblem
 
 
 class Args(tap.Tap):
@@ -184,16 +184,16 @@ if True:
     print("Croc inf. err: {:.4e}".format(croc_dual_err))
 
 if True:
-    import proxddp
+    import aligator
 
-    print("running proxddp")
+    print("running aligator")
     prox_problem = convertCrocoddylProblem(problem)
 
     # mu_init = 1e-7
     # rho_init = 1e-10
-    # proxsolver = proxddp.SolverProxDDP(croc_dual_err * 0.8, 0.001, max_iters=300)
-    proxsolver = proxddp.SolverFDDP(tol=croc_dual_err)
-    proxsolver.verbose = proxddp.VerboseLevel.VERBOSE
+    # proxsolver = aligator.SolverProxDDP(croc_dual_err * 0.8, 0.001, max_iters=300)
+    proxsolver = aligator.SolverFDDP(tol=croc_dual_err)
+    proxsolver.verbose = aligator.VerboseLevel.VERBOSE
     proxsolver.setup(prox_problem)
 
     elapsed_time = time.time()

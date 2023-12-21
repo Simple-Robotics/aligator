@@ -1,6 +1,6 @@
 import example_robot_data as erd
-import proxddp
-from proxddp import manifolds, dynamics, constraints
+import aligator
+from aligator import manifolds, dynamics, constraints
 from utils import IMAGEIO_KWARGS
 import numpy as np
 import pinocchio as pin
@@ -36,13 +36,13 @@ dyn_model = dynamics.IntegratorRK2(
 )
 w_x = np.eye(space.ndx) * 1e-4
 w_u = np.eye(nu) * 1e-3
-cost = proxddp.CostStack(space, nu)
-cost.addCost(proxddp.QuadraticStateCost(space, nu, target, w_x * timestep))
-cost.addCost(proxddp.QuadraticControlCost(space, np.zeros(nu), w_u * timestep))
-term_cost = proxddp.CostStack(space, nu)
+cost = aligator.CostStack(space, nu)
+cost.addCost(aligator.QuadraticStateCost(space, nu, target, w_x * timestep))
+cost.addCost(aligator.QuadraticControlCost(space, np.zeros(nu), w_u * timestep))
+term_cost = aligator.CostStack(space, nu)
 if not args.term_cstr:
     term_cost.addCost(
-        proxddp.QuadraticStateCost(space, nu, target, np.eye(space.ndx) * 10)
+        aligator.QuadraticStateCost(space, nu, target, np.eye(space.ndx) * 10)
     )
 
 Tf = 1.0
@@ -57,34 +57,34 @@ if args.bounds:
 stages = []
 box_set = constraints.BoxConstraint(umin, umax)
 for i in range(nsteps):
-    stm = proxddp.StageModel(cost, dyn_model)
+    stm = aligator.StageModel(cost, dyn_model)
     if args.bounds:
         stm.addConstraint(
-            func=proxddp.ControlErrorResidual(space.ndx, nu),
+            func=aligator.ControlErrorResidual(space.ndx, nu),
             cstr_set=box_set,
         )
     stages.append(stm)
 
-problem = proxddp.TrajOptProblem(x0, stages, term_cost)
+problem = aligator.TrajOptProblem(x0, stages, term_cost)
 if args.term_cstr:
-    term_cstr = proxddp.StageConstraint(
-        proxddp.StateErrorResidual(space, nu, target),
+    term_cstr = aligator.StageConstraint(
+        aligator.StateErrorResidual(space, nu, target),
         constraints.EqualityConstraintSet(),
     )
     problem.addTerminalConstraint(term_cstr)
 
 tol = 1e-3
 mu_init = 1e-1
-solver = proxddp.SolverProxDDP(tol, mu_init=mu_init, verbose=proxddp.VERBOSE)
+solver = aligator.SolverProxDDP(tol, mu_init=mu_init, verbose=aligator.VERBOSE)
 solver.max_iters = 200
 solver.setup(problem)
 if args.bounds:
     for i in range(nsteps):
-        psc: proxddp.ProxScaler = solver.workspace.getConstraintScaler(i)
+        psc: aligator.ProxScaler = solver.workspace.getConstraintScaler(i)
         psc.set_weight(0.01, 1)
 
 us_init = [np.zeros(nu) for _ in range(nsteps)]
-xs_init = proxddp.rollout(dyn_model, x0, us_init).tolist()
+xs_init = aligator.rollout(dyn_model, x0, us_init).tolist()
 conv = solver.run(problem, xs_init, us_init)
 
 res = solver.results
@@ -98,7 +98,7 @@ if args.term_cstr:
 
 if args.plot:
     import matplotlib.pyplot as plt
-    from proxddp.utils.plotting import plot_controls_traj
+    from aligator.utils.plotting import plot_controls_traj
 
     times = np.linspace(0, Tf, nsteps + 1)
     fig1 = plot_controls_traj(times, res.us, ncols=1, rmodel=rmodel, figsize=(6.4, 3.2))

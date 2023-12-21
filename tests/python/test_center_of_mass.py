@@ -1,11 +1,11 @@
 """
 Test function related to center of mass residuals
 """
-import proxddp
+import aligator
 import numpy as np
 import pinocchio as pin
 
-from proxddp import manifolds
+from aligator import manifolds
 
 
 model = pin.buildSampleModelHumanoid()
@@ -38,7 +38,7 @@ def test_com_placement():
 
     pin.centerOfMass(model, rdata, q0)
     com_plc1 = rdata.com[0]
-    fun = proxddp.CenterOfMassTranslationResidual(ndx, nu, model, com_plc1)
+    fun = aligator.CenterOfMassTranslationResidual(ndx, nu, model, com_plc1)
     assert np.allclose(com_plc1, fun.getReference())
 
     fdata = fun.createData()
@@ -54,7 +54,7 @@ def test_com_placement():
     assert J.shape == realJ.shape
     assert np.allclose(fdata.Jx[:, :nv], realJ)
 
-    fun_fd = proxddp.FiniteDifferenceHelper(space, fun, FD_EPS)
+    fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
     fun_fd.evaluate(x0, u0, x0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
@@ -83,7 +83,7 @@ def test_frame_velocity():
     pin.centerOfMass(model, rdata, q0, v0)
     com_vel1 = rdata.vcom[0]
 
-    fun = proxddp.CenterOfMassVelocityResidual(space.ndx, nu, model, com_vel1)
+    fun = aligator.CenterOfMassVelocityResidual(space.ndx, nu, model, com_vel1)
     assert np.allclose(com_vel1, fun.getReference())
 
     fdata = fun.createData()
@@ -93,7 +93,7 @@ def test_frame_velocity():
 
     fun.computeJacobians(x0, fdata)
 
-    fun_fd = proxddp.FiniteDifferenceHelper(space, fun, FD_EPS)
+    fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
     fun_fd.evaluate(x0, u0, x0, fdata2)
     fun_fd.computeJacobians(x0, u0, x0, fdata2)

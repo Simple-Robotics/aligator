@@ -1,11 +1,11 @@
 """
 Test function related to frames.
 """
-import proxddp
+import aligator
 import numpy as np
 import pinocchio as pin
 
-from proxddp import manifolds
+from aligator import manifolds
 
 
 model = pin.buildSampleModelHumanoid()
@@ -42,7 +42,7 @@ def test_frame_placement():
     pin.framesForwardKinematics(model, rdata, q0)
     fr_plc1 = rdata.oMf[fr_id1]
 
-    fun = proxddp.FramePlacementResidual(ndx, nu, model, fr_plc1, fr_id1)
+    fun = aligator.FramePlacementResidual(ndx, nu, model, fr_plc1, fr_id1)
     assert fr_id1 == fun.frame_id
     assert fr_plc1 == fun.getReference()
 
@@ -59,7 +59,7 @@ def test_frame_placement():
     assert J.shape == realJ.shape
     assert np.allclose(fdata.Jx[:, :nv], realJ)
 
-    fun_fd = proxddp.FiniteDifferenceHelper(space, fun, FD_EPS)
+    fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
     fun_fd.evaluate(x0, u0, x0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
@@ -93,7 +93,7 @@ def test_frame_translation():
     pin.framesForwardKinematics(model, rdata, q0)
     target_pos = rdata.oMf[fr_id1].translation
 
-    fun = proxddp.FrameTranslationResidual(ndx, nu, model, target_pos, fr_id1)
+    fun = aligator.FrameTranslationResidual(ndx, nu, model, target_pos, fr_id1)
     assert fr_id1 == fun.frame_id
 
     fdata = fun.createData()
@@ -103,7 +103,7 @@ def test_frame_translation():
 
     fun.computeJacobians(x0, u0, x0, fdata)
 
-    fun_fd = proxddp.FiniteDifferenceHelper(space, fun, FD_EPS)
+    fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
     fun_fd.evaluate(x0, u0, x0, fdata2)
     fun_fd.computeJacobians(x0, u0, x0, fdata2)
@@ -132,7 +132,7 @@ def test_frame_velocity():
     ref_type = pin.LOCAL
     v_ref = pin.getFrameVelocity(model, rdata, fr_id1, ref_type)
 
-    fun = proxddp.FrameVelocityResidual(space.ndx, nu, model, v_ref, fr_id1, ref_type)
+    fun = aligator.FrameVelocityResidual(space.ndx, nu, model, v_ref, fr_id1, ref_type)
     assert fr_id1 == fun.frame_id
     assert np.allclose(v_ref, fun.getReference())
 
@@ -145,7 +145,7 @@ def test_frame_velocity():
     fun.evaluate(x0, fdata)
     fun.computeJacobians(x0, fdata)
 
-    fun_fd = proxddp.FiniteDifferenceHelper(space, fun, FD_EPS)
+    fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
     fun_fd.evaluate(x0, u0, x0, fdata2)
     fun_fd.computeJacobians(x0, u0, x0, fdata2)
@@ -164,7 +164,7 @@ def test_fly_high():
     fr_name1 = "larm_shoulder2_body"
     fr_id1 = model.getFrameId(fr_name1)
     space = manifolds.MultibodyPhaseSpace(model)
-    fun = proxddp.FlyHighResidual(space, fr_id1, 0.1, nu)
+    fun = aligator.FlyHighResidual(space, fr_id1, 0.1, nu)
     data = fun.createData()
     data2 = fun.createData()
     Jx_nd = data.Jx.copy()

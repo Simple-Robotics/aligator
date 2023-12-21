@@ -1,6 +1,6 @@
-from proxddp import QuadraticCost, CostStack
-from proxddp import manifolds
-import proxddp
+from aligator import QuadraticCost, CostStack
+from aligator import manifolds
+import aligator
 import numpy as np
 
 import pytest
@@ -49,7 +49,7 @@ def test_composite_cost():
     nu = space.ndx
     u0 = np.ones(nu)
     target = space.rand()
-    fun = proxddp.StateErrorResidual(space, nu, target)
+    fun = aligator.StateErrorResidual(space, nu, target)
     # for debug
     fd = fun.createData()
     fun.evaluate(x0, u0, x0, fd)
@@ -61,12 +61,12 @@ def test_composite_cost():
 
     weights = np.random.randn(4, fun.nr)
     weights = weights.T @ weights
-    cost = proxddp.QuadraticResidualCost(space, fun, weights)
+    cost = aligator.QuadraticResidualCost(space, fun, weights)
     assert np.array_equal(weights, cost.weights)
 
     data = cost.createData()
     print("Composite data:", data)
-    assert isinstance(data, proxddp.CompositeCostData)
+    assert isinstance(data, aligator.CompositeCostData)
 
     cost.evaluate(x0, u0, data)
     cost.computeGradients(x0, u0, data)
@@ -85,10 +85,10 @@ def test_composite_cost():
     print("----")
 
     weights = np.ones(fun.nr)
-    log_cost = proxddp.LogResidualCost(space, fun, weights)
+    log_cost = aligator.LogResidualCost(space, fun, weights)
     data = log_cost.createData()
     print(data)
-    assert isinstance(data, proxddp.CompositeCostData)
+    assert isinstance(data, aligator.CompositeCostData)
 
     log_cost.evaluate(x0, u0, data)
     log_cost.computeGradients(x0, u0, data)
@@ -107,7 +107,7 @@ def test_quad_state():
     x0 = space.neutral()
     x1 = space.rand()
     weights = np.eye(ndx)
-    cost = proxddp.QuadraticStateCost(space, nu, x0, weights)
+    cost = aligator.QuadraticStateCost(space, nu, x0, weights)
 
     data = cost.createData()
 
@@ -180,21 +180,21 @@ def test_direct_sum():
     q0 = config_space.neutral()
     pin.framesForwardKinematics(model, data, q0)
     p_ref = data.oMf[frame_id].translation
-    frame_fn = proxddp.FrameTranslationResidual(
+    frame_fn = aligator.FrameTranslationResidual(
         config_space.ndx, nv, model, p_ref, frame_id
     )
     print(frame_fn.nr)
-    frame_cost = proxddp.QuadraticResidualCost(config_space, frame_fn, np.eye(3))
+    frame_cost = aligator.QuadraticResidualCost(config_space, frame_fn, np.eye(3))
 
     cam_space = manifolds.SE3()
-    cam_cost = proxddp.QuadraticStateCost(
+    cam_cost = aligator.QuadraticStateCost(
         cam_space, cam_space.ndx, cam_space.neutral(), np.eye(6) * 0.01
     )
 
     # direct sum
-    direct_sum = proxddp.directSum(cam_cost, frame_cost)
+    direct_sum = aligator.directSum(cam_cost, frame_cost)
     data = direct_sum.createData()
-    assert isinstance(data, proxddp.DirectSumCostData)
+    assert isinstance(data, aligator.DirectSumCostData)
     d1 = data.data1
     d2 = data.data2
     space = direct_sum.space

@@ -1,9 +1,9 @@
 import example_robot_data as erd
 import pinocchio as pin
 import numpy as np
-import proxddp
+import aligator
 
-from proxddp import dynamics, manifolds
+from aligator import dynamics, manifolds
 from utils import plot_controls_traj, ArgsBase
 from pinocchio.visualize import MeshcatVisualizer
 
@@ -35,7 +35,7 @@ nsteps = int(tf / dt)
 x0 = space.neutral()
 u0 = pin.rnea(rmodel, robot.data, q=x0[:nq], v=x0[nq:], a=np.zeros(nv))
 us_i = [u0] * nsteps
-xs_i = proxddp.rollout_implicit(dyn_model, x0, us_i)
+xs_i = aligator.rollout_implicit(dyn_model, x0, us_i)
 ee_pos_target = np.array([0.5, 0.7, 1.2]) * 0.707
 
 
@@ -43,32 +43,32 @@ def define_cost():
     w_x = np.ones(ndx) * 1e-6
     w_x[nv:] = 5e-2
     w_u = 1e-3
-    costs = proxddp.CostStack(space, nu)
-    xreg = proxddp.QuadraticStateCost(space, nu, space.neutral(), np.diag(w_x) * dt)
-    ureg = proxddp.QuadraticControlCost(space, u0, np.eye(nu) * dt)
+    costs = aligator.CostStack(space, nu)
+    xreg = aligator.QuadraticStateCost(space, nu, space.neutral(), np.diag(w_x) * dt)
+    ureg = aligator.QuadraticControlCost(space, u0, np.eye(nu) * dt)
     costs.addCost(xreg)
     costs.addCost(ureg, w_u)
 
     frame_name = "ee_link"
     ee_id = rmodel.getFrameId(frame_name)
-    frame_err = proxddp.FrameTranslationResidual(ndx, nu, rmodel, ee_pos_target, ee_id)
+    frame_err = aligator.FrameTranslationResidual(ndx, nu, rmodel, ee_pos_target, ee_id)
 
     w_frame = np.eye(3) * 6.0
-    term_cost = proxddp.CostStack(space, nu)
-    frame_cost = proxddp.QuadraticResidualCost(space, frame_err, w_frame)
+    term_cost = aligator.CostStack(space, nu)
+    frame_cost = aligator.QuadraticResidualCost(space, frame_err, w_frame)
     term_cost.addCost(frame_cost)
 
     return costs, term_cost
 
 
 running_cost, term_cost = define_cost()
-stm = proxddp.StageModel(running_cost, dyn_model)
-ctrl_fn = proxddp.ControlErrorResidual(ndx, np.zeros(nu))
+stm = aligator.StageModel(running_cost, dyn_model)
+ctrl_fn = aligator.ControlErrorResidual(ndx, np.zeros(nu))
 stm.addConstraint(
-    ctrl_fn, proxddp.constraints.BoxConstraint(-rmodel.effortLimit, rmodel.effortLimit)
+    ctrl_fn, aligator.constraints.BoxConstraint(-rmodel.effortLimit, rmodel.effortLimit)
 )
 stages = [stm] * nsteps
-problem = proxddp.TrajOptProblem(x0, stages, term_cost)
+problem = aligator.TrajOptProblem(x0, stages, term_cost)
 
 
 if __name__ == "__main__":
@@ -95,13 +95,13 @@ if __name__ == "__main__":
 
     tol = 1e-3
     mu_init = 0.001
-    solver = proxddp.SolverProxDDP(tol, mu_init, verbose=proxddp.VERBOSE)
+    solver = aligator.SolverProxDDP(tol, mu_init, verbose=aligator.VERBOSE)
     solver.rollout_max_iters = 10
     solver.max_iters = 200
     solver.setup(problem)
     solver.run(problem, xs_i, us_i)
 
-    results: proxddp.Results = solver.results
+    results: aligator.Results = solver.results
     print(results)
     us_opt = results.us
 

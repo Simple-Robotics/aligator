@@ -1,12 +1,12 @@
 """
 Simple example showing how to use a non-StateErrorResidual initial condition in 2D.
 """
-import proxddp
+import aligator
 import numpy as np
 import matplotlib.pyplot as plt
 
-from proxddp import manifolds
-from proxddp import dynamics
+from aligator import manifolds
+from aligator import dynamics
 
 
 space = manifolds.R2()
@@ -20,32 +20,32 @@ B = np.eye(ndx)
 x0 = space.rand()
 INIT_COND_IDX = 1
 x0[1] = 0.1
-init_cond = proxddp.StateErrorResidual(space, nu, x0)
+init_cond = aligator.StateErrorResidual(space, nu, x0)
 init_cond = init_cond[INIT_COND_IDX]
 print(init_cond)
 
 stages = []
 xtarget = space.neutral()
 xtarget[1] = 0.0
-term_cost = proxddp.QuadraticStateCost(space, nu, xtarget, np.eye(ndx))
+term_cost = aligator.QuadraticStateCost(space, nu, xtarget, np.eye(ndx))
 
-problem = proxddp.TrajOptProblem(init_cond, term_cost)
+problem = aligator.TrajOptProblem(init_cond, term_cost)
 
 dm = dynamics.LinearDiscreteDynamics(A, B, c=np.zeros(2))
-cost = proxddp.QuadraticControlCost(space, nu, np.eye(nu) * 1e-3)
-stage = proxddp.StageModel(cost, dm)
+cost = aligator.QuadraticControlCost(space, nu, np.eye(nu) * 1e-3)
+stage = aligator.StageModel(cost, dm)
 
 nsteps = 100
 
 for i in range(nsteps):
     problem.addStage(stage)
 
-solver = proxddp.SolverProxDDP(1e-3, 0.01, verbose=proxddp.VERBOSE)
+solver = aligator.SolverProxDDP(1e-3, 0.01, verbose=aligator.VERBOSE)
 solver.setup(problem)
 solver.force_initial_condition = False
 
 us_i = [np.zeros(nu) for _ in range(nsteps)]
-xs_i = proxddp.rollout(dm, x0, us_i)
+xs_i = aligator.rollout(dm, x0, us_i)
 
 
 flag = solver.run(problem, xs_i, us_i)

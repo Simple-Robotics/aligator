@@ -1,6 +1,6 @@
 import numpy as np
-import proxddp
-from proxddp import dynamics, manifolds
+import aligator
+from aligator import dynamics, manifolds
 import pytest
 from utils import create_linear_ode, create_multibody_ode
 
@@ -9,7 +9,7 @@ ATOL = EPSILON**0.5
 
 
 def function_finite_difference(
-    fun: proxddp.StageFunction,
+    fun: aligator.StageFunction,
     space: manifolds.ManifoldAbstract,
     x0,
     u0,
@@ -17,7 +17,7 @@ def function_finite_difference(
     eps=EPSILON,
 ):
     """Use finite differences to compute Jacobians
-    of a `proxddp.StageFunction`.
+    of a `aligator.StageFunction`.
 
     TODO: move to a test utils file
     """

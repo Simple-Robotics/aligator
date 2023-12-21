@@ -1,7 +1,7 @@
-import proxddp
+import aligator
 
 from proxsuite_nlp.manifolds import MultibodyPhaseSpace
-from proxddp.dynamics import (
+from aligator.dynamics import (
     MultibodyFreeFwdDynamics,
     IntegratorEuler,
     IntegratorRK2,
@@ -85,7 +85,7 @@ def test_euler(setup_fig):
     discrete_dyn = IntegratorEuler(ode_dynamics, dt)
     u0 = np.zeros(discrete_dyn.nu)
     us = [u0] * nsteps
-    xs = proxddp.rollout(discrete_dyn, x0, us).tolist()
+    xs = aligator.rollout(discrete_dyn, x0, us).tolist()
     if DISPLAY:
         display(xs, dt)
     e = computeMechanicalEnergy(rmodel, rdata, xs)
@@ -96,7 +96,7 @@ def test_rk2(setup_fig):
     discrete_dyn = IntegratorRK2(ode_dynamics, dt)
     u0 = np.zeros(discrete_dyn.nu)
     us = [u0] * nsteps
-    xs = proxddp.rollout(discrete_dyn, x0, us).tolist()
+    xs = aligator.rollout(discrete_dyn, x0, us).tolist()
     if DISPLAY:
         display(xs, dt)
     e = computeMechanicalEnergy(rmodel, rdata, xs)
@@ -107,7 +107,7 @@ def test_midpoint(setup_fig):
     discrete_dyn = IntegratorMidpoint(ode_dynamics, dt)
     u0 = np.zeros(discrete_dyn.nu)
     us = [u0] * nsteps
-    xs = proxddp.rollout_implicit(discrete_dyn, x0, us).tolist()
+    xs = aligator.rollout_implicit(discrete_dyn, x0, us).tolist()
     if DISPLAY:
         display(xs, dt)
     e = computeMechanicalEnergy(rmodel, rdata, xs)

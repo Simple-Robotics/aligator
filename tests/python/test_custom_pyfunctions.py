@@ -1,30 +1,30 @@
-import proxddp
+import aligator
 import numpy as np
 import pytest
 
-from proxddp import ControlBoxFunction as PyControlBoxFunction
+from aligator import ControlBoxFunction as PyControlBoxFunction
 
 
 def test_abstract():
-    space = proxddp.manifolds.SE2()
+    space = aligator.manifolds.SE2()
     ndx = space.ndx
     nu = 3
     nr = 1
-    fun = proxddp.StageFunction(ndx, nu, nr)
+    fun = aligator.StageFunction(ndx, nu, nr)
     data = fun.createData()
     print(data)
 
 
 def test_custom_controlbox():
-    space = proxddp.manifolds.SE2()
+    space = aligator.manifolds.SE2()
     ndx = space.ndx
     nu = 3
 
     u_min = np.ones(nu) * -0.1
     u_max = np.ones(nu) * 0.1
     box_function = PyControlBoxFunction(ndx, u_min, u_max)
-    bf2 = proxddp.ControlBoxFunction(ndx, u_min, u_max)
-    data1: proxddp.StageFunctionData = box_function.createData()
+    bf2 = aligator.ControlBoxFunction(ndx, u_min, u_max)
+    data1: aligator.StageFunctionData = box_function.createData()
     data2 = bf2.createData()
 
     lbd0 = np.zeros(box_function.nr)

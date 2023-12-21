@@ -1,8 +1,8 @@
 import proxsuite_nlp
-import proxddp
+import aligator
 from proxsuite_nlp import manifolds, constraints
 
-from proxddp import TrajOptProblem, StageModel
+from aligator import TrajOptProblem, StageModel
 
 
 def _split_state_control(space, x, N):
@@ -20,7 +20,7 @@ def _split_state_control(space, x, N):
 class ProxnlpCostFromProblem(proxsuite_nlp.costs.CostFunctionBase):
     def __init__(self, problem: TrajOptProblem):
         self.problem = problem
-        self.prob_data = proxddp.TrajOptData(problem)
+        self.prob_data = aligator.TrajOptData(problem)
         self.space = _get_product_space(problem)
         super().__init__(self.space.nx, self.space.ndx)
 
@@ -37,11 +37,11 @@ class ProxnlpCostFromProblem(proxsuite_nlp.costs.CostFunctionBase):
         self.problem.computeDerivatives(xs, us, self.prob_data)
         gs = self.space.split_vector(gout)
         for i in range(N):
-            sd: proxddp.StageData = self.prob_data.stage_data[i]
-            cd: proxddp.CostData = sd.cost_data
+            sd: aligator.StageData = self.prob_data.stage_data[i]
+            cd: aligator.CostData = sd.cost_data
             gs[2 * i][:] = cd.Lx
             gs[2 * i + 1][:] = cd.Lu
-        tcd: proxddp.CostData = self.prob_data.term_cost
+        tcd: aligator.CostData = self.prob_data.term_cost
         gs[2 * N][:] = tcd.Lx
 
     def computeHessian(self, x, Hout):
@@ -52,14 +52,14 @@ class ProxnlpCostFromProblem(proxsuite_nlp.costs.CostFunctionBase):
         self.problem.computeDerivatives(xs, us, prob_data)
         k = 0
         for i in range(N):
-            sd: proxddp.StageData = prob_data.stage_data[i]
-            cd: proxddp.CostData = sd.cost_data
-            sm: proxddp.StageModel = self.problem.stages[i]
+            sd: aligator.StageData = prob_data.stage_data[i]
+            cd: aligator.CostData = sd.cost_data
+            sm: aligator.StageModel = self.problem.stages[i]
             nx_u = sm.ndx1 + sm.nu
             xr = slice(k, k + nx_u)
             Hout[xr, xr] = cd.hess
             k += nx_u
-        tcd: proxddp.CostData = prob_data.term_cost
+        tcd: aligator.CostData = prob_data.term_cost
         xr = slice(k, k + tcd.Lx.size)
         Hout[xr, xr] = tcd.Lxx
 
@@ -70,7 +70,7 @@ def _get_start_end_idx(problem: TrajOptProblem):
     st = []
     en = []
     for i in range(N):
-        sm: proxddp.StageModel = problem.stages[i]
+        sm: aligator.StageModel = problem.stages[i]
         nt = sm.ndx1 + sm.nu
         st.append(k)
         en.append(k + nt + sm.ndx2)
@@ -82,7 +82,7 @@ class ProxnlpConstraintFromProblem(proxsuite_nlp.C2Function):
     def __init__(
         self,
         space: manifolds.ManifoldAbstract,
-        func: proxddp.StageFunction,
+        func: aligator.StageFunction,
         i: int,
         N: int,
         start_idx: int,
@@ -139,7 +139,7 @@ def convert_problem_to_proxsuite_nlp(problem: TrajOptProblem):
     st_idx, en_idx = _get_start_end_idx(problem)
     prnlp_constraints = []
     for i in range(N):
-        sm: proxddp.StageModel = problem.stages[i]
+        sm: aligator.StageModel = problem.stages[i]
         fun = sm.constraints[0].func
         cstr_fun = ProxnlpConstraintFromProblem(
             product_space, fun, i, N, st_idx[i], en_idx[i]
