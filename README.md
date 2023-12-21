@@ -26,6 +26,7 @@ This is a C++ template library, which provides
 * (optional) [eigenpy](https://github.com/stack-of-tasks/eigenpy)>=3.1.0 | [conda](https://anaconda.org/conda-forge/eigenpy) (Python bindings)
 * (optional) [Crocoddyl](https://github.com/loco-3d/crocoddyl)
 * (optional) [Pinocchio](https://github.com/stack-of-tasks/eigenpy)
+* a C++14 compliant compiler
 
 Python:
 
@@ -80,7 +81,7 @@ flamegraph -o my_flamegraph.svg -- ./build/examples/example-croc-talos-arm
 * [Nicolas Mansard](https://gepettoweb.laas.fr/index.php/Members/NicolasMansard) (LAAS-CNRS): project coordinator
 * [Guilhem Saurel](https://github.com/nim65s) (LAAS-CNRS)
 * [Fabian Schramm](https://github.com/fabinsch) (Inria): core developer
-* [Ludovic De Matteïs](https://github.com/LudovicDeMatteis)
+* [Ludovic De Matteïs](https://github.com/LudovicDeMatteis) (LAAS-CNRS/Inria)
 
 ## Acknowledgments
 
