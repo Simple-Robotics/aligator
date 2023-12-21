@@ -3,7 +3,7 @@
 <?xml version="1.0" ?>
 <robot name="urdf_robot">
   <link name="baseLink">
-  	<contact>
+    <contact>
       <rolling_friction value="0.03"/>
       <spinning_friction value="0.03"/>
     </contact>
@@ -17,7 +17,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-				<mesh filename="soccerball.obj" scale="1 1 1"/>
+        <mesh filename="soccerball.obj" scale="1 1 1"/>
       </geometry>
       <material name="white">
         <color rgba="1 1 1 1"/>
@@ -27,7 +27,7 @@
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-	 <sphere radius="0.5"/>
+        <sphere radius="0.5"/>
       </geometry>
     </collision>
   </link>

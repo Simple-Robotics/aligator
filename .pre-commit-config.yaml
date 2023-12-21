@@ -1,39 +1,47 @@
 ci:
-    autoupdate_branch: main
+  autoupdate_branch: main
 repos:
--   repo: https://github.com/pre-commit/mirrors-clang-format
+  - repo: https://github.com/pre-commit/mirrors-clang-format
     rev: v17.0.5
     hooks:
-    -   id: clang-format
-        types_or: []
-        types: [text]
-        files: '\.(cpp|cxx|c|h|hpp|hxx|txx)$'
--   repo: https://github.com/pre-commit/pre-commit-hooks
+    - id: clang-format
+      types_or: []
+      types: [text]
+      files: '\.(cpp|cxx|c|h|hpp|hxx|txx)$'
+  - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
-    -   id: detect-private-key
-    -   id: end-of-file-fixer
-    -   id: mixed-line-ending
-    -   id: check-merge-conflict
-    -   id: trailing-whitespace
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-yaml
+        exclude: ^conda/
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: check-merge-conflict
+      - id: trailing-whitespace
         exclude: |
             (?x)^(
                 doc/doxygen-awesome.*
             )$
--   repo: https://github.com/psf/black
+  - repo: https://github.com/psf/black
     rev: 23.11.0
     hooks:
-    -   id: black
--   repo: https://github.com/charliermarsh/ruff-pre-commit
+      - id: black
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
     # Ruff version.
     rev: 'v0.1.6'
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
--   repo: https://github.com/cheshirekow/cmake-format-precommit
+  - repo: https://github.com/cheshirekow/cmake-format-precommit
     rev: v0.6.13
     hooks:
-    -   id: cmake-format
-        additional_dependencies: [pyyaml>=5.1]
-    -   id: cmake-lint
-        additional_dependencies: [pyyaml>=5.1]
+    - id: cmake-format
+      additional_dependencies: [pyyaml>=5.1]
+    - id: cmake-lint
+      additional_dependencies: [pyyaml>=5.1]
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.1
+    hooks:
+      - id: forbid-tabs
