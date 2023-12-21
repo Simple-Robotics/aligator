@@ -5,7 +5,7 @@
 #include "proxddp/core/stage-model.hpp"
 #include "proxddp/core/stage-data.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 void exposeStage() {
@@ -88,4 +88,4 @@ void exposeStage() {
 }
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

@@ -5,7 +5,7 @@
 
 BOOST_AUTO_TEST_SUITE(continuous)
 
-using namespace proxddp;
+using namespace aligator;
 
 BOOST_AUTO_TEST_CASE(create_data) {
   pinocchio::Model model;

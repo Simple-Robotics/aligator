@@ -3,10 +3,10 @@
 #include "proxddp/context.hpp"
 #include "proxddp/core/traj-opt-problem.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 extern template struct TrajOptProblemTpl<context::Scalar>;
 
 extern template struct TrajOptDataTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

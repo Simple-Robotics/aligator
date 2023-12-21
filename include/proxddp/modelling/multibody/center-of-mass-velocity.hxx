@@ -4,7 +4,7 @@
 #include <pinocchio/algorithm/center-of-mass.hpp>
 #include <pinocchio/algorithm/center-of-mass-derivatives.hpp>
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar>
 void CenterOfMassVelocityResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
@@ -42,4 +42,4 @@ CenterOfMassVelocityDataTpl<Scalar>::CenterOfMassVelocityDataTpl(
   fJf_.setZero();
 }
 
-} // namespace proxddp
+} // namespace aligator

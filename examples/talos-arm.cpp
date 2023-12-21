@@ -7,7 +7,7 @@
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-using proxddp::SolverProxDDP;
+using aligator::SolverProxDDP;
 
 constexpr double TOL = 1e-4;
 constexpr std::size_t max_iters = 10;
@@ -15,12 +15,12 @@ constexpr std::size_t max_iters = 10;
 const std::size_t nsteps = 30;
 #define KKTFILEFORMAT "{}.{:03d}.npy"
 
-struct extract_kkt_matrix_callback : proxddp::CallbackBaseTpl<double> {
+struct extract_kkt_matrix_callback : aligator::CallbackBaseTpl<double> {
   std::string filepath;
   extract_kkt_matrix_callback(std::string const &filepath)
       : filepath(filepath) {}
   void call(const Workspace &ws_, const Results &) {
-    const auto &ws = static_cast<const proxddp::context::Workspace &>(ws_);
+    const auto &ws = static_cast<const aligator::context::Workspace &>(ws_);
     for (std::size_t t = 0; t < ws.kkt_mats_.size(); t++) {
       MatrixXd const &w = ws.kkt_mats_[t];
       auto fname = fmt::format(KKTFILEFORMAT, filepath, t);
@@ -34,10 +34,10 @@ struct extract_kkt_matrix_callback : proxddp::CallbackBaseTpl<double> {
 int main(int, char **) {
 
   auto croc_problem = defineCrocoddylProblem(nsteps);
-  auto problem = proxddp::compat::croc::convertCrocoddylProblem(croc_problem);
+  auto problem = aligator::compat::croc::convertCrocoddylProblem(croc_problem);
 
   double mu_init = 0.01;
-  SolverProxDDP<double> solver(TOL, mu_init, 0., max_iters, proxddp::VERBOSE);
+  SolverProxDDP<double> solver(TOL, mu_init, 0., max_iters, aligator::VERBOSE);
   std::string fpath_base = "kkt_matrices";
   solver.registerCallback(
       "kktcb", std::make_shared<extract_kkt_matrix_callback>(fpath_base));

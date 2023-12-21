@@ -5,7 +5,7 @@
 #include "proxddp/core/stage-model.hpp"
 #include "proxddp/modelling/state-error.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 /**
  * @brief    Trajectory optimization problem.
@@ -238,7 +238,7 @@ template <typename _Scalar> struct TrajOptDataTpl {
   const StageFunctionData &getInitData() const { return *init_data; }
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/core/traj-opt-problem.hxx"
 

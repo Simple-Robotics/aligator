@@ -9,7 +9,7 @@
 
 BOOST_AUTO_TEST_SUITE(utils)
 
-using namespace proxddp;
+using namespace aligator;
 using Scalar = double;
 PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
 

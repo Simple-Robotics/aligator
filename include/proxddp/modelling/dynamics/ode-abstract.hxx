@@ -6,7 +6,7 @@
 
 #include <proxsuite-nlp/manifold-base.hpp>
 
-namespace proxddp {
+namespace aligator {
 namespace dynamics {
 
 template <typename Scalar>
@@ -41,4 +41,4 @@ ODEDataTpl<Scalar>::ODEDataTpl(const int ndx, const int nu)
   this->Jxdot_.diagonal().array() = -1.;
 }
 } // namespace dynamics
-} // namespace proxddp
+} // namespace aligator

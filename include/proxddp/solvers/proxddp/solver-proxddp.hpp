@@ -19,7 +19,7 @@
 
 #include <unordered_map>
 
-namespace proxddp {
+namespace aligator {
 
 /// Apply the default strategy for scaling constraints
 template <typename Scalar>
@@ -327,7 +327,7 @@ private:
   LinesearchType linesearch_;
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 #include "./solver-proxddp.hxx"
 

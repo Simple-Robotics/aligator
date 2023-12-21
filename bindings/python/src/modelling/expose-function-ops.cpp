@@ -6,7 +6,7 @@
 #include "proxddp/modelling/function-xpr-slice.hpp"
 #include "proxddp/modelling/linear-function-composition.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 using context::MatrixXs;
@@ -97,4 +97,4 @@ void exposeFunctionExpressions() {
 }
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

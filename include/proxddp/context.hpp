@@ -3,7 +3,7 @@
 
 #include "proxddp/fwd.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace context {
 
 using Scalar = double;
@@ -43,4 +43,4 @@ using Workspace = WorkspaceTpl<Scalar>;
 using Results = ResultsTpl<Scalar>;
 
 } // namespace context
-} // namespace proxddp
+} // namespace aligator

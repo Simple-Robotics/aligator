@@ -4,7 +4,7 @@
 
 #include "proxddp/python/fwd.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 using context::CostBase;
@@ -31,4 +31,4 @@ void exposeCostOps() {
 }
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

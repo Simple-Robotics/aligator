@@ -2,7 +2,7 @@
 #include "proxddp/python/callbacks.hpp"
 #include "proxddp/helpers/history-callback.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 using context::Scalar;
@@ -45,4 +45,4 @@ void exposeCallbacks() {
   exposeHistoryCallback();
 }
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

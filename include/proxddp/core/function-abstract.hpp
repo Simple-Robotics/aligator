@@ -9,7 +9,7 @@
 #include <fmt/format.h>
 #include <ostream>
 
-namespace proxddp {
+namespace aligator {
 
 /// @brief    Class representing ternary functions \f$f(x,u,x')\f$.
 template <typename _Scalar>
@@ -134,7 +134,7 @@ protected:
   }
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/core/function-abstract.hxx"
 

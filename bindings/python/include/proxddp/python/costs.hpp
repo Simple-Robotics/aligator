@@ -4,7 +4,7 @@
 #include "proxddp/python/fwd.hpp"
 #include "proxddp/core/cost-abstract.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 namespace internal {
 /// @brief Wrapper for the CostDataAbstractTpl class and its children.
@@ -44,4 +44,4 @@ struct PyCostFunction : T, bp::wrapper<T> {
 } // namespace internal
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

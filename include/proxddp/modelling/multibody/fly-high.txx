@@ -3,7 +3,7 @@
 #include "./fly-high.hpp"
 #include "proxddp/context.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 extern template struct FlyHighResidualTpl<context::Scalar>;
 

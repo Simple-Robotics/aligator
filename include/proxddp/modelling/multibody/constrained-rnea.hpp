@@ -8,7 +8,7 @@
 
 #include <Eigen/LU>
 
-namespace proxddp {
+namespace aligator {
 
 namespace {
 using pinocchio::DataTpl;
@@ -61,7 +61,7 @@ void underactuatedConstrainedInverseDynamics(
   res = qr.solve(nle);
 }
 
-} // namespace proxddp
+} // namespace aligator
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
 #include "./constrained-rnea.txx"

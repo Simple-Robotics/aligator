@@ -6,7 +6,7 @@
 #include <vector>
 #include <algorithm>
 
-namespace proxddp {
+namespace aligator {
 
 /// @brief Simply rotate an entire std::vector to the left.
 /// @tparam T
@@ -21,4 +21,4 @@ void rotate_vec_left(std::vector<T, Alloc> &v, long n_head = 0,
   std::rotate(beg, beg + 1, end);
 }
 
-} // namespace proxddp
+} // namespace aligator

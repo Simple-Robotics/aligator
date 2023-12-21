@@ -2,7 +2,7 @@
 
 #include "proxddp/solvers/fddp/solver-fddp.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 void exposeFDDP() {
@@ -40,4 +40,4 @@ void exposeFDDP() {
 }
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

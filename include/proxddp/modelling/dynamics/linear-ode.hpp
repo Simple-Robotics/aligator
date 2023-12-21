@@ -3,7 +3,7 @@
 #include "proxddp/modelling/dynamics/ode-abstract.hpp"
 #include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
 
-namespace proxddp {
+namespace aligator {
 namespace dynamics {
 /**
  * @brief   Linear ordinary differential equation \f$\dot{x} = Ax + Bu\f$.
@@ -60,6 +60,6 @@ template <typename _Scalar> struct LinearODETpl : ODEAbstractTpl<_Scalar> {
 };
 
 } // namespace dynamics
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/modelling/dynamics/linear-ode.hxx"

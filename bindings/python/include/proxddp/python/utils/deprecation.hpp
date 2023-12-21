@@ -6,7 +6,7 @@
 
 #include <eigenpy/fwd.hpp>
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 namespace bp = boost::python;
 
@@ -78,4 +78,4 @@ struct deprecated_member
 };
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

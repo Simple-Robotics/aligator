@@ -1,7 +1,7 @@
 #include "proxddp/core/results-base.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template struct ResultsBaseTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

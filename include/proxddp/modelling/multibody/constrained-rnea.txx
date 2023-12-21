@@ -4,7 +4,7 @@
 #include "./constrained-rnea.hpp"
 #include "proxddp/fwd.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 extern template void underactuatedConstrainedInverseDynamics<
     context::Scalar, context::ConstVectorRef, context::ConstVectorRef,
@@ -17,4 +17,4 @@ extern template void underactuatedConstrainedInverseDynamics<
     StdVectorEigenAligned<context::RCD> &,
     const Eigen::MatrixBase<context::VectorRef> &);
 
-} // namespace proxddp
+} // namespace aligator

@@ -3,7 +3,7 @@
 #include "proxddp/python/fwd.hpp"
 #include "proxddp/python/utils.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 #ifdef PROXDDP_WITH_PINOCCHIO
@@ -31,4 +31,4 @@ void exposePinocchioFeatures() {
 #endif
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

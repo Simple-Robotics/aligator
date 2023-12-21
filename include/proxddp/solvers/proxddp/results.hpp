@@ -4,7 +4,7 @@
 
 #include "proxddp/core/results-base.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 /// @brief    Results holder struct.
 template <typename _Scalar> struct ResultsTpl : ResultsBaseTpl<_Scalar> {
@@ -33,10 +33,10 @@ std::ostream &operator<<(std::ostream &oss, const ResultsTpl<Scalar> &self) {
   return oss << fmt::format("\n  al_iters:     {:d},", self.al_iter) << "\n}";
 }
 
-} // namespace proxddp
+} // namespace aligator
 
 template <typename Scalar>
-struct fmt::formatter<proxddp::ResultsTpl<Scalar>> : fmt::ostream_formatter {};
+struct fmt::formatter<aligator::ResultsTpl<Scalar>> : fmt::ostream_formatter {};
 
 #include "./results.hxx"
 

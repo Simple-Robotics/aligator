@@ -1,8 +1,8 @@
 #include "proxddp/modelling/multibody/center-of-mass-translation.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template struct CenterOfMassTranslationResidualTpl<context::Scalar>;
 template struct CenterOfMassTranslationDataTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

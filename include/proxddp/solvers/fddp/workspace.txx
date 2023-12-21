@@ -3,7 +3,7 @@
 #include "proxddp/context.hpp"
 #include "./workspace.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 extern template struct WorkspaceFDDPTpl<context::Scalar>;
 

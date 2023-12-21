@@ -2,7 +2,7 @@
 #ifdef PROXDDP_PINOCCHIO_V3
 #include "proxddp/modelling/multibody/constrained-rnea.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template void underactuatedConstrainedInverseDynamics<
     context::Scalar, context::ConstVectorRef, context::ConstVectorRef,
@@ -15,5 +15,5 @@ template void underactuatedConstrainedInverseDynamics<
     StdVectorEigenAligned<context::RCD> &,
     const Eigen::MatrixBase<context::VectorRef> &);
 
-} // namespace proxddp
+} // namespace aligator
 #endif

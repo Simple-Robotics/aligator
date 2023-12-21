@@ -2,7 +2,7 @@
 
 #include "proxddp/parlqr/parlqr.hpp"
 
-using namespace proxddp;
+using namespace aligator;
 
 using T = double;
 

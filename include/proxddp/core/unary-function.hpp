@@ -4,7 +4,7 @@
 
 #include "proxddp/core/function-abstract.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 /// @brief  Represents unary functions of the form \f$f(x)\f$, with no control
 /// (or next-state) arguments.
@@ -48,7 +48,7 @@ struct UnaryFunctionTpl : StageFunctionTpl<_Scalar> {
   using Base::computeJacobians;                                                \
   using Base::computeVectorHessianProducts
 
-} // namespace proxddp
+} // namespace aligator
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
 #include "./unary-function.txx"

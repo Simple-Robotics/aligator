@@ -3,10 +3,10 @@
 
 #include "proxddp/modelling/dynamics/multibody-free-fwd.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 void exposeFreeFwdDynamics() {
-  using namespace proxddp::dynamics;
+  using namespace aligator::dynamics;
   using context::Scalar;
   using ODEData = ODEDataTpl<Scalar>;
   using ODEAbstract = ODEAbstractTpl<Scalar>;
@@ -47,4 +47,4 @@ void exposeFreeFwdDynamics() {
       .def_readwrite("pin_data", &MultibodyFreeFwdData::pin_data_);
 }
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

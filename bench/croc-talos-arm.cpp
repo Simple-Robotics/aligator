@@ -1,5 +1,5 @@
 /// @file
-/// @brief Benchmark proxddp::SolverFDDP against Crocoddyl on a simple example
+/// @brief Benchmark aligator::SolverFDDP against Crocoddyl on a simple example
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
 #include "croc-talos-arm.hpp"
@@ -9,11 +9,11 @@
 
 #include <benchmark/benchmark.h>
 
+using aligator::LDLTChoice;
+using aligator::SolverFDDP;
+using aligator::SolverProxDDP;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
-using proxddp::LDLTChoice;
-using proxddp::SolverFDDP;
-using proxddp::SolverProxDDP;
 
 constexpr double TOL = 1e-16;
 constexpr std::size_t maxiters = 10;
@@ -44,13 +44,14 @@ static void BM_croc_fddp(benchmark::State &state) {
 }
 
 auto get_verbose_flag(bool verbose) {
-  return verbose ? proxddp::VERBOSE : proxddp::QUIET;
+  return verbose ? aligator::VERBOSE : aligator::QUIET;
 }
 
 static void BM_prox_fddp(benchmark::State &state) {
   const std::size_t nsteps = (std::size_t)state.range(0);
   auto croc_problem = defineCrocoddylProblem(nsteps);
-  auto prob_wrap = proxddp::compat::croc::convertCrocoddylProblem(croc_problem);
+  auto prob_wrap =
+      aligator::compat::croc::convertCrocoddylProblem(croc_problem);
 #ifdef PROXDDP_MULTITHREADING
   prob_wrap.setNumThreads(DEFAULT_NUM_THREADS);
 #endif
@@ -69,12 +70,13 @@ static void BM_prox_fddp(benchmark::State &state) {
   state.SetComplexityN(state.range(0));
 }
 
-/// Benchmark the full PROXDDP algorithm (proxddp::SolverProxDDP)
+/// Benchmark the full PROXDDP algorithm (aligator::SolverProxDDP)
 template <LDLTChoice choice> static void BM_proxddp(benchmark::State &state) {
   const std::size_t nsteps = (std::size_t)state.range(0);
-  using proxddp::LDLTChoice;
+  using aligator::LDLTChoice;
   auto croc_problem = defineCrocoddylProblem(nsteps);
-  auto prob_wrap = proxddp::compat::croc::convertCrocoddylProblem(croc_problem);
+  auto prob_wrap =
+      aligator::compat::croc::convertCrocoddylProblem(croc_problem);
 #ifdef PROXDDP_MULTITHREADING
   prob_wrap.setNumThreads(DEFAULT_NUM_THREADS);
 #endif
@@ -112,15 +114,15 @@ int main(int argc, char **argv) {
         ->UseRealTime();
   };
   registerWithOpts("croc::FDDP", &BM_croc_fddp);
-  registerWithOpts("proxddp::FDDP", &BM_prox_fddp);
-  registerWithOpts("proxddp::PROXDDP_DENSE", &BM_proxddp<LDLTChoice::DENSE>);
-  registerWithOpts("proxddp::PROXDDP_BLOCK",
+  registerWithOpts("aligator::FDDP", &BM_prox_fddp);
+  registerWithOpts("aligator::PROXDDP_DENSE", &BM_proxddp<LDLTChoice::DENSE>);
+  registerWithOpts("aligator::PROXDDP_BLOCK",
                    &BM_proxddp<LDLTChoice::BLOCKSPARSE>);
-  registerWithOpts("proxddp::PROXDDP_BUNCHKAUFMAN",
+  registerWithOpts("aligator::PROXDDP_BUNCHKAUFMAN",
                    &BM_proxddp<LDLTChoice::BUNCHKAUFMAN>);
-  registerWithOpts("proxddp::PROXDDP_EIGLDL", &BM_proxddp<LDLTChoice::EIGEN>);
+  registerWithOpts("aligator::PROXDDP_EIGLDL", &BM_proxddp<LDLTChoice::EIGEN>);
 #ifdef PROXSUITE_NLP_USE_PROXSUITE_LDLT
-  registerWithOpts("proxddp::PROXDDP_PSUITE",
+  registerWithOpts("aligator::PROXDDP_PSUITE",
                    &BM_proxddp<LDLTChoice::PROXSUITE>);
 #endif
 

@@ -5,7 +5,7 @@
 #include "proxddp/python/fwd.hpp"
 #include "proxddp/modelling/multibody/context.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 template <typename Class>
@@ -18,4 +18,4 @@ struct FrameAPIVisitor : bp::def_visitor<FrameAPIVisitor<Class>> {
 };
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

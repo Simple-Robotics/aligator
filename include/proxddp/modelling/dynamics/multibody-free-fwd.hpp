@@ -6,7 +6,7 @@
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 #include <pinocchio/multibody/data.hpp>
 
-namespace proxddp {
+namespace aligator {
 namespace dynamics {
 template <typename Scalar> struct MultibodyFreeFwdDataTpl;
 
@@ -81,7 +81,7 @@ template <typename Scalar> struct MultibodyFreeFwdDataTpl : ODEDataTpl<Scalar> {
 };
 
 } // namespace dynamics
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/modelling/dynamics/multibody-free-fwd.hxx"
 

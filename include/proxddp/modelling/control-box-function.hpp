@@ -2,7 +2,7 @@
 
 #include "proxddp/core/function-abstract.hpp"
 
-namespace proxddp {
+namespace aligator {
 /**
  * @brief   A simple function \f$f(u) = [u_{\min} - u; u - u_{\max}]\f$.
  *
@@ -44,6 +44,6 @@ struct ControlBoxFunctionTpl : StageFunctionTpl<_Scalar> {
   virtual shared_ptr<Data> createData() const;
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/modelling/control-box-function.hxx"

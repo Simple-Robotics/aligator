@@ -13,7 +13,7 @@
 #endif
 
 /// @brief  Main package namespace.
-namespace proxddp {
+namespace aligator {
 /// TYPEDEFS FROM PROXNLP
 
 // NOLINTBEGIN(misc-unused-using-decls)
@@ -118,7 +118,7 @@ inline auto allocate_shared_eigen_aligned(Args &&...args) {
                                  std::forward<Args>(args)...);
 }
 
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/math.hpp"
 #include "proxddp/macros.hpp"

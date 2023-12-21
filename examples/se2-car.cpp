@@ -15,7 +15,7 @@ using pinocchio::SpecialEuclideanOperationTpl;
 using proxsuite::nlp::PinocchioLieGroup;
 using SE2 = PinocchioLieGroup<SpecialEuclideanOperationTpl<2, T>>;
 
-using namespace proxddp;
+using namespace aligator;
 using StateError = StateErrorResidualTpl<T>;
 using QuadResidualCost = QuadraticResidualCostTpl<T>;
 

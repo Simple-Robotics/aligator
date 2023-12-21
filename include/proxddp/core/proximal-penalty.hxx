@@ -2,7 +2,7 @@
 
 #include "proxddp/core/proximal-penalty.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar>
 ProximalDataTpl<Scalar>::ProximalDataTpl(
@@ -15,4 +15,4 @@ ProximalDataTpl<Scalar>::ProximalDataTpl(
   Ju_.setZero();
 }
 
-} // namespace proxddp
+} // namespace aligator

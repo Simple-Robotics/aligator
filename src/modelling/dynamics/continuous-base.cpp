@@ -3,11 +3,11 @@
 #include "proxddp/modelling/dynamics/continuous-base.hpp"
 #include <proxsuite-nlp/manifold-base.hpp>
 
-namespace proxddp {
+namespace aligator {
 namespace dynamics {
 
 template struct ContinuousDynamicsAbstractTpl<context::Scalar>;
 template struct ContinuousDynamicsDataTpl<context::Scalar>;
 
 } // namespace dynamics
-} // namespace proxddp
+} // namespace aligator

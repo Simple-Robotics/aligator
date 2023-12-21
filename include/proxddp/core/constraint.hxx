@@ -4,7 +4,7 @@
 
 #include "proxddp/core/constraint.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar> void ConstraintStackTpl<Scalar>::clear() {
   storage_.clear();
@@ -58,4 +58,4 @@ auto ConstraintStackTpl<Scalar>::rowsByConstraint(
   return J.middleRows(indices_[j], dims_[j]);
 }
 
-} // namespace proxddp
+} // namespace aligator

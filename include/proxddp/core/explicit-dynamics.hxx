@@ -3,7 +3,7 @@
 
 #include "proxddp/core/explicit-dynamics.hpp"
 
-namespace proxddp {
+namespace aligator {
 template <typename Scalar>
 ExplicitDynamicsModelTpl<Scalar>::ExplicitDynamicsModelTpl(
     ManifoldPtr next_state, const int nu)
@@ -53,4 +53,4 @@ ExplicitDynamicsDataTpl<Scalar>::ExplicitDynamicsDataTpl(const int ndx1,
   Jtmp_xnext.setZero();
 }
 
-} // namespace proxddp
+} // namespace aligator

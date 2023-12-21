@@ -3,7 +3,7 @@
 #include "proxddp/core/constraint.hpp"
 #include <proxsuite-nlp/constraint-base.hpp>
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 context::StageConstraint *
@@ -48,4 +48,4 @@ void exposeConstraint() {
 }
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

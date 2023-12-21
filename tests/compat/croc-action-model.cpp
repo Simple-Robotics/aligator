@@ -12,8 +12,8 @@
 
 BOOST_AUTO_TEST_SUITE(croc_action_model)
 
-using namespace proxddp;
-namespace pcroc = proxddp::compat::croc;
+using namespace aligator;
+namespace pcroc = aligator::compat::croc;
 
 BOOST_AUTO_TEST_CASE(lqr) {
   using crocoddyl::ActionModelLQR;

@@ -3,7 +3,7 @@
 #include "proxddp/core/dynamics.hpp"
 #include <proxsuite-nlp/manifold-base.hpp>
 
-namespace proxddp {
+namespace aligator {
 
 template struct DynamicsModelTpl<context::Scalar>;
 

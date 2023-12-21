@@ -16,7 +16,7 @@
 
 BOOST_AUTO_TEST_SUITE(crocoddyl_problem)
 
-namespace pcroc = proxddp::compat::croc;
+namespace pcroc = aligator::compat::croc;
 
 BOOST_AUTO_TEST_CASE(lqr) {
   using crocoddyl::ActionModelLQR;
@@ -72,14 +72,14 @@ BOOST_AUTO_TEST_CASE(lqr) {
 
   // convert to proxddp problem
 
-  proxddp::TrajOptProblemTpl<double> prox_problem =
+  aligator::TrajOptProblemTpl<double> prox_problem =
       pcroc::convertCrocoddylProblem(croc_problem);
 
   const double mu_init = 1e-4;
-  proxddp::SolverProxDDP<double> prox_solver(TOL, mu_init);
-  prox_solver.verbose_ = proxddp::VerboseLevel::VERBOSE;
+  aligator::SolverProxDDP<double> prox_solver(TOL, mu_init);
+  prox_solver.verbose_ = aligator::VerboseLevel::VERBOSE;
   prox_solver.max_iters = 8;
-  prox_solver.rollout_type_ = proxddp::RolloutType::NONLINEAR;
+  prox_solver.rollout_type_ = aligator::RolloutType::NONLINEAR;
 
   std::vector<VectorXd> xs_init(nsteps + 1, x0);
   std::vector<VectorXd> us_init(nsteps, u0);

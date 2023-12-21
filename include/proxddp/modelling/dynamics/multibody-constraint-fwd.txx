@@ -2,11 +2,11 @@
 
 #include "./multibody-constraint-fwd.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace dynamics {
 
 extern template struct MultibodyConstraintFwdDynamicsTpl<context::Scalar>;
 extern template struct MultibodyConstraintFwdDataTpl<context::Scalar>;
 
 } // namespace dynamics
-} // namespace proxddp
+} // namespace aligator

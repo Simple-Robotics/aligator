@@ -9,17 +9,17 @@
 #include <type_traits>
 
 #define PROXDDP_RAISE_IF_NAN(value)                                            \
-  if (::proxddp::math::check_value(value))                                     \
+  if (::aligator::math::check_value(value))                                    \
   PROXDDP_RUNTIME_ERROR("Encountered NaN.\n")
 
 #define PROXDDP_RAISE_IF_NAN_NAME(value, name)                                 \
-  if (::proxddp::math::check_value(value))                                     \
+  if (::aligator::math::check_value(value))                                    \
   PROXDDP_RUNTIME_ERROR(                                                       \
       fmt::format("Encountered NaN for variable {:s}\n", name))
 
 #define PROXDDP_DYNAMIC_TYPEDEFS(Scalar) PROXSUITE_NLP_DYNAMIC_TYPEDEFS(Scalar)
 
-namespace proxddp {
+namespace aligator {
 
 // NOLINTBEGIN(misc-unused-using-decls)
 using proxsuite::nlp::math_types;
@@ -52,4 +52,4 @@ template <typename T> void setZero(std::vector<T> &mats) {
 }
 
 } // namespace math
-} // namespace proxddp
+} // namespace aligator

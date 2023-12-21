@@ -6,7 +6,7 @@
 #include "proxddp/core/value-function.hpp"
 #include "proxddp/core/solver-util.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 /// Base workspace struct for the algorithms.
 template <typename Scalar> struct WorkspaceBaseTpl {
@@ -89,7 +89,7 @@ template <typename Scalar> void WorkspaceBaseTpl<Scalar>::cycleLeft() {
   rotate_vec_left(q_params);
 }
 
-} // namespace proxddp
+} // namespace aligator
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
 #include "./workspace-base.txx"

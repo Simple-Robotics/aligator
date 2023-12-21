@@ -8,7 +8,7 @@
 #include <fmt/color.h>
 #include <fmt/ranges.h>
 
-namespace proxddp {
+namespace aligator {
 
 using log_pair_t = std::pair<fmt::string_view, unsigned int>;
 static constexpr int NKEYS = 11;
@@ -111,4 +111,4 @@ struct ALMLogger : BaseLogger {
   }
 };
 
-} // namespace proxddp
+} // namespace aligator

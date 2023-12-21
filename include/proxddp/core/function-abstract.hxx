@@ -3,7 +3,7 @@
 
 #include "proxddp/core/function-abstract.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar>
 StageFunctionTpl<Scalar>::StageFunctionTpl(const int ndx1, const int nu,
@@ -66,4 +66,4 @@ std::ostream &operator<<(std::ostream &oss,
   return oss;
 }
 
-} // namespace proxddp
+} // namespace aligator

@@ -7,7 +7,7 @@
 #include <eigenpy/eigenpy.hpp>
 #include <eigenpy/std-vector.hpp>
 
-namespace proxddp {
+namespace aligator {
 /// @brief  The Python bindings.
 namespace python {
 namespace bp = boost::python;
@@ -45,4 +45,4 @@ void exposePinocchioFeatures();
 #endif
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

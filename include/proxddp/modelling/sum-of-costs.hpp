@@ -2,7 +2,7 @@
 
 #include "proxddp/core/cost-abstract.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar> struct CostStackDataTpl;
 
@@ -108,7 +108,7 @@ struct CostStackDataTpl : CostDataAbstractTpl<_Scalar> {
   std::vector<shared_ptr<CostData>> sub_cost_data;
   CostStackDataTpl(const CostStackTpl<Scalar> &obj);
 };
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/modelling/sum-of-costs.hxx"
 

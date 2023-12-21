@@ -4,7 +4,7 @@
 
 #include "proxddp/modelling/dynamics/integrator-explicit.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace dynamics {
 /**
  *  @brief Explicit Euler integrator \f$ x_{k+1} = x_k \oplus h f(x_k, u_k)\f$.
@@ -31,6 +31,6 @@ struct IntegratorEulerTpl : ExplicitIntegratorAbstractTpl<_Scalar> {
 };
 
 } // namespace dynamics
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/modelling/dynamics/integrator-euler.hxx"

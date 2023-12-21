@@ -3,7 +3,7 @@
 #include "proxddp/core/workspace-base.hpp"
 #include <Eigen/Cholesky>
 
-namespace proxddp {
+namespace aligator {
 
 /// Workspace for solver SolverFDDP.
 template <typename Scalar> struct WorkspaceFDDPTpl : WorkspaceBaseTpl<Scalar> {
@@ -48,7 +48,7 @@ template <typename Scalar> struct WorkspaceFDDPTpl : WorkspaceBaseTpl<Scalar> {
   void cycleLeft() override;
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 #include "./workspace.hxx"
 

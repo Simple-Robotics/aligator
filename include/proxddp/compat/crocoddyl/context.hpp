@@ -4,13 +4,13 @@
 #include "proxddp/compat/crocoddyl/fwd.hpp"
 #include "proxddp/context.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace compat {
 namespace croc {
 
 namespace context {
 
-using Scalar = ::proxddp::context::Scalar;
+using Scalar = ::aligator::context::Scalar;
 
 using StateWrapper = StateWrapperTpl<Scalar>;
 using CostModelWrapper = CrocCostModelWrapperTpl<Scalar>;
@@ -30,4 +30,4 @@ using CrocShootingProblem = crocoddyl::ShootingProblemTpl<Scalar>;
 
 } // namespace compat
 
-} // namespace proxddp
+} // namespace aligator

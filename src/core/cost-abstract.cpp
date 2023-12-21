@@ -1,9 +1,9 @@
 #include "proxddp/core/cost-abstract.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template struct CostAbstractTpl<context::Scalar>;
 
 template struct CostDataAbstractTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

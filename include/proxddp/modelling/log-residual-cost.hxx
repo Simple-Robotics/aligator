@@ -4,7 +4,7 @@
 
 #include "./composite-costs.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar>
 LogResidualCostTpl<Scalar>::LogResidualCostTpl(
@@ -72,4 +72,4 @@ void LogResidualCostTpl<Scalar>::computeHessians(const ConstVectorRef &,
         barrier_weights_(i) * (g_i.transpose() * g_i) / (v(i) * v(i));
   }
 }
-} // namespace proxddp
+} // namespace aligator

@@ -4,7 +4,7 @@
 #include "proxddp/solvers/proxddp/merit-function.hpp"
 #include "proxddp/solvers/proxddp/solver-proxddp.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template struct PDALFunction<context::Scalar>;
 

@@ -4,7 +4,7 @@
 
 #include "./solver-fddp.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 extern template struct SolverFDDP<context::Scalar>;
 

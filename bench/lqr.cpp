@@ -10,7 +10,7 @@
 
 #include <benchmark/benchmark.h>
 
-using namespace proxddp;
+using namespace aligator;
 
 using T = double;
 constexpr T TOL = 1e-7;

@@ -2,7 +2,7 @@
 
 #include <omp.h>
 
-namespace proxddp {
+namespace aligator {
 
 /// Utilities to set parallelism options.
 namespace omp {
@@ -24,4 +24,4 @@ inline void set_default_options(std::size_t num_threads, int dynamic = 1) {
 
 } // namespace omp
 
-} // namespace proxddp
+} // namespace aligator

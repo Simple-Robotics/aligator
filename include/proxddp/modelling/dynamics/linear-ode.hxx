@@ -2,7 +2,7 @@
 
 #include "proxddp/modelling/dynamics/linear-ode.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace dynamics {
 template <typename Scalar>
 void LinearODETpl<Scalar>::forward(const ConstVectorRef &x,
@@ -16,4 +16,4 @@ void LinearODETpl<Scalar>::dForward(const ConstVectorRef &,
   return;
 }
 } // namespace dynamics
-} // namespace proxddp
+} // namespace aligator

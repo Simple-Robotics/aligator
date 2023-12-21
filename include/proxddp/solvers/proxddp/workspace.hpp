@@ -10,7 +10,7 @@
 #include <array>
 #include <proxsuite-nlp/ldlt-allocator.hpp>
 
-namespace proxddp {
+namespace aligator {
 
 using proxsuite::nlp::LDLTChoice;
 
@@ -127,10 +127,10 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   }
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 template <typename Scalar>
-struct fmt::formatter<proxddp::WorkspaceTpl<Scalar>> : fmt::ostream_formatter {
+struct fmt::formatter<aligator::WorkspaceTpl<Scalar>> : fmt::ostream_formatter {
 };
 
 #include "./workspace.hxx"

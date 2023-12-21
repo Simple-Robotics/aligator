@@ -5,7 +5,7 @@
 #include "proxddp/compat/crocoddyl/cost-wrap.hpp"
 #include "proxddp/compat/crocoddyl/action-model-wrap.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace compat {
 namespace croc {
 
@@ -44,4 +44,4 @@ TrajOptProblemTpl<Scalar> convertCrocoddylProblem(
 
 } // namespace croc
 } // namespace compat
-} // namespace proxddp
+} // namespace aligator

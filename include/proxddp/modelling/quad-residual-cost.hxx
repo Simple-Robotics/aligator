@@ -4,7 +4,7 @@
 
 #include "proxddp/modelling/composite-costs.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar>
 QuadraticResidualCostTpl<Scalar>::QuadraticResidualCostTpl(
@@ -53,4 +53,4 @@ void QuadraticResidualCostTpl<Scalar>::computeHessians(const ConstVectorRef &x,
   }
 }
 
-} // namespace proxddp
+} // namespace aligator

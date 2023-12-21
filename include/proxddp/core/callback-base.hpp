@@ -3,7 +3,7 @@
 #include "proxddp/fwd.hpp"
 #include <boost/any.hpp>
 
-namespace proxddp {
+namespace aligator {
 
 /// Base callback class.
 template <typename Scalar> struct CallbackBaseTpl {
@@ -15,7 +15,7 @@ template <typename Scalar> struct CallbackBaseTpl {
   virtual ~CallbackBaseTpl() = default;
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/core/callback-base.txx"

@@ -5,7 +5,7 @@
 #include "proxddp/core/workspace-base.hpp"
 #include "proxddp/core/results-base.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 /// @brief  Store the history of results.
 template <typename Scalar> struct HistoryCallbackTpl : CallbackBaseTpl<Scalar> {
@@ -59,7 +59,7 @@ template <typename Scalar> struct HistoryCallbackTpl : CallbackBaseTpl<Scalar> {
   bool store_residuals_;
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
 #include "./history-callback.txx"

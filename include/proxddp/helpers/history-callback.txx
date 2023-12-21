@@ -3,8 +3,8 @@
 #include "proxddp/context.hpp"
 #include "./history-callback.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 extern template struct HistoryCallbackTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

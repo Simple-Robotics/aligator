@@ -3,8 +3,8 @@
 #include "./unary-function.hpp"
 #include "proxddp/context.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 extern template struct UnaryFunctionTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

@@ -5,7 +5,7 @@
 
 #include "proxddp/modelling/dynamics/continuous-base.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace dynamics {
 
 /**
@@ -64,6 +64,6 @@ struct IntegratorDataTpl : DynamicsDataTpl<_Scalar> {
 };
 
 } // namespace dynamics
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/modelling/dynamics/integrator-abstract.hxx"

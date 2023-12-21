@@ -8,7 +8,7 @@
 
 #include <fmt/format.h>
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar>
 TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
@@ -195,4 +195,4 @@ TrajOptDataTpl<Scalar>::TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem)
   }
 }
 
-} // namespace proxddp
+} // namespace aligator

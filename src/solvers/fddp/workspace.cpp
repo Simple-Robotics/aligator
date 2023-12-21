@@ -1,7 +1,7 @@
 #include "proxddp/solvers/fddp/workspace.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template struct WorkspaceFDDPTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

@@ -1,8 +1,8 @@
 #include "proxddp/modelling/quad-state-cost.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template struct QuadraticStateCostTpl<context::Scalar>;
 template struct QuadraticControlCostTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

@@ -2,7 +2,7 @@
 
 #include "proxddp/modelling/dynamics/integrator-abstract.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace dynamics {
 template <typename Scalar>
 IntegratorAbstractTpl<Scalar>::IntegratorAbstractTpl(
@@ -27,4 +27,4 @@ IntegratorDataTpl<Scalar>::IntegratorDataTpl(
 }
 
 } // namespace dynamics
-} // namespace proxddp
+} // namespace aligator

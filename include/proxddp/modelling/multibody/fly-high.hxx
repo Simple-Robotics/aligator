@@ -3,7 +3,7 @@
 #include "proxddp/modelling/multibody/fly-high.hpp"
 #include <pinocchio/algorithm/compute-all-terms.hpp>
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar>
 FlyHighResidualTpl<Scalar>::FlyHighResidualTpl(
@@ -66,4 +66,4 @@ void FlyHighResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &x,
   d.Jx_.leftCols(nv).row(1) -= data.value_[1] * slope_ * d.o_dv_dv.row(2);
 }
 
-} // namespace proxddp
+} // namespace aligator

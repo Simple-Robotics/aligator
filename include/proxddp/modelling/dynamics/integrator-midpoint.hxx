@@ -3,7 +3,7 @@
 #include "proxddp/modelling/dynamics/integrator-midpoint.hpp"
 #include "proxddp/utils/exceptions.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace dynamics {
 
 template <typename Scalar>
@@ -76,4 +76,4 @@ IntegratorMidpointTpl<Scalar>::createData() const {
 }
 
 } // namespace dynamics
-} // namespace proxddp
+} // namespace aligator

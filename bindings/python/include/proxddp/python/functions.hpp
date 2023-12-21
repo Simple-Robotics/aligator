@@ -6,7 +6,7 @@
 #include "proxddp/core/function-abstract.hpp"
 #include "proxddp/core/unary-function.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 namespace internal {
 /// Wrapper for the StageFunction class and any virtual children that avoids
@@ -123,4 +123,4 @@ struct SlicingVisitor : bp::def_visitor<SlicingVisitor<Class>> {
 };
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

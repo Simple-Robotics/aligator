@@ -6,7 +6,7 @@
 #include "proxddp/python/modelling/multibody-utils.hpp"
 #include "proxddp/modelling/multibody/fly-high.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 using context::MultibodyPhaseSpace;
@@ -35,6 +35,6 @@ void exposeFlyHigh() {
 }
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator
 
 #endif

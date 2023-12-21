@@ -5,7 +5,7 @@
 
 #include "proxddp/modelling/dynamics/continuous-base.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace dynamics {
 /** @brief   Base class for ODE dynamics \f$ \dot{x} = f(x, u) \f$.
  * @details  Formulated as a DAE (for ContinuousDynamicsAbstractTpl), this class
@@ -60,7 +60,7 @@ struct ODEDataTpl : ContinuousDynamicsDataTpl<_Scalar> {
 };
 
 } // namespace dynamics
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/modelling/dynamics/ode-abstract.hxx"
 

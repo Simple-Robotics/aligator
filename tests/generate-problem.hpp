@@ -4,7 +4,7 @@
 
 #include <proxsuite-nlp/modelling/spaces/pinocchio-groups.hpp>
 
-using namespace proxddp;
+using namespace aligator;
 
 /// @brief    Addition dynamics.
 /// @details  It maps \f$(x,u)\f$ to \f$ x + u \f$.
@@ -47,7 +47,7 @@ struct MyCost : CostAbstractTpl<double> {
 // using Manifold = proxsuite::nlp::VectorSpaceTpl<double>;
 using Manifold = proxsuite::nlp::PinocchioLieGroup<
     pinocchio::SpecialEuclideanOperationTpl<3, double>>;
-using StageModel = proxddp::StageModelTpl<double>;
+using StageModel = aligator::StageModelTpl<double>;
 
 struct MyFixture {
   shared_ptr<Manifold> space;

@@ -1,8 +1,8 @@
 #include "proxddp/modelling/sum-of-costs.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template struct CostStackTpl<context::Scalar>;
 template struct CostStackDataTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

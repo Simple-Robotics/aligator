@@ -6,7 +6,7 @@
 
 #include "proxddp/core/function-abstract.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 /// @brief Simple struct holding together a function and set, to describe a
 /// constraint.
@@ -78,7 +78,7 @@ protected:
   long total_dim_ = 0;
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/core/constraint.hxx"
 

@@ -2,7 +2,7 @@
 
 #include "proxddp/fwd.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 /// @brief  Weighting strategy for the constraints in a stack.
 template <typename Scalar> class ConstraintProximalScalerTpl {
@@ -68,4 +68,4 @@ void ConstraintProximalScalerTpl<Scalar>::initMatrix() {
   }
 }
 
-} // namespace proxddp
+} // namespace aligator

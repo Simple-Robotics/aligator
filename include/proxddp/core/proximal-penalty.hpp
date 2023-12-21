@@ -4,7 +4,7 @@
 
 #include "proxddp/fwd.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 /// @brief  Data for proximal penalty.
 template <typename Scalar> struct ProximalDataTpl;
@@ -87,6 +87,6 @@ struct ProximalDataTpl : CostDataAbstractTpl<Scalar> {
   explicit ProximalDataTpl(const ProximalPenaltyTpl<Scalar> *model);
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/core/proximal-penalty.hxx"

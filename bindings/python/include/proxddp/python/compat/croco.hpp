@@ -6,10 +6,10 @@
 
 #include "proxddp/compat/crocoddyl/problem-wrap.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 void exposeCrocoddylCompat();
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

@@ -6,11 +6,11 @@
 #include "proxddp/python/utils/enum.hpp"
 #include <proxsuite-nlp/python/utils/namespace.hpp>
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 using proxsuite::nlp::python::get_namespace;
 using proxsuite::nlp::python::get_scope_name;
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

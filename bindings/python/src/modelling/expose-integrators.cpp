@@ -9,12 +9,12 @@
 #include "proxddp/modelling/dynamics/integrator-semi-euler.hpp"
 #include "proxddp/modelling/dynamics/integrator-midpoint.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 void exposeIntegrators() {
   using context::Scalar;
-  using namespace proxddp::dynamics;
+  using namespace aligator::dynamics;
 
   using IntegratorAbstract = IntegratorAbstractTpl<Scalar>;
   using DAEType = ContinuousDynamicsAbstractTpl<Scalar>;
@@ -111,4 +111,4 @@ void exposeIntegrators() {
 }
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

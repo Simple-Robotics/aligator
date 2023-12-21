@@ -6,7 +6,7 @@
 #include <crocoddyl/core/state-base.hpp>
 #include <boost/shared_ptr.hpp>
 
-namespace proxddp {
+namespace aligator {
 namespace compat {
 namespace croc {
 
@@ -70,4 +70,4 @@ struct StateWrapperTpl : ManifoldAbstractTpl<_Scalar> {
 
 } // namespace croc
 } // namespace compat
-} // namespace proxddp
+} // namespace aligator

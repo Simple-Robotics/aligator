@@ -2,7 +2,7 @@
 
 #include "proxddp/modelling/autodiff/finite-difference.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 /// Expose finite difference helpers.
@@ -54,4 +54,4 @@ void exposeAutodiff() {
 }
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

@@ -4,7 +4,7 @@
 #include <pinocchio/algorithm/frames.hpp>
 #include <pinocchio/algorithm/kinematics.hpp>
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar>
 void FrameTranslationResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
@@ -38,4 +38,4 @@ FrameTranslationDataTpl<Scalar>::FrameTranslationDataTpl(
   fJf_.setZero();
 }
 
-} // namespace proxddp
+} // namespace aligator

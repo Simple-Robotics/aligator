@@ -3,7 +3,7 @@
 #include "proxddp/core/function-abstract.hpp"
 #include "proxddp/core/unary-function.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 namespace detail {
 
@@ -120,6 +120,6 @@ auto linear_compose(shared_ptr<UnaryFunctionTpl<Scalar>> func,
                                                                      b);
 }
 
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/modelling/linear-function-composition.hxx"

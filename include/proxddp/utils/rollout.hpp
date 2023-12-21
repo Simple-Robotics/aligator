@@ -3,7 +3,7 @@
 #include "proxddp/utils/forward-dyn.hpp"
 #include "proxddp/utils/exceptions.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 /// @brief Perform a rollout of the supplied dynamical models.
 template <typename Scalar>
@@ -123,4 +123,4 @@ rollout(const std::vector<shared_ptr<C<Scalar>>> &dms,
   return xout;
 }
 
-} // namespace proxddp
+} // namespace aligator

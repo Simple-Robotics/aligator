@@ -2,7 +2,7 @@
 
 #include "./linear-function-composition.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar>
 void LinearFunctionCompositionTpl<Scalar>::evaluate(const ConstVectorRef &x,
@@ -26,4 +26,4 @@ void LinearFunctionCompositionTpl<Scalar>::computeJacobians(
   data.jac_buffer_.noalias() = A * d.sub_data->jac_buffer_;
 }
 
-} // namespace proxddp
+} // namespace aligator

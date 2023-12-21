@@ -8,14 +8,14 @@
 #include "proxddp/compat/crocoddyl/instantiate.txx"
 #endif
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 void exposeCrocoddylCompat() {
   bp::import("crocoddyl");
 
   using context::Scalar;
-  namespace ns_croc = ::proxddp::compat::croc;
+  namespace ns_croc = ::aligator::compat::croc;
   bp::def("convertCrocoddylProblem",
           &ns_croc::convertCrocoddylProblem<context::Scalar>,
           bp::args("croc_problem"),
@@ -55,5 +55,5 @@ void exposeCrocoddylCompat() {
 }
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator
 #endif

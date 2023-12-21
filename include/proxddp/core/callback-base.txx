@@ -3,8 +3,8 @@
 #include "proxddp/context.hpp"
 #include "proxddp/core/callback-base.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 extern template struct CallbackBaseTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

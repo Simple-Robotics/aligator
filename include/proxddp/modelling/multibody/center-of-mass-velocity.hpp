@@ -5,7 +5,7 @@
 
 #include <pinocchio/multibody/model.hpp>
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar> struct CenterOfMassVelocityDataTpl;
 
@@ -57,7 +57,7 @@ struct CenterOfMassVelocityDataTpl : StageFunctionDataTpl<Scalar> {
       const CenterOfMassVelocityResidualTpl<Scalar> &model);
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/modelling/multibody/center-of-mass-velocity.hxx"
 

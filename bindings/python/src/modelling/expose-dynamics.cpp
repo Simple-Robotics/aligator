@@ -4,7 +4,7 @@
 #include "proxddp/python/eigen-member.hpp"
 #include "proxddp/python/visitors.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 // fwd declaration
@@ -46,4 +46,4 @@ void exposeDynamicsBase() {
 }
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

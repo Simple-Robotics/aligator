@@ -7,7 +7,7 @@
 #include "proxddp/core/clone.hpp"
 #include <proxsuite-nlp/manifold-base.hpp>
 
-namespace proxddp {
+namespace aligator {
 /** @brief Stage costs \f$ \ell(x, u) \f$ for control problems.
  */
 template <typename _Scalar> struct CostAbstractTpl {
@@ -86,7 +86,7 @@ template <typename _Scalar> struct CostDataAbstractTpl {
   virtual ~CostDataAbstractTpl() = default;
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/core/cost-abstract.txx"

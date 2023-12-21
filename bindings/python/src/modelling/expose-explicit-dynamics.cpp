@@ -4,7 +4,7 @@
 
 #include "proxddp/modelling/linear-discrete-dynamics.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 using context::DynamicsModel;
@@ -73,7 +73,7 @@ void exposeExplicitBase() {
 void exposeLinearDiscreteDynamics() {
   using context::MatrixXs;
   using context::VectorXs;
-  using namespace proxddp::dynamics;
+  using namespace aligator::dynamics;
 
   bp::class_<LinearDiscreteDynamicsTpl<Scalar>,
              bp::bases<context::ExplicitDynamics>>(
@@ -89,4 +89,4 @@ void exposeLinearDiscreteDynamics() {
 }
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

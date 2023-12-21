@@ -6,7 +6,7 @@
 #include "proxddp/core/explicit-dynamics.hpp"
 #include <crocoddyl/core/action-base.hpp>
 
-namespace proxddp {
+namespace aligator {
 namespace compat {
 namespace croc {
 
@@ -23,4 +23,4 @@ struct DynamicsDataWrapperTpl : ExplicitDynamicsDataTpl<Scalar> {
 
 } // namespace croc
 } // namespace compat
-} // namespace proxddp
+} // namespace aligator

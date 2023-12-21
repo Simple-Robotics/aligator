@@ -7,7 +7,7 @@
 #include "proxddp/modelling/dynamics/continuous-base.hpp"
 #include "proxddp/modelling/dynamics/ode-abstract.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 namespace internal {
 
@@ -66,4 +66,4 @@ struct PyODEAbstract : T, bp::wrapper<T> {
 } // namespace internal
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

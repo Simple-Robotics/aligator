@@ -6,7 +6,7 @@
 #include "proxddp/core/explicit-dynamics.hpp"
 #include "proxddp/modelling/dynamics/ode-abstract.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace dynamics {
 
 /**
@@ -55,6 +55,6 @@ struct ExplicitIntegratorDataTpl : ExplicitDynamicsDataTpl<_Scalar> {
 };
 
 } // namespace dynamics
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/modelling/dynamics/integrator-explicit.hxx"

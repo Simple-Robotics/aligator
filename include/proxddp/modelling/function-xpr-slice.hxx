@@ -2,7 +2,7 @@
 
 #include "./function-xpr-slice.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace detail {
 
 template <typename Base>
@@ -64,4 +64,4 @@ void slice_impl_tpl<Base>::computeVectorHessianProducts_impl(
 
 } // namespace detail
 
-} // namespace proxddp
+} // namespace aligator

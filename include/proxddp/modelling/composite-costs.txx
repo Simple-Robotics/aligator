@@ -5,7 +5,7 @@
 #include "proxddp/context.hpp"
 #include "./composite-costs.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 extern template struct CompositeCostDataTpl<context::Scalar>;
 
@@ -13,4 +13,4 @@ extern template struct QuadraticResidualCostTpl<context::Scalar>;
 
 extern template struct LogResidualCostTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

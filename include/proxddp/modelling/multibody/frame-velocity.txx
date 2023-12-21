@@ -3,9 +3,9 @@
 #include "proxddp/context.hpp"
 #include "proxddp/modelling/multibody/frame-velocity.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 extern template struct FrameVelocityResidualTpl<context::Scalar>;
 extern template struct FrameVelocityDataTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

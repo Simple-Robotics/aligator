@@ -5,7 +5,7 @@
 #include <pinocchio/algorithm/constrained-dynamics.hpp>
 #include <pinocchio/algorithm/constrained-dynamics-derivatives.hpp>
 
-namespace proxddp {
+namespace aligator {
 namespace dynamics {
 template <typename Scalar>
 MultibodyConstraintFwdDynamicsTpl<Scalar>::MultibodyConstraintFwdDynamicsTpl(
@@ -82,4 +82,4 @@ MultibodyConstraintFwdDataTpl<Scalar>::MultibodyConstraintFwdDataTpl(
   this->Jx_.topRightCorner(model.nv, model.nv).setIdentity();
 }
 } // namespace dynamics
-} // namespace proxddp
+} // namespace aligator

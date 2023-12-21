@@ -3,7 +3,7 @@
 
 #include "proxddp/solvers/proxddp/solver-proxddp.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(prox_run_overloads, run, 1, 4)
@@ -178,4 +178,4 @@ void exposeProxDDP() {
 }
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace proxddp {
+namespace aligator {
 
 enum struct RolloutType {
   /// Linear rollout
@@ -21,4 +21,4 @@ enum struct MultiplierUpdateMode { NEWTON, PRIMAL, PRIMAL_DUAL };
 /// Whether to use merit functions in primal or primal-dual mode.
 enum struct LinesearchMode { PRIMAL = 0, PRIMAL_DUAL = 1 };
 
-} // namespace proxddp
+} // namespace aligator

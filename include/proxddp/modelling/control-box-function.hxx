@@ -2,7 +2,7 @@
 
 #include "proxddp/modelling/control-box-function.hpp"
 
-namespace proxddp {
+namespace aligator {
 template <typename Scalar>
 ControlBoxFunctionTpl<Scalar>::ControlBoxFunctionTpl(const int ndx,
                                                      const VectorXs &umin,
@@ -48,4 +48,4 @@ ControlBoxFunctionTpl<Scalar>::createData() const {
   data->Ju_.bottomRows(this->nu).diagonal().array() = static_cast<Scalar>(1.);
   return data;
 }
-} // namespace proxddp
+} // namespace aligator

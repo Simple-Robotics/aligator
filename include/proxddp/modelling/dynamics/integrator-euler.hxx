@@ -2,7 +2,7 @@
 
 #include "proxddp/modelling/dynamics/integrator-euler.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace dynamics {
 template <typename Scalar>
 IntegratorEulerTpl<Scalar>::IntegratorEulerTpl(
@@ -41,4 +41,4 @@ void IntegratorEulerTpl<Scalar>::dForward(
   d.Jx_ += d.Jtmp_xnext;
 }
 } // namespace dynamics
-} // namespace proxddp
+} // namespace aligator

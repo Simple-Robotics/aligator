@@ -7,7 +7,7 @@
 
 #include <fmt/format.h>
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar>
 ResultsTpl<Scalar>::ResultsTpl(const TrajOptProblemTpl<Scalar> &problem) {
@@ -40,4 +40,4 @@ ResultsTpl<Scalar>::ResultsTpl(const TrajOptProblemTpl<Scalar> &problem) {
 
   this->m_isInitialized = true;
 }
-} // namespace proxddp
+} // namespace aligator

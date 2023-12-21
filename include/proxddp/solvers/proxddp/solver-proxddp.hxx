@@ -10,7 +10,7 @@
 #include <fmt/ostream.h>
 #endif
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar>
 SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
@@ -914,4 +914,4 @@ void SolverProxDDP<Scalar>::computeCriterion(const Problem &problem) {
   results_.dual_infeas = math::infty_norm(workspace_.stage_dual_infeas);
 }
 
-} // namespace proxddp
+} // namespace aligator
