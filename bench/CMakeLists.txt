@@ -2,7 +2,7 @@
 # Copyright (C) 2023 LAAS-CNRS, INRIA
 #
 
-add_project_dependency(benchmark REQUIRED PKG_CONFIG_REQUIRES "benchmark >= 1.5.0")
+find_package(benchmark REQUIRED)
 
 # Create a benchmark
 function(create_bench exfile croc)
