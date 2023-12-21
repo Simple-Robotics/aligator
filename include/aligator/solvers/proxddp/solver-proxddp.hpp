@@ -147,8 +147,8 @@ public:
                 VerboseLevel verbose = VerboseLevel::QUIET,
                 HessianApprox hess_approx = HessianApprox::GAUSS_NEWTON);
 
-  PROXDDP_DEPRECATED const Results &getResults() { return results_; }
-  PROXDDP_DEPRECATED const Workspace &getWorkspace() { return workspace_; }
+  ALIGATOR_DEPRECATED const Results &getResults() { return results_; }
+  ALIGATOR_DEPRECATED const Workspace &getWorkspace() { return workspace_; }
 
   /// @brief Compute the linear search direction, i.e. the (regularized) SQP
   /// step.

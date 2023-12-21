@@ -88,9 +88,9 @@ public:
              const Scalar reg_init = 1e-9, const std::size_t max_iters = 200);
 
   /// @brief  Get the solver results.
-  PROXDDP_DEPRECATED const Results &getResults() const { return results_; }
+  ALIGATOR_DEPRECATED const Results &getResults() const { return results_; }
   /// @brief  Get a const reference to the solver's workspace.
-  PROXDDP_DEPRECATED const Workspace &getWorkspace() const {
+  ALIGATOR_DEPRECATED const Workspace &getWorkspace() const {
     return workspace_;
   }
 

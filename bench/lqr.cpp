@@ -109,12 +109,12 @@ int main(int argc, char **argv) {
   };
 
   registerOpts("FDDP", &BM_lqr_fddp);
-  registerOpts("PROXDDP_BLOCKED", &BM_lqr_prox<LDLTChoice::BLOCKSPARSE>);
-  registerOpts("PROXDDP_BUNCHKAUFMAN", &BM_lqr_prox<LDLTChoice::BUNCHKAUFMAN>);
-  registerOpts("PROXDDP_DENSE", &BM_lqr_prox<LDLTChoice::DENSE>);
-  registerOpts("PROXDDP_EIGLDL", &BM_lqr_prox<LDLTChoice::EIGEN>);
+  registerOpts("ALIGATOR_BLOCKED", &BM_lqr_prox<LDLTChoice::BLOCKSPARSE>);
+  registerOpts("ALIGATOR_BUNCHKAUFMAN", &BM_lqr_prox<LDLTChoice::BUNCHKAUFMAN>);
+  registerOpts("ALIGATOR_DENSE", &BM_lqr_prox<LDLTChoice::DENSE>);
+  registerOpts("ALIGATOR_EIGLDL", &BM_lqr_prox<LDLTChoice::EIGEN>);
 #ifdef PROXSUITE_NLP_ENABLE_PROXSUITE_LDLT
-  registerOpts("PROXDDP_PSUITE", &BM_lqr_prox<LDLTChoice::PROXSUITE>);
+  registerOpts("ALIGATOR_PSUITE", &BM_lqr_prox<LDLTChoice::PROXSUITE>);
 #endif
 
   benchmark::Initialize(&argc, argv);
