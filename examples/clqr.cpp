@@ -1,13 +1,13 @@
-#include "proxddp/modelling/linear-discrete-dynamics.hpp"
-#include "proxddp/modelling/linear-function.hpp"
-#include "proxddp/modelling/costs/quad-costs.hpp"
-#include "proxddp/modelling/state-error.hpp"
-#include "proxddp/solvers/proxddp/solver-proxddp.hpp"
+#include "aligator/modelling/linear-discrete-dynamics.hpp"
+#include "aligator/modelling/linear-function.hpp"
+#include "aligator/modelling/costs/quad-costs.hpp"
+#include "aligator/modelling/state-error.hpp"
+#include "aligator/solvers/proxddp/solver-proxddp.hpp"
 
 #include <proxsuite-nlp/modelling/constraints.hpp>
 #include <iostream>
 
-using namespace proxddp;
+using namespace aligator;
 
 using Space = proxsuite::nlp::VectorSpaceTpl<double>;
 using LinearDynamics = dynamics::LinearDiscreteDynamicsTpl<double>;
