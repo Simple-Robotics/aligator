@@ -5,7 +5,7 @@
 #include "proxddp/core/function-abstract.hpp"
 #include "proxddp/core/unary-function.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 namespace detail {
 template <typename Base> struct slice_impl_tpl;
@@ -137,7 +137,7 @@ protected:
 };
 } // namespace detail
 
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/modelling/function-xpr-slice.hxx"
 

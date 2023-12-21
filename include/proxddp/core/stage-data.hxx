@@ -6,7 +6,7 @@
 
 #include "proxddp/core/stage-model.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 /* StageDataTpl */
 
@@ -24,4 +24,4 @@ StageDataTpl<Scalar>::StageDataTpl(const StageModel &stage_model)
   dynamics_data = std::dynamic_pointer_cast<DynamicsData>(constraint_data[0]);
 }
 
-} // namespace proxddp
+} // namespace aligator

@@ -4,7 +4,7 @@
 
 #include "./solver-fddp.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 /* SolverFDDP<Scalar> */
 
@@ -393,4 +393,4 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
   logger.finish(results_.conv);
   return results_.conv;
 }
-} // namespace proxddp
+} // namespace aligator

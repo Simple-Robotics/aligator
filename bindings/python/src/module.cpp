@@ -10,7 +10,7 @@
 #include "proxddp/python/compat/croco.hpp"
 #endif
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 void exposeEnums() {
   register_enum_symlink<VerboseLevel>(true);
@@ -38,18 +38,18 @@ void exposeEnums() {
 }
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator
 
 BOOST_PYTHON_MODULE(MODULE_NAME) {
-  using namespace proxddp::python;
+  using namespace aligator::python;
 
   bp::docstring_options module_docstring_options(true, true, true);
 
-  bp::scope().attr("__version__") = proxddp::printVersion();
+  bp::scope().attr("__version__") = aligator::printVersion();
 #ifdef PROXDDP_MULTITHREADING
-  bp::def("get_available_threads", &proxddp::omp::get_available_threads,
+  bp::def("get_available_threads", &aligator::omp::get_available_threads,
           "Get the number of available threads.");
-  bp::def("get_current_threads", &proxddp::omp::get_current_threads,
+  bp::def("get_current_threads", &aligator::omp::get_current_threads,
           "Get the current number of threads.");
 #endif
   eigenpy::enableEigenPy();

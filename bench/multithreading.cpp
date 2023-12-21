@@ -6,10 +6,10 @@
 
 #include <benchmark/benchmark.h>
 
+using aligator::SolverFDDP;
+using aligator::SolverProxDDP;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
-using proxddp::SolverFDDP;
-using proxddp::SolverProxDDP;
 
 using T = double;
 
@@ -36,7 +36,7 @@ static void BM_croc_multithread(benchmark::State &state) {
 }
 
 static void BM_prox_multithread(benchmark::State &state) {
-  using proxddp::compat::croc::convertCrocoddylProblem;
+  using aligator::compat::croc::convertCrocoddylProblem;
   const std::size_t nsteps = (std::size_t)state.range(0);
   const std::size_t nthreads = (std::size_t)state.range(1);
 
@@ -57,7 +57,7 @@ static void BM_prox_multithread(benchmark::State &state) {
 }
 
 static void BM_fddp_multithread(benchmark::State &state) {
-  using proxddp::compat::croc::convertCrocoddylProblem;
+  using aligator::compat::croc::convertCrocoddylProblem;
   const std::size_t nsteps = (std::size_t)state.range(0);
   const std::size_t nthreads = (std::size_t)state.range(1);
 

@@ -3,7 +3,7 @@
 
 #include "proxddp/modelling/composite-costs.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template struct CompositeCostDataTpl<context::Scalar>;
 
@@ -11,4 +11,4 @@ template struct QuadraticResidualCostTpl<context::Scalar>;
 
 template struct LogResidualCostTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

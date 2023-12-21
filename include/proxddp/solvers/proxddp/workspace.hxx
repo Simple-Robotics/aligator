@@ -4,7 +4,7 @@
 
 #include "./workspace.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 namespace {
 template <typename T> long ncNonDyn(const ConstraintStackTpl<T> &cstrs) {
@@ -181,4 +181,4 @@ std::ostream &operator<<(std::ostream &oss, const WorkspaceTpl<Scalar> &self) {
   return oss;
 }
 
-} // namespace proxddp
+} // namespace aligator

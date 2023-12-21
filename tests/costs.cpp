@@ -8,7 +8,7 @@
 
 BOOST_AUTO_TEST_SUITE(costs)
 
-using namespace proxddp;
+using namespace aligator;
 using T = double;
 
 BOOST_AUTO_TEST_CASE(quad_state) {

@@ -4,11 +4,11 @@
 
 #include "proxddp/compat/crocoddyl/instantiate.txx"
 
-namespace proxddp {
+namespace aligator {
 namespace compat {
 namespace croc {
 
-template ::proxddp::context::TrajOptProblem
+template ::aligator::context::TrajOptProblem
 convertCrocoddylProblem<context::Scalar>(
     const boost::shared_ptr<context::CrocShootingProblem> &);
 
@@ -24,4 +24,4 @@ template struct ActionDataWrapperTpl<context::Scalar>;
 
 } // namespace croc
 } // namespace compat
-} // namespace proxddp
+} // namespace aligator

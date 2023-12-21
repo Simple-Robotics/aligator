@@ -2,7 +2,7 @@
 
 #include "proxddp/modelling/dynamics/integrator-explicit.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace dynamics {
 template <typename Scalar>
 ExplicitIntegratorAbstractTpl<Scalar>::ExplicitIntegratorAbstractTpl(
@@ -24,4 +24,4 @@ ExplicitIntegratorDataTpl<Scalar>::ExplicitIntegratorDataTpl(
       std::static_pointer_cast<ODEData>(integrator->ode_->createData());
 }
 } // namespace dynamics
-} // namespace proxddp
+} // namespace aligator

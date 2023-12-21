@@ -1,6 +1,6 @@
 #include "proxddp/utils/logger.hpp"
 
-namespace proxddp {
+namespace aligator {
 BaseLogger::BaseLogger() { cols.reserve(BASIC_KEYS.size()); }
 
 void BaseLogger::printHeadline() {
@@ -33,4 +33,4 @@ void BaseLogger::finish(bool conv) {
 
 template struct LogRecordTpl<double>;
 
-} // namespace proxddp
+} // namespace aligator

@@ -5,7 +5,7 @@
 #include <pinocchio/algorithm/frames-derivatives.hpp>
 #include <pinocchio/algorithm/kinematics.hpp>
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar>
 FrameVelocityResidualTpl<Scalar>::FrameVelocityResidualTpl(
@@ -54,4 +54,4 @@ FrameVelocityDataTpl<Scalar>::FrameVelocityDataTpl(
     const FrameVelocityResidualTpl<Scalar> &model)
     : Base(model.ndx1, model.nu, model.ndx2, 6), pin_data_(*model.pin_model_) {}
 
-} // namespace proxddp
+} // namespace aligator

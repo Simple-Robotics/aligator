@@ -2,7 +2,7 @@
 
 #include <pinocchio/algorithm/frames.hpp>
 
-namespace proxddp {
+namespace aligator {
 
 struct frame_api {
   pinocchio::FrameIndex getFrameId() const { return pin_frame_id_; }
@@ -12,4 +12,4 @@ protected:
   pinocchio::FrameIndex pin_frame_id_;
 };
 
-} // namespace proxddp
+} // namespace aligator

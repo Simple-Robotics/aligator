@@ -1,7 +1,7 @@
 #include "proxddp/core/workspace-base.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template struct WorkspaceBaseTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

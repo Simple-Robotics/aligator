@@ -5,8 +5,8 @@
 #include "proxddp/context.hpp"
 #include "./results.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 extern template struct ResultsTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

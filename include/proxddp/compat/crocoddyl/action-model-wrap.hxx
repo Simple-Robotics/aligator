@@ -5,7 +5,7 @@
 #include "proxddp/compat/crocoddyl/action-model-wrap.hpp"
 #include "proxddp/core/stage-data.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace compat {
 namespace croc {
 
@@ -90,4 +90,4 @@ template <typename Scalar> void ActionDataWrapperTpl<Scalar>::checkData() {
 
 } // namespace croc
 } // namespace compat
-} // namespace proxddp
+} // namespace aligator

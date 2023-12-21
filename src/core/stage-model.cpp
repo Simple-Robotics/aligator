@@ -3,8 +3,8 @@
 #include "proxddp/core/stage-model.hpp"
 #include "proxddp/core/stage-data.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template struct StageModelTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

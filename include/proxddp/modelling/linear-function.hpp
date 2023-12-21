@@ -2,7 +2,7 @@
 
 #include "proxddp/core/function-abstract.hpp"
 
-namespace proxddp {
+namespace aligator {
 /** @brief Linear function \f$f(x,u,y) = Ax + Bu + Cy + d\f$.
  *
  */
@@ -67,4 +67,4 @@ template <typename Scalar> struct LinearFunctionTpl : StageFunctionTpl<Scalar> {
   }
 };
 
-} // namespace proxddp
+} // namespace aligator

@@ -5,7 +5,7 @@
 
 #include "proxddp/modelling/dynamics/fwd.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace dynamics {
 
 ///  @brief Continuous dynamics described by differential-algebraic equations
@@ -79,7 +79,7 @@ template <typename _Scalar> struct ContinuousDynamicsDataTpl {
 };
 
 } // namespace dynamics
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/modelling/dynamics/continuous-base.hxx"
 

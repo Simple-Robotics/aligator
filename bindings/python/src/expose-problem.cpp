@@ -3,7 +3,7 @@
 #include "proxddp/python/fwd.hpp"
 #include "proxddp/core/traj-opt-problem.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 void exposeProblem() {
   using context::ConstVectorRef;
@@ -86,4 +86,4 @@ void exposeProblem() {
 }
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

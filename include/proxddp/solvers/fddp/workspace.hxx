@@ -2,7 +2,7 @@
 
 #include "./workspace.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar>
 WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
@@ -71,4 +71,4 @@ template <typename Scalar> void WorkspaceFDDPTpl<Scalar>::cycleLeft() {
   rotate_vec_left(JtH_temp_);
 }
 
-} // namespace proxddp
+} // namespace aligator

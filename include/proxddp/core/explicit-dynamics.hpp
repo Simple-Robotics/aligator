@@ -8,7 +8,7 @@
 
 #include <fmt/core.h>
 
-namespace proxddp {
+namespace aligator {
 
 /** @brief Explicit forward dynamics model \f$ x_{k+1} = f(x_k, u_k) \f$.
  *
@@ -91,7 +91,7 @@ std::ostream &operator<<(std::ostream &oss,
   return oss;
 }
 
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/core/explicit-dynamics.hxx"
 

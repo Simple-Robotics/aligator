@@ -6,7 +6,7 @@
 #include <pinocchio/algorithm/aba.hpp>
 #include <pinocchio/algorithm/aba-derivatives.hpp>
 
-namespace proxddp {
+namespace aligator {
 namespace dynamics {
 
 template <typename Scalar>
@@ -80,4 +80,4 @@ MultibodyFreeFwdDataTpl<Scalar>::MultibodyFreeFwdDataTpl(
   this->Jx_.topRightCorner(model.nv, model.nv).setIdentity();
 }
 } // namespace dynamics
-} // namespace proxddp
+} // namespace aligator

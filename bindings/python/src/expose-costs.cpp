@@ -6,7 +6,7 @@
 #include "proxddp/modelling/constant-cost.hpp"
 #include "proxddp/modelling/sum-of-costs.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 using context::ConstMatrixRef;
 using context::ConstVectorRef;
@@ -158,4 +158,4 @@ void exposeCosts() {
 }
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

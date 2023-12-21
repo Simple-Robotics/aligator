@@ -1,9 +1,9 @@
 #include "proxddp/core/explicit-dynamics.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template struct ExplicitDynamicsModelTpl<context::Scalar>;
 
 template struct ExplicitDynamicsDataTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

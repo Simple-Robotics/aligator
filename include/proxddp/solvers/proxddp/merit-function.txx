@@ -2,8 +2,8 @@
 
 #include "proxddp/context.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 extern template struct PDALFunction<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

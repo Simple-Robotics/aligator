@@ -3,26 +3,26 @@
 #include "proxddp/solvers/proxddp/results.hpp"
 #include "proxddp/core/workspace-base.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 using context::Scalar;
 using QParams = QFunctionTpl<Scalar>;
 using VParams = ValueFunctionTpl<Scalar>;
 } // namespace python
-} // namespace proxddp
+} // namespace aligator
 
 namespace eigenpy {
 namespace internal {
 
 template <>
-struct has_operator_equal<::proxddp::python::QParams> : boost::false_type {};
+struct has_operator_equal<::aligator::python::QParams> : boost::false_type {};
 template <>
-struct has_operator_equal<::proxddp::python::VParams> : boost::false_type {};
+struct has_operator_equal<::aligator::python::VParams> : boost::false_type {};
 
 } // namespace internal
 } // namespace eigenpy
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 /* fwd declarations */
@@ -121,4 +121,4 @@ void exposeSolvers() {
 }
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

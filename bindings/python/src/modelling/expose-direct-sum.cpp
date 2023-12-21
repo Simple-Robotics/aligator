@@ -4,7 +4,7 @@
 #include "proxddp/python/fwd.hpp"
 #include "proxddp/modelling/explicit-dynamics-direct-sum.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 using context::Scalar;
@@ -32,4 +32,4 @@ void exposeExplicitDynDirectSum() {
 }
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

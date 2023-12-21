@@ -3,7 +3,7 @@
 #include "proxddp/core/cost-abstract.hpp"
 #include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar> struct QuadraticCostDataTpl;
 
@@ -148,7 +148,7 @@ struct QuadraticCostDataTpl : CostDataAbstractTpl<Scalar> {
   }
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/modelling/quad-costs.txx"

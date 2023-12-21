@@ -2,7 +2,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar>
 DynamicsModelTpl<Scalar>::DynamicsModelTpl(ManifoldPtr space, const int nu)
@@ -15,4 +15,4 @@ DynamicsModelTpl<Scalar>::DynamicsModelTpl(ManifoldPtr space, const int nu,
     : Base(space->ndx(), nu, space2->ndx(), space2->ndx()), space_(space),
       space_next_(space2) {}
 
-} // namespace proxddp
+} // namespace aligator

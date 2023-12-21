@@ -9,7 +9,7 @@
 
 #include <fmt/ostream.h>
 
-namespace proxddp {
+namespace aligator {
 
 /// Data struct for composite costs.
 template <typename Scalar>
@@ -112,7 +112,7 @@ template <typename Scalar> struct LogResidualCostTpl : CostAbstractTpl<Scalar> {
   }
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 // Implementation files
 #include "proxddp/modelling/quad-residual-cost.hxx"

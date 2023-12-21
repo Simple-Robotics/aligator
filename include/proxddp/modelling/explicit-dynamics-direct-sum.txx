@@ -5,8 +5,8 @@
 #include "proxddp/context.hpp"
 #include "./explicit-dynamics-direct-sum.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 extern template struct DirectSumExplicitDynamicsTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

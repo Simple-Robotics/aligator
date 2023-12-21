@@ -2,9 +2,9 @@
 
 #include <proxsuite-nlp/linesearch-base.hpp>
 
-namespace proxddp {
+namespace aligator {
 
 using proxsuite::nlp::Linesearch;
 using proxsuite::nlp::LinesearchStrategy;
 
-} // namespace proxddp
+} // namespace aligator

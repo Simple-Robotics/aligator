@@ -20,7 +20,7 @@
 /// @brief  A warning for the FDDP module.
 #define PROXDDP_FDDP_WARNING(msg) PROXDDP_WARNING("SolverFDDP", msg)
 
-namespace proxddp {
+namespace aligator {
 
 /**
  * @brief   The feasible DDP (FDDP) algorithm, from Mastalli et al. (2020).
@@ -197,7 +197,7 @@ public:
   }
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 #include "./solver-fddp.hxx"
 

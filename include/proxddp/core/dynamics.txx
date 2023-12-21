@@ -5,8 +5,8 @@
 #include "proxddp/context.hpp"
 #include "proxddp/core/dynamics.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 extern template struct DynamicsModelTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

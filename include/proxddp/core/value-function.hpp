@@ -9,7 +9,7 @@
 
 #include <ostream>
 
-namespace proxddp {
+namespace aligator {
 
 /// @brief  Storage for the value function model parameters.
 template <typename _Scalar> struct ValueFunctionTpl {
@@ -146,7 +146,7 @@ protected:
   }
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/core/value-function.txx"

@@ -3,7 +3,7 @@
 #include "proxddp/modelling/composite-costs.hpp"
 #include "proxddp/modelling/quad-state-cost.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 using context::ConstVectorRef;
 using context::CostBase;
@@ -76,4 +76,4 @@ void exposeComposites() {
                     "Reference of the control cost.");
 }
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

@@ -7,7 +7,7 @@
 #include <crocoddyl/core/cost-base.hpp>
 #include <crocoddyl/core/action-base.hpp>
 
-namespace proxddp {
+namespace aligator {
 namespace compat {
 namespace croc {
 
@@ -118,4 +118,4 @@ struct CrocCostDataWrapperTpl : CostDataAbstractTpl<Scalar> {
 
 } // namespace croc
 } // namespace compat
-} // namespace proxddp
+} // namespace aligator

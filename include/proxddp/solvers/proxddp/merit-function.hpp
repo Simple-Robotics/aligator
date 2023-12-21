@@ -6,7 +6,7 @@
 #include "proxddp/core/enums.hpp"
 #include "proxddp/core/alm-weights.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar>
 Scalar costDirectionalDerivative(const WorkspaceTpl<Scalar> &workspace,
@@ -69,7 +69,7 @@ template <typename _Scalar> struct PDALFunction {
                                       Workspace &workspace);
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 #include "./merit-function.hxx"
 

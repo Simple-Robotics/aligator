@@ -5,7 +5,7 @@
 
 #include "proxddp/modelling/dynamics/integrator-explicit.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace dynamics {
 template <typename Scalar> struct IntegratorSemiImplDataTpl;
 /**
@@ -59,6 +59,6 @@ struct IntegratorSemiImplDataTpl : ExplicitIntegratorDataTpl<Scalar> {
 };
 
 } // namespace dynamics
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/modelling/dynamics/integrator-semi-euler.hxx"

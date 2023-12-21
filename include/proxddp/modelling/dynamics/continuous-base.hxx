@@ -2,7 +2,7 @@
 
 #include "proxddp/modelling/dynamics/continuous-base.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace dynamics {
 template <typename Scalar>
 ContinuousDynamicsAbstractTpl<Scalar>::ContinuousDynamicsAbstractTpl(
@@ -26,4 +26,4 @@ ContinuousDynamicsDataTpl<Scalar>::ContinuousDynamicsDataTpl(const int ndx,
 }
 
 } // namespace dynamics
-} // namespace proxddp
+} // namespace aligator

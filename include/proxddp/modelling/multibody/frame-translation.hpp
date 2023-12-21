@@ -6,7 +6,7 @@
 #include <pinocchio/multibody/model.hpp>
 #include <pinocchio/multibody/frame.hpp>
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar> struct FrameTranslationDataTpl;
 
@@ -62,7 +62,7 @@ struct FrameTranslationDataTpl : StageFunctionDataTpl<Scalar> {
   FrameTranslationDataTpl(const FrameTranslationResidualTpl<Scalar> &model);
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/modelling/multibody/frame-translation.hxx"
 

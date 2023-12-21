@@ -3,9 +3,9 @@
 #include "proxddp/python/modelling/continuous.hpp"
 #include "proxddp/modelling/dynamics/linear-ode.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
-using namespace ::proxddp::dynamics;
+using namespace ::aligator::dynamics;
 using context::MatrixXs;
 using context::Scalar;
 using context::VectorXs;
@@ -117,4 +117,4 @@ void exposeODEs() {
 }
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

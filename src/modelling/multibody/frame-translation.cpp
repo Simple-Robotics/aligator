@@ -1,8 +1,8 @@
 #include "proxddp/modelling/multibody/frame-translation.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template struct FrameTranslationResidualTpl<context::Scalar>;
 template struct FrameTranslationDataTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

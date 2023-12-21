@@ -2,7 +2,7 @@
 #include "proxddp/python/fwd.hpp"
 #include "proxddp/utils/rollout.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 void exposeUtils() {
   using DynamicsType = DynamicsModelTpl<context::Scalar>;
@@ -25,21 +25,22 @@ void exposeUtils() {
       const context::VectorXs &, const context::VectorOfVectors &);
 
   bp::def<rollout_generic_t>(
-      "rollout_implicit", &proxddp::rollout, bp::args("dyn_model", "x0", "us"),
+      "rollout_implicit", &aligator::rollout, bp::args("dyn_model", "x0", "us"),
       "Perform a dynamics rollout, for a dynamics model.");
 
   bp::def<rollout_explicit_t>(
-      "rollout", &proxddp::rollout, bp::args("dyn_model", "x0", "us"),
+      "rollout", &aligator::rollout, bp::args("dyn_model", "x0", "us"),
       "Perform a rollout of a single explicit dynamics model.");
 
   bp::def<rollout_vec_generic_t>(
-      "rollout_implicit", &proxddp::rollout, bp::args("dyn_models", "x0", "us"),
+      "rollout_implicit", &aligator::rollout,
+      bp::args("dyn_models", "x0", "us"),
       "Perform a dynamics rollout, for multiple discrete dynamics models.");
 
   bp::def<rollout_vec_explicit_t>(
-      "rollout", &proxddp::rollout, bp::args("dyn_models", "x0", "us"),
+      "rollout", &aligator::rollout, bp::args("dyn_models", "x0", "us"),
       "Perform a rollout of multiple explicit dynamics model.");
 }
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

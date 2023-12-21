@@ -3,7 +3,7 @@
 #include "proxddp/modelling/multibody/center-of-mass-translation.hpp"
 #include <pinocchio/algorithm/center-of-mass.hpp>
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar>
 void CenterOfMassTranslationResidualTpl<Scalar>::evaluate(
@@ -33,4 +33,4 @@ CenterOfMassTranslationDataTpl<Scalar>::CenterOfMassTranslationDataTpl(
     : Base(model->ndx1, model->nu, model->ndx2, 3),
       pin_data_(*model->pin_model_) {}
 
-} // namespace proxddp
+} // namespace aligator

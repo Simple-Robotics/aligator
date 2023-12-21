@@ -5,7 +5,7 @@
 #include "proxddp/fwd.hpp"
 #include "proxddp/core/linesearch.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 /// @brief    The backtracking linesearch from FDDP (Mastalli et al).
 /// @details  The conditions that are checked for are not exactly the Goldstein
@@ -29,7 +29,7 @@ PROXDDP_INLINE std::pair<Scalar, Scalar> fddp_goldstein_linesearch(
     }
     try {
       phitry = phi(atry);
-    } catch (const ::proxddp::RuntimeError &) {
+    } catch (const ::aligator::RuntimeError &) {
       atry *= beta;
       continue;
     }
@@ -52,4 +52,4 @@ PROXDDP_INLINE std::pair<Scalar, Scalar> fddp_goldstein_linesearch(
   return {atry, phitry};
 }
 
-} // namespace proxddp
+} // namespace aligator

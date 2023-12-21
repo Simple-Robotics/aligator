@@ -6,7 +6,7 @@
 
 #include "proxddp/modelling/dynamics/multibody-constraint-fwd.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 namespace {
 
@@ -23,7 +23,7 @@ using RigidConstraintDataVector =
 } // namespace
 
 void exposeConstrainedFwdDynamics() {
-  using namespace proxddp::dynamics;
+  using namespace aligator::dynamics;
   using context::Scalar;
   using ODEData = ODEDataTpl<Scalar>;
   using ODEAbstract = ODEAbstractTpl<Scalar>;
@@ -57,6 +57,6 @@ void exposeConstrainedFwdDynamics() {
                      &MultibodyConstraintFwdData::constraint_datas_);
 }
 } // namespace python
-} // namespace proxddp
+} // namespace aligator
 
 #endif

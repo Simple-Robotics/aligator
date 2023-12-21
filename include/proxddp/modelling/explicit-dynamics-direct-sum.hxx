@@ -5,7 +5,7 @@
 #include "./explicit-dynamics-direct-sum.hpp"
 #include <proxsuite-nlp/modelling/spaces/cartesian-product.hpp>
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar>
 struct DirectSumExplicitDynamicsTpl<Scalar>::Data : BaseData {
@@ -74,4 +74,4 @@ auto DirectSumExplicitDynamicsTpl<Scalar>::get_product_space(Base const &f,
   return f.space_next_ * g.space_next_;
 }
 
-} // namespace proxddp
+} // namespace aligator

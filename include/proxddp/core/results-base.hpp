@@ -4,7 +4,7 @@
 
 #include "proxddp/fwd.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template <typename _Scalar> struct ResultsBaseTpl {
   using Scalar = _Scalar;
@@ -104,7 +104,7 @@ std::ostream &operator<<(std::ostream &oss,
   return oss;
 }
 
-} // namespace proxddp
+} // namespace aligator
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
 #include "./results-base.txx"

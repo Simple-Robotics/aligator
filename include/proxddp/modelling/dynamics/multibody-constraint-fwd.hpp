@@ -7,7 +7,7 @@
 
 #include <pinocchio/algorithm/proximal.hpp>
 
-namespace proxddp {
+namespace aligator {
 namespace dynamics {
 template <typename Scalar> struct MultibodyConstraintFwdDataTpl;
 
@@ -74,7 +74,7 @@ struct MultibodyConstraintFwdDataTpl : ODEDataTpl<Scalar> {
 };
 
 } // namespace dynamics
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/modelling/dynamics/multibody-constraint-fwd.hxx"
 

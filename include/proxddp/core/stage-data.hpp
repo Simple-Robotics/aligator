@@ -5,7 +5,7 @@
 #include "proxddp/fwd.hpp"
 #include "proxddp/core/clone.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 /// @brief    Data struct for stage models StageModelTpl.
 template <typename _Scalar>
@@ -60,7 +60,7 @@ protected:
   }
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/core/stage-data.hxx"
 

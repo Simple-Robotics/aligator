@@ -6,7 +6,7 @@
 #include <fmt/format.h>
 #include "proxddp/python/utils/deprecation.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 namespace bp = boost::python;
 
@@ -125,4 +125,4 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
 };
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

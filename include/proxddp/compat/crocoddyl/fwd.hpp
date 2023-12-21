@@ -2,7 +2,7 @@
 
 #include <crocoddyl/core/fwd.hpp>
 
-namespace proxddp {
+namespace aligator {
 /// @brief Headers for compatibility modules.
 namespace compat {
 /// @brief Headers for the Crocoddyl compatibility module.
@@ -22,4 +22,4 @@ template <typename Scalar> struct ActionDataWrapperTpl;
 
 } // namespace croc
 } // namespace compat
-} // namespace proxddp
+} // namespace aligator

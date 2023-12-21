@@ -12,7 +12,7 @@
 #include "proxddp/modelling/multibody/constrained-rnea.hpp"
 #endif
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 using context::ConstMatrixRef;
 using context::ConstVectorRef;
@@ -139,6 +139,6 @@ void exposePinocchioFunctions() {
 #endif
 }
 } // namespace python
-} // namespace proxddp
+} // namespace aligator
 
 #endif

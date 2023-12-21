@@ -8,7 +8,7 @@
 #include <proxsuite-nlp/modelling/constraints/equality-constraint.hpp>
 #include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
 
-namespace proxddp {
+namespace aligator {
 
 namespace {
 
@@ -103,4 +103,4 @@ auto StageModelTpl<Scalar>::createData() const -> shared_ptr<Data> {
   return std::make_shared<Data>(*this);
 }
 
-} // namespace proxddp
+} // namespace aligator

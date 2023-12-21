@@ -5,7 +5,7 @@
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 #include <pinocchio/algorithm/frames-derivatives.hpp>
 
-namespace proxddp {
+namespace aligator {
 
 /// A port of sobec's ResidualModelFlyHighTpl.
 template <typename _Scalar>
@@ -71,7 +71,7 @@ struct FlyHighResidualTpl<Scalar>::Data : StageFunctionDataTpl<Scalar> {
   Scalar ez;
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/modelling/multibody/fly-high.hxx"
 

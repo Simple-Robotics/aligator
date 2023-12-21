@@ -5,7 +5,7 @@
 #include "proxddp/core/explicit-dynamics.hpp"
 #include <proxsuite-nlp/modelling/spaces/cartesian-product.hpp>
 
-namespace proxddp {
+namespace aligator {
 
 /// Direct sum of two explicit-dynamics models. This operates on the product
 /// space of the two supplied functions. The expression is \f\[
@@ -55,7 +55,7 @@ auto directSum(shared_ptr<ExplicitDynamicsModelTpl<Scalar>> const &m1,
   return std::make_shared<DirectSumExplicitDynamicsTpl<Scalar>>(m1, m2);
 }
 
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/modelling/explicit-dynamics-direct-sum.hxx"
 

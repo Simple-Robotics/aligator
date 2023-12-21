@@ -2,7 +2,7 @@
 
 #include "proxddp/modelling/sum-of-costs.hpp"
 
-namespace proxddp {
+namespace aligator {
 template <typename Scalar>
 CostStackTpl<Scalar>::CostStackTpl(shared_ptr<Manifold> space, const int nu,
                                    const std::vector<CostPtr> &comps,
@@ -104,4 +104,4 @@ CostStackDataTpl<Scalar>::CostStackDataTpl(const CostStackTpl<Scalar> &obj)
   }
 }
 
-} // namespace proxddp
+} // namespace aligator

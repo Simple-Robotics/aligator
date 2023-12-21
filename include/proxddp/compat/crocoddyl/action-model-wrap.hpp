@@ -11,7 +11,7 @@
 
 #include "proxddp/utils/exceptions.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace compat {
 namespace croc {
 
@@ -77,6 +77,6 @@ protected:
 
 } // namespace croc
 } // namespace compat
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/compat/crocoddyl/action-model-wrap.hxx"

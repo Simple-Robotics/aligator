@@ -1,6 +1,6 @@
 #include "proxddp/core/unary-function.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template struct UnaryFunctionTpl<context::Scalar>;
 

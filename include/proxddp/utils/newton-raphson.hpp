@@ -4,7 +4,7 @@
 
 #include <Eigen/LU>
 
-namespace proxddp {
+namespace aligator {
 
 /// @brief  Newton-Raphson procedure, e.g. to compute forward dynamics from
 /// implicit functions.
@@ -65,4 +65,4 @@ template <typename Scalar> struct NewtonRaphson {
   }
 };
 
-} // namespace proxddp
+} // namespace aligator

@@ -4,7 +4,7 @@
 #include "./workspace.hpp"
 #include "./results.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar>
 Scalar costDirectionalDerivative(const WorkspaceTpl<Scalar> &workspace,
@@ -126,4 +126,4 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
 
   return d1;
 }
-} // namespace proxddp
+} // namespace aligator

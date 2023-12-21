@@ -4,7 +4,7 @@
 #include "proxddp/utils/newton-raphson.hpp"
 #include <boost/optional.hpp>
 
-namespace proxddp {
+namespace aligator {
 
 /**
  * @brief    Evaluates the forward map for a discrete dynamics model, implicit
@@ -64,4 +64,4 @@ template <typename T> struct forwardDynamics {
   }
 };
 
-} // namespace proxddp
+} // namespace aligator

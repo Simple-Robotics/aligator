@@ -4,7 +4,7 @@
 #include "proxddp/core/unary-function.hpp"
 #include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
 
-namespace proxddp {
+namespace aligator {
 
 namespace detail {
 
@@ -150,7 +150,7 @@ struct ControlErrorResidualTpl
   using Base::Base;
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/modelling/state-error.txx"

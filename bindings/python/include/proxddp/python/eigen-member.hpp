@@ -8,7 +8,7 @@
 
 #include <fmt/ostream.h>
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 namespace bp = boost::python;
@@ -66,4 +66,4 @@ bp::object make_setter_eigen_matrix(MatrixType C::*v) {
 }
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

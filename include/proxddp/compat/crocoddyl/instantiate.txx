@@ -7,11 +7,11 @@
 #include "proxddp/compat/crocoddyl/cost-wrap.hpp"
 #include "proxddp/compat/crocoddyl/problem-wrap.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace compat {
 namespace croc {
 
-extern template ::proxddp::context::TrajOptProblem
+extern template ::aligator::context::TrajOptProblem
 convertCrocoddylProblem<context::Scalar>(
     const boost::shared_ptr<context::CrocShootingProblem> &);
 
@@ -27,4 +27,4 @@ extern template struct ActionDataWrapperTpl<context::Scalar>;
 
 } // namespace croc
 } // namespace compat
-} // namespace proxddp
+} // namespace aligator

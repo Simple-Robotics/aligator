@@ -2,7 +2,7 @@
 
 #include "proxddp/core/results-base.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar> struct ResultsFDDPTpl : ResultsBaseTpl<Scalar> {
 
@@ -43,7 +43,7 @@ ResultsFDDPTpl<Scalar>::ResultsFDDPTpl(
   this->m_isInitialized = true;
 }
 
-} // namespace proxddp
+} // namespace aligator
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
 #include "./results.txx"

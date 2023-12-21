@@ -4,7 +4,7 @@
 #include "proxddp/python/fwd.hpp"
 #include "proxddp/core/callback-base.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 using context::CallbackBase;
@@ -17,4 +17,4 @@ struct CallbackWrapper : CallbackBase, bp::wrapper<CallbackBase> {
   }
 };
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

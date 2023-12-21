@@ -7,7 +7,7 @@
 #include "proxddp/core/traj-opt-problem.hpp"
 #include "proxddp/utils/exceptions.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 /// @brief Default-intialize a trajectory to the neutral states for each state
 /// space at each stage.
@@ -137,4 +137,4 @@ void computeLagrangianDerivatives(
   }
 }
 
-} // namespace proxddp
+} // namespace aligator

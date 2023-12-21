@@ -5,7 +5,7 @@
 #include "proxddp/python/functions.hpp"
 #include "proxddp/core/explicit-dynamics.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 namespace internal {
 
@@ -46,4 +46,4 @@ struct PyExplicitDynamics : ExplicitBase, bp::wrapper<ExplicitBase> {
 
 } // namespace internal
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

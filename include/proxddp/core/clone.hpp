@@ -3,7 +3,7 @@
 
 #include "proxddp/fwd.hpp"
 
-namespace proxddp {
+namespace aligator {
 /// @brief Mixin which makes a class/class hierarchy cloneable.
 /// @details Inheriting from Cloneable<T> creates a function clone() returning
 /// shared_ptr<T>. Child classes of T only need to implement the virtual member
@@ -19,4 +19,4 @@ protected:
   virtual Cloneable *clone_impl() const = 0;
 };
 
-} // namespace proxddp
+} // namespace aligator

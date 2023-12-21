@@ -1,7 +1,7 @@
 #include "proxddp/modelling/cost-direct-sum.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template struct DirectSumCostTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

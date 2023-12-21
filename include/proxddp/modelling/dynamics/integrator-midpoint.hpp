@@ -2,7 +2,7 @@
 
 #include "proxddp/modelling/dynamics/integrator-abstract.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace dynamics {
 template <typename Scalar> struct IntegratorMidpointDataTpl;
 
@@ -75,6 +75,6 @@ struct IntegratorMidpointDataTpl : IntegratorDataTpl<_Scalar> {
 };
 
 } // namespace dynamics
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/modelling/dynamics/integrator-midpoint.hxx"

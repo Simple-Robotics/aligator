@@ -1,8 +1,8 @@
 #include "proxddp/modelling/function-xpr-slice.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template struct FunctionSliceXprTpl<context::Scalar, context::StageFunction>;
 template struct FunctionSliceXprTpl<context::Scalar, context::UnaryFunction>;
 
-} // namespace proxddp
+} // namespace aligator

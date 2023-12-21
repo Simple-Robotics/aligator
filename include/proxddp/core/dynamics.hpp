@@ -4,7 +4,7 @@
 
 #include "proxddp/core/function-abstract.hpp"
 
-namespace proxddp {
+namespace aligator {
 /**
  * @brief   Dynamics model: describes system dynamics through an implicit
  * relation \f$f(x,u,x') = 0\f$.
@@ -57,7 +57,7 @@ struct DynamicsModelTpl : StageFunctionTpl<_Scalar> {
   DynamicsModelTpl(ManifoldPtr space, const int nu, ManifoldPtr space2);
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/core/dynamics.hxx"
 

@@ -5,7 +5,7 @@
 #include <string>
 #include <sstream>
 
-namespace proxddp {
+namespace aligator {
 
 /// @brief    Pretty-print the package version number.
 /// @param    delimiter   The delimiter between the major/minor/patch version
@@ -16,4 +16,4 @@ inline std::string printVersion(const std::string &delimiter = ".") {
       << delimiter << PROXDDP_PATCH_VERSION;
   return oss.str();
 }
-} // namespace proxddp
+} // namespace aligator

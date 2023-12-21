@@ -5,7 +5,7 @@
 #include "proxddp/core/cost-abstract.hpp"
 #include <proxsuite-nlp/modelling/spaces/cartesian-product.hpp>
 
-namespace proxddp {
+namespace aligator {
 
 template <typename _Scalar> struct DirectSumCostTpl : CostAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
@@ -125,7 +125,7 @@ auto directSum(shared_ptr<CostAbstractTpl<Scalar>> const &c1,
   return std::make_shared<DirectSumCostTpl<Scalar>>(c1, c2);
 }
 
-} // namespace proxddp
+} // namespace aligator
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
 #include "./cost-direct-sum.txx"

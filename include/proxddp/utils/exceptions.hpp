@@ -4,7 +4,7 @@
 #include <fmt/color.h>
 
 #define PROXDDP_RUNTIME_ERROR(msg)                                             \
-  throw proxddp::RuntimeError(                                                 \
+  throw aligator::RuntimeError(                                                \
       fmt::format("{}({}): {}", __FILE__, __LINE__, msg))
 
 #define PROXDDP_DOMAIN_ERROR(msg)                                              \
@@ -14,7 +14,7 @@
   fmt::print(fmt::fg(fmt::color::yellow), "[{}] {}: {}", loc, __FUNCTION__,    \
              msg);
 
-namespace proxddp {
+namespace aligator {
 
 class RuntimeError : public std::runtime_error {
 public:
@@ -22,4 +22,4 @@ public:
       : std::runtime_error(what) {}
 };
 
-} // namespace proxddp
+} // namespace aligator

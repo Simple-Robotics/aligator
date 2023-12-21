@@ -10,7 +10,7 @@
 
 #include "proxddp/core/clone.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 /** @brief    A stage in the control problem.
  *
@@ -131,11 +131,11 @@ protected:
   }
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 template <typename Scalar>
-struct fmt::formatter<proxddp::StageModelTpl<Scalar>> : fmt::ostream_formatter {
-};
+struct fmt::formatter<aligator::StageModelTpl<Scalar>>
+    : fmt::ostream_formatter {};
 
 #include "proxddp/core/stage-model.hxx"
 

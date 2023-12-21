@@ -7,7 +7,7 @@
 #include <pinocchio/multibody/data.hpp>
 #include <pinocchio/multibody/frame.hpp>
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar> struct FrameVelocityDataTpl;
 
@@ -60,7 +60,7 @@ struct FrameVelocityDataTpl : StageFunctionDataTpl<Scalar> {
   FrameVelocityDataTpl(const FrameVelocityResidualTpl<Scalar> &model);
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 #include "proxddp/modelling/multibody/frame-velocity.hxx"
 

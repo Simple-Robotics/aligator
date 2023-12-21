@@ -2,7 +2,7 @@
 
 #include "proxddp/modelling/dynamics/integrator-semi-euler.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace dynamics {
 
 template <typename Scalar>
@@ -73,4 +73,4 @@ IntegratorSemiImplDataTpl<Scalar>::IntegratorSemiImplDataTpl(
 
 } // namespace dynamics
 
-} // namespace proxddp
+} // namespace aligator

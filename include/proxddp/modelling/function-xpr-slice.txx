@@ -5,11 +5,11 @@
 #include "proxddp/context.hpp"
 #include "./function-xpr-slice.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 extern template struct FunctionSliceXprTpl<context::Scalar,
                                            context::StageFunction>;
 extern template struct FunctionSliceXprTpl<context::Scalar,
                                            context::UnaryFunction>;
 
-} // namespace proxddp
+} // namespace aligator

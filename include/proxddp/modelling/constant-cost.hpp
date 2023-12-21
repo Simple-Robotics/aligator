@@ -2,7 +2,7 @@
 
 #include "proxddp/core/cost-abstract.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 /// @brief Constant cost.
 template <typename _Scalar> struct ConstantCostTpl : CostAbstractTpl<_Scalar> {
@@ -33,4 +33,4 @@ template <typename _Scalar> struct ConstantCostTpl : CostAbstractTpl<_Scalar> {
   }
 };
 
-} // namespace proxddp
+} // namespace aligator

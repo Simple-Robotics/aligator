@@ -5,8 +5,8 @@
 #include "proxddp/context.hpp"
 #include "proxddp/core/stage-data.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 extern template struct StageDataTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

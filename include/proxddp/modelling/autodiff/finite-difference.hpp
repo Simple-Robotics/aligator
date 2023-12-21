@@ -7,7 +7,7 @@
 #include <proxsuite-nlp/manifold-base.hpp>
 #include <boost/mpl/bool.hpp>
 
-namespace proxddp {
+namespace aligator {
 namespace autodiff {
 
 namespace internal {
@@ -240,4 +240,4 @@ extern template struct CostFiniteDifferenceHelper<context::Scalar>;
 #endif
 
 } // namespace autodiff
-} // namespace proxddp
+} // namespace aligator

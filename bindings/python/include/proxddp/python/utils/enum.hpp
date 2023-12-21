@@ -4,7 +4,7 @@
 
 #include <eigenpy/registration.hpp>
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 template <typename T> bool register_enum_symlink(bool export_values) {
@@ -23,4 +23,4 @@ template <typename T> bool register_enum_symlink(bool export_values) {
 }
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

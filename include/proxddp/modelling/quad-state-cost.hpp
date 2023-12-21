@@ -6,7 +6,7 @@
 #include "proxddp/modelling/state-error.hpp"
 #include "proxddp/modelling/composite-costs.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 /// Quadratic distance cost over the state manifold.
 template <typename Scalar>
@@ -67,7 +67,7 @@ protected:
   }
 };
 
-} // namespace proxddp
+} // namespace aligator
 
 #ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/modelling/quad-state-cost.txx"

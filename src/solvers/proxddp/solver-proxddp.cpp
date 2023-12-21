@@ -1,7 +1,7 @@
 #include "proxddp/solvers/proxddp/solver-proxddp.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template struct SolverProxDDP<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

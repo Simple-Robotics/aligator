@@ -1,6 +1,6 @@
 #include "proxddp/modelling/multibody/fly-high.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template struct FlyHighResidualTpl<context::Scalar>;
 

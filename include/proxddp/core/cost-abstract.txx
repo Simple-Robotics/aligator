@@ -4,10 +4,10 @@
 
 #include "proxddp/context.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 extern template struct CostAbstractTpl<context::Scalar>;
 
 extern template struct CostDataAbstractTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

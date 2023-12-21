@@ -6,7 +6,7 @@
 #include <fmt/format.h>
 #include "proxddp/utils/exceptions.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 namespace internal {
 
@@ -23,13 +23,13 @@ suppress_if_void(T &&o) {
 
 } // namespace internal
 } // namespace python
-} // namespace proxddp
+} // namespace aligator
 
 #define PROXDDP_PYTHON_OVERRIDE_IMPL(ret_type, pyname, ...)                    \
   do {                                                                         \
     if (bp::override fo = this->get_override(pyname)) {                        \
       decltype(auto) o = fo(__VA_ARGS__);                                      \
-      return ::proxddp::python::internal::suppress_if_void<ret_type>(          \
+      return ::aligator::python::internal::suppress_if_void<ret_type>(         \
           std::move(o));                                                       \
     }                                                                          \
   } while (false)

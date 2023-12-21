@@ -8,7 +8,7 @@
 #include "proxddp/modelling/control-box-function.hpp"
 #include "proxddp/modelling/function-xpr-slice.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 using context::ConstMatrixRef;
@@ -226,4 +226,4 @@ void exposeFunctions() {
 }
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator

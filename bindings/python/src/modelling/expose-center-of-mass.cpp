@@ -9,7 +9,7 @@
 #include "proxddp/modelling/multibody/center-of-mass-translation.hpp"
 #include "proxddp/modelling/multibody/center-of-mass-velocity.hpp"
 
-namespace proxddp {
+namespace aligator {
 namespace python {
 
 using context::PinData;
@@ -71,6 +71,6 @@ void exposeCenterOfMassFunctions() {
 }
 
 } // namespace python
-} // namespace proxddp
+} // namespace aligator
 
 #endif

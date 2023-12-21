@@ -4,7 +4,7 @@
 
 #include "proxddp/math.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template <typename Scalar> struct IterativeRefinementVisitor {
 
@@ -44,4 +44,4 @@ template <typename Scalar> struct IterativeRefinementVisitor {
   const std::size_t max_refinement_steps;
 };
 
-} // namespace proxddp
+} // namespace aligator

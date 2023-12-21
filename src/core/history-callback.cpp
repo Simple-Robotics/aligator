@@ -1,7 +1,7 @@
 #include "proxddp/helpers/history-callback.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 template struct HistoryCallbackTpl<context::Scalar>;
 
-} // namespace proxddp
+} // namespace aligator

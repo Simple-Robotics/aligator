@@ -2,7 +2,7 @@
 
 #include "proxddp/core/dynamics.hpp"
 
-namespace proxddp {
+namespace aligator {
 
 /// @brief  Namespace for modelling system dynamics.
 namespace dynamics {
@@ -46,4 +46,4 @@ template <typename Scalar> struct IntegratorRK2Tpl;
 
 } // namespace dynamics
 
-} // namespace proxddp
+} // namespace aligator

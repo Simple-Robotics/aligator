@@ -13,7 +13,7 @@
 
 BOOST_AUTO_TEST_SUITE(node)
 
-using namespace proxddp;
+using namespace aligator;
 
 BOOST_AUTO_TEST_CASE(test_problem) {
   MyFixture f;

@@ -3,7 +3,7 @@
 #include "proxddp/core/explicit-dynamics.hpp"
 #include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
 
-namespace proxddp {
+namespace aligator {
 
 namespace dynamics {
 
@@ -46,4 +46,4 @@ struct LinearDiscreteDynamicsTpl : ExplicitDynamicsModelTpl<_Scalar> {
 
 } // namespace dynamics
 
-} // namespace proxddp
+} // namespace aligator
