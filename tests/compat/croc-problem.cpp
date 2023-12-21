@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(lqr) {
 
   BOOST_TEST_CHECK(cr_converged);
 
-  // convert to proxddp problem
+  // convert to aligator problem
 
   aligator::TrajOptProblemTpl<double> prox_problem =
       pcroc::convertCrocoddylProblem(croc_problem);
