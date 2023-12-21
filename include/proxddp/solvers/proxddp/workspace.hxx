@@ -41,7 +41,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
   dyn_slacks.reserve(nsteps);
 
   {
-    const int ndx1 = problem.stages_[0]->ndx1();
+    const int ndx1 = problem.init_condition_->ndx1;
     const int nprim = ndx1;
     const int ndual = problem.init_condition_->nr;
     const int ntot = nprim + ndual;
@@ -94,7 +94,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
   }
 
   {
-    const int ndx2 = problem.stages_.back()->ndx2();
+    const int ndx2 = problem.term_cost_->ndx();
     Lxs_.emplace_back(ndx2);
     value_params.emplace_back(ndx2);
   }
