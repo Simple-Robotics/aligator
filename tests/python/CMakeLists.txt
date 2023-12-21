@@ -13,6 +13,12 @@ if(NOT BUILD_WITH_PINOCCHIO_PYTHON_BINDINGS)
   list(REMOVE_ITEM PYTHON_TESTS test_constrained_dynamics.py)
   list(REMOVE_ITEM PYTHON_TESTS test_frames.py)
 endif()
+# TODO Add tests when Pinocchio 3 is released
+list(REMOVE_ITEM PYTHON_TESTS test_center_of_mass.py)
+list(REMOVE_ITEM PYTHON_TESTS test_constrained_dynamics.py)
+list(REMOVE_ITEM PYTHON_TESTS test_finite_diff.py)
+list(REMOVE_ITEM PYTHON_TESTS test_frames.py)
+list(REMOVE_ITEM PYTHON_TESTS test_rollout.py)
 make_directory(${CMAKE_CURRENT_BINARY_DIR})
 
 foreach(pyfile ${PYTHON_TESTS})
@@ -22,7 +28,7 @@ foreach(pyfile ${PYTHON_TESTS})
   execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/${pyfile}
                           ${CMAKE_CURRENT_BINARY_DIR}/${pyfile})
   message(STATUS "Adding Python test: ${test_name}")
-  add_python_unit_test(${test_name} "tests/python/${pyfile}" "tests/python")
+  add_python_unit_test(${test_name} "tests/python/${pyfile}" "tests/python" "bindings/python")
   set_tests_properties("${test_name}" PROPERTIES DEPENDS ${PYLIB_NAME})
 endforeach()
 

@@ -229,7 +229,7 @@ add_subdirectory(bindings)
 
 macro(create_ex_or_bench exfile exname)
 
-  add_unit_test(${exname} ${exfile})
+  add_executable(${exname} ${exfile})
   message(STATUS "Adding cpp example ${exname}")
   set_target_properties(${exname} PROPERTIES LINKER_LANGUAGE CXX)
   target_include_directories(${exname} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
