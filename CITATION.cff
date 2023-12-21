@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: proxddp
+title: aligator
 message: "If you use this software, please cite it as below."
 type: software
 authors:
@@ -18,4 +18,4 @@ authors:
     email: nmansard@laas.fr
     affiliation: LAAS-CNRS
     orcid: 'https://orcid.org/0000-0002-8090-0601'
-url: "https://github.com/Simple-Robotics/proxddp"
+url: "https://github.com/Simple-Robotics/aligator"

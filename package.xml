@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>proxddp</name>
+  <name>aligator</name>
   <version>0.3.0</version>
   <maintainer email="wilson.jallet@laas.fr">Wilson Jallet</maintainer>
   <description>A primal-dual augmented Lagrangian-type solver for trajectory optimization.</description>

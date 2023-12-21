@@ -1,6 +1,6 @@
-#include "proxddp/fwd.hpp"
+#include "aligator/fwd.hpp"
 #ifdef ALIGATOR_PINOCCHIO_V3
-#include "proxddp/modelling/multibody/constrained-rnea.hpp"
+#include "aligator/modelling/multibody/constrained-rnea.hpp"
 
 namespace aligator {
 

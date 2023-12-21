@@ -1,4 +1,4 @@
-#include "proxddp/utils/logger.hpp"
+#include "aligator/utils/logger.hpp"
 
 namespace aligator {
 BaseLogger::BaseLogger() { cols.reserve(BASIC_KEYS.size()); }

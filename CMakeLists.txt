@@ -4,10 +4,10 @@
 
 cmake_minimum_required(VERSION 3.12)
 
-set(PROJECT_NAME proxddp)
+set(PROJECT_NAME aligator)
 set(PROJECT_DESCRIPTION
     "A primal-dual augmented Lagrangian-type solver for nonlinear trajectory optimization.")
-set(PROJECT_URL "https://github.com/Simple-Robotics/proxddp")
+set(PROJECT_URL "https://github.com/Simple-Robotics/aligator")
 set(PROJECT_CUSTOM_HEADER_EXTENSION "hpp")
 set(PROJECT_USE_KEYWORD_LINK_LIBRARIES True)
 
@@ -152,8 +152,8 @@ add_project_dependency(proxsuite-nlp 0.2.3 REQUIRED)
 
 set(LIB_SOURCES src/utils/logger.cpp)
 
-file(GLOB_RECURSE LIB_HEADERS ${PROJECT_SOURCE_DIR}/include/proxddp/*.hpp
-     ${PROJECT_SOURCE_DIR}/include/proxddp/*.hxx)
+file(GLOB_RECURSE LIB_HEADERS ${PROJECT_SOURCE_DIR}/include/aligator/*.hpp
+     ${PROJECT_SOURCE_DIR}/include/aligator/*.hxx)
 
 if(ENABLE_TEMPLATE_INSTANTIATION)
 
@@ -165,13 +165,13 @@ if(ENABLE_TEMPLATE_INSTANTIATION)
     ${PROJECT_SOURCE_DIR}/src/solvers/proxddp/*.cpp
     ${PROJECT_SOURCE_DIR}/src/modelling/*.cpp
     ${PROJECT_SOURCE_DIR}/src/parlqr/*.cpp)
-  file(GLOB_RECURSE LIB_TEMPLATE_DECLARATIONS ${PROJECT_SOURCE_DIR}/include/proxddp/*.txx)
+  file(GLOB_RECURSE LIB_TEMPLATE_DECLARATIONS ${PROJECT_SOURCE_DIR}/include/aligator/*.txx)
   list(APPEND LIB_HEADERS ${LIB_TEMPLATE_DECLARATIONS})
   list(APPEND LIB_SOURCES ${LIB_TEMPLATE_SOURCES})
 
 endif(ENABLE_TEMPLATE_INSTANTIATION)
 
-list(FILTER LIB_HEADERS EXCLUDE REGEX ${PROJECT_SOURCE_DIR}/include/proxddp/compat/*)
+list(FILTER LIB_HEADERS EXCLUDE REGEX ${PROJECT_SOURCE_DIR}/include/aligator/compat/*)
 
 # Create the main shared library.
 function(create_library)

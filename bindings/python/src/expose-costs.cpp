@@ -1,10 +1,10 @@
 /// @file
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
-#include "proxddp/python/costs.hpp"
+#include "aligator/python/costs.hpp"
 
-#include "proxddp/modelling/quad-costs.hpp"
-#include "proxddp/modelling/constant-cost.hpp"
-#include "proxddp/modelling/sum-of-costs.hpp"
+#include "aligator/modelling/quad-costs.hpp"
+#include "aligator/modelling/constant-cost.hpp"
+#include "aligator/modelling/sum-of-costs.hpp"
 
 namespace aligator {
 namespace python {

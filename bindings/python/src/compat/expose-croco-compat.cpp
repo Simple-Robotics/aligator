@@ -1,11 +1,11 @@
 /// @file
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #ifdef ALIGATOR_WITH_CROCODDYL_COMPAT
-#include "proxddp/python/compat/croco.hpp"
-#include "proxddp/python/utils.hpp"
+#include "aligator/python/compat/croco.hpp"
+#include "aligator/python/utils.hpp"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "proxddp/compat/crocoddyl/instantiate.txx"
+#include "aligator/compat/crocoddyl/instantiate.txx"
 #endif
 
 namespace aligator {

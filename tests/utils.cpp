@@ -1,4 +1,4 @@
-#include "proxddp/utils/newton-raphson.hpp"
+#include "aligator/utils/newton-raphson.hpp"
 
 #include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
 

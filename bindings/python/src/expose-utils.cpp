@@ -1,6 +1,6 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
-#include "proxddp/python/fwd.hpp"
-#include "proxddp/utils/rollout.hpp"
+#include "aligator/python/fwd.hpp"
+#include "aligator/utils/rollout.hpp"
 
 namespace aligator {
 namespace python {

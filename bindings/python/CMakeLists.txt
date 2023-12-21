@@ -8,7 +8,7 @@ endif(GENERATE_PYTHON_STUBS)
 
 file(GLOB PY_SOURCES src/*.cpp src/modelling/*.cpp)
 
-set(PY_HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/proxddp/python)
+set(PY_HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/python)
 file(GLOB PY_HEADERS ${PY_HEADER_DIR}/*.hpp ${PY_HEADER_DIR}/modelling/*.hpp
      ${PY_HEADER_DIR}/utils/*.hpp)
 
@@ -19,7 +19,7 @@ endif()
 
 function(make_bindings)
   add_library(${PYLIB_NAME} SHARED ${PY_HEADERS} ${PY_SOURCES})
-  add_library(proxddp::python ALIAS ${PYLIB_NAME})
+  add_library(aligator::python ALIAS ${PYLIB_NAME})
 
   set_target_properties(
     ${PYLIB_NAME}
@@ -41,7 +41,7 @@ function(make_bindings)
   target_link_libraries(${PYLIB_NAME} PUBLIC ${PROJECT_NAME} eigenpy::eigenpy)
 
   if(BUILD_CROCODDYL_COMPAT)
-    target_link_libraries(${PYLIB_NAME} PUBLIC proxddp::croc_compat)
+    target_link_libraries(${PYLIB_NAME} PUBLIC aligator::croc_compat)
   endif(BUILD_CROCODDYL_COMPAT)
 
   if(BUILD_WITH_OPENMP_SUPPORT)

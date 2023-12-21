@@ -1,8 +1,8 @@
 /// @file
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 
-#include "proxddp/python/fwd.hpp"
-#include "proxddp/modelling/explicit-dynamics-direct-sum.hpp"
+#include "aligator/python/fwd.hpp"
+#include "aligator/modelling/explicit-dynamics-direct-sum.hpp"
 
 namespace aligator {
 namespace python {

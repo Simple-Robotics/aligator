@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
-#include "proxddp/parlqr/parlqr.hpp"
+#include "aligator/parlqr/parlqr.hpp"
 
 using namespace aligator;
 

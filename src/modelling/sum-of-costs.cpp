@@ -1,4 +1,4 @@
-#include "proxddp/modelling/sum-of-costs.hpp"
+#include "aligator/modelling/sum-of-costs.hpp"
 
 namespace aligator {
 

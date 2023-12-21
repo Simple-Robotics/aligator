@@ -1,4 +1,4 @@
-#include "proxddp/modelling/state-error.hpp"
+#include "aligator/modelling/state-error.hpp"
 
 namespace aligator {
 

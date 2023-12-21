@@ -1,4 +1,4 @@
-#include "proxddp/core/unary-function.hpp"
+#include "aligator/core/unary-function.hpp"
 
 namespace aligator {
 

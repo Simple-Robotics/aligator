@@ -1,4 +1,4 @@
-#include "proxddp/modelling/dynamics/ode-abstract.hpp"
+#include "aligator/modelling/dynamics/ode-abstract.hpp"
 
 namespace aligator {
 namespace dynamics {

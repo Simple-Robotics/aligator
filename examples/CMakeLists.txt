@@ -21,7 +21,7 @@ endmacro()
 
 function(create_example_with_croco exfile)
   create_example(${exfile})
-  target_link_libraries(${exname} PUBLIC proxddp::croc_compat)
+  target_link_libraries(${exname} PUBLIC aligator::croc_compat)
 endfunction()
 
 create_example(se2-car.cpp)

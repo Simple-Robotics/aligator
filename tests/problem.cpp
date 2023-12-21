@@ -1,7 +1,7 @@
-#include "proxddp/core/traj-opt-problem.hpp"
-#include "proxddp/solvers/proxddp/results.hpp"
-#include "proxddp/solvers/proxddp/workspace.hpp"
-#include "proxddp/utils/rollout.hpp"
+#include "aligator/core/traj-opt-problem.hpp"
+#include "aligator/solvers/proxddp/results.hpp"
+#include "aligator/solvers/proxddp/workspace.hpp"
+#include "aligator/utils/rollout.hpp"
 
 #include "generate-problem.hpp"
 #include <proxsuite-nlp/modelling/spaces/vector-space.hpp>

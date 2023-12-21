@@ -1,10 +1,10 @@
 /// @file
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
-#include "proxddp/python/fwd.hpp"
-#include "proxddp/python/eigen-member.hpp"
-#include "proxddp/modelling/function-xpr-slice.hpp"
-#include "proxddp/modelling/linear-function-composition.hpp"
+#include "aligator/python/fwd.hpp"
+#include "aligator/python/eigen-member.hpp"
+#include "aligator/modelling/function-xpr-slice.hpp"
+#include "aligator/modelling/linear-function-composition.hpp"
 
 namespace aligator {
 namespace python {

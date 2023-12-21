@@ -1,6 +1,6 @@
-#include "proxddp/python/fwd.hpp"
+#include "aligator/python/fwd.hpp"
 
-#include "proxddp/solvers/fddp/solver-fddp.hpp"
+#include "aligator/solvers/fddp/solver-fddp.hpp"
 
 namespace aligator {
 namespace python {

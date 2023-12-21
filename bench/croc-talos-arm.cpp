@@ -4,8 +4,8 @@
 
 #include "croc-talos-arm.hpp"
 
-#include "proxddp/solvers/fddp/solver-fddp.hpp"
-#include "proxddp/solvers/proxddp/solver-proxddp.hpp"
+#include "aligator/solvers/fddp/solver-fddp.hpp"
+#include "aligator/solvers/proxddp/solver-proxddp.hpp"
 
 #include <benchmark/benchmark.h>
 
@@ -71,7 +71,7 @@ static void BM_prox_fddp(benchmark::State &state) {
 }
 
 /// Benchmark the full PROXDDP algorithm (aligator::SolverProxDDP)
-template <LDLTChoice choice> static void BM_proxddp(benchmark::State &state) {
+template <LDLTChoice choice> static void BM_aligator(benchmark::State &state) {
   const std::size_t nsteps = (std::size_t)state.range(0);
   using aligator::LDLTChoice;
   auto croc_problem = defineCrocoddylProblem(nsteps);
@@ -115,15 +115,16 @@ int main(int argc, char **argv) {
   };
   registerWithOpts("croc::FDDP", &BM_croc_fddp);
   registerWithOpts("aligator::FDDP", &BM_prox_fddp);
-  registerWithOpts("aligator::ALIGATOR_DENSE", &BM_proxddp<LDLTChoice::DENSE>);
+  registerWithOpts("aligator::ALIGATOR_DENSE", &BM_aligator<LDLTChoice::DENSE>);
   registerWithOpts("aligator::ALIGATOR_BLOCK",
-                   &BM_proxddp<LDLTChoice::BLOCKSPARSE>);
+                   &BM_aligator<LDLTChoice::BLOCKSPARSE>);
   registerWithOpts("aligator::ALIGATOR_BUNCHKAUFMAN",
-                   &BM_proxddp<LDLTChoice::BUNCHKAUFMAN>);
-  registerWithOpts("aligator::ALIGATOR_EIGLDL", &BM_proxddp<LDLTChoice::EIGEN>);
+                   &BM_aligator<LDLTChoice::BUNCHKAUFMAN>);
+  registerWithOpts("aligator::ALIGATOR_EIGLDL",
+                   &BM_aligator<LDLTChoice::EIGEN>);
 #ifdef PROXSUITE_NLP_USE_PROXSUITE_LDLT
   registerWithOpts("aligator::ALIGATOR_PSUITE",
-                   &BM_proxddp<LDLTChoice::PROXSUITE>);
+                   &BM_aligator<LDLTChoice::PROXSUITE>);
 #endif
 
   benchmark::Initialize(&argc, argv);

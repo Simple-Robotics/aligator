@@ -2,7 +2,7 @@
 /// @details Instantiates the templates for the chosen context's Scalar type.
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 
-#include "proxddp/compat/crocoddyl/instantiate.txx"
+#include "aligator/compat/crocoddyl/instantiate.txx"
 
 namespace aligator {
 namespace compat {

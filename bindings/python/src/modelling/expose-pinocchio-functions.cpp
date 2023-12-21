@@ -1,15 +1,15 @@
 /// @file
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #ifdef ALIGATOR_WITH_PINOCCHIO
-#include "proxddp/fwd.hpp"
-#include "proxddp/python/functions.hpp"
-#include "proxddp/python/modelling/multibody-utils.hpp"
+#include "aligator/fwd.hpp"
+#include "aligator/python/functions.hpp"
+#include "aligator/python/modelling/multibody-utils.hpp"
 
-#include "proxddp/modelling/multibody/frame-placement.hpp"
-#include "proxddp/modelling/multibody/frame-velocity.hpp"
-#include "proxddp/modelling/multibody/frame-translation.hpp"
+#include "aligator/modelling/multibody/frame-placement.hpp"
+#include "aligator/modelling/multibody/frame-velocity.hpp"
+#include "aligator/modelling/multibody/frame-translation.hpp"
 #ifdef ALIGATOR_PINOCCHIO_V3
-#include "proxddp/modelling/multibody/constrained-rnea.hpp"
+#include "aligator/modelling/multibody/constrained-rnea.hpp"
 #endif
 
 namespace aligator {

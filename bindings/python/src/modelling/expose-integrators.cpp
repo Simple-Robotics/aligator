@@ -1,13 +1,13 @@
 
-#include "proxddp/python/fwd.hpp"
-#include "proxddp/python/functions.hpp"
-#include "proxddp/python/modelling/explicit-dynamics.hpp"
+#include "aligator/python/fwd.hpp"
+#include "aligator/python/functions.hpp"
+#include "aligator/python/modelling/explicit-dynamics.hpp"
 
-#include "proxddp/modelling/dynamics/integrator-abstract.hpp"
-#include "proxddp/modelling/dynamics/integrator-euler.hpp"
-#include "proxddp/modelling/dynamics/integrator-rk2.hpp"
-#include "proxddp/modelling/dynamics/integrator-semi-euler.hpp"
-#include "proxddp/modelling/dynamics/integrator-midpoint.hpp"
+#include "aligator/modelling/dynamics/integrator-abstract.hpp"
+#include "aligator/modelling/dynamics/integrator-euler.hpp"
+#include "aligator/modelling/dynamics/integrator-rk2.hpp"
+#include "aligator/modelling/dynamics/integrator-semi-euler.hpp"
+#include "aligator/modelling/dynamics/integrator-midpoint.hpp"
 
 namespace aligator {
 namespace python {

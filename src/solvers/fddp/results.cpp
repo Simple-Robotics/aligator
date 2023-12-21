@@ -1,5 +1,5 @@
-#include "proxddp/solvers/fddp/results.hpp"
-#include "proxddp/core/solver-util.hpp"
+#include "aligator/solvers/fddp/results.hpp"
+#include "aligator/core/solver-util.hpp"
 
 namespace aligator {
 

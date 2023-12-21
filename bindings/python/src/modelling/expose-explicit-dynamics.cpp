@@ -1,8 +1,8 @@
 /// @file
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
-#include "proxddp/python/modelling/explicit-dynamics.hpp"
+#include "aligator/python/modelling/explicit-dynamics.hpp"
 
-#include "proxddp/modelling/linear-discrete-dynamics.hpp"
+#include "aligator/modelling/linear-discrete-dynamics.hpp"
 
 namespace aligator {
 namespace python {

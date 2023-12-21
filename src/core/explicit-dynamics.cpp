@@ -1,4 +1,4 @@
-#include "proxddp/core/explicit-dynamics.hpp"
+#include "aligator/core/explicit-dynamics.hpp"
 
 namespace aligator {
 

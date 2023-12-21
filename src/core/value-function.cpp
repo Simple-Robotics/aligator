@@ -1,4 +1,4 @@
-#include "proxddp/core/value-function.hpp"
+#include "aligator/core/value-function.hpp"
 
 namespace aligator {
 template struct ValueFunctionTpl<context::Scalar>;

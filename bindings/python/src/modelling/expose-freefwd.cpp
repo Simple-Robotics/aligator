@@ -1,7 +1,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
-#include "proxddp/python/fwd.hpp"
+#include "aligator/python/fwd.hpp"
 
-#include "proxddp/modelling/dynamics/multibody-free-fwd.hpp"
+#include "aligator/modelling/dynamics/multibody-free-fwd.hpp"
 
 namespace aligator {
 namespace python {

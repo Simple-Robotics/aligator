@@ -1,4 +1,4 @@
-#include "proxddp/modelling/dynamics/multibody-free-fwd.hpp"
+#include "aligator/modelling/dynamics/multibody-free-fwd.hpp"
 #include <pinocchio/parsers/sample-models.hpp>
 
 #include <boost/test/unit_test.hpp>
