@@ -12,8 +12,8 @@ namespace aligator {
 /// components.
 inline std::string printVersion(const std::string &delimiter = ".") {
   std::ostringstream oss;
-  oss << ALIGATOR_MAJOR_VERSION << delimiter << ALIGATOR_MINOR_VERSION
-      << delimiter << ALIGATOR_PATCH_VERSION;
+  oss << PROXDDP_MAJOR_VERSION << delimiter << PROXDDP_MINOR_VERSION
+      << delimiter << PROXDDP_PATCH_VERSION;
   return oss.str();
 }
 } // namespace aligator
