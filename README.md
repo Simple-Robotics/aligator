@@ -18,7 +18,23 @@ This is a C++ template library, which provides
 
 ## Installation
 
-### Dependencies
+### From Conda
+
+From [our channel](https://anaconda.org/simple-robotics/proxsuite-nlp).
+
+```bash
+conda install -c simple-robotics aligator
+```
+
+### Build from source
+
+```bash
+git clone https://github.com/Simple-Robotics/aligator --recursive
+cmake -DCMAKE_INSTALL_PREFIX=your_install_folder -S . -B build/ && cd build/
+cmake --build . -jNCPUS
+```
+
+**Dependencies**
 
 * [proxsuite-nlp](https://github.com/Simple-Robotics/proxsuite-nlp.git)
 * [Eigen3](https://eigen.tuxfamily.org) >= 3.3.7
@@ -28,32 +44,17 @@ This is a C++ template library, which provides
 * (optional) [Pinocchio](https://github.com/stack-of-tasks/eigenpy)
 * a C++14 compliant compiler
 
-Python:
+**Python dependencies**
 
 * [typed-argument-parser](https://github.com/swansonk14/typed-argument-parser)
 * [matplotlib](https://matplotlib.org)
 
-### Build from source
-
-```bash
-git clone repo_link --recursive
-# define envars here
-cmake -DCMAKE_INSTALL_PREFIX=your_install_folder -S . -B build/
-cd build/
-cmake --build . -jNCPUS
-```
-
-Options:
+### Notes
 
 * For developers, add the `-DCMAKE_EXPORT_COMPILE_COMMANDS=1` when working with language servers e.g. clangd.
 * To use the Crocoddyl interface, add `-DBUILD_CROCODDYL_COMPAT=ON`
 * By default, building the library will instantiate the templates for the `double` scalar type.
-
-**Building against conda:** define
-
-```bash
-export CMAKE_PREFIX_PATH=$CONDA_PREFIX
-```
+* To build against a Conda environment, activate the environment and run `export CMAKE_PREFIX_PATH=$CONDA_PREFIX` before running CMake.
 
 and use `$CONDA_PREFIX` as your install folder.
 
@@ -81,7 +82,7 @@ flamegraph -o my_flamegraph.svg -- ./build/examples/example-croc-talos-arm
 * [Nicolas Mansard](https://gepettoweb.laas.fr/index.php/Members/NicolasMansard) (LAAS-CNRS): project coordinator
 * [Guilhem Saurel](https://github.com/nim65s) (LAAS-CNRS)
 * [Fabian Schramm](https://github.com/fabinsch) (Inria): core developer
-* [Ludovic De Matteïs](https://github.com/LudovicDeMatteis) (LAAS-CNRS/Inria): COM costs and dynamics
+* [Ludovic De Matteïs](https://github.com/LudovicDeMatteis) (LAAS-CNRS/Inria): CoM costs and dynamics
 
 ## Acknowledgments
 
