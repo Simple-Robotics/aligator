@@ -252,12 +252,19 @@ macro(create_ex_or_bench exfile exname)
   target_include_directories(${exname} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
   target_link_libraries(${exname} PUBLIC ${PROJECT_NAME})
-  target_link_libraries(${exname} PUBLIC example-robot-data::example-robot-data)
   target_link_libraries(${exname} PUBLIC Boost::filesystem)
   if(BUILD_WITH_OPENMP_SUPPORT)
     target_link_libraries(${exname} PRIVATE OpenMP::OpenMP_CXX)
   endif()
 endmacro()
+
+macro(target_add_example_robot_data target_name)
+  target_link_libraries(${target_name} PRIVATE example-robot-data::example-robot-data)
+endmacro()
+
+if(BUILD_WITH_PINOCCHIO_SUPPORT AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
+  find_package(example-robot-data 4.0.9 REQUIRED)
+endif()
 
 if(BUILD_EXAMPLES)
   add_subdirectory(examples)
