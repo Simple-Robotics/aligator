@@ -120,6 +120,7 @@ add_project_dependency(fmt "9.1.0...<11" REQUIRED PKG_CONFIG_REQUIRES "fmt >= 9.
 
 if(BUILD_WITH_OPENMP_SUPPORT)
   add_project_dependency(OpenMP REQUIRED)
+  add_compile_definitions(ALIGATOR_MULTITHREADING)
 endif(BUILD_WITH_OPENMP_SUPPORT)
 
 if(BUILD_WITH_PINOCCHIO_SUPPORT)
