@@ -6,5 +6,5 @@ and their importance as a proportion of the call stack.
 
 Here's Crocoddyl's flame graph:
 ![croc-talos-arm](images/flamegraph-croc.svg)
-Here's for `proxddp::SolverFDDP`:
+Here's for `aligator::SolverFDDP`:
 ![prox-talos-arm](images/flamegraph-prox.svg)

@@ -20,9 +20,8 @@ ENABLE_PREPROCESSING    = YES
 MACRO_EXPANSION         = YES
 EXPAND_ONLY_PREDEF      = YES
 PREDEFINED              += EIGEN_MAKE_ALIGNED_OPERATOR_NEW \
-                           PROXNLP_DYNAMIC_TYPEDEFS \
-                           PROXDDP_RUNTIME_ERROR \
-                           PROXDDP_RAISE_IF_NAN
+                           ALIGATOR_RUNTIME_ERROR \
+                           ALIGATOR_RAISE_IF_NAN
 
 FULL_PATH_NAMES         = YES
 EXCLUDE_SYMBOLS         = *::internal, internal::*, *::internal::*
