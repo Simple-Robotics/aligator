@@ -1,14 +1,20 @@
-# proxddp
+# aligator
 
-A primal-dual augmented Lagrangian-type trajectory optimization solver.
+**aligator** is a trajectory optimization library for robotics and beyond.
+
+It can be used for motion generation and planning, for optimal estimation, for implementing Model-Predictive Control (MPC) schemes on complex systems, and more.
+
+It contains ProxDDP, a primal-dual augmented Lagrangian-type trajectory optimization solver.
 
 ## Features
 
-This is a C++14 template library, which provides
+This is a C++ template library, which provides
 
 * a modelling interface for optimal control problems, node-per-node
-* an efficient solver algorithm
-* (optional) an interface to [Crocoddyl](https://github.com/loco-3d/crocoddyl)
+* an efficient solver algorithm for constrained OCPs
+* (optional) support for the [pinocchio](https://github.com/stack-of-tasks/pinocchio) rigid-body dynamics library
+* (optional) an interface to the [Crocoddyl](https://github.com/loco-3d/crocoddyl) trajectory optimization library which can be used as an alternative frontend
+* Python bindings supported using [eigenpy](https://github.com/stack-of-tasks/eigenpy)
 
 ## Installation
 
@@ -17,8 +23,9 @@ This is a C++14 template library, which provides
 * [proxsuite-nlp](https://github.com/Simple-Robotics/proxsuite-nlp.git)
 * [Eigen3](https://eigen.tuxfamily.org) >= 3.3.7
 * [Boost](https://www.boost.org) >= 1.71.0
-* [eigenpy](https://github.com/stack-of-tasks/eigenpy)>=3.1.0 | [conda](https://anaconda.org/conda-forge/eigenpy)
+* (optional) [eigenpy](https://github.com/stack-of-tasks/eigenpy)>=3.1.0 | [conda](https://anaconda.org/conda-forge/eigenpy) (Python bindings)
 * (optional) [Crocoddyl](https://github.com/loco-3d/crocoddyl)
+* (optional) [Pinocchio](https://github.com/stack-of-tasks/eigenpy)
 
 Python:
 
@@ -64,12 +71,21 @@ flamegraph -o my_flamegraph.svg -- ./build/examples/example-croc-talos-arm
 
 ## Contributors
 
-* [Antoine Bambade](https://bambade.github.io/)
-* [Justin Carpentier](https://jcarpent.github.io/)
-* [Wilson Jallet](https://manifoldfr.github.io/)
-* [Sarah Kazdadi](https://github.com/sarah-ek/)
-* [Quentin Le Lidec](https://quentinll.github.io/)
-* [Nicolas Mansard](https://gepettoweb.laas.fr/index.php/Members/NicolasMansard)
-* [Guilhem Saurel](https://github.com/nim65s)
-* [Fabian Schramm](https://github.com/fabinsch)
+* [Antoine Bambade](https://bambade.github.io/) (Inria): mathematics and algorithms developer
+* [Justin Carpentier](https://jcarpent.github.io/) (Inria): project coordinator
+* [Wilson Jallet](https://manifoldfr.github.io/) (LAAS-CNRS/Inria): main developer and manager of the project
+* [Sarah Kazdadi](https://github.com/sarah-ek/): linear algebra czar
+* [Quentin Le Lidec](https://quentinll.github.io/) (Inria)
+* [Joris Vaillant](https://github.com/jorisv) (Inria): core developer
+* [Nicolas Mansard](https://gepettoweb.laas.fr/index.php/Members/NicolasMansard) (LAAS-CNRS): project coordinator
+* [Guilhem Saurel](https://github.com/nim65s) (LAAS-CNRS)
+* [Fabian Schramm](https://github.com/fabinsch) (Inria): core developer
 * [Ludovic De Matteïs](https://github.com/LudovicDeMatteis)
+
+## Acknowledgments
+
+The development of **aligator** is actively supported by the [Willow team](https://www.di.ens.fr/willow/) [@INRIA](http://www.inria.fr) and the [Gepetto team](http://projects.laas.fr/gepetto/) [@LAAS-CNRS](http://www.laas.fr).
+
+The views and conclusions contained in the software and documentation are those
+of the authors and should not be interpreted as representing official policies,
+either expressed or implied, of the aligator project.
