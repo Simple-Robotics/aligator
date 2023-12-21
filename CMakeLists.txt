@@ -192,7 +192,11 @@ list(FILTER LIB_HEADERS EXCLUDE REGEX ${PROJECT_SOURCE_DIR}/include/aligator/com
 # Create the main shared library.
 function(create_library)
   add_library(${PROJECT_NAME} SHARED ${LIB_HEADERS} ${LIB_SOURCES})
-  set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX VERSION ${PROJECT_VERSION})
+  set_target_properties(
+    ${PROJECT_NAME}
+    PROPERTIES LINKER_LANGUAGE CXX
+               VERSION ${PROJECT_VERSION}
+               INSTALL_RPATH "\$ORIGIN")
 
   if(BUILD_WITH_PINOCCHIO_SUPPORT)
     target_link_libraries(${PROJECT_NAME} PUBLIC pinocchio::pinocchio)
