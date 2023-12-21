@@ -27,7 +27,7 @@ function(make_bindings)
                PREFIX ""
                SUFFIX ${PYTHON_EXT_SUFFIX}
                VERSION ${PROJECT_VERSION})
-  if(UNIX)
+  if(UNIX AND NOT APPLE)
     get_relative_rpath(${${PYLIB_NAME}_INSTALL_DIR} PYLIB_INSTALL_RPATH)
     set_target_properties(${PYLIB_NAME} PROPERTIES INSTALL_RPATH "${PYLIB_INSTALL_RPATH}")
   endif()
