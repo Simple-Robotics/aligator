@@ -14,7 +14,7 @@ namespace croc {
 template <typename _Scalar>
 struct CrocCostModelWrapperTpl : CostAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using CrocCostModel = crocoddyl::CostModelAbstractTpl<Scalar>;
   using CrocActionModel = crocoddyl::ActionModelAbstractTpl<Scalar>;
   using Base = CostAbstractTpl<Scalar>;
@@ -87,8 +87,8 @@ struct CrocCostModelWrapperTpl : CostAbstractTpl<_Scalar> {
           action_model_->createData();
       return std::make_shared<CrocCostDataWrapperTpl<Scalar>>(am_data);
     } else {
-      PROXDDP_DOMAIN_ERROR("Invalid call. Cannot build Data from"
-                           "crocoddyl cost model only.");
+      ALIGATOR_DOMAIN_ERROR("Invalid call. Cannot build Data from"
+                            "crocoddyl cost model only.");
     }
   }
 

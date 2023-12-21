@@ -8,7 +8,7 @@ namespace aligator {
 
 template <typename Scalar> struct IterativeRefinementVisitor {
 
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   template <typename DecompoAlgo> bool operator()(const DecompoAlgo &ldlt) {
 

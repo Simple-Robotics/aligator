@@ -9,7 +9,7 @@ namespace context {
 using Scalar = double;
 static constexpr int Options = 0;
 
-PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
 using Manifold = ManifoldAbstractTpl<Scalar>;
 

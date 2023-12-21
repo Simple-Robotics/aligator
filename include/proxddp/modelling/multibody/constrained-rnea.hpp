@@ -63,6 +63,6 @@ void underactuatedConstrainedInverseDynamics(
 
 } // namespace aligator
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./constrained-rnea.txx"
 #endif

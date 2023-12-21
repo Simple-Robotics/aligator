@@ -14,7 +14,7 @@ namespace aligator {
 /// @brief  Storage for the value function model parameters.
 template <typename _Scalar> struct ValueFunctionTpl {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   int ndx_;
   VectorXs Vx_;
   MatrixXs Vxx_;
@@ -39,7 +39,7 @@ template <typename _Scalar> struct ValueFunctionTpl {
 /// Q_u, Q_y\ldots\f$.
 template <typename _Scalar> struct QFunctionTpl {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   long ndx_;
   long nu_;
@@ -148,6 +148,6 @@ protected:
 
 } // namespace aligator
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/core/value-function.txx"
 #endif

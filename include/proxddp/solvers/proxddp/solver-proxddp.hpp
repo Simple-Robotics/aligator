@@ -36,7 +36,7 @@ public:
   // typedefs
 
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Problem = TrajOptProblemTpl<Scalar>;
   using Workspace = WorkspaceTpl<Scalar>;
   using Results = ResultsTpl<Scalar>;
@@ -147,8 +147,8 @@ public:
                 VerboseLevel verbose = VerboseLevel::QUIET,
                 HessianApprox hess_approx = HessianApprox::GAUSS_NEWTON);
 
-  PROXDDP_DEPRECATED const Results &getResults() { return results_; }
-  PROXDDP_DEPRECATED const Workspace &getWorkspace() { return workspace_; }
+  ALIGATOR_DEPRECATED const Results &getResults() { return results_; }
+  ALIGATOR_DEPRECATED const Workspace &getWorkspace() { return workspace_; }
 
   /// @brief Compute the linear search direction, i.e. the (regularized) SQP
   /// step.
@@ -256,13 +256,13 @@ public:
                           const std::vector<VectorXs> &lams);
 
   /// @copydoc mu_penal_
-  PROXDDP_INLINE Scalar mu() const { return mu_penal_; }
+  ALIGATOR_INLINE Scalar mu() const { return mu_penal_; }
 
   /// @copydoc mu_inverse_
-  PROXDDP_INLINE Scalar mu_inv() const { return mu_inverse_; }
+  ALIGATOR_INLINE Scalar mu_inv() const { return mu_inverse_; }
 
   /// @copydoc rho_penal_
-  PROXDDP_INLINE Scalar rho() const { return rho_penal_; }
+  ALIGATOR_INLINE Scalar rho() const { return rho_penal_; }
 
   //// Scaled variants
 
@@ -280,15 +280,17 @@ protected:
   void update_tols_on_success();
 
   /// Set dual proximal/ALM penalty parameter.
-  PROXDDP_INLINE void set_penalty_mu(Scalar new_mu) noexcept {
+  ALIGATOR_INLINE void set_penalty_mu(Scalar new_mu) noexcept {
     mu_penal_ = std::max(new_mu, MU_MIN);
     mu_inverse_ = 1. / new_mu;
   }
 
-  PROXDDP_INLINE void set_rho(Scalar new_rho) noexcept { rho_penal_ = new_rho; }
+  ALIGATOR_INLINE void set_rho(Scalar new_rho) noexcept {
+    rho_penal_ = new_rho;
+  }
 
   /// Update the dual proximal penalty according to BCL.
-  PROXDDP_INLINE void bcl_update_alm_penalty() noexcept {
+  ALIGATOR_INLINE void bcl_update_alm_penalty() noexcept {
     set_penalty_mu(mu_penal_ * bcl_params.mu_update_factor);
   }
 
@@ -331,6 +333,6 @@ private:
 
 #include "./solver-proxddp.hxx"
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./solver-proxddp.txx"
 #endif

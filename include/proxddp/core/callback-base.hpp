@@ -17,6 +17,6 @@ template <typename Scalar> struct CallbackBaseTpl {
 
 } // namespace aligator
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/core/callback-base.txx"
 #endif

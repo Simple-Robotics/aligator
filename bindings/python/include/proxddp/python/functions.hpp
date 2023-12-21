@@ -20,7 +20,7 @@ template <class FunctionBase = context::StageFunction>
 struct PyStageFunction : FunctionBase, bp::wrapper<FunctionBase> {
   using Scalar = typename FunctionBase::Scalar;
   using Data = StageFunctionDataTpl<Scalar>;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   // Use perfect forwarding to the FunctionBase constructors.
   template <typename... Args>
@@ -28,13 +28,13 @@ struct PyStageFunction : FunctionBase, bp::wrapper<FunctionBase> {
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &y, Data &data) const override {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "evaluate", x, u, y, boost::ref(data));
+    ALIGATOR_PYTHON_OVERRIDE_PURE(void, "evaluate", x, u, y, boost::ref(data));
   }
 
   void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
                         const ConstVectorRef &y, Data &data) const override {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeJacobians", x, u, y,
-                                 boost::ref(data));
+    ALIGATOR_PYTHON_OVERRIDE_PURE(void, "computeJacobians", x, u, y,
+                                  boost::ref(data));
   }
 
   void computeVectorHessianProducts(const ConstVectorRef &x,
@@ -42,12 +42,12 @@ struct PyStageFunction : FunctionBase, bp::wrapper<FunctionBase> {
                                     const ConstVectorRef &y,
                                     const ConstVectorRef &lbda,
                                     Data &data) const override {
-    PROXDDP_PYTHON_OVERRIDE(void, FunctionBase, computeVectorHessianProducts, x,
-                            u, y, lbda, boost::ref(data));
+    ALIGATOR_PYTHON_OVERRIDE(void, FunctionBase, computeVectorHessianProducts,
+                             x, u, y, lbda, boost::ref(data));
   }
 
   shared_ptr<Data> createData() const override {
-    PROXDDP_PYTHON_OVERRIDE(shared_ptr<Data>, FunctionBase, createData, );
+    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<Data>, FunctionBase, createData, );
   }
 
   shared_ptr<Data> default_createData() const {
@@ -58,25 +58,26 @@ struct PyStageFunction : FunctionBase, bp::wrapper<FunctionBase> {
 template <typename UFunction = context::UnaryFunction>
 struct PyUnaryFunction : UFunction, bp::wrapper<UFunction> {
   using Scalar = typename UFunction::Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
-  PROXDDP_UNARY_FUNCTION_INTERFACE(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_UNARY_FUNCTION_INTERFACE(Scalar);
   using Data = StageFunctionDataTpl<Scalar>;
 
   using UFunction::UFunction;
 
   void evaluate(const ConstVectorRef &x, Data &data) const override {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "evaluate", x, boost::ref(data));
+    ALIGATOR_PYTHON_OVERRIDE_PURE(void, "evaluate", x, boost::ref(data));
   }
 
   void computeJacobians(const ConstVectorRef &x, Data &data) const override {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeJacobians", x, boost::ref(data));
+    ALIGATOR_PYTHON_OVERRIDE_PURE(void, "computeJacobians", x,
+                                  boost::ref(data));
   }
 
   void computeVectorHessianProducts(const ConstVectorRef &x,
                                     const ConstVectorRef &lbda,
                                     Data &data) const override {
-    PROXDDP_PYTHON_OVERRIDE(void, UFunction, computeVectorHessianProducts, x,
-                            lbda, boost::ref(data));
+    ALIGATOR_PYTHON_OVERRIDE(void, UFunction, computeVectorHessianProducts, x,
+                             lbda, boost::ref(data));
   }
 };
 

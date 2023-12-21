@@ -9,7 +9,7 @@ namespace aligator {
 /// @brief    Results holder struct.
 template <typename _Scalar> struct ResultsTpl : ResultsBaseTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ResultsBaseTpl<Scalar>;
   using Base::conv;
   using Base::gains_;
@@ -40,6 +40,6 @@ struct fmt::formatter<aligator::ResultsTpl<Scalar>> : fmt::ostream_formatter {};
 
 #include "./results.hxx"
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./results.txx"
 #endif

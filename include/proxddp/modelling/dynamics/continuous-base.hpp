@@ -15,7 +15,7 @@ namespace dynamics {
 ///          The codimension of this function is the same as that of \f$x\f$.
 template <typename _Scalar> struct ContinuousDynamicsAbstractTpl {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using ManifoldPtr = shared_ptr<Manifold>;
   using Data = ContinuousDynamicsDataTpl<Scalar>;
@@ -61,7 +61,7 @@ template <typename _Scalar> struct ContinuousDynamicsAbstractTpl {
 template <typename _Scalar> struct ContinuousDynamicsDataTpl {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   /// Residual value \f$e = f(x,u,\dot{x})\f$
   VectorXs value_;
@@ -83,6 +83,6 @@ template <typename _Scalar> struct ContinuousDynamicsDataTpl {
 
 #include "proxddp/modelling/dynamics/continuous-base.hxx"
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/modelling/dynamics/continuous-base.txx"
 #endif

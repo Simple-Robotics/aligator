@@ -8,16 +8,16 @@
 
 #include <type_traits>
 
-#define PROXDDP_RAISE_IF_NAN(value)                                            \
+#define ALIGATOR_RAISE_IF_NAN(value)                                           \
   if (::aligator::math::check_value(value))                                    \
-  PROXDDP_RUNTIME_ERROR("Encountered NaN.\n")
+  ALIGATOR_RUNTIME_ERROR("Encountered NaN.\n")
 
-#define PROXDDP_RAISE_IF_NAN_NAME(value, name)                                 \
+#define ALIGATOR_RAISE_IF_NAN_NAME(value, name)                                \
   if (::aligator::math::check_value(value))                                    \
-  PROXDDP_RUNTIME_ERROR(                                                       \
+  ALIGATOR_RUNTIME_ERROR(                                                      \
       fmt::format("Encountered NaN for variable {:s}\n", name))
 
-#define PROXDDP_DYNAMIC_TYPEDEFS(Scalar) PROXSUITE_NLP_DYNAMIC_TYPEDEFS(Scalar)
+#define ALIGATOR_DYNAMIC_TYPEDEFS(Scalar) PROXSUITE_NLP_DYNAMIC_TYPEDEFS(Scalar)
 
 namespace aligator {
 

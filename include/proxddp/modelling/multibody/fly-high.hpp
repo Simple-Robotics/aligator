@@ -11,7 +11,7 @@ namespace aligator {
 template <typename _Scalar>
 struct FlyHighResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   static constexpr int NR = 2;
 
   using Base = UnaryFunctionTpl<Scalar>;
@@ -75,6 +75,6 @@ struct FlyHighResidualTpl<Scalar>::Data : StageFunctionDataTpl<Scalar> {
 
 #include "proxddp/modelling/multibody/fly-high.hxx"
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./fly-high.txx"
 #endif

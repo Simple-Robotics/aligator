@@ -5,10 +5,10 @@
 
 #include <proxsuite-nlp/fwd.hpp>
 
-#ifdef PROXDDP_WITH_PINOCCHIO
+#ifdef ALIGATOR_WITH_PINOCCHIO
 #include <pinocchio/fwd.hpp>
 #if PINOCCHIO_VERSION_AT_LEAST(2, 9, 2)
-#define PROXDDP_PINOCCHIO_V3
+#define ALIGATOR_PINOCCHIO_V3
 #endif
 #endif
 

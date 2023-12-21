@@ -22,7 +22,7 @@ namespace croc {
  */
 template <typename Scalar>
 struct ActionModelWrapperTpl : StageModelTpl<Scalar> {
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageModelTpl<Scalar>;
   using Data = StageDataTpl<Scalar>;
   using Constraint = StageConstraintTpl<Scalar>;
@@ -39,7 +39,7 @@ struct ActionModelWrapperTpl : StageModelTpl<Scalar> {
 
   bool has_dyn_model() const { return false; }
   const Dynamics &dyn_model() const {
-    PROXDDP_RUNTIME_ERROR("There is no dyn_model() for this class.");
+    ALIGATOR_RUNTIME_ERROR("There is no dyn_model() for this class.");
   }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,

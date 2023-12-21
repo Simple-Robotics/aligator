@@ -9,7 +9,7 @@ namespace aligator {
 
 template <typename _Scalar> struct DirectSumCostTpl : CostAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using BaseCost = CostAbstractTpl<Scalar>;
   using BaseData = CostDataAbstractTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
@@ -127,6 +127,6 @@ auto directSum(shared_ptr<CostAbstractTpl<Scalar>> const &c1,
 
 } // namespace aligator
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./cost-direct-sum.txx"
 #endif

@@ -26,7 +26,7 @@ SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
 
 template <typename Scalar>
 void SolverProxDDP<Scalar>::linearRollout(const Problem &problem) {
-  PROXDDP_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_BEGIN;
   compute_dir_x0(problem);
 
   const std::size_t nsteps = workspace_.nsteps;
@@ -46,7 +46,7 @@ void SolverProxDDP<Scalar>::linearRollout(const Problem &problem) {
     dlam = ff;
     dlam.noalias() += fb * workspace_.dxs[nsteps];
   }
-  PROXDDP_NOMALLOC_END;
+  ALIGATOR_NOMALLOC_END;
 }
 
 template <typename Scalar>
@@ -80,7 +80,7 @@ Scalar SolverProxDDP<Scalar>::forward_linear_impl(const Problem &problem,
 
 template <typename Scalar>
 void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem) {
-  PROXDDP_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_BEGIN;
   // compute direction dx0
   const VParams &vp = workspace_.value_params[0];
   StageFunctionData &init_data = workspace_.problem_data.getInitData();
@@ -112,7 +112,7 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem) {
     kkt_mat.bottomLeftCorner(ndual0, ndx0) = init_data.Jx_;
     kkt_mat.bottomRightCorner(ndual0, ndual0).diagonal().array() = -mu();
     auto &ldlt = workspace_.ldlts_[0];
-    PROXDDP_NOMALLOC_END;
+    ALIGATOR_NOMALLOC_END;
     boost::apply_visitor([&](auto &&fac) { fac.compute(kkt_mat); }, ldlt);
     auto &resdl = workspace_.kkt_resdls_[0];
     auto &gains = workspace_.pd_step_[0];
@@ -122,7 +122,7 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem) {
                                            max_refinement_steps_},
         ldlt);
   }
-  PROXDDP_NOMALLOC_END;
+  ALIGATOR_NOMALLOC_END;
 }
 
 template <typename Scalar>
@@ -245,7 +245,7 @@ void SolverProxDDP<Scalar>::computeMultipliers(
 template <typename Scalar>
 void SolverProxDDP<Scalar>::updateHamiltonian(const Problem &problem,
                                               const std::size_t t) {
-  PROXDDP_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_BEGIN;
 
   const StageModel &stage = *problem.stages_[t];
   const VParams &vnext = workspace_.value_params[t + 1];
@@ -272,12 +272,12 @@ void SolverProxDDP<Scalar>::updateHamiltonian(const Problem &problem,
       qparam.hess_ += cstr_data.vhp_buffer_;
     }
   }
-  PROXDDP_NOMALLOC_END;
+  ALIGATOR_NOMALLOC_END;
 }
 
 template <typename Scalar>
 void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem) {
-  PROXDDP_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_BEGIN;
   const std::size_t nsteps = workspace_.nsteps;
 
   const CostData &term_cost_data = *workspace_.problem_data.term_cost_data;
@@ -325,13 +325,13 @@ void SolverProxDDP<Scalar>::computeTerminalValue(const Problem &problem) {
       term_value.Vxx_.noalias() += pJx_k.transpose() * fbk;
     }
   }
-  PROXDDP_NOMALLOC_END;
+  ALIGATOR_NOMALLOC_END;
 }
 
 template <typename Scalar>
 void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
                                               const std::size_t t) {
-  PROXDDP_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_BEGIN;
   using ColXpr = typename MatrixXs::ColXpr;
   using ColsBlockXpr = typename MatrixXs::ColsBlockXpr;
   const StageModel &stage = *problem.stages_[t];
@@ -418,13 +418,13 @@ void SolverProxDDP<Scalar>::assembleKktSystem(const Problem &problem,
     qparam.Qx.noalias() += (Jx_orig - Jx_proj).transpose() * ld_j;
   }
   kkt_mat = kkt_mat.template selfadjointView<Eigen::Lower>();
-  PROXDDP_NOMALLOC_END;
+  ALIGATOR_NOMALLOC_END;
 }
 
 template <typename Scalar>
 auto SolverProxDDP<Scalar>::computeGains(const Problem &problem,
                                          const std::size_t t) -> BackwardRet {
-  PROXDDP_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_BEGIN;
   const StageModel &stage = *problem.stages_[t];
   const QParams &qparam = workspace_.q_params[t];
   const int ndx1 = stage.ndx1();
@@ -435,9 +435,9 @@ auto SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   MatrixXs &gains = results_.gains_[t];
 
   auto &ldlt = workspace_.ldlts_[t + 1];
-  PROXDDP_NOMALLOC_END;
+  ALIGATOR_NOMALLOC_END;
   boost::apply_visitor([&](auto &&fac) { fac.compute(kkt_mat); }, ldlt);
-  PROXDDP_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_BEGIN;
 
   // check inertia
   {
@@ -451,13 +451,13 @@ auto SolverProxDDP<Scalar>::computeGains(const Problem &problem,
     }
   }
 
-  PROXDDP_NOMALLOC_END;
+  ALIGATOR_NOMALLOC_END;
   boost::apply_visitor(
       IterativeRefinementVisitor<Scalar>{kkt_mat, kkt_rhs, resdl, gains,
                                          refinement_threshold_,
                                          max_refinement_steps_},
       ldlt);
-  PROXDDP_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_BEGIN;
 
   /// Value function/Riccati update:
   /// provided by the Schur complement.
@@ -473,7 +473,7 @@ auto SolverProxDDP<Scalar>::computeGains(const Problem &problem,
   vp.Vxx_ = qparam.Qxx;
   vp.Vxx_.noalias() += Qxw * fb;
   vp.Vxx_.diagonal().array() += xreg_;
-  PROXDDP_NOMALLOC_END;
+  ALIGATOR_NOMALLOC_END;
   return BWD_SUCCESS;
 }
 
@@ -500,7 +500,7 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
     stage.xspace().integrate(results_.xs[0], lams[0], xs[0]);
     lams[0] = results_.lams[0] + alpha * workspace_.dlams[0];
 
-    PROXDDP_RAISE_IF_NAN_NAME(xs[0], fmt::format("xs[{:d}]", 0));
+    ALIGATOR_RAISE_IF_NAN_NAME(xs[0], fmt::format("xs[{:d}]", 0));
   }
 
   for (std::size_t t = 0; t < nsteps; t++) {
@@ -559,9 +559,9 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
 
     stage.xspace_next().difference(results_.xs[t + 1], xs[t + 1], dxs[t + 1]);
 
-    PROXDDP_RAISE_IF_NAN_NAME(xs[t + 1], fmt::format("xs[{:d}]", t + 1));
-    PROXDDP_RAISE_IF_NAN_NAME(us[t], fmt::format("us[{:d}]", t));
-    PROXDDP_RAISE_IF_NAN_NAME(lams[t + 1], fmt::format("lams[{:d}]", t + 1));
+    ALIGATOR_RAISE_IF_NAN_NAME(xs[t + 1], fmt::format("xs[{:d}]", t + 1));
+    ALIGATOR_RAISE_IF_NAN_NAME(us[t], fmt::format("us[{:d}]", t));
+    ALIGATOR_RAISE_IF_NAN_NAME(lams[t + 1], fmt::format("lams[{:d}]", t + 1));
   }
 
   // TERMINAL NODE
@@ -595,7 +595,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
                                 const std::vector<VectorXs> &us_init,
                                 const std::vector<VectorXs> &lams_init) {
   if (!workspace_.isInitialized() || !results_.isInitialized()) {
-    PROXDDP_RUNTIME_ERROR("workspace and results were not allocated yet!");
+    ALIGATOR_RUNTIME_ERROR("workspace and results were not allocated yet!");
   }
 
   check_trajectory_and_assign(problem, xs_init, us_init, results_.xs,
@@ -796,9 +796,9 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
     results_.lams = workspace_.trial_lams;
     results_.traj_cost_ = workspace_.problem_data.cost_;
     results_.merit_value_ = phi_new;
-    PROXDDP_RAISE_IF_NAN_NAME(alpha_opt, "alpha_opt");
-    PROXDDP_RAISE_IF_NAN_NAME(results_.merit_value_, "results.merit_value");
-    PROXDDP_RAISE_IF_NAN_NAME(results_.traj_cost_, "results.traj_cost");
+    ALIGATOR_RAISE_IF_NAN_NAME(alpha_opt, "alpha_opt");
+    ALIGATOR_RAISE_IF_NAN_NAME(results_.merit_value_, "results.merit_value");
+    ALIGATOR_RAISE_IF_NAN_NAME(results_.traj_cost_, "results.traj_cost");
 
     iter_log.iter = iter + 1;
     iter_log.al_iter = results_.al_iter + 1;
@@ -829,7 +829,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
 template <typename Scalar>
 void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem) {
   // modifying quantities such as Qu, Qy... is allowed
-  PROXDDP_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_BEGIN;
   const TrajOptData &prob_data = workspace_.problem_data;
   const std::size_t nsteps = workspace_.nsteps;
 
@@ -870,7 +870,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem) {
 
   results_.prim_infeas = math::infty_norm(workspace_.stage_prim_infeas);
 
-  PROXDDP_NOMALLOC_END;
+  ALIGATOR_NOMALLOC_END;
 }
 
 template <typename Scalar>

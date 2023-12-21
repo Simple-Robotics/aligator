@@ -12,7 +12,7 @@ namespace dynamics {
 template <typename _Scalar>
 struct IntegratorEulerTpl : ExplicitIntegratorAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ExplicitIntegratorAbstractTpl<Scalar>;
   using Data = ExplicitIntegratorDataTpl<Scalar>;
   using ODEType = ODEAbstractTpl<Scalar>;

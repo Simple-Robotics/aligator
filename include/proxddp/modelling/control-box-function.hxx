@@ -10,7 +10,7 @@ ControlBoxFunctionTpl<Scalar>::ControlBoxFunctionTpl(const int ndx,
     : Base(ndx, (int)umin.size(), ndx, 2 * (int)umin.size()), umin_(umin),
       umax_(umax) {
   if (umin.size() != umax.size()) {
-    PROXDDP_DOMAIN_ERROR("Size of umin and umax should be the same!");
+    ALIGATOR_DOMAIN_ERROR("Size of umin and umax should be the same!");
   }
 }
 

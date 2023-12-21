@@ -15,8 +15,8 @@ FrameVelocityResidualTpl<Scalar>::FrameVelocityResidualTpl(
     : Base(ndx, nu, 6), pin_model_(model), vref_(velocity), type_(type) {
   pin_frame_id_ = frame_id;
   if (ndx < model->nv * 2) {
-    PROXDDP_RUNTIME_ERROR("Specified manifold dimension is incompatible. It "
-                          "needs to be at least 2 * nv.");
+    ALIGATOR_RUNTIME_ERROR("Specified manifold dimension is incompatible. It "
+                           "needs to be at least 2 * nv.");
   }
 }
 

@@ -20,7 +20,7 @@ template <typename _Scalar>
 struct ExplicitDynamicsModelTpl : DynamicsModelTpl<_Scalar> {
 public:
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = DynamicsModelTpl<Scalar>;
   using BaseData = DynamicsDataTpl<Scalar>;
   using Data = ExplicitDynamicsDataTpl<Scalar>;
@@ -56,7 +56,7 @@ template <typename _Scalar>
 struct ExplicitDynamicsDataTpl : StageFunctionDataTpl<_Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageFunctionDataTpl<Scalar>;
   using Base::Ju_;
   using Base::Jx_;
@@ -95,6 +95,6 @@ std::ostream &operator<<(std::ostream &oss,
 
 #include "proxddp/core/explicit-dynamics.hxx"
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/core/explicit-dynamics.txx"
 #endif

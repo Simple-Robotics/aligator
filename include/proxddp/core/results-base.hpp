@@ -8,7 +8,7 @@ namespace aligator {
 
 template <typename _Scalar> struct ResultsBaseTpl {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
 protected:
   // Whether the results struct was initialized.
@@ -106,6 +106,6 @@ std::ostream &operator<<(std::ostream &oss,
 
 } // namespace aligator
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./results-base.txx"
 #endif

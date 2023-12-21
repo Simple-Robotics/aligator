@@ -11,7 +11,7 @@ namespace aligator {
 /// Quadratic distance cost over the state manifold.
 template <typename Scalar>
 struct QuadraticStateCostTpl : QuadraticResidualCostTpl<Scalar> {
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = QuadraticResidualCostTpl<Scalar>;
   using StateError = StateErrorResidualTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
@@ -37,7 +37,7 @@ protected:
 
 template <typename Scalar>
 struct QuadraticControlCostTpl : QuadraticResidualCostTpl<Scalar> {
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = QuadraticResidualCostTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using Error = ControlErrorResidualTpl<Scalar>;
@@ -69,6 +69,6 @@ protected:
 
 } // namespace aligator
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/modelling/quad-state-cost.txx"
 #endif

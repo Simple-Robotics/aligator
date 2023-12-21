@@ -11,7 +11,7 @@ BOOST_AUTO_TEST_SUITE(utils)
 
 using namespace aligator;
 using Scalar = double;
-PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
 BOOST_AUTO_TEST_CASE(newton_raphson) {
   const long nx = 4;

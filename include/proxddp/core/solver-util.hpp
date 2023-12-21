@@ -22,7 +22,7 @@ void xs_default_init(const TrajOptProblemTpl<Scalar> &problem,
     if (problem.stages_.size() > 0) {
       xs[0] = problem.stages_[0]->xspace().neutral();
     } else {
-      PROXDDP_RUNTIME_ERROR(
+      ALIGATOR_RUNTIME_ERROR(
           "The problem should have either a StateErrorResidual as an initial "
           "condition or at least one stage.");
     }
@@ -62,7 +62,7 @@ void check_trajectory_and_assign(
     xs_default_init(problem, xs_out);
   } else {
     if (xs_init.size() != (nsteps + 1)) {
-      PROXDDP_RUNTIME_ERROR("warm-start for xs has wrong size!");
+      ALIGATOR_RUNTIME_ERROR("warm-start for xs has wrong size!");
     }
     xs_out = xs_init;
   }
@@ -70,7 +70,7 @@ void check_trajectory_and_assign(
     us_default_init(problem, us_out);
   } else {
     if (us_init.size() != nsteps) {
-      PROXDDP_RUNTIME_ERROR("warm-start for us has wrong size!");
+      ALIGATOR_RUNTIME_ERROR("warm-start for us has wrong size!");
     }
     us_out = us_init;
   }

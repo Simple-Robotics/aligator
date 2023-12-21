@@ -25,7 +25,7 @@ suppress_if_void(T &&o) {
 } // namespace python
 } // namespace aligator
 
-#define PROXDDP_PYTHON_OVERRIDE_IMPL(ret_type, pyname, ...)                    \
+#define ALIGATOR_PYTHON_OVERRIDE_IMPL(ret_type, pyname, ...)                   \
   do {                                                                         \
     if (bp::override fo = this->get_override(pyname)) {                        \
       decltype(auto) o = fo(__VA_ARGS__);                                      \
@@ -35,19 +35,19 @@ suppress_if_void(T &&o) {
   } while (false)
 
 /**
- * @def PROXDDP_PYTHON_OVERRIDE_PURE(ret_type, pyname, ...)
+ * @def ALIGATOR_PYTHON_OVERRIDE_PURE(ret_type, pyname, ...)
  * @brief Define the body of a virtual function override. This is meant
  *        to reduce boilerplate code when exposing virtual member functions.
  */
-#define PROXDDP_PYTHON_OVERRIDE_PURE(ret_type, pyname, ...)                    \
-  PROXDDP_PYTHON_OVERRIDE_IMPL(ret_type, pyname, __VA_ARGS__);                 \
-  PROXDDP_RUNTIME_ERROR(                                                       \
+#define ALIGATOR_PYTHON_OVERRIDE_PURE(ret_type, pyname, ...)                   \
+  ALIGATOR_PYTHON_OVERRIDE_IMPL(ret_type, pyname, __VA_ARGS__);                \
+  ALIGATOR_RUNTIME_ERROR(                                                      \
       fmt::format("Tried to call pure virtual function {:s}.", pyname))
 
 /**
- * @def PROXDDP_PYTHON_OVERRIDE(ret_type, cname, fname, ...)
- * @copybrief PROXDDP_PYTHON_OVERRIDE_PURE()
+ * @def ALIGATOR_PYTHON_OVERRIDE(ret_type, cname, fname, ...)
+ * @copybrief ALIGATOR_PYTHON_OVERRIDE_PURE()
  */
-#define PROXDDP_PYTHON_OVERRIDE(ret_type, cname, fname, ...)                   \
-  PROXDDP_PYTHON_OVERRIDE_IMPL(ret_type, #fname, __VA_ARGS__);                 \
+#define ALIGATOR_PYTHON_OVERRIDE(ret_type, cname, fname, ...)                  \
+  ALIGATOR_PYTHON_OVERRIDE_IMPL(ret_type, #fname, __VA_ARGS__);                \
   return cname::fname(__VA_ARGS__)

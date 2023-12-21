@@ -15,7 +15,7 @@ rollout(const std::vector<shared_ptr<DynamicsModelTpl<Scalar>>> &dyn_models,
   using Data = DynamicsDataTpl<Scalar>;
   const std::size_t N = us.size();
   if (dyn_models.size() != N) {
-    PROXDDP_RUNTIME_ERROR(
+    ALIGATOR_RUNTIME_ERROR(
         "Number of controls should be the same as number of dynamical models!");
   }
   xout.resize(N + 1);
@@ -65,7 +65,7 @@ void rollout(
   xout.resize(N + 1);
   xout[0] = x0;
   if (dyn_models.size() != N) {
-    PROXDDP_RUNTIME_ERROR(
+    ALIGATOR_RUNTIME_ERROR(
         fmt::format("Number of controls ({}) should be the same as number of "
                     "dynamical models ({})!",
                     N, dyn_models.size()));

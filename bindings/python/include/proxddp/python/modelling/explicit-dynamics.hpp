@@ -16,7 +16,7 @@ namespace internal {
 template <class ExplicitBase = context::ExplicitDynamics>
 struct PyExplicitDynamics : ExplicitBase, bp::wrapper<ExplicitBase> {
   using Scalar = context::Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   // All functions in the interface take this type for output
   using Data = ExplicitDynamicsDataTpl<Scalar>;
   using StageFunctionData = StageFunctionDataTpl<Scalar>;
@@ -26,17 +26,17 @@ struct PyExplicitDynamics : ExplicitBase, bp::wrapper<ExplicitBase> {
 
   virtual void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                        Data &data) const {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "forward", x, u, boost::ref(data));
+    ALIGATOR_PYTHON_OVERRIDE_PURE(void, "forward", x, u, boost::ref(data));
   }
 
   virtual void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
                         Data &data) const {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, boost::ref(data));
+    ALIGATOR_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, boost::ref(data));
   }
 
   shared_ptr<StageFunctionData> createData() const {
-    PROXDDP_PYTHON_OVERRIDE(shared_ptr<StageFunctionData>, ExplicitBase,
-                            createData, );
+    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<StageFunctionData>, ExplicitBase,
+                             createData, );
   }
 
   shared_ptr<StageFunctionData> default_createData() const {

@@ -12,7 +12,7 @@ namespace aligator {
  */
 template <typename _Scalar> struct CostAbstractTpl {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using CostData = CostDataAbstractTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
 
@@ -50,7 +50,7 @@ template <typename _Scalar> struct CostAbstractTpl {
 /// @brief  Data struct for CostAbstractTpl
 template <typename _Scalar> struct CostDataAbstractTpl {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   int ndx_, nu_;
   Scalar value_;
   VectorXs grad_;
@@ -88,6 +88,6 @@ template <typename _Scalar> struct CostDataAbstractTpl {
 
 } // namespace aligator
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/core/cost-abstract.txx"
 #endif

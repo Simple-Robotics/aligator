@@ -26,7 +26,7 @@ template <typename Scalar> struct IntegratorMidpointDataTpl;
 template <typename _Scalar>
 struct IntegratorMidpointTpl : IntegratorAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = IntegratorAbstractTpl<Scalar>;
   using ContinuousDynamics = ContinuousDynamicsAbstractTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
@@ -50,7 +50,7 @@ struct IntegratorMidpointTpl : IntegratorAbstractTpl<_Scalar> {
 template <typename _Scalar>
 struct IntegratorMidpointDataTpl : IntegratorDataTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = IntegratorDataTpl<Scalar>;
 
   VectorXs x1_;

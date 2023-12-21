@@ -13,7 +13,7 @@ struct PyCostFunction : T, bp::wrapper<T> {
   using Scalar = context::Scalar;
   using bp::wrapper<T>::get_override;
   using CostData = CostDataAbstractTpl<Scalar>;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   /// forwarding constructor
   template <typename... Args>
@@ -21,24 +21,24 @@ struct PyCostFunction : T, bp::wrapper<T> {
 
   virtual void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                         CostData &data) const override {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "evaluate", x, u, boost::ref(data));
+    ALIGATOR_PYTHON_OVERRIDE_PURE(void, "evaluate", x, u, boost::ref(data));
   }
 
   virtual void computeGradients(const ConstVectorRef &x,
                                 const ConstVectorRef &u,
                                 CostData &data) const override {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeGradients", x, u,
-                                 boost::ref(data));
+    ALIGATOR_PYTHON_OVERRIDE_PURE(void, "computeGradients", x, u,
+                                  boost::ref(data));
   }
 
   virtual void computeHessians(const ConstVectorRef &x, const ConstVectorRef &u,
                                CostData &data) const override {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "computeHessians", x, u,
-                                 boost::ref(data));
+    ALIGATOR_PYTHON_OVERRIDE_PURE(void, "computeHessians", x, u,
+                                  boost::ref(data));
   }
 
   virtual shared_ptr<CostData> createData() const override {
-    PROXDDP_PYTHON_OVERRIDE(shared_ptr<CostData>, T, createData, );
+    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<CostData>, T, createData, );
   }
 };
 } // namespace internal

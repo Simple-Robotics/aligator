@@ -28,9 +28,9 @@ StageModelTpl<Scalar>::StageModelTpl(CostPtr cost, DynamicsPtr dyn_model)
       uspace_(make_vector_space<Scalar>(dyn_model->nu)), cost_(cost) {
 
   if (cost->nu != dyn_model->nu) {
-    PROXDDP_RUNTIME_ERROR(fmt::format("Control dimensions cost.nu ({:d}) and "
-                                      "dyn_model.nu ({:d}) are inconsistent.",
-                                      cost->nu, dyn_model->nu));
+    ALIGATOR_RUNTIME_ERROR(fmt::format("Control dimensions cost.nu ({:d}) and "
+                                       "dyn_model.nu ({:d}) are inconsistent.",
+                                       cost->nu, dyn_model->nu));
   }
 
   using EqualitySet = proxsuite::nlp::EqualityConstraint<Scalar>;
@@ -55,7 +55,7 @@ template <typename T>
 void StageModelTpl<Scalar>::addConstraint(T &&cstr) {
   const int c_nu = cstr.func->nu;
   if (c_nu != this->nu()) {
-    PROXDDP_RUNTIME_ERROR(fmt::format(
+    ALIGATOR_RUNTIME_ERROR(fmt::format(
         "Function has the wrong dimension for u: got {:d}, expected {:d}", c_nu,
         this->nu()));
   }
@@ -66,7 +66,7 @@ template <typename Scalar>
 void StageModelTpl<Scalar>::addConstraint(FunctionPtr func,
                                           ConstraintSetPtr cstr_set) {
   if (func->nu != this->nu()) {
-    PROXDDP_RUNTIME_ERROR(fmt::format(
+    ALIGATOR_RUNTIME_ERROR(fmt::format(
         "Function has the wrong dimension for u: got {:d}, expected {:d}",
         func->nu, this->nu()));
   }

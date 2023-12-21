@@ -14,7 +14,7 @@ namespace dynamics {
 template <typename _Scalar>
 struct ODEAbstractTpl : ContinuousDynamicsAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   using Base = ContinuousDynamicsAbstractTpl<Scalar>;
   using ContDataAbstract = ContinuousDynamicsDataTpl<Scalar>;
@@ -64,6 +64,6 @@ struct ODEDataTpl : ContinuousDynamicsDataTpl<_Scalar> {
 
 #include "proxddp/modelling/dynamics/ode-abstract.hxx"
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/modelling/dynamics/ode-abstract.txx"
 #endif

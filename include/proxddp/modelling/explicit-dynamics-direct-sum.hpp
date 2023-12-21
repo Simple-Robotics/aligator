@@ -15,7 +15,7 @@ namespace aligator {
 template <typename _Scalar>
 struct DirectSumExplicitDynamicsTpl : ExplicitDynamicsModelTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ExplicitDynamicsModelTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using CartesianProduct = proxsuite::nlp::CartesianProductTpl<Scalar>;
@@ -59,6 +59,6 @@ auto directSum(shared_ptr<ExplicitDynamicsModelTpl<Scalar>> const &m1,
 
 #include "proxddp/modelling/explicit-dynamics-direct-sum.hxx"
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./explicit-dynamics-direct-sum.txx"
 #endif

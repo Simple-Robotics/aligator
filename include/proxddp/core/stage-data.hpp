@@ -11,7 +11,7 @@ namespace aligator {
 template <typename _Scalar>
 struct StageDataTpl : Cloneable<StageDataTpl<_Scalar>> {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   using StageModel = StageModelTpl<Scalar>;
   using CostDataAbstract = CostDataAbstractTpl<Scalar>;
@@ -39,14 +39,14 @@ struct StageDataTpl : Cloneable<StageDataTpl<_Scalar>> {
   virtual void checkData() {
     const char msg[] = "StageData integrity check failed.";
     if (constraint_data.size() == 0) {
-      PROXDDP_RUNTIME_ERROR(fmt::format("{} (constraint_data empty)", msg));
+      ALIGATOR_RUNTIME_ERROR(fmt::format("{} (constraint_data empty)", msg));
     }
     if (cost_data == 0) {
-      PROXDDP_RUNTIME_ERROR(fmt::format("{} (cost_data is nullptr)", msg));
+      ALIGATOR_RUNTIME_ERROR(fmt::format("{} (cost_data is nullptr)", msg));
     }
 
     if (dynamics_data == nullptr) {
-      PROXDDP_RUNTIME_ERROR(
+      ALIGATOR_RUNTIME_ERROR(
           fmt::format("{} (constraint_data[0] should be dynamics data)", msg));
     }
   }
@@ -64,6 +64,6 @@ protected:
 
 #include "proxddp/core/stage-data.hxx"
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/core/stage-data.txx"
 #endif

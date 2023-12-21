@@ -13,8 +13,8 @@ template <typename _Scalar>
 struct CenterOfMassVelocityResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
 public:
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
-  PROXDDP_UNARY_FUNCTION_INTERFACE(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_UNARY_FUNCTION_INTERFACE(Scalar);
   using BaseData = typename Base::Data;
   using Model = pinocchio::ModelTpl<Scalar>;
   using SE3 = pinocchio::SE3Tpl<Scalar>;
@@ -61,6 +61,6 @@ struct CenterOfMassVelocityDataTpl : StageFunctionDataTpl<Scalar> {
 
 #include "proxddp/modelling/multibody/center-of-mass-velocity.hxx"
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./center-of-mass-velocity.txx"
 #endif

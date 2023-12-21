@@ -10,7 +10,7 @@ namespace detail {
 template <typename _FunType> struct linear_func_composition_impl : _FunType {
   using FunType = _FunType;
   using Scalar = typename FunType::Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using BaseData = StageFunctionDataTpl<Scalar>;
 
   shared_ptr<FunType> func;
@@ -29,13 +29,13 @@ template <typename _FunType> struct linear_func_composition_impl : _FunType {
       : FunType(func->ndx1, func->nu, func->ndx2, (int)A.rows()), func(func),
         A(A), b(b) {
     if (func == 0) {
-      PROXDDP_RUNTIME_ERROR("Underlying function cannot be nullptr.");
+      ALIGATOR_RUNTIME_ERROR("Underlying function cannot be nullptr.");
     }
     if (A.rows() != b.rows()) {
-      PROXDDP_RUNTIME_ERROR("Incompatible dimensions: A.rows() != b.rows()");
+      ALIGATOR_RUNTIME_ERROR("Incompatible dimensions: A.rows() != b.rows()");
     }
     if (A.cols() != func->nr) {
-      PROXDDP_RUNTIME_ERROR("Incompatible dimensions: A.cols() != func.nr");
+      ALIGATOR_RUNTIME_ERROR("Incompatible dimensions: A.cols() != func.nr");
     }
   }
 
@@ -52,7 +52,7 @@ template <typename _Scalar>
 struct LinearFunctionCompositionTpl
     : detail::linear_func_composition_impl<StageFunctionTpl<_Scalar>> {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Impl = detail::linear_func_composition_impl<StageFunctionTpl<Scalar>>;
   using Base = typename Impl::FunType;
   using Data = typename Impl::Data;
@@ -75,8 +75,8 @@ template <typename _Scalar>
 struct LinearUnaryFunctionCompositionTpl
     : detail::linear_func_composition_impl<UnaryFunctionTpl<_Scalar>> {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
-  PROXDDP_UNARY_FUNCTION_INTERFACE(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_UNARY_FUNCTION_INTERFACE(Scalar);
   using Impl = detail::linear_func_composition_impl<Base>;
   using Data = typename Impl::Data;
   using BaseData = StageFunctionDataTpl<Scalar>;

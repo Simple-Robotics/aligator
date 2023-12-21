@@ -11,7 +11,7 @@ namespace aligator {
 template <typename _Scalar>
 struct UnaryFunctionTpl : StageFunctionTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageFunctionTpl<Scalar>;
   using Data = StageFunctionDataTpl<Scalar>;
 
@@ -42,7 +42,7 @@ struct UnaryFunctionTpl : StageFunctionTpl<_Scalar> {
   }
 };
 
-#define PROXDDP_UNARY_FUNCTION_INTERFACE(Scalar)                               \
+#define ALIGATOR_UNARY_FUNCTION_INTERFACE(Scalar)                              \
   using Base = UnaryFunctionTpl<Scalar>;                                       \
   using Base::evaluate;                                                        \
   using Base::computeJacobians;                                                \
@@ -50,6 +50,6 @@ struct UnaryFunctionTpl : StageFunctionTpl<_Scalar> {
 
 } // namespace aligator
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./unary-function.txx"
 #endif

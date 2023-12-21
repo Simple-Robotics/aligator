@@ -14,7 +14,7 @@ namespace aligator {
 /// Data struct for composite costs.
 template <typename Scalar>
 struct CompositeCostDataTpl : CostDataAbstractTpl<Scalar> {
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = CostDataAbstractTpl<Scalar>;
   using StageFunctionData = StageFunctionDataTpl<Scalar>;
   using RowMatrixXs = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
@@ -41,7 +41,7 @@ struct CompositeCostDataTpl : CostDataAbstractTpl<Scalar> {
 template <typename _Scalar>
 struct QuadraticResidualCostTpl : CostAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = CostAbstractTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using Data = CompositeCostDataTpl<Scalar>;
@@ -73,7 +73,7 @@ struct QuadraticResidualCostTpl : CostAbstractTpl<_Scalar> {
 private:
   void debug_dims() const {
     if (residual_->nr != weights_.cols()) {
-      PROXDDP_RUNTIME_ERROR(
+      ALIGATOR_RUNTIME_ERROR(
           "Weight matrix and residual codimension are inconsistent.");
     }
   }
@@ -81,7 +81,7 @@ private:
 
 /// @brief  Log-barrier of an underlying cost function.
 template <typename Scalar> struct LogResidualCostTpl : CostAbstractTpl<Scalar> {
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using CostDataAbstract = CostDataAbstractTpl<Scalar>;
   using Data = CompositeCostDataTpl<Scalar>;
   using StageFunction = StageFunctionTpl<Scalar>;
@@ -118,6 +118,6 @@ template <typename Scalar> struct LogResidualCostTpl : CostAbstractTpl<Scalar> {
 #include "proxddp/modelling/quad-residual-cost.hxx"
 #include "proxddp/modelling/log-residual-cost.hxx"
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./composite-costs.txx"
 #endif

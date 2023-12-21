@@ -3,14 +3,14 @@
 #include <stdexcept>
 #include <fmt/color.h>
 
-#define PROXDDP_RUNTIME_ERROR(msg)                                             \
+#define ALIGATOR_RUNTIME_ERROR(msg)                                            \
   throw aligator::RuntimeError(                                                \
       fmt::format("{}({}): {}", __FILE__, __LINE__, msg))
 
-#define PROXDDP_DOMAIN_ERROR(msg)                                              \
+#define ALIGATOR_DOMAIN_ERROR(msg)                                             \
   throw std::domain_error(fmt::format("{}({}): {}", __FILE__, __LINE__, msg))
 
-#define PROXDDP_WARNING(loc, msg)                                              \
+#define ALIGATOR_WARNING(loc, msg)                                             \
   fmt::print(fmt::fg(fmt::color::yellow), "[{}] {}: {}", loc, __FUNCTION__,    \
              msg);
 
