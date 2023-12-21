@@ -302,6 +302,7 @@ if(BUILD_WITH_OPENMP_SUPPORT)
 endif()
 if(BUILD_CROCODDYL_COMPAT)
   export_variable(ALIGATOR_WITH_CROCODDYL_COMPAT ON)
+  pkg_config_append_libs(aligator_croc_compat)
 endif()
 
 pkg_config_append_libs(${PROJECT_NAME})
