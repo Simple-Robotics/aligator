@@ -1,0 +1,84 @@
+name: CI - OSX/Linux via Conda
+
+on: [push,pull_request]
+
+jobs:
+  aligator-conda:
+    name: ${{ matrix.os }} - Python ${{ matrix.python-version }} ${{ matrix.build_type }}
+    runs-on: ${{ matrix.os }}
+    env:
+      CCACHE_BASEDIR: "${GITHUB_WORKSPACE}"
+      CCACHE_DIR: "${GITHUB_WORKSPACE}/.ccache"
+      CCACHE_COMPRESS: true
+      CCACHE_COMPRESSLEVEL: 6
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest", "macos-latest"]
+        build_type: [Release, Debug]
+        python-version: ["3.8", "3.12"]
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - uses: actions/cache@v3
+      with:
+        path: .ccache
+        key: ccache-conda-${{ matrix.os }}-${{ matrix.build_type }}
+
+    - uses: conda-incubator/setup-miniconda@v3
+      with:
+        activate-environment: aligator
+        auto-update-conda: true
+        environment-file: .github/workflows/conda/conda-env.yml
+        python-version: ${{ matrix.python-version }}
+
+    - name: Build aligator
+      shell: bash -l {0}
+      run: |
+        conda activate aligator
+        echo $CONDA_PREFIX
+
+        mkdir build
+        cd build
+
+        cmake .. \
+          -GNinja \
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+          -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX \
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+          -DPYTHON_EXECUTABLE=$(which python3) \
+          -DBUILD_PYTHON_INTERFACE=ON \
+          -DGENERATE_PYTHON_STUBS=ON \
+          -DBUILD_WITH_OPENMP_SUPPORT=ON \
+          -DBUILD_CROCODDYL_COMPAT=ON \
+          -DBUILD_BENCHMARKS=ON \
+          -DBUILD_EXAMPLES=OFF
+        cmake --build .
+        ctest --output-on-failure
+        cmake --install .
+
+    - name: Uninstall aligator
+      shell: bash -l {0}
+      run: |
+        conda activate aligator
+        cd build
+        cmake --build . --target uninstall
+
+  check:
+    if: always()
+    name: check-macos-linux-conda
+
+    needs:
+    - aligator-conda
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Decide whether the needed jobs succeeded or failed
+      uses: re-actors/alls-green@release/v1
+      with:
+        jobs: ${{ toJSON(needs) }}

@@ -1,0 +1,21 @@
+name: aligator
+channels:
+  - simple-robotics
+  - conda-forge
+dependencies:
+  - python
+  - cmake
+  - ninja
+  - cxx-compiler
+  - ccache
+  - eigenpy
+  - pinocchio
+  - eigen
+  - fmt
+  - proxsuite-nlp
+  - benchmark
+  - crocoddyl
+  - example-robot-data
+  - llvm-openmp
+  - matplotlib
+  - pytest
