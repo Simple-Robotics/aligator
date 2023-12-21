@@ -8,7 +8,7 @@ namespace aligator {
 namespace context {
 using PinModel = pinocchio::ModelTpl<Scalar, Options>;
 using PinData = pinocchio::DataTpl<Scalar, Options>;
-#ifdef PROXDDP_PINOCCHIO_V3
+#ifdef ALIGATOR_PINOCCHIO_V3
 using RCM = pinocchio::RigidConstraintModelTpl<Scalar, Options>;
 using RCD = pinocchio::RigidConstraintDataTpl<Scalar, Options>;
 #endif

@@ -18,7 +18,7 @@ template <typename Scalar> struct StageConstraintTpl {
 
 /// @brief Convenience class to manage a stack of constraints.
 template <typename Scalar> struct ConstraintStackTpl {
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using ConstraintType = StageConstraintTpl<Scalar>;
   using value_type = ConstraintType;
   using data_type = ConstraintType;
@@ -82,6 +82,6 @@ protected:
 
 #include "proxddp/core/constraint.hxx"
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/core/constraint.txx"
 #endif

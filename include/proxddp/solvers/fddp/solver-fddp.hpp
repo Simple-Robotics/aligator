@@ -18,7 +18,7 @@
 #include <unordered_map>
 
 /// @brief  A warning for the FDDP module.
-#define PROXDDP_FDDP_WARNING(msg) PROXDDP_WARNING("SolverFDDP", msg)
+#define ALIGATOR_FDDP_WARNING(msg) ALIGATOR_WARNING("SolverFDDP", msg)
 
 namespace aligator {
 
@@ -28,7 +28,7 @@ namespace aligator {
  *
  */
 template <typename Scalar> struct SolverFDDP {
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Problem = TrajOptProblemTpl<Scalar>;
   using StageModel = StageModelTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
@@ -140,12 +140,12 @@ public:
   /// @brief   Accept the gains computed in the last backwardPass().
   /// @details This is called if the convergence check after computeCriterion()
   /// did not exit.
-  PROXDDP_INLINE void acceptGains(const Workspace &workspace,
-                                  Results &results) const {
+  ALIGATOR_INLINE void acceptGains(const Workspace &workspace,
+                                   Results &results) const {
     assert(workspace.kkt_rhs_bufs.size() == results.gains_.size());
-    PROXDDP_NOMALLOC_BEGIN;
+    ALIGATOR_NOMALLOC_BEGIN;
     results.gains_ = workspace.kkt_rhs_bufs;
-    PROXDDP_NOMALLOC_END;
+    ALIGATOR_NOMALLOC_END;
   }
 
   inline void increaseRegularization() {
@@ -201,6 +201,6 @@ public:
 
 #include "./solver-fddp.hxx"
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./solver-fddp.txx"
 #endif

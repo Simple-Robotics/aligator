@@ -17,7 +17,7 @@ MultibodyConstraintFwdDynamicsTpl<Scalar>::MultibodyConstraintFwdDynamicsTpl(
       prox_settings_(prox_settings) {
   const int nv = state->getModel().nv;
   if (nv != actuation.rows()) {
-    PROXDDP_DOMAIN_ERROR(
+    ALIGATOR_DOMAIN_ERROR(
         fmt::format("actuation matrix should have number of rows = pinocchio "
                     "model nv ({} and {}).",
                     actuation.rows(), nv));

@@ -25,8 +25,9 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
     this->dyn_slacks[0] = VectorXs::Zero(ndx);
     ftVxx_[0] = VectorXs::Zero(ndx);
   } else {
-    PROXDDP_WARNING("[WorkspaceFDDP]",
-                    "Initialized a workspace for an empty problem (no nodes).");
+    ALIGATOR_WARNING(
+        "[WorkspaceFDDP]",
+        "Initialized a workspace for an empty problem (no nodes).");
     this->m_isInitialized = false;
     return;
   }

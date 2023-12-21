@@ -39,7 +39,7 @@ void exposeCallbacks();
 void exposeAutodiff();
 void exposeUtils();
 
-#ifdef PROXDDP_WITH_PINOCCHIO
+#ifdef ALIGATOR_WITH_PINOCCHIO
 /// Expose features using the Pinocchio rigid dynamics library
 void exposePinocchioFeatures();
 #endif

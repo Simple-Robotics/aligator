@@ -30,16 +30,16 @@ void SolverFDDP<Scalar>::setup(const Problem &problem) {
     }
   }
   if (idx_where_constraints.size() > 0) {
-    PROXDDP_FDDP_WARNING(
+    ALIGATOR_FDDP_WARNING(
         fmt::format("problem stages [{}] have constraints, "
                     "which this solver cannot handle. "
                     "Please use a penalized cost formulation.\n",
                     fmt::join(idx_where_constraints, ", ")));
   }
   if (!problem.term_cstrs_.empty()) {
-    PROXDDP_FDDP_WARNING("problem has at least one terminal constraint, which "
-                         "this solver cannot "
-                         "handle.\n");
+    ALIGATOR_FDDP_WARNING("problem has at least one terminal constraint, which "
+                          "this solver cannot "
+                          "handle.\n");
   }
 }
 
@@ -47,7 +47,7 @@ template <typename Scalar>
 Scalar
 SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
                                 Workspace &workspace, const Scalar alpha) {
-  PROXDDP_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_BEGIN;
   const std::size_t nsteps = workspace.nsteps;
   std::vector<VectorXs> &xs_try = workspace.trial_xs;
   std::vector<VectorXs> &us_try = workspace.trial_us;
@@ -72,9 +72,9 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
     workspace.dus[i].noalias() += kkt_fb * workspace.dxs[i];
     sm.uspace().integrate(results.us[i], workspace.dus[i], us_try[i]);
 
-    PROXDDP_NOMALLOC_END;
+    ALIGATOR_NOMALLOC_END;
     sm.evaluate(xs_try[i], us_try[i], xs_try[i + 1], sd);
-    PROXDDP_NOMALLOC_BEGIN;
+    ALIGATOR_NOMALLOC_BEGIN;
 
     const ExpData &dd = stage_get_dynamics_data(sd);
 
@@ -82,8 +82,8 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
     sm.xspace_next_->integrate(dd.xnext_, workspace.dxs[i + 1], xs_try[i + 1]);
     const CostData &cd = *sd.cost_data;
 
-    PROXDDP_RAISE_IF_NAN_NAME(xs_try[i + 1], fmt::format("xs[{}]", i + 1));
-    PROXDDP_RAISE_IF_NAN_NAME(us_try[i], fmt::format("us[{}]", i));
+    ALIGATOR_RAISE_IF_NAN_NAME(xs_try[i + 1], fmt::format("xs[{}]", i + 1));
+    ALIGATOR_RAISE_IF_NAN_NAME(us_try[i], fmt::format("us[{}]", i));
 
     sm.xspace_->difference(results.xs[i + 1], xs_try[i + 1],
                            workspace.dxs[i + 1]);
@@ -92,23 +92,23 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
   }
   CostData &cd_term = *prob_data.term_cost_data;
 
-  PROXDDP_NOMALLOC_END;
+  ALIGATOR_NOMALLOC_END;
   problem.term_cost_->evaluate(xs_try.back(), us_try.back(), cd_term);
-  PROXDDP_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_BEGIN;
 
   traj_cost_ += cd_term.value_;
   const auto &space = problem.stages_.back()->xspace_next_;
   space->difference(results.xs[nsteps], xs_try[nsteps], workspace.dxs[nsteps]);
 
   prob_data.cost_ = traj_cost_;
-  PROXDDP_NOMALLOC_END;
+  ALIGATOR_NOMALLOC_END;
   return traj_cost_;
 }
 
 template <typename Scalar>
 void SolverFDDP<Scalar>::expectedImprovement(Workspace &workspace, Scalar &d1,
                                              Scalar &d2) const {
-  PROXDDP_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_BEGIN;
   Scalar &dv = workspace.dv_;
   dv = 0.;
   const std::size_t nsteps = workspace.nsteps;
@@ -120,13 +120,13 @@ void SolverFDDP<Scalar>::expectedImprovement(Workspace &workspace, Scalar &d1,
 
   d1 = workspace.dg_ + dv;
   d2 = workspace.dq_ - 2 * dv;
-  PROXDDP_NOMALLOC_END;
+  ALIGATOR_NOMALLOC_END;
 }
 
 template <typename Scalar>
 void SolverFDDP<Scalar>::updateExpectedImprovement(Workspace &workspace,
                                                    Results &results) const {
-  PROXDDP_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_BEGIN;
   Scalar &dg = workspace.dg_;
   Scalar &dq = workspace.dq_;
   dg = 0.; // cost directional derivative
@@ -148,12 +148,12 @@ void SolverFDDP<Scalar>::updateExpectedImprovement(Workspace &workspace,
     const VectorXs &ftVxx = workspace.ftVxx_[i];
     dq -= ftVxx.dot(fs[i]);
   }
-  PROXDDP_NOMALLOC_END;
+  ALIGATOR_NOMALLOC_END;
 }
 
 template <typename Scalar>
 Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem) {
-  PROXDDP_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_BEGIN;
   const std::size_t nsteps = problem.numSteps();
   const ProblemData &pd = workspace_.problem_data;
   const auto &xs = results_.xs;
@@ -170,27 +170,27 @@ Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem) {
     sm.xspace_->difference(xs[i + 1], dd.xnext_, fs[i + 1]);
   }
   Scalar res = math::infty_norm(fs);
-  PROXDDP_NOMALLOC_END;
+  ALIGATOR_NOMALLOC_END;
   return res;
 }
 
 template <typename Scalar>
 Scalar SolverFDDP<Scalar>::computeCriterion(Workspace &workspace) {
-  PROXDDP_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_BEGIN;
   const std::size_t nsteps = workspace.nsteps;
   Scalar v = 0.;
   for (std::size_t i = 0; i < nsteps; i++) {
     Scalar s = math::infty_norm(workspace.q_params[i].Qu);
     v = std::max(v, s);
   }
-  PROXDDP_NOMALLOC_END;
+  ALIGATOR_NOMALLOC_END;
   return v;
 }
 
 template <typename Scalar>
 void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
                                       Workspace &workspace) const {
-  PROXDDP_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_BEGIN;
 
   const std::size_t nsteps = workspace.nsteps;
   const std::vector<VectorXs> &fs = workspace.dyn_slacks;
@@ -250,12 +250,12 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
 
 #ifndef NDEBUG
     {
-      PROXDDP_NOMALLOC_END;
+      ALIGATOR_NOMALLOC_END;
       std::FILE *fi = std::fopen("fddp.log", "a");
       fmt::print(fi, "uff[{:d}]={}\n", i, kkt_ff.head(nu).transpose());
       fmt::print(fi, "V'x[{:d}]={}\n", i, vnext.Vx_.transpose());
       std::fclose(fi);
-      PROXDDP_NOMALLOC_BEGIN;
+      ALIGATOR_NOMALLOC_BEGIN;
     }
 #endif
     workspace.Quuks_[i].noalias() = qparam.Quu * kkt_ff;
@@ -273,7 +273,7 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
     vp.Vx_ += ftVxx;
   }
 
-  PROXDDP_NOMALLOC_END;
+  ALIGATOR_NOMALLOC_END;
 }
 
 template <typename Scalar>
@@ -289,7 +289,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
 #endif
 
   if (!results_.isInitialized() || !workspace_.isInitialized()) {
-    PROXDDP_RUNTIME_ERROR(
+    ALIGATOR_RUNTIME_ERROR(
         "Either results or workspace not allocated. Call setup() first!");
   }
 
@@ -331,12 +331,12 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     problem.computeDerivatives(results_.xs, results_.us,
                                workspace_.problem_data);
     results_.prim_infeas = computeInfeasibility(problem);
-    PROXDDP_RAISE_IF_NAN(results_.prim_infeas);
+    ALIGATOR_RAISE_IF_NAN(results_.prim_infeas);
     record.prim_err = results_.prim_infeas;
 
     backwardPass(problem, workspace_);
     results_.dual_infeas = computeCriterion(workspace_);
-    PROXDDP_RAISE_IF_NAN(results_.dual_infeas);
+    ALIGATOR_RAISE_IF_NAN(results_.dual_infeas);
     record.dual_err = results_.dual_infeas;
 
     Scalar stopping_criterion =
@@ -349,7 +349,7 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
     acceptGains(workspace_, results_);
 
     phi0 = results_.traj_cost_;
-    PROXDDP_RAISE_IF_NAN(phi0);
+    ALIGATOR_RAISE_IF_NAN(phi0);
 
     updateExpectedImprovement(workspace_, results_);
 
@@ -358,8 +358,8 @@ bool SolverFDDP<Scalar>::run(const Problem &problem,
         linesearch_fun, ls_model, phi0, ls_params, th_grad_, d1_phi);
 
     results_.traj_cost_ = phi_new;
-    PROXDDP_RAISE_IF_NAN(alpha_opt);
-    PROXDDP_RAISE_IF_NAN(phi_new);
+    ALIGATOR_RAISE_IF_NAN(alpha_opt);
+    ALIGATOR_RAISE_IF_NAN(phi_new);
     record.step_size = alpha_opt;
     record.dM = phi_new - phi0;
     record.merit = phi_new;

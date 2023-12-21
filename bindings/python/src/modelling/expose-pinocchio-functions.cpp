@@ -1,6 +1,6 @@
 /// @file
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
-#ifdef PROXDDP_WITH_PINOCCHIO
+#ifdef ALIGATOR_WITH_PINOCCHIO
 #include "proxddp/fwd.hpp"
 #include "proxddp/python/functions.hpp"
 #include "proxddp/python/modelling/multibody-utils.hpp"
@@ -8,7 +8,7 @@
 #include "proxddp/modelling/multibody/frame-placement.hpp"
 #include "proxddp/modelling/multibody/frame-velocity.hpp"
 #include "proxddp/modelling/multibody/frame-translation.hpp"
-#ifdef PROXDDP_PINOCCHIO_V3
+#ifdef ALIGATOR_PINOCCHIO_V3
 #include "proxddp/modelling/multibody/constrained-rnea.hpp"
 #endif
 
@@ -104,7 +104,7 @@ void exposeFrameFunctions() {
                     "Pinocchio data struct.");
 }
 
-#ifdef PROXDDP_PINOCCHIO_V3
+#ifdef ALIGATOR_PINOCCHIO_V3
 auto underactuatedConstraintInvDyn_proxy(
     const PinModel &model, PinData &data, const ConstVectorRef &q,
     const ConstVectorRef &v, const ConstMatrixRef &actMatrix,
@@ -129,7 +129,7 @@ void exposePinocchioFunctions() {
   exposeFlyHigh();
   exposeCenterOfMassFunctions();
 
-#ifdef PROXDDP_PINOCCHIO_V3
+#ifdef ALIGATOR_PINOCCHIO_V3
   bp::def("underactuatedConstrainedInverseDynamics",
           underactuatedConstraintInvDyn_proxy,
           bp::args("model", "data", "q", "v", "actMatrix", "constraint_model",

@@ -84,12 +84,12 @@ endif(INITIALIZE_WITH_NAN)
 
 if(CHECK_RUNTIME_MALLOC)
   message(STATUS "Check if some memory allocations are performed at runtime.")
-  add_definitions(-DPROXDDP_EIGEN_CHECK_MALLOC)
+  add_definitions(-DALIGATOR_EIGEN_CHECK_MALLOC)
   add_definitions(-DEIGEN_RUNTIME_NO_MALLOC)
 endif(CHECK_RUNTIME_MALLOC)
 
 if(ENABLE_TEMPLATE_INSTANTIATION)
-  add_definitions(-DPROXDDP_ENABLE_TEMPLATE_INSTANTIATION)
+  add_definitions(-DALIGATOR_ENABLE_TEMPLATE_INSTANTIATION)
 endif(ENABLE_TEMPLATE_INSTANTIATION)
 
 # ----------------------------------------------------
@@ -179,12 +179,12 @@ function(create_library)
   set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX VERSION ${PROJECT_VERSION})
 
   if(BUILD_WITH_PINOCCHIO_SUPPORT)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC -DPROXDDP_WITH_PINOCCHIO)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC -DALIGATOR_WITH_PINOCCHIO)
     target_link_libraries(${PROJECT_NAME} PUBLIC pinocchio::pinocchio)
   endif(BUILD_WITH_PINOCCHIO_SUPPORT)
 
   if(BUILD_WITH_OPENMP_SUPPORT)
-    add_definitions(-DPROXDDP_MULTITHREADING)
+    add_definitions(-DALIGATOR_MULTITHREADING)
     target_link_libraries(${PROJECT_NAME} PRIVATE OpenMP::OpenMP_CXX)
   endif(BUILD_WITH_OPENMP_SUPPORT)
 
@@ -219,7 +219,7 @@ install(
   LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
 
 if(BUILD_CROCODDYL_COMPAT)
-  target_compile_definitions(${PROJECT_NAME} PUBLIC -DPROXDDP_WITH_CROCODDYL_COMPAT)
+  target_compile_definitions(${PROJECT_NAME} PUBLIC -DALIGATOR_WITH_CROCODDYL_COMPAT)
   add_subdirectory(src/compat/crocoddyl)
 endif()
 
@@ -269,12 +269,12 @@ endmacro(
   var_value)
 
 if(BUILD_WITH_CASADI_SUPPORT)
-  export_variable(PROXDDP_USE_CASADI ON)
-  set(PACKAGE_EXTRA_MACROS "${PACKAGE_EXTRA_MACROS}\nset(PROXDDP_USE_CASADI \"\")")
+  export_variable(ALIGATOR_USE_CASADI ON)
+  set(PACKAGE_EXTRA_MACROS "${PACKAGE_EXTRA_MACROS}\nset(ALIGATOR_USE_CASADI \"\")")
 endif()
 if(BUILD_PYTHON_INTERFACE)
-  export_variable(PROXDDP_WITH_PYTHON_INTERFACE ON)
-  set(PACKAGE_EXTRA_MACROS "${PACKAGE_EXTRA_MACROS}\nset(PROXDDP_WITH_PYTHON_INTERFACE \"\")")
+  export_variable(ALIGATOR_WITH_PYTHON_INTERFACE ON)
+  set(PACKAGE_EXTRA_MACROS "${PACKAGE_EXTRA_MACROS}\nset(ALIGATOR_WITH_PYTHON_INTERFACE \"\")")
 endif()
 
 pkg_config_append_libs(${PROJECT_NAME})

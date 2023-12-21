@@ -20,7 +20,7 @@ using proxsuite::nlp::LDLTChoice;
  *          the primal-dual steps, problem data...
  */
 template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using StageModel = StageModelTpl<Scalar>;
   using Base = WorkspaceBaseTpl<Scalar>;
   using VecBool = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
@@ -135,6 +135,6 @@ struct fmt::formatter<aligator::WorkspaceTpl<Scalar>> : fmt::ostream_formatter {
 
 #include "./workspace.hxx"
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./workspace.txx"
 #endif

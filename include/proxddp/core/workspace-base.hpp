@@ -12,7 +12,7 @@ namespace aligator {
 template <typename Scalar> struct WorkspaceBaseTpl {
   using VParams = ValueFunctionTpl<Scalar>;
   using QParams = QFunctionTpl<Scalar>;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
 protected:
   // Whether the workspace was initialized.
@@ -91,6 +91,6 @@ template <typename Scalar> void WorkspaceBaseTpl<Scalar>::cycleLeft() {
 
 } // namespace aligator
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./workspace-base.txx"
 #endif

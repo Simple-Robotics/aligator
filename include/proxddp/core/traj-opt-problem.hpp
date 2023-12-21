@@ -84,7 +84,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
    *
    */
 
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   /// Initial condition
   shared_ptr<UnaryFunction> init_condition_;
@@ -130,7 +130,8 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// @brief Get initial state constraint.
   ConstVectorRef getInitState() const {
     if (!initCondIsStateError()) {
-      PROXDDP_RUNTIME_ERROR("Initial condition is not a StateErrorResidual.\n");
+      ALIGATOR_RUNTIME_ERROR(
+          "Initial condition is not a StateErrorResidual.\n");
     }
     return init_state_error_->target_;
   }
@@ -138,7 +139,8 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// @brief Set initial state constraint.
   void setInitState(const ConstVectorRef &x0) {
     if (!initCondIsStateError()) {
-      PROXDDP_RUNTIME_ERROR("Initial condition is not a StateErrorResidual.\n");
+      ALIGATOR_RUNTIME_ERROR(
+          "Initial condition is not a StateErrorResidual.\n");
     }
     init_state_error_->target_ = x0;
   }
@@ -175,7 +177,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 
   /// @brief  Set the number of threads for multithreaded evaluation.
   void setNumThreads(std::size_t num_threads) {
-#ifndef PROXDDP_MULTITHREADING
+#ifndef ALIGATOR_MULTITHREADING
     fmt::print("{} does nothing: PROXDDP was not compiled with multithreading "
                "support.\n",
                __FUNCTION__);
@@ -203,7 +205,7 @@ private:
 /// @brief Problem data struct.
 template <typename _Scalar> struct TrajOptDataTpl {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using StageFunctionData = StageFunctionDataTpl<Scalar>;
   using ConstraintType = StageConstraintTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
@@ -242,6 +244,6 @@ template <typename _Scalar> struct TrajOptDataTpl {
 
 #include "proxddp/core/traj-opt-problem.hxx"
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/core/traj-opt-problem.txx"
 #endif

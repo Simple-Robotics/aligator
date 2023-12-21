@@ -23,7 +23,7 @@ template <typename _Scalar>
 struct StageModelTpl : Cloneable<StageModelTpl<_Scalar>> {
 public:
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using ManifoldPtr = shared_ptr<Manifold>;
@@ -139,6 +139,6 @@ struct fmt::formatter<aligator::StageModelTpl<Scalar>>
 
 #include "proxddp/core/stage-model.hxx"
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/core/stage-model.txx"
 #endif

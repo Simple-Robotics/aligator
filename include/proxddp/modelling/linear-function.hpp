@@ -8,7 +8,7 @@ namespace aligator {
  */
 template <typename Scalar> struct LinearFunctionTpl : StageFunctionTpl<Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageFunctionTpl<Scalar>;
   using Data = StageFunctionDataTpl<Scalar>;
 

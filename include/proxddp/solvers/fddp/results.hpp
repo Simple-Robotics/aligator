@@ -6,7 +6,7 @@ namespace aligator {
 
 template <typename Scalar> struct ResultsFDDPTpl : ResultsBaseTpl<Scalar> {
 
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ResultsBaseTpl<Scalar>;
   using BlockXs = Eigen::Block<MatrixXs, -1, -1>;
 
@@ -45,6 +45,6 @@ ResultsFDDPTpl<Scalar>::ResultsFDDPTpl(
 
 } // namespace aligator
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./results.txx"
 #endif

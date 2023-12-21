@@ -2,7 +2,7 @@
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #include "proxddp/python/fwd.hpp"
 
-#ifdef PROXDDP_PINOCCHIO_V3
+#ifdef ALIGATOR_PINOCCHIO_V3
 
 #include "proxddp/modelling/dynamics/multibody-constraint-fwd.hpp"
 

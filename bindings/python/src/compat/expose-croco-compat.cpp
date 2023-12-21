@@ -1,10 +1,10 @@
 /// @file
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
-#ifdef PROXDDP_WITH_CROCODDYL_COMPAT
+#ifdef ALIGATOR_WITH_CROCODDYL_COMPAT
 #include "proxddp/python/compat/croco.hpp"
 #include "proxddp/python/utils.hpp"
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/compat/crocoddyl/instantiate.txx"
 #endif
 

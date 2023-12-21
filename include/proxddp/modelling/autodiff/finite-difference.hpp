@@ -16,7 +16,7 @@ namespace internal {
 template <typename _Scalar, template <typename> class _Base>
 struct finite_difference_impl : virtual _Base<_Scalar> {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = _Base<Scalar>;
   using BaseData = typename Base::Data;
   using Manifold = ManifoldAbstractTpl<Scalar>;
@@ -130,7 +130,7 @@ struct FiniteDifferenceHelper
   using Base::computeVectorHessianProducts;
   using Base::evaluate;
 
-  PROXDDP_DYNAMIC_TYPEDEFS(_Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(_Scalar);
 
   FiniteDifferenceHelper(shared_ptr<Manifold> space,
                          shared_ptr<StageFunction> func, const Scalar fd_eps)
@@ -150,7 +150,7 @@ struct DynamicsFiniteDifferenceHelper
   using Base::computeVectorHessianProducts;
   using Base::evaluate;
 
-  PROXDDP_DYNAMIC_TYPEDEFS(_Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(_Scalar);
 
   DynamicsFiniteDifferenceHelper(shared_ptr<Manifold> space,
                                  shared_ptr<DynamicsModel> func,
@@ -166,7 +166,7 @@ struct CostFiniteDifferenceHelper : CostAbstractTpl<Scalar> {
 
   using CostBase::space;
 
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   struct Data : CostData {
 
@@ -233,7 +233,7 @@ struct CostFiniteDifferenceHelper : CostAbstractTpl<Scalar> {
   Scalar fd_eps;
 };
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 extern template struct FiniteDifferenceHelper<context::Scalar>;
 extern template struct DynamicsFiniteDifferenceHelper<context::Scalar>;
 extern template struct CostFiniteDifferenceHelper<context::Scalar>;

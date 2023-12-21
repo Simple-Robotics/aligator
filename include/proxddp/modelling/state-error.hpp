@@ -19,8 +19,8 @@ struct StateOrControlErrorResidual;
 template <typename _Scalar>
 struct StateOrControlErrorResidual<_Scalar, 0> : UnaryFunctionTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
-  PROXDDP_UNARY_FUNCTION_INTERFACE(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_UNARY_FUNCTION_INTERFACE(Scalar);
   using Data = StageFunctionDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using VectorSpace = proxsuite::nlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
@@ -33,7 +33,7 @@ struct StateOrControlErrorResidual<_Scalar, 0> : UnaryFunctionTpl<_Scalar> {
       : Base(xspace->ndx(), nu, xspace->ndx()), space_(xspace),
         target_(target) {
     if (!xspace->isNormalized(target)) {
-      PROXDDP_RUNTIME_ERROR(
+      ALIGATOR_RUNTIME_ERROR(
           "Target parameter invalid (not a viable element of state manifold.)");
     }
   }
@@ -51,7 +51,7 @@ template <typename _Scalar, unsigned int arg>
 struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
   static_assert(arg > 0 && arg <= 2, "arg value must be 1 or 2!");
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageFunctionTpl<Scalar>;
   using Data = StageFunctionDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
@@ -121,7 +121,7 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
 private:
   inline void check_target_viable() const {
     if (!space_->isNormalized(target_)) {
-      PROXDDP_RUNTIME_ERROR(
+      ALIGATOR_RUNTIME_ERROR(
           "Target parameter invalid (not a viable element of state manifold.)");
     }
   }
@@ -152,6 +152,6 @@ struct ControlErrorResidualTpl
 
 } // namespace aligator
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/modelling/state-error.txx"
 #endif

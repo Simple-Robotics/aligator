@@ -9,7 +9,7 @@ namespace aligator {
 /// @brief  Newton-Raphson procedure, e.g. to compute forward dynamics from
 /// implicit functions.
 template <typename Scalar> struct NewtonRaphson {
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Manifold = ManifoldAbstractTpl<Scalar>;
 
   struct Options {

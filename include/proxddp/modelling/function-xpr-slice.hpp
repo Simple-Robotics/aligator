@@ -18,7 +18,7 @@ template <typename Scalar> struct FunctionSliceDataTpl;
 /// given.
 template <typename Scalar, typename Base = StageFunctionTpl<Scalar>>
 struct FunctionSliceXprTpl : Base, detail::slice_impl_tpl<Base> {
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using BaseData = StageFunctionDataTpl<Scalar>;
   using SliceImpl = detail::slice_impl_tpl<StageFunctionTpl<Scalar>>;
   using Data = FunctionSliceDataTpl<Scalar>;
@@ -59,10 +59,10 @@ template <typename Scalar>
 struct FunctionSliceXprTpl<Scalar, UnaryFunctionTpl<Scalar>>
     : UnaryFunctionTpl<Scalar>,
       detail::slice_impl_tpl<UnaryFunctionTpl<Scalar>> {
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using BaseData = StageFunctionDataTpl<Scalar>;
   using Data = FunctionSliceDataTpl<Scalar>;
-  PROXDDP_UNARY_FUNCTION_INTERFACE(Scalar);
+  ALIGATOR_UNARY_FUNCTION_INTERFACE(Scalar);
   using SliceImpl = detail::slice_impl_tpl<UnaryFunctionTpl<Scalar>>;
 
   FunctionSliceXprTpl(shared_ptr<Base> func, std::vector<int> const &indices)
@@ -97,7 +97,7 @@ template <typename Scalar>
 struct FunctionSliceDataTpl : StageFunctionDataTpl<Scalar> {
   /// @brief Base residual's data object.
   using BaseData = StageFunctionDataTpl<Scalar>;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   shared_ptr<BaseData> sub_data;
   VectorXs lbda_sub;
 
@@ -111,7 +111,7 @@ namespace detail {
 /// @brief Slicing and indexing of a function's output.
 template <typename Base> struct slice_impl_tpl {
   using Scalar = typename Base::Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using BaseData = StageFunctionDataTpl<Scalar>;
 
   using Data = FunctionSliceDataTpl<Scalar>;
@@ -141,6 +141,6 @@ protected:
 
 #include "proxddp/modelling/function-xpr-slice.hxx"
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/modelling/function-xpr-slice.txx"
 #endif

@@ -62,7 +62,7 @@ Scalar TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
   const std::size_t nsteps = numSteps();
   const bool sizes_correct = (xs.size() == nsteps + 1) && (us.size() == nsteps);
   if (!sizes_correct) {
-    PROXDDP_RUNTIME_ERROR(fmt::format(
+    ALIGATOR_RUNTIME_ERROR(fmt::format(
         "Wrong size for xs or us, expected us.size = {:d}", nsteps));
   }
 
@@ -91,7 +91,7 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
   const std::size_t nsteps = numSteps();
   const bool sizes_correct = (xs.size() == nsteps + 1) && (us.size() == nsteps);
   if (!sizes_correct) {
-    PROXDDP_RUNTIME_ERROR(fmt::format(
+    ALIGATOR_RUNTIME_ERROR(fmt::format(
         "Wrong size for xs or us, expected us.size = {:d}", nsteps));
   }
 
@@ -121,7 +121,7 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
 template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::addStage(const shared_ptr<StageModel> &stage) {
   if (stage == nullptr)
-    PROXDDP_RUNTIME_ERROR("Input stage is null.");
+    ALIGATOR_RUNTIME_ERROR("Input stage is null.");
   stages_.push_back(stage);
 }
 
@@ -129,7 +129,7 @@ template <typename Scalar> void TrajOptProblemTpl<Scalar>::checkStages() const {
   for (auto st = begin(stages_); st != end(stages_); ++st) {
     if (*st == nullptr) {
       long d = std::distance(stages_.begin(), st);
-      PROXDDP_RUNTIME_ERROR(fmt::format("Stage {:d} is null.", d));
+      ALIGATOR_RUNTIME_ERROR(fmt::format("Stage {:d} is null.", d));
     }
   }
 }
@@ -156,7 +156,7 @@ void TrajOptProblemTpl<Scalar>::replaceStageCircular(
 template <typename Scalar>
 Scalar TrajOptProblemTpl<Scalar>::computeTrajectoryCost(
     const Data &problem_data) const {
-  PROXDDP_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_BEGIN;
   Scalar traj_cost = 0.;
 
   const std::size_t nsteps = numSteps();
@@ -168,7 +168,7 @@ Scalar TrajOptProblemTpl<Scalar>::computeTrajectoryCost(
   }
   traj_cost += problem_data.term_cost_data->value_;
 
-  PROXDDP_NOMALLOC_END;
+  ALIGATOR_NOMALLOC_END;
   return traj_cost;
 }
 

@@ -14,8 +14,8 @@ struct CenterOfMassTranslationResidualTpl : UnaryFunctionTpl<_Scalar>,
                                             frame_api {
 public:
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
-  PROXDDP_UNARY_FUNCTION_INTERFACE(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_UNARY_FUNCTION_INTERFACE(Scalar);
   using BaseData = typename Base::Data;
   using Model = pinocchio::ModelTpl<Scalar>;
   using SE3 = pinocchio::SE3Tpl<Scalar>;
@@ -60,6 +60,6 @@ struct CenterOfMassTranslationDataTpl : StageFunctionDataTpl<Scalar> {
 
 #include "proxddp/modelling/multibody/center-of-mass-translation.hxx"
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./center-of-mass-translation.txx"
 #endif

@@ -13,7 +13,7 @@ struct CallbackWrapper : CallbackBase, bp::wrapper<CallbackBase> {
   CallbackWrapper() = default;
   void call(const WorkspaceBaseTpl<context::Scalar> &w,
             const ResultsBaseTpl<context::Scalar> &r) {
-    PROXDDP_PYTHON_OVERRIDE_PURE(void, "call", boost::cref(w), boost::cref(r));
+    ALIGATOR_PYTHON_OVERRIDE_PURE(void, "call", boost::cref(w), boost::cref(r));
   }
 };
 } // namespace python

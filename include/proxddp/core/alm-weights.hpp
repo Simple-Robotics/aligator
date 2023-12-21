@@ -7,7 +7,7 @@ namespace aligator {
 /// @brief  Weighting strategy for the constraints in a stack.
 template <typename Scalar> class ConstraintProximalScalerTpl {
 public:
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using ConstraintStack = ConstraintStackTpl<Scalar>;
 
   ConstraintProximalScalerTpl(const ConstraintStack &constraints,

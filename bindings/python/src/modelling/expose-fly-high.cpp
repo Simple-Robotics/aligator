@@ -1,6 +1,6 @@
 /// @file
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
-#ifdef PROXDDP_WITH_PINOCCHIO
+#ifdef ALIGATOR_WITH_PINOCCHIO
 
 #include "proxddp/python/fwd.hpp"
 #include "proxddp/python/modelling/multibody-utils.hpp"

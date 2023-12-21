@@ -11,7 +11,7 @@ IntegratorMidpointTpl<Scalar>::IntegratorMidpointTpl(
     const shared_ptr<ContinuousDynamics> &cont_dynamics, const Scalar timestep)
     : Base(cont_dynamics), timestep_(timestep) {
   if (timestep <= 0.) {
-    PROXDDP_RUNTIME_ERROR("Timestep must be positive!");
+    ALIGATOR_RUNTIME_ERROR("Timestep must be positive!");
   }
 }
 

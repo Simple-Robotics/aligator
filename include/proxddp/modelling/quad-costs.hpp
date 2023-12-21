@@ -11,7 +11,7 @@ template <typename Scalar> struct QuadraticCostDataTpl;
 template <typename _Scalar> struct QuadraticCostTpl : CostAbstractTpl<_Scalar> {
 public:
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = CostAbstractTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
 
@@ -29,7 +29,7 @@ protected:
 
   static void check_dim_equal(long n, long m, const std::string &msg = "") {
     if (n != m)
-      PROXDDP_RUNTIME_ERROR(fmt::format(
+      ALIGATOR_RUNTIME_ERROR(fmt::format(
           "Dimensions inconsistent: got {:d} and {:d}{}.\n", n, m, msg));
   }
 
@@ -150,6 +150,6 @@ struct QuadraticCostDataTpl : CostDataAbstractTpl<Scalar> {
 
 } // namespace aligator
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/modelling/quad-costs.txx"
 #endif

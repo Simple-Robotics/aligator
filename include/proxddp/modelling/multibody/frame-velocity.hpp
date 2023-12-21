@@ -16,8 +16,8 @@ struct FrameVelocityResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
-  PROXDDP_UNARY_FUNCTION_INTERFACE(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_UNARY_FUNCTION_INTERFACE(Scalar);
   using BaseData = typename Base::Data;
   using Model = pinocchio::ModelTpl<Scalar>;
   using ManifoldPtr = shared_ptr<ManifoldAbstractTpl<Scalar>>;
@@ -64,6 +64,6 @@ struct FrameVelocityDataTpl : StageFunctionDataTpl<Scalar> {
 
 #include "proxddp/modelling/multibody/frame-velocity.hxx"
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./frame-velocity.txx"
 #endif

@@ -19,7 +19,7 @@ template <typename _Scalar>
 struct MultibodyConstraintFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ODEAbstractTpl<Scalar>;
   using BaseData = ODEDataTpl<Scalar>;
   using ContDataAbstract = ContinuousDynamicsDataTpl<Scalar>;
@@ -78,6 +78,6 @@ struct MultibodyConstraintFwdDataTpl : ODEDataTpl<Scalar> {
 
 #include "proxddp/modelling/dynamics/multibody-constraint-fwd.hxx"
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/modelling/dynamics/multibody-constraint-fwd.txx"
 #endif

@@ -11,7 +11,7 @@ namespace dynamics {
 template <typename _Scalar>
 struct LinearDiscreteDynamicsTpl : ExplicitDynamicsModelTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   const MatrixXs A_;
   const MatrixXs B_;
   const VectorXs c_;

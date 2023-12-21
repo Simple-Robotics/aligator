@@ -6,11 +6,11 @@
 namespace aligator {
 namespace python {
 
-#ifdef PROXDDP_WITH_PINOCCHIO
+#ifdef ALIGATOR_WITH_PINOCCHIO
 
 void exposePinocchioFunctions();
 void exposeFreeFwdDynamics();
-#ifdef PROXDDP_PINOCCHIO_V3
+#ifdef ALIGATOR_PINOCCHIO_V3
 void exposeConstrainedFwdDynamics();
 #endif
 
@@ -22,7 +22,7 @@ void exposePinocchioFeatures() {
     bp::scope dyn = get_namespace("dynamics");
     exposeFreeFwdDynamics();
 
-#ifdef PROXDDP_PINOCCHIO_V3
+#ifdef ALIGATOR_PINOCCHIO_V3
     exposeConstrainedFwdDynamics();
 #endif
   }

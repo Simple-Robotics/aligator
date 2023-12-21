@@ -15,7 +15,7 @@ template <typename Scalar> struct CostStackDataTpl;
  */
 template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using CostBase = CostAbstractTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using CostPtr = shared_ptr<CostBase>;
@@ -112,6 +112,6 @@ struct CostStackDataTpl : CostDataAbstractTpl<_Scalar> {
 
 #include "proxddp/modelling/sum-of-costs.hxx"
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "proxddp/modelling/sum-of-costs.txx"
 #endif

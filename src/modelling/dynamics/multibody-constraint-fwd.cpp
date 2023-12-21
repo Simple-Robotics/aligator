@@ -1,6 +1,6 @@
 #include "proxddp/fwd.hpp"
 
-#ifdef PROXDDP_PINOCCHIO_V3
+#ifdef ALIGATOR_PINOCCHIO_V3
 #include "proxddp/modelling/dynamics/multibody-constraint-fwd.hpp"
 
 namespace aligator {

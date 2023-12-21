@@ -45,7 +45,7 @@ Scalar costDirectionalDerivative(const WorkspaceTpl<Scalar> &workspace,
  */
 template <typename _Scalar> struct PDALFunction {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using StageModel = StageModelTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
   using StageFunctionData = StageFunctionDataTpl<Scalar>;
@@ -73,6 +73,6 @@ template <typename _Scalar> struct PDALFunction {
 
 #include "./merit-function.hxx"
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./merit-function.txx"
 #endif

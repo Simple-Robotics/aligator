@@ -12,7 +12,7 @@ namespace aligator {
 /// conditions.
 /// @return an std::pair
 template <typename Scalar, typename F, typename M>
-PROXDDP_INLINE std::pair<Scalar, Scalar> fddp_goldstein_linesearch(
+ALIGATOR_INLINE std::pair<Scalar, Scalar> fddp_goldstein_linesearch(
     F &&phi, M &&model, const Scalar phi0,
     const typename Linesearch<Scalar>::Options &ls_params, Scalar th_grad,
     Scalar &d1, Scalar th_accept_step = 0.1, Scalar th_accept_neg_step = 2.0) {

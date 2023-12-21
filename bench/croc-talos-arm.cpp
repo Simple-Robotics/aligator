@@ -52,7 +52,7 @@ static void BM_prox_fddp(benchmark::State &state) {
   auto croc_problem = defineCrocoddylProblem(nsteps);
   auto prob_wrap =
       aligator::compat::croc::convertCrocoddylProblem(croc_problem);
-#ifdef PROXDDP_MULTITHREADING
+#ifdef ALIGATOR_MULTITHREADING
   prob_wrap.setNumThreads(DEFAULT_NUM_THREADS);
 #endif
 
@@ -77,7 +77,7 @@ template <LDLTChoice choice> static void BM_proxddp(benchmark::State &state) {
   auto croc_problem = defineCrocoddylProblem(nsteps);
   auto prob_wrap =
       aligator::compat::croc::convertCrocoddylProblem(croc_problem);
-#ifdef PROXDDP_MULTITHREADING
+#ifdef ALIGATOR_MULTITHREADING
   prob_wrap.setNumThreads(DEFAULT_NUM_THREADS);
 #endif
 
@@ -115,14 +115,14 @@ int main(int argc, char **argv) {
   };
   registerWithOpts("croc::FDDP", &BM_croc_fddp);
   registerWithOpts("aligator::FDDP", &BM_prox_fddp);
-  registerWithOpts("aligator::PROXDDP_DENSE", &BM_proxddp<LDLTChoice::DENSE>);
-  registerWithOpts("aligator::PROXDDP_BLOCK",
+  registerWithOpts("aligator::ALIGATOR_DENSE", &BM_proxddp<LDLTChoice::DENSE>);
+  registerWithOpts("aligator::ALIGATOR_BLOCK",
                    &BM_proxddp<LDLTChoice::BLOCKSPARSE>);
-  registerWithOpts("aligator::PROXDDP_BUNCHKAUFMAN",
+  registerWithOpts("aligator::ALIGATOR_BUNCHKAUFMAN",
                    &BM_proxddp<LDLTChoice::BUNCHKAUFMAN>);
-  registerWithOpts("aligator::PROXDDP_EIGLDL", &BM_proxddp<LDLTChoice::EIGEN>);
+  registerWithOpts("aligator::ALIGATOR_EIGLDL", &BM_proxddp<LDLTChoice::EIGEN>);
 #ifdef PROXSUITE_NLP_USE_PROXSUITE_LDLT
-  registerWithOpts("aligator::PROXDDP_PSUITE",
+  registerWithOpts("aligator::ALIGATOR_PSUITE",
                    &BM_proxddp<LDLTChoice::PROXSUITE>);
 #endif
 

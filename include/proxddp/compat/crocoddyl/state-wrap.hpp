@@ -15,7 +15,7 @@ namespace croc {
 template <typename _Scalar>
 struct StateWrapperTpl : ManifoldAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using PointType = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
   using TangentVectorType = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
 

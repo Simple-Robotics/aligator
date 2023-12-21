@@ -12,13 +12,13 @@ LogResidualCostTpl<Scalar>::LogResidualCostTpl(
     const VectorXs &scale)
     : Base(space, function->nu), barrier_weights_(scale), residual_(function) {
   if (scale.size() != function->nr) {
-    PROXDDP_RUNTIME_ERROR(fmt::format(
+    ALIGATOR_RUNTIME_ERROR(fmt::format(
         "scale argument dimension ({:d}) != function codimension ({:d})",
         scale.size(), function->nr));
   }
   bool negs = (scale.array() <= 0.0).any();
   if (negs) {
-    PROXDDP_RUNTIME_ERROR("scale coefficients must be > 0.");
+    ALIGATOR_RUNTIME_ERROR("scale coefficients must be > 0.");
   }
 }
 

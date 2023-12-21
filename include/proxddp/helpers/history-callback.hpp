@@ -16,7 +16,7 @@ template <typename Scalar> struct HistoryCallbackTpl : CallbackBaseTpl<Scalar> {
       : store_primal_dual_vars_(store_pd_vars), store_values_(store_values),
         store_residuals_(store_residuals) {}
 
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   struct {
     std::vector<std::vector<VectorXs>> xs;
@@ -61,6 +61,6 @@ template <typename Scalar> struct HistoryCallbackTpl : CallbackBaseTpl<Scalar> {
 
 } // namespace aligator
 
-#ifdef PROXDDP_ENABLE_TEMPLATE_INSTANTIATION
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./history-callback.txx"
 #endif

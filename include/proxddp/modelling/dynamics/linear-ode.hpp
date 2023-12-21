@@ -12,7 +12,7 @@ namespace dynamics {
  */
 template <typename _Scalar> struct LinearODETpl : ODEAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
-  PROXDDP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ODEAbstractTpl<Scalar>;
   using ODEData = ODEDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
@@ -27,14 +27,14 @@ template <typename _Scalar> struct LinearODETpl : ODEAbstractTpl<_Scalar> {
                const VectorXs &c)
       : Base(space, (int)B.cols()), A_(A), B_(B), c_(c) {
     if (A.cols() != space->ndx()) {
-      PROXDDP_DOMAIN_ERROR(fmt::format(
+      ALIGATOR_DOMAIN_ERROR(fmt::format(
           "A.cols() should be equal to space.ndx()! (got {:d} and {:d})",
           A.cols(), space->ndx()));
     }
     bool rows_ok = (A.rows() == space->ndx()) && (B.rows() == space->ndx()) &&
                    (c.rows() == space->ndx());
     if (!rows_ok) {
-      PROXDDP_DOMAIN_ERROR("Input matrices have wrong number of rows.");
+      ALIGATOR_DOMAIN_ERROR("Input matrices have wrong number of rows.");
     }
   }
 
