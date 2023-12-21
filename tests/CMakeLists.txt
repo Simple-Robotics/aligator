@@ -33,7 +33,7 @@ function(_add_test_prototype name prefix dependencies)
   add_test_cflags(${test_name} "-DBOOST_TEST_MODULE=${MODULE_NAME}")
 
   target_link_libraries(${test_name} PUBLIC ${dependencies})
-  target_link_libraries(${test_name} PRIVATE Boost::unit_test_framework benchmark::benchmark)
+  target_link_libraries(${test_name} PRIVATE Boost::unit_test_framework)
 endfunction(_add_test_prototype)
 
 function(add_aligator_test name)
