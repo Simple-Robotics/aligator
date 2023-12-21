@@ -81,7 +81,7 @@ flamegraph -o my_flamegraph.svg -- ./build/examples/example-croc-talos-arm
 * [Nicolas Mansard](https://gepettoweb.laas.fr/index.php/Members/NicolasMansard) (LAAS-CNRS): project coordinator
 * [Guilhem Saurel](https://github.com/nim65s) (LAAS-CNRS)
 * [Fabian Schramm](https://github.com/fabinsch) (Inria): core developer
-* [Ludovic De Matteïs](https://github.com/LudovicDeMatteis) (LAAS-CNRS/Inria)
+* [Ludovic De Matteïs](https://github.com/LudovicDeMatteis) (LAAS-CNRS/Inria): COM costs and dynamics
 
 ## Acknowledgments
 
