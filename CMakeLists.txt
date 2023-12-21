@@ -77,19 +77,24 @@ cmake_dependent_option(
 option(INITIALIZE_WITH_NAN "Initialize Eigen entries with NaN" OFF)
 option(CHECK_RUNTIME_MALLOC "Check if some memory allocations are performed at runtime" OFF)
 
+# Variable containing all the cflags definition relative to optional dependencies
+# and options
+set(CFLAGS_DEPENDENCIES)
+
 if(INITIALIZE_WITH_NAN)
   message(STATUS "Initialize with NaN all the Eigen entries.")
-  add_definitions(-DEIGEN_INITIALIZE_MATRICES_BY_NAN)
+  add_compile_definitions(EIGEN_INITIALIZE_MATRICES_BY_NAN)
 endif(INITIALIZE_WITH_NAN)
 
 if(CHECK_RUNTIME_MALLOC)
   message(STATUS "Check if some memory allocations are performed at runtime.")
-  add_definitions(-DALIGATOR_EIGEN_CHECK_MALLOC)
-  add_definitions(-DEIGEN_RUNTIME_NO_MALLOC)
+  add_compile_definitions(ALIGATOR_EIGEN_CHECK_MALLOC)
+  add_compile_definitions(EIGEN_RUNTIME_NO_MALLOC)
 endif(CHECK_RUNTIME_MALLOC)
 
 if(ENABLE_TEMPLATE_INSTANTIATION)
-  add_definitions(-DALIGATOR_ENABLE_TEMPLATE_INSTANTIATION)
+  add_compile_definitions(ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION)
+  list(APPEND CFLAGS_DEPENDENCIES "-DALIGATOR_ENABLE_TEMPLATE_INSTANTIATION")
 endif(ENABLE_TEMPLATE_INSTANTIATION)
 
 # ----------------------------------------------------
@@ -98,15 +103,26 @@ endif(ENABLE_TEMPLATE_INSTANTIATION)
 add_project_dependency(Eigen3 3.3.7 REQUIRED PKG_CONFIG_REQUIRES "eigen3 >= 3.3.7")
 add_project_dependency(fmt "9.1.0...<11" REQUIRED PKG_CONFIG_REQUIRES "fmt >= 9.1.0")
 
-# Variable containing all the cflags definition relative to optional dependencies
-set(CFLAGS_DEPENDENCIES)
-
 if(BUILD_WITH_OPENMP_SUPPORT)
+  message(STATUS "Building with OpenMP support.")
   find_package(OpenMP REQUIRED)
-endif(BUILD_WITH_OPENMP_SUPPORT)
+  add_compile_definitions(ALIGATOR_MULTITHREADING)
+  list(APPEND CFLAGS_DEPENDENCIES "-DALIGATOR_MULTITHREADING")
+endif()
 
-set(BOOST_REQUIRED_COMPONENTS filesystem serialization system)
+if(BUILD_WITH_PINOCCHIO_SUPPORT)
+  message(STATUS "Building with Pinocchio support.")
+  add_compile_definitions(ALIGATOR_WITH_PINOCCHIO)
+  list(APPEND CFLAGS_DEPENDENCIES "-DALIGATOR_WITH_PINOCCHIO")
+endif()
 
+if(BUILD_CROCODDYL_COMPAT)
+  message(STATUS "Building with Crocoddyl compatibility.")
+  add_compile_definitions(ALIGATOR_WITH_CROCODDYL_COMPAT)
+  list(APPEND CFLAGS_DEPENDENCIES "-DALIGATOR_WITH_CROCODDYL_COMPAT")
+endif()
+
+set(BOOST_REQUIRED_COMPONENTS filesystem)
 set_boost_default_options()
 export_boost_default_options()
 add_project_dependency(Boost REQUIRED COMPONENTS ${BOOST_REQUIRED_COMPONENTS})
@@ -179,17 +195,15 @@ function(create_library)
   set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX VERSION ${PROJECT_VERSION})
 
   if(BUILD_WITH_PINOCCHIO_SUPPORT)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC -DALIGATOR_WITH_PINOCCHIO)
     target_link_libraries(${PROJECT_NAME} PUBLIC pinocchio::pinocchio)
   endif(BUILD_WITH_PINOCCHIO_SUPPORT)
 
   if(BUILD_WITH_OPENMP_SUPPORT)
-    add_definitions(-DALIGATOR_MULTITHREADING)
     target_link_libraries(${PROJECT_NAME} PRIVATE OpenMP::OpenMP_CXX)
   endif(BUILD_WITH_OPENMP_SUPPORT)
 
   target_link_libraries(${PROJECT_NAME} PUBLIC proxsuite-nlp::proxsuite-nlp)
-  target_link_libraries(${PROJECT_NAME} PUBLIC Boost::filesystem Boost::system Boost::serialization)
+  target_link_libraries(${PROJECT_NAME} PUBLIC Boost::boost)
   target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt)
   # set the install-tree include dirs
   # used by dependent projects to consume this target
@@ -219,7 +233,6 @@ install(
   LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
 
 if(BUILD_CROCODDYL_COMPAT)
-  target_compile_definitions(${PROJECT_NAME} PUBLIC -DALIGATOR_WITH_CROCODDYL_COMPAT)
   add_subdirectory(src/compat/crocoddyl)
 endif()
 
@@ -236,6 +249,7 @@ macro(create_ex_or_bench exfile exname)
 
   target_link_libraries(${exname} PUBLIC ${PROJECT_NAME})
   target_link_libraries(${exname} PUBLIC example-robot-data::example-robot-data)
+  target_link_libraries(${exname} PUBLIC Boost::filesystem)
   if(BUILD_WITH_OPENMP_SUPPORT)
     target_link_libraries(${exname} PRIVATE OpenMP::OpenMP_CXX)
   endif()
@@ -263,26 +277,25 @@ macro(EXPORT_VARIABLE var_name var_value)
   else()
     set(${var_name} ${var_value})
   endif()
-endmacro(
-  EXPORT_VARIABLE
-  var_name
-  var_value)
+  string(APPEND PACKAGE_EXTRA_MACROS "\nset(${var_name} ${var_value})")
+endmacro()
 
-if(BUILD_WITH_CASADI_SUPPORT)
-  export_variable(ALIGATOR_USE_CASADI ON)
-  set(PACKAGE_EXTRA_MACROS "${PACKAGE_EXTRA_MACROS}\nset(ALIGATOR_USE_CASADI \"\")")
+if(BUILD_WITH_PINOCCHIO_SUPPORT)
+  export_variable(ALIGATOR_WITH_PINOCCHIO_SUPPORT ON)
 endif()
 if(BUILD_PYTHON_INTERFACE)
   export_variable(ALIGATOR_WITH_PYTHON_INTERFACE ON)
-  set(PACKAGE_EXTRA_MACROS "${PACKAGE_EXTRA_MACROS}\nset(ALIGATOR_WITH_PYTHON_INTERFACE \"\")")
+endif()
+if(BUILD_WITH_OPENMP_SUPPORT)
+  export_variable(ALIGATOR_WITH_OPENMP_SUPPORT ON)
+endif()
+if(BUILD_CROCODDYL_COMPAT)
+  export_variable(ALIGATOR_WITH_CROCODDYL_COMPAT ON)
 endif()
 
 pkg_config_append_libs(${PROJECT_NAME})
 pkg_config_append_boost_libs(${BOOST_REQUIRED_COMPONENTS})
-
-foreach(cflags ${CFLAGS_DEPENDENCIES})
-  pkg_config_append_cflags(${cflags})
-endforeach(cflags ${CFLAGS_DEPENDENCIES})
+pkg_config_append_cflags("${CFLAGS_DEPENDENCIES}")
 
 # Install catkin package.xml
 install(FILES package.xml DESTINATION share/${PROJECT_NAME})
