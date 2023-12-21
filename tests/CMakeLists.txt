@@ -23,7 +23,7 @@ endfunction(get_cpp_test_name)
 
 set(TEST_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/generate-problem.hpp)
 
-function(add_proxddp_test name)
+function(add_aligator_test name)
   get_cpp_test_name(${name} ${CMAKE_CURRENT_SOURCE_DIR} test_name)
   set(test_file ${name}.cpp)
   message(STATUS "Adding C++ test: ${test_file}")
@@ -43,12 +43,12 @@ function(add_proxddp_test name)
 
   target_link_libraries(${test_name} PUBLIC ${PROJECT_NAME})
   target_link_libraries(${test_name} PRIVATE Boost::unit_test_framework benchmark::benchmark)
-endfunction(add_proxddp_test)
+endfunction(add_aligator_test)
 
 set(TEST_NAMES integrators problem costs continuous utils solver-storage)
 
 foreach(test_name ${TEST_NAMES})
-  add_proxddp_test(${test_name})
+  add_aligator_test(${test_name})
 endforeach(test_name)
 
 # PYTHON TESTS
