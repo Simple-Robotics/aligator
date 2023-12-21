@@ -4,14 +4,6 @@
 
 cmake_policy(SET CMP0057 NEW)
 
-# handle cpp examples
-set(EXAMPLES_WITH_CROC_CPP "talos-arm.cpp")
-
-find_package(example-robot-data 4.0.7 REQUIRED)
-if(BUILD_CROCODDYL_COMPAT)
-  find_package(crocoddyl REQUIRED)
-endif()
-
 # Create an example
 macro(create_example exfile)
   get_filename_component(exname ${exfile} NAME_WE)
@@ -21,17 +13,15 @@ endmacro()
 
 function(create_example_with_croco exfile)
   create_example(${exfile})
-  target_link_libraries(${exname} PUBLIC aligator::croc_compat)
+  target_link_libraries(${exname} PRIVATE aligator::croc_compat)
 endfunction()
 
 create_example(se2-car.cpp)
 
 if(BUILD_CROCODDYL_COMPAT)
   create_example_with_croco(talos-arm.cpp)
-endif()
-
-if(BUILD_CROCODDYL_COMPAT)
-  target_link_libraries(example-talos-arm PUBLIC proxsuite-nlp::cnpy)
+  target_link_libraries(example-talos-arm PRIVATE proxsuite-nlp::cnpy)
+  target_add_example_robot_data(example-talos-arm)
 endif()
 
 file(GLOB EXAMPLES_PY *.py)

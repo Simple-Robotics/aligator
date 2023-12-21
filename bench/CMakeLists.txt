@@ -2,9 +2,7 @@
 # Copyright (C) 2023 LAAS-CNRS, INRIA
 #
 
-add_project_dependency(benchmark REQUIRED PKG_CONFIG_REQUIRES "benchmark >= 1.5.0")
-
-find_package(example-robot-data 4.0.7 REQUIRED)
+find_package(benchmark REQUIRED)
 
 # Create a benchmark
 function(create_bench exfile croc)
@@ -22,7 +20,8 @@ endfunction()
 
 create_bench("lqr.cpp" FALSE)
 if(BUILD_CROCODDYL_COMPAT)
-  find_package(crocoddyl REQUIRED)
   create_bench("croc-talos-arm.cpp" TRUE)
+  target_add_example_robot_data(bench-croc-talos-arm)
   create_bench("multithreading.cpp" TRUE)
+  target_add_example_robot_data(bench-multithreading)
 endif()

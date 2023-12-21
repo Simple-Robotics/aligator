@@ -3,7 +3,6 @@
 
 #include <pinocchio/parsers/urdf.hpp>
 #include <pinocchio/algorithm/model.hpp>
-#include <example-robot-data/path.hpp>
 
 #include <crocoddyl/multibody/states/multibody.hpp>
 #include <crocoddyl/multibody/actuations/full.hpp>

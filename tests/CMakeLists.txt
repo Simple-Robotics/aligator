@@ -4,8 +4,7 @@
 
 set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_project_dependency(benchmark REQUIRED PKG_CONFIG_REQUIRES "benchmark >= 1.5.0")
-add_project_dependency(Boost REQUIRED COMPONENTS unit_test_framework)
+find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 
 macro(ADD_TEST_CFLAGS test_name flag)
   set_property(
@@ -42,7 +41,7 @@ function(add_aligator_test name)
   add_test_cflags(${test_name} "-DBOOST_TEST_MODULE=${MODULE_NAME}")
 
   target_link_libraries(${test_name} PUBLIC ${PROJECT_NAME})
-  target_link_libraries(${test_name} PRIVATE Boost::unit_test_framework benchmark::benchmark)
+  target_link_libraries(${test_name} PRIVATE Boost::unit_test_framework)
 endfunction(add_aligator_test)
 
 set(TEST_NAMES integrators problem costs continuous utils solver-storage)
