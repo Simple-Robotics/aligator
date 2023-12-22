@@ -62,10 +62,6 @@ cmake --build . -jNCPUS
 
 ## Benchmarking
 
-```bash
-./scripts/runbench.sh
-```
-
 We recommend using [Flame Graphs](https://github.com/brendangregg/FlameGraph) to evaluate performance.
 If you have the Rust toolchain and `cargo` installed, we suggest you install [cargo-flamegraph](https://github.com/flamegraph-rs/flamegraph). Then, you can create a flame graph with the following command:
 
