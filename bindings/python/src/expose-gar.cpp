@@ -139,8 +139,7 @@ void exposeGAR() {
     bp::scope _ =
         bp::class_<prox_riccati_t, boost::noncopyable>(
             "ProximalRiccatiSolver", "Proximal Riccati solver.", bp::no_init)
-            .def(bp::init<const lqr_t &, bool>(
-                ("self"_a, "problem", "solve_initial"_a = true)))
+            .def(bp::init<const lqr_t &>(("self"_a, "problem")))
             .def_readonly("datas", &prox_riccati_t::datas)
             .def_readonly("thGrad", &prox_riccati_t::thGrad, "Value gradient")
             .def_readonly("thHess", &prox_riccati_t::thHess, "Value Hessian")

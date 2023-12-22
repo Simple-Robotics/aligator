@@ -6,12 +6,12 @@
 namespace aligator {
 namespace gar {
 template <typename Scalar>
-bool ProximalRiccatiSolver<Scalar>::backward(const Scalar mudyn,
-                                             const Scalar mueq) {
+bool ProximalRiccatiImpl<Scalar>::backwardImpl(
+    const LQRProblemTpl<Scalar> &problem, const Scalar mudyn, const Scalar mueq,
+    boost::span<stage_factor_t> datas) {
   if (!problem.isInitialized())
     return false;
 
-  ALIGATOR_NOMALLOC_BEGIN;
   // terminal node
   uint N = (uint)problem.horizon();
   {
@@ -26,7 +26,7 @@ bool ProximalRiccatiSolver<Scalar>::backward(const Scalar mudyn,
     RowMatrixRef Kth = d.fth.blockRow(0);
     RowMatrixRef Zth = d.fth.blockRow(1);
 
-    auto Ct = model.C.transpose();
+    Eigen::Transpose<const MatrixXs> Ct = model.C.transpose();
 
     if (model.nu == 0) {
       Z = model.C / mueq;
@@ -87,42 +87,14 @@ bool ProximalRiccatiSolver<Scalar>::backward(const Scalar mudyn,
     --t;
   }
 
-  stage_factor_t &d0 = datas[0];
-  value_t &vinit = d0.vm;
-  vinit.Vxx = vinit.Pmat;
-  vinit.vx = vinit.pvec;
-
-  // initial stage
-  if (solveInitial) {
-    kkt0.mat(0, 0) = vinit.Vxx;
-    kkt0.mat(1, 0) = problem.G0;
-    kkt0.mat(0, 1) = problem.G0.transpose();
-    kkt0.mat(1, 1).diagonal().setConstant(-mudyn);
-    kkt0.chol.compute(kkt0.mat.matrix());
-
-    kkt0.ff.blockSegment(0) = -vinit.vx;
-    kkt0.ff.blockSegment(1) = -problem.g0;
-    kkt0.chol.solveInPlace(kkt0.ff.matrix());
-    kkt0.fth.blockRow(0) = -vinit.Vxt;
-    kkt0.fth.blockRow(1).setZero();
-    kkt0.chol.solveInPlace(kkt0.fth.matrix());
-
-    thGrad.noalias() =
-        vinit.vt + vinit.Vxt.transpose() * kkt0.ff.blockSegment(0);
-    thHess.noalias() = vinit.Vtt + vinit.Vxt.transpose() * kkt0.fth.blockRow(0);
-  }
-
-  ALIGATOR_NOMALLOC_END;
-
   return true;
 }
 
 template <typename Scalar>
-void ProximalRiccatiSolver<Scalar>::computeMatrixTerms(const knot_t &model,
-                                                       Scalar mudyn,
-                                                       Scalar mueq,
-                                                       value_t &vnext,
-                                                       stage_factor_t &d) {
+void ProximalRiccatiImpl<Scalar>::computeMatrixTerms(const knot_t &model,
+                                                     Scalar mudyn, Scalar mueq,
+                                                     value_t &vnext,
+                                                     stage_factor_t &d) {
   vnext.Pchol.compute(vnext.Pmat);
   d.PinvEt = vnext.Pchol.solve(model.E.transpose());
   vnext.schurMat.noalias() = model.E * d.PinvEt;
@@ -148,15 +120,105 @@ void ProximalRiccatiSolver<Scalar>::computeMatrixTerms(const knot_t &model,
 }
 
 template <typename Scalar>
-bool ProximalRiccatiSolver<Scalar>::forward(
-    std::vector<VectorXs> &xs, std::vector<VectorXs> &us,
-    std::vector<VectorXs> &vs, std::vector<VectorXs> &lbdas,
-    const boost::optional<ConstVectorRef> &theta_) const {
-  ALIGATOR_NOMALLOC_BEGIN;
-  // solve initial stage
-  if (solveInitial) {
-    computeInitial(xs[0], lbdas[0], theta_);
+void ProximalRiccatiImpl<Scalar>::solveOneStage(const knot_t &model,
+                                                stage_factor_t &d, value_t &vn,
+                                                const Scalar mudyn,
+                                                const Scalar mueq) {
+
+  // compute matrix expressions for the inverse
+  computeMatrixTerms(model, mudyn, mueq, vn, d);
+
+  VectorRef kff = d.ff.blockSegment(0);
+  VectorRef zff = d.ff.blockSegment(1);
+  VectorRef xi = d.ff.blockSegment(2);
+  VectorRef a = d.ff.blockSegment(3);
+  a = vn.Pchol.solve(-vn.pvec);
+
+  vn.vx.noalias() = model.f + model.E * a;
+
+  // fill feedback system
+  d.qhat.noalias() = model.q + d.AtV * vn.vx;
+  d.rhat.noalias() = model.r + d.BtV * vn.vx;
+  kff = -d.rhat;
+  zff = -model.d;
+
+  RowMatrixRef K = d.fb.blockRow(0);
+  RowMatrixRef Z = d.fb.blockRow(1);
+  RowMatrixRef Xi = d.fb.blockRow(2);
+  RowMatrixRef A = d.fb.blockRow(3);
+  K = -d.Shat.transpose();
+  Z = -model.C;
+  BlkMatrix<VectorRef, 2, 1> ffview = d.ff.template topBlkRows<2>();
+  BlkMatrix<RowMatrixRef, 2, 1> fbview = d.fb.template topBlkRows<2>();
+  d.kktChol.solveInPlace(ffview.matrix());
+  d.kktChol.solveInPlace(fbview.matrix());
+
+  // set closed loop dynamics
+  xi.noalias() = vn.Vxx * vn.vx;
+  xi.noalias() += d.BtV.transpose() * kff;
+
+  Xi.noalias() = vn.Vxx * model.A;
+  Xi.noalias() += d.BtV.transpose() * K;
+
+  a.noalias() -= d.PinvEt * xi;
+  A.noalias() = d.PinvEt * Xi;
+  A *= -1;
+
+  value_t &vc = d.vm;
+  Eigen::Transpose<const MatrixXs> Ct = model.C.transpose();
+  vc.Pmat.noalias() = d.Qhat + d.Shat * K + Ct * Z;
+  vc.pvec.noalias() = d.qhat + d.Shat * kff + Ct * zff;
+
+  if (model.nth > 0) {
+    RowMatrixRef Kth = d.fth.blockRow(0);
+    RowMatrixRef Zth = d.fth.blockRow(1);
+    RowMatrixRef Xith = d.fth.blockRow(2);
+    RowMatrixRef Ath = d.fth.blockRow(3);
+
+    // store -Pinv * L
+    Ath = vn.Pchol.solve(-vn.Vxt);
+    // store -V * E * Pinv * L
+    Xith.noalias() = model.E * Ath;
+
+    d.Gxhat.noalias() = model.Gx + d.AtV * Xith;
+    d.Guhat.noalias() = model.Gu + d.BtV * Xith;
+
+    // set rhs of 2x2 block system and solve
+    Kth = -d.Guhat;
+    Zth.setZero();
+    BlkMatrix<RowMatrixRef, 2, 1> fthview = d.fth.template topBlkRows<2>();
+    d.kktChol.solveInPlace(fthview.matrix());
+
+    // substitute into Xith, Ath gains
+    Xith.noalias() += model.B * Kth;
+    vn.schurChol.solveInPlace(Xith);
+    Ath.noalias() -= d.PinvEt * Xith;
+
+    // update vt, Vxt, Vtt
+    vc.vt = vn.vt + model.gamma;
+    // vc.vt.noalias() += d.Guhat.transpose() * kff;
+    vc.vt.noalias() += model.Gu.transpose() * kff;
+    vc.vt.noalias() += vn.Vxt.transpose() * a;
+
+    // vc.Vxt.noalias() = d.Gxhat + K.transpose() * d.Guhat;
+    vc.Vxt = model.Gx;
+    vc.Vxt.noalias() += K.transpose() * model.Gu;
+    vc.Vxt.noalias() += A.transpose() * vn.Vxt;
+
+    vc.Vtt = model.Gth + vn.Vtt;
+    vc.Vtt.noalias() += model.Gu.transpose() * Kth;
+    vc.Vtt.noalias() += vn.Vxt.transpose() * Ath;
   }
+}
+
+template <typename Scalar>
+bool ProximalRiccatiImpl<Scalar>::forwardImpl(
+    const LQRProblemTpl<Scalar> &problem,
+    boost::span<const stage_factor_t> datas, boost::span<VectorXs> xs,
+    boost::span<VectorXs> us, boost::span<VectorXs> vs,
+    boost::span<VectorXs> lbdas,
+    const boost::optional<ConstVectorRef> &theta_) {
+  ALIGATOR_NOMALLOC_BEGIN;
 
   uint N = (uint)problem.horizon();
   for (uint t = 0; t <= N; t++) {
@@ -176,7 +238,7 @@ bool ProximalRiccatiSolver<Scalar>::forward(
     ConstVectorRef zff = d.ff.blockSegment(1);
     vs[t].noalias() = zff + Z * xs[t];
 
-    if (problem.isParameterized() && theta_.has_value()) {
+    if (model.nth > 0 && theta_.has_value()) {
       ConstVectorRef theta = *theta_;
       ConstRowMatrixRef Kth = d.fth.blockRow(0);
       ConstRowMatrixRef Zth = d.fth.blockRow(1);
@@ -199,7 +261,7 @@ bool ProximalRiccatiSolver<Scalar>::forward(
     ConstVectorRef a = d.ff.blockSegment(3);
     xs[t + 1].noalias() = a + A * xs[t];
 
-    if (problem.isParameterized() && theta_.has_value()) {
+    if (model.nth > 0 && theta_.has_value()) {
       ConstVectorRef theta = *theta_;
       ConstRowMatrixRef Xith = d.fth.blockRow(2);
       ConstRowMatrixRef Ath = d.fth.blockRow(3);
@@ -211,18 +273,6 @@ bool ProximalRiccatiSolver<Scalar>::forward(
 
   ALIGATOR_NOMALLOC_END;
   return true;
-}
-
-template <typename Scalar> void ProximalRiccatiSolver<Scalar>::initialize() {
-  auto N = uint(problem.horizon());
-  auto &knots = problem.stages;
-  datas.reserve(N + 1);
-  for (uint t = 0; t <= N; t++) {
-    const knot_t &knot = knots[t];
-    datas.emplace_back(knot.nx, knot.nu, knot.nc, knot.nth);
-  }
-  thGrad.setZero();
-  thHess.setZero();
 }
 
 } // namespace gar
