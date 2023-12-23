@@ -57,7 +57,7 @@ jobs:
           --error-overlinking \
           --py ${{ matrix.python-version }} \
           --numpy ${{ matrix.numpy-version }} \
-          conda/aligator-release
+          packaging/conda/aligator-release
 
     - name: upload on conda
       if: github.event_name == 'release' || inputs.publish
