@@ -161,13 +161,7 @@ xs_init = [x0_ref] * (nsteps + 1)
 us_init = [np.zeros(nu) for _ in range(nsteps)]
 
 
-add_plane(robot, (251, 127, 0, 240))
-vizer = MeshcatVisualizer(
-    rmodel,
-    collision_model=robot.collision_model,
-    visual_model=robot.visual_model,
-    data=rdata,
-)
+add_plane(robot)
 
 
 def make_plots(res: aligator.Results):
@@ -211,41 +205,51 @@ def make_plots(res: aligator.Results):
 
 
 if __name__ == "__main__":
-    vizer.initViewer(loadModel=True, zmq_url=args.zmq_url)
-    custom_color = np.asarray((53, 144, 243)) / 255.0
-    vizer.setBackgroundColor(col_bot=list(custom_color), col_top=(1, 1, 1, 1))
-    manage_lights(vizer)
-    vizer.display(q0)
+    if args.display:
+        vizer = MeshcatVisualizer(
+            rmodel,
+            collision_model=robot.collision_model,
+            visual_model=robot.visual_model,
+            data=rdata,
+        )
+        vizer.initViewer(loadModel=True, zmq_url=args.zmq_url)
+        # custom_color = np.asarray((53, 144, 243)) / 255.0
+        # vizer.setBackgroundColor(col_bot=list(custom_color), col_top=(1, 1, 1, 1))
+        manage_lights(vizer)
+        vizer.display(q0)
+        cam_pos = np.array((1.0, -0.7, 1.0))
+        cam_pos *= 0.9 / np.linalg.norm(cam_pos)
+        cam_tar = (0.0, 0.0, 0.3)
+        vizer.setCameraPosition(cam_pos)
+        vizer.setCameraTarget(cam_tar)
 
     solver.run(problem, xs_init, us_init)
     res = solver.results
     print(res)
     make_plots(res)
 
-    qs = [x[:nq] for x in res.xs]
-    vs = [x[nq:] for x in res.xs]
+    xs = np.stack(res.xs)
+    qs = xs[:, :nq]
+    vs = xs[:, nq:]
 
-    FPS = 1.0 / dt
-
-    def callback(i: int):
-        pin.forwardKinematics(rmodel, rdata, qs[i], vs[i])
-        for fid in FOOT_FRAME_IDS.values():
-            vizer.drawFrameVelocities(fid)
-
-    cam_pos = np.array([1.0, 0.7, 1.0])
-    cam_pos *= 0.9 / np.linalg.norm(cam_pos)
-    vizer.setCameraPosition(cam_pos)
-    vizer.setCameraTarget((0.0, 0.0, 0.3))
+    FPS = min(30, 1.0 / dt)
 
     if args.display:
-        input("[display]")
-        if args.record:
-            with vizer.create_video_ctx(
-                "assets/solo_jump.mp4", fps=FPS, **IMAGEIO_KWARGS
-            ):
-                print("[Recording video]")
-                vizer.play(qs, dt, callback=callback)
+        import contextlib
 
-        while True:
-            vizer.play(qs, dt, callback=callback)
-            input("[replay]")
+        def callback(i: int):
+            pin.forwardKinematics(rmodel, rdata, qs[i], vs[i])
+            for fid in FOOT_FRAME_IDS.values():
+                vizer.drawFrameVelocities(fid)
+
+        input("[display]")
+        ctx = (
+            vizer.create_video_ctx("assets/solo_jump.mp4", fps=FPS, **IMAGEIO_KWARGS)
+            if args.record
+            else contextlib.nullcontext()
+        )
+
+        with ctx:
+            while True:
+                vizer.play(qs, dt, callback=callback)
+                input("[replay]")

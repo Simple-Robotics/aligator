@@ -1,6 +1,7 @@
 import example_robot_data as erd
 import pinocchio as pin
 import numpy as np
+from . import manage_lights
 
 robot = erd.load("solo12")
 rmodel: pin.Model = robot.model
@@ -40,7 +41,7 @@ def create_ground_contact_model(rmodel: pin.Model, Kp=(0.0, 0.0, 1000.0), Kd=Non
     return constraint_models
 
 
-def add_plane(robot, meshColor=(238, 66, 102, 240)):
+def add_plane(robot, meshColor=(251, 127, 0, 255)):
     import hppfcl as fcl
 
     plane = fcl.Plane(np.array([0.0, 0.0, 1.0]), 0.0)
@@ -50,24 +51,20 @@ def add_plane(robot, meshColor=(238, 66, 102, 240)):
     plane_obj.meshScale[:] = 1.0
     robot.visual_model.addGeometryObject(plane_obj)
     robot.collision_model.addGeometryObject(plane_obj)
-
-
-def manage_lights(vizer: pin.visualize.MeshcatVisualizer):
-    import meshcat
-
-    viewer: meshcat.Visualizer = vizer.viewer
-    SPOTLIGHT_PATH = "/Lights/SpotLight/<object>"
-    viewer["/Lights/SpotLight"].set_property("visible", True)
-    props = [("intensity", 0.2), ("castShadow", True)]
-    for name, value in props:
-        viewer[SPOTLIGHT_PATH].set_property(name, value)
-
-    AMBIENT_PATH = "/Lights/AmbientLight/<object>"
-    props = [
-        ("intensity", 0.5),
-    ]
-    for name, value in props:
-        viewer[AMBIENT_PATH].set_property(name, value)
+    return plane_obj
 
 
 __all__ = ["robot", "rmodel", "rdata", "q0", "FOOT_FRAME_IDS", "FOOT_JOINT_IDS"]
+
+
+if __name__ == "__main__":
+    from pinocchio.visualize import MeshcatVisualizer
+
+    collision_model = robot.collision_model
+    visual_model = robot.visual_model
+    add_plane(robot)
+
+    vizer = MeshcatVisualizer(rmodel, collision_model, visual_model, data=rdata)
+    vizer.initViewer(open=True, loadModel=True)
+    vizer.display(q0)
+    manage_lights(vizer)

@@ -229,3 +229,49 @@ def add_namespace_prefix_to_models(model, collision_model, visual_model, namespa
     # Rename joints in model:
     for k in range(len(model.names)):
         model.names[k] = f"{namespace}/{model.names[k]}"
+
+
+def manage_lights(vizer: pin.visualize.MeshcatVisualizer):
+    import meshcat
+
+    def apply_props(obj, props):
+        for name, value in props.items():
+            obj.set_property(name, value)
+
+    viewer: meshcat.Visualizer = vizer.viewer
+    apply_props(viewer["/Lights/SpotLight"], props={"visible": True})
+    spotlight = viewer["/Lights/SpotLight/<object>"]
+    apply_props(
+        spotlight,
+        props={
+            # default: 0.8 * pi
+            "intensity": 8.0,
+            "penumbra": 1.0,
+            "decay": 1.0,
+            # default: false
+            "castShadow": True,
+            # default: pi / 3
+            "angle": np.pi / 3,
+            "position": [4, -4, 4],
+        },
+    )
+
+    ambient_light = viewer["/Lights/AmbientLight/<object>"]
+    apply_props(
+        ambient_light,
+        props={
+            # default: 0.6
+            "intensity": 0.4
+        },
+    )
+
+    fill_light = viewer["/Lights/FillLight/<object>"]
+    apply_props(fill_light, props={"intensity": 3.0, "castShadow": False})
+
+    plpx = viewer["/Lights/PointLightPositiveX"]
+    apply_props(plpx, props={"visible": False})
+    plnx = viewer["/Lights/PointLightNegativeX"]
+    apply_props(plnx, props={"visible": False})
+
+    plpx.delete()
+    plnx.delete()

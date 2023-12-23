@@ -7,7 +7,13 @@ import example_robot_data as erd
 import matplotlib.pyplot as plt
 
 from aligator import manifolds, constraints, dynamics
-from utils import ArgsBase, compute_quasistatic, get_endpoint_traj
+from utils import (
+    ArgsBase,
+    compute_quasistatic,
+    get_endpoint_traj,
+    IMAGEIO_KWARGS,
+    manage_lights,
+)
 from aligator.utils.plotting import plot_convergence
 
 
@@ -157,8 +163,6 @@ if args.display:
     import contextlib
     import hppfcl
 
-    video_fps = 0.5 / dt
-
     def planehoz(vizer):
         p_height = table_height
         p_width = table_side_y_r - table_side_y_l
@@ -191,20 +195,26 @@ if args.display:
         rmodel, robot.collision_model, robot.visual_model, data=rdata
     )
     vizer.initViewer(open=True, loadModel=True)
+    manage_lights(vizer)
     vizer.display(robot.q0)
     vizer.setBackgroundColor()
 
     planehoz(vizer)
 
-    ctx = (
-        vizer.create_video_ctx("assets/ur5_halfspace_under.mp4", fps=video_fps)
+    VID_FPS = 30
+
+    vid_ctx = (
+        vizer.create_video_ctx(
+            "assets/ur5_halfspace_under.mp4", fps=VID_FPS, **IMAGEIO_KWARGS
+        )
         if args.record
         else contextlib.nullcontext()
     )
 
-    slow_factor = 2.0
-    play_dt = dt / slow_factor
+    slow_factor = 0.5
+    play_dt = dt * slow_factor
     vizer.setCameraPreset("preset1")
+    vizer.setCameraZoom(1.6)
     input("[enter to play]")
     nq = rmodel.nq
     qs = [x[:nq] for x in rs.xs]
@@ -214,6 +224,5 @@ if args.display:
         pin.forwardKinematics(rmodel, vizer.data, qs[i], vs[i])
         vizer.drawFrameVelocities(frame_id)
 
-    with ctx:
-        for i in range(4):
-            vizer.play(qs, dt, callback)
+    with vid_ctx:
+        vizer.play(qs, dt, callback)
