@@ -1,10 +1,12 @@
+#include <benchmark/benchmark.h>
 
-#include "croc-talos-arm.hpp"
+#include <crocoddyl/core/solvers/fddp.hpp>
 
+#include "aligator/compat/crocoddyl/instantiate.txx"
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
 #include "aligator/solvers/fddp/solver-fddp.hpp"
 
-#include <benchmark/benchmark.h>
+#include "croc-talos-arm.hpp"
 
 using aligator::SolverFDDP;
 using aligator::SolverProxDDP;
