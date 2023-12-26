@@ -28,7 +28,7 @@ public:
   /// Backward sweep.
   bool backward(const Scalar mudyn, const Scalar mueq) {
     ALIGATOR_NOMALLOC_BEGIN;
-    bool ret = Impl::backwardImpl(problem, mudyn, mueq, datas);
+    bool ret = Impl::backwardImpl(problem.stages, mudyn, mueq, datas);
 
     stage_factor_t &d0 = datas[0];
     value_t &vinit = d0.vm;

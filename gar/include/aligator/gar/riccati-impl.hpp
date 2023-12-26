@@ -104,8 +104,8 @@ template <typename Scalar> struct ProximalRiccatiImpl {
   static void computeMatrixTerms(const knot_t &model, Scalar mudyn, Scalar mueq,
                                  value_t &vnext, stage_factor_t &d);
 
-  static bool backwardImpl(const LQRProblemTpl<Scalar> &problem,
-                           const Scalar mudyn, const Scalar mueq,
+  static bool backwardImpl(boost::span<const knot_t> stages, const Scalar mudyn,
+                           const Scalar mueq,
                            boost::span<stage_factor_t> datas);
 
   /// Solve initial stage

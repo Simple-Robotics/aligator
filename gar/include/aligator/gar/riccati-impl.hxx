@@ -7,17 +7,14 @@ namespace aligator {
 namespace gar {
 template <typename Scalar>
 bool ProximalRiccatiImpl<Scalar>::backwardImpl(
-    const LQRProblemTpl<Scalar> &problem, const Scalar mudyn, const Scalar mueq,
+    boost::span<const knot_t> stages, const Scalar mudyn, const Scalar mueq,
     boost::span<stage_factor_t> datas) {
-  if (!problem.isInitialized())
-    return false;
-
   // terminal node
-  uint N = (uint)problem.horizon();
+  uint N = (uint)(datas.size() - 1);
   {
     stage_factor_t &d = datas[N];
     value_t &vc = d.vm;
-    const knot_t &model = problem.stages[N];
+    const knot_t &model = stages[N];
     // fill cost-to-go matrix
     VectorRef kff = d.ff.blockSegment(0);
     VectorRef zff = d.ff.blockSegment(1);
@@ -79,8 +76,7 @@ bool ProximalRiccatiImpl<Scalar>::backwardImpl(
   while (true) {
     stage_factor_t &d = datas[t];
     value_t &vn = datas[t + 1].vm;
-    const knot_t &model = problem.stages[t];
-    solveOneStage(model, d, vn, mudyn, mueq);
+    solveOneStage(stages[t], d, vn, mudyn, mueq);
 
     if (t == 0)
       break;
