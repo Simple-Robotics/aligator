@@ -3,6 +3,7 @@
 #include <pinocchio/parsers/urdf.hpp>
 #include <pinocchio/algorithm/model.hpp>
 
+#include <crocoddyl/core/fwd.hpp>
 #include <crocoddyl/multibody/states/multibody.hpp>
 #include <crocoddyl/multibody/actuations/full.hpp>
 #include <crocoddyl/multibody/actions/free-fwddyn.hpp>
@@ -14,10 +15,6 @@
 #include <crocoddyl/multibody/residuals/state.hpp>
 #include <crocoddyl/core/residuals/control.hpp>
 #include <crocoddyl/core/solvers/fddp.hpp>
-
-#include <crocoddyl/core/fwd.hpp>
-
-#include "aligator/compat/crocoddyl/problem-wrap.hpp"
 
 void makeTalosArm(pin::Model &model) {
   const std::string talos_arm_path =

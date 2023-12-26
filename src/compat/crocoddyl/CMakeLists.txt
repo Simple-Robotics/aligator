@@ -14,8 +14,6 @@ if(ENABLE_TEMPLATE_INSTANTIATION)
   target_sources(aligator_croc_compat PRIVATE ${HEADERS_TEMPL} ${SOURCES_TEMPL})
 endif()
 
-add_project_dependency(crocoddyl REQUIRED)
-
 set_target_properties(
   aligator_croc_compat
   PROPERTIES LINKER_LANGUAGE CXX

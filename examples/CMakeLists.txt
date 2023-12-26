@@ -13,7 +13,7 @@ endmacro()
 
 function(create_example_with_croco exfile)
   create_example(${exfile})
-  target_link_libraries(${exname} PRIVATE aligator::croc_compat)
+  target_link_libraries(${exname} PRIVATE aligator::croc_compat croc_talos_arm_utils)
 endfunction()
 
 create_example(se2-car.cpp)

@@ -237,6 +237,7 @@ install(
   LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
 
 if(BUILD_CROCODDYL_COMPAT)
+  add_project_dependency(crocoddyl REQUIRED)
   add_subdirectory(src/compat/crocoddyl)
 endif()
 
@@ -245,7 +246,6 @@ add_subdirectory(bindings)
 # benchmarks, examples, and tests
 
 macro(create_ex_or_bench exfile exname)
-
   add_executable(${exname} ${exfile})
   message(STATUS "Adding cpp example ${exname}")
   set_target_properties(${exname} PROPERTIES LINKER_LANGUAGE CXX)
@@ -264,6 +264,17 @@ endmacro()
 
 if(BUILD_WITH_PINOCCHIO_SUPPORT AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
   find_package(example-robot-data 4.0.9 REQUIRED)
+endif()
+
+# create an utility library to avoid recompiling crocoddyl talos arm problem
+# used in examples and benchmarks
+if(BUILD_CROCODDYL_COMPAT)
+  add_library(croc_talos_arm_utils STATIC ${CMAKE_SOURCE_DIR}/examples/croc-talos-arm.cpp
+                                          ${CMAKE_SOURCE_DIR}/examples/croc-talos-arm.hpp)
+  target_include_directories(croc_talos_arm_utils PUBLIC ${CMAKE_SOURCE_DIR}/examples)
+  target_link_libraries(croc_talos_arm_utils PUBLIC ${PROJECT_NAME} Boost::boost
+                                                    crocoddyl::crocoddyl)
+  target_add_example_robot_data(croc_talos_arm_utils)
 endif()
 
 if(BUILD_EXAMPLES)
