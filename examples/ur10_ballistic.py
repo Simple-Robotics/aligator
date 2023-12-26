@@ -10,7 +10,12 @@ from pathlib import Path
 from typing import Tuple
 from pinocchio.visualize import MeshcatVisualizer
 from aligator.utils.plotting import plot_controls_traj, plot_velocity_traj
-from utils import add_namespace_prefix_to_models, ArgsBase, IMAGEIO_KWARGS
+from utils import (
+    add_namespace_prefix_to_models,
+    ArgsBase,
+    IMAGEIO_KWARGS,
+    manage_lights,
+)
 from aligator import dynamics, manifolds, constraints
 
 
@@ -118,9 +123,10 @@ def configure_viz(target_pos):
         model=rmodel, collision_model=cmodel, visual_model=vmodel, data=rdata
     )
     viz.initViewer(loadModel=True, zmq_url=args.zmq_url)
+    manage_lights(viz)
     viz.addGeometryObject(gobj)
-    viz.setBackgroundColor()
-    viz.setCameraZoom(1.8)
+    # viz.setBackgroundColor()
+    viz.setCameraZoom(1.7)
     return viz
 
 
@@ -170,7 +176,6 @@ us_i = [u0] * len(dms)
 xs_i = aligator.rollout(dms, x0, us_i)
 qs_i = [x[:nq] for x in xs_i]
 
-input("[press enter]")
 viz.play(qs_i, dt=dt)
 
 
@@ -292,21 +297,30 @@ vf_launch_t = get_frame_vel(t_contact + 1)
 print("Before launch  :", vf_before_launch.np)
 print("Launch velocity:", vf_launch_t.np)
 
-
-def viz_callback(i: int):
-    pin.forwardKinematics(rmodel, rdata, qs[i], xs[i][nq:])
-    viz.drawFrameVelocities(proj_frame_id, v_scale=0.06)
-
-
 EXPERIMENT_NAME = "ur10_mug_throw"
-VID_FPS = 1.0 / dt
-vid_ctx = (
-    viz.create_video_ctx(f"assets/{EXPERIMENT_NAME}.mp4", fps=VID_FPS, **IMAGEIO_KWARGS)
-    if args.record
-    else contextlib.nullcontext()
-)
-with vid_ctx:
-    viz.play(qs, dt, callback=viz_callback)
+
+if args.display:
+
+    def viz_callback(i: int):
+        pin.forwardKinematics(rmodel, rdata, qs[i], xs[i][nq:])
+        viz.drawFrameVelocities(proj_frame_id, v_scale=0.06)
+        fid = rmodel.getFrameId("ball/root_joint")
+        ctar: pin.SE3 = rdata.oMf[fid]
+        viz.setCameraTarget(ctar.translation)
+
+    VID_FPS = 30
+    vid_ctx = (
+        viz.create_video_ctx(
+            f"assets/{EXPERIMENT_NAME}.mp4", fps=VID_FPS, **IMAGEIO_KWARGS
+        )
+        if args.record
+        else contextlib.nullcontext()
+    )
+
+    input("[press enter]")
+
+    with vid_ctx:
+        viz.play(qs, dt, callback=viz_callback)
 
 times = np.linspace(0.0, tf, nsteps + 1)
 _joint_names = rmodel.names[2:]

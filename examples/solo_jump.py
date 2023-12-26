@@ -77,7 +77,7 @@ mask = (switch_t0 <= times) & (times < switch_t1)
 
 x0_ref = np.concatenate((q0, np.zeros(nv)))
 x_ref_flight = x0_ref.copy()
-w_x = np.ones(space.ndx) * 1e-3
+w_x = np.ones(space.ndx) * 1e-2
 w_x[:6] = 0.0
 w_x[nv : nv + 6] = 0.0
 w_x = np.diag(w_x)
@@ -97,8 +97,18 @@ def create_land_fns():
     for fname, fid in FOOT_FRAME_IDS.items():
         p_ref = rdata.oMf[fid].translation
         fn = aligator.FrameTranslationResidual(space.ndx, nu, rmodel, p_ref, fid)
-        fn = fn[2]
-        out[fid] = fn
+        out[fid] = fn[2]
+    return out
+
+
+def create_land_vel_fns():
+    out = {}
+    for fname, fid in FOOT_FRAME_IDS.items():
+        v_ref = pin.Motion.Zero()
+        fn = aligator.FrameVelocityResidual(
+            space.ndx, nu, rmodel, v_ref, fid, pin.LOCAL_WORLD_ALIGNED
+        )
+        out[fid] = fn[:3]
     return out
 
 
@@ -138,6 +148,8 @@ for k in range(nsteps):
         fns = create_land_fns()
         for fid, fn in fns.items():
             stm.addConstraint(fn, constraints.EqualityConstraintSet())
+        for fid, fn in create_land_vel_fns().items():
+            stm.addConstraint(fn, constraints.EqualityConstraintSet())
 
     stages.append(stm)
 
@@ -146,7 +158,6 @@ w_xterm = w_x.copy()
 term_cost = aligator.QuadraticStateCost(space, nu, x0_ref, weights=w_x)
 
 problem = aligator.TrajOptProblem(x0_ref, stages, term_cost)
-# mu_init = 0.1
 mu_init = 1e-4
 tol = 1e-4
 solver = aligator.SolverProxDDP(tol, mu_init, verbose=aligator.VERBOSE, max_iters=200)
@@ -217,7 +228,7 @@ if __name__ == "__main__":
         # vizer.setBackgroundColor(col_bot=list(custom_color), col_top=(1, 1, 1, 1))
         manage_lights(vizer)
         vizer.display(q0)
-        cam_pos = np.array((1.0, -0.7, 1.0))
+        cam_pos = np.array((0.9, -0.3, 0.4))
         cam_pos *= 0.9 / np.linalg.norm(cam_pos)
         cam_tar = (0.0, 0.0, 0.3)
         vizer.setCameraPosition(cam_pos)
@@ -226,7 +237,8 @@ if __name__ == "__main__":
     solver.run(problem, xs_init, us_init)
     res = solver.results
     print(res)
-    make_plots(res)
+    if args.plot:
+        make_plots(res)
 
     xs = np.stack(res.xs)
     qs = xs[:, :nq]

@@ -1,7 +1,7 @@
 import example_robot_data as erd
 import aligator
 from aligator import manifolds, dynamics, constraints
-from utils import IMAGEIO_KWARGS
+from utils import IMAGEIO_KWARGS, manage_lights
 import numpy as np
 import pinocchio as pin
 
@@ -74,7 +74,7 @@ if args.term_cstr:
     problem.addTerminalConstraint(term_cstr)
 
 tol = 1e-3
-mu_init = 1e-1
+mu_init = 10.0
 solver = aligator.SolverProxDDP(tol, mu_init=mu_init, verbose=aligator.VERBOSE)
 solver.max_iters = 200
 solver.setup(problem)
@@ -82,6 +82,10 @@ if args.bounds:
     for i in range(nsteps):
         psc: aligator.ProxScaler = solver.workspace.getConstraintScaler(i)
         psc.set_weight(0.01, 1)
+if args.term_cstr:
+    psc: aligator.ProxScaler = solver.workspace.getConstraintScaler(nsteps)
+    psc.weights[0] = 1e-1
+
 
 us_init = [np.zeros(nu) for _ in range(nsteps)]
 xs_init = aligator.rollout(dyn_model, x0, us_init).tolist()
@@ -135,6 +139,7 @@ if args.display:
         rmodel, robot.collision_model, robot.visual_model, data=robot.data
     )
     vizer.initViewer(open=True, loadModel=True)
+    manage_lights(vizer)
     vizer.display(x0[:nq])
 
     vizer.setCameraPreset("acrobot")
