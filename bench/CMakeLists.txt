@@ -10,11 +10,9 @@ function(create_bench exfile croc)
   set(exname "bench-${exname}")
   create_ex_or_bench(${exfile} ${exname})
 
-  # include any headers in the examples/ directory
-  target_include_directories(${exname} PRIVATE ${CMAKE_SOURCE_DIR}/examples)
   target_link_libraries(${exname} PRIVATE benchmark::benchmark)
   if(croc)
-    target_link_libraries(${exname} PUBLIC aligator::croc_compat)
+    target_link_libraries(${exname} PUBLIC aligator::croc_compat croc_talos_arm_utils)
   endif(croc)
 endfunction()
 

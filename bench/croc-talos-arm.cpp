@@ -2,12 +2,16 @@
 /// @brief Benchmark aligator::SolverFDDP against Crocoddyl on a simple example
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
+#include <benchmark/benchmark.h>
+
+#include <crocoddyl/core/solvers/fddp.hpp>
+#include <crocoddyl/core/utils/callbacks.hpp>
+
 #include "croc-talos-arm.hpp"
 
 #include "aligator/solvers/fddp/solver-fddp.hpp"
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
-
-#include <benchmark/benchmark.h>
+#include "aligator/compat/crocoddyl/problem-wrap.hpp"
 
 using aligator::LDLTChoice;
 using aligator::SolverFDDP;
