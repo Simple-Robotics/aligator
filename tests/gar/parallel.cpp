@@ -133,3 +133,13 @@ BOOST_AUTO_TEST_CASE(parallel) {
       compute_kkt_error(problem, xs_merge, us_merge, vs_merge, lbdas_merge);
   fmt::print("KKT error (merged): {:.3e}\n", _err_merged.max);
 }
+
+BOOST_AUTO_TEST_CASE(parallel_solver_class) {
+  uint nx = 2;
+  uint nu = 2;
+  VectorXs x0;
+  x0.setRandom(nx);
+  uint horizon = 12;
+
+  problem_t problem = generate_problem(x0, horizon, nx, nu);
+}
