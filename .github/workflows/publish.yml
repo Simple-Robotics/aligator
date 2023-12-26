@@ -62,7 +62,7 @@ jobs:
     - name: upload on conda
       if: github.event_name == 'release' || inputs.publish
       shell: bash -el {0}
-      run: anaconda -t ${{ secrets.SIMPLE_ROBOTICS_ANACONDA_TOKEN }} upload --force $CONDA_PREFIX/conda-bld/*/aligator-nlp-*.tar.bz2
+      run: anaconda -t ${{ secrets.SIMPLE_ROBOTICS_ANACONDA_TOKEN }} upload --force $CONDA_PREFIX/conda-bld/*/aligator-*.tar.bz2
 
   check:
     if: always()
