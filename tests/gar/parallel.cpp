@@ -123,13 +123,8 @@ BOOST_AUTO_TEST_CASE(parallel) {
 
   VectorXs x_errs(horizon + 1);
 
-  for (uint i = 0; i <= horizon; i++) {
-    fmt::print("(merged) x[{:d}] = {}\n", i, xs_merge[i].transpose());
-  }
-
   const auto &xs = _sol_full[0];
   for (uint i = 0; i <= horizon; i++) {
-    fmt::print("(origin) x[{:d}] = {}\n", i, xs[i].transpose());
     x_errs[i] = infty_norm(xs[i] - xs_merge[i]);
   }
   fmt::print("errors between solves: {}\n", x_errs.transpose());
