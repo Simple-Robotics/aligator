@@ -3,6 +3,7 @@
 
 #include "aligator/gar/riccati.hpp"
 #include "aligator/gar/helpers.hpp"
+#include <random>
 
 ALIGATOR_DYNAMIC_TYPEDEFS(double);
 using prox_riccati_t = aligator::gar::ProximalRiccatiSolver<double>;
@@ -34,6 +35,16 @@ KktError compute_kkt_error(const problem_t &problem, const VectorOfVectors &xs,
                            const VectorOfVectors &us, const VectorOfVectors &vs,
                            const VectorOfVectors &lbdas,
                            const ConstVectorRef &theta);
+
+struct normal_unary_op {
+  static std::mt19937 rng;
+  // underlying normal distribution
+  mutable std::normal_distribution<double> gen;
+
+  normal_unary_op(double stddev = 1.0) : gen(0.0, stddev) {}
+
+  double operator()() const { return gen(rng); }
+};
 
 MatrixXs wishart_dist_matrix(uint n, uint p);
 

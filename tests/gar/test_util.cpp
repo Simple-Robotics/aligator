@@ -1,16 +1,5 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #include "./test_util.hpp"
-#include <random>
-
-struct normal_unary_op {
-  static std::mt19937 rng;
-  // underlying normal distribution
-  mutable std::normal_distribution<double> gen;
-
-  normal_unary_op(double stddev = 1.0) : gen(0.0, stddev) {}
-
-  double operator()() const { return gen(rng); }
-};
 
 std::mt19937 normal_unary_op::rng{};
 
