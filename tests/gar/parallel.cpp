@@ -4,7 +4,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "./test_util.hpp"
-#include "aligator/threads.hpp"
+#include "aligator/gar/parallel-solver.hpp"
 
 using namespace aligator::gar;
 
@@ -32,12 +32,11 @@ BOOST_AUTO_TEST_CASE(parallel) {
     bool ret = solver_full_horz.forward(xs, us, vs, lbdas);
     BOOST_CHECK(ret);
     KktError err_full = compute_kkt_error(problem, xs, us, vs, lbdas);
-    fmt::print("dyn:  {:.3e}\ncst:  {:.3e}\ndual: {:.3e}\n", err_full.dyn,
-               err_full.cstr, err_full.dual);
-    fmt::print("KKT error (full horz.): {:.3}\n", err_full.max);
+    printError(err_full, "KKT error (full horz.)");
     BOOST_CHECK_LE(err_full.max, EPS);
   }
 
+  fmt::print("=== solve parallel: ===\n");
   uint t0 = horizon / 2;
   auto prs = splitProblemInTwo(problem, t0, mu);
   auto &pr1 = prs[0];
@@ -127,11 +126,12 @@ BOOST_AUTO_TEST_CASE(parallel) {
   for (uint i = 0; i <= horizon; i++) {
     x_errs[i] = infty_norm(xs[i] - xs_merge[i]);
   }
-  fmt::print("errors between solves: {}\n", x_errs.transpose());
+  fmt::print("errors between solves: {}\n", aligator::math::infty_norm(x_errs));
 
   KktError _err_merged =
       compute_kkt_error(problem, xs_merge, us_merge, vs_merge, lbdas_merge);
   fmt::print("KKT error (merged): {:.3e}\n", _err_merged.max);
+  printError(_err_merged, "KKT error (merged)");
 }
 
 BOOST_AUTO_TEST_CASE(parallel_solver_class) {
