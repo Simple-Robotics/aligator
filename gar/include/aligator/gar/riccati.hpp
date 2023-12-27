@@ -86,6 +86,7 @@ protected:
     }
     thGrad.setZero();
     thHess.setZero();
+    kkt0.mat.setZero();
   }
   const LQRProblemTpl<Scalar> &problem;
 };
