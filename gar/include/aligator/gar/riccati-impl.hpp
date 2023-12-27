@@ -125,7 +125,7 @@ template <typename Scalar> struct ProximalRiccatiImpl {
 
   /// Forward sweep.
   static bool
-  forwardImpl(const LQRProblemTpl<Scalar> &problem,
+  forwardImpl(boost::span<const knot_t> stages,
               boost::span<const stage_factor_t> datas, boost::span<VectorXs> xs,
               boost::span<VectorXs> us, boost::span<VectorXs> vs,
               boost::span<VectorXs> lbdas,

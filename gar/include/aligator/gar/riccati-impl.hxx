@@ -74,9 +74,8 @@ bool ProximalRiccatiImpl<Scalar>::backwardImpl(
 
   uint t = N - 1;
   while (true) {
-    stage_factor_t &d = datas[t];
     value_t &vn = datas[t + 1].vm;
-    solveOneStage(stages[t], d, vn, mudyn, mueq);
+    solveOneStage(stages[t], datas[t], vn, mudyn, mueq);
 
     if (t == 0)
       break;
@@ -209,17 +208,16 @@ void ProximalRiccatiImpl<Scalar>::solveOneStage(const knot_t &model,
 
 template <typename Scalar>
 bool ProximalRiccatiImpl<Scalar>::forwardImpl(
-    const LQRProblemTpl<Scalar> &problem,
-    boost::span<const stage_factor_t> datas, boost::span<VectorXs> xs,
-    boost::span<VectorXs> us, boost::span<VectorXs> vs,
-    boost::span<VectorXs> lbdas,
+    boost::span<const knot_t> stages, boost::span<const stage_factor_t> datas,
+    boost::span<VectorXs> xs, boost::span<VectorXs> us,
+    boost::span<VectorXs> vs, boost::span<VectorXs> lbdas,
     const boost::optional<ConstVectorRef> &theta_) {
   ALIGATOR_NOMALLOC_BEGIN;
 
-  uint N = (uint)problem.horizon();
+  uint N = (uint)(datas.size() - 1);
   for (uint t = 0; t <= N; t++) {
     const stage_factor_t &d = datas[t];
-    const knot_t &model = problem.stages[t];
+    const knot_t &model = stages[t];
     assert(xs[t].size() == model.nx);
     assert(vs[t].size() == model.nc);
 

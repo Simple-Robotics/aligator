@@ -66,7 +66,7 @@ public:
     // solve initial stage
     Impl::computeInitial(xs[0], lbdas[0], kkt0, theta_);
 
-    return Impl::forwardImpl(problem, datas, xs, us, vs, lbdas, theta_);
+    return Impl::forwardImpl(problem.stages, datas, xs, us, vs, lbdas, theta_);
   }
 
   std::vector<stage_factor_t> datas;
