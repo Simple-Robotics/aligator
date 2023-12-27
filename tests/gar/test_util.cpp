@@ -161,3 +161,45 @@ KktError compute_kkt_error(const problem_t &problem, const VectorOfVectors &xs,
                            const ConstVectorRef &theta) {
   return compute_kkt_error_impl(problem, xs, us, vs, lbdas, theta);
 }
+
+std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem, uint t0,
+                                           double mu) {
+  assert(problem.isInitialized());
+  uint N = (uint)problem.horizon();
+  assert(t0 < N);
+
+  std::vector<knot_t> knots1, knots2;
+  uint nx_t0 = problem.stages[t0].nx;
+
+  for (uint i = 0; i < t0; i++)
+    knots1.push_back(problem.stages[i]);
+
+  for (uint i = t0; i <= N; i++)
+    knots2.push_back(problem.stages[i]);
+
+  knot_t kn1_last = knots1.back(); // copy
+
+  problem_t p1(knots1, problem.nc0());
+  p1.G0 = problem.G0;
+  p1.g0 = problem.g0;
+  p1.addParameterization(nx_t0);
+  {
+    knot_t &p1_last = p1.stages.back();
+    p1_last.Gx = kn1_last.A.transpose();
+    p1_last.Gu = kn1_last.B.transpose();
+    p1_last.gamma = kn1_last.f;
+    p1_last.Gth.diagonal().setConstant(-mu);
+    kn1_last.A.setZero();
+    kn1_last.B.setZero();
+    kn1_last.f.setZero();
+  }
+
+  problem_t p2(knots2, 0);
+  p2.addParameterization(nx_t0);
+  {
+    knot_t &p2_first = p2.stages[0];
+    p2_first.Gx = kn1_last.E.transpose();
+  }
+
+  return {p1, p2};
+}
