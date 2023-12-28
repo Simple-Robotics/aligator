@@ -13,9 +13,9 @@ using namespace gar;
 
 using context::Scalar;
 using prox_riccati_t = ProximalRiccatiSolver<Scalar>;
-using knot_t = LQRKnotTpl<Scalar>;
 using stage_factor_t = prox_riccati_t::stage_factor_t;
-using lqr_t = LQRProblemTpl<Scalar>;
+using knot_t = LQRKnotTpl<context::Scalar>;
+using lqr_t = LQRProblemTpl<context::Scalar>;
 } // namespace python
 } // namespace aligator
 
@@ -56,6 +56,9 @@ static void exposeBlockMatrices() {
   BlkMatrixPythonVisitor<BlkMatrix<RowMatrixXs, 2, 1>>::expose(
       "BlockRowMatrix21");
 }
+
+// fwd-declare exposeParallelSolver()
+void exposeParallelSolver();
 
 void exposeGAR() {
 
@@ -166,6 +169,8 @@ void exposeGAR() {
       ("problem"_a, "mudyn", "mueq"));
 
   bp::def("lqrInitializeSolution", lqr_sol_initialize_wrap, ("problem"_a));
+
+  exposeParallelSolver();
 }
 
 } // namespace python
