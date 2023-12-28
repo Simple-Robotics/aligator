@@ -183,8 +183,47 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
   uint nx = 2;
   uint nu = 2;
   VectorXs x0;
-  x0.setRandom(nx);
-  uint horizon = 12;
+  x0.resize(nx);
+  x0 << 1., 1.;
+  uint horizon = 20;
 
   problem_t problem = generate_problem(x0, horizon, nx, nu);
+  problem_t problemRef = problem;
+  const double mu = 1e-14;
+
+  auto solutionRef = lqrInitializeSolution(problemRef);
+  auto [xs_ref, us_ref, vs_ref, lbdas_ref] = solutionRef;
+  auto [xs, us, vs, lbdas] = solutionRef;
+
+  BOOST_TEST_MESSAGE("Run Serial solver (reference solution)");
+  ProximalRiccatiSolver<double> refSolver{problemRef};
+
+  {
+    refSolver.backward(mu, mu);
+    refSolver.forward(xs_ref, us_ref, vs_ref, lbdas_ref);
+    KktError err_ref =
+        compute_kkt_error(problemRef, xs_ref, us_ref, vs_ref, lbdas_ref);
+    printError(err_ref);
+    for (uint t = 0; t <= horizon; t++) {
+      fmt::print("xs[{:d}] = {}\n", t, xs_ref[t].transpose());
+    }
+    for (uint t = 0; t <= horizon; t++) {
+      fmt::print("λs[{:d}] = {}\n", t, lbdas_ref[t].transpose());
+    }
+  }
+
+  BOOST_TEST_MESSAGE("Run Parallel solver");
+  ParallelRiccatiSolver<double> parSolver{problem};
+  fmt::print("Split: [{}]\n", fmt::join(parSolver.splitIdx, ", "));
+
+  parSolver.backward(mu, mu);
+  parSolver.forward(xs, us, vs, lbdas);
+  KktError err = compute_kkt_error(problemRef, xs, us, vs, lbdas);
+  printError(err);
+
+  VectorXs xerrs = VectorXs::Zero(horizon + 1);
+  for (uint i = 0; i <= horizon; i++) {
+    xerrs[(long)i] = infty_norm(xs[i] - xs_ref[i]);
+  }
+  fmt::print("xerrs = {}\n", infty_norm(xerrs));
 }
