@@ -18,6 +18,16 @@ boost::span<const T> make_span_from_indices(const std::vector<T> &vec,
   return boost::make_span(vec.data() + i0, i1 - i0);
 }
 
+/// A parallel-condensing LQ solver. This solver condenses the problem into a
+/// reduced saddle-point problem in a subset of the states and costates,
+/// corresponding to the time indices where the problem was split up.
+/// These splitting variables are used to exploit the problem's
+/// partially-separable structure: each "leg" is then condensed into its value
+/// function with respect to both its initial state and last costate (linking to
+/// the next leg). The saddle-point is cast into a linear system which is solved
+/// by dense LDL factorization.
+/// TODO: implement tailored reduced system solver
+/// TODO: generalize to more than 2 legs
 template <typename _Scalar> class ParallelRiccatiSolver {
 public:
   using Scalar = _Scalar;
