@@ -7,14 +7,14 @@ namespace aligator {
 namespace gar {
 template <typename Scalar>
 bool ProximalRiccatiImpl<Scalar>::backwardImpl(
-    boost::span<const knot_t> stages, const Scalar mudyn, const Scalar mueq,
-    boost::span<stage_factor_t> datas) {
+    boost::span<const KnotType> stages, const Scalar mudyn, const Scalar mueq,
+    boost::span<StageFactor> datas) {
   // terminal node
   uint N = (uint)(datas.size() - 1);
   {
-    stage_factor_t &d = datas[N];
+    StageFactor &d = datas[N];
     value_t &vc = d.vm;
-    const knot_t &model = stages[N];
+    const KnotType &model = stages[N];
     // fill cost-to-go matrix
     VectorRef kff = d.ff.blockSegment(0);
     VectorRef zff = d.ff.blockSegment(1);
@@ -86,10 +86,10 @@ bool ProximalRiccatiImpl<Scalar>::backwardImpl(
 }
 
 template <typename Scalar>
-void ProximalRiccatiImpl<Scalar>::computeMatrixTerms(const knot_t &model,
+void ProximalRiccatiImpl<Scalar>::computeMatrixTerms(const KnotType &model,
                                                      Scalar mudyn, Scalar mueq,
                                                      value_t &vnext,
-                                                     stage_factor_t &d) {
+                                                     StageFactor &d) {
   vnext.Pchol.compute(vnext.Pmat);
   d.PinvEt = vnext.Pchol.solve(model.E.transpose());
   vnext.schurMat.noalias() = model.E * d.PinvEt;
@@ -115,8 +115,8 @@ void ProximalRiccatiImpl<Scalar>::computeMatrixTerms(const knot_t &model,
 }
 
 template <typename Scalar>
-void ProximalRiccatiImpl<Scalar>::solveOneStage(const knot_t &model,
-                                                stage_factor_t &d, value_t &vn,
+void ProximalRiccatiImpl<Scalar>::solveOneStage(const KnotType &model,
+                                                StageFactor &d, value_t &vn,
                                                 const Scalar mudyn,
                                                 const Scalar mueq) {
 
@@ -208,7 +208,7 @@ void ProximalRiccatiImpl<Scalar>::solveOneStage(const knot_t &model,
 
 template <typename Scalar>
 bool ProximalRiccatiImpl<Scalar>::forwardImpl(
-    boost::span<const knot_t> stages, boost::span<const stage_factor_t> datas,
+    boost::span<const KnotType> stages, boost::span<const StageFactor> datas,
     boost::span<VectorXs> xs, boost::span<VectorXs> us,
     boost::span<VectorXs> vs, boost::span<VectorXs> lbdas,
     const boost::optional<ConstVectorRef> &theta_) {
@@ -216,8 +216,8 @@ bool ProximalRiccatiImpl<Scalar>::forwardImpl(
 
   uint N = (uint)(datas.size() - 1);
   for (uint t = 0; t <= N; t++) {
-    const stage_factor_t &d = datas[t];
-    const knot_t &model = stages[t];
+    const StageFactor &d = datas[t];
+    const KnotType &model = stages[t];
     assert(xs[t].size() == model.nx);
     assert(vs[t].size() == model.nc);
 

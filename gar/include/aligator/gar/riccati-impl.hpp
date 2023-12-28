@@ -19,7 +19,7 @@ template <typename Scalar> struct ProximalRiccatiImpl {
   using RowMatrixXs = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
   using RowMatrixRef = Eigen::Ref<RowMatrixXs>;
   using ConstRowMatrixRef = Eigen::Ref<const RowMatrixXs>;
-  using knot_t = LQRKnotTpl<Scalar>;
+  using KnotType = LQRKnotTpl<Scalar>;
 
   struct value_t {
     MatrixXs Pmat;                  //< Riccati matrix
@@ -44,8 +44,8 @@ template <typename Scalar> struct ProximalRiccatiImpl {
   };
 
   /// Per-node struct for all computations in the factorization.
-  struct stage_factor_t {
-    stage_factor_t(uint nx, uint nu, uint nc, uint nth)
+  struct StageFactor {
+    StageFactor(uint nx, uint nu, uint nc, uint nth)
         : Qhat(nx, nx), Rhat(nu, nu), Shat(nx, nu), qhat(nx), rhat(nu),
           AtV(nx, nx), BtV(nu, nx), Gxhat(nx, nth), Guhat(nu, nth),
           ff({nu, nc, nx, nx}, {1}), fb({nu, nc, nx, nx}, {nx}),
@@ -82,13 +82,13 @@ template <typename Scalar> struct ProximalRiccatiImpl {
     MatrixXs Gxhat;
     MatrixXs Guhat;
 
-    BlkMatrix<VectorXs, 4, 1> ff;     //< feedforward gains
-    BlkMatrix<RowMatrixXs, 4, 1> fb;  //< feedback gains
-    BlkMatrix<RowMatrixXs, 4, 1> fth; //< parameter feedback gains
-    BlkMatrix<MatrixXs, 2, 2> kktMat; //< reduced KKT matrix buffer
-    Eigen::LDLT<MatrixXs> kktChol;    //< reduced KKT LDLT solver
-    value_t vm;                       //< cost-to-go parameters
-    MatrixXs PinvEt;                  //< tmp buffer for \f$P^{-1}E^\top\f$
+    BlkMatrix<VectorXs, 4, 1> ff;          //< feedforward gains
+    BlkMatrix<RowMatrixXs, 4, 1> fb;       //< feedback gains
+    BlkMatrix<RowMatrixXs, 4, 1> fth;      //< parameter feedback gains
+    BlkMatrix<MatrixXs, 2, 2> kktMat;      //< reduced KKT matrix buffer
+    Eigen::BunchKaufman<MatrixXs> kktChol; //< reduced KKT LDLT solver
+    value_t vm;                            //< cost-to-go parameters
+    MatrixXs PinvEt;                       //< tmp buffer for \f$P^{-1}E^\top\f$
   };
 
   struct kkt0_t {
@@ -101,16 +101,18 @@ template <typename Scalar> struct ProximalRiccatiImpl {
           fth(mat.rowDims(), {nth}) {}
   };
 
-  static void computeMatrixTerms(const knot_t &model, Scalar mudyn, Scalar mueq,
-                                 value_t &vnext, stage_factor_t &d);
+  inline static void computeMatrixTerms(const KnotType &model, Scalar mudyn,
+                                        Scalar mueq, value_t &vnext,
+                                        StageFactor &d);
 
-  static bool backwardImpl(boost::span<const knot_t> stages, const Scalar mudyn,
-                           const Scalar mueq,
-                           boost::span<stage_factor_t> datas);
+  inline static bool backwardImpl(boost::span<const KnotType> stages,
+                                  const Scalar mudyn, const Scalar mueq,
+                                  boost::span<StageFactor> datas);
 
   /// Solve initial stage
-  static void computeInitial(VectorRef x0, VectorRef lbd0, const kkt0_t &kkt0,
-                             const boost::optional<ConstVectorRef> &theta_) {
+  inline static void
+  computeInitial(VectorRef x0, VectorRef lbd0, const kkt0_t &kkt0,
+                 const boost::optional<ConstVectorRef> &theta_) {
     assert(kkt0.chol.info() == Eigen::Success);
     x0 = kkt0.ff.blockSegment(0);
     lbd0 = kkt0.ff.blockSegment(1);
@@ -120,13 +122,14 @@ template <typename Scalar> struct ProximalRiccatiImpl {
     }
   }
 
-  static void solveOneStage(const knot_t &model, stage_factor_t &d, value_t &vn,
-                            const Scalar mudyn, const Scalar mueq);
+  inline static void solveOneStage(const KnotType &model, StageFactor &d,
+                                   value_t &vn, const Scalar mudyn,
+                                   const Scalar mueq);
 
   /// Forward sweep.
-  static bool
-  forwardImpl(boost::span<const knot_t> stages,
-              boost::span<const stage_factor_t> datas, boost::span<VectorXs> xs,
+  inline static bool
+  forwardImpl(boost::span<const KnotType> stages,
+              boost::span<const StageFactor> datas, boost::span<VectorXs> xs,
               boost::span<VectorXs> us, boost::span<VectorXs> vs,
               boost::span<VectorXs> lbdas,
               const boost::optional<ConstVectorRef> &theta_ = boost::none);

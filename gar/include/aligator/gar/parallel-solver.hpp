@@ -6,12 +6,14 @@
 namespace aligator {
 namespace gar {
 
+/// Create a boost::span object from a vector and two indices.
 template <class T>
 boost::span<T> make_span_from_indices(std::vector<T> &vec, size_t i0,
                                       size_t i1) {
   return boost::make_span(vec.data() + i0, i1 - i0);
 }
 
+/// @copybrief make_span_from_indices
 template <class T>
 boost::span<const T> make_span_from_indices(const std::vector<T> &vec,
                                             size_t i0, size_t i1) {
@@ -34,18 +36,12 @@ public:
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   using Impl = ProximalRiccatiImpl<Scalar>;
-  using StageFactor = typename Impl::stage_factor_t;
+  using StageFactor = typename Impl::StageFactor;
   using value_t = typename Impl::value_t;
   using KnotType = LQRKnotTpl<Scalar>;
 
   using BlkMat = BlkMatrix<MatrixXs, -1, -1>;
   using BlkVec = BlkMatrix<VectorXs, -1, 1>;
-
-  /// Struct containing data to solve a backward leg
-  struct LegData {
-    boost::span<const KnotType> stages;
-    boost::span<StageFactor> datas;
-  };
 
   explicit ParallelRiccatiSolver(const LQRProblemTpl<Scalar> &problem)
       : datas(), problem(problem) {
@@ -98,14 +94,14 @@ public:
     bool ret = true;
 #pragma omp parallel for reduction(& : ret)
     for (size_t i = 0; i < 2; i++) {
-      LegData leg{
-          make_span_from_indices(problem.stages, splitIdx[i], splitIdx[i + 1]),
-          make_span_from_indices(datas, splitIdx[i], splitIdx[i + 1])};
-      bool r = Impl::backwardImpl(leg.stages, mudyn, mueq, leg.datas);
+      boost::span<const KnotType> stview =
+          make_span_from_indices(problem.stages, splitIdx[i], splitIdx[i + 1]);
+      boost::span<StageFactor> dtview =
+          make_span_from_indices(datas, splitIdx[i], splitIdx[i + 1]);
+      bool r = Impl::backwardImpl(stview, mudyn, mueq, dtview);
       ret &= r;
     }
     solveReducedSystem(mudyn);
-    return true;
     return true;
   }
 

@@ -11,10 +11,10 @@ public:
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   using Impl = ProximalRiccatiImpl<Scalar>;
-  using stage_factor_t = typename Impl::stage_factor_t;
+  using StageFactor = typename Impl::StageFactor;
   using value_t = typename Impl::value_t;
   using kkt0_t = typename Impl::kkt0_t;
-  using knot_t = LQRKnotTpl<Scalar>;
+  using KnotType = LQRKnotTpl<Scalar>;
 
   explicit ProximalRiccatiSolver(const LQRProblemTpl<Scalar> &problem)
       : datas(), kkt0(problem.stages[0].nx, problem.nc0(), problem.ntheta()),
@@ -30,7 +30,7 @@ public:
     ALIGATOR_NOMALLOC_BEGIN;
     bool ret = Impl::backwardImpl(problem.stages, mudyn, mueq, datas);
 
-    stage_factor_t &d0 = datas[0];
+    StageFactor &d0 = datas[0];
     value_t &vinit = d0.vm;
     vinit.Vxx = vinit.Pmat;
     vinit.vx = vinit.pvec;
@@ -69,7 +69,7 @@ public:
     return Impl::forwardImpl(problem.stages, datas, xs, us, vs, lbdas, theta_);
   }
 
-  std::vector<stage_factor_t> datas;
+  std::vector<StageFactor> datas;
   kkt0_t kkt0;
 
   VectorXs thGrad; //< optimal value gradient wrt parameter
@@ -81,7 +81,7 @@ protected:
     auto &knots = problem.stages;
     datas.reserve(N + 1);
     for (uint t = 0; t <= N; t++) {
-      const knot_t &knot = knots[t];
+      const KnotType &knot = knots[t];
       datas.emplace_back(knot.nx, knot.nu, knot.nc, knot.nth);
     }
     thGrad.setZero();

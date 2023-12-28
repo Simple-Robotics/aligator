@@ -4,7 +4,7 @@
 namespace aligator {
 namespace gar {
 
-template class aligator::gar::ParallelRiccatiSolver<context::Scalar>;
+template class ParallelRiccatiSolver<context::Scalar>;
 
 } // namespace gar
 } // namespace aligator

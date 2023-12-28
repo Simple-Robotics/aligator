@@ -13,7 +13,7 @@ using namespace gar;
 
 using context::Scalar;
 using prox_riccati_t = ProximalRiccatiSolver<Scalar>;
-using stage_factor_t = prox_riccati_t::stage_factor_t;
+using StageFactor = prox_riccati_t::StageFactor;
 using knot_t = LQRKnotTpl<context::Scalar>;
 using lqr_t = LQRProblemTpl<context::Scalar>;
 } // namespace python
@@ -24,8 +24,8 @@ namespace internal {
 template <>
 struct has_operator_equal<::aligator::python::knot_t> : boost::false_type {};
 template <>
-struct has_operator_equal<::aligator::python::stage_factor_t>
-    : boost::false_type {};
+struct has_operator_equal<::aligator::python::StageFactor> : boost::false_type {
+};
 } // namespace internal
 } // namespace eigenpy
 
@@ -76,15 +76,17 @@ void exposeGAR() {
       .def_readonly("Vtt", &value_t::Vtt)
       .def_readonly("vt", &value_t::vt);
 
-  bp::class_<stage_factor_t>("stage_factor", bp::no_init)
-      .def_readonly("ff", &stage_factor_t::ff)
-      .def_readonly("fb", &stage_factor_t::fb)
-      .def_readonly("fth", &stage_factor_t::fth)
-      .def_readonly("kktMat", &stage_factor_t::kktMat)
-      .def_readonly("kktChol", &stage_factor_t::kktChol)
-      .def_readonly("vm", &stage_factor_t::vm);
+  bp::class_<StageFactor>(
+      "StageFactor", "Stagewise factor for the generalized Riccati algorithm.",
+      bp::no_init)
+      .def_readonly("ff", &StageFactor::ff)
+      .def_readonly("fb", &StageFactor::fb)
+      .def_readonly("fth", &StageFactor::fth)
+      .def_readonly("kktMat", &StageFactor::kktMat)
+      .def_readonly("kktChol", &StageFactor::kktChol)
+      .def_readonly("vm", &StageFactor::vm);
 
-  StdVectorPythonVisitor<std::vector<stage_factor_t>, true>::expose(
+  StdVectorPythonVisitor<std::vector<StageFactor>, true>::expose(
       "StdVec_stage_factor");
 
   bp::class_<knot_t>("LQRKnot", bp::no_init)
