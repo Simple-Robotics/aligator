@@ -63,7 +63,3 @@ std::vector<T> mergeStdVectors(const std::vector<T> &v1,
   }
   return out;
 }
-
-/// Split a given problem into two parts
-std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem, uint t0,
-                                           double mu = 0.);
