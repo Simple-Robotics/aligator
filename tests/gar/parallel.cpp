@@ -187,6 +187,8 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
   x0 << 1., 1.;
   uint horizon = 20;
 
+  const double tol = 1e-10;
+
   problem_t problem = generate_problem(x0, horizon, nx, nu);
   problem_t problemRef = problem;
   const double mu = 1e-14;
@@ -220,10 +222,13 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
   parSolver.forward(xs, us, vs, lbdas);
   KktError err = compute_kkt_error(problemRef, xs, us, vs, lbdas);
   printError(err);
+  BOOST_CHECK_LE(err.max, tol);
 
   VectorXs xerrs = VectorXs::Zero(horizon + 1);
   for (uint i = 0; i <= horizon; i++) {
     xerrs[(long)i] = infty_norm(xs[i] - xs_ref[i]);
   }
-  fmt::print("xerrs = {}\n", infty_norm(xerrs));
+  double xerr = infty_norm(xerrs);
+  fmt::print("xerrs = {}\n", xerr);
+  BOOST_CHECK_LE(xerr, tol);
 }
