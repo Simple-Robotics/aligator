@@ -286,6 +286,12 @@ if(BUILD_CROCODDYL_COMPAT)
   target_add_example_robot_data(croc_talos_arm_utils)
 endif()
 
+if(BUILD_BENCHMARKS OR BUILD_TESTING)
+  add_library(gar_test_utils STATIC ${CMAKE_SOURCE_DIR}/tests/gar/test_util.cpp)
+  target_link_libraries(gar_test_utils PRIVATE aligator::gar)
+  set_target_properties(gar_test_utils PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "tests/")
+endif()
+
 if(BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()

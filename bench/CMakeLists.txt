@@ -21,3 +21,6 @@ if(BUILD_CROCODDYL_COMPAT)
   create_bench("multithreading.cpp" TRUE)
   target_add_example_robot_data(bench-multithreading)
 endif()
+
+create_bench("gar.cpp" FALSE)
+target_link_libraries(bench-gar PRIVATE gar_test_utils)

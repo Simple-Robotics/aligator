@@ -1,7 +1,3 @@
-add_library(gar_test_utils STATIC test_util.cpp)
-target_link_libraries(gar_test_utils PRIVATE aligator::gar)
-set_target_properties(gar_test_utils PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "../")
-
 set(_gar_test_deps aligator::gar gar_test_utils)
 
 function(add_gar_test name)
