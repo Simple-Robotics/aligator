@@ -92,14 +92,13 @@ public:
   bool backward(Scalar mudyn, Scalar mueq) {
 
     bool ret = true;
-#pragma omp parallel for reduction(& : ret)
+#pragma omp parallel for num_threads(2) reduction(& : ret)
     for (size_t i = 0; i < 2; i++) {
       boost::span<const KnotType> stview =
           make_span_from_indices(problem.stages, splitIdx[i], splitIdx[i + 1]);
       boost::span<StageFactor> dtview =
           make_span_from_indices(datas, splitIdx[i], splitIdx[i + 1]);
-      bool r = Impl::backwardImpl(stview, mudyn, mueq, dtview);
-      ret &= r;
+      ret &= Impl::backwardImpl(stview, mudyn, mueq, dtview);
     }
     solveReducedSystem(mudyn);
     return true;
@@ -118,7 +117,8 @@ public:
     // TODO: remove temporary memory allocation here
     BlkMat redKkt(dims, dims);
     redKkt.setZero();
-    BlkVec redRhs(dims);
+    reduced_kkt_sol = BlkVec(dims);
+    auto &redRhs = reduced_kkt_sol.value();
 
     redKkt(0, 0).diagonal().array() = -mudyn;
     redKkt(0, 1) = problem.G0;
@@ -143,7 +143,6 @@ public:
 
     Eigen::BunchKaufman<MatrixXs> chol{redKkt.matrix()};
     chol.solveInPlace(redRhs.matrix());
-    reduced_kkt_sol.emplace(redRhs);
   }
 
   void forward(VectorOfVectors &xs, VectorOfVectors &us, VectorOfVectors &vs,
@@ -154,7 +153,7 @@ public:
     lbdas[splitIdx[1]] = rkkts[2];
     xs[splitIdx[1]] = rkkts[3];
 
-    // #pragma omp parallel for
+#pragma omp parallel for num_threads(2)
     for (size_t i = 0; i < 2; i++) {
       auto xsview = make_span_from_indices(xs, splitIdx[i], splitIdx[i + 1]);
       auto usview = make_span_from_indices(us, splitIdx[i], splitIdx[i + 1]);
