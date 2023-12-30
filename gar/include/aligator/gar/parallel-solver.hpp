@@ -43,17 +43,18 @@ public:
   using BlkMat = BlkMatrix<MatrixXs, -1, -1>;
   using BlkVec = BlkMatrix<VectorXs, -1, 1>;
 
-  explicit ParallelRiccatiSolver(const LQRProblemTpl<Scalar> &problem)
-      : datas(), problem(problem) {
+  explicit ParallelRiccatiSolver(const LQRProblemTpl<Scalar> &problem,
+                                 const uint num_legs = 2)
+      : datas(), numLegs(num_legs), splitIdx(num_legs + 1), problem(problem) {
 
     uint N = (uint)problem.horizon();
-    uint i0 = 0;
-    uint i1 = (N + 1) / 2;
-    uint i2 = N + 1;
-    splitIdx = {i0, i1, i2};
-
-    build_leg(i0, i1);
-    build_leg(i1, i2);
+    for (uint i = 0; i < num_legs; i++) {
+      splitIdx[i] = i * (N + 1) / num_legs;
+    }
+    splitIdx[num_legs] = N + 1;
+    for (uint i = 0; i < num_legs; i++) {
+      buildLeg(splitIdx[i], splitIdx[i + 1], i == (num_legs - 1));
+    }
 
     assert(datas.size() == (N + 1));
     assert(checkIndices());
@@ -63,15 +64,14 @@ public:
     if (splitIdx[0] != 0)
       return false;
 
-    for (size_t i = 0; i < splitIdx.size() - 1; i++) {
+    for (uint i = 0; i < numLegs; i++) {
       if (splitIdx[i] >= splitIdx[i + 1])
         return false;
     }
     return true;
   }
 
-  void build_leg(uint start, uint end) {
-    bool last_leg = (int)end == problem.horizon() + 1;
+  void buildLeg(uint start, uint end, bool last_leg) {
     for (uint t = start; t < end; t++) {
       const KnotType &knot = problem.stages[t];
       if (!last_leg) {
@@ -92,8 +92,8 @@ public:
   bool backward(Scalar mudyn, Scalar mueq) {
 
     bool ret = true;
-#pragma omp parallel for num_threads(2) reduction(& : ret)
-    for (size_t i = 0; i < 2; i++) {
+#pragma omp parallel for num_threads(numLegs) reduction(& : ret)
+    for (uint i = 0; i < numLegs; i++) {
       boost::span<const KnotType> stview =
           make_span_from_indices(problem.stages, splitIdx[i], splitIdx[i + 1]);
       boost::span<StageFactor> dtview =
@@ -153,8 +153,8 @@ public:
     lbdas[splitIdx[1]] = rkkts[2];
     xs[splitIdx[1]] = rkkts[3];
 
-#pragma omp parallel for num_threads(2)
-    for (size_t i = 0; i < 2; i++) {
+#pragma omp parallel for num_threads(numLegs)
+    for (uint i = 0; i < numLegs; i++) {
       auto xsview = make_span_from_indices(xs, splitIdx[i], splitIdx[i + 1]);
       auto usview = make_span_from_indices(us, splitIdx[i], splitIdx[i + 1]);
       auto vsview = make_span_from_indices(vs, splitIdx[i], splitIdx[i + 1]);
@@ -173,6 +173,9 @@ public:
   }
 
   std::vector<StageFactor> datas;
+  /// Number of parallel divisions in the problem.
+  uint numLegs;
+  /// Indices at which the problem should be split.
   std::vector<uint> splitIdx;
   boost::optional<BlkVec> reduced_kkt_sol = boost::none;
 
