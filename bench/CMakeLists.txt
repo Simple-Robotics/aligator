@@ -2,8 +2,6 @@
 # Copyright (C) 2023 LAAS-CNRS, INRIA
 #
 
-find_package(benchmark REQUIRED)
-
 # Create a benchmark
 function(create_bench exfile croc)
   get_filename_component(exname ${exfile} NAME_WE)
