@@ -282,6 +282,7 @@ if(BUILD_EXAMPLES)
 endif()
 
 if(BUILD_BENCHMARKS)
+  find_package(benchmark REQUIRED)
   add_subdirectory(bench)
 endif()
 
