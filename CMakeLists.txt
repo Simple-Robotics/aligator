@@ -28,16 +28,12 @@ set(DOXYGEN_USE_TEMPLATE_CSS YES)
 set(JRL_CMAKE_MODULES "${CMAKE_CURRENT_LIST_DIR}/cmake")
 if(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
   if(${CMAKE_VERSION} VERSION_LESS "3.14.0")
-    message(
-      FATAL_ERROR
-        "\nPlease run the following command first:\ngit submodule update --init\n"
-    )
+    message(FATAL_ERROR "\nPlease run the following command first:\ngit submodule update --init\n")
   else()
     message(STATUS "JRL cmakemodules not found. Let's fetch it.")
     include(FetchContent)
-    FetchContent_Declare(
-      "jrl-cmakemodules"
-      GIT_REPOSITORY "https://github.com/jrl-umi3218/jrl-cmakemodules.git")
+    FetchContent_Declare("jrl-cmakemodules"
+                         GIT_REPOSITORY "https://github.com/jrl-umi3218/jrl-cmakemodules.git")
     FetchContent_MakeAvailable("jrl-cmakemodules")
     FetchContent_GetProperties("jrl-cmakemodules" SOURCE_DIR JRL_CMAKE_MODULES)
   endif()
@@ -52,10 +48,10 @@ include(${JRL_CMAKE_MODULES}/boost.cmake)
 include(${JRL_CMAKE_MODULES}/ide.cmake)
 include(${JRL_CMAKE_MODULES}/apple.cmake)
 if(APPLE) # Use the handmade approach
-    set(CMAKE_MODULE_PATH ${JRL_CMAKE_MODULES}/find-external/OpenMP ${CMAKE_MODULE_PATH})
+  set(CMAKE_MODULE_PATH ${JRL_CMAKE_MODULES}/find-external/OpenMP ${CMAKE_MODULE_PATH})
 elseif(UNIX)
   if(${CMAKE_VERSION} VERSION_GREATER "3.20.0" OR ${CMAKE_VERSION} VERSION_EQUAL "3.20.0")
-      set(CMAKE_MODULE_PATH ${JRL_CMAKE_MODULES}/find-external/OpenMP ${CMAKE_MODULE_PATH})
+    set(CMAKE_MODULE_PATH ${JRL_CMAKE_MODULES}/find-external/OpenMP ${CMAKE_MODULE_PATH})
   endif()
 endif(APPLE)
 include(CMakeDependentOption)
