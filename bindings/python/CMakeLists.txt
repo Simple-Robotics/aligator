@@ -1,9 +1,9 @@
 #
 # Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #
-include(${PROJECT_SOURCE_DIR}/cmake/python.cmake)
+include(${JRL_CMAKE_MODULES}/python.cmake)
 if(GENERATE_PYTHON_STUBS)
-  include(${PROJECT_SOURCE_DIR}/cmake/stubs.cmake)
+  include(${JRL_CMAKE_MODULES}/stubs.cmake)
 endif(GENERATE_PYTHON_STUBS)
 
 file(GLOB PY_SOURCES src/*.cpp src/modelling/*.cpp)
