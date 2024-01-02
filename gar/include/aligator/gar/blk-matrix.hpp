@@ -28,6 +28,10 @@ public:
   static_assert(!MatrixType::IsVectorAtCompileTime || (M == 1),
                 "Compile-time vector cannot have more than one column block.");
 
+  BlkMatrix()
+      : m_data(), m_rowDims(), m_colDims(), m_rowIndices(), m_colIndices(),
+        m_totalRows(0), m_totalCols(0) {}
+
   BlkMatrix(const row_dim_t &rowDims, const col_dim_t &colDims)
       : m_data(), //
         m_rowDims(rowDims), m_colDims(colDims), m_rowIndices(rowDims),
