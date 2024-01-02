@@ -88,7 +88,7 @@ def create_rcm():
     # create rigid constraint between ball & tool0
     tool_fid = rmodel.getFrameId("tool0")
     frame: pin.Frame = rmodel.frames[tool_fid]
-    joint1_id = frame.parentJoint
+    joint1_id = frame.parent
     joint2_id = rmodel.getJointId("ball/root_joint")
     pin.framesForwardKinematics(rmodel, rdata, ref_q0)
     pl1 = rmodel.frames[tool_fid].placement
