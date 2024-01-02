@@ -14,7 +14,7 @@ FOOT_FRAME_IDS = {
 }
 
 FOOT_JOINT_IDS = {
-    fname: rmodel.frames[fid].parentJoint for fname, fid in FOOT_FRAME_IDS.items()
+    fname: rmodel.frames[fid].parent for fname, fid in FOOT_FRAME_IDS.items()
 }
 
 
