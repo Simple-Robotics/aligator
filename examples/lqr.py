@@ -1,10 +1,19 @@
-import aligator
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# SPDX-License-Identifier: BSD-2-Clause
+# Copyright 2023 Inria
+
+"""Formulating and solving a linear quadratic regulator with Aligator."""
+
+from copy import deepcopy
+
+import matplotlib.pyplot as plt
+import numpy as np
 import tap
 
-import numpy as np
-import matplotlib.pyplot as plt
-
-from aligator import dynamics, constraints, manifolds
+import aligator
+from aligator import constraints, dynamics, manifolds
 from aligator.utils.plotting import plot_convergence
 
 
@@ -14,14 +23,14 @@ class Args(tap.Tap):
 
 
 args = Args().parse_args()
-print(args)
-
 np.random.seed(42)
-nx = 3
-nu = 3
+
+nx = 3  # dimension of the state manifold
+nu = 3  # dimension of the input
 space = manifolds.VectorSpace(nx)
 x0 = space.neutral() + (0.2, 0.3, -0.1)
 
+# Linear discrete dynamics: x[t+1] = A x[t] + B u[t] + c
 A = np.eye(nx)
 A[0, 1] = -0.2
 A[1, 0] = 0.2
@@ -30,20 +39,19 @@ B[2, :] = 0.4
 c = np.zeros(nx)
 c[:] = (0.0, 0.0, 0.1)
 
+# Quadratic cost: ½ x^T Q x + ½ u^T R u + x^T N u
 Q = 1e-2 * np.eye(nx)
 R = 1e-2 * np.eye(nu)
 N = 1e-5 * np.eye(nx, nu)
 
 Qf = np.eye(nx)
-if args.term_cstr:
+if args.term_cstr:  # <-- TODO: should it be `not term_cstr`?
     Qf[:, :] = 0.0
 
 
+# These matrices define the costs and constraints that apply at each stage
+# (a.k.a. node) of our trajectory optimization problem
 rcost0 = aligator.QuadraticCost(Q, R, N)
-assert np.allclose(rcost0.w_x, Q)
-assert np.allclose(rcost0.w_u, R)
-assert np.allclose(rcost0.weights_cross, N)
-assert rcost0.has_cross_term
 term_cost = aligator.QuadraticCost(Qf, R)
 dynmodel = dynamics.LinearDiscreteDynamics(A, B, c)
 stage = aligator.StageModel(rcost0, dynmodel)
@@ -54,13 +62,13 @@ if args.bounds:
     stage.addConstraint(ctrl_fn, constraints.BoxConstraint(u_min, u_max))
 
 
+# Build our problem by appending stages and the optional terminal constraint
 nsteps = 20
 problem = aligator.TrajOptProblem(x0, nu, space, term_cost)
 
 for i in range(nsteps):
     problem.addStage(stage)
 
-xtar = space.neutral()
 xtar2 = 0.1 * np.ones(nx)
 if args.term_cstr:
     term_fun = aligator.StateErrorResidual(space, nu, xtar2)
@@ -68,10 +76,8 @@ if args.term_cstr:
         aligator.StageConstraint(term_fun, constraints.EqualityConstraintSet())
     )
 
-if args.bounds:
-    mu_init = 1e-3
-else:
-    mu_init = 1e-6
+# Instantiate a solver separately
+mu_init = 1e-3 if args.bounds else 1e-6
 rho_init = 0.0
 verbose = aligator.VerboseLevel.VERBOSE
 tol = 1e-8
@@ -89,28 +95,14 @@ class CustomCallback(aligator.BaseCallback):
         self.kkts = []
 
     def call(self, workspace: aligator.Workspace, results: aligator.Results):
-        import copy
-
         self.active_sets.append(workspace.active_constraints.tolist())
-        self.x_dirs.append(copy.deepcopy(workspace.dxs.tolist()))
-        self.u_dirs.append(copy.deepcopy(workspace.dus.tolist()))
-        self.lams.append(copy.deepcopy(results.lams.tolist()))
+        self.x_dirs.append(deepcopy(workspace.dxs.tolist()))
+        self.u_dirs.append(deepcopy(workspace.dus.tolist()))
+        self.lams.append(deepcopy(results.lams.tolist()))
         Qus = [qq.Qu.copy() for qq in workspace.q_params]
         self.Qus.append(Qus)
         kkts = workspace.kkt_mat
-        self.kkts.append(copy.deepcopy(kkts))
-
-        def infNorm(xs):
-            return max([np.linalg.norm(x, np.inf) for x in xs])
-
-        print("Lxs: ", end="")
-        Lxs = workspace.Lxs.tolist()
-        if solver.force_initial_condition:
-            Lxs = Lxs[1:]
-        print("norm = {}".format(infNorm(Lxs)))
-        Lus = workspace.Lus.tolist()
-        print("Lus: ", end="")
-        print("norm = {}".format(infNorm(Lus)))
+        self.kkts.append(deepcopy(kkts))
 
 
 cus_cb = CustomCallback()
@@ -133,8 +125,6 @@ for i in range(nsteps):
 solver.run(problem, xs_i, us_i)
 res = solver.results
 ws = solver.workspace
-
-print(res)
 
 plt.subplot(121)
 fig1: plt.Figure = plt.gcf()
@@ -197,17 +187,13 @@ ax.hlines(
 )
 plot_convergence(his_cb, ax, res)
 ax.set_title("Convergence (constrained LQR)")
-ax.legend(["Tolerance $\\epsilon_\\mathrm{tol}$", "Primal error $p$", "Dual error $d$"])
+ax.legend(
+    [
+        "Tolerance $\\epsilon_\\mathrm{tol}$",
+        "Primal error $p$",
+        "Dual error $d$",
+    ]
+)
 fig2.tight_layout()
 
 plt.show()
-
-fig_dict = {"traj": fig1, "conv": fig2}
-TAG = "LQR"
-if args.bounds:
-    TAG += "_bounded"
-if args.term_cstr:
-    TAG += "_cstr"
-for name, fig in fig_dict.items():
-    fig.savefig(f"assets/{TAG}_{name}.png")
-    fig.savefig(f"assets/{TAG}_{name}.pdf")
