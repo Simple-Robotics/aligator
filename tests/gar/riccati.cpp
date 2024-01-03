@@ -7,6 +7,7 @@
 #include <chrono>
 
 #include "./test_util.hpp"
+#include "aligator/gar/helpers.hpp"
 
 using namespace aligator::gar;
 

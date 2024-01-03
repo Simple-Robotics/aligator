@@ -2,7 +2,6 @@
 #pragma once
 
 #include "aligator/gar/riccati.hpp"
-#include "aligator/gar/helpers.hpp"
 #include <random>
 
 ALIGATOR_DYNAMIC_TYPEDEFS(double);
