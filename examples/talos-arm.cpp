@@ -1,6 +1,7 @@
 #include "croc-talos-arm.hpp"
 
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
+#include "aligator/compat/crocoddyl/problem-wrap.hpp"
 #include <proxsuite-nlp/tests/cnpy.hpp>
 #include <fmt/ostream.h>
 
