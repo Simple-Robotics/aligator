@@ -29,8 +29,6 @@ boost::span<const T> make_span_from_indices(const std::vector<T> &vec,
 /// function with respect to both its initial state and last costate (linking to
 /// the next leg). The saddle-point is cast into a linear system which is solved
 /// by dense LDL factorization.
-/// TODO: implement tailored reduced system solver
-/// TODO: generalize to more than 2 legs
 template <typename _Scalar> class ParallelRiccatiSolver {
 public:
   using Scalar = _Scalar;
@@ -56,8 +54,26 @@ public:
       buildLeg(splitIdx[i], splitIdx[i + 1], i == (num_legs - 1));
     }
 
+    const std::vector<long> dims = compute_dims_for_reduced_system();
+    condensedKktRhs = BlkVec(dims);
+    condensedKktSystem = initialize_tridiag_system(dims);
+
     assert(datas.size() == (N + 1));
     assert(checkIndices());
+  }
+
+  auto compute_dims_for_reduced_system() const {
+    const auto &stages = problem.stages;
+    std::vector<long> dims{problem.nc0(), stages[0].nx}; // dims for rhs
+
+    // fill in for all legs
+    for (size_t i = 0; i < numLegs - 1; i++) {
+      uint i0 = splitIdx[i];
+      uint i1 = splitIdx[i + 1];
+      dims.push_back(stages[i0].nx);
+      dims.push_back(stages[i1 - 1].nx);
+    }
+    return dims;
   }
 
   inline bool checkIndices() const {
@@ -101,9 +117,9 @@ public:
           make_span_from_indices(datas, splitIdx[i], splitIdx[i + 1]);
       ret &= Impl::backwardImpl(stview, mudyn, mueq, dtview);
     }
-    ALIGATOR_NOMALLOC_END;
 
     assembleCondensedSystem(mudyn);
+    ALIGATOR_NOMALLOC_END;
     symmetric_block_tridiagonal_solve(
         condensedKktSystem.subdiagonal, condensedKktSystem.diagonal,
         condensedKktSystem.superdiagonal, condensedKktRhs);
@@ -117,17 +133,12 @@ public:
   };
 
   /// Create the sparse representation of the reduced KKT system.
-  /// TODO: fix is the hot path of the solver, fix all the bloody mallocs
   void assembleCondensedSystem(const Scalar mudyn) {
     std::vector<MatrixXs> &subdiagonal = condensedKktSystem.subdiagonal;
     std::vector<MatrixXs> &diagonal = condensedKktSystem.diagonal;
     std::vector<MatrixXs> &superdiagonal = condensedKktSystem.superdiagonal;
 
     const std::vector<KnotType> &stages = problem.stages;
-
-    subdiagonal.resize(2 * numLegs - 1);
-    diagonal.resize(2 * numLegs);
-    superdiagonal.resize(2 * numLegs - 1);
 
     uint nc0 = problem.nc0();
     diagonal[0] = -mudyn * MatrixXs::Identity(nc0, nc0);
@@ -136,8 +147,6 @@ public:
     diagonal[1] = datas[0].vm.Pmat;
     superdiagonal[1] = datas[0].vm.Vxt;
 
-    std::vector<long> dims{problem.nc0(), stages[0].nx}; // dims for rhs
-
     // fill in for all legs
     for (size_t i = 0; i < numLegs - 1; i++) {
       uint i0 = splitIdx[i];
@@ -145,8 +154,6 @@ public:
 
       size_t ip1 = i + 1;
       diagonal[2 * ip1] = datas[i0].vm.Vtt;
-      dims.push_back(stages[i0].nx);
-      dims.push_back(stages[i1 - 1].nth);
 
       diagonal[2 * ip1 + 1] = datas[i1].vm.Pmat;
       superdiagonal[2 * ip1] = stages[i1].E;
@@ -161,21 +168,16 @@ public:
       subdiagonal[i] = superdiagonal[i].transpose();
     }
 
-    assert(dims.size() == diagonal.size());
-
-    condensedKktRhs = BlkVec(dims);
-    condensedKktRhs[0] = problem.g0;
-    condensedKktRhs[1] = datas[0].vm.pvec;
+    condensedKktRhs[0] = -problem.g0;
+    condensedKktRhs[1] = -datas[0].vm.pvec;
 
     for (size_t i = 0; i < numLegs - 1; i++) {
       uint i0 = splitIdx[i];
       uint i1 = splitIdx[i + 1];
       size_t ip1 = i + 1;
-      condensedKktRhs[2 * ip1] = datas[i0].vm.vt;
-      condensedKktRhs[2 * ip1 + 1] = datas[i1].vm.pvec;
+      condensedKktRhs[2 * ip1] = -datas[i0].vm.vt;
+      condensedKktRhs[2 * ip1 + 1] = -datas[i1].vm.pvec;
     }
-
-    condensedKktRhs.matrix() *= -1.;
   }
 
   void forward(VectorOfVectors &xs, VectorOfVectors &us, VectorOfVectors &vs,
@@ -220,6 +222,28 @@ public:
 
 protected:
   const LQRProblemTpl<Scalar> &problem;
+
+  inline static condensed_system_t
+  initialize_tridiag_system(const std::vector<long> &dims) {
+    std::vector<MatrixXs> subdiagonal;
+    std::vector<MatrixXs> diagonal;
+    std::vector<MatrixXs> superdiagonal;
+
+    subdiagonal.reserve(dims.size() - 1);
+    diagonal.reserve(dims.size());
+    superdiagonal.reserve(dims.size());
+
+    diagonal.emplace_back(dims[0], dims[0]);
+
+    for (uint i = 0; i < dims.size() - 1; i++) {
+      superdiagonal.emplace_back(dims[i], dims[i + 1]);
+      diagonal.emplace_back(dims[i + 1], dims[i + 1]);
+      subdiagonal.emplace_back(dims[i + 1], dims[i]);
+    }
+
+    return {std::move(subdiagonal), std::move(diagonal),
+            std::move(superdiagonal)};
+  }
 };
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
