@@ -1,6 +1,7 @@
 #pragma once
 
 #include "./riccati-impl.hpp"
+#include "./block-tridiagonal-solver.hpp"
 #include "aligator/threads.hpp"
 
 namespace aligator {
@@ -90,6 +91,7 @@ public:
 
   bool backward(Scalar mudyn, Scalar mueq) {
 
+    ALIGATOR_NOMALLOC_BEGIN;
     bool ret = true;
 #pragma omp parallel for num_threads(numLegs) reduction(& : ret)
     for (uint i = 0; i < numLegs; i++) {
@@ -99,56 +101,91 @@ public:
           make_span_from_indices(datas, splitIdx[i], splitIdx[i + 1]);
       ret &= Impl::backwardImpl(stview, mudyn, mueq, dtview);
     }
-    solveReducedSystem(mudyn);
+    ALIGATOR_NOMALLOC_END;
+
+    assembleCondensedSystem(mudyn);
+    symmetric_block_tridiagonal_solve(
+        condensedKktSystem.subdiagonal, condensedKktSystem.diagonal,
+        condensedKktSystem.superdiagonal, condensedKktRhs);
     return true;
   }
 
-  /// Solve reduced KKT system using dense factorization.
-  void solveReducedSystem(const Scalar mudyn) {
-    auto i0 = splitIdx[0];
-    auto i1 = splitIdx[1];
-    const KnotType &kt0 = problem.stages[i0];
-    const StageFactor<Scalar> &sf0 = datas[i0];
-    const KnotType &kt1 = problem.stages[i1];
-    const StageFactor<Scalar> &sf1 = datas[i1];
+  struct condensed_system_t {
+    std::vector<MatrixXs> subdiagonal;
+    std::vector<MatrixXs> diagonal;
+    std::vector<MatrixXs> superdiagonal;
+  };
 
-    std::vector<long> dims = {problem.nc0(), kt0.nx, kt1.nx, kt1.nx};
-    // TODO: remove temporary memory allocation here
-    BlkMat redKkt(dims, dims);
-    redKkt.setZero();
+  /// Create the sparse representation of the reduced KKT system.
+  /// TODO: fix is the hot path of the solver, fix all the bloody mallocs
+  void assembleCondensedSystem(const Scalar mudyn) {
+    std::vector<MatrixXs> &subdiagonal = condensedKktSystem.subdiagonal;
+    std::vector<MatrixXs> &diagonal = condensedKktSystem.diagonal;
+    std::vector<MatrixXs> &superdiagonal = condensedKktSystem.superdiagonal;
+
+    const std::vector<KnotType> &stages = problem.stages;
+
+    subdiagonal.resize(2 * numLegs - 1);
+    diagonal.resize(2 * numLegs);
+    superdiagonal.resize(2 * numLegs - 1);
+
+    uint nc0 = problem.nc0();
+    diagonal[0] = -mudyn * MatrixXs::Identity(nc0, nc0);
+    superdiagonal[0] = problem.G0;
+
+    diagonal[1] = datas[0].vm.Pmat;
+    superdiagonal[1] = datas[0].vm.Vxt;
+
+    std::vector<long> dims{problem.nc0(), stages[0].nx}; // dims for rhs
+
+    // fill in for all legs
+    for (size_t i = 0; i < numLegs - 1; i++) {
+      uint i0 = splitIdx[i];
+      uint i1 = splitIdx[i + 1];
+
+      size_t ip1 = i + 1;
+      diagonal[2 * ip1] = datas[i0].vm.Vtt;
+      dims.push_back(stages[i0].nx);
+      dims.push_back(stages[i1 - 1].nth);
+
+      diagonal[2 * ip1 + 1] = datas[i1].vm.Pmat;
+      superdiagonal[2 * ip1] = stages[i1].E;
+
+      if (ip1 + 1 < numLegs) {
+        superdiagonal[2 * ip1 + 1] = datas[i1].vm.Vxt;
+      }
+    }
+
+    // fix sub diagonal
+    for (size_t i = 0; i < subdiagonal.size(); i++) {
+      subdiagonal[i] = superdiagonal[i].transpose();
+    }
+
+    assert(dims.size() == diagonal.size());
+
     condensedKktRhs = BlkVec(dims);
-
-    redKkt(0, 0).diagonal().array() = -mudyn;
-    redKkt(0, 1) = problem.G0;
-
-    redKkt(1, 0) = problem.G0.transpose();
-    redKkt(1, 1) = sf0.vm.Pmat;
-    redKkt(1, 2) = sf0.vm.Vxt;
-
-    redKkt(2, 1) = sf0.vm.Vxt.transpose();
-    redKkt(2, 2) = sf0.vm.Vtt; // Pi0
-    redKkt(2, 3) = kt0.E;
-
-    redKkt(3, 2) = kt0.E.transpose();
-    redKkt(3, 3) = sf1.vm.Pmat;
-
     condensedKktRhs[0] = problem.g0;
-    condensedKktRhs[1] = sf0.vm.pvec;
-    condensedKktRhs[2] = sf0.vm.vt;
-    condensedKktRhs[3] = sf1.vm.pvec;
+    condensedKktRhs[1] = datas[0].vm.pvec;
 
-    condensedKktRhs.matrix() *= -1;
+    for (size_t i = 0; i < numLegs - 1; i++) {
+      uint i0 = splitIdx[i];
+      uint i1 = splitIdx[i + 1];
+      size_t ip1 = i + 1;
+      condensedKktRhs[2 * ip1] = datas[i0].vm.vt;
+      condensedKktRhs[2 * ip1 + 1] = datas[i1].vm.pvec;
+    }
 
-    Eigen::BunchKaufman<MatrixXs> chol{redKkt.matrix()};
-    chol.solveInPlace(condensedKktRhs.matrix());
+    condensedKktRhs.matrix() *= -1.;
   }
 
   void forward(VectorOfVectors &xs, VectorOfVectors &us, VectorOfVectors &vs,
                VectorOfVectors &lbdas) {
-    lbdas[0] = condensedKktRhs[0];
-    xs[0] = condensedKktRhs[1];
-    lbdas[splitIdx[1]] = condensedKktRhs[2];
-    xs[splitIdx[1]] = condensedKktRhs[3];
+    for (size_t i = 0; i < numLegs; i++) {
+      uint i0 = splitIdx[i];
+      lbdas[i0] = condensedKktRhs[2 * i];
+      xs[i0] = condensedKktRhs[2 * i + 1];
+    }
+    ALIGATOR_NOMALLOC_BEGIN;
 
 #pragma omp parallel for num_threads(numLegs)
     for (uint i = 0; i < numLegs; i++) {
@@ -159,7 +196,7 @@ public:
       auto stview =
           make_span_from_indices(problem.stages, splitIdx[i], splitIdx[i + 1]);
       auto dsview = make_span_from_indices(datas, splitIdx[i], splitIdx[i + 1]);
-      if (i == 1) {
+      if (i == numLegs - 1) {
         Impl::forwardImpl(stview, dsview, xsview, usview, vsview, lsview);
       } else {
         ConstVectorRef theta1 = lbdas[splitIdx[i + 1]];
@@ -167,13 +204,17 @@ public:
                           theta1);
       }
     }
+    ALIGATOR_NOMALLOC_END;
   }
 
   std::vector<StageFactor<Scalar>> datas;
-  /// Number of parallel divisions in the problem.
+  /// Number of parallel divisions in the problem: \f$J+1\f$ in the math.
   uint numLegs;
   /// Indices at which the problem should be split.
   std::vector<uint> splitIdx;
+
+  /// Hold the compressed representation of the condensed KKT system
+  condensed_system_t condensedKktSystem;
   /// Contains the right-hand side and solution of the condensed KKT system.
   BlkVec condensedKktRhs;
 

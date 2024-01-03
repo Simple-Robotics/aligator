@@ -216,7 +216,7 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
   }
 
   BOOST_TEST_MESSAGE("Run Parallel solver");
-  ParallelRiccatiSolver<double> parSolver{problem};
+  ParallelRiccatiSolver<double> parSolver(problem, 4);
   fmt::print("Split: [{}]\n", fmt::join(parSolver.splitIdx, ", "));
 
   parSolver.backward(mu, mu);
@@ -226,10 +226,21 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
   BOOST_CHECK_LE(err.max, tol);
 
   VectorXs xerrs = VectorXs::Zero(horizon + 1);
+  VectorXs lerrs = xerrs;
   for (uint i = 0; i <= horizon; i++) {
     xerrs[(long)i] = infty_norm(xs[i] - xs_ref[i]);
+    lerrs[(long)i] = infty_norm(lbdas[i] - lbdas_ref[i]);
+  }
+  for (uint i = 0; i <= horizon; i++) {
+    fmt::print("ex[{:d}] = {}\n", i, xerrs[long(i)]);
+  }
+  for (uint i = 0; i <= horizon; i++) {
+    fmt::print("eλ[{:d}] = {}\n", i, lerrs[long(i)]);
   }
   double xerr = infty_norm(xerrs);
+  double lerr = infty_norm(lerrs);
   fmt::print("xerrs = {}\n", xerr);
+  fmt::print("lerrs = {}\n", lerr);
   BOOST_CHECK_LE(xerr, tol);
+  BOOST_CHECK_LE(lerr, tol);
 }
