@@ -1,7 +1,7 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "./riccati.hpp"
+#include "./riccati-impl.hpp"
 
 namespace aligator {
 namespace gar {

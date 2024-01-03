@@ -11,8 +11,8 @@ public:
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   using Impl = ProximalRiccatiImpl<Scalar>;
-  using StageFactor = typename Impl::StageFactor;
-  using value_t = typename Impl::value_t;
+  using StageFactor = StageFactor<Scalar>;
+  using value_t = typename StageFactor::value_t;
   using kkt0_t = typename Impl::kkt0_t;
   using KnotType = LQRKnotTpl<Scalar>;
 

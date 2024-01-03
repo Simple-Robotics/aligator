@@ -36,8 +36,7 @@ public:
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   using Impl = ProximalRiccatiImpl<Scalar>;
-  using StageFactor = typename Impl::StageFactor;
-  using value_t = typename Impl::value_t;
+  using value_t = typename StageFactor<Scalar>::value_t;
   using KnotType = LQRKnotTpl<Scalar>;
 
   using BlkMat = BlkMatrix<MatrixXs, -1, -1>;
@@ -96,7 +95,7 @@ public:
     for (uint i = 0; i < numLegs; i++) {
       boost::span<const KnotType> stview =
           make_span_from_indices(problem.stages, splitIdx[i], splitIdx[i + 1]);
-      boost::span<StageFactor> dtview =
+      boost::span<StageFactor<Scalar>> dtview =
           make_span_from_indices(datas, splitIdx[i], splitIdx[i + 1]);
       ret &= Impl::backwardImpl(stview, mudyn, mueq, dtview);
     }
@@ -109,9 +108,9 @@ public:
     auto i0 = splitIdx[0];
     auto i1 = splitIdx[1];
     const KnotType &kt0 = problem.stages[i0];
-    const StageFactor &sf0 = datas[i0];
+    const StageFactor<Scalar> &sf0 = datas[i0];
     const KnotType &kt1 = problem.stages[i1];
-    const StageFactor &sf1 = datas[i1];
+    const StageFactor<Scalar> &sf1 = datas[i1];
 
     std::vector<long> dims = {problem.nc0(), kt0.nx, kt1.nx, kt1.nx};
     // TODO: remove temporary memory allocation here
@@ -170,7 +169,7 @@ public:
     }
   }
 
-  std::vector<StageFactor> datas;
+  std::vector<StageFactor<Scalar>> datas;
   /// Number of parallel divisions in the problem.
   uint numLegs;
   /// Indices at which the problem should be split.

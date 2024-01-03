@@ -12,14 +12,10 @@
 namespace aligator {
 namespace gar {
 
-/// A sequential, regularized Riccati algorithm
-// for proximal-regularized, constrained LQ problems.
-template <typename Scalar> struct ProximalRiccatiImpl {
+/// Per-node struct for all computations in the factorization.
+template <typename Scalar> struct StageFactor {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using RowMatrixXs = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
-  using RowMatrixRef = Eigen::Ref<RowMatrixXs>;
-  using ConstRowMatrixRef = Eigen::Ref<const RowMatrixXs>;
-  using KnotType = LQRKnotTpl<Scalar>;
 
   struct value_t {
     MatrixXs Pmat;                  //< Riccati matrix
@@ -43,53 +39,62 @@ template <typename Scalar> struct ProximalRiccatiImpl {
     }
   };
 
-  /// Per-node struct for all computations in the factorization.
-  struct StageFactor {
-    StageFactor(uint nx, uint nu, uint nc, uint nth)
-        : Qhat(nx, nx), Rhat(nu, nu), Shat(nx, nu), qhat(nx), rhat(nu),
-          AtV(nx, nx), BtV(nu, nx), Gxhat(nx, nth), Guhat(nu, nth),
-          ff({nu, nc, nx, nx}, {1}), fb({nu, nc, nx, nx}, {nx}),
-          fth({nu, nc, nx, nx}, {nth}),                       //
-          kktMat({nu, nc}, {nu, nc}), kktChol(kktMat.rows()), //
-          vm(nx, nth), PinvEt(nx, nx) {
-      Qhat.setZero();
-      Rhat.setZero();
-      Shat.setZero();
-      qhat.setZero();
-      rhat.setZero();
+  StageFactor(uint nx, uint nu, uint nc, uint nth)
+      : Qhat(nx, nx), Rhat(nu, nu), Shat(nx, nu), qhat(nx), rhat(nu),
+        AtV(nx, nx), BtV(nu, nx), Gxhat(nx, nth), Guhat(nu, nth),
+        ff({nu, nc, nx, nx}, {1}), fb({nu, nc, nx, nx}, {nx}),
+        fth({nu, nc, nx, nx}, {nth}),                       //
+        kktMat({nu, nc}, {nu, nc}), kktChol(kktMat.rows()), //
+        vm(nx, nth), PinvEt(nx, nx) {
+    Qhat.setZero();
+    Rhat.setZero();
+    Shat.setZero();
+    qhat.setZero();
+    rhat.setZero();
 
-      AtV.setZero();
-      BtV.setZero();
+    AtV.setZero();
+    BtV.setZero();
 
-      Gxhat.setZero();
-      Guhat.setZero();
+    Gxhat.setZero();
+    Guhat.setZero();
 
-      ff.setZero();
-      fb.setZero();
-      kktMat.setZero();
-      fth.setZero();
-    }
+    ff.setZero();
+    fb.setZero();
+    kktMat.setZero();
+    fth.setZero();
+  }
 
-    MatrixXs Qhat;
-    MatrixXs Rhat;
-    MatrixXs Shat;
-    VectorXs qhat;
-    VectorXs rhat;
-    RowMatrixXs AtV;
-    RowMatrixXs BtV;
+  MatrixXs Qhat;
+  MatrixXs Rhat;
+  MatrixXs Shat;
+  VectorXs qhat;
+  VectorXs rhat;
+  RowMatrixXs AtV;
+  RowMatrixXs BtV;
 
-    // Parametric
-    MatrixXs Gxhat;
-    MatrixXs Guhat;
+  // Parametric
+  MatrixXs Gxhat;
+  MatrixXs Guhat;
 
-    BlkMatrix<VectorXs, 4, 1> ff;          //< feedforward gains
-    BlkMatrix<RowMatrixXs, 4, 1> fb;       //< feedback gains
-    BlkMatrix<RowMatrixXs, 4, 1> fth;      //< parameter feedback gains
-    BlkMatrix<MatrixXs, 2, 2> kktMat;      //< reduced KKT matrix buffer
-    Eigen::BunchKaufman<MatrixXs> kktChol; //< reduced KKT LDLT solver
-    value_t vm;                            //< cost-to-go parameters
-    MatrixXs PinvEt;                       //< tmp buffer for \f$P^{-1}E^\top\f$
-  };
+  BlkMatrix<VectorXs, 4, 1> ff;          //< feedforward gains
+  BlkMatrix<RowMatrixXs, 4, 1> fb;       //< feedback gains
+  BlkMatrix<RowMatrixXs, 4, 1> fth;      //< parameter feedback gains
+  BlkMatrix<MatrixXs, 2, 2> kktMat;      //< reduced KKT matrix buffer
+  Eigen::BunchKaufman<MatrixXs> kktChol; //< reduced KKT LDLT solver
+  value_t vm;                            //< cost-to-go parameters
+  MatrixXs PinvEt;                       //< tmp buffer for \f$P^{-1}E^\top\f$
+};
+
+/// A sequential, regularized Riccati algorithm
+// for proximal-regularized, constrained LQ problems.
+template <typename Scalar> struct ProximalRiccatiImpl {
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  using RowMatrixXs = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
+  using RowMatrixRef = Eigen::Ref<RowMatrixXs>;
+  using ConstRowMatrixRef = Eigen::Ref<const RowMatrixXs>;
+  using KnotType = LQRKnotTpl<Scalar>;
+  using StageFactor = StageFactor<Scalar>;
+  using value_t = typename StageFactor::value_t;
 
   struct kkt0_t {
     BlkMatrix<MatrixXs, 2, 2> mat;
