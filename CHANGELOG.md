@@ -7,8 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
 - CMake: fetch submodule if not available in #103
 - CMake: move benchmark dependency speecification in main file
+
+### Fixed
+
+- Fix name of frame parent attribute in examples
 
 ## [0.4.0] - 2023-12-22
 
