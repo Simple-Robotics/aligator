@@ -44,7 +44,7 @@ public:
   using BlkVec = BlkMatrix<VectorXs, -1, 1>;
 
   explicit ParallelRiccatiSolver(const LQRProblemTpl<Scalar> &problem,
-                                 const uint num_legs = 2)
+                                 const uint num_legs)
       : datas(), numLegs(num_legs), splitIdx(num_legs + 1), problem(problem) {
 
     uint N = (uint)problem.horizon();
