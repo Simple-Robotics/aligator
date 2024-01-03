@@ -6,6 +6,7 @@
 #include "aligator/core/workspace-base.hpp"
 #include "aligator/core/proximal-penalty.hpp"
 #include "aligator/core/alm-weights.hpp"
+#include "aligator/gar/riccati.hpp"
 
 #include <array>
 #include <proxsuite-nlp/ldlt-allocator.hpp>
@@ -25,6 +26,9 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using Base = WorkspaceBaseTpl<Scalar>;
   using VecBool = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
   using CstrProxScaler = ConstraintProximalScalerTpl<Scalar>;
+  using BlkVec = BlkMatrix<VectorXs, -1>;
+  using BlkMat = BlkMatrix<MatrixXs, -1, -1>;
+  using ProxRiccati = gar::ProximalRiccatiSolver<Scalar>;
 
   using Base::dyn_slacks;
   using Base::nsteps;
@@ -33,6 +37,9 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using Base::trial_us;
   using Base::trial_xs;
   using Base::value_params;
+
+  gar::LQRProblemTpl<Scalar> lqrData;
+  // unique_ptr<ProxRiccati> lqrSolver;
 
   /// Proximal algo scalers for the constraints
   std::vector<CstrProxScaler> cstr_scalers;
@@ -50,7 +57,9 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   std::vector<VectorXs> lams_pdal;
   /// Shifted constraints the projection operators should be applied to.
   std::vector<VectorXs> shifted_constraints;
+  /// Projected Jacobians, used to symmetrize LQR subproblem
   std::vector<MatrixXs> proj_jacobians;
+  std::vector<BlkMat> proj_jacobians_2;
   std::vector<VecBool> active_constraints;
 
   /// @name Riccati gains, memory buffers for primal-dual steps

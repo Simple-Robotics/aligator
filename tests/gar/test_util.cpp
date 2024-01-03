@@ -1,5 +1,6 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #include "./test_util.hpp"
+#include "aligator/gar/block-tridiagonal-solver.hpp"
 
 std::mt19937 normal_unary_op::rng{};
 
@@ -149,4 +150,36 @@ KktError compute_kkt_error(const problem_t &problem, const VectorOfVectors &xs,
                            const VectorOfVectors &lbdas,
                            const ConstVectorRef &theta) {
   return compute_kkt_error_impl(problem, xs, us, vs, lbdas, theta);
+}
+
+MatrixXs block_tridiag_to_dense(std::vector<MatrixXs> const &subdiagonal,
+                                std::vector<MatrixXs> const &diagonal,
+                                std::vector<MatrixXs> const &superdiagonal) {
+  if (!aligator::gar::internal::check_block_tridiag(subdiagonal, diagonal,
+                                                    superdiagonal)) {
+    throw std::invalid_argument("Wrong lengths");
+  }
+
+  const size_t N = subdiagonal.size();
+  Eigen::Index dim = 0;
+  for (size_t i = 0; i <= N; i++) {
+    dim += diagonal[i].cols();
+  }
+
+  MatrixXs out(dim, dim);
+  out.setZero();
+  Eigen::Index i0 = 0;
+  for (size_t i = 0; i <= N; i++) {
+    Eigen::Index d = diagonal[i].cols();
+    out.block(i0, i0, d, d) = diagonal[i];
+
+    if (i != N) {
+      Eigen::Index dn = superdiagonal[i].cols();
+      out.block(i0, i0 + d, d, dn) = superdiagonal[i];
+      out.block(i0 + d, i0, dn, d) = subdiagonal[i];
+    }
+
+    i0 += d;
+  }
+  return out;
 }
