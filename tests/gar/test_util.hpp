@@ -62,7 +62,3 @@ std::vector<T> mergeStdVectors(const std::vector<T> &v1,
   }
   return out;
 }
-
-MatrixXs block_tridiag_to_dense(std::vector<MatrixXs> const &subdiagonal,
-                                std::vector<MatrixXs> const &diagonal,
-                                std::vector<MatrixXs> const &superdiagonal);

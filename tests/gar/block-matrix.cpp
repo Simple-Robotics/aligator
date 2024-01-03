@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(block_tridiag_solve) {
   BlkVec vec(dims);
   vec.matrix().setOnes();
 
-  MatrixXs densemat = block_tridiag_to_dense(sub, diagonal, sup);
+  MatrixXs densemat = gar::block_tridiag_to_dense(sub, diagonal, sup);
   fmt::print("Dense problem matrix:\n{}\n", densemat);
   BlkVec densevec = vec;
 

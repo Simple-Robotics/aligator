@@ -17,6 +17,40 @@ bool check_block_tridiag(const std::vector<MatrixType> &subdiagonal,
 }
 } // namespace internal
 
+template <typename MatrixType>
+auto block_tridiag_to_dense(const std::vector<MatrixType> &subdiagonal,
+                            const std::vector<MatrixType> &diagonal,
+                            const std::vector<MatrixType> &superdiagonal) {
+  if (!internal::check_block_tridiag(subdiagonal, diagonal, superdiagonal)) {
+    throw std::invalid_argument("Wrong lengths");
+  }
+
+  using PlainObjectType = typename MatrixType::PlainObject;
+
+  const size_t N = subdiagonal.size();
+  Eigen::Index dim = 0;
+  for (size_t i = 0; i <= N; i++) {
+    dim += diagonal[i].cols();
+  }
+
+  PlainObjectType out(dim, dim);
+  out.setZero();
+  Eigen::Index i0 = 0;
+  for (size_t i = 0; i <= N; i++) {
+    Eigen::Index d = diagonal[i].cols();
+    out.block(i0, i0, d, d) = diagonal[i];
+
+    if (i != N) {
+      Eigen::Index dn = superdiagonal[i].cols();
+      out.block(i0, i0 + d, d, dn) = superdiagonal[i];
+      out.block(i0 + d, i0, dn, d) = subdiagonal[i];
+    }
+
+    i0 += d;
+  }
+  return out;
+}
+
 /// Solve a symmetric block-tridiagonal problem by in-place factorization.
 /// The subdiagonal will be used to store factorization coefficients.
 template <typename MatrixType, typename RhsType>
