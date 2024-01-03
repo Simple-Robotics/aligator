@@ -116,7 +116,7 @@ public:
     // TODO: remove temporary memory allocation here
     BlkMat redKkt(dims, dims);
     redKkt.setZero();
-    reduced_kkt_sol = BlkVec(dims);
+    condensedKktRhs = BlkVec(dims);
 
     redKkt(0, 0).diagonal().array() = -mudyn;
     redKkt(0, 1) = problem.G0;
@@ -132,23 +132,23 @@ public:
     redKkt(3, 2) = kt0.E.transpose();
     redKkt(3, 3) = sf1.vm.Pmat;
 
-    reduced_kkt_sol[0] = problem.g0;
-    reduced_kkt_sol[1] = sf0.vm.pvec;
-    reduced_kkt_sol[2] = sf0.vm.vt;
-    reduced_kkt_sol[3] = sf1.vm.pvec;
+    condensedKktRhs[0] = problem.g0;
+    condensedKktRhs[1] = sf0.vm.pvec;
+    condensedKktRhs[2] = sf0.vm.vt;
+    condensedKktRhs[3] = sf1.vm.pvec;
 
-    reduced_kkt_sol.matrix() *= -1;
+    condensedKktRhs.matrix() *= -1;
 
     Eigen::BunchKaufman<MatrixXs> chol{redKkt.matrix()};
-    chol.solveInPlace(reduced_kkt_sol.matrix());
+    chol.solveInPlace(condensedKktRhs.matrix());
   }
 
   void forward(VectorOfVectors &xs, VectorOfVectors &us, VectorOfVectors &vs,
                VectorOfVectors &lbdas) {
-    lbdas[0] = reduced_kkt_sol[0];
-    xs[0] = reduced_kkt_sol[1];
-    lbdas[splitIdx[1]] = reduced_kkt_sol[2];
-    xs[splitIdx[1]] = reduced_kkt_sol[3];
+    lbdas[0] = condensedKktRhs[0];
+    xs[0] = condensedKktRhs[1];
+    lbdas[splitIdx[1]] = condensedKktRhs[2];
+    xs[splitIdx[1]] = condensedKktRhs[3];
 
 #pragma omp parallel for num_threads(numLegs)
     for (uint i = 0; i < numLegs; i++) {
@@ -174,7 +174,8 @@ public:
   uint numLegs;
   /// Indices at which the problem should be split.
   std::vector<uint> splitIdx;
-  BlkVec reduced_kkt_sol;
+  /// Contains the right-hand side and solution of the condensed KKT system.
+  BlkVec condensedKktRhs;
 
 protected:
   const LQRProblemTpl<Scalar> &problem;
