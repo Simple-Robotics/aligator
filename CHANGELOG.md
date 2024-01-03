@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - CMake: fetch submodule if not available in #103
 - CMake: move benchmark dependency speecification in main file
+- Document and simplify the LQR example
 
 ### Fixed
 
