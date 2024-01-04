@@ -729,8 +729,8 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
   auto pair_eval_fun = [&](Scalar a0) -> std::pair<Scalar,Scalar> {
     std::pair<Scalar,Scalar> fpair;
     fpair.first = forwardPass(problem, a0);
-    computeCriterion(problem);
-    fpair.second = results_.dual_infeas;
+    computeInfeasibilities(problem);
+    fpair.second = results_.prim_infeas;
     return fpair;
   };
 
@@ -797,8 +797,19 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
 
     // otherwise continue linesearch
     Scalar alpha_opt = 1;
-    //Scalar phi_new = linesearch_.run(merit_eval_fun, phi0, dphi0, alpha_opt);
-    Scalar phi_new = filter_.run(pair_eval_fun, alpha_opt);
+    Scalar phi_new;
+
+    switch (sa_mode) {
+    case StepAcceptanceMode::LINESEARCH:
+      phi_new = linesearch_.run(merit_eval_fun, phi0, dphi0, alpha_opt);
+      break;
+    case StepAcceptanceMode::FILTER:
+      phi_new = filter_.run(pair_eval_fun, alpha_opt);
+      break;
+    default:
+      assert(false && "unknown StepAcceptanceMode!");
+      break;
+    }
 
     // accept the step
     results_.xs = workspace_.trial_xs;

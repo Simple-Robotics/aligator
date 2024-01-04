@@ -200,6 +200,12 @@ def load_talos_upper_body():
     red_bot = robot.buildReducedRobot(locked_joints, qref)
     return red_bot
 
+def load_talos():
+    robot = erd.load("talos")
+    qref = robot.model.referenceConfigurations["half_sitting"]
+    locked_joints = [20,21,22,23,28,29,30,31,32,33]
+    red_bot = robot.buildReducedRobot(locked_joints, qref)
+    return robot, red_bot
 
 def add_namespace_prefix_to_models(model, collision_model, visual_model, namespace):
     """

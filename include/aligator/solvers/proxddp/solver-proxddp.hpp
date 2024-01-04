@@ -60,6 +60,8 @@ public:
   using Filter = FilterTpl<Scalar>;
 
   enum BackwardRet { BWD_SUCCESS, BWD_WRONG_INERTIA };
+  /// TODO: this should not be necessary as it is defined in core/enums.hpp
+  enum struct StepAcceptanceMode { LINESEARCH = 0, FILTER = 1 };
 
   /// Subproblem tolerance
   Scalar inner_tol_;
@@ -110,6 +112,8 @@ public:
   RolloutType rollout_type_ = RolloutType::NONLINEAR;
   /// Parameters for the BCL outer loop of the augmented Lagrangian algorithm.
   BCLParamsTpl<Scalar> bcl_params;
+  /// Step acceptance mode.
+  StepAcceptanceMode sa_mode = StepAcceptanceMode::FILTER;
 
   /// Force the initial state @f$ x_0 @f$ to be fixed to the problem initial
   /// condition.
