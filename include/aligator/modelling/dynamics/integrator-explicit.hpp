@@ -58,3 +58,7 @@ struct ExplicitIntegratorDataTpl : ExplicitDynamicsDataTpl<_Scalar> {
 } // namespace aligator
 
 #include "aligator/modelling/dynamics/integrator-explicit.hxx"
+
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+#include "aligator/modelling/dynamics/integrator-explicit.txx"
+#endif

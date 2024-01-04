@@ -209,6 +209,9 @@ function(create_library)
                INSTALL_RPATH "\$ORIGIN")
 
   target_link_libraries(${PROJECT_NAME} PUBLIC aligator::gar)
+  # Extract the compile definitions of the project for export
+  get_directory_property(CURRENT_COMPILE_DEFINITIONS COMPILE_DEFINITIONS)
+  target_compile_definitions(${PROJECT_NAME} PUBLIC ${CURRENT_COMPILE_DEFINITIONS})
 
   if(BUILD_WITH_PINOCCHIO_SUPPORT)
     target_link_libraries(${PROJECT_NAME} PUBLIC pinocchio::pinocchio)

@@ -2,6 +2,7 @@
 /// @file integrator-semi-impl-euler.hpp
 /// @author Quentin Le Lidec
 /// @brief Define the semi-implicit Euler integrator.
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 
 #include "aligator/modelling/dynamics/integrator-explicit.hpp"
 

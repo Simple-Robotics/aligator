@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include "aligator/modelling/dynamics/integrator-abstract.hpp"

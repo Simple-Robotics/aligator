@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
 #include "aligator/fwd.hpp"
 
 #ifdef ALIGATOR_PINOCCHIO_V3

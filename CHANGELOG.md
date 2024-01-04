@@ -12,10 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CMake: fetch submodule if not available in #103
 - CMake: move benchmark dependency speecification in main file
 - Document and simplify the LQR example
+- Finish the se2-car.cpp example #110
+- Add template instantiation for IntegratorAbstract, ExplicitIntegratorAbstract and IntegratorRK2 #114
 
 ### Fixed
 
 - Fix name of frame parent attribute in examples
+- Export C++ definitions in CMake config file
+- Fix Doxyfile python bindings directory #110
 
 ## [0.4.0] - 2023-12-22
 

@@ -21,6 +21,14 @@ using context::StageModel;
 using context::TrajOptProblem;
 ALIGATOR_DYNAMIC_TYPEDEFS(T);
 
+/// @details The dynamics of the car are given by
+/// \f[
+///   \dot x = f(x,u) = \begin{bmatrix} v\cos\theta \\ v\sin\theta \\ \omega
+///   \end{bmatrix}
+/// \f]
+/// with state \f$x = (x,y,\cos\theta,\sin\theta) \in \mathrm{SE}(2)\f$, control
+/// \f$u=(v,\omega)\f$.
+///
 struct CarDynamics : dynamics::ODEAbstractTpl<T> {
   using Base = dynamics::ODEAbstractTpl<T>;
   using ODEData = dynamics::ODEDataTpl<T>;
@@ -61,7 +69,7 @@ int main() {
 
   auto state_err = std::make_shared<StateError>(space, nu, x_target);
 
-  MatrixXs w_x(ndx, ndx);
+  MatrixXs w_x = MatrixXs::Zero(ndx, ndx);
   w_x.diagonal().array() = 0.01;
   MatrixXs w_term = w_x * 10;
   MatrixXs w_u = MatrixXs::Random(nu, nu);
@@ -91,7 +99,7 @@ int main() {
   std::fill_n(stages.begin(), nsteps, stage);
 
   TrajOptProblem problem(x0, stages, term_cost);
-  const T mu_init = 1e-4;
+  const T mu_init = 1e-2;
   SolverProxDDP<T> solver(1e-4, mu_init);
   solver.verbose_ = VERBOSE;
   solver.setup(problem);

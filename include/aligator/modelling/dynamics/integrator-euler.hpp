@@ -1,6 +1,7 @@
 #pragma once
 /// @file integrator-euler.hpp
 /// @brief Define the explicit Euler integrator.
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 
 #include "aligator/modelling/dynamics/integrator-explicit.hpp"
 
