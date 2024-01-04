@@ -20,8 +20,9 @@ SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
                                      HessianApprox hess_approx)
     : target_tol_(tol), mu_init(mu_init), rho_init(rho_init), verbose_(verbose),
       hess_approx_(hess_approx), ldlt_algo_choice_(LDLTChoice::DENSE),
-      max_iters(max_iters), rollout_max_iters(1), linesearch_(ls_params) {
+      max_iters(max_iters), rollout_max_iters(1), linesearch_(ls_params), filter_(beta_,ls_params.alpha_min) {
   ls_params.interp_type = proxsuite::nlp::LSInterpolation::CUBIC;
+  beta_ = 1e-5;
 }
 
 template <typename Scalar>
@@ -130,7 +131,7 @@ void SolverProxDDP<Scalar>::setup(const Problem &problem) {
   workspace_ = Workspace(problem, ldlt_algo_choice_);
   results_ = Results(problem);
   linesearch_.setOptions(ls_params);
-
+  filter_.resetFilter(beta_, ls_params.alpha_min);
   workspace_.configureScalers(problem, mu_penal_,
                               applyDefaultScalingStrategy<Scalar>);
 }
@@ -725,6 +726,14 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
     return forwardPass(problem, a0);
   };
 
+  auto pair_eval_fun = [&](Scalar a0) -> std::pair<Scalar,Scalar> {
+    std::pair<Scalar,Scalar> fpair;
+    fpair.first = forwardPass(problem, a0);
+    computeCriterion(problem);
+    fpair.second = results_.dual_infeas;
+    return fpair;
+  };
+
   LogRecord iter_log;
 
   std::size_t &iter = results_.num_iters;
@@ -788,7 +797,8 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
 
     // otherwise continue linesearch
     Scalar alpha_opt = 1;
-    Scalar phi_new = linesearch_.run(merit_eval_fun, phi0, dphi0, alpha_opt);
+    //Scalar phi_new = linesearch_.run(merit_eval_fun, phi0, dphi0, alpha_opt);
+    Scalar phi_new = filter_.run(pair_eval_fun, alpha_opt);
 
     // accept the step
     results_.xs = workspace_.trial_xs;

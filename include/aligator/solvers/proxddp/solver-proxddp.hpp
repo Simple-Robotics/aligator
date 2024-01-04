@@ -5,6 +5,7 @@
 
 #include "aligator/core/proximal-penalty.hpp"
 #include "aligator/core/linesearch.hpp"
+#include "aligator/core/filter.hpp"
 #include "aligator/core/callback-base.hpp"
 #include "aligator/core/enums.hpp"
 #include "aligator/utils/exceptions.hpp"
@@ -56,6 +57,7 @@ public:
   using LinesearchOptions = typename Linesearch<Scalar>::Options;
   using CstrProximalScaler = ConstraintProximalScalerTpl<Scalar>;
   using LinesearchType = proxsuite::nlp::ArmijoLinesearch<Scalar>;
+  using Filter = FilterTpl<Scalar>;
 
   enum BackwardRet { BWD_SUCCESS, BWD_WRONG_INERTIA };
 
@@ -258,7 +260,7 @@ public:
   /// @copydoc mu_penal_
   ALIGATOR_INLINE Scalar mu() const { return mu_penal_; }
 
-  /// @copydoc mu_inverse_
+  /// @copydoc mu _inverse_
   ALIGATOR_INLINE Scalar mu_inv() const { return mu_inverse_; }
 
   /// @copydoc rho_penal_
@@ -327,6 +329,8 @@ private:
   Scalar rho_penal_ = rho_init;
   /// Linesearch function
   LinesearchType linesearch_;
+  Filter filter_;
+  Scalar beta_ = 1e-5;
 };
 
 } // namespace aligator
