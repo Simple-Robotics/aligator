@@ -72,13 +72,6 @@ void exposeProxDDP() {
           "Scalers of the constraints in the proximal algorithm.")
       .def_readwrite("lqrData", &Workspace::lqrData,
                      "Data buffer for the underlying LQ problem.")
-      .add_property("lqrSolver",
-                    bp::make_function(
-                        +[](const Workspace &work)
-                            -> gar::ProximalRiccatiSolver<Scalar> * {
-                          return work.lqrSolver.get();
-                        },
-                        bp::return_internal_reference<>()))
       .def_readonly("kkt_mat", &Workspace::kkt_mats_)
       .def_readonly("kkt_rhs", &Workspace::kkt_rhs_)
       .def_readonly("kkt_residuals", &Workspace::kkt_resdls_,
