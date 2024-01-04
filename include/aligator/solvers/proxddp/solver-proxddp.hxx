@@ -20,7 +20,8 @@ SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
                                      HessianApprox hess_approx)
     : target_tol_(tol), mu_init(mu_init), rho_init(rho_init), verbose_(verbose),
       hess_approx_(hess_approx), ldlt_algo_choice_(LDLTChoice::DENSE),
-      max_iters(max_iters), rollout_max_iters(1), linesearch_(ls_params), filter_(beta_,ls_params.alpha_min) {
+      max_iters(max_iters), rollout_max_iters(1), linesearch_(ls_params),
+      filter_(beta_, ls_params.alpha_min) {
   ls_params.interp_type = proxsuite::nlp::LSInterpolation::CUBIC;
   beta_ = 1e-5;
 }
@@ -726,8 +727,8 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
     return forwardPass(problem, a0);
   };
 
-  auto pair_eval_fun = [&](Scalar a0) -> std::pair<Scalar,Scalar> {
-    std::pair<Scalar,Scalar> fpair;
+  auto pair_eval_fun = [&](Scalar a0) -> std::pair<Scalar, Scalar> {
+    std::pair<Scalar, Scalar> fpair;
     fpair.first = forwardPass(problem, a0);
     computeInfeasibilities(problem);
     fpair.second = results_.prim_infeas;
