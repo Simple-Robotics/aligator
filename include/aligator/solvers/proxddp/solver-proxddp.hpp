@@ -7,7 +7,8 @@
 #include "aligator/core/linesearch.hpp"
 #include "aligator/core/filter.hpp"
 #include "aligator/core/callback-base.hpp"
-#include "aligator/core/enums.hpp"
+// TODO: circular include as enums.hpp is already included in merit-function.hpp
+// #include "aligator/core/enums.hpp"
 #include "aligator/utils/exceptions.hpp"
 #include "aligator/utils/logger.hpp"
 #include "aligator/utils/forward-dyn.hpp"
@@ -60,8 +61,6 @@ public:
   using Filter = FilterTpl<Scalar>;
 
   enum BackwardRet { BWD_SUCCESS, BWD_WRONG_INERTIA };
-  /// TODO: this should not be necessary as it is defined in core/enums.hpp
-  enum struct StepAcceptanceMode { LINESEARCH = 0, FILTER = 1 };
 
   /// Subproblem tolerance
   Scalar inner_tol_;

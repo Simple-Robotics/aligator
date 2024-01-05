@@ -35,6 +35,11 @@ void exposeEnums() {
       .value("HESSIAN_EXACT", HessianApprox::EXACT)
       .value("HESSIAN_GAUSS_NEWTON", HessianApprox::GAUSS_NEWTON)
       .export_values();
+
+  bp::enum_<StepAcceptanceMode>("StepAcceptanceMode", "Step acceptance mode.")
+      .value("LINESEARCH", StepAcceptanceMode::LINESEARCH)
+      .value("FILTER", StepAcceptanceMode::FILTER)
+      .export_values();
 }
 
 } // namespace python
