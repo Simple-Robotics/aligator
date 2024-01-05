@@ -58,7 +58,7 @@ frame_fn_lh = aligator.FrameTranslationResidual(
     space.ndx, nu, rmodel, target_ee_pos, tool_id_lh
 )
 w_x_ee = 10.0 * np.eye(3)
-frame_fn_cost = aligator.QuadraticResidualCost(frame_fn_lh, w_x_ee)
+frame_fn_cost = aligator.QuadraticResidualCost(space, frame_fn_lh, w_x_ee)
 
 rcost = aligator.CostStack(space, nu)
 rcost.addCost(aligator.QuadraticCost(w_x, w_u), dt)
@@ -91,6 +91,7 @@ solver.rollout_type = aligator.ROLLOUT_NONLINEAR
 print("LDLT algo choice:", solver.ldlt_algo_choice)
 # solver = aligator.SolverFDDP(TOL, verbose=verbose)
 solver.max_iters = max_iters
+solver.sa_mode = aligator.LINESEARCH  # FILTER or LINESEARCH
 solver.setup(problem)
 
 u0 = compute_quasistatic(rmodel, rdata, x0, acc=np.zeros(nv))

@@ -38,6 +38,7 @@ void exposeCallbacks();
 /// Expose autodiff helpers
 void exposeAutodiff();
 void exposeUtils();
+void exposeFilter();
 
 #ifdef ALIGATOR_WITH_PINOCCHIO
 /// Expose features using the Pinocchio rigid dynamics library

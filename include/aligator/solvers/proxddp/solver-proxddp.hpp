@@ -112,7 +112,7 @@ public:
   /// Parameters for the BCL outer loop of the augmented Lagrangian algorithm.
   BCLParamsTpl<Scalar> bcl_params;
   /// Step acceptance mode.
-  StepAcceptanceMode sa_mode = StepAcceptanceMode::FILTER;
+  StepAcceptanceMode sa_mode = StepAcceptanceMode::LINESEARCH;
 
   /// Force the initial state @f$ x_0 @f$ to be fixed to the problem initial
   /// condition.

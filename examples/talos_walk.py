@@ -295,7 +295,7 @@ solver.rollout_type = aligator.ROLLOUT_LINEAR
 print("LDLT algo choice:", solver.ldlt_algo_choice)
 # solver = aligator.SolverFDDP(TOL, verbose=verbose)
 solver.max_iters = max_iters
-solver.sa_mode = aligator.FILTER  # FILTER or LINESEARCH
+solver.sa_mode = aligator.LINESEARCH  # FILTER or LINESEARCH
 solver.setup(problem)
 
 us_init = [np.zeros(nu)] * nsteps

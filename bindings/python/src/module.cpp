@@ -68,6 +68,7 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
   exposeConstraint();
   exposeStage();
   exposeProblem();
+  exposeFilter();
   {
     bp::scope dynamics = get_namespace("dynamics");
     exposeODEs();

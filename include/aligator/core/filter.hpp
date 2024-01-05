@@ -21,18 +21,21 @@ public:
   // Proximity parameter
   Scalar beta_;
   Scalar alpha_min_;
+  std::size_t max_num_steps_;
 
-  FilterTpl(const Scalar &beta, const Scalar &alpha_min) {
+  FilterTpl(const Scalar &beta, const Scalar &alpha_min, const std::size_t &max_num_steps) {
     beta_ = beta;
     alpha_min_ = alpha_min;
+    max_num_steps_ = max_num_steps;
     filter_pairs_.clear();
   }
 
   virtual ~FilterTpl() = default;
 
-  void resetFilter(const Scalar &beta, const Scalar &alpha_min) {
+  void resetFilter(const Scalar &beta, const Scalar &alpha_min, const std::size_t &max_num_steps) {
     beta_ = beta;
     alpha_min_ = alpha_min;
+    max_num_steps_ = max_num_steps;
     filter_pairs_.clear();
   }
 
@@ -54,12 +57,20 @@ public:
       }
     }
 
-    // If valid descent direction, the pair if accepted
-    if (alpha_try > alpha_min_) {
-      accept_pair(fpair);
+    // Try to accept pair, backtrack if failure
+    for (std::size_t i = 0; i < max_num_steps_; i++) {
+      if (!accept_pair(fpair)) {
+        alpha_try *= 0.5;
+        if (alpha_try <= alpha_min_) {
+          alpha_try = alpha_min_;
+          fpair = phi(alpha_try);
+          break;
+        }
+        fpair = phi(alpha_try);
+      }
     }
-    // TODO: else, feasilibity restauration by minimizing h
 
+    // TODO: else, feasilibity restauration by minimizing h
     return fpair.first;
   }
 
