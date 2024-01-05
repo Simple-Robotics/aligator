@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
@@ -63,3 +64,7 @@ template <typename _Scalar> struct LinearODETpl : ODEAbstractTpl<_Scalar> {
 } // namespace aligator
 
 #include "aligator/modelling/dynamics/linear-ode.hxx"
+
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+#include "aligator/modelling/dynamics/linear-ode.txx"
+#endif

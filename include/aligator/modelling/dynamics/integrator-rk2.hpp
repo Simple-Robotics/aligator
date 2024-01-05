@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include "aligator/modelling/dynamics/integrator-explicit.hpp"
@@ -64,3 +65,7 @@ struct IntegratorRK2DataTpl : ExplicitIntegratorDataTpl<Scalar> {
 } // namespace aligator
 
 #include "aligator/modelling/dynamics/integrator-rk2.hxx"
+
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+#include "aligator/modelling/dynamics/integrator-rk2.txx"
+#endif
