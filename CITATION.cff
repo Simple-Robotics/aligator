@@ -1,13 +1,23 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
 cff-version: 1.2.0
 title: aligator
-message: "If you use this software, please cite it as below."
+message: 'If you use this software, please cite it as below.'
 type: software
 authors:
   - given-names: Wilson
     family-names: Jallet
-    email: wilson.jallet@m4x.org
+    email: wilson.jallet@polytechnique.org
     orcid: 'https://orcid.org/0000-0001-8222-2739'
     affiliation: LAAS-CNRS & INRIA
+  - given-names: Antoine
+    family-names: Bambade
+    affiliation: INRIA
+    email: antoine.bambade@inria.fr
+  - given-names: Sarah
+    family-names: El Kazdadi
+    email: sarahelkazdadi@gmail.com
   - given-names: Carpentier
     family-names: Justin
     email: justin.carpentier@inria.fr
@@ -18,4 +28,8 @@ authors:
     email: nmansard@laas.fr
     affiliation: LAAS-CNRS
     orcid: 'https://orcid.org/0000-0002-8090-0601'
-url: "https://github.com/Simple-Robotics/aligator"
+repository-code: 'https://github.com/Simple-Robotics/aligator'
+abstract: >-
+  A versatile and efficient framework for constrained
+  trajectory optimization
+license: BSD-2-Clause

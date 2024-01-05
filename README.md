@@ -4,6 +4,10 @@
 
 It can be used for motion generation and planning, optimal estimation, deployment of model-predictive control on complex systems, and much more.
 
+Developing advanced, open-source, and versatile robotic software such as **Aligator** takes time and energy while requiring a lot of engineering support.
+In recognition of our commitment, we would be grateful if you would quote our papers and software in your publications, software, and research articles.
+Please refer to the [Citation section](#citing-aligator) for further details.
+
 ## Features
 
 **Aligator** is a C++ template library, which provides
@@ -67,6 +71,30 @@ If you have the Rust toolchain and `cargo` installed, we suggest you install [ca
 
 ```bash
 flamegraph -o my_flamegraph.svg -- ./build/examples/example-croc-talos-arm
+```
+
+## Citing Aligator
+
+To cite **Aligator** in your academic research, please use the following bibtex entry:
+
+```bibtex
+@misc{aligatorweb,
+  author = {Jallet, Wilson and Bambade, Antoine and El Kazdadi, Sarah and Justin, Carpentier and Nicolas, Mansard},
+  title = {aligator},
+  url = {https://github.com/Simple-Robotics/aligator}
+}
+```
+Please also consider citing the reference paper for the ProxDDP algorithm:
+
+```bibtex
+@misc{jalletPROXDDPProximalConstrained2023,
+  title = {PROXDDP: Proximal Constrained Trajectory Optimization},
+  author = {Jallet, Wilson and Bambade, Antoine and Arlaud, Etienne and {El-Kazdadi}, Sarah and Mansard, Nicolas and Carpentier, Justin},
+  year = {2023},
+  abstract = {Trajectory optimization (TO) has proven, over the last decade, to be a versatile and effective framework for robot control. Several numerical solvers have been demonstrated to be fast enough to allow recomputing full-dynamics trajectories for various systems at control time, enabling model predictive control (MPC) of complex robots. These first implementations of MPC in robotics predominantly utilize some differential dynamic programming (DDP) variant for its computational speed and ease of use in constraint-free settings. Nevertheless, many scenarios in robotics call for adding hard constraints in TO problems (e.g., torque limits, obstacle avoidance), which existing solvers, based on DDP, often struggle to handle. Effectively addressing path constraints still poses optimization challenges (e.g., numerical stability, efficiency, accuracy of constraint satisfaction) that we propose to solve by combining advances in numerical optimization with the foundational efficiency of DDP. In this article, we leverage proximal methods for constrained optimization and introduce a DDP-like method to achieve fast, constrained trajectory optimization with an efficient warm-starting strategy particularly suited for MPC applications. Compared to earlier solvers, our approach effectively manages hard constraints without warm-start limitations and exhibits commendable convergence accuracy. Additionally, we leverage the computational efficiency of DDP, enabling real-time resolution of complex problems such as whole-body quadruped locomotion. We provide a complete implementation as part of an open-source and flexible C++ trajectory optimization library called ALIGATOR. These algorithmic contributions are validated through several trajectory planning scenarios from the robotics literature and the real-time whole-body MPC of a quadruped robot.},
+  langid = {english},
+  note = {https://inria.hal.science/hal-04332348v1}
+}
 ```
 
 ## Contributors
