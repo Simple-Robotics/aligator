@@ -89,16 +89,16 @@ public:
 
   void buildLeg(uint start, uint end, bool last_leg) {
     for (uint t = start; t < end; t++) {
-      const KnotType &knot = problem.stages[t];
+      KnotType &knot = problem.stages[t];
       if (!last_leg) {
-        const_cast<KnotType &>(knot).addParameterization(knot.nx);
+        knot.addParameterization(knot.nx);
         assert(knot.nx == knot.nth);
       }
       datas.emplace_back(knot.nx, knot.nu, knot.nc, knot.nth);
     }
     if (!last_leg) {
       // last knot needs parameter to be set
-      KnotType &knot = const_cast<KnotType &>(problem.stages[end - 1]);
+      KnotType &knot = problem.stages[end - 1];
       knot.Gx = knot.A.transpose();
       knot.Gu = knot.B.transpose();
       knot.gamma = knot.f;
@@ -109,7 +109,8 @@ public:
 
     ALIGATOR_NOMALLOC_BEGIN;
     bool ret = true;
-#pragma omp parallel for num_threads(numLegs) reduction(& : ret)
+#pragma omp parallel for schedule(static, 1) num_threads(numLegs)              \
+    reduction(& : ret)
     for (uint i = 0; i < numLegs; i++) {
       boost::span<const KnotType> stview =
           make_span_from_indices(problem.stages, splitIdx[i], splitIdx[i + 1]);
@@ -140,8 +141,8 @@ public:
 
     const std::vector<KnotType> &stages = problem.stages;
 
-    uint nc0 = problem.nc0();
-    diagonal[0] = -mudyn * MatrixXs::Identity(nc0, nc0);
+    diagonal[0].setZero();
+    diagonal[0].diagonal().setConstant(-mudyn);
     superdiagonal[0] = problem.G0;
 
     diagonal[1] = datas[0].vm.Pmat;
@@ -189,7 +190,7 @@ public:
     }
     ALIGATOR_NOMALLOC_BEGIN;
 
-#pragma omp parallel for num_threads(numLegs)
+#pragma omp parallel for schedule(static, 1) num_threads(numLegs)
     for (uint i = 0; i < numLegs; i++) {
       auto xsview = make_span_from_indices(xs, splitIdx[i], splitIdx[i + 1]);
       auto usview = make_span_from_indices(us, splitIdx[i], splitIdx[i + 1]);
@@ -220,8 +221,7 @@ public:
   /// Contains the right-hand side and solution of the condensed KKT system.
   BlkVec condensedKktRhs;
 
-protected:
-  const LQRProblemTpl<Scalar> &problem;
+  LQRProblemTpl<Scalar> problem;
 
   inline static condensed_system_t
   initialize_tridiag_system(const std::vector<long> &dims) {
