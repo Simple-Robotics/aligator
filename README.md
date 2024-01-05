@@ -69,6 +69,18 @@ If you have the Rust toolchain and `cargo` installed, we suggest you install [ca
 flamegraph -o my_flamegraph.svg -- ./build/examples/example-croc-talos-arm
 ```
 
+## Citing Aligator
+
+To cite **Aligator** in your academic research, please use the following bibtex entry:
+
+```bibtex
+@misc{aligatorweb,
+  author = {Jallet, Wilson and Bambade, Antoine and El Kazdadi, Sarah and Justin, Carpentier and Nicolas, Mansard},
+  title = {aligator},
+  url = {https://github.com/Simple-Robotics/aligator}
+}
+```
+
 ## Contributors
 
 * [Antoine Bambade](https://bambade.github.io/) (Inria): mathematics and algorithms developer
