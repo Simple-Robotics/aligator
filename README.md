@@ -4,6 +4,10 @@
 
 It can be used for motion generation and planning, optimal estimation, deployment of model-predictive control on complex systems, and much more.
 
+Developing advanced, open-source, and versatile robotic software such as **Aligator** takes time and energy while requiring a lot of engineering support.
+In recognition of our commitment, we would be grateful if you would quote our papers and software in your publications, software, and research articles.
+Please refer to the [Citation section](#citing-aligator) for further details.
+
 ## Features
 
 **Aligator** is a C++ template library, which provides
@@ -80,8 +84,7 @@ To cite **Aligator** in your academic research, please use the following bibtex 
   url = {https://github.com/Simple-Robotics/aligator}
 }
 ```
-
-You can also cite the paper for the ProxDDP algorithm:
+Please also consider citing the reference paper for the ProxDDP algorithm:
 
 ```bibtex
 @misc{jalletPROXDDPProximalConstrained2023,
