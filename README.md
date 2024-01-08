@@ -109,6 +109,7 @@ Please also consider citing the reference paper for the ProxDDP algorithm:
 * [Guilhem Saurel](https://github.com/nim65s) (LAAS-CNRS): core maintener
 * [Fabian Schramm](https://github.com/fabinsch) (Inria): core developer
 * [Ludovic De Matteïs](https://github.com/LudovicDeMatteis) (LAAS-CNRS/Inria): feature developer
+* [Ewen Dantec](https://edantec.github.io/) (Inria): feature developer
 
 ## Acknowledgments
 

@@ -36,7 +36,8 @@ void exposeEnums() {
       .value("HESSIAN_GAUSS_NEWTON", HessianApprox::GAUSS_NEWTON)
       .export_values();
 
-  bp::enum_<StepAcceptanceStrategy>("StepAcceptanceStrategy", "Step acceptance strategy.")
+  bp::enum_<StepAcceptanceStrategy>("StepAcceptanceStrategy",
+                                    "Step acceptance strategy.")
       .value("LINESEARCH", StepAcceptanceStrategy::LINESEARCH)
       .value("FILTER", StepAcceptanceStrategy::FILTER)
       .export_values();

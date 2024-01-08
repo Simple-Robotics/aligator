@@ -61,14 +61,15 @@ def test_no_node():
     )
     solver.setup(problem)
 
+
 def test_proxddp_lqr():
     nx = 3
     nu = 3
     space = VectorSpace(nx)
     x0 = space.neutral() + (0.2, 0.3, -0.1)
     xf = x0 * 0.9
-    umin = np.array([-1,-1])
-    umax = np.array([1,1])
+    umin = np.array([-1, -1])
+    umax = np.array([1, 1])
     A = np.eye(nx)
     A[0, 1] = -0.2
     A[1, 0] = 0.2
@@ -80,7 +81,7 @@ def test_proxddp_lqr():
     Q = 1e-2 * np.eye(nx)
     R = 1e-2 * np.eye(nu)
     N = 1e-5 * np.eye(nx, nu)
-    
+
     run_cost = aligator.QuadraticCost(Q, R, N)
     term_cost = aligator.QuadraticCost(Q, R)
     dyn = aligator.dynamics.LinearDiscreteDynamics(A, B, c)
@@ -93,13 +94,17 @@ def test_proxddp_lqr():
     stages = [stage] * nsteps
     problem = aligator.TrajOptProblem(x0, stages, term_cost)
 
-    term_cstr = aligator.StageConstraint(state_fn, aligator.constraints.EqualityConstraintSet())
+    term_cstr = aligator.StageConstraint(
+        state_fn, aligator.constraints.EqualityConstraintSet()
+    )
     problem.addTerminalConstraint(term_cstr)
-    
+
     tol = 1e-6
     mu_init = 1e-3
     rho_init = 1e-2
-    solver = aligator.SolverProxDDP(tol, mu_init, rho_init, aligator.VerboseLevel.VERBOSE)
+    solver = aligator.SolverProxDDP(
+        tol, mu_init, rho_init, aligator.VerboseLevel.VERBOSE
+    )
     solver.setup(problem)
     solver.sa_strategy = aligator.FILTER
     solver.max_iters = 50
@@ -107,6 +112,7 @@ def test_proxddp_lqr():
     us_init = [np.zeros(nu)] * nsteps
     conv = solver.run(problem, xs_init, us_init)
     assert conv
+
 
 if __name__ == "__main__":
     sys.exit(pytest.main(sys.argv))

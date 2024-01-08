@@ -23,7 +23,8 @@ public:
   Scalar alpha_min_;
   std::size_t max_num_steps_;
 
-  FilterTpl(const Scalar &beta, const Scalar &alpha_min, const std::size_t &max_num_steps) {
+  FilterTpl(const Scalar &beta, const Scalar &alpha_min,
+            const std::size_t &max_num_steps) {
     beta_ = beta;
     alpha_min_ = alpha_min;
     max_num_steps_ = max_num_steps;
@@ -32,7 +33,8 @@ public:
 
   virtual ~FilterTpl() = default;
 
-  void resetFilter(const Scalar &beta, const Scalar &alpha_min, const std::size_t &max_num_steps) {
+  void resetFilter(const Scalar &beta, const Scalar &alpha_min,
+                   const std::size_t &max_num_steps) {
     beta_ = beta;
     alpha_min_ = alpha_min;
     max_num_steps_ = max_num_steps;
@@ -67,10 +69,10 @@ public:
           break;
         }
         fpair = phi(alpha_try);
-      }
-      else break;
+      } else
+        break;
     }
-    
+
     // TODO: else, feasilibity restauration by minimizing h
     return fpair.first;
   }
@@ -79,8 +81,8 @@ public:
     // Check if pair is acceptable to the filter
     for (auto el = filter_pairs_.begin(); el != filter_pairs_.end(); el++) {
       std::pair<Scalar, Scalar> element = *el;
-      if (element.first - beta_ * element.second <= fpair.first and
-          element.second - beta_ * element.second <= fpair.second) {
+      if (element.first + beta_ * element.second <= fpair.first and
+          element.second + beta_ * element.second <= fpair.second) {
         return false;
       }
     }

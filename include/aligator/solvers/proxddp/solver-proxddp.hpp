@@ -146,6 +146,7 @@ private:
 public:
   Workspace workspace_;
   Results results_;
+  Filter filter_;
 
   SolverProxDDP(const Scalar tol = 1e-6, const Scalar mu_init = 0.01,
                 const Scalar rho_init = 0., const std::size_t max_iters = 1000,
@@ -332,7 +333,6 @@ private:
   Scalar rho_penal_ = rho_init;
   /// Linesearch function
   LinesearchType linesearch_;
-  Filter filter_;
 };
 
 } // namespace aligator

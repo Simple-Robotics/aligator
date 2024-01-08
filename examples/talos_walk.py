@@ -297,6 +297,7 @@ print("LDLT algo choice:", solver.ldlt_algo_choice)
 solver.max_iters = max_iters
 solver.sa_strategy = aligator.FILTER  # FILTER or LINESEARCH
 solver.setup(problem)
+solver.filter.beta = 1e-5
 
 us_init = [np.zeros(nu)] * nsteps
 xs_init = [x0] * (nsteps + 1)

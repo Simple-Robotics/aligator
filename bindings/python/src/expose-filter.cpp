@@ -10,29 +10,27 @@ namespace python {
 
 void exposeFilter() {
   using Filter = FilterTpl<double>;
-  
-  eigenpy::StdPairConverter<std::pair<double,double>>::registration();
+
+  eigenpy::StdPairConverter<std::pair<double, double>>::registration();
   StdVectorPythonVisitor<std::vector<std::pair<double, double>>>::expose(
       "StdVec_StdPair_double");
 
   bp::register_ptr_to_python<shared_ptr<Filter>>();
-  bp::class_<Filter>(
-      "Filter",
-      "A pair filter implementation to help make larger steps during optimization.",
-      bp::init<double, double, std::size_t>(bp::args("self", "beta", "alpha_min", "max_num_steps")))
+  bp::class_<Filter>("Filter",
+                     "A pair filter implementation to help make larger steps "
+                     "during optimization.",
+                     bp::init<double, double, std::size_t>(bp::args(
+                         "self", "beta", "alpha_min", "max_num_steps")))
       .def("resetFilter", &Filter::resetFilter,
-          bp::args("self", "beta", "alpha_min", "max_num_steps"),
-          "Reset the filter parameters.")
-      .def("run", &Filter::run,
-          bp::args("self", "phi", "alpha_try"),
-          "Make a step and add pair if step accepted.")
-      .def("accept_pair", &Filter::accept_pair,
-          bp::args("self", "fpair"),
-          "Pair acceptance function.")
-      .def_readonly("beta_", &Filter::beta_,
-                    "Distance parameter with other pairs in filter.")
-      .def_readonly("alpha_min_", &Filter::alpha_min_,
-                    "Minimum alpha step.")
+           bp::args("self", "beta", "alpha_min", "max_num_steps"),
+           "Reset the filter parameters.")
+      .def("run", &Filter::run, bp::args("self", "phi", "alpha_try"),
+           "Make a step and add pair if step accepted.")
+      .def("accept_pair", &Filter::accept_pair, bp::args("self", "fpair"),
+           "Pair acceptance function.")
+      .def_readwrite("beta", &Filter::beta_,
+                     "Distance parameter with other pairs in filter.")
+      .def_readwrite("alpha_min", &Filter::alpha_min_, "Minimum alpha step.")
       .def_readonly("filter_pairs_", &Filter::filter_pairs_,
                     "Filter pairs vector.");
 }

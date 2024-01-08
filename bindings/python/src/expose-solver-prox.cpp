@@ -148,7 +148,8 @@ void exposeProxDDP() {
       .def_readwrite("max_al_iters", &SolverType::max_al_iters,
                      "Maximum number of AL iterations.")
       .def_readwrite("ls_mode", &SolverType::ls_mode, "Linesearch mode.")
-      .def_readwrite("sa_strategy", &SolverType::sa_strategy, "StepAcceptance strategy.")
+      .def_readwrite("sa_strategy", &SolverType::sa_strategy,
+                     "StepAcceptance strategy.")
       .def_readwrite("rollout_type", &SolverType::rollout_type_,
                      "Rollout type.")
       .def_readwrite("dual_weight", &SolverType::dual_weight,
@@ -157,6 +158,8 @@ void exposeProxDDP() {
                      "Minimum regularization value.")
       .def_readwrite("reg_max", &SolverType::reg_max,
                      "Maximum regularization value.")
+      .def_readwrite("filter", &SolverType::filter_,
+                     "Pair filter used to accept a step.")
       .def("getLinesearchMu", &SolverType::getLinesearchMu, bp::args("self"))
       .def("setLinesearchMuLowerBound", &SolverType::setLinesearchMuLowerBound,
            bp::args("self", "mu_lower_bound"),
