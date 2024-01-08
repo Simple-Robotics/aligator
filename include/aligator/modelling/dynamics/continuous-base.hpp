@@ -4,6 +4,7 @@
 #pragma once
 
 #include "aligator/modelling/dynamics/fwd.hpp"
+#include <proxsuite-nlp/manifold-base.hpp>
 
 namespace aligator {
 namespace dynamics {

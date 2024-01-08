@@ -1,7 +1,7 @@
 #pragma once
 /// @file integrator-abstract.hpp
 /// @brief Base definitions for numerical integrators.
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 
 #include "aligator/modelling/dynamics/continuous-base.hpp"
 
@@ -67,3 +67,7 @@ struct IntegratorDataTpl : DynamicsDataTpl<_Scalar> {
 } // namespace aligator
 
 #include "aligator/modelling/dynamics/integrator-abstract.hxx"
+
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+#include "aligator/modelling/dynamics/integrator-abstract.txx"
+#endif

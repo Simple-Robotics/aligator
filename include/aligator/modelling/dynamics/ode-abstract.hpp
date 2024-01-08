@@ -1,7 +1,7 @@
 #pragma once
 /// @file ode-abstract.hpp
 /// @brief Defines a class representing ODEs.
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 
 #include "aligator/modelling/dynamics/continuous-base.hpp"
 
