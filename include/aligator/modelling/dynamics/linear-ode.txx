@@ -1,7 +1,8 @@
 /// @copyright Copyright (C) 2024 LAAS-CNRS, INRIA
 #pragma once
 
-#include "./linear-ode.hpp"
+#include "aligator/context.hpp"
+#include "aligator/modelling/dynamics/linear-ode.hpp"
 
 namespace aligator {
 namespace dynamics {

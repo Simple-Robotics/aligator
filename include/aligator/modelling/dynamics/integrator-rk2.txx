@@ -1,7 +1,8 @@
 /// @copyright Copyright (C) 2024 LAAS-CNRS, INRIA
 #pragma once
 
-#include "./integrator-rk2.hpp"
+#include "aligator/context.hpp"
+#include "aligator/modelling/dynamics/integrator-rk2.hpp"
 
 namespace aligator {
 namespace dynamics {
