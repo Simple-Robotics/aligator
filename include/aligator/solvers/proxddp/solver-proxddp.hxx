@@ -21,9 +21,8 @@ SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
     : target_tol_(tol), mu_init(mu_init), rho_init(rho_init), verbose_(verbose),
       hess_approx_(hess_approx), ldlt_algo_choice_(LDLTChoice::DENSE),
       max_iters(max_iters), rollout_max_iters(1), linesearch_(ls_params),
-      filter_(beta_, ls_params.alpha_min, ls_params.max_num_steps) {
+      filter_(0.0, ls_params.alpha_min, ls_params.max_num_steps) {
   ls_params.interp_type = proxsuite::nlp::LSInterpolation::CUBIC;
-  beta_ = 1e-5;
 }
 
 template <typename Scalar>
@@ -132,7 +131,7 @@ void SolverProxDDP<Scalar>::setup(const Problem &problem) {
   workspace_ = Workspace(problem, ldlt_algo_choice_);
   results_ = Results(problem);
   linesearch_.setOptions(ls_params);
-  filter_.resetFilter(beta_, ls_params.alpha_min, ls_params.max_num_steps);
+  filter_.resetFilter(0.0, ls_params.alpha_min, ls_params.max_num_steps);
   workspace_.configureScalers(problem, mu_penal_,
                               applyDefaultScalingStrategy<Scalar>);
 }
@@ -800,15 +799,15 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
     Scalar alpha_opt = 1;
     Scalar phi_new;
 
-    switch (sa_mode) {
-    case StepAcceptanceMode::LINESEARCH:
+    switch (sa_strategy) {
+    case StepAcceptanceStrategy::LINESEARCH:
       phi_new = linesearch_.run(merit_eval_fun, phi0, dphi0, alpha_opt);
       break;
-    case StepAcceptanceMode::FILTER:
+    case StepAcceptanceStrategy::FILTER:
       phi_new = filter_.run(pair_eval_fun, alpha_opt);
       break;
     default:
-      assert(false && "unknown StepAcceptanceMode!");
+      assert(false && "unknown StepAcceptanceStrategy!");
       break;
     }
 

@@ -68,15 +68,15 @@ public:
         }
         fpair = phi(alpha_try);
       }
+      else break;
     }
-
+    
     // TODO: else, feasilibity restauration by minimizing h
     return fpair.first;
   }
 
   bool accept_pair(const std::pair<Scalar, Scalar> &fpair) {
     // Check if pair is acceptable to the filter
-
     for (auto el = filter_pairs_.begin(); el != filter_pairs_.end(); el++) {
       std::pair<Scalar, Scalar> element = *el;
       if (element.first - beta_ * element.second <= fpair.first and

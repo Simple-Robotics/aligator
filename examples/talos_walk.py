@@ -9,7 +9,7 @@ from aligator import (
     dynamics,
     constraints,
 )
-from utils import load_talos, ArgsBase
+from utils import load_talos_no_wristhead, ArgsBase
 
 
 class Args(ArgsBase):
@@ -18,7 +18,7 @@ class Args(ArgsBase):
 
 
 args = Args().parse_args()
-robotComplete, robot = load_talos()
+robotComplete, robot = load_talos_no_wristhead()
 rmodel: pin.Model = robot.model
 rdata: pin.Data = robot.data
 nq = rmodel.nq
@@ -287,7 +287,7 @@ problem = aligator.TrajOptProblem(x0, stages, term_cost)
 TOL = 1e-5
 mu_init = 1e-8
 rho_init = 0.0
-max_iters = 500
+max_iters = 100
 verbose = aligator.VerboseLevel.VERBOSE
 solver = aligator.SolverProxDDP(TOL, mu_init, rho_init, verbose=verbose)
 # solver = aligator.SolverFDDP(TOL, verbose=verbose)
@@ -295,7 +295,7 @@ solver.rollout_type = aligator.ROLLOUT_LINEAR
 print("LDLT algo choice:", solver.ldlt_algo_choice)
 # solver = aligator.SolverFDDP(TOL, verbose=verbose)
 solver.max_iters = max_iters
-solver.sa_mode = aligator.LINESEARCH  # FILTER or LINESEARCH
+solver.sa_strategy = aligator.FILTER  # FILTER or LINESEARCH
 solver.setup(problem)
 
 us_init = [np.zeros(nu)] * nsteps
