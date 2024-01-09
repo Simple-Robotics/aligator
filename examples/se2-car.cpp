@@ -69,7 +69,7 @@ int main() {
 
   auto state_err = std::make_shared<StateError>(space, nu, x_target);
 
-  MatrixXs w_x(ndx, ndx);
+  MatrixXs w_x = MatrixXs::Zero(ndx, ndx);
   w_x.diagonal().array() = 0.01;
   MatrixXs w_term = w_x * 10;
   MatrixXs w_u = MatrixXs::Random(nu, nu);
