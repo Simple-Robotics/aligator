@@ -54,4 +54,12 @@ BENCHMARK_TEMPLATE(BM_parallel, 3)->Apply(customArgs);
 BENCHMARK_TEMPLATE(BM_parallel, 4)->Apply(customArgs);
 BENCHMARK_TEMPLATE(BM_parallel, 5)->Apply(customArgs);
 
-BENCHMARK_MAIN();
+int main(int argc, char **argv) {
+  aligator::omp::set_default_options(aligator::omp::get_available_threads());
+
+  benchmark::Initialize(&argc, argv);
+  if (benchmark::ReportUnrecognizedArguments(argc, argv)) {
+    return 1;
+  }
+  benchmark::RunSpecifiedBenchmarks();
+}
