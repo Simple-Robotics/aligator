@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE(short_horz_pb) {
   // check error
   KktError err = compute_kkt_error(prob, xs, us, vs, lbdas);
 
-  printError(err);
+  print_kkt_error(err);
 
   BOOST_CHECK_LE(err.max, 1e-9);
 }
@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(random_long_problem) {
   fmt::print("Elapsed time (fwd): {:d}\n", t_fwd.count());
 
   KktError err = compute_kkt_error(prob, xs, us, vs, lbdas);
-  printError(err);
+  print_kkt_error(err);
 
   BOOST_CHECK_LE(err.max, 1e-9);
 }

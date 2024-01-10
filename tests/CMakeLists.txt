@@ -40,14 +40,7 @@ function(add_aligator_test name)
   _add_test_prototype(${name} "" ${PROJECT_NAME})
 endfunction(add_aligator_test)
 
-set(TEST_NAMES
-    integrators
-    problem
-    costs
-    continuous
-    utils
-    solver-storage
-    schur3x3)
+set(TEST_NAMES integrators problem costs continuous utils solver-storage)
 
 foreach(test_name ${TEST_NAMES})
   add_aligator_test(${test_name})

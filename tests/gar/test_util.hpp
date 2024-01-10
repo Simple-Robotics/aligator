@@ -19,8 +19,8 @@ struct KktError {
   double max;
 };
 
-inline void printError(const KktError &err,
-                       const std::string &msg = "Max KKT error") {
+inline void print_kkt_error(const KktError &err,
+                            const std::string &msg = "Max KKT error") {
   fmt::print("{}: {:.3e}\n", msg, err.max);
   fmt::print("> dual: {:.3e}\n> cstr: {:.3e}\n> dyn: {:.3e}\n", err.dual,
              err.cstr, err.dyn);
