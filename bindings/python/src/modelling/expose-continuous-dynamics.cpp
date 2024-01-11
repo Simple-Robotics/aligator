@@ -2,6 +2,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "aligator/python/modelling/continuous.hpp"
 #include "aligator/modelling/dynamics/linear-ode.hpp"
+#include "aligator/modelling/dynamics/centroidal-fwd.hpp"
 
 namespace aligator {
 namespace python {
@@ -13,6 +14,7 @@ using ContinuousDynamicsBase = ContinuousDynamicsAbstractTpl<Scalar>;
 using ContinuousDynamicsData = ContinuousDynamicsDataTpl<Scalar>;
 using ODEAbstract = ODEAbstractTpl<Scalar>;
 using ODEData = ODEDataTpl<Scalar>;
+using CentroidalFwdDynamics = CentroidalFwdDynamicsTpl<Scalar>;
 
 struct DAEDataWrapper : ContinuousDynamicsData,
                         bp::wrapper<ContinuousDynamicsData> {
@@ -114,6 +116,27 @@ void exposeODEs() {
       .def_readonly("A", &LinearODETpl<Scalar>::A_, "State transition matrix.")
       .def_readonly("B", &LinearODETpl<Scalar>::B_, "Control matrix.")
       .def_readonly("c", &LinearODETpl<Scalar>::c_, "Constant drift term.");
+
+  /*bp::class_<CentroidalFwdDynamics, bp::bases<ODEAbstract>>(
+      "CentroidalFwdDynamics",
+      "Nonlinear centroidal dynamics with preplanned feet positions",
+      bp::init<const shared_ptr<proxsuite::nlp::VectorSpaceTpl<Scalar>> &,
+               const int &, const double &>(
+          bp::args("self", "space", "max number of contacts", "total lass")));
+      .def("updateContactPoints", &CentroidalFwdDynamics::updateContactPoints,
+           bp::args("self", "contact_points"),
+           "Set the nk planned contact positions.")
+      .def("updateGait", &CentroidalFwdDynamics::updateGait,
+           bp::args("self", "active_contacts"),
+           "Set the active contacts.")
+      .def(CreateDataPythonVisitor<CentroidalFwdDynamics>());
+
+  bp::register_ptr_to_python<shared_ptr<CentroidalFwdDataTpl<Scalar>>>();
+  bp::class_<CentroidalFwdDataTpl<Scalar>, bp::bases<ODEData>>(
+      "CentroidalFwdData", bp::no_init)
+      .def_readwrite("Fx", &CentroidalFwdDataTpl<Scalar>::Fx_)
+      .def_readwrite("Fu", &CentroidalFwdDataTpl<Scalar>::Fu_)
+      .def_readwrite("B", &CentroidalFwdDataTpl<Scalar>::B); */
 }
 
 } // namespace python

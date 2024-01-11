@@ -18,6 +18,11 @@ template <typename Scalar> struct ODEAbstractTpl;
 
 template <typename Scalar> struct ODEDataTpl;
 
+// fwd CentroidalFwdDynamicsTpl
+template <typename Scalar> struct CentroidalFwdDynamicsTpl;
+
+template <typename Scalar> struct CentroidalFwdDataTpl;
+
 //// INTEGRATORS
 
 // fwd IntegratorAbstractTpl;
