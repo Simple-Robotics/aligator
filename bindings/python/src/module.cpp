@@ -59,7 +59,6 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
           "Get the current number of threads.");
 #endif
   eigenpy::enableEigenPy();
-
   bp::import("warnings");
   bp::import("proxsuite_nlp");
 

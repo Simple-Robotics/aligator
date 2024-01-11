@@ -35,38 +35,28 @@ struct CentroidalFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using Base::nu_;
 
   ManifoldPtr space_;
-  const int nk_;
+  const std::size_t nk_;
   const double mass_;
-  const Vector3s gravity_;
+  Vector3s gravity_;
   std::vector<bool> active_contacts_;
-  std::vector<Vector3s> contact_points_;
+  StdVectorEigenAligned<Vector3s> contact_points_;
 
   const Manifold &space() const { return *space_; }
 
   CentroidalFwdDynamicsTpl(const ManifoldPtr &state, const int &nk,
                            const double &mass);
 
-  virtual void forward(const ConstVectorRef &x, const ConstVectorRef &u,
-                       BaseData &data) const;
-  virtual void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
-                        BaseData &data) const;
-
-  virtual void updateContactPoints(std::vector<Vector3s> contact_points);
-
-  virtual void updateGait(std::vector<bool> active_contacts);
+  void forward(const ConstVectorRef &x, const ConstVectorRef &u,
+               BaseData &data) const;
+  void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
+                BaseData &data) const;
 
   shared_ptr<ContDataAbstract> createData() const;
 };
 
 template <typename Scalar> struct CentroidalFwdDataTpl : ODEDataTpl<Scalar> {
   using Base = ODEDataTpl<Scalar>;
-  using Vector3s = typename math_types<Scalar>::Vector3s;
-  using MatrixXs = typename math_types<Scalar>::MatrixXs;
-  using Matrix3s = Eigen::Matrix<Scalar, 3, 3>;
 
-  MatrixXs Fx_;
-  MatrixXs Fu_;
-  Matrix3s B;
   CentroidalFwdDataTpl(const CentroidalFwdDynamicsTpl<Scalar> *cont_dyn);
 };
 
@@ -74,7 +64,3 @@ template <typename Scalar> struct CentroidalFwdDataTpl : ODEDataTpl<Scalar> {
 } // namespace aligator
 
 #include "aligator/modelling/dynamics/centroidal-fwd.hxx"
-
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/modelling/dynamics/centroidal-fwd.txx"
-#endif

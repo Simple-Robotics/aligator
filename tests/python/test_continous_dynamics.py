@@ -89,6 +89,25 @@ def test_multibody_free():
         pass
 
 
+def test_centroidal():
+    try:
+        space = manifolds.VectorSpace(9)
+        nk = 2
+        nu = 6 * nk
+        mass = 10.5
+        ode = dynamics.CentroidalFwdDynamics(space, nk, mass)
+        data = ode.createData()
+        assert isinstance(data, dynamics.CentroidalFwdData)
+
+        x0 = space.neutral()
+        u0 = np.random.randn(nu)
+
+        ode.forward(x0, u0, data)
+        ode.dForward(x0, u0, data)
+    except ImportError:
+        pass
+
+
 if __name__ == "__main__":
     import sys
 
