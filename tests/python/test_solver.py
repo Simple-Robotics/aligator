@@ -106,7 +106,7 @@ def test_proxddp_lqr():
         tol, mu_init, rho_init, aligator.VerboseLevel.VERBOSE
     )
     solver.setup(problem)
-    solver.sa_strategy = aligator.FILTER
+    solver.sa_strategy = aligator.SA_FILTER
     solver.max_iters = 50
     xs_init = [x0] * (nsteps + 1)
     us_init = [np.zeros(nu)] * nsteps

@@ -125,7 +125,7 @@ solver = aligator.SolverProxDDP(
     tol, mu_init, rho_init, max_iters=max_iters, verbose=verbose
 )
 solver.rollout_type = aligator.ROLLOUT_NONLINEAR
-solver.sa_strategy = aligator.LINESEARCH
+solver.sa_strategy = aligator.SA_LINESEARCH
 if args.fddp:
     solver = aligator.SolverFDDP(tol, verbose, max_iters=max_iters)
 cb = aligator.HistoryCallback()

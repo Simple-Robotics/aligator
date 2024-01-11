@@ -91,7 +91,7 @@ solver.rollout_type = aligator.ROLLOUT_NONLINEAR
 print("LDLT algo choice:", solver.ldlt_algo_choice)
 # solver = aligator.SolverFDDP(TOL, verbose=verbose)
 solver.max_iters = max_iters
-solver.sa_strategy = aligator.LINESEARCH  # FILTER or LINESEARCH
+solver.sa_strategy = aligator.SA_LINESEARCH  # FILTER or LINESEARCH
 solver.setup(problem)
 
 u0 = compute_quasistatic(rmodel, rdata, x0, acc=np.zeros(nv))
