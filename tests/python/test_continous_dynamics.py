@@ -108,6 +108,47 @@ def test_centroidal():
         pass
 
 
+def test_centroidal_diff():
+    space = manifolds.VectorSpace(9)
+    nk = 2
+    nu = 6 * nk
+    mass = 10.5
+    ode = dynamics.CentroidalFwdDynamics(space, nk, mass)
+    data = ode.createData()
+
+    x0 = np.random.randn(9)
+    u0 = np.random.randn(nu)
+    epsilon = 1e-6
+
+    ode.forward(x0, u0, data)
+    ode.dForward(x0, u0, data)
+
+    xdot0 = data.xdot.copy()
+    Jx0 = data.Jx.copy()
+    Ju0 = data.Ju.copy()
+    Jxdiff = np.zeros((9, 9))
+    Judiff = np.zeros((9, 12))
+
+    for i in range(9):
+        evec = np.zeros(9)
+        evec[i] = epsilon
+        xi = x0 + evec
+        ode.forward(xi, u0, data)
+        ode.dForward(xi, u0, data)
+        Jxdiff[:, i] = (data.xdot - xdot0) / epsilon
+
+    for i in range(nu):
+        evec = np.zeros(nu)
+        evec[i] = epsilon
+        ui = u0 + evec
+        ode.forward(x0, ui, data)
+        ode.dForward(x0, ui, data)
+        Judiff[:, i] = (data.xdot - xdot0) / epsilon
+
+    assert np.linalg.norm(Jxdiff - Jx0) <= epsilon
+    assert np.linalg.norm(Judiff - Ju0) <= epsilon
+
+
 if __name__ == "__main__":
     import sys
 
