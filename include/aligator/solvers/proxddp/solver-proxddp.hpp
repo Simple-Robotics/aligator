@@ -7,8 +7,7 @@
 #include "aligator/core/linesearch.hpp"
 #include "aligator/core/filter.hpp"
 #include "aligator/core/callback-base.hpp"
-// TODO: circular include as enums.hpp is already included in merit-function.hpp
-// #include "aligator/core/enums.hpp"
+#include "aligator/core/enums.hpp"
 #include "aligator/utils/exceptions.hpp"
 #include "aligator/utils/logger.hpp"
 #include "aligator/utils/forward-dyn.hpp"
