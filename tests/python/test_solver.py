@@ -68,8 +68,8 @@ def test_proxddp_lqr(strategy):
     space = VectorSpace(nx)
     x0 = space.neutral() + (0.2, 0.3, -0.1)
     xf = x0 * 0.9
-    umin = np.array([-1, -1])
-    umax = np.array([1, 1])
+    umin = np.array([-1, -1, -1])
+    umax = np.array([1, 1, 1])
     A = np.eye(nx)
     A[0, 1] = -0.2
     A[1, 0] = 0.2
