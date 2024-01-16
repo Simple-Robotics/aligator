@@ -237,7 +237,7 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
 
     /* Compute gains */
 
-    MatrixXs &kkt_rhs = workspace.kkt_rhs_bufs[i];
+    MatrixXs &kkt_rhs = workspace.kktRhs[i];
     auto kkt_ff = kkt_rhs.col(0);
     auto kkt_fb = kkt_rhs.rightCols(ndx1);
 

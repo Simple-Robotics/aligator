@@ -142,9 +142,9 @@ public:
   /// did not exit.
   ALIGATOR_INLINE void acceptGains(const Workspace &workspace,
                                    Results &results) const {
-    assert(workspace.kkt_rhs_bufs.size() == results.gains_.size());
+    assert(workspace.kktRhs.size() == results.gains_.size());
     ALIGATOR_NOMALLOC_BEGIN;
-    results.gains_ = workspace.kkt_rhs_bufs;
+    results.gains_ = workspace.kktRhs;
     ALIGATOR_NOMALLOC_END;
   }
 
