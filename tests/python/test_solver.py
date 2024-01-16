@@ -61,7 +61,8 @@ def test_no_node():
     solver.setup(problem)
 
 
-def test_proxddp_lqr():
+@pytest.mark.parametrize("strategy", [aligator.SA_FILTER, aligator.SA_LINESEARCH])
+def test_proxddp_lqr(strategy):
     nx = 3
     nu = 3
     space = VectorSpace(nx)
@@ -103,8 +104,8 @@ def test_proxddp_lqr():
     rho_init = 1e-2
     solver = aligator.SolverProxDDP(tol, mu_init, rho_init, verbose=aligator.VERBOSE)
     solver.setup(problem)
-    solver.sa_strategy = aligator.SA_FILTER
-    solver.max_iters = 4
+    solver.sa_strategy = strategy
+    solver.max_iters = 10
     xs_init = [x0] * (nsteps + 1)
     us_init = [np.zeros(nu)] * nsteps
     conv = solver.run(problem, xs_init, us_init)
