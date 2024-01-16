@@ -33,7 +33,7 @@ def test_fddp_lqr():
         problem.addStage(stage)
 
     tol = 1e-6
-    solver = aligator.SolverFDDP(tol, aligator.VerboseLevel.VERBOSE)
+    solver = aligator.SolverFDDP(tol, verbose=aligator.VERBOSE)
     solver.setup(problem)
     solver.max_iters = 2
     xs_init = [x0] * (nsteps + 1)
@@ -51,13 +51,12 @@ def test_no_node():
     x0 = space.rand()
     mu_init = 4e-2
     rho_init = 1e-2
-    verbose = aligator.VERBOSE
     TOL = 1e-4
     MAX_ITER = 200
     terminal_cost = aligator.CostStack(space, nu)
     problem = aligator.TrajOptProblem(x0, nu, space, terminal_cost)
     solver = aligator.SolverProxDDP(
-        TOL, mu_init, rho_init=rho_init, max_iters=MAX_ITER, verbose=verbose
+        TOL, mu_init, rho_init=rho_init, max_iters=MAX_ITER, verbose=aligator.VERBOSE
     )
     solver.setup(problem)
 
@@ -100,14 +99,12 @@ def test_proxddp_lqr():
     problem.addTerminalConstraint(term_cstr)
 
     tol = 1e-6
-    mu_init = 1e-3
+    mu_init = 1e-4
     rho_init = 1e-2
-    solver = aligator.SolverProxDDP(
-        tol, mu_init, rho_init, aligator.VerboseLevel.VERBOSE
-    )
+    solver = aligator.SolverProxDDP(tol, mu_init, rho_init, verbose=aligator.VERBOSE)
     solver.setup(problem)
     solver.sa_strategy = aligator.SA_FILTER
-    solver.max_iters = 50
+    solver.max_iters = 4
     xs_init = [x0] * (nsteps + 1)
     us_init = [np.zeros(nu)] * nsteps
     conv = solver.run(problem, xs_init, us_init)
