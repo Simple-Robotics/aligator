@@ -66,8 +66,6 @@ BOOST_AUTO_TEST_CASE(block_tridiag_solve) {
   std::fill_n(sup.begin(), N, B);
   std::fill_n(sub.begin(), N, B.transpose());
 
-  BOOST_CHECK(gar::internal::check_block_tridiag(sub, diagonal, sup));
-
   using BlkVec = BlkMatrix<VectorXs, -1, 1>;
   std::vector<long> dims(N + 1);
   std::fill_n(dims.begin(), N + 1, nx);
@@ -75,11 +73,12 @@ BOOST_AUTO_TEST_CASE(block_tridiag_solve) {
   BlkVec vec(dims);
   vec.matrix().setOnes();
 
-  MatrixXs densemat = gar::block_tridiag_to_dense(sub, diagonal, sup);
+  MatrixXs densemat = gar::blockTridiagToDenseMatrix(sub, diagonal, sup);
   fmt::print("Dense problem matrix:\n{}\n", densemat);
   BlkVec densevec = vec;
 
-  gar::symmetric_block_tridiagonal_solve(sub, diagonal, sup, vec);
+  bool ret = gar::symmetricBlockTridiagSolve(sub, diagonal, sup, vec);
+  BOOST_CHECK(ret);
 
   for (size_t i = 0; i <= N; i++) {
     fmt::print("rhs[{:d}] = {}\n", i, vec[i].transpose());

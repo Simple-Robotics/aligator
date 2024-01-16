@@ -2,26 +2,17 @@
 
 #include "aligator/gar/blk-matrix.hpp"
 #include <Eigen/Cholesky>
+#include "tracy/Tracy.hpp"
 
 namespace aligator {
 namespace gar {
 
-/// Returns true if block-tridiag matrix data has consistent lengths
-namespace internal {
 template <typename MatrixType>
-bool check_block_tridiag(const std::vector<MatrixType> &subdiagonal,
-                         const std::vector<MatrixType> &diagonal,
-                         const std::vector<MatrixType> &superdiagonal) {
-  return (diagonal.size() == superdiagonal.size() + 1 ||
-          diagonal.size() == subdiagonal.size());
-}
-} // namespace internal
-
-template <typename MatrixType>
-auto block_tridiag_to_dense(const std::vector<MatrixType> &subdiagonal,
-                            const std::vector<MatrixType> &diagonal,
-                            const std::vector<MatrixType> &superdiagonal) {
-  if (!internal::check_block_tridiag(subdiagonal, diagonal, superdiagonal)) {
+auto blockTridiagToDenseMatrix(const std::vector<MatrixType> &subdiagonal,
+                               const std::vector<MatrixType> &diagonal,
+                               const std::vector<MatrixType> &superdiagonal) {
+  if (subdiagonal.size() != superdiagonal.size() ||
+      diagonal.size() != superdiagonal.size() + 1) {
     throw std::invalid_argument("Wrong lengths");
   }
 
@@ -54,12 +45,13 @@ auto block_tridiag_to_dense(const std::vector<MatrixType> &subdiagonal,
 /// Solve a symmetric block-tridiagonal problem by in-place factorization.
 /// The subdiagonal will be used to store factorization coefficients.
 template <typename MatrixType, typename RhsType>
-bool symmetric_block_tridiagonal_solve(std::vector<MatrixType> &subdiagonal,
-                                       std::vector<MatrixType> &diagonal,
-                                       std::vector<MatrixType> &superdiagonal,
-                                       BlkMatrix<RhsType, -1, 1> &rhs) {
+bool symmetricBlockTridiagSolve(std::vector<MatrixType> &subdiagonal,
+                                std::vector<MatrixType> &diagonal,
+                                std::vector<MatrixType> &superdiagonal,
+                                BlkMatrix<RhsType, -1, 1> &rhs) {
 
-  if (!internal::check_block_tridiag(subdiagonal, diagonal, superdiagonal) ||
+  if (subdiagonal.size() != superdiagonal.size() ||
+      diagonal.size() != superdiagonal.size() + 1 ||
       rhs.rowDims().size() != diagonal.size()) {
     return false;
   }

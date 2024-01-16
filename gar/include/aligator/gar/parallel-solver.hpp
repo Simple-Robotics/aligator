@@ -11,6 +11,7 @@ namespace gar {
 template <class T>
 boost::span<T> make_span_from_indices(std::vector<T> &vec, size_t i0,
                                       size_t i1) {
+  ZoneScopedN("make_span");
   return boost::make_span(vec.data() + i0, i1 - i0);
 }
 
@@ -18,6 +19,7 @@ boost::span<T> make_span_from_indices(std::vector<T> &vec, size_t i0,
 template <class T>
 boost::span<const T> make_span_from_indices(const std::vector<T> &vec,
                                             size_t i0, size_t i1) {
+  ZoneScopedN("make_span_const");
   return boost::make_span(vec.data() + i0, i1 - i0);
 }
 
@@ -42,45 +44,39 @@ public:
   using BlkVec = BlkMatrix<VectorXs, -1, 1>;
 
   explicit ParallelRiccatiSolver(const LQRProblemTpl<Scalar> &problem,
-                                 const uint num_legs)
-      : datas(), numLegs(num_legs), splitIdx(num_legs + 1), problem(problem) {
+                                 const uint num_threads)
+      : datas(), numThreads(num_threads), splitIdx(num_threads + 1),
+        problem(problem) {
+    ZoneScoped;
 
     uint N = (uint)problem.horizon();
-    for (uint i = 0; i < num_legs; i++) {
-      splitIdx[i] = i * (N + 1) / num_legs;
+    for (uint i = 0; i < num_threads; i++) {
+      splitIdx[i] = i * (N + 1) / num_threads;
     }
-    splitIdx[num_legs] = N + 1;
-    for (uint i = 0; i < num_legs; i++) {
-      buildLeg(splitIdx[i], splitIdx[i + 1], i == (num_legs - 1));
+    splitIdx[num_threads] = N + 1;
+    for (uint i = 0; i < num_threads; i++) {
+      buildLeg(splitIdx[i], splitIdx[i + 1], i == (num_threads - 1));
     }
 
-    const std::vector<long> dims = compute_dims_for_reduced_system();
+    std::vector<long> dims{problem.nc0(), problem.stages.front().nx};
+    for (size_t i = 0; i < num_threads - 1; i++) {
+      uint i0 = splitIdx[i];
+      uint i1 = splitIdx[i + 1];
+      dims.push_back(problem.stages[i0].nx);
+      dims.push_back(problem.stages[i1 - 1].nx);
+    }
     condensedKktRhs = BlkVec(dims);
-    condensedKktSystem = initialize_tridiag_system(dims);
+    condensedKktSystem = initializeTridiagSystem(dims);
 
     assert(datas.size() == (N + 1));
     assert(checkIndices());
-  }
-
-  auto compute_dims_for_reduced_system() const {
-    const auto &stages = problem.stages;
-    std::vector<long> dims{problem.nc0(), stages[0].nx}; // dims for rhs
-
-    // fill in for all legs
-    for (size_t i = 0; i < numLegs - 1; i++) {
-      uint i0 = splitIdx[i];
-      uint i1 = splitIdx[i + 1];
-      dims.push_back(stages[i0].nx);
-      dims.push_back(stages[i1 - 1].nx);
-    }
-    return dims;
   }
 
   inline bool checkIndices() const {
     if (splitIdx[0] != 0)
       return false;
 
-    for (uint i = 0; i < numLegs; i++) {
+    for (uint i = 0; i < numThreads; i++) {
       if (splitIdx[i] >= splitIdx[i + 1])
         return false;
     }
@@ -108,23 +104,27 @@ public:
   bool backward(Scalar mudyn, Scalar mueq) {
 
     ALIGATOR_NOMALLOC_BEGIN;
+    Eigen::setNbThreads(1);
     bool ret = true;
-#pragma omp parallel for schedule(static, 1) num_threads(numLegs)              \
-    reduction(& : ret)
-    for (uint i = 0; i < numLegs; i++) {
-      boost::span<const KnotType> stview =
-          make_span_from_indices(problem.stages, splitIdx[i], splitIdx[i + 1]);
-      boost::span<StageFactor<Scalar>> dtview =
-          make_span_from_indices(datas, splitIdx[i], splitIdx[i + 1]);
-      ret &= Impl::backwardImpl(stview, mudyn, mueq, dtview);
+#pragma omp parallel num_threads(numThreads)
+    {
+#pragma omp for schedule(static, 1) reduction(& : ret)
+      for (uint i = 0; i < numThreads; i++) {
+        boost::span<const KnotType> stview = make_span_from_indices(
+            problem.stages, splitIdx[id], splitIdx[i + 1]);
+        boost::span<StageFactor<Scalar>> dtview =
+            make_span_from_indices(datas, splitIdx[i], splitIdx[i + 1]);
+        ret &= Impl::backwardImpl(stview, mudyn, mueq, dtview);
+      }
     }
 
+    Eigen::setNbThreads(0);
     assembleCondensedSystem(mudyn);
     ALIGATOR_NOMALLOC_END;
-    symmetric_block_tridiagonal_solve(
+    ret &= symmetricBlockTridiagSolve(
         condensedKktSystem.subdiagonal, condensedKktSystem.diagonal,
         condensedKktSystem.superdiagonal, condensedKktRhs);
-    return true;
+    return ret;
   }
 
   struct condensed_system_t {
@@ -149,7 +149,7 @@ public:
     superdiagonal[1] = datas[0].vm.Vxt;
 
     // fill in for all legs
-    for (size_t i = 0; i < numLegs - 1; i++) {
+    for (size_t i = 0; i < numThreads - 1; i++) {
       uint i0 = splitIdx[i];
       uint i1 = splitIdx[i + 1];
 
@@ -159,7 +159,7 @@ public:
       diagonal[2 * ip1 + 1] = datas[i1].vm.Pmat;
       superdiagonal[2 * ip1] = stages[i1].E;
 
-      if (ip1 + 1 < numLegs) {
+      if (ip1 + 1 < numThreads) {
         superdiagonal[2 * ip1 + 1] = datas[i1].vm.Vxt;
       }
     }
@@ -172,7 +172,7 @@ public:
     condensedKktRhs[0] = -problem.g0;
     condensedKktRhs[1] = -datas[0].vm.pvec;
 
-    for (size_t i = 0; i < numLegs - 1; i++) {
+    for (size_t i = 0; i < numThreads - 1; i++) {
       uint i0 = splitIdx[i];
       uint i1 = splitIdx[i + 1];
       size_t ip1 = i + 1;
@@ -183,15 +183,16 @@ public:
 
   void forward(VectorOfVectors &xs, VectorOfVectors &us, VectorOfVectors &vs,
                VectorOfVectors &lbdas) {
-    for (size_t i = 0; i < numLegs; i++) {
+    ALIGATOR_NOMALLOC_BEGIN;
+    for (size_t i = 0; i < numThreads; i++) {
       uint i0 = splitIdx[i];
       lbdas[i0] = condensedKktRhs[2 * i];
       xs[i0] = condensedKktRhs[2 * i + 1];
     }
-    ALIGATOR_NOMALLOC_BEGIN;
+    Eigen::setNbThreads(1);
 
-#pragma omp parallel for schedule(static, 1) num_threads(numLegs)
-    for (uint i = 0; i < numLegs; i++) {
+#pragma omp parallel for schedule(static, 1) num_threads(numThreads)
+    for (uint i = 0; i < numThreads; i++) {
       auto xsview = make_span_from_indices(xs, splitIdx[i], splitIdx[i + 1]);
       auto usview = make_span_from_indices(us, splitIdx[i], splitIdx[i + 1]);
       auto vsview = make_span_from_indices(vs, splitIdx[i], splitIdx[i + 1]);
@@ -199,7 +200,7 @@ public:
       auto stview =
           make_span_from_indices(problem.stages, splitIdx[i], splitIdx[i + 1]);
       auto dsview = make_span_from_indices(datas, splitIdx[i], splitIdx[i + 1]);
-      if (i == numLegs - 1) {
+      if (i == numThreads - 1) {
         Impl::forwardImpl(stview, dsview, xsview, usview, vsview, lsview);
       } else {
         ConstVectorRef theta1 = lbdas[splitIdx[i + 1]];
@@ -207,12 +208,13 @@ public:
                           theta1);
       }
     }
+    Eigen::setNbThreads(0);
     ALIGATOR_NOMALLOC_END;
   }
 
   std::vector<StageFactor<Scalar>> datas;
   /// Number of parallel divisions in the problem: \f$J+1\f$ in the math.
-  uint numLegs;
+  uint numThreads;
   /// Indices at which the problem should be split.
   std::vector<uint> splitIdx;
 
@@ -221,10 +223,11 @@ public:
   /// Contains the right-hand side and solution of the condensed KKT system.
   BlkVec condensedKktRhs;
 
+  /// An owned copy of the initial problem.
   LQRProblemTpl<Scalar> problem;
 
   inline static condensed_system_t
-  initialize_tridiag_system(const std::vector<long> &dims) {
+  initializeTridiagSystem(const std::vector<long> &dims) {
     std::vector<MatrixXs> subdiagonal;
     std::vector<MatrixXs> diagonal;
     std::vector<MatrixXs> superdiagonal;
