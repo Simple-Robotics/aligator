@@ -15,6 +15,8 @@ target_link_libraries(aligator_gar PUBLIC proxsuite-nlp::proxsuite-nlp)
 if(BUILD_WITH_OPENMP_SUPPORT)
   target_link_libraries(aligator_gar PUBLIC OpenMP::OpenMP_CXX)
 endif(BUILD_WITH_OPENMP_SUPPORT)
+target_link_libraries(aligator_gar PUBLIC Tracy::TracyClient)
+
 add_library(aligator::gar ALIAS aligator_gar)
 
 if(ENABLE_TEMPLATE_INSTANTIATION)

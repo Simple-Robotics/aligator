@@ -24,6 +24,8 @@ option(INSTALL_DOCUMENTATION "Generate and install the documentation" ON)
 set(DOXYGEN_USE_MATHJAX YES)
 set(DOXYGEN_USE_TEMPLATE_CSS YES)
 
+include(FetchContent)
+
 # Check if the submodule cmake have been initialized
 set(JRL_CMAKE_MODULES "${CMAKE_CURRENT_LIST_DIR}/cmake")
 if(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
@@ -31,7 +33,6 @@ if(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
     message(FATAL_ERROR "\nPlease run the following command first:\ngit submodule update --init\n")
   else()
     message(STATUS "JRL cmakemodules not found. Let's fetch it.")
-    include(FetchContent)
     FetchContent_Declare("jrl-cmakemodules"
                          GIT_REPOSITORY "https://github.com/jrl-umi3218/jrl-cmakemodules.git")
     FetchContent_MakeAvailable("jrl-cmakemodules")
@@ -196,6 +197,22 @@ if(ENABLE_TEMPLATE_INSTANTIATION)
 endif(ENABLE_TEMPLATE_INSTANTIATION)
 
 list(FILTER LIB_HEADERS EXCLUDE REGEX ${PROJECT_SOURCE_DIR}/include/aligator/compat/*)
+
+option(ENABLE_TRACY_PROFILING "Enable Tracy profiler" OFF)
+FetchContent_Declare(
+  tracy
+  GIT_REPOSITORY https://github.com/wolfpld/tracy.git
+  GIT_TAG master
+  GIT_SHALLOW TRUE
+  GIT_PROGRESS TRUE)
+FetchContent_GetProperties(tracy)
+if(NOT tracy_POPULATED)
+  FetchContent_Populate(tracy)
+  set(TRACY_STATIC "" ON)
+  set(TRACY_ENABLE ${ENABLE_TRACY_PROFILING})
+  add_subdirectory(${tracy_SOURCE_DIR} ${tracy_BINARY_DIR} EXCLUDE_FROM_ALL)
+  set_target_properties(TracyClient PROPERTIES POSITION_INDEPENDENT_CODE True)
+endif()
 
 add_subdirectory(gar)
 
