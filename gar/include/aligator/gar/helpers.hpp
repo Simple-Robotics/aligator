@@ -113,27 +113,31 @@ auto lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
 template <typename Scalar>
 auto lqrInitializeSolution(const LQRProblemTpl<Scalar> &problem) {
   using VectorXs = typename math_types<Scalar>::VectorXs;
-  using VectorOfVectors = typename math_types<Scalar>::VectorOfVectors;
   using knot_t = LQRKnotTpl<Scalar>;
-  std::array<VectorOfVectors, 4> out;
-  VectorOfVectors &xs = out[0];
-  VectorOfVectors &us = out[1];
-  VectorOfVectors &vs = out[2];
-  VectorOfVectors &lbdas = out[3];
+  std::array<std::vector<VectorXs>, 4> out;
+  std::vector<VectorXs> &xs = out[0];
+  std::vector<VectorXs> &us = out[1];
+  std::vector<VectorXs> &vs = out[2];
+  std::vector<VectorXs> &lbdas = out[3];
   const uint N = (uint)problem.horizon();
-  auto zero = [](uint n) { return VectorXs::Zero(n); };
-  lbdas.emplace_back(zero(problem.nc0()));
+
+  xs.resize(N + 1);
+  us.resize(N + 1);
+  vs.resize(N + 1);
+  lbdas.resize(N + 1);
+
+  lbdas[0].setZero(problem.nc0());
   for (uint i = 0; i <= N; i++) {
     const knot_t &kn = problem.stages[i];
-    xs.emplace_back(zero(kn.nx));
-    vs.emplace_back(zero(kn.nc));
-    if (i == N) {
-      if (kn.nu > 0)
-        us.emplace_back(zero(kn.nu));
+    xs[i].setZero(kn.nx);
+    us[i].setZero(kn.nu);
+    vs[i].setZero(kn.nc);
+    if (i == N)
       break;
-    }
-    us.emplace_back(zero(kn.nu));
-    lbdas.emplace_back(zero(kn.nx));
+    lbdas[i + 1].setZero(kn.nx);
+  }
+  if (problem.stages.back().nu == 0) {
+    us.pop_back();
   }
   return out;
 }
