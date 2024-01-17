@@ -156,7 +156,8 @@ void ProximalRiccatiImpl<Scalar>::solveOneStage(const KnotType &model,
   Xi.noalias() += d.BtV.transpose() * K;
 
   a.noalias() -= d.PinvEt * xi;
-  A.noalias() = -d.PinvEt * Xi;
+  A.noalias() = d.PinvEt * Xi;
+  A *= -1;
 
   value_t &vc = d.vm;
   Eigen::Transpose<const MatrixXs> Ct = model.C.transpose();
