@@ -6,19 +6,19 @@
 
 namespace aligator {
 
-/* SolverFDDP<Scalar> */
+/* SolverFDDPTpl<Scalar> */
 
 template <typename Scalar>
-SolverFDDP<Scalar>::SolverFDDP(const Scalar tol, VerboseLevel verbose,
-                               const Scalar reg_init,
-                               const std::size_t max_iters)
+SolverFDDPTpl<Scalar>::SolverFDDPTpl(const Scalar tol, VerboseLevel verbose,
+                                     const Scalar reg_init,
+                                     const std::size_t max_iters)
     : target_tol_(tol), reg_init(reg_init), verbose_(verbose),
       max_iters(max_iters), force_initial_condition_(false) {
   ls_params.alpha_min = pow(2., -9.);
 }
 
 template <typename Scalar>
-void SolverFDDP<Scalar>::setup(const Problem &problem) {
+void SolverFDDPTpl<Scalar>::setup(const Problem &problem) {
   results_ = Results(problem);
   workspace_ = Workspace(problem);
   // check if there are any constraints other than dynamics and throw a warning
@@ -43,9 +43,10 @@ void SolverFDDP<Scalar>::setup(const Problem &problem) {
 }
 
 template <typename Scalar>
-Scalar
-SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
-                                Workspace &workspace, const Scalar alpha) {
+Scalar SolverFDDPTpl<Scalar>::forwardPass(const Problem &problem,
+                                          const Results &results,
+                                          Workspace &workspace,
+                                          const Scalar alpha) {
   ALIGATOR_NOMALLOC_BEGIN;
   const std::size_t nsteps = workspace.nsteps;
   std::vector<VectorXs> &xs_try = workspace.trial_xs;
@@ -105,8 +106,8 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
 }
 
 template <typename Scalar>
-void SolverFDDP<Scalar>::expectedImprovement(Workspace &workspace, Scalar &d1,
-                                             Scalar &d2) const {
+void SolverFDDPTpl<Scalar>::expectedImprovement(Workspace &workspace,
+                                                Scalar &d1, Scalar &d2) const {
   ALIGATOR_NOMALLOC_BEGIN;
   Scalar &dv = workspace.dv_;
   dv = 0.;
@@ -123,8 +124,8 @@ void SolverFDDP<Scalar>::expectedImprovement(Workspace &workspace, Scalar &d1,
 }
 
 template <typename Scalar>
-void SolverFDDP<Scalar>::updateExpectedImprovement(Workspace &workspace,
-                                                   Results &results) const {
+void SolverFDDPTpl<Scalar>::updateExpectedImprovement(Workspace &workspace,
+                                                      Results &results) const {
   ALIGATOR_NOMALLOC_BEGIN;
   Scalar &dg = workspace.dg_;
   Scalar &dq = workspace.dq_;
@@ -151,7 +152,7 @@ void SolverFDDP<Scalar>::updateExpectedImprovement(Workspace &workspace,
 }
 
 template <typename Scalar>
-Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem) {
+Scalar SolverFDDPTpl<Scalar>::computeInfeasibility(const Problem &problem) {
   ALIGATOR_NOMALLOC_BEGIN;
   const std::size_t nsteps = problem.numSteps();
   const ProblemData &pd = workspace_.problem_data;
@@ -165,7 +166,7 @@ Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem) {
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &sm = *problem.stages_[i];
     const auto &sd = *pd.stage_data[i];
-    const ExpData &dd = stage_get_dynamics_data(sd);
+    const ExplicitDynamicsData &dd = stage_get_dynamics_data(sd);
     sm.xspace_->difference(xs[i + 1], dd.xnext_, fs[i + 1]);
   }
   Scalar res = math::infty_norm(fs);
@@ -174,7 +175,7 @@ Scalar SolverFDDP<Scalar>::computeInfeasibility(const Problem &problem) {
 }
 
 template <typename Scalar>
-Scalar SolverFDDP<Scalar>::computeCriterion(Workspace &workspace) {
+Scalar SolverFDDPTpl<Scalar>::computeCriterion(Workspace &workspace) {
   ALIGATOR_NOMALLOC_BEGIN;
   const std::size_t nsteps = workspace.nsteps;
   Scalar v = 0.;
@@ -187,8 +188,8 @@ Scalar SolverFDDP<Scalar>::computeCriterion(Workspace &workspace) {
 }
 
 template <typename Scalar>
-void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
-                                      Workspace &workspace) const {
+void SolverFDDPTpl<Scalar>::backwardPass(const Problem &problem,
+                                         Workspace &workspace) const {
   ALIGATOR_NOMALLOC_BEGIN;
 
   const std::size_t nsteps = workspace.nsteps;
@@ -276,9 +277,9 @@ void SolverFDDP<Scalar>::backwardPass(const Problem &problem,
 }
 
 template <typename Scalar>
-bool SolverFDDP<Scalar>::run(const Problem &problem,
-                             const std::vector<VectorXs> &xs_init,
-                             const std::vector<VectorXs> &us_init) {
+bool SolverFDDPTpl<Scalar>::run(const Problem &problem,
+                                const std::vector<VectorXs> &xs_init,
+                                const std::vector<VectorXs> &us_init) {
   xreg_ = reg_init;
   ureg_ = xreg_;
 

@@ -14,7 +14,7 @@
 #include "aligator/compat/crocoddyl/problem-wrap.hpp"
 
 using aligator::LDLTChoice;
-using aligator::SolverFDDP;
+using aligator::SolverFDDPTpl;
 using aligator::SolverProxDDP;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -64,7 +64,7 @@ static void BM_prox_fddp(benchmark::State &state) {
   std::vector<VectorXd> us_i;
   getInitialGuesses(croc_problem, xs_i, us_i);
 
-  SolverFDDP<double> solver(TOL, get_verbose_flag(verbose));
+  SolverFDDPTpl<double> solver(TOL, get_verbose_flag(verbose));
   solver.max_iters = maxiters;
   solver.setup(prob_wrap);
 

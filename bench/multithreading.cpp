@@ -8,7 +8,7 @@
 
 #include "croc-talos-arm.hpp"
 
-using aligator::SolverFDDP;
+using aligator::SolverFDDPTpl;
 using aligator::SolverProxDDP;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -70,7 +70,7 @@ static void BM_fddp_multithread(benchmark::State &state) {
   auto problem = convertCrocoddylProblem(croc_problem);
   problem.setNumThreads(nthreads);
 
-  SolverFDDP<T> solver(TOL);
+  SolverFDDPTpl<T> solver(TOL);
   solver.max_iters = maxiters;
   solver.setup(problem);
 

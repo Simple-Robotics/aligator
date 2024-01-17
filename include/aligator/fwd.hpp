@@ -100,7 +100,7 @@ template <typename Scalar> struct TrajOptDataTpl;
 template <typename Scalar> struct SolverProxDDP;
 
 // fwd SolverFDDP
-template <typename Scalar> struct SolverFDDP;
+template <typename Scalar> struct SolverFDDPTpl;
 
 // fwd WorkspaceBaseTpl
 template <typename Scalar> struct WorkspaceBaseTpl;

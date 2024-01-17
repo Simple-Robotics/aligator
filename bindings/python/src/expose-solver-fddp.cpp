@@ -8,7 +8,7 @@ namespace python {
 void exposeFDDP() {
   using context::Manifold;
   using context::Scalar;
-  using SolverType = SolverFDDP<Scalar>;
+  using context::SolverFDDP;
   using Workspace = WorkspaceFDDPTpl<Scalar>;
   using Results = ResultsFDDPTpl<Scalar>;
 
@@ -22,17 +22,17 @@ void exposeFDDP() {
   bp::class_<Results, bp::bases<Results::Base>>("ResultsFDDP", bp::no_init)
       .def(bp::init<const context::TrajOptProblem &>(("self"_a, "problem")));
 
-  bp::class_<SolverType, boost::noncopyable>(
+  bp::class_<SolverFDDP, boost::noncopyable>(
       "SolverFDDP", "An implementation of the FDDP solver from Crocoddyl.",
       bp::init<Scalar, VerboseLevel, Scalar, std::size_t>(
           ("self"_a, "tol", "verbose"_a = VerboseLevel::QUIET,
            "reg_init"_a = 1e-9, "max_iters"_a = 1000)))
-      .def_readwrite("reg_min", &SolverType::reg_min_)
-      .def_readwrite("reg_max", &SolverType::reg_max_)
-      .def_readwrite("xreg", &SolverType::xreg_)
-      .def_readwrite("ureg", &SolverType::ureg_)
-      .def(SolverVisitor<SolverType>())
-      .def("run", &SolverType::run,
+      .def_readwrite("reg_min", &SolverFDDP::reg_min_)
+      .def_readwrite("reg_max", &SolverFDDP::reg_max_)
+      .def_readwrite("xreg", &SolverFDDP::xreg_)
+      .def_readwrite("ureg", &SolverFDDP::ureg_)
+      .def(SolverVisitor<SolverFDDP>())
+      .def("run", &SolverFDDP::run,
            ("self"_a, "problem", "xs_init", "us_init"));
 }
 

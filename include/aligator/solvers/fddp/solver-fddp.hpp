@@ -27,7 +27,7 @@ namespace aligator {
  * @details The implementation very similar to Crocoddyl's SolverFDDP.
  *
  */
-template <typename Scalar> struct SolverFDDP {
+template <typename Scalar> struct SolverFDDPTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Problem = TrajOptProblemTpl<Scalar>;
   using StageModel = StageModelTpl<Scalar>;
@@ -83,9 +83,10 @@ public:
   Results results_;
   Workspace workspace_;
 
-  SolverFDDP(const Scalar tol = 1e-6,
-             VerboseLevel verbose = VerboseLevel::QUIET,
-             const Scalar reg_init = 1e-9, const std::size_t max_iters = 200);
+  SolverFDDPTpl(const Scalar tol = 1e-6,
+                VerboseLevel verbose = VerboseLevel::QUIET,
+                const Scalar reg_init = 1e-9,
+                const std::size_t max_iters = 200);
 
   /// @brief  Get the solver results.
   ALIGATOR_DEPRECATED const Results &getResults() const { return results_; }

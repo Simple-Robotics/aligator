@@ -83,7 +83,7 @@ template <LDLTChoice N> static void BM_lqr_prox(benchmark::State &state) {
 
 static void BM_lqr_fddp(benchmark::State &state) {
   SETUP_PROBLEM_VARS(state);
-  SolverFDDP<T> fddp(TOL, verbose);
+  SolverFDDPTpl<T> fddp(TOL, verbose);
   fddp.max_iters = max_iters;
   fddp.setup(problem);
 

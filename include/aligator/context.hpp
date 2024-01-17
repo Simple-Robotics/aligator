@@ -37,7 +37,7 @@ using ExplicitDynamics = ExplicitDynamicsModelTpl<Scalar>;
 using ExplicitDynamicsData = ExplicitDynamicsDataTpl<Scalar>;
 
 using SolverProxDDP = SolverProxDDP<Scalar>;
-using SolverFDDP = SolverFDDP<Scalar>;
+using SolverFDDP = SolverFDDPTpl<Scalar>;
 
 using Workspace = WorkspaceTpl<Scalar>;
 using Results = ResultsTpl<Scalar>;
