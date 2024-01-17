@@ -117,7 +117,7 @@ template <typename Scalar> struct ProximalRiccatiImpl {
   /// Solve initial stage
   inline static void
   computeInitial(VectorRef x0, VectorRef lbd0, const kkt0_t &kkt0,
-                 const boost::optional<ConstVectorRef> &theta_) {
+                 const std::optional<ConstVectorRef> &theta_) {
     assert(kkt0.chol.info() == Eigen::Success);
     x0 = kkt0.ff.blockSegment(0);
     lbd0 = kkt0.ff.blockSegment(1);
@@ -137,7 +137,7 @@ template <typename Scalar> struct ProximalRiccatiImpl {
               boost::span<const StageFactor> datas, boost::span<VectorXs> xs,
               boost::span<VectorXs> us, boost::span<VectorXs> vs,
               boost::span<VectorXs> lbdas,
-              const boost::optional<ConstVectorRef> &theta_ = boost::none);
+              const std::optional<ConstVectorRef> &theta_ = std::nullopt);
 };
 
 } // namespace gar

@@ -61,7 +61,7 @@ public:
   bool
   forward(std::vector<VectorXs> &xs, std::vector<VectorXs> &us,
           std::vector<VectorXs> &vs, std::vector<VectorXs> &lbdas,
-          const boost::optional<ConstVectorRef> &theta_ = boost::none) const {
+          const std::optional<ConstVectorRef> &theta_ = std::nullopt) const {
 
     // solve initial stage
     Impl::computeInitial(xs[0], lbdas[0], kkt0, theta_);

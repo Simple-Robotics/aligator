@@ -156,8 +156,7 @@ void ProximalRiccatiImpl<Scalar>::solveOneStage(const KnotType &model,
   Xi.noalias() += d.BtV.transpose() * K;
 
   a.noalias() -= d.PinvEt * xi;
-  A.noalias() = d.PinvEt * Xi;
-  A *= -1;
+  A.noalias() = -d.PinvEt * Xi;
 
   value_t &vc = d.vm;
   Eigen::Transpose<const MatrixXs> Ct = model.C.transpose();
@@ -211,7 +210,7 @@ bool ProximalRiccatiImpl<Scalar>::forwardImpl(
     boost::span<const KnotType> stages, boost::span<const StageFactor> datas,
     boost::span<VectorXs> xs, boost::span<VectorXs> us,
     boost::span<VectorXs> vs, boost::span<VectorXs> lbdas,
-    const boost::optional<ConstVectorRef> &theta_) {
+    const std::optional<ConstVectorRef> &theta_) {
   ALIGATOR_NOMALLOC_BEGIN;
 
   uint N = (uint)(datas.size() - 1);

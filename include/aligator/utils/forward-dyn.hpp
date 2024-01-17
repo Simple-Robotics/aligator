@@ -2,7 +2,7 @@
 
 #include "aligator/core/explicit-dynamics.hpp"
 #include "aligator/utils/newton-raphson.hpp"
-#include <boost/optional.hpp>
+#include <optional>
 
 namespace aligator {
 
@@ -23,7 +23,7 @@ template <typename T> struct forwardDynamics {
   static void run(const DynamicsModelTpl<T> &model, const ConstVectorRef &x,
                   const ConstVectorRef &u, DynamicsDataTpl<T> &data,
                   VectorRef xout,
-                  const boost::optional<ConstVectorRef> &gap = boost::none,
+                  const std::optional<ConstVectorRef> &gap = std::nullopt,
                   const uint max_iters = 1000, const T EPS = 1e-6) {
     using ExpModel = ExplicitDynamicsModelTpl<T>;
     using ExpData = ExplicitDynamicsDataTpl<T>;
@@ -55,7 +55,7 @@ template <typename T> struct forwardDynamics {
   static void run(const ExplicitDynamicsModelTpl<T> &model,
                   const ConstVectorRef &x, const ConstVectorRef &u,
                   ExplicitDynamicsDataTpl<T> &data, VectorRef xout,
-                  const boost::optional<ConstVectorRef> &gap = boost::none) {
+                  const std::optional<ConstVectorRef> &gap = std::nullopt) {
     model.forward(x, u, data);
     xout = data.xnext_;
     if (gap.has_value()) {

@@ -8,7 +8,7 @@ static KktError
 compute_kkt_error_impl(const problem_t &problem, const VectorOfVectors &xs,
                        const VectorOfVectors &us, const VectorOfVectors &vs,
                        const VectorOfVectors &lbdas,
-                       const boost::optional<ConstVectorRef> &theta_) {
+                       const std::optional<ConstVectorRef> &theta_) {
   uint N = (uint)problem.horizon();
 
   double dynErr = 0.;
@@ -142,7 +142,7 @@ problem_t generate_problem(const ConstVectorRef &x0, uint horz, uint nx,
 KktError compute_kkt_error(const problem_t &problem, const VectorOfVectors &xs,
                            const VectorOfVectors &us, const VectorOfVectors &vs,
                            const VectorOfVectors &lbdas) {
-  return compute_kkt_error_impl(problem, xs, us, vs, lbdas, boost::none);
+  return compute_kkt_error_impl(problem, xs, us, vs, lbdas, std::nullopt);
 }
 
 KktError compute_kkt_error(const problem_t &problem, const VectorOfVectors &xs,
