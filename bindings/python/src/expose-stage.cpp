@@ -1,6 +1,7 @@
 /// @file
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "aligator/python/fwd.hpp"
+#include "aligator/python/utils/deprecation.hpp"
 
 #include "aligator/core/stage-model.hpp"
 #include "aligator/core/stage-data.hpp"
@@ -27,7 +28,7 @@ void exposeStage() {
   bp::class_<StageModel>(
       "StageModel",
       "A stage of the control problem. Holds costs, dynamics, and constraints.",
-      bp::init<CostPtr, DynamicsPtr>(bp::args("self", "cost", "dyn_model")))
+      bp::init<CostPtr, DynamicsPtr>(bp::args("self", "cost", "dynamics")))
       .def<void (StageModel::*)(const context::StageConstraint &)>(
           "addConstraint", &StageModel::addConstraint,
           bp::args("self", "constraint"),
@@ -39,6 +40,7 @@ void exposeStage() {
           "and adds it to the stage.")
       .def_readonly("constraints", &StageModel::constraints_,
                     "Get the set of constraints.")
+      .def_readonly("dynamics", &StageModel::dynamics_, "Stage dynamics.")
       .add_property("xspace",
                     bp::make_function(&StageModel::xspace,
                                       bp::return_internal_reference<>()),
@@ -55,10 +57,14 @@ void exposeStage() {
                     bp::make_function(&StageModel::cost,
                                       bp::return_internal_reference<>()),
                     "Stage cost.")
-      .add_property("dyn_model",
-                    bp::make_function(&StageModel::dyn_model,
-                                      bp::return_internal_reference<>()),
-                    "Stage dynamics.")
+      .add_property(
+          "dyn_model",
+          bp::make_function(
+              &StageModel::dyn_model,
+              deprecation_warning_policy<bp::return_internal_reference<>,
+                                         DeprecationTypes::DEPRECATION>(
+                  "Deprecated. Use StageModel.dynamics instead")),
+          "Stage dynamics.")
       .def("evaluate", &StageModel::evaluate,
            bp::args("self", "x", "u", "y", "data"),
            "Evaluate the stage cost, dynamics, constraints.")

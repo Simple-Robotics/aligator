@@ -65,8 +65,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
     const int ndx1 = stage.ndx1();
     const int nu = stage.nu();
     const int ndx2 = stage.ndx2();
-    const int nprim = stage.numPrimal();
-    const int ndual = stage.numDual();
+    const int ncstr = stage.nc();
     // total matrix system dim
     const int ntot = nprim + ndual;
     const std::size_t ncb = stage.numConstraints();

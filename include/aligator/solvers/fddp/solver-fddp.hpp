@@ -40,7 +40,7 @@ template <typename Scalar> struct SolverFDDP {
   using QParams = QFunctionTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using ExpModel = ExplicitDynamicsModelTpl<Scalar>;
-  using ExpData = ExplicitDynamicsDataTpl<Scalar>;
+  using ExplicitDynamicsData = ExplicitDynamicsDataTpl<Scalar>;
   using CallbackPtr = shared_ptr<CallbackBaseTpl<Scalar>>;
   using CallbackMap = std::unordered_map<std::string, CallbackPtr>;
 
@@ -190,10 +190,10 @@ public:
   bool run(const Problem &problem, const std::vector<VectorXs> &xs_init = {},
            const std::vector<VectorXs> &us_init = {});
 
-  static const ExpData &
+  static const ExplicitDynamicsData &
   stage_get_dynamics_data(const StageDataTpl<Scalar> &data) {
     const DynamicsDataTpl<Scalar> &dd = *data.dynamics_data;
-    return static_cast<const ExpData &>(dd);
+    return static_cast<const ExplicitDynamicsData &>(dd);
   }
 };
 

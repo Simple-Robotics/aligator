@@ -25,9 +25,8 @@ void SolverFDDP<Scalar>::setup(const Problem &problem) {
   std::vector<std::size_t> idx_where_constraints;
   for (std::size_t i = 0; i < problem.numSteps(); i++) {
     const shared_ptr<StageModel> &sm = problem.stages_[i];
-    if (sm->numConstraints() > 1) {
+    if (!sm->constraints_.empty())
       idx_where_constraints.push_back(i);
-    }
   }
   if (idx_where_constraints.size() > 0) {
     ALIGATOR_FDDP_WARNING(
@@ -76,7 +75,7 @@ SolverFDDP<Scalar>::forwardPass(const Problem &problem, const Results &results,
     sm.evaluate(xs_try[i], us_try[i], xs_try[i + 1], sd);
     ALIGATOR_NOMALLOC_BEGIN;
 
-    const ExpData &dd = stage_get_dynamics_data(sd);
+    const ExplicitDynamicsData &dd = stage_get_dynamics_data(sd);
 
     workspace.dxs[i + 1] = (alpha - 1.) * fs[i + 1]; // use as tmp variable
     sm.xspace_next_->integrate(dd.xnext_, workspace.dxs[i + 1], xs_try[i + 1]);
