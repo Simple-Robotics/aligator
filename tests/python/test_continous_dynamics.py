@@ -93,10 +93,14 @@ def test_centroidal():
     try:
         space = manifolds.VectorSpace(9)
         nk = 2
-        nu = 6 * nk
+        nu = 3 * nk
         mass = 10.5
-        ode = dynamics.CentroidalFwdDynamics(space, nk, mass)
+        gravity = np.array([0, 0, -9.81])
+        ode = dynamics.CentroidalFwdDynamics(space, nk, mass, gravity)
         data = ode.createData()
+        ode.contact_points[0] = np.array([0, 0.1, 0])
+        ode.contact_points[1] = np.array([0.1, -0.1, 0])
+
         assert isinstance(data, dynamics.CentroidalFwdData)
 
         x0 = space.neutral()
@@ -111,9 +115,12 @@ def test_centroidal():
 def test_centroidal_diff():
     space = manifolds.VectorSpace(9)
     nk = 2
-    nu = 6 * nk
+    nu = 3 * nk
     mass = 10.5
-    ode = dynamics.CentroidalFwdDynamics(space, nk, mass)
+    gravity = np.array([0, 0, -9.81])
+    ode = dynamics.CentroidalFwdDynamics(space, nk, mass, gravity)
+    ode.contact_points[0] = np.array([0, 0.1, 0])
+    ode.contact_points[1] = np.array([0.1, -0.1, 0])
     data = ode.createData()
 
     x0 = np.random.randn(9)

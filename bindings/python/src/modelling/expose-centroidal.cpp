@@ -2,9 +2,10 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/functions.hpp"
-#include "aligator/modelling/centroidal/center-of-mass-translation.hpp"
+#include "aligator/modelling/centroidal/centroidal-translation.hpp"
 #include "aligator/modelling/centroidal/linear-momentum.hpp"
 #include "aligator/modelling/centroidal/angular-momentum.hpp"
+#include "aligator/modelling/centroidal/centroidal-acceleration.hpp"
 
 namespace aligator {
 namespace python {
@@ -14,68 +15,81 @@ using context::StageFunctionData;
 using context::UnaryFunction;
 
 void exposeCentroidalFunctions() {
-  using CentroidalCoM = CentroidalCoMResidualTpl<Scalar>;
+  using CentroidalCoMResidual = CentroidalCoMResidualTpl<Scalar>;
   using CentroidalCoMData = CentroidalCoMDataTpl<Scalar>;
 
-  using LinearMomentum = LinearMomentumResidualTpl<Scalar>;
+  using LinearMomentumResidual = LinearMomentumResidualTpl<Scalar>;
   using LinearMomentumData = LinearMomentumDataTpl<Scalar>;
 
-  using AngularMomentum = AngularMomentumResidualTpl<Scalar>;
+  using AngularMomentumResidual = AngularMomentumResidualTpl<Scalar>;
   using AngularMomentumData = AngularMomentumDataTpl<Scalar>;
 
-  /*bp::class_<CentroidalCoM, bp::bases<UnaryFunction>>(
-      "CentroidalCoMTranslation residual",
-      "A residual function :math:`r(x) = com(x)` ",
+  using CentroidalAccelerationResidual =
+      CentroidalAccelerationResidualTpl<Scalar>;
+  using CentroidalAccelerationData = CentroidalAccelerationDataTpl<Scalar>;
+
+  bp::class_<CentroidalCoMResidual, bp::bases<UnaryFunction>>(
+      "CentroidalCoMResidual", "A residual function :math:`r(x) = com(x)` ",
       bp::init<const int, const int, const context::Vector3s>(
           bp::args("self", "ndx", "nu", "p_ref")))
-      .def("getReference", &CentroidalCoM::getReference,
+      .def("getReference", &CentroidalCoMResidual::getReference,
            bp::args("self"), bp::return_internal_reference<>(),
            "Get the target Centroidal CoM translation.")
-      .def("setReference", &CentroidalCoM::setReference,
+      .def("setReference", &CentroidalCoMResidual::setReference,
            bp::args("self", "p_new"),
            "Set the target Centroidal CoM translation.");
 
   bp::register_ptr_to_python<shared_ptr<CentroidalCoMData>>();
 
   bp::class_<CentroidalCoMData, bp::bases<StageFunctionData>>(
-      "CentroidalCoMData",
-      "Data Structure for CentroidalCoM", bp::no_init);
+      "CentroidalCoMData", "Data Structure for CentroidalCoM", bp::no_init);
 
-  bp::class_<LinearMomentum, bp::bases<UnaryFunction>>(
-      "LinearMomentum residual",
-      "A residual function :math:`r(x) = h(x)` ",
+  bp::class_<LinearMomentumResidual, bp::bases<UnaryFunction>>(
+      "LinearMomentumResidual", "A residual function :math:`r(x) = h(x)` ",
       bp::init<const int, const int, const context::Vector3s>(
           bp::args("self", "ndx", "nu", "h_ref")))
-      .def("getReference", &LinearMomentum::getReference,
+      .def("getReference", &LinearMomentumResidual::getReference,
            bp::args("self"), bp::return_internal_reference<>(),
            "Get the target Linear Momentum.")
-      .def("setReference", &LinearMomentum::setReference,
-           bp::args("self", "h_new"),
-           "Set the target Linear Momentum.");
+      .def("setReference", &LinearMomentumResidual::setReference,
+           bp::args("self", "h_new"), "Set the target Linear Momentum.");
 
   bp::register_ptr_to_python<shared_ptr<LinearMomentumData>>();
 
   bp::class_<LinearMomentumData, bp::bases<StageFunctionData>>(
-      "LinearMomentumData",
-      "Data Structure for LinearMomentum", bp::no_init);*/
+      "LinearMomentumData", "Data Structure for LinearMomentum", bp::no_init);
 
-  /*bp::class_<AngularMomentum, bp::bases<UnaryFunction>>(
-      "AngularMomentum residual",
-      "A residual function :math:`r(x) = L(x)` ",
+  bp::class_<AngularMomentumResidual, bp::bases<UnaryFunction>>(
+      "AngularMomentumResidual", "A residual function :math:`r(x) = L(x)` ",
       bp::init<const int, const int, const context::Vector3s>(
           bp::args("self", "ndx", "nu", "L_ref")))
-      .def("getReference", &AngularMomentum::getReference,
+      .def("getReference", &AngularMomentumResidual::getReference,
            bp::args("self"), bp::return_internal_reference<>(),
            "Get the target Angular Momentum.")
-      .def("setReference", &AngularMomentum::setReference,
-           bp::args("self", "L_new"),
-           "Set the target Angular Momentum.");
+      .def("setReference", &AngularMomentumResidual::setReference,
+           bp::args("self", "L_new"), "Set the target Angular Momentum.");
 
   bp::register_ptr_to_python<shared_ptr<AngularMomentumData>>();
 
   bp::class_<AngularMomentumData, bp::bases<StageFunctionData>>(
-      "AngularMomentumData",
-      "Data Structure for AngularMomentum", bp::no_init);*/
+      "AngularMomentumData", "Data Structure for AngularMomentum", bp::no_init);
+
+  /*bp::class_<CentroidalAccelerationResidual, bp::bases<UnaryFunction>>(
+      "CentroidalAccelerationResidual",
+      "A residual function :math:`r(x) = cddot(x)` ",
+      bp::init<const int, const int, const double, const context::Vector3s>(
+          bp::args("self", "ndx", "nu", "mass", "gravity")));
+      .def_readwrite("contact_points",
+     &CentroidalAccelerationResidual::contact_points_)
+      .def_readwrite("active_contacts",
+                     &CentroidalAccelerationResidual::active_contacts_)
+      .def(CreateDataPythonVisitor<CentroidalAccelerationResidual>());*/
+
+  bp::register_ptr_to_python<shared_ptr<CentroidalAccelerationData>>();
+
+  bp::class_<CentroidalAccelerationData, bp::bases<StageFunctionData>>(
+      "CentroidalAccelerationData", "Data Structure for CentroidalAcceleration",
+      bp::no_init);
 }
 
 } // namespace python

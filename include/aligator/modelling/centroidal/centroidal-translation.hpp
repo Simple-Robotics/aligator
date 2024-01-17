@@ -44,8 +44,8 @@ struct CentroidalCoMDataTpl : StageFunctionDataTpl<Scalar> {
 
 } // namespace aligator
 
-#include "aligator/modelling/centroidal/center-of-mass-translation.hxx"
+#include "aligator/modelling/centroidal/centroidal-translation.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./center-of-mass-translation.txx"
+#include "./centroidal-translation.txx"
 #endif

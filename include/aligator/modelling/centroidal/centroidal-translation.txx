@@ -1,7 +1,7 @@
 #pragma once
 
 #include "aligator/context.hpp"
-#include "aligator/modelling/centroidal/center-of-mass-translation.hpp"
+#include "aligator/modelling/centroidal/centroidal-translation.hpp"
 
 namespace aligator {
 

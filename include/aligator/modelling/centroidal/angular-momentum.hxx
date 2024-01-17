@@ -17,7 +17,7 @@ void AngularMomentumResidualTpl<Scalar>::computeJacobians(
     const ConstVectorRef &x, BaseData &data) const {
   Data &d = static_cast<Data &>(data);
 
-  d.Jx_.bottomRightCorner(3, 3).setIdentity();
+  d.Jx_.rightCols(3).setIdentity();
 }
 
 template <typename Scalar>

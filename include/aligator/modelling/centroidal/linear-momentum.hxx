@@ -1,7 +1,7 @@
 #pragma once
 
 #include "aligator/modelling/centroidal/linear-momentum.hpp"
-
+#include <iostream>
 namespace aligator {
 
 template <typename Scalar>
@@ -17,7 +17,7 @@ void LinearMomentumResidualTpl<Scalar>::computeJacobians(
     const ConstVectorRef &x, BaseData &data) const {
   Data &d = static_cast<Data &>(data);
 
-  d.Jx_.block(3, 3, 3, 3).setIdentity();
+  d.Jx_.block(0, 3, 3, 3).setIdentity();
 }
 
 template <typename Scalar>

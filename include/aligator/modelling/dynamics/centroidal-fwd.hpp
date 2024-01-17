@@ -44,7 +44,7 @@ struct CentroidalFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   const Manifold &space() const { return *space_; }
 
   CentroidalFwdDynamicsTpl(const ManifoldPtr &state, const int &nk,
-                           const double &mass);
+                           const double &mass, const Vector3s &gravity);
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                BaseData &data) const;

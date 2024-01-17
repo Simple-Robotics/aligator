@@ -122,8 +122,8 @@ void exposeODEs() {
       "CentroidalFwdDynamics",
       "Nonlinear centroidal dynamics with preplanned feet positions",
       bp::init<const shared_ptr<proxsuite::nlp::VectorSpaceTpl<Scalar>> &,
-               const int &, const double &>(
-          bp::args("self", "space", "max number of contacts", "total lass")))
+               const int &, const double &, const Vector3s &>(bp::args(
+          "self", "space", "max number of contacts", "total mass", "gravity")))
       .def_readwrite("contact_points", &CentroidalFwdDynamics::contact_points_)
       .def_readwrite("active_contacts",
                      &CentroidalFwdDynamics::active_contacts_)
