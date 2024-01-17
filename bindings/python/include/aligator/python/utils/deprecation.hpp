@@ -5,6 +5,7 @@
 #pragma once
 
 #include <eigenpy/fwd.hpp>
+#include <string_view>
 
 namespace aligator {
 namespace python {
@@ -27,10 +28,10 @@ constexpr auto deprtype_to_pyobj(DeprecationTypes dep) {
 
 } // namespace detail
 
-constexpr const char *default_depr_func_msg =
+constexpr std::string_view default_depr_func_msg =
     "This function has been marked as deprecated, and will be removed in the "
     "future.";
-constexpr const char *default_depr_member_msg =
+constexpr std::string_view default_depr_member_msg =
     "This attribute has been marked as deprecated, and will be removed in the "
     "future.";
 
@@ -43,7 +44,7 @@ struct deprecation_warning_policy : Policy {
   using result_converter = typename Policy::result_converter;
   using argument_package = typename Policy::argument_package;
 
-  deprecation_warning_policy(const std::string &warning_msg = "")
+  deprecation_warning_policy(std::string_view warning_msg = "")
       : Policy(), m_what(warning_msg) {}
 
   const std::string what() const { return m_what; }
