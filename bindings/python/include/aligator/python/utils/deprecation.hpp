@@ -27,6 +27,13 @@ constexpr auto deprtype_to_pyobj(DeprecationTypes dep) {
 
 } // namespace detail
 
+constexpr const char *default_depr_func_msg =
+    "This function has been marked as deprecated, and will be removed in the "
+    "future.";
+constexpr const char *default_depr_member_msg =
+    "This attribute has been marked as deprecated, and will be removed in the "
+    "future.";
+
 /// A Boost.Python policy which triggers a Python warning on precall.
 template <class Policy = bp::default_call_policies,
           DeprecationTypes deprecation_type =
@@ -51,30 +58,6 @@ struct deprecation_warning_policy : Policy {
 
 private:
   const std::string m_what;
-};
-
-template <class Policy = bp::default_call_policies,
-          DeprecationTypes deprecation_type =
-              DeprecationTypes::PENDING_DEPRECATION>
-struct deprecated_function
-    : deprecation_warning_policy<Policy, deprecation_type> {
-  using Base = deprecation_warning_policy<Policy, deprecation_type>;
-  deprecated_function(const std::string &warning_msg =
-                          "This function has been marked as deprecated, and "
-                          "will be removed in the future.")
-      : Base(warning_msg) {}
-};
-
-template <class Policy = bp::default_call_policies,
-          DeprecationTypes deprecation_type =
-              DeprecationTypes::PENDING_DEPRECATION>
-struct deprecated_member
-    : deprecation_warning_policy<Policy, deprecation_type> {
-  using Base = deprecation_warning_policy<Policy, deprecation_type>;
-  deprecated_member(const std::string &warning_msg =
-                        "This attribute has been marked as deprecated, and "
-                        "will be removed in the future.")
-      : Base(warning_msg) {}
 };
 
 } // namespace python

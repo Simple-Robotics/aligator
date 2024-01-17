@@ -101,12 +101,12 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
                        &SolverType::force_initial_condition_,
                        "Set x0 to be fixed to the initial condition.")
         .def("getResults", &SolverType::getResults, bp::args("self"),
-             deprecated_member<bp::return_internal_reference<>>(
+             deprecation_warning_policy<bp::return_internal_reference<>>(
                  "This getter is deprecated. Access the results using "
                  "`solver.results` instead."),
              "Get the results instance.")
         .def("getWorkspace", &SolverType::getWorkspace, bp::args("self"),
-             deprecated_member<bp::return_internal_reference<>>(
+             deprecation_warning_policy<bp::return_internal_reference<>>(
                  "This getter is deprecated. Access the workspace using "
                  "`solver.workspace` instead."),
              "Get the workspace instance.")
