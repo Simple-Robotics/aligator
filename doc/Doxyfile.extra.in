@@ -43,16 +43,17 @@ GENERATE_TREEVIEW       = YES
 VERBATIM_HEADERS        = YES
 
 
-HTML_HEADER             = @PROJECT_SOURCE_DIR@/doc/header.html
 HTML_EXTRA_STYLESHEET   = @PROJECT_SOURCE_DIR@/doc/doxygen-awesome.css
-HTML_EXTRA_FILES        = @PROJECT_SOURCE_DIR@/doc/doxygen-awesome-darkmode-toggle.js
-
-
-TAGFILES                =
+HTML_EXTRA_FILES        = @PROJECT_SOURCE_DIR@/doc/doxygen-awesome-darkmode-toggle.js \
+                          @PROJECT_SOURCE_DIR@/doc/doxygen-awesome-tabs.js \
+                          @PROJECT_SOURCE_DIR@/doc/doxygen-awesome-interactive-toc.js \
+                          @PROJECT_SOURCE_DIR@/doc/doxygen-awesome-fragment-copy-button.js
+HTML_COLORSTYLE         = LIGHT
 
 SHOW_FILES              = YES
 SHOW_NAMESPACES         = YES
 
+USE_MATHJAX             = YES
 MATHJAX_FORMAT          = SVG
 
 SOURCE_BROWSER          = YES

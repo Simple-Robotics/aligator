@@ -21,8 +21,10 @@ set(PROJECT_USE_CMAKE_EXPORT True)
 
 option(INSTALL_DOCUMENTATION "Generate and install the documentation" ON)
 
-set(DOXYGEN_USE_MATHJAX YES)
+set(DOXYGEN_USE_MATHJAX NO)
 set(DOXYGEN_USE_TEMPLATE_CSS YES)
+set(DOXYGEN_HTML_HEADER "${CMAKE_SOURCE_DIR}/doc/header.html")
+set(DOXYGEN_HTML_STYLESHEET "")
 
 # Check if the submodule cmake have been initialized
 set(JRL_CMAKE_MODULES "${CMAKE_CURRENT_LIST_DIR}/cmake")
