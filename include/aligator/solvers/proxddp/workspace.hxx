@@ -3,6 +3,7 @@
 #pragma once
 
 #include "./workspace.hpp"
+#include "aligator/gar/utils.hpp"
 
 namespace aligator {
 

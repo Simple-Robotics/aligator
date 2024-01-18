@@ -5,7 +5,7 @@
 
 #include "aligator/gar/riccati.hpp"
 #include "aligator/gar/parallel-solver.hpp"
-#include "aligator/gar/helpers.hpp"
+#include "aligator/gar/utils.hpp"
 
 #include "../tests/gar/test_util.hpp"
 

@@ -2,7 +2,7 @@
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/gar-visitors.hpp"
 #include "aligator/gar/riccati.hpp"
-#include "aligator/gar/helpers.hpp"
+#include "aligator/gar/utils.hpp"
 
 #include "aligator/python/utils.hpp"
 #include "aligator/python/visitors.hpp"

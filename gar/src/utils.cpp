@@ -1,5 +1,5 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
-#include "aligator/gar/helpers.hpp"
+#include "aligator/gar/utils.hpp"
 
 namespace aligator {
 namespace gar {

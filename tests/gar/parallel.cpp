@@ -5,7 +5,7 @@
 
 #include "./test_util.hpp"
 #include "aligator/gar/parallel-solver.hpp"
-#include "aligator/gar/helpers.hpp"
+#include "aligator/gar/utils.hpp"
 
 using namespace aligator::gar;
 
