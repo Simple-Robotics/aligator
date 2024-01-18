@@ -106,10 +106,6 @@ template <typename Scalar> struct ProximalRiccatiImpl {
           fth(mat.rowDims(), {nth}) {}
   };
 
-  inline static void computeMatrixTerms(const KnotType &model, Scalar mudyn,
-                                        Scalar mueq, value_t &vnext,
-                                        StageFactor &d);
-
   inline static bool backwardImpl(boost::span<const KnotType> stages,
                                   const Scalar mudyn, const Scalar mueq,
                                   boost::span<StageFactor> datas);
@@ -127,9 +123,9 @@ template <typename Scalar> struct ProximalRiccatiImpl {
     }
   }
 
-  inline static void solveOneStage(const KnotType &model, StageFactor &d,
-                                   value_t &vn, const Scalar mudyn,
-                                   const Scalar mueq);
+  inline static void solveSingleStage(const KnotType &model, StageFactor &d,
+                                      value_t &vn, const Scalar mudyn,
+                                      const Scalar mueq);
 
   /// Forward sweep.
   inline static bool

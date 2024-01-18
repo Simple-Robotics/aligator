@@ -203,9 +203,8 @@ public:
       if (i == numThreads - 1) {
         Impl::forwardImpl(stview, dsview, xsview, usview, vsview, lsview);
       } else {
-        ConstVectorRef theta1 = lbdas[splitIdx[i + 1]];
         Impl::forwardImpl(stview, dsview, xsview, usview, vsview, lsview,
-                          theta1);
+                          lbdas[splitIdx[i + 1]]);
       }
     }
     Eigen::setNbThreads(0);

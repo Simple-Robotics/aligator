@@ -137,7 +137,7 @@ void exposeGAR() {
            ("self"_a, "nth"))
       .add_property("ntheta", &lqr_t::ntheta)
       .def("evaluate", &lqr_t::evaluate,
-           ("self"_a, "xs", "us", "theta"_a = boost::none),
+           ("self"_a, "xs", "us", "theta"_a = std::nullopt),
            "Evaluate the problem objective.")
       .def(CopyableVisitor<lqr_t>());
 
@@ -153,9 +153,9 @@ void exposeGAR() {
                           "Initial stage KKT system")
             .def("backward", &prox_riccati_t::backward,
                  ("self"_a, "mu", "mueq"))
-            .def(
-                "forward", &prox_riccati_t::forward,
-                ("self"_a, "xs", "us", "vs", "lbdas", "theta"_a = boost::none));
+            .def("forward", &prox_riccati_t::forward,
+                 ("self"_a, "xs", "us", "vs", "lbdas",
+                  "theta"_a = std::nullopt));
     bp::class_<prox_riccati_t::kkt0_t>("kkt0_t", bp::no_init)
         .def_readonly("ff", &prox_riccati_t::kkt0_t::ff)
         .def_readonly("fth", &prox_riccati_t::kkt0_t::fth)

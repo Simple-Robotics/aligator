@@ -75,7 +75,7 @@ bool ProximalRiccatiImpl<Scalar>::backwardImpl(
   uint t = N - 1;
   while (true) {
     value_t &vn = datas[t + 1].vm;
-    solveOneStage(stages[t], datas[t], vn, mudyn, mueq);
+    solveSingleStage(stages[t], datas[t], vn, mudyn, mueq);
 
     if (t == 0)
       break;
@@ -86,21 +86,22 @@ bool ProximalRiccatiImpl<Scalar>::backwardImpl(
 }
 
 template <typename Scalar>
-void ProximalRiccatiImpl<Scalar>::computeMatrixTerms(const KnotType &model,
-                                                     Scalar mudyn, Scalar mueq,
-                                                     value_t &vnext,
-                                                     StageFactor &d) {
-  vnext.Pchol.compute(vnext.Pmat);
-  d.PinvEt = vnext.Pchol.solve(model.E.transpose());
-  vnext.schurMat.noalias() = model.E * d.PinvEt;
-  vnext.schurMat.diagonal().array() += mudyn;
-  vnext.schurChol.compute(vnext.schurMat);
+void ProximalRiccatiImpl<Scalar>::solveSingleStage(const KnotType &model,
+                                                   StageFactor &d, value_t &vn,
+                                                   const Scalar mudyn,
+                                                   const Scalar mueq) {
+  ZoneScoped;
+  vn.Pchol.compute(vn.Pmat);
+  d.PinvEt = vn.Pchol.solve(model.E.transpose());
+  vn.schurMat.noalias() = model.E * d.PinvEt;
+  vn.schurMat.diagonal().array() += mudyn;
+  vn.schurChol.compute(vn.schurMat);
   // evaluate inverse of schurMat
-  vnext.Vxx.setIdentity();
-  vnext.schurChol.solveInPlace(vnext.Vxx);
+  vn.Vxx.setIdentity();
+  vn.schurChol.solveInPlace(vn.Vxx);
 
-  d.AtV.noalias() = model.A.transpose() * vnext.Vxx;
-  d.BtV.noalias() = model.B.transpose() * vnext.Vxx;
+  d.AtV.noalias() = model.A.transpose() * vn.Vxx;
+  d.BtV.noalias() = model.B.transpose() * vn.Vxx;
 
   d.Qhat.noalias() = model.Q + d.AtV * model.A;
   d.Rhat.noalias() = model.R + d.BtV * model.B;
@@ -112,16 +113,6 @@ void ProximalRiccatiImpl<Scalar>::computeMatrixTerms(const KnotType &model,
   d.kktMat(1, 0) = model.D;
   d.kktMat(1, 1).diagonal().setConstant(-mueq);
   d.kktChol.compute(d.kktMat.matrix());
-}
-
-template <typename Scalar>
-void ProximalRiccatiImpl<Scalar>::solveOneStage(const KnotType &model,
-                                                StageFactor &d, value_t &vn,
-                                                const Scalar mudyn,
-                                                const Scalar mueq) {
-
-  // compute matrix expressions for the inverse
-  computeMatrixTerms(model, mudyn, mueq, vn, d);
 
   VectorRef kff = d.ff.blockSegment(0);
   VectorRef zff = d.ff.blockSegment(1);
