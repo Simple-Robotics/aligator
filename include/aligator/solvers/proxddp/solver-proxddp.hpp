@@ -5,6 +5,7 @@
 
 #include "aligator/core/proximal-penalty.hpp"
 #include "aligator/core/linesearch.hpp"
+#include "aligator/core/filter.hpp"
 #include "aligator/core/callback-base.hpp"
 #include "aligator/core/enums.hpp"
 #include "aligator/utils/exceptions.hpp"
@@ -56,6 +57,7 @@ public:
   using LinesearchOptions = typename Linesearch<Scalar>::Options;
   using CstrProximalScaler = ConstraintProximalScalerTpl<Scalar>;
   using LinesearchType = proxsuite::nlp::ArmijoLinesearch<Scalar>;
+  using Filter = FilterTpl<Scalar>;
 
   enum BackwardRet { BWD_SUCCESS, BWD_WRONG_INERTIA };
 
@@ -108,6 +110,8 @@ public:
   RolloutType rollout_type_ = RolloutType::NONLINEAR;
   /// Parameters for the BCL outer loop of the augmented Lagrangian algorithm.
   BCLParamsTpl<Scalar> bcl_params;
+  /// Step acceptance mode.
+  StepAcceptanceStrategy sa_strategy = StepAcceptanceStrategy::LINESEARCH;
 
   /// Force the initial state @f$ x_0 @f$ to be fixed to the problem initial
   /// condition.
@@ -141,6 +145,7 @@ private:
 public:
   Workspace workspace_;
   Results results_;
+  Filter filter_;
 
   SolverProxDDP(const Scalar tol = 1e-6, const Scalar mu_init = 0.01,
                 const Scalar rho_init = 0., const std::size_t max_iters = 1000,
@@ -258,7 +263,7 @@ public:
   /// @copydoc mu_penal_
   ALIGATOR_INLINE Scalar mu() const { return mu_penal_; }
 
-  /// @copydoc mu_inverse_
+  /// @copydoc mu _inverse_
   ALIGATOR_INLINE Scalar mu_inv() const { return mu_inverse_; }
 
   /// @copydoc rho_penal_

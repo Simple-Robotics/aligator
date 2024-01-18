@@ -320,6 +320,7 @@ def main(args: Args):
     solver.registerCallback("his", history_cb)
     solver.setup(problem)
     workspace: aligator.Workspace = solver.workspace
+    solver.sa_strategy = aligator.SA_LINESEARCH
     solver.run(problem, xs_init, us_init)
 
     results = solver.results

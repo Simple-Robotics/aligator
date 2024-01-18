@@ -35,6 +35,12 @@ void exposeEnums() {
       .value("HESSIAN_EXACT", HessianApprox::EXACT)
       .value("HESSIAN_GAUSS_NEWTON", HessianApprox::GAUSS_NEWTON)
       .export_values();
+
+  bp::enum_<StepAcceptanceStrategy>("StepAcceptanceStrategy",
+                                    "Step acceptance strategy.")
+      .value("SA_LINESEARCH", StepAcceptanceStrategy::LINESEARCH)
+      .value("SA_FILTER", StepAcceptanceStrategy::FILTER)
+      .export_values();
 }
 
 } // namespace python
@@ -63,6 +69,7 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
   exposeConstraint();
   exposeStage();
   exposeProblem();
+  exposeFilter();
   {
     bp::scope dynamics = get_namespace("dynamics");
     exposeODEs();
