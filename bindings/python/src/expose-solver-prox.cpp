@@ -159,9 +159,6 @@ void exposeProxDDP() {
       .def("updateLqrSubproblem", &SolverType::updateLqrSubproblem,
            bp::args("self"))
       .def("getLinesearchMu", &SolverType::getLinesearchMu, bp::args("self"))
-      .def("setLinesearchMuLowerBound", &SolverType::setLinesearchMuLowerBound,
-           bp::args("self", "mu_lower_bound"),
-           "Set an appropriate lower bound for mu during linesearch.")
       .def("computeCriterion", &SolverType::computeCriterion,
            bp::args("self", "problem"), "Compute problem stationarity.")
       .def("computeInfeasibilities", &SolverType::computeInfeasibilities,

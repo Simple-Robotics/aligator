@@ -259,7 +259,7 @@ public:
   ALIGATOR_INLINE Scalar mu() const { return mu_penal_; }
 
   /// @copydoc mu_inverse_
-  ALIGATOR_INLINE Scalar mu_inv() const { return mu_inverse_; }
+  ALIGATOR_INLINE Scalar mu_inv() const { return 1. / mu_penal_; }
 
   /// @copydoc rho_penal_
   ALIGATOR_INLINE Scalar rho() const { return rho_penal_; }
@@ -269,11 +269,8 @@ public:
   /// @brief  Put together the Q-function parameters and compute the Riccati
   /// gains.
   inline BackwardRet computeGains(const Problem &problem, const std::size_t t);
-
-  auto getLinesearchMuLowerBound() const { return min_mu_linesearch_; }
-  void setLinesearchMuLowerBound(Scalar mu) { min_mu_linesearch_ = mu; }
   /// @brief  Get the penalty parameter for linesearch.
-  auto getLinesearchMu() const { return std::max(mu(), min_mu_linesearch_); }
+  auto getLinesearchMu() const { return mu(); }
 
 protected:
   void update_tols_on_failure();
