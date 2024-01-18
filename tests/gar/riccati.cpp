@@ -72,11 +72,7 @@ BOOST_AUTO_TEST_CASE(short_horz_pb) {
       std::chrono::duration_cast<std::chrono::microseconds>(bwend - bwbeg);
   fmt::print("Elapsed time (bwd): {:d}\n", t_bwd.count());
 
-  auto _traj = lqrInitializeSolution(prob);
-  VectorOfVectors xs = std::move(_traj[0]);
-  VectorOfVectors us = std::move(_traj[1]);
-  VectorOfVectors vs = std::move(_traj[2]);
-  VectorOfVectors lbdas = std::move(_traj[3]);
+  auto [xs, us, vs, lbdas] = lqrInitializeSolution(prob);
   BOOST_CHECK_EQUAL(xs.size(), prob.horizon() + 1);
   BOOST_CHECK_EQUAL(vs.size(), prob.horizon() + 1);
   BOOST_CHECK_EQUAL(lbdas.size(), prob.horizon() + 1);
@@ -111,11 +107,7 @@ BOOST_AUTO_TEST_CASE(random_long_problem) {
       std::chrono::duration_cast<std::chrono::microseconds>(bwend - bwbeg);
   fmt::print("Elapsed time (bwd): {:d}\n", t_bwd.count());
 
-  auto _traj = lqrInitializeSolution(prob);
-  VectorOfVectors xs = std::move(_traj[0]);
-  VectorOfVectors us = std::move(_traj[1]);
-  VectorOfVectors vs = std::move(_traj[2]);
-  VectorOfVectors lbdas = std::move(_traj[3]);
+  auto [xs, us, vs, lbdas] = lqrInitializeSolution(prob);
   auto fwbeg = std::chrono::system_clock::now();
   solver.forward(xs, us, vs, lbdas);
   auto fwend = std::chrono::system_clock::now();

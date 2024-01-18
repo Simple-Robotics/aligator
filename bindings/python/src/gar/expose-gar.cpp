@@ -40,10 +40,11 @@ using knot_vec_t = std::vector<knot_t>;
 bp::dict lqr_sol_initialize_wrap(const lqr_t &problem) {
   bp::dict out;
   auto ss = lqrInitializeSolution(problem);
-  out["xs"] = ss[0];
-  out["us"] = ss[1];
-  out["vs"] = ss[2];
-  out["lbdas"] = ss[3];
+  auto &[xs, us, vs, lbdas] = ss;
+  out["xs"] = xs;
+  out["us"] = us;
+  out["vs"] = vs;
+  out["lbdas"] = lbdas;
   return out;
 }
 

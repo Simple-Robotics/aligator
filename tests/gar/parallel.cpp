@@ -71,10 +71,7 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
 
   auto solution_full_horz = lqrInitializeSolution(problem);
   {
-    auto &xs = solution_full_horz[0];
-    auto &us = solution_full_horz[1];
-    auto &vs = solution_full_horz[2];
-    auto &lbdas = solution_full_horz[3];
+    auto &[xs, us, vs, lbdas] = solution_full_horz;
     bool ret = solver_full_horz.forward(xs, us, vs, lbdas);
     BOOST_CHECK(ret);
     KktError err_full = compute_kkt_error(problem, xs, us, vs, lbdas);
@@ -95,6 +92,8 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
 
   auto sol_leg1 = lqrInitializeSolution(pr1);
   auto sol_leg2 = lqrInitializeSolution(pr2);
+  auto &[xs1, us1, vs1, lbdas1] = sol_leg1;
+  auto &[xs2, us2, vs2, lbdas2] = sol_leg2;
   MatrixXs thHess = MatrixXs::Zero(nx, nx);
   VectorXs thGrad = VectorXs::Zero(nx);
   VectorXs thtopt = VectorXs::Zero(nx);
@@ -122,21 +121,9 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
                infty_norm(thHess * thtopt + thGrad));
   }
   {
-    // subSolve1.forward(_sol1[0], _sol1[1], _sol1[2], _sol1[3]);
-    subSolve1.forward(sol_leg1[0], sol_leg1[1], sol_leg1[2], sol_leg1[3],
-                      ConstVectorRef(thtopt));
-    // subSolve2.forward(_sol2[0], _sol2[1], _sol2[2], _sol2[3]);
-    subSolve2.forward(sol_leg2[0], sol_leg2[1], sol_leg2[2], sol_leg2[3],
-                      ConstVectorRef(thtopt));
+    subSolve1.forward(xs1, us1, vs1, lbdas1, thtopt);
+    subSolve2.forward(xs2, us2, vs2, lbdas2, thtopt);
   }
-  auto &xs1 = sol_leg1[0];
-  auto &us1 = sol_leg1[1];
-  auto &vs1 = sol_leg1[2];
-  auto &lbdas1 = sol_leg1[3];
-  auto &xs2 = sol_leg2[0];
-  auto &us2 = sol_leg2[1];
-  auto &vs2 = sol_leg2[2];
-  auto &lbdas2 = sol_leg2[3];
 
   KktError err1 = compute_kkt_error(pr1, xs1, us1, vs1, lbdas1, thtopt);
   KktError err2 = compute_kkt_error(pr2, xs2, us2, vs2, lbdas2, thtopt);
@@ -168,7 +155,7 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
 
   VectorXs x_errs(horizon + 1);
 
-  const auto &xs = solution_full_horz[0];
+  const auto &[xs, us, vs, lbdas] = solution_full_horz;
   for (uint i = 0; i <= horizon; i++) {
     x_errs[i] = infty_norm(xs[i] - xs_merged[i]);
   }

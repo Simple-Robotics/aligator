@@ -114,11 +114,10 @@ template <typename Scalar>
 auto lqrInitializeSolution(const LQRProblemTpl<Scalar> &problem) {
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using knot_t = LQRKnotTpl<Scalar>;
-  std::array<std::vector<VectorXs>, 4> out;
-  std::vector<VectorXs> &xs = out[0];
-  std::vector<VectorXs> &us = out[1];
-  std::vector<VectorXs> &vs = out[2];
-  std::vector<VectorXs> &lbdas = out[3];
+  std::vector<VectorXs> xs;
+  std::vector<VectorXs> us;
+  std::vector<VectorXs> vs;
+  std::vector<VectorXs> lbdas;
   const uint N = (uint)problem.horizon();
 
   xs.resize(N + 1);
@@ -139,7 +138,8 @@ auto lqrInitializeSolution(const LQRProblemTpl<Scalar> &problem) {
   if (problem.stages.back().nu == 0) {
     us.pop_back();
   }
-  return out;
+  return std::make_tuple(std::move(xs), std::move(us), std::move(vs),
+                         std::move(lbdas));
 }
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
