@@ -14,55 +14,54 @@ template <typename Scalar> struct LagrangianDerivatives {
 
   static void compute(const TrajOptProblem &problem, const TrajOptData &pd,
                       const std::vector<VectorXs> &lams,
+                      const std::vector<VectorXs> &vs,
                       std::vector<VectorXs> &Lxs, std::vector<VectorXs> &Lus) {
     using ConstraintStack = ConstraintStackTpl<Scalar>;
     using StageFunctionData = StageFunctionDataTpl<Scalar>;
     using CostData = CostDataAbstractTpl<Scalar>;
     using StageModel = StageModelTpl<Scalar>;
     using StageData = StageDataTpl<Scalar>;
-    std::size_t nsteps = problem.numSteps();
+    const std::size_t nsteps = problem.numSteps();
+
+    ALIGATOR_NOMALLOC_BEGIN;
 
     math::setZero(Lxs);
     math::setZero(Lus);
-    {
-      StageFunctionData const &ind = *pd.init_data;
-      Lxs[0] += ind.Jx_.transpose() * lams[0];
-    }
 
-    {
-      CostData const &cdterm = *pd.term_cost_data;
-      Lxs[nsteps] = cdterm.Lx_;
-      ConstraintStack const &stack = problem.term_cstrs_;
-      if (!stack.empty()) {
-        VectorXs const &lamN = lams.back();
-        BlkView lview(lamN, stack.getDims());
-        for (std::size_t j = 0; j < stack.size(); j++) {
-          StageFunctionData const &cstr_data = *pd.term_cstr_data[j];
-          Lxs[nsteps] += cstr_data.Jx_.transpose() * lview[j];
-        }
-      }
-    }
+    // initial condition
+    const StageFunctionData &init_cond = *pd.init_data;
+    Lxs[0].noalias() = init_cond.Jx_.transpose() * lams[0];
 
     for (std::size_t i = 0; i < nsteps; i++) {
-      StageModel const &sm = *problem.stages_[i];
-      StageData const &sd = *pd.stage_data[i];
-      ConstraintStack const &stack = sm.constraints_;
-      Lxs[i] += sd.cost_data->Lx_;
-      Lus[i] += sd.cost_data->Lu_;
+      const StageModel &sm = *problem.stages_[i];
+      const StageData &sd = *pd.stage_data[i];
+      const ConstraintStack &stack = sm.constraints_;
+      const StageFunctionData &dd = *sd.dynamics_data;
+      Lxs[i].noalias() += sd.cost_data->Lx_ + dd.Jx_.transpose() * lams[i + 1];
+      Lus[i].noalias() = sd.cost_data->Lu_ + dd.Ju_.transpose() * lams[i + 1];
 
-      assert(sd.constraint_data.size() == sm.numConstraints());
-
-      BlkView lview(lams[i + 1], stack.getDims());
+      BlkView v_(vs[i], stack.getDims());
       for (std::size_t j = 0; j < stack.size(); j++) {
-        StageFunctionData const &cstr_data = *sd.constraint_data[j];
-        Lxs[i] += cstr_data.Jx_.transpose() * lview[j];
-        Lus[i] += cstr_data.Ju_.transpose() * lview[j];
+        const StageFunctionData &cd = *sd.constraint_data[j];
+        Lxs[i] += cd.Jx_.transpose() * v_[j];
+        Lus[i] += cd.Ju_.transpose() * v_[j];
+      }
 
-        assert((i + 1) <= nsteps);
-        // add contribution to the next node
-        Lxs[i + 1] += cstr_data.Jy_.transpose() * lview[j];
+      Lxs[i + 1].noalias() = dd.Jy_.transpose() * lams[i + 1];
+    }
+
+    // terminal node
+    {
+      const CostData &cdterm = *pd.term_cost_data;
+      Lxs[nsteps] += cdterm.Lx_;
+      const ConstraintStack &stack = problem.term_cstrs_;
+      BlkView vN(vs[nsteps], stack.getDims());
+      for (std::size_t j = 0; j < stack.size(); j++) {
+        const StageFunctionData &cd = *pd.term_cstr_data[j];
+        Lxs[nsteps] += cd.Jx_.transpose() * vN[j];
       }
     }
+    ALIGATOR_NOMALLOC_END;
   }
 };
 
