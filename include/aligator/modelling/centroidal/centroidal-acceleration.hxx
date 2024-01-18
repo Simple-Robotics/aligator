@@ -23,7 +23,8 @@ void CentroidalAccelerationResidualTpl<Scalar>::evaluate(
 
 template <typename Scalar>
 void CentroidalAccelerationResidualTpl<Scalar>::computeJacobians(
-    const ConstVectorRef &, BaseData &data) const {
+    const ConstVectorRef &, const ConstVectorRef &, const ConstVectorRef &,
+    BaseData &data) const {
   Data &d = static_cast<Data &>(data);
 
   d.Ju_.setZero();

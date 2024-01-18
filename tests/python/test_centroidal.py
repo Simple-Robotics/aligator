@@ -124,6 +124,47 @@ def test_angular_momentum():
         assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
 
 
+def test_acceleration():
+    x0 = space.neutral()
+    dx = np.random.randn(space.ndx) * 0.1
+    x0 = space.integrate(x0, dx)
+    u0 = np.random.randn(nu)
+
+    fun = aligator.CentroidalAccelerationResidual(ndx, nu, mass, gravity)
+
+    fdata = fun.createData()
+    fun.evaluate(x0, u0, x0, fdata)
+
+    comddot = np.zeros(3)
+    for i in range(nk):
+        comddot += u0[i * 3 : (i + 1) * 3]
+
+    comddot /= mass
+    comddot += gravity
+
+    assert np.allclose(fdata.value, comddot)
+
+    fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
+    fdata2 = fun_fd.createData()
+    fun_fd.evaluate(x0, u0, x0, fdata2)
+    assert np.allclose(fdata.value, fdata2.value)
+
+    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    J_fd = fdata2.Jx
+    J_fd_u = fdata2.Ju
+    assert fdata.Jx.shape == J_fd.shape
+    assert fdata.Ju.shape == J_fd_u.shape
+
+    for i in range(100):
+        du = np.random.randn(nu) * 0.1
+        u1 = u0 + du
+        fun.evaluate(x0, u1, x0, fdata)
+        fun.computeJacobians(x0, u1, x0, fdata)
+        fun_fd.evaluate(x0, u1, x0, fdata2)
+        fun_fd.computeJacobians(x0, u1, x0, fdata2)
+        assert np.allclose(fdata.Ju, fdata2.Ju, THRESH)
+
+
 if __name__ == "__main__":
     import sys
     import pytest

@@ -1,36 +1,38 @@
 #pragma once
 
-#include "aligator/core/unary-function.hpp"
+#include "aligator/core/function-abstract.hpp"
 
 namespace aligator {
 
 template <typename Scalar> struct CentroidalAccelerationDataTpl;
 
 template <typename _Scalar>
-struct CentroidalAccelerationResidualTpl : UnaryFunctionTpl<_Scalar> {
+struct CentroidalAccelerationResidualTpl : StageFunctionTpl<_Scalar> {
 
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  ALIGATOR_UNARY_FUNCTION_INTERFACE(Scalar);
+  using Base = StageFunctionTpl<Scalar>;
   using BaseData = typename Base::Data;
   using Data = CentroidalAccelerationDataTpl<Scalar>;
 
   CentroidalAccelerationResidualTpl(const int ndx, const int nu,
                                     const double mass, const Vector3s gravity)
-      : Base(ndx, nu, 3), nk_(nu / 3), mass_(mass), gravity_(gravity) {}
+      : Base(ndx, nu, 3), nk_(nu / 3), mass_(mass), gravity_(gravity) {
+    active_contacts_ = std::vector<bool>(nk_, true);
+  }
 
   void evaluate(const ConstVectorRef &, const ConstVectorRef &u,
                 const ConstVectorRef &, BaseData &data) const;
 
-  void computeJacobians(const ConstVectorRef &, BaseData &data) const;
+  void computeJacobians(const ConstVectorRef &, const ConstVectorRef &,
+                        const ConstVectorRef &, BaseData &data) const;
 
   shared_ptr<BaseData> createData() const {
     return allocate_shared_eigen_aligned<Data>(this);
   }
 
   std::vector<bool> active_contacts_;
-  StdVectorEigenAligned<Vector3s> contact_points_;
 
 protected:
   const std::size_t nk_;

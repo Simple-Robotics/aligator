@@ -1,5 +1,6 @@
 /// @file
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
+#include "aligator/core/function-abstract.hpp"
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/functions.hpp"
 #include "aligator/modelling/centroidal/centroidal-translation.hpp"
@@ -11,6 +12,7 @@ namespace aligator {
 namespace python {
 
 using context::Scalar;
+using context::StageFunction;
 using context::StageFunctionData;
 using context::UnaryFunction;
 
@@ -74,16 +76,14 @@ void exposeCentroidalFunctions() {
   bp::class_<AngularMomentumData, bp::bases<StageFunctionData>>(
       "AngularMomentumData", "Data Structure for AngularMomentum", bp::no_init);
 
-  /*bp::class_<CentroidalAccelerationResidual, bp::bases<UnaryFunction>>(
+  bp::class_<CentroidalAccelerationResidual, bp::bases<StageFunction>>(
       "CentroidalAccelerationResidual",
       "A residual function :math:`r(x) = cddot(x)` ",
       bp::init<const int, const int, const double, const context::Vector3s>(
-          bp::args("self", "ndx", "nu", "mass", "gravity")));
-      .def_readwrite("contact_points",
-     &CentroidalAccelerationResidual::contact_points_)
+          bp::args("self", "ndx", "nu", "mass", "gravity")))
       .def_readwrite("active_contacts",
                      &CentroidalAccelerationResidual::active_contacts_)
-      .def(CreateDataPythonVisitor<CentroidalAccelerationResidual>());*/
+      .def(CreateDataPythonVisitor<CentroidalAccelerationResidual>());
 
   bp::register_ptr_to_python<shared_ptr<CentroidalAccelerationData>>();
 
