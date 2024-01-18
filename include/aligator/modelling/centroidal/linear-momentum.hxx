@@ -13,8 +13,8 @@ void LinearMomentumResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
 }
 
 template <typename Scalar>
-void LinearMomentumResidualTpl<Scalar>::computeJacobians(
-    const ConstVectorRef &x, BaseData &data) const {
+void LinearMomentumResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
+                                                         BaseData &data) const {
   Data &d = static_cast<Data &>(data);
 
   d.Jx_.block(0, 3, 3, 3).setIdentity();

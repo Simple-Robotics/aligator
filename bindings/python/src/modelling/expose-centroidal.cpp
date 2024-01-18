@@ -7,6 +7,7 @@
 #include "aligator/modelling/centroidal/linear-momentum.hpp"
 #include "aligator/modelling/centroidal/angular-momentum.hpp"
 #include "aligator/modelling/centroidal/centroidal-acceleration.hpp"
+#include "aligator/modelling/centroidal/friction-cone.hpp"
 
 namespace aligator {
 namespace python {
@@ -29,6 +30,9 @@ void exposeCentroidalFunctions() {
   using CentroidalAccelerationResidual =
       CentroidalAccelerationResidualTpl<Scalar>;
   using CentroidalAccelerationData = CentroidalAccelerationDataTpl<Scalar>;
+
+  using FrictionConeResidual = FrictionConeResidualTpl<Scalar>;
+  using FrictionConeData = FrictionConeDataTpl<Scalar>;
 
   bp::class_<CentroidalCoMResidual, bp::bases<UnaryFunction>>(
       "CentroidalCoMResidual", "A residual function :math:`r(x) = com(x)` ",
@@ -90,6 +94,16 @@ void exposeCentroidalFunctions() {
   bp::class_<CentroidalAccelerationData, bp::bases<StageFunctionData>>(
       "CentroidalAccelerationData", "Data Structure for CentroidalAcceleration",
       bp::no_init);
+
+  bp::class_<FrictionConeResidual, bp::bases<StageFunction>>(
+      "FrictionConeResidual", "A residual function :math:`r(x) = cddot(x)` ",
+      bp::init<const int, const int, const int, const double>(
+          bp::args("self", "ndx", "nu", "k", "mu")));
+
+  bp::register_ptr_to_python<shared_ptr<FrictionConeData>>();
+
+  bp::class_<FrictionConeData, bp::bases<StageFunctionData>>(
+      "FrictionConeData", "Data Structure for FrictionCone", bp::no_init);
 }
 
 } // namespace python

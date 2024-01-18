@@ -13,7 +13,7 @@ void CentroidalCoMResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
 }
 
 template <typename Scalar>
-void CentroidalCoMResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &x,
+void CentroidalCoMResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
                                                         BaseData &data) const {
   Data &d = static_cast<Data &>(data);
 
