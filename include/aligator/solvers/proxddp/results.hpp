@@ -18,6 +18,9 @@ template <typename _Scalar> struct ResultsTpl : ResultsBaseTpl<_Scalar> {
 
   /// Problem co-states
   std::vector<VectorXs> lams;
+  /// Path constraint multipliers
+  std::vector<VectorXs> vs;
+  /// Proximal/AL iteration count
   std::size_t al_iter = 0;
 
   ResultsTpl() : Base() {}

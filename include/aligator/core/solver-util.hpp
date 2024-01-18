@@ -47,6 +47,31 @@ void us_default_init(const TrajOptProblemTpl<Scalar> &problem,
   }
 }
 
+template <typename Scalar>
+auto problemInitializeSolution(const TrajOptProblemTpl<Scalar> &problem) {
+  using VectorXs = typename math_types<Scalar>::VectorXs;
+  std::vector<VectorXs> xs, us, vs, lbdas;
+  const size_t nsteps = problem.numSteps();
+  xs_default_init(problem, xs);
+  us_default_init(problem, us);
+  // initialize multipliers...
+  vs.resize(nsteps + 1);
+  lbdas.resize(nsteps + 1);
+  lbdas[0].setZero(problem.init_condition_->nr);
+  for (size_t i = 0; i < nsteps; i++) {
+    const StageModelTpl<Scalar> &sm = *problem.stages_[i];
+    lbdas[i + 1].setZero(sm.ndx2());
+    vs[i].setZero(sm.nc());
+  }
+
+  if (!problem.term_cstrs_.empty()) {
+    vs[nsteps].setZero(problem.term_cstrs_.totalDim());
+  }
+
+  return std::make_tuple(std::move(xs), std::move(us), std::move(vs),
+                         std::move(lbdas));
+}
+
 /// @brief Check the input state-control trajectory is a consistent warm-start
 /// for the output.
 template <typename Scalar>
