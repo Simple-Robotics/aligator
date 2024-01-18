@@ -8,6 +8,7 @@
 #include "aligator/modelling/centroidal/angular-momentum.hpp"
 #include "aligator/modelling/centroidal/centroidal-acceleration.hpp"
 #include "aligator/modelling/centroidal/friction-cone.hpp"
+#include "aligator/modelling/centroidal/angular-acceleration.hpp"
 
 namespace aligator {
 namespace python {
@@ -33,6 +34,9 @@ void exposeCentroidalFunctions() {
 
   using FrictionConeResidual = FrictionConeResidualTpl<Scalar>;
   using FrictionConeData = FrictionConeDataTpl<Scalar>;
+
+  using AngularAccelerationResidual = AngularAccelerationResidualTpl<Scalar>;
+  using AngularAccelerationData = AngularAccelerationDataTpl<Scalar>;
 
   bp::class_<CentroidalCoMResidual, bp::bases<UnaryFunction>>(
       "CentroidalCoMResidual", "A residual function :math:`r(x) = com(x)` ",
@@ -96,7 +100,8 @@ void exposeCentroidalFunctions() {
       bp::no_init);
 
   bp::class_<FrictionConeResidual, bp::bases<StageFunction>>(
-      "FrictionConeResidual", "A residual function :math:`r(x) = cddot(x)` ",
+      "FrictionConeResidual",
+      "A residual function :math:`r(x) = [fz, mu2 * fz2 - (fx2 + fy2)]` ",
       bp::init<const int, const int, const int, const double>(
           bp::args("self", "ndx", "nu", "k", "mu")));
 
@@ -104,6 +109,23 @@ void exposeCentroidalFunctions() {
 
   bp::class_<FrictionConeData, bp::bases<StageFunctionData>>(
       "FrictionConeData", "Data Structure for FrictionCone", bp::no_init);
+
+  bp::class_<AngularAccelerationResidual, bp::bases<StageFunction>>(
+      "AngularAccelerationResidual",
+      "A residual function :math:`r(x) = Ldot(x)` ",
+      bp::init<const int, const int, const double, const context::Vector3s>(
+          bp::args("self", "ndx", "nu", "mass", "gravity")))
+      .def_readwrite("active_contacts",
+                     &AngularAccelerationResidual::active_contacts_)
+      .def_readwrite("contact_points",
+                     &AngularAccelerationResidual::contact_points_)
+      .def(CreateDataPythonVisitor<AngularAccelerationResidual>());
+
+  bp::register_ptr_to_python<shared_ptr<AngularAccelerationData>>();
+
+  bp::class_<AngularAccelerationData, bp::bases<StageFunctionData>>(
+      "AngularAccelerationData", "Data Structure for AngularAcceleration",
+      bp::no_init);
 }
 
 } // namespace python
