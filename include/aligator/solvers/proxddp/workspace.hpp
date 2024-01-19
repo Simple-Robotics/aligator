@@ -93,8 +93,10 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
 
   /// Subproblem termination criterion for each stage.
   VectorXs stage_inner_crits;
-  /// Constraint violation for each stage and constraint of the problem.
-  std::vector<VectorXs> stage_prim_infeas;
+  /// Constraint violation measures for each stage and constraint.
+  VectorXs stage_cstr_violations;
+  /// Stagewise infeasibilities
+  std::vector<VectorXs> stage_infeasibilities;
   /// Dual infeasibility in the states for each stage of the problem.
   VectorXs state_dual_infeas;
   /// Dual infeasibility in the controls for each stage of the problem.

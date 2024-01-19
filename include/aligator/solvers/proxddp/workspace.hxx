@@ -10,8 +10,8 @@ namespace aligator {
 template <typename Scalar>
 WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     : Base(problem), stage_inner_crits(nsteps + 1),
-      stage_prim_infeas(nsteps + 1), state_dual_infeas(nsteps + 1),
-      control_dual_infeas(nsteps + 1) {
+      stage_cstr_violations(nsteps + 1), stage_infeasibilities(nsteps + 1),
+      state_dual_infeas(nsteps + 1), control_dual_infeas(nsteps + 1) {
 
   if (nsteps == 0) {
     ALIGATOR_WARNING(
@@ -30,6 +30,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   lams_plus = lams_pdal = trial_lams;
 
   dyn_slacks = trial_lams; // same dimensions
+  stage_cstr_violations.setZero();
+  stage_infeasibilities = trial_vs;
 
   constraintProductOperators.resize(nsteps + 1); // includes terminal
   shifted_constraints = prev_vs;
@@ -53,11 +55,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     const int ndx1 = stage.ndx1();
     const int nu = stage.nu();
     const int ncstr = stage.nc();
-    // total matrix system dim
-    const std::size_t ncb = stage.numConstraints();
 
     constraintProductOperators[i] = getConstraintProductSet(stage.constraints_);
-    stage_prim_infeas[i].setZero(ncb);
     proj_jacobians[i].setZero(ncstr, ndx1 + nu);
     active_constraints[i].setZero(ncstr);
   }
@@ -66,7 +65,6 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   if (!problem.term_cstrs_.empty()) {
     const int ndx1 = problem.stages_.back()->ndx2();
     const long nc = problem.term_cstrs_.totalDim();
-    stage_prim_infeas[nsteps].setZero(problem.term_cstrs_.size());
     proj_jacobians[nsteps].setZero(nc, ndx1);
     active_constraints[nsteps].setZero(nc);
   }
@@ -117,7 +115,7 @@ template <typename Scalar> void WorkspaceTpl<Scalar>::cycleLeft() {
   rotate_vec_left(prev_us);
   rotate_vec_left(prev_lams, 1, n_tail);
 
-  rotate_vec_left(stage_prim_infeas, 1, n_tail);
+  rotate_vec_left(stage_infeasibilities, 1, n_tail);
 }
 
 template <typename Scalar>
