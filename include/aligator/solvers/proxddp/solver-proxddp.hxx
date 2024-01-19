@@ -468,13 +468,7 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
     stage.evaluate(xs[t], us[t], xs[t + 1], data);
 
     // compute desired multiple-shooting gap from the multipliers
-    {
-      const ConstraintStack &cstr_stack = stage.constraints_;
-      using BlkView = BlkMatrix<ConstVectorRef, -1, 1>;
-      const BlkView lamview(lams[t + 1], cstr_stack.getDims());
-      const BlkView plamview(lams_prev[t + 1], cstr_stack.getDims());
-      dyn_slacks[t] = mu() * (lamview[0] - plamview[0]);
-    }
+    dyn_slacks[t] = mu() * (lams[t + 1] - lams_prev[t + 1]);
 
     DynamicsData &dd = *data.dynamics_data;
 

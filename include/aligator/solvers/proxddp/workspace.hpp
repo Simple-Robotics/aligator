@@ -18,7 +18,7 @@ auto getConstraintProductSet(const ConstraintStackTpl<Scalar> &constraints) {
   for (size_t i = 0; i < constraints.size(); i++) {
     out.components.push_back(constraints[i].set.get());
   }
-  out.nrs = constraints.getDims();
+  out.nrs = constraints.dims();
   return out;
 }
 

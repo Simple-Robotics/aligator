@@ -97,13 +97,11 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
 
   init_condition_->computeJacobians(xs[0], *prob_data.init_data);
 
-  prob_data.xs_copy = xs;
   auto &sds = prob_data.stage_data;
 
 #pragma omp parallel for num_threads(num_threads_)
   for (std::size_t i = 0; i < nsteps; i++) {
-    stages_[i]->computeDerivatives(xs[i], us[i], prob_data.xs_copy[i + 1],
-                                   *sds[i]);
+    stages_[i]->computeDerivatives(xs[i], us[i], xs[i + 1], *sds[i]);
   }
 
   if (term_cost_) {

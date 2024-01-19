@@ -40,7 +40,7 @@ template <typename Scalar> struct LagrangianDerivatives {
       Lxs[i].noalias() += sd.cost_data->Lx_ + dd.Jx_.transpose() * lams[i + 1];
       Lus[i].noalias() = sd.cost_data->Lu_ + dd.Ju_.transpose() * lams[i + 1];
 
-      BlkView v_(vs[i], stack.getDims());
+      BlkView v_(vs[i], stack.dims());
       for (std::size_t j = 0; j < stack.size(); j++) {
         const StageFunctionData &cd = *sd.constraint_data[j];
         Lxs[i].noalias() += cd.Jx_.transpose() * v_[j];
@@ -55,7 +55,7 @@ template <typename Scalar> struct LagrangianDerivatives {
       const CostData &cdterm = *pd.term_cost_data;
       Lxs[nsteps] += cdterm.Lx_;
       const ConstraintStack &stack = problem.term_cstrs_;
-      BlkView vN(vs[nsteps], stack.getDims());
+      BlkView vN(vs[nsteps], stack.dims());
       for (std::size_t j = 0; j < stack.size(); j++) {
         const StageFunctionData &cd = *pd.term_cstr_data[j];
         Lxs[nsteps].noalias() += cd.Jx_.transpose() * vN[j];

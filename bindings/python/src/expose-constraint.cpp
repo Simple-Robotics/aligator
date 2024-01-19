@@ -38,7 +38,7 @@ void exposeConstraint() {
       .add_property("size", &ConstraintStack::size,
                     "Get number of individual constraints.")
       .add_property("dims",
-                    bp::make_function(&ConstraintStack::getDims,
+                    bp::make_function(&ConstraintStack::dims,
                                       bp::return_internal_reference<>()),
                     "Get the individual dimensions of all constraints.")
       .def(eigenpy::details::overload_base_get_item_for_std_vector<

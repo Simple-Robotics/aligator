@@ -37,7 +37,9 @@ template <typename Scalar> struct ConstraintStackTpl {
   void pushBack(const ConstraintType &el);
 
   /// @brief Get the set of dimensions for each constraint in the stack.
-  const std::vector<long> &getDims() const { return dims_; }
+  const std::vector<long> &dims() const { return dims_; }
+  /// @copybrief getDims()
+  ALIGATOR_DEPRECATED const std::vector<long> &getDims() const { return dims_; }
 
   long totalDim() const { return total_dim_; }
 

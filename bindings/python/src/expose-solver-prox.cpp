@@ -37,10 +37,10 @@ void exposeProxDDP() {
           ("self"_a, "value", "j"))
       .add_property("size", &ProxScaler::size,
                     "Get the number of constraint blocks.")
-      .add_property(
-          "weights", +[](ProxScaler &s) -> VectorRef { return s.getWeights(); },
+      .def(
+          "setWeights",
           +[](ProxScaler &s, const ConstVectorRef &w) {
-            if (s.getWeights().size() != w.size()) {
+            if (s.size() != std::size_t(w.size())) {
               PyErr_SetString(PyExc_ValueError, "Input has wrong dimension.");
             }
             s.setWeights(w);
