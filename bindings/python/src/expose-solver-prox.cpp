@@ -90,7 +90,7 @@ void exposeProxDDP() {
       .def_readonly("prev_us", &Workspace::prev_us)
       .def_readonly("prev_lams", &Workspace::prev_lams)
       .def_readonly("prev_vs", &Workspace::prev_vs)
-      .def_readonly("stage_prim_infeas", &Workspace::stage_prim_infeas)
+      .def_readonly("stage_infeasibilities", &Workspace::stage_infeasibilities)
       .def_readonly("state_dual_infeas", &Workspace::state_dual_infeas)
       .def_readonly("control_dual_infeas", &Workspace::control_dual_infeas)
       .def(PrintableVisitor<Workspace>());
@@ -116,8 +116,8 @@ void exposeProxDDP() {
                                "verbose"_a = VerboseLevel::QUIET,
                                "hess_approx"_a = HessianApprox::GAUSS_NEWTON)))
       .def_readwrite("bcl_params", &SolverType::bcl_params, "BCL parameters.")
-      .def_readwrite("max_refinement_steps", &SolverType::max_refinement_steps_)
-      .def_readwrite("refinement_threshold", &SolverType::refinement_threshold_)
+      .def_readwrite("max_refinement_steps", &SolverType::maxRefinementSteps_)
+      .def_readwrite("refinement_threshold", &SolverType::refinementThreshold_)
       .def_readwrite("multiplier_update_mode",
                      &SolverType::multiplier_update_mode)
       .def_readwrite("mu_init", &SolverType::mu_init,
@@ -140,7 +140,7 @@ void exposeProxDDP() {
                      "Minimum regularization value.")
       .def_readwrite("reg_max", &SolverType::reg_max,
                      "Maximum regularization value.")
-      .def("updateLqrSubproblem", &SolverType::updateLqrSubproblem, "self"_a)
+      .def("updateLQSubproblem", &SolverType::updateLQSubproblem, "self"_a)
       .def("computeCriterion", &SolverType::computeCriterion, "self"_a,
            "Compute problem stationarity.")
       .def("computeInfeasibilities", &SolverType::computeInfeasibilities,

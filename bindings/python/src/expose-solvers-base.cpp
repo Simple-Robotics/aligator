@@ -2,6 +2,7 @@
 
 #include "aligator/solvers/proxddp/results.hpp"
 #include "aligator/core/workspace-base.hpp"
+#include "aligator/core/value-function.hpp"
 
 namespace aligator {
 namespace python {
@@ -83,8 +84,6 @@ void exposeSolverCommon() {
       .def_readonly("trial_us", &WorkspaceBase::trial_us)
       .def_readonly("dyn_slacks", &WorkspaceBase::dyn_slacks,
                     "Expose dynamics' slack variables (e.g. feasibility gaps).")
-      .def_readonly("value_params", &WorkspaceBase::value_params)
-      .def_readonly("q_params", &WorkspaceBase::q_params)
       .def("cycleLeft", &WorkspaceBase::cycleLeft, bp::args("self"),
            "Cycle the workspace to the left: this will rotate all the data "
            "(states, controls, multipliers) forward by one rank.")
@@ -101,7 +100,6 @@ void exposeSolverCommon() {
       .def_readonly("gains", &ResultsBase::gains_)
       .def_readonly("xs", &ResultsBase::xs)
       .def_readonly("us", &ResultsBase::us)
-      .def_readonly("lams", &ResultsBase::lams)
       .def_readonly("primal_infeas", &ResultsBase::prim_infeas)
       .def_readonly("dual_infeas", &ResultsBase::dual_infeas)
       .def_readonly("traj_cost", &ResultsBase::traj_cost_, "Trajectory cost.")

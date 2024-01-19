@@ -16,6 +16,8 @@ void exposeFDDP() {
                                                     bp::no_init)
       .def_readonly("dxs", &Workspace::dxs)
       .def_readonly("dus", &Workspace::dus)
+      .def_readonly("value_params", &Workspace::value_params)
+      .def_readonly("q_params", &Workspace::q_params)
       .def_readonly("d1", &Workspace::d1_)
       .def_readonly("d2", &Workspace::d2_);
 
