@@ -103,7 +103,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
   if (!problem.term_cstrs_.empty()) {
     int ndx1 = problem.stages_.back()->ndx1();
     const long ndual = problem.term_cstrs_.totalDim();
-    stage_prim_infeas.emplace_back(1);
+    stage_prim_infeas.emplace_back(problem.term_cstrs_.size());
     lams_plus.push_back(VectorXs::Zero(ndual));
     proj_jacobians.emplace_back(ndual, ndx1);
     active_constraints.push_back(VecBool::Zero(ndual));
