@@ -103,14 +103,7 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   Scalar inner_criterion = 0.;
 
   WorkspaceTpl() : Base() {}
-  WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
-               LDLTChoice ldlt_choice = LDLTChoice::DENSE);
-  WorkspaceTpl(const WorkspaceTpl &) = default;
-  WorkspaceTpl(WorkspaceTpl &&) = default;
-  ~WorkspaceTpl() = default;
-
-  WorkspaceTpl &operator=(const WorkspaceTpl &) = default;
-  WorkspaceTpl &operator=(WorkspaceTpl &&) = default;
+  WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem);
 
   void cycleLeft() override;
 

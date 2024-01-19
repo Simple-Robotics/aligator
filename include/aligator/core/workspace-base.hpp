@@ -27,7 +27,7 @@ public:
   std::vector<VectorXs> trial_us;
   /// @}
 
-  /// Feasibility gaps
+  /// Dynamical infeasibility gaps
   std::vector<VectorXs> dyn_slacks;
 
   WorkspaceBaseTpl() : m_isInitialized(false), problem_data() {}
