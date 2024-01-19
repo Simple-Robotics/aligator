@@ -76,6 +76,6 @@ CentroidalFwdDynamicsTpl<Scalar>::createData() const {
 template <typename Scalar>
 CentroidalFwdDataTpl<Scalar>::CentroidalFwdDataTpl(
     const CentroidalFwdDynamicsTpl<Scalar> *cont_dyn)
-    : Base(9, 6 * cont_dyn->nk_) {}
+    : Base(9, 3 * cont_dyn->nk_) {}
 } // namespace dynamics
 } // namespace aligator
