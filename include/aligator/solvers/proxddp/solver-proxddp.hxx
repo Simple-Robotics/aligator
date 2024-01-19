@@ -426,14 +426,13 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
   std::vector<VectorXs> &xs = workspace_.trial_xs;
   std::vector<VectorXs> &us = workspace_.trial_us;
   std::vector<VectorXs> &lams = workspace_.trial_lams;
-  std::vector<VectorRef> &dxs = workspace_.dxs;
-  std::vector<VectorRef> &dus = workspace_.dus;
+  std::vector<VectorXs> &dxs = workspace_.dxs;
+  std::vector<VectorXs> &dus = workspace_.dus;
   const std::vector<VectorXs> &lams_prev = workspace_.prev_lams;
   std::vector<VectorXs> &dyn_slacks = workspace_.dyn_slacks;
   TrajOptData &prob_data = workspace_.problem_data;
 
   {
-    compute_dir_x0(problem);
     const StageModel &stage = *problem.stages_[0];
     // use lams[0] as a tmp var for alpha * dx0
     lams[0] = alpha * dxs[0];
@@ -461,7 +460,7 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
     dus[t].noalias() += fb_u * dxs[t];
     stage.uspace().integrate(results_.us[t], dus[t], us[t]);
 
-    VectorRef &dlam = workspace_.dlams[t + 1];
+    VectorRef dlam = workspace_.dlams[t + 1];
     dlam = alpha * ff_lm;
     dlam.noalias() += fb_lm * dxs[t];
     lams[t + 1] = results_.lams[t + 1] + dlam;
@@ -474,8 +473,7 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
       using BlkView = BlkMatrix<ConstVectorRef, -1, 1>;
       const BlkView lamview(lams[t + 1], cstr_stack.getDims());
       const BlkView plamview(lams_prev[t + 1], cstr_stack.getDims());
-      const auto &weight_strat = workspace_.cstr_scalers[t];
-      dyn_slacks[t] = weight_strat.get(0) * (lamview[0] - plamview[0]);
+      dyn_slacks[t] = mu() * (lamview[0] - plamview[0]);
     }
 
     DynamicsData &dd = *data.dynamics_data;
@@ -491,9 +489,8 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
     if (!stage.has_dyn_model() || stage.dyn_model().is_explicit()) {
       explicit_model_update_xnext();
     } else {
-      ConstVectorRef slack = dyn_slacks[t];
       forwardDynamics<Scalar>::run(stage.dyn_model(), xs[t], us[t], dd,
-                                   xs[t + 1], slack, rollout_max_iters);
+                                   xs[t + 1], dyn_slacks[t], rollout_max_iters);
     }
 
     stage.xspace_next().difference(results_.xs[t + 1], xs[t + 1], dxs[t + 1]);
@@ -667,10 +664,9 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
   LogRecord iter_log;
 
   std::size_t &iter = results_.num_iters;
-  std::size_t inner_step = 0;
   results_.traj_cost_ =
       problem.evaluate(results_.xs, results_.us, workspace_.problem_data);
-  computeMultipliers(problem, results_.lams, results_.lams);
+  computeMultipliers(problem, results_.lams, results_.vs);
   results_.merit_value_ = PDALFunction<Scalar>::evaluate(
       mu(), problem, results_.lams, results_.vs, workspace_);
 
@@ -698,15 +694,18 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
     // attempt backward pass until successful
     // i.e. no inertia problems
     initialize_regularization();
+    updateLQSubproblem();
     linearSolver_->backward(mu_penal_, mu_penal_);
 
     bool inner_conv = (workspace_.inner_criterion <= inner_tol_);
-    if (inner_conv && (inner_step > 0))
+    if (inner_conv)
       return true;
 
-    // TODO: remove these expensive computations
+    linearSolver_->forward(workspace_.dxs, workspace_.dus, workspace_.dvs,
+                           workspace_.dlams);
     Scalar dphi0 = PDALFunction<Scalar>::directionalDerivative(
         mu(), problem, results_.lams, results_.vs, workspace_);
+    ALIGATOR_RAISE_IF_NAN(dphi0);
 
     // check if we can early stop
     if (std::abs(dphi0) <= ls_params.dphi_thresh)
@@ -719,6 +718,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
     // accept the step
     results_.xs = workspace_.trial_xs;
     results_.us = workspace_.trial_us;
+    results_.vs = workspace_.trial_vs;
     results_.lams = workspace_.trial_lams;
     results_.traj_cost_ = workspace_.problem_data.cost_;
     results_.merit_value_ = phi_new;
@@ -747,7 +747,6 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
     logger.log(iter_log);
 
     xreg_last_ = xreg_;
-    inner_step++;
   }
   return false;
 }
@@ -804,36 +803,19 @@ template <typename Scalar> void SolverProxDDP<Scalar>::computeCriterion() {
   const std::size_t nsteps = workspace_.nsteps;
 
   workspace_.stage_inner_crits.setZero();
-  workspace_.stage_dual_infeas.setZero();
-  Scalar x_residuals = 0.;
-  Scalar u_residuals = 0.;
-  if (!force_initial_condition_) {
-    const int ndual = problem.stages_[0]->numDual();
-    Scalar rx = math::infty_norm(workspace_.Lxs_[0]);
-    VectorRef kkt_rhs = workspace_.kkt_mats_[0].col(0);
-    auto kktlam = kkt_rhs.tail(ndual);
-    Scalar rlam = math::infty_norm(kktlam);
-    x_residuals = std::max(x_residuals, rx);
-    workspace_.stage_inner_crits(0) = std::max(rx, rlam);
-    workspace_.stage_dual_infeas(0) = rx;
-  }
 
   for (std::size_t i = 0; i < nsteps; i++) {
-    const StageModel &st = *problem.stages_[i];
-    const int ndual = st.numDual();
-    ConstVectorRef kkt_rhs = workspace_.kkt_rhs_[i + 1].col(0);
-    ConstVectorRef kktlam = kkt_rhs.tail(ndual); // dual residual
-
-    Scalar rlam = math::infty_norm(kktlam);
-    Scalar rx = math::infty_norm(workspace_.Lxs_[i + 1]);
+    Scalar rx = math::infty_norm(workspace_.Lxs_[i]);
     Scalar ru = math::infty_norm(workspace_.Lus_[i]);
-    x_residuals = std::max(x_residuals, rx);
-    u_residuals = std::max(u_residuals, ru);
+    Scalar rd = math::infty_norm(workspace_.Lds_[i]);
+    Scalar rc = math::infty_norm(workspace_.Lvs_[i]);
 
-    rx *= 1e-3;
-    workspace_.stage_inner_crits(long(i + 1)) = std::max({rx, ru, rlam});
-    workspace_.stage_dual_infeas(long(i + 1)) = std::max(rx, ru);
+    workspace_.stage_inner_crits[long(i)] = std::max({rx, ru, rd, rc});
+    workspace_.state_dual_infeas[long(i)] = rx;
+    workspace_.control_dual_infeas[long(i)] = ru;
   }
+  workspace_.state_dual_infeas[long(nsteps)] =
+      math::infty_norm(workspace_.Lxs_[nsteps]);
 
   workspace_.inner_criterion = math::infty_norm(workspace_.stage_inner_crits);
   results_.dual_infeas =
