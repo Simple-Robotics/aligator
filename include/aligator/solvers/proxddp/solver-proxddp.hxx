@@ -836,7 +836,67 @@ template <typename Scalar> void SolverProxDDP<Scalar>::computeCriterion() {
   }
 
   workspace_.inner_criterion = math::infty_norm(workspace_.stage_inner_crits);
-  results_.dual_infeas = math::infty_norm(workspace_.stage_dual_infeas);
+  results_.dual_infeas =
+      std::max(math::infty_norm(workspace_.state_dual_infeas),
+               math::infty_norm(workspace_.control_dual_infeas));
+}
+
+template <typename Scalar> void SolverProxDDP<Scalar>::updateLQSubproblem() {
+  LQProblem &prob = workspace_.lqr_problem;
+  const TrajOptData &pd = workspace_.problem_data;
+
+  const std::vector<VectorXs> &ilams = results_.lams;
+  const std::vector<VectorXs> &ivs = results_.vs;
+  const std::vector<VectorXs> &plams = workspace_.prev_lams;
+  const std::vector<VectorXs> &pvs = workspace_.prev_vs;
+  using gar::LQRKnotTpl;
+
+  size_t N = (size_t)prob.horizon();
+  assert(N == workspace_.nsteps);
+
+  for (size_t t = 0; t < N; t++) {
+    const StageData &sd = *pd.stage_data[t];
+    LQRKnotTpl<Scalar> &knot = prob.stages[t];
+    const StageFunctionData &dd = *sd.dynamics_data;
+    const CostData &cd = *sd.cost_data;
+
+    knot.A = dd.Jx_;
+    knot.B = dd.Ju_;
+    knot.E = dd.Jy_;
+    knot.f = workspace_.Lds_[t + 1];
+
+    knot.Q = cd.Lxx_;
+    knot.S = cd.Lxu_;
+    knot.R = cd.Luu_;
+    knot.q = workspace_.Lxs_[t];
+    knot.r = workspace_.Lus_[t];
+
+    // dynamics hessians
+    if (hess_approx_ == HessianApprox::EXACT) {
+      knot.Q += dd.Hxx_;
+      knot.S += dd.Hxu_;
+      knot.R += dd.Huu_;
+    }
+
+    // TODO: handle the bloody constraints
+    assert(knot.nc == workspace_.proj_jacobians[t].rows());
+    knot.d = workspace_.Lvs_[t];
+  }
+
+  {
+    LQRKnotTpl<Scalar> &knot = prob.stages[N];
+    const CostData &tcd = *pd.term_cost_data;
+    knot.Q = tcd.Lxx_;
+    knot.q = workspace_.Lxs_[N];
+    knot.d = workspace_.shifted_constraints[N];
+  }
+
+  const StageFunctionData &id = *pd.init_data;
+  prob.G0 = id.Jx_;
+  prob.g0.noalias() = workspace_.Lds_[0];
+
+  LQRKnotTpl<Scalar> &model = prob.stages[0];
+  model.Q += id.Hxx_;
 }
 
 } // namespace aligator

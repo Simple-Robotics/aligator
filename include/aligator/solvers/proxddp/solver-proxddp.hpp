@@ -75,21 +75,20 @@ public:
   /// Solver tolerance \f$\epsilon > 0\f$.
   Scalar target_tol_ = 1e-6;
 
-  Scalar mu_init = 0.01;
+  Scalar mu_init = 0.01; //< Initial AL parameter
   Scalar rho_init = 0.;
 
   //// Inertia-correcting heuristic
 
-  Scalar reg_min = 1e-10; //< Minimal nonzero regularization
-  Scalar reg_max = 1e9;
+  Scalar reg_min = 1e-10;         //< Minimal nonzero regularization
+  Scalar reg_max = 1e9;           //< Maximum regularization value
   Scalar reg_init = 1e-9;         //< Initial regularization value (can be zero)
   Scalar reg_inc_k_ = 10.;        //< Regularization increase factor
   Scalar reg_inc_first_k_ = 100.; //< Regularization increase (critical)
   Scalar reg_dec_k_ = 1. / 3.;    //< Regularization decrease factor
-
-  Scalar xreg_ = reg_init;
-  Scalar ureg_ = xreg_;
-  Scalar xreg_last_ = 0.; //< Last "good" regularization value
+  Scalar xreg_ = reg_init;        //< State regularization value
+  Scalar ureg_ = xreg_;           //< Control regularization value
+  Scalar xreg_last_ = 0.;         //< Last "good" regularization value
 
   //// Initial BCL tolerances
 
@@ -122,21 +121,13 @@ public:
   /// condition.
   bool force_initial_condition_ = true;
 
-  /// Maximum number of linear system refinement iterations
-  std::size_t max_refinement_steps_ = 0;
-  /// Target tolerance for solving the KKT system.
-  Scalar refinement_threshold_ = 1e-13;
-
-  /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.
-  std::size_t max_iters;
-  /// Maximum number of ALM iterations.
-  std::size_t max_al_iters = 100;
-
-  /// Minimum possible penalty parameter.
-  Scalar mu_lower_bound = 1e-8;
-
-  /// Nonlinear rollout options
-  uint rollout_max_iters;
+  std::size_t maxRefinementSteps_ =
+      0; //< Max number of KKT system refinement iters
+  Scalar refinementThreshold_ = 1e-13; //< Target tol. for the KKT system.
+  std::size_t max_iters;               //< Max number of Newton iterations.
+  std::size_t max_al_iters = 100;      //< Maximum number of ALM iterations.
+  Scalar mu_lower_bound = 1e-8;        //< Minimum possible penalty parameter.
+  uint rollout_max_iters;              //< Nonlinear rollout options
 
   /// Callbacks
   CallbackMap callbacks_;
@@ -182,7 +173,7 @@ public:
 
   Scalar forwardPass(const Problem &problem, const Scalar alpha);
 
-  void updateLqrSubproblem(const Problem &problem);
+  void updateLQSubproblem();
 
   /// @brief Allocate new workspace and results instances according to the
   /// specifications of @p problem.
