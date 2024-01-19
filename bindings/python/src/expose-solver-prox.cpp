@@ -16,7 +16,6 @@ void exposeProxDDP() {
   using context::VectorRef;
   using context::Workspace;
 
-  register_enum_symlink<proxsuite::nlp::LDLTChoice>(true);
   eigenpy::register_symbolic_link_to_registered_type<
       Linesearch<Scalar>::Options>();
   eigenpy::register_symbolic_link_to_registered_type<LinesearchStrategy>();
@@ -35,7 +34,7 @@ void exposeProxDDP() {
             }
             s.setWeight(v, j);
           },
-          bp::args("self", "value", "j"))
+          ("self"_a, "value", "j"))
       .add_property("size", &ProxScaler::size,
                     "Get the number of constraint blocks.")
       .add_property(
@@ -57,8 +56,7 @@ void exposeProxDDP() {
   bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>,
              boost::noncopyable>(
       "Workspace", "Workspace for ProxDDP.",
-      bp::init<const TrajOptProblem &, bp::optional<LDLTChoice>>(
-          bp::args("self", "problem", "ldlt_choice")))
+      bp::init<const TrajOptProblem &>(("self"_a, "problem")))
       .def(
           "getConstraintScaler",
           +[](const Workspace &ws, std::size_t j) -> const ProxScaler & {
@@ -68,7 +66,7 @@ void exposeProxDDP() {
             }
             return ws.cstr_scalers[j];
           },
-          bp::args("self", "j"), bp::return_internal_reference<>(),
+          ("self"_a, "j"), bp::return_internal_reference<>(),
           "Scalers of the constraints in the proximal algorithm.")
       .def_readwrite("lqrData", &Workspace::lqrData,
                      "Data buffer for the underlying LQ problem.")
@@ -89,31 +87,19 @@ void exposeProxDDP() {
       .def_readonly("proj_jacobians", &Workspace::proj_jacobians)
       .def_readonly("inner_crit", &Workspace::inner_criterion)
       .def_readonly("active_constraints", &Workspace::active_constraints)
-      // .def(
-      //     "get_ldlt",
-      //     +[](const Workspace &ws,
-      //         std::size_t i) -> proxsuite::nlp::linalg::ldlt_base<Scalar>
-      //         const & {
-      //       if (i >= ws.ldlts_.size()) {
-      //         PyErr_SetString(PyExc_IndexError, "Index out of bounds.");
-      //         bp::throw_error_already_set();
-      //       }
-      //       return ws.ldlts_[i];
-      //     },
-      //     bp::return_internal_reference<>(), bp::args("self", "i"),
-      //     "Get the LDLT algorithm for the i-th linear problem.")
       .def_readonly("prev_xs", &Workspace::prev_xs)
       .def_readonly("prev_us", &Workspace::prev_us)
       .def_readonly("prev_lams", &Workspace::prev_lams)
       .def_readonly("stage_prim_infeas", &Workspace::stage_prim_infeas)
-      .def_readonly("stage_dual_infeas", &Workspace::stage_dual_infeas)
-      .def_readonly("stage_inner_crits", &Workspace::stage_inner_crits)
+      .def_readonly("state_dual_infeas", &Workspace::state_dual_infeas)
+      .def_readonly("control_dual_infeas", &Workspace::control_dual_infeas)
       .def(PrintableVisitor<Workspace>());
 
   bp::class_<Results, bp::bases<ResultsBaseTpl<Scalar>>>(
       "Results", "Results struct for proxDDP.",
-      bp::init<const TrajOptProblem &>())
+      bp::init<const TrajOptProblem &>(("self"_a, "problem")))
       .def_readonly("al_iter", &Results::al_iter)
+      .def_readonly("lams", &Results::lams)
       .def(PrintableVisitor<Results>());
 
   using SolverType = SolverProxDDP<Scalar>;
@@ -132,15 +118,13 @@ void exposeProxDDP() {
       .def_readwrite("bcl_params", &SolverType::bcl_params, "BCL parameters.")
       .def_readwrite("max_refinement_steps", &SolverType::max_refinement_steps_)
       .def_readwrite("refinement_threshold", &SolverType::refinement_threshold_)
-      .def_readwrite("ldlt_algo_choice", &SolverType::ldlt_algo_choice_,
-                     "Choice of LDLT algorithm.")
       .def_readwrite("multiplier_update_mode",
                      &SolverType::multiplier_update_mode)
       .def_readwrite("mu_init", &SolverType::mu_init,
                      "Initial AL penalty parameter.")
       .def_readwrite("rho_init", &SolverType::rho_init,
                      "Initial proximal regularization.")
-      .def_readwrite("mu_min", &SolverType::MU_MIN,
+      .def_readwrite("mu_min", &SolverType::mu_lower_bound,
                      "Lower bound on the AL penalty parameter.")
       .def_readwrite(
           "rollout_max_iters", &SolverType::rollout_max_iters,
@@ -156,18 +140,15 @@ void exposeProxDDP() {
                      "Minimum regularization value.")
       .def_readwrite("reg_max", &SolverType::reg_max,
                      "Maximum regularization value.")
-      .def("updateLqrSubproblem", &SolverType::updateLqrSubproblem,
-           bp::args("self"))
-      .def("getLinesearchMu", &SolverType::getLinesearchMu, bp::args("self"))
-      .def("computeCriterion", &SolverType::computeCriterion,
-           bp::args("self", "problem"), "Compute problem stationarity.")
+      .def("updateLqrSubproblem", &SolverType::updateLqrSubproblem, "self"_a)
+      .def("computeCriterion", &SolverType::computeCriterion, "self"_a,
+           "Compute problem stationarity.")
       .def("computeInfeasibilities", &SolverType::computeInfeasibilities,
-           bp::args("self", "problem"), "Compute problem infeasibilities.")
+           ("self"_a, "problem"), "Compute problem infeasibilities.")
       .def(SolverVisitor<SolverType>())
       .def("run", &SolverType::run,
            prox_run_overloads(
-               (bp::arg("self"), bp::arg("problem"), bp::arg("xs_init"),
-                bp::arg("us_init"), bp::arg("lams_init")),
+               ("self"_a, "problem", "xs_init", "us_init", "lams_init"),
                "Run the algorithm. Can receive initial guess for "
                "multiplier trajectory."));
 }

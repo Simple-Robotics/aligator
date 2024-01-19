@@ -3,9 +3,8 @@
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "./solver-proxddp.hpp"
-#include "aligator/core/iterative-refinement.hpp"
-#include <boost/variant/apply_visitor.hpp>
+#include "solver-proxddp.hpp"
+#include "aligator/core/lagrangian.hpp"
 #ifndef NDEBUG
 #include <fmt/ostream.h>
 #endif
@@ -768,13 +767,13 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
     const Scalar phi0 = results_.merit_value_;
 
     LagrangianDerivatives<Scalar>::compute(problem, workspace_.problem_data,
-                                           results_.lams, workspace_.Lxs_,
-                                           workspace_.Lus_);
+                                           results_.lams, results_.vs,
+                                           workspace_.Lxs_, workspace_.Lus_);
     if (force_initial_condition_) {
       workspace_.Lxs_[0].setZero();
     }
     computeInfeasibilities(problem);
-    computeCriterion(problem);
+    computeCriterion();
 
     Scalar outer_crit = std::max(results_.dual_infeas, results_.prim_infeas);
     if (outer_crit <= target_tol_)
@@ -900,9 +899,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem) {
   ALIGATOR_NOMALLOC_END;
 }
 
-template <typename Scalar>
-void SolverProxDDP<Scalar>::computeCriterion(const Problem &problem) {
-  // DUAL INFEASIBILITIES
+template <typename Scalar> void SolverProxDDP<Scalar>::computeCriterion() {
   const std::size_t nsteps = workspace_.nsteps;
 
   workspace_.stage_inner_crits.setZero();

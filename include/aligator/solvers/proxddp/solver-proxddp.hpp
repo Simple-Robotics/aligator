@@ -169,21 +169,7 @@ public:
 
   Scalar forwardPass(const Problem &problem, const Scalar alpha);
 
-  /// @brief    Compute search direction in the first state variable \f$x_0\f$.
-  void compute_dir_x0(const Problem &problem);
-
-  /// @brief    Initialize the Riccati equations at the terminal stage.
-  void computeTerminalValue(const Problem &problem);
-
-  /// @brief    Compute the Hamiltonian parameters at time @param t.
-  void updateHamiltonian(const Problem &problem, const std::size_t);
-
-  /// Assemble the right-hand side of the KKT system.
-  void assembleKktSystem(const Problem &problem, const std::size_t t);
-
-  /// @brief    Perform the Riccati backward pass.
-  /// @pre  Compute the derivatives first!
-  BackwardRet backwardPass(const Problem &problem);
+  void updateLqrSubproblem(const Problem &problem);
 
   /// @brief Allocate new workspace and results instances according to the
   /// specifications of @p problem.
@@ -211,8 +197,8 @@ public:
   /// normal cone in-place).
   ///           Compute anything which accesses these before!
   void computeInfeasibilities(const Problem &problem);
-  /// @brief Compute stationarity criterion.
-  void computeCriterion(const Problem &problem);
+  /// @brief Compute stationarity criterion (dual infeasibility).
+  void computeCriterion();
 
   /// @name callbacks
   /// \{
@@ -247,7 +233,8 @@ public:
   /// first-order Lagrange multiplier estimates, shifted and
   /// projected constraints.
   void computeMultipliers(const Problem &problem,
-                          const std::vector<VectorXs> &lams);
+                          const std::vector<VectorXs> &lams,
+                          const std::vector<VectorXs> &vs);
 
   /// @copydoc mu_penal_
   ALIGATOR_INLINE Scalar mu() const { return mu_penal_; }
@@ -257,14 +244,6 @@ public:
 
   /// @copydoc rho_penal_
   ALIGATOR_INLINE Scalar rho() const { return rho_penal_; }
-
-  //// Scaled variants
-
-  /// @brief  Put together the Q-function parameters and compute the Riccati
-  /// gains.
-  inline BackwardRet computeGains(const Problem &problem, const std::size_t t);
-  /// @brief  Get the penalty parameter for linesearch.
-  auto getLinesearchMu() const { return mu(); }
 
 protected:
   void update_tols_on_failure();

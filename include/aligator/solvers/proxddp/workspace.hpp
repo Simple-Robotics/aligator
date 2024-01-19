@@ -4,22 +4,17 @@
 #pragma once
 
 #include "aligator/core/workspace-base.hpp"
-#include "aligator/core/proximal-penalty.hpp"
 #include "aligator/core/alm-weights.hpp"
 #include "aligator/gar/riccati.hpp"
 
 #include <array>
-#include <proxsuite-nlp/ldlt-allocator.hpp>
 
 namespace aligator {
 
-using proxsuite::nlp::LDLTChoice;
-
-/** @brief Workspace for solver SolverProxDDP.
- *
- * @details This struct holds data for the Riccati forward and backward passes,
- *          the primal-dual steps, problem data...
- */
+/// @brief Workspace for solver SolverProxDDP.
+///
+/// @details This struct holds data for the Riccati forward and backward passes,
+///          the primal-dual steps, problem data...
 template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using StageModel = StageModelTpl<Scalar>;
