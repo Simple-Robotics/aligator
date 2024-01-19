@@ -3,6 +3,7 @@
 #include "./merit-function.hpp"
 #include "./workspace.hpp"
 #include "./results.hpp"
+#include "aligator/core/lagrangian.hpp"
 
 namespace aligator {
 
@@ -24,14 +25,13 @@ Scalar costDirectionalDerivative(const WorkspaceTpl<Scalar> &workspace,
 }
 
 template <typename Scalar>
-Scalar PDALFunction<Scalar>::evaluate(const SolverType &solver,
+Scalar PDALFunction<Scalar>::evaluate(const Scalar mu,
                                       const TrajOptProblem &problem,
                                       const std::vector<VectorXs> &lams,
+                                      const std::vector<VectorXs> &vs,
                                       Workspace &workspace) {
   TrajOptData &prob_data = workspace.problem_data;
-  Scalar prox_value = 0.;
   Scalar penalty_value = 0.;
-  const Scalar mu = solver.getLinesearchMu();
   const std::vector<VectorXs> &lams_pdal = workspace.lams_pdal;
 
   // initial constraint
@@ -64,29 +64,29 @@ Scalar PDALFunction<Scalar>::evaluate(const SolverType &solver,
                                       workspace.cstr_scalers.back());
   }
 
-  return prob_data.cost_ + prox_value + penalty_value;
+  return prob_data.cost_ + penalty_value;
 }
 
 template <typename Scalar>
 Scalar PDALFunction<Scalar>::directionalDerivative(
-    const SolverType &solver, const TrajOptProblem &problem,
-    const std::vector<VectorXs> &lams, Workspace &workspace) {
+    const Scalar mu, const TrajOptProblem &problem,
+    const std::vector<VectorXs> &lams, const std::vector<VectorXs> &vs,
+    Workspace &workspace) {
   TrajOptData &prob_data = workspace.problem_data;
   const std::size_t nsteps = workspace.nsteps;
 
   Scalar d1 = costDirectionalDerivative(workspace, prob_data);
 
-  const Scalar mu = solver.getLinesearchMu();
-  const std::vector<VectorRef> &dxs = workspace.dxs;
-  const std::vector<VectorRef> &dus = workspace.dus;
-  const std::vector<VectorRef> &dlams = workspace.dlams;
+  const std::vector<VectorXs> &dxs = workspace.dxs;
+  const std::vector<VectorXs> &dus = workspace.dus;
+  const std::vector<VectorXs> &dvs = workspace.dvs;
+  const std::vector<VectorXs> &dlams = workspace.dlams;
+  const std::vector<VectorXs> &vs_pdal = workspace.vs_pdal;
   const std::vector<VectorXs> &lams_pdal = workspace.lams_pdal;
+  std::vector<VectorXs> &Lxs = workspace.Lxs_;
+  std::vector<VectorXs> &Lus = workspace.Lus_;
   LagrangianDerivatives<Scalar>::compute(problem, workspace.problem_data,
-                                         lams_pdal, workspace.Lxs_,
-                                         workspace.Lus_);
-  if (solver.force_initial_condition_) {
-    workspace.Lxs_[0].setZero();
-  }
+                                         lams_pdal, vs_pdal, Lxs, Lus);
 
   // constraints
   {

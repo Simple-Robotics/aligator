@@ -56,9 +56,8 @@ Scalar SolverProxDDP<Scalar>::forward_linear_impl(const Problem &problem,
 
   const std::size_t nsteps = workspace.nsteps;
 
-  for (std::size_t i = 0; i < results.lams.size(); i++) {
-    workspace.trial_lams[i] = results.lams[i] + alpha * workspace.dlams[i];
-  }
+  vectorMultiplyAdd(results.lams, workspace.dlams, workspace.trial_lams, alpha);
+  vectorMultiplyAdd(results.vs, workspace.dvs, workspace.trial_vs, alpha);
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
@@ -736,9 +735,9 @@ Scalar SolverProxDDP<Scalar>::forwardPass(const Problem &problem,
     assert(false && "unknown RolloutType!");
     break;
   }
-  computeMultipliers(problem, workspace_.trial_lams);
-  return PDALFunction<Scalar>::evaluate(*this, problem, workspace_.trial_lams,
-                                        workspace_);
+  computeMultipliers(problem, workspace_.trial_lams, workspace_.trial_vs);
+  return PDALFunction<Scalar>::evaluate(mu(), problem, workspace_.trial_lams,
+                                        workspace_.trial_vs, workspace_);
 }
 
 template <typename Scalar>
@@ -754,9 +753,9 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
   std::size_t inner_step = 0;
   results_.traj_cost_ =
       problem.evaluate(results_.xs, results_.us, workspace_.problem_data);
-  computeMultipliers(problem, results_.lams);
-  results_.merit_value_ =
-      PDALFunction<Scalar>::evaluate(*this, problem, results_.lams, workspace_);
+  computeMultipliers(problem, results_.lams, results_.lams);
+  results_.merit_value_ = PDALFunction<Scalar>::evaluate(
+      mu(), problem, results_.lams, results_.vs, workspace_);
 
   for (; iter < max_iters; iter++) {
     // ASSUMPTION: last evaluation in previous iterate
@@ -805,7 +804,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
     /// only use Q-function params etc
     linearRollout(problem);
     Scalar dphi0 = PDALFunction<Scalar>::directionalDerivative(
-        *this, problem, results_.lams, workspace_);
+        mu(), problem, results_.lams, results_.vs, workspace_);
 
     // check if we can early stop
     if (std::abs(dphi0) <= ls_params.dphi_thresh)
