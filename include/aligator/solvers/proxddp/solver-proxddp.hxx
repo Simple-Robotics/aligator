@@ -18,34 +18,9 @@ SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
                                      VerboseLevel verbose,
                                      HessianApprox hess_approx)
     : target_tol_(tol), mu_init(mu_init), rho_init(rho_init), verbose_(verbose),
-      hess_approx_(hess_approx), ldlt_algo_choice_(LDLTChoice::DENSE),
-      max_iters(max_iters), rollout_max_iters(1), linesearch_(ls_params) {
+      hess_approx_(hess_approx), max_iters(max_iters), rollout_max_iters(1),
+      linesearch_(ls_params) {
   ls_params.interp_type = proxsuite::nlp::LSInterpolation::CUBIC;
-}
-
-template <typename Scalar>
-void SolverProxDDP<Scalar>::linearRollout(const Problem &problem) {
-  ALIGATOR_NOMALLOC_BEGIN;
-  compute_dir_x0(problem);
-
-  const std::size_t nsteps = workspace_.nsteps;
-
-  for (std::size_t i = 0; i < nsteps; i++) {
-    VectorXs &pd_step = workspace_.pd_step_[i + 1];
-    const auto ff = results_.getFeedforward(i);
-    const auto fb = results_.getFeedback(i);
-
-    pd_step = ff;
-    pd_step.noalias() += fb * workspace_.dxs[i];
-  }
-  if (!problem.term_cstrs_.empty()) {
-    const auto ff = results_.getFeedforward(nsteps);
-    const auto fb = results_.getFeedback(nsteps);
-    VectorRef &dlam = workspace_.dlams.back();
-    dlam = ff;
-    dlam.noalias() += fb * workspace_.dxs[nsteps];
-  }
-  ALIGATOR_NOMALLOC_END;
 }
 
 template <typename Scalar>
@@ -55,6 +30,10 @@ Scalar SolverProxDDP<Scalar>::forward_linear_impl(const Problem &problem,
                                                   const Scalar alpha) {
 
   const std::size_t nsteps = workspace.nsteps;
+  assert(results.xs.size() == nsteps + 1);
+  assert(results.us.size() == nsteps);
+  assert(results.lams.size() == nsteps + 1);
+  assert(results.vs.size() == nsteps + 1);
 
   vectorMultiplyAdd(results.lams, workspace.dlams, workspace.trial_lams, alpha);
   vectorMultiplyAdd(results.vs, workspace.dvs, workspace.trial_vs, alpha);
@@ -77,53 +56,6 @@ Scalar SolverProxDDP<Scalar>::forward_linear_impl(const Problem &problem,
 }
 
 template <typename Scalar>
-void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem) {
-  ALIGATOR_NOMALLOC_BEGIN;
-  // compute direction dx0
-  const VParams &vp = workspace_.value_params[0];
-  const StageFunctionData &init_data = *workspace_.problem_data.init_data;
-  const int ndual0 = problem.init_condition_->nr;
-  const int ndx0 = problem.init_condition_->ndx1;
-  const VectorXs &lampl0 = workspace_.lams_plus[0];
-  const VectorXs &lamin0 = results_.lams[0];
-  MatrixXs &kkt_mat = workspace_.kkt_mats_[0];
-  VectorRef kkt_rhs = workspace_.kkt_rhs_[0].col(0);
-  VectorRef kktx = kkt_rhs.head(ndx0);
-  assert(kkt_rhs.size() == ndx0 + ndual0);
-  assert(kkt_mat.cols() == ndx0 + ndual0);
-
-  if (force_initial_condition_) {
-    workspace_.pd_step_[0].setZero();
-    workspace_.dxs[0] = -init_data.value_;
-    workspace_.dlams[0] = -results_.lams[0];
-    kkt_rhs.setZero();
-  } else {
-    auto kktl = kkt_rhs.tail(ndual0);
-    kktx = vp.Vx_;
-    kktx.noalias() += init_data.Jx_.transpose() * lamin0;
-    kktl = mu() * (lampl0 - lamin0);
-
-    auto kkt_xx = kkt_mat.topLeftCorner(ndx0, ndx0);
-    kkt_xx = vp.Vxx_ + init_data.Hxx_;
-
-    kkt_mat.topRightCorner(ndx0, ndual0) = init_data.Jx_.transpose();
-    kkt_mat.bottomLeftCorner(ndual0, ndx0) = init_data.Jx_;
-    kkt_mat.bottomRightCorner(ndual0, ndual0).diagonal().array() = -mu();
-    auto &ldlt = workspace_.ldlts_[0];
-    ALIGATOR_NOMALLOC_END;
-    boost::apply_visitor([&](auto &&fac) { fac.compute(kkt_mat); }, ldlt);
-    auto &resdl = workspace_.kkt_resdls_[0];
-    auto &gains = workspace_.pd_step_[0];
-    boost::apply_visitor(
-        IterativeRefinementVisitor<Scalar>{kkt_mat, kkt_rhs, resdl, gains,
-                                           refinement_threshold_,
-                                           max_refinement_steps_},
-        ldlt);
-  }
-  ALIGATOR_NOMALLOC_END;
-}
-
-template <typename Scalar>
 void SolverProxDDP<Scalar>::setup(const Problem &problem) {
   workspace_ = Workspace(problem);
   results_ = Results(problem);
@@ -131,30 +63,15 @@ void SolverProxDDP<Scalar>::setup(const Problem &problem) {
 
   workspace_.configureScalers(problem, mu_penal_,
                               applyDefaultScalingStrategy<Scalar>);
+  linearSolver_ = std::make_unique<gar::ProximalRiccatiSolver<Scalar>>(
+      workspace_.lqr_problem);
 }
 
-template <typename Scalar>
-auto SolverProxDDP<Scalar>::backwardPass(const Problem &problem)
-    -> BackwardRet {
-  /* Terminal node */
-  computeTerminalValue(problem);
-
-  const std::size_t nsteps = workspace_.nsteps;
-  for (std::size_t i = 0; i < nsteps; i++) {
-    std::size_t t = nsteps - i - 1;
-    updateHamiltonian(problem, t);
-    assembleKktSystem(problem, t);
-    BackwardRet b = computeGains(problem, t);
-    if (b != BWD_SUCCESS) {
-      return b;
-    }
-  }
-  return BWD_SUCCESS;
-}
-
+/// TODO: REWORK FOR NEW MULTIPLIERS
 template <typename Scalar>
 void SolverProxDDP<Scalar>::computeMultipliers(
-    const Problem &problem, const std::vector<VectorXs> &lams) {
+    const Problem &problem, const std::vector<VectorXs> &lams,
+    const std::vector<VectorXs> &vs) {
 
   TrajOptData &prob_data = workspace_.problem_data;
   const std::size_t nsteps = workspace_.nsteps;
@@ -598,8 +515,8 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
 
   // update multiplier
   if (!problem.term_cstrs_.empty()) {
-    VectorRef &dlam = workspace_.dlams.back();
-    const VectorRef &dx = workspace_.dxs.back();
+    VectorRef dlam = workspace_.dlams.back();
+    ConstVectorRef dx = workspace_.dxs.back();
     auto ff = results_.getFeedforward(nsteps);
     auto fb = results_.getFeedback(nsteps);
     dlam = alpha * ff;
@@ -781,28 +698,13 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
     // attempt backward pass until successful
     // i.e. no inertia problems
     initialize_regularization();
-    while (true) {
-      BackwardRet b = backwardPass(problem);
-      switch (b) {
-      case BWD_SUCCESS:
-        break;
-      case BWD_WRONG_INERTIA: {
-        if (xreg_ >= reg_max)
-          return false;
-        increase_regularization();
-        continue;
-      }
-      }
-      break; // if you broke from the switch
-    }
+    linearSolver_->backward(mu_penal_, mu_penal_);
 
     bool inner_conv = (workspace_.inner_criterion <= inner_tol_);
     if (inner_conv && (inner_step > 0))
       return true;
 
-    /// TODO: remove these expensive computations
-    /// only use Q-function params etc
-    linearRollout(problem);
+    // TODO: remove these expensive computations
     Scalar dphi0 = PDALFunction<Scalar>::directionalDerivative(
         mu(), problem, results_.lams, results_.vs, workspace_);
 

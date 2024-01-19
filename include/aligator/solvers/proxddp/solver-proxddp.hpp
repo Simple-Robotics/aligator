@@ -10,11 +10,11 @@
 #include "aligator/utils/exceptions.hpp"
 #include "aligator/utils/logger.hpp"
 #include "aligator/utils/forward-dyn.hpp"
+#include "aligator/gar/riccati.hpp"
 #include "./workspace.hpp"
 #include "./results.hpp"
 #include "./merit-function.hpp"
 
-#include <proxsuite-nlp/modelling/constraints.hpp>
 #include <proxsuite-nlp/bcl-params.hpp>
 
 #include <unordered_map>
