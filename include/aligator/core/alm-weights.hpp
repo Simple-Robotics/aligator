@@ -43,6 +43,10 @@ public:
     return diagMatrix().asDiagonal() * m;
   }
 
+  template <typename D> auto applyInverse(const Eigen::MatrixBase<D> &m) const {
+    return diagMatrix().asDiagonal().inverse() * m;
+  }
+
   template <typename D>
   Scalar weightedNorm(const Eigen::MatrixBase<D> &m) const {
     EIGEN_STATIC_ASSERT_VECTOR_ONLY(D)
