@@ -5,6 +5,7 @@
 
 #include "aligator/core/workspace-base.hpp"
 #include "aligator/core/alm-weights.hpp"
+#include "aligator/gar/lqr-problem.hpp"
 #include "aligator/core/constraint-set-product.hpp"
 
 #include <array>
@@ -31,79 +32,73 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using Base = WorkspaceBaseTpl<Scalar>;
   using VecBool = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
   using CstrProxScaler = ConstraintProximalScalerTpl<Scalar>;
-  using BlkVec = BlkMatrix<VectorXs, -1>;
-  using BlkMat = BlkMatrix<MatrixXs, -1, -1>;
-  using ProxRiccati = gar::ProximalRiccatiSolver<Scalar>;
+  using KnotType = gar::LQRKnotTpl<Scalar>;
+  using ConstraintSetProduct = ConstraintSetProductTpl<Scalar>;
 
   using Base::dyn_slacks;
   using Base::nsteps;
   using Base::problem_data;
-  using Base::q_params;
-  using Base::trial_us;
-  using Base::trial_xs;
-  using Base::value_params;
 
-  gar::LQRProblemTpl<Scalar> lqrData;
-  // unique_ptr<ProxRiccati> lqrSolver;
-
-  /// Proximal algo scalers for the constraints
-  std::vector<CstrProxScaler> cstr_scalers;
+  gar::LQRProblemTpl<Scalar> lqr_problem;   //< Linear-quadratic subproblem
+  std::vector<CstrProxScaler> cstr_scalers; //< Scaling for the constraints
 
   /// @name Lagrangian Gradients
   /// @{
-  std::vector<VectorXs> Lxs_;
-  std::vector<VectorXs> Lus_;
-  std::vector<VectorXs> Lds_;
+  std::vector<VectorXs> Lxs_; //< State gradients
+  std::vector<VectorXs> Lus_; //< Control gradients
+  std::vector<VectorXs> Lvs_; //< Path multiplier gradients
+  std::vector<VectorXs> Lds_; //< Costate gradients
   /// @}
 
-  /// Lagrange multipliers for ALM & linesearch.
+  /// @name Trial primal-dual step
+  /// @{
+  using Base::trial_us;
+  using Base::trial_xs;
+  std::vector<VectorXs> trial_vs;
   std::vector<VectorXs> trial_lams;
+  /// @}
+
+  /// @name Lagrange multipliers.
+  /// @{
   std::vector<VectorXs> lams_plus;
   std::vector<VectorXs> lams_pdal;
+  std::vector<VectorXs> vs_plus;
+  std::vector<VectorXs> vs_pdal;
+  /// @}
+
   /// Shifted constraints the projection operators should be applied to.
   std::vector<VectorXs> shifted_constraints;
-  /// Projected Jacobians, used to symmetrize LQR subproblem
+  /// Projected path constraint Jacobians (used to symmetrize the LQ subproblem)
   std::vector<MatrixXs> proj_jacobians;
-  std::vector<BlkMat> proj_jacobians_2;
+  /// Masks for active constraint sets
   std::vector<VecBool> active_constraints;
+  /// Cartesian products of the constraint sets of each stage.
+  std::vector<ConstraintSetProduct> constraintProductOperators;
 
-  /// @name Riccati gains, memory buffers for primal-dual steps
+  /// @name Primal-dual steps
   /// @{
-  std::vector<VectorXs> pd_step_;
-  std::vector<VectorRef> dxs;
-  std::vector<VectorRef> dus;
-  std::vector<VectorRef> dlams;
-
-  /// Buffer for KKT matrix
-  std::vector<MatrixXs> kkt_mats_;
-  /// Buffer for KKT right hand side
-  std::vector<MatrixXs> kkt_rhs_;
-  /// Linear system residual buffers: used for iterative refinement
-  std::vector<MatrixXs> kkt_resdls_;
-
-  using LDLTVariant = proxsuite::nlp::LDLTVariant<Scalar>;
-  /// LDLT solvers
-  std::vector<LDLTVariant> ldlts_;
-
+  std::vector<VectorXs> dxs;
+  std::vector<VectorXs> dus;
+  std::vector<VectorXs> dvs;
+  std::vector<VectorXs> dlams;
   /// @}
 
   /// @name Previous external/proximal iterates
   /// @{
-
   std::vector<VectorXs> prev_xs;
   std::vector<VectorXs> prev_us;
+  std::vector<VectorXs> prev_vs;
   std::vector<VectorXs> prev_lams;
-
   /// @}
 
   /// Subproblem termination criterion for each stage.
   VectorXs stage_inner_crits;
-  /// Constraint violation for each stage and each constraint of the
-  /// TrajOptProblemTpl.
+  /// Constraint violation for each stage and constraint of the problem.
   std::vector<VectorXs> stage_prim_infeas;
-  /// Dual infeasibility for each stage of the TrajOptProblemTpl.
-  VectorXs stage_dual_infeas;
-
+  /// Dual infeasibility in the states for each stage of the problem.
+  VectorXs state_dual_infeas;
+  /// Dual infeasibility in the controls for each stage of the problem.
+  VectorXs control_dual_infeas;
   /// Overall subproblem termination criterion.
   Scalar inner_criterion = 0.;
 

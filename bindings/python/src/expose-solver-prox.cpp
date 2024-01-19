@@ -68,18 +68,17 @@ void exposeProxDDP() {
           },
           ("self"_a, "j"), bp::return_internal_reference<>(),
           "Scalers of the constraints in the proximal algorithm.")
-      .def_readwrite("lqrData", &Workspace::lqrData,
-                     "Data buffer for the underlying LQ problem.")
-      .def_readonly("kkt_mat", &Workspace::kkt_mats_)
-      .def_readonly("kkt_rhs", &Workspace::kkt_rhs_)
-      .def_readonly("kkt_residuals", &Workspace::kkt_resdls_,
-                    "KKT system residuals.")
+      .def_readonly("lqr_problem", &Workspace::lqr_problem,
+                    "Buffers for the LQ subproblem.")
       .def_readonly("Lxs", &Workspace::Lxs_)
       .def_readonly("Lus", &Workspace::Lus_)
       .def_readonly("Lds", &Workspace::Lds_)
+      .def_readonly("Lvs", &Workspace::Lvs_)
       .def_readonly("dxs", &Workspace::dxs)
       .def_readonly("dus", &Workspace::dus)
+      .def_readonly("dvs", &Workspace::dvs)
       .def_readonly("dlams", &Workspace::dlams)
+      .def_readonly("trial_vs", &Workspace::trial_vs)
       .def_readonly("trial_lams", &Workspace::trial_lams)
       .def_readonly("lams_plus", &Workspace::lams_plus)
       .def_readonly("lams_pdal", &Workspace::lams_pdal)
@@ -90,6 +89,7 @@ void exposeProxDDP() {
       .def_readonly("prev_xs", &Workspace::prev_xs)
       .def_readonly("prev_us", &Workspace::prev_us)
       .def_readonly("prev_lams", &Workspace::prev_lams)
+      .def_readonly("prev_vs", &Workspace::prev_vs)
       .def_readonly("stage_prim_infeas", &Workspace::stage_prim_infeas)
       .def_readonly("state_dual_infeas", &Workspace::state_dual_infeas)
       .def_readonly("control_dual_infeas", &Workspace::control_dual_infeas)
