@@ -24,7 +24,6 @@ namespace aligator {
 /// Apply the default strategy for scaling constraints
 template <typename Scalar>
 void applyDefaultScalingStrategy(ConstraintProximalScalerTpl<Scalar> &scaler) {
-  scaler.setWeight(1e-3, 0);
   for (std::size_t j = 1; j < scaler.size(); j++)
     scaler.setWeight(100., j);
 }
@@ -46,8 +45,6 @@ public:
   using StageModel = StageModelTpl<Scalar>;
   using ConstraintType = StageConstraintTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
-  using VParams = ValueFunctionTpl<Scalar>;
-  using QParams = QFunctionTpl<Scalar>;
   using CallbackPtr = shared_ptr<CallbackBaseTpl<Scalar>>;
   using CallbackMap = std::unordered_map<std::string, CallbackPtr>;
   using ConstraintStack = ConstraintStackTpl<Scalar>;
@@ -56,8 +53,7 @@ public:
   using LinesearchOptions = typename Linesearch<Scalar>::Options;
   using CstrProximalScaler = ConstraintProximalScalerTpl<Scalar>;
   using LinesearchType = proxsuite::nlp::ArmijoLinesearch<Scalar>;
-
-  enum BackwardRet { BWD_SUCCESS, BWD_WRONG_INERTIA };
+  using LQProblem = gar::LQRProblemTpl<Scalar>;
 
   /// Subproblem tolerance
   Scalar inner_tol_;
@@ -124,19 +120,30 @@ public:
   std::size_t max_al_iters = 100;
 
   /// Minimum possible penalty parameter.
-  Scalar MU_MIN = 1e-8;
+  Scalar mu_lower_bound = 1e-8;
 
   /// Nonlinear rollout options
   uint rollout_max_iters;
 
-private:
   /// Callbacks
   CallbackMap callbacks_;
-
-public:
   Workspace workspace_;
   Results results_;
+  /// LQR subproblem solver
+  unique_ptr<gar::ProximalRiccatiSolver<Scalar>> linearSolver_;
 
+private:
+  /// Dual proximal/ALM penalty parameter \f$\mu\f$
+  /// This is the global parameter: scales may be applied for stagewise
+  /// constraints, dynamicals...
+  Scalar mu_penal_ = mu_init;
+  Scalar min_mu_linesearch_ = 1e-8;
+  /// Primal proximal parameter \f$\rho > 0\f$
+  Scalar rho_penal_ = rho_init;
+  /// Linesearch function
+  LinesearchType linesearch_;
+
+public:
   SolverProxDDP(const Scalar tol = 1e-6, const Scalar mu_init = 0.01,
                 const Scalar rho_init = 0., const std::size_t max_iters = 1000,
                 VerboseLevel verbose = VerboseLevel::QUIET,
@@ -144,14 +151,6 @@ public:
 
   ALIGATOR_DEPRECATED const Results &getResults() { return results_; }
   ALIGATOR_DEPRECATED const Workspace &getWorkspace() { return workspace_; }
-
-  /// @brief Compute the linear search direction, i.e. the (regularized) SQP
-  /// step.
-  ///
-  /// @pre This function assumes \f$\delta x_0\f$ has already been computed!
-  /// @returns This computes the primal-dual step \f$(\delta \bfx,\delta
-  /// \bfu,\delta\bmlam)\f$
-  void linearRollout(const Problem &problem);
 
   /// @brief    Try a step of size \f$\alpha\f$.
   /// @returns  A primal-dual trial point
@@ -273,8 +272,7 @@ protected:
 
   /// Set dual proximal/ALM penalty parameter.
   ALIGATOR_INLINE void set_penalty_mu(Scalar new_mu) noexcept {
-    mu_penal_ = std::max(new_mu, MU_MIN);
-    mu_inverse_ = 1. / new_mu;
+    mu_penal_ = std::max(new_mu, mu_lower_bound);
   }
 
   ALIGATOR_INLINE void set_rho(Scalar new_rho) noexcept {
@@ -306,19 +304,6 @@ protected:
       xreg_ *= reg_inc_k_;
     ureg_ = xreg_;
   }
-
-private:
-  /// Dual proximal/ALM penalty parameter \f$\mu\f$
-  /// This is the global parameter: scales may be applied for stagewise
-  /// constraints, dynamicals...
-  Scalar mu_penal_ = mu_init;
-  Scalar min_mu_linesearch_ = 1e-8;
-  /// Inverse ALM penalty parameter.
-  Scalar mu_inverse_ = 1. / mu_penal_;
-  /// Primal proximal parameter \f$\rho > 0\f$
-  Scalar rho_penal_ = rho_init;
-  /// Linesearch function
-  LinesearchType linesearch_;
 };
 
 } // namespace aligator
