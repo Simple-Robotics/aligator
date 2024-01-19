@@ -5,11 +5,21 @@
 
 #include "aligator/core/workspace-base.hpp"
 #include "aligator/core/alm-weights.hpp"
-#include "aligator/gar/riccati.hpp"
+#include "aligator/core/constraint-set-product.hpp"
 
 #include <array>
 
 namespace aligator {
+
+template <typename Scalar>
+auto getConstraintProductSet(const ConstraintStackTpl<Scalar> &constraints) {
+  ConstraintSetProductTpl<Scalar> out;
+  for (size_t i = 0; i < constraints.size(); i++) {
+    out.components.push_back(constraints[i].set.get());
+  }
+  out.nrs = constraints.getDims();
+  return out;
+}
 
 /// @brief Workspace for solver SolverProxDDP.
 ///
