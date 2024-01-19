@@ -555,6 +555,7 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
 
   workspace_.prev_xs = results_.xs;
   workspace_.prev_us = results_.us;
+  workspace_.prev_vs = results_.vs;
   workspace_.prev_lams = results_.lams;
 
   inner_tol_ = inner_tol0;
@@ -585,12 +586,15 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
 
       switch (multiplier_update_mode) {
       case MultiplierUpdateMode::NEWTON:
+        workspace_.prev_vs = results_.vs;
         workspace_.prev_lams = results_.lams;
         break;
       case MultiplierUpdateMode::PRIMAL:
+        workspace_.prev_vs = workspace_.vs_plus;
         workspace_.prev_lams = workspace_.lams_plus;
         break;
       case MultiplierUpdateMode::PRIMAL_DUAL:
+        workspace_.prev_vs = workspace_.vs_pdal;
         workspace_.prev_lams = workspace_.lams_pdal;
         break;
       default:
