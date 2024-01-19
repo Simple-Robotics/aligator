@@ -43,8 +43,8 @@ template <typename Scalar> struct LagrangianDerivatives {
       BlkView v_(vs[i], stack.getDims());
       for (std::size_t j = 0; j < stack.size(); j++) {
         const StageFunctionData &cd = *sd.constraint_data[j];
-        Lxs[i] += cd.Jx_.transpose() * v_[j];
-        Lus[i] += cd.Ju_.transpose() * v_[j];
+        Lxs[i].noalias() += cd.Jx_.transpose() * v_[j];
+        Lus[i].noalias() += cd.Ju_.transpose() * v_[j];
       }
 
       Lxs[i + 1].noalias() = dd.Jy_.transpose() * lams[i + 1];
@@ -58,7 +58,7 @@ template <typename Scalar> struct LagrangianDerivatives {
       BlkView vN(vs[nsteps], stack.getDims());
       for (std::size_t j = 0; j < stack.size(); j++) {
         const StageFunctionData &cd = *pd.term_cstr_data[j];
-        Lxs[nsteps] += cd.Jx_.transpose() * vN[j];
+        Lxs[nsteps].noalias() += cd.Jx_.transpose() * vN[j];
       }
     }
     ALIGATOR_NOMALLOC_END;
