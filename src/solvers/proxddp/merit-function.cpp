@@ -7,4 +7,4 @@ namespace aligator {
 
 template struct PDALFunction<context::Scalar>;
 
-}
+} // namespace aligator

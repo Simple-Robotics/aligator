@@ -543,7 +543,6 @@ template <typename Scalar>
 void SolverProxDDPTpl<Scalar>::computeInfeasibilities(const Problem &problem) {
   // modifying quantities such as Qu, Qy... is allowed
   ALIGATOR_NOMALLOC_BEGIN;
-  const TrajOptData &prob_data = workspace_.problem_data;
   const std::size_t nsteps = workspace_.nsteps;
 
   std::vector<VectorXs> &lams_plus = workspace_.lams_plus;
@@ -606,10 +605,6 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
   LQProblem &prob = workspace_.lqr_problem;
   const TrajOptData &pd = workspace_.problem_data;
 
-  const std::vector<VectorXs> &ilams = results_.lams;
-  const std::vector<VectorXs> &ivs = results_.vs;
-  const std::vector<VectorXs> &plams = workspace_.prev_lams;
-  const std::vector<VectorXs> &pvs = workspace_.prev_vs;
   using gar::LQRKnotTpl;
 
   size_t N = (size_t)prob.horizon();
