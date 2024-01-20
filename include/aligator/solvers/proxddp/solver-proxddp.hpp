@@ -43,7 +43,7 @@ void applyDefaultScalingStrategy(ConstraintProximalScalerTpl<Scalar> &scaler) {
 
 /// @brief A proximal, augmented Lagrangian-type solver for trajectory
 /// optimization.
-template <typename _Scalar> struct SolverProxDDP {
+template <typename _Scalar> struct SolverProxDDPTpl {
 public:
   // typedefs
 
@@ -148,10 +148,11 @@ private:
   LinesearchType linesearch_;
 
 public:
-  SolverProxDDP(const Scalar tol = 1e-6, const Scalar mu_init = 0.01,
-                const Scalar rho_init = 0., const std::size_t max_iters = 1000,
-                VerboseLevel verbose = VerboseLevel::QUIET,
-                HessianApprox hess_approx = HessianApprox::GAUSS_NEWTON);
+  SolverProxDDPTpl(const Scalar tol = 1e-6, const Scalar mu_init = 0.01,
+                   const Scalar rho_init = 0.,
+                   const std::size_t max_iters = 1000,
+                   VerboseLevel verbose = VerboseLevel::QUIET,
+                   HessianApprox hess_approx = HessianApprox::GAUSS_NEWTON);
 
   ALIGATOR_DEPRECATED const Results &getResults() { return results_; }
   ALIGATOR_DEPRECATED const Workspace &getWorkspace() { return workspace_; }

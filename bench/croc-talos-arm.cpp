@@ -13,11 +13,11 @@
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
 #include "aligator/compat/crocoddyl/problem-wrap.hpp"
 
-using aligator::LDLTChoice;
 using aligator::SolverFDDPTpl;
-using aligator::SolverProxDDP;
+using aligator::context::SolverProxDDP;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
+using proxsuite::nlp::LDLTChoice;
 
 constexpr double TOL = 1e-16;
 constexpr std::size_t maxiters = 10;
@@ -90,10 +90,8 @@ template <LDLTChoice choice> static void BM_aligator(benchmark::State &state) {
   getInitialGuesses(croc_problem, xs_i, us_i);
 
   const double mu0 = 1e-4;
-  SolverProxDDP<double> solver(TOL, mu0, 0., maxiters,
-                               get_verbose_flag(verbose));
-  solver.ldlt_algo_choice_ = choice;
-  solver.max_refinement_steps_ = 0;
+  SolverProxDDP solver(TOL, mu0, 0., maxiters, get_verbose_flag(verbose));
+  solver.maxRefinementSteps_ = 0;
   solver.setup(prob_wrap);
 
   for (auto _ : state) {

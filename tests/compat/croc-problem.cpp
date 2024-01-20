@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(lqr) {
       pcroc::convertCrocoddylProblem(croc_problem);
 
   const double mu_init = 1e-4;
-  aligator::SolverProxDDP<double> prox_solver(TOL, mu_init);
+  aligator::SolverProxDDPTpl<double> prox_solver(TOL, mu_init);
   prox_solver.verbose_ = aligator::VerboseLevel::VERBOSE;
   prox_solver.max_iters = 8;
   prox_solver.rollout_type_ = aligator::RolloutType::NONLINEAR;

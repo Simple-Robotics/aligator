@@ -2,6 +2,6 @@
 
 namespace aligator {
 
-template struct SolverProxDDP<context::Scalar>;
+template struct SolverProxDDPTpl<context::Scalar>;
 
 } // namespace aligator

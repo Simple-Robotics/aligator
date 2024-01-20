@@ -75,7 +75,7 @@ int main() {
   TrajOptProblem problem(x0, stages, term_cost);
 
   double tol = 1e-6;
-  SolverProxDDP<double> ddp(tol, 0.01);
+  SolverProxDDPTpl<double> ddp(tol, 0.01);
   ddp.max_iters = 10;
   ddp.verbose_ = VERBOSE;
 

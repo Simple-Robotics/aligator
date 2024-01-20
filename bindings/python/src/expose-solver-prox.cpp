@@ -102,7 +102,7 @@ void exposeProxDDP() {
       .def_readonly("lams", &Results::lams)
       .def(PrintableVisitor<Results>());
 
-  using SolverType = SolverProxDDP<Scalar>;
+  using SolverType = SolverProxDDPTpl<Scalar>;
 
   bp::class_<SolverType, boost::noncopyable>(
       "SolverProxDDP",

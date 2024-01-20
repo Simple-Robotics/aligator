@@ -36,7 +36,7 @@ using ConstraintStack = ConstraintStackTpl<Scalar>;
 using ExplicitDynamics = ExplicitDynamicsModelTpl<Scalar>;
 using ExplicitDynamicsData = ExplicitDynamicsDataTpl<Scalar>;
 
-using SolverProxDDP = SolverProxDDP<Scalar>;
+using SolverProxDDP = SolverProxDDPTpl<Scalar>;
 using SolverFDDP = SolverFDDPTpl<Scalar>;
 
 using Workspace = WorkspaceTpl<Scalar>;

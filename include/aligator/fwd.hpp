@@ -97,7 +97,7 @@ template <typename Scalar> struct TrajOptProblemTpl;
 template <typename Scalar> struct TrajOptDataTpl;
 
 // fwd SolverProxDDP
-template <typename Scalar> struct SolverProxDDP;
+template <typename Scalar> struct SolverProxDDPTpl;
 
 // fwd SolverFDDP
 template <typename Scalar> struct SolverFDDPTpl;

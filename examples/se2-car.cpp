@@ -100,7 +100,7 @@ int main() {
 
   TrajOptProblem problem(x0, stages, term_cost);
   const T mu_init = 1e-2;
-  SolverProxDDP<T> solver(1e-4, mu_init);
+  SolverProxDDPTpl<T> solver(1e-4, mu_init);
   solver.verbose_ = VERBOSE;
   solver.setup(problem);
   solver.run(problem);

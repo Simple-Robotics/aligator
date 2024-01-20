@@ -9,7 +9,7 @@
 #include "croc-talos-arm.hpp"
 
 using aligator::SolverFDDPTpl;
-using aligator::SolverProxDDP;
+using aligator::SolverProxDDPTpl;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
@@ -50,7 +50,7 @@ static void BM_prox_multithread(benchmark::State &state) {
   problem.setNumThreads(nthreads);
 
   const T mu_init = 1e-6;
-  SolverProxDDP<T> solver(TOL, mu_init, 0., maxiters);
+  SolverProxDDPTpl<T> solver(TOL, mu_init, 0., maxiters);
   solver.setup(problem);
 
   for (auto _ : state) {

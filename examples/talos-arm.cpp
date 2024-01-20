@@ -8,7 +8,7 @@
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-using aligator::SolverProxDDP;
+using aligator::SolverProxDDPTpl;
 
 constexpr double TOL = 1e-4;
 constexpr std::size_t max_iters = 10;
@@ -21,7 +21,8 @@ int main(int, char **) {
   auto problem = aligator::compat::croc::convertCrocoddylProblem(croc_problem);
 
   double mu_init = 0.01;
-  SolverProxDDP<double> solver(TOL, mu_init, 0., max_iters, aligator::VERBOSE);
+  SolverProxDDPTpl<double> solver(TOL, mu_init, 0., max_iters,
+                                  aligator::VERBOSE);
 
   std::vector<VectorXd> xs_i, us_i;
   getInitialGuesses(croc_problem, xs_i, us_i);

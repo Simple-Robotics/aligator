@@ -47,11 +47,12 @@ void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
 }
 
 template <typename Scalar>
-SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
-                                     const Scalar rho_init,
-                                     const std::size_t max_iters,
-                                     VerboseLevel verbose,
-                                     HessianApprox hess_approx)
+SolverProxDDPTpl<Scalar>::SolverProxDDPTpl(const Scalar tol,
+                                           const Scalar mu_init,
+                                           const Scalar rho_init,
+                                           const std::size_t max_iters,
+                                           VerboseLevel verbose,
+                                           HessianApprox hess_approx)
     : target_tol_(tol), mu_init(mu_init), rho_init(rho_init), verbose_(verbose),
       hess_approx_(hess_approx), max_iters(max_iters), rollout_max_iters(1),
       linesearch_(ls_params) {
@@ -59,10 +60,10 @@ SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
 }
 
 template <typename Scalar>
-Scalar SolverProxDDP<Scalar>::forward_linear_impl(const Problem &problem,
-                                                  Workspace &workspace,
-                                                  const Results &results,
-                                                  const Scalar alpha) {
+Scalar SolverProxDDPTpl<Scalar>::forward_linear_impl(const Problem &problem,
+                                                     Workspace &workspace,
+                                                     const Results &results,
+                                                     const Scalar alpha) {
 
   const std::size_t nsteps = workspace.nsteps;
   assert(results.xs.size() == nsteps + 1);
@@ -91,7 +92,7 @@ Scalar SolverProxDDP<Scalar>::forward_linear_impl(const Problem &problem,
 }
 
 template <typename Scalar>
-void SolverProxDDP<Scalar>::setup(const Problem &problem) {
+void SolverProxDDPTpl<Scalar>::setup(const Problem &problem) {
   workspace_ = Workspace(problem);
   results_ = Results(problem);
   linesearch_.setOptions(ls_params);
@@ -104,7 +105,7 @@ void SolverProxDDP<Scalar>::setup(const Problem &problem) {
 
 /// TODO: REWORK FOR NEW MULTIPLIERS
 template <typename Scalar>
-void SolverProxDDP<Scalar>::computeMultipliers(
+void SolverProxDDPTpl<Scalar>::computeMultipliers(
     const Problem &problem, const std::vector<VectorXs> &lams,
     const std::vector<VectorXs> &vs) {
   using BlkView = BlkMatrix<VectorRef, -1, 1>;
@@ -206,8 +207,8 @@ void SolverProxDDP<Scalar>::computeMultipliers(
 }
 
 template <typename Scalar>
-Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
-                                                     const Scalar alpha) {
+Scalar SolverProxDDPTpl<Scalar>::nonlinear_rollout_impl(const Problem &problem,
+                                                        const Scalar alpha) {
   using ExplicitDynData = ExplicitDynamicsDataTpl<Scalar>;
 
   const std::size_t nsteps = workspace_.nsteps;
@@ -308,10 +309,10 @@ Scalar SolverProxDDP<Scalar>::nonlinear_rollout_impl(const Problem &problem,
 }
 
 template <typename Scalar>
-bool SolverProxDDP<Scalar>::run(const Problem &problem,
-                                const std::vector<VectorXs> &xs_init,
-                                const std::vector<VectorXs> &us_init,
-                                const std::vector<VectorXs> &lams_init) {
+bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
+                                   const std::vector<VectorXs> &xs_init,
+                                   const std::vector<VectorXs> &us_init,
+                                   const std::vector<VectorXs> &lams_init) {
   if (!workspace_.isInitialized() || !results_.isInitialized()) {
     ALIGATOR_RUNTIME_ERROR("workspace and results were not allocated yet!");
   }
@@ -410,20 +411,20 @@ bool SolverProxDDP<Scalar>::run(const Problem &problem,
 }
 
 template <typename Scalar>
-void SolverProxDDP<Scalar>::update_tols_on_failure() {
+void SolverProxDDPTpl<Scalar>::update_tols_on_failure() {
   prim_tol_ = prim_tol0 * std::pow(mu_penal_, bcl_params.prim_alpha);
   inner_tol_ = inner_tol0 * std::pow(mu_penal_, bcl_params.dual_alpha);
 }
 
 template <typename Scalar>
-void SolverProxDDP<Scalar>::update_tols_on_success() {
+void SolverProxDDPTpl<Scalar>::update_tols_on_success() {
   prim_tol_ = prim_tol_ * std::pow(mu_penal_, bcl_params.prim_beta);
   inner_tol_ = inner_tol_ * std::pow(mu_penal_, bcl_params.dual_beta);
 }
 
 template <typename Scalar>
-Scalar SolverProxDDP<Scalar>::forwardPass(const Problem &problem,
-                                          const Scalar alpha) {
+Scalar SolverProxDDPTpl<Scalar>::forwardPass(const Problem &problem,
+                                             const Scalar alpha) {
   switch (rollout_type_) {
   case RolloutType::LINEAR:
     forward_linear_impl(problem, workspace_, results_, alpha);
@@ -441,7 +442,7 @@ Scalar SolverProxDDP<Scalar>::forwardPass(const Problem &problem,
 }
 
 template <typename Scalar>
-bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
+bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
 
   auto merit_eval_fun = [&](Scalar a0) -> Scalar {
     return forwardPass(problem, a0);
@@ -539,7 +540,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
 }
 
 template <typename Scalar>
-void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem) {
+void SolverProxDDPTpl<Scalar>::computeInfeasibilities(const Problem &problem) {
   // modifying quantities such as Qu, Qy... is allowed
   ALIGATOR_NOMALLOC_BEGIN;
   const TrajOptData &prob_data = workspace_.problem_data;
@@ -577,7 +578,7 @@ void SolverProxDDP<Scalar>::computeInfeasibilities(const Problem &problem) {
   ALIGATOR_NOMALLOC_END;
 }
 
-template <typename Scalar> void SolverProxDDP<Scalar>::computeCriterion() {
+template <typename Scalar> void SolverProxDDPTpl<Scalar>::computeCriterion() {
   const std::size_t nsteps = workspace_.nsteps;
 
   workspace_.stage_inner_crits.setZero();
@@ -601,7 +602,7 @@ template <typename Scalar> void SolverProxDDP<Scalar>::computeCriterion() {
                math::infty_norm(workspace_.control_dual_infeas));
 }
 
-template <typename Scalar> void SolverProxDDP<Scalar>::updateLQSubproblem() {
+template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
   LQProblem &prob = workspace_.lqr_problem;
   const TrajOptData &pd = workspace_.problem_data;
 

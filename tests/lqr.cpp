@@ -14,6 +14,7 @@ using Space = proxsuite::nlp::VectorSpaceTpl<double>;
 using LinearDynamics = dynamics::LinearDiscreteDynamicsTpl<double>;
 using QuadraticCost = QuadraticCostTpl<double>;
 using context::CostBase;
+using context::SolverProxDDP;
 using context::StageModel;
 using context::TrajOptProblem;
 
@@ -64,7 +65,7 @@ BOOST_AUTO_TEST_CASE(lqr_proxddp) {
 
   double tol = 1e-6;
   double mu_init = 1e-8;
-  SolverProxDDP<double> ddp(tol, mu_init);
+  SolverProxDDP ddp(tol, mu_init);
   ddp.rollout_type_ = RolloutType::LINEAR;
   ddp.max_iters = 2;
   ddp.verbose_ = VERBOSE;
