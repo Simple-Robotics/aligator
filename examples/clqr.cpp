@@ -74,6 +74,12 @@ int main() {
   std::vector<decltype(stage)> stages(nsteps);
   std::fill(stages.begin(), stages.end(), stage);
   TrajOptProblem problem(x0, stages, term_cost);
+  {
+    auto xf = x0;
+    xf.setOnes();
+    auto func = std::make_shared<StateErrorResidualTpl<double>>(space, nu, xf);
+    problem.addTerminalConstraint({func, std::make_shared<Equality>()});
+  }
 
   double tol = 1e-6;
   const double mu_init = 1e-4;
@@ -88,6 +94,10 @@ int main() {
   auto &us = ddp.results_.us;
   for (std::size_t i = 0; i < us.size(); i++) {
     fmt::print("us[{:02d}] = {}\n", i, us[i].transpose());
+  }
+  auto &xs = ddp.results_.xs;
+  for (std::size_t i = 0; i < xs.size(); i++) {
+    fmt::print("xs[{:02d}] = {}\n", i, xs[i].transpose());
   }
 
   std::cout << ddp.results_ << std::endl;
