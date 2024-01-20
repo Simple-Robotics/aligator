@@ -66,8 +66,8 @@ int main() {
     auto box =
         std::make_shared<BoxConstraint>(-ctrlUpperBound * VectorXd::Ones(nu),
                                         ctrlUpperBound * VectorXd::Ones(nu));
-    auto func = std::make_shared<ControlErrorResidualTpl<double>>(
-        nx, VectorXd::Zero(nu));
+    auto u0 = VectorXd::Zero(nu);
+    auto func = std::make_shared<ControlErrorResidualTpl<double>>(nx, u0);
     stage->addConstraint(func, box);
   }
 
@@ -76,14 +76,14 @@ int main() {
   TrajOptProblem problem(x0, stages, term_cost);
 
   double tol = 1e-6;
-  SolverProxDDPTpl<double> ddp(tol, 0.01);
+  const double mu_init = 1e-4;
+  SolverProxDDPTpl<double> ddp(tol, mu_init);
   ddp.max_iters = 10;
   ddp.verbose_ = VERBOSE;
 
   ddp.setup(problem);
   bool conv = ddp.run(problem);
   (void)conv;
-  assert(conv);
 
   auto &us = ddp.results_.us;
   for (std::size_t i = 0; i < us.size(); i++) {
@@ -91,4 +91,6 @@ int main() {
   }
 
   std::cout << ddp.results_ << std::endl;
+
+  assert(conv);
 }
