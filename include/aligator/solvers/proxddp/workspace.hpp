@@ -34,6 +34,7 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using CstrProxScaler = ConstraintProximalScalerTpl<Scalar>;
   using KnotType = gar::LQRKnotTpl<Scalar>;
   using ConstraintSetProduct = ConstraintSetProductTpl<Scalar>;
+  using BlkJacobianType = BlkMatrix<MatrixXs, -1, 2>; // jacobians
 
   using Base::dyn_slacks;
   using Base::nsteps;
@@ -69,7 +70,7 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   /// Shifted constraints the projection operators should be applied to.
   std::vector<VectorXs> shifted_constraints;
   /// Projected path constraint Jacobians (used to symmetrize the LQ subproblem)
-  std::vector<MatrixXs> proj_jacobians;
+  std::vector<BlkJacobianType> constraintProjJacobians;
   /// Masks for active constraint sets
   std::vector<VecBool> active_constraints;
   /// Cartesian products of the constraint sets of each stage.

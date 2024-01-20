@@ -37,7 +37,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   shifted_constraints = prev_vs;
 
   active_constraints.resize(nsteps + 1);
-  proj_jacobians.resize(nsteps + 1);
+  constraintProjJacobians.resize(nsteps + 1);
 
   std::vector<KnotType> knots;
   {
@@ -52,21 +52,22 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
+    const ConstraintStackTpl<Scalar> &stack = stage.constraints_;
     const int ndx1 = stage.ndx1();
     const int nu = stage.nu();
     const int ncstr = stage.nc();
 
     constraintProductOperators[i] = getConstraintProductSet(stage.constraints_);
-    proj_jacobians[i].setZero(ncstr, ndx1 + nu);
+    constraintProjJacobians[i] = BlkJacobianType(stack.dims(), {ndx1, nu});
     active_constraints[i].setZero(ncstr);
   }
 
-  // terminal node: always allocate data, even with dim 0
-  if (!problem.term_cstrs_.empty()) {
+  // terminal node: always allocate, no check for nonempty constaint stack
+  {
+    const ConstraintStackTpl<Scalar> &stack = problem.term_cstrs_;
     const int ndx1 = problem.stages_.back()->ndx2();
-    const long nc = problem.term_cstrs_.totalDim();
-    proj_jacobians[nsteps].setZero(nc, ndx1);
-    active_constraints[nsteps].setZero(nc);
+    constraintProjJacobians[nsteps] = BlkJacobianType(stack.dims(), {ndx1, 0});
+    active_constraints[nsteps].setZero(stack.totalDim());
   }
 
   // initial condition
@@ -103,7 +104,7 @@ template <typename Scalar> void WorkspaceTpl<Scalar>::cycleLeft() {
   rotate_vec_left(lams_plus, 1, n_tail);
   rotate_vec_left(lams_pdal, 1, n_tail);
   rotate_vec_left(shifted_constraints, 1, n_tail);
-  rotate_vec_left(proj_jacobians, 1, n_tail);
+  rotate_vec_left(constraintProjJacobians, 1, n_tail);
   rotate_vec_left(active_constraints, 1, n_tail);
 
   rotate_vec_left(dxs);

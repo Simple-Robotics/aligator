@@ -603,7 +603,7 @@ template <typename Scalar> void SolverProxDDP<Scalar>::updateLQSubproblem() {
     }
 
     // TODO: handle the bloody constraints
-    assert(knot.nc == workspace_.proj_jacobians[t].rows());
+    assert(knot.nc == workspace_.constraintProjJacobians[t].rows());
     knot.d = workspace_.Lvs_[t];
   }
 
