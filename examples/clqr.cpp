@@ -60,11 +60,12 @@ int main() {
     assert(term_cost->nu == 0);
   }
 
+  double ctrlUpperBound = 0.3;
   auto stage = std::make_shared<StageModel>(cost, dyn_model);
   {
-    double ub = 1.0;
-    auto box = std::make_shared<BoxConstraint>(-ub * VectorXd::Ones(nu),
-                                               ub * VectorXd::Ones(nu));
+    auto box =
+        std::make_shared<BoxConstraint>(-ctrlUpperBound * VectorXd::Ones(nu),
+                                        ctrlUpperBound * VectorXd::Ones(nu));
     auto func = std::make_shared<ControlErrorResidualTpl<double>>(
         nx, VectorXd::Zero(nu));
     stage->addConstraint(func, box);
@@ -83,6 +84,11 @@ int main() {
   bool conv = ddp.run(problem);
   (void)conv;
   assert(conv);
+
+  auto &us = ddp.results_.us;
+  for (std::size_t i = 0; i < us.size(); i++) {
+    fmt::print("us[{:02d}] = {}\n", i, us[i].transpose());
+  }
 
   std::cout << ddp.results_ << std::endl;
 }
