@@ -37,7 +37,7 @@ void vectorMultiplyAdd(const std::vector<A> &a, const std::vector<B> &b,
 /// Apply the default strategy for scaling constraints
 template <typename Scalar>
 void applyDefaultScalingStrategy(ConstraintProximalScalerTpl<Scalar> &scaler) {
-  for (std::size_t j = 1; j < scaler.size(); j++)
+  for (std::size_t j = 0; j < scaler.size(); j++)
     scaler.setWeight(100., j);
 }
 
