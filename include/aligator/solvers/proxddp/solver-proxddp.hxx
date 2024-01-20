@@ -38,7 +38,6 @@ void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
     const auto &cds = prob_data.term_cstr_data;
     for (std::size_t j = 0; j < cds.size(); j++) {
       jac(j, 0) = cds[j]->Jx_;
-      jac(j, 1) = cds[j]->Ju_;
     }
 
     const ProductOp &op = workspace.constraintProductOperators[nsteps];
