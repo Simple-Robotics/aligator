@@ -66,6 +66,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   {
     const ConstraintStackTpl<Scalar> &stack = problem.term_cstrs_;
     const int ndx1 = problem.stages_.back()->ndx2();
+    constraintProductOperators[nsteps] =
+        getConstraintProductSet(problem.term_cstrs_);
     constraintProjJacobians[nsteps] = BlkJacobianType(stack.dims(), {ndx1, 0});
     active_constraints[nsteps].setZero(stack.totalDim());
   }
