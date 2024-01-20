@@ -113,11 +113,11 @@ void SolverProxDDPTpl<Scalar>::computeMultipliers(
   TrajOptData &prob_data = workspace_.problem_data;
   const std::size_t nsteps = workspace_.nsteps;
 
-  std::vector<VectorXs> &lams_prev = workspace_.prev_lams;
+  const std::vector<VectorXs> &lams_prev = workspace_.prev_lams;
   std::vector<VectorXs> &lams_plus = workspace_.lams_plus;
   std::vector<VectorXs> &lams_pdal = workspace_.lams_pdal;
 
-  std::vector<VectorXs> &vs_prev = workspace_.prev_vs;
+  const std::vector<VectorXs> &vs_prev = workspace_.prev_vs;
   std::vector<VectorXs> &vs_plus = workspace_.vs_plus;
   std::vector<VectorXs> &vs_pdal = workspace_.vs_pdal;
 
