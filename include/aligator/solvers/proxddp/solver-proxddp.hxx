@@ -12,6 +12,41 @@
 namespace aligator {
 
 template <typename Scalar>
+void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
+                               WorkspaceTpl<Scalar> &workspace) {
+  using ProductOp = ConstraintSetProductTpl<Scalar>;
+  auto &sif = workspace.shifted_constraints;
+
+  const TrajOptDataTpl<Scalar> &prob_data = workspace.problem_data;
+  const std::size_t nsteps = workspace.nsteps;
+  for (std::size_t i = 0; i < nsteps; i++) {
+    const StageModelTpl<Scalar> &sm = *problem.stages_[i];
+    const StageDataTpl<Scalar> &sd = *prob_data.stage_data[i];
+    auto &jac = workspace.constraintProjJacobians[i];
+
+    for (std::size_t j = 0; j < sm.numConstraints(); j++) {
+      jac(j, 0) = sd.constraint_data[j]->Jx_;
+      jac(j, 1) = sd.constraint_data[j]->Ju_;
+    }
+
+    const ProductOp &op = workspace.constraintProductOperators[i];
+    op.applyNormalConeProjectionJacobian(sif[i], jac.matrix());
+  }
+
+  if (!problem.term_cstrs_.empty()) {
+    auto &jac = workspace.constraintProjJacobians[nsteps];
+    const auto &cds = prob_data.term_cstr_data;
+    for (std::size_t j = 0; j < cds.size(); j++) {
+      jac(j, 0) = cds[j]->Jx_;
+      jac(j, 1) = cds[j]->Ju_;
+    }
+
+    const ProductOp &op = workspace.constraintProductOperators[nsteps];
+    op.applyNormalConeProjectionJacobian(sif[nsteps], jac.matrix());
+  }
+}
+
+template <typename Scalar>
 SolverProxDDP<Scalar>::SolverProxDDP(const Scalar tol, const Scalar mu_init,
                                      const Scalar rho_init,
                                      const std::size_t max_iters,
@@ -427,6 +462,7 @@ bool SolverProxDDP<Scalar>::innerLoop(const Problem &problem) {
     /// TODO: make this smarter using e.g. some caching mechanism
     problem.computeDerivatives(results_.xs, results_.us,
                                workspace_.problem_data);
+    computeProjectedJacobians(problem, workspace_);
     const Scalar phi0 = results_.merit_value_;
 
     LagrangianDerivatives<Scalar>::compute(problem, workspace_.problem_data,
@@ -583,6 +619,7 @@ template <typename Scalar> void SolverProxDDP<Scalar>::updateLQSubproblem() {
     LQRKnotTpl<Scalar> &knot = prob.stages[t];
     const StageFunctionData &dd = *sd.dynamics_data;
     const CostData &cd = *sd.cost_data;
+    const CstrProximalScaler &sc = workspace_.cstr_scalers[t];
 
     knot.A = dd.Jx_;
     knot.B = dd.Ju_;
@@ -604,7 +641,13 @@ template <typename Scalar> void SolverProxDDP<Scalar>::updateLQSubproblem() {
 
     // TODO: handle the bloody constraints
     assert(knot.nc == workspace_.constraintProjJacobians[t].rows());
+    knot.C = workspace_.constraintProjJacobians[t].blockCol(0);
+    knot.D = workspace_.constraintProjJacobians[t].blockCol(1);
     knot.d = workspace_.Lvs_[t];
+
+    // correct right-hand side
+    knot.q.noalias() += knot.C.transpose() * sc.apply(knot.d);
+    knot.r.noalias() += knot.D.transpose() * sc.apply(knot.d);
   }
 
   {
@@ -612,7 +655,8 @@ template <typename Scalar> void SolverProxDDP<Scalar>::updateLQSubproblem() {
     const CostData &tcd = *pd.term_cost_data;
     knot.Q = tcd.Lxx_;
     knot.q = workspace_.Lxs_[N];
-    knot.d = workspace_.shifted_constraints[N];
+    knot.C = workspace_.constraintProjJacobians[N].blockCol(0);
+    knot.d = workspace_.Lvs_[N];
   }
 
   const StageFunctionData &id = *pd.init_data;
