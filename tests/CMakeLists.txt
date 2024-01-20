@@ -45,6 +45,7 @@ set(TEST_NAMES
     continuous
     costs
     integrators
+    lqr
     problem
     solver-storage
     utils)
