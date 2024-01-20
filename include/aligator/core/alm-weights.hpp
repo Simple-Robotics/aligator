@@ -14,7 +14,9 @@ public:
   ConstraintProximalScalerTpl(const ConstraintStack &constraints,
                               const Scalar &mu)
       : constraints_(&constraints), mu_(&mu),
-        scalingMatrix_(constraints.dims()) {}
+        scalingMatrix_(constraints.dims()) {
+    scalingMatrix_.matrix().setOnes();
+  }
 
   std::size_t size() const { return constraints_->size(); }
 
