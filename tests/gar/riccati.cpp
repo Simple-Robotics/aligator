@@ -13,19 +13,6 @@ using namespace aligator::gar;
 
 BOOST_AUTO_TEST_SUITE(prox_riccati)
 
-BOOST_AUTO_TEST_CASE(inplace_llt) {
-  uint N = 7;
-  MatrixXs a(N, N);
-  a.setRandom();
-  MatrixXs M = a.transpose() * a;
-
-  fmt::print("Matrix M=\n{}\n", M);
-
-  Eigen::LLT<MatrixRef> Mchol(M);
-  MatrixXs L(Mchol.matrixL());
-  fmt::print("Factor L=\n{}\n", L);
-}
-
 BOOST_AUTO_TEST_CASE(short_horz_pb) {
   // dual regularization parameters
   const double mu = 1e-14;
@@ -34,8 +21,8 @@ BOOST_AUTO_TEST_CASE(short_horz_pb) {
   uint nx = 2, nu = 2;
   VectorXs x0 = VectorXs::Ones(nx);
   VectorXs x1 = -VectorXs::Ones(nx);
-  auto init_knot = [&]() {
-    knot_t knot(nx, nu, 0);
+  auto init_knot = [&](uint nc = 0) {
+    knot_t knot(nx, nu, nc);
     knot.A << 0.1, 0., -0.1, 0.01;
     knot.B.setRandom();
     knot.E.setIdentity();
@@ -58,6 +45,9 @@ BOOST_AUTO_TEST_CASE(short_horz_pb) {
   uint N = 8;
 
   std::vector<knot_t> knots(N + 1, base_knot);
+  knots[4] = init_knot(nu);
+  knots[4].D.setIdentity();
+  knots[4].d.setConstant(0.1);
   knots[N] = knot1;
   LQRProblemTpl<double> prob(knots, nx);
   prob.g0 = -x0;
@@ -91,6 +81,10 @@ BOOST_AUTO_TEST_CASE(short_horz_pb) {
   print_kkt_error(err);
 
   BOOST_CHECK_LE(err.max, 1e-9);
+
+  for (size_t i = 0; i < N; i++) {
+    fmt::print("us[{:>2d}] = {}\n", i, us[i].transpose());
+  }
 }
 
 BOOST_AUTO_TEST_CASE(random_long_problem) {
