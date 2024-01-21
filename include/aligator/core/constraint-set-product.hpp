@@ -49,9 +49,18 @@ struct ConstraintSetProductTpl : ConstraintSetBase<Scalar> {
   void applyProjectionJacobian(const ConstVectorRef &z,
                                MatrixRef Jout) const override {
     BlkVecView zv(z, nrs);
-    BlkMatViewMut Jv(Jout, nrs, {1});
+    BlkMatViewMut Jv(Jout, nrs, {Jout.cols()});
     for (std::size_t i = 0; i < components.size(); i++) {
       components[i]->applyProjectionJacobian(zv[i], Jv.blockRow(i));
+    }
+  }
+
+  void applyNormalConeProjectionJacobian(const ConstVectorRef &z,
+                                         MatrixRef Jout) const override {
+    BlkVecView zv(z, nrs);
+    BlkMatViewMut Jv(Jout, nrs, {Jout.cols()});
+    for (std::size_t i = 0; i < components.size(); i++) {
+      components[i]->applyNormalConeProjectionJacobian(zv[i], Jv.blockRow(i));
     }
   }
 
