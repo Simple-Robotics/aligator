@@ -20,10 +20,12 @@ BOOST_AUTO_TEST_CASE(constraint_product_op) {
 
   VectorXd z(n1 + n2);
   z.setRandom();
+  z[4] = -0.14;
   VectorXd zCopy = z;
 
+  fmt::print("z = {}\n", z.transpose());
   op.normalConeProjection(zCopy, z);
-  fmt::print("zproj = {}", z.transpose());
+  fmt::print("zproj = {}\n", z.transpose());
 
   neg_op.normalConeProjection(zCopy.tail(n2), zCopy.tail(n2));
 
