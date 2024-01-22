@@ -96,8 +96,7 @@ void SolverProxDDPTpl<Scalar>::setup(const Problem &problem) {
   results_ = Results(problem);
   linesearch_.setOptions(ls_params);
 
-  workspace_.configureScalers(problem, mu_penal_,
-                              applyDefaultScalingStrategy<Scalar>);
+  workspace_.configureScalers(problem, mu_penal_, DefaultScaling<Scalar>{});
   linearSolver_ = std::make_unique<gar::ProximalRiccatiSolver<Scalar>>(
       workspace_.lqr_problem);
 }
@@ -464,20 +463,20 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     computeInfeasibilities(problem);
     computeCriterion();
 
+    // exit if either the subproblem or overall problem converged
     Scalar outer_crit = std::max(results_.dual_infeas, results_.prim_infeas);
-    if (outer_crit <= target_tol_)
+    if ((workspace_.inner_criterion <= inner_tol_) ||
+        (outer_crit <= target_tol_))
       return true;
 
     initializeRegularization();
     updateLQSubproblem();
-    linearSolver_->backward(mu_penal_, mu_penal_);
-
-    bool inner_conv = (workspace_.inner_criterion <= inner_tol_);
-    if (inner_conv)
-      return true;
+    // TODO: supply a penalty weight matrix for constraints
+    linearSolver_->backward(mu(), DefaultScaling<Scalar>::scale * mu());
 
     linearSolver_->forward(workspace_.dxs, workspace_.dus, workspace_.dvs,
                            workspace_.dlams);
+
     if (force_initial_condition_) {
       workspace_.dxs[0].setZero();
       workspace_.dlams[0].setZero();
@@ -536,8 +535,6 @@ void SolverProxDDPTpl<Scalar>::computeInfeasibilities(const Problem &problem) {
   ALIGATOR_NOMALLOC_BEGIN;
   const std::size_t nsteps = workspace_.nsteps;
 
-  std::vector<VectorXs> &lams_plus = workspace_.lams_plus;
-  std::vector<VectorXs> &lams_prev = workspace_.prev_lams;
   std::vector<VectorXs> &vs_plus = workspace_.vs_plus;
   std::vector<VectorXs> &vs_prev = workspace_.prev_vs;
   std::vector<VectorXs> &stage_infeas = workspace_.stage_infeasibilities;
@@ -583,8 +580,10 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::computeCriterion() {
     workspace_.state_dual_infeas[long(i)] = rx;
     workspace_.control_dual_infeas[long(i)] = ru;
   }
-  workspace_.state_dual_infeas[long(nsteps)] =
-      math::infty_norm(workspace_.Lxs_[nsteps]);
+  Scalar rx = math::infty_norm(workspace_.Lxs_[nsteps]);
+  Scalar rc = math::infty_norm(workspace_.Lvs_[nsteps]);
+  workspace_.state_dual_infeas[long(nsteps)] = rx;
+  workspace_.stage_inner_crits[long(nsteps)] = std::max(rx, rc);
 
   workspace_.inner_criterion = math::infty_norm(workspace_.stage_inner_crits);
   results_.dual_infeas =

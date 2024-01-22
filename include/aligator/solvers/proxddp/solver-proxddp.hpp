@@ -34,13 +34,14 @@ void vectorMultiplyAdd(const std::vector<A> &a, const std::vector<B> &b,
   }
 }
 
-/// Apply the default strategy for scaling constraints
 /// TODO: NEW G.A.R. BACKEND CAN'T HANDLE DIFFERENT WEIGHTS, PLS FIX
-template <typename Scalar>
-void applyDefaultScalingStrategy(ConstraintProximalScalerTpl<Scalar> &scaler) {
-  for (std::size_t j = 0; j < scaler.size(); j++)
-    scaler.setWeight(1., j);
-}
+template <typename Scalar> struct DefaultScaling {
+  void operator()(ConstraintProximalScalerTpl<Scalar> &scaler) {
+    for (std::size_t j = 0; j < scaler.size(); j++)
+      scaler.setWeight(scale, j);
+  }
+  static constexpr Scalar scale = 10.;
+};
 
 /// @brief A proximal, augmented Lagrangian-type solver for trajectory
 /// optimization.
@@ -142,7 +143,6 @@ private:
   /// This is the global parameter: scales may be applied for stagewise
   /// constraints, dynamicals...
   Scalar mu_penal_ = mu_init;
-  Scalar min_mu_linesearch_ = 1e-8;
   /// Primal proximal parameter \f$\rho > 0\f$
   Scalar rho_penal_ = rho_init;
   /// Linesearch function
