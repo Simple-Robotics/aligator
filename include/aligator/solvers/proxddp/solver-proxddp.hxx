@@ -109,7 +109,7 @@ void SolverProxDDPTpl<Scalar>::computeMultipliers(
     const std::vector<VectorXs> &vs) {
   using BlkView = BlkMatrix<VectorRef, -1, 1>;
 
-  TrajOptData &prob_data = workspace_.problem_data;
+  const TrajOptData &prob_data = workspace_.problem_data;
   const std::size_t nsteps = workspace_.nsteps;
 
   const std::vector<VectorXs> &lams_prev = workspace_.prev_lams;
