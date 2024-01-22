@@ -29,6 +29,7 @@ struct NormalGen {
 };
 
 int main() {
+  std::srand(42);
   const size_t nsteps = 100;
   const auto nx = 4;
   const auto nu = 2;
@@ -74,15 +75,16 @@ int main() {
   std::vector<decltype(stage)> stages(nsteps);
   std::fill(stages.begin(), stages.end(), stage);
   TrajOptProblem problem(x0, stages, term_cost);
-  {
-    auto xf = x0;
-    xf.setOnes();
+
+  bool terminal = false;
+  if (terminal) {
+    auto xf = VectorXd::Ones(nx);
     auto func = std::make_shared<StateErrorResidualTpl<double>>(space, nu, xf);
     problem.addTerminalConstraint({func, std::make_shared<Equality>()});
   }
 
   double tol = 1e-6;
-  const double mu_init = 1e-4;
+  const double mu_init = 1e-6;
   SolverProxDDPTpl<double> ddp(tol, mu_init);
   ddp.max_iters = 10;
   ddp.verbose_ = VERBOSE;
