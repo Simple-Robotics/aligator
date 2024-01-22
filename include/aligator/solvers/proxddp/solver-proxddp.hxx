@@ -327,6 +327,7 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
 
   if (force_initial_condition_) {
     workspace_.trial_xs[0] = problem.getInitState();
+    workspace_.trial_lams[0].setZero();
   }
 
   logger.active = (verbose_ > 0);
@@ -458,6 +459,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
                                            workspace_.Lxs_, workspace_.Lus_);
     if (force_initial_condition_) {
       workspace_.Lxs_[0].setZero();
+      workspace_.Lds_[0].setZero();
     }
     computeInfeasibilities(problem);
     computeCriterion();
@@ -476,6 +478,10 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
 
     linearSolver_->forward(workspace_.dxs, workspace_.dus, workspace_.dvs,
                            workspace_.dlams);
+    if (force_initial_condition_) {
+      workspace_.dxs[0].setZero();
+      workspace_.dlams[0].setZero();
+    }
     Scalar dphi0 = PDALFunction<Scalar>::directionalDerivative(
         mu(), problem, results_.lams, results_.vs, workspace_);
     ALIGATOR_RAISE_IF_NAN(dphi0);
