@@ -125,8 +125,6 @@ void exposeODEs() {
                const int &, const double &, const Vector3s &>(bp::args(
           "self", "space", "max number of contacts", "total mass", "gravity")))
       .def_readwrite("contact_points", &CentroidalFwdDynamics::contact_points_)
-      .def_readwrite("active_contacts",
-                     &CentroidalFwdDynamics::active_contacts_)
       .def(CreateDataPythonVisitor<CentroidalFwdDynamics>());
 
   bp::register_ptr_to_python<shared_ptr<CentroidalFwdDataTpl<Scalar>>>();

@@ -18,14 +18,12 @@ args = Args().parse_args()
 """ Define centroidal parameters """
 nx = 9  # State size: [c, h, L]
 nk = 4  # Number of contacts
-nu = nk * 3  # Control size (unilateral contacts)
 mass = 10.5
 gravity = np.array([0, 0, -9.81])
 mu = 0.8  # Friction coefficient
 
 space = manifolds.VectorSpace(nx)
 x0 = space.neutral()
-u0 = np.zeros(nu)
 
 """ Define initial and final desired CoM """
 com_initial = np.array([0.1, 0.05, 0.15])
@@ -58,106 +56,123 @@ cp1 = [
     np.array([0.0, 0.0, 0]),
 ]
 cp2 = [
+    np.array([0.2, 0.0, 0.0]),
+    np.array([0.0, 0.1, 0.0]),
+]
+cp3 = [
     np.array([0.25, 0.1, 0.0]),
     np.array([0.2, 0.0, 0.0]),
     np.array([0.0, 0.1, 0.0]),
     np.array([0.05, 0.0, 0]),
 ]
-cp3 = [
+cp4 = [
+    np.array([0.25, 0.1, 0.0]),
+    np.array([0.05, 0.0, 0]),
+]
+cp5 = [
     np.array([0.25, 0.1, 0.0]),
     np.array([0.25, 0.0, 0.0]),
     np.array([0.05, 0.1, 0.0]),
     np.array([0.05, 0.0, 0]),
 ]
-cp4 = [
+cp6 = [
+    np.array([0.25, 0.0, 0.0]),
+    np.array([0.05, 0.1, 0.0]),
+]
+cp7 = [
     np.array([0.3, 0.1, 0.0]),
     np.array([0.25, 0.0, 0.0]),
     np.array([0.05, 0.1, 0.0]),
     np.array([0.1, 0.0, 0]),
 ]
 contact_points = (
-    [cp1] * (T_ds + T_ss) + [cp2] * (T_ds + T_ss) + [cp3] * (T_ds + T_ss) + [cp4] * T_ds
+    [cp1] * T_ds
+    + [cp2] * T_ss
+    + [cp3] * T_ds
+    + [cp4] * T_ss
+    + [cp5] * T_ds
+    + [cp6] * T_ss
+    + [cp7] * T_ds
 )
 
 """ Create dynamics and costs """
 
-w_control = np.eye(nu) * 1e-3
 w_angular_acc = 0.1 * np.eye(3)
-w_linear_mom = 10 * np.eye(3)
-w_linear_acc = 10 * np.eye(3)
+w_linear_mom = 500 * np.eye(3)
+w_linear_acc = 100 * np.eye(3)
+
+# Regularize linear momentum only
+state_w = np.diag(np.array([0, 0, 0, 10, 10, 10, 0, 0, 0]))
 
 
-def create_dynamics(gait, cp):
-    ode = dynamics.CentroidalFwdDynamics(space, nk, mass, gravity)
+def create_dynamics(cp):
+    ode = dynamics.CentroidalFwdDynamics(space, len(cp), mass, gravity)
     ode.contact_points = cp
-    ode.active_contacts = gait
     dyn_model = dynamics.IntegratorEuler(ode, dt)
     return dyn_model
 
 
-def createStage(gait, cp):
+def createStage(cp):
+    nu = len(cp) * 3
+    w_control = np.eye(nu) * 1e-3
+    u0 = np.zeros(nu)
     rcost = aligator.CostStack(space, nu)
 
     linear_acc = aligator.CentroidalAccelerationResidual(nx, nu, mass, gravity)
-    linear_acc.active_contacts = gait
     angular_acc = aligator.AngularAccelerationResidual(nx, nu, mass, gravity)
     angular_acc.contact_points = cp
-    angular_acc.active_contacts = gait
-    linear_mom = aligator.LinearMomentumResidual(nx, nu, np.array([0, 0, 0]))
 
     rcost.addCost(aligator.QuadraticControlCost(space, u0, w_control))
+    rcost.addCost(aligator.QuadraticStateCost(space, nu, x0, state_w))
     rcost.addCost(aligator.QuadraticResidualCost(space, angular_acc, w_angular_acc))
-    rcost.addCost(aligator.QuadraticResidualCost(space, linear_mom, w_linear_mom))
     rcost.addCost(aligator.QuadraticResidualCost(space, linear_acc, w_linear_acc))
-    stm = aligator.StageModel(rcost, create_dynamics(gait, cp))
-    for i in range(len(gait)):
-        if gait[i]:
-            cone_cstr = aligator.FrictionConeResidual(space.ndx, nu, i, mu)
-            stm.addConstraint(cone_cstr, constraints.NegativeOrthant())
+    stm = aligator.StageModel(rcost, create_dynamics(cp))
+    for i in range(len(cp)):
+        cone_cstr = aligator.FrictionConeResidual(space.ndx, nu, i, mu)
+        stm.addConstraint(cone_cstr, constraints.NegativeOrthant())
 
     return stm
 
 
+nu = nk * 3
 term_cost = aligator.CostStack(space, nu)
-ter_linear_mom = aligator.LinearMomentumResidual(nx, nu, np.array([0, 0, 0]))
-ter_linear_acc = aligator.CentroidalAccelerationResidual(nx, nu, mass, gravity)
-term_cost.addCost(
-    aligator.QuadraticResidualCost(space, ter_linear_mom, 10 * w_linear_mom)
-)
-term_cost.addCost(
-    aligator.QuadraticResidualCost(space, ter_linear_acc, 1000 * w_linear_acc)
-)
 
+""" Initial and final acceleration (linear + angular) must be null"""
 stages = []
 for i in range(T):
-    stages.append(createStage(gaits[i], contact_points[i]))
+    stages.append(createStage(contact_points[i]))
 linear_acc_cstr = aligator.CentroidalAccelerationResidual(nx, nu, mass, gravity)
 angular_acc_cstr = aligator.AngularAccelerationResidual(nx, nu, mass, gravity)
 angular_acc_cstr.contact_points = cp4
+init_linear_mom = aligator.LinearMomentumResidual(nx, nu, np.array([0, 0, 0]))
+ter_angular_mom = aligator.AngularMomentumResidual(nx, nu, np.array([0, 0, 0]))
+stages[0].addConstraint(linear_acc_cstr, constraints.EqualityConstraintSet())
+# stages[0].addConstraint(angular_acc_cstr, constraints.EqualityConstraintSet())
+stages[0].addConstraint(init_linear_mom, constraints.EqualityConstraintSet())
+
 stages[-1].addConstraint(linear_acc_cstr, constraints.EqualityConstraintSet())
-stages[-1].addConstraint(angular_acc_cstr, constraints.EqualityConstraintSet())
+stages[-1].addConstraint(init_linear_mom, constraints.EqualityConstraintSet())
+stages[-1].addConstraint(ter_angular_mom, constraints.EqualityConstraintSet())
+# stages[-1].addConstraint(angular_acc_cstr, constraints.EqualityConstraintSet())
 problem = aligator.TrajOptProblem(x0, stages, term_cost)
 
-""" Final constraints """
+""" Final CoM placement constraints """
 com_cstr = aligator.CentroidalCoMResidual(space.ndx, nu, com_final)
 linear_mom_cstr = aligator.LinearMomentumResidual(nx, nu, np.array([0, 0, 0]))
+ang_mom_cstr = aligator.AngularMomentumResidual(nx, nu, np.array([0, 0, 0]))
 
-term_constraint_acc = aligator.StageConstraint(
-    linear_acc_cstr, constraints.EqualityConstraintSet()
-)
-term_constraint_angacc = aligator.StageConstraint(
-    angular_acc_cstr, constraints.EqualityConstraintSet()
-)
 term_constraint_com = aligator.StageConstraint(
     com_cstr, constraints.EqualityConstraintSet()
 )
 term_constraint_linmom = aligator.StageConstraint(
     linear_mom_cstr, constraints.EqualityConstraintSet()
 )
+term_constraint_angmom = aligator.StageConstraint(
+    ang_mom_cstr, constraints.EqualityConstraintSet()
+)
 problem.addTerminalConstraint(term_constraint_com)
 # problem.addTerminalConstraint(term_constraint_linmom)
-# problem.addTerminalConstraint(term_constraint_angacc)
-# problem.addTerminalConstraint(term_constraint_acc)
+# problem.addTerminalConstraint(term_constraint_angmom)
 
 """ Solver initialization """
 TOL = 1e-5
@@ -175,7 +190,10 @@ solver.sa_strategy = aligator.SA_FILTER  # FILTER or LINESEARCH
 solver.setup(problem)
 solver.filter.beta = 1e-5
 
-us_init = [u0] * T
+us_init = []
+for el in contact_points:
+    us_init.append(np.zeros(len(el) * 3))
+
 xs_init = [x0] * (T + 1)
 
 solver.run(
@@ -187,6 +205,23 @@ solver.run(
 workspace = solver.workspace
 results = solver.results
 print(results)
+
+""" Compute linear and angular acceleration """
+linear_acceleration = [[], [], []]
+angular_acceleration = [[], [], []]
+for i in range(T):
+    linacc = gravity * mass
+    angacc = np.zeros(3)
+    ncontact = len(contact_points[i])
+    for j in range(ncontact):
+        fj = results.us[i][j * 3 : (j + 1) * 3]
+        ci = results.xs[i][0:3]
+        linacc += fj
+        angacc += np.cross(contact_points[i][j] - ci, fj)
+    for z in range(3):
+        linear_acceleration[z].append(linacc[z])
+        angular_acceleration[z].append(angacc[z])
+
 
 """ Plots results """
 com_traj = [[], [], []]
@@ -204,7 +239,8 @@ for i in range(T):
     angular_momentum[0].append(results.xs[i][6])
     angular_momentum[1].append(results.xs[i][7])
     angular_momentum[2].append(results.xs[i][8])
-    for j in range(nk):
+    ncontact = len(contact_points[i])
+    for j in range(ncontact):
         forces_z[j].append(results.us[i][j * 3 + 2])
 
 fig, axs = plt.subplots(ncols=1, nrows=3, figsize=(3.5, 2.5), layout="constrained")
@@ -240,7 +276,29 @@ axs[2].plot(ttlin, angular_momentum[2])
 axs[2].grid(True)
 axs[2].set_title("L Z")
 
-fig, axs = plt.subplots(ncols=1, nrows=4, figsize=(3.5, 2.5), layout="constrained")
+fig, axs = plt.subplots(ncols=1, nrows=3, figsize=(3.5, 2.5), layout="constrained")
+axs[0].plot(ttlin, linear_acceleration[0])
+axs[0].set_title("h_dot X")
+axs[0].grid(True)
+axs[1].plot(ttlin, linear_acceleration[1])
+axs[1].grid(True)
+axs[1].set_title("h_dot Y")
+axs[2].plot(ttlin, linear_acceleration[2])
+axs[2].grid(True)
+axs[2].set_title("h_dot Z")
+
+fig, axs = plt.subplots(ncols=1, nrows=3, figsize=(3.5, 2.5), layout="constrained")
+axs[0].plot(ttlin, angular_acceleration[0])
+axs[0].set_title("L_dot X")
+axs[0].grid(True)
+axs[1].plot(ttlin, angular_acceleration[1])
+axs[1].grid(True)
+axs[1].set_title("L_dot Y")
+axs[2].plot(ttlin, angular_acceleration[2])
+axs[2].grid(True)
+axs[2].set_title("L_dot Z")
+
+""" fig, axs = plt.subplots(ncols=1, nrows=4, figsize=(3.5, 2.5), layout="constrained")
 axs[0].plot(ttlin, forces_z[0])
 axs[0].set_title("f_z LF")
 axs[0].grid(True)
@@ -252,6 +310,6 @@ axs[2].grid(True)
 axs[2].set_title("f_z LB")
 axs[3].plot(ttlin, forces_z[3])
 axs[3].grid(True)
-axs[3].set_title("f_z RB")
+axs[3].set_title("f_z RB") """
 
-plt.show()
+# plt.show()

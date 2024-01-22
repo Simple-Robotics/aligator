@@ -12,9 +12,7 @@ void CentroidalAccelerationResidualTpl<Scalar>::evaluate(
 
   d.value_.setZero();
   for (std::size_t i = 0; i < nk_; i++) {
-    if (active_contacts_[i]) {
-      d.value_ += u.segment(i * 3, 3);
-    }
+    d.value_ += u.segment(i * 3, 3);
   }
 
   d.value_ /= mass_;
@@ -29,10 +27,8 @@ void CentroidalAccelerationResidualTpl<Scalar>::computeJacobians(
 
   d.Ju_.setZero();
   for (std::size_t i = 0; i < nk_; i++) {
-    if (active_contacts_[i]) {
-      d.Ju_.block(0, i * 3, 3, 3).setIdentity();
-      d.Ju_.block(0, i * 3, 3, 3) *= 1 / mass_;
-    }
+    d.Ju_.block(0, i * 3, 3, 3).setIdentity();
+    d.Ju_.block(0, i * 3, 3, 3) *= 1 / mass_;
   }
 }
 

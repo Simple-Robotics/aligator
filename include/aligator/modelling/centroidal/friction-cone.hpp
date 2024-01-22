@@ -20,7 +20,7 @@ public:
                           const double mu)
       : Base(ndx, nu, 2), nk_(nu / 3), k_(k), mu2_(mu * mu) {
     if (k_ >= nk_) {
-      ALIGATOR_DOMAIN_ERROR(
+      ALIGATOR_RUNTIME_ERROR(
           fmt::format("Invalid contact index: k should be < {}. ", nk_));
     }
   }

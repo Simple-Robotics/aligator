@@ -113,7 +113,8 @@ def test_centroidal():
 
 
 def test_centroidal_diff():
-    space = manifolds.VectorSpace(9)
+    nx = 9
+    space = manifolds.VectorSpace(nx)
     nk = 2
     nu = 3 * nk
     mass = 10.5
@@ -123,7 +124,7 @@ def test_centroidal_diff():
     ode.contact_points[1] = np.array([0.1, -0.1, 0])
     data = ode.createData()
 
-    x0 = np.random.randn(9)
+    x0 = np.random.randn(nx)
     u0 = np.random.randn(nu)
     epsilon = 1e-6
 
@@ -133,11 +134,11 @@ def test_centroidal_diff():
     xdot0 = data.xdot.copy()
     Jx0 = data.Jx.copy()
     Ju0 = data.Ju.copy()
-    Jxdiff = np.zeros((9, 9))
-    Judiff = np.zeros((9, 12))
+    Jxdiff = np.zeros((nx, nx))
+    Judiff = np.zeros((nx, nu))
 
-    for i in range(9):
-        evec = np.zeros(9)
+    for i in range(nx):
+        evec = np.zeros(nx)
         evec[i] = epsilon
         xi = x0 + evec
         ode.forward(xi, u0, data)

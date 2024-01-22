@@ -20,7 +20,6 @@ public:
                                  const Vector3s gravity)
       : Base(ndx, nu, 3), nk_(nu / 3), mass_(mass), gravity_(gravity) {
     contact_points_ = StdVectorEigenAligned<Vector3s>(nk_, Vector3s::Zero());
-    active_contacts_ = std::vector<bool>(nk_, true);
   }
 
   void evaluate(const ConstVectorRef &, const ConstVectorRef &u,
@@ -33,7 +32,6 @@ public:
     return allocate_shared_eigen_aligned<Data>(this);
   }
 
-  std::vector<bool> active_contacts_;
   StdVectorEigenAligned<Vector3s> contact_points_;
 
 protected:

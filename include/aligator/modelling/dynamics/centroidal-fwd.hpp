@@ -38,7 +38,6 @@ struct CentroidalFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   const std::size_t nk_;
   const double mass_;
   Vector3s gravity_;
-  std::vector<bool> active_contacts_;
   StdVectorEigenAligned<Vector3s> contact_points_;
 
   const Manifold &space() const { return *space_; }
