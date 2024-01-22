@@ -35,10 +35,11 @@ void vectorMultiplyAdd(const std::vector<A> &a, const std::vector<B> &b,
 }
 
 /// Apply the default strategy for scaling constraints
+/// TODO: NEW G.A.R. BACKEND CAN'T HANDLE DIFFERENT WEIGHTS, PLS FIX
 template <typename Scalar>
 void applyDefaultScalingStrategy(ConstraintProximalScalerTpl<Scalar> &scaler) {
   for (std::size_t j = 0; j < scaler.size(); j++)
-    scaler.setWeight(100., j);
+    scaler.setWeight(1., j);
 }
 
 /// @brief A proximal, augmented Lagrangian-type solver for trajectory
