@@ -332,8 +332,8 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
   logger.active = (verbose_ > 0);
   logger.printHeadline();
 
-  set_penalty_mu(mu_init);
-  set_rho(rho_init);
+  setAlmPenalty(mu_init);
+  setRho(rho_init);
 
   workspace_.prev_xs = results_.xs;
   workspace_.prev_us = results_.us;
@@ -342,7 +342,7 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
 
   inner_tol_ = inner_tol0;
   prim_tol_ = prim_tol0;
-  update_tols_on_failure();
+  updateTolsOnFailure();
 
   inner_tol_ = std::max(inner_tol_, target_tol_);
   prim_tol_ = std::max(prim_tol_, target_tol_);
@@ -364,7 +364,7 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
     workspace_.prev_us = results_.us;
 
     if (results_.prim_infeas <= prim_tol_) {
-      update_tols_on_success();
+      updateTolsOnSuccess();
 
       switch (multiplier_update_mode) {
       case MultiplierUpdateMode::NEWTON:
@@ -390,11 +390,11 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
       }
     } else {
       Scalar old_mu = mu_penal_;
-      bcl_update_alm_penalty();
-      update_tols_on_failure();
+      bclUpdateAlmPenalty();
+      updateTolsOnFailure();
       if (math::scalar_close(old_mu, mu_penal_)) {
         // reset penalty to initial value
-        set_penalty_mu(mu_init);
+        setAlmPenalty(mu_init);
       }
     }
     rho_penal_ *= bcl_params.rho_update_factor;
@@ -407,18 +407,6 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
 
   logger.finish(conv);
   return conv;
-}
-
-template <typename Scalar>
-void SolverProxDDPTpl<Scalar>::update_tols_on_failure() {
-  prim_tol_ = prim_tol0 * std::pow(mu_penal_, bcl_params.prim_alpha);
-  inner_tol_ = inner_tol0 * std::pow(mu_penal_, bcl_params.dual_alpha);
-}
-
-template <typename Scalar>
-void SolverProxDDPTpl<Scalar>::update_tols_on_success() {
-  prim_tol_ = prim_tol_ * std::pow(mu_penal_, bcl_params.prim_beta);
-  inner_tol_ = inner_tol_ * std::pow(mu_penal_, bcl_params.dual_beta);
 }
 
 template <typename Scalar>
@@ -478,9 +466,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     if (outer_crit <= target_tol_)
       return true;
 
-    // attempt backward pass until successful
-    // i.e. no inertia problems
-    initialize_regularization();
+    initializeRegularization();
     updateLQSubproblem();
     linearSolver_->backward(mu_penal_, mu_penal_);
 
@@ -528,7 +514,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     if (alpha_opt <= ls_params.alpha_min) {
       if (xreg_ >= reg_max)
         return false;
-      increase_regularization();
+      increaseRegularization();
     }
     invokeCallbacks(workspace_, results_);
     logger.log(iter_log);

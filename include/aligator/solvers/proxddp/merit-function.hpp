@@ -70,8 +70,8 @@ template <typename _Scalar> struct PDALFunction {
 
 } // namespace aligator
 
-#include "./merit-function.hxx"
+#include "merit-function.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./merit-function.txx"
+#include "merit-function.txx"
 #endif

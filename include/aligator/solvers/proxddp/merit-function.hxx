@@ -1,8 +1,8 @@
 #pragma once
 
-#include "./merit-function.hpp"
-#include "./workspace.hpp"
-#include "./results.hpp"
+#include "merit-function.hpp"
+#include "workspace.hpp"
+#include "results.hpp"
 #include "aligator/core/lagrangian.hpp"
 
 namespace aligator {

@@ -11,9 +11,9 @@
 #include "aligator/utils/logger.hpp"
 #include "aligator/utils/forward-dyn.hpp"
 #include "aligator/gar/riccati.hpp"
-#include "./workspace.hpp"
-#include "./results.hpp"
-#include "./merit-function.hpp"
+#include "workspace.hpp"
+#include "results.hpp"
+#include "merit-function.hpp"
 
 #include <proxsuite-nlp/bcl-params.hpp>
 
@@ -251,26 +251,31 @@ public:
   ALIGATOR_INLINE Scalar rho() const { return rho_penal_; }
 
 protected:
-  void update_tols_on_failure();
-  void update_tols_on_success();
+  void updateTolsOnFailure() noexcept {
+    prim_tol_ = prim_tol0 * std::pow(mu_penal_, bcl_params.prim_alpha);
+    inner_tol_ = inner_tol0 * std::pow(mu_penal_, bcl_params.dual_alpha);
+  }
+
+  void updateTolsOnSuccess() noexcept {
+    prim_tol_ = prim_tol_ * std::pow(mu_penal_, bcl_params.prim_beta);
+    inner_tol_ = inner_tol_ * std::pow(mu_penal_, bcl_params.dual_beta);
+  }
 
   /// Set dual proximal/ALM penalty parameter.
-  ALIGATOR_INLINE void set_penalty_mu(Scalar new_mu) noexcept {
+  ALIGATOR_INLINE void setAlmPenalty(Scalar new_mu) noexcept {
     mu_penal_ = std::max(new_mu, mu_lower_bound);
   }
 
-  ALIGATOR_INLINE void set_rho(Scalar new_rho) noexcept {
-    rho_penal_ = new_rho;
-  }
+  ALIGATOR_INLINE void setRho(Scalar new_rho) noexcept { rho_penal_ = new_rho; }
 
   /// Update the dual proximal penalty according to BCL.
-  ALIGATOR_INLINE void bcl_update_alm_penalty() noexcept {
-    set_penalty_mu(mu_penal_ * bcl_params.mu_update_factor);
+  ALIGATOR_INLINE void bclUpdateAlmPenalty() noexcept {
+    setAlmPenalty(mu_penal_ * bcl_params.mu_update_factor);
   }
 
   // See sec. 3.1 of the IPOPT paper [Wächter, Biegler 2006]
   // called before first bwd pass attempt
-  inline void initialize_regularization() noexcept {
+  inline void initializeRegularization() noexcept {
     if (xreg_last_ == 0.) {
       // this is the 1st iteration
       xreg_ = reg_init;
@@ -281,7 +286,7 @@ protected:
     ureg_ = xreg_;
   }
 
-  inline void increase_regularization() noexcept {
+  inline void increaseRegularization() noexcept {
     if (xreg_last_ == 0.)
       xreg_ *= reg_inc_first_k_;
     else
@@ -292,8 +297,8 @@ protected:
 
 } // namespace aligator
 
-#include "./solver-proxddp.hxx"
+#include "solver-proxddp.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./solver-proxddp.txx"
+#include "solver-proxddp.txx"
 #endif
