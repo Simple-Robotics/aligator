@@ -34,11 +34,11 @@ public:
 
   /// Apply weighted penalty matrix
   template <typename D> auto apply(const Eigen::MatrixBase<D> &m) const {
-    return diagMatrix().asDiagonal() * m;
+    return diagMatrix() * m;
   }
 
   template <typename D> auto applyInverse(const Eigen::MatrixBase<D> &m) const {
-    return diagMatrix().asDiagonal().inverse() * m;
+    return diagMatrix().inverse() * m;
   }
 
   template <typename D>
@@ -47,7 +47,9 @@ public:
     return m.dot(apply(m));
   }
 
-  inline auto diagMatrix() const { return mu() * scalingMatrix_.matrix(); }
+  inline auto diagMatrix() const {
+    return mu() * scalingMatrix_.matrix().asDiagonal();
+  }
 
 private:
   using BlkVec = BlkMatrix<VectorXs, -1, 1>;

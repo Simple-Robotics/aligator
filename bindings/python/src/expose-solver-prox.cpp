@@ -47,8 +47,9 @@ void exposeProxDDP() {
           },
           "Vector of weights for each constraint in the stack.")
       .add_property(
-          "matrix",
-          +[](ProxScaler &sc) -> ConstVectorRef { return sc.diagMatrix(); });
+          "matrix", +[](ProxScaler &sc) -> ConstVectorRef {
+            return sc.diagMatrix().toDenseMatrix();
+          });
 
   bp::def("applyDefaultScalingStrategy", applyDefaultScalingStrategy<Scalar>,
           "scaler"_a, "Apply the default strategy for scaling constraints.");
