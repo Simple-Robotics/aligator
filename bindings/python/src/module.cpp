@@ -62,7 +62,7 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
 #endif
   eigenpy::enableEigenPy();
 
-  eigenpy::OptionalConverter<ConstVectorRef>::registration();
+  eigenpy::OptionalConverter<ConstVectorRef, std::optional>::registration();
 
   bp::import("warnings");
   bp::import("proxsuite_nlp");
