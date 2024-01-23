@@ -69,6 +69,8 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
 
   /// Shifted constraints the projection operators should be applied to.
   std::vector<VectorXs> shifted_constraints;
+  std::vector<VectorXs> constraintLxCorr;
+  std::vector<VectorXs> constraintLuCorr;
   /// Projected path constraint Jacobians (used to symmetrize the LQ subproblem)
   std::vector<BlkJacobianType> constraintProjJacobians;
   /// Masks for active constraint sets

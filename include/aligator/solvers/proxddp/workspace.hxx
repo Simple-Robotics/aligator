@@ -81,6 +81,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   Lus_ = dus;
   Lvs_ = dvs;
   Lds_ = dlams;
+  constraintLxCorr = Lxs_;
+  constraintLuCorr = Lus_;
 
   stage_inner_crits.setZero();
   state_dual_infeas.setZero();
