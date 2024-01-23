@@ -49,6 +49,7 @@ bool symmetricBlockTridiagSolve(std::vector<MatrixType> &subdiagonal,
                                 std::vector<MatrixType> &diagonal,
                                 std::vector<MatrixType> &superdiagonal,
                                 BlkMatrix<RhsType, -1, 1> &rhs) {
+  ZoneScoped;
 
   if (subdiagonal.size() != superdiagonal.size() ||
       diagonal.size() != superdiagonal.size() + 1 ||

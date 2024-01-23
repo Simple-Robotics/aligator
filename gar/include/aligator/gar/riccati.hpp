@@ -28,6 +28,7 @@ public:
   /// Backward sweep.
   bool backward(const Scalar mudyn, const Scalar mueq) {
     ALIGATOR_NOMALLOC_BEGIN;
+    ZoneNamed(Zone1, true);
     bool ret = Impl::backwardImpl(problem.stages, mudyn, mueq, datas);
 
     StageFactor &d0 = datas[0];
@@ -36,6 +37,7 @@ public:
     vinit.vx = vinit.pvec;
     // initial stage
     {
+      ZoneNamedN(Zone2, "factor_initial", true);
       kkt0.mat(0, 0) = vinit.Vxx;
       kkt0.mat(1, 0) = problem.G0;
       kkt0.mat(0, 1) = problem.G0.transpose();
@@ -62,6 +64,7 @@ public:
   forward(std::vector<VectorXs> &xs, std::vector<VectorXs> &us,
           std::vector<VectorXs> &vs, std::vector<VectorXs> &lbdas,
           const std::optional<ConstVectorRef> &theta_ = std::nullopt) const {
+    ZoneScoped;
 
     // solve initial stage
     Impl::computeInitial(xs[0], lbdas[0], kkt0, theta_);
@@ -77,6 +80,7 @@ public:
 
 protected:
   void initialize() {
+    ZoneScoped;
     auto N = uint(problem.horizon());
     auto &knots = problem.stages;
     datas.reserve(N + 1);

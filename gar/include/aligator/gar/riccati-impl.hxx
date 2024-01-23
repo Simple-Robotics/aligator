@@ -2,6 +2,7 @@
 #pragma once
 
 #include "./riccati-impl.hpp"
+#include "tracy/Tracy.hpp"
 
 namespace aligator {
 namespace gar {
@@ -9,9 +10,11 @@ template <typename Scalar>
 bool ProximalRiccatiImpl<Scalar>::backwardImpl(
     boost::span<const KnotType> stages, const Scalar mudyn, const Scalar mueq,
     boost::span<StageFactor> datas) {
+  ZoneScoped;
   // terminal node
   uint N = (uint)(datas.size() - 1);
   {
+    ZoneScopedN("backward_terminal");
     StageFactor &d = datas[N];
     value_t &vc = d.vm;
     const KnotType &model = stages[N];
@@ -89,6 +92,7 @@ template <typename Scalar>
 void ProximalRiccatiImpl<Scalar>::computeInitial(
     VectorRef x0, VectorRef lbd0, const kkt0_t &kkt0,
     const std::optional<ConstVectorRef> &theta_) {
+  ZoneScoped;
   assert(kkt0.chol.info() == Eigen::Success);
   x0 = kkt0.ff.blockSegment(0);
   lbd0 = kkt0.ff.blockSegment(1);
@@ -169,6 +173,7 @@ void ProximalRiccatiImpl<Scalar>::solveSingleStage(const KnotType &model,
   vc.pvec.noalias() = d.qhat + d.Shat * kff + Ct * zff;
 
   if (model.nth > 0) {
+    ZoneScopedN("stage_solve_parameter");
     RowMatrixRef Kth = d.fth.blockRow(0);
     RowMatrixRef Zth = d.fth.blockRow(1);
     RowMatrixRef Xith = d.fth.blockRow(2);
@@ -216,6 +221,7 @@ bool ProximalRiccatiImpl<Scalar>::forwardImpl(
     boost::span<VectorXs> xs, boost::span<VectorXs> us,
     boost::span<VectorXs> vs, boost::span<VectorXs> lbdas,
     const std::optional<ConstVectorRef> &theta_) {
+  ZoneScoped;
   ALIGATOR_NOMALLOC_BEGIN;
 
   uint N = (uint)(datas.size() - 1);

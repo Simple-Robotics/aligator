@@ -84,6 +84,7 @@ public:
   }
 
   void buildLeg(uint start, uint end, bool last_leg) {
+    ZoneScoped;
     for (uint t = start; t < end; t++) {
       KnotType &knot = problem.stages[t];
       if (!last_leg) {
@@ -104,10 +105,16 @@ public:
   bool backward(Scalar mudyn, Scalar mueq) {
 
     ALIGATOR_NOMALLOC_BEGIN;
+    ZoneScopedN("parallel_backward");
     Eigen::setNbThreads(1);
     bool ret = true;
 #pragma omp parallel num_threads(numThreads)
     {
+      size_t id = omp::get_thread_id();
+      char *thrdname = new char[16];
+      int cpu = sched_getcpu();
+      snprintf(thrdname, 16, "thread%d[c%d]", int(id), cpu);
+      tracy::SetThreadName(thrdname);
 #pragma omp for schedule(static, 1) reduction(& : ret)
       for (uint i = 0; i < numThreads; i++) {
         boost::span<const KnotType> stview = make_span_from_indices(
@@ -135,6 +142,7 @@ public:
 
   /// Create the sparse representation of the reduced KKT system.
   void assembleCondensedSystem(const Scalar mudyn) {
+    ZoneScoped;
     std::vector<MatrixXs> &subdiagonal = condensedKktSystem.subdiagonal;
     std::vector<MatrixXs> &diagonal = condensedKktSystem.diagonal;
     std::vector<MatrixXs> &superdiagonal = condensedKktSystem.superdiagonal;
@@ -184,6 +192,7 @@ public:
   void forward(VectorOfVectors &xs, VectorOfVectors &us, VectorOfVectors &vs,
                VectorOfVectors &lbdas) {
     ALIGATOR_NOMALLOC_BEGIN;
+    ZoneScopedN("parallel_forward");
     for (size_t i = 0; i < numThreads; i++) {
       uint i0 = splitIdx[i];
       lbdas[i0] = condensedKktRhs[2 * i];
@@ -227,6 +236,7 @@ public:
 
   inline static condensed_system_t
   initializeTridiagSystem(const std::vector<long> &dims) {
+    ZoneScoped;
     std::vector<MatrixXs> subdiagonal;
     std::vector<MatrixXs> diagonal;
     std::vector<MatrixXs> superdiagonal;
