@@ -26,7 +26,7 @@ void exposeConstraint() {
       .def("__init__",
            bp::make_constructor(make_constraint_wrap,
                                 bp::default_call_policies(),
-                                bp::args("func", "cstr_set")),
+                                ("func"_a, "cstr_set")),
            "Contruct a StageConstraint from a StageFunction and a constraint "
            "set.")
       .def_readwrite("func", &StageConstraint::func)

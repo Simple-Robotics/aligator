@@ -51,9 +51,6 @@ void exposeProxDDP() {
             return sc.diagMatrix().toDenseMatrix();
           });
 
-  bp::def("applyDefaultScalingStrategy", applyDefaultScalingStrategy<Scalar>,
-          "scaler"_a, "Apply the default strategy for scaling constraints.");
-
   bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>,
              boost::noncopyable>(
       "Workspace", "Workspace for ProxDDP.",

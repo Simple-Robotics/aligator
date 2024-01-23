@@ -123,8 +123,7 @@ void exposeGAR() {
   StdVectorPythonVisitor<knot_vec_t, false>::expose("StdVec_LQRKnot");
 
   bp::class_<lqr_t>("LQRProblem", bp::no_init)
-      .def(
-          bp::init<const knot_vec_t &, long>(bp::args("self", "stages", "nc0")))
+      .def(bp::init<const knot_vec_t &, long>(("self"_a, "stages", "nc0")))
       .def_readwrite("stages", &lqr_t::stages)
       .add_property("horizon", &lqr_t::horizon)
       .def_readwrite("G0", &lqr_t::G0)
