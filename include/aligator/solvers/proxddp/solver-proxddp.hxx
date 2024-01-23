@@ -605,6 +605,7 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::computeCriterion() {
 }
 
 template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
+  ALIGATOR_NOMALLOC_BEGIN;
   LQProblem &prob = workspace_.lqr_problem;
   const TrajOptData &pd = workspace_.problem_data;
 
@@ -668,6 +669,7 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
 
   LQRKnotTpl<Scalar> &model = prob.stages[0];
   model.Q += id.Hxx_;
+  ALIGATOR_NOMALLOC_END;
 }
 
 } // namespace aligator
