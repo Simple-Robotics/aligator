@@ -6,8 +6,6 @@
 
 """Formulating and solving a linear quadratic regulator with Aligator."""
 
-from copy import deepcopy
-
 import matplotlib.pyplot as plt
 import numpy as np
 import tap
@@ -83,30 +81,6 @@ verbose = aligator.VerboseLevel.VERBOSE
 tol = 1e-8
 solver = aligator.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
 
-
-class CustomCallback(aligator.BaseCallback):
-    def __init__(self):
-        super().__init__()
-        self.active_sets = []
-        self.x_dirs = []
-        self.u_dirs = []
-        self.lams = []
-        self.Qus = []
-        self.kkts = []
-
-    def call(self, workspace: aligator.Workspace, results: aligator.Results):
-        self.active_sets.append(workspace.active_constraints.tolist())
-        self.x_dirs.append(deepcopy(workspace.dxs.tolist()))
-        self.u_dirs.append(deepcopy(workspace.dus.tolist()))
-        self.lams.append(deepcopy(results.lams.tolist()))
-        Qus = [qq.Qu.copy() for qq in workspace.q_params]
-        self.Qus.append(Qus)
-        kkts = workspace.kkt_mat
-        self.kkts.append(deepcopy(kkts))
-
-
-cus_cb = CustomCallback()
-solver.registerCallback("cus", cus_cb)
 his_cb = aligator.HistoryCallback()
 solver.registerCallback("his", his_cb)
 solver.max_iters = 20
@@ -118,13 +92,10 @@ prob_data = aligator.TrajOptData(problem)
 problem.evaluate(xs_i, us_i, prob_data)
 
 solver.setup(problem)
-for i in range(nsteps):
-    psc = solver.workspace.getConstraintScaler(i)
-    if args.bounds:
-        psc.set_weight(100, 1)
 solver.run(problem, xs_i, us_i)
 res = solver.results
 ws = solver.workspace
+print(res)
 
 plt.subplot(121)
 fig1: plt.Figure = plt.gcf()
