@@ -251,6 +251,32 @@ public:
   /// @copydoc rho_penal_
   ALIGATOR_INLINE Scalar rho() const { return rho_penal_; }
 
+  /// @brief Update primal-dual feedback gains (control, costate, path
+  /// multiplier)
+  inline void updateGains() {
+    ALIGATOR_NOMALLOC_BEGIN;
+    using gar::StageFactor;
+    const std::size_t N = workspace_.nsteps;
+    for (std::size_t i = 0; i < N; i++) {
+      VectorRef ff = results_.getFeedforward(i);
+      MatrixRef fb = results_.getFeedback(i);
+
+      const StageFactor<Scalar> &fac = linearSolver_->datas[i];
+      ff = fac.ff.matrix(); // primal-dual feedforward
+      fb = fac.fb.matrix(); // primal-dual feedback
+    }
+
+    // terminal node
+    {
+      const StageFactor<Scalar> &fac = linearSolver_->datas[N];
+      VectorRef ff = results_.getFeedforward(N);
+      MatrixRef fb = results_.getFeedback(N);
+      ff = fac.ff.blockSegment(1); // multiplier feedforward
+      fb = fac.fb.blockRow(1);     // multiplier feedback
+    }
+    ALIGATOR_NOMALLOC_END;
+  }
+
 protected:
   void updateTolsOnFailure() noexcept {
     prim_tol_ = prim_tol0 * std::pow(mu_penal_, bcl_params.prim_alpha);

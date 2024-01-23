@@ -38,7 +38,7 @@ ResultsFDDPTpl<Scalar>::ResultsFDDPTpl(
     const int ndx = sm.ndx1();
     const int nu = sm.nu();
 
-    gains_[i] = MatrixXs::Zero(nu, ndx + 1);
+    gains_[i].setZero(nu, ndx + 1);
   }
   this->m_isInitialized = true;
 }

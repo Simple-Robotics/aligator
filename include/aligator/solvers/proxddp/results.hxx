@@ -19,6 +19,22 @@ ResultsTpl<Scalar>::ResultsTpl(const TrajOptProblemTpl<Scalar> &problem)
   assert(xs.size() == nsteps + 1);
   assert(us.size() == nsteps);
 
+  gains_.resize(nsteps + 1);
+  for (std::size_t i = 0; i < nsteps; i++) {
+    const StageModelTpl<Scalar> &sm = *problem.stages_[i];
+    const int np = sm.numPrimal();
+    const int nd = sm.numDual();
+    const int ndx = sm.ndx1();
+    gains_[i].setZero(np + nd, ndx + 1);
+  }
+
+  // terminal constraints
+  {
+    const int ndx = problem.stages_.back()->ndx2();
+    const int nc = problem.term_cstrs_.totalDim();
+    gains_[nsteps].setZero(nc, ndx + 1);
+  }
+
   this->m_isInitialized = true;
 }
 } // namespace aligator

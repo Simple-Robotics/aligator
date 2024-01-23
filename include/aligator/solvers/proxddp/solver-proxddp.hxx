@@ -496,6 +496,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
 
     linearSolver_->forward(workspace_.dxs, workspace_.dus, workspace_.dvs,
                            workspace_.dlams);
+    updateGains();
 
     if (force_initial_condition_) {
       workspace_.dxs[0].setZero();
