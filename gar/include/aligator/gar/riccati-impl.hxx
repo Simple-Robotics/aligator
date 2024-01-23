@@ -86,6 +86,19 @@ bool ProximalRiccatiImpl<Scalar>::backwardImpl(
 }
 
 template <typename Scalar>
+void ProximalRiccatiImpl<Scalar>::computeInitial(
+    VectorRef x0, VectorRef lbd0, const kkt0_t &kkt0,
+    const std::optional<ConstVectorRef> &theta_) {
+  assert(kkt0.chol.info() == Eigen::Success);
+  x0 = kkt0.ff.blockSegment(0);
+  lbd0 = kkt0.ff.blockSegment(1);
+  if (theta_.has_value()) {
+    x0.noalias() += kkt0.fth.blockRow(0) * theta_.value();
+    lbd0.noalias() += kkt0.fth.blockRow(1) * theta_.value();
+  }
+}
+
+template <typename Scalar>
 void ProximalRiccatiImpl<Scalar>::solveSingleStage(const KnotType &model,
                                                    StageFactor &d, value_t &vn,
                                                    const Scalar mudyn,
