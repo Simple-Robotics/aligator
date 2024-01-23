@@ -12,13 +12,15 @@ void AngularAccelerationResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
   Data &d = static_cast<Data &>(data);
 
   d.value_.setZero();
+  auto it = contact_map_.begin();
   for (std::size_t i = 0; i < nk_; i++) {
-    d.value_[0] += (contact_points_[i][1] - x[1]) * u[i * 3 + 2] -
-                   (contact_points_[i][2] - x[2]) * u[i * 3 + 1];
-    d.value_[1] += (contact_points_[i][2] - x[2]) * u[i * 3] -
-                   (contact_points_[i][0] - x[0]) * u[i * 3 + 2];
-    d.value_[2] += (contact_points_[i][0] - x[0]) * u[i * 3 + 1] -
-                   (contact_points_[i][1] - x[1]) * u[i * 3];
+    d.value_[0] += (it->second[1] - x[1]) * u[i * 3 + 2] -
+                   (it->second[2] - x[2]) * u[i * 3 + 1];
+    d.value_[1] += (it->second[2] - x[2]) * u[i * 3] -
+                   (it->second[0] - x[0]) * u[i * 3 + 2];
+    d.value_[2] += (it->second[0] - x[0]) * u[i * 3 + 1] -
+                   (it->second[1] - x[1]) * u[i * 3];
+    it++;
   }
 }
 
@@ -39,11 +41,13 @@ void AngularAccelerationResidualTpl<Scalar>::computeJacobians(
   }
 
   d.Ju_.setZero();
+  auto it = contact_map_.begin();
   for (std::size_t i = 0; i < nk_; i++) {
-    d.Ju_.block(0, 3 * i, 3, 3) << 0.0, -(contact_points_[i][2] - x[2]),
-        (contact_points_[i][1] - x[1]), (contact_points_[i][2] - x[2]), 0.0,
-        -(contact_points_[i][0] - x[0]), -(contact_points_[i][1] - x[1]),
-        (contact_points_[i][0] - x[0]), 0.0;
+    d.Ju_.block(0, 3 * i, 3, 3) << 0.0, -(it->second[2] - x[2]),
+        (it->second[1] - x[1]), (it->second[2] - x[2]), 0.0,
+        -(it->second[0] - x[0]), -(it->second[1] - x[1]),
+        (it->second[0] - x[0]), 0.0;
+    it++;
   }
 }
 

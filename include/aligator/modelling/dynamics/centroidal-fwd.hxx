@@ -9,10 +9,16 @@ namespace dynamics {
 template <typename Scalar>
 CentroidalFwdDynamicsTpl<Scalar>::CentroidalFwdDynamicsTpl(
     const ManifoldPtr &state, const int &nk, const double &mass,
-    const Vector3s &gravity)
+    const Vector3s &gravity,
+    const std::vector<std::pair<std::size_t, Vector3s>> &contact_map)
     : Base(state, nk * 3), space_(state), nk_(nk), mass_(mass),
-      gravity_(gravity) {
-  contact_points_ = StdVectorEigenAligned<Vector3s>(nk_, Vector3s::Zero());
+      gravity_(gravity), contact_map_(contact_map) {
+  if (contact_map.size() != nk) {
+    ALIGATOR_DOMAIN_ERROR(
+        fmt::format("Contact map size and nk should be the same: now "
+                    "({} and {}).",
+                    contact_map.size(), nk));
+  }
 }
 
 template <typename Scalar>
@@ -24,14 +30,16 @@ void CentroidalFwdDynamicsTpl<Scalar>::forward(const ConstVectorRef &x,
   d.xdot_.head(3) = 1 / mass_ * x.segment(3, 3);
   d.xdot_.segment(3, 3) = mass_ * gravity_;
   d.xdot_.segment(6, 3).setZero();
+  auto it = contact_map_.begin();
   for (std::size_t i = 0; i < nk_; i++) {
     d.xdot_.segment(3, 3) += u.segment(i * 3, 3);
-    d.xdot_[6] += (contact_points_[i][1] - x[1]) * u[i * 3 + 2] -
-                  (contact_points_[i][2] - x[2]) * u[i * 3 + 1];
-    d.xdot_[7] += (contact_points_[i][2] - x[2]) * u[i * 3] -
-                  (contact_points_[i][0] - x[0]) * u[i * 3 + 2];
-    d.xdot_[8] += (contact_points_[i][0] - x[0]) * u[i * 3 + 1] -
-                  (contact_points_[i][1] - x[1]) * u[i * 3];
+    d.xdot_[6] += (it->second[1] - x[1]) * u[i * 3 + 2] -
+                  (it->second[2] - x[2]) * u[i * 3 + 1];
+    d.xdot_[7] += (it->second[2] - x[2]) * u[i * 3] -
+                  (it->second[0] - x[0]) * u[i * 3 + 2];
+    d.xdot_[8] += (it->second[0] - x[0]) * u[i * 3 + 1] -
+                  (it->second[1] - x[1]) * u[i * 3];
+    it++;
   }
 }
 
@@ -51,12 +59,14 @@ void CentroidalFwdDynamicsTpl<Scalar>::dForward(const ConstVectorRef &x,
     d.Jx_(8, 1) += u[i * 3];
   }
   d.Ju_.setZero();
+  auto it = contact_map_.begin();
   for (std::size_t i = 0; i < nk_; i++) {
-    d.Ju_.block(6, 3 * i, 3, 3) << 0.0, -(contact_points_[i][2] - x[2]),
-        (contact_points_[i][1] - x[1]), (contact_points_[i][2] - x[2]), 0.0,
-        -(contact_points_[i][0] - x[0]), -(contact_points_[i][1] - x[1]),
-        (contact_points_[i][0] - x[0]), 0.0;
+    d.Ju_.block(6, 3 * i, 3, 3) << 0.0, -(it->second[2] - x[2]),
+        (it->second[1] - x[1]), (it->second[2] - x[2]), 0.0,
+        -(it->second[0] - x[0]), -(it->second[1] - x[1]),
+        (it->second[0] - x[0]), 0.0;
     d.Ju_.block(3, 3 * i, 3, 3) = Matrix3s::Identity();
+    it++;
   }
 }
 

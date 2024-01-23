@@ -10,6 +10,8 @@
 #include "aligator/modelling/centroidal/friction-cone.hpp"
 #include "aligator/modelling/centroidal/angular-acceleration.hpp"
 
+#include <eigenpy/std-pair.hpp>
+
 namespace aligator {
 namespace python {
 
@@ -111,10 +113,11 @@ void exposeCentroidalFunctions() {
   bp::class_<AngularAccelerationResidual, bp::bases<StageFunction>>(
       "AngularAccelerationResidual",
       "A residual function :math:`r(x) = Ldot(x)` ",
-      bp::init<const int, const int, const double, const context::Vector3s>(
-          bp::args("self", "ndx", "nu", "mass", "gravity")))
-      .def_readwrite("contact_points",
-                     &AngularAccelerationResidual::contact_points_)
+      bp::init<const int &, const int &, const double &,
+               const context::Vector3s &,
+               const std::vector<std::pair<std::size_t, context::Vector3s>> &>(
+          bp::args("self", "ndx", "nu", "mass", "gravity", "contact_map")))
+      .def_readwrite("contact_map", &AngularAccelerationResidual::contact_map_)
       .def(CreateDataPythonVisitor<AngularAccelerationResidual>());
 
   bp::register_ptr_to_python<shared_ptr<AngularAccelerationData>>();
@@ -122,6 +125,11 @@ void exposeCentroidalFunctions() {
   bp::class_<AngularAccelerationData, bp::bases<StageFunctionData>>(
       "AngularAccelerationData", "Data Structure for AngularAcceleration",
       bp::no_init);
+
+  eigenpy::StdPairConverter<
+      std::pair<std::size_t, context::Vector3s>>::registration();
+  StdVectorPythonVisitor<std::vector<std::pair<std::size_t, context::Vector3s>>,
+                         true>::expose("StdVec_StdPair_map");
 }
 
 } // namespace python

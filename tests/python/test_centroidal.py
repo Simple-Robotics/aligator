@@ -204,21 +204,20 @@ def test_angular_acceleration():
     dx = np.random.randn(space.ndx) * 0.1
     x0 = space.integrate(x0, dx)
     u0 = np.random.randn(nu)
-
-    fun = aligator.AngularAccelerationResidual(ndx, nu, mass, gravity)
-    fun.contact_points = [
-        np.array([0.2, 0.1, 0.0]),
-        np.array([0.2, 0.0, 0.0]),
-        np.array([0.0, 0.1, 0.0]),
-        np.array([0.0, 0.0, 0]),
+    contact_map = [
+        (0, np.array([0.2, 0.1, 0.0])),
+        (1, np.array([0.2, 0.0, 0.0])),
+        (2, np.array([0.0, 0.1, 0.0])),
+        (3, np.array([0.0, 0.0, 0])),
     ]
+    fun = aligator.AngularAccelerationResidual(ndx, nu, mass, gravity, contact_map)
 
     fdata = fun.createData()
     fun.evaluate(x0, u0, x0, fdata)
 
     Ldot = np.zeros(3)
     for i in range(nk):
-        Ldot += np.cross(fun.contact_points[i] - x0[:3], u0[i * 3 : (i + 1) * 3])
+        Ldot += np.cross(fun.contact_map[i][1] - x0[:3], u0[i * 3 : (i + 1) * 3])
 
     assert np.allclose(fdata.value, Ldot)
 

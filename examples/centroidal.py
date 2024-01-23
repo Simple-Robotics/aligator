@@ -36,54 +36,51 @@ T_ds = 10  # Double support time
 T_ss = 40  # Singel support time
 # Contacts state: [LF, RF, LB, RB]
 gaits = (
-    [[True, True, True, True]] * T_ds
-    + [[False, True, True, False]] * T_ss
-    + [[True, True, True, True]] * T_ds
-    + [[True, False, False, True]] * T_ss
-    + [[True, True, True, True]] * T_ds
-    + [[False, True, True, False]] * T_ss
-    + [[True, True, True, True]] * T_ds
+    [[0, 1, 2, 3]] * T_ds
+    + [[1, 2]] * T_ss
+    + [[0, 1, 2, 3]] * T_ds
+    + [[0, 3]] * T_ss
+    + [[0, 1, 2, 3]] * T_ds
+    + [[1, 2]] * T_ss
+    + [[0, 1, 2, 3]] * T_ds
 )
-
-T = len(gaits)  # Size of the problem
-dt = 0.01  # timestep
 
 """ Define contact points throughout horizon"""
 cp1 = [
-    np.array([0.2, 0.1, 0.0]),
-    np.array([0.2, 0.0, 0.0]),
-    np.array([0.0, 0.1, 0.0]),
-    np.array([0.0, 0.0, 0]),
+    (0, np.array([0.2, 0.1, 0.0])),
+    (1, np.array([0.2, 0.0, 0.0])),
+    (2, np.array([0.0, 0.1, 0.0])),
+    (3, np.array([0.0, 0.0, 0])),
 ]
 cp2 = [
-    np.array([0.2, 0.0, 0.0]),
-    np.array([0.0, 0.1, 0.0]),
+    (1, np.array([0.2, 0.0, 0.0])),
+    (2, np.array([0.0, 0.1, 0.0])),
 ]
 cp3 = [
-    np.array([0.25, 0.1, 0.0]),
-    np.array([0.2, 0.0, 0.0]),
-    np.array([0.0, 0.1, 0.0]),
-    np.array([0.05, 0.0, 0]),
+    (0, np.array([0.25, 0.1, 0.0])),
+    (1, np.array([0.2, 0.0, 0.0])),
+    (2, np.array([0.0, 0.1, 0.0])),
+    (3, np.array([0.05, 0.0, 0])),
 ]
 cp4 = [
-    np.array([0.25, 0.1, 0.0]),
-    np.array([0.05, 0.0, 0]),
+    (0, np.array([0.25, 0.1, 0.0])),
+    (3, np.array([0.05, 0.0, 0])),
 ]
 cp5 = [
-    np.array([0.25, 0.1, 0.0]),
-    np.array([0.25, 0.0, 0.0]),
-    np.array([0.05, 0.1, 0.0]),
-    np.array([0.05, 0.0, 0]),
+    (0, np.array([0.25, 0.1, 0.0])),
+    (1, np.array([0.25, 0.0, 0.0])),
+    (2, np.array([0.05, 0.1, 0.0])),
+    (3, np.array([0.05, 0.0, 0])),
 ]
 cp6 = [
-    np.array([0.25, 0.0, 0.0]),
-    np.array([0.05, 0.1, 0.0]),
+    (1, np.array([0.25, 0.0, 0.0])),
+    (2, np.array([0.05, 0.1, 0.0])),
 ]
 cp7 = [
-    np.array([0.3, 0.1, 0.0]),
-    np.array([0.25, 0.0, 0.0]),
-    np.array([0.05, 0.1, 0.0]),
-    np.array([0.1, 0.0, 0]),
+    (0, np.array([0.3, 0.1, 0.0])),
+    (1, np.array([0.25, 0.0, 0.0])),
+    (2, np.array([0.05, 0.1, 0.0])),
+    (3, np.array([0.1, 0.0, 0])),
 ]
 contact_points = (
     [cp1] * T_ds
@@ -94,6 +91,9 @@ contact_points = (
     + [cp6] * T_ss
     + [cp7] * T_ds
 )
+
+T = len(contact_points)  # Size of the problem
+dt = 0.01  # timestep
 
 """ Create dynamics and costs """
 
@@ -106,8 +106,7 @@ state_w = np.diag(np.array([0, 0, 0, 10, 10, 10, 0, 0, 0]))
 
 
 def create_dynamics(cp):
-    ode = dynamics.CentroidalFwdDynamics(space, len(cp), mass, gravity)
-    ode.contact_points = cp
+    ode = dynamics.CentroidalFwdDynamics(space, len(cp), mass, gravity, cp)
     dyn_model = dynamics.IntegratorEuler(ode, dt)
     return dyn_model
 
@@ -119,8 +118,7 @@ def createStage(cp):
     rcost = aligator.CostStack(space, nu)
 
     linear_acc = aligator.CentroidalAccelerationResidual(nx, nu, mass, gravity)
-    angular_acc = aligator.AngularAccelerationResidual(nx, nu, mass, gravity)
-    angular_acc.contact_points = cp
+    angular_acc = aligator.AngularAccelerationResidual(nx, nu, mass, gravity, cp)
 
     rcost.addCost(aligator.QuadraticControlCost(space, u0, w_control))
     rcost.addCost(aligator.QuadraticStateCost(space, nu, x0, state_w))
@@ -142,8 +140,9 @@ stages = []
 for i in range(T):
     stages.append(createStage(contact_points[i]))
 linear_acc_cstr = aligator.CentroidalAccelerationResidual(nx, nu, mass, gravity)
-angular_acc_cstr = aligator.AngularAccelerationResidual(nx, nu, mass, gravity)
-angular_acc_cstr.contact_points = cp4
+angular_acc_cstr = aligator.AngularAccelerationResidual(
+    nx, nu, mass, gravity, contact_points[-1]
+)
 init_linear_mom = aligator.LinearMomentumResidual(nx, nu, np.array([0, 0, 0]))
 ter_angular_mom = aligator.AngularMomentumResidual(nx, nu, np.array([0, 0, 0]))
 stages[0].addConstraint(linear_acc_cstr, constraints.EqualityConstraintSet())
@@ -217,7 +216,7 @@ for i in range(T):
         fj = results.us[i][j * 3 : (j + 1) * 3]
         ci = results.xs[i][0:3]
         linacc += fj
-        angacc += np.cross(contact_points[i][j] - ci, fj)
+        angacc += np.cross(contact_points[i][j][1] - ci, fj)
     for z in range(3):
         linear_acceleration[z].append(linacc[z])
         angular_acceleration[z].append(angacc[z])
@@ -228,7 +227,7 @@ com_traj = [[], [], []]
 linear_momentum = [[], [], []]
 angular_momentum = [[], [], []]
 forces_z = [[] for _ in range(nk)]
-ttlin = np.linspace(0, T * 0.01, T)
+ttlin = np.linspace(0, T * dt, T)
 for i in range(T):
     com_traj[0].append(results.xs[i][0])
     com_traj[1].append(results.xs[i][1])
@@ -239,9 +238,14 @@ for i in range(T):
     angular_momentum[0].append(results.xs[i][6])
     angular_momentum[1].append(results.xs[i][7])
     angular_momentum[2].append(results.xs[i][8])
-    ncontact = len(contact_points[i])
-    for j in range(ncontact):
-        forces_z[j].append(results.us[i][j * 3 + 2])
+    s = 0
+    for j in range(nk):
+        if j in gaits[i]:
+            forces_z[j].append(results.us[i][s * 3 + 2])
+            s += 1
+        else:
+            forces_z[j].append(0)
+
 
 fig, axs = plt.subplots(ncols=1, nrows=3, figsize=(3.5, 2.5), layout="constrained")
 axs[0].plot(ttlin, com_traj[0])
@@ -298,7 +302,7 @@ axs[2].plot(ttlin, angular_acceleration[2])
 axs[2].grid(True)
 axs[2].set_title("L_dot Z")
 
-""" fig, axs = plt.subplots(ncols=1, nrows=4, figsize=(3.5, 2.5), layout="constrained")
+fig, axs = plt.subplots(ncols=1, nrows=4, figsize=(3.5, 2.5), layout="constrained")
 axs[0].plot(ttlin, forces_z[0])
 axs[0].set_title("f_z LF")
 axs[0].grid(True)
@@ -310,6 +314,6 @@ axs[2].grid(True)
 axs[2].set_title("f_z LB")
 axs[3].plot(ttlin, forces_z[3])
 axs[3].grid(True)
-axs[3].set_title("f_z RB") """
+axs[3].set_title("f_z RB")
 
 # plt.show()

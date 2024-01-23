@@ -96,10 +96,9 @@ def test_centroidal():
         nu = 3 * nk
         mass = 10.5
         gravity = np.array([0, 0, -9.81])
-        ode = dynamics.CentroidalFwdDynamics(space, nk, mass, gravity)
+        contact_map = [(0, np.array([0, 0.1, 0])), (1, np.array([0.1, -0.1, 0]))]
+        ode = dynamics.CentroidalFwdDynamics(space, nk, mass, gravity, contact_map)
         data = ode.createData()
-        ode.contact_points[0] = np.array([0, 0.1, 0])
-        ode.contact_points[1] = np.array([0.1, -0.1, 0])
 
         assert isinstance(data, dynamics.CentroidalFwdData)
 
@@ -119,9 +118,8 @@ def test_centroidal_diff():
     nu = 3 * nk
     mass = 10.5
     gravity = np.array([0, 0, -9.81])
-    ode = dynamics.CentroidalFwdDynamics(space, nk, mass, gravity)
-    ode.contact_points[0] = np.array([0, 0.1, 0])
-    ode.contact_points[1] = np.array([0.1, -0.1, 0])
+    contact_map = [(0, np.array([0, 0.1, 0])), (1, np.array([0.1, -0.1, 0]))]
+    ode = dynamics.CentroidalFwdDynamics(space, nk, mass, gravity, contact_map)
     data = ode.createData()
 
     x0 = np.random.randn(nx)

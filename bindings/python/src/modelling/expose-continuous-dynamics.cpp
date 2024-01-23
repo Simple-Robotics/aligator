@@ -4,6 +4,8 @@
 #include "aligator/modelling/dynamics/linear-ode.hpp"
 #include "aligator/modelling/dynamics/centroidal-fwd.hpp"
 
+#include <eigenpy/std-pair.hpp>
+
 namespace aligator {
 namespace python {
 using namespace ::aligator::dynamics;
@@ -122,14 +124,20 @@ void exposeODEs() {
       "CentroidalFwdDynamics",
       "Nonlinear centroidal dynamics with preplanned feet positions",
       bp::init<const shared_ptr<proxsuite::nlp::VectorSpaceTpl<Scalar>> &,
-               const int &, const double &, const Vector3s &>(bp::args(
-          "self", "space", "max number of contacts", "total mass", "gravity")))
-      .def_readwrite("contact_points", &CentroidalFwdDynamics::contact_points_)
+               const int &, const double &, const Vector3s &,
+               const std::vector<std::pair<std::size_t, Vector3s>> &>(
+          bp::args("self", "space", "max number of contacts", "total mass",
+                   "gravity", "contact_map")))
+      .def_readwrite("contact_map", &CentroidalFwdDynamics::contact_map_)
       .def(CreateDataPythonVisitor<CentroidalFwdDynamics>());
 
   bp::register_ptr_to_python<shared_ptr<CentroidalFwdDataTpl<Scalar>>>();
   bp::class_<CentroidalFwdDataTpl<Scalar>, bp::bases<ODEData>>(
       "CentroidalFwdData", bp::no_init);
+
+  eigenpy::StdPairConverter<std::pair<std::size_t, Vector3s>>::registration();
+  StdVectorPythonVisitor<std::vector<std::pair<std::size_t, Vector3s>>,
+                         true>::expose("StdVec_StdPair_map");
 
   StdVectorPythonVisitor<StdVectorEigenAligned<Vector3s>, true>::expose(
       "StdVec_Vector3s");
