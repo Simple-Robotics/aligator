@@ -77,6 +77,8 @@ public:
 
   void printBase(std::ostream &oss) const;
 
+  virtual ~ResultsBaseTpl() = default;
+
 private:
   Eigen::Index get_ndx1(std::size_t i) const {
     return this->gains_[i].cols() - 1;
