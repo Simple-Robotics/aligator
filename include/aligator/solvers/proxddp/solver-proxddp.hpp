@@ -7,7 +7,6 @@
 #include "aligator/core/linesearch.hpp"
 #include "aligator/core/callback-base.hpp"
 #include "aligator/core/enums.hpp"
-#include "aligator/utils/exceptions.hpp"
 #include "aligator/utils/logger.hpp"
 #include "aligator/utils/forward-dyn.hpp"
 #include "aligator/gar/riccati.hpp"

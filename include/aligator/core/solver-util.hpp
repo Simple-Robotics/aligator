@@ -4,7 +4,6 @@
 #pragma once
 
 #include "aligator/core/traj-opt-problem.hpp"
-#include "aligator/utils/exceptions.hpp"
 
 namespace aligator {
 
