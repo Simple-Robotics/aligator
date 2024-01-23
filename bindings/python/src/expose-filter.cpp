@@ -12,7 +12,7 @@ void exposeFilter() {
   using Filter = FilterTpl<double>;
 
   eigenpy::StdPairConverter<std::pair<double, double>>::registration();
-  StdVectorPythonVisitor<std::vector<std::pair<double, double>>>::expose(
+  StdVectorPythonVisitor<std::vector<std::pair<double, double>>, true>::expose(
       "StdVec_StdPair_double");
 
   bp::register_ptr_to_python<shared_ptr<Filter>>();
