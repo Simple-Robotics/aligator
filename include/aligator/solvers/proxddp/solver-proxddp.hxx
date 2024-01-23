@@ -74,10 +74,10 @@ SolverProxDDPTpl<Scalar>::SolverProxDDPTpl(const Scalar tol,
 }
 
 template <typename Scalar>
-Scalar SolverProxDDPTpl<Scalar>::forward_linear_impl(const Problem &problem,
-                                                     Workspace &workspace,
-                                                     const Results &results,
-                                                     const Scalar alpha) {
+Scalar SolverProxDDPTpl<Scalar>::tryLinearStep(const Problem &problem,
+                                               Workspace &workspace,
+                                               const Results &results,
+                                               const Scalar alpha) {
   ZoneScoped;
 
   const std::size_t nsteps = workspace.nsteps;
@@ -222,8 +222,8 @@ void SolverProxDDPTpl<Scalar>::computeMultipliers(
 }
 
 template <typename Scalar>
-Scalar SolverProxDDPTpl<Scalar>::nonlinear_rollout_impl(const Problem &problem,
-                                                        const Scalar alpha) {
+Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
+                                                     const Scalar alpha) {
   ZoneScoped;
   using ExplicitDynData = ExplicitDynamicsDataTpl<Scalar>;
 
@@ -433,10 +433,10 @@ Scalar SolverProxDDPTpl<Scalar>::forwardPass(const Problem &problem,
   ZoneScoped;
   switch (rollout_type_) {
   case RolloutType::LINEAR:
-    forward_linear_impl(problem, workspace_, results_, alpha);
+    tryLinearStep(problem, workspace_, results_, alpha);
     break;
   case RolloutType::NONLINEAR:
-    nonlinear_rollout_impl(problem, alpha);
+    tryNonlinearRollout(problem, alpha);
     break;
   default:
     assert(false && "unknown RolloutType!");

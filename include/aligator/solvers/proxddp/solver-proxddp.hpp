@@ -163,15 +163,14 @@ public:
   ///           \f$(\bfx \oplus\alpha\delta\bfx, \bfu+\alpha\delta\bfu,
   ///           \bmlam+\alpha\delta\bmlam)\f$
   /// @returns  The trajectory cost.
-  static Scalar forward_linear_impl(const Problem &problem,
-                                    Workspace &workspace,
-                                    const Results &results, const Scalar alpha);
+  static Scalar tryLinearStep(const Problem &problem, Workspace &workspace,
+                              const Results &results, const Scalar alpha);
 
   /// @brief    Policy rollout using the full nonlinear dynamics. The feedback
   /// gains need to be computed first. This will evaluate all the terms in the
   /// problem into the problem data, similar to TrajOptProblemTpl::evaluate().
   /// @returns  The trajectory cost.
-  Scalar nonlinear_rollout_impl(const Problem &problem, const Scalar alpha);
+  Scalar tryNonlinearRollout(const Problem &problem, const Scalar alpha);
 
   Scalar forwardPass(const Problem &problem, const Scalar alpha);
 

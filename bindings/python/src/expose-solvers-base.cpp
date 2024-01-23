@@ -29,9 +29,8 @@ void exposeSolverCommon() {
            "Cycle the workspace to the left: this will rotate all the data "
            "(states, controls, multipliers) forward by one rank.")
       .def("cycleAppend", &WorkspaceBase::cycleAppend, ("self"_a, "data"),
-           "Insert a StageData object and cycle the "
-           "workspace left (using `cycleLeft()`) and insert the allocated data "
-           "(useful for MPC).");
+           "Insert a StageData object and cycle the workspace left (using "
+           "`cycleLeft()`) and insert the allocated data (useful for MPC).");
 
   using ResultsBase = ResultsBaseTpl<Scalar>;
   bp::class_<ResultsBase>("ResultsBase", "Base results struct.", bp::no_init)
