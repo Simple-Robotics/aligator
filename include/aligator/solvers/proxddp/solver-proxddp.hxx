@@ -226,13 +226,18 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
                                                      const Scalar alpha) {
   ZoneScoped;
   using ExplicitDynData = ExplicitDynamicsDataTpl<Scalar>;
+  using gar::StageFactor;
 
   const std::size_t nsteps = workspace_.nsteps;
   std::vector<VectorXs> &xs = workspace_.trial_xs;
   std::vector<VectorXs> &us = workspace_.trial_us;
+  std::vector<VectorXs> &vs = workspace_.trial_vs;
   std::vector<VectorXs> &lams = workspace_.trial_lams;
   std::vector<VectorXs> &dxs = workspace_.dxs;
   std::vector<VectorXs> &dus = workspace_.dus;
+  std::vector<VectorXs> &dvs = workspace_.dvs;
+  std::vector<VectorXs> &dlams = workspace_.dlams;
+
   const std::vector<VectorXs> &lams_prev = workspace_.prev_lams;
   std::vector<VectorXs> &dyn_slacks = workspace_.dyn_slacks;
   TrajOptData &prob_data = workspace_.problem_data;
@@ -251,42 +256,38 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
     const StageModel &stage = *problem.stages_[t];
     StageData &data = *prob_data.stage_data[t];
 
-    const int nu = stage.nu();
-    const int ndual = stage.numDual();
+    const StageFactor<Scalar> &fac = linearSolver_->datas[t];
+    ConstVectorRef kff = fac.ff[0];
+    ConstVectorRef zff = fac.ff[1];
+    ConstVectorRef lff = fac.ff[2];
+    ConstMatrixRef Kfb = fac.fb.blockRow(0);
+    ConstMatrixRef Zfb = fac.fb.blockRow(1);
+    ConstMatrixRef Lfb = fac.fb.blockRow(2);
 
-    ConstVectorRef ff = results_.getFeedforward(t);
-    ConstMatrixRef fb = results_.getFeedback(t);
-    auto ff_u = ff.head(nu);
-    auto fb_u = fb.topRows(nu);
-    auto ff_lm = ff.tail(ndual);
-    auto fb_lm = fb.bottomRows(ndual);
-
-    dus[t] = alpha * ff_u;
-    dus[t].noalias() += fb_u * dxs[t];
+    dus[t] = alpha * kff;
+    dus[t].noalias() += Kfb * dxs[t];
     stage.uspace().integrate(results_.us[t], dus[t], us[t]);
 
-    VectorRef dlam = workspace_.dlams[t + 1];
-    dlam = alpha * ff_lm;
-    dlam.noalias() += fb_lm * dxs[t];
-    lams[t + 1] = results_.lams[t + 1] + dlam;
+    dvs[t] = alpha * zff;
+    dvs[t].noalias() += Zfb * dxs[t];
+    vs[t] = results_.vs[t] + dvs[t];
+
+    dlams[t + 1] = alpha * lff;
+    dlams[t + 1].noalias() += Lfb * dxs[t];
+    lams[t + 1] = results_.lams[t + 1] + dlams[t + 1];
 
     stage.evaluate(xs[t], us[t], xs[t + 1], data);
 
     // compute desired multiple-shooting gap from the multipliers
-    dyn_slacks[t] = mu() * (lams[t + 1] - lams_prev[t + 1]);
+    dyn_slacks[t] = mu() * (lams_prev[t + 1] - lams[t + 1]);
 
     DynamicsData &dd = *data.dynamics_data;
 
-    // lambda to be called in both branches
-    auto explicit_model_update_xnext = [&]() {
+    if (!stage.has_dyn_model() || stage.dyn_model().is_explicit()) {
       ExplicitDynData &exp_dd = static_cast<ExplicitDynData &>(dd);
       stage.xspace_next().integrate(exp_dd.xnext_, dyn_slacks[t], xs[t + 1]);
       // at xs[i+1], the dynamics gap = the slack dyn_slack[i].
       exp_dd.value_ = -dyn_slacks[t];
-    };
-
-    if (!stage.has_dyn_model() || stage.dyn_model().is_explicit()) {
-      explicit_model_update_xnext();
     } else {
       forwardDynamics<Scalar>::run(stage.dyn_model(), xs[t], us[t], dd,
                                    xs[t + 1], dyn_slacks[t], rollout_max_iters);
@@ -311,13 +312,13 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
 
   // update multiplier
   if (!problem.term_cstrs_.empty()) {
-    VectorRef dlam = workspace_.dlams.back();
-    ConstVectorRef dx = workspace_.dxs.back();
-    auto ff = results_.getFeedforward(nsteps);
-    auto fb = results_.getFeedback(nsteps);
-    dlam = alpha * ff;
-    dlam.noalias() += fb * dx;
-    lams.back() = results_.lams.back() + dlam;
+    const StageFactor<Scalar> &fac = linearSolver_->datas[nsteps];
+    ConstVectorRef zff = fac.ff[1];
+    ConstMatrixRef Zfb = fac.fb.blockRow(1);
+
+    dvs[nsteps] = alpha * zff;
+    dvs[nsteps].noalias() += Zfb * dxs[nsteps];
+    vs[nsteps] = results_.vs[nsteps] + dvs[nsteps];
   }
 
   prob_data.cost_ = problem.computeTrajectoryCost(prob_data);
