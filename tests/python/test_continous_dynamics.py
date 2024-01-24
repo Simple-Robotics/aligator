@@ -155,6 +155,76 @@ def test_centroidal_diff():
     assert np.linalg.norm(Judiff - Ju0) <= epsilon
 
 
+def test_continuous_centroidal():
+    try:
+        nk = 2
+        nu = 3 * nk
+        space = manifolds.VectorSpace(9 + nu)
+        mass = 10.5
+        gravity = np.array([0, 0, -9.81])
+        contact_map = [(0, np.array([0, 0.1, 0])), (1, np.array([0.1, -0.1, 0]))]
+        ode = dynamics.ContinuousCentroidalFwdDynamics(
+            space, nk, mass, gravity, contact_map
+        )
+        data = ode.createData()
+
+        assert isinstance(data, dynamics.ContinuousCentroidalFwdData)
+
+        x0 = space.neutral()
+        u0 = np.random.randn(nu)
+
+        ode.forward(x0, u0, data)
+        ode.dForward(x0, u0, data)
+    except ImportError:
+        pass
+
+
+def test_continuous_centroidal_diff():
+    nk = 2
+    nu = 3 * nk
+    nx = 9 + nu
+    space = manifolds.VectorSpace(nx)
+    mass = 10.5
+    gravity = np.array([0, 0, -9.81])
+    contact_map = [(0, np.array([0, 0.1, 0])), (1, np.array([0.1, -0.1, 0]))]
+    ode = dynamics.ContinuousCentroidalFwdDynamics(
+        space, nk, mass, gravity, contact_map
+    )
+    data = ode.createData()
+
+    x0 = np.random.randn(nx)
+    u0 = np.random.randn(nu)
+    epsilon = 1e-6
+
+    ode.forward(x0, u0, data)
+    ode.dForward(x0, u0, data)
+
+    xdot0 = data.xdot.copy()
+    Jx0 = data.Jx.copy()
+    Ju0 = data.Ju.copy()
+    Jxdiff = np.zeros((nx, nx))
+    Judiff = np.zeros((nx, nu))
+
+    for i in range(nx):
+        evec = np.zeros(nx)
+        evec[i] = epsilon
+        xi = x0 + evec
+        ode.forward(xi, u0, data)
+        ode.dForward(xi, u0, data)
+        Jxdiff[:, i] = (data.xdot - xdot0) / epsilon
+
+    for i in range(nu):
+        evec = np.zeros(nu)
+        evec[i] = epsilon
+        ui = u0 + evec
+        ode.forward(x0, ui, data)
+        ode.dForward(x0, ui, data)
+        Judiff[:, i] = (data.xdot - xdot0) / epsilon
+
+    assert np.linalg.norm(Jxdiff - Jx0) <= epsilon
+    assert np.linalg.norm(Judiff - Ju0) <= epsilon
+
+
 if __name__ == "__main__":
     import sys
 

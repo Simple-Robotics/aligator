@@ -23,6 +23,11 @@ template <typename Scalar> struct CentroidalFwdDynamicsTpl;
 
 template <typename Scalar> struct CentroidalFwdDataTpl;
 
+// fwd ContinuousCentroidalFwdDynamicsTpl
+template <typename Scalar> struct ContinuousCentroidalFwdDynamicsTpl;
+
+template <typename Scalar> struct ContinuousCentroidalFwdDataTpl;
+
 //// INTEGRATORS
 
 // fwd IntegratorAbstractTpl;

@@ -3,6 +3,7 @@
 #include "aligator/python/modelling/continuous.hpp"
 #include "aligator/modelling/dynamics/linear-ode.hpp"
 #include "aligator/modelling/dynamics/centroidal-fwd.hpp"
+#include "aligator/modelling/dynamics/continuous-centroidal-fwd.hpp"
 
 #include <eigenpy/std-pair.hpp>
 
@@ -17,6 +18,8 @@ using ContinuousDynamicsData = ContinuousDynamicsDataTpl<Scalar>;
 using ODEAbstract = ODEAbstractTpl<Scalar>;
 using ODEData = ODEDataTpl<Scalar>;
 using CentroidalFwdDynamics = CentroidalFwdDynamicsTpl<Scalar>;
+using ContinuousCentroidalFwdDynamics =
+    ContinuousCentroidalFwdDynamicsTpl<Scalar>;
 using Vector3s = typename math_types<Scalar>::Vector3s;
 
 struct DAEDataWrapper : ContinuousDynamicsData,
@@ -134,6 +137,24 @@ void exposeODEs() {
   bp::register_ptr_to_python<shared_ptr<CentroidalFwdDataTpl<Scalar>>>();
   bp::class_<CentroidalFwdDataTpl<Scalar>, bp::bases<ODEData>>(
       "CentroidalFwdData", bp::no_init);
+
+  bp::class_<ContinuousCentroidalFwdDynamics, bp::bases<ODEAbstract>>(
+      "ContinuousCentroidalFwdDynamics",
+      "Nonlinear centroidal dynamics with preplanned feet positions and smooth "
+      "forces",
+      bp::init<const shared_ptr<proxsuite::nlp::VectorSpaceTpl<Scalar>> &,
+               const int &, const double &, const Vector3s &,
+               const std::vector<std::pair<std::size_t, Vector3s>> &>(
+          bp::args("self", "space", "max number of contacts", "total mass",
+                   "gravity", "contact_map")))
+      .def_readwrite("contact_map",
+                     &ContinuousCentroidalFwdDynamics::contact_map_)
+      .def(CreateDataPythonVisitor<ContinuousCentroidalFwdDynamics>());
+
+  bp::register_ptr_to_python<
+      shared_ptr<ContinuousCentroidalFwdDataTpl<Scalar>>>();
+  bp::class_<ContinuousCentroidalFwdDataTpl<Scalar>, bp::bases<ODEData>>(
+      "ContinuousCentroidalFwdData", bp::no_init);
 
   eigenpy::StdPairConverter<std::pair<std::size_t, Vector3s>>::registration();
   StdVectorPythonVisitor<std::vector<std::pair<std::size_t, Vector3s>>,
