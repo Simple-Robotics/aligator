@@ -174,7 +174,7 @@ else:
         aligator.QuadraticResidualCost(space, frame_err, np.diag(weights_frame_place))
     )
 
-mu_init = 0.8
+mu_init = 0.2
 rho_init = 0.0
 verbose = aligator.VerboseLevel.VERBOSE
 TOL = 1e-4

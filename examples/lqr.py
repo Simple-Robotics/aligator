@@ -84,6 +84,7 @@ solver = aligator.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
 his_cb = aligator.HistoryCallback()
 solver.registerCallback("his", his_cb)
 solver.max_iters = 20
+solver.rollout_type = aligator.ROLLOUT_LINEAR
 
 u0 = np.zeros(nu)
 us_i = [u0] * nsteps
