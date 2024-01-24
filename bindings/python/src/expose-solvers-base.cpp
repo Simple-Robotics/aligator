@@ -11,6 +11,7 @@ using VParams = ValueFunctionTpl<Scalar>;
 } // namespace python
 } // namespace aligator
 
+#if EIGENPY_VERSION_AT_MOST(3, 2, 0)
 namespace eigenpy {
 namespace internal {
 
@@ -21,6 +22,7 @@ struct has_operator_equal<::aligator::python::VParams> : boost::false_type {};
 
 } // namespace internal
 } // namespace eigenpy
+#endif
 
 namespace aligator {
 namespace python {
