@@ -246,7 +246,7 @@ def main(args: Args):
     task_schedule = get_task_schedule()
 
     def setup():
-        w_u = np.eye(nu) * 1e-2
+        w_u = np.eye(nu) * 1e-1
 
         floor = create_halfspace_z(space.ndx, nu, 0.0, True)
         stages = []
@@ -317,65 +317,31 @@ def main(args: Args):
         solver = aligator.SolverFDDP(tol, verbose=verbose)
     solver.max_iters = 200
     solver.registerCallback("his", history_cb)
+    solver.force_initial_condition = False
     solver.rollout_type = aligator.ROLLOUT_LINEAR
     solver.setup(problem)
-    workspace: aligator.Workspace = solver.workspace
     solver.run(problem, xs_init, us_init)
 
     results = solver.results
     print(results)
 
-    def test_check_numiters(results):
-        if args.bounds:
-            if args.obstacles:
-                if args.term_cstr:
-                    pass
-                else:
-                    assert results.num_iters <= 50
-            else:
-                if args.term_cstr:
-                    assert results.num_iters <= 129
-                else:
-                    assert results.num_iters <= 33
-        elif args.term_cstr:
-            if args.obstacles:
-                assert results.num_iters <= 39
-            else:
-                assert results.num_iters <= 20
-
-    # test_check_numiters(results)
-
     xs_opt = results.xs.tolist()
     us_opt = results.us.tolist()
 
-    val_grad = [vp.Vx for vp in workspace.value_params]
-
     def plot_costate_value() -> plt.Figure:
-        lams_stack = np.stack([la[: space.ndx] for la in results.lams]).T
-        costate_stack = lams_stack[:, 1 : nsteps + 1]
-        vx_stack = np.stack(val_grad).T[:, 1:]
+        costate_stack = np.stack(results.lams).T
+        if solver.force_initial_condition:
+            costate_stack[:, 0] = np.nan
         plt.figure()
-        plt.subplot(131)
-        mmin = min(np.min(costate_stack), np.min(vx_stack))
-        mmax = max(np.max(costate_stack), np.max(vx_stack))
+        mmin = np.min(costate_stack)
+        mmax = np.max(costate_stack)
         plt.imshow(costate_stack, vmin=mmin, vmax=mmax, aspect="auto")
         plt.vlines(idx_switch, *plt.ylim(), colors="r", label="switch")
-        plt.legend()
 
+        plt.legend()
         plt.xlabel("Time $t$")
         plt.ylabel("Dimension")
         plt.title("Multipliers")
-        plt.subplot(132)
-        plt.imshow(vx_stack, vmin=mmin, vmax=mmax, aspect="auto")
-        plt.colorbar()
-        plt.xlabel("Time $t$")
-        plt.ylabel("Dimension")
-        plt.title("$\\nabla_xV$")
-
-        plt.subplot(133)
-        err = np.abs(costate_stack - vx_stack)
-        plt.imshow(err, cmap="Reds", aspect="auto")
-        plt.title("$\\lambda - V'_x$")
         plt.colorbar()
         plt.tight_layout()
         return plt.gcf()
