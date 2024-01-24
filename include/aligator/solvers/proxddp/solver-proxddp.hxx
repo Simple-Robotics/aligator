@@ -646,6 +646,9 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
     knot.q = workspace_.Lxs_[t];
     knot.r = workspace_.Lus_[t];
 
+    knot.Q.diagonal().array() += xreg_;
+    knot.R.diagonal().array() += ureg_;
+
     // dynamics hessians
     if (hess_approx_ == HessianApprox::EXACT) {
       knot.Q += dd.Hxx_;
@@ -668,6 +671,7 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
     LQRKnotTpl<Scalar> &knot = prob.stages[N];
     const CostData &tcd = *pd.term_cost_data;
     knot.Q = tcd.Lxx_;
+    knot.Q.diagonal().array() += xreg_;
     knot.q = workspace_.Lxs_[N];
     knot.C = workspace_.constraintProjJacobians[N].blockCol(0);
     knot.d = workspace_.Lvs_[N];
