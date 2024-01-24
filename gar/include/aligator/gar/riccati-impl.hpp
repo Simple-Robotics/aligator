@@ -132,3 +132,12 @@ template <typename Scalar> struct ProximalRiccatiImpl {
 } // namespace aligator
 
 #include "./riccati-impl.hxx"
+
+namespace aligator {
+namespace gar {
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct StageFactor<context::Scalar>;
+extern template struct ProximalRiccatiImpl<context::Scalar>;
+#endif
+} // namespace gar
+} // namespace aligator
