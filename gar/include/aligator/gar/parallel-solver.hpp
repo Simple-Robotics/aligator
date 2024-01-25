@@ -55,7 +55,7 @@ public:
     }
     splitIdx[num_threads] = N + 1;
     for (uint i = 0; i < num_threads; i++) {
-      buildLeg(splitIdx[i], splitIdx[i + 1], i == (num_threads - 1));
+      allocateLeg(splitIdx[i], splitIdx[i + 1], i == (num_threads - 1));
     }
 
     std::vector<long> dims{problem.nc0(), problem.stages.front().nx};
@@ -83,23 +83,25 @@ public:
     return true;
   }
 
-  void buildLeg(uint start, uint end, bool last_leg) {
+  void allocateLeg(uint start, uint end, bool last_leg) {
     ZoneScoped;
     for (uint t = start; t < end; t++) {
       KnotType &knot = problem.stages[t];
-      if (!last_leg) {
+      if (!last_leg)
         knot.addParameterization(knot.nx);
-        assert(knot.nx == knot.nth);
-      }
       datas.emplace_back(knot.nx, knot.nu, knot.nc, knot.nth);
     }
     if (!last_leg) {
-      // last knot needs parameter to be set
-      KnotType &knot = problem.stages[end - 1];
-      knot.Gx = knot.A.transpose();
-      knot.Gu = knot.B.transpose();
-      knot.gamma = knot.f;
+      // last knot in the leg needs parameter to be set
+      setupKnot(problem.stages[end - 1]);
     }
+  }
+
+  static void setupKnot(KnotType &knot) {
+    ZoneScoped;
+    knot.Gx = knot.A.transpose();
+    knot.Gu = knot.B.transpose();
+    knot.gamma = knot.f;
   }
 
   bool backward(Scalar mudyn, Scalar mueq) {
@@ -108,21 +110,23 @@ public:
     ZoneScopedN("parallel_backward");
     Eigen::setNbThreads(1);
     bool ret = true;
-#pragma omp parallel num_threads(numThreads)
-    {
+#pragma omp parallel for num_threads(numThreads) schedule(static, 1)           \
+    reduction(& : ret)
+    for (uint i = 0; i < numThreads; i++) {
       size_t id = omp::get_thread_id();
       char *thrdname = new char[16];
       int cpu = sched_getcpu();
       snprintf(thrdname, 16, "thread%d[c%d]", int(id), cpu);
       tracy::SetThreadName(thrdname);
-#pragma omp for schedule(static, 1) reduction(& : ret)
-      for (uint i = 0; i < numThreads; i++) {
-        boost::span<const KnotType> stview = make_span_from_indices(
-            problem.stages, splitIdx[id], splitIdx[i + 1]);
-        boost::span<StageFactor<Scalar>> dtview =
-            make_span_from_indices(datas, splitIdx[i], splitIdx[i + 1]);
-        ret &= Impl::backwardImpl(stview, mudyn, mueq, dtview);
-      }
+      uint beg = splitIdx[i];
+      uint end = splitIdx[i + 1];
+      boost::span<const KnotType> stview =
+          make_span_from_indices(problem.stages, beg, end);
+      if (i + 1 < numThreads)
+        setupKnot(problem.stages[end - 1]);
+      boost::span<StageFactor<Scalar>> dtview =
+          make_span_from_indices(datas, beg, end);
+      ret &= Impl::backwardImpl(stview, mudyn, mueq, dtview);
     }
 
     Eigen::setNbThreads(0);
