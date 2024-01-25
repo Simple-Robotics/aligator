@@ -203,8 +203,8 @@ list(FILTER LIB_HEADERS EXCLUDE REGEX ${PROJECT_SOURCE_DIR}/include/aligator/com
 option(ENABLE_TRACY_PROFILING "Enable Tracy profiler" OFF)
 FetchContent_Declare(
   tracy
-  GIT_REPOSITORY https://github.com/wolfpld/tracy.git
-  GIT_TAG master
+  GIT_REPOSITORY https://github.com/Simple-Robotics/tracy.git
+  GIT_TAG f083b07
   GIT_SHALLOW TRUE
   GIT_PROGRESS TRUE)
 FetchContent_GetProperties(tracy)
