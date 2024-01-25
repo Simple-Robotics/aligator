@@ -76,9 +76,9 @@ BOOST_AUTO_TEST_CASE(short_horz_pb) {
   BOOST_CHECK(ret);
 
   // check error
-  KktError err = compute_kkt_error(prob, xs, us, vs, lbdas);
+  KktError err = computeKktError(prob, xs, us, vs, lbdas);
 
-  print_kkt_error(err);
+  printKktError(err);
 
   BOOST_CHECK_LE(err.max, 1e-9);
 
@@ -109,8 +109,8 @@ BOOST_AUTO_TEST_CASE(random_long_problem) {
       std::chrono::duration_cast<std::chrono::microseconds>(fwend - fwbeg);
   fmt::print("Elapsed time (fwd): {:d}\n", t_fwd.count());
 
-  KktError err = compute_kkt_error(prob, xs, us, vs, lbdas);
-  print_kkt_error(err);
+  KktError err = computeKktError(prob, xs, us, vs, lbdas);
+  printKktError(err);
 
   BOOST_CHECK_LE(err.max, 1e-9);
 }

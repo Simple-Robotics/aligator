@@ -74,8 +74,8 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
     auto &[xs, us, vs, lbdas] = solution_full_horz;
     bool ret = solver_full_horz.forward(xs, us, vs, lbdas);
     BOOST_CHECK(ret);
-    KktError err_full = compute_kkt_error(problem, xs, us, vs, lbdas);
-    print_kkt_error(err_full, "KKT error (full horz.)");
+    KktError err_full = computeKktError(problem, xs, us, vs, lbdas);
+    printKktError(err_full, "KKT error (full horz.)");
     BOOST_CHECK_LE(err_full.max, EPS);
   }
 
@@ -125,8 +125,8 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
     subSolve2.forward(xs2, us2, vs2, lbdas2, thtopt);
   }
 
-  KktError err1 = compute_kkt_error(pr1, xs1, us1, vs1, lbdas1, thtopt);
-  KktError err2 = compute_kkt_error(pr2, xs2, us2, vs2, lbdas2, thtopt);
+  KktError err1 = computeKktError(pr1, xs1, us1, vs1, lbdas1, thtopt);
+  KktError err2 = computeKktError(pr2, xs2, us2, vs2, lbdas2, thtopt);
 
   BOOST_CHECK_LE(err1.max, EPS);
   BOOST_CHECK_LE(err2.max, EPS);
@@ -162,8 +162,8 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
   fmt::print("errors between solves: {}\n", infty_norm(x_errs));
 
   KktError err_merged =
-      compute_kkt_error(problem, xs_merged, us_merged, vs_merged, lbdas_merged);
-  print_kkt_error(err_merged, "KKT error (merged)");
+      computeKktError(problem, xs_merged, us_merged, vs_merged, lbdas_merged);
+  printKktError(err_merged, "KKT error (merged)");
 }
 
 BOOST_AUTO_TEST_CASE(parallel_solver_class) {
@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
 
   problem_t problem = generate_problem(x0, horizon, nx, nu);
   problem_t problemRef = problem;
-  const double mu = 1e-14;
+  const double mu = 1e-4;
 
   auto solutionRef = lqrInitializeSolution(problemRef);
   auto [xs_ref, us_ref, vs_ref, lbdas_ref] = solutionRef;
@@ -192,8 +192,8 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
     refSolver.backward(mu, mu);
     refSolver.forward(xs_ref, us_ref, vs_ref, lbdas_ref);
     KktError err_ref =
-        compute_kkt_error(problemRef, xs_ref, us_ref, vs_ref, lbdas_ref);
-    print_kkt_error(err_ref);
+        computeKktError(problemRef, xs_ref, us_ref, vs_ref, lbdas_ref);
+    printKktError(err_ref);
     for (uint t = 0; t <= horizon; t++) {
       fmt::print("xs[{:d}] = {}\n", t, xs_ref[t].transpose());
     }
@@ -208,8 +208,9 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
 
   parSolver.backward(mu, mu);
   parSolver.forward(xs, us, vs, lbdas);
-  KktError err = compute_kkt_error(problemRef, xs, us, vs, lbdas);
-  print_kkt_error(err);
+  KktError err =
+      computeKktError(problemRef, xs, us, vs, lbdas, std::nullopt, mu, mu);
+  printKktError(err);
   BOOST_CHECK_LE(err.max, tol);
 
   VectorXs xerrs = VectorXs::Zero(horizon + 1);

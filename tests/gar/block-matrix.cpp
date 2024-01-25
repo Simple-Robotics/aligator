@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(block_tridiag_solve) {
   std::vector<MatrixXs> sub(N);
 
   for (size_t i = 0; i <= N; i++) {
-    diagonal[i] = wishart_dist_matrix(nx, nx + 1);
+    diagonal[i] = sampleWishartDistributedMatrix(nx, nx + 1);
   }
 
   std::fill_n(sup.begin(), N, B);

@@ -14,7 +14,8 @@ auto lqrComputeKktError(
     const typename math_types<Scalar>::VectorOfVectors &vs,
     const typename math_types<Scalar>::VectorOfVectors &lbdas,
     const Scalar mudyn, const Scalar mueq,
-    const std::optional<typename math_types<Scalar>::ConstVectorRef> &theta_) {
+    const std::optional<typename math_types<Scalar>::ConstVectorRef> &theta_,
+    bool verbose = false) {
   fmt::print("[{}] ", __func__);
   uint N = (uint)problem.horizon();
   using VectorXs = typename math_types<Scalar>::VectorXs;
@@ -37,13 +38,15 @@ auto lqrComputeKktError(
     _dyn = problem.g0 + problem.G0 * xs[0] - mudyn * lbdas[0];
     dNorm = math::infty_norm(_dyn);
     dynErr = std::max(dynErr, dNorm);
-    fmt::print("d0 = {:.3e} \n", dNorm);
+    if (verbose)
+      fmt::print("d0 = {:.3e} \n", dNorm);
   }
   for (uint t = 0; t <= N; t++) {
     const KnotType &knot = problem.stages[t];
     auto _Str = knot.S.transpose();
 
-    fmt::print("[{: >2d}] ", t);
+    if (verbose)
+      fmt::print("[{: >2d}] ", t);
     _gx.setZero(knot.nx);
     _gu.setZero(knot.nu);
     _gt.setZero(knot.nth);
@@ -72,7 +75,8 @@ auto lqrComputeKktError(
       _gu += knot.B.transpose() * lbdas[t + 1];
 
       dNorm = math::infty_norm(_dyn);
-      fmt::print(" |d| = {:.3e} | ", dNorm);
+      if (verbose)
+        fmt::print(" |d| = {:.3e} | ", dNorm);
       dynErr = std::max(dynErr, dNorm);
     }
 
@@ -86,14 +90,14 @@ auto lqrComputeKktError(
         _gt.noalias() += knot.Gu.transpose() * us[t];
       _gt.noalias() += knot.Gth * th;
       thNorm = math::infty_norm(_gt);
-      fmt::print("|gt| = {:.3e} | ", thNorm);
     }
 
     Scalar gxNorm = math::infty_norm(_gx);
     Scalar guNorm = math::infty_norm(_gu);
     Scalar cstNorm = math::infty_norm(_cst);
-    fmt::print("|gx| = {:.3e} | |gu| = {:.3e} | |cst| = {:.3e}\n", gxNorm,
-               guNorm, cstNorm);
+    if (verbose)
+      fmt::print("|gx| = {:.3e} | |gu| = {:.3e} | |cst| = {:.3e}\n", gxNorm,
+                 guNorm, cstNorm);
 
     dualErr = std::max({dualErr, gxNorm, guNorm});
     cstErr = std::max(cstErr, cstNorm);
@@ -243,7 +247,8 @@ extern template auto lqrComputeKktError<context::Scalar>(
     const LQRProblemTpl<context::Scalar> &, const context::VectorOfVectors &,
     const context::VectorOfVectors &, const context::VectorOfVectors &,
     const context::VectorOfVectors &, const context::Scalar,
-    const context::Scalar, const std::optional<context::ConstVectorRef> &);
+    const context::Scalar, const std::optional<context::ConstVectorRef> &,
+    bool);
 extern template auto
 lqrDenseMatrix<context::Scalar>(const LQRProblemTpl<context::Scalar> &,
                                 context::Scalar, context::Scalar);

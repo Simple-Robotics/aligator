@@ -19,21 +19,28 @@ struct KktError {
   double max;
 };
 
-inline void print_kkt_error(const KktError &err,
-                            const std::string &msg = "Max KKT error") {
+inline void printKktError(const KktError &err,
+                          const std::string &msg = "Max KKT error") {
   fmt::print("{}: {:.3e}\n", msg, err.max);
   fmt::print("> dual: {:.3e}\n> cstr: {:.3e}\n> dyn: {:.3e}\n", err.dual,
              err.cstr, err.dyn);
 }
 
-KktError compute_kkt_error(const problem_t &problem, const VectorOfVectors &xs,
-                           const VectorOfVectors &us, const VectorOfVectors &vs,
-                           const VectorOfVectors &lbdas);
+KktError
+computeKktError(const problem_t &problem, const VectorOfVectors &xs,
+                const VectorOfVectors &us, const VectorOfVectors &vs,
+                const VectorOfVectors &lbdas,
+                const std::optional<ConstVectorRef> &theta = std::nullopt,
+                const double mudyn = 0., const double mueq = 0.);
 
-KktError compute_kkt_error(const problem_t &problem, const VectorOfVectors &xs,
-                           const VectorOfVectors &us, const VectorOfVectors &vs,
-                           const VectorOfVectors &lbdas,
-                           const ConstVectorRef &theta);
+inline KktError computeKktError(const problem_t &problem,
+                                const VectorOfVectors &xs,
+                                const VectorOfVectors &us,
+                                const VectorOfVectors &vs,
+                                const VectorOfVectors &lbdas,
+                                const double mudyn, const double mueq) {
+  return computeKktError(problem, xs, us, vs, lbdas, std::nullopt, mudyn, mueq);
+}
 
 struct normal_unary_op {
   static std::mt19937 rng;
@@ -45,7 +52,7 @@ struct normal_unary_op {
   double operator()() const { return gen(rng); }
 };
 
-MatrixXs wishart_dist_matrix(uint n, uint p);
+MatrixXs sampleWishartDistributedMatrix(uint n, uint p);
 
 problem_t generate_problem(const ConstVectorRef &x0, uint horz, uint nx,
                            uint nu);
