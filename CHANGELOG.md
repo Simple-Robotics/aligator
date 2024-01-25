@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Finish the se2-car.cpp example #110
 - Add template instantiation for IntegratorAbstract, ExplicitIntegratorAbstract and IntegratorRK2 #114
 - Fix for eigenpy 3.3
+- Don't output numpy matrices in `example-talos-arm`
 
 ### Fixed
 
