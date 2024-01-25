@@ -21,7 +21,6 @@ int main(int, char **) {
 
   double mu_init = 0.01;
   SolverProxDDP<double> solver(TOL, mu_init, 0., max_iters, aligator::VERBOSE);
-  std::string fpath_base = "kkt_matrices";
 
   std::vector<VectorXd> xs_i, us_i;
   getInitialGuesses(croc_problem, xs_i, us_i);
