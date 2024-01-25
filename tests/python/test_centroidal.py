@@ -245,6 +245,99 @@ def test_angular_acceleration():
         assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
 
 
+def test_wrapper_angular_acceleration():
+    wx0 = space.neutral()
+    wdx = np.random.randn(space.ndx) * 0.1
+    wx0 = space.integrate(wx0, wdx)
+    wu0 = np.random.randn(nu)
+
+    ndx_w = 9 + nk * 3
+    x0 = np.concatenate((wx0, wu0))
+    u0 = np.random.randn(nu)
+    wrapping_space = manifolds.VectorSpace(ndx_w)
+
+    contact_map = [
+        (0, np.array([0.2, 0.1, 0.0])),
+        (1, np.array([0.2, 0.0, 0.0])),
+        (2, np.array([0.0, 0.1, 0.0])),
+        (3, np.array([0.0, 0.0, 0])),
+    ]
+    wrapped_fun = aligator.AngularAccelerationResidual(
+        ndx, nu, mass, gravity, contact_map
+    )
+    fun = aligator.CentroidalWrapperResidual(wrapped_fun)
+
+    fdata = fun.createData()
+    wrapped_fdata = wrapped_fun.createData()
+    wrapped_fun.evaluate(wx0, wu0, wx0, wrapped_fdata)
+    fun.evaluate(x0, fdata)
+
+    assert np.allclose(fdata.value, wrapped_fdata.value)
+
+    fun_fd = aligator.FiniteDifferenceHelper(wrapping_space, fun, FD_EPS)
+    fdata2 = fun_fd.createData()
+    fun_fd.evaluate(x0, u0, x0, fdata2)
+    assert np.allclose(fdata.value, fdata2.value)
+
+    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    J_fd = fdata2.Jx
+    J_fd_u = fdata2.Ju
+    assert fdata.Jx.shape == J_fd.shape
+    assert fdata.Ju.shape == J_fd_u.shape
+
+    for i in range(100):
+        dx = np.random.randn(wrapping_space.ndx) * 0.1
+        x1 = wrapping_space.integrate(x0, dx)
+        fun.evaluate(x1, fdata)
+        fun.computeJacobians(x1, fdata)
+        fun_fd.evaluate(x1, u0, x0, fdata2)
+        fun_fd.computeJacobians(x1, u0, x0, fdata2)
+        assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
+
+
+def test_wrapper_linear_momentum():
+    wx0 = space.neutral()
+    wdx = np.random.randn(space.ndx) * 0.1
+    wx0 = space.integrate(wx0, wdx)
+    wu0 = np.random.randn(nu)
+
+    ndx_w = 9 + nk * 3
+    x0 = np.concatenate((wx0, wu0))
+    u0 = np.random.randn(nu)
+    wrapping_space = manifolds.VectorSpace(ndx_w)
+
+    h_ref = np.array([0, 0, 0])
+    wrapped_fun = aligator.LinearMomentumResidual(ndx, nu, h_ref)
+    fun = aligator.CentroidalWrapperResidual(wrapped_fun)
+
+    fdata = fun.createData()
+    wrapped_fdata = wrapped_fun.createData()
+    wrapped_fun.evaluate(wx0, wu0, wx0, wrapped_fdata)
+    fun.evaluate(x0, fdata)
+
+    assert np.allclose(fdata.value, wrapped_fdata.value)
+
+    fun_fd = aligator.FiniteDifferenceHelper(wrapping_space, fun, FD_EPS)
+    fdata2 = fun_fd.createData()
+    fun_fd.evaluate(x0, u0, x0, fdata2)
+    assert np.allclose(fdata.value, fdata2.value)
+
+    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    J_fd = fdata2.Jx
+    J_fd_u = fdata2.Ju
+    assert fdata.Jx.shape == J_fd.shape
+    assert fdata.Ju.shape == J_fd_u.shape
+
+    for i in range(100):
+        dx = np.random.randn(wrapping_space.ndx) * 0.1
+        x1 = wrapping_space.integrate(x0, dx)
+        fun.evaluate(x1, fdata)
+        fun.computeJacobians(x1, fdata)
+        fun_fd.evaluate(x1, u0, x0, fdata2)
+        fun_fd.computeJacobians(x1, u0, x0, fdata2)
+        assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
+
+
 if __name__ == "__main__":
     import sys
     import pytest

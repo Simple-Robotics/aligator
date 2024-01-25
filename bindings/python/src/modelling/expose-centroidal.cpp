@@ -9,6 +9,7 @@
 #include "aligator/modelling/centroidal/centroidal-acceleration.hpp"
 #include "aligator/modelling/centroidal/friction-cone.hpp"
 #include "aligator/modelling/centroidal/angular-acceleration.hpp"
+#include "aligator/modelling/centroidal/centroidal-wrapper.hpp"
 
 #include <eigenpy/std-pair.hpp>
 
@@ -39,6 +40,9 @@ void exposeCentroidalFunctions() {
 
   using AngularAccelerationResidual = AngularAccelerationResidualTpl<Scalar>;
   using AngularAccelerationData = AngularAccelerationDataTpl<Scalar>;
+
+  using CentroidalWrapperResidual = CentroidalWrapperResidualTpl<Scalar>;
+  using CentroidalWrapperData = CentroidalWrapperDataTpl<Scalar>;
 
   bp::class_<CentroidalCoMResidual, bp::bases<UnaryFunction>>(
       "CentroidalCoMResidual", "A residual function :math:`r(x) = com(x)` ",
@@ -124,6 +128,18 @@ void exposeCentroidalFunctions() {
 
   bp::class_<AngularAccelerationData, bp::bases<StageFunctionData>>(
       "AngularAccelerationData", "Data Structure for AngularAcceleration",
+      bp::no_init);
+
+  bp::class_<CentroidalWrapperResidual, bp::bases<UnaryFunction>>(
+      "CentroidalWrapperResidual",
+      "A wrapper for centroidal cost with smooth control",
+      bp::init<shared_ptr<StageFunction>>(bp::args("self", "centroidal_cost")))
+      .def(CreateDataPythonVisitor<CentroidalWrapperResidual>());
+
+  bp::register_ptr_to_python<shared_ptr<CentroidalWrapperData>>();
+
+  bp::class_<CentroidalWrapperData, bp::bases<StageFunctionData>>(
+      "CentroidalWrapperData", "Data Structure for CentroidalWrapper",
       bp::no_init);
 
   eigenpy::StdPairConverter<
