@@ -1,7 +1,7 @@
 #pragma once
 
-#include "./riccati-impl.hpp"
-#include "./block-tridiagonal-solver.hpp"
+#include "riccati-base.hpp"
+#include "block-tridiagonal-solver.hpp"
 #include "aligator/threads.hpp"
 
 namespace aligator {
@@ -31,10 +31,13 @@ boost::span<const T> make_span_from_indices(const std::vector<T> &vec,
 /// function with respect to both its initial state and last costate (linking to
 /// the next leg). The saddle-point is cast into a linear system which is solved
 /// by dense LDL factorization.
-template <typename _Scalar> class ParallelRiccatiSolver {
+template <typename _Scalar>
+class ParallelRiccatiSolver : public RiccatiSolverBase<_Scalar> {
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  using Base = RiccatiSolverBase<Scalar>;
+  using Base::datas;
 
   using Impl = ProximalRiccatiImpl<Scalar>;
   using value_t = typename StageFactor<Scalar>::value_t;
@@ -43,10 +46,9 @@ public:
   using BlkMat = BlkMatrix<MatrixXs, -1, -1>;
   using BlkVec = BlkMatrix<VectorXs, -1, 1>;
 
-  explicit ParallelRiccatiSolver(LQRProblemTpl<Scalar> &problem,
-                                 const uint num_threads)
-      : datas(), numThreads(num_threads), splitIdx(num_threads + 1),
-        problem(problem) {
+  ParallelRiccatiSolver(LQRProblemTpl<Scalar> &problem, const uint num_threads)
+      : Base(), numThreads(num_threads), splitIdx(num_threads + 1),
+        problem_(&problem) {
     ZoneScoped;
 
     uint N = (uint)problem.horizon();
@@ -86,14 +88,14 @@ public:
   void allocateLeg(uint start, uint end, bool last_leg) {
     ZoneScoped;
     for (uint t = start; t < end; t++) {
-      KnotType &knot = problem.stages[t];
+      KnotType &knot = problem_->stages[t];
       if (!last_leg)
         knot.addParameterization(knot.nx);
       datas.emplace_back(knot.nx, knot.nu, knot.nc, knot.nth);
     }
     if (!last_leg) {
       // last knot in the leg needs parameter to be set
-      setupKnot(problem.stages[end - 1]);
+      setupKnot(problem_->stages[end - 1]);
     }
   }
 
@@ -106,7 +108,7 @@ public:
     ALIGATOR_NOMALLOC_END;
   }
 
-  bool backward(Scalar mudyn, Scalar mueq) {
+  bool backward(const Scalar mudyn, const Scalar mueq) {
 
     ALIGATOR_NOMALLOC_BEGIN;
     ZoneScopedN("parallel_backward");
@@ -123,9 +125,9 @@ public:
       uint beg = splitIdx[i];
       uint end = splitIdx[i + 1];
       boost::span<const KnotType> stview =
-          make_span_from_indices(problem.stages, beg, end);
+          make_span_from_indices(problem_->stages, beg, end);
       if (i + 1 < numThreads)
-        setupKnot(problem.stages[end - 1]);
+        setupKnot(problem_->stages[end - 1]);
       boost::span<StageFactor<Scalar>> dtview =
           make_span_from_indices(datas, beg, end);
       ret &= Impl::backwardImpl(stview, mudyn, mueq, dtview);
@@ -153,11 +155,11 @@ public:
     std::vector<MatrixXs> &diagonal = condensedKktSystem.diagonal;
     std::vector<MatrixXs> &superdiagonal = condensedKktSystem.superdiagonal;
 
-    const std::vector<KnotType> &stages = problem.stages;
+    const std::vector<KnotType> &stages = problem_->stages;
 
     diagonal[0].setZero();
     diagonal[0].diagonal().setConstant(-mudyn);
-    superdiagonal[0] = problem.G0;
+    superdiagonal[0] = problem_->G0;
 
     diagonal[1] = datas[0].vm.Pmat;
     superdiagonal[1] = datas[0].vm.Vxt;
@@ -184,7 +186,7 @@ public:
       subdiagonal[i] = superdiagonal[i].transpose();
     }
 
-    condensedKktRhs[0] = -problem.g0;
+    condensedKktRhs[0] = -problem_->g0;
     condensedKktRhs[1] = -datas[0].vm.pvec;
 
     for (size_t i = 0; i < numThreads - 1; i++) {
@@ -196,8 +198,9 @@ public:
     }
   }
 
-  void forward(VectorOfVectors &xs, VectorOfVectors &us, VectorOfVectors &vs,
-               VectorOfVectors &lbdas) {
+  bool forward(VectorOfVectors &xs, VectorOfVectors &us, VectorOfVectors &vs,
+               VectorOfVectors &lbdas,
+               const std::optional<ConstVectorRef> & = std::nullopt) const {
     ALIGATOR_NOMALLOC_BEGIN;
     ZoneScopedN("parallel_forward");
     for (size_t i = 0; i < numThreads; i++) {
@@ -213,8 +216,8 @@ public:
       auto usview = make_span_from_indices(us, splitIdx[i], splitIdx[i + 1]);
       auto vsview = make_span_from_indices(vs, splitIdx[i], splitIdx[i + 1]);
       auto lsview = make_span_from_indices(lbdas, splitIdx[i], splitIdx[i + 1]);
-      auto stview =
-          make_span_from_indices(problem.stages, splitIdx[i], splitIdx[i + 1]);
+      auto stview = make_span_from_indices(problem_->stages, splitIdx[i],
+                                           splitIdx[i + 1]);
       auto dsview = make_span_from_indices(datas, splitIdx[i], splitIdx[i + 1]);
       if (i == numThreads - 1) {
         Impl::forwardImpl(stview, dsview, xsview, usview, vsview, lsview);
@@ -225,9 +228,9 @@ public:
     }
     Eigen::setNbThreads(0);
     ALIGATOR_NOMALLOC_END;
+    return true;
   }
 
-  std::vector<StageFactor<Scalar>> datas;
   /// Number of parallel divisions in the problem: \f$J+1\f$ in the math.
   uint numThreads;
   /// Indices at which the problem should be split.
@@ -237,9 +240,6 @@ public:
   condensed_system_t condensedKktSystem;
   /// Contains the right-hand side and solution of the condensed KKT system.
   BlkVec condensedKktRhs;
-
-  /// An owned copy of the initial problem.
-  LQRProblemTpl<Scalar> &problem;
 
   inline static condensed_system_t
   initializeTridiagSystem(const std::vector<long> &dims) {
@@ -263,6 +263,9 @@ public:
     return {std::move(subdiagonal), std::move(diagonal),
             std::move(superdiagonal)};
   }
+
+protected:
+  LQRProblemTpl<Scalar> *problem_;
 };
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
