@@ -22,22 +22,22 @@ void exposeProblem() {
                     const std::vector<shared_ptr<StageModel>> &,
                     shared_ptr<CostBase>>(
           "Constructor adding the initial constraint explicitly.",
-          bp::args("self", "init_constraint", "stages", "term_cost")))
+          ("self"_a, "init_constraint", "stages", "term_cost")))
       .def(bp::init<ConstVectorRef, const std::vector<shared_ptr<StageModel>> &,
                     shared_ptr<CostBase>>(
           "Constructor for an initial value problem.",
-          bp::args("self", "x0", "stages", "term_cost")))
+          ("self"_a, "x0", "stages", "term_cost")))
       .def(bp::init<shared_ptr<UnaryFunction>, shared_ptr<CostBase>>(
           "Constructor adding the initial constraint explicitly (without "
           "stages).",
-          bp::args("self", "init_constraint", "term_cost")))
+          ("self"_a, "init_constraint", "term_cost")))
       .def(bp::init<ConstVectorRef, const int, shared_ptr<Manifold>,
                     shared_ptr<CostBase>>(
           "Constructor for an initial value problem (without pre-allocated "
           "stages).",
-          bp::args("self", "x0", "nu", "space", "term_cost")))
+          ("self"_a, "x0", "nu", "space", "term_cost")))
       .def<void (TrajOptProblem::*)(const shared_ptr<StageModel> &)>(
-          "addStage", &TrajOptProblem::addStage, bp::args("self", "new_stage"),
+          "addStage", &TrajOptProblem::addStage, ("self"_a, "new_stage"),
           "Add a stage to the problem.")
       .def_readonly("stages", &TrajOptProblem::stages_,
                     "Stages of the shooting problem.")
@@ -45,10 +45,6 @@ void exposeProblem() {
                      "Problem terminal cost.")
       .def_readwrite("term_constraints", &TrajOptProblem::term_cstrs_,
                      "Set of terminal constraints.")
-      .def("getNumThreads", &TrajOptProblem::getNumThreads,
-           "Get the number of threads.")
-      .def("setNumThreads", &TrajOptProblem::setNumThreads,
-           "Set the number of threads for evaluation.")
       .add_property("num_steps", &TrajOptProblem::numSteps,
                     "Number of stages in the problem.")
       .add_property("x0_init", &TrajOptProblem::getInitState,
@@ -56,25 +52,25 @@ void exposeProblem() {
       .add_property("init_constraint", &TrajOptProblem::init_condition_,
                     "Get initial state constraint.")
       .def("addTerminalConstraint", &TrajOptProblem::addTerminalConstraint,
-           bp::args("self", "constraint"), "Add a terminal constraint.")
+           ("self"_a, "constraint"), "Add a terminal constraint.")
       .def("removeTerminalConstraint",
-           &TrajOptProblem::removeTerminalConstraints, bp::args("self"),
+           &TrajOptProblem::removeTerminalConstraints, "self"_a,
            "Remove all terminal constraints.")
       .def("evaluate", &TrajOptProblem::evaluate,
-           bp::args("self", "xs", "us", "prob_data"),
+           ("self"_a, "xs", "us", "prob_data"),
            "Evaluate the problem costs, dynamics, and constraints.")
       .def("computeDerivatives", &TrajOptProblem::computeDerivatives,
-           bp::args("self", "xs", "us", "prob_data"),
+           ("self"_a, "xs", "us", "prob_data"),
            "Evaluate the problem derivatives. Call `evaluate()` first.")
       .def("replaceStageCircular", &TrajOptProblem::replaceStageCircular,
-           bp::args("self", "model"),
+           ("self"_a, "model"),
            "Circularly replace the last stage in the problem, dropping the "
            "first stage.");
 
   bp::register_ptr_to_python<shared_ptr<TrajOptData>>();
   bp::class_<TrajOptData>(
       "TrajOptData", "Data struct for shooting problems.",
-      bp::init<const TrajOptProblem &>(bp::args("self", "problem")))
+      bp::init<const TrajOptProblem &>(("self"_a, "problem")))
       .def_readwrite("init_data", &TrajOptData::init_data,
                      "Initial stage contraint data.")
       .def_readwrite("cost", &TrajOptData::cost_,
