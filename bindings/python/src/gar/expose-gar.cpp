@@ -13,7 +13,7 @@ using namespace gar;
 
 using context::Scalar;
 using prox_riccati_t = ProximalRiccatiSolver<Scalar>;
-using StageFactor = prox_riccati_t::StageFactor;
+using StageFactor = prox_riccati_t::StageFactorType;
 using knot_t = LQRKnotTpl<context::Scalar>;
 using lqr_t = LQRProblemTpl<context::Scalar>;
 } // namespace python
@@ -25,7 +25,7 @@ namespace internal {
 template <>
 struct has_operator_equal<::aligator::python::knot_t> : boost::false_type {};
 template <>
-struct has_operator_equal<::aligator::python::StageFactor> : boost::false_type {
+struct has_operator_equal<::aligator::python::StageFactorType> : boost::false_type {
 };
 } // namespace internal
 } // namespace eigenpy
