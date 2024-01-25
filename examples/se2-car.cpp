@@ -101,6 +101,7 @@ int main() {
   const T mu_init = 1e-2;
   SolverProxDDPTpl<T> solver(1e-4, mu_init);
   solver.verbose_ = VERBOSE;
+  solver.sa_strategy = StepAcceptanceStrategy::FILTER;
   solver.setup(problem);
   solver.run(problem);
 
