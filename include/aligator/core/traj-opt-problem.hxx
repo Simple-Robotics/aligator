@@ -39,12 +39,11 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     shared_ptr<UnaryFunction> init_constraint,
     shared_ptr<CostAbstract> term_cost)
     : init_condition_(init_constraint), term_cost_(term_cost),
-      unone_(term_cost->nu), init_state_error_(nullptr), num_threads_(1) {
+      unone_(term_cost->nu),
+      init_state_error_(
+          dynamic_cast<StateErrorResidual *>(init_condition_.get())),
+      num_threads_(1) {
   unone_.setZero();
-  if (auto se =
-          std::dynamic_pointer_cast<StateErrorResidual>(init_condition_)) {
-    init_state_error_ = se.get();
-  }
 }
 
 template <typename Scalar>
@@ -59,11 +58,12 @@ Scalar TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
                                            const std::vector<VectorXs> &us,
                                            Data &prob_data) const {
   const std::size_t nsteps = numSteps();
-  const bool sizes_correct = (xs.size() == nsteps + 1) && (us.size() == nsteps);
-  if (!sizes_correct) {
+  if (xs.size() != nsteps + 1)
     ALIGATOR_RUNTIME_ERROR(fmt::format(
-        "Wrong size for xs or us, expected us.size = {:d}", nsteps));
-  }
+        "Wrong size for xs (got {:d}, expected {:d})", xs.size(), nsteps + 1));
+  if (us.size() != nsteps)
+    ALIGATOR_RUNTIME_ERROR(fmt::format(
+        "Wrong size for us (got {:d}, expected {:d})", us.size(), nsteps));
 
   init_condition_->evaluate(xs[0], *prob_data.init_data);
 
@@ -88,11 +88,12 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
     const std::vector<VectorXs> &xs, const std::vector<VectorXs> &us,
     Data &prob_data) const {
   const std::size_t nsteps = numSteps();
-  const bool sizes_correct = (xs.size() == nsteps + 1) && (us.size() == nsteps);
-  if (!sizes_correct) {
+  if (xs.size() != nsteps + 1)
     ALIGATOR_RUNTIME_ERROR(fmt::format(
-        "Wrong size for xs or us, expected us.size = {:d}", nsteps));
-  }
+        "Wrong size for xs (got {:d}, expected {:d})", xs.size(), nsteps + 1));
+  if (us.size() != nsteps)
+    ALIGATOR_RUNTIME_ERROR(fmt::format(
+        "Wrong size for us (got {:d}, expected {:d})", us.size(), nsteps));
 
   init_condition_->computeJacobians(xs[0], *prob_data.init_data);
 
