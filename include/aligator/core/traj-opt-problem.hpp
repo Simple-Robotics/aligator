@@ -154,7 +154,8 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 
   /// @brief Rollout the problem costs, constraints, dynamics, stage per stage.
   Scalar evaluate(const std::vector<VectorXs> &xs,
-                  const std::vector<VectorXs> &us, Data &prob_data) const;
+                  const std::vector<VectorXs> &us, Data &prob_data,
+                  const std::size_t num_threads = 1) const;
 
   /**
    * @brief Rollout the problem derivatives, stage per stage.
@@ -163,8 +164,8 @@ template <typename _Scalar> struct TrajOptProblemTpl {
    * @param us Control sequence
    */
   void computeDerivatives(const std::vector<VectorXs> &xs,
-                          const std::vector<VectorXs> &us,
-                          Data &prob_data) const;
+                          const std::vector<VectorXs> &us, Data &prob_data,
+                          const std::size_t num_threads = 1) const;
 
   /// @brief Pop out the first StageModel and replace by the supplied one;
   /// updates the supplied problem data (TrajOptDataTpl) object.
@@ -176,21 +177,18 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   Scalar computeTrajectoryCost(const Data &problem_data) const;
 
   /// @brief  Set the number of threads for multithreaded evaluation.
-  void setNumThreads(std::size_t num_threads) {
+  inline void checkMultithreadingEnabled() const {
 #ifndef ALIGATOR_MULTITHREADING
-    fmt::print("{} does nothing: aligator was not compiled with multithreading "
+    fmt::print("'num_threads' does nothing: aligator was not compiled with "
+               "multithreading "
                "support.\n",
                __FUNCTION__);
 #endif
-    num_threads_ = num_threads;
   }
-  /// @brief  Get the number of threads.
-  std::size_t getNumThreads() const { return num_threads_; }
 
 protected:
   /// Pointer to underlying state error residual
   StateErrorResidual *init_state_error_;
-  std::size_t num_threads_;
   /// @brief Check if all stages are non-null.
   void checkStages() const;
 

@@ -57,10 +57,10 @@ void exposeProblem() {
            &TrajOptProblem::removeTerminalConstraints, "self"_a,
            "Remove all terminal constraints.")
       .def("evaluate", &TrajOptProblem::evaluate,
-           ("self"_a, "xs", "us", "prob_data"),
+           ("self"_a, "xs", "us", "prob_data", "num_threads"_a = 1),
            "Evaluate the problem costs, dynamics, and constraints.")
       .def("computeDerivatives", &TrajOptProblem::computeDerivatives,
-           ("self"_a, "xs", "us", "prob_data"),
+           ("self"_a, "xs", "us", "prob_data", "num_threads"_a = 1),
            "Evaluate the problem derivatives. Call `evaluate()` first.")
       .def("replaceStageCircular", &TrajOptProblem::replaceStageCircular,
            ("self"_a, "model"),
