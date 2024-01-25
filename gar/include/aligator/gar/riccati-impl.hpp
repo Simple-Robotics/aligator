@@ -122,9 +122,9 @@ template <typename Scalar> struct ProximalRiccatiImpl {
   /// Forward sweep.
   inline static bool
   forwardImpl(boost::span<const KnotType> stages,
-              boost::span<const StageFactorType> datas, boost::span<VectorXs> xs,
-              boost::span<VectorXs> us, boost::span<VectorXs> vs,
-              boost::span<VectorXs> lbdas,
+              boost::span<const StageFactorType> datas,
+              boost::span<VectorXs> xs, boost::span<VectorXs> us,
+              boost::span<VectorXs> vs, boost::span<VectorXs> lbdas,
               const std::optional<ConstVectorRef> &theta_ = std::nullopt);
 };
 

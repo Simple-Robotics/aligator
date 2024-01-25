@@ -16,7 +16,7 @@ using parallel_solver_t = gar::ParallelRiccatiSolver<Scalar>;
 void exposeParallelSolver() {
   bp::class_<parallel_solver_t, boost::noncopyable>("ParallelRiccatiSolver",
                                                     bp::no_init)
-      .def(bp::init<const lqr_t &, uint>(("self"_a, "problem", "num_threads")))
+      .def(bp::init<lqr_t &, uint>(("self"_a, "problem", "num_threads")))
       .def_readonly("datas", &parallel_solver_t::datas)
       .def("backward", &parallel_solver_t::backward,
            ("self"_a, "mudyn", "mueq"))

@@ -25,8 +25,8 @@ namespace internal {
 template <>
 struct has_operator_equal<::aligator::python::knot_t> : boost::false_type {};
 template <>
-struct has_operator_equal<::aligator::python::StageFactorType> : boost::false_type {
-};
+struct has_operator_equal<::aligator::python::StageFactorType>
+    : boost::false_type {};
 } // namespace internal
 } // namespace eigenpy
 #endif

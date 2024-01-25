@@ -43,7 +43,7 @@ public:
   using BlkMat = BlkMatrix<MatrixXs, -1, -1>;
   using BlkVec = BlkMatrix<VectorXs, -1, 1>;
 
-  explicit ParallelRiccatiSolver(const LQRProblemTpl<Scalar> &problem,
+  explicit ParallelRiccatiSolver(LQRProblemTpl<Scalar> &problem,
                                  const uint num_threads)
       : datas(), numThreads(num_threads), splitIdx(num_threads + 1),
         problem(problem) {
@@ -99,9 +99,11 @@ public:
 
   static void setupKnot(KnotType &knot) {
     ZoneScoped;
+    ALIGATOR_NOMALLOC_BEGIN;
     knot.Gx = knot.A.transpose();
     knot.Gu = knot.B.transpose();
     knot.gamma = knot.f;
+    ALIGATOR_NOMALLOC_END;
   }
 
   bool backward(Scalar mudyn, Scalar mueq) {
@@ -237,7 +239,7 @@ public:
   BlkVec condensedKktRhs;
 
   /// An owned copy of the initial problem.
-  LQRProblemTpl<Scalar> problem;
+  LQRProblemTpl<Scalar> &problem;
 
   inline static condensed_system_t
   initializeTridiagSystem(const std::vector<long> &dims) {

@@ -30,7 +30,7 @@ static void BM_serial(benchmark::State &state) {
 template <uint NPROC> static void BM_parallel(benchmark::State &state) {
   uint horz = (uint)state.range(0);
   VectorXs x0 = VectorXs::NullaryExpr(nx, normal_unary_op{});
-  const LQRProblemTpl<double> problem = generate_problem(x0, horz, nx, nu);
+  LQRProblemTpl<double> problem = generate_problem(x0, horz, nx, nu);
   ParallelRiccatiSolver<double> solver(problem, NPROC);
   const double mu = 1e-11;
   auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
