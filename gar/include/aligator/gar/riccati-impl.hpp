@@ -18,12 +18,12 @@ template <typename Scalar> struct StageFactor {
   using RowMatrixXs = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
 
   struct value_t {
-    MatrixXs Pmat;                  //< Riccati matrix
-    VectorXs pvec;                  //< Riccati bias
-    MatrixXs schurMat;              //< Dual-space Schur matrix
-    MatrixXs Vxx;                   //< "cost-to-go" matrix
-    VectorXs vx;                    //< "cost-to-go" gradient
-    Eigen::LLT<MatrixXs> Pchol;     //< Cholesky decomposition of Pmat
+    MatrixXs Pmat;                       //< Riccati matrix
+    VectorXs pvec;                       //< Riccati bias
+    MatrixXs schurMat;                   //< Dual-space Schur matrix
+    MatrixXs Vxx;                        //< "cost-to-go" matrix
+    VectorXs vx;                         //< "cost-to-go" gradient
+    Eigen::BunchKaufman<MatrixXs> Pchol; //< Cholesky decomposition of Pmat
     Eigen::LLT<MatrixXs> schurChol; //< Cholesky decomposition of Schur matrix
     MatrixXs Vxt;
     MatrixXs Vtt;
