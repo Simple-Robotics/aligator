@@ -330,6 +330,7 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
                                    const std::vector<VectorXs> &xs_init,
                                    const std::vector<VectorXs> &us_init,
                                    const std::vector<VectorXs> &lams_init) {
+  ZoneScoped;
   if (!workspace_.isInitialized() || !results_.isInitialized()) {
     ALIGATOR_RUNTIME_ERROR("workspace and results were not allocated yet!");
   }
