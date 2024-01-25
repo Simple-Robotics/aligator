@@ -166,6 +166,21 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
   printKktError(err_merged, "KKT error (merged)");
 }
 
+/// Randomize some of the parameters of the problem. This simulates something
+/// like updating the LQ problem in SQP.
+void randomly_modify_problem(problem_t &prob) {
+  auto N = size_t(prob.horizon());
+  std::vector<size_t> idx = {0, N / 3, N / 2, N / 2 + 1, N / 2 + 2, N};
+  for (auto i : idx) {
+    auto &kn = prob.stages.at(i);
+    kn.A = kn.A.NullaryExpr(kn.nx, kn.nx, normal_unary_op{});
+    kn.B.setRandom();
+    kn.q = kn.q.NullaryExpr(kn.nx, normal_unary_op{});
+    kn.R.setIdentity();
+    kn.S.setZero();
+  }
+}
+
 BOOST_AUTO_TEST_CASE(parallel_solver_class) {
   BOOST_TEST_MESSAGE("parallel_solver_class");
   uint nx = 2;
@@ -208,8 +223,7 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
 
   parSolver.backward(mu, mu);
   parSolver.forward(xs, us, vs, lbdas);
-  KktError err =
-      computeKktError(problemRef, xs, us, vs, lbdas, std::nullopt, mu, mu);
+  KktError err = computeKktError(problem, xs, us, vs, lbdas, mu, mu);
   printKktError(err);
   BOOST_CHECK_LE(err.max, tol);
 
@@ -231,4 +245,17 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
   fmt::print("lerrs = {}\n", lerr);
   BOOST_CHECK_LE(xerr, tol);
   BOOST_CHECK_LE(lerr, tol);
+
+  BOOST_TEST_MESSAGE("Run Parallel solver again [tweak the problem]");
+  for (size_t i = 0; i < 10; i++) {
+    randomly_modify_problem(problem);
+    parSolver.backward(mu, mu);
+    parSolver.forward(xs, us, vs, lbdas);
+    KktError e = computeKktError(problem, xs, us, vs, lbdas, mu, mu);
+    printKktError(e);
+    BOOST_CHECK_LE(e.max, tol);
+    for (uint t = 0; t <= horizon; t++) {
+      fmt::print("xs[{:d}] = {}\n", t, xs[t].transpose());
+    }
+  }
 }
