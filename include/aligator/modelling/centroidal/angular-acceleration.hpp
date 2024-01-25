@@ -21,7 +21,7 @@ public:
   AngularAccelerationResidualTpl(
       const int &ndx, const int &nu, const double &mass,
       const Vector3s &gravity,
-      const std::vector<std::pair<std::size_t, Vector3s>> &contact_map)
+      const std::vector<std::pair<bool, Vector3s>> &contact_map)
       : Base(ndx, nu, 3), nk_(nu / 3), mass_(mass), gravity_(gravity),
         contact_map_(contact_map) {
     if (contact_map.size() != nk_) {
@@ -42,7 +42,7 @@ public:
     return allocate_shared_eigen_aligned<Data>(this);
   }
 
-  std::vector<std::pair<std::size_t, Vector3s>> contact_map_;
+  std::vector<std::pair<bool, Vector3s>> contact_map_;
 
 protected:
   const std::size_t nk_;

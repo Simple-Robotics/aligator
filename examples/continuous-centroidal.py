@@ -52,40 +52,46 @@ gaits = (
 
 """ Define contact points throughout horizon"""
 cp1 = [
-    (0, np.array([0.2, 0.1, 0.0])),
-    (1, np.array([0.2, 0.0, 0.0])),
-    (2, np.array([0.0, 0.1, 0.0])),
-    (3, np.array([0.0, 0.0, 0])),
+    (True, np.array([0.2, 0.1, 0.0])),
+    (True, np.array([0.2, 0.0, 0.0])),
+    (True, np.array([0.0, 0.1, 0.0])),
+    (True, np.array([0.0, 0.0, 0])),
 ]
 cp2 = [
-    (1, np.array([0.2, 0.0, 0.0])),
-    (2, np.array([0.0, 0.1, 0.0])),
+    (False, np.array([0.2, 0.1, 0.0])),
+    (True, np.array([0.2, 0.0, 0.0])),
+    (True, np.array([0.0, 0.1, 0.0])),
+    (False, np.array([0.0, 0.0, 0])),
 ]
 cp3 = [
-    (0, np.array([0.25, 0.1, 0.0])),
-    (1, np.array([0.2, 0.0, 0.0])),
-    (2, np.array([0.0, 0.1, 0.0])),
-    (3, np.array([0.05, 0.0, 0])),
+    (True, np.array([0.25, 0.1, 0.0])),
+    (True, np.array([0.2, 0.0, 0.0])),
+    (True, np.array([0.0, 0.1, 0.0])),
+    (True, np.array([0.05, 0.0, 0])),
 ]
 cp4 = [
-    (0, np.array([0.25, 0.1, 0.0])),
-    (3, np.array([0.05, 0.0, 0])),
+    (True, np.array([0.25, 0.1, 0.0])),
+    (False, np.array([0.2, 0.0, 0.0])),
+    (False, np.array([0.0, 0.1, 0.0])),
+    (True, np.array([0.05, 0.0, 0])),
 ]
 cp5 = [
-    (0, np.array([0.25, 0.1, 0.0])),
-    (1, np.array([0.25, 0.0, 0.0])),
-    (2, np.array([0.05, 0.1, 0.0])),
-    (3, np.array([0.05, 0.0, 0])),
+    (True, np.array([0.25, 0.1, 0.0])),
+    (True, np.array([0.25, 0.0, 0.0])),
+    (True, np.array([0.05, 0.1, 0.0])),
+    (True, np.array([0.05, 0.0, 0])),
 ]
 cp6 = [
-    (1, np.array([0.25, 0.0, 0.0])),
-    (2, np.array([0.05, 0.1, 0.0])),
+    (False, np.array([0.2, 0.0, 0.0])),
+    (True, np.array([0.25, 0.0, 0.0])),
+    (True, np.array([0.05, 0.1, 0.0])),
+    (False, np.array([0.2, 0.0, 0.0])),
 ]
 cp7 = [
-    (0, np.array([0.3, 0.1, 0.0])),
-    (1, np.array([0.25, 0.0, 0.0])),
-    (2, np.array([0.05, 0.1, 0.0])),
-    (3, np.array([0.1, 0.0, 0])),
+    (True, np.array([0.3, 0.1, 0.0])),
+    (True, np.array([0.25, 0.0, 0.0])),
+    (True, np.array([0.05, 0.1, 0.0])),
+    (True, np.array([0.1, 0.0, 0])),
 ]
 contact_points = (
     [cp1] * T_ds
@@ -106,9 +112,6 @@ w_angular_acc = 0.1 * np.eye(3)
 w_linear_mom = 10 * np.eye(3)
 w_linear_acc = 100 * np.eye(3)
 
-# Regularize linear momentum only
-state_w = np.diag(np.array([0, 0, 0, 10, 10, 10, 0, 0, 0] + [0] * nu_max))
-
 
 def create_dynamics(nspace, cp):
     ode = dynamics.ContinuousCentroidalFwdDynamics(nspace, len(cp), mass, gravity, cp)
@@ -117,31 +120,28 @@ def create_dynamics(nspace, cp):
 
 
 def createStage(cp):
-    nu = len(cp) * 3
-    nnx = 9 + nu
-    nspace = manifolds.VectorSpace(nnx)
     w_control = np.eye(nu) * 1e-3
     u0 = np.zeros(nu)
-    rcost = aligator.CostStack(nspace, nu)
+    rcost = aligator.CostStack(space, nu)
 
-    linear_acc = aligator.CentroidalAccelerationResidual(nxc, nu, mass, gravity)
+    linear_acc = aligator.CentroidalAccelerationResidual(nxc, nu, mass, gravity, cp)
     linear_mom = aligator.LinearMomentumResidual(nxc, nu, np.zeros(3))
     angular_acc = aligator.AngularAccelerationResidual(nxc, nu, mass, gravity, cp)
     wrapped_linear_acc = aligator.CentroidalWrapperResidual(linear_acc)
     wrapped_angular_acc = aligator.CentroidalWrapperResidual(angular_acc)
     wrapped_linear_mom = aligator.CentroidalWrapperResidual(linear_mom)
 
-    rcost.addCost(aligator.QuadraticControlCost(nspace, u0, w_control))
+    rcost.addCost(aligator.QuadraticControlCost(space, u0, w_control))
     rcost.addCost(
-        aligator.QuadraticResidualCost(nspace, wrapped_linear_mom, w_linear_mom)
+        aligator.QuadraticResidualCost(space, wrapped_linear_mom, w_linear_mom)
     )
     rcost.addCost(
-        aligator.QuadraticResidualCost(nspace, wrapped_angular_acc, w_angular_acc)
+        aligator.QuadraticResidualCost(space, wrapped_angular_acc, w_angular_acc)
     )
     rcost.addCost(
-        aligator.QuadraticResidualCost(nspace, wrapped_linear_acc, w_linear_acc)
+        aligator.QuadraticResidualCost(space, wrapped_linear_acc, w_linear_acc)
     )
-    stm = aligator.StageModel(rcost, create_dynamics(nspace, cp))
+    stm = aligator.StageModel(rcost, create_dynamics(space, cp))
     for i in range(len(cp)):
         cone_cstr = aligator.FrictionConeResidual(nxc, nu, i, mu)
         wrapped_cstr = aligator.CentroidalWrapperResidual(cone_cstr)
@@ -157,8 +157,11 @@ term_cost = aligator.CostStack(space, nu)
 stages = []
 for i in range(T):
     stages.append(createStage(contact_points[i]))
-linear_acc_cstr = aligator.CentroidalWrapperResidual(
-    aligator.CentroidalAccelerationResidual(nxc, nu, mass, gravity)
+init_linear_acc_cstr = aligator.CentroidalWrapperResidual(
+    aligator.CentroidalAccelerationResidual(nxc, nu, mass, gravity, contact_points[0])
+)
+ter_linear_acc_cstr = aligator.CentroidalWrapperResidual(
+    aligator.CentroidalAccelerationResidual(nxc, nu, mass, gravity, contact_points[-1])
 )
 angular_acc_cstr = aligator.CentroidalWrapperResidual(
     aligator.AngularAccelerationResidual(nx, nu, mass, gravity, contact_points[-1])
@@ -170,13 +173,13 @@ init_linear_mom = aligator.CentroidalWrapperResidual(
 ter_angular_mom = aligator.CentroidalWrapperResidual(
     aligator.AngularMomentumResidual(nxc, nu, np.array([0, 0, 0]))
 )
-stages[0].addConstraint(linear_acc_cstr, constraints.EqualityConstraintSet())
+# stages[0].addConstraint(init_linear_acc_cstr, constraints.EqualityConstraintSet())
 # stages[0].addConstraint(angular_acc_cstr, constraints.EqualityConstraintSet())
-stages[0].addConstraint(init_linear_mom, constraints.EqualityConstraintSet())
+# stages[0].addConstraint(init_linear_mom, constraints.EqualityConstraintSet())
 
-stages[-1].addConstraint(linear_acc_cstr, constraints.EqualityConstraintSet())
-stages[-1].addConstraint(init_linear_mom, constraints.EqualityConstraintSet())
-stages[-1].addConstraint(ter_angular_mom, constraints.EqualityConstraintSet())
+stages[-1].addConstraint(ter_linear_acc_cstr, constraints.EqualityConstraintSet())
+# stages[-1].addConstraint(init_linear_mom, constraints.EqualityConstraintSet())
+# stages[-1].addConstraint(ter_angular_mom, constraints.EqualityConstraintSet())
 # stages[-1].addConstraint(angular_acc_cstr, constraints.EqualityConstraintSet())
 problem = aligator.TrajOptProblem(x0, stages, term_cost)
 
@@ -194,7 +197,7 @@ problem.addTerminalConstraint(term_constraint_com)
 TOL = 1e-5
 mu_init = 1e-8
 rho_init = 0.0
-max_iters = 100
+max_iters = 500
 verbose = aligator.VerboseLevel.VERBOSE
 solver = aligator.SolverProxDDP(TOL, mu_init, rho_init, verbose=verbose)
 # solver = aligator.SolverFDDP(TOL, verbose=verbose)
@@ -263,8 +266,8 @@ for i in range(T):
     angular_momentum[2].append(results.xs[i][8])
     s = 0
     for j in range(nk):
-        if j in gaits[i]:
-            forces_z[j].append(results.us[i][s * 3 + 2])
+        if contact_points[i][j][0]:
+            forces_z[j].append(results.xs[i][9 + s * 3 + 2])
             s += 1
         else:
             forces_z[j].append(0)

@@ -127,8 +127,8 @@ void exposeODEs() {
       "CentroidalFwdDynamics",
       "Nonlinear centroidal dynamics with preplanned feet positions",
       bp::init<const shared_ptr<proxsuite::nlp::VectorSpaceTpl<Scalar>> &,
-               const int &, const double &, const Vector3s &,
-               const std::vector<std::pair<std::size_t, Vector3s>> &>(
+               const std::size_t &, const double &, const Vector3s &,
+               const std::vector<std::pair<bool, Vector3s>> &>(
           bp::args("self", "space", "max number of contacts", "total mass",
                    "gravity", "contact_map")))
       .def_readwrite("contact_map", &CentroidalFwdDynamics::contact_map_)
@@ -144,7 +144,7 @@ void exposeODEs() {
       "forces",
       bp::init<const shared_ptr<proxsuite::nlp::VectorSpaceTpl<Scalar>> &,
                const int &, const double &, const Vector3s &,
-               const std::vector<std::pair<std::size_t, Vector3s>> &>(
+               const std::vector<std::pair<bool, Vector3s>> &>(
           bp::args("self", "space", "max number of contacts", "total mass",
                    "gravity", "contact_map")))
       .def_readwrite("contact_map",
@@ -156,9 +156,9 @@ void exposeODEs() {
   bp::class_<ContinuousCentroidalFwdDataTpl<Scalar>, bp::bases<ODEData>>(
       "ContinuousCentroidalFwdData", bp::no_init);
 
-  eigenpy::StdPairConverter<std::pair<std::size_t, Vector3s>>::registration();
-  StdVectorPythonVisitor<std::vector<std::pair<std::size_t, Vector3s>>,
-                         true>::expose("StdVec_StdPair_map");
+  eigenpy::StdPairConverter<std::pair<bool, Vector3s>>::registration();
+  StdVectorPythonVisitor<std::vector<std::pair<bool, Vector3s>>, true>::expose(
+      "StdVec_StdPair_map");
 
   StdVectorPythonVisitor<StdVectorEigenAligned<Vector3s>, true>::expose(
       "StdVec_Vector3s");

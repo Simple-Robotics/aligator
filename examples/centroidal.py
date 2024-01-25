@@ -98,7 +98,7 @@ dt = 0.01  # timestep
 """ Create dynamics and costs """
 
 w_angular_acc = 0.1 * np.eye(3)
-w_linear_mom = 500 * np.eye(3)
+w_linear_mom = 10 * np.eye(3)
 w_linear_acc = 100 * np.eye(3)
 
 # Regularize linear momentum only
@@ -117,11 +117,12 @@ def createStage(cp):
     u0 = np.zeros(nu)
     rcost = aligator.CostStack(space, nu)
 
-    linear_acc = aligator.CentroidalAccelerationResidual(nx, nu, mass, gravity)
+    linear_acc = aligator.CentroidalAccelerationResidual(nx, nu, mass, gravity, cp)
     angular_acc = aligator.AngularAccelerationResidual(nx, nu, mass, gravity, cp)
+    linear_mom = aligator.LinearMomentumResidual(nx, nu, np.zeros(3))
 
     rcost.addCost(aligator.QuadraticControlCost(space, u0, w_control))
-    rcost.addCost(aligator.QuadraticStateCost(space, nu, x0, state_w))
+    rcost.addCost(aligator.QuadraticResidualCost(space, linear_mom, w_linear_mom))
     rcost.addCost(aligator.QuadraticResidualCost(space, angular_acc, w_angular_acc))
     rcost.addCost(aligator.QuadraticResidualCost(space, linear_acc, w_linear_acc))
     stm = aligator.StageModel(rcost, create_dynamics(cp))
@@ -139,17 +140,22 @@ term_cost = aligator.CostStack(space, nu)
 stages = []
 for i in range(T):
     stages.append(createStage(contact_points[i]))
-linear_acc_cstr = aligator.CentroidalAccelerationResidual(nx, nu, mass, gravity)
+init_linear_acc_cstr = aligator.CentroidalAccelerationResidual(
+    nx, nu, mass, gravity, contact_points[0]
+)
+ter_linear_acc_cstr = aligator.CentroidalAccelerationResidual(
+    nx, nu, mass, gravity, contact_points[-1]
+)
 angular_acc_cstr = aligator.AngularAccelerationResidual(
     nx, nu, mass, gravity, contact_points[-1]
 )
 init_linear_mom = aligator.LinearMomentumResidual(nx, nu, np.array([0, 0, 0]))
 ter_angular_mom = aligator.AngularMomentumResidual(nx, nu, np.array([0, 0, 0]))
-stages[0].addConstraint(linear_acc_cstr, constraints.EqualityConstraintSet())
+stages[0].addConstraint(init_linear_acc_cstr, constraints.EqualityConstraintSet())
 # stages[0].addConstraint(angular_acc_cstr, constraints.EqualityConstraintSet())
 stages[0].addConstraint(init_linear_mom, constraints.EqualityConstraintSet())
 
-stages[-1].addConstraint(linear_acc_cstr, constraints.EqualityConstraintSet())
+stages[-1].addConstraint(ter_linear_acc_cstr, constraints.EqualityConstraintSet())
 stages[-1].addConstraint(init_linear_mom, constraints.EqualityConstraintSet())
 stages[-1].addConstraint(ter_angular_mom, constraints.EqualityConstraintSet())
 # stages[-1].addConstraint(angular_acc_cstr, constraints.EqualityConstraintSet())

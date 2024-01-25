@@ -38,14 +38,14 @@ struct CentroidalFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   const std::size_t nk_;
   const double mass_;
   Vector3s gravity_;
-  std::vector<std::pair<std::size_t, Vector3s>> contact_map_;
+  std::vector<std::pair<bool, Vector3s>> contact_map_;
 
   const Manifold &space() const { return *space_; }
 
   CentroidalFwdDynamicsTpl(
-      const ManifoldPtr &state, const int &nk, const double &mass,
+      const ManifoldPtr &state, const std::size_t &nk, const double &mass,
       const Vector3s &gravity,
-      const std::vector<std::pair<std::size_t, Vector3s>> &contact_map);
+      const std::vector<std::pair<bool, Vector3s>> &contact_map);
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                BaseData &data) const;

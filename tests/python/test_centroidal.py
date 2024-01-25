@@ -129,8 +129,14 @@ def test_acceleration():
     dx = np.random.randn(space.ndx) * 0.1
     x0 = space.integrate(x0, dx)
     u0 = np.random.randn(nu)
+    contact_map = [
+        (True, np.array([0.2, 0.1, 0.0])),
+        (True, np.array([0.2, 0.0, 0.0])),
+        (True, np.array([0.0, 0.1, 0.0])),
+        (True, np.array([0.0, 0.0, 0])),
+    ]
 
-    fun = aligator.CentroidalAccelerationResidual(ndx, nu, mass, gravity)
+    fun = aligator.CentroidalAccelerationResidual(ndx, nu, mass, gravity, contact_map)
 
     fdata = fun.createData()
     fun.evaluate(x0, u0, x0, fdata)
@@ -205,10 +211,10 @@ def test_angular_acceleration():
     x0 = space.integrate(x0, dx)
     u0 = np.random.randn(nu)
     contact_map = [
-        (0, np.array([0.2, 0.1, 0.0])),
-        (1, np.array([0.2, 0.0, 0.0])),
-        (2, np.array([0.0, 0.1, 0.0])),
-        (3, np.array([0.0, 0.0, 0])),
+        (True, np.array([0.2, 0.1, 0.0])),
+        (True, np.array([0.2, 0.0, 0.0])),
+        (True, np.array([0.0, 0.1, 0.0])),
+        (True, np.array([0.0, 0.0, 0])),
     ]
     fun = aligator.AngularAccelerationResidual(ndx, nu, mass, gravity, contact_map)
 
@@ -257,10 +263,10 @@ def test_wrapper_angular_acceleration():
     wrapping_space = manifolds.VectorSpace(ndx_w)
 
     contact_map = [
-        (0, np.array([0.2, 0.1, 0.0])),
-        (1, np.array([0.2, 0.0, 0.0])),
-        (2, np.array([0.0, 0.1, 0.0])),
-        (3, np.array([0.0, 0.0, 0])),
+        (True, np.array([0.2, 0.1, 0.0])),
+        (True, np.array([0.2, 0.0, 0.0])),
+        (True, np.array([0.0, 0.1, 0.0])),
+        (True, np.array([0.0, 0.0, 0])),
     ]
     wrapped_fun = aligator.AngularAccelerationResidual(
         ndx, nu, mass, gravity, contact_map
@@ -290,8 +296,8 @@ def test_wrapper_angular_acceleration():
         x1 = wrapping_space.integrate(x0, dx)
         fun.evaluate(x1, fdata)
         fun.computeJacobians(x1, fdata)
-        fun_fd.evaluate(x1, u0, x0, fdata2)
-        fun_fd.computeJacobians(x1, u0, x0, fdata2)
+        fun_fd.evaluate(x1, u0, x1, fdata2)
+        fun_fd.computeJacobians(x1, u0, x1, fdata2)
         assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
 
 

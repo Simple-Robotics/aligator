@@ -93,8 +93,9 @@ void exposeCentroidalFunctions() {
   bp::class_<CentroidalAccelerationResidual, bp::bases<StageFunction>>(
       "CentroidalAccelerationResidual",
       "A residual function :math:`r(x) = cddot(x)` ",
-      bp::init<const int, const int, const double, const context::Vector3s>(
-          bp::args("self", "ndx", "nu", "mass", "gravity")))
+      bp::init<const int, const int, const double, const context::Vector3s,
+               const std::vector<std::pair<bool, context::Vector3s>> &>(
+          bp::args("self", "ndx", "nu", "mass", "gravity", "contact_map")))
       .def(CreateDataPythonVisitor<CentroidalAccelerationResidual>());
 
   bp::register_ptr_to_python<shared_ptr<CentroidalAccelerationData>>();
@@ -119,7 +120,7 @@ void exposeCentroidalFunctions() {
       "A residual function :math:`r(x) = Ldot(x)` ",
       bp::init<const int &, const int &, const double &,
                const context::Vector3s &,
-               const std::vector<std::pair<std::size_t, context::Vector3s>> &>(
+               const std::vector<std::pair<bool, context::Vector3s>> &>(
           bp::args("self", "ndx", "nu", "mass", "gravity", "contact_map")))
       .def_readwrite("contact_map", &AngularAccelerationResidual::contact_map_)
       .def(CreateDataPythonVisitor<AngularAccelerationResidual>());
@@ -142,9 +143,8 @@ void exposeCentroidalFunctions() {
       "CentroidalWrapperData", "Data Structure for CentroidalWrapper",
       bp::no_init);
 
-  eigenpy::StdPairConverter<
-      std::pair<std::size_t, context::Vector3s>>::registration();
-  StdVectorPythonVisitor<std::vector<std::pair<std::size_t, context::Vector3s>>,
+  eigenpy::StdPairConverter<std::pair<bool, context::Vector3s>>::registration();
+  StdVectorPythonVisitor<std::vector<std::pair<bool, context::Vector3s>>,
                          true>::expose("StdVec_StdPair_map");
 }
 
