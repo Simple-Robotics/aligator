@@ -133,11 +133,11 @@ void ProximalRiccatiImpl<Scalar>::solveSingleStage(const KnotType &model,
 
   VectorRef kff = d.ff.blockSegment(0);
   VectorRef zff = d.ff.blockSegment(1);
-  VectorRef xi = d.ff.blockSegment(2);
-  VectorRef a = d.ff.blockSegment(3);
-  a = vn.Pchol.solve(-vn.pvec);
+  VectorRef lff = d.ff.blockSegment(2);
+  VectorRef yff = d.ff.blockSegment(3);
+  yff = vn.Pchol.solve(-vn.pvec);
 
-  vn.vx.noalias() = model.f + model.E * a;
+  vn.vx.noalias() = model.f + model.E * yff;
 
   // fill feedback system
   d.qhat.noalias() = model.q + d.AtV * vn.vx;
@@ -147,7 +147,7 @@ void ProximalRiccatiImpl<Scalar>::solveSingleStage(const KnotType &model,
 
   RowMatrixRef K = d.fb.blockRow(0);
   RowMatrixRef Z = d.fb.blockRow(1);
-  RowMatrixRef Xi = d.fb.blockRow(2);
+  RowMatrixRef L = d.fb.blockRow(2);
   RowMatrixRef A = d.fb.blockRow(3);
   K = -d.Shat.transpose();
   Z = -model.C;
@@ -157,14 +157,14 @@ void ProximalRiccatiImpl<Scalar>::solveSingleStage(const KnotType &model,
   d.kktChol.solveInPlace(fbview.matrix());
 
   // set closed loop dynamics
-  xi.noalias() = vn.Vxx * vn.vx;
-  xi.noalias() += d.BtV.transpose() * kff;
+  lff.noalias() = vn.Vxx * vn.vx;
+  lff.noalias() += d.BtV.transpose() * kff;
 
-  Xi.noalias() = vn.Vxx * model.A;
-  Xi.noalias() += d.BtV.transpose() * K;
+  L.noalias() = vn.Vxx * model.A;
+  L.noalias() += d.BtV.transpose() * K;
 
-  a.noalias() -= d.PinvEt * xi;
-  A.noalias() = d.PinvEt * Xi;
+  yff.noalias() -= d.PinvEt * lff;
+  A.noalias() = d.PinvEt * L;
   A *= -1;
 
   value_t &vc = d.vm;
@@ -176,16 +176,16 @@ void ProximalRiccatiImpl<Scalar>::solveSingleStage(const KnotType &model,
     ZoneScopedN("stage_solve_parameter");
     RowMatrixRef Kth = d.fth.blockRow(0);
     RowMatrixRef Zth = d.fth.blockRow(1);
-    RowMatrixRef Xith = d.fth.blockRow(2);
-    RowMatrixRef Ath = d.fth.blockRow(3);
+    RowMatrixRef Lth = d.fth.blockRow(2);
+    RowMatrixRef Yth = d.fth.blockRow(3);
 
     // store -Pinv * L
-    Ath = vn.Pchol.solve(-vn.Vxt);
+    Yth = vn.Pchol.solve(-vn.Vxt);
     // store -V * E * Pinv * L
-    Xith.noalias() = model.E * Ath;
+    Lth.noalias() = model.E * Yth;
 
-    d.Gxhat.noalias() = model.Gx + d.AtV * Xith;
-    d.Guhat.noalias() = model.Gu + d.BtV * Xith;
+    d.Gxhat.noalias() = model.Gx + d.AtV * Lth;
+    d.Guhat.noalias() = model.Gu + d.BtV * Lth;
 
     // set rhs of 2x2 block system and solve
     Kth = -d.Guhat;
@@ -194,15 +194,15 @@ void ProximalRiccatiImpl<Scalar>::solveSingleStage(const KnotType &model,
     d.kktChol.solveInPlace(fthview.matrix());
 
     // substitute into Xith, Ath gains
-    Xith.noalias() += model.B * Kth;
-    vn.schurChol.solveInPlace(Xith);
-    Ath.noalias() -= d.PinvEt * Xith;
+    Lth.noalias() += model.B * Kth;
+    vn.schurChol.solveInPlace(Lth);
+    Yth.noalias() -= d.PinvEt * Lth;
 
     // update vt, Vxt, Vtt
     vc.vt = vn.vt + model.gamma;
     // vc.vt.noalias() += d.Guhat.transpose() * kff;
     vc.vt.noalias() += model.Gu.transpose() * kff;
-    vc.vt.noalias() += vn.Vxt.transpose() * a;
+    vc.vt.noalias() += vn.Vxt.transpose() * yff;
 
     // vc.Vxt.noalias() = d.Gxhat + K.transpose() * d.Guhat;
     vc.Vxt = model.Gx;
@@ -211,7 +211,7 @@ void ProximalRiccatiImpl<Scalar>::solveSingleStage(const KnotType &model,
 
     vc.Vtt = model.Gth + vn.Vtt;
     vc.Vtt.noalias() += model.Gu.transpose() * Kth;
-    vc.Vtt.noalias() += vn.Vxt.transpose() * Ath;
+    vc.Vtt.noalias() += vn.Vxt.transpose() * Yth;
   }
 }
 
