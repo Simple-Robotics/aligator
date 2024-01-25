@@ -167,6 +167,7 @@ public:
 
       size_t ip1 = i + 1;
       diagonal[2 * ip1] = datas[i0].vm.Vtt;
+      diagonal[2 * ip1].diagonal().array() -= mudyn;
 
       diagonal[2 * ip1 + 1] = datas[i1].vm.Pmat;
       superdiagonal[2 * ip1] = stages[i1].E;
