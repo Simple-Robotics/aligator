@@ -72,8 +72,7 @@ int main() {
     stage->addConstraint(func, box);
   }
 
-  std::vector<decltype(stage)> stages(nsteps);
-  std::fill(stages.begin(), stages.end(), stage);
+  std::vector<decltype(stage)> stages(nsteps, stage);
   TrajOptProblem problem(x0, stages, term_cost);
 
   bool terminal = false;
