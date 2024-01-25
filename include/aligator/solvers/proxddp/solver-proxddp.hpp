@@ -5,6 +5,7 @@
 
 #include "aligator/core/proximal-penalty.hpp"
 #include "aligator/core/linesearch.hpp"
+#include "aligator/core/filter.hpp"
 #include "aligator/core/callback-base.hpp"
 #include "aligator/core/enums.hpp"
 #include "aligator/utils/logger.hpp"
@@ -68,6 +69,7 @@ public:
   using CstrProximalScaler = ConstraintProximalScalerTpl<Scalar>;
   using LinesearchType = proxsuite::nlp::ArmijoLinesearch<Scalar>;
   using LQProblem = gar::LQRProblemTpl<Scalar>;
+  using Filter = FilterTpl<Scalar>;
 
   /// Subproblem tolerance
   Scalar inner_tol_;
@@ -117,6 +119,8 @@ public:
   RolloutType rollout_type_ = RolloutType::NONLINEAR;
   /// Parameters for the BCL outer loop of the augmented Lagrangian algorithm.
   BCLParamsTpl<Scalar> bcl_params;
+  /// Step acceptance mode.
+  StepAcceptanceStrategy sa_strategy = StepAcceptanceStrategy::LINESEARCH;
 
   /// Force the initial state @f$ x_0 @f$ to be fixed to the problem initial
   /// condition.
@@ -136,6 +140,7 @@ public:
   Results results_;
   /// LQR subproblem solver
   unique_ptr<gar::ProximalRiccatiSolver<Scalar>> linearSolver_;
+  Filter filter_;
 
 private:
   /// Dual proximal/ALM penalty parameter \f$\mu\f$

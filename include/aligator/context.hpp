@@ -41,6 +41,7 @@ using SolverFDDP = SolverFDDPTpl<Scalar>;
 
 using Workspace = WorkspaceTpl<Scalar>;
 using Results = ResultsTpl<Scalar>;
+using Filter = FilterTpl<Scalar>;
 
 } // namespace context
 } // namespace aligator

@@ -114,6 +114,9 @@ template <typename Scalar> struct WorkspaceTpl;
 // fwd ResultsTpl
 template <typename Scalar> struct ResultsTpl;
 
+// fwd FilterTpl
+template <typename Scalar> struct FilterTpl;
+
 template <typename T>
 using StdVectorEigenAligned = std::vector<T, Eigen::aligned_allocator<T>>;
 

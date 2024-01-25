@@ -320,6 +320,7 @@ def main(args: Args):
     solver.force_initial_condition = False
     solver.rollout_type = aligator.ROLLOUT_LINEAR
     solver.setup(problem)
+    solver.sa_strategy = aligator.SA_LINESEARCH
     solver.run(problem, xs_init, us_init)
 
     results = solver.results

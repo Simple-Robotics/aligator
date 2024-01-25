@@ -69,6 +69,7 @@ SolverProxDDPTpl<Scalar>::SolverProxDDPTpl(const Scalar tol,
                                            HessianApprox hess_approx)
     : target_tol_(tol), mu_init(mu_init), rho_init(rho_init), verbose_(verbose),
       hess_approx_(hess_approx), max_iters(max_iters), rollout_max_iters(1),
+      filter_(0.0, ls_params.alpha_min, ls_params.max_num_steps),
       linesearch_(ls_params) {
   ls_params.interp_type = proxsuite::nlp::LSInterpolation::CUBIC;
 }
@@ -115,6 +116,7 @@ void SolverProxDDPTpl<Scalar>::setup(const Problem &problem) {
   workspace_.configureScalers(problem, mu_penal_, DefaultScaling<Scalar>{});
   linearSolver_ = std::make_unique<gar::ProximalRiccatiSolver<Scalar>>(
       workspace_.lqr_problem);
+  filter_.resetFilter(0.0, ls_params.alpha_min, ls_params.max_num_steps);
 }
 
 /// TODO: REWORK FOR NEW MULTIPLIERS
@@ -457,6 +459,14 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     return forwardPass(problem, a0);
   };
 
+  auto pair_eval_fun = [&](Scalar a0) -> std::pair<Scalar, Scalar> {
+    std::pair<Scalar, Scalar> fpair;
+    fpair.first = forwardPass(problem, a0);
+    computeInfeasibilities(problem);
+    fpair.second = results_.prim_infeas;
+    return fpair;
+  };
+
   LogRecord iter_log;
 
   std::size_t &iter = results_.num_iters;
@@ -523,7 +533,19 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
 
     // otherwise continue linesearch
     Scalar alpha_opt = 1;
-    Scalar phi_new = linesearch_.run(merit_eval_fun, phi0, dphi0, alpha_opt);
+    Scalar phi_new;
+
+    switch (sa_strategy) {
+    case StepAcceptanceStrategy::LINESEARCH:
+      phi_new = linesearch_.run(merit_eval_fun, phi0, dphi0, alpha_opt);
+      break;
+    case StepAcceptanceStrategy::FILTER:
+      phi_new = filter_.run(pair_eval_fun, alpha_opt);
+      break;
+    default:
+      assert(false && "unknown StepAcceptanceStrategy!");
+      break;
+    }
 
     // accept the step
     results_.xs = workspace_.trial_xs;

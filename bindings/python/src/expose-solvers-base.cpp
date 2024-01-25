@@ -2,7 +2,6 @@
 
 #include "aligator/solvers/proxddp/results.hpp"
 #include "aligator/core/workspace-base.hpp"
-#include "aligator/core/value-function.hpp"
 
 namespace aligator {
 namespace python {
