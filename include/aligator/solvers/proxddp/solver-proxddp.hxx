@@ -500,6 +500,15 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
                            workspace_.dlams);
     updateGains();
 
+#ifndef NDEBUG
+    // TODO: log this properly instead
+    auto kktErr = lqrComputeKktError(
+        workspace_.lqr_problem, workspace_.dxs, workspace_.dus, workspace_.dvs,
+        workspace_.dlams, mu(), DefaultScaling<Scalar>::scale * mu(),
+        std::nullopt, false);
+    fmt::print("LQ subproblem errors: ({:.3e})\n", fmt::join(kktErr, ","));
+#endif
+
     if (force_initial_condition_) {
       workspace_.dxs[0].setZero();
       workspace_.dlams[0].setZero();
