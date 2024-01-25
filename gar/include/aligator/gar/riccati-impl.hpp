@@ -93,8 +93,8 @@ template <typename Scalar> struct ProximalRiccatiImpl {
   using RowMatrixRef = Eigen::Ref<RowMatrixXs>;
   using ConstRowMatrixRef = Eigen::Ref<const RowMatrixXs>;
   using KnotType = LQRKnotTpl<Scalar>;
-  using StageFactor = StageFactor<Scalar>;
-  using value_t = typename StageFactor::value_t;
+  using StageFactorType = StageFactor<Scalar>;
+  using value_t = typename StageFactorType::value_t;
 
   struct kkt0_t {
     BlkMatrix<MatrixXs, 2, 2> mat;
@@ -108,21 +108,21 @@ template <typename Scalar> struct ProximalRiccatiImpl {
 
   inline static bool backwardImpl(boost::span<const KnotType> stages,
                                   const Scalar mudyn, const Scalar mueq,
-                                  boost::span<StageFactor> datas);
+                                  boost::span<StageFactorType> datas);
 
   /// Solve initial stage
   inline static void
   computeInitial(VectorRef x0, VectorRef lbd0, const kkt0_t &kkt0,
                  const std::optional<ConstVectorRef> &theta_);
 
-  inline static void solveSingleStage(const KnotType &model, StageFactor &d,
+  inline static void solveSingleStage(const KnotType &model, StageFactorType &d,
                                       value_t &vn, const Scalar mudyn,
                                       const Scalar mueq);
 
   /// Forward sweep.
   inline static bool
   forwardImpl(boost::span<const KnotType> stages,
-              boost::span<const StageFactor> datas, boost::span<VectorXs> xs,
+              boost::span<const StageFactorType> datas, boost::span<VectorXs> xs,
               boost::span<VectorXs> us, boost::span<VectorXs> vs,
               boost::span<VectorXs> lbdas,
               const std::optional<ConstVectorRef> &theta_ = std::nullopt);

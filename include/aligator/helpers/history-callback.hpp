@@ -36,7 +36,7 @@ template <typename Scalar> struct HistoryCallbackTpl : CallbackBaseTpl<Scalar> {
     if (store_primal_dual_vars_) {
       storage.xs.push_back(results.xs);
       storage.us.push_back(results.us);
-      storage.lams.push_back(results.lams);
+      // storage.lams.push_back(results.lams);
     }
     if (store_values_) {
       storage.values.push_back(results.traj_cost_);

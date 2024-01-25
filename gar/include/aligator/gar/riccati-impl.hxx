@@ -9,13 +9,13 @@ namespace gar {
 template <typename Scalar>
 bool ProximalRiccatiImpl<Scalar>::backwardImpl(
     boost::span<const KnotType> stages, const Scalar mudyn, const Scalar mueq,
-    boost::span<StageFactor> datas) {
+    boost::span<StageFactorType> datas) {
   ZoneScoped;
   // terminal node
   uint N = (uint)(datas.size() - 1);
   {
     ZoneScopedN("backward_terminal");
-    StageFactor &d = datas[N];
+    StageFactorType &d = datas[N];
     value_t &vc = d.vm;
     const KnotType &model = stages[N];
     // fill cost-to-go matrix
@@ -104,7 +104,7 @@ void ProximalRiccatiImpl<Scalar>::computeInitial(
 
 template <typename Scalar>
 void ProximalRiccatiImpl<Scalar>::solveSingleStage(const KnotType &model,
-                                                   StageFactor &d, value_t &vn,
+                                                   StageFactorType &d, value_t &vn,
                                                    const Scalar mudyn,
                                                    const Scalar mueq) {
   ZoneScoped;
@@ -217,7 +217,7 @@ void ProximalRiccatiImpl<Scalar>::solveSingleStage(const KnotType &model,
 
 template <typename Scalar>
 bool ProximalRiccatiImpl<Scalar>::forwardImpl(
-    boost::span<const KnotType> stages, boost::span<const StageFactor> datas,
+    boost::span<const KnotType> stages, boost::span<const StageFactorType> datas,
     boost::span<VectorXs> xs, boost::span<VectorXs> us,
     boost::span<VectorXs> vs, boost::span<VectorXs> lbdas,
     const std::optional<ConstVectorRef> &theta_) {
@@ -226,7 +226,7 @@ bool ProximalRiccatiImpl<Scalar>::forwardImpl(
 
   uint N = (uint)(datas.size() - 1);
   for (uint t = 0; t <= N; t++) {
-    const StageFactor &d = datas[t];
+    const StageFactorType &d = datas[t];
     const KnotType &model = stages[t];
     assert(xs[t].size() == model.nx);
     assert(vs[t].size() == model.nc);

@@ -11,8 +11,8 @@ public:
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   using Impl = ProximalRiccatiImpl<Scalar>;
-  using StageFactor = StageFactor<Scalar>;
-  using value_t = typename StageFactor::value_t;
+  using StageFactorType = StageFactor<Scalar>;
+  using value_t = typename StageFactorType::value_t;
   using kkt0_t = typename Impl::kkt0_t;
   using KnotType = LQRKnotTpl<Scalar>;
 
@@ -31,7 +31,7 @@ public:
     ZoneNamed(Zone1, true);
     bool ret = Impl::backwardImpl(problem.stages, mudyn, mueq, datas);
 
-    StageFactor &d0 = datas[0];
+    StageFactorType &d0 = datas[0];
     value_t &vinit = d0.vm;
     vinit.Vxx = vinit.Pmat;
     vinit.vx = vinit.pvec;
@@ -72,7 +72,7 @@ public:
     return Impl::forwardImpl(problem.stages, datas, xs, us, vs, lbdas, theta_);
   }
 
-  std::vector<StageFactor> datas;
+  std::vector<StageFactorType> datas;
   kkt0_t kkt0;
 
   VectorXs thGrad; //< optimal value gradient wrt parameter
