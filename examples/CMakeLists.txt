@@ -20,7 +20,6 @@ create_example(se2-car.cpp)
 
 if(BUILD_CROCODDYL_COMPAT)
   create_example_with_croco(talos-arm.cpp)
-  target_link_libraries(example-talos-arm PRIVATE proxsuite-nlp::cnpy)
   target_add_example_robot_data(example-talos-arm)
 endif()
 
