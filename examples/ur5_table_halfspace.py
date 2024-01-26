@@ -98,7 +98,6 @@ for i in range(nsteps):
 
 problem = aligator.TrajOptProblem(x0, stages, term_cost)
 problem.addTerminalConstraint(frame_cstr)
-problem.setNumThreads(4)
 
 
 tol = 1e-4
@@ -106,6 +105,7 @@ mu_init = 0.001
 max_iters = 50
 verbose = aligator.VerboseLevel.VERBOSE
 solver = aligator.SolverProxDDP(tol, mu_init, max_iters=max_iters, verbose=verbose)
+solver.setNumThreads(4)
 cb = aligator.HistoryCallback()
 solver.registerCallback("his", cb)
 

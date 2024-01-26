@@ -37,13 +37,9 @@ template <typename Scalar> struct ConstraintStackTpl {
   void pushBack(const ConstraintType &el);
 
   /// @brief Get the set of dimensions for each constraint in the stack.
-  const std::vector<long> &getDims() const { return dims_; }
-
-  /// @copybrief getSegmentByConstraint()
-  template <typename Derived>
-  Eigen::VectorBlock<const Derived, -1>
-  constSegmentByConstraint(const Eigen::MatrixBase<Derived> &lambda,
-                           const std::size_t j) const;
+  const std::vector<long> &dims() const { return dims_; }
+  /// @copybrief getDims()
+  ALIGATOR_DEPRECATED const std::vector<long> &getDims() const { return dims_; }
 
   long totalDim() const { return total_dim_; }
 

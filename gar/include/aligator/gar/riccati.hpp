@@ -1,49 +1,53 @@
 #pragma once
 
 #include "./riccati-impl.hpp"
+#include "riccati-base.hpp"
 
 namespace aligator {
 namespace gar {
 
-template <typename _Scalar> class ProximalRiccatiSolver {
+template <typename _Scalar>
+class ProximalRiccatiSolver : public RiccatiSolverBase<_Scalar> {
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  using Base = RiccatiSolverBase<Scalar>;
+  using Base::datas;
 
   using Impl = ProximalRiccatiImpl<Scalar>;
-  using StageFactor = StageFactor<Scalar>;
-  using value_t = typename StageFactor::value_t;
+  using StageFactorType = StageFactor<Scalar>;
+  using value_t = typename StageFactorType::value_t;
   using kkt0_t = typename Impl::kkt0_t;
   using KnotType = LQRKnotTpl<Scalar>;
 
   explicit ProximalRiccatiSolver(const LQRProblemTpl<Scalar> &problem)
-      : datas(), kkt0(problem.stages[0].nx, problem.nc0(), problem.ntheta()),
+      : Base(), kkt0(problem.stages[0].nx, problem.nc0(), problem.ntheta()),
         thGrad(problem.ntheta()), thHess(problem.ntheta(), problem.ntheta()),
-        problem(problem) {
+        problem_(&problem) {
     initialize();
   }
-
-  ProximalRiccatiSolver(LQRProblemTpl<Scalar> &&problem) = delete;
 
   /// Backward sweep.
   bool backward(const Scalar mudyn, const Scalar mueq) {
     ALIGATOR_NOMALLOC_BEGIN;
-    bool ret = Impl::backwardImpl(problem.stages, mudyn, mueq, datas);
+    ZoneNamed(Zone1, true);
+    bool ret = Impl::backwardImpl(problem_->stages, mudyn, mueq, datas);
 
-    StageFactor &d0 = datas[0];
+    StageFactorType &d0 = datas[0];
     value_t &vinit = d0.vm;
     vinit.Vxx = vinit.Pmat;
     vinit.vx = vinit.pvec;
     // initial stage
     {
+      ZoneNamedN(Zone2, "factor_initial", true);
       kkt0.mat(0, 0) = vinit.Vxx;
-      kkt0.mat(1, 0) = problem.G0;
-      kkt0.mat(0, 1) = problem.G0.transpose();
+      kkt0.mat(1, 0) = problem_->G0;
+      kkt0.mat(0, 1) = problem_->G0.transpose();
       kkt0.mat(1, 1).diagonal().setConstant(-mudyn);
       kkt0.chol.compute(kkt0.mat.matrix());
 
       kkt0.ff.blockSegment(0) = -vinit.vx;
-      kkt0.ff.blockSegment(1) = -problem.g0;
+      kkt0.ff.blockSegment(1) = -problem_->g0;
       kkt0.chol.solveInPlace(kkt0.ff.matrix());
       kkt0.fth.blockRow(0) = -vinit.Vxt;
       kkt0.fth.blockRow(1).setZero();
@@ -61,15 +65,16 @@ public:
   bool
   forward(std::vector<VectorXs> &xs, std::vector<VectorXs> &us,
           std::vector<VectorXs> &vs, std::vector<VectorXs> &lbdas,
-          const boost::optional<ConstVectorRef> &theta_ = boost::none) const {
+          const std::optional<ConstVectorRef> &theta_ = std::nullopt) const {
+    ZoneScoped;
 
     // solve initial stage
     Impl::computeInitial(xs[0], lbdas[0], kkt0, theta_);
 
-    return Impl::forwardImpl(problem.stages, datas, xs, us, vs, lbdas, theta_);
+    return Impl::forwardImpl(problem_->stages, datas, xs, us, vs, lbdas,
+                             theta_);
   }
 
-  std::vector<StageFactor> datas;
   kkt0_t kkt0;
 
   VectorXs thGrad; //< optimal value gradient wrt parameter
@@ -77,8 +82,9 @@ public:
 
 protected:
   void initialize() {
-    auto N = uint(problem.horizon());
-    auto &knots = problem.stages;
+    ZoneScoped;
+    auto N = uint(problem_->horizon());
+    auto &knots = problem_->stages;
     datas.reserve(N + 1);
     for (uint t = 0; t <= N; t++) {
       const KnotType &knot = knots[t];
@@ -88,7 +94,7 @@ protected:
     thHess.setZero();
     kkt0.mat.setZero();
   }
-  const LQRProblemTpl<Scalar> &problem;
+  const LQRProblemTpl<Scalar> *problem_;
 };
 
 } // namespace gar

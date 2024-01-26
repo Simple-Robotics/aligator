@@ -46,7 +46,7 @@ cmake --build . -jNCPUS
 * [proxsuite-nlp](https://github.com/Simple-Robotics/proxsuite-nlp.git)
 * [Eigen3](https://eigen.tuxfamily.org) >= 3.3.7
 * [Boost](https://www.boost.org) >= 1.71.0
-* (optional) [eigenpy](https://github.com/stack-of-tasks/eigenpy)>=3.1.0 | [conda](https://anaconda.org/conda-forge/eigenpy) (Python bindings)
+* (optional) [eigenpy](https://github.com/stack-of-tasks/eigenpy)>=3.2.0 | [conda](https://anaconda.org/conda-forge/eigenpy) (Python bindings)
 * (optional) [Pinocchio](https://github.com/stack-of-tasks/pinocchio) | [conda](https://anaconda.org/conda-forge/pinocchio)
 * (optional) [Crocoddyl](https://github.com/loco-3d/crocoddyl) | [conda](https://anaconda.org/conda-forge/crocoddyl)
 * (optional) [example-robot-data](https://github.com/Gepetto/example-robot-data) | [conda](https://anaconda.org/conda-forge/example-robot-data) (required for some examples and benchmarks)
@@ -109,6 +109,7 @@ Please also consider citing the reference paper for the ProxDDP algorithm:
 * [Guilhem Saurel](https://github.com/nim65s) (LAAS-CNRS): core maintener
 * [Fabian Schramm](https://github.com/fabinsch) (Inria): core developer
 * [Ludovic De Matteïs](https://github.com/LudovicDeMatteis) (LAAS-CNRS/Inria): feature developer
+* [Ewen Dantec](https://edantec.github.io/) (Inria): feature developer
 
 ## Acknowledgments
 

@@ -2,7 +2,7 @@
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/gar-visitors.hpp"
 #include "aligator/gar/riccati.hpp"
-#include "aligator/gar/helpers.hpp"
+#include "aligator/gar/utils.hpp"
 
 #include "aligator/python/utils.hpp"
 #include "aligator/python/visitors.hpp"
@@ -13,21 +13,23 @@ using namespace gar;
 
 using context::Scalar;
 using prox_riccati_t = ProximalRiccatiSolver<Scalar>;
-using StageFactor = prox_riccati_t::StageFactor;
+using StageFactor = prox_riccati_t::StageFactorType;
 using knot_t = LQRKnotTpl<context::Scalar>;
 using lqr_t = LQRProblemTpl<context::Scalar>;
 } // namespace python
 } // namespace aligator
 
+#if EIGENPY_VERSION_AT_MOST(3, 2, 0)
 namespace eigenpy {
 namespace internal {
 template <>
 struct has_operator_equal<::aligator::python::knot_t> : boost::false_type {};
 template <>
-struct has_operator_equal<::aligator::python::StageFactor> : boost::false_type {
-};
+struct has_operator_equal<::aligator::python::StageFactorType>
+    : boost::false_type {};
 } // namespace internal
 } // namespace eigenpy
+#endif
 
 namespace aligator {
 namespace python {
@@ -40,10 +42,11 @@ using knot_vec_t = std::vector<knot_t>;
 bp::dict lqr_sol_initialize_wrap(const lqr_t &problem) {
   bp::dict out;
   auto ss = lqrInitializeSolution(problem);
-  out["xs"] = ss[0];
-  out["us"] = ss[1];
-  out["vs"] = ss[2];
-  out["lbdas"] = ss[3];
+  auto &[xs, us, vs, lbdas] = ss;
+  out["xs"] = xs;
+  out["us"] = us;
+  out["vs"] = vs;
+  out["lbdas"] = lbdas;
   return out;
 }
 
@@ -122,8 +125,7 @@ void exposeGAR() {
   StdVectorPythonVisitor<knot_vec_t, false>::expose("StdVec_LQRKnot");
 
   bp::class_<lqr_t>("LQRProblem", bp::no_init)
-      .def(
-          bp::init<const knot_vec_t &, long>(bp::args("self", "stages", "nc0")))
+      .def(bp::init<const knot_vec_t &, long>(("self"_a, "stages", "nc0")))
       .def_readwrite("stages", &lqr_t::stages)
       .add_property("horizon", &lqr_t::horizon)
       .def_readwrite("G0", &lqr_t::G0)
@@ -136,7 +138,7 @@ void exposeGAR() {
            ("self"_a, "nth"))
       .add_property("ntheta", &lqr_t::ntheta)
       .def("evaluate", &lqr_t::evaluate,
-           ("self"_a, "xs", "us", "theta"_a = boost::none),
+           ("self"_a, "xs", "us", "theta"_a = std::nullopt),
            "Evaluate the problem objective.")
       .def(CopyableVisitor<lqr_t>());
 
@@ -152,9 +154,9 @@ void exposeGAR() {
                           "Initial stage KKT system")
             .def("backward", &prox_riccati_t::backward,
                  ("self"_a, "mu", "mueq"))
-            .def(
-                "forward", &prox_riccati_t::forward,
-                ("self"_a, "xs", "us", "vs", "lbdas", "theta"_a = boost::none));
+            .def("forward", &prox_riccati_t::forward,
+                 ("self"_a, "xs", "us", "vs", "lbdas",
+                  "theta"_a = std::nullopt));
     bp::class_<prox_riccati_t::kkt0_t>("kkt0_t", bp::no_init)
         .def_readonly("ff", &prox_riccati_t::kkt0_t::ff)
         .def_readonly("fth", &prox_riccati_t::kkt0_t::fth)

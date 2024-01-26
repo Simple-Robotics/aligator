@@ -31,8 +31,6 @@ public:
   std::vector<VectorXs> xs;
   /// Controls
   std::vector<VectorXs> us;
-  /// Problem Lagrange multipliers
-  std::vector<VectorXs> lams;
 
   ResultsBaseTpl() : m_isInitialized(false) {}
   bool isInitialized() const { return m_isInitialized; }
@@ -78,6 +76,8 @@ public:
   }
 
   void printBase(std::ostream &oss) const;
+
+  virtual ~ResultsBaseTpl() = default;
 
 private:
   Eigen::Index get_ndx1(std::size_t i) const {

@@ -90,6 +90,14 @@ public:
     return m_data.middleRows(m_rowIndices[i], m_rowDims[i]);
   }
 
+  inline auto blockCol(size_t j) const {
+    return m_data.middleCols(m_colIndices[j], m_colDims[j]);
+  }
+
+  inline auto blockCol(size_t j) {
+    return m_data.middleCols(m_colIndices[j], m_colDims[j]);
+  }
+
   auto blockSegment(size_t i) {
     EIGEN_STATIC_ASSERT_VECTOR_ONLY(MatrixType);
     return m_data.segment(m_rowIndices[i], m_rowDims[i]);

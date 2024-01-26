@@ -27,7 +27,7 @@ namespace aligator {
  * @details The implementation very similar to Crocoddyl's SolverFDDP.
  *
  */
-template <typename Scalar> struct SolverFDDP {
+template <typename Scalar> struct SolverFDDPTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Problem = TrajOptProblemTpl<Scalar>;
   using StageModel = StageModelTpl<Scalar>;
@@ -40,7 +40,7 @@ template <typename Scalar> struct SolverFDDP {
   using QParams = QFunctionTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using ExpModel = ExplicitDynamicsModelTpl<Scalar>;
-  using ExpData = ExplicitDynamicsDataTpl<Scalar>;
+  using ExplicitDynamicsData = ExplicitDynamicsDataTpl<Scalar>;
   using CallbackPtr = shared_ptr<CallbackBaseTpl<Scalar>>;
   using CallbackMap = std::unordered_map<std::string, CallbackPtr>;
 
@@ -75,7 +75,15 @@ template <typename Scalar> struct SolverFDDP {
 
   BaseLogger logger{};
 
-private:
+  void setNumThreads(const std::size_t num_threads) {
+    num_threads_ = num_threads;
+    omp::set_default_options(num_threads);
+  }
+  std::size_t getNumThreads() const { return num_threads_; }
+
+protected:
+  /// Number of threads to use when evaluating the problem or its derivatives.
+  std::size_t num_threads_;
   /// Callbacks
   CallbackMap callbacks_;
 
@@ -83,9 +91,10 @@ public:
   Results results_;
   Workspace workspace_;
 
-  SolverFDDP(const Scalar tol = 1e-6,
-             VerboseLevel verbose = VerboseLevel::QUIET,
-             const Scalar reg_init = 1e-9, const std::size_t max_iters = 200);
+  SolverFDDPTpl(const Scalar tol = 1e-6,
+                VerboseLevel verbose = VerboseLevel::QUIET,
+                const Scalar reg_init = 1e-9,
+                const std::size_t max_iters = 200);
 
   /// @brief  Get the solver results.
   ALIGATOR_DEPRECATED const Results &getResults() const { return results_; }
@@ -142,9 +151,9 @@ public:
   /// did not exit.
   ALIGATOR_INLINE void acceptGains(const Workspace &workspace,
                                    Results &results) const {
-    assert(workspace.kkt_rhs_bufs.size() == results.gains_.size());
+    assert(workspace.kktRhs.size() == results.gains_.size());
     ALIGATOR_NOMALLOC_BEGIN;
-    results.gains_ = workspace.kkt_rhs_bufs;
+    results.gains_ = workspace.kktRhs;
     ALIGATOR_NOMALLOC_END;
   }
 
@@ -190,10 +199,10 @@ public:
   bool run(const Problem &problem, const std::vector<VectorXs> &xs_init = {},
            const std::vector<VectorXs> &us_init = {});
 
-  static const ExpData &
+  static const ExplicitDynamicsData &
   stage_get_dynamics_data(const StageDataTpl<Scalar> &data) {
     const DynamicsDataTpl<Scalar> &dd = *data.dynamics_data;
-    return static_cast<const ExpData &>(dd);
+    return static_cast<const ExplicitDynamicsData &>(dd);
   }
 };
 

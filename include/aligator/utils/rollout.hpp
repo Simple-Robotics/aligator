@@ -1,7 +1,6 @@
 #pragma once
 
 #include "aligator/utils/forward-dyn.hpp"
-#include "aligator/utils/exceptions.hpp"
 
 namespace aligator {
 

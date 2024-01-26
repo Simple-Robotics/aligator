@@ -13,7 +13,7 @@ set(PROJECT_USE_KEYWORD_LINK_LIBRARIES True)
 
 set(CXX_DISABLE_WERROR True)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -21,8 +21,10 @@ set(PROJECT_USE_CMAKE_EXPORT True)
 
 option(INSTALL_DOCUMENTATION "Generate and install the documentation" ON)
 
-set(DOXYGEN_USE_MATHJAX YES)
+set(DOXYGEN_USE_MATHJAX NO)
 set(DOXYGEN_USE_TEMPLATE_CSS YES)
+set(DOXYGEN_HTML_HEADER "${CMAKE_SOURCE_DIR}/doc/header.html")
+set(DOXYGEN_HTML_STYLESHEET "")
 
 include(FetchContent)
 
@@ -143,7 +145,7 @@ add_project_dependency(Boost REQUIRED COMPONENTS ${BOOST_REQUIRED_COMPONENTS})
 
 if(BUILD_PYTHON_INTERFACE)
   set(PYTHON_COMPONENTS Interpreter Development.Module NumPy Development)
-  add_project_dependency(eigenpy 3.1.0 REQUIRED PKG_CONFIG_REQUIRES "eigenpy >= 3.1.0")
+  add_project_dependency(eigenpy 3.2.0 REQUIRED PKG_CONFIG_REQUIRES "eigenpy >= 3.2.0")
   set(PYLIB_NAME "py${PROJECT_NAME}")
   set(${PYLIB_NAME}_INSTALL_DIR ${PYTHON_SITELIB}/${PROJECT_NAME})
 
@@ -201,8 +203,8 @@ list(FILTER LIB_HEADERS EXCLUDE REGEX ${PROJECT_SOURCE_DIR}/include/aligator/com
 option(ENABLE_TRACY_PROFILING "Enable Tracy profiler" OFF)
 FetchContent_Declare(
   tracy
-  GIT_REPOSITORY https://github.com/wolfpld/tracy.git
-  GIT_TAG master
+  GIT_REPOSITORY https://github.com/Simple-Robotics/tracy.git
+  GIT_TAG f083b07
   GIT_SHALLOW TRUE
   GIT_PROGRESS TRUE)
 FetchContent_GetProperties(tracy)

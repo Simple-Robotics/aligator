@@ -95,13 +95,13 @@ int main() {
   auto stage = std::make_shared<StageModel>(rcost, discrete_dyn);
 
   const size_t nsteps = 40;
-  std::vector<decltype(stage)> stages(nsteps);
-  std::fill_n(stages.begin(), nsteps, stage);
+  std::vector<decltype(stage)> stages(nsteps, stage);
 
   TrajOptProblem problem(x0, stages, term_cost);
   const T mu_init = 1e-2;
-  SolverProxDDP<T> solver(1e-4, mu_init);
+  SolverProxDDPTpl<T> solver(1e-4, mu_init);
   solver.verbose_ = VERBOSE;
+  solver.sa_strategy = StepAcceptanceStrategy::FILTER;
   solver.setup(problem);
   solver.run(problem);
 

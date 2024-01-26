@@ -1,6 +1,24 @@
 name: CI - OSX/Linux via Conda
 
-on: [push,pull_request]
+on:
+  push:
+    paths-ignore:
+      - 'doc/**'
+      - 'scripts/**'
+      - '.gitlab-ci.yml'
+      - '.gitignore'
+      - '*.md'
+      - 'CITATION.cff'
+      - 'CITATIONS.bib'
+  pull_request:
+    paths-ignore:
+      - 'doc/'
+      - 'scripts/'
+      - '.gitlab-ci.yml'
+      - '.gitignore'
+      - '*.md'
+      - 'CITATION.cff'
+      - 'CITATIONS.bib'
 
 jobs:
   aligator-conda:

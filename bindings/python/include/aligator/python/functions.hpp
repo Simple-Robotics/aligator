@@ -2,6 +2,7 @@
 #pragma once
 
 #include "aligator/python/fwd.hpp"
+#include "aligator/python/visitors.hpp"
 
 #include "aligator/core/function-abstract.hpp"
 #include "aligator/core/unary-function.hpp"

@@ -13,11 +13,11 @@
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
 #include "aligator/compat/crocoddyl/problem-wrap.hpp"
 
-using aligator::LDLTChoice;
-using aligator::SolverFDDP;
-using aligator::SolverProxDDP;
+using aligator::SolverFDDPTpl;
+using aligator::context::SolverProxDDP;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
+using proxsuite::nlp::LDLTChoice;
 
 constexpr double TOL = 1e-16;
 constexpr std::size_t maxiters = 10;
@@ -56,16 +56,14 @@ static void BM_prox_fddp(benchmark::State &state) {
   auto croc_problem = defineCrocoddylProblem(nsteps);
   auto prob_wrap =
       aligator::compat::croc::convertCrocoddylProblem(croc_problem);
-#ifdef ALIGATOR_MULTITHREADING
-  prob_wrap.setNumThreads(DEFAULT_NUM_THREADS);
-#endif
 
   std::vector<VectorXd> xs_i;
   std::vector<VectorXd> us_i;
   getInitialGuesses(croc_problem, xs_i, us_i);
 
-  SolverFDDP<double> solver(TOL, get_verbose_flag(verbose));
+  SolverFDDPTpl<double> solver(TOL, get_verbose_flag(verbose));
   solver.max_iters = maxiters;
+  solver.setNumThreads(DEFAULT_NUM_THREADS);
   solver.setup(prob_wrap);
 
   for (auto _ : state) {
@@ -81,19 +79,15 @@ template <LDLTChoice choice> static void BM_aligator(benchmark::State &state) {
   auto croc_problem = defineCrocoddylProblem(nsteps);
   auto prob_wrap =
       aligator::compat::croc::convertCrocoddylProblem(croc_problem);
-#ifdef ALIGATOR_MULTITHREADING
-  prob_wrap.setNumThreads(DEFAULT_NUM_THREADS);
-#endif
 
   std::vector<VectorXd> xs_i;
   std::vector<VectorXd> us_i;
   getInitialGuesses(croc_problem, xs_i, us_i);
 
   const double mu0 = 1e-4;
-  SolverProxDDP<double> solver(TOL, mu0, 0., maxiters,
-                               get_verbose_flag(verbose));
-  solver.ldlt_algo_choice_ = choice;
-  solver.max_refinement_steps_ = 0;
+  SolverProxDDP solver(TOL, mu0, 0., maxiters, get_verbose_flag(verbose));
+  solver.setNumThreads(DEFAULT_NUM_THREADS);
+  solver.maxRefinementSteps_ = 0;
   solver.setup(prob_wrap);
 
   for (auto _ : state) {

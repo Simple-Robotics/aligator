@@ -54,25 +54,24 @@ template <typename _Scalar> struct PDALFunction {
   using TrajOptProblem = TrajOptProblemTpl<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
   using CstrProximalScaler = ConstraintProximalScalerTpl<Scalar>;
-  using SolverType = SolverProxDDP<Scalar>;
 
   /// @brief    Compute the merit function at the trial point.
   /// @warning  Evaluate the problem and proximal terms first!
-  static Scalar evaluate(const SolverType &solver,
-                         const TrajOptProblem &problem,
+  static Scalar evaluate(const Scalar mu, const TrajOptProblem &problem,
                          const std::vector<VectorXs> &lams,
-                         Workspace &workspace);
+                         const std::vector<VectorXs> &vs, Workspace &workspace);
 
-  static Scalar directionalDerivative(const SolverType &solver,
+  static Scalar directionalDerivative(const Scalar mu,
                                       const TrajOptProblem &problem,
                                       const std::vector<VectorXs> &lams,
+                                      const std::vector<VectorXs> &vs,
                                       Workspace &workspace);
 };
 
 } // namespace aligator
 
-#include "./merit-function.hxx"
+#include "merit-function.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./merit-function.txx"
+#include "merit-function.txx"
 #endif

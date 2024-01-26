@@ -7,24 +7,11 @@
 #include <chrono>
 
 #include "./test_util.hpp"
-#include "aligator/gar/helpers.hpp"
+#include "aligator/gar/utils.hpp"
 
 using namespace aligator::gar;
 
 BOOST_AUTO_TEST_SUITE(prox_riccati)
-
-BOOST_AUTO_TEST_CASE(inplace_llt) {
-  uint N = 7;
-  MatrixXs a(N, N);
-  a.setRandom();
-  MatrixXs M = a.transpose() * a;
-
-  fmt::print("Matrix M=\n{}\n", M);
-
-  Eigen::LLT<MatrixRef> Mchol(M);
-  MatrixXs L(Mchol.matrixL());
-  fmt::print("Factor L=\n{}\n", L);
-}
 
 BOOST_AUTO_TEST_CASE(short_horz_pb) {
   // dual regularization parameters
@@ -34,8 +21,8 @@ BOOST_AUTO_TEST_CASE(short_horz_pb) {
   uint nx = 2, nu = 2;
   VectorXs x0 = VectorXs::Ones(nx);
   VectorXs x1 = -VectorXs::Ones(nx);
-  auto init_knot = [&]() {
-    knot_t knot(nx, nu, 0);
+  auto init_knot = [&](uint nc = 0) {
+    knot_t knot(nx, nu, nc);
     knot.A << 0.1, 0., -0.1, 0.01;
     knot.B.setRandom();
     knot.E.setIdentity();
@@ -58,6 +45,9 @@ BOOST_AUTO_TEST_CASE(short_horz_pb) {
   uint N = 8;
 
   std::vector<knot_t> knots(N + 1, base_knot);
+  knots[4] = init_knot(nu);
+  knots[4].D.setIdentity();
+  knots[4].d.setConstant(0.1);
   knots[N] = knot1;
   LQRProblemTpl<double> prob(knots, nx);
   prob.g0 = -x0;
@@ -72,11 +62,7 @@ BOOST_AUTO_TEST_CASE(short_horz_pb) {
       std::chrono::duration_cast<std::chrono::microseconds>(bwend - bwbeg);
   fmt::print("Elapsed time (bwd): {:d}\n", t_bwd.count());
 
-  auto _traj = lqrInitializeSolution(prob);
-  VectorOfVectors xs = std::move(_traj[0]);
-  VectorOfVectors us = std::move(_traj[1]);
-  VectorOfVectors vs = std::move(_traj[2]);
-  VectorOfVectors lbdas = std::move(_traj[3]);
+  auto [xs, us, vs, lbdas] = lqrInitializeSolution(prob);
   BOOST_CHECK_EQUAL(xs.size(), prob.horizon() + 1);
   BOOST_CHECK_EQUAL(vs.size(), prob.horizon() + 1);
   BOOST_CHECK_EQUAL(lbdas.size(), prob.horizon() + 1);
@@ -90,11 +76,15 @@ BOOST_AUTO_TEST_CASE(short_horz_pb) {
   BOOST_CHECK(ret);
 
   // check error
-  KktError err = compute_kkt_error(prob, xs, us, vs, lbdas);
+  KktError err = computeKktError(prob, xs, us, vs, lbdas);
 
-  print_kkt_error(err);
+  printKktError(err);
 
   BOOST_CHECK_LE(err.max, 1e-9);
+
+  for (size_t i = 0; i < N; i++) {
+    fmt::print("us[{:>2d}] = {}\n", i, us[i].transpose());
+  }
 }
 
 BOOST_AUTO_TEST_CASE(random_long_problem) {
@@ -111,11 +101,7 @@ BOOST_AUTO_TEST_CASE(random_long_problem) {
       std::chrono::duration_cast<std::chrono::microseconds>(bwend - bwbeg);
   fmt::print("Elapsed time (bwd): {:d}\n", t_bwd.count());
 
-  auto _traj = lqrInitializeSolution(prob);
-  VectorOfVectors xs = std::move(_traj[0]);
-  VectorOfVectors us = std::move(_traj[1]);
-  VectorOfVectors vs = std::move(_traj[2]);
-  VectorOfVectors lbdas = std::move(_traj[3]);
+  auto [xs, us, vs, lbdas] = lqrInitializeSolution(prob);
   auto fwbeg = std::chrono::system_clock::now();
   solver.forward(xs, us, vs, lbdas);
   auto fwend = std::chrono::system_clock::now();
@@ -123,8 +109,8 @@ BOOST_AUTO_TEST_CASE(random_long_problem) {
       std::chrono::duration_cast<std::chrono::microseconds>(fwend - fwbeg);
   fmt::print("Elapsed time (fwd): {:d}\n", t_fwd.count());
 
-  KktError err = compute_kkt_error(prob, xs, us, vs, lbdas);
-  print_kkt_error(err);
+  KktError err = computeKktError(prob, xs, us, vs, lbdas);
+  printKktError(err);
 
   BOOST_CHECK_LE(err.max, 1e-9);
 }

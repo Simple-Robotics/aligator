@@ -68,9 +68,9 @@ template <LDLTChoice N> static void BM_lqr_prox(benchmark::State &state) {
   SETUP_PROBLEM_VARS(state);
   const T mu_init = 1e-6;
   const T rho_init = 0.;
-  SolverProxDDP<T> solver(TOL, mu_init, rho_init, max_iters, verbose);
+  SolverProxDDPTpl<T> solver(TOL, mu_init, rho_init, max_iters, verbose);
   solver.ldlt_algo_choice_ = N;
-  solver.max_refinement_steps_ = 0;
+  solver.maxRefinementSteps_ = 0;
   solver.setup(problem);
 
   for (auto _ : state) {
@@ -83,7 +83,7 @@ template <LDLTChoice N> static void BM_lqr_prox(benchmark::State &state) {
 
 static void BM_lqr_fddp(benchmark::State &state) {
   SETUP_PROBLEM_VARS(state);
-  SolverFDDP<T> fddp(TOL, verbose);
+  SolverFDDPTpl<T> fddp(TOL, verbose);
   fddp.max_iters = max_iters;
   fddp.setup(problem);
 

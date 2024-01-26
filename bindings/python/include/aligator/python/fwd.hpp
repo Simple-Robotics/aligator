@@ -2,7 +2,6 @@
 
 #include "aligator/context.hpp"
 #include "aligator/python/macros.hpp"
-#include "aligator/python/visitors.hpp"
 
 #include <eigenpy/eigenpy.hpp>
 #include <eigenpy/std-vector.hpp>
@@ -45,6 +44,7 @@ void exposeCallbacks();
 /// Expose autodiff helpers
 void exposeAutodiff();
 void exposeUtils();
+void exposeFilter();
 
 #ifdef ALIGATOR_WITH_PINOCCHIO
 /// Expose features using the Pinocchio rigid dynamics library

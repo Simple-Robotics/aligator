@@ -1,8 +1,9 @@
 #pragma once
 
-#include "./merit-function.hpp"
-#include "./workspace.hpp"
-#include "./results.hpp"
+#include "merit-function.hpp"
+#include "workspace.hpp"
+#include "results.hpp"
+#include "aligator/core/lagrangian.hpp"
 
 namespace aligator {
 
@@ -23,100 +24,72 @@ Scalar costDirectionalDerivative(const WorkspaceTpl<Scalar> &workspace,
   return d1;
 }
 
+// TODO: add missing dual terms
 template <typename Scalar>
-Scalar PDALFunction<Scalar>::evaluate(const SolverType &solver,
+Scalar PDALFunction<Scalar>::evaluate(const Scalar mu,
                                       const TrajOptProblem &problem,
                                       const std::vector<VectorXs> &lams,
+                                      const std::vector<VectorXs> &vs,
                                       Workspace &workspace) {
   TrajOptData &prob_data = workspace.problem_data;
-  Scalar prox_value = 0.;
   Scalar penalty_value = 0.;
-  const Scalar mu = solver.getLinesearchMu();
-  const std::vector<VectorXs> &lams_pdal = workspace.lams_pdal;
+  const std::vector<VectorXs> &lams_plus = workspace.lams_plus;
+  const std::vector<VectorXs> &vs_plus = workspace.vs_plus;
 
   // initial constraint
-  {
-    auto e = 0.5 * mu * lams_pdal[0];
-    penalty_value +=
-        1. / mu * e.squaredNorm() + 0.25 * mu * lams[0].squaredNorm();
-  }
-
-  // local lambda function, defining the op to run on each constraint stack.
-  auto execute_on_stack = [](const VectorXs &lambda, const VectorXs &lams_pdal,
-                             CstrProximalScaler &weight_strat) {
-    auto e1 = weight_strat.apply(lams_pdal);
-    auto e2 = weight_strat.apply(lambda);
-    Scalar r = 0.25 * e1.dot(lams_pdal);
-    r += 0.25 * e2.dot(lambda);
-    return r;
-  };
+  penalty_value = 0.5 * mu * lams_plus[0].squaredNorm();
 
   // stage-per-stage
   const std::size_t nsteps = problem.numSteps();
   for (std::size_t i = 0; i < nsteps; i++) {
-    penalty_value += execute_on_stack(lams[i + 1], lams_pdal[i + 1],
-                                      workspace.cstr_scalers[i]);
+    const CstrProximalScaler &scaler = workspace.cstr_scalers[i];
+    penalty_value += 0.5 * mu * lams_plus[i + 1].squaredNorm();
+    penalty_value += 0.5 * scaler.weightedNorm(vs_plus[i]);
   }
 
   if (!problem.term_cstrs_.empty()) {
-    assert(lams.size() == nsteps + 2);
-    penalty_value += execute_on_stack(lams.back(), lams_pdal.back(),
-                                      workspace.cstr_scalers.back());
+    const CstrProximalScaler &scaler = workspace.cstr_scalers[nsteps];
+    penalty_value += 0.5 * scaler.weightedNorm(vs_plus[nsteps]);
   }
 
-  return prob_data.cost_ + prox_value + penalty_value;
+  return prob_data.cost_ + penalty_value;
 }
 
+// TODO: restore missing dual terms
 template <typename Scalar>
 Scalar PDALFunction<Scalar>::directionalDerivative(
-    const SolverType &solver, const TrajOptProblem &problem,
-    const std::vector<VectorXs> &lams, Workspace &workspace) {
+    const Scalar mu, const TrajOptProblem &problem,
+    const std::vector<VectorXs> &lams, const std::vector<VectorXs> &vs,
+    Workspace &workspace) {
   TrajOptData &prob_data = workspace.problem_data;
   const std::size_t nsteps = workspace.nsteps;
 
-  Scalar d1 = costDirectionalDerivative(workspace, prob_data);
+  Scalar d1 = 0.;
 
-  const Scalar mu = solver.getLinesearchMu();
-  const std::vector<VectorRef> &dxs = workspace.dxs;
-  const std::vector<VectorRef> &dus = workspace.dus;
-  const std::vector<VectorRef> &dlams = workspace.dlams;
-  const std::vector<VectorXs> &lams_pdal = workspace.lams_pdal;
+  const std::vector<VectorXs> &dxs = workspace.dxs;
+  const std::vector<VectorXs> &dus = workspace.dus;
+  const std::vector<VectorXs> &dvs = workspace.dvs;
+  const std::vector<VectorXs> &dlams = workspace.dlams;
+  // const std::vector<VectorXs> &vs_pdal = workspace.vs_pdal;
+  // const std::vector<VectorXs> &lams_pdal = workspace.lams_pdal;
+  std::vector<VectorXs> &Lxs = workspace.Lxs_;
+  std::vector<VectorXs> &Lus = workspace.Lus_;
   LagrangianDerivatives<Scalar>::compute(problem, workspace.problem_data,
-                                         lams_pdal, workspace.Lxs_,
-                                         workspace.Lus_);
-  if (solver.force_initial_condition_) {
-    workspace.Lxs_[0].setZero();
-  }
+                                         //  lams_pdal, vs_pdal, Lxs, Lus);
+                                         workspace.lams_plus, workspace.vs_plus,
+                                         Lxs, Lus);
+
+  assert(dxs.size() == nsteps + 1);
+  assert(dus.size() == nsteps);
+  assert(dvs.size() == nsteps + 1);
+  assert(dlams.size() == nsteps + 1);
 
   // constraints
-  {
-    const auto &lampdal = workspace.lams_pdal[0];
-    const auto e = 0.5 * mu * (lams[0] - lampdal);
-
-    d1 += workspace.Lxs_[0].dot(dxs[0]);
-    d1 += e.dot(dlams[0]);
-  }
-
-  auto execute_on_stack = [](const auto &dlam, const VectorXs &lam,
-                             const VectorXs &lampdal,
-                             CstrProximalScaler &weight_strat) {
-    auto e = 0.5 * weight_strat.apply(lam - lampdal);
-    return e.dot(dlam);
-  };
+  d1 += workspace.Lxs_[0].dot(dxs[0]);
 
   for (std::size_t i = 0; i < nsteps; i++) {
     d1 += workspace.Lxs_[i + 1].dot(dxs[i + 1]);
     d1 += workspace.Lus_[i].dot(dus[i]);
-    d1 += execute_on_stack(dlams[i + 1], lams[i + 1], lams_pdal[i + 1],
-                           workspace.cstr_scalers[i]);
-  }
-
-  d1 += workspace.Lxs_[nsteps].dot(dxs[nsteps]);
-
-  const ConstraintStack &term_stack = problem.term_cstrs_;
-  if (!term_stack.empty()) {
-    d1 += execute_on_stack(dlams.back(), lams.back(), lams_pdal.back(),
-                           workspace.cstr_scalers.back());
   }
 
   return d1;

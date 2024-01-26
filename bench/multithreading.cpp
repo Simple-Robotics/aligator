@@ -8,8 +8,8 @@
 
 #include "croc-talos-arm.hpp"
 
-using aligator::SolverFDDP;
-using aligator::SolverProxDDP;
+using aligator::SolverFDDPTpl;
+using aligator::SolverProxDDPTpl;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
@@ -47,10 +47,10 @@ static void BM_prox_multithread(benchmark::State &state) {
   auto croc_problem = defineCrocoddylProblem(nsteps);
   getInitialGuesses(croc_problem, xs_i, us_i);
   auto problem = convertCrocoddylProblem(croc_problem);
-  problem.setNumThreads(nthreads);
 
   const T mu_init = 1e-6;
-  SolverProxDDP<T> solver(TOL, mu_init, 0., maxiters);
+  SolverProxDDPTpl<T> solver(TOL, mu_init, 0., maxiters);
+  solver.setNumThreads(nthreads);
   solver.setup(problem);
 
   for (auto _ : state) {
@@ -68,10 +68,10 @@ static void BM_fddp_multithread(benchmark::State &state) {
   auto croc_problem = defineCrocoddylProblem(nsteps);
   getInitialGuesses(croc_problem, xs_i, us_i);
   auto problem = convertCrocoddylProblem(croc_problem);
-  problem.setNumThreads(nthreads);
 
-  SolverFDDP<T> solver(TOL);
+  SolverFDDPTpl<T> solver(TOL);
   solver.max_iters = maxiters;
+  solver.setNumThreads(nthreads);
   solver.setup(problem);
 
   for (auto _ : state) {

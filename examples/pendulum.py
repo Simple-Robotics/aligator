@@ -174,7 +174,7 @@ else:
         aligator.QuadraticResidualCost(space, frame_err, np.diag(weights_frame_place))
     )
 
-mu_init = 0.8
+mu_init = 0.2
 rho_init = 0.0
 verbose = aligator.VerboseLevel.VERBOSE
 TOL = 1e-4
@@ -191,8 +191,8 @@ xs_i = aligator.rollout(dyn_model, x0, us_i)
 
 max_threads = aligator.get_available_threads()
 print("Max threads:", max_threads)
-problem.setNumThreads(max_threads)
 solver.setup(problem)
+solver.setNumThreads(max_threads)
 solver.run(problem, xs_i, us_i)
 res = solver.results
 print(res)

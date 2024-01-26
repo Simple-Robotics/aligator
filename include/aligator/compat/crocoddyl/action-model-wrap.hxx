@@ -14,12 +14,7 @@ ActionModelWrapperTpl<Scalar>::ActionModelWrapperTpl(
     boost::shared_ptr<CrocActionModel> action_model)
     : Base(std::make_shared<StateWrapper>(action_model->get_state()),
            (int)action_model->get_nu()),
-      action_model_(action_model) {
-  using EqualitySet = proxsuite::nlp::EqualityConstraint<Scalar>;
-  const int nr = (int)action_model->get_state()->get_ndx();
-  this->constraints_.pushBack(
-      Constraint{nullptr, std::make_shared<EqualitySet>()}, nr);
-}
+      action_model_(action_model) {}
 
 template <typename Scalar>
 void ActionModelWrapperTpl<Scalar>::evaluate(const ConstVectorRef &x,

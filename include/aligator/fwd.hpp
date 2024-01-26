@@ -97,10 +97,10 @@ template <typename Scalar> struct TrajOptProblemTpl;
 template <typename Scalar> struct TrajOptDataTpl;
 
 // fwd SolverProxDDP
-template <typename Scalar> struct SolverProxDDP;
+template <typename Scalar> struct SolverProxDDPTpl;
 
 // fwd SolverFDDP
-template <typename Scalar> struct SolverFDDP;
+template <typename Scalar> struct SolverFDDPTpl;
 
 // fwd WorkspaceBaseTpl
 template <typename Scalar> struct WorkspaceBaseTpl;
@@ -113,6 +113,9 @@ template <typename Scalar> struct WorkspaceTpl;
 
 // fwd ResultsTpl
 template <typename Scalar> struct ResultsTpl;
+
+// fwd FilterTpl
+template <typename Scalar> struct FilterTpl;
 
 template <typename T>
 using StdVectorEigenAligned = std::vector<T, Eigen::aligned_allocator<T>>;

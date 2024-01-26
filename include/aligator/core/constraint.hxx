@@ -30,13 +30,4 @@ void ConstraintStackTpl<Scalar>::pushBack(const ConstraintType &el) {
   pushBack(el, el.nr());
 }
 
-template <typename Scalar>
-template <typename Derived>
-Eigen::VectorBlock<const Derived, -1>
-ConstraintStackTpl<Scalar>::constSegmentByConstraint(
-    const Eigen::MatrixBase<Derived> &lambda, const std::size_t j) const {
-  assert(lambda.size() == totalDim());
-  return lambda.segment(indices_[j], dims_[j]);
-}
-
 } // namespace aligator

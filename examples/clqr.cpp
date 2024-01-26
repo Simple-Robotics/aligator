@@ -29,6 +29,7 @@ struct NormalGen {
 };
 
 int main() {
+  std::srand(42);
   const size_t nsteps = 100;
   const auto nx = 4;
   const auto nu = 2;
@@ -60,29 +61,51 @@ int main() {
     assert(term_cost->nu == 0);
   }
 
+  double ctrlUpperBound = 0.3;
   auto stage = std::make_shared<StageModel>(cost, dyn_model);
   {
-    double ub = 1.0;
-    auto box = std::make_shared<BoxConstraint>(-ub * VectorXd::Ones(nu),
-                                               ub * VectorXd::Ones(nu));
-    auto func = std::make_shared<ControlErrorResidualTpl<double>>(
-        nx, VectorXd::Zero(nu));
+    auto box =
+        std::make_shared<BoxConstraint>(-ctrlUpperBound * VectorXd::Ones(nu),
+                                        ctrlUpperBound * VectorXd::Ones(nu));
+    auto u0 = VectorXd::Zero(nu);
+    auto func = std::make_shared<ControlErrorResidualTpl<double>>(nx, u0);
     stage->addConstraint(func, box);
   }
 
-  std::vector<decltype(stage)> stages(nsteps);
-  std::fill(stages.begin(), stages.end(), stage);
+  std::vector<decltype(stage)> stages(nsteps, stage);
   TrajOptProblem problem(x0, stages, term_cost);
 
-  double tol = 1e-6;
-  SolverProxDDP<double> ddp(tol, 0.01);
-  ddp.max_iters = 10;
-  ddp.verbose_ = VERBOSE;
+  bool terminal = false;
+  if (terminal) {
+    auto xf = VectorXd::Ones(nx);
+    auto func = std::make_shared<StateErrorResidualTpl<double>>(space, nu, xf);
+    problem.addTerminalConstraint({func, std::make_shared<Equality>()});
+  }
 
-  ddp.setup(problem);
-  bool conv = ddp.run(problem);
+  const double tol = 1e-6;
+  const double mu_init = 1e-6;
+  SolverProxDDPTpl<double> solver(tol, mu_init);
+  solver.max_iters = 10;
+  solver.verbose_ = VERBOSE;
+  solver.linear_solver_choice = LQSolverChoice::PARALLEL;
+  solver.force_initial_condition_ = false;
+  solver.rollout_type_ = RolloutType::LINEAR;
+  solver.setNumThreads(4);
+
+  solver.setup(problem);
+  const bool conv = solver.run(problem);
   (void)conv;
-  assert(conv);
 
-  std::cout << ddp.results_ << std::endl;
+  auto us = solver.results_.us;
+  for (std::size_t i = 0; i < us.size(); i++) {
+    fmt::print("us[{:02d}] = {}\n", i, us[i].transpose());
+  }
+  auto xs = solver.results_.xs;
+  for (std::size_t i = 0; i < xs.size(); i++) {
+    fmt::print("xs[{:02d}] = {}\n", i, xs[i].transpose());
+  }
+
+  std::cout << solver.results_ << std::endl;
+
+  assert(conv);
 }

@@ -40,7 +40,7 @@ struct BlkMatrixPythonVisitor
                       bp::make_function(&BlockMatrixType::colDims,
                                         bp::return_internal_reference<>()))
         .def("blockRow", blockRow, "Get a block row by index.")
-        .def("__call__", get_block, bp::args("self", "i", "j"));
+        .def("__call__", get_block, ("self"_a, "i", "j"));
   }
 
   static void expose(const char *name) {

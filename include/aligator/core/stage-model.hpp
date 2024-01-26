@@ -41,14 +41,16 @@ public:
   ManifoldPtr xspace_next_;
   /// Control vector space -- by default, a simple Euclidean space.
   ManifoldPtr uspace_;
-  /// Stage cost function.
-  CostPtr cost_;
   /// Constraint manager.
   ConstraintStackTpl<Scalar> constraints_;
+  /// Stage cost function.
+  CostPtr cost_;
+  /// Dynamics model
+  DynamicsPtr dynamics_;
 
   /// Constructor assumes the control space is a Euclidean space of
   /// dimension @p nu.
-  StageModelTpl(CostPtr cost, DynamicsPtr dyn_model);
+  StageModelTpl(CostPtr cost, DynamicsPtr dynamics);
   virtual ~StageModelTpl() = default;
 
   const Manifold &xspace() const { return *xspace_; }
@@ -60,16 +62,15 @@ public:
   /// This boolean allows flexibility in solvers when dealing
   /// with different frontends e.g. Crocoddyl's API.
   virtual bool has_dyn_model() const { return true; }
-  virtual const Dynamics &dyn_model() const {
-    assert(numConstraints() > 0);
-    return static_cast<const Dynamics &>(*constraints_[0].func);
-  }
+  virtual const Dynamics &dyn_model() const { return *dynamics_; }
 
   int nx1() const { return xspace_->nx(); }
   int ndx1() const { return xspace_->ndx(); }
   int nu() const { return uspace_->ndx(); }
   int nx2() const { return xspace_next_->nx(); }
   int ndx2() const { return xspace_next_->ndx(); }
+  /// Total number of constraints
+  int nc() const { return (int)constraints_.totalDim(); }
 
   /// Number of constraint objects.
   std::size_t numConstraints() const { return constraints_.size(); }
@@ -77,7 +78,7 @@ public:
   /// Number of primal optimization variables.
   int numPrimal() const { return nu() + ndx2(); }
   /// Number of dual variables, i.e. Lagrange multipliers.
-  int numDual() const { return (int)constraints_.totalDim(); }
+  int numDual() const { return ndx2() + nc(); }
 
   /// @brief    Add a constraint to the stage.
   template <typename T> void addConstraint(T &&cstr);

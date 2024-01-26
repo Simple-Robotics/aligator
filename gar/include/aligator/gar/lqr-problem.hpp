@@ -3,7 +3,7 @@
 
 #include "aligator/math.hpp"
 
-#include <boost/optional.hpp>
+#include <optional>
 
 namespace aligator {
 namespace gar {
@@ -110,7 +110,7 @@ template <typename Scalar> struct LQRProblemTpl {
 
   /// Evaluate the quadratic objective.
   Scalar evaluate(const VectorOfVectors &xs, const VectorOfVectors &us,
-                  const boost::optional<ConstVectorRef> &theta_) const;
+                  const std::optional<ConstVectorRef> &theta_) const;
 
 protected:
   void initialize() {
@@ -123,7 +123,7 @@ protected:
 template <typename Scalar>
 Scalar LQRProblemTpl<Scalar>::evaluate(
     const VectorOfVectors &xs, const VectorOfVectors &us,
-    const boost::optional<ConstVectorRef> &theta_) const {
+    const std::optional<ConstVectorRef> &theta_) const {
   if ((int)xs.size() != horizon() + 1)
     ALIGATOR_RUNTIME_ERROR(fmt::format(
         "Wrong size for vector xs (expected {:d}).", horizon() + 1));

@@ -1,26 +1,8 @@
 #include "aligator/python/fwd.hpp"
+#include "aligator/python/visitors.hpp"
 
 #include "aligator/solvers/proxddp/results.hpp"
 #include "aligator/core/workspace-base.hpp"
-
-namespace aligator {
-namespace python {
-using context::Scalar;
-using QParams = QFunctionTpl<Scalar>;
-using VParams = ValueFunctionTpl<Scalar>;
-} // namespace python
-} // namespace aligator
-
-namespace eigenpy {
-namespace internal {
-
-template <>
-struct has_operator_equal<::aligator::python::QParams> : boost::false_type {};
-template <>
-struct has_operator_equal<::aligator::python::VParams> : boost::false_type {};
-
-} // namespace internal
-} // namespace eigenpy
 
 namespace aligator {
 namespace python {
@@ -34,46 +16,6 @@ void exposeProxDDP();
 void exposeSolverCommon() {
   using context::Scalar;
 
-  bp::class_<QParams>(
-      "QParams", "Q-function parameters.",
-      bp::init<int, int, int>(bp::args("self", "ndx", "nu", "ndy")))
-      .add_property("ntot", &QParams::ntot)
-      .def_readonly("grad", &QParams::grad_)
-      .def_readonly("hess", &QParams::hess_)
-      .add_property(
-          "Qx", bp::make_getter(&QParams::Qx,
-                                bp::return_value_policy<bp::return_by_value>()))
-      .add_property(
-          "Qu", bp::make_getter(&QParams::Qu,
-                                bp::return_value_policy<bp::return_by_value>()))
-      .add_property("Qxx", bp::make_getter(
-                               &QParams::Qxx,
-                               bp::return_value_policy<bp::return_by_value>()))
-      .add_property("Qxu", bp::make_getter(
-                               &QParams::Qxu,
-                               bp::return_value_policy<bp::return_by_value>()))
-      .add_property("Qxy", bp::make_getter(
-                               &QParams::Qxy,
-                               bp::return_value_policy<bp::return_by_value>()))
-      .add_property("Quu", bp::make_getter(
-                               &QParams::Quu,
-                               bp::return_value_policy<bp::return_by_value>()))
-      .add_property("Quy", bp::make_getter(
-                               &QParams::Quy,
-                               bp::return_value_policy<bp::return_by_value>()))
-      .add_property("Qyy", bp::make_getter(
-                               &QParams::Qyy,
-                               bp::return_value_policy<bp::return_by_value>()))
-      .def(PrintableVisitor<QParams>());
-
-  bp::class_<VParams>("VParams", "Value function parameters.", bp::no_init)
-      .def_readonly("Vx", &VParams::Vx_)
-      .def_readonly("Vxx", &VParams::Vxx_)
-      .def(PrintableVisitor<VParams>());
-
-  StdVectorPythonVisitor<std::vector<QParams>>::expose("StdVec_QParams");
-  StdVectorPythonVisitor<std::vector<VParams>>::expose("StdVec_VParams");
-
   using WorkspaceBase = WorkspaceBaseTpl<Scalar>;
   bp::class_<WorkspaceBase, boost::noncopyable>(
       "WorkspaceBase", "Base workspace struct.", bp::no_init)
@@ -83,15 +25,12 @@ void exposeSolverCommon() {
       .def_readonly("trial_us", &WorkspaceBase::trial_us)
       .def_readonly("dyn_slacks", &WorkspaceBase::dyn_slacks,
                     "Expose dynamics' slack variables (e.g. feasibility gaps).")
-      .def_readonly("value_params", &WorkspaceBase::value_params)
-      .def_readonly("q_params", &WorkspaceBase::q_params)
-      .def("cycleLeft", &WorkspaceBase::cycleLeft, bp::args("self"),
+      .def("cycleLeft", &WorkspaceBase::cycleLeft, "self"_a,
            "Cycle the workspace to the left: this will rotate all the data "
            "(states, controls, multipliers) forward by one rank.")
-      .def("cycleAppend", &WorkspaceBase::cycleAppend, bp::args("self", "data"),
-           "Insert a StageData object and cycle the "
-           "workspace left (using `cycleLeft()`) and insert the allocated data "
-           "(useful for MPC).");
+      .def("cycleAppend", &WorkspaceBase::cycleAppend, ("self"_a, "data"),
+           "Insert a StageData object and cycle the workspace left (using "
+           "`cycleLeft()`) and insert the allocated data (useful for MPC).");
 
   using ResultsBase = ResultsBaseTpl<Scalar>;
   bp::class_<ResultsBase>("ResultsBase", "Base results struct.", bp::no_init)
@@ -101,16 +40,15 @@ void exposeSolverCommon() {
       .def_readonly("gains", &ResultsBase::gains_)
       .def_readonly("xs", &ResultsBase::xs)
       .def_readonly("us", &ResultsBase::us)
-      .def_readonly("lams", &ResultsBase::lams)
       .def_readonly("primal_infeas", &ResultsBase::prim_infeas)
       .def_readonly("dual_infeas", &ResultsBase::dual_infeas)
       .def_readonly("traj_cost", &ResultsBase::traj_cost_, "Trajectory cost.")
       .def_readonly("merit_value", &ResultsBase::merit_value_,
                     "Merit function value.")
-      .def("controlFeedbacks", &ResultsBase::getCtrlFeedbacks, bp::args("self"),
+      .def("controlFeedbacks", &ResultsBase::getCtrlFeedbacks, "self"_a,
            "Get the control feedback matrices.")
-      .def("controlFeedforwards", &ResultsBase::getCtrlFeedforwards,
-           bp::args("self"), "Get the control feedforward gains.")
+      .def("controlFeedforwards", &ResultsBase::getCtrlFeedforwards, "self"_a,
+           "Get the control feedforward gains.")
       .def(PrintableVisitor<ResultsBase>());
 }
 

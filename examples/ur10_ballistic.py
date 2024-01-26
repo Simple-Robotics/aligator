@@ -132,8 +132,11 @@ def configure_viz(target_pos):
 
 target_pos = np.array([3.4, -0.2, 0.0])
 
-viz = configure_viz(target_pos=target_pos)
-viz.display(ref_q0)
+if args.display:
+    viz = configure_viz(target_pos=target_pos)
+    viz.display(ref_q0)
+else:
+    viz = None
 
 dt = 0.01
 tf = 2.0  # seconds
@@ -176,7 +179,8 @@ us_i = [u0] * len(dms)
 xs_i = aligator.rollout(dms, x0, us_i)
 qs_i = [x[:nq] for x in xs_i]
 
-viz.play(qs_i, dt=dt)
+if args.display:
+    viz.play(qs_i, dt=dt)
 
 
 def create_running_cost():
@@ -229,8 +233,9 @@ def get_position_limit_constraint():
 
 def get_velocity_limit_constraint():
     state_fn = aligator.StateErrorResidual(space, nu, space.neutral())
-    vel_fn = state_fn[nv + 6 :][3]
-    vlim = robot.model.velocityLimit[3:4]
+    idx = [3]
+    vel_fn = state_fn[nv + 6 :][idx]
+    vlim = robot.model.velocityLimit[idx]
     box_cstr = constraints.BoxConstraint(-vlim, vlim)
     return aligator.StageConstraint(vel_fn, box_cstr)
 
@@ -264,17 +269,11 @@ problem = aligator.TrajOptProblem(x0, stages, term_cost)
 problem.addTerminalConstraint(term_constraint)
 tol = 1e-3
 mu_init = 1e-4
-solver = aligator.SolverProxDDP(tol, mu_init, max_iters=200, verbose=aligator.VERBOSE)
-solver.reg_min = 1e-8
+solver = aligator.SolverProxDDP(tol, mu_init, max_iters=400, verbose=aligator.VERBOSE)
+solver.rollout_type = aligator.ROLLOUT_LINEAR
 his_cb = aligator.HistoryCallback()
 solver.registerCallback("his", his_cb)
-solver.dual_weight = 0.0
 solver.setup(problem)
-# customize constraint scales
-for i in range(nsteps):
-    psc = solver.workspace.getConstraintScaler(i)
-    psc.set_weight(0.001, 1)
-    # psc.set_weight(0.001, 2)
 flag = solver.run(problem, xs_i, us_i)
 
 print(solver.results)
@@ -288,7 +287,7 @@ proj_frame_id = rmodel.getFrameId("ball/root_joint")
 
 
 def get_frame_vel(k: int):
-    pin.forwardKinematics(rmodel, rdata, qs[i], vs[i])
+    pin.forwardKinematics(rmodel, rdata, qs[k], vs[k])
     return pin.getFrameVelocity(rmodel, rdata, proj_frame_id)
 
 

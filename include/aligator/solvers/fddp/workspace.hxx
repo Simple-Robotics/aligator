@@ -9,16 +9,18 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
     const TrajOptProblemTpl<Scalar> &problem)
     : Base(problem) {
   const std::size_t nsteps = this->nsteps;
+  problem.checkIntegrity();
 
   this->dyn_slacks.resize(nsteps + 1);
   dxs.resize(nsteps + 1);
   dus.resize(nsteps);
   Quuks_.resize(nsteps);
   ftVxx_.resize(nsteps + 1);
-  kkt_mat_bufs.resize(nsteps);
-  kkt_rhs_bufs.resize(nsteps);
+  kktRhs.resize(nsteps);
   llts_.reserve(nsteps);
   JtH_temp_.reserve(nsteps);
+  value_params.reserve(nsteps + 1);
+  q_params.reserve(nsteps);
 
   if (nsteps > 0) {
     const int ndx = problem.stages_[0]->ndx1();
@@ -46,15 +48,14 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
 
     Quuks_[i] = VectorXs::Zero(nu);
     ftVxx_[i + 1] = VectorXs::Zero(sm.ndx2());
-    kkt_mat_bufs[i] = MatrixXs::Zero(nu, nu);
-    kkt_rhs_bufs[i] = MatrixXs::Zero(nu, ndx + 1);
+    kktRhs[i] = MatrixXs::Zero(nu, ndx + 1);
     llts_.emplace_back(nu);
     JtH_temp_.emplace_back(ndx + nu, ndx);
     JtH_temp_.back().setZero();
   }
-  const StageModelTpl<Scalar> &sm = *problem.stages_.back();
-  dxs[nsteps] = VectorXs::Zero(sm.ndx2());
-  value_params.emplace_back(sm.ndx2());
+  const int ndx = internal::problem_last_ndx_helper(problem);
+  dxs[nsteps].setZero(ndx);
+  value_params.emplace_back(ndx);
 
   assert(llts_.size() == nsteps);
 }
@@ -66,10 +67,12 @@ template <typename Scalar> void WorkspaceFDDPTpl<Scalar>::cycleLeft() {
   rotate_vec_left(dus);
   rotate_vec_left(Quuks_);
   rotate_vec_left(ftVxx_, 1);
-  rotate_vec_left(kkt_mat_bufs);
-  rotate_vec_left(kkt_rhs_bufs);
+  rotate_vec_left(kktRhs);
   rotate_vec_left(llts_);
   rotate_vec_left(JtH_temp_);
+
+  rotate_vec_left(value_params);
+  rotate_vec_left(q_params);
 }
 
 } // namespace aligator

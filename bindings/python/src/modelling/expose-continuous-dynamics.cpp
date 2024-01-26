@@ -1,5 +1,6 @@
 /// @file
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+#include "aligator/python/visitors.hpp"
 #include "aligator/python/modelling/continuous.hpp"
 #include "aligator/modelling/dynamics/linear-ode.hpp"
 

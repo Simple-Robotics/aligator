@@ -2,17 +2,22 @@
 #pragma once
 
 #include "./riccati-impl.hpp"
+#include "tracy/Tracy.hpp"
 
 namespace aligator {
 namespace gar {
 template <typename Scalar>
 bool ProximalRiccatiImpl<Scalar>::backwardImpl(
     boost::span<const KnotType> stages, const Scalar mudyn, const Scalar mueq,
-    boost::span<StageFactor> datas) {
+    boost::span<StageFactorType> datas) {
+  ZoneScoped;
   // terminal node
+  if (datas.size() == 0)
+    return true;
   uint N = (uint)(datas.size() - 1);
   {
-    StageFactor &d = datas[N];
+    ZoneScopedN("backward_terminal");
+    StageFactorType &d = datas[N];
     value_t &vc = d.vm;
     const KnotType &model = stages[N];
     // fill cost-to-go matrix
@@ -75,7 +80,7 @@ bool ProximalRiccatiImpl<Scalar>::backwardImpl(
   uint t = N - 1;
   while (true) {
     value_t &vn = datas[t + 1].vm;
-    solveOneStage(stages[t], datas[t], vn, mudyn, mueq);
+    solveSingleStage(stages[t], datas[t], vn, mudyn, mueq);
 
     if (t == 0)
       break;
@@ -86,21 +91,37 @@ bool ProximalRiccatiImpl<Scalar>::backwardImpl(
 }
 
 template <typename Scalar>
-void ProximalRiccatiImpl<Scalar>::computeMatrixTerms(const KnotType &model,
-                                                     Scalar mudyn, Scalar mueq,
-                                                     value_t &vnext,
-                                                     StageFactor &d) {
-  vnext.Pchol.compute(vnext.Pmat);
-  d.PinvEt = vnext.Pchol.solve(model.E.transpose());
-  vnext.schurMat.noalias() = model.E * d.PinvEt;
-  vnext.schurMat.diagonal().array() += mudyn;
-  vnext.schurChol.compute(vnext.schurMat);
-  // evaluate inverse of schurMat
-  vnext.Vxx.setIdentity();
-  vnext.schurChol.solveInPlace(vnext.Vxx);
+void ProximalRiccatiImpl<Scalar>::computeInitial(
+    VectorRef x0, VectorRef lbd0, const kkt0_t &kkt0,
+    const std::optional<ConstVectorRef> &theta_) {
+  ZoneScoped;
+  assert(kkt0.chol.info() == Eigen::Success);
+  x0 = kkt0.ff.blockSegment(0);
+  lbd0 = kkt0.ff.blockSegment(1);
+  if (theta_.has_value()) {
+    x0.noalias() += kkt0.fth.blockRow(0) * theta_.value();
+    lbd0.noalias() += kkt0.fth.blockRow(1) * theta_.value();
+  }
+}
 
-  d.AtV.noalias() = model.A.transpose() * vnext.Vxx;
-  d.BtV.noalias() = model.B.transpose() * vnext.Vxx;
+template <typename Scalar>
+void ProximalRiccatiImpl<Scalar>::solveSingleStage(const KnotType &model,
+                                                   StageFactorType &d,
+                                                   value_t &vn,
+                                                   const Scalar mudyn,
+                                                   const Scalar mueq) {
+  ZoneScoped;
+  vn.Pchol.compute(vn.Pmat);
+  d.PinvEt = vn.Pchol.solve(model.E.transpose());
+  vn.schurMat.noalias() = model.E * d.PinvEt;
+  vn.schurMat.diagonal().array() += mudyn;
+  vn.schurChol.compute(vn.schurMat);
+  // evaluate inverse of schurMat
+  vn.Vxx.setIdentity();
+  vn.schurChol.solveInPlace(vn.Vxx);
+
+  d.AtV.noalias() = model.A.transpose() * vn.Vxx;
+  d.BtV.noalias() = model.B.transpose() * vn.Vxx;
 
   d.Qhat.noalias() = model.Q + d.AtV * model.A;
   d.Rhat.noalias() = model.R + d.BtV * model.B;
@@ -112,24 +133,14 @@ void ProximalRiccatiImpl<Scalar>::computeMatrixTerms(const KnotType &model,
   d.kktMat(1, 0) = model.D;
   d.kktMat(1, 1).diagonal().setConstant(-mueq);
   d.kktChol.compute(d.kktMat.matrix());
-}
-
-template <typename Scalar>
-void ProximalRiccatiImpl<Scalar>::solveOneStage(const KnotType &model,
-                                                StageFactor &d, value_t &vn,
-                                                const Scalar mudyn,
-                                                const Scalar mueq) {
-
-  // compute matrix expressions for the inverse
-  computeMatrixTerms(model, mudyn, mueq, vn, d);
 
   VectorRef kff = d.ff.blockSegment(0);
   VectorRef zff = d.ff.blockSegment(1);
-  VectorRef xi = d.ff.blockSegment(2);
-  VectorRef a = d.ff.blockSegment(3);
-  a = vn.Pchol.solve(-vn.pvec);
+  VectorRef lff = d.ff.blockSegment(2);
+  VectorRef yff = d.ff.blockSegment(3);
+  yff = vn.Pchol.solve(-vn.pvec);
 
-  vn.vx.noalias() = model.f + model.E * a;
+  vn.vx.noalias() = model.f + model.E * yff;
 
   // fill feedback system
   d.qhat.noalias() = model.q + d.AtV * vn.vx;
@@ -139,7 +150,7 @@ void ProximalRiccatiImpl<Scalar>::solveOneStage(const KnotType &model,
 
   RowMatrixRef K = d.fb.blockRow(0);
   RowMatrixRef Z = d.fb.blockRow(1);
-  RowMatrixRef Xi = d.fb.blockRow(2);
+  RowMatrixRef L = d.fb.blockRow(2);
   RowMatrixRef A = d.fb.blockRow(3);
   K = -d.Shat.transpose();
   Z = -model.C;
@@ -149,14 +160,14 @@ void ProximalRiccatiImpl<Scalar>::solveOneStage(const KnotType &model,
   d.kktChol.solveInPlace(fbview.matrix());
 
   // set closed loop dynamics
-  xi.noalias() = vn.Vxx * vn.vx;
-  xi.noalias() += d.BtV.transpose() * kff;
+  lff.noalias() = vn.Vxx * vn.vx;
+  lff.noalias() += d.BtV.transpose() * kff;
 
-  Xi.noalias() = vn.Vxx * model.A;
-  Xi.noalias() += d.BtV.transpose() * K;
+  L.noalias() = vn.Vxx * model.A;
+  L.noalias() += d.BtV.transpose() * K;
 
-  a.noalias() -= d.PinvEt * xi;
-  A.noalias() = d.PinvEt * Xi;
+  yff.noalias() -= d.PinvEt * lff;
+  A.noalias() = d.PinvEt * L;
   A *= -1;
 
   value_t &vc = d.vm;
@@ -165,18 +176,19 @@ void ProximalRiccatiImpl<Scalar>::solveOneStage(const KnotType &model,
   vc.pvec.noalias() = d.qhat + d.Shat * kff + Ct * zff;
 
   if (model.nth > 0) {
+    ZoneScopedN("stage_solve_parameter");
     RowMatrixRef Kth = d.fth.blockRow(0);
     RowMatrixRef Zth = d.fth.blockRow(1);
-    RowMatrixRef Xith = d.fth.blockRow(2);
-    RowMatrixRef Ath = d.fth.blockRow(3);
+    RowMatrixRef Lth = d.fth.blockRow(2);
+    RowMatrixRef Yth = d.fth.blockRow(3);
 
     // store -Pinv * L
-    Ath = vn.Pchol.solve(-vn.Vxt);
+    Yth = vn.Pchol.solve(-vn.Vxt);
     // store -V * E * Pinv * L
-    Xith.noalias() = model.E * Ath;
+    Lth.noalias() = model.E * Yth;
 
-    d.Gxhat.noalias() = model.Gx + d.AtV * Xith;
-    d.Guhat.noalias() = model.Gu + d.BtV * Xith;
+    d.Gxhat.noalias() = model.Gx + d.AtV * Lth;
+    d.Guhat.noalias() = model.Gu + d.BtV * Lth;
 
     // set rhs of 2x2 block system and solve
     Kth = -d.Guhat;
@@ -185,15 +197,15 @@ void ProximalRiccatiImpl<Scalar>::solveOneStage(const KnotType &model,
     d.kktChol.solveInPlace(fthview.matrix());
 
     // substitute into Xith, Ath gains
-    Xith.noalias() += model.B * Kth;
-    vn.schurChol.solveInPlace(Xith);
-    Ath.noalias() -= d.PinvEt * Xith;
+    Lth.noalias() += model.B * Kth;
+    vn.schurChol.solveInPlace(Lth);
+    Yth.noalias() -= d.PinvEt * Lth;
 
     // update vt, Vxt, Vtt
     vc.vt = vn.vt + model.gamma;
     // vc.vt.noalias() += d.Guhat.transpose() * kff;
     vc.vt.noalias() += model.Gu.transpose() * kff;
-    vc.vt.noalias() += vn.Vxt.transpose() * a;
+    vc.vt.noalias() += vn.Vxt.transpose() * yff;
 
     // vc.Vxt.noalias() = d.Gxhat + K.transpose() * d.Guhat;
     vc.Vxt = model.Gx;
@@ -202,21 +214,22 @@ void ProximalRiccatiImpl<Scalar>::solveOneStage(const KnotType &model,
 
     vc.Vtt = model.Gth + vn.Vtt;
     vc.Vtt.noalias() += model.Gu.transpose() * Kth;
-    vc.Vtt.noalias() += vn.Vxt.transpose() * Ath;
+    vc.Vtt.noalias() += vn.Vxt.transpose() * Yth;
   }
 }
 
 template <typename Scalar>
 bool ProximalRiccatiImpl<Scalar>::forwardImpl(
-    boost::span<const KnotType> stages, boost::span<const StageFactor> datas,
-    boost::span<VectorXs> xs, boost::span<VectorXs> us,
-    boost::span<VectorXs> vs, boost::span<VectorXs> lbdas,
-    const boost::optional<ConstVectorRef> &theta_) {
+    boost::span<const KnotType> stages,
+    boost::span<const StageFactorType> datas, boost::span<VectorXs> xs,
+    boost::span<VectorXs> us, boost::span<VectorXs> vs,
+    boost::span<VectorXs> lbdas, const std::optional<ConstVectorRef> &theta_) {
+  ZoneScoped;
   ALIGATOR_NOMALLOC_BEGIN;
 
   uint N = (uint)(datas.size() - 1);
   for (uint t = 0; t <= N; t++) {
-    const StageFactor &d = datas[t];
+    const StageFactorType &d = datas[t];
     const KnotType &model = stages[t];
     assert(xs[t].size() == model.nx);
     assert(vs[t].size() == model.nc);

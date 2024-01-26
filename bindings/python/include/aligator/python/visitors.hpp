@@ -10,6 +10,9 @@ namespace aligator {
 namespace python {
 namespace bp = boost::python;
 
+// fwd-declaration
+bp::arg operator""_a(const char *argname, std::size_t);
+
 template <typename T>
 struct ClonePythonVisitor : bp::def_visitor<ClonePythonVisitor<T>> {
   template <typename PyT> void visit(PyT &obj) const {
@@ -100,26 +103,29 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
         .def_readwrite("force_initial_condition",
                        &SolverType::force_initial_condition_,
                        "Set x0 to be fixed to the initial condition.")
-        .def("getResults", &SolverType::getResults, bp::args("self"),
-             deprecated_member<bp::return_internal_reference<>>(
+        .add_property("num_threads", &SolverType::getNumThreads)
+        .def("setNumThreads", &SolverType::setNumThreads,
+             ("self"_a, "num_threads"))
+        .def("getResults", &SolverType::getResults, ("self"_a),
+             deprecation_warning_policy<bp::return_internal_reference<>>(
                  "This getter is deprecated. Access the results using "
                  "`solver.results` instead."),
              "Get the results instance.")
-        .def("getWorkspace", &SolverType::getWorkspace, bp::args("self"),
-             deprecated_member<bp::return_internal_reference<>>(
+        .def("getWorkspace", &SolverType::getWorkspace, ("self"_a),
+             deprecation_warning_policy<bp::return_internal_reference<>>(
                  "This getter is deprecated. Access the workspace using "
                  "`solver.workspace` instead."),
              "Get the workspace instance.")
         .def_readonly("results", &SolverType::results_, "Solver results.")
         .def_readonly("workspace", &SolverType::workspace_, "Solver workspace.")
-        .def("setup", &SolverType::setup, bp::args("self", "problem"),
+        .def("setup", &SolverType::setup, ("self"_a, "problem"),
              "Allocate solver workspace and results data for the problem.")
         .def("registerCallback", &SolverType::registerCallback,
-             bp::args("self", "name", "cb"), "Add a callback to the solver.")
-        .def("removeCallback", &SolverType::removeCallback,
-             bp::args("self", "key"), "Remove a callback.")
-        .def("getCallback", getCallback, bp::args("self", "key"))
-        .def("clearCallbacks", &SolverType::clearCallbacks, bp::args("self"),
+             ("self"_a, "name", "cb"), "Add a callback to the solver.")
+        .def("removeCallback", &SolverType::removeCallback, ("self"_a, "key"),
+             "Remove a callback.")
+        .def("getCallback", getCallback, ("self"_a, "key"))
+        .def("clearCallbacks", &SolverType::clearCallbacks, ("self"_a),
              "Clear callbacks.");
   }
 };

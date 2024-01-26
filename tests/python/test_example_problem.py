@@ -166,7 +166,6 @@ class TestClass:
 
         solver.multiplier_update_mode = aligator.MultiplierUpdateMode.NEWTON
         solver.setup(problem)
-        solver.setLinesearchMuLowerBound(1e-9)
         solver.run(problem, xs_out, us_init)
 
 

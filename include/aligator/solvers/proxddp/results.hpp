@@ -13,11 +13,15 @@ template <typename _Scalar> struct ResultsTpl : ResultsBaseTpl<_Scalar> {
   using Base = ResultsBaseTpl<Scalar>;
   using Base::conv;
   using Base::gains_;
-  using Base::lams;
   using Base::num_iters;
   using Base::us;
   using Base::xs;
 
+  /// Problem co-states
+  std::vector<VectorXs> lams;
+  /// Path constraint multipliers
+  std::vector<VectorXs> vs;
+  /// Proximal/AL iteration count
   std::size_t al_iter = 0;
 
   ResultsTpl() : Base() {}

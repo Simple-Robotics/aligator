@@ -154,7 +154,8 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 
   /// @brief Rollout the problem costs, constraints, dynamics, stage per stage.
   Scalar evaluate(const std::vector<VectorXs> &xs,
-                  const std::vector<VectorXs> &us, Data &prob_data) const;
+                  const std::vector<VectorXs> &us, Data &prob_data,
+                  std::size_t num_threads = 1) const;
 
   /**
    * @brief Rollout the problem derivatives, stage per stage.
@@ -163,8 +164,8 @@ template <typename _Scalar> struct TrajOptProblemTpl {
    * @param us Control sequence
    */
   void computeDerivatives(const std::vector<VectorXs> &xs,
-                          const std::vector<VectorXs> &us,
-                          Data &prob_data) const;
+                          const std::vector<VectorXs> &us, Data &prob_data,
+                          std::size_t num_threads = 1) const;
 
   /// @brief Pop out the first StageModel and replace by the supplied one;
   /// updates the supplied problem data (TrajOptDataTpl) object.
@@ -175,22 +176,17 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// @warning Call TrajOptProblemTpl::evaluate() first!
   Scalar computeTrajectoryCost(const Data &problem_data) const;
 
-  /// @brief  Set the number of threads for multithreaded evaluation.
-  void setNumThreads(std::size_t num_threads) {
-#ifndef ALIGATOR_MULTITHREADING
-    fmt::print("{} does nothing: aligator was not compiled with multithreading "
-               "support.\n",
-               __FUNCTION__);
-#endif
-    num_threads_ = num_threads;
+  inline void checkIntegrity() const {
+    checkStages();
+
+    if (term_cost_ == nullptr) {
+      ALIGATOR_RUNTIME_ERROR("Problem has no terminal cost.");
+    }
   }
-  /// @brief  Get the number of threads.
-  std::size_t getNumThreads() const { return num_threads_; }
 
 protected:
   /// Pointer to underlying state error residual
   StateErrorResidual *init_state_error_;
-  std::size_t num_threads_;
   /// @brief Check if all stages are non-null.
   void checkStages() const;
 
@@ -223,14 +219,24 @@ template <typename _Scalar> struct TrajOptDataTpl {
   /// Terminal constraint data.
   std::vector<shared_ptr<StageFunctionData>> term_cstr_data;
 
-  /// Copy of xs to fill in (for data parallelism)
-  std::vector<VectorXs> xs_copy;
-
   inline std::size_t numSteps() const { return stage_data.size(); }
 
   TrajOptDataTpl() = default;
   TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem);
 };
+
+namespace internal {
+template <typename Scalar>
+auto problem_last_state_space_helper(const TrajOptProblemTpl<Scalar> &problem) {
+  return problem.term_cost_->space;
+}
+
+/// Get dimension of problem's last stage/cost function.
+template <typename Scalar>
+int problem_last_ndx_helper(const TrajOptProblemTpl<Scalar> &problem) {
+  return problem_last_state_space_helper(problem)->ndx();
+}
+} // namespace internal
 
 } // namespace aligator
 

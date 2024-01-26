@@ -9,8 +9,6 @@
 #include "aligator/core/stage-model.hpp"
 #include <crocoddyl/core/action-base.hpp>
 
-#include "aligator/utils/exceptions.hpp"
-
 namespace aligator {
 namespace compat {
 namespace croc {

@@ -3,6 +3,8 @@
 #pragma once
 
 #include "aligator/fwd.hpp"
+#include "aligator/core/dynamics.hpp"
+#include "aligator/core/constraint.hpp"
 #include "aligator/core/clone.hpp"
 
 namespace aligator {
@@ -22,19 +24,37 @@ struct StageDataTpl : Cloneable<StageDataTpl<_Scalar>> {
   std::vector<shared_ptr<StageFunctionData>> constraint_data;
   /// Data for the running costs.
   shared_ptr<CostDataAbstract> cost_data;
-  // Shortcut pointer to dynamics' data.
+  // Data for the system dynamics.
   shared_ptr<DynamicsData> dynamics_data;
 
   /// @brief    Constructor.
   ///
   /// @details  The constructor initializes or fills in the data members using
   /// move semantics.
-  explicit StageDataTpl(const StageModel &stage_model);
+  explicit StageDataTpl(const StageModel &stage_model)
+      : constraint_data(stage_model.numConstraints()),
+        cost_data(stage_model.cost_->createData()),
+        dynamics_data(stage_model.dynamics_->createData()) {
+    const std::size_t nc = stage_model.numConstraints();
+
+    for (std::size_t j = 0; j < nc; j++) {
+      const auto &func = stage_model.constraints_[j].func;
+      constraint_data[j] = func->createData();
+    }
+  }
 
   virtual ~StageDataTpl() = default;
 
   /// @brief Check data integrity.
-  virtual void checkData();
+  virtual void checkData() {
+    const char msg[] = "StageData integrity check failed.";
+    if (cost_data == nullptr)
+      ALIGATOR_RUNTIME_ERROR(
+          fmt::format("{} (cost_data cannot be nullptr)", msg));
+    if (dynamics_data == nullptr)
+      ALIGATOR_RUNTIME_ERROR(
+          fmt::format("{} (dynamics_data cannot be nullptr)", msg));
+  }
 
 protected:
   StageDataTpl() = default;
@@ -44,8 +64,6 @@ protected:
 };
 
 } // namespace aligator
-
-#include "aligator/core/stage-data.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/core/stage-data.txx"

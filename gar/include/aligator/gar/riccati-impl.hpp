@@ -18,12 +18,12 @@ template <typename Scalar> struct StageFactor {
   using RowMatrixXs = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
 
   struct value_t {
-    MatrixXs Pmat;                  //< Riccati matrix
-    VectorXs pvec;                  //< Riccati bias
-    MatrixXs schurMat;              //< Dual-space Schur matrix
-    MatrixXs Vxx;                   //< "cost-to-go" matrix
-    VectorXs vx;                    //< "cost-to-go" gradient
-    Eigen::LLT<MatrixXs> Pchol;     //< Cholesky decomposition of Pmat
+    MatrixXs Pmat;                       //< Riccati matrix
+    VectorXs pvec;                       //< Riccati bias
+    MatrixXs schurMat;                   //< Dual-space Schur matrix
+    MatrixXs Vxx;                        //< "cost-to-go" matrix
+    VectorXs vx;                         //< "cost-to-go" gradient
+    Eigen::BunchKaufman<MatrixXs> Pchol; //< Cholesky decomposition of Pmat
     Eigen::LLT<MatrixXs> schurChol; //< Cholesky decomposition of Schur matrix
     MatrixXs Vxt;
     MatrixXs Vtt;
@@ -93,8 +93,8 @@ template <typename Scalar> struct ProximalRiccatiImpl {
   using RowMatrixRef = Eigen::Ref<RowMatrixXs>;
   using ConstRowMatrixRef = Eigen::Ref<const RowMatrixXs>;
   using KnotType = LQRKnotTpl<Scalar>;
-  using StageFactor = StageFactor<Scalar>;
-  using value_t = typename StageFactor::value_t;
+  using StageFactorType = StageFactor<Scalar>;
+  using value_t = typename StageFactorType::value_t;
 
   struct kkt0_t {
     BlkMatrix<MatrixXs, 2, 2> mat;
@@ -106,41 +106,38 @@ template <typename Scalar> struct ProximalRiccatiImpl {
           fth(mat.rowDims(), {nth}) {}
   };
 
-  inline static void computeMatrixTerms(const KnotType &model, Scalar mudyn,
-                                        Scalar mueq, value_t &vnext,
-                                        StageFactor &d);
-
   inline static bool backwardImpl(boost::span<const KnotType> stages,
                                   const Scalar mudyn, const Scalar mueq,
-                                  boost::span<StageFactor> datas);
+                                  boost::span<StageFactorType> datas);
 
   /// Solve initial stage
   inline static void
   computeInitial(VectorRef x0, VectorRef lbd0, const kkt0_t &kkt0,
-                 const boost::optional<ConstVectorRef> &theta_) {
-    assert(kkt0.chol.info() == Eigen::Success);
-    x0 = kkt0.ff.blockSegment(0);
-    lbd0 = kkt0.ff.blockSegment(1);
-    if (theta_.has_value()) {
-      x0.noalias() += kkt0.fth.blockRow(0) * theta_.value();
-      lbd0.noalias() += kkt0.fth.blockRow(1) * theta_.value();
-    }
-  }
+                 const std::optional<ConstVectorRef> &theta_);
 
-  inline static void solveOneStage(const KnotType &model, StageFactor &d,
-                                   value_t &vn, const Scalar mudyn,
-                                   const Scalar mueq);
+  inline static void solveSingleStage(const KnotType &model, StageFactorType &d,
+                                      value_t &vn, const Scalar mudyn,
+                                      const Scalar mueq);
 
   /// Forward sweep.
   inline static bool
   forwardImpl(boost::span<const KnotType> stages,
-              boost::span<const StageFactor> datas, boost::span<VectorXs> xs,
-              boost::span<VectorXs> us, boost::span<VectorXs> vs,
-              boost::span<VectorXs> lbdas,
-              const boost::optional<ConstVectorRef> &theta_ = boost::none);
+              boost::span<const StageFactorType> datas,
+              boost::span<VectorXs> xs, boost::span<VectorXs> us,
+              boost::span<VectorXs> vs, boost::span<VectorXs> lbdas,
+              const std::optional<ConstVectorRef> &theta_ = std::nullopt);
 };
 
 } // namespace gar
 } // namespace aligator
 
 #include "./riccati-impl.hxx"
+
+namespace aligator {
+namespace gar {
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct StageFactor<context::Scalar>;
+extern template struct ProximalRiccatiImpl<context::Scalar>;
+#endif
+} // namespace gar
+} // namespace aligator

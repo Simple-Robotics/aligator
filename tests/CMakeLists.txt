@@ -40,7 +40,15 @@ function(add_aligator_test name)
   _add_test_prototype(${name} "" ${PROJECT_NAME})
 endfunction(add_aligator_test)
 
-set(TEST_NAMES integrators problem costs continuous utils solver-storage)
+set(TEST_NAMES
+    constraint-product
+    continuous
+    costs
+    integrators
+    lqr
+    problem
+    solver-storage
+    utils)
 
 foreach(test_name ${TEST_NAMES})
   add_aligator_test(${test_name})

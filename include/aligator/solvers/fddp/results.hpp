@@ -21,6 +21,7 @@ template <typename Scalar> struct ResultsFDDPTpl : ResultsBaseTpl<Scalar> {
 template <typename Scalar>
 ResultsFDDPTpl<Scalar>::ResultsFDDPTpl(
     const TrajOptProblemTpl<Scalar> &problem) {
+  problem.checkIntegrity();
   using StageModel = StageModelTpl<Scalar>;
 
   const std::size_t nsteps = problem.numSteps();
@@ -38,7 +39,7 @@ ResultsFDDPTpl<Scalar>::ResultsFDDPTpl(
     const int ndx = sm.ndx1();
     const int nu = sm.nu();
 
-    gains_[i] = MatrixXs::Zero(nu, ndx + 1);
+    gains_[i].setZero(nu, ndx + 1);
   }
   this->m_isInitialized = true;
 }

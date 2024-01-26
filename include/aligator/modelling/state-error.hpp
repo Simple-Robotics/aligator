@@ -39,11 +39,11 @@ struct StateOrControlErrorResidual<_Scalar, 0> : UnaryFunctionTpl<_Scalar> {
   }
 
   void evaluate(const ConstVectorRef &x, Data &data) const override {
-    space_->difference(target_, x, data.value_);
+    space_->difference(x, target_, data.value_);
   }
 
   void computeJacobians(const ConstVectorRef &x, Data &data) const override {
-    space_->Jdifference(target_, x, data.Jx_, 1);
+    space_->Jdifference(x, target_, data.Jx_, 0);
   }
 };
 
