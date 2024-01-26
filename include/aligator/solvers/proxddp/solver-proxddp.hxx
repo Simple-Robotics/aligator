@@ -536,7 +536,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     auto kktErr = lqrComputeKktError(
         workspace_.lqr_problem, workspace_.dxs, workspace_.dus, workspace_.dvs,
         workspace_.dlams, mu(), DefaultScaling<Scalar>::scale * mu(),
-        std::nullopt, false);
+        std::nullopt, lq_print_detailed);
     fmt::print("LQ subproblem errors: ({:.3e})\n", fmt::join(kktErr, ","));
 #endif
 

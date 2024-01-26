@@ -108,6 +108,7 @@ public:
   VerboseLevel verbose_;
   /// Choice of linear solver
   LQSolverChoice linear_solver_choice = LQSolverChoice::SERIAL;
+  bool lq_print_detailed = false;
   /// Type of Hessian approximation. Default is Gauss-Newton.
   HessianApprox hess_approx_ = HessianApprox::GAUSS_NEWTON;
   /// Linesearch options, as in proxsuite-nlp.

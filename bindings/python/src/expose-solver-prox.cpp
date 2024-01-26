@@ -150,6 +150,7 @@ void exposeProxDDP() {
                      "Minimum regularization value.")
       .def_readwrite("reg_max", &SolverType::reg_max,
                      "Maximum regularization value.")
+      .def_readwrite("lq_print_detailed", &SolverType::lq_print_detailed)
       .def("updateLQSubproblem", &SolverType::updateLQSubproblem, "self"_a)
       .def("computeCriterion", &SolverType::computeCriterion, "self"_a,
            "Compute problem stationarity.")
