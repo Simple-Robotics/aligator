@@ -12,6 +12,8 @@ bool ProximalRiccatiImpl<Scalar>::backwardImpl(
     boost::span<StageFactorType> datas) {
   ZoneScoped;
   // terminal node
+  if (datas.size() == 0)
+    return true;
   uint N = (uint)(datas.size() - 1);
   {
     ZoneScopedN("backward_terminal");
