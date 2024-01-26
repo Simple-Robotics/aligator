@@ -126,6 +126,12 @@ void SolverProxDDPTpl<Scalar>::setup(const Problem &problem) {
       ALIGATOR_RUNTIME_ERROR(
           "Nonlinear rollouts not supported with the parallel solver.");
     }
+#ifndef ALIGATOR_MULTITHREADING
+    ALIGATOR_WARNING(
+        "SolverProxDDP",
+        "Aligator was not compiled with OpenMP support. The parallel Riccati "
+        "solver will run sequentially (with overhead).\n");
+#endif
     linearSolver_ = std::make_unique<gar::ParallelRiccatiSolver<Scalar>>(
         workspace_.lqr_problem, num_threads_);
     break;
