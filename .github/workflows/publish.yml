@@ -11,6 +11,8 @@ on:
   pull_request:
   release:
     types: published
+env:
+  FROM_TAG: ${{ inputs.publish && '1' || '' }}
 
 jobs:
   upload-on-anaconda:
