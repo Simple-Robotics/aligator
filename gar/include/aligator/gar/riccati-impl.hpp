@@ -7,7 +7,7 @@
 #include <proxsuite-nlp/linalg/bunchkaufman.hpp>
 #include <Eigen/Cholesky>
 
-#include <boost/core/make_span.hpp>
+#include "boost/core/make_span.hpp"
 
 namespace aligator {
 namespace gar {
