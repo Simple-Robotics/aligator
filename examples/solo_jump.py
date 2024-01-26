@@ -158,10 +158,13 @@ w_xterm = w_x.copy()
 term_cost = aligator.QuadraticStateCost(space, nu, x0_ref, weights=w_x)
 
 problem = aligator.TrajOptProblem(x0_ref, stages, term_cost)
-mu_init = 1e-4
+mu_init = 1e-5
 tol = 1e-4
-solver = aligator.SolverProxDDP(tol, mu_init, verbose=aligator.VERBOSE, max_iters=200)
+solver = aligator.SolverProxDDP(tol, mu_init, verbose=aligator.VERBOSE, max_iters=100)
 solver.rollout_type = aligator.ROLLOUT_LINEAR
+solver.linear_solver_choice = aligator.LQ_SOLVER_PARALLEL
+# solver.sa_strategy = aligator.SA_FILTER
+# solver.setNumThreads(4)
 
 cb_ = aligator.HistoryCallback()
 solver.registerCallback("his", cb_)
