@@ -4,6 +4,7 @@
 #include "aligator/core/stage-data.hpp"
 #include "aligator/utils/mpc-util.hpp"
 #include "aligator/threads.hpp"
+#include "tracy/Tracy.hpp"
 
 #include <fmt/format.h>
 
@@ -56,6 +57,7 @@ template <typename Scalar>
 Scalar TrajOptProblemTpl<Scalar>::evaluate(
     const std::vector<VectorXs> &xs, const std::vector<VectorXs> &us,
     Data &prob_data, ALIGATOR_MAYBE_UNUSED std::size_t num_threads) const {
+  ZoneScopedN("TrajOptProblem::evaluate");
   const std::size_t nsteps = numSteps();
   if (xs.size() != nsteps + 1)
     ALIGATOR_RUNTIME_ERROR(fmt::format(
@@ -88,6 +90,7 @@ template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::computeDerivatives(
     const std::vector<VectorXs> &xs, const std::vector<VectorXs> &us,
     Data &prob_data, ALIGATOR_MAYBE_UNUSED std::size_t num_threads) const {
+  ZoneScopedN("TrajOptProblem::computeDerivatives");
   const std::size_t nsteps = numSteps();
   if (xs.size() != nsteps + 1)
     ALIGATOR_RUNTIME_ERROR(fmt::format(
@@ -156,6 +159,7 @@ template <typename Scalar>
 Scalar TrajOptProblemTpl<Scalar>::computeTrajectoryCost(
     const Data &problem_data) const {
   ALIGATOR_NOMALLOC_BEGIN;
+  ZoneScoped;
   Scalar traj_cost = 0.;
 
   const std::size_t nsteps = numSteps();

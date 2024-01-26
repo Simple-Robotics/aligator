@@ -102,8 +102,8 @@ Scalar SolverProxDDPTpl<Scalar>::tryLinearStep(const Problem &problem,
                                 alpha * workspace.dxs[nsteps],
                                 workspace.trial_xs[nsteps]);
   TrajOptData &prob_data = workspace.problem_data;
-  problem.evaluate(workspace.trial_xs, workspace.trial_us, prob_data);
-  prob_data.cost_ = problem.computeTrajectoryCost(prob_data);
+  prob_data.cost_ =
+      problem.evaluate(workspace.trial_xs, workspace.trial_us, prob_data);
   return prob_data.cost_;
 }
 
@@ -474,13 +474,14 @@ Scalar SolverProxDDPTpl<Scalar>::forwardPass(const Problem &problem,
 
 template <typename Scalar>
 bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
-  ZoneScoped;
+  ZoneNamed(InnerLoop, true);
 
   auto merit_eval_fun = [&](Scalar a0) -> Scalar {
     return forwardPass(problem, a0);
   };
 
   auto pair_eval_fun = [&](Scalar a0) -> std::pair<Scalar, Scalar> {
+    ZoneNamedN(FilterPairEval, "pair_eval_fun", true);
     std::pair<Scalar, Scalar> fpair;
     fpair.first = forwardPass(problem, a0);
     computeInfeasibilities(problem);
@@ -498,6 +499,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
       mu(), problem, results_.lams, results_.vs, workspace_);
 
   for (; iter < max_iters; iter++) {
+    ZoneNamedN(ZoneIteration, "inner_iteration", true);
     // ASSUMPTION: last evaluation in previous iterate
     // was during linesearch, at the current candidate solution (x,u).
     /// TODO: make this smarter using e.g. some caching mechanism

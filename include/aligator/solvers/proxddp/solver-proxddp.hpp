@@ -271,6 +271,7 @@ public:
   /// @brief Update primal-dual feedback gains (control, costate, path
   /// multiplier)
   inline void updateGains() {
+    ZoneScoped;
     ALIGATOR_NOMALLOC_BEGIN;
     using gar::StageFactor;
     const std::size_t N = workspace_.nsteps;
