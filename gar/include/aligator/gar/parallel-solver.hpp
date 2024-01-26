@@ -114,23 +114,25 @@ public:
     ZoneScopedN("parallel_backward");
     Eigen::setNbThreads(1);
     bool ret = true;
-#pragma omp parallel for num_threads(numThreads) schedule(static, 1)           \
-    reduction(& : ret)
-    for (uint i = 0; i < numThreads; i++) {
+#pragma omp parallel num_threads(numThreads)
+    {
       size_t id = omp::get_thread_id();
       char *thrdname = new char[16];
       int cpu = sched_getcpu();
       snprintf(thrdname, 16, "thread%d[c%d]", int(id), cpu);
       tracy::SetThreadName(thrdname);
-      uint beg = splitIdx[i];
-      uint end = splitIdx[i + 1];
-      boost::span<const KnotType> stview =
-          make_span_from_indices(problem_->stages, beg, end);
-      if (i + 1 < numThreads)
-        setupKnot(problem_->stages[end - 1]);
-      boost::span<StageFactor<Scalar>> dtview =
-          make_span_from_indices(datas, beg, end);
-      ret &= Impl::backwardImpl(stview, mudyn, mueq, dtview);
+#pragma omp for schedule(static, 1) reduction(& : ret)
+      for (uint i = 0; i < numThreads; i++) {
+        uint beg = splitIdx[i];
+        uint end = splitIdx[i + 1];
+        boost::span<const KnotType> stview =
+            make_span_from_indices(problem_->stages, beg, end);
+        if (i + 1 < numThreads)
+          setupKnot(problem_->stages[end - 1]);
+        boost::span<StageFactor<Scalar>> dtview =
+            make_span_from_indices(datas, beg, end);
+        ret &= Impl::backwardImpl(stview, mudyn, mueq, dtview);
+      }
     }
 
     Eigen::setNbThreads(0);
