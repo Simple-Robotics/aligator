@@ -177,14 +177,6 @@ LF_placement = rdata.oMf[LF_id]
 RF_placement = rdata.oMf[RF_id]
 
 frame_com = aligator.CenterOfMassTranslationResidual(space.ndx, nu, rmodel, com0)
-v_ref = pin.Motion()
-v_ref.np[:] = 0.0
-frame_vel_LF = aligator.FrameVelocityResidual(
-    space.ndx, nu, rmodel, v_ref, LF_id, pin.LOCAL
-)
-frame_vel_RF = aligator.FrameVelocityResidual(
-    space.ndx, nu, rmodel, v_ref, RF_id, pin.LOCAL
-)
 
 
 def createStage(support, prev_support, LF_target, RF_target):
@@ -217,14 +209,14 @@ def createStage(support, prev_support, LF_target, RF_target):
         # print("Control bounds activated")
         # fun: u -> u
         ctrl_fn = aligator.ControlErrorResidual(space.ndx, np.zeros(nu))
-        stm.addConstraint(ctrl_fn, constraints.BoxConstraint(umin, umax))
+        # stm.addConstraint(ctrl_fn, constraints.BoxConstraint(umin, umax))
 
-    if support == "DOUBLE" and prev_support == "LEFT":
+    """ if support == "DOUBLE" and prev_support == "LEFT":
         stm.addConstraint(frame_vel_RF, constraints.EqualityConstraintSet())
         stm.addConstraint(frame_cs_RF, constraints.EqualityConstraintSet())
     elif support == "DOUBLE" and prev_support == "RIGHT":
         stm.addConstraint(frame_vel_LF, constraints.EqualityConstraintSet())
-        stm.addConstraint(frame_cs_LF, constraints.EqualityConstraintSet())
+        stm.addConstraint(frame_cs_LF, constraints.EqualityConstraintSet()) """
 
     return stm
 
@@ -247,8 +239,8 @@ contact_phases = (
     ["DOUBLE"] * T_ds
     + ["LEFT"] * T_ss
     + ["DOUBLE"] * T_ds
-    + ["RIGHT"] * T_ss
-    + ["DOUBLE"] * T_ds
+    # + ["RIGHT"] * T_ss
+    # + ["DOUBLE"] * T_ds
 )
 
 LF_placements = []
@@ -287,7 +279,7 @@ problem = aligator.TrajOptProblem(x0, stages, term_cost)
 TOL = 1e-5
 mu_init = 1e-8
 rho_init = 0.0
-max_iters = 100
+max_iters = 200
 verbose = aligator.VerboseLevel.VERBOSE
 solver = aligator.SolverProxDDP(TOL, mu_init, rho_init, verbose=verbose)
 # solver = aligator.SolverFDDP(TOL, verbose=verbose)
@@ -297,6 +289,9 @@ solver.max_iters = max_iters
 solver.sa_strategy = aligator.SA_FILTER  # FILTER or LINESEARCH
 solver.setup(problem)
 solver.filter.beta = 1e-5
+solver.force_initial_condition = True
+solver.linear_solver_choice = aligator.LQ_SOLVER_SERIAL  # LQ_SOLVER_SERIAL
+solver.setNumThreads(4)
 
 us_init = [np.zeros(nu)] * nsteps
 xs_init = [x0] * (nsteps + 1)
@@ -310,68 +305,16 @@ workspace = solver.workspace
 results = solver.results
 print(results)
 
-force_left = []
-force_right = []
-for i, cp in enumerate(contact_phases):
-    if cp == "LEFT":
-        force_left.append(
-            workspace.problem_data.stage_data[i]
-            .constraint_data[0]
-            .continuous_data.constraint_datas[0]
-            .contact_force.linear
-        )
-        force_right.append(np.zeros(3))
-    elif cp == "RIGHT":
-        force_right.append(
-            workspace.problem_data.stage_data[i]
-            .constraint_data[0]
-            .continuous_data.constraint_datas[0]
-            .contact_force.linear
-        )
-        force_left.append(np.zeros(3))
-    else:
-        force_left.append(
-            workspace.problem_data.stage_data[i]
-            .constraint_data[0]
-            .continuous_data.constraint_datas[0]
-            .contact_force.linear
-        )
-        force_right.append(
-            workspace.problem_data.stage_data[i]
-            .constraint_data[0]
-            .continuous_data.constraint_datas[1]
-            .contact_force.linear
-        )
 
-force_left = np.array(force_left)
-force_right = np.array(force_right)
-ttlin = np.linspace(0, nsteps * 0.01, nsteps)
-
-fig, axs = plt.subplots(ncols=2, nrows=3, figsize=(3.5, 2.5), layout="constrained")
-axs[0, 0].plot(ttlin, force_left[:, 0])
-axs[0, 0].set_title("Fx left")
-axs[0, 0].grid(True)
-axs[1, 0].plot(ttlin, force_left[:, 1])
-axs[1, 0].grid(True)
-axs[1, 0].set_title("Fy left")
-axs[2, 0].plot(ttlin, force_left[:, 2])
-axs[2, 0].grid(True)
-axs[2, 0].set_title("Fz left")
-axs[0, 1].plot(ttlin, force_right[:, 0])
-axs[0, 1].grid(True)
-axs[0, 1].set_title("Fx left")
-axs[1, 1].plot(ttlin, force_right[:, 1])
-axs[1, 1].grid(True)
-axs[1, 1].set_title("Fy left")
-axs[2, 1].plot(ttlin, force_right[:, 2])
-axs[2, 1].grid(True)
-axs[2, 1].set_title("Fz left")
-
-if args.display:
-    vizer.setCameraPosition([1.2, 0.0, 1.2])
-    vizer.setCameraTarget([0.0, 0.0, 1.0])
+def fdisplay():
     qs = [x[:nq] for x in results.xs.tolist()]
 
     for _ in range(3):
         vizer.play(qs, dt)
         time.sleep(0.5)
+
+
+if args.display:
+    # vizer.setCameraPosition([1.2, 0.0, 1.2])
+    # vizer.setCameraTarget([0.0, 0.0, 1.0])
+    fdisplay()
