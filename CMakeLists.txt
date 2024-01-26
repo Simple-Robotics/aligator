@@ -289,7 +289,7 @@ endif()
 
 # create an utility library to avoid recompiling crocoddyl talos arm problem
 # used in examples and benchmarks
-if(BUILD_CROCODDYL_COMPAT)
+if(BUILD_CROCODDYL_COMPAT AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
   add_library(croc_talos_arm_utils STATIC ${CMAKE_SOURCE_DIR}/examples/croc-talos-arm.cpp
                                           ${CMAKE_SOURCE_DIR}/examples/croc-talos-arm.hpp)
   target_include_directories(croc_talos_arm_utils PUBLIC ${CMAKE_SOURCE_DIR}/examples)

@@ -1,13 +1,18 @@
 {% set name = "aligator" %}
 {% set version = environ.get('VERSION', '') %}
+{% set from_tag = environ.get('FROM_TAG', '') %}
 
 package:
   name: {{ name }}
   version: {{ version }}
 
 source:
+{% if from_tag %}
   git_url: https://github.com/Simple-Robotics/aligator
   git_rev: v{{ version }}
+{% else %}
+  path: ../../..
+{% endif %}
 
 build:
   number: 0
@@ -32,6 +37,7 @@ requirements:
     - python
     - matplotlib
     - llvm-openmp
+    - example-robot-data
   run:
     - eigen
     - python
