@@ -191,8 +191,8 @@ xs_i = aligator.rollout(dyn_model, x0, us_i)
 
 max_threads = aligator.get_available_threads()
 print("Max threads:", max_threads)
-problem.setNumThreads(max_threads)
 solver.setup(problem)
+solver.setNumThreads(max_threads)
 solver.run(problem, xs_i, us_i)
 res = solver.results
 print(res)

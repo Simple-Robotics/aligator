@@ -82,26 +82,30 @@ int main() {
     problem.addTerminalConstraint({func, std::make_shared<Equality>()});
   }
 
-  double tol = 1e-6;
+  const double tol = 1e-6;
   const double mu_init = 1e-6;
-  SolverProxDDPTpl<double> ddp(tol, mu_init);
-  ddp.max_iters = 10;
-  ddp.verbose_ = VERBOSE;
+  SolverProxDDPTpl<double> solver(tol, mu_init);
+  solver.max_iters = 10;
+  solver.verbose_ = VERBOSE;
+  solver.linear_solver_choice = LQSolverChoice::PARALLEL;
+  solver.force_initial_condition_ = false;
+  solver.rollout_type_ = RolloutType::LINEAR;
+  solver.setNumThreads(4);
 
-  ddp.setup(problem);
-  bool conv = ddp.run(problem);
+  solver.setup(problem);
+  const bool conv = solver.run(problem);
   (void)conv;
 
-  auto &us = ddp.results_.us;
+  auto us = solver.results_.us;
   for (std::size_t i = 0; i < us.size(); i++) {
     fmt::print("us[{:02d}] = {}\n", i, us[i].transpose());
   }
-  auto &xs = ddp.results_.xs;
+  auto xs = solver.results_.xs;
   for (std::size_t i = 0; i < xs.size(); i++) {
     fmt::print("xs[{:02d}] = {}\n", i, xs[i].transpose());
   }
 
-  std::cout << ddp.results_ << std::endl;
+  std::cout << solver.results_ << std::endl;
 
   assert(conv);
 }

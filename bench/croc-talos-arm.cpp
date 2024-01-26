@@ -56,9 +56,6 @@ static void BM_prox_fddp(benchmark::State &state) {
   auto croc_problem = defineCrocoddylProblem(nsteps);
   auto prob_wrap =
       aligator::compat::croc::convertCrocoddylProblem(croc_problem);
-#ifdef ALIGATOR_MULTITHREADING
-  prob_wrap.setNumThreads(DEFAULT_NUM_THREADS);
-#endif
 
   std::vector<VectorXd> xs_i;
   std::vector<VectorXd> us_i;
@@ -66,6 +63,7 @@ static void BM_prox_fddp(benchmark::State &state) {
 
   SolverFDDPTpl<double> solver(TOL, get_verbose_flag(verbose));
   solver.max_iters = maxiters;
+  solver.setNumThreads(DEFAULT_NUM_THREADS);
   solver.setup(prob_wrap);
 
   for (auto _ : state) {
@@ -81,9 +79,6 @@ template <LDLTChoice choice> static void BM_aligator(benchmark::State &state) {
   auto croc_problem = defineCrocoddylProblem(nsteps);
   auto prob_wrap =
       aligator::compat::croc::convertCrocoddylProblem(croc_problem);
-#ifdef ALIGATOR_MULTITHREADING
-  prob_wrap.setNumThreads(DEFAULT_NUM_THREADS);
-#endif
 
   std::vector<VectorXd> xs_i;
   std::vector<VectorXd> us_i;
@@ -91,6 +86,7 @@ template <LDLTChoice choice> static void BM_aligator(benchmark::State &state) {
 
   const double mu0 = 1e-4;
   SolverProxDDP solver(TOL, mu0, 0., maxiters, get_verbose_flag(verbose));
+  solver.setNumThreads(DEFAULT_NUM_THREADS);
   solver.maxRefinementSteps_ = 0;
   solver.setup(prob_wrap);
 

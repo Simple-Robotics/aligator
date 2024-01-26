@@ -88,7 +88,6 @@ max_iters = 200
 verbose = aligator.VerboseLevel.VERBOSE
 solver = aligator.SolverProxDDP(TOL, mu_init, rho_init, verbose=verbose)
 solver.rollout_type = aligator.ROLLOUT_NONLINEAR
-print("LDLT algo choice:", solver.ldlt_algo_choice)
 # solver = aligator.SolverFDDP(TOL, verbose=verbose)
 solver.max_iters = max_iters
 solver.sa_strategy = aligator.SA_LINESEARCH  # FILTER or LINESEARCH
