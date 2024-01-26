@@ -177,6 +177,15 @@ LF_placement = rdata.oMf[LF_id]
 RF_placement = rdata.oMf[RF_id]
 
 frame_com = aligator.CenterOfMassTranslationResidual(space.ndx, nu, rmodel, com0)
+frame_com = aligator.CenterOfMassTranslationResidual(space.ndx, nu, rmodel, com0)
+v_ref = pin.Motion()
+v_ref.np[:] = 0.0
+frame_vel_LF = aligator.FrameVelocityResidual(
+    space.ndx, nu, rmodel, v_ref, LF_id, pin.LOCAL
+)
+frame_vel_RF = aligator.FrameVelocityResidual(
+    space.ndx, nu, rmodel, v_ref, RF_id, pin.LOCAL
+)
 
 
 def createStage(support, prev_support, LF_target, RF_target):
@@ -209,14 +218,14 @@ def createStage(support, prev_support, LF_target, RF_target):
         # print("Control bounds activated")
         # fun: u -> u
         ctrl_fn = aligator.ControlErrorResidual(space.ndx, np.zeros(nu))
-        # stm.addConstraint(ctrl_fn, constraints.BoxConstraint(umin, umax))
+        stm.addConstraint(ctrl_fn, constraints.BoxConstraint(umin, umax))
 
-    """ if support == "DOUBLE" and prev_support == "LEFT":
+    if support == "DOUBLE" and prev_support == "LEFT":
         stm.addConstraint(frame_vel_RF, constraints.EqualityConstraintSet())
         stm.addConstraint(frame_cs_RF, constraints.EqualityConstraintSet())
     elif support == "DOUBLE" and prev_support == "RIGHT":
         stm.addConstraint(frame_vel_LF, constraints.EqualityConstraintSet())
-        stm.addConstraint(frame_cs_LF, constraints.EqualityConstraintSet()) """
+        stm.addConstraint(frame_cs_LF, constraints.EqualityConstraintSet())
 
     return stm
 
@@ -239,8 +248,8 @@ contact_phases = (
     ["DOUBLE"] * T_ds
     + ["LEFT"] * T_ss
     + ["DOUBLE"] * T_ds
-    # + ["RIGHT"] * T_ss
-    # + ["DOUBLE"] * T_ds
+    + ["RIGHT"] * T_ss
+    + ["DOUBLE"] * T_ds
 )
 
 LF_placements = []
@@ -276,7 +285,7 @@ for i in range(1, nsteps):
 
 problem = aligator.TrajOptProblem(x0, stages, term_cost)
 
-TOL = 1e-5
+TOL = 1e-4
 mu_init = 1e-8
 rho_init = 0.0
 max_iters = 200
@@ -290,8 +299,9 @@ solver.sa_strategy = aligator.SA_FILTER  # FILTER or LINESEARCH
 solver.setup(problem)
 solver.filter.beta = 1e-5
 solver.force_initial_condition = True
-solver.linear_solver_choice = aligator.LQ_SOLVER_SERIAL  # LQ_SOLVER_SERIAL
-solver.setNumThreads(4)
+solver.reg_min = 1e-6
+solver.linear_solver_choice = aligator.LQ_SOLVER_PARALLEL  # LQ_SOLVER_SERIAL
+solver.setNumThreads(8)
 
 us_init = [np.zeros(nu)] * nsteps
 xs_init = [x0] * (nsteps + 1)
