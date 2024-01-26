@@ -37,11 +37,11 @@ requirements:
     - python
     - matplotlib
     - llvm-openmp
+    - example-robot-data
   run:
     - eigen
     - python
     - matplotlib
-    - example-robot-data
 
 test:
   requires:
