@@ -55,7 +55,7 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(const ConstVectorRef &x0,
 template <typename Scalar>
 Scalar TrajOptProblemTpl<Scalar>::evaluate(
     const std::vector<VectorXs> &xs, const std::vector<VectorXs> &us,
-    Data &prob_data, const std::size_t num_threads) const {
+    Data &prob_data, ALIGATOR_MAYBE_UNUSED std::size_t num_threads) const {
   const std::size_t nsteps = numSteps();
   if (xs.size() != nsteps + 1)
     ALIGATOR_RUNTIME_ERROR(fmt::format(
@@ -63,8 +63,6 @@ Scalar TrajOptProblemTpl<Scalar>::evaluate(
   if (us.size() != nsteps)
     ALIGATOR_RUNTIME_ERROR(fmt::format(
         "Wrong size for us (got {:d}, expected {:d})", us.size(), nsteps));
-  if (num_threads > 1)
-    checkMultithreadingEnabled();
 
   init_condition_->evaluate(xs[0], *prob_data.init_data);
 
@@ -89,7 +87,7 @@ Scalar TrajOptProblemTpl<Scalar>::evaluate(
 template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::computeDerivatives(
     const std::vector<VectorXs> &xs, const std::vector<VectorXs> &us,
-    Data &prob_data, const std::size_t num_threads) const {
+    Data &prob_data, ALIGATOR_MAYBE_UNUSED std::size_t num_threads) const {
   const std::size_t nsteps = numSteps();
   if (xs.size() != nsteps + 1)
     ALIGATOR_RUNTIME_ERROR(fmt::format(
@@ -97,8 +95,6 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
   if (us.size() != nsteps)
     ALIGATOR_RUNTIME_ERROR(fmt::format(
         "Wrong size for us (got {:d}, expected {:d})", us.size(), nsteps));
-  if (num_threads > 1)
-    checkMultithreadingEnabled();
 
   init_condition_->computeJacobians(xs[0], *prob_data.init_data);
 
