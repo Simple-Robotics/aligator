@@ -13,7 +13,7 @@ SolverFDDPTpl<Scalar>::SolverFDDPTpl(const Scalar tol, VerboseLevel verbose,
                                      const Scalar reg_init,
                                      const std::size_t max_iters)
     : target_tol_(tol), reg_init(reg_init), verbose_(verbose),
-      max_iters(max_iters), force_initial_condition_(false) {
+      max_iters(max_iters), force_initial_condition_(false), num_threads_(1) {
   ls_params.alpha_min = pow(2., -9.);
 }
 
@@ -162,7 +162,7 @@ Scalar SolverFDDPTpl<Scalar>::computeInfeasibility(const Problem &problem) {
   const auto &space = problem.stages_[0]->xspace_;
   space->difference(xs[0], problem.getInitState(), fs[0]);
 
-#pragma omp parallel for num_threads(problem.getNumThreads())
+#pragma omp parallel for num_threads(num_threads_)
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &sm = *problem.stages_[i];
     const auto &sd = *pd.stage_data[i];
@@ -322,14 +322,14 @@ bool SolverFDDPTpl<Scalar>::run(const Problem &problem,
   LogRecord record;
 
   std::size_t &iter = results_.num_iters;
-  results_.traj_cost_ =
-      problem.evaluate(results_.xs, results_.us, workspace_.problem_data);
+  results_.traj_cost_ = problem.evaluate(results_.xs, results_.us,
+                                         workspace_.problem_data, num_threads_);
 
   for (iter = 0; iter < max_iters; ++iter) {
     record.iter = iter + 1;
 
     problem.computeDerivatives(results_.xs, results_.us,
-                               workspace_.problem_data);
+                               workspace_.problem_data, num_threads_);
     results_.prim_infeas = computeInfeasibility(problem);
     ALIGATOR_RAISE_IF_NAN(results_.prim_infeas);
     record.prim_err = results_.prim_infeas;

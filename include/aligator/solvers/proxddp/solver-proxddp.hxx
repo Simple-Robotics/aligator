@@ -470,8 +470,8 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
   LogRecord iter_log;
 
   std::size_t &iter = results_.num_iters;
-  results_.traj_cost_ =
-      problem.evaluate(results_.xs, results_.us, workspace_.problem_data);
+  results_.traj_cost_ = problem.evaluate(results_.xs, results_.us,
+                                         workspace_.problem_data, num_threads_);
   computeMultipliers(problem, results_.lams, results_.vs);
   results_.merit_value_ = PDALFunction<Scalar>::evaluate(
       mu(), problem, results_.lams, results_.vs, workspace_);
@@ -481,7 +481,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     // was during linesearch, at the current candidate solution (x,u).
     /// TODO: make this smarter using e.g. some caching mechanism
     problem.computeDerivatives(results_.xs, results_.us,
-                               workspace_.problem_data);
+                               workspace_.problem_data, num_threads_);
     const Scalar phi0 = results_.merit_value_;
 
     LagrangianDerivatives<Scalar>::compute(problem, workspace_.problem_data,

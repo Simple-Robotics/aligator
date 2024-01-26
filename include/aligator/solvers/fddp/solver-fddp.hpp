@@ -75,7 +75,15 @@ template <typename Scalar> struct SolverFDDPTpl {
 
   BaseLogger logger{};
 
-private:
+  void setNumThreads(const std::size_t num_threads) {
+    num_threads_ = num_threads;
+    omp::set_default_options(num_threads);
+  }
+  std::size_t getNumThreads() const { return num_threads_; }
+
+protected:
+  /// Number of threads to use when evaluating the problem or its derivatives.
+  std::size_t num_threads_;
   /// Callbacks
   CallbackMap callbacks_;
 

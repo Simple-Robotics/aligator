@@ -143,6 +143,8 @@ public:
   Filter filter_;
 
 private:
+  /// Number of threads
+  std::size_t num_threads_ = 1;
   /// Dual proximal/ALM penalty parameter \f$\mu\f$
   /// This is the global parameter: scales may be applied for stagewise
   /// constraints, dynamicals...
@@ -158,6 +160,12 @@ public:
                    const std::size_t max_iters = 1000,
                    VerboseLevel verbose = VerboseLevel::QUIET,
                    HessianApprox hess_approx = HessianApprox::GAUSS_NEWTON);
+
+  void setNumThreads(const std::size_t num_threads) {
+    num_threads_ = num_threads;
+    omp::set_default_options(num_threads);
+  }
+  std::size_t getNumThreads() const { return num_threads_; }
 
   ALIGATOR_DEPRECATED const Results &getResults() { return results_; }
   ALIGATOR_DEPRECATED const Workspace &getWorkspace() { return workspace_; }
