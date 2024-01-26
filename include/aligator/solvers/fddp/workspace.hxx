@@ -9,6 +9,7 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
     const TrajOptProblemTpl<Scalar> &problem)
     : Base(problem) {
   const std::size_t nsteps = this->nsteps;
+  problem.checkIntegrity();
 
   this->dyn_slacks.resize(nsteps + 1);
   dxs.resize(nsteps + 1);

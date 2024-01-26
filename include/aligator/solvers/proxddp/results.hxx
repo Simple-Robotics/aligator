@@ -12,6 +12,7 @@ namespace aligator {
 template <typename Scalar>
 ResultsTpl<Scalar>::ResultsTpl(const TrajOptProblemTpl<Scalar> &problem)
     : Base() {
+  problem.checkIntegrity();
 
   const std::size_t nsteps = problem.numSteps();
   std::tie(xs, us, vs, lams) = problemInitializeSolution(problem);

@@ -21,6 +21,7 @@ template <typename Scalar> struct ResultsFDDPTpl : ResultsBaseTpl<Scalar> {
 template <typename Scalar>
 ResultsFDDPTpl<Scalar>::ResultsFDDPTpl(
     const TrajOptProblemTpl<Scalar> &problem) {
+  problem.checkIntegrity();
   using StageModel = StageModelTpl<Scalar>;
 
   const std::size_t nsteps = problem.numSteps();

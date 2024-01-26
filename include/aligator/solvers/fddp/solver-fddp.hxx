@@ -19,6 +19,7 @@ SolverFDDPTpl<Scalar>::SolverFDDPTpl(const Scalar tol, VerboseLevel verbose,
 
 template <typename Scalar>
 void SolverFDDPTpl<Scalar>::setup(const Problem &problem) {
+  problem.checkIntegrity();
   results_ = Results(problem);
   workspace_ = Workspace(problem);
   // check if there are any constraints other than dynamics and throw a warning

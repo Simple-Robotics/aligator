@@ -13,13 +13,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
       stage_cstr_violations(nsteps + 1), stage_infeasibilities(nsteps + 1),
       state_dual_infeas(nsteps + 1), control_dual_infeas(nsteps + 1) {
 
-  if (nsteps == 0) {
-    ALIGATOR_WARNING(
-        "[Workspace]",
-        "Initialized a workspace for an empty problem (no nodes).");
-    this->m_isInitialized = false;
-    return;
-  }
+  problem.checkIntegrity();
 
   std::tie(trial_xs, trial_us, trial_vs, trial_lams) =
       problemInitializeSolution(problem);

@@ -186,6 +186,14 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 #endif
   }
 
+  inline void checkIntegrity() const {
+    checkStages();
+
+    if (term_cost_ == nullptr) {
+      ALIGATOR_RUNTIME_ERROR("Problem has no terminal cost.");
+    }
+  }
+
 protected:
   /// Pointer to underlying state error residual
   StateErrorResidual *init_state_error_;
