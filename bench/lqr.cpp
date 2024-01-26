@@ -56,21 +56,25 @@ TrajOptProblem define_problem(const std::size_t nsteps, const int dim = 20,
   return problem;
 }
 
-#define SETUP_PROBLEM_VARS(state)                                              \
-  auto problem = define_problem((std::size_t)state.range(0));                  \
+#define SETUP_PROBLEM_VARS(nsteps)                                             \
+  auto problem = define_problem(nsteps);                                       \
   const auto &dynamics = problem.stages_[0] -> dyn_model();                    \
   const VectorXd &x0 = problem.getInitState();                                 \
   std::vector<VectorXd> us_init;                                               \
   us_default_init(problem, us_init);                                           \
   std::vector<VectorXd> xs_init = rollout(dynamics, x0, us_init)
 
-template <LDLTChoice N> static void BM_lqr_prox(benchmark::State &state) {
-  SETUP_PROBLEM_VARS(state);
-  const T mu_init = 1e-6;
-  const T rho_init = 0.;
-  SolverProxDDPTpl<T> solver(TOL, mu_init, rho_init, max_iters, verbose);
-  solver.ldlt_algo_choice_ = N;
-  solver.maxRefinementSteps_ = 0;
+template <LQSolverChoice lqsc>
+static void BM_lqr_prox(benchmark::State &state) {
+  const auto nsteps = static_cast<std::size_t>(state.range(0));
+  SETUP_PROBLEM_VARS(nsteps);
+  const T mu_init = 1e-10;
+  const auto num_threads = static_cast<std::size_t>(state.range(1));
+  SolverProxDDPTpl<T> solver(TOL, mu_init, 0., max_iters, verbose);
+  solver.linear_solver_choice = lqsc;
+  solver.rollout_type_ = RolloutType::LINEAR;
+  solver.force_initial_condition_ = false;
+  solver.setNumThreads(num_threads);
   solver.setup(problem);
 
   for (auto _ : state) {
@@ -82,7 +86,8 @@ template <LDLTChoice N> static void BM_lqr_prox(benchmark::State &state) {
 }
 
 static void BM_lqr_fddp(benchmark::State &state) {
-  SETUP_PROBLEM_VARS(state);
+  const auto nsteps = static_cast<std::size_t>(state.range(0));
+  SETUP_PROBLEM_VARS(nsteps);
   SolverFDDPTpl<T> fddp(TOL, verbose);
   fddp.max_iters = max_iters;
   fddp.setup(problem);
@@ -94,28 +99,39 @@ static void BM_lqr_fddp(benchmark::State &state) {
   }
   state.SetComplexityN(state.range(0));
 }
+constexpr auto unit = benchmark::kMillisecond;
+
+static void BaseArgs(benchmark::internal::Benchmark *bench) {
+  bench->Complexity()->Unit(unit)->UseRealTime();
+}
+
+static void ArgsSerial(benchmark::internal::Benchmark *bench) {
+  bench->ArgName("nsteps")->RangeMultiplier(2)->Range(1 << 3, 1 << 9);
+}
+
+static void ArgsParallel(benchmark::internal::Benchmark *bench) {
+  bench->ArgNames({"nsteps", "nthreads"});
+  std::vector<long> nthreads = {2, 3, 4, 6};
+  for (auto n : nthreads) {
+    for (size_t j = 4; j < 9; j++) {
+      bench->Args({1 << j, n});
+    }
+  }
+}
 
 int main(int argc, char **argv) {
-  constexpr auto unit = benchmark::kMillisecond;
 
-  auto registerOpts = [&](auto name, auto fn) {
-    return benchmark::RegisterBenchmark(name, fn)
-        ->ArgName("nsteps")
-        ->RangeMultiplier(2)
-        ->Range(1 << 3, 1 << 9)
-        ->Complexity()
-        ->Unit(unit)
-        ->UseRealTime();
-  };
-
-  registerOpts("FDDP", &BM_lqr_fddp);
-  registerOpts("ALIGATOR_BLOCKED", &BM_lqr_prox<LDLTChoice::BLOCKSPARSE>);
-  registerOpts("ALIGATOR_BUNCHKAUFMAN", &BM_lqr_prox<LDLTChoice::BUNCHKAUFMAN>);
-  registerOpts("ALIGATOR_DENSE", &BM_lqr_prox<LDLTChoice::DENSE>);
-  registerOpts("ALIGATOR_EIGLDL", &BM_lqr_prox<LDLTChoice::EIGEN>);
-#ifdef PROXSUITE_NLP_ENABLE_PROXSUITE_LDLT
-  registerOpts("ALIGATOR_PSUITE", &BM_lqr_prox<LDLTChoice::PROXSUITE>);
-#endif
+  benchmark::RegisterBenchmark("FDDP", &BM_lqr_fddp)
+      ->Apply(BaseArgs)
+      ->Apply(ArgsSerial);
+  benchmark::RegisterBenchmark("ALIGATOR_SERIAL",
+                               &BM_lqr_prox<LQSolverChoice::SERIAL>)
+      ->Apply(BaseArgs)
+      ->Apply(ArgsSerial);
+  benchmark::RegisterBenchmark("ALIGATOR_PARALLEL",
+                               &BM_lqr_prox<LQSolverChoice::PARALLEL>)
+      ->Apply(BaseArgs)
+      ->Apply(ArgsParallel);
 
   benchmark::Initialize(&argc, argv);
   if (benchmark::ReportUnrecognizedArguments(argc, argv)) {
