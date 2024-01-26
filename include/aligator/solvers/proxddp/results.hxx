@@ -31,7 +31,7 @@ ResultsTpl<Scalar>::ResultsTpl(const TrajOptProblemTpl<Scalar> &problem)
 
   // terminal constraints
   {
-    const int ndx = problem.stages_.back()->ndx2();
+    const int ndx = internal::problem_last_ndx_helper(problem);
     const long nc = problem.term_cstrs_.totalDim();
     gains_[nsteps].setZero(nc, ndx + 1);
   }

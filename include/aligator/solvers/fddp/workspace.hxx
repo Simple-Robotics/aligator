@@ -53,9 +53,9 @@ WorkspaceFDDPTpl<Scalar>::WorkspaceFDDPTpl(
     JtH_temp_.emplace_back(ndx + nu, ndx);
     JtH_temp_.back().setZero();
   }
-  const StageModelTpl<Scalar> &sm = *problem.stages_.back();
-  dxs[nsteps] = VectorXs::Zero(sm.ndx2());
-  value_params.emplace_back(sm.ndx2());
+  const int ndx = internal::problem_last_ndx_helper(problem);
+  dxs[nsteps].setZero(ndx);
+  value_params.emplace_back(ndx);
 
   assert(llts_.size() == nsteps);
 }

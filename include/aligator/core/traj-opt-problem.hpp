@@ -235,6 +235,19 @@ template <typename _Scalar> struct TrajOptDataTpl {
   TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem);
 };
 
+namespace internal {
+template <typename Scalar>
+auto problem_last_state_space_helper(const TrajOptProblemTpl<Scalar> &problem) {
+  return problem.term_cost_->space;
+}
+
+/// Get dimension of problem's last stage/cost function.
+template <typename Scalar>
+int problem_last_ndx_helper(const TrajOptProblemTpl<Scalar> &problem) {
+  return problem_last_state_space_helper(problem)->ndx();
+}
+} // namespace internal
+
 } // namespace aligator
 
 #include "aligator/core/traj-opt-problem.hxx"

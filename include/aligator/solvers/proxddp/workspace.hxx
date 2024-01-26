@@ -40,7 +40,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
       knots.emplace_back(stage.ndx1(), stage.nu(), stage.nc());
     }
 
-    knots.emplace_back(problem.stages_.back()->ndx2(), 0,
+    knots.emplace_back(internal::problem_last_ndx_helper(problem), 0,
                        problem.term_cstrs_.totalDim());
   }
 
@@ -59,7 +59,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   // terminal node: always allocate, no check for nonempty constaint stack
   {
     const ConstraintStackTpl<Scalar> &stack = problem.term_cstrs_;
-    const int ndx1 = problem.stages_.back()->ndx2();
+    const int ndx1 = internal::problem_last_ndx_helper(problem);
     constraintProductOperators[nsteps] =
         getConstraintProductSet(problem.term_cstrs_);
     constraintProjJacobians[nsteps] = BlkJacobianType(stack.dims(), {ndx1, 0});
