@@ -1,5 +1,6 @@
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/utils.hpp"
+#include "aligator/python/visitors.hpp"
 
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
 

@@ -1,4 +1,5 @@
 #include "aligator/python/fwd.hpp"
+#include "aligator/python/visitors.hpp"
 
 #include "aligator/solvers/fddp/solver-fddp.hpp"
 

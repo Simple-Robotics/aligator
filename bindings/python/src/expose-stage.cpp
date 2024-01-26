@@ -1,7 +1,8 @@
 /// @file
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "aligator/python/fwd.hpp"
-#include "aligator/python/utils/deprecation.hpp"
+#include "aligator/python/utils.hpp"
+#include "aligator/python/visitors.hpp"
 
 #include "aligator/core/stage-model.hpp"
 #include "aligator/core/stage-data.hpp"

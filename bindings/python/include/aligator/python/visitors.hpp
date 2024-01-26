@@ -10,6 +10,7 @@ namespace aligator {
 namespace python {
 namespace bp = boost::python;
 
+// fwd-declaration
 bp::arg operator""_a(const char *argname, std::size_t);
 
 template <typename T>

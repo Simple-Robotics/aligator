@@ -2,7 +2,6 @@
 
 #include "aligator/context.hpp"
 #include "aligator/python/macros.hpp"
-#include "aligator/python/visitors.hpp"
 
 #include <eigenpy/eigenpy.hpp>
 #include <eigenpy/std-vector.hpp>

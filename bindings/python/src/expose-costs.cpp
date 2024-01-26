@@ -1,6 +1,7 @@
 /// @file
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "aligator/python/costs.hpp"
+#include "aligator/python/visitors.hpp"
 
 #include "aligator/modelling/costs/quad-costs.hpp"
 #include "aligator/modelling/costs/constant-cost.hpp"
