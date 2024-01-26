@@ -23,6 +23,11 @@ void exposeProxDDP() {
       proxsuite::nlp::LSInterpolation>();
   eigenpy::register_symbolic_link_to_registered_type<context::BCLParams>();
 
+  bp::enum_<LQSolverChoice>("LinearSolverChoice")
+      .value("LQ_SOLVER_SERIAL", LQSolverChoice::SERIAL)
+      .value("LQ_SOLVER_PARALLEL", LQSolverChoice::PARALLEL)
+      .export_values();
+
   using ProxScaler = ConstraintProximalScalerTpl<Scalar>;
   bp::class_<ProxScaler, boost::noncopyable>("ProxScaler", bp::no_init)
       .def(
@@ -119,6 +124,7 @@ void exposeProxDDP() {
       .def_readwrite("bcl_params", &SolverType::bcl_params, "BCL parameters.")
       .def_readwrite("max_refinement_steps", &SolverType::maxRefinementSteps_)
       .def_readwrite("refinement_threshold", &SolverType::refinementThreshold_)
+      .def_readwrite("linear_solver_choice", &SolverType::linear_solver_choice)
       .def_readwrite("multiplier_update_mode",
                      &SolverType::multiplier_update_mode)
       .def_readwrite("mu_init", &SolverType::mu_init,

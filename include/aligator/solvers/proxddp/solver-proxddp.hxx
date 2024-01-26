@@ -114,8 +114,22 @@ void SolverProxDDPTpl<Scalar>::setup(const Problem &problem) {
   linesearch_.setOptions(ls_params);
 
   workspace_.configureScalers(problem, mu_penal_, DefaultScaling<Scalar>{});
-  linearSolver_ = std::make_unique<gar::ProximalRiccatiSolver<Scalar>>(
-      workspace_.lqr_problem);
+  switch (linear_solver_choice) {
+  case LQSolverChoice::SERIAL: {
+    linearSolver_ = std::make_unique<gar::ProximalRiccatiSolver<Scalar>>(
+        workspace_.lqr_problem);
+    break;
+  }
+  case LQSolverChoice::PARALLEL: {
+    if (rollout_type_ == RolloutType::NONLINEAR) {
+      ALIGATOR_RUNTIME_ERROR(
+          "Nonlinear rollouts not supported with the parallel solver.");
+    }
+    linearSolver_ = std::make_unique<gar::ParallelRiccatiSolver<Scalar>>(
+        workspace_.lqr_problem, num_threads_);
+    break;
+  }
+  }
   filter_.resetFilter(0.0, ls_params.alpha_min, ls_params.max_num_steps);
 }
 

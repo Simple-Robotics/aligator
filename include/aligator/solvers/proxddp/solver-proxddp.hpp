@@ -11,6 +11,7 @@
 #include "aligator/utils/logger.hpp"
 #include "aligator/utils/forward-dyn.hpp"
 #include "aligator/gar/riccati.hpp"
+#include "aligator/gar/parallel-solver.hpp"
 #include "workspace.hpp"
 #include "results.hpp"
 #include "merit-function.hpp"
@@ -42,6 +43,8 @@ template <typename Scalar> struct DefaultScaling {
   }
   static constexpr Scalar scale = 10.;
 };
+
+enum class LQSolverChoice { SERIAL, PARALLEL };
 
 /// @brief A proximal, augmented Lagrangian-type solver for trajectory
 /// optimization.
@@ -103,6 +106,8 @@ public:
 
   /// Solver verbosity level.
   VerboseLevel verbose_;
+  /// Choice of linear solver
+  LQSolverChoice linear_solver_choice = LQSolverChoice::PARALLEL;
   /// Type of Hessian approximation. Default is Gauss-Newton.
   HessianApprox hess_approx_ = HessianApprox::GAUSS_NEWTON;
   /// Linesearch options, as in proxsuite-nlp.
@@ -139,7 +144,7 @@ public:
   Workspace workspace_;
   Results results_;
   /// LQR subproblem solver
-  unique_ptr<gar::ProximalRiccatiSolver<Scalar>> linearSolver_;
+  unique_ptr<gar::RiccatiSolverBase<Scalar>> linearSolver_;
   Filter filter_;
 
 private:
