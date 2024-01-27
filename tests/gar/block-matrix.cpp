@@ -77,7 +77,8 @@ BOOST_AUTO_TEST_CASE(block_tridiag_solve) {
   fmt::print("Dense problem matrix:\n{}\n", densemat);
   BlkVec densevec = vec;
 
-  bool ret = gar::symmetricBlockTridiagSolve(sub, diagonal, sup, vec);
+  std::vector<Eigen::LDLT<MatrixXs>> facs(diagonal.size());
+  bool ret = gar::symmetricBlockTridiagSolve(sub, diagonal, sup, vec, facs);
   BOOST_CHECK(ret);
 
   for (size_t i = 0; i <= N; i++) {

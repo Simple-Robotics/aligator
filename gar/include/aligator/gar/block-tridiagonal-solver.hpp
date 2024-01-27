@@ -1,7 +1,6 @@
 #pragma once
 
 #include "aligator/gar/blk-matrix.hpp"
-#include <Eigen/Cholesky>
 #include "tracy/Tracy.hpp"
 
 namespace aligator {
@@ -44,11 +43,12 @@ auto blockTridiagToDenseMatrix(const std::vector<MatrixType> &subdiagonal,
 
 /// Solve a symmetric block-tridiagonal problem by in-place factorization.
 /// The subdiagonal will be used to store factorization coefficients.
-template <typename MatrixType, typename RhsType>
+template <typename MatrixType, typename RhsType, typename DecType>
 bool symmetricBlockTridiagSolve(std::vector<MatrixType> &subdiagonal,
                                 std::vector<MatrixType> &diagonal,
                                 std::vector<MatrixType> &superdiagonal,
-                                BlkMatrix<RhsType, -1, 1> &rhs) {
+                                BlkMatrix<RhsType, -1, 1> &rhs,
+                                std::vector<DecType> &facs) {
   ZoneScoped;
 
   if (subdiagonal.size() != superdiagonal.size() ||
@@ -59,24 +59,23 @@ bool symmetricBlockTridiagSolve(std::vector<MatrixType> &subdiagonal,
 
   // size of problem
   size_t N = superdiagonal.size();
-  using RefType = Eigen::Ref<typename MatrixType::PlainObject>;
-  using InPlaceLDLT = Eigen::LDLT<RefType>;
 
   size_t i = N - 1;
   while (true) {
-    InPlaceLDLT ldlt(diagonal[i + 1]);
-    if (ldlt.info() != Eigen::Success)
+    DecType &ldl = facs[i + 1];
+    ldl.compute(diagonal[i + 1]);
+    if (ldl.info() != Eigen::Success)
       return false;
 
     Eigen::Ref<RhsType> r = rhs[i + 1];
-    ldlt.solveInPlace(r);
+    ldl.solveInPlace(r);
 
     // the math has index of B starting at 1, array starts at 0
     auto &Bip1 = superdiagonal[i];
     auto &Cip1 = subdiagonal[i]; // should be Bi.transpose()
 
     rhs[i].noalias() -= Bip1 * rhs[i + 1];
-    ldlt.solveInPlace(Cip1); // contains U.T = D[i+1]^-1 * B[i+1].transpose()
+    ldl.solveInPlace(Cip1); // contains U.T = D[i+1]^-1 * B[i+1].transpose()
 
     diagonal[i].noalias() -= Bip1 * Cip1;
 
@@ -86,11 +85,12 @@ bool symmetricBlockTridiagSolve(std::vector<MatrixType> &subdiagonal,
   }
 
   {
-    InPlaceLDLT ldlt(diagonal[0]);
-    if (ldlt.info() != Eigen::Success)
+    DecType &ldl = facs[0];
+    ldl.compute(diagonal[0]);
+    if (ldl.info() != Eigen::Success)
       return false;
     Eigen::Ref<RhsType> r = rhs[0];
-    ldlt.solveInPlace(r);
+    ldl.solveInPlace(r);
   }
 
   for (size_t i = 0; i < N; i++) {
