@@ -161,22 +161,22 @@ bool lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
     rhsblk.tail(model.nc) = model.d;
 
     // fill in dynamics
-    // row contains [A; B; 0; -mu*I, E] -> nx + nu + nc + 2*nx cols
+    // row contains [A; B; 0; -mu*I, E] -> nx + nu + nc + nx + nx2 cols
     if (t != N) {
-      auto row = mat.block(idx + n, idx, model.nx, model.nx * 2 + n);
+      uint ncols = model.nx + model.nx2 + n;
+      auto row = mat.block(idx + n, idx, model.nx, ncols);
       row.leftCols(model.nx) = model.A;
       row.middleCols(model.nx, model.nu) = model.B;
       row.middleCols(n, model.nx).diagonal().array() = -mudyn;
       row.rightCols(model.nx) = model.E;
 
-      rhs.segment(idx + n, model.nx) = model.f;
+      rhs.segment(idx + n, model.nx2) = model.f;
 
-      auto col =
-          mat.transpose().block(idx + n, idx, model.nx, model.nx * 2 + n);
+      auto col = mat.transpose().block(idx + n, idx, model.nx, ncols);
       col = row;
 
-      // shift by size of block + multiplier size
-      idx += model.nx + n;
+      // shift by size of block + costate size (nx2)
+      idx += n + model.nx2;
     }
   }
   return true;
@@ -233,7 +233,7 @@ auto lqrInitializeSolution(const LQRProblemTpl<Scalar> &problem) {
     vs[i].setZero(kn.nc);
     if (i == N)
       break;
-    lbdas[i + 1].setZero(kn.nx);
+    lbdas[i + 1].setZero(kn.nx2);
   }
   if (problem.stages.back().nu == 0) {
     us.pop_back();

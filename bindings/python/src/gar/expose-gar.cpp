@@ -94,9 +94,11 @@ void exposeGAR() {
 
   bp::class_<knot_t>("LQRKnot", bp::no_init)
       .def(bp::init<uint, uint, uint>(("nx"_a, "nu", "nc")))
+      .def(bp::init<uint, uint, uint, uint>(("nx"_a, "nu", "nc", "nx2")))
       .def_readonly("nx", &knot_t::nx)
       .def_readonly("nu", &knot_t::nu)
       .def_readonly("nc", &knot_t::nc)
+      .def_readonly("nx2", &knot_t::nx2)
       .def_readonly("nth", &knot_t::nth)
       //
       .def_readwrite("Q", &knot_t::Q)

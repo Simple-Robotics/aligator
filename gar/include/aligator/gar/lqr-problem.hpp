@@ -27,7 +27,7 @@ namespace gar {
 template <typename Scalar> struct LQRKnotTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
-  uint nx, nu, nc;
+  uint nx, nu, nc, nx2;
   MatrixXs Q, S, R;
   VectorXs q, r;
   MatrixXs A, B, E;
@@ -41,10 +41,10 @@ template <typename Scalar> struct LQRKnotTpl {
   MatrixXs Gu;
   VectorXs gamma;
 
-  LQRKnotTpl(uint nx, uint nu, uint nc)
-      : nx(nx), nu(nu), nc(nc),                        //
+  LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2)
+      : nx(nx), nu(nu), nc(nc), nx2(nx2),              //
         Q(nx, nx), S(nx, nu), R(nu, nu), q(nx), r(nu), //
-        A(nx, nx), B(nx, nu), E(nx, nx), f(nx),        //
+        A(nx2, nx), B(nx2, nu), E(nx2, nx), f(nx2),    //
         C(nc, nx), D(nc, nu), d(nc), nth(0) {
     Q.setZero();
     S.setZero();
@@ -61,6 +61,8 @@ template <typename Scalar> struct LQRKnotTpl {
     D.setZero();
     d.setZero();
   }
+
+  LQRKnotTpl(uint nx, uint nu, uint nc) : LQRKnotTpl(nx, nu, nc, nx) {}
 
   inline void addParameterization(uint nth) {
     this->nth = nth;
