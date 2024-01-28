@@ -68,8 +68,8 @@ void exposeFDDP() {
   StdVectorPythonVisitor<std::vector<QParams>>::expose("StdVec_QParams");
   StdVectorPythonVisitor<std::vector<VParams>>::expose("StdVec_VParams");
 
-  bp::class_<Workspace, bp::bases<Workspace::Base>>("WorkspaceFDDP",
-                                                    bp::no_init)
+  bp::class_<Workspace, bp::bases<Workspace::Base>, boost::noncopyable>(
+      "WorkspaceFDDP", bp::no_init)
       .def_readonly("dxs", &Workspace::dxs)
       .def_readonly("dus", &Workspace::dus)
       .def_readonly("value_params", &Workspace::value_params)
