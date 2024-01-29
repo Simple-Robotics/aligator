@@ -12,8 +12,6 @@
 
 using namespace aligator::gar;
 
-BOOST_AUTO_TEST_SUITE(prox_riccati)
-
 BOOST_AUTO_TEST_CASE(short_horz_pb) {
   // dual regularization parameters
   const double mu = 1e-14;
@@ -132,4 +130,33 @@ BOOST_AUTO_TEST_CASE(random_long_problem) {
   }
 }
 
-BOOST_AUTO_TEST_SUITE_END()
+BOOST_AUTO_TEST_CASE(parametric) {
+  BOOST_TEST_MESSAGE("parametric");
+  Eigen::Vector3d x0 = Eigen::Vector3d::NullaryExpr(normal_unary_op{});
+  uint nx = uint(x0.rows());
+  uint nu = 2;
+  uint horz = 100;
+  uint nth = 1;
+  auto problem = generate_problem(x0, horz, nx, nu, nth);
+  const double mu = 1e-12;
+  auto testfn = [&](auto &&solver) {
+    auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
+    solver.backward(mu, mu);
+
+    VectorXs theta(nth);
+    theta.setRandom();
+    solver.forward(xs, us, vs, lbdas, theta);
+    auto e = xs[0] - x0;
+    fmt::print("x0 = {}\n", x0.transpose());
+    fmt::print("e = {}\n", e.transpose());
+
+    KktError err = computeKktError(problem, xs, us, vs, lbdas, theta);
+    printKktError(err);
+    BOOST_CHECK_LE(err.max, 1e-10);
+  };
+
+  ProximalRiccatiSolver<double> solver(problem);
+  testfn(solver);
+  RiccatiSolverDense<double> denseSolver(problem);
+  testfn(denseSolver);
+}
