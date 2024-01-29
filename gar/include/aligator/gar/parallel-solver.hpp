@@ -68,7 +68,7 @@ public:
       dims.push_back(problem.stages[i1 - 1].nx);
     }
     condensedKktRhs = BlkVec(dims);
-    condensedKktSystem = initializeTridiagSystem(dims);
+    initializeTridiagSystem(dims);
 
     assert(datas.size() == (N + 1));
     assert(checkIndices());
@@ -114,33 +114,34 @@ public:
     ZoneScopedN("parallel_backward");
     Eigen::setNbThreads(1);
     bool ret = true;
-#pragma omp parallel num_threads(numThreads)
-    {
-      size_t id = omp::get_thread_id();
-      char *thrdname = new char[16];
-      int cpu = sched_getcpu();
-      snprintf(thrdname, 16, "thread%d[c%d]", int(id), cpu);
-      tracy::SetThreadName(thrdname);
-#pragma omp for schedule(static, 1) reduction(& : ret)
-      for (uint i = 0; i < numThreads; i++) {
-        uint beg = splitIdx[i];
-        uint end = splitIdx[i + 1];
-        boost::span<const KnotType> stview =
-            make_span_from_indices(problem_->stages, beg, end);
-        if (i + 1 < numThreads)
-          setupKnot(problem_->stages[end - 1]);
-        boost::span<StageFactor<Scalar>> dtview =
-            make_span_from_indices(datas, beg, end);
-        ret &= Impl::backwardImpl(stview, mudyn, mueq, dtview);
+#pragma omp parallel for num_threads(numThreads) schedule(static, 1)           \
+    reduction(& : ret)
+    for (uint i = 0; i < numThreads; i++) {
+      {
+        size_t id = omp::get_thread_id();
+        char *thrdname = new char[16];
+        int cpu = sched_getcpu();
+        snprintf(thrdname, 16, "thread%d[c%d]", int(id), cpu);
+        tracy::SetThreadName(thrdname);
       }
+      uint beg = splitIdx[i];
+      uint end = splitIdx[i + 1];
+      boost::span<const KnotType> stview =
+          make_span_from_indices(problem_->stages, beg, end);
+      if (i + 1 < numThreads)
+        setupKnot(problem_->stages[end - 1]);
+      boost::span<StageFactor<Scalar>> dtview =
+          make_span_from_indices(datas, beg, end);
+      ret &= Impl::backwardImpl(stview, mudyn, mueq, dtview);
     }
 
     Eigen::setNbThreads(0);
     assembleCondensedSystem(mudyn);
     ALIGATOR_NOMALLOC_END;
-    ret &= symmetricBlockTridiagSolve(
-        condensedKktSystem.subdiagonal, condensedKktSystem.diagonal,
-        condensedKktSystem.superdiagonal, condensedKktRhs);
+    ret &= symmetricBlockTridiagSolve(condensedKktSystem.subdiagonal,
+                                      condensedKktSystem.diagonal,
+                                      condensedKktSystem.superdiagonal,
+                                      condensedKktRhs, condensedKktSystem.facs);
     return ret;
   }
 
@@ -148,6 +149,7 @@ public:
     std::vector<MatrixXs> subdiagonal;
     std::vector<MatrixXs> diagonal;
     std::vector<MatrixXs> superdiagonal;
+    std::vector<Eigen::BunchKaufman<MatrixXs>> facs;
   };
 
   /// Create the sparse representation of the reduced KKT system.
@@ -212,7 +214,7 @@ public:
     }
     Eigen::setNbThreads(1);
 
-#pragma omp parallel for schedule(static, 1) num_threads(numThreads)
+    // #pragma omp parallel for schedule(static, 1) num_threads(numThreads)
     for (uint i = 0; i < numThreads; i++) {
       auto xsview = make_span_from_indices(xs, splitIdx[i], splitIdx[i + 1]);
       auto usview = make_span_from_indices(us, splitIdx[i], splitIdx[i + 1]);
@@ -243,27 +245,26 @@ public:
   /// Contains the right-hand side and solution of the condensed KKT system.
   BlkVec condensedKktRhs;
 
-  inline static condensed_system_t
-  initializeTridiagSystem(const std::vector<long> &dims) {
+  inline void initializeTridiagSystem(const std::vector<long> &dims) {
     ZoneScoped;
     std::vector<MatrixXs> subdiagonal;
     std::vector<MatrixXs> diagonal;
     std::vector<MatrixXs> superdiagonal;
 
-    subdiagonal.reserve(dims.size() - 1);
-    diagonal.reserve(dims.size());
-    superdiagonal.reserve(dims.size());
+    condensedKktSystem.subdiagonal.reserve(dims.size() - 1);
+    condensedKktSystem.diagonal.reserve(dims.size());
+    condensedKktSystem.superdiagonal.reserve(dims.size() - 1);
+    condensedKktSystem.facs.reserve(dims.size());
 
-    diagonal.emplace_back(dims[0], dims[0]);
+    condensedKktSystem.diagonal.emplace_back(dims[0], dims[0]);
+    condensedKktSystem.facs.emplace_back(dims[0]);
 
     for (uint i = 0; i < dims.size() - 1; i++) {
-      superdiagonal.emplace_back(dims[i], dims[i + 1]);
-      diagonal.emplace_back(dims[i + 1], dims[i + 1]);
-      subdiagonal.emplace_back(dims[i + 1], dims[i]);
+      condensedKktSystem.superdiagonal.emplace_back(dims[i], dims[i + 1]);
+      condensedKktSystem.diagonal.emplace_back(dims[i + 1], dims[i + 1]);
+      condensedKktSystem.subdiagonal.emplace_back(dims[i + 1], dims[i]);
+      condensedKktSystem.facs.emplace_back(dims[i + 1]);
     }
-
-    return {std::move(subdiagonal), std::move(diagonal),
-            std::move(superdiagonal)};
   }
 
 protected:
