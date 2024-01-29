@@ -45,10 +45,12 @@ public:
   std::vector<VectorXs> pt;
   struct {
     BlkMatrix<MatrixXs, 2, 2> mat;
-    BlkMatrix<VectorXs, 2, 1> rhs;
-    BlkMatrix<MatrixXs, 2, 1> rhst; // parametric rhs
+    BlkMatrix<VectorXs, 2, 1> ff;
+    BlkMatrix<MatrixXs, 2, 1> fth; // parametric rhs
     Eigen::BunchKaufman<MatrixXs> ldl;
   } kkt0;
+  VectorXs thGrad;
+  MatrixXs thHess;
 
   explicit RiccatiSolverDense(const LQRProblemTpl<Scalar> &problem)
       : Base(), problem_(&problem) {
@@ -77,9 +79,11 @@ public:
     uint nx0 = stages[0].nx;
     uint nth = stages[0].nth;
     std::array<long, 2> dims0 = {nx0, problem_->nc0()};
-    kkt0 = {decltype(kkt0.mat)(dims0, dims0), decltype(kkt0.rhs)(dims0, {1}),
-            decltype(kkt0.rhst)(dims0, {nth}),
+    kkt0 = {decltype(kkt0.mat)(dims0, dims0), decltype(kkt0.ff)(dims0, {1}),
+            decltype(kkt0.fth)(dims0, {nth}),
             Eigen::BunchKaufman<MatrixXs>(nx0 + problem_->nc0())};
+    thGrad.setZero(nth);
+    thHess.setZero(nth, nth);
   }
 
   bool backward(const Scalar mudyn, const Scalar mueq) {
@@ -204,19 +208,24 @@ public:
     }
 
     // initial stage
+    kkt0.mat.setZero();
     kkt0.mat(0, 0) = Pxx[0];
     kkt0.mat(0, 1) = problem_->G0.transpose();
     kkt0.mat(1, 0) = problem_->G0;
     kkt0.mat(1, 1).diagonal().array() = -mudyn;
-    kkt0.rhs[0] = -px[0];
-    kkt0.rhs[1] = -problem_->g0;
-
-    kkt0.rhst.blockRow(0) = -Pxt[0];
-    kkt0.rhst.blockRow(1).setZero();
-
     kkt0.ldl.compute(kkt0.mat.matrix());
-    kkt0.ldl.solveInPlace(kkt0.rhs.matrix());
-    kkt0.ldl.solveInPlace(kkt0.rhst.matrix());
+
+    kkt0.ff[0] = -px[0];
+    kkt0.ff[1] = -problem_->g0;
+
+    kkt0.fth.blockRow(0) = -Pxt[0];
+    kkt0.fth.blockRow(1).setZero();
+
+    kkt0.ldl.solveInPlace(kkt0.ff.matrix());
+    kkt0.ldl.solveInPlace(kkt0.fth.matrix());
+
+    thGrad.noalias() = pt[0] + Pxt[0].transpose() * kkt0.ff[0];
+    thHess.noalias() = Ptt[0] + Pxt[0].transpose() * kkt0.fth.blockRow(0);
 
     return true;
   }
@@ -226,11 +235,11 @@ public:
           std::vector<VectorXs> &vs, std::vector<VectorXs> &lbdas,
           const std::optional<ConstVectorRef> &theta_ = std::nullopt) const {
     ALIGATOR_NOMALLOC_BEGIN;
-    xs[0] = kkt0.rhs[0];
-    lbdas[0] = kkt0.rhs[1];
+    xs[0] = kkt0.ff[0];
+    lbdas[0] = kkt0.ff[1];
     if (theta_.has_value()) {
-      xs[0].noalias() += kkt0.rhst.blockRow(0) * theta_.value();
-      lbdas[0].noalias() += kkt0.rhst.blockRow(1) * theta_.value();
+      xs[0].noalias() += kkt0.fth.blockRow(0) * theta_.value();
+      lbdas[0].noalias() += kkt0.fth.blockRow(1) * theta_.value();
     }
 
     uint N = (uint)problem_->horizon();
