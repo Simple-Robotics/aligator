@@ -9,19 +9,15 @@ namespace python {
 
 using namespace gar;
 using context::Scalar;
+using riccati_base_t = RiccatiSolverBase<Scalar>;
 using knot_t = LQRKnotTpl<context::Scalar>;
 using lqr_t = LQRProblemTpl<context::Scalar>;
 using parallel_solver_t = gar::ParallelRiccatiSolver<Scalar>;
 
 void exposeParallelSolver() {
-  bp::class_<parallel_solver_t, boost::noncopyable>("ParallelRiccatiSolver",
-                                                    bp::no_init)
-      .def(bp::init<lqr_t &, uint>(("self"_a, "problem", "num_threads")))
-      .def_readonly("datas", &parallel_solver_t::datas)
-      .def("backward", &parallel_solver_t::backward,
-           ("self"_a, "mudyn", "mueq"))
-      .def("forward", &parallel_solver_t::forward,
-           ("self"_a, "xs", "us", "vs", "lbdas"));
+  bp::class_<parallel_solver_t, bp::bases<riccati_base_t>, boost::noncopyable>(
+      "ParallelRiccatiSolver", bp::no_init)
+      .def(bp::init<lqr_t &, uint>(("self"_a, "problem", "num_threads")));
 }
 
 } // namespace python

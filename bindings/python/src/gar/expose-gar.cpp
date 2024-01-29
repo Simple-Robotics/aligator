@@ -2,6 +2,7 @@
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/gar-visitors.hpp"
 #include "aligator/gar/riccati.hpp"
+#include "aligator/gar/dense-riccati.hpp"
 #include "aligator/gar/utils.hpp"
 
 #include "aligator/python/utils.hpp"
@@ -12,8 +13,9 @@ namespace python {
 using namespace gar;
 
 using context::Scalar;
+using riccati_base_t = RiccatiSolverBase<Scalar>;
 using prox_riccati_t = ProximalRiccatiSolver<Scalar>;
-using StageFactor = prox_riccati_t::StageFactorType;
+using stage_factor_t = StageFactor<Scalar>;
 using knot_t = LQRKnotTpl<context::Scalar>;
 using lqr_t = LQRProblemTpl<context::Scalar>;
 } // namespace python
@@ -79,17 +81,17 @@ void exposeGAR() {
       .def_readonly("Vtt", &value_t::Vtt)
       .def_readonly("vt", &value_t::vt);
 
-  bp::class_<StageFactor>(
+  bp::class_<stage_factor_t>(
       "StageFactor", "Stagewise factor for the generalized Riccati algorithm.",
       bp::no_init)
-      .def_readonly("ff", &StageFactor::ff)
-      .def_readonly("fb", &StageFactor::fb)
-      .def_readonly("fth", &StageFactor::fth)
-      .def_readonly("kktMat", &StageFactor::kktMat)
-      .def_readonly("kktChol", &StageFactor::kktChol)
-      .def_readonly("vm", &StageFactor::vm);
+      .def_readonly("ff", &stage_factor_t::ff)
+      .def_readonly("fb", &stage_factor_t::fb)
+      .def_readonly("fth", &stage_factor_t::fth)
+      .def_readonly("kktMat", &stage_factor_t::kktMat)
+      .def_readonly("kktChol", &stage_factor_t::kktChol)
+      .def_readonly("vm", &stage_factor_t::vm);
 
-  StdVectorPythonVisitor<std::vector<StageFactor>, true>::expose(
+  StdVectorPythonVisitor<std::vector<stage_factor_t>, true>::expose(
       "StdVec_stage_factor");
 
   bp::class_<knot_t>("LQRKnot", bp::no_init)
@@ -144,27 +146,35 @@ void exposeGAR() {
            "Evaluate the problem objective.")
       .def(CopyableVisitor<lqr_t>());
 
+  bp::class_<riccati_base_t, boost::noncopyable>("RiccatiSolverBase")
+      .def_readonly("datas", &riccati_base_t::datas)
+      .def("backward", &riccati_base_t::backward, ("self"_a, "mu", "mueq"))
+      .def("forward", &riccati_base_t::forward,
+           ("self"_a, "xs", "us", "vs", "lbdas", "theta"_a = std::nullopt));
+
   {
     bp::scope _ =
-        bp::class_<prox_riccati_t, boost::noncopyable>(
-            "ProximalRiccatiSolver", "Proximal Riccati solver.", bp::no_init)
+        bp::class_<prox_riccati_t, bp::bases<riccati_base_t>,
+                   boost::noncopyable>("ProximalRiccatiSolver",
+                                       "Proximal Riccati solver.", bp::no_init)
             .def(bp::init<const lqr_t &>(("self"_a, "problem")))
-            .def_readonly("datas", &prox_riccati_t::datas)
             .def_readonly("thGrad", &prox_riccati_t::thGrad, "Value gradient")
             .def_readonly("thHess", &prox_riccati_t::thHess, "Value Hessian")
             .def_readonly("kkt0", &prox_riccati_t::kkt0,
-                          "Initial stage KKT system")
-            .def("backward", &prox_riccati_t::backward,
-                 ("self"_a, "mu", "mueq"))
-            .def("forward", &prox_riccati_t::forward,
-                 ("self"_a, "xs", "us", "vs", "lbdas",
-                  "theta"_a = std::nullopt));
+                          "Initial stage KKT system");
     bp::class_<prox_riccati_t::kkt0_t>("kkt0_t", bp::no_init)
         .def_readonly("ff", &prox_riccati_t::kkt0_t::ff)
         .def_readonly("fth", &prox_riccati_t::kkt0_t::fth)
         .def_readonly("mat", &prox_riccati_t::kkt0_t::mat)
         .def_readonly("chol", &prox_riccati_t::kkt0_t::chol);
   }
+
+  bp::class_<RiccatiSolverDense<Scalar>, bp::bases<riccati_base_t>,
+             boost::noncopyable>("RiccatiSolverDense",
+                                 "Stagewise-dense Riccati solver (using "
+                                 "stagewise Bunch-Kaufman factorizations).",
+                                 bp::no_init)
+      .def(bp::init<const lqr_t &>(("self"_a, "problem")));
 
   bp::def(
       "lqrDenseMatrix",
