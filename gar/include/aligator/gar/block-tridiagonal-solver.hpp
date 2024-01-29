@@ -1,6 +1,7 @@
 #pragma once
 
 #include "aligator/gar/blk-matrix.hpp"
+#include "aligator/macros.hpp"
 #include "tracy/Tracy.hpp"
 
 namespace aligator {
@@ -50,6 +51,7 @@ bool symmetricBlockTridiagSolve(std::vector<MatrixType> &subdiagonal,
                                 BlkMatrix<RhsType, -1, 1> &rhs,
                                 std::vector<DecType> &facs) {
   ZoneScoped;
+  ALIGATOR_NOMALLOC_BEGIN;
 
   if (subdiagonal.size() != superdiagonal.size() ||
       diagonal.size() != superdiagonal.size() + 1 ||
@@ -98,6 +100,7 @@ bool symmetricBlockTridiagSolve(std::vector<MatrixType> &subdiagonal,
     rhs[i + 1].noalias() -= Cip1 * rhs[i];
   }
 
+  ALIGATOR_NOMALLOC_END;
   return true;
 }
 
