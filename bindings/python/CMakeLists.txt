@@ -6,7 +6,7 @@ if(GENERATE_PYTHON_STUBS)
   include(${JRL_CMAKE_MODULES}/stubs.cmake)
 endif(GENERATE_PYTHON_STUBS)
 
-file(GLOB PY_SOURCES src/*.cpp src/gar/*.cpp src/modelling/*.cpp)
+file(GLOB PY_SOURCES CONFIGURE_DEPENDS src/*.cpp src/gar/*.cpp src/modelling/*.cpp)
 
 set(PY_HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/python)
 file(GLOB PY_HEADERS ${PY_HEADER_DIR}/*.hpp ${PY_HEADER_DIR}/modelling/*.hpp
