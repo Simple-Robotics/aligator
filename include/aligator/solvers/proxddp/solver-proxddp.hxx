@@ -5,6 +5,10 @@
 
 #include "solver-proxddp.hpp"
 #include "aligator/core/lagrangian.hpp"
+
+#include "aligator/gar/parallel-solver.hpp"
+#include "aligator/gar/dense-riccati.hpp"
+
 #include <tracy/Tracy.hpp>
 #ifndef NDEBUG
 #include <fmt/ostream.h>
@@ -138,6 +142,7 @@ void SolverProxDDPTpl<Scalar>::setup(const Problem &problem) {
   case LQSolverChoice::STAGEDENSE:
     linearSolver_ = std::make_unique<gar::RiccatiSolverDense<Scalar>>(
         workspace_.lqr_problem);
+    break;
   }
   }
   filter_.resetFilter(0.0, ls_params.alpha_min, ls_params.max_num_steps);

@@ -3,7 +3,7 @@
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "aligator/core/proximal-penalty.hpp"
+// #include "aligator/core/proximal-penalty.hpp"
 #include "aligator/core/linesearch.hpp"
 #include "aligator/core/filter.hpp"
 #include "aligator/core/callback-base.hpp"
@@ -12,8 +12,6 @@
 #include "aligator/utils/forward-dyn.hpp"
 
 #include "aligator/gar/riccati.hpp"
-#include "aligator/gar/parallel-solver.hpp"
-#include "aligator/gar/dense-riccati.hpp"
 
 #include "workspace.hpp"
 #include "results.hpp"

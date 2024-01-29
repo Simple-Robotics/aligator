@@ -8,7 +8,7 @@ namespace aligator::gar {
 
 /// A stagewise-dense Riccati solver
 template <typename _Scalar>
-class RiccatiSolverDense : RiccatiSolverBase<_Scalar> {
+class RiccatiSolverDense : public RiccatiSolverBase<_Scalar> {
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
@@ -42,9 +42,7 @@ public:
     Eigen::BunchKaufman<MatrixXs> ldl;
   } kkt0;
 
-  const LQRProblemTpl<Scalar> *problem_;
-
-  RiccatiSolverDense(const LQRProblemTpl<Scalar> &problem)
+  explicit RiccatiSolverDense(const LQRProblemTpl<Scalar> &problem)
       : Base(), problem_(&problem) {
     initialize();
   }
