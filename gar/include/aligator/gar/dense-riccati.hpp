@@ -3,6 +3,7 @@
 #include <proxsuite-nlp/linalg/bunchkaufman.hpp>
 
 #include "riccati-base.hpp"
+#include "tracy/Tracy.hpp"
 
 namespace aligator::gar {
 
@@ -22,6 +23,7 @@ public:
     BlkMat44 kkt;
     BlkVec4 ff;
     BlkMat41 fb;
+    BlkMat41 fth;
     Eigen::BunchKaufman<MatrixXs> ldl;
   };
 
@@ -29,16 +31,22 @@ public:
     std::array<long, 4> dims = {knot.nu, knot.nc, knot.nx2, knot.nx2};
     using ldl_t = decltype(FactorData::ldl);
     long ntot = std::accumulate(dims.begin(), dims.end(), 0);
+    uint nth = knot.nth;
     return FactorData{BlkMat44(dims, dims), BlkVec4(dims, {1}),
-                      BlkMat41(dims, {knot.nx}), ldl_t{ntot}};
+                      BlkMat41(dims, {knot.nx}), BlkMat41(dims, {nth}),
+                      ldl_t{ntot}};
   }
 
   std::vector<FactorData> datas;
-  std::vector<MatrixXs> Ps;
-  std::vector<VectorXs> ps;
+  std::vector<MatrixXs> Pxx;
+  std::vector<MatrixXs> Pxt;
+  std::vector<MatrixXs> Ptt;
+  std::vector<VectorXs> px;
+  std::vector<VectorXs> pt;
   struct {
     BlkMatrix<MatrixXs, 2, 2> mat;
     BlkMatrix<VectorXs, 2, 1> rhs;
+    BlkMatrix<MatrixXs, 2, 1> rhst; // parametric rhs
     Eigen::BunchKaufman<MatrixXs> ldl;
   } kkt0;
 
@@ -50,18 +58,27 @@ public:
   void initialize() {
     auto N = (uint)problem_->horizon();
     const auto &stages = problem_->stages;
-    Ps.resize(N + 1);
-    ps.resize(N + 1);
-    for (uint t = 0; t <= N; t++) {
-      uint nx = stages[t].nx;
-      Ps[t].setZero(nx, nx);
-      ps[t].setZero(nx);
-      datas.emplace_back(init_factor(stages[t]));
+    Pxx.resize(N + 1);
+    Pxt.resize(N + 1);
+    Ptt.resize(N + 1);
+    px.resize(N + 1);
+    pt.resize(N + 1);
+    for (uint i = 0; i <= N; i++) {
+      uint nx = stages[i].nx;
+      uint nth = stages[i].nth;
+      Pxx[i].setZero(nx, nx);
+      Pxt[i].setZero(nx, nth);
+      Ptt[i].setZero(nth, nth);
+      px[i].setZero(nx);
+      pt[i].setZero(nth);
+      datas.emplace_back(init_factor(stages[i]));
     }
 
     uint nx0 = stages[0].nx;
+    uint nth = stages[0].nth;
     std::array<long, 2> dims0 = {nx0, problem_->nc0()};
     kkt0 = {decltype(kkt0.mat)(dims0, dims0), decltype(kkt0.rhs)(dims0, {1}),
+            decltype(kkt0.rhst)(dims0, {nth}),
             Eigen::BunchKaufman<MatrixXs>(nx0 + problem_->nc0())};
   }
 
@@ -94,12 +111,28 @@ public:
       fac.ldl.solveInPlace(fac.ff.matrix());
       fac.ldl.solveInPlace(fac.fb.matrix());
 
+      MatrixRef Kth = fac.fth.blockRow(0);
+      Kth = -knot.Gu;
+      MatrixRef Zth = fac.fth.blockRow(1);
+      Zth = -knot.Gv;
+      fac.ldl.solveInPlace(fac.fth.matrix());
+
       Eigen::Transpose Ct = knot.C.transpose();
 
-      Ps[N].noalias() = knot.Q + knot.S * K;
-      Ps[N].noalias() += Ct * Z;
-      ps[N].noalias() = knot.q + knot.S * kff;
-      ps[N].noalias() += Ct * zff;
+      Pxx[N].noalias() = knot.Q + knot.S * K;
+      Pxx[N].noalias() += Ct * Z;
+
+      Pxt[N].noalias() = knot.Gx + K.transpose() * knot.Gu;
+      Pxt[N].noalias() += Z.transpose() * knot.Gv;
+
+      Ptt[N].noalias() = knot.Gth + knot.Gu.transpose() * Kth;
+      Ptt[N].noalias() += knot.Gv.transpose() * Zth;
+
+      px[N].noalias() = knot.q + knot.S * kff;
+      px[N].noalias() += Ct * zff;
+
+      pt[N].noalias() = knot.gamma + knot.Gu.transpose() * kff;
+      pt[N].noalias() += knot.Gv.transpose() * zff;
     }
 
     uint i = N - 1;
@@ -118,30 +151,52 @@ public:
       fac.kkt(2, 2).diagonal().array() = -mudyn;
       fac.kkt(3, 2) = knot.E.transpose();
       fac.kkt(2, 3) = knot.E;
-      fac.kkt(3, 3) = Ps[i + 1];
+      fac.kkt(3, 3) = Pxx[i + 1];
 
-      fac.ff[0] = -knot.r;
-      fac.ff[1] = -knot.d;
-      fac.ff[2] = -knot.f;
-      fac.ff[3] = -ps[i + 1];
+      VectorRef kff = fac.ff[0] = -knot.r;
+      VectorRef zff = fac.ff[1] = -knot.d;
+      VectorRef lff = fac.ff[2] = -knot.f;
+      VectorRef yff = fac.ff[3] = -px[i + 1];
 
-      fac.fb.blockRow(0) = -knot.S.transpose();
-      fac.fb.blockRow(1) = -knot.C;
-      fac.fb.blockRow(2) = -knot.A;
-      fac.fb.blockRow(3).setZero();
+      MatrixRef K = fac.fb.blockRow(0) = -knot.S.transpose();
+      MatrixRef Z = fac.fb.blockRow(1) = -knot.C;
+      MatrixRef L = fac.fb.blockRow(2) = -knot.A;
+      MatrixRef Y = fac.fb.blockRow(3);
+      Y.setZero();
+
+      MatrixRef Kth = fac.fth.blockRow(0) = -knot.Gu;
+      MatrixRef Zth = fac.fth.blockRow(1) = -knot.Gv;
+      fac.fth.blockRow(2).setZero();
+      MatrixRef Yth = fac.fth.blockRow(3) = -Pxt[i + 1];
 
       fac.ldl.compute(fac.kkt.matrix());
       fac.ldl.solveInPlace(fac.ff.matrix());
       fac.ldl.solveInPlace(fac.fb.matrix());
+      fac.ldl.solveInPlace(fac.fth.matrix());
 
       Eigen::Transpose At = knot.A.transpose();
       Eigen::Transpose Ct = knot.C.transpose();
-      Ps[i].noalias() = knot.Q + knot.S * fac.fb.blockRow(0);
-      Ps[i].noalias() += Ct * fac.fb.blockRow(1);
-      Ps[i].noalias() += At * fac.fb.blockRow(2);
-      ps[i].noalias() = knot.q + knot.S * fac.ff[0];
-      ps[i].noalias() += Ct * fac.ff[1];
-      ps[i].noalias() += At * fac.ff[2];
+      Pxx[i].noalias() = knot.Q + knot.S * K;
+      Pxx[i].noalias() += Ct * Z;
+      Pxx[i].noalias() += At * L;
+
+      Pxt[i] = knot.Gx;
+      Pxt[i].noalias() += K.transpose() * knot.Gu;
+      Pxt[i].noalias() += Z.transpose() * knot.Gv;
+      Pxt[i].noalias() += Y.transpose() * Pxt[i + 1];
+
+      Ptt[i] = knot.Gth;
+      Ptt[i].noalias() += Kth.transpose() * knot.Gu;
+      Ptt[i].noalias() += Zth.transpose() * knot.Gv;
+      Ptt[i].noalias() += Yth.transpose() * Pxt[i + 1];
+
+      px[i].noalias() = knot.q + knot.S * kff;
+      px[i].noalias() += Ct * zff;
+      px[i].noalias() += At * lff;
+
+      pt[i].noalias() = knot.gamma + knot.Gu.transpose() * kff;
+      pt[i].noalias() += knot.Gv.transpose() * zff;
+      pt[i].noalias() += Pxt[i + 1].transpose() * yff;
 
       if (i == 0)
         break;
@@ -149,24 +204,34 @@ public:
     }
 
     // initial stage
-    kkt0.mat(0, 0) = Ps[0];
+    kkt0.mat(0, 0) = Pxx[0];
     kkt0.mat(0, 1) = problem_->G0.transpose();
     kkt0.mat(1, 0) = problem_->G0;
     kkt0.mat(1, 1).diagonal().array() = -mudyn;
-    kkt0.rhs[0] = -ps[0];
+    kkt0.rhs[0] = -px[0];
     kkt0.rhs[1] = -problem_->g0;
+
+    kkt0.rhst.blockRow(0) = -Pxt[0];
+    kkt0.rhst.blockRow(1).setZero();
+
     kkt0.ldl.compute(kkt0.mat.matrix());
     kkt0.ldl.solveInPlace(kkt0.rhs.matrix());
+    kkt0.ldl.solveInPlace(kkt0.rhst.matrix());
 
     return true;
   }
 
-  bool forward(std::vector<VectorXs> &xs, std::vector<VectorXs> &us,
-               std::vector<VectorXs> &vs, std::vector<VectorXs> &lbdas,
-               const std::optional<ConstVectorRef> & = std::nullopt) const {
+  bool
+  forward(std::vector<VectorXs> &xs, std::vector<VectorXs> &us,
+          std::vector<VectorXs> &vs, std::vector<VectorXs> &lbdas,
+          const std::optional<ConstVectorRef> &theta_ = std::nullopt) const {
     ALIGATOR_NOMALLOC_BEGIN;
     xs[0] = kkt0.rhs[0];
     lbdas[0] = kkt0.rhs[1];
+    if (theta_.has_value()) {
+      xs[0].noalias() += kkt0.rhst.blockRow(0) * theta_.value();
+      lbdas[0].noalias() += kkt0.rhst.blockRow(1) * theta_.value();
+    }
 
     uint N = (uint)problem_->horizon();
     assert(xs.size() == N + 1);
@@ -184,17 +249,33 @@ public:
       ConstMatrixRef Lfb = d.fb.blockRow(2);
       ConstMatrixRef Yfb = d.fb.blockRow(3);
 
+      ConstMatrixRef Kth = d.fth.blockRow(0);
+      ConstMatrixRef Zth = d.fth.blockRow(1);
+      ConstMatrixRef Lth = d.fth.blockRow(2);
+      ConstMatrixRef Yth = d.fth.blockRow(3);
+
       us[i].noalias() = kff + K * xs[i];
       vs[i].noalias() = zff + Z * xs[i];
+      if (theta_.has_value()) {
+        us[i].noalias() += Kth * theta_.value();
+        vs[i].noalias() += Zth * theta_.value();
+      }
 
       if (i == N)
         break;
       lbdas[i + 1].noalias() = lff + Lfb * xs[i];
       xs[i + 1].noalias() = yff + Yfb * xs[i];
+      if (theta_.has_value()) {
+        lbdas[i + 1].noalias() += Lth * theta_.value();
+        xs[i + 1].noalias() += Yth * theta_.value();
+      }
     }
     ALIGATOR_NOMALLOC_END;
     return true;
   }
+
+protected:
+  const LQRProblemTpl<Scalar> *problem_;
 };
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
