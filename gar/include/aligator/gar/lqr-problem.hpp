@@ -39,6 +39,7 @@ template <typename Scalar> struct LQRKnotTpl {
   MatrixXs Gth;
   MatrixXs Gx;
   MatrixXs Gu;
+  MatrixXs Gv;
   VectorXs gamma;
 
   LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2)
@@ -69,6 +70,7 @@ template <typename Scalar> struct LQRKnotTpl {
     Gth.setZero(nth, nth);
     Gx.setZero(nx, nth);
     Gu.setZero(nu, nth);
+    Gv.setZero(nc, nth);
     gamma.setZero(nth);
   }
 };
