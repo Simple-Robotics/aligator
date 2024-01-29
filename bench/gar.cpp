@@ -5,6 +5,8 @@
 
 #include "aligator/gar/riccati.hpp"
 #include "aligator/gar/parallel-solver.hpp"
+#include "aligator/gar/dense-riccati.hpp"
+
 #include "aligator/gar/utils.hpp"
 
 #include "../tests/gar/test_util.hpp"
@@ -40,6 +42,19 @@ template <uint NPROC> static void BM_parallel(benchmark::State &state) {
   }
 }
 
+static void BM_stagedense(benchmark::State &state) {
+  uint horz = (uint)state.range(0);
+  VectorXs x0 = VectorXs::NullaryExpr(nx, normal_unary_op{});
+  LQRProblemTpl<double> problem = generate_problem(x0, horz, nx, nu);
+  RiccatiSolverDense<double> solver(problem);
+  const double mu = 1e-11;
+  auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
+  for (auto _ : state) {
+    solver.backward(mu, mu);
+    solver.forward(xs, us, vs, lbdas);
+  }
+}
+
 static void customArgs(benchmark::internal::Benchmark *b) {
   for (uint e = 4; e <= 8; e++) {
     b->Arg(1 << e);
@@ -49,6 +64,7 @@ static void customArgs(benchmark::internal::Benchmark *b) {
 }
 
 BENCHMARK(BM_serial)->Apply(customArgs);
+BENCHMARK(BM_stagedense)->Apply(customArgs);
 BENCHMARK_TEMPLATE(BM_parallel, 2)->Apply(customArgs);
 BENCHMARK_TEMPLATE(BM_parallel, 3)->Apply(customArgs);
 BENCHMARK_TEMPLATE(BM_parallel, 4)->Apply(customArgs);

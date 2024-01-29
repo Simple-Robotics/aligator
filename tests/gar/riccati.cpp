@@ -8,6 +8,7 @@
 
 #include "./test_util.hpp"
 #include "aligator/gar/utils.hpp"
+#include "aligator/gar/dense-riccati.hpp"
 
 using namespace aligator::gar;
 
@@ -93,7 +94,7 @@ BOOST_AUTO_TEST_CASE(random_long_problem) {
   uint nu = 3;
   auto prob = generate_problem(x0, 100, nx, nu);
   prox_riccati_t solver{prob};
-  double mu = 1e-14;
+  const double mu = 1e-14;
   auto bwbeg = std::chrono::system_clock::now();
   solver.backward(mu, mu);
   auto bwend = std::chrono::system_clock::now();
@@ -113,11 +114,22 @@ BOOST_AUTO_TEST_CASE(random_long_problem) {
   printKktError(err);
 
   BOOST_CHECK_LE(err.max, 1e-9);
-}
 
-BOOST_AUTO_TEST_CASE(parametric) {
-  // TODO: implement a parametric problem and solve it
-  BOOST_CHECK(true);
+  BOOST_TEST_MESSAGE("Dense stagewise solver:");
+  {
+    RiccatiSolverDense<double> denseSolver(prob);
+    auto bwbeg = std::chrono::system_clock::now();
+    denseSolver.backward(mu, mu);
+    auto bwend = std::chrono::system_clock::now();
+    auto t_bwd =
+        std::chrono::duration_cast<std::chrono::microseconds>(bwend - bwbeg);
+    fmt::print("Elapsed time (bwd, dense): {:d}\n", t_bwd.count());
+    auto [xsd, usd, vsd, lbdasd] = lqrInitializeSolution(prob);
+    denseSolver.forward(xsd, usd, vsd, lbdasd);
+    KktError err = computeKktError(prob, xsd, usd, vsd, lbdasd);
+    printKktError(err);
+    BOOST_CHECK_LE(err.max, 1e-9);
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

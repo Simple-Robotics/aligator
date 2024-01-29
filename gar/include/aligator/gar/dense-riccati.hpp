@@ -102,9 +102,6 @@ public:
       Ps[N].noalias() += Ct * Z;
       ps[N].noalias() = knot.q + knot.S * kff;
       ps[N].noalias() += Ct * zff;
-      fmt::print("[{:>2d}] ", N);
-      fmt::print("  q={}", knot.q.transpose());
-      fmt::print("  p={}\n", ps[N].transpose());
     }
 
     uint i = N - 1;
@@ -135,20 +132,18 @@ public:
       fac.fb.blockRow(2) = -knot.A;
       fac.fb.blockRow(3).setZero();
 
-      auto rhs = fac.ff.matrix();
       fac.ldl.compute(fac.kkt.matrix());
       fac.ldl.solveInPlace(fac.ff.matrix());
       fac.ldl.solveInPlace(fac.fb.matrix());
-      {
-        auto e = math::infty_norm(rhs - fac.kkt.matrix() * fac.ff.matrix());
-        fmt::print("[{:>2d}] e={:.3e}\n", i, e);
-      }
 
+      Eigen::Transpose At = knot.A.transpose();
       Eigen::Transpose Ct = knot.C.transpose();
       Ps[i].noalias() = knot.Q + knot.S * fac.fb.blockRow(0);
       Ps[i].noalias() += Ct * fac.fb.blockRow(1);
+      Ps[i].noalias() += At * fac.fb.blockRow(2);
       ps[i].noalias() = knot.q + knot.S * fac.ff[0];
       ps[i].noalias() += Ct * fac.ff[1];
+      ps[i].noalias() += At * fac.ff[2];
 
       if (i == 0)
         break;
