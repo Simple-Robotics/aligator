@@ -10,8 +10,11 @@
 #include "aligator/core/enums.hpp"
 #include "aligator/utils/logger.hpp"
 #include "aligator/utils/forward-dyn.hpp"
+
 #include "aligator/gar/riccati.hpp"
 #include "aligator/gar/parallel-solver.hpp"
+#include "aligator/gar/dense-riccati.hpp"
+
 #include "workspace.hpp"
 #include "results.hpp"
 #include "merit-function.hpp"
@@ -44,7 +47,7 @@ template <typename Scalar> struct DefaultScaling {
   static constexpr Scalar scale = 10.;
 };
 
-enum class LQSolverChoice { SERIAL, PARALLEL };
+enum class LQSolverChoice { SERIAL, PARALLEL, STAGEDENSE };
 
 /// @brief A proximal, augmented Lagrangian-type solver for trajectory
 /// optimization.
