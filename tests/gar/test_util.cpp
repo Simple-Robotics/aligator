@@ -3,7 +3,7 @@
 #include "aligator/gar/block-tridiagonal-solver.hpp"
 #include "aligator/gar/utils.hpp"
 
-std::mt19937 normal_unary_op::rng{};
+std::mt19937 normal_unary_op::rng{42};
 
 /// Generate a Wishart-distributed matrix in @p n dimensions with @p p DoF
 MatrixXs sampleWishartDistributedMatrix(uint n, uint p) {
@@ -12,7 +12,7 @@ MatrixXs sampleWishartDistributedMatrix(uint n, uint p) {
 };
 
 problem_t generate_problem(const ConstVectorRef &x0, uint horz, uint nx,
-                           uint nu) {
+                           uint nu, uint nth) {
   assert(x0.size() == nx);
 
   std::vector<knot_t> knots;
@@ -20,6 +20,7 @@ problem_t generate_problem(const ConstVectorRef &x0, uint horz, uint nx,
 
   auto gen = [&](uint nu) {
     knot_t out(nx, nu, 0);
+    out.addParameterization(nth);
 
     MatrixXs _qsr = sampleWishartDistributedMatrix(nx + nu, wishartDof);
 
@@ -34,6 +35,11 @@ problem_t generate_problem(const ConstVectorRef &x0, uint horz, uint nx,
     out.E.setIdentity();
     out.E *= -1;
     out.f.head(nx) = VectorXs::NullaryExpr(nx, normal_unary_op{});
+
+    out.Gx = MatrixXs::NullaryExpr(nx, nth, normal_unary_op{});
+    out.Gu = MatrixXs::NullaryExpr(nu, nth, normal_unary_op{});
+    out.Gth = sampleWishartDistributedMatrix(nth, nth + 2);
+    out.gamma = VectorXs::NullaryExpr(nth, normal_unary_op{});
 
     return out;
   };

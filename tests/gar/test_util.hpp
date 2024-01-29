@@ -55,7 +55,7 @@ struct normal_unary_op {
 MatrixXs sampleWishartDistributedMatrix(uint n, uint p);
 
 problem_t generate_problem(const ConstVectorRef &x0, uint horz, uint nx,
-                           uint nu);
+                           uint nu, uint nth = 0);
 
 template <typename T>
 std::vector<T> mergeStdVectors(const std::vector<T> &v1,
