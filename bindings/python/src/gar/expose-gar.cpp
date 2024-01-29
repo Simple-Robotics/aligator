@@ -146,7 +146,8 @@ void exposeGAR() {
            "Evaluate the problem objective.")
       .def(CopyableVisitor<lqr_t>());
 
-  bp::class_<riccati_base_t, boost::noncopyable>("RiccatiSolverBase")
+  bp::class_<riccati_base_t, boost::noncopyable>("RiccatiSolverBase",
+                                                 bp::no_init)
       .def_readonly("datas", &riccati_base_t::datas)
       .def("backward", &riccati_base_t::backward, ("self"_a, "mu", "mueq"))
       .def("forward", &riccati_base_t::forward,
