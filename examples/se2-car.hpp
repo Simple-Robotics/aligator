@@ -4,7 +4,7 @@
 #include <pinocchio/multibody/liegroup/special-euclidean.hpp>
 
 #include "aligator/core/traj-opt-problem.hpp"
-#include "aligator/modelling/costs/quad-costs.hpp"
+#include "aligator/modelling/costs/quad-state-cost.hpp"
 #include "aligator/modelling/state-error.hpp"
 #include "aligator/modelling/costs/composite-costs.hpp"
 #include "aligator/modelling/costs/sum-of-costs.hpp"
@@ -16,7 +16,8 @@ using SE2 = proxsuite::nlp::SETpl<2, T>;
 
 using namespace aligator;
 using StateError = StateErrorResidualTpl<T>;
-using QuadResidualCost = QuadraticResidualCostTpl<T>;
+using QuadStateCost = QuadraticStateCostTpl<T>;
+using QuadControlCost = QuadraticControlCostTpl<T>;
 using context::StageModel;
 using context::TrajOptProblem;
 ALIGATOR_DYNAMIC_TYPEDEFS(T);
@@ -79,15 +80,11 @@ inline auto create_se2_problem(std::size_t nsteps) {
 
   auto rcost = std::make_shared<CostStackTpl<T>>(space, nu);
   auto rc1 =
-      std::make_shared<QuadResidualCost>(space, state_err, w_x * timestep);
-  auto control_err =
-      std::make_shared<ControlErrorResidualTpl<T>>(space->ndx(), nu);
-  auto rc2 =
-      std::make_shared<QuadResidualCost>(space, control_err, w_u * timestep);
+      std::make_shared<QuadStateCost>(space, nu, x_target, w_x * timestep);
+  auto rc2 = std::make_shared<QuadControlCost>(space, nu, w_u * timestep);
   rcost->addCost(rc1);
   rcost->addCost(rc2);
 
-  auto term_cost = std::make_shared<QuadResidualCost>(space, state_err, w_term);
   auto ode = std::make_shared<CarDynamics>();
   auto discrete_dyn =
       std::make_shared<dynamics::IntegratorEulerTpl<T>>(ode, timestep);
@@ -96,5 +93,6 @@ inline auto create_se2_problem(std::size_t nsteps) {
 
   std::vector<decltype(stage)> stages(nsteps, stage);
 
+  auto term_cost = std::make_shared<QuadStateCost>(space, nu, x_target, w_term);
   return TrajOptProblem(x0, stages, term_cost);
 }
