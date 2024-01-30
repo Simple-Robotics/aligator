@@ -20,7 +20,6 @@
 #include <proxsuite-nlp/bcl-params.hpp>
 
 #include <unordered_map>
-#include <boost/core/span.hpp>
 
 namespace aligator {
 

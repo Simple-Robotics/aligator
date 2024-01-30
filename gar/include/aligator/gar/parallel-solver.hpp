@@ -24,7 +24,6 @@ public:
   using Base::datas;
 
   using Impl = ProximalRiccatiKernel<Scalar>;
-  using value_t = typename StageFactor<Scalar>::value_t;
   using KnotType = LQRKnotTpl<Scalar>;
 
   using BlkMat = BlkMatrix<MatrixXs, -1, -1>;

@@ -12,15 +12,15 @@
 namespace aligator {
 namespace gar {
 /// Create a boost::span object from a vector and two indices.
-template <class T>
-inline boost::span<T> make_span_from_indices(std::vector<T> &vec, size_t i0,
+template <class T, class A>
+inline boost::span<T> make_span_from_indices(std::vector<T, A> &vec, size_t i0,
                                              size_t i1) {
   return boost::make_span(vec.data() + i0, i1 - i0);
 }
 
 /// @copybrief make_span_from_indices
-template <class T>
-inline boost::span<const T> make_span_from_indices(const std::vector<T> &vec,
+template <class T, class A>
+inline boost::span<const T> make_span_from_indices(const std::vector<T, A> &vec,
                                                    size_t i0, size_t i1) {
   return boost::make_span(vec.data() + i0, i1 - i0);
 }
@@ -98,16 +98,15 @@ template <typename Scalar> struct StageFactor {
   MatrixXs PinvEt;                       //< tmp buffer for \f$P^{-1}E^\top\f$
 };
 
-/// A sequential, regularized Riccati algorithm
-// for proximal-regularized, constrained LQ problems.
-template <typename Scalar> struct ProximalRiccatiImpl {
+// Implementation of a proximal riccati kernel.
+template <typename Scalar> struct ProximalRiccatiKernel {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using RowMatrixXs = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
   using RowMatrixRef = Eigen::Ref<RowMatrixXs>;
   using ConstRowMatrixRef = Eigen::Ref<const RowMatrixXs>;
   using KnotType = LQRKnotTpl<Scalar>;
   using StageFactorType = StageFactor<Scalar>;
-  using value_t = typename StageFactorType::value_t;
+  using value_t = typename StageFactor<Scalar>::value_t;
 
   struct kkt0_t {
     BlkMatrix<MatrixXs, 2, 2> mat;
@@ -128,8 +127,8 @@ template <typename Scalar> struct ProximalRiccatiImpl {
   computeInitial(VectorRef x0, VectorRef lbd0, const kkt0_t &kkt0,
                  const std::optional<ConstVectorRef> &theta_);
 
-  inline static void solveSingleStage(const KnotType &model, StageFactorType &d,
-                                      value_t &vn, const Scalar mudyn,
+  inline static void stageKernelSolve(const KnotType &model, StageFactorType &d,
+                                      value_t *vn, const Scalar mudyn,
                                       const Scalar mueq);
 
   /// Forward sweep.
@@ -150,7 +149,7 @@ namespace aligator {
 namespace gar {
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 extern template struct StageFactor<context::Scalar>;
-extern template struct ProximalRiccatiImpl<context::Scalar>;
+extern template struct ProximalRiccatiKernel<context::Scalar>;
 #endif
 } // namespace gar
 } // namespace aligator
