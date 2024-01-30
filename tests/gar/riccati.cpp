@@ -155,8 +155,10 @@ BOOST_AUTO_TEST_CASE(parametric) {
     BOOST_CHECK_LE(err.max, 1e-10);
   };
 
+  BOOST_TEST_MESSAGE("ProximalRiccatiSolver");
   ProximalRiccatiSolver<double> solver(problem);
   testfn(solver);
+  BOOST_TEST_MESSAGE("RiccatiSolverDense");
   RiccatiSolverDense<double> denseSolver(problem);
   testfn(denseSolver);
 }
