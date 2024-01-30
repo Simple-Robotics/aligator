@@ -23,7 +23,7 @@ public:
   using Base = RiccatiSolverBase<Scalar>;
   using Base::datas;
 
-  using Impl = ProximalRiccatiImpl<Scalar>;
+  using Impl = ProximalRiccatiKernel<Scalar>;
   using value_t = typename StageFactor<Scalar>::value_t;
   using KnotType = LQRKnotTpl<Scalar>;
 

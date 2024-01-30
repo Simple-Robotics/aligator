@@ -14,7 +14,7 @@ public:
   using Base = RiccatiSolverBase<Scalar>;
   using Base::datas;
 
-  using Impl = ProximalRiccatiImpl<Scalar>;
+  using Impl = ProximalRiccatiKernel<Scalar>;
   using StageFactorType = StageFactor<Scalar>;
   using value_t = typename StageFactorType::value_t;
   using kkt0_t = typename Impl::kkt0_t;

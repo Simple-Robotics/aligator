@@ -7,7 +7,7 @@
 namespace aligator {
 namespace gar {
 template <typename Scalar>
-bool ProximalRiccatiImpl<Scalar>::backwardImpl(
+bool ProximalRiccatiKernel<Scalar>::backwardImpl(
     boost::span<const KnotType> stages, const Scalar mudyn, const Scalar mueq,
     boost::span<StageFactorType> datas) {
   ZoneScoped;
@@ -91,7 +91,7 @@ bool ProximalRiccatiImpl<Scalar>::backwardImpl(
 }
 
 template <typename Scalar>
-void ProximalRiccatiImpl<Scalar>::computeInitial(
+void ProximalRiccatiKernel<Scalar>::computeInitial(
     VectorRef x0, VectorRef lbd0, const kkt0_t &kkt0,
     const std::optional<ConstVectorRef> &theta_) {
   ZoneScoped;
@@ -105,11 +105,11 @@ void ProximalRiccatiImpl<Scalar>::computeInitial(
 }
 
 template <typename Scalar>
-void ProximalRiccatiImpl<Scalar>::solveSingleStage(const KnotType &model,
-                                                   StageFactorType &d,
-                                                   value_t &vn,
-                                                   const Scalar mudyn,
-                                                   const Scalar mueq) {
+void ProximalRiccatiKernel<Scalar>::solveSingleStage(const KnotType &model,
+                                                     StageFactorType &d,
+                                                     value_t &vn,
+                                                     const Scalar mudyn,
+                                                     const Scalar mueq) {
   ZoneScoped;
   vn.Pchol.compute(vn.Pmat);
   d.PinvEt = vn.Pchol.solve(model.E.transpose());
@@ -219,7 +219,7 @@ void ProximalRiccatiImpl<Scalar>::solveSingleStage(const KnotType &model,
 }
 
 template <typename Scalar>
-bool ProximalRiccatiImpl<Scalar>::forwardImpl(
+bool ProximalRiccatiKernel<Scalar>::forwardImpl(
     boost::span<const KnotType> stages,
     boost::span<const StageFactorType> datas, boost::span<VectorXs> xs,
     boost::span<VectorXs> us, boost::span<VectorXs> vs,
