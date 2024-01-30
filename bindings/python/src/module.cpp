@@ -65,6 +65,8 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
           "Get the number of available threads.");
   bp::def("get_current_threads", &aligator::omp::get_current_threads,
           "Get the current number of threads.");
+  bp::def("set_omp_default_options", &aligator::omp::set_default_options,
+          ("num_threads"_a, "dynamic"_a = true));
 #endif
   eigenpy::enableEigenPy();
 

@@ -27,6 +27,7 @@ void exposeProxDDP() {
   bp::enum_<LQSolverChoice>("LinearSolverChoice")
       .value("LQ_SOLVER_SERIAL", LQSolverChoice::SERIAL)
       .value("LQ_SOLVER_PARALLEL", LQSolverChoice::PARALLEL)
+      .value("LQ_SOLVER_STAGEDENSE", LQSolverChoice::STAGEDENSE)
       .export_values();
 
   using ProxScaler = ConstraintProximalScalerTpl<Scalar>;
