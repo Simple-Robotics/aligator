@@ -11,6 +11,19 @@
 
 namespace aligator {
 namespace gar {
+/// Create a boost::span object from a vector and two indices.
+template <class T>
+inline boost::span<T> make_span_from_indices(std::vector<T> &vec, size_t i0,
+                                             size_t i1) {
+  return boost::make_span(vec.data() + i0, i1 - i0);
+}
+
+/// @copybrief make_span_from_indices
+template <class T>
+inline boost::span<const T> make_span_from_indices(const std::vector<T> &vec,
+                                                   size_t i0, size_t i1) {
+  return boost::make_span(vec.data() + i0, i1 - i0);
+}
 
 /// Per-node struct for all computations in the factorization.
 template <typename Scalar> struct StageFactor {

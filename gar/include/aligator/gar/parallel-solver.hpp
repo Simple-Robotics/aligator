@@ -7,22 +7,6 @@
 namespace aligator {
 namespace gar {
 
-/// Create a boost::span object from a vector and two indices.
-template <class T>
-boost::span<T> make_span_from_indices(std::vector<T> &vec, size_t i0,
-                                      size_t i1) {
-  ZoneScopedN("make_span");
-  return boost::make_span(vec.data() + i0, i1 - i0);
-}
-
-/// @copybrief make_span_from_indices
-template <class T>
-boost::span<const T> make_span_from_indices(const std::vector<T> &vec,
-                                            size_t i0, size_t i1) {
-  ZoneScopedN("make_span_const");
-  return boost::make_span(vec.data() + i0, i1 - i0);
-}
-
 /// A parallel-condensing LQ solver. This solver condenses the problem into a
 /// reduced saddle-point problem in a subset of the states and costates,
 /// corresponding to the time indices where the problem was split up.
