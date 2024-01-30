@@ -5,6 +5,7 @@
 
 #include "./test_util.hpp"
 #include "aligator/gar/parallel-solver.hpp"
+#include "aligator/gar/parallel-solver-tbb.hpp"
 #include "aligator/gar/utils.hpp"
 
 using namespace aligator::gar;
@@ -258,4 +259,38 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
       fmt::print("xs[{:d}] = {}\n", t, xs[t].transpose());
     }
   }
+}
+
+BOOST_AUTO_TEST_CASE(tbb_parallel) {
+  BOOST_TEST_MESSAGE("parallel_solver_tbb");
+  int default_num_threads = tbb::info::default_concurrency();
+  fmt::print("oneTBB default num threads: {:d}\n", default_num_threads);
+  uint nx = 2;
+  uint nu = 2;
+  VectorXs x0;
+  x0.resize(nx);
+  x0 << 1., 1.;
+  uint horizon = 20;
+
+  const double tol = 1e-10;
+
+  problem_t problem = generate_problem(x0, horizon, nx, nu);
+  problem_t problemRef = problem;
+  const double mu = 1e-12;
+
+  auto solutionRef = lqrInitializeSolution(problemRef);
+  auto [xs_ref, us_ref, vs_ref, lbdas_ref] = solutionRef;
+  auto [xs, us, vs, lbdas] = solutionRef;
+
+  BOOST_TEST_MESSAGE("Run Serial solver (reference solution)");
+  ParallelRiccatiSolver2<double> solver(problemRef, 4);
+
+  for (size_t i = 0; i < 10; i++) {
+    solver.backward(mu, mu);
+    solver.forward(xs, us, vs, lbdas);
+  }
+
+  KktError err = computeKktError(problem, xs, us, vs, lbdas);
+  printKktError(err);
+  BOOST_CHECK_LE(err.max, tol);
 }
