@@ -1,5 +1,6 @@
 /// @file
 /// @brief Benchmark solvers from GAR
+/// @copyright Copyright (C) 2024 LAAS-CNRS, INRIA
 
 #include <benchmark/benchmark.h>
 
@@ -56,7 +57,7 @@ static void BM_stagedense(benchmark::State &state) {
 }
 
 static void customArgs(benchmark::internal::Benchmark *b) {
-  for (uint e = 4; e <= 8; e++) {
+  for (uint e = 4; e <= 10; e++) {
     b->Arg(1 << e);
   }
   b->Unit(benchmark::kMillisecond);
@@ -69,6 +70,7 @@ BENCHMARK_TEMPLATE(BM_parallel, 2)->Apply(customArgs);
 BENCHMARK_TEMPLATE(BM_parallel, 3)->Apply(customArgs);
 BENCHMARK_TEMPLATE(BM_parallel, 4)->Apply(customArgs);
 BENCHMARK_TEMPLATE(BM_parallel, 5)->Apply(customArgs);
+BENCHMARK_TEMPLATE(BM_parallel, 6)->Apply(customArgs);
 
 int main(int argc, char **argv) {
   aligator::omp::set_default_options(aligator::omp::get_available_threads());
