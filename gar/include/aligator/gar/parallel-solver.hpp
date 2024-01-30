@@ -96,17 +96,14 @@ public:
     ALIGATOR_NOMALLOC_BEGIN;
     ZoneScopedN("parallel_backward");
     Eigen::setNbThreads(1);
-    bool ret = true;
-#pragma omp parallel for num_threads(numThreads) schedule(static, 1)           \
-    reduction(& : ret)
-    for (uint i = 0; i < numThreads; i++) {
-      {
-        size_t id = omp::get_thread_id();
-        char *thrdname = new char[16];
-        int cpu = sched_getcpu();
-        snprintf(thrdname, 16, "thread%d[c%d]", int(id), cpu);
-        tracy::SetThreadName(thrdname);
-      }
+    aligator::omp::set_default_options(numThreads, false);
+#pragma omp parallel num_threads(numThreads)
+    {
+      size_t i = omp::get_thread_id();
+      char *thrdname = new char[16];
+      int cpu = sched_getcpu();
+      snprintf(thrdname, 16, "thread%d[c%d]", int(i), cpu);
+      tracy::SetThreadName(thrdname);
       uint beg = splitIdx[i];
       uint end = splitIdx[i + 1];
       boost::span<const KnotType> stview =
@@ -115,17 +112,21 @@ public:
         setupKnot(problem_->stages[end - 1]);
       boost::span<StageFactor<Scalar>> dtview =
           make_span_from_indices(datas, beg, end);
-      ret &= Impl::backwardImpl(stview, mudyn, mueq, dtview);
+      Impl::backwardImpl(stview, mudyn, mueq, dtview);
+#pragma omp barrier
+#pragma omp single
+      {
+        assembleCondensedSystem(mudyn);
+        Eigen::setNbThreads(0);
+        symmetricBlockTridiagSolve(condensedKktSystem.subdiagonal,
+                                   condensedKktSystem.diagonal,
+                                   condensedKktSystem.superdiagonal,
+                                   condensedKktRhs, condensedKktSystem.facs);
+      }
     }
 
-    Eigen::setNbThreads(0);
-    assembleCondensedSystem(mudyn);
     ALIGATOR_NOMALLOC_END;
-    ret &= symmetricBlockTridiagSolve(condensedKktSystem.subdiagonal,
-                                      condensedKktSystem.diagonal,
-                                      condensedKktSystem.superdiagonal,
-                                      condensedKktRhs, condensedKktSystem.facs);
-    return ret;
+    return true;
   }
 
   struct condensed_system_t {
@@ -197,8 +198,9 @@ public:
     }
     Eigen::setNbThreads(1);
 
-    // #pragma omp parallel for schedule(static, 1) num_threads(numThreads)
-    for (uint i = 0; i < numThreads; i++) {
+#pragma omp parallel num_threads(numThreads)
+    {
+      size_t i = omp::get_thread_id();
       auto xsview = make_span_from_indices(xs, splitIdx[i], splitIdx[i + 1]);
       auto usview = make_span_from_indices(us, splitIdx[i], splitIdx[i + 1]);
       auto vsview = make_span_from_indices(vs, splitIdx[i], splitIdx[i + 1]);
