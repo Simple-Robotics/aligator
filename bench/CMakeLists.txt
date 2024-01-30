@@ -27,10 +27,8 @@ endfunction()
 
 create_bench("lqr.cpp" FALSE)
 if(BUILD_CROCODDYL_COMPAT)
-  # create_bench("croc-talos-arm.cpp" TRUE)
-  # target_add_example_robot_data(bench-croc-talos-arm)
-  create_bench("multithreading.cpp" TRUE)
-  target_add_example_robot_data(bench-multithreading)
+  create_bench("croc-talos-arm.cpp" TRUE)
+  target_add_example_robot_data(bench-croc-talos-arm)
 endif()
 
 create_gar_bench("gar.cpp")
