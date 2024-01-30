@@ -41,7 +41,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     }
 
     knots.emplace_back(internal::problem_last_ndx_helper(problem), 0,
-                       problem.term_cstrs_.totalDim());
+                       problem.term_cstrs_.totalDim(), 0);
   }
 
   for (std::size_t i = 0; i < nsteps; i++) {
