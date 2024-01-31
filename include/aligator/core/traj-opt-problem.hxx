@@ -70,10 +70,12 @@ Scalar TrajOptProblemTpl<Scalar>::evaluate(
 
   auto &sds = prob_data.stage_data;
 
-#pragma omp parallel for num_threads(num_threads)
+  Eigen::setNbThreads(1);
+#pragma omp parallel for num_threads(num_threads) schedule(auto)
   for (std::size_t i = 0; i < nsteps; i++) {
     stages_[i]->evaluate(xs[i], us[i], xs[i + 1], *sds[i]);
   }
+  Eigen::setNbThreads(0);
 
   term_cost_->evaluate(xs[nsteps], unone_, *prob_data.term_cost_data);
 
@@ -103,10 +105,12 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
 
   auto &sds = prob_data.stage_data;
 
-#pragma omp parallel for num_threads(num_threads)
+  Eigen::setNbThreads(1);
+#pragma omp parallel for num_threads(num_threads) schedule(auto)
   for (std::size_t i = 0; i < nsteps; i++) {
     stages_[i]->computeDerivatives(xs[i], us[i], xs[i + 1], *sds[i]);
   }
+  Eigen::setNbThreads(0);
 
   if (term_cost_) {
     term_cost_->computeGradients(xs[nsteps], unone_, *prob_data.term_cost_data);

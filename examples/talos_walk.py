@@ -300,8 +300,8 @@ solver.filter.beta = 1e-5
 solver.force_initial_condition = True
 solver.reg_min = 1e-6
 solver.linear_solver_choice = aligator.LQ_SOLVER_PARALLEL  # LQ_SOLVER_SERIAL
-solver.setup(problem)
 solver.setNumThreads(args.num_threads)
+solver.setup(problem)
 
 us_init = [np.zeros(nu)] * nsteps
 xs_init = [x0] * (nsteps + 1)
