@@ -128,7 +128,7 @@ template <typename Scalar> struct ProximalRiccatiKernel {
                  const std::optional<ConstVectorRef> &theta_);
 
   inline static void stageKernelSolve(const KnotType &model, StageFactorType &d,
-                                      value_t *vn, const Scalar mudyn,
+                                      value_t &vn, const Scalar mudyn,
                                       const Scalar mueq);
 
   /// Forward sweep.

@@ -101,14 +101,18 @@ public:
           snprintf(thrdname, 16, "thread%d[c%d]", int(i), cpu);
           tracy::SetThreadName(thrdname);
           auto [beg, end] = get_work(N, i, numThreads);
-          end -= 1;
-          Impl::stageKernelSolve(stages[end], datas[end], nullptr, mudyn, mueq);
-          int _t;
-          for (_t = int(end) - 1; _t >= int(beg); --_t) {
-            auto t = static_cast<size_t>(_t);
-            auto &vn = datas[t + 1].vm;
-            Impl::stageKernelSolve(stages[t], datas[t], &vn, mudyn, mueq);
-          }
+          boost::span<const KnotType> stview =
+              make_span_from_indices(stages, beg, end);
+          boost::span<StageFactor<Scalar>> dtview =
+              make_span_from_indices(datas, beg, end);
+          Impl::backwardImpl(stview, mudyn, mueq, dtview);
+          // end -= 1;
+          // Impl::stageKernelSolve(stages[end], datas[end], nullptr, mudyn,
+          // mueq); int _t; for (_t = int(end) - 1; _t >= int(beg); --_t) {
+          //   auto t = static_cast<size_t>(_t);
+          //   auto &vn = datas[t + 1].vm;
+          //   Impl::stageKernelSolve(stages[t], datas[t], &vn, mudyn, mueq);
+          // }
         });
 
     assembleCondensedSystem(mudyn);
