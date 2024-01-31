@@ -42,5 +42,5 @@ enum Support { LEFT, RIGHT, DOUBLE };
 
 void makeTalosReduced(Model &model_complete, Model &model, Eigen::VectorXd &q0);
 
-std::shared_ptr<TrajOptProblem>
-defineLocomotionProblem(const std::size_t &T_ss, const std::size_t &T_ds);
+TrajOptProblem defineLocomotionProblem(const std::size_t T_ss,
+                                       const std::size_t T_ds);

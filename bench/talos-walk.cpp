@@ -40,13 +40,13 @@ static void BM_aligator(benchmark::State &state) {
   const double mu_init = 1e-8;
 
   Eigen::VectorXd u0 = Eigen::VectorXd::Zero(22);
-  xs_i.assign(nsteps + 1, problem->getInitState());
+  xs_i.assign(nsteps + 1, problem.getInitState());
   us_i.assign(nsteps, u0);
 
   SolverProxDDPTpl<double> solver(TOL, mu_init, 0., maxiters, aligator::QUIET);
 
   solver.setNumThreads(DEFAULT_NUM_THREADS);
-  solver.setup(*problem);
+  solver.setup(problem);
   solver.rollout_type_ = aligator::RolloutType::LINEAR;
   solver.linear_solver_choice = lqsc;
   solver.force_initial_condition_ = true;
@@ -54,7 +54,7 @@ static void BM_aligator(benchmark::State &state) {
   solver.setNumThreads(num_threads);
 
   for (auto _ : state) {
-    bool conv = solver.run(*problem, xs_i, us_i);
+    bool conv = solver.run(problem, xs_i, us_i);
     if (!conv)
       state.SkipWithError("solver did not converge.");
   }
@@ -73,16 +73,16 @@ static void BM_FDDP(benchmark::State &state) {
   std::vector<VectorXd> us_i;
 
   Eigen::VectorXd u0 = Eigen::VectorXd::Zero(22);
-  xs_i.assign(nsteps + 1, problem->getInitState());
+  xs_i.assign(nsteps + 1, problem.getInitState());
   us_i.assign(nsteps, u0);
 
   SolverFDDPTpl<double> solver(TOL, aligator::QUIET);
 
-  solver.setup(*problem);
+  solver.setup(problem);
   solver.force_initial_condition_ = true;
 
   for (auto _ : state) {
-    bool conv = solver.run(*problem, xs_i, us_i);
+    bool conv = solver.run(problem, xs_i, us_i);
     if (!conv)
       state.SkipWithError("solver did not converge.");
   }

@@ -93,22 +93,24 @@ create_dynamics(std::shared_ptr<MultibodyPhaseSpace> &stage_space,
   return dyn_model;
 }
 
-std::shared_ptr<TrajOptProblem>
-defineLocomotionProblem(const std::size_t &T_ss, const std::size_t &T_ds) {
-  auto rmodel = std::make_shared<pin::Model>();
-  auto rmodel_complete = std::make_shared<pin::Model>();
+TrajOptProblem defineLocomotionProblem(const std::size_t T_ss,
+                                       const std::size_t T_ds) {
+  pin::Model rmodel;
   Eigen::VectorXd q0;
-  makeTalosReduced(*rmodel_complete, *rmodel, q0);
-  pin::Data rdata = pin::Data(*rmodel);
+  {
+    pin::Model rmodel_complete;
+    makeTalosReduced(rmodel_complete, rmodel, q0);
+  }
+  pin::Data rdata = pin::Data(rmodel);
 
-  pin::forwardKinematics(*rmodel, rdata, q0);
-  pin::updateFramePlacements(*rmodel, rdata);
-  const int nq = rmodel->nq;
-  const int nv = rmodel->nv;
+  pin::forwardKinematics(rmodel, rdata, q0);
+  pin::updateFramePlacements(rmodel, rdata);
+  const int nq = rmodel.nq;
+  const int nv = rmodel.nv;
   const int nu = nv - 6;
 
   Eigen::VectorXd x0(nq + nv);
-  x0 << q0, Eigen::VectorXd::Zero(rmodel->nv);
+  x0 << q0, Eigen::VectorXd::Zero(rmodel.nv);
   Eigen::VectorXd u0 = Eigen::VectorXd::Zero(nu);
 
   Eigen::MatrixXd w_x(nv * 2, nv * 2);
@@ -143,19 +145,19 @@ defineLocomotionProblem(const std::size_t &T_ss, const std::size_t &T_ds) {
   foot_frame_name.push_back("left_sole_link");
   foot_frame_name.push_back("right_sole_link");
   std::vector<std::size_t> foot_frame_ids;
-  foot_frame_ids.push_back(rmodel->getFrameId(foot_frame_name[0]));
-  foot_frame_ids.push_back(rmodel->getFrameId(foot_frame_name[1]));
+  foot_frame_ids.push_back(rmodel.getFrameId(foot_frame_name[0]));
+  foot_frame_ids.push_back(rmodel.getFrameId(foot_frame_name[1]));
   std::vector<std::size_t> foot_joint_ids;
-  foot_joint_ids.push_back(rmodel->frames[foot_frame_ids[0]].parentJoint);
-  foot_joint_ids.push_back(rmodel->frames[foot_frame_ids[1]].parentJoint);
+  foot_joint_ids.push_back(rmodel.frames[foot_frame_ids[0]].parentJoint);
+  foot_joint_ids.push_back(rmodel.frames[foot_frame_ids[1]].parentJoint);
 
   std::vector<pin::RigidConstraintModel> constraint_models;
 
   for (std::size_t i = 0; i < 2; i++) {
-    pin::SE3 pl1 = rmodel->frames[foot_frame_ids[i]].placement;
+    pin::SE3 pl1 = rmodel.frames[foot_frame_ids[i]].placement;
     pin::SE3 pl2 = rdata.oMf[foot_frame_ids[i]];
     pin::RigidConstraintModel constraint_model = pin::RigidConstraintModel(
-        pin::ContactType::CONTACT_6D, *rmodel, foot_joint_ids[i], pl1, 0, pl2,
+        pin::ContactType::CONTACT_6D, rmodel, foot_joint_ids[i], pl1, 0, pl2,
         pin::LOCAL_WORLD_ALIGNED);
     constraint_model.corrector.Kp << 0, 0, 100, 0, 0, 0;
     constraint_model.corrector.Kd << 50, 50, 50, 50, 50, 50;
@@ -188,12 +190,10 @@ defineLocomotionProblem(const std::size_t &T_ss, const std::size_t &T_ds) {
     Support ph = *phase;
     ts += 1;
 
-    const std::shared_ptr<Model> cmodel = std::make_shared<Model>(*rmodel);
-    std::shared_ptr<MultibodyPhaseSpace> stage_space =
-        std::make_shared<MultibodyPhaseSpace>(*cmodel);
+    const auto cmodel = std::make_shared<Model>(rmodel);
+    auto stage_space = std::make_shared<MultibodyPhaseSpace>(*cmodel);
 
-    std::shared_ptr<CostStack> rcost =
-        std::make_shared<CostStack>(stage_space, nu);
+    auto rcost = std::make_shared<CostStack>(stage_space, nu);
 
     rcost->addCost(
         std::make_shared<QuadraticStateCost>(stage_space, nu, x0, w_x));
@@ -226,14 +226,10 @@ defineLocomotionProblem(const std::size_t &T_ss, const std::size_t &T_ds) {
         rcost, create_dynamics(stage_space, ph, actuation_matrix, prox_settings,
                                constraint_models)));
   }
-  std::shared_ptr<MultibodyPhaseSpace> ter_space =
-      std::make_shared<MultibodyPhaseSpace>(*rmodel);
-  std::shared_ptr<CostStack> term_cost =
-      std::make_shared<CostStack>(ter_space, nu);
+  auto ter_space = std::make_shared<MultibodyPhaseSpace>(rmodel);
+  auto term_cost = std::make_shared<CostStack>(ter_space, nu);
   term_cost->addCost(
       std::make_shared<QuadraticStateCost>(ter_space, nu, x0, w_x));
 
-  std::shared_ptr<TrajOptProblem> problem =
-      std::make_shared<TrajOptProblem>(x0, stage_models, term_cost);
-  return problem;
+  return TrajOptProblem(x0, stage_models, term_cost);
 }

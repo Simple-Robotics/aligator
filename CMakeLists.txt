@@ -303,8 +303,7 @@ if(BUILD_CROCODDYL_COMPAT)
   add_library(croc_talos_arm_utils STATIC ${CMAKE_SOURCE_DIR}/examples/croc-talos-arm.cpp
                                           ${CMAKE_SOURCE_DIR}/examples/croc-talos-arm.hpp)
   target_include_directories(croc_talos_arm_utils PUBLIC ${CMAKE_SOURCE_DIR}/examples)
-  target_link_libraries(croc_talos_arm_utils PUBLIC ${PROJECT_NAME} Boost::boost
-                                                    crocoddyl::crocoddyl)
+  target_link_libraries(croc_talos_arm_utils PUBLIC ${PROJECT_NAME} crocoddyl::crocoddyl)
   target_add_example_robot_data(croc_talos_arm_utils)
 endif()
 
@@ -318,8 +317,7 @@ if(BUILD_EXAMPLES)
   add_library(talos_walk_utils STATIC ${CMAKE_SOURCE_DIR}/examples/talos-walk-utils.cpp
                                       ${CMAKE_SOURCE_DIR}/examples/talos-walk-utils.hpp)
   target_include_directories(talos_walk_utils PUBLIC ${CMAKE_SOURCE_DIR}/examples)
-  target_link_libraries(talos_walk_utils PUBLIC ${PROJECT_NAME} Boost::boost
-                                                proxsuite-nlp::proxsuite-nlp)
+  target_link_libraries(talos_walk_utils PUBLIC ${PROJECT_NAME})
   target_add_example_robot_data(talos_walk_utils)
   add_subdirectory(examples)
 endif()

@@ -26,16 +26,16 @@ int main(int, char **) {
                                   aligator::VERBOSE);
   std::vector<VectorXd> xs_i, us_i;
   Eigen::VectorXd u0 = Eigen::VectorXd::Zero(22);
-  xs_i.assign(nsteps + 1, problem->getInitState());
+  xs_i.assign(nsteps + 1, problem.getInitState());
   us_i.assign(nsteps, u0);
 
-  solver.setup(*problem);
+  solver.setup(problem);
   solver.rollout_type_ = aligator::RolloutType::LINEAR;
   solver.sa_strategy = aligator::StepAcceptanceStrategy::FILTER;
   solver.filter_.beta_ = 1e-5;
   solver.force_initial_condition_ = true;
   solver.reg_min = 1e-6;
-  solver.run(*problem, xs_i, us_i);
+  solver.run(problem, xs_i, us_i);
 
   auto &res = solver.results_;
   fmt::print("Results: {}\n", res);
