@@ -114,7 +114,7 @@ bool lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
                     Scalar mueq, typename math_types<Scalar>::MatrixXs &mat,
                     typename math_types<Scalar>::VectorXs &rhs) {
   using knot_t = LQRKnotTpl<Scalar>;
-  const std::vector<knot_t> &knots = problem.stages;
+  const auto &knots = problem.stages;
   size_t N = (size_t)problem.horizon();
 
   if (!problem.isInitialized())

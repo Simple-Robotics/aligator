@@ -39,7 +39,7 @@ using context::MatrixXs;
 using RowMatrixXs = Eigen::Transpose<MatrixXs>::PlainMatrix;
 using context::VectorXs;
 
-using knot_vec_t = std::vector<knot_t>;
+using knot_vec_t = lqr_t::KnotVector;
 
 bp::dict lqr_sol_initialize_wrap(const lqr_t &problem) {
   bp::dict out;

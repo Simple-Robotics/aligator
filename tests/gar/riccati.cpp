@@ -42,13 +42,12 @@ BOOST_AUTO_TEST_CASE(short_horz_pb) {
   }
 
   uint N = 8;
-
-  std::vector<knot_t> knots(N + 1, base_knot);
+  problem_t::KnotVector knots(N + 1, base_knot);
   knots[4] = init_knot(nu);
   knots[4].D.setIdentity();
   knots[4].d.setConstant(0.1);
   knots[N] = knot1;
-  LQRProblemTpl<double> prob(knots, nx);
+  problem_t prob(knots, nx);
   prob.g0 = -x0;
   prob.G0.setIdentity();
   prox_riccati_t solver{prob};

@@ -129,7 +129,7 @@ public:
     std::vector<MatrixXs> &diagonal = condensedKktSystem.diagonal;
     std::vector<MatrixXs> &superdiagonal = condensedKktSystem.superdiagonal;
 
-    const std::vector<KnotType> &stages = problem_->stages;
+    const auto &stages = problem_->stages;
 
     diagonal[0].setZero();
     diagonal[0].diagonal().setConstant(-mudyn);

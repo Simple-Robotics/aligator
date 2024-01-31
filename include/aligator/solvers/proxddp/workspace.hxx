@@ -33,7 +33,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   active_constraints.resize(nsteps + 1);
   constraintProjJacobians.resize(nsteps + 1);
 
-  std::vector<KnotType> knots;
+  using LQRProblemType = gar::LQRProblemTpl<Scalar>;
+  typename LQRProblemType::KnotVector knots;
   {
     for (size_t i = 0; i < nsteps; i++) {
       const StageModel &stage = *problem.stages_[i];
@@ -68,7 +69,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 
   // initial condition
   long nc0 = (long)problem.init_condition_->nr;
-  lqr_problem = gar::LQRProblemTpl<Scalar>(knots, nc0);
+  lqr_problem = LQRProblemType(knots, nc0);
   std::tie(dxs, dus, dvs, dlams) =
       gar::lqrInitializeSolution(lqr_problem); // lqr subproblem variables
   Lxs_ = dxs;

@@ -18,7 +18,7 @@ std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem, uint t0,
   uint N = (uint)problem.horizon();
   assert(t0 < N);
 
-  std::vector<knot_t> knots1, knots2;
+  problem_t::KnotVector knots1, knots2;
   uint nx_t0 = problem.stages[t0].nx;
 
   for (uint i = 0; i < t0; i++)

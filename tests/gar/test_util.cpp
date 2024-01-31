@@ -15,7 +15,7 @@ problem_t generate_problem(const ConstVectorRef &x0, uint horz, uint nx,
                            uint nu, uint nth) {
   assert(x0.size() == nx);
 
-  std::vector<knot_t> knots(horz + 1);
+  problem_t::KnotVector knots(horz + 1);
   uint wishartDof = nx + nu + 1;
 
   auto gen = [&](uint nu) {

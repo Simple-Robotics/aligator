@@ -2,6 +2,7 @@
 #pragma once
 
 #include "aligator/math.hpp"
+#include <tbb/cache_aligned_allocator.h>
 
 #include <optional>
 
@@ -79,7 +80,10 @@ template <typename Scalar> struct LQRKnotTpl {
 
 template <typename Scalar> struct LQRProblemTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  std::vector<LQRKnotTpl<Scalar>> stages;
+  using KnotType = LQRKnotTpl<Scalar>;
+  using KnotVector =
+      std::vector<KnotType, tbb::cache_aligned_allocator<KnotType>>;
+  KnotVector stages;
   MatrixXs G0;
   VectorXs g0;
 
@@ -88,13 +92,11 @@ template <typename Scalar> struct LQRProblemTpl {
 
   LQRProblemTpl() : stages(), G0(), g0() {}
 
-  LQRProblemTpl(std::vector<LQRKnotTpl<Scalar>> &&knots, long nc0)
-      : stages(knots), G0(), g0(nc0) {
+  LQRProblemTpl(KnotVector &&knots, long nc0) : stages(knots), G0(), g0(nc0) {
     initialize();
   }
 
-  LQRProblemTpl(const std::vector<LQRKnotTpl<Scalar>> &knots, long nc0)
-      : stages(knots), G0(), g0(nc0) {
+  LQRProblemTpl(KnotVector &knots, long nc0) : stages(knots), G0(), g0(nc0) {
     initialize();
   }
 

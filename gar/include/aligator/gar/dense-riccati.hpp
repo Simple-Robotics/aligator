@@ -88,7 +88,7 @@ public:
 
   bool backward(const Scalar mudyn, const Scalar mueq) {
     ZoneScoped;
-    const std::vector<KnotType> &stages = problem_->stages;
+    const auto &stages = problem_->stages;
 
     const uint N = (uint)problem_->horizon();
     {
