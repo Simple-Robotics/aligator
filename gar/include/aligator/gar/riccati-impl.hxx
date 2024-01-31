@@ -16,6 +16,8 @@ bool ProximalRiccatiKernel<Scalar>::backwardImpl(
     return true;
   uint N = (uint)(datas.size() - 1);
   stageKernelSolve(stages[N], datas[N], nullptr, mudyn, mueq);
+  if (N == 0)
+    return true;
 
   uint t = N - 1;
   while (true) {

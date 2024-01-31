@@ -85,6 +85,25 @@ BOOST_AUTO_TEST_CASE(short_horz_pb) {
   }
 }
 
+BOOST_AUTO_TEST_CASE(one_knot_prob) {
+  uint nx = 2;
+  uint nu = 2;
+  Eigen::VectorXd x0;
+  x0.setZero(nx);
+  auto problem = generate_problem(x0, 0, nx, nu);
+  prox_riccati_t solver(problem);
+  auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
+  BOOST_CHECK_EQUAL(xs.size(), 1);
+  BOOST_CHECK_EQUAL(us.size(), 0);
+  BOOST_CHECK_EQUAL(lbdas.size(), 1);
+  double mu = 1e-13;
+  solver.backward(mu, mu);
+  solver.forward(xs, us, vs, lbdas);
+
+  KktError err = computeKktError(problem, xs, us, vs, lbdas);
+  BOOST_CHECK_LE(err.max, 1e-10);
+}
+
 BOOST_AUTO_TEST_CASE(random_long_problem) {
   Eigen::Vector2d x0 = {0.1, 1.0};
   uint nx = 2;
