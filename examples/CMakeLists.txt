@@ -23,7 +23,9 @@ endfunction()
 
 create_example(se2-car.cpp)
 create_example(clqr.cpp)
-create_example_with_walk(talos-walk.cpp)
+if(PINOCCHIO_V3)
+  create_example_with_walk(talos-walk.cpp)
+endif()
 
 if(BUILD_CROCODDYL_COMPAT)
   create_example_with_croco(talos-arm.cpp)

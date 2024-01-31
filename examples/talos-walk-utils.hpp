@@ -3,8 +3,6 @@
 
 #include "aligator/core/traj-opt-problem.hpp"
 
-#include <boost/shared_ptr.hpp>
-
 #include <Eigen/Core>
 
 #include <pinocchio/multibody/fwd.hpp>

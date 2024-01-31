@@ -313,12 +313,22 @@ if(BUILD_BENCHMARKS OR BUILD_TESTING)
   set_target_properties(gar_test_utils PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "tests/")
 endif()
 
-if(BUILD_EXAMPLES)
+if(${pinocchio_VERSION} VERSION_GREATER "2.9.0")
+  set(PINOCCHIO_V3 True)
+endif()
+
+if(BUILD_EXAMPLES AND PINOCCHIO_V3)
   add_library(talos_walk_utils STATIC ${CMAKE_SOURCE_DIR}/examples/talos-walk-utils.cpp
                                       ${CMAKE_SOURCE_DIR}/examples/talos-walk-utils.hpp)
   target_include_directories(talos_walk_utils PUBLIC ${CMAKE_SOURCE_DIR}/examples)
   target_link_libraries(talos_walk_utils PUBLIC ${PROJECT_NAME})
   target_add_example_robot_data(talos_walk_utils)
+  function(target_add_talos_walk target)
+    target_link_libraries(${target} PRIVATE talos_walk_utils)
+  endfunction()
+endif()
+
+if(BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
