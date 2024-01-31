@@ -7,6 +7,7 @@
 #include <proxsuite-nlp/modelling/constraints.hpp>
 
 #include <boost/test/unit_test.hpp>
+#include <boost/random.hpp>
 
 using namespace aligator;
 
@@ -21,10 +22,10 @@ using context::TrajOptProblem;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-static std::mt19937_64 urng{42};
+static boost::random::mt19937_64 urng{42};
 struct NormalGen {
   double operator()() const { return norm(urng); }
-  mutable std::normal_distribution<double> norm;
+  mutable boost::random::normal_distribution<double> norm;
 };
 
 BOOST_AUTO_TEST_CASE(lqr_proxddp) {
