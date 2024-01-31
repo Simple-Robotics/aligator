@@ -168,6 +168,12 @@ public:
                    HessianApprox hess_approx = HessianApprox::GAUSS_NEWTON);
 
   void setNumThreads(const std::size_t num_threads) {
+    if (linearSolver_) {
+      ALIGATOR_WARNING(
+          "[setNumThreads]",
+          "Linear solver already set: setNumThreads() should be called before "
+          "you call setup() if you want to use the parallel linear solver.");
+    }
     num_threads_ = num_threads;
     omp::set_default_options(num_threads);
   }
