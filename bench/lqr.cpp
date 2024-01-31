@@ -22,8 +22,8 @@ using Eigen::VectorXd;
 
 const std::size_t max_iters = 2;
 
-TrajOptProblem define_problem(const std::size_t nsteps, const int dim = 20,
-                              const int nu = 20) {
+TrajOptProblem define_problem(const std::size_t nsteps, const int dim = 56,
+                              const int nu = 22) {
   MatrixXd A(dim, dim);
   MatrixXd B(dim, nu);
   VectorXd c_(dim);

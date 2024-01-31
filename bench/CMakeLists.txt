@@ -11,7 +11,8 @@ function(create_bench exfile croc)
   target_include_directories(${exname} PRIVATE ../examples)
   target_link_libraries(${exname} PRIVATE benchmark::benchmark)
   if(croc)
-    target_link_libraries(${exname} PUBLIC aligator::croc_compat croc_talos_arm_utils)
+    target_link_libraries(${exname} PUBLIC aligator::croc_compat croc_talos_arm_utils
+                                           talos_walk_utils)
   endif(croc)
 endfunction()
 
@@ -31,6 +32,8 @@ create_bench("se2-car.cpp" FALSE)
 if(BUILD_CROCODDYL_COMPAT)
   create_bench("croc-talos-arm.cpp" TRUE)
   target_add_example_robot_data(bench-croc-talos-arm)
+  create_bench("talos-walk.cpp" TRUE)
+  target_add_example_robot_data(bench-talos-walk)
 endif()
 
 create_gar_bench("gar.cpp")

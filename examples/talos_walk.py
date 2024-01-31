@@ -67,28 +67,28 @@ w_x = np.array(
         10000,
         10000,
         10000,  # Base pos/ori
-        10,
-        10,
-        10,
-        10,
-        10,
-        10,  # Left leg
-        10,
-        10,
-        10,
-        10,
-        10,
-        10,  # Right leg
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,  # Left leg
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,  # Right leg
         1000,
         1000,  # Torso
-        1,
-        1,
-        1,
-        1,  # Left arm
-        1,
-        1,
-        1,
-        1,  # Right arm
+        100,
+        100,
+        100,
+        100,  # Left arm
+        100,
+        100,
+        100,
+        100,  # Right arm
         100,
         100,
         100,
@@ -121,7 +121,7 @@ w_x = np.array(
 )
 w_x = np.diag(w_x)
 w_u = np.eye(nu) * 1e-3
-w_LFRF = 10000 * np.eye(6)
+w_LFRF = 100000 * np.eye(6)
 w_com = 10000 * np.ones(3)
 w_com = np.diag(w_com)
 

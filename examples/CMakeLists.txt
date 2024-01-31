@@ -16,8 +16,14 @@ function(create_example_with_croco exfile)
   target_link_libraries(${exname} PRIVATE aligator::croc_compat croc_talos_arm_utils)
 endfunction()
 
+function(create_example_with_walk exfile)
+  create_example(${exfile})
+  target_link_libraries(${exname} PRIVATE talos_walk_utils)
+endfunction()
+
 create_example(se2-car.cpp)
 create_example(clqr.cpp)
+create_example_with_walk(talos-walk.cpp)
 
 if(BUILD_CROCODDYL_COMPAT)
   create_example_with_croco(talos-arm.cpp)

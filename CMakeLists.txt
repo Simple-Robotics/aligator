@@ -315,6 +315,12 @@ if(BUILD_BENCHMARKS OR BUILD_TESTING)
 endif()
 
 if(BUILD_EXAMPLES)
+  add_library(talos_walk_utils STATIC ${CMAKE_SOURCE_DIR}/examples/talos-walk-utils.cpp
+                                      ${CMAKE_SOURCE_DIR}/examples/talos-walk-utils.hpp)
+  target_include_directories(talos_walk_utils PUBLIC ${CMAKE_SOURCE_DIR}/examples)
+  target_link_libraries(talos_walk_utils PUBLIC ${PROJECT_NAME} Boost::boost
+                                                proxsuite-nlp::proxsuite-nlp)
+  target_add_example_robot_data(talos_walk_utils)
   add_subdirectory(examples)
 endif()
 
