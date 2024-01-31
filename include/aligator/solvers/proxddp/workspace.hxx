@@ -93,29 +93,24 @@ template <typename Scalar> void WorkspaceTpl<Scalar>::cycleLeft() {
   rotate_vec_left(Lds_);
   rotate_vec_left(Lvs_);
 
-  // number of "tail" multipliers that shouldn't be in the cycle
-  long n_tail = 1;
-  if (lams_plus.size() < (nsteps + 2)) {
-    n_tail = 0;
-  }
-
-  rotate_vec_left(trial_lams, 1, n_tail);
-  rotate_vec_left(lams_plus, 1, n_tail);
-  rotate_vec_left(lams_pdal, 1, n_tail);
-  rotate_vec_left(shifted_constraints, 1, n_tail);
-  rotate_vec_left(constraintProjJacobians, 1, n_tail);
-  rotate_vec_left(active_constraints, 1, n_tail);
+  rotate_vec_left(trial_lams, 1);
+  rotate_vec_left(lams_plus, 1);
+  rotate_vec_left(lams_pdal, 1);
+  rotate_vec_left(shifted_constraints, 0, 1);
+  rotate_vec_left(constraintProjJacobians, 0, 1);
+  rotate_vec_left(active_constraints, 0, 1);
 
   rotate_vec_left(dxs);
   rotate_vec_left(dus);
-  rotate_vec_left(dvs);
-  rotate_vec_left(dlams, 1, n_tail);
+  rotate_vec_left(dvs, 0, 1);
+  rotate_vec_left(dlams, 1);
 
   rotate_vec_left(prev_xs);
   rotate_vec_left(prev_us);
-  rotate_vec_left(prev_lams, 1, n_tail);
+  rotate_vec_left(prev_vs, 0, 1);
+  rotate_vec_left(prev_lams, 1);
 
-  rotate_vec_left(stage_infeasibilities, 1, n_tail);
+  rotate_vec_left(stage_infeasibilities, 0, 1);
 }
 
 template <typename Scalar>
