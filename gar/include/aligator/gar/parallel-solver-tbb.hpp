@@ -2,6 +2,7 @@
 
 #include "riccati-base.hpp"
 #include "block-tridiagonal-solver.hpp"
+#include "work.hpp"
 #include <tbb/global_control.h>
 #include <tbb/cache_aligned_allocator.h>
 #include <tbb/parallel_for.h>
@@ -40,22 +41,18 @@ public:
       : Base(), numThreads(num_threads),
         global_(tbb::global_control::max_allowed_parallelism,
                 (size_t)numThreads),
-        splitIdx(num_threads + 1), problem_(&problem) {
+        problem_(&problem) {
     ZoneScoped;
 
     uint N = (uint)problem.horizon();
     for (uint i = 0; i < num_threads; i++) {
-      splitIdx[i] = i * (N + 1) / num_threads;
-    }
-    splitIdx[num_threads] = N + 1;
-    for (uint i = 0; i < num_threads; i++) {
-      allocateLeg(splitIdx[i], splitIdx[i + 1], i == (num_threads - 1));
+      auto [i0, i1] = get_work(N, i, num_threads);
+      allocateLeg(i0, i1, i == (num_threads - 1));
     }
 
     std::vector<long> dims{problem.nc0(), problem.stages.front().nx};
-    for (size_t i = 0; i < num_threads - 1; i++) {
-      uint i0 = splitIdx[i];
-      uint i1 = splitIdx[i + 1];
+    for (uint i = 0; i < num_threads - 1; i++) {
+      auto [i0, i1] = get_work(N, i, num_threads);
       dims.push_back(problem.stages[i0].nx);
       dims.push_back(problem.stages[i1 - 1].nx);
     }
@@ -63,18 +60,6 @@ public:
     initializeTridiagSystem(dims);
 
     assert(datas.size() == (N + 1));
-    assert(checkIndices());
-  }
-
-  inline bool checkIndices() const {
-    if (splitIdx[0] != 0)
-      return false;
-
-    for (uint i = 0; i < numThreads; i++) {
-      if (splitIdx[i] >= splitIdx[i + 1])
-        return false;
-    }
-    return true;
   }
 
   void allocateLeg(uint start, uint end, bool last_leg) {
@@ -105,26 +90,32 @@ public:
     ALIGATOR_NOMALLOC_BEGIN;
     ZoneScopedN("tbb_parallel_backward");
     Eigen::setNbThreads(1);
-    auto &splitIdx = this->splitIdx;
     auto &stages = problem_->stages;
     auto &datas = this->datas;
-    tbb::parallel_for(0U, numThreads,
-                      [numThreads = this->numThreads, splitIdx, mueq, mudyn,
-                       &stages, &datas](uint i) {
-                        char *thrdname = new char[16];
-                        int cpu = sched_getcpu();
-                        snprintf(thrdname, 16, "thread%d[c%d]", int(i), cpu);
-                        tracy::SetThreadName(thrdname);
-                        uint beg = splitIdx[i];
-                        uint end = splitIdx[i + 1];
-                        boost::span<const KnotType> stview =
-                            make_span_from_indices(stages, beg, end);
-                        if (i + 1 < numThreads)
-                          setupKnot(stages[end - 1]);
-                        boost::span<StageFactor<Scalar>> dtview =
-                            make_span_from_indices(datas, beg, end);
-                        Impl::backwardImpl(stview, mudyn, mueq, dtview);
-                      });
+
+    uint N = static_cast<uint>(problem_->horizon());
+    for (uint i = 0; i < numThreads - 1; i++) {
+      auto [_, end] = get_work(N, i, numThreads);
+      setupKnot(stages[end - 1]);
+    }
+
+    tbb::parallel_for(
+        0U, numThreads,
+        [N, numThreads = numThreads, mueq, mudyn, &stages, &datas](uint i) {
+          char *thrdname = new char[16];
+          int cpu = sched_getcpu();
+          snprintf(thrdname, 16, "thread%d[c%d]", int(i), cpu);
+          tracy::SetThreadName(thrdname);
+          auto [beg, end] = get_work(N, i, numThreads);
+          end -= 1;
+          Impl::stageKernelSolve(stages[end], datas[end], nullptr, mudyn, mueq);
+          int _t;
+          for (_t = int(end) - 1; _t >= int(beg); --_t) {
+            auto t = static_cast<size_t>(_t);
+            auto &vn = datas[t + 1].vm;
+            Impl::stageKernelSolve(stages[t], datas[t], &vn, mudyn, mueq);
+          }
+        });
 
     assembleCondensedSystem(mudyn);
     Eigen::setNbThreads(0);
@@ -152,6 +143,7 @@ public:
     std::vector<MatrixXs> &superdiagonal = condensedKktSystem.superdiagonal;
 
     const std::vector<KnotType> &stages = problem_->stages;
+    uint N = static_cast<uint>(problem_->horizon());
 
     diagonal[0].setZero();
     diagonal[0].diagonal().setConstant(-mudyn);
@@ -161,9 +153,8 @@ public:
     superdiagonal[1] = datas[0].vm.Vxt;
 
     // fill in for all legs
-    for (size_t i = 0; i < numThreads - 1; i++) {
-      uint i0 = splitIdx[i];
-      uint i1 = splitIdx[i + 1];
+    for (uint i = 0; i < numThreads - 1; i++) {
+      auto [i0, i1] = get_work(N, i, numThreads);
 
       size_t ip1 = i + 1;
       diagonal[2 * ip1] = datas[i0].vm.Vtt;
@@ -185,9 +176,8 @@ public:
     condensedKktRhs[0] = -problem_->g0;
     condensedKktRhs[1] = -datas[0].vm.pvec;
 
-    for (size_t i = 0; i < numThreads - 1; i++) {
-      uint i0 = splitIdx[i];
-      uint i1 = splitIdx[i + 1];
+    for (uint i = 0; i < numThreads - 1; i++) {
+      auto [i0, i1] = get_work(N, i, numThreads);
       size_t ip1 = i + 1;
       condensedKktRhs[2 * ip1] = -datas[i0].vm.vt;
       condensedKktRhs[2 * ip1 + 1] = -datas[i1].vm.pvec;
@@ -199,41 +189,34 @@ public:
                const std::optional<ConstVectorRef> & = std::nullopt) const {
     ALIGATOR_NOMALLOC_BEGIN;
     ZoneScopedN("tbb_parallel_forward");
-    for (size_t i = 0; i < numThreads; i++) {
-      uint i0 = splitIdx[i];
+    uint N = static_cast<uint>(problem_->horizon());
+    for (uint i = 0; i < numThreads; i++) {
+      auto [i0, _] = get_work(N, i, numThreads);
       lbdas[i0] = condensedKktRhs[2 * i];
       xs[i0] = condensedKktRhs[2 * i + 1];
     }
-    Eigen::setNbThreads(1);
 
-    auto &splitIdx = this->splitIdx;
     auto &stages = problem_->stages;
     auto &datas = this->datas;
-    tbb::parallel_for(
-        0U, numThreads,
-        [numThreads = this->numThreads, splitIdx, &xs, &us, &vs, &lbdas,
-         &stages, &datas](uint i) {
-          // size_t i = omp::get_thread_id();
-          auto xsview =
-              make_span_from_indices(xs, splitIdx[i], splitIdx[i + 1]);
-          auto usview =
-              make_span_from_indices(us, splitIdx[i], splitIdx[i + 1]);
-          auto vsview =
-              make_span_from_indices(vs, splitIdx[i], splitIdx[i + 1]);
-          auto lsview =
-              make_span_from_indices(lbdas, splitIdx[i], splitIdx[i + 1]);
-          auto stview =
-              make_span_from_indices(stages, splitIdx[i], splitIdx[i + 1]);
-          auto dsview =
-              make_span_from_indices(datas, splitIdx[i], splitIdx[i + 1]);
-          if (i == numThreads - 1) {
-            Impl::forwardImpl(stview, dsview, xsview, usview, vsview, lsview);
-          } else {
-            Impl::forwardImpl(stview, dsview, xsview, usview, vsview, lsview,
-                              lbdas[splitIdx[i + 1]]);
-          }
-        });
-    Eigen::setNbThreads(0);
+    tbb::parallel_for(0U, numThreads,
+                      [N, numThreads = numThreads, &xs, &us, &vs, &lbdas,
+                       &stages, &datas](uint i) {
+                        // size_t i = omp::get_thread_id();
+                        auto [beg, end] = get_work(N, i, numThreads);
+                        auto xsview = make_span_from_indices(xs, beg, end);
+                        auto usview = make_span_from_indices(us, beg, end);
+                        auto vsview = make_span_from_indices(vs, beg, end);
+                        auto lsview = make_span_from_indices(lbdas, beg, end);
+                        auto stview = make_span_from_indices(stages, beg, end);
+                        auto dsview = make_span_from_indices(datas, beg, end);
+                        if (i < numThreads - 1) {
+                          Impl::forwardImpl(stview, dsview, xsview, usview,
+                                            vsview, lsview, lbdas[end]);
+                        } else {
+                          Impl::forwardImpl(stview, dsview, xsview, usview,
+                                            vsview, lsview);
+                        }
+                      });
     ALIGATOR_NOMALLOC_END;
     return true;
   }
@@ -241,8 +224,6 @@ public:
   /// Number of parallel divisions in the problem: \f$J+1\f$ in the math.
   uint numThreads;
   tbb::global_control global_;
-  /// Indices at which the problem should be split.
-  std::vector<uint> splitIdx;
 
   /// Hold the compressed representation of the condensed KKT system
   condensed_system_t condensedKktSystem;

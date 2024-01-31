@@ -2,6 +2,7 @@
 
 #include "riccati-base.hpp"
 #include "block-tridiagonal-solver.hpp"
+#include "work.hpp"
 #include "aligator/threads.hpp"
 
 namespace aligator {
@@ -30,23 +31,18 @@ public:
   using BlkVec = BlkMatrix<VectorXs, -1, 1>;
 
   ParallelRiccatiSolver(LQRProblemTpl<Scalar> &problem, const uint num_threads)
-      : Base(), numThreads(num_threads), splitIdx(num_threads + 1),
-        problem_(&problem) {
+      : Base(), numThreads(num_threads), problem_(&problem) {
     ZoneScoped;
 
     uint N = (uint)problem.horizon();
     for (uint i = 0; i < num_threads; i++) {
-      splitIdx[i] = i * (N + 1) / num_threads;
-    }
-    splitIdx[num_threads] = N + 1;
-    for (uint i = 0; i < num_threads; i++) {
-      allocateLeg(splitIdx[i], splitIdx[i + 1], i == (num_threads - 1));
+      auto [start, end] = get_work(N, i, num_threads);
+      allocateLeg(start, end, i == (num_threads - 1));
     }
 
     std::vector<long> dims{problem.nc0(), problem.stages.front().nx};
-    for (size_t i = 0; i < num_threads - 1; i++) {
-      uint i0 = splitIdx[i];
-      uint i1 = splitIdx[i + 1];
+    for (uint i = 0; i < num_threads - 1; i++) {
+      auto [i0, i1] = get_work(N, i, num_threads);
       dims.push_back(problem.stages[i0].nx);
       dims.push_back(problem.stages[i1 - 1].nx);
     }
@@ -54,18 +50,6 @@ public:
     initializeTridiagSystem(dims);
 
     assert(datas.size() == (N + 1));
-    assert(checkIndices());
-  }
-
-  inline bool checkIndices() const {
-    if (splitIdx[0] != 0)
-      return false;
-
-    for (uint i = 0; i < numThreads; i++) {
-      if (splitIdx[i] >= splitIdx[i + 1])
-        return false;
-    }
-    return true;
   }
 
   void allocateLeg(uint start, uint end, bool last_leg) {
@@ -95,21 +79,23 @@ public:
 
     ALIGATOR_NOMALLOC_BEGIN;
     ZoneScopedN("parallel_backward");
+    auto N = static_cast<uint>(problem_->horizon());
+    for (uint i = 0; i < numThreads - 1; i++) {
+      uint end = get_work(N, i, numThreads).end;
+      setupKnot(problem_->stages[end - 1]);
+    }
     Eigen::setNbThreads(1);
     aligator::omp::set_default_options(numThreads, false);
 #pragma omp parallel num_threads(numThreads)
     {
-      size_t i = omp::get_thread_id();
+      uint i = (uint)omp::get_thread_id();
       char *thrdname = new char[16];
       int cpu = sched_getcpu();
       snprintf(thrdname, 16, "thread%d[c%d]", int(i), cpu);
       tracy::SetThreadName(thrdname);
-      uint beg = splitIdx[i];
-      uint end = splitIdx[i + 1];
+      auto [beg, end] = get_work(N, i, numThreads);
       boost::span<const KnotType> stview =
           make_span_from_indices(problem_->stages, beg, end);
-      if (i + 1 < numThreads)
-        setupKnot(problem_->stages[end - 1]);
       boost::span<StageFactor<Scalar>> dtview =
           make_span_from_indices(datas, beg, end);
       Impl::backwardImpl(stview, mudyn, mueq, dtview);
@@ -152,12 +138,11 @@ public:
     diagonal[1] = datas[0].vm.Pmat;
     superdiagonal[1] = datas[0].vm.Vxt;
 
+    uint N = (uint)problem_->horizon();
     // fill in for all legs
-    for (size_t i = 0; i < numThreads - 1; i++) {
-      uint i0 = splitIdx[i];
-      uint i1 = splitIdx[i + 1];
-
-      size_t ip1 = i + 1;
+    for (uint i = 0; i < numThreads - 1; i++) {
+      auto [i0, i1] = get_work(N, i, numThreads);
+      uint ip1 = i + 1;
       diagonal[2 * ip1] = datas[i0].vm.Vtt;
       diagonal[2 * ip1].diagonal().array() -= mudyn;
 
@@ -177,10 +162,9 @@ public:
     condensedKktRhs[0] = -problem_->g0;
     condensedKktRhs[1] = -datas[0].vm.pvec;
 
-    for (size_t i = 0; i < numThreads - 1; i++) {
-      uint i0 = splitIdx[i];
-      uint i1 = splitIdx[i + 1];
-      size_t ip1 = i + 1;
+    for (uint i = 0; i < numThreads - 1; i++) {
+      auto [i0, i1] = get_work(N, i, numThreads);
+      uint ip1 = i + 1;
       condensedKktRhs[2 * ip1] = -datas[i0].vm.vt;
       condensedKktRhs[2 * ip1 + 1] = -datas[i1].vm.pvec;
     }
@@ -191,28 +175,30 @@ public:
                const std::optional<ConstVectorRef> & = std::nullopt) const {
     ALIGATOR_NOMALLOC_BEGIN;
     ZoneScopedN("parallel_forward");
-    for (size_t i = 0; i < numThreads; i++) {
-      uint i0 = splitIdx[i];
+    uint N = (uint)problem_->horizon();
+    for (uint i = 0; i < numThreads; i++) {
+      uint i0 = get_work(N, i, numThreads).beg;
       lbdas[i0] = condensedKktRhs[2 * i];
       xs[i0] = condensedKktRhs[2 * i + 1];
     }
     Eigen::setNbThreads(1);
+    const auto &stages = problem_->stages;
 
 #pragma omp parallel num_threads(numThreads)
     {
-      size_t i = omp::get_thread_id();
-      auto xsview = make_span_from_indices(xs, splitIdx[i], splitIdx[i + 1]);
-      auto usview = make_span_from_indices(us, splitIdx[i], splitIdx[i + 1]);
-      auto vsview = make_span_from_indices(vs, splitIdx[i], splitIdx[i + 1]);
-      auto lsview = make_span_from_indices(lbdas, splitIdx[i], splitIdx[i + 1]);
-      auto stview = make_span_from_indices(problem_->stages, splitIdx[i],
-                                           splitIdx[i + 1]);
-      auto dsview = make_span_from_indices(datas, splitIdx[i], splitIdx[i + 1]);
-      if (i == numThreads - 1) {
-        Impl::forwardImpl(stview, dsview, xsview, usview, vsview, lsview);
-      } else {
+      uint i = (uint)omp::get_thread_id();
+      auto [beg, end] = get_work(N, i, numThreads);
+      auto xsview = make_span_from_indices(xs, beg, end);
+      auto usview = make_span_from_indices(us, beg, end);
+      auto vsview = make_span_from_indices(vs, beg, end);
+      auto lsview = make_span_from_indices(lbdas, beg, end);
+      auto stview = make_span_from_indices(stages, beg, end);
+      auto dsview = make_span_from_indices(datas, beg, end);
+      if (i < numThreads - 1) {
         Impl::forwardImpl(stview, dsview, xsview, usview, vsview, lsview,
-                          lbdas[splitIdx[i + 1]]);
+                          lbdas[end]);
+      } else {
+        Impl::forwardImpl(stview, dsview, xsview, usview, vsview, lsview);
       }
     }
     Eigen::setNbThreads(0);
@@ -222,8 +208,6 @@ public:
 
   /// Number of parallel divisions in the problem: \f$J+1\f$ in the math.
   uint numThreads;
-  /// Indices at which the problem should be split.
-  std::vector<uint> splitIdx;
 
   /// Hold the compressed representation of the condensed KKT system
   condensed_system_t condensedKktSystem;
