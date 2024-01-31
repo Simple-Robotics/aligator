@@ -26,6 +26,7 @@ from pinocchio.visualize import MeshcatVisualizer
 
 class Args(ArgsBase):
     bounds: bool = False
+    num_threads: int = 4
 
 
 args = Args().parse_args()
@@ -66,6 +67,7 @@ test()
 dt = 20e-3  # 20 ms
 tf = 1.2  # in seconds
 nsteps = int(tf / dt)
+print("Num steps: {:d}".format(nsteps))
 
 switch_t0 = 0.4
 switch_t1 = 0.9  # landing time
@@ -164,7 +166,7 @@ solver = aligator.SolverProxDDP(tol, mu_init, verbose=aligator.VERBOSE, max_iter
 solver.rollout_type = aligator.ROLLOUT_LINEAR
 solver.linear_solver_choice = aligator.LQ_SOLVER_PARALLEL
 # solver.sa_strategy = aligator.SA_FILTER
-# solver.setNumThreads(4)
+solver.setNumThreads(args.num_threads)
 
 cb_ = aligator.HistoryCallback()
 solver.registerCallback("his", cb_)
