@@ -220,7 +220,6 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
 
   BOOST_TEST_MESSAGE("Run Parallel solver");
   ParallelRiccatiSolver<double> parSolver(problem, 4);
-  fmt::print("Split: [{}]\n", fmt::join(parSolver.splitIdx, ", "));
 
   parSolver.backward(mu, mu);
   parSolver.forward(xs, us, vs, lbdas);
