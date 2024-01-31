@@ -29,12 +29,14 @@ int main(int, char **) {
   xs_i.assign(nsteps + 1, problem.getInitState());
   us_i.assign(nsteps, u0);
 
-  solver.setup(problem);
   solver.rollout_type_ = aligator::RolloutType::LINEAR;
   solver.sa_strategy = aligator::StepAcceptanceStrategy::FILTER;
   solver.filter_.beta_ = 1e-5;
   solver.force_initial_condition_ = true;
   solver.reg_min = 1e-6;
+  solver.linear_solver_choice = aligator::LQSolverChoice::PARALLEL;
+  solver.setNumThreads(4); // call before setup()
+  solver.setup(problem);
   solver.run(problem, xs_i, us_i);
 
   auto &res = solver.results_;

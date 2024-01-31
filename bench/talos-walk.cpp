@@ -29,8 +29,8 @@ constexpr int DEFAULT_NUM_THREADS = 1;
 template <aligator::LQSolverChoice lqsc>
 static void BM_aligator(benchmark::State &state) {
   const std::size_t T_ss = (std::size_t)state.range(0);
-  std::size_t T_ds = T_ss / 4;
-  std::size_t nsteps = T_ss * 2 + T_ds * 3;
+  const std::size_t T_ds = T_ss / 4;
+  const std::size_t nsteps = T_ss * 2 + T_ds * 3;
   const auto num_threads = static_cast<std::size_t>(state.range(1));
 
   auto problem = defineLocomotionProblem(T_ss, T_ds);
@@ -45,13 +45,12 @@ static void BM_aligator(benchmark::State &state) {
 
   SolverProxDDPTpl<double> solver(TOL, mu_init, 0., maxiters, aligator::QUIET);
 
-  solver.setNumThreads(DEFAULT_NUM_THREADS);
-  solver.setup(problem);
   solver.rollout_type_ = aligator::RolloutType::LINEAR;
   solver.linear_solver_choice = lqsc;
   solver.force_initial_condition_ = true;
   solver.reg_min = 1e-6;
   solver.setNumThreads(num_threads);
+  solver.setup(problem);
 
   for (auto _ : state) {
     bool conv = solver.run(problem, xs_i, us_i);
@@ -64,8 +63,8 @@ static void BM_aligator(benchmark::State &state) {
 /// Benchmark the FDDP algorithm (aligator::SolverFDDP)
 static void BM_FDDP(benchmark::State &state) {
   const std::size_t T_ss = (std::size_t)state.range(0);
-  std::size_t T_ds = T_ss / 4;
-  std::size_t nsteps = T_ss * 2 + T_ds * 3;
+  const std::size_t T_ds = T_ss / 4;
+  const std::size_t nsteps = T_ss * 2 + T_ds * 3;
 
   auto problem = defineLocomotionProblem(T_ss, T_ds);
 
@@ -78,8 +77,8 @@ static void BM_FDDP(benchmark::State &state) {
 
   SolverFDDPTpl<double> solver(TOL, aligator::QUIET);
 
-  solver.setup(problem);
   solver.force_initial_condition_ = true;
+  solver.setup(problem);
 
   for (auto _ : state) {
     bool conv = solver.run(problem, xs_i, us_i);

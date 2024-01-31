@@ -1,7 +1,6 @@
 import numpy as np
 import aligator
 import pinocchio as pin
-import matplotlib.pyplot as plt
 import time
 
 from aligator import (
@@ -15,6 +14,7 @@ from utils import load_talos_no_wristhead, ArgsBase
 class Args(ArgsBase):
     tcp: str = None
     bounds: bool = True
+    num_threads: int = 8
 
 
 args = Args().parse_args()
@@ -296,12 +296,12 @@ solver.rollout_type = aligator.ROLLOUT_LINEAR
 # solver = aligator.SolverFDDP(TOL, verbose=verbose)
 solver.max_iters = max_iters
 solver.sa_strategy = aligator.SA_FILTER  # FILTER or LINESEARCH
-solver.setup(problem)
 solver.filter.beta = 1e-5
 solver.force_initial_condition = True
 solver.reg_min = 1e-6
 solver.linear_solver_choice = aligator.LQ_SOLVER_PARALLEL  # LQ_SOLVER_SERIAL
-solver.setNumThreads(8)
+solver.setup(problem)
+solver.setNumThreads(args.num_threads)
 
 us_init = [np.zeros(nu)] * nsteps
 xs_init = [x0] * (nsteps + 1)
