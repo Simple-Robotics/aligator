@@ -189,10 +189,11 @@ u0 = pin.rnea(model, data, x0[:1], x0[1:], np.zeros(nv))
 us_i = [u0] * nsteps
 xs_i = aligator.rollout(dyn_model, x0, us_i)
 
-max_threads = aligator.get_available_threads()
+max_threads = 6
 print("Max threads:", max_threads)
 solver.setup(problem)
 solver.setNumThreads(max_threads)
+solver.linear_solver_choice = aligator.LQ_SOLVER_PARALLEL
 solver.run(problem, xs_i, us_i)
 res = solver.results
 print(res)
