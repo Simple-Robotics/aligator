@@ -1,6 +1,7 @@
 #pragma once
 
 #include "riccati-impl.hpp"
+#include <tbb/cache_aligned_allocator.h>
 
 namespace aligator {
 namespace gar {
@@ -10,7 +11,10 @@ public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using StageFactorType = StageFactor<Scalar>;
-  std::vector<StageFactorType> datas;
+  using StageFactorVec =
+      std::vector<StageFactorType,
+                  tbb::cache_aligned_allocator<StageFactorType>>;
+  StageFactorVec datas;
 
   virtual bool backward(const Scalar mudyn, const Scalar mueq) = 0;
 

@@ -4,7 +4,6 @@
 #include "block-tridiagonal-solver.hpp"
 #include "work.hpp"
 #include <tbb/global_control.h>
-#include <tbb/cache_aligned_allocator.h>
 #include <tbb/parallel_for.h>
 
 namespace aligator {
@@ -24,15 +23,10 @@ public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = RiccatiSolverBase<Scalar>;
+  using Base::datas;
 
   using Impl = ProximalRiccatiKernel<Scalar>;
   using KnotType = LQRKnotTpl<Scalar>;
-  using StageFactorType = StageFactor<Scalar>;
-
-  using StageFactorVec =
-      std::vector<StageFactorType,
-                  tbb::cache_aligned_allocator<StageFactorType>>;
-  StageFactorVec datas;
 
   using BlkMat = BlkMatrix<MatrixXs, -1, -1>;
   using BlkVec = BlkMatrix<VectorXs, -1, 1>;
