@@ -96,7 +96,8 @@ template <typename Scalar> struct LQRProblemTpl {
     initialize();
   }
 
-  LQRProblemTpl(KnotVector &knots, long nc0) : stages(knots), G0(), g0(nc0) {
+  LQRProblemTpl(const KnotVector &knots, long nc0)
+      : stages(knots), G0(), g0(nc0) {
     initialize();
   }
 
