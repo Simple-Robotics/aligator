@@ -23,7 +23,6 @@ using TrajOptProblem = aligator::TrajOptProblemTpl<double>;
 
 constexpr double TOL = 1e-4;
 constexpr std::size_t maxiters = 100;
-constexpr int DEFAULT_NUM_THREADS = 1;
 
 /// Benchmark the full PROXDDP algorithm (aligator::SolverProxDDP)
 template <aligator::LQSolverChoice lqsc>
@@ -62,6 +61,7 @@ static void BM_aligator(benchmark::State &state) {
 
 /// Benchmark the FDDP algorithm (aligator::SolverFDDP)
 static void BM_FDDP(benchmark::State &state) {
+  const auto num_threads = static_cast<std::size_t>(state.range(1));
   const std::size_t T_ss = (std::size_t)state.range(0);
   const std::size_t T_ds = T_ss / 4;
   const std::size_t nsteps = T_ss * 2 + T_ds * 3;
@@ -78,6 +78,7 @@ static void BM_FDDP(benchmark::State &state) {
   SolverFDDPTpl<double> solver(TOL, aligator::QUIET);
 
   solver.force_initial_condition_ = true;
+  solver.setNumThreads(num_threads);
   solver.setup(problem);
 
   for (auto _ : state) {
@@ -95,7 +96,6 @@ static void BaseArgs(benchmark::internal::Benchmark *bench) {
 }
 
 static void ArgsSerial(benchmark::internal::Benchmark *bench) {
-  // bench->ArgName("T_ss")->RangeMultiplier(2)->Range(1 << 3, 3 << 8);
   bench->ArgName("T_ss");
   std::vector<long> T_ss_vec = {60, 80, 100};
   for (auto t : T_ss_vec) {
@@ -105,7 +105,7 @@ static void ArgsSerial(benchmark::internal::Benchmark *bench) {
 
 static void ArgsParallel(benchmark::internal::Benchmark *bench) {
   bench->ArgNames({"T_ss", "nthreads"});
-  std::vector<long> nthreads = {2, 3, 4, 6};
+  std::vector<long> nthreads = {2, 4, 6, 8};
   std::vector<long> T_ss_vec = {60, 80, 100};
   for (auto n : nthreads) {
     for (auto t : T_ss_vec) {
@@ -115,9 +115,12 @@ static void ArgsParallel(benchmark::internal::Benchmark *bench) {
 }
 
 int main(int argc, char **argv) {
-  benchmark::RegisterBenchmark("FDDP", &BM_FDDP)
+  benchmark::RegisterBenchmark("FDDP_SERIAL", &BM_FDDP)
       ->Apply(BaseArgs)
       ->Apply(ArgsSerial);
+  benchmark::RegisterBenchmark("FDDP_PARALLEL", &BM_FDDP)
+      ->Apply(BaseArgs)
+      ->Apply(ArgsParallel);
   benchmark::RegisterBenchmark("ALIGATOR_SERIAL",
                                &BM_aligator<aligator::LQSolverChoice::SERIAL>)
       ->Apply(BaseArgs)
