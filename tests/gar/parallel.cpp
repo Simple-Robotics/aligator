@@ -208,7 +208,7 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
     refSolver.backward(mu, mu);
     refSolver.forward(xs_ref, us_ref, vs_ref, lbdas_ref);
     KktError err_ref =
-        computeKktError(problemRef, xs_ref, us_ref, vs_ref, lbdas_ref);
+        computeKktError(problemRef, xs_ref, us_ref, vs_ref, lbdas_ref, mu, mu);
     printKktError(err_ref);
     for (uint t = 0; t <= horizon; t++) {
       fmt::print("xs[{:d}] = {}\n", t, xs_ref[t].transpose());
@@ -216,6 +216,7 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
     for (uint t = 0; t <= horizon; t++) {
       fmt::print("λs[{:d}] = {}\n", t, lbdas_ref[t].transpose());
     }
+    BOOST_CHECK_LE(err_ref.max, tol);
   }
 
   BOOST_TEST_MESSAGE("Run Parallel solver");
@@ -274,15 +275,12 @@ BOOST_AUTO_TEST_CASE(tbb_parallel) {
   const double tol = 1e-10;
 
   problem_t problem = generate_problem(x0, horizon, nx, nu);
-  problem_t problemRef = problem;
   const double mu = 1e-12;
 
-  auto solutionRef = lqrInitializeSolution(problemRef);
-  auto [xs_ref, us_ref, vs_ref, lbdas_ref] = solutionRef;
+  auto solutionRef = lqrInitializeSolution(problem);
   auto [xs, us, vs, lbdas] = solutionRef;
 
-  BOOST_TEST_MESSAGE("Run Serial solver (reference solution)");
-  ParallelRiccatiSolver2<double> solver(problemRef, 4);
+  ParallelRiccatiSolver2<double> solver(problem, 4);
 
   for (size_t i = 0; i < 10; i++) {
     solver.backward(mu, mu);
