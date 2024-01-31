@@ -64,8 +64,13 @@ inline auto create_se2_problem(std::size_t nsteps) {
   const int nu = 2;
   const int ndx = space->ndx();
 
-  const VectorXs x0 = space->rand();
-  VectorXs utest = VectorXs::Random(nu);
+  VectorXs x0(space->nx());
+  {
+    double theta = 0.15355;
+    pinocchio::SINCOS(theta, &x0[2], &x0[3]);
+    x0[0] = 0.7;
+    x0[1] = -0.1;
+  }
   const VectorXs x_target = space->neutral();
 
   auto state_err = std::make_shared<StateError>(space, nu, x_target);
@@ -73,7 +78,7 @@ inline auto create_se2_problem(std::size_t nsteps) {
   MatrixXs w_x = MatrixXs::Zero(ndx, ndx);
   w_x.diagonal().array() = 0.01;
   MatrixXs w_term = w_x * 10;
-  MatrixXs w_u = MatrixXs::Random(nu, nu);
+  MatrixXs w_u = MatrixXs::Identity(nu, nu);
   w_u = w_u.transpose() * w_u;
 
   const T timestep = 0.05;
