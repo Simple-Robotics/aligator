@@ -64,6 +64,12 @@ template <typename Scalar> struct LQRKnotTpl {
     C.setZero();
     D.setZero();
     d.setZero();
+
+    Gth.setZero(nth, nth);
+    Gx.setZero(nx, nth);
+    Gu.setZero(nu, nth);
+    Gv.setZero(nc, nth);
+    gamma.setZero(nth);
   }
 
   LQRKnotTpl(uint nx, uint nu, uint nc) : LQRKnotTpl(nx, nu, nc, nx) {}
