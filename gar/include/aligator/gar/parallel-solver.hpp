@@ -99,17 +99,13 @@ public:
       boost::span<StageFactor<Scalar>> dtview =
           make_span_from_indices(datas, beg, end);
       Impl::backwardImpl(stview, mudyn, mueq, dtview);
-#pragma omp barrier
-#pragma omp single
-      {
-        assembleCondensedSystem(mudyn);
-        Eigen::setNbThreads(0);
-        symmetricBlockTridiagSolve(condensedKktSystem.subdiagonal,
-                                   condensedKktSystem.diagonal,
-                                   condensedKktSystem.superdiagonal,
-                                   condensedKktRhs, condensedKktSystem.facs);
-      }
     }
+    assembleCondensedSystem(mudyn);
+    Eigen::setNbThreads(0);
+    symmetricBlockTridiagSolve(condensedKktSystem.subdiagonal,
+                               condensedKktSystem.diagonal,
+                               condensedKktSystem.superdiagonal,
+                               condensedKktRhs, condensedKktSystem.facs);
 
     ALIGATOR_NOMALLOC_END;
     return true;
@@ -147,7 +143,7 @@ public:
       diagonal[2 * ip1].diagonal().array() -= mudyn;
 
       diagonal[2 * ip1 + 1] = datas[i1].vm.Pmat;
-      superdiagonal[2 * ip1] = stages[i1].E;
+      superdiagonal[2 * ip1] = stages[i1 - 1].E;
 
       if (ip1 + 1 < numThreads) {
         superdiagonal[2 * ip1 + 1] = datas[i1].vm.Vxt;

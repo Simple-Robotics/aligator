@@ -159,7 +159,7 @@ public:
       diagonal[2 * ip1].diagonal().array() -= mudyn;
 
       diagonal[2 * ip1 + 1] = datas[i1].vm.Pmat;
-      superdiagonal[2 * ip1] = stages[i1].E;
+      superdiagonal[2 * ip1] = stages[i1 - 1].E;
 
       if (ip1 + 1 < numThreads) {
         superdiagonal[2 * ip1 + 1] = datas[i1].vm.Vxt;
