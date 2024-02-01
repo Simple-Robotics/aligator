@@ -96,10 +96,10 @@ static void BaseArgs(benchmark::internal::Benchmark *bench) {
 }
 
 static void ArgsSerial(benchmark::internal::Benchmark *bench) {
-  bench->ArgName("T_ss");
+  bench->ArgNames({"T_ss", "nthreads"});
   std::vector<long> T_ss_vec = {60, 80, 100};
   for (auto t : T_ss_vec) {
-    bench->Arg(t);
+    bench->Args({t, 1});
   }
 }
 
