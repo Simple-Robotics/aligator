@@ -23,6 +23,10 @@ public:
           std::vector<VectorXs> &vs, std::vector<VectorXs> &lbdas,
           const std::optional<ConstVectorRef> &theta_ = std::nullopt) const = 0;
 
+  /// For applicable solvers, updates the first feedback gain in-place to
+  /// correspond to the first Riccati gain.
+  virtual void collapseFeedback() {}
+
   virtual ~RiccatiSolverBase() = default;
 };
 

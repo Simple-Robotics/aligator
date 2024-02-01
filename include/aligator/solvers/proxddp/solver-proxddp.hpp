@@ -281,6 +281,7 @@ public:
     ALIGATOR_NOMALLOC_BEGIN;
     using gar::StageFactor;
     const std::size_t N = workspace_.nsteps;
+    linearSolver_->collapseFeedback(); // will alter feedback gains
     for (std::size_t i = 0; i < N; i++) {
       VectorRef ff = results_.getFeedforward(i);
       MatrixRef fb = results_.getFeedback(i);

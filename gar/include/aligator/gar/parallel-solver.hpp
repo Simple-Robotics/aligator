@@ -111,6 +111,19 @@ public:
     return true;
   }
 
+  void collapseFeedback() {
+    using RowMatrix = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
+    StageFactor<Scalar> &d = datas[0];
+    Eigen::Ref<RowMatrix> K = d.fb.blockRow(0);
+    Eigen::Ref<RowMatrix> Kth = d.fth.blockRow(0);
+
+    // condensedSystem.subdiagonal contains the 'U' factors in the
+    // block-tridiag UDUt decomposition
+    // and ∂Xi+1 = -Ui+1.t ∂Xi
+    auto &Up1t = condensedKktSystem.subdiagonal[1];
+    K.noalias() -= Kth * Up1t;
+  }
+
   struct condensed_system_t {
     std::vector<MatrixXs> subdiagonal;
     std::vector<MatrixXs> diagonal;
