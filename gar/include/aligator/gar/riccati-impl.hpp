@@ -5,7 +5,7 @@
 #include "./blk-matrix.hpp"
 
 #include <proxsuite-nlp/linalg/bunchkaufman.hpp>
-#include <Eigen/Cholesky>
+#include <Eigen/LU>
 
 #include "boost/core/make_span.hpp"
 
@@ -31,20 +31,16 @@ template <typename Scalar> struct StageFactor {
   using RowMatrixXs = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
 
   struct value_t {
-    MatrixXs Pmat;                       //< Riccati matrix
-    VectorXs pvec;                       //< Riccati bias
-    MatrixXs schurMat;                   //< Dual-space Schur matrix
-    MatrixXs Vxx;                        //< "cost-to-go" matrix
-    VectorXs vx;                         //< "cost-to-go" gradient
-    Eigen::BunchKaufman<MatrixXs> Pchol; //< Cholesky decomposition of Pmat
-    Eigen::LLT<MatrixXs> schurChol; //< Cholesky decomposition of Schur matrix
+    MatrixXs Pmat; //< Riccati matrix
+    VectorXs pvec; //< Riccati bias
+    MatrixXs Vxx;  //< "cost-to-go" matrix
+    VectorXs vx;   //< "cost-to-go" gradient
     MatrixXs Vxt;
     MatrixXs Vtt;
     VectorXs vt;
 
     value_t(uint nx, uint nth)
-        : Pmat(nx, nx), pvec(nx), schurMat(nx, nx), //
-          Vxx(nx, nx), vx(nx), Pchol(nx), schurChol(nx), Vxt(nx, nth),
+        : Pmat(nx, nx), pvec(nx), Vxx(nx, nx), vx(nx), Vxt(nx, nth),
           Vtt(nth, nth), vt(nth) {
       Vxt.setZero();
       Vtt.setZero();
@@ -56,9 +52,9 @@ template <typename Scalar> struct StageFactor {
       : Qhat(nx, nx), Rhat(nu, nu), Shat(nx, nu), qhat(nx), rhat(nu),
         AtV(nx, nx), BtV(nu, nx), Gxhat(nx, nth), Guhat(nu, nth),
         ff({nu, nc, nx, nx}, {1}), fb({nu, nc, nx, nx}, {nx}),
-        fth({nu, nc, nx, nx}, {nth}),                       //
-        kktMat({nu, nc}, {nu, nc}), kktChol(kktMat.rows()), //
-        vm(nx, nth), PinvEt(nx, nx) {
+        fth({nu, nc, nx, nx}, {nth}), kktMat({nu, nc}, {nu, nc}),
+        kktChol(kktMat.rows()), Efact(nx), Ptilde(nx, nx), EinvP(nx, nx),
+        schurMat(nx, nx), schurChol(nx), vm(nx, nth) {
     Qhat.setZero();
     Rhat.setZero();
     Shat.setZero();
@@ -73,8 +69,12 @@ template <typename Scalar> struct StageFactor {
 
     ff.setZero();
     fb.setZero();
-    kktMat.setZero();
     fth.setZero();
+    kktMat.setZero();
+
+    Ptilde.setZero();
+    EinvP.setZero();
+    schurMat.setZero();
   }
 
   MatrixXs Qhat;
@@ -94,8 +94,13 @@ template <typename Scalar> struct StageFactor {
   BlkMatrix<RowMatrixXs, 4, 1> fth;      //< parameter feedback gains
   BlkMatrix<MatrixXs, 2, 2> kktMat;      //< reduced KKT matrix buffer
   Eigen::BunchKaufman<MatrixXs> kktChol; //< reduced KKT LDLT solver
-  value_t vm;                            //< cost-to-go parameters
-  MatrixXs PinvEt;                       //< tmp buffer for \f$P^{-1}E^\top\f$
+  Eigen::PartialPivLU<MatrixXs> Efact;   //< LU decomp. of E matrix
+  MatrixXs Ptilde;                       //< product Et.inv P * E.inv
+  MatrixXs EinvP;                        //< product P * E.inv
+  MatrixXs schurMat;                     //< Dual-space Schur matrix
+  Eigen::BunchKaufman<MatrixXs>
+      schurChol; //< Cholesky decomposition of Schur matrix
+  value_t vm;    //< cost-to-go parameters
 };
 
 // Implementation of a proximal riccati kernel.

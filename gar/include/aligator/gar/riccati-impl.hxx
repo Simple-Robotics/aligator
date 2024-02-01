@@ -73,7 +73,7 @@ bool ProximalRiccatiKernel<Scalar>::backwardImpl(
       vc.Vtt = model.Gth;
       vc.Vtt.noalias() += model.Gu.transpose() * Kth;
       vc.vt = model.gamma;
-      vc.vt.noalias() += model.B * kff;
+      vc.vt.noalias() += model.Gu.transpose() * kff;
     }
   }
 
@@ -114,14 +114,23 @@ void ProximalRiccatiKernel<Scalar>::stageKernelSolve(const KnotType &model,
                                                      const Scalar mudyn,
                                                      const Scalar mueq) {
   ZoneScoped;
-  vn.Pchol.compute(vn.Pmat);
-  d.PinvEt = vn.Pchol.solve(model.E.transpose());
-  vn.schurMat.noalias() = model.E * d.PinvEt;
-  vn.schurMat.diagonal().array() += mudyn;
-  vn.schurChol.compute(vn.schurMat);
-  // evaluate inverse of schurMat
-  vn.Vxx.setIdentity();
-  vn.schurChol.solveInPlace(vn.Vxx);
+  // step 1. compute decomposition of the E matrix
+  auto &Efac = d.Efact.compute(model.E);
+  Eigen::Inverse Einv = Efac.inverse();
+  auto &ptilde = vn.vx; // just an alias
+  ptilde = -Einv.transpose() * vn.pvec;
+  d.EinvP.noalias() = Einv.transpose() * vn.Pmat;
+  d.Ptilde.noalias() = d.EinvP * Einv;
+  d.Ptilde = d.Ptilde.template selfadjointView<Eigen::Lower>();
+
+  d.schurMat.setIdentity();
+  d.schurMat.noalias() += mudyn * d.Ptilde;
+
+  d.schurChol.compute(d.schurMat);
+  vn.Vxx = d.Ptilde;
+  vn.vx.noalias() += d.Ptilde * model.f;
+  d.schurChol.solveInPlace(vn.vx);
+  d.schurChol.solveInPlace(vn.Vxx);
 
   d.AtV.noalias() = model.A.transpose() * vn.Vxx;
   d.BtV.noalias() = model.B.transpose() * vn.Vxx;
@@ -129,25 +138,24 @@ void ProximalRiccatiKernel<Scalar>::stageKernelSolve(const KnotType &model,
   d.Qhat.noalias() = model.Q + d.AtV * model.A;
   d.Rhat.noalias() = model.R + d.BtV * model.B;
   d.Shat.noalias() = model.S + d.AtV * model.B;
+  d.qhat.noalias() = model.q + model.A.transpose() * vn.vx;
+  d.rhat.noalias() = model.r + model.B.transpose() * vn.vx;
 
   // factorize reduced KKT system
   d.kktMat(0, 0) = d.Rhat;
   d.kktMat(0, 1) = model.D.transpose();
   d.kktMat(1, 0) = model.D;
   d.kktMat(1, 1).diagonal().setConstant(-mueq);
+  d.kktMat.matrix() =
+      d.kktMat.matrix().template selfadjointView<Eigen::Lower>();
   d.kktChol.compute(d.kktMat.matrix());
 
   VectorRef kff = d.ff.blockSegment(0);
   VectorRef zff = d.ff.blockSegment(1);
   VectorRef lff = d.ff.blockSegment(2);
   VectorRef yff = d.ff.blockSegment(3);
-  yff = vn.Pchol.solve(-vn.pvec);
-
-  vn.vx.noalias() = model.f + model.E * yff;
 
   // fill feedback system
-  d.qhat.noalias() = model.q + d.AtV * vn.vx;
-  d.rhat.noalias() = model.r + d.BtV * vn.vx;
   kff = -d.rhat;
   zff = -model.d;
 
@@ -157,41 +165,45 @@ void ProximalRiccatiKernel<Scalar>::stageKernelSolve(const KnotType &model,
   RowMatrixRef A = d.fb.blockRow(3);
   K = -d.Shat.transpose();
   Z = -model.C;
-  BlkMatrix<VectorRef, 2, 1> ffview = d.ff.template topBlkRows<2>();
-  BlkMatrix<RowMatrixRef, 2, 1> fbview = d.fb.template topBlkRows<2>();
+  auto ffview = d.ff.template topBlkRows<2>();
+  auto fbview = d.fb.template topBlkRows<2>();
   d.kktChol.solveInPlace(ffview.matrix());
   d.kktChol.solveInPlace(fbview.matrix());
 
   // set closed loop dynamics
-  lff.noalias() = vn.Vxx * vn.vx;
-  lff.noalias() += d.BtV.transpose() * kff;
+  lff.noalias() = vn.vx + d.BtV.transpose() * kff;
+  yff.noalias() = model.f + model.B * kff;
+  yff -= mudyn * lff;
+  yff = -Einv * yff;
 
   L.noalias() = vn.Vxx * model.A;
   L.noalias() += d.BtV.transpose() * K;
 
-  yff.noalias() -= d.PinvEt * lff;
-  A.noalias() = d.PinvEt * L;
-  A *= -1;
+  A.noalias() = model.A + model.B * K;
+  A -= mudyn * L;
+  A = -Einv * A;
 
   value_t &vc = d.vm;
-  Eigen::Transpose<const MatrixXs> Ct = model.C.transpose();
+  Eigen::Transpose Ct = model.C.transpose();
   vc.Pmat.noalias() = d.Qhat + d.Shat * K + Ct * Z;
   vc.pvec.noalias() = d.qhat + d.Shat * kff + Ct * zff;
 
+  RowMatrixRef Kth = d.fth.blockRow(0);
+  RowMatrixRef Zth = d.fth.blockRow(1);
+  RowMatrixRef Lth = d.fth.blockRow(2);
+  RowMatrixRef Yth = d.fth.blockRow(3);
   if (model.nth > 0) {
     ZoneScopedN("stage_solve_parameter");
-    RowMatrixRef Kth = d.fth.blockRow(0);
-    RowMatrixRef Zth = d.fth.blockRow(1);
-    RowMatrixRef Lth = d.fth.blockRow(2);
-    RowMatrixRef Yth = d.fth.blockRow(3);
 
-    // store -Pinv * L
-    Yth = vn.Pchol.solve(-vn.Vxt);
-    // store -V * E * Pinv * L
-    Lth.noalias() = model.E * Yth;
+    // store Pxttilde = -Einv * Pxt
+    // this is like ptilde
+    Lth.noalias() = -Einv.transpose() * vn.Vxt;
+    auto &Pxttilde = Lth; // just an alias for clarity
+    // store Lambda.inv * Pxttilde
+    d.schurChol.solveInPlace(Lth);
 
-    d.Gxhat.noalias() = model.Gx + d.AtV * Lth;
-    d.Guhat.noalias() = model.Gu + d.BtV * Lth;
+    d.Gxhat.noalias() = model.Gx + model.A.transpose() * Pxttilde;
+    d.Guhat.noalias() = model.Gu + model.B.transpose() * Pxttilde;
 
     // set rhs of 2x2 block system and solve
     Kth = -d.Guhat;
@@ -200,9 +212,11 @@ void ProximalRiccatiKernel<Scalar>::stageKernelSolve(const KnotType &model,
     d.kktChol.solveInPlace(fthview.matrix());
 
     // substitute into Xith, Ath gains
-    Lth.noalias() += model.B * Kth;
-    vn.schurChol.solveInPlace(Lth);
-    Yth.noalias() -= d.PinvEt * Lth;
+    Lth.noalias() += d.BtV.transpose() * Kth;
+
+    Yth.noalias() = model.B * Kth;
+    Yth -= mudyn * Lth;
+    Yth = -Einv * Yth;
 
     // update vt, Vxt, Vtt
     vc.vt = vn.vt + model.gamma;
