@@ -16,14 +16,14 @@ struct KktError {
   // constraint error
   double cstr;
   double dual;
-  double max;
+  double max = std::max({dyn, cstr, dual});
 };
 
 inline void printKktError(const KktError &err,
                           const std::string &msg = "Max KKT error") {
   fmt::print("{}: {:.3e}\n", msg, err.max);
-  fmt::print("> dual: {:.3e}\n> cstr: {:.3e}\n> dyn: {:.3e}\n", err.dual,
-             err.cstr, err.dyn);
+  fmt::print("> dual: {:.3e}, cstr: {:.3e}, dyn: {:.3e}\n", err.dual, err.cstr,
+             err.dyn);
 }
 
 KktError

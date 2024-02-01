@@ -3,6 +3,7 @@
 #include "aligator/context.hpp"
 #include "aligator/gar/blk-matrix.hpp"
 #include "aligator/gar/block-tridiagonal-solver.hpp"
+#include <Eigen/Cholesky>
 
 #include "test_util.hpp"
 
