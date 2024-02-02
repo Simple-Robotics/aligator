@@ -8,6 +8,7 @@
 #include <Eigen/LU>
 
 #include "boost/core/make_span.hpp"
+#include "tracy/Tracy.hpp"
 
 namespace aligator {
 namespace gar {
@@ -53,8 +54,8 @@ template <typename Scalar> struct StageFactor {
         AtV(nx, nx), BtV(nu, nx), Gxhat(nx, nth), Guhat(nu, nth),
         ff({nu, nc, nx, nx}, {1}), fb({nu, nc, nx, nx}, {nx}),
         fth({nu, nc, nx, nx}, {nth}), kktMat({nu, nc}, {nu, nc}),
-        kktChol(kktMat.rows()), Efact(nx), Ptilde(nx, nx), EinvP(nx, nx),
-        schurMat(nx, nx), schurChol(nx), vm(nx, nth) {
+        kktChol(kktMat.rows()), Efact(nx), Ptilde(nx, nx), Einv(nx, nx),
+        EinvP(nx, nx), schurMat(nx, nx), schurChol(nx), vm(nx, nth) {
     Qhat.setZero();
     Rhat.setZero();
     Shat.setZero();
@@ -72,7 +73,11 @@ template <typename Scalar> struct StageFactor {
     fth.setZero();
     kktMat.setZero();
 
+    yff_pre.setZero(nx);
+    A_pre.setZero(nx, nx);
+    Yth_pre.setZero(nx, nth);
     Ptilde.setZero();
+    Einv.setZero();
     EinvP.setZero();
     schurMat.setZero();
   }
@@ -95,9 +100,13 @@ template <typename Scalar> struct StageFactor {
   BlkMatrix<MatrixXs, 2, 2> kktMat;      //< reduced KKT matrix buffer
   Eigen::BunchKaufman<MatrixXs> kktChol; //< reduced KKT LDLT solver
   Eigen::PartialPivLU<MatrixXs> Efact;   //< LU decomp. of E matrix
-  MatrixXs Ptilde;                       //< product Et.inv P * E.inv
-  MatrixXs EinvP;                        //< product P * E.inv
-  MatrixXs schurMat;                     //< Dual-space Schur matrix
+  VectorXs yff_pre;
+  MatrixXs A_pre;
+  MatrixXs Yth_pre;
+  MatrixXs Ptilde;   //< product Et.inv P * E.inv
+  MatrixXs Einv;     //< product P * E.inv
+  MatrixXs EinvP;    //< product P * E.inv
+  MatrixXs schurMat; //< Dual-space Schur matrix
   Eigen::BunchKaufman<MatrixXs>
       schurChol; //< Cholesky decomposition of Schur matrix
   value_t vm;    //< cost-to-go parameters
@@ -122,6 +131,67 @@ template <typename Scalar> struct ProximalRiccatiKernel {
         : mat({nx, nc}, {nx, nc}), ff(mat.rowDims()),
           fth(mat.rowDims(), {nth}) {}
   };
+
+  inline static void terminalSolve(const KnotType &model, const Scalar mueq,
+                                   StageFactorType &d) {
+    ZoneScoped;
+    value_t &vc = d.vm;
+    // fill cost-to-go matrix
+    VectorRef kff = d.ff.blockSegment(0);
+    VectorRef zff = d.ff.blockSegment(1);
+    RowMatrixRef K = d.fb.blockRow(0);
+    RowMatrixRef Z = d.fb.blockRow(1);
+    RowMatrixRef Kth = d.fth.blockRow(0);
+    RowMatrixRef Zth = d.fth.blockRow(1);
+
+    Eigen::Transpose<const MatrixXs> Ct = model.C.transpose();
+
+    if (model.nu == 0) {
+      Z = model.C / mueq;
+      zff = model.d / mueq;
+      Zth.setZero();
+    } else {
+      d.kktMat(0, 0) = model.R;
+      d.kktMat(0, 1) = model.D.transpose();
+      d.kktMat(1, 0) = model.D;
+      d.kktMat(1, 1).diagonal().setConstant(-mueq);
+      d.kktChol.compute(d.kktMat.matrix());
+
+      kff = -model.r;
+      zff = -model.d;
+      K = -model.S.transpose();
+      Z = -model.C;
+
+      auto ffview = d.ff.template topBlkRows<2>();
+      auto fbview = d.fb.template topBlkRows<2>();
+      d.kktChol.solveInPlace(ffview.matrix());
+      d.kktChol.solveInPlace(fbview.matrix());
+
+      if (model.nth > 0) {
+        Kth = -model.Gu;
+        Zth.setZero();
+        auto fthview = d.fth.template topBlkRows<2>();
+        d.kktChol.solveInPlace(fthview.matrix());
+      }
+    }
+
+    vc.Pmat.noalias() = model.Q + Ct * Z;
+    vc.pvec.noalias() = model.q + Ct * zff;
+
+    if (model.nu > 0) {
+      vc.Pmat.noalias() += model.S * K;
+      vc.pvec.noalias() += model.S * kff;
+    }
+
+    if (model.nth > 0) {
+      vc.Vxt = model.Gx;
+      vc.Vxt.noalias() += K.transpose() * model.Gu;
+      vc.Vtt = model.Gth;
+      vc.Vtt.noalias() += model.Gu.transpose() * Kth;
+      vc.vt = model.gamma;
+      vc.vt.noalias() += model.Gu.transpose() * kff;
+    }
+  }
 
   inline static bool backwardImpl(boost::span<const KnotType> stages,
                                   const Scalar mudyn, const Scalar mueq,

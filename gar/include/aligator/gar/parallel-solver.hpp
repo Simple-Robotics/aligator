@@ -99,13 +99,17 @@ public:
       boost::span<StageFactor<Scalar>> dtview =
           make_span_from_indices(datas, beg, end);
       Impl::backwardImpl(stview, mudyn, mueq, dtview);
+#pragma omp barrier
+#pragma omp single
+      {
+        Eigen::setNbThreads(0);
+        assembleCondensedSystem(mudyn);
+        symmetricBlockTridiagSolve(condensedKktSystem.subdiagonal,
+                                   condensedKktSystem.diagonal,
+                                   condensedKktSystem.superdiagonal,
+                                   condensedKktRhs, condensedKktSystem.facs);
+      }
     }
-    assembleCondensedSystem(mudyn);
-    Eigen::setNbThreads(0);
-    symmetricBlockTridiagSolve(condensedKktSystem.subdiagonal,
-                               condensedKktSystem.diagonal,
-                               condensedKktSystem.superdiagonal,
-                               condensedKktRhs, condensedKktSystem.facs);
 
     ALIGATOR_NOMALLOC_END;
     return true;

@@ -115,8 +115,8 @@ public:
           // }
         });
 
-    assembleCondensedSystem(mudyn);
     Eigen::setNbThreads(0);
+    assembleCondensedSystem(mudyn);
     symmetricBlockTridiagSolve(condensedKktSystem.subdiagonal,
                                condensedKktSystem.diagonal,
                                condensedKktSystem.superdiagonal,
