@@ -6,6 +6,7 @@
 
 #include <proxsuite-nlp/linalg/bunchkaufman.hpp>
 #include <Eigen/LU>
+#include <Eigen/Cholesky>
 
 #include "boost/core/make_span.hpp"
 #include "tracy/Tracy.hpp"
@@ -103,13 +104,12 @@ template <typename Scalar> struct StageFactor {
   VectorXs yff_pre;
   MatrixXs A_pre;
   MatrixXs Yth_pre;
-  MatrixXs Ptilde;   //< product Et.inv P * E.inv
-  MatrixXs Einv;     //< product P * E.inv
-  MatrixXs EinvP;    //< product P * E.inv
-  MatrixXs schurMat; //< Dual-space Schur matrix
-  Eigen::BunchKaufman<MatrixXs>
-      schurChol; //< Cholesky decomposition of Schur matrix
-  value_t vm;    //< cost-to-go parameters
+  MatrixXs Ptilde;                //< product Et.inv P * E.inv
+  MatrixXs Einv;                  //< product P * E.inv
+  MatrixXs EinvP;                 //< product P * E.inv
+  MatrixXs schurMat;              //< Dual-space Schur matrix
+  Eigen::LLT<MatrixXs> schurChol; //< Cholesky decomposition of Schur matrix
+  value_t vm;                     //< cost-to-go parameters
 };
 
 // Implementation of a proximal riccati kernel.
