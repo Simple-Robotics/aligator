@@ -117,7 +117,8 @@ void ProximalRiccatiKernel<Scalar>::stageKernelSolve(const KnotType &model,
   yff.noalias() = model.f + model.B * kff;
   yff -= mudyn * lff;
   d.yff_pre = yff;
-  yff.noalias() = d.Efact.solve(-d.yff_pre);
+  yff.noalias() = d.Einv * d.yff_pre;
+  yff *= -1;
 
   L.noalias() = vn.Vxx * model.A;
   L.noalias() += d.BtV.transpose() * K;
@@ -125,7 +126,8 @@ void ProximalRiccatiKernel<Scalar>::stageKernelSolve(const KnotType &model,
   A.noalias() = model.A + model.B * K;
   A -= mudyn * L;
   d.A_pre = A;
-  A.noalias() = d.Efact.solve(-d.A_pre);
+  A.noalias() = d.Einv * d.A_pre;
+  A *= -1;
 
   value_t &vc = d.vm;
   Eigen::Transpose Ct = model.C.transpose();
@@ -162,7 +164,8 @@ void ProximalRiccatiKernel<Scalar>::stageKernelSolve(const KnotType &model,
     Yth.noalias() = model.B * Kth;
     Yth -= mudyn * Lth;
     d.Yth_pre = Yth;
-    Yth.noalias() = d.Efact.solve(-d.Yth_pre);
+    Yth.noalias() = d.Einv * d.Yth_pre;
+    Yth *= -1;
 
     // update vt, Vxt, Vtt
     vc.vt = vn.vt + model.gamma;
