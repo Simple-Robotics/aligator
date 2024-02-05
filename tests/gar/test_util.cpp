@@ -32,8 +32,10 @@ problem_t generate_problem(const ConstVectorRef &x0, uint horz, uint nx,
 
     out.A.setRandom();
     out.B.setRandom();
-    out.E.setIdentity();
-    out.E *= -1;
+    out.E = out.E.NullaryExpr(nx, nx, normal_unary_op{});
+    out.E *= 1000;
+    // out.E.setIdentity();
+    // out.E *= -1;
     out.f.head(nx) = VectorXs::NullaryExpr(nx, normal_unary_op{});
 
     out.Gx = MatrixXs::NullaryExpr(nx, nth, normal_unary_op{});
@@ -63,5 +65,5 @@ KktError computeKktError(const problem_t &problem, const VectorOfVectors &xs,
                          const double mudyn, const double mueq) {
   auto r = aligator::gar::lqrComputeKktError(problem, xs, us, vs, lbdas, mudyn,
                                              mueq, theta_, true);
-  return {r[0], r[1], r[2], std::max({r[0], r[1], r[2]})};
+  return {r[0], r[1], r[2]};
 }

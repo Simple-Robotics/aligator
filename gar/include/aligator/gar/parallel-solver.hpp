@@ -99,16 +99,33 @@ public:
       boost::span<StageFactor<Scalar>> dtview =
           make_span_from_indices(datas, beg, end);
       Impl::backwardImpl(stview, mudyn, mueq, dtview);
+#pragma omp barrier
+#pragma omp single
+      {
+        Eigen::setNbThreads(0);
+        assembleCondensedSystem(mudyn);
+        symmetricBlockTridiagSolve(condensedKktSystem.subdiagonal,
+                                   condensedKktSystem.diagonal,
+                                   condensedKktSystem.superdiagonal,
+                                   condensedKktRhs, condensedKktSystem.facs);
+      }
     }
-    assembleCondensedSystem(mudyn);
-    Eigen::setNbThreads(0);
-    symmetricBlockTridiagSolve(condensedKktSystem.subdiagonal,
-                               condensedKktSystem.diagonal,
-                               condensedKktSystem.superdiagonal,
-                               condensedKktRhs, condensedKktSystem.facs);
 
     ALIGATOR_NOMALLOC_END;
     return true;
+  }
+
+  void collapseFeedback() {
+    using RowMatrix = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
+    StageFactor<Scalar> &d = datas[0];
+    Eigen::Ref<RowMatrix> K = d.fb.blockRow(0);
+    Eigen::Ref<RowMatrix> Kth = d.fth.blockRow(0);
+
+    // condensedSystem.subdiagonal contains the 'U' factors in the
+    // block-tridiag UDUt decomposition
+    // and ∂Xi+1 = -Ui+1.t ∂Xi
+    auto &Up1t = condensedKktSystem.subdiagonal[1];
+    K.noalias() -= Kth * Up1t;
   }
 
   struct condensed_system_t {

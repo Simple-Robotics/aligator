@@ -7,10 +7,12 @@
 #include "aligator/gar/parallel-solver.hpp"
 #include "aligator/gar/parallel-solver-tbb.hpp"
 #include "aligator/gar/utils.hpp"
+#include <Eigen/Cholesky>
 
 using namespace aligator::gar;
 
 constexpr double EPS = 1e-9;
+const uint num_threads = 2;
 
 std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem, uint t0,
                                            double mu) {
@@ -184,12 +186,11 @@ void randomly_modify_problem(problem_t &prob) {
 
 BOOST_AUTO_TEST_CASE(parallel_solver_class) {
   BOOST_TEST_MESSAGE("parallel_solver_class");
-  uint nx = 2;
-  uint nu = 2;
+  uint nx = 32;
+  uint nu = 12;
   VectorXs x0;
-  x0.resize(nx);
-  x0 << 1., 1.;
-  uint horizon = 20;
+  x0.setZero(nx);
+  uint horizon = 50;
 
   const double tol = 1e-10;
 
@@ -204,29 +205,32 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
   BOOST_TEST_MESSAGE("Run Serial solver (reference solution)");
   ProximalRiccatiSolver<double> refSolver{problemRef};
 
+  MatrixXs K0_ref;
   {
     refSolver.backward(mu, mu);
     refSolver.forward(xs_ref, us_ref, vs_ref, lbdas_ref);
     KktError err_ref =
         computeKktError(problemRef, xs_ref, us_ref, vs_ref, lbdas_ref, mu, mu);
     printKktError(err_ref);
-    for (uint t = 0; t <= horizon; t++) {
-      fmt::print("xs[{:d}] = {}\n", t, xs_ref[t].transpose());
-    }
-    for (uint t = 0; t <= horizon; t++) {
-      fmt::print("λs[{:d}] = {}\n", t, lbdas_ref[t].transpose());
-    }
     BOOST_CHECK_LE(err_ref.max, tol);
+    K0_ref = refSolver.datas[0].fb.blockRow(0);
+    fmt::print("K0_ref=\n{}\n", K0_ref);
   }
 
   BOOST_TEST_MESSAGE("Run Parallel solver");
-  ParallelRiccatiSolver<double> parSolver(problem, 4);
+  ParallelRiccatiSolver<double> parSolver(problem, num_threads);
 
   parSolver.backward(mu, mu);
   parSolver.forward(xs, us, vs, lbdas);
   KktError err = computeKktError(problem, xs, us, vs, lbdas, mu, mu);
   printKktError(err);
   BOOST_CHECK_LE(err.max, tol);
+  MatrixXs K0_par = parSolver.datas[0].fb.blockRow(0);
+
+  auto _Ku_err = K0_par - K0_ref;
+  auto Ku_err = infty_norm(_Ku_err);
+  fmt::print("Ku_err =\n{}\n   |.|={:.3e}\n", _Ku_err, Ku_err);
+  BOOST_CHECK_LE(Ku_err, 1e-7);
 
   VectorXs xerrs = VectorXs::Zero(horizon + 1);
   VectorXs lerrs = xerrs;
@@ -255,39 +259,17 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
     KktError e = computeKktError(problem, xs, us, vs, lbdas, mu, mu);
     printKktError(e);
     BOOST_CHECK_LE(e.max, tol);
-    for (uint t = 0; t <= horizon; t++) {
-      fmt::print("xs[{:d}] = {}\n", t, xs[t].transpose());
-    }
   }
-}
 
-BOOST_AUTO_TEST_CASE(tbb_parallel) {
-  BOOST_TEST_MESSAGE("parallel_solver_tbb");
-  int default_num_threads = tbb::info::default_concurrency();
-  fmt::print("oneTBB default num threads: {:d}\n", default_num_threads);
-  uint nx = 2;
-  uint nu = 2;
-  VectorXs x0;
-  x0.resize(nx);
-  x0 << 1., 1.;
-  uint horizon = 20;
-
-  const double tol = 1e-10;
-
-  problem_t problem = generate_problem(x0, horizon, nx, nu);
-  const double mu = 1e-12;
-
-  auto solutionRef = lqrInitializeSolution(problem);
-  auto [xs, us, vs, lbdas] = solutionRef;
-
-  ParallelRiccatiSolver2<double> solver(problem, 4);
-
-  for (size_t i = 0; i < 10; i++) {
+  {
+    BOOST_TEST_MESSAGE("Also run TBB parallel solver");
+    int default_num_threads = tbb::info::default_concurrency();
+    fmt::print("oneTBB default num threads: {:d}\n", default_num_threads);
+    ParallelRiccatiSolver2<double> solver(problem, num_threads);
     solver.backward(mu, mu);
     solver.forward(xs, us, vs, lbdas);
+    KktError e = computeKktError(problem, xs, us, vs, lbdas, mu, mu);
+    printKktError(e);
+    BOOST_CHECK_LE(e.max, tol);
   }
-
-  KktError err = computeKktError(problem, xs, us, vs, lbdas);
-  printKktError(err);
-  BOOST_CHECK_LE(err.max, tol);
 }

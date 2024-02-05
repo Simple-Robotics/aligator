@@ -47,7 +47,7 @@ def add_mid(t0, v):
 
 
 t0 = T // 3
-add_mid(t0, 0.1)
+add_mid(t0, 0.2)
 t1 = 2 * T // 3
 add_mid(t1, -0.1)
 
@@ -75,8 +75,8 @@ xss = np.stack(sol_["xs"])
 times = np.arange(0, T + 1)
 
 print("xs[0] = ", xss[0])
-plt.figure()
-plt.plot(times, xss, marker="x")
+plt.figure(figsize=(5.4, 4))
+plt.plot(times, xss, marker=".")
 plt.hlines(
     xss[0],
     times[0],
@@ -88,7 +88,9 @@ plt.hlines(
 ax = plt.gca()
 ax.xaxis.set_major_locator(plt.MultipleLocator(2))
 
-plt.title("$x_t$ (cyclic LQ problem)")
+plt.title("Cyclic LQ problem")
+plt.ylabel("State $x$")
+plt.xlabel("$t$")
 plt.legend()
 plt.tight_layout()
 plt.savefig(ASSET_DIR / "gar-cyclic-lqr-1d.png")

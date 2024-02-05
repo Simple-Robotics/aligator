@@ -96,8 +96,8 @@ bool symmetricBlockTridiagSolve(std::vector<MatrixType> &subdiagonal,
   }
 
   for (size_t i = 0; i < N; i++) {
-    auto &Cip1 = subdiagonal[i];
-    rhs[i + 1].noalias() -= Cip1 * rhs[i];
+    auto &Uip1t = subdiagonal[i];
+    rhs[i + 1].noalias() -= Uip1t * rhs[i];
   }
 
   ALIGATOR_NOMALLOC_END;

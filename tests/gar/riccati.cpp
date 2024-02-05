@@ -86,6 +86,7 @@ BOOST_AUTO_TEST_CASE(short_horz_pb) {
 }
 
 BOOST_AUTO_TEST_CASE(one_knot_prob) {
+  BOOST_TEST_MESSAGE("Single-knot problem");
   uint nx = 2;
   uint nu = 2;
   Eigen::VectorXd x0;
@@ -105,10 +106,13 @@ BOOST_AUTO_TEST_CASE(one_knot_prob) {
 }
 
 BOOST_AUTO_TEST_CASE(random_long_problem) {
-  Eigen::Vector2d x0 = {0.1, 1.0};
-  uint nx = 2;
-  uint nu = 3;
-  auto prob = generate_problem(x0, 100, nx, nu);
+  BOOST_TEST_MESSAGE("Random long problem");
+  uint nx = 36;
+  uint nu = 12;
+  Eigen::VectorXd x0;
+  x0.setZero(nx);
+  uint horz = 100;
+  auto prob = generate_problem(x0, horz, nx, nu);
   prox_riccati_t solver{prob};
   const double mu = 1e-14;
   auto bwbeg = std::chrono::system_clock::now();
