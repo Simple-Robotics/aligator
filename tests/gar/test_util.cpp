@@ -18,19 +18,25 @@ problem_t generate_problem(const ConstVectorRef &x0, uint horz, uint nx,
   problem_t::KnotVector knots(horz + 1);
   uint wishartDof = nx + nu + 1;
 
-  auto gen = [&](uint nu) {
+  auto gen = [&](uint nu, bool sing = false) {
     knot_t out(nx, nu, 0);
     out.addParameterization(nth);
 
     MatrixXs _qsr = sampleWishartDistributedMatrix(nx + nu, wishartDof);
 
     out.Q = _qsr.topLeftCorner(nx, nx);
-    out.S = _qsr.topRightCorner(nx, nu);
+    // out.S = _qsr.topRightCorner(nx, nu);
+    if (sing) {
+      auto n = nx / 2;
+      if (nx <= 6)
+        n = nx / 2;
+      out.Q.topLeftCorner(n, n).setZero();
+    }
     out.R = _qsr.bottomRightCorner(nu, nu);
     out.q.head(nx) = VectorXs::NullaryExpr(nx, normal_unary_op{});
     out.r.head(nu) = VectorXs::NullaryExpr(nu, normal_unary_op{});
 
-    out.A.setRandom();
+    out.A = MatrixXs::NullaryExpr(nx, nx, normal_unary_op{});
     out.B.setRandom();
     out.E = out.E.NullaryExpr(nx, nx, normal_unary_op{});
     out.E *= 1000;
@@ -46,7 +52,7 @@ problem_t generate_problem(const ConstVectorRef &x0, uint horz, uint nx,
     return out;
   };
 
-  auto knb = gen(nu);
+  auto knb = gen(nu, true);
   for (uint i = 0; i < horz; i++) {
     knots[i] = knb;
   }
