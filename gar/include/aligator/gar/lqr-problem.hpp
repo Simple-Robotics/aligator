@@ -28,7 +28,7 @@ namespace gar {
 template <typename Scalar> struct LQRKnotTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
-  uint nx, nu, nc, nx2;
+  uint nx, nu, nc, nx2, nth;
   MatrixXs Q, S, R;
   VectorXs q, r;
   MatrixXs A, B, E;
@@ -36,7 +36,6 @@ template <typename Scalar> struct LQRKnotTpl {
   MatrixXs C, D;
   VectorXs d;
 
-  uint nth;
   MatrixXs Gth;
   MatrixXs Gx;
   MatrixXs Gu;
@@ -45,11 +44,12 @@ template <typename Scalar> struct LQRKnotTpl {
 
   LQRKnotTpl() = default;
 
-  LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2)
-      : nx(nx), nu(nu), nc(nc), nx2(nx2),              //
+  LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth = 0)
+      : nx(nx), nu(nu), nc(nc), nx2(nx2), nth(nth),    //
         Q(nx, nx), S(nx, nu), R(nu, nu), q(nx), r(nu), //
         A(nx2, nx), B(nx2, nu), E(nx2, nx), f(nx2),    //
-        C(nc, nx), D(nc, nu), d(nc), nth(0) {
+        C(nc, nx), D(nc, nu), d(nc), Gth(nth, nth), Gx(nx, nth), Gu(nu, nth),
+        Gv(nc, nth), gamma(nth) {
     Q.setZero();
     S.setZero();
     R.setZero();
@@ -65,22 +65,18 @@ template <typename Scalar> struct LQRKnotTpl {
     D.setZero();
     d.setZero();
 
-    Gth.setZero(nth, nth);
-    Gx.setZero(nx, nth);
-    Gu.setZero(nu, nth);
-    Gv.setZero(nc, nth);
-    gamma.setZero(nth);
+    Gth.setZero();
+    Gx.setZero();
+    Gu.setZero();
+    Gv.setZero();
+    gamma.setZero();
   }
 
   LQRKnotTpl(uint nx, uint nu, uint nc) : LQRKnotTpl(nx, nu, nc, nx) {}
 
+  // reallocates entire buffer for contigousness
   inline void addParameterization(uint nth) {
-    this->nth = nth;
-    Gth.setZero(nth, nth);
-    Gx.setZero(nx, nth);
-    Gu.setZero(nu, nth);
-    Gv.setZero(nc, nth);
-    gamma.setZero(nth);
+    *this = LQRKnotTpl(nx, nu, nc, nx2, nth);
   }
 };
 
