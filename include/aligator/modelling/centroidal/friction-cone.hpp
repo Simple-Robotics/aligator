@@ -16,9 +16,10 @@ public:
   using BaseData = typename Base::Data;
   using Data = FrictionConeDataTpl<Scalar>;
 
-  FrictionConeResidualTpl(const int ndx, const int nu, const int k,
-                          const double mu)
-      : Base(ndx, nu, 2), nk_(nu / 3), k_(k), mu2_(mu * mu) {
+  FrictionConeResidualTpl(const std::size_t &ndx, const std::size_t &nu,
+                          const std::size_t &k, const double &mu,
+                          const double &epsilon)
+      : Base(ndx, nu, 2), nk_(nu / 3), k_(k), mu2_(mu * mu), epsilon_(epsilon) {
     if (k_ >= nk_) {
       ALIGATOR_RUNTIME_ERROR(
           fmt::format("Invalid contact index: k should be < {}. ", nk_));
@@ -39,6 +40,7 @@ protected:
   const std::size_t nk_;
   const std::size_t k_;
   const double mu2_;
+  const double epsilon_;
 };
 
 template <typename Scalar>

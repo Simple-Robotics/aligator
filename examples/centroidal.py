@@ -18,6 +18,7 @@ args = Args().parse_args()
 """ Define centroidal parameters """
 nx = 9  # State size: [c, h, L]
 nk = 4  # Number of contacts
+nu = nk * 3
 mass = 10.5
 gravity = np.array([0, 0, -9.81])
 mu = 0.8  # Friction coefficient
@@ -47,40 +48,46 @@ gaits = (
 
 """ Define contact points throughout horizon"""
 cp1 = [
-    (0, np.array([0.2, 0.1, 0.0])),
-    (1, np.array([0.2, 0.0, 0.0])),
-    (2, np.array([0.0, 0.1, 0.0])),
-    (3, np.array([0.0, 0.0, 0])),
+    (True, np.array([0.2, 0.1, 0.0])),
+    (True, np.array([0.2, 0.0, 0.0])),
+    (True, np.array([0.0, 0.1, 0.0])),
+    (True, np.array([0.0, 0.0, 0])),
 ]
 cp2 = [
-    (1, np.array([0.2, 0.0, 0.0])),
-    (2, np.array([0.0, 0.1, 0.0])),
+    (False, np.array([0.2, 0.1, 0.0])),
+    (True, np.array([0.2, 0.0, 0.0])),
+    (True, np.array([0.0, 0.1, 0.0])),
+    (False, np.array([0.0, 0.0, 0])),
 ]
 cp3 = [
-    (0, np.array([0.25, 0.1, 0.0])),
-    (1, np.array([0.2, 0.0, 0.0])),
-    (2, np.array([0.0, 0.1, 0.0])),
-    (3, np.array([0.05, 0.0, 0])),
+    (True, np.array([0.25, 0.1, 0.0])),
+    (True, np.array([0.2, 0.0, 0.0])),
+    (True, np.array([0.0, 0.1, 0.0])),
+    (True, np.array([0.05, 0.0, 0])),
 ]
 cp4 = [
-    (0, np.array([0.25, 0.1, 0.0])),
-    (3, np.array([0.05, 0.0, 0])),
+    (True, np.array([0.25, 0.1, 0.0])),
+    (False, np.array([0.2, 0.0, 0.0])),
+    (False, np.array([0.0, 0.1, 0.0])),
+    (True, np.array([0.05, 0.0, 0])),
 ]
 cp5 = [
-    (0, np.array([0.25, 0.1, 0.0])),
-    (1, np.array([0.25, 0.0, 0.0])),
-    (2, np.array([0.05, 0.1, 0.0])),
-    (3, np.array([0.05, 0.0, 0])),
+    (True, np.array([0.25, 0.1, 0.0])),
+    (True, np.array([0.25, 0.0, 0.0])),
+    (True, np.array([0.05, 0.1, 0.0])),
+    (True, np.array([0.05, 0.0, 0])),
 ]
 cp6 = [
-    (1, np.array([0.25, 0.0, 0.0])),
-    (2, np.array([0.05, 0.1, 0.0])),
+    (False, np.array([0.25, 0.1, 0.0])),
+    (True, np.array([0.25, 0.0, 0.0])),
+    (True, np.array([0.05, 0.1, 0.0])),
+    (False, np.array([0.05, 0.0, 0])),
 ]
 cp7 = [
-    (0, np.array([0.3, 0.1, 0.0])),
-    (1, np.array([0.25, 0.0, 0.0])),
-    (2, np.array([0.05, 0.1, 0.0])),
-    (3, np.array([0.1, 0.0, 0])),
+    (True, np.array([0.3, 0.1, 0.0])),
+    (True, np.array([0.25, 0.0, 0.0])),
+    (True, np.array([0.05, 0.1, 0.0])),
+    (True, np.array([0.1, 0.0, 0])),
 ]
 contact_points = (
     [cp1] * T_ds
@@ -91,6 +98,7 @@ contact_points = (
     + [cp6] * T_ss
     + [cp7] * T_ds
 )
+
 
 T = len(contact_points)  # Size of the problem
 dt = 0.01  # timestep
@@ -112,8 +120,7 @@ def create_dynamics(cp):
 
 
 def createStage(cp):
-    nu = len(cp) * 3
-    w_control = np.eye(nu) * 1e-3
+    w_control = np.eye(nu) * 1e-1
     u0 = np.zeros(nu)
     rcost = aligator.CostStack(space, nu)
 
@@ -126,14 +133,14 @@ def createStage(cp):
     rcost.addCost(aligator.QuadraticResidualCost(space, angular_acc, w_angular_acc))
     rcost.addCost(aligator.QuadraticResidualCost(space, linear_acc, w_linear_acc))
     stm = aligator.StageModel(rcost, create_dynamics(cp))
-    for i in range(len(cp)):
-        cone_cstr = aligator.FrictionConeResidual(space.ndx, nu, i, mu)
-        stm.addConstraint(cone_cstr, constraints.NegativeOrthant())
+    for i, c in enumerate(cp):
+        if c[0]:
+            cone_cstr = aligator.FrictionConeResidual(space.ndx, nu, i, mu, 0)
+            stm.addConstraint(cone_cstr, constraints.NegativeOrthant())
 
     return stm
 
 
-nu = nk * 3
 term_cost = aligator.CostStack(space, nu)
 
 """ Initial and final acceleration (linear + angular) must be null"""
@@ -146,19 +153,22 @@ init_linear_acc_cstr = aligator.CentroidalAccelerationResidual(
 ter_linear_acc_cstr = aligator.CentroidalAccelerationResidual(
     nx, nu, mass, gravity, contact_points[-1]
 )
-angular_acc_cstr = aligator.AngularAccelerationResidual(
+ter_angular_acc_cstr = aligator.AngularAccelerationResidual(
     nx, nu, mass, gravity, contact_points[-1]
+)
+init_angular_acc_cstr = aligator.AngularAccelerationResidual(
+    nx, nu, mass, gravity, contact_points[0]
 )
 init_linear_mom = aligator.LinearMomentumResidual(nx, nu, np.array([0, 0, 0]))
 ter_angular_mom = aligator.AngularMomentumResidual(nx, nu, np.array([0, 0, 0]))
 stages[0].addConstraint(init_linear_acc_cstr, constraints.EqualityConstraintSet())
-# stages[0].addConstraint(angular_acc_cstr, constraints.EqualityConstraintSet())
+stages[0].addConstraint(init_angular_acc_cstr, constraints.EqualityConstraintSet())
 stages[0].addConstraint(init_linear_mom, constraints.EqualityConstraintSet())
 
-stages[-1].addConstraint(ter_linear_acc_cstr, constraints.EqualityConstraintSet())
 stages[-1].addConstraint(init_linear_mom, constraints.EqualityConstraintSet())
+stages[-1].addConstraint(ter_linear_acc_cstr, constraints.EqualityConstraintSet())
 stages[-1].addConstraint(ter_angular_mom, constraints.EqualityConstraintSet())
-# stages[-1].addConstraint(angular_acc_cstr, constraints.EqualityConstraintSet())
+stages[-1].addConstraint(ter_angular_acc_cstr, constraints.EqualityConstraintSet())
 problem = aligator.TrajOptProblem(x0, stages, term_cost)
 
 """ Final CoM placement constraints """
@@ -244,11 +254,9 @@ for i in range(T):
     angular_momentum[0].append(results.xs[i][6])
     angular_momentum[1].append(results.xs[i][7])
     angular_momentum[2].append(results.xs[i][8])
-    s = 0
     for j in range(nk):
-        if j in gaits[i]:
-            forces_z[j].append(results.us[i][s * 3 + 2])
-            s += 1
+        if contact_points[i][j][0]:
+            forces_z[j].append(results.us[i][j * 3 + 2])
         else:
             forces_z[j].append(0)
 
@@ -322,4 +330,4 @@ axs[3].plot(ttlin, forces_z[3])
 axs[3].grid(True)
 axs[3].set_title("f_z RB")
 
-# plt.show()
+plt.show()

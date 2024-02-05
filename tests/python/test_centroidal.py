@@ -178,8 +178,9 @@ def test_friction_cone():
     u0 = np.random.randn(nu)
     k = 2
     mu = 0.5
+    epsilon = 1e-3
 
-    fun = aligator.FrictionConeResidual(ndx, nu, k, mu)
+    fun = aligator.FrictionConeResidual(ndx, nu, k, mu, epsilon)
 
     fdata = fun.createData()
     fun.evaluate(x0, u0, x0, fdata)

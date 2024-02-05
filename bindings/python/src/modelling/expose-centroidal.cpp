@@ -107,8 +107,9 @@ void exposeCentroidalFunctions() {
   bp::class_<FrictionConeResidual, bp::bases<StageFunction>>(
       "FrictionConeResidual",
       "A residual function :math:`r(x) = [fz, mu2 * fz2 - (fx2 + fy2)]` ",
-      bp::init<const int, const int, const int, const double>(
-          bp::args("self", "ndx", "nu", "k", "mu")));
+      bp::init<const std::size_t &, const std::size_t &, const std::size_t &,
+               const double &, const double &>(
+          bp::args("self", "ndx", "nu", "k", "mu", "epsilon")));
 
   bp::register_ptr_to_python<shared_ptr<FrictionConeData>>();
 

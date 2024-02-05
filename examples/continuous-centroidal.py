@@ -22,7 +22,7 @@ nx = 9 + 3 * nk  # State size: [c, h, L, u]
 mass = 10.5
 gravity = np.array([0, 0, -9.81])
 mu = 0.8  # Friction coefficient
-nu_max = 3 * nk
+nu = 3 * nk
 
 space = manifolds.VectorSpace(nx)
 wrapped_space = manifolds.VectorSpace(9)
@@ -100,7 +100,7 @@ contact_points = (
     + [cp4] * T_ss
     + [cp5] * T_ds
     + [cp6] * T_ss
-    + [cp7] * T_ds
+    + [cp7] * (T_ds + 50)
 )
 
 T = len(contact_points)  # Size of the problem
@@ -111,6 +111,11 @@ dt = 0.01  # timestep
 w_angular_acc = 0.1 * np.eye(3)
 w_linear_mom = 10 * np.eye(3)
 w_linear_acc = 100 * np.eye(3)
+w_control = np.eye(nu) * 1e-3
+w_state = (
+    np.diag(np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]))
+    * 1e-2
+)
 
 
 def create_dynamics(nspace, cp):
@@ -120,8 +125,7 @@ def create_dynamics(nspace, cp):
 
 
 def createStage(cp):
-    w_control = np.eye(nu) * 1e-3
-    u0 = np.zeros(nu)
+    x0n = np.zeros(nx)
     rcost = aligator.CostStack(space, nu)
 
     linear_acc = aligator.CentroidalAccelerationResidual(nxc, nu, mass, gravity, cp)
@@ -131,7 +135,8 @@ def createStage(cp):
     wrapped_angular_acc = aligator.CentroidalWrapperResidual(angular_acc)
     wrapped_linear_mom = aligator.CentroidalWrapperResidual(linear_mom)
 
-    rcost.addCost(aligator.QuadraticControlCost(space, u0, w_control))
+    rcost.addCost(aligator.QuadraticStateCost(space, nu, x0n, w_state))
+    rcost.addCost(aligator.QuadraticControlCost(space, np.zeros(nu), w_control))
     rcost.addCost(
         aligator.QuadraticResidualCost(space, wrapped_linear_mom, w_linear_mom)
     )
@@ -142,10 +147,11 @@ def createStage(cp):
         aligator.QuadraticResidualCost(space, wrapped_linear_acc, w_linear_acc)
     )
     stm = aligator.StageModel(rcost, create_dynamics(space, cp))
-    for i in range(len(cp)):
-        cone_cstr = aligator.FrictionConeResidual(nxc, nu, i, mu)
-        wrapped_cstr = aligator.CentroidalWrapperResidual(cone_cstr)
-        stm.addConstraint(wrapped_cstr, constraints.NegativeOrthant())
+    for i, c in enumerate(cp):
+        if c[0]:
+            cone_cstr = aligator.FrictionConeResidual(space.ndx, nu, i, mu, 1e-3)
+            wrapped_cstr = aligator.CentroidalWrapperResidual(cone_cstr)
+            stm.addConstraint(wrapped_cstr, constraints.NegativeOrthant())
 
     return stm
 
@@ -173,13 +179,16 @@ init_linear_mom = aligator.CentroidalWrapperResidual(
 ter_angular_mom = aligator.CentroidalWrapperResidual(
     aligator.AngularMomentumResidual(nxc, nu, np.array([0, 0, 0]))
 )
-# stages[0].addConstraint(init_linear_acc_cstr, constraints.EqualityConstraintSet())
+
+init_force_derivative = aligator.ControlErrorResidual(nx, nu)
+stages[0].addConstraint(init_force_derivative, constraints.EqualityConstraintSet())
+stages[0].addConstraint(init_linear_acc_cstr, constraints.EqualityConstraintSet())
+stages[0].addConstraint(init_linear_mom, constraints.EqualityConstraintSet())
 # stages[0].addConstraint(angular_acc_cstr, constraints.EqualityConstraintSet())
-# stages[0].addConstraint(init_linear_mom, constraints.EqualityConstraintSet())
 
 stages[-1].addConstraint(ter_linear_acc_cstr, constraints.EqualityConstraintSet())
-# stages[-1].addConstraint(init_linear_mom, constraints.EqualityConstraintSet())
-# stages[-1].addConstraint(ter_angular_mom, constraints.EqualityConstraintSet())
+stages[-1].addConstraint(init_linear_mom, constraints.EqualityConstraintSet())
+stages[-1].addConstraint(ter_angular_mom, constraints.EqualityConstraintSet())
 # stages[-1].addConstraint(angular_acc_cstr, constraints.EqualityConstraintSet())
 problem = aligator.TrajOptProblem(x0, stages, term_cost)
 
@@ -197,7 +206,7 @@ problem.addTerminalConstraint(term_constraint_com)
 TOL = 1e-5
 mu_init = 1e-8
 rho_init = 0.0
-max_iters = 500
+max_iters = 100
 verbose = aligator.VerboseLevel.VERBOSE
 solver = aligator.SolverProxDDP(TOL, mu_init, rho_init, verbose=verbose)
 # solver = aligator.SolverFDDP(TOL, verbose=verbose)
@@ -206,17 +215,24 @@ print("LDLT algo choice:", solver.ldlt_algo_choice)
 # solver = aligator.SolverFDDP(TOL, verbose=verbose)
 solver.max_iters = max_iters
 solver.sa_strategy = aligator.SA_FILTER  # FILTER or LINESEARCH
+solver.force_initial_condition = True
 solver.setup(problem)
 solver.filter.beta = 1e-5
 
 us_init = []
 xs_init = []
 for el in contact_points:
-    us_init.append(np.zeros(len(el) * 3))
-    xi = np.zeros(9 + len(el) * 3)
+    us_init.append(np.zeros(nk * 3))
+    xi = np.zeros(9 + nk * 3)
     xi[:9] = x0[:9].copy()
+    active_contact = 0
+    for c in el:
+        if c[0]:
+            active_contact += 1
+    weight_reg = -mass * gravity[2] / active_contact
     for i in range(len(el)):
-        xi[9 + 3 * i + 2] = -gravity[2] * mass / len(el)
+        if el[i][0]:
+            xi[9 + 3 * i + 2] = weight_reg
     xs_init.append(xi)
 
 xs_init.append(x0)
@@ -264,11 +280,9 @@ for i in range(T):
     angular_momentum[0].append(results.xs[i][6])
     angular_momentum[1].append(results.xs[i][7])
     angular_momentum[2].append(results.xs[i][8])
-    s = 0
     for j in range(nk):
         if contact_points[i][j][0]:
-            forces_z[j].append(results.xs[i][9 + s * 3 + 2])
-            s += 1
+            forces_z[j].append(results.xs[i][9 + j * 3 + 2])
         else:
             forces_z[j].append(0)
 
@@ -342,4 +356,4 @@ axs[3].plot(ttlin, forces_z[3])
 axs[3].grid(True)
 axs[3].set_title("f_z RB")
 
-# plt.show()
+plt.show()
