@@ -16,7 +16,7 @@ public:
   using BaseData = typename Base::Data;
   using Data = CentroidalCoMDataTpl<Scalar>;
 
-  CentroidalCoMResidualTpl(const int ndx, const int nu, const Vector3s &p_ref)
+  CentroidalCoMResidualTpl(const int &ndx, const int &nu, const Vector3s &p_ref)
       : Base(ndx, nu, 3), p_ref_(p_ref) {}
 
   const Vector3s &getReference() const { return p_ref_; }

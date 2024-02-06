@@ -164,7 +164,7 @@ def test_continuous_centroidal():
         gravity = np.array([0, 0, -9.81])
         contact_map = [(True, np.array([0, 0.1, 0])), (True, np.array([0.1, -0.1, 0]))]
         ode = dynamics.ContinuousCentroidalFwdDynamics(
-            space, nk, mass, gravity, contact_map
+            space, mass, gravity, contact_map
         )
         data = ode.createData()
 
@@ -187,9 +187,7 @@ def test_continuous_centroidal_diff():
     mass = 10.5
     gravity = np.array([0, 0, -9.81])
     contact_map = [(True, np.array([0, 0.1, 0])), (True, np.array([0.1, -0.1, 0]))]
-    ode = dynamics.ContinuousCentroidalFwdDynamics(
-        space, nk, mass, gravity, contact_map
-    )
+    ode = dynamics.ContinuousCentroidalFwdDynamics(space, mass, gravity, contact_map)
     data = ode.createData()
 
     x0 = np.random.randn(nx)

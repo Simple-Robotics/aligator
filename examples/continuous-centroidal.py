@@ -38,19 +38,9 @@ for i in range(nk):
 """ Define gait and time parameters"""
 T_ds = 10  # Double support time
 T_ss = 40  # Singel support time
-# Contacts state: [LF, RF, LB, RB]
-gaits = (
-    [[0, 1, 2, 3]] * T_ds
-    + [[1, 2]] * T_ss
-    + [[0, 1, 2, 3]] * T_ds
-    + [[0, 3]] * T_ss
-    + [[0, 1, 2, 3]] * T_ds
-    + [[1, 2]] * T_ss
-    + [[0, 1, 2, 3]] * T_ds
-)
 
 """ Define contact points throughout horizon"""
-x_forward = 0.1
+x_forward = 0.2
 cp1 = [
     (True, np.array([0.2, 0.1, 0.0])),
     (True, np.array([0.2, 0.0, 0.0])),
@@ -116,8 +106,8 @@ dt = 0.01  # timestep
 
 w_angular_acc = 0.1 * np.eye(3)
 w_linear_mom = 10 * np.eye(3)
-w_linear_acc = 100 * np.eye(3)
-w_control = np.eye(nu) * 1e-3
+w_linear_acc = 0.1 * np.eye(3)
+w_control = np.eye(nu) * 1e-4
 w_ter_com = np.eye(3) * 1e7
 w_state = (
     np.diag(np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]))
@@ -126,12 +116,12 @@ w_state = (
 
 
 def create_dynamics(nspace, cp):
-    ode = dynamics.ContinuousCentroidalFwdDynamics(nspace, len(cp), mass, gravity, cp)
+    ode = dynamics.ContinuousCentroidalFwdDynamics(nspace, mass, gravity, cp)
     dyn_model = dynamics.IntegratorEuler(ode, dt)
     return dyn_model
 
 
-def createStage(cp):
+def createStage(cp, cp_previous):
     x0n = np.zeros(nx)
     rcost = aligator.CostStack(space, nu)
 
@@ -142,7 +132,15 @@ def createStage(cp):
     wrapped_angular_acc = aligator.CentroidalWrapperResidual(angular_acc)
     wrapped_linear_mom = aligator.CentroidalWrapperResidual(linear_mom)
 
-    rcost.addCost(aligator.QuadraticStateCost(space, nu, x0n, w_state))
+    w_state_cstr = w_state.copy()
+    for i, c in enumerate(cp):
+        if c[0] and not (cp_previous[i][0]):
+            w_state_cstr[9 + i * 3 + 2] *= 100
+        elif not (c[0]) and cp_previous[i][0]:
+            w_state_cstr[9 + i * 3 + 2] *= 100
+
+    rcost.addCost(aligator.QuadraticStateCost(space, nu, x0n, w_state_cstr))
+
     rcost.addCost(aligator.QuadraticControlCost(space, np.zeros(nu), w_control))
     rcost.addCost(
         aligator.QuadraticResidualCost(space, wrapped_linear_mom, w_linear_mom)
@@ -171,9 +169,9 @@ ter_com = aligator.CentroidalWrapperResidual(
 # term_cost.addCost(aligator.QuadraticResidualCost(space,ter_com, w_ter_com))
 
 """ Initial and final acceleration (linear + angular) must be null"""
-stages = []
-for i in range(T):
-    stages.append(createStage(contact_points[i]))
+stages = [createStage(contact_points[0], contact_points[0])]
+for i in range(1, T):
+    stages.append(createStage(contact_points[i], contact_points[i - 1]))
 init_linear_acc_cstr = aligator.CentroidalWrapperResidual(
     aligator.CentroidalAccelerationResidual(nxc, nu, mass, gravity, contact_points[0])
 )
@@ -192,6 +190,8 @@ ter_angular_mom = aligator.CentroidalWrapperResidual(
 )
 
 init_force_derivative = aligator.ControlErrorResidual(nx, nu)
+init_state = aligator.StateErrorResidual(space, nu, x0)
+stages[0].addConstraint(init_state, constraints.EqualityConstraintSet())
 stages[0].addConstraint(init_force_derivative, constraints.EqualityConstraintSet())
 stages[0].addConstraint(init_linear_acc_cstr, constraints.EqualityConstraintSet())
 stages[0].addConstraint(init_linear_mom, constraints.EqualityConstraintSet())

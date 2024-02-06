@@ -16,7 +16,8 @@ public:
   using BaseData = typename Base::Data;
   using Data = AngularMomentumDataTpl<Scalar>;
 
-  AngularMomentumResidualTpl(const int ndx, const int nu, const Vector3s &L_ref)
+  AngularMomentumResidualTpl(const int &ndx, const int &nu,
+                             const Vector3s &L_ref)
       : Base(ndx, nu, 3), L_ref_(L_ref) {}
 
   const Vector3s &getReference() const { return L_ref_; }

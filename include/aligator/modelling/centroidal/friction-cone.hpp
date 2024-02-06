@@ -16,9 +16,8 @@ public:
   using BaseData = typename Base::Data;
   using Data = FrictionConeDataTpl<Scalar>;
 
-  FrictionConeResidualTpl(const std::size_t &ndx, const std::size_t &nu,
-                          const std::size_t &k, const double &mu,
-                          const double &epsilon)
+  FrictionConeResidualTpl(const int &ndx, const int &nu, const int &k,
+                          const double &mu, const double &epsilon)
       : Base(ndx, nu, 2), nk_(nu / 3), k_(k), mu2_(mu * mu), epsilon_(epsilon) {
     if (k_ >= nk_) {
       ALIGATOR_RUNTIME_ERROR(
@@ -37,8 +36,8 @@ public:
   }
 
 protected:
-  const std::size_t nk_;
-  const std::size_t k_;
+  const int nk_;
+  const int k_;
   const double mu2_;
   const double epsilon_;
 };

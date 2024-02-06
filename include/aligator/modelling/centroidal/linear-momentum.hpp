@@ -15,7 +15,8 @@ public:
   using BaseData = typename Base::Data;
   using Data = LinearMomentumDataTpl<Scalar>;
 
-  LinearMomentumResidualTpl(const int ndx, const int nu, const Vector3s &h_ref)
+  LinearMomentumResidualTpl(const int &ndx, const int &nu,
+                            const Vector3s &h_ref)
       : Base(ndx, nu, 3), h_ref_(h_ref) {}
 
   const Vector3s &getReference() const { return h_ref_; }

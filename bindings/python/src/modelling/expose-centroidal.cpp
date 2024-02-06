@@ -46,7 +46,7 @@ void exposeCentroidalFunctions() {
 
   bp::class_<CentroidalCoMResidual, bp::bases<UnaryFunction>>(
       "CentroidalCoMResidual", "A residual function :math:`r(x) = com(x)` ",
-      bp::init<const int, const int, const context::Vector3s>(
+      bp::init<const int &, const int &, const context::Vector3s &>(
           bp::args("self", "ndx", "nu", "p_ref")))
       .def("getReference", &CentroidalCoMResidual::getReference,
            bp::args("self"), bp::return_internal_reference<>(),
@@ -62,7 +62,7 @@ void exposeCentroidalFunctions() {
 
   bp::class_<LinearMomentumResidual, bp::bases<UnaryFunction>>(
       "LinearMomentumResidual", "A residual function :math:`r(x) = h(x)` ",
-      bp::init<const int, const int, const context::Vector3s>(
+      bp::init<const int &, const int &, const context::Vector3s &>(
           bp::args("self", "ndx", "nu", "h_ref")))
       .def("getReference", &LinearMomentumResidual::getReference,
            bp::args("self"), bp::return_internal_reference<>(),
@@ -77,7 +77,7 @@ void exposeCentroidalFunctions() {
 
   bp::class_<AngularMomentumResidual, bp::bases<UnaryFunction>>(
       "AngularMomentumResidual", "A residual function :math:`r(x) = L(x)` ",
-      bp::init<const int, const int, const context::Vector3s>(
+      bp::init<const int &, const int &, const context::Vector3s &>(
           bp::args("self", "ndx", "nu", "L_ref")))
       .def("getReference", &AngularMomentumResidual::getReference,
            bp::args("self"), bp::return_internal_reference<>(),
@@ -93,7 +93,8 @@ void exposeCentroidalFunctions() {
   bp::class_<CentroidalAccelerationResidual, bp::bases<StageFunction>>(
       "CentroidalAccelerationResidual",
       "A residual function :math:`r(x) = cddot(x)` ",
-      bp::init<const int, const int, const double, const context::Vector3s,
+      bp::init<const int &, const int &, const double &,
+               const context::Vector3s &,
                const std::vector<std::pair<bool, context::Vector3s>> &>(
           bp::args("self", "ndx", "nu", "mass", "gravity", "contact_map")))
       .def(CreateDataPythonVisitor<CentroidalAccelerationResidual>());
@@ -107,8 +108,8 @@ void exposeCentroidalFunctions() {
   bp::class_<FrictionConeResidual, bp::bases<StageFunction>>(
       "FrictionConeResidual",
       "A residual function :math:`r(x) = [fz, mu2 * fz2 - (fx2 + fy2)]` ",
-      bp::init<const std::size_t &, const std::size_t &, const std::size_t &,
-               const double &, const double &>(
+      bp::init<const int &, const int &, const int &, const double &,
+               const double &>(
           bp::args("self", "ndx", "nu", "k", "mu", "epsilon")));
 
   bp::register_ptr_to_python<shared_ptr<FrictionConeData>>();

@@ -8,17 +8,11 @@ namespace dynamics {
 
 template <typename Scalar>
 ContinuousCentroidalFwdDynamicsTpl<Scalar>::ContinuousCentroidalFwdDynamicsTpl(
-    const ManifoldPtr &state, const int &nk, const double &mass,
-    const Vector3s &gravity,
+    const ManifoldPtr &state, const double &mass, const Vector3s &gravity,
     const std::vector<std::pair<bool, Vector3s>> &contact_map)
-    : Base(state, nk * 3), space_(state), nk_(nk), mass_(mass),
-      gravity_(gravity), contact_map_(contact_map) {
-  if (contact_map.size() != nk) {
-    ALIGATOR_DOMAIN_ERROR(
-        fmt::format("Contact map size and nk should be the same: now "
-                    "({} and {}).",
-                    contact_map.size(), nk));
-  }
+    : Base(state, contact_map.size() * 3), space_(state),
+      nk_(contact_map.size()), mass_(mass), gravity_(gravity),
+      contact_map_(contact_map) {
   if (space_->nx() != 9 + nu_) {
     ALIGATOR_DOMAIN_ERROR(fmt::format("State space should be of size: "
                                       "({}).",

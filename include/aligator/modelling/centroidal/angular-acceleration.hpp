@@ -45,7 +45,7 @@ public:
   std::vector<std::pair<bool, Vector3s>> contact_map_;
 
 protected:
-  const std::size_t nk_;
+  const int nk_;
   const double mass_;
   Vector3s gravity_;
 };
