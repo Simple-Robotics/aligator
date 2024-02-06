@@ -30,7 +30,6 @@ x0 = space.neutral()
 
 """ Define initial and final desired CoM """
 com_initial = np.array([0.1, 0.05, 0.15])
-com_final = np.array([0.175, 0.05, 0.15])
 
 x0[:3] = com_initial
 for i in range(nk):
@@ -51,6 +50,7 @@ gaits = (
 )
 
 """ Define contact points throughout horizon"""
+x_forward = 0.1
 cp1 = [
     (True, np.array([0.2, 0.1, 0.0])),
     (True, np.array([0.2, 0.0, 0.0])),
@@ -64,34 +64,34 @@ cp2 = [
     (False, np.array([0.0, 0.0, 0])),
 ]
 cp3 = [
-    (True, np.array([0.25, 0.1, 0.0])),
+    (True, np.array([0.2 + x_forward, 0.1, 0.0])),
     (True, np.array([0.2, 0.0, 0.0])),
     (True, np.array([0.0, 0.1, 0.0])),
-    (True, np.array([0.05, 0.0, 0])),
+    (True, np.array([x_forward, 0.0, 0])),
 ]
 cp4 = [
-    (True, np.array([0.25, 0.1, 0.0])),
+    (True, np.array([0.2 + x_forward, 0.1, 0.0])),
     (False, np.array([0.2, 0.0, 0.0])),
     (False, np.array([0.0, 0.1, 0.0])),
-    (True, np.array([0.05, 0.0, 0])),
+    (True, np.array([x_forward, 0.0, 0])),
 ]
 cp5 = [
-    (True, np.array([0.25, 0.1, 0.0])),
-    (True, np.array([0.25, 0.0, 0.0])),
-    (True, np.array([0.05, 0.1, 0.0])),
-    (True, np.array([0.05, 0.0, 0])),
+    (True, np.array([0.2 + x_forward, 0.1, 0.0])),
+    (True, np.array([0.2 + x_forward, 0.0, 0.0])),
+    (True, np.array([x_forward, 0.1, 0.0])),
+    (True, np.array([x_forward, 0.0, 0])),
 ]
 cp6 = [
-    (False, np.array([0.2, 0.0, 0.0])),
-    (True, np.array([0.25, 0.0, 0.0])),
-    (True, np.array([0.05, 0.1, 0.0])),
-    (False, np.array([0.2, 0.0, 0.0])),
+    (False, np.array([0.2 + x_forward, 0.0, 0.0])),
+    (True, np.array([0.2 + x_forward, 0.0, 0.0])),
+    (True, np.array([x_forward, 0.1, 0.0])),
+    (False, np.array([x_forward, 0.0, 0.0])),
 ]
 cp7 = [
-    (True, np.array([0.3, 0.1, 0.0])),
-    (True, np.array([0.25, 0.0, 0.0])),
-    (True, np.array([0.05, 0.1, 0.0])),
-    (True, np.array([0.1, 0.0, 0])),
+    (True, np.array([0.2 + 2 * x_forward, 0.1, 0.0])),
+    (True, np.array([0.2 + x_forward, 0.0, 0.0])),
+    (True, np.array([x_forward, 0.1, 0.0])),
+    (True, np.array([2 * x_forward, 0.0, 0])),
 ]
 contact_points = (
     [cp1] * T_ds
@@ -102,6 +102,12 @@ contact_points = (
     + [cp6] * T_ss
     + [cp7] * (T_ds + 50)
 )
+com_final = cp7[0][1]
+com_final += cp7[1][1]
+com_final += cp7[2][1]
+com_final += cp7[3][1]
+com_final /= 4
+com_final[2] = com_initial[2]
 
 T = len(contact_points)  # Size of the problem
 dt = 0.01  # timestep
@@ -112,6 +118,7 @@ w_angular_acc = 0.1 * np.eye(3)
 w_linear_mom = 10 * np.eye(3)
 w_linear_acc = 100 * np.eye(3)
 w_control = np.eye(nu) * 1e-3
+w_ter_com = np.eye(3) * 1e7
 w_state = (
     np.diag(np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]))
     * 1e-2
@@ -158,6 +165,10 @@ def createStage(cp):
 
 nu = nk * 3
 term_cost = aligator.CostStack(space, nu)
+ter_com = aligator.CentroidalWrapperResidual(
+    aligator.CentroidalCoMResidual(nxc, nu, com_final)
+)
+# term_cost.addCost(aligator.QuadraticResidualCost(space,ter_com, w_ter_com))
 
 """ Initial and final acceleration (linear + angular) must be null"""
 stages = []
