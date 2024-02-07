@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add a pair filter strategy as an alternative to linesearch methods
 - Add a python example of a locomotion OCP with the robot Talos
+- Add two nonlinear centroidal dynamical models, where the control is respectively contact forces and their time derivative
+- Add a set of cost functions to generate a centroidal problem with user-defined contacts
+- Add unittests and example of typical centroidal problem
 
 ## [0.4.1] - 2024-01-25
 
