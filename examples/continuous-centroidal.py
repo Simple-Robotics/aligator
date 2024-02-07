@@ -15,7 +15,7 @@ class Args(ArgsBase):
 
 
 args = Args().parse_args()
-""" Define centroidal parameters """
+# Define centroidal parameters
 nk = 4  # Max number of contacts
 nxc = 9
 nx = 9 + 3 * nk  # State size: [c, h, L, u]
@@ -28,7 +28,7 @@ space = manifolds.VectorSpace(nx)
 wrapped_space = manifolds.VectorSpace(9)
 x0 = space.neutral()
 
-""" Define initial and final desired CoM """
+# Define initial and final desired CoM
 com_initial = np.array([0.1, 0.05, 0.15])
 
 x0[:3] = com_initial
@@ -39,7 +39,7 @@ for i in range(nk):
 T_ds = 10  # Double support time
 T_ss = 40  # Singel support time
 
-""" Define contact points throughout horizon"""
+# Define contact points throughout horizon
 x_forward = 0.05
 cp1 = [
     (True, np.array([0.2, 0.1, 0.0])),
@@ -102,7 +102,7 @@ com_final[2] = com_initial[2]
 T = len(contact_points)  # Size of the problem
 dt = 0.01  # timestep
 
-""" Create dynamics and costs """
+# Create dynamics and costs
 
 w_angular_acc = 0.1 * np.eye(3)
 w_linear_mom = 10 * np.eye(3)
@@ -168,7 +168,7 @@ ter_com = aligator.CentroidalWrapperResidual(
 )
 # term_cost.addCost(aligator.QuadraticResidualCost(space,ter_com, w_ter_com))
 
-""" Initial and final acceleration (linear + angular) must be null"""
+# Initial and final acceleration (linear + angular) must be null
 stages = [createStage(contact_points[0], contact_points[0])]
 for i in range(1, T):
     stages.append(createStage(contact_points[i], contact_points[i - 1]))
@@ -203,7 +203,7 @@ stages[-1].addConstraint(ter_angular_mom, constraints.EqualityConstraintSet())
 # stages[-1].addConstraint(angular_acc_cstr, constraints.EqualityConstraintSet())
 problem = aligator.TrajOptProblem(x0, stages, term_cost)
 
-""" Final CoM placement constraints """
+# Final CoM placement constraints
 com_cstr = aligator.CentroidalWrapperResidual(
     aligator.CentroidalCoMResidual(nxc, nu, com_final)
 )
@@ -213,7 +213,7 @@ term_constraint_com = aligator.StageConstraint(
 )
 problem.addTerminalConstraint(term_constraint_com)
 
-""" Solver initialization """
+# Solver initialization
 TOL = 1e-5
 mu_init = 1e-8
 rho_init = 0.0
@@ -258,7 +258,7 @@ workspace = solver.workspace
 results = solver.results
 print(results)
 
-""" Compute linear and angular acceleration """
+# Compute linear and angular acceleration
 linear_acceleration = [[], [], []]
 angular_acceleration = [[], [], []]
 for i in range(T):
@@ -277,7 +277,7 @@ for i in range(T):
         angular_acceleration[z].append(angacc[z])
 
 
-""" Plots results """
+# Plots results
 com_traj = [[], [], []]
 linear_momentum = [[], [], []]
 angular_momentum = [[], [], []]
