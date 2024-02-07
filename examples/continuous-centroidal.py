@@ -40,7 +40,7 @@ T_ds = 10  # Double support time
 T_ss = 40  # Singel support time
 
 """ Define contact points throughout horizon"""
-x_forward = 0.2
+x_forward = 0.05
 cp1 = [
     (True, np.array([0.2, 0.1, 0.0])),
     (True, np.array([0.2, 0.0, 0.0])),
@@ -154,7 +154,7 @@ def createStage(cp, cp_previous):
     stm = aligator.StageModel(rcost, create_dynamics(space, cp))
     for i, c in enumerate(cp):
         if c[0]:
-            cone_cstr = aligator.FrictionConeResidual(space.ndx, nu, i, mu, 1e-3)
+            cone_cstr = aligator.FrictionConeResidual(nxc, nu, i, mu, 1e-3)
             wrapped_cstr = aligator.CentroidalWrapperResidual(cone_cstr)
             stm.addConstraint(wrapped_cstr, constraints.NegativeOrthant())
 
@@ -266,7 +266,9 @@ for i in range(T):
     angacc = np.zeros(3)
     ncontact = len(contact_points[i])
     for j in range(ncontact):
-        fj = results.us[i][j * 3 : (j + 1) * 3]
+        fj = np.zeros(3)
+        if contact_points[i][j][0]:
+            fj = results.xs[i][9 + j * 3 : 9 + (j + 1) * 3]
         ci = results.xs[i][0:3]
         linacc += fj
         angacc += np.cross(contact_points[i][j][1] - ci, fj)
