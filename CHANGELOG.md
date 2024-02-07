@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add a pair filter strategy as an alternative to linesearch methods
+- Add a python example of a locomotion OCP with the robot Talos
+
 ## [0.4.1] - 2024-01-25
 
 ### Changed
@@ -28,9 +33,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.4.0] - 2023-12-22
 
 ### Added
-
-- Add a pair filter strategy as an alternative to linesearch methods
-- Add a python example of a locomotion OCP with the robot Talos
 
 * This is the first release of `aligator`. This library is a joint effort between INRIA and LAAS-CNRS, and will be maintained and expanded in the future. Please provide constructive feedback and contribute!
 
