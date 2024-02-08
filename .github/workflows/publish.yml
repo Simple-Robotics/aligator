@@ -38,6 +38,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v3
       with:
         auto-update-conda: true
+        channels: conda-forge
         # Python version will be inputed in conda build
         # command line
         python-version: "3.10"
