@@ -16,8 +16,8 @@ public:
   using BaseData = typename Base::Data;
   using Data = FrictionConeDataTpl<Scalar>;
 
-  FrictionConeResidualTpl(const int &ndx, const int &nu, const int &k,
-                          const double &mu, const double &epsilon)
+  FrictionConeResidualTpl(const int ndx, const int nu, const int k,
+                          const double mu, const double epsilon)
       : Base(ndx, nu, 2), nk_(nu / 3), k_(k), mu2_(mu * mu), epsilon_(epsilon) {
     if (k_ >= nk_) {
       ALIGATOR_RUNTIME_ERROR(
@@ -36,10 +36,10 @@ public:
   }
 
 protected:
-  const int nk_;
-  const int k_;
-  const double mu2_;
-  const double epsilon_;
+  int nk_;
+  int k_;
+  double mu2_;
+  double epsilon_;
 };
 
 template <typename Scalar>

@@ -19,8 +19,7 @@ public:
   using Data = AngularAccelerationDataTpl<Scalar>;
 
   AngularAccelerationResidualTpl(
-      const int &ndx, const int &nu, const double &mass,
-      const Vector3s &gravity,
+      const int ndx, const int nu, const double mass, const Vector3s &gravity,
       const std::vector<std::pair<bool, Vector3s>> &contact_map)
       : Base(ndx, nu, 3), nk_(nu / 3), mass_(mass), gravity_(gravity),
         contact_map_(contact_map) {
@@ -45,8 +44,8 @@ public:
   std::vector<std::pair<bool, Vector3s>> contact_map_;
 
 protected:
-  const int nk_;
-  const double mass_;
+  int nk_;
+  double mass_;
   Vector3s gravity_;
 };
 

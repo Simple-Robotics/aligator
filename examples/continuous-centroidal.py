@@ -35,7 +35,7 @@ x0[:3] = com_initial
 for i in range(nk):
     x0[9 + 3 * i + 2] = -gravity[2] * mass / 4.0
 
-""" Define gait and time parameters"""
+# Define gait and time parameters
 T_ds = 10  # Double support time
 T_ss = 40  # Singel support time
 

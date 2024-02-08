@@ -127,10 +127,9 @@ void exposeODEs() {
       "CentroidalFwdDynamics",
       "Nonlinear centroidal dynamics with preplanned feet positions",
       bp::init<const shared_ptr<proxsuite::nlp::VectorSpaceTpl<Scalar>> &,
-               const std::size_t &, const double &, const Vector3s &,
+               const double, const Vector3s &,
                const std::vector<std::pair<bool, Vector3s>> &>(
-          bp::args("self", "space", "max number of contacts", "total mass",
-                   "gravity", "contact_map")))
+          bp::args("self", "space", "total mass", "gravity", "contact_map")))
       .def_readwrite("contact_map", &CentroidalFwdDynamics::contact_map_)
       .def(CreateDataPythonVisitor<CentroidalFwdDynamics>());
 
@@ -143,7 +142,7 @@ void exposeODEs() {
       "Nonlinear centroidal dynamics with preplanned feet positions and smooth "
       "forces",
       bp::init<const shared_ptr<proxsuite::nlp::VectorSpaceTpl<Scalar>> &,
-               const double &, const Vector3s &,
+               const double, const Vector3s &,
                const std::vector<std::pair<bool, Vector3s>> &>(
           bp::args("self", "space", "total mass", "gravity", "contact_map")))
       .def_readwrite("contact_map",

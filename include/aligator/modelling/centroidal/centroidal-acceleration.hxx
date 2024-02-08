@@ -11,12 +11,11 @@ void CentroidalAccelerationResidualTpl<Scalar>::evaluate(
   Data &d = static_cast<Data &>(data);
 
   d.value_.setZero();
-  auto it = contact_map_.begin();
   for (std::size_t i = 0; i < nk_; i++) {
-    if (it->first) {
+    const auto &it = contact_map_[i];
+    if (it.first) {
       d.value_ += u.segment(i * 3, 3);
     }
-    it++;
   }
 
   d.value_ /= mass_;
@@ -30,13 +29,12 @@ void CentroidalAccelerationResidualTpl<Scalar>::computeJacobians(
   Data &d = static_cast<Data &>(data);
 
   d.Ju_.setZero();
-  auto it = contact_map_.begin();
   for (std::size_t i = 0; i < nk_; i++) {
-    if (it->first) {
+    const auto &it = contact_map_[i];
+    if (it.first) {
       d.Ju_.block(0, i * 3, 3, 3).setIdentity();
       d.Ju_.block(0, i * 3, 3, 3) *= 1 / mass_;
     }
-    it++;
   }
 }
 

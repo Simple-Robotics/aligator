@@ -114,7 +114,7 @@ state_w = np.diag(np.array([0, 0, 0, 10, 10, 10, 0, 0, 0]))
 
 
 def create_dynamics(cp):
-    ode = dynamics.CentroidalFwdDynamics(space, len(cp), mass, gravity, cp)
+    ode = dynamics.CentroidalFwdDynamics(space, mass, gravity, cp)
     dyn_model = dynamics.IntegratorEuler(ode, dt)
     return dyn_model
 
