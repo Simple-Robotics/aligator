@@ -254,6 +254,98 @@ def test_continuous_centroidal_diff():
     assert np.allclose(Judiff, Ju0, epsilon), "err={}".format(infNorm(Judiff - Ju0))
 
 
+def test_centroidal_kinematics():
+    try:
+        import pinocchio as pin
+
+        model = pin.buildSampleModelHumanoid()
+
+        nk = 2
+        nu = 3 * nk + model.nv
+        space_centroidal = manifolds.VectorSpace(9 + 3 * nk)
+        space_multibody = manifolds.MultibodyPhaseSpace(model)
+        space = manifolds.CartesianProduct(space_centroidal, space_multibody)
+        mass = 0
+        for inertia in model.inertias:
+            mass += inertia.mass
+        gravity = np.array([0, 0, -9.81])
+        contact_map = [(True, np.array([0, 0.1, 0])), (True, np.array([0.1, -0.1, 0]))]
+        centroidal = dynamics.CentroidalFwdDynamics(
+            space_centroidal, nk, mass, gravity, contact_map
+        )
+
+        ode = dynamics.CentroidalKinematicsFwdDynamics(space, model.nv, centroidal)
+        data = ode.createData()
+
+        assert isinstance(data, dynamics.CentroidalKinematicsFwdData)
+
+        x0 = space.neutral()
+        u0 = np.random.randn(nu)
+
+        ode.forward(x0, u0, data)
+        ode.dForward(x0, u0, data)
+    except ImportError:
+        pass
+
+
+def test_centroidal_kinematics_diff():
+    import pinocchio as pin
+
+    model = pin.buildSampleModelHumanoid()
+
+    nk = 2
+    nu = 3 * nk + model.nv
+    space_centroidal = manifolds.VectorSpace(9)
+    space_multibody = manifolds.MultibodyPhaseSpace(model)
+    space = manifolds.CartesianProduct(space_centroidal, space_multibody)
+    mass = 0
+    for inertia in model.inertias:
+        mass += inertia.mass
+    gravity = np.array([0, 0, -9.81])
+    contact_map = [(True, np.array([0, 0.1, 0])), (True, np.array([0.1, -0.1, 0]))]
+    centroidal = dynamics.CentroidalFwdDynamics(
+        space_centroidal, nk, mass, gravity, contact_map
+    )
+
+    ode = dynamics.CentroidalKinematicsFwdDynamics(space, model.nv, centroidal)
+    data = ode.createData()
+
+    x0 = space.neutral()
+    ndx = space.ndx
+    dx = np.random.randn(ndx)
+    x0 = space.integrate(x0, dx)
+    u0 = np.random.randn(nu)
+    epsilon = 1e-6
+
+    ode.forward(x0, u0, data)
+    ode.dForward(x0, u0, data)
+
+    xdot0 = data.xdot.copy()
+    Jx0 = data.Jx.copy()
+    Ju0 = data.Ju.copy()
+    Jxdiff = np.zeros((ndx, ndx))
+    Judiff = np.zeros((ndx, nu))
+
+    for i in range(ndx):
+        evec = np.zeros(ndx)
+        evec[i] = epsilon
+        xi = space.integrate(x0, evec)
+        ode.forward(xi, u0, data)
+        ode.dForward(xi, u0, data)
+        Jxdiff[:, i] = (data.xdot - xdot0) / epsilon
+
+    for i in range(nu):
+        evec = np.zeros(nu)
+        evec[i] = epsilon
+        ui = u0 + evec
+        ode.forward(x0, ui, data)
+        ode.dForward(x0, ui, data)
+        Judiff[:, i] = (data.xdot - xdot0) / epsilon
+
+    assert np.linalg.norm(Jxdiff - Jx0) <= epsilon
+    assert np.linalg.norm(Judiff - Ju0) <= epsilon
+
+
 if __name__ == "__main__":
     import sys
 
