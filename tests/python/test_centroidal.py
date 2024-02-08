@@ -16,19 +16,18 @@ mass = 10.5
 gravity = np.array([0, 0, -9.81])
 space = manifolds.VectorSpace(9)
 ndx = space.ndx
+sample_factor = 0.1
 
 
 def sample_gauss(space):
     x0 = space.neutral()
-    d = np.random.randn(space.ndx) * 0.1
+    d = np.random.randn(space.ndx) * sample_factor
     x1 = space.integrate(x0, d)
     return x0, d, x1
 
 
 def test_com_translation():
-    x0 = space.neutral()
-    dx = np.random.randn(space.ndx) * 0.1
-    x0 = space.integrate(x0, dx)
+    x, d, x0 = sample_gauss(space)
     u0 = np.zeros(nu)
 
     p_ref = np.array([0, 0, 0])
@@ -59,9 +58,7 @@ def test_com_translation():
 
 
 def test_linear_momentum():
-    x0 = space.neutral()
-    dx = np.random.randn(space.ndx) * 0.1
-    x0 = space.integrate(x0, dx)
+    x, d, x0 = sample_gauss(space)
     u0 = np.zeros(nu)
 
     h_ref = np.array([0, 0, 0])
@@ -92,9 +89,7 @@ def test_linear_momentum():
 
 
 def test_angular_momentum():
-    x0 = space.neutral()
-    dx = np.random.randn(space.ndx) * 0.1
-    x0 = space.integrate(x0, dx)
+    x, d, x0 = sample_gauss(space)
     u0 = np.zeros(nu)
 
     L_ref = np.array([0, 0, 0])
@@ -125,9 +120,7 @@ def test_angular_momentum():
 
 
 def test_acceleration():
-    x0 = space.neutral()
-    dx = np.random.randn(space.ndx) * 0.1
-    x0 = space.integrate(x0, dx)
+    x, d, x0 = sample_gauss(space)
     u0 = np.random.randn(nu)
     contact_map = [
         (True, np.array([0.2, 0.1, 0.0])),
@@ -172,9 +165,7 @@ def test_acceleration():
 
 
 def test_friction_cone():
-    x0 = space.neutral()
-    dx = np.random.randn(space.ndx) * 0.1
-    x0 = space.integrate(x0, dx)
+    x, d, x0 = sample_gauss(space)
     u0 = np.random.randn(nu)
     k = 2
     mu = 0.5
@@ -197,7 +188,7 @@ def test_friction_cone():
     assert fdata.Ju.shape == J_fd_u.shape
 
     for i in range(100):
-        du = np.random.randn(nu) * 0.1
+        du = np.random.randn(nu) * sample_factor
         u1 = u0 + du
         fun.evaluate(x0, u1, x0, fdata)
         fun.computeJacobians(x0, u1, x0, fdata)
@@ -207,9 +198,7 @@ def test_friction_cone():
 
 
 def test_angular_acceleration():
-    x0 = space.neutral()
-    dx = np.random.randn(space.ndx) * 0.1
-    x0 = space.integrate(x0, dx)
+    x, d, x0 = sample_gauss(space)
     u0 = np.random.randn(nu)
     contact_map = [
         (True, np.array([0.2, 0.1, 0.0])),
@@ -240,22 +229,19 @@ def test_angular_acceleration():
     assert fdata.Ju.shape == J_fd_u.shape
 
     for i in range(100):
-        du = np.random.randn(nu) * 0.1
-        dx = np.random.randn(space.ndx) * 0.1
-        x1 = space.integrate(x0, dx)
+        du = np.random.randn(nu) * sample_factor
         u1 = u0 + du
-        fun.evaluate(x1, u1, x0, fdata)
-        fun.computeJacobians(x1, u1, x0, fdata)
-        fun_fd.evaluate(x1, u1, x0, fdata2)
-        fun_fd.computeJacobians(x1, u1, x0, fdata2)
+        x, d, x0 = sample_gauss(space)
+        fun.evaluate(x0, u1, x0, fdata)
+        fun.computeJacobians(x0, u1, x0, fdata)
+        fun_fd.evaluate(x0, u1, x0, fdata2)
+        fun_fd.computeJacobians(x0, u1, x0, fdata2)
         assert np.allclose(fdata.Ju, fdata2.Ju, THRESH)
         assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
 
 
 def test_wrapper_angular_acceleration():
-    wx0 = space.neutral()
-    wdx = np.random.randn(space.ndx) * 0.1
-    wx0 = space.integrate(wx0, wdx)
+    wx, d, wx0 = sample_gauss(space)
     wu0 = np.random.randn(nu)
 
     ndx_w = 9 + nk * 3
@@ -293,8 +279,7 @@ def test_wrapper_angular_acceleration():
     assert fdata.Ju.shape == J_fd_u.shape
 
     for i in range(100):
-        dx = np.random.randn(wrapping_space.ndx) * 0.1
-        x1 = wrapping_space.integrate(x0, dx)
+        x, d, x1 = sample_gauss(wrapping_space)
         fun.evaluate(x1, fdata)
         fun.computeJacobians(x1, fdata)
         fun_fd.evaluate(x1, u0, x1, fdata2)
@@ -303,9 +288,7 @@ def test_wrapper_angular_acceleration():
 
 
 def test_wrapper_linear_momentum():
-    wx0 = space.neutral()
-    wdx = np.random.randn(space.ndx) * 0.1
-    wx0 = space.integrate(wx0, wdx)
+    wx, d, wx0 = sample_gauss(space)
     wu0 = np.random.randn(nu)
 
     ndx_w = 9 + nk * 3
@@ -336,8 +319,7 @@ def test_wrapper_linear_momentum():
     assert fdata.Ju.shape == J_fd_u.shape
 
     for i in range(100):
-        dx = np.random.randn(wrapping_space.ndx) * 0.1
-        x1 = wrapping_space.integrate(x0, dx)
+        x, d, x1 = sample_gauss(wrapping_space)
         fun.evaluate(x1, fdata)
         fun.computeJacobians(x1, fdata)
         fun_fd.evaluate(x1, u0, x0, fdata2)

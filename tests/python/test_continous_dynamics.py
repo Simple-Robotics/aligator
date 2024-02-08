@@ -6,9 +6,11 @@ import numpy as np
 import aligator
 from aligator import dynamics, manifolds
 from pinocchio import Quaternion
+from utils import finite_diff
 
 space = manifolds.R3() * manifolds.SO3()
 nu = 0
+epsilon = 1e-6
 
 
 class MyODE(dynamics.ODEAbstract):
@@ -90,25 +92,40 @@ def test_multibody_free():
 
 
 def test_centroidal():
-    try:
-        space = manifolds.VectorSpace(9)
-        nk = 2
-        nu = 3 * nk
-        mass = 10.5
-        gravity = np.array([0, 0, -9.81])
-        contact_map = [(True, np.array([0, 0.1, 0])), (True, np.array([0.1, -0.1, 0]))]
-        ode = dynamics.CentroidalFwdDynamics(space, nk, mass, gravity, contact_map)
-        data = ode.createData()
+    space = manifolds.VectorSpace(9)
+    nk = 2
+    nu = 3 * nk
+    mass = 10.5
+    gravity = np.array([0, 0, -9.81])
+    contact_map = [(True, np.array([0, 0.1, 0])), (True, np.array([0.1, -0.1, 0]))]
+    ode = dynamics.CentroidalFwdDynamics(space, nk, mass, gravity, contact_map)
+    data = ode.createData()
 
-        assert isinstance(data, dynamics.CentroidalFwdData)
+    assert isinstance(data, dynamics.CentroidalFwdData)
 
-        x0 = space.neutral()
-        u0 = np.random.randn(nu)
+    x0 = space.neutral()
+    x0[2] = 0.5
+    u0 = np.zeros(nu)
+    force_x = 10
+    force_y = 10
+    force_z = -gravity[2] * mass / nk + 10
+    # Build contact forces so that CoM moves up left forward
+    for k in range(nk):
+        u0[k * 3] = force_x
+        u0[k * 3 + 1] = force_y
+        u0[k * 3 + 2] = force_z
 
+    # Integrate over several timesteps
+    dt = 0.01
+    N = 10
+    for _ in range(N):
         ode.forward(x0, u0, data)
-        ode.dForward(x0, u0, data)
-    except ImportError:
-        pass
+        x0 += dt * data.xdot
+
+    # CoM has shifted up left forward
+    assert x0[0] > 0
+    assert x0[1] > 0
+    assert x0[2] > 0
 
 
 def test_centroidal_diff():
@@ -124,59 +141,56 @@ def test_centroidal_diff():
 
     x0 = np.random.randn(nx)
     u0 = np.random.randn(nu)
-    epsilon = 1e-6
 
     ode.forward(x0, u0, data)
     ode.dForward(x0, u0, data)
 
-    xdot0 = data.xdot.copy()
     Jx0 = data.Jx.copy()
     Ju0 = data.Ju.copy()
-    Jxdiff = np.zeros((nx, nx))
-    Judiff = np.zeros((nx, nu))
-
-    for i in range(nx):
-        evec = np.zeros(nx)
-        evec[i] = epsilon
-        xi = x0 + evec
-        ode.forward(xi, u0, data)
-        ode.dForward(xi, u0, data)
-        Jxdiff[:, i] = (data.xdot - xdot0) / epsilon
-
-    for i in range(nu):
-        evec = np.zeros(nu)
-        evec[i] = epsilon
-        ui = u0 + evec
-        ode.forward(x0, ui, data)
-        ode.dForward(x0, ui, data)
-        Judiff[:, i] = (data.xdot - xdot0) / epsilon
+    Jxdiff, Judiff = finite_diff(ode, space, x0, u0, epsilon)
 
     assert np.linalg.norm(Jxdiff - Jx0) <= epsilon
     assert np.linalg.norm(Judiff - Ju0) <= epsilon
 
 
 def test_continuous_centroidal():
-    try:
-        nk = 2
-        nu = 3 * nk
-        space = manifolds.VectorSpace(9 + nu)
-        mass = 10.5
-        gravity = np.array([0, 0, -9.81])
-        contact_map = [(True, np.array([0, 0.1, 0])), (True, np.array([0.1, -0.1, 0]))]
-        ode = dynamics.ContinuousCentroidalFwdDynamics(
-            space, mass, gravity, contact_map
-        )
-        data = ode.createData()
+    nk = 2
+    nu = 3 * nk
+    space = manifolds.VectorSpace(9 + nu)
+    mass = 10.5
+    gravity = np.array([0, 0, -9.81])
+    contact_map = [(True, np.array([0, 0.1, 0])), (True, np.array([0.1, -0.1, 0]))]
+    ode = dynamics.ContinuousCentroidalFwdDynamics(space, mass, gravity, contact_map)
+    data = ode.createData()
 
-        assert isinstance(data, dynamics.ContinuousCentroidalFwdData)
+    assert isinstance(data, dynamics.ContinuousCentroidalFwdData)
 
-        x0 = space.neutral()
-        u0 = np.random.randn(nu)
+    x0 = space.neutral()
+    x0[2] = 0.5
+    force_z = -gravity[2] * mass / nk
+    for k in range(nk):
+        x0[11 + k * nk] = force_z
+    u0 = np.zeros(nu)
+    # Build derivatives of contact forces so that CoM moves up left forward
+    dforce_x = 10
+    dforce_y = 10
+    dforce_z = 10
+    for k in range(nk):
+        u0[k * 3] = dforce_x
+        u0[k * 3 + 1] = dforce_y
+        u0[k * 3 + 2] = dforce_z
 
+    # Integrate over several timesteps
+    dt = 0.01
+    N = 10
+    for _ in range(N):
         ode.forward(x0, u0, data)
-        ode.dForward(x0, u0, data)
-    except ImportError:
-        pass
+        x0 += dt * data.xdot
+
+    # CoM has shifted up left forward
+    assert x0[0] > 0
+    assert x0[1] > 0
+    assert x0[2] > 0
 
 
 def test_continuous_centroidal_diff():
@@ -192,32 +206,13 @@ def test_continuous_centroidal_diff():
 
     x0 = np.random.randn(nx)
     u0 = np.random.randn(nu)
-    epsilon = 1e-6
 
     ode.forward(x0, u0, data)
     ode.dForward(x0, u0, data)
 
-    xdot0 = data.xdot.copy()
     Jx0 = data.Jx.copy()
     Ju0 = data.Ju.copy()
-    Jxdiff = np.zeros((nx, nx))
-    Judiff = np.zeros((nx, nu))
-
-    for i in range(nx):
-        evec = np.zeros(nx)
-        evec[i] = epsilon
-        xi = x0 + evec
-        ode.forward(xi, u0, data)
-        ode.dForward(xi, u0, data)
-        Jxdiff[:, i] = (data.xdot - xdot0) / epsilon
-
-    for i in range(nu):
-        evec = np.zeros(nu)
-        evec[i] = epsilon
-        ui = u0 + evec
-        ode.forward(x0, ui, data)
-        ode.dForward(x0, ui, data)
-        Judiff[:, i] = (data.xdot - xdot0) / epsilon
+    Jxdiff, Judiff = finite_diff(ode, space, x0, u0, epsilon)
 
     assert np.linalg.norm(Jxdiff - Jx0) <= epsilon
     assert np.linalg.norm(Judiff - Ju0) <= epsilon

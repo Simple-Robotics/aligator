@@ -6,6 +6,7 @@ import hppfcl as fcl
 import aligator
 
 from aligator import manifolds, dynamics
+from utils import finite_diff
 
 TOL = 1e-4
 
@@ -186,35 +187,6 @@ def test_inv_dyn():
 
 
 def test_constrained_dynamics():
-    def finite_diff(dynmodel, space, x, u, EPS=1e-8):
-        ndx = space.ndx
-        Jx = np.zeros((ndx, ndx))
-        dx = np.zeros(ndx)
-        data = dynmodel.createData()
-        dynmodel.forward(x, u, data)
-        f = data.xdot.copy()
-        fp = f.copy()
-        for i in range(ndx):
-            dx[i] = EPS
-            x_p = space.integrate(x, dx)
-            dynmodel.forward(x_p, u, data)
-            fp[:] = data.xdot
-            Jx[:, i] = space.difference(f, fp) / EPS
-            dx[i] = 0.0
-
-        nu = u.shape[0]
-        Ju = np.zeros((ndx, nu))
-        du = np.zeros(nu)
-        data = dynmodel.createData()
-        for i in range(nu):
-            du[i] = EPS
-            dynmodel.forward(x, u + du, data)
-            fp[:] = data.xdot
-            Ju[:, i] = space.difference(f, fp) / EPS
-            du[i] = 0.0
-
-        return Jx, Ju
-
     model, constraint_model = createFourBarLinkages()
 
     # check derivatives
