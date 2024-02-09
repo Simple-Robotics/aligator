@@ -9,9 +9,9 @@ namespace dynamics {
 template <typename Scalar>
 CentroidalFwdDynamicsTpl<Scalar>::CentroidalFwdDynamicsTpl(
     const ManifoldPtr &state, const double mass, const Vector3s &gravity,
-    const std::vector<std::pair<bool, Vector3s>> &contact_map)
-    : Base(state, contact_map.size() * 3), space_(state),
-      nk_(contact_map.size()), mass_(mass), gravity_(gravity),
+    const ContactMap &contact_map)
+    : Base(state, contact_map.getSize() * 3), space_(state),
+      nk_(contact_map.getSize()), mass_(mass), gravity_(gravity),
       contact_map_(contact_map) {}
 
 template <typename Scalar>
@@ -20,19 +20,18 @@ void CentroidalFwdDynamicsTpl<Scalar>::forward(const ConstVectorRef &x,
                                                BaseData &data) const {
   Data &d = static_cast<Data &>(data);
 
-  d.xdot_.head(3) = 1 / mass_ * x.segment(3, 3);
-  d.xdot_.segment(3, 3) = mass_ * gravity_;
-  d.xdot_.segment(6, 3).setZero();
+  d.xdot_.template head<3>() = 1 / mass_ * x.template segment<3>(3);
+  d.xdot_.template segment<3>(3) = mass_ * gravity_;
+  d.xdot_.template segment<3>(6).setZero();
   for (std::size_t i = 0; i < nk_; i++) {
-    const auto &it = contact_map_[i];
-    if (it.first) {
-      d.xdot_.segment(3, 3) += u.segment(i * 3, 3);
-      d.xdot_[6] += (it.second[1] - x[1]) * u[i * 3 + 2] -
-                    (it.second[2] - x[2]) * u[i * 3 + 1];
-      d.xdot_[7] += (it.second[2] - x[2]) * u[i * 3] -
-                    (it.second[0] - x[0]) * u[i * 3 + 2];
-      d.xdot_[8] += (it.second[0] - x[0]) * u[i * 3 + 1] -
-                    (it.second[1] - x[1]) * u[i * 3];
+    if (contact_map_.getContactState(i)) {
+      d.xdot_.template segment<3>(3) += u.template segment<3>(i * 3);
+      d.xdot_[6] += (contact_map_.getContactPose(i)[1] - x[1]) * u[i * 3 + 2] -
+                    (contact_map_.getContactPose(i)[2] - x[2]) * u[i * 3 + 1];
+      d.xdot_[7] += (contact_map_.getContactPose(i)[2] - x[2]) * u[i * 3] -
+                    (contact_map_.getContactPose(i)[0] - x[0]) * u[i * 3 + 2];
+      d.xdot_[8] += (contact_map_.getContactPose(i)[0] - x[0]) * u[i * 3 + 1] -
+                    (contact_map_.getContactPose(i)[1] - x[1]) * u[i * 3];
     }
   }
 }
@@ -44,10 +43,10 @@ void CentroidalFwdDynamicsTpl<Scalar>::dForward(const ConstVectorRef &x,
   Data &d = static_cast<Data &>(data);
   d.Jx_.setZero();
   d.Ju_.setZero();
-  d.Jx_.block(0, 3, 3, 3) = 1 / mass_ * Matrix3s::Identity();
+  d.Jx_.template block<3, 3>(0, 3).setIdentity();
+  d.Jx_.template block<3, 3>(0, 3) /= mass_;
   for (std::size_t i = 0; i < nk_; i++) {
-    const auto &it = contact_map_[i];
-    if (it.first) {
+    if (contact_map_.getContactState(i)) {
       d.Jx_(6, 1) -= u[i * 3 + 2];
       d.Jx_(6, 2) += u[i * 3 + 1];
       d.Jx_(7, 0) += u[i * 3 + 2];
@@ -55,11 +54,15 @@ void CentroidalFwdDynamicsTpl<Scalar>::dForward(const ConstVectorRef &x,
       d.Jx_(8, 0) -= u[i * 3 + 1];
       d.Jx_(8, 1) += u[i * 3];
 
-      d.Ju_.block(6, 3 * i, 3, 3) << 0.0, -(it.second[2] - x[2]),
-          (it.second[1] - x[1]), (it.second[2] - x[2]), 0.0,
-          -(it.second[0] - x[0]), -(it.second[1] - x[1]), (it.second[0] - x[0]),
-          0.0;
-      d.Ju_.block(3, 3 * i, 3, 3) = Matrix3s::Identity();
+      d.Jtemp_ << 0.0, -(contact_map_.getContactPose(i)[2] - x[2]),
+          (contact_map_.getContactPose(i)[1] - x[1]),
+          (contact_map_.getContactPose(i)[2] - x[2]), 0.0,
+          -(contact_map_.getContactPose(i)[0] - x[0]),
+          -(contact_map_.getContactPose(i)[1] - x[1]),
+          (contact_map_.getContactPose(i)[0] - x[0]), 0.0;
+
+      d.Ju_.template block<3, 3>(6, 3 * i) = d.Jtemp_;
+      d.Ju_.template block<3, 3>(3, 3 * i).setIdentity();
     }
   }
 }
@@ -73,6 +76,8 @@ CentroidalFwdDynamicsTpl<Scalar>::createData() const {
 template <typename Scalar>
 CentroidalFwdDataTpl<Scalar>::CentroidalFwdDataTpl(
     const CentroidalFwdDynamicsTpl<Scalar> *cont_dyn)
-    : Base(9, 3 * cont_dyn->nk_) {}
+    : Base(9, 3 * cont_dyn->nk_) {
+  Jtemp_.setZero();
+}
 } // namespace dynamics
 } // namespace aligator

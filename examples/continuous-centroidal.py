@@ -42,46 +42,67 @@ T_ss = 40  # Singel support time
 # Define contact points throughout horizon
 x_forward = 0.05
 cp1 = [
-    (True, np.array([0.2, 0.1, 0.0])),
-    (True, np.array([0.2, 0.0, 0.0])),
-    (True, np.array([0.0, 0.1, 0.0])),
-    (True, np.array([0.0, 0.0, 0])),
+    [True, True, True, True],
+    [
+        np.array([0.2, 0.1, 0.0]),
+        np.array([0.2, 0.0, 0.0]),
+        np.array([0.0, 0.1, 0.0]),
+        np.array([0.0, 0.0, 0]),
+    ],
 ]
 cp2 = [
-    (False, np.array([0.2, 0.1, 0.0])),
-    (True, np.array([0.2, 0.0, 0.0])),
-    (True, np.array([0.0, 0.1, 0.0])),
-    (False, np.array([0.0, 0.0, 0])),
+    [False, True, True, False],
+    [
+        np.array([0.2, 0.1, 0.0]),
+        np.array([0.2, 0.0, 0.0]),
+        np.array([0.0, 0.1, 0.0]),
+        np.array([0.0, 0.0, 0]),
+    ],
 ]
 cp3 = [
-    (True, np.array([0.2 + x_forward, 0.1, 0.0])),
-    (True, np.array([0.2, 0.0, 0.0])),
-    (True, np.array([0.0, 0.1, 0.0])),
-    (True, np.array([x_forward, 0.0, 0])),
+    [True, True, True, True],
+    [
+        np.array([0.25, 0.1, 0.0]),
+        np.array([0.2, 0.0, 0.0]),
+        np.array([0.0, 0.1, 0.0]),
+        np.array([0.05, 0.0, 0]),
+    ],
 ]
 cp4 = [
-    (True, np.array([0.2 + x_forward, 0.1, 0.0])),
-    (False, np.array([0.2, 0.0, 0.0])),
-    (False, np.array([0.0, 0.1, 0.0])),
-    (True, np.array([x_forward, 0.0, 0])),
+    [True, False, False, True],
+    [
+        np.array([0.25, 0.1, 0.0]),
+        np.array([0.2, 0.0, 0.0]),
+        np.array([0.0, 0.1, 0.0]),
+        np.array([0.05, 0.0, 0]),
+    ],
 ]
 cp5 = [
-    (True, np.array([0.2 + x_forward, 0.1, 0.0])),
-    (True, np.array([0.2 + x_forward, 0.0, 0.0])),
-    (True, np.array([x_forward, 0.1, 0.0])),
-    (True, np.array([x_forward, 0.0, 0])),
+    [True, True, True, True],
+    [
+        np.array([0.25, 0.1, 0.0]),
+        np.array([0.25, 0.0, 0.0]),
+        np.array([0.05, 0.1, 0.0]),
+        np.array([0.05, 0.0, 0]),
+    ],
 ]
 cp6 = [
-    (False, np.array([0.2 + x_forward, 0.0, 0.0])),
-    (True, np.array([0.2 + x_forward, 0.0, 0.0])),
-    (True, np.array([x_forward, 0.1, 0.0])),
-    (False, np.array([x_forward, 0.0, 0.0])),
+    [False, True, True, False],
+    [
+        np.array([0.25, 0.1, 0.0]),
+        np.array([0.25, 0.0, 0.0]),
+        np.array([0.05, 0.1, 0.0]),
+        np.array([0.05, 0.0, 0]),
+    ],
 ]
 cp7 = [
-    (True, np.array([0.2 + 2 * x_forward, 0.1, 0.0])),
-    (True, np.array([0.2 + x_forward, 0.0, 0.0])),
-    (True, np.array([x_forward, 0.1, 0.0])),
-    (True, np.array([2 * x_forward, 0.0, 0])),
+    [True, True, True, True],
+    [
+        np.array([0.3, 0.1, 0.0]),
+        np.array([0.25, 0.0, 0.0]),
+        np.array([0.05, 0.1, 0.0]),
+        np.array([0.1, 0.0, 0]),
+    ],
 ]
 contact_points = (
     [cp1] * T_ds
@@ -92,10 +113,10 @@ contact_points = (
     + [cp6] * T_ss
     + [cp7] * (T_ds + 50)
 )
-com_final = cp7[0][1]
+com_final = cp7[1][0]
 com_final += cp7[1][1]
-com_final += cp7[2][1]
-com_final += cp7[3][1]
+com_final += cp7[1][2]
+com_final += cp7[1][3]
 com_final /= 4
 com_final[2] = com_initial[2]
 
@@ -115,28 +136,33 @@ w_state = (
 )
 
 
-def create_dynamics(nspace, cp):
-    ode = dynamics.ContinuousCentroidalFwdDynamics(nspace, mass, gravity, cp)
+def create_dynamics(nspace, contact_map):
+    ode = dynamics.ContinuousCentroidalFwdDynamics(nspace, mass, gravity, contact_map)
     dyn_model = dynamics.IntegratorEuler(ode, dt)
     return dyn_model
 
 
 def createStage(cp, cp_previous):
+    contact_map = aligator.ContactMap(cp[0], cp[1])
     x0n = np.zeros(nx)
     rcost = aligator.CostStack(space, nu)
 
-    linear_acc = aligator.CentroidalAccelerationResidual(nxc, nu, mass, gravity, cp)
+    linear_acc = aligator.CentroidalAccelerationResidual(
+        nxc, nu, mass, gravity, contact_map
+    )
     linear_mom = aligator.LinearMomentumResidual(nxc, nu, np.zeros(3))
-    angular_acc = aligator.AngularAccelerationResidual(nxc, nu, mass, gravity, cp)
+    angular_acc = aligator.AngularAccelerationResidual(
+        nxc, nu, mass, gravity, contact_map
+    )
     wrapped_linear_acc = aligator.CentroidalWrapperResidual(linear_acc)
     wrapped_angular_acc = aligator.CentroidalWrapperResidual(angular_acc)
     wrapped_linear_mom = aligator.CentroidalWrapperResidual(linear_mom)
 
     w_state_cstr = w_state.copy()
-    for i, c in enumerate(cp):
-        if c[0] and not (cp_previous[i][0]):
+    for i in range(len(cp[0])):
+        if cp[0][i] and not (cp_previous[0][i]):
             w_state_cstr[9 + i * 3 + 2] *= 100
-        elif not (c[0]) and cp_previous[i][0]:
+        elif not (cp[0][i]) and cp_previous[0][i]:
             w_state_cstr[9 + i * 3 + 2] *= 100
 
     rcost.addCost(aligator.QuadraticStateCost(space, nu, x0n, w_state_cstr))
@@ -151,9 +177,9 @@ def createStage(cp, cp_previous):
     rcost.addCost(
         aligator.QuadraticResidualCost(space, wrapped_linear_acc, w_linear_acc)
     )
-    stm = aligator.StageModel(rcost, create_dynamics(space, cp))
-    for i, c in enumerate(cp):
-        if c[0]:
+    stm = aligator.StageModel(rcost, create_dynamics(space, contact_map))
+    for i in range(len(cp[0])):
+        if cp[0][i]:
             cone_cstr = aligator.FrictionConeResidual(nxc, nu, i, mu, 1e-3)
             wrapped_cstr = aligator.CentroidalWrapperResidual(cone_cstr)
             stm.addConstraint(wrapped_cstr, constraints.NegativeOrthant())
@@ -172,14 +198,18 @@ ter_com = aligator.CentroidalWrapperResidual(
 stages = [createStage(contact_points[0], contact_points[0])]
 for i in range(1, T):
     stages.append(createStage(contact_points[i], contact_points[i - 1]))
+
+contact_map_init = aligator.ContactMap(contact_points[0][0], contact_points[0][1])
+contact_map_ter = aligator.ContactMap(contact_points[-1][0], contact_points[-1][1])
+
 init_linear_acc_cstr = aligator.CentroidalWrapperResidual(
-    aligator.CentroidalAccelerationResidual(nxc, nu, mass, gravity, contact_points[0])
+    aligator.CentroidalAccelerationResidual(nxc, nu, mass, gravity, contact_map_init)
 )
 ter_linear_acc_cstr = aligator.CentroidalWrapperResidual(
-    aligator.CentroidalAccelerationResidual(nxc, nu, mass, gravity, contact_points[-1])
+    aligator.CentroidalAccelerationResidual(nxc, nu, mass, gravity, contact_map_ter)
 )
 angular_acc_cstr = aligator.CentroidalWrapperResidual(
-    aligator.AngularAccelerationResidual(nx, nu, mass, gravity, contact_points[-1])
+    aligator.AngularAccelerationResidual(nx, nu, mass, gravity, contact_map_ter)
 )
 
 init_linear_mom = aligator.CentroidalWrapperResidual(
@@ -237,12 +267,12 @@ for el in contact_points:
     xi = np.zeros(9 + nk * 3)
     xi[:9] = x0[:9].copy()
     active_contact = 0
-    for c in el:
-        if c[0]:
+    for i in range(nk):
+        if el[0][i]:
             active_contact += 1
     weight_reg = -mass * gravity[2] / active_contact
-    for i in range(len(el)):
-        if el[i][0]:
+    for i in range(nk):
+        if el[0][i]:
             xi[9 + 3 * i + 2] = weight_reg
     xs_init.append(xi)
 
@@ -264,14 +294,13 @@ angular_acceleration = [[], [], []]
 for i in range(T):
     linacc = gravity * mass
     angacc = np.zeros(3)
-    ncontact = len(contact_points[i])
-    for j in range(ncontact):
+    for j in range(nk):
         fj = np.zeros(3)
-        if contact_points[i][j][0]:
+        if contact_points[i][0][j]:
             fj = results.xs[i][9 + j * 3 : 9 + (j + 1) * 3]
         ci = results.xs[i][0:3]
         linacc += fj
-        angacc += np.cross(contact_points[i][j][1] - ci, fj)
+        angacc += np.cross(contact_points[i][1][j] - ci, fj)
     for z in range(3):
         linear_acceleration[z].append(linacc[z])
         angular_acceleration[z].append(angacc[z])
@@ -294,7 +323,7 @@ for i in range(T):
     angular_momentum[1].append(results.xs[i][7])
     angular_momentum[2].append(results.xs[i][8])
     for j in range(nk):
-        if contact_points[i][j][0]:
+        if contact_points[i][0][j]:
             forces_z[j].append(results.xs[i][9 + j * 3 + 2])
         else:
             forces_z[j].append(0)

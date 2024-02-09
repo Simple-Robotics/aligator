@@ -1,8 +1,6 @@
 /// @file
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
-#include "aligator/core/function-abstract.hpp"
 #include "aligator/python/fwd.hpp"
-#include "aligator/python/functions.hpp"
 #include "aligator/modelling/centroidal/centroidal-translation.hpp"
 #include "aligator/modelling/centroidal/linear-momentum.hpp"
 #include "aligator/modelling/centroidal/angular-momentum.hpp"
@@ -10,6 +8,7 @@
 #include "aligator/modelling/centroidal/friction-cone.hpp"
 #include "aligator/modelling/centroidal/angular-acceleration.hpp"
 #include "aligator/modelling/centroidal/centroidal-wrapper.hpp"
+#include "aligator/modelling/contact-map.hpp"
 
 #include <eigenpy/std-pair.hpp>
 
@@ -20,6 +19,32 @@ using context::Scalar;
 using context::StageFunction;
 using context::StageFunctionData;
 using context::UnaryFunction;
+using ContactMap = ContactMapTpl<Scalar>;
+
+void exposeContactMap() {
+  bp::class_<ContactMap>(
+      "ContactMap", "Store contact state and pose for centroidal problem",
+      bp::init<const std::vector<bool>, const std::vector<context::Vector3s>>(
+          bp::args("self", "contact_states", "contact_poses")))
+      .def("addContact", &ContactMap::addContact,
+           bp::args("self", "state", "pose"),
+           "Add a contact to the contact map.")
+      .def("removeContact", &ContactMap::removeContact, bp::args("self", "i"),
+           "Remove contact i from the contact map.")
+      .add_property("size", &ContactMap::getSize, "Get map size.")
+      .add_property("contact_states",
+                    bp::make_function(&ContactMap::getContactStates,
+                                      bp::return_internal_reference<>()),
+                    "Get all the states in contact map.")
+      .add_property("contact_poses",
+                    bp::make_function(&ContactMap::getContactPoses,
+                                      bp::return_internal_reference<>()),
+                    "Get all the poses in contact map.");
+
+  StdVectorPythonVisitor<std::vector<bool>, true>::expose("StdVec_StdBool");
+  StdVectorPythonVisitor<std::vector<context::Vector3s>, true>::expose(
+      "StdVec_StdVector3s");
+}
 
 void exposeCentroidalFunctions() {
   using CentroidalCoMResidual = CentroidalCoMResidualTpl<Scalar>;
@@ -94,8 +119,10 @@ void exposeCentroidalFunctions() {
       "CentroidalAccelerationResidual",
       "A residual function :math:`r(x) = cddot(x)` ",
       bp::init<const int, const int, const double, const context::Vector3s &,
-               const std::vector<std::pair<bool, context::Vector3s>> &>(
+               const ContactMap &>(
           bp::args("self", "ndx", "nu", "mass", "gravity", "contact_map")))
+      .def_readwrite("contact_map",
+                     &CentroidalAccelerationResidual::contact_map_)
       .def(CreateDataPythonVisitor<CentroidalAccelerationResidual>());
 
   bp::register_ptr_to_python<shared_ptr<CentroidalAccelerationData>>();
@@ -119,7 +146,7 @@ void exposeCentroidalFunctions() {
       "AngularAccelerationResidual",
       "A residual function :math:`r(x) = Ldot(x)` ",
       bp::init<const int, const int, const double, const context::Vector3s &,
-               const std::vector<std::pair<bool, context::Vector3s>> &>(
+               const ContactMap &>(
           bp::args("self", "ndx", "nu", "mass", "gravity", "contact_map")))
       .def_readwrite("contact_map", &AngularAccelerationResidual::contact_map_)
       .def(CreateDataPythonVisitor<AngularAccelerationResidual>());
@@ -141,10 +168,6 @@ void exposeCentroidalFunctions() {
   bp::class_<CentroidalWrapperData, bp::bases<StageFunctionData>>(
       "CentroidalWrapperData", "Data Structure for CentroidalWrapper",
       bp::no_init);
-
-  eigenpy::StdPairConverter<std::pair<bool, context::Vector3s>>::registration();
-  StdVectorPythonVisitor<std::vector<std::pair<bool, context::Vector3s>>,
-                         true>::expose("StdVec_StdPair_map");
 }
 
 } // namespace python

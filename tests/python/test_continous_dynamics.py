@@ -93,11 +93,17 @@ def test_multibody_free():
 
 def test_centroidal():
     space = manifolds.VectorSpace(9)
-    nk = 2
+    nk = 3
     nu = 3 * nk
     mass = 10.5
     gravity = np.array([0, 0, -9.81])
-    contact_map = [(True, np.array([0, 0.1, 0])), (True, np.array([0.1, -0.1, 0]))]
+    contact_states = [True, True, False]
+    contact_poses = [
+        np.array([0, 0.1, 0]),
+        np.array([0.1, -0.1, 0]),
+        np.array([0.1, 0.2, 0]),
+    ]
+    contact_map = aligator.ContactMap(contact_states, contact_poses)
     ode = dynamics.CentroidalFwdDynamics(space, mass, gravity, contact_map)
     data = ode.createData()
 
@@ -131,11 +137,17 @@ def test_centroidal():
 def test_centroidal_diff():
     nx = 9
     space = manifolds.VectorSpace(nx)
-    nk = 2
+    nk = 3
     nu = 3 * nk
     mass = 10.5
     gravity = np.array([0, 0, -9.81])
-    contact_map = [(True, np.array([0, 0.1, 0])), (True, np.array([0.1, -0.1, 0]))]
+    contact_states = [True, True, False]
+    contact_poses = [
+        np.array([0, 0.1, 0]),
+        np.array([0.1, -0.1, 0]),
+        np.array([0.1, 0.2, 0]),
+    ]
+    contact_map = aligator.ContactMap(contact_states, contact_poses)
     ode = dynamics.CentroidalFwdDynamics(space, mass, gravity, contact_map)
     data = ode.createData()
 
@@ -154,12 +166,18 @@ def test_centroidal_diff():
 
 
 def test_continuous_centroidal():
-    nk = 2
+    nk = 3
     nu = 3 * nk
     space = manifolds.VectorSpace(9 + nu)
     mass = 10.5
     gravity = np.array([0, 0, -9.81])
-    contact_map = [(True, np.array([0, 0.1, 0])), (True, np.array([0.1, -0.1, 0]))]
+    contact_states = [True, True, False]
+    contact_poses = [
+        np.array([0, 0.1, 0]),
+        np.array([0.1, -0.1, 0]),
+        np.array([0.1, 0.2, 0]),
+    ]
+    contact_map = aligator.ContactMap(contact_states, contact_poses)
     ode = dynamics.ContinuousCentroidalFwdDynamics(space, mass, gravity, contact_map)
     data = ode.createData()
 
@@ -194,13 +212,19 @@ def test_continuous_centroidal():
 
 
 def test_continuous_centroidal_diff():
-    nk = 2
+    nk = 3
     nu = 3 * nk
     nx = 9 + nu
     space = manifolds.VectorSpace(nx)
     mass = 10.5
     gravity = np.array([0, 0, -9.81])
-    contact_map = [(True, np.array([0, 0.1, 0])), (True, np.array([0.1, -0.1, 0]))]
+    contact_states = [True, True, False]
+    contact_poses = [
+        np.array([0, 0.1, 0]),
+        np.array([0.1, -0.1, 0]),
+        np.array([0.1, 0.2, 0]),
+    ]
+    contact_map = aligator.ContactMap(contact_states, contact_poses)
     ode = dynamics.ContinuousCentroidalFwdDynamics(space, mass, gravity, contact_map)
     data = ode.createData()
 

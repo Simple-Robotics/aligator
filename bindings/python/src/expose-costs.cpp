@@ -68,6 +68,7 @@ void exposeQuadCost() {
 void exposeComposites();
 
 /// Centroidal cost functions.
+void exposeContactMap();
 void exposeCentroidalFunctions();
 
 void exposeCostStack() {
@@ -158,6 +159,7 @@ void exposeCosts() {
   exposeQuadCost();
   exposeComposites();
   exposeCostOps();
+  exposeContactMap();
   exposeCentroidalFunctions();
 }
 

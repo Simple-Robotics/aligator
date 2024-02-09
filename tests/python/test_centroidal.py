@@ -26,6 +26,23 @@ def sample_gauss(space):
     return x0, d, x1
 
 
+def test_contact_map():
+    contact_states = [True, False, True]
+    contact_poses = [
+        np.array([0.2, 0.1, 0.0]),
+        np.array([0.2, 0.0, 0.0]),
+        np.array([0.0, 0.1, 0.0]),
+    ]
+    contact_map = aligator.ContactMap(contact_states, contact_poses)
+    contact_map.addContact(False, np.array([0.0, 0.0, 0.0]))
+
+    assert contact_map.size == 4
+
+    contact_map.removeContact(3)
+
+    assert contact_map.size == 3
+
+
 def test_com_translation():
     x, d, x0 = sample_gauss(space)
     u0 = np.zeros(nu)
@@ -122,21 +139,24 @@ def test_angular_momentum():
 def test_acceleration():
     x, d, x0 = sample_gauss(space)
     u0 = np.random.randn(nu)
-    contact_map = [
-        (True, np.array([0.2, 0.1, 0.0])),
-        (True, np.array([0.2, 0.0, 0.0])),
-        (True, np.array([0.0, 0.1, 0.0])),
-        (True, np.array([0.0, 0.0, 0])),
+
+    contact_states = [True, False, True, True]
+    contact_poses = [
+        np.array([0.2, 0.1, 0.0]),
+        np.array([0.2, 0.0, 0.0]),
+        np.array([0.0, 0.1, 0.0]),
+        np.array([0.0, 0.0, 0]),
     ]
+    contact_map = aligator.ContactMap(contact_states, contact_poses)
 
     fun = aligator.CentroidalAccelerationResidual(ndx, nu, mass, gravity, contact_map)
-
     fdata = fun.createData()
     fun.evaluate(x0, u0, x0, fdata)
 
     comddot = np.zeros(3)
     for i in range(nk):
-        comddot += u0[i * 3 : (i + 1) * 3]
+        if fun.contact_map.contact_states[i]:
+            comddot += u0[i * 3 : (i + 1) * 3]
 
     comddot /= mass
     comddot += gravity
@@ -175,6 +195,11 @@ def test_friction_cone():
 
     fdata = fun.createData()
     fun.evaluate(x0, u0, x0, fdata)
+    fcone = np.zeros(2)
+    fcone[0] = epsilon - u0[k * 3 + 2]
+    fcone[1] = -(mu**2) * u0[k * 3 + 2] ** 2 + u0[k * 3] ** 2 + u0[k * 3 + 1] ** 2
+
+    assert np.allclose(fdata.value, fcone)
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
@@ -200,20 +225,24 @@ def test_friction_cone():
 def test_angular_acceleration():
     x, d, x0 = sample_gauss(space)
     u0 = np.random.randn(nu)
-    contact_map = [
-        (True, np.array([0.2, 0.1, 0.0])),
-        (True, np.array([0.2, 0.0, 0.0])),
-        (True, np.array([0.0, 0.1, 0.0])),
-        (True, np.array([0.0, 0.0, 0])),
+    contact_states = [True, False, True, True]
+    contact_poses = [
+        np.array([0.2, 0.1, 0.0]),
+        np.array([0.2, 0.0, 0.0]),
+        np.array([0.0, 0.1, 0.0]),
+        np.array([0.0, 0.0, 0]),
     ]
-    fun = aligator.AngularAccelerationResidual(ndx, nu, mass, gravity, contact_map)
+    contact_map = aligator.ContactMap(contact_states, contact_poses)
 
+    fun = aligator.AngularAccelerationResidual(ndx, nu, mass, gravity, contact_map)
     fdata = fun.createData()
+
     fun.evaluate(x0, u0, x0, fdata)
 
     Ldot = np.zeros(3)
     for i in range(nk):
-        Ldot += np.cross(fun.contact_map[i][1] - x0[:3], u0[i * 3 : (i + 1) * 3])
+        if contact_states[i]:
+            Ldot += np.cross(contact_poses[i] - x0[:3], u0[i * 3 : (i + 1) * 3])
 
     assert np.allclose(fdata.value, Ldot)
 
@@ -249,12 +278,15 @@ def test_wrapper_angular_acceleration():
     u0 = np.random.randn(nu)
     wrapping_space = manifolds.VectorSpace(ndx_w)
 
-    contact_map = [
-        (True, np.array([0.2, 0.1, 0.0])),
-        (True, np.array([0.2, 0.0, 0.0])),
-        (True, np.array([0.0, 0.1, 0.0])),
-        (True, np.array([0.0, 0.0, 0])),
+    contact_states = [True, False, True, True]
+    contact_poses = [
+        np.array([0.2, 0.1, 0.0]),
+        np.array([0.2, 0.0, 0.0]),
+        np.array([0.0, 0.1, 0.0]),
+        np.array([0.0, 0.0, 0]),
     ]
+    contact_map = aligator.ContactMap(contact_states, contact_poses)
+
     wrapped_fun = aligator.AngularAccelerationResidual(
         ndx, nu, mass, gravity, contact_map
     )

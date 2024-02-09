@@ -46,6 +46,9 @@ template <typename Scalar>
 struct FrictionConeDataTpl : StageFunctionDataTpl<Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Base = StageFunctionDataTpl<Scalar>;
+  using Matrix23s = Eigen::Matrix<Scalar, 2, 3>;
+
+  Matrix23s Jtemp_;
 
   FrictionConeDataTpl(const FrictionConeResidualTpl<Scalar> *model);
 };
