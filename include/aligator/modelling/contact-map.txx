@@ -3,7 +3,7 @@
 #pragma once
 
 #include "aligator/context.hpp"
-#include "./contact-map.hpp"
+#include "aligator/modelling/contact-map.hpp"
 
 namespace aligator {
 
