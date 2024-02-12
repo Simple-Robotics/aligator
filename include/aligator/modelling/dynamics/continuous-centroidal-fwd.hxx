@@ -10,7 +10,7 @@ template <typename Scalar>
 ContinuousCentroidalFwdDynamicsTpl<Scalar>::ContinuousCentroidalFwdDynamicsTpl(
     const ManifoldPtr &state, const double mass, const Vector3s &gravity,
     const ContactMap &contact_map)
-    : Base(state, contact_map.getSize() * 3), space_(state),
+    : Base(state, (int)contact_map.getSize() * 3), space_(state),
       nk_(contact_map.getSize()), mass_(mass), gravity_(gravity),
       contact_map_(contact_map) {
   if (space_->nx() != 9 + nu_) {
@@ -28,18 +28,19 @@ void ContinuousCentroidalFwdDynamicsTpl<Scalar>::forward(
   d.xdot_.template head<3>() = 1 / mass_ * x.template segment<3>(3);
   d.xdot_.template segment<3>(3) = mass_ * gravity_;
   d.xdot_.template segment<3>(6).setZero();
-  for (std::size_t i = 0; i < nk_; i++) {
-    if (contact_map_.getContactState(i)) {
+  for (std::size_t i_ = 0; i_ < nk_; i_++) {
+    long i = static_cast<long>(i_);
+    if (contact_map_.getContactState(i_)) {
       d.xdot_.template segment<3>(3) += x.template segment<3>(9 + i * 3);
       d.xdot_[6] +=
-          (contact_map_.getContactPose(i)[1] - x[1]) * x[9 + i * 3 + 2] -
-          (contact_map_.getContactPose(i)[2] - x[2]) * x[9 + i * 3 + 1];
+          (contact_map_.getContactPose(i_)[1] - x[1]) * x[9 + i * 3 + 2] -
+          (contact_map_.getContactPose(i_)[2] - x[2]) * x[9 + i * 3 + 1];
       d.xdot_[7] +=
-          (contact_map_.getContactPose(i)[2] - x[2]) * x[9 + i * 3] -
-          (contact_map_.getContactPose(i)[0] - x[0]) * x[9 + i * 3 + 2];
+          (contact_map_.getContactPose(i_)[2] - x[2]) * x[9 + i * 3] -
+          (contact_map_.getContactPose(i_)[0] - x[0]) * x[9 + i * 3 + 2];
       d.xdot_[8] +=
-          (contact_map_.getContactPose(i)[0] - x[0]) * x[9 + i * 3 + 1] -
-          (contact_map_.getContactPose(i)[1] - x[1]) * x[9 + i * 3];
+          (contact_map_.getContactPose(i_)[0] - x[0]) * x[9 + i * 3 + 1] -
+          (contact_map_.getContactPose(i_)[1] - x[1]) * x[9 + i * 3];
     }
   }
   d.xdot_.tail(nu_) = u;
@@ -52,8 +53,9 @@ void ContinuousCentroidalFwdDynamicsTpl<Scalar>::dForward(
   d.Jx_.setZero();
   d.Jx_.template block<3, 3>(0, 3).setIdentity();
   d.Jx_.template block<3, 3>(0, 3) /= mass_;
-  for (std::size_t i = 0; i < nk_; i++) {
-    if (contact_map_.getContactState(i)) {
+  for (std::size_t i_ = 0; i_ < nk_; i_++) {
+    long i = static_cast<long>(i_);
+    if (contact_map_.getContactState(i_)) {
       d.Jx_(6, 1) -= x[9 + i * 3 + 2];
       d.Jx_(6, 2) += x[9 + i * 3 + 1];
       d.Jx_(7, 0) += x[9 + i * 3 + 2];
@@ -61,12 +63,12 @@ void ContinuousCentroidalFwdDynamicsTpl<Scalar>::dForward(
       d.Jx_(8, 0) -= x[9 + i * 3 + 1];
       d.Jx_(8, 1) += x[9 + i * 3];
 
-      d.Jtemp_ << 0.0, -(contact_map_.getContactPose(i)[2] - x[2]),
-          (contact_map_.getContactPose(i)[1] - x[1]),
-          (contact_map_.getContactPose(i)[2] - x[2]), 0.0,
-          -(contact_map_.getContactPose(i)[0] - x[0]),
-          -(contact_map_.getContactPose(i)[1] - x[1]),
-          (contact_map_.getContactPose(i)[0] - x[0]), 0.0;
+      d.Jtemp_ << 0.0, -(contact_map_.getContactPose(i_)[2] - x[2]),
+          (contact_map_.getContactPose(i_)[1] - x[1]),
+          (contact_map_.getContactPose(i_)[2] - x[2]), 0.0,
+          -(contact_map_.getContactPose(i_)[0] - x[0]),
+          -(contact_map_.getContactPose(i_)[1] - x[1]),
+          (contact_map_.getContactPose(i_)[0] - x[0]), 0.0;
 
       d.Jx_.template block<3, 3>(6, 9 + 3 * i) = d.Jtemp_;
       d.Jx_.template block<3, 3>(3, 9 + 3 * i).setIdentity();

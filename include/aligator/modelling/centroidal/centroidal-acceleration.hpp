@@ -21,7 +21,7 @@ public:
   CentroidalAccelerationResidualTpl(const int ndx, const int nu,
                                     const double mass, const Vector3s &gravity,
                                     const ContactMap &contact_map)
-      : Base(ndx, nu, 3), nk_(nu / 3), mass_(mass), gravity_(gravity),
+      : Base(ndx, nu, 3), nk_(size_t(nu) / 3), mass_(mass), gravity_(gravity),
         contact_map_(contact_map) {
     if (contact_map.getSize() != nk_) {
       ALIGATOR_DOMAIN_ERROR(
@@ -44,7 +44,7 @@ public:
   ContactMap contact_map_;
 
 protected:
-  int nk_;
+  size_t nk_;
   double mass_;
   Vector3s gravity_;
 };

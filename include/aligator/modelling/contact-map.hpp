@@ -8,9 +8,10 @@ namespace aligator {
 template <typename _Scalar> struct ContactMapTpl {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  using PoseVec = StdVectorEigenAligned<Vector3s>;
 
-  ContactMapTpl(const std::vector<bool> contact_states,
-                const std::vector<Vector3s> contact_poses)
+  ContactMapTpl(const std::vector<bool> &contact_states,
+                const PoseVec &contact_poses)
       : contact_states_(contact_states), contact_poses_(contact_poses) {
     if (contact_states.size() != contact_poses.size()) {
       ALIGATOR_DOMAIN_ERROR(
@@ -27,7 +28,7 @@ template <typename _Scalar> struct ContactMapTpl {
     size_ += 1;
   }
 
-  void removeContact(const int i) {
+  void removeContact(const size_t i) {
     if (size_ == 0) {
       ALIGATOR_RUNTIME_ERROR("ContactMap is empty!");
     } else {
@@ -41,9 +42,7 @@ template <typename _Scalar> struct ContactMapTpl {
 
   bool getContactState(const std::size_t i) const { return contact_states_[i]; }
 
-  const std::vector<Vector3s> &getContactPoses() const {
-    return contact_poses_;
-  }
+  const PoseVec &getContactPoses() const { return contact_poses_; }
 
   const Vector3s &getContactPose(const std::size_t i) const {
     return contact_poses_[i];
@@ -53,7 +52,7 @@ template <typename _Scalar> struct ContactMapTpl {
 
 private:
   std::vector<bool> contact_states_;
-  std::vector<Vector3s> contact_poses_;
+  PoseVec contact_poses_;
   std::size_t size_;
 };
 
