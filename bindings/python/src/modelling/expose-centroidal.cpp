@@ -10,8 +10,6 @@
 #include "aligator/modelling/centroidal/centroidal-wrapper.hpp"
 #include "aligator/modelling/contact-map.hpp"
 
-#include <eigenpy/std-pair.hpp>
-
 namespace aligator {
 namespace python {
 
@@ -24,7 +22,8 @@ using ContactMap = ContactMapTpl<Scalar>;
 void exposeContactMap() {
   bp::class_<ContactMap>(
       "ContactMap", "Store contact state and pose for centroidal problem",
-      bp::init<const std::vector<bool>, const std::vector<context::Vector3s>>(
+      bp::init<const std::vector<bool> &,
+               const StdVectorEigenAligned<context::Vector3s> &>(
           bp::args("self", "contact_states", "contact_poses")))
       .def("addContact", &ContactMap::addContact,
            bp::args("self", "state", "pose"),
@@ -40,10 +39,6 @@ void exposeContactMap() {
                     bp::make_function(&ContactMap::getContactPoses,
                                       bp::return_internal_reference<>()),
                     "Get all the poses in contact map.");
-
-  StdVectorPythonVisitor<std::vector<bool>, true>::expose("StdVec_StdBool");
-  StdVectorPythonVisitor<std::vector<context::Vector3s>, true>::expose(
-      "StdVec_StdVector3s");
 }
 
 void exposeCentroidalFunctions() {
