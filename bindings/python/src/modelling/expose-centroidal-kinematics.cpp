@@ -24,7 +24,7 @@ void exposeCentroidalKinematicsDynamics() {
   bp::class_<CentroidalKinematicsFwdDynamics, bp::bases<ODEAbstract>>(
       "CentroidalKinematicsFwdDynamics",
       "Centroidal forward dynamics + kinematics using Pinocchio.",
-      bp::init<StateManifoldPtr, const size_t &, CentroidalPtr>(
+      bp::init<StateManifoldPtr, const int &, CentroidalPtr>(
           "Constructor.", bp::args("self", "space", "nv", "centroidal")));
 
   bp::register_ptr_to_python<shared_ptr<CentroidalKinematicsFwdData>>();

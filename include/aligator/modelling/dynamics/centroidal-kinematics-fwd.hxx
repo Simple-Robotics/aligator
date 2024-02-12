@@ -8,9 +8,9 @@ namespace dynamics {
 
 template <typename Scalar>
 CentroidalKinematicsFwdDynamicsTpl<Scalar>::CentroidalKinematicsFwdDynamicsTpl(
-    const ManifoldPtr &state, const size_t &nv, CentroidalPtr centroidal)
-    : Base(state, nv + centroidal->nu_), space_(state), nuc_(centroidal->nu_),
-      nv_(nv), centroidal_(centroidal) {}
+    const ManifoldPtr &state, const int &nv, CentroidalPtr centroidal)
+    : Base(state, nv + (int)centroidal->nu_), space_(state),
+      nuc_(centroidal->nu_), nv_(nv), centroidal_(centroidal) {}
 
 template <typename Scalar>
 void CentroidalKinematicsFwdDynamicsTpl<Scalar>::forward(
@@ -19,7 +19,7 @@ void CentroidalKinematicsFwdDynamicsTpl<Scalar>::forward(
 
   centroidal_->forward(x.head(9), u.head(nuc_), *d.centroidal_data_);
 
-  d.xdot_.head(9) = d.centroidal_data_->xdot_;
+  d.xdot_.template head<9>() = d.centroidal_data_->xdot_;
   d.xdot_.segment(9, nv_) = x.tail(nv_);
   d.xdot_.tail(nv_) = u.tail(nv_);
 }
@@ -31,7 +31,7 @@ void CentroidalKinematicsFwdDynamicsTpl<Scalar>::dForward(
 
   centroidal_->dForward(x.head(9), u.head(nuc_), *d.centroidal_data_);
 
-  d.Jx_.topLeftCorner(9, 9) = d.centroidal_data_->Jx_;
+  d.Jx_.template topLeftCorner<9, 9>() = d.centroidal_data_->Jx_;
   d.Ju_.topLeftCorner(9, nuc_) = d.centroidal_data_->Ju_;
 }
 

@@ -44,13 +44,13 @@ struct CentroidalKinematicsFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using Base::nu_;
 
   ManifoldPtr space_;
-  const std::size_t nuc_;
-  const std::size_t nv_;
+  const int nuc_;
+  const int nv_;
   CentroidalPtr centroidal_;
 
   const Manifold &space() const { return *space_; }
 
-  CentroidalKinematicsFwdDynamicsTpl(const ManifoldPtr &state, const size_t &nv,
+  CentroidalKinematicsFwdDynamicsTpl(const ManifoldPtr &state, const int &nv,
                                      CentroidalPtr centroidal);
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,

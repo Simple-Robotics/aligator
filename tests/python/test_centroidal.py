@@ -360,6 +360,64 @@ def test_wrapper_linear_momentum():
         assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
 
 
+def test_angular_constraint():
+    import pinocchio as pin
+
+    model = pin.buildSampleModelHumanoid()
+    data = model.createData()
+    space_centroidal = manifolds.VectorSpace(9)
+    space_multibody = manifolds.MultibodyPhaseSpace(model)
+    nk = 3
+    nu = 3 * nk + model.nv
+    space = manifolds.CartesianProduct(space_centroidal, space_multibody)
+
+    x, d, x0 = sample_gauss(space)
+    u0 = np.random.randn(nu)
+    contact_states = [True, False, True]
+    contact_poses = [
+        np.array([0.2, 0.1, 0.0]),
+        np.array([0.2, 0.0, 0.0]),
+        np.array([0.0, 0.1, 0.0]),
+    ]
+    contact_map = aligator.ContactMap(contact_states, contact_poses)
+
+    fun = aligator.AngularMomentumConstraintResidual(model, gravity, contact_map)
+    fdata = fun.createData()
+
+    fun.evaluate(x0, u0, x0, fdata)
+
+    pin.computeCentroidalMomentum(model, data, x0[9 : model.nq + 9], x0[-model.nv :])
+
+    Ldot = np.zeros(3)
+    for i in range(nk):
+        if contact_states[i]:
+            Ldot += np.cross(contact_poses[i] - x0[:3], u0[i * 3 : (i + 1) * 3])
+
+    assert np.allclose(fdata.value, Ldot - data.hg.angular)
+
+    fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
+    fdata2 = fun_fd.createData()
+    fun_fd.evaluate(x0, u0, x0, fdata2)
+    assert np.allclose(fdata.value, fdata2.value)
+
+    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    J_fd = fdata2.Jx
+    J_fd_u = fdata2.Ju
+    assert fdata.Jx.shape == J_fd.shape
+    assert fdata.Ju.shape == J_fd_u.shape
+
+    for i in range(100):
+        du = np.random.randn(nu) * sample_factor
+        u1 = u0 + du
+        x, d, x0 = sample_gauss(space)
+        fun.evaluate(x0, u1, x0, fdata)
+        fun.computeJacobians(x0, u1, x0, fdata)
+        fun_fd.evaluate(x0, u1, x0, fdata2)
+        fun_fd.computeJacobians(x0, u1, x0, fdata2)
+        assert np.linalg.norm(fdata.Ju - fdata2.Ju) <= THRESH
+        assert np.linalg.norm(fdata.Jx - fdata2.Jx) <= THRESH
+
+
 if __name__ == "__main__":
     import sys
     import pytest

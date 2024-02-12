@@ -255,37 +255,40 @@ def test_continuous_centroidal_diff():
 
 
 def test_centroidal_kinematics():
-    try:
-        import pinocchio as pin
+    import pinocchio as pin
 
-        model = pin.buildSampleModelHumanoid()
+    model = pin.buildSampleModelHumanoid()
 
-        nk = 2
-        nu = 3 * nk + model.nv
-        space_centroidal = manifolds.VectorSpace(9 + 3 * nk)
-        space_multibody = manifolds.MultibodyPhaseSpace(model)
-        space = manifolds.CartesianProduct(space_centroidal, space_multibody)
-        mass = 0
-        for inertia in model.inertias:
-            mass += inertia.mass
-        gravity = np.array([0, 0, -9.81])
-        contact_map = [(True, np.array([0, 0.1, 0])), (True, np.array([0.1, -0.1, 0]))]
-        centroidal = dynamics.CentroidalFwdDynamics(
-            space_centroidal, nk, mass, gravity, contact_map
-        )
+    nk = 2
+    nu = 3 * nk + model.nv
+    space_centroidal = manifolds.VectorSpace(9 + 3 * nk)
+    space_multibody = manifolds.MultibodyPhaseSpace(model)
+    space = manifolds.CartesianProduct(space_centroidal, space_multibody)
+    mass = 0
+    for inertia in model.inertias:
+        mass += inertia.mass
+    gravity = np.array([0, 0, -9.81])
+    contact_states = [True, True, False]
+    contact_poses = [
+        np.array([0, 0.1, 0]),
+        np.array([0.1, -0.1, 0]),
+        np.array([0.1, 0.2, 0]),
+    ]
+    contact_map = aligator.ContactMap(contact_states, contact_poses)
+    centroidal = dynamics.CentroidalFwdDynamics(
+        space_centroidal, mass, gravity, contact_map
+    )
 
-        ode = dynamics.CentroidalKinematicsFwdDynamics(space, model.nv, centroidal)
-        data = ode.createData()
+    ode = dynamics.CentroidalKinematicsFwdDynamics(space, model.nv, centroidal)
+    data = ode.createData()
 
-        assert isinstance(data, dynamics.CentroidalKinematicsFwdData)
+    assert isinstance(data, dynamics.CentroidalKinematicsFwdData)
 
-        x0 = space.neutral()
-        u0 = np.random.randn(nu)
+    x0 = space.neutral()
+    u0 = np.random.randn(nu)
 
-        ode.forward(x0, u0, data)
-        ode.dForward(x0, u0, data)
-    except ImportError:
-        pass
+    ode.forward(x0, u0, data)
+    ode.dForward(x0, u0, data)
 
 
 def test_centroidal_kinematics_diff():
@@ -293,7 +296,7 @@ def test_centroidal_kinematics_diff():
 
     model = pin.buildSampleModelHumanoid()
 
-    nk = 2
+    nk = 3
     nu = 3 * nk + model.nv
     space_centroidal = manifolds.VectorSpace(9)
     space_multibody = manifolds.MultibodyPhaseSpace(model)
@@ -302,9 +305,15 @@ def test_centroidal_kinematics_diff():
     for inertia in model.inertias:
         mass += inertia.mass
     gravity = np.array([0, 0, -9.81])
-    contact_map = [(True, np.array([0, 0.1, 0])), (True, np.array([0.1, -0.1, 0]))]
+    contact_states = [True, True, False]
+    contact_poses = [
+        np.array([0, 0.1, 0]),
+        np.array([0.1, -0.1, 0]),
+        np.array([0.1, 0.2, 0]),
+    ]
+    contact_map = aligator.ContactMap(contact_states, contact_poses)
     centroidal = dynamics.CentroidalFwdDynamics(
-        space_centroidal, nk, mass, gravity, contact_map
+        space_centroidal, mass, gravity, contact_map
     )
 
     ode = dynamics.CentroidalKinematicsFwdDynamics(space, model.nv, centroidal)
@@ -320,27 +329,9 @@ def test_centroidal_kinematics_diff():
     ode.forward(x0, u0, data)
     ode.dForward(x0, u0, data)
 
-    xdot0 = data.xdot.copy()
     Jx0 = data.Jx.copy()
     Ju0 = data.Ju.copy()
-    Jxdiff = np.zeros((ndx, ndx))
-    Judiff = np.zeros((ndx, nu))
-
-    for i in range(ndx):
-        evec = np.zeros(ndx)
-        evec[i] = epsilon
-        xi = space.integrate(x0, evec)
-        ode.forward(xi, u0, data)
-        ode.dForward(xi, u0, data)
-        Jxdiff[:, i] = (data.xdot - xdot0) / epsilon
-
-    for i in range(nu):
-        evec = np.zeros(nu)
-        evec[i] = epsilon
-        ui = u0 + evec
-        ode.forward(x0, ui, data)
-        ode.dForward(x0, ui, data)
-        Judiff[:, i] = (data.xdot - xdot0) / epsilon
+    Jxdiff, Judiff = finite_diff(ode, space, x0, u0, epsilon)
 
     assert np.linalg.norm(Jxdiff - Jx0) <= epsilon
     assert np.linalg.norm(Judiff - Ju0) <= epsilon
