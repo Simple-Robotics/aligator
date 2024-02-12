@@ -2,6 +2,11 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "aligator/python/modelling/continuous.hpp"
 #include "aligator/modelling/dynamics/linear-ode.hpp"
+#include "aligator/modelling/dynamics/centroidal-fwd.hpp"
+#include "aligator/modelling/dynamics/continuous-centroidal-fwd.hpp"
+#include "aligator/modelling/contact-map.hpp"
+
+#include <eigenpy/std-pair.hpp>
 
 namespace aligator {
 namespace python {
@@ -13,6 +18,11 @@ using ContinuousDynamicsBase = ContinuousDynamicsAbstractTpl<Scalar>;
 using ContinuousDynamicsData = ContinuousDynamicsDataTpl<Scalar>;
 using ODEAbstract = ODEAbstractTpl<Scalar>;
 using ODEData = ODEDataTpl<Scalar>;
+using CentroidalFwdDynamics = CentroidalFwdDynamicsTpl<Scalar>;
+using ContinuousCentroidalFwdDynamics =
+    ContinuousCentroidalFwdDynamicsTpl<Scalar>;
+using Vector3s = typename math_types<Scalar>::Vector3s;
+using ContactMap = ContactMapTpl<Scalar>;
 
 struct DAEDataWrapper : ContinuousDynamicsData,
                         bp::wrapper<ContinuousDynamicsData> {
@@ -114,6 +124,35 @@ void exposeODEs() {
       .def_readonly("A", &LinearODETpl<Scalar>::A_, "State transition matrix.")
       .def_readonly("B", &LinearODETpl<Scalar>::B_, "Control matrix.")
       .def_readonly("c", &LinearODETpl<Scalar>::c_, "Constant drift term.");
+
+  bp::class_<CentroidalFwdDynamics, bp::bases<ODEAbstract>>(
+      "CentroidalFwdDynamics",
+      "Nonlinear centroidal dynamics with preplanned feet positions",
+      bp::init<const shared_ptr<proxsuite::nlp::VectorSpaceTpl<Scalar>> &,
+               const double, const Vector3s &, const ContactMap &>(
+          bp::args("self", "space", "total mass", "gravity", "contact_map")))
+      .def_readwrite("contact_map", &CentroidalFwdDynamics::contact_map_)
+      .def(CreateDataPythonVisitor<CentroidalFwdDynamics>());
+
+  bp::register_ptr_to_python<shared_ptr<CentroidalFwdDataTpl<Scalar>>>();
+  bp::class_<CentroidalFwdDataTpl<Scalar>, bp::bases<ODEData>>(
+      "CentroidalFwdData", bp::no_init);
+
+  bp::class_<ContinuousCentroidalFwdDynamics, bp::bases<ODEAbstract>>(
+      "ContinuousCentroidalFwdDynamics",
+      "Nonlinear centroidal dynamics with preplanned feet positions and smooth "
+      "forces",
+      bp::init<const shared_ptr<proxsuite::nlp::VectorSpaceTpl<Scalar>> &,
+               const double, const Vector3s &, const ContactMap &>(
+          bp::args("self", "space", "total mass", "gravity", "contact_map")))
+      .def_readwrite("contact_map",
+                     &ContinuousCentroidalFwdDynamics::contact_map_)
+      .def(CreateDataPythonVisitor<ContinuousCentroidalFwdDynamics>());
+
+  bp::register_ptr_to_python<
+      shared_ptr<ContinuousCentroidalFwdDataTpl<Scalar>>>();
+  bp::class_<ContinuousCentroidalFwdDataTpl<Scalar>, bp::bases<ODEData>>(
+      "ContinuousCentroidalFwdData", bp::no_init);
 }
 
 } // namespace python

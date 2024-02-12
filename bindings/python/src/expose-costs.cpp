@@ -67,6 +67,10 @@ void exposeQuadCost() {
 /// Composite cost functions.
 void exposeComposites();
 
+/// Centroidal cost functions.
+void exposeContactMap();
+void exposeCentroidalFunctions();
+
 void exposeCostStack() {
   using CostStack = CostStackTpl<Scalar>;
   using CostStackData = CostStackDataTpl<Scalar>;
@@ -155,6 +159,8 @@ void exposeCosts() {
   exposeQuadCost();
   exposeComposites();
   exposeCostOps();
+  exposeContactMap();
+  exposeCentroidalFunctions();
 }
 
 } // namespace python

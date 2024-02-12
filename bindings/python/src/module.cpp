@@ -43,6 +43,12 @@ void exposeEnums() {
       .export_values();
 }
 
+void exposeContainers() {
+  eigenpy::exposeStdVectorEigenSpecificType<context::Vector3s>(
+      "StdVec_Vector3s");
+  StdVectorPythonVisitor<std::vector<bool>, true>::expose("StdVec_bool");
+}
+
 } // namespace python
 } // namespace aligator
 
@@ -64,6 +70,7 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
   bp::import("proxsuite_nlp");
 
   exposeEnums();
+  exposeContainers();
   exposeFunctions();
   exposeCosts();
   exposeConstraint();
