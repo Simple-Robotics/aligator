@@ -73,7 +73,7 @@ void ContinuousCentroidalFwdDynamicsTpl<Scalar>::dForward(
     }
   }
   d.Ju_.setZero();
-  d.Ju_.template block(9, 0, nu_, nu_).setIdentity();
+  d.Ju_.block(9, 0, nu_, nu_).setIdentity();
 }
 
 template <typename Scalar>
