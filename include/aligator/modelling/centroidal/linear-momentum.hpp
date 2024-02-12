@@ -6,6 +6,15 @@ namespace aligator {
 
 template <typename Scalar> struct LinearMomentumDataTpl;
 
+/**
+ * @brief This residual returns the linear momentum for a centroidal model
+ * with state \f$x = (c, h, L) \f$.
+ *
+ * @details The residual returns the middle three components of the state:
+ * \f$r(x) = h - h_r \f$ with \f$ h \f$ linear momentym and \f$ h_r \f$ desired
+ * reference for linear momentum.
+ */
+
 template <typename _Scalar>
 struct LinearMomentumResidualTpl : UnaryFunctionTpl<_Scalar> {
 public:

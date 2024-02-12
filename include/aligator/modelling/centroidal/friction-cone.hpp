@@ -4,6 +4,18 @@
 
 namespace aligator {
 
+/**
+ * @brief This residual implements the "ice cream" friction cone for a
+ * centroidal model with state \f$x = (c, h, L) \f$.
+ *
+ * @details Considering an unilateral contact k exerting 3D force u,
+ * the residual returns a two-dimension array with first component
+ * equal to \f$ \epsilon - u_z \f$ (strictly positive normal force
+ * condition) and second component equal to * \f$ u_{x,y}^2 -
+ * \mu^2 * u_{z}^2 \f$ (non-slippage condition) with \f$ \epsilon
+ * \f$ small threshold and \f$ \mu \f$ friction coefficient.
+ */
+
 template <typename Scalar> struct FrictionConeDataTpl;
 
 template <typename _Scalar>

@@ -7,6 +7,12 @@ namespace aligator {
 
 template <typename Scalar> struct CentroidalWrapperDataTpl;
 
+/**
+ * @brief This residual acts as a wrapper for centroidal model cost
+ * functions in which the external forces are added to the state
+ * and the control becomes the forces derivatives.
+ */
+
 template <typename _Scalar>
 struct CentroidalWrapperResidualTpl : UnaryFunctionTpl<_Scalar> {
 public:

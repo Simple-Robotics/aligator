@@ -7,6 +7,17 @@ namespace aligator {
 
 template <typename Scalar> struct CentroidalAccelerationDataTpl;
 
+/**
+ * @brief This residual returns the linear acceleration of a centroidal model
+ * with state \f$x = (c, h, L) \f$, computed from the external forces and
+ * contact poses.
+ *
+ * @details The cost is described by \f$r(x,u) = g + \frac{1}{m} * \sum_{k \in
+ * K} u_k\f$ with \f$K\f$ set of active contacts, \f$g\f$ gravity, \f$m\f$ model
+ * mass, and \f$u_k\f$ 3D unilateral force for contact k. All contacts are
+ * considered as unilateral.
+ */
+
 template <typename _Scalar>
 struct CentroidalAccelerationResidualTpl : StageFunctionTpl<_Scalar> {
 

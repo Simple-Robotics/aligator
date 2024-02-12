@@ -7,6 +7,17 @@ namespace aligator {
 
 template <typename Scalar> struct AngularAccelerationDataTpl;
 
+/**
+ * @brief This residual returns the angular acceleration of a centroidal model
+ * with state \f$x = (c, h, L) \f$, computed from the external forces and
+ * contact poses.
+ *
+ * @details The cost is described by \f$r(x,u) = \sum_{k \in K} (p_k - c) \times
+ * u_k\f$ with \f$K\f$ set of active contacts, \f$p_k\f$ contact pose k, \f$c\f$
+ * Center of Mass, and \f$u_k\f$ 3D unilateral force for contact k. All contacts
+ * are considered as unilateral.
+ */
+
 template <typename _Scalar>
 struct AngularAccelerationResidualTpl : StageFunctionTpl<_Scalar> {
 
