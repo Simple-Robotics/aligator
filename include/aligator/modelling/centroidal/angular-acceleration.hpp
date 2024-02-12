@@ -32,8 +32,8 @@ public:
   AngularAccelerationResidualTpl(const int ndx, const int nu, const double mass,
                                  const Vector3s &gravity,
                                  const ContactMap &contact_map)
-      : Base(ndx, nu, 3), nk_(size_t(nu) / 3), mass_(mass), gravity_(gravity),
-        contact_map_(contact_map) {
+      : Base(ndx, nu, 3), contact_map_(contact_map), nk_(size_t(nu) / 3),
+        mass_(mass), gravity_(gravity) {
     if (contact_map.getSize() != nk_) {
       ALIGATOR_DOMAIN_ERROR(
           fmt::format("Contact ids and nk should be the same: now "

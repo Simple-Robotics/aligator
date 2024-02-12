@@ -13,13 +13,16 @@ void AngularAccelerationResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
 
   d.value_.setZero();
   for (std::size_t i = 0; i < nk_; i++) {
+    long i_ = static_cast<long>(i);
     if (contact_map_.getContactState(i)) {
-      d.value_[0] += (contact_map_.getContactPose(i)[1] - x[1]) * u[i * 3 + 2] -
-                     (contact_map_.getContactPose(i)[2] - x[2]) * u[i * 3 + 1];
-      d.value_[1] += (contact_map_.getContactPose(i)[2] - x[2]) * u[i * 3] -
-                     (contact_map_.getContactPose(i)[0] - x[0]) * u[i * 3 + 2];
-      d.value_[2] += (contact_map_.getContactPose(i)[0] - x[0]) * u[i * 3 + 1] -
-                     (contact_map_.getContactPose(i)[1] - x[1]) * u[i * 3];
+      d.value_[0] +=
+          (contact_map_.getContactPose(i)[1] - x[1]) * u[i_ * 3 + 2] -
+          (contact_map_.getContactPose(i)[2] - x[2]) * u[i_ * 3 + 1];
+      d.value_[1] += (contact_map_.getContactPose(i)[2] - x[2]) * u[i_ * 3] -
+                     (contact_map_.getContactPose(i)[0] - x[0]) * u[i_ * 3 + 2];
+      d.value_[2] +=
+          (contact_map_.getContactPose(i)[0] - x[0]) * u[i_ * 3 + 1] -
+          (contact_map_.getContactPose(i)[1] - x[1]) * u[i_ * 3];
     }
   }
 }
@@ -33,13 +36,14 @@ void AngularAccelerationResidualTpl<Scalar>::computeJacobians(
   d.Jx_.setZero();
   d.Ju_.setZero();
   for (std::size_t i = 0; i < nk_; i++) {
+    long i_ = static_cast<long>(i);
     if (contact_map_.getContactState(i)) {
-      d.Jx_(0, 1) -= u[i * 3 + 2];
-      d.Jx_(0, 2) += u[i * 3 + 1];
-      d.Jx_(1, 0) += u[i * 3 + 2];
-      d.Jx_(1, 2) -= u[i * 3];
-      d.Jx_(2, 0) -= u[i * 3 + 1];
-      d.Jx_(2, 1) += u[i * 3];
+      d.Jx_(0, 1) -= u[i_ * 3 + 2];
+      d.Jx_(0, 2) += u[i_ * 3 + 1];
+      d.Jx_(1, 0) += u[i_ * 3 + 2];
+      d.Jx_(1, 2) -= u[i_ * 3];
+      d.Jx_(2, 0) -= u[i_ * 3 + 1];
+      d.Jx_(2, 1) += u[i_ * 3];
 
       d.Jtemp_ << 0.0, -(contact_map_.getContactPose(i)[2] - x[2]),
           (contact_map_.getContactPose(i)[1] - x[1]),
@@ -48,7 +52,7 @@ void AngularAccelerationResidualTpl<Scalar>::computeJacobians(
           -(contact_map_.getContactPose(i)[1] - x[1]),
           (contact_map_.getContactPose(i)[0] - x[0]), 0.0;
 
-      d.Ju_.template block<3, 3>(0, 3 * i) = d.Jtemp_;
+      d.Ju_.template block<3, 3>(0, 3 * i_) = d.Jtemp_;
     }
   }
 }

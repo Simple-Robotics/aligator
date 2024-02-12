@@ -32,8 +32,8 @@ template <typename _Scalar> struct ContactMapTpl {
     if (size_ == 0) {
       ALIGATOR_RUNTIME_ERROR("ContactMap is empty!");
     } else {
-      contact_states_.erase(contact_states_.begin() + i);
-      contact_poses_.erase(contact_poses_.begin() + i);
+      contact_states_.erase(contact_states_.begin() + long(i));
+      contact_poses_.erase(contact_poses_.begin() + long(i));
       size_ -= 1;
     }
   }
