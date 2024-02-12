@@ -153,9 +153,6 @@ void exposeODEs() {
       shared_ptr<ContinuousCentroidalFwdDataTpl<Scalar>>>();
   bp::class_<ContinuousCentroidalFwdDataTpl<Scalar>, bp::bases<ODEData>>(
       "ContinuousCentroidalFwdData", bp::no_init);
-
-  StdVectorPythonVisitor<StdVectorEigenAligned<Vector3s>, true>::expose(
-      "StdVec_Vector3s");
 }
 
 } // namespace python
