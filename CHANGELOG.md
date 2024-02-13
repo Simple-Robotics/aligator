@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix finite difference function in python unittest ([#128](https://github.com/Simple-Robotics/aligator/pull/128))
+
 ## [0.5.0] - 2024-02-13
 
 ### Added
@@ -34,7 +37,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Export C++ definitions in CMake config file
 - Fix Doxyfile python bindings directory ([#110](https://github.com/Simple-Robotics/aligator/pull/110))
 - Fix for eigenpy 3.3 ([#121](https://github.com/Simple-Robotics/aligator/pull/121))
-- Fix finite difference function in python unittest
 
 ## [0.4.0] - 2023-12-22
 
