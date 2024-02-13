@@ -91,7 +91,7 @@ def test_multibody_free():
         ode.dForward(x0, u0, data)
 
         Jxdiff, Judiff = finite_diff(ode, space, x0, u0, epsilon)
-        atol = 10 * epsilon
+        atol = epsilon
         assert np.allclose(Jxdiff, data.Jx, atol, atol), "Jxerr={}".format(
             infNorm(Jxdiff - data.Jx)
         )
