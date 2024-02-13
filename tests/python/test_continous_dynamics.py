@@ -89,12 +89,14 @@ def test_multibody_free():
         ode.forward(x0, u0, data)
         ode.dForward(x0, u0, data)
 
-        Jxdiff, Judiff = finite_diff(ode, space, x0, u0)
-
-        err_Jx = np.max(Jxdiff - data.Jx)
-        err_Ju = np.max(Judiff - data.Ju)
-
-        assert err_Jx < epsilon and err_Ju < epsilon
+        Jxdiff, Judiff = finite_diff(ode, space, x0, u0, epsilon)
+        atol = 10 * epsilon
+        assert np.allclose(Jxdiff, data.Jx, atol, atol), "Jxerr={}".format(
+            infNorm(Jxdiff - data.Jx)
+        )
+        assert np.allclose(Judiff, data.Ju, atol, atol), "Juerr={}".format(
+            infNorm(Judiff - data.Ju)
+        )
     except ImportError:
         pass
 
