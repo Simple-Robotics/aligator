@@ -10,7 +10,7 @@ from utils import finite_diff
 
 space = manifolds.R3() * manifolds.SO3()
 nu = 0
-epsilon = 1e-6
+epsilon = 1e-4
 
 
 class MyODE(dynamics.ODEAbstract):
@@ -87,6 +87,15 @@ def test_multibody_free():
 
         ode.forward(x0, u0, data)
         ode.dForward(x0, u0, data)
+
+        Jx0 = data.Jx.copy()
+        Ju0 = data.Ju.copy()
+        Jxdiff, Judiff = finite_diff(ode, space, x0, u0)
+
+        err_Jx = np.max(Jxdiff - Jx0)
+        err_Ju = np.max(Judiff - Ju0)
+
+        assert err_Jx < epsilon and err_Ju < epsilon
     except ImportError:
         pass
 
@@ -159,7 +168,7 @@ def test_centroidal_diff():
 
     Jx0 = data.Jx.copy()
     Ju0 = data.Ju.copy()
-    Jxdiff, Judiff = finite_diff(ode, space, x0, u0, epsilon)
+    Jxdiff, Judiff = finite_diff(ode, space, x0, u0)
 
     assert np.linalg.norm(Jxdiff - Jx0) <= epsilon
     assert np.linalg.norm(Judiff - Ju0) <= epsilon
@@ -236,7 +245,7 @@ def test_continuous_centroidal_diff():
 
     Jx0 = data.Jx.copy()
     Ju0 = data.Ju.copy()
-    Jxdiff, Judiff = finite_diff(ode, space, x0, u0, epsilon)
+    Jxdiff, Judiff = finite_diff(ode, space, x0, u0)
 
     assert np.linalg.norm(Jxdiff - Jx0) <= epsilon
     assert np.linalg.norm(Judiff - Ju0) <= epsilon

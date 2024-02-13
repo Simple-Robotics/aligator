@@ -50,7 +50,7 @@ def finite_diff(dynmodel, space, x, u, EPS=1e-8):
         x_p = space.integrate(x, dx)
         dynmodel.forward(x_p, u, data)
         fp[:] = data.xdot
-        Jx[:, i] = space.difference(f, fp) / EPS
+        Jx[:, i] = (fp - f) / EPS
         dx[i] = 0.0
 
     nu = u.shape[0]
@@ -61,7 +61,7 @@ def finite_diff(dynmodel, space, x, u, EPS=1e-8):
         du[i] = EPS
         dynmodel.forward(x, u + du, data)
         fp[:] = data.xdot
-        Ju[:, i] = space.difference(f, fp) / EPS
+        Ju[:, i] = (fp - f) / EPS
         du[i] = 0.0
 
     return Jx, Ju
