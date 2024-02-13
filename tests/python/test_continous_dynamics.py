@@ -8,7 +8,7 @@ from aligator import dynamics, manifolds
 from pinocchio import Quaternion
 from utils import finite_diff, infNorm
 
-epsilon = 1e-4
+epsilon = 1e-6
 aligator.seed(42)
 np.random.seed(42)
 
@@ -83,7 +83,8 @@ def test_multibody_free():
         assert isinstance(data, dynamics.MultibodyFreeFwdData)
         assert hasattr(data, "tau")
 
-        x0 = space.neutral()
+        x0 = space.rand()
+        x0[:3] = 0.0
         u0 = np.random.randn(nu)
 
         ode.forward(x0, u0, data)
