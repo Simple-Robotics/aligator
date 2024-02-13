@@ -3,6 +3,10 @@ import numpy as np
 from aligator import manifolds, dynamics
 
 
+def infNorm(x):
+    return np.linalg.norm(x, np.inf)
+
+
 def create_multibody_ode(humanoid=True):
     try:
         import pinocchio as pin
@@ -47,8 +51,7 @@ def finite_diff(dynmodel, space, x, u, EPS=1e-8):
     fp = f.copy()
     for i in range(ndx):
         dx[i] = EPS
-        x_p = space.integrate(x, dx)
-        dynmodel.forward(x_p, u, data)
+        dynmodel.forward(space.integrate(x, dx), u, data)
         fp[:] = data.xdot
         Jx[:, i] = (fp - f) / EPS
         dx[i] = 0.0
