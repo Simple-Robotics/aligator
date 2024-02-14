@@ -2,11 +2,12 @@
 #pragma once
 
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
-#include "aligator/modelling/dynamics/centroidal-fwd.hpp"
+#include "aligator/modelling/contact-map.hpp"
 
 #include <proxsuite-nlp/modelling/spaces/cartesian-product.hpp>
 #include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
+#include <pinocchio/multibody/model.hpp>
 
 namespace aligator {
 namespace dynamics {
@@ -38,20 +39,24 @@ struct CentroidalKinematicsFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using Data = CentroidalKinematicsFwdDataTpl<Scalar>;
   using Manifold = proxsuite::nlp::CartesianProductTpl<Scalar>;
   using ManifoldPtr = shared_ptr<Manifold>;
-  using CentroidalPtr = shared_ptr<CentroidalFwdDynamicsTpl<Scalar>>;
+  using Model = pinocchio::ModelTpl<Scalar>;
   using Matrix3s = Eigen::Matrix<Scalar, 3, 3>;
+  using ContactMap = ContactMapTpl<Scalar>;
 
   using Base::nu_;
 
   ManifoldPtr space_;
-  const int nuc_;
-  const int nv_;
-  CentroidalPtr centroidal_;
+  Model pin_model_;
+  double mass_;
+  Vector3s gravity_;
+  ContactMap contact_map_;
 
   const Manifold &space() const { return *space_; }
 
-  CentroidalKinematicsFwdDynamicsTpl(const ManifoldPtr &state, const int &nv,
-                                     CentroidalPtr centroidal);
+  CentroidalKinematicsFwdDynamicsTpl(const ManifoldPtr &state,
+                                     const Model &model,
+                                     const Vector3s &gravity,
+                                     const ContactMap &contact_map);
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                BaseData &data) const;
@@ -64,8 +69,18 @@ struct CentroidalKinematicsFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
 template <typename Scalar>
 struct CentroidalKinematicsFwdDataTpl : ODEDataTpl<Scalar> {
   using Base = ODEDataTpl<Scalar>;
+  using PinData = pinocchio::DataTpl<Scalar>;
+  using Force = pinocchio::ForceTpl<Scalar>;
+  using Matrix6Xs = typename math_types<Scalar>::Matrix6Xs;
+  using Matrix3s = Eigen::Matrix<Scalar, 3, 3>;
 
-  shared_ptr<Base> centroidal_data_;
+  PinData pin_data_;
+  Matrix3s Jtemp_;
+  Force hdot_;
+  Matrix6Xs dh_dq_;
+  Matrix6Xs dhdot_dq_;
+  Matrix6Xs dhdot_dv_;
+  Matrix6Xs dhdot_da_;
 
   CentroidalKinematicsFwdDataTpl(
       const CentroidalKinematicsFwdDynamicsTpl<Scalar> *model);
