@@ -254,35 +254,28 @@ def test_continuous_centroidal_diff():
     assert np.allclose(Judiff, Ju0, epsilon), "err={}".format(infNorm(Judiff - Ju0))
 
 
-def test_centroidal_kinematics():
+def test_kinodynamics():
     import pinocchio as pin
 
     model = pin.buildSampleModelHumanoid()
 
     nk = 2
     nu = 3 * nk + model.nv
-    space_centroidal = manifolds.VectorSpace(9 + 3 * nk)
+    space_centroidal = manifolds.VectorSpace(6)
     space_multibody = manifolds.MultibodyPhaseSpace(model)
     space = manifolds.CartesianProduct(space_centroidal, space_multibody)
     mass = 0
     for inertia in model.inertias:
         mass += inertia.mass
     gravity = np.array([0, 0, -9.81])
-    contact_states = [True, True, False]
-    contact_poses = [
-        np.array([0, 0.1, 0]),
-        np.array([0.1, -0.1, 0]),
-        np.array([0.1, 0.2, 0]),
-    ]
+    contact_states = [True, True]
+    contact_poses = [np.array([0, 0.1, 0]), np.array([0.1, -0.1, 0])]
     contact_map = aligator.ContactMap(contact_states, contact_poses)
-    centroidal = dynamics.CentroidalFwdDynamics(
-        space_centroidal, mass, gravity, contact_map
-    )
 
-    ode = dynamics.CentroidalKinematicsFwdDynamics(space, model.nv, centroidal)
+    ode = dynamics.KinodynamicsFwdDynamics(space, model, gravity, contact_map)
     data = ode.createData()
 
-    assert isinstance(data, dynamics.CentroidalKinematicsFwdData)
+    assert isinstance(data, dynamics.KinodynamicsFwdData)
 
     x0 = space.neutral()
     u0 = np.random.randn(nu)
@@ -291,14 +284,14 @@ def test_centroidal_kinematics():
     ode.dForward(x0, u0, data)
 
 
-def test_centroidal_kinematics_diff():
+def test_kinodynamics_diff():
     import pinocchio as pin
 
     model = pin.buildSampleModelHumanoid()
 
     nk = 3
     nu = 3 * nk + model.nv
-    space_centroidal = manifolds.VectorSpace(9)
+    space_centroidal = manifolds.VectorSpace(6)
     space_multibody = manifolds.MultibodyPhaseSpace(model)
     space = manifolds.CartesianProduct(space_centroidal, space_multibody)
     mass = 0
@@ -309,14 +302,11 @@ def test_centroidal_kinematics_diff():
     contact_poses = [
         np.array([0, 0.1, 0]),
         np.array([0.1, -0.1, 0]),
-        np.array([0.1, 0.2, 0]),
+        np.array([0.0, 0, 0]),
     ]
     contact_map = aligator.ContactMap(contact_states, contact_poses)
-    centroidal = dynamics.CentroidalFwdDynamics(
-        space_centroidal, mass, gravity, contact_map
-    )
 
-    ode = dynamics.CentroidalKinematicsFwdDynamics(space, model.nv, centroidal)
+    ode = dynamics.KinodynamicsFwdDynamics(space, model, gravity, contact_map)
     data = ode.createData()
 
     x0 = space.neutral()

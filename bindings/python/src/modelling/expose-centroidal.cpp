@@ -8,6 +8,7 @@
 #include "aligator/modelling/centroidal/friction-cone.hpp"
 #include "aligator/modelling/centroidal/angular-acceleration.hpp"
 #include "aligator/modelling/centroidal/centroidal-wrapper.hpp"
+#include "aligator/modelling/multibody/kinodynamics-wrapper.hpp"
 #include "aligator/modelling/contact-map.hpp"
 
 namespace aligator {
@@ -63,6 +64,9 @@ void exposeCentroidalFunctions() {
 
   using CentroidalWrapperResidual = CentroidalWrapperResidualTpl<Scalar>;
   using CentroidalWrapperData = CentroidalWrapperDataTpl<Scalar>;
+
+  using KinodynamicsWrapperResidual = KinodynamicsWrapperResidualTpl<Scalar>;
+  using KinodynamicsWrapperData = KinodynamicsWrapperDataTpl<Scalar>;
 
   bp::class_<CentroidalCoMResidual, bp::bases<UnaryFunction>>(
       "CentroidalCoMResidual", "A residual function :math:`r(x) = com(x)` ",
@@ -162,6 +166,20 @@ void exposeCentroidalFunctions() {
 
   bp::class_<CentroidalWrapperData, bp::bases<StageFunctionData>>(
       "CentroidalWrapperData", "Data Structure for CentroidalWrapper",
+      bp::no_init);
+
+  bp::class_<KinodynamicsWrapperResidual, bp::bases<UnaryFunction>>(
+      "KinodynamicsWrapperResidual",
+      "A wrapper for kinodynamics cost functions",
+      bp::init<shared_ptr<UnaryFunction>, const int &, const int &,
+               const int &>(
+          bp::args("self", "multibody_cost", "nq", "nv", "nk")))
+      .def(CreateDataPythonVisitor<KinodynamicsWrapperResidual>());
+
+  bp::register_ptr_to_python<shared_ptr<KinodynamicsWrapperData>>();
+
+  bp::class_<KinodynamicsWrapperData, bp::bases<StageFunctionData>>(
+      "KinodynamicsWrapperData", "Data Structure for KinodynamicsWrapper",
       bp::no_init);
 }
 

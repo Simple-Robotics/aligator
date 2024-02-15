@@ -1,7 +1,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "aligator/modelling/dynamics/centroidal-kinematics-fwd.hpp"
+#include "aligator/modelling/dynamics/kinodynamics-fwd.hpp"
 
 #include <pinocchio/algorithm/centroidal-derivatives.hpp>
 #include <pinocchio/algorithm/centroidal.hpp>
@@ -12,7 +12,7 @@ namespace aligator {
 namespace dynamics {
 
 template <typename Scalar>
-CentroidalKinematicsFwdDynamicsTpl<Scalar>::CentroidalKinematicsFwdDynamicsTpl(
+KinodynamicsFwdDynamicsTpl<Scalar>::KinodynamicsFwdDynamicsTpl(
     const ManifoldPtr &state, const Model &model, const Vector3s &gravity,
     const ContactMap &contact_map)
     : Base(state, model.nv + int(contact_map.getSize()) * 3), space_(state),
@@ -21,8 +21,9 @@ CentroidalKinematicsFwdDynamicsTpl<Scalar>::CentroidalKinematicsFwdDynamicsTpl(
 }
 
 template <typename Scalar>
-void CentroidalKinematicsFwdDynamicsTpl<Scalar>::forward(
-    const ConstVectorRef &x, const ConstVectorRef &u, BaseData &data) const {
+void KinodynamicsFwdDynamicsTpl<Scalar>::forward(const ConstVectorRef &x,
+                                                 const ConstVectorRef &u,
+                                                 BaseData &data) const {
   Data &d = static_cast<Data &>(data);
   pinocchio::DataTpl<Scalar> &pdata = d.pin_data_;
   const auto q = x.segment(6, pin_model_.nq);
@@ -53,13 +54,14 @@ void CentroidalKinematicsFwdDynamicsTpl<Scalar>::forward(
           (contact_map_.getContactPose(i)[1] - pdata.com[0][1]) * u[i_ * 3];
     }
   }
-  d.xdot_.segment(9, pin_model_.nv) = v;
+  d.xdot_.segment(6, pin_model_.nv) = v;
   d.xdot_.tail(pin_model_.nv) = a;
 }
 
 template <typename Scalar>
-void CentroidalKinematicsFwdDynamicsTpl<Scalar>::dForward(
-    const ConstVectorRef &x, const ConstVectorRef &u, BaseData &data) const {
+void KinodynamicsFwdDynamicsTpl<Scalar>::dForward(const ConstVectorRef &x,
+                                                  const ConstVectorRef &u,
+                                                  BaseData &data) const {
   Data &d = static_cast<Data &>(data);
   pinocchio::DataTpl<Scalar> &pdata = d.pin_data_;
   const auto q = x.segment(6, pin_model_.nq);
@@ -78,11 +80,11 @@ void CentroidalKinematicsFwdDynamicsTpl<Scalar>::dForward(
     long i_ = static_cast<long>(i);
     if (contact_map_.getContactState(i)) {
       d.Jtemp_ << 0, -u[i_ * 3 + 2], u[i_ * 3 + 1], u[i_ * 3 + 2], 0,
-          -u[i_ * 3], u[i_ * 3 + 1], -u[i_ * 3], 0;
+          -u[i_ * 3], -u[i_ * 3 + 1], u[i_ * 3], 0;
       d.Jx_.block(3, 6, 3, pin_model_.nv) += d.Jtemp_ * pdata.Jcom;
     }
   }
-  d.Jx_.block(0, 6 + pin_model_.nv, 6, pin_model_.nv) = d.dhdot_dv_;
+  d.Jx_.topRightCorner(6, pin_model_.nv) = d.dhdot_dv_;
 
   d.Ju_.template topRows<6>().setZero();
   for (std::size_t i = 0; i < contact_map_.getSize(); i++) {
@@ -104,13 +106,13 @@ void CentroidalKinematicsFwdDynamicsTpl<Scalar>::dForward(
 
 template <typename Scalar>
 shared_ptr<ContinuousDynamicsDataTpl<Scalar>>
-CentroidalKinematicsFwdDynamicsTpl<Scalar>::createData() const {
+KinodynamicsFwdDynamicsTpl<Scalar>::createData() const {
   return allocate_shared_eigen_aligned<Data>(this);
 }
 
 template <typename Scalar>
-CentroidalKinematicsFwdDataTpl<Scalar>::CentroidalKinematicsFwdDataTpl(
-    const CentroidalKinematicsFwdDynamicsTpl<Scalar> *model)
+KinodynamicsFwdDataTpl<Scalar>::KinodynamicsFwdDataTpl(
+    const KinodynamicsFwdDynamicsTpl<Scalar> *model)
     : Base(model->ndx(), model->nu()), pin_data_(model->pin_model_),
       dh_dq_(6, model->pin_model_.nv), dhdot_dq_(6, model->pin_model_.nv),
       dhdot_dv_(6, model->pin_model_.nv), dhdot_da_(6, model->pin_model_.nv) {

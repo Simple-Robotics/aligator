@@ -11,7 +11,7 @@
 
 namespace aligator {
 namespace dynamics {
-template <typename Scalar> struct CentroidalKinematicsFwdDataTpl;
+template <typename Scalar> struct KinodynamicsFwdDataTpl;
 
 /**
  * @brief   Nonlinear centroidal and kinematics forward dynamics.
@@ -29,14 +29,14 @@ template <typename Scalar> struct CentroidalKinematicsFwdDataTpl;
  *
  */
 template <typename _Scalar>
-struct CentroidalKinematicsFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
+struct KinodynamicsFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ODEAbstractTpl<Scalar>;
   using BaseData = ODEDataTpl<Scalar>;
   using ContDataAbstract = ContinuousDynamicsDataTpl<Scalar>;
-  using Data = CentroidalKinematicsFwdDataTpl<Scalar>;
+  using Data = KinodynamicsFwdDataTpl<Scalar>;
   using Manifold = proxsuite::nlp::CartesianProductTpl<Scalar>;
   using ManifoldPtr = shared_ptr<Manifold>;
   using Model = pinocchio::ModelTpl<Scalar>;
@@ -53,10 +53,9 @@ struct CentroidalKinematicsFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
 
   const Manifold &space() const { return *space_; }
 
-  CentroidalKinematicsFwdDynamicsTpl(const ManifoldPtr &state,
-                                     const Model &model,
-                                     const Vector3s &gravity,
-                                     const ContactMap &contact_map);
+  KinodynamicsFwdDynamicsTpl(const ManifoldPtr &state, const Model &model,
+                             const Vector3s &gravity,
+                             const ContactMap &contact_map);
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                BaseData &data) const;
@@ -66,8 +65,7 @@ struct CentroidalKinematicsFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   shared_ptr<ContDataAbstract> createData() const;
 };
 
-template <typename Scalar>
-struct CentroidalKinematicsFwdDataTpl : ODEDataTpl<Scalar> {
+template <typename Scalar> struct KinodynamicsFwdDataTpl : ODEDataTpl<Scalar> {
   using Base = ODEDataTpl<Scalar>;
   using PinData = pinocchio::DataTpl<Scalar>;
   using Force = pinocchio::ForceTpl<Scalar>;
@@ -82,11 +80,10 @@ struct CentroidalKinematicsFwdDataTpl : ODEDataTpl<Scalar> {
   Matrix6Xs dhdot_dv_;
   Matrix6Xs dhdot_da_;
 
-  CentroidalKinematicsFwdDataTpl(
-      const CentroidalKinematicsFwdDynamicsTpl<Scalar> *model);
+  KinodynamicsFwdDataTpl(const KinodynamicsFwdDynamicsTpl<Scalar> *model);
 };
 
 } // namespace dynamics
 } // namespace aligator
 
-#include "aligator/modelling/dynamics/centroidal-kinematics-fwd.hxx"
+#include "aligator/modelling/dynamics/kinodynamics-fwd.hxx"

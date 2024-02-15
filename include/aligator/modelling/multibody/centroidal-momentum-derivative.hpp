@@ -2,15 +2,14 @@
 
 #include "./fwd.hpp"
 #include "aligator/core/function-abstract.hpp"
-#include "aligator/modelling/centroidal/angular-acceleration.hpp"
 #include "aligator/modelling/contact-map.hpp"
-#include <pinocchio/algorithm/center-of-mass.hpp>
 
 #include <pinocchio/multibody/model.hpp>
+#include <pinocchio/algorithm/center-of-mass.hpp>
 
 namespace aligator {
 
-template <typename Scalar> struct AngularMomentumConstraintDataTpl;
+template <typename Scalar> struct CentroidalMomentumDerivativeDataTpl;
 
 /**
  * @brief This residual returns the difference between angular momentum
@@ -18,30 +17,29 @@ template <typename Scalar> struct AngularMomentumConstraintDataTpl;
  */
 
 template <typename _Scalar>
-struct AngularMomentumConstraintResidualTpl : StageFunctionTpl<_Scalar>,
-                                              frame_api {
+struct CentroidalMomentumDerivativeResidualTpl : StageFunctionTpl<_Scalar>,
+                                                 frame_api {
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageFunctionTpl<Scalar>;
   using BaseData = typename Base::Data;
   using Model = pinocchio::ModelTpl<Scalar>;
-  using Centroidal = AngularAccelerationResidualTpl<Scalar>;
   using SE3 = pinocchio::SE3Tpl<Scalar>;
-  using Data = AngularMomentumConstraintDataTpl<Scalar>;
+  using Data = CentroidalMomentumDerivativeDataTpl<Scalar>;
   using ContactMap = ContactMapTpl<Scalar>;
 
-  shared_ptr<Model> pin_model_;
-  shared_ptr<Centroidal> centroidal_model_;
+  Model pin_model_;
+  double mass_;
+  Vector3s gravity_;
+  ContactMap contact_map_;
 
-  AngularMomentumConstraintResidualTpl(const shared_ptr<Model> &model,
-                                       const Vector3s &gravity,
-                                       const ContactMap &contact_map)
-      : Base(9 + 2 * model->nv, (int)contact_map.getSize() * 3 + model->nv, 3),
-        pin_model_(model) {
-    double mass = pinocchio::computeTotalMass(*model);
-    centroidal_model_ = std::make_shared<Centroidal>(Centroidal(
-        9, (int)contact_map.getSize() * 3, mass, gravity, contact_map));
+  CentroidalMomentumDerivativeResidualTpl(const Model &model,
+                                          const Vector3s &gravity,
+                                          const ContactMap &contact_map)
+      : Base(6 + 2 * model.nv, (int)contact_map.getSize() * 3 + model.nv, 6),
+        pin_model_(model), gravity_(gravity), contact_map_(contact_map) {
+    mass_ = pinocchio::computeTotalMass(model);
   }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
@@ -56,28 +54,31 @@ public:
 };
 
 template <typename Scalar>
-struct AngularMomentumConstraintDataTpl : StageFunctionDataTpl<Scalar> {
+struct CentroidalMomentumDerivativeDataTpl : StageFunctionDataTpl<Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Base = StageFunctionDataTpl<Scalar>;
   using PinData = pinocchio::DataTpl<Scalar>;
+  using Force = pinocchio::ForceTpl<Scalar>;
   using Matrix6Xs = typename math_types<Scalar>::Matrix6Xs;
+  using Matrix3s = Eigen::Matrix<Scalar, 3, 3>;
 
-  shared_ptr<Base> centroidal_data_;
   /// Pinocchio data object.
   PinData pin_data_;
+  Matrix3s Jtemp_;
+  Force hdot_;
   Matrix6Xs dh_dq_;
   Matrix6Xs dhdot_dq_;
   Matrix6Xs dhdot_dv_;
   Matrix6Xs dhdot_da_;
 
-  AngularMomentumConstraintDataTpl(
-      const AngularMomentumConstraintResidualTpl<Scalar> *model);
+  CentroidalMomentumDerivativeDataTpl(
+      const CentroidalMomentumDerivativeResidualTpl<Scalar> *model);
 };
 
 } // namespace aligator
 
-#include "aligator/modelling/multibody/angular-momentum-constraint.hxx"
+#include "aligator/modelling/multibody/centroidal-momentum-derivative.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./angular-momentum-constraint.txx"
+#include "./centroidal-momentum-derivative.txx"
 #endif
