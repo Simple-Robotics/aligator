@@ -55,8 +55,9 @@ template <typename Scalar> struct StageFactor {
         AtV(nx, nx), BtV(nu, nx), Gxhat(nx, nth), Guhat(nu, nth),
         ff({nu, nc, nx, nx}, {1}), fb({nu, nc, nx, nx}, {nx}),
         fth({nu, nc, nx, nx}, {nth}), kktMat({nu, nc}, {nu, nc}),
-        kktChol(kktMat.rows()), Efact(nx), Ptilde(nx, nx), Einv(nx, nx),
-        EinvP(nx, nx), schurMat(nx, nx), schurChol(nx), vm(nx, nth) {
+        kktChol(nu + nc), Efact(nx), yff_pre(nx), A_pre(nx, nx),
+        Yth_pre(nx, nth), Ptilde(nx, nx), Einv(nx, nx), EinvP(nx, nx),
+        schurMat(nx, nx), schurChol(nx), vm(nx, nth) {
     Qhat.setZero();
     Rhat.setZero();
     Shat.setZero();
@@ -74,9 +75,9 @@ template <typename Scalar> struct StageFactor {
     fth.setZero();
     kktMat.setZero();
 
-    yff_pre.setZero(nx);
-    A_pre.setZero(nx, nx);
-    Yth_pre.setZero(nx, nth);
+    yff_pre.setZero();
+    A_pre.setZero();
+    Yth_pre.setZero();
     Ptilde.setZero();
     Einv.setZero();
     EinvP.setZero();
