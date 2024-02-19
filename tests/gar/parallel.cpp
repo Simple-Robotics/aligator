@@ -12,7 +12,7 @@
 using namespace aligator::gar;
 
 constexpr double EPS = 1e-9;
-const uint num_threads = 2;
+const uint num_threads = 6;
 
 std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem, uint t0,
                                            double mu) {
@@ -196,7 +196,7 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
 
   problem_t problem = generate_problem(x0, horizon, nx, nu);
   problem_t problemRef = problem;
-  const double mu = 1e-4;
+  const double mu = 1e-9;
 
   auto solutionRef = lqrInitializeSolution(problemRef);
   auto [xs_ref, us_ref, vs_ref, lbdas_ref] = solutionRef;
@@ -205,7 +205,6 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
   BOOST_TEST_MESSAGE("Run Serial solver (reference solution)");
   ProximalRiccatiSolver<double> refSolver{problemRef};
 
-  MatrixXs K0_ref;
   {
     refSolver.backward(mu, mu);
     refSolver.forward(xs_ref, us_ref, vs_ref, lbdas_ref);
@@ -213,8 +212,6 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
         computeKktError(problemRef, xs_ref, us_ref, vs_ref, lbdas_ref, mu, mu);
     printKktError(err_ref);
     BOOST_CHECK_LE(err_ref.max, tol);
-    K0_ref = refSolver.datas[0].fb.blockRow(0);
-    fmt::print("K0_ref=\n{}\n", K0_ref);
   }
 
   BOOST_TEST_MESSAGE("Run Parallel solver");
@@ -225,12 +222,22 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
   KktError err = computeKktError(problem, xs, us, vs, lbdas, mu, mu);
   printKktError(err);
   BOOST_CHECK_LE(err.max, tol);
-  MatrixXs K0_par = parSolver.datas[0].fb.blockRow(0);
 
-  auto _Ku_err = K0_par - K0_ref;
-  auto Ku_err = infty_norm(_Ku_err);
-  fmt::print("Ku_err =\n{}\n   |.|={:.3e}\n", _Ku_err, Ku_err);
-  BOOST_CHECK_LE(Ku_err, 1e-7);
+  MatrixXs K0_ref;
+  MatrixXs K0_par;
+
+  for (uint i = 0; i < 8; i++) {
+    VectorXs ku_ref = refSolver.datas[i].ff.blockRow(0);
+    K0_ref = refSolver.datas[i].fb.blockRow(0);
+    VectorXs ku_par = parSolver.datas[i].ff.blockRow(0);
+    K0_par = parSolver.datas[i].fb.blockRow(0);
+    auto _Ku_err = K0_par - K0_ref;
+    auto Ku_err = infty_norm(_Ku_err);
+    auto ku_err = infty_norm(ku_ref - ku_par);
+    fmt::print("|Ku_err|={:.3e}\n", Ku_err);
+    fmt::print("|ffuerr| = {:.3e}\n", ku_err);
+    BOOST_CHECK_LE(Ku_err, 1e-7);
+  }
 
   VectorXs xerrs = VectorXs::Zero(horizon + 1);
   VectorXs lerrs = xerrs;
