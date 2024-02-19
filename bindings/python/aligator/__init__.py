@@ -1,6 +1,7 @@
 """
 Copyright (C) 2022 LAAS-CNRS, INRIA
 """
+
 from .pyaligator import *
 from .pyaligator import __version__
 from . import utils

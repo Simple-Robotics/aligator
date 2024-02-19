@@ -5,6 +5,7 @@ https://github.com/loco-3d/crocoddyl/blob/master/examples/humanoid_manipulation.
 In this script, we demonstrate use the Python Crocoddyl API, by defining
 a manipulation problem using Crocoddyl and converting it to a aligator problem.
 """
+
 import os
 import sys
 

@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix finite difference function in python unittest ([#128](https://github.com/Simple-Robotics/aligator/pull/128))
+
+### Added
+- Add kinodynamics forward scheme
+- Add centroidal dynamics derivative cost to regularize the time derivative of centroidal dynamics
+- Add Python example of Solo stepping in place
+- Add wrench cone cost for 6D contact in centroidal dynamics
+- Add a 6D contact formulation for every centroidal cost and dynamics, including kinodynamics
+
+## [0.5.0] - 2024-02-13
+
+### Added
+
+- Add a pair filter strategy as an alternative to linesearch methods
+- Add a python example of a locomotion OCP with the robot Talos
+- Add two nonlinear centroidal dynamical models, where the control is respectively contact forces and their time derivative
+- Add a set of cost functions to generate a centroidal problem with user-defined contacts
+- Add unittests and example of typical centroidal problem
+
 ## [0.4.1] - 2024-01-25
 
 ### Changed
@@ -29,12 +49,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add a pair filter strategy as an alternative to linesearch methods
-- Add a python example of a locomotion OCP with the robot Talos
-
 * This is the first release of `aligator`. This library is a joint effort between INRIA and LAAS-CNRS, and will be maintained and expanded in the future. Please provide constructive feedback and contribute!
 
-[Unreleased]: https://github.com/Simple-Robotics/aligator/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/Simple-Robotics/aligator/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/Simple-Robotics/aligator/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/Simple-Robotics/aligator/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/Simple-Robotics/aligator/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Simple-Robotics/aligator/releases/tag/v0.3.0

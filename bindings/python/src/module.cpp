@@ -48,6 +48,9 @@ static void exposeEnums() {
 
 static void exposeContainers() {
   StdVectorPythonVisitor<std::vector<long>, true>::expose("StdVec_long");
+  eigenpy::exposeStdVectorEigenSpecificType<context::Vector3s>(
+      "StdVec_Vector3s");
+  StdVectorPythonVisitor<std::vector<bool>, true>::expose("StdVec_bool");
 }
 
 } // namespace python
@@ -78,6 +81,7 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
   exposeContainers();
   exposeGAR();
   exposeEnums();
+  exposeContainers();
   exposeFunctions();
   exposeCosts();
   exposeConstraint();

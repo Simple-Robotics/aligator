@@ -1,6 +1,7 @@
 """
 Common utilities for examples.
 """
+
 import numpy as np
 import pinocchio as pin
 import tap

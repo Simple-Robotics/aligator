@@ -3,6 +3,7 @@ Simple quadrotor dynamics example.
 
 Inspired by: https://github.com/loco-3d/crocoddyl/blob/master/examples/quadrotor.py
 """
+
 import pinocchio as pin
 import hppfcl as fcl
 import example_robot_data as erd

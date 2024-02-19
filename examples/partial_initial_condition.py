@@ -1,6 +1,7 @@
 """
 Simple example showing how to use a non-StateErrorResidual initial condition in 2D.
 """
+
 import aligator
 import numpy as np
 import matplotlib.pyplot as plt

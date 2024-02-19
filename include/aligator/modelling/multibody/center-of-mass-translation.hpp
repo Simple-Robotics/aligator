@@ -9,6 +9,15 @@ namespace aligator {
 
 template <typename Scalar> struct CenterOfMassTranslationDataTpl;
 
+/**
+ * @brief This residual returns the Center of Mass translation for a centroidal
+ * model with state \f$x = (c, h, L) \f$.
+ *
+ * @details The residual returns the first three components of the state:
+ * \f$r(x) = c - c_r \f$ with \f$ c \f$ center of mass and \f$ c_r \f$ desired
+ * reference for center of mass.
+ */
+
 template <typename _Scalar>
 struct CenterOfMassTranslationResidualTpl : UnaryFunctionTpl<_Scalar>,
                                             frame_api {
