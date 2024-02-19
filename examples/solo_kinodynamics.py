@@ -108,7 +108,7 @@ contact_points = (
     ]
     + [
         [
-            [False, False, True, True],
+            [False, True, True, False],
             [
                 FL_pose.translation.copy(),
                 FR_pose.translation.copy(),
@@ -132,7 +132,7 @@ contact_points = (
     ]
     + [
         [
-            [True, True, False, False],
+            [True, False, False, True],
             [
                 FL_pose.translation.copy(),
                 FR_pose.translation.copy(),
@@ -162,7 +162,9 @@ times = np.linspace(0, tf, nsteps + 1)
 
 
 def create_dynamics(contact_map):
-    ode = dynamics.KinodynamicsFwdDynamics(space, rmodel, gravity, contact_map)
+    ode = dynamics.KinodynamicsFwdDynamics(
+        space, rmodel, gravity, contact_map, feet_ids
+    )
     dyn_model = dynamics.IntegratorEuler(ode, dt)
     return dyn_model
 
@@ -175,15 +177,15 @@ def createStage(cp):
     cent_mom = aligator.CentroidalMomentumDerivativeResidual(
         rmodel, gravity, contact_map
     )
-    com_pose = aligator.CenterOfMassTranslationResidual(
+    """com_pose = aligator.CenterOfMassTranslationResidual(
         space_multibody.ndx, nu, rmodel, com0
-    )
-    wrapped_com = aligator.KinodynamicsWrapperResidual(com_pose, nq, nv, nk)
+    )"""
+    # wrapped_com = aligator.KinodynamicsWrapperResidual(com_pose, nq, nv, nk)
 
     rcost.addCost(aligator.QuadraticStateCost(space, nu, x0, w_x))
     rcost.addCost(aligator.QuadraticControlCost(space, u0, w_u))
     rcost.addCost(aligator.QuadraticResidualCost(space, cent_mom, w_cent_mom))
-    rcost.addCost(aligator.QuadraticResidualCost(space, wrapped_com, w_com))
+    # rcost.addCost(aligator.QuadraticResidualCost(space, wrapped_com, w_com))
     for i in range(len(cp[0])):
         frame_res = aligator.FrameTranslationResidual(
             space_multibody.ndx, nu, rmodel, cp[1][i], feet_ids[i]
@@ -205,21 +207,38 @@ def createStage(cp):
 
 
 swing_apex = 0.1
+x_forward = 0.1
 
 
 def ztraj(swing_apex, t_ss, ts):
-    return swing_apex * np.sin(ts / t_ss * np.pi)
+    return swing_apex * np.sin(ts / float(t_ss) * np.pi)
+
+
+def xtraj(x_forward, t_ss, ts):
+    return x_forward * ts / float(t_ss)
 
 
 ts = [0, 0, 0, 0]
+ref_poses = [FL_pose, FR_pose, HL_pose, HR_pose]
+now_trans = [
+    FL_pose.translation.copy(),
+    FR_pose.translation.copy(),
+    HL_pose.translation.copy(),
+    HR_pose.translation.copy(),
+]
 for r in range(len(contact_points)):
     for i in range(4):
         if contact_points[r][0][i]:
+            contact_points[r][1][i] = now_trans[i]
             ts[i] = 0
         else:
-            contact_points[r][1][i][2] = (
-                ztraj(swing_apex, n_ds, ts[i]) + FL_pose.translation[2]
+            contact_points[r][1][i][0] = (
+                xtraj(x_forward, n_ds, ts[i]) + ref_poses[i].translation[0]
             )
+            contact_points[r][1][i][2] = (
+                ztraj(swing_apex, n_ds, ts[i]) + ref_poses[i].translation[2]
+            )
+            now_trans[i] = contact_points[r][1][i]
             ts[i] += 1
 
 w_xterm = w_x.copy()
@@ -229,7 +248,7 @@ com_pose = aligator.CenterOfMassTranslationResidual(
     space_multibody.ndx, nu, rmodel, com0
 )
 wrapped_com = aligator.KinodynamicsWrapperResidual(com_pose, nq, nv, nk)
-term_cost.addCost(aligator.QuadraticResidualCost(space, wrapped_com, w_com * 10))
+# term_cost.addCost(aligator.QuadraticResidualCost(space, wrapped_com, w_com * 10))
 
 stages = [createStage(contact_points[i]) for i in range(nsteps)]
 

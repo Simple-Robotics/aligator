@@ -81,8 +81,10 @@ void exposeCenterOfMassFunctions() {
   bp::class_<CentroidalMomentumDerivativeResidual, bp::bases<StageFunction>>(
       "CentroidalMomentumDerivativeResidual",
       "A residual function :math:`r(x) = H_dot` ",
-      bp::init<const PinModel &, const context::Vector3s &, const ContactMap &>(
-          bp::args("self", "model", "gravity", "contact_map")))
+      bp::init<const int, const PinModel &, const context::Vector3s &,
+               const ContactMap &, const std::vector<pinocchio::FrameIndex> &>(
+          bp::args("self", "ndx", "model", "gravity", "contact_map",
+                   "frame_ids")))
       .def(FrameAPIVisitor<CentroidalMomentumDerivativeResidual>());
 
   bp::register_ptr_to_python<shared_ptr<CentroidalMomentumDerivativeData>>();

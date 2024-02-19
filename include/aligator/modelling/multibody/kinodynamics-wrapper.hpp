@@ -25,7 +25,7 @@ public:
 
   KinodynamicsWrapperResidualTpl(FunPtr multibody_cost, const int &nq,
                                  const int &nv, const int &nk)
-      : Base(6 + multibody_cost->ndx1, nv + 3 * nk, multibody_cost->nr),
+      : Base(multibody_cost->ndx1, nv - 6 + 3 * nk, multibody_cost->nr),
         multibody_cost_(multibody_cost), nx_(nq + nv), nk_(nk) {}
 
   void evaluate(const ConstVectorRef &x, BaseData &data) const;

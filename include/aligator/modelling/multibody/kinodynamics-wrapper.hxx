@@ -9,7 +9,7 @@ void KinodynamicsWrapperResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                                       BaseData &data) const {
   Data &d = static_cast<Data &>(data);
 
-  multibody_cost_->evaluate(x.tail(nx_), *d.wrapped_data_);
+  multibody_cost_->evaluate(x, *d.wrapped_data_);
   d.value_ = d.wrapped_data_->value_;
 }
 

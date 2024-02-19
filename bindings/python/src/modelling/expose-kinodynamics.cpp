@@ -2,7 +2,8 @@
 #include "aligator/python/fwd.hpp"
 
 #include "aligator/modelling/dynamics/kinodynamics-fwd.hpp"
-#include <proxsuite-nlp/modelling/spaces/cartesian-product.hpp>
+#include <pinocchio/multibody/fwd.hpp>
+#include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 #include <pinocchio/multibody/model.hpp>
 
 namespace aligator {
@@ -17,19 +18,20 @@ void exposeKinodynamics() {
   using ODEAbstract = ODEAbstractTpl<Scalar>;
   using KinodynamicsFwdData = KinodynamicsFwdDataTpl<Scalar>;
   using KinodynamicsFwdDynamics = KinodynamicsFwdDynamicsTpl<Scalar>;
-  using proxsuite::nlp::CartesianProductTpl;
+  using Manifold = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
+  using ManifoldPtr = shared_ptr<Manifold>;
   using Vector3s = typename math_types<Scalar>::Vector3s;
   using ContactMap = ContactMapTpl<Scalar>;
 
-  using StateManifoldPtr = shared_ptr<CartesianProductTpl<Scalar>>;
   using Model = pinocchio::ModelTpl<Scalar>;
 
   bp::class_<KinodynamicsFwdDynamics, bp::bases<ODEAbstract>>(
       "KinodynamicsFwdDynamics",
       "Centroidal forward dynamics + kinematics using Pinocchio.",
-      bp::init<const StateManifoldPtr &, const Model &, const Vector3s &,
-               const ContactMap &>(
-          "Constructor.", bp::args("self", "space", "gravity", "contact_map")));
+      bp::init<const ManifoldPtr &, const Model &, const Vector3s &,
+               const ContactMap &, const std::vector<pinocchio::FrameIndex> &>(
+          "Constructor.", bp::args("self", "space", "model", "gravity",
+                                   "contact_map", "frame_ids")));
 
   bp::register_ptr_to_python<shared_ptr<KinodynamicsFwdData>>();
 

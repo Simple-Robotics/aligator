@@ -4,8 +4,6 @@
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
 #include "aligator/modelling/contact-map.hpp"
 
-#include <proxsuite-nlp/modelling/spaces/cartesian-product.hpp>
-#include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 #include <pinocchio/multibody/model.hpp>
 
@@ -37,7 +35,7 @@ struct KinodynamicsFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using BaseData = ODEDataTpl<Scalar>;
   using ContDataAbstract = ContinuousDynamicsDataTpl<Scalar>;
   using Data = KinodynamicsFwdDataTpl<Scalar>;
-  using Manifold = proxsuite::nlp::CartesianProductTpl<Scalar>;
+  using Manifold = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
   using ManifoldPtr = shared_ptr<Manifold>;
   using Model = pinocchio::ModelTpl<Scalar>;
   using Matrix3s = Eigen::Matrix<Scalar, 3, 3>;
@@ -51,11 +49,14 @@ struct KinodynamicsFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   Vector3s gravity_;
   ContactMap contact_map_;
 
+  std::vector<pinocchio::FrameIndex> frame_ids_;
+
   const Manifold &space() const { return *space_; }
 
-  KinodynamicsFwdDynamicsTpl(const ManifoldPtr &state, const Model &model,
-                             const Vector3s &gravity,
-                             const ContactMap &contact_map);
+  KinodynamicsFwdDynamicsTpl(
+      const ManifoldPtr &state, const Model &model, const Vector3s &gravity,
+      const ContactMap &contact_map,
+      const std::vector<pinocchio::FrameIndex> frame_ids);
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                BaseData &data) const;
@@ -68,17 +69,24 @@ struct KinodynamicsFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
 template <typename Scalar> struct KinodynamicsFwdDataTpl : ODEDataTpl<Scalar> {
   using Base = ODEDataTpl<Scalar>;
   using PinData = pinocchio::DataTpl<Scalar>;
-  using Force = pinocchio::ForceTpl<Scalar>;
+  using VectorXs = typename math_types<Scalar>::VectorXs;
   using Matrix6Xs = typename math_types<Scalar>::Matrix6Xs;
   using Matrix3s = Eigen::Matrix<Scalar, 3, 3>;
+  using Matrix6s = Eigen::Matrix<Scalar, 6, 6>;
+  using Vector6s = Eigen::Matrix<Scalar, 6, 1>;
 
   PinData pin_data_;
   Matrix3s Jtemp_;
-  Force hdot_;
+  Matrix6s Agu_inv_;
   Matrix6Xs dh_dq_;
   Matrix6Xs dhdot_dq_;
   Matrix6Xs dhdot_dv_;
   Matrix6Xs dhdot_da_;
+  Vector6s cforces_;
+  VectorXs a0_;
+
+  /// Jacobian of the error, local frame
+  Matrix6Xs fJf_;
 
   KinodynamicsFwdDataTpl(const KinodynamicsFwdDynamicsTpl<Scalar> *model);
 };

@@ -258,21 +258,30 @@ def test_kinodynamics():
     import pinocchio as pin
 
     model = pin.buildSampleModelHumanoid()
+    frame_ids = [
+        model.getFrameId("lleg_effector_body"),
+        model.getFrameId("rleg_effector_body"),
+        model.getFrameId("rarm_effector_body"),
+    ]
 
-    nk = 2
-    nu = 3 * nk + model.nv
-    space_centroidal = manifolds.VectorSpace(6)
-    space_multibody = manifolds.MultibodyPhaseSpace(model)
-    space = manifolds.CartesianProduct(space_centroidal, space_multibody)
+    nk = 3
+    nu = 3 * nk + model.nv - 6
+    space = manifolds.MultibodyPhaseSpace(model)
     mass = 0
     for inertia in model.inertias:
         mass += inertia.mass
     gravity = np.array([0, 0, -9.81])
-    contact_states = [True, True]
-    contact_poses = [np.array([0, 0.1, 0]), np.array([0.1, -0.1, 0])]
+    contact_states = [True, True, False]
+    contact_poses = [
+        np.array([0, 0.1, 0]),
+        np.array([0.1, -0.1, 0]),
+        np.array([0.0, 0, 0]),
+    ]
     contact_map = aligator.ContactMap(contact_states, contact_poses)
 
-    ode = dynamics.KinodynamicsFwdDynamics(space, model, gravity, contact_map)
+    ode = dynamics.KinodynamicsFwdDynamics(
+        space, model, gravity, contact_map, frame_ids
+    )
     data = ode.createData()
 
     assert isinstance(data, dynamics.KinodynamicsFwdData)
@@ -288,12 +297,14 @@ def test_kinodynamics_diff():
     import pinocchio as pin
 
     model = pin.buildSampleModelHumanoid()
-
+    frame_ids = [
+        model.getFrameId("lleg_effector_body"),
+        model.getFrameId("rleg_effector_body"),
+        model.getFrameId("rarm_effector_body"),
+    ]
     nk = 3
-    nu = 3 * nk + model.nv
-    space_centroidal = manifolds.VectorSpace(6)
-    space_multibody = manifolds.MultibodyPhaseSpace(model)
-    space = manifolds.CartesianProduct(space_centroidal, space_multibody)
+    nu = 3 * nk + model.nv - 6
+    space = manifolds.MultibodyPhaseSpace(model)
     mass = 0
     for inertia in model.inertias:
         mass += inertia.mass
@@ -306,7 +317,9 @@ def test_kinodynamics_diff():
     ]
     contact_map = aligator.ContactMap(contact_states, contact_poses)
 
-    ode = dynamics.KinodynamicsFwdDynamics(space, model, gravity, contact_map)
+    ode = dynamics.KinodynamicsFwdDynamics(
+        space, model, gravity, contact_map, frame_ids
+    )
     data = ode.createData()
 
     x0 = space.neutral()
