@@ -3,6 +3,7 @@ Define a problem on UR5 using Crocoddyl, convert to aligator problem and solve u
 @Author  :   manifold
 @License :   (C)Copyright 2021-2022, INRIA
 """
+
 import crocoddyl as croc
 import aligator
 
