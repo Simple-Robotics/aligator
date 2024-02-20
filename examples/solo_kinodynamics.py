@@ -30,19 +30,16 @@ pin.updateFramePlacements(rmodel, rdata)
 nq = rmodel.nq
 nv = rmodel.nv
 nk = 4
-nu = nv + nk * 3
-space_multibody = manifolds.MultibodyPhaseSpace(rmodel)
-space_centroidal = manifolds.VectorSpace(6)
-space = manifolds.CartesianProduct(space_centroidal, space_multibody)
+nu = nv - 6 + nk * 3
+space = manifolds.MultibodyPhaseSpace(rmodel)
 ndx = space.ndx
 
 effort_limit = rmodel.effortLimit[6:]
 print(f"Effort limit: {effort_limit}")
 
-x0_m = np.concatenate((q0, np.zeros(nv)))
-x0 = np.concatenate((np.zeros(6), q0, np.zeros(nv)))
+x0 = np.concatenate((q0, np.zeros(nv)))
 u0 = np.zeros(nu)
-com0 = pin.centerOfMass(rmodel, rdata, x0_m[:nq])
+com0 = pin.centerOfMass(rmodel, rdata, x0[:nq])
 com1 = com0.copy()
 com2 = com0.copy()
 com1[2] -= 0.1
@@ -53,16 +50,6 @@ mu = 0.8  # Friction coefficient
 mass = pin.computeTotalMass(rmodel)
 f_ref = np.array([0, 0, -mass * gravity[2] / 4.0])
 
-
-""" dx = np.random.rand(nv)
-x1 = space_multibody.integrate(x0_m, dx)
-q1 = x1[:nq]
-v1 = np.random.rand(nv)
-a1 = np.random.rand(nv)
-hdot = pin.computeCentroidalMomentumTimeVariation(rmodel, rdata, q1, v1, a1)
-dh_dq, dhdot_dq, dhdot_dv, dhdot_da = pin.computeCentroidalDynamicsDerivatives(rmodel, rdata, q1, v1, a1)
-
-exit() """
 FL_id = rmodel.getFrameId("FL_FOOT")
 FR_id = rmodel.getFrameId("FR_FOOT")
 HL_id = rmodel.getFrameId("HL_FOOT")
@@ -76,9 +63,9 @@ HL_pose = rdata.oMf[HL_id].copy()
 HR_pose = rdata.oMf[HR_id].copy()
 
 w_x = np.ones(space.ndx) * 1e-2
-w_x[6:12] = 0.0
+w_x[0:6] = 0.0
 w_x = np.diag(w_x)
-w_u = np.eye(nu) * 1e-5
+w_u = np.eye(nu) * 1e-6
 
 w_trans = np.ones(3) * 100
 w_trans = np.diag(w_trans)
@@ -90,8 +77,7 @@ w_com = np.ones(3) * 0
 w_com = np.diag(w_com)
 
 """ Define contact points throughout horizon"""
-transoffset = np.array([0, 0, 0])
-n_qs = 50
+n_qs = 10
 n_ds = 50
 contact_points = (
     [
@@ -122,10 +108,10 @@ contact_points = (
         [
             [True, True, True, True],
             [
-                FL_pose.translation.copy() + transoffset,
+                FL_pose.translation.copy(),
                 FR_pose.translation.copy(),
                 HL_pose.translation.copy(),
-                HR_pose.translation.copy() + transoffset,
+                HR_pose.translation.copy(),
             ],
         ]
         for _ in range(n_qs)
@@ -146,10 +132,10 @@ contact_points = (
         [
             [True, True, True, True],
             [
-                FL_pose.translation.copy() + transoffset,
+                FL_pose.translation.copy(),
                 FR_pose.translation.copy(),
                 HL_pose.translation.copy(),
-                HR_pose.translation.copy() + transoffset,
+                HR_pose.translation.copy(),
             ],
         ]
         for _ in range(n_qs)
@@ -171,27 +157,24 @@ def create_dynamics(contact_map):
 
 def createStage(cp):
     contact_map = aligator.ContactMap(cp[0], cp[1])
-    u0 = np.zeros(nu)
     rcost = aligator.CostStack(space, nu)
 
     cent_mom = aligator.CentroidalMomentumDerivativeResidual(
-        rmodel, gravity, contact_map
+        space.ndx, rmodel, gravity, contact_map, feet_ids
     )
     """com_pose = aligator.CenterOfMassTranslationResidual(
         space_multibody.ndx, nu, rmodel, com0
-    )"""
-    # wrapped_com = aligator.KinodynamicsWrapperResidual(com_pose, nq, nv, nk)
+    ) """
 
     rcost.addCost(aligator.QuadraticStateCost(space, nu, x0, w_x))
     rcost.addCost(aligator.QuadraticControlCost(space, u0, w_u))
     rcost.addCost(aligator.QuadraticResidualCost(space, cent_mom, w_cent_mom))
-    # rcost.addCost(aligator.QuadraticResidualCost(space, wrapped_com, w_com))
+    # rcost.addCost(aligator.QuadraticResidualCost(space, com_pose, w_com))
     for i in range(len(cp[0])):
         frame_res = aligator.FrameTranslationResidual(
-            space_multibody.ndx, nu, rmodel, cp[1][i], feet_ids[i]
+            space.ndx, nu, rmodel, cp[1][i], feet_ids[i]
         )
-        wrapped_frame_res = aligator.KinodynamicsWrapperResidual(frame_res, nq, nv, nk)
-        rcost.addCost(aligator.QuadraticResidualCost(space, wrapped_frame_res, w_trans))
+        rcost.addCost(aligator.QuadraticResidualCost(space, frame_res, w_trans))
 
     stm = aligator.StageModel(rcost, create_dynamics(contact_map))
     for i in range(len(cp[0])):
@@ -199,15 +182,14 @@ def createStage(cp):
             cone_cstr = aligator.FrictionConeResidual(space.ndx, nu, i, mu, 1e-5)
             stm.addConstraint(cone_cstr, constraints.NegativeOrthant())
             frame_res = aligator.FrameTranslationResidual(
-                space_multibody.ndx, nu, rmodel, cp[1][i], feet_ids[i]
+                space.ndx, nu, rmodel, cp[1][i], feet_ids[i]
             )
-            wrapped_cstr = aligator.KinodynamicsWrapperResidual(frame_res, nq, nv, nk)
-            stm.addConstraint(wrapped_cstr, constraints.EqualityConstraintSet())
+            stm.addConstraint(frame_res, constraints.EqualityConstraintSet())
     return stm
 
 
-swing_apex = 0.1
-x_forward = 0.1
+swing_apex = 0.05
+x_forward = 0.2
 
 
 def ztraj(swing_apex, t_ss, ts):
@@ -244,25 +226,23 @@ for r in range(len(contact_points)):
 w_xterm = w_x.copy()
 term_cost = aligator.CostStack(space, nu)
 term_cost.addCost(aligator.QuadraticStateCost(space, nu, x0, weights=10 * w_x))
-com_pose = aligator.CenterOfMassTranslationResidual(
-    space_multibody.ndx, nu, rmodel, com0
-)
-wrapped_com = aligator.KinodynamicsWrapperResidual(com_pose, nq, nv, nk)
-# term_cost.addCost(aligator.QuadraticResidualCost(space, wrapped_com, w_com * 10))
+com_pose = aligator.CenterOfMassTranslationResidual(space.ndx, nu, rmodel, com0)
+# term_cost.addCost(aligator.QuadraticResidualCost(space, com_pose, w_com * 10))
 
 stages = [createStage(contact_points[i]) for i in range(nsteps)]
 
-contact_map = aligator.ContactMap(contact_points[-1][0], contact_points[-1][1])
-cent_mom_cst = aligator.CentroidalMomentumDerivativeResidual(
-    rmodel, gravity, contact_map
+contact_map_ter = aligator.ContactMap(contact_points[-1][0], contact_points[-1][1])
+contact_map_init = aligator.ContactMap(contact_points[0][0], contact_points[0][1])
+cent_mom_cst_ter = aligator.CentroidalMomentumDerivativeResidual(
+    space.ndx, rmodel, gravity, contact_map_ter, feet_ids
 )
-stages[-1].addConstraint(cent_mom_cst, constraints.EqualityConstraintSet())
+cent_mom_cst_init = aligator.CentroidalMomentumDerivativeResidual(
+    space.ndx, rmodel, gravity, contact_map_init, feet_ids
+)
+stages[0].addConstraint(cent_mom_cst_init, constraints.EqualityConstraintSet())
+stages[-1].addConstraint(cent_mom_cst_ter, constraints.EqualityConstraintSet())
 
 problem = aligator.TrajOptProblem(x0, stages, term_cost)
-term_constraint_cent = aligator.StageConstraint(
-    cent_mom_cst, constraints.EqualityConstraintSet()
-)
-# problem.addTerminalConstraint(term_constraint_cent)
 
 TOL = 1e-5
 mu_init = 1e-8
@@ -273,7 +253,6 @@ solver = aligator.SolverProxDDP(TOL, mu_init, rho_init, verbose=verbose)
 # solver = aligator.SolverFDDP(TOL, verbose=verbose)
 solver.rollout_type = aligator.ROLLOUT_LINEAR
 print("LDLT algo choice:", solver.ldlt_algo_choice)
-# solver = aligator.SolverFDDP(TOL, verbose=verbose)
 solver.max_iters = max_iters
 solver.sa_strategy = aligator.SA_FILTER  # FILTER or LINESEARCH
 solver.force_initial_condition = True
@@ -281,7 +260,7 @@ solver.filter.beta = 1e-5
 solver.setup(problem)
 
 xs_init = [x0] * (nsteps + 1)
-u_ref = np.concatenate((f_ref, f_ref, f_ref, f_ref, np.zeros(rmodel.nv)))
+u_ref = np.concatenate((f_ref, f_ref, f_ref, f_ref, np.zeros(rmodel.nv - 6)))
 us_init = [u_ref for _ in range(nsteps)]
 
 solver.run(
@@ -296,7 +275,7 @@ print(results)
 if args.display:
     vizer.setCameraPosition([1.2, 0.0, 1.2])
     vizer.setCameraTarget([0.0, 0.0, 1.0])
-    qs = [x[6 : 6 + nq] for x in results.xs.tolist()]
+    qs = [x[:nq] for x in results.xs.tolist()]
 
     for _ in range(5):
         vizer.play(qs, dt)
@@ -318,12 +297,15 @@ FR_desired = [[], [], []]
 HR_desired = [[], [], []]
 ttlin = np.linspace(0, nsteps * dt, nsteps)
 for i in range(nsteps):
-    pin.forwardKinematics(rmodel, rdata, results.xs[i][6 : 6 + rmodel.nq])
+    pin.forwardKinematics(rmodel, rdata, results.xs[i][: rmodel.nq])
     pin.updateFramePlacements(rmodel, rdata)
-    com = pin.centerOfMass(rmodel, rdata, results.xs[i][6 : 6 + rmodel.nq])
+    com = pin.centerOfMass(rmodel, rdata, results.xs[i][: rmodel.nq])
+    pin.computeCentroidalMomentum(
+        rmodel, rdata, results.xs[i][: rmodel.nq], results.xs[i][rmodel.nq :]
+    )
     for j in range(3):
         com_traj[j].append(com[j])
-        base_pose[j].append(results.xs[i][6 + j])
+        base_pose[j].append(results.xs[i][j])
         FL_poses[j].append(rdata.oMf[FL_id].translation[j])
         FR_poses[j].append(rdata.oMf[FR_id].translation[j])
         HL_poses[j].append(rdata.oMf[HL_id].translation[j])
@@ -332,12 +314,8 @@ for i in range(nsteps):
         FR_desired[j].append(contact_points[i][1][1][j])
         HL_desired[j].append(contact_points[i][1][2][j])
         HR_desired[j].append(contact_points[i][1][3][j])
-    linear_momentum[0].append(results.xs[i][0])
-    linear_momentum[1].append(results.xs[i][1])
-    linear_momentum[2].append(results.xs[i][2])
-    angular_momentum[0].append(results.xs[i][3])
-    angular_momentum[1].append(results.xs[i][4])
-    angular_momentum[2].append(results.xs[i][5])
+        linear_momentum[j].append(rdata.hg.linear[j])
+        angular_momentum[j].append(rdata.hg.angular[j])
     for j in range(nk):
         if contact_points[i][0][j]:
             forces_z[j].append(results.us[i][j * 3 + 2])

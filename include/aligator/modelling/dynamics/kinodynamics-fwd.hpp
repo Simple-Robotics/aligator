@@ -12,18 +12,17 @@ namespace dynamics {
 template <typename Scalar> struct KinodynamicsFwdDataTpl;
 
 /**
- * @brief   Nonlinear centroidal and kinematics forward dynamics.
+ * @brief   Nonlinear centroidal and full kinematics forward dynamics.
  *
- * @details Cartesian product of centroidal dynamics and Pinocchio kinematics.
- * This is described in state-space \f$\mathcal{X} = T\mathcal{Q}\f$
- * (the phase space \f$x = (c,h,L,q,v)\f$ with c CoM position, h linear
- * momentum, L angular momentum, q kinematics pose and v joint velocity) using
- * the differential equation \f[ \dot{c,h,l} = f(c,h,l,\lambda) = F_x * x
- * + F_{lambda}}(x) * lambda \f]
- * with f contact forces as described by the Newton-Euler law of momentum.
- * Kinematics component is subjected to \f$\begin{bmatrix} \dot{q} \\ \dot{v}
- * \end{bmatrix} = \begin{bmatrix} v \\ a \end{bmatrix}\f$ with a commanded
- * joint acceleration.
+ * @details This is described in state-space \f$\mathcal{X} = T\mathcal{Q}\f$
+ * (the phase space \f$x = (q,v)\f$ with q kinematics pose and v joint velocity)
+ * using the differential equation \f$ \dot{q} = v \f$ and
+ * \f$ \dot{v} = \begin{bmatrix} a_u \\ a_j \end{bmatrix} \f$,
+ * with \f$a_u\f$ base acceleration computed from centroidal Newton-Euler law of
+ * momentum
+ * (\f$ \dot{H} = \dot{A}\dot{q} + A\ddot{q} = \begin{bmatrix} \sum_i=1^{n_k}
+ * f_i + mg \\ \sum_i=1^{n_k} (p_i - c) \times f_i \end{bmatrix} \f$ ) and
+ * \f$a_j\f$ commanded joints acceleration.
  *
  */
 template <typename _Scalar>
@@ -84,8 +83,6 @@ template <typename Scalar> struct KinodynamicsFwdDataTpl : ODEDataTpl<Scalar> {
   Matrix6Xs dhdot_da_;
   Vector6s cforces_;
   VectorXs a0_;
-
-  /// Jacobian of the error, local frame
   Matrix6Xs fJf_;
 
   KinodynamicsFwdDataTpl(const KinodynamicsFwdDynamicsTpl<Scalar> *model);
