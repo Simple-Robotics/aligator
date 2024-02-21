@@ -6,6 +6,7 @@ You can run this file using pytest:
 
 Or also as a module.
 """
+
 from proxsuite_nlp import costs
 import aligator
 from aligator import manifolds

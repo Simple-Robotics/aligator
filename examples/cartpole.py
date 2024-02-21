@@ -3,6 +3,7 @@
 @Author  :   quentinll
 @License :   (C)Copyright 2021-2022, INRIA
 """
+
 import pinocchio as pin
 import numpy as np
 import aligator

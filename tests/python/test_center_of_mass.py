@@ -1,6 +1,7 @@
 """
 Test function related to center of mass residuals
 """
+
 import aligator
 import numpy as np
 import pinocchio as pin

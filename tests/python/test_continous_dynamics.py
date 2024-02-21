@@ -1,6 +1,7 @@
 """
 Create continuous dynamics from Python.
 """
+
 import pytest
 import numpy as np
 import aligator
