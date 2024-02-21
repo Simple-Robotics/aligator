@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 
 from utils import ArgsBase
 from aligator import manifolds, dynamics, constraints
+import copy
 
 
 class Args(ArgsBase):
@@ -34,21 +35,15 @@ nu = nv - 6 + nk * 3
 space = manifolds.MultibodyPhaseSpace(rmodel)
 ndx = space.ndx
 
-effort_limit = rmodel.effortLimit[6:]
-print(f"Effort limit: {effort_limit}")
-
 x0 = np.concatenate((q0, np.zeros(nv)))
 u0 = np.zeros(nu)
 com0 = pin.centerOfMass(rmodel, rdata, x0[:nq])
-com1 = com0.copy()
-com2 = com0.copy()
-com1[2] -= 0.1
-com2[2] += 0.05
-dt = 20e-3  # 20 ms
+
+dt = 20e-3  # Timestep
 gravity = np.array([0, 0, -9.81])
 mu = 0.8  # Friction coefficient
 mass = pin.computeTotalMass(rmodel)
-f_ref = np.array([0, 0, -mass * gravity[2] / 4.0])
+f_ref = np.array([0, 0, -mass * gravity[2] / 4.0])  # Initial contact force
 
 FL_id = rmodel.getFrameId("FL_FOOT")
 FR_id = rmodel.getFrameId("FR_FOOT")
@@ -62,6 +57,8 @@ FR_pose = rdata.oMf[FR_id].copy()
 HL_pose = rdata.oMf[HL_id].copy()
 HR_pose = rdata.oMf[HR_id].copy()
 
+# Cost weights
+
 w_x = np.ones(space.ndx) * 1e-2
 w_x[0:6] = 0.0
 w_x = np.diag(w_x)
@@ -73,121 +70,57 @@ w_trans = np.diag(w_trans)
 w_cent_mom = np.ones(6) * 1e-3
 w_cent_mom = np.diag(w_cent_mom)
 
-w_com = np.ones(3) * 0
-w_com = np.diag(w_com)
 
-""" Define contact points throughout horizon"""
-n_qs = 10
-n_ds = 50
-contact_points = (
-    [
-        [
-            [True, True, True, True],
-            [
-                FL_pose.translation.copy(),
-                FR_pose.translation.copy(),
-                HL_pose.translation.copy(),
-                HR_pose.translation.copy(),
-            ],
-        ]
-        for _ in range(n_qs)
-    ]
-    + [
-        [
-            [False, True, True, False],
-            [
-                FL_pose.translation.copy(),
-                FR_pose.translation.copy(),
-                HL_pose.translation.copy(),
-                HR_pose.translation.copy(),
-            ],
-        ]
-        for _ in range(n_ds)
-    ]
-    + [
-        [
-            [True, True, True, True],
-            [
-                FL_pose.translation.copy(),
-                FR_pose.translation.copy(),
-                HL_pose.translation.copy(),
-                HR_pose.translation.copy(),
-            ],
-        ]
-        for _ in range(n_qs)
-    ]
-    + [
-        [
-            [True, False, False, True],
-            [
-                FL_pose.translation.copy(),
-                FR_pose.translation.copy(),
-                HL_pose.translation.copy(),
-                HR_pose.translation.copy(),
-            ],
-        ]
-        for _ in range(n_ds)
-    ]
-    + [
-        [
-            [True, True, True, True],
-            [
-                FL_pose.translation.copy(),
-                FR_pose.translation.copy(),
-                HL_pose.translation.copy(),
-                HR_pose.translation.copy(),
-            ],
-        ]
-        for _ in range(n_qs)
-    ]
-)
-
-nsteps = len(contact_points)
-tf = nsteps * dt  # in seconds
-times = np.linspace(0, tf, nsteps + 1)
-
-
-def create_dynamics(contact_map):
+def create_dynamics(cont_states):
     ode = dynamics.KinodynamicsFwdDynamics(
-        space, rmodel, gravity, contact_map, feet_ids
+        space, rmodel, gravity, cont_states, feet_ids
     )
     dyn_model = dynamics.IntegratorEuler(ode, dt)
     return dyn_model
 
 
-def createStage(cp):
-    contact_map = aligator.ContactMap(cp[0], cp[1])
+def createStage(cont_states, cont_pos):
     rcost = aligator.CostStack(space, nu)
 
     cent_mom = aligator.CentroidalMomentumDerivativeResidual(
-        space.ndx, rmodel, gravity, contact_map, feet_ids
+        space.ndx, rmodel, gravity, cont_states, feet_ids
     )
-    """com_pose = aligator.CenterOfMassTranslationResidual(
-        space_multibody.ndx, nu, rmodel, com0
-    ) """
 
     rcost.addCost(aligator.QuadraticStateCost(space, nu, x0, w_x))
     rcost.addCost(aligator.QuadraticControlCost(space, u0, w_u))
     rcost.addCost(aligator.QuadraticResidualCost(space, cent_mom, w_cent_mom))
-    # rcost.addCost(aligator.QuadraticResidualCost(space, com_pose, w_com))
-    for i in range(len(cp[0])):
+    for i in range(len(cont_pos)):
         frame_res = aligator.FrameTranslationResidual(
-            space.ndx, nu, rmodel, cp[1][i], feet_ids[i]
+            space.ndx, nu, rmodel, cont_pos[i], feet_ids[i]
         )
         rcost.addCost(aligator.QuadraticResidualCost(space, frame_res, w_trans))
 
-    stm = aligator.StageModel(rcost, create_dynamics(contact_map))
-    for i in range(len(cp[0])):
-        if cp[0][i]:
+    stm = aligator.StageModel(rcost, create_dynamics(cont_states))
+    for i in range(len(cont_states)):
+        if cont_states[i]:
             cone_cstr = aligator.FrictionConeResidual(space.ndx, nu, i, mu, 1e-5)
             stm.addConstraint(cone_cstr, constraints.NegativeOrthant())
             frame_res = aligator.FrameTranslationResidual(
-                space.ndx, nu, rmodel, cp[1][i], feet_ids[i]
+                space.ndx, nu, rmodel, cont_pos[i], feet_ids[i]
             )
             stm.addConstraint(frame_res, constraints.EqualityConstraintSet())
     return stm
 
 
+# Define contact points throughout horizon
+
+n_qs = 5  # Full contact support
+n_ds = 40  # Two-contact support
+
+steps = 2
+contact_poses = []
+contact_states = []
+now_trans = [
+    FL_pose.translation.copy(),
+    FR_pose.translation.copy(),
+    HL_pose.translation.copy(),
+    HR_pose.translation.copy(),
+]
 swing_apex = 0.05
 x_forward = 0.2
 
@@ -200,44 +133,50 @@ def xtraj(x_forward, t_ss, ts):
     return x_forward * ts / float(t_ss)
 
 
-ts = [0, 0, 0, 0]
-ref_poses = [FL_pose, FR_pose, HL_pose, HR_pose]
-now_trans = [
-    FL_pose.translation.copy(),
-    FR_pose.translation.copy(),
-    HL_pose.translation.copy(),
-    HR_pose.translation.copy(),
-]
-for r in range(len(contact_points)):
-    for i in range(4):
-        if contact_points[r][0][i]:
-            contact_points[r][1][i] = now_trans[i]
-            ts[i] = 0
-        else:
-            contact_points[r][1][i][0] = (
-                xtraj(x_forward, n_ds, ts[i]) + ref_poses[i].translation[0]
-            )
-            contact_points[r][1][i][2] = (
-                ztraj(swing_apex, n_ds, ts[i]) + ref_poses[i].translation[2]
-            )
-            now_trans[i] = contact_points[r][1][i]
-            ts[i] += 1
+for i in range(steps):
+    for j in range(n_qs):
+        contact_states.append([True, True, True, True])
+        contact_poses.append(copy.deepcopy(now_trans))
+    for j in range(n_ds):
+        contact_states.append([False, True, True, False])
+        new_trans = copy.deepcopy(now_trans)
+        new_trans[0][0] = xtraj(x_forward, n_ds, j) + now_trans[0][0]
+        new_trans[0][2] = ztraj(swing_apex, n_ds, j) + now_trans[0][2]
+        new_trans[3][0] = xtraj(x_forward, n_ds, j) + now_trans[3][0]
+        new_trans[3][2] = ztraj(swing_apex, n_ds, j) + now_trans[3][2]
+        contact_poses.append(copy.deepcopy(new_trans))
+        if j == n_ds - 1:
+            now_trans = copy.deepcopy(new_trans)
+    for j in range(n_qs):
+        contact_states.append([True, True, True, True])
+        contact_poses.append(copy.deepcopy(now_trans))
+    for j in range(n_ds):
+        contact_states.append([True, False, False, True])
+        new_trans = copy.deepcopy(now_trans)
+        new_trans[1][0] = xtraj(x_forward, n_ds, j) + now_trans[1][0]
+        new_trans[1][2] = ztraj(swing_apex, n_ds, j) + now_trans[1][2]
+        new_trans[2][0] = xtraj(x_forward, n_ds, j) + now_trans[2][0]
+        new_trans[2][2] = ztraj(swing_apex, n_ds, j) + now_trans[2][2]
+        contact_poses.append(copy.deepcopy(new_trans))
+        if j == n_ds - 1:
+            now_trans = copy.deepcopy(new_trans)
+
+nsteps = len(contact_states)
+tf = nsteps * dt  # in seconds
+times = np.linspace(0, tf, nsteps + 1)
 
 w_xterm = w_x.copy()
 term_cost = aligator.CostStack(space, nu)
 term_cost.addCost(aligator.QuadraticStateCost(space, nu, x0, weights=10 * w_x))
 com_pose = aligator.CenterOfMassTranslationResidual(space.ndx, nu, rmodel, com0)
-# term_cost.addCost(aligator.QuadraticResidualCost(space, com_pose, w_com * 10))
 
-stages = [createStage(contact_points[i]) for i in range(nsteps)]
+stages = [createStage(contact_states[i], contact_poses[i]) for i in range(nsteps)]
 
-contact_map_ter = aligator.ContactMap(contact_points[-1][0], contact_points[-1][1])
-contact_map_init = aligator.ContactMap(contact_points[0][0], contact_points[0][1])
 cent_mom_cst_ter = aligator.CentroidalMomentumDerivativeResidual(
-    space.ndx, rmodel, gravity, contact_map_ter, feet_ids
+    space.ndx, rmodel, gravity, contact_states[-1], feet_ids
 )
 cent_mom_cst_init = aligator.CentroidalMomentumDerivativeResidual(
-    space.ndx, rmodel, gravity, contact_map_init, feet_ids
+    space.ndx, rmodel, gravity, contact_states[0], feet_ids
 )
 stages[0].addConstraint(cent_mom_cst_init, constraints.EqualityConstraintSet())
 stages[-1].addConstraint(cent_mom_cst_ter, constraints.EqualityConstraintSet())
@@ -310,14 +249,14 @@ for i in range(nsteps):
         FR_poses[j].append(rdata.oMf[FR_id].translation[j])
         HL_poses[j].append(rdata.oMf[HL_id].translation[j])
         HR_poses[j].append(rdata.oMf[HR_id].translation[j])
-        FL_desired[j].append(contact_points[i][1][0][j])
-        FR_desired[j].append(contact_points[i][1][1][j])
-        HL_desired[j].append(contact_points[i][1][2][j])
-        HR_desired[j].append(contact_points[i][1][3][j])
+        FL_desired[j].append(contact_poses[i][0][j])
+        FR_desired[j].append(contact_poses[i][1][j])
+        HL_desired[j].append(contact_poses[i][2][j])
+        HR_desired[j].append(contact_poses[i][3][j])
         linear_momentum[j].append(rdata.hg.linear[j])
         angular_momentum[j].append(rdata.hg.angular[j])
     for j in range(nk):
-        if contact_points[i][0][j]:
+        if contact_states[i][j]:
             forces_z[j].append(results.us[i][j * 3 + 2])
         else:
             forces_z[j].append(0)

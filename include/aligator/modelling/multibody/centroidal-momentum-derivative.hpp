@@ -2,7 +2,6 @@
 
 #include "./fwd.hpp"
 #include "aligator/core/function-abstract.hpp"
-#include "aligator/modelling/contact-map.hpp"
 
 #include <pinocchio/multibody/model.hpp>
 #include <pinocchio/algorithm/center-of-mass.hpp>
@@ -27,22 +26,27 @@ public:
   using Model = pinocchio::ModelTpl<Scalar>;
   using SE3 = pinocchio::SE3Tpl<Scalar>;
   using Data = CentroidalMomentumDerivativeDataTpl<Scalar>;
-  using ContactMap = ContactMapTpl<Scalar>;
 
   Model pin_model_;
   double mass_;
   Vector3s gravity_;
-  ContactMap contact_map_;
-  std::vector<pinocchio::FrameIndex> frame_ids_;
+  std::vector<bool> contact_states_;
+  std::vector<pinocchio::FrameIndex> contact_ids_;
 
   CentroidalMomentumDerivativeResidualTpl(
       const int ndx, const Model &model, const Vector3s &gravity,
-      const ContactMap &contact_map,
-      const std::vector<pinocchio::FrameIndex> &frame_ids)
-      : Base(ndx, (int)contact_map.getSize() * 3 + model.nv - 6, 6),
-        pin_model_(model), gravity_(gravity), contact_map_(contact_map),
-        frame_ids_(frame_ids) {
+      const std::vector<bool> &contact_states,
+      const std::vector<pinocchio::FrameIndex> &contact_ids)
+      : Base(ndx, (int)contact_states.size() * 3 + model.nv - 6, 6),
+        pin_model_(model), gravity_(gravity), contact_states_(contact_states),
+        contact_ids_(contact_ids) {
     mass_ = pinocchio::computeTotalMass(model);
+    if (contact_ids_.size() != contact_states_.size()) {
+      ALIGATOR_DOMAIN_ERROR(
+          fmt::format("contact_ids and contact_states should have same size: "
+                      "now ({} and {}).",
+                      contact_ids_.size(), contact_states_.size()));
+    }
   }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,

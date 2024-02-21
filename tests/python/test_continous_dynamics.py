@@ -258,7 +258,7 @@ def test_kinodynamics():
     import pinocchio as pin
 
     model = pin.buildSampleModelHumanoid()
-    frame_ids = [
+    contact_ids = [
         model.getFrameId("lleg_effector_body"),
         model.getFrameId("rleg_effector_body"),
         model.getFrameId("rarm_effector_body"),
@@ -272,15 +272,9 @@ def test_kinodynamics():
         mass += inertia.mass
     gravity = np.array([0, 0, -9.81])
     contact_states = [True, True, False]
-    contact_poses = [
-        np.array([0, 0.1, 0]),
-        np.array([0.1, -0.1, 0]),
-        np.array([0.0, 0, 0]),
-    ]
-    contact_map = aligator.ContactMap(contact_states, contact_poses)
 
     ode = dynamics.KinodynamicsFwdDynamics(
-        space, model, gravity, contact_map, frame_ids
+        space, model, gravity, contact_states, contact_ids
     )
     data = ode.createData()
 
@@ -297,7 +291,7 @@ def test_kinodynamics_diff():
     import pinocchio as pin
 
     model = pin.buildSampleModelHumanoid()
-    frame_ids = [
+    contact_ids = [
         model.getFrameId("lleg_effector_body"),
         model.getFrameId("rleg_effector_body"),
         model.getFrameId("rarm_effector_body"),
@@ -310,15 +304,9 @@ def test_kinodynamics_diff():
         mass += inertia.mass
     gravity = np.array([0, 0, -9.81])
     contact_states = [True, True, False]
-    contact_poses = [
-        np.array([0, 0.1, 0]),
-        np.array([0.1, -0.1, 0]),
-        np.array([0.0, 0, 0]),
-    ]
-    contact_map = aligator.ContactMap(contact_states, contact_poses)
 
     ode = dynamics.KinodynamicsFwdDynamics(
-        space, model, gravity, contact_map, frame_ids
+        space, model, gravity, contact_states, contact_ids
     )
     data = ode.createData()
 

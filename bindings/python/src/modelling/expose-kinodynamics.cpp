@@ -21,7 +21,6 @@ void exposeKinodynamics() {
   using Manifold = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
   using ManifoldPtr = shared_ptr<Manifold>;
   using Vector3s = typename math_types<Scalar>::Vector3s;
-  using ContactMap = ContactMapTpl<Scalar>;
 
   using Model = pinocchio::ModelTpl<Scalar>;
 
@@ -29,9 +28,10 @@ void exposeKinodynamics() {
       "KinodynamicsFwdDynamics",
       "Centroidal forward dynamics + kinematics using Pinocchio.",
       bp::init<const ManifoldPtr &, const Model &, const Vector3s &,
-               const ContactMap &, const std::vector<pinocchio::FrameIndex> &>(
+               const std::vector<bool> &,
+               const std::vector<pinocchio::FrameIndex> &>(
           "Constructor.", bp::args("self", "space", "model", "gravity",
-                                   "contact_map", "frame_ids")));
+                                   "contact_states", "contact_ids")));
 
   bp::register_ptr_to_python<shared_ptr<KinodynamicsFwdData>>();
 

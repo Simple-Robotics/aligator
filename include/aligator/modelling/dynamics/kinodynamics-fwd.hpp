@@ -2,7 +2,6 @@
 #pragma once
 
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
-#include "aligator/modelling/contact-map.hpp"
 
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 #include <pinocchio/multibody/model.hpp>
@@ -38,7 +37,6 @@ struct KinodynamicsFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using ManifoldPtr = shared_ptr<Manifold>;
   using Model = pinocchio::ModelTpl<Scalar>;
   using Matrix3s = Eigen::Matrix<Scalar, 3, 3>;
-  using ContactMap = ContactMapTpl<Scalar>;
 
   using Base::nu_;
 
@@ -46,16 +44,16 @@ struct KinodynamicsFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   Model pin_model_;
   double mass_;
   Vector3s gravity_;
-  ContactMap contact_map_;
 
-  std::vector<pinocchio::FrameIndex> frame_ids_;
+  std::vector<bool> contact_states_;
+  std::vector<pinocchio::FrameIndex> contact_ids_;
 
   const Manifold &space() const { return *space_; }
 
   KinodynamicsFwdDynamicsTpl(
       const ManifoldPtr &state, const Model &model, const Vector3s &gravity,
-      const ContactMap &contact_map,
-      const std::vector<pinocchio::FrameIndex> frame_ids);
+      const std::vector<bool> &contact_states,
+      const std::vector<pinocchio::FrameIndex> &contact_ids);
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                BaseData &data) const;
@@ -75,15 +73,17 @@ template <typename Scalar> struct KinodynamicsFwdDataTpl : ODEDataTpl<Scalar> {
   using Vector6s = Eigen::Matrix<Scalar, 6, 1>;
 
   PinData pin_data_;
-  Matrix3s Jtemp_;
-  Matrix6s Agu_inv_;
   Matrix6Xs dh_dq_;
   Matrix6Xs dhdot_dq_;
   Matrix6Xs dhdot_dv_;
   Matrix6Xs dhdot_da_;
-  Vector6s cforces_;
-  VectorXs a0_;
   Matrix6Xs fJf_;
+  VectorXs v0_;
+  VectorXs a0_;
+
+  Vector6s cforces_;
+  Matrix3s Jtemp_;
+  Matrix6s Agu_inv_;
 
   KinodynamicsFwdDataTpl(const KinodynamicsFwdDynamicsTpl<Scalar> *model);
 };
