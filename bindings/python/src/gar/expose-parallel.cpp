@@ -1,6 +1,6 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #include "aligator/python/fwd.hpp"
-#include "aligator/python/gar-visitors.hpp"
+#include "aligator/python/blk-matrix.hpp"
 #include "aligator/gar/lqr-problem.hpp"
 #include "aligator/gar/parallel-solver.hpp"
 

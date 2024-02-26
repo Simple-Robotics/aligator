@@ -1,6 +1,6 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #include "aligator/python/fwd.hpp"
-#include "aligator/python/gar-visitors.hpp"
+#include "aligator/python/blk-matrix.hpp"
 #include "aligator/gar/riccati.hpp"
 #include "aligator/gar/dense-riccati.hpp"
 #include "aligator/gar/utils.hpp"
