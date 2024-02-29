@@ -204,7 +204,7 @@ option(ENABLE_TRACY_PROFILING "Enable Tracy profiler" OFF)
 FetchContent_Declare(
   tracy
   GIT_REPOSITORY https://github.com/Simple-Robotics/tracy.git
-  GIT_TAG f083b07
+  GIT_TAG patches
   GIT_SHALLOW TRUE
   GIT_PROGRESS TRUE)
 FetchContent_GetProperties(tracy)
@@ -213,7 +213,9 @@ if(NOT tracy_POPULATED)
   set(TRACY_STATIC "" ON)
   set(TRACY_ENABLE ${ENABLE_TRACY_PROFILING})
   add_subdirectory(${tracy_SOURCE_DIR} ${tracy_BINARY_DIR} EXCLUDE_FROM_ALL)
-  set_target_properties(TracyClient PROPERTIES POSITION_INDEPENDENT_CODE True)
+  get_target_property(tracy_IID TracyClient INTERFACE_INCLUDE_DIRECTORIES)
+  set_target_properties(TracyClient PROPERTIES POSITION_INDEPENDENT_CODE True
+                                               INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${tracy_IID}")
 endif()
 
 add_subdirectory(gar)
