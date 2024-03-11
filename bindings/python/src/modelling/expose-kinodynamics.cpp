@@ -31,7 +31,9 @@ void exposeKinodynamics() {
                const std::vector<bool> &,
                const std::vector<pinocchio::FrameIndex> &>(
           "Constructor.", bp::args("self", "space", "model", "gravity",
-                                   "contact_states", "contact_ids")));
+                                   "contact_states", "contact_ids")))
+      .def_readwrite("contact_states",
+                     &KinodynamicsFwdDynamics::contact_states_);
 
   bp::register_ptr_to_python<shared_ptr<KinodynamicsFwdData>>();
 

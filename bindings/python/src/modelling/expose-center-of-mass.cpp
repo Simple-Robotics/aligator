@@ -85,7 +85,9 @@ void exposeCenterOfMassFunctions() {
                const std::vector<bool> &,
                const std::vector<pinocchio::FrameIndex> &>(bp::args(
           "self", "ndx", "model", "gravity", "contact_states", "contact_ids")))
-      .def(FrameAPIVisitor<CentroidalMomentumDerivativeResidual>());
+      .def(FrameAPIVisitor<CentroidalMomentumDerivativeResidual>())
+      .def_readwrite("contact_states",
+                     &CentroidalMomentumDerivativeResidual::contact_states_);
 
   bp::register_ptr_to_python<shared_ptr<CentroidalMomentumDerivativeData>>();
 
