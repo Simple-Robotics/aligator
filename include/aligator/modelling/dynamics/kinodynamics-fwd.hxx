@@ -123,17 +123,19 @@ void KinodynamicsFwdDynamicsTpl<Scalar>::dForward(const ConstVectorRef &x,
   pinocchio::computeCentroidalDynamicsDerivatives(pin_model_, pdata, q, d.v0_,
                                                   d.a0_, d.dh_dq_, d.dhdot_dq_,
                                                   d.dhdot_dv_, d.dhdot_da_);
-  d.Jx_.block(pin_model_.nv, 0, 6, pin_model_.nv) -= d.Agu_inv_ * d.dhdot_dq_;
+  d.Jx_.block(pin_model_.nv, 0, 6, pin_model_.nv).noalias() -=
+      d.Agu_inv_ * d.dhdot_dq_;
 
   // Compute d(Ag_dot * q_dot)/ dq
   d.a0_.setZero();
   pinocchio::computeCentroidalDynamicsDerivatives(pin_model_, pdata, q, v,
                                                   d.a0_, d.dh_dq_, d.dhdot_dq_,
                                                   d.dhdot_dv_, d.dhdot_da_);
-  d.Jx_.block(pin_model_.nv, 0, 6, pin_model_.nv) -= d.Agu_inv_ * d.dhdot_dq_;
+  d.Jx_.block(pin_model_.nv, 0, 6, pin_model_.nv).noalias() -=
+      d.Agu_inv_ * d.dhdot_dq_;
 
   // Compute d(Ag_dot * q_dot)/ dq_dot
-  d.Jx_.block(pin_model_.nv, pin_model_.nv, 6, pin_model_.nv) =
+  d.Jx_.block(pin_model_.nv, pin_model_.nv, 6, pin_model_.nv).noalias() =
       -d.Agu_inv_ * d.dhdot_dv_;
 
   // Compute dAgu_inv / dq
@@ -143,7 +145,8 @@ void KinodynamicsFwdDynamicsTpl<Scalar>::dForward(const ConstVectorRef &x,
       pin_model_, pdata, q, VectorXs::Zero(pin_model_.nv), d.a0_, d.dh_dq_,
       d.dhdot_dq_, d.dhdot_dv_, d.dhdot_da_);
 
-  d.Jx_.block(pin_model_.nv, 0, 6, pin_model_.nv) -= d.Agu_inv_ * d.dhdot_dq_;
+  d.Jx_.block(pin_model_.nv, 0, 6, pin_model_.nv).noalias() -=
+      d.Agu_inv_ * d.dhdot_dq_;
 
   ////// Ju computation //////
 
@@ -160,17 +163,18 @@ void KinodynamicsFwdDynamicsTpl<Scalar>::dForward(const ConstVectorRef &x,
           -(pdata.oMf[contact_ids_[i]].translation()[1] - pdata.com[0][1]),
           (pdata.oMf[contact_ids_[i]].translation()[0] - pdata.com[0][0]), 0.0;
 
-      d.Ju_.block(pin_model_.nv, 3 * i_, 6, 3) =
+      d.Ju_.block(pin_model_.nv, 3 * i_, 6, 3).noalias() =
           d.Agu_inv_.template leftCols<3>();
-      d.Ju_.block(pin_model_.nv, 3 * i_, 6, 3) +=
+      d.Ju_.block(pin_model_.nv, 3 * i_, 6, 3).noalias() +=
           d.Agu_inv_.template rightCols<3>() * d.Jtemp_;
     }
   }
 
   // Compute derivatives with respect to joint acceleration
-  d.Ju_.block(pin_model_.nv, (long)contact_states_.size() * 3, 6,
-              pin_model_.nv - 6) =
-      -d.Agu_inv_ * pdata.Ag.rightCols(pin_model_.nv - 6);
+  d.Ju_
+      .block(pin_model_.nv, (long)contact_states_.size() * 3, 6,
+             pin_model_.nv - 6)
+      .noalias() = -d.Agu_inv_ * pdata.Ag.rightCols(pin_model_.nv - 6);
 }
 
 template <typename Scalar>
