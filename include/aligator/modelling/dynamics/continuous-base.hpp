@@ -20,6 +20,9 @@ template <typename _Scalar> struct ContinuousDynamicsAbstractTpl {
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using ManifoldPtr = shared_ptr<Manifold>;
   using Data = ContinuousDynamicsDataTpl<Scalar>;
+  using CommonModelBuilderStageContainer =
+      CommonModelBuilderStageContainerHandleTpl<Scalar>;
+  using CommonModelStageContainer = CommonModelStageContainerHandleTpl<Scalar>;
 
   /// State space.
   ManifoldPtr space_;
@@ -35,6 +38,14 @@ template <typename _Scalar> struct ContinuousDynamicsAbstractTpl {
   ContinuousDynamicsAbstractTpl(ManifoldPtr space, const int nu);
 
   virtual ~ContinuousDynamicsAbstractTpl() = default;
+
+  /// @brief Create and configure CommonModelTpl
+  virtual void configure(ALIGATOR_MAYBE_UNUSED CommonModelBuilderStageContainer
+                             &common_buider_container) const {}
+
+  /// @brief Retrieve CommonModelDataTpl
+  virtual void retrieve(ALIGATOR_MAYBE_UNUSED CommonModelStageContainer
+                            &common_data_container) const {}
 
   /// @brief   Evaluate the vector field at a point \f$(x, u)\f$.
   /// @param   x The input state variable.
