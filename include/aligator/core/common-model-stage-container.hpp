@@ -66,6 +66,7 @@ public:
   }
 
   /// \return CommonModelData pointer associated with CommonType
+  /// \throw std::runtime_error When the CommonType is not contained
   template <typename CommonType>
   typename CommonType::Data *get_common_data() const {
     auto type_index = boost::typeindex::ctti_type_index::type_id<CommonType>();
@@ -98,7 +99,8 @@ public:
   CommonModelStageContainerHandleTpl(Container &container)
       : container_(container) {}
 
-  /// \return CommonModelData ptr associated with CommonType
+  /// \return CommonModelData pointer associated with CommonType
+  /// \throw std::runtime_error When the CommonType is not contained
   template <typename CommonType>
   typename CommonType::Data *get_common_data() const {
     return container_.get_common_data<CommonType>();
