@@ -64,6 +64,27 @@ template <typename Scalar> struct ExplicitDynamicsModelTpl;
 // fwd declaration of ExplicitDynamicsDataTpl
 template <typename Scalar> struct ExplicitDynamicsDataTpl;
 
+// fwd CommonModelTpl
+template <typename Scalar> struct CommonModelTpl;
+
+// fwd CommonModelDataTpl
+template <typename Scalar> struct CommonModelDataTpl;
+
+// fwd CommonModelBuilderTpl
+template <typename Scalar> class CommonModelBuilderTpl;
+
+// fwd CommonModelStageContainerTpl
+template <typename Scalar> class CommonModelStageContainerTpl;
+
+// fwd CommonModelStageContainerHandleTpl
+template <typename Scalar> class CommonModelStageContainerHandleTpl;
+
+// fwd CommonModelBuilderStageContainerTpl
+template <typename Scalar> class CommonModelBuilderStageContainerTpl;
+
+// fwd CommonModelBuilderStageContainerHandleTpl
+template <typename Scalar> class CommonModelBuilderStageContainerHandleTpl;
+
 /* FUNCTION EXPRESSIONS */
 
 // fwd declaration of FunctionSliceXprTpl
