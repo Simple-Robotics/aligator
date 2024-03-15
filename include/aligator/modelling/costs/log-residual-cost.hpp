@@ -14,6 +14,8 @@ template <typename Scalar> struct LogResidualCostTpl : CostAbstractTpl<Scalar> {
   using StageFunction = StageFunctionTpl<Scalar>;
   using Base = CostAbstractTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   VectorXs barrier_weights_;
   shared_ptr<StageFunction> residual_;
@@ -24,6 +26,9 @@ template <typename Scalar> struct LogResidualCostTpl : CostAbstractTpl<Scalar> {
 
   LogResidualCostTpl(shared_ptr<Manifold> space,
                      shared_ptr<StageFunction> function, const Scalar scale);
+
+  void configure(
+      CommonModelBuilderContainer &common_buider_container) const override;
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 CostDataAbstract &data) const;
@@ -37,6 +42,12 @@ template <typename Scalar> struct LogResidualCostTpl : CostAbstractTpl<Scalar> {
   shared_ptr<CostDataAbstract> createData() const {
     return std::make_shared<Data>(this->ndx(), this->nu,
                                   residual_->createData());
+  }
+
+  shared_ptr<CostDataAbstract>
+  createData(const CommonModelDataContainer &container) const override {
+    return std::make_shared<Data>(this->ndx(), this->nu,
+                                  residual_->createData(container));
   }
 };
 

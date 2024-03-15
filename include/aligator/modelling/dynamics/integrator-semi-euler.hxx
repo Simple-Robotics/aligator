@@ -72,6 +72,17 @@ IntegratorSemiImplDataTpl<Scalar>::IntegratorSemiImplDataTpl(
   Jtmp_u.setZero();
 }
 
+template <typename Scalar>
+IntegratorSemiImplDataTpl<Scalar>::IntegratorSemiImplDataTpl(
+    const IntegratorSemiImplEulerTpl<Scalar> *integrator,
+    const CommonModelDataContainer &container)
+    : Base(integrator, container),
+      Jtmp_xnext2(integrator->ndx1, integrator->ndx1),
+      Jtmp_u(integrator->ndx1, integrator->nu) {
+  Jtmp_xnext2.setZero();
+  Jtmp_u.setZero();
+}
+
 } // namespace dynamics
 
 } // namespace aligator

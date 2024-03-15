@@ -19,12 +19,17 @@ BOOST_AUTO_TEST_CASE(create_data) {
 
   using ContDataAbstract = dynamics::ContinuousDynamicsDataTpl<double>;
   using Data = dynamics::MultibodyFreeFwdDataTpl<double>;
-  shared_ptr<ContDataAbstract> data = contdyn.createData();
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<double>;
+  CommonModelBuilderContainer builder_container;
+  contdyn.configure(builder_container);
+  auto model_container = builder_container.createCommonModelContainer();
+  auto data_container = model_container.createData();
+  shared_ptr<ContDataAbstract> data = contdyn.createData(data_container);
   shared_ptr<Data> d2 = std::static_pointer_cast<Data>(data);
 
-  BOOST_CHECK_EQUAL(d2->tau_.size(), model.nv);
-  BOOST_CHECK_EQUAL(d2->dtau_du_.cols(), model.nv);
-  BOOST_CHECK_EQUAL(d2->dtau_du_.rows(), model.nv);
+  BOOST_CHECK_EQUAL(d2->multibody_data_->tau_.size(), model.nv);
+  BOOST_CHECK_EQUAL(d2->multibody_data_->qdd_dtau_.cols(), model.nv);
+  BOOST_CHECK_EQUAL(d2->multibody_data_->qdd_dtau_.rows(), model.nv);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

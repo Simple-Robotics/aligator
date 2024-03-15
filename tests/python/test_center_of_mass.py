@@ -8,6 +8,8 @@ import pinocchio as pin
 
 from aligator import manifolds
 
+from utils import configure_functions
+
 
 model = pin.buildSampleModelHumanoid()
 rdata: pin.Data = model.createData()
@@ -41,12 +43,14 @@ def test_com_placement():
     com_plc1 = rdata.com[0]
     fun = aligator.CenterOfMassTranslationResidual(ndx, nu, model, com_plc1)
     assert np.allclose(com_plc1, fun.getReference())
-
-    fdata = fun.createData()
+    common_containers = configure_functions([fun])
+    fdata = fun.createData(common_containers.datas)
+    common_containers.evaluate(x0, u0)
     fun.evaluate(x0, fdata)
 
     assert np.allclose(fdata.value, 0.0)
 
+    common_containers.compute_gradients(x0, u0)
     fun.computeJacobians(x0, fdata)
     J = fdata.Jx[:, :nv]
 
@@ -56,21 +60,25 @@ def test_com_placement():
     assert np.allclose(fdata.Jx[:, :nv], realJ)
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
-    fdata2 = fun_fd.createData()
+    fdata2 = fun_fd.createData(common_containers.datas)
+    common_containers.evaluate(x0, u0)
     fun_fd.evaluate(x0, u0, x0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
+    common_containers.compute_gradients(x0, u0)
     fun_fd.computeJacobians(x0, u0, x0, fdata2)
     J_fd = fdata2.Jx[:]
     assert fdata.Jx.shape == J_fd.shape
 
     for i in range(100):
         x, d, x0 = sample_gauss(space)
+        common_containers.evaluate(x0, u0)
+        common_containers.compute_gradients(x0, u0)
         fun.evaluate(x0, u0, x0, fdata)
         fun.computeJacobians(x0, u0, x0, fdata)
         fun_fd.evaluate(x0, u0, x0, fdata2)
         fun_fd.computeJacobians(x0, u0, x0, fdata2)
-        assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
+        assert np.allclose(fdata.Jx, fdata2.Jx, atol=THRESH)
 
 
 def test_frame_velocity():
@@ -86,22 +94,28 @@ def test_frame_velocity():
 
     fun = aligator.CenterOfMassVelocityResidual(space.ndx, nu, model, com_vel1)
     assert np.allclose(com_vel1, fun.getReference())
-
-    fdata = fun.createData()
+    common_containers = configure_functions([fun])
+    fdata = fun.createData(common_containers.datas)
+    common_containers.evaluate(x0, u0)
     fun.evaluate(x0, fdata)
 
     assert np.allclose(fdata.value, 0.0)
 
+    common_containers.compute_gradients(x0, u0)
     fun.computeJacobians(x0, fdata)
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
-    fdata2 = fun_fd.createData()
+    fdata2 = fun_fd.createData(common_containers.datas)
+    common_containers.evaluate(x0, u0)
+    common_containers.compute_gradients(x0, u0)
     fun_fd.evaluate(x0, u0, x0, fdata2)
     fun_fd.computeJacobians(x0, u0, x0, fdata2)
     assert fdata.Jx.shape == fdata2.Jx.shape
 
     for i in range(100):
         x, d, x0 = sample_gauss(space)
+        common_containers.evaluate(x0, u0)
+        common_containers.compute_gradients(x0, u0)
         fun.evaluate(x0, fdata)
         fun.computeJacobians(x0, fdata)
         fun_fd.evaluate(x0, u0, x0, fdata2)
@@ -110,7 +124,7 @@ def test_frame_velocity():
         print(fdata.Jx)
         print(fdata2.Jx)
         print(fdata.Jx)
-        assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
+        assert np.allclose(fdata.Jx, fdata2.Jx, atol=THRESH)
 
 
 if __name__ == "__main__":

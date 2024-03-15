@@ -58,6 +58,8 @@ void exposeContinuousDynamics() {
                     bp::make_function(&ContinuousDynamicsAbstract::space,
                                       bp::return_internal_reference<>()),
                     "Get the state space.")
+      .def(ConfigurePythonVisitor<ContinuousDynamicsAbstract,
+                                  PyContinuousDynamics<>>())
       .def(CreateDataPolymorphicPythonVisitor<ContinuousDynamicsAbstract,
                                               PyContinuousDynamics<>>());
 

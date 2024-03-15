@@ -18,11 +18,29 @@ IntegratorAbstractTpl<Scalar>::createData() const {
 }
 
 template <typename Scalar>
+shared_ptr<StageFunctionDataTpl<Scalar>>
+IntegratorAbstractTpl<Scalar>::createData(
+    const CommonModelDataContainer &container) const {
+  return std::make_shared<IntegratorDataTpl<Scalar>>(this, container);
+}
+
+template <typename Scalar>
 IntegratorDataTpl<Scalar>::IntegratorDataTpl(
     const IntegratorAbstractTpl<Scalar> *integrator)
     : Base(integrator->ndx1, integrator->nu, integrator->ndx2,
            integrator->ndx2),
       continuous_data(integrator->continuous_dynamics_->createData()),
+      xdot_(integrator->continuous_dynamics_->ndx()) {
+  xdot_.setZero();
+}
+
+template <typename Scalar>
+IntegratorDataTpl<Scalar>::IntegratorDataTpl(
+    const IntegratorAbstractTpl<Scalar> *integrator,
+    const CommonModelDataContainer &container)
+    : Base(integrator->ndx1, integrator->nu, integrator->ndx2,
+           integrator->ndx2),
+      continuous_data(integrator->continuous_dynamics_->createData(container)),
       xdot_(integrator->continuous_dynamics_->ndx()) {
   xdot_.setZero();
 }

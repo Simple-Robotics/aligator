@@ -48,6 +48,20 @@ struct UnaryFunctionTpl : StageFunctionTpl<_Scalar> {
   using Base::computeJacobians;                                                \
   using Base::computeVectorHessianProducts
 
+#define ALIGATOR_UNARY_FUNCTION_TYPEDEFS(Scalar, _Data)                        \
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);                                           \
+  ALIGATOR_UNARY_FUNCTION_INTERFACE(Scalar);                                   \
+  using BaseData = StageFunctionDataTpl<Scalar>;                               \
+  using Data = _Data<Scalar>;                                                  \
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;  \
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>
+
+#define ALIGATOR_UNARY_FUNCTION_DATA_TYPEDEFS(Scalar, _Model)                  \
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);                                           \
+  using Model = _Model<Scalar>;                                                \
+  using Base = StageFunctionDataTpl<Scalar>;                                   \
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>
+
 } // namespace aligator
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION

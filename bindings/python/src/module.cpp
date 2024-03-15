@@ -83,6 +83,7 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
   exposeContainers();
   exposeGAR();
   exposeEnums();
+  exposeCommonModel();
   exposeContainers();
   exposeFunctions();
   exposeCosts();

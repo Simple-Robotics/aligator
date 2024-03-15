@@ -2,9 +2,10 @@
 #pragma once
 
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
+#include "aligator/modelling/dynamics/multibody-common.hpp"
+#include "aligator/core/common-model-builder-container.hpp"
 
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
-#include <pinocchio/multibody/data.hpp>
 
 namespace aligator {
 namespace dynamics {
@@ -31,6 +32,9 @@ struct MultibodyFreeFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using Data = MultibodyFreeFwdDataTpl<Scalar>;
   using Manifold = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
   using ManifoldPtr = shared_ptr<Manifold>;
+  using MultibodyCommon = MultibodyCommonTpl<Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   using Base::nu_;
 
@@ -56,12 +60,17 @@ struct MultibodyFreeFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
 
   Eigen::Index getActuationMatrixRank() const { return act_matrix_rank; }
 
-  virtual void forward(const ConstVectorRef &x, const ConstVectorRef &u,
-                       BaseData &data) const;
-  virtual void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
-                        BaseData &data) const;
+  void configure(CommonModelBuilderContainer &container) const override;
+  void forward(const ConstVectorRef &x, const ConstVectorRef &u,
+               BaseData &data) const override;
+  void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
+                BaseData &data) const override;
 
-  shared_ptr<ContDataAbstract> createData() const;
+  shared_ptr<ContDataAbstract>
+  createData(const CommonModelDataContainer &container) const override;
+  shared_ptr<ContDataAbstract> createData() const override {
+    ALIGATOR_RUNTIME_ERROR("createData can't be called without arguments");
+  }
 
 private:
   Eigen::FullPivLU<MatrixXs> lu_decomp_;
@@ -72,12 +81,14 @@ template <typename Scalar> struct MultibodyFreeFwdDataTpl : ODEDataTpl<Scalar> {
   using Base = ODEDataTpl<Scalar>;
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
-  using PinDataType = pinocchio::DataTpl<Scalar>;
-  VectorXs tau_;
-  MatrixXs dtau_dx_;
-  MatrixXs dtau_du_;
-  PinDataType pin_data_;
-  MultibodyFreeFwdDataTpl(const MultibodyFreeFwdDynamicsTpl<Scalar> *cont_dyn);
+  using MultibodyCommon = MultibodyCommonTpl<Scalar>;
+  using MultibodyCommonData = MultibodyCommonDataTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
+
+  MultibodyFreeFwdDataTpl(const MultibodyFreeFwdDynamicsTpl<Scalar> *cont_dyn,
+                          const CommonModelDataContainer &container);
+
+  const MultibodyCommonData *multibody_data_;
 };
 
 } // namespace dynamics

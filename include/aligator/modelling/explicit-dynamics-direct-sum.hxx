@@ -10,10 +10,19 @@ namespace aligator {
 template <typename Scalar>
 struct DirectSumExplicitDynamicsTpl<Scalar>::Data : BaseData {
   shared_ptr<BaseData> data1_, data2_;
+
   Data(DirectSumExplicitDynamicsTpl const &model)
       : BaseData(model.ndx1, model.nu, model.nx2(), model.ndx2),
         data1_(std::static_pointer_cast<BaseData>(model.f_->createData())),
         data2_(std::static_pointer_cast<BaseData>(model.g_->createData())) {}
+
+  Data(DirectSumExplicitDynamicsTpl const &model,
+       const CommonModelDataContainer &container)
+      : BaseData(model.ndx1, model.nu, model.nx2(), model.ndx2),
+        data1_(std::static_pointer_cast<BaseData>(
+            model.f_->createData(container))),
+        data2_(std::static_pointer_cast<BaseData>(
+            model.g_->createData(container))) {}
 };
 
 template <typename Scalar>

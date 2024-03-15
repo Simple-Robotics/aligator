@@ -29,6 +29,7 @@ public:
   using Model = pinocchio::ModelTpl<Scalar>;
   using SE3 = pinocchio::SE3Tpl<Scalar>;
   using Data = CenterOfMassTranslationDataTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   shared_ptr<Model> pin_model_;
 

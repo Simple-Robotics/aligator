@@ -54,6 +54,7 @@ void exposeFunctionBase() {
       .def_readonly("nu", &StageFunction::nu, "Control dimension.")
       .def_readonly("nr", &StageFunction::nr, "Function codimension.")
       .def(SlicingVisitor<StageFunction>())
+      .def(ConfigurePythonVisitor<StageFunction, PyStageFunction<>>())
       .def(CreateDataPolymorphicPythonVisitor<StageFunction,
                                               PyStageFunction<>>());
 

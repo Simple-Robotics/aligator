@@ -30,6 +30,12 @@ LogResidualCostTpl<Scalar>::LogResidualCostTpl(
                          VectorXs::Constant(function->nr, scale)) {}
 
 template <typename Scalar>
+void LogResidualCostTpl<Scalar>::configure(
+    CommonModelBuilderContainer &common_buider_container) const {
+  residual_->configure(common_buider_container);
+}
+
+template <typename Scalar>
 void LogResidualCostTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                           const ConstVectorRef &u,
                                           CostDataAbstract &data) const {

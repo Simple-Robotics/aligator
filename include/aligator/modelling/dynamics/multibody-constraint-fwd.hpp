@@ -2,6 +2,7 @@
 #pragma once
 
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
+#include "aligator/modelling/dynamics/multibody-constraint-common.hpp"
 
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 #include <pinocchio/multibody/data.hpp>
@@ -20,17 +21,15 @@ template <typename _Scalar>
 struct MultibodyConstraintFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
-  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using Base = ODEAbstractTpl<Scalar>;
-  using BaseData = ODEDataTpl<Scalar>;
-  using ContDataAbstract = ContinuousDynamicsDataTpl<Scalar>;
-  using Data = MultibodyConstraintFwdDataTpl<Scalar>;
+  ALIGATOR_ODE_TYPEDEFS(Scalar, MultibodyConstraintFwdDataTpl);
+
   using RigidConstraintModelVector = PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(
       pinocchio::RigidConstraintModel);
   using RigidConstraintDataVector =
       PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(pinocchio::RigidConstraintData);
   using ProxSettings = pinocchio::ProximalSettingsTpl<Scalar>;
   using Manifold = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
+  using MultibodyConstraintCommon = MultibodyConstraintCommonTpl<Scalar>;
 
   using ManifoldPtr = shared_ptr<Manifold>;
   ManifoldPtr space_;
@@ -46,32 +45,32 @@ struct MultibodyConstraintFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
       const RigidConstraintModelVector &constraint_models,
       const ProxSettings &prox_settings);
 
-  virtual void forward(const ConstVectorRef &x, const ConstVectorRef &u,
-                       BaseData &data) const;
-  virtual void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
-                        BaseData &data) const;
+  void configure(CommonModelBuilderContainer &container) const override;
+  void forward(const ConstVectorRef &x, const ConstVectorRef &u,
+               BaseData &data) const override;
+  void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
+                BaseData &data) const override;
 
-  shared_ptr<ContDataAbstract> createData() const;
+  shared_ptr<ContinuousData>
+  createData(const CommonModelDataContainer &container) const override;
+  shared_ptr<ContinuousData> createData() const override {
+    ALIGATOR_RUNTIME_ERROR("createData can't be called without arguments");
+  }
 };
 
 template <typename Scalar>
 struct MultibodyConstraintFwdDataTpl : ODEDataTpl<Scalar> {
-  using Base = ODEDataTpl<Scalar>;
-  using VectorXs = typename math_types<Scalar>::VectorXs;
-  using MatrixXs = typename math_types<Scalar>::MatrixXs;
-  using PinDataType = pinocchio::DataTpl<Scalar>;
-  using RigidConstraintDataVector =
-      PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(pinocchio::RigidConstraintData);
+  ALIGATOR_ODE_DATA_TYPEDEFS(Scalar, MultibodyConstraintFwdDynamicsTpl);
 
-  VectorXs tau_;
-  MatrixXs dtau_dx_;
-  MatrixXs dtau_du_;
-  RigidConstraintDataVector constraint_datas_;
-  pinocchio::ProximalSettingsTpl<Scalar> settings;
-  /// shared_ptr to the underlying pinocchio::DataTpl object.
-  PinDataType pin_data_;
+  using MultibodyConstraintCommon = MultibodyConstraintCommonTpl<Scalar>;
+  using MultibodyConstraintCommonData =
+      MultibodyConstraintCommonDataTpl<Scalar>;
+
   MultibodyConstraintFwdDataTpl(
-      const MultibodyConstraintFwdDynamicsTpl<Scalar> &cont_dyn);
+      const MultibodyConstraintFwdDynamicsTpl<Scalar> &cont_dyn,
+      const CommonModelDataContainer &container);
+
+  const MultibodyConstraintCommonData *multibody_data_;
 };
 
 } // namespace dynamics

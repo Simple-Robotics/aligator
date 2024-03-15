@@ -6,6 +6,7 @@
 #include "aligator/core/dynamics.hpp"
 #include "aligator/core/constraint.hpp"
 #include "aligator/core/clone.hpp"
+#include "aligator/core/common-model-data-container.hpp"
 
 namespace aligator {
 
@@ -19,7 +20,10 @@ struct StageDataTpl : Cloneable<StageDataTpl<_Scalar>> {
   using CostDataAbstract = CostDataAbstractTpl<Scalar>;
   using StageFunctionData = StageFunctionDataTpl<Scalar>;
   using DynamicsData = DynamicsDataTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
+  /// Store all CommonModelData
+  CommonModelDataContainer common_model_data_container;
   /// Data structs for the functions involved in the constraints.
   std::vector<shared_ptr<StageFunctionData>> constraint_data;
   /// Data for the running costs.
@@ -32,14 +36,16 @@ struct StageDataTpl : Cloneable<StageDataTpl<_Scalar>> {
   /// @details  The constructor initializes or fills in the data members using
   /// move semantics.
   explicit StageDataTpl(const StageModel &stage_model)
-      : constraint_data(stage_model.numConstraints()),
+      : common_model_data_container(
+            stage_model.common_model_container_.createData()),
+        constraint_data(stage_model.numConstraints()),
         cost_data(stage_model.cost_->createData()),
         dynamics_data(stage_model.dynamics_->createData()) {
     const std::size_t nc = stage_model.numConstraints();
 
     for (std::size_t j = 0; j < nc; j++) {
       const auto &func = stage_model.constraints_[j].func;
-      constraint_data[j] = func->createData();
+      constraint_data[j] = func->createData(common_model_data_container);
     }
   }
 

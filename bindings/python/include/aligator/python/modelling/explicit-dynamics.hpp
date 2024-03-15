@@ -20,9 +20,20 @@ struct PyExplicitDynamics : ExplicitBase, bp::wrapper<ExplicitBase> {
   // All functions in the interface take this type for output
   using Data = ExplicitDynamicsDataTpl<Scalar>;
   using StageFunctionData = StageFunctionDataTpl<Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   template <typename... Args>
   PyExplicitDynamics(Args &&...args) : ExplicitBase(args...) {}
+
+  virtual void
+  configure(CommonModelBuilderContainer &container) const override {
+    ALIGATOR_PYTHON_OVERRIDE(void, ExplicitBase, configure, container);
+  }
+
+  void default_configure(CommonModelBuilderContainer &container) const {
+    ExplicitBase::configure(container);
+  }
 
   virtual void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                        Data &data) const {
@@ -34,13 +45,15 @@ struct PyExplicitDynamics : ExplicitBase, bp::wrapper<ExplicitBase> {
     ALIGATOR_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, boost::ref(data));
   }
 
-  shared_ptr<StageFunctionData> createData() const {
+  virtual shared_ptr<StageFunctionData>
+  createData(const CommonModelDataContainer &container) const override {
     ALIGATOR_PYTHON_OVERRIDE(shared_ptr<StageFunctionData>, ExplicitBase,
-                             createData, );
+                             createData, container);
   }
 
-  shared_ptr<StageFunctionData> default_createData() const {
-    return ExplicitBase::createData();
+  shared_ptr<StageFunctionData>
+  default_createData(const CommonModelDataContainer &container) const {
+    return ExplicitBase::createData(container);
   }
 };
 

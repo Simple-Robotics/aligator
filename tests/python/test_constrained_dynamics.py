@@ -6,7 +6,7 @@ import hppfcl as fcl
 import aligator
 
 from aligator import manifolds, dynamics
-from utils import finite_diff
+from utils import finite_diff, configure_functions
 
 TOL = 1e-4
 
@@ -199,13 +199,16 @@ def test_constrained_dynamics():
     prox = pin.ProximalSettings(1e-12, 1e-10, 3)
 
     ode = dynamics.MultibodyConstraintFwdDynamics(space, B, [constraint_model], prox)
-    data = ode.createData()
+    common_containers = configure_functions([ode])
+    data = ode.createData(common_containers.datas)
     assert isinstance(data, dynamics.MultibodyConstraintFwdData)
 
     x0 = space.neutral()
     x0[: model.nq] = model.q_init
     u0 = np.random.randn(nu)
 
+    common_containers.evaluate(x0, u0)
+    common_containers.compute_gradients(x0, u0)
     ode.forward(x0, u0, data)
     ode.dForward(x0, u0, data)
 
@@ -221,7 +224,7 @@ def test_constrained_dynamics():
     # Perform forward simulation of free swinging
     dt = 5e-3
     discrete_dynamics = dynamics.IntegratorSemiImplEuler(ode, dt)
-    data = discrete_dynamics.createData()
+    data = discrete_dynamics.createData(common_containers.datas)
 
     # target is following config
     # 0----0

@@ -4,6 +4,9 @@
 
 #include "aligator/core/stage-model.hpp"
 #include "aligator/modelling/state-error.hpp"
+#include "aligator/core/common-model-container.hpp"
+#include "aligator/core/common-model-builder-container.hpp"
+#include "aligator/core/common-model-data-container.hpp"
 
 namespace aligator {
 
@@ -29,6 +32,9 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   using CostAbstract = CostAbstractTpl<Scalar>;
   using ConstraintType = StageConstraintTpl<Scalar>;
   using StateErrorResidual = StateErrorResidualTpl<Scalar>;
+  using CommonModel = CommonModelTpl<Scalar>;
+  using CommonModelContainer = CommonModelContainerTpl<Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
 
   /**
    * @page trajoptproblem Trajectory optimization problems
@@ -88,12 +94,24 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 
   /// Initial condition
   shared_ptr<UnaryFunction> init_condition_;
+  /// Store all CommonModel for init_condition_
+  mutable CommonModelContainer init_condition_common_model_container_;
+  /// Contains all CommonModelBuilder for init_condition_
+  mutable CommonModelBuilderContainer
+      init_condition_common_model_builder_container_;
+
   /// Stages of the control problem.
   std::vector<shared_ptr<StageModel>> stages_;
+
   /// Terminal cost.
   shared_ptr<CostAbstract> term_cost_;
   /// Terminal constraints.
   ConstraintStackTpl<Scalar> term_cstrs_;
+  /// Store all CommonModel for terminal cost and constraints
+  mutable CommonModelContainer term_common_model_container_;
+  /// Contains all CommonModelBuilder for terminal cost and constraints
+  mutable CommonModelBuilderContainer term_common_model_builder_container_;
+
   /// Dummy, "neutral" control value.
   VectorXs unone_;
 
@@ -151,6 +169,9 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   void removeTerminalConstraints() { term_cstrs_.clear(); }
 
   std::size_t numSteps() const;
+
+  /// Configure each stages
+  void configure() const;
 
   /// @brief Rollout the problem costs, constraints, dynamics, stage per stage.
   Scalar evaluate(const std::vector<VectorXs> &xs,

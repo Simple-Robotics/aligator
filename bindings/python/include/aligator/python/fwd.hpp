@@ -19,6 +19,9 @@ inline bp::arg operator""_a(const char *argname, std::size_t) {
 
 /// Expose GAR module
 void exposeGAR();
+/// Expose common model
+void exposeCommonModel();
+
 /// Expose stagewise function classes
 void exposeFunctions();
 /// Expose cost functions

@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add `CommonModelTpl` to share computations between Costs, Dynamics and Constraints ([#133](https://github.com/Simple-Robotics/aligator/pull/133))
+
 ## [0.6.1] - 2024-05-27
 
 ### Added

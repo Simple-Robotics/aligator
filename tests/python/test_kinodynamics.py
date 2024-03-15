@@ -6,7 +6,7 @@ import aligator
 import numpy as np
 import pinocchio as pin
 
-from aligator import manifolds
+from aligator import manifolds, CommonModelDataContainer
 
 
 model = pin.buildSampleModelHumanoid()
@@ -117,10 +117,10 @@ def test_centroidal_momentum_derivative():
     fun = aligator.CentroidalMomentumDerivativeResidual(
         space.ndx, model, gravity, contact_states, contact_ids, force_size
     )
-    fdata = fun.createData()
+    fdata = fun.createData(CommonModelDataContainer())
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
-    fdata2 = fun_fd.createData()
+    fdata2 = fun_fd.createData(CommonModelDataContainer())
     fun.evaluate(x0, u0, x0, fdata)
     fun_fd.evaluate(x0, u0, x0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)

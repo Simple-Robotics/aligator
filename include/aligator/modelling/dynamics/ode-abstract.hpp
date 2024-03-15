@@ -44,6 +44,20 @@ struct ODEAbstractTpl : ContinuousDynamicsAbstractTpl<_Scalar> {
 } // namespace dynamics
 } // namespace aligator
 
+#define ALIGATOR_ODE_TYPEDEFS(Scalar, _Data)                                   \
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);                                           \
+  using Base = ODEAbstractTpl<Scalar>;                                         \
+  using BaseData = ContinuousDynamicsDataTpl<Scalar>;                          \
+  using Data = _Data<Scalar>;                                                  \
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;  \
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>
+
+#define ALIGATOR_ODE_DATA_TYPEDEFS(Scalar, _Model)                             \
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);                                           \
+  using Model = _Model<Scalar>;                                                \
+  using Base = ContinuousDynamicsDataTpl<Scalar>;                              \
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>
+
 #include "aligator/modelling/dynamics/ode-abstract.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION

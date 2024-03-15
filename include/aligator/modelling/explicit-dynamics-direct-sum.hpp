@@ -20,12 +20,20 @@ struct DirectSumExplicitDynamicsTpl : ExplicitDynamicsModelTpl<_Scalar> {
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using CartesianProduct = proxsuite::nlp::CartesianProductTpl<Scalar>;
   using BaseData = ExplicitDynamicsDataTpl<Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   struct Data;
 
   DirectSumExplicitDynamicsTpl(shared_ptr<Base> f, shared_ptr<Base> g)
       : Base(get_product_space(*f, *g), f->nu + g->nu), f_(f), g_(g) {
     product_space_ = static_cast<CartesianProduct *>(this->space_next_.get());
+  }
+
+  void configure(
+      CommonModelBuilderContainer &common_buider_container) const override {
+    f_->configure(common_buider_container);
+    g_->configure(common_buider_container);
   }
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
@@ -36,6 +44,10 @@ struct DirectSumExplicitDynamicsTpl : ExplicitDynamicsModelTpl<_Scalar> {
 
   shared_ptr<DynamicsDataTpl<Scalar>> createData() const override {
     return std::make_shared<Data>(*this);
+  }
+  shared_ptr<DynamicsDataTpl<Scalar>>
+  createData(const CommonModelDataContainer &container) const override {
+    return std::make_shared<Data>(*this, container);
   }
 
   shared_ptr<Base> f_, g_;

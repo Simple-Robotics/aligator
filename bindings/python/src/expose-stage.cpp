@@ -70,6 +70,8 @@ void exposeStage() {
                                 bp::return_internal_reference<>>(
                                 "Deprecated. Use StageModel.dynamics instead")),
           "Stage dynamics.")
+      .def("configure", &StageModel::configure, bp::args("self"),
+           "Configure cost, constraints and dynamics")
       .def("evaluate", &StageModel::evaluate,
            bp::args("self", "x", "u", "y", "data"),
            "Evaluate the stage cost, dynamics, constraints.")
@@ -90,7 +92,8 @@ void exposeStage() {
                     "Number of primal variables.")
       .add_property("num_dual", &StageModel::numDual,
                     "Number of dual variables.")
-      .def(CreateDataPythonVisitor<StageModel>())
+      .def("createData", &StageModel::createData, bp::args("self"),
+           "Create a data object.")
       .def(ClonePythonVisitor<StageModel>())
       .def(PrintableVisitor<StageModel>());
 #pragma GCC diagnostic pop
@@ -103,6 +106,8 @@ void exposeStage() {
                         bp::init<const StageModel &>())
       .def_readonly("cost_data", &StageData::cost_data)
       .def_readwrite("dynamics_data", &StageData::dynamics_data)
+      .def_readonly("common_model_data_container",
+                    &StageData::common_model_data_container)
       .def_readwrite("constraint_data", &StageData::constraint_data)
       .def(ClonePythonVisitor<StageData>());
 }

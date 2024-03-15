@@ -18,6 +18,12 @@ QuadraticResidualCostTpl<Scalar>::QuadraticResidualCostTpl(
 }
 
 template <typename Scalar>
+void QuadraticResidualCostTpl<Scalar>::configure(
+    CommonModelBuilderContainer &common_buider_container) const {
+  residual_->configure(common_buider_container);
+}
+
+template <typename Scalar>
 void QuadraticResidualCostTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                                 const ConstVectorRef &u,
                                                 CostData &data_) const {

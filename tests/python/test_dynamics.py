@@ -1,6 +1,7 @@
 import numpy as np
 
 from aligator import dynamics, manifolds
+from utils import configure_functions
 
 import sys
 import pytest
@@ -11,17 +12,20 @@ def test_abstract():
     space = manifolds.VectorSpace(nx)
     nu = 2
     dm = dynamics.DynamicsModel(space, nu)
-    dd = dm.createData()
+    common_containers_dm = configure_functions([dm])
+    dd = dm.createData(common_containers_dm.datas)
     print(dd)
 
     em = dynamics.ExplicitDynamicsModel(space, nu)
-    ed = em.createData()
+    common_containers_em = configure_functions([dm])
+    ed = em.createData(common_containers_em.datas)
     print(ed)
 
 
 def _test_direct_sum(f, g):
     dm = dynamics.directSum(f, g)
-    dd = dm.createData()
+    common_containers = configure_functions([dm])
+    dd = dm.createData(common_containers.datas)
     print(dd)
     space = dm.space_next
     print(space)
@@ -29,11 +33,12 @@ def _test_direct_sum(f, g):
 
     x0 = space.rand()
     u0 = np.random.randn(dm.nu)
+    common_containers.evaluate(x0, u0)
     dm.forward(x0, u0, dd)
     print(dd.xnext)
 
-    dd1 = f.createData()
-    dd2 = g.createData()
+    dd1 = f.createData(common_containers.datas)
+    dd2 = g.createData(common_containers.datas)
     x01, x02 = space.split(x0).tolist()
     u01, u02 = u0[: f.nu], u0[f.nu :]
     f.forward(x01, u01, dd1)
@@ -41,6 +46,7 @@ def _test_direct_sum(f, g):
     assert np.allclose(dd1.xnext, dd.data1.xnext)
     assert np.allclose(dd2.xnext, dd.data2.xnext)
 
+    common_containers.compute_gradients(x0, u0)
     dm.dForward(x0, u0, dd)
     f.dForward(x01, u01, dd1)
     g.dForward(x02, u02, dd2)
@@ -83,8 +89,10 @@ class TestLinear:
         x0 = space.neutral()
         x1 = space.rand()
         u0 = np.random.randn(self.nu)
-        lddata = self.ldd.createData()
+        common_containers = configure_functions([self.ldd])
+        lddata = self.ldd.createData(common_containers.datas)
         print(lddata)
+        common_containers.evaluate(x0, u0)
         self.ldd.forward(x0, u0, lddata)
         self.ldd.evaluate(x0, u0, x1, lddata)
 

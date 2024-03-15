@@ -136,4 +136,81 @@ BOOST_AUTO_TEST_CASE(test_workspace) {
   ResultsTpl<double> results(f.problem);
 }
 
+namespace {
+
+struct MockModel : MyModel {
+  using Scalar = double;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
+
+  MockModel() : MyModel(std::make_shared<::Manifold>()) {}
+
+  void configure(
+      ALIGATOR_MAYBE_UNUSED CommonModelBuilderContainer &container) const {
+    configure_called = true;
+  }
+
+  mutable bool configure_called = false;
+};
+
+struct MockUnaryFunction : UnaryFunctionTpl<double> {
+  MockUnaryFunction() : UnaryFunctionTpl<double>(6, 6, 6) {}
+
+  void configure(ALIGATOR_MAYBE_UNUSED CommonModelBuilderContainer &container)
+      const override {
+    configure_called = true;
+  }
+
+  void evaluate(const ConstVectorRef &, Data &) const override {}
+  void computeJacobians(const ConstVectorRef &, Data &) const override {}
+
+  mutable bool configure_called = false;
+};
+
+struct MockCost : MyCost {
+  using Scalar = double;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
+
+  MockCost() : MyCost(std::make_shared<::Manifold>(), 6) {}
+
+  void configure(
+      ALIGATOR_MAYBE_UNUSED CommonModelBuilderContainer &container) const {
+    configure_called = true;
+  }
+
+  mutable bool configure_called = false;
+};
+
+} // namespace
+
+/// Test that configure is well called for:
+/// - Cost and constraints in each stage
+/// - Final cost and constraints
+/// - Initial constraint
+BOOST_AUTO_TEST_CASE(test_problem_configure) {
+  auto model1 = std::make_shared<MockModel>();
+  auto model2 = std::make_shared<MockModel>();
+  auto init_constr = std::make_shared<MockUnaryFunction>();
+  auto final_constr = std::make_shared<MockModel>();
+
+  auto cost1 = std::make_shared<MockCost>();
+  auto cost2 = std::make_shared<MockCost>();
+  auto final_cost = std::make_shared<MockCost>();
+  auto stage1 = std::make_shared<StageModel>(cost1, model1);
+  auto stage2 = std::make_shared<StageModel>(cost2, model2);
+
+  TrajOptProblemTpl<double> problem(init_constr, {stage1, stage2}, final_cost);
+  using EqualitySet = proxsuite::nlp::EqualityConstraint<double>;
+  problem.addTerminalConstraint(StageConstraintTpl<double>{
+      final_constr, std::make_shared<EqualitySet>()});
+
+  problem.configure();
+  BOOST_CHECK(model1->configure_called);
+  BOOST_CHECK(model2->configure_called);
+  BOOST_CHECK(init_constr->configure_called);
+  BOOST_CHECK(final_constr->configure_called);
+  BOOST_CHECK(cost1->configure_called);
+  BOOST_CHECK(cost2->configure_called);
+  BOOST_CHECK(final_cost->configure_called);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

@@ -12,6 +12,13 @@ ContinuousDynamicsAbstractTpl<Scalar>::ContinuousDynamicsAbstractTpl(
 
 template <typename Scalar>
 shared_ptr<ContinuousDynamicsDataTpl<Scalar>>
+ContinuousDynamicsAbstractTpl<Scalar>::createData(
+    ALIGATOR_MAYBE_UNUSED const CommonModelDataContainer &container) const {
+  return createData();
+}
+
+template <typename Scalar>
+shared_ptr<ContinuousDynamicsDataTpl<Scalar>>
 ContinuousDynamicsAbstractTpl<Scalar>::createData() const {
   return std::make_shared<Data>(ndx(), nu());
 }
