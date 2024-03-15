@@ -134,6 +134,11 @@ void SolverProxDDP<Scalar>::setup(const Problem &problem) {
   filter_.resetFilter(0.0, ls_params.alpha_min, ls_params.max_num_steps);
   workspace_.configureScalers(problem, mu_penal_,
                               applyDefaultScalingStrategy<Scalar>);
+
+  for (std::size_t i = 0; i < workspace_.nsteps; i++) {
+    StageModel &sm = *problem.stages_[i];
+    sm.configure();
+  }
 }
 
 template <typename Scalar>
