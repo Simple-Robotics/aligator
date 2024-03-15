@@ -21,6 +21,9 @@ template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
   using CostPtr = shared_ptr<CostBase>;
   using SumCostData = CostStackDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
+  using CommonModelBuilderStageContainer =
+      CommonModelBuilderStageContainerHandleTpl<Scalar>;
+  using CommonModelStageContainer = CommonModelStageContainerHandleTpl<Scalar>;
 
   std::vector<CostPtr> components_;
   std::vector<Scalar> weights_;
@@ -43,16 +46,22 @@ template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
 
   std::size_t size() const;
 
+  void configure(
+      CommonModelBuilderStageContainer &common_buider_container) const override;
+
+  void
+  retrieve(CommonModelStageContainer &common_data_container) const override;
+
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                CostData &data) const;
+                CostData &data) const override;
 
   void computeGradients(const ConstVectorRef &x, const ConstVectorRef &u,
-                        CostData &data) const;
+                        CostData &data) const override;
 
   void computeHessians(const ConstVectorRef &x, const ConstVectorRef &u,
-                       CostData &data) const;
+                       CostData &data) const override;
 
-  shared_ptr<CostData> createData() const;
+  shared_ptr<CostData> createData() const override;
 };
 
 namespace {
