@@ -30,8 +30,8 @@ template <typename _Scalar> struct CommonModelTpl {
   virtual void computeHessians(const ConstVectorRef &x, const ConstVectorRef &u,
                                Data &data) const = 0;
 
-  virtual std::unique_ptr<Data> createData() const {
-    return std::make_unique<Data>();
+  virtual std::shared_ptr<Data> createData() const {
+    return std::make_shared<Data>();
   }
 
   virtual ~CommonModelTpl() = default;
@@ -52,7 +52,7 @@ public:
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Model = CommonModelTpl<Scalar>;
 
-  virtual std::unique_ptr<Model> build() const = 0;
+  virtual std::shared_ptr<Model> build() const = 0;
 
   virtual ~CommonModelBuilderTpl() = default;
 };

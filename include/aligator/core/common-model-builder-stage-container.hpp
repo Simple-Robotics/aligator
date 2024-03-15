@@ -46,7 +46,7 @@ public:
 
   using container_type =
       std::unordered_map<boost::typeindex::ctti_type_index,
-                         std::unique_ptr<Builder>, internal::HashCTTITypeIndex,
+                         std::shared_ptr<Builder>, internal::HashCTTITypeIndex,
                          internal::EqualCTTITypeIndex>;
 
   /// Return a CommonModelBuilderTpl pointer
@@ -55,7 +55,7 @@ public:
     // If insertion took place we create the new builder
     auto [it, inserted] = builders_.try_emplace(key, nullptr);
     if (inserted) {
-      it->second = std::make_unique<typename CommonType::Builder>();
+      it->second = std::make_shared<typename CommonType::Builder>();
     }
     return static_cast<typename CommonType::Builder *>(it->second.get());
   }

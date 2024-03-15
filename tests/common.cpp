@@ -61,13 +61,13 @@ struct MockCommonModel : CommonModel {
     data.compute_hessians_called = true;
   }
 
-  std::unique_ptr<BaseData> createData() const override {
-    return std::make_unique<Data>();
+  std::shared_ptr<BaseData> createData() const override {
+    return std::make_shared<Data>();
   }
 
   struct Builder : CommonModelBuilder {
-    std::unique_ptr<CommonModel> build() const override {
-      auto model = std::make_unique<MockCommonModel>();
+    std::shared_ptr<CommonModel> build() const override {
+      auto model = std::make_shared<MockCommonModel>();
       model->feature_a = with_feature_a;
       return model;
     }
@@ -86,8 +86,8 @@ struct MockCommonModel : CommonModel {
 struct MockCommonModel2 : MockCommonModel {
 
   struct Builder : CommonModelBuilder {
-    std::unique_ptr<CommonModel> build() const override {
-      auto model = std::make_unique<MockCommonModel2>();
+    std::shared_ptr<CommonModel> build() const override {
+      auto model = std::make_shared<MockCommonModel2>();
       model->feature_a = with_feature_a;
       return model;
     }

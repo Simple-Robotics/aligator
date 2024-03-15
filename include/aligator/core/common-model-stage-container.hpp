@@ -25,13 +25,13 @@ public:
   using Data = CommonModelDataTpl<Scalar>;
 
   struct Value {
-    Value(boost::typeindex::ctti_type_index ti, std::unique_ptr<Model> m,
-          std::unique_ptr<Data> d)
+    Value(boost::typeindex::ctti_type_index ti, std::shared_ptr<Model> m,
+          std::shared_ptr<Data> d)
         : type_index(ti), model(std::move(m)), data(std::move(d)) {}
 
     boost::typeindex::ctti_type_index type_index;
-    std::unique_ptr<Model> model;
-    std::unique_ptr<Data> data;
+    std::shared_ptr<Model> model;
+    std::shared_ptr<Data> data;
   };
 
   using container_type = std::vector<Value>;
