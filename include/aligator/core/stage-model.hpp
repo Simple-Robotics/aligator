@@ -6,9 +6,13 @@
 #include "aligator/core/cost-abstract.hpp"
 #include "aligator/core/dynamics.hpp"
 #include "aligator/core/constraint.hpp"
+#include "aligator/core/common-model-stage-container.hpp"
+#include "aligator/core/common-model-builder-stage-container.hpp"
 #include "aligator/utils/exceptions.hpp"
 
 #include "aligator/core/clone.hpp"
+
+#include <boost/optional.hpp>
 
 namespace aligator {
 
@@ -35,6 +39,9 @@ public:
   using Cost = CostAbstractTpl<Scalar>;
   using CostPtr = shared_ptr<Cost>;
   using Data = StageDataTpl<Scalar>;
+  using CommonModelStageContainer = CommonModelStageContainerTpl<Scalar>;
+  using CommonModelBuilderStageContainer =
+      CommonModelBuilderStageContainerTpl<Scalar>;
 
   /// State space for the current state \f$x_k\f$.
   ManifoldPtr xspace_;
@@ -46,6 +53,10 @@ public:
   CostPtr cost_;
   /// Constraint manager.
   ConstraintStackTpl<Scalar> constraints_;
+  /// Contains all CommonModel an CommonModelData
+  boost::optional<CommonModelStageContainer> common_container_;
+  /// Contains all CommonModelBuilder
+  CommonModelBuilderStageContainer common_builder_container_;
 
   /// Constructor assumes the control space is a Euclidean space of
   /// dimension @p nu.
@@ -88,6 +99,9 @@ public:
   /// @details    Adds a constraint by allocating a new StageConstraintTpl.
   void addConstraint(FunctionPtr func, ConstraintSetPtr cstr_set);
 
+  /* Configure costs, constraints, ... */
+  virtual void configure();
+
   /* Evaluate costs, constraints, ... */
 
   /// @brief    Evaluate all the functions (cost, dynamics, constraints) at this
@@ -107,9 +121,11 @@ public:
                                   const StageModelTpl &stage) {
     oss << "StageModel { ";
     if (stage.ndx1() == stage.ndx2()) {
-      oss << "ndx: " << stage.ndx1() << ", " << "nu:  " << stage.nu();
+      oss << "ndx: " << stage.ndx1() << ", "
+          << "nu:  " << stage.nu();
     } else {
-      oss << "ndx1:" << stage.ndx1() << ", " << "nu:  " << stage.nu() << ", "
+      oss << "ndx1:" << stage.ndx1() << ", "
+          << "nu:  " << stage.nu() << ", "
           << "ndx2:" << stage.ndx2();
     }
 
