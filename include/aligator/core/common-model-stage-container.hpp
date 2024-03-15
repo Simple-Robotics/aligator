@@ -94,7 +94,7 @@ template <typename _Scalar> class CommonModelStageContainerHandleTpl {
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using Container = CommonModelStageContainerHandleTpl<Scalar>;
+  using Container = CommonModelStageContainerTpl<Scalar>;
 
   CommonModelStageContainerHandleTpl(Container &container)
       : container_(container) {}
@@ -103,7 +103,7 @@ public:
   /// \throw std::runtime_error When the CommonType is not contained
   template <typename CommonType>
   typename CommonType::Data *get_common_data() const {
-    return container_.get_common_data<CommonType>();
+    return container_.template get_common_data<CommonType>();
   }
 
 private:

@@ -83,14 +83,14 @@ template <typename _Scalar> class CommonModelBuilderStageContainerHandleTpl {
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using Container = CommonModelBuilderStageContainerHandleTpl<Scalar>;
+  using Container = CommonModelBuilderStageContainerTpl<Scalar>;
 
   CommonModelBuilderStageContainerHandleTpl(Container &container)
       : container_(container) {}
 
   /// \return CommonModelBuilder pointer associated with CommonType
   template <typename CommonType> typename CommonType::Builder *get() {
-    return container_.get<CommonType>();
+    return container_.template get<CommonType>();
   }
 
 private:
