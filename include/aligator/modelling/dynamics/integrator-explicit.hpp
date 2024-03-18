@@ -21,9 +21,9 @@ struct ExplicitIntegratorAbstractTpl : ExplicitDynamicsModelTpl<_Scalar> {
   using ODEType = ODEAbstractTpl<Scalar>;
   using Base = ExplicitDynamicsModelTpl<Scalar>;
   using Data = ExplicitIntegratorDataTpl<Scalar>;
-  using CommonModelBuilderStageContainer =
-      CommonModelBuilderStageContainerHandleTpl<Scalar>;
-  using CommonModelStageContainer = CommonModelStageContainerHandleTpl<Scalar>;
+  using CommonModelBuilderContainer =
+      CommonModelBuilderContainerHandleTpl<Scalar>;
+  using CommonModelContainer = CommonModelContainerHandleTpl<Scalar>;
 
   using Base::computeJacobians;
   using Base::evaluate;
@@ -40,13 +40,12 @@ struct ExplicitIntegratorAbstractTpl : ExplicitDynamicsModelTpl<_Scalar> {
   virtual ~ExplicitIntegratorAbstractTpl() = default;
 
   /// @brief Create and configure CommonModelTpl
-  void
-  configure(CommonModelBuilderStageContainer &common_buider_container) const {
+  void configure(CommonModelBuilderContainer &common_buider_container) const {
     ode_->configure(common_buider_container);
   }
 
   /// @brief Retrieve CommonModelDataTpl
-  void retrieve(CommonModelStageContainer &common_data_container) const {
+  void retrieve(CommonModelContainer &common_data_container) const {
     ode_->retrieve(common_data_container);
   }
 

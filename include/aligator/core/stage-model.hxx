@@ -75,7 +75,7 @@ void StageModelTpl<Scalar>::addConstraint(FunctionPtr func,
 
 template <typename Scalar> void StageModelTpl<Scalar>::configure() {
   // Create and configure builder
-  CommonModelBuilderStageContainerHandleTpl<Scalar> builder_handle(
+  CommonModelBuilderContainerHandleTpl<Scalar> builder_handle(
       common_builder_container_);
   for (std::size_t j = 0; j < numConstraints(); j++) {
     const Constraint &cstr = constraints_[j];
@@ -86,8 +86,7 @@ template <typename Scalar> void StageModelTpl<Scalar>::configure() {
   // Create common_container_ and retrieve the data in each costs and
   // constraints
   common_container_ = common_builder_container_.create_common_container();
-  CommonModelStageContainerHandleTpl<Scalar> container_handle(
-      *common_container_);
+  CommonModelContainerHandleTpl<Scalar> container_handle(*common_container_);
   for (std::size_t j = 0; j < numConstraints(); j++) {
     const Constraint &cstr = constraints_[j];
     cstr.func->retrieve(container_handle);

@@ -6,8 +6,8 @@
 #include "aligator/core/cost-abstract.hpp"
 #include "aligator/core/dynamics.hpp"
 #include "aligator/core/constraint.hpp"
-#include "aligator/core/common-model-stage-container.hpp"
-#include "aligator/core/common-model-builder-stage-container.hpp"
+#include "aligator/core/common-model-container.hpp"
+#include "aligator/core/common-model-builder-container.hpp"
 #include "aligator/utils/exceptions.hpp"
 
 #include "aligator/core/clone.hpp"
@@ -39,9 +39,8 @@ public:
   using Cost = CostAbstractTpl<Scalar>;
   using CostPtr = shared_ptr<Cost>;
   using Data = StageDataTpl<Scalar>;
-  using CommonModelStageContainer = CommonModelStageContainerTpl<Scalar>;
-  using CommonModelBuilderStageContainer =
-      CommonModelBuilderStageContainerTpl<Scalar>;
+  using CommonModelContainer = CommonModelContainerTpl<Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
 
   /// State space for the current state \f$x_k\f$.
   ManifoldPtr xspace_;
@@ -54,9 +53,9 @@ public:
   /// Constraint manager.
   ConstraintStackTpl<Scalar> constraints_;
   /// Contains all CommonModel an CommonModelData
-  boost::optional<CommonModelStageContainer> common_container_;
+  boost::optional<CommonModelContainer> common_container_;
   /// Contains all CommonModelBuilder
-  CommonModelBuilderStageContainer common_builder_container_;
+  CommonModelBuilderContainer common_builder_container_;
 
   /// Constructor assumes the control space is a Euclidean space of
   /// dimension @p nu.

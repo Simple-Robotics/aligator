@@ -1,11 +1,11 @@
 /// @copyright Copyright (C) 2024 LAAS-CNRS, INRIA
 /// @file common-model-builder-stage-container.hpp
-/// @brief Definition of CommonModelBuilderStageContainer
+/// @brief Definition of CommonModelBuilderContainer
 #pragma once
 
 #include "aligator/fwd.hpp"
 #include "aligator/core/common-model-abstract.hpp"
-#include "aligator/core/common-model-stage-container.hpp"
+#include "aligator/core/common-model-container.hpp"
 
 #include <boost/type_index/ctti_type_index.hpp>
 
@@ -35,14 +35,14 @@ struct EqualCTTITypeIndex {
 
 /** @brief Store all CommonModelBuilder associated with a stage.
  */
-template <typename _Scalar> class CommonModelBuilderStageContainerTpl {
+template <typename _Scalar> class CommonModelBuilderContainerTpl {
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Model = CommonModelTpl<Scalar>;
   using Data = CommonModelDataTpl<Scalar>;
   using Builder = CommonModelBuilderTpl<Scalar>;
-  using Container = CommonModelStageContainerTpl<Scalar>;
+  using Container = CommonModelContainerTpl<Scalar>;
 
   using container_type =
       std::unordered_map<boost::typeindex::ctti_type_index,
@@ -60,7 +60,7 @@ public:
     return static_cast<typename CommonType::Builder *>(it->second.get());
   }
 
-  /// Create a CommonModelStageContainerTpl from all configured builder
+  /// Create a CommonModelContainerTpl from all configured builder
   Container create_common_container() const {
     typename Container::container_type container;
     for (const auto &b : builders_) {
@@ -77,15 +77,15 @@ private:
 
 /** @brief This class will be used by dynamics/costs/constraints to
  * create/retrieve builder without access to other
- * CommonModelBuilderStageContainerTpl methods.
+ * CommonModelBuilderContainerTpl methods.
  */
-template <typename _Scalar> class CommonModelBuilderStageContainerHandleTpl {
+template <typename _Scalar> class CommonModelBuilderContainerHandleTpl {
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using Container = CommonModelBuilderStageContainerTpl<Scalar>;
+  using Container = CommonModelBuilderContainerTpl<Scalar>;
 
-  CommonModelBuilderStageContainerHandleTpl(Container &container)
+  CommonModelBuilderContainerHandleTpl(Container &container)
       : container_(container) {}
 
   /// \return CommonModelBuilder pointer associated with CommonType

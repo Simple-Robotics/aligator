@@ -19,9 +19,9 @@ public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Data = StageFunctionDataTpl<Scalar>;
-  using CommonModelBuilderStageContainer =
-      CommonModelBuilderStageContainerHandleTpl<Scalar>;
-  using CommonModelStageContainer = CommonModelStageContainerHandleTpl<Scalar>;
+  using CommonModelBuilderContainer =
+      CommonModelBuilderContainerHandleTpl<Scalar>;
+  using CommonModelContainer = CommonModelContainerHandleTpl<Scalar>;
 
   /// @brief Current state dimension
   const int ndx1;
@@ -38,12 +38,13 @@ public:
   StageFunctionTpl(const int ndx, const int nu, const int nr);
 
   /// @brief Create and configure CommonModelTpl
-  virtual void configure(ALIGATOR_MAYBE_UNUSED CommonModelBuilderStageContainer
+  virtual void configure(ALIGATOR_MAYBE_UNUSED CommonModelBuilderContainer
                              &common_buider_container) const {}
 
   /// @brief Retrieve CommonModelDataTpl
-  virtual void retrieve(ALIGATOR_MAYBE_UNUSED CommonModelStageContainer
-                            &common_data_container) const {}
+  virtual void retrieve(
+      ALIGATOR_MAYBE_UNUSED CommonModelContainer &common_data_container) const {
+  }
 
   /**
    * @brief       Evaluate the function.

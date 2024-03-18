@@ -73,17 +73,17 @@ template <typename Scalar> struct CommonModelDataTpl;
 // fwd CommonModelBuilderTpl
 template <typename Scalar> class CommonModelBuilderTpl;
 
-// fwd CommonModelStageContainerTpl
-template <typename Scalar> class CommonModelStageContainerTpl;
+// fwd CommonModelContainerTpl
+template <typename Scalar> class CommonModelContainerTpl;
 
-// fwd CommonModelStageContainerHandleTpl
-template <typename Scalar> class CommonModelStageContainerHandleTpl;
+// fwd CommonModelContainerHandleTpl
+template <typename Scalar> class CommonModelContainerHandleTpl;
 
-// fwd CommonModelBuilderStageContainerTpl
-template <typename Scalar> class CommonModelBuilderStageContainerTpl;
+// fwd CommonModelBuilderContainerTpl
+template <typename Scalar> class CommonModelBuilderContainerTpl;
 
-// fwd CommonModelBuilderStageContainerHandleTpl
-template <typename Scalar> class CommonModelBuilderStageContainerHandleTpl;
+// fwd CommonModelBuilderContainerHandleTpl
+template <typename Scalar> class CommonModelBuilderContainerHandleTpl;
 
 /* FUNCTION EXPRESSIONS */
 

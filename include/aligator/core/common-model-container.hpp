@@ -1,6 +1,6 @@
 /// @copyright Copyright (C) 2024 LAAS-CNRS, INRIA
 /// @file common-model-stage-container.hpp
-/// @brief Definition of CommonModelStageContainer
+/// @brief Definition of CommonModelContainer
 #pragma once
 
 #include "aligator/fwd.hpp"
@@ -17,7 +17,7 @@ namespace aligator {
  * a stage.
  * Add some helper methods to update all CommonModel for new x, u.
  */
-template <typename _Scalar> class CommonModelStageContainerTpl {
+template <typename _Scalar> class CommonModelContainerTpl {
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
@@ -36,8 +36,7 @@ public:
 
   using container_type = std::vector<Value>;
 
-  CommonModelStageContainerTpl(container_type models)
-      : models_(std::move(models)) {}
+  CommonModelContainerTpl(container_type models) : models_(std::move(models)) {}
 
   /// \return Number of contained models
   std::size_t size() const { return models_.size(); }
@@ -88,16 +87,15 @@ private:
 };
 
 /** @brief This class will be used by dynamics/costs/constraints to retrieve
- * data without access to other CommonModelStageContainerTpl methods.
+ * data without access to other CommonModelContainerTpl methods.
  */
-template <typename _Scalar> class CommonModelStageContainerHandleTpl {
+template <typename _Scalar> class CommonModelContainerHandleTpl {
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using Container = CommonModelStageContainerTpl<Scalar>;
+  using Container = CommonModelContainerTpl<Scalar>;
 
-  CommonModelStageContainerHandleTpl(Container &container)
-      : container_(container) {}
+  CommonModelContainerHandleTpl(Container &container) : container_(container) {}
 
   /// \return CommonModelData pointer associated with CommonType
   /// \throw std::runtime_error When the CommonType is not contained

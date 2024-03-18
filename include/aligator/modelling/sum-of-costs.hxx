@@ -54,7 +54,7 @@ void CostStackTpl<Scalar>::addCost(const CostPtr &cost, const Scalar weight) {
 
 template <typename Scalar>
 void CostStackTpl<Scalar>::configure(
-    CommonModelBuilderStageContainer &common_buider_container) const {
+    CommonModelBuilderContainer &common_buider_container) const {
   for (std::size_t i = 0; i < components_.size(); i++) {
     components_[i]->configure(common_buider_container);
   }
@@ -62,7 +62,7 @@ void CostStackTpl<Scalar>::configure(
 
 template <typename Scalar>
 void CostStackTpl<Scalar>::retrieve(
-    CommonModelStageContainer &common_data_container) const {
+    CommonModelContainer &common_data_container) const {
   for (std::size_t i = 0; i < components_.size(); i++) {
     components_[i]->retrieve(common_data_container);
   }

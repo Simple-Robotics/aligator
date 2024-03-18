@@ -1,16 +1,15 @@
 #include <boost/test/unit_test.hpp>
 
 #include "aligator/core/common-model-abstract.hpp"
-#include "aligator/core/common-model-stage-container.hpp"
-#include "aligator/core/common-model-builder-stage-container.hpp"
+#include "aligator/core/common-model-container.hpp"
+#include "aligator/core/common-model-builder-container.hpp"
 
 using CommonModel = aligator::CommonModelTpl<double>;
 using CommonModelData = aligator::CommonModelDataTpl<double>;
 using CommonModelBuilder = aligator::CommonModelBuilderTpl<double>;
-using CommonModelStageContainer =
-    aligator::CommonModelStageContainerTpl<double>;
-using CommonModelBuilderStageContainer =
-    aligator::CommonModelBuilderStageContainerTpl<double>;
+using CommonModelContainer = aligator::CommonModelContainerTpl<double>;
+using CommonModelBuilderContainer =
+    aligator::CommonModelBuilderContainerTpl<double>;
 
 BOOST_AUTO_TEST_SUITE(common)
 
@@ -103,7 +102,7 @@ struct MockCommonModel2 : MockCommonModel {
 };
 
 BOOST_AUTO_TEST_CASE(builder_and_container_one_common) {
-  CommonModelBuilderStageContainer builder_container;
+  CommonModelBuilderContainer builder_container;
   /// Create and configure bulider
   auto *model_builder = builder_container.get<MockCommonModel>();
   model_builder->withFeatureA(true);
@@ -152,7 +151,7 @@ BOOST_AUTO_TEST_CASE(builder_and_container_one_common) {
 }
 
 BOOST_AUTO_TEST_CASE(builder_and_container_two_common) {
-  CommonModelBuilderStageContainer builder_container;
+  CommonModelBuilderContainer builder_container;
   /// Create and configure bulider
   auto *model_builder = builder_container.get<MockCommonModel>();
   model_builder->withFeatureA(true);

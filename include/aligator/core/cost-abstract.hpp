@@ -15,9 +15,9 @@ template <typename _Scalar> struct CostAbstractTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using CostData = CostDataAbstractTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
-  using CommonModelBuilderStageContainer =
-      CommonModelBuilderStageContainerHandleTpl<Scalar>;
-  using CommonModelStageContainer = CommonModelStageContainerHandleTpl<Scalar>;
+  using CommonModelBuilderContainer =
+      CommonModelBuilderContainerHandleTpl<Scalar>;
+  using CommonModelContainer = CommonModelContainerHandleTpl<Scalar>;
 
   /// @brief State dimension
   shared_ptr<Manifold> space;
@@ -31,12 +31,13 @@ template <typename _Scalar> struct CostAbstractTpl {
       : space(space), nu(nu) {}
 
   /// @brief Create and configure CommonModelTpl
-  virtual void configure(ALIGATOR_MAYBE_UNUSED CommonModelBuilderStageContainer
+  virtual void configure(ALIGATOR_MAYBE_UNUSED CommonModelBuilderContainer
                              &common_buider_container) const {}
 
   /// @brief Retrieve CommonModelDataTpl
-  virtual void retrieve(ALIGATOR_MAYBE_UNUSED CommonModelStageContainer
-                            &common_data_container) const {}
+  virtual void retrieve(
+      ALIGATOR_MAYBE_UNUSED CommonModelContainer &common_data_container) const {
+  }
 
   /// @brief Evaluate the cost function.
   virtual void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
