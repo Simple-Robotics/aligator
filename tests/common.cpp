@@ -136,14 +136,14 @@ BOOST_AUTO_TEST_CASE(builder_and_container_one_common) {
   BOOST_REQUIRE(!data->compute_hessians_called);
 
   data->reset();
-  container.computeGradientsAll(x, u);
+  container.computeAllGradients(x, u);
   BOOST_REQUIRE(!data->evaluate_called);
   BOOST_REQUIRE(!data->evaluate_feature_a);
   BOOST_REQUIRE(data->compute_gradients_called);
   BOOST_REQUIRE(!data->compute_hessians_called);
 
   data->reset();
-  container.computeHessiansAll(x, u);
+  container.computeAllHessians(x, u);
   BOOST_REQUIRE(!data->evaluate_called);
   BOOST_REQUIRE(!data->evaluate_feature_a);
   BOOST_REQUIRE(!data->compute_gradients_called);
@@ -183,7 +183,7 @@ BOOST_AUTO_TEST_CASE(builder_and_container_two_common) {
 
   data->reset();
   data2->reset();
-  container.computeGradientsAll(x, u);
+  container.computeAllGradients(x, u);
   BOOST_REQUIRE(!data->evaluate_called);
   BOOST_REQUIRE(!data->evaluate_feature_a);
   BOOST_REQUIRE(data->compute_gradients_called);
@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE(builder_and_container_two_common) {
 
   data->reset();
   data2->reset();
-  container.computeHessiansAll(x, u);
+  container.computeAllHessians(x, u);
   BOOST_REQUIRE(!data->evaluate_called);
   BOOST_REQUIRE(!data->evaluate_feature_a);
   BOOST_REQUIRE(!data->compute_gradients_called);

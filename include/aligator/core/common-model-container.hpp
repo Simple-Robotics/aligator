@@ -51,14 +51,14 @@ public:
   }
 
   /// Call CommonModelTpl::computeGradients for each stored model
-  void computeGradientsAll(const ConstVectorRef &x, const ConstVectorRef &u) {
+  void computeAllGradients(const ConstVectorRef &x, const ConstVectorRef &u) {
     for (auto &v : models_) {
       v.model->computeGradients(x, u, *v.data);
     }
   }
 
   /// Call CommonModelTpl::computeHessians for each stored model
-  void computeHessiansAll(const ConstVectorRef &x, const ConstVectorRef &u) {
+  void computeAllHessians(const ConstVectorRef &x, const ConstVectorRef &u) {
     for (auto &v : models_) {
       v.model->computeHessians(x, u, *v.data);
     }
