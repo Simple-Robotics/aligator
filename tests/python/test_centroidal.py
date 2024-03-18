@@ -1,6 +1,7 @@
 """
 Test function related to centroidal residuals
 """
+
 import aligator
 import numpy as np
 from aligator import manifolds
