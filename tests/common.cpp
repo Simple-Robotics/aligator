@@ -109,12 +109,16 @@ BOOST_AUTO_TEST_CASE(builder_and_container_one_common) {
 
   /// Generate all model and datas
   /// We should have one MockCommonModel and MockCommonModelData
-  auto container = builder_container.create_common_container();
-  BOOST_REQUIRE_EQUAL(container.size(), 1);
-  auto *model = dynamic_cast<MockCommonModel *>(container.at(0).model.get());
+  auto model_container = builder_container.createCommonModelContainer();
+  auto data_container = model_container.createData();
+  BOOST_REQUIRE_EQUAL(model_container.size(), 1);
+  BOOST_REQUIRE_EQUAL(data_container.size(), 1);
+  auto *model =
+      dynamic_cast<MockCommonModel *>(model_container.at(0).model.get());
   BOOST_REQUIRE(model);
   BOOST_REQUIRE(model->feature_a);
-  auto *data = dynamic_cast<MockCommonModelData *>(container.at(0).data.get());
+  auto *data =
+      dynamic_cast<MockCommonModelData *>(data_container.at(0).data.get());
   BOOST_REQUIRE(data);
   BOOST_REQUIRE(!data->evaluate_called);
   BOOST_REQUIRE(!data->evaluate_feature_a);
@@ -122,28 +126,34 @@ BOOST_AUTO_TEST_CASE(builder_and_container_one_common) {
   BOOST_REQUIRE(!data->compute_hessians_called);
 
   /// Test get_common_data function
-  auto *data_from_type = container.get_common_data<MockCommonModel>();
+  auto *data_from_type = data_container.getData<MockCommonModel>();
   BOOST_REQUIRE_EQUAL(data_from_type, data);
 
   /// Test the evaluation
   Eigen::VectorXd x = Eigen::VectorXd::Zero(1);
   Eigen::VectorXd u = Eigen::VectorXd::Zero(1);
 
-  container.evaluateAll(x, u);
+  for (std::size_t i = 0; i < model_container.size(); ++i) {
+    model_container[i].model->evaluate(x, u, *data_container[i].data);
+  }
   BOOST_REQUIRE(data->evaluate_called);
   BOOST_REQUIRE(data->evaluate_feature_a);
   BOOST_REQUIRE(!data->compute_gradients_called);
   BOOST_REQUIRE(!data->compute_hessians_called);
 
   data->reset();
-  container.computeAllGradients(x, u);
+  for (std::size_t i = 0; i < model_container.size(); ++i) {
+    model_container[i].model->computeGradients(x, u, *data_container[i].data);
+  }
   BOOST_REQUIRE(!data->evaluate_called);
   BOOST_REQUIRE(!data->evaluate_feature_a);
   BOOST_REQUIRE(data->compute_gradients_called);
   BOOST_REQUIRE(!data->compute_hessians_called);
 
   data->reset();
-  container.computeAllHessians(x, u);
+  for (std::size_t i = 0; i < model_container.size(); ++i) {
+    model_container[i].model->computeHessians(x, u, *data_container[i].data);
+  }
   BOOST_REQUIRE(!data->evaluate_called);
   BOOST_REQUIRE(!data->evaluate_feature_a);
   BOOST_REQUIRE(!data->compute_gradients_called);
@@ -160,18 +170,22 @@ BOOST_AUTO_TEST_CASE(builder_and_container_two_common) {
 
   /// Generate all model and datas
   /// We should have one MockCommonModel and MockCommonModelData
-  auto container = builder_container.create_common_container();
-  BOOST_REQUIRE_EQUAL(container.size(), 2);
+  auto model_container = builder_container.createCommonModelContainer();
+  auto data_container = model_container.createData();
+  BOOST_REQUIRE_EQUAL(model_container.size(), 2);
+  BOOST_REQUIRE_EQUAL(data_container.size(), 2);
 
   /// Test get_common_data function
-  auto *data = container.get_common_data<MockCommonModel>();
-  auto *data2 = container.get_common_data<MockCommonModel2>();
+  auto *data = data_container.getData<MockCommonModel>();
+  auto *data2 = data_container.getData<MockCommonModel2>();
 
   /// Test the evaluation
   Eigen::VectorXd x = Eigen::VectorXd::Zero(1);
   Eigen::VectorXd u = Eigen::VectorXd::Zero(1);
 
-  container.evaluateAll(x, u);
+  for (std::size_t i = 0; i < model_container.size(); ++i) {
+    model_container[i].model->evaluate(x, u, *data_container[i].data);
+  }
   BOOST_REQUIRE(data->evaluate_called);
   BOOST_REQUIRE(data->evaluate_feature_a);
   BOOST_REQUIRE(!data->compute_gradients_called);
@@ -183,7 +197,9 @@ BOOST_AUTO_TEST_CASE(builder_and_container_two_common) {
 
   data->reset();
   data2->reset();
-  container.computeAllGradients(x, u);
+  for (std::size_t i = 0; i < model_container.size(); ++i) {
+    model_container[i].model->computeGradients(x, u, *data_container[i].data);
+  }
   BOOST_REQUIRE(!data->evaluate_called);
   BOOST_REQUIRE(!data->evaluate_feature_a);
   BOOST_REQUIRE(data->compute_gradients_called);
@@ -195,7 +211,9 @@ BOOST_AUTO_TEST_CASE(builder_and_container_two_common) {
 
   data->reset();
   data2->reset();
-  container.computeAllHessians(x, u);
+  for (std::size_t i = 0; i < model_container.size(); ++i) {
+    model_container[i].model->computeHessians(x, u, *data_container[i].data);
+  }
   BOOST_REQUIRE(!data->evaluate_called);
   BOOST_REQUIRE(!data->evaluate_feature_a);
   BOOST_REQUIRE(!data->compute_gradients_called);

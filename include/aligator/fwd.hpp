@@ -76,6 +76,9 @@ template <typename Scalar> class CommonModelBuilderTpl;
 // fwd CommonModelContainerTpl
 template <typename Scalar> class CommonModelContainerTpl;
 
+// fwd CommonModelDataContainerTpl
+template <typename Scalar> class CommonModelDataContainerTpl;
+
 // fwd CommonModelBuilderContainerTpl
 template <typename Scalar> class CommonModelBuilderContainerTpl;
 

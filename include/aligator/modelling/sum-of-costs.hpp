@@ -22,7 +22,7 @@ template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
   using SumCostData = CostStackDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
-  using CommonModelContainer = CommonModelContainerTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   std::vector<CostPtr> components_;
   std::vector<Scalar> weights_;
@@ -47,8 +47,6 @@ template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
 
   void configure(
       CommonModelBuilderContainer &common_buider_container) const override;
-
-  void retrieve(CommonModelContainer &common_data_container) const override;
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 CostData &data) const override;

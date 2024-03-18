@@ -52,10 +52,10 @@ public:
   CostPtr cost_;
   /// Constraint manager.
   ConstraintStackTpl<Scalar> constraints_;
-  /// Contains all CommonModel an CommonModelData
-  boost::optional<CommonModelContainer> common_container_;
+  /// Store all CommonModel
+  boost::optional<CommonModelContainer> common_model_container_;
   /// Contains all CommonModelBuilder
-  CommonModelBuilderContainer common_builder_container_;
+  CommonModelBuilderContainer common_model_builder_container_;
 
   /// Constructor assumes the control space is a Euclidean space of
   /// dimension @p nu.
@@ -120,9 +120,11 @@ public:
                                   const StageModelTpl &stage) {
     oss << "StageModel { ";
     if (stage.ndx1() == stage.ndx2()) {
-      oss << "ndx: " << stage.ndx1() << ", " << "nu:  " << stage.nu();
+      oss << "ndx: " << stage.ndx1() << ", "
+          << "nu:  " << stage.nu();
     } else {
-      oss << "ndx1:" << stage.ndx1() << ", " << "nu:  " << stage.nu() << ", "
+      oss << "ndx1:" << stage.ndx1() << ", "
+          << "nu:  " << stage.nu() << ", "
           << "ndx2:" << stage.ndx2();
     }
 

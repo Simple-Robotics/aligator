@@ -1,11 +1,12 @@
 /// @copyright Copyright (C) 2024 LAAS-CNRS, INRIA
-/// @file common-model-stage-container.hpp
+/// @file common-model-container.hpp
 /// @brief Definition of CommonModelContainer
 #pragma once
 
 #include "aligator/fwd.hpp"
 
 #include "aligator/core/common-model-abstract.hpp"
+#include "aligator/core/common-model-data-container.hpp"
 
 #include <boost/type_index/ctti_type_index.hpp>
 
@@ -22,65 +23,60 @@ public:
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Model = CommonModelTpl<Scalar>;
   using Data = CommonModelDataTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
-  struct Value {
-    Value(boost::typeindex::ctti_type_index ti, std::shared_ptr<Model> m,
-          std::shared_ptr<Data> d)
-        : type_index(ti), model(std::move(m)), data(std::move(d)) {}
+  struct value_type {
+    value_type(boost::typeindex::ctti_type_index ti, std::shared_ptr<Model> m)
+        : type_index(ti), model(std::move(m)) {}
 
     boost::typeindex::ctti_type_index type_index;
     std::shared_ptr<Model> model;
-    std::shared_ptr<Data> data;
   };
 
-  using container_type = std::vector<Value>;
+  using container_type = std::vector<value_type>;
 
   CommonModelContainerTpl(container_type models) : models_(std::move(models)) {}
 
   /// @return Number of contained models.
   std::size_t size() const { return models_.size(); }
 
-  const Value &at(std::size_t index) const { return models_.at(index); }
+  const value_type &at(std::size_t index) const { return models_.at(index); }
 
-  /// Call CommonModelTpl::evaluate for each stored model.
-  void evaluateAll(const ConstVectorRef &x, const ConstVectorRef &u) {
-    for (auto &v : models_) {
-      v.model->evaluate(x, u, *v.data);
-    }
+  const value_type &operator[](std::size_t index) const {
+    return models_[index];
   }
 
-  /// Call CommonModelTpl::computeGradients for each stored model.
-  void computeAllGradients(const ConstVectorRef &x, const ConstVectorRef &u) {
-    for (auto &v : models_) {
-      v.model->computeGradients(x, u, *v.data);
+  CommonModelDataContainer createData() const {
+    typename CommonModelDataContainer::container_type container;
+    container.reserve(models_.size());
+    for (const auto &v : models_) {
+      container.emplace_back(v.type_index, v.model->createData());
     }
+    return CommonModelDataContainer(std::move(container));
   }
 
-  /// Call CommonModelTpl::computeHessians for each stored model.
-  void computeAllHessians(const ConstVectorRef &x, const ConstVectorRef &u) {
-    for (auto &v : models_) {
-      v.model->computeHessians(x, u, *v.data);
-    }
-  }
+  // TODO remove
+  // /// Call CommonModelTpl::evaluate for each stored model.
+  // void evaluateAll(const ConstVectorRef &x, const ConstVectorRef &u) {
+  //   for (auto &v : models_) {
+  //     v.model->evaluate(x, u, *v.data);
+  //   }
+  // }
 
-  /// @return CommonModelData pointer associated with CommonType.
-  /// @throw std::runtime_error When the CommonType is not contained.
-  /// @warning This method must be called by StageModel only.
-  template <typename CommonType>
-  typename CommonType::Data *get_common_data() const {
-    auto type_index = boost::typeindex::ctti_type_index::type_id<CommonType>();
-    auto it = std::find_if(models_.begin(), models_.end(),
-                           [&type_index](const Value &value) {
-                             return value.type_index.equal(type_index);
-                           });
+  // /// Call CommonModelTpl::computeGradients for each stored model.
+  // void computeAllGradients(const ConstVectorRef &x, const ConstVectorRef &u)
+  // {
+  //   for (auto &v : models_) {
+  //     v.model->computeGradients(x, u, *v.data);
+  //   }
+  // }
 
-    if (it == models_.end()) {
-      ALIGATOR_RUNTIME_ERROR(
-          fmt::format("{} CommonModel is not initialized or doesn't exists"));
-    }
-
-    return static_cast<typename CommonType::Data *>(it->data.get());
-  }
+  // /// Call CommonModelTpl::computeHessians for each stored model.
+  // void computeAllHessians(const ConstVectorRef &x, const ConstVectorRef &u) {
+  //   for (auto &v : models_) {
+  //     v.model->computeHessians(x, u, *v.data);
+  //   }
+  // }
 
 private:
   container_type models_;

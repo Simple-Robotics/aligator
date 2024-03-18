@@ -21,7 +21,7 @@ template <typename _Scalar> struct ContinuousDynamicsAbstractTpl {
   using ManifoldPtr = shared_ptr<Manifold>;
   using Data = ContinuousDynamicsDataTpl<Scalar>;
   using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
-  using CommonModelContainer = CommonModelContainerTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   /// State space.
   ManifoldPtr space_;
@@ -42,11 +42,6 @@ template <typename _Scalar> struct ContinuousDynamicsAbstractTpl {
   virtual void configure(ALIGATOR_MAYBE_UNUSED CommonModelBuilderContainer
                              &common_buider_container) const {}
 
-  /// @brief Retrieve CommonModelDataTpl
-  virtual void retrieve(
-      ALIGATOR_MAYBE_UNUSED CommonModelContainer &common_data_container) const {
-  }
-
   /// @brief   Evaluate the vector field at a point \f$(x, u)\f$.
   /// @param   x The input state variable.
   /// @param   u The input control variable.
@@ -65,7 +60,13 @@ template <typename _Scalar> struct ContinuousDynamicsAbstractTpl {
                                 const ConstVectorRef &xdot,
                                 Data &data) const = 0;
 
-  /// @brief  Create a data holder instance.
+  /// @brief Instantiate a Data object with CommonModelData.
+  /// @brief Create a data holder instance with CommonModelData
+  /// By default, call createData()
+  virtual shared_ptr<Data> createData(
+      ALIGATOR_MAYBE_UNUSED const CommonModelDataContainer &container) const;
+
+  /// @brief Create a data holder instance.
   virtual shared_ptr<Data> createData() const;
 };
 

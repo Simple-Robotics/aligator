@@ -77,18 +77,14 @@ template <typename Scalar> void StageModelTpl<Scalar>::configure() {
   // Create and configure builder
   for (std::size_t j = 0; j < numConstraints(); j++) {
     const Constraint &cstr = constraints_[j];
-    cstr.func->configure(common_builder_container_);
+    cstr.func->configure(common_model_builder_container_);
   }
-  cost_->configure(common_builder_container_);
+  cost_->configure(common_model_builder_container_);
+  // TODO find a way to not store the builder container
 
-  // Create common_container_ and retrieve the data in each costs and
-  // constraints
-  common_container_ = common_builder_container_.create_common_container();
-  for (std::size_t j = 0; j < numConstraints(); j++) {
-    const Constraint &cstr = constraints_[j];
-    cstr.func->retrieve(*common_container_);
-  }
-  cost_->retrieve(*common_container_);
+  // Create common_container_
+  common_model_container_ =
+      common_model_builder_container_.createCommonModelContainer();
 }
 
 template <typename Scalar>

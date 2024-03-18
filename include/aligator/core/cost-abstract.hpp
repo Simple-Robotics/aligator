@@ -17,6 +17,7 @@ template <typename _Scalar> struct CostAbstractTpl {
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
   using CommonModelContainer = CommonModelContainerTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   /// @brief State dimension
   shared_ptr<Manifold> space;
@@ -33,11 +34,6 @@ template <typename _Scalar> struct CostAbstractTpl {
   virtual void configure(ALIGATOR_MAYBE_UNUSED CommonModelBuilderContainer
                              &common_buider_container) const {}
 
-  /// @brief Retrieve CommonModelDataTpl
-  virtual void retrieve(
-      ALIGATOR_MAYBE_UNUSED CommonModelContainer &common_data_container) const {
-  }
-
   /// @brief Evaluate the cost function.
   virtual void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                         CostData &data) const = 0;
@@ -51,6 +47,14 @@ template <typename _Scalar> struct CostAbstractTpl {
   virtual void computeHessians(const ConstVectorRef &x, const ConstVectorRef &u,
                                CostData &data) const = 0;
 
+  /// @brief Instantiate a Data object with CommonModelData.
+  /// By default, call createData()
+  virtual shared_ptr<CostData> createData(
+      ALIGATOR_MAYBE_UNUSED const CommonModelDataContainer &container) const {
+    return createData();
+  }
+
+  /// @brief Instantiate a Data object.
   virtual shared_ptr<CostData> createData() const {
     return std::make_shared<CostData>(ndx(), nu);
   }

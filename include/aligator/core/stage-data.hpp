@@ -4,6 +4,7 @@
 
 #include "aligator/fwd.hpp"
 #include "aligator/core/clone.hpp"
+#include "aligator/core/common-model-data-container.hpp"
 
 namespace aligator {
 
@@ -17,7 +18,10 @@ struct StageDataTpl : Cloneable<StageDataTpl<_Scalar>> {
   using CostDataAbstract = CostDataAbstractTpl<Scalar>;
   using StageFunctionData = StageFunctionDataTpl<Scalar>;
   using DynamicsData = DynamicsDataTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
+  /// Store all CommonModelData
+  CommonModelDataContainer common_model_data_container;
   /// Data structs for the functions involved in the constraints.
   std::vector<shared_ptr<StageFunctionData>> constraint_data;
   /// Data for the running costs.

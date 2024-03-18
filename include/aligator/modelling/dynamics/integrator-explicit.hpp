@@ -22,7 +22,7 @@ struct ExplicitIntegratorAbstractTpl : ExplicitDynamicsModelTpl<_Scalar> {
   using Base = ExplicitDynamicsModelTpl<Scalar>;
   using Data = ExplicitIntegratorDataTpl<Scalar>;
   using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
-  using CommonModelContainer = CommonModelContainerTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   using Base::computeJacobians;
   using Base::evaluate;
@@ -41,11 +41,6 @@ struct ExplicitIntegratorAbstractTpl : ExplicitDynamicsModelTpl<_Scalar> {
   /// @brief Create and configure CommonModelTpl
   void configure(CommonModelBuilderContainer &common_buider_container) const {
     ode_->configure(common_buider_container);
-  }
-
-  /// @brief Retrieve CommonModelDataTpl
-  void retrieve(CommonModelContainer &common_data_container) const {
-    ode_->retrieve(common_data_container);
   }
 
   shared_ptr<DynamicsDataTpl<Scalar>> createData() const;

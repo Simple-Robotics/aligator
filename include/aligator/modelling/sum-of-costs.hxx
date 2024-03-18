@@ -61,14 +61,6 @@ void CostStackTpl<Scalar>::configure(
 }
 
 template <typename Scalar>
-void CostStackTpl<Scalar>::retrieve(
-    CommonModelContainer &common_data_container) const {
-  for (std::size_t i = 0; i < components_.size(); i++) {
-    components_[i]->retrieve(common_data_container);
-  }
-}
-
-template <typename Scalar>
 void CostStackTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                     const ConstVectorRef &u,
                                     CostData &data) const {

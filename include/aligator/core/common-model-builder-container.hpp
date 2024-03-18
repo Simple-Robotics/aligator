@@ -1,5 +1,5 @@
 /// @copyright Copyright (C) 2024 LAAS-CNRS, INRIA
-/// @file common-model-builder-stage-container.hpp
+/// @file common-model-builder-container.hpp
 /// @brief Definition of CommonModelBuilderContainer
 #pragma once
 
@@ -61,12 +61,11 @@ public:
 
   /// Create a CommonModelContainerTpl from all configured builder.
   /// @warning This method must be called by StageModel only.
-  Container create_common_container() const {
+  Container createCommonModelContainer() const {
     typename Container::container_type container;
     for (const auto &b : builders_) {
       auto model = b.second->build();
-      auto data = model->createData();
-      container.emplace_back(b.first, std::move(model), std::move(data));
+      container.emplace_back(b.first, std::move(model));
     }
     return Container(std::move(container));
   }

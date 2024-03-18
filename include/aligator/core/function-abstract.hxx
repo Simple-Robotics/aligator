@@ -21,6 +21,12 @@ void StageFunctionTpl<Scalar>::computeVectorHessianProducts(
     const ConstVectorRef &, Data &) const {}
 
 template <typename Scalar>
+shared_ptr<StageFunctionDataTpl<Scalar>> StageFunctionTpl<Scalar>::createData(
+    ALIGATOR_MAYBE_UNUSED const CommonModelDataContainer &container) const {
+  return createData();
+}
+
+template <typename Scalar>
 shared_ptr<StageFunctionDataTpl<Scalar>>
 StageFunctionTpl<Scalar>::createData() const {
   return std::make_shared<Data>(ndx1, nu, ndx2, nr);
