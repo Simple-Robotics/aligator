@@ -59,7 +59,8 @@ public:
     return static_cast<typename CommonType::Builder *>(it->second.get());
   }
 
-  /// Create a CommonModelContainerTpl from all configured builder
+  /// Create a CommonModelContainerTpl from all configured builder.
+  /// @warning This method must be called by StageModel only.
   Container create_common_container() const {
     typename Container::container_type container;
     for (const auto &b : builders_) {

@@ -37,34 +37,35 @@ public:
 
   CommonModelContainerTpl(container_type models) : models_(std::move(models)) {}
 
-  /// @return Number of contained models
+  /// @return Number of contained models.
   std::size_t size() const { return models_.size(); }
 
   const Value &at(std::size_t index) const { return models_.at(index); }
 
-  /// Call CommonModelTpl::evaluate for each stored model
+  /// Call CommonModelTpl::evaluate for each stored model.
   void evaluateAll(const ConstVectorRef &x, const ConstVectorRef &u) {
     for (auto &v : models_) {
       v.model->evaluate(x, u, *v.data);
     }
   }
 
-  /// Call CommonModelTpl::computeGradients for each stored model
+  /// Call CommonModelTpl::computeGradients for each stored model.
   void computeAllGradients(const ConstVectorRef &x, const ConstVectorRef &u) {
     for (auto &v : models_) {
       v.model->computeGradients(x, u, *v.data);
     }
   }
 
-  /// Call CommonModelTpl::computeHessians for each stored model
+  /// Call CommonModelTpl::computeHessians for each stored model.
   void computeAllHessians(const ConstVectorRef &x, const ConstVectorRef &u) {
     for (auto &v : models_) {
       v.model->computeHessians(x, u, *v.data);
     }
   }
 
-  /// @return CommonModelData pointer associated with CommonType
-  /// @throw std::runtime_error When the CommonType is not contained
+  /// @return CommonModelData pointer associated with CommonType.
+  /// @throw std::runtime_error When the CommonType is not contained.
+  /// @warning This method must be called by StageModel only.
   template <typename CommonType>
   typename CommonType::Data *get_common_data() const {
     auto type_index = boost::typeindex::ctti_type_index::type_id<CommonType>();
