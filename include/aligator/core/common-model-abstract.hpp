@@ -9,8 +9,7 @@
 
 namespace aligator {
 
-/** @brief Common computation between dynamics, costs and constraints.
- */
+/// @brief Common computation between dynamics, costs and constraints.
 template <typename _Scalar> struct CommonModelTpl {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);

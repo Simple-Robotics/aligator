@@ -33,8 +33,7 @@ struct EqualCTTITypeIndex {
 
 } // namespace internal
 
-/** @brief Store all CommonModelBuilder associated with a stage.
- */
+/// @brief Store all CommonModelBuilder associated with a stage.
 template <typename _Scalar> class CommonModelBuilderContainerTpl {
 public:
   using Scalar = _Scalar;
@@ -75,10 +74,9 @@ private:
   container_type builders_;
 };
 
-/** @brief This class will be used by dynamics/costs/constraints to
- * create/retrieve builder without access to other
- * CommonModelBuilderContainerTpl methods.
- */
+/// @brief This class will be used by dynamics/costs/constraints to
+/// create/retrieve builder without access to other
+/// CommonModelBuilderContainerTpl methods.
 template <typename _Scalar> class CommonModelBuilderContainerHandleTpl {
 public:
   using Scalar = _Scalar;
@@ -88,7 +86,7 @@ public:
   CommonModelBuilderContainerHandleTpl(Container &container)
       : container_(container) {}
 
-  /// \return CommonModelBuilder pointer associated with CommonType
+  /// @return CommonModelBuilder pointer associated with CommonType
   template <typename CommonType> typename CommonType::Builder *get() {
     return container_.template get<CommonType>();
   }

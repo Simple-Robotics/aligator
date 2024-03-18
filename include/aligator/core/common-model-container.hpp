@@ -13,10 +13,9 @@
 
 namespace aligator {
 
-/** @brief Store all CommonModel and associated CommonModelData associated with
- * a stage.
- * Add some helper methods to update all CommonModel for new x, u.
- */
+// @brief Store all CommonModel and associated CommonModelData associated with
+// a stage.
+// Add some helper methods to update all CommonModel for new x, u.
 template <typename _Scalar> class CommonModelContainerTpl {
 public:
   using Scalar = _Scalar;
@@ -38,7 +37,7 @@ public:
 
   CommonModelContainerTpl(container_type models) : models_(std::move(models)) {}
 
-  /// \return Number of contained models
+  /// @return Number of contained models
   std::size_t size() const { return models_.size(); }
 
   const Value &at(std::size_t index) const { return models_.at(index); }
@@ -64,8 +63,8 @@ public:
     }
   }
 
-  /// \return CommonModelData pointer associated with CommonType
-  /// \throw std::runtime_error When the CommonType is not contained
+  /// @return CommonModelData pointer associated with CommonType
+  /// @throw std::runtime_error When the CommonType is not contained
   template <typename CommonType>
   typename CommonType::Data *get_common_data() const {
     auto type_index = boost::typeindex::ctti_type_index::type_id<CommonType>();
@@ -75,8 +74,8 @@ public:
                            });
 
     if (it == models_.end()) {
-      throw std::runtime_error(std::string(type_index.name()) +
-                               std::string(" is not initialized"));
+      ALIGATOR_RUNTIME_ERROR(
+          fmt::format("{} CommonModel is not initialized or doesn't exists"));
     }
 
     return static_cast<typename CommonType::Data *>(it->data.get());
@@ -86,9 +85,8 @@ private:
   container_type models_;
 };
 
-/** @brief This class will be used by dynamics/costs/constraints to retrieve
- * data without access to other CommonModelContainerTpl methods.
- */
+/// @brief This class will be used by dynamics/costs/constraints to retrieve
+/// data without access to other CommonModelContainerTpl methods.
 template <typename _Scalar> class CommonModelContainerHandleTpl {
 public:
   using Scalar = _Scalar;
@@ -97,8 +95,8 @@ public:
 
   CommonModelContainerHandleTpl(Container &container) : container_(container) {}
 
-  /// \return CommonModelData pointer associated with CommonType
-  /// \throw std::runtime_error When the CommonType is not contained
+  /// @return CommonModelData pointer associated with CommonType
+  /// @throw std::runtime_error When the CommonType is not contained
   template <typename CommonType>
   typename CommonType::Data *get_common_data() const {
     return container_.template get_common_data<CommonType>();
