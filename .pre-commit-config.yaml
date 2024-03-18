@@ -3,7 +3,7 @@ ci:
   autofix_prs: false
 repos:
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v17.0.6
+    rev: v18.1.1
     hooks:
     - id: clang-format
       types_or: []
@@ -26,12 +26,12 @@ repos:
                 doc/doxygen-awesome.*
             )$
   - repo: https://github.com/psf/black
-    rev: 23.12.1
+    rev: 24.3.0
     hooks:
       - id: black
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
+  - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: 'v0.1.11'
+    rev: 'v0.3.3'
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
@@ -43,6 +43,6 @@ repos:
     - id: cmake-lint
       additional_dependencies: [pyyaml>=5.1]
   - repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.5.4
+    rev: v1.5.5
     hooks:
       - id: forbid-tabs
