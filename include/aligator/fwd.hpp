@@ -76,14 +76,8 @@ template <typename Scalar> class CommonModelBuilderTpl;
 // fwd CommonModelContainerTpl
 template <typename Scalar> class CommonModelContainerTpl;
 
-// fwd CommonModelContainerHandleTpl
-template <typename Scalar> class CommonModelContainerHandleTpl;
-
 // fwd CommonModelBuilderContainerTpl
 template <typename Scalar> class CommonModelBuilderContainerTpl;
-
-// fwd CommonModelBuilderContainerHandleTpl
-template <typename Scalar> class CommonModelBuilderContainerHandleTpl;
 
 /* FUNCTION EXPRESSIONS */
 

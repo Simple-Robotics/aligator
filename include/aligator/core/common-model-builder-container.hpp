@@ -74,27 +74,6 @@ private:
   container_type builders_;
 };
 
-/// @brief This class will be used by dynamics/costs/constraints to
-/// create/retrieve builder without access to other
-/// CommonModelBuilderContainerTpl methods.
-template <typename _Scalar> class CommonModelBuilderContainerHandleTpl {
-public:
-  using Scalar = _Scalar;
-  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using Container = CommonModelBuilderContainerTpl<Scalar>;
-
-  CommonModelBuilderContainerHandleTpl(Container &container)
-      : container_(container) {}
-
-  /// @return CommonModelBuilder pointer associated with CommonType
-  template <typename CommonType> typename CommonType::Builder *get() {
-    return container_.template get<CommonType>();
-  }
-
-private:
-  Container &container_;
-};
-
 } // namespace aligator
 
 // TODO template instantiation

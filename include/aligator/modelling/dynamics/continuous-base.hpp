@@ -20,9 +20,8 @@ template <typename _Scalar> struct ContinuousDynamicsAbstractTpl {
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using ManifoldPtr = shared_ptr<Manifold>;
   using Data = ContinuousDynamicsDataTpl<Scalar>;
-  using CommonModelBuilderContainer =
-      CommonModelBuilderContainerHandleTpl<Scalar>;
-  using CommonModelContainer = CommonModelContainerHandleTpl<Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
+  using CommonModelContainer = CommonModelContainerTpl<Scalar>;
 
   /// State space.
   ManifoldPtr space_;

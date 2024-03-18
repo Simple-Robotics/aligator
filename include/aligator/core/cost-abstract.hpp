@@ -15,9 +15,8 @@ template <typename _Scalar> struct CostAbstractTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using CostData = CostDataAbstractTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
-  using CommonModelBuilderContainer =
-      CommonModelBuilderContainerHandleTpl<Scalar>;
-  using CommonModelContainer = CommonModelContainerHandleTpl<Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
+  using CommonModelContainer = CommonModelContainerTpl<Scalar>;
 
   /// @brief State dimension
   shared_ptr<Manifold> space;

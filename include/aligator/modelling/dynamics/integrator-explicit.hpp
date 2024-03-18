@@ -21,9 +21,8 @@ struct ExplicitIntegratorAbstractTpl : ExplicitDynamicsModelTpl<_Scalar> {
   using ODEType = ODEAbstractTpl<Scalar>;
   using Base = ExplicitDynamicsModelTpl<Scalar>;
   using Data = ExplicitIntegratorDataTpl<Scalar>;
-  using CommonModelBuilderContainer =
-      CommonModelBuilderContainerHandleTpl<Scalar>;
-  using CommonModelContainer = CommonModelContainerHandleTpl<Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
+  using CommonModelContainer = CommonModelContainerTpl<Scalar>;
 
   using Base::computeJacobians;
   using Base::evaluate;

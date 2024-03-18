@@ -85,27 +85,6 @@ private:
   container_type models_;
 };
 
-/// @brief This class will be used by dynamics/costs/constraints to retrieve
-/// data without access to other CommonModelContainerTpl methods.
-template <typename _Scalar> class CommonModelContainerHandleTpl {
-public:
-  using Scalar = _Scalar;
-  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using Container = CommonModelContainerTpl<Scalar>;
-
-  CommonModelContainerHandleTpl(Container &container) : container_(container) {}
-
-  /// @return CommonModelData pointer associated with CommonType
-  /// @throw std::runtime_error When the CommonType is not contained
-  template <typename CommonType>
-  typename CommonType::Data *get_common_data() const {
-    return container_.template get_common_data<CommonType>();
-  }
-
-private:
-  Container &container_;
-};
-
 } // namespace aligator
 
 // TODO template instantiation

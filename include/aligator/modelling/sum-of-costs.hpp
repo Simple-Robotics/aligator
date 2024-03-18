@@ -21,9 +21,8 @@ template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
   using CostPtr = shared_ptr<CostBase>;
   using SumCostData = CostStackDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
-  using CommonModelBuilderContainer =
-      CommonModelBuilderContainerHandleTpl<Scalar>;
-  using CommonModelContainer = CommonModelContainerHandleTpl<Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
+  using CommonModelContainer = CommonModelContainerTpl<Scalar>;
 
   std::vector<CostPtr> components_;
   std::vector<Scalar> weights_;

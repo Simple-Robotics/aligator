@@ -19,9 +19,8 @@ public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Data = StageFunctionDataTpl<Scalar>;
-  using CommonModelBuilderContainer =
-      CommonModelBuilderContainerHandleTpl<Scalar>;
-  using CommonModelContainer = CommonModelContainerHandleTpl<Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
+  using CommonModelContainer = CommonModelContainerTpl<Scalar>;
 
   /// @brief Current state dimension
   const int ndx1;
