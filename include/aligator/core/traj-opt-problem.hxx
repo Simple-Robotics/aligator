@@ -67,6 +67,7 @@ template <typename Scalar>
 Scalar TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
                                            const std::vector<VectorXs> &us,
                                            Data &prob_data) const {
+  // TODO call common evaluate for initial and term constraints
   const std::size_t nsteps = numSteps();
   const bool sizes_correct = (xs.size() == nsteps + 1) && (us.size() == nsteps);
   if (!sizes_correct) {
@@ -96,6 +97,8 @@ template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::computeDerivatives(
     const std::vector<VectorXs> &xs, const std::vector<VectorXs> &us,
     Data &prob_data) const {
+  // TODO call common computeGradients/computeHessians for initial and term
+  // TODO constraints
   const std::size_t nsteps = numSteps();
   const bool sizes_correct = (xs.size() == nsteps + 1) && (us.size() == nsteps);
   if (!sizes_correct) {

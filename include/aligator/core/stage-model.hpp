@@ -39,6 +39,7 @@ public:
   using Cost = CostAbstractTpl<Scalar>;
   using CostPtr = shared_ptr<Cost>;
   using Data = StageDataTpl<Scalar>;
+  using CommonModel = CommonModelTpl<Scalar>;
   using CommonModelContainer = CommonModelContainerTpl<Scalar>;
   using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
 

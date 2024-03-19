@@ -55,29 +55,6 @@ public:
     return CommonModelDataContainer(std::move(container));
   }
 
-  // TODO remove
-  // /// Call CommonModelTpl::evaluate for each stored model.
-  // void evaluateAll(const ConstVectorRef &x, const ConstVectorRef &u) {
-  //   for (auto &v : models_) {
-  //     v.model->evaluate(x, u, *v.data);
-  //   }
-  // }
-
-  // /// Call CommonModelTpl::computeGradients for each stored model.
-  // void computeAllGradients(const ConstVectorRef &x, const ConstVectorRef &u)
-  // {
-  //   for (auto &v : models_) {
-  //     v.model->computeGradients(x, u, *v.data);
-  //   }
-  // }
-
-  // /// Call CommonModelTpl::computeHessians for each stored model.
-  // void computeAllHessians(const ConstVectorRef &x, const ConstVectorRef &u) {
-  //   for (auto &v : models_) {
-  //     v.model->computeHessians(x, u, *v.data);
-  //   }
-  // }
-
 private:
   container_type models_;
 };
