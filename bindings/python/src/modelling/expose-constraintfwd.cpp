@@ -43,9 +43,7 @@ void exposeConstrainedFwdDynamics() {
                      &MultibodyConstraintFwdDynamics::constraint_models_)
       .add_property("ntau", &MultibodyConstraintFwdDynamics::ntau,
                     "Torque dimension.")
-      .def(CreateDataPythonVisitor<
-           MultibodyConstraintFwdDynamics,
-           typename MultibodyConstraintFwdDynamics::BaseData>());
+      .def(CreateDataPythonVisitor<MultibodyConstraintFwdDynamics>());
 
   bp::register_ptr_to_python<shared_ptr<MultibodyConstraintFwdData>>();
 
