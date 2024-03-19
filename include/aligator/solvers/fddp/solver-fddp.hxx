@@ -41,10 +41,6 @@ void SolverFDDP<Scalar>::setup(const Problem &problem) {
                           "this solver cannot "
                           "handle.\n");
   }
-  for (std::size_t i = 0; i < workspace_.nsteps; i++) {
-    StageModel &sm = *problem.stages_[i];
-    sm.configure();
-  }
 }
 
 template <typename Scalar>
