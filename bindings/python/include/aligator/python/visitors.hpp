@@ -17,10 +17,12 @@ struct ClonePythonVisitor : bp::def_visitor<ClonePythonVisitor<T>> {
   }
 };
 
-template <typename T>
-struct CreateDataPythonVisitor : bp::def_visitor<CreateDataPythonVisitor<T>> {
+template <typename T, typename DataType>
+struct CreateDataPythonVisitor
+    : bp::def_visitor<CreateDataPythonVisitor<T, DataType>> {
   template <typename Pyclass> void visit(Pyclass &obj) const {
-    obj.def("createData", &T::createData, bp::args("self"),
+    std::shared_ptr<DataType> (T::*createData)() const = &T::createData;
+    obj.def("createData", createData, bp::args("self"),
             "Create a data object.");
   }
 };
@@ -31,11 +33,13 @@ struct CreateDataPythonVisitor : bp::def_visitor<CreateDataPythonVisitor<T>> {
 /// @sa StageFunctionTpl
 /// @tparam T The wrapped class
 /// @tparam TWrapper The wrapper class
-template <typename T, typename TWrapper>
+template <typename T, typename TWrapper, typename DataType>
 struct CreateDataPolymorphicPythonVisitor
-    : bp::def_visitor<CreateDataPolymorphicPythonVisitor<T, TWrapper>> {
+    : bp::def_visitor<
+          CreateDataPolymorphicPythonVisitor<T, TWrapper, DataType>> {
   template <typename PyClass> void visit(PyClass &obj) const {
-    obj.def("createData", &T::createData, &TWrapper::default_createData,
+    std::shared_ptr<DataType> (T::*createData)() const = &T::createData;
+    obj.def("createData", createData, &TWrapper::default_createData,
             bp::args("self"), "Create a data object.");
   }
 };

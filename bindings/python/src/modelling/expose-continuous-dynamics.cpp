@@ -61,8 +61,9 @@ void exposeODEs() {
                     bp::make_function(&ContinuousDynamicsBase::space,
                                       bp::return_internal_reference<>()),
                     "Get the state space.")
-      .def(CreateDataPolymorphicPythonVisitor<ContinuousDynamicsBase,
-                                              PyContinuousDynamics<>>());
+      .def(CreateDataPolymorphicPythonVisitor<
+           ContinuousDynamicsBase, PyContinuousDynamics<>,
+           typename ContinuousDynamicsBase::Data>());
 
   bp::register_ptr_to_python<shared_ptr<ContinuousDynamicsData>>();
   bp::class_<DAEDataWrapper, boost::noncopyable>(
@@ -101,7 +102,9 @@ void exposeODEs() {
            bp::args("self", "x", "u", "data"),
            "Compute the derivatives of the ODE vector field with respect "
            "to the state-control pair :math:`(x, u)`.")
-      .def(CreateDataPolymorphicPythonVisitor<ODEAbstract, PyODEAbstract<>>());
+      .def(CreateDataPolymorphicPythonVisitor<
+           ODEAbstract, PyODEAbstract<>,
+           typename ODEAbstract::ContDataAbstract>());
 
   bp::register_ptr_to_python<shared_ptr<ODEData>>();
   bp::class_<ODEDataWrapper, bp::bases<ContinuousDynamicsData>,
@@ -132,7 +135,9 @@ void exposeODEs() {
                const double, const Vector3s &, const ContactMap &>(
           bp::args("self", "space", "total mass", "gravity", "contact_map")))
       .def_readwrite("contact_map", &CentroidalFwdDynamics::contact_map_)
-      .def(CreateDataPythonVisitor<CentroidalFwdDynamics>());
+      .def(CreateDataPythonVisitor<
+           CentroidalFwdDynamics,
+           typename CentroidalFwdDynamics::ContDataAbstract>());
 
   bp::register_ptr_to_python<shared_ptr<CentroidalFwdDataTpl<Scalar>>>();
   bp::class_<CentroidalFwdDataTpl<Scalar>, bp::bases<ODEData>>(
@@ -147,7 +152,9 @@ void exposeODEs() {
           bp::args("self", "space", "total mass", "gravity", "contact_map")))
       .def_readwrite("contact_map",
                      &ContinuousCentroidalFwdDynamics::contact_map_)
-      .def(CreateDataPythonVisitor<ContinuousCentroidalFwdDynamics>());
+      .def(CreateDataPythonVisitor<
+           ContinuousCentroidalFwdDynamics,
+           typename ContinuousCentroidalFwdDynamics::ContDataAbstract>());
 
   bp::register_ptr_to_python<
       shared_ptr<ContinuousCentroidalFwdDataTpl<Scalar>>>();
