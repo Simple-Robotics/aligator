@@ -152,6 +152,9 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 
   std::size_t numSteps() const;
 
+  /// Configure each stages
+  void configure() const;
+
   /// @brief Rollout the problem costs, constraints, dynamics, stage per stage.
   Scalar evaluate(const std::vector<VectorXs> &xs,
                   const std::vector<VectorXs> &us, Data &prob_data) const;

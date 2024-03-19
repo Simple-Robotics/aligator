@@ -52,10 +52,12 @@ public:
   CostPtr cost_;
   /// Constraint manager.
   ConstraintStackTpl<Scalar> constraints_;
+  // TODO to avoid mutable, we must call configure outside setup
+  // TODO or remove setup constness
   /// Store all CommonModel
-  boost::optional<CommonModelContainer> common_model_container_;
+  mutable boost::optional<CommonModelContainer> common_model_container_;
   /// Contains all CommonModelBuilder
-  CommonModelBuilderContainer common_model_builder_container_;
+  mutable CommonModelBuilderContainer common_model_builder_container_;
 
   /// Constructor assumes the control space is a Euclidean space of
   /// dimension @p nu.
@@ -99,7 +101,7 @@ public:
   void addConstraint(FunctionPtr func, ConstraintSetPtr cstr_set);
 
   /* Configure costs, constraints, ... */
-  virtual void configure();
+  virtual void configure() const;
 
   /* Evaluate costs, constraints, ... */
 

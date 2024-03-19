@@ -55,6 +55,14 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(const ConstVectorRef &x0,
                                              shared_ptr<CostAbstract> term_cost)
     : TrajOptProblemTpl(createStateError(x0, space, nu), term_cost) {}
 
+template <typename Scalar> void TrajOptProblemTpl<Scalar>::configure() const {
+  /// TODO configure initial constraints and final cost ?
+  const std::size_t nsteps = numSteps();
+  for (std::size_t i = 0; i < nsteps; i++) {
+    stages_[i]->configure();
+  }
+}
+
 template <typename Scalar>
 Scalar TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
                                            const std::vector<VectorXs> &us,
@@ -174,6 +182,7 @@ Scalar TrajOptProblemTpl<Scalar>::computeTrajectoryCost(
 
 /* TrajOptDataTpl */
 
+// TODO need to create a common_model_container_ for init_conditions_ ?
 template <typename Scalar>
 TrajOptDataTpl<Scalar>::TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem)
     : init_data(problem.init_condition_->createData()) {
@@ -183,6 +192,8 @@ TrajOptDataTpl<Scalar>::TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem)
     stage_data[i]->checkData();
   }
 
+  // TODO need to create a common_model_container_ for term cost and constraints
+  // ?
   if (problem.term_cost_) {
     term_cost_data = problem.term_cost_->createData();
   }

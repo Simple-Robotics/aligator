@@ -73,7 +73,7 @@ void StageModelTpl<Scalar>::addConstraint(FunctionPtr func,
   constraints_.pushBack(Constraint{func, cstr_set});
 }
 
-template <typename Scalar> void StageModelTpl<Scalar>::configure() {
+template <typename Scalar> void StageModelTpl<Scalar>::configure() const {
   // Create and configure builder
   for (std::size_t j = 0; j < numConstraints(); j++) {
     const Constraint &cstr = constraints_[j];
