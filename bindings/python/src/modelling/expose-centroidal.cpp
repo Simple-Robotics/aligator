@@ -118,9 +118,7 @@ void exposeCentroidalFunctions() {
           bp::args("self", "ndx", "nu", "mass", "gravity", "contact_map")))
       .def_readwrite("contact_map",
                      &CentroidalAccelerationResidual::contact_map_)
-      .def(CreateDataPythonVisitor<
-           CentroidalAccelerationResidual,
-           typename CentroidalAccelerationResidual::BaseData>());
+      .def(CreateDataPythonVisitor<CentroidalAccelerationResidual>());
 
   bp::register_ptr_to_python<shared_ptr<CentroidalAccelerationData>>();
 
@@ -146,9 +144,7 @@ void exposeCentroidalFunctions() {
                const ContactMap &>(
           bp::args("self", "ndx", "nu", "mass", "gravity", "contact_map")))
       .def_readwrite("contact_map", &AngularAccelerationResidual::contact_map_)
-      .def(CreateDataPythonVisitor<
-           AngularAccelerationResidual,
-           typename AngularAccelerationResidual::BaseData>());
+      .def(CreateDataPythonVisitor<AngularAccelerationResidual>());
 
   bp::register_ptr_to_python<shared_ptr<AngularAccelerationData>>();
 
@@ -160,9 +156,7 @@ void exposeCentroidalFunctions() {
       "CentroidalWrapperResidual",
       "A wrapper for centroidal cost with smooth control",
       bp::init<shared_ptr<StageFunction>>(bp::args("self", "centroidal_cost")))
-      .def(CreateDataPythonVisitor<
-           CentroidalWrapperResidual,
-           typename CentroidalWrapperResidual::BaseData>());
+      .def(CreateDataPythonVisitor<CentroidalWrapperResidual>());
 
   bp::register_ptr_to_python<shared_ptr<CentroidalWrapperData>>();
 
