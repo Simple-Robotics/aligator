@@ -92,8 +92,8 @@ void StageModelTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                      const ConstVectorRef &u,
                                      const ConstVectorRef &y,
                                      Data &data) const {
-  for (std::size_t j = 0; j < common_model_container_->size(); j++) {
-    const CommonModel &model = *(*common_model_container_)[j].model;
+  for (std::size_t j = 0; j < common_model_container_.size(); j++) {
+    const CommonModel &model = *common_model_container_[j].model;
     model.evaluate(x, u, *data.common_model_data_container[j].data);
   }
   for (std::size_t j = 0; j < numConstraints(); j++) {
@@ -108,8 +108,8 @@ void StageModelTpl<Scalar>::computeDerivatives(const ConstVectorRef &x,
                                                const ConstVectorRef &u,
                                                const ConstVectorRef &y,
                                                Data &data) const {
-  for (std::size_t j = 0; j < common_model_container_->size(); j++) {
-    const CommonModel &model = *(*common_model_container_)[j].model;
+  for (std::size_t j = 0; j < common_model_container_.size(); j++) {
+    const CommonModel &model = *common_model_container_[j].model;
     model.computeGradients(x, u, *data.common_model_data_container[j].data);
   }
   for (std::size_t j = 0; j < numConstraints(); j++) {
@@ -118,8 +118,8 @@ void StageModelTpl<Scalar>::computeDerivatives(const ConstVectorRef &x,
   }
   cost_->computeGradients(x, u, *data.cost_data);
 
-  for (std::size_t j = 0; j < common_model_container_->size(); j++) {
-    const CommonModel &model = *(*common_model_container_)[j].model;
+  for (std::size_t j = 0; j < common_model_container_.size(); j++) {
+    const CommonModel &model = *common_model_container_[j].model;
     model.computeHessians(x, u, *data.common_model_data_container[j].data);
   }
   cost_->computeHessians(x, u, *data.cost_data);

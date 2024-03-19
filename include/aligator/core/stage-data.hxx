@@ -13,7 +13,7 @@ namespace aligator {
 template <typename Scalar>
 StageDataTpl<Scalar>::StageDataTpl(const StageModel &stage_model)
     : common_model_data_container(
-          stage_model.common_model_container_->createData()),
+          stage_model.common_model_container_.createData()),
       constraint_data(stage_model.numConstraints()),
       cost_data(stage_model.cost_->createData(common_model_data_container)) {
   using Function = StageFunctionTpl<Scalar>;

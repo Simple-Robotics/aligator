@@ -56,7 +56,7 @@ public:
   // TODO to avoid mutable, we must call configure outside setup
   // TODO or remove setup constness
   /// Store all CommonModel
-  mutable boost::optional<CommonModelContainer> common_model_container_;
+  mutable CommonModelContainer common_model_container_;
   /// Contains all CommonModelBuilder
   mutable CommonModelBuilderContainer common_model_builder_container_;
 
@@ -123,9 +123,11 @@ public:
                                   const StageModelTpl &stage) {
     oss << "StageModel { ";
     if (stage.ndx1() == stage.ndx2()) {
-      oss << "ndx: " << stage.ndx1() << ", " << "nu:  " << stage.nu();
+      oss << "ndx: " << stage.ndx1() << ", "
+          << "nu:  " << stage.nu();
     } else {
-      oss << "ndx1:" << stage.ndx1() << ", " << "nu:  " << stage.nu() << ", "
+      oss << "ndx1:" << stage.ndx1() << ", "
+          << "nu:  " << stage.nu() << ", "
           << "ndx2:" << stage.ndx2();
     }
 

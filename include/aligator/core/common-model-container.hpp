@@ -35,6 +35,7 @@ public:
 
   using container_type = std::vector<value_type>;
 
+  CommonModelContainerTpl() = default;
   CommonModelContainerTpl(container_type models) : models_(std::move(models)) {}
 
   /// @return Number of contained models.

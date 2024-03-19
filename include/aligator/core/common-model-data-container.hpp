@@ -32,6 +32,7 @@ public:
 
   using container_type = std::vector<value_type>;
 
+  CommonModelDataContainerTpl() = default;
   CommonModelDataContainerTpl(container_type datas)
       : datas_(std::move(datas)) {}
 
