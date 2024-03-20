@@ -56,18 +56,29 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(const ConstVectorRef &x0,
     : TrajOptProblemTpl(createStateError(x0, space, nu), term_cost) {}
 
 template <typename Scalar> void TrajOptProblemTpl<Scalar>::configure() const {
-  /// TODO configure initial constraints and final cost ?
+  init_condition_->configure(init_condition_common_model_builder_container_);
+  init_condition_common_model_container_ =
+      init_condition_common_model_builder_container_
+          .createCommonModelContainer();
+
   const std::size_t nsteps = numSteps();
   for (std::size_t i = 0; i < nsteps; i++) {
     stages_[i]->configure();
   }
+
+  term_cost_->configure(term_common_model_builder_container_);
+  for (std::size_t k = 0; k < term_cstrs_.size(); ++k) {
+    const ConstraintType &tc = term_cstrs_[k];
+    tc.func->configure(term_common_model_builder_container_);
+  }
+  term_common_model_container_ =
+      term_common_model_builder_container_.createCommonModelContainer();
 }
 
 template <typename Scalar>
 Scalar TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
                                            const std::vector<VectorXs> &us,
                                            Data &prob_data) const {
-  // TODO call common evaluate for initial and term constraints
   const std::size_t nsteps = numSteps();
   const bool sizes_correct = (xs.size() == nsteps + 1) && (us.size() == nsteps);
   if (!sizes_correct) {
@@ -75,11 +86,25 @@ Scalar TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
         "Wrong size for xs or us, expected us.size = {:d}", nsteps));
   }
 
+  for (std::size_t j = 0; j < init_condition_common_model_container_.size();
+       j++) {
+    const CommonModel &model = *init_condition_common_model_container_[j].model;
+    model.evaluate(
+        xs[0], unone_,
+        *prob_data.init_condition_common_model_data_container[j].data);
+  }
+
   init_condition_->evaluate(xs[0], prob_data.getInitData());
 
   auto &sds = prob_data.stage_data;
   for (std::size_t i = 0; i < nsteps; i++) {
     stages_[i]->evaluate(xs[i], us[i], xs[i + 1], *sds[i]);
+  }
+
+  for (std::size_t j = 0; j < term_common_model_container_.size(); j++) {
+    const CommonModel &model = *term_common_model_container_[j].model;
+    model.evaluate(xs[nsteps], unone_,
+                   *prob_data.term_common_model_data_container[j].data);
   }
 
   term_cost_->evaluate(xs[nsteps], unone_, *prob_data.term_cost_data);
@@ -97,13 +122,22 @@ template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::computeDerivatives(
     const std::vector<VectorXs> &xs, const std::vector<VectorXs> &us,
     Data &prob_data) const {
-  // TODO call common computeGradients/computeHessians for initial and term
-  // TODO constraints
   const std::size_t nsteps = numSteps();
   const bool sizes_correct = (xs.size() == nsteps + 1) && (us.size() == nsteps);
   if (!sizes_correct) {
     ALIGATOR_RUNTIME_ERROR(fmt::format(
         "Wrong size for xs or us, expected us.size = {:d}", nsteps));
+  }
+
+  for (std::size_t j = 0; j < init_condition_common_model_container_.size();
+       j++) {
+    const CommonModel &model = *init_condition_common_model_container_[j].model;
+    model.computeGradients(
+        xs[0], unone_,
+        *prob_data.init_condition_common_model_data_container[j].data);
+    model.computeHessians(
+        xs[0], unone_,
+        *prob_data.init_condition_common_model_data_container[j].data);
   }
 
   init_condition_->computeJacobians(xs[0], prob_data.getInitData());
@@ -115,6 +149,14 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
   for (std::size_t i = 0; i < nsteps; i++) {
     stages_[i]->computeDerivatives(xs[i], us[i], prob_data.xs_copy[i + 1],
                                    *sds[i]);
+  }
+
+  for (std::size_t j = 0; j < term_common_model_container_.size(); j++) {
+    const CommonModel &model = *term_common_model_container_[j].model;
+    model.computeGradients(xs[nsteps], unone_,
+                           *prob_data.term_common_model_data_container[j].data);
+    model.computeHessians(xs[nsteps], unone_,
+                          *prob_data.term_common_model_data_container[j].data);
   }
 
   if (term_cost_) {
@@ -185,27 +227,32 @@ Scalar TrajOptProblemTpl<Scalar>::computeTrajectoryCost(
 
 /* TrajOptDataTpl */
 
-// TODO need to create a common_model_container_ for init_conditions_ ?
 template <typename Scalar>
 TrajOptDataTpl<Scalar>::TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem)
-    : init_data(problem.init_condition_->createData()) {
+    : init_condition_common_model_data_container(
+          problem.init_condition_common_model_container_.createData()),
+      term_common_model_data_container(
+          problem.term_common_model_container_.createData()),
+      init_data(problem.init_condition_->createData(
+          init_condition_common_model_data_container)) {
+
   stage_data.reserve(problem.numSteps());
   for (std::size_t i = 0; i < problem.numSteps(); i++) {
     stage_data.push_back(problem.stages_[i]->createData());
     stage_data[i]->checkData();
   }
 
-  // TODO need to create a common_model_container_ for term cost and constraints
-  // ?
   if (problem.term_cost_) {
-    term_cost_data = problem.term_cost_->createData();
+    term_cost_data =
+        problem.term_cost_->createData(term_common_model_data_container);
   }
 
   if (!problem.term_cstrs_.empty())
     term_cstr_data.reserve(problem.term_cstrs_.size());
   for (std::size_t k = 0; k < problem.term_cstrs_.size(); k++) {
     const ConstraintType &tc = problem.term_cstrs_[k];
-    term_cstr_data.push_back(tc.func->createData());
+    term_cstr_data.push_back(
+        tc.func->createData(term_common_model_data_container));
   }
 }
 
