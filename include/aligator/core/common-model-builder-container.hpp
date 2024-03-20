@@ -9,29 +9,10 @@
 
 #include <boost/type_index/ctti_type_index.hpp>
 
+#include <string>
 #include <unordered_map>
 
 namespace aligator {
-
-namespace internal {
-
-/// boost::typeindex::ctti_type_index hash operator
-struct HashCTTITypeIndex {
-  std::size_t
-  operator()(const boost::typeindex::ctti_type_index &s) const noexcept {
-    return s.hash_code();
-  }
-};
-
-/// boost::typeindex::ctti_type_index equality operator
-struct EqualCTTITypeIndex {
-  bool operator()(const boost::typeindex::ctti_type_index &s1,
-                  const boost::typeindex::ctti_type_index &s2) const noexcept {
-    return s1.equal(s2);
-  }
-};
-
-} // namespace internal
 
 /// @brief Store all CommonModelBuilder associated with a stage.
 template <typename _Scalar> class CommonModelBuilderContainerTpl {
@@ -44,15 +25,13 @@ public:
   using Container = CommonModelContainerTpl<Scalar>;
 
   using container_type =
-      std::unordered_map<boost::typeindex::ctti_type_index,
-                         std::shared_ptr<Builder>, internal::HashCTTITypeIndex,
-                         internal::EqualCTTITypeIndex>;
+      std::unordered_map<std::string, std::shared_ptr<Builder>>;
 
-  /// Return a CommonModelBuilderTpl pointer
+  /// \return CommonModelBuilderTpl pointer associated with CommonType
   template <typename CommonType> typename CommonType::Builder *get() {
     auto key = boost::typeindex::ctti_type_index::type_id<CommonType>();
     // If insertion took place we create the new builder
-    auto [it, inserted] = builders_.try_emplace(key, nullptr);
+    auto [it, inserted] = builders_.try_emplace(key.raw_name(), nullptr);
     if (inserted) {
       it->second = std::make_shared<typename CommonType::Builder>();
     }

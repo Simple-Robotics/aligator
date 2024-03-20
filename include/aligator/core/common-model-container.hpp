@@ -8,9 +8,8 @@
 #include "aligator/core/common-model-abstract.hpp"
 #include "aligator/core/common-model-data-container.hpp"
 
-#include <boost/type_index/ctti_type_index.hpp>
-
 #include <vector>
+#include <string>
 
 namespace aligator {
 
@@ -24,10 +23,10 @@ public:
   using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   struct value_type {
-    value_type(boost::typeindex::ctti_type_index ti, std::shared_ptr<Model> m)
-        : type_index(ti), model(std::move(m)) {}
+    value_type(std::string ti, std::shared_ptr<Model> m)
+        : type_index(std::move(ti)), model(std::move(m)) {}
 
-    boost::typeindex::ctti_type_index type_index;
+    std::string type_index;
     std::shared_ptr<Model> model;
   };
 

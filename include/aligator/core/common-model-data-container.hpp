@@ -10,6 +10,7 @@
 #include <boost/type_index/ctti_type_index.hpp>
 
 #include <vector>
+#include <string>
 
 namespace aligator {
 
@@ -23,10 +24,10 @@ public:
   using Data = CommonModelDataTpl<Scalar>;
 
   struct value_type {
-    value_type(boost::typeindex::ctti_type_index ti, std::shared_ptr<Data> m)
-        : type_index(ti), data(std::move(m)) {}
+    value_type(std::string ti, std::shared_ptr<Data> m)
+        : type_index(std::move(ti)), data(std::move(m)) {}
 
-    boost::typeindex::ctti_type_index type_index;
+    std::string type_index;
     std::shared_ptr<Data> data;
   };
 
@@ -48,10 +49,11 @@ public:
   /// @return CommonModelData pointer associated with CommonType.
   /// @throw std::runtime_error When the CommonType is not contained.
   template <typename CommonType> typename CommonType::Data *getData() const {
-    auto type_index = boost::typeindex::ctti_type_index::type_id<CommonType>();
+    std::string type_index =
+        boost::typeindex::ctti_type_index::type_id<CommonType>().raw_name();
     auto it = std::find_if(datas_.begin(), datas_.end(),
                            [&type_index](const value_type &value) {
-                             return value.type_index.equal(type_index);
+                             return value.type_index == type_index;
                            });
 
     if (it == datas_.end()) {
