@@ -13,7 +13,7 @@
 
 namespace aligator {
 
-// @brief Store all CommonModel and associated CommonModelData associated with
+// @brief Store all CommonModelData associated with
 // a stage.
 // Add some helper methods to update all CommonModel for new x, u.
 template <typename _Scalar> class CommonModelDataContainerTpl {

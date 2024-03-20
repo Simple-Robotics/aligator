@@ -14,9 +14,7 @@
 
 namespace aligator {
 
-// @brief Store all CommonModel and associated CommonModelData associated with
-// a stage.
-// Add some helper methods to update all CommonModel for new x, u.
+// @brief Store all CommonModel associated with a stage.
 template <typename _Scalar> class CommonModelContainerTpl {
 public:
   using Scalar = _Scalar;
