@@ -58,4 +58,6 @@ public:
 
 } // namespace aligator
 
-// TODO template instantiating
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+#include "aligator/core/common-model-abstract.txx"
+#endif

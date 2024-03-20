@@ -68,4 +68,6 @@ private:
 
 } // namespace aligator
 
-// TODO template instantiation
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+#include "aligator/core/common-model-data-container.txx"
+#endif
