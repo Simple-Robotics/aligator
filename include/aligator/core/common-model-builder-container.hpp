@@ -22,12 +22,13 @@ public:
   using Model = CommonModelTpl<Scalar>;
   using Data = CommonModelDataTpl<Scalar>;
   using Builder = CommonModelBuilderTpl<Scalar>;
+  using BuilderPtr = shared_ptr<Builder>;
   using Container = CommonModelContainerTpl<Scalar>;
 
   using container_type =
       std::unordered_map<std::string, std::shared_ptr<Builder>>;
 
-  /// \return CommonModelBuilderTpl pointer associated with CommonType
+  /// \return CommonModelBuilderTpl pointer associated with CommonType.
   template <typename CommonType> typename CommonType::Builder *get() {
     auto key = boost::typeindex::ctti_type_index::type_id<CommonType>();
     // If insertion took place we create the new builder
@@ -36,6 +37,18 @@ public:
       it->second = std::make_shared<typename CommonType::Builder>();
     }
     return static_cast<typename CommonType::Builder *>(it->second.get());
+  }
+
+  /// \return CommonModelBuilderTpl shared pointer associated with
+  /// ctti_type_index::raw_name.
+  BuilderPtr getFromTypeIndexRawName(const std::string &key,
+                                     BuilderPtr builder) {
+    // If insertion took place we create the new builder
+    auto [it, inserted] = builders_.try_emplace(key, nullptr);
+    if (inserted) {
+      it->second = builder;
+    }
+    return it->second;
   }
 
   /// Create a CommonModelContainerTpl from all configured builder.

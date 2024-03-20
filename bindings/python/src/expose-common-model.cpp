@@ -6,6 +6,7 @@
 #include "aligator/core/common-model-builder-container.hpp"
 #include "aligator/core/common-model-data-container.hpp"
 #include "aligator/python/common-model.hpp"
+#include "aligator/python/common-model-builder-container.hpp"
 
 namespace aligator {
 namespace python {
@@ -46,14 +47,24 @@ void exposeCommonModelAbstract() {
 void exposeCommonModelBuilderContainer() {
   using context::CommonModelBuilderContainer;
 
-  /// TODO Find a way to manage Python CommonModelBuilder in get method
-  /// TODO Allow to call get method in Python
   bp::class_<CommonModelBuilderContainer>(
       "CommonModelBuilderContainer",
       "Store all CommonModelBuilder associated with a stage.")
       .def("createCommonModelContainer",
            &CommonModelBuilderContainer::createCommonModelContainer,
            bp::args("self"),
+           "Create a CommonModelContainerTpl from all configured builder.");
+
+  bp::class_<internal::PyCommonModelBuilderContainerWrapper>(
+      "CommonModelBuilderContainerWrapper",
+      "Store all CommonModelBuilder associated with a stage.", bp::no_init)
+      .def("createCommonModelContainer",
+           &internal::PyCommonModelBuilderContainerWrapper::
+               createCommonModelContainer,
+           bp::args("self"),
+           "Create a CommonModelContainerTpl from all configured builder.")
+      .def("get", &internal::PyCommonModelBuilderContainerWrapper::get,
+           bp::args("self", "builder"),
            "Create a CommonModelContainerTpl from all configured builder.");
 }
 
