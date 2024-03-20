@@ -102,6 +102,12 @@ CostStackTpl<Scalar>::createData() const {
   return std::make_shared<SumCostData>(*this);
 }
 
+template <typename Scalar>
+shared_ptr<CostDataAbstractTpl<Scalar>> CostStackTpl<Scalar>::createData(
+    const CommonModelDataContainer &container) const {
+  return std::make_shared<SumCostData>(*this, container);
+}
+
 /* SumCostData */
 
 template <typename Scalar>
@@ -109,6 +115,15 @@ CostStackDataTpl<Scalar>::CostStackDataTpl(const CostStackTpl<Scalar> &obj)
     : CostData(obj.ndx(), obj.nu) {
   for (std::size_t i = 0; i < obj.size(); i++) {
     sub_cost_data.push_back(obj.components_[i]->createData());
+  }
+}
+
+template <typename Scalar>
+CostStackDataTpl<Scalar>::CostStackDataTpl(
+    const CostStackTpl<Scalar> &obj, const CommonModelDataContainer &container)
+    : CostData(obj.ndx(), obj.nu) {
+  for (std::size_t i = 0; i < obj.size(); i++) {
+    sub_cost_data.push_back(obj.components_[i]->createData(container));
   }
 }
 

@@ -58,6 +58,9 @@ template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
                        CostData &data) const override;
 
   shared_ptr<CostData> createData() const override;
+
+  shared_ptr<CostData>
+  createData(const CommonModelDataContainer &container) const override;
 };
 
 namespace {
@@ -110,8 +113,13 @@ template <typename _Scalar>
 struct CostStackDataTpl : CostDataAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
   using CostData = CostDataAbstractTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
+
   std::vector<shared_ptr<CostData>> sub_cost_data;
+
   CostStackDataTpl(const CostStackTpl<Scalar> &obj);
+  CostStackDataTpl(const CostStackTpl<Scalar> &obj,
+                   const CommonModelDataContainer &container);
 };
 } // namespace aligator
 
