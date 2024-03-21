@@ -13,10 +13,17 @@ namespace internal {
 
 template <class T = dynamics::ContinuousDynamicsAbstractTpl<context::Scalar>>
 struct PyContinuousDynamics : T, bp::wrapper<T> {
-  using Data = dynamics::ContinuousDynamicsDataTpl<context::Scalar>;
-  ALIGATOR_DYNAMIC_TYPEDEFS(context::Scalar);
+  using Scalar = context::Scalar;
+  using Data = dynamics::ContinuousDynamicsDataTpl<Scalar>;
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   template <class... Args> PyContinuousDynamics(Args &&...args) : T(args...) {}
+
+  virtual void configure(CommonModelBuilderContainer &container) const {
+    ALIGATOR_PYTHON_OVERRIDE(void, T, configure, container);
+  }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &xdot, Data &data) const override {
@@ -35,6 +42,16 @@ struct PyContinuousDynamics : T, bp::wrapper<T> {
   }
 
   shared_ptr<Data> default_createData() const { return T::createData(); }
+
+  virtual shared_ptr<Data>
+  createData(const CommonModelDataContainer &container) const override {
+    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<Data>, T, createData, container);
+  }
+
+  shared_ptr<Data> default_createDataWithCommon(
+      const CommonModelDataContainer &container) const {
+    return T::createData(container);
+  }
 };
 
 template <class T = dynamics::ODEAbstractTpl<context::Scalar>>
@@ -43,8 +60,14 @@ struct PyODEAbstract : T, bp::wrapper<T> {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using ODEData = dynamics::ODEDataTpl<context::Scalar>;
   using Data = dynamics::ContinuousDynamicsDataTpl<context::Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   template <class... Args> PyODEAbstract(Args &&...args) : T(args...) {}
+
+  virtual void configure(CommonModelBuilderContainer &container) const {
+    ALIGATOR_PYTHON_OVERRIDE(void, T, configure, container);
+  }
 
   virtual void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                        ODEData &data) const override {
@@ -61,6 +84,16 @@ struct PyODEAbstract : T, bp::wrapper<T> {
   }
 
   shared_ptr<Data> default_createData() const { return T::createData(); }
+
+  virtual shared_ptr<Data>
+  createData(const CommonModelDataContainer &container) const override {
+    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<Data>, T, createData, container);
+  }
+
+  shared_ptr<Data> default_createDataWithCommon(
+      const CommonModelDataContainer &container) const {
+    return T::createData(container);
+  }
 };
 
 } // namespace internal

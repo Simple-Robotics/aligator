@@ -25,7 +25,6 @@ template <typename _Scalar> struct CommonModelTpl {
                                 const ConstVectorRef &u, Data &data) const = 0;
 
   /// @brief Compute the common model Hessians.
-  // TODO useful ?
   virtual void computeHessians(const ConstVectorRef &x, const ConstVectorRef &u,
                                Data &data) const = 0;
 

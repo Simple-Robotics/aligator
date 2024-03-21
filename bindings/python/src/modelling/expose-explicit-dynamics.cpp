@@ -50,8 +50,9 @@ void exposeExplicitBase() {
       .def("dForward", bp::pure_virtual(&ExplicitDynamics::dForward),
            bp::args("self", "x", "u", "data"),
            "Compute the derivatives of forward discrete dynamics.")
-      .def(CreateDataPolymorphicPythonVisitor<ExplicitDynamics,
-                                              PyExplicitDynamics<>>());
+      .def(
+          CreateDataWithCommonPolymorphicPythonVisitor<ExplicitDynamics,
+                                                       PyExplicitDynamics<>>());
 
   bp::register_ptr_to_python<shared_ptr<ExplicitDynamicsData>>();
 

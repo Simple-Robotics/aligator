@@ -4,6 +4,7 @@
 
 #include <eigenpy/fwd.hpp>
 #include <fmt/format.h>
+#include "aligator/python/fwd.hpp"
 #include "aligator/python/utils/deprecation.hpp"
 
 namespace aligator {
@@ -27,6 +28,20 @@ struct CreateDataPythonVisitor : bp::def_visitor<CreateDataPythonVisitor<T>> {
   }
 };
 
+template <typename T>
+struct CreateDataWithCommonPythonVisitor
+    : bp::def_visitor<CreateDataPythonVisitor<T>> {
+  template <typename Pyclass> void visit(Pyclass &obj) const {
+    using ReturnPtrType = decltype(std::declval<T>().createData());
+    ReturnPtrType (T::*createData)() const = &T::createData;
+    ReturnPtrType (T::*createDataWithCommon)(
+        const context::CommonModelDataContainer &) const = &T::createData;
+    obj.def("createData", createData, bp::args("self"), "Create a data object.")
+        .def("createDataWithCommon", createDataWithCommon,
+             bp::args("self", "container"), "Create a data object.");
+  }
+};
+
 /// Visitor for exposing a polymorphic factory for data classes that can be
 /// overridden from Python.
 /// @sa CreateDataPythonVisitor
@@ -34,13 +49,19 @@ struct CreateDataPythonVisitor : bp::def_visitor<CreateDataPythonVisitor<T>> {
 /// @tparam T The wrapped class
 /// @tparam TWrapper The wrapper class
 template <typename T, typename TWrapper>
-struct CreateDataPolymorphicPythonVisitor
-    : bp::def_visitor<CreateDataPolymorphicPythonVisitor<T, TWrapper>> {
+struct CreateDataWithCommonPolymorphicPythonVisitor
+    : bp::def_visitor<
+          CreateDataWithCommonPolymorphicPythonVisitor<T, TWrapper>> {
   template <typename PyClass> void visit(PyClass &obj) const {
     using ReturnPtrType = decltype(std::declval<T>().createData());
     ReturnPtrType (T::*createData)() const = &T::createData;
+    ReturnPtrType (T::*createDataWithCommon)(
+        const context::CommonModelDataContainer &) const = &T::createData;
     obj.def("createData", createData, &TWrapper::default_createData,
-            bp::args("self"), "Create a data object.");
+            bp::args("self"), "Create a data object.")
+        .def("createDataWithCommon", createDataWithCommon,
+             &TWrapper::default_createDataWithCommon,
+             bp::args("self", "container"), "Create a data object.");
   }
 };
 
@@ -75,8 +96,8 @@ struct PrintAddressVisitor : bp::def_visitor<PrintAddressVisitor<T>> {
 template <typename SolverType>
 struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
   using CallbackPtr = typename SolverType::CallbackPtr;
-  static auto getCallback(const SolverType &obj,
-                          const std::string &name) -> CallbackPtr {
+  static auto getCallback(const SolverType &obj, const std::string &name)
+      -> CallbackPtr {
     const auto &cbs = obj.getCallbacks();
     auto cb = cbs.find(name);
     if (cb == cbs.end()) {

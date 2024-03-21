@@ -55,6 +55,7 @@ struct ContinuousCentroidalFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
                 BaseData &data) const;
 
   shared_ptr<ContDataAbstract> createData() const;
+  using Base::createData;
 };
 
 template <typename Scalar>

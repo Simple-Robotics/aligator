@@ -44,6 +44,7 @@ struct ODEAbstractTpl : ContinuousDynamicsAbstractTpl<_Scalar> {
                         ContDataAbstract &data) const override;
 
   virtual shared_ptr<ContDataAbstract> createData() const override;
+  using Base::createData;
 };
 
 template <typename _Scalar>

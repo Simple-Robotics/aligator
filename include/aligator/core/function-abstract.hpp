@@ -5,6 +5,8 @@
 
 #include "aligator/fwd.hpp"
 #include "aligator/core/clone.hpp"
+#include "aligator/core/common-model-builder-container.hpp"
+#include "aligator/core/common-model-data-container.hpp"
 
 #include <fmt/format.h>
 #include <ostream>

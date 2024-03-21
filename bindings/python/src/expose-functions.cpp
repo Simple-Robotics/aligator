@@ -45,6 +45,8 @@ void exposeFunctionBase() {
           bp::args("self", "ndx1", "nu", "ndx2", "nr")))
       .def(bp::init<const int, const int, const int>(
           bp::args("self", "ndx", "nu", "nr")))
+      .def("configure", &StageFunction::configure,
+           bp::args("self", "container"), "Create and configure CommonModel.")
       .def("evaluate", bp::pure_virtual(&StageFunction::evaluate),
            bp::args("self", "x", "u", "y", "data"))
       .def("computeJacobians",
@@ -58,8 +60,8 @@ void exposeFunctionBase() {
       .def_readonly("nu", &StageFunction::nu, "Control dimension.")
       .def_readonly("nr", &StageFunction::nr, "Function codimension.")
       .def(SlicingVisitor<StageFunction>())
-      .def(CreateDataPolymorphicPythonVisitor<StageFunction,
-                                              PyStageFunction<>>());
+      .def(CreateDataWithCommonPolymorphicPythonVisitor<StageFunction,
+                                                        PyStageFunction<>>());
 
   bp::register_ptr_to_python<shared_ptr<StageFunctionData>>();
 

@@ -46,6 +46,7 @@ struct IntegratorMidpointTpl : IntegratorAbstractTpl<_Scalar> {
                         DynamicsDataTpl<Scalar> &data) const;
 
   shared_ptr<DynamicsDataTpl<Scalar>> createData() const;
+  using Base::createData;
 };
 
 template <typename _Scalar>

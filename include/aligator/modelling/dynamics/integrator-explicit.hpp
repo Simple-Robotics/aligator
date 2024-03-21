@@ -44,6 +44,7 @@ struct ExplicitIntegratorAbstractTpl : ExplicitDynamicsModelTpl<_Scalar> {
   }
 
   shared_ptr<DynamicsDataTpl<Scalar>> createData() const;
+  using Base::createData;
 };
 
 template <typename _Scalar>

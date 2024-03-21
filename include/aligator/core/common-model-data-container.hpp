@@ -22,6 +22,7 @@ public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Data = CommonModelDataTpl<Scalar>;
+  using DataPtr = shared_ptr<Data>;
 
   struct value_type {
     value_type(std::string ti, std::shared_ptr<Data> m)
@@ -50,18 +51,33 @@ public:
   /// @throw std::runtime_error When the CommonType is not contained.
   template <typename CommonType> typename CommonType::Data *getData() const {
     std::string type_index =
-        boost::typeindex::ctti_type_index::type_id<CommonType>().raw_name();
+        boost::typeindex::ctti_type_index::type_id<CommonType>().pretty_name();
     auto it = std::find_if(datas_.begin(), datas_.end(),
                            [&type_index](const value_type &value) {
                              return value.type_index == type_index;
                            });
 
     if (it == datas_.end()) {
-      ALIGATOR_RUNTIME_ERROR(
-          fmt::format("{} CommonModel is not initialized or doesn't exists"));
+      ALIGATOR_RUNTIME_ERROR(fmt::format(
+          "{} CommonModel is not initialized or doesn't exists", type_index));
     }
 
     return static_cast<typename CommonType::Data *>(it->data.get());
+  }
+
+  /// @return CommonModelData pointer associated with CommonType.
+  /// @throw std::runtime_error When the CommonType is not contained.
+  DataPtr getDataFromTypeIndexName(const std::string &key) const {
+    auto it = std::find_if(
+        datas_.begin(), datas_.end(),
+        [&key](const value_type &value) { return value.type_index == key; });
+
+    if (it == datas_.end()) {
+      ALIGATOR_RUNTIME_ERROR(fmt::format(
+          "{} CommonModel is not initialized or doesn't exists", key));
+    }
+
+    return it->data;
   }
 
 private:

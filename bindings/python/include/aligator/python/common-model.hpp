@@ -36,6 +36,8 @@ struct PyCommonModel : T, bp::wrapper<T> {
   shared_ptr<Data> createData() const override {
     ALIGATOR_PYTHON_OVERRIDE(shared_ptr<Data>, T, createData, );
   }
+
+  shared_ptr<Data> default_createData() const { return T::createData(); }
 };
 
 template <typename T = CommonModelDataTpl<context::Scalar>>

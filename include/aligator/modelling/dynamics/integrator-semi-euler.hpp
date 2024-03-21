@@ -38,6 +38,8 @@ struct IntegratorSemiImplEulerTpl : ExplicitIntegratorAbstractTpl<_Scalar> {
   shared_ptr<StageFunctionDataTpl<Scalar>> createData() const {
     return std::make_shared<Data>(this);
   }
+
+  using Base::createData;
 };
 
 template <typename Scalar>

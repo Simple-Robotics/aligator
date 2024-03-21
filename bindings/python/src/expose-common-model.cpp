@@ -6,7 +6,6 @@
 #include "aligator/core/common-model-builder-container.hpp"
 #include "aligator/core/common-model-data-container.hpp"
 #include "aligator/python/common-model.hpp"
-#include "aligator/python/common-model-builder-container.hpp"
 
 namespace aligator {
 namespace python {
@@ -31,7 +30,9 @@ void exposeCommonModelAbstract() {
       .def("computeHessians", bp::pure_virtual(&CommonModel::computeHessians),
            bp::args("self", "x", "u", "data"),
            "Compute the cost function hessians.")
-      .def(CreateDataPythonVisitor<CommonModel>());
+      .def("createData", &CommonModel::createData,
+           &internal::PyCommonModel<>::default_createData, bp::args("self"),
+           "Create a data object.");
 
   bp::register_ptr_to_python<shared_ptr<CommonModelData>>();
   bp::class_<internal::PyCommonModelData<>, boost::noncopyable>(
@@ -53,25 +54,16 @@ void exposeCommonModelBuilderContainer() {
       .def("createCommonModelContainer",
            &CommonModelBuilderContainer::createCommonModelContainer,
            bp::args("self"),
-           "Create a CommonModelContainerTpl from all configured builder.");
-
-  bp::class_<internal::PyCommonModelBuilderContainerWrapper>(
-      "CommonModelBuilderContainerWrapper",
-      "Store all CommonModelBuilder associated with a stage.", bp::no_init)
-      .def("createCommonModelContainer",
-           &internal::PyCommonModelBuilderContainerWrapper::
-               createCommonModelContainer,
-           bp::args("self"),
            "Create a CommonModelContainerTpl from all configured builder.")
-      .def("get", &internal::PyCommonModelBuilderContainerWrapper::get,
-           bp::args("self", "builder"),
-           "Create a CommonModelContainerTpl from all configured builder.");
+      .def("get", &CommonModelBuilderContainer::getFromTypeIndexName,
+           bp::args("self", "key", "builder"),
+           "Get a CommonModelBuilder from a key or the provided buider if the "
+           "key doesn't exists.");
 }
 
 void exposeCommonModelDataContainer() {
   using context::CommonModelDataContainer;
 
-  /// TODO Allow to call getData method in Python
   bp::class_<CommonModelDataContainer>(
       "CommonModelDataContainer",
       "Store all CommonModelData associated with a stage.")
@@ -79,7 +71,9 @@ void exposeCommonModelDataContainer() {
            "Number of CommonModel inside the container.")
       .def("__getitem__", &CommonModelDataContainer::at,
            bp::return_internal_reference<>(), bp::args("self", "index"),
-           "Get item index.");
+           "Get item index.")
+      .def("get", &CommonModelDataContainer::getDataFromTypeIndexName,
+           bp::args("self", "key"), "Get a CommonModelData from a key.");
 }
 
 void exposeCommonModelContainer() {
@@ -92,7 +86,8 @@ void exposeCommonModelContainer() {
       .def("__getitem__", &CommonModelContainer::at,
            bp::return_internal_reference<>(), bp::args("self", "index"),
            "Get item index.")
-      .def(CreateDataPythonVisitor<CommonModelContainer>());
+      .def("createData", &CommonModelContainer::createData, bp::args("self"),
+           "Create a data object.");
 }
 
 } // namespace

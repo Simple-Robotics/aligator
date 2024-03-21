@@ -37,6 +37,7 @@ struct IntegratorRK2Tpl : ExplicitIntegratorAbstractTpl<_Scalar> {
   shared_ptr<StageFunctionDataTpl<Scalar>> createData() const {
     return std::make_shared<Data>(this);
   }
+  using Base::createData;
 
 protected:
   Scalar dt_2_ = 0.5 * timestep_;
