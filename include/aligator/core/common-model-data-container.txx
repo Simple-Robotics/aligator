@@ -5,6 +5,6 @@
 
 namespace aligator {
 
-extern template class CommonModelDataContainerTpl<context::Scalar> ;
+extern template class CommonModelDataContainerTpl<context::Scalar>;
 
 } // namespace aligator

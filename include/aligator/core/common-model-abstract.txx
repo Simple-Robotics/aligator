@@ -5,7 +5,7 @@
 
 namespace aligator {
 
-extern template struct CommonModelTpl<context::Scalar> ;
+extern template struct CommonModelTpl<context::Scalar>;
 extern template struct CommonModelDataTpl<context::Scalar>;
 extern template class CommonModelBuilderTpl<context::Scalar>;
 
