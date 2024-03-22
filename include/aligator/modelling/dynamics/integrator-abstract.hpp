@@ -35,6 +35,7 @@ public:
       const shared_ptr<ContinuousDynamics> &cont_dynamics);
   virtual ~IntegratorAbstractTpl() = default;
   shared_ptr<BaseData> createData() const;
+  using Base::createData;
 };
 
 /// @brief  Data class for numerical integrators (IntegratorAbstractTpl).
