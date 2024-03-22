@@ -26,6 +26,15 @@ struct PyExplicitDynamics : ExplicitBase, bp::wrapper<ExplicitBase> {
   template <typename... Args>
   PyExplicitDynamics(Args &&...args) : ExplicitBase(args...) {}
 
+  virtual void
+  configure(CommonModelBuilderContainer &container) const override {
+    ALIGATOR_PYTHON_OVERRIDE(void, ExplicitBase, configure, container);
+  }
+
+  void default_configure(CommonModelBuilderContainer &container) const {
+    ExplicitBase::configure(container);
+  }
+
   virtual void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                        Data &data) const {
     ALIGATOR_PYTHON_OVERRIDE_PURE(void, "forward", x, u, boost::ref(data));

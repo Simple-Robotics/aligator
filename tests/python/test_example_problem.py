@@ -37,6 +37,9 @@ class TwistModelExplicit(aligator.dynamics.ExplicitDynamicsModel):
         self.dt = dt
         super().__init__(space, nu)
 
+    def configure(self, container):
+        pass
+
     def forward(self, x, u, data: aligator.dynamics.ExplicitDynamicsData):
         assert data.good
         space.integrate(x, self.dt * self.B @ u, data.xnext)
@@ -52,6 +55,9 @@ class TwistModelExplicit(aligator.dynamics.ExplicitDynamicsModel):
         Ju[:, :] = Jxnext_dv @ dv_du
 
     def createData(self):
+        return TwistData()
+
+    def createDataWithCommon(self, container):
         return TwistData()
 
 

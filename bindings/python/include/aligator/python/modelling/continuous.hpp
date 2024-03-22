@@ -71,8 +71,13 @@ struct PyODEAbstract : T, bp::wrapper<T> {
 
   template <class... Args> PyODEAbstract(Args &&...args) : T(args...) {}
 
-  virtual void configure(CommonModelBuilderContainer &container) const {
+  virtual void
+  configure(CommonModelBuilderContainer &container) const override {
     ALIGATOR_PYTHON_OVERRIDE(void, T, configure, container);
+  }
+
+  void default_configure(CommonModelBuilderContainer &container) const {
+    return T::configure(container);
   }
 
   virtual void forward(const ConstVectorRef &x, const ConstVectorRef &u,
