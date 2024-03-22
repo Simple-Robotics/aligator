@@ -60,6 +60,8 @@ void exposeProblem() {
       .def("removeTerminalConstraint",
            &TrajOptProblem::removeTerminalConstraints, bp::args("self"),
            "Remove all terminal constraints.")
+      .def("configure", &TrajOptProblem::configure, bp::args("self"),
+           "Configure each stages")
       .def("evaluate", &TrajOptProblem::evaluate,
            bp::args("self", "xs", "us", "prob_data"),
            "Evaluate the problem costs, dynamics, and constraints.")

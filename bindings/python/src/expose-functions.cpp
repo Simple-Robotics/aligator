@@ -46,7 +46,8 @@ void exposeFunctionBase() {
       .def(bp::init<const int, const int, const int>(
           bp::args("self", "ndx", "nu", "nr")))
       .def("configure", &StageFunction::configure,
-           bp::args("self", "container"), "Create and configure CommonModel.")
+           &PyStageFunction<>::default_configure, bp::args("self", "container"),
+           "Create and configure CommonModel.")
       .def("evaluate", bp::pure_virtual(&StageFunction::evaluate),
            bp::args("self", "x", "u", "y", "data"))
       .def("computeJacobians",

@@ -21,8 +21,13 @@ struct PyContinuousDynamics : T, bp::wrapper<T> {
 
   template <class... Args> PyContinuousDynamics(Args &&...args) : T(args...) {}
 
-  virtual void configure(CommonModelBuilderContainer &container) const {
+  virtual void
+  configure(CommonModelBuilderContainer &container) const override {
     ALIGATOR_PYTHON_OVERRIDE(void, T, configure, container);
+  }
+
+  void default_configure(CommonModelBuilderContainer &container) const {
+    T::configure(container);
   }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,

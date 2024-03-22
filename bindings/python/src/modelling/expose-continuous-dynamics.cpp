@@ -50,6 +50,9 @@ void exposeODEs() {
                     "State space dimension.")
       .add_property("nu", &ContinuousDynamicsBase::nu,
                     "Control space dimension.")
+      .def("configure", &ContinuousDynamicsBase::configure,
+           &PyContinuousDynamics<>::default_configure,
+           bp::args("self", "container"), "Create and configure CommonModel.")
       .def("evaluate", bp::pure_virtual(&ContinuousDynamicsBase::evaluate),
            bp::args("self", "x", "u", "xdot", "data"),
            "Evaluate the DAE functions.")

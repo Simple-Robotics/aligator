@@ -59,6 +59,8 @@ void exposeStage() {
                     bp::make_function(&StageModel::dyn_model,
                                       bp::return_internal_reference<>()),
                     "Stage dynamics.")
+      .def("configure", &StageModel::configure, bp::args("self"),
+           "Configure cost, constraints and dynamics")
       .def("evaluate", &StageModel::evaluate,
            bp::args("self", "x", "u", "y", "data"),
            "Evaluate the stage cost, dynamics, constraints.")

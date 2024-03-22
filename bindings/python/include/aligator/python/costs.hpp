@@ -22,8 +22,13 @@ struct PyCostFunction : T, bp::wrapper<T> {
   template <typename... Args>
   PyCostFunction(Args &&...args) : T(std::forward<Args>(args)...) {}
 
-  virtual void configure(CommonModelBuilderContainer &container) const {
+  virtual void
+  configure(CommonModelBuilderContainer &container) const override {
     ALIGATOR_PYTHON_OVERRIDE(void, T, configure, container);
+  }
+
+  void default_configure(CommonModelBuilderContainer &container) const {
+    T::configure(container);
   }
 
   virtual void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,

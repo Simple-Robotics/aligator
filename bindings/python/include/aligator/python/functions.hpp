@@ -28,8 +28,13 @@ struct PyStageFunction : FunctionBase, bp::wrapper<FunctionBase> {
   template <typename... Args>
   PyStageFunction(Args &&...args) : FunctionBase(std::forward<Args>(args)...) {}
 
-  virtual void configure(CommonModelBuilderContainer &container) const {
+  virtual void
+  configure(CommonModelBuilderContainer &container) const override {
     ALIGATOR_PYTHON_OVERRIDE(void, FunctionBase, configure, container);
+  }
+
+  void default_configure(CommonModelBuilderContainer &container) const {
+    FunctionBase::configure(container);
   }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,

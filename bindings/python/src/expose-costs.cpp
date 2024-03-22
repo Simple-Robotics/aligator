@@ -104,7 +104,8 @@ void exposeCostBase() {
       "CostAbstract", "Base class for cost functions.", bp::no_init)
       .def(bp::init<shared_ptr<Manifold>, const int>(
           bp::args("self", "space", "nu")))
-      .def("configure", &CostBase::configure, bp::args("self", "container"),
+      .def("configure", &CostBase::configure,
+           &PyCostFunction<>::default_configure, bp::args("self", "container"),
            "Create and configure CommonModel.")
       .def("evaluate", bp::pure_virtual(&CostBase::evaluate),
            bp::args("self", "x", "u", "data"), "Evaluate the cost function.")
