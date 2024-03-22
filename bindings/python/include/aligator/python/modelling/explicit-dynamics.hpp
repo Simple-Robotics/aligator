@@ -26,10 +26,6 @@ struct PyExplicitDynamics : ExplicitBase, bp::wrapper<ExplicitBase> {
   template <typename... Args>
   PyExplicitDynamics(Args &&...args) : ExplicitBase(args...) {}
 
-  virtual void configure(CommonModelBuilderContainer &container) const {
-    ALIGATOR_PYTHON_OVERRIDE(void, ExplicitBase, configure, container);
-  }
-
   virtual void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                        Data &data) const {
     ALIGATOR_PYTHON_OVERRIDE_PURE(void, "forward", x, u, boost::ref(data));
@@ -51,8 +47,9 @@ struct PyExplicitDynamics : ExplicitBase, bp::wrapper<ExplicitBase> {
 
   virtual shared_ptr<StageFunctionData>
   createData(const CommonModelDataContainer &container) const override {
-    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<StageFunctionData>, ExplicitBase,
-                             createData, container);
+    ALIGATOR_PYTHON_OVERRIDE_DIFF_NAME(shared_ptr<StageFunctionData>,
+                                       ExplicitBase, createData,
+                                       createDataWithCommon, container);
   }
 
   shared_ptr<StageFunctionData> default_createDataWithCommon(

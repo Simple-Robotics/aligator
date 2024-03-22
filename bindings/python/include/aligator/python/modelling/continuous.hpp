@@ -50,7 +50,8 @@ struct PyContinuousDynamics : T, bp::wrapper<T> {
 
   virtual shared_ptr<Data>
   createData(const CommonModelDataContainer &container) const override {
-    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<Data>, T, createData, container);
+    ALIGATOR_PYTHON_OVERRIDE_DIFF_NAME(shared_ptr<Data>, T, createData,
+                                       createDataWithCommon, container);
   }
 
   shared_ptr<Data> default_createDataWithCommon(

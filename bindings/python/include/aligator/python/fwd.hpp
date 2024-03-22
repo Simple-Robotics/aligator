@@ -13,6 +13,8 @@ namespace python {
 namespace bp = boost::python;
 using eigenpy::StdVectorPythonVisitor;
 
+/// Expose common model
+void exposeCommonModel();
 /// Expose stagewise function classes
 void exposeFunctions();
 /// Expose cost functions

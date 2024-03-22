@@ -85,6 +85,8 @@ void exposeStage() {
   bp::class_<StageData>("StageData", "Data struct for StageModel objects.",
                         bp::init<const StageModel &>())
       .def_readonly("cost_data", &StageData::cost_data)
+      .def_readonly("common_model_data_container",
+                    &StageData::common_model_data_container)
       .def_readwrite("constraint_data", &StageData::constraint_data)
       .def(ClonePythonVisitor<StageData>());
 }

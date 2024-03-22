@@ -84,7 +84,13 @@ void exposeProblem() {
       .def_readwrite("term_constraint", &TrajOptData::term_cstr_data,
                      "Terminal constraint data.")
       .def_readonly("stage_data", &TrajOptData::stage_data,
-                    "Data for each stage.");
+                    "Data for each stage.")
+      .def_readonly("init_condition_common_model_data_container",
+                    &TrajOptData::init_condition_common_model_data_container,
+                    "Common data for init condition.")
+      .def_readonly("term_common_model_data_container",
+                    &TrajOptData::term_common_model_data_container,
+                    "Common data for terminal costs and constaints.");
 }
 
 } // namespace python
