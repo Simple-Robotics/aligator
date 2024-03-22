@@ -2,6 +2,8 @@
 
 #include "aligator/utils/forward-dyn.hpp"
 #include "aligator/utils/exceptions.hpp"
+#include "aligator/core/common-model-data-container.hpp"
+#include "aligator/core/common-model-builder-container.hpp"
 
 namespace aligator {
 
@@ -13,6 +15,7 @@ rollout(const std::vector<shared_ptr<DynamicsModelTpl<Scalar>>> &dyn_models,
         const typename math_types<Scalar>::VectorOfVectors &us,
         typename math_types<Scalar>::VectorOfVectors &xout) {
   using Data = DynamicsDataTpl<Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
   const std::size_t N = us.size();
   if (dyn_models.size() != N) {
     ALIGATOR_RUNTIME_ERROR(
@@ -22,7 +25,15 @@ rollout(const std::vector<shared_ptr<DynamicsModelTpl<Scalar>>> &dyn_models,
   xout[0] = x0;
 
   for (std::size_t i = 0; i < N; i++) {
-    shared_ptr<Data> data = dyn_models[i]->createData();
+    CommonModelBuilderContainer common_builders;
+    dyn_models[i]->configure(common_builders);
+    auto common_models = common_builders.createCommonModelContainer();
+    auto common_datas = common_models.createData();
+    shared_ptr<Data> data = dyn_models[i]->createData(common_datas);
+
+    for (std::size_t j = 0; j < common_models.size(); j++) {
+      common_models[j].model->evaluate(xout[i], us[i], *common_datas[j].data);
+    }
     const ManifoldAbstractTpl<Scalar> &space = dyn_models[i]->space();
     xout.push_back(space.neutral());
     forwardDynamics<Scalar>::run(*dyn_models[i], xout[i], us[i], *data,
@@ -38,13 +49,22 @@ rollout(const DynamicsModelTpl<Scalar> &dyn_model,
         const typename math_types<Scalar>::VectorXs &x0,
         const typename math_types<Scalar>::VectorOfVectors &us) {
   using VectorXs = typename math_types<Scalar>::VectorXs;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
 
   const std::size_t N = us.size();
   std::vector<VectorXs> xs{x0};
   xs.reserve(N + 1);
-  shared_ptr<DynamicsDataTpl<Scalar>> data = dyn_model.createData();
+
+  CommonModelBuilderContainer common_builders;
+  dyn_model.configure(common_builders);
+  auto common_models = common_builders.createCommonModelContainer();
+  auto common_datas = common_models.createData();
+  shared_ptr<DynamicsDataTpl<Scalar>> data = dyn_model.createData(common_datas);
 
   for (std::size_t i = 0; i < N; i++) {
+    for (std::size_t j = 0; j < common_models.size(); j++) {
+      common_models[j].model->evaluate(xs[i], us[i], *common_datas[j].data);
+    }
     const ManifoldAbstractTpl<Scalar> &space = dyn_model.space();
     xs.push_back(space.neutral());
     forwardDynamics<Scalar>::run(dyn_model, xs[i], us[i], *data, xs[i + 1]);
@@ -61,6 +81,7 @@ void rollout(
     const typename math_types<Scalar>::VectorOfVectors &us,
     typename math_types<Scalar>::VectorOfVectors &xout) {
   using DataType = ExplicitDynamicsDataTpl<Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
   const std::size_t N = us.size();
   xout.resize(N + 1);
   xout[0] = x0;
@@ -72,8 +93,16 @@ void rollout(
   }
 
   for (std::size_t i = 0; i < N; i++) {
-    shared_ptr<DataType> data =
-        std::static_pointer_cast<DataType>(dyn_models[i]->createData());
+    CommonModelBuilderContainer common_builders;
+    dyn_models[i]->configure(common_builders);
+    auto common_models = common_builders.createCommonModelContainer();
+    auto common_datas = common_models.createData();
+    shared_ptr<DataType> data = std::static_pointer_cast<DataType>(
+        dyn_models[i]->createData(common_datas));
+
+    for (std::size_t j = 0; j < common_models.size(); j++) {
+      common_models[j].model->evaluate(xout[i], us[i], *common_datas[j].data);
+    }
     dyn_models[i]->forward(xout[i], us[i], *data);
     xout[i + 1] = data->xnext_;
   }
@@ -86,13 +115,22 @@ void rollout(const ExplicitDynamicsModelTpl<Scalar> &dyn_model,
              const typename math_types<Scalar>::VectorOfVectors &us,
              typename math_types<Scalar>::VectorOfVectors &xout) {
   using DataType = ExplicitDynamicsDataTpl<Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
   const std::size_t N = us.size();
   xout.resize(N + 1);
   xout[0] = x0;
 
+  CommonModelBuilderContainer common_builders;
+  dyn_model.configure(common_builders);
+  auto common_models = common_builders.createCommonModelContainer();
+  auto common_datas = common_models.createData();
   shared_ptr<DataType> data =
-      std::static_pointer_cast<DataType>(dyn_model.createData());
+      std::static_pointer_cast<DataType>(dyn_model.createData(common_datas));
+
   for (std::size_t i = 0; i < N; i++) {
+    for (std::size_t j = 0; j < common_models.size(); j++) {
+      common_models[j].model->evaluate(xout[i], us[i], *common_datas[j].data);
+    }
     dyn_model.forward(xout[i], us[i], *data);
     xout[i + 1] = data->xnext_;
   }
