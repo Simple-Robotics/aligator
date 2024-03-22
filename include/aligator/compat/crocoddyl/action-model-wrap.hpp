@@ -42,13 +42,15 @@ struct ActionModelWrapperTpl : StageModelTpl<Scalar> {
     ALIGATOR_RUNTIME_ERROR("There is no dyn_model() for this class.");
   }
 
+  void configure() const override;
+
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                const ConstVectorRef &y, Data &data) const;
+                const ConstVectorRef &y, Data &data) const override;
 
   void computeDerivatives(const ConstVectorRef &x, const ConstVectorRef &u,
-                          const ConstVectorRef &y, Data &data) const;
+                          const ConstVectorRef &y, Data &data) const override;
 
-  shared_ptr<Data> createData() const;
+  shared_ptr<Data> createData() const override;
 };
 
 /**
