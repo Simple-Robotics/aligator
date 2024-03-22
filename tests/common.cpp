@@ -81,26 +81,6 @@ struct MockCommonModel : CommonModel {
   };
 };
 
-/// This structure allow to test Container with two elements
-struct MockCommonModel2 : MockCommonModel {
-
-  struct Builder : CommonModelBuilder {
-    std::shared_ptr<CommonModel> build() const override {
-      auto model = std::make_shared<MockCommonModel2>();
-      model->feature_a = with_feature_a;
-      return model;
-    }
-
-    Builder &withFeatureA(bool active) {
-      with_feature_a = active;
-      return *this;
-    }
-
-  private:
-    bool with_feature_a = false;
-  };
-};
-
 BOOST_AUTO_TEST_CASE(builder_and_container_one_common) {
   CommonModelBuilderContainer builder_container;
   /// Create and configure bulider
@@ -165,7 +145,10 @@ BOOST_AUTO_TEST_CASE(builder_and_container_two_common) {
   /// Create and configure bulider
   auto *model_builder = builder_container.get<MockCommonModel>();
   model_builder->withFeatureA(true);
-  auto *model2_builder = builder_container.get<MockCommonModel2>();
+  auto model2_builder = std::dynamic_pointer_cast<MockCommonModel::Builder>(
+      builder_container.getFromTypeIndexName(
+          "MockCommonModel2", std::make_shared<MockCommonModel::Builder>()));
+  BOOST_REQUIRE(model2_builder);
   model2_builder->withFeatureA(false);
 
   /// Generate all model and datas
@@ -177,7 +160,9 @@ BOOST_AUTO_TEST_CASE(builder_and_container_two_common) {
 
   /// Test get_common_data function
   auto *data = data_container.getData<MockCommonModel>();
-  auto *data2 = data_container.getData<MockCommonModel2>();
+  auto data2 = std::dynamic_pointer_cast<MockCommonModel::Data>(
+      data_container.getDataFromTypeIndexName("MockCommonModel2"));
+  BOOST_REQUIRE(data2);
 
   /// Test the evaluation
   Eigen::VectorXd x = Eigen::VectorXd::Zero(1);
