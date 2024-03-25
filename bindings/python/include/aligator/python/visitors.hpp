@@ -71,8 +71,8 @@ struct PrintAddressVisitor : bp::def_visitor<PrintAddressVisitor<T>> {
 template <typename SolverType>
 struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
   using CallbackPtr = typename SolverType::CallbackPtr;
-  static auto getCallback(const SolverType &obj, const std::string &name)
-      -> CallbackPtr {
+  static auto getCallback(const SolverType &obj,
+                          const std::string &name) -> CallbackPtr {
     const auto &cbs = obj.getCallbacks();
     auto cb = cbs.find(name);
     if (cb == cbs.end()) {
