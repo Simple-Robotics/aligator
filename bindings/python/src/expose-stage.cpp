@@ -74,7 +74,8 @@ void exposeStage() {
                     "Number of primal variables.")
       .add_property("num_dual", &StageModel::numDual,
                     "Number of dual variables.")
-      .def(CreateDataPythonVisitor<StageModel>())
+      .def("createData", &StageModel::createData, bp::args("self"),
+           "Create a data object.")
       .def(ClonePythonVisitor<StageModel>())
       .def(PrintableVisitor<StageModel>());
 

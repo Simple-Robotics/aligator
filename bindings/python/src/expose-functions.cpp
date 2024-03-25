@@ -59,8 +59,8 @@ void exposeFunctionBase() {
       .def_readonly("nr", &StageFunction::nr, "Function codimension.")
       .def(SlicingVisitor<StageFunction>())
       .def(ConfigurePythonVisitor<StageFunction, PyStageFunction<>>())
-      .def(CreateDataWithCommonPolymorphicPythonVisitor<StageFunction,
-                                                        PyStageFunction<>>());
+      .def(CreateDataPolymorphicPythonVisitor<StageFunction,
+                                              PyStageFunction<>>());
 
   bp::register_ptr_to_python<shared_ptr<StageFunctionData>>();
 

@@ -57,23 +57,14 @@ struct PyStageFunction : FunctionBase, bp::wrapper<FunctionBase> {
                              x, u, y, lbda, boost::ref(data));
   }
 
-  shared_ptr<Data> createData() const override {
-    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<Data>, FunctionBase, createData, );
-  }
-
-  shared_ptr<Data> default_createData() const {
-    return FunctionBase::createData();
-  }
-
   virtual shared_ptr<Data>
   createData(const CommonModelDataContainer &container) const override {
-    ALIGATOR_PYTHON_OVERRIDE_DIFF_NAME(shared_ptr<Data>, FunctionBase,
-                                       createData, createDataWithCommon,
-                                       container);
+    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<Data>, FunctionBase, createData,
+                             container);
   }
 
-  shared_ptr<Data> default_createDataWithCommon(
-      const CommonModelDataContainer &container) const {
+  shared_ptr<Data>
+  default_createData(const CommonModelDataContainer &container) const {
     return FunctionBase::createData(container);
   }
 };

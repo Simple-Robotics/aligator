@@ -18,8 +18,8 @@ def test_cost_stack():
     assert isinstance(rcost.space, manifolds.VectorSpace)
 
     cost_stack.addCost(rcost, 1.0)
-    data1 = rcost.createData()
-    data2 = cost_stack.createData()
+    data1 = rcost.createData(aligator.CommonModelDataContainer())
+    data2 = cost_stack.createData(aligator.CommonModelDataContainer())
 
     for _ in range(10):
         x0 = np.random.randn(nx)
@@ -51,7 +51,7 @@ def test_composite_cost():
     target = space.rand()
     fun = aligator.StateErrorResidual(space, nu, target)
     # for debug
-    fd = fun.createData()
+    fd = fun.createData(aligator.CommonModelDataContainer())
     fun.evaluate(x0, u0, x0, fd)
     fun.computeJacobians(x0, u0, x0, fd)
 
@@ -64,7 +64,7 @@ def test_composite_cost():
     cost = aligator.QuadraticResidualCost(space, fun, weights)
     assert np.array_equal(weights, cost.weights)
 
-    data = cost.createData()
+    data = cost.createData(aligator.CommonModelDataContainer())
     print("Composite data:", data)
     assert isinstance(data, aligator.CompositeCostData)
 
@@ -86,7 +86,7 @@ def test_composite_cost():
 
     weights = np.ones(fun.nr)
     log_cost = aligator.LogResidualCost(space, fun, weights)
-    data = log_cost.createData()
+    data = log_cost.createData(aligator.CommonModelDataContainer())
     print(data)
     assert isinstance(data, aligator.CompositeCostData)
 
@@ -109,7 +109,7 @@ def test_quad_state():
     weights = np.eye(ndx)
     cost = aligator.QuadraticStateCost(space, nu, x0, weights)
 
-    data = cost.createData()
+    data = cost.createData(aligator.CommonModelDataContainer())
 
     print("x0", x0)
     print("x1", x1)
@@ -148,7 +148,7 @@ def test_stack_error():
     rc2 = QuadraticCost(np.eye(3), np.eye(nu))
     rc3 = QuadraticCost(np.eye(nx), np.eye(nu * 2))
 
-    cost_data = cost_stack.createData()
+    cost_data = cost_stack.createData(aligator.CommonModelDataContainer())
     print(cost_data.sub_cost_data.tolist())
 
     with pytest.raises(Exception) as e_info:
@@ -193,7 +193,7 @@ def test_direct_sum():
 
     # direct sum
     direct_sum = aligator.directSum(cam_cost, frame_cost)
-    data = direct_sum.createData()
+    data = direct_sum.createData(aligator.CommonModelDataContainer())
     assert isinstance(data, aligator.DirectSumCostData)
     d1 = data.data1
     d2 = data.data2

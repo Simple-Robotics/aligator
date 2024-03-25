@@ -76,5 +76,11 @@ IntegratorMidpointTpl<Scalar>::createData() const {
   return std::make_shared<Data>(this);
 }
 
+template <typename Scalar>
+shared_ptr<DynamicsDataTpl<Scalar>> IntegratorMidpointTpl<Scalar>::createData(
+    const CommonModelDataContainer &container) const {
+  return std::make_shared<Data>(this, container);
+}
+
 } // namespace dynamics
 } // namespace aligator

@@ -51,12 +51,3 @@ suppress_if_void(T &&o) {
 #define ALIGATOR_PYTHON_OVERRIDE(ret_type, cname, fname, ...)                  \
   ALIGATOR_PYTHON_OVERRIDE_IMPL(ret_type, #fname, __VA_ARGS__);                \
   return cname::fname(__VA_ARGS__)
-
-/**
- * @def ALIGATOR_PYTHON_OVERRIDE_DIFF_NAME(ret_type, cname, fname, pyname, ...)
- * @copybrief ALIGATOR_PYTHON_OVERRIDE_PURE()
- */
-#define ALIGATOR_PYTHON_OVERRIDE_DIFF_NAME(ret_type, cname, fname, pyname,     \
-                                           ...)                                \
-  ALIGATOR_PYTHON_OVERRIDE_IMPL(ret_type, #pyname, __VA_ARGS__);               \
-  return cname::fname(__VA_ARGS__)

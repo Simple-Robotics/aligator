@@ -44,7 +44,8 @@ struct ExplicitIntegratorAbstractTpl : ExplicitDynamicsModelTpl<_Scalar> {
   }
 
   shared_ptr<DynamicsDataTpl<Scalar>> createData() const;
-  using Base::createData;
+  shared_ptr<DynamicsDataTpl<Scalar>>
+  createData(const CommonModelDataContainer &container) const;
 };
 
 template <typename _Scalar>
@@ -52,10 +53,14 @@ struct ExplicitIntegratorDataTpl : ExplicitDynamicsDataTpl<_Scalar> {
   using Scalar = _Scalar;
   using Base = ExplicitDynamicsDataTpl<Scalar>;
   using ODEData = ODEDataTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
   shared_ptr<ODEData> continuous_data;
 
   explicit ExplicitIntegratorDataTpl(
       const ExplicitIntegratorAbstractTpl<Scalar> *integrator);
+  ExplicitIntegratorDataTpl(
+      const ExplicitIntegratorAbstractTpl<Scalar> *integrator,
+      const CommonModelDataContainer &container);
   virtual ~ExplicitIntegratorDataTpl() = default;
 
   using Base::dx_;

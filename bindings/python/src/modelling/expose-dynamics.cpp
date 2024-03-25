@@ -42,8 +42,8 @@ void exposeDynamicsBase() {
       .add_property("is_explicit", &DynamicsModel::is_explicit,
                     "Return whether the current model is explicit.")
       .def(ConfigurePythonVisitor<DynamicsModel, PyDynamicsModel>())
-      .def(CreateDataWithCommonPolymorphicPythonVisitor<DynamicsModel,
-                                                        PyDynamicsModel>());
+      .def(
+          CreateDataPolymorphicPythonVisitor<DynamicsModel, PyDynamicsModel>());
 }
 
 } // namespace python

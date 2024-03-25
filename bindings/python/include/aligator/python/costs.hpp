@@ -49,20 +49,13 @@ struct PyCostFunction : T, bp::wrapper<T> {
                                   boost::ref(data));
   }
 
-  virtual shared_ptr<CostData> createData() const override {
-    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<CostData>, T, createData, );
-  }
-
-  shared_ptr<CostData> default_createData() const { return T::createData(); }
-
   virtual shared_ptr<CostData>
   createData(const CommonModelDataContainer &container) const override {
-    ALIGATOR_PYTHON_OVERRIDE_DIFF_NAME(shared_ptr<CostData>, T, createData,
-                                       createDataWithCommon, container);
+    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<CostData>, T, createData, container);
   }
 
-  shared_ptr<CostData> default_createDataWithCommon(
-      const CommonModelDataContainer &container) const {
+  shared_ptr<CostData>
+  default_createData(const CommonModelDataContainer &container) const {
     return T::createData(container);
   }
 };

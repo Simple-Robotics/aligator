@@ -117,8 +117,7 @@ void exposeCostBase() {
       .add_property("ndx", &CostBase::ndx)
       .add_property("nu", &CostBase::nu)
       .def(ConfigurePythonVisitor<CostBase, PyCostFunction<>>())
-      .def(CreateDataWithCommonPolymorphicPythonVisitor<CostBase,
-                                                        PyCostFunction<>>());
+      .def(CreateDataPolymorphicPythonVisitor<CostBase, PyCostFunction<>>());
 
   bp::register_ptr_to_python<shared_ptr<CostData>>();
   bp::class_<CostDataWrapper, boost::noncopyable>(

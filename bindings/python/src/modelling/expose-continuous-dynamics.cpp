@@ -63,8 +63,8 @@ void exposeODEs() {
                     "Get the state space.")
       .def(ConfigurePythonVisitor<ContinuousDynamicsBase,
                                   PyContinuousDynamics<>>())
-      .def(CreateDataWithCommonPolymorphicPythonVisitor<
-           ContinuousDynamicsBase, PyContinuousDynamics<>>());
+      .def(CreateDataPolymorphicPythonVisitor<ContinuousDynamicsBase,
+                                              PyContinuousDynamics<>>());
 
   bp::register_ptr_to_python<shared_ptr<ContinuousDynamicsData>>();
   bp::class_<DAEDataWrapper, boost::noncopyable>(
@@ -104,8 +104,7 @@ void exposeODEs() {
            "Compute the derivatives of the ODE vector field with respect "
            "to the state-control pair :math:`(x, u)`.")
       .def(ConfigurePythonVisitor<ODEAbstract, PyODEAbstract<>>())
-      .def(CreateDataWithCommonPolymorphicPythonVisitor<ODEAbstract,
-                                                        PyODEAbstract<>>());
+      .def(CreateDataPolymorphicPythonVisitor<ODEAbstract, PyODEAbstract<>>());
 
   bp::register_ptr_to_python<shared_ptr<ODEData>>();
   bp::class_<ODEDataWrapper, bp::bases<ContinuousDynamicsData>,
@@ -136,7 +135,7 @@ void exposeODEs() {
                const double, const Vector3s &, const ContactMap &>(
           bp::args("self", "space", "total mass", "gravity", "contact_map")))
       .def_readwrite("contact_map", &CentroidalFwdDynamics::contact_map_)
-      .def(CreateDataWithCommonPythonVisitor<CentroidalFwdDynamics>());
+      .def(CreateDataPythonVisitor<CentroidalFwdDynamics>());
 
   bp::register_ptr_to_python<shared_ptr<CentroidalFwdDataTpl<Scalar>>>();
   bp::class_<CentroidalFwdDataTpl<Scalar>, bp::bases<ODEData>>(
@@ -151,8 +150,7 @@ void exposeODEs() {
           bp::args("self", "space", "total mass", "gravity", "contact_map")))
       .def_readwrite("contact_map",
                      &ContinuousCentroidalFwdDynamics::contact_map_)
-      .def(
-          CreateDataWithCommonPythonVisitor<ContinuousCentroidalFwdDynamics>());
+      .def(CreateDataPythonVisitor<ContinuousCentroidalFwdDynamics>());
 
   bp::register_ptr_to_python<
       shared_ptr<ContinuousCentroidalFwdDataTpl<Scalar>>>();

@@ -21,6 +21,7 @@ struct IntegratorSemiImplEulerTpl : ExplicitIntegratorAbstractTpl<_Scalar> {
   using BaseData = ExplicitDynamicsDataTpl<Scalar>;
   using Data = IntegratorSemiImplDataTpl<Scalar>;
   using ODEType = ODEAbstractTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
   using Base::space_next_;
 
   /// Integration time step \f$h\f$.
@@ -30,16 +31,19 @@ struct IntegratorSemiImplEulerTpl : ExplicitIntegratorAbstractTpl<_Scalar> {
                              const Scalar timestep);
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
-               BaseData &data) const;
+               BaseData &data) const override;
 
   void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
-                BaseData &data) const;
+                BaseData &data) const override;
 
-  shared_ptr<StageFunctionDataTpl<Scalar>> createData() const {
+  shared_ptr<StageFunctionDataTpl<Scalar>> createData() const override {
     return std::make_shared<Data>(this);
   }
 
-  using Base::createData;
+  shared_ptr<StageFunctionDataTpl<Scalar>>
+  createData(const CommonModelDataContainer &container) const override {
+    return std::make_shared<Data>(this, container);
+  }
 };
 
 template <typename Scalar>
@@ -47,12 +51,16 @@ struct IntegratorSemiImplDataTpl : ExplicitIntegratorDataTpl<Scalar> {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ExplicitIntegratorDataTpl<Scalar>;
   using ODEData = ODEDataTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   MatrixXs Jtmp_xnext2;
   MatrixXs Jtmp_u;
 
   explicit IntegratorSemiImplDataTpl(
       const IntegratorSemiImplEulerTpl<Scalar> *integrator);
+  IntegratorSemiImplDataTpl(
+      const IntegratorSemiImplEulerTpl<Scalar> *integrator,
+      const CommonModelDataContainer &container);
 
   using Base::dx_;
   using Base::Jtmp_xnext;

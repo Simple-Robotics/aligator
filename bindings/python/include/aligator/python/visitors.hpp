@@ -22,8 +22,9 @@ template <typename T>
 struct CreateDataPythonVisitor : bp::def_visitor<CreateDataPythonVisitor<T>> {
   template <typename Pyclass> void visit(Pyclass &obj) const {
     using ReturnPtrType = decltype(std::declval<T>().createData());
-    ReturnPtrType (T::*createData)() const = &T::createData;
-    obj.def("createData", createData, bp::args("self"),
+    ReturnPtrType (T::*createData)(const context::CommonModelDataContainer &)
+        const = &T::createData;
+    obj.def("createData", createData, bp::args("self", "container"),
             "Create a data object.");
   }
 };
@@ -37,20 +38,6 @@ struct ConfigurePythonVisitor
   }
 };
 
-template <typename T>
-struct CreateDataWithCommonPythonVisitor
-    : bp::def_visitor<CreateDataPythonVisitor<T>> {
-  template <typename Pyclass> void visit(Pyclass &obj) const {
-    using ReturnPtrType = decltype(std::declval<T>().createData());
-    ReturnPtrType (T::*createData)() const = &T::createData;
-    ReturnPtrType (T::*createDataWithCommon)(
-        const context::CommonModelDataContainer &) const = &T::createData;
-    obj.def("createData", createData, bp::args("self"), "Create a data object.")
-        .def("createDataWithCommon", createDataWithCommon,
-             bp::args("self", "container"), "Create a data object.");
-  }
-};
-
 /// Visitor for exposing a polymorphic factory for data classes that can be
 /// overridden from Python.
 /// @sa CreateDataPythonVisitor
@@ -58,19 +45,14 @@ struct CreateDataWithCommonPythonVisitor
 /// @tparam T The wrapped class
 /// @tparam TWrapper The wrapper class
 template <typename T, typename TWrapper>
-struct CreateDataWithCommonPolymorphicPythonVisitor
-    : bp::def_visitor<
-          CreateDataWithCommonPolymorphicPythonVisitor<T, TWrapper>> {
+struct CreateDataPolymorphicPythonVisitor
+    : bp::def_visitor<CreateDataPolymorphicPythonVisitor<T, TWrapper>> {
   template <typename PyClass> void visit(PyClass &obj) const {
     using ReturnPtrType = decltype(std::declval<T>().createData());
-    ReturnPtrType (T::*createData)() const = &T::createData;
-    ReturnPtrType (T::*createDataWithCommon)(
-        const context::CommonModelDataContainer &) const = &T::createData;
+    ReturnPtrType (T::*createData)(const context::CommonModelDataContainer &)
+        const = &T::createData;
     obj.def("createData", createData, &TWrapper::default_createData,
-            bp::args("self"), "Create a data object.")
-        .def("createDataWithCommon", createDataWithCommon,
-             &TWrapper::default_createDataWithCommon,
-             bp::args("self", "container"), "Create a data object.");
+            bp::args("self", "container"), "Create a data object.");
   }
 };
 

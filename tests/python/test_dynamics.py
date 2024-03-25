@@ -1,6 +1,6 @@
 import numpy as np
 
-from aligator import dynamics, manifolds
+from aligator import dynamics, manifolds, CommonModelDataContainer
 
 import sys
 import pytest
@@ -11,17 +11,17 @@ def test_abstract():
     space = manifolds.VectorSpace(nx)
     nu = 2
     dm = dynamics.DynamicsModel(space, nu)
-    dd = dm.createData()
+    dd = dm.createData(CommonModelDataContainer())
     print(dd)
 
     em = dynamics.ExplicitDynamicsModel(space, nu)
-    ed = em.createData()
+    ed = em.createData(CommonModelDataContainer())
     print(ed)
 
 
 def _test_direct_sum(f, g):
     dm = dynamics.directSum(f, g)
-    dd = dm.createData()
+    dd = dm.createData(CommonModelDataContainer())
     print(dd)
     space = dm.space_next
     print(space)
@@ -32,8 +32,8 @@ def _test_direct_sum(f, g):
     dm.forward(x0, u0, dd)
     print(dd.xnext)
 
-    dd1 = f.createData()
-    dd2 = g.createData()
+    dd1 = f.createData(CommonModelDataContainer())
+    dd2 = g.createData(CommonModelDataContainer())
     x01, x02 = space.split(x0).tolist()
     u01, u02 = u0[: f.nu], u0[f.nu :]
     f.forward(x01, u01, dd1)
@@ -83,7 +83,7 @@ class TestLinear:
         x0 = space.neutral()
         x1 = space.rand()
         u0 = np.random.randn(self.nu)
-        lddata = self.ldd.createData()
+        lddata = self.ldd.createData(CommonModelDataContainer())
         print(lddata)
         self.ldd.forward(x0, u0, lddata)
         self.ldd.evaluate(x0, u0, x1, lddata)

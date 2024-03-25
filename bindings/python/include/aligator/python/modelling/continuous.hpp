@@ -42,20 +42,13 @@ struct PyContinuousDynamics : T, bp::wrapper<T> {
                                   boost::ref(data));
   }
 
-  shared_ptr<Data> createData() const override {
-    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<Data>, T, createData, );
-  }
-
-  shared_ptr<Data> default_createData() const { return T::createData(); }
-
   virtual shared_ptr<Data>
   createData(const CommonModelDataContainer &container) const override {
-    ALIGATOR_PYTHON_OVERRIDE_DIFF_NAME(shared_ptr<Data>, T, createData,
-                                       createDataWithCommon, container);
+    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<Data>, T, createData, container);
   }
 
-  shared_ptr<Data> default_createDataWithCommon(
-      const CommonModelDataContainer &container) const {
+  shared_ptr<Data>
+  default_createData(const CommonModelDataContainer &container) const {
     return T::createData(container);
   }
 };
@@ -90,19 +83,13 @@ struct PyODEAbstract : T, bp::wrapper<T> {
     ALIGATOR_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, boost::ref(data));
   }
 
-  shared_ptr<Data> createData() const override {
-    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<Data>, T, createData, );
-  }
-
-  shared_ptr<Data> default_createData() const { return T::createData(); }
-
   virtual shared_ptr<Data>
   createData(const CommonModelDataContainer &container) const override {
     ALIGATOR_PYTHON_OVERRIDE(shared_ptr<Data>, T, createData, container);
   }
 
-  shared_ptr<Data> default_createDataWithCommon(
-      const CommonModelDataContainer &container) const {
+  shared_ptr<Data>
+  default_createData(const CommonModelDataContainer &container) const {
     return T::createData(container);
   }
 };

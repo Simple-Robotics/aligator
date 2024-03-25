@@ -9,7 +9,7 @@ Or also as a module.
 
 from proxsuite_nlp import costs
 import aligator
-from aligator import manifolds
+from aligator import manifolds, CommonModelDataContainer
 import numpy as np
 import typing
 
@@ -56,10 +56,7 @@ class TwistModelExplicit(aligator.dynamics.ExplicitDynamicsModel):
         Jxnext_dv = space.Jintegrate(x, v_, 1)
         Ju[:, :] = Jxnext_dv @ dv_du
 
-    def createData(self):
-        return TwistData()
-
-    def createDataWithCommon(self, container):
+    def createData(self, container):
         return TwistData()
 
 
@@ -100,10 +97,7 @@ class MyQuadCost(aligator.CostAbstract):
         data.hess[:, :] = 0.0
         self._basis.computeHessian(x, data.Lxx)
 
-    def createData(self):
-        return MyCostData()
-
-    def createDataWithCommon(self, container):
+    def createData(self, container):
         return MyCostData()
 
 
@@ -133,7 +127,7 @@ class TestClass:
     solver = aligator.SolverProxDDP(tol, mu_init, 0.0)
 
     def test_dyn(self, nsteps, problem):
-        dyn_data = problem.dynmodel.createData()
+        dyn_data = problem.dynmodel.createData(CommonModelDataContainer())
         assert isinstance(dyn_data, TwistData)
         dyn_data.Jx[:, :] = np.arange(ndx**2).reshape(ndx, ndx)
         dyn_data.Ju[:, :] = np.arange(ndx**2, ndx**2 + ndx * nu).reshape(ndx, nu)
@@ -142,7 +136,7 @@ class TestClass:
 
     def test_cost(self, nsteps, problem):
         cost = problem.cost
-        cost_data = cost.createData()
+        cost_data = cost.createData(CommonModelDataContainer())
         cost.evaluate(x0, u0, cost_data)
         cost.computeGradients(x0, u0, cost_data)
         cost.computeHessians(x0, u0, cost_data)
@@ -157,7 +151,7 @@ class TestClass:
     def test_rollout(self, nsteps, problem):
         us_i = [np.ones(problem.dynmodel.nu) * 0.1 for _ in range(nsteps)]
         xs_i = aligator.rollout(problem.dynmodel, self.x0, us_i).tolist()
-        dd = problem.dynmodel.createData()
+        dd = problem.dynmodel.createData(CommonModelDataContainer())
         problem.dynmodel.forward(self.x0, us_i[0], dd)
         assert np.allclose(dd.xnext, xs_i[1])
 

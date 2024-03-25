@@ -1,6 +1,6 @@
 import numpy as np
 
-from aligator import manifolds, dynamics
+from aligator import manifolds, dynamics, CommonModelDataContainer
 
 
 def infNorm(x):
@@ -19,7 +19,7 @@ def create_multibody_ode(humanoid=True):
         nu = model.nv
         B = np.eye(nu)
         ode = dynamics.MultibodyFreeFwdDynamics(space, B)
-        data = ode.createData()
+        data = ode.createData(CommonModelDataContainer())
         assert isinstance(data, dynamics.MultibodyFreeFwdData)
         return ode
     except ImportError:
@@ -35,7 +35,7 @@ def create_linear_ode(nx, nu):
     B[0, 1] = 0.5
     c = np.zeros(nx)
     ode = dynamics.LinearODE(A, B, c)
-    cd = ode.createData()
+    cd = ode.createData(CommonModelDataContainer())
     assert np.allclose(ode.A, cd.Jx)
     assert np.allclose(ode.B, cd.Ju)
     return ode
@@ -45,7 +45,7 @@ def finite_diff(dynmodel, space, x, u, EPS=1e-8):
     ndx = space.ndx
     Jx = np.zeros((ndx, ndx))
     dx = np.zeros(ndx)
-    data = dynmodel.createData()
+    data = dynmodel.createData(CommonModelDataContainer())
     dynmodel.forward(x, u, data)
     # distance to origin
     _dx = space.difference(space.neutral(), x)
@@ -64,7 +64,7 @@ def finite_diff(dynmodel, space, x, u, EPS=1e-8):
     eu = EPS * max(1.0, np.linalg.norm(u))
     Ju = np.zeros((ndx, nu))
     du = np.zeros(nu)
-    data = dynmodel.createData()
+    data = dynmodel.createData(CommonModelDataContainer())
     for i in range(nu):
         du[i] = eu
         dynmodel.forward(x, u + du, data)

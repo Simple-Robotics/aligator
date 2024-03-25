@@ -45,24 +45,14 @@ struct PyExplicitDynamics : ExplicitBase, bp::wrapper<ExplicitBase> {
     ALIGATOR_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, boost::ref(data));
   }
 
-  shared_ptr<StageFunctionData> createData() const {
-    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<StageFunctionData>, ExplicitBase,
-                             createData, );
-  }
-
-  shared_ptr<StageFunctionData> default_createData() const {
-    return ExplicitBase::createData();
-  }
-
   virtual shared_ptr<StageFunctionData>
   createData(const CommonModelDataContainer &container) const override {
-    ALIGATOR_PYTHON_OVERRIDE_DIFF_NAME(shared_ptr<StageFunctionData>,
-                                       ExplicitBase, createData,
-                                       createDataWithCommon, container);
+    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<StageFunctionData>, ExplicitBase,
+                             createData, container);
   }
 
-  shared_ptr<StageFunctionData> default_createDataWithCommon(
-      const CommonModelDataContainer &container) const {
+  shared_ptr<StageFunctionData>
+  default_createData(const CommonModelDataContainer &container) const {
     return ExplicitBase::createData(container);
   }
 };

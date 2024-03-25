@@ -67,5 +67,14 @@ IntegratorRK2DataTpl<Scalar>::IntegratorRK2DataTpl(
       std::static_pointer_cast<ODEData>(integrator->ode_->createData());
 }
 
+template <typename Scalar>
+IntegratorRK2DataTpl<Scalar>::IntegratorRK2DataTpl(
+    const IntegratorRK2Tpl<Scalar> *integrator,
+    const CommonModelDataContainer &container)
+    : Base(integrator, container), x1_(integrator->space_next().neutral()) {
+  continuous_data2 = std::static_pointer_cast<ODEData>(
+      integrator->ode_->createData(container));
+}
+
 } // namespace dynamics
 } // namespace aligator
