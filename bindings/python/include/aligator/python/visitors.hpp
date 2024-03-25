@@ -28,6 +28,15 @@ struct CreateDataPythonVisitor : bp::def_visitor<CreateDataPythonVisitor<T>> {
   }
 };
 
+template <typename T, typename TWrapper>
+struct ConfigurePythonVisitor
+    : bp::def_visitor<ConfigurePythonVisitor<T, TWrapper>> {
+  template <typename Pyclass> void visit(Pyclass &obj) const {
+    obj.def("configure", &T::configure, &TWrapper::default_configure,
+            bp::args("self", "container"), "Create and configure CommonModel.");
+  }
+};
+
 template <typename T>
 struct CreateDataWithCommonPythonVisitor
     : bp::def_visitor<CreateDataPythonVisitor<T>> {
@@ -96,8 +105,8 @@ struct PrintAddressVisitor : bp::def_visitor<PrintAddressVisitor<T>> {
 template <typename SolverType>
 struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
   using CallbackPtr = typename SolverType::CallbackPtr;
-  static auto getCallback(const SolverType &obj,
-                          const std::string &name) -> CallbackPtr {
+  static auto getCallback(const SolverType &obj, const std::string &name)
+      -> CallbackPtr {
     const auto &cbs = obj.getCallbacks();
     auto cb = cbs.find(name);
     if (cb == cbs.end()) {

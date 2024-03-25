@@ -50,9 +50,6 @@ void exposeODEs() {
                     "State space dimension.")
       .add_property("nu", &ContinuousDynamicsBase::nu,
                     "Control space dimension.")
-      .def("configure", &ContinuousDynamicsBase::configure,
-           &PyContinuousDynamics<>::default_configure,
-           bp::args("self", "container"), "Create and configure CommonModel.")
       .def("evaluate", bp::pure_virtual(&ContinuousDynamicsBase::evaluate),
            bp::args("self", "x", "u", "xdot", "data"),
            "Evaluate the DAE functions.")
@@ -64,6 +61,8 @@ void exposeODEs() {
                     bp::make_function(&ContinuousDynamicsBase::space,
                                       bp::return_internal_reference<>()),
                     "Get the state space.")
+      .def(ConfigurePythonVisitor<ContinuousDynamicsBase,
+                                  PyContinuousDynamics<>>())
       .def(CreateDataWithCommonPolymorphicPythonVisitor<
            ContinuousDynamicsBase, PyContinuousDynamics<>>());
 
@@ -104,6 +103,7 @@ void exposeODEs() {
            bp::args("self", "x", "u", "data"),
            "Compute the derivatives of the ODE vector field with respect "
            "to the state-control pair :math:`(x, u)`.")
+      .def(ConfigurePythonVisitor<ODEAbstract, PyODEAbstract<>>())
       .def(CreateDataWithCommonPolymorphicPythonVisitor<ODEAbstract,
                                                         PyODEAbstract<>>());
 

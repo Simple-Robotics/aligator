@@ -104,9 +104,6 @@ void exposeCostBase() {
       "CostAbstract", "Base class for cost functions.", bp::no_init)
       .def(bp::init<shared_ptr<Manifold>, const int>(
           bp::args("self", "space", "nu")))
-      .def("configure", &CostBase::configure,
-           &PyCostFunction<>::default_configure, bp::args("self", "container"),
-           "Create and configure CommonModel.")
       .def("evaluate", bp::pure_virtual(&CostBase::evaluate),
            bp::args("self", "x", "u", "data"), "Evaluate the cost function.")
       .def("computeGradients", bp::pure_virtual(&CostBase::computeGradients),
@@ -119,6 +116,7 @@ void exposeCostBase() {
       .add_property("nx", &CostBase::nx)
       .add_property("ndx", &CostBase::ndx)
       .add_property("nu", &CostBase::nu)
+      .def(ConfigurePythonVisitor<CostBase, PyCostFunction<>>())
       .def(CreateDataWithCommonPolymorphicPythonVisitor<CostBase,
                                                         PyCostFunction<>>());
 
