@@ -254,6 +254,80 @@ def test_continuous_centroidal_diff():
     assert np.allclose(Judiff, Ju0, epsilon), "err={}".format(infNorm(Judiff - Ju0))
 
 
+def test_kinodynamics():
+    import pinocchio as pin
+
+    model = pin.buildSampleModelHumanoid()
+    contact_ids = [
+        model.getFrameId("lleg_effector_body"),
+        model.getFrameId("rleg_effector_body"),
+        model.getFrameId("rarm_effector_body"),
+    ]
+
+    nk = 3
+    nu = 3 * nk + model.nv - 6
+    space = manifolds.MultibodyPhaseSpace(model)
+    mass = 0
+    for inertia in model.inertias:
+        mass += inertia.mass
+    gravity = np.array([0, 0, -9.81])
+    contact_states = [True, True, False]
+
+    ode = dynamics.KinodynamicsFwdDynamics(
+        space, model, gravity, contact_states, contact_ids
+    )
+    data = ode.createData()
+
+    assert isinstance(data, dynamics.KinodynamicsFwdData)
+
+    x0 = space.neutral()
+    u0 = np.random.randn(nu)
+
+    ode.forward(x0, u0, data)
+    ode.dForward(x0, u0, data)
+
+
+def test_kinodynamics_diff():
+    import pinocchio as pin
+
+    model = pin.buildSampleModelHumanoid()
+    contact_ids = [
+        model.getFrameId("lleg_effector_body"),
+        model.getFrameId("rleg_effector_body"),
+        model.getFrameId("rarm_effector_body"),
+    ]
+    nk = 3
+    nu = 3 * nk + model.nv - 6
+    space = manifolds.MultibodyPhaseSpace(model)
+    mass = 0
+    for inertia in model.inertias:
+        mass += inertia.mass
+    gravity = np.array([0, 0, -9.81])
+    contact_states = [True, True, False]
+
+    ode = dynamics.KinodynamicsFwdDynamics(
+        space, model, gravity, contact_states, contact_ids
+    )
+    data = ode.createData()
+
+    x0 = space.neutral()
+    ndx = space.ndx
+    dx = np.random.randn(ndx)
+    x0 = space.integrate(x0, dx)
+    u0 = np.random.randn(nu)
+    epsilon = 1e-6
+
+    ode.forward(x0, u0, data)
+    ode.dForward(x0, u0, data)
+
+    Jx0 = data.Jx.copy()
+    Ju0 = data.Ju.copy()
+    Jxdiff, Judiff = finite_diff(ode, space, x0, u0, epsilon)
+
+    assert np.linalg.norm(Jxdiff - Jx0) <= epsilon
+    assert np.linalg.norm(Judiff - Ju0) <= epsilon
+
+
 if __name__ == "__main__":
     import sys
 
