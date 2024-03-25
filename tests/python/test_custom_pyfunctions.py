@@ -24,7 +24,9 @@ def test_custom_controlbox():
     u_max = np.ones(nu) * 0.1
     box_function = PyControlBoxFunction(ndx, u_min, u_max)
     bf2 = aligator.ControlBoxFunction(ndx, u_min, u_max)
-    data1: aligator.StageFunctionData = box_function.createData(aligator.CommonModelDataContainer())
+    data1: aligator.StageFunctionData = box_function.createData(
+        aligator.CommonModelDataContainer()
+    )
     data2 = bf2.createData(aligator.CommonModelDataContainer())
 
     lbd0 = np.zeros(box_function.nr)
