@@ -276,7 +276,7 @@ def test_kinodynamics():
     ode = dynamics.KinodynamicsFwdDynamics(
         space, model, gravity, contact_states, contact_ids
     )
-    data = ode.createData()
+    data = ode.createData(aligator.CommonModelDataContainer())
 
     assert isinstance(data, dynamics.KinodynamicsFwdData)
 
@@ -308,7 +308,7 @@ def test_kinodynamics_diff():
     ode = dynamics.KinodynamicsFwdDynamics(
         space, model, gravity, contact_states, contact_ids
     )
-    data = ode.createData()
+    data = ode.createData(aligator.CommonModelDataContainer())
 
     x0 = space.neutral()
     ndx = space.ndx
