@@ -132,7 +132,9 @@ BOOST_AUTO_TEST_CASE(test_problem_configure) {
   auto stage2 = std::make_shared<StageModel>(cost2, model2);
 
   TrajOptProblemTpl<double> problem(init_constr, {stage1, stage2}, final_cost);
-  problem.addTerminalConstraint(StageConstraintTpl<double>{final_constr, {}});
+  using EqualitySet = proxsuite::nlp::EqualityConstraint<double>;
+  problem.addTerminalConstraint(StageConstraintTpl<double>{
+      final_constr, std::make_shared<EqualitySet>()});
 
   problem.configure();
   BOOST_CHECK(model1->configure_called);
