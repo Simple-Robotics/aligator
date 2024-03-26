@@ -9,10 +9,10 @@ namespace dynamics {
 template <typename Scalar>
 CentroidalFwdDynamicsTpl<Scalar>::CentroidalFwdDynamicsTpl(
     const ManifoldPtr &state, const double mass, const Vector3s &gravity,
-    const ContactMap &contact_map)
-    : Base(state, int(contact_map.getSize()) * 3), space_(state),
+    const ContactMap &contact_map, const int force_size)
+    : Base(state, int(contact_map.getSize()) * force_size), space_(state),
       nk_(contact_map.getSize()), mass_(mass), gravity_(gravity),
-      contact_map_(contact_map) {}
+      contact_map_(contact_map), force_size_(force_size) {}
 
 template <typename Scalar>
 void CentroidalFwdDynamicsTpl<Scalar>::forward(const ConstVectorRef &x,
@@ -26,13 +26,20 @@ void CentroidalFwdDynamicsTpl<Scalar>::forward(const ConstVectorRef &x,
   for (std::size_t i = 0; i < nk_; i++) {
     if (contact_map_.getContactState(i)) {
       long i_ = static_cast<long>(i);
-      d.xdot_.template segment<3>(3) += u.template segment<3>(i_ * 3);
-      d.xdot_[6] += (contact_map_.getContactPose(i)[1] - x[1]) * u[i_ * 3 + 2] -
-                    (contact_map_.getContactPose(i)[2] - x[2]) * u[i_ * 3 + 1];
-      d.xdot_[7] += (contact_map_.getContactPose(i)[2] - x[2]) * u[i_ * 3] -
-                    (contact_map_.getContactPose(i)[0] - x[0]) * u[i_ * 3 + 2];
-      d.xdot_[8] += (contact_map_.getContactPose(i)[0] - x[0]) * u[i_ * 3 + 1] -
-                    (contact_map_.getContactPose(i)[1] - x[1]) * u[i_ * 3];
+      d.xdot_.template segment<3>(3) += u.template segment<3>(i_ * force_size_);
+      d.xdot_[6] +=
+          (contact_map_.getContactPose(i)[1] - x[1]) * u[i_ * force_size_ + 2] -
+          (contact_map_.getContactPose(i)[2] - x[2]) * u[i_ * force_size_ + 1];
+      d.xdot_[7] +=
+          (contact_map_.getContactPose(i)[2] - x[2]) * u[i_ * force_size_] -
+          (contact_map_.getContactPose(i)[0] - x[0]) * u[i_ * force_size_ + 2];
+      d.xdot_[8] +=
+          (contact_map_.getContactPose(i)[0] - x[0]) * u[i_ * force_size_ + 1] -
+          (contact_map_.getContactPose(i)[1] - x[1]) * u[i_ * force_size_];
+      if (force_size_ == 6) {
+        d.xdot_.template tail<3>() +=
+            u.template segment<3>(i_ * force_size_ + 3);
+      }
     }
   }
 }
@@ -49,12 +56,12 @@ void CentroidalFwdDynamicsTpl<Scalar>::dForward(const ConstVectorRef &x,
   for (std::size_t i = 0; i < nk_; i++) {
     long i_ = static_cast<long>(i);
     if (contact_map_.getContactState(i)) {
-      d.Jx_(6, 1) -= u[i_ * 3 + 2];
-      d.Jx_(6, 2) += u[i_ * 3 + 1];
-      d.Jx_(7, 0) += u[i_ * 3 + 2];
-      d.Jx_(7, 2) -= u[i_ * 3];
-      d.Jx_(8, 0) -= u[i_ * 3 + 1];
-      d.Jx_(8, 1) += u[i_ * 3];
+      d.Jx_(6, 1) -= u[i_ * force_size_ + 2];
+      d.Jx_(6, 2) += u[i_ * force_size_ + 1];
+      d.Jx_(7, 0) += u[i_ * force_size_ + 2];
+      d.Jx_(7, 2) -= u[i_ * force_size_];
+      d.Jx_(8, 0) -= u[i_ * force_size_ + 1];
+      d.Jx_(8, 1) += u[i_ * force_size_];
 
       d.Jtemp_ << 0.0, -(contact_map_.getContactPose(i)[2] - x[2]),
           (contact_map_.getContactPose(i)[1] - x[1]),
@@ -63,8 +70,11 @@ void CentroidalFwdDynamicsTpl<Scalar>::dForward(const ConstVectorRef &x,
           -(contact_map_.getContactPose(i)[1] - x[1]),
           (contact_map_.getContactPose(i)[0] - x[0]), 0.0;
 
-      d.Ju_.template block<3, 3>(6, 3 * i_) = d.Jtemp_;
-      d.Ju_.template block<3, 3>(3, 3 * i_).setIdentity();
+      d.Ju_.template block<3, 3>(6, force_size_ * i_) = d.Jtemp_;
+      d.Ju_.template block<3, 3>(3, force_size_ * i_).setIdentity();
+      if (force_size_ == 6) {
+        d.Ju_.template block<3, 3>(6, force_size_ * i_ + 3).setIdentity();
+      }
     }
   }
 }
@@ -78,7 +88,7 @@ CentroidalFwdDynamicsTpl<Scalar>::createData() const {
 template <typename Scalar>
 CentroidalFwdDataTpl<Scalar>::CentroidalFwdDataTpl(
     const CentroidalFwdDynamicsTpl<Scalar> *cont_dyn)
-    : Base(9, 3 * int(cont_dyn->nk_)) {
+    : Base(9, cont_dyn->force_size_ * int(cont_dyn->nk_)) {
   Jtemp_.setZero();
 }
 } // namespace dynamics

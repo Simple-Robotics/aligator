@@ -16,21 +16,23 @@ namespace aligator {
  * \f$ small threshold and \f$ \mu \f$ friction coefficient.
  */
 
-template <typename Scalar> struct FrictionConeDataTpl;
+template <typename Scalar> struct WrenchConeDataTpl;
 
 template <typename _Scalar>
-struct FrictionConeResidualTpl : StageFunctionTpl<_Scalar> {
+struct WrenchConeResidualTpl : StageFunctionTpl<_Scalar> {
 
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageFunctionTpl<Scalar>;
   using BaseData = typename Base::Data;
-  using Data = FrictionConeDataTpl<Scalar>;
+  using Data = WrenchConeDataTpl<Scalar>;
 
-  FrictionConeResidualTpl(const int ndx, const int nu, const int k,
-                          const double mu, const double epsilon)
-      : Base(ndx, nu, 2), k_(k), mu2_(mu * mu), epsilon_(epsilon) {}
+  WrenchConeResidualTpl(const int ndx, const int nu, const int k,
+                        const double mu, const double L, const double W,
+                        const double epsilon)
+      : Base(ndx, nu, 6), k_(k), mu2_(mu * mu), L_(L), W_(W),
+        epsilon_(epsilon) {}
 
   void evaluate(const ConstVectorRef &, const ConstVectorRef &u,
                 const ConstVectorRef &, BaseData &data) const;
@@ -45,24 +47,26 @@ public:
 protected:
   int k_;
   double mu2_;
+  double L_;
+  double W_;
   double epsilon_;
 };
 
 template <typename Scalar>
-struct FrictionConeDataTpl : StageFunctionDataTpl<Scalar> {
+struct WrenchConeDataTpl : StageFunctionDataTpl<Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Base = StageFunctionDataTpl<Scalar>;
-  using Matrix23s = Eigen::Matrix<Scalar, 2, 3>;
+  using Matrix6s = Eigen::Matrix<Scalar, 6, 6>;
 
-  Matrix23s Jtemp_;
+  Matrix6s Jtemp_;
 
-  FrictionConeDataTpl(const FrictionConeResidualTpl<Scalar> *model);
+  WrenchConeDataTpl(const WrenchConeResidualTpl<Scalar> *model);
 };
 
 } // namespace aligator
 
-#include "aligator/modelling/centroidal/friction-cone.hxx"
+#include "aligator/modelling/centroidal/wrench-cone.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./friction-cone.txx"
+#include "./wrench-cone.txx"
 #endif
