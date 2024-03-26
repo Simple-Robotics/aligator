@@ -7,16 +7,16 @@ import numpy as np
 import aligator
 from aligator import dynamics, manifolds
 from pinocchio import Quaternion
-from utils import finite_diff
+from utils import finite_diff, infNorm
 
-space = manifolds.R3() * manifolds.SO3()
-nu = 0
 epsilon = 1e-6
+aligator.seed(42)
+np.random.seed(42)
 
 
 class MyODE(dynamics.ODEAbstract):
-    def __init__(self):
-        super().__init__(space, nu)
+    def __init__(self, nu=0):
+        super().__init__(manifolds.R3() * manifolds.SO3(), nu)
 
     def forward(self, x, u, data: dynamics.ODEData):
         assert isinstance(data, MyODEData)
@@ -35,12 +35,12 @@ class MyODE(dynamics.ODEAbstract):
         Jw[:, 3:] = 0.0
 
     def createData(self):
-        return MyODEData()
+        return MyODEData(self)
 
 
 class MyODEData(dynamics.ODEData):
-    def __init__(self):
-        super().__init__(space.ndx, nu)
+    def __init__(self, obj: MyODE):
+        super().__init__(obj.ndx, obj.nu)
         self.v0 = np.random.randn(3)
 
 
@@ -64,10 +64,11 @@ def test_abstract():
 def test_custom_ode():
     ode = MyODE()
     itg = dynamics.IntegratorEuler(ode, 0.01)
-    x0 = space.rand()
+    x0 = ode.space.rand()
     us = [np.zeros(0) for _ in range(10)]
     xs = aligator.rollout(itg, x0, us)
     print(xs.tolist())
+    assert len(xs) == 11
 
 
 def test_multibody_free():
@@ -83,11 +84,21 @@ def test_multibody_free():
         assert isinstance(data, dynamics.MultibodyFreeFwdData)
         assert hasattr(data, "tau")
 
-        x0 = space.neutral()
+        x0 = space.rand()
+        x0[:3] = 0.0
         u0 = np.random.randn(nu)
 
         ode.forward(x0, u0, data)
         ode.dForward(x0, u0, data)
+
+        Jxdiff, Judiff = finite_diff(ode, space, x0, u0, epsilon)
+        atol = epsilon
+        assert np.allclose(Jxdiff, data.Jx, atol, atol), "Jxerr={}".format(
+            infNorm(Jxdiff - data.Jx)
+        )
+        assert np.allclose(Judiff, data.Ju, atol, atol), "Juerr={}".format(
+            infNorm(Judiff - data.Ju)
+        )
     except ImportError:
         pass
 
@@ -162,8 +173,8 @@ def test_centroidal_diff():
     Ju0 = data.Ju.copy()
     Jxdiff, Judiff = finite_diff(ode, space, x0, u0, epsilon)
 
-    assert np.linalg.norm(Jxdiff - Jx0) <= epsilon
-    assert np.linalg.norm(Judiff - Ju0) <= epsilon
+    assert np.allclose(Jxdiff, Jx0, epsilon), "err={}".format(infNorm(Jxdiff - Jx0))
+    assert np.allclose(Judiff, Ju0, epsilon), "err={}".format(infNorm(Judiff - Ju0))
 
 
 def test_continuous_centroidal():
@@ -231,6 +242,80 @@ def test_continuous_centroidal_diff():
 
     x0 = np.random.randn(nx)
     u0 = np.random.randn(nu)
+
+    ode.forward(x0, u0, data)
+    ode.dForward(x0, u0, data)
+
+    Jx0 = data.Jx.copy()
+    Ju0 = data.Ju.copy()
+    Jxdiff, Judiff = finite_diff(ode, space, x0, u0, epsilon)
+
+    assert np.allclose(Jxdiff, Jx0, epsilon), "err={}".format(infNorm(Jxdiff - Jx0))
+    assert np.allclose(Judiff, Ju0, epsilon), "err={}".format(infNorm(Judiff - Ju0))
+
+
+def test_kinodynamics():
+    import pinocchio as pin
+
+    model = pin.buildSampleModelHumanoid()
+    contact_ids = [
+        model.getFrameId("lleg_effector_body"),
+        model.getFrameId("rleg_effector_body"),
+        model.getFrameId("rarm_effector_body"),
+    ]
+
+    nk = 3
+    nu = 3 * nk + model.nv - 6
+    space = manifolds.MultibodyPhaseSpace(model)
+    mass = 0
+    for inertia in model.inertias:
+        mass += inertia.mass
+    gravity = np.array([0, 0, -9.81])
+    contact_states = [True, True, False]
+
+    ode = dynamics.KinodynamicsFwdDynamics(
+        space, model, gravity, contact_states, contact_ids
+    )
+    data = ode.createData()
+
+    assert isinstance(data, dynamics.KinodynamicsFwdData)
+
+    x0 = space.neutral()
+    u0 = np.random.randn(nu)
+
+    ode.forward(x0, u0, data)
+    ode.dForward(x0, u0, data)
+
+
+def test_kinodynamics_diff():
+    import pinocchio as pin
+
+    model = pin.buildSampleModelHumanoid()
+    contact_ids = [
+        model.getFrameId("lleg_effector_body"),
+        model.getFrameId("rleg_effector_body"),
+        model.getFrameId("rarm_effector_body"),
+    ]
+    nk = 3
+    nu = 3 * nk + model.nv - 6
+    space = manifolds.MultibodyPhaseSpace(model)
+    mass = 0
+    for inertia in model.inertias:
+        mass += inertia.mass
+    gravity = np.array([0, 0, -9.81])
+    contact_states = [True, True, False]
+
+    ode = dynamics.KinodynamicsFwdDynamics(
+        space, model, gravity, contact_states, contact_ids
+    )
+    data = ode.createData()
+
+    x0 = space.neutral()
+    ndx = space.ndx
+    dx = np.random.randn(ndx)
+    x0 = space.integrate(x0, dx)
+    u0 = np.random.randn(nu)
+    epsilon = 1e-6
 
     ode.forward(x0, u0, data)
     ode.dForward(x0, u0, data)

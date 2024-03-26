@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fix finite difference function in python unittest ([#128](https://github.com/Simple-Robotics/aligator/pull/128))
+
+### Added
+- Add kinodynamics forward scheme
+- Add centroidal dynamics derivative cost to regularize the time derivative of centroidal dynamics
+- Add Python example of Solo stepping in place
+
 ## [0.5.0] - 2024-02-13
 
 ### Added

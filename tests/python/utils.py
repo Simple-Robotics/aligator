@@ -3,6 +3,10 @@ import numpy as np
 from aligator import manifolds, dynamics
 
 
+def infNorm(x):
+    return np.linalg.norm(x, np.inf)
+
+
 def create_multibody_ode(humanoid=True):
     try:
         import pinocchio as pin
@@ -43,25 +47,29 @@ def finite_diff(dynmodel, space, x, u, EPS=1e-8):
     dx = np.zeros(ndx)
     data = dynmodel.createData()
     dynmodel.forward(x, u, data)
+    # distance to origin
+    _dx = space.difference(space.neutral(), x)
+    ex = EPS * max(1.0, np.linalg.norm(_dx))
     f = data.xdot.copy()
-    fp = f.copy()
     for i in range(ndx):
-        dx[i] = EPS
-        x_p = space.integrate(x, dx)
-        dynmodel.forward(x_p, u, data)
-        fp[:] = data.xdot
-        Jx[:, i] = space.difference(f, fp) / EPS
+        dx[i] = ex
+        dynmodel.forward(space.integrate(x, dx), u, data)
+        fp = data.xdot.copy()
+        dynmodel.forward(space.integrate(x, -dx), u, data)
+        fm = data.xdot.copy()
+        Jx[:, i] = (fp - fm) / (2 * ex)
         dx[i] = 0.0
 
     nu = u.shape[0]
+    eu = EPS * max(1.0, np.linalg.norm(u))
     Ju = np.zeros((ndx, nu))
     du = np.zeros(nu)
     data = dynmodel.createData()
     for i in range(nu):
-        du[i] = EPS
+        du[i] = eu
         dynmodel.forward(x, u + du, data)
         fp[:] = data.xdot
-        Ju[:, i] = space.difference(f, fp) / EPS
+        Ju[:, i] = (fp - f) / eu
         du[i] = 0.0
 
     return Jx, Ju

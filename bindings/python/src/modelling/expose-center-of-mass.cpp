@@ -8,6 +8,8 @@
 #include "aligator/python/modelling/multibody-utils.hpp"
 #include "aligator/modelling/multibody/center-of-mass-translation.hpp"
 #include "aligator/modelling/multibody/center-of-mass-velocity.hpp"
+#include "aligator/modelling/multibody/centroidal-momentum-derivative.hpp"
+#include "aligator/modelling/contact-map.hpp"
 
 namespace aligator {
 namespace python {
@@ -15,8 +17,10 @@ namespace python {
 using context::PinData;
 using context::PinModel;
 using context::Scalar;
+using context::StageFunction;
 using context::StageFunctionData;
 using context::UnaryFunction;
+using ContactMap = ContactMapTpl<Scalar>;
 
 void exposeCenterOfMassFunctions() {
   using CenterOfMassTranslation = CenterOfMassTranslationResidualTpl<Scalar>;
@@ -24,6 +28,11 @@ void exposeCenterOfMassFunctions() {
 
   using CenterOfMassVelocity = CenterOfMassVelocityResidualTpl<Scalar>;
   using CenterOfMassVelocityData = CenterOfMassVelocityDataTpl<Scalar>;
+
+  using CentroidalMomentumDerivativeResidual =
+      CentroidalMomentumDerivativeResidualTpl<Scalar>;
+  using CentroidalMomentumDerivativeData =
+      CentroidalMomentumDerivativeDataTpl<Scalar>;
 
   bp::class_<CenterOfMassTranslation, bp::bases<UnaryFunction>>(
       "CenterOfMassTranslationResidual",
@@ -67,6 +76,25 @@ void exposeCenterOfMassFunctions() {
       "CenterOfMassVelocityResidualData",
       "Data Structure for CenterOfMassVelocity", bp::no_init)
       .def_readonly("pin_data", &CenterOfMassVelocityData::pin_data_,
+                    "Pinocchio data struct.");
+
+  bp::class_<CentroidalMomentumDerivativeResidual, bp::bases<StageFunction>>(
+      "CentroidalMomentumDerivativeResidual",
+      "A residual function :math:`r(x) = H_dot` ",
+      bp::init<const int, const PinModel &, const context::Vector3s &,
+               const std::vector<bool> &,
+               const std::vector<pinocchio::FrameIndex> &>(bp::args(
+          "self", "ndx", "model", "gravity", "contact_states", "contact_ids")))
+      .def(FrameAPIVisitor<CentroidalMomentumDerivativeResidual>())
+      .def_readwrite("contact_states",
+                     &CentroidalMomentumDerivativeResidual::contact_states_);
+
+  bp::register_ptr_to_python<shared_ptr<CentroidalMomentumDerivativeData>>();
+
+  bp::class_<CentroidalMomentumDerivativeData, bp::bases<StageFunctionData>>(
+      "AngularMomentumConstraintResidualData",
+      "Data Structure for CentroidalMomentumResidual", bp::no_init)
+      .def_readonly("pin_data", &CentroidalMomentumDerivativeData::pin_data_,
                     "Pinocchio data struct.");
 }
 
