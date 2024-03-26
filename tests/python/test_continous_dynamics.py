@@ -106,7 +106,8 @@ def test_multibody_free():
 def test_centroidal():
     space = manifolds.VectorSpace(9)
     nk = 3
-    nu = 3 * nk
+    force_size = 3
+    nu = force_size * nk
     mass = 10.5
     gravity = np.array([0, 0, -9.81])
     contact_states = [True, True, False]
@@ -116,7 +117,7 @@ def test_centroidal():
         np.array([0.1, 0.2, 0]),
     ]
     contact_map = aligator.ContactMap(contact_states, contact_poses)
-    ode = dynamics.CentroidalFwdDynamics(space, mass, gravity, contact_map)
+    ode = dynamics.CentroidalFwdDynamics(space, mass, gravity, contact_map, force_size)
     data = ode.createData()
 
     assert isinstance(data, dynamics.CentroidalFwdData)
@@ -149,8 +150,9 @@ def test_centroidal():
 def test_centroidal_diff():
     nx = 9
     space = manifolds.VectorSpace(nx)
+    force_size = 3
     nk = 3
-    nu = 3 * nk
+    nu = force_size * nk
     mass = 10.5
     gravity = np.array([0, 0, -9.81])
     contact_states = [True, True, False]
@@ -160,11 +162,28 @@ def test_centroidal_diff():
         np.array([0.1, 0.2, 0]),
     ]
     contact_map = aligator.ContactMap(contact_states, contact_poses)
-    ode = dynamics.CentroidalFwdDynamics(space, mass, gravity, contact_map)
+    ode = dynamics.CentroidalFwdDynamics(space, mass, gravity, contact_map, force_size)
     data = ode.createData()
 
     x0 = np.random.randn(nx)
     u0 = np.random.randn(nu)
+
+    ode.forward(x0, u0, data)
+    ode.dForward(x0, u0, data)
+
+    Jx0 = data.Jx.copy()
+    Ju0 = data.Ju.copy()
+    Jxdiff, Judiff = finite_diff(ode, space, x0, u0, epsilon)
+
+    assert np.allclose(Jxdiff, Jx0, epsilon), "err={}".format(infNorm(Jxdiff - Jx0))
+    assert np.allclose(Judiff, Ju0, epsilon), "err={}".format(infNorm(Judiff - Ju0))
+
+    force_size = 6
+    nu = force_size * nk
+    u0 = np.random.randn(nu)
+
+    ode = dynamics.CentroidalFwdDynamics(space, mass, gravity, contact_map, force_size)
+    data = ode.createData()
 
     ode.forward(x0, u0, data)
     ode.dForward(x0, u0, data)
@@ -274,7 +293,7 @@ def test_kinodynamics():
     contact_states = [True, True, False]
 
     ode = dynamics.KinodynamicsFwdDynamics(
-        space, model, gravity, contact_states, contact_ids
+        space, model, gravity, contact_states, contact_ids, 3
     )
     data = ode.createData()
 
@@ -296,8 +315,9 @@ def test_kinodynamics_diff():
         model.getFrameId("rleg_effector_body"),
         model.getFrameId("rarm_effector_body"),
     ]
+    force_size = 3
     nk = 3
-    nu = 3 * nk + model.nv - 6
+    nu = force_size * nk + model.nv - 6
     space = manifolds.MultibodyPhaseSpace(model)
     mass = 0
     for inertia in model.inertias:
@@ -306,7 +326,7 @@ def test_kinodynamics_diff():
     contact_states = [True, True, False]
 
     ode = dynamics.KinodynamicsFwdDynamics(
-        space, model, gravity, contact_states, contact_ids
+        space, model, gravity, contact_states, contact_ids, force_size
     )
     data = ode.createData()
 
@@ -316,6 +336,25 @@ def test_kinodynamics_diff():
     x0 = space.integrate(x0, dx)
     u0 = np.random.randn(nu)
     epsilon = 1e-6
+
+    ode.forward(x0, u0, data)
+    ode.dForward(x0, u0, data)
+
+    Jx0 = data.Jx.copy()
+    Ju0 = data.Ju.copy()
+    Jxdiff, Judiff = finite_diff(ode, space, x0, u0, epsilon)
+
+    assert np.linalg.norm(Jxdiff - Jx0) <= epsilon
+    assert np.linalg.norm(Judiff - Ju0) <= epsilon
+
+    force_size = 6
+    nu = force_size * nk + model.nv - 6
+
+    ode = dynamics.KinodynamicsFwdDynamics(
+        space, model, gravity, contact_states, contact_ids, force_size
+    )
+    data = ode.createData()
+    u0 = np.random.randn(nu)
 
     ode.forward(x0, u0, data)
     ode.dForward(x0, u0, data)

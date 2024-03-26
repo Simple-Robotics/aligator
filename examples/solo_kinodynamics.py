@@ -31,7 +31,8 @@ pin.updateFramePlacements(rmodel, rdata)
 nq = rmodel.nq
 nv = rmodel.nv
 nk = 4
-nu = nv - 6 + nk * 3
+force_size = 3
+nu = nv - 6 + nk * force_size
 space = manifolds.MultibodyPhaseSpace(rmodel)
 ndx = space.ndx
 
@@ -73,7 +74,7 @@ w_cent_mom = np.diag(w_cent_mom)
 
 def create_dynamics(cont_states):
     ode = dynamics.KinodynamicsFwdDynamics(
-        space, rmodel, gravity, cont_states, feet_ids
+        space, rmodel, gravity, cont_states, feet_ids, force_size
     )
     dyn_model = dynamics.IntegratorEuler(ode, dt)
     return dyn_model
@@ -83,7 +84,7 @@ def createStage(cont_states, cont_pos):
     rcost = aligator.CostStack(space, nu)
 
     cent_mom = aligator.CentroidalMomentumDerivativeResidual(
-        space.ndx, rmodel, gravity, cont_states, feet_ids
+        space.ndx, rmodel, gravity, cont_states, feet_ids, force_size
     )
 
     rcost.addCost(aligator.QuadraticStateCost(space, nu, x0, w_x))
@@ -173,10 +174,10 @@ com_pose = aligator.CenterOfMassTranslationResidual(space.ndx, nu, rmodel, com0)
 stages = [createStage(contact_states[i], contact_poses[i]) for i in range(nsteps)]
 
 cent_mom_cst_ter = aligator.CentroidalMomentumDerivativeResidual(
-    space.ndx, rmodel, gravity, contact_states[-1], feet_ids
+    space.ndx, rmodel, gravity, contact_states[-1], feet_ids, force_size
 )
 cent_mom_cst_init = aligator.CentroidalMomentumDerivativeResidual(
-    space.ndx, rmodel, gravity, contact_states[0], feet_ids
+    space.ndx, rmodel, gravity, contact_states[0], feet_ids, force_size
 )
 stages[0].addConstraint(cent_mom_cst_init, constraints.EqualityConstraintSet())
 stages[-1].addConstraint(cent_mom_cst_ter, constraints.EqualityConstraintSet())

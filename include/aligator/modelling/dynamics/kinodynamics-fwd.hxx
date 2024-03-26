@@ -17,10 +17,11 @@ template <typename Scalar>
 KinodynamicsFwdDynamicsTpl<Scalar>::KinodynamicsFwdDynamicsTpl(
     const ManifoldPtr &state, const Model &model, const Vector3s &gravity,
     const std::vector<bool> &contact_states,
-    const std::vector<pinocchio::FrameIndex> &contact_ids)
-    : Base(state, model.nv - 6 + int(contact_states.size()) * 3), space_(state),
-      pin_model_(model), gravity_(gravity), contact_states_(contact_states),
-      contact_ids_(contact_ids) {
+    const std::vector<pinocchio::FrameIndex> &contact_ids, const int force_size)
+    : Base(state, model.nv - 6 + int(contact_states.size()) * force_size),
+      space_(state), pin_model_(model), gravity_(gravity),
+      contact_states_(contact_states), contact_ids_(contact_ids),
+      force_size_(force_size) {
   mass_ = pinocchio::computeTotalMass(pin_model_);
   if (contact_ids_.size() != contact_states_.size()) {
     ALIGATOR_DOMAIN_ERROR(
@@ -28,6 +29,12 @@ KinodynamicsFwdDynamicsTpl<Scalar>::KinodynamicsFwdDynamicsTpl(
                     "now ({} and {}).",
                     contact_ids_.size(), contact_states_.size()));
   }
+  /* if (force_size_ != 3 or force_size_ != 6) {
+    ALIGATOR_DOMAIN_ERROR(
+        fmt::format("force size should be of size "
+                    "{} or {}.",
+                    3, 6));
+  } */
 }
 
 template <typename Scalar>
@@ -55,22 +62,26 @@ void KinodynamicsFwdDynamicsTpl<Scalar>::forward(const ConstVectorRef &x,
     if (contact_states_[i]) {
       long i_ = static_cast<long>(i);
       pinocchio::updateFramePlacement(pin_model_, pdata, contact_ids_[i]);
-      d.cforces_.template head<3>() += u.template segment<3>(i_ * 3);
+      d.cforces_.template head<3>() += u.template segment<3>(i_ * force_size_);
       d.cforces_[3] +=
           (pdata.oMf[contact_ids_[i]].translation()[1] - pdata.com[0][1]) *
-              u[i_ * 3 + 2] -
+              u[i_ * force_size_ + 2] -
           (pdata.oMf[contact_ids_[i]].translation()[2] - pdata.com[0][2]) *
-              u[i_ * 3 + 1];
+              u[i_ * force_size_ + 1];
       d.cforces_[4] +=
           (pdata.oMf[contact_ids_[i]].translation()[2] - pdata.com[0][2]) *
-              u[i_ * 3] -
+              u[i_ * force_size_] -
           (pdata.oMf[contact_ids_[i]].translation()[0] - pdata.com[0][0]) *
-              u[i_ * 3 + 2];
+              u[i_ * force_size_ + 2];
       d.cforces_[5] +=
           (pdata.oMf[contact_ids_[i]].translation()[0] - pdata.com[0][0]) *
-              u[i_ * 3 + 1] -
+              u[i_ * force_size_ + 1] -
           (pdata.oMf[contact_ids_[i]].translation()[1] - pdata.com[0][1]) *
-              u[i_ * 3];
+              u[i_ * force_size_];
+      if (force_size_ == 6) {
+        d.cforces_.template tail<3>() +=
+            u.template segment<3>(i_ * force_size_ + 3);
+      }
     }
   }
 
@@ -110,8 +121,9 @@ void KinodynamicsFwdDynamicsTpl<Scalar>::dForward(const ConstVectorRef &x,
       d.fJf_.setZero();
       pinocchio::getFrameJacobian(pin_model_, pdata, contact_ids_[i],
                                   pinocchio::LOCAL_WORLD_ALIGNED, d.fJf_);
-      d.Jtemp_ << 0, -u[i_ * 3 + 2], u[i_ * 3 + 1], u[i_ * 3 + 2], 0,
-          -u[i_ * 3], -u[i_ * 3 + 1], u[i_ * 3], 0;
+      d.Jtemp_ << 0, -u[i_ * force_size_ + 2], u[i_ * force_size_ + 1],
+          u[i_ * force_size_ + 2], 0, -u[i_ * force_size_],
+          -u[i_ * force_size_ + 1], u[i_ * force_size_], 0;
       d.Jx_.block(pin_model_.nv, 0, 6, pin_model_.nv) +=
           d.Agu_inv_.template rightCols<3>() * d.Jtemp_ *
           (pdata.Jcom - d.fJf_.template topRows<3>());
@@ -163,16 +175,20 @@ void KinodynamicsFwdDynamicsTpl<Scalar>::dForward(const ConstVectorRef &x,
           -(pdata.oMf[contact_ids_[i]].translation()[1] - pdata.com[0][1]),
           (pdata.oMf[contact_ids_[i]].translation()[0] - pdata.com[0][0]), 0.0;
 
-      d.Ju_.block(pin_model_.nv, 3 * i_, 6, 3).noalias() =
+      d.Ju_.block(pin_model_.nv, force_size_ * i_, 6, 3).noalias() =
           d.Agu_inv_.template leftCols<3>();
-      d.Ju_.block(pin_model_.nv, 3 * i_, 6, 3).noalias() +=
+      d.Ju_.block(pin_model_.nv, force_size_ * i_, 6, 3).noalias() +=
           d.Agu_inv_.template rightCols<3>() * d.Jtemp_;
+      if (force_size_ == 6) {
+        d.Ju_.block(pin_model_.nv, force_size_ * i_ + 3, 6, 3).noalias() +=
+            d.Agu_inv_.template rightCols<3>();
+      }
     }
   }
 
   // Compute derivatives with respect to joint acceleration
   d.Ju_
-      .block(pin_model_.nv, (long)contact_states_.size() * 3, 6,
+      .block(pin_model_.nv, (long)contact_states_.size() * force_size_, 6,
              pin_model_.nv - 6)
       .noalias() = -d.Agu_inv_ * pdata.Ag.rightCols(pin_model_.nv - 6);
 }
