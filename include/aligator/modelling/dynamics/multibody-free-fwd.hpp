@@ -2,9 +2,9 @@
 #pragma once
 
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
+#include "aligator/modelling/dynamics/multibody-common.hpp"
 
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
-#include <pinocchio/multibody/data.hpp>
 
 namespace aligator {
 namespace dynamics {
@@ -31,6 +31,7 @@ struct MultibodyFreeFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using Data = MultibodyFreeFwdDataTpl<Scalar>;
   using Manifold = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
   using ManifoldPtr = shared_ptr<Manifold>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   using Base::nu_;
 
@@ -61,7 +62,12 @@ struct MultibodyFreeFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   virtual void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
                         BaseData &data) const;
 
-  shared_ptr<ContDataAbstract> createData() const;
+  shared_ptr<ContDataAbstract>
+  createData(const CommonModelDataContainer &container) const;
+  shared_ptr<ContDataAbstract> createData() const {
+    ALIGATOR_RUNTIME_ERROR("MultibodyFreeFwdDataTpl::createdata must be called "
+                           "with a CommonModelDataContainerTpl");
+  }
 
 private:
   Eigen::FullPivLU<MatrixXs> lu_decomp_;
@@ -72,12 +78,14 @@ template <typename Scalar> struct MultibodyFreeFwdDataTpl : ODEDataTpl<Scalar> {
   using Base = ODEDataTpl<Scalar>;
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
-  using PinDataType = pinocchio::DataTpl<Scalar>;
-  VectorXs tau_;
-  MatrixXs dtau_dx_;
-  MatrixXs dtau_du_;
-  PinDataType pin_data_;
-  MultibodyFreeFwdDataTpl(const MultibodyFreeFwdDynamicsTpl<Scalar> *cont_dyn);
+  using MultibodyCommonModelData = MultibodyCommonModelDataTpl<Scalar>;
+  using MultibodyCommonModel = MultibodyCommonModelTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
+
+  MultibodyFreeFwdDataTpl(const MultibodyFreeFwdDynamicsTpl<Scalar> *cont_dyn,
+                          const CommonModelDataContainer &container);
+
+  const MultibodyCommonModelData *multibody_data_;
 };
 
 } // namespace dynamics
