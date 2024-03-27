@@ -18,13 +18,17 @@ args = Args().parse_args()
 """ Define centroidal parameters """
 nx = 9  # State size: [c, h, L]
 nk = 4  # Number of contacts
-nu = nk * 3
+force_size = 3
+nu = nk * force_size
 mass = 10.5
 gravity = np.array([0, 0, -9.81])
 mu = 0.8  # Friction coefficient
 
+foot_length = 0.1
+foot_width = 0.1
 space = manifolds.VectorSpace(nx)
 x0 = space.neutral()
+u0 = np.zeros(nu)
 
 """ Define initial and final desired CoM """
 com_initial = np.array([0.1, 0.05, 0.15])
@@ -120,28 +124,27 @@ dt = 0.01  # timestep
 w_angular_acc = 0.1 * np.eye(3)
 w_linear_mom = 10 * np.eye(3)
 w_linear_acc = 100 * np.eye(3)
+w_control = np.eye(nu) * 1e-1
 
 # Regularize linear momentum only
 state_w = np.diag(np.array([0, 0, 0, 10, 10, 10, 0, 0, 0]))
 
 
 def create_dynamics(contact_map):
-    ode = dynamics.CentroidalFwdDynamics(space, mass, gravity, contact_map)
+    ode = dynamics.CentroidalFwdDynamics(space, mass, gravity, contact_map, force_size)
     dyn_model = dynamics.IntegratorEuler(ode, dt)
     return dyn_model
 
 
 def createStage(cp):
     contact_map = aligator.ContactMap(cp[0], cp[1])
-    w_control = np.eye(nu) * 1e-1
-    u0 = np.zeros(nu)
     rcost = aligator.CostStack(space, nu)
 
     linear_acc = aligator.CentroidalAccelerationResidual(
-        nx, nu, mass, gravity, contact_map
+        nx, nu, mass, gravity, contact_map, force_size
     )
     angular_acc = aligator.AngularAccelerationResidual(
-        nx, nu, mass, gravity, contact_map
+        nx, nu, mass, gravity, contact_map, force_size
     )
     linear_mom = aligator.LinearMomentumResidual(nx, nu, np.zeros(3))
 
@@ -153,6 +156,10 @@ def createStage(cp):
     for i in range(len(cp[0])):
         if cp[0][i]:
             cone_cstr = aligator.FrictionConeResidual(space.ndx, nu, i, mu, 0)
+            if force_size == 6:
+                cone_cstr = aligator.WrenchConeResidual(
+                    space.ndx, nu, i, mu, foot_length, foot_width
+                )
             stm.addConstraint(cone_cstr, constraints.NegativeOrthant())
 
     return stm
@@ -168,16 +175,16 @@ for i in range(T):
 contact_map_init = aligator.ContactMap(contact_points[0][0], contact_points[0][1])
 contact_map_ter = aligator.ContactMap(contact_points[-1][0], contact_points[-1][1])
 init_linear_acc_cstr = aligator.CentroidalAccelerationResidual(
-    nx, nu, mass, gravity, contact_map_init
+    nx, nu, mass, gravity, contact_map_init, force_size
 )
 ter_linear_acc_cstr = aligator.CentroidalAccelerationResidual(
-    nx, nu, mass, gravity, contact_map_ter
+    nx, nu, mass, gravity, contact_map_ter, force_size
 )
 ter_angular_acc_cstr = aligator.AngularAccelerationResidual(
-    nx, nu, mass, gravity, contact_map_ter
+    nx, nu, mass, gravity, contact_map_ter, force_size
 )
 init_angular_acc_cstr = aligator.AngularAccelerationResidual(
-    nx, nu, mass, gravity, contact_map_init
+    nx, nu, mass, gravity, contact_map_init, force_size
 )
 init_linear_mom = aligator.LinearMomentumResidual(nx, nu, np.array([0, 0, 0]))
 ter_angular_mom = aligator.AngularMomentumResidual(nx, nu, np.array([0, 0, 0]))
@@ -225,7 +232,7 @@ solver.sa_strategy = aligator.SA_FILTER  # FILTER or LINESEARCH
 solver.setup(problem)
 solver.filter.beta = 1e-5
 
-us_init = [np.zeros(nk * 3)] * T
+us_init = [np.zeros(nk * force_size)] * T
 xs_init = [x0] * (T + 1)
 
 solver.run(
@@ -246,10 +253,12 @@ for i in range(T):
     angacc = np.zeros(3)
     ncontact = len(contact_points[i])
     for j in range(ncontact):
-        fj = results.us[i][j * 3 : (j + 1) * 3]
+        fj = results.us[i][j * force_size : (j + 1) * force_size]
         ci = results.xs[i][0:3]
-        linacc += fj
-        angacc += np.cross(contact_points[i][j][1] - ci, fj)
+        linacc += fj[:3]
+        angacc += np.cross(contact_points[i][j][1] - ci, fj[:3])
+        if force_size == 6:
+            angacc += fj[3:]
     for z in range(3):
         linear_acceleration[z].append(linacc[z])
         angular_acceleration[z].append(angacc[z])
@@ -273,7 +282,7 @@ for i in range(T):
     angular_momentum[2].append(results.xs[i][8])
     for j in range(nk):
         if contact_points[i][0][j]:
-            forces_z[j].append(results.us[i][j * 3 + 2])
+            forces_z[j].append(results.us[i][j * force_size + 2])
         else:
             forces_z[j].append(0)
 
