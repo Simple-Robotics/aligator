@@ -31,7 +31,7 @@ MultibodyFreeFwdDynamicsTpl<Scalar>::MultibodyFreeFwdDynamicsTpl(
 template <typename Scalar>
 void MultibodyFreeFwdDynamicsTpl<Scalar>::configure(
     CommonModelBuilderContainer &container) const {
-  container.template get<MultibodyCommonModel>()
+  container.template get<MultibodyCommon>()
       .withRunAba(true)
       .withPinocchioModel(space_->getModel())
       .withActuationMatrix(actuation_matrix_);
@@ -75,7 +75,7 @@ MultibodyFreeFwdDataTpl<Scalar>::MultibodyFreeFwdDataTpl(
     const MultibodyFreeFwdDynamicsTpl<Scalar> *cont_dyn,
     const CommonModelDataContainerTpl<Scalar> &container)
     : Base(cont_dyn->ndx(), cont_dyn->nu()),
-      multibody_data_(container.template getData<MultibodyCommonModel>()) {}
+      multibody_data_(container.template getData<MultibodyCommon>()) {}
 
 } // namespace dynamics
 } // namespace aligator

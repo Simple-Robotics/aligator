@@ -1,7 +1,7 @@
 /// @copyright Copyright (C) 2024 LAAS-CNRS, INRIA
 #pragma once
 
-#include <boost/optional.hpp>
+#include <optional>
 
 #include <pinocchio/multibody/model.hpp>
 #include <pinocchio/multibody/data.hpp>
@@ -12,18 +12,18 @@
 
 namespace aligator {
 namespace dynamics {
-template <typename _Scalar> struct MultibodyCommonModelDataTpl;
+template <typename _Scalar> struct MultibodyCommonDataTpl;
 
 template <typename _Scalar>
-struct MultibodyCommonModelTpl : CommonModelTpl<_Scalar> {
+struct MultibodyCommonTpl : CommonModelTpl<_Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = CommonModelTpl<Scalar>;
   using BaseData = typename CommonModelTpl<Scalar>::Data;
   using BaseBuilder = CommonModelBuilderTpl<Scalar>;
-  using Data = MultibodyCommonModelDataTpl<Scalar>;
-  using Model = MultibodyCommonModelTpl<Scalar>;
+  using Data = MultibodyCommonDataTpl<Scalar>;
+  using Model = MultibodyCommonTpl<Scalar>;
   using PinocchioModel = pinocchio::ModelTpl<Scalar>;
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
@@ -66,34 +66,38 @@ struct MultibodyCommonModelTpl : CommonModelTpl<_Scalar> {
   class Builder : public BaseBuilder {
   public:
     using Self = Builder;
-    using SelfRef = Self &;
 
-    SelfRef withPinocchioModel(PinocchioModel model) {
+    /// @return Reference to this to allow method-chaining
+    Self &withPinocchioModel(PinocchioModel model) {
       pin_model_ = std::move(model);
       return *this;
     }
 
-    SelfRef withActuationMatrix(const MatrixXs &actuation_matrix) {
+    /// @return Reference to this to allow method-chaining
+    Self &withActuationMatrix(const MatrixXs &actuation_matrix) {
       actuation_matrix_ = actuation_matrix;
       return *this;
     }
 
-    SelfRef withRunAba(bool run_aba) { run_aba_ = run_aba; }
+    /// @return Reference to this to allow method-chaining
+    Self &withRunAba(bool run_aba) {
+      run_aba_ = run_aba;
+      return *this;
+    }
 
     std::shared_ptr<Base> build() const override {
       auto model = std::make_shared<Model>();
       const int nv = pin_model_->nv;
       if (!pin_model_) {
-        ALIGATOR_RUNTIME_ERROR(
-            "No pinocchio::Model provided to MultibodyCommonModelTpl");
+        ALIGATOR_RUNTIME_ERROR("No pinocchio::Model provided");
       }
       if (actuation_matrix_.cols() == 0 && actuation_matrix_.rows() == 0) {
         model->actuation_matrix_.setIdentity(nv, nv);
       } else {
         if (actuation_matrix_.rows() != nv || actuation_matrix_.cols() != nv) {
           ALIGATOR_RUNTIME_ERROR(fmt::format(
-              "Wrong actuation_matrix size in MultibodyCommonModelTpl: "
-              "provided ({}, {}) but should be ({}, {})",
+              "Wrong actuation_matrix size: "
+              "({}, {}) provided but should be ({}, {})",
               actuation_matrix_.rows(), actuation_matrix_.cols(), nv, nv));
         }
         model->actuation_matrix_ = actuation_matrix_;
@@ -104,22 +108,22 @@ struct MultibodyCommonModelTpl : CommonModelTpl<_Scalar> {
     }
 
   private:
-    boost::optional<PinocchioModel> pin_model_;
+    std::optional<PinocchioModel> pin_model_;
     MatrixXs actuation_matrix_;
     bool run_aba_ = false;
   };
 };
 
 template <typename _Scalar>
-struct MultibodyCommonModelDataTpl : CommonModelDataTpl<_Scalar> {
+struct MultibodyCommonDataTpl : CommonModelDataTpl<_Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = CommonModelDataTpl<Scalar>;
-  using Model = MultibodyCommonModelTpl<Scalar>;
+  using Model = MultibodyCommonTpl<Scalar>;
   using PinocchioData = pinocchio::DataTpl<Scalar>;
 
-  MultibodyCommonModelDataTpl(const Model *model)
+  MultibodyCommonDataTpl(const Model *model)
       : tau_(model->pin_model_.nv), qdd_(model->pin_model_.nv),
         qdd_dq_(model->pin_model_.nv, model->pin_model_.nv),
         qdd_dv_(model->pin_model_.nv, model->pin_model_.nv),

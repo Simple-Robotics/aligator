@@ -2,7 +2,7 @@
 #pragma once
 
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
-#include "aligator/modelling/dynamics/multibody-common-model.hpp"
+#include "aligator/modelling/dynamics/multibody-common.hpp"
 
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 
@@ -31,7 +31,7 @@ struct MultibodyFreeFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using Data = MultibodyFreeFwdDataTpl<Scalar>;
   using Manifold = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
   using ManifoldPtr = shared_ptr<Manifold>;
-  using MultibodyCommonModel = MultibodyCommonModelTpl<Scalar>;
+  using MultibodyCommon = MultibodyCommonTpl<Scalar>;
   using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
   using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
@@ -66,10 +66,9 @@ struct MultibodyFreeFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
                 BaseData &data) const override;
 
   shared_ptr<ContDataAbstract>
-  createData(const CommonModelDataContainer &container) const;
-  shared_ptr<ContDataAbstract> createData() const {
-    ALIGATOR_RUNTIME_ERROR("MultibodyFreeFwdDataTpl::createdata must be called "
-                           "with a CommonModelDataContainerTpl");
+  createData(const CommonModelDataContainer &container) const override;
+  shared_ptr<ContDataAbstract> createData() const override {
+    ALIGATOR_RUNTIME_ERROR("createdata can't be called without arguments");
   }
 
 private:
@@ -81,14 +80,14 @@ template <typename Scalar> struct MultibodyFreeFwdDataTpl : ODEDataTpl<Scalar> {
   using Base = ODEDataTpl<Scalar>;
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
-  using MultibodyCommonModelData = MultibodyCommonModelDataTpl<Scalar>;
-  using MultibodyCommonModel = MultibodyCommonModelTpl<Scalar>;
+  using MultibodyCommonData = MultibodyCommonDataTpl<Scalar>;
+  using MultibodyCommon = MultibodyCommonTpl<Scalar>;
   using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   MultibodyFreeFwdDataTpl(const MultibodyFreeFwdDynamicsTpl<Scalar> *cont_dyn,
                           const CommonModelDataContainer &container);
 
-  const MultibodyCommonModelData *multibody_data_;
+  const MultibodyCommonData *multibody_data_;
 };
 
 } // namespace dynamics
