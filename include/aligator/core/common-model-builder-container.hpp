@@ -29,14 +29,14 @@ public:
       std::unordered_map<std::string, std::shared_ptr<Builder>>;
 
   /// @return CommonModelBuilderTpl pointer associated with CommonType.
-  template <typename CommonType> typename CommonType::Builder *get() {
+  template <typename CommonType> typename CommonType::Builder &get() {
     auto key = boost::typeindex::ctti_type_index::type_id<CommonType>();
     // If insertion took place we create the new builder
     auto [it, inserted] = builders_.try_emplace(key.pretty_name(), nullptr);
     if (inserted) {
       it->second = std::make_shared<typename CommonType::Builder>();
     }
-    return static_cast<typename CommonType::Builder *>(it->second.get());
+    return static_cast<typename CommonType::Builder &>(*it->second);
   }
 
   /// @param key Key name. User must use ctti_type_index::pretty_name to

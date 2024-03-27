@@ -84,8 +84,8 @@ struct MockCommonModel : CommonModel {
 BOOST_AUTO_TEST_CASE(builder_and_container_one_common) {
   CommonModelBuilderContainer builder_container;
   /// Create and configure bulider
-  auto *model_builder = builder_container.get<MockCommonModel>();
-  model_builder->withFeatureA(true);
+  auto &model_builder = builder_container.get<MockCommonModel>();
+  model_builder.withFeatureA(true);
 
   /// Generate all model and datas
   /// We should have one MockCommonModel and MockCommonModelData
@@ -143,8 +143,8 @@ BOOST_AUTO_TEST_CASE(builder_and_container_one_common) {
 BOOST_AUTO_TEST_CASE(builder_and_container_two_common) {
   CommonModelBuilderContainer builder_container;
   /// Create and configure bulider
-  auto *model_builder = builder_container.get<MockCommonModel>();
-  model_builder->withFeatureA(true);
+  auto &model_builder = builder_container.get<MockCommonModel>();
+  model_builder.withFeatureA(true);
   auto model2_builder = std::dynamic_pointer_cast<MockCommonModel::Builder>(
       builder_container.getFromTypeIndexName(
           "MockCommonModel2", std::make_shared<MockCommonModel::Builder>()));
