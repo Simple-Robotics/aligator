@@ -29,6 +29,15 @@ MultibodyFreeFwdDynamicsTpl<Scalar>::MultibodyFreeFwdDynamicsTpl(
           MatrixXs::Identity(state->getModel().nv, state->getModel().nv)) {}
 
 template <typename Scalar>
+void MultibodyFreeFwdDynamicsTpl<Scalar>::configure(
+    CommonModelBuilderContainer &container) const {
+  container.template get<MultibodyCommonModel>()
+      .withRunAba(true)
+      .withPinocchioModel(space_->getModel())
+      .withActuationMatrix(actuation_matrix_);
+}
+
+template <typename Scalar>
 void MultibodyFreeFwdDynamicsTpl<Scalar>::forward(const ConstVectorRef &x,
                                                   const ConstVectorRef &,
                                                   BaseData &data) const {

@@ -1,6 +1,8 @@
 /// @copyright Copyright (C) 2024 LAAS-CNRS, INRIA
 #pragma once
 
+#include <boost/optional.hpp>
+
 #include <pinocchio/multibody/model.hpp>
 #include <pinocchio/multibody/data.hpp>
 #include <pinocchio/algorithm/aba.hpp>
@@ -19,7 +21,9 @@ struct MultibodyCommonModelTpl : CommonModelTpl<_Scalar> {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = CommonModelTpl<Scalar>;
   using BaseData = typename CommonModelTpl<Scalar>::Data;
+  using BaseBuilder = CommonModelBuilderTpl<Scalar>;
   using Data = MultibodyCommonModelDataTpl<Scalar>;
+  using Model = MultibodyCommonModelTpl<Scalar>;
   using PinocchioModel = pinocchio::ModelTpl<Scalar>;
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
@@ -58,6 +62,52 @@ struct MultibodyCommonModelTpl : CommonModelTpl<_Scalar> {
   MatrixXs actuation_matrix_;
   bool run_aba_;
   /// TODO allow to configure how to retrieve q, v and tau
+
+  class Builder : public BaseBuilder {
+  public:
+    using Self = Builder;
+    using SelfRef = Self &;
+
+    SelfRef withPinocchioModel(PinocchioModel model) {
+      pin_model_ = std::move(model);
+      return *this;
+    }
+
+    SelfRef withActuationMatrix(const MatrixXs &actuation_matrix) {
+      actuation_matrix_ = actuation_matrix;
+      return *this;
+    }
+
+    SelfRef withRunAba(bool run_aba) { run_aba_ = run_aba; }
+
+    std::shared_ptr<Base> build() const override {
+      auto model = std::make_shared<Model>();
+      const int nv = pin_model_->nv;
+      if (!pin_model_) {
+        ALIGATOR_RUNTIME_ERROR(
+            "No pinocchio::Model provided to MultibodyCommonModelTpl");
+      }
+      if (actuation_matrix_.cols() == 0 && actuation_matrix_.rows() == 0) {
+        model->actuation_matrix_.setIdentity(nv, nv);
+      } else {
+        if (actuation_matrix_.rows() != nv || actuation_matrix_.cols() != nv) {
+          ALIGATOR_RUNTIME_ERROR(fmt::format(
+              "Wrong actuation_matrix size in MultibodyCommonModelTpl: "
+              "provided ({}, {}) but should be ({}, {})",
+              actuation_matrix_.rows(), actuation_matrix_.cols(), nv, nv));
+        }
+        model->actuation_matrix_ = actuation_matrix_;
+      }
+      model->pin_model_ = *pin_model_;
+      model->run_aba_ = run_aba_;
+      return model;
+    }
+
+  private:
+    boost::optional<PinocchioModel> pin_model_;
+    MatrixXs actuation_matrix_;
+    bool run_aba_ = false;
+  };
 };
 
 template <typename _Scalar>

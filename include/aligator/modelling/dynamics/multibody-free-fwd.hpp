@@ -2,7 +2,7 @@
 #pragma once
 
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
-#include "aligator/modelling/dynamics/multibody-common.hpp"
+#include "aligator/modelling/dynamics/multibody-common-model.hpp"
 
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 
@@ -31,6 +31,8 @@ struct MultibodyFreeFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using Data = MultibodyFreeFwdDataTpl<Scalar>;
   using Manifold = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
   using ManifoldPtr = shared_ptr<Manifold>;
+  using MultibodyCommonModel = MultibodyCommonModelTpl<Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
   using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   using Base::nu_;
@@ -57,10 +59,11 @@ struct MultibodyFreeFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
 
   Eigen::Index getActuationMatrixRank() const { return act_matrix_rank; }
 
-  virtual void forward(const ConstVectorRef &x, const ConstVectorRef &u,
-                       BaseData &data) const;
-  virtual void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
-                        BaseData &data) const;
+  void configure(CommonModelBuilderContainer &container) const override;
+  void forward(const ConstVectorRef &x, const ConstVectorRef &u,
+               BaseData &data) const override;
+  void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
+                BaseData &data) const override;
 
   shared_ptr<ContDataAbstract>
   createData(const CommonModelDataContainer &container) const;
