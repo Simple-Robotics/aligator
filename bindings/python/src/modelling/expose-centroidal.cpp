@@ -145,8 +145,8 @@ void exposeCentroidalFunctions() {
       "WrenchConeResidual",
       "A residual function :math:`r(x) = [fz, mu2 * fz2 - (fx2 + fy2)]` ",
       bp::init<const int, const int, const int, const double, const double,
-               const double, const double>(
-          bp::args("self", "ndx", "nu", "k", "mu", "L", "W", "epsilon")));
+               const double>(
+          bp::args("self", "ndx", "nu", "k", "mu", "L", "W")));
 
   bp::register_ptr_to_python<shared_ptr<WrenchConeData>>();
 

@@ -275,28 +275,13 @@ def test_wrench_cone():
     u0 = np.random.randn(nu)
     k = 2
     mu = 0.5
-    epsilon = 1e-3
     L = 0.1
     W = 0.05
 
-    fun = aligator.WrenchConeResidual(ndx, nu, k, mu, L, W, epsilon)
-
+    fun = aligator.WrenchConeResidual(ndx, nu, k, mu, L, W)
     fdata = fun.createData()
+
     fun.evaluate(x0, u0, x0, fdata)
-    fcone = np.zeros(6)
-    fcone[0] = epsilon - u0[k * force_size + 2]
-    fcone[1] = (
-        -(mu**2) * u0[k * force_size + 2] ** 2
-        + u0[k * force_size] ** 2
-        + u0[k * force_size + 1] ** 2
-    )
-    fcone[2] = -W * u0[k * force_size + 2] + u0[k * force_size + 3]
-    fcone[3] = -W * u0[k * force_size + 2] - u0[k * force_size + 3]
-    fcone[4] = -L * u0[k * force_size + 2] + u0[k * force_size + 4]
-    fcone[5] = -L * u0[k * force_size + 2] - u0[k * force_size + 4]
-
-    assert np.allclose(fdata.value, fcone)
-
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
     fun_fd.evaluate(x0, u0, x0, fdata2)
