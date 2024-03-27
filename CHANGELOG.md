@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add kinodynamics forward scheme
 - Add centroidal dynamics derivative cost to regularize the time derivative of centroidal dynamics
 - Add Python example of Solo stepping in place
+- Add wrench cone cost for 6D contact in centroidal dynamics
+- Add a 6D contact formulation for every centroidal cost and dynamics, including kinodynamics
 
 ## [0.5.0] - 2024-02-13
 
