@@ -42,12 +42,14 @@ struct ContinuousCentroidalFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   double mass_;
   Vector3s gravity_;
   ContactMap contact_map_;
+  int force_size_;
 
   const Manifold &space() const { return *space_; }
 
   ContinuousCentroidalFwdDynamicsTpl(const ManifoldPtr &state,
                                      const double mass, const Vector3s &gravity,
-                                     const ContactMap &contact_map);
+                                     const ContactMap &contact_map,
+                                     const int force_size);
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                BaseData &data) const;

@@ -29,12 +29,6 @@ KinodynamicsFwdDynamicsTpl<Scalar>::KinodynamicsFwdDynamicsTpl(
                     "now ({} and {}).",
                     contact_ids_.size(), contact_states_.size()));
   }
-  /* if (force_size_ != 3 or force_size_ != 6) {
-    ALIGATOR_DOMAIN_ERROR(
-        fmt::format("force size should be of size "
-                    "{} or {}.",
-                    3, 6));
-  } */
 }
 
 template <typename Scalar>
