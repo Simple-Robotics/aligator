@@ -5,15 +5,16 @@
 namespace aligator {
 
 /**
- * @brief This residual implements the "ice cream" friction cone for a
- * centroidal model with state \f$x = (c, h, L) \f$.
+ * @brief This residual implements the wrench cone for a
+ * centroidal model with control \f$u = (f_1,...,f_c) \f$
+ * with \f$f_k\f$ 6D spatial force.
  *
- * @details Considering an unilateral contact k exerting 3D force u,
- * the residual returns a two-dimension array with first component
- * equal to \f$ \epsilon - u_z \f$ (strictly positive normal force
- * condition) and second component equal to * \f$ u_{x,y}^2 -
- * \mu^2 * u_{z}^2 \f$ (non-slippage condition) with \f$ \epsilon
- * \f$ small threshold and \f$ \mu \f$ friction coefficient.
+ * @details Considering an contact k exerting 6D force f,
+ * the residual returns \f$ A f \f$ with \f$A \in \mathbb{R}^{16 \times 6}\f$
+ * the wrench cone matrix gathering Coulomb friction inequalities,
+ * CoP inequalities and limits on vertical torque. The usual
+ * wrench cone approximation with 4 facets is leveraged here.
+ * The frame in contact is supposed to be rectangular.
  */
 
 template <typename Scalar> struct WrenchConeDataTpl;
@@ -29,8 +30,9 @@ public:
   using Data = WrenchConeDataTpl<Scalar>;
 
   WrenchConeResidualTpl(const int ndx, const int nu, const int k,
-                        const double mu, const double L, const double W)
-      : Base(ndx, nu, 16), k_(k), mu_(mu), L_(L), W_(W) {}
+                        const double mu, const double half_length,
+                        const double half_width)
+      : Base(ndx, nu, 16), k_(k), mu_(mu), hL_(half_length), hW_(half_width) {}
 
   void evaluate(const ConstVectorRef &, const ConstVectorRef &u,
                 const ConstVectorRef &, BaseData &data) const;
@@ -43,10 +45,10 @@ public:
   }
 
 protected:
-  int k_;
-  double mu_;
-  double L_;
-  double W_;
+  int k_;     // Contact index corresponding to the contact frame
+  double mu_; // Friction coefficient
+  double hL_; // Half-length of the contact frame
+  double hW_; // Half-width of the contact frame
 };
 
 template <typename Scalar>
