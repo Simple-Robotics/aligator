@@ -29,15 +29,13 @@ public:
   using Data = WrenchConeDataTpl<Scalar>;
 
   WrenchConeResidualTpl(const int ndx, const int nu, const int k,
-                        const double mu, const double L, const double W,
-                        const double epsilon)
-      : Base(ndx, nu, 6), k_(k), mu2_(mu * mu), L_(L), W_(W),
-        epsilon_(epsilon) {}
+                        const double mu, const double L, const double W)
+      : Base(ndx, nu, 16), k_(k), mu_(mu), L_(L), W_(W) {}
 
   void evaluate(const ConstVectorRef &, const ConstVectorRef &u,
                 const ConstVectorRef &, BaseData &data) const;
 
-  void computeJacobians(const ConstVectorRef &, const ConstVectorRef &u,
+  void computeJacobians(const ConstVectorRef &, const ConstVectorRef &,
                         const ConstVectorRef &, BaseData &data) const;
 
   shared_ptr<BaseData> createData() const {
@@ -46,17 +44,16 @@ public:
 
 protected:
   int k_;
-  double mu2_;
+  double mu_;
   double L_;
   double W_;
-  double epsilon_;
 };
 
 template <typename Scalar>
 struct WrenchConeDataTpl : StageFunctionDataTpl<Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Base = StageFunctionDataTpl<Scalar>;
-  using Matrix6s = Eigen::Matrix<Scalar, 6, 6>;
+  using Matrix6s = Eigen::Matrix<Scalar, 16, 6>;
 
   Matrix6s Jtemp_;
 
