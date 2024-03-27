@@ -30,12 +30,7 @@ public:
 
   FrictionConeResidualTpl(const int ndx, const int nu, const int k,
                           const double mu, const double epsilon)
-      : Base(ndx, nu, 2), nk_(nu / 3), k_(k), mu2_(mu * mu), epsilon_(epsilon) {
-    if (k_ >= nk_) {
-      ALIGATOR_RUNTIME_ERROR(
-          fmt::format("Invalid contact index: k should be < {}. ", nk_));
-    }
-  }
+      : Base(ndx, nu, 2), k_(k), mu2_(mu * mu), epsilon_(epsilon) {}
 
   void evaluate(const ConstVectorRef &, const ConstVectorRef &u,
                 const ConstVectorRef &, BaseData &data) const;
@@ -48,7 +43,6 @@ public:
   }
 
 protected:
-  int nk_;
   int k_;
   double mu2_;
   double epsilon_;

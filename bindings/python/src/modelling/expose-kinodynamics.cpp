@@ -29,9 +29,10 @@ void exposeKinodynamics() {
       "Centroidal forward dynamics + kinematics using Pinocchio.",
       bp::init<const ManifoldPtr &, const Model &, const Vector3s &,
                const std::vector<bool> &,
-               const std::vector<pinocchio::FrameIndex> &>(
-          "Constructor.", bp::args("self", "space", "model", "gravity",
-                                   "contact_states", "contact_ids")))
+               const std::vector<pinocchio::FrameIndex> &, const int>(
+          "Constructor.",
+          bp::args("self", "space", "model", "gravity", "contact_states",
+                   "contact_ids", "force_size")))
       .def_readwrite("contact_states",
                      &KinodynamicsFwdDynamics::contact_states_);
 

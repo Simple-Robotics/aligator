@@ -44,6 +44,7 @@ struct KinodynamicsFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   Model pin_model_;
   double mass_;
   Vector3s gravity_;
+  int force_size_;
 
   std::vector<bool> contact_states_;
   std::vector<pinocchio::FrameIndex> contact_ids_;
@@ -53,7 +54,8 @@ struct KinodynamicsFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   KinodynamicsFwdDynamicsTpl(
       const ManifoldPtr &state, const Model &model, const Vector3s &gravity,
       const std::vector<bool> &contact_states,
-      const std::vector<pinocchio::FrameIndex> &contact_ids);
+      const std::vector<pinocchio::FrameIndex> &contact_ids,
+      const int force_size);
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                BaseData &data) const;

@@ -13,7 +13,7 @@ void CentroidalAccelerationResidualTpl<Scalar>::evaluate(
   d.value_.setZero();
   for (std::size_t i = 0; i < nk_; i++) {
     if (contact_map_.getContactState(i)) {
-      d.value_ += u.template segment<3>(long(i) * 3);
+      d.value_ += u.template segment<3>(long(i) * force_size_);
     }
   }
 
@@ -30,8 +30,8 @@ void CentroidalAccelerationResidualTpl<Scalar>::computeJacobians(
   d.Ju_.setZero();
   for (std::size_t i = 0; i < nk_; i++) {
     if (contact_map_.getContactState(i)) {
-      d.Ju_.template block<3, 3>(0, long(i) * 3).setIdentity();
-      d.Ju_.template block<3, 3>(0, long(i) * 3) *= 1 / mass_;
+      d.Ju_.template block<3, 3>(0, long(i) * force_size_).setIdentity();
+      d.Ju_.template block<3, 3>(0, long(i) * force_size_) *= 1 / mass_;
     }
   }
 }
