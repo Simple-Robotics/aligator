@@ -80,8 +80,8 @@ template <typename Scalar> struct MultibodyFreeFwdDataTpl : ODEDataTpl<Scalar> {
   using Base = ODEDataTpl<Scalar>;
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
-  using MultibodyCommonData = MultibodyCommonDataTpl<Scalar>;
   using MultibodyCommon = MultibodyCommonTpl<Scalar>;
+  using MultibodyCommonData = MultibodyCommonDataTpl<Scalar>;
   using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   MultibodyFreeFwdDataTpl(const MultibodyFreeFwdDynamicsTpl<Scalar> *cont_dyn,
