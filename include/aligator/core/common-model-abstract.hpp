@@ -39,6 +39,7 @@ template <typename _Scalar> struct CommonModelTpl {
 template <typename _Scalar> struct CommonModelDataTpl {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  using Base = CommonModelDataTpl<Scalar>;
 
   virtual ~CommonModelDataTpl() = default;
 };
@@ -49,6 +50,7 @@ public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Model = CommonModelTpl<Scalar>;
+  using Base = CommonModelBuilderTpl<Scalar>;
 
   virtual std::shared_ptr<Model> build() const = 0;
 
@@ -56,6 +58,25 @@ public:
 };
 
 } // namespace aligator
+//
+#define ALIGATOR_COMMON_MODEL_TYPEDEFS(Scalar, _Base, _Data, _Builder)         \
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);                                           \
+  using Base = _Base<Scalar>;                                                  \
+  using Data = _Data<Scalar>;                                                  \
+  using Builder = _Builder<Scalar>;                                            \
+  using BaseData = typename Base::Data
+
+#define ALIGATOR_COMMON_DATA_TYPEDEFS(Scalar, _Model)                          \
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);                                           \
+  using Model = _Model<Scalar>;                                                \
+  using Base = typename Model::Data::Base
+
+#define ALIGATOR_COMMON_BUILDER_TYPEDEFS(Scalar, _Model)                       \
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);                                           \
+  using Model = _Model<Scalar>;                                                \
+  using BaseModel = typename Model::Base;                                      \
+  using Base = typename Model::Builder::Base;                                  \
+  using Self = typename Model::Builder
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/core/common-model-abstract.txx"
