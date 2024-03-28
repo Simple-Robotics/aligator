@@ -147,6 +147,20 @@ protected:
   }
 };
 
+#define ALIGATOR_STAGE_FUNCTION_TYPEDEFS(Scalar, _Data)                        \
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);                                           \
+  using Base = StageFunctionTpl<Scalar>;                                       \
+  using BaseData = StageFunctionDataTpl<Scalar>;                               \
+  using Data = _Data<Scalar>;                                                  \
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;  \
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>
+
+#define ALIGATOR_STAGE_FUNCTION_DATA_TYPEDEFS(Scalar, _Model)                  \
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);                                           \
+  using Model = _Model<Scalar>;                                                \
+  using Base = StageFunctionDataTpl<Scalar>;                                   \
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>
+
 } // namespace aligator
 
 #include "aligator/core/function-abstract.hxx"
