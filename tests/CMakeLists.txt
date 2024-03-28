@@ -44,7 +44,14 @@ function(add_aligator_test name)
   target_link_libraries(${test_name} PRIVATE Boost::unit_test_framework)
 endfunction(add_aligator_test)
 
-set(TEST_NAMES integrators problem costs continuous utils solver-storage)
+set(TEST_NAMES
+    integrators
+    problem
+    costs
+    continuous
+    utils
+    solver-storage
+    common)
 
 foreach(test_name ${TEST_NAMES})
   add_aligator_test(${test_name})

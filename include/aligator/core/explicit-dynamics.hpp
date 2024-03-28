@@ -48,6 +48,7 @@ public:
                         const ConstVectorRef &y, BaseData &data) const;
 
   virtual shared_ptr<BaseData> createData() const;
+  using Base::createData;
 };
 
 /// @brief    Specific data struct for explicit dynamics

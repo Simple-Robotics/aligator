@@ -34,7 +34,7 @@ class MyODE(dynamics.ODEAbstract):
         Jp[:, :3] = 0.0
         Jw[:, 3:] = 0.0
 
-    def createData(self):
+    def createData(self, container):
         return MyODEData(self)
 
 
@@ -49,14 +49,14 @@ def test_abstract():
     space = manifolds.SO3()
     nu = 1
     dae = dynamics.ContinuousDynamicsBase(space, nu)
-    dae_data = dae.createData()
+    dae_data = dae.createData(aligator.CommonModelDataContainer())
     assert isinstance(dae_data, dynamics.ContinuousDynamicsData)
     assert hasattr(dae_data, "Jx")
     assert hasattr(dae_data, "Ju")
     assert hasattr(dae_data, "Jxdot")
 
     ode = dynamics.ODEAbstract(space, nu)
-    ode_data = ode.createData()
+    ode_data = ode.createData(aligator.CommonModelDataContainer())
     assert isinstance(ode_data, dynamics.ODEData)
     assert hasattr(ode_data, "xdot")
 
@@ -80,7 +80,7 @@ def test_multibody_free():
         nu = model.nv
         B = np.eye(nu)
         ode = dynamics.MultibodyFreeFwdDynamics(space, B)
-        data = ode.createData()
+        data = ode.createData(aligator.CommonModelDataContainer())
         assert isinstance(data, dynamics.MultibodyFreeFwdData)
         assert hasattr(data, "tau")
 
@@ -117,7 +117,7 @@ def test_centroidal():
     ]
     contact_map = aligator.ContactMap(contact_states, contact_poses)
     ode = dynamics.CentroidalFwdDynamics(space, mass, gravity, contact_map)
-    data = ode.createData()
+    data = ode.createData(aligator.CommonModelDataContainer())
 
     assert isinstance(data, dynamics.CentroidalFwdData)
 
@@ -161,7 +161,7 @@ def test_centroidal_diff():
     ]
     contact_map = aligator.ContactMap(contact_states, contact_poses)
     ode = dynamics.CentroidalFwdDynamics(space, mass, gravity, contact_map)
-    data = ode.createData()
+    data = ode.createData(aligator.CommonModelDataContainer())
 
     x0 = np.random.randn(nx)
     u0 = np.random.randn(nu)
@@ -191,7 +191,7 @@ def test_continuous_centroidal():
     ]
     contact_map = aligator.ContactMap(contact_states, contact_poses)
     ode = dynamics.ContinuousCentroidalFwdDynamics(space, mass, gravity, contact_map)
-    data = ode.createData()
+    data = ode.createData(aligator.CommonModelDataContainer())
 
     assert isinstance(data, dynamics.ContinuousCentroidalFwdData)
 
@@ -238,7 +238,7 @@ def test_continuous_centroidal_diff():
     ]
     contact_map = aligator.ContactMap(contact_states, contact_poses)
     ode = dynamics.ContinuousCentroidalFwdDynamics(space, mass, gravity, contact_map)
-    data = ode.createData()
+    data = ode.createData(aligator.CommonModelDataContainer())
 
     x0 = np.random.randn(nx)
     u0 = np.random.randn(nu)
@@ -276,7 +276,7 @@ def test_kinodynamics():
     ode = dynamics.KinodynamicsFwdDynamics(
         space, model, gravity, contact_states, contact_ids
     )
-    data = ode.createData()
+    data = ode.createData(aligator.CommonModelDataContainer())
 
     assert isinstance(data, dynamics.KinodynamicsFwdData)
 
@@ -308,7 +308,7 @@ def test_kinodynamics_diff():
     ode = dynamics.KinodynamicsFwdDynamics(
         space, model, gravity, contact_states, contact_ids
     )
-    data = ode.createData()
+    data = ode.createData(aligator.CommonModelDataContainer())
 
     x0 = space.neutral()
     ndx = space.ndx

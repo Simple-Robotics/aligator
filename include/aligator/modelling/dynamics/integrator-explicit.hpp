@@ -21,6 +21,8 @@ struct ExplicitIntegratorAbstractTpl : ExplicitDynamicsModelTpl<_Scalar> {
   using ODEType = ODEAbstractTpl<Scalar>;
   using Base = ExplicitDynamicsModelTpl<Scalar>;
   using Data = ExplicitIntegratorDataTpl<Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   using Base::computeJacobians;
   using Base::evaluate;
@@ -36,7 +38,14 @@ struct ExplicitIntegratorAbstractTpl : ExplicitDynamicsModelTpl<_Scalar> {
       const shared_ptr<ODEType> &cont_dynamics);
   virtual ~ExplicitIntegratorAbstractTpl() = default;
 
+  /// @brief Create and configure CommonModelTpl
+  void configure(CommonModelBuilderContainer &common_buider_container) const {
+    ode_->configure(common_buider_container);
+  }
+
   shared_ptr<DynamicsDataTpl<Scalar>> createData() const;
+  shared_ptr<DynamicsDataTpl<Scalar>>
+  createData(const CommonModelDataContainer &container) const;
 };
 
 template <typename _Scalar>
@@ -44,10 +53,14 @@ struct ExplicitIntegratorDataTpl : ExplicitDynamicsDataTpl<_Scalar> {
   using Scalar = _Scalar;
   using Base = ExplicitDynamicsDataTpl<Scalar>;
   using ODEData = ODEDataTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
   shared_ptr<ODEData> continuous_data;
 
   explicit ExplicitIntegratorDataTpl(
       const ExplicitIntegratorAbstractTpl<Scalar> *integrator);
+  ExplicitIntegratorDataTpl(
+      const ExplicitIntegratorAbstractTpl<Scalar> *integrator,
+      const CommonModelDataContainer &container);
   virtual ~ExplicitIntegratorDataTpl() = default;
 
   using Base::dx_;

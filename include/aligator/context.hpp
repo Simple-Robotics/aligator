@@ -18,6 +18,12 @@ using StageFunction = StageFunctionTpl<Scalar>;
 using UnaryFunction = UnaryFunctionTpl<Scalar>;
 using StageFunctionData = StageFunctionDataTpl<Scalar>;
 using StageConstraint = StageConstraintTpl<Scalar>;
+using CommonModel = CommonModelTpl<Scalar>;
+using CommonModelData = CommonModelDataTpl<Scalar>;
+using CommonModelBuilder = CommonModelBuilderTpl<Scalar>;
+using CommonModelContainer = CommonModelContainerTpl<Scalar>;
+using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
+using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
 
 using ConstraintSet = ConstraintSetBase<Scalar>;
 

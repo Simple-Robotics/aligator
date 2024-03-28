@@ -2,7 +2,7 @@ import aligator
 import numpy as np
 import pytest
 
-from aligator import manifolds
+from aligator import manifolds, CommonModelDataContainer
 
 
 def test_manifold_diff():
@@ -11,7 +11,7 @@ def test_manifold_diff():
     target = space.rand()
     fun = aligator.StateErrorResidual(space, nu, target)
 
-    data = fun.createData()
+    data = fun.createData(CommonModelDataContainer())
 
     x = space.rand()
     u = np.random.randn(nu)
@@ -31,7 +31,7 @@ def test_manifold_diff():
     assert A.shape[1] == fun.nr
     fun_lin = aligator.LinearFunctionComposition(fun, A, b)
     assert fun_lin.nr == A.shape[0]
-    data3 = fun_lin.createData()
+    data3 = fun_lin.createData(CommonModelDataContainer())
     sd3 = data3.sub_data
     fun_lin.evaluate(x, u, y, data3)
     print("d3 value:", data3.value)
@@ -59,11 +59,11 @@ def test_slicing():
     x0 = space.rand()
     u0 = np.zeros(fn.nu)
 
-    dfull = fn.createData()
+    dfull = fn.createData(CommonModelDataContainer())
 
     idxs = [0, 2]
     fslice = fn[idxs]
-    dslice = fslice.createData()
+    dslice = fslice.createData(CommonModelDataContainer())
     assert idxs == fslice.indices.tolist()
 
     fn.evaluate(x0, u0, x0, dfull)

@@ -62,6 +62,7 @@ struct FunctionSliceXprTpl<Scalar, UnaryFunctionTpl<Scalar>>
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using BaseData = StageFunctionDataTpl<Scalar>;
   using Data = FunctionSliceDataTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
   ALIGATOR_UNARY_FUNCTION_INTERFACE(Scalar);
   using SliceImpl = detail::slice_impl_tpl<UnaryFunctionTpl<Scalar>>;
 

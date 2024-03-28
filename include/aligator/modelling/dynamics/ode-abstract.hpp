@@ -44,6 +44,7 @@ struct ODEAbstractTpl : ContinuousDynamicsAbstractTpl<_Scalar> {
                         ContDataAbstract &data) const override;
 
   virtual shared_ptr<ContDataAbstract> createData() const override;
+  using Base::createData;
 };
 
 template <typename _Scalar>
@@ -61,6 +62,21 @@ struct ODEDataTpl : ContinuousDynamicsDataTpl<_Scalar> {
 
 } // namespace dynamics
 } // namespace aligator
+
+#define ALIGATOR_ODE_TYPEDEFS(Scalar, _Data)                                   \
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);                                           \
+  using Base = ODEAbstractTpl<Scalar>;                                         \
+  using BaseData = ODEDataTpl<Scalar>;                                         \
+  using ContinuousData = ContinuousDynamicsDataTpl<Scalar>;                    \
+  using Data = _Data<Scalar>;                                                  \
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;  \
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>
+
+#define ALIGATOR_ODE_DATA_TYPEDEFS(Scalar, _Model)                             \
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);                                           \
+  using Model = _Model<Scalar>;                                                \
+  using Base = ODEDataTpl<Scalar>;                                             \
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>
 
 #include "aligator/modelling/dynamics/ode-abstract.hxx"
 

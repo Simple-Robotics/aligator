@@ -32,6 +32,7 @@ struct IntegratorMidpointTpl : IntegratorAbstractTpl<_Scalar> {
   using ContinuousDynamics = ContinuousDynamicsAbstractTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using Data = IntegratorMidpointDataTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   Scalar timestep_;
 
@@ -46,6 +47,8 @@ struct IntegratorMidpointTpl : IntegratorAbstractTpl<_Scalar> {
                         DynamicsDataTpl<Scalar> &data) const;
 
   shared_ptr<DynamicsDataTpl<Scalar>> createData() const;
+  shared_ptr<DynamicsDataTpl<Scalar>>
+  createData(const CommonModelDataContainer &container) const;
 };
 
 template <typename _Scalar>
@@ -53,6 +56,7 @@ struct IntegratorMidpointDataTpl : IntegratorDataTpl<_Scalar> {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = IntegratorDataTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   VectorXs x1_;
   VectorXs dx1_;
@@ -66,6 +70,20 @@ struct IntegratorMidpointDataTpl : IntegratorDataTpl<_Scalar> {
       : Base(integrator), x1_(integrator->space().neutral()), dx1_(this->ndx1),
         J_v_0(this->ndx1, this->ndx1), J_v_1(this->ndx1, this->ndx1),
         Jtm0(this->ndx1, this->ndx1), Jtm1(this->ndx1, this->ndx1) {
+    x1_.setZero();
+    dx1_.setZero();
+    J_v_0.setZero();
+    J_v_1.setZero();
+    Jtm0.setZero();
+    Jtm1.setZero();
+  }
+
+  IntegratorMidpointDataTpl(const IntegratorMidpointTpl<Scalar> *integrator,
+                            const CommonModelDataContainer &container)
+      : Base(integrator, container), x1_(integrator->space().neutral()),
+        dx1_(this->ndx1), J_v_0(this->ndx1, this->ndx1),
+        J_v_1(this->ndx1, this->ndx1), Jtm0(this->ndx1, this->ndx1),
+        Jtm1(this->ndx1, this->ndx1) {
     x1_.setZero();
     dx1_.setZero();
     J_v_0.setZero();

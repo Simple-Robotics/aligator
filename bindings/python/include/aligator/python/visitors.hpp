@@ -4,6 +4,7 @@
 
 #include <eigenpy/fwd.hpp>
 #include <fmt/format.h>
+#include "aligator/python/fwd.hpp"
 #include "aligator/python/utils/deprecation.hpp"
 
 namespace aligator {
@@ -20,8 +21,20 @@ struct ClonePythonVisitor : bp::def_visitor<ClonePythonVisitor<T>> {
 template <typename T>
 struct CreateDataPythonVisitor : bp::def_visitor<CreateDataPythonVisitor<T>> {
   template <typename Pyclass> void visit(Pyclass &obj) const {
-    obj.def("createData", &T::createData, bp::args("self"),
+    using ReturnPtrType = decltype(std::declval<T>().createData());
+    ReturnPtrType (T::*createData)(const context::CommonModelDataContainer &)
+        const = &T::createData;
+    obj.def("createData", createData, bp::args("self", "container"),
             "Create a data object.");
+  }
+};
+
+template <typename T, typename TWrapper>
+struct ConfigurePythonVisitor
+    : bp::def_visitor<ConfigurePythonVisitor<T, TWrapper>> {
+  template <typename Pyclass> void visit(Pyclass &obj) const {
+    obj.def("configure", &T::configure, &TWrapper::default_configure,
+            bp::args("self", "container"), "Create and configure CommonModel.");
   }
 };
 
@@ -35,8 +48,11 @@ template <typename T, typename TWrapper>
 struct CreateDataPolymorphicPythonVisitor
     : bp::def_visitor<CreateDataPolymorphicPythonVisitor<T, TWrapper>> {
   template <typename PyClass> void visit(PyClass &obj) const {
-    obj.def("createData", &T::createData, &TWrapper::default_createData,
-            bp::args("self"), "Create a data object.");
+    using ReturnPtrType = decltype(std::declval<T>().createData());
+    ReturnPtrType (T::*createData)(const context::CommonModelDataContainer &)
+        const = &T::createData;
+    obj.def("createData", createData, &TWrapper::default_createData,
+            bp::args("self", "container"), "Create a data object.");
   }
 };
 

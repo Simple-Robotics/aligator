@@ -5,6 +5,8 @@
 
 #include "aligator/fwd.hpp"
 #include "aligator/core/clone.hpp"
+#include "aligator/core/common-model-builder-container.hpp"
+#include "aligator/core/common-model-data-container.hpp"
 
 #include <fmt/format.h>
 #include <ostream>
@@ -19,6 +21,8 @@ public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Data = StageFunctionDataTpl<Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   /// @brief Current state dimension
   const int ndx1;
@@ -33,6 +37,10 @@ public:
 
   /// Constructor where ndx2 = ndx1.
   StageFunctionTpl(const int ndx, const int nu, const int nr);
+
+  /// @brief Create and configure CommonModelTpl
+  virtual void configure(ALIGATOR_MAYBE_UNUSED CommonModelBuilderContainer
+                             &common_buider_container) const {}
 
   /**
    * @brief       Evaluate the function.
@@ -77,6 +85,11 @@ public:
                                             Data &data) const;
 
   virtual ~StageFunctionTpl() = default;
+
+  /// @brief Instantiate a Data object with CommonModelData.
+  /// By default, call createData()
+  virtual shared_ptr<Data>
+  createData(const CommonModelDataContainer &container) const;
 
   /// @brief Instantiate a Data object.
   virtual shared_ptr<Data> createData() const;
@@ -133,6 +146,20 @@ protected:
     return new StageFunctionDataTpl(*this);
   }
 };
+
+#define ALIGATOR_STAGE_FUNCTION_TYPEDEFS(Scalar, _Data)                        \
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);                                           \
+  using Base = StageFunctionTpl<Scalar>;                                       \
+  using BaseData = StageFunctionDataTpl<Scalar>;                               \
+  using Data = _Data<Scalar>;                                                  \
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;  \
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>
+
+#define ALIGATOR_STAGE_FUNCTION_DATA_TYPEDEFS(Scalar, _Model)                  \
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);                                           \
+  using Model = _Model<Scalar>;                                                \
+  using Base = StageFunctionDataTpl<Scalar>;                                   \
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>
 
 } // namespace aligator
 

@@ -59,6 +59,8 @@ void exposeStage() {
                     bp::make_function(&StageModel::dyn_model,
                                       bp::return_internal_reference<>()),
                     "Stage dynamics.")
+      .def("configure", &StageModel::configure, bp::args("self"),
+           "Configure cost, constraints and dynamics")
       .def("evaluate", &StageModel::evaluate,
            bp::args("self", "x", "u", "y", "data"),
            "Evaluate the stage cost, dynamics, constraints.")
@@ -72,7 +74,8 @@ void exposeStage() {
                     "Number of primal variables.")
       .add_property("num_dual", &StageModel::numDual,
                     "Number of dual variables.")
-      .def(CreateDataPythonVisitor<StageModel>())
+      .def("createData", &StageModel::createData, bp::args("self"),
+           "Create a data object.")
       .def(ClonePythonVisitor<StageModel>())
       .def(PrintableVisitor<StageModel>());
 
@@ -83,6 +86,8 @@ void exposeStage() {
   bp::class_<StageData>("StageData", "Data struct for StageModel objects.",
                         bp::init<const StageModel &>())
       .def_readonly("cost_data", &StageData::cost_data)
+      .def_readonly("common_model_data_container",
+                    &StageData::common_model_data_container)
       .def_readwrite("constraint_data", &StageData::constraint_data)
       .def(ClonePythonVisitor<StageData>());
 }

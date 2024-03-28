@@ -128,6 +128,7 @@ void SolverProxDDP<Scalar>::compute_dir_x0(const Problem &problem) {
 
 template <typename Scalar>
 void SolverProxDDP<Scalar>::setup(const Problem &problem) {
+  problem.configure();
   workspace_ = Workspace(problem, ldlt_algo_choice_);
   results_ = Results(problem);
   linesearch_.setOptions(ls_params);

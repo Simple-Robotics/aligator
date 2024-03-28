@@ -13,6 +13,8 @@ template <typename _Scalar> struct DirectSumCostTpl : CostAbstractTpl<_Scalar> {
   using BaseCost = CostAbstractTpl<Scalar>;
   using BaseData = CostDataAbstractTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   struct Data;
 
@@ -24,7 +26,11 @@ template <typename _Scalar> struct DirectSumCostTpl : CostAbstractTpl<_Scalar> {
   shared_ptr<BaseCost> c1_, c2_;
 
   shared_ptr<BaseData> createData() const override;
+  shared_ptr<BaseData>
+  createData(const CommonModelDataContainer &container) const override;
 
+  void configure(
+      CommonModelBuilderContainer &common_buider_container) const override;
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 BaseData &data) const override;
   void computeGradients(const ConstVectorRef &x, const ConstVectorRef &u,
@@ -42,11 +48,25 @@ private:
 
 template <typename Scalar> struct DirectSumCostTpl<Scalar>::Data : BaseData {
 
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
+
   shared_ptr<BaseData> data1_, data2_;
   Data(const DirectSumCostTpl &model)
       : BaseData(model.ndx(), model.nu), data1_(model.c1_->createData()),
         data2_(model.c2_->createData()) {}
+
+  Data(const DirectSumCostTpl &model, const CommonModelDataContainer &container)
+      : BaseData(model.ndx(), model.nu),
+        data1_(model.c1_->createData(container)),
+        data2_(model.c2_->createData(container)) {}
 };
+
+template <typename Scalar>
+void DirectSumCostTpl<Scalar>::configure(
+    CommonModelBuilderContainer &common_buider_container) const {
+  c1_->configure(common_buider_container);
+  c2_->configure(common_buider_container);
+}
 
 template <typename Scalar>
 void DirectSumCostTpl<Scalar>::evaluate(const ConstVectorRef &x,
@@ -117,6 +137,12 @@ void DirectSumCostTpl<Scalar>::computeHessians(const ConstVectorRef &x,
 template <typename Scalar>
 auto DirectSumCostTpl<Scalar>::createData() const -> shared_ptr<BaseData> {
   return std::make_shared<Data>(*this);
+}
+
+template <typename Scalar>
+auto DirectSumCostTpl<Scalar>::createData(
+    const CommonModelDataContainer &container) const -> shared_ptr<BaseData> {
+  return std::make_shared<Data>(*this, container);
 }
 
 template <typename Scalar>

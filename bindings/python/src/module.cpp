@@ -70,6 +70,7 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
   bp::import("proxsuite_nlp");
 
   exposeEnums();
+  exposeCommonModel();
   exposeContainers();
   exposeFunctions();
   exposeCosts();

@@ -1,6 +1,6 @@
 import numpy as np
 import aligator
-from aligator import dynamics, manifolds
+from aligator import dynamics, manifolds, CommonModelDataContainer
 import pytest
 from utils import create_linear_ode, create_multibody_ode
 
@@ -23,7 +23,7 @@ def function_finite_difference(
     """
     if y0 is None:
         y0 = x0
-    data = fun.createData()
+    data = fun.createData(CommonModelDataContainer())
     Jx_nd = np.zeros((fun.nr, fun.ndx1))
     ei = np.zeros(fun.ndx1)
     fun.evaluate(x0, u0, y0, data)
@@ -57,7 +57,7 @@ def function_finite_difference(
 
 
 def finite_difference_explicit_dyn(dyn: dynamics.IntegratorAbstract, x0, u0, eps):
-    data = dyn.createData()
+    data = dyn.createData(CommonModelDataContainer())
     space: manifolds.ManifoldAbstract = dyn.space
     Jx_nd = np.zeros((dyn.ndx2, dyn.ndx1))
     ei = np.zeros(dyn.ndx1)
@@ -112,7 +112,7 @@ def test_implicit_integrator(
     x = dae.space.rand()
     x = np.clip(x, -5, 5)
     u = np.random.randn(dyn.nu)
-    data = dyn.createData()
+    data = dyn.createData(CommonModelDataContainer())
     dyn.evaluate(x, u, x, data)
     assert isinstance(data, dynamics.IntegratorData)
 
@@ -129,7 +129,7 @@ def exp_dyn_fd_check(dyn, x, u, eps=EPSILON):
     Jx_nd, Ju_nd = finite_difference_explicit_dyn(dyn, x, u, eps=eps)
 
     np.set_printoptions(precision=3, linewidth=250)
-    data = dyn.createData()
+    data = dyn.createData(CommonModelDataContainer())
     dyn.forward(x, u, data)
     dyn.dForward(x, u, data)
     assert np.allclose(data.Jx, Jx_nd, atol=ATOL)

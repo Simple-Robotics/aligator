@@ -6,9 +6,13 @@
 #include "aligator/core/cost-abstract.hpp"
 #include "aligator/core/dynamics.hpp"
 #include "aligator/core/constraint.hpp"
+#include "aligator/core/common-model-container.hpp"
+#include "aligator/core/common-model-builder-container.hpp"
 #include "aligator/utils/exceptions.hpp"
 
 #include "aligator/core/clone.hpp"
+
+#include <boost/optional.hpp>
 
 namespace aligator {
 
@@ -35,6 +39,9 @@ public:
   using Cost = CostAbstractTpl<Scalar>;
   using CostPtr = shared_ptr<Cost>;
   using Data = StageDataTpl<Scalar>;
+  using CommonModel = CommonModelTpl<Scalar>;
+  using CommonModelContainer = CommonModelContainerTpl<Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
 
   /// State space for the current state \f$x_k\f$.
   ManifoldPtr xspace_;
@@ -46,6 +53,12 @@ public:
   CostPtr cost_;
   /// Constraint manager.
   ConstraintStackTpl<Scalar> constraints_;
+  // TODO to avoid mutable, we must call configure outside setup
+  // TODO or remove setup constness
+  /// Store all CommonModel
+  mutable CommonModelContainer common_model_container_;
+  /// Contains all CommonModelBuilder
+  mutable CommonModelBuilderContainer common_model_builder_container_;
 
   /// Constructor assumes the control space is a Euclidean space of
   /// dimension @p nu.
@@ -87,6 +100,9 @@ public:
   /// @copybrief  addConstraint().
   /// @details    Adds a constraint by allocating a new StageConstraintTpl.
   void addConstraint(FunctionPtr func, ConstraintSetPtr cstr_set);
+
+  /* Configure costs, constraints, ... */
+  virtual void configure() const;
 
   /* Evaluate costs, constraints, ... */
 

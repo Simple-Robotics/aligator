@@ -52,13 +52,13 @@ def test_com_translation():
     fun = aligator.CentroidalCoMResidual(ndx, nu, p_ref)
     assert np.allclose(p_ref, fun.getReference())
 
-    fdata = fun.createData()
+    fdata = fun.createData(aligator.CommonModelDataContainer())
     fun.evaluate(x0, fdata)
 
     assert np.allclose(fdata.value, x0[:3] - p_ref)
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
-    fdata2 = fun_fd.createData()
+    fdata2 = fun_fd.createData(aligator.CommonModelDataContainer())
     fun_fd.evaluate(x0, u0, x0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
@@ -83,13 +83,13 @@ def test_linear_momentum():
     fun = aligator.LinearMomentumResidual(ndx, nu, h_ref)
     assert np.allclose(h_ref, fun.getReference())
 
-    fdata = fun.createData()
+    fdata = fun.createData(aligator.CommonModelDataContainer())
     fun.evaluate(x0, fdata)
 
     assert np.allclose(fdata.value, x0[3:6] - h_ref)
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
-    fdata2 = fun_fd.createData()
+    fdata2 = fun_fd.createData(aligator.CommonModelDataContainer())
     fun_fd.evaluate(x0, u0, x0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
@@ -114,13 +114,13 @@ def test_angular_momentum():
     fun = aligator.AngularMomentumResidual(ndx, nu, L_ref)
     assert np.allclose(L_ref, fun.getReference())
 
-    fdata = fun.createData()
+    fdata = fun.createData(aligator.CommonModelDataContainer())
     fun.evaluate(x0, fdata)
 
     assert np.allclose(fdata.value, x0[6:] - L_ref)
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
-    fdata2 = fun_fd.createData()
+    fdata2 = fun_fd.createData(aligator.CommonModelDataContainer())
     fun_fd.evaluate(x0, u0, x0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
@@ -151,7 +151,7 @@ def test_acceleration():
     contact_map = aligator.ContactMap(contact_states, contact_poses)
 
     fun = aligator.CentroidalAccelerationResidual(ndx, nu, mass, gravity, contact_map)
-    fdata = fun.createData()
+    fdata = fun.createData(aligator.CommonModelDataContainer())
     fun.evaluate(x0, u0, x0, fdata)
 
     comddot = np.zeros(3)
@@ -165,7 +165,7 @@ def test_acceleration():
     assert np.allclose(fdata.value, comddot)
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
-    fdata2 = fun_fd.createData()
+    fdata2 = fun_fd.createData(aligator.CommonModelDataContainer())
     fun_fd.evaluate(x0, u0, x0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
@@ -194,7 +194,7 @@ def test_friction_cone():
 
     fun = aligator.FrictionConeResidual(ndx, nu, k, mu, epsilon)
 
-    fdata = fun.createData()
+    fdata = fun.createData(aligator.CommonModelDataContainer())
     fun.evaluate(x0, u0, x0, fdata)
     fcone = np.zeros(2)
     fcone[0] = epsilon - u0[k * 3 + 2]
@@ -203,7 +203,7 @@ def test_friction_cone():
     assert np.allclose(fdata.value, fcone)
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
-    fdata2 = fun_fd.createData()
+    fdata2 = fun_fd.createData(aligator.CommonModelDataContainer())
     fun_fd.evaluate(x0, u0, x0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
@@ -236,7 +236,7 @@ def test_angular_acceleration():
     contact_map = aligator.ContactMap(contact_states, contact_poses)
 
     fun = aligator.AngularAccelerationResidual(ndx, nu, mass, gravity, contact_map)
-    fdata = fun.createData()
+    fdata = fun.createData(aligator.CommonModelDataContainer())
 
     fun.evaluate(x0, u0, x0, fdata)
 
@@ -248,7 +248,7 @@ def test_angular_acceleration():
     assert np.allclose(fdata.value, Ldot)
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
-    fdata2 = fun_fd.createData()
+    fdata2 = fun_fd.createData(aligator.CommonModelDataContainer())
     fun_fd.evaluate(x0, u0, x0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
@@ -293,15 +293,15 @@ def test_wrapper_angular_acceleration():
     )
     fun = aligator.CentroidalWrapperResidual(wrapped_fun)
 
-    fdata = fun.createData()
-    wrapped_fdata = wrapped_fun.createData()
+    fdata = fun.createData(aligator.CommonModelDataContainer())
+    wrapped_fdata = wrapped_fun.createData(aligator.CommonModelDataContainer())
     wrapped_fun.evaluate(wx0, wu0, wx0, wrapped_fdata)
     fun.evaluate(x0, fdata)
 
     assert np.allclose(fdata.value, wrapped_fdata.value)
 
     fun_fd = aligator.FiniteDifferenceHelper(wrapping_space, fun, FD_EPS)
-    fdata2 = fun_fd.createData()
+    fdata2 = fun_fd.createData(aligator.CommonModelDataContainer())
     fun_fd.evaluate(x0, u0, x0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
@@ -333,15 +333,15 @@ def test_wrapper_linear_momentum():
     wrapped_fun = aligator.LinearMomentumResidual(ndx, nu, h_ref)
     fun = aligator.CentroidalWrapperResidual(wrapped_fun)
 
-    fdata = fun.createData()
-    wrapped_fdata = wrapped_fun.createData()
+    fdata = fun.createData(aligator.CommonModelDataContainer())
+    wrapped_fdata = wrapped_fun.createData(aligator.CommonModelDataContainer())
     wrapped_fun.evaluate(wx0, wu0, wx0, wrapped_fdata)
     fun.evaluate(x0, fdata)
 
     assert np.allclose(fdata.value, wrapped_fdata.value)
 
     fun_fd = aligator.FiniteDifferenceHelper(wrapping_space, fun, FD_EPS)
-    fdata2 = fun_fd.createData()
+    fdata2 = fun_fd.createData(aligator.CommonModelDataContainer())
     fun_fd.evaluate(x0, u0, x0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
