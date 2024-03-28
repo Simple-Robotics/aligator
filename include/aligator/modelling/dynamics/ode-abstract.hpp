@@ -62,7 +62,7 @@ struct ODEDataTpl : ContinuousDynamicsDataTpl<_Scalar> {
 
 } // namespace dynamics
 } // namespace aligator
-//
+
 #define ALIGATOR_ODE_TYPEDEFS(Scalar, _Data)                                   \
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);                                           \
   using Base = ODEAbstractTpl<Scalar>;                                         \

@@ -150,8 +150,10 @@ struct MultibodyConstraintCommonDataTpl : CommonModelDataTpl<_Scalar> {
   using ProxSettings = pinocchio::ProximalSettingsTpl<Scalar>;
 
   MultibodyConstraintCommonDataTpl(const Model *model)
-      : tau_(model->pin_model_.nv), qdd_(model->pin_model_.nv),
+      : nv(model->pin_model_.nv), tau_(model->pin_model_.nv),
+        qdd_(model->pin_model_.nv),
         qdd_dtau_(model->pin_model_.nv, model->pin_model_.nv),
+        actuation_matrix_(model->actuation_matrix_),
         pin_data_(model->pin_model_), prox_settings_(model->prox_settings_) {
     pinocchio::initConstraintDynamics(model->pin_model_, pin_data_,
                                       model->constraint_models_);
@@ -161,9 +163,13 @@ struct MultibodyConstraintCommonDataTpl : CommonModelDataTpl<_Scalar> {
     }
   }
 
+  // TODO remove if we share Model
+  Eigen::DenseIndex nv;
   VectorXs tau_;
   VectorXs qdd_;
   MatrixXs qdd_dtau_;
+  // TODO remove if we share Model
+  MatrixXs actuation_matrix_;
   PinocchioData pin_data_;
   RigidConstraintDataVector constraint_datas_;
   ProxSettings prox_settings_;
