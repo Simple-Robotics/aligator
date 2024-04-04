@@ -10,7 +10,7 @@ namespace aligator {
  * with \f$f_k\f$ 6D spatial force.
  *
  * @details Considering an contact k exerting 6D force f,
- * the residual returns \f$ A f \f$ with \f$A \in \mathbb{R}^{16 \times 6}\f$
+ * the residual returns \f$ A f \f$ with \f$A \in \mathbb{R}^{17 \times 6}\f$
  * the wrench cone matrix gathering Coulomb friction inequalities,
  * CoP inequalities and limits on vertical torque. The usual
  * wrench cone approximation with 4 facets is leveraged here.
@@ -32,7 +32,7 @@ public:
   WrenchConeResidualTpl(const int ndx, const int nu, const int k,
                         const double mu, const double half_length,
                         const double half_width)
-      : Base(ndx, nu, 16), k_(k), mu_(mu), hL_(half_length), hW_(half_width) {}
+      : Base(ndx, nu, 17), k_(k), mu_(mu), hL_(half_length), hW_(half_width) {}
 
   void evaluate(const ConstVectorRef &, const ConstVectorRef &u,
                 const ConstVectorRef &, BaseData &data) const;
@@ -55,9 +55,8 @@ template <typename Scalar>
 struct WrenchConeDataTpl : StageFunctionDataTpl<Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Base = StageFunctionDataTpl<Scalar>;
-  using Matrix6s = Eigen::Matrix<Scalar, 16, 6>;
 
-  Matrix6s Jtemp_;
+  Eigen::Matrix<Scalar, 17, 6> Jtemp_;
 
   WrenchConeDataTpl(const WrenchConeResidualTpl<Scalar> *model);
 };
