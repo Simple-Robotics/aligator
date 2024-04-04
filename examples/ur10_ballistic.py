@@ -268,8 +268,8 @@ term_constraint = create_term_constraint(target_pos=target_pos)
 problem = aligator.TrajOptProblem(x0, stages, term_cost)
 problem.addTerminalConstraint(term_constraint)
 tol = 1e-3
-mu_init = 1e-4
-solver = aligator.SolverProxDDP(tol, mu_init, max_iters=400, verbose=aligator.VERBOSE)
+mu_init = 1e-5
+solver = aligator.SolverProxDDP(tol, mu_init, max_iters=500, verbose=aligator.VERBOSE)
 solver.rollout_type = aligator.ROLLOUT_LINEAR
 his_cb = aligator.HistoryCallback()
 solver.registerCallback("his", his_cb)
