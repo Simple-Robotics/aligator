@@ -42,6 +42,7 @@ requirements:
     - eigen
     - python
     - matplotlib
+    - typed-argument-parser
 
 test:
   requires:
