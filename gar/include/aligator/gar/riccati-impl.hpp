@@ -1,7 +1,6 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "./lqr-problem.hpp"
 #include "./blk-matrix.hpp"
 
 #include <proxsuite-nlp/linalg/bunchkaufman.hpp>
@@ -11,8 +10,14 @@
 #include "boost/core/make_span.hpp"
 #include "tracy/Tracy.hpp"
 
+#include <optional>
+
 namespace aligator {
 namespace gar {
+
+// fwd
+template <typename Scalar> struct LQRKnotTpl;
+
 /// Create a boost::span object from a vector and two indices.
 template <class T, class A>
 inline boost::span<T> make_span_from_indices(std::vector<T, A> &vec, size_t i0,
@@ -163,11 +168,6 @@ template <typename Scalar> struct ProximalRiccatiKernel {
 
 #include "./riccati-impl.hxx"
 
-namespace aligator {
-namespace gar {
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-extern template struct StageFactor<context::Scalar>;
-extern template struct ProximalRiccatiKernel<context::Scalar>;
+#include "./riccati-impl.txx"
 #endif
-} // namespace gar
-} // namespace aligator

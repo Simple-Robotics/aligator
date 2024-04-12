@@ -2,6 +2,7 @@
 #pragma once
 
 #include "./riccati-impl.hpp"
+#include "./lqr-problem.hpp"
 
 namespace aligator {
 namespace gar {
