@@ -134,65 +134,7 @@ template <typename Scalar> struct ProximalRiccatiKernel {
   };
 
   inline static void terminalSolve(const KnotType &model, const Scalar mueq,
-                                   StageFactorType &d) {
-    ZoneScoped;
-    value_t &vc = d.vm;
-    // fill cost-to-go matrix
-    VectorRef kff = d.ff.blockSegment(0);
-    VectorRef zff = d.ff.blockSegment(1);
-    RowMatrixRef K = d.fb.blockRow(0);
-    RowMatrixRef Z = d.fb.blockRow(1);
-    RowMatrixRef Kth = d.fth.blockRow(0);
-    RowMatrixRef Zth = d.fth.blockRow(1);
-
-    Eigen::Transpose<const MatrixXs> Ct = model.C.transpose();
-
-    if (model.nu == 0) {
-      Z = model.C / mueq;
-      zff = model.d / mueq;
-      Zth.setZero();
-    } else {
-      d.kktMat(0, 0) = model.R;
-      d.kktMat(0, 1) = model.D.transpose();
-      d.kktMat(1, 0) = model.D;
-      d.kktMat(1, 1).diagonal().setConstant(-mueq);
-      d.kktChol.compute(d.kktMat.matrix());
-
-      kff = -model.r;
-      zff = -model.d;
-      K = -model.S.transpose();
-      Z = -model.C;
-
-      auto ffview = d.ff.template topBlkRows<2>();
-      auto fbview = d.fb.template topBlkRows<2>();
-      d.kktChol.solveInPlace(ffview.matrix());
-      d.kktChol.solveInPlace(fbview.matrix());
-
-      if (model.nth > 0) {
-        Kth = -model.Gu;
-        Zth.setZero();
-        auto fthview = d.fth.template topBlkRows<2>();
-        d.kktChol.solveInPlace(fthview.matrix());
-      }
-    }
-
-    vc.Pmat.noalias() = model.Q + Ct * Z;
-    vc.pvec.noalias() = model.q + Ct * zff;
-
-    if (model.nu > 0) {
-      vc.Pmat.noalias() += model.S * K;
-      vc.pvec.noalias() += model.S * kff;
-    }
-
-    if (model.nth > 0) {
-      vc.Vxt = model.Gx;
-      vc.Vxt.noalias() += K.transpose() * model.Gu;
-      vc.Vtt = model.Gth;
-      vc.Vtt.noalias() += model.Gu.transpose() * Kth;
-      vc.vt = model.gamma;
-      vc.vt.noalias() += model.Gu.transpose() * kff;
-    }
-  }
+                                   StageFactorType &d);
 
   inline static bool backwardImpl(boost::span<const KnotType> stages,
                                   const Scalar mudyn, const Scalar mueq,
