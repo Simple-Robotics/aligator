@@ -180,6 +180,20 @@ BOOST_AUTO_TEST_CASE(parametric) {
   BOOST_TEST_MESSAGE("ProximalRiccatiSolver");
   ProximalRiccatiSolver<double> solver(problem);
   testfn(solver);
+
+  using aligator::math::check_value;
+  BOOST_TEST_CHECK(!check_value(solver.kkt0.chol.matrixLDLT()));
+  BOOST_TEST_CHECK(!check_value(solver.kkt0.ff.matrix()));
+  BOOST_TEST_CHECK(!check_value(solver.kkt0.fth.matrix()));
+  BOOST_TEST_CHECK(!check_value(solver.thGrad));
+  BOOST_TEST_CHECK(!check_value(solver.thHess));
+  BOOST_TEST_CHECK(!check_value(solver.datas[0].vm.vt));
+  BOOST_TEST_CHECK(!check_value(solver.datas[0].vm.Vxt));
+  BOOST_TEST_CHECK(!check_value(solver.datas[0].vm.Vtt));
+  BOOST_TEST_CHECK(!check_value(solver.datas[horz].vm.vt));
+  BOOST_TEST_CHECK(!check_value(solver.datas[horz].vm.Vxt));
+  BOOST_TEST_CHECK(!check_value(solver.datas[horz].vm.Vtt));
+
   BOOST_TEST_MESSAGE("RiccatiSolverDense");
   RiccatiSolverDense<double> denseSolver(problem);
   testfn(denseSolver);
