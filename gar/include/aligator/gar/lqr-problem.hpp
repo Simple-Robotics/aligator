@@ -76,7 +76,12 @@ template <typename Scalar> struct LQRKnotTpl {
 
   // reallocates entire buffer for contigousness
   inline void addParameterization(uint nth) {
-    *this = LQRKnotTpl(nx, nu, nc, nx2, nth);
+    this->nth = nth;
+    Gth.setZero(nth, nth);
+    Gx.setZero(nx, nth);
+    Gu.setZero(nu, nth);
+    Gv.setZero(nc, nth);
+    gamma.setZero(nth);
   }
 };
 
