@@ -78,7 +78,6 @@ knots.append(knot1)
 prob = gar.LQRProblem(knots, nx)
 prob.G0 = -np.eye(nx)
 prob.g0 = x0
-del knots
 
 print("Is problem parameterized? {}".format(prob.isParameterized))
 ricsolve = gar.ProximalRiccatiSolver(prob)
