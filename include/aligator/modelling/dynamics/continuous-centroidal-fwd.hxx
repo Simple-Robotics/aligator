@@ -28,28 +28,30 @@ void ContinuousCentroidalFwdDynamicsTpl<Scalar>::forward(
   d.xdot_.template head<3>() = 1 / mass_ * x.template segment<3>(3);
   d.xdot_.template segment<3>(3) = mass_ * gravity_;
   d.xdot_.template segment<3>(6).setZero();
-  for (std::size_t i_ = 0; i_ < nk_; i_++) {
-    long i = static_cast<long>(i_);
-    if (contact_map_.getContactState(i_)) {
+  for (std::size_t i = 0; i < nk_; i++) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+    if (contact_map_.getContactState(i)) {
       d.xdot_.template segment<3>(3) +=
           x.template segment<3>(9 + i * force_size_);
-      d.xdot_[6] += (contact_map_.getContactPose(i_)[1] - x[1]) *
+      d.xdot_[6] += (contact_map_.getContactPose(i)[1] - x[1]) *
                         x[9 + i * force_size_ + 2] -
-                    (contact_map_.getContactPose(i_)[2] - x[2]) *
+                    (contact_map_.getContactPose(i)[2] - x[2]) *
                         x[9 + i * force_size_ + 1];
       d.xdot_[7] +=
-          (contact_map_.getContactPose(i_)[2] - x[2]) * x[9 + i * force_size_] -
-          (contact_map_.getContactPose(i_)[0] - x[0]) *
+          (contact_map_.getContactPose(i)[2] - x[2]) * x[9 + i * force_size_] -
+          (contact_map_.getContactPose(i)[0] - x[0]) *
               x[9 + i * force_size_ + 2];
       d.xdot_[8] +=
-          (contact_map_.getContactPose(i_)[0] - x[0]) *
+          (contact_map_.getContactPose(i)[0] - x[0]) *
               x[9 + i * force_size_ + 1] -
-          (contact_map_.getContactPose(i_)[1] - x[1]) * x[9 + i * force_size_];
+          (contact_map_.getContactPose(i)[1] - x[1]) * x[9 + i * force_size_];
       if (force_size_ == 6) {
         d.xdot_.template segment<3>(6) +=
-            x.template segment<3>(9 + i_ * force_size_ + 3);
+            x.template segment<3>(9 + i * force_size_ + 3);
       }
     }
+#pragma GCC diagnostic pop
   }
   d.xdot_.tail(nu_) = u;
 }
@@ -61,9 +63,10 @@ void ContinuousCentroidalFwdDynamicsTpl<Scalar>::dForward(
   d.Jx_.setZero();
   d.Jx_.template block<3, 3>(0, 3).setIdentity();
   d.Jx_.template block<3, 3>(0, 3) /= mass_;
-  for (std::size_t i_ = 0; i_ < nk_; i_++) {
-    long i = static_cast<long>(i_);
-    if (contact_map_.getContactState(i_)) {
+  for (std::size_t i = 0; i < nk_; i++) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+    if (contact_map_.getContactState(i)) {
       d.Jx_(6, 1) -= x[9 + i * force_size_ + 2];
       d.Jx_(6, 2) += x[9 + i * force_size_ + 1];
       d.Jx_(7, 0) += x[9 + i * force_size_ + 2];
@@ -71,22 +74,23 @@ void ContinuousCentroidalFwdDynamicsTpl<Scalar>::dForward(
       d.Jx_(8, 0) -= x[9 + i * force_size_ + 1];
       d.Jx_(8, 1) += x[9 + i * force_size_];
 
-      d.Jtemp_ << 0.0, -(contact_map_.getContactPose(i_)[2] - x[2]),
-          (contact_map_.getContactPose(i_)[1] - x[1]),
-          (contact_map_.getContactPose(i_)[2] - x[2]), 0.0,
-          -(contact_map_.getContactPose(i_)[0] - x[0]),
-          -(contact_map_.getContactPose(i_)[1] - x[1]),
-          (contact_map_.getContactPose(i_)[0] - x[0]), 0.0;
+      d.Jtemp_ << 0.0, -(contact_map_.getContactPose(i)[2] - x[2]),
+          (contact_map_.getContactPose(i)[1] - x[1]),
+          (contact_map_.getContactPose(i)[2] - x[2]), 0.0,
+          -(contact_map_.getContactPose(i)[0] - x[0]),
+          -(contact_map_.getContactPose(i)[1] - x[1]),
+          (contact_map_.getContactPose(i)[0] - x[0]), 0.0;
 
       d.Jx_.template block<3, 3>(6, 9 + force_size_ * i) = d.Jtemp_;
       d.Jx_.template block<3, 3>(3, 9 + force_size_ * i).setIdentity();
       if (force_size_ == 6) {
-        d.Jx_.template block<3, 3>(6, 9 + force_size_ * i_ + 3).setIdentity();
+        d.Jx_.template block<3, 3>(6, 9 + force_size_ * i + 3).setIdentity();
       }
     }
   }
   d.Ju_.setZero();
   d.Ju_.block(9, 0, nu_, nu_).setIdentity();
+#pragma GCC diagnostic pop
 }
 
 template <typename Scalar>

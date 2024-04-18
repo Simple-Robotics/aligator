@@ -33,9 +33,9 @@ public:
                                     const double mass, const Vector3s &gravity,
                                     const ContactMap &contact_map,
                                     const int force_size)
-      : Base(ndx, nu, 3), gravity_(gravity), contact_map_(contact_map),
-        force_size_(force_size), nk_(size_t(nu) / size_t(force_size)),
-        mass_(mass) {
+      : Base(ndx, nu, 3), contact_map_(contact_map),
+        nk_(size_t(nu) / size_t(force_size)), mass_(mass), gravity_(gravity),
+        force_size_(force_size) {
     if (contact_map.getSize() != nk_) {
       ALIGATOR_DOMAIN_ERROR(
           fmt::format("Contact ids and nk should be the same: now "
