@@ -91,8 +91,8 @@ void exposeGAR() {
       .def_readonly("kktChol", &stage_factor_t::kktChol)
       .def_readonly("vm", &stage_factor_t::vm);
 
-  StdVectorPythonVisitor<std::vector<stage_factor_t>, true>::expose(
-      "StdVec_stage_factor");
+  StdVectorPythonVisitor<riccati_base_t::StageFactorVec, true>::expose(
+      "StdVec_StageFactor");
 
   bp::class_<knot_t>("LQRKnot", bp::no_init)
       .def(bp::init<uint, uint, uint>(("nx"_a, "nu", "nc")))
