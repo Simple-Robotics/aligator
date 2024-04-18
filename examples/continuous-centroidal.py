@@ -18,12 +18,15 @@ args = Args().parse_args()
 # Define centroidal parameters
 nk = 4  # Max number of contacts
 nxc = 9
-nx = 9 + 3 * nk  # State size: [c, h, L, u]
+force_size = 3
+nx = 9 + force_size * nk  # State size: [c, h, L, u]
 mass = 10.5
 gravity = np.array([0, 0, -9.81])
 mu = 0.8  # Friction coefficient
-nu = 3 * nk
+nu = force_size * nk
 
+foot_length = 0.1
+foot_width = 0.1
 space = manifolds.VectorSpace(nx)
 wrapped_space = manifolds.VectorSpace(9)
 x0 = space.neutral()
@@ -33,7 +36,7 @@ com_initial = np.array([0.1, 0.05, 0.15])
 
 x0[:3] = com_initial
 for i in range(nk):
-    x0[9 + 3 * i + 2] = -gravity[2] * mass / 4.0
+    x0[9 + force_size * i + 2] = -gravity[2] * mass / 4.0
 
 # Define gait and time parameters
 T_ds = 10  # Double support time
@@ -130,29 +133,32 @@ w_linear_mom = 10 * np.eye(3)
 w_linear_acc = 0.1 * np.eye(3)
 w_control = np.eye(nu) * 1e-4
 w_ter_com = np.eye(3) * 1e7
-w_state = (
-    np.diag(np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]))
-    * 1e-2
+
+w_centroidal_state = np.zeros(9)
+w_forces = np.ones(force_size) * 1e-2
+w_state = np.diag(
+    np.concatenate((w_centroidal_state, w_forces, w_forces, w_forces, w_forces))
 )
 
 
 def create_dynamics(nspace, contact_map):
-    ode = dynamics.ContinuousCentroidalFwdDynamics(nspace, mass, gravity, contact_map)
+    ode = dynamics.ContinuousCentroidalFwdDynamics(
+        nspace, mass, gravity, contact_map, force_size
+    )
     dyn_model = dynamics.IntegratorEuler(ode, dt)
     return dyn_model
 
 
 def createStage(cp, cp_previous):
     contact_map = aligator.ContactMap(cp[0], cp[1])
-    x0n = np.zeros(nx)
     rcost = aligator.CostStack(space, nu)
 
     linear_acc = aligator.CentroidalAccelerationResidual(
-        nxc, nu, mass, gravity, contact_map
+        nxc, nu, mass, gravity, contact_map, force_size
     )
     linear_mom = aligator.LinearMomentumResidual(nxc, nu, np.zeros(3))
     angular_acc = aligator.AngularAccelerationResidual(
-        nxc, nu, mass, gravity, contact_map
+        nxc, nu, mass, gravity, contact_map, force_size
     )
     wrapped_linear_acc = aligator.CentroidalWrapperResidual(linear_acc)
     wrapped_angular_acc = aligator.CentroidalWrapperResidual(angular_acc)
@@ -161,11 +167,11 @@ def createStage(cp, cp_previous):
     w_state_cstr = w_state.copy()
     for i in range(len(cp[0])):
         if cp[0][i] and not (cp_previous[0][i]):
-            w_state_cstr[9 + i * 3 + 2] *= 100
+            w_state_cstr[9 + i * force_size + 2] *= 100
         elif not (cp[0][i]) and cp_previous[0][i]:
-            w_state_cstr[9 + i * 3 + 2] *= 100
+            w_state_cstr[9 + i * force_size + 2] *= 100
 
-    rcost.addCost(aligator.QuadraticStateCost(space, nu, x0n, w_state_cstr))
+    rcost.addCost(aligator.QuadraticStateCost(space, nu, np.zeros(nx), w_state_cstr))
 
     rcost.addCost(aligator.QuadraticControlCost(space, np.zeros(nu), w_control))
     rcost.addCost(
@@ -181,13 +187,16 @@ def createStage(cp, cp_previous):
     for i in range(len(cp[0])):
         if cp[0][i]:
             cone_cstr = aligator.FrictionConeResidual(nxc, nu, i, mu, 1e-3)
+            if force_size == 6:
+                cone_cstr = aligator.WrenchConeResidual(
+                    nxc, nu, i, mu, foot_length, foot_width
+                )
             wrapped_cstr = aligator.CentroidalWrapperResidual(cone_cstr)
             stm.addConstraint(wrapped_cstr, constraints.NegativeOrthant())
 
     return stm
 
 
-nu = nk * 3
 term_cost = aligator.CostStack(space, nu)
 ter_com = aligator.CentroidalWrapperResidual(
     aligator.CentroidalCoMResidual(nxc, nu, com_final)
@@ -203,13 +212,19 @@ contact_map_init = aligator.ContactMap(contact_points[0][0], contact_points[0][1
 contact_map_ter = aligator.ContactMap(contact_points[-1][0], contact_points[-1][1])
 
 init_linear_acc_cstr = aligator.CentroidalWrapperResidual(
-    aligator.CentroidalAccelerationResidual(nxc, nu, mass, gravity, contact_map_init)
+    aligator.CentroidalAccelerationResidual(
+        nxc, nu, mass, gravity, contact_map_init, force_size
+    )
 )
 ter_linear_acc_cstr = aligator.CentroidalWrapperResidual(
-    aligator.CentroidalAccelerationResidual(nxc, nu, mass, gravity, contact_map_ter)
+    aligator.CentroidalAccelerationResidual(
+        nxc, nu, mass, gravity, contact_map_ter, force_size
+    )
 )
 angular_acc_cstr = aligator.CentroidalWrapperResidual(
-    aligator.AngularAccelerationResidual(nx, nu, mass, gravity, contact_map_ter)
+    aligator.AngularAccelerationResidual(
+        nx, nu, mass, gravity, contact_map_ter, force_size
+    )
 )
 
 init_linear_mom = aligator.CentroidalWrapperResidual(
@@ -295,12 +310,14 @@ for i in range(T):
     linacc = gravity * mass
     angacc = np.zeros(3)
     for j in range(nk):
-        fj = np.zeros(3)
+        fj = np.zeros(force_size)
         if contact_points[i][0][j]:
-            fj = results.xs[i][9 + j * 3 : 9 + (j + 1) * 3]
+            fj = results.xs[i][9 + j * force_size : 9 + (j + 1) * force_size]
         ci = results.xs[i][0:3]
-        linacc += fj
-        angacc += np.cross(contact_points[i][1][j] - ci, fj)
+        linacc += fj[:3]
+        angacc += np.cross(contact_points[i][1][j] - ci, fj[:3])
+        if force_size == 6:
+            angacc += fj[3:]
     for z in range(3):
         linear_acceleration[z].append(linacc[z])
         angular_acceleration[z].append(angacc[z])
@@ -324,7 +341,7 @@ for i in range(T):
     angular_momentum[2].append(results.xs[i][8])
     for j in range(nk):
         if contact_points[i][0][j]:
-            forces_z[j].append(results.xs[i][9 + j * 3 + 2])
+            forces_z[j].append(results.xs[i][9 + j * force_size + 2])
         else:
             forces_z[j].append(0)
 

@@ -32,14 +32,16 @@ public:
   Vector3s gravity_;
   std::vector<bool> contact_states_;
   std::vector<pinocchio::FrameIndex> contact_ids_;
+  int force_size_;
 
   CentroidalMomentumDerivativeResidualTpl(
       const int ndx, const Model &model, const Vector3s &gravity,
       const std::vector<bool> &contact_states,
-      const std::vector<pinocchio::FrameIndex> &contact_ids)
-      : Base(ndx, (int)contact_states.size() * 3 + model.nv - 6, 6),
+      const std::vector<pinocchio::FrameIndex> &contact_ids,
+      const int force_size)
+      : Base(ndx, (int)contact_states.size() * force_size + model.nv - 6, 6),
         pin_model_(model), gravity_(gravity), contact_states_(contact_states),
-        contact_ids_(contact_ids) {
+        contact_ids_(contact_ids), force_size_(force_size) {
     mass_ = pinocchio::computeTotalMass(model);
     if (contact_ids_.size() != contact_states_.size()) {
       ALIGATOR_DOMAIN_ERROR(
