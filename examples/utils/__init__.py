@@ -4,6 +4,7 @@ Common utilities for examples.
 
 import numpy as np
 import pinocchio as pin
+import pinocchio.visualize
 import tap
 
 import matplotlib.pyplot as plt
