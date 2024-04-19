@@ -1,6 +1,7 @@
 """
 Define two successive LQ problems and "fuse" them together by maximizing over the common Lagrange multiplier.
 """
+
 from aligator import gar
 from eigenpy import LDLT
 

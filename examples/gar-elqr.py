@@ -1,6 +1,7 @@
 """
 Tests for GAR module in the aligator Python bindings.
 """
+
 from aligator import gar
 import numpy as np
 import pprint
