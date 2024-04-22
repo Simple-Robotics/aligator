@@ -8,8 +8,9 @@
 #include "aligator/gar/parallel-solver.hpp"
 #include "aligator/gar/parallel-solver-tbb.hpp"
 #include "aligator/gar/dense-riccati.hpp"
-
 #include "aligator/gar/utils.hpp"
+
+#include "aligator/threads.hpp"
 
 #include "../tests/gar/test_util.hpp"
 
