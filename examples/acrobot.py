@@ -74,17 +74,11 @@ if args.term_cstr:
     problem.addTerminalConstraint(term_cstr)
 
 tol = 1e-3
-mu_init = 10.0
+mu_init = 0.01
 solver = aligator.SolverProxDDP(tol, mu_init=mu_init, verbose=aligator.VERBOSE)
 solver.max_iters = 200
+solver.rollout_type = aligator.ROLLOUT_LINEAR
 solver.setup(problem)
-if args.bounds:
-    for i in range(nsteps):
-        psc: aligator.ProxScaler = solver.workspace.getConstraintScaler(i)
-        psc.set_weight(0.01, 1)
-if args.term_cstr:
-    psc: aligator.ProxScaler = solver.workspace.getConstraintScaler(nsteps)
-    psc.weights[0] = 1e-1
 
 
 us_init = [np.zeros(nu) for _ in range(nsteps)]
