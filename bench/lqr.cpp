@@ -58,7 +58,7 @@ TrajOptProblem define_problem(const std::size_t nsteps, const int dim = 56,
 
 #define SETUP_PROBLEM_VARS(nsteps)                                             \
   auto problem = define_problem(nsteps);                                       \
-  const auto &dynamics = problem.stages_[0] -> dyn_model();                    \
+  const auto &dynamics = problem.stages_[0]->dyn_model();                      \
   const VectorXd &x0 = problem.getInitState();                                 \
   std::vector<VectorXd> us_init;                                               \
   us_default_init(problem, us_init);                                           \
