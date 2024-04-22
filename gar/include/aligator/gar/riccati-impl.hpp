@@ -33,7 +33,8 @@ inline boost::span<const T> make_span_from_indices(const std::vector<T, A> &vec,
 }
 
 /// Per-node struct for all computations in the factorization.
-template <typename Scalar> struct StageFactor {
+template <typename _Scalar> struct StageFactor {
+  using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using RowMatrixXs = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
 
