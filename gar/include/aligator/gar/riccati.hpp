@@ -1,11 +1,11 @@
 #pragma once
 
-#include "./riccati-impl.hpp"
-#include "riccati-base.hpp"
+#include "./riccati-base.hpp"
 
 namespace aligator {
 namespace gar {
 
+/// @brief A Riccati-like solver for the proximal LQ subproblem in ProxDDP.
 template <typename _Scalar>
 class ProximalRiccatiSolver : public RiccatiSolverBase<_Scalar> {
 public:
@@ -20,85 +20,28 @@ public:
   using kkt0_t = typename Impl::kkt0_t;
   using KnotType = LQRKnotTpl<Scalar>;
 
-  explicit ProximalRiccatiSolver(const LQRProblemTpl<Scalar> &problem)
-      : Base(), kkt0(problem.stages[0].nx, problem.nc0(), problem.ntheta()),
-        thGrad(problem.ntheta()), thHess(problem.ntheta(), problem.ntheta()),
-        problem_(&problem) {
-    initialize();
-  }
+  explicit ProximalRiccatiSolver(const LQRProblemTpl<Scalar> &problem);
 
   /// Backward sweep.
-  bool backward(const Scalar mudyn, const Scalar mueq) {
-    ALIGATOR_NOMALLOC_BEGIN;
-    ZoneNamed(Zone1, true);
-    bool ret = Impl::backwardImpl(problem_->stages, mudyn, mueq, datas);
+  bool backward(const Scalar mudyn, const Scalar mueq);
 
-    StageFactorType &d0 = datas[0];
-    value_t &vinit = d0.vm;
-    vinit.Vxx = vinit.Pmat;
-    vinit.vx = vinit.pvec;
-    // initial stage
-    {
-      ZoneNamedN(Zone2, "factor_initial", true);
-      kkt0.mat(0, 0) = vinit.Vxx;
-      kkt0.mat(1, 0) = problem_->G0;
-      kkt0.mat(0, 1) = problem_->G0.transpose();
-      kkt0.mat(1, 1).diagonal().setConstant(-mudyn);
-      kkt0.chol.compute(kkt0.mat.matrix());
+  bool forward(std::vector<VectorXs> &xs, std::vector<VectorXs> &us,
+               std::vector<VectorXs> &vs, std::vector<VectorXs> &lbdas,
+               const std::optional<ConstVectorRef> &theta = std::nullopt) const;
 
-      kkt0.ff.blockSegment(0) = -vinit.vx;
-      kkt0.ff.blockSegment(1) = -problem_->g0;
-      kkt0.chol.solveInPlace(kkt0.ff.matrix());
-      kkt0.fth.blockRow(0) = -vinit.Vxt;
-      kkt0.fth.blockRow(1).setZero();
-      kkt0.chol.solveInPlace(kkt0.fth.matrix());
-
-      thGrad.noalias() =
-          vinit.vt + vinit.Vxt.transpose() * kkt0.ff.blockSegment(0);
-      thHess.noalias() =
-          vinit.Vtt + vinit.Vxt.transpose() * kkt0.fth.blockRow(0);
-    }
-    ALIGATOR_NOMALLOC_END;
-    return ret;
-  }
-
-  bool
-  forward(std::vector<VectorXs> &xs, std::vector<VectorXs> &us,
-          std::vector<VectorXs> &vs, std::vector<VectorXs> &lbdas,
-          const std::optional<ConstVectorRef> &theta_ = std::nullopt) const {
-    ZoneScoped;
-
-    // solve initial stage
-    Impl::computeInitial(xs[0], lbdas[0], kkt0, theta_);
-
-    return Impl::forwardImpl(problem_->stages, datas, xs, us, vs, lbdas,
-                             theta_);
-  }
-
-  kkt0_t kkt0;
-
+  kkt0_t kkt0;     //< initial stage KKT system
   VectorXs thGrad; //< optimal value gradient wrt parameter
   MatrixXs thHess; //< optimal value Hessian wrt parameter
 
 protected:
-  void initialize() {
-    ZoneScoped;
-    auto N = uint(problem_->horizon());
-    auto &knots = problem_->stages;
-    datas.reserve(N + 1);
-    for (uint t = 0; t <= N; t++) {
-      const KnotType &knot = knots[t];
-      datas.emplace_back(knot.nx, knot.nu, knot.nc, knot.nth);
-    }
-    thGrad.setZero();
-    thHess.setZero();
-    kkt0.mat.setZero();
-  }
+  void initialize();
   const LQRProblemTpl<Scalar> *problem_;
 };
 
 } // namespace gar
 } // namespace aligator
+
+#include "riccati.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./riccati.txx"

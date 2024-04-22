@@ -4,6 +4,8 @@
 #include "./riccati-impl.hpp"
 #include "./lqr-problem.hpp"
 
+#include "tracy/Tracy.hpp"
+
 namespace aligator {
 namespace gar {
 template <typename Scalar>

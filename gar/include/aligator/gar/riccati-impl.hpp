@@ -8,7 +8,6 @@
 #include <Eigen/Cholesky>
 
 #include "boost/core/make_span.hpp"
-#include "tracy/Tracy.hpp"
 
 #include <optional>
 
@@ -119,7 +118,8 @@ template <typename _Scalar> struct StageFactor {
   value_t vm;                     //< cost-to-go parameters
 };
 
-// Implementation of a proximal riccati kernel.
+/// @brief Kernel for use in Riccati-like algorithms for the proximal LQ
+/// subproblem.
 template <typename Scalar> struct ProximalRiccatiKernel {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using RowMatrixXs = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
