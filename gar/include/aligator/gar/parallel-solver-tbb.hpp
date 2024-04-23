@@ -1,6 +1,7 @@
 #pragma once
 
 #include "riccati-base.hpp"
+#include "riccati-impl.hpp"
 #include "block-tridiagonal-solver.hpp"
 #include "work.hpp"
 #include <tbb/global_control.h>

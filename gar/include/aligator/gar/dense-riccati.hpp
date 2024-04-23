@@ -3,6 +3,7 @@
 #include <proxsuite-nlp/linalg/bunchkaufman.hpp>
 
 #include "riccati-base.hpp"
+#include "riccati-impl.hpp"
 #include "tracy/Tracy.hpp"
 
 namespace aligator::gar {

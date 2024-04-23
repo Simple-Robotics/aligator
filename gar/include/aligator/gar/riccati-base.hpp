@@ -1,10 +1,15 @@
 #pragma once
 
-#include "riccati-impl.hpp"
+#include "aligator/math.hpp"
+
+#include <optional>
 #include <tbb/cache_aligned_allocator.h>
 
 namespace aligator {
 namespace gar {
+
+// fwd
+template <typename Scalar> struct StageFactor;
 
 template <typename _Scalar> class RiccatiSolverBase {
 public:
@@ -30,9 +35,9 @@ public:
   virtual ~RiccatiSolverBase() = default;
 };
 
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-extern template class RiccatiSolverBase<context::Scalar>;
-#endif
-
 } // namespace gar
 } // namespace aligator
+
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+#include "riccati-base.txx"
+#endif
