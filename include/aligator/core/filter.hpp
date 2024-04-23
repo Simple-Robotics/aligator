@@ -8,9 +8,7 @@
 
 namespace aligator {
 
-/**
- * @brief   Filter class.
- */
+/// @brief  A basic filter line-search strategy.
 template <typename Scalar> struct FilterTpl {
 public:
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
@@ -41,7 +39,7 @@ public:
     filter_pairs_.clear();
   }
 
-  Scalar run(std::function<std::pair<Scalar, Scalar>(Scalar)> phi,
+  Scalar run(const std::function<std::pair<Scalar, Scalar>(Scalar)> &phi,
              Scalar &alpha_try) {
     alpha_try = 1;
     std::pair<Scalar, Scalar> fpair;
