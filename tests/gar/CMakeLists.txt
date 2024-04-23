@@ -7,3 +7,6 @@ endfunction(add_gar_test)
 add_gar_test(riccati)
 add_gar_test(block-matrix)
 add_gar_test(parallel aligator)
+
+add_executable(run-parallel run-parallel.cpp)
+target_link_libraries(run-parallel PRIVATE ${_gar_test_deps})
