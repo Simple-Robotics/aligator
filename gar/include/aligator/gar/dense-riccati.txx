@@ -4,5 +4,4 @@
 
 namespace aligator::gar {
 extern template class RiccatiSolverDense<context::Scalar>;
-
-}
+} // namespace aligator::gar

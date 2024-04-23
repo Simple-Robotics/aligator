@@ -105,11 +105,11 @@ protected:
   LQRProblemTpl<Scalar> *problem_;
 };
 
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-extern template class ParallelRiccatiSolver<context::Scalar>;
-#endif
-
 } // namespace gar
 } // namespace aligator
 
 #include "parallel-solver.hxx"
+
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+#include "parallel-solver.txx"
+#endif
