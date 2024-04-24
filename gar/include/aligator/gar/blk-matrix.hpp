@@ -118,6 +118,7 @@ public:
     assert(other.rows() == m_data.rows());
     assert(other.cols() == m_data.cols());
     m_data = other;
+    return *this;
   }
 
   void setZero() { m_data.setZero(); }
