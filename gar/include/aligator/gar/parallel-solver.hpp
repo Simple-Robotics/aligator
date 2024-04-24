@@ -79,27 +79,7 @@ public:
   /// Contains the right-hand side and solution of the condensed KKT system.
   BlkVec condensedKktRhs;
 
-  inline void initializeTridiagSystem(const std::vector<long> &dims) {
-    ZoneScoped;
-    std::vector<MatrixXs> subdiagonal;
-    std::vector<MatrixXs> diagonal;
-    std::vector<MatrixXs> superdiagonal;
-
-    condensedKktSystem.subdiagonal.reserve(dims.size() - 1);
-    condensedKktSystem.diagonal.reserve(dims.size());
-    condensedKktSystem.superdiagonal.reserve(dims.size() - 1);
-    condensedKktSystem.facs.reserve(dims.size());
-
-    condensedKktSystem.diagonal.emplace_back(dims[0], dims[0]);
-    condensedKktSystem.facs.emplace_back(dims[0]);
-
-    for (uint i = 0; i < dims.size() - 1; i++) {
-      condensedKktSystem.superdiagonal.emplace_back(dims[i], dims[i + 1]);
-      condensedKktSystem.diagonal.emplace_back(dims[i + 1], dims[i + 1]);
-      condensedKktSystem.subdiagonal.emplace_back(dims[i + 1], dims[i]);
-      condensedKktSystem.facs.emplace_back(dims[i + 1]);
-    }
-  }
+  void initializeTridiagSystem(const std::vector<long> &dims);
 
 protected:
   LQRProblemTpl<Scalar> *problem_;
