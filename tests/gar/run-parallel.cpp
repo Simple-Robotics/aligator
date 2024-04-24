@@ -1,7 +1,6 @@
 #define TRACY_SAMPLING_HZ 100000
 #include "test_util.hpp"
 #include "aligator/gar/parallel-solver.hpp"
-#include "aligator/gar/parallel-solver-tbb.hpp"
 #include "aligator/gar/utils.hpp"
 
 using namespace aligator::gar;
@@ -40,18 +39,6 @@ int main(int argc, char *argv[]) {
 
     for (size_t i = 0; i < nreps; i++) {
       ZoneScopedNC("parallel", 0x9500ff);
-      solver.backward(mu, mu);
-      solver.forward(xs, us, vs, lbdas);
-    }
-  }
-
-  {
-    ZoneScopedN("TBB_parallel_runs");
-    auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
-    ParallelRiccatiSolver2<double> solver(problem, num_threads);
-
-    for (size_t i = 0; i < nreps; i++) {
-      ZoneScopedNC("TBB_parallel", 0x9544aa);
       solver.backward(mu, mu);
       solver.forward(xs, us, vs, lbdas);
     }
