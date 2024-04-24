@@ -60,7 +60,7 @@ bool symmetricBlockTridiagSolve(std::vector<MatrixType> &subdiagonal,
   }
 
   // size of problem
-  size_t N = superdiagonal.size();
+  const size_t N = superdiagonal.size();
 
   size_t i = N - 1;
   while (true) {
@@ -98,6 +98,68 @@ bool symmetricBlockTridiagSolve(std::vector<MatrixType> &subdiagonal,
   for (size_t i = 0; i < N; i++) {
     auto &Uip1t = subdiagonal[i];
     rhs[i + 1].noalias() -= Uip1t * rhs[i];
+  }
+
+  ALIGATOR_NOMALLOC_END;
+  return true;
+}
+
+/// @copybrief symmetricBlockTridiagSolve(). This version starts by looking down
+/// from the top-left corner of the matrix.
+template <typename MatrixType, typename RhsType, typename DecType>
+bool symmetricBlockTridiagSolveDownLooking(
+    std::vector<MatrixType> &subdiagonal, std::vector<MatrixType> &diagonal,
+    std::vector<MatrixType> &superdiagonal, BlkMatrix<RhsType, -1, 1> &rhs,
+    std::vector<DecType> &facs) {
+  ZoneScoped;
+  ALIGATOR_NOMALLOC_BEGIN;
+
+  if (subdiagonal.size() != superdiagonal.size() ||
+      diagonal.size() != superdiagonal.size() + 1 ||
+      rhs.rowDims().size() != diagonal.size()) {
+    return false;
+  }
+
+  // size of problem
+  const size_t N = superdiagonal.size();
+
+  for (size_t i = 0; i < N; i++) {
+    DecType &ldl = facs[i];
+    ldl.compute(diagonal[i]);
+    if (ldl.info() != Eigen::Success)
+      return false;
+
+    Eigen::Ref<RhsType> r = rhs[i];
+    ldl.solveInPlace(r);
+
+    // the math has index of B starting at 1, array starts at 0
+    auto &Bip1 = superdiagonal[i];
+    auto &Cip1 = subdiagonal[i]; // should be B[i+1].transpose()
+
+    rhs[i + 1].noalias() -= Cip1 * rhs[i];
+    ldl.solveInPlace(Bip1); // contains L.T = D[i]^-1 * B[i+1]
+
+    // substract B[i+1].T * L.T
+    diagonal[i + 1].noalias() -= Cip1 * Bip1;
+  }
+
+  {
+    DecType &ldl = facs[N];
+    ldl.compute(diagonal[N]);
+    if (ldl.info() != Eigen::Success)
+      return false;
+    Eigen::Ref<RhsType> r = rhs[N];
+    ldl.solveInPlace(r);
+  }
+
+  size_t i = N - 1;
+  while (true) {
+    auto &Lim1t = superdiagonal[i];
+    rhs[i].noalias() -= Lim1t * rhs[i + 1];
+
+    if (i == 0)
+      break;
+    i--;
   }
 
   ALIGATOR_NOMALLOC_END;

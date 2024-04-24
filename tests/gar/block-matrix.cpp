@@ -49,7 +49,55 @@ BOOST_AUTO_TEST_CASE(dynamicblkvec) {
   BOOST_CHECK_EQUAL(bvtop2.rows(), 7);
 }
 
-BOOST_AUTO_TEST_CASE(block_tridiag_solve) {
+BOOST_AUTO_TEST_CASE(block_tridiag_solve_up_looking) {
+  size_t N = 6;
+  uint nx = 2;
+  MatrixXs B = MatrixXs::NullaryExpr(nx, nx, normal_unary_op{});
+
+  std::vector<MatrixXs> diagonal(N + 1);
+  std::vector<MatrixXs> sup(N);
+  std::vector<MatrixXs> sub(N);
+
+  for (size_t i = 0; i <= N; i++) {
+    diagonal[i] = sampleWishartDistributedMatrix(nx, nx + 1);
+  }
+
+  std::fill_n(sup.begin(), N, B);
+  std::fill_n(sub.begin(), N, B.transpose());
+
+  using BlkVec = BlkMatrix<VectorXs, -1, 1>;
+  std::vector<long> dims(N + 1);
+  std::fill_n(dims.begin(), N + 1, nx);
+  BOOST_CHECK(dims.size() == N + 1);
+  BlkVec vec(dims);
+  vec.matrix().setOnes();
+
+  MatrixXs densemat = gar::blockTridiagToDenseMatrix(sub, diagonal, sup);
+  fmt::print("Dense problem matrix:\n{}\n", densemat);
+  BlkVec densevec = vec;
+
+  std::vector<Eigen::LDLT<MatrixXs>> facs(diagonal.size());
+  bool ret = gar::symmetricBlockTridiagSolve(sub, diagonal, sup, vec, facs);
+  BOOST_CHECK(ret);
+
+  for (size_t i = 0; i <= N; i++) {
+    fmt::print("rhs[{:d}] = {}\n", i, vec[i].transpose());
+  }
+
+  {
+    // alternative solve
+    Eigen::LDLT<MatrixXs> ldlt(densemat);
+    ldlt.solveInPlace(densevec.matrix());
+
+    fmt::print("Alternative solve:\n");
+    for (size_t i = 0; i <= N; i++) {
+      fmt::print("rhs[{:d}] = {}\n", i, densevec[i].transpose());
+    }
+    BOOST_CHECK(vec.matrix().isApprox(densevec.matrix(), 1e-12));
+  }
+}
+
+BOOST_AUTO_TEST_CASE(block_tridiag_solve_down_looking) {
   auto test_case_name = utf::current_test_case().full_name();
   BOOST_TEST_MESSAGE(test_case_name);
   size_t N = 6;
@@ -79,7 +127,8 @@ BOOST_AUTO_TEST_CASE(block_tridiag_solve) {
   BlkVec densevec = vec;
 
   std::vector<Eigen::LDLT<MatrixXs>> facs(diagonal.size());
-  bool ret = gar::symmetricBlockTridiagSolve(sub, diagonal, sup, vec, facs);
+  bool ret =
+      gar::symmetricBlockTridiagSolveDownLooking(sub, diagonal, sup, vec, facs);
   BOOST_CHECK(ret);
 
   for (size_t i = 0; i <= N; i++) {
