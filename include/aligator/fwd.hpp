@@ -6,7 +6,7 @@
 #include <proxsuite-nlp/fwd.hpp>
 
 #ifdef ALIGATOR_WITH_PINOCCHIO
-#include <pinocchio/fwd.hpp>
+#include <pinocchio/config.hpp>
 #if PINOCCHIO_VERSION_AT_LEAST(2, 9, 2)
 #define ALIGATOR_PINOCCHIO_V3
 #endif

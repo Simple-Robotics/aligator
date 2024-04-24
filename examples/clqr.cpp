@@ -6,6 +6,7 @@
 
 #include <proxsuite-nlp/modelling/constraints.hpp>
 #include <iostream>
+#include <random>
 
 using namespace aligator;
 
@@ -13,7 +14,7 @@ using Space = proxsuite::nlp::VectorSpaceTpl<double>;
 using LinearDynamics = dynamics::LinearDiscreteDynamicsTpl<double>;
 using LinearFunction = LinearFunctionTpl<double>;
 using BoxConstraint = proxsuite::nlp::BoxConstraintTpl<double>;
-using Equality = proxsuite::nlp::EqualityConstraint<double>;
+using EqualityConstraint = proxsuite::nlp::EqualityConstraint<double>;
 using QuadraticCost = QuadraticCostTpl<double>;
 using context::CostBase;
 using context::StageModel;
@@ -79,7 +80,7 @@ int main() {
   if (terminal) {
     auto xf = VectorXd::Ones(nx);
     auto func = std::make_shared<StateErrorResidualTpl<double>>(space, nu, xf);
-    problem.addTerminalConstraint({func, std::make_shared<Equality>()});
+    problem.addTerminalConstraint({func, std::make_shared<EqualityConstraint>()});
   }
 
   const double tol = 1e-6;
