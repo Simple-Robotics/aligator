@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
   uint nu = 2;
   VectorXs x0;
   x0.setRandom(nx);
-  uint horizon = 16;
+  const uint horizon = 16;
   const double mu = 1e-14;
 
   problem_t problem = generate_problem(x0, horizon, nx, nu);
@@ -72,8 +72,8 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
   solver_full_horz.backward(mu, mu);
 
   auto solution_full_horz = lqrInitializeSolution(problem);
+  auto &[xs, us, vs, lbdas] = solution_full_horz;
   {
-    auto &[xs, us, vs, lbdas] = solution_full_horz;
     bool ret = solver_full_horz.forward(xs, us, vs, lbdas);
     BOOST_CHECK(ret);
     KktError err_full = computeKktError(problem, xs, us, vs, lbdas);
@@ -133,9 +133,6 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
   BOOST_CHECK_LE(err1.max, EPS);
   BOOST_CHECK_LE(err2.max, EPS);
 
-  fmt::print("err1 = {:.3e}\n", err1.max);
-  fmt::print("err2 = {:.3e}\n", err2.max);
-
   uint t1 = horizon - t0;
 
   VectorOfVectors xs_merged = mergeStdVectors(xs1, xs2);
@@ -156,12 +153,17 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
   BOOST_CHECK_EQUAL(xs2.size(), t1 + 1);
 
   VectorXs x_errs(horizon + 1);
+  VectorXs u_errs(horizon);
+  VectorXs l_errs(horizon + 1);
 
-  const auto &[xs, us, vs, lbdas] = solution_full_horz;
   for (uint i = 0; i <= horizon; i++) {
     x_errs[i] = infty_norm(xs[i] - xs_merged[i]);
+    l_errs[i] = infty_norm(lbdas[i] - lbdas_merged[i]);
+    if (i < horizon)
+      u_errs[i] = infty_norm(us[i] - us_merged[i]);
   }
-  fmt::print("errors between solves: {}\n", infty_norm(x_errs));
+  fmt::print("errors between solves: x={:.3e}, u={:.3e}, λ={:.3e}\n",
+             infty_norm(x_errs), infty_norm(u_errs), infty_norm(l_errs));
 
   KktError err_merged =
       computeKktError(problem, xs_merged, us_merged, vs_merged, lbdas_merged);
