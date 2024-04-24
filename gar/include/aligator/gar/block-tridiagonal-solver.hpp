@@ -42,6 +42,43 @@ auto blockTridiagToDenseMatrix(const std::vector<MatrixType> &subdiagonal,
   return out;
 }
 
+/// @brief Apply the Jacobi preconditioning strategy.
+template <typename MatrixType, typename RhsType>
+void applyJacobiPreconditioningStrategy(std::vector<MatrixType> &subdiagonal,
+                                        std::vector<MatrixType> &diagonal,
+                                        std::vector<MatrixType> &superdiagonal,
+                                        BlkMatrix<RhsType, -1, 1> &rhs) {
+  ZoneScoped;
+  using Scalar = typename MatrixType::Scalar;
+  using Eigen::Index;
+
+  assert(diagonal.size() > 0);
+  const size_t N = size_t(diagonal.size() - 1);
+
+  // iterate over block-rows
+  for (size_t i = 0; i <= N; i++) {
+    MatrixType &Ai = diagonal[i];
+    Eigen::Diagonal diag = Ai.diagonal();
+    fmt::println("diag[{:d}] = {}", i, diag);
+    for (Index kk = 0; kk < Ai.rows(); kk++) {
+      Scalar piv = std::abs(diag[kk]);
+      if (piv < 0.1) {
+        piv = 1.0;
+      }
+      Ai.row(kk) /= piv;
+      rhs[i](kk) /= piv;
+      if (i < N) {
+        MatrixType &Bi = superdiagonal[i];
+        Bi.row(kk) /= piv;
+      }
+      if (i >= 1) {
+        MatrixType &Ci = subdiagonal[i - 1];
+        Ci.row(kk) /= piv;
+      }
+    }
+  }
+}
+
 /// Solve a symmetric block-tridiagonal problem by in-place factorization.
 /// The subdiagonal will be used to store factorization coefficients.
 template <typename MatrixType, typename RhsType, typename DecType>
