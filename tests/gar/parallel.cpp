@@ -5,7 +5,6 @@
 
 #include "./test_util.hpp"
 #include "aligator/gar/parallel-solver.hpp"
-#include "aligator/gar/parallel-solver-tbb.hpp"
 #include "aligator/gar/utils.hpp"
 #include <Eigen/Cholesky>
 
@@ -263,18 +262,6 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
     randomly_modify_problem(problem);
     parSolver.backward(mu, mu);
     parSolver.forward(xs, us, vs, lbdas);
-    KktError e = computeKktError(problem, xs, us, vs, lbdas, mu, mu);
-    printKktError(e);
-    BOOST_CHECK_LE(e.max, tol);
-  }
-
-  {
-    BOOST_TEST_MESSAGE("Also run TBB parallel solver");
-    int default_num_threads = tbb::info::default_concurrency();
-    fmt::print("oneTBB default num threads: {:d}\n", default_num_threads);
-    ParallelRiccatiSolver2<double> solver(problem, num_threads);
-    solver.backward(mu, mu);
-    solver.forward(xs, us, vs, lbdas);
     KktError e = computeKktError(problem, xs, us, vs, lbdas, mu, mu);
     printKktError(e);
     BOOST_CHECK_LE(e.max, tol);
