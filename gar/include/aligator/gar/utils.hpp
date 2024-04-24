@@ -2,6 +2,7 @@
 #pragma once
 
 #include "./lqr-problem.hpp"
+#include "boost/core/span.hpp"
 
 namespace aligator {
 namespace gar {
@@ -9,10 +10,10 @@ namespace gar {
 template <typename Scalar>
 auto lqrComputeKktError(
     const LQRProblemTpl<Scalar> &problem,
-    const typename math_types<Scalar>::VectorOfVectors &xs,
-    const typename math_types<Scalar>::VectorOfVectors &us,
-    const typename math_types<Scalar>::VectorOfVectors &vs,
-    const typename math_types<Scalar>::VectorOfVectors &lbdas,
+    boost::span<const typename math_types<Scalar>::VectorXs> xs,
+    boost::span<const typename math_types<Scalar>::VectorXs> us,
+    boost::span<const typename math_types<Scalar>::VectorXs> vs,
+    boost::span<const typename math_types<Scalar>::VectorXs> lbdas,
     const Scalar mudyn, const Scalar mueq,
     const std::optional<typename math_types<Scalar>::ConstVectorRef> &theta_,
     bool verbose = false) {
@@ -244,11 +245,11 @@ auto lqrInitializeSolution(const LQRProblemTpl<Scalar> &problem) {
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 extern template auto lqrComputeKktError<context::Scalar>(
-    const LQRProblemTpl<context::Scalar> &, const context::VectorOfVectors &,
-    const context::VectorOfVectors &, const context::VectorOfVectors &,
-    const context::VectorOfVectors &, const context::Scalar,
-    const context::Scalar, const std::optional<context::ConstVectorRef> &,
-    bool);
+    const LQRProblemTpl<context::Scalar> &,
+    boost::span<const context::VectorXs>, boost::span<const context::VectorXs>,
+    boost::span<const context::VectorXs>, boost::span<const context::VectorXs>,
+    const context::Scalar, const context::Scalar,
+    const std::optional<context::ConstVectorRef> &, bool);
 extern template auto
 lqrDenseMatrix<context::Scalar>(const LQRProblemTpl<context::Scalar> &,
                                 context::Scalar, context::Scalar);
