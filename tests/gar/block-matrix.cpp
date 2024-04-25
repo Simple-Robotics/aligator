@@ -62,8 +62,9 @@ struct BTAG_Fixture {
   BlkVec vec;
   MatrixXs densemat;
   BlkVec rhs;
+  std::vector<Eigen::LDLT<MatrixXs>> facs;
 
-  BTAG_Fixture() : diagonal(N + 1), sup(N), sub(N) {
+  BTAG_Fixture() : diagonal(N + 1), sup(N), sub(N), facs() {
     for (size_t i = 0; i <= N; i++) {
       diagonal[i] = sampleWishartDistributedMatrix(nx, nx + 1);
     }
@@ -80,12 +81,14 @@ struct BTAG_Fixture {
     densemat = gar::blockTridiagToDenseMatrix(sub, diagonal, sup);
     fmt::print("Dense problem matrix:\n{}\n", densemat);
     rhs = vec;
+    for (size_t i = 0; i < diagonal.size(); i++) {
+      facs.emplace_back(diagonal[i].cols());
+    }
   }
 };
 
 BOOST_FIXTURE_TEST_CASE(block_tridiag_solve_up_looking, BTAG_Fixture) {
 
-  std::vector<Eigen::LDLT<MatrixXs>> facs(diagonal.size());
   gar::applyJacobiPreconditioningStrategy(sub, diagonal, sup, vec);
   bool ret = gar::symmetricBlockTridiagSolve(sub, diagonal, sup, vec, facs);
   BOOST_CHECK(ret);
@@ -109,7 +112,9 @@ BOOST_FIXTURE_TEST_CASE(block_tridiag_solve_up_looking, BTAG_Fixture) {
 
 BOOST_FIXTURE_TEST_CASE(block_tridiag_solve_down_looking, BTAG_Fixture) {
 
-  std::vector<Eigen::LDLT<MatrixXs>> facs(diagonal.size());
+  for (size_t i = 0; i < diagonal.size(); i++) {
+    facs.emplace_back(diagonal[i].size());
+  }
   bool ret =
       gar::symmetricBlockTridiagSolveDownLooking(sub, diagonal, sup, vec, facs);
   BOOST_CHECK(ret);
