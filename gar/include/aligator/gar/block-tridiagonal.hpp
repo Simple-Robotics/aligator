@@ -106,8 +106,9 @@ void applyJacobiPreconditioningStrategy(std::vector<MatrixType> &subdiagonal,
   }
 }
 
-/// Solve a symmetric block-tridiagonal problem by in-place factorization.
-/// The subdiagonal will be used to store factorization coefficients.
+/// @brief Solve a symmetric block-tridiagonal \f$Ax=b\f$ problem by in-place
+/// factorization. The subdiagonal will be used to store factorization
+/// coefficients.
 template <typename MatrixType, typename RhsType, typename DecType>
 bool symmetricBlockTridiagSolve(std::vector<MatrixType> &subdiagonal,
                                 std::vector<MatrixType> &diagonal,
@@ -115,7 +116,7 @@ bool symmetricBlockTridiagSolve(std::vector<MatrixType> &subdiagonal,
                                 BlkMatrix<RhsType, -1, 1> &rhs,
                                 std::vector<DecType> &facs) {
   ZoneScoped;
-  ALIGATOR_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_SCOPED;
 
   if (subdiagonal.size() != superdiagonal.size() ||
       diagonal.size() != superdiagonal.size() + 1 ||
@@ -164,7 +165,6 @@ bool symmetricBlockTridiagSolve(std::vector<MatrixType> &subdiagonal,
     rhs[i + 1].noalias() -= Uip1t * rhs[i];
   }
 
-  ALIGATOR_NOMALLOC_END;
   return true;
 }
 

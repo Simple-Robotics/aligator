@@ -1,7 +1,7 @@
 #pragma once
 
 #include "parallel-solver.hpp"
-#include "block-tridiagonal-solver.hpp"
+#include "block-tridiagonal.hpp"
 #include "work.hpp"
 
 #include "aligator/threads.hpp"
