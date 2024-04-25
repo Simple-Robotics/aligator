@@ -1,4 +1,5 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
+/// @author Wilson Jallet
 #pragma once
 
 #include "aligator/math.hpp"

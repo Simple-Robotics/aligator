@@ -1,3 +1,5 @@
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
+/// @author Wilson Jallet
 #include <boost/test/unit_test.hpp>
 
 #include "aligator/context.hpp"
@@ -84,6 +86,7 @@ struct BTAG_Fixture {
 BOOST_FIXTURE_TEST_CASE(block_tridiag_solve_up_looking, BTAG_Fixture) {
 
   std::vector<Eigen::LDLT<MatrixXs>> facs(diagonal.size());
+  gar::applyJacobiPreconditioningStrategy(sub, diagonal, sup, vec);
   bool ret = gar::symmetricBlockTridiagSolve(sub, diagonal, sup, vec, facs);
   BOOST_CHECK(ret);
 
