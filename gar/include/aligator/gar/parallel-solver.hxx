@@ -42,10 +42,6 @@ void ParallelRiccatiSolver<Scalar>::allocateLeg(uint start, uint end,
       knot.addParameterization(knot.nx);
     datas.emplace_back(knot.nx, knot.nu, knot.nc, knot.nth);
   }
-  if (!last_leg) {
-    // last knot in the leg needs parameter to be set
-    setupKnot(problem_->stages[end - 1]);
-  }
 }
 
 template <typename Scalar>
@@ -71,7 +67,6 @@ void ParallelRiccatiSolver<Scalar>::assembleCondensedSystem(
     auto [i0, i1] = get_work(N, i, numThreads);
     uint ip1 = i + 1;
     diagonal[2 * ip1] = datas[i0].vm.Vtt;
-    diagonal[2 * ip1].diagonal().array() -= mudyn;
 
     diagonal[2 * ip1 + 1] = datas[i1].vm.Pmat;
     superdiagonal[2 * ip1] = stages[i1 - 1].E;
@@ -106,7 +101,7 @@ bool ParallelRiccatiSolver<Scalar>::backward(const Scalar mudyn,
   auto N = static_cast<uint>(problem_->horizon());
   for (uint i = 0; i < numThreads - 1; i++) {
     uint end = get_work(N, i, numThreads).end;
-    setupKnot(problem_->stages[end - 1]);
+    setupKnot(problem_->stages[end - 1], mudyn);
   }
   Eigen::setNbThreads(1);
   aligator::omp::set_default_options(numThreads, false);

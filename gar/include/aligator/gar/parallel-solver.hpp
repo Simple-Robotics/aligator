@@ -33,11 +33,13 @@ public:
 
   void allocateLeg(uint start, uint end, bool last_leg);
 
-  static void setupKnot(KnotType &knot) {
+  static void setupKnot(KnotType &knot, const Scalar mudyn) {
     ZoneScoped;
     ALIGATOR_NOMALLOC_BEGIN;
     knot.Gx = knot.A.transpose();
     knot.Gu = knot.B.transpose();
+    knot.Gth.setZero();
+    knot.Gth.diagonal().setConstant(-mudyn);
     knot.gamma = knot.f;
     ALIGATOR_NOMALLOC_END;
   }
@@ -64,7 +66,7 @@ public:
     std::vector<Eigen::BunchKaufman<MatrixXs>> facs;
   };
 
-  /// Create the sparse representation of the reduced KKT system.
+  /// @brief Create the sparse representation of the reduced KKT system.
   void assembleCondensedSystem(const Scalar mudyn);
 
   bool forward(VectorOfVectors &xs, VectorOfVectors &us, VectorOfVectors &vs,
@@ -79,6 +81,7 @@ public:
   /// Contains the right-hand side and solution of the condensed KKT system.
   BlkVec condensedKktRhs;
 
+  /// @brief Initialize the buffers for the block-tridiagonal system.
   void initializeTridiagSystem(const std::vector<long> &dims);
 
 protected:
