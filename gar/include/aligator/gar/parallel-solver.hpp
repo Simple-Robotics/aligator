@@ -63,7 +63,6 @@ public:
     std::vector<MatrixXs> subdiagonal;
     std::vector<MatrixXs> diagonal;
     std::vector<MatrixXs> superdiagonal;
-    std::vector<Eigen::BunchKaufman<MatrixXs>> facs;
   };
 
   /// @brief Create the sparse representation of the reduced KKT system.
@@ -78,8 +77,9 @@ public:
 
   /// Hold the compressed representation of the condensed KKT system
   condensed_system_t condensedKktSystem;
+  std::vector<Eigen::BunchKaufman<MatrixXs>> condensedFacs;
   /// Contains the right-hand side and solution of the condensed KKT system.
-  BlkVec condensedKktRhs;
+  BlkVec condensedKktRhs, condensedKktSolution;
 
   /// @brief Initialize the buffers for the block-tridiagonal system.
   void initializeTridiagSystem(const std::vector<long> &dims);

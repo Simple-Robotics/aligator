@@ -4,6 +4,8 @@
 #include "block-tridiagonal.hpp"
 #include "work.hpp"
 
+#include <Eigen/Eigenvalues>
+
 #include "aligator/threads.hpp"
 
 namespace aligator::gar {
@@ -27,6 +29,7 @@ ParallelRiccatiSolver<Scalar>::ParallelRiccatiSolver(
     dims.push_back(problem.stages[i1 - 1].nx);
   }
   condensedKktRhs = BlkVec(dims);
+  condensedKktSolution = condensedKktRhs;
   initializeTridiagSystem(dims);
 
   assert(datas.size() == (N + 1));
@@ -118,16 +121,31 @@ bool ParallelRiccatiSolver<Scalar>::backward(const Scalar mudyn,
     boost::span<StageFactor<Scalar>> dtview =
         make_span_from_indices(datas, beg, end);
     Impl::backwardImpl(stview, mudyn, mueq, dtview);
-#pragma omp barrier
-#pragma omp single
-    {
-      Eigen::setNbThreads(0);
-      assembleCondensedSystem(mudyn);
-      symmetricBlockTridiagSolve(condensedKktSystem.subdiagonal,
-                                 condensedKktSystem.diagonal,
-                                 condensedKktSystem.superdiagonal,
-                                 condensedKktRhs, condensedKktSystem.facs);
-    }
+  }
+
+  {
+    Eigen::setNbThreads(0);
+    assembleCondensedSystem(mudyn);
+    condensedKktSolution = condensedKktRhs;
+    condensed_system_t kktCopy = condensedKktSystem;
+    // This routine has accuracy problems. Jesus H. Christ
+    symmetricBlockTridiagSolve(
+        condensedKktSystem.subdiagonal, condensedKktSystem.diagonal,
+        condensedKktSystem.superdiagonal, condensedKktSolution, condensedFacs);
+    // iterative refinement
+    // 1. compute residual into rhs
+    blockTridiagMatMul(kktCopy.subdiagonal, kktCopy.diagonal,
+                       kktCopy.superdiagonal, condensedKktSolution,
+                       condensedKktRhs, -1.0);
+
+    condensedKktRhs.matrix() *= -1;
+    Scalar err = math::infty_norm(condensedKktRhs.matrix());
+    fmt::println("Condensed KKT residual:\n{:.3e}", err);
+    // 2. perform refinement step and swap
+    blockTridiagRefinementStep(
+        condensedKktSystem.subdiagonal, condensedKktSystem.diagonal,
+        condensedKktSystem.superdiagonal, condensedFacs, condensedKktRhs);
+    condensedKktSolution.matrix() += condensedKktRhs.matrix();
   }
 
   ALIGATOR_NOMALLOC_END;
@@ -143,8 +161,8 @@ bool ParallelRiccatiSolver<Scalar>::forward(
   uint N = (uint)problem_->horizon();
   for (uint i = 0; i < numThreads; i++) {
     uint i0 = get_work(N, i, numThreads).beg;
-    lbdas[i0] = condensedKktRhs[2 * i];
-    xs[i0] = condensedKktRhs[2 * i + 1];
+    lbdas[i0] = condensedKktSolution[2 * i];
+    xs[i0] = condensedKktSolution[2 * i + 1];
   }
   Eigen::setNbThreads(1);
   const auto &stages = problem_->stages;
@@ -182,16 +200,16 @@ void ParallelRiccatiSolver<Scalar>::initializeTridiagSystem(
   condensedKktSystem.subdiagonal.reserve(dims.size() - 1);
   condensedKktSystem.diagonal.reserve(dims.size());
   condensedKktSystem.superdiagonal.reserve(dims.size() - 1);
-  condensedKktSystem.facs.reserve(dims.size());
+  condensedFacs.reserve(dims.size());
 
   condensedKktSystem.diagonal.emplace_back(dims[0], dims[0]);
-  condensedKktSystem.facs.emplace_back(dims[0]);
+  condensedFacs.emplace_back(dims[0]);
 
   for (uint i = 0; i < dims.size() - 1; i++) {
     condensedKktSystem.superdiagonal.emplace_back(dims[i], dims[i + 1]);
     condensedKktSystem.diagonal.emplace_back(dims[i + 1], dims[i + 1]);
     condensedKktSystem.subdiagonal.emplace_back(dims[i + 1], dims[i]);
-    condensedKktSystem.facs.emplace_back(dims[i + 1]);
+    condensedFacs.emplace_back(dims[i + 1]);
   }
 }
 

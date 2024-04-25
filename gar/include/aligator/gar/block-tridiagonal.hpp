@@ -112,7 +112,7 @@ void applyJacobiPreconditioningStrategy(std::vector<MatrixType> &subdiagonal,
 template <typename MatrixType, typename RhsType, typename DecType>
 bool symmetricBlockTridiagSolve(std::vector<MatrixType> &subdiagonal,
                                 std::vector<MatrixType> &diagonal,
-                                std::vector<MatrixType> &superdiagonal,
+                                const std::vector<MatrixType> &superdiagonal,
                                 BlkMatrix<RhsType, -1, 1> &rhs,
                                 std::vector<DecType> &facs) {
   ZoneScoped;
@@ -138,7 +138,7 @@ bool symmetricBlockTridiagSolve(std::vector<MatrixType> &subdiagonal,
     ldl.solveInPlace(r);
 
     // the math has index of B starting at 1, array starts at 0
-    auto &Bip1 = superdiagonal[i];
+    const auto &Bip1 = superdiagonal[i];
     auto &Cip1 = subdiagonal[i]; // should be Bi.transpose()
 
     rhs[i].noalias() -= Bip1 * rhs[i + 1];
@@ -161,7 +161,49 @@ bool symmetricBlockTridiagSolve(std::vector<MatrixType> &subdiagonal,
   }
 
   for (size_t i = 0; i < N; i++) {
-    auto &Uip1t = subdiagonal[i];
+    const auto &Uip1t = subdiagonal[i];
+    rhs[i + 1].noalias() -= Uip1t * rhs[i];
+  }
+
+  return true;
+}
+
+/// @brief Given the decomposed matrix data, just perform the backward-forward
+/// step of the algorithm.
+template <typename MatrixType, typename RhsType, typename DecType>
+bool blockTridiagRefinementStep(const std::vector<MatrixType> &subdiagonal,
+                                const std::vector<MatrixType> & /*diagonal*/,
+                                const std::vector<MatrixType> &superdiagonal,
+                                const std::vector<DecType> &facs,
+                                BlkMatrix<RhsType, -1, 1> &rhs) {
+  ALIGATOR_NOMALLOC_SCOPED;
+  // size of problem
+  const size_t N = superdiagonal.size();
+
+  size_t i = N - 1;
+  while (true) {
+    const DecType &ldl = facs[i + 1];
+    Eigen::Ref<RhsType> r = rhs[i + 1];
+    ldl.solveInPlace(r);
+
+    // the math has index of B starting at 1, array starts at 0
+    const auto &Bip1 = superdiagonal[i];
+
+    rhs[i].noalias() -= Bip1 * rhs[i + 1];
+
+    if (i == 0)
+      break;
+    i--;
+  }
+
+  {
+    const DecType &ldl = facs[0];
+    Eigen::Ref<RhsType> r = rhs[0];
+    ldl.solveInPlace(r);
+  }
+
+  for (size_t i = 0; i < N; i++) {
+    const auto &Uip1t = subdiagonal[i];
     rhs[i + 1].noalias() -= Uip1t * rhs[i];
   }
 
@@ -198,7 +240,7 @@ bool symmetricBlockTridiagSolveDownLooking(
 
     // the math has index of B starting at 1, array starts at 0
     auto &Bip1 = superdiagonal[i];
-    auto &Cip1 = subdiagonal[i]; // should be B[i+1].transpose()
+    const auto &Cip1 = subdiagonal[i]; // should be B[i+1].transpose()
 
     rhs[i + 1].noalias() -= Cip1 * rhs[i];
     ldl.solveInPlace(Bip1); // contains L.T = D[i]^-1 * B[i+1]
@@ -218,7 +260,7 @@ bool symmetricBlockTridiagSolveDownLooking(
 
   size_t i = N - 1;
   while (true) {
-    auto &Lim1t = superdiagonal[i];
+    const auto &Lim1t = superdiagonal[i];
     rhs[i].noalias() -= Lim1t * rhs[i + 1];
 
     if (i == 0)
