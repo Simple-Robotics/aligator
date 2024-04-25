@@ -42,6 +42,33 @@ auto blockTridiagToDenseMatrix(const std::vector<MatrixType> &subdiagonal,
   return out;
 }
 
+template <typename MatrixType, typename InputType, typename OutType,
+          typename Scalar = typename MatrixType::Scalar>
+bool blockTridiagMatMul(const std::vector<MatrixType> &Asub,
+                        const std::vector<MatrixType> &Adiag,
+                        const std::vector<MatrixType> &Asuper,
+                        const BlkMatrix<InputType, -1, 1> &b,
+                        BlkMatrix<OutType, -1, 1> &c, const Scalar beta) {
+  ALIGATOR_NOMALLOC_SCOPED;
+  const size_t N = Asuper.size();
+
+  c.matrix() *= beta;
+
+  c[0].noalias() += Adiag[0] * b[0];
+  c[0].noalias() += Asuper[0] * b[1];
+
+  for (size_t i = 1; i < N; i++) {
+    c[i].noalias() += Asub[i - 1] * b[i - 1];
+    c[i].noalias() += Adiag[i] * b[i];
+    c[i].noalias() += Asuper[i] * b[i + 1];
+  }
+
+  c[N].noalias() += Asub[N - 1] * b[N - 1];
+  c[N].noalias() += Adiag[N] * b[N];
+
+  return true;
+}
+
 /// @brief Apply the Jacobi preconditioning strategy.
 template <typename MatrixType, typename RhsType>
 void applyJacobiPreconditioningStrategy(std::vector<MatrixType> &subdiagonal,
