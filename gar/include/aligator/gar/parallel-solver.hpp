@@ -1,3 +1,5 @@
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
+/// @author Wilson Jallet
 #pragma once
 
 #include "riccati-base.hpp"
@@ -33,11 +35,13 @@ public:
 
   void allocateLeg(uint start, uint end, bool last_leg);
 
-  static void setupKnot(KnotType &knot) {
+  static void setupKnot(KnotType &knot, const Scalar mudyn) {
     ZoneScoped;
     ALIGATOR_NOMALLOC_BEGIN;
     knot.Gx = knot.A.transpose();
     knot.Gu = knot.B.transpose();
+    knot.Gth.setZero();
+    knot.Gth.diagonal().setConstant(-mudyn);
     knot.gamma = knot.f;
     ALIGATOR_NOMALLOC_END;
   }
@@ -61,10 +65,15 @@ public:
     std::vector<MatrixXs> subdiagonal;
     std::vector<MatrixXs> diagonal;
     std::vector<MatrixXs> superdiagonal;
-    std::vector<Eigen::BunchKaufman<MatrixXs>> facs;
   };
 
-  /// Create the sparse representation of the reduced KKT system.
+  struct condensed_system_factor {
+    std::vector<MatrixXs> diagonalFacs; //< diagonal factors
+    std::vector<MatrixXs> upFacs;       //< transposed U factors
+    std::vector<Eigen::BunchKaufman<MatrixXs>> ldlt;
+  };
+
+  /// @brief Create the sparse representation of the reduced KKT system.
   void assembleCondensedSystem(const Scalar mudyn);
 
   bool forward(VectorOfVectors &xs, VectorOfVectors &us, VectorOfVectors &vs,
@@ -76,9 +85,12 @@ public:
 
   /// Hold the compressed representation of the condensed KKT system
   condensed_system_t condensedKktSystem;
+  /// Condensed KKT system factors.
+  condensed_system_factor condensedFacs;
   /// Contains the right-hand side and solution of the condensed KKT system.
-  BlkVec condensedKktRhs;
+  BlkVec condensedKktRhs, condensedKktSolution;
 
+  /// @brief Initialize the buffers for the block-tridiagonal system.
   void initializeTridiagSystem(const std::vector<long> &dims);
 
 protected:

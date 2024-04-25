@@ -1,15 +1,16 @@
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
+/// @author Wilson Jallet
 #include <boost/test/unit_test.hpp>
 
 #include "aligator/context.hpp"
 #include "aligator/gar/blk-matrix.hpp"
-#include "aligator/gar/block-tridiagonal-solver.hpp"
+#include "aligator/gar/block-tridiagonal.hpp"
 #include <Eigen/Cholesky>
 
 #include "test_util.hpp"
 
 using namespace aligator;
 using namespace aligator::context;
-namespace utf = boost::unit_test::framework;
 
 using MatrixXs = math_types<Scalar>::MatrixXs;
 using MatrixRef = Eigen::Ref<MatrixXs>;
@@ -85,6 +86,7 @@ struct BTAG_Fixture {
 BOOST_FIXTURE_TEST_CASE(block_tridiag_solve_up_looking, BTAG_Fixture) {
 
   std::vector<Eigen::LDLT<MatrixXs>> facs(diagonal.size());
+  gar::applyJacobiPreconditioningStrategy(sub, diagonal, sup, vec);
   bool ret = gar::symmetricBlockTridiagSolve(sub, diagonal, sup, vec, facs);
   BOOST_CHECK(ret);
 

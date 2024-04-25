@@ -20,6 +20,9 @@
 /// @brief Exiting performance-critical code.
 #define ALIGATOR_NOMALLOC_END ALIGATOR_EIGEN_ALLOW_MALLOC(true)
 
+#define ALIGATOR_NOMALLOC_SCOPED                                               \
+  static const ::aligator::internal::scoped_nomalloc myvar {}
+
 #define ALIGATOR_INLINE inline __attribute__((always_inline))
 
 #ifdef ALIGATOR_WITH_CPP_17
@@ -29,3 +32,19 @@
 #else
 #define ALIGATOR_MAYBE_UNUSED __attribute__((__unused__))
 #endif
+
+namespace aligator {
+namespace internal {
+struct scoped_nomalloc {
+  scoped_nomalloc(const scoped_nomalloc &) = delete;
+  scoped_nomalloc(scoped_nomalloc &&) = delete;
+  ALIGATOR_INLINE scoped_nomalloc(bool active = true) : m_active(active) {
+    ALIGATOR_EIGEN_ALLOW_MALLOC(!m_active);
+  }
+  ~scoped_nomalloc() { ALIGATOR_EIGEN_ALLOW_MALLOC(m_active); }
+
+private:
+  bool m_active;
+};
+} // namespace internal
+} // namespace aligator

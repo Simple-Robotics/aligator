@@ -1,8 +1,12 @@
+/// @copyright Copyright (C) 2024 LAAS-CNRS, INRIA
+/// @author Wilson Jallet
 #pragma once
 
 #include "parallel-solver.hpp"
-#include "block-tridiagonal-solver.hpp"
+#include "block-tridiagonal.hpp"
 #include "work.hpp"
+
+#include <Eigen/Eigenvalues>
 
 #include "aligator/threads.hpp"
 
@@ -27,6 +31,7 @@ ParallelRiccatiSolver<Scalar>::ParallelRiccatiSolver(
     dims.push_back(problem.stages[i1 - 1].nx);
   }
   condensedKktRhs = BlkVec(dims);
+  condensedKktSolution = condensedKktRhs;
   initializeTridiagSystem(dims);
 
   assert(datas.size() == (N + 1));
@@ -41,10 +46,6 @@ void ParallelRiccatiSolver<Scalar>::allocateLeg(uint start, uint end,
     if (!last_leg)
       knot.addParameterization(knot.nx);
     datas.emplace_back(knot.nx, knot.nu, knot.nc, knot.nth);
-  }
-  if (!last_leg) {
-    // last knot in the leg needs parameter to be set
-    setupKnot(problem_->stages[end - 1]);
   }
 }
 
@@ -71,7 +72,6 @@ void ParallelRiccatiSolver<Scalar>::assembleCondensedSystem(
     auto [i0, i1] = get_work(N, i, numThreads);
     uint ip1 = i + 1;
     diagonal[2 * ip1] = datas[i0].vm.Vtt;
-    diagonal[2 * ip1].diagonal().array() -= mudyn;
 
     diagonal[2 * ip1 + 1] = datas[i1].vm.Pmat;
     superdiagonal[2 * ip1] = stages[i1 - 1].E;
@@ -101,12 +101,12 @@ template <typename Scalar>
 bool ParallelRiccatiSolver<Scalar>::backward(const Scalar mudyn,
                                              const Scalar mueq) {
 
-  ALIGATOR_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_SCOPED;
   ZoneScopedN("parallel_backward");
   auto N = static_cast<uint>(problem_->horizon());
   for (uint i = 0; i < numThreads - 1; i++) {
     uint end = get_work(N, i, numThreads).end;
-    setupKnot(problem_->stages[end - 1]);
+    setupKnot(problem_->stages[end - 1], mudyn);
   }
   Eigen::setNbThreads(1);
   aligator::omp::set_default_options(numThreads, false);
@@ -123,19 +123,38 @@ bool ParallelRiccatiSolver<Scalar>::backward(const Scalar mudyn,
     boost::span<StageFactor<Scalar>> dtview =
         make_span_from_indices(datas, beg, end);
     Impl::backwardImpl(stview, mudyn, mueq, dtview);
-#pragma omp barrier
-#pragma omp single
-    {
-      Eigen::setNbThreads(0);
-      assembleCondensedSystem(mudyn);
-      symmetricBlockTridiagSolve(condensedKktSystem.subdiagonal,
-                                 condensedKktSystem.diagonal,
-                                 condensedKktSystem.superdiagonal,
-                                 condensedKktRhs, condensedKktSystem.facs);
-    }
   }
 
-  ALIGATOR_NOMALLOC_END;
+  {
+    Eigen::setNbThreads(0);
+    assembleCondensedSystem(mudyn);
+    condensedKktSolution = condensedKktRhs;
+    condensedFacs.diagonalFacs = condensedKktSystem.diagonal;
+    condensedFacs.upFacs = condensedKktSystem.subdiagonal;
+
+    // This routine has accuracy problems. Jesus H. Christ
+    symmetricBlockTridiagSolve(condensedKktSystem.subdiagonal,
+                               condensedKktSystem.diagonal,
+                               condensedKktSystem.superdiagonal,
+                               condensedKktSolution, condensedFacs.ldlt);
+    condensedFacs.diagonalFacs.swap(condensedKktSystem.diagonal);
+    condensedFacs.upFacs.swap(condensedKktSystem.subdiagonal);
+
+    // iterative refinement
+    // 1. compute residual into rhs
+    blockTridiagMatMul(condensedKktSystem.subdiagonal,
+                       condensedKktSystem.diagonal,
+                       condensedKktSystem.superdiagonal, condensedKktSolution,
+                       condensedKktRhs, -1.0);
+
+    condensedKktRhs.matrix() *= -1;
+    // 2. perform refinement step and swap
+    blockTridiagRefinementStep(condensedFacs.upFacs,
+                               condensedKktSystem.superdiagonal,
+                               condensedFacs.ldlt, condensedKktRhs);
+    condensedKktSolution.matrix() += condensedKktRhs.matrix();
+  }
+
   return true;
 }
 
@@ -143,13 +162,13 @@ template <typename Scalar>
 bool ParallelRiccatiSolver<Scalar>::forward(
     VectorOfVectors &xs, VectorOfVectors &us, VectorOfVectors &vs,
     VectorOfVectors &lbdas, const std::optional<ConstVectorRef> &) const {
-  ALIGATOR_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_SCOPED;
   ZoneScopedN("parallel_forward");
   uint N = (uint)problem_->horizon();
   for (uint i = 0; i < numThreads; i++) {
     uint i0 = get_work(N, i, numThreads).beg;
-    lbdas[i0] = condensedKktRhs[2 * i];
-    xs[i0] = condensedKktRhs[2 * i + 1];
+    lbdas[i0] = condensedKktSolution[2 * i];
+    xs[i0] = condensedKktSolution[2 * i + 1];
   }
   Eigen::setNbThreads(1);
   const auto &stages = problem_->stages;
@@ -172,7 +191,6 @@ bool ParallelRiccatiSolver<Scalar>::forward(
     }
   }
   Eigen::setNbThreads(0);
-  ALIGATOR_NOMALLOC_END;
   return true;
 }
 
@@ -187,16 +205,24 @@ void ParallelRiccatiSolver<Scalar>::initializeTridiagSystem(
   condensedKktSystem.subdiagonal.reserve(dims.size() - 1);
   condensedKktSystem.diagonal.reserve(dims.size());
   condensedKktSystem.superdiagonal.reserve(dims.size() - 1);
-  condensedKktSystem.facs.reserve(dims.size());
+  condensedFacs.diagonalFacs.reserve(dims.size());
+  condensedFacs.upFacs.reserve(dims.size());
+  condensedFacs.ldlt.reserve(dims.size());
+
+  const auto emplace_factor = [](condensed_system_factor &f, Eigen::Index dim) {
+    f.diagonalFacs.emplace_back(dim, dim);
+    f.upFacs.emplace_back(dim, dim);
+    f.ldlt.emplace_back(dim);
+  };
 
   condensedKktSystem.diagonal.emplace_back(dims[0], dims[0]);
-  condensedKktSystem.facs.emplace_back(dims[0]);
+  emplace_factor(condensedFacs, dims[0]);
 
   for (uint i = 0; i < dims.size() - 1; i++) {
     condensedKktSystem.superdiagonal.emplace_back(dims[i], dims[i + 1]);
     condensedKktSystem.diagonal.emplace_back(dims[i + 1], dims[i + 1]);
     condensedKktSystem.subdiagonal.emplace_back(dims[i + 1], dims[i]);
-    condensedKktSystem.facs.emplace_back(dims[i + 1]);
+    emplace_factor(condensedFacs, dims[i + 1]);
   }
 }
 
