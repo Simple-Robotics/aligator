@@ -11,8 +11,11 @@
 #ifdef ALIGATOR_EIGEN_CHECK_MALLOC
 #define ALIGATOR_EIGEN_ALLOW_MALLOC(allowed)                                   \
   ::Eigen::internal::set_is_malloc_allowed(allowed)
+#define ALIGATOR_NOMALLOC_SCOPED
 #else
 #define ALIGATOR_EIGEN_ALLOW_MALLOC(allowed)
+#define ALIGATOR_NOMALLOC_SCOPED                                               \
+  ::aligator::internal::scoped_nomalloc {}
 #endif
 
 /// @brief Entering performance-critical code.
@@ -29,3 +32,12 @@
 #else
 #define ALIGATOR_MAYBE_UNUSED __attribute__((__unused__))
 #endif
+
+namespace aligator {
+namespace internal {
+struct scoped_nomalloc {
+  scoped_nomalloc() { ALIGATOR_NOMALLOC_BEGIN; }
+  ~scoped_nomalloc() { ALIGATOR_NOMALLOC_END; }
+};
+} // namespace internal
+} // namespace aligator
