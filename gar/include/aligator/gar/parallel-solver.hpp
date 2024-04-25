@@ -65,6 +65,12 @@ public:
     std::vector<MatrixXs> superdiagonal;
   };
 
+  struct condensed_system_factor {
+    std::vector<MatrixXs> diagonalFacs; //< diagonal factors
+    std::vector<MatrixXs> upFacs;       //< transposed U factors
+    std::vector<Eigen::BunchKaufman<MatrixXs>> ldlt;
+  };
+
   /// @brief Create the sparse representation of the reduced KKT system.
   void assembleCondensedSystem(const Scalar mudyn);
 
@@ -77,7 +83,8 @@ public:
 
   /// Hold the compressed representation of the condensed KKT system
   condensed_system_t condensedKktSystem;
-  std::vector<Eigen::BunchKaufman<MatrixXs>> condensedFacs;
+  /// Condensed KKT system factors.
+  condensed_system_factor condensedFacs;
   /// Contains the right-hand side and solution of the condensed KKT system.
   BlkVec condensedKktRhs, condensedKktSolution;
 

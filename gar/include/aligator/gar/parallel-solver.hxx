@@ -99,7 +99,7 @@ template <typename Scalar>
 bool ParallelRiccatiSolver<Scalar>::backward(const Scalar mudyn,
                                              const Scalar mueq) {
 
-  ALIGATOR_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_SCOPED;
   ZoneScopedN("parallel_backward");
   auto N = static_cast<uint>(problem_->horizon());
   for (uint i = 0; i < numThreads - 1; i++) {
@@ -127,28 +127,32 @@ bool ParallelRiccatiSolver<Scalar>::backward(const Scalar mudyn,
     Eigen::setNbThreads(0);
     assembleCondensedSystem(mudyn);
     condensedKktSolution = condensedKktRhs;
-    condensed_system_t kktCopy = condensedKktSystem;
+    condensedFacs.diagonalFacs = condensedKktSystem.diagonal;
+    condensedFacs.upFacs = condensedKktSystem.subdiagonal;
+
     // This routine has accuracy problems. Jesus H. Christ
-    symmetricBlockTridiagSolve(
-        condensedKktSystem.subdiagonal, condensedKktSystem.diagonal,
-        condensedKktSystem.superdiagonal, condensedKktSolution, condensedFacs);
+    symmetricBlockTridiagSolve(condensedKktSystem.subdiagonal,
+                               condensedKktSystem.diagonal,
+                               condensedKktSystem.superdiagonal,
+                               condensedKktSolution, condensedFacs.ldlt);
+    condensedFacs.diagonalFacs.swap(condensedKktSystem.diagonal);
+    condensedFacs.upFacs.swap(condensedKktSystem.subdiagonal);
+
     // iterative refinement
     // 1. compute residual into rhs
-    blockTridiagMatMul(kktCopy.subdiagonal, kktCopy.diagonal,
-                       kktCopy.superdiagonal, condensedKktSolution,
+    blockTridiagMatMul(condensedKktSystem.subdiagonal,
+                       condensedKktSystem.diagonal,
+                       condensedKktSystem.superdiagonal, condensedKktSolution,
                        condensedKktRhs, -1.0);
 
     condensedKktRhs.matrix() *= -1;
-    Scalar err = math::infty_norm(condensedKktRhs.matrix());
-    fmt::println("Condensed KKT residual:\n{:.3e}", err);
     // 2. perform refinement step and swap
-    blockTridiagRefinementStep(
-        condensedKktSystem.subdiagonal, condensedKktSystem.diagonal,
-        condensedKktSystem.superdiagonal, condensedFacs, condensedKktRhs);
+    blockTridiagRefinementStep(condensedFacs.upFacs,
+                               condensedKktSystem.superdiagonal,
+                               condensedFacs.ldlt, condensedKktRhs);
     condensedKktSolution.matrix() += condensedKktRhs.matrix();
   }
 
-  ALIGATOR_NOMALLOC_END;
   return true;
 }
 
@@ -156,7 +160,7 @@ template <typename Scalar>
 bool ParallelRiccatiSolver<Scalar>::forward(
     VectorOfVectors &xs, VectorOfVectors &us, VectorOfVectors &vs,
     VectorOfVectors &lbdas, const std::optional<ConstVectorRef> &) const {
-  ALIGATOR_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_SCOPED;
   ZoneScopedN("parallel_forward");
   uint N = (uint)problem_->horizon();
   for (uint i = 0; i < numThreads; i++) {
@@ -185,7 +189,6 @@ bool ParallelRiccatiSolver<Scalar>::forward(
     }
   }
   Eigen::setNbThreads(0);
-  ALIGATOR_NOMALLOC_END;
   return true;
 }
 
@@ -200,16 +203,24 @@ void ParallelRiccatiSolver<Scalar>::initializeTridiagSystem(
   condensedKktSystem.subdiagonal.reserve(dims.size() - 1);
   condensedKktSystem.diagonal.reserve(dims.size());
   condensedKktSystem.superdiagonal.reserve(dims.size() - 1);
-  condensedFacs.reserve(dims.size());
+  condensedFacs.diagonalFacs.reserve(dims.size());
+  condensedFacs.upFacs.reserve(dims.size());
+  condensedFacs.ldlt.reserve(dims.size());
+
+  const auto emplace_factor = [](condensed_system_factor &f, Eigen::Index dim) {
+    f.diagonalFacs.emplace_back(dim, dim);
+    f.upFacs.emplace_back(dim, dim);
+    f.ldlt.emplace_back(dim);
+  };
 
   condensedKktSystem.diagonal.emplace_back(dims[0], dims[0]);
-  condensedFacs.emplace_back(dims[0]);
+  emplace_factor(condensedFacs, dims[0]);
 
   for (uint i = 0; i < dims.size() - 1; i++) {
     condensedKktSystem.superdiagonal.emplace_back(dims[i], dims[i + 1]);
     condensedKktSystem.diagonal.emplace_back(dims[i + 1], dims[i + 1]);
     condensedKktSystem.subdiagonal.emplace_back(dims[i + 1], dims[i]);
-    condensedFacs.emplace_back(dims[i + 1]);
+    emplace_factor(condensedFacs, dims[i + 1]);
   }
 }
 

@@ -8,9 +8,10 @@ namespace aligator {
 namespace gar {
 
 template <typename MatrixType>
-auto blockTridiagToDenseMatrix(const std::vector<MatrixType> &subdiagonal,
-                               const std::vector<MatrixType> &diagonal,
-                               const std::vector<MatrixType> &superdiagonal) {
+typename MatrixType::PlainObject
+blockTridiagToDenseMatrix(const std::vector<MatrixType> &subdiagonal,
+                          const std::vector<MatrixType> &diagonal,
+                          const std::vector<MatrixType> &superdiagonal) {
   if (subdiagonal.size() != superdiagonal.size() ||
       diagonal.size() != superdiagonal.size() + 1) {
     throw std::invalid_argument("Wrong lengths");
@@ -170,11 +171,13 @@ bool symmetricBlockTridiagSolve(std::vector<MatrixType> &subdiagonal,
 
 /// @brief Given the decomposed matrix data, just perform the backward-forward
 /// step of the algorithm.
+/// @param transposedUfacs - transposed U factors in the decomposition
+/// @param superdiagonal - superdiagonal of the original matrix
+/// @param diagonalFacs - diagonal factor decompositions
 template <typename MatrixType, typename RhsType, typename DecType>
-bool blockTridiagRefinementStep(const std::vector<MatrixType> &subdiagonal,
-                                const std::vector<MatrixType> & /*diagonal*/,
+bool blockTridiagRefinementStep(const std::vector<MatrixType> &transposedUfacs,
                                 const std::vector<MatrixType> &superdiagonal,
-                                const std::vector<DecType> &facs,
+                                const std::vector<DecType> &diagonalFacs,
                                 BlkMatrix<RhsType, -1, 1> &rhs) {
   ALIGATOR_NOMALLOC_SCOPED;
   // size of problem
@@ -182,7 +185,7 @@ bool blockTridiagRefinementStep(const std::vector<MatrixType> &subdiagonal,
 
   size_t i = N - 1;
   while (true) {
-    const DecType &ldl = facs[i + 1];
+    const DecType &ldl = diagonalFacs[i + 1];
     Eigen::Ref<RhsType> r = rhs[i + 1];
     ldl.solveInPlace(r);
 
@@ -196,14 +199,12 @@ bool blockTridiagRefinementStep(const std::vector<MatrixType> &subdiagonal,
     i--;
   }
 
-  {
-    const DecType &ldl = facs[0];
-    Eigen::Ref<RhsType> r = rhs[0];
-    ldl.solveInPlace(r);
-  }
+  const DecType &ldl = diagonalFacs[0];
+  Eigen::Ref<RhsType> r = rhs[0];
+  ldl.solveInPlace(r);
 
   for (size_t i = 0; i < N; i++) {
-    const auto &Uip1t = subdiagonal[i];
+    const auto &Uip1t = transposedUfacs[i];
     rhs[i + 1].noalias() -= Uip1t * rhs[i];
   }
 
