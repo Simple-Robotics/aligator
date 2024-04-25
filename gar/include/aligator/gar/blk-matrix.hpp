@@ -123,6 +123,10 @@ public:
 
   void setZero() { m_data.setZero(); }
 
+  template <typename Other> inline void swap(BlkMatrix<Other, N, M> &other) {
+    m_data.swap(other.matrix());
+  }
+
   MatrixType &matrix() { return m_data; }
   const MatrixType &matrix() const { return m_data; }
 
