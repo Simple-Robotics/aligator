@@ -44,7 +44,7 @@ struct scoped_nomalloc {
   ~scoped_nomalloc() { ALIGATOR_EIGEN_ALLOW_MALLOC(m_active); }
 
 private:
-  bool m_active;
+  ALIGATOR_MAYBE_UNUSED bool m_active;
 };
 } // namespace internal
 } // namespace aligator
