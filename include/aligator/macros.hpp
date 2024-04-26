@@ -21,7 +21,7 @@
 #define ALIGATOR_NOMALLOC_END ALIGATOR_EIGEN_ALLOW_MALLOC(true)
 
 #define ALIGATOR_NOMALLOC_SCOPED                                               \
-  static const ::aligator::internal::scoped_nomalloc myvar {}
+  const ::aligator::internal::scoped_nomalloc ___aligator_nomalloc_zone {}
 
 #define ALIGATOR_INLINE inline __attribute__((always_inline))
 
