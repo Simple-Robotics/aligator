@@ -1,6 +1,6 @@
 /// @file solver-proxddp.hpp
 /// @brief  Definitions for the proximal trajectory optimization algorithm.
-/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
 // #include "aligator/core/proximal-penalty.hpp"
@@ -11,8 +11,6 @@
 #include "aligator/utils/logger.hpp"
 #include "aligator/utils/forward-dyn.hpp"
 
-#include "aligator/gar/riccati-base.hpp"
-
 #include "workspace.hpp"
 #include "results.hpp"
 #include "merit-function.hpp"
@@ -22,6 +20,9 @@
 #include <unordered_map>
 
 namespace aligator {
+namespace gar {
+template <typename Scalar> class RiccatiSolverBase;
+} // namespace gar
 
 /// TODO: NEW G.A.R. BACKEND CAN'T HANDLE DIFFERENT WEIGHTS, PLS FIX
 template <typename Scalar> struct DefaultScaling {
