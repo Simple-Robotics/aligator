@@ -89,7 +89,6 @@ struct BTAG_Fixture {
 
 BOOST_FIXTURE_TEST_CASE(block_tridiag_solve_up_looking, BTAG_Fixture) {
 
-  // gar::applyJacobiPreconditioningStrategy(sub, diagonal, sup, vec);
   bool ret = gar::symmetricBlockTridiagSolve(sub, diagonal, sup, vec, facs);
   BOOST_CHECK(ret);
 
