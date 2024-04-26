@@ -5,7 +5,6 @@
 #include "aligator/math.hpp"
 
 #include <optional>
-#include <tbb/cache_aligned_allocator.h>
 
 namespace aligator {
 namespace gar {
@@ -18,9 +17,7 @@ public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using StageFactorType = StageFactor<Scalar>;
-  using StageFactorVec =
-      std::vector<StageFactorType,
-                  tbb::cache_aligned_allocator<StageFactorType>>;
+  using StageFactorVec = std::vector<StageFactorType>;
   StageFactorVec datas;
 
   virtual bool backward(const Scalar mudyn, const Scalar mueq) = 0;

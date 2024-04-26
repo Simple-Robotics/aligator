@@ -27,10 +27,10 @@ Please refer to the [Citation section](#citing-aligator) for further details.
 
 ### From Conda
 
-From [our channel](https://anaconda.org/simple-robotics/aligator).
+From either conda-forge or [our channel](https://anaconda.org/simple-robotics/aligator).
 
 ```bash
-conda install -c simple-robotics aligator
+conda install -c conda-forge aligator  # or -c conda-forge
 ```
 
 ### Build from source
@@ -41,20 +41,19 @@ cmake -DCMAKE_INSTALL_PREFIX=your_install_folder -S . -B build/ && cd build/
 cmake --build . -jNCPUS
 ```
 
-**Dependencies**
+#### Dependencies
 
 * [proxsuite-nlp](https://github.com/Simple-Robotics/proxsuite-nlp.git)
 * [Eigen3](https://eigen.tuxfamily.org) >= 3.3.7
 * [Boost](https://www.boost.org) >= 1.71.0
 * OpenMP
-* [openTBB](https://anaconda.org/conda-forge/tbb-devel)
 * (optional) [eigenpy](https://github.com/stack-of-tasks/eigenpy)>=3.2.0 | [conda](https://anaconda.org/conda-forge/eigenpy) (Python bindings)
 * (optional) [Pinocchio](https://github.com/stack-of-tasks/pinocchio) | [conda](https://anaconda.org/conda-forge/pinocchio)
 * (optional) [Crocoddyl](https://github.com/loco-3d/crocoddyl) | [conda](https://anaconda.org/conda-forge/crocoddyl)
 * (optional) [example-robot-data](https://github.com/Gepetto/example-robot-data) | [conda](https://anaconda.org/conda-forge/example-robot-data) (required for some examples and benchmarks)
 * a C++14 compliant compiler
 
-**Python dependencies**
+#### Python dependencies
 
 * [typed-argument-parser](https://github.com/swansonk14/typed-argument-parser)
 * [matplotlib](https://matplotlib.org)

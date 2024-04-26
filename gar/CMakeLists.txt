@@ -1,12 +1,10 @@
 #
-# Copyright (C) 2023 LAAS-CNRS, INRIA
+# Copyright (C) 2023-2024 LAAS-CNRS, INRIA
 #
 
 file(GLOB SOURCES CONFIGURE_DEPENDS src/*.cpp)
 
 file(GLOB HEADERS CONFIGURE_DEPENDS include/aligator/gar/*.hpp)
-
-find_package(TBB REQUIRED)
 
 add_library(aligator_gar SHARED ${HEADERS})
 target_include_directories(aligator_gar PRIVATE ${PROJECT_SOURCE_DIR}/include/aligator)
@@ -17,7 +15,6 @@ target_link_libraries(aligator_gar PUBLIC proxsuite-nlp::proxsuite-nlp)
 if(BUILD_WITH_OPENMP_SUPPORT)
   target_link_libraries(aligator_gar PUBLIC OpenMP::OpenMP_CXX)
 endif(BUILD_WITH_OPENMP_SUPPORT)
-target_link_libraries(aligator_gar PUBLIC TBB::tbb TBB::tbbmalloc)
 target_link_libraries(aligator_gar PUBLIC Tracy::TracyClient)
 
 add_library(aligator::gar ALIAS aligator_gar)
