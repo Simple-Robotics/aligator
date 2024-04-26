@@ -36,7 +36,7 @@ void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
 
     auto Px = jac.blockCol(0);
     auto Pu = jac.blockCol(1);
-    auto Lv = sc.applyInverse(workspace.Lvs_[i]);
+    auto Lv = sc.applyInverse(workspace.Lvs[i]);
     workspace.constraintLxCorr[i].noalias() = Px.transpose() * Lv;
     workspace.constraintLuCorr[i].noalias() = Pu.transpose() * Lv;
     const ProductOp &op = workspace.constraintProductOperators[i];
@@ -54,7 +54,7 @@ void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
     }
 
     auto Px = jac.blockCol(0);
-    auto Lv = sc.applyInverse(workspace.Lvs_[N]);
+    auto Lv = sc.applyInverse(workspace.Lvs[N]);
     workspace.constraintLxCorr[N].noalias() = Px.transpose() * Lv;
     const ProductOp &op = workspace.constraintProductOperators[N];
     op.applyNormalConeProjectionJacobian(sif[N], jac.matrix());
@@ -167,8 +167,8 @@ void SolverProxDDPTpl<Scalar>::computeMultipliers(
   std::vector<VectorXs> &vs_plus = workspace_.vs_plus;
   std::vector<VectorXs> &vs_pdal = workspace_.vs_pdal;
 
-  std::vector<VectorXs> &Lds = workspace_.Lds_;
-  std::vector<VectorXs> &Lvs = workspace_.Lvs_;
+  std::vector<VectorXs> &Lds = workspace_.Lds;
+  std::vector<VectorXs> &Lvs = workspace_.Lvs;
   std::vector<VectorXs> &shifted_constraints = workspace_.shifted_constraints;
 
   assert(Lds.size() == lams_prev.size());
@@ -539,10 +539,10 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
 
     LagrangianDerivatives<Scalar>::compute(problem, workspace_.problem_data,
                                            results_.lams, results_.vs,
-                                           workspace_.Lxs_, workspace_.Lus_);
+                                           workspace_.Lxs, workspace_.Lus);
     if (force_initial_condition_) {
-      workspace_.Lxs_[0].setZero();
-      workspace_.Lds_[0].setZero();
+      workspace_.Lxs[0].setZero();
+      workspace_.Lds[0].setZero();
     }
     computeInfeasibilities(problem);
     computeCriterion();
@@ -671,17 +671,17 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::computeCriterion() {
   workspace_.stage_inner_crits.setZero();
 
   for (std::size_t i = 0; i < nsteps; i++) {
-    Scalar rx = math::infty_norm(workspace_.Lxs_[i]);
-    Scalar ru = math::infty_norm(workspace_.Lus_[i]);
-    Scalar rd = math::infty_norm(workspace_.Lds_[i]);
-    Scalar rc = math::infty_norm(workspace_.Lvs_[i]);
+    Scalar rx = math::infty_norm(workspace_.Lxs[i]);
+    Scalar ru = math::infty_norm(workspace_.Lus[i]);
+    Scalar rd = math::infty_norm(workspace_.Lds[i]);
+    Scalar rc = math::infty_norm(workspace_.Lvs[i]);
 
     workspace_.stage_inner_crits[long(i)] = std::max({rx, ru, rd, rc});
     workspace_.state_dual_infeas[long(i)] = rx;
     workspace_.control_dual_infeas[long(i)] = ru;
   }
-  Scalar rx = math::infty_norm(workspace_.Lxs_[nsteps]);
-  Scalar rc = math::infty_norm(workspace_.Lvs_[nsteps]);
+  Scalar rx = math::infty_norm(workspace_.Lxs[nsteps]);
+  Scalar rc = math::infty_norm(workspace_.Lvs[nsteps]);
   workspace_.state_dual_infeas[long(nsteps)] = rx;
   workspace_.stage_inner_crits[long(nsteps)] = std::max(rx, rc);
 
@@ -715,13 +715,13 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
     knot.A = dd.Jx_;
     knot.B = dd.Ju_;
     knot.E = dd.Jy_;
-    knot.f = workspace_.Lds_[t + 1];
+    knot.f = workspace_.Lds[t + 1];
 
     knot.Q = cd.Lxx_;
     knot.S = cd.Lxu_;
     knot.R = cd.Luu_;
-    knot.q = workspace_.Lxs_[t];
-    knot.r = workspace_.Lus_[t];
+    knot.q = workspace_.Lxs[t];
+    knot.r = workspace_.Lus[t];
 
     knot.Q.diagonal().array() += xreg_;
     knot.R.diagonal().array() += ureg_;
@@ -737,7 +737,7 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
     assert(knot.nc == workspace_.constraintProjJacobians[t].rows());
     knot.C.topRows(nc) = workspace_.constraintProjJacobians[t].blockCol(0);
     knot.D.topRows(nc) = workspace_.constraintProjJacobians[t].blockCol(1);
-    knot.d.head(nc) = workspace_.Lvs_[t];
+    knot.d.head(nc) = workspace_.Lvs[t];
 
     // correct right-hand side
     knot.q.head(nx) += workspace_.constraintLxCorr[t];
@@ -749,16 +749,16 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
     const CostData &tcd = *pd.term_cost_data;
     knot.Q = tcd.Lxx_;
     knot.Q.diagonal().array() += xreg_;
-    knot.q = workspace_.Lxs_[N];
+    knot.q = workspace_.Lxs[N];
     knot.C = workspace_.constraintProjJacobians[N].blockCol(0);
-    knot.d = workspace_.Lvs_[N];
+    knot.d = workspace_.Lvs[N];
     // correct right-hand side
     knot.q += workspace_.constraintLxCorr[N];
   }
 
   const StageFunctionData &id = *pd.init_data;
   prob.G0 = id.Jx_;
-  prob.g0.noalias() = workspace_.Lds_[0];
+  prob.g0.noalias() = workspace_.Lds[0];
 
   LQRKnotTpl<Scalar> &model = prob.stages[0];
   model.Q += id.Hxx_;

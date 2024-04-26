@@ -74,8 +74,8 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
   const std::vector<VectorXs> &dlams = workspace.dlams;
   // const std::vector<VectorXs> &vs_pdal = workspace.vs_pdal;
   // const std::vector<VectorXs> &lams_pdal = workspace.lams_pdal;
-  std::vector<VectorXs> &Lxs = workspace.Lxs_;
-  std::vector<VectorXs> &Lus = workspace.Lus_;
+  std::vector<VectorXs> &Lxs = workspace.Lxs;
+  std::vector<VectorXs> &Lus = workspace.Lus;
   LagrangianDerivatives<Scalar>::compute(problem, workspace.problem_data,
                                          //  lams_pdal, vs_pdal, Lxs, Lus);
                                          workspace.lams_plus, workspace.vs_plus,
@@ -87,11 +87,11 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
   assert(dlams.size() == nsteps + 1);
 
   // constraints
-  d1 += workspace.Lxs_[0].dot(dxs[0]);
+  d1 += workspace.Lxs[0].dot(dxs[0]);
 
   for (std::size_t i = 0; i < nsteps; i++) {
-    d1 += workspace.Lxs_[i + 1].dot(dxs[i + 1]);
-    d1 += workspace.Lus_[i].dot(dus[i]);
+    d1 += workspace.Lxs[i + 1].dot(dxs[i + 1]);
+    d1 += workspace.Lus[i].dot(dus[i]);
   }
 
   return d1;

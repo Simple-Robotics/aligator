@@ -72,12 +72,12 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   lqr_problem = LQRProblemType(knots, nc0);
   std::tie(dxs, dus, dvs, dlams) =
       gar::lqrInitializeSolution(lqr_problem); // lqr subproblem variables
-  Lxs_ = dxs;
-  Lus_ = dus;
-  Lvs_ = dvs;
-  Lds_ = dlams;
-  constraintLxCorr = Lxs_;
-  constraintLuCorr = Lus_;
+  Lxs = dxs;
+  Lus = dus;
+  Lvs = dvs;
+  Lds = dlams;
+  constraintLxCorr = Lxs;
+  constraintLuCorr = Lus;
 
   stage_inner_crits.setZero();
   state_dual_infeas.setZero();
@@ -88,10 +88,10 @@ template <typename Scalar> void WorkspaceTpl<Scalar>::cycleLeft() {
   Base::cycleLeft();
 
   rotate_vec_left(cstr_scalers);
-  rotate_vec_left(Lxs_);
-  rotate_vec_left(Lus_);
-  rotate_vec_left(Lds_);
-  rotate_vec_left(Lvs_);
+  rotate_vec_left(Lxs);
+  rotate_vec_left(Lus);
+  rotate_vec_left(Lds);
+  rotate_vec_left(Lvs);
 
   rotate_vec_left(trial_lams, 1);
   rotate_vec_left(lams_plus, 1);

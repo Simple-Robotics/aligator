@@ -45,10 +45,10 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
 
   /// @name Lagrangian Gradients
   /// @{
-  std::vector<VectorXs> Lxs_; //< State gradients
-  std::vector<VectorXs> Lus_; //< Control gradients
-  std::vector<VectorXs> Lvs_; //< Path multiplier gradients
-  std::vector<VectorXs> Lds_; //< Costate gradients
+  std::vector<VectorXs> Lxs; //< State gradients
+  std::vector<VectorXs> Lus; //< Control gradients
+  std::vector<VectorXs> Lvs; //< Path multiplier gradients
+  std::vector<VectorXs> Lds; //< Costate gradients
   /// @}
 
   /// @name Trial primal-dual step
