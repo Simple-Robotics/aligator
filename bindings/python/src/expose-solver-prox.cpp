@@ -4,6 +4,8 @@
 
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
 
+#include <eigenpy/std-unique-ptr.hpp>
+
 namespace aligator {
 namespace python {
 
@@ -155,6 +157,10 @@ void exposeProxDDP() {
       .def("updateLQSubproblem", &SolverType::updateLQSubproblem, "self"_a)
       .def("computeCriterion", &SolverType::computeCriterion, "self"_a,
            "Compute problem stationarity.")
+      .add_property("linearSolver",
+                    bp::make_getter(&SolverType::linearSolver_,
+                                    eigenpy::ReturnInternalStdUniquePtr{}),
+                    "Linear solver for the semismooth Newton method.")
       .def_readwrite("filter", &SolverType::filter_,
                      "Pair filter used to accept a step.")
       .def("computeInfeasibilities", &SolverType::computeInfeasibilities,
