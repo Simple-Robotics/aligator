@@ -76,6 +76,7 @@ SolverProxDDPTpl<Scalar>::SolverProxDDPTpl(const Scalar tol,
       filter_(0.0, ls_params.alpha_min, ls_params.max_num_steps),
       linesearch_(ls_params) {
   ls_params.interp_type = proxsuite::nlp::LSInterpolation::CUBIC;
+  logger.is_prox = true;
 }
 
 template <typename Scalar>
@@ -498,8 +499,6 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     return fpair;
   };
 
-  LogRecord iter_log;
-
   std::size_t &iter = results_.num_iters;
   results_.traj_cost_ = problem.evaluate(results_.xs, results_.us,
                                          workspace_.problem_data, num_threads_);
@@ -590,17 +589,19 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     ALIGATOR_RAISE_IF_NAN_NAME(results_.merit_value_, "results.merit_value");
     ALIGATOR_RAISE_IF_NAN_NAME(results_.traj_cost_, "results.traj_cost");
 
-    iter_log.iter = iter + 1;
-    iter_log.al_iter = results_.al_iter + 1;
-    iter_log.xreg = xreg_;
-    iter_log.inner_crit = workspace_.inner_criterion;
-    iter_log.prim_err = results_.prim_infeas;
-    iter_log.dual_err = results_.dual_infeas;
-    iter_log.step_size = alpha_opt;
-    iter_log.dphi0 = dphi0;
-    iter_log.merit = phi_new;
-    iter_log.dM = phi_new - phi0;
-    iter_log.mu = mu();
+    if (iter >= 1 && iter % 25 == 0)
+      logger.printHeadline();
+    logger.addEntry(iter + 1);
+    logger.addEntry(alpha_opt);
+    logger.addEntry(workspace_.inner_criterion);
+    logger.addEntry(results_.prim_infeas);
+    logger.addEntry(results_.dual_infeas);
+    logger.addEntry(xreg_);
+    logger.addEntry(dphi0);
+    logger.addEntry(phi_new);
+    logger.addEntry(phi_new - phi0);
+    logger.addEntry(results_.al_iter + 1);
+    logger.addEntry(mu());
 
     if (alpha_opt <= ls_params.alpha_min) {
       if (xreg_ >= reg_max)
@@ -608,7 +609,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
       increaseRegularization();
     }
     invokeCallbacks(workspace_, results_);
-    logger.log(iter_log);
+    logger.log();
 
     xreg_last_ = xreg_;
   }

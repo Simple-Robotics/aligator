@@ -1,22 +1,34 @@
 #include "aligator/utils/logger.hpp"
 
+#include <cassert>
+
 namespace aligator {
-BaseLogger::BaseLogger() { cols.reserve(BASIC_KEYS.size()); }
+BaseLogger::BaseLogger() : m_iter(BASIC_KEYS.cbegin()) {
+  cols.reserve(BASIC_KEYS.size());
+}
 
 void BaseLogger::printHeadline() {
   if (!active)
     return;
   static constexpr char fstr[] = "{:^{}s}";
-  for (auto it = BASIC_KEYS.cbegin(); it != BASIC_KEYS.cend(); ++it) {
-    if (!is_prox_) {
-      if (it->first == "inner_crit" || it->first == "al_iter")
+  std::array<std::string, BASIC_KEYS.size()> columns;
+  for (size_t j = 0; j < BASIC_KEYS.size(); j++) {
+    auto key = BASIC_KEYS[j];
+    if (!is_prox) {
+      if (key.name == "inner_crit" || key.name == "al_iter")
         continue;
     }
-    cols.push_back(fmt::format(fstr, it->first, it->second));
+    columns[j] = fmt::format(fstr, key.name, key.colSize);
   }
-  fmt::print(fmt::emphasis::bold, "{}", fmt::join(cols, join_str));
+  fmt::print(fmt::emphasis::bold, "{}", fmt::join(columns, join_str));
   fmt::print("\n");
-  cols.clear();
+}
+
+void BaseLogger::log() {
+  if (!active)
+    return;
+  fmt::print("{}\n", fmt::join(cols, join_str));
+  reset();
 }
 
 void BaseLogger::finish(bool conv) {
@@ -29,8 +41,6 @@ void BaseLogger::finish(bool conv) {
   fmt::print("\n");
 }
 
-// instantiate
-
-template struct LogRecordTpl<double>;
+void BaseLogger::checkIter() const { assert(m_iter != BASIC_KEYS.cend()); }
 
 } // namespace aligator

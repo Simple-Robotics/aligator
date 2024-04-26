@@ -320,25 +320,20 @@ bool SolverFDDPTpl<Scalar>::run(const Problem &problem,
     return phi0 + alpha * (d1_phi + 0.5 * d2_phi * alpha);
   };
 
-  LogRecord record;
-
   std::size_t &iter = results_.num_iters;
   results_.traj_cost_ = problem.evaluate(results_.xs, results_.us,
                                          workspace_.problem_data, num_threads_);
 
   for (iter = 0; iter < max_iters; ++iter) {
-    record.iter = iter + 1;
 
     problem.computeDerivatives(results_.xs, results_.us,
                                workspace_.problem_data, num_threads_);
     results_.prim_infeas = computeInfeasibility(problem);
     ALIGATOR_RAISE_IF_NAN(results_.prim_infeas);
-    record.prim_err = results_.prim_infeas;
 
     backwardPass(problem, workspace_);
     results_.dual_infeas = computeCriterion(workspace_);
     ALIGATOR_RAISE_IF_NAN(results_.dual_infeas);
-    record.dual_err = results_.dual_infeas;
 
     Scalar stopping_criterion =
         std::max(results_.prim_infeas, results_.dual_infeas);
@@ -361,11 +356,16 @@ bool SolverFDDPTpl<Scalar>::run(const Problem &problem,
     results_.traj_cost_ = phi_new;
     ALIGATOR_RAISE_IF_NAN(alpha_opt);
     ALIGATOR_RAISE_IF_NAN(phi_new);
-    record.step_size = alpha_opt;
-    record.dM = phi_new - phi0;
-    record.merit = phi_new;
-    record.dphi0 = d1_phi;
-    record.xreg = xreg_;
+
+    logger.addEntry(iter + 1);
+    logger.addEntry(alpha_opt);
+    logger.advance();
+    logger.addEntry(results_.prim_infeas);
+    logger.addEntry(results_.dual_infeas);
+    logger.addEntry(xreg_);
+    logger.addEntry(d1_phi);
+    logger.addEntry(phi_new);
+    logger.addEntry(phi_new - phi0);
 
     results_.xs = workspace_.trial_xs;
     results_.us = workspace_.trial_us;
@@ -386,11 +386,11 @@ bool SolverFDDPTpl<Scalar>::run(const Problem &problem,
     }
 
     invokeCallbacks(workspace_, results_);
-    logger.log(record);
+    logger.log();
   }
 
   if (iter < max_iters)
-    logger.log(record);
+    logger.log();
   logger.finish(results_.conv);
   return results_.conv;
 }

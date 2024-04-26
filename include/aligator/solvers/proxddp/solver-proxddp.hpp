@@ -90,7 +90,7 @@ public:
   Scalar prim_tol0 = 1.;
 
   /// Logger
-  ALMLogger logger{};
+  BaseLogger logger{};
 
   /// Solver verbosity level.
   VerboseLevel verbose_;
