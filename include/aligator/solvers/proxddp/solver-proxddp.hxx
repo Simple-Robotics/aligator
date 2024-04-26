@@ -252,6 +252,29 @@ void SolverProxDDPTpl<Scalar>::computeMultipliers(
   }
 }
 
+template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateGains() {
+  ZoneScoped;
+  ALIGATOR_NOMALLOC_SCOPED;
+  using gar::StageFactor;
+  const std::size_t N = workspace_.nsteps;
+  linearSolver_->collapseFeedback(); // will alter feedback gains
+  for (std::size_t i = 0; i < N; i++) {
+    VectorRef ff = results_.getFeedforward(i);
+    MatrixRef fb = results_.getFeedback(i);
+
+    const StageFactor<Scalar> &fac = linearSolver_->datas[i];
+    ff = fac.ff.matrix(); // primal-dual feedforward
+    fb = fac.fb.matrix(); // primal-dual feedback
+  }
+
+  // terminal node
+  const StageFactor<Scalar> &fac = linearSolver_->datas[N];
+  VectorRef ff = results_.getFeedforward(N);
+  MatrixRef fb = results_.getFeedback(N);
+  ff = fac.ff.blockSegment(1); // multiplier feedforward
+  fb = fac.fb.blockRow(1);     // multiplier feedback
+}
+
 template <typename Scalar>
 Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
                                                      const Scalar alpha) {
@@ -404,8 +427,7 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
   results_.num_iters = 0;
   std::size_t &al_iter = results_.al_iter;
   while ((al_iter < max_al_iters) && (results_.num_iters < max_iters)) {
-    bool inner_conv = innerLoop(problem);
-    if (!inner_conv) {
+    if (!innerLoop(problem)) {
       al_iter++;
       break;
     }
@@ -415,7 +437,9 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
     workspace_.prev_us = results_.us;
 
     if (results_.prim_infeas <= prim_tol_) {
-      updateTolsOnSuccess();
+      do {
+        updateTolsOnSuccess();
+      } while (workspace_.inner_criterion < inner_tol_);
 
       switch (multiplier_update_mode) {
       case MultiplierUpdateMode::NEWTON:

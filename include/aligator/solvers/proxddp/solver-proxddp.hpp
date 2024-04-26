@@ -264,31 +264,7 @@ public:
 
   /// @brief Update primal-dual feedback gains (control, costate, path
   /// multiplier)
-  inline void updateGains() {
-    ZoneScoped;
-    ALIGATOR_NOMALLOC_BEGIN;
-    using gar::StageFactor;
-    const std::size_t N = workspace_.nsteps;
-    linearSolver_->collapseFeedback(); // will alter feedback gains
-    for (std::size_t i = 0; i < N; i++) {
-      VectorRef ff = results_.getFeedforward(i);
-      MatrixRef fb = results_.getFeedback(i);
-
-      const StageFactor<Scalar> &fac = linearSolver_->datas[i];
-      ff = fac.ff.matrix(); // primal-dual feedforward
-      fb = fac.fb.matrix(); // primal-dual feedback
-    }
-
-    // terminal node
-    {
-      const StageFactor<Scalar> &fac = linearSolver_->datas[N];
-      VectorRef ff = results_.getFeedforward(N);
-      MatrixRef fb = results_.getFeedback(N);
-      ff = fac.ff.blockSegment(1); // multiplier feedforward
-      fb = fac.fb.blockRow(1);     // multiplier feedback
-    }
-    ALIGATOR_NOMALLOC_END;
-  }
+  inline void updateGains();
 
 protected:
   void updateTolsOnFailure() noexcept {
