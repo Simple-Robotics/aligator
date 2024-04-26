@@ -11,9 +11,6 @@
 #include "aligator/gar/dense-riccati.hpp"
 
 #include <tracy/Tracy.hpp>
-#ifndef NDEBUG
-#include <fmt/ostream.h>
-#endif
 
 namespace aligator {
 
@@ -541,15 +538,6 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     linearSolver_->forward(workspace_.dxs, workspace_.dus, workspace_.dvs,
                            workspace_.dlams);
     updateGains();
-
-#ifndef NDEBUG
-    // TODO: log this properly instead
-    auto kktErr = lqrComputeKktError(
-        workspace_.lqr_problem, workspace_.dxs, workspace_.dus, workspace_.dvs,
-        workspace_.dlams, mu(), DefaultScaling<Scalar>::scale * mu(),
-        std::nullopt, lq_print_detailed);
-    fmt::print("LQ subproblem errors: ({:.3e})\n", fmt::join(kktErr, ","));
-#endif
 
     if (force_initial_condition_) {
       workspace_.dxs[0].setZero();
