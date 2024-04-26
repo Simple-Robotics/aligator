@@ -13,7 +13,9 @@ enum struct HessianApprox {
   /// Use exact Hessian.
   EXACT,
   /// Use the Gauss-Newton approximation.
-  GAUSS_NEWTON
+  GAUSS_NEWTON,
+  /// Use a BFGS-type approximation.
+  BFGS
 };
 
 enum struct MultiplierUpdateMode { NEWTON, PRIMAL, PRIMAL_DUAL };

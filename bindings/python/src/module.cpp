@@ -37,6 +37,7 @@ static void exposeEnums() {
                            "Level of approximation for the Hessian.")
       .value("HESSIAN_EXACT", HessianApprox::EXACT)
       .value("HESSIAN_GAUSS_NEWTON", HessianApprox::GAUSS_NEWTON)
+      .value("HESSIAN_BFGS", HessianApprox::BFGS)
       .export_values();
 
   bp::enum_<StepAcceptanceStrategy>("StepAcceptanceStrategy",
