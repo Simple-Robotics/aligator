@@ -11,7 +11,7 @@
 #include "aligator/utils/logger.hpp"
 #include "aligator/utils/forward-dyn.hpp"
 
-#include "aligator/gar/riccati.hpp"
+#include "aligator/gar/riccati-base.hpp"
 
 #include "workspace.hpp"
 #include "results.hpp"

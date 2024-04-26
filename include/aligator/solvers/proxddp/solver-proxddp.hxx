@@ -6,6 +6,7 @@
 #include "solver-proxddp.hpp"
 #include "aligator/core/lagrangian.hpp"
 
+#include "aligator/gar/riccati.hpp"
 #include "aligator/gar/parallel-solver.hpp"
 #include "aligator/gar/dense-riccati.hpp"
 
@@ -618,7 +619,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
 
 template <typename Scalar>
 void SolverProxDDPTpl<Scalar>::computeInfeasibilities(const Problem &problem) {
-  ALIGATOR_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_SCOPED;
   ZoneScoped;
   const std::size_t nsteps = workspace_.nsteps;
 
@@ -648,8 +649,6 @@ void SolverProxDDPTpl<Scalar>::computeInfeasibilities(const Problem &problem) {
 
   results_.prim_infeas = std::max(math::infty_norm(stage_infeas),
                                   math::infty_norm(workspace_.dyn_slacks));
-
-  ALIGATOR_NOMALLOC_END;
 }
 
 template <typename Scalar> void SolverProxDDPTpl<Scalar>::computeCriterion() {
@@ -682,7 +681,7 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::computeCriterion() {
 }
 
 template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
-  ALIGATOR_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_SCOPED;
   ZoneScoped;
   LQProblem &prob = workspace_.lqr_problem;
   const TrajOptData &pd = workspace_.problem_data;
@@ -751,7 +750,6 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
 
   LQRKnotTpl<Scalar> &model = prob.stages[0];
   model.Q += id.Hxx_;
-  ALIGATOR_NOMALLOC_END;
 }
 
 } // namespace aligator
