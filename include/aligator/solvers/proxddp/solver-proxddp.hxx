@@ -91,8 +91,9 @@ Scalar SolverProxDDPTpl<Scalar>::tryLinearStep(const Problem &problem,
   assert(results.lams.size() == nsteps + 1);
   assert(results.vs.size() == nsteps + 1);
 
-  vectorMultiplyAdd(results.lams, workspace.dlams, workspace.trial_lams, alpha);
-  vectorMultiplyAdd(results.vs, workspace.dvs, workspace.trial_vs, alpha);
+  math::vectorMultiplyAdd(results.lams, workspace.dlams, workspace.trial_lams,
+                          alpha);
+  math::vectorMultiplyAdd(results.vs, workspace.dvs, workspace.trial_vs, alpha);
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];

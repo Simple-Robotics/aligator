@@ -23,18 +23,6 @@
 
 namespace aligator {
 
-/// @brief Compute zi = xi + alpha * yi for all i
-template <typename A, typename B, typename OutType, typename Scalar>
-void vectorMultiplyAdd(const std::vector<A> &a, const std::vector<B> &b,
-                       std::vector<OutType> &c, const Scalar alpha) {
-  assert(a.size() == b.size());
-  assert(a.size() == c.size());
-  const std::size_t N = a.size();
-  for (std::size_t i = 0; i < N; i++) {
-    c[i] = a[i] + alpha * b[i];
-  }
-}
-
 /// TODO: NEW G.A.R. BACKEND CAN'T HANDLE DIFFERENT WEIGHTS, PLS FIX
 template <typename Scalar> struct DefaultScaling {
   void operator()(ConstraintProximalScalerTpl<Scalar> &scaler) {
