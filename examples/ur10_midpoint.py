@@ -93,12 +93,13 @@ if __name__ == "__main__":
         viz.setBackgroundColor()
         viz.display(robot.q0)
 
-    tol = 1e-3
-    mu_init = 1e-6
+    tol = 1e-6
+    mu_init = 0.9
     solver = aligator.SolverProxDDP(tol, mu_init, verbose=aligator.VERBOSE)
     solver.rollout_max_iters = 10
     solver.max_iters = 100
     solver.linear_solver_choice = aligator.LQ_SOLVER_PARALLEL
+    solver.rollout_type = aligator.ROLLOUT_LINEAR
     solver.setNumThreads(4)
     solver.setup(problem)
     solver.run(problem, xs_i, us_i)
