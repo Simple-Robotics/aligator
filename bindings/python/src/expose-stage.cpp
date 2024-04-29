@@ -60,11 +60,11 @@ void exposeStage() {
                     "Stage cost.")
       .add_property(
           "dyn_model",
-          bp::make_function(
-              &StageModel::dyn_model,
-              deprecation_warning_policy<bp::return_internal_reference<>,
-                                         DeprecationTypes::DEPRECATION>(
-                  "Deprecated. Use StageModel.dynamics instead")),
+          bp::make_function(&StageModel::dyn_model,
+                            eigenpy::deprecation_warning_policy<
+                                eigenpy::DeprecationType::DEPRECATION,
+                                bp::return_internal_reference<>>(
+                                "Deprecated. Use StageModel.dynamics instead")),
           "Stage dynamics.")
       .def("evaluate", &StageModel::evaluate,
            bp::args("self", "x", "u", "y", "data"),
