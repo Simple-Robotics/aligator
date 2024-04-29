@@ -3,13 +3,11 @@
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
-// #include "aligator/core/proximal-penalty.hpp"
 #include "aligator/core/linesearch.hpp"
 #include "aligator/core/filter.hpp"
 #include "aligator/core/callback-base.hpp"
 #include "aligator/core/enums.hpp"
 #include "aligator/utils/logger.hpp"
-#include "aligator/utils/forward-dyn.hpp"
 
 #include "workspace.hpp"
 #include "results.hpp"

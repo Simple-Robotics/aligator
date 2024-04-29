@@ -5,6 +5,7 @@
 
 #include "solver-proxddp.hpp"
 #include "aligator/core/lagrangian.hpp"
+#include "aligator/utils/forward-dyn.hpp"
 
 #include "aligator/gar/riccati.hpp"
 #include "aligator/gar/parallel-solver.hpp"

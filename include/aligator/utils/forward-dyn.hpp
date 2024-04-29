@@ -1,3 +1,5 @@
+/// @file forward-dyn.hpp
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include "aligator/core/explicit-dynamics.hpp"
