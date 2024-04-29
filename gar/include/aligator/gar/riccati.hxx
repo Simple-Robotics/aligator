@@ -1,8 +1,9 @@
 #pragma once
 
-#include "./riccati.hpp"
+#include "riccati.hpp"
+#include "lqr-problem.hpp"
 
-#include "tracy/Tracy.hpp"
+#include <tracy/Tracy.hpp>
 
 namespace aligator::gar {
 

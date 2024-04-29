@@ -4,7 +4,7 @@
 
 #include "riccati-base.hpp"
 #include "riccati-impl.hpp"
-#include "tracy/Tracy.hpp"
+#include <tracy/Tracy.hpp>
 
 namespace aligator::gar {
 

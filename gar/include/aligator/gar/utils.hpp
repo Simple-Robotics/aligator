@@ -1,8 +1,8 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "./lqr-problem.hpp"
-#include "boost/core/span.hpp"
+#include "lqr-problem.hpp"
+#include <boost/core/span.hpp>
 
 namespace aligator {
 namespace gar {

@@ -5,6 +5,7 @@
 #include "parallel-solver.hpp"
 #include "block-tridiagonal.hpp"
 #include "work.hpp"
+#include "lqr-problem.hpp"
 
 #include <Eigen/Eigenvalues>
 

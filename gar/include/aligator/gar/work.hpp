@@ -1,6 +1,6 @@
 #pragma once
 
-#include <assert.h>
+#include <cassert>
 #include <sys/types.h>
 
 namespace aligator {

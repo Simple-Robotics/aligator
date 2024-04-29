@@ -2,21 +2,19 @@
 /// @author Wilson Jallet
 #pragma once
 
-#include "./blk-matrix.hpp"
+#include "fwd.hpp"
+#include "blk-matrix.hpp"
 
 #include <proxsuite-nlp/linalg/bunchkaufman.hpp>
 #include <Eigen/LU>
 #include <Eigen/Cholesky>
 
-#include "boost/core/make_span.hpp"
+#include <boost/core/make_span.hpp>
 
 #include <optional>
 
 namespace aligator {
 namespace gar {
-
-// fwd
-template <typename Scalar> struct LQRKnotTpl;
 
 /// Create a boost::span object from a vector and two indices.
 template <class T, class A>
