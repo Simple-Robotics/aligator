@@ -53,7 +53,7 @@ struct MyCost : CostAbstractTpl<double> {
 
 using Manifold = proxsuite::nlp::SETpl<3, double>;
 using StageModel = aligator::StageModelTpl<double>;
-using proxsuite::nlp::EqualityConstraint;
+using EqualityConstraint = proxsuite::nlp::EqualityConstraintTpl<double>;
 
 struct MyFixture {
   shared_ptr<Manifold> space;
@@ -71,7 +71,7 @@ struct MyFixture {
     auto func = std::make_shared<StateErrorResidualTpl<double>>(
         space, nu, space->neutral());
     auto stage2 = stage->clone();
-    stage2->addConstraint(func, std::make_shared<EqualityConstraint<double>>());
+    stage2->addConstraint(func, std::make_shared<EqualityConstraint>());
     problem.addStage(stage);
     problem.addStage(stage2);
   }
