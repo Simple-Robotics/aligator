@@ -6,20 +6,23 @@
 #include "aligator/core/workspace-base.hpp"
 #include "aligator/core/alm-weights.hpp"
 #include "aligator/gar/lqr-problem.hpp"
-#include "aligator/core/constraint-set-product.hpp"
+
+#include <proxsuite-nlp/modelling/constraints.hpp>
 
 #include <array>
 
 namespace aligator {
+namespace {
+using proxsuite::nlp::ConstraintSetProductTpl;
+} // namespace
 
 template <typename Scalar>
 auto getConstraintProductSet(const ConstraintStackTpl<Scalar> &constraints) {
-  ConstraintSetProductTpl<Scalar> out;
+  std::vector<ConstraintSetBase<Scalar> *> components;
   for (size_t i = 0; i < constraints.size(); i++) {
-    out.components.push_back(constraints[i].set.get());
+    components.push_back(constraints[i].set.get());
   }
-  out.nrs = constraints.dims();
-  return out;
+  return ConstraintSetProductTpl<Scalar>{components, constraints.dims()};
 }
 
 /// @brief Workspace for solver SolverProxDDP.

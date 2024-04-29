@@ -41,7 +41,6 @@ function(add_aligator_test name)
 endfunction(add_aligator_test)
 
 set(TEST_NAMES
-    constraint-product
     continuous
     costs
     integrators
