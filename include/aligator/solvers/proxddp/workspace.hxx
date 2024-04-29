@@ -27,7 +27,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   stage_cstr_violations.setZero();
   stage_infeasibilities = trial_vs;
 
-  constraintProductOperators.resize(nsteps + 1); // includes terminal
+  constraintProductOperators.reserve(nsteps + 1); // includes terminal
   shifted_constraints = prev_vs;
 
   active_constraints.resize(nsteps + 1);
@@ -52,7 +52,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     const int nu = stage.nu();
     const int ncstr = stage.nc();
 
-    constraintProductOperators[i] = getConstraintProductSet(stage.constraints_);
+    constraintProductOperators.emplace_back(
+        getConstraintProductSet(stage.constraints_));
     constraintProjJacobians[i] = BlkJacobianType(stack.dims(), {ndx1, nu});
     active_constraints[i].setZero(ncstr);
   }
@@ -61,8 +62,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   {
     const ConstraintStackTpl<Scalar> &stack = problem.term_cstrs_;
     const int ndx1 = internal::problem_last_ndx_helper(problem);
-    constraintProductOperators[nsteps] =
-        getConstraintProductSet(problem.term_cstrs_);
+    constraintProductOperators.emplace_back(
+        getConstraintProductSet(problem.term_cstrs_));
     constraintProjJacobians[nsteps] = BlkJacobianType(stack.dims(), {ndx1, 0});
     active_constraints[nsteps].setZero(stack.totalDim());
   }
