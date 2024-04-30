@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Added constrained LQR example
+
 ## [0.5.1] - 2024-04-24
 
 ### Fixed
