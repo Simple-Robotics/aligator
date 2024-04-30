@@ -210,8 +210,12 @@ FetchContent_Declare(
 FetchContent_GetProperties(tracy)
 if(NOT tracy_POPULATED)
   FetchContent_Populate(tracy)
-  set(TRACY_STATIC "" ON)
-  set(TRACY_ENABLE ${ENABLE_TRACY_PROFILING})
+  set(TRACY_STATIC
+      ON
+      CACHE INTERNAL "")
+  set(TRACY_ENABLE
+      ${ENABLE_TRACY_PROFILING}
+      CACHE INTERNAL "")
   add_subdirectory(${tracy_SOURCE_DIR} ${tracy_BINARY_DIR} EXCLUDE_FROM_ALL)
   get_target_property(tracy_IID TracyClient INTERFACE_INCLUDE_DIRECTORIES)
   set_target_properties(TracyClient PROPERTIES POSITION_INDEPENDENT_CODE True
