@@ -15,6 +15,8 @@
 
 namespace aligator {
 
+// [1], realted to Appendix A, details on aug. Lagrangian method
+// interpretation as shifted-penalty method
 template <typename Scalar>
 void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
                                WorkspaceTpl<Scalar> &workspace) {
@@ -78,6 +80,8 @@ SolverProxDDPTpl<Scalar>::SolverProxDDPTpl(const Scalar tol,
   logger.is_prox = true;
 }
 
+// [1] Section IV. Proximal Differential Dynamic Programming
+// C. Forward pass
 template <typename Scalar>
 Scalar SolverProxDDPTpl<Scalar>::tryLinearStep(const Problem &problem,
                                                Workspace &workspace,
@@ -160,6 +164,11 @@ void SolverProxDDPTpl<Scalar>::computeMultipliers(
   const TrajOptData &prob_data = workspace_.problem_data;
   const std::size_t nsteps = workspace_.nsteps;
 
+  // TODO: make clear with the naming prev_x, x_plus, x_pdal means ?
+  // [1] Section B. Augmented Lagrangian methods eqn. 5a and 5b for x_plus
+  // and in subsection Primal-dual search x_k is prev_x. Then, more precisely
+  // eqn. 39 gives the formula for first-order multiplier estimates in the
+  // DDP setup
   const std::vector<VectorXs> &lams_prev = workspace_.prev_lams;
   std::vector<VectorXs> &lams_plus = workspace_.lams_plus;
   std::vector<VectorXs> &lams_pdal = workspace_.lams_pdal;
@@ -276,6 +285,8 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateGains() {
   fb = fac.fb.blockRow(1);     // multiplier feedback
 }
 
+// [1] Section IV. Proximal Differential Dynamic Programming
+// C. Forward pass
 template <typename Scalar>
 Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
                                                      const Scalar alpha) {
@@ -380,6 +391,8 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
   return prob_data.cost_;
 }
 
+// Main loop of the Algorithm 2 detailed in section II. Background
+// on nonlinear optimization and augmented Lagrangian methods
 template <typename Scalar>
 bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
                                    const std::vector<VectorXs> &xs_init,
@@ -485,6 +498,8 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
   return conv;
 }
 
+// [1] Algorithm 2, l. 5: this is the function the linesearch
+// is performed on.
 template <typename Scalar>
 Scalar SolverProxDDPTpl<Scalar>::forwardPass(const Problem &problem,
                                              const Scalar alpha) {
@@ -535,6 +550,9 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
                                workspace_.problem_data, num_threads_);
     const Scalar phi0 = results_.merit_value_;
 
+    // compute the Lagrangian derivatives to check for convergence
+    // and use them in the LQ subproblem as gradient of cost g
+    // with constraintLxCorr.
     LagrangianDerivatives<Scalar>::compute(problem, workspace_.problem_data,
                                            results_.lams, results_.vs,
                                            workspace_.Lxs, workspace_.Lus);
@@ -555,6 +573,13 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     initializeRegularization();
     updateLQSubproblem();
     // TODO: supply a penalty weight matrix for constraints
+
+    // In the next two lines, the LQ subproblem is solved. This is
+    // another way to view the backward and forward passes of the
+    // Riccati recursion detailed in [1] IV. Proximal Differential
+    //  Dynamic Programming Section B Backward. The backward pass
+    // computes the gains, and the forward pass computes the new
+    // control and state trajectories.
     linearSolver_->backward(mu(), DefaultScaling<Scalar>::scale * mu());
 
     linearSolver_->forward(workspace_.dxs, workspace_.dus, workspace_.dvs,
@@ -637,7 +662,7 @@ void SolverProxDDPTpl<Scalar>::computeInfeasibilities(const Problem &problem) {
   std::vector<VectorXs> &vs_prev = workspace_.prev_vs;
   std::vector<VectorXs> &stage_infeas = workspace_.stage_infeasibilities;
 
-  // compute infeasibility of all stage constraints
+  // compute infeasibility of all stage constraints [1] eqn. 53
   for (std::size_t i = 0; i < nsteps; i++) {
     const CstrProximalScaler &scaler = workspace_.cstr_scalers[i];
     stage_infeas[i] = vs_plus[i] - vs_prev[i];
@@ -675,12 +700,12 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::computeCriterion() {
     Scalar rc = math::infty_norm(workspace_.Lvs[i]);
 
     workspace_.stage_inner_crits[long(i)] = std::max({rx, ru, rd, rc});
-    workspace_.state_dual_infeas[long(i)] = rx;
+    workspace_.state_dual_infeas[long(i)] = rx; // [1] eqn. 52
     workspace_.control_dual_infeas[long(i)] = ru;
   }
   Scalar rx = math::infty_norm(workspace_.Lxs[nsteps]);
   Scalar rc = math::infty_norm(workspace_.Lvs[nsteps]);
-  workspace_.state_dual_infeas[long(nsteps)] = rx;
+  workspace_.state_dual_infeas[long(nsteps)] = rx; // [1] eqn. 52
   workspace_.stage_inner_crits[long(nsteps)] = std::max(rx, rc);
 
   workspace_.inner_criterion = math::infty_norm(workspace_.stage_inner_crits);
