@@ -496,9 +496,6 @@ Scalar SolverProxDDPTpl<Scalar>::forwardPass(const Problem &problem,
   case RolloutType::NONLINEAR:
     tryNonlinearRollout(problem, alpha);
     break;
-  default:
-    assert(false && "unknown RolloutType!");
-    break;
   }
   computeMultipliers(problem, workspace_.trial_lams, workspace_.trial_vs);
   return PDALFunction<Scalar>::evaluate(mu(), problem, workspace_.trial_lams,
