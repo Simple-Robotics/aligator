@@ -1,5 +1,7 @@
 # Aligator
 
+<a href="https://simple-robotics.github.io/aligator/"><img src="https://img.shields.io/badge/docs-online-brightgreen" alt="Documentation"/></a>
+
 **Aligator** is an efficient and versatile trajectory optimization library for robotics and beyond.
 
 It can be used for motion generation and planning, optimal estimation, deployment of model-predictive control on complex systems, and much more.
