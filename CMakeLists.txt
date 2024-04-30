@@ -1,8 +1,8 @@
 #
-# Copyright (C) 2022 LAAS-CNRS, INRIA
+# Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #
 
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.16)
 
 set(PROJECT_NAME aligator)
 set(PROJECT_DESCRIPTION
