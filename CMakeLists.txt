@@ -31,9 +31,23 @@ include(FetchContent)
 
 # Check if the submodule cmake have been initialized
 set(JRL_CMAKE_MODULES "${CMAKE_CURRENT_LIST_DIR}/cmake")
-if(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
-  if(${CMAKE_VERSION} VERSION_LESS "3.14.0")
-    message(FATAL_ERROR "\nPlease run the following command first:\ngit submodule update --init\n")
+if(EXISTS "${JRL_CMAKE_MODULES}/base.cmake")
+  message(STATUS "JRL cmakemodules found in 'cmake/' git submodule")
+else()
+  find_package(jrl-cmakemodules QUIET CONFIG)
+  if(jrl-cmakemodules_FOUND)
+    get_property(
+      JRL_CMAKE_MODULES
+      TARGET jrl-cmakemodules::jrl-cmakemodules
+      PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+    message(STATUS "JRL cmakemodules found on system at ${JRL_CMAKE_MODULES}")
+  elseif(${CMAKE_VERSION} VERSION_LESS "3.14.0")
+    message(
+      FATAL_ERROR
+        "\nCan't find jrl-cmakemodules. Please either:\n"
+        "  - use git submodule: 'git submodule update --init'\n"
+        "  - or install https://github.com/jrl-umi3218/jrl-cmakemodules\n"
+        "  - or upgrade your CMake version to >= 3.14 to allow automatic fetching\n")
   else()
     message(STATUS "JRL cmakemodules not found. Let's fetch it.")
     FetchContent_Declare(
@@ -80,6 +94,15 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo"
   )
 endif()
+
+function(set_standard_output_directory target)
+  set_target_properties(
+    ${target}
+    PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin
+               LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib
+               ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib
+  )
+endfunction()
 
 # --- OPTIONS ----------------------------------------
 option(BUILD_PYTHON_INTERFACE "Build the Python bindings" ON)
@@ -188,7 +211,7 @@ if(BUILD_PYTHON_INTERFACE)
 
 endif(BUILD_PYTHON_INTERFACE)
 
-add_project_dependency(proxsuite-nlp 0.2.3 REQUIRED)
+add_project_dependency(proxsuite-nlp 0.6.1 REQUIRED)
 
 set(LIB_SOURCES src/utils/logger.cpp)
 
@@ -256,6 +279,7 @@ function(create_library)
                VERSION ${PROJECT_VERSION}
                INSTALL_RPATH "\$ORIGIN"
   )
+  set_standard_output_directory(${PROJECT_NAME})
 
   target_link_libraries(${PROJECT_NAME} PUBLIC aligator::gar)
   # Extract the compile definitions of the project for export
@@ -325,6 +349,7 @@ macro(create_ex_or_bench exfile exname)
   add_executable(${exname} ${exfile})
   message(STATUS "Adding cpp example ${exname}")
   set_target_properties(${exname} PROPERTIES LINKER_LANGUAGE CXX)
+  set_standard_output_directory(${exname})
   target_include_directories(${exname} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
   target_link_libraries(${exname} PUBLIC ${PROJECT_NAME})
@@ -347,7 +372,10 @@ if(BUILD_CROCODDYL_COMPAT AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
                                 ${CMAKE_SOURCE_DIR}/examples/croc-talos-arm.hpp
   )
   target_include_directories(croc_talos_arm_utils PUBLIC ${CMAKE_SOURCE_DIR}/examples)
-  target_link_libraries(croc_talos_arm_utils PUBLIC ${PROJECT_NAME} crocoddyl::crocoddyl)
+  target_link_libraries(
+    croc_talos_arm_utils PUBLIC ${PROJECT_NAME} Boost::boost crocoddyl::crocoddyl
+  )
+  set_standard_output_directory(croc_talos_arm_utils)
   target_add_example_robot_data(croc_talos_arm_utils)
 endif()
 
@@ -403,6 +431,9 @@ endmacro()
 
 if(BUILD_WITH_PINOCCHIO_SUPPORT)
   export_variable(ALIGATOR_WITH_PINOCCHIO_SUPPORT ON)
+endif()
+if(ENABLE_TEMPLATE_INSTANTIATION)
+  export_variable(ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION ON)
 endif()
 if(BUILD_PYTHON_INTERFACE)
   export_variable(ALIGATOR_WITH_PYTHON_INTERFACE ON)

@@ -106,9 +106,11 @@ public:
                                   const StageModelTpl &stage) {
     oss << "StageModel { ";
     if (stage.ndx1() == stage.ndx2()) {
-      oss << "ndx: " << stage.ndx1() << ", " << "nu:  " << stage.nu();
+      oss << "ndx: " << stage.ndx1() << ", "
+          << "nu:  " << stage.nu();
     } else {
-      oss << "ndx1:" << stage.ndx1() << ", " << "nu:  " << stage.nu() << ", "
+      oss << "ndx1:" << stage.ndx1() << ", "
+          << "nu:  " << stage.nu() << ", "
           << "ndx2:" << stage.ndx2();
     }
 

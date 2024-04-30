@@ -1,5 +1,7 @@
 # Aligator
 
+<a href="https://simple-robotics.github.io/aligator/"><img src="https://img.shields.io/badge/docs-online-brightgreen" alt="Documentation"/></a>
+
 **Aligator** is an efficient and versatile trajectory optimization library for robotics and beyond.
 
 It can be used for motion generation and planning, optimal estimation, deployment of model-predictive control on complex systems, and much more.
@@ -107,7 +109,7 @@ Please also consider citing the reference paper for the ProxDDP algorithm:
 * [Quentin Le Lidec](https://quentinll.github.io/) (Inria): feature developer
 * [Joris Vaillant](https://github.com/jorisv) (Inria): core developer
 * [Nicolas Mansard](https://gepettoweb.laas.fr/index.php/Members/NicolasMansard) (LAAS-CNRS): project coordinator
-* [Guilhem Saurel](https://github.com/nim65s) (LAAS-CNRS): core maintener
+* [Guilhem Saurel](https://github.com/nim65s) (LAAS-CNRS): core maintainer
 * [Fabian Schramm](https://github.com/fabinsch) (Inria): core developer
 * [Ludovic De Matteïs](https://github.com/LudovicDeMatteis) (LAAS-CNRS/Inria): feature developer
 * [Ewen Dantec](https://edantec.github.io/) (Inria): feature developer

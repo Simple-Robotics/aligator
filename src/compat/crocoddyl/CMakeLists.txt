@@ -4,6 +4,7 @@ set(CROC_INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_FULL_INCLUDEDIR}/${PROJECT_NAME}/co
 file(GLOB_RECURSE HEADERS ${INCLUDE_DIR}/*.hpp ${INCLUDE_DIR}/*.hxx)
 add_library(aligator_croc_compat SHARED ${HEADERS})
 add_library(aligator::croc_compat ALIAS aligator_croc_compat)
+set_standard_output_directory(aligator_croc_compat)
 
 if(ENABLE_TEMPLATE_INSTANTIATION)
   file(GLOB SOURCES_TEMPL ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
@@ -19,6 +20,7 @@ set_target_properties(
   PROPERTIES LINKER_LANGUAGE CXX
              LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
              PUBLIC_HEADER "${HEADERS}"
+             INSTALL_RPATH "\$ORIGIN"
              VERSION ${PROJECT_VERSION}
 )
 
