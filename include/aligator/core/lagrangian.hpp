@@ -38,17 +38,19 @@ template <typename Scalar> struct LagrangianDerivatives {
       const StageData &sd = *pd.stage_data[i];
       const ConstraintStack &stack = sm.constraints_;
       const StageFunctionData &dd = *sd.dynamics_data;
-      Lxs[i].noalias() += sd.cost_data->Lx_ + dd.Jx_.transpose() * lams[i + 1];
-      Lus[i].noalias() = sd.cost_data->Lu_ + dd.Ju_.transpose() * lams[i + 1];
+      Lxs[i].noalias() +=
+          sd.cost_data->Lx_ + dd.Jx_.transpose() * lams[i + 1]; // [1] eqn. 24c
+      Lus[i].noalias() =
+          sd.cost_data->Lu_ + dd.Ju_.transpose() * lams[i + 1]; // [1] eqn. 24b
 
       BlkView v_(vs[i], stack.dims());
       for (std::size_t j = 0; j < stack.size(); j++) {
         const StageFunctionData &cd = *sd.constraint_data[j];
-        Lxs[i].noalias() += cd.Jx_.transpose() * v_[j];
-        Lus[i].noalias() += cd.Ju_.transpose() * v_[j];
+        Lxs[i].noalias() += cd.Jx_.transpose() * v_[j]; // [1] eqn. 24c
+        Lus[i].noalias() += cd.Ju_.transpose() * v_[j]; // [1] eqn. 24b
       }
 
-      Lxs[i + 1].noalias() = dd.Jy_.transpose() * lams[i + 1];
+      Lxs[i + 1].noalias() = dd.Jy_.transpose() * lams[i + 1]; // [1] eqn. 24b
     }
 
     // terminal node

@@ -35,6 +35,12 @@ enum class LQSolverChoice { SERIAL, PARALLEL, STAGEDENSE };
 
 /// @brief A proximal, augmented Lagrangian-type solver for trajectory
 /// optimization.
+///
+/// @details This class implements the Proximal Differential Dynamic Programming
+/// algorithm, a variant of the augmented Lagrangian method for trajectory
+/// optimization. The paper "PROXDDP: Proximal Constrained Trajectory
+/// Optimization" by Jallet et al (2023) is the reference [1] for this
+/// implementation.
 template <typename _Scalar> struct SolverProxDDPTpl {
 public:
   // typedefs
