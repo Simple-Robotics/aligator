@@ -47,15 +47,15 @@ struct finite_difference_impl : virtual _Base<_Scalar> {
     }
   };
 
-  template <typename U = Base, class = std::enable_if_t<std::is_same<
-                                   U, StageFunctionTpl<Scalar>>::value>>
+  template <typename U = Base, class = std::enable_if_t<
+                                   std::is_same_v<U, StageFunctionTpl<Scalar>>>>
   finite_difference_impl(shared_ptr<Manifold> space, shared_ptr<U> func,
                          const Scalar fd_eps)
       : Base(func->ndx1, func->nu, func->ndx2, func->nr), space_(space),
         func_(func), fd_eps(fd_eps), nx1(space->nx()), nx2(space->nx()) {}
 
-  template <typename U = Base, class = std::enable_if_t<std::is_same<
-                                   U, DynamicsModelTpl<Scalar>>::value>>
+  template <typename U = Base, class = std::enable_if_t<
+                                   std::is_same_v<U, DynamicsModelTpl<Scalar>>>>
   finite_difference_impl(shared_ptr<Manifold> space, shared_ptr<U> func,
                          const Scalar fd_eps, boost::mpl::false_ = {})
       : Base(space, func->nu, space), space_(space), func_(func),
