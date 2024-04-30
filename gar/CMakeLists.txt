@@ -10,7 +10,8 @@ add_library(aligator_gar SHARED ${HEADERS})
 target_include_directories(aligator_gar PRIVATE ${PROJECT_SOURCE_DIR}/include/aligator)
 target_include_directories(
   aligator_gar PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-                      $<INSTALL_INTERFACE:include/aligator/gar>)
+                      $<INSTALL_INTERFACE:include/aligator/gar>
+)
 target_link_libraries(aligator_gar PUBLIC proxsuite-nlp::proxsuite-nlp)
 if(BUILD_WITH_OPENMP_SUPPORT)
   target_link_libraries(aligator_gar PUBLIC OpenMP::OpenMP_CXX)
@@ -29,10 +30,12 @@ set_target_properties(
   aligator_gar
   PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
              VERSION ${PROJECT_VERSION}
-             PUBLIC_HEADER "${HEADERS}")
+             PUBLIC_HEADER "${HEADERS}"
+)
 
 install(
   TARGETS aligator_gar
   EXPORT ${TARGETS_EXPORT_NAME}
   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/aligator/gar
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)

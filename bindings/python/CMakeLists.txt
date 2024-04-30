@@ -10,7 +10,8 @@ file(GLOB PY_SOURCES CONFIGURE_DEPENDS src/*.cpp src/gar/*.cpp src/modelling/*.c
 
 set(PY_HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/python)
 file(GLOB PY_HEADERS ${PY_HEADER_DIR}/*.hpp ${PY_HEADER_DIR}/modelling/*.hpp
-     ${PY_HEADER_DIR}/utils/*.hpp)
+     ${PY_HEADER_DIR}/utils/*.hpp
+)
 
 if(BUILD_CROCODDYL_COMPAT)
   list(APPEND PY_HEADERS ${PY_HEADER_DIR}/compat/croco.hpp)
@@ -26,7 +27,8 @@ function(make_bindings)
     PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_NAME}
                PREFIX ""
                SUFFIX ${PYTHON_EXT_SUFFIX}
-               VERSION ${PROJECT_VERSION})
+               VERSION ${PROJECT_VERSION}
+  )
   if(UNIX AND NOT APPLE)
     get_relative_rpath(${${PYLIB_NAME}_INSTALL_DIR} PYLIB_INSTALL_RPATH)
     set_target_properties(${PYLIB_NAME} PROPERTIES INSTALL_RPATH "${PYLIB_INSTALL_RPATH}")
@@ -35,8 +37,9 @@ function(make_bindings)
   # deprecated functions are exposed up until they are removed. remove warnings.
   target_compile_options(${PYLIB_NAME} PRIVATE "-Wno-deprecated-declarations")
   target_compile_definitions(${PYLIB_NAME} PRIVATE MODULE_NAME=${PYLIB_NAME})
-  target_include_directories(${PYLIB_NAME}
-                             PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+  target_include_directories(
+    ${PYLIB_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  )
 
   target_link_libraries(${PYLIB_NAME} PUBLIC ${PROJECT_NAME} eigenpy::eigenpy)
 
@@ -48,7 +51,8 @@ function(make_bindings)
     TARGETS ${PYLIB_NAME}
     EXPORT ${TARGETS_EXPORT_NAME}
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/aligator/python
-    LIBRARY DESTINATION ${${PYLIB_NAME}_INSTALL_DIR})
+    LIBRARY DESTINATION ${${PYLIB_NAME}_INSTALL_DIR}
+  )
 
 endfunction()
 
@@ -58,7 +62,8 @@ install(
   DIRECTORY ${PY_HEADER_DIR}
   DESTINATION "include/${PROJECT_NAME}"
   FILES_MATCHING
-  PATTERN "*.hpp")
+  PATTERN "*.hpp"
+)
 
 if(IS_ABSOLUTE ${PYTHON_SITELIB})
   set(ABSOLUTE_PYTHON_SITELIB ${PYTHON_SITELIB})
@@ -68,8 +73,9 @@ endif()
 # --- GENERATE STUBS
 if(GENERATE_PYTHON_STUBS)
   load_stubgen()
-  generate_stubs(${CMAKE_CURRENT_BINARY_DIR} ${PROJECT_NAME} ${ABSOLUTE_PYTHON_SITELIB}
-                 ${PYLIB_NAME})
+  generate_stubs(
+    ${CMAKE_CURRENT_BINARY_DIR} ${PROJECT_NAME} ${ABSOLUTE_PYTHON_SITELIB} ${PYLIB_NAME}
+  )
 endif(GENERATE_PYTHON_STUBS)
 
 set(${PYLIB_NAME}_PYFILES __init__.py)

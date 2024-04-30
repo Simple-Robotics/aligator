@@ -8,7 +8,8 @@ macro(ADD_TEST_CFLAGS test_name flag)
   set_property(
     TARGET ${test_name}
     APPEND_STRING
-    PROPERTY COMPILE_FLAGS " ${flag}")
+    PROPERTY COMPILE_FLAGS " ${flag}"
+  )
 endmacro()
 
 file(GLOB TEST_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
@@ -47,7 +48,8 @@ set(TEST_NAMES
     lqr
     problem
     solver-storage
-    utils)
+    utils
+)
 
 foreach(test_name ${TEST_NAMES})
   add_aligator_test(${test_name})

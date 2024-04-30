@@ -6,7 +6,8 @@ cmake_minimum_required(VERSION 3.16)
 
 set(PROJECT_NAME aligator)
 set(PROJECT_DESCRIPTION
-    "A primal-dual augmented Lagrangian-type solver for nonlinear trajectory optimization.")
+    "A primal-dual augmented Lagrangian-type solver for nonlinear trajectory optimization."
+)
 set(PROJECT_URL "https://github.com/Simple-Robotics/aligator")
 set(PROJECT_CUSTOM_HEADER_EXTENSION "hpp")
 set(PROJECT_USE_KEYWORD_LINK_LIBRARIES True)
@@ -35,8 +36,9 @@ if(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
     message(FATAL_ERROR "\nPlease run the following command first:\ngit submodule update --init\n")
   else()
     message(STATUS "JRL cmakemodules not found. Let's fetch it.")
-    FetchContent_Declare("jrl-cmakemodules"
-                         GIT_REPOSITORY "https://github.com/jrl-umi3218/jrl-cmakemodules.git")
+    FetchContent_Declare(
+      "jrl-cmakemodules" GIT_REPOSITORY "https://github.com/jrl-umi3218/jrl-cmakemodules.git"
+    )
     FetchContent_MakeAvailable("jrl-cmakemodules")
     FetchContent_GetProperties("jrl-cmakemodules" SOURCE_DIR JRL_CMAKE_MODULES)
   endif()
@@ -71,10 +73,12 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to 'Release' as none was specified.")
   set(CMAKE_BUILD_TYPE
       Release
-      CACHE STRING "Choose the type of build." FORCE)
+      CACHE STRING "Choose the type of build." FORCE
+  )
   # Set the possible values of build type for cmake-gui
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel"
-                                               "RelWithDebInfo")
+  set_property(
+    CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo"
+  )
 endif()
 
 # --- OPTIONS ----------------------------------------
@@ -90,7 +94,8 @@ option(BUILD_BENCHMARKS "Build benchmarks" ON)
 option(BUILD_EXAMPLES "Build examples" ON)
 cmake_dependent_option(
   GENERATE_PYTHON_STUBS "Generate the Python stubs associated to the Python library" ON
-  BUILD_PYTHON_INTERFACE OFF)
+  BUILD_PYTHON_INTERFACE OFF
+)
 
 option(INITIALIZE_WITH_NAN "Initialize Eigen entries with NaN" OFF)
 option(CHECK_RUNTIME_MALLOC "Check if some memory allocations are performed at runtime" OFF)
@@ -152,13 +157,15 @@ if(BUILD_PYTHON_INTERFACE)
   execute_process(
     COMMAND ${PYTHON_EXECUTABLE} -c "import platform; print(platform.python_implementation())"
     OUTPUT_VARIABLE _python_implementation_value
-    OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+    OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET
+  )
   message(STATUS "Python compiler: ${_python_implementation_value}")
 
   execute_process(
     COMMAND ${PYTHON_EXECUTABLE} -c "import proxsuite_nlp"
     RESULT_VARIABLE _proxsuite_nlp_python_bindings_not_found
-    OUTPUT_QUIET ERROR_QUIET)
+    OUTPUT_QUIET ERROR_QUIET
+  )
   if(_proxsuite_nlp_python_bindings_not_found EQUAL 0)
     message(STATUS "Found proxsuite_nlp Python bindings.")
   else()
@@ -169,7 +176,8 @@ if(BUILD_PYTHON_INTERFACE)
   execute_process(
     COMMAND ${PYTHON_EXECUTABLE} -c "import pinocchio"
     RESULT_VARIABLE _pinocchio_python_bindings_not_found
-    OUTPUT_QUIET ERROR_QUIET)
+    OUTPUT_QUIET ERROR_QUIET
+  )
   if(_pinocchio_python_bindings_not_found EQUAL 0)
     message(STATUS "Found pinocchio Python bindings.")
     set(BUILD_WITH_PINOCCHIO_PYTHON_BINDINGS True)
@@ -185,13 +193,15 @@ add_project_dependency(proxsuite-nlp 0.2.3 REQUIRED)
 set(LIB_SOURCES src/utils/logger.cpp)
 
 file(GLOB_RECURSE LIB_HEADERS ${PROJECT_SOURCE_DIR}/include/aligator/*.hpp
-     ${PROJECT_SOURCE_DIR}/include/aligator/*.hxx)
+     ${PROJECT_SOURCE_DIR}/include/aligator/*.hxx
+)
 
 if(ENABLE_TEMPLATE_INSTANTIATION)
 
   file(GLOB_RECURSE LIB_TEMPLATE_SOURCES ${PROJECT_SOURCE_DIR}/src/core/*.cpp
        ${PROJECT_SOURCE_DIR}/src/solvers/fddp/*.cpp ${PROJECT_SOURCE_DIR}/src/solvers/proxddp/*.cpp
-       ${PROJECT_SOURCE_DIR}/src/modelling/*.cpp)
+       ${PROJECT_SOURCE_DIR}/src/modelling/*.cpp
+  )
   file(GLOB_RECURSE LIB_TEMPLATE_DECLARATIONS ${PROJECT_SOURCE_DIR}/include/aligator/*.txx)
   list(APPEND LIB_HEADERS ${LIB_TEMPLATE_DECLARATIONS})
   list(APPEND LIB_SOURCES ${LIB_TEMPLATE_SOURCES})
@@ -208,22 +218,26 @@ if(DOWNLOAD_TRACY)
     GIT_REPOSITORY https://github.com/Simple-Robotics/tracy.git
     GIT_TAG patches
     GIT_SHALLOW TRUE
-    GIT_PROGRESS TRUE)
+    GIT_PROGRESS TRUE
+  )
   FetchContent_GetProperties(tracy)
   if(NOT tracy_POPULATED)
     FetchContent_Populate(tracy)
     set(TRACY_STATIC
         ON
-        CACHE INTERNAL "")
+        CACHE INTERNAL ""
+    )
     set(TRACY_ENABLE
         ${ENABLE_TRACY_PROFILING}
-        CACHE INTERNAL "")
+        CACHE INTERNAL ""
+    )
     add_subdirectory(${tracy_SOURCE_DIR} ${tracy_BINARY_DIR} EXCLUDE_FROM_ALL)
     # Extract the target include directories, set as system
     get_target_property(tracy_INCLUDE_DIR TracyClient INTERFACE_INCLUDE_DIRECTORIES)
     set_target_properties(
       TracyClient PROPERTIES POSITION_INDEPENDENT_CODE True INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
-                                                            "${tracy_INCLUDE_DIR}")
+                                                            "${tracy_INCLUDE_DIR}"
+    )
   endif()
 else()
   # assume it is installed somewhere
@@ -240,7 +254,8 @@ function(create_library)
     ${PROJECT_NAME}
     PROPERTIES LINKER_LANGUAGE CXX
                VERSION ${PROJECT_VERSION}
-               INSTALL_RPATH "\$ORIGIN")
+               INSTALL_RPATH "\$ORIGIN"
+  )
 
   target_link_libraries(${PROJECT_NAME} PUBLIC aligator::gar)
   # Extract the compile definitions of the project for export
@@ -268,7 +283,8 @@ function(create_library)
     install(
       FILES ${headerFileRelative}
       DESTINATION ${headerPath}
-      PERMISSIONS OWNER_READ GROUP_READ WORLD_READ OWNER_WRITE)
+      PERMISSIONS OWNER_READ GROUP_READ WORLD_READ OWNER_WRITE
+    )
   endforeach(headerFile ${LIB_HEADERS})
 
 endfunction()
@@ -283,14 +299,16 @@ install(
   EXPORT ${TARGETS_EXPORT_NAME}
   INCLUDES
   DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR})
+  LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
+)
 
 if(DOWNLOAD_TRACY)
   install(
     TARGETS TracyClient
     EXPORT ${TARGETS_EXPORT_NAME}
     LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/aligator
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/aligator)
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/aligator
+  )
   message(STATUS "Installing TracyClient target to ${CMAKE_INSTALL_FULL_LIBDIR}/aligator")
 endif()
 
@@ -324,8 +342,10 @@ endif()
 # create an utility library to avoid recompiling crocoddyl talos arm problem
 # used in examples and benchmarks
 if(BUILD_CROCODDYL_COMPAT AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
-  add_library(croc_talos_arm_utils STATIC ${CMAKE_SOURCE_DIR}/examples/croc-talos-arm.cpp
-                                          ${CMAKE_SOURCE_DIR}/examples/croc-talos-arm.hpp)
+  add_library(
+    croc_talos_arm_utils STATIC ${CMAKE_SOURCE_DIR}/examples/croc-talos-arm.cpp
+                                ${CMAKE_SOURCE_DIR}/examples/croc-talos-arm.hpp
+  )
   target_include_directories(croc_talos_arm_utils PUBLIC ${CMAKE_SOURCE_DIR}/examples)
   target_link_libraries(croc_talos_arm_utils PUBLIC ${PROJECT_NAME} crocoddyl::crocoddyl)
   target_add_example_robot_data(croc_talos_arm_utils)
@@ -342,8 +362,10 @@ if(${pinocchio_VERSION} VERSION_GREATER "2.9.0")
 endif()
 
 if(BUILD_EXAMPLES AND PINOCCHIO_V3)
-  add_library(talos_walk_utils STATIC ${CMAKE_SOURCE_DIR}/examples/talos-walk-utils.cpp
-                                      ${CMAKE_SOURCE_DIR}/examples/talos-walk-utils.hpp)
+  add_library(
+    talos_walk_utils STATIC ${CMAKE_SOURCE_DIR}/examples/talos-walk-utils.cpp
+                            ${CMAKE_SOURCE_DIR}/examples/talos-walk-utils.hpp
+  )
   target_include_directories(talos_walk_utils PUBLIC ${CMAKE_SOURCE_DIR}/examples)
   target_link_libraries(talos_walk_utils PUBLIC ${PROJECT_NAME})
   target_add_example_robot_data(talos_walk_utils)
@@ -371,7 +393,8 @@ macro(EXPORT_VARIABLE var_name var_value)
   if(has_parent)
     set(${var_name}
         ${var_value}
-        PARENT_SCOPE)
+        PARENT_SCOPE
+    )
   else()
     set(${var_name} ${var_value})
   endif()
