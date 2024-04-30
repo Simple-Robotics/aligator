@@ -14,7 +14,7 @@ using Space = proxsuite::nlp::VectorSpaceTpl<double>;
 using LinearDynamics = dynamics::LinearDiscreteDynamicsTpl<double>;
 using LinearFunction = LinearFunctionTpl<double>;
 using BoxConstraint = proxsuite::nlp::BoxConstraintTpl<double>;
-using EqualityConstraint = proxsuite::nlp::EqualityConstraintTpl<double>;
+using EqualityConstraint = proxsuite::nlp::EqualityConstraint<double>;
 using QuadraticCost = QuadraticCostTpl<double>;
 using context::CostBase;
 using context::StageModel;
