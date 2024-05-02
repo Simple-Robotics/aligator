@@ -211,7 +211,7 @@ if(BUILD_PYTHON_INTERFACE)
 
 endif(BUILD_PYTHON_INTERFACE)
 
-add_project_dependency(proxsuite-nlp 0.6.1 REQUIRED)
+add_project_dependency(proxsuite-nlp 0.6.1 REQUIRED PKG_CONFIG_REQUIRES "proxsuite-nlp >= 0.6.1")
 
 set(LIB_SOURCES src/utils/logger.cpp)
 
