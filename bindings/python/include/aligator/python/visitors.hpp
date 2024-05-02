@@ -3,7 +3,7 @@
 #pragma once
 
 #include <eigenpy/fwd.hpp>
-#include <eigenpy/deprecation-policy.hpp>
+#include <proxsuite-nlp/python/deprecation-policy.hpp>
 #include <fmt/format.h>
 
 namespace aligator {
@@ -87,8 +87,8 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
   }
 
   template <typename PyClass> void visit(PyClass &obj) const {
-    using eigenpy::deprecation_warning_policy;
-    using eigenpy::DeprecationType;
+    using proxsuite::nlp::deprecation_warning_policy;
+    using proxsuite::nlp::DeprecationType;
     obj.def_readwrite("verbose", &SolverType::verbose_,
                       "Verbosity level of the solver.")
         .def_readwrite("max_iters", &SolverType::max_iters,

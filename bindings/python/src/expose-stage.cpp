@@ -61,8 +61,8 @@ void exposeStage() {
       .add_property(
           "dyn_model",
           bp::make_function(&StageModel::dyn_model,
-                            eigenpy::deprecation_warning_policy<
-                                eigenpy::DeprecationType::DEPRECATION,
+                            proxsuite::nlp::deprecation_warning_policy<
+                                proxsuite::nlp::DeprecationType::DEPRECATION,
                                 bp::return_internal_reference<>>(
                                 "Deprecated. Use StageModel.dynamics instead")),
           "Stage dynamics.")
