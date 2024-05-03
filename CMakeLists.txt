@@ -76,6 +76,14 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
                                                "RelWithDebInfo")
 endif()
 
+function(set_standard_output_directory target)
+  set_target_properties(
+    ${target}
+    PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin
+               LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib
+               ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+endfunction()
+
 # --- OPTIONS ----------------------------------------
 option(BUILD_PYTHON_INTERFACE "Build the Python bindings" ON)
 option(BUILD_WITH_VERSION_SUFFIX "Build libraries with version appended to suffix" OFF)
@@ -214,6 +222,7 @@ function(create_library)
     PROPERTIES LINKER_LANGUAGE CXX
                VERSION ${PROJECT_VERSION}
                INSTALL_RPATH "\$ORIGIN")
+  set_standard_output_directory(${PROJECT_NAME})
 
   # Extract the compile definitions of the project for export
   get_directory_property(CURRENT_COMPILE_DEFINITIONS COMPILE_DEFINITIONS)
@@ -270,6 +279,7 @@ macro(create_ex_or_bench exfile exname)
   add_executable(${exname} ${exfile})
   message(STATUS "Adding cpp example ${exname}")
   set_target_properties(${exname} PROPERTIES LINKER_LANGUAGE CXX)
+  set_standard_output_directory(${exname})
   target_include_directories(${exname} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
   target_link_libraries(${exname} PUBLIC ${PROJECT_NAME})
@@ -295,6 +305,7 @@ if(BUILD_CROCODDYL_COMPAT AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
   target_include_directories(croc_talos_arm_utils PUBLIC ${CMAKE_SOURCE_DIR}/examples)
   target_link_libraries(croc_talos_arm_utils PUBLIC ${PROJECT_NAME} Boost::boost
                                                     crocoddyl::crocoddyl)
+  set_standard_output_directory(croc_talos_arm_utils)
   target_add_example_robot_data(croc_talos_arm_utils)
 endif()
 

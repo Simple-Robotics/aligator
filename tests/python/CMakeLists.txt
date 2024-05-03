@@ -36,6 +36,7 @@ function(add_test_binding_lib test_name)
   create_ctest_build_tests_target()
 
   add_library(${test_name} SHARED "${test_name}.cpp")
+  set_standard_output_directory(${test_name})
   target_link_libraries(${test_name} PUBLIC ${PYLIB_NAME})
   target_link_libraries(${test_name} PUBLIC eigenpy::eigenpy)
   set_target_properties(${test_name} PROPERTIES PREFIX "" SUFFIX ${PYTHON_EXT_SUFFIX})
