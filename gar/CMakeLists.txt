@@ -26,12 +26,8 @@ if(ENABLE_TEMPLATE_INSTANTIATION)
   target_sources(aligator_gar PRIVATE ${SOURCES} ${TEMPL_DECL_HEADERS})
 endif(ENABLE_TEMPLATE_INSTANTIATION)
 
-set_target_properties(
-  aligator_gar
-  PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
-             VERSION ${PROJECT_VERSION}
-             PUBLIC_HEADER "${HEADERS}"
-)
+set_target_properties(aligator_gar PROPERTIES VERSION ${PROJECT_VERSION} PUBLIC_HEADER "${HEADERS}")
+set_standard_output_directory(aligator_gar)
 
 install(
   TARGETS aligator_gar

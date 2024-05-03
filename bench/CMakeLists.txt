@@ -21,6 +21,7 @@ function(create_gar_bench exfile)
   add_executable(${exname} ${exfile})
   message(STATUS "Adding cpp bench ${exname}")
   set_target_properties(${exname} PROPERTIES LINKER_LANGUAGE CXX)
+  set_standard_output_directory(${exname})
   target_include_directories(${exname} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
   target_link_libraries(${exname} PRIVATE aligator::gar benchmark::benchmark gar_test_utils)
