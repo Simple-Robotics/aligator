@@ -62,7 +62,9 @@ public:
   /// This boolean allows flexibility in solvers when dealing
   /// with different frontends e.g. Crocoddyl's API.
   virtual bool has_dyn_model() const { return true; }
-  virtual const Dynamics &dyn_model() const { return *dynamics_; }
+  ALIGATOR_DEPRECATED virtual const Dynamics &dyn_model() const {
+    return *dynamics_;
+  }
 
   int nx1() const { return xspace_->nx(); }
   int ndx1() const { return xspace_->ndx(); }

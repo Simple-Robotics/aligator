@@ -25,6 +25,8 @@ void exposeStage() {
   StdVectorPythonVisitor<std::vector<shared_ptr<StageModel>>, true>::expose(
       "StdVec_StageModel");
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   bp::register_ptr_to_python<shared_ptr<StageModel>>();
   bp::class_<StageModel>(
       "StageModel",
@@ -89,6 +91,7 @@ void exposeStage() {
       .def(CreateDataPythonVisitor<StageModel>())
       .def(ClonePythonVisitor<StageModel>())
       .def(PrintableVisitor<StageModel>());
+#pragma GCC diagnostic pop
 
   bp::register_ptr_to_python<shared_ptr<StageData>>();
   StdVectorPythonVisitor<std::vector<shared_ptr<StageData>>, true>::expose(
