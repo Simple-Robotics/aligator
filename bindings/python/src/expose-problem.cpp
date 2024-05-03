@@ -60,7 +60,8 @@ void exposeProblem() {
            ("self"_a, "xs", "us", "prob_data", "num_threads"_a = 1),
            "Evaluate the problem costs, dynamics, and constraints.")
       .def("computeDerivatives", &TrajOptProblem::computeDerivatives,
-           ("self"_a, "xs", "us", "prob_data", "num_threads"_a = 1),
+           ("self"_a, "xs", "us", "prob_data", "num_threads"_a = 1,
+            "compute_second_order"_a = true),
            "Evaluate the problem derivatives. Call `evaluate()` first.")
       .def("replaceStageCircular", &TrajOptProblem::replaceStageCircular,
            ("self"_a, "model"),

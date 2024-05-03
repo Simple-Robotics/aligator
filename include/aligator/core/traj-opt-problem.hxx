@@ -91,7 +91,8 @@ Scalar TrajOptProblemTpl<Scalar>::evaluate(
 template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::computeDerivatives(
     const std::vector<VectorXs> &xs, const std::vector<VectorXs> &us,
-    Data &prob_data, ALIGATOR_MAYBE_UNUSED std::size_t num_threads) const {
+    Data &prob_data, ALIGATOR_MAYBE_UNUSED std::size_t num_threads,
+    bool compute_second_order) const {
   ZoneScopedN("TrajOptProblem::computeDerivatives");
   const std::size_t nsteps = numSteps();
   if (xs.size() != nsteps + 1)
@@ -108,13 +109,19 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
   Eigen::setNbThreads(1);
 #pragma omp parallel for num_threads(num_threads) schedule(auto)
   for (std::size_t i = 0; i < nsteps; i++) {
-    stages_[i]->computeDerivatives(xs[i], us[i], xs[i + 1], *sds[i]);
+    stages_[i]->computeFirstOrderDerivatives(xs[i], us[i], xs[i + 1], *sds[i]);
+    if (compute_second_order) {
+      stages_[i]->computeSecondOrderDerivatives(xs[i], us[i], *sds[i]);
+    }
   }
   Eigen::setNbThreads(0);
 
   if (term_cost_) {
     term_cost_->computeGradients(xs[nsteps], unone_, *prob_data.term_cost_data);
-    term_cost_->computeHessians(xs[nsteps], unone_, *prob_data.term_cost_data);
+    if (compute_second_order) {
+      term_cost_->computeHessians(xs[nsteps], unone_,
+                                  *prob_data.term_cost_data);
+    }
   }
 
   for (std::size_t k = 0; k < term_cstrs_.size(); ++k) {

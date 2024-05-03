@@ -162,10 +162,14 @@ template <typename _Scalar> struct TrajOptProblemTpl {
    *
    * @param xs State sequence
    * @param us Control sequence
+   * @param prob_data Problem data
+   * @param num_threads Number of threads to use
+   * @param compute_second_order Whether to compute second-order derivatives
    */
   void computeDerivatives(const std::vector<VectorXs> &xs,
                           const std::vector<VectorXs> &us, Data &prob_data,
-                          std::size_t num_threads = 1) const;
+                          std::size_t num_threads = 1,
+                          bool compute_second_order = true) const;
 
   /// @brief Pop out the first StageModel and replace by the supplied one;
   /// updates the supplied problem data (TrajOptDataTpl) object.
