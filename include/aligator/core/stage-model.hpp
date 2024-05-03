@@ -94,10 +94,16 @@ public:
   virtual void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                         const ConstVectorRef &y, Data &data) const;
 
-  /// @brief    Compute the derivatives of the StageModelTpl.
-  virtual void computeDerivatives(const ConstVectorRef &x,
-                                  const ConstVectorRef &u,
-                                  const ConstVectorRef &y, Data &data) const;
+  /// @brief    Compute the first-order derivatives of the StageModelTpl.
+  virtual void computeFirstOrderDerivatives(const ConstVectorRef &x,
+                                            const ConstVectorRef &u,
+                                            const ConstVectorRef &y,
+                                            Data &data) const;
+
+  /// @brief    Compute the second-order derivatives of the StageModelTpl.
+  virtual void computeSecondOrderDerivatives(const ConstVectorRef &x,
+                                             const ConstVectorRef &u,
+                                             Data &data) const;
 
   /// @brief    Create a StageData object.
   virtual shared_ptr<Data> createData() const;

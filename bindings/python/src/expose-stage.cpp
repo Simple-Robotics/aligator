@@ -69,9 +69,16 @@ void exposeStage() {
       .def("evaluate", &StageModel::evaluate,
            bp::args("self", "x", "u", "y", "data"),
            "Evaluate the stage cost, dynamics, constraints.")
-      .def("computeDerivatives", &StageModel::computeDerivatives,
+      .def("computeFirstOrderDerivatives",
+           &StageModel::computeFirstOrderDerivatives,
            bp::args("self", "x", "u", "y", "data"),
-           "Compute derivatives of the stage cost, dynamics, and constraints.")
+           "Compute gradients of the stage cost and jacobians of the dynamics "
+           "and "
+           "constraints.")
+      .def("computeSecondOrderDerivatives",
+           &StageModel::computeSecondOrderDerivatives,
+           bp::args("self", "x", "u", "data"),
+           "Compute Hessians of the stage cost.")
       .add_property("ndx1", &StageModel::ndx1)
       .add_property("ndx2", &StageModel::ndx2)
       .add_property("nu", &StageModel::nu, "Control space dimension.")

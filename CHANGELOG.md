@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Standardized CMake output directories ([#147](https://github.com/Simple-Robotics/aligator/pull/147))
+- Split derivative computation into first- and second-order functions per stage by @fabinsch
 
 ## [0.5.1] - 2024-04-24
 
