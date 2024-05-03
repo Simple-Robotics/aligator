@@ -48,8 +48,7 @@ struct ActionModelWrapperTpl : StageModelTpl<Scalar> {
   /// Does nothing for this class.
   void computeSecondOrderDerivatives(const ConstVectorRef & /*x*/,
                                      const ConstVectorRef & /*u*/,
-                                     const ConstVectorRef & /*y*/,
-                                     Data & /*data*/) const {}
+                                     Data & /*data*/) const override {}
 
   shared_ptr<Data> createData() const override;
 };
