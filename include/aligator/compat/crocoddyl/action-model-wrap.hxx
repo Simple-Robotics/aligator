@@ -34,10 +34,9 @@ void ActionModelWrapperTpl<Scalar>::evaluate(const ConstVectorRef &x,
 }
 
 template <typename Scalar>
-void ActionModelWrapperTpl<Scalar>::computeDerivatives(const ConstVectorRef &x,
-                                                       const ConstVectorRef &u,
-                                                       const ConstVectorRef &y,
-                                                       Data &data) const {
+void ActionModelWrapperTpl<Scalar>::computeFirstOrderDerivatives(
+    const ConstVectorRef &x, const ConstVectorRef &u, const ConstVectorRef &y,
+    Data &data) const {
   ActionDataWrap &d = static_cast<ActionDataWrap &>(data);
   CrocActionModel &m = *action_model_;
   m.calcDiff(d.croc_action_data, x, u);

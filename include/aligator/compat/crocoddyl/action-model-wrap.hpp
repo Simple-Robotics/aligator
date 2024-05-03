@@ -35,18 +35,23 @@ struct ActionModelWrapperTpl : StageModelTpl<Scalar> {
   explicit ActionModelWrapperTpl(
       boost::shared_ptr<CrocActionModel> action_model);
 
-  bool has_dyn_model() const { return false; }
-  const Dynamics &dyn_model() const {
-    ALIGATOR_RUNTIME_ERROR("There is no dyn_model() for this class.");
-  }
+  bool has_dyn_model() const override { return false; }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                const ConstVectorRef &y, Data &data) const;
+                const ConstVectorRef &y, Data &data) const override;
 
-  void computeDerivatives(const ConstVectorRef &x, const ConstVectorRef &u,
-                          const ConstVectorRef &y, Data &data) const;
+  void computeFirstOrderDerivatives(const ConstVectorRef &x,
+                                    const ConstVectorRef &u,
+                                    const ConstVectorRef &y,
+                                    Data &data) const override;
 
-  shared_ptr<Data> createData() const;
+  /// Does nothing for this class.
+  void computeSecondOrderDerivatives(const ConstVectorRef & /*x*/,
+                                     const ConstVectorRef & /*u*/,
+                                     const ConstVectorRef & /*y*/,
+                                     Data & /*data*/) const {}
+
+  shared_ptr<Data> createData() const override;
 };
 
 /**

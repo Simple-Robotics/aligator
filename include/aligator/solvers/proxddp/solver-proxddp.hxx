@@ -349,13 +349,13 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
 
     DynamicsData &dd = *data.dynamics_data;
 
-    if (!stage.has_dyn_model() || stage.dyn_model().is_explicit()) {
+    if (!stage.has_dyn_model() || stage.dynamics_->is_explicit()) {
       ExplicitDynData &exp_dd = static_cast<ExplicitDynData &>(dd);
       stage.xspace_next().integrate(exp_dd.xnext_, dyn_slacks[t], xs[t + 1]);
       // at xs[i+1], the dynamics gap = the slack dyn_slack[i].
       exp_dd.value_ = -dyn_slacks[t];
     } else {
-      forwardDynamics<Scalar>::run(stage.dyn_model(), xs[t], us[t], dd,
+      forwardDynamics<Scalar>::run(*stage.dynamics_, xs[t], us[t], dd,
                                    xs[t + 1], dyn_slacks[t], rollout_max_iters);
     }
 
