@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added constrained LQR example
 
+### Changed
+- Standardized CMake output directories ([#147](https://github.com/Simple-Robotics/aligator/pull/147))
+
 ## [0.5.1] - 2024-04-24
 
 ### Fixed
