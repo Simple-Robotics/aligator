@@ -1,6 +1,8 @@
+/// @file
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #include "aligator/python/fwd.hpp"
-#include "aligator/python/utils.hpp"
 #include "aligator/python/visitors.hpp"
+#include "aligator/python/solvers.hpp"
 
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
 
