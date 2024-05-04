@@ -1,3 +1,5 @@
+/// @file
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #ifdef ALIGATOR_EIGEN_CHECK_MALLOC

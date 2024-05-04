@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
 #include "aligator/python/functions.hpp"
 #include "aligator/python/visitors.hpp"
 #include "aligator/core/dynamics.hpp"
