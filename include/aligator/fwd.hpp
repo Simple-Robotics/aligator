@@ -14,6 +14,7 @@
 
 #include "aligator/math.hpp"
 #include "aligator/macros.hpp"
+#include "aligator/eigen-macros.hpp"
 #include "aligator/config.hpp"
 #include "aligator/deprecated.hpp"
 
