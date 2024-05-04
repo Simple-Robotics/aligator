@@ -1,8 +1,9 @@
 /// @file
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
-#include "aligator/python/modelling/explicit-dynamics.hpp"
-#include "aligator/python/eigen-member.hpp"
+#include "aligator/python/functions.hpp"
 #include "aligator/python/visitors.hpp"
+#include "aligator/core/dynamics.hpp"
+#include <proxsuite-nlp/manifold-base.hpp>
 
 namespace aligator {
 namespace python {

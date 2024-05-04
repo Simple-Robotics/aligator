@@ -2,7 +2,7 @@
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "aligator/python/functions.hpp"
+#include "aligator/python/fwd.hpp"
 #include "aligator/core/explicit-dynamics.hpp"
 
 namespace aligator {
