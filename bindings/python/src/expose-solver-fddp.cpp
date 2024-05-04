@@ -9,17 +9,6 @@ using QParams = QFunctionTpl<Scalar>;
 using VParams = ValueFunctionTpl<Scalar>;
 } // namespace aligator::python
 
-#if EIGENPY_VERSION_AT_MOST(3, 2, 0)
-namespace eigenpy {
-
-template <>
-struct has_operator_equal<::aligator::python::QParams> : boost::false_type {};
-template <>
-struct has_operator_equal<::aligator::python::VParams> : boost::false_type {};
-
-} // namespace eigenpy
-#endif
-
 namespace aligator {
 namespace python {
 
