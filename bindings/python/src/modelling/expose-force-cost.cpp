@@ -45,6 +45,11 @@ void exposeContactForce() {
           bp::args("self", "ndx", "model", "actuation_matrix",
                    "constraint_models", "prox_settings", "fref", "contact_id")))
       .def(FrameAPIVisitor<ContactForceResidual>())
+      .def("getReference", &ContactForceResidual::getReference,
+           bp::args("self"), bp::return_internal_reference<>(),
+           "Get the target force.")
+      .def("setReference", &ContactForceResidual::setReference,
+           bp::args("self", "fnew"), "Set the target force.")
       .def_readwrite("constraint_models",
                      &ContactForceResidual::constraint_models_);
 

@@ -57,10 +57,6 @@ BOOST_AUTO_TEST_CASE(contact_forces) {
   constraint_models.push_back(ci_RF);
   constraint_data.push_back(RigidConstraintData(ci_RF));
 
-  Eigen::DenseIndex constraint_dim = 0;
-  for (size_t k = 0; k < constraint_models.size(); ++k)
-    constraint_dim += constraint_models[k].size();
-
   const double mu0 = 0.;
   ProximalSettings prox_settings(1e-12, mu0, 1);
 
@@ -196,13 +192,17 @@ BOOST_AUTO_TEST_CASE(wrench_cone) {
   cone_partial_dx = fdata->Jx_;
   cone_partial_du = fdata->Ju_;
 
+  std::cout << "cone_dx" << cone_partial_dx << std::endl;
+  std::cout << "cone_du" << cone_partial_du << std::endl;
+
   // Data_fd
-  MatrixXd cone_partial_dx_fd(6, model.nv * 2);
+  MatrixXd cone_partial_dx_fd(17, model.nv * 2);
   cone_partial_dx_fd.setZero();
-  MatrixXd cone_partial_du_fd(6, model.nv - 6);
+  MatrixXd cone_partial_du_fd(17, model.nv - 6);
   cone_partial_du_fd.setZero();
 
   const VectorXd cone0 = fdata->value_;
+  std::cout << "value " << fdata->value_ << std::endl;
   VectorXd v_eps(VectorXd::Zero(model.nv * 2));
   VectorXd u_eps(VectorXd::Zero(model.nv - 6));
   VectorXd x_plus(model.nq + model.nv);
@@ -225,7 +225,7 @@ BOOST_AUTO_TEST_CASE(wrench_cone) {
     cone_partial_du_fd.col(k) = (fdata->value_ - cone0) / alpha;
     u_eps[k] = 0.;
   }
-  std::cout << (cone_partial_dx_fd - cone_partial_dx).norm() << std::endl;
+
   BOOST_CHECK(cone_partial_dx_fd.isApprox(cone_partial_dx, sqrt(alpha)));
   BOOST_CHECK(cone_partial_du_fd.isApprox(cone_partial_du, sqrt(alpha)));
 }

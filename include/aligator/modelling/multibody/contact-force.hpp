@@ -57,6 +57,9 @@ public:
     }
   }
 
+  const Vector6s &getReference() const { return fref_; }
+  void setReference(const Eigen::Ref<const Vector6s> &fnew) { fref_ = fnew; }
+
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &, BaseData &data) const;
 

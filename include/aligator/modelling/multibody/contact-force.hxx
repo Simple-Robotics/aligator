@@ -33,8 +33,6 @@ void ContactForceResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &x,
   Data &d = static_cast<Data &>(data);
   pinocchio::DataTpl<Scalar> &pdata = d.pin_data_;
 
-  const auto q = x.head(pin_model_.nq);
-
   pinocchio::computeConstraintDynamicsDerivatives(
       pin_model_, d.pin_data_, constraint_models_, d.constraint_datas_,
       d.settings);
