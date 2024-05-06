@@ -1,6 +1,6 @@
 #pragma once
 
-#include "aligator/modelling/multibody/contact-force.hpp"
+#include "aligator/modelling/multibody/multibody-wrench-cone.hpp"
 
 #include <pinocchio/algorithm/constrained-dynamics.hpp>
 #include <pinocchio/algorithm/constrained-dynamics-derivatives.hpp>
@@ -8,10 +8,10 @@
 namespace aligator {
 
 template <typename Scalar>
-void ContactForceResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
-                                               const ConstVectorRef &u,
-                                               const ConstVectorRef &,
-                                               BaseData &data) const {
+void MultibodyWrenchConeResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
+                                                      const ConstVectorRef &u,
+                                                      const ConstVectorRef &,
+                                                      BaseData &data) const {
   Data &d = static_cast<Data &>(data);
   pinocchio::DataTpl<Scalar> &pdata = d.pin_data_;
 
@@ -22,16 +22,16 @@ void ContactForceResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
   pinocchio::constraintDynamics(pin_model_, d.pin_data_, q, v, d.tau_,
                                 constraint_models_, d.constraint_datas_,
                                 d.settings);
-  d.value_ = d.pin_data_.lambda_c.segment(contact_id_ * 6, 6) - fref_;
+
+  // Unilateral contact
+  d.value_ = Acone_ * d.pin_data_.lambda_c.segment(contact_id_ * 6, 6);
 }
 
 template <typename Scalar>
-void ContactForceResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &x,
-                                                       const ConstVectorRef &,
-                                                       const ConstVectorRef &,
-                                                       BaseData &data) const {
+void MultibodyWrenchConeResidualTpl<Scalar>::computeJacobians(
+    const ConstVectorRef &x, const ConstVectorRef &, const ConstVectorRef &,
+    BaseData &data) const {
   Data &d = static_cast<Data &>(data);
-  pinocchio::DataTpl<Scalar> &pdata = d.pin_data_;
 
   const auto q = x.head(pin_model_.nq);
 
@@ -40,17 +40,20 @@ void ContactForceResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &x,
       d.settings);
 
   d.Jx_.leftCols(pin_model_.nv) =
+      Acone_ *
       d.pin_data_.dlambda_dq.block(contact_id_ * 6, 0, 6, pin_model_.nv);
   d.Jx_.rightCols(pin_model_.nv) =
+      Acone_ *
       d.pin_data_.dlambda_dv.block(contact_id_ * 6, 0, 6, pin_model_.nv);
-  d.Ju_ = d.pin_data_.dlambda_dtau.block(contact_id_ * 6, 0, 6, pin_model_.nv) *
+  d.Ju_ = Acone_ *
+          d.pin_data_.dlambda_dtau.block(contact_id_ * 6, 0, 6, pin_model_.nv) *
           actuation_matrix_;
 }
 
 template <typename Scalar>
-ContactForceDataTpl<Scalar>::ContactForceDataTpl(
-    const ContactForceResidualTpl<Scalar> *model)
-    : Base(model->ndx1, model->nu, model->ndx2, 6),
+MultibodyWrenchConeDataTpl<Scalar>::MultibodyWrenchConeDataTpl(
+    const MultibodyWrenchConeResidualTpl<Scalar> *model)
+    : Base(model->ndx1, model->nu, model->ndx2, 17),
       pin_data_(model->pin_model_), tau_(model->pin_model_.nv) {
   tau_.setZero();
 
