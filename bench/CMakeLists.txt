@@ -39,4 +39,4 @@ if(PINOCCHIO_V3)
   target_add_talos_walk(bench-talos-walk)
 endif()
 
-create_gar_bench("gar.cpp")
+create_gar_bench("gar-riccati.cpp")
