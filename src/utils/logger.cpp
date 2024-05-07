@@ -41,6 +41,8 @@ void BaseLogger::finish(bool conv) {
   fmt::print("\n");
 }
 
-void BaseLogger::checkIter() const { assert(m_iter != BASIC_KEYS.cend()); }
+bool BaseLogger::checkIter() const {
+  return active && (m_iter != BASIC_KEYS.cend());
+}
 
 } // namespace aligator

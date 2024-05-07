@@ -52,14 +52,16 @@ struct BaseLogger {
   }
 
   void addEntry(double val) {
-    checkIter();
+    if (!checkIter())
+      return;
     constexpr int prec = 3;
     cols.push_back(fmt::format(m_iter->format, val, m_iter->colSize, prec));
     m_iter++;
   }
 
   void addEntry(size_t val) {
-    checkIter();
+    if (!checkIter())
+      return;
     cols.push_back(fmt::format(m_iter->format, val, m_iter->colSize));
     m_iter++;
   }
@@ -68,7 +70,7 @@ struct BaseLogger {
 
 protected:
   iterator m_iter;
-  void checkIter() const;
+  bool checkIter() const;
 };
 
 } // namespace aligator
