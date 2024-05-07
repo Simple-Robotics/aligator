@@ -3,7 +3,7 @@
 #pragma once
 
 #include "aligator/gar/blk-matrix.hpp"
-#include "aligator/macros.hpp"
+#include "aligator/eigen-macros.hpp"
 #include <tracy/Tracy.hpp>
 
 namespace aligator {
