@@ -113,6 +113,7 @@ option(ENABLE_TEMPLATE_INSTANTIATION "Template instantiation of the main library
 option(BUILD_WITH_PINOCCHIO_SUPPORT "Build the library with support for Pinocchio" ON)
 option(BUILD_CROCODDYL_COMPAT "Build the Crocoddyl compatibility module" OFF)
 option(BUILD_WITH_OPENMP_SUPPORT "Build the library with the OpenMP support" ON)
+option(BUILD_WITH_CHOLMOD_SUPPORT "Build with support for backends enabled by Cholmod" OFF)
 option(BUILD_BENCHMARKS "Build benchmarks" ON)
 option(BUILD_EXAMPLES "Build examples" ON)
 cmake_dependent_option(
@@ -164,6 +165,15 @@ if(BUILD_CROCODDYL_COMPAT)
   message(STATUS "Building with Crocoddyl compatibility.")
   add_compile_definitions(ALIGATOR_WITH_CROCODDYL_COMPAT)
   list(APPEND CFLAGS_DEPENDENCIES "-DALIGATOR_WITH_CROCODDYL_COMPAT")
+endif()
+
+if(BUILD_WITH_CHOLMOD_SUPPORT)
+  set(CMAKE_MODULE_PATH ${JRL_CMAKE_MODULES}/find-external/CHOLMOD ${CMAKE_MODULE_PATH})
+  add_project_dependency(CHOLMOD REQUIRED)
+  message(
+    STATUS "Build with CHOLDOD support (LGPL). See CHOLMOD/Doc/License.txt for further details."
+  )
+  add_compile_definitions(ALIGATOR_WITH_CHOLMOD)
 endif()
 
 set(BOOST_REQUIRED_COMPONENTS filesystem)

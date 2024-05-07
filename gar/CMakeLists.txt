@@ -20,6 +20,10 @@ target_link_libraries(aligator_gar PUBLIC Tracy::TracyClient)
 
 add_library(aligator::gar ALIAS aligator_gar)
 
+if(BUILD_WITH_CHOLMOD_SUPPORT)
+  target_link_libraries(aligator_gar PUBLIC CHOLMOD::CHOLMOD)
+endif()
+
 if(ENABLE_TEMPLATE_INSTANTIATION)
   file(GLOB TEMPL_DECL_HEADERS include/aligator/gar/*.txx)
   list(APPEND HEADERS ${TEMPL_DECL_HEADERS})
