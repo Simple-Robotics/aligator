@@ -40,12 +40,12 @@ void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
     auto Px = jac.blockCol(0);
     auto Pu = jac.blockCol(1);
     auto Lv = sc.applyInverse(workspace.Lvs[i]);
-    workspace.constraintLxCorr[i].noalias() = Px.transpose() * Lv;
-    workspace.constraintLuCorr[i].noalias() = Pu.transpose() * Lv;
+    workspace.cstr_lx_corr[i].noalias() = Px.transpose() * Lv;
+    workspace.cstr_lu_corr[i].noalias() = Pu.transpose() * Lv;
     const ProductOp &op = workspace.cstr_product_sets[i];
     op.applyNormalConeProjectionJacobian(sif[i], jac.matrix());
-    workspace.constraintLxCorr[i].noalias() -= Px.transpose() * Lv;
-    workspace.constraintLuCorr[i].noalias() -= Pu.transpose() * Lv;
+    workspace.cstr_lx_corr[i].noalias() -= Px.transpose() * Lv;
+    workspace.cstr_lu_corr[i].noalias() -= Pu.transpose() * Lv;
   }
 
   if (!problem.term_cstrs_.empty()) {
@@ -58,10 +58,10 @@ void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
 
     auto Px = jac.blockCol(0);
     auto Lv = sc.applyInverse(workspace.Lvs[N]);
-    workspace.constraintLxCorr[N].noalias() = Px.transpose() * Lv;
+    workspace.cstr_lx_corr[N].noalias() = Px.transpose() * Lv;
     const ProductOp &op = workspace.cstr_product_sets[N];
     op.applyNormalConeProjectionJacobian(sif[N], jac.matrix());
-    workspace.constraintLxCorr[N].noalias() -= Px.transpose() * Lv;
+    workspace.cstr_lx_corr[N].noalias() -= Px.transpose() * Lv;
   }
 }
 
@@ -765,8 +765,8 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
     knot.d.head(nc) = workspace_.Lvs[t];
 
     // correct right-hand side
-    knot.q.head(nx) += workspace_.constraintLxCorr[t];
-    knot.r.head(nu) += workspace_.constraintLuCorr[t];
+    knot.q.head(nx) += workspace_.cstr_lx_corr[t];
+    knot.r.head(nu) += workspace_.cstr_lu_corr[t];
   }
 
   {
@@ -778,7 +778,7 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
     knot.C = workspace_.cstr_proj_jacs[N].blockCol(0);
     knot.d = workspace_.Lvs[N];
     // correct right-hand side
-    knot.q += workspace_.constraintLxCorr[N];
+    knot.q += workspace_.cstr_lx_corr[N];
   }
 
   const StageFunctionData &id = *pd.init_data;
