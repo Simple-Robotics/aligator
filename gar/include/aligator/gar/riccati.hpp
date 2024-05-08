@@ -14,7 +14,8 @@ public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = RiccatiSolverBase<Scalar>;
-  using Base::datas;
+  using StageFactorVec = std::vector<StageFactor<Scalar>>;
+  StageFactorVec datas;
 
   using Impl = ProximalRiccatiKernel<Scalar>;
   using StageFactorType = StageFactor<Scalar>;

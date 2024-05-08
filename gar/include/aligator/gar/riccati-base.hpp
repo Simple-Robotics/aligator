@@ -9,16 +9,10 @@
 namespace aligator {
 namespace gar {
 
-// fwd
-template <typename Scalar> struct StageFactor;
-
 template <typename _Scalar> class RiccatiSolverBase {
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using StageFactorType = StageFactor<Scalar>;
-  using StageFactorVec = std::vector<StageFactorType>;
-  StageFactorVec datas;
 
   virtual bool backward(const Scalar mudyn, const Scalar mueq) = 0;
 

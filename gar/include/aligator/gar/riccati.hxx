@@ -23,7 +23,7 @@ bool ProximalRiccatiSolver<Scalar>::backward(const Scalar mudyn,
   ZoneNamed(Zone1, true);
   bool ret = Impl::backwardImpl(problem_->stages, mudyn, mueq, datas);
 
-  StageFactorType &d0 = datas[0];
+  StageFactor<Scalar> &d0 = datas[0];
   value_t &vinit = d0.vm;
   vinit.Vxx = vinit.Pmat;
   vinit.vx = vinit.pvec;
