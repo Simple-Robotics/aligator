@@ -25,6 +25,13 @@ template <typename _Scalar> struct ResultsTpl : ResultsBaseTpl<_Scalar> {
   std::size_t al_iter = 0;
 
   ResultsTpl() : Base() {}
+
+  ResultsTpl(const ResultsTpl &) = delete;
+  ResultsTpl &operator=(const ResultsTpl &) = delete;
+
+  ResultsTpl(ResultsTpl &&) = default;
+  ResultsTpl &operator=(ResultsTpl &&) = default;
+
   /// @brief    Create the results struct from a problem (TrajOptProblemTpl)
   /// instance.
   explicit ResultsTpl(const TrajOptProblemTpl<Scalar> &problem);

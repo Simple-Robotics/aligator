@@ -111,6 +111,12 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   WorkspaceTpl() : Base() {}
   WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem);
 
+  WorkspaceTpl(const WorkspaceTpl &) = delete;
+  WorkspaceTpl &operator=(const WorkspaceTpl &) = delete;
+
+  WorkspaceTpl(WorkspaceTpl &&) = default;
+  WorkspaceTpl &operator=(WorkspaceTpl &&) = default;
+
   void cycleLeft();
 
   template <typename T>

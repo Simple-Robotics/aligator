@@ -106,7 +106,7 @@ void exposeProxDDP() {
       .def_readonly("control_dual_infeas", &Workspace::control_dual_infeas)
       .def(PrintableVisitor<Workspace>());
 
-  bp::class_<Results, bp::bases<ResultsBaseTpl<Scalar>>>(
+  bp::class_<Results, bp::bases<ResultsBaseTpl<Scalar>>, boost::noncopyable>(
       "Results", "Results struct for proxDDP.",
       bp::init<const TrajOptProblem &>(("self"_a, "problem")))
       .def_readonly("al_iter", &Results::al_iter)
