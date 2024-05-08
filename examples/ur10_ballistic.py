@@ -72,7 +72,7 @@ def append_ball_to_robot_model(
     )
 
     ref_q0 = pin.neutral(rmodel)
-    ref_q0[7:] = robot.q0
+    ref_q0[:6] = robot.q0
     return rmodel, cmodel, vmodel, ref_q0
 
 
@@ -85,6 +85,8 @@ nu = nv - 6
 ndx = space.ndx
 x0 = space.neutral()
 x0[:nq] = ref_q0
+print("X0 = {}".format(x0))
+MUG_VEL_IDX = slice(robot.nv, nv)
 
 CONTACT_REF_FRAME = pin.LOCAL_WORLD_ALIGNED
 
@@ -141,7 +143,7 @@ else:
 dt = 0.01
 tf = 2.0  # seconds
 nsteps = int(tf / dt)
-actuation_matrix = np.eye(nv, nu, -nu)
+actuation_matrix = np.eye(nv, nu)
 
 prox_settings = pin.ProximalSettings(accuracy=1e-8, mu=1e-6, max_iter=20)
 rcm = create_rcm()
@@ -154,7 +156,7 @@ dyn_model2 = dynamics.IntegratorSemiImplEuler(ode2, dt)
 
 q0 = x0[:nq]
 v0 = x0[nq:]
-u0_now = pin.rnea(robot.model, robot.data, robot.q0, robot.v0, robot.v0)
+u0_free = pin.rnea(robot.model, robot.data, robot.q0, robot.v0, robot.v0)
 u0, lam_c = aligator.underactuatedConstrainedInverseDynamics(
     rmodel, rdata, q0, v0, actuation_matrix, [rcm], [rcm.createData()]
 )
@@ -170,7 +172,7 @@ def testu0(u0):
 
 
 with np.printoptions(precision=4, linewidth=200):
-    print("invdyn (free): {}".format(u0_now))
+    print("invdyn (free): {}".format(u0_free))
     print("invdyn torque : {}".format(u0))
     testu0(u0)
 
@@ -188,8 +190,9 @@ def create_running_cost():
     w_x = np.array([1e-6] * nv + [10.0] * nv)
     w_v = w_x[nv:]
     # no costs on mug
-    w_x[:6] = 0.0
-    w_v[:6] = 0.0
+    w_x[MUG_VEL_IDX] = 0.0
+    w_v[MUG_VEL_IDX] = 0.0
+    assert space.isNormalized(x0)
     xreg = aligator.QuadraticStateCost(space, nu, x0, np.diag(w_x) * dt)
     ureg = aligator.QuadraticControlCost(space, u0, np.eye(nu) * dt)
     costs.addCost(xreg)
@@ -200,7 +203,7 @@ def create_running_cost():
 def create_term_cost(has_frame_cost=False, w_ball=1.0):
     w_xf = np.ones(ndx)
     w_xf[:nv] = 1e-7
-    w_xf[nv : nv + 6] = 1e-6
+    w_xf[nv + 6 :] = 1e-6
     costs = aligator.CostStack(space, nu)
     xreg = aligator.QuadraticStateCost(space, nu, x0, np.diag(w_xf))
     costs.addCost(xreg)
@@ -224,7 +227,7 @@ def create_term_constraint(target_pos):
 
 def get_position_limit_constraint():
     state_fn = aligator.StateErrorResidual(space, nu, space.neutral())
-    pos_fn = state_fn[7:13]
+    pos_fn = state_fn[:7]
     box_cstr = constraints.BoxConstraint(
         robot.model.lowerPositionLimit, robot.model.upperPositionLimit
     )
@@ -233,8 +236,8 @@ def get_position_limit_constraint():
 
 def get_velocity_limit_constraint():
     state_fn = aligator.StateErrorResidual(space, nu, space.neutral())
-    idx = [3]
-    vel_fn = state_fn[nv + 6 :][idx]
+    idx = [3, 4]
+    vel_fn = state_fn[[nv + i for i in idx]]
     vlim = robot.model.velocityLimit[idx]
     box_cstr = constraints.BoxConstraint(-vlim, vlim)
     return aligator.StageConstraint(vel_fn, box_cstr)
