@@ -14,18 +14,18 @@ template <typename _Scalar>
 class RiccatiSolverDense : public RiccatiSolverBase<_Scalar> {
 public:
   using Scalar = _Scalar;
-  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS_WITH_ROW_TYPES(Scalar);
   using Base = RiccatiSolverBase<Scalar>;
   using BlkMat44 = BlkMatrix<MatrixXs, 4, 4>;
-  using BlkMat41 = BlkMatrix<MatrixXs, 4, 1>;
+  using BlkRowMat41 = BlkMatrix<RowMatrixXs, 4, 1>;
   using BlkVec4 = BlkMatrix<VectorXs, 4, 1>;
   using KnotType = LQRKnotTpl<Scalar>;
 
   struct FactorData {
     BlkMat44 kkt;
     BlkVec4 ff;
-    BlkMat41 fb;
-    BlkMat41 fth;
+    BlkRowMat41 fb;
+    BlkRowMat41 fth;
     Eigen::BunchKaufman<MatrixXs> ldl;
   };
 
@@ -35,7 +35,7 @@ public:
     long ntot = std::accumulate(dims.begin(), dims.end(), 0);
     uint nth = knot.nth;
     return FactorData{BlkMat44(dims, dims), BlkVec4(dims, {1}),
-                      BlkMat41(dims, {knot.nx}), BlkMat41(dims, {nth}),
+                      BlkRowMat41(dims, {knot.nx}), BlkRowMat41(dims, {nth}),
                       ldl_t{ntot}};
   }
 

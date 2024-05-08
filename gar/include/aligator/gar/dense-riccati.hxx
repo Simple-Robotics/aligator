@@ -54,8 +54,8 @@ bool RiccatiSolverDense<Scalar>::backward(const Scalar mudyn,
     fac.kkt.setZero();
     VectorRef kff = fac.ff[0];
     VectorRef zff = fac.ff[1];
-    MatrixRef K = fac.fb.blockRow(0);
-    MatrixRef Z = fac.fb.blockRow(1);
+    RowMatrixRef K = fac.fb.blockRow(0);
+    RowMatrixRef Z = fac.fb.blockRow(1);
 
     // assemble last-stage kkt matrix - includes input 'u'
     fac.kkt(0, 0) = knot.R;
@@ -72,9 +72,9 @@ bool RiccatiSolverDense<Scalar>::backward(const Scalar mudyn,
     fac.ldl.solveInPlace(fac.ff.matrix());
     fac.ldl.solveInPlace(fac.fb.matrix());
 
-    MatrixRef Kth = fac.fth.blockRow(0);
+    RowMatrixRef Kth = fac.fth.blockRow(0);
     Kth = -knot.Gu;
-    MatrixRef Zth = fac.fth.blockRow(1);
+    RowMatrixRef Zth = fac.fth.blockRow(1);
     Zth = -knot.Gv;
     fac.ldl.solveInPlace(fac.fth.matrix());
 
@@ -119,16 +119,16 @@ bool RiccatiSolverDense<Scalar>::backward(const Scalar mudyn,
     VectorRef lff = fac.ff[2] = -knot.f;
     VectorRef yff = fac.ff[3] = -px[i + 1];
 
-    MatrixRef K = fac.fb.blockRow(0) = -knot.S.transpose();
-    MatrixRef Z = fac.fb.blockRow(1) = -knot.C;
-    MatrixRef L = fac.fb.blockRow(2) = -knot.A;
-    MatrixRef Y = fac.fb.blockRow(3);
+    RowMatrixRef K = fac.fb.blockRow(0) = -knot.S.transpose();
+    RowMatrixRef Z = fac.fb.blockRow(1) = -knot.C;
+    RowMatrixRef L = fac.fb.blockRow(2) = -knot.A;
+    RowMatrixRef Y = fac.fb.blockRow(3);
     Y.setZero();
 
-    MatrixRef Kth = fac.fth.blockRow(0) = -knot.Gu;
-    MatrixRef Zth = fac.fth.blockRow(1) = -knot.Gv;
+    RowMatrixRef Kth = fac.fth.blockRow(0) = -knot.Gu;
+    RowMatrixRef Zth = fac.fth.blockRow(1) = -knot.Gv;
     fac.fth.blockRow(2).setZero();
-    MatrixRef Yth = fac.fth.blockRow(3) = -Pxt[i + 1];
+    RowMatrixRef Yth = fac.fth.blockRow(3) = -Pxt[i + 1];
 
     fac.ldl.compute(fac.kkt.matrix());
     fac.ldl.solveInPlace(fac.ff.matrix());
@@ -211,15 +211,15 @@ bool RiccatiSolverDense<Scalar>::forward(
     ConstVectorRef lff = d.ff[2];
     ConstVectorRef yff = d.ff[3];
 
-    ConstMatrixRef K = d.fb.blockRow(0);
-    ConstMatrixRef Z = d.fb.blockRow(1);
-    ConstMatrixRef Lfb = d.fb.blockRow(2);
-    ConstMatrixRef Yfb = d.fb.blockRow(3);
+    ConstRowMatrixRef K = d.fb.blockRow(0);
+    ConstRowMatrixRef Z = d.fb.blockRow(1);
+    ConstRowMatrixRef Lfb = d.fb.blockRow(2);
+    ConstRowMatrixRef Yfb = d.fb.blockRow(3);
 
-    ConstMatrixRef Kth = d.fth.blockRow(0);
-    ConstMatrixRef Zth = d.fth.blockRow(1);
-    ConstMatrixRef Lth = d.fth.blockRow(2);
-    ConstMatrixRef Yth = d.fth.blockRow(3);
+    ConstRowMatrixRef Kth = d.fth.blockRow(0);
+    ConstRowMatrixRef Zth = d.fth.blockRow(1);
+    ConstRowMatrixRef Lth = d.fth.blockRow(2);
+    ConstRowMatrixRef Yth = d.fth.blockRow(3);
 
     us[i].noalias() = kff + K * xs[i];
     vs[i].noalias() = zff + Z * xs[i];
