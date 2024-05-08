@@ -61,6 +61,8 @@ static void exposeBlockMatrices() {
       "BlockRowMatrix21");
 }
 
+// fwd-declare exposeCholmodSolver()
+void exposeCholmodSolver();
 // fwd-declare exposeParallelSolver()
 void exposeParallelSolver();
 // fwd-declare exposeDenseSolver()
@@ -181,6 +183,7 @@ void exposeGAR() {
 
   bp::def("lqrInitializeSolution", lqr_sol_initialize_wrap, ("problem"_a));
 
+  exposeCholmodSolver();
   exposeDenseSolver();
   exposeParallelSolver();
 }
