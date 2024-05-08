@@ -9,8 +9,6 @@
 
 #include <proxsuite-nlp/modelling/constraints.hpp>
 
-#include <array>
-
 namespace aligator {
 namespace {
 using proxsuite::nlp::ConstraintSetProductTpl;
