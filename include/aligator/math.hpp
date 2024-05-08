@@ -17,6 +17,12 @@
 
 #define ALIGATOR_DYNAMIC_TYPEDEFS(Scalar) PROXSUITE_NLP_DYNAMIC_TYPEDEFS(Scalar)
 
+#define ALIGATOR_DYNAMIC_TYPEDEFS_WITH_ROW_TYPES(Scalar)                       \
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);                                           \
+  using RowMatrixXs = typename Eigen::Transpose<MatrixXs>::PlainObject;        \
+  using RowMatrixRef = Eigen::Ref<RowMatrixXs>;                                \
+  using ConstRowMatrixRef = Eigen::Ref<const RowMatrixXs>
+
 namespace aligator {
 
 // NOLINTBEGIN(misc-unused-using-decls)
