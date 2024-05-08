@@ -268,21 +268,13 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateGains() {
   using gar::StageFactor;
   const std::size_t N = workspace_.nsteps;
   linearSolver_->collapseFeedback(); // will alter feedback gains
-  for (std::size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i <= N; i++) {
     VectorRef ff = results_.getFeedforward(i);
     MatrixRef fb = results_.getFeedback(i);
 
-    const StageFactor<Scalar> &fac = linearSolver_->datas[i];
-    ff = fac.ff.matrix(); // primal-dual feedforward
-    fb = fac.fb.matrix(); // primal-dual feedback
+    ff = linearSolver_->getFeedforward(i);
+    fb = linearSolver_->getFeedback(i);
   }
-
-  // terminal node
-  const StageFactor<Scalar> &fac = linearSolver_->datas[N];
-  VectorRef ff = results_.getFeedforward(N);
-  MatrixRef fb = results_.getFeedback(N);
-  ff = fac.ff.blockSegment(1); // multiplier feedforward
-  fb = fac.fb.blockRow(1);     // multiplier feedback
 }
 
 // [1] Section IV. Proximal Differential Dynamic Programming
@@ -322,13 +314,18 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
     const StageModel &stage = *problem.stages_[t];
     StageData &data = *prob_data.stage_data[t];
 
-    const StageFactor<Scalar> &fac = linearSolver_->datas[t];
-    ConstVectorRef kff = fac.ff[0];
-    ConstVectorRef zff = fac.ff[1];
-    ConstVectorRef lff = fac.ff[2];
-    ConstMatrixRef Kfb = fac.fb.blockRow(0);
-    ConstMatrixRef Zfb = fac.fb.blockRow(1);
-    ConstMatrixRef Lfb = fac.fb.blockRow(2);
+    const std::array<long, 4> _dims{stage.nu(), stage.nc(), stage.ndx2(),
+                                    stage.ndx2()};
+    BlkMatrix<ConstVectorRef, 4, 1> ff{
+        linearSolver_->getFeedforward(t), _dims, {1}};
+    BlkMatrix<ConstMatrixRef, 4, 1> fb{
+        linearSolver_->getFeedback(t), _dims, {stage.ndx1()}};
+    ConstVectorRef kff = ff[0];
+    ConstVectorRef zff = ff[1];
+    ConstVectorRef lff = ff[2];
+    ConstMatrixRef Kfb = fb.blockRow(0);
+    ConstMatrixRef Zfb = fb.blockRow(1);
+    ConstMatrixRef Lfb = fb.blockRow(2);
 
     dus[t] = alpha * kff;
     dus[t].noalias() += Kfb * dxs[t];
@@ -378,9 +375,15 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
 
   // update multiplier
   if (!problem.term_cstrs_.empty()) {
-    const StageFactor<Scalar> &fac = linearSolver_->datas[nsteps];
-    ConstVectorRef zff = fac.ff[1];
-    ConstMatrixRef Zfb = fac.fb.blockRow(1);
+    const uint nu = dus.back().rows();
+    const uint nc = dvs[nsteps].rows();
+    const uint ndx = dxs[nsteps].rows();
+    BlkMatrix<ConstVectorRef, 2, 1> ff{
+        linearSolver_->getFeedforward(nsteps), {nu, nc}, {1}};
+    BlkMatrix<ConstMatrixRef, 2, 1> fb{
+        linearSolver_->getFeedback(nsteps), {nu, nc}, {ndx}};
+    ConstVectorRef zff = ff[1];
+    ConstMatrixRef Zfb = fb.blockRow(1);
 
     dvs[nsteps] = alpha * zff;
     dvs[nsteps].noalias() += Zfb * dxs[nsteps];
