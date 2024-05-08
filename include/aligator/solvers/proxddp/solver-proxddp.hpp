@@ -85,9 +85,8 @@ public:
   Scalar reg_inc_k_ = 10.;        //< Regularization increase factor
   Scalar reg_inc_first_k_ = 100.; //< Regularization increase (critical)
   Scalar reg_dec_k_ = 1. / 3.;    //< Regularization decrease factor
-  Scalar xreg_ = reg_init;        //< State regularization value
-  Scalar ureg_ = xreg_;           //< Control regularization value
-  Scalar xreg_last_ = 0.;         //< Last "good" regularization value
+  Scalar preg_ = reg_init;        //< Primal regularization value
+  Scalar preg_last_ = 0.;         //< Last "good" regularization value
 
   //// Initial BCL tolerances
 
@@ -297,22 +296,20 @@ protected:
   // See sec. 3.1 of the IPOPT paper [Wächter, Biegler 2006]
   // called before first bwd pass attempt
   inline void initializeRegularization() noexcept {
-    if (xreg_last_ == 0.) {
+    if (preg_last_ == 0.) {
       // this is the 1st iteration
-      xreg_ = reg_init;
+      preg_ = reg_init;
     } else {
       // attempt decrease from last "good" value
-      xreg_ = std::max(reg_min, xreg_last_ * reg_dec_k_);
+      preg_ = std::max(reg_min, preg_last_ * reg_dec_k_);
     }
-    ureg_ = xreg_;
   }
 
   inline void increaseRegularization() noexcept {
-    if (xreg_last_ == 0.)
-      xreg_ *= reg_inc_first_k_;
+    if (preg_last_ == 0.)
+      preg_ *= reg_inc_first_k_;
     else
-      xreg_ *= reg_inc_k_;
-    ureg_ = xreg_;
+      preg_ *= reg_inc_k_;
   }
 };
 

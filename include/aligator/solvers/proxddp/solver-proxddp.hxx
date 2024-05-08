@@ -634,7 +634,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     logger.addEntry(workspace_.inner_criterion);
     logger.addEntry(results_.prim_infeas);
     logger.addEntry(results_.dual_infeas);
-    logger.addEntry(xreg_);
+    logger.addEntry(preg_);
     logger.addEntry(dphi0);
     logger.addEntry(phi_new);
     logger.addEntry(phi_new - phi0);
@@ -642,14 +642,14 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     logger.addEntry(mu());
 
     if (alpha_opt <= ls_params.alpha_min) {
-      if (xreg_ >= reg_max)
+      if (preg_ >= reg_max)
         return false;
       increaseRegularization();
     }
     invokeCallbacks(workspace_, results_);
     logger.log();
 
-    xreg_last_ = xreg_;
+    preg_last_ = preg_;
   }
   return false;
 }
@@ -748,8 +748,8 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
     knot.q = workspace_.Lxs[t];
     knot.r = workspace_.Lus[t];
 
-    knot.Q.diagonal().array() += xreg_;
-    knot.R.diagonal().array() += ureg_;
+    knot.Q.diagonal().array() += preg_;
+    knot.R.diagonal().array() += preg_;
 
     // dynamics hessians
     if (hess_approx_ == HessianApprox::EXACT) {
@@ -773,7 +773,7 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
     LQRKnotTpl<Scalar> &knot = prob.stages[N];
     const CostData &tcd = *pd.term_cost_data;
     knot.Q = tcd.Lxx_;
-    knot.Q.diagonal().array() += xreg_;
+    knot.Q.diagonal().array() += preg_;
     knot.q = workspace_.Lxs[N];
     knot.C = workspace_.cstr_proj_jacs[N].blockCol(0);
     knot.d = workspace_.Lvs[N];

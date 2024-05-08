@@ -26,7 +26,7 @@ static const std::array<LogColumn, 11> BASIC_KEYS = {
      {"inner_crit", sci_format, 10U},
      {"prim_err", sci_format, 10U},
      {"dual_err", sci_format, 10U},
-     {"xreg", sci_format, 10U},
+     {"preg", sci_format, 10U},
      {"dphi0", sci_format, 10U},
      {"merit", sci_format, 10U},
      {"delta_M", sci_format, 10U},
