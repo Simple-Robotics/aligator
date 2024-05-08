@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include "lqr-problem.hpp"
@@ -209,6 +209,40 @@ auto lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
     ALIGATOR_RUNTIME_ERROR("Problem was not initialized.");
   }
   return std::make_pair(mat, rhs);
+}
+
+/// @brief Convert dense RHS solution to its trajectory [x,u,v,lambda] solution.
+template <typename Scalar>
+void lqrDenseSolutionToTraj(
+    const LQRProblemTpl<Scalar> &problem,
+    const typename math_types<Scalar>::ConstVectorRef solution,
+    std::vector<typename math_types<Scalar>::VectorXs> &xs,
+    std::vector<typename math_types<Scalar>::VectorXs> &us,
+    std::vector<typename math_types<Scalar>::VectorXs> &vs,
+    std::vector<typename math_types<Scalar>::VectorXs> &lbdas) {
+  const uint N = (uint)problem.horizon();
+  xs.resize(N + 1);
+  us.resize(N + 1);
+  vs.resize(N + 1);
+  lbdas.resize(N + 1);
+  const uint nc0 = problem.nc0();
+
+  lbdas[0] = solution.head(nc0);
+
+  uint idx = nc0;
+  for (size_t t = 0; t <= N; t++) {
+    const LQRKnotTpl<Scalar> &knot = problem.stages[t];
+    const uint n = knot.nx + knot.nu + knot.nc + knot.nx2;
+    auto seg = solution.segment(idx, n);
+    xs[t] = seg.head(knot.nx);
+    us[t] = seg.segment(knot.nx, knot.nu);
+    vs[t] = seg.segment(knot.nx + knot.nu, knot.nc);
+    if (t < N) {
+      lbdas[t + 1] = seg.tail(knot.nx2);
+    }
+
+    idx += n;
+  }
 }
 
 template <typename Scalar>
