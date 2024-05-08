@@ -62,6 +62,9 @@ public:
                std::vector<VectorXs> &vs, std::vector<VectorXs> &lbdas,
                const std::optional<ConstVectorRef> &theta = std::nullopt) const;
 
+  VectorRef getFeedforward(size_t i) { return datas[i].ff.matrix(); }
+  RowMatrixRef getFeedback(size_t i) { return datas[i].fb.matrix(); }
+
 protected:
   void initialize();
   const LQRProblemTpl<Scalar> *problem_;
