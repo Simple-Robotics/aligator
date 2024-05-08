@@ -75,11 +75,11 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   std::vector<VectorXs> constraintLxCorr;
   std::vector<VectorXs> constraintLuCorr;
   /// Projected path constraint Jacobians (used to symmetrize the LQ subproblem)
-  std::vector<BlkJacobianType> constraintProjJacobians;
+  std::vector<BlkJacobianType> cstr_proj_jacs;
   /// Masks for active constraint sets
   std::vector<VecBool> active_constraints;
   /// Cartesian products of the constraint sets of each stage.
-  std::vector<ConstraintSetProduct> constraintProductOperators;
+  std::vector<ConstraintSetProduct> cstr_product_sets;
 
   /// @name Primal-dual steps
   /// @{

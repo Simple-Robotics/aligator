@@ -30,7 +30,7 @@ void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
     const StageModelTpl<Scalar> &sm = *problem.stages_[i];
     const StageDataTpl<Scalar> &sd = *prob_data.stage_data[i];
     const auto &sc = workspace.cstr_scalers[i];
-    auto &jac = workspace.constraintProjJacobians[i];
+    auto &jac = workspace.cstr_proj_jacs[i];
 
     for (std::size_t j = 0; j < sm.numConstraints(); j++) {
       jac(j, 0) = sd.constraint_data[j]->Jx_;
@@ -42,14 +42,14 @@ void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
     auto Lv = sc.applyInverse(workspace.Lvs[i]);
     workspace.constraintLxCorr[i].noalias() = Px.transpose() * Lv;
     workspace.constraintLuCorr[i].noalias() = Pu.transpose() * Lv;
-    const ProductOp &op = workspace.constraintProductOperators[i];
+    const ProductOp &op = workspace.cstr_product_sets[i];
     op.applyNormalConeProjectionJacobian(sif[i], jac.matrix());
     workspace.constraintLxCorr[i].noalias() -= Px.transpose() * Lv;
     workspace.constraintLuCorr[i].noalias() -= Pu.transpose() * Lv;
   }
 
   if (!problem.term_cstrs_.empty()) {
-    auto &jac = workspace.constraintProjJacobians[N];
+    auto &jac = workspace.cstr_proj_jacs[N];
     const auto &sc = workspace.cstr_scalers[N];
     const auto &cds = prob_data.term_cstr_data;
     for (std::size_t j = 0; j < cds.size(); j++) {
@@ -59,7 +59,7 @@ void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
     auto Px = jac.blockCol(0);
     auto Lv = sc.applyInverse(workspace.Lvs[N]);
     workspace.constraintLxCorr[N].noalias() = Px.transpose() * Lv;
-    const ProductOp &op = workspace.constraintProductOperators[N];
+    const ProductOp &op = workspace.cstr_product_sets[N];
     op.applyNormalConeProjectionJacobian(sif[N], jac.matrix());
     workspace.constraintLxCorr[N].noalias() -= Px.transpose() * Lv;
   }
@@ -217,8 +217,7 @@ void SolverProxDDPTpl<Scalar>::computeMultipliers(
 
     // 2. use product constraint operator
     // to compute the new multiplier estimates
-    const ConstraintSetProductTpl<Scalar> &op =
-        workspace_.constraintProductOperators[i];
+    const ConstraintSetProductTpl<Scalar> &op = workspace_.cstr_product_sets[i];
 
     // fill in shifted constraints buffer
     BlkView scvView(shifted_constraints[i], cstr_stack.dims());
@@ -243,7 +242,7 @@ void SolverProxDDPTpl<Scalar>::computeMultipliers(
     const CstrProximalScaler &scaler = workspace_.cstr_scalers[nsteps];
 
     const ConstraintSetProductTpl<Scalar> &op =
-        workspace_.constraintProductOperators[nsteps];
+        workspace_.cstr_product_sets[nsteps];
 
     BlkView scvView(shifted_constraints[nsteps], cstr_stack.dims());
     for (size_t j = 0; j < cstr_stack.size(); j++) {
@@ -761,8 +760,8 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
 
     // TODO: handle the bloody constraints
     assert(knot.nc == workspace_.constraintProjJacobians[t].rows());
-    knot.C.topRows(nc) = workspace_.constraintProjJacobians[t].blockCol(0);
-    knot.D.topRows(nc) = workspace_.constraintProjJacobians[t].blockCol(1);
+    knot.C.topRows(nc) = workspace_.cstr_proj_jacs[t].blockCol(0);
+    knot.D.topRows(nc) = workspace_.cstr_proj_jacs[t].blockCol(1);
     knot.d.head(nc) = workspace_.Lvs[t];
 
     // correct right-hand side
@@ -776,7 +775,7 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
     knot.Q = tcd.Lxx_;
     knot.Q.diagonal().array() += xreg_;
     knot.q = workspace_.Lxs[N];
-    knot.C = workspace_.constraintProjJacobians[N].blockCol(0);
+    knot.C = workspace_.cstr_proj_jacs[N].blockCol(0);
     knot.d = workspace_.Lvs[N];
     // correct right-hand side
     knot.q += workspace_.constraintLxCorr[N];

@@ -27,11 +27,11 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   stage_cstr_violations.setZero();
   stage_infeasibilities = trial_vs;
 
-  constraintProductOperators.reserve(nsteps + 1); // includes terminal
+  cstr_product_sets.reserve(nsteps + 1); // includes terminal
   shifted_constraints = prev_vs;
 
   active_constraints.resize(nsteps + 1);
-  constraintProjJacobians.resize(nsteps + 1);
+  cstr_proj_jacs.resize(nsteps + 1);
 
   using LQRProblemType = gar::LQRProblemTpl<Scalar>;
   typename LQRProblemType::KnotVector knots;
@@ -52,9 +52,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     const int nu = stage.nu();
     const int ncstr = stage.nc();
 
-    constraintProductOperators.emplace_back(
-        getConstraintProductSet(stage.constraints_));
-    constraintProjJacobians[i] = BlkJacobianType(stack.dims(), {ndx1, nu});
+    cstr_product_sets.emplace_back(getConstraintProductSet(stage.constraints_));
+    cstr_proj_jacs[i] = BlkJacobianType(stack.dims(), {ndx1, nu});
     active_constraints[i].setZero(ncstr);
   }
 
@@ -62,9 +61,9 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   {
     const ConstraintStackTpl<Scalar> &stack = problem.term_cstrs_;
     const int ndx1 = internal::problem_last_ndx_helper(problem);
-    constraintProductOperators.emplace_back(
+    cstr_product_sets.emplace_back(
         getConstraintProductSet(problem.term_cstrs_));
-    constraintProjJacobians[nsteps] = BlkJacobianType(stack.dims(), {ndx1, 0});
+    cstr_proj_jacs[nsteps] = BlkJacobianType(stack.dims(), {ndx1, 0});
     active_constraints[nsteps].setZero(stack.totalDim());
   }
 
@@ -98,7 +97,7 @@ template <typename Scalar> void WorkspaceTpl<Scalar>::cycleLeft() {
   rotate_vec_left(lams_plus, 1);
   rotate_vec_left(lams_pdal, 1);
   rotate_vec_left(shifted_constraints, 0, 1);
-  rotate_vec_left(constraintProjJacobians, 0, 1);
+  rotate_vec_left(cstr_proj_jacs, 0, 1);
   rotate_vec_left(active_constraints, 0, 1);
 
   rotate_vec_left(dxs);
