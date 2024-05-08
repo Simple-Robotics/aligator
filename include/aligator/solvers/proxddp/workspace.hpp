@@ -111,7 +111,7 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   WorkspaceTpl() : Base() {}
   WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem);
 
-  void cycleLeft() override;
+  void cycleLeft();
 
   template <typename T>
   friend std::ostream &operator<<(std::ostream &oss,

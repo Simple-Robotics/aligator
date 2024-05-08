@@ -45,7 +45,7 @@ template <typename Scalar> struct WorkspaceFDDPTpl : WorkspaceBaseTpl<Scalar> {
   WorkspaceFDDPTpl() : Base(), value_params(), q_params() {}
   explicit WorkspaceFDDPTpl(const TrajOptProblemTpl<Scalar> &problem);
 
-  void cycleLeft() override;
+  void cycleLeft();
 };
 
 } // namespace aligator

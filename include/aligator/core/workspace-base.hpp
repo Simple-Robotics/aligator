@@ -34,13 +34,13 @@ public:
 
   explicit WorkspaceBaseTpl(const TrajOptProblemTpl<Scalar> &problem);
 
-  virtual ~WorkspaceBaseTpl() = 0;
+  ~WorkspaceBaseTpl() = default;
 
   bool isInitialized() const { return m_isInitialized; }
 
   /// @brief   Cycle the workspace data to the left.
   /// @details Useful in model-predictive control (MPC) applications.
-  virtual void cycleLeft();
+  void cycleLeft();
 
   /// @brief Same as cycleLeft(), but add a StageDataTpl to problem_data.
   /// @details The implementation pushes back on top of the vector of
@@ -51,8 +51,6 @@ public:
     problem_data.stage_data.pop_back();
   }
 };
-
-template <typename Scalar> WorkspaceBaseTpl<Scalar>::~WorkspaceBaseTpl() {}
 
 /* impl */
 
