@@ -1,8 +1,7 @@
-/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/blk-matrix.hpp"
 #include "aligator/gar/riccati.hpp"
-#include "aligator/gar/dense-riccati.hpp"
 #include "aligator/gar/utils.hpp"
 
 #include "aligator/python/utils.hpp"
@@ -64,6 +63,8 @@ static void exposeBlockMatrices() {
 
 // fwd-declare exposeParallelSolver()
 void exposeParallelSolver();
+// fwd-declare exposeDenseSolver()
+void exposeDenseSolver();
 
 void exposeGAR() {
 
@@ -170,13 +171,6 @@ void exposeGAR() {
         .def_readonly("chol", &prox_riccati_t::kkt0_t::chol);
   }
 
-  bp::class_<RiccatiSolverDense<Scalar>, bp::bases<riccati_base_t>,
-             boost::noncopyable>("RiccatiSolverDense",
-                                 "Stagewise-dense Riccati solver (using "
-                                 "stagewise Bunch-Kaufman factorizations).",
-                                 bp::no_init)
-      .def(bp::init<const lqr_t &>(("self"_a, "problem")));
-
   bp::def(
       "lqrDenseMatrix",
       +[](const lqr_t &problem, Scalar mudyn, Scalar mueq) {
@@ -187,6 +181,7 @@ void exposeGAR() {
 
   bp::def("lqrInitializeSolution", lqr_sol_initialize_wrap, ("problem"_a));
 
+  exposeDenseSolver();
   exposeParallelSolver();
 }
 
