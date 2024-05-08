@@ -77,8 +77,7 @@ void exposeFDDP() {
            "reg_init"_a = 1e-9, "max_iters"_a = 1000)))
       .def_readwrite("reg_min", &SolverFDDP::reg_min_)
       .def_readwrite("reg_max", &SolverFDDP::reg_max_)
-      .def_readwrite("xreg", &SolverFDDP::xreg_)
-      .def_readwrite("ureg", &SolverFDDP::ureg_)
+      .def_readwrite("preg", &SolverFDDP::preg_)
       .def(SolverVisitor<SolverFDDP>())
       .def("run", &SolverFDDP::run,
            ("self"_a, "problem", "xs_init", "us_init"));

@@ -38,10 +38,6 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
                        "Linesearch parameters.")
         .def_readwrite("target_tol", &SolverType::target_tol_,
                        "Target tolerance.")
-        .def_readwrite("xreg", &SolverType::xreg_,
-                       "Newton regularization parameter.")
-        .def_readwrite("ureg", &SolverType::ureg_,
-                       "Newton regularization parameter.")
         .def_readwrite("reg_init", &SolverType::reg_init)
         .def_readwrite("force_initial_condition",
                        &SolverType::force_initial_condition_,
