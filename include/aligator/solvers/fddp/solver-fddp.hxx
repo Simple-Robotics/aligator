@@ -203,7 +203,7 @@ void SolverFDDPTpl<Scalar>::backwardPass(const Problem &problem,
     vp.v_ = term_cost_data.value_;
     vp.Vx_ = term_cost_data.Lx_;
     vp.Vxx_ = term_cost_data.Lxx_;
-    vp.Vxx_.diagonal().array() += xreg_;
+    vp.Vxx_.diagonal().array() += preg_;
     VectorXs &ftVxx = workspace.ftVxx_[nsteps];
     ftVxx.noalias() = vp.Vxx_ * fs[nsteps];
     vp.Vx_ += ftVxx;
@@ -234,7 +234,7 @@ void SolverFDDPTpl<Scalar>::backwardPass(const Problem &problem,
     workspace.JtH_temp_[i].noalias() = J_x_u.transpose() * vnext.Vxx_;
     qparam.hess_ = cd.hess_;
     qparam.hess_.noalias() += workspace.JtH_temp_[i] * J_x_u;
-    qparam.Quu.diagonal().array() += ureg_;
+    qparam.Quu.diagonal().array() += preg_;
 
     /* Compute gains */
 
@@ -268,7 +268,7 @@ void SolverFDDPTpl<Scalar>::backwardPass(const Problem &problem,
     vp.Vxx_ = qparam.Qxx;
     vp.Vxx_.noalias() += qparam.Qxu * kkt_fb;
     vp.Vxx_ = vp.Vxx_.template selfadjointView<Eigen::Lower>();
-    vp.Vxx_.diagonal().array() += xreg_;
+    vp.Vxx_.diagonal().array() += preg_;
     VectorXs &ftVxx = workspace.ftVxx_[i];
     ftVxx.noalias() = vp.Vxx_ * fs[i];
     vp.Vx_ += ftVxx;
@@ -281,8 +281,7 @@ template <typename Scalar>
 bool SolverFDDPTpl<Scalar>::run(const Problem &problem,
                                 const std::vector<VectorXs> &xs_init,
                                 const std::vector<VectorXs> &us_init) {
-  xreg_ = reg_init;
-  ureg_ = xreg_;
+  preg_ = reg_init;
 
 #ifndef NDEBUG
   std::FILE *fi = std::fopen("fddp.log", "w");
@@ -362,7 +361,7 @@ bool SolverFDDPTpl<Scalar>::run(const Problem &problem,
     logger.advance();
     logger.addEntry(results_.prim_infeas);
     logger.addEntry(results_.dual_infeas);
-    logger.addEntry(xreg_);
+    logger.addEntry(preg_);
     logger.addEntry(d1_phi);
     logger.addEntry(phi_new);
     logger.addEntry(phi_new - phi0);
@@ -379,7 +378,7 @@ bool SolverFDDPTpl<Scalar>::run(const Problem &problem,
     }
     if (alpha_opt <= th_step_inc_) {
       increaseRegularization();
-      if (xreg_ == reg_max_) {
+      if (preg_ == reg_max_) {
         results_.conv = false;
         break;
       }

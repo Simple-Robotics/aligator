@@ -49,8 +49,7 @@ template <typename Scalar> struct SolverFDDPTpl {
   /// @name Regularization parameters
   /// \{
   Scalar reg_init;
-  Scalar xreg_ = reg_init;
-  Scalar ureg_ = xreg_;
+  Scalar preg_ = reg_init;
   Scalar reg_min_ = 1e-9;
   Scalar reg_max_ = 1e9;
   /// Regularization decrease factor
@@ -158,15 +157,13 @@ public:
   }
 
   inline void increaseRegularization() {
-    xreg_ *= reg_inc_factor_;
-    xreg_ = std::min(xreg_, reg_max_);
-    ureg_ = xreg_;
+    preg_ *= reg_inc_factor_;
+    preg_ = std::min(preg_, reg_max_);
   }
 
   inline void decreaseRegularization() {
-    xreg_ *= reg_dec_factor_;
-    xreg_ = std::max(xreg_, reg_min_);
-    ureg_ = xreg_;
+    preg_ *= reg_dec_factor_;
+    preg_ = std::max(preg_, reg_min_);
   }
 
   /// @brief Compute the dual feasibility of the problem.
