@@ -288,11 +288,6 @@ protected:
 
   ALIGATOR_INLINE void setRho(Scalar new_rho) noexcept { rho_penal_ = new_rho; }
 
-  /// Update the dual proximal penalty according to BCL.
-  ALIGATOR_INLINE void bclUpdateAlmPenalty() noexcept {
-    setAlmPenalty(mu_penal_ * bcl_params.mu_update_factor);
-  }
-
   // See sec. 3.1 of the IPOPT paper [Wächter, Biegler 2006]
   // called before first bwd pass attempt
   inline void initializeRegularization() noexcept {

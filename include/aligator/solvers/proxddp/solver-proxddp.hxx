@@ -483,7 +483,7 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
       }
     } else {
       Scalar old_mu = mu_penal_;
-      bclUpdateAlmPenalty();
+      setAlmPenalty(mu_penal_ * bcl_params.mu_update_factor);
       updateTolsOnFailure();
       if (math::scalar_close(old_mu, mu_penal_)) {
         // reset penalty to initial value
