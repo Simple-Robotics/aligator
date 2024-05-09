@@ -88,8 +88,6 @@ x0[:nq] = ref_q0
 print("X0 = {}".format(x0))
 MUG_VEL_IDX = slice(robot.nv, nv)
 
-CONTACT_REF_FRAME = pin.LOCAL_WORLD_ALIGNED
-
 
 def create_rcm():
     # create rigid constraint between ball & tool0
@@ -107,9 +105,9 @@ def create_rcm():
         pl1,
         joint2_id,
         pl2,
-        CONTACT_REF_FRAME,
+        pin.LOCAL_WORLD_ALIGNED,
     )
-    Kp = 0.0
+    Kp = 1e-3
     rcm.corrector.Kp[:] = Kp
     rcm.corrector.Kd[:] = 2 * Kp**0.5
     return rcm
@@ -132,7 +130,7 @@ def configure_viz(target_pos):
     return viz
 
 
-target_pos = np.array([3.4, -0.2, 0.0])
+target_pos = np.array([2.4, -0.2, 0.0])
 
 if args.display:
     viz = configure_viz(target_pos=target_pos)
@@ -187,22 +185,23 @@ if args.display:
 
 def create_running_cost():
     costs = aligator.CostStack(space, nu)
-    w_x = np.array([1e-6] * nv + [10.0] * nv)
+    w_x = np.array([1e-3] * nv + [0.1] * nv)
     w_v = w_x[nv:]
     # no costs on mug
     w_x[MUG_VEL_IDX] = 0.0
     w_v[MUG_VEL_IDX] = 0.0
     assert space.isNormalized(x0)
     xreg = aligator.QuadraticStateCost(space, nu, x0, np.diag(w_x) * dt)
-    ureg = aligator.QuadraticControlCost(space, u0, np.eye(nu) * dt)
+    w_u = np.ones(nu) * 1e-5
+    ureg = aligator.QuadraticControlCost(space, u0, np.diag(w_u) * dt)
     costs.addCost(xreg)
-    costs.addCost(ureg, 1e-2)
+    costs.addCost(ureg)
     return costs
 
 
 def create_term_cost(has_frame_cost=False, w_ball=1.0):
-    w_xf = np.ones(ndx)
-    w_xf[:nv] = 1e-7
+    w_xf = np.zeros(ndx)
+    w_xf[: robot.nv] = 1e-4
     w_xf[nv + 6 :] = 1e-6
     costs = aligator.CostStack(space, nu)
     xreg = aligator.QuadraticStateCost(space, nu, x0, np.diag(w_xf))
@@ -256,7 +255,7 @@ def create_stage(contact: bool):
     stm = aligator.StageModel(rc, dm)
     stm.addConstraint(get_torque_limit_constraint())
     # stm.addConstraint(get_position_limit_constraint())
-    # stm.addConstraint(get_velocity_limit_constraint())
+    stm.addConstraint(get_velocity_limit_constraint())
     return stm
 
 
@@ -272,14 +271,19 @@ problem = aligator.TrajOptProblem(x0, stages, term_cost)
 problem.addTerminalConstraint(term_constraint)
 tol = 1e-3
 mu_init = 1e-5
-solver = aligator.SolverProxDDP(tol, mu_init, max_iters=500, verbose=aligator.VERBOSE)
+solver = aligator.SolverProxDDP(tol, mu_init, max_iters=300, verbose=aligator.VERBOSE)
+solver.linear_solver_choice = aligator.LQ_SOLVER_PARALLEL
 solver.rollout_type = aligator.ROLLOUT_LINEAR
 his_cb = aligator.HistoryCallback()
+solver.setNumThreads(4)
 solver.registerCallback("his", his_cb)
 solver.setup(problem)
 flag = solver.run(problem, xs_i, us_i)
 
 print(solver.results)
+ws: aligator.Workspace = solver.workspace
+rs: aligator.Results = solver.results
+dyn_slackn_slacks = [np.max(np.abs(s)) for s in ws.dyn_slacks]
 
 xs = solver.results.xs
 us = solver.results.us
@@ -335,5 +339,11 @@ for fig, name in [(fig1, "controls"), (fig2, "velocity")]:
     for ext in [".png", ".pdf"]:
         figpath: Path = PLOTDIR / f"{EXPERIMENT_NAME}_{name}"
         fig.savefig(figpath.with_suffix(ext))
+
+fig3 = plt.figure()
+ax: plt.Axes = fig3.add_subplot(111)
+ax.plot(dyn_slackn_slacks)
+ax.set_yscale("log")
+ax.set_title("Dynamic slack errors $\\|s\\|_\\infty$")
 
 plt.show()

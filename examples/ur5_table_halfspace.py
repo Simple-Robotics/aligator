@@ -101,10 +101,11 @@ problem.addTerminalConstraint(frame_cstr)
 
 
 tol = 1e-4
-mu_init = 0.001
-max_iters = 50
+mu_init = 1e-3
+max_iters = 150
 verbose = aligator.VerboseLevel.VERBOSE
 solver = aligator.SolverProxDDP(tol, mu_init, max_iters=max_iters, verbose=verbose)
+solver.rollout_type = aligator.ROLLOUT_LINEAR
 solver.setNumThreads(4)
 cb = aligator.HistoryCallback()
 solver.registerCallback("his", cb)
@@ -127,8 +128,8 @@ ineq_cstr_datas = []
 ineq_cstr_values = []
 dyn_cstr_values = []
 for i in range(nsteps):
-    if len(stage_datas[i].constraint_data) > 1:
-        icd: aligator.StageFunctionData = stage_datas[i].constraint_data[1]
+    if len(stage_datas[i].constraint_data) > 0:
+        icd: aligator.StageFunctionData = stage_datas[i].constraint_data[0]
         ineq_cstr_datas.append(icd)
         ineq_cstr_values.append(icd.value.copy())
     dcd = stage_datas[i].dynamics_data
@@ -142,6 +143,7 @@ plt.title("Inequality constraint values")
 plt.xlabel("Time")
 plt.subplot(132)
 plt.plot(times[1:], np.array(dyn_cstr_values))
+plt.title("Dyn. constraints")
 plt.xlabel("Time")
 plt.subplot(133)
 ee_traj = get_endpoint_traj(rmodel, rdata, xs_opt, frame_id)
