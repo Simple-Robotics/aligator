@@ -27,10 +27,7 @@ struct FrameTranslationResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
   FrameTranslationResidualTpl(const int ndx, const int nu,
                               const shared_ptr<Model> &model,
                               const Vector3s &frame_trans,
-                              const pinocchio::FrameIndex frame_id)
-      : Base(ndx, nu, 3), pin_model_(model), p_ref_(frame_trans) {
-    pin_frame_id_ = frame_id;
-  }
+                              const pinocchio::FrameIndex frame_id);
 
   const Vector3s &getReference() const { return p_ref_; }
   void setReference(const Eigen::Ref<const Vector3s> &p_new) { p_ref_ = p_new; }

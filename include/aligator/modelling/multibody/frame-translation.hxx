@@ -5,6 +5,13 @@
 #include <pinocchio/algorithm/kinematics.hpp>
 
 namespace aligator {
+template <typename Scalar>
+FrameTranslationResidualTpl<Scalar>::FrameTranslationResidualTpl(
+    const int ndx, const int nu, const shared_ptr<Model> &model,
+    const Vector3s &frame_trans, const pinocchio::FrameIndex frame_id)
+    : Base(ndx, nu, 3), pin_model_(model), p_ref_(frame_trans) {
+  pin_frame_id_ = frame_id;
+}
 
 template <typename Scalar>
 void FrameTranslationResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
