@@ -1,9 +1,9 @@
 /// @file merit-function.hpp
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include "aligator/fwd.hpp"
 #include "aligator/core/traj-opt-problem.hpp"
-#include "aligator/core/enums.hpp"
 #include "aligator/core/alm-weights.hpp"
 
 namespace aligator {
@@ -40,8 +40,8 @@ Scalar costDirectionalDerivative(const WorkspaceTpl<Scalar> &workspace,
  * \f]
  * where \f$(*)\f$ is the expression within the norm in \f$\mathscr{P}\f$ above.
  *
- * Some of the parameters of this function are obtained from the linked the
- * SolverProxDDP<Scalar> instance.
+ * Some of the parameters of this function are obtained from the linked
+ * SolverProxDDPTpl<Scalar> instance.
  */
 template <typename _Scalar> struct PDALFunction {
   using Scalar = _Scalar;

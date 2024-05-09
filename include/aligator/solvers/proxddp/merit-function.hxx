@@ -1,8 +1,8 @@
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include "merit-function.hpp"
 #include "workspace.hpp"
-#include "results.hpp"
 #include "aligator/core/lagrangian.hpp"
 
 namespace aligator {
@@ -77,7 +77,6 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
   std::vector<VectorXs> &Lxs = workspace.Lxs;
   std::vector<VectorXs> &Lus = workspace.Lus;
   LagrangianDerivatives<Scalar>::compute(problem, workspace.problem_data,
-                                         //  lams_pdal, vs_pdal, Lxs, Lus);
                                          workspace.lams_plus, workspace.vs_plus,
                                          Lxs, Lus);
 

@@ -554,7 +554,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
 
     // compute the Lagrangian derivatives to check for convergence
     // and use them in the LQ subproblem as gradient of cost g
-    // with constraintLxCorr.
+    // with cstr_lx_corr.
     LagrangianDerivatives<Scalar>::compute(problem, workspace_.problem_data,
                                            results_.lams, results_.vs,
                                            workspace_.Lxs, workspace_.Lus);

@@ -1,6 +1,6 @@
 /// @file    workspace.hpp
 /// @brief   Define workspace for the ProxDDP solver.
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include "aligator/core/workspace-base.hpp"
