@@ -72,7 +72,7 @@ template <typename Scalar> struct SolverFDDPTpl {
   /// off.
   bool force_initial_condition_;
 
-  BaseLogger logger{};
+  Logger logger{};
 
   void setNumThreads(const std::size_t num_threads) {
     num_threads_ = num_threads;

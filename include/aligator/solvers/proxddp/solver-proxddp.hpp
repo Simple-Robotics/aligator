@@ -94,7 +94,7 @@ public:
   Scalar prim_tol0 = 1.;
 
   /// Logger
-  BaseLogger logger{};
+  Logger logger{};
 
   /// Solver verbosity level.
   VerboseLevel verbose_;

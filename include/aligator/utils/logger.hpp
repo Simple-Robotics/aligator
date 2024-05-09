@@ -3,74 +3,59 @@
 #pragma once
 
 #include <array>
+#include <string_view>
 #include <vector>
-#include <utility>
-#include <fmt/color.h>
-#include <fmt/ranges.h>
+#include <map>
 
 namespace aligator {
+using uint = unsigned int;
 
-constexpr fmt::string_view int_format = "{: >{}d}";
-constexpr fmt::string_view sci_format = "{: > {}.{}e}";
-constexpr fmt::string_view dbl_format = "{: > {}.{}g}";
+constexpr std::string_view int_format = "{: >{}d}";
+constexpr std::string_view sci_format = "{: >{}.4e}";
+constexpr std::string_view dbl_format = "{: >{}.4g}";
 struct LogColumn {
-  fmt::string_view name;
-  fmt::string_view format;
-  uint colSize;
+  std::string_view name;
+  std::string_view format;
+  uint width;
 };
 
 // log columns names and widths
 static const std::array<LogColumn, 11> BASIC_KEYS = {
-    {{"iter", int_format, 4U},
+    {{"iter", int_format, 5U},
      {"alpha", sci_format, 10U},
      {"inner_crit", sci_format, 10U},
      {"prim_err", sci_format, 10U},
      {"dual_err", sci_format, 10U},
      {"preg", sci_format, 10U},
-     {"dphi0", sci_format, 10U},
-     {"merit", sci_format, 10U},
-     {"delta_M", sci_format, 10U},
-     {"aliter", int_format, 6U},
+     {"dphi0", sci_format, 11U},
+     {"merit", sci_format, 11U},
+     {"ΔM", sci_format, 11U},
+     {"aliter", int_format, 7U},
      {"mu", dbl_format, 8U}}};
 
 /// @brief  A table logging utility to log the trace of the numerical solvers.
-struct BaseLogger {
+struct Logger {
   bool active = true;
-  bool is_prox = false;
-  using iterator = decltype(BASIC_KEYS)::const_iterator;
-  static constexpr fmt::string_view join_str = "｜";
-  std::vector<std::string> cols;
+  static constexpr std::string_view join_str = "｜";
 
-  BaseLogger();
+  Logger();
 
   void printHeadline();
   void log();
   void finish(bool conv);
-  inline void reset() {
-    cols.clear();
-    m_iter = BASIC_KEYS.cbegin();
-  }
+  void reset();
 
-  void addEntry(double val) {
-    if (!checkIter())
-      return;
-    constexpr int prec = 3;
-    cols.push_back(fmt::format(m_iter->format, val, m_iter->colSize, prec));
-    m_iter++;
-  }
+  void addColumn(std::string_view name, uint width, std::string_view format);
+  void addColumn(LogColumn col) { addColumn(col.name, col.width, col.format); }
 
-  void addEntry(size_t val) {
-    if (!checkIter())
-      return;
-    cols.push_back(fmt::format(m_iter->format, val, m_iter->colSize));
-    m_iter++;
-  }
-
-  inline void advance() { m_iter++; }
+  void addEntry(std::string_view name, double val);
+  void addEntry(std::string_view name, size_t val);
 
 protected:
-  iterator m_iter;
-  bool checkIter() const;
+  // sizes and formats
+  std::vector<std::string_view> m_colNames;
+  std::map<std::string_view, std::pair<uint, std::string>> m_colSpecs;
+  std::map<std::string_view, std::string> m_currentLine;
 };
 
 } // namespace aligator

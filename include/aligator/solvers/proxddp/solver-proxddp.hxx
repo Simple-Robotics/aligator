@@ -77,7 +77,6 @@ SolverProxDDPTpl<Scalar>::SolverProxDDPTpl(const Scalar tol,
       filter_(0.0, ls_params.alpha_min, ls_params.max_num_steps),
       linesearch_(ls_params) {
   ls_params.interp_type = proxsuite::nlp::LSInterpolation::CUBIC;
-  logger.is_prox = true;
 }
 
 // [1] Section IV. Proximal Differential Dynamic Programming
@@ -420,6 +419,9 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
   }
 
   logger.active = (verbose_ > 0);
+  for (const auto &col : BASIC_KEYS) {
+    logger.addColumn(col);
+  }
   logger.printHeadline();
 
   setAlmPenalty(mu_init);
@@ -629,17 +631,17 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
 
     if (iter >= 1 && iter % 25 == 0)
       logger.printHeadline();
-    logger.addEntry(iter + 1);
-    logger.addEntry(alpha_opt);
-    logger.addEntry(workspace_.inner_criterion);
-    logger.addEntry(results_.prim_infeas);
-    logger.addEntry(results_.dual_infeas);
-    logger.addEntry(preg_);
-    logger.addEntry(dphi0);
-    logger.addEntry(phi_new);
-    logger.addEntry(phi_new - phi0);
-    logger.addEntry(results_.al_iter + 1);
-    logger.addEntry(mu());
+    logger.addEntry("iter", iter + 1);
+    logger.addEntry("alpha", alpha_opt);
+    logger.addEntry("inner_crit", workspace_.inner_criterion);
+    logger.addEntry("prim_err", results_.prim_infeas);
+    logger.addEntry("dual_err", results_.dual_infeas);
+    logger.addEntry("preg", preg_);
+    logger.addEntry("dphi0", dphi0);
+    logger.addEntry("merit", phi_new);
+    logger.addEntry("ΔM", phi_new - phi0);
+    logger.addEntry("aliter", results_.al_iter + 1);
+    logger.addEntry("mu", mu());
 
     if (alpha_opt <= ls_params.alpha_min) {
       if (preg_ >= reg_max)

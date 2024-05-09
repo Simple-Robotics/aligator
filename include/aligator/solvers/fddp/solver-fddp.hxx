@@ -302,6 +302,14 @@ bool SolverFDDPTpl<Scalar>::run(const Problem &problem,
   results_.conv = false;
 
   logger.active = verbose_ > 0;
+  logger.addColumn(BASIC_KEYS[0]);
+  logger.addColumn(BASIC_KEYS[1]);
+  logger.addColumn(BASIC_KEYS[3]);
+  logger.addColumn(BASIC_KEYS[4]);
+  logger.addColumn(BASIC_KEYS[5]);
+  logger.addColumn(BASIC_KEYS[6]);
+  logger.addColumn(BASIC_KEYS[7]);
+  logger.addColumn(BASIC_KEYS[8]);
   logger.printHeadline();
 
   // in Crocoddyl, linesearch xs is primed to use problem x0
@@ -356,15 +364,14 @@ bool SolverFDDPTpl<Scalar>::run(const Problem &problem,
     ALIGATOR_RAISE_IF_NAN(alpha_opt);
     ALIGATOR_RAISE_IF_NAN(phi_new);
 
-    logger.addEntry(iter + 1);
-    logger.addEntry(alpha_opt);
-    logger.advance();
-    logger.addEntry(results_.prim_infeas);
-    logger.addEntry(results_.dual_infeas);
-    logger.addEntry(preg_);
-    logger.addEntry(d1_phi);
-    logger.addEntry(phi_new);
-    logger.addEntry(phi_new - phi0);
+    logger.addEntry("iter", iter + 1);
+    logger.addEntry("alpha", alpha_opt);
+    logger.addEntry("prim_err", results_.prim_infeas);
+    logger.addEntry("dual_err", results_.dual_infeas);
+    logger.addEntry("preg", preg_);
+    logger.addEntry("dphi0", d1_phi);
+    logger.addEntry("merit", phi_new);
+    logger.addEntry("ΔM", phi_new - phi0);
 
     results_.xs = workspace_.trial_xs;
     results_.us = workspace_.trial_us;
