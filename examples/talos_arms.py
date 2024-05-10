@@ -128,16 +128,6 @@ if len(idx_hit) > 0:
 plt.title("Controls trajectory")
 plt.legend()
 plt.tight_layout()
-
-
-plt.figure()
-value_grads = [v.Vx for v in workspace.value_params]
-value_grads = np.stack(value_grads).T
-plt.imshow(value_grads)
-plt.xlabel("Time $t$")
-plt.ylabel("Dimension $\\partial V_t/\\partial x_i$")
-
-plt.tight_layout()
 plt.show()
 
 if args.display:
