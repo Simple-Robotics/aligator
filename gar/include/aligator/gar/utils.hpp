@@ -239,16 +239,16 @@ void lqrDenseSolutionToTraj(
   uint idx = nc0;
   for (size_t t = 0; t <= N; t++) {
     const LQRKnotTpl<Scalar> &knot = problem.stages[t];
-    const uint n = knot.nx + knot.nu + knot.nc + knot.nx2;
+    const uint n = knot.nx + knot.nu + knot.nc;
     auto seg = solution.segment(idx, n);
     xs[t] = seg.head(knot.nx);
     us[t] = seg.segment(knot.nx, knot.nu);
     vs[t] = seg.segment(knot.nx + knot.nu, knot.nc);
-    if (t < N) {
-      lbdas[t + 1] = seg.tail(knot.nx2);
-    }
-
     idx += n;
+    if (t < N) {
+      lbdas[t + 1] = solution.segment(idx, knot.nx2);
+      idx += knot.nx2;
+    }
   }
 }
 
