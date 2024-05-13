@@ -140,7 +140,7 @@ public:
   using SparseType = Eigen::SparseMatrix<Scalar>;
   using Triplet = Eigen::Triplet<Scalar>;
 
-  explicit CholmodLqSolver(const Problem &problem);
+  explicit CholmodLqSolver(const Problem &problem, uint numRefinementSteps = 1);
 
   bool backward(const Scalar mudyn, const Scalar mueq) {
     // update the sparse linear problem
@@ -152,33 +152,46 @@ public:
   bool forward(std::vector<VectorXs> &xs, std::vector<VectorXs> &us,
                std::vector<VectorXs> &vs, std::vector<VectorXs> &lbdas) const {
     kktSol = cholmod.solve(-kktRhs);
+    kktResidual = kktRhs;
+    for (uint i = 0; i < numRefinementSteps; i++) {
+      kktResidual.noalias() += kktMatrix * kktSol;
+      kktSol += cholmod.solve(-kktResidual);
+    }
     lqrDenseSolutionToTraj(*problem_, kktSol, xs, us, vs, lbdas);
     return true;
   };
 
-  Scalar computeSparseResidual() {
-    kktRhs.noalias() += kktMatrix * kktSol;
-    return math::infty_norm(kktRhs);
+  Scalar computeSparseResidual() const {
+    kktResidual = kktRhs;
+    kktResidual.noalias() += kktMatrix * kktSol;
+    return math::infty_norm(kktResidual);
   }
 
   /// Linear problem matrix
   SparseType kktMatrix;
   /// Linear problem rhs
   VectorXs kktRhs;
+  /// KKT problem residual
+  mutable VectorXs kktResidual;
   /// Linear problem solution
   mutable VectorXs kktSol;
   Eigen::CholmodSimplicialLDLT<SparseType> cholmod;
+  /// Number of iterative refinement steps.
+  uint numRefinementSteps;
 
 protected:
   const Problem *problem_;
 };
 
 template <typename Scalar>
-CholmodLqSolver<Scalar>::CholmodLqSolver(const Problem &problem)
-    : kktMatrix(), kktRhs(), cholmod(), problem_(&problem) {
+CholmodLqSolver<Scalar>::CholmodLqSolver(const Problem &problem,
+                                         uint numRefinementSteps)
+    : kktMatrix(), kktRhs(), cholmod(), numRefinementSteps(numRefinementSteps),
+      problem_(&problem) {
   lqrCreateSparseMatrix<false>(problem, 1., 1., kktMatrix, kktRhs);
   assert(kktMatrix.cols() == kktRhs.rows());
   kktSol.resize(kktRhs.rows());
+  kktResidual.resize(kktRhs.rows());
   cholmod.analyzePattern(kktMatrix);
 }
 

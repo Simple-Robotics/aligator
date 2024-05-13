@@ -1,6 +1,5 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #include "./test_util.hpp"
-#include "aligator/gar/block-tridiagonal.hpp"
 #include "aligator/gar/utils.hpp"
 
 std::mt19937 normal_unary_op::rng{42};

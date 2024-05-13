@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE(create_sparse_problem) {
   // modify problem
   problem.g0.setRandom();
   problem.stages[0].Q = sampleWishartDistributedMatrix(nx, nx + 1);
-  problem.stages[0].R = sampleWishartDistributedMatrix(nx, nx + 1);
+  problem.stages[0].R = sampleWishartDistributedMatrix(nu, nu + 1);
   // update
   gar::lqrCreateSparseMatrix<true>(problem, 1e-8, 1e-6, kktMat, kktRhs);
 
@@ -105,14 +105,14 @@ BOOST_AUTO_TEST_CASE(create_sparse_problem) {
 }
 
 BOOST_AUTO_TEST_CASE(cholmod_short_horz) {
-  const double mu = 1e-8;
+  const double mu = 1e-10;
   uint nx = 4, nu = 4;
   uint horz = 10;
-  constexpr double TOL = 1e-8;
+  constexpr double TOL = 1e-14;
   VectorXs x0;
   x0.setRandom(nx);
   problem_t problem = generate_problem(x0, horz, nx, nu);
-  gar::CholmodLqSolver<double> solver{problem};
+  gar::CholmodLqSolver<double> solver{problem, 1};
 
   auto [xs, us, vs, lbdas] = gar::lqrInitializeSolution(problem);
 
@@ -125,8 +125,9 @@ BOOST_AUTO_TEST_CASE(cholmod_short_horz) {
   }
   solver.forward(xs, us, vs, lbdas);
 
-  fmt::println("Sparse solver residual: {:.4e}",
-               solver.computeSparseResidual());
+  const double sparse_residual = solver.computeSparseResidual();
+  fmt::println("Sparse solver residual: {:.4e}", sparse_residual);
+  BOOST_CHECK_LE(sparse_residual, TOL);
 
   BOOST_CHECK(ret);
 
