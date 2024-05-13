@@ -26,7 +26,7 @@ void ContactForceResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
 }
 
 template <typename Scalar>
-void ContactForceResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &x,
+void ContactForceResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
                                                        const ConstVectorRef &,
                                                        const ConstVectorRef &,
                                                        BaseData &data) const {

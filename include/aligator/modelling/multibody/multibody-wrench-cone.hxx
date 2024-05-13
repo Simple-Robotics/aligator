@@ -29,11 +29,9 @@ void MultibodyWrenchConeResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
 
 template <typename Scalar>
 void MultibodyWrenchConeResidualTpl<Scalar>::computeJacobians(
-    const ConstVectorRef &x, const ConstVectorRef &, const ConstVectorRef &,
+    const ConstVectorRef &, const ConstVectorRef &, const ConstVectorRef &,
     BaseData &data) const {
   Data &d = static_cast<Data &>(data);
-
-  const auto q = x.head(pin_model_.nq);
 
   pinocchio::computeConstraintDynamicsDerivatives(
       pin_model_, d.pin_data_, constraint_models_, d.constraint_datas_,
