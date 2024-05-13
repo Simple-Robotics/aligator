@@ -6,7 +6,7 @@ if(GENERATE_PYTHON_STUBS)
   include(${JRL_CMAKE_MODULES}/stubs.cmake)
 endif(GENERATE_PYTHON_STUBS)
 
-file(GLOB PY_SOURCES CONFIGURE_DEPENDS src/*.cpp src/gar/*.cpp src/modelling/*.cpp)
+file(GLOB PY_SOURCES CONFIGURE_DEPENDS src/*.cpp src/modelling/*.cpp)
 
 set(PY_HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/python)
 file(GLOB PY_HEADERS ${PY_HEADER_DIR}/*.hpp ${PY_HEADER_DIR}/modelling/*.hpp
@@ -19,8 +19,15 @@ if(BUILD_CROCODDYL_COMPAT)
 endif()
 
 function(make_bindings)
-  add_library(${PYLIB_NAME} SHARED ${PY_HEADERS} ${PY_SOURCES})
+  add_library(
+    ${PYLIB_NAME} SHARED ${PY_HEADERS} ${PY_SOURCES} src/gar/expose-gar.cpp
+                         src/gar/expose-parallel.cpp src/gar/expose-dense.cpp
+  )
   add_library(aligator::python ALIAS ${PYLIB_NAME})
+
+  if(BUILD_WITH_CHOLMOD_SUPPORT)
+    target_sources(${PYLIB_NAME} PRIVATE src/gar/expose-cholmod-solver.cpp)
+  endif()
 
   set_target_properties(
     ${PYLIB_NAME}
