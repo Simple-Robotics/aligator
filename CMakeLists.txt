@@ -171,7 +171,7 @@ if(BUILD_WITH_CHOLMOD_SUPPORT)
   set(CMAKE_MODULE_PATH ${JRL_CMAKE_MODULES}/find-external/CHOLMOD ${CMAKE_MODULE_PATH})
   add_project_dependency(CHOLMOD REQUIRED)
   message(
-    STATUS "Build with CHOLDOD support (LGPL). See CHOLMOD/Doc/License.txt for further details."
+    STATUS "Build with CHOLMOD support (LGPL). See CHOLMOD/Doc/License.txt for further details."
   )
   add_compile_definitions(ALIGATOR_WITH_CHOLMOD)
 endif()
