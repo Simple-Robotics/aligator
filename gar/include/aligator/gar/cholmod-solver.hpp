@@ -141,25 +141,46 @@ public:
   using Triplet = Eigen::Triplet<Scalar>;
 
   explicit CholmodLqSolver(const Problem &problem);
-  void buildProblemSparseMatrix(const LQRProblemTpl<Scalar> &problem,
-                                std::vector<Triplet> &coefficients) {
-    coefficients;
-    kktMatrix_.setFromTriplets(coefficients.begin(), coefficients.end());
-  }
-  void addProblemRegularization(const Scalar mudyn, const Scalar mueq) {}
 
-  void backward() {}
+  bool backward(const Scalar mudyn, const Scalar mueq) {
+    // update the sparse linear problem
+    lqrCreateSparseMatrix<true>(*problem_, mudyn, mueq, kktMatrix, kktRhs);
+    cholmod.factorize(kktMatrix);
+    return cholmod.info() == Eigen::Success;
+  }
+
+  bool forward(std::vector<VectorXs> &xs, std::vector<VectorXs> &us,
+               std::vector<VectorXs> &vs, std::vector<VectorXs> &lbdas) const {
+    kktSol = cholmod.solve(-kktRhs);
+    lqrDenseSolutionToTraj(*problem_, kktSol, xs, us, vs, lbdas);
+    return true;
+  };
+
+  Scalar computeSparseResidual() {
+    kktRhs.noalias() += kktMatrix * kktSol;
+    return math::infty_norm(kktRhs);
+  }
+
+  /// Linear problem matrix
+  SparseType kktMatrix;
+  /// Linear problem rhs
+  VectorXs kktRhs;
+  /// Linear problem solution
+  mutable VectorXs kktSol;
+  Eigen::CholmodSimplicialLDLT<SparseType> cholmod;
 
 protected:
-  /// Linear problem matrix
-  SparseType kktMatrix_;
-  Eigen::CholmodSimplicialLDLT<SparseType> cholmod;
   const Problem *problem_;
 };
 
 template <typename Scalar>
 CholmodLqSolver<Scalar>::CholmodLqSolver(const Problem &problem)
-    : cholmod(), problem_(&problem) {}
+    : kktMatrix(), kktRhs(), cholmod(), problem_(&problem) {
+  lqrCreateSparseMatrix<false>(problem, 1., 1., kktMatrix, kktRhs);
+  assert(kktMatrix.cols() == kktRhs.rows());
+  kktSol.resize(kktRhs.rows());
+  cholmod.analyzePattern(kktMatrix);
+}
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 extern template class CholmodLqSolver<context::Scalar>;

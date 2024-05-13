@@ -1,3 +1,4 @@
+#include "aligator/gar/riccati.hpp"
 #include "aligator/gar/cholmod-solver.hpp"
 #include "aligator/gar/utils.hpp"
 
@@ -49,9 +50,12 @@ problem_t short_problem(VectorXs x0, uint horz, uint nx, uint nu, uint nc) {
     knot.Q.setConstant(+0.11);
     knot.R.setConstant(+0.12);
     knot.S.setConstant(-0.2);
+    knot.q.setConstant(13.);
+    knot.r.setConstant(-13);
 
     knot.C.setConstant(-2.);
     knot.D.setConstant(-3.);
+    knot.d.setConstant(-4.);
 
     knot.f.setConstant(-0.3);
     knot.A.setConstant(0.2);
@@ -82,7 +86,7 @@ BOOST_AUTO_TEST_CASE(create_sparse_problem) {
     fmt::println("kktMatrix (sparse):\n{}", kktMat.toDense());
     fmt::println("kktMatrix (dense):\n{}", kktDense);
     fmt::println("kktRhs (sparse) {}", kktRhs.transpose());
-    fmt::println("kktRhs (dense) {}", rhsDense.transpose());
+    fmt::println("kktRhs (dense)  {}", rhsDense.transpose());
     BOOST_CHECK(rhsDense.isApprox(kktRhs));
     BOOST_CHECK(kktDense.isApprox(kktMat.toDense()));
   };
@@ -101,9 +105,10 @@ BOOST_AUTO_TEST_CASE(create_sparse_problem) {
 }
 
 BOOST_AUTO_TEST_CASE(cholmod_short_horz) {
-  const double mu = 1e-14;
-  uint nx = 2, nu = 2;
+  const double mu = 1e-8;
+  uint nx = 4, nu = 4;
   uint horz = 10;
+  constexpr double TOL = 1e-8;
   VectorXs x0;
   x0.setRandom(nx);
   problem_t problem = generate_problem(x0, horz, nx, nu);
@@ -111,10 +116,41 @@ BOOST_AUTO_TEST_CASE(cholmod_short_horz) {
 
   auto [xs, us, vs, lbdas] = gar::lqrInitializeSolution(problem);
 
-  // solver.backward(mu, mu);
-  // solver.forward(xs, us, vs, lbdas);
+  bool ret = solver.backward(mu, mu);
+  {
+    // test here because backward(mudyn, mueq) sets right values of mu
+    auto [denseKkt, rhsDense] = gar::lqrDenseMatrix(problem, mu, mu);
+    BOOST_CHECK(denseKkt.isApprox(solver.kktMatrix.toDense()));
+    BOOST_CHECK(rhsDense.isApprox(solver.kktRhs));
+  }
+  solver.forward(xs, us, vs, lbdas);
 
-  // auto [dynErr, cstErr, dualErr] = gar::lqrComputeKktError(
-  //     problem, xs, us, vs, lbdas, mu, mu, std::nullopt, true);
-  // fmt::print("KKT errors: d = {:.4e} / dual = {:.4e}\n", dynErr, dualErr);
+  fmt::println("Sparse solver residual: {:.4e}",
+               solver.computeSparseResidual());
+
+  BOOST_CHECK(ret);
+
+  auto [dynErr, cstErr, dualErr] = gar::lqrComputeKktError(
+      problem, xs, us, vs, lbdas, mu, mu, std::nullopt, true);
+  fmt::print("KKT errors: d = {:.4e} / dual = {:.4e}\n", dynErr, dualErr);
+  BOOST_CHECK_LE(dynErr, TOL);
+  BOOST_CHECK_LE(cstErr, TOL);
+  BOOST_CHECK_LE(dualErr, TOL);
+
+  {
+    gar::ProximalRiccatiSolver<double> solver2{problem};
+    solver2.backward(mu, mu);
+    auto [xs2, us2, vs2, lbdas2] = gar::lqrInitializeSolution(problem);
+    solver2.forward(xs2, us2, vs2, lbdas2);
+
+    auto [dynErr, cstErr, dualErr] = gar::lqrComputeKktError(
+        problem, xs2, us2, vs2, lbdas2, mu, mu, std::nullopt, true);
+    fmt::print("KKT errors: d = {:.4e} / dual = {:.4e}\n", dynErr, dualErr);
+
+    for (uint i = 0; i <= horz; i++) {
+      fmt::println("xerr[{:d}] = {:.3e}", i, math::infty_norm(xs[i] - xs2[i]));
+      fmt::println("lerr[{:d}] = {:.3e}", i,
+                   math::infty_norm(lbdas[i] - lbdas2[i]));
+    }
+  }
 }
