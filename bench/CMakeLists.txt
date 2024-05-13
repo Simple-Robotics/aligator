@@ -40,3 +40,4 @@ if(PINOCCHIO_V3)
 endif()
 
 create_gar_bench("gar-riccati.cpp")
+create_gar_bench("gar-impl-multithread.cpp")
