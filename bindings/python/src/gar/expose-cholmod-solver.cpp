@@ -7,8 +7,10 @@ using lqr_t = gar::LQRProblemTpl<context::Scalar>;
 using cholmod_solver_t = gar::CholmodLqSolver<context::Scalar>;
 
 void exposeCholmodSolver() {
-  bp::class_<cholmod_solver_t, boost::noncopyable>("CholmodLqSolver",
-                                                   bp::no_init)
+  bp::class_<cholmod_solver_t, boost::noncopyable>(
+      "CholmodLqSolver",
+      "A wrapper for CHOLMOD to solve the linear system for the LQ step.",
+      bp::no_init)
       .def(bp::init<const lqr_t &, uint>(
           ("self"_a, "problem", "numRefinementSteps"_a = 1)))
       .def_readonly("kktMatrix", &cholmod_solver_t::kktMatrix)
