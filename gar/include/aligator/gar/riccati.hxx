@@ -13,7 +13,17 @@ ProximalRiccatiSolver<Scalar>::ProximalRiccatiSolver(
     : Base(), kkt0(problem.stages[0].nx, problem.nc0(), problem.ntheta()),
       thGrad(problem.ntheta()), thHess(problem.ntheta(), problem.ntheta()),
       problem_(&problem) {
-  initialize();
+  ZoneScoped;
+  auto N = uint(problem_->horizon());
+  auto &knots = problem_->stages;
+  datas.reserve(N + 1);
+  for (uint t = 0; t <= N; t++) {
+    const KnotType &knot = knots[t];
+    datas.emplace_back(knot.nx, knot.nu, knot.nc, knot.nth);
+  }
+  thGrad.setZero();
+  thHess.setZero();
+  kkt0.mat.setZero();
 }
 
 template <typename Scalar>
@@ -62,20 +72,6 @@ bool ProximalRiccatiSolver<Scalar>::forward(
   Impl::computeInitial(xs[0], lbdas[0], kkt0, theta_);
 
   return Impl::forwardImpl(problem_->stages, datas, xs, us, vs, lbdas, theta_);
-}
-
-template <typename Scalar> void ProximalRiccatiSolver<Scalar>::initialize() {
-  ZoneScoped;
-  auto N = uint(problem_->horizon());
-  auto &knots = problem_->stages;
-  datas.reserve(N + 1);
-  for (uint t = 0; t <= N; t++) {
-    const KnotType &knot = knots[t];
-    datas.emplace_back(knot.nx, knot.nu, knot.nc, knot.nth);
-  }
-  thGrad.setZero();
-  thHess.setZero();
-  kkt0.mat.setZero();
 }
 
 } // namespace aligator::gar

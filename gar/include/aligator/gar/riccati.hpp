@@ -40,7 +40,6 @@ public:
   MatrixXs thHess; //< optimal value Hessian wrt parameter
 
 protected:
-  void initialize();
   const LQRProblemTpl<Scalar> *problem_;
 };
 
