@@ -20,9 +20,10 @@ using context::PinModel;
 
 // fwd declaration, see expose-fly-high.cpp
 void exposeFlyHigh();
+#ifdef ALIGATOR_PINOCCHIO_V3
 void exposeContactForce();
+#endif
 void exposeCenterOfMassFunctions();
-
 void exposeFrameFunctions() {
   using context::Manifold;
   using context::Scalar;
@@ -127,7 +128,9 @@ auto underactuatedConstraintInvDyn_proxy(
 void exposePinocchioFunctions() {
   exposeFrameFunctions();
   exposeFlyHigh();
+#ifdef ALIGATOR_PINOCCHIO_V3
   exposeContactForce();
+#endif
   exposeCenterOfMassFunctions();
 
 #ifdef ALIGATOR_PINOCCHIO_V3
