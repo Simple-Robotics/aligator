@@ -21,9 +21,10 @@ template <typename _Scalar>
 class ParallelRiccatiSolver : public RiccatiSolverBase<_Scalar> {
 public:
   using Scalar = _Scalar;
-  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS_WITH_ROW_TYPES(Scalar);
   using Base = RiccatiSolverBase<Scalar>;
-  using Base::datas;
+  using StageFactorVec = std::vector<StageFactor<Scalar>>;
+  StageFactorVec datas;
 
   using Impl = ProximalRiccatiKernel<Scalar>;
   using KnotType = LQRKnotTpl<Scalar>;
@@ -80,6 +81,9 @@ public:
   bool forward(VectorOfVectors &xs, VectorOfVectors &us, VectorOfVectors &vs,
                VectorOfVectors &lbdas,
                const std::optional<ConstVectorRef> & = std::nullopt) const;
+
+  VectorRef getFeedforward(size_t i) { return datas[i].ff.matrix(); }
+  RowMatrixRef getFeedback(size_t i) { return datas[i].fb.matrix(); }
 
   /// Number of parallel divisions in the problem: \f$J+1\f$ in the math.
   uint numThreads;

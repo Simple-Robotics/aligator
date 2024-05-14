@@ -9,16 +9,10 @@
 namespace aligator {
 namespace gar {
 
-// fwd
-template <typename Scalar> struct StageFactor;
-
 template <typename _Scalar> class RiccatiSolverBase {
 public:
   using Scalar = _Scalar;
-  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using StageFactorType = StageFactor<Scalar>;
-  using StageFactorVec = std::vector<StageFactorType>;
-  StageFactorVec datas;
+  ALIGATOR_DYNAMIC_TYPEDEFS_WITH_ROW_TYPES(Scalar);
 
   virtual bool backward(const Scalar mudyn, const Scalar mueq) = 0;
 
@@ -30,6 +24,8 @@ public:
   /// For applicable solvers, updates the first feedback gain in-place to
   /// correspond to the first Riccati gain.
   virtual void collapseFeedback() {}
+  virtual VectorRef getFeedforward(size_t) = 0;
+  virtual RowMatrixRef getFeedback(size_t) = 0;
 
   virtual ~RiccatiSolverBase() = default;
 };

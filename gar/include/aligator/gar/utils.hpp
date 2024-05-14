@@ -116,7 +116,7 @@ bool lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
                     typename math_types<Scalar>::VectorXs &rhs) {
   using knot_t = LQRKnotTpl<Scalar>;
   const auto &knots = problem.stages;
-  size_t N = (size_t)problem.horizon();
+  const size_t N = size_t(problem.horizon());
 
   if (!problem.isInitialized())
     return false;
@@ -125,8 +125,8 @@ bool lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
 
   uint idx = 0;
   {
-    uint nc0 = problem.nc0();
-    uint nx0 = problem.stages[0].nx;
+    const uint nc0 = problem.nc0();
+    const uint nx0 = knots[0].nx;
     mat.block(nc0, 0, nx0, nc0) = problem.G0.transpose();
     mat.block(0, nc0, nc0, nx0) = problem.G0;
     mat.topLeftCorner(nc0, nc0).diagonal().setConstant(-mudyn);
@@ -138,7 +138,7 @@ bool lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
   for (size_t t = 0; t <= N; t++) {
     const knot_t &model = knots[t];
     // get block for current variables
-    uint n = model.nx + model.nu + model.nc;
+    const uint n = model.nx + model.nu + model.nc;
     auto block = mat.block(idx, idx, n, n);
     auto rhsblk = rhs.segment(idx, n);
     auto Q = block.topLeftCorner(model.nx, model.nx);
@@ -183,6 +183,22 @@ bool lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
   return true;
 }
 
+/// @brief Compute the number of rows in the problem matrix.
+template <typename Scalar>
+uint lqrNumRows(const LQRProblemTpl<Scalar> &problem) {
+  const auto &knots = problem.stages;
+  const uint nc0 = problem.nc0();
+  const size_t N = knots.size() - 1UL;
+  uint nrows = nc0;
+  for (size_t t = 0; t <= N; t++) {
+    const auto &model = knots[t];
+    nrows += model.nx + model.nu + model.nc;
+    if (t != N)
+      nrows += model.nx;
+  }
+  return nrows;
+}
+
 /// @copybrief lqrDenseMatrix()
 template <typename Scalar>
 auto lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
@@ -191,16 +207,7 @@ auto lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
   decltype(auto) knots = problem.stages;
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
   using VectorXs = typename math_types<Scalar>::VectorXs;
-  using knot_t = LQRKnotTpl<Scalar>;
-  uint nc0 = problem.nc0();
-  size_t N = knots.size() - 1UL;
-  uint nrows = nc0;
-  for (size_t t = 0; t <= N; t++) {
-    const knot_t &model = knots[t];
-    nrows += model.nx + model.nu + model.nc;
-    if (t != N)
-      nrows += model.nx;
-  }
+  const uint nrows = lqrNumRows(problem);
 
   MatrixXs mat(nrows, nrows);
   VectorXs rhs(nrows);
@@ -232,16 +239,16 @@ void lqrDenseSolutionToTraj(
   uint idx = nc0;
   for (size_t t = 0; t <= N; t++) {
     const LQRKnotTpl<Scalar> &knot = problem.stages[t];
-    const uint n = knot.nx + knot.nu + knot.nc + knot.nx2;
+    const uint n = knot.nx + knot.nu + knot.nc;
     auto seg = solution.segment(idx, n);
     xs[t] = seg.head(knot.nx);
     us[t] = seg.segment(knot.nx, knot.nu);
     vs[t] = seg.segment(knot.nx + knot.nu, knot.nc);
-    if (t < N) {
-      lbdas[t + 1] = seg.tail(knot.nx2);
-    }
-
     idx += n;
+    if (t < N) {
+      lbdas[t + 1] = solution.segment(idx, knot.nx2);
+      idx += knot.nx2;
+    }
   }
 }
 

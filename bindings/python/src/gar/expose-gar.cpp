@@ -61,6 +61,8 @@ static void exposeBlockMatrices() {
       "BlockRowMatrix21");
 }
 
+// fwd-declare exposeCholmodSolver()
+void exposeCholmodSolver();
 // fwd-declare exposeParallelSolver()
 void exposeParallelSolver();
 // fwd-declare exposeDenseSolver()
@@ -92,8 +94,8 @@ void exposeGAR() {
       .def_readonly("kktChol", &stage_factor_t::kktChol)
       .def_readonly("vm", &stage_factor_t::vm);
 
-  StdVectorPythonVisitor<riccati_base_t::StageFactorVec, true>::expose(
-      "StdVec_StageFactor");
+  using StageFactorVec = std::vector<stage_factor_t>;
+  StdVectorPythonVisitor<StageFactorVec, true>::expose("StdVec_StageFactor");
 
   bp::class_<knot_t>("LQRKnot", bp::no_init)
       .def(bp::init<uint, uint, uint>(("nx"_a, "nu", "nc")))
@@ -149,7 +151,6 @@ void exposeGAR() {
 
   bp::class_<riccati_base_t, boost::noncopyable>("RiccatiSolverBase",
                                                  bp::no_init)
-      .def_readonly("datas", &riccati_base_t::datas)
       .def("backward", &riccati_base_t::backward, ("self"_a, "mu", "mueq"))
       .def("forward", &riccati_base_t::forward,
            ("self"_a, "xs", "us", "vs", "lbdas", "theta"_a = std::nullopt));
@@ -162,6 +163,7 @@ void exposeGAR() {
             .def(bp::init<const lqr_t &>(("self"_a, "problem")))
             .def_readonly("thGrad", &prox_riccati_t::thGrad, "Value gradient")
             .def_readonly("thHess", &prox_riccati_t::thHess, "Value Hessian")
+            .def_readonly("datas", &prox_riccati_t::datas)
             .def_readonly("kkt0", &prox_riccati_t::kkt0,
                           "Initial stage KKT system");
     bp::class_<prox_riccati_t::kkt0_t>("kkt0_t", bp::no_init)
@@ -181,6 +183,7 @@ void exposeGAR() {
 
   bp::def("lqrInitializeSolution", lqr_sol_initialize_wrap, ("problem"_a));
 
+  exposeCholmodSolver();
   exposeDenseSolver();
   exposeParallelSolver();
 }

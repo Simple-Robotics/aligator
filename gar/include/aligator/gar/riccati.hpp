@@ -12,9 +12,10 @@ template <typename _Scalar>
 class ProximalRiccatiSolver : public RiccatiSolverBase<_Scalar> {
 public:
   using Scalar = _Scalar;
-  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS_WITH_ROW_TYPES(Scalar);
   using Base = RiccatiSolverBase<Scalar>;
-  using Base::datas;
+  using StageFactorVec = std::vector<StageFactor<Scalar>>;
+  StageFactorVec datas;
 
   using Impl = ProximalRiccatiKernel<Scalar>;
   using StageFactorType = StageFactor<Scalar>;
@@ -30,6 +31,9 @@ public:
   bool forward(std::vector<VectorXs> &xs, std::vector<VectorXs> &us,
                std::vector<VectorXs> &vs, std::vector<VectorXs> &lbdas,
                const std::optional<ConstVectorRef> &theta = std::nullopt) const;
+
+  VectorRef getFeedforward(size_t i) { return datas[i].ff.matrix(); }
+  RowMatrixRef getFeedback(size_t i) { return datas[i].fb.matrix(); }
 
   kkt0_t kkt0;     //< initial stage KKT system
   VectorXs thGrad; //< optimal value gradient wrt parameter
