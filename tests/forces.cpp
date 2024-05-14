@@ -9,6 +9,8 @@
 #include <aligator/modelling/multibody/contact-force.hpp>
 #include <aligator/modelling/multibody/multibody-wrench-cone.hpp>
 
+#ifdef ALIGATOR_PINOCCHIO_V3
+
 BOOST_AUTO_TEST_SUITE(forces)
 
 BOOST_AUTO_TEST_CASE(contact_forces) {
@@ -231,3 +233,5 @@ BOOST_AUTO_TEST_CASE(wrench_cone) {
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+#endif

@@ -9,6 +9,7 @@
 
 #include <pinocchio/algorithm/proximal.hpp>
 
+#ifdef ALIGATOR_PINOCCHIO_V3
 namespace aligator {
 
 template <typename Scalar> struct ContactForceDataTpl;
@@ -98,3 +99,5 @@ struct ContactForceDataTpl : StageFunctionDataTpl<Scalar> {
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./contact-force.txx"
 #endif
+
+#endif // ALIGATOR_PINOCCHIO_V3
