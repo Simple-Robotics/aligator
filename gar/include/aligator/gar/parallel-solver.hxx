@@ -114,10 +114,11 @@ bool ParallelRiccatiSolver<Scalar>::backward(const Scalar mudyn,
 #pragma omp parallel num_threads(numThreads)
   {
     uint i = (uint)omp::get_thread_id();
+#ifdef __linux__
     char *thrdname = new char[16];
-    int cpu = sched_getcpu();
-    snprintf(thrdname, 16, "thread%d[c%d]", int(i), cpu);
+    snprintf(thrdname, 16, "thread%d[c%d]", int(i), sched_getcpu());
     tracy::SetThreadName(thrdname);
+#endif
     auto [beg, end] = get_work(N, i, numThreads);
     boost::span<const KnotType> stview =
         make_span_from_indices(problem_->stages, beg, end);
