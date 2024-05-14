@@ -26,7 +26,6 @@ auto lqrComputeKktError(
   Scalar cstErr = 0.;
   Scalar dualErr = 0.;
   Scalar dNorm;
-  Scalar thNorm;
 
   VectorXs _dyn;
   VectorXs _cst;
@@ -90,7 +89,6 @@ auto lqrComputeKktError(
       if (knot.nu > 0)
         _gt.noalias() += knot.Gu.transpose() * us[t];
       _gt.noalias() += knot.Gth * th;
-      thNorm = math::infty_norm(_gt);
     }
 
     Scalar gxNorm = math::infty_norm(_gx);
