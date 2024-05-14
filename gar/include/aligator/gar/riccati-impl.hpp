@@ -54,14 +54,14 @@ template <typename _Scalar> struct StageFactor {
     }
   };
 
-  StageFactor(uint nx, uint nu, uint nc, uint nth)
+  StageFactor(uint nx, uint nu, uint nc, uint nx2, uint nth)
       : Qhat(nx, nx), Rhat(nu, nu), Shat(nx, nu), qhat(nx), rhat(nu),
-        AtV(nx, nx), BtV(nu, nx), Gxhat(nx, nth), Guhat(nu, nth),
-        ff({nu, nc, nx, nx}, {1}), fb({nu, nc, nx, nx}, {nx}),
-        fth({nu, nc, nx, nx}, {nth}), kktMat({nu, nc}, {nu, nc}),
-        kktChol(nu + nc), Efact(nx), yff_pre(nx), A_pre(nx, nx),
-        Yth_pre(nx, nth), Ptilde(nx, nx), Einv(nx, nx), EinvP(nx, nx),
-        schurMat(nx, nx), schurChol(nx), vm(nx, nth) {
+        AtV(nx, nx2), BtV(nu, nx2), Gxhat(nx, nth), Guhat(nu, nth),
+        ff({nu, nc, nx2, nx2}, {1}), fb({nu, nc, nx2, nx2}, {nx}),
+        fth({nu, nc, nx2, nx2}, {nth}), kktMat({nu, nc}, {nu, nc}),
+        kktChol(nu + nc), Efact(nx), yff_pre(nx2), A_pre(nx, nx),
+        Yth_pre(nx2, nth), Ptilde(nx, nx), Einv(nx2, nx2), EinvP(nx2, nx2),
+        schurMat(nx2, nx2), schurChol(nx2), vm(nx, nth) {
     Qhat.setZero();
     Rhat.setZero();
     Shat.setZero();

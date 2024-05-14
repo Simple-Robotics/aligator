@@ -46,7 +46,7 @@ void ParallelRiccatiSolver<Scalar>::allocateLeg(uint start, uint end,
     KnotType &knot = problem_->stages[t];
     if (!last_leg)
       knot.addParameterization(knot.nx);
-    datas.emplace_back(knot.nx, knot.nu, knot.nc, knot.nth);
+    datas.emplace_back(knot.nx, knot.nu, knot.nc, knot.nx2, knot.nth);
   }
 }
 

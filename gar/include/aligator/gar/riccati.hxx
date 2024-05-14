@@ -19,7 +19,7 @@ ProximalRiccatiSolver<Scalar>::ProximalRiccatiSolver(
   datas.reserve(N + 1);
   for (uint t = 0; t <= N; t++) {
     const KnotType &knot = knots[t];
-    datas.emplace_back(knot.nx, knot.nu, knot.nc, knot.nth);
+    datas.emplace_back(knot.nx, knot.nu, knot.nc, knot.nx2, knot.nth);
   }
   thGrad.setZero();
   thHess.setZero();

@@ -378,13 +378,15 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
 
   // update multiplier
   if (!problem.term_cstrs_.empty()) {
-    const uint nu = dus.back().rows();
-    const uint nc = dvs[nsteps].rows();
-    const uint ndx = dxs[nsteps].rows();
+    const std::array<long, 2> _dims{
+        workspace_.lqr_problem.stages[nsteps].nu,
+        workspace_.lqr_problem.stages[nsteps].nc,
+    };
+    const uint ndx = workspace_.lqr_problem.stages[nsteps].nx;
     BlkMatrix<ConstVectorRef, 2, 1> ff{
-        linearSolver_->getFeedforward(nsteps), {nu, nc}, {1}};
+        linearSolver_->getFeedforward(nsteps), _dims, {1}};
     BlkMatrix<ConstMatrixRef, 2, 1> fb{
-        linearSolver_->getFeedback(nsteps), {nu, nc}, {ndx}};
+        linearSolver_->getFeedback(nsteps), _dims, {ndx}};
     ConstVectorRef zff = ff[1];
     ConstMatrixRef Zfb = fb.blockRow(1);
 

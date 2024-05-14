@@ -9,6 +9,8 @@ enum struct RolloutType {
   NONLINEAR
 };
 
+enum struct ErrorCode { UNINITIALIZED, UNSUPPORTED_OPTION, NAN_DETECTED };
+
 enum struct HessianApprox {
   /// Use exact Hessian.
   EXACT,
