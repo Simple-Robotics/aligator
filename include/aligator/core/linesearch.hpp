@@ -1,6 +1,6 @@
 #pragma once
 
-#include <proxsuite-nlp/linesearch-base.hpp>
+#include <proxsuite-nlp/linesearch-armijo.hpp>
 
 namespace aligator {
 

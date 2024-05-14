@@ -189,7 +189,7 @@ if(BUILD_PYTHON_INTERFACE)
 
 endif(BUILD_PYTHON_INTERFACE)
 
-add_project_dependency(proxsuite-nlp 0.2.3 REQUIRED)
+add_project_dependency(proxsuite-nlp 0.6.1 REQUIRED)
 
 set(LIB_SOURCES src/utils/logger.cpp)
 
