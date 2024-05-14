@@ -761,7 +761,7 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
     }
 
     // TODO: handle the bloody constraints
-    assert(knot.nc == workspace_.constraintProjJacobians[t].rows());
+    assert(knot.nc == workspace_.cstr_proj_jacs[t].rows());
     knot.C.topRows(nc) = workspace_.cstr_proj_jacs[t].blockCol(0);
     knot.D.topRows(nc) = workspace_.cstr_proj_jacs[t].blockCol(1);
     knot.d.head(nc) = workspace_.Lvs[t];
