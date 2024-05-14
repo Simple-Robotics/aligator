@@ -2,6 +2,7 @@
 /// @author Wilson Jallet
 #pragma once
 
+#ifdef ALIGATOR_WITH_CHOLMOD
 #include <Eigen/CholmodSupport>
 
 #include "lqr-problem.hpp"
@@ -200,3 +201,4 @@ extern template class CholmodLqSolver<context::Scalar>;
 #endif
 
 } // namespace aligator::gar
+#endif
