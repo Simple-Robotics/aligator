@@ -266,13 +266,18 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateGains() {
   using gar::StageFactor;
   const std::size_t N = workspace_.nsteps;
   linearSolver_->collapseFeedback(); // will alter feedback gains
-  for (std::size_t i = 0; i <= N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     VectorRef ff = results_.getFeedforward(i);
     MatrixRef fb = results_.getFeedback(i);
 
     ff = linearSolver_->getFeedforward(i);
     fb = linearSolver_->getFeedback(i);
   }
+  VectorRef ff = results_.getFeedforward(N);
+  MatrixRef fb = results_.getFeedback(N);
+
+  ff = linearSolver_->getFeedforward(N).tail(ff.rows());
+  fb = linearSolver_->getFeedback(N).bottomRows(fb.rows());
 }
 
 // [1] Section IV. Proximal Differential Dynamic Programming
