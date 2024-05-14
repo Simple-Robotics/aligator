@@ -134,6 +134,7 @@ void exposeProxDDP() {
                      &SolverType::multiplier_update_mode)
       .def_readwrite("mu_init", &SolverType::mu_init,
                      "Initial AL penalty parameter.")
+      .add_property("mu", &SolverType::mu)
       .def_readwrite("rho_init", &SolverType::rho_init,
                      "Initial proximal regularization.")
       .def_readwrite("mu_min", &SolverType::mu_lower_bound,
