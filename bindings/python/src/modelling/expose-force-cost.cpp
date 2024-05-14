@@ -4,6 +4,8 @@
 
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/modelling/multibody-utils.hpp"
+
+#ifdef ALIGATOR_PINOCCHIO_V3
 #include "aligator/modelling/multibody/contact-force.hpp"
 #include "aligator/modelling/multibody/multibody-wrench-cone.hpp"
 
@@ -82,5 +84,7 @@ void exposeContactForce() {
 
 } // namespace python
 } // namespace aligator
+
+#endif
 
 #endif

@@ -7,9 +7,9 @@
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 #include <pinocchio/multibody/data.hpp>
 
+#ifdef ALIGATOR_PINOCCHIO_V3
 #include <pinocchio/algorithm/proximal.hpp>
 
-#ifdef ALIGATOR_PINOCCHIO_V3
 namespace aligator {
 
 template <typename Scalar> struct ContactForceDataTpl;

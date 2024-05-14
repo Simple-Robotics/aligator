@@ -5,11 +5,10 @@
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 
 #include <boost/test/unit_test.hpp>
-#include <iostream>
-#include <aligator/modelling/multibody/contact-force.hpp>
-#include <aligator/modelling/multibody/multibody-wrench-cone.hpp>
 
 #ifdef ALIGATOR_PINOCCHIO_V3
+#include <aligator/modelling/multibody/contact-force.hpp>
+#include <aligator/modelling/multibody/multibody-wrench-cone.hpp>
 
 BOOST_AUTO_TEST_SUITE(forces)
 
