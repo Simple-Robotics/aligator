@@ -9,10 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Added constrained LQR example
+- Adds [tracy](https://github.com/Simple-Robotics/tracy) as a profiling tool
+- Adds a new sublibrary called `gar` to represent and solve time-varying linear-quadratic subproblems
+- Adds a parallel, block-sparse factorization for the implicit/proximal Riccati algorithm
+- Integrates the CHOLMOD solver from the SuiteSparse library into `gar`
 
 ### Changed
 - Standardized CMake output directories ([#147](https://github.com/Simple-Robotics/aligator/pull/147))
 - Split derivative computation into first- and second-order functions per stage by @fabinsch
+- Changed minimum version of C++ to C++17
+- SolverProxDDP now uses linear solvers provided by `gar`
+- Minimum version of eigenpy upgraded to 3.4 (for supporting `std::unique_ptr`)
 
 ## [0.5.1] - 2024-04-24
 
