@@ -28,7 +28,7 @@ void exposeProxDDP() {
       proxsuite::nlp::LSInterpolation>();
   eigenpy::register_symbolic_link_to_registered_type<context::BCLParams>();
 
-  bp::enum_<LQSolverChoice>("LinearSolverChoice")
+  bp::enum_<LQSolverChoice>("LQSolverChoice")
       .value("LQ_SOLVER_SERIAL", LQSolverChoice::SERIAL)
       .value("LQ_SOLVER_PARALLEL", LQSolverChoice::PARALLEL)
       .value("LQ_SOLVER_STAGEDENSE", LQSolverChoice::STAGEDENSE)
