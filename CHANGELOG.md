@@ -8,18 +8,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Added constrained LQR example
+
+- Added constrained LQR example ([#145](https://github.com/Simple-Robotics/aligator/pull/145))
 - Adds [tracy](https://github.com/Simple-Robotics/tracy) as a profiling tool
 - Adds a new sublibrary called `gar` to represent and solve time-varying linear-quadratic subproblems
 - Adds a parallel, block-sparse factorization for the implicit/proximal Riccati algorithm
 - Integrates the CHOLMOD solver from the SuiteSparse library into `gar`
+- Add a C++ example and benchmark of Talos walking by @edantec
+- Add a `BlkMatrix<>` template class for dealing with block Eigen matrices effectively
+- Copy the headers from [boost::core::span](https://www.boost.org/doc/libs/1_85_0/libs/core/doc/html/core/span.html)
+- Add SE2 car benchmark `bench/se2-car.cpp`
 
 ### Changed
+
 - Standardized CMake output directories ([#147](https://github.com/Simple-Robotics/aligator/pull/147))
 - Split derivative computation into first- and second-order functions per stage by @fabinsch
-- Changed minimum version of C++ to C++17
-- SolverProxDDP now uses linear solvers provided by `gar`
+- Changed minimum version of C++ to C++17 (no longer use `boost::optional` or `boost::filesystem`)
+- SolverProxDDP now uses linear solvers provided by `gar` (API breaking), add `LQSolverChoice` enum
 - Minimum version of eigenpy upgraded to 3.4 (for supporting `std::unique_ptr`)
+- Move cost functions to `aligator/modelling/costs`
+- Python: Expose `TrajOptData::init_data`
+- Deprecate `ControlBoxFunction`
+- Remove `LDLTChoice` enum (API breaking)
+- Refactor computation of problem Lagrangian's gradient
+- Remove `core/stage-data.hxx`
+- StageModel/StageData now store dynamics model/data separate from other constraints
+  - add `dynamics_data` to `StageData`
+- Rewrite the `Logger` class (rename from `BaseLogger`) using map data structures to store line formatting info + content
 
 ## [0.5.1] - 2024-04-24
 
