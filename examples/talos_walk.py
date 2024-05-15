@@ -177,7 +177,6 @@ LF_placement = rdata.oMf[LF_id]
 RF_placement = rdata.oMf[RF_id]
 
 frame_com = aligator.CenterOfMassTranslationResidual(space.ndx, nu, rmodel, com0)
-frame_com = aligator.CenterOfMassTranslationResidual(space.ndx, nu, rmodel, com0)
 v_ref = pin.Motion()
 v_ref.np[:] = 0.0
 frame_vel_LF = aligator.FrameVelocityResidual(
