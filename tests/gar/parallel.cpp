@@ -106,7 +106,6 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
              aligator::omp::get_available_threads());
 
 #pragma omp parallel sections num_threads(2)
-  // #pragma omp sections
   {
     fmt::print("Current threads: {:d}\n", aligator::omp::get_current_threads());
 
@@ -116,6 +115,7 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
     subSolve2.backward(mu, mu);
   }
   {
+    ALIGATOR_NOMALLOC_END;
     thHess = subSolve1.thHess + subSolve2.thHess;
     thGrad = subSolve1.thGrad + subSolve2.thGrad;
     hessChol.compute(thHess);
