@@ -50,12 +50,15 @@ set(TEST_NAMES
     problem
     solver-storage
     utils
-    nomalloc
 )
 
 foreach(test_name ${TEST_NAMES})
   add_aligator_test(${test_name})
 endforeach(test_name)
+
+if(CHECK_RUNTIME_MALLOC)
+  add_aligator_test(nomalloc)
+endif(CHECK_RUNTIME_MALLOC)
 
 add_subdirectory(gar)
 
