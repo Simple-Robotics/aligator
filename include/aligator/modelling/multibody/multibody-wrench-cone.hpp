@@ -89,12 +89,14 @@ struct MultibodyWrenchConeDataTpl : StageFunctionDataTpl<Scalar> {
   using PinData = pinocchio::DataTpl<Scalar>;
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
+  using Matrix6Xs = typename math_types<Scalar>::Matrix6Xs;
   using RigidConstraintDataVector =
       PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(pinocchio::RigidConstraintData);
 
   /// Pinocchio data object.
   PinData pin_data_;
   VectorXs tau_;
+  Matrix6Xs temp_;
 
   RigidConstraintDataVector constraint_datas_;
   pinocchio::ProximalSettingsTpl<Scalar> settings;

@@ -1,9 +1,11 @@
 #pragma once
 
+#include "aligator/macros.hpp"
 #include "aligator/modelling/multibody/contact-force.hpp"
 
 #include <pinocchio/algorithm/constrained-dynamics.hpp>
 #include <pinocchio/algorithm/constrained-dynamics-derivatives.hpp>
+#include <aligator/macros.hpp>
 
 namespace aligator {
 
@@ -18,7 +20,7 @@ void ContactForceResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
   const auto q = x.head(pin_model_.nq);
   const auto v = x.tail(pin_model_.nv);
 
-  d.tau_ = actuation_matrix_ * u;
+  d.tau_.noalias() = actuation_matrix_ * u;
   pinocchio::constraintDynamics(pin_model_, d.pin_data_, q, v, d.tau_,
                                 constraint_models_, d.constraint_datas_,
                                 d.settings);
@@ -36,13 +38,13 @@ void ContactForceResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
   pinocchio::computeConstraintDynamicsDerivatives(
       pin_model_, d.pin_data_, constraint_models_, d.constraint_datas_,
       d.settings);
-
   d.Jx_.leftCols(pin_model_.nv) =
       d.pin_data_.dlambda_dq.block(contact_id_ * 6, 0, 6, pin_model_.nv);
   d.Jx_.rightCols(pin_model_.nv) =
       d.pin_data_.dlambda_dv.block(contact_id_ * 6, 0, 6, pin_model_.nv);
-  d.Ju_ = d.pin_data_.dlambda_dtau.block(contact_id_ * 6, 0, 6, pin_model_.nv) *
-          actuation_matrix_;
+  d.Ju_.noalias() =
+      d.pin_data_.dlambda_dtau.block(contact_id_ * 6, 0, 6, pin_model_.nv) *
+      actuation_matrix_;
 }
 
 template <typename Scalar>

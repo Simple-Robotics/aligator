@@ -67,12 +67,14 @@ struct CentroidalMomentumDerivativeDataTpl : StageFunctionDataTpl<Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Base = StageFunctionDataTpl<Scalar>;
   using PinData = pinocchio::DataTpl<Scalar>;
+  using Matrix3Xs = typename math_types<Scalar>::Matrix3Xs;
   using Matrix6Xs = typename math_types<Scalar>::Matrix6Xs;
   using Matrix3s = Eigen::Matrix<Scalar, 3, 3>;
 
   /// Pinocchio data object.
   PinData pin_data_;
   Matrix3s Jtemp_;
+  Matrix3Xs temp_;
   Matrix6Xs fJf_;
 
   CentroidalMomentumDerivativeDataTpl(
