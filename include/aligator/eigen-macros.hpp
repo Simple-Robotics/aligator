@@ -22,7 +22,7 @@
 #define ALIGATOR_NOMALLOC_END ALIGATOR_EIGEN_ALLOW_MALLOC(true)
 /// @brief Restore the previous nomalloc status.
 #define ALIGATOR_NOMALLOC_RESTORE                                              \
-  ALIGATOR_EIGEN_ALLOW_MALLOC(::aligator::internal::get_malloc_status())
+  ALIGATOR_EIGEN_ALLOW_MALLOC(::aligator::internal::get_cached_malloc_status())
 
 namespace aligator::internal {
 static bool g_cached_malloc_status = true;
@@ -39,7 +39,7 @@ inline void save_malloc_status() {
   );
 }
 
-inline bool get_malloc_status() { return g_cached_malloc_status; }
+inline bool get_cached_malloc_status() { return g_cached_malloc_status; }
 
 struct scoped_nomalloc {
   scoped_nomalloc(const scoped_nomalloc &) = delete;
