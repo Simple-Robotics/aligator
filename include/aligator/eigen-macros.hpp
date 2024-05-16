@@ -7,6 +7,8 @@
 #ifdef ALIGATOR_EIGEN_CHECK_MALLOC
 #define ALIGATOR_EIGEN_ALLOW_MALLOC(allowed)                                   \
   ::Eigen::internal::set_is_malloc_allowed(allowed)
+/// @brief Set nomalloc for the scope. Previous malloc status will be restored
+/// upon exiting the scope.
 #define ALIGATOR_NOMALLOC_SCOPED                                               \
   const ::aligator::internal::scoped_nomalloc ___aligator_nomalloc_zone {}
 #else
