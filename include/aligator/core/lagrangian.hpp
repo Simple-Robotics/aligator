@@ -24,7 +24,7 @@ template <typename Scalar> struct LagrangianDerivatives {
     const std::size_t nsteps = problem.numSteps();
 
     ZoneScopedN("LagrangianDerivatives::compute");
-    ALIGATOR_NOMALLOC_BEGIN;
+    ALIGATOR_NOMALLOC_SCOPED;
 
     math::setZero(Lxs);
     math::setZero(Lus);
@@ -64,7 +64,6 @@ template <typename Scalar> struct LagrangianDerivatives {
         Lxs[nsteps].noalias() += cd.Jx_.transpose() * vN[j];
       }
     }
-    ALIGATOR_NOMALLOC_END;
   }
 };
 

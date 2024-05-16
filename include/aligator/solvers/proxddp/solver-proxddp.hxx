@@ -698,7 +698,7 @@ void SolverProxDDPTpl<Scalar>::computeInfeasibilities(const Problem &problem) {
 }
 
 template <typename Scalar> void SolverProxDDPTpl<Scalar>::computeCriterion() {
-  ALIGATOR_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_SCOPED;
   ZoneScoped;
   const std::size_t nsteps = workspace_.nsteps;
 
@@ -723,7 +723,6 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::computeCriterion() {
   results_.dual_infeas =
       std::max(math::infty_norm(workspace_.state_dual_infeas),
                math::infty_norm(workspace_.control_dual_infeas));
-  ALIGATOR_NOMALLOC_END;
 }
 
 template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {

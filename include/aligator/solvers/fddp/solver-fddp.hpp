@@ -151,9 +151,8 @@ public:
   ALIGATOR_INLINE void acceptGains(const Workspace &workspace,
                                    Results &results) const {
     assert(workspace.kktRhs.size() == results.gains_.size());
-    ALIGATOR_NOMALLOC_BEGIN;
+    ALIGATOR_NOMALLOC_SCOPED;
     results.gains_ = workspace.kktRhs;
-    ALIGATOR_NOMALLOC_END;
   }
 
   inline void increaseRegularization() {

@@ -171,7 +171,7 @@ void TrajOptProblemTpl<Scalar>::replaceStageCircular(
 template <typename Scalar>
 Scalar TrajOptProblemTpl<Scalar>::computeTrajectoryCost(
     const Data &problem_data) const {
-  ALIGATOR_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_SCOPED;
   ZoneScoped;
   Scalar traj_cost = 0.;
 
@@ -184,7 +184,6 @@ Scalar TrajOptProblemTpl<Scalar>::computeTrajectoryCost(
   }
   traj_cost += problem_data.term_cost_data->value_;
 
-  ALIGATOR_NOMALLOC_END;
   return traj_cost;
 }
 
