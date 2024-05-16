@@ -5,10 +5,14 @@
 #include "macros.hpp"
 
 #ifdef ALIGATOR_EIGEN_CHECK_MALLOC
+/// @warning Unless using versions of Eigen past 3.4.x, NOT SUPPORTED IN
+/// MULTITHREADED CONTEXTS
 #define ALIGATOR_EIGEN_ALLOW_MALLOC(allowed)                                   \
   ::Eigen::internal::set_is_malloc_allowed(allowed)
 /// @brief Set nomalloc for the scope. Previous malloc status will be restored
 /// upon exiting the scope.
+/// @warning Unless using versions of Eigen past 3.4.x, NOT SUPPORTED IN
+/// MULTITHREADED CONTEXTS
 #define ALIGATOR_NOMALLOC_SCOPED                                               \
   const ::aligator::internal::scoped_nomalloc ___aligator_nomalloc_zone {}
 #else

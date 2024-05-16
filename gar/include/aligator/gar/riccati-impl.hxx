@@ -102,7 +102,6 @@ void ProximalRiccatiKernel<Scalar>::computeInitial(
     VectorRef x0, VectorRef lbd0, const kkt0_t &kkt0,
     const std::optional<ConstVectorRef> &theta_) {
   ZoneScoped;
-  ALIGATOR_NOMALLOC_SCOPED;
   assert(kkt0.chol.info() == Eigen::Success);
   x0 = kkt0.ff.blockSegment(0);
   lbd0 = kkt0.ff.blockSegment(1);
@@ -257,7 +256,6 @@ bool ProximalRiccatiKernel<Scalar>::forwardImpl(
     boost::span<VectorXs> us, boost::span<VectorXs> vs,
     boost::span<VectorXs> lbdas, const std::optional<ConstVectorRef> &theta_) {
   ZoneScoped;
-  ALIGATOR_NOMALLOC_SCOPED;
 
   uint N = (uint)(datas.size() - 1);
   for (uint t = 0; t <= N; t++) {
