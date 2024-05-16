@@ -25,7 +25,7 @@
   ALIGATOR_EIGEN_ALLOW_MALLOC(::aligator::internal::get_cached_malloc_status())
 
 namespace aligator::internal {
-static bool g_cached_malloc_status = true;
+thread_local static bool g_cached_malloc_status = true;
 
 inline void set_malloc_status(bool status) { g_cached_malloc_status = status; }
 
