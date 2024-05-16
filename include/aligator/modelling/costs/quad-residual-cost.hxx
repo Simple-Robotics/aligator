@@ -24,7 +24,8 @@ void QuadraticResidualCostTpl<Scalar>::evaluate(const ConstVectorRef &x,
   Data &data = static_cast<Data &>(data_);
   StageFunctionDataTpl<Scalar> &under_data = *data.residual_data;
   residual_->evaluate(x, u, x, under_data);
-  data.value_ = .5 * under_data.value_.dot(weights_ * under_data.value_);
+  data.Wv_buf.noalias() = weights_ * under_data.value_;
+  data.value_ = .5 * under_data.value_.dot(data.Wv_buf);
 }
 
 template <typename Scalar>
