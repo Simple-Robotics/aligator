@@ -18,6 +18,9 @@
 #define ALIGATOR_NOMALLOC_BEGIN ALIGATOR_EIGEN_ALLOW_MALLOC(false)
 /// @brief Exiting performance-critical code.
 #define ALIGATOR_NOMALLOC_END ALIGATOR_EIGEN_ALLOW_MALLOC(true)
+/// @brief Restore the previous nomalloc status.
+#define ALIGATOR_NOMALLOC_RESTORE                                              \
+  ALIGATOR_EIGEN_ALLOW_MALLOC(::aligator::internal::get_malloc_status())
 
 namespace aligator::internal {
 static struct {
@@ -46,13 +49,10 @@ struct scoped_nomalloc {
   scoped_nomalloc(scoped_nomalloc &&) = delete;
   ALIGATOR_INLINE scoped_nomalloc() {
     save_malloc_status();
-    ALIGATOR_EIGEN_ALLOW_MALLOC(true);
+    ALIGATOR_EIGEN_ALLOW_MALLOC(false);
   }
   // reset to value from before the scope
-  ~scoped_nomalloc() {
-    ALIGATOR_MAYBE_UNUSED bool active = get_malloc_status();
-    ALIGATOR_EIGEN_ALLOW_MALLOC(active);
-  }
+  ~scoped_nomalloc() { ALIGATOR_NOMALLOC_RESTORE; }
 };
 
 } // namespace aligator::internal
