@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(nested) {
     BOOST_CHECK(!aligator::internal::get_cached_malloc_status());
     BOOST_CHECK(!Eigen::internal::is_malloc_allowed());
     {
-      ALIGATOR_NOMALLOC_BEGIN;
+      ALIGATOR_NOMALLOC_SCOPED;
       BOOST_CHECK(!Eigen::internal::is_malloc_allowed());
       ALIGATOR_NOMALLOC_END; // allow Eigen's malloc, do not modify cached value
       BOOST_CHECK(Eigen::internal::is_malloc_allowed());
