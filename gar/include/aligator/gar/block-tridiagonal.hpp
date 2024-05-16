@@ -184,7 +184,7 @@ bool symmetricBlockTridiagSolveDownLooking(
     std::vector<MatrixType> &superdiagonal, BlkMatrix<RhsType, -1, 1> &rhs,
     std::vector<DecType> &facs) {
   ZoneScoped;
-  ALIGATOR_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_SCOPED;
 
   if (subdiagonal.size() != superdiagonal.size() ||
       diagonal.size() != superdiagonal.size() + 1 ||
@@ -233,8 +233,6 @@ bool symmetricBlockTridiagSolveDownLooking(
       break;
     i--;
   }
-
-  ALIGATOR_NOMALLOC_END;
   return true;
 }
 

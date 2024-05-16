@@ -29,7 +29,7 @@ ProximalRiccatiSolver<Scalar>::ProximalRiccatiSolver(
 template <typename Scalar>
 bool ProximalRiccatiSolver<Scalar>::backward(const Scalar mudyn,
                                              const Scalar mueq) {
-  ALIGATOR_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_SCOPED;
   ZoneNamed(Zone1, true);
   bool ret = Impl::backwardImpl(problem_->stages, mudyn, mueq, datas);
 
@@ -57,7 +57,6 @@ bool ProximalRiccatiSolver<Scalar>::backward(const Scalar mudyn,
         vinit.vt + vinit.Vxt.transpose() * kkt0.ff.blockSegment(0);
     thHess.noalias() = vinit.Vtt + vinit.Vxt.transpose() * kkt0.fth.blockRow(0);
   }
-  ALIGATOR_NOMALLOC_END;
   return ret;
 }
 

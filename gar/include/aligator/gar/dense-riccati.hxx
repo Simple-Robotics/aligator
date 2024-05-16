@@ -192,7 +192,7 @@ bool RiccatiSolverDense<Scalar>::forward(
     std::vector<VectorXs> &xs, std::vector<VectorXs> &us,
     std::vector<VectorXs> &vs, std::vector<VectorXs> &lbdas,
     const std::optional<ConstVectorRef> &theta_) const {
-  ALIGATOR_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_SCOPED;
   xs[0] = kkt0.ff[0];
   lbdas[0] = kkt0.ff[1];
   if (theta_.has_value()) {
@@ -237,7 +237,6 @@ bool RiccatiSolverDense<Scalar>::forward(
       xs[i + 1].noalias() += Yth * theta_.value();
     }
   }
-  ALIGATOR_NOMALLOC_END;
   return true;
 }
 } // namespace aligator::gar

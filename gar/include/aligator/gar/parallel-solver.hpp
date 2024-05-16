@@ -39,13 +39,12 @@ public:
 
   static void setupKnot(KnotType &knot, const Scalar mudyn) {
     ZoneScoped;
-    ALIGATOR_NOMALLOC_BEGIN;
+    ALIGATOR_NOMALLOC_SCOPED;
     knot.Gx = knot.A.transpose();
     knot.Gu = knot.B.transpose();
     knot.Gth.setZero();
     knot.Gth.diagonal().setConstant(-mudyn);
     knot.gamma = knot.f;
-    ALIGATOR_NOMALLOC_END;
   }
 
   bool backward(const Scalar mudyn, const Scalar mueq);
