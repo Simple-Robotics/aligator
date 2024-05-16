@@ -24,6 +24,7 @@ void QuadraticResidualCostTpl<Scalar>::evaluate(const ConstVectorRef &x,
   Data &data = static_cast<Data &>(data_);
   StageFunctionDataTpl<Scalar> &under_data = *data.residual_data;
   residual_->evaluate(x, u, x, under_data);
+  ALIGATOR_NOMALLOC_SCOPED;
   data.Wv_buf.noalias() = weights_ * under_data.value_;
   data.value_ = .5 * under_data.value_.dot(data.Wv_buf);
 }
@@ -36,6 +37,7 @@ void QuadraticResidualCostTpl<Scalar>::computeGradients(const ConstVectorRef &x,
   StageFunctionDataTpl<Scalar> &under_data = *data.residual_data;
   residual_->computeJacobians(x, u, x, under_data);
   const Eigen::Index size = data.grad_.size();
+  ALIGATOR_NOMALLOC_SCOPED;
   MatrixRef J = under_data.jac_buffer_.leftCols(size);
   data.Wv_buf.noalias() = weights_ * under_data.value_;
   data.grad_.noalias() = J.transpose() * data.Wv_buf;
