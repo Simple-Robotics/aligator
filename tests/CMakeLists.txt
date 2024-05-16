@@ -50,6 +50,7 @@ set(TEST_NAMES
     problem
     solver-storage
     utils
+    nomalloc
 )
 
 foreach(test_name ${TEST_NAMES})
