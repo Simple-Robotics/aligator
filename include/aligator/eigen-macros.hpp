@@ -24,7 +24,7 @@
 
 namespace aligator::internal {
 static struct {
-  bool value;
+  bool value = true;
 } g_malloc_status;
 
 inline bool set_malloc_status(bool status) {
