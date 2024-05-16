@@ -47,13 +47,15 @@ template <typename Scalar>
 void QuadraticResidualCostTpl<Scalar>::computeHessians(const ConstVectorRef &x,
                                                        const ConstVectorRef &u,
                                                        CostData &data_) const {
+  ALIGATOR_NOMALLOC_SCOPED;
   Data &data = static_cast<Data &>(data_);
   StageFunctionDataTpl<Scalar> &under_data = *data.residual_data;
   const Eigen::Index size = data.grad_.size();
   MatrixRef J = under_data.jac_buffer_.leftCols(size);
   data.JtW_buf.noalias() = J.transpose() * weights_;
-  data.hess_ = data.JtW_buf * J;
+  data.hess_.noalias() = data.JtW_buf * J;
   if (!gauss_newton) {
+    ALIGATOR_NOMALLOC_END;
     residual_->computeVectorHessianProducts(x, u, x, data.Wv_buf, under_data);
     data.hess_ = under_data.vhp_buffer_;
   }
