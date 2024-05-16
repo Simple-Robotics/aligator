@@ -4,7 +4,7 @@
 #pragma once
 
 #include "aligator/modelling/state-error.hpp"
-#include "aligator/modelling/costs/composite-costs.hpp"
+#include "aligator/modelling/costs/quad-residual-cost.hpp"
 
 namespace aligator {
 

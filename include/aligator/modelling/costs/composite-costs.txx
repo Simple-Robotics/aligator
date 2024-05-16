@@ -3,14 +3,8 @@
 #pragma once
 
 #include "aligator/context.hpp"
-#include "./composite-costs.hpp"
+#include "aligator/modelling/costs/composite-costs.hpp"
 
 namespace aligator {
-
 extern template struct CompositeCostDataTpl<context::Scalar>;
-
-extern template struct QuadraticResidualCostTpl<context::Scalar>;
-
-extern template struct LogResidualCostTpl<context::Scalar>;
-
 } // namespace aligator

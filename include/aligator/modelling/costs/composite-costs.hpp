@@ -5,7 +5,6 @@
 #include "aligator/fwd.hpp"
 #include "aligator/core/function-abstract.hpp"
 #include "aligator/core/cost-abstract.hpp"
-#include "aligator/modelling/state-error.hpp"
 
 #include <fmt/ostream.h>
 
@@ -32,9 +31,6 @@ struct CompositeCostDataTpl : CostDataAbstractTpl<Scalar> {
 };
 
 } // namespace aligator
-
-#include "./quad-residual-cost.hpp"
-#include "./log-residual-cost.hpp"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./composite-costs.txx"

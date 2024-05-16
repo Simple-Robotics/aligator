@@ -46,6 +46,8 @@ struct QuadraticResidualCostTpl : CostAbstractTpl<_Scalar> {
   }
 };
 
+extern template struct QuadraticResidualCostTpl<context::Scalar>;
+
 } // namespace aligator
 
 #include "./quad-residual-cost.hxx"

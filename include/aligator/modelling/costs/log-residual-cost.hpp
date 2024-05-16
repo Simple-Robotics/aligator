@@ -40,6 +40,8 @@ template <typename Scalar> struct LogResidualCostTpl : CostAbstractTpl<Scalar> {
   }
 };
 
+extern template struct LogResidualCostTpl<context::Scalar>;
+
 } // namespace aligator
 
 #include "./log-residual-cost.hxx"
