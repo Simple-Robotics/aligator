@@ -15,19 +15,21 @@
 /// MULTITHREADED CONTEXTS
 #define ALIGATOR_NOMALLOC_SCOPED                                               \
   const ::aligator::internal::scoped_nomalloc ___aligator_nomalloc_zone {}
+/// @brief Restore the previous nomalloc status.
+#define ALIGATOR_NOMALLOC_RESTORE                                              \
+  ALIGATOR_EIGEN_ALLOW_MALLOC(::aligator::internal::get_cached_malloc_status())
 #else
 #define ALIGATOR_EIGEN_ALLOW_MALLOC(allowed)
 #define ALIGATOR_NOMALLOC_SCOPED
+#define ALIGATOR_NOMALLOC_RESTORE
 #endif
 
 /// @brief Entering performance-critical code.
 #define ALIGATOR_NOMALLOC_BEGIN ALIGATOR_EIGEN_ALLOW_MALLOC(false)
 /// @brief Exiting performance-critical code.
 #define ALIGATOR_NOMALLOC_END ALIGATOR_EIGEN_ALLOW_MALLOC(true)
-/// @brief Restore the previous nomalloc status.
-#define ALIGATOR_NOMALLOC_RESTORE                                              \
-  ALIGATOR_EIGEN_ALLOW_MALLOC(::aligator::internal::get_cached_malloc_status())
 
+#ifdef ALIGATOR_EIGEN_CHECK_MALLOC
 namespace aligator::internal {
 thread_local static bool g_cached_malloc_status = true;
 
@@ -57,3 +59,4 @@ struct scoped_nomalloc {
 };
 
 } // namespace aligator::internal
+#endif
