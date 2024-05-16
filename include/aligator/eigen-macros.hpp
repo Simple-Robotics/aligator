@@ -25,14 +25,9 @@
   ALIGATOR_EIGEN_ALLOW_MALLOC(::aligator::internal::get_malloc_status())
 
 namespace aligator::internal {
-static struct {
-  bool value = true;
-} g_malloc_status;
+static bool g_cached_malloc_status = true;
 
-inline bool set_malloc_status(bool status) {
-  g_malloc_status.value = status;
-  return g_malloc_status.value;
-}
+inline void set_malloc_status(bool status) { g_cached_malloc_status = status; }
 
 inline void save_malloc_status() {
   set_malloc_status(
@@ -44,7 +39,7 @@ inline void save_malloc_status() {
   );
 }
 
-inline bool get_malloc_status() { return g_malloc_status.value; }
+inline bool get_malloc_status() { return g_cached_malloc_status; }
 
 struct scoped_nomalloc {
   scoped_nomalloc(const scoped_nomalloc &) = delete;
