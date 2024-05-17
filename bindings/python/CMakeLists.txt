@@ -79,9 +79,14 @@ else()
 endif()
 # --- GENERATE STUBS
 if(GENERATE_PYTHON_STUBS)
+  python_build_get_target(python_build_target_name)
   load_stubgen()
+  # Set PYWRAP and PROJECT_NAME as stubs dependencies.
+  # PROJECT_NAME is mandatory (even if it's a PYWRAP dependency)
+  # to find PROJECT_NAME name DLL on windows.
   generate_stubs(
     ${CMAKE_CURRENT_BINARY_DIR} ${PROJECT_NAME} ${ABSOLUTE_PYTHON_SITELIB} ${PYLIB_NAME}
+    ${python_build_target_name}
   )
 endif(GENERATE_PYTHON_STUBS)
 
