@@ -7,7 +7,7 @@
 #include "aligator/core/lagrangian.hpp"
 #include "aligator/utils/forward-dyn.hpp"
 
-#include "aligator/gar/riccati.hpp"
+#include "aligator/gar/proximal-riccati.hpp"
 #include "aligator/gar/parallel-solver.hpp"
 #include "aligator/gar/dense-riccati.hpp"
 

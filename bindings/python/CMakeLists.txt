@@ -20,8 +20,9 @@ endif()
 
 function(make_bindings)
   add_library(
-    ${PYLIB_NAME} SHARED ${PY_HEADERS} ${PY_SOURCES} src/gar/expose-gar.cpp
-                         src/gar/expose-parallel.cpp src/gar/expose-dense.cpp
+    ${PYLIB_NAME} SHARED
+    ${PY_HEADERS} ${PY_SOURCES} src/gar/expose-dense.cpp src/gar/expose-gar.cpp
+    src/gar/expose-parallel.cpp src/gar/expose-prox-riccati.cpp
   )
   add_library(aligator::python ALIAS ${PYLIB_NAME})
 

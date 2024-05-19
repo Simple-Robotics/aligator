@@ -4,7 +4,7 @@
 
 #include <benchmark/benchmark.h>
 
-#include "aligator/gar/riccati.hpp"
+#include "aligator/gar/proximal-riccati.hpp"
 #include "aligator/gar/parallel-solver.hpp"
 #include "aligator/gar/dense-riccati.hpp"
 #include "aligator/gar/utils.hpp"

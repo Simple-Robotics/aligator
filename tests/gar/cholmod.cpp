@@ -1,4 +1,4 @@
-#include "aligator/gar/riccati.hpp"
+#include "aligator/gar/proximal-riccati.hpp"
 #include "aligator/gar/cholmod-solver.hpp"
 #include "aligator/gar/utils.hpp"
 

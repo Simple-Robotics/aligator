@@ -1,7 +1,7 @@
 #pragma once
 
-#include "riccati.hpp"
-#include "lqr-problem.hpp"
+#include "./proximal-riccati.hpp"
+#include "./lqr-problem.hpp"
 
 #include <tracy/Tracy.hpp>
 

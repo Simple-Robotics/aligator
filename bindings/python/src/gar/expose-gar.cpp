@@ -1,39 +1,21 @@
 /// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/blk-matrix.hpp"
-#include "aligator/gar/riccati.hpp"
+#include "aligator/gar/lqr-problem.hpp"
+#include "aligator/gar/riccati-base.hpp"
 #include "aligator/gar/utils.hpp"
 
 #include "aligator/python/utils.hpp"
 #include "aligator/python/visitors.hpp"
 
-namespace aligator {
-namespace python {
+namespace aligator::python {
 using namespace gar;
 
 using context::Scalar;
 using riccati_base_t = RiccatiSolverBase<Scalar>;
-using prox_riccati_t = ProximalRiccatiSolver<Scalar>;
-using stage_factor_t = StageFactor<Scalar>;
 using knot_t = LQRKnotTpl<context::Scalar>;
 using lqr_t = LQRProblemTpl<context::Scalar>;
-} // namespace python
-} // namespace aligator
 
-#if EIGENPY_VERSION_AT_MOST(3, 2, 0)
-namespace eigenpy {
-namespace internal {
-template <>
-struct has_operator_equal<::aligator::python::knot_t> : boost::false_type {};
-template <>
-struct has_operator_equal<::aligator::python::StageFactorType>
-    : boost::false_type {};
-} // namespace internal
-} // namespace eigenpy
-#endif
-
-namespace aligator {
-namespace python {
 using context::MatrixXs;
 using RowMatrixXs = Eigen::Transpose<MatrixXs>::PlainMatrix;
 using context::VectorXs;
@@ -69,35 +51,14 @@ void exposeCholmodSolver();
 void exposeParallelSolver();
 // fwd-declare exposeDenseSolver()
 void exposeDenseSolver();
+// fwd-declare exposeProxRiccati()
+void exposeProxRiccati();
 
 void exposeGAR() {
 
   bp::scope ns = get_namespace("gar");
 
   exposeBlockMatrices();
-
-  using value_t = prox_riccati_t::value_t;
-  bp::class_<value_t>("value_data", bp::no_init)
-      .def_readonly("Pmat", &value_t::Pmat)
-      .def_readonly("pvec", &value_t::pvec)
-      .def_readonly("Vxx", &value_t::Vxx)
-      .def_readonly("vx", &value_t::vx)
-      .def_readonly("Vxt", &value_t::Vxt)
-      .def_readonly("Vtt", &value_t::Vtt)
-      .def_readonly("vt", &value_t::vt);
-
-  bp::class_<stage_factor_t>(
-      "StageFactor", "Stagewise factor for the generalized Riccati algorithm.",
-      bp::no_init)
-      .def_readonly("ff", &stage_factor_t::ff)
-      .def_readonly("fb", &stage_factor_t::fb)
-      .def_readonly("fth", &stage_factor_t::fth)
-      .def_readonly("kktMat", &stage_factor_t::kktMat)
-      .def_readonly("kktChol", &stage_factor_t::kktChol)
-      .def_readonly("vm", &stage_factor_t::vm);
-
-  using StageFactorVec = std::vector<stage_factor_t>;
-  StdVectorPythonVisitor<StageFactorVec, true>::expose("StdVec_StageFactor");
 
   bp::class_<knot_t>("LQRKnot", bp::no_init)
       .def(bp::init<uint, uint, uint>(("nx"_a, "nu", "nc")))
@@ -157,24 +118,6 @@ void exposeGAR() {
       .def("forward", &riccati_base_t::forward,
            ("self"_a, "xs", "us", "vs", "lbdas", "theta"_a = std::nullopt));
 
-  {
-    bp::scope _ =
-        bp::class_<prox_riccati_t, bp::bases<riccati_base_t>,
-                   boost::noncopyable>("ProximalRiccatiSolver",
-                                       "Proximal Riccati solver.", bp::no_init)
-            .def(bp::init<const lqr_t &>(("self"_a, "problem")))
-            .def_readonly("thGrad", &prox_riccati_t::thGrad, "Value gradient")
-            .def_readonly("thHess", &prox_riccati_t::thHess, "Value Hessian")
-            .def_readonly("datas", &prox_riccati_t::datas)
-            .def_readonly("kkt0", &prox_riccati_t::kkt0,
-                          "Initial stage KKT system");
-    bp::class_<prox_riccati_t::kkt0_t>("kkt0_t", bp::no_init)
-        .def_readonly("ff", &prox_riccati_t::kkt0_t::ff)
-        .def_readonly("fth", &prox_riccati_t::kkt0_t::fth)
-        .def_readonly("mat", &prox_riccati_t::kkt0_t::mat)
-        .def_readonly("chol", &prox_riccati_t::kkt0_t::chol);
-  }
-
   bp::def(
       "lqrDenseMatrix",
       +[](const lqr_t &problem, Scalar mudyn, Scalar mueq) {
@@ -190,7 +133,7 @@ void exposeGAR() {
 #endif
   exposeDenseSolver();
   exposeParallelSolver();
+  exposeProxRiccati();
 }
 
-} // namespace python
-} // namespace aligator
+} // namespace aligator::python

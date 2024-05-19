@@ -1,7 +1,7 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "aligator/gar/riccati.hpp"
+#include "aligator/gar/proximal-riccati.hpp"
 #include <random>
 
 ALIGATOR_DYNAMIC_TYPEDEFS(double);

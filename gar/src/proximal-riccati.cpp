@@ -1,5 +1,5 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
-#include "aligator/gar/riccati.hpp"
+#include "aligator/gar/proximal-riccati.hpp"
 
 namespace aligator {
 namespace gar {
