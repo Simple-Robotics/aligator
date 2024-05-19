@@ -7,12 +7,13 @@
 
 #include "aligator/core/callback-base.hpp"
 #include "aligator/core/explicit-dynamics.hpp"
+#include "aligator/core/linesearch.hpp"
 
 #include "./results.hpp"
 #include "./workspace.hpp"
-#include "./linesearch.hpp"
 
 #include "aligator/utils/logger.hpp"
+#include "aligator/threads.hpp"
 
 #include <fmt/ostream.h>
 #include <unordered_map>

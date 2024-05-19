@@ -202,33 +202,6 @@ private:
   }
 };
 
-/// @brief Problem data struct.
-template <typename _Scalar> struct TrajOptDataTpl {
-  using Scalar = _Scalar;
-  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using StageFunctionData = StageFunctionDataTpl<Scalar>;
-  using ConstraintType = StageConstraintTpl<Scalar>;
-  using StageData = StageDataTpl<Scalar>;
-  using CostData = CostDataAbstractTpl<Scalar>;
-
-  /// Current cost in the TO problem.
-  Scalar cost_ = 0.;
-
-  /// Data for the initial condition.
-  shared_ptr<StageFunctionData> init_data;
-  /// Data structs for each stage of the problem.
-  std::vector<shared_ptr<StageData>> stage_data;
-  /// Terminal cost data.
-  shared_ptr<CostData> term_cost_data;
-  /// Terminal constraint data.
-  std::vector<shared_ptr<StageFunctionData>> term_cstr_data;
-
-  inline std::size_t numSteps() const { return stage_data.size(); }
-
-  TrajOptDataTpl() = default;
-  TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem);
-};
-
 namespace internal {
 template <typename Scalar>
 auto problem_last_state_space_helper(const TrajOptProblemTpl<Scalar> &problem) {

@@ -4,6 +4,7 @@
 
 #include "aligator/fwd.hpp"
 #include "aligator/core/solver-util.hpp"
+#include "aligator/core/traj-opt-data.hpp"
 
 namespace aligator {
 

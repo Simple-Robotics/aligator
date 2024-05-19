@@ -3,6 +3,7 @@
 #pragma once
 
 #include "./solver-fddp.hpp"
+#include "./linesearch.hpp"
 
 namespace aligator {
 

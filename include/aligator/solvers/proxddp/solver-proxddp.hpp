@@ -7,6 +7,7 @@
 #include "aligator/core/filter.hpp"
 #include "aligator/core/callback-base.hpp"
 #include "aligator/core/enums.hpp"
+#include "aligator/threads.hpp"
 #include "aligator/utils/logger.hpp"
 
 #include "workspace.hpp"
