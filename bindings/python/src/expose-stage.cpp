@@ -5,6 +5,7 @@
 
 #include "aligator/core/stage-model.hpp"
 #include "aligator/core/stage-data.hpp"
+#include "aligator/core/cost-abstract.hpp"
 
 #include <proxsuite-nlp/python/deprecation-policy.hpp>
 

@@ -2,6 +2,7 @@
 #include "aligator/solvers/proxddp/results.hpp"
 #include "aligator/solvers/proxddp/workspace.hpp"
 #include "aligator/core/explicit-dynamics.hpp"
+#include "aligator/core/cost-abstract.hpp"
 #include "aligator/utils/rollout.hpp"
 #include "aligator/modelling/state-error.hpp"
 #include <proxsuite-nlp/modelling/spaces/pinocchio-groups.hpp>

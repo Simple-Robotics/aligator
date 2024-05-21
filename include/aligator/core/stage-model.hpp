@@ -3,7 +3,6 @@
 #pragma once
 
 #include "aligator/core/function-abstract.hpp"
-#include "aligator/core/cost-abstract.hpp"
 #include "aligator/core/dynamics.hpp"
 #include "aligator/core/constraint.hpp"
 
