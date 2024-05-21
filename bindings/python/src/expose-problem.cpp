@@ -8,7 +8,7 @@ namespace aligator {
 namespace python {
 void exposeProblem() {
   using context::ConstVectorRef;
-  using context::CostBase;
+  using context::CostAbstract;
   using context::Manifold;
   using context::Scalar;
   using context::StageData;
@@ -21,19 +21,19 @@ void exposeProblem() {
                              bp::no_init)
       .def(bp::init<shared_ptr<UnaryFunction>,
                     const std::vector<shared_ptr<StageModel>> &,
-                    shared_ptr<CostBase>>(
+                    shared_ptr<CostAbstract>>(
           "Constructor adding the initial constraint explicitly.",
           ("self"_a, "init_constraint", "stages", "term_cost")))
       .def(bp::init<ConstVectorRef, const std::vector<shared_ptr<StageModel>> &,
-                    shared_ptr<CostBase>>(
+                    shared_ptr<CostAbstract>>(
           "Constructor for an initial value problem.",
           ("self"_a, "x0", "stages", "term_cost")))
-      .def(bp::init<shared_ptr<UnaryFunction>, shared_ptr<CostBase>>(
+      .def(bp::init<shared_ptr<UnaryFunction>, shared_ptr<CostAbstract>>(
           "Constructor adding the initial constraint explicitly (without "
           "stages).",
           ("self"_a, "init_constraint", "term_cost")))
       .def(bp::init<ConstVectorRef, const int, shared_ptr<Manifold>,
-                    shared_ptr<CostBase>>(
+                    shared_ptr<CostAbstract>>(
           "Constructor for an initial value problem (without pre-allocated "
           "stages).",
           ("self"_a, "x0", "nu", "space", "term_cost")))

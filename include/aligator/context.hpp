@@ -21,7 +21,9 @@ using StageConstraint = StageConstraintTpl<Scalar>;
 
 using ConstraintSet = ConstraintSetBase<Scalar>;
 
-using CostBase = CostAbstractTpl<Scalar>;
+using CostBase ALIGATOR_DEPRECATED_MESSAGE(
+    "Use the CostAbstract typedef instead.") = CostAbstractTpl<Scalar>;
+using CostAbstract = CostAbstractTpl<Scalar>;
 using CostData = CostDataAbstractTpl<Scalar>;
 using DynamicsModel = DynamicsModelTpl<Scalar>;
 using StageModel = StageModelTpl<Scalar>;

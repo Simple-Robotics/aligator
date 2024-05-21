@@ -16,7 +16,7 @@ using LinearFunction = LinearFunctionTpl<double>;
 using BoxConstraint = proxsuite::nlp::BoxConstraintTpl<double>;
 using EqualityConstraint = proxsuite::nlp::EqualityConstraintTpl<double>;
 using QuadraticCost = QuadraticCostTpl<double>;
-using context::CostBase;
+using context::CostAbstract;
 using context::StageModel;
 using context::TrajOptProblem;
 
@@ -47,7 +47,7 @@ int main() {
   VectorXd x0 = VectorXd::NullaryExpr(nx, norm_gen);
 
   auto dyn_model = std::make_shared<LinearDynamics>(A, B, VectorXd::Zero(nx));
-  shared_ptr<CostBase> cost, term_cost;
+  shared_ptr<CostAbstract> cost, term_cost;
   {
     MatrixXd Q = MatrixXd::NullaryExpr(nx, nx, norm_gen);
     Q = Q.transpose() * Q;

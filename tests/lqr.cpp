@@ -14,7 +14,7 @@ using namespace aligator;
 using Space = proxsuite::nlp::VectorSpaceTpl<double>;
 using LinearDynamics = dynamics::LinearDiscreteDynamicsTpl<double>;
 using QuadraticCost = QuadraticCostTpl<double>;
-using context::CostBase;
+using context::CostAbstract;
 using context::SolverProxDDP;
 using context::StageModel;
 using context::TrajOptProblem;
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(lqr_proxddp) {
   VectorXd x0 = VectorXd::NullaryExpr(nx, norm_gen);
 
   auto dyn_model = std::make_shared<LinearDynamics>(A, B, VectorXd::Zero(nx));
-  shared_ptr<CostBase> cost, term_cost;
+  shared_ptr<CostAbstract> cost, term_cost;
   MatrixXd Q = MatrixXd::NullaryExpr(nx, nx, norm_gen);
   Q = Q.transpose() * Q;
   VectorXd q = VectorXd::NullaryExpr(nx, norm_gen);

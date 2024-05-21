@@ -18,7 +18,7 @@ void exposeStage() {
   using context::StageModel;
   using StageData = StageDataTpl<Scalar>;
 
-  using CostPtr = shared_ptr<context::CostBase>;
+  using CostPtr = shared_ptr<context::CostAbstract>;
   using DynamicsPtr = shared_ptr<context::DynamicsModel>;
   using FunctionPtr = shared_ptr<context::StageFunction>;
   using CstrSetPtr = shared_ptr<ConstraintSet>;

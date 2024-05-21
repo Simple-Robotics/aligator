@@ -5,13 +5,12 @@
 
 #include "aligator/modelling/costs/quad-costs.hpp"
 #include "aligator/modelling/costs/constant-cost.hpp"
-#include "aligator/modelling/costs/sum-of-costs.hpp"
 
 namespace aligator {
 namespace python {
 using context::ConstMatrixRef;
 using context::ConstVectorRef;
-using context::CostBase;
+using context::CostAbstract;
 using context::CostData;
 using context::Manifold;
 using context::MatrixXs;
@@ -19,7 +18,7 @@ using context::Scalar;
 using context::VectorXs;
 using internal::PyCostFunction;
 using QuadraticCost = QuadraticCostTpl<Scalar>;
-using CostPtr = shared_ptr<CostBase>;
+using CostPtr = shared_ptr<CostAbstract>;
 
 struct CostDataWrapper : CostData, bp::wrapper<CostData> {
   using CostData::CostData;
@@ -27,14 +26,14 @@ struct CostDataWrapper : CostData, bp::wrapper<CostData> {
 
 void exposeQuadCost() {
 
-  bp::class_<ConstantCostTpl<Scalar>, bp::bases<CostBase>>(
+  bp::class_<ConstantCostTpl<Scalar>, bp::bases<CostAbstract>>(
       "ConstantCost", "A constant cost term.",
       bp::init<shared_ptr<Manifold>, int, Scalar>(
           bp::args("self", "space", "nu", "value")))
       .def_readwrite("value", &ConstantCostTpl<Scalar>::value_)
       .def(CopyableVisitor<ConstantCostTpl<Scalar>>());
 
-  bp::class_<QuadraticCost, bp::bases<CostBase>>(
+  bp::class_<QuadraticCost, bp::bases<CostAbstract>>(
       "QuadraticCost",
       "Quadratic cost in both state and control - only for Euclidean spaces.",
       bp::no_init)
@@ -70,58 +69,36 @@ void exposeComposites();
 /// Centroidal cost functions.
 void exposeContactMap();
 void exposeCentroidalFunctions();
+/// fwd-declare exposeCostStack()
+void exposeCostStack();
 
-void exposeCostStack() {
-  using CostStack = CostStackTpl<Scalar>;
-  using CostStackData = CostStackDataTpl<Scalar>;
-
-  bp::class_<CostStack, bp::bases<CostBase>>(
-      "CostStack", "A weighted sum of other cost functions.",
-      bp::init<shared_ptr<Manifold>, int, const std::vector<CostPtr> &,
-               const std::vector<Scalar> &>(("self"_a, "space", "nu",
-                                             "components"_a = bp::list(),
-                                             "weights"_a = bp::list())))
-      .def_readwrite("components", &CostStack::components_,
-                     "Components of this cost stack.")
-      .def_readonly("weights", &CostStack::weights_,
-                    "Weights of this cost stack.")
-      .def("addCost", &CostStack::addCost, ("self"_a, "cost", "weight"_a = 1.),
-           "Add a cost to the stack of costs.")
-      .def("size", &CostStack::size, "Get the number of cost components.")
-      .def(CopyableVisitor<CostStack>());
-
-  bp::register_ptr_to_python<shared_ptr<CostStackData>>();
-  bp::class_<CostStackData, bp::bases<CostData>>(
-      "CostStackData", "Data struct for CostStack.", bp::no_init)
-      .def_readonly("sub_cost_data", &CostStackData::sub_cost_data);
-}
-
-void exposeCostBase() {
+void exposeCostAbstract() {
   bp::register_ptr_to_python<CostPtr>();
 
   bp::class_<PyCostFunction<>, boost::noncopyable>(
       "CostAbstract", "Base class for cost functions.", bp::no_init)
       .def(bp::init<shared_ptr<Manifold>, const int>(
           bp::args("self", "space", "nu")))
-      .def("evaluate", bp::pure_virtual(&CostBase::evaluate),
+      .def("evaluate", bp::pure_virtual(&CostAbstract::evaluate),
            bp::args("self", "x", "u", "data"), "Evaluate the cost function.")
-      .def("computeGradients", bp::pure_virtual(&CostBase::computeGradients),
+      .def("computeGradients",
+           bp::pure_virtual(&CostAbstract::computeGradients),
            bp::args("self", "x", "u", "data"),
            "Compute the cost function gradients.")
-      .def("computeHessians", bp::pure_virtual(&CostBase::computeHessians),
+      .def("computeHessians", bp::pure_virtual(&CostAbstract::computeHessians),
            bp::args("self", "x", "u", "data"),
            "Compute the cost function hessians.")
-      .def_readonly("space", &CostBase::space)
-      .add_property("nx", &CostBase::nx)
-      .add_property("ndx", &CostBase::ndx)
-      .add_property("nu", &CostBase::nu)
-      .def(CreateDataPythonVisitor<CostBase>());
+      .def_readonly("space", &CostAbstract::space)
+      .add_property("nx", &CostAbstract::nx)
+      .add_property("ndx", &CostAbstract::ndx)
+      .add_property("nu", &CostAbstract::nu)
+      .def(CreateDataPythonVisitor<CostAbstract>());
 
   bp::register_ptr_to_python<shared_ptr<CostData>>();
   bp::class_<CostDataWrapper, boost::noncopyable>(
       "CostData", "Cost function data struct.", bp::no_init)
       .def(bp::init<const int, const int>(bp::args("self", "ndx", "nu")))
-      .def(bp::init<const CostBase &>(bp::args("self", "cost")))
+      .def(bp::init<const CostAbstract &>(bp::args("self", "cost")))
       .def_readwrite("value", &CostData::value_)
       .def_readwrite("grad", &CostData::grad_)
       .def_readwrite("hess", &CostData::hess_)
@@ -153,7 +130,7 @@ void exposeCostBase() {
 void exposeCostOps();
 
 void exposeCosts() {
-  exposeCostBase();
+  exposeCostAbstract();
   exposeCostStack();
   exposeQuadCost();
   exposeComposites();
