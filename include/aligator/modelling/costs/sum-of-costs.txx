@@ -1,7 +1,7 @@
 #pragma once
 
 #include "aligator/context.hpp"
-#include "./sum-of-costs.hpp"
+#include "aligator/modelling/costs/sum-of-costs.hpp"
 
 namespace aligator {
 

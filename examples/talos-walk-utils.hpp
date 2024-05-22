@@ -11,7 +11,7 @@
 #include "aligator/modelling/dynamics/integrator-semi-euler.hpp"
 #include "aligator/modelling/multibody/frame-velocity.hpp"
 #include "aligator/modelling/multibody/frame-placement.hpp"
-#include "aligator/modelling/sum-of-costs.hpp"
+#include "aligator/modelling/costs/sum-of-costs.hpp"
 #include "aligator/modelling/costs/quad-state-cost.hpp"
 
 namespace pin = pinocchio;

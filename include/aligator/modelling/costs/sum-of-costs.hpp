@@ -110,8 +110,8 @@ struct CostStackDataTpl : CostDataAbstractTpl<_Scalar> {
 };
 } // namespace aligator
 
-#include "./sum-of-costs.hxx"
+#include "aligator/modelling/costs/sum-of-costs.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./sum-of-costs.txx"
+#include "aligator/modelling/costs/sum-of-costs.txx"
 #endif
