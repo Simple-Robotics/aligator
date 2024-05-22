@@ -3,7 +3,7 @@
 #pragma once
 
 #include "aligator/context.hpp"
-#include "aligator/modelling/dynamics/continuous-base.hpp"
+#include "aligator/modelling/dynamics/continuous-dynamics-abstract.hpp"
 
 namespace aligator {
 namespace dynamics {

@@ -1,7 +1,7 @@
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
-#include "aligator/modelling/dynamics/continuous-base.hpp"
+#include "aligator/modelling/dynamics/continuous-dynamics-abstract.hpp"
 
 namespace aligator {
 namespace dynamics {
@@ -19,11 +19,14 @@ ContinuousDynamicsAbstractTpl<Scalar>::createData() const {
 template <typename Scalar>
 ContinuousDynamicsDataTpl<Scalar>::ContinuousDynamicsDataTpl(const int ndx,
                                                              const int nu)
-    : value_(ndx), Jx_(ndx, ndx), Ju_(ndx, nu), Jxdot_(ndx, ndx) {
+    : value_(ndx), Jx_(ndx, ndx), Ju_(ndx, nu), Jxdot_(ndx, ndx), xdot_(ndx) {
   value_.setZero();
   Jx_.setZero();
   Ju_.setZero();
   Jxdot_.setZero();
+  // initialization for ODE models
+  Jxdot_.diagonal().setConstant(Scalar(-1.));
+  xdot_.setZero();
 }
 
 } // namespace dynamics

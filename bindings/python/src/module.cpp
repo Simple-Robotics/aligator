@@ -92,7 +92,7 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
   exposeFilter();
   {
     bp::scope dynamics = get_namespace("dynamics");
-    exposeODEs();
+    exposeContinuousDynamics();
     exposeDynamics();
     exposeIntegrators();
   }

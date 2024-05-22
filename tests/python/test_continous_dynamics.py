@@ -48,7 +48,7 @@ def test_abstract():
     """Test have the right types, etc."""
     space = manifolds.SO3()
     nu = 1
-    dae = dynamics.ContinuousDynamicsBase(space, nu)
+    dae = dynamics.ContinuousDynamicsAbstract(space, nu)
     dae_data = dae.createData()
     assert isinstance(dae_data, dynamics.ContinuousDynamicsData)
     assert hasattr(dae_data, "Jx")

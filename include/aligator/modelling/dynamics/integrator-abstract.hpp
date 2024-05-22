@@ -3,7 +3,8 @@
 /// @brief Base definitions for numerical integrators.
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 
-#include "aligator/modelling/dynamics/continuous-base.hpp"
+#include "aligator/modelling/dynamics/continuous-dynamics-abstract.hpp"
+#include "aligator/core/dynamics.hpp"
 
 namespace aligator {
 namespace dynamics {

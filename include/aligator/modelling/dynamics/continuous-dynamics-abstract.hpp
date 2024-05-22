@@ -1,8 +1,9 @@
-/// @file continuous-base.hpp
+/// @file continuous-dynamics-abstract.hpp
 /// @brief Base definitions for continuous dynamics.
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
+#include "aligator/fwd.hpp"
 #include "aligator/modelling/dynamics/fwd.hpp"
 #include <proxsuite-nlp/manifold-base.hpp>
 
@@ -72,6 +73,8 @@ template <typename _Scalar> struct ContinuousDynamicsDataTpl {
   MatrixXs Ju_;
   /// Derivative \f$\partial f/\partial\dot{x}\f$
   MatrixXs Jxdot_;
+  /// Time derivative \f$\dot{x} = f(x, u)\f$, output of ODE model
+  VectorXs xdot_;
 
   ContinuousDynamicsDataTpl(const int ndx, const int nu);
 
@@ -82,8 +85,8 @@ template <typename _Scalar> struct ContinuousDynamicsDataTpl {
 } // namespace dynamics
 } // namespace aligator
 
-#include "aligator/modelling/dynamics/continuous-base.hxx"
+#include "aligator/modelling/dynamics/continuous-dynamics-abstract.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/modelling/dynamics/continuous-base.txx"
+#include "aligator/modelling/dynamics/continuous-dynamics-abstract.txx"
 #endif

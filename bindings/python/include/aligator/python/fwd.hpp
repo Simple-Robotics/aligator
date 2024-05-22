@@ -33,7 +33,7 @@ void exposeProblem();
 /// Expose discrete dynamics
 void exposeDynamics();
 /// Expose continuous dynamics
-void exposeODEs();
+void exposeContinuousDynamics();
 /// Expose numerical integrators
 void exposeIntegrators();
 

@@ -1,6 +1,7 @@
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
-#include "aligator/core/dynamics.hpp"
+#include "aligator/deprecated.hpp"
 
 namespace aligator {
 
@@ -16,7 +17,10 @@ template <typename Scalar> struct ContinuousDynamicsDataTpl;
 // fwd ODEAbstractTpl
 template <typename Scalar> struct ODEAbstractTpl;
 
-template <typename Scalar> struct ODEDataTpl;
+template <typename _Scalar>
+using ODEDataTpl ALIGATOR_DEPRECATED_MESSAGE(
+    "This struct has been merged with ContinousDynamicsDataTpl and has been "
+    "replaced by a typedef.") = ContinuousDynamicsDataTpl<_Scalar>;
 
 // fwd CentroidalFwdDynamicsTpl
 template <typename Scalar> struct CentroidalFwdDynamicsTpl;
