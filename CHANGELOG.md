@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Copy the headers from [boost::core::span](https://www.boost.org/doc/libs/1_85_0/libs/core/doc/html/core/span.html)
 - Add SE2 car benchmark `bench/se2-car.cpp`
 - Split part of `macros.hpp` into new header `eigen-macros.hpp`, add `ALIGATOR_NOMALLOC_SCOPED` macro to disable Eigen's malloc per-scope and a caching system to restore the malloc status
+- Add `context.hpp` file for `aligator/modelling/dynamics`
 
 ### Changed
 
@@ -28,14 +29,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SolverProxDDP now uses linear solvers provided by `gar` (API breaking), add `LQSolverChoice` enum
 - Minimum version of eigenpy upgraded to 3.4 (for supporting `std::unique_ptr`)
 - Move cost functions to `aligator/modelling/costs`
-- Python: Expose `TrajOptData::init_data`
 - Deprecate `ControlBoxFunction`
 - Remove `LDLTChoice` enum (API breaking)
 - Refactor computation of problem Lagrangian's gradient
-- Remove `core/stage-data.hxx`
-- StageModel/StageData now store dynamics model/data separate from other constraints
-  - add `dynamics_data` to `StageData`
+- Remove `aligator/core/stage-data.hxx`
+- StageModel/StageData now store dynamics model/data separate from other constraints, add `dynamics_data` to `StageData`
 - Rewrite the `Logger` class (rename from `BaseLogger`) using map data structures to store line formatting info + content
+- Merge struct ODEData into ContinousDynamicsData, rename continous-base.hpp header to continuous-dynamics-abstract
+- Optimize a few includes for faster compilation:
+  - `aligator/modelling/dynamics/fwd.hpp`
+  - `aligator/core/stage-model.hpp` no longer includes `aligator/core/cost-abstract.hpp`
+  - Split `traj-opt-data.hpp` out of `traj-opt-problem.hpp`
+
+#### Python API
+
+- Rename `ContinousDynamicsBase` to `ContinousDynamicsAbstract`
+- Rename `CostBase` to `CostAbstract`
+- Expose `TrajOptData.init_data`
+- Remove `LDLTChoice` enum and `SolverProxDDP.ldlt_solver_choice` attribute
 
 ## [0.5.1] - 2024-04-24
 
