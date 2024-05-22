@@ -8,7 +8,7 @@ namespace aligator {
 namespace python {
 namespace internal {
 /// @brief Wrapper for the CostDataAbstractTpl class and its children.
-template <typename T = CostAbstractTpl<context::Scalar>>
+template <typename T = context::CostAbstract>
 struct PyCostFunction : T, bp::wrapper<T> {
   using Scalar = context::Scalar;
   using bp::wrapper<T>::get_override;
