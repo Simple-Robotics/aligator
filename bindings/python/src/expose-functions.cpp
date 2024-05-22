@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #include "aligator/python/functions.hpp"
 #include "aligator/python/eigen-member.hpp"
 
@@ -18,10 +18,8 @@ using context::MatrixXs;
 using context::Scalar;
 using context::StageFunction;
 using context::StageFunctionData;
-using context::UnaryFunction;
 using context::VectorXs;
 using internal::PyStageFunction;
-using internal::PyUnaryFunction;
 using FunctionPtr = shared_ptr<StageFunction>;
 using StateErrorResidual = StateErrorResidualTpl<Scalar>;
 using ControlErrorResidual = ControlErrorResidualTpl<Scalar>;
@@ -30,8 +28,6 @@ using ControlErrorResidual = ControlErrorResidualTpl<Scalar>;
 struct FunctionDataWrapper : StageFunctionData, bp::wrapper<StageFunctionData> {
   using StageFunctionData::StageFunctionData;
 };
-
-void exposeUnaryFunctions();
 
 void exposeFunctionBase() {
 
@@ -132,8 +128,18 @@ void exposeFunctionBase() {
       "StdVec_StageFunction");
   StdVectorPythonVisitor<std::vector<shared_ptr<StageFunctionData>>,
                          true>::expose("StdVec_StageFunctionData");
+}
 
+// fwd-decl exposeUnaryFunctions()
+void exposeUnaryFunctions();
+
+// fwd-decl exposeFunctionExpressions()
+void exposeFunctionExpressions();
+
+void exposeFunctions() {
+  exposeFunctionBase();
   exposeUnaryFunctions();
+  exposeFunctionExpressions();
 
   bp::class_<StateErrorResidual, bp::bases<context::UnaryFunction>>(
       "StateErrorResidual", bp::init<const shared_ptr<context::Manifold> &,
@@ -175,54 +181,6 @@ void exposeFunctionBase() {
           bp::args("self", "ndx", "umin", "umax")))
       .def(bp::init<const int, const int, const Scalar, const Scalar>(
           bp::args("self", "ndx", "nu", "umin", "umax")));
-}
-
-/// Expose the UnaryFunction type and its member function overloads.
-void exposeUnaryFunctions() {
-  using unary_eval_t = void (UnaryFunction::*)(const ConstVectorRef &,
-                                               StageFunctionData &) const;
-  using full_eval_t =
-      void (UnaryFunction::*)(const ConstVectorRef &, const ConstVectorRef &,
-                              const ConstVectorRef &, StageFunctionData &)
-          const;
-  using unary_vhp_t =
-      void (UnaryFunction::*)(const ConstVectorRef &, const ConstVectorRef &,
-                              StageFunctionData &) const;
-  using full_vhp_t = void (UnaryFunction::*)(
-      const ConstVectorRef &, const ConstVectorRef &, const ConstVectorRef &,
-      const ConstVectorRef &, StageFunctionData &) const;
-  bp::register_ptr_to_python<shared_ptr<UnaryFunction>>();
-  bp::class_<PyUnaryFunction<>, bp::bases<StageFunction>, boost::noncopyable>(
-      "UnaryFunction",
-      "Base class for unary functions of the form :math:`x \\mapsto f(x)`.",
-      bp::no_init)
-      .def(bp::init<const int, const int, const int, const int>(
-          bp::args("self", "ndx1", "nu", "ndx2", "nr")))
-      .def("evaluate", bp::pure_virtual<unary_eval_t>(&UnaryFunction::evaluate),
-           bp::args("self", "x", "data"))
-      .def<full_eval_t>("evaluate", &UnaryFunction::evaluate,
-                        bp::args("self", "x", "u", "y", "data"))
-      .def("computeJacobians",
-           bp::pure_virtual<unary_eval_t>(&UnaryFunction::computeJacobians),
-           bp::args("self", "x", "data"))
-      .def<full_eval_t>("computeJacobians", &UnaryFunction::computeJacobians,
-                        bp::args("self", "x", "u", "y", "data"))
-      .def("computeVectorHessianProducts",
-           bp::pure_virtual<unary_vhp_t>(
-               &UnaryFunction::computeVectorHessianProducts),
-           bp::args("self", "x", "lbda", "data"))
-      .def<full_vhp_t>("computeVectorHessianProducts",
-                       &UnaryFunction::computeVectorHessianProducts,
-                       bp::args("self", "x", "u", "y", "lbda", "data"))
-      .def(SlicingVisitor<UnaryFunction>());
-}
-
-// fwd declaration
-void exposeFunctionExpressions();
-
-void exposeFunctions() {
-  exposeFunctionBase();
-  exposeFunctionExpressions();
 }
 
 } // namespace python
