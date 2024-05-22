@@ -33,23 +33,24 @@ void exposeUnaryFunctions() {
       "Base class for unary functions of the form :math:`x \\mapsto f(x)`.",
       bp::no_init)
       .def(bp::init<const int, const int, const int, const int>(
-          bp::args("self", "ndx1", "nu", "ndx2", "nr")))
+          ("self"_a, "ndx1", "nu", "ndx2", "nr")))
       .def("evaluate", bp::pure_virtual<unary_eval_t>(&UnaryFunction::evaluate),
-           bp::args("self", "x", "data"))
+           ("self"_a, "x", "data"))
       .def<full_eval_t>("evaluate", &UnaryFunction::evaluate,
-                        bp::args("self", "x", "u", "y", "data"))
+                        ("self"_a, "x", "u", "y", "data"))
       .def("computeJacobians",
            bp::pure_virtual<unary_eval_t>(&UnaryFunction::computeJacobians),
-           bp::args("self", "x", "data"))
+           ("self"_a, "x", "data"))
       .def<full_eval_t>("computeJacobians", &UnaryFunction::computeJacobians,
-                        bp::args("self", "x", "u", "y", "data"))
-      .def("computeVectorHessianProducts",
-           bp::pure_virtual<unary_vhp_t>(
-               &UnaryFunction::computeVectorHessianProducts),
-           bp::args("self", "x", "lbda", "data"))
+                        ("self"_a, "x", "u", "y", "data"))
+      .def<unary_vhp_t>(
+          "computeVectorHessianProducts",
+          &UnaryFunction::computeVectorHessianProducts,
+          &PyUnaryFunction<>::default_computeVectorHessianProducts,
+          ("self"_a, "x", "lbda", "data"))
       .def<full_vhp_t>("computeVectorHessianProducts",
                        &UnaryFunction::computeVectorHessianProducts,
-                       bp::args("self", "x", "u", "y", "lbda", "data"))
+                       ("self"_a, "x", "u", "y", "lbda", "data"))
       .def(SlicingVisitor<UnaryFunction>());
 }
 

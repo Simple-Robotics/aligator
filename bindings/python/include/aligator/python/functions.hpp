@@ -59,6 +59,9 @@ struct PyStageFunction : FunctionBase, bp::wrapper<FunctionBase> {
 template <typename UFunction = context::UnaryFunction>
 struct PyUnaryFunction : UFunction, bp::wrapper<UFunction> {
   using Scalar = typename UFunction::Scalar;
+  static_assert(
+      std::is_base_of_v<UnaryFunctionTpl<Scalar>, UFunction>,
+      "Template parameter UFunction must derive from UnaryFunctionTpl<>.");
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   ALIGATOR_UNARY_FUNCTION_INTERFACE(Scalar);
   using Data = StageFunctionDataTpl<Scalar>;
@@ -79,6 +82,12 @@ struct PyUnaryFunction : UFunction, bp::wrapper<UFunction> {
                                     Data &data) const override {
     ALIGATOR_PYTHON_OVERRIDE(void, UFunction, computeVectorHessianProducts, x,
                              lbda, boost::ref(data));
+  }
+
+  void default_computeVectorHessianProducts(const ConstVectorRef &x,
+                                            const ConstVectorRef &lbda,
+                                            Data &data) const {
+    UFunction::computeVectorHessianProducts(x, lbda, data);
   }
 };
 
