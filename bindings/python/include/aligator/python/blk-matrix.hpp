@@ -1,6 +1,5 @@
 #include "fwd.hpp"
 #include "aligator/gar/blk-matrix.hpp"
-#include <eigenpy/std-array.hpp>
 
 namespace aligator {
 namespace python {
@@ -45,18 +44,6 @@ struct BlkMatrixPythonVisitor
 
   static void expose(const char *name) {
     bp::class_<BlockMatrixType>(name, "", bp::no_init).def(Self());
-    if (N != -1) {
-      std::ostringstream oss;
-      oss << "StdArr" << N << "_long";
-      eigenpy::StdArrayPythonVisitor<std::array<long, N>, true>::expose(
-          oss.str());
-    }
-    if (M != -1) {
-      std::ostringstream oss;
-      oss << "StdArr" << M << "_long";
-      eigenpy::StdArrayPythonVisitor<std::array<long, M>, true>::expose(
-          oss.str());
-    }
   }
 };
 

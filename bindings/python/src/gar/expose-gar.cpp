@@ -8,6 +8,8 @@
 #include "aligator/python/utils.hpp"
 #include "aligator/python/visitors.hpp"
 
+#include <eigenpy/std-array.hpp>
+
 namespace aligator::python {
 using namespace gar;
 
@@ -41,6 +43,12 @@ static void exposeBlockMatrices() {
       "BlockRowMatrix41");
   BlkMatrixPythonVisitor<BlkMatrix<RowMatrixXs, 2, 1>>::expose(
       "BlockRowMatrix21");
+  eigenpy::StdArrayPythonVisitor<std::array<long, 1>, true>::expose(
+      "StdArr1_long");
+  eigenpy::StdArrayPythonVisitor<std::array<long, 2>, true>::expose(
+      "StdArr2_long");
+  eigenpy::StdArrayPythonVisitor<std::array<long, 4>, true>::expose(
+      "StdArr4_long");
 }
 
 #ifdef ALIGATOR_WITH_CHOLMOD
