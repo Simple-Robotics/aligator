@@ -50,13 +50,12 @@ def test_no_node():
     nu = actuation_matrix.shape[1]
     x0 = space.rand()
     mu_init = 4e-2
-    rho_init = 1e-2
     TOL = 1e-4
     MAX_ITER = 200
     terminal_cost = aligator.CostStack(space, nu)
     problem = aligator.TrajOptProblem(x0, nu, space, terminal_cost)
     solver = aligator.SolverProxDDP(
-        TOL, mu_init, rho_init=rho_init, max_iters=MAX_ITER, verbose=aligator.VERBOSE
+        TOL, mu_init, rho_init=0.0, max_iters=MAX_ITER, verbose=aligator.VERBOSE
     )
     solver.setup(problem)
 
@@ -101,14 +100,15 @@ def test_proxddp_lqr(strategy):
 
     tol = 1e-6
     mu_init = 1e-4
-    rho_init = 1e-2
-    solver = aligator.SolverProxDDP(tol, mu_init, rho_init, verbose=aligator.VERBOSE)
+    solver = aligator.SolverProxDDP(tol, mu_init, 0.0, verbose=aligator.VERBOSE)
     solver.setup(problem)
     solver.sa_strategy = strategy
-    solver.max_iters = 10
+    solver.max_iters = 3
     xs_init = [x0] * (nsteps + 1)
     us_init = [np.zeros(nu)] * nsteps
     conv = solver.run(problem, xs_init, us_init)
+    print(solver.results)
+    print(solver.mu)
     assert conv
 
 

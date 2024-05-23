@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
 #include "aligator/fwd.hpp"
@@ -21,7 +21,9 @@ using StageConstraint = StageConstraintTpl<Scalar>;
 
 using ConstraintSet = ConstraintSetBase<Scalar>;
 
-using CostBase = CostAbstractTpl<Scalar>;
+using CostBase ALIGATOR_DEPRECATED_MESSAGE(
+    "Use the CostAbstract typedef instead.") = CostAbstractTpl<Scalar>;
+using CostAbstract = CostAbstractTpl<Scalar>;
 using CostData = CostDataAbstractTpl<Scalar>;
 using DynamicsModel = DynamicsModelTpl<Scalar>;
 using StageModel = StageModelTpl<Scalar>;
@@ -36,8 +38,8 @@ using ConstraintStack = ConstraintStackTpl<Scalar>;
 using ExplicitDynamics = ExplicitDynamicsModelTpl<Scalar>;
 using ExplicitDynamicsData = ExplicitDynamicsDataTpl<Scalar>;
 
-using SolverProxDDP = SolverProxDDP<Scalar>;
-using SolverFDDP = SolverFDDP<Scalar>;
+using SolverProxDDP = SolverProxDDPTpl<Scalar>;
+using SolverFDDP = SolverFDDPTpl<Scalar>;
 
 using Workspace = WorkspaceTpl<Scalar>;
 using Results = ResultsTpl<Scalar>;

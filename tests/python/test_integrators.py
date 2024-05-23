@@ -105,7 +105,7 @@ def test_explicit_integrator_combinations(ode, integrator):
 @pytest.mark.parametrize("dae", [create_linear_ode(4, 3), create_multibody_ode()])
 @pytest.mark.parametrize("integrator", [dynamics.IntegratorMidpoint])
 def test_implicit_integrator(
-    dae: dynamics.ContinuousDynamicsBase, integrator: dynamics.IntegratorAbstract
+    dae: dynamics.ContinuousDynamicsAbstract, integrator: dynamics.IntegratorAbstract
 ):
     dt = 0.1
     dyn = integrator(dae, dt)

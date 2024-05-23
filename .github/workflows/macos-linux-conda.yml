@@ -35,7 +35,7 @@ jobs:
       matrix:
         os: ["ubuntu-latest", "macos-latest"]
         build_type: [Release, Debug]
-        python-version: ["3.8", "3.12"]
+        python-version: ["3.8", "3.10", "3.12"]
 
     steps:
     - uses: actions/checkout@v4
@@ -72,6 +72,7 @@ jobs:
           -DPYTHON_EXECUTABLE=$(which python3) \
           -DBUILD_PYTHON_INTERFACE=ON \
           -DGENERATE_PYTHON_STUBS=ON \
+          -DBUILD_WITH_CHOLMOD_SUPPORT=ON \
           -DBUILD_WITH_OPENMP_SUPPORT=ON \
           -DBUILD_CROCODDYL_COMPAT=ON \
           -DBUILD_BENCHMARKS=ON \

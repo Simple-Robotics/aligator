@@ -1,38 +1,48 @@
 /// @file solver-proxddp.hpp
 /// @brief  Definitions for the proximal trajectory optimization algorithm.
-/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
-#include "aligator/core/proximal-penalty.hpp"
 #include "aligator/core/linesearch.hpp"
 #include "aligator/core/filter.hpp"
 #include "aligator/core/callback-base.hpp"
 #include "aligator/core/enums.hpp"
-#include "aligator/utils/exceptions.hpp"
+#include "aligator/threads.hpp"
 #include "aligator/utils/logger.hpp"
-#include "aligator/utils/forward-dyn.hpp"
-#include "./workspace.hpp"
-#include "./results.hpp"
-#include "./merit-function.hpp"
 
-#include <proxsuite-nlp/modelling/constraints.hpp>
+#include "workspace.hpp"
+#include "results.hpp"
+#include "merit-function.hpp"
+
 #include <proxsuite-nlp/bcl-params.hpp>
 
 #include <unordered_map>
 
 namespace aligator {
+namespace gar {
+template <typename Scalar> class RiccatiSolverBase;
+} // namespace gar
 
-/// Apply the default strategy for scaling constraints
-template <typename Scalar>
-void applyDefaultScalingStrategy(ConstraintProximalScalerTpl<Scalar> &scaler) {
-  scaler.setWeight(1e-3, 0);
-  for (std::size_t j = 1; j < scaler.size(); j++)
-    scaler.setWeight(100., j);
-}
+/// TODO: NEW G.A.R. BACKEND CAN'T HANDLE DIFFERENT WEIGHTS, PLS FIX
+template <typename Scalar> struct DefaultScaling {
+  void operator()(ConstraintProximalScalerTpl<Scalar> &scaler) {
+    for (std::size_t j = 0; j < scaler.size(); j++)
+      scaler.setWeight(scale, j);
+  }
+  static constexpr Scalar scale = 10.;
+};
+
+enum class LQSolverChoice { SERIAL, PARALLEL, STAGEDENSE };
 
 /// @brief A proximal, augmented Lagrangian-type solver for trajectory
 /// optimization.
-template <typename _Scalar> struct SolverProxDDP {
+///
+/// @details This class implements the Proximal Differential Dynamic Programming
+/// algorithm, a variant of the augmented Lagrangian method for trajectory
+/// optimization. The paper "PROXDDP: Proximal Constrained Trajectory
+/// Optimization" by Jallet et al (2023) is the reference [1] for this
+/// implementation.
+template <typename _Scalar> struct SolverProxDDPTpl {
 public:
   // typedefs
 
@@ -47,8 +57,6 @@ public:
   using StageModel = StageModelTpl<Scalar>;
   using ConstraintType = StageConstraintTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
-  using VParams = ValueFunctionTpl<Scalar>;
-  using QParams = QFunctionTpl<Scalar>;
   using CallbackPtr = shared_ptr<CallbackBaseTpl<Scalar>>;
   using CallbackMap = std::unordered_map<std::string, CallbackPtr>;
   using ConstraintStack = ConstraintStackTpl<Scalar>;
@@ -57,9 +65,8 @@ public:
   using LinesearchOptions = typename Linesearch<Scalar>::Options;
   using CstrProximalScaler = ConstraintProximalScalerTpl<Scalar>;
   using LinesearchType = proxsuite::nlp::ArmijoLinesearch<Scalar>;
+  using LQProblem = gar::LQRProblemTpl<Scalar>;
   using Filter = FilterTpl<Scalar>;
-
-  enum BackwardRet { BWD_SUCCESS, BWD_WRONG_INERTIA };
 
   /// Subproblem tolerance
   Scalar inner_tol_;
@@ -68,21 +75,19 @@ public:
   /// Solver tolerance \f$\epsilon > 0\f$.
   Scalar target_tol_ = 1e-6;
 
-  Scalar mu_init = 0.01;
+  Scalar mu_init = 0.01; //< Initial AL parameter
   Scalar rho_init = 0.;
 
   //// Inertia-correcting heuristic
 
-  Scalar reg_min = 1e-10; //< Minimal nonzero regularization
-  Scalar reg_max = 1e9;
+  Scalar reg_min = 1e-10;         //< Minimal nonzero regularization
+  Scalar reg_max = 1e9;           //< Maximum regularization value
   Scalar reg_init = 1e-9;         //< Initial regularization value (can be zero)
   Scalar reg_inc_k_ = 10.;        //< Regularization increase factor
   Scalar reg_inc_first_k_ = 100.; //< Regularization increase (critical)
   Scalar reg_dec_k_ = 1. / 3.;    //< Regularization decrease factor
-
-  Scalar xreg_ = reg_init;
-  Scalar ureg_ = xreg_;
-  Scalar xreg_last_ = 0.; //< Last "good" regularization value
+  Scalar preg_ = reg_init;        //< Primal regularization value
+  Scalar preg_last_ = 0.;         //< Last "good" regularization value
 
   //// Initial BCL tolerances
 
@@ -90,10 +95,13 @@ public:
   Scalar prim_tol0 = 1.;
 
   /// Logger
-  ALMLogger logger{};
+  Logger logger{};
 
   /// Solver verbosity level.
   VerboseLevel verbose_;
+  /// Choice of linear solver
+  LQSolverChoice linear_solver_choice = LQSolverChoice::SERIAL;
+  bool lq_print_detailed = false;
   /// Type of Hessian approximation. Default is Gauss-Newton.
   HessianApprox hess_approx_ = HessianApprox::GAUSS_NEWTON;
   /// Linesearch options, as in proxsuite-nlp.
@@ -117,84 +125,73 @@ public:
   /// condition.
   bool force_initial_condition_ = true;
 
-  /// @name Linear algebra options
-  /// \{
-  /// Maximum number of linear system refinement iterations
-  std::size_t max_refinement_steps_ = 0;
-  /// Target tolerance for solving the KKT system.
-  Scalar refinement_threshold_ = 1e-13;
-  /// Choice of factorization routine.
-  LDLTChoice ldlt_algo_choice_;
-  /// \}
+  std::size_t maxRefinementSteps_ =
+      0; //< Max number of KKT system refinement iters
+  Scalar refinementThreshold_ = 1e-13; //< Target tol. for the KKT system.
+  std::size_t max_iters;               //< Max number of Newton iterations.
+  std::size_t max_al_iters = 100;      //< Maximum number of ALM iterations.
+  Scalar mu_lower_bound = 1e-8;        //< Minimum possible penalty parameter.
+  uint rollout_max_iters;              //< Nonlinear rollout options
 
-  /// Maximum number \f$N_{\mathrm{max}}\f$ of Newton iterations.
-  std::size_t max_iters;
-  /// Maximum number of ALM iterations.
-  std::size_t max_al_iters = 100;
-
-  /// Minimum possible penalty parameter.
-  Scalar MU_MIN = 1e-8;
-
-  /// Nonlinear rollout options
-  uint rollout_max_iters;
-
-private:
   /// Callbacks
   CallbackMap callbacks_;
-
-public:
   Workspace workspace_;
   Results results_;
+  /// LQR subproblem solver
+  unique_ptr<gar::RiccatiSolverBase<Scalar>> linearSolver_;
   Filter filter_;
 
-  SolverProxDDP(const Scalar tol = 1e-6, const Scalar mu_init = 0.01,
-                const Scalar rho_init = 0., const std::size_t max_iters = 1000,
-                VerboseLevel verbose = VerboseLevel::QUIET,
-                HessianApprox hess_approx = HessianApprox::GAUSS_NEWTON);
+private:
+  /// Number of threads
+  std::size_t num_threads_ = 1;
+  /// Dual proximal/ALM penalty parameter \f$\mu\f$
+  /// This is the global parameter: scales may be applied for stagewise
+  /// constraints, dynamicals...
+  Scalar mu_penal_ = mu_init;
+  /// Primal proximal parameter \f$\rho > 0\f$
+  Scalar rho_penal_ = rho_init;
+  /// Linesearch function
+  LinesearchType linesearch_;
+
+public:
+  SolverProxDDPTpl(const Scalar tol = 1e-6, const Scalar mu_init = 0.01,
+                   const Scalar rho_init = 0.,
+                   const std::size_t max_iters = 1000,
+                   VerboseLevel verbose = VerboseLevel::QUIET,
+                   HessianApprox hess_approx = HessianApprox::GAUSS_NEWTON);
+
+  void setNumThreads(const std::size_t num_threads) {
+    if (linearSolver_) {
+      ALIGATOR_WARNING(
+          "SolverProxDDP",
+          "Linear solver already set: setNumThreads() should be called before "
+          "you call setup() if you want to use the parallel linear solver.\n");
+    }
+    num_threads_ = num_threads;
+    omp::set_default_options(num_threads);
+  }
+  std::size_t getNumThreads() const { return num_threads_; }
 
   ALIGATOR_DEPRECATED const Results &getResults() { return results_; }
   ALIGATOR_DEPRECATED const Workspace &getWorkspace() { return workspace_; }
-
-  /// @brief Compute the linear search direction, i.e. the (regularized) SQP
-  /// step.
-  ///
-  /// @pre This function assumes \f$\delta x_0\f$ has already been computed!
-  /// @returns This computes the primal-dual step \f$(\delta \bfx,\delta
-  /// \bfu,\delta\bmlam)\f$
-  void linearRollout(const Problem &problem);
 
   /// @brief    Try a step of size \f$\alpha\f$.
   /// @returns  A primal-dual trial point
   ///           \f$(\bfx \oplus\alpha\delta\bfx, \bfu+\alpha\delta\bfu,
   ///           \bmlam+\alpha\delta\bmlam)\f$
   /// @returns  The trajectory cost.
-  static Scalar forward_linear_impl(const Problem &problem,
-                                    Workspace &workspace,
-                                    const Results &results, const Scalar alpha);
+  static Scalar tryLinearStep(const Problem &problem, Workspace &workspace,
+                              const Results &results, const Scalar alpha);
 
   /// @brief    Policy rollout using the full nonlinear dynamics. The feedback
   /// gains need to be computed first. This will evaluate all the terms in the
   /// problem into the problem data, similar to TrajOptProblemTpl::evaluate().
   /// @returns  The trajectory cost.
-  Scalar nonlinear_rollout_impl(const Problem &problem, const Scalar alpha);
+  Scalar tryNonlinearRollout(const Problem &problem, const Scalar alpha);
 
   Scalar forwardPass(const Problem &problem, const Scalar alpha);
 
-  /// @brief    Compute search direction in the first state variable \f$x_0\f$.
-  void compute_dir_x0(const Problem &problem);
-
-  /// @brief    Initialize the Riccati equations at the terminal stage.
-  void computeTerminalValue(const Problem &problem);
-
-  /// @brief    Compute the Hamiltonian parameters at time @param t.
-  void updateHamiltonian(const Problem &problem, const std::size_t);
-
-  /// Assemble the right-hand side of the KKT system.
-  void assembleKktSystem(const Problem &problem, const std::size_t t);
-
-  /// @brief    Perform the Riccati backward pass.
-  /// @pre  Compute the derivatives first!
-  BackwardRet backwardPass(const Problem &problem);
+  void updateLQSubproblem();
 
   /// @brief Allocate new workspace and results instances according to the
   /// specifications of @p problem.
@@ -222,8 +219,8 @@ public:
   /// normal cone in-place).
   ///           Compute anything which accesses these before!
   void computeInfeasibilities(const Problem &problem);
-  /// @brief Compute stationarity criterion.
-  void computeCriterion(const Problem &problem);
+  /// @brief Compute stationarity criterion (dual infeasibility).
+  void computeCriterion();
 
   /// @name callbacks
   /// \{
@@ -258,86 +255,64 @@ public:
   /// first-order Lagrange multiplier estimates, shifted and
   /// projected constraints.
   void computeMultipliers(const Problem &problem,
-                          const std::vector<VectorXs> &lams);
+                          const std::vector<VectorXs> &lams,
+                          const std::vector<VectorXs> &vs);
 
   /// @copydoc mu_penal_
   ALIGATOR_INLINE Scalar mu() const { return mu_penal_; }
 
-  /// @copydoc mu _inverse_
-  ALIGATOR_INLINE Scalar mu_inv() const { return mu_inverse_; }
+  /// @copydoc mu_inverse_
+  ALIGATOR_INLINE Scalar mu_inv() const { return 1. / mu_penal_; }
 
   /// @copydoc rho_penal_
   ALIGATOR_INLINE Scalar rho() const { return rho_penal_; }
 
-  //// Scaled variants
-
-  /// @brief  Put together the Q-function parameters and compute the Riccati
-  /// gains.
-  inline BackwardRet computeGains(const Problem &problem, const std::size_t t);
-
-  auto getLinesearchMuLowerBound() const { return min_mu_linesearch_; }
-  void setLinesearchMuLowerBound(Scalar mu) { min_mu_linesearch_ = mu; }
-  /// @brief  Get the penalty parameter for linesearch.
-  auto getLinesearchMu() const { return std::max(mu(), min_mu_linesearch_); }
+  /// @brief Update primal-dual feedback gains (control, costate, path
+  /// multiplier)
+  inline void updateGains();
 
 protected:
-  void update_tols_on_failure();
-  void update_tols_on_success();
+  void updateTolsOnFailure() noexcept {
+    prim_tol_ = prim_tol0 * std::pow(mu_penal_, bcl_params.prim_alpha);
+    inner_tol_ = inner_tol0 * std::pow(mu_penal_, bcl_params.dual_alpha);
+  }
+
+  void updateTolsOnSuccess() noexcept {
+    prim_tol_ = prim_tol_ * std::pow(mu_penal_, bcl_params.prim_beta);
+    inner_tol_ = inner_tol_ * std::pow(mu_penal_, bcl_params.dual_beta);
+  }
 
   /// Set dual proximal/ALM penalty parameter.
-  ALIGATOR_INLINE void set_penalty_mu(Scalar new_mu) noexcept {
-    mu_penal_ = std::max(new_mu, MU_MIN);
-    mu_inverse_ = 1. / new_mu;
+  ALIGATOR_INLINE void setAlmPenalty(Scalar new_mu) noexcept {
+    mu_penal_ = std::max(new_mu, mu_lower_bound);
   }
 
-  ALIGATOR_INLINE void set_rho(Scalar new_rho) noexcept {
-    rho_penal_ = new_rho;
-  }
-
-  /// Update the dual proximal penalty according to BCL.
-  ALIGATOR_INLINE void bcl_update_alm_penalty() noexcept {
-    set_penalty_mu(mu_penal_ * bcl_params.mu_update_factor);
-  }
+  ALIGATOR_INLINE void setRho(Scalar new_rho) noexcept { rho_penal_ = new_rho; }
 
   // See sec. 3.1 of the IPOPT paper [Wächter, Biegler 2006]
   // called before first bwd pass attempt
-  inline void initialize_regularization() noexcept {
-    if (xreg_last_ == 0.) {
+  inline void initializeRegularization() noexcept {
+    if (preg_last_ == 0.) {
       // this is the 1st iteration
-      xreg_ = reg_init;
+      preg_ = reg_init;
     } else {
       // attempt decrease from last "good" value
-      xreg_ = std::max(reg_min, xreg_last_ * reg_dec_k_);
+      preg_ = std::max(reg_min, preg_last_ * reg_dec_k_);
     }
-    ureg_ = xreg_;
   }
 
-  inline void increase_regularization() noexcept {
-    if (xreg_last_ == 0.)
-      xreg_ *= reg_inc_first_k_;
+  inline void increaseRegularization() noexcept {
+    if (preg_last_ == 0.)
+      preg_ *= reg_inc_first_k_;
     else
-      xreg_ *= reg_inc_k_;
-    ureg_ = xreg_;
+      preg_ *= reg_inc_k_;
   }
-
-private:
-  /// Dual proximal/ALM penalty parameter \f$\mu\f$
-  /// This is the global parameter: scales may be applied for stagewise
-  /// constraints, dynamicals...
-  Scalar mu_penal_ = mu_init;
-  Scalar min_mu_linesearch_ = 1e-8;
-  /// Inverse ALM penalty parameter.
-  Scalar mu_inverse_ = 1. / mu_penal_;
-  /// Primal proximal parameter \f$\rho > 0\f$
-  Scalar rho_penal_ = rho_init;
-  /// Linesearch function
-  LinesearchType linesearch_;
 };
 
 } // namespace aligator
 
-#include "./solver-proxddp.hxx"
+#include "solver-proxddp.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./solver-proxddp.txx"
+#include "solver-proxddp.txx"
 #endif

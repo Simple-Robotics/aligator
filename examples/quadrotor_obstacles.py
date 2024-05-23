@@ -11,13 +11,12 @@ import example_robot_data as erd
 import numpy as np
 import matplotlib.pyplot as plt
 
-import os
 import aligator
 
 from aligator import manifolds
 from proxsuite_nlp import constraints
 
-from utils import ArgsBase
+from utils import ArgsBase, manage_lights
 
 robot = erd.load("hector")
 rmodel = robot.model
@@ -28,7 +27,6 @@ ROT_NULL = np.eye(3)
 
 
 class Args(ArgsBase):
-    integrator = "semieuler"
     bounds: bool = False
     """Use control bounds"""
     obstacles: bool = False  # Obstacles in the environment
@@ -93,23 +91,26 @@ def sample_feasible_translation(centers, radius, margin):
 
 
 def main(args: Args):
-    os.makedirs("assets", exist_ok=True)
+    from utils import ASSET_DIR
+
     print(args)
 
     if args.obstacles:  # we add the obstacles to the geometric model
         cyl_radius = 0.22
         cylinder = fcl.Cylinder(cyl_radius, 10.0)
-        center_column1 = np.array([-0.45, 0.8, 0.0])
+        center_column1 = np.array([-0.45, 1.2, 0.0])
+        center_column2 = np.array([0.4, 2.4, 0.0])
+
         geom_cyl1 = pin.GeometryObject(
             "column1", 0, pin.SE3(ROT_NULL, center_column1), cylinder
         )
-        center_column2 = np.array([0.3, 2.4, 0.0])
         geom_cyl2 = pin.GeometryObject(
             "column2", 0, pin.SE3(ROT_NULL, center_column2), cylinder
         )
-        cyl_color = np.array([2.0, 0.2, 1.0, 0.4])
-        geom_cyl1.meshColor = cyl_color
-        geom_cyl2.meshColor = cyl_color
+        cyl_color1 = np.array([1.0, 0.2, 1.0, 0.4])
+        cyl_color2 = np.array([0.2, 1.0, 1.0, 0.4])
+        geom_cyl1.meshColor = cyl_color1
+        geom_cyl2.meshColor = cyl_color2
         robot.collision_model.addGeometryObject(geom_cyl1)
         robot.visual_model.addGeometryObject(geom_cyl1)
         robot.collision_model.addGeometryObject(geom_cyl2)
@@ -219,10 +220,11 @@ def main(args: Args):
             weights[3:6] = 1e-2
             weights[nv:] = 1e-3
 
-            def weight_target_selector(i):
+            def _schedule(i):
                 return weights, x_tar3
 
         else:
+            # waypoint task
             weights1 = np.zeros(space.ndx)
             weights1[:3] = 4.0
             weights1[3:6] = 1e-2
@@ -230,7 +232,7 @@ def main(args: Args):
             weights2 = weights1.copy()
             weights2[:3] = 1.0
 
-            def weight_target_selector(i):
+            def _schedule(i):
                 x_tar = x_tar1
                 weights = weights1
                 if i == idx_switch:
@@ -240,14 +242,13 @@ def main(args: Args):
                     weights = weights2
                 return weights, x_tar
 
-        return weight_target_selector
+        return _schedule
 
     task_schedule = get_task_schedule()
 
     def setup():
-        w_u = np.eye(nu) * 1e-2
+        w_u = np.eye(nu) * 1e-1
 
-        ceiling = create_halfspace_z(space.ndx, nu, 2.0)
         floor = create_halfspace_z(space.ndx, nu, 0.0, True)
         stages = []
         if args.bounds:
@@ -277,16 +278,15 @@ def main(args: Args):
                 column2 = Column(
                     space.ndx, nu, center_column2[:2], cyl_radius, quad_radius
                 )
-                stage.addConstraint(ceiling, constraints.NegativeOrthant())
                 stage.addConstraint(floor, constraints.NegativeOrthant())
                 stage.addConstraint(column1, constraints.NegativeOrthant())
                 stage.addConstraint(column2, constraints.NegativeOrthant())
             stages.append(stage)
 
-        weights, x_tar = task_schedule(nsteps)
+        wterm, x_tar = task_schedule(nsteps)
         if not args.term_cstr:
-            weights *= 10.0
-        term_cost = aligator.QuadraticStateCost(space, nu, x_tar, np.diag(weights))
+            wterm *= 12.0
+        term_cost = aligator.QuadraticStateCost(space, nu, x_tar, np.diag(wterm))
         prob = aligator.TrajOptProblem(x0, stages, term_cost=term_cost)
         if args.term_cstr:
             term_cstr = aligator.StageConstraint(
@@ -304,80 +304,46 @@ def main(args: Args):
             rmodel, robot.collision_model, robot.visual_model, data=rdata
         )
         vizer.initViewer(loadModel=True, zmq_url=args.zmq_url)
-        vizer.displayCollisions(True)
+        manage_lights(vizer)
         vizer.display(x0[:nq])
     else:
         vizer = None
 
     tol = 1e-3
-    mu_init = 1e-1
-    rho_init = 0.0
+    mu_init = 1e-2
     verbose = aligator.VerboseLevel.VERBOSE
     history_cb = aligator.HistoryCallback()
-    solver = aligator.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
+    solver = aligator.SolverProxDDP(tol, mu_init, verbose=verbose)
     if args.fddp:
         solver = aligator.SolverFDDP(tol, verbose=verbose)
     solver.max_iters = 200
     solver.registerCallback("his", history_cb)
+    solver.force_initial_condition = False
+    solver.rollout_type = aligator.ROLLOUT_LINEAR
     solver.setup(problem)
-    workspace: aligator.Workspace = solver.workspace
     solver.sa_strategy = aligator.SA_LINESEARCH
     solver.run(problem, xs_init, us_init)
 
     results = solver.results
     print(results)
 
-    def test_check_numiters(results):
-        if args.bounds:
-            if args.obstacles:
-                if args.term_cstr:
-                    pass
-                else:
-                    assert results.num_iters <= 50
-            else:
-                if args.term_cstr:
-                    assert results.num_iters <= 129
-                else:
-                    assert results.num_iters <= 33
-        elif args.term_cstr:
-            if args.obstacles:
-                assert results.num_iters <= 39
-            else:
-                assert results.num_iters <= 20
-
-    test_check_numiters(results)
-
     xs_opt = results.xs.tolist()
     us_opt = results.us.tolist()
 
-    val_grad = [vp.Vx for vp in workspace.value_params]
-
     def plot_costate_value() -> plt.Figure:
-        lams_stack = np.stack([la[: space.ndx] for la in results.lams]).T
-        costate_stack = lams_stack[:, 1 : nsteps + 1]
-        vx_stack = np.stack(val_grad).T[:, 1:]
+        costate_stack = np.stack(results.lams).T
+        if solver.force_initial_condition:
+            costate_stack[:, 0] = np.nan
         plt.figure()
-        plt.subplot(131)
-        mmin = min(np.min(costate_stack), np.min(vx_stack))
-        mmax = max(np.max(costate_stack), np.max(vx_stack))
+        mmin = np.min(costate_stack)
+        mmax = np.max(costate_stack)
         plt.imshow(costate_stack, vmin=mmin, vmax=mmax, aspect="auto")
         plt.vlines(idx_switch, *plt.ylim(), colors="r", label="switch")
-        plt.legend()
 
+        plt.legend()
         plt.xlabel("Time $t$")
         plt.ylabel("Dimension")
         plt.title("Multipliers")
-        plt.subplot(132)
-        plt.imshow(vx_stack, vmin=mmin, vmax=mmax, aspect="auto")
-        plt.colorbar()
-        plt.xlabel("Time $t$")
-        plt.ylabel("Dimension")
-        plt.title("$\\nabla_xV$")
-
-        plt.subplot(133)
-        err = np.abs(costate_stack - vx_stack)
-        plt.imshow(err, cmap="Reds", aspect="auto")
-        plt.title("$\\lambda - V'_x$")
         plt.colorbar()
         plt.tight_layout()
         return plt.gcf()
@@ -418,7 +384,7 @@ def main(args: Args):
 
         fig.tight_layout()
         for ext in ["png", "pdf"]:
-            fig.savefig("assets/{}.{}".format(TAG, ext))
+            fig.savefig(ASSET_DIR / "{}.{}".format(TAG, ext))
         plt.show()
 
     if args.display:
@@ -430,17 +396,20 @@ def main(args: Args):
         for d in directions_:
             d /= np.linalg.norm(d)
 
-        vid_uri = "assets/{}.mp4".format(TAG)
+        vid_uri = ASSET_DIR / "{}.mp4".format(TAG)
         qs_opt = [x[:nq] for x in xs_opt]
         base_link_id = rmodel.getFrameId("base_link")
 
         def get_callback(i: int):
+            pos_ema = np.zeros(3) + directions_[i] * cam_dist
+            blend = 0.9
+
             def _callback(t):
-                n = len(root_pt_opt)
-                n = min(t, n)
-                rp = root_pt_opt[n]
-                pos = rp + directions_[i] * cam_dist
-                vizer.setCameraPosition(pos)
+                rp = xs_opt[t][:3]
+                pos_new = rp + directions_[i] * cam_dist
+                nonlocal pos_ema
+                pos_ema = blend * pos_new + (1 - blend) * pos_ema
+                vizer.setCameraPosition(pos_ema)
                 vizer.setCameraTarget(rp)
                 vel = xs_opt[t][nq:]
                 pin.forwardKinematics(rmodel, vizer.data, qs_opt[t], vel)

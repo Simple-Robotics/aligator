@@ -3,9 +3,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "aligator/fwd.hpp"
 #include "aligator/core/traj-opt-problem.hpp"
-#include "aligator/utils/exceptions.hpp"
 
 namespace aligator {
 
@@ -46,6 +44,31 @@ void us_default_init(const TrajOptProblemTpl<Scalar> &problem,
   }
 }
 
+template <typename Scalar>
+auto problemInitializeSolution(const TrajOptProblemTpl<Scalar> &problem) {
+  using VectorXs = typename math_types<Scalar>::VectorXs;
+  std::vector<VectorXs> xs, us, vs, lbdas;
+  const size_t nsteps = problem.numSteps();
+  xs_default_init(problem, xs);
+  us_default_init(problem, us);
+  // initialize multipliers...
+  vs.resize(nsteps + 1);
+  lbdas.resize(nsteps + 1);
+  lbdas[0].setZero(problem.init_condition_->nr);
+  for (size_t i = 0; i < nsteps; i++) {
+    const StageModelTpl<Scalar> &sm = *problem.stages_[i];
+    lbdas[i + 1].setZero(sm.ndx2());
+    vs[i].setZero(sm.nc());
+  }
+
+  if (!problem.term_cstrs_.empty()) {
+    vs[nsteps].setZero(problem.term_cstrs_.totalDim());
+  }
+
+  return std::make_tuple(std::move(xs), std::move(us), std::move(vs),
+                         std::move(lbdas));
+}
+
 /// @brief Check the input state-control trajectory is a consistent warm-start
 /// for the output.
 template <typename Scalar>
@@ -73,67 +96,6 @@ void check_trajectory_and_assign(
       ALIGATOR_RUNTIME_ERROR("warm-start for us has wrong size!");
     }
     us_out = us_init;
-  }
-}
-
-/// @brief  Compute the derivatives of the problem Lagrangian.
-template <typename Scalar>
-void computeLagrangianDerivatives(
-    const TrajOptProblemTpl<Scalar> &problem, WorkspaceTpl<Scalar> &workspace,
-    const typename math_types<Scalar>::VectorOfVectors &lams) {
-  using TrajOptData = TrajOptDataTpl<Scalar>;
-  using ConstraintStack = ConstraintStackTpl<Scalar>;
-  using StageFunctionData = StageFunctionDataTpl<Scalar>;
-  using CostData = CostDataAbstractTpl<Scalar>;
-  using StageModel = StageModelTpl<Scalar>;
-  using StageData = StageDataTpl<Scalar>;
-  using VectorXs = typename math_types<Scalar>::VectorXs;
-  using ConstVectorRef = typename math_types<Scalar>::ConstVectorRef;
-
-  TrajOptData const &pd = workspace.problem_data;
-  std::vector<VectorXs> &Lxs = workspace.Lxs_;
-  std::vector<VectorXs> &Lus = workspace.Lus_;
-
-  std::size_t nsteps = workspace.nsteps;
-
-  math::setZero(Lxs);
-  math::setZero(Lus);
-  {
-    StageFunctionData const &ind = pd.getInitData();
-    Lxs[0] += ind.Jx_.transpose() * lams[0];
-  }
-
-  {
-    CostData const &cdterm = *pd.term_cost_data;
-    Lxs[nsteps] = cdterm.Lx_;
-    ConstraintStack const &stack = problem.term_cstrs_;
-    VectorXs const &lamN = lams.back();
-    for (std::size_t j = 0; j < stack.size(); j++) {
-      StageFunctionData const &cstr_data = *pd.term_cstr_data[j];
-      auto lam_j = stack.constSegmentByConstraint(lamN, j);
-      Lxs[nsteps] += cstr_data.Jx_.transpose() * lam_j;
-    }
-  }
-
-  for (std::size_t i = 0; i < nsteps; i++) {
-    StageModel const &sm = *problem.stages_[i];
-    StageData const &sd = pd.getStageData(i);
-    ConstraintStack const &stack = sm.constraints_;
-    Lxs[i] += sd.cost_data->Lx_;
-    Lus[i] += sd.cost_data->Lu_;
-
-    assert(sd.constraint_data.size() == sm.numConstraints());
-
-    for (std::size_t j = 0; j < stack.size(); j++) {
-      StageFunctionData const &cstr_data = *sd.constraint_data[j];
-      ConstVectorRef lam_j = stack.constSegmentByConstraint(lams[i + 1], j);
-      Lxs[i] += cstr_data.Jx_.transpose() * lam_j;
-      Lus[i] += cstr_data.Ju_.transpose() * lam_j;
-
-      assert((i + 1) <= nsteps);
-      // add contribution to the next node
-      Lxs[i + 1] += cstr_data.Jy_.transpose() * lam_j;
-    }
   }
 }
 

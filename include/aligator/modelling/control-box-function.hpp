@@ -6,11 +6,15 @@ namespace aligator {
 /**
  * @brief   A simple function \f$f(u) = [u_{\min} - u; u - u_{\max}]\f$.
  *
- * @details This function should be used along proxsuite::nlp::NegativeOrthant
- * to create control bound constraints \f[ -u_\min \leq u \leq u_\max. \f]
+ * @details This function should be used along
+ * proxsuite::nlp::NegativeOrthantTpl to create control bound constraints \f[
+ * -u_\min \leq u \leq u_\max. \f]
  */
 template <typename _Scalar>
-struct ControlBoxFunctionTpl : StageFunctionTpl<_Scalar> {
+struct ALIGATOR_DEPRECATED_MESSAGE(
+    "ControlBoxFunction should not be used. Instead, just use the identity "
+    "function and a BoxConstraint.") ControlBoxFunctionTpl
+    : StageFunctionTpl<_Scalar> {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageFunctionTpl<Scalar>;

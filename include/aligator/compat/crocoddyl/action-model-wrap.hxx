@@ -14,12 +14,7 @@ ActionModelWrapperTpl<Scalar>::ActionModelWrapperTpl(
     boost::shared_ptr<CrocActionModel> action_model)
     : Base(std::make_shared<StateWrapper>(action_model->get_state()),
            (int)action_model->get_nu()),
-      action_model_(action_model) {
-  using EqualitySet = proxsuite::nlp::EqualityConstraint<Scalar>;
-  const int nr = (int)action_model->get_state()->get_ndx();
-  this->constraints_.pushBack(
-      Constraint{nullptr, std::make_shared<EqualitySet>()}, nr);
-}
+      action_model_(action_model) {}
 
 template <typename Scalar>
 void ActionModelWrapperTpl<Scalar>::evaluate(const ConstVectorRef &x,
@@ -30,24 +25,22 @@ void ActionModelWrapperTpl<Scalar>::evaluate(const ConstVectorRef &x,
   CrocActionModel &m = *action_model_;
   m.calc(d.croc_action_data, x, u);
 
-  ALIGATOR_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_SCOPED;
   d.cost_data->value_ = d.croc_action_data->cost;
   DynDataWrap &dyn_data = *d.dynamics_data;
   dyn_data.xnext_ = d.croc_action_data->xnext;
   this->xspace_next_->difference(y, dyn_data.xnext_, dyn_data.value_);
-  ALIGATOR_NOMALLOC_END;
 }
 
 template <typename Scalar>
-void ActionModelWrapperTpl<Scalar>::computeDerivatives(const ConstVectorRef &x,
-                                                       const ConstVectorRef &u,
-                                                       const ConstVectorRef &y,
-                                                       Data &data) const {
+void ActionModelWrapperTpl<Scalar>::computeFirstOrderDerivatives(
+    const ConstVectorRef &x, const ConstVectorRef &u, const ConstVectorRef &y,
+    Data &data) const {
   ActionDataWrap &d = static_cast<ActionDataWrap &>(data);
   CrocActionModel &m = *action_model_;
   m.calcDiff(d.croc_action_data, x, u);
 
-  ALIGATOR_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_SCOPED;
   d.cost_data->Lx_ = d.croc_action_data->Lx;
   d.cost_data->Lu_ = d.croc_action_data->Lu;
   d.cost_data->Lxx_ = d.croc_action_data->Lxx;
@@ -59,7 +52,6 @@ void ActionModelWrapperTpl<Scalar>::computeDerivatives(const ConstVectorRef &x,
   dyn_data.Jx_ = d.croc_action_data->Fx;
   dyn_data.Ju_ = d.croc_action_data->Fu;
   this->xspace_next_->Jdifference(y, dyn_data.xnext_, dyn_data.Jy_, 0);
-  ALIGATOR_NOMALLOC_END;
 }
 
 template <typename Scalar>

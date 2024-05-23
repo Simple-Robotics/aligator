@@ -1,6 +1,6 @@
 #include "aligator/modelling/linear-discrete-dynamics.hpp"
 #include "aligator/modelling/linear-function.hpp"
-#include "aligator/modelling/quad-costs.hpp"
+#include "aligator/modelling/costs/quad-costs.hpp"
 #include "aligator/modelling/state-error.hpp"
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
 
@@ -14,9 +14,9 @@ using Space = proxsuite::nlp::VectorSpaceTpl<double>;
 using LinearDynamics = dynamics::LinearDiscreteDynamicsTpl<double>;
 using LinearFunction = LinearFunctionTpl<double>;
 using BoxConstraint = proxsuite::nlp::BoxConstraintTpl<double>;
-using EqualityConstraint = proxsuite::nlp::EqualityConstraint<double>;
+using EqualityConstraint = proxsuite::nlp::EqualityConstraintTpl<double>;
 using QuadraticCost = QuadraticCostTpl<double>;
-using context::CostBase;
+using context::CostAbstract;
 using context::StageModel;
 using context::TrajOptProblem;
 
@@ -47,7 +47,7 @@ int main() {
   VectorXd x0 = VectorXd::NullaryExpr(nx, norm_gen);
 
   auto dyn_model = std::make_shared<LinearDynamics>(A, B, VectorXd::Zero(nx));
-  shared_ptr<CostBase> cost, term_cost;
+  shared_ptr<CostAbstract> cost, term_cost;
   {
     MatrixXd Q = MatrixXd::NullaryExpr(nx, nx, norm_gen);
     Q = Q.transpose() * Q;
@@ -85,10 +85,14 @@ int main() {
   }
 
   const double tol = 1e-6;
-  const double mu_init = 1e-8;
-  SolverProxDDP<double> solver(tol, mu_init);
+  const double mu_init = 1e-6;
+  SolverProxDDPTpl<double> solver(tol, mu_init);
   solver.max_iters = 10;
   solver.verbose_ = VERBOSE;
+  solver.linear_solver_choice = LQSolverChoice::PARALLEL;
+  solver.force_initial_condition_ = false;
+  solver.rollout_type_ = RolloutType::LINEAR;
+  solver.setNumThreads(4);
 
   solver.setup(problem);
   const bool conv = solver.run(problem);

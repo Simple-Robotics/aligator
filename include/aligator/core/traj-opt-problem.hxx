@@ -1,10 +1,10 @@
+/// @file
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include "aligator/core/traj-opt-problem.hpp"
-#include "aligator/core/stage-data.hpp"
-#include "aligator/utils/exceptions.hpp"
 #include "aligator/utils/mpc-util.hpp"
-#include "aligator/threads.hpp"
+#include "tracy/Tracy.hpp"
 
 #include <fmt/format.h>
 
@@ -16,7 +16,7 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     const std::vector<shared_ptr<StageModel>> &stages,
     shared_ptr<CostAbstract> term_cost)
     : init_condition_(init_constraint), stages_(stages), term_cost_(term_cost),
-      unone_(term_cost->nu), num_threads_(1) {
+      unone_(term_cost->nu) {
   unone_.setZero();
   checkStages();
   if (auto se =
@@ -40,12 +40,10 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     shared_ptr<UnaryFunction> init_constraint,
     shared_ptr<CostAbstract> term_cost)
     : init_condition_(init_constraint), term_cost_(term_cost),
-      unone_(term_cost->nu), init_state_error_(nullptr), num_threads_(1) {
+      unone_(term_cost->nu),
+      init_state_error_(
+          dynamic_cast<StateErrorResidual *>(init_condition_.get())) {
   unone_.setZero();
-  if (auto se =
-          std::dynamic_pointer_cast<StateErrorResidual>(init_condition_)) {
-    init_state_error_ = se.get();
-  }
 }
 
 template <typename Scalar>
@@ -56,22 +54,28 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(const ConstVectorRef &x0,
     : TrajOptProblemTpl(createStateError(x0, space, nu), term_cost) {}
 
 template <typename Scalar>
-Scalar TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
-                                           const std::vector<VectorXs> &us,
-                                           Data &prob_data) const {
+Scalar TrajOptProblemTpl<Scalar>::evaluate(
+    const std::vector<VectorXs> &xs, const std::vector<VectorXs> &us,
+    Data &prob_data, ALIGATOR_MAYBE_UNUSED std::size_t num_threads) const {
+  ZoneScopedN("TrajOptProblem::evaluate");
   const std::size_t nsteps = numSteps();
-  const bool sizes_correct = (xs.size() == nsteps + 1) && (us.size() == nsteps);
-  if (!sizes_correct) {
+  if (xs.size() != nsteps + 1)
     ALIGATOR_RUNTIME_ERROR(fmt::format(
-        "Wrong size for xs or us, expected us.size = {:d}", nsteps));
-  }
+        "Wrong size for xs (got {:d}, expected {:d})", xs.size(), nsteps + 1));
+  if (us.size() != nsteps)
+    ALIGATOR_RUNTIME_ERROR(fmt::format(
+        "Wrong size for us (got {:d}, expected {:d})", us.size(), nsteps));
 
-  init_condition_->evaluate(xs[0], prob_data.getInitData());
+  init_condition_->evaluate(xs[0], *prob_data.init_data);
 
   auto &sds = prob_data.stage_data;
+
+  Eigen::setNbThreads(1);
+#pragma omp parallel for num_threads(num_threads) schedule(auto)
   for (std::size_t i = 0; i < nsteps; i++) {
     stages_[i]->evaluate(xs[i], us[i], xs[i + 1], *sds[i]);
   }
+  Eigen::setNbThreads(0);
 
   term_cost_->evaluate(xs[nsteps], unone_, *prob_data.term_cost_data);
 
@@ -87,28 +91,37 @@ Scalar TrajOptProblemTpl<Scalar>::evaluate(const std::vector<VectorXs> &xs,
 template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::computeDerivatives(
     const std::vector<VectorXs> &xs, const std::vector<VectorXs> &us,
-    Data &prob_data) const {
+    Data &prob_data, ALIGATOR_MAYBE_UNUSED std::size_t num_threads,
+    bool compute_second_order) const {
+  ZoneScopedN("TrajOptProblem::computeDerivatives");
   const std::size_t nsteps = numSteps();
-  const bool sizes_correct = (xs.size() == nsteps + 1) && (us.size() == nsteps);
-  if (!sizes_correct) {
+  if (xs.size() != nsteps + 1)
     ALIGATOR_RUNTIME_ERROR(fmt::format(
-        "Wrong size for xs or us, expected us.size = {:d}", nsteps));
-  }
+        "Wrong size for xs (got {:d}, expected {:d})", xs.size(), nsteps + 1));
+  if (us.size() != nsteps)
+    ALIGATOR_RUNTIME_ERROR(fmt::format(
+        "Wrong size for us (got {:d}, expected {:d})", us.size(), nsteps));
 
-  init_condition_->computeJacobians(xs[0], prob_data.getInitData());
+  init_condition_->computeJacobians(xs[0], *prob_data.init_data);
 
-  prob_data.xs_copy = xs;
   auto &sds = prob_data.stage_data;
 
-#pragma omp parallel for num_threads(num_threads_)
+  Eigen::setNbThreads(1);
+#pragma omp parallel for num_threads(num_threads) schedule(auto)
   for (std::size_t i = 0; i < nsteps; i++) {
-    stages_[i]->computeDerivatives(xs[i], us[i], prob_data.xs_copy[i + 1],
-                                   *sds[i]);
+    stages_[i]->computeFirstOrderDerivatives(xs[i], us[i], xs[i + 1], *sds[i]);
+    if (compute_second_order) {
+      stages_[i]->computeSecondOrderDerivatives(xs[i], us[i], *sds[i]);
+    }
   }
+  Eigen::setNbThreads(0);
 
   if (term_cost_) {
     term_cost_->computeGradients(xs[nsteps], unone_, *prob_data.term_cost_data);
-    term_cost_->computeHessians(xs[nsteps], unone_, *prob_data.term_cost_data);
+    if (compute_second_order) {
+      term_cost_->computeHessians(xs[nsteps], unone_,
+                                  *prob_data.term_cost_data);
+    }
   }
 
   for (std::size_t k = 0; k < term_cstrs_.size(); ++k) {
@@ -156,7 +169,8 @@ void TrajOptProblemTpl<Scalar>::replaceStageCircular(
 template <typename Scalar>
 Scalar TrajOptProblemTpl<Scalar>::computeTrajectoryCost(
     const Data &problem_data) const {
-  ALIGATOR_NOMALLOC_BEGIN;
+  ALIGATOR_NOMALLOC_SCOPED;
+  ZoneScoped;
   Scalar traj_cost = 0.;
 
   const std::size_t nsteps = numSteps();
@@ -168,31 +182,7 @@ Scalar TrajOptProblemTpl<Scalar>::computeTrajectoryCost(
   }
   traj_cost += problem_data.term_cost_data->value_;
 
-  ALIGATOR_NOMALLOC_END;
   return traj_cost;
-}
-
-/* TrajOptDataTpl */
-
-template <typename Scalar>
-TrajOptDataTpl<Scalar>::TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem)
-    : init_data(problem.init_condition_->createData()) {
-  stage_data.reserve(problem.numSteps());
-  for (std::size_t i = 0; i < problem.numSteps(); i++) {
-    stage_data.push_back(problem.stages_[i]->createData());
-    stage_data[i]->checkData();
-  }
-
-  if (problem.term_cost_) {
-    term_cost_data = problem.term_cost_->createData();
-  }
-
-  if (!problem.term_cstrs_.empty())
-    term_cstr_data.reserve(problem.term_cstrs_.size());
-  for (std::size_t k = 0; k < problem.term_cstrs_.size(); k++) {
-    const ConstraintType &tc = problem.term_cstrs_[k];
-    term_cstr_data.push_back(tc.func->createData());
-  }
 }
 
 } // namespace aligator

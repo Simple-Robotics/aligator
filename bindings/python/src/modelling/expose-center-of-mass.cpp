@@ -1,11 +1,8 @@
 /// @file
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #ifdef ALIGATOR_WITH_PINOCCHIO
-#include "aligator/python/fwd.hpp"
-#include "aligator/python/functions.hpp"
 #include "aligator/python/modelling/multibody-utils.hpp"
 
-#include "aligator/python/modelling/multibody-utils.hpp"
 #include "aligator/modelling/multibody/center-of-mass-translation.hpp"
 #include "aligator/modelling/multibody/center-of-mass-velocity.hpp"
 #include "aligator/modelling/multibody/centroidal-momentum-derivative.hpp"

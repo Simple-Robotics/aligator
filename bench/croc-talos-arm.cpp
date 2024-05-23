@@ -1,6 +1,6 @@
 /// @file
-/// @brief Benchmark aligator::SolverFDDP against Crocoddyl on a simple example
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @brief Benchmark aligator against Crocoddyl on a nonlinear example
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 
 #include <benchmark/benchmark.h>
 
@@ -13,9 +13,8 @@
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
 #include "aligator/compat/crocoddyl/problem-wrap.hpp"
 
-using aligator::LDLTChoice;
-using aligator::SolverFDDP;
-using aligator::SolverProxDDP;
+using aligator::SolverFDDPTpl;
+using aligator::context::SolverProxDDP;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
@@ -56,16 +55,14 @@ static void BM_prox_fddp(benchmark::State &state) {
   auto croc_problem = defineCrocoddylProblem(nsteps);
   auto prob_wrap =
       aligator::compat::croc::convertCrocoddylProblem(croc_problem);
-#ifdef ALIGATOR_MULTITHREADING
-  prob_wrap.setNumThreads(DEFAULT_NUM_THREADS);
-#endif
 
   std::vector<VectorXd> xs_i;
   std::vector<VectorXd> us_i;
   getInitialGuesses(croc_problem, xs_i, us_i);
 
-  SolverFDDP<double> solver(TOL, get_verbose_flag(verbose));
+  SolverFDDPTpl<double> solver(TOL, get_verbose_flag(verbose));
   solver.max_iters = maxiters;
+  solver.setNumThreads(DEFAULT_NUM_THREADS);
   solver.setup(prob_wrap);
 
   for (auto _ : state) {
@@ -75,25 +72,19 @@ static void BM_prox_fddp(benchmark::State &state) {
 }
 
 /// Benchmark the full PROXDDP algorithm (aligator::SolverProxDDP)
-template <LDLTChoice choice> static void BM_aligator(benchmark::State &state) {
+template <uint NPROC> void BM_aligator(benchmark::State &state) {
   const std::size_t nsteps = (std::size_t)state.range(0);
-  using aligator::LDLTChoice;
   auto croc_problem = defineCrocoddylProblem(nsteps);
   auto prob_wrap =
       aligator::compat::croc::convertCrocoddylProblem(croc_problem);
-#ifdef ALIGATOR_MULTITHREADING
-  prob_wrap.setNumThreads(DEFAULT_NUM_THREADS);
-#endif
 
   std::vector<VectorXd> xs_i;
   std::vector<VectorXd> us_i;
   getInitialGuesses(croc_problem, xs_i, us_i);
 
-  const double mu0 = 1e-4;
-  SolverProxDDP<double> solver(TOL, mu0, 0., maxiters,
-                               get_verbose_flag(verbose));
-  solver.ldlt_algo_choice_ = choice;
-  solver.max_refinement_steps_ = 0;
+  const double mu_init = 1e-10;
+  SolverProxDDP solver(TOL, mu_init, 0., maxiters, get_verbose_flag(verbose));
+  solver.setNumThreads(NPROC);
   solver.setup(prob_wrap);
 
   for (auto _ : state) {
@@ -102,34 +93,28 @@ template <LDLTChoice choice> static void BM_aligator(benchmark::State &state) {
   state.SetComplexityN(state.range(0));
 }
 
-int main(int argc, char **argv) {
+constexpr long nmin = 50;
+constexpr long nmax = 450;
+constexpr long ns = 50;
+constexpr auto unit = benchmark::kMillisecond;
 
-  constexpr long nmin = 50;
-  constexpr long nmax = 450;
-  constexpr long ns = 50;
-  auto unit = benchmark::kMillisecond;
-  auto registerWithOpts = [&](auto name, auto fn) {
-    benchmark::RegisterBenchmark(name, fn)
-        ->Arg(5)
-        ->Arg(20)
-        ->DenseRange(nmin, nmax, ns)
-        ->Unit(unit)
-        ->Complexity()
-        ->UseRealTime();
-  };
-  registerWithOpts("croc::FDDP", &BM_croc_fddp);
-  registerWithOpts("aligator::FDDP", &BM_prox_fddp);
-  registerWithOpts("aligator::ALIGATOR_DENSE", &BM_aligator<LDLTChoice::DENSE>);
-  registerWithOpts("aligator::ALIGATOR_BLOCK",
-                   &BM_aligator<LDLTChoice::BLOCKSPARSE>);
-  registerWithOpts("aligator::ALIGATOR_BUNCHKAUFMAN",
-                   &BM_aligator<LDLTChoice::BUNCHKAUFMAN>);
-  registerWithOpts("aligator::ALIGATOR_EIGLDL",
-                   &BM_aligator<LDLTChoice::EIGEN>);
-#ifdef PROXSUITE_NLP_USE_PROXSUITE_LDLT
-  registerWithOpts("aligator::ALIGATOR_PSUITE",
-                   &BM_aligator<LDLTChoice::PROXSUITE>);
-#endif
+void CustomArgs(benchmark::internal::Benchmark *bench) {
+  bench->Arg(5)
+      ->Arg(20)
+      ->DenseRange(nmin, nmax, ns)
+      ->Unit(unit)
+      ->Complexity()
+      ->UseRealTime();
+};
+
+BENCHMARK(BM_croc_fddp)->Apply(CustomArgs);
+BENCHMARK(BM_prox_fddp)->Apply(CustomArgs);
+BENCHMARK_TEMPLATE(BM_aligator, 2)->Apply(CustomArgs);
+BENCHMARK_TEMPLATE(BM_aligator, 4)->Apply(CustomArgs);
+BENCHMARK_TEMPLATE(BM_aligator, 6)->Apply(CustomArgs);
+BENCHMARK_TEMPLATE(BM_aligator, 8)->Apply(CustomArgs);
+
+int main(int argc, char **argv) {
 
   benchmark::Initialize(&argc, argv);
   if (benchmark::ReportUnrecognizedArguments(argc, argv)) {

@@ -8,6 +8,7 @@ dependencies:
   - ninja
   - cxx-compiler
   - ccache
+  - suitesparse
   - eigenpy
   - pinocchio
   - eigen

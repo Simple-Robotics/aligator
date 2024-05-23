@@ -1,4 +1,4 @@
-#include "aligator/solvers/proxddp/workspace.hpp"
+#include "aligator/core/value-function.hpp"
 
 #include <boost/test/unit_test.hpp>
 

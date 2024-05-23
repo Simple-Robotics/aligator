@@ -7,12 +7,13 @@
 
 #include "aligator/core/callback-base.hpp"
 #include "aligator/core/explicit-dynamics.hpp"
+#include "aligator/core/linesearch.hpp"
 
 #include "./results.hpp"
 #include "./workspace.hpp"
-#include "./linesearch.hpp"
 
 #include "aligator/utils/logger.hpp"
+#include "aligator/threads.hpp"
 
 #include <fmt/ostream.h>
 #include <unordered_map>
@@ -27,7 +28,7 @@ namespace aligator {
  * @details The implementation very similar to Crocoddyl's SolverFDDP.
  *
  */
-template <typename Scalar> struct SolverFDDP {
+template <typename Scalar> struct SolverFDDPTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Problem = TrajOptProblemTpl<Scalar>;
   using StageModel = StageModelTpl<Scalar>;
@@ -40,7 +41,7 @@ template <typename Scalar> struct SolverFDDP {
   using QParams = QFunctionTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using ExpModel = ExplicitDynamicsModelTpl<Scalar>;
-  using ExpData = ExplicitDynamicsDataTpl<Scalar>;
+  using ExplicitDynamicsData = ExplicitDynamicsDataTpl<Scalar>;
   using CallbackPtr = shared_ptr<CallbackBaseTpl<Scalar>>;
   using CallbackMap = std::unordered_map<std::string, CallbackPtr>;
 
@@ -49,8 +50,7 @@ template <typename Scalar> struct SolverFDDP {
   /// @name Regularization parameters
   /// \{
   Scalar reg_init;
-  Scalar xreg_ = reg_init;
-  Scalar ureg_ = xreg_;
+  Scalar preg_ = reg_init;
   Scalar reg_min_ = 1e-9;
   Scalar reg_max_ = 1e9;
   /// Regularization decrease factor
@@ -73,9 +73,17 @@ template <typename Scalar> struct SolverFDDP {
   /// off.
   bool force_initial_condition_;
 
-  BaseLogger logger{};
+  Logger logger{};
 
-private:
+  void setNumThreads(const std::size_t num_threads) {
+    num_threads_ = num_threads;
+    omp::set_default_options(num_threads);
+  }
+  std::size_t getNumThreads() const { return num_threads_; }
+
+protected:
+  /// Number of threads to use when evaluating the problem or its derivatives.
+  std::size_t num_threads_;
   /// Callbacks
   CallbackMap callbacks_;
 
@@ -83,9 +91,10 @@ public:
   Results results_;
   Workspace workspace_;
 
-  SolverFDDP(const Scalar tol = 1e-6,
-             VerboseLevel verbose = VerboseLevel::QUIET,
-             const Scalar reg_init = 1e-9, const std::size_t max_iters = 200);
+  SolverFDDPTpl(const Scalar tol = 1e-6,
+                VerboseLevel verbose = VerboseLevel::QUIET,
+                const Scalar reg_init = 1e-9,
+                const std::size_t max_iters = 200);
 
   /// @brief  Get the solver results.
   ALIGATOR_DEPRECATED const Results &getResults() const { return results_; }
@@ -142,22 +151,19 @@ public:
   /// did not exit.
   ALIGATOR_INLINE void acceptGains(const Workspace &workspace,
                                    Results &results) const {
-    assert(workspace.kkt_rhs_bufs.size() == results.gains_.size());
-    ALIGATOR_NOMALLOC_BEGIN;
-    results.gains_ = workspace.kkt_rhs_bufs;
-    ALIGATOR_NOMALLOC_END;
+    assert(workspace.kktRhs.size() == results.gains_.size());
+    ALIGATOR_NOMALLOC_SCOPED;
+    results.gains_ = workspace.kktRhs;
   }
 
   inline void increaseRegularization() {
-    xreg_ *= reg_inc_factor_;
-    xreg_ = std::min(xreg_, reg_max_);
-    ureg_ = xreg_;
+    preg_ *= reg_inc_factor_;
+    preg_ = std::min(preg_, reg_max_);
   }
 
   inline void decreaseRegularization() {
-    xreg_ *= reg_dec_factor_;
-    xreg_ = std::max(xreg_, reg_min_);
-    ureg_ = xreg_;
+    preg_ *= reg_dec_factor_;
+    preg_ = std::max(preg_, reg_min_);
   }
 
   /// @brief Compute the dual feasibility of the problem.
@@ -190,10 +196,10 @@ public:
   bool run(const Problem &problem, const std::vector<VectorXs> &xs_init = {},
            const std::vector<VectorXs> &us_init = {});
 
-  static const ExpData &
+  static const ExplicitDynamicsData &
   stage_get_dynamics_data(const StageDataTpl<Scalar> &data) {
-    const DynamicsDataTpl<Scalar> &dd = data.dyn_data();
-    return static_cast<const ExpData &>(dd);
+    const DynamicsDataTpl<Scalar> &dd = *data.dynamics_data;
+    return static_cast<const ExplicitDynamicsData &>(dd);
   }
 };
 

@@ -1,109 +1,123 @@
 /// @file    workspace.hpp
 /// @brief   Define workspace for the ProxDDP solver.
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include "aligator/core/workspace-base.hpp"
-#include "aligator/core/proximal-penalty.hpp"
 #include "aligator/core/alm-weights.hpp"
+#include "aligator/gar/lqr-problem.hpp"
 
-#include <array>
-#include <proxsuite-nlp/ldlt-allocator.hpp>
+#include <proxsuite-nlp/modelling/constraints.hpp>
 
 namespace aligator {
+namespace {
+using proxsuite::nlp::ConstraintSetProductTpl;
+} // namespace
 
-using proxsuite::nlp::LDLTChoice;
+template <typename Scalar>
+auto getConstraintProductSet(const ConstraintStackTpl<Scalar> &constraints) {
+  std::vector<ConstraintSetBase<Scalar> *> components;
+  for (size_t i = 0; i < constraints.size(); i++) {
+    components.push_back(constraints[i].set.get());
+  }
+  return ConstraintSetProductTpl<Scalar>{components, constraints.dims()};
+}
 
-/** @brief Workspace for solver SolverProxDDP.
- *
- * @details This struct holds data for the Riccati forward and backward passes,
- *          the primal-dual steps, problem data...
- */
+/// @brief Workspace for solver SolverProxDDP.
+///
+/// @details This struct holds data for the Riccati forward and backward passes,
+///          the primal-dual steps, problem data...
 template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using StageModel = StageModelTpl<Scalar>;
   using Base = WorkspaceBaseTpl<Scalar>;
   using VecBool = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
   using CstrProxScaler = ConstraintProximalScalerTpl<Scalar>;
+  using KnotType = gar::LQRKnotTpl<Scalar>;
+  using ConstraintSetProduct = ConstraintSetProductTpl<Scalar>;
+  using BlkJacobianType = BlkMatrix<MatrixXs, -1, 2>; // jacobians
 
   using Base::dyn_slacks;
   using Base::nsteps;
   using Base::problem_data;
-  using Base::q_params;
-  using Base::trial_us;
-  using Base::trial_xs;
-  using Base::value_params;
 
-  /// Proximal algo scalers for the constraints
-  std::vector<CstrProxScaler> cstr_scalers;
+  gar::LQRProblemTpl<Scalar> lqr_problem;   //< Linear-quadratic subproblem
+  std::vector<CstrProxScaler> cstr_scalers; //< Scaling for the constraints
 
   /// @name Lagrangian Gradients
   /// @{
-  std::vector<VectorXs> Lxs_;
-  std::vector<VectorXs> Lus_;
-  std::vector<VectorXs> Lds_;
+  std::vector<VectorXs> Lxs; //< State gradients
+  std::vector<VectorXs> Lus; //< Control gradients
+  std::vector<VectorXs> Lvs; //< Path multiplier gradients
+  std::vector<VectorXs> Lds; //< Costate gradients
   /// @}
 
-  /// Lagrange multipliers for ALM & linesearch.
+  /// @name Trial primal-dual step
+  /// @{
+  using Base::trial_us;
+  using Base::trial_xs;
+  std::vector<VectorXs> trial_vs;
   std::vector<VectorXs> trial_lams;
+  /// @}
+
+  /// @name Lagrange multipliers.
+  /// @{
   std::vector<VectorXs> lams_plus;
   std::vector<VectorXs> lams_pdal;
+  std::vector<VectorXs> vs_plus;
+  std::vector<VectorXs> vs_pdal;
+  /// @}
+
   /// Shifted constraints the projection operators should be applied to.
   std::vector<VectorXs> shifted_constraints;
-  std::vector<MatrixXs> proj_jacobians;
+  std::vector<VectorXs> cstr_lx_corr;
+  std::vector<VectorXs> cstr_lu_corr;
+  /// Projected path constraint Jacobians (used to symmetrize the LQ subproblem)
+  std::vector<BlkJacobianType> cstr_proj_jacs;
+  /// Masks for active constraint sets
   std::vector<VecBool> active_constraints;
+  /// Cartesian products of the constraint sets of each stage.
+  std::vector<ConstraintSetProduct> cstr_product_sets;
 
-  /// @name Riccati gains, memory buffers for primal-dual steps
+  /// @name Primal-dual steps
   /// @{
-  std::vector<VectorXs> pd_step_;
-  std::vector<VectorRef> dxs;
-  std::vector<VectorRef> dus;
-  std::vector<VectorRef> dlams;
-
-  /// Buffer for KKT matrix
-  std::vector<MatrixXs> kkt_mats_;
-  /// Buffer for KKT right hand side
-  std::vector<MatrixXs> kkt_rhs_;
-  /// Linear system residual buffers: used for iterative refinement
-  std::vector<MatrixXs> kkt_resdls_;
-
-  using LDLTVariant = proxsuite::nlp::LDLTVariant<Scalar>;
-  /// LDLT solvers
-  std::vector<LDLTVariant> ldlts_;
-
+  std::vector<VectorXs> dxs;
+  std::vector<VectorXs> dus;
+  std::vector<VectorXs> dvs;
+  std::vector<VectorXs> dlams;
   /// @}
 
   /// @name Previous external/proximal iterates
   /// @{
-
   std::vector<VectorXs> prev_xs;
   std::vector<VectorXs> prev_us;
+  std::vector<VectorXs> prev_vs;
   std::vector<VectorXs> prev_lams;
-
   /// @}
 
   /// Subproblem termination criterion for each stage.
   VectorXs stage_inner_crits;
-  /// Constraint violation for each stage and each constraint of the
-  /// TrajOptProblemTpl.
-  std::vector<VectorXs> stage_prim_infeas;
-  /// Dual infeasibility for each stage of the TrajOptProblemTpl.
-  VectorXs stage_dual_infeas;
-
+  /// Constraint violation measures for each stage and constraint.
+  VectorXs stage_cstr_violations;
+  /// Stagewise infeasibilities
+  std::vector<VectorXs> stage_infeasibilities;
+  /// Dual infeasibility in the states for each stage of the problem.
+  VectorXs state_dual_infeas;
+  /// Dual infeasibility in the controls for each stage of the problem.
+  VectorXs control_dual_infeas;
   /// Overall subproblem termination criterion.
   Scalar inner_criterion = 0.;
 
   WorkspaceTpl() : Base() {}
-  WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
-               LDLTChoice ldlt_choice = LDLTChoice::DENSE);
-  WorkspaceTpl(const WorkspaceTpl &) = default;
-  WorkspaceTpl(WorkspaceTpl &&) = default;
-  ~WorkspaceTpl() = default;
+  WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem);
 
-  WorkspaceTpl &operator=(const WorkspaceTpl &) = default;
+  WorkspaceTpl(const WorkspaceTpl &) = delete;
+  WorkspaceTpl &operator=(const WorkspaceTpl &) = delete;
+
+  WorkspaceTpl(WorkspaceTpl &&) = default;
   WorkspaceTpl &operator=(WorkspaceTpl &&) = default;
 
-  void cycleLeft() override;
+  void cycleLeft();
 
   template <typename T>
   friend std::ostream &operator<<(std::ostream &oss,

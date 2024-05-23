@@ -1,12 +1,10 @@
 /// @file
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include "aligator/core/function-abstract.hpp"
-#include "aligator/core/cost-abstract.hpp"
 #include "aligator/core/dynamics.hpp"
 #include "aligator/core/constraint.hpp"
-#include "aligator/utils/exceptions.hpp"
 
 #include "aligator/core/clone.hpp"
 
@@ -42,14 +40,16 @@ public:
   ManifoldPtr xspace_next_;
   /// Control vector space -- by default, a simple Euclidean space.
   ManifoldPtr uspace_;
-  /// Stage cost function.
-  CostPtr cost_;
   /// Constraint manager.
   ConstraintStackTpl<Scalar> constraints_;
+  /// Stage cost function.
+  CostPtr cost_;
+  /// Dynamics model
+  DynamicsPtr dynamics_;
 
   /// Constructor assumes the control space is a Euclidean space of
   /// dimension @p nu.
-  StageModelTpl(CostPtr cost, DynamicsPtr dyn_model);
+  StageModelTpl(CostPtr cost, DynamicsPtr dynamics);
   virtual ~StageModelTpl() = default;
 
   const Manifold &xspace() const { return *xspace_; }
@@ -61,10 +61,8 @@ public:
   /// This boolean allows flexibility in solvers when dealing
   /// with different frontends e.g. Crocoddyl's API.
   virtual bool has_dyn_model() const { return true; }
-  virtual const Dynamics &dyn_model() const {
-    assert(numConstraints() > 0);
-    auto dyn_ptr = std::static_pointer_cast<Dynamics>(constraints_[0].func);
-    return *dyn_ptr;
+  ALIGATOR_DEPRECATED virtual const Dynamics &dyn_model() const {
+    return *dynamics_;
   }
 
   int nx1() const { return xspace_->nx(); }
@@ -72,14 +70,16 @@ public:
   int nu() const { return uspace_->ndx(); }
   int nx2() const { return xspace_next_->nx(); }
   int ndx2() const { return xspace_next_->ndx(); }
+  /// Total number of constraints
+  int nc() const { return (int)constraints_.totalDim(); }
 
-  /// Number of constraints (constraint objects).
+  /// Number of constraint objects.
   std::size_t numConstraints() const { return constraints_.size(); }
 
   /// Number of primal optimization variables.
-  int numPrimal() const;
+  int numPrimal() const { return nu() + ndx2(); }
   /// Number of dual variables, i.e. Lagrange multipliers.
-  int numDual() const;
+  int numDual() const { return ndx2() + nc(); }
 
   /// @brief    Add a constraint to the stage.
   template <typename T> void addConstraint(T &&cstr);
@@ -95,12 +95,18 @@ public:
   virtual void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                         const ConstVectorRef &y, Data &data) const;
 
-  /// @brief    Compute the derivatives of the StageModelTpl.
-  virtual void computeDerivatives(const ConstVectorRef &x,
-                                  const ConstVectorRef &u,
-                                  const ConstVectorRef &y, Data &data) const;
+  /// @brief    Compute the first-order derivatives of the StageModelTpl.
+  virtual void computeFirstOrderDerivatives(const ConstVectorRef &x,
+                                            const ConstVectorRef &u,
+                                            const ConstVectorRef &y,
+                                            Data &data) const;
 
-  /// @brief    Create a Data object.
+  /// @brief    Compute the second-order derivatives of the StageModelTpl.
+  virtual void computeSecondOrderDerivatives(const ConstVectorRef &x,
+                                             const ConstVectorRef &u,
+                                             Data &data) const;
+
+  /// @brief    Create a StageData object.
   virtual shared_ptr<Data> createData() const;
 
   friend std::ostream &operator<<(std::ostream &oss,

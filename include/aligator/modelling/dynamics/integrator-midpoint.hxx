@@ -2,7 +2,6 @@
 #pragma once
 
 #include "aligator/modelling/dynamics/integrator-midpoint.hpp"
-#include "aligator/utils/exceptions.hpp"
 
 namespace aligator {
 namespace dynamics {

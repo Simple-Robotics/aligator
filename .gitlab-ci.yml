@@ -2,6 +2,23 @@ variables:
   GIT_SUBMODULE_STRATEGY: "recursive"
   GIT_DEPTH: "3"
 
+changelog:
+  stage: test
+  script:
+    - git fetch
+    - FILES_CHANGED=$(git diff --name-only $CI_MERGE_REQUEST_DIFF_BASE_SHA...HEAD)
+    - |+
+      for i in $FILES_CHANGED
+      do
+        if [[ "$i" == "CHANGELOG.md" ]]
+        then
+          exit 0
+        fi
+      done
+      exit 1
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
 .proxddp: &proxddp
   retry:
     max: 2

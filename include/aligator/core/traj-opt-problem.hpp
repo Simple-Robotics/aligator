@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include "aligator/core/stage-model.hpp"
@@ -154,17 +154,22 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 
   /// @brief Rollout the problem costs, constraints, dynamics, stage per stage.
   Scalar evaluate(const std::vector<VectorXs> &xs,
-                  const std::vector<VectorXs> &us, Data &prob_data) const;
+                  const std::vector<VectorXs> &us, Data &prob_data,
+                  std::size_t num_threads = 1) const;
 
   /**
    * @brief Rollout the problem derivatives, stage per stage.
    *
    * @param xs State sequence
    * @param us Control sequence
+   * @param prob_data Problem data
+   * @param num_threads Number of threads to use
+   * @param compute_second_order Whether to compute second-order derivatives
    */
   void computeDerivatives(const std::vector<VectorXs> &xs,
-                          const std::vector<VectorXs> &us,
-                          Data &prob_data) const;
+                          const std::vector<VectorXs> &us, Data &prob_data,
+                          std::size_t num_threads = 1,
+                          bool compute_second_order = true) const;
 
   /// @brief Pop out the first StageModel and replace by the supplied one;
   /// updates the supplied problem data (TrajOptDataTpl) object.
@@ -175,22 +180,17 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// @warning Call TrajOptProblemTpl::evaluate() first!
   Scalar computeTrajectoryCost(const Data &problem_data) const;
 
-  /// @brief  Set the number of threads for multithreaded evaluation.
-  void setNumThreads(std::size_t num_threads) {
-#ifndef ALIGATOR_MULTITHREADING
-    fmt::print("{} does nothing: aligator was not compiled with multithreading "
-               "support.\n",
-               __FUNCTION__);
-#endif
-    num_threads_ = num_threads;
+  inline void checkIntegrity() const {
+    checkStages();
+
+    if (term_cost_ == nullptr) {
+      ALIGATOR_RUNTIME_ERROR("Problem has no terminal cost.");
+    }
   }
-  /// @brief  Get the number of threads.
-  std::size_t getNumThreads() const { return num_threads_; }
 
 protected:
   /// Pointer to underlying state error residual
   StateErrorResidual *init_state_error_;
-  std::size_t num_threads_;
   /// @brief Check if all stages are non-null.
   void checkStages() const;
 
@@ -202,43 +202,18 @@ private:
   }
 };
 
-/// @brief Problem data struct.
-template <typename _Scalar> struct TrajOptDataTpl {
-  using Scalar = _Scalar;
-  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using StageFunctionData = StageFunctionDataTpl<Scalar>;
-  using ConstraintType = StageConstraintTpl<Scalar>;
-  using StageData = StageDataTpl<Scalar>;
-  using CostData = CostDataAbstractTpl<Scalar>;
+namespace internal {
+template <typename Scalar>
+auto problem_last_state_space_helper(const TrajOptProblemTpl<Scalar> &problem) {
+  return problem.term_cost_->space;
+}
 
-  /// Current cost in the TO problem.
-  Scalar cost_ = 0.;
-
-  /// Data for the initial condition.
-  shared_ptr<StageFunctionData> init_data;
-  /// Data structs for each stage of the problem.
-  std::vector<shared_ptr<StageData>> stage_data;
-  /// Terminal cost data.
-  shared_ptr<CostData> term_cost_data;
-  /// Terminal constraint data.
-  std::vector<shared_ptr<StageFunctionData>> term_cstr_data;
-
-  /// Copy of xs to fill in (for data parallelism)
-  std::vector<VectorXs> xs_copy;
-
-  TrajOptDataTpl() = default;
-  TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem);
-
-  /// Get stage data for a stage by time index.
-  StageData &getStageData(std::size_t i) { return *stage_data[i]; }
-  /// @copydoc getStageData()
-  const StageData &getStageData(std::size_t i) const { return *stage_data[i]; }
-
-  /// Get initial constraint function data.
-  StageFunctionData &getInitData() { return *init_data; }
-  /// @copydoc getInitData()
-  const StageFunctionData &getInitData() const { return *init_data; }
-};
+/// Get dimension of problem's last stage/cost function.
+template <typename Scalar>
+int problem_last_ndx_helper(const TrajOptProblemTpl<Scalar> &problem) {
+  return problem_last_state_space_helper(problem)->ndx();
+}
+} // namespace internal
 
 } // namespace aligator
 

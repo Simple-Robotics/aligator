@@ -16,6 +16,7 @@ Please refer to the [Citation section](#citing-aligator) for further details.
 
 * a modeling interface for optimal control problems, node-per-node
 * a set of efficient solvers for constrained trajectory optimization
+* multiple routines for factorization of linear problems arising in numerical OC
 * support for the [pinocchio](https://github.com/stack-of-tasks/pinocchio) rigid-body dynamics library and its analytical derivatives
 * an interface to the [Crocoddyl](https://github.com/loco-3d/crocoddyl) trajectory optimization library which can be used as an alternative frontend
 * Python bindings leveraging [eigenpy](https://github.com/stack-of-tasks/eigenpy)
@@ -29,10 +30,10 @@ Please refer to the [Citation section](#citing-aligator) for further details.
 
 ### From Conda
 
-From [our channel](https://anaconda.org/simple-robotics/aligator).
+From either conda-forge or [our channel](https://anaconda.org/simple-robotics/aligator).
 
 ```bash
-conda install -c simple-robotics aligator
+conda install -c conda-forge aligator  # or -c conda-forge
 ```
 
 ### Build from source
@@ -43,18 +44,19 @@ cmake -DCMAKE_INSTALL_PREFIX=your_install_folder -S . -B build/ && cd build/
 cmake --build . -jNCPUS
 ```
 
-**Dependencies**
+#### Dependencies
 
 * [proxsuite-nlp](https://github.com/Simple-Robotics/proxsuite-nlp.git)
 * [Eigen3](https://eigen.tuxfamily.org) >= 3.3.7
 * [Boost](https://www.boost.org) >= 1.71.0
-* (optional) [eigenpy](https://github.com/stack-of-tasks/eigenpy)>=3.2.0 | [conda](https://anaconda.org/conda-forge/eigenpy) (Python bindings)
+* OpenMP
+* (optional) [eigenpy](https://github.com/stack-of-tasks/eigenpy)>=3.4.0 | [conda](https://anaconda.org/conda-forge/eigenpy) (Python bindings)
 * (optional) [Pinocchio](https://github.com/stack-of-tasks/pinocchio) | [conda](https://anaconda.org/conda-forge/pinocchio)
 * (optional) [Crocoddyl](https://github.com/loco-3d/crocoddyl) | [conda](https://anaconda.org/conda-forge/crocoddyl)
 * (optional) [example-robot-data](https://github.com/Gepetto/example-robot-data) | [conda](https://anaconda.org/conda-forge/example-robot-data) (required for some examples and benchmarks)
-* a C++14 compliant compiler
+* a C++17 compliant compiler
 
-**Python dependencies**
+#### Python dependencies
 
 * [typed-argument-parser](https://github.com/swansonk14/typed-argument-parser)
 * [matplotlib](https://matplotlib.org)
@@ -116,3 +118,14 @@ Please also consider citing the reference paper for the ProxDDP algorithm:
 ## Acknowledgments
 
 The development of **Aligator** is actively supported by the [Willow team](https://www.di.ens.fr/willow/) [@INRIA](http://www.inria.fr) and the [Gepetto team](http://projects.laas.fr/gepetto/) [@LAAS-CNRS](http://www.laas.fr).
+
+## Associated scientific and technical publications
+
+* E. Ménager, A. Bilger, W. Jallet, J. Carpentier, and C. Duriez, ‘Condensed semi-implicit dynamics for trajectory optimization in soft robotics’, in IEEE International Conference on Soft Robotics (RoboSoft), San Diego (CA), United States: IEEE, Apr. 2024. Accessed: Apr. 10, 2024. [Online]. Available: https://hal.science/hal-04466639
+* W. Jallet, N. Mansard, and J. Carpentier, ‘Implicit Differential Dynamic Programming’, in 2022 International Conference on Robotics and Automation (ICRA), Philadelphia, United States: IEEE Robotics and Automation Society, May 2022. doi: 10.1109/ICRA46639.2022.9811647.
+* W. Jallet, A. Bambade, N. Mansard, and J. Carpentier, ‘Constrained Differential Dynamic Programming: A primal-dual augmented Lagrangian approach’, in 2022 IEEE/RSJ International Conference on Intelligent Robots and Systems, Kyoto, Japan, Oct. 2022. doi: 10.1109/IROS47612.2022.9981586.
+* W. Jallet, A. Bambade, N. Mansard, and J. Carpentier, ‘ProxNLP: a primal-dual augmented Lagrangian solver for nonlinear programming in Robotics and beyond’, in 6th Legged Robots Workshop, Philadelphia, Pennsylvania, United States, May 2022. Accessed: Oct. 10, 2022. [Online]. Available: https://hal.archives-ouvertes.fr/hal-03680510
+* W. Jallet, A. Bambade, E. Arlaud, S. El-Kazdadi, N. Mansard, and J. Carpentier, ‘PROXDDP: Proximal Constrained Trajectory Optimization’. 2023. [Online]. Available: https://inria.hal.science/hal-04332348v1
+* S. Kazdadi, J. Carpentier, and J. Ponce, ‘Equality Constrained Differential Dynamic Programming’, presented at the ICRA 2021 - IEEE International Conference on Robotics and Automation, May 2021. Accessed: Sep. 07, 2021. [Online]. Available: https://hal.inria.fr/hal-03184203
+* A. Bambade, S. El-Kazdadi, A. Taylor, and J. Carpentier, ‘PROX-QP: Yet another Quadratic Programming Solver for Robotics and beyond’, in Robotics: Science and Systems XVIII, Robotics: Science and Systems Foundation, Jun. 2022. doi: 10.15607/RSS.2022.XVIII.040.
+* W. Jallet, E. Dantec, E. Arlaud, J. Carpentier, and N. Mansard, ‘Parallel and Proximal Linear-Quadratic Methods for Real-Time Constrained Model-Predictive Control’. arXiv, May 15, 2024. Accessed: May 16, 2024. [Online]. Available: http://arxiv.org/abs/2405.09197

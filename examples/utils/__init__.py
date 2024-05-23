@@ -4,12 +4,12 @@ Common utilities for examples.
 
 import numpy as np
 import pinocchio as pin
-import hppfcl as fcl
-import example_robot_data as erd
+import pinocchio.visualize
 import tap
 
 import matplotlib.pyplot as plt
 
+from pathlib import Path
 from aligator.utils.plotting import *  # noqa
 from typing import Literal, List, Optional
 
@@ -17,7 +17,10 @@ from typing import Literal, List, Optional
 plt.rcParams["lines.linewidth"] = 1.0
 plt.rcParams["lines.markersize"] = 5
 
-integrator_choices = Literal["euler", "semieuler", "midpoint", "rk2"]
+ASSET_DIR = Path("assets/")
+ASSET_DIR.mkdir(exist_ok=True)
+
+_integrator_choices = Literal["euler", "semieuler", "midpoint", "rk2"]
 MESHCAT_ZMQ_DEFAULT = "tcp://127.0.0.1:6000"
 IMAGEIO_KWARGS = {"macro_block_size": 8, "quality": 9}
 
@@ -26,7 +29,7 @@ class ArgsBase(tap.Tap):
     display: bool = False  # Display the trajectory using meshcat
     record: bool = False  # record video
     plot: bool = False
-    integrator: integrator_choices = "semieuler"
+    integrator: _integrator_choices = "semieuler"
     """Numerical integrator to use"""
     zmq_url: Optional[str] = MESHCAT_ZMQ_DEFAULT
 
@@ -57,6 +60,8 @@ def compute_quasistatic(model: pin.Model, data: pin.Data, x0, acc):
 
 
 def create_cartpole(N):
+    import hppfcl as fcl
+
     model = pin.Model()
     geom_model = pin.GeometryModel()
 
@@ -141,6 +146,8 @@ def create_cartpole(N):
 
 
 def make_npendulum(N, ub=True, lengths=None):
+    import hppfcl as fcl
+
     model = pin.Model()
     geom_model = pin.GeometryModel()
 
@@ -193,6 +200,8 @@ def make_npendulum(N, ub=True, lengths=None):
 
 
 def load_talos_upper_body():
+    import example_robot_data as erd
+
     robot = erd.load("talos")
     qref = robot.model.referenceConfigurations["half_sitting"]
     locked_joints = list(range(1, 14))
@@ -203,6 +212,8 @@ def load_talos_upper_body():
 
 
 def load_talos_no_wristhead():
+    import example_robot_data as erd
+
     robot = erd.load("talos")
     qref = robot.model.referenceConfigurations["half_sitting"]
     locked_joints = [20, 21, 22, 23, 28, 29, 30, 31, 32, 33]
@@ -230,3 +241,49 @@ def add_namespace_prefix_to_models(model, collision_model, visual_model, namespa
     # Rename joints in model:
     for k in range(len(model.names)):
         model.names[k] = f"{namespace}/{model.names[k]}"
+
+
+def manage_lights(vizer: pin.visualize.MeshcatVisualizer):
+    import meshcat
+
+    def apply_props(obj, props):
+        for name, value in props.items():
+            obj.set_property(name, value)
+
+    viewer: meshcat.Visualizer = vizer.viewer
+    apply_props(viewer["/Lights/SpotLight"], props={"visible": True})
+    spotlight = viewer["/Lights/SpotLight/<object>"]
+    apply_props(
+        spotlight,
+        props={
+            # default: 0.8 * pi
+            "intensity": 8.0,
+            "penumbra": 1.0,
+            "decay": 1.0,
+            # default: false
+            "castShadow": True,
+            # default: pi / 3
+            "angle": np.pi / 3,
+            "position": [4, -4, 4],
+        },
+    )
+
+    ambient_light = viewer["/Lights/AmbientLight/<object>"]
+    apply_props(
+        ambient_light,
+        props={
+            # default: 0.6
+            "intensity": 0.4
+        },
+    )
+
+    fill_light = viewer["/Lights/FillLight/<object>"]
+    apply_props(fill_light, props={"intensity": 3.0, "castShadow": False})
+
+    plpx = viewer["/Lights/PointLightPositiveX"]
+    apply_props(plpx, props={"visible": False})
+    plnx = viewer["/Lights/PointLightNegativeX"]
+    apply_props(plnx, props={"visible": False})
+
+    plpx.delete()
+    plnx.delete()

@@ -96,16 +96,15 @@ else:
     )
 
 
-mu_init = 1e-5
-if args.bounds:
-    mu_init = 1e-5
+mu_init = 1e-2
 rho_init = 0.0
 verbose = aligator.VerboseLevel.VERBOSE
 TOL = 1e-4
-MAX_ITER = 200
+MAX_ITER = 300
 solver = aligator.SolverProxDDP(
     TOL, mu_init, rho_init, max_iters=MAX_ITER, verbose=verbose
 )
+solver.rollout_type = aligator.ROLLOUT_LINEAR
 callback = aligator.HistoryCallback()
 solver.registerCallback("his", callback)
 
@@ -118,7 +117,7 @@ workspace = solver.workspace
 for i in range(nsteps):
     psc = workspace.getConstraintScaler(i)
     if args.bounds:
-        psc.set_weight(10.0, 1)
+        psc.set_weight(10.0, 0)
 solver.run(problem, xs_i, us_i)
 res = solver.results
 print(res)

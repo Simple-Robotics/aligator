@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(lqr) {
   auto act_wrap_data = act_wrapper->createData();
 
   act_wrapper->evaluate(x0, u0, x0, *act_wrap_data);
-  act_wrapper->computeDerivatives(x0, u0, x0, *act_wrap_data);
+  act_wrapper->computeFirstOrderDerivatives(x0, u0, x0, *act_wrap_data);
 
   auto cd = *act_wrap_data->cost_data;
   fmt::print("act cost_data\n");

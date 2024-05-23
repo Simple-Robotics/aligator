@@ -88,7 +88,6 @@ max_iters = 200
 verbose = aligator.VerboseLevel.VERBOSE
 solver = aligator.SolverProxDDP(TOL, mu_init, rho_init, verbose=verbose)
 solver.rollout_type = aligator.ROLLOUT_NONLINEAR
-print("LDLT algo choice:", solver.ldlt_algo_choice)
 # solver = aligator.SolverFDDP(TOL, verbose=verbose)
 solver.max_iters = max_iters
 solver.sa_strategy = aligator.SA_LINESEARCH  # FILTER or LINESEARCH
@@ -128,16 +127,6 @@ if len(idx_hit) > 0:
     plt.hlines(umax[idx_hit], *times[[0, -1]], colors="b", linestyles="--")
 plt.title("Controls trajectory")
 plt.legend()
-plt.tight_layout()
-
-
-plt.figure()
-value_grads = [v.Vx for v in workspace.value_params]
-value_grads = np.stack(value_grads).T
-plt.imshow(value_grads)
-plt.xlabel("Time $t$")
-plt.ylabel("Dimension $\\partial V_t/\\partial x_i$")
-
 plt.tight_layout()
 plt.show()
 

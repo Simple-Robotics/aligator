@@ -8,7 +8,7 @@ namespace python {
 /// Expose finite difference helpers.
 void exposeAutodiff() {
   using namespace autodiff;
-  using context::CostBase;
+  using context::CostAbstract;
   using context::CostData;
   using context::DynamicsModel;
   using context::Manifold;
@@ -40,11 +40,11 @@ void exposeAutodiff() {
   {
     using CostFiniteDiffType = CostFiniteDifferenceHelper<Scalar>;
     bp::scope _ =
-        bp::class_<CostFiniteDiffType, bp::bases<CostBase>>(
+        bp::class_<CostFiniteDiffType, bp::bases<CostAbstract>>(
             "CostFiniteDifference",
             "Define a cost function's derivatives using finite differences.",
             bp::no_init)
-            .def(bp::init<shared_ptr<CostBase>, Scalar>(
+            .def(bp::init<shared_ptr<CostAbstract>, Scalar>(
                 bp::args("self", "cost", "fd_eps")));
     bp::class_<CostFiniteDiffType::Data, bp::bases<CostData>>("Data",
                                                               bp::no_init)

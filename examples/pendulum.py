@@ -14,10 +14,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from pinocchio.visualize import MeshcatVisualizer
 from aligator import constraints
-from utils import ArgsBase
-
-
-Path("assets/").mkdir(exist_ok=True)
+from utils import ArgsBase, ASSET_DIR
 
 
 class Args(ArgsBase):
@@ -177,14 +174,11 @@ else:
         aligator.QuadraticResidualCost(space, frame_err, np.diag(weights_frame_place))
     )
 
-mu_init = 0.8
-rho_init = 0.0
+mu_init = 0.2
 verbose = aligator.VerboseLevel.VERBOSE
-TOL = 1e-4
+TOL = 1e-6
 MAX_ITER = 200
-solver = aligator.SolverProxDDP(
-    TOL, mu_init, rho_init=rho_init, max_iters=MAX_ITER, verbose=verbose
-)
+solver = aligator.SolverProxDDP(TOL, mu_init, max_iters=MAX_ITER, verbose=verbose)
 callback = aligator.HistoryCallback()
 solver.registerCallback("his", callback)
 
@@ -192,9 +186,12 @@ u0 = pin.rnea(model, data, x0[:1], x0[1:], np.zeros(nv))
 us_i = [u0] * nsteps
 xs_i = aligator.rollout(dyn_model, x0, us_i)
 
-max_threads = aligator.get_available_threads()
+max_threads = 4
 print("Max threads:", max_threads)
-problem.setNumThreads(max_threads)
+solver.linear_solver_choice = aligator.LQ_SOLVER_PARALLEL
+solver.rollout_type = aligator.ROLLOUT_LINEAR
+solver.setNumThreads(max_threads)
+solver.sa_strategy = aligator.SA_FILTER
 solver.setup(problem)
 solver.run(problem, xs_i, us_i)
 res = solver.results
@@ -233,8 +230,8 @@ plt.hlines(
 plt.title("Controls $u(t)$")
 plt.legend()
 plt.tight_layout()
-plt.savefig("assets/pendulum_controls{}.png".format(TAG))
-plt.savefig("assets/pendulum_controls{}.pdf".format(TAG))
+plt.savefig(ASSET_DIR / "pendulum_controls{}.png".format(TAG))
+plt.savefig(ASSET_DIR / "pendulum_controls{}.pdf".format(TAG))
 
 if True:
     from proxsuite_nlp.utils import plot_pd_errs
@@ -264,7 +261,7 @@ plt.show()
 
 
 def get_ctx(vizer):
-    vid_uri = Path("assets/pendulum{}.mp4".format(TAG))
+    vid_uri = Path(ASSET_DIR / "pendulum{}.mp4".format(TAG))
     if args.record:
         return vizer.create_video_ctx(
             vid_uri, format="ffmpeg", fps=30, quality=None, bitrate=6000

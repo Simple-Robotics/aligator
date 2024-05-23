@@ -6,13 +6,16 @@
 #include "aligator/version.hpp"
 #include "aligator/threads.hpp"
 
+#include <eigenpy/optional.hpp>
+
 #ifdef ALIGATOR_WITH_CROCODDYL_COMPAT
 #include "aligator/python/compat/croco.hpp"
 #endif
 
 namespace aligator {
 namespace python {
-void exposeEnums() {
+
+static void exposeEnums() {
   register_enum_symlink<VerboseLevel>(true);
 
   bp::enum_<MultiplierUpdateMode>(
@@ -34,6 +37,7 @@ void exposeEnums() {
                            "Level of approximation for the Hessian.")
       .value("HESSIAN_EXACT", HessianApprox::EXACT)
       .value("HESSIAN_GAUSS_NEWTON", HessianApprox::GAUSS_NEWTON)
+      .value("HESSIAN_BFGS", HessianApprox::BFGS)
       .export_values();
 
   bp::enum_<StepAcceptanceStrategy>("StepAcceptanceStrategy",
@@ -43,7 +47,8 @@ void exposeEnums() {
       .export_values();
 }
 
-void exposeContainers() {
+static void exposeContainers() {
+  StdVectorPythonVisitor<std::vector<long>, true>::expose("StdVec_long");
   eigenpy::exposeStdVectorEigenSpecificType<context::Vector3s>(
       "StdVec_Vector3s");
   StdVectorPythonVisitor<std::vector<bool>, true>::expose("StdVec_bool");
@@ -54,6 +59,7 @@ void exposeContainers() {
 
 BOOST_PYTHON_MODULE(MODULE_NAME) {
   using namespace aligator::python;
+  using aligator::context::ConstVectorRef;
 
   bp::docstring_options module_docstring_options(true, true, true);
 
@@ -63,12 +69,19 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
           "Get the number of available threads.");
   bp::def("get_current_threads", &aligator::omp::get_current_threads,
           "Get the current number of threads.");
+  bp::def("set_omp_default_options", &aligator::omp::set_default_options,
+          ("num_threads"_a, "dynamic"_a = true));
 #endif
   eigenpy::enableEigenPy();
+
+  eigenpy::OptionalConverter<ConstVectorRef, std::optional>::registration();
+  eigenpy::detail::NoneToPython<std::nullopt_t>::registration();
 
   bp::import("warnings");
   bp::import("proxsuite_nlp");
 
+  exposeContainers();
+  exposeGAR();
   exposeEnums();
   exposeContainers();
   exposeFunctions();
@@ -79,7 +92,7 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
   exposeFilter();
   {
     bp::scope dynamics = get_namespace("dynamics");
-    exposeODEs();
+    exposeContinuousDynamics();
     exposeDynamics();
     exposeIntegrators();
   }

@@ -54,11 +54,14 @@ BOOST_AUTO_TEST_CASE(lqr) {
   auto croc_problem = boost::make_shared<crocoddyl::ShootingProblem>(
       x0, running_models, lqr_model);
 
+  std::vector<VectorXd> xs_init(nsteps + 1, x0);
+  std::vector<VectorXd> us_init(nsteps, u0);
+
   crocoddyl::SolverDDP croc_solver(croc_problem);
   croc_solver.setCallbacks({boost::make_shared<crocoddyl::CallbackVerbose>()});
-  const double TOL = 1e-7;
+  const double TOL = 1e-8;
   croc_solver.set_th_stop(TOL * TOL);
-  bool cr_converged = croc_solver.solve();
+  bool cr_converged = croc_solver.solve(xs_init, us_init);
 
   auto croc_xs = croc_solver.get_xs();
   auto croc_us = croc_solver.get_us();
@@ -75,25 +78,32 @@ BOOST_AUTO_TEST_CASE(lqr) {
   aligator::TrajOptProblemTpl<double> prox_problem =
       pcroc::convertCrocoddylProblem(croc_problem);
 
-  const double mu_init = 1e-4;
-  aligator::SolverProxDDP<double> prox_solver(TOL, mu_init);
+  const double mu_init = 1e-5;
+  aligator::SolverProxDDPTpl<double> prox_solver(TOL, mu_init);
   prox_solver.verbose_ = aligator::VerboseLevel::VERBOSE;
   prox_solver.max_iters = 8;
+  prox_solver.force_initial_condition_ = true;
   prox_solver.rollout_type_ = aligator::RolloutType::NONLINEAR;
-
-  std::vector<VectorXd> xs_init(nsteps + 1, x0);
-  std::vector<VectorXd> us_init(nsteps, u0);
 
   prox_solver.setup(prox_problem);
   bool conv2 = prox_solver.run(prox_problem, xs_init, us_init);
 
   const auto &results = prox_solver.results_;
   fmt::print("{}\n", results);
+  const auto &xs = results.xs;
+  const auto &us = results.us;
 
   BOOST_TEST_CHECK(conv2);
 
+  for (std::size_t i = 0; i <= nsteps; i++) {
+    auto e = aligator::math::infty_norm(xs[i] - croc_xs[i]);
+    fmt::print("errx[{:>2d}] = {:.3e}\n", i, e);
+    BOOST_CHECK_LE(e, 1e-6);
+  }
   for (std::size_t i = 0; i < nsteps; i++) {
-    BOOST_TEST_CHECK(results.xs[i].isApprox(croc_xs[i], 1e-4));
+    auto e = aligator::math::infty_norm(us[i] - croc_us[i]);
+    fmt::print("erru[{:>2d}] = {:.3e}\n", i, e);
+    BOOST_CHECK_LE(e, 1e-6);
   }
 }
 

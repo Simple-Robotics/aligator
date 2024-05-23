@@ -13,7 +13,7 @@ import crocoddyl
 from crocoddyl.utils.biped import plotSolution
 import numpy as np
 import example_robot_data
-import pinocchio
+import pinocchio as pin
 
 import aligator
 import time
@@ -59,14 +59,14 @@ rightFootId = rmodel.getFrameId(rightFoot)
 leftFootId = rmodel.getFrameId(leftFoot)
 q0 = rmodel.referenceConfigurations["half_sitting"]
 x0 = np.concatenate([q0, np.zeros(rmodel.nv)])
-pinocchio.forwardKinematics(rmodel, rdata, q0)
-pinocchio.updateFramePlacements(rmodel, rdata)
+pin.forwardKinematics(rmodel, rdata, q0)
+pin.updateFramePlacements(rmodel, rdata)
 rfPos0 = rdata.oMf[rightFootId].translation
 lfPos0 = rdata.oMf[leftFootId].translation
 jointId = rmodel.getFrameId("gripper_left_joint")
 refGripper = rdata.oMf[jointId].translation
 comRef = (rfPos0 + lfPos0) / 2
-comRef[2] = pinocchio.centerOfMass(rmodel, rdata, q0)[2].item()
+comRef[2] = pin.centerOfMass(rmodel, rdata, q0)[2].item()
 
 # Initialize Gepetto viewer
 if WITHDISPLAY:
@@ -81,11 +81,21 @@ if WITHDISPLAY:
 # Add contact to the model
 contactModel = crocoddyl.ContactModelMultiple(state, actuation.nu)
 supportContactModelLeft = crocoddyl.ContactModel6D(
-    state, leftFootId, pinocchio.SE3.Identity(), actuation.nu, np.array([0, 0])
+    state,
+    leftFootId,
+    pin.SE3.Identity(),
+    pin.LOCAL_WORLD_ALIGNED,
+    actuation.nu,
+    np.array([0, 0]),
 )
 contactModel.addContact(leftFoot + "_contact", supportContactModelLeft)
 supportContactModelRight = crocoddyl.ContactModel6D(
-    state, rightFootId, pinocchio.SE3.Identity(), actuation.nu, np.array([0, 0])
+    state,
+    rightFootId,
+    pin.SE3.Identity(),
+    pin.LOCAL_WORLD_ALIGNED,
+    actuation.nu,
+    np.array([0, 0]),
 )
 contactModel.addContact(rightFoot + "_contact", supportContactModelRight)
 contactData = contactModel.createData(rdata)
@@ -126,7 +136,7 @@ xRegTermCost = crocoddyl.CostModelResidual(state, xTActivation, xResidual)
 
 # Cost for target reaching
 framePlacementResidual = crocoddyl.ResidualModelFramePlacement(
-    state, endEffectorId, pinocchio.SE3(np.eye(3), target), actuation.nu
+    state, endEffectorId, pin.SE3(np.eye(3), target), actuation.nu
 )
 framePlacementActivation = crocoddyl.ActivationModelWeightedQuad(
     np.array([1] * 3 + [0.0001] * 3) ** 2
@@ -164,7 +174,7 @@ runningModel = crocoddyl.IntegratedActionModelEuler(dmodelRunning, DT)
 terminalModel = crocoddyl.IntegratedActionModelEuler(dmodelTerminal, 0)
 
 # Problem definition
-x0 = np.concatenate([q0, pinocchio.utils.zero(state.nv)])
+x0 = np.concatenate([q0, pin.utils.zero(state.nv)])
 croc_problem = crocoddyl.ShootingProblem(x0, [runningModel] * nsteps, terminalModel)
 
 # Creating the DDP solver for this OC problem, defining a logger
@@ -214,9 +224,9 @@ if WITHDISPLAY:
 
 # Get final state and end effector position
 xT = solver.xs[-1]
-pinocchio.forwardKinematics(rmodel, rdata, xT[: state.nq])
-pinocchio.updateFramePlacements(rmodel, rdata)
-com = pinocchio.centerOfMass(rmodel, rdata, xT[: state.nq])
+pin.forwardKinematics(rmodel, rdata, xT[: state.nq])
+pin.updateFramePlacements(rmodel, rdata)
+com = pin.centerOfMass(rmodel, rdata, xT[: state.nq])
 finalPosEff = np.array(
     rdata.oMf[rmodel.getFrameId("gripper_left_joint")].translation.T.flat
 )

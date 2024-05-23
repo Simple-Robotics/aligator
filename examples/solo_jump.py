@@ -26,6 +26,7 @@ from pinocchio.visualize import MeshcatVisualizer
 
 class Args(ArgsBase):
     bounds: bool = False
+    num_threads: int = 4
 
 
 args = Args().parse_args()
@@ -66,6 +67,7 @@ test()
 dt = 20e-3  # 20 ms
 tf = 1.2  # in seconds
 nsteps = int(tf / dt)
+print("Num steps: {:d}".format(nsteps))
 
 switch_t0 = 0.4
 switch_t1 = 0.9  # landing time
@@ -77,7 +79,7 @@ mask = (switch_t0 <= times) & (times < switch_t1)
 
 x0_ref = np.concatenate((q0, np.zeros(nv)))
 x_ref_flight = x0_ref.copy()
-w_x = np.ones(space.ndx) * 1e-3
+w_x = np.ones(space.ndx) * 1e-2
 w_x[:6] = 0.0
 w_x[nv : nv + 6] = 0.0
 w_x = np.diag(w_x)
@@ -97,8 +99,18 @@ def create_land_fns():
     for fname, fid in FOOT_FRAME_IDS.items():
         p_ref = rdata.oMf[fid].translation
         fn = aligator.FrameTranslationResidual(space.ndx, nu, rmodel, p_ref, fid)
-        fn = fn[2]
-        out[fid] = fn
+        out[fid] = fn[2]
+    return out
+
+
+def create_land_vel_fns():
+    out = {}
+    for fname, fid in FOOT_FRAME_IDS.items():
+        v_ref = pin.Motion.Zero()
+        fn = aligator.FrameVelocityResidual(
+            space.ndx, nu, rmodel, v_ref, fid, pin.LOCAL_WORLD_ALIGNED
+        )
+        out[fid] = fn[:3]
     return out
 
 
@@ -138,6 +150,8 @@ for k in range(nsteps):
         fns = create_land_fns()
         for fid, fn in fns.items():
             stm.addConstraint(fn, constraints.EqualityConstraintSet())
+        for fid, fn in create_land_vel_fns().items():
+            stm.addConstraint(fn, constraints.EqualityConstraintSet())
 
     stages.append(stm)
 
@@ -146,11 +160,13 @@ w_xterm = w_x.copy()
 term_cost = aligator.QuadraticStateCost(space, nu, x0_ref, weights=w_x)
 
 problem = aligator.TrajOptProblem(x0_ref, stages, term_cost)
-# mu_init = 0.1
-mu_init = 1e-4
+mu_init = 1e-5
 tol = 1e-4
-solver = aligator.SolverProxDDP(tol, mu_init, verbose=aligator.VERBOSE, max_iters=200)
+solver = aligator.SolverProxDDP(tol, mu_init, verbose=aligator.VERBOSE, max_iters=100)
 solver.rollout_type = aligator.ROLLOUT_LINEAR
+solver.linear_solver_choice = aligator.LQ_SOLVER_PARALLEL
+# solver.sa_strategy = aligator.SA_FILTER
+solver.setNumThreads(args.num_threads)
 
 cb_ = aligator.HistoryCallback()
 solver.registerCallback("his", cb_)
@@ -161,13 +177,7 @@ xs_init = [x0_ref] * (nsteps + 1)
 us_init = [np.zeros(nu) for _ in range(nsteps)]
 
 
-add_plane(robot, (251, 127, 0, 240))
-vizer = MeshcatVisualizer(
-    rmodel,
-    collision_model=robot.collision_model,
-    visual_model=robot.visual_model,
-    data=rdata,
-)
+add_plane(robot)
 
 
 def make_plots(res: aligator.Results):
@@ -211,41 +221,52 @@ def make_plots(res: aligator.Results):
 
 
 if __name__ == "__main__":
-    vizer.initViewer(loadModel=True, zmq_url=args.zmq_url)
-    custom_color = np.asarray((53, 144, 243)) / 255.0
-    vizer.setBackgroundColor(col_bot=list(custom_color), col_top=(1, 1, 1, 1))
-    manage_lights(vizer)
-    vizer.display(q0)
+    if args.display:
+        vizer = MeshcatVisualizer(
+            rmodel,
+            collision_model=robot.collision_model,
+            visual_model=robot.visual_model,
+            data=rdata,
+        )
+        vizer.initViewer(loadModel=True, zmq_url=args.zmq_url)
+        # custom_color = np.asarray((53, 144, 243)) / 255.0
+        # vizer.setBackgroundColor(col_bot=list(custom_color), col_top=(1, 1, 1, 1))
+        manage_lights(vizer)
+        vizer.display(q0)
+        cam_pos = np.array((0.9, -0.3, 0.4))
+        cam_pos *= 0.9 / np.linalg.norm(cam_pos)
+        cam_tar = (0.0, 0.0, 0.3)
+        vizer.setCameraPosition(cam_pos)
+        vizer.setCameraTarget(cam_tar)
 
     solver.run(problem, xs_init, us_init)
     res = solver.results
     print(res)
-    make_plots(res)
+    if args.plot:
+        make_plots(res)
 
-    qs = [x[:nq] for x in res.xs]
-    vs = [x[nq:] for x in res.xs]
+    xs = np.stack(res.xs)
+    qs = xs[:, :nq]
+    vs = xs[:, nq:]
 
-    FPS = 1.0 / dt
-
-    def callback(i: int):
-        pin.forwardKinematics(rmodel, rdata, qs[i], vs[i])
-        for fid in FOOT_FRAME_IDS.values():
-            vizer.drawFrameVelocities(fid)
-
-    cam_pos = np.array([1.0, 0.7, 1.0])
-    cam_pos *= 0.9 / np.linalg.norm(cam_pos)
-    vizer.setCameraPosition(cam_pos)
-    vizer.setCameraTarget((0.0, 0.0, 0.3))
+    FPS = min(30, 1.0 / dt)
 
     if args.display:
-        input("[display]")
-        if args.record:
-            with vizer.create_video_ctx(
-                "assets/solo_jump.mp4", fps=FPS, **IMAGEIO_KWARGS
-            ):
-                print("[Recording video]")
-                vizer.play(qs, dt, callback=callback)
+        import contextlib
 
-        while True:
-            vizer.play(qs, dt, callback=callback)
-            input("[replay]")
+        def callback(i: int):
+            pin.forwardKinematics(rmodel, rdata, qs[i], vs[i])
+            for fid in FOOT_FRAME_IDS.values():
+                vizer.drawFrameVelocities(fid)
+
+        input("[display]")
+        ctx = (
+            vizer.create_video_ctx("assets/solo_jump.mp4", fps=FPS, **IMAGEIO_KWARGS)
+            if args.record
+            else contextlib.nullcontext()
+        )
+
+        with ctx:
+            while True:
+                vizer.play(qs, dt, callback=callback)
+                input("[replay]")

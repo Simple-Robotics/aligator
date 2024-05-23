@@ -2,63 +2,103 @@
 #include <boost/test/unit_test.hpp>
 
 #include "aligator/modelling/state-error.hpp"
-#include "aligator/modelling/composite-costs.hpp"
 
+#include "aligator/modelling/costs/quad-state-cost.hpp"
 #include <proxsuite-nlp/modelling/spaces/pinocchio-groups.hpp>
+#include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
 
 BOOST_AUTO_TEST_SUITE(costs)
 
 using namespace aligator;
 using T = double;
+using context::MatrixXs;
+using context::VectorXs;
+using QuadraticResidualCost = QuadraticResidualCostTpl<T>;
 
-BOOST_AUTO_TEST_CASE(quad_state) {
+void fd_test(VectorXs x0, VectorXs u0, MatrixXs weights,
+             shared_ptr<QuadraticResidualCost> qres,
+             shared_ptr<context::CostData> data) {
+
+  const shared_ptr<StageFunctionTpl<T>> fun = qres->residual_;
+  const auto fd = fun->createData();
+  const auto ndx = fd->ndx1;
+  const auto nu = fd->nu;
+  qres->evaluate(x0, u0, *data);
+  qres->computeGradients(x0, u0, *data);
+  qres->computeHessians(x0, u0, *data);
+
+  // analytical formula
+  fun->evaluate(x0, u0, x0, *fd);
+  fun->computeJacobians(x0, u0, x0, *fd);
+
+  auto n = (long)(ndx + nu);
+  auto J = fd->jac_buffer_.leftCols(n);
+
+  auto grad_ref = J.transpose() * weights * fd->value_;
+  auto hess_ref = J.transpose() * weights * J;
+  BOOST_CHECK(grad_ref.isApprox(data->grad_));
+  BOOST_CHECK(hess_ref.isApprox(data->hess_));
+}
+
+BOOST_AUTO_TEST_CASE(quad_state_se2) {
   using SE2 = proxsuite::nlp::SETpl<2, T>;
   auto space = std::make_shared<SE2>();
 
-  std::size_t ndx = (std::size_t)space->ndx();
-  std::size_t nu = 1UL;
+  const Eigen::Index ndx = space->ndx();
+  const Eigen::Index nu = 1UL;
   Eigen::VectorXd u0(nu);
   u0.setZero();
 
-  auto target = space->rand();
+  const auto target = space->rand();
 
-  auto fun = std::make_shared<StateErrorResidualTpl<T>>(space, nu, target);
+  const auto fun =
+      std::make_shared<StateErrorResidualTpl<T>>(space, nu, target);
 
-  Eigen::MatrixXd weights(fun->nr, fun->nr);
+  BOOST_CHECK_EQUAL(fun->nr, ndx);
+  Eigen::MatrixXd weights(ndx, ndx);
   weights.setIdentity();
-  auto qres =
-      std::make_shared<QuadraticResidualCostTpl<T>>(space, fun, weights);
+  const auto qres =
+      std::make_shared<QuadraticStateCostTpl<T>>(space, nu, target, weights);
 
-  shared_ptr<CostDataAbstractTpl<T>> data = qres->createData();
+  shared_ptr<context::CostData> data = qres->createData();
   auto fd = fun->createData();
 
-  int nrepeats = 10;
+  const int nrepeats = 10;
 
-  int k = 0;
-  while (k < nrepeats) {
+  for (int k = 0; k < nrepeats; k++) {
     Eigen::VectorXd x0 = space->rand();
-    qres->evaluate(x0, u0, *data);
-    qres->computeGradients(x0, u0, *data);
-    qres->computeHessians(x0, u0, *data);
+    fd_test(x0, u0, weights, qres, data);
+  }
+}
 
-    fmt::print("grad: {}\n", data->grad_.transpose());
-    fmt::print("hess:\n{}\n", data->hess_);
+BOOST_AUTO_TEST_CASE(quad_state_highdim) {
+  using VectorSpace = proxsuite::nlp::VectorSpaceTpl<T>;
+  const Eigen::Index ndx = 56;
+  const auto space = std::make_shared<VectorSpace>(ndx);
+  const Eigen::Index nu = 1UL;
 
-    // analytical formula
-    fun->evaluate(x0, u0, x0, *fd);
-    fun->computeJacobians(x0, u0, x0, *fd);
+  Eigen::VectorXd u0(nu);
+  u0.setZero();
 
-    auto n = (long)(ndx + nu);
-    auto J = fd->jac_buffer_.leftCols(n);
+  const auto target = space->rand();
 
-    auto grad_ref = J.transpose() * weights * fd->value_;
-    auto hess_ref = J.transpose() * weights * J;
-    fmt::print("grad_ref: {}\n", grad_ref.transpose());
-    fmt::print("hess_ref:\n{}\n", hess_ref);
-    BOOST_CHECK(grad_ref.isApprox(data->grad_));
-    BOOST_CHECK(hess_ref.isApprox(data->hess_));
+  const auto fun =
+      std::make_shared<StateErrorResidualTpl<T>>(space, nu, target);
 
-    k++;
+  BOOST_CHECK_EQUAL(fun->nr, ndx);
+  Eigen::MatrixXd weights(ndx, ndx);
+  weights.setIdentity();
+  const auto qres =
+      std::make_shared<QuadraticStateCostTpl<T>>(space, nu, target, weights);
+
+  shared_ptr<context::CostData> data = qres->createData();
+  auto fd = fun->createData();
+
+  const int nrepeats = 10;
+
+  for (int k = 0; k < nrepeats; k++) {
+    Eigen::VectorXd x0 = space->rand();
+    fd_test(x0, u0, weights, qres, data);
   }
 }
 

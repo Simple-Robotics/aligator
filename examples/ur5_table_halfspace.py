@@ -7,7 +7,13 @@ import example_robot_data as erd
 import matplotlib.pyplot as plt
 
 from aligator import manifolds, constraints, dynamics
-from utils import ArgsBase, compute_quasistatic, get_endpoint_traj
+from utils import (
+    ArgsBase,
+    compute_quasistatic,
+    get_endpoint_traj,
+    IMAGEIO_KWARGS,
+    manage_lights,
+)
 from aligator.utils.plotting import plot_convergence
 
 
@@ -92,14 +98,15 @@ for i in range(nsteps):
 
 problem = aligator.TrajOptProblem(x0, stages, term_cost)
 problem.addTerminalConstraint(frame_cstr)
-problem.setNumThreads(4)
 
 
 tol = 1e-4
-mu_init = 0.001
-max_iters = 50
+mu_init = 1e-3
+max_iters = 150
 verbose = aligator.VerboseLevel.VERBOSE
 solver = aligator.SolverProxDDP(tol, mu_init, max_iters=max_iters, verbose=verbose)
+solver.rollout_type = aligator.ROLLOUT_LINEAR
+solver.setNumThreads(4)
 cb = aligator.HistoryCallback()
 solver.registerCallback("his", cb)
 
@@ -121,11 +128,11 @@ ineq_cstr_datas = []
 ineq_cstr_values = []
 dyn_cstr_values = []
 for i in range(nsteps):
-    if len(stage_datas[i].constraint_data) > 1:
-        icd: aligator.StageFunctionData = stage_datas[i].constraint_data[1]
+    if len(stage_datas[i].constraint_data) > 0:
+        icd: aligator.StageFunctionData = stage_datas[i].constraint_data[0]
         ineq_cstr_datas.append(icd)
         ineq_cstr_values.append(icd.value.copy())
-    dcd = stage_datas[i].constraint_data[0]
+    dcd = stage_datas[i].dynamics_data
     dyn_cstr_values.append(dcd.value.copy())
 
 times = np.linspace(0.0, Tf, nsteps + 1)
@@ -136,6 +143,7 @@ plt.title("Inequality constraint values")
 plt.xlabel("Time")
 plt.subplot(132)
 plt.plot(times[1:], np.array(dyn_cstr_values))
+plt.title("Dyn. constraints")
 plt.xlabel("Time")
 plt.subplot(133)
 ee_traj = get_endpoint_traj(rmodel, rdata, xs_opt, frame_id)
@@ -156,8 +164,6 @@ if args.display:
     import meshcat.transformations as mtransf
     import contextlib
     import hppfcl
-
-    video_fps = 0.5 / dt
 
     def planehoz(vizer):
         p_height = table_height
@@ -191,20 +197,26 @@ if args.display:
         rmodel, robot.collision_model, robot.visual_model, data=rdata
     )
     vizer.initViewer(open=True, loadModel=True)
+    manage_lights(vizer)
     vizer.display(robot.q0)
     vizer.setBackgroundColor()
 
     planehoz(vizer)
 
-    ctx = (
-        vizer.create_video_ctx("assets/ur5_halfspace_under.mp4", fps=video_fps)
+    VID_FPS = 30
+
+    vid_ctx = (
+        vizer.create_video_ctx(
+            "assets/ur5_halfspace_under.mp4", fps=VID_FPS, **IMAGEIO_KWARGS
+        )
         if args.record
         else contextlib.nullcontext()
     )
 
-    slow_factor = 2.0
-    play_dt = dt / slow_factor
+    slow_factor = 0.5
+    play_dt = dt * slow_factor
     vizer.setCameraPreset("preset1")
+    vizer.setCameraZoom(1.6)
     input("[enter to play]")
     nq = rmodel.nq
     qs = [x[:nq] for x in rs.xs]
@@ -214,6 +226,5 @@ if args.display:
         pin.forwardKinematics(rmodel, vizer.data, qs[i], vs[i])
         vizer.drawFrameVelocities(frame_id)
 
-    with ctx:
-        for i in range(4):
-            vizer.play(qs, dt, callback)
+    with vid_ctx:
+        vizer.play(qs, dt, callback)

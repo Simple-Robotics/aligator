@@ -1,7 +1,6 @@
 import numpy as np
 import aligator
 import pinocchio as pin
-import matplotlib.pyplot as plt
 import time
 
 from aligator import (
@@ -15,6 +14,7 @@ from utils import load_talos_no_wristhead, ArgsBase
 class Args(ArgsBase):
     tcp: str = None
     bounds: bool = True
+    num_threads: int = 8
 
 
 args = Args().parse_args()
@@ -67,28 +67,28 @@ w_x = np.array(
         10000,
         10000,
         10000,  # Base pos/ori
-        10,
-        10,
-        10,
-        10,
-        10,
-        10,  # Left leg
-        10,
-        10,
-        10,
-        10,
-        10,
-        10,  # Right leg
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,  # Left leg
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,  # Right leg
         1000,
         1000,  # Torso
-        1,
-        1,
-        1,
-        1,  # Left arm
-        1,
-        1,
-        1,
-        1,  # Right arm
+        100,
+        100,
+        100,
+        100,  # Left arm
+        100,
+        100,
+        100,
+        100,  # Right arm
         100,
         100,
         100,
@@ -121,7 +121,7 @@ w_x = np.array(
 )
 w_x = np.diag(w_x)
 w_u = np.eye(nu) * 1e-3
-w_LFRF = 10000 * np.eye(6)
+w_LFRF = 100000 * np.eye(6)
 w_com = 10000 * np.ones(3)
 w_com = np.diag(w_com)
 
@@ -284,20 +284,23 @@ for i in range(1, nsteps):
 
 problem = aligator.TrajOptProblem(x0, stages, term_cost)
 
-TOL = 1e-5
+TOL = 1e-4
 mu_init = 1e-8
 rho_init = 0.0
-max_iters = 100
+max_iters = 200
 verbose = aligator.VerboseLevel.VERBOSE
 solver = aligator.SolverProxDDP(TOL, mu_init, rho_init, verbose=verbose)
 # solver = aligator.SolverFDDP(TOL, verbose=verbose)
 solver.rollout_type = aligator.ROLLOUT_LINEAR
-print("LDLT algo choice:", solver.ldlt_algo_choice)
 # solver = aligator.SolverFDDP(TOL, verbose=verbose)
 solver.max_iters = max_iters
 solver.sa_strategy = aligator.SA_FILTER  # FILTER or LINESEARCH
-solver.setup(problem)
 solver.filter.beta = 1e-5
+solver.force_initial_condition = True
+solver.reg_min = 1e-6
+solver.linear_solver_choice = aligator.LQ_SOLVER_PARALLEL  # LQ_SOLVER_SERIAL
+solver.setNumThreads(args.num_threads)
+solver.setup(problem)
 
 us_init = [np.zeros(nu)] * nsteps
 xs_init = [x0] * (nsteps + 1)
@@ -311,68 +314,16 @@ workspace = solver.workspace
 results = solver.results
 print(results)
 
-force_left = []
-force_right = []
-for i, cp in enumerate(contact_phases):
-    if cp == "LEFT":
-        force_left.append(
-            workspace.problem_data.stage_data[i]
-            .constraint_data[0]
-            .continuous_data.constraint_datas[0]
-            .contact_force.linear
-        )
-        force_right.append(np.zeros(3))
-    elif cp == "RIGHT":
-        force_right.append(
-            workspace.problem_data.stage_data[i]
-            .constraint_data[0]
-            .continuous_data.constraint_datas[0]
-            .contact_force.linear
-        )
-        force_left.append(np.zeros(3))
-    else:
-        force_left.append(
-            workspace.problem_data.stage_data[i]
-            .constraint_data[0]
-            .continuous_data.constraint_datas[0]
-            .contact_force.linear
-        )
-        force_right.append(
-            workspace.problem_data.stage_data[i]
-            .constraint_data[0]
-            .continuous_data.constraint_datas[1]
-            .contact_force.linear
-        )
 
-force_left = np.array(force_left)
-force_right = np.array(force_right)
-ttlin = np.linspace(0, nsteps * 0.01, nsteps)
-
-fig, axs = plt.subplots(ncols=2, nrows=3, figsize=(3.5, 2.5), layout="constrained")
-axs[0, 0].plot(ttlin, force_left[:, 0])
-axs[0, 0].set_title("Fx left")
-axs[0, 0].grid(True)
-axs[1, 0].plot(ttlin, force_left[:, 1])
-axs[1, 0].grid(True)
-axs[1, 0].set_title("Fy left")
-axs[2, 0].plot(ttlin, force_left[:, 2])
-axs[2, 0].grid(True)
-axs[2, 0].set_title("Fz left")
-axs[0, 1].plot(ttlin, force_right[:, 0])
-axs[0, 1].grid(True)
-axs[0, 1].set_title("Fx left")
-axs[1, 1].plot(ttlin, force_right[:, 1])
-axs[1, 1].grid(True)
-axs[1, 1].set_title("Fy left")
-axs[2, 1].plot(ttlin, force_right[:, 2])
-axs[2, 1].grid(True)
-axs[2, 1].set_title("Fz left")
-
-if args.display:
-    vizer.setCameraPosition([1.2, 0.0, 1.2])
-    vizer.setCameraTarget([0.0, 0.0, 1.0])
+def fdisplay():
     qs = [x[:nq] for x in results.xs.tolist()]
 
     for _ in range(3):
         vizer.play(qs, dt)
         time.sleep(0.5)
+
+
+if args.display:
+    # vizer.setCameraPosition([1.2, 0.0, 1.2])
+    # vizer.setCameraTarget([0.0, 0.0, 1.0])
+    fdisplay()

@@ -1,7 +1,7 @@
-#pragma once
 /// @file fwd.hpp
 /// @brief Forward declarations.
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+#pragma once
 
 #include <proxsuite-nlp/fwd.hpp>
 
@@ -11,6 +11,12 @@
 #define ALIGATOR_PINOCCHIO_V3
 #endif
 #endif
+
+#include "aligator/math.hpp"
+#include "aligator/macros.hpp"
+#include "aligator/eigen-macros.hpp"
+#include "aligator/config.hpp"
+#include "aligator/deprecated.hpp"
 
 /// @brief  Main package namespace.
 namespace aligator {
@@ -92,10 +98,10 @@ template <typename Scalar> struct TrajOptProblemTpl;
 template <typename Scalar> struct TrajOptDataTpl;
 
 // fwd SolverProxDDP
-template <typename Scalar> struct SolverProxDDP;
+template <typename Scalar> struct SolverProxDDPTpl;
 
 // fwd SolverFDDP
-template <typename Scalar> struct SolverFDDP;
+template <typename Scalar> struct SolverFDDPTpl;
 
 // fwd WorkspaceBaseTpl
 template <typename Scalar> struct WorkspaceBaseTpl;
@@ -122,8 +128,3 @@ inline auto allocate_shared_eigen_aligned(Args &&...args) {
 }
 
 } // namespace aligator
-
-#include "aligator/math.hpp"
-#include "aligator/macros.hpp"
-#include "aligator/config.hpp"
-#include "aligator/deprecated.hpp"

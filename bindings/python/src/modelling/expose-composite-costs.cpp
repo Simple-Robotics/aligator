@@ -1,18 +1,19 @@
 #include "aligator/python/fwd.hpp"
+#include "aligator/python/visitors.hpp"
 
-#include "aligator/modelling/composite-costs.hpp"
-#include "aligator/modelling/quad-state-cost.hpp"
+#include "aligator/modelling/costs/quad-state-cost.hpp"
+#include "aligator/modelling/costs/log-residual-cost.hpp"
 
 namespace aligator {
 namespace python {
+using context::ConstMatrixRef;
 using context::ConstVectorRef;
-using context::CostBase;
+using context::CostAbstract;
 using context::CostData;
 using context::Manifold;
 using context::MatrixXs;
 using context::Scalar;
 using context::StageFunction;
-using context::VectorXs;
 using FunctionPtr = shared_ptr<StageFunction>;
 using ManifoldPtr = shared_ptr<Manifold>;
 
@@ -22,19 +23,19 @@ void exposeComposites() {
   using QuadResCost = QuadraticResidualCostTpl<Scalar>;
   using QuadStateCost = QuadraticStateCostTpl<Scalar>;
   using QuadControlCost = QuadraticControlCostTpl<Scalar>;
+  using LogResCost = LogResidualCostTpl<Scalar>;
 
-  bp::class_<QuadResCost, bp::bases<CostBase>>(
+  bp::class_<QuadResCost, bp::bases<CostAbstract>>(
       "QuadraticResidualCost", "Weighted 2-norm of a given residual function.",
-      bp::init<ManifoldPtr, FunctionPtr, const MatrixXs &>(
+      bp::init<ManifoldPtr, FunctionPtr, const ConstMatrixRef &>(
           bp::args("self", "space", "function", "weights")))
       .def_readwrite("residual", &QuadResCost::residual_)
       .def_readwrite("weights", &QuadResCost::weights_)
       .def(CopyableVisitor<QuadResCost>());
 
-  using LogResCost = LogResidualCostTpl<Scalar>;
-  bp::class_<LogResCost, bp::bases<CostBase>>(
+  bp::class_<LogResCost, bp::bases<CostAbstract>>(
       "LogResidualCost", "Weighted log-cost composite cost.",
-      bp::init<ManifoldPtr, FunctionPtr, const VectorXs &>(
+      bp::init<ManifoldPtr, FunctionPtr, const ConstVectorRef &>(
           bp::args("self", "space", "function", "barrier_weights")))
       .def(bp::init<ManifoldPtr, FunctionPtr, Scalar>(
           bp::args("self", "function", "scale")))

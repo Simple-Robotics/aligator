@@ -2,7 +2,6 @@
 
 #include "aligator/context.hpp"
 #include "aligator/python/macros.hpp"
-#include "aligator/python/visitors.hpp"
 
 #include <eigenpy/eigenpy.hpp>
 #include <eigenpy/std-vector.hpp>
@@ -13,6 +12,13 @@ namespace python {
 namespace bp = boost::python;
 using eigenpy::StdVectorPythonVisitor;
 
+/// User-defined literal for defining boost::python::arg
+inline bp::arg operator""_a(const char *argname, std::size_t) {
+  return bp::arg(argname);
+}
+
+/// Expose GAR module
+void exposeGAR();
 /// Expose stagewise function classes
 void exposeFunctions();
 /// Expose cost functions
@@ -27,7 +33,7 @@ void exposeProblem();
 /// Expose discrete dynamics
 void exposeDynamics();
 /// Expose continuous dynamics
-void exposeODEs();
+void exposeContinuousDynamics();
 /// Expose numerical integrators
 void exposeIntegrators();
 

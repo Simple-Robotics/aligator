@@ -9,11 +9,15 @@ enum struct RolloutType {
   NONLINEAR
 };
 
+enum struct ErrorCode { UNINITIALIZED, UNSUPPORTED_OPTION, NAN_DETECTED };
+
 enum struct HessianApprox {
   /// Use exact Hessian.
   EXACT,
   /// Use the Gauss-Newton approximation.
-  GAUSS_NEWTON
+  GAUSS_NEWTON,
+  /// Use a BFGS-type approximation.
+  BFGS
 };
 
 enum struct MultiplierUpdateMode { NEWTON, PRIMAL, PRIMAL_DUAL };

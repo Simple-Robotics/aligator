@@ -1,6 +1,7 @@
 #pragma once
 
 #include "aligator/fwd.hpp"
+#include "aligator/gar/blk-matrix.hpp"
 
 namespace aligator {
 
@@ -12,60 +13,52 @@ public:
 
   ConstraintProximalScalerTpl(const ConstraintStack &constraints,
                               const Scalar &mu)
-      : constraints_(&constraints), mu_(&mu), weights_(constraints.size()),
-        scaleMatDiag_(constraints.totalDim()) {
-    weights_.setOnes();
-    initMatrix();
+      : constraints_(&constraints), mu_(&mu),
+        scalingMatrix_(constraints.dims()) {
+    scalingMatrix_.matrix().setOnes();
   }
 
   std::size_t size() const { return constraints_->size(); }
-  Scalar get(std::size_t j) const { return weights_[(long)j] * mu(); }
 
   void setWeight(const Scalar w, std::size_t j) {
-    assert(j < (std::size_t)weights_.size());
-    weights_[(long)j] = w;
-    constraints_->segmentByConstraint(scaleMatDiag_, j).setConstant(get(j));
+    scalingMatrix_[j].array() = w;
   }
 
-  VectorXs &getWeights() { return weights_; }
-  const VectorXs &getWeights() const { return weights_; }
   /// Set all weights at once
-  template <typename D> void setWeights(const Eigen::MatrixBase<D> &w) {
+  template <typename D> void setWeights(const Eigen::MatrixBase<D> &weights) {
     EIGEN_STATIC_ASSERT_VECTOR_ONLY(D)
-    assert(w.size() == weights_.size());
-    weights_ = w;
-    initMatrix(); // reinitialize matrix
+    for (size_t i = 0; i < constraints_->size(); i++) {
+      scalingMatrix_[i].array() = weights[long(i)];
+    }
   }
 
   /// Apply weighted penalty matrix
   template <typename D> auto apply(const Eigen::MatrixBase<D> &m) const {
-    return diagMatrix().asDiagonal() * m;
+    return diagMatrix() * m;
+  }
+
+  template <typename D> auto applyInverse(const Eigen::MatrixBase<D> &m) const {
+    return diagMatrix().inverse() * m;
   }
 
   template <typename D>
   Scalar weightedNorm(const Eigen::MatrixBase<D> &m) const {
     EIGEN_STATIC_ASSERT_VECTOR_ONLY(D)
-    return m.dot(diagMatrix().asDiagonal() * m);
+    return m.dot(apply(m));
   }
 
-  const VectorXs &diagMatrix() const { return scaleMatDiag_; }
+  inline auto diagMatrix() const {
+    return mu() * scalingMatrix_.matrix().asDiagonal();
+  }
 
 private:
-  /// Initialize the penalty weight matrix
-  void initMatrix();
+  using BlkVec = BlkMatrix<VectorXs, -1, 1>;
   Scalar mu() const { return *mu_; }
   const ConstraintStack *constraints_;
+  /// Solver mu parameter
   const Scalar *mu_;
-  VectorXs weights_;
   /// Diagonal for the scaling matrix
-  VectorXs scaleMatDiag_;
+  BlkVec scalingMatrix_;
 };
-
-template <typename Scalar>
-void ConstraintProximalScalerTpl<Scalar>::initMatrix() {
-  for (std::size_t j = 0; j < constraints_->size(); ++j) {
-    constraints_->segmentByConstraint(scaleMatDiag_, j).setConstant(get(j));
-  }
-}
 
 } // namespace aligator

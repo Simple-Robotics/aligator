@@ -7,4 +7,4 @@ namespace aligator {
 
 extern template struct FlyHighResidualTpl<context::Scalar>;
 
-}
+} // namespace aligator

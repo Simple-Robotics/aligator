@@ -1,12 +1,11 @@
 /// @file
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+#include "aligator/python/visitors.hpp"
 #include "aligator/python/modelling/continuous.hpp"
-#include "aligator/modelling/dynamics/linear-ode.hpp"
 #include "aligator/modelling/dynamics/centroidal-fwd.hpp"
 #include "aligator/modelling/dynamics/continuous-centroidal-fwd.hpp"
+#include "aligator/modelling/dynamics/context.hpp"
 #include "aligator/modelling/contact-map.hpp"
-
-#include <eigenpy/std-pair.hpp>
 
 namespace aligator {
 namespace python {
@@ -14,116 +13,85 @@ using namespace ::aligator::dynamics;
 using context::MatrixXs;
 using context::Scalar;
 using context::VectorXs;
-using ContinuousDynamicsBase = ContinuousDynamicsAbstractTpl<Scalar>;
-using ContinuousDynamicsData = ContinuousDynamicsDataTpl<Scalar>;
-using ODEAbstract = ODEAbstractTpl<Scalar>;
-using ODEData = ODEDataTpl<Scalar>;
+
+using context::ContinuousDynamicsAbstract;
+using context::ContinuousDynamicsData;
+using context::ODEAbstract;
+using context::ODEData;
+
 using CentroidalFwdDynamics = CentroidalFwdDynamicsTpl<Scalar>;
 using ContinuousCentroidalFwdDynamics =
     ContinuousCentroidalFwdDynamicsTpl<Scalar>;
 using Vector3s = typename math_types<Scalar>::Vector3s;
 using ContactMap = ContactMapTpl<Scalar>;
 
-struct DAEDataWrapper : ContinuousDynamicsData,
-                        bp::wrapper<ContinuousDynamicsData> {
+struct ContinousDataWrapper : ContinuousDynamicsData,
+                              bp::wrapper<ContinuousDynamicsData> {
   using ContinuousDynamicsData::ContinuousDynamicsData;
 };
 
-struct ODEDataWrapper : ODEData, bp::wrapper<ODEData> {
-  using ODEData::ODEData;
-};
+void exposeODEs();
 
-void exposeODEs() {
+void exposeContinuousDynamics() {
   using ManifoldPtr = shared_ptr<context::Manifold>;
-  using internal::PyContinuousDynamics;
-  using internal::PyODEAbstract;
 
-  bp::register_ptr_to_python<shared_ptr<ContinuousDynamicsBase>>();
+  bp::register_ptr_to_python<shared_ptr<ContinuousDynamicsAbstract>>();
   bp::class_<PyContinuousDynamics<>, boost::noncopyable>(
-      "ContinuousDynamicsBase",
+      "ContinuousDynamicsAbstract",
       "Base class for continuous-time dynamical models (DAEs and ODEs).",
-      bp::init<ManifoldPtr, int>(
-          "Default constructor: provide the working manifold and control space "
-          "dimension.",
-          bp::args("self", "space", "nu")))
-      .add_property("ndx", &ContinuousDynamicsBase::ndx,
+      bp::init<ManifoldPtr, int>("Default constructor: provide the working "
+                                 "manifold and control space "
+                                 "dimension.",
+                                 bp::args("self", "space", "nu")))
+      .add_property("ndx", &ContinuousDynamicsAbstract::ndx,
                     "State space dimension.")
-      .add_property("nu", &ContinuousDynamicsBase::nu,
+      .add_property("nu", &ContinuousDynamicsAbstract::nu,
                     "Control space dimension.")
-      .def("evaluate", bp::pure_virtual(&ContinuousDynamicsBase::evaluate),
+      .def("evaluate", bp::pure_virtual(&ContinuousDynamicsAbstract::evaluate),
            bp::args("self", "x", "u", "xdot", "data"),
            "Evaluate the DAE functions.")
       .def("computeJacobians",
-           bp::pure_virtual(&ContinuousDynamicsBase::computeJacobians),
+           bp::pure_virtual(&ContinuousDynamicsAbstract::computeJacobians),
            bp::args("self", "x", "u", "xdot", "data"),
            "Evaluate the DAE function derivatives.")
       .add_property("space",
-                    bp::make_function(&ContinuousDynamicsBase::space,
+                    bp::make_function(&ContinuousDynamicsAbstract::space,
                                       bp::return_internal_reference<>()),
                     "Get the state space.")
-      .def(CreateDataPolymorphicPythonVisitor<ContinuousDynamicsBase,
+      .def(CreateDataPolymorphicPythonVisitor<ContinuousDynamicsAbstract,
                                               PyContinuousDynamics<>>());
 
   bp::register_ptr_to_python<shared_ptr<ContinuousDynamicsData>>();
-  bp::class_<DAEDataWrapper, boost::noncopyable>(
-      "ContinuousDynamicsData",
-      "Data struct for continuous dynamics/DAE models.",
-      bp::init<int, int>(bp::args("self", "ndx", "nu")))
-      .add_property("value",
-                    bp::make_getter(&ContinuousDynamicsData::value_,
-                                    bp::return_internal_reference<>()),
-                    "Vector value of the DAE residual.")
-      .add_property("Jx",
-                    bp::make_getter(&ContinuousDynamicsData::Jx_,
-                                    bp::return_internal_reference<>()),
-                    "Jacobian with respect to state.")
-      .add_property("Ju",
-                    bp::make_getter(&ContinuousDynamicsData::Ju_,
-                                    bp::return_internal_reference<>()),
-                    "Jacobian with respect to controls.")
-      .add_property("Jxdot",
-                    bp::make_getter(&ContinuousDynamicsData::Jxdot_,
-                                    bp::return_internal_reference<>()),
-                    "Jacobian with respect to :math:`\\dot{x}`.");
+  auto cont_data_cls =
+      bp::class_<ContinousDataWrapper, boost::noncopyable>(
+          "ContinuousDynamicsData",
+          "Data struct for continuous dynamics/DAE models.",
+          bp::init<int, int>(bp::args("self", "ndx", "nu")))
+          .add_property("value",
+                        bp::make_getter(&ContinuousDynamicsData::value_,
+                                        bp::return_internal_reference<>()),
+                        "Vector value of the DAE residual.")
+          .add_property("Jx",
+                        bp::make_getter(&ContinuousDynamicsData::Jx_,
+                                        bp::return_internal_reference<>()),
+                        "Jacobian with respect to state.")
+          .add_property("Ju",
+                        bp::make_getter(&ContinuousDynamicsData::Ju_,
+                                        bp::return_internal_reference<>()),
+                        "Jacobian with respect to controls.")
+          .add_property("Jxdot",
+                        bp::make_getter(&ContinuousDynamicsData::Jxdot_,
+                                        bp::return_internal_reference<>()),
+                        "Jacobian with respect to :math:`\\dot{x}`.")
+          .add_property("xdot",
+                        bp::make_getter(&ContinuousDynamicsData::xdot_,
+                                        bp::return_internal_reference<>()),
+                        "Time derivative :math:`\\dot{x}`.");
 
-  bp::register_ptr_to_python<shared_ptr<ODEAbstract>>();
-  bp::class_<PyODEAbstract<>, bp::bases<ContinuousDynamicsBase>,
-             boost::noncopyable>(
-      "ODEAbstract",
-      "Continuous dynamics described by ordinary differential equations "
-      "(ODEs).",
-      bp::init<const ManifoldPtr &, int>(bp::args("self", "space", "nu")))
-      .def("forward", bp::pure_virtual(&ODEAbstract::forward),
-           bp::args("self", "x", "u", "data"),
-           "Compute the value of the ODE vector field, i.e. the "
-           "state time derivative :math:`\\dot{x}`.")
-      .def("dForward", bp::pure_virtual(&ODEAbstract::dForward),
-           bp::args("self", "x", "u", "data"),
-           "Compute the derivatives of the ODE vector field with respect "
-           "to the state-control pair :math:`(x, u)`.")
-      .def(CreateDataPolymorphicPythonVisitor<ODEAbstract, PyODEAbstract<>>());
+  // Alias this for back-compatibility
+  bp::scope().attr("ODEData") = cont_data_cls;
 
-  bp::register_ptr_to_python<shared_ptr<ODEData>>();
-  bp::class_<ODEDataWrapper, bp::bases<ContinuousDynamicsData>,
-             boost::noncopyable>(
-      "ODEData", "Data struct for ODE models.",
-      bp::init<int, int>(bp::args("self", "ndx", "nu")))
-      .add_property("xdot", bp::make_getter(&ODEData::xdot_,
-                                            bp::return_internal_reference<>()));
-
-  //// EXPOSE SOME
-  bp::class_<LinearODETpl<Scalar>, bp::bases<ODEAbstract>>(
-      "LinearODE",
-      "Linear ordinary differential equation, :math:`\\dot{x} = Ax + Bu`.",
-      bp::init<ManifoldPtr, MatrixXs, MatrixXs, VectorXs>(
-          bp::args("self", "A", "B", "c")))
-      .def(bp::init<MatrixXs, MatrixXs, VectorXs>(
-          "Constructor with just the matrices; a Euclidean state space is "
-          "assumed.",
-          bp::args("self", "A", "B", "c")))
-      .def_readonly("A", &LinearODETpl<Scalar>::A_, "State transition matrix.")
-      .def_readonly("B", &LinearODETpl<Scalar>::B_, "Control matrix.")
-      .def_readonly("c", &LinearODETpl<Scalar>::c_, "Constant drift term.");
+  exposeODEs();
 
   bp::class_<CentroidalFwdDynamics, bp::bases<ODEAbstract>>(
       "CentroidalFwdDynamics",

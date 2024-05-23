@@ -10,7 +10,12 @@ from pathlib import Path
 from typing import Tuple
 from pinocchio.visualize import MeshcatVisualizer
 from aligator.utils.plotting import plot_controls_traj, plot_velocity_traj
-from utils import add_namespace_prefix_to_models, ArgsBase, IMAGEIO_KWARGS
+from utils import (
+    add_namespace_prefix_to_models,
+    ArgsBase,
+    IMAGEIO_KWARGS,
+    manage_lights,
+)
 from aligator import dynamics, manifolds, constraints
 
 
@@ -67,7 +72,7 @@ def append_ball_to_robot_model(
     )
 
     ref_q0 = pin.neutral(rmodel)
-    ref_q0[7:] = robot.q0
+    ref_q0[:6] = robot.q0
     return rmodel, cmodel, vmodel, ref_q0
 
 
@@ -80,8 +85,8 @@ nu = nv - 6
 ndx = space.ndx
 x0 = space.neutral()
 x0[:nq] = ref_q0
-
-CONTACT_REF_FRAME = pin.LOCAL_WORLD_ALIGNED
+print("X0 = {}".format(x0))
+MUG_VEL_IDX = slice(robot.nv, nv)
 
 
 def create_rcm():
@@ -100,9 +105,9 @@ def create_rcm():
         pl1,
         joint2_id,
         pl2,
-        CONTACT_REF_FRAME,
+        pin.LOCAL_WORLD_ALIGNED,
     )
-    Kp = 0.0
+    Kp = 1e-3
     rcm.corrector.Kp[:] = Kp
     rcm.corrector.Kd[:] = 2 * Kp**0.5
     return rcm
@@ -118,21 +123,25 @@ def configure_viz(target_pos):
         model=rmodel, collision_model=cmodel, visual_model=vmodel, data=rdata
     )
     viz.initViewer(loadModel=True, zmq_url=args.zmq_url)
+    manage_lights(viz)
     viz.addGeometryObject(gobj)
-    viz.setBackgroundColor()
-    viz.setCameraZoom(1.8)
+    # viz.setBackgroundColor()
+    viz.setCameraZoom(1.7)
     return viz
 
 
-target_pos = np.array([3.4, -0.2, 0.0])
+target_pos = np.array([2.4, -0.2, 0.0])
 
-viz = configure_viz(target_pos=target_pos)
-viz.display(ref_q0)
+if args.display:
+    viz = configure_viz(target_pos=target_pos)
+    viz.display(ref_q0)
+else:
+    viz = None
 
 dt = 0.01
 tf = 2.0  # seconds
 nsteps = int(tf / dt)
-actuation_matrix = np.eye(nv, nu, -nu)
+actuation_matrix = np.eye(nv, nu)
 
 prox_settings = pin.ProximalSettings(accuracy=1e-8, mu=1e-6, max_iter=20)
 rcm = create_rcm()
@@ -145,7 +154,7 @@ dyn_model2 = dynamics.IntegratorSemiImplEuler(ode2, dt)
 
 q0 = x0[:nq]
 v0 = x0[nq:]
-u0_now = pin.rnea(robot.model, robot.data, robot.q0, robot.v0, robot.v0)
+u0_free = pin.rnea(robot.model, robot.data, robot.q0, robot.v0, robot.v0)
 u0, lam_c = aligator.underactuatedConstrainedInverseDynamics(
     rmodel, rdata, q0, v0, actuation_matrix, [rcm], [rcm.createData()]
 )
@@ -161,7 +170,7 @@ def testu0(u0):
 
 
 with np.printoptions(precision=4, linewidth=200):
-    print("invdyn (free): {}".format(u0_now))
+    print("invdyn (free): {}".format(u0_free))
     print("invdyn torque : {}".format(u0))
     testu0(u0)
 
@@ -170,28 +179,30 @@ us_i = [u0] * len(dms)
 xs_i = aligator.rollout(dms, x0, us_i)
 qs_i = [x[:nq] for x in xs_i]
 
-input("[press enter]")
-viz.play(qs_i, dt=dt)
+if args.display:
+    viz.play(qs_i, dt=dt)
 
 
 def create_running_cost():
     costs = aligator.CostStack(space, nu)
-    w_x = np.array([1e-6] * nv + [10.0] * nv)
+    w_x = np.array([1e-3] * nv + [0.1] * nv)
     w_v = w_x[nv:]
     # no costs on mug
-    w_x[:6] = 0.0
-    w_v[:6] = 0.0
+    w_x[MUG_VEL_IDX] = 0.0
+    w_v[MUG_VEL_IDX] = 0.0
+    assert space.isNormalized(x0)
     xreg = aligator.QuadraticStateCost(space, nu, x0, np.diag(w_x) * dt)
-    ureg = aligator.QuadraticControlCost(space, u0, np.eye(nu) * dt)
+    w_u = np.ones(nu) * 1e-5
+    ureg = aligator.QuadraticControlCost(space, u0, np.diag(w_u) * dt)
     costs.addCost(xreg)
-    costs.addCost(ureg, 1e-2)
+    costs.addCost(ureg)
     return costs
 
 
 def create_term_cost(has_frame_cost=False, w_ball=1.0):
-    w_xf = np.ones(ndx)
-    w_xf[:nv] = 1e-7
-    w_xf[nv : nv + 6] = 1e-6
+    w_xf = np.zeros(ndx)
+    w_xf[: robot.nv] = 1e-4
+    w_xf[nv + 6 :] = 1e-6
     costs = aligator.CostStack(space, nu)
     xreg = aligator.QuadraticStateCost(space, nu, x0, np.diag(w_xf))
     costs.addCost(xreg)
@@ -215,7 +226,7 @@ def create_term_constraint(target_pos):
 
 def get_position_limit_constraint():
     state_fn = aligator.StateErrorResidual(space, nu, space.neutral())
-    pos_fn = state_fn[7:13]
+    pos_fn = state_fn[:7]
     box_cstr = constraints.BoxConstraint(
         robot.model.lowerPositionLimit, robot.model.upperPositionLimit
     )
@@ -224,8 +235,9 @@ def get_position_limit_constraint():
 
 def get_velocity_limit_constraint():
     state_fn = aligator.StateErrorResidual(space, nu, space.neutral())
-    vel_fn = state_fn[nv + 6 :][3]
-    vlim = robot.model.velocityLimit[3:4]
+    idx = [3, 4]
+    vel_fn = state_fn[[nv + i for i in idx]]
+    vlim = robot.model.velocityLimit[idx]
     box_cstr = constraints.BoxConstraint(-vlim, vlim)
     return aligator.StageConstraint(vel_fn, box_cstr)
 
@@ -243,7 +255,7 @@ def create_stage(contact: bool):
     stm = aligator.StageModel(rc, dm)
     stm.addConstraint(get_torque_limit_constraint())
     # stm.addConstraint(get_position_limit_constraint())
-    # stm.addConstraint(get_velocity_limit_constraint())
+    stm.addConstraint(get_velocity_limit_constraint())
     return stm
 
 
@@ -258,21 +270,20 @@ term_constraint = create_term_constraint(target_pos=target_pos)
 problem = aligator.TrajOptProblem(x0, stages, term_cost)
 problem.addTerminalConstraint(term_constraint)
 tol = 1e-3
-mu_init = 1e-4
-solver = aligator.SolverProxDDP(tol, mu_init, max_iters=200, verbose=aligator.VERBOSE)
-solver.reg_min = 1e-8
+mu_init = 1e-5
+solver = aligator.SolverProxDDP(tol, mu_init, max_iters=300, verbose=aligator.VERBOSE)
+solver.linear_solver_choice = aligator.LQ_SOLVER_PARALLEL
+solver.rollout_type = aligator.ROLLOUT_LINEAR
 his_cb = aligator.HistoryCallback()
+solver.setNumThreads(4)
 solver.registerCallback("his", his_cb)
-solver.dual_weight = 0.0
 solver.setup(problem)
-# customize constraint scales
-for i in range(nsteps):
-    psc = solver.workspace.getConstraintScaler(i)
-    psc.set_weight(0.001, 1)
-    # psc.set_weight(0.001, 2)
 flag = solver.run(problem, xs_i, us_i)
 
 print(solver.results)
+ws: aligator.Workspace = solver.workspace
+rs: aligator.Results = solver.results
+dyn_slackn_slacks = [np.max(np.abs(s)) for s in ws.dyn_slacks]
 
 xs = solver.results.xs
 us = solver.results.us
@@ -283,7 +294,7 @@ proj_frame_id = rmodel.getFrameId("ball/root_joint")
 
 
 def get_frame_vel(k: int):
-    pin.forwardKinematics(rmodel, rdata, qs[i], vs[i])
+    pin.forwardKinematics(rmodel, rdata, qs[k], vs[k])
     return pin.getFrameVelocity(rmodel, rdata, proj_frame_id)
 
 
@@ -292,21 +303,30 @@ vf_launch_t = get_frame_vel(t_contact + 1)
 print("Before launch  :", vf_before_launch.np)
 print("Launch velocity:", vf_launch_t.np)
 
-
-def viz_callback(i: int):
-    pin.forwardKinematics(rmodel, rdata, qs[i], xs[i][nq:])
-    viz.drawFrameVelocities(proj_frame_id, v_scale=0.06)
-
-
 EXPERIMENT_NAME = "ur10_mug_throw"
-VID_FPS = 1.0 / dt
-vid_ctx = (
-    viz.create_video_ctx(f"assets/{EXPERIMENT_NAME}.mp4", fps=VID_FPS, **IMAGEIO_KWARGS)
-    if args.record
-    else contextlib.nullcontext()
-)
-with vid_ctx:
-    viz.play(qs, dt, callback=viz_callback)
+
+if args.display:
+
+    def viz_callback(i: int):
+        pin.forwardKinematics(rmodel, rdata, qs[i], xs[i][nq:])
+        viz.drawFrameVelocities(proj_frame_id, v_scale=0.06)
+        fid = rmodel.getFrameId("ball/root_joint")
+        ctar: pin.SE3 = rdata.oMf[fid]
+        viz.setCameraTarget(ctar.translation)
+
+    VID_FPS = 30
+    vid_ctx = (
+        viz.create_video_ctx(
+            f"assets/{EXPERIMENT_NAME}.mp4", fps=VID_FPS, **IMAGEIO_KWARGS
+        )
+        if args.record
+        else contextlib.nullcontext()
+    )
+
+    input("[press enter]")
+
+    with vid_ctx:
+        viz.play(qs, dt, callback=viz_callback)
 
 times = np.linspace(0.0, tf, nsteps + 1)
 _joint_names = rmodel.names[2:]
@@ -319,5 +339,11 @@ for fig, name in [(fig1, "controls"), (fig2, "velocity")]:
     for ext in [".png", ".pdf"]:
         figpath: Path = PLOTDIR / f"{EXPERIMENT_NAME}_{name}"
         fig.savefig(figpath.with_suffix(ext))
+
+fig3 = plt.figure()
+ax: plt.Axes = fig3.add_subplot(111)
+ax.plot(dyn_slackn_slacks)
+ax.set_yscale("log")
+ax.set_title("Dynamic slack errors $\\|s\\|_\\infty$")
 
 plt.show()
