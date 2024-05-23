@@ -1,11 +1,10 @@
 /// @file
-/// @brief Benchmark aligator::SolverFDDP against Crocoddyl on a simple example
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @brief Benchmark aligator::SolverFDDP against SolverProxDDP on a simple
+/// example
+/// @copyright Copyright (C) 2024 LAAS-CNRS, INRIA
 
 #include <benchmark/benchmark.h>
 
-#include <crocoddyl/core/solvers/fddp.hpp>
-#include <crocoddyl/core/utils/callbacks.hpp>
 #include <proxsuite-nlp/fwd.hpp>
 
 #include "talos-walk-utils.hpp"
