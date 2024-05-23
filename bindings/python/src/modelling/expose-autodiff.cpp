@@ -1,6 +1,7 @@
 #include "aligator/python/fwd.hpp"
 
 #include "aligator/modelling/autodiff/finite-difference.hpp"
+#include "aligator/modelling/autodiff/cost-finite-difference.hpp"
 
 namespace aligator {
 namespace python {
