@@ -25,7 +25,7 @@ struct DirectSumExplicitDynamicsTpl : ExplicitDynamicsModelTpl<_Scalar> {
 
   DirectSumExplicitDynamicsTpl(shared_ptr<Base> f, shared_ptr<Base> g)
       : Base(get_product_space(*f, *g), f->nu + g->nu), f_(f), g_(g) {
-    product_space_ = static_cast<CartesianProduct *>(this->space_next_.get());
+    product_space_ = dynamic_cast<CartesianProduct &>(*this->space_next_);
   }
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
@@ -46,7 +46,7 @@ private:
 
   /// pointer to casted cartesian product space; this pointer does not manage
   /// memory
-  CartesianProduct const *product_space_;
+  CartesianProduct product_space_;
 };
 
 template <typename Scalar>

@@ -35,7 +35,7 @@ struct KinodynamicsFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using ContDataAbstract = ContinuousDynamicsDataTpl<Scalar>;
   using Data = KinodynamicsFwdDataTpl<Scalar>;
   using Manifold = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
-  using ManifoldPtr = shared_ptr<Manifold>;
+  using ManifoldPtr = xyz::polymorphic<Manifold>;
   using Model = pinocchio::ModelTpl<Scalar>;
   using Matrix3s = Eigen::Matrix<Scalar, 3, 3>;
 

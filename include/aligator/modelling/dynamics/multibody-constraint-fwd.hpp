@@ -31,8 +31,8 @@ struct MultibodyConstraintFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
       PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(pinocchio::RigidConstraintData);
   using ProxSettings = pinocchio::ProximalSettingsTpl<Scalar>;
   using Manifold = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
+  using ManifoldPtr = xyz::polymorphic<Manifold>;
 
-  using ManifoldPtr = shared_ptr<Manifold>;
   ManifoldPtr space_;
   MatrixXs actuation_matrix_;
   RigidConstraintModelVector constraint_models_;

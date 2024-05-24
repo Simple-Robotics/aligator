@@ -3,6 +3,7 @@
 #include "aligator/core/function-abstract.hpp"
 #include "aligator/core/unary-function.hpp"
 #include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
+#include <proxsuite-nlp/third-party/polymorphic_cxx14.h>
 
 namespace aligator {
 
@@ -25,11 +26,11 @@ struct StateOrControlErrorResidual<_Scalar, 0> : UnaryFunctionTpl<_Scalar> {
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using VectorSpace = proxsuite::nlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
 
-  shared_ptr<Manifold> space_;
+  xyz::polymorphic<Manifold> space_;
   VectorXs target_;
 
-  StateOrControlErrorResidual(const shared_ptr<Manifold> &xspace, const int nu,
-                              const ConstVectorRef &target)
+  StateOrControlErrorResidual(const xyz::polymorphic<Manifold> &xspace,
+                              const int nu, const ConstVectorRef &target)
       : Base(xspace->ndx(), nu, xspace->ndx()), space_(xspace),
         target_(target) {
     if (!xspace->isNormalized(target)) {
@@ -57,19 +58,20 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using VectorSpace = proxsuite::nlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
 
-  shared_ptr<Manifold> space_;
+  xyz::polymorphic<Manifold> space_;
   VectorXs target_;
 
   /// @brief Constructor using the state space, control dimension and state
   /// target.
   template <unsigned int N = arg, typename = std::enable_if_t<N == 2>>
-  StateOrControlErrorResidual(const shared_ptr<Manifold> &xspace, const int nu,
-                              const ConstVectorRef &target);
+  StateOrControlErrorResidual(const xyz::polymorphic<Manifold> &xspace,
+                              const int nu, const ConstVectorRef &target);
 
   /// @brief Constructor using the state space dimension, control manifold and
   ///        control target.
   template <unsigned int N = arg, typename = std::enable_if_t<N == 1>>
-  StateOrControlErrorResidual(const int ndx, const shared_ptr<Manifold> &uspace,
+  StateOrControlErrorResidual(const int ndx,
+                              const xyz::polymorphic<Manifold> &uspace,
                               const ConstVectorRef &target)
       : Base(ndx, uspace->nx(), uspace->ndx()), space_(uspace),
         target_(target) {
@@ -78,14 +80,19 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
 
   /// @brief Constructor using state space and control space dimensions,
   ///        the control space is assumed to be Euclidean.
+  auto get_polymorphic(const int &size) const {
+    VectorSpace vs = VectorSpace(size);
+    return xyz::polymorphic<Manifold>(VectorSpace(size));
+  }
   template <unsigned int N = arg, typename = std::enable_if_t<N == 1>>
   StateOrControlErrorResidual(const int ndx, const ConstVectorRef &target)
-      : StateOrControlErrorResidual(
-            ndx, std::make_shared<VectorSpace>(target.size()), target) {}
+      : StateOrControlErrorResidual(ndx, get_polymorphic(target.size()),
+                                    target) {}
 
   template <unsigned int N = arg, typename = std::enable_if_t<N == 1>>
   StateOrControlErrorResidual(const int ndx, const int nu)
-      : Base(ndx, nu, ndx, nu), space_(std::make_shared<VectorSpace>(nu)),
+      : Base(ndx, nu, ndx, nu),
+        space_(xyz::polymorphic<Manifold>(VectorSpace(nu))),
         target_(space_->neutral()) {
     check_target_viable();
   }
@@ -130,7 +137,7 @@ private:
 template <typename Scalar, unsigned int arg>
 template <unsigned int N, typename>
 StateOrControlErrorResidual<Scalar, arg>::StateOrControlErrorResidual(
-    const shared_ptr<Manifold> &xspace, const int nu,
+    const xyz::polymorphic<Manifold> &xspace, const int nu,
     const ConstVectorRef &target)
     : Base(xspace->ndx(), nu, xspace->ndx()), space_(xspace), target_(target) {
   check_target_viable();

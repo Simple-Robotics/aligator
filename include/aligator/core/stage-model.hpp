@@ -24,7 +24,7 @@ public:
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   using Manifold = ManifoldAbstractTpl<Scalar>;
-  using ManifoldPtr = shared_ptr<Manifold>;
+  using ManifoldPtr = xyz::polymorphic<Manifold>;
   using Dynamics = DynamicsModelTpl<Scalar>;
   using DynamicsPtr = shared_ptr<Dynamics>;
   using FunctionPtr = shared_ptr<StageFunctionTpl<Scalar>>;

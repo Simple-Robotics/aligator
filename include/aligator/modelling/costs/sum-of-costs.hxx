@@ -4,7 +4,8 @@
 
 namespace aligator {
 template <typename Scalar>
-CostStackTpl<Scalar>::CostStackTpl(shared_ptr<Manifold> space, const int nu,
+CostStackTpl<Scalar>::CostStackTpl(xyz::polymorphic<Manifold> space,
+                                   const int nu,
                                    const std::vector<CostPtr> &comps,
                                    const std::vector<Scalar> &weights)
     : CostBase(space, nu), components_(comps), weights_(weights) {
