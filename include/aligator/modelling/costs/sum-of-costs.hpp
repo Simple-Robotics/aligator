@@ -32,7 +32,7 @@ template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
 
   /// @brief  Constructor with a specified dimension, and optional vector of
   /// components and weights.
-  CostStackTpl(shared_ptr<Manifold> space, const int nu,
+  CostStackTpl(xyz::polymorphic<Manifold> space, const int nu,
                const std::vector<CostPtr> &comps = {},
                const std::vector<Scalar> &weights = {});
 

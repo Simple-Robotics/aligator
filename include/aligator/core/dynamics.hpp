@@ -3,6 +3,7 @@
 #pragma once
 
 #include "aligator/core/function-abstract.hpp"
+#include <proxsuite-nlp/third-party/polymorphic_cxx14.h>
 
 namespace aligator {
 /**
@@ -21,7 +22,7 @@ struct DynamicsModelTpl : StageFunctionTpl<_Scalar> {
   using Base = StageFunctionTpl<Scalar>;
   using Data = DynamicsDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
-  using ManifoldPtr = shared_ptr<Manifold>;
+  using ManifoldPtr = xyz::polymorphic<Manifold>;
 
   /// State space for the input.
   ManifoldPtr space_;

@@ -119,7 +119,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// @ingroup ctor2
   /// @brief Constructor for an initial value problem.
   TrajOptProblemTpl(const ConstVectorRef &x0, const int nu,
-                    shared_ptr<Manifold> space,
+                    xyz::polymorphic<Manifold> space,
                     shared_ptr<CostAbstract> term_cost);
 
   bool initCondIsStateError() const { return init_state_error_ != nullptr; }
@@ -196,7 +196,7 @@ protected:
 
 private:
   static auto createStateError(const ConstVectorRef &x0,
-                               const shared_ptr<Manifold> &space,
+                               const xyz::polymorphic<Manifold> &space,
                                const int nu) {
     return std::make_shared<StateErrorResidual>(space, nu, x0);
   }

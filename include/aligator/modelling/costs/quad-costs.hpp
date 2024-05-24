@@ -1,6 +1,8 @@
 #pragma once
 
+#include "aligator/context.hpp"
 #include "aligator/core/cost-abstract.hpp"
+#include <proxsuite-nlp/manifold-base.hpp>
 #include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
 
 namespace aligator {
@@ -17,6 +19,7 @@ public:
 
   using Data = QuadraticCostDataTpl<Scalar>;
   using VectorSpace = proxsuite::nlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
+  using Manifold = proxsuite::nlp::ManifoldAbstractTpl<Scalar>;
 
   /// Weight @f$ Q @f$
   MatrixXs Wxx_;
@@ -34,7 +37,7 @@ public:
   VectorXs interp_u;
 
   static auto get_vector_space(Eigen::Index nx) {
-    return std::make_shared<VectorSpace>((int)nx);
+    return xyz::polymorphic<Manifold>(VectorSpace((int)nx));
   }
 
   QuadraticCostTpl(const ConstMatrixRef &w_x, const ConstMatrixRef &w_u,

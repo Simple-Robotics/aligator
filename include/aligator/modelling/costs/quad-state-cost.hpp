@@ -20,7 +20,7 @@ struct QuadraticStateCostTpl : QuadraticResidualCostTpl<Scalar> {
   QuadraticStateCostTpl(shared_ptr<StateError> resdl, const MatrixXs &weights)
       : Base(resdl->space_, resdl, weights) {}
 
-  QuadraticStateCostTpl(shared_ptr<Manifold> space, const int nu,
+  QuadraticStateCostTpl(xyz::polymorphic<Manifold> space, const int nu,
                         const ConstVectorRef &target, const MatrixXs &weights)
       : QuadraticStateCostTpl(std::make_shared<StateError>(space, nu, target),
                               weights) {}
@@ -42,16 +42,16 @@ struct QuadraticControlCostTpl : QuadraticResidualCostTpl<Scalar> {
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using Error = ControlErrorResidualTpl<Scalar>;
 
-  QuadraticControlCostTpl(shared_ptr<Manifold> space, shared_ptr<Error> resdl,
-                          const MatrixXs &weights)
+  QuadraticControlCostTpl(xyz::polymorphic<Manifold> space,
+                          shared_ptr<Error> resdl, const MatrixXs &weights)
       : Base(space, resdl, weights) {}
 
-  QuadraticControlCostTpl(shared_ptr<Manifold> space, int nu,
+  QuadraticControlCostTpl(xyz::polymorphic<Manifold> space, int nu,
                           const ConstMatrixRef &weights)
       : QuadraticControlCostTpl(
             space, std::make_shared<Error>(space->ndx(), nu), weights) {}
 
-  QuadraticControlCostTpl(shared_ptr<Manifold> space,
+  QuadraticControlCostTpl(xyz::polymorphic<Manifold> space,
                           const ConstVectorRef &target,
                           const ConstMatrixRef &weights)
       : QuadraticControlCostTpl(

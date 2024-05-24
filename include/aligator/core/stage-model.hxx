@@ -5,6 +5,7 @@
 #include "aligator/core/stage-model.hpp"
 #include "aligator/utils/exceptions.hpp"
 
+#include <proxsuite-nlp/context.hpp>
 #include <proxsuite-nlp/modelling/constraints/equality-constraint.hpp>
 #include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
 
@@ -14,7 +15,8 @@ namespace {
 
 using proxsuite::nlp::VectorSpaceTpl;
 template <typename T> auto make_vector_space(const int n) {
-  return std::make_shared<VectorSpaceTpl<T>>(n);
+  return xyz::polymorphic<proxsuite::nlp::context::Manifold>(
+      VectorSpaceTpl<T>(n));
 }
 
 } // namespace
