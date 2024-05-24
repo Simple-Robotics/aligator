@@ -34,7 +34,7 @@ int main() {
   const size_t nsteps = 100;
   const auto nx = 4;
   const auto nu = 2;
-  const auto space = std::make_shared<Space>(nx);
+  const auto space = Space(nx);
 
   NormalGen norm_gen;
   MatrixXd A;

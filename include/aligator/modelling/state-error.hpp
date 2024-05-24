@@ -86,7 +86,7 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
   }
   template <unsigned int N = arg, typename = std::enable_if_t<N == 1>>
   StateOrControlErrorResidual(const int ndx, const ConstVectorRef &target)
-      : StateOrControlErrorResidual(ndx, get_polymorphic(target.size()),
+      : StateOrControlErrorResidual(ndx, get_polymorphic((int)target.size()),
                                     target) {}
 
   template <unsigned int N = arg, typename = std::enable_if_t<N == 1>>

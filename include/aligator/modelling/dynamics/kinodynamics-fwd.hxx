@@ -15,7 +15,7 @@ namespace dynamics {
 
 template <typename Scalar>
 KinodynamicsFwdDynamicsTpl<Scalar>::KinodynamicsFwdDynamicsTpl(
-    const ManifoldPtr &state, const Model &model, const Vector3s &gravity,
+    const Manifold &state, const Model &model, const Vector3s &gravity,
     const std::vector<bool> &contact_states,
     const std::vector<pinocchio::FrameIndex> &contact_ids, const int force_size)
     : Base(state, model.nv - 6 + int(contact_states.size()) * force_size),

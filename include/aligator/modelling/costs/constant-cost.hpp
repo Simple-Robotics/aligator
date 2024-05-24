@@ -13,7 +13,8 @@ template <typename _Scalar> struct ConstantCostTpl : CostAbstractTpl<_Scalar> {
   using Manifold = ManifoldAbstractTpl<Scalar>;
 
   Scalar value_;
-  ConstantCostTpl(shared_ptr<Manifold> space, const int nu, const Scalar value)
+  ConstantCostTpl(xyz::polymorphic<Manifold> space, const int nu,
+                  const Scalar value)
       : Base(space, nu), value_(value) {}
   void evaluate(const ConstVectorRef &, const ConstVectorRef &,
                 CostData &data) const override {
