@@ -6,7 +6,7 @@
 #include "aligator/utils/rollout.hpp"
 #include "aligator/modelling/state-error.hpp"
 #include <proxsuite-nlp/modelling/spaces/pinocchio-groups.hpp>
-
+#include <proxsuite-nlp/third-party/polymorphic_cxx14.h>
 #include <boost/test/unit_test.hpp>
 
 #include <fmt/core.h>
@@ -18,8 +18,9 @@ using namespace aligator;
 /// @details  It maps \f$(x,u)\f$ to \f$ x + u \f$.
 struct MyModel : ExplicitDynamicsModelTpl<double> {
   using Manifold = ManifoldAbstractTpl<double>;
+  using ManifoldPtr = xyz::polymorphic<Manifold>;
   using ExplicitData = ExplicitDynamicsDataTpl<double>;
-  explicit MyModel(const shared_ptr<Manifold> &space)
+  explicit MyModel(const ManifoldPtr &space)
       : ExplicitDynamicsModelTpl<double>(space, space->ndx()) {}
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
@@ -57,20 +58,20 @@ using StageModel = aligator::StageModelTpl<double>;
 using EqualityConstraint = proxsuite::nlp::EqualityConstraintTpl<double>;
 
 struct MyFixture {
-  shared_ptr<Manifold> space;
+  Manifold space;
   const int nu;
   const shared_ptr<MyModel> dyn_model;
   const shared_ptr<MyCost> cost;
   TrajOptProblemTpl<double> problem;
 
   MyFixture()
-      : space(std::make_shared<Manifold>()), nu(space->ndx()),
+      : space(Manifold()), nu(space.ndx()),
         dyn_model(std::make_shared<MyModel>(space)),
         cost(std::make_shared<MyCost>(space, nu)),
-        problem(space->neutral(), nu, space, cost) {
+        problem(space.neutral(), nu, space, cost) {
     auto stage = std::make_shared<StageModel>(cost, dyn_model);
     auto func = std::make_shared<StateErrorResidualTpl<double>>(
-        space, nu, space->neutral());
+        space, nu, space.neutral());
     auto stage2 = stage->clone();
     stage2->addConstraint(func, std::make_shared<EqualityConstraint>());
     problem.addStage(stage);
@@ -86,7 +87,7 @@ BOOST_AUTO_TEST_CASE(test_problem) {
   MyFixture f;
 
   auto nu = f.nu;
-  auto &space = *f.space;
+  auto &space = f.space;
   auto &stage = *f.problem.stages_[0];
   BOOST_CHECK_EQUAL(stage.numPrimal(), space.ndx() + nu);
   BOOST_CHECK_EQUAL(stage.numDual(), space.ndx());
@@ -117,7 +118,7 @@ BOOST_AUTO_TEST_CASE(test_workspace) {
   using Workspace = WorkspaceTpl<double>;
   MyFixture f;
   auto nu = f.nu;
-  auto space = *f.space;
+  auto space = f.space;
   Workspace workspace(f.problem);
   fmt::print("{}", workspace);
   const std::size_t nsteps = f.problem.numSteps();

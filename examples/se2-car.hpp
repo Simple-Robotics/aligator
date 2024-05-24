@@ -33,7 +33,7 @@ ALIGATOR_DYNAMIC_TYPEDEFS(T);
 struct CarDynamics : dynamics::ODEAbstractTpl<T> {
   using Base = dynamics::ODEAbstractTpl<T>;
   using ODEData = dynamics::ODEDataTpl<T>;
-  CarDynamics() : Base(std::make_shared<SE2>(), 2) {}
+  CarDynamics() : Base(SE2(), 2) {}
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                ODEData &data) const override {
@@ -60,18 +60,18 @@ struct CarDynamics : dynamics::ODEAbstractTpl<T> {
 };
 
 inline auto create_se2_problem(std::size_t nsteps) {
-  auto space = std::make_shared<SE2>();
+  auto space = SE2();
   const int nu = 2;
-  const int ndx = space->ndx();
+  const int ndx = space.ndx();
 
-  VectorXs x0(space->nx());
+  VectorXs x0(space.nx());
   {
     double theta = 0.15355;
     pinocchio::SINCOS(theta, &x0[2], &x0[3]);
     x0[0] = 0.7;
     x0[1] = -0.1;
   }
-  const VectorXs x_target = space->neutral();
+  const VectorXs x_target = space.neutral();
 
   auto state_err = std::make_shared<StateError>(space, nu, x_target);
 

@@ -64,9 +64,8 @@ void foot_traj(Eigen::Vector3d &translation_init, const int &t_ss,
 }
 
 std::shared_ptr<IntegratorSemiImplEuler>
-create_dynamics(std::shared_ptr<MultibodyPhaseSpace> &stage_space,
-                Support &support, MatrixXd &actuation_matrix,
-                ProximalSettings &proximal_settings,
+create_dynamics(MultibodyPhaseSpace &stage_space, Support &support,
+                MatrixXd &actuation_matrix, ProximalSettings &proximal_settings,
                 std::vector<pin::RigidConstraintModel> &constraint_models) {
   std::shared_ptr<ODEAbstract> ode;
   pinocchio::context::RigidConstraintModelVector cms;
@@ -191,7 +190,7 @@ TrajOptProblem defineLocomotionProblem(const std::size_t T_ss,
     ts += 1;
 
     const auto cmodel = std::make_shared<Model>(rmodel);
-    auto stage_space = std::make_shared<MultibodyPhaseSpace>(*cmodel);
+    auto stage_space = MultibodyPhaseSpace(*cmodel);
 
     auto rcost = std::make_shared<CostStack>(stage_space, nu);
 
@@ -207,14 +206,14 @@ TrajOptProblem defineLocomotionProblem(const std::size_t T_ss,
     case LEFT:
       foot_traj(RF_placement.translation(), T_ss, ts);
       frame_fn_RF = std::make_shared<FramePlacementResidual>(
-          stage_space->ndx(), nu, cmodel, RF_placement, foot_frame_ids[1]);
+          stage_space.ndx(), nu, cmodel, RF_placement, foot_frame_ids[1]);
       rcost->addCost(std::make_shared<QuadraticResidualCost>(
           stage_space, frame_fn_RF, w_LFRF));
       break;
     case RIGHT:
       foot_traj(LF_placement.translation(), T_ss, ts);
       frame_fn_LF = std::make_shared<FramePlacementResidual>(
-          stage_space->ndx(), nu, cmodel, LF_placement, foot_frame_ids[0]);
+          stage_space.ndx(), nu, cmodel, LF_placement, foot_frame_ids[0]);
       rcost->addCost(std::make_shared<QuadraticResidualCost>(
           stage_space, frame_fn_LF, w_LFRF));
       break;
@@ -226,7 +225,7 @@ TrajOptProblem defineLocomotionProblem(const std::size_t T_ss,
         rcost, create_dynamics(stage_space, ph, actuation_matrix, prox_settings,
                                constraint_models)));
   }
-  auto ter_space = std::make_shared<MultibodyPhaseSpace>(rmodel);
+  auto ter_space = MultibodyPhaseSpace(rmodel);
   auto term_cost = std::make_shared<CostStack>(ter_space, nu);
   term_cost->addCost(
       std::make_shared<QuadraticStateCost>(ter_space, nu, x0, w_x));

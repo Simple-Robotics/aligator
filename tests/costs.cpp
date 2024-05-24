@@ -52,13 +52,13 @@ BOOST_AUTO_TEST_CASE(quad_state_se2) {
   const auto target = space->rand();
 
   const auto fun =
-      std::make_shared<StateErrorResidualTpl<T>>(space, nu, target);
+      std::make_shared<StateErrorResidualTpl<T>>(*space, nu, target);
 
   BOOST_CHECK_EQUAL(fun->nr, ndx);
   Eigen::MatrixXd weights(ndx, ndx);
   weights.setIdentity();
   const auto qres =
-      std::make_shared<QuadraticStateCostTpl<T>>(space, nu, target, weights);
+      std::make_shared<QuadraticStateCostTpl<T>>(*space, nu, target, weights);
 
   shared_ptr<context::CostData> data = qres->createData();
   auto fd = fun->createData();
@@ -83,13 +83,13 @@ BOOST_AUTO_TEST_CASE(quad_state_highdim) {
   const auto target = space->rand();
 
   const auto fun =
-      std::make_shared<StateErrorResidualTpl<T>>(space, nu, target);
+      std::make_shared<StateErrorResidualTpl<T>>(*space, nu, target);
 
   BOOST_CHECK_EQUAL(fun->nr, ndx);
   Eigen::MatrixXd weights(ndx, ndx);
   weights.setIdentity();
   const auto qres =
-      std::make_shared<QuadraticStateCostTpl<T>>(space, nu, target, weights);
+      std::make_shared<QuadraticStateCostTpl<T>>(*space, nu, target, weights);
 
   shared_ptr<context::CostData> data = qres->createData();
   auto fd = fun->createData();

@@ -25,8 +25,8 @@ struct LinearDiscreteDynamicsTpl : ExplicitDynamicsModelTpl<_Scalar> {
   /// @brief Constructor with state manifold and matrices.
   LinearDiscreteDynamicsTpl(const MatrixXs &A, const MatrixXs &B,
                             const VectorXs &c)
-      : Base(std::make_shared<VectorSpaceType>((int)A.cols()), (int)B.cols()),
-        A_(A), B_(B), c_(c) {}
+      : Base(VectorSpaceType((int)A.cols()), (int)B.cols()), A_(A), B_(B),
+        c_(c) {}
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                Data &data) const {
