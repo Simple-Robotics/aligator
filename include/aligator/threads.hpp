@@ -1,6 +1,8 @@
 #pragma once
 
+#ifdef ALIGATOR_MULTITHREADING
 #include <omp.h>
+#endif
 
 namespace aligator {
 

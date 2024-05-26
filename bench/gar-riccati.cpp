@@ -31,6 +31,7 @@ static void BM_serial(benchmark::State &state) {
   }
 }
 
+#ifdef ALIGATOR_MULTITHREADING
 template <uint NPROC> static void BM_parallel(benchmark::State &state) {
   uint horz = (uint)state.range(0);
   VectorXs x0 = VectorXs::NullaryExpr(nx, normal_unary_op{});
@@ -43,6 +44,7 @@ template <uint NPROC> static void BM_parallel(benchmark::State &state) {
     solver.forward(xs, us, vs, lbdas);
   }
 }
+#endif
 
 static void BM_stagedense(benchmark::State &state) {
   uint horz = (uint)state.range(0);
@@ -67,10 +69,12 @@ static void customArgs(benchmark::internal::Benchmark *b) {
 
 BENCHMARK(BM_serial)->Apply(customArgs);
 BENCHMARK(BM_stagedense)->Apply(customArgs);
+#ifdef ALIGATOR_MULTITHREADING
 BENCHMARK_TEMPLATE(BM_parallel, 2)->Apply(customArgs);
 BENCHMARK_TEMPLATE(BM_parallel, 3)->Apply(customArgs);
 BENCHMARK_TEMPLATE(BM_parallel, 4)->Apply(customArgs);
 BENCHMARK_TEMPLATE(BM_parallel, 6)->Apply(customArgs);
+#endif
 
 int main(int argc, char **argv) {
   aligator::omp::set_default_options(aligator::omp::get_available_threads());
