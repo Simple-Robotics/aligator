@@ -10,7 +10,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.6.0] - 2024-05-23
 
 ### Added
-
 - Added constrained LQR example ([#145](https://github.com/Simple-Robotics/aligator/pull/145))
 - Adds [tracy](https://github.com/Simple-Robotics/tracy) as a profiling tool
 - Adds a new sublibrary called `gar` to represent and solve time-varying linear-quadratic subproblems
@@ -22,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add SE2 car benchmark `bench/se2-car.cpp`
 - Split part of `macros.hpp` into new header `eigen-macros.hpp`, add `ALIGATOR_NOMALLOC_SCOPED` macro to disable Eigen's malloc per-scope and a caching system to restore the malloc status
 - Add `context.hpp` file for `aligator/modelling/dynamics`
+- Add force and wrench cone costs
+- Add centroidal momentum cost
 
 ### Changed
 

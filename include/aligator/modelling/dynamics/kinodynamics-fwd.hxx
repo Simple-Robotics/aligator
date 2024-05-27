@@ -47,7 +47,8 @@ void KinodynamicsFwdDynamicsTpl<Scalar>::forward(const ConstVectorRef &x,
   pinocchio::forwardKinematics(pin_model_, pdata, q);
   pinocchio::centerOfMass(pin_model_, pdata, q, v);
 
-  d.Agu_inv_ = pdata.Ag.leftCols(6).inverse();
+  d.PivLU_.compute(pdata.Ag.leftCols(6));
+  d.Agu_inv_ = d.PivLU_.inverse();
 
   // Compute external forces component
   d.cforces_.setZero();
@@ -118,9 +119,10 @@ void KinodynamicsFwdDynamicsTpl<Scalar>::dForward(const ConstVectorRef &x,
       d.Jtemp_ << 0, -u[i_ * force_size_ + 2], u[i_ * force_size_ + 1],
           u[i_ * force_size_ + 2], 0, -u[i_ * force_size_],
           -u[i_ * force_size_ + 1], u[i_ * force_size_], 0;
-      d.Jx_.block(pin_model_.nv, 0, 6, pin_model_.nv) +=
-          d.Agu_inv_.template rightCols<3>() * d.Jtemp_ *
-          (pdata.Jcom - d.fJf_.template topRows<3>());
+      d.temp1_.noalias() = d.Agu_inv_.template rightCols<3>() * d.Jtemp_;
+      d.temp2_.noalias() = pdata.Jcom - d.fJf_.template topRows<3>();
+      d.Jx_.block(pin_model_.nv, 0, 6, pin_model_.nv).noalias() +=
+          d.temp1_ * d.temp2_;
     }
   }
   // Compute d(Ag * q_ddot)/ dq
@@ -137,6 +139,7 @@ void KinodynamicsFwdDynamicsTpl<Scalar>::dForward(const ConstVectorRef &x,
   pinocchio::computeCentroidalDynamicsDerivatives(pin_model_, pdata, q, v,
                                                   d.a0_, d.dh_dq_, d.dhdot_dq_,
                                                   d.dhdot_dv_, d.dhdot_da_);
+
   d.Jx_.block(pin_model_.nv, 0, 6, pin_model_.nv).noalias() -=
       d.Agu_inv_ * d.dhdot_dq_;
 
@@ -147,6 +150,7 @@ void KinodynamicsFwdDynamicsTpl<Scalar>::dForward(const ConstVectorRef &x,
   // Compute dAgu_inv / dq
   d.a0_.setZero();
   d.a0_.template head<6>() = d.xdot_.segment(pin_model_.nv, 6);
+
   pinocchio::computeCentroidalDynamicsDerivatives(
       pin_model_, pdata, q, VectorXs::Zero(pin_model_.nv), d.a0_, d.dh_dq_,
       d.dhdot_dq_, d.dhdot_dv_, d.dhdot_da_);
@@ -199,8 +203,9 @@ KinodynamicsFwdDataTpl<Scalar>::KinodynamicsFwdDataTpl(
     : Base(model->ndx(), model->nu()), pin_data_(model->pin_model_),
       dh_dq_(6, model->pin_model_.nv), dhdot_dq_(6, model->pin_model_.nv),
       dhdot_dv_(6, model->pin_model_.nv), dhdot_da_(6, model->pin_model_.nv),
+      temp1_(6, 3), temp2_(3, model->pin_model_.nv),
       fJf_(6, model->pin_model_.nv), v0_(model->pin_model_.nv),
-      a0_(model->pin_model_.nv) {
+      a0_(model->pin_model_.nv), PivLU_(6) {
   this->Jx_.topRightCorner(model->pin_model_.nv, model->pin_model_.nv)
       .setIdentity();
   this->Ju_
@@ -211,6 +216,8 @@ KinodynamicsFwdDataTpl<Scalar>::KinodynamicsFwdDataTpl(
   dhdot_dq_.setZero();
   dhdot_dv_.setZero();
   dhdot_da_.setZero();
+  temp1_.setZero();
+  temp2_.setZero();
   fJf_.setZero();
   v0_.setZero();
   a0_.setZero();

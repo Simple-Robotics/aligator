@@ -73,8 +73,8 @@ void CentroidalMomentumDerivativeResidualTpl<Scalar>::computeJacobians(
       d.Jtemp_ << 0, -u[i_ * force_size_ + 2], u[i_ * force_size_ + 1],
           u[i_ * force_size_ + 2], 0, -u[i_ * force_size_],
           -u[i_ * force_size_ + 1], u[i_ * force_size_], 0;
-      d.Jx_.bottomLeftCorner(3, pin_model_.nv) +=
-          d.Jtemp_ * (pdata.Jcom - d.fJf_.template topRows<3>());
+      d.temp_.noalias() = pdata.Jcom - d.fJf_.template topRows<3>();
+      d.Jx_.bottomLeftCorner(3, pin_model_.nv).noalias() += d.Jtemp_ * d.temp_;
     }
   }
 
@@ -104,8 +104,10 @@ CentroidalMomentumDerivativeDataTpl<Scalar>::
     CentroidalMomentumDerivativeDataTpl(
         const CentroidalMomentumDerivativeResidualTpl<Scalar> *model)
     : Base(model->ndx1, model->nu, model->ndx2, 6),
-      pin_data_(model->pin_model_), fJf_(6, model->pin_model_.nv) {
+      pin_data_(model->pin_model_), temp_(3, model->pin_model_.nv),
+      fJf_(6, model->pin_model_.nv) {
   fJf_.setZero();
+  temp_.setZero();
 }
 
 } // namespace aligator

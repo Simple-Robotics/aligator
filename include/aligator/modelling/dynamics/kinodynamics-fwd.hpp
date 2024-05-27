@@ -3,6 +3,7 @@
 
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
 
+#include <Eigen/src/LU/PartialPivLU.h>
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 #include <pinocchio/multibody/model.hpp>
 
@@ -70,6 +71,7 @@ template <typename Scalar> struct KinodynamicsFwdDataTpl : ODEDataTpl<Scalar> {
   using PinData = pinocchio::DataTpl<Scalar>;
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using Matrix6Xs = typename math_types<Scalar>::Matrix6Xs;
+  using Matrix3Xs = typename math_types<Scalar>::Matrix3Xs;
   using Matrix3s = Eigen::Matrix<Scalar, 3, 3>;
   using Matrix6s = Eigen::Matrix<Scalar, 6, 6>;
   using Vector6s = Eigen::Matrix<Scalar, 6, 1>;
@@ -79,6 +81,8 @@ template <typename Scalar> struct KinodynamicsFwdDataTpl : ODEDataTpl<Scalar> {
   Matrix6Xs dhdot_dq_;
   Matrix6Xs dhdot_dv_;
   Matrix6Xs dhdot_da_;
+  Matrix6Xs temp1_;
+  Matrix3Xs temp2_;
   Matrix6Xs fJf_;
   VectorXs v0_;
   VectorXs a0_;
@@ -86,6 +90,7 @@ template <typename Scalar> struct KinodynamicsFwdDataTpl : ODEDataTpl<Scalar> {
   Vector6s cforces_;
   Matrix3s Jtemp_;
   Matrix6s Agu_inv_;
+  Eigen::PartialPivLU<Eigen::Matrix<Scalar, 6, 6>> PivLU_;
 
   KinodynamicsFwdDataTpl(const KinodynamicsFwdDynamicsTpl<Scalar> *model);
 };

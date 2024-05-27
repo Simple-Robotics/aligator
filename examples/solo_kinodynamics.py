@@ -1,5 +1,6 @@
 import aligator
 import pinocchio as pin
+import pinocchio.visualize
 from utils.solo import robot, rmodel, rdata, q0
 import time
 
