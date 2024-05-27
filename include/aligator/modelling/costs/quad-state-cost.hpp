@@ -17,13 +17,12 @@ struct QuadraticStateCostTpl : QuadraticResidualCostTpl<Scalar> {
   using Manifold = ManifoldAbstractTpl<Scalar>;
 
   // StateError's space variable holds a pointer to the state manifold
-  QuadraticStateCostTpl(shared_ptr<StateError> resdl, const MatrixXs &weights)
-      : Base(resdl->space_, resdl, weights) {}
+  QuadraticStateCostTpl(StateError resdl, const MatrixXs &weights)
+      : Base(resdl.space_, resdl, weights) {}
 
   QuadraticStateCostTpl(xyz::polymorphic<Manifold> space, const int nu,
                         const ConstVectorRef &target, const MatrixXs &weights)
-      : QuadraticStateCostTpl(std::make_shared<StateError>(space, nu, target),
-                              weights) {}
+      : QuadraticStateCostTpl(StateError(space, nu, target), weights) {}
 
   void setTarget(const ConstVectorRef target) { residual().target_ = target; }
   ConstVectorRef getTarget() const { return residual().target_; }
@@ -42,20 +41,18 @@ struct QuadraticControlCostTpl : QuadraticResidualCostTpl<Scalar> {
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using Error = ControlErrorResidualTpl<Scalar>;
 
-  QuadraticControlCostTpl(xyz::polymorphic<Manifold> space,
-                          shared_ptr<Error> resdl, const MatrixXs &weights)
+  QuadraticControlCostTpl(xyz::polymorphic<Manifold> space, Error resdl,
+                          const MatrixXs &weights)
       : Base(space, resdl, weights) {}
 
   QuadraticControlCostTpl(xyz::polymorphic<Manifold> space, int nu,
                           const ConstMatrixRef &weights)
-      : QuadraticControlCostTpl(
-            space, std::make_shared<Error>(space->ndx(), nu), weights) {}
+      : QuadraticControlCostTpl(space, Error(space->ndx(), nu), weights) {}
 
   QuadraticControlCostTpl(xyz::polymorphic<Manifold> space,
                           const ConstVectorRef &target,
                           const ConstMatrixRef &weights)
-      : QuadraticControlCostTpl(
-            space, std::make_shared<Error>(space->ndx(), target), weights) {}
+      : QuadraticControlCostTpl(space, Error(space->ndx(), target), weights) {}
 
   void setTarget(const ConstVectorRef &target) { residual().target_ = target; }
   ConstVectorRef getTarget() const { return residual().target_; }

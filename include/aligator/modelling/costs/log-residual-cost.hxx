@@ -8,7 +8,7 @@ namespace aligator {
 
 template <typename Scalar>
 LogResidualCostTpl<Scalar>::LogResidualCostTpl(
-    xyz::polymorphic<Manifold> space, shared_ptr<StageFunction> function,
+    xyz::polymorphic<Manifold> space, xyz::polymorphic<StageFunction> function,
     const ConstVectorRef &scale)
     : Base(space, function->nu), barrier_weights_(scale), residual_(function) {
   if (scale.size() != function->nr) {
@@ -24,7 +24,7 @@ LogResidualCostTpl<Scalar>::LogResidualCostTpl(
 
 template <typename Scalar>
 LogResidualCostTpl<Scalar>::LogResidualCostTpl(
-    xyz::polymorphic<Manifold> space, shared_ptr<StageFunction> function,
+    xyz::polymorphic<Manifold> space, xyz::polymorphic<StageFunction> function,
     const Scalar scale)
     : LogResidualCostTpl(space, function,
                          VectorXs::Constant(function->nr, scale)) {}

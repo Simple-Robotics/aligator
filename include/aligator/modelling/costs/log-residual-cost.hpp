@@ -16,14 +16,15 @@ template <typename Scalar> struct LogResidualCostTpl : CostAbstractTpl<Scalar> {
   using Manifold = ManifoldAbstractTpl<Scalar>;
 
   VectorXs barrier_weights_;
-  shared_ptr<StageFunction> residual_;
+  xyz::polymorphic<StageFunction> residual_;
 
   LogResidualCostTpl(xyz::polymorphic<Manifold> space,
-                     shared_ptr<StageFunction> function,
+                     xyz::polymorphic<StageFunction> function,
                      const ConstVectorRef &scale);
 
   LogResidualCostTpl(xyz::polymorphic<Manifold> space,
-                     shared_ptr<StageFunction> function, const Scalar scale);
+                     xyz::polymorphic<StageFunction> function,
+                     const Scalar scale);
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 CostDataAbstract &data) const;

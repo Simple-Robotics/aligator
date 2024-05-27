@@ -8,7 +8,7 @@ namespace aligator {
 
 template <typename Scalar>
 QuadraticResidualCostTpl<Scalar>::QuadraticResidualCostTpl(
-    xyz::polymorphic<Manifold> space, shared_ptr<StageFunction> function,
+    xyz::polymorphic<Manifold> space, xyz::polymorphic<StageFunction> function,
     const ConstMatrixRef &weights)
     : Base(space, function->nu), weights_(weights), residual_(function) {
   if (residual_->nr != weights_.cols()) {
