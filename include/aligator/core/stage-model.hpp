@@ -27,8 +27,8 @@ public:
   using ManifoldPtr = xyz::polymorphic<Manifold>;
   using Dynamics = DynamicsModelTpl<Scalar>;
   using DynamicsPtr = xyz::polymorphic<Dynamics>;
-  using FunctionPtr = shared_ptr<StageFunctionTpl<Scalar>>;
-  using ConstraintSetPtr = shared_ptr<ConstraintSetBase<Scalar>>;
+  using FunctionPtr = xyz::polymorphic<StageFunctionTpl<Scalar>>;
+  using ConstraintSetPtr = std::shared_ptr<ConstraintSetBase<Scalar>>;
   using Constraint = StageConstraintTpl<Scalar>;
   using Cost = CostAbstractTpl<Scalar>;
   using CostPtr = shared_ptr<Cost>;

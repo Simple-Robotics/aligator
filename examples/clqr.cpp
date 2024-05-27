@@ -69,7 +69,7 @@ int main() {
         std::make_shared<BoxConstraint>(-ctrlUpperBound * VectorXd::Ones(nu),
                                         ctrlUpperBound * VectorXd::Ones(nu));
     auto u0 = VectorXd::Zero(nu);
-    auto func = std::make_shared<ControlErrorResidualTpl<double>>(nx, u0);
+    auto func = ControlErrorResidualTpl<double>(nx, u0);
     stage->addConstraint(func, box);
   }
 
@@ -79,7 +79,7 @@ int main() {
   bool terminal = false;
   if (terminal) {
     auto xf = VectorXd::Ones(nx);
-    auto func = std::make_shared<StateErrorResidualTpl<double>>(space, nu, xf);
+    auto func = StateErrorResidualTpl<double>(space, nu, xf);
     problem.addTerminalConstraint(
         {func, std::make_shared<EqualityConstraint>()});
   }

@@ -69,8 +69,7 @@ struct MyFixture {
         cost(std::make_shared<MyCost>(space, nu)),
         problem(space.neutral(), nu, space, cost) {
     auto stage = std::make_shared<StageModel>(cost, dyn_model);
-    auto func = std::make_shared<StateErrorResidualTpl<double>>(
-        space, nu, space.neutral());
+    auto func = StateErrorResidualTpl<double>(space, nu, space.neutral());
     auto stage2 = stage->clone();
     stage2->addConstraint(func, std::make_shared<EqualityConstraint>());
     problem.addStage(stage);
