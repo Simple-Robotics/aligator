@@ -18,7 +18,7 @@ template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using CostBase = CostAbstractTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
-  using CostPtr = shared_ptr<CostBase>;
+  using CostPtr = xyz::polymorphic<CostBase>;
   using SumCostData = CostStackDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
 
@@ -28,7 +28,7 @@ template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
   /// @brief    Check the dimension of a component.
   /// @returns  A bool value indicating whether the component is OK to be added
   /// to this instance.
-  bool checkDimension(const CostBase *comp) const;
+  bool checkDimension(const xyz::polymorphic<CostBase> comp) const;
 
   /// @brief  Constructor with a specified dimension, and optional vector of
   /// components and weights.
@@ -57,8 +57,9 @@ template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
 
 namespace {
 template <typename T>
-using CostPtr = shared_ptr<CostAbstractTpl<T>>; //< convenience typedef for rest
-                                                // of this file
+using CostPtr =
+    xyz::polymorphic<CostAbstractTpl<T>>; //< convenience typedef for rest
+                                          // of this file
 }
 
 template <typename T>

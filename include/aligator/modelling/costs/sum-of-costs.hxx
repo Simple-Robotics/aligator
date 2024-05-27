@@ -16,7 +16,7 @@ CostStackTpl<Scalar>::CostStackTpl(xyz::polymorphic<Manifold> space,
     ALIGATOR_RUNTIME_ERROR(msg);
   } else {
     for (std::size_t i = 0; i < comps.size(); i++) {
-      if (!this->checkDimension(comps[i].get())) {
+      if (!this->checkDimension(comps[i])) {
         auto msg = fmt::format("Component #{:d} has wrong input dimensions "
                                "({:d}, {:d}) (expected "
                                "({:d}, {:d}))",
@@ -33,7 +33,8 @@ CostStackTpl<Scalar>::CostStackTpl(const CostPtr &cost)
     : CostStackTpl(cost->space, cost->nu, {cost}, {1.}) {}
 
 template <typename Scalar>
-bool CostStackTpl<Scalar>::checkDimension(const CostBase *comp) const {
+bool CostStackTpl<Scalar>::checkDimension(
+    const xyz::polymorphic<CostBase> comp) const {
   return (comp->nx() == this->nx()) && (comp->ndx() == this->ndx()) &&
          (comp->nu == this->nu);
 }
@@ -44,7 +45,7 @@ template <typename Scalar> std::size_t CostStackTpl<Scalar>::size() const {
 
 template <typename Scalar>
 void CostStackTpl<Scalar>::addCost(const CostPtr &cost, const Scalar weight) {
-  if (!this->checkDimension(cost.get())) {
+  if (!this->checkDimension(cost)) {
     ALIGATOR_DOMAIN_ERROR(fmt::format(
         "Cannot add new component due to inconsistent input dimensions "
         "(got ({:d}, {:d}), expected ({:d}, {:d}))",

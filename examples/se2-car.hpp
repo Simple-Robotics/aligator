@@ -84,9 +84,8 @@ inline auto create_se2_problem(std::size_t nsteps) {
   const T timestep = 0.05;
 
   auto rcost = std::make_shared<CostStackTpl<T>>(space, nu);
-  auto rc1 =
-      std::make_shared<QuadStateCost>(space, nu, x_target, w_x * timestep);
-  auto rc2 = std::make_shared<QuadControlCost>(space, nu, w_u * timestep);
+  auto rc1 = QuadStateCost(space, nu, x_target, w_x * timestep);
+  auto rc2 = QuadControlCost(space, nu, w_u * timestep);
   rcost->addCost(rc1);
   rcost->addCost(rc2);
 
