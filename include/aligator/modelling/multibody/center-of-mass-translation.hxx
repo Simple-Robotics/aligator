@@ -9,9 +9,8 @@ template <typename Scalar>
 void CenterOfMassTranslationResidualTpl<Scalar>::evaluate(
     const ConstVectorRef &x, BaseData &data) const {
   Data &d = static_cast<Data &>(data);
-  const Model &model = *pin_model_;
   pinocchio::DataTpl<Scalar> &pdata = d.pin_data_;
-  pinocchio::centerOfMass(model, pdata, x.head(model.nq));
+  pinocchio::centerOfMass(pin_model_, pdata, x.head(pin_model_.nq));
 
   d.value_ = pdata.com[0] - p_ref_;
 }
@@ -20,17 +19,16 @@ template <typename Scalar>
 void CenterOfMassTranslationResidualTpl<Scalar>::computeJacobians(
     const ConstVectorRef &x, BaseData &data) const {
   Data &d = static_cast<Data &>(data);
-  const Model &model = *pin_model_;
   pinocchio::DataTpl<Scalar> &pdata = d.pin_data_;
-  pinocchio::jacobianCenterOfMass(model, pdata, x.head(model.nq));
+  pinocchio::jacobianCenterOfMass(pin_model_, pdata, x.head(pin_model_.nq));
 
-  d.Jx_.leftCols(model.nv) = pdata.Jcom;
+  d.Jx_.leftCols(pin_model_.nv) = pdata.Jcom;
 }
 
 template <typename Scalar>
 CenterOfMassTranslationDataTpl<Scalar>::CenterOfMassTranslationDataTpl(
     const CenterOfMassTranslationResidualTpl<Scalar> *model)
     : Base(model->ndx1, model->nu, model->ndx2, 3),
-      pin_data_(*model->pin_model_) {}
+      pin_data_(model->pin_model_) {}
 
 } // namespace aligator

@@ -22,10 +22,9 @@ struct FrameTranslationResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
   using SE3 = pinocchio::SE3Tpl<Scalar>;
   using Data = FrameTranslationDataTpl<Scalar>;
 
-  shared_ptr<Model> pin_model_;
+  Model pin_model_;
 
-  FrameTranslationResidualTpl(const int ndx, const int nu,
-                              const shared_ptr<Model> &model,
+  FrameTranslationResidualTpl(const int ndx, const int nu, const Model &model,
                               const Vector3s &frame_trans,
                               const pinocchio::FrameIndex frame_id);
 

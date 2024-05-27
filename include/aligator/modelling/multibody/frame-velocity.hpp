@@ -25,10 +25,9 @@ public:
   using Motion = pinocchio::MotionTpl<Scalar>;
   using Data = FrameVelocityDataTpl<Scalar>;
 
-  shared_ptr<Model> pin_model_;
+  Model pin_model_;
 
-  FrameVelocityResidualTpl(const int ndx, const int nu,
-                           const shared_ptr<Model> &model,
+  FrameVelocityResidualTpl(const int ndx, const int nu, const Model &model,
                            const Motion &velocity,
                            const pinocchio::FrameIndex id,
                            const pinocchio::ReferenceFrame type);

@@ -189,8 +189,7 @@ TrajOptProblem defineLocomotionProblem(const std::size_t T_ss,
     Support ph = *phase;
     ts += 1;
 
-    const auto cmodel = std::make_shared<Model>(rmodel);
-    auto stage_space = MultibodyPhaseSpace(*cmodel);
+    auto stage_space = MultibodyPhaseSpace(rmodel);
 
     auto rcost = std::make_shared<CostStack>(stage_space, nu);
 
@@ -206,14 +205,14 @@ TrajOptProblem defineLocomotionProblem(const std::size_t T_ss,
     case LEFT:
       foot_traj(RF_placement.translation(), T_ss, ts);
       frame_fn_RF = std::make_shared<FramePlacementResidual>(
-          stage_space.ndx(), nu, cmodel, RF_placement, foot_frame_ids[1]);
+          stage_space.ndx(), nu, rmodel, RF_placement, foot_frame_ids[1]);
       rcost->addCost(std::make_shared<QuadraticResidualCost>(
           stage_space, frame_fn_RF, w_LFRF));
       break;
     case RIGHT:
       foot_traj(LF_placement.translation(), T_ss, ts);
       frame_fn_LF = std::make_shared<FramePlacementResidual>(
-          stage_space.ndx(), nu, cmodel, LF_placement, foot_frame_ids[0]);
+          stage_space.ndx(), nu, rmodel, LF_placement, foot_frame_ids[0]);
       rcost->addCost(std::make_shared<QuadraticResidualCost>(
           stage_space, frame_fn_LF, w_LFRF));
       break;
