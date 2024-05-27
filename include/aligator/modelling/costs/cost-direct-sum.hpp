@@ -16,14 +16,14 @@ template <typename _Scalar> struct DirectSumCostTpl : CostAbstractTpl<_Scalar> {
 
   struct Data;
 
-  DirectSumCostTpl(shared_ptr<BaseCost> c1, shared_ptr<BaseCost> c2)
+  DirectSumCostTpl(xyz::polymorphic<BaseCost> c1, xyz::polymorphic<BaseCost> c2)
       : BaseCost(xyz::polymorphic<Manifold>(c1->space * c2->space),
                  c1->nu + c2->nu),
         c1_(c1), c2_(c2) {
     assert(c1 != nullptr && c2 != nullptr);
   }
 
-  shared_ptr<BaseCost> c1_, c2_;
+  xyz::polymorphic<BaseCost> c1_, c2_;
 
   shared_ptr<BaseData> createData() const override;
 
@@ -122,8 +122,8 @@ auto DirectSumCostTpl<Scalar>::createData() const -> shared_ptr<BaseData> {
 }
 
 template <typename Scalar>
-auto directSum(shared_ptr<CostAbstractTpl<Scalar>> const &c1,
-               shared_ptr<CostAbstractTpl<Scalar>> const &c2) {
+auto directSum(xyz::polymorphic<CostAbstractTpl<Scalar>> const &c1,
+               xyz::polymorphic<CostAbstractTpl<Scalar>> const &c2) {
   return std::make_shared<DirectSumCostTpl<Scalar>>(c1, c2);
 }
 
