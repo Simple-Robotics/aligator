@@ -7,7 +7,7 @@ namespace aligator {
 namespace dynamics {
 template <typename Scalar>
 ExplicitIntegratorAbstractTpl<Scalar>::ExplicitIntegratorAbstractTpl(
-    const shared_ptr<ODEType> &cont_dynamics)
+    const xyz::polymorphic<ODEType> &cont_dynamics)
     : Base(cont_dynamics->space_, cont_dynamics->nu()), ode_(cont_dynamics) {}
 
 template <typename Scalar>

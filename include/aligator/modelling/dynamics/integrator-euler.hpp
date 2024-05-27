@@ -21,7 +21,7 @@ struct IntegratorEulerTpl : ExplicitIntegratorAbstractTpl<_Scalar> {
   /// Integration time step \f$h\f$.
   Scalar timestep_;
 
-  IntegratorEulerTpl(const shared_ptr<ODEType> &cont_dynamics,
+  IntegratorEulerTpl(const xyz::polymorphic<ODEType> &cont_dynamics,
                      const Scalar timestep);
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,

@@ -30,10 +30,10 @@ struct ExplicitIntegratorAbstractTpl : ExplicitDynamicsModelTpl<_Scalar> {
   using Base::space_next_;
   using Manifold = ManifoldAbstractTpl<Scalar>;
 
-  shared_ptr<ODEType> ode_;
+  xyz::polymorphic<ODEType> ode_;
 
   explicit ExplicitIntegratorAbstractTpl(
-      const shared_ptr<ODEType> &cont_dynamics);
+      const xyz::polymorphic<ODEType> &cont_dynamics);
   virtual ~ExplicitIntegratorAbstractTpl() = default;
 
   shared_ptr<DynamicsDataTpl<Scalar>> createData() const;

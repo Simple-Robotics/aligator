@@ -8,7 +8,8 @@ namespace dynamics {
 
 template <typename Scalar>
 IntegratorMidpointTpl<Scalar>::IntegratorMidpointTpl(
-    const shared_ptr<ContinuousDynamics> &cont_dynamics, const Scalar timestep)
+    const xyz::polymorphic<ContinuousDynamics> &cont_dynamics,
+    const Scalar timestep)
     : Base(cont_dynamics), timestep_(timestep) {
   if (timestep <= 0.) {
     ALIGATOR_RUNTIME_ERROR("Timestep must be positive!");
