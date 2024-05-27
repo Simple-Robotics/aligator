@@ -6,12 +6,14 @@
 
 #include "aligator/core/function-abstract.hpp"
 
+#include <proxsuite-nlp/third-party/polymorphic_cxx14.h>
+
 namespace aligator {
 
 /// @brief Simple struct holding together a function and set, to describe a
 /// constraint.
 template <typename Scalar> struct StageConstraintTpl {
-  shared_ptr<StageFunctionTpl<Scalar>> func;
+  xyz::polymorphic<StageFunctionTpl<Scalar>> func;
   shared_ptr<ConstraintSetBase<Scalar>> set;
   long nr() const { return func->nr; }
 };
