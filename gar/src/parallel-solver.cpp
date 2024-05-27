@@ -3,8 +3,8 @@
 
 namespace aligator {
 namespace gar {
-
+#ifdef ALIGATOR_MULTITHREADING
 template class ParallelRiccatiSolver<context::Scalar>;
-
+#endif
 } // namespace gar
 } // namespace aligator

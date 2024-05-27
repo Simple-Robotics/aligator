@@ -2,17 +2,16 @@
 /// @author Wilson Jallet
 #pragma once
 
-#include "parallel-solver.hpp"
-#include "block-tridiagonal.hpp"
-#include "work.hpp"
-#include "lqr-problem.hpp"
-
-#include <Eigen/Eigenvalues>
+#include "aligator/gar/parallel-solver.hpp"
+#include "aligator/gar/block-tridiagonal.hpp"
+#include "aligator/gar/work.hpp"
+#include "aligator/gar/lqr-problem.hpp"
 
 #include "aligator/threads.hpp"
 
 namespace aligator::gar {
 
+#ifdef ALIGATOR_MULTITHREADING
 template <typename Scalar>
 ParallelRiccatiSolver<Scalar>::ParallelRiccatiSolver(
     LQRProblemTpl<Scalar> &problem, const uint num_threads)
@@ -227,5 +226,6 @@ void ParallelRiccatiSolver<Scalar>::initializeTridiagSystem(
     emplace_factor(condensedFacs, dims[i + 1]);
   }
 }
+#endif
 
 } // namespace aligator::gar

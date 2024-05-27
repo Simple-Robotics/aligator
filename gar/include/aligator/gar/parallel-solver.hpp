@@ -2,14 +2,16 @@
 /// @author Wilson Jallet
 #pragma once
 
-#include "fwd.hpp"
-#include "riccati-base.hpp"
-#include "riccati-impl.hpp"
+#include "aligator/gar/fwd.hpp"
+#include "aligator/gar/riccati-base.hpp"
+#include "aligator/gar/riccati-impl.hpp"
 
 namespace aligator {
 namespace gar {
 
-/// A parallel-condensing LQ solver. This solver condenses the problem into a
+#ifdef ALIGATOR_MULTITHREADING
+/// @brief A parallel-condensing LQ solver.
+/// @details This solver condenses the problem into a
 /// reduced saddle-point problem in a subset of the states and costates,
 /// corresponding to the time indices where the problem was split up.
 /// These splitting variables are used to exploit the problem's
@@ -100,12 +102,13 @@ public:
 protected:
   LQRProblemTpl<Scalar> *problem_;
 };
+#endif
 
 } // namespace gar
 } // namespace aligator
 
-#include "parallel-solver.hxx"
+#include "aligator/gar/parallel-solver.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "parallel-solver.txx"
+#include "aligator/gar/parallel-solver.txx"
 #endif
