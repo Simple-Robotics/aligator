@@ -21,9 +21,9 @@ void exposeFlyHigh() {
       "A residual function :math:`r(x) = v_{j,xy} e^{-s z_j}` where :math:`j` "
       "is a given frame index.",
       bp::no_init)
-      .def(bp::init<shared_ptr<MultibodyPhaseSpace>, pinocchio::FrameIndex,
-                    Scalar, std::size_t>(
-          bp::args("self", "space", "frame_id", "slope", "nu")))
+      .def(bp::init<const int, const Model &, pinocchio::FrameIndex, Scalar,
+                    std::size_t>(
+          bp::args("self", "ndx", "model", "frame_id", "slope", "nu")))
       .def(FrameAPIVisitor<FlyHighResidual>())
       .def_readwrite("slope", &FlyHighResidual::slope_,
                      "The slope parameter of the function.");

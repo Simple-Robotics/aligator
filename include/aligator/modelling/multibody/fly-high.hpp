@@ -16,11 +16,11 @@ struct FlyHighResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
 
   using Base = UnaryFunctionTpl<Scalar>;
   using BaseData = StageFunctionDataTpl<Scalar>;
-  using PhaseSpace = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
+  using Model = pinocchio::ModelTpl<Scalar>;
 
   struct Data;
 
-  FlyHighResidualTpl(shared_ptr<PhaseSpace> space,
+  FlyHighResidualTpl(const int ndx, const Model &model,
                      const pinocchio::FrameIndex frame_id, Scalar slope,
                      int nu);
 
@@ -31,12 +31,12 @@ struct FlyHighResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
     return allocate_shared_eigen_aligned<Data>(*this);
   }
 
-  const auto &getModel() const { return pmodel_; }
+  const auto &getModel() const { return pin_model_; }
 
   Scalar slope_;
 
 private:
-  pinocchio::ModelTpl<Scalar> pmodel_;
+  Model pin_model_;
 };
 
 template <typename Scalar>
@@ -51,10 +51,10 @@ struct FlyHighResidualTpl<Scalar>::Data : StageFunctionDataTpl<Scalar> {
 
   Data(FlyHighResidualTpl const &model)
       : BaseData(model.ndx1, model.nu, model.ndx2, model.nr),
-        pdata_(model.pmodel_), d_dq(6, model.pmodel_.nv),
-        d_dv(6, model.pmodel_.nv), l_dnu_dq(6, model.pmodel_.nv),
-        l_dnu_dv(6, model.pmodel_.nv), o_dv_dq(3, model.pmodel_.nv),
-        o_dv_dv(3, model.pmodel_.nv), vxJ(3, model.pmodel_.nv) {
+        pdata_(model.pin_model_), d_dq(6, model.pin_model_.nv),
+        d_dv(6, model.pin_model_.nv), l_dnu_dq(6, model.pin_model_.nv),
+        l_dnu_dv(6, model.pin_model_.nv), o_dv_dq(3, model.pin_model_.nv),
+        o_dv_dv(3, model.pin_model_.nv), vxJ(3, model.pin_model_.nv) {
     d_dq.setZero();
     d_dv.setZero();
     l_dnu_dq.setZero();
