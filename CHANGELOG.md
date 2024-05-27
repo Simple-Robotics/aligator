@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add force and wrench cone costs
+- Add centroidal momentum cost
+
 ### Changed
 
 - Do not compile or use `gar::ParallelRiccatiSolver<>` when OpenMP support is disabled ([#160](https://github.com/Simple-Robotics/aligator/pull/160))
@@ -25,8 +30,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add SE2 car benchmark `bench/se2-car.cpp`
 - Split part of `macros.hpp` into new header `eigen-macros.hpp`, add `ALIGATOR_NOMALLOC_SCOPED` macro to disable Eigen's malloc per-scope and a caching system to restore the malloc status
 - Add `context.hpp` file for `aligator/modelling/dynamics`
-- Add force and wrench cone costs
-- Add centroidal momentum cost
 
 ### Changed
 
