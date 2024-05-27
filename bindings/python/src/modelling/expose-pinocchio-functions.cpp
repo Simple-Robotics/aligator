@@ -44,8 +44,7 @@ void exposeFrameFunctions() {
 
   bp::class_<FramePlacement, bp::bases<UnaryFunction>>(
       "FramePlacementResidual", "Frame placement residual function.",
-      bp::init<int, int, shared_ptr<PinModel>, const SE3 &,
-               pinocchio::FrameIndex>(
+      bp::init<int, int, const PinModel &, const SE3 &, pinocchio::FrameIndex>(
           bp::args("self", "ndx", "nu", "model", "p_ref", "id")))
       .def(FrameAPIVisitor<FramePlacement>())
       .def("getReference", &FramePlacement::getReference, bp::args("self"),
@@ -66,7 +65,7 @@ void exposeFrameFunctions() {
 
   bp::class_<FrameVelocity, bp::bases<UnaryFunction>>(
       "FrameVelocityResidual", "Frame velocity residual function.",
-      bp::init<int, int, shared_ptr<PinModel>, const Motion &,
+      bp::init<int, int, const PinModel &, const Motion &,
                pinocchio::FrameIndex, pinocchio::ReferenceFrame>(bp::args(
           "self", "ndx", "nu", "model", "v_ref", "id", "reference_frame")))
       .def(FrameAPIVisitor<FrameVelocity>())
@@ -85,7 +84,7 @@ void exposeFrameFunctions() {
 
   bp::class_<FrameTranslation, bp::bases<UnaryFunction>>(
       "FrameTranslationResidual", "Frame placement residual function.",
-      bp::init<int, int, shared_ptr<PinModel>, const context::Vector3s &,
+      bp::init<int, int, const PinModel &, const context::Vector3s &,
                pinocchio::FrameIndex>(
           bp::args("self", "ndx", "nu", "model", "p_ref", "id")))
       .def(FrameAPIVisitor<FrameTranslation>())

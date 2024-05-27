@@ -38,8 +38,7 @@ void exposeCenterOfMassFunctions() {
   bp::class_<CenterOfMassTranslation, bp::bases<UnaryFunction>>(
       "CenterOfMassTranslationResidual",
       "A residual function :math:`r(x) = com(x)` ",
-      bp::init<const int, const int, shared_ptr<PinModel>,
-               const context::Vector3s>(
+      bp::init<const int, const int, const PinModel &, const context::Vector3s>(
           bp::args("self", "ndx", "nu", "model", "p_ref")))
       .def(FrameAPIVisitor<CenterOfMassTranslation>())
       .def("getReference", &CenterOfMassTranslation::getReference,
@@ -60,8 +59,7 @@ void exposeCenterOfMassFunctions() {
   bp::class_<CenterOfMassVelocity, bp::bases<UnaryFunction>>(
       "CenterOfMassVelocityResidual",
       "A residual function :math:`r(x) = vcom(x)` ",
-      bp::init<const int, const int, shared_ptr<PinModel>,
-               const context::Vector3s>(
+      bp::init<const int, const int, const PinModel &, const context::Vector3s>(
           bp::args("self", "ndx", "nu", "model", "v_ref")))
       .def(FrameAPIVisitor<CenterOfMassVelocity>())
       .def("getReference", &CenterOfMassVelocity::getReference,
