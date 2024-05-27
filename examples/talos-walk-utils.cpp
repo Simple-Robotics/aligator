@@ -198,13 +198,13 @@ TrajOptProblem defineLocomotionProblem(const std::size_t T_ss,
       foot_traj(RF_placement.translation(), T_ss, ts);
       frame_fn_RF = std::make_shared<FramePlacementResidual>(
           stage_space.ndx(), nu, rmodel, RF_placement, foot_frame_ids[1]);
-      rcost->addCost(QuadraticResidualCost(stage_space, frame_fn_RF, w_LFRF));
+      rcost->addCost(QuadraticResidualCost(stage_space, *frame_fn_RF, w_LFRF));
       break;
     case RIGHT:
       foot_traj(LF_placement.translation(), T_ss, ts);
       frame_fn_LF = std::make_shared<FramePlacementResidual>(
           stage_space.ndx(), nu, rmodel, LF_placement, foot_frame_ids[0]);
-      rcost->addCost(QuadraticResidualCost(stage_space, frame_fn_LF, w_LFRF));
+      rcost->addCost(QuadraticResidualCost(stage_space, *frame_fn_LF, w_LFRF));
       break;
     case DOUBLE:
       ts = 0;

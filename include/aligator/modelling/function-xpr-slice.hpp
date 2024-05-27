@@ -4,6 +4,7 @@
 
 #include "aligator/core/function-abstract.hpp"
 #include "aligator/core/unary-function.hpp"
+#include <proxsuite-nlp/third-party/polymorphic_cxx14.h>
 
 namespace aligator {
 
@@ -23,11 +24,12 @@ struct FunctionSliceXprTpl : Base, detail::slice_impl_tpl<Base> {
   using SliceImpl = detail::slice_impl_tpl<StageFunctionTpl<Scalar>>;
   using Data = FunctionSliceDataTpl<Scalar>;
 
-  FunctionSliceXprTpl(shared_ptr<Base> func, std::vector<int> const &indices)
+  FunctionSliceXprTpl(xyz::polymorphic<Base> func,
+                      std::vector<int> const &indices)
       : Base(func->ndx1, func->nu, func->ndx2, (int)indices.size()),
         SliceImpl(func, indices) {}
 
-  FunctionSliceXprTpl(shared_ptr<Base> func, const int idx)
+  FunctionSliceXprTpl(xyz::polymorphic<Base> func, const int idx)
       : FunctionSliceXprTpl(func, std::vector<int>{idx}) {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
@@ -65,11 +67,12 @@ struct FunctionSliceXprTpl<Scalar, UnaryFunctionTpl<Scalar>>
   ALIGATOR_UNARY_FUNCTION_INTERFACE(Scalar);
   using SliceImpl = detail::slice_impl_tpl<UnaryFunctionTpl<Scalar>>;
 
-  FunctionSliceXprTpl(shared_ptr<Base> func, std::vector<int> const &indices)
+  FunctionSliceXprTpl(xyz::polymorphic<Base> func,
+                      std::vector<int> const &indices)
       : Base(func->ndx1, func->nu, func->ndx2, (int)indices.size()),
         SliceImpl(func, indices) {}
 
-  FunctionSliceXprTpl(shared_ptr<Base> func, const int idx)
+  FunctionSliceXprTpl(xyz::polymorphic<Base> func, const int idx)
       : FunctionSliceXprTpl(func, std::vector<int>{idx}) {}
 
   void evaluate(const ConstVectorRef &x, BaseData &data) const override {
@@ -116,12 +119,12 @@ template <typename Base> struct slice_impl_tpl {
 
   using Data = FunctionSliceDataTpl<Scalar>;
 
-  shared_ptr<Base> func;
+  xyz::polymorphic<Base> func;
   /// @brief
   std::vector<int> indices;
 
-  slice_impl_tpl(shared_ptr<Base> func, std::vector<int> const &indices);
-  slice_impl_tpl(shared_ptr<Base> func, int idx);
+  slice_impl_tpl(xyz::polymorphic<Base> func, std::vector<int> const &indices);
+  slice_impl_tpl(xyz::polymorphic<Base> func, int idx);
 
 protected:
   template <typename... Args>

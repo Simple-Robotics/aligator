@@ -1,6 +1,7 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include "aligator/core/function-abstract.hpp"
 #include "aligator/modelling/state-error.hpp"
 
 #include "aligator/modelling/costs/quad-state-cost.hpp"
@@ -16,16 +17,15 @@ using context::VectorXs;
 using QuadraticResidualCost = QuadraticResidualCostTpl<T>;
 
 void fd_test(VectorXs x0, VectorXs u0, MatrixXs weights,
-             shared_ptr<QuadraticResidualCost> qres,
-             shared_ptr<context::CostData> data) {
+             QuadraticResidualCost qres, shared_ptr<context::CostData> data) {
 
-  const shared_ptr<StageFunctionTpl<T>> fun = qres->residual_;
+  const xyz::polymorphic<StageFunctionTpl<T>> fun = qres.residual_;
   const auto fd = fun->createData();
   const auto ndx = fd->ndx1;
   const auto nu = fd->nu;
-  qres->evaluate(x0, u0, *data);
-  qres->computeGradients(x0, u0, *data);
-  qres->computeHessians(x0, u0, *data);
+  qres.evaluate(x0, u0, *data);
+  qres.computeGradients(x0, u0, *data);
+  qres.computeHessians(x0, u0, *data);
 
   // analytical formula
   fun->evaluate(x0, u0, x0, *fd);
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(quad_state_se2) {
 
   for (int k = 0; k < nrepeats; k++) {
     Eigen::VectorXd x0 = space->rand();
-    fd_test(x0, u0, weights, qres, data);
+    fd_test(x0, u0, weights, *qres, data);
   }
 }
 
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(quad_state_highdim) {
 
   for (int k = 0; k < nrepeats; k++) {
     Eigen::VectorXd x0 = space->rand();
-    fd_test(x0, u0, weights, qres, data);
+    fd_test(x0, u0, weights, *qres, data);
   }
 }
 
