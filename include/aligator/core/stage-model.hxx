@@ -36,10 +36,10 @@ StageModelTpl<Scalar>::StageModelTpl(CostPtr cost, DynamicsPtr dynamics)
   }
 }
 
-template <typename Scalar>
+/* template <typename Scalar>
 StageModelTpl<Scalar>::StageModelTpl(ManifoldPtr space, const int nu)
     : xspace_(space), xspace_next_(space),
-      uspace_(make_vector_space<Scalar>(nu)) {}
+      uspace_(make_vector_space<Scalar>(nu)) {} */
 
 template <typename Scalar>
 template <typename Cstr>

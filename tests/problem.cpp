@@ -60,13 +60,12 @@ using EqualityConstraint = proxsuite::nlp::EqualityConstraintTpl<double>;
 struct MyFixture {
   Manifold space;
   const int nu;
-  const shared_ptr<MyModel> dyn_model;
+  const MyModel dyn_model;
   const shared_ptr<MyCost> cost;
   TrajOptProblemTpl<double> problem;
 
   MyFixture()
-      : space(Manifold()), nu(space.ndx()),
-        dyn_model(std::make_shared<MyModel>(space)),
+      : space(Manifold()), nu(space.ndx()), dyn_model(MyModel(space)),
         cost(std::make_shared<MyCost>(space, nu)),
         problem(space.neutral(), nu, space, cost) {
     auto stage = std::make_shared<StageModel>(cost, dyn_model);
@@ -98,7 +97,7 @@ BOOST_AUTO_TEST_CASE(test_problem) {
   constexpr int nsteps = 20;
   std::vector<Eigen::VectorXd> us(nsteps, u0);
 
-  auto xs = rollout(*f.dyn_model, x0, us);
+  auto xs = rollout(f.dyn_model, x0, us);
   for (std::size_t i = 0; i < xs.size(); i++) {
     BOOST_CHECK(x0.isApprox(xs[i]));
   }

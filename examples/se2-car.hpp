@@ -90,9 +90,8 @@ inline auto create_se2_problem(std::size_t nsteps) {
   rcost->addCost(rc1);
   rcost->addCost(rc2);
 
-  auto ode = std::make_shared<CarDynamics>();
-  auto discrete_dyn =
-      std::make_shared<dynamics::IntegratorEulerTpl<T>>(ode, timestep);
+  auto ode = CarDynamics(); // xyz::polymorphic<CarDynamics>();
+  auto discrete_dyn = dynamics::IntegratorEulerTpl<T>(ode, timestep);
 
   auto stage = std::make_shared<StageModel>(rcost, discrete_dyn);
 

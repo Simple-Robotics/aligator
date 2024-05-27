@@ -26,7 +26,7 @@ public:
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using ManifoldPtr = xyz::polymorphic<Manifold>;
   using Dynamics = DynamicsModelTpl<Scalar>;
-  using DynamicsPtr = shared_ptr<Dynamics>;
+  using DynamicsPtr = xyz::polymorphic<Dynamics>;
   using FunctionPtr = shared_ptr<StageFunctionTpl<Scalar>>;
   using ConstraintSetPtr = shared_ptr<ConstraintSetBase<Scalar>>;
   using Constraint = StageConstraintTpl<Scalar>;
@@ -131,7 +131,7 @@ public:
   }
 
 protected:
-  StageModelTpl(ManifoldPtr space, const int nu);
+  // StageModelTpl(ManifoldPtr space, const int nu);
   virtual StageModelTpl *clone_impl() const override {
     return new StageModelTpl(*this);
   }

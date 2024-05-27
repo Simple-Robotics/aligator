@@ -63,32 +63,26 @@ void foot_traj(Eigen::Vector3d &translation_init, const int &t_ss,
   translation_init[2] += swing_apex * sin(ts * M_PI / (double)t_ss);
 }
 
-std::shared_ptr<IntegratorSemiImplEuler>
+IntegratorSemiImplEuler
 create_dynamics(MultibodyPhaseSpace &stage_space, Support &support,
                 MatrixXd &actuation_matrix, ProximalSettings &proximal_settings,
                 std::vector<pin::RigidConstraintModel> &constraint_models) {
-  std::shared_ptr<ODEAbstract> ode;
   pinocchio::context::RigidConstraintModelVector cms;
   switch (support) {
   case LEFT:
     cms.push_back(constraint_models[0]);
-    ode = std::make_shared<MultibodyConstraintFwdDynamics>(
-        stage_space, actuation_matrix, cms, proximal_settings);
     break;
   case RIGHT:
     cms.push_back(constraint_models[1]);
-    ode = std::make_shared<MultibodyConstraintFwdDynamics>(
-        stage_space, actuation_matrix, cms, proximal_settings);
     break;
   case DOUBLE:
     cms.push_back(constraint_models[0]);
     cms.push_back(constraint_models[1]);
-    ode = std::make_shared<MultibodyConstraintFwdDynamics>(
-        stage_space, actuation_matrix, cms, proximal_settings);
     break;
   }
-  std::shared_ptr<IntegratorSemiImplEuler> dyn_model =
-      std::make_shared<IntegratorSemiImplEuler>(ode, 0.01);
+  MultibodyConstraintFwdDynamics ode = MultibodyConstraintFwdDynamics(
+      stage_space, actuation_matrix, cms, proximal_settings);
+  IntegratorSemiImplEuler dyn_model = IntegratorSemiImplEuler(ode, 0.01);
   return dyn_model;
 }
 

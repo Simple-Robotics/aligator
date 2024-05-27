@@ -46,7 +46,7 @@ int main() {
 
   VectorXd x0 = VectorXd::NullaryExpr(nx, norm_gen);
 
-  auto dyn_model = std::make_shared<LinearDynamics>(A, B, VectorXd::Zero(nx));
+  auto dyn_model = LinearDynamics(A, B, VectorXd::Zero(nx));
   shared_ptr<CostAbstract> cost, term_cost;
   {
     MatrixXd Q = MatrixXd::NullaryExpr(nx, nx, norm_gen);
