@@ -7,7 +7,7 @@ namespace aligator {
 namespace dynamics {
 template <typename Scalar>
 IntegratorAbstractTpl<Scalar>::IntegratorAbstractTpl(
-    const shared_ptr<ContinuousDynamics> &cont_dynamics)
+    const xyz::polymorphic<ContinuousDynamics> &cont_dynamics)
     : Base(cont_dynamics->space_, cont_dynamics->nu()),
       continuous_dynamics_(cont_dynamics) {}
 
