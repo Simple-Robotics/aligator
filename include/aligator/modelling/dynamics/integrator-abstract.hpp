@@ -29,11 +29,11 @@ public:
   using ContinuousDynamics = ContinuousDynamicsAbstractTpl<Scalar>;
 
   /// The underlying continuous dynamics.
-  shared_ptr<ContinuousDynamics> continuous_dynamics_;
+  xyz::polymorphic<ContinuousDynamics> continuous_dynamics_;
 
   /// Constructor from instances of DynamicsType.
   explicit IntegratorAbstractTpl(
-      const shared_ptr<ContinuousDynamics> &cont_dynamics);
+      const xyz::polymorphic<ContinuousDynamics> &cont_dynamics);
   virtual ~IntegratorAbstractTpl() = default;
   shared_ptr<BaseData> createData() const;
 };

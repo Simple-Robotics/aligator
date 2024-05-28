@@ -6,6 +6,7 @@
 #include <pinocchio/multibody/model.hpp>
 #include <pinocchio/multibody/data.hpp>
 #include <pinocchio/multibody/frame.hpp>
+#include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 
 namespace aligator {
 
@@ -20,7 +21,7 @@ public:
   ALIGATOR_UNARY_FUNCTION_INTERFACE(Scalar);
   using BaseData = typename Base::Data;
   using Model = pinocchio::ModelTpl<Scalar>;
-  using ManifoldPtr = shared_ptr<ManifoldAbstractTpl<Scalar>>;
+  using ManifoldPtr = xyz::polymorphic<ManifoldAbstractTpl<Scalar>>;
   using SE3 = pinocchio::SE3Tpl<Scalar>;
   using Motion = pinocchio::MotionTpl<Scalar>;
   using Data = FrameVelocityDataTpl<Scalar>;

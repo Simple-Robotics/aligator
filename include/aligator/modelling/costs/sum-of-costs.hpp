@@ -63,39 +63,40 @@ using CostPtr =
 }
 
 template <typename T>
-shared_ptr<CostStackTpl<T>> operator+(const CostPtr<T> &c1,
-                                      const CostPtr<T> &c2) {
-  return std::make_shared<CostStackTpl<T>>({c1, c2}, {1., 1.});
+xyz::polymorphic<CostStackTpl<T>> operator+(const CostPtr<T> &c1,
+                                            const CostPtr<T> &c2) {
+  return xyz::polymorphic<CostStackTpl<T>>({c1, c2}, {1., 1.});
 }
 
 template <typename T>
-shared_ptr<CostStackTpl<T>> operator+(shared_ptr<CostStackTpl<T>> &&c1,
-                                      const CostPtr<T> &c2) {
+xyz::polymorphic<CostStackTpl<T>>
+operator+(xyz::polymorphic<CostStackTpl<T>> &&c1, const CostPtr<T> &c2) {
   c1->addCost(c2, 1.);
   return c1;
 }
 
 template <typename T>
-shared_ptr<CostStackTpl<T>> operator+(shared_ptr<CostStackTpl<T>> &&c1,
-                                      CostPtr<T> &&c2) {
+xyz::polymorphic<CostStackTpl<T>>
+operator+(xyz::polymorphic<CostStackTpl<T>> &&c1, CostPtr<T> &&c2) {
   c1->addCost(std::move(c2), 1.);
   return c1;
 }
 
 template <typename T>
-shared_ptr<CostStackTpl<T>> operator+(const shared_ptr<CostStackTpl<T>> &c1,
-                                      CostPtr<T> &&c2) {
+xyz::polymorphic<CostStackTpl<T>>
+operator+(const xyz::polymorphic<CostStackTpl<T>> &c1, CostPtr<T> &&c2) {
   c1->addCost(std::move(c2), 1.);
   return c1;
 }
 
 template <typename T>
-shared_ptr<CostStackTpl<T>> operator*(T u, const CostPtr<T> &c1) {
+xyz::polymorphic<CostStackTpl<T>> operator*(T u, const CostPtr<T> &c1) {
   return std::make_shared<CostStackTpl<T>>({c1}, {u});
 }
 
 template <typename T>
-shared_ptr<CostStackTpl<T>> operator*(T u, shared_ptr<CostStackTpl<T>> &&c1) {
+xyz::polymorphic<CostStackTpl<T>>
+operator*(T u, xyz::polymorphic<CostStackTpl<T>> &&c1) {
   for (std::size_t i = 0; i < c1->size(); i++) {
     c1->weights_[i] *= u;
   }
