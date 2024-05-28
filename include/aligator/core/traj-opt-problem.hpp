@@ -89,7 +89,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// Initial condition
   xyz::polymorphic<UnaryFunction> init_condition_;
   /// Stages of the control problem.
-  std::vector<shared_ptr<StageModel>> stages_;
+  std::vector<xyz::polymorphic<StageModel>> stages_;
   /// Terminal cost.
   xyz::polymorphic<CostAbstract> term_cost_;
   /// Terminal constraints.
@@ -101,13 +101,13 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 
   /// @ingroup ctor1
   TrajOptProblemTpl(xyz::polymorphic<UnaryFunction> init_constraint,
-                    const std::vector<shared_ptr<StageModel>> &stages,
+                    const std::vector<xyz::polymorphic<StageModel>> &stages,
                     xyz::polymorphic<CostAbstract> term_cost);
 
   /// @ingroup ctor1
   /// @brief Constructor for an initial value problem.
   TrajOptProblemTpl(const ConstVectorRef &x0,
-                    const std::vector<shared_ptr<StageModel>> &stages,
+                    const std::vector<xyz::polymorphic<StageModel>> &stages,
                     xyz::polymorphic<CostAbstract> term_cost);
 
   /// @defgroup ctor2 Constructors without pre-allocated stages
@@ -125,7 +125,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   bool initCondIsStateError() const { return init_state_error_ != nullptr; }
 
   /// @brief Add a stage to the control problem.
-  void addStage(const shared_ptr<StageModel> &stage);
+  void addStage(const xyz::polymorphic<StageModel> &stage);
 
   /// @brief Get initial state constraint.
   ConstVectorRef getInitState() const {
@@ -173,7 +173,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 
   /// @brief Pop out the first StageModel and replace by the supplied one;
   /// updates the supplied problem data (TrajOptDataTpl) object.
-  void replaceStageCircular(const shared_ptr<StageModel> &model);
+  void replaceStageCircular(const xyz::polymorphic<StageModel> &model);
 
   /// @brief Helper for computing the trajectory cost (from pre-computed problem
   /// data).

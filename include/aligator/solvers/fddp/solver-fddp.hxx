@@ -26,7 +26,7 @@ void SolverFDDPTpl<Scalar>::setup(const Problem &problem) {
   // check if there are any constraints other than dynamics and throw a warning
   std::vector<std::size_t> idx_where_constraints;
   for (std::size_t i = 0; i < problem.numSteps(); i++) {
-    const shared_ptr<StageModel> &sm = problem.stages_[i];
+    const xyz::polymorphic<StageModel> sm = problem.stages_[i];
     if (!sm->constraints_.empty())
       idx_where_constraints.push_back(i);
   }
@@ -214,7 +214,7 @@ void SolverFDDPTpl<Scalar>::backwardPass(const Problem &problem,
     const VParams &vnext = workspace.value_params[i + 1];
     QParams &qparam = workspace.q_params[i];
 
-    StageModel &sm = *problem.stages_[i];
+    StageModel sm = *problem.stages_[i];
     StageData &sd = *prob_data.stage_data[i];
 
     const int nu = sm.nu();

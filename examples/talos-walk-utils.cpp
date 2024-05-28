@@ -176,7 +176,7 @@ TrajOptProblem defineLocomotionProblem(const std::size_t T_ss,
   contact_phases.insert(contact_phases.end(), double_phase.begin(),
                         double_phase.end());
 
-  std::vector<std::shared_ptr<StageModel>> stage_models;
+  std::vector<xyz::polymorphic<StageModel>> stage_models;
   size_t ts = 0;
   for (std::vector<Support>::iterator phase = contact_phases.begin();
        phase < contact_phases.end(); phase++) {
@@ -210,9 +210,9 @@ TrajOptProblem defineLocomotionProblem(const std::size_t T_ss,
       ts = 0;
       break;
     }
-    stage_models.push_back(std::make_shared<StageModel>(
-        rcost, create_dynamics(stage_space, ph, actuation_matrix, prox_settings,
-                               constraint_models)));
+    stage_models.push_back(
+        StageModel(rcost, create_dynamics(stage_space, ph, actuation_matrix,
+                                          prox_settings, constraint_models)));
   }
   auto ter_space = MultibodyPhaseSpace(rmodel);
   auto term_cost = CostStack(ter_space, nu);

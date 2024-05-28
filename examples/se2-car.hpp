@@ -91,9 +91,9 @@ inline auto create_se2_problem(std::size_t nsteps) {
   auto ode = CarDynamics(); // xyz::polymorphic<CarDynamics>();
   auto discrete_dyn = dynamics::IntegratorEulerTpl<T>(ode, timestep);
 
-  auto stage = std::make_shared<StageModel>(rcost, discrete_dyn);
+  auto stage = StageModel(rcost, discrete_dyn);
 
-  std::vector<decltype(stage)> stages(nsteps, stage);
+  std::vector<xyz::polymorphic<StageModel>> stages(nsteps, stage);
 
   auto term_cost = QuadStateCost(space, nu, x_target, w_term);
   return TrajOptProblem(x0, stages, term_cost);

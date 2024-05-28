@@ -57,10 +57,9 @@ BOOST_AUTO_TEST_CASE(lqr_proxddp) {
   QuadraticCost term_cost = QuadraticCost(Q * 10., MatrixXd());
   assert(term_cost->nu == 0);
 
-  auto stage = std::make_shared<StageModel>(cost, dyn_model);
+  auto stage = StageModel(cost, dyn_model);
 
-  std::vector<decltype(stage)> stages(nsteps);
-  std::fill(stages.begin(), stages.end(), stage);
+  std::vector<xyz::polymorphic<StageModel>> stages(nsteps, stage);
   TrajOptProblem problem(x0, stages, term_cost);
 
   double tol = 1e-6;
