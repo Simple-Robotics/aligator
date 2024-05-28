@@ -5,7 +5,6 @@
 
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 #include <pinocchio/multibody/data.hpp>
-#include <proxsuite-nlp/third-party/polymorphic_cxx14.h>
 
 namespace aligator {
 namespace dynamics {
