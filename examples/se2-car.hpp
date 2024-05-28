@@ -6,7 +6,6 @@
 #include "aligator/core/traj-opt-problem.hpp"
 #include "aligator/modelling/costs/quad-state-cost.hpp"
 #include "aligator/modelling/state-error.hpp"
-#include "aligator/modelling/costs/composite-costs.hpp"
 #include "aligator/modelling/costs/sum-of-costs.hpp"
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
 #include "aligator/modelling/dynamics/integrator-euler.hpp"
@@ -83,11 +82,11 @@ inline auto create_se2_problem(std::size_t nsteps) {
 
   const T timestep = 0.05;
 
-  auto rcost = std::make_shared<CostStackTpl<T>>(space, nu);
+  auto rcost = CostStackTpl<T>(space, nu);
   auto rc1 = QuadStateCost(space, nu, x_target, w_x * timestep);
   auto rc2 = QuadControlCost(space, nu, w_u * timestep);
-  rcost->addCost(rc1);
-  rcost->addCost(rc2);
+  rcost.addCost(rc1);
+  rcost.addCost(rc2);
 
   auto ode = CarDynamics(); // xyz::polymorphic<CarDynamics>();
   auto discrete_dyn = dynamics::IntegratorEulerTpl<T>(ode, timestep);
@@ -96,6 +95,6 @@ inline auto create_se2_problem(std::size_t nsteps) {
 
   std::vector<decltype(stage)> stages(nsteps, stage);
 
-  auto term_cost = std::make_shared<QuadStateCost>(space, nu, x_target, w_term);
+  auto term_cost = QuadStateCost(space, nu, x_target, w_term);
   return TrajOptProblem(x0, stages, term_cost);
 }

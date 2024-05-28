@@ -31,7 +31,7 @@ public:
   using ConstraintSetPtr = std::shared_ptr<ConstraintSetBase<Scalar>>;
   using Constraint = StageConstraintTpl<Scalar>;
   using Cost = CostAbstractTpl<Scalar>;
-  using CostPtr = shared_ptr<Cost>;
+  using CostPtr = xyz::polymorphic<Cost>;
   using Data = StageDataTpl<Scalar>;
 
   /// State space for the current state \f$x_k\f$.
