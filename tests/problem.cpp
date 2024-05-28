@@ -67,10 +67,10 @@ struct MyFixture {
   MyFixture()
       : space(Manifold()), nu(space.ndx()), dyn_model(MyModel(space)),
         cost(MyCost(space, nu)), problem(space.neutral(), nu, space, cost) {
-    auto stage = std::make_shared<StageModel>(cost, dyn_model);
+    auto stage = StageModel(cost, dyn_model);
     auto func = StateErrorResidualTpl<double>(space, nu, space.neutral());
-    auto stage2 = stage->clone();
-    stage2->addConstraint(func, EqualityConstraint());
+    auto stage2 = StageModel(cost, dyn_model);
+    stage2.addConstraint(func, EqualityConstraint());
     problem.addStage(stage);
     problem.addStage(stage2);
   }

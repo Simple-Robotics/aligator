@@ -61,16 +61,16 @@ int main() {
   assert(term_cost->nu == 0);
 
   double ctrlUpperBound = 0.3;
-  auto stage = std::make_shared<StageModel>(cost, dyn_model);
+  auto stage = StageModel(cost, dyn_model);
   {
     auto box = BoxConstraint(-ctrlUpperBound * VectorXd::Ones(nu),
                              ctrlUpperBound * VectorXd::Ones(nu));
     auto u0 = VectorXd::Zero(nu);
     auto func = ControlErrorResidualTpl<double>(nx, u0);
-    stage->addConstraint(func, box);
+    stage.addConstraint(func, box);
   }
 
-  std::vector<decltype(stage)> stages(nsteps, stage);
+  std::vector<xyz::polymorphic<StageModel>> stages(nsteps, stage);
   TrajOptProblem problem(x0, stages, term_cost);
 
   bool terminal = false;

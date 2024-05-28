@@ -13,7 +13,7 @@ namespace aligator {
 template <typename Scalar>
 TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     xyz::polymorphic<UnaryFunction> init_constraint,
-    const std::vector<shared_ptr<StageModel>> &stages,
+    const std::vector<xyz::polymorphic<StageModel>> &stages,
     xyz::polymorphic<CostAbstract> term_cost)
     : init_condition_(init_constraint), stages_(stages), term_cost_(term_cost),
       unone_(term_cost->nu) {
@@ -24,7 +24,8 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
 
 template <typename Scalar>
 TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
-    const ConstVectorRef &x0, const std::vector<shared_ptr<StageModel>> &stages,
+    const ConstVectorRef &x0,
+    const std::vector<xyz::polymorphic<StageModel>> &stages,
     xyz::polymorphic<CostAbstract> term_cost)
     : TrajOptProblemTpl(
           createStateError(x0, stages[0]->xspace_, stages[0]->nu()), stages,
@@ -124,18 +125,19 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
 }
 
 template <typename Scalar>
-void TrajOptProblemTpl<Scalar>::addStage(const shared_ptr<StageModel> &stage) {
-  if (stage == nullptr)
-    ALIGATOR_RUNTIME_ERROR("Input stage is null.");
+void TrajOptProblemTpl<Scalar>::addStage(
+    const xyz::polymorphic<StageModel> &stage) {
+  // if (stage == nullptr)
+  //   ALIGATOR_RUNTIME_ERROR("Input stage is null.");
   stages_.push_back(stage);
 }
 
 template <typename Scalar> void TrajOptProblemTpl<Scalar>::checkStages() const {
   for (auto st = begin(stages_); st != end(stages_); ++st) {
-    if (*st == nullptr) {
+    /*if (*st == nullptr) {
       long d = std::distance(stages_.begin(), st);
       ALIGATOR_RUNTIME_ERROR(fmt::format("Stage {:d} is null.", d));
-    }
+    }*/
   }
 }
 
@@ -152,7 +154,7 @@ inline std::size_t TrajOptProblemTpl<Scalar>::numSteps() const {
 
 template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::replaceStageCircular(
-    const shared_ptr<StageModel> &model) {
+    const xyz::polymorphic<StageModel> &model) {
   addStage(model);
   rotate_vec_left(stages_);
   stages_.pop_back();
