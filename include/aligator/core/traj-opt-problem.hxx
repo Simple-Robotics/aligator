@@ -12,17 +12,14 @@ namespace aligator {
 
 template <typename Scalar>
 TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
-    shared_ptr<UnaryFunction> init_constraint,
+    xyz::polymorphic<UnaryFunction> init_constraint,
     const std::vector<shared_ptr<StageModel>> &stages,
     xyz::polymorphic<CostAbstract> term_cost)
     : init_condition_(init_constraint), stages_(stages), term_cost_(term_cost),
       unone_(term_cost->nu) {
   unone_.setZero();
   checkStages();
-  if (auto se =
-          std::dynamic_pointer_cast<StateErrorResidual>(init_condition_)) {
-    init_state_error_ = se.get();
-  }
+  init_state_error_ = &dynamic_cast<StateErrorResidual &>(*init_condition_);
 }
 
 template <typename Scalar>
@@ -32,17 +29,16 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     : TrajOptProblemTpl(
           createStateError(x0, stages[0]->xspace_, stages[0]->nu()), stages,
           term_cost) {
-  init_state_error_ = static_cast<StateErrorResidual *>(init_condition_.get());
+  init_state_error_ = &dynamic_cast<StateErrorResidual &>(*init_condition_);
 }
 
 template <typename Scalar>
 TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
-    shared_ptr<UnaryFunction> init_constraint,
+    xyz::polymorphic<UnaryFunction> init_constraint,
     xyz::polymorphic<CostAbstract> term_cost)
     : init_condition_(init_constraint), term_cost_(term_cost),
       unone_(term_cost->nu),
-      init_state_error_(
-          dynamic_cast<StateErrorResidual *>(init_condition_.get())) {
+      init_state_error_(&dynamic_cast<StateErrorResidual &>(*init_condition_)) {
   unone_.setZero();
 }
 

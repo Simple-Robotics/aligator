@@ -87,7 +87,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   /// Initial condition
-  shared_ptr<UnaryFunction> init_condition_;
+  xyz::polymorphic<UnaryFunction> init_condition_;
   /// Stages of the control problem.
   std::vector<shared_ptr<StageModel>> stages_;
   /// Terminal cost.
@@ -100,7 +100,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// @defgroup ctor1 Constructors with pre-allocated stages
 
   /// @ingroup ctor1
-  TrajOptProblemTpl(shared_ptr<UnaryFunction> init_constraint,
+  TrajOptProblemTpl(xyz::polymorphic<UnaryFunction> init_constraint,
                     const std::vector<shared_ptr<StageModel>> &stages,
                     xyz::polymorphic<CostAbstract> term_cost);
 
@@ -113,7 +113,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// @defgroup ctor2 Constructors without pre-allocated stages
 
   /// @ingroup ctor2
-  TrajOptProblemTpl(shared_ptr<UnaryFunction> init_constraint,
+  TrajOptProblemTpl(xyz::polymorphic<UnaryFunction> init_constraint,
                     xyz::polymorphic<CostAbstract> term_cost);
 
   /// @ingroup ctor2
@@ -192,7 +192,7 @@ private:
   static auto createStateError(const ConstVectorRef &x0,
                                const xyz::polymorphic<Manifold> &space,
                                const int nu) {
-    return std::make_shared<StateErrorResidual>(space, nu, x0);
+    return StateErrorResidual(space, nu, x0);
   }
 };
 

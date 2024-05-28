@@ -63,9 +63,8 @@ int main() {
   double ctrlUpperBound = 0.3;
   auto stage = std::make_shared<StageModel>(cost, dyn_model);
   {
-    auto box =
-        std::make_shared<BoxConstraint>(-ctrlUpperBound * VectorXd::Ones(nu),
-                                        ctrlUpperBound * VectorXd::Ones(nu));
+    auto box = BoxConstraint(-ctrlUpperBound * VectorXd::Ones(nu),
+                             ctrlUpperBound * VectorXd::Ones(nu));
     auto u0 = VectorXd::Zero(nu);
     auto func = ControlErrorResidualTpl<double>(nx, u0);
     stage->addConstraint(func, box);
@@ -78,8 +77,7 @@ int main() {
   if (terminal) {
     auto xf = VectorXd::Ones(nx);
     auto func = StateErrorResidualTpl<double>(space, nu, xf);
-    problem.addTerminalConstraint(
-        {func, std::make_shared<EqualityConstraint>()});
+    problem.addTerminalConstraint({func, EqualityConstraint()});
   }
 
   const double tol = 1e-6;
