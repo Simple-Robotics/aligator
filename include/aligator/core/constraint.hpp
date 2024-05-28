@@ -14,7 +14,7 @@ namespace aligator {
 /// constraint.
 template <typename Scalar> struct StageConstraintTpl {
   xyz::polymorphic<StageFunctionTpl<Scalar>> func;
-  shared_ptr<ConstraintSetBase<Scalar>> set;
+  xyz::polymorphic<ConstraintSetBase<Scalar>> set;
   long nr() const { return func->nr; }
 };
 

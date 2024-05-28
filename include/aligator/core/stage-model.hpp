@@ -28,7 +28,7 @@ public:
   using Dynamics = DynamicsModelTpl<Scalar>;
   using DynamicsPtr = xyz::polymorphic<Dynamics>;
   using FunctionPtr = xyz::polymorphic<StageFunctionTpl<Scalar>>;
-  using ConstraintSetPtr = std::shared_ptr<ConstraintSetBase<Scalar>>;
+  using ConstraintSetPtr = xyz::polymorphic<ConstraintSetBase<Scalar>>;
   using Constraint = StageConstraintTpl<Scalar>;
   using Cost = CostAbstractTpl<Scalar>;
   using CostPtr = xyz::polymorphic<Cost>;

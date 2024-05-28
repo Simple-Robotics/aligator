@@ -16,9 +16,9 @@ using proxsuite::nlp::ConstraintSetProductTpl;
 
 template <typename Scalar>
 auto getConstraintProductSet(const ConstraintStackTpl<Scalar> &constraints) {
-  std::vector<ConstraintSetBase<Scalar> *> components;
+  std::vector<xyz::polymorphic<ConstraintSetBase<Scalar>>> components;
   for (size_t i = 0; i < constraints.size(); i++) {
-    components.push_back(constraints[i].set.get());
+    components.push_back(constraints[i].set);
   }
   return ConstraintSetProductTpl<Scalar>{components, constraints.dims()};
 }
