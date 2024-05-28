@@ -6,7 +6,7 @@
 #include "aligator/utils/rollout.hpp"
 #include "aligator/modelling/state-error.hpp"
 #include <proxsuite-nlp/modelling/spaces/pinocchio-groups.hpp>
-#include <proxsuite-nlp/third-party/polymorphic_cxx14.h>
+#include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include <fmt/core.h>
