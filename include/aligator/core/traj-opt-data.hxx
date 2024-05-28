@@ -14,10 +14,7 @@ TrajOptDataTpl<Scalar>::TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem)
     stage_data.push_back(problem.stages_[i]->createData());
     stage_data[i]->checkData();
   }
-
-  if (problem.term_cost_) {
-    term_cost_data = problem.term_cost_->createData();
-  }
+  term_cost_data = problem.term_cost_->createData();
 
   if (!problem.term_cstrs_.empty())
     term_cstr_data.reserve(problem.term_cstrs_.size());

@@ -61,13 +61,12 @@ struct MyFixture {
   Manifold space;
   const int nu;
   const MyModel dyn_model;
-  const shared_ptr<MyCost> cost;
+  const MyCost cost;
   TrajOptProblemTpl<double> problem;
 
   MyFixture()
       : space(Manifold()), nu(space.ndx()), dyn_model(MyModel(space)),
-        cost(std::make_shared<MyCost>(space, nu)),
-        problem(space.neutral(), nu, space, cost) {
+        cost(MyCost(space, nu)), problem(space.neutral(), nu, space, cost) {
     auto stage = std::make_shared<StageModel>(cost, dyn_model);
     auto func = StateErrorResidualTpl<double>(space, nu, space.neutral());
     auto stage2 = stage->clone();

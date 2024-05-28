@@ -91,7 +91,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// Stages of the control problem.
   std::vector<shared_ptr<StageModel>> stages_;
   /// Terminal cost.
-  shared_ptr<CostAbstract> term_cost_;
+  xyz::polymorphic<CostAbstract> term_cost_;
   /// Terminal constraints.
   ConstraintStackTpl<Scalar> term_cstrs_;
   /// Dummy, "neutral" control value.
@@ -102,25 +102,25 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// @ingroup ctor1
   TrajOptProblemTpl(shared_ptr<UnaryFunction> init_constraint,
                     const std::vector<shared_ptr<StageModel>> &stages,
-                    shared_ptr<CostAbstract> term_cost);
+                    xyz::polymorphic<CostAbstract> term_cost);
 
   /// @ingroup ctor1
   /// @brief Constructor for an initial value problem.
   TrajOptProblemTpl(const ConstVectorRef &x0,
                     const std::vector<shared_ptr<StageModel>> &stages,
-                    shared_ptr<CostAbstract> term_cost);
+                    xyz::polymorphic<CostAbstract> term_cost);
 
   /// @defgroup ctor2 Constructors without pre-allocated stages
 
   /// @ingroup ctor2
   TrajOptProblemTpl(shared_ptr<UnaryFunction> init_constraint,
-                    shared_ptr<CostAbstract> term_cost);
+                    xyz::polymorphic<CostAbstract> term_cost);
 
   /// @ingroup ctor2
   /// @brief Constructor for an initial value problem.
   TrajOptProblemTpl(const ConstVectorRef &x0, const int nu,
                     xyz::polymorphic<Manifold> space,
-                    shared_ptr<CostAbstract> term_cost);
+                    xyz::polymorphic<CostAbstract> term_cost);
 
   bool initCondIsStateError() const { return init_state_error_ != nullptr; }
 
@@ -180,13 +180,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// @warning Call TrajOptProblemTpl::evaluate() first!
   Scalar computeTrajectoryCost(const Data &problem_data) const;
 
-  inline void checkIntegrity() const {
-    checkStages();
-
-    if (term_cost_ == nullptr) {
-      ALIGATOR_RUNTIME_ERROR("Problem has no terminal cost.");
-    }
-  }
+  inline void checkIntegrity() const { checkStages(); }
 
 protected:
   /// Pointer to underlying state error residual

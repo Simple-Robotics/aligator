@@ -14,7 +14,7 @@ template <typename Scalar>
 TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     shared_ptr<UnaryFunction> init_constraint,
     const std::vector<shared_ptr<StageModel>> &stages,
-    shared_ptr<CostAbstract> term_cost)
+    xyz::polymorphic<CostAbstract> term_cost)
     : init_condition_(init_constraint), stages_(stages), term_cost_(term_cost),
       unone_(term_cost->nu) {
   unone_.setZero();
@@ -28,7 +28,7 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
 template <typename Scalar>
 TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     const ConstVectorRef &x0, const std::vector<shared_ptr<StageModel>> &stages,
-    shared_ptr<CostAbstract> term_cost)
+    xyz::polymorphic<CostAbstract> term_cost)
     : TrajOptProblemTpl(
           createStateError(x0, stages[0]->xspace_, stages[0]->nu()), stages,
           term_cost) {
@@ -38,7 +38,7 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
 template <typename Scalar>
 TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     shared_ptr<UnaryFunction> init_constraint,
-    shared_ptr<CostAbstract> term_cost)
+    xyz::polymorphic<CostAbstract> term_cost)
     : init_condition_(init_constraint), term_cost_(term_cost),
       unone_(term_cost->nu),
       init_state_error_(
@@ -47,10 +47,9 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
 }
 
 template <typename Scalar>
-TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(const ConstVectorRef &x0,
-                                             const int nu,
-                                             xyz::polymorphic<Manifold> space,
-                                             shared_ptr<CostAbstract> term_cost)
+TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
+    const ConstVectorRef &x0, const int nu, xyz::polymorphic<Manifold> space,
+    xyz::polymorphic<CostAbstract> term_cost)
     : TrajOptProblemTpl(createStateError(x0, space, nu), term_cost) {}
 
 template <typename Scalar>
@@ -116,12 +115,9 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
   }
   Eigen::setNbThreads(0);
 
-  if (term_cost_) {
-    term_cost_->computeGradients(xs[nsteps], unone_, *prob_data.term_cost_data);
-    if (compute_second_order) {
-      term_cost_->computeHessians(xs[nsteps], unone_,
-                                  *prob_data.term_cost_data);
-    }
+  term_cost_->computeGradients(xs[nsteps], unone_, *prob_data.term_cost_data);
+  if (compute_second_order) {
+    term_cost_->computeHessians(xs[nsteps], unone_, *prob_data.term_cost_data);
   }
 
   for (std::size_t k = 0; k < term_cstrs_.size(); ++k) {

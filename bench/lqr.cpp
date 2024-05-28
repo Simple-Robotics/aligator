@@ -42,7 +42,7 @@ TrajOptProblem define_problem(const std::size_t nsteps, const int dim = 56,
   auto dynptr = Dynamics(A, B, c_);
   auto space = dynptr.space_next_;
 
-  auto rcost = std::make_shared<QuadCost>(w_x, w_u);
+  auto rcost = QuadCost(w_x, w_u);
   auto stage = std::make_shared<StageModel>(rcost, dynptr);
   auto term_cost = rcost;
 
