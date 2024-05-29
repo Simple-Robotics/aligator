@@ -33,9 +33,9 @@ struct ContinousDataWrapper : ContinuousDynamicsData,
 void exposeODEs();
 
 void exposeContinuousDynamics() {
-  using ManifoldPtr = shared_ptr<context::Manifold>;
+  using ManifoldPtr = xyz::polymorphic<context::Manifold>;
 
-  bp::register_ptr_to_python<shared_ptr<ContinuousDynamicsAbstract>>();
+  bp::register_ptr_to_python<xyz::polymorphic<ContinuousDynamicsAbstract>>();
   bp::class_<PyContinuousDynamics<>, boost::noncopyable>(
       "ContinuousDynamicsAbstract",
       "Base class for continuous-time dynamical models (DAEs and ODEs).",
@@ -96,7 +96,7 @@ void exposeContinuousDynamics() {
   bp::class_<CentroidalFwdDynamics, bp::bases<ODEAbstract>>(
       "CentroidalFwdDynamics",
       "Nonlinear centroidal dynamics with preplanned feet positions",
-      bp::init<const shared_ptr<proxsuite::nlp::VectorSpaceTpl<Scalar>> &,
+      bp::init<const xyz::polymorphic<proxsuite::nlp::VectorSpaceTpl<Scalar>> &,
                const double, const Vector3s &, const ContactMap &, const int>(
           bp::args("self", "space", "total mass", "gravity", "contact_map",
                    "force_size")))
@@ -111,7 +111,7 @@ void exposeContinuousDynamics() {
       "ContinuousCentroidalFwdDynamics",
       "Nonlinear centroidal dynamics with preplanned feet positions and smooth "
       "forces",
-      bp::init<const shared_ptr<proxsuite::nlp::VectorSpaceTpl<Scalar>> &,
+      bp::init<const xyz::polymorphic<proxsuite::nlp::VectorSpaceTpl<Scalar>> &,
                const double, const Vector3s &, const ContactMap &, const int>(
           bp::args("self", "space", "total mass", "gravity", "contact_map",
                    "force_size")))

@@ -20,7 +20,7 @@ using context::StageFunction;
 using context::StageFunctionData;
 using context::VectorXs;
 using internal::PyStageFunction;
-using FunctionPtr = shared_ptr<StageFunction>;
+using FunctionPtr = xyz::polymorphic<StageFunction>;
 using StateErrorResidual = StateErrorResidualTpl<Scalar>;
 using ControlErrorResidual = ControlErrorResidualTpl<Scalar>;
 
@@ -142,15 +142,16 @@ void exposeFunctions() {
   exposeFunctionExpressions();
 
   bp::class_<StateErrorResidual, bp::bases<context::UnaryFunction>>(
-      "StateErrorResidual", bp::init<const shared_ptr<context::Manifold> &,
-                                     const int, const context::VectorXs &>(
-                                bp::args("self", "space", "nu", "target")))
+      "StateErrorResidual",
+      bp::init<const xyz::polymorphic<context::Manifold> &, const int,
+               const context::VectorXs &>(
+          bp::args("self", "space", "nu", "target")))
       .def_readonly("space", &StateErrorResidual::space_)
       .def_readwrite("target", &StateErrorResidual::target_);
 
   bp::class_<ControlErrorResidual, bp::bases<StageFunction>>(
       "ControlErrorResidual",
-      bp::init<const int, const shared_ptr<context::Manifold> &,
+      bp::init<const int, const xyz::polymorphic<context::Manifold> &,
                const context::VectorXs &>(
           bp::args("self", "ndx", "uspace", "target")))
       .def(bp::init<const int, const context::VectorXs &>(

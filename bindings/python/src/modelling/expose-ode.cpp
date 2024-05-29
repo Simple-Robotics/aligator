@@ -13,12 +13,12 @@ using context::ODEAbstract;
 using context::ODEData;
 using context::Scalar;
 using context::VectorXs;
-using ManifoldPtr = shared_ptr<context::Manifold>;
+using ManifoldPtr = xyz::polymorphic<context::Manifold>;
 
 void exposeODEs() {
   using dynamics::LinearODETpl;
 
-  bp::register_ptr_to_python<shared_ptr<ODEAbstract>>();
+  bp::register_ptr_to_python<xyz::polymorphic<ODEAbstract>>();
   bp::class_<PyODEAbstract<>, bp::bases<ContinuousDynamicsAbstract>,
              boost::noncopyable>(
       "ODEAbstract",

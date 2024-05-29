@@ -19,17 +19,17 @@ void exposeStage() {
   using context::StageModel;
   using StageData = StageDataTpl<Scalar>;
 
-  using CostPtr = shared_ptr<context::CostAbstract>;
-  using DynamicsPtr = shared_ptr<context::DynamicsModel>;
-  using FunctionPtr = shared_ptr<context::StageFunction>;
-  using CstrSetPtr = shared_ptr<ConstraintSet>;
+  using CostPtr = xyz::polymorphic<context::CostAbstract>;
+  using DynamicsPtr = xyz::polymorphic<context::DynamicsModel>;
+  using FunctionPtr = xyz::polymorphic<context::StageFunction>;
+  using CstrSetPtr = xyz::polymorphic<ConstraintSet>;
 
-  StdVectorPythonVisitor<std::vector<shared_ptr<StageModel>>, true>::expose(
-      "StdVec_StageModel");
+  StdVectorPythonVisitor<std::vector<xyz::polymorphic<StageModel>>,
+                         true>::expose("StdVec_StageModel");
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-  bp::register_ptr_to_python<shared_ptr<StageModel>>();
+  bp::register_ptr_to_python<xyz::polymorphic<StageModel>>();
   bp::class_<StageModel>(
       "StageModel",
       "A stage of the control problem. Holds costs, dynamics, and constraints.",

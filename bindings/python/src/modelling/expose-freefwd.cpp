@@ -14,7 +14,7 @@ void exposeFreeFwdDynamics() {
   using MultibodyFreeFwdDynamics = MultibodyFreeFwdDynamicsTpl<Scalar>;
   using proxsuite::nlp::MultibodyPhaseSpace;
 
-  using StateManifoldPtr = shared_ptr<MultibodyPhaseSpace<Scalar>>;
+  using StateManifoldPtr = xyz::polymorphic<MultibodyPhaseSpace<Scalar>>;
 
   bp::class_<MultibodyFreeFwdDynamics, bp::bases<ODEAbstract>>(
       "MultibodyFreeFwdDynamics",

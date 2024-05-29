@@ -11,7 +11,7 @@ using context::DynamicsModel;
 using context::ExplicitDynamics;
 using context::ExplicitDynamicsData;
 using context::Scalar;
-using ManifoldPtr = shared_ptr<context::Manifold>;
+using ManifoldPtr = xyz::polymorphic<context::Manifold>;
 using internal::PyExplicitDynamics;
 
 // fwd declaration
@@ -35,7 +35,7 @@ struct ExplicitDataWrapper : ExplicitDynamicsData,
 
 void exposeExplicitBase() {
 
-  StdVectorPythonVisitor<std::vector<shared_ptr<ExplicitDynamics>>,
+  StdVectorPythonVisitor<std::vector<xyz::polymorphic<ExplicitDynamics>>,
                          true>::expose("StdVec_ExplicitDynamics");
 
   bp::class_<PyExplicitDynamics<>, bp::bases<DynamicsModel>,

@@ -7,8 +7,8 @@ namespace aligator {
 namespace python {
 
 context::StageConstraint *
-make_constraint_wrap(const shared_ptr<context::StageFunction> &f,
-                     const shared_ptr<context::ConstraintSet> &c) {
+make_constraint_wrap(const xyz::polymorphic<context::StageFunction> &f,
+                     const xyz::polymorphic<context::ConstraintSet> &c) {
   return new context::StageConstraint{f, c};
 }
 
