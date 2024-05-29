@@ -37,7 +37,6 @@ void exposeExplicitBase() {
 
   StdVectorPythonVisitor<std::vector<xyz::polymorphic<ExplicitDynamics>>,
                          true>::expose("StdVec_ExplicitDynamics");
-
   bp::class_<PyExplicitDynamics<>, bp::bases<DynamicsModel>,
              boost::noncopyable>(
       "ExplicitDynamicsModel", "Base class for explicit dynamics.",
@@ -75,6 +74,10 @@ void exposeLinearDiscreteDynamics() {
   using context::VectorXs;
   using namespace aligator::dynamics;
 
+  bp::implicitly_convertible<LinearDiscreteDynamicsTpl<Scalar>,
+                             xyz::polymorphic<ExplicitDynamics>>();
+  bp::implicitly_convertible<LinearDiscreteDynamicsTpl<Scalar>,
+                             xyz::polymorphic<DynamicsModel>>();
   bp::class_<LinearDiscreteDynamicsTpl<Scalar>,
              bp::bases<context::ExplicitDynamics>>(
       "LinearDiscreteDynamics",

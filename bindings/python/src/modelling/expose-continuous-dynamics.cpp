@@ -1,5 +1,6 @@
 /// @file
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+#include <proxsuite-nlp/python/polymorphic.hpp>
 #include "aligator/python/visitors.hpp"
 #include "aligator/python/modelling/continuous.hpp"
 #include "aligator/modelling/dynamics/centroidal-fwd.hpp"
@@ -35,7 +36,8 @@ void exposeODEs();
 void exposeContinuousDynamics() {
   using ManifoldPtr = xyz::polymorphic<context::Manifold>;
 
-  bp::register_ptr_to_python<xyz::polymorphic<ContinuousDynamicsAbstract>>();
+  proxsuite::nlp::python::register_polymorphic_to_python<
+      xyz::polymorphic<ContinuousDynamicsAbstract>>();
   bp::class_<PyContinuousDynamics<>, boost::noncopyable>(
       "ContinuousDynamicsAbstract",
       "Base class for continuous-time dynamical models (DAEs and ODEs).",
@@ -92,12 +94,15 @@ void exposeContinuousDynamics() {
   bp::scope().attr("ODEData") = cont_data_cls;
 
   exposeODEs();
-
+  bp::implicitly_convertible<CentroidalFwdDynamics,
+                             xyz::polymorphic<ODEAbstract>>();
+  bp::implicitly_convertible<CentroidalFwdDynamics,
+                             xyz::polymorphic<ContinuousDynamicsAbstract>>();
   bp::class_<CentroidalFwdDynamics, bp::bases<ODEAbstract>>(
       "CentroidalFwdDynamics",
       "Nonlinear centroidal dynamics with preplanned feet positions",
-      bp::init<const xyz::polymorphic<proxsuite::nlp::VectorSpaceTpl<Scalar>> &,
-               const double, const Vector3s &, const ContactMap &, const int>(
+      bp::init<const proxsuite::nlp::VectorSpaceTpl<Scalar> &, const double,
+               const Vector3s &, const ContactMap &, const int>(
           bp::args("self", "space", "total mass", "gravity", "contact_map",
                    "force_size")))
       .def_readwrite("contact_map", &CentroidalFwdDynamics::contact_map_)
@@ -107,12 +112,16 @@ void exposeContinuousDynamics() {
   bp::class_<CentroidalFwdDataTpl<Scalar>, bp::bases<ODEData>>(
       "CentroidalFwdData", bp::no_init);
 
+  bp::implicitly_convertible<ContinuousCentroidalFwdDynamics,
+                             xyz::polymorphic<ODEAbstract>>();
+  bp::implicitly_convertible<ContinuousCentroidalFwdDynamics,
+                             xyz::polymorphic<ContinuousDynamicsAbstract>>();
   bp::class_<ContinuousCentroidalFwdDynamics, bp::bases<ODEAbstract>>(
       "ContinuousCentroidalFwdDynamics",
       "Nonlinear centroidal dynamics with preplanned feet positions and smooth "
       "forces",
-      bp::init<const xyz::polymorphic<proxsuite::nlp::VectorSpaceTpl<Scalar>> &,
-               const double, const Vector3s &, const ContactMap &, const int>(
+      bp::init<const proxsuite::nlp::VectorSpaceTpl<Scalar> &, const double,
+               const Vector3s &, const ContactMap &, const int>(
           bp::args("self", "space", "total mass", "gravity", "contact_map",
                    "force_size")))
       .def_readwrite("contact_map",

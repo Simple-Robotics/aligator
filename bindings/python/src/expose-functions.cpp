@@ -1,5 +1,6 @@
 /// @file
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+#include <proxsuite-nlp/python/polymorphic.hpp>
 #include "aligator/python/functions.hpp"
 #include "aligator/python/eigen-member.hpp"
 
@@ -18,9 +19,10 @@ using context::MatrixXs;
 using context::Scalar;
 using context::StageFunction;
 using context::StageFunctionData;
+using context::UnaryFunction;
 using context::VectorXs;
 using internal::PyStageFunction;
-using FunctionPtr = xyz::polymorphic<StageFunction>;
+using PolyFunction = xyz::polymorphic<StageFunction>;
 using StateErrorResidual = StateErrorResidualTpl<Scalar>;
 using ControlErrorResidual = ControlErrorResidualTpl<Scalar>;
 
@@ -30,9 +32,7 @@ struct FunctionDataWrapper : StageFunctionData, bp::wrapper<StageFunctionData> {
 };
 
 void exposeFunctionBase() {
-
-  bp::register_ptr_to_python<FunctionPtr>();
-
+  proxsuite::nlp::python::register_polymorphic_to_python<PolyFunction>();
   bp::class_<PyStageFunction<>, boost::noncopyable>(
       "StageFunction",
       "Base class for ternary functions f(x,u,x') on a stage of the problem.",
@@ -53,7 +53,7 @@ void exposeFunctionBase() {
       .def_readonly("ndx2", &StageFunction::ndx2, "Next state space.")
       .def_readonly("nu", &StageFunction::nu, "Control dimension.")
       .def_readonly("nr", &StageFunction::nr, "Function codimension.")
-      .def(SlicingVisitor<StageFunction>())
+      //.def(SlicingVisitor<StageFunction>())
       .def(CreateDataPolymorphicPythonVisitor<StageFunction,
                                               PyStageFunction<>>());
 
@@ -124,7 +124,7 @@ void exposeFunctionBase() {
       .def(PrintAddressVisitor<StageFunctionData>())
       .def(ClonePythonVisitor<StageFunctionData>());
 
-  StdVectorPythonVisitor<std::vector<FunctionPtr>, true>::expose(
+  StdVectorPythonVisitor<std::vector<PolyFunction>, true>::expose(
       "StdVec_StageFunction");
   StdVectorPythonVisitor<std::vector<shared_ptr<StageFunctionData>>,
                          true>::expose("StdVec_StageFunctionData");
@@ -141,7 +141,11 @@ void exposeFunctions() {
   exposeUnaryFunctions();
   exposeFunctionExpressions();
 
-  bp::class_<StateErrorResidual, bp::bases<context::UnaryFunction>>(
+  bp::implicitly_convertible<StateErrorResidual,
+                             xyz::polymorphic<UnaryFunction>>();
+  bp::implicitly_convertible<StateErrorResidual,
+                             xyz::polymorphic<StageFunction>>();
+  bp::class_<StateErrorResidual, bp::bases<UnaryFunction>>(
       "StateErrorResidual",
       bp::init<const xyz::polymorphic<context::Manifold> &, const int,
                const context::VectorXs &>(
@@ -149,6 +153,8 @@ void exposeFunctions() {
       .def_readonly("space", &StateErrorResidual::space_)
       .def_readwrite("target", &StateErrorResidual::target_);
 
+  bp::implicitly_convertible<ControlErrorResidual,
+                             xyz::polymorphic<StageFunction>>();
   bp::class_<ControlErrorResidual, bp::bases<StageFunction>>(
       "ControlErrorResidual",
       bp::init<const int, const xyz::polymorphic<context::Manifold> &,
@@ -161,6 +167,7 @@ void exposeFunctions() {
       .def_readwrite("target", &ControlErrorResidual::target_);
 
   using LinearFunction = LinearFunctionTpl<Scalar>;
+  bp::implicitly_convertible<LinearFunction, xyz::polymorphic<StageFunction>>();
   bp::class_<LinearFunction, bp::bases<StageFunction>>(
       "LinearFunction", bp::init<const int, const int, const int, const int>(
                             bp::args("self", "ndx1", "nu", "ndx2", "nr")))
@@ -176,6 +183,8 @@ void exposeFunctions() {
       .def_readonly("C", &LinearFunction::C_)
       .def_readonly("d", &LinearFunction::d_);
 
+  bp::implicitly_convertible<ControlBoxFunctionTpl<Scalar>,
+                             xyz::polymorphic<StageFunction>>();
   bp::class_<ControlBoxFunctionTpl<Scalar>, bp::bases<StageFunction>>(
       "ControlBoxFunction",
       bp::init<const int, const VectorXs &, const VectorXs &>(

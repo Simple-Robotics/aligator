@@ -6,6 +6,7 @@
 
 #include "aligator/core/function-abstract.hpp"
 #include "aligator/core/unary-function.hpp"
+#include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 
 namespace aligator {
 namespace python {
@@ -107,23 +108,24 @@ struct SlicingVisitor : bp::def_visitor<SlicingVisitor<Class>> {
     fun(*range.start);
   }
 
-  static auto get_slice(shared_ptr<Class> const &fn, bp::slice slice_obj) {
+  static auto get_slice(xyz::polymorphic<Class> const &fn,
+                        bp::slice slice_obj) {
     std::vector<int> indices((unsigned)fn->nr);
     std::iota(indices.begin(), indices.end(), 0);
     auto bounds = slice_obj.get_indices(indices.cbegin(), indices.cend());
     std::vector<int> out{};
 
     do_with_slice([&](int i) { out.push_back(i); }, bounds);
-    return std::make_shared<FS>(fn, out);
+    return xyz::polymorphic<FS>(fn, out);
   }
 
-  static auto get_from_index(shared_ptr<Class> const &fn, const int idx) {
-    return std::make_shared<FS>(fn, idx);
+  static auto get_from_index(xyz::polymorphic<Class> const &fn, const int idx) {
+    return xyz::polymorphic<FS>(fn, idx);
   }
 
-  static auto get_from_indices(shared_ptr<Class> const &fn,
+  static auto get_from_indices(xyz::polymorphic<Class> const &fn,
                                std::vector<int> const &indices) {
-    return std::make_shared<FS>(fn, indices);
+    return xyz::polymorphic<FS>(fn, indices);
   }
 
   template <typename... Args> void visit(bp::class_<Args...> &cl) const {

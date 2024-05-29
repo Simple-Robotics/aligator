@@ -1,5 +1,6 @@
 /// @file
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+#include <proxsuite-nlp/python/polymorphic.hpp>
 #include "aligator/python/costs.hpp"
 #include "aligator/python/visitors.hpp"
 
@@ -18,7 +19,7 @@ using context::Scalar;
 using context::VectorXs;
 using internal::PyCostFunction;
 using QuadraticCost = QuadraticCostTpl<Scalar>;
-using CostPtr = xyz::polymorphic<CostAbstract>;
+using PolyCost = xyz::polymorphic<CostAbstract>;
 
 struct CostDataWrapper : CostData, bp::wrapper<CostData> {
   using CostData::CostData;
@@ -26,6 +27,8 @@ struct CostDataWrapper : CostData, bp::wrapper<CostData> {
 
 void exposeQuadCost() {
 
+  bp::implicitly_convertible<ConstantCostTpl<Scalar>,
+                             xyz::polymorphic<CostAbstract>>();
   bp::class_<ConstantCostTpl<Scalar>, bp::bases<CostAbstract>>(
       "ConstantCost", "A constant cost term.",
       bp::init<xyz::polymorphic<Manifold>, int, Scalar>(
@@ -33,6 +36,7 @@ void exposeQuadCost() {
       .def_readwrite("value", &ConstantCostTpl<Scalar>::value_)
       .def(CopyableVisitor<ConstantCostTpl<Scalar>>());
 
+  bp::implicitly_convertible<QuadraticCost, xyz::polymorphic<CostAbstract>>();
   bp::class_<QuadraticCost, bp::bases<CostAbstract>>(
       "QuadraticCost",
       "Quadratic cost in both state and control - only for Euclidean spaces.",
@@ -73,8 +77,7 @@ void exposeCentroidalFunctions();
 void exposeCostStack();
 
 void exposeCostAbstract() {
-  bp::register_ptr_to_python<CostPtr>();
-
+  proxsuite::nlp::python::register_polymorphic_to_python<PolyCost>();
   bp::class_<PyCostFunction<>, boost::noncopyable>(
       "CostAbstract", "Base class for cost functions.", bp::no_init)
       .def(bp::init<xyz::polymorphic<Manifold>, const int>(
@@ -121,7 +124,7 @@ void exposeCostAbstract() {
                                &CostData::Luu_,
                                bp::return_value_policy<bp::return_by_value>()));
 
-  StdVectorPythonVisitor<std::vector<CostPtr>, true>::expose(
+  StdVectorPythonVisitor<std::vector<PolyCost>, true>::expose(
       "StdVec_CostAbstract");
   StdVectorPythonVisitor<std::vector<shared_ptr<CostData>>, true>::expose(
       "StdVec_CostData");

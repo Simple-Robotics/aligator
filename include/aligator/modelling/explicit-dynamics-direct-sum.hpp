@@ -53,7 +53,7 @@ private:
 template <typename Scalar>
 auto directSum(xyz::polymorphic<ExplicitDynamicsModelTpl<Scalar>> const &m1,
                xyz::polymorphic<ExplicitDynamicsModelTpl<Scalar>> const &m2) {
-  return xyz::polymorphic<DirectSumExplicitDynamicsTpl<Scalar>>(m1, m2);
+  return DirectSumExplicitDynamicsTpl<Scalar>(m1, m2);
 }
 
 } // namespace aligator

@@ -13,11 +13,16 @@ namespace python {
 using context::MultibodyPhaseSpace;
 using context::PinModel;
 using context::Scalar;
+using context::StageFunction;
 using context::StageFunctionData;
 using context::UnaryFunction;
 
 void exposeFlyHigh() {
   using FlyHighResidual = FlyHighResidualTpl<Scalar>;
+  bp::implicitly_convertible<FlyHighResidual,
+                             xyz::polymorphic<UnaryFunction>>();
+  bp::implicitly_convertible<FlyHighResidual,
+                             xyz::polymorphic<StageFunction>>();
   bp::class_<FlyHighResidual, bp::bases<UnaryFunction>>(
       "FlyHighResidual",
       "A residual function :math:`r(x) = v_{j,xy} e^{-s z_j}` where :math:`j` "

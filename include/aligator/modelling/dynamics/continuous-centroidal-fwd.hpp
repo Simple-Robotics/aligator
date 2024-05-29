@@ -31,13 +31,12 @@ struct ContinuousCentroidalFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using ContDataAbstract = ContinuousDynamicsDataTpl<Scalar>;
   using Data = ContinuousCentroidalFwdDataTpl<Scalar>;
   using Manifold = proxsuite::nlp::VectorSpaceTpl<Scalar>;
-  using ManifoldPtr = xyz::polymorphic<Manifold>;
   using Matrix3s = Eigen::Matrix<Scalar, 3, 3>;
   using ContactMap = ContactMapTpl<Scalar>;
 
   using Base::nu_;
 
-  ManifoldPtr space_;
+  Manifold space_;
   std::size_t nk_;
   double mass_;
   Vector3s gravity_;
@@ -46,8 +45,8 @@ struct ContinuousCentroidalFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
 
   const Manifold &space() const { return *space_; }
 
-  ContinuousCentroidalFwdDynamicsTpl(const ManifoldPtr &state,
-                                     const double mass, const Vector3s &gravity,
+  ContinuousCentroidalFwdDynamicsTpl(const Manifold &state, const double mass,
+                                     const Vector3s &gravity,
                                      const ContactMap &contact_map,
                                      const int force_size);
 

@@ -34,10 +34,9 @@ void exposeConstrainedFwdDynamics() {
   bp::class_<MultibodyConstraintFwdDynamics, bp::bases<ODEAbstract>>(
       "MultibodyConstraintFwdDynamics",
       "Constraint forward dynamics using Pinocchio.",
-      bp::init<
-          const xyz::polymorphic<proxsuite::nlp::MultibodyPhaseSpace<Scalar>> &,
-          const context::MatrixXs &, const RigidConstraintModelVector &,
-          const pinocchio::ProximalSettingsTpl<Scalar> &>(
+      bp::init<const proxsuite::nlp::MultibodyPhaseSpace<Scalar> &,
+               const context::MatrixXs &, const RigidConstraintModelVector &,
+               const pinocchio::ProximalSettingsTpl<Scalar> &>(
           bp::args("self", "space", "actuation_matrix", "constraint_models",
                    "prox_settings")))
       .def_readwrite("constraint_models",

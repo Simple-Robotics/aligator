@@ -1,5 +1,6 @@
 /// @file
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+#include <proxsuite-nlp/python/polymorphic.hpp>
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/visitors.hpp"
 
@@ -19,26 +20,29 @@ void exposeStage() {
   using context::StageModel;
   using StageData = StageDataTpl<Scalar>;
 
-  using CostPtr = xyz::polymorphic<context::CostAbstract>;
-  using DynamicsPtr = xyz::polymorphic<context::DynamicsModel>;
-  using FunctionPtr = xyz::polymorphic<context::StageFunction>;
-  using CstrSetPtr = xyz::polymorphic<ConstraintSet>;
+  using PolyCost = xyz::polymorphic<context::CostAbstract>;
+  using PloyDynamics = xyz::polymorphic<context::DynamicsModel>;
+  using PolyFunction = xyz::polymorphic<context::StageFunction>;
+  using PolyCstrSet = xyz::polymorphic<ConstraintSet>;
+  using PolyStage = xyz::polymorphic<StageModel>;
 
-  StdVectorPythonVisitor<std::vector<xyz::polymorphic<StageModel>>,
-                         true>::expose("StdVec_StageModel");
+  proxsuite::nlp::python::register_polymorphic_to_python<PolyStage>();
+  proxsuite::nlp::python::register_polymorphic_to_python<PolyCstrSet>();
+
+  StdVectorPythonVisitor<std::vector<PolyStage>, true>::expose(
+      "StdVec_StageModel");
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-  bp::register_ptr_to_python<xyz::polymorphic<StageModel>>();
   bp::class_<StageModel>(
       "StageModel",
       "A stage of the control problem. Holds costs, dynamics, and constraints.",
-      bp::init<CostPtr, DynamicsPtr>(bp::args("self", "cost", "dynamics")))
+      bp::init<PolyCost, PloyDynamics>(bp::args("self", "cost", "dynamics")))
       .def<void (StageModel::*)(const context::StageConstraint &)>(
           "addConstraint", &StageModel::addConstraint,
           bp::args("self", "constraint"),
           "Add an existing constraint to the stage.")
-      .def<void (StageModel::*)(FunctionPtr, CstrSetPtr)>(
+      .def<void (StageModel::*)(PolyFunction, PolyCstrSet)>(
           "addConstraint", &StageModel::addConstraint,
           bp::args("self", "func", "cstr_set"),
           "Constructs a new constraint (from the underlying function and set) "

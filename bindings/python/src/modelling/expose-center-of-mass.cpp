@@ -35,6 +35,10 @@ void exposeCenterOfMassFunctions() {
   using CentroidalMomentumResidual = CentroidalMomentumResidualTpl<Scalar>;
   using CentroidalMomentumData = CentroidalMomentumDataTpl<Scalar>;
 
+  bp::implicitly_convertible<CenterOfMassTranslation,
+                             xyz::polymorphic<UnaryFunction>>();
+  bp::implicitly_convertible<CenterOfMassTranslation,
+                             xyz::polymorphic<StageFunction>>();
   bp::class_<CenterOfMassTranslation, bp::bases<UnaryFunction>>(
       "CenterOfMassTranslationResidual",
       "A residual function :math:`r(x) = com(x)` ",
@@ -56,6 +60,10 @@ void exposeCenterOfMassFunctions() {
       .def_readonly("pin_data", &CenterOfMassTranslationData::pin_data_,
                     "Pinocchio data struct.");
 
+  bp::implicitly_convertible<CenterOfMassVelocity,
+                             xyz::polymorphic<UnaryFunction>>();
+  bp::implicitly_convertible<CenterOfMassVelocity,
+                             xyz::polymorphic<StageFunction>>();
   bp::class_<CenterOfMassVelocity, bp::bases<UnaryFunction>>(
       "CenterOfMassVelocityResidual",
       "A residual function :math:`r(x) = vcom(x)` ",
@@ -77,6 +85,8 @@ void exposeCenterOfMassFunctions() {
       .def_readonly("pin_data", &CenterOfMassVelocityData::pin_data_,
                     "Pinocchio data struct.");
 
+  bp::implicitly_convertible<CentroidalMomentumDerivativeResidual,
+                             xyz::polymorphic<StageFunction>>();
   bp::class_<CentroidalMomentumDerivativeResidual, bp::bases<StageFunction>>(
       "CentroidalMomentumDerivativeResidual",
       "A residual function :math:`r(x) = H_dot` ",
@@ -97,6 +107,10 @@ void exposeCenterOfMassFunctions() {
       .def_readonly("pin_data", &CentroidalMomentumDerivativeData::pin_data_,
                     "Pinocchio data struct.");
 
+  bp::implicitly_convertible<CentroidalMomentumResidual,
+                             xyz::polymorphic<UnaryFunction>>();
+  bp::implicitly_convertible<CentroidalMomentumResidual,
+                             xyz::polymorphic<StageFunction>>();
   bp::class_<CentroidalMomentumResidual, bp::bases<UnaryFunction>>(
       "CentroidalMomentumResidual", "A residual function :math:`r(x) = H` ",
       bp::init<const int, const int, const PinModel &,
