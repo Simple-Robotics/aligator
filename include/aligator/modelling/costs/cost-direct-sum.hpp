@@ -124,7 +124,7 @@ auto DirectSumCostTpl<Scalar>::createData() const -> shared_ptr<BaseData> {
 template <typename Scalar>
 auto directSum(xyz::polymorphic<CostAbstractTpl<Scalar>> const &c1,
                xyz::polymorphic<CostAbstractTpl<Scalar>> const &c2) {
-  return std::make_shared<DirectSumCostTpl<Scalar>>(c1, c2);
+  return DirectSumCostTpl<Scalar>(c1, c2);
 }
 
 } // namespace aligator

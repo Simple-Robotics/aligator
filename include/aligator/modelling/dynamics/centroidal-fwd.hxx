@@ -8,7 +8,7 @@ namespace dynamics {
 
 template <typename Scalar>
 CentroidalFwdDynamicsTpl<Scalar>::CentroidalFwdDynamicsTpl(
-    const ManifoldPtr &state, const double mass, const Vector3s &gravity,
+    const Manifold &state, const double mass, const Vector3s &gravity,
     const ContactMap &contact_map, const int force_size)
     : Base(state, int(contact_map.getSize()) * force_size), space_(state),
       nk_(contact_map.getSize()), mass_(mass), gravity_(gravity),

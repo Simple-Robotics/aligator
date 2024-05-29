@@ -29,9 +29,9 @@ template <typename _FunType> struct linear_func_composition_impl : _FunType {
                                const ConstMatrixRef A, const ConstVectorRef b)
       : FunType(func->ndx1, func->nu, func->ndx2, (int)A.rows()), func(func),
         A(A), b(b) {
-    if (func == 0) {
-      ALIGATOR_RUNTIME_ERROR("Underlying function cannot be nullptr.");
-    }
+    // if (func == 0) {
+    //   ALIGATOR_RUNTIME_ERROR("Underlying function cannot be nullptr.");
+    // }
     if (A.rows() != b.rows()) {
       ALIGATOR_RUNTIME_ERROR("Incompatible dimensions: A.rows() != b.rows()");
     }
@@ -110,7 +110,7 @@ template <typename Scalar>
 auto linear_compose(xyz::polymorphic<StageFunctionTpl<Scalar>> func,
                     const typename math_types<Scalar>::ConstMatrixRef A,
                     const typename math_types<Scalar>::ConstVectorRef b) {
-  return xyz::polymorphic<LinearFunctionCompositionTpl<Scalar>>(func, A, b);
+  return LinearFunctionCompositionTpl<Scalar>(func, A, b);
 }
 
 /// @copybrief linear_compose This will return a UnaryFunctionTpl.
@@ -118,8 +118,7 @@ template <typename Scalar>
 auto linear_compose(xyz::polymorphic<UnaryFunctionTpl<Scalar>> func,
                     const typename math_types<Scalar>::ConstMatrixRef A,
                     const typename math_types<Scalar>::ConstVectorRef b) {
-  return xyz::polymorphic<LinearUnaryFunctionCompositionTpl<Scalar>>(func, A,
-                                                                     b);
+  return LinearUnaryFunctionCompositionTpl<Scalar>(func, A, b);
 }
 
 } // namespace aligator

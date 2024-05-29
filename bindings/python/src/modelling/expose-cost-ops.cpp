@@ -13,7 +13,8 @@ using context::Scalar;
 using DirectSumCost = DirectSumCostTpl<Scalar>;
 
 void exposeCostOps() {
-  bp::register_ptr_to_python<xyz::polymorphic<DirectSumCost>>();
+  // bp::register_ptr_to_python<xyz::polymorphic<DirectSumCost>>();
+  bp::implicitly_convertible<DirectSumCost, xyz::polymorphic<CostAbstract>>();
   bp::class_<DirectSumCost, bp::bases<CostAbstract>>("DirectSumCost",
                                                      bp::no_init)
       .def(bp::init<xyz::polymorphic<CostAbstract>,

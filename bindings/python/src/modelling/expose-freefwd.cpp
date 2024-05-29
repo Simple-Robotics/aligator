@@ -1,4 +1,5 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+#include "aligator/modelling/dynamics/context.hpp"
 #include "aligator/python/fwd.hpp"
 
 #include "aligator/modelling/dynamics/multibody-free-fwd.hpp"
@@ -10,20 +11,25 @@ void exposeFreeFwdDynamics() {
   using context::Scalar;
   using ODEData = ODEDataTpl<Scalar>;
   using ODEAbstract = ODEAbstractTpl<Scalar>;
+  using ContinuousDynamicsAbstract = ContinuousDynamicsAbstractTpl<Scalar>;
   using MultibodyFreeFwdData = MultibodyFreeFwdDataTpl<Scalar>;
   using MultibodyFreeFwdDynamics = MultibodyFreeFwdDynamicsTpl<Scalar>;
   using proxsuite::nlp::MultibodyPhaseSpace;
 
-  using StateManifoldPtr = xyz::polymorphic<MultibodyPhaseSpace<Scalar>>;
+  using StateManifold = MultibodyPhaseSpace<Scalar>;
 
+  bp::implicitly_convertible<MultibodyFreeFwdDynamics,
+                             xyz::polymorphic<ContinuousDynamicsAbstract>>();
+  bp::implicitly_convertible<MultibodyFreeFwdDynamics,
+                             xyz::polymorphic<ODEAbstract>>();
   bp::class_<MultibodyFreeFwdDynamics, bp::bases<ODEAbstract>>(
       "MultibodyFreeFwdDynamics",
       "Free-space forward dynamics on multibodies using Pinocchio's ABA "
       "algorithm.",
-      bp::init<StateManifoldPtr, const context::MatrixXs &>(
+      bp::init<StateManifold, const context::MatrixXs &>(
           "Constructor where the actuation matrix is provided.",
           bp::args("self", "space", "actuation_matrix")))
-      .def(bp::init<StateManifoldPtr>(
+      .def(bp::init<StateManifold>(
           "Constructor without actuation matrix (assumed to be the (nu,nu) "
           "identity matrix).",
           bp::args("self", "space")))

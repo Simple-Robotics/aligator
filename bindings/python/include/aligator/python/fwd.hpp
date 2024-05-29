@@ -6,6 +6,8 @@
 #include <eigenpy/eigenpy.hpp>
 #include <eigenpy/std-vector.hpp>
 
+#include <proxsuite-nlp/python/polymorphic.hpp>
+
 namespace aligator {
 /// @brief  The Python bindings.
 namespace python {

@@ -16,18 +16,22 @@ void exposeKinodynamics() {
   using context::UnaryFunction;
   using ODEData = ODEDataTpl<Scalar>;
   using ODEAbstract = ODEAbstractTpl<Scalar>;
+  using ContinuousDynamicsAbstract = ContinuousDynamicsAbstractTpl<Scalar>;
   using KinodynamicsFwdData = KinodynamicsFwdDataTpl<Scalar>;
   using KinodynamicsFwdDynamics = KinodynamicsFwdDynamicsTpl<Scalar>;
   using Manifold = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
-  using ManifoldPtr = xyz::polymorphic<Manifold>;
   using Vector3s = typename math_types<Scalar>::Vector3s;
 
   using Model = pinocchio::ModelTpl<Scalar>;
 
+  bp::implicitly_convertible<KinodynamicsFwdDynamics,
+                             xyz::polymorphic<ContinuousDynamicsAbstract>>();
+  bp::implicitly_convertible<KinodynamicsFwdDynamics,
+                             xyz::polymorphic<ODEAbstract>>();
   bp::class_<KinodynamicsFwdDynamics, bp::bases<ODEAbstract>>(
       "KinodynamicsFwdDynamics",
       "Centroidal forward dynamics + kinematics using Pinocchio.",
-      bp::init<const ManifoldPtr &, const Model &, const Vector3s &,
+      bp::init<const Manifold &, const Model &, const Vector3s &,
                const std::vector<bool> &,
                const std::vector<pinocchio::FrameIndex> &, const int>(
           "Constructor.",

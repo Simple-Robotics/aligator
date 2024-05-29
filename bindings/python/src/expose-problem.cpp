@@ -18,29 +18,28 @@ void exposeProblem() {
   using context::TrajOptProblem;
   using context::UnaryFunction;
 
+  using PolyFunction = xyz::polymorphic<UnaryFunction>;
+  using PolyStage = xyz::polymorphic<StageModel>;
+  using PolyCost = xyz::polymorphic<CostAbstract>;
+  using PolyManifold = xyz::polymorphic<Manifold>;
+
   bp::class_<TrajOptProblem>("TrajOptProblem", "Define a shooting problem.",
                              bp::no_init)
-      .def(bp::init<xyz::polymorphic<UnaryFunction>,
-                    const std::vector<xyz::polymorphic<StageModel>> &,
-                    xyz::polymorphic<CostAbstract>>(
+      .def(bp::init<PolyFunction, const std::vector<PolyStage> &, PolyCost>(
           "Constructor adding the initial constraint explicitly.",
           ("self"_a, "init_constraint", "stages", "term_cost")))
-      .def(bp::init<ConstVectorRef,
-                    const std::vector<xyz::polymorphic<StageModel>> &,
-                    xyz::polymorphic<CostAbstract>>(
+      .def(bp::init<ConstVectorRef, const std::vector<PolyStage> &, PolyCost>(
           "Constructor for an initial value problem.",
           ("self"_a, "x0", "stages", "term_cost")))
-      .def(bp::init<xyz::polymorphic<UnaryFunction>,
-                    xyz::polymorphic<CostAbstract>>(
+      .def(bp::init<PolyFunction, PolyCost>(
           "Constructor adding the initial constraint explicitly (without "
           "stages).",
           ("self"_a, "init_constraint", "term_cost")))
-      .def(bp::init<ConstVectorRef, const int, xyz::polymorphic<Manifold>,
-                    xyz::polymorphic<CostAbstract>>(
+      .def(bp::init<ConstVectorRef, const int, PolyManifold, PolyCost>(
           "Constructor for an initial value problem (without pre-allocated "
           "stages).",
           ("self"_a, "x0", "nu", "space", "term_cost")))
-      .def<void (TrajOptProblem::*)(const xyz::polymorphic<StageModel> &)>(
+      .def<void (TrajOptProblem::*)(const PolyStage &)>(
           "addStage", &TrajOptProblem::addStage, ("self"_a, "new_stage"),
           "Add a stage to the problem.")
       .def_readonly("stages", &TrajOptProblem::stages_,
@@ -50,7 +49,7 @@ void exposeProblem() {
       .def_readwrite("term_constraints", &TrajOptProblem::term_cstrs_,
                      "Set of terminal constraints.")
       .add_property("num_steps", &TrajOptProblem::numSteps,
-                    "Number of stages in the problem.")
+                    "Number of stages in the problem.CostPtr")
       .add_property("x0_init", &TrajOptProblem::getInitState,
                     &TrajOptProblem::setInitState, "Initial state.")
       .add_property("init_constraint", &TrajOptProblem::init_condition_,

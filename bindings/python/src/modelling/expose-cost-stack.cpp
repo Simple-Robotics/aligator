@@ -14,9 +14,10 @@ void exposeCostStack() {
   using CostStack = CostStackTpl<Scalar>;
   using CostStackData = CostStackDataTpl<Scalar>;
 
+  bp::implicitly_convertible<CostStack, xyz::polymorphic<CostAbstract>>();
   bp::class_<CostStack, bp::bases<CostAbstract>>(
       "CostStack", "A weighted sum of other cost functions.",
-      bp::init<shared_ptr<Manifold>, int,
+      bp::init<xyz::polymorphic<Manifold>, int,
                const std::vector<xyz::polymorphic<CostAbstract>> &,
                const std::vector<Scalar> &>(("self"_a, "space", "nu",
                                              "components"_a = bp::list(),
