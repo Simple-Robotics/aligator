@@ -27,7 +27,7 @@ void exposeUnaryFunctions() {
   using full_vhp_t = void (UnaryFunction::*)(
       const ConstVectorRef &, const ConstVectorRef &, const ConstVectorRef &,
       const ConstVectorRef &, StageFunctionData &) const;
-  bp::register_ptr_to_python<shared_ptr<UnaryFunction>>();
+  bp::register_ptr_to_python<xyz::polymorphic<UnaryFunction>>();
   bp::class_<PyUnaryFunction<>, bp::bases<StageFunction>, boost::noncopyable>(
       "UnaryFunction",
       "Base class for unary functions of the form :math:`x \\mapsto f(x)`.",

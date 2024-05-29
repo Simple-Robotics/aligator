@@ -28,17 +28,18 @@ void exposeCrocoddylCompat() {
   using ns_croc::context::DynamicsDataWrapper;
   using ns_croc::context::StateWrapper;
 
-  bp::register_ptr_to_python<shared_ptr<ActionModelWrapper>>();
+  bp::register_ptr_to_python<xyz::polymorphic<ActionModelWrapper>>();
   bp::class_<ActionModelWrapper, bp::bases<context::StageModel>>(
       "ActionModelWrapper", "Wrapper for Crocoddyl action models.",
-      bp::init<boost::shared_ptr<CrocActionModel>>(bp::args("action_model")))
+      bp::init<boost::xyz::polymorphic<CrocActionModel>>(
+          bp::args("action_model")))
       .def_readonly("action_model", &ActionModelWrapper::action_model_,
                     "Underlying Crocoddyl ActionModel.");
 
   bp::register_ptr_to_python<shared_ptr<ActionDataWrapper>>();
   bp::class_<ActionDataWrapper, bp::bases<context::StageData>>(
       "ActionDataWrapper", bp::no_init)
-      .def(bp::init<const boost::shared_ptr<CrocActionModel> &>(
+      .def(bp::init<const boost::xyz::polymorphic<CrocActionModel> &>(
           bp::args("self", "croc_action_model")))
       .def_readonly("croc_action_data", &ActionDataWrapper::croc_action_data,
                     "Underlying Crocoddyl action data.");
@@ -49,8 +50,8 @@ void exposeCrocoddylCompat() {
 
   bp::class_<StateWrapper, bp::bases<context::Manifold>>(
       "StateWrapper", "Wrapper for a Crocoddyl state.", bp::no_init)
-      .def(
-          bp::init<boost::shared_ptr<StateAbstract>>(bp::args("self", "state")))
+      .def(bp::init<boost::xyz::polymorphic<StateAbstract>>(
+          bp::args("self", "state")))
       .def_readonly("croc_state", &StateWrapper::croc_state);
 }
 

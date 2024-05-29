@@ -172,7 +172,8 @@ void exposeCentroidalFunctions() {
   bp::class_<CentroidalWrapperResidual, bp::bases<UnaryFunction>>(
       "CentroidalWrapperResidual",
       "A wrapper for centroidal cost with smooth control",
-      bp::init<shared_ptr<StageFunction>>(bp::args("self", "centroidal_cost")))
+      bp::init<xyz::polymorphic<StageFunction>>(
+          bp::args("self", "centroidal_cost")))
       .def_readwrite("centroidal_cost",
                      &CentroidalWrapperResidual::centroidal_cost_)
       .def(CreateDataPythonVisitor<CentroidalWrapperResidual>());

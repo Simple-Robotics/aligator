@@ -1,5 +1,6 @@
 /// @file
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
+#include "aligator/modelling/multibody/context.hpp"
 #ifdef ALIGATOR_WITH_PINOCCHIO
 
 #include "aligator/python/fwd.hpp"
@@ -10,6 +11,7 @@ namespace aligator {
 namespace python {
 
 using context::MultibodyPhaseSpace;
+using context::PinModel;
 using context::Scalar;
 using context::StageFunctionData;
 using context::UnaryFunction;
@@ -21,7 +23,7 @@ void exposeFlyHigh() {
       "A residual function :math:`r(x) = v_{j,xy} e^{-s z_j}` where :math:`j` "
       "is a given frame index.",
       bp::no_init)
-      .def(bp::init<const int, const Model &, pinocchio::FrameIndex, Scalar,
+      .def(bp::init<const int, const PinModel &, pinocchio::FrameIndex, Scalar,
                     std::size_t>(
           bp::args("self", "ndx", "model", "frame_id", "slope", "nu")))
       .def(FrameAPIVisitor<FlyHighResidual>())

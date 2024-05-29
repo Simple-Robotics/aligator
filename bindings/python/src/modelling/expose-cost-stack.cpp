@@ -17,7 +17,7 @@ void exposeCostStack() {
   bp::class_<CostStack, bp::bases<CostAbstract>>(
       "CostStack", "A weighted sum of other cost functions.",
       bp::init<shared_ptr<Manifold>, int,
-               const std::vector<shared_ptr<CostAbstract>> &,
+               const std::vector<xyz::polymorphic<CostAbstract>> &,
                const std::vector<Scalar> &>(("self"_a, "space", "nu",
                                              "components"_a = bp::list(),
                                              "weights"_a = bp::list())))

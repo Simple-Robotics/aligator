@@ -20,25 +20,27 @@ void exposeProblem() {
 
   bp::class_<TrajOptProblem>("TrajOptProblem", "Define a shooting problem.",
                              bp::no_init)
-      .def(bp::init<shared_ptr<UnaryFunction>,
-                    const std::vector<shared_ptr<StageModel>> &,
-                    shared_ptr<CostAbstract>>(
+      .def(bp::init<xyz::polymorphic<UnaryFunction>,
+                    const std::vector<xyz::polymorphic<StageModel>> &,
+                    xyz::polymorphic<CostAbstract>>(
           "Constructor adding the initial constraint explicitly.",
           ("self"_a, "init_constraint", "stages", "term_cost")))
-      .def(bp::init<ConstVectorRef, const std::vector<shared_ptr<StageModel>> &,
-                    shared_ptr<CostAbstract>>(
+      .def(bp::init<ConstVectorRef,
+                    const std::vector<xyz::polymorphic<StageModel>> &,
+                    xyz::polymorphic<CostAbstract>>(
           "Constructor for an initial value problem.",
           ("self"_a, "x0", "stages", "term_cost")))
-      .def(bp::init<shared_ptr<UnaryFunction>, shared_ptr<CostAbstract>>(
+      .def(bp::init<xyz::polymorphic<UnaryFunction>,
+                    xyz::polymorphic<CostAbstract>>(
           "Constructor adding the initial constraint explicitly (without "
           "stages).",
           ("self"_a, "init_constraint", "term_cost")))
-      .def(bp::init<ConstVectorRef, const int, shared_ptr<Manifold>,
-                    shared_ptr<CostAbstract>>(
+      .def(bp::init<ConstVectorRef, const int, xyz::polymorphic<Manifold>,
+                    xyz::polymorphic<CostAbstract>>(
           "Constructor for an initial value problem (without pre-allocated "
           "stages).",
           ("self"_a, "x0", "nu", "space", "term_cost")))
-      .def<void (TrajOptProblem::*)(const shared_ptr<StageModel> &)>(
+      .def<void (TrajOptProblem::*)(const xyz::polymorphic<StageModel> &)>(
           "addStage", &TrajOptProblem::addStage, ("self"_a, "new_stage"),
           "Add a stage to the problem.")
       .def_readonly("stages", &TrajOptProblem::stages_,

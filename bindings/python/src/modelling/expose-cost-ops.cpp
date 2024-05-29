@@ -13,10 +13,11 @@ using context::Scalar;
 using DirectSumCost = DirectSumCostTpl<Scalar>;
 
 void exposeCostOps() {
-  bp::register_ptr_to_python<shared_ptr<DirectSumCost>>();
+  bp::register_ptr_to_python<xyz::polymorphic<DirectSumCost>>();
   bp::class_<DirectSumCost, bp::bases<CostAbstract>>("DirectSumCost",
                                                      bp::no_init)
-      .def(bp::init<shared_ptr<CostAbstract>, shared_ptr<CostAbstract>>(
+      .def(bp::init<xyz::polymorphic<CostAbstract>,
+                    xyz::polymorphic<CostAbstract>>(
           bp::args("self", "cost1", "cost2")))
       .def_readonly("cost1", &DirectSumCost::c1_)
       .def_readonly("cost2", &DirectSumCost::c2_);

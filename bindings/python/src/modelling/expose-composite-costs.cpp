@@ -14,8 +14,8 @@ using context::Manifold;
 using context::MatrixXs;
 using context::Scalar;
 using context::StageFunction;
-using FunctionPtr = shared_ptr<StageFunction>;
-using ManifoldPtr = shared_ptr<Manifold>;
+using FunctionPtr = xyz::polymorphic<StageFunction>;
+using ManifoldPtr = xyz::polymorphic<Manifold>;
 
 void exposeComposites() {
 

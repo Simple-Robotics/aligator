@@ -18,7 +18,7 @@ using context::Scalar;
 using context::VectorXs;
 using internal::PyCostFunction;
 using QuadraticCost = QuadraticCostTpl<Scalar>;
-using CostPtr = shared_ptr<CostAbstract>;
+using CostPtr = xyz::polymorphic<CostAbstract>;
 
 struct CostDataWrapper : CostData, bp::wrapper<CostData> {
   using CostData::CostData;
@@ -28,7 +28,7 @@ void exposeQuadCost() {
 
   bp::class_<ConstantCostTpl<Scalar>, bp::bases<CostAbstract>>(
       "ConstantCost", "A constant cost term.",
-      bp::init<shared_ptr<Manifold>, int, Scalar>(
+      bp::init<xyz::polymorphic<Manifold>, int, Scalar>(
           bp::args("self", "space", "nu", "value")))
       .def_readwrite("value", &ConstantCostTpl<Scalar>::value_)
       .def(CopyableVisitor<ConstantCostTpl<Scalar>>());
@@ -77,7 +77,7 @@ void exposeCostAbstract() {
 
   bp::class_<PyCostFunction<>, boost::noncopyable>(
       "CostAbstract", "Base class for cost functions.", bp::no_init)
-      .def(bp::init<shared_ptr<Manifold>, const int>(
+      .def(bp::init<xyz::polymorphic<Manifold>, const int>(
           bp::args("self", "space", "nu")))
       .def("evaluate", bp::pure_virtual(&CostAbstract::evaluate),
            bp::args("self", "x", "u", "data"), "Evaluate the cost function.")

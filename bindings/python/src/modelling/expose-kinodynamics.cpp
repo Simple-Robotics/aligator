@@ -19,7 +19,7 @@ void exposeKinodynamics() {
   using KinodynamicsFwdData = KinodynamicsFwdDataTpl<Scalar>;
   using KinodynamicsFwdDynamics = KinodynamicsFwdDynamicsTpl<Scalar>;
   using Manifold = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
-  using ManifoldPtr = shared_ptr<Manifold>;
+  using ManifoldPtr = xyz::polymorphic<Manifold>;
   using Vector3s = typename math_types<Scalar>::Vector3s;
 
   using Model = pinocchio::ModelTpl<Scalar>;

@@ -19,15 +19,15 @@ void exposeDynamics() {
 }
 
 using context::DynamicsModel;
-using ManifoldPtr = shared_ptr<context::Manifold>;
+using ManifoldPtr = xyz::polymorphic<context::Manifold>;
 using context::StageFunction;
 
 void exposeDynamicsBase() {
 
   using PyDynamicsModel = internal::PyStageFunction<DynamicsModel>;
 
-  StdVectorPythonVisitor<std::vector<shared_ptr<DynamicsModel>>, true>::expose(
-      "StdVec_Dynamics");
+  StdVectorPythonVisitor<std::vector<xyz::polymorphic<DynamicsModel>>,
+                         true>::expose("StdVec_Dynamics");
 
   bp::class_<PyDynamicsModel, bp::bases<StageFunction>, boost::noncopyable>(
       "DynamicsModel",
