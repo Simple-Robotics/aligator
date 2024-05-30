@@ -36,7 +36,6 @@ using VerboseLevel::VERBOSE;
 using VerboseLevel::VERYVERBOSE;
 
 using std::shared_ptr;
-using std::unique_ptr;
 
 // NOLINTEND(misc-unused-using-decls)
 
