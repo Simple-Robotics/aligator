@@ -97,7 +97,7 @@ struct PyUnaryFunction : UFunction, bp::wrapper<UFunction> {
 template <typename Class>
 struct SlicingVisitor : bp::def_visitor<SlicingVisitor<Class>> {
   using Scalar = typename Class::Scalar;
-  using FS = FunctionSliceXprTpl<Scalar, Class>;
+  using SliceType = FunctionSliceXprTpl<Scalar, Class>;
 
   template <typename Iterator, typename Fn>
   static auto do_with_slice(Fn &&fun, bp::slice::range<Iterator> &range) {
@@ -116,16 +116,16 @@ struct SlicingVisitor : bp::def_visitor<SlicingVisitor<Class>> {
     std::vector<int> out{};
 
     do_with_slice([&](int i) { out.push_back(i); }, bounds);
-    return xyz::polymorphic<FS>(fn, out);
+    return SliceType(fn, out);
   }
 
   static auto get_from_index(xyz::polymorphic<Class> const &fn, const int idx) {
-    return xyz::polymorphic<FS>(fn, idx);
+    return SliceType(fn, idx);
   }
 
   static auto get_from_indices(xyz::polymorphic<Class> const &fn,
                                std::vector<int> const &indices) {
-    return xyz::polymorphic<FS>(fn, indices);
+    return SliceType(fn, indices);
   }
 
   template <typename... Args> void visit(bp::class_<Args...> &cl) const {
