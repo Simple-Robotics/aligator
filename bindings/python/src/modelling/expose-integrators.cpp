@@ -1,3 +1,5 @@
+/// @file
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 
 #include "aligator/core/explicit-dynamics.hpp"
 #include "aligator/python/fwd.hpp"
