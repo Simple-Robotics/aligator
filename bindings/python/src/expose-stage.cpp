@@ -36,34 +36,35 @@ void exposeStage() {
   bp::class_<StageModel>(
       "StageModel",
       "A stage of the control problem. Holds costs, dynamics, and constraints.",
-      bp::init<PolyCost, PolyDynamics>(bp::args("self", "cost", "dynamics")))
+      bp::no_init)
+      .def(bp::init<const PolyCost &, const PolyDynamics &>(
+          ("self"_a, "cost", "dynamics")))
       .def<void (StageModel::*)(const context::StageConstraint &)>(
-          "addConstraint", &StageModel::addConstraint,
-          bp::args("self", "constraint"),
+          "addConstraint", &StageModel::addConstraint, ("self"_a, "constraint"),
           "Add an existing constraint to the stage.")
-      .def<void (StageModel::*)(PolyFunction, PolyCstrSet)>(
+      .def<void (StageModel::*)(const PolyFunction &, const PolyCstrSet &)>(
           "addConstraint", &StageModel::addConstraint,
-          bp::args("self", "func", "cstr_set"),
+          ("self"_a, "func", "cstr_set"),
           "Constructs a new constraint (from the underlying function and set) "
           "and adds it to the stage.")
       .def_readonly("constraints", &StageModel::constraints_,
                     "Get the set of constraints.")
       .def_readonly("dynamics", &StageModel::dynamics_, "Stage dynamics.")
       .add_property("xspace",
-                    bp::make_function(&StageModel::xspace,
-                                      bp::return_internal_reference<>()),
+                    bp::make_getter(&StageModel::xspace_,
+                                    bp::return_internal_reference<>()),
                     "State space for the current state :math:`x_k`.")
       .add_property("xspace_next",
-                    bp::make_function(&StageModel::xspace_next,
-                                      bp::return_internal_reference<>()),
+                    bp::make_getter(&StageModel::xspace_next_,
+                                    bp::return_internal_reference<>()),
                     "State space corresponding to next state :math:`x_{k+1}`.")
       .add_property("uspace",
-                    bp::make_function(&StageModel::uspace,
-                                      bp::return_internal_reference<>()),
+                    bp::make_getter(&StageModel::uspace_,
+                                    bp::return_internal_reference<>()),
                     "Control space.")
       .add_property("cost",
-                    bp::make_function(&StageModel::cost,
-                                      bp::return_internal_reference<>()),
+                    bp::make_getter(&StageModel::cost_,
+                                    bp::return_internal_reference<>()),
                     "Stage cost.")
       .add_property(
           "dyn_model",
@@ -73,19 +74,17 @@ void exposeStage() {
                                 bp::return_internal_reference<>>(
                                 "Deprecated. Use StageModel.dynamics instead")),
           "Stage dynamics.")
-      .def("evaluate", &StageModel::evaluate,
-           bp::args("self", "x", "u", "y", "data"),
+      .def("evaluate", &StageModel::evaluate, ("self"_a, "x", "u", "y", "data"),
            "Evaluate the stage cost, dynamics, constraints.")
       .def("computeFirstOrderDerivatives",
            &StageModel::computeFirstOrderDerivatives,
-           bp::args("self", "x", "u", "y", "data"),
+           ("self"_a, "x", "u", "y", "data"),
            "Compute gradients of the stage cost and jacobians of the dynamics "
            "and "
            "constraints.")
       .def("computeSecondOrderDerivatives",
            &StageModel::computeSecondOrderDerivatives,
-           bp::args("self", "x", "u", "data"),
-           "Compute Hessians of the stage cost.")
+           ("self"_a, "x", "u", "data"), "Compute Hessians of the stage cost.")
       .add_property("ndx1", &StageModel::ndx1)
       .add_property("ndx2", &StageModel::ndx2)
       .add_property("nu", &StageModel::nu, "Control space dimension.")

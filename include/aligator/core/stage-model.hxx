@@ -24,7 +24,8 @@ template <typename T> auto make_vector_space(const int n) {
 /* StageModelTpl */
 
 template <typename Scalar>
-StageModelTpl<Scalar>::StageModelTpl(CostPtr cost, DynamicsPtr dynamics)
+StageModelTpl<Scalar>::StageModelTpl(const PolyCost &cost,
+                                     const PolyDynamics &dynamics)
     : xspace_(dynamics->space_), xspace_next_(dynamics->space_next_),
       uspace_(make_vector_space<Scalar>(dynamics->nu)), cost_(cost),
       dynamics_(dynamics) {
@@ -54,8 +55,8 @@ void StageModelTpl<Scalar>::addConstraint(Cstr &&cstr) {
 }
 
 template <typename Scalar>
-void StageModelTpl<Scalar>::addConstraint(FunctionPtr func,
-                                          ConstraintSetPtr cstr_set) {
+void StageModelTpl<Scalar>::addConstraint(const FunctionPtr &func,
+                                          const ConstraintSetPtr &cstr_set) {
   if (func->nu != this->nu()) {
     ALIGATOR_RUNTIME_ERROR(fmt::format(
         "Function has the wrong dimension for u: got {:d}, expected {:d}",
