@@ -19,5 +19,10 @@ using IntegratorAbstract = dynamics::IntegratorAbstractTpl<Scalar>;
 
 using IntegratorData = dynamics::IntegratorDataTpl<Scalar>;
 
+using ExplicitIntegratorAbstract =
+    dynamics::ExplicitIntegratorAbstractTpl<Scalar>;
+
+using ExplicitIntegratorData = dynamics::ExplicitIntegratorDataTpl<Scalar>;
+
 } // namespace context
 } // namespace aligator
