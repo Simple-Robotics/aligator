@@ -17,6 +17,14 @@ using context::ConstMatrixRef;
 using context::ConstVectorRef;
 using context::PinData;
 using context::PinModel;
+using context::StageFunction;
+using context::UnaryFunction;
+
+/// Declare all required conversions for an UnaryFunction
+template <class T> void declareFunctionConversions() {
+  bp::implicitly_convertible<T, xyz::polymorphic<UnaryFunction>>();
+  bp::implicitly_convertible<T, xyz::polymorphic<StageFunction>>();
+}
 
 // fwd declaration, see expose-fly-high.cpp
 void exposeFlyHigh();
@@ -27,8 +35,6 @@ void exposeCenterOfMassFunctions();
 void exposeFrameFunctions() {
   using context::Manifold;
   using context::Scalar;
-  using context::StageFunction;
-  using context::UnaryFunction;
   using SE3 = pinocchio::SE3Tpl<Scalar>;
   using Motion = pinocchio::MotionTpl<Scalar>;
 
@@ -43,8 +49,7 @@ void exposeFrameFunctions() {
 
   bp::register_ptr_to_python<shared_ptr<PinData>>();
 
-  bp::implicitly_convertible<FramePlacement, xyz::polymorphic<UnaryFunction>>();
-  bp::implicitly_convertible<FramePlacement, xyz::polymorphic<StageFunction>>();
+  declareFunctionConversions<FramePlacement>();
   bp::class_<FramePlacement, bp::bases<UnaryFunction>>(
       "FramePlacementResidual", "Frame placement residual function.",
       bp::init<int, int, const PinModel &, const SE3 &, pinocchio::FrameIndex>(
@@ -66,8 +71,7 @@ void exposeFrameFunctions() {
       .def_readonly("pin_data", &FramePlacementData::pin_data_,
                     "Pinocchio data struct.");
 
-  bp::implicitly_convertible<FrameVelocity, xyz::polymorphic<UnaryFunction>>();
-  bp::implicitly_convertible<FrameVelocity, xyz::polymorphic<StageFunction>>();
+  declareFunctionConversions<FrameVelocity>();
   bp::class_<FrameVelocity, bp::bases<UnaryFunction>>(
       "FrameVelocityResidual", "Frame velocity residual function.",
       bp::init<int, int, const PinModel &, const Motion &,
@@ -87,10 +91,7 @@ void exposeFrameFunctions() {
       .def_readonly("pin_data", &FrameVelocityData::pin_data_,
                     "Pinocchio data struct.");
 
-  bp::implicitly_convertible<FrameTranslation,
-                             xyz::polymorphic<UnaryFunction>>();
-  bp::implicitly_convertible<FrameTranslation,
-                             xyz::polymorphic<StageFunction>>();
+  declareFunctionConversions<FrameTranslation>();
   bp::class_<FrameTranslation, bp::bases<UnaryFunction>>(
       "FrameTranslationResidual", "Frame placement residual function.",
       bp::init<int, int, const PinModel &, const context::Vector3s &,
