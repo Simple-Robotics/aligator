@@ -4,6 +4,7 @@
 #include "aligator/python/functions.hpp"
 #include "aligator/python/modelling/explicit-dynamics.hpp"
 
+#include "aligator/modelling/dynamics/context.hpp"
 #include "aligator/modelling/dynamics/integrator-abstract.hpp"
 #include "aligator/modelling/dynamics/integrator-euler.hpp"
 #include "aligator/modelling/dynamics/integrator-rk2.hpp"
@@ -12,20 +13,36 @@
 
 namespace aligator {
 namespace python {
+using context::Scalar;
+using namespace aligator::dynamics;
+using context::DynamicsModel;
+using context::ExplicitDynamics;
+using context::ExplicitDynamicsData;
+using context::ExplicitIntegratorAbstract;
+using context::ExplicitIntegratorData;
+using context::IntegratorAbstract;
+
+/// Declare all required conversions for an integrator
+template <class T> void declareIntegratorConversions() {
+  bp::implicitly_convertible<T, xyz::polymorphic<DynamicsModel>>();
+  bp::implicitly_convertible<T, xyz::polymorphic<IntegratorAbstract>>();
+}
+
+/// Declare all required conversions for an explicit integrator
+template <class T> void declareExplicitIntegratorConversions() {
+  bp::implicitly_convertible<T, xyz::polymorphic<ExplicitIntegratorAbstract>>();
+  bp::implicitly_convertible<T, xyz::polymorphic<ExplicitDynamics>>();
+  bp::implicitly_convertible<T, xyz::polymorphic<DynamicsModel>>();
+}
 
 void exposeIntegrators() {
-  using context::Scalar;
-  using namespace aligator::dynamics;
-
-  using ExplicitDynamicsModel = ExplicitDynamicsModelTpl<Scalar>;
-  using IntegratorAbstract = IntegratorAbstractTpl<Scalar>;
   using DAEType = ContinuousDynamicsAbstractTpl<Scalar>;
   using ODEType = ODEAbstractTpl<Scalar>;
 
   //// GENERIC INTEGRATORS
 
   using PyIntegratorAbstract = internal::PyStageFunction<IntegratorAbstract>;
-  bp::class_<PyIntegratorAbstract, bp::bases<context::DynamicsModel>,
+  bp::class_<PyIntegratorAbstract, bp::bases<DynamicsModel>,
              boost::noncopyable>("IntegratorAbstract",
                                  "Base class for numerical integrators.",
                                  bp::init<const xyz::polymorphic<DAEType> &>(
@@ -61,18 +78,14 @@ void exposeIntegrators() {
       .def_readwrite("differential_dynamics", &ExplicitIntegratorAbstract::ode_,
                      "The underlying differential equation.");
 
-  bp::register_ptr_to_python<shared_ptr<ExplicitIntegratorDataTpl<Scalar>>>();
-  bp::class_<ExplicitIntegratorDataTpl<Scalar>,
-             bp::bases<ExplicitDynamicsDataTpl<Scalar>>>(
+  bp::register_ptr_to_python<shared_ptr<ExplicitIntegratorData>>();
+  bp::class_<ExplicitIntegratorData, bp::bases<ExplicitDynamicsData>>(
       "ExplicitIntegratorData", "Data struct for explicit time integrators.",
       bp::no_init)
       .def_readwrite("continuous_data",
-                     &ExplicitIntegratorDataTpl<Scalar>::continuous_data);
+                     &ExplicitIntegratorData::continuous_data);
 
-  bp::implicitly_convertible<IntegratorEulerTpl<Scalar>,
-                             xyz::polymorphic<ExplicitIntegratorAbstract>>();
-  bp::implicitly_convertible<IntegratorEulerTpl<Scalar>,
-                             xyz::polymorphic<ExplicitDynamicsModel>>();
+  declareExplicitIntegratorConversions<IntegratorEulerTpl<Scalar>>();
   bp::class_<IntegratorEulerTpl<Scalar>, bp::bases<ExplicitIntegratorAbstract>>(
       "IntegratorEuler",
       "The explicit Euler integrator :math:`x' = x \\oplus \\Delta t f(x, u)`; "
@@ -83,10 +96,7 @@ void exposeIntegrators() {
       .def_readwrite("timestep", &IntegratorEulerTpl<Scalar>::timestep_,
                      "Time step.");
 
-  bp::implicitly_convertible<IntegratorSemiImplEulerTpl<Scalar>,
-                             xyz::polymorphic<ExplicitIntegratorAbstract>>();
-  bp::implicitly_convertible<IntegratorEulerTpl<Scalar>,
-                             xyz::polymorphic<ExplicitDynamicsModel>>();
+  declareExplicitIntegratorConversions<IntegratorSemiImplEulerTpl<Scalar>>();
   bp::class_<IntegratorSemiImplEulerTpl<Scalar>,
              bp::bases<ExplicitIntegratorAbstract>>(
       "IntegratorSemiImplEuler", "The semi implicit Euler integrator.",
@@ -95,30 +105,25 @@ void exposeIntegrators() {
       .def_readwrite("timestep", &IntegratorSemiImplEulerTpl<Scalar>::timestep_,
                      "Time step.");
   bp::class_<IntegratorSemiImplDataTpl<Scalar>,
-             bp::bases<ExplicitIntegratorDataTpl<Scalar>>>(
-      "IntegratorSemiImplData", bp::no_init);
+             bp::bases<ExplicitIntegratorData>>("IntegratorSemiImplData",
+                                                bp::no_init);
 
-  bp::implicitly_convertible<IntegratorRK2Tpl<Scalar>,
-                             xyz::polymorphic<ExplicitIntegratorAbstract>>();
-  bp::implicitly_convertible<IntegratorEulerTpl<Scalar>,
-                             xyz::polymorphic<ExplicitDynamicsModel>>();
+  declareExplicitIntegratorConversions<IntegratorRK2Tpl<Scalar>>();
   bp::class_<IntegratorRK2Tpl<Scalar>, bp::bases<ExplicitIntegratorAbstract>>(
       "IntegratorRK2", bp::init<xyz::polymorphic<ODEType>, Scalar>(
                            bp::args("self", "ode", "timestep")))
       .def_readwrite("timestep", &IntegratorRK2Tpl<Scalar>::timestep_,
                      "Time step.");
 
-  bp::class_<IntegratorRK2DataTpl<Scalar>,
-             bp::bases<ExplicitIntegratorDataTpl<Scalar>>>("IntegratorRK2Data",
-                                                           bp::no_init);
+  bp::class_<IntegratorRK2DataTpl<Scalar>, bp::bases<ExplicitIntegratorData>>(
+      "IntegratorRK2Data", bp::no_init);
 
-  using MidpointType = IntegratorMidpointTpl<Scalar>;
-  bp::implicitly_convertible<MidpointType,
-                             xyz::polymorphic<IntegratorAbstract>>();
-  bp::class_<MidpointType, bp::bases<IntegratorAbstract>>(
+  using MidpointIntegrator = IntegratorMidpointTpl<Scalar>;
+  declareIntegratorConversions<MidpointIntegrator>();
+  bp::class_<MidpointIntegrator, bp::bases<IntegratorAbstract>>(
       "IntegratorMidpoint", bp::init<xyz::polymorphic<DAEType>, Scalar>(
                                 bp::args("self", "dae", "timestep")))
-      .def_readwrite("timestep", &MidpointType::timestep_, "Time step.");
+      .def_readwrite("timestep", &MidpointIntegrator::timestep_, "Time step.");
 
   bp::register_ptr_to_python<shared_ptr<IntegratorMidpointDataTpl<Scalar>>>();
   bp::class_<IntegratorMidpointDataTpl<Scalar>,
