@@ -27,7 +27,6 @@ void exposeStage() {
   using PolyStage = xyz::polymorphic<StageModel>;
 
   proxsuite::nlp::python::register_polymorphic_to_python<PolyStage>();
-  proxsuite::nlp::python::register_polymorphic_to_python<PolyCstrSet>();
 
   StdVectorPythonVisitor<std::vector<PolyStage>, true>::expose(
       "StdVec_StageModel");
