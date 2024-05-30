@@ -4,6 +4,8 @@
 #include <proxsuite-nlp/python/polymorphic.hpp>
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/eigen-member.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
+
 #include "aligator/modelling/function-xpr-slice.hpp"
 #include "aligator/modelling/linear-function-composition.hpp"
 
@@ -22,9 +24,7 @@ template <typename Base> void exposeSliceExpression(const char *name) {
 
   using FunctionSliceXpr = FunctionSliceXprTpl<Scalar, Base>;
 
-  proxsuite::nlp::python::register_polymorphic_to_python<
-      xyz::polymorphic<FunctionSliceXpr>>();
-  bp::implicitly_convertible<FunctionSliceXpr, xyz::polymorphic<Base>>();
+  convertibleToPolymorphicBases<FunctionSliceXpr, Base, StageFunction>();
   bp::class_<FunctionSliceXpr, bp::bases<Base>>(
       name,
       "Represents a slice of an expression according to either a single index "
@@ -84,21 +84,14 @@ void exposeFunctionExpressions() {
   using LinearUnaryFunctionComposition =
       LinearUnaryFunctionCompositionTpl<Scalar>;
 
-  proxsuite::nlp::python::register_polymorphic_to_python<
-      xyz::polymorphic<LinearFunctionComposition>>();
-  bp::implicitly_convertible<LinearFunctionComposition,
-                             xyz::polymorphic<StageFunction>>();
+  convertibleToPolymorphicBases<LinearFunctionComposition, StageFunction>();
   bp::class_<LinearFunctionComposition, bp::bases<StageFunction>>(
       "LinearFunctionComposition",
       "Function composition :math:`r(x) = Af(x, u, y) + b`.", bp::no_init)
       .def(LinFunctionCompositionVisitor<LinearFunctionComposition>());
 
-  proxsuite::nlp::python::register_polymorphic_to_python<
-      xyz::polymorphic<LinearUnaryFunctionComposition>>();
-  bp::implicitly_convertible<LinearUnaryFunctionComposition,
-                             xyz::polymorphic<UnaryFunction>>();
-  bp::implicitly_convertible<LinearUnaryFunctionComposition,
-                             xyz::polymorphic<StageFunction>>();
+  convertibleToPolymorphicBases<LinearUnaryFunctionComposition, StageFunction,
+                                UnaryFunction>();
   bp::class_<LinearUnaryFunctionComposition, bp::bases<UnaryFunction>>(
       "LinearUnaryFunctionComposition",
       "Function composition for unary functions: :math:`r(x) = Af(x) + b`.",
