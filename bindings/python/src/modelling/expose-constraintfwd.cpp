@@ -5,6 +5,7 @@
 #ifdef ALIGATOR_PINOCCHIO_V3
 
 #include "aligator/modelling/dynamics/multibody-constraint-fwd.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {

@@ -3,6 +3,7 @@
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/functions.hpp"
 #include "aligator/python/modelling/explicit-dynamics.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
 
 #include "aligator/modelling/dynamics/context.hpp"
 #include "aligator/modelling/dynamics/integrator-abstract.hpp"
@@ -10,8 +11,6 @@
 #include "aligator/modelling/dynamics/integrator-rk2.hpp"
 #include "aligator/modelling/dynamics/integrator-semi-euler.hpp"
 #include "aligator/modelling/dynamics/integrator-midpoint.hpp"
-
-#include "../polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {
