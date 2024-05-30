@@ -4,6 +4,7 @@
 
 #ifdef ALIGATOR_PINOCCHIO_V3
 
+#include "aligator/modelling/dynamics/context.hpp"
 #include "aligator/modelling/dynamics/multibody-constraint-fwd.hpp"
 #include "aligator/python/polymorphic-convertible.hpp"
 
@@ -25,13 +26,16 @@ using RigidConstraintDataVector =
 
 void exposeConstrainedFwdDynamics() {
   using namespace aligator::dynamics;
+  using context::ContinuousDynamicsAbstract;
+  using context::ODEAbstract;
+  using context::ODEData;
   using context::Scalar;
-  using ODEData = ODEDataTpl<Scalar>;
-  using ODEAbstract = ODEAbstractTpl<Scalar>;
   using MultibodyConstraintFwdData = MultibodyConstraintFwdDataTpl<Scalar>;
   using MultibodyConstraintFwdDynamics =
       MultibodyConstraintFwdDynamicsTpl<Scalar>;
 
+  convertibleToPolymorphicBases<MultibodyConstraintFwdDynamics, ODEAbstract,
+                                ContinuousDynamicsAbstract>();
   bp::class_<MultibodyConstraintFwdDynamics, bp::bases<ODEAbstract>>(
       "MultibodyConstraintFwdDynamics",
       "Constraint forward dynamics using Pinocchio.",
