@@ -138,7 +138,7 @@ public:
   Workspace workspace_;
   Results results_;
   /// LQR subproblem solver
-  unique_ptr<gar::RiccatiSolverBase<Scalar>> linearSolver_;
+  std::unique_ptr<gar::RiccatiSolverBase<Scalar>> linearSolver_;
   Filter filter_;
 
 private:
