@@ -29,8 +29,10 @@ void exposeStage() {
   proxsuite::nlp::python::register_polymorphic_to_python<PolyStage>();
   bp::implicitly_convertible<StageModel, PolyStage>();
 
-  StdVectorPythonVisitor<std::vector<PolyStage>, true>::expose(
-      "StdVec_StageModel");
+  using StageVec = std::vector<PolyStage>;
+  StdVectorPythonVisitor<StageVec, true>::expose(
+      "StdVec_StageModel",
+      eigenpy::details::overload_base_get_item_for_std_vector<StageVec>());
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
