@@ -21,7 +21,7 @@ void exposeStage() {
   using StageData = StageDataTpl<Scalar>;
 
   using PolyCost = xyz::polymorphic<context::CostAbstract>;
-  using PloyDynamics = xyz::polymorphic<context::DynamicsModel>;
+  using PolyDynamics = xyz::polymorphic<context::DynamicsModel>;
   using PolyFunction = xyz::polymorphic<context::StageFunction>;
   using PolyCstrSet = xyz::polymorphic<ConstraintSet>;
   using PolyStage = xyz::polymorphic<StageModel>;
@@ -36,7 +36,7 @@ void exposeStage() {
   bp::class_<StageModel>(
       "StageModel",
       "A stage of the control problem. Holds costs, dynamics, and constraints.",
-      bp::init<PolyCost, PloyDynamics>(bp::args("self", "cost", "dynamics")))
+      bp::init<PolyCost, PolyDynamics>(bp::args("self", "cost", "dynamics")))
       .def<void (StageModel::*)(const context::StageConstraint &)>(
           "addConstraint", &StageModel::addConstraint,
           bp::args("self", "constraint"),
