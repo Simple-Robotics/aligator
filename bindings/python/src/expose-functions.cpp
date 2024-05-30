@@ -3,6 +3,7 @@
 #include <proxsuite-nlp/python/polymorphic.hpp>
 #include "aligator/python/functions.hpp"
 #include "aligator/python/eigen-member.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
 
 #include "aligator/modelling/state-error.hpp"
 #include "aligator/modelling/linear-function.hpp"
@@ -53,7 +54,7 @@ void exposeFunctionBase() {
       .def_readonly("ndx2", &StageFunction::ndx2, "Next state space.")
       .def_readonly("nu", &StageFunction::nu, "Control dimension.")
       .def_readonly("nr", &StageFunction::nr, "Function codimension.")
-      //.def(SlicingVisitor<StageFunction>())
+      // .def(SlicingVisitor<StageFunction>())
       .def(CreateDataPolymorphicPythonVisitor<StageFunction,
                                               PyStageFunction<>>());
 
@@ -141,10 +142,8 @@ void exposeFunctions() {
   exposeUnaryFunctions();
   exposeFunctionExpressions();
 
-  bp::implicitly_convertible<StateErrorResidual,
-                             xyz::polymorphic<UnaryFunction>>();
-  bp::implicitly_convertible<StateErrorResidual,
-                             xyz::polymorphic<StageFunction>>();
+  convertibleToPolymorphicBases<StateErrorResidual, UnaryFunction,
+                                StageFunction>();
   bp::class_<StateErrorResidual, bp::bases<UnaryFunction>>(
       "StateErrorResidual",
       bp::init<const xyz::polymorphic<context::Manifold> &, const int,
@@ -153,8 +152,7 @@ void exposeFunctions() {
       .def_readonly("space", &StateErrorResidual::space_)
       .def_readwrite("target", &StateErrorResidual::target_);
 
-  bp::implicitly_convertible<ControlErrorResidual,
-                             xyz::polymorphic<StageFunction>>();
+  convertibleToPolymorphicBases<ControlErrorResidual, StageFunction>();
   bp::class_<ControlErrorResidual, bp::bases<StageFunction>>(
       "ControlErrorResidual",
       bp::init<const int, const xyz::polymorphic<context::Manifold> &,
@@ -167,7 +165,7 @@ void exposeFunctions() {
       .def_readwrite("target", &ControlErrorResidual::target_);
 
   using LinearFunction = LinearFunctionTpl<Scalar>;
-  bp::implicitly_convertible<LinearFunction, xyz::polymorphic<StageFunction>>();
+  convertibleToPolymorphicBases<LinearFunction, StageFunction>();
   bp::class_<LinearFunction, bp::bases<StageFunction>>(
       "LinearFunction", bp::init<const int, const int, const int, const int>(
                             bp::args("self", "ndx1", "nu", "ndx2", "nr")))
@@ -183,8 +181,7 @@ void exposeFunctions() {
       .def_readonly("C", &LinearFunction::C_)
       .def_readonly("d", &LinearFunction::d_);
 
-  bp::implicitly_convertible<ControlBoxFunctionTpl<Scalar>,
-                             xyz::polymorphic<StageFunction>>();
+  convertibleToPolymorphicBases<ControlBoxFunctionTpl<Scalar>, StageFunction>();
   bp::class_<ControlBoxFunctionTpl<Scalar>, bp::bases<StageFunction>>(
       "ControlBoxFunction",
       bp::init<const int, const VectorXs &, const VectorXs &>(

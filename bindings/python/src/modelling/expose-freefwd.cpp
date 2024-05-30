@@ -3,6 +3,7 @@
 #include "aligator/python/fwd.hpp"
 
 #include "aligator/modelling/dynamics/multibody-free-fwd.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {
@@ -18,10 +19,8 @@ void exposeFreeFwdDynamics() {
 
   using StateManifold = MultibodyPhaseSpace<Scalar>;
 
-  bp::implicitly_convertible<MultibodyFreeFwdDynamics,
-                             xyz::polymorphic<ContinuousDynamicsAbstract>>();
-  bp::implicitly_convertible<MultibodyFreeFwdDynamics,
-                             xyz::polymorphic<ODEAbstract>>();
+  convertibleToPolymorphicBases<MultibodyFreeFwdDynamics,
+                                ContinuousDynamicsAbstract, ODEAbstract>();
   bp::class_<MultibodyFreeFwdDynamics, bp::bases<ODEAbstract>>(
       "MultibodyFreeFwdDynamics",
       "Free-space forward dynamics on multibodies using Pinocchio's ABA "
