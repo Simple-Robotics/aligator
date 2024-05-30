@@ -26,12 +26,12 @@ public:
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using ManifoldPtr = xyz::polymorphic<Manifold>;
   using Dynamics = DynamicsModelTpl<Scalar>;
-  using DynamicsPtr = xyz::polymorphic<Dynamics>;
+  using PolyDynamics = xyz::polymorphic<Dynamics>;
   using FunctionPtr = xyz::polymorphic<StageFunctionTpl<Scalar>>;
   using ConstraintSetPtr = xyz::polymorphic<ConstraintSetBase<Scalar>>;
   using Constraint = StageConstraintTpl<Scalar>;
   using Cost = CostAbstractTpl<Scalar>;
-  using CostPtr = xyz::polymorphic<Cost>;
+  using PolyCost = xyz::polymorphic<Cost>;
   using Data = StageDataTpl<Scalar>;
 
   /// State space for the current state \f$x_k\f$.
@@ -43,13 +43,13 @@ public:
   /// Constraint manager.
   ConstraintStackTpl<Scalar> constraints_;
   /// Stage cost function.
-  CostPtr cost_;
+  PolyCost cost_;
   /// Dynamics model
-  DynamicsPtr dynamics_;
+  PolyDynamics dynamics_;
 
   /// Constructor assumes the control space is a Euclidean space of
   /// dimension @p nu.
-  StageModelTpl(CostPtr cost, DynamicsPtr dynamics);
+  StageModelTpl(const PolyCost &cost, const PolyDynamics &dynamics);
   virtual ~StageModelTpl() = default;
 
   const Manifold &xspace() const { return *xspace_; }
@@ -86,7 +86,7 @@ public:
 
   /// @copybrief  addConstraint().
   /// @details    Adds a constraint by allocating a new StageConstraintTpl.
-  void addConstraint(FunctionPtr func, ConstraintSetPtr cstr_set);
+  void addConstraint(const FunctionPtr &func, const ConstraintSetPtr &cstr_set);
 
   /* Evaluate costs, constraints, ... */
 
