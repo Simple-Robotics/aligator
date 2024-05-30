@@ -11,6 +11,8 @@
 #include "aligator/modelling/dynamics/integrator-semi-euler.hpp"
 #include "aligator/modelling/dynamics/integrator-midpoint.hpp"
 
+#include "../polymorphic-convertible.hpp"
+
 namespace aligator {
 namespace python {
 using context::Scalar;
@@ -24,15 +26,13 @@ using context::IntegratorAbstract;
 
 /// Declare all required conversions for an integrator
 template <class T> void declareIntegratorConversions() {
-  bp::implicitly_convertible<T, xyz::polymorphic<DynamicsModel>>();
-  bp::implicitly_convertible<T, xyz::polymorphic<IntegratorAbstract>>();
+  convertibleToPolymorphicBases<T, DynamicsModel, IntegratorAbstract>();
 }
 
 /// Declare all required conversions for an explicit integrator
 template <class T> void declareExplicitIntegratorConversions() {
-  bp::implicitly_convertible<T, xyz::polymorphic<ExplicitIntegratorAbstract>>();
-  bp::implicitly_convertible<T, xyz::polymorphic<ExplicitDynamics>>();
-  bp::implicitly_convertible<T, xyz::polymorphic<DynamicsModel>>();
+  convertibleToPolymorphicBases<T, ExplicitIntegratorAbstract, ExplicitDynamics,
+                                DynamicsModel>();
 }
 
 void exposeIntegrators() {
