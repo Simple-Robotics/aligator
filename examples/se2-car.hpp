@@ -72,8 +72,6 @@ inline auto create_se2_problem(std::size_t nsteps) {
   }
   const VectorXs x_target = space.neutral();
 
-  auto state_err = std::make_shared<StateError>(space, nu, x_target);
-
   MatrixXs w_x = MatrixXs::Zero(ndx, ndx);
   w_x.diagonal().array() = 0.01;
   MatrixXs w_term = w_x * 10;
