@@ -8,6 +8,7 @@
 #ifdef ALIGATOR_PINOCCHIO_V3
 #include "aligator/modelling/multibody/contact-force.hpp"
 #include "aligator/modelling/multibody/multibody-wrench-cone.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {
@@ -35,8 +36,7 @@ void exposeContactForce() {
   using MultibodyWrenchConeResidual = MultibodyWrenchConeResidualTpl<Scalar>;
   using MultibodyWrenchConeData = MultibodyWrenchConeDataTpl<Scalar>;
 
-  bp::implicitly_convertible<ContactForceResidual,
-                             xyz::polymorphic<StageFunction>>();
+  convertibleToPolymorphicBases<ContactForceResidual, StageFunction>();
   bp::class_<ContactForceResidual, bp::bases<StageFunction>>(
       "ContactForceResidual",
       "A residual function :math:`r(x) = v_{j,xy} e^{-s z_j}` where :math:`j` "
@@ -63,8 +63,7 @@ void exposeContactForce() {
       .def_readwrite("pin_data", &ContactForceData::pin_data_)
       .def_readwrite("constraint_datas", &ContactForceData::constraint_datas_);
 
-  bp::implicitly_convertible<MultibodyWrenchConeResidual,
-                             xyz::polymorphic<StageFunction>>();
+  convertibleToPolymorphicBases<MultibodyWrenchConeResidual, StageFunction>();
   bp::class_<MultibodyWrenchConeResidual, bp::bases<StageFunction>>(
       "MultibodyWrenchConeResidual", "A residual function :math:`r(x) = Af` ",
       bp::no_init)

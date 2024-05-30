@@ -7,6 +7,7 @@
 #include "aligator/modelling/multibody/frame-placement.hpp"
 #include "aligator/modelling/multibody/frame-velocity.hpp"
 #include "aligator/modelling/multibody/frame-translation.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
 #ifdef ALIGATOR_PINOCCHIO_V3
 #include "aligator/modelling/multibody/constrained-rnea.hpp"
 #endif
@@ -19,12 +20,6 @@ using context::PinData;
 using context::PinModel;
 using context::StageFunction;
 using context::UnaryFunction;
-
-/// Declare all required conversions for an UnaryFunction
-template <class T> void declareFunctionConversions() {
-  bp::implicitly_convertible<T, xyz::polymorphic<UnaryFunction>>();
-  bp::implicitly_convertible<T, xyz::polymorphic<StageFunction>>();
-}
 
 // fwd declaration, see expose-fly-high.cpp
 void exposeFlyHigh();
@@ -49,7 +44,7 @@ void exposeFrameFunctions() {
 
   bp::register_ptr_to_python<shared_ptr<PinData>>();
 
-  declareFunctionConversions<FramePlacement>();
+  convertibleToPolymorphicBases<FramePlacement, UnaryFunction, StageFunction>();
   bp::class_<FramePlacement, bp::bases<UnaryFunction>>(
       "FramePlacementResidual", "Frame placement residual function.",
       bp::init<int, int, const PinModel &, const SE3 &, pinocchio::FrameIndex>(
@@ -71,7 +66,7 @@ void exposeFrameFunctions() {
       .def_readonly("pin_data", &FramePlacementData::pin_data_,
                     "Pinocchio data struct.");
 
-  declareFunctionConversions<FrameVelocity>();
+  convertibleToPolymorphicBases<FrameVelocity, UnaryFunction, StageFunction>();
   bp::class_<FrameVelocity, bp::bases<UnaryFunction>>(
       "FrameVelocityResidual", "Frame velocity residual function.",
       bp::init<int, int, const PinModel &, const Motion &,
@@ -91,7 +86,8 @@ void exposeFrameFunctions() {
       .def_readonly("pin_data", &FrameVelocityData::pin_data_,
                     "Pinocchio data struct.");
 
-  declareFunctionConversions<FrameTranslation>();
+  convertibleToPolymorphicBases<FrameTranslation, UnaryFunction,
+                                StageFunction>();
   bp::class_<FrameTranslation, bp::bases<UnaryFunction>>(
       "FrameTranslationResidual", "Frame placement residual function.",
       bp::init<int, int, const PinModel &, const context::Vector3s &,

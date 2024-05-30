@@ -3,6 +3,7 @@
 #include "aligator/python/visitors.hpp"
 #include "aligator/python/modelling/explicit-dynamics.hpp"
 #include "aligator/modelling/linear-discrete-dynamics.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {
@@ -74,10 +75,8 @@ void exposeLinearDiscreteDynamics() {
   using context::VectorXs;
   using namespace aligator::dynamics;
 
-  bp::implicitly_convertible<LinearDiscreteDynamicsTpl<Scalar>,
-                             xyz::polymorphic<ExplicitDynamics>>();
-  bp::implicitly_convertible<LinearDiscreteDynamicsTpl<Scalar>,
-                             xyz::polymorphic<DynamicsModel>>();
+  convertibleToPolymorphicBases<LinearDiscreteDynamicsTpl<Scalar>,
+                                ExplicitDynamics, DynamicsModel>();
   bp::class_<LinearDiscreteDynamicsTpl<Scalar>,
              bp::bases<context::ExplicitDynamics>>(
       "LinearDiscreteDynamics",

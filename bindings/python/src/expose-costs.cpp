@@ -6,6 +6,7 @@
 
 #include "aligator/modelling/costs/quad-costs.hpp"
 #include "aligator/modelling/costs/constant-cost.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {
@@ -27,8 +28,7 @@ struct CostDataWrapper : CostData, bp::wrapper<CostData> {
 
 void exposeQuadCost() {
 
-  bp::implicitly_convertible<ConstantCostTpl<Scalar>,
-                             xyz::polymorphic<CostAbstract>>();
+  convertibleToPolymorphicBases<ConstantCostTpl<Scalar>, CostAbstract>();
   bp::class_<ConstantCostTpl<Scalar>, bp::bases<CostAbstract>>(
       "ConstantCost", "A constant cost term.",
       bp::init<xyz::polymorphic<Manifold>, int, Scalar>(
@@ -36,7 +36,7 @@ void exposeQuadCost() {
       .def_readwrite("value", &ConstantCostTpl<Scalar>::value_)
       .def(CopyableVisitor<ConstantCostTpl<Scalar>>());
 
-  bp::implicitly_convertible<QuadraticCost, xyz::polymorphic<CostAbstract>>();
+  convertibleToPolymorphicBases<QuadraticCost, CostAbstract>();
   bp::class_<QuadraticCost, bp::bases<CostAbstract>>(
       "QuadraticCost",
       "Quadratic cost in both state and control - only for Euclidean spaces.",

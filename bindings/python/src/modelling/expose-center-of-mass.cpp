@@ -8,6 +8,7 @@
 #include "aligator/modelling/multibody/centroidal-momentum.hpp"
 #include "aligator/modelling/multibody/centroidal-momentum-derivative.hpp"
 #include "aligator/modelling/contact-map.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {
@@ -19,12 +20,6 @@ using context::StageFunction;
 using context::StageFunctionData;
 using context::UnaryFunction;
 using ContactMap = ContactMapTpl<Scalar>;
-
-/// Declare all required conversions for an UnaryFunction
-template <class T> void declareFunctionConversions() {
-  bp::implicitly_convertible<T, xyz::polymorphic<UnaryFunction>>();
-  bp::implicitly_convertible<T, xyz::polymorphic<StageFunction>>();
-}
 
 void exposeCenterOfMassFunctions() {
   using CenterOfMassTranslation = CenterOfMassTranslationResidualTpl<Scalar>;
@@ -41,7 +36,8 @@ void exposeCenterOfMassFunctions() {
   using CentroidalMomentumResidual = CentroidalMomentumResidualTpl<Scalar>;
   using CentroidalMomentumData = CentroidalMomentumDataTpl<Scalar>;
 
-  declareFunctionConversions<CenterOfMassTranslation>();
+  convertibleToPolymorphicBases<CenterOfMassTranslation, UnaryFunction,
+                                StageFunction>();
   bp::class_<CenterOfMassTranslation, bp::bases<UnaryFunction>>(
       "CenterOfMassTranslationResidual",
       "A residual function :math:`r(x) = com(x)` ",
@@ -63,7 +59,8 @@ void exposeCenterOfMassFunctions() {
       .def_readonly("pin_data", &CenterOfMassTranslationData::pin_data_,
                     "Pinocchio data struct.");
 
-  declareFunctionConversions<CenterOfMassVelocity>();
+  convertibleToPolymorphicBases<CenterOfMassVelocity, UnaryFunction,
+                                StageFunction>();
   bp::class_<CenterOfMassVelocity, bp::bases<UnaryFunction>>(
       "CenterOfMassVelocityResidual",
       "A residual function :math:`r(x) = vcom(x)` ",
@@ -85,8 +82,8 @@ void exposeCenterOfMassFunctions() {
       .def_readonly("pin_data", &CenterOfMassVelocityData::pin_data_,
                     "Pinocchio data struct.");
 
-  bp::implicitly_convertible<CentroidalMomentumDerivativeResidual,
-                             xyz::polymorphic<StageFunction>>();
+  convertibleToPolymorphicBases<CentroidalMomentumDerivativeResidual,
+                                StageFunction>();
   bp::class_<CentroidalMomentumDerivativeResidual, bp::bases<StageFunction>>(
       "CentroidalMomentumDerivativeResidual",
       "A residual function :math:`r(x) = H_dot` ",
@@ -107,7 +104,8 @@ void exposeCenterOfMassFunctions() {
       .def_readonly("pin_data", &CentroidalMomentumDerivativeData::pin_data_,
                     "Pinocchio data struct.");
 
-  declareFunctionConversions<CentroidalMomentumResidual>();
+  convertibleToPolymorphicBases<CentroidalMomentumResidual, UnaryFunction,
+                                StageFunction>();
   bp::class_<CentroidalMomentumResidual, bp::bases<UnaryFunction>>(
       "CentroidalMomentumResidual", "A residual function :math:`r(x) = H` ",
       bp::init<const int, const int, const PinModel &,

@@ -12,6 +12,7 @@
 #include "aligator/modelling/centroidal/angular-acceleration.hpp"
 #include "aligator/modelling/centroidal/centroidal-wrapper.hpp"
 #include "aligator/modelling/contact-map.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {
@@ -70,10 +71,8 @@ void exposeCentroidalFunctions() {
   using CentroidalWrapperResidual = CentroidalWrapperResidualTpl<Scalar>;
   using CentroidalWrapperData = CentroidalWrapperDataTpl<Scalar>;
 
-  bp::implicitly_convertible<CentroidalCoMResidual,
-                             xyz::polymorphic<UnaryFunction>>();
-  bp::implicitly_convertible<CentroidalCoMResidual,
-                             xyz::polymorphic<StageFunction>>();
+  convertibleToPolymorphicBases<CentroidalCoMResidual, UnaryFunction,
+                                StageFunction>();
   bp::class_<CentroidalCoMResidual, bp::bases<UnaryFunction>>(
       "CentroidalCoMResidual", "A residual function :math:`r(x) = com(x)` ",
       bp::init<const int, const int, const context::Vector3s &>(
@@ -90,10 +89,8 @@ void exposeCentroidalFunctions() {
   bp::class_<CentroidalCoMData, bp::bases<StageFunctionData>>(
       "CentroidalCoMData", "Data Structure for CentroidalCoM", bp::no_init);
 
-  bp::implicitly_convertible<LinearMomentumResidual,
-                             xyz::polymorphic<UnaryFunction>>();
-  bp::implicitly_convertible<LinearMomentumResidual,
-                             xyz::polymorphic<StageFunction>>();
+  convertibleToPolymorphicBases<LinearMomentumResidual, UnaryFunction,
+                                StageFunction>();
   bp::class_<LinearMomentumResidual, bp::bases<UnaryFunction>>(
       "LinearMomentumResidual", "A residual function :math:`r(x) = h(x)` ",
       bp::init<const int, const int, const context::Vector3s &>(
@@ -109,10 +106,8 @@ void exposeCentroidalFunctions() {
   bp::class_<LinearMomentumData, bp::bases<StageFunctionData>>(
       "LinearMomentumData", "Data Structure for LinearMomentum", bp::no_init);
 
-  bp::implicitly_convertible<AngularMomentumResidual,
-                             xyz::polymorphic<UnaryFunction>>();
-  bp::implicitly_convertible<AngularMomentumResidual,
-                             xyz::polymorphic<StageFunction>>();
+  convertibleToPolymorphicBases<AngularMomentumResidual, UnaryFunction,
+                                StageFunction>();
   bp::class_<AngularMomentumResidual, bp::bases<UnaryFunction>>(
       "AngularMomentumResidual", "A residual function :math:`r(x) = L(x)` ",
       bp::init<const int, const int, const context::Vector3s &>(
@@ -128,8 +123,8 @@ void exposeCentroidalFunctions() {
   bp::class_<AngularMomentumData, bp::bases<StageFunctionData>>(
       "AngularMomentumData", "Data Structure for AngularMomentum", bp::no_init);
 
-  bp::implicitly_convertible<CentroidalAccelerationResidual,
-                             xyz::polymorphic<StageFunction>>();
+  convertibleToPolymorphicBases<CentroidalAccelerationResidual,
+                                StageFunction>();
   bp::class_<CentroidalAccelerationResidual, bp::bases<StageFunction>>(
       "CentroidalAccelerationResidual",
       "A residual function :math:`r(x) = cddot(x)` ",
@@ -146,8 +141,7 @@ void exposeCentroidalFunctions() {
       "CentroidalAccelerationData", "Data Structure for CentroidalAcceleration",
       bp::no_init);
 
-  bp::implicitly_convertible<FrictionConeResidual,
-                             xyz::polymorphic<StageFunction>>();
+  convertibleToPolymorphicBases<FrictionConeResidual, StageFunction>();
   bp::class_<FrictionConeResidual, bp::bases<StageFunction>>(
       "FrictionConeResidual",
       "A residual function :math:`r(x) = [fz, mu2 * fz2 - (fx2 + fy2)]` ",
@@ -159,8 +153,7 @@ void exposeCentroidalFunctions() {
   bp::class_<FrictionConeData, bp::bases<StageFunctionData>>(
       "FrictionConeData", "Data Structure for FrictionCone", bp::no_init);
 
-  bp::implicitly_convertible<WrenchConeResidual,
-                             xyz::polymorphic<StageFunction>>();
+  convertibleToPolymorphicBases<WrenchConeResidual, StageFunction>();
   bp::class_<WrenchConeResidual, bp::bases<StageFunction>>(
       "WrenchConeResidual",
       "A residual function :math:`r(x) = [fz, mu2 * fz2 - (fx2 + fy2)]` ",
@@ -173,8 +166,7 @@ void exposeCentroidalFunctions() {
   bp::class_<WrenchConeData, bp::bases<StageFunctionData>>(
       "WrenchConeData", "Data Structure for WrenchCone", bp::no_init);
 
-  bp::implicitly_convertible<AngularAccelerationResidual,
-                             xyz::polymorphic<StageFunction>>();
+  convertibleToPolymorphicBases<AngularAccelerationResidual, StageFunction>();
   bp::class_<AngularAccelerationResidual, bp::bases<StageFunction>>(
       "AngularAccelerationResidual",
       "A residual function :math:`r(x) = Ldot(x)` ",
@@ -190,10 +182,8 @@ void exposeCentroidalFunctions() {
       "AngularAccelerationData", "Data Structure for AngularAcceleration",
       bp::no_init);
 
-  bp::implicitly_convertible<CentroidalWrapperResidual,
-                             xyz::polymorphic<UnaryFunction>>();
-  bp::implicitly_convertible<CentroidalWrapperResidual,
-                             xyz::polymorphic<StageFunction>>();
+  convertibleToPolymorphicBases<CentroidalWrapperResidual, UnaryFunction,
+                                StageFunction>();
   bp::class_<CentroidalWrapperResidual, bp::bases<UnaryFunction>>(
       "CentroidalWrapperResidual",
       "A wrapper for centroidal cost with smooth control",

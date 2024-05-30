@@ -7,6 +7,7 @@
 #include "aligator/modelling/dynamics/continuous-centroidal-fwd.hpp"
 #include "aligator/modelling/dynamics/context.hpp"
 #include "aligator/modelling/contact-map.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {
@@ -30,12 +31,6 @@ struct ContinousDataWrapper : ContinuousDynamicsData,
                               bp::wrapper<ContinuousDynamicsData> {
   using ContinuousDynamicsData::ContinuousDynamicsData;
 };
-
-/// Declare all required conversions for an ODEAbstract
-template <class T> void declareODEAbstractConversions() {
-  bp::implicitly_convertible<T, xyz::polymorphic<ODEAbstract>>();
-  bp::implicitly_convertible<T, xyz::polymorphic<ContinuousDynamicsAbstract>>();
-}
 
 void exposeODEs();
 
@@ -100,7 +95,8 @@ void exposeContinuousDynamics() {
   bp::scope().attr("ODEData") = cont_data_cls;
 
   exposeODEs();
-  declareODEAbstractConversions<CentroidalFwdDynamics>();
+  convertibleToPolymorphicBases<CentroidalFwdDynamics, ODEAbstract,
+                                ContinuousDynamicsAbstract>();
   bp::class_<CentroidalFwdDynamics, bp::bases<ODEAbstract>>(
       "CentroidalFwdDynamics",
       "Nonlinear centroidal dynamics with preplanned feet positions",
@@ -115,7 +111,8 @@ void exposeContinuousDynamics() {
   bp::class_<CentroidalFwdDataTpl<Scalar>, bp::bases<ODEData>>(
       "CentroidalFwdData", bp::no_init);
 
-  declareODEAbstractConversions<ContinuousCentroidalFwdDynamics>();
+  convertibleToPolymorphicBases<ContinuousCentroidalFwdDynamics, ODEAbstract,
+                                ContinuousDynamicsAbstract>();
   bp::class_<ContinuousCentroidalFwdDynamics, bp::bases<ODEAbstract>>(
       "ContinuousCentroidalFwdDynamics",
       "Nonlinear centroidal dynamics with preplanned feet positions and smooth "
