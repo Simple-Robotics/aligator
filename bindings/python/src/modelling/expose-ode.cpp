@@ -5,6 +5,7 @@
 #include "aligator/python/modelling/continuous.hpp"
 #include "aligator/modelling/dynamics/context.hpp"
 #include "aligator/modelling/dynamics/linear-ode.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator::python {
 using context::ContinuousDynamicsAbstract;
@@ -18,13 +19,10 @@ using PolyManifold = xyz::polymorphic<context::Manifold>;
 void exposeODEs() {
   using dynamics::LinearODETpl;
 
-  bp::implicitly_convertible<LinearODETpl<Scalar>,
-                             xyz::polymorphic<ODEAbstract>>();
-  bp::implicitly_convertible<LinearODETpl<Scalar>,
-                             xyz::polymorphic<ContinuousDynamicsAbstract>>();
-  bp::implicitly_convertible<PyODEAbstract<>, xyz::polymorphic<ODEAbstract>>();
-  bp::implicitly_convertible<PyODEAbstract<>,
-                             xyz::polymorphic<ContinuousDynamicsAbstract>>();
+  convertibleToPolymorphicBases<LinearODETpl<Scalar>, ODEAbstract,
+                                ContinuousDynamicsAbstract>();
+  convertibleToPolymorphicBases<PyODEAbstract<>, ODEAbstract,
+                                ContinuousDynamicsAbstract>();
   proxsuite::nlp::python::register_polymorphic_to_python<
       xyz::polymorphic<ODEAbstract>>();
   bp::class_<PyODEAbstract<>, bp::bases<ContinuousDynamicsAbstract>,

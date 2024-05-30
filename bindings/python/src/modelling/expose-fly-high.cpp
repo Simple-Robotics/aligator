@@ -6,6 +6,7 @@
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/modelling/multibody-utils.hpp"
 #include "aligator/modelling/multibody/fly-high.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {
@@ -19,10 +20,8 @@ using context::UnaryFunction;
 
 void exposeFlyHigh() {
   using FlyHighResidual = FlyHighResidualTpl<Scalar>;
-  bp::implicitly_convertible<FlyHighResidual,
-                             xyz::polymorphic<UnaryFunction>>();
-  bp::implicitly_convertible<FlyHighResidual,
-                             xyz::polymorphic<StageFunction>>();
+  convertibleToPolymorphicBases<FlyHighResidual, UnaryFunction,
+                                StageFunction>();
   bp::class_<FlyHighResidual, bp::bases<UnaryFunction>>(
       "FlyHighResidual",
       "A residual function :math:`r(x) = v_{j,xy} e^{-s z_j}` where :math:`j` "

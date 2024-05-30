@@ -5,6 +5,7 @@
 #include <pinocchio/multibody/fwd.hpp>
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 #include <pinocchio/multibody/model.hpp>
+#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {
@@ -24,10 +25,8 @@ void exposeKinodynamics() {
 
   using Model = pinocchio::ModelTpl<Scalar>;
 
-  bp::implicitly_convertible<KinodynamicsFwdDynamics,
-                             xyz::polymorphic<ContinuousDynamicsAbstract>>();
-  bp::implicitly_convertible<KinodynamicsFwdDynamics,
-                             xyz::polymorphic<ODEAbstract>>();
+  convertibleToPolymorphicBases<KinodynamicsFwdDynamics,
+                                ContinuousDynamicsAbstract, ODEAbstract>();
   bp::class_<KinodynamicsFwdDynamics, bp::bases<ODEAbstract>>(
       "KinodynamicsFwdDynamics",
       "Centroidal forward dynamics + kinematics using Pinocchio.",

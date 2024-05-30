@@ -5,6 +5,7 @@
 #include "aligator/context.hpp"
 #include "aligator/python/fwd.hpp"
 #include "aligator/modelling/explicit-dynamics-direct-sum.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {
@@ -16,10 +17,8 @@ using context::ExplicitDynamics;
 
 void exposeExplicitDynDirectSum() {
 
-  bp::implicitly_convertible<DirectSumExplicitDynamics,
-                             xyz::polymorphic<ExplicitDynamics>>();
-  bp::implicitly_convertible<DirectSumExplicitDynamics,
-                             xyz::polymorphic<DynamicsModel>>();
+  convertibleToPolymorphicBases<DirectSumExplicitDynamics, ExplicitDynamics,
+                                DynamicsModel>();
   proxsuite::nlp::python::register_polymorphic_to_python<
       xyz::polymorphic<DirectSumExplicitDynamics>>();
   bp::class_<DirectSumExplicitDynamics, bp::bases<ExplicitDynamics>>(
