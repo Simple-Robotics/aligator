@@ -31,6 +31,12 @@ struct ContinousDataWrapper : ContinuousDynamicsData,
   using ContinuousDynamicsData::ContinuousDynamicsData;
 };
 
+/// Declare all required conversions for an ODEAbstract
+template <class T> void declareODEAbstractConversions() {
+  bp::implicitly_convertible<T, xyz::polymorphic<ODEAbstract>>();
+  bp::implicitly_convertible<T, xyz::polymorphic<ContinuousDynamicsAbstract>>();
+}
+
 void exposeODEs();
 
 void exposeContinuousDynamics() {
@@ -94,10 +100,7 @@ void exposeContinuousDynamics() {
   bp::scope().attr("ODEData") = cont_data_cls;
 
   exposeODEs();
-  bp::implicitly_convertible<CentroidalFwdDynamics,
-                             xyz::polymorphic<ODEAbstract>>();
-  bp::implicitly_convertible<CentroidalFwdDynamics,
-                             xyz::polymorphic<ContinuousDynamicsAbstract>>();
+  declareODEAbstractConversions<CentroidalFwdDynamics>();
   bp::class_<CentroidalFwdDynamics, bp::bases<ODEAbstract>>(
       "CentroidalFwdDynamics",
       "Nonlinear centroidal dynamics with preplanned feet positions",
@@ -112,10 +115,7 @@ void exposeContinuousDynamics() {
   bp::class_<CentroidalFwdDataTpl<Scalar>, bp::bases<ODEData>>(
       "CentroidalFwdData", bp::no_init);
 
-  bp::implicitly_convertible<ContinuousCentroidalFwdDynamics,
-                             xyz::polymorphic<ODEAbstract>>();
-  bp::implicitly_convertible<ContinuousCentroidalFwdDynamics,
-                             xyz::polymorphic<ContinuousDynamicsAbstract>>();
+  declareODEAbstractConversions<ContinuousCentroidalFwdDynamics>();
   bp::class_<ContinuousCentroidalFwdDynamics, bp::bases<ODEAbstract>>(
       "ContinuousCentroidalFwdDynamics",
       "Nonlinear centroidal dynamics with preplanned feet positions and smooth "

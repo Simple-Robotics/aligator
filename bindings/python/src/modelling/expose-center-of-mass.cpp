@@ -20,6 +20,12 @@ using context::StageFunctionData;
 using context::UnaryFunction;
 using ContactMap = ContactMapTpl<Scalar>;
 
+/// Declare all required conversions for an UnaryFunction
+template <class T> void declareFunctionConversions() {
+  bp::implicitly_convertible<T, xyz::polymorphic<UnaryFunction>>();
+  bp::implicitly_convertible<T, xyz::polymorphic<StageFunction>>();
+}
+
 void exposeCenterOfMassFunctions() {
   using CenterOfMassTranslation = CenterOfMassTranslationResidualTpl<Scalar>;
   using CenterOfMassTranslationData = CenterOfMassTranslationDataTpl<Scalar>;
@@ -35,10 +41,7 @@ void exposeCenterOfMassFunctions() {
   using CentroidalMomentumResidual = CentroidalMomentumResidualTpl<Scalar>;
   using CentroidalMomentumData = CentroidalMomentumDataTpl<Scalar>;
 
-  bp::implicitly_convertible<CenterOfMassTranslation,
-                             xyz::polymorphic<UnaryFunction>>();
-  bp::implicitly_convertible<CenterOfMassTranslation,
-                             xyz::polymorphic<StageFunction>>();
+  declareFunctionConversions<CenterOfMassTranslation>();
   bp::class_<CenterOfMassTranslation, bp::bases<UnaryFunction>>(
       "CenterOfMassTranslationResidual",
       "A residual function :math:`r(x) = com(x)` ",
@@ -60,10 +63,7 @@ void exposeCenterOfMassFunctions() {
       .def_readonly("pin_data", &CenterOfMassTranslationData::pin_data_,
                     "Pinocchio data struct.");
 
-  bp::implicitly_convertible<CenterOfMassVelocity,
-                             xyz::polymorphic<UnaryFunction>>();
-  bp::implicitly_convertible<CenterOfMassVelocity,
-                             xyz::polymorphic<StageFunction>>();
+  declareFunctionConversions<CenterOfMassVelocity>();
   bp::class_<CenterOfMassVelocity, bp::bases<UnaryFunction>>(
       "CenterOfMassVelocityResidual",
       "A residual function :math:`r(x) = vcom(x)` ",
@@ -107,10 +107,7 @@ void exposeCenterOfMassFunctions() {
       .def_readonly("pin_data", &CentroidalMomentumDerivativeData::pin_data_,
                     "Pinocchio data struct.");
 
-  bp::implicitly_convertible<CentroidalMomentumResidual,
-                             xyz::polymorphic<UnaryFunction>>();
-  bp::implicitly_convertible<CentroidalMomentumResidual,
-                             xyz::polymorphic<StageFunction>>();
+  declareFunctionConversions<CentroidalMomentumResidual>();
   bp::class_<CentroidalMomentumResidual, bp::bases<UnaryFunction>>(
       "CentroidalMomentumResidual", "A residual function :math:`r(x) = H` ",
       bp::init<const int, const int, const PinModel &,

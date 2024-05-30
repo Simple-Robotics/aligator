@@ -16,11 +16,17 @@ using context::Scalar;
 using context::StageFunction;
 using PolyFunction = xyz::polymorphic<StageFunction>;
 using PolyManifold = xyz::polymorphic<Manifold>;
+using QuadResCost = QuadraticResidualCostTpl<Scalar>;
+
+/// Declare all required conversions for an CostAbstract
+template <class T> void declareCostAbstractConversions() {
+  bp::implicitly_convertible<T, xyz::polymorphic<QuadResCost>>();
+  bp::implicitly_convertible<T, xyz::polymorphic<CostAbstract>>();
+}
 
 void exposeComposites() {
 
   using CompositeData = CompositeCostDataTpl<Scalar>;
-  using QuadResCost = QuadraticResidualCostTpl<Scalar>;
   using QuadStateCost = QuadraticStateCostTpl<Scalar>;
   using QuadControlCost = QuadraticControlCostTpl<Scalar>;
   using LogResCost = LogResidualCostTpl<Scalar>;
@@ -51,8 +57,7 @@ void exposeComposites() {
           bp::args("self", "ndx", "nu", "rdata")))
       .def_readwrite("residual_data", &CompositeData::residual_data);
 
-  bp::implicitly_convertible<QuadStateCost, xyz::polymorphic<QuadResCost>>();
-  bp::implicitly_convertible<QuadStateCost, xyz::polymorphic<CostAbstract>>();
+  declareCostAbstractConversions<QuadStateCost>();
   bp::class_<QuadStateCost, bp::bases<QuadResCost>>(
       "QuadraticStateCost",
       "Quadratic distance over the state manifold. This is a shortcut to "
@@ -67,8 +72,7 @@ void exposeComposites() {
                     &QuadStateCost::setTarget,
                     "Target of the quadratic distance.");
 
-  bp::implicitly_convertible<QuadControlCost, xyz::polymorphic<QuadResCost>>();
-  bp::implicitly_convertible<QuadControlCost, xyz::polymorphic<CostAbstract>>();
+  declareCostAbstractConversions<QuadControlCost>();
   bp::class_<QuadControlCost, bp::bases<QuadResCost>>(
       "QuadraticControlCost", "Quadratic control cost.", bp::no_init)
       .def(bp::init<PolyManifold, ConstVectorRef, const MatrixXs &>(
