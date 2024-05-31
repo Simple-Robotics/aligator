@@ -4,7 +4,7 @@
 
 file(GLOB SOURCES CONFIGURE_DEPENDS src/*.cpp)
 
-file(GLOB HEADERS CONFIGURE_DEPENDS include/aligator/gar/*.hpp)
+file(GLOB HEADERS CONFIGURE_DEPENDS include/aligator/gar/*.hpp include/aligator/gar/*.hxx)
 
 add_library(aligator_gar SHARED ${HEADERS})
 target_include_directories(aligator_gar PRIVATE ${PROJECT_SOURCE_DIR}/include/aligator)
