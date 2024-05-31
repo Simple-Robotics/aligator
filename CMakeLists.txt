@@ -74,16 +74,16 @@ elseif(UNIX)
   if(${CMAKE_VERSION} VERSION_GREATER "3.20.0" OR ${CMAKE_VERSION} VERSION_EQUAL "3.20.0")
     set(CMAKE_MODULE_PATH ${JRL_CMAKE_MODULES}/find-external/OpenMP ${CMAKE_MODULE_PATH})
   endif()
-endif(APPLE)
+endif()
 include(CMakeDependentOption)
 
 apply_default_apple_configuration()
 
 if(WIN32)
   set(LINK copy_if_different)
-else(WIN32)
+else()
   set(LINK create_symlink)
-endif(WIN32)
+endif()
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to 'Release' as none was specified.")
@@ -133,18 +133,18 @@ set(CFLAGS_DEPENDENCIES)
 if(INITIALIZE_WITH_NAN)
   message(STATUS "Initialize with NaN all the Eigen entries.")
   add_compile_definitions(EIGEN_INITIALIZE_MATRICES_BY_NAN)
-endif(INITIALIZE_WITH_NAN)
+endif()
 
 if(CHECK_RUNTIME_MALLOC)
   message(STATUS "Check if some memory allocations are performed at runtime.")
   add_compile_definitions(ALIGATOR_EIGEN_CHECK_MALLOC)
   add_compile_definitions(EIGEN_RUNTIME_NO_MALLOC)
-endif(CHECK_RUNTIME_MALLOC)
+endif()
 
 if(ENABLE_TEMPLATE_INSTANTIATION)
   add_compile_definitions(ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION)
   list(APPEND CFLAGS_DEPENDENCIES "-DALIGATOR_ENABLE_TEMPLATE_INSTANTIATION")
-endif(ENABLE_TEMPLATE_INSTANTIATION)
+endif()
 
 # ----------------------------------------------------
 # --- DEPENDENCIES -----------------------------------
@@ -155,7 +155,7 @@ add_project_dependency(fmt "9.1.0...<11" REQUIRED PKG_CONFIG_REQUIRES "fmt >= 9.
 if(BUILD_WITH_OPENMP_SUPPORT)
   add_project_dependency(OpenMP REQUIRED)
   add_compile_definitions(ALIGATOR_MULTITHREADING)
-endif(BUILD_WITH_OPENMP_SUPPORT)
+endif()
 
 if(BUILD_WITH_PINOCCHIO_SUPPORT)
   message(STATUS "Building with Pinocchio support.")
@@ -199,7 +199,6 @@ file(GLOB_RECURSE LIB_HEADERS ${PROJECT_SOURCE_DIR}/include/aligator/*.hpp
 )
 
 if(ENABLE_TEMPLATE_INSTANTIATION)
-
   file(GLOB_RECURSE LIB_TEMPLATE_SOURCES ${PROJECT_SOURCE_DIR}/src/core/*.cpp
        ${PROJECT_SOURCE_DIR}/src/solvers/fddp/*.cpp ${PROJECT_SOURCE_DIR}/src/solvers/proxddp/*.cpp
        ${PROJECT_SOURCE_DIR}/src/modelling/*.cpp
@@ -207,8 +206,7 @@ if(ENABLE_TEMPLATE_INSTANTIATION)
   file(GLOB_RECURSE LIB_TEMPLATE_DECLARATIONS ${PROJECT_SOURCE_DIR}/include/aligator/*.txx)
   list(APPEND LIB_HEADERS ${LIB_TEMPLATE_DECLARATIONS})
   list(APPEND LIB_SOURCES ${LIB_TEMPLATE_SOURCES})
-
-endif(ENABLE_TEMPLATE_INSTANTIATION)
+endif()
 
 list(FILTER LIB_HEADERS EXCLUDE REGEX ${PROJECT_SOURCE_DIR}/include/aligator/compat/*)
 
@@ -267,11 +265,11 @@ function(create_library)
 
   if(BUILD_WITH_PINOCCHIO_SUPPORT)
     target_link_libraries(${PROJECT_NAME} PUBLIC pinocchio::pinocchio)
-  endif(BUILD_WITH_PINOCCHIO_SUPPORT)
+  endif()
 
   if(BUILD_WITH_OPENMP_SUPPORT)
     target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
-  endif(BUILD_WITH_OPENMP_SUPPORT)
+  endif()
 
   target_link_libraries(${PROJECT_NAME} PUBLIC proxsuite-nlp::proxsuite-nlp)
   target_link_libraries(${PROJECT_NAME} PUBLIC Boost::boost)
@@ -288,7 +286,7 @@ function(create_library)
       DESTINATION ${headerPath}
       PERMISSIONS OWNER_READ GROUP_READ WORLD_READ OWNER_WRITE
     )
-  endforeach(headerFile ${LIB_HEADERS})
+  endforeach()
 
 endfunction()
 

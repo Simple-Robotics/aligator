@@ -4,7 +4,7 @@
 include(${JRL_CMAKE_MODULES}/python.cmake)
 if(GENERATE_PYTHON_STUBS)
   include(${JRL_CMAKE_MODULES}/stubs.cmake)
-endif(GENERATE_PYTHON_STUBS)
+endif()
 
 file(GLOB PY_SOURCES CONFIGURE_DEPENDS src/*.cpp src/modelling/*.cpp)
 
@@ -53,7 +53,7 @@ function(make_bindings)
 
   if(BUILD_CROCODDYL_COMPAT)
     target_link_libraries(${PYLIB_NAME} PUBLIC aligator::croc_compat)
-  endif(BUILD_CROCODDYL_COMPAT)
+  endif()
 
   install(
     TARGETS ${PYLIB_NAME}
@@ -89,7 +89,7 @@ if(GENERATE_PYTHON_STUBS)
     ${CMAKE_CURRENT_BINARY_DIR} ${PROJECT_NAME} ${ABSOLUTE_PYTHON_SITELIB} ${PYLIB_NAME}
     ${python_build_target_name}
   )
-endif(GENERATE_PYTHON_STUBS)
+endif()
 
 set(${PYLIB_NAME}_PYFILES __init__.py)
 set(${PYLIB_NAME}_PYFILES_UTILS __init__.py plotting.py)
