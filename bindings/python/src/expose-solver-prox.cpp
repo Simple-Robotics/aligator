@@ -11,7 +11,7 @@
 namespace aligator {
 namespace python {
 
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(prox_run_overloads, run, 1, 4)
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(prox_run_overloads, run, 1, 5)
 
 void exposeProxDDP() {
   using context::ConstVectorRef;
@@ -170,11 +170,12 @@ void exposeProxDDP() {
       .def("computeInfeasibilities", &SolverType::computeInfeasibilities,
            ("self"_a, "problem"), "Compute problem infeasibilities.")
       .def(SolverVisitor<SolverType>())
-      .def("run", &SolverType::run,
-           prox_run_overloads(
-               ("self"_a, "problem", "xs_init", "us_init", "lams_init"),
-               "Run the algorithm. Can receive initial guess for "
-               "multiplier trajectory."));
+      .def(
+          "run", &SolverType::run,
+          prox_run_overloads(("self"_a, "problem", "xs_init", "us_init",
+                              "vs_init", "lams_init"),
+                             "Run the algorithm. Can receive initial guess for "
+                             "multiplier trajectory."));
 }
 
 } // namespace python
