@@ -12,7 +12,7 @@ function(create_bench exfile croc)
   target_link_libraries(${exname} PRIVATE benchmark::benchmark)
   if(croc)
     target_link_libraries(${exname} PRIVATE aligator::croc_compat croc_talos_arm_utils)
-  endif(croc)
+  endif()
 endfunction()
 
 function(create_gar_bench exfile)

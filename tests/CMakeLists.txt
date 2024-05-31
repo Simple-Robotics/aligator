@@ -36,11 +36,11 @@ function(_add_test_prototype name prefix dependencies)
 
   target_link_libraries(${test_name} PUBLIC ${dependencies})
   target_link_libraries(${test_name} PRIVATE Boost::unit_test_framework)
-endfunction(_add_test_prototype)
+endfunction()
 
 function(add_aligator_test name)
   _add_test_prototype(${name} "" ${PROJECT_NAME})
-endfunction(add_aligator_test)
+endfunction()
 
 set(TEST_NAMES
     continuous
@@ -54,11 +54,11 @@ set(TEST_NAMES
 
 foreach(test_name ${TEST_NAMES})
   add_aligator_test(${test_name})
-endforeach(test_name)
+endforeach()
 
 if(CHECK_RUNTIME_MALLOC)
   add_aligator_test(nomalloc)
-endif(CHECK_RUNTIME_MALLOC)
+endif()
 
 add_subdirectory(gar)
 

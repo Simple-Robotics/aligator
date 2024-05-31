@@ -21,7 +21,7 @@ target_include_directories(
 target_link_libraries(aligator_gar PUBLIC proxsuite-nlp::proxsuite-nlp)
 if(BUILD_WITH_OPENMP_SUPPORT)
   target_link_libraries(aligator_gar PUBLIC OpenMP::OpenMP_CXX)
-endif(BUILD_WITH_OPENMP_SUPPORT)
+endif()
 target_link_libraries(aligator_gar PUBLIC Tracy::TracyClient)
 
 add_library(aligator::gar ALIAS aligator_gar)
@@ -38,7 +38,7 @@ if(ENABLE_TEMPLATE_INSTANTIATION)
   )
   list(APPEND HEADERS ${TEMPL_DECL_HEADERS})
   target_sources(aligator_gar PRIVATE ${SOURCES})
-endif(ENABLE_TEMPLATE_INSTANTIATION)
+endif()
 
 set_target_properties(aligator_gar PROPERTIES VERSION ${PROJECT_VERSION})
 set_standard_output_directory(aligator_gar)
