@@ -184,44 +184,11 @@ export_boost_default_options()
 add_project_dependency(Boost REQUIRED COMPONENTS ${BOOST_REQUIRED_COMPONENTS})
 
 if(BUILD_PYTHON_INTERFACE)
-  set(PYTHON_COMPONENTS Interpreter Development.Module NumPy Development)
+  set(PYTHON_COMPONENTS Interpreter Development NumPy)
   add_project_dependency(eigenpy 3.4.0 REQUIRED PKG_CONFIG_REQUIRES "eigenpy >= 3.4.0")
   set(PYLIB_NAME "py${PROJECT_NAME}")
   set(${PYLIB_NAME}_INSTALL_DIR ${PYTHON_SITELIB}/${PROJECT_NAME})
-
-  execute_process(
-    COMMAND ${PYTHON_EXECUTABLE} -c "import platform; print(platform.python_implementation())"
-    OUTPUT_VARIABLE _python_implementation_value
-    OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET
-  )
-  message(STATUS "Python compiler: ${_python_implementation_value}")
-
-  execute_process(
-    COMMAND ${PYTHON_EXECUTABLE} -c "import proxsuite_nlp"
-    RESULT_VARIABLE _proxsuite_nlp_python_bindings_not_found
-    OUTPUT_QUIET ERROR_QUIET
-  )
-  if(_proxsuite_nlp_python_bindings_not_found EQUAL 0)
-    message(STATUS "Found proxsuite_nlp Python bindings.")
-  else()
-    message(FATAL_ERROR "proxsuite_nlp Python bindings NOT found.")
-  endif()
-  unset(_proxsuite_nlp_python_bindings_not_found)
-
-  execute_process(
-    COMMAND ${PYTHON_EXECUTABLE} -c "import pinocchio"
-    RESULT_VARIABLE _pinocchio_python_bindings_not_found
-    OUTPUT_QUIET ERROR_QUIET
-  )
-  if(_pinocchio_python_bindings_not_found EQUAL 0)
-    message(STATUS "Found pinocchio Python bindings.")
-    set(BUILD_WITH_PINOCCHIO_PYTHON_BINDINGS True)
-  else()
-    message(STATUS "pinocchio Python bindings NOT found.")
-  endif()
-  unset(_pinocchio_python_bindings_not_found)
-
-endif(BUILD_PYTHON_INTERFACE)
+endif()
 
 add_project_dependency(proxsuite-nlp 0.6.1 REQUIRED PKG_CONFIG_REQUIRES "proxsuite-nlp >= 0.6.1")
 
