@@ -4,9 +4,15 @@
 
 file(GLOB SOURCES CONFIGURE_DEPENDS src/*.cpp)
 
-file(GLOB HEADERS CONFIGURE_DEPENDS include/aligator/gar/*.hpp include/aligator/gar/*.hxx)
+file(
+  GLOB HEADERS
+  RELATIVE ${CMAKE_CURRENT_LIST_DIR}/include
+  CONFIGURE_DEPENDS include/aligator/gar/*.hpp include/aligator/gar/*.hxx
+  include/aligator/third-party/boost/core/*.hpp
+)
+message(STATUS "GAR HEADERS: ${HEADERS}")
 
-add_library(aligator_gar SHARED ${HEADERS})
+add_library(aligator_gar SHARED)
 target_include_directories(aligator_gar PRIVATE ${PROJECT_SOURCE_DIR}/include/aligator)
 target_include_directories(
   aligator_gar PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -25,17 +31,24 @@ if(BUILD_WITH_CHOLMOD_SUPPORT)
 endif()
 
 if(ENABLE_TEMPLATE_INSTANTIATION)
-  file(GLOB TEMPL_DECL_HEADERS include/aligator/gar/*.txx)
+  file(
+    GLOB TEMPL_DECL_HEADERS
+    RELATIVE ${CMAKE_CURRENT_LIST_DIR}/include
+    include/aligator/gar/*.txx
+  )
   list(APPEND HEADERS ${TEMPL_DECL_HEADERS})
-  target_sources(aligator_gar PRIVATE ${SOURCES} ${TEMPL_DECL_HEADERS})
+  target_sources(aligator_gar PRIVATE ${SOURCES})
 endif(ENABLE_TEMPLATE_INSTANTIATION)
 
-set_target_properties(aligator_gar PROPERTIES VERSION ${PROJECT_VERSION} PUBLIC_HEADER "${HEADERS}")
+set_target_properties(aligator_gar PROPERTIES VERSION ${PROJECT_VERSION})
 set_standard_output_directory(aligator_gar)
 
 install(
   TARGETS aligator_gar
   EXPORT ${TARGETS_EXPORT_NAME}
-  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/aligator/gar
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
+foreach(header ${HEADERS})
+  get_filename_component(DIR ${header} DIRECTORY)
+  install(FILES include/${header} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${DIR})
+endforeach()
