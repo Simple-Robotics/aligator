@@ -203,11 +203,13 @@ public:
   /// @param problem  The trajectory optimization problem to solve.
   /// @param xs_init  Initial trajectory guess.
   /// @param us_init  Initial control sequence guess.
-  /// @param lams_init  Initial multiplier guess.
+  /// @param vs_init  Initial path multiplier guess.
+  /// @param lams_init  Initial co-state guess.
   /// @pre  You must call SolverProxDDP::setup beforehand to allocate a
   /// workspace and results.
   bool run(const Problem &problem, const std::vector<VectorXs> &xs_init = {},
            const std::vector<VectorXs> &us_init = {},
+           const std::vector<VectorXs> &vs_init = {},
            const std::vector<VectorXs> &lams_init = {});
 
   /// @brief    Perform the inner loop of the algorithm (augmented Lagrangian

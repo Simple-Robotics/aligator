@@ -69,6 +69,29 @@ auto problemInitializeSolution(const TrajOptProblemTpl<Scalar> &problem) {
                          std::move(lbdas));
 }
 
+/// @brief Assign a vector of Eigen types into another, ensure there is no
+/// resize
+template <typename T1, typename T2>
+bool assign_no_resize(const std::vector<T1> &lhs, std::vector<T2> &rhs) {
+  static_assert(std::is_base_of_v<Eigen::EigenBase<T1>, T1>,
+                "T1 should be an Eigen object!");
+  static_assert(std::is_base_of_v<Eigen::EigenBase<T2>, T2>,
+                "T2 should be an Eigen object!");
+  if (lhs.size() != rhs.size())
+    return false;
+
+  const auto same_dims = [](auto &x, auto &y) {
+    return (x.cols() == y.cols()) && (x.rows() == y.rows());
+  };
+
+  for (std::size_t i = 0; i < lhs.size(); i++) {
+    if (!same_dims(lhs[i], rhs[i]))
+      return false;
+    rhs[i] = lhs[i];
+  }
+  return true;
+}
+
 /// @brief Check the input state-control trajectory is a consistent warm-start
 /// for the output.
 template <typename Scalar>
@@ -83,19 +106,13 @@ void check_trajectory_and_assign(
   us_out.reserve(nsteps);
   if (xs_init.size() == 0) {
     xs_default_init(problem, xs_out);
-  } else {
-    if (xs_init.size() != (nsteps + 1)) {
-      ALIGATOR_RUNTIME_ERROR("warm-start for xs has wrong size!");
-    }
-    xs_out = xs_init;
+  } else if (!assign_no_resize(xs_init, xs_out)) {
+    ALIGATOR_RUNTIME_ERROR("warm-start for xs has wrong size!");
   }
   if (us_init.size() == 0) {
     us_default_init(problem, us_out);
-  } else {
-    if (us_init.size() != nsteps) {
-      ALIGATOR_RUNTIME_ERROR("warm-start for us has wrong size!");
-    }
-    us_out = us_init;
+  } else if (!assign_no_resize(us_init, us_out)) {
+    ALIGATOR_RUNTIME_ERROR("warm-start for us has wrong size!");
   }
 }
 
