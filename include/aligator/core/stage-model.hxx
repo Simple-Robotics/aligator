@@ -12,13 +12,7 @@
 namespace aligator {
 
 namespace {
-
 using proxsuite::nlp::VectorSpaceTpl;
-template <typename T> auto make_vector_space(const int n) {
-  return xyz::polymorphic<proxsuite::nlp::context::Manifold>(
-      VectorSpaceTpl<T>(n));
-}
-
 } // namespace
 
 /* StageModelTpl */
@@ -27,7 +21,7 @@ template <typename Scalar>
 StageModelTpl<Scalar>::StageModelTpl(const PolyCost &cost,
                                      const PolyDynamics &dynamics)
     : xspace_(dynamics->space_), xspace_next_(dynamics->space_next_),
-      uspace_(make_vector_space<Scalar>(dynamics->nu)), cost_(cost),
+      uspace_(VectorSpaceTpl<Scalar>(dynamics->nu)), cost_(cost),
       dynamics_(dynamics) {
 
   if (cost->nu != dynamics->nu) {
