@@ -139,13 +139,12 @@ class TestClass:
             problem.addStage(stage_model)
 
         problem_data = aligator.TrajOptData(problem)
-        stage_datas = problem_data.stage_data
 
         print("term cost data:", problem_data.term_cost)
         print("term cstr data:", problem_data.term_constraint)
 
-        stage2 = stage_model.clone()
-        sd0 = stage_datas[0].clone()
+        stage2 = stage_model.copy()
+        sd0 = stage2.createData()
         print("Clone stage:", stage2)
         print("Clone stage data:", sd0)
 

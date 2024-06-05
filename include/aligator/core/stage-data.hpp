@@ -10,8 +10,7 @@
 namespace aligator {
 
 /// @brief    Data struct for stage models StageModelTpl.
-template <typename _Scalar>
-struct StageDataTpl : Cloneable<StageDataTpl<_Scalar>> {
+template <typename _Scalar> struct StageDataTpl {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
@@ -54,12 +53,6 @@ struct StageDataTpl : Cloneable<StageDataTpl<_Scalar>> {
     if (dynamics_data == nullptr)
       ALIGATOR_RUNTIME_ERROR(
           fmt::format("{} (dynamics_data cannot be nullptr)", msg));
-  }
-
-protected:
-  StageDataTpl() = default;
-  virtual StageDataTpl *clone_impl() const override {
-    return new StageDataTpl(*this);
   }
 };
 

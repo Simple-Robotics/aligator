@@ -96,7 +96,6 @@ void exposeStage() {
       .add_property("num_dual", &StageModel::numDual,
                     "Number of dual variables.")
       .def(CreateDataPythonVisitor<StageModel>())
-      .def(ClonePythonVisitor<StageModel>())
       .def(PrintableVisitor<StageModel>());
 #pragma GCC diagnostic pop
 
@@ -108,8 +107,7 @@ void exposeStage() {
                         bp::init<const StageModel &>())
       .def_readonly("cost_data", &StageData::cost_data)
       .def_readwrite("dynamics_data", &StageData::dynamics_data)
-      .def_readwrite("constraint_data", &StageData::constraint_data)
-      .def(ClonePythonVisitor<StageData>());
+      .def_readwrite("constraint_data", &StageData::constraint_data);
 }
 
 } // namespace python

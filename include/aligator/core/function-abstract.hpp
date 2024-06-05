@@ -83,8 +83,7 @@ public:
 };
 
 /// @brief  Base struct for function data.
-template <typename _Scalar>
-struct StageFunctionDataTpl : Cloneable<StageFunctionDataTpl<_Scalar>> {
+template <typename _Scalar> struct StageFunctionDataTpl {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
