@@ -1,6 +1,5 @@
 /// @file
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
-#include <proxsuite-nlp/python/polymorphic.hpp>
 #include "aligator/python/functions.hpp"
 
 #include "aligator/modelling/function-xpr-slice.hpp"

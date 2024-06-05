@@ -29,6 +29,8 @@ using RigidConstraintModelVector =
 using RigidConstraintDataVector =
     PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(RigidConstraintData);
 
+const PolymorphicMultiBaseVisitor<StageFunction> func_visitor;
+
 void exposeContactForce() {
   using ContactForceResidual = ContactForceResidualTpl<Scalar>;
   using ContactForceData = ContactForceDataTpl<Scalar>;
@@ -36,7 +38,6 @@ void exposeContactForce() {
   using MultibodyWrenchConeResidual = MultibodyWrenchConeResidualTpl<Scalar>;
   using MultibodyWrenchConeData = MultibodyWrenchConeDataTpl<Scalar>;
 
-  convertibleToPolymorphicBases<ContactForceResidual, StageFunction>();
   bp::class_<ContactForceResidual, bp::bases<StageFunction>>(
       "ContactForceResidual",
       "A residual function :math:`r(x) = v_{j,xy} e^{-s z_j}` where :math:`j` "
@@ -49,6 +50,7 @@ void exposeContactForce() {
           bp::args("self", "ndx", "model", "actuation_matrix",
                    "constraint_models", "prox_settings", "fref", "contact_id")))
       .def(FrameAPIVisitor<ContactForceResidual>())
+      .def(func_visitor)
       .def("getReference", &ContactForceResidual::getReference,
            bp::args("self"), bp::return_internal_reference<>(),
            "Get the target force.")
@@ -63,7 +65,6 @@ void exposeContactForce() {
       .def_readwrite("pin_data", &ContactForceData::pin_data_)
       .def_readwrite("constraint_datas", &ContactForceData::constraint_datas_);
 
-  convertibleToPolymorphicBases<MultibodyWrenchConeResidual, StageFunction>();
   bp::class_<MultibodyWrenchConeResidual, bp::bases<StageFunction>>(
       "MultibodyWrenchConeResidual", "A residual function :math:`r(x) = Af` ",
       bp::no_init)
@@ -74,6 +75,7 @@ void exposeContactForce() {
           "self", "ndx", "model", "actuation_matrix", "constraint_models",
           "prox_settings", "contact_id", "mu", "half_length", "half_width")))
       .def(FrameAPIVisitor<MultibodyWrenchConeResidual>())
+      .def(func_visitor)
       .def_readwrite("constraint_models",
                      &MultibodyWrenchConeResidual::constraint_models_);
 

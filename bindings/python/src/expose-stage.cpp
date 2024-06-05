@@ -1,7 +1,6 @@
 /// @file
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
-#include <proxsuite-nlp/python/polymorphic.hpp>
-#include "aligator/python/fwd.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
 #include "aligator/python/visitors.hpp"
 
 #include "aligator/core/stage-model.hpp"
@@ -12,6 +11,8 @@
 
 namespace aligator {
 namespace python {
+using proxsuite::nlp::python::PolymorphicVisitor;
+using proxsuite::nlp::python::register_polymorphic_to_python;
 
 void exposeStage() {
   using context::ConstraintSet;
@@ -26,8 +27,7 @@ void exposeStage() {
   using PolyCstrSet = xyz::polymorphic<ConstraintSet>;
   using PolyStage = xyz::polymorphic<StageModel>;
 
-  proxsuite::nlp::python::register_polymorphic_to_python<PolyStage>();
-  bp::implicitly_convertible<StageModel, PolyStage>();
+  register_polymorphic_to_python<PolyStage>();
 
   using StageVec = std::vector<PolyStage>;
   StdVectorPythonVisitor<StageVec, true>::expose(
@@ -88,7 +88,9 @@ void exposeStage() {
       .add_property("num_dual", &StageModel::numDual,
                     "Number of dual variables.")
       .def(CreateDataPythonVisitor<StageModel>())
-      .def(PrintableVisitor<StageModel>());
+      .def(PrintableVisitor<StageModel>())
+      .def(CopyableVisitor<StageModel>())
+      .def(PolymorphicVisitor<PolyStage>());
 #pragma GCC diagnostic pop
 
   bp::register_ptr_to_python<shared_ptr<StageData>>();

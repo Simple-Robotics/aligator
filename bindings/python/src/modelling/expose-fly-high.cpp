@@ -20,8 +20,8 @@ using context::UnaryFunction;
 
 void exposeFlyHigh() {
   using FlyHighResidual = FlyHighResidualTpl<Scalar>;
-  convertibleToPolymorphicBases<FlyHighResidual, UnaryFunction,
-                                StageFunction>();
+  PolymorphicMultiBaseVisitor<UnaryFunction, StageFunction> unary_visitor;
+
   bp::class_<FlyHighResidual, bp::bases<UnaryFunction>>(
       "FlyHighResidual",
       "A residual function :math:`r(x) = v_{j,xy} e^{-s z_j}` where :math:`j` "
@@ -29,8 +29,9 @@ void exposeFlyHigh() {
       bp::no_init)
       .def(bp::init<const int, const PinModel &, pinocchio::FrameIndex, Scalar,
                     std::size_t>(
-          bp::args("self", "ndx", "model", "frame_id", "slope", "nu")))
+          ("self"_a, "ndx", "model", "frame_id", "slope", "nu")))
       .def(FrameAPIVisitor<FlyHighResidual>())
+      .def(unary_visitor)
       .def_readwrite("slope", &FlyHighResidual::slope_,
                      "The slope parameter of the function.");
 

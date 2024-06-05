@@ -2,7 +2,7 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #include "aligator/modelling/costs/cost-direct-sum.hpp"
 
-#include "aligator/python/fwd.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {
@@ -11,17 +11,17 @@ using context::CostAbstract;
 using context::Manifold;
 using context::Scalar;
 using DirectSumCost = DirectSumCostTpl<Scalar>;
+using PolyCost = xyz::polymorphic<CostAbstract>;
 
 void exposeCostOps() {
-  // bp::register_ptr_to_python<xyz::polymorphic<DirectSumCost>>();
-  bp::implicitly_convertible<DirectSumCost, xyz::polymorphic<CostAbstract>>();
   bp::class_<DirectSumCost, bp::bases<CostAbstract>>("DirectSumCost",
                                                      bp::no_init)
       .def(bp::init<xyz::polymorphic<CostAbstract>,
                     xyz::polymorphic<CostAbstract>>(
           bp::args("self", "cost1", "cost2")))
       .def_readonly("cost1", &DirectSumCost::c1_)
-      .def_readonly("cost2", &DirectSumCost::c2_);
+      .def_readonly("cost2", &DirectSumCost::c2_)
+      .def(PolymorphicVisitor<PolyCost>());
 
   bp::class_<DirectSumCost::Data, bp::bases<context::CostData>>(
       "DirectSumCostData", bp::no_init)

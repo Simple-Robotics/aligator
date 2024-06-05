@@ -1,9 +1,7 @@
 /// @file
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
-#include <proxsuite-nlp/python/polymorphic.hpp>
 #include "aligator/python/functions.hpp"
 #include "aligator/python/eigen-member.hpp"
-#include "aligator/python/polymorphic-convertible.hpp"
 
 #include "aligator/modelling/state-error.hpp"
 #include "aligator/modelling/linear-function.hpp"
@@ -122,8 +120,7 @@ void exposeFunctionBase() {
                           bp::return_value_policy<bp::return_by_value>()),
           "Hessian with respect to $(y, y)$.")
       .def(PrintableVisitor<StageFunctionData>())
-      .def(PrintAddressVisitor<StageFunctionData>())
-      .def(ClonePythonVisitor<StageFunctionData>());
+      .def(PrintAddressVisitor<StageFunctionData>());
 
   StdVectorPythonVisitor<std::vector<PolyFunction>, true>::expose(
       "StdVec_StageFunction");
@@ -142,17 +139,15 @@ void exposeFunctions() {
   exposeUnaryFunctions();
   exposeFunctionExpressions();
 
-  convertibleToPolymorphicBases<StateErrorResidual, UnaryFunction,
-                                StageFunction>();
   bp::class_<StateErrorResidual, bp::bases<UnaryFunction>>(
       "StateErrorResidual",
       bp::init<const xyz::polymorphic<context::Manifold> &, const int,
                const context::VectorXs &>(
           bp::args("self", "space", "nu", "target")))
       .def_readonly("space", &StateErrorResidual::space_)
-      .def_readwrite("target", &StateErrorResidual::target_);
+      .def_readwrite("target", &StateErrorResidual::target_)
+      .def(PolymorphicMultiBaseVisitor<UnaryFunction, StageFunction>());
 
-  convertibleToPolymorphicBases<ControlErrorResidual, StageFunction>();
   bp::class_<ControlErrorResidual, bp::bases<StageFunction>>(
       "ControlErrorResidual",
       bp::init<const int, const xyz::polymorphic<context::Manifold> &,
@@ -162,10 +157,10 @@ void exposeFunctions() {
           bp::args("self", "ndx", "target")))
       .def(bp::init<int, int>(bp::args("self", "ndx", "nu")))
       .def_readonly("space", &ControlErrorResidual::space_)
-      .def_readwrite("target", &ControlErrorResidual::target_);
+      .def_readwrite("target", &ControlErrorResidual::target_)
+      .def(PolymorphicMultiBaseVisitor<StageFunction>());
 
   using LinearFunction = LinearFunctionTpl<Scalar>;
-  convertibleToPolymorphicBases<LinearFunction, StageFunction>();
   bp::class_<LinearFunction, bp::bases<StageFunction>>(
       "LinearFunction", bp::init<const int, const int, const int, const int>(
                             bp::args("self", "ndx1", "nu", "ndx2", "nr")))
@@ -179,15 +174,16 @@ void exposeFunctions() {
       .def_readonly("A", &LinearFunction::A_)
       .def_readonly("B", &LinearFunction::B_)
       .def_readonly("C", &LinearFunction::C_)
-      .def_readonly("d", &LinearFunction::d_);
+      .def_readonly("d", &LinearFunction::d_)
+      .def(PolymorphicMultiBaseVisitor<StageFunction>());
 
-  convertibleToPolymorphicBases<ControlBoxFunctionTpl<Scalar>, StageFunction>();
   bp::class_<ControlBoxFunctionTpl<Scalar>, bp::bases<StageFunction>>(
       "ControlBoxFunction",
       bp::init<const int, const VectorXs &, const VectorXs &>(
           bp::args("self", "ndx", "umin", "umax")))
       .def(bp::init<const int, const int, const Scalar, const Scalar>(
-          bp::args("self", "ndx", "nu", "umin", "umax")));
+          bp::args("self", "ndx", "nu", "umin", "umax")))
+      .def(PolymorphicMultiBaseVisitor<StageFunction>());
 }
 
 } // namespace python

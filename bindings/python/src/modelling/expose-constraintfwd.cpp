@@ -34,16 +34,17 @@ void exposeConstrainedFwdDynamics() {
   using MultibodyConstraintFwdDynamics =
       MultibodyConstraintFwdDynamicsTpl<Scalar>;
 
-  convertibleToPolymorphicBases<MultibodyConstraintFwdDynamics, ODEAbstract,
-                                ContinuousDynamicsAbstract>();
+  PolymorphicMultiBaseVisitor<ODEAbstract, ContinuousDynamicsAbstract>
+      ode_visitor;
   bp::class_<MultibodyConstraintFwdDynamics, bp::bases<ODEAbstract>>(
       "MultibodyConstraintFwdDynamics",
       "Constraint forward dynamics using Pinocchio.",
       bp::init<const proxsuite::nlp::MultibodyPhaseSpace<Scalar> &,
                const context::MatrixXs &, const RigidConstraintModelVector &,
                const pinocchio::ProximalSettingsTpl<Scalar> &>(
-          bp::args("self", "space", "actuation_matrix", "constraint_models",
-                   "prox_settings")))
+          ("self"_a, "space", "actuation_matrix", "constraint_models",
+           "prox_settings")))
+      .def(ode_visitor)
       .def_readwrite("constraint_models",
                      &MultibodyConstraintFwdDynamics::constraint_models_)
       .add_property("ntau", &MultibodyConstraintFwdDynamics::ntau,
