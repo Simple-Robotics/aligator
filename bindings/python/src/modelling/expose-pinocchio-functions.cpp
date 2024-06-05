@@ -44,16 +44,18 @@ void exposeFrameFunctions() {
 
   bp::register_ptr_to_python<shared_ptr<PinData>>();
 
-  convertibleToPolymorphicBases<FramePlacement, UnaryFunction, StageFunction>();
+  PolymorphicMultiBaseVisitor<UnaryFunction, StageFunction> unary_visitor;
+
   bp::class_<FramePlacement, bp::bases<UnaryFunction>>(
       "FramePlacementResidual", "Frame placement residual function.",
       bp::init<int, int, const PinModel &, const SE3 &, pinocchio::FrameIndex>(
-          bp::args("self", "ndx", "nu", "model", "p_ref", "id")))
+          ("self"_a, "ndx", "nu", "model", "p_ref", "id")))
       .def(FrameAPIVisitor<FramePlacement>())
-      .def("getReference", &FramePlacement::getReference, bp::args("self"),
+      .def(unary_visitor)
+      .def("getReference", &FramePlacement::getReference, "self"_a,
            bp::return_internal_reference<>(), "Get the target frame in SE3.")
-      .def("setReference", &FramePlacement::setReference,
-           bp::args("self", "p_new"), "Set the target frame in SE3.");
+      .def("setReference", &FramePlacement::setReference, ("self"_a, "p_new"),
+           "Set the target frame in SE3.");
 
   bp::register_ptr_to_python<shared_ptr<FramePlacementData>>();
 
@@ -66,17 +68,17 @@ void exposeFrameFunctions() {
       .def_readonly("pin_data", &FramePlacementData::pin_data_,
                     "Pinocchio data struct.");
 
-  convertibleToPolymorphicBases<FrameVelocity, UnaryFunction, StageFunction>();
   bp::class_<FrameVelocity, bp::bases<UnaryFunction>>(
       "FrameVelocityResidual", "Frame velocity residual function.",
       bp::init<int, int, const PinModel &, const Motion &,
-               pinocchio::FrameIndex, pinocchio::ReferenceFrame>(bp::args(
-          "self", "ndx", "nu", "model", "v_ref", "id", "reference_frame")))
+               pinocchio::FrameIndex, pinocchio::ReferenceFrame>(
+          ("self"_a, "ndx", "nu", "model", "v_ref", "id", "reference_frame")))
       .def(FrameAPIVisitor<FrameVelocity>())
-      .def("getReference", &FrameVelocity::getReference, bp::args("self"),
+      .def(unary_visitor)
+      .def("getReference", &FrameVelocity::getReference, "self"_a,
            bp::return_internal_reference<>(), "Get the target frame velocity.")
-      .def("setReference", &FrameVelocity::setReference,
-           bp::args("self", "v_new"), "Set the target frame velocity.");
+      .def("setReference", &FrameVelocity::setReference, ("self"_a, "v_new"),
+           "Set the target frame velocity.");
 
   bp::register_ptr_to_python<shared_ptr<FrameVelocityData>>();
 
@@ -86,19 +88,18 @@ void exposeFrameFunctions() {
       .def_readonly("pin_data", &FrameVelocityData::pin_data_,
                     "Pinocchio data struct.");
 
-  convertibleToPolymorphicBases<FrameTranslation, UnaryFunction,
-                                StageFunction>();
   bp::class_<FrameTranslation, bp::bases<UnaryFunction>>(
       "FrameTranslationResidual", "Frame placement residual function.",
       bp::init<int, int, const PinModel &, const context::Vector3s &,
                pinocchio::FrameIndex>(
-          bp::args("self", "ndx", "nu", "model", "p_ref", "id")))
+          ("self"_a, "ndx", "nu", "model", "p_ref", "id")))
       .def(FrameAPIVisitor<FrameTranslation>())
-      .def("getReference", &FrameTranslation::getReference, bp::args("self"),
+      .def(unary_visitor)
+      .def("getReference", &FrameTranslation::getReference, "self"_a,
            bp::return_internal_reference<>(),
            "Get the target frame translation.")
-      .def("setReference", &FrameTranslation::setReference,
-           bp::args("self", "p_new"), "Set the target frame translation.");
+      .def("setReference", &FrameTranslation::setReference, ("self"_a, "p_new"),
+           "Set the target frame translation.");
 
   bp::register_ptr_to_python<shared_ptr<FrameTranslationData>>();
 
@@ -141,8 +142,8 @@ void exposePinocchioFunctions() {
 #ifdef ALIGATOR_PINOCCHIO_V3
   bp::def("underactuatedConstrainedInverseDynamics",
           underactuatedConstraintInvDyn_proxy,
-          bp::args("model", "data", "q", "v", "actMatrix", "constraint_model",
-                   "constraint_data"),
+          ("model"_a, "data", "q", "v", "actMatrix", "constraint_model",
+           "constraint_data"),
           "Compute the gravity-compensating torque for a pinocchio Model under "
           "a rigid constraint.");
 #endif

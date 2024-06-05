@@ -36,8 +36,9 @@ void exposeCenterOfMassFunctions() {
   using CentroidalMomentumResidual = CentroidalMomentumResidualTpl<Scalar>;
   using CentroidalMomentumData = CentroidalMomentumDataTpl<Scalar>;
 
-  convertibleToPolymorphicBases<CenterOfMassTranslation, UnaryFunction,
-                                StageFunction>();
+  PolymorphicMultiBaseVisitor<StageFunction> func_visitor;
+  PolymorphicMultiBaseVisitor<UnaryFunction, StageFunction> unary_visitor;
+
   bp::class_<CenterOfMassTranslation, bp::bases<UnaryFunction>>(
       "CenterOfMassTranslationResidual",
       "A residual function :math:`r(x) = com(x)` ",
@@ -49,7 +50,8 @@ void exposeCenterOfMassFunctions() {
            "Get the target Center Of Mass translation.")
       .def("setReference", &CenterOfMassTranslation::setReference,
            bp::args("self", "p_new"),
-           "Set the target Center Of Mass translation.");
+           "Set the target Center Of Mass translation.")
+      .def(unary_visitor);
 
   bp::register_ptr_to_python<shared_ptr<CenterOfMassTranslationData>>();
 
@@ -59,14 +61,13 @@ void exposeCenterOfMassFunctions() {
       .def_readonly("pin_data", &CenterOfMassTranslationData::pin_data_,
                     "Pinocchio data struct.");
 
-  convertibleToPolymorphicBases<CenterOfMassVelocity, UnaryFunction,
-                                StageFunction>();
   bp::class_<CenterOfMassVelocity, bp::bases<UnaryFunction>>(
       "CenterOfMassVelocityResidual",
       "A residual function :math:`r(x) = vcom(x)` ",
       bp::init<const int, const int, const PinModel &, const context::Vector3s>(
           bp::args("self", "ndx", "nu", "model", "v_ref")))
       .def(FrameAPIVisitor<CenterOfMassVelocity>())
+      .def(unary_visitor)
       .def("getReference", &CenterOfMassVelocity::getReference,
            bp::args("self"), bp::return_internal_reference<>(),
            "Get the target Center Of Mass velocity.")
@@ -82,8 +83,6 @@ void exposeCenterOfMassFunctions() {
       .def_readonly("pin_data", &CenterOfMassVelocityData::pin_data_,
                     "Pinocchio data struct.");
 
-  convertibleToPolymorphicBases<CentroidalMomentumDerivativeResidual,
-                                StageFunction>();
   bp::class_<CentroidalMomentumDerivativeResidual, bp::bases<StageFunction>>(
       "CentroidalMomentumDerivativeResidual",
       "A residual function :math:`r(x) = H_dot` ",
@@ -93,6 +92,7 @@ void exposeCenterOfMassFunctions() {
           bp::args("self", "ndx", "model", "gravity", "contact_states",
                    "contact_ids", "force_size")))
       .def(FrameAPIVisitor<CentroidalMomentumDerivativeResidual>())
+      .def(func_visitor)
       .def_readwrite("contact_states",
                      &CentroidalMomentumDerivativeResidual::contact_states_);
 
@@ -104,14 +104,13 @@ void exposeCenterOfMassFunctions() {
       .def_readonly("pin_data", &CentroidalMomentumDerivativeData::pin_data_,
                     "Pinocchio data struct.");
 
-  convertibleToPolymorphicBases<CentroidalMomentumResidual, UnaryFunction,
-                                StageFunction>();
   bp::class_<CentroidalMomentumResidual, bp::bases<UnaryFunction>>(
       "CentroidalMomentumResidual", "A residual function :math:`r(x) = H` ",
       bp::init<const int, const int, const PinModel &,
                const context::Vector6s &>(
           bp::args("self", "ndx", "nu", "model", "h_ref")))
       .def(FrameAPIVisitor<CentroidalMomentumResidual>())
+      .def(unary_visitor)
       .def("getReference", &CentroidalMomentumResidual::getReference,
            bp::args("self"), bp::return_internal_reference<>(),
            "Get the centroidal target.")

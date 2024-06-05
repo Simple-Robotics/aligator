@@ -16,17 +16,15 @@ using namespace aligator::dynamics;
 using context::DynamicsModel;
 using context::IntegratorAbstract;
 
-/// Declare all required conversions for an integrator
-template <class T> void declareIntegratorConversions() {
-  convertibleToPolymorphicBases<T, DynamicsModel, IntegratorAbstract>();
-}
-
-void exposeExplicitIntegrators();
-
 void exposeIntegrators() {
   using DAEType = ContinuousDynamicsAbstractTpl<Scalar>;
 
   using PyIntegratorAbstract = internal::PyStageFunction<IntegratorAbstract>;
+  register_polymorphic_to_python<xyz::polymorphic<IntegratorAbstract>>();
+
+  PolymorphicMultiBaseVisitor<DynamicsModel, IntegratorAbstract>
+      conversions_visitor;
+
   bp::class_<PyIntegratorAbstract, bp::bases<DynamicsModel>,
              boost::noncopyable>("IntegratorAbstract",
                                  "Base class for numerical integrators.",
@@ -39,7 +37,9 @@ void exposeIntegrators() {
       .add_property("space",
                     bp::make_function(&IntegratorAbstract::space,
                                       bp::return_internal_reference<>()),
-                    "Return the state manifold.");
+                    "Return the state manifold.")
+      // allow casting custom Python class to polymorphic<base_classes>...
+      .def(conversions_visitor);
 
   bp::register_ptr_to_python<shared_ptr<IntegratorDataTpl<Scalar>>>();
   bp::class_<IntegratorDataTpl<Scalar>, bp::bases<DynamicsDataTpl<Scalar>>>(
@@ -48,18 +48,16 @@ void exposeIntegrators() {
                      &IntegratorDataTpl<Scalar>::continuous_data);
 
   using MidpointIntegrator = IntegratorMidpointTpl<Scalar>;
-  declareIntegratorConversions<MidpointIntegrator>();
   bp::class_<MidpointIntegrator, bp::bases<IntegratorAbstract>>(
       "IntegratorMidpoint", bp::init<xyz::polymorphic<DAEType>, Scalar>(
                                 bp::args("self", "dae", "timestep")))
-      .def_readwrite("timestep", &MidpointIntegrator::timestep_, "Time step.");
+      .def_readwrite("timestep", &MidpointIntegrator::timestep_, "Time step.")
+      .def(conversions_visitor);
 
   bp::register_ptr_to_python<shared_ptr<IntegratorMidpointDataTpl<Scalar>>>();
   bp::class_<IntegratorMidpointDataTpl<Scalar>,
              bp::bases<IntegratorDataTpl<Scalar>>>("IntegratorMidpointData",
                                                    bp::no_init);
-
-  exposeExplicitIntegrators();
 }
 
 } // namespace python

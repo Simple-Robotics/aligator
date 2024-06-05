@@ -1,6 +1,5 @@
 /// @file
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
-#include <proxsuite-nlp/python/polymorphic.hpp>
 #include "aligator/python/costs.hpp"
 #include "aligator/python/visitors.hpp"
 
@@ -26,17 +25,18 @@ struct CostDataWrapper : CostData, bp::wrapper<CostData> {
   using CostData::CostData;
 };
 
+PolymorphicVisitor<PolyCost> poly_visitor;
+
 void exposeQuadCost() {
 
-  convertibleToPolymorphicBases<ConstantCostTpl<Scalar>, CostAbstract>();
   bp::class_<ConstantCostTpl<Scalar>, bp::bases<CostAbstract>>(
       "ConstantCost", "A constant cost term.",
       bp::init<xyz::polymorphic<Manifold>, int, Scalar>(
           bp::args("self", "space", "nu", "value")))
       .def_readwrite("value", &ConstantCostTpl<Scalar>::value_)
-      .def(CopyableVisitor<ConstantCostTpl<Scalar>>());
+      .def(CopyableVisitor<ConstantCostTpl<Scalar>>())
+      .def(poly_visitor);
 
-  convertibleToPolymorphicBases<QuadraticCost, CostAbstract>();
   bp::class_<QuadraticCost, bp::bases<CostAbstract>>(
       "QuadraticCost",
       "Quadratic cost in both state and control - only for Euclidean spaces.",
@@ -61,7 +61,8 @@ void exposeQuadCost() {
                     "Whether there is a cross term.")
       .add_property("weights_cross", &QuadraticCost::getCrossWeights,
                     &QuadraticCost::setCrossWeight, "Cross term weight.")
-      .def(CopyableVisitor<QuadraticCostTpl<Scalar>>());
+      .def(CopyableVisitor<QuadraticCostTpl<Scalar>>())
+      .def(poly_visitor);
 
   bp::class_<QuadraticCost::Data, bp::bases<CostData>>(
       "QuadraticCostData", "Quadratic cost data.", bp::no_init);
@@ -77,7 +78,7 @@ void exposeCentroidalFunctions();
 void exposeCostStack();
 
 void exposeCostAbstract() {
-  proxsuite::nlp::python::register_polymorphic_to_python<PolyCost>();
+  register_polymorphic_to_python<PolyCost>();
   bp::class_<PyCostFunction<>, boost::noncopyable>(
       "CostAbstract", "Base class for cost functions.", bp::no_init)
       .def(bp::init<xyz::polymorphic<Manifold>, const int>(
@@ -95,7 +96,8 @@ void exposeCostAbstract() {
       .add_property("nx", &CostAbstract::nx)
       .add_property("ndx", &CostAbstract::ndx)
       .add_property("nu", &CostAbstract::nu)
-      .def(CreateDataPythonVisitor<CostAbstract>());
+      .def(CreateDataPythonVisitor<CostAbstract>())
+      .def(poly_visitor);
 
   bp::register_ptr_to_python<shared_ptr<CostData>>();
   bp::class_<CostDataWrapper, boost::noncopyable>(

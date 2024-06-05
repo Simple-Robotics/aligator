@@ -25,8 +25,9 @@ void exposeKinodynamics() {
 
   using Model = pinocchio::ModelTpl<Scalar>;
 
-  convertibleToPolymorphicBases<KinodynamicsFwdDynamics,
-                                ContinuousDynamicsAbstract, ODEAbstract>();
+  const PolymorphicMultiBaseVisitor<ODEAbstract, ContinuousDynamicsAbstract>
+      ode_visitor;
+
   bp::class_<KinodynamicsFwdDynamics, bp::bases<ODEAbstract>>(
       "KinodynamicsFwdDynamics",
       "Centroidal forward dynamics + kinematics using Pinocchio.",
@@ -37,7 +38,8 @@ void exposeKinodynamics() {
           bp::args("self", "space", "model", "gravity", "contact_states",
                    "contact_ids", "force_size")))
       .def_readwrite("contact_states",
-                     &KinodynamicsFwdDynamics::contact_states_);
+                     &KinodynamicsFwdDynamics::contact_states_)
+      .def(ode_visitor);
 
   bp::register_ptr_to_python<shared_ptr<KinodynamicsFwdData>>();
 
