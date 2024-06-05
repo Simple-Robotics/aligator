@@ -69,14 +69,6 @@ void exposeStage() {
                     bp::make_getter(&StageModel::cost_,
                                     bp::return_internal_reference<>()),
                     "Stage cost.")
-      .add_property(
-          "dyn_model",
-          bp::make_function(&StageModel::dyn_model,
-                            proxsuite::nlp::deprecation_warning_policy<
-                                proxsuite::nlp::DeprecationType::DEPRECATION,
-                                bp::return_internal_reference<>>(
-                                "Deprecated. Use StageModel.dynamics instead")),
-          "Stage dynamics.")
       .def("evaluate", &StageModel::evaluate, ("self"_a, "x", "u", "y", "data"),
            "Evaluate the stage cost, dynamics, constraints.")
       .def("computeFirstOrderDerivatives",
