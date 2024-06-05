@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(lqr_proxddp) {
 
   QuadraticCost cost = QuadraticCost(Q, R, q, r);
   QuadraticCost term_cost = QuadraticCost(Q * 10., MatrixXd());
-  assert(term_cost->nu == 0);
+  assert(term_cost.nu == 0);
 
   auto stage = StageModel(cost, dyn_model);
 
