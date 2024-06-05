@@ -17,8 +17,7 @@ namespace aligator {
  *            through smart pointers to leverage dynamic
  *            polymorphism.
  */
-template <typename _Scalar>
-struct StageModelTpl : Cloneable<StageModelTpl<_Scalar>> {
+template <typename _Scalar> struct StageModelTpl {
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
@@ -128,12 +127,6 @@ public:
 
     oss << " }";
     return oss;
-  }
-
-protected:
-  // StageModelTpl(ManifoldPtr space, const int nu);
-  virtual StageModelTpl *clone_impl() const override {
-    return new StageModelTpl(*this);
   }
 };
 
