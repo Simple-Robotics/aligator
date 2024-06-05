@@ -25,8 +25,10 @@ void ConstraintStackTpl<Scalar>::pushBack(const ConstraintType &el,
 
 template <typename Scalar>
 void ConstraintStackTpl<Scalar>::pushBack(const ConstraintType &el) {
-  assert(el.func != 0 && "constraint must have non-null underlying function.");
-  assert(el.set != 0 && "constraint must have non-null underlying set.");
+  assert(!el.func.valueless_after_move() &&
+         "constraint must have non-null underlying function.");
+  assert(!el.set.valueless_after_move() &&
+         "constraint must have non-null underlying set.");
   pushBack(el, el.nr());
 }
 

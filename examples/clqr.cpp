@@ -58,7 +58,7 @@ int main() {
 
   QuadraticCost cost = QuadraticCost(Q, R, q, r);
   QuadraticCost term_cost = QuadraticCost(Q * 10., MatrixXd());
-  assert(term_cost->nu == 0);
+  assert(term_cost.nu == 0);
 
   double ctrlUpperBound = 0.3;
   auto stage = StageModel(cost, dyn_model);
