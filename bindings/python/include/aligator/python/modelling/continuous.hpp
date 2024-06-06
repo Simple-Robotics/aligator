@@ -4,15 +4,14 @@
 
 #include "aligator/python/fwd.hpp"
 
-#include "aligator/modelling/dynamics/continuous-dynamics-abstract.hpp"
-#include "aligator/modelling/dynamics/ode-abstract.hpp"
+#include "aligator/modelling/dynamics/context.hpp"
 
 namespace aligator {
 namespace python {
 
-template <class T = dynamics::ContinuousDynamicsAbstractTpl<context::Scalar>>
+template <class T = context::ContinuousDynamicsAbstract>
 struct PyContinuousDynamics : T, bp::wrapper<T> {
-  using Data = dynamics::ContinuousDynamicsDataTpl<context::Scalar>;
+  using Data = context::ContinuousDynamicsData;
   ALIGATOR_DYNAMIC_TYPEDEFS(context::Scalar);
   using T::T;
 
@@ -35,11 +34,11 @@ struct PyContinuousDynamics : T, bp::wrapper<T> {
   shared_ptr<Data> default_createData() const { return T::createData(); }
 };
 
-template <class T = dynamics::ODEAbstractTpl<context::Scalar>>
+template <class T = context::ODEAbstract>
 struct PyODEAbstract : T, bp::wrapper<T> {
   using Scalar = context::Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using Data = dynamics::ContinuousDynamicsDataTpl<context::Scalar>;
+  using Data = context::ODEData;
 
   using T::T;
 
