@@ -24,7 +24,7 @@ using context::StageFunction;
 
 void exposeDynamicsBase() {
 
-  using PyDynamicsModel = internal::PyStageFunction<DynamicsModel>;
+  using PyDynamicsModel = PyStageFunction<DynamicsModel>;
 
   register_polymorphic_to_python<xyz::polymorphic<DynamicsModel>>();
   StdVectorPythonVisitor<std::vector<xyz::polymorphic<DynamicsModel>>,

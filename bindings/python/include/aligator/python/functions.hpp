@@ -10,7 +10,6 @@
 
 namespace aligator {
 namespace python {
-namespace internal {
 /// Wrapper for the StageFunction class and any virtual children that avoids
 /// having to redeclare Python overrides for these children.
 ///
@@ -91,8 +90,6 @@ struct PyUnaryFunction : UFunction, bp::wrapper<UFunction> {
     UFunction::computeVectorHessianProducts(x, lbda, data);
   }
 };
-
-} // namespace internal
 
 template <typename Class>
 struct SlicingVisitor : bp::def_visitor<SlicingVisitor<Class>> {
