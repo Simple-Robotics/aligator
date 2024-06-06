@@ -20,7 +20,6 @@ using context::StageFunction;
 using context::StageFunctionData;
 using context::UnaryFunction;
 using context::VectorXs;
-using internal::PyStageFunction;
 using PolyFunction = xyz::polymorphic<StageFunction>;
 using StateErrorResidual = StateErrorResidualTpl<Scalar>;
 using ControlErrorResidual = ControlErrorResidualTpl<Scalar>;

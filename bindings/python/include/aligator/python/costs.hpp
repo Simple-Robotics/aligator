@@ -6,42 +6,35 @@
 
 namespace aligator {
 namespace python {
-namespace internal {
 /// @brief Wrapper for the CostDataAbstractTpl class and its children.
-template <typename T = context::CostAbstract>
-struct PyCostFunction : T, bp::wrapper<T> {
+struct PyCostFunction : context::CostAbstract,
+                        bp::wrapper<context::CostAbstract> {
   using Scalar = context::Scalar;
-  using bp::wrapper<T>::get_override;
+  using T = context::CostAbstract;
   using CostData = CostDataAbstractTpl<Scalar>;
+  using context::CostAbstract::CostAbstractTpl;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
-  /// forwarding constructor
-  template <typename... Args>
-  PyCostFunction(Args &&...args) : T(std::forward<Args>(args)...) {}
-
-  virtual void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                        CostData &data) const override {
+  void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
+                CostData &data) const override {
     ALIGATOR_PYTHON_OVERRIDE_PURE(void, "evaluate", x, u, boost::ref(data));
   }
 
-  virtual void computeGradients(const ConstVectorRef &x,
-                                const ConstVectorRef &u,
-                                CostData &data) const override {
+  void computeGradients(const ConstVectorRef &x, const ConstVectorRef &u,
+                        CostData &data) const override {
     ALIGATOR_PYTHON_OVERRIDE_PURE(void, "computeGradients", x, u,
                                   boost::ref(data));
   }
 
-  virtual void computeHessians(const ConstVectorRef &x, const ConstVectorRef &u,
-                               CostData &data) const override {
+  void computeHessians(const ConstVectorRef &x, const ConstVectorRef &u,
+                       CostData &data) const override {
     ALIGATOR_PYTHON_OVERRIDE_PURE(void, "computeHessians", x, u,
                                   boost::ref(data));
   }
 
-  virtual shared_ptr<CostData> createData() const override {
+  shared_ptr<CostData> createData() const override {
     ALIGATOR_PYTHON_OVERRIDE(shared_ptr<CostData>, T, createData, );
   }
 };
-} // namespace internal
-
 } // namespace python
 } // namespace aligator
