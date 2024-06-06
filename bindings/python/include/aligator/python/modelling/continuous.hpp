@@ -14,8 +14,7 @@ template <class T = dynamics::ContinuousDynamicsAbstractTpl<context::Scalar>>
 struct PyContinuousDynamics : T, bp::wrapper<T> {
   using Data = dynamics::ContinuousDynamicsDataTpl<context::Scalar>;
   ALIGATOR_DYNAMIC_TYPEDEFS(context::Scalar);
-
-  template <class... Args> PyContinuousDynamics(Args &&...args) : T(args...) {}
+  using T::T;
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &xdot, Data &data) const override {
@@ -42,7 +41,7 @@ struct PyODEAbstract : T, bp::wrapper<T> {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Data = dynamics::ContinuousDynamicsDataTpl<context::Scalar>;
 
-  template <class... Args> PyODEAbstract(Args &&...args) : T(args...) {}
+  using T::T;
 
   virtual void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                        Data &data) const override {

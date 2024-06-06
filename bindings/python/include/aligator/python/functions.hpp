@@ -21,11 +21,8 @@ template <class FunctionBase = context::StageFunction>
 struct PyStageFunction : FunctionBase, bp::wrapper<FunctionBase> {
   using Scalar = typename FunctionBase::Scalar;
   using Data = StageFunctionDataTpl<Scalar>;
+  using FunctionBase::FunctionBase;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-
-  // Use perfect forwarding to the FunctionBase constructors.
-  template <typename... Args>
-  PyStageFunction(Args &&...args) : FunctionBase(std::forward<Args>(args)...) {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &y, Data &data) const override {
