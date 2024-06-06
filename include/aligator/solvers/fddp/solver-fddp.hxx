@@ -26,8 +26,8 @@ void SolverFDDPTpl<Scalar>::setup(const Problem &problem) {
   // check if there are any constraints other than dynamics and throw a warning
   std::vector<std::size_t> idx_where_constraints;
   for (std::size_t i = 0; i < problem.numSteps(); i++) {
-    const xyz::polymorphic<StageModel> sm = problem.stages_[i];
-    if (!sm->constraints_.empty())
+    const StageModel &sm = *problem.stages_[i];
+    if (!sm.constraints_.empty())
       idx_where_constraints.push_back(i);
   }
   if (idx_where_constraints.size() > 0) {
