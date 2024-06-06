@@ -6,16 +6,13 @@
 namespace aligator {
 namespace python {
 
-context::StageConstraint *
-make_constraint_wrap(const xyz::polymorphic<context::StageFunction> &f,
-                     const xyz::polymorphic<context::ConstraintSet> &c) {
-  return new context::StageConstraint{f, c};
-}
-
 void exposeConstraint() {
   using context::ConstraintSet;
   using context::ConstraintStack;
   using context::StageConstraint;
+  using context::StageFunction;
+  using PolyFunc = xyz::polymorphic<StageFunction>;
+  using PolySet = xyz::polymorphic<ConstraintSet>;
 
   bp::class_<StageConstraint>(
       "StageConstraint",
@@ -23,12 +20,10 @@ void exposeConstraint() {
       ":param f: underlying function\n"
       ":param cs: constraint set",
       bp::no_init)
-      .def("__init__",
-           bp::make_constructor(make_constraint_wrap,
-                                bp::default_call_policies(),
-                                ("func"_a, "cstr_set")),
-           "Contruct a StageConstraint from a StageFunction and a constraint "
-           "set.")
+      .def(bp::init<const PolyFunc &, const PolySet &>(
+          ("self"_a, "func", "cstr_set"),
+          "Contruct a StageConstraint from a StageFunction and a constraint "
+          "set."))
       .def_readwrite("func", &StageConstraint::func)
       .def_readwrite("set", &StageConstraint::set)
       .add_property("nr", &StageConstraint::nr, "Get constraint dimension.");
