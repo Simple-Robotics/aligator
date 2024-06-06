@@ -3,6 +3,7 @@
 #include "aligator/python/polymorphic-convertible.hpp"
 #include "aligator/python/visitors.hpp"
 #include "aligator/python/modelling/continuous.hpp"
+#include "aligator/modelling/dynamics/continuous-dynamics-abstract.hpp"
 #include "aligator/modelling/dynamics/context.hpp"
 
 namespace aligator {
