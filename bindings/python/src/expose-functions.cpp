@@ -23,6 +23,7 @@ using context::VectorXs;
 using PolyFunction = xyz::polymorphic<StageFunction>;
 using StateErrorResidual = StateErrorResidualTpl<Scalar>;
 using ControlErrorResidual = ControlErrorResidualTpl<Scalar>;
+PolymorphicMultiBaseVisitor<StageFunction> func_visitor;
 
 /// Required trampoline class
 struct FunctionDataWrapper : StageFunctionData, bp::wrapper<StageFunctionData> {
@@ -30,7 +31,7 @@ struct FunctionDataWrapper : StageFunctionData, bp::wrapper<StageFunctionData> {
 };
 
 void exposeFunctionBase() {
-  proxsuite::nlp::python::register_polymorphic_to_python<PolyFunction>();
+  register_polymorphic_to_python<PolyFunction>();
   bp::class_<PyStageFunction<>, boost::noncopyable>(
       "StageFunction",
       "Base class for ternary functions f(x,u,x') on a stage of the problem.",
@@ -52,6 +53,7 @@ void exposeFunctionBase() {
       .def_readonly("nu", &StageFunction::nu, "Control dimension.")
       .def_readonly("nr", &StageFunction::nr, "Function codimension.")
       .def(SlicingVisitor<StageFunction>())
+      .def(func_visitor)
       .def(CreateDataPolymorphicPythonVisitor<StageFunction,
                                               PyStageFunction<>>());
 
@@ -157,7 +159,7 @@ void exposeFunctions() {
       .def(bp::init<int, int>(bp::args("self", "ndx", "nu")))
       .def_readonly("space", &ControlErrorResidual::space_)
       .def_readwrite("target", &ControlErrorResidual::target_)
-      .def(PolymorphicMultiBaseVisitor<StageFunction>());
+      .def(func_visitor);
 
   using LinearFunction = LinearFunctionTpl<Scalar>;
   bp::class_<LinearFunction, bp::bases<StageFunction>>(
@@ -174,7 +176,7 @@ void exposeFunctions() {
       .def_readonly("B", &LinearFunction::B_)
       .def_readonly("C", &LinearFunction::C_)
       .def_readonly("d", &LinearFunction::d_)
-      .def(PolymorphicMultiBaseVisitor<StageFunction>());
+      .def(func_visitor);
 
   bp::class_<ControlBoxFunctionTpl<Scalar>, bp::bases<StageFunction>>(
       "ControlBoxFunction",
@@ -182,7 +184,7 @@ void exposeFunctions() {
           bp::args("self", "ndx", "umin", "umax")))
       .def(bp::init<const int, const int, const Scalar, const Scalar>(
           bp::args("self", "ndx", "nu", "umin", "umax")))
-      .def(PolymorphicMultiBaseVisitor<StageFunction>());
+      .def(func_visitor);
 }
 
 } // namespace python
