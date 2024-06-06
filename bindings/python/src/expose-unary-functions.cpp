@@ -15,6 +15,7 @@ using PolyUnaryFunction = xyz::polymorphic<UnaryFunction>;
 
 /// Expose the UnaryFunction type and its member function overloads.
 void exposeUnaryFunctions() {
+  PolymorphicMultiBaseVisitor<UnaryFunction, StageFunction> unary_visitor;
   proxsuite::nlp::python::register_polymorphic_to_python<PolyUnaryFunction>();
   using unary_eval_t = void (UnaryFunction::*)(const ConstVectorRef &,
                                                StageFunctionData &) const;
@@ -50,8 +51,11 @@ void exposeUnaryFunctions() {
           ("self"_a, "x", "lbda", "data"))
       .def<full_vhp_t>("computeVectorHessianProducts",
                        &UnaryFunction::computeVectorHessianProducts,
-                       ("self"_a, "x", "u", "y", "lbda", "data"));
-  //.def(SlicingVisitor<UnaryFunction>());
+                       ("self"_a, "x", "u", "y", "lbda", "data"))
+      .def(unary_visitor)
+      .def(SlicingVisitor<UnaryFunction>())
+      .def(CreateDataPolymorphicPythonVisitor<UnaryFunction,
+                                              PyUnaryFunction<>>());
 }
 
 } // namespace python
