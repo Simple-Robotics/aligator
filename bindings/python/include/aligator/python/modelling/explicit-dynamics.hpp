@@ -7,7 +7,6 @@
 
 namespace aligator {
 namespace python {
-namespace internal {
 
 /// Wrapper for ExplicitDynamicsModel which avoids redeclaring overrides for any
 /// child virtual class (e.g. integrator classes).
@@ -44,6 +43,5 @@ struct PyExplicitDynamics : ExplicitBase, bp::wrapper<ExplicitBase> {
   }
 };
 
-} // namespace internal
 } // namespace python
 } // namespace aligator

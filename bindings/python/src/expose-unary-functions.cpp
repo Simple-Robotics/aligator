@@ -11,7 +11,6 @@ using context::ConstVectorRef;
 using context::StageFunction;
 using context::StageFunctionData;
 using context::UnaryFunction;
-using internal::PyUnaryFunction;
 using PolyUnaryFunction = xyz::polymorphic<UnaryFunction>;
 
 /// Expose the UnaryFunction type and its member function overloads.

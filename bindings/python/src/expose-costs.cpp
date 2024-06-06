@@ -17,7 +17,6 @@ using context::Manifold;
 using context::MatrixXs;
 using context::Scalar;
 using context::VectorXs;
-using internal::PyCostFunction;
 using QuadraticCost = QuadraticCostTpl<Scalar>;
 using PolyCost = xyz::polymorphic<CostAbstract>;
 
@@ -79,9 +78,9 @@ void exposeCostStack();
 
 void exposeCostAbstract() {
   register_polymorphic_to_python<PolyCost>();
-  bp::class_<PyCostFunction<>, boost::noncopyable>(
+  bp::class_<PyCostFunction, boost::noncopyable>(
       "CostAbstract", "Base class for cost functions.", bp::no_init)
-      .def(bp::init<xyz::polymorphic<Manifold>, const int>(
+      .def(bp::init<const xyz::polymorphic<Manifold> &, const int>(
           bp::args("self", "space", "nu")))
       .def("evaluate", bp::pure_virtual(&CostAbstract::evaluate),
            bp::args("self", "x", "u", "data"), "Evaluate the cost function.")

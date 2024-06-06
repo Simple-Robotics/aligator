@@ -13,7 +13,6 @@ using context::ExplicitDynamics;
 using context::ExplicitDynamicsData;
 using context::Scalar;
 using ManifoldPtr = xyz::polymorphic<context::Manifold>;
-using internal::PyExplicitDynamics;
 PolymorphicMultiBaseVisitor<DynamicsModel, ExplicitDynamics>
     exp_dynamics_visitor;
 
