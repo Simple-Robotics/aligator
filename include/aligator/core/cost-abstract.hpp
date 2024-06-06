@@ -25,8 +25,9 @@ template <typename _Scalar> struct CostAbstractTpl {
   int nx() const { return space->nx(); }
   int ndx() const { return space->ndx(); }
 
-  CostAbstractTpl(xyz::polymorphic<Manifold> space, const int nu)
-      : space(space), nu(nu) {}
+  template <class U>
+  CostAbstractTpl(U &&space, const int nu)
+      : space(std::forward<U>(space)), nu(nu) {}
 
   /// @brief Evaluate the cost function.
   virtual void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
