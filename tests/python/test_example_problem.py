@@ -110,6 +110,8 @@ class TestClass:
         dyn_data.Ju[:, :] = np.arange(ndx**2, ndx**2 + ndx * nu).reshape(ndx, nu)
         self.dynmodel.evaluate(x0, u0, x1, dyn_data)
         self.dynmodel.computeJacobians(x0, u0, x1, dyn_data)
+        print(self.stage_model.dynamics)
+        assert isinstance(self.stage_model.dynamics, TwistModelExplicit)
 
     def test_cost(self, nsteps):
         cost = self.cost
@@ -117,6 +119,7 @@ class TestClass:
         cost.evaluate(x0, u0, cost_data)
         cost.computeGradients(x0, u0, cost_data)
         cost.computeHessians(x0, u0, cost_data)
+        assert isinstance(self.stage_model.cost, MyQuadCost)
 
     def test_stage(self, nsteps):
         stage_model = self.stage_model
