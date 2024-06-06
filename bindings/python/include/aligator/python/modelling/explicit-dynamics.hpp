@@ -20,8 +20,7 @@ struct PyExplicitDynamics : ExplicitBase, bp::wrapper<ExplicitBase> {
   using Data = ExplicitDynamicsDataTpl<Scalar>;
   using StageFunctionData = StageFunctionDataTpl<Scalar>;
 
-  template <typename... Args>
-  PyExplicitDynamics(Args &&...args) : ExplicitBase(args...) {}
+  using ExplicitBase::ExplicitBase;
 
   virtual void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                        Data &data) const {
