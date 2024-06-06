@@ -13,14 +13,13 @@ template <typename _Scalar> struct DirectSumCostTpl : CostAbstractTpl<_Scalar> {
   using BaseCost = CostAbstractTpl<Scalar>;
   using BaseData = CostDataAbstractTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
+  using PolyCost = xyz::polymorphic<BaseCost>;
 
   struct Data;
 
-  DirectSumCostTpl(xyz::polymorphic<BaseCost> c1, xyz::polymorphic<BaseCost> c2)
-      : BaseCost(xyz::polymorphic<Manifold>(c1->space * c2->space),
-                 c1->nu + c2->nu),
-        c1_(c1), c2_(c2) {
-    assert(c1 != nullptr && c2 != nullptr);
+  DirectSumCostTpl(const PolyCost &c1, const PolyCost &c2)
+      : BaseCost(c1->space * c2->space, c1->nu + c2->nu), c1_(c1), c2_(c2) {
+    assert(!c1.valueless_after_move() && !c2.valueless_after_move());
   }
 
   xyz::polymorphic<BaseCost> c1_, c2_;
