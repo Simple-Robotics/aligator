@@ -18,7 +18,7 @@ namespace python {
 ///
 /// @tparam FunctionBase The virtual class to expose.
 template <class FunctionBase = context::StageFunction>
-struct PyStageFunction : FunctionBase, bp::wrapper<FunctionBase> {
+struct PyStageFunction final : FunctionBase, bp::wrapper<FunctionBase> {
   using Scalar = typename FunctionBase::Scalar;
   using Data = StageFunctionDataTpl<Scalar>;
   using FunctionBase::FunctionBase;
@@ -54,7 +54,7 @@ struct PyStageFunction : FunctionBase, bp::wrapper<FunctionBase> {
 };
 
 template <typename UFunction = context::UnaryFunction>
-struct PyUnaryFunction : UFunction, bp::wrapper<UFunction> {
+struct PyUnaryFunction final : UFunction, bp::wrapper<UFunction> {
   using Scalar = typename UFunction::Scalar;
   static_assert(
       std::is_base_of_v<UnaryFunctionTpl<Scalar>, UFunction>,
@@ -85,6 +85,14 @@ struct PyUnaryFunction : UFunction, bp::wrapper<UFunction> {
                                             const ConstVectorRef &lbda,
                                             Data &data) const {
     UFunction::computeVectorHessianProducts(x, lbda, data);
+  }
+
+  shared_ptr<Data> createData() const override {
+    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<Data>, UFunction, createData, );
+  }
+
+  shared_ptr<Data> default_createData() const {
+    return UFunction::createData();
   }
 };
 

@@ -7,8 +7,8 @@
 namespace aligator {
 namespace python {
 /// @brief Wrapper for the CostDataAbstractTpl class and its children.
-struct PyCostFunction : context::CostAbstract,
-                        bp::wrapper<context::CostAbstract> {
+struct PyCostFunction final : context::CostAbstract,
+                              bp::wrapper<context::CostAbstract> {
   using Scalar = context::Scalar;
   using T = context::CostAbstract;
   using CostData = CostDataAbstractTpl<Scalar>;
@@ -35,6 +35,8 @@ struct PyCostFunction : context::CostAbstract,
   shared_ptr<CostData> createData() const override {
     ALIGATOR_PYTHON_OVERRIDE(shared_ptr<CostData>, T, createData, );
   }
+
+  shared_ptr<CostData> default_createData() const { return T::createData(); }
 };
 } // namespace python
 } // namespace aligator
