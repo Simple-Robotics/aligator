@@ -231,7 +231,7 @@ if args.display:
     qs = [x[:nq] for x in res.xs.tolist()]
     vs = [x[nq:] for x in res.xs.tolist()]
 
-    obj = pin.GeometryObject("objective", 0, frame_place_target, hppfcl.Sphere(0.05))
+    obj = pin.GeometryObject("objective", 0, hppfcl.Sphere(0.05), frame_place_target)
     color = [255, 20, 83, 255]
     obj.meshColor[:] = color
     obj.meshColor /= 255
