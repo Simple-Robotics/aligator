@@ -76,9 +76,9 @@ Scalar TrajOptProblemTpl<Scalar>::evaluate(
   term_cost_->evaluate(xs[nsteps], unone_, *prob_data.term_cost_data);
 
   for (std::size_t k = 0; k < term_cstrs_.size(); ++k) {
-    const ConstraintType &tc = term_cstrs_[k];
+    const auto &func = term_cstrs_.funcs[k];
     auto &td = prob_data.term_cstr_data[k];
-    tc.func->evaluate(xs[nsteps], unone_, xs[nsteps], *td);
+    func->evaluate(xs[nsteps], unone_, xs[nsteps], *td);
   }
   prob_data.cost_ = computeTrajectoryCost(prob_data);
   return prob_data.cost_;
@@ -118,9 +118,9 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
   }
 
   for (std::size_t k = 0; k < term_cstrs_.size(); ++k) {
-    const ConstraintType &tc = term_cstrs_[k];
+    const auto &func = term_cstrs_.funcs[k];
     auto &td = prob_data.term_cstr_data[k];
-    tc.func->computeJacobians(xs[nsteps], unone_, xs[nsteps], *td);
+    func->computeJacobians(xs[nsteps], unone_, xs[nsteps], *td);
   }
 }
 

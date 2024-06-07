@@ -23,7 +23,6 @@ struct ActionModelWrapperTpl : StageModelTpl<Scalar> {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageModelTpl<Scalar>;
   using Data = StageDataTpl<Scalar>;
-  using Constraint = StageConstraintTpl<Scalar>;
   using Dynamics = typename Base::Dynamics;
   using CrocActionModel = crocoddyl::ActionModelAbstractTpl<Scalar>;
   using StateWrapper = StateWrapperTpl<Scalar>;

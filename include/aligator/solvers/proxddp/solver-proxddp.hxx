@@ -371,9 +371,9 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
                                *prob_data.term_cost_data);
 
   for (std::size_t k = 0; k < problem.term_cstrs_.size(); ++k) {
-    const ConstraintType &tc = problem.term_cstrs_[k];
+    const auto &func = problem.term_cstrs_.funcs[k];
     StageFunctionData &td = *prob_data.term_cstr_data[k];
-    tc.func->evaluate(xs[nsteps], problem.unone_, xs[nsteps], td);
+    func->evaluate(xs[nsteps], problem.unone_, xs[nsteps], td);
   }
 
   // update multiplier
