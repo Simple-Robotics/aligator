@@ -10,7 +10,7 @@ namespace aligator {
 namespace python {
 
 template <class T = context::ContinuousDynamicsAbstract>
-struct PyContinuousDynamics : T, bp::wrapper<T> {
+struct PyContinuousDynamics final : T, bp::wrapper<T> {
   using Data = context::ContinuousDynamicsData;
   ALIGATOR_DYNAMIC_TYPEDEFS(context::Scalar);
   using T::T;
@@ -35,20 +35,20 @@ struct PyContinuousDynamics : T, bp::wrapper<T> {
 };
 
 template <class T = context::ODEAbstract>
-struct PyODEAbstract : T, bp::wrapper<T> {
+struct PyODEAbstract final : T, bp::wrapper<T> {
   using Scalar = context::Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Data = context::ODEData;
 
   using T::T;
 
-  virtual void forward(const ConstVectorRef &x, const ConstVectorRef &u,
-                       Data &data) const override {
+  void forward(const ConstVectorRef &x, const ConstVectorRef &u,
+               Data &data) const override {
     ALIGATOR_PYTHON_OVERRIDE_PURE(void, "forward", x, u, boost::ref(data));
   }
 
-  virtual void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
-                        Data &data) const override {
+  void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
+                Data &data) const override {
     ALIGATOR_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, boost::ref(data));
   }
 
