@@ -29,6 +29,10 @@ template <typename Scalar> struct ConstraintStackTpl {
   using iterator = typename std::vector<ConstraintType>::iterator;
 
   ConstraintStackTpl() : indices_({0}) {};
+  ConstraintStackTpl(const ConstraintStackTpl &) = default;
+  ConstraintStackTpl &operator=(const ConstraintStackTpl &) = default;
+  ConstraintStackTpl(ConstraintStackTpl &&) = default;
+  ConstraintStackTpl &operator=(ConstraintStackTpl &&) = default;
 
   auto begin() { return storage_.begin(); }
   auto end() { return storage_.end(); }
