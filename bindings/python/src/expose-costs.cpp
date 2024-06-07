@@ -95,7 +95,7 @@ void exposeCostAbstract() {
       .add_property("nx", &CostAbstract::nx)
       .add_property("ndx", &CostAbstract::ndx)
       .add_property("nu", &CostAbstract::nu)
-      .def(CreateDataPythonVisitor<CostAbstract>())
+      .def(CreateDataPolymorphicPythonVisitor<CostAbstract, PyCostFunction>())
       .def(poly_visitor);
 
   bp::register_ptr_to_python<shared_ptr<CostData>>();
