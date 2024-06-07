@@ -15,9 +15,6 @@ namespace aligator {
 template <typename Scalar> struct StageConstraintTpl {
   xyz::polymorphic<StageFunctionTpl<Scalar>> func;
   xyz::polymorphic<ConstraintSetBase<Scalar>> set;
-  template <class Fun, class Set>
-  StageConstraintTpl(const Fun &fun, const Set &set) : func(fun), set(set) {}
-  long nr() const { return func->nr; }
 };
 
 /// @brief Convenience class to manage a stack of constraints.
@@ -27,6 +24,8 @@ template <typename Scalar> struct ConstraintStackTpl {
   using value_type = ConstraintType;
   using data_type = ConstraintType;
   using iterator = typename std::vector<ConstraintType>::iterator;
+  using PolyFunc = xyz::polymorphic<StageFunctionTpl<Scalar>>;
+  using PolySet = xyz::polymorphic<ConstraintSetBase<Scalar>>;
 
   ConstraintStackTpl() : indices_({0}) {};
   ConstraintStackTpl(const ConstraintStackTpl &) = default;
@@ -34,15 +33,29 @@ template <typename Scalar> struct ConstraintStackTpl {
   ConstraintStackTpl(ConstraintStackTpl &&) = default;
   ConstraintStackTpl &operator=(ConstraintStackTpl &&) = default;
 
-  auto begin() { return storage_.begin(); }
-  auto end() { return storage_.end(); }
-
-  std::size_t size() const { return storage_.size(); }
+  std::size_t size() const { return funcs.size(); }
   bool empty() const { return size() == 0; }
   void clear();
 
-  void pushBack(const ConstraintType &el, const long nr);
-  void pushBack(const ConstraintType &el);
+  template <typename Cstr> void pushBack(Cstr &&el) {
+    assert(!el.func.valueless_after_move() &&
+           "constraint must have non-null underlying function.");
+    assert(!el.set.valueless_after_move() &&
+           "constraint must have non-null underlying set.");
+    funcs.emplace_back(el.func);
+    sets.emplace_back(el.set);
+    addDim(el.func->nr);
+  }
+
+  void pushBack(const PolyFunc &func, const PolySet &cstr_set) {
+    assert(!func.valueless_after_move() &&
+           "constraint must have non-null underlying function.");
+    assert(!cstr_set.valueless_after_move() &&
+           "constraint must have non-null underlying set.");
+    funcs.emplace_back(func);
+    sets.emplace_back(cstr_set);
+    addDim(func->nr);
+  }
 
   /// @brief Get the set of dimensions for each constraint in the stack.
   const std::vector<long> &dims() const { return dims_; }
@@ -51,23 +64,21 @@ template <typename Scalar> struct ConstraintStackTpl {
 
   long totalDim() const { return total_dim_; }
 
-  /// @brief Get the i-th constraint.
-  ConstraintType &operator[](std::size_t j) {
-    assert((j < this->storage_.size()) && "i exceeds number of constraints!");
-    return storage_[j];
-  }
-
-  /// @copybrief operator[]()
-  const ConstraintType &operator[](std::size_t j) const {
-    assert((j < this->storage_.size()) && "i exceeds number of constraints!");
-    return storage_[j];
-  }
+  std::vector<PolyFunc> funcs;
+  std::vector<PolySet> sets;
 
 protected:
-  std::vector<ConstraintType> storage_;
   std::vector<long> indices_;
   std::vector<long> dims_;
   long total_dim_ = 0;
+
+private:
+  void addDim(const long nr) {
+    const long last_cursor = indices_.back();
+    indices_.push_back(last_cursor + nr);
+    dims_.push_back(nr);
+    total_dim_ += nr;
+  }
 };
 
 } // namespace aligator

@@ -37,7 +37,7 @@ template <typename _Scalar> struct StageDataTpl {
     const std::size_t nc = stage_model.numConstraints();
 
     for (std::size_t j = 0; j < nc; j++) {
-      const auto &func = stage_model.constraints_[j].func;
+      const auto &func = stage_model.constraints_.funcs[j];
       constraint_data[j] = func->createData();
     }
   }

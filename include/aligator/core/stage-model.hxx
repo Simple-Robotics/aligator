@@ -56,7 +56,7 @@ void StageModelTpl<Scalar>::addConstraint(const FunctionPtr &func,
         "Function has the wrong dimension for u: got {:d}, expected {:d}",
         func->nu, this->nu()));
   }
-  constraints_.pushBack(Constraint{func, cstr_set});
+  constraints_.pushBack(func, cstr_set);
 }
 
 template <typename Scalar>
@@ -66,8 +66,7 @@ void StageModelTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                      Data &data) const {
   dynamics_->evaluate(x, u, y, *data.dynamics_data);
   for (std::size_t j = 0; j < numConstraints(); j++) {
-    const Constraint &cstr = constraints_[j];
-    cstr.func->evaluate(x, u, y, *data.constraint_data[j]);
+    constraints_.funcs[j]->evaluate(x, u, y, *data.constraint_data[j]);
   }
   cost_->evaluate(x, u, *data.cost_data);
 }
@@ -78,8 +77,7 @@ void StageModelTpl<Scalar>::computeFirstOrderDerivatives(
     Data &data) const {
   dynamics_->computeJacobians(x, u, y, *data.dynamics_data);
   for (std::size_t j = 0; j < numConstraints(); j++) {
-    const Constraint &cstr = constraints_[j];
-    cstr.func->computeJacobians(x, u, y, *data.constraint_data[j]);
+    constraints_.funcs[j]->computeJacobians(x, u, y, *data.constraint_data[j]);
   }
   cost_->computeGradients(x, u, *data.cost_data);
 }

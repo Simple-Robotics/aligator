@@ -19,8 +19,8 @@ TrajOptDataTpl<Scalar>::TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem)
   if (!problem.term_cstrs_.empty())
     term_cstr_data.reserve(problem.term_cstrs_.size());
   for (std::size_t k = 0; k < problem.term_cstrs_.size(); k++) {
-    const ConstraintType &tc = problem.term_cstrs_[k];
-    term_cstr_data.push_back(tc.func->createData());
+    const auto &func = problem.term_cstrs_.funcs[k];
+    term_cstr_data.push_back(func->createData());
   }
 }
 

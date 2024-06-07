@@ -18,7 +18,7 @@ template <typename Scalar>
 auto getConstraintProductSet(const ConstraintStackTpl<Scalar> &constraints) {
   std::vector<xyz::polymorphic<ConstraintSetBase<Scalar>>> components;
   for (size_t i = 0; i < constraints.size(); i++) {
-    components.push_back(constraints[i].set);
+    components.push_back(constraints.sets[i]);
   }
   return ConstraintSetProductTpl<Scalar>{components, constraints.dims()};
 }
