@@ -124,7 +124,9 @@ void exposeFunctionBase() {
       .def(PrintAddressVisitor<StageFunctionData>());
 
   StdVectorPythonVisitor<std::vector<PolyFunction>, true>::expose(
-      "StdVec_StageFunction");
+      "StdVec_StageFunction",
+      eigenpy::details::overload_base_get_item_for_std_vector<
+          std::vector<PolyFunction>>{});
   StdVectorPythonVisitor<std::vector<shared_ptr<StageFunctionData>>,
                          true>::expose("StdVec_StageFunctionData");
 }
