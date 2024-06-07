@@ -114,10 +114,10 @@ def main(args: Args):
         center_column2 = np.array([0.4, 2.4, 0.0])
 
         geom_cyl1 = pin.GeometryObject(
-            "column1", 0, pin.SE3(ROT_NULL, center_column1), cylinder
+            "column1", 0, cylinder, pin.SE3(ROT_NULL, center_column1)
         )
         geom_cyl2 = pin.GeometryObject(
-            "column2", 0, pin.SE3(ROT_NULL, center_column2), cylinder
+            "column2", 0, cylinder, pin.SE3(ROT_NULL, center_column2)
         )
         cyl_color1 = np.array([1.0, 0.2, 1.0, 0.4])
         cyl_color2 = np.array([0.2, 1.0, 1.0, 0.4])
@@ -132,7 +132,7 @@ def main(args: Args):
         # 1st arg is the plane normal
         # 2nd arg is offset from origin
         plane = fcl.Plane(np.array([0.0, 0.0, 1.0]), 0.0)
-        plane_obj = pin.GeometryObject("plane", 0, pin.SE3.Identity(), plane)
+        plane_obj = pin.GeometryObject("plane", 0, plane, pin.SE3.Identity())
         plane_obj.meshColor[:] = [1.0, 1.0, 0.95, 1.0]
         plane_obj.meshScale[:] = 2.0
         robot.visual_model.addGeometryObject(plane_obj)
@@ -143,16 +143,16 @@ def main(args: Args):
         objective_color = np.array([5, 104, 143, 200]) / 255.0
         if args.obstacles:
             sp1_obj = pin.GeometryObject(
-                "obj1", 0, pin.SE3(ROT_NULL, x_tar3[:3]), fcl.Sphere(0.05)
+                "obj1", 0, fcl.Sphere(0.05), pin.SE3(ROT_NULL, x_tar3[:3])
             )
             sp1_obj.meshColor[:] = objective_color
             robot.visual_model.addGeometryObject(sp1_obj)
         else:
             sp1_obj = pin.GeometryObject(
-                "obj1", 0, pin.SE3(ROT_NULL, x_tar1[:3]), fcl.Sphere(0.05)
+                "obj1", 0, fcl.Sphere(0.05), pin.SE3(ROT_NULL, x_tar1[:3])
             )
             sp2_obj = pin.GeometryObject(
-                "obj2", 0, pin.SE3(ROT_NULL, x_tar2[:3]), fcl.Sphere(0.05)
+                "obj2", 0, fcl.Sphere(0.05), pin.SE3(ROT_NULL, x_tar2[:3])
             )
             sp1_obj.meshColor[:] = objective_color
             sp2_obj.meshColor[:] = objective_color
