@@ -44,15 +44,25 @@ public:
                           const MatrixXs &actuation,
                           const RigidConstraintModelVector &constraint_models,
                           const ProxSettings &prox_settings,
-                          const Vector6s &fref, const int contact_id)
+                          const Vector6s &fref, const std::string &contact_name)
       : Base(ndx, (int)actuation.cols(), 6), pin_model_(model),
         actuation_matrix_(actuation), constraint_models_(constraint_models),
-        prox_settings_(prox_settings), fref_(fref), contact_id_(contact_id) {
+        prox_settings_(prox_settings), fref_(fref) {
     if (model.nv != actuation.rows()) {
       ALIGATOR_DOMAIN_ERROR(
           fmt::format("actuation matrix should have number of rows = pinocchio "
                       "model nv ({} and {}).",
                       actuation.rows(), model.nv));
+    }
+    contact_id_ = -1;
+    for (std::size_t i = 0; i < constraint_models.size(); i++) {
+      if (constraint_models[i].name == contact_name) {
+        contact_id_ = (int)i;
+      }
+    }
+    if (contact_id_ == -1) {
+      ALIGATOR_RUNTIME_ERROR(
+          "Contact name is not included in constraint models");
     }
   }
 

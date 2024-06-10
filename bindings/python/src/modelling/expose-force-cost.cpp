@@ -46,9 +46,9 @@ void exposeContactForce() {
       .def(bp::init<int, PinModel, const context::MatrixXs &,
                     const RigidConstraintModelVector &,
                     const pinocchio::ProximalSettingsTpl<Scalar> &,
-                    const context::Vector6s &, int>(
-          bp::args("self", "ndx", "model", "actuation_matrix",
-                   "constraint_models", "prox_settings", "fref", "contact_id")))
+                    const context::Vector6s &, const std::string &>(bp::args(
+          "self", "ndx", "model", "actuation_matrix", "constraint_models",
+          "prox_settings", "fref", "contact_name")))
       .def(FrameAPIVisitor<ContactForceResidual>())
       .def(func_visitor)
       .def("getReference", &ContactForceResidual::getReference,
@@ -70,10 +70,11 @@ void exposeContactForce() {
       bp::no_init)
       .def(bp::init<int, PinModel, const context::MatrixXs &,
                     const RigidConstraintModelVector &,
-                    const pinocchio::ProximalSettingsTpl<Scalar> &, const int,
-                    const double, const double, const double>(bp::args(
+                    const pinocchio::ProximalSettingsTpl<Scalar> &,
+                    const std::string &, const double, const double,
+                    const double>(bp::args(
           "self", "ndx", "model", "actuation_matrix", "constraint_models",
-          "prox_settings", "contact_id", "mu", "half_length", "half_width")))
+          "prox_settings", "contact_name", "mu", "half_length", "half_width")))
       .def(FrameAPIVisitor<MultibodyWrenchConeResidual>())
       .def(func_visitor)
       .def_readwrite("constraint_models",

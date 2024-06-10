@@ -47,11 +47,13 @@ BOOST_AUTO_TEST_CASE(contact_forces) {
   ci_LF.joint1_placement.setRandom();
   ci_LF.corrector.Kp.array() = 10;
   ci_LF.corrector.Kd.array() = 10;
+  ci_LF.name = "LF_foot";
 
   RigidConstraintModel ci_RF(CONTACT_6D, model, RF_id, LOCAL);
   ci_RF.joint1_placement.setRandom();
   ci_RF.corrector.Kp.array() = 10;
   ci_RF.corrector.Kd.array() = 10;
+  ci_RF.name = "RF_foot";
 
   constraint_models.push_back(ci_LF);
   constraint_data.push_back(RigidConstraintData(ci_LF));
@@ -68,8 +70,8 @@ BOOST_AUTO_TEST_CASE(contact_forces) {
   VectorXd fref(6);
   fref.setZero();
   ContactForceResidual fun =
-      ContactForceResidual(space.ndx(), model, act_matrix, constraint_models,
-                           prox_settings, fref, 1);
+      ContactForceResidual(space->ndx(), model, act_matrix, constraint_models,
+                           prox_settings, fref, "RF_foot");
   shared_ptr<StageFunctionData> sfdata = fun.createData();
   shared_ptr<ContactForceData> fdata =
       std::static_pointer_cast<ContactForceData>(sfdata);
@@ -154,11 +156,13 @@ BOOST_AUTO_TEST_CASE(wrench_cone) {
   ci_LF.joint1_placement.setRandom();
   ci_LF.corrector.Kp.array() = 10;
   ci_LF.corrector.Kd.array() = 10;
+  ci_LF.name = "LF_foot";
 
   RigidConstraintModel ci_RF(CONTACT_6D, model, RF_id, LOCAL);
   ci_RF.joint1_placement.setRandom();
   ci_RF.corrector.Kp.array() = 10;
   ci_RF.corrector.Kd.array() = 10;
+  ci_RF.name = "RF_foot";
 
   constraint_models.push_back(ci_LF);
   constraint_data.push_back(RigidConstraintData(ci_LF));
@@ -177,8 +181,8 @@ BOOST_AUTO_TEST_CASE(wrench_cone) {
   double hL = 0.2;
   double hW = 0.2;
   MultibodyWrenchConeResidual fun = MultibodyWrenchConeResidual(
-      space.ndx(), model, act_matrix, constraint_models, prox_settings, 0, mu,
-      hL, hW);
+      space->ndx(), model, act_matrix, constraint_models, prox_settings,
+      "LF_foot", mu, hL, hW);
   shared_ptr<StageFunctionData> sfdata = fun.createData();
   shared_ptr<MultibodyWrenchConeData> fdata =
       std::static_pointer_cast<MultibodyWrenchConeData>(sfdata);
@@ -193,9 +197,6 @@ BOOST_AUTO_TEST_CASE(wrench_cone) {
   cone_partial_dx = fdata->Jx_;
   cone_partial_du = fdata->Ju_;
 
-  std::cout << "cone_dx" << cone_partial_dx << std::endl;
-  std::cout << "cone_du" << cone_partial_du << std::endl;
-
   // Data_fd
   MatrixXd cone_partial_dx_fd(17, model.nv * 2);
   cone_partial_dx_fd.setZero();
@@ -203,7 +204,6 @@ BOOST_AUTO_TEST_CASE(wrench_cone) {
   cone_partial_du_fd.setZero();
 
   const VectorXd cone0 = fdata->value_;
-  std::cout << "value " << fdata->value_ << std::endl;
   VectorXd v_eps(VectorXd::Zero(model.nv * 2));
   VectorXd u_eps(VectorXd::Zero(model.nv - 6));
   VectorXd x_plus(model.nq + model.nv);
