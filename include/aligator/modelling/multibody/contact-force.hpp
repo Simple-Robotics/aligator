@@ -37,17 +37,19 @@ public:
   MatrixXs actuation_matrix_;
   RigidConstraintModelVector constraint_models_;
   ProxSettings prox_settings_;
-  Vector6s fref_;
+  Eigen::VectorXd fref_;
+  long force_size_;
   int contact_id_;
 
   ContactForceResidualTpl(const int ndx, const Model &model,
                           const MatrixXs &actuation,
                           const RigidConstraintModelVector &constraint_models,
                           const ProxSettings &prox_settings,
-                          const Vector6s &fref, const std::string &contact_name)
-      : Base(ndx, (int)actuation.cols(), 6), pin_model_(model),
+                          const Eigen::VectorXd &fref,
+                          const std::string &contact_name)
+      : Base(ndx, (int)actuation.cols(), fref.size()), pin_model_(model),
         actuation_matrix_(actuation), constraint_models_(constraint_models),
-        prox_settings_(prox_settings), fref_(fref) {
+        prox_settings_(prox_settings), fref_(fref), force_size_(fref.size()) {
     if (model.nv != actuation.rows()) {
       ALIGATOR_DOMAIN_ERROR(
           fmt::format("actuation matrix should have number of rows = pinocchio "
@@ -66,8 +68,10 @@ public:
     }
   }
 
-  const Vector6s &getReference() const { return fref_; }
-  void setReference(const Eigen::Ref<const Vector6s> &fnew) { fref_ = fnew; }
+  const Eigen::VectorXd &getReference() const { return fref_; }
+  void setReference(const Eigen::Ref<const Eigen::VectorXd> &fnew) {
+    fref_ = fnew;
+  }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &, BaseData &data) const;

@@ -21,7 +21,9 @@ void ContactForceResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
   pinocchio::constraintDynamics(pin_model_, d.pin_data_, q, v, d.tau_,
                                 constraint_models_, d.constraint_datas_,
                                 d.settings);
-  d.value_ = d.pin_data_.lambda_c.segment(contact_id_ * 6, 6) - fref_;
+  d.value_ =
+      d.pin_data_.lambda_c.segment(contact_id_ * force_size_, force_size_) -
+      fref_;
 }
 
 template <typename Scalar>
@@ -34,19 +36,19 @@ void ContactForceResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
   pinocchio::computeConstraintDynamicsDerivatives(
       pin_model_, d.pin_data_, constraint_models_, d.constraint_datas_,
       d.settings);
-  d.Jx_.leftCols(pin_model_.nv) =
-      d.pin_data_.dlambda_dq.block(contact_id_ * 6, 0, 6, pin_model_.nv);
-  d.Jx_.rightCols(pin_model_.nv) =
-      d.pin_data_.dlambda_dv.block(contact_id_ * 6, 0, 6, pin_model_.nv);
-  d.Ju_.noalias() =
-      d.pin_data_.dlambda_dtau.block(contact_id_ * 6, 0, 6, pin_model_.nv) *
-      actuation_matrix_;
+  d.Jx_.leftCols(pin_model_.nv) = d.pin_data_.dlambda_dq.block(
+      contact_id_ * force_size_, 0, force_size_, pin_model_.nv);
+  d.Jx_.rightCols(pin_model_.nv) = d.pin_data_.dlambda_dv.block(
+      contact_id_ * force_size_, 0, force_size_, pin_model_.nv);
+  d.Ju_.noalias() = d.pin_data_.dlambda_dtau.block(contact_id_ * force_size_, 0,
+                                                   force_size_, pin_model_.nv) *
+                    actuation_matrix_;
 }
 
 template <typename Scalar>
 ContactForceDataTpl<Scalar>::ContactForceDataTpl(
     const ContactForceResidualTpl<Scalar> *model)
-    : Base(model->ndx1, model->nu, model->ndx2, 6),
+    : Base(model->ndx1, model->nu, model->ndx2, model->force_size_),
       pin_data_(model->pin_model_), tau_(model->pin_model_.nv) {
   tau_.setZero();
 

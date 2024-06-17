@@ -50,6 +50,7 @@ set(TEST_NAMES
     problem
     solver-storage
     utils
+    forces
 )
 
 foreach(test_name ${TEST_NAMES})
