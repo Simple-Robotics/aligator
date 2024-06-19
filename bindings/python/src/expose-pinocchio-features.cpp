@@ -10,9 +10,11 @@ namespace python {
 
 void exposePinocchioFunctions();
 void exposeFreeFwdDynamics();
+void exposeMultibodyCommon();
 void exposeKinodynamics();
 #ifdef ALIGATOR_PINOCCHIO_V3
 void exposeConstrainedFwdDynamics();
+void exposeMultibodyConstraintCommon();
 #endif
 
 void exposePinocchioFeatures() {
@@ -22,10 +24,12 @@ void exposePinocchioFeatures() {
   {
     bp::scope dyn = get_namespace("dynamics");
     exposeFreeFwdDynamics();
+    exposeMultibodyCommon();
     exposeKinodynamics();
 
 #ifdef ALIGATOR_PINOCCHIO_V3
     exposeConstrainedFwdDynamics();
+    exposeMultibodyConstraintCommon();
 #endif
   }
 }

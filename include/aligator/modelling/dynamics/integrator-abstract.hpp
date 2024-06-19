@@ -27,6 +27,8 @@ public:
   using Base = DynamicsModelTpl<Scalar>;
   using BaseData = DynamicsDataTpl<Scalar>;
   using ContinuousDynamics = ContinuousDynamicsAbstractTpl<Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   /// The underlying continuous dynamics.
   shared_ptr<ContinuousDynamics> continuous_dynamics_;
@@ -34,8 +36,15 @@ public:
   /// Constructor from instances of DynamicsType.
   explicit IntegratorAbstractTpl(
       const shared_ptr<ContinuousDynamics> &cont_dynamics);
-  virtual ~IntegratorAbstractTpl() = default;
-  shared_ptr<BaseData> createData() const;
+
+  void configure(
+      CommonModelBuilderContainer &common_buider_container) const override {
+    continuous_dynamics_->configure(common_buider_container);
+  }
+
+  shared_ptr<BaseData> createData() const override;
+  shared_ptr<BaseData>
+  createData(const CommonModelDataContainer &container) const override;
 };
 
 /// @brief  Data class for numerical integrators (IntegratorAbstractTpl).
@@ -44,6 +53,7 @@ struct IntegratorDataTpl : DynamicsDataTpl<_Scalar> {
   using Scalar = _Scalar;
   using Base = DynamicsDataTpl<Scalar>;
   using VectorXs = typename math_types<Scalar>::VectorXs;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
   shared_ptr<ContinuousDynamicsDataTpl<Scalar>> continuous_data;
 
   using Base::Huu_;
@@ -61,6 +71,8 @@ struct IntegratorDataTpl : DynamicsDataTpl<_Scalar> {
   VectorXs xdot_;
 
   explicit IntegratorDataTpl(const IntegratorAbstractTpl<Scalar> *integrator);
+  explicit IntegratorDataTpl(const IntegratorAbstractTpl<Scalar> *integrator,
+                             const CommonModelDataContainer &container);
   virtual ~IntegratorDataTpl() = default;
 };
 

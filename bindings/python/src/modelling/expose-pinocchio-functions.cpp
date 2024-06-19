@@ -123,6 +123,8 @@ auto underactuatedConstraintInvDyn_proxy(
   return bp::make_tuple((context::VectorXs)out.head(nu),
                         (context::VectorXs)out.tail(d));
 }
+
+void exposeContactForce();
 #endif
 
 void exposePinocchioFunctions() {
@@ -140,6 +142,7 @@ void exposePinocchioFunctions() {
                    "constraint_data"),
           "Compute the gravity-compensating torque for a pinocchio Model under "
           "a rigid constraint.");
+  exposeContactForce();
 #endif
 }
 } // namespace python

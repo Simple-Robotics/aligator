@@ -20,6 +20,7 @@ struct finite_difference_impl : virtual _Base<_Scalar> {
   using Base = _Base<Scalar>;
   using BaseData = typename Base::Data;
   using Manifold = ManifoldAbstractTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   shared_ptr<Manifold> space_;
   shared_ptr<Base> func_;
@@ -27,23 +28,49 @@ struct finite_difference_impl : virtual _Base<_Scalar> {
   int nx1, nx2;
 
   struct Data : BaseData {
+    using CommonModelContainer = CommonModelContainerTpl<Scalar>;
+    using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
+
     using BaseData::ndx1;
     using BaseData::ndx2;
     using BaseData::nr;
     using BaseData::nu;
     shared_ptr<BaseData> data_0;
+    CommonModelContainer common_models_1;
+    CommonModelDataContainer common_datas_1;
     shared_ptr<BaseData> data_1;
     VectorXs dx, du, dy;
     VectorXs xp, up, yp;
 
     Data(finite_difference_impl const &model)
         : BaseData(model.ndx1, model.nu, model.ndx2, model.nr),
-          data_0(model.func_->createData()), data_1(model.func_->createData()),
-          dx(ndx1), du(nu), dy(ndx2), xp(model.nx1), up(model.nu),
-          yp(model.nx2) {
+          data_0(model.func_->createData()), dx(ndx1), du(nu), dy(ndx2),
+          xp(model.nx1), up(model.nu), yp(model.nx2) {
       dx.setZero();
       du.setZero();
       dy.setZero();
+
+      CommonModelBuilderContainer model_builders;
+      model.func_->configure(model_builders);
+      common_models_1 = model_builders.createCommonModelContainer();
+      common_datas_1 = common_models_1.createData();
+      data_1 = model.func_->createData(common_datas_1);
+    }
+
+    Data(finite_difference_impl const &model,
+         const CommonModelDataContainer &container)
+        : BaseData(model.ndx1, model.nu, model.ndx2, model.nr),
+          data_0(model.func_->createData(container)), dx(ndx1), du(nu),
+          dy(ndx2), xp(model.nx1), up(model.nu), yp(model.nx2) {
+      dx.setZero();
+      du.setZero();
+      dy.setZero();
+
+      CommonModelBuilderContainer model_builders;
+      model.func_->configure(model_builders);
+      common_models_1 = model_builders.createCommonModelContainer();
+      common_datas_1 = common_models_1.createData();
+      data_1 = model.func_->createData(common_datas_1);
     }
   };
 
@@ -78,6 +105,7 @@ struct finite_difference_impl : virtual _Base<_Scalar> {
     for (int i = 0; i < func_->ndx1; i++) {
       d.dx[i] = fd_eps;
       space_->integrate(x, d.dx, d.xp);
+      d.common_models_1.evaluate(d.xp, u, d.common_datas_1);
       func_->evaluate(d.xp, u, y, *d.data_1);
       data.Jx_.col(i) = (vp - v0) / fd_eps;
       d.dx[i] = 0.;
@@ -86,6 +114,7 @@ struct finite_difference_impl : virtual _Base<_Scalar> {
     for (int i = 0; i < func_->ndx2; i++) {
       d.dy[i] = fd_eps;
       space_->integrate(y, d.dy, d.yp);
+      d.common_models_1.evaluate(x, u, d.common_datas_1);
       func_->evaluate(x, u, d.yp, *d.data_1);
       data.Jy_.col(i) = (vp - v0) / fd_eps;
       d.dy[i] = 0.;
@@ -94,6 +123,7 @@ struct finite_difference_impl : virtual _Base<_Scalar> {
     for (int i = 0; i < func_->nu; i++) {
       d.du[i] = fd_eps;
       d.up = u + d.du;
+      d.common_models_1.evaluate(x, d.up, d.common_datas_1);
       func_->evaluate(x, d.up, y, *d.data_1);
       data.Ju_.col(i) = (vp - v0) / fd_eps;
       d.du[i] = 0.;
@@ -107,6 +137,11 @@ struct finite_difference_impl : virtual _Base<_Scalar> {
 
   shared_ptr<BaseData> createData() const {
     return std::make_shared<Data>(*this);
+  }
+
+  shared_ptr<BaseData>
+  createData(const CommonModelDataContainer &container) const {
+    return std::make_shared<Data>(*this, container);
   }
 };
 
@@ -163,13 +198,18 @@ struct CostFiniteDifferenceHelper : CostAbstractTpl<Scalar> {
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using CostBase = CostAbstractTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   using CostBase::space;
 
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   struct Data : CostData {
+    using CommonModelContainer = CommonModelContainerTpl<Scalar>;
+    using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
 
+    CommonModelContainer common_models_2;
+    CommonModelDataContainer common_datas_2;
     shared_ptr<CostData> c1, c2;
     VectorXs dx, du;
     VectorXs xp, up;
@@ -177,7 +217,24 @@ struct CostFiniteDifferenceHelper : CostAbstractTpl<Scalar> {
     Data(CostFiniteDifferenceHelper const &obj)
         : CostData(obj), dx(obj.ndx()), du(obj.nu), xp(obj.nx()), up(obj.nu) {
       c1 = obj.cost_->createData();
-      c2 = obj.cost_->createData();
+
+      CommonModelBuilderContainer model_builders;
+      obj.cost_->configure(model_builders);
+      common_models_2 = model_builders.createCommonModelContainer();
+      common_datas_2 = common_models_2.createData();
+      c2 = obj.cost_->createData(common_datas_2);
+    }
+
+    Data(CostFiniteDifferenceHelper const &obj,
+         const CommonModelDataContainer &container)
+        : CostData(obj), dx(obj.ndx()), du(obj.nu), xp(obj.nx()), up(obj.nu) {
+      c1 = obj.cost_->createData(container);
+
+      CommonModelBuilderContainer model_builders;
+      obj.cost_->configure(model_builders);
+      common_models_2 = model_builders.createCommonModelContainer();
+      common_datas_2 = common_models_2.createData();
+      c2 = obj.cost_->createData(common_datas_2);
     }
   };
 
@@ -204,6 +261,7 @@ struct CostFiniteDifferenceHelper : CostAbstractTpl<Scalar> {
     for (int i = 0; i < this->ndx(); i++) {
       d.dx[i] = fd_eps;
       space.integrate(x, d.dx, d.xp);
+      d.common_models_2.evaluate(d.xp, u, d.common_datas_2);
       cost_->evaluate(d.xp, u, *d.c2);
 
       d.Lx_[i] = (d.c2->value_ - d.c1->value_) / fd_eps;
@@ -214,6 +272,7 @@ struct CostFiniteDifferenceHelper : CostAbstractTpl<Scalar> {
     for (int i = 0; i < this->nu; i++) {
       d.du[i] = fd_eps;
       d.up = u + d.du;
+      d.common_models_2.evaluate(x, d.up, d.common_datas_2);
       cost_->evaluate(x, d.up, *d.c2);
 
       d.Lu_[i] = (d.c2->value_ - d.c1->value_) / fd_eps;
@@ -227,6 +286,10 @@ struct CostFiniteDifferenceHelper : CostAbstractTpl<Scalar> {
 
   shared_ptr<CostData> createData() const override {
     return std::make_shared<Data>(*this);
+  }
+  shared_ptr<CostData>
+  createData(const CommonModelDataContainer &container) const override {
+    return std::make_shared<Data>(*this, container);
   }
 
   shared_ptr<CostBase> cost_;

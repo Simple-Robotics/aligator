@@ -14,14 +14,19 @@ template <typename _Scalar> struct TrajOptDataTpl {
   using ConstraintType = StageConstraintTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   /// Current cost in the TO problem.
   Scalar cost_ = 0.;
 
+  /// init_condition_common_model_container_ Data
+  CommonModelDataContainer init_condition_common_model_data_container;
   /// Data for the initial condition.
   shared_ptr<StageFunctionData> init_data;
   /// Data structs for each stage of the problem.
   std::vector<shared_ptr<StageData>> stage_data;
+  /// term_common_model_container_ Data
+  CommonModelDataContainer term_common_model_data_container;
   /// Terminal cost data.
   shared_ptr<CostData> term_cost_data;
   /// Terminal constraint data.

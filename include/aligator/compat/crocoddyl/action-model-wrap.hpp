@@ -37,6 +37,8 @@ struct ActionModelWrapperTpl : StageModelTpl<Scalar> {
 
   bool has_dyn_model() const override { return false; }
 
+  void configure() const override;
+
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &y, Data &data) const override;
 

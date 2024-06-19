@@ -17,6 +17,9 @@ ActionModelWrapperTpl<Scalar>::ActionModelWrapperTpl(
       action_model_(action_model) {}
 
 template <typename Scalar>
+void ActionModelWrapperTpl<Scalar>::configure() const {}
+
+template <typename Scalar>
 void ActionModelWrapperTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                              const ConstVectorRef &u,
                                              const ConstVectorRef &y,

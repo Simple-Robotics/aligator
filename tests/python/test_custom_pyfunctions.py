@@ -11,7 +11,7 @@ def test_abstract():
     nu = 3
     nr = 1
     fun = aligator.StageFunction(ndx, nu, nr)
-    data = fun.createData()
+    data = fun.createData(aligator.CommonModelDataContainer())
     print(data)
 
 
@@ -24,8 +24,10 @@ def test_custom_controlbox():
     u_max = np.ones(nu) * 0.1
     box_function = PyControlBoxFunction(ndx, u_min, u_max)
     bf2 = aligator.ControlBoxFunction(ndx, u_min, u_max)
-    data1: aligator.StageFunctionData = box_function.createData()
-    data2 = bf2.createData()
+    data1: aligator.StageFunctionData = box_function.createData(
+        aligator.CommonModelDataContainer()
+    )
+    data2 = bf2.createData(aligator.CommonModelDataContainer())
 
     lbd0 = np.zeros(box_function.nr)
     x0 = np.random.randn(ndx)

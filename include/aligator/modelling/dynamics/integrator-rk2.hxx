@@ -23,6 +23,7 @@ void IntegratorRK2Tpl<Scalar>::forward(const ConstVectorRef &x,
   d.dx1_ = dt_2_ * cd1.xdot_;
   this->space_next_->integrate(x, d.dx1_, d.x1_);
 
+  d.common_models.evaluate(d.x1_, u, d.common_datas);
   this->ode_->forward(d.x1_, u, cd2);
   d.dx_ = timestep_ * cd2.xdot_;
   this->space_next_->integrate(x, d.dx_, d.xnext_);
@@ -49,6 +50,7 @@ void IntegratorRK2Tpl<Scalar>::dForward(const ConstVectorRef &x,
 
   // J = d(x+dx)_dz = d(x+dx)_dx1 * dx1_dz
   // then transport J to xnext = exp(dx) * x1
+  d.common_models.computeGradients(d.x1_, u, d.common_datas);
   this->ode_->dForward(d.x1_, u, cd2);
   d.Jx_ = (timestep_ * cd2.Jx_) * d.Jx_;
   d.Ju_ = (timestep_ * cd2.Jx_) * d.Ju_ + timestep_ * cd2.Ju_;
@@ -63,8 +65,25 @@ template <typename Scalar>
 IntegratorRK2DataTpl<Scalar>::IntegratorRK2DataTpl(
     const IntegratorRK2Tpl<Scalar> *integrator)
     : Base(integrator), x1_(integrator->space_next().neutral()) {
-  continuous_data2 =
-      std::static_pointer_cast<ODEData>(integrator->ode_->createData());
+  CommonModelBuilderContainer model_builders;
+  integrator->ode_->configure(model_builders);
+  common_models = model_builders.createCommonModelContainer();
+  common_datas = common_models.createData();
+  continuous_data2 = std::static_pointer_cast<ODEData>(
+      integrator->ode_->createData(common_datas));
+}
+
+template <typename Scalar>
+IntegratorRK2DataTpl<Scalar>::IntegratorRK2DataTpl(
+    const IntegratorRK2Tpl<Scalar> *integrator,
+    const CommonModelDataContainer &container)
+    : Base(integrator, container), x1_(integrator->space_next().neutral()) {
+  CommonModelBuilderContainer model_builders;
+  integrator->ode_->configure(model_builders);
+  common_models = model_builders.createCommonModelContainer();
+  common_datas = common_models.createData();
+  continuous_data2 = std::static_pointer_cast<ODEData>(
+      integrator->ode_->createData(common_datas));
 }
 
 } // namespace dynamics

@@ -1,3 +1,5 @@
+/// @copyright Copyright (C) 2024 LAAS-CNRS, INRIA
+/// @brief ContactForceResidualTpl definition.
 #pragma once
 
 #include "./fwd.hpp"

@@ -22,6 +22,8 @@ struct QuadraticResidualCostTpl : CostAbstractTpl<_Scalar> {
   using Data = CompositeCostDataTpl<Scalar>;
   using StageFunction = StageFunctionTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   MatrixXs weights_;
   shared_ptr<StageFunction> residual_;
@@ -30,6 +32,9 @@ struct QuadraticResidualCostTpl : CostAbstractTpl<_Scalar> {
   QuadraticResidualCostTpl(shared_ptr<Manifold> space,
                            shared_ptr<StageFunction> function,
                            const ConstMatrixRef &weights);
+
+  void configure(
+      CommonModelBuilderContainer &common_buider_container) const override;
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 CostData &data_) const;
@@ -43,6 +48,12 @@ struct QuadraticResidualCostTpl : CostAbstractTpl<_Scalar> {
   shared_ptr<CostData> createData() const {
     return std::make_shared<Data>(this->ndx(), this->nu,
                                   residual_->createData());
+  }
+
+  shared_ptr<CostData>
+  createData(const CommonModelDataContainer &container) const override {
+    return std::make_shared<Data>(this->ndx(), this->nu,
+                                  residual_->createData(container));
   }
 };
 

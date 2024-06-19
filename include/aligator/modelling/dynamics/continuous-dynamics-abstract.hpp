@@ -5,6 +5,9 @@
 
 #include "aligator/fwd.hpp"
 #include "aligator/modelling/dynamics/fwd.hpp"
+#include "aligator/core/common-model-builder-container.hpp"
+#include "aligator/core/common-model-data-container.hpp"
+
 #include <proxsuite-nlp/manifold-base.hpp>
 
 namespace aligator {
@@ -21,6 +24,8 @@ template <typename _Scalar> struct ContinuousDynamicsAbstractTpl {
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using ManifoldPtr = shared_ptr<Manifold>;
   using Data = ContinuousDynamicsDataTpl<Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
 
   /// State space.
   ManifoldPtr space_;
@@ -36,6 +41,10 @@ template <typename _Scalar> struct ContinuousDynamicsAbstractTpl {
   ContinuousDynamicsAbstractTpl(ManifoldPtr space, const int nu);
 
   virtual ~ContinuousDynamicsAbstractTpl() = default;
+
+  /// @brief Create and configure CommonModelTpl
+  virtual void configure(ALIGATOR_MAYBE_UNUSED CommonModelBuilderContainer
+                             &common_buider_container) const {}
 
   /// @brief   Evaluate the vector field at a point \f$(x, u)\f$.
   /// @param   x The input state variable.
@@ -55,7 +64,13 @@ template <typename _Scalar> struct ContinuousDynamicsAbstractTpl {
                                 const ConstVectorRef &xdot,
                                 Data &data) const = 0;
 
-  /// @brief  Create a data holder instance.
+  /// @brief Instantiate a Data object with CommonModelData.
+  /// @brief Create a data holder instance with CommonModelData
+  /// By default, call createData()
+  virtual shared_ptr<Data> createData(
+      ALIGATOR_MAYBE_UNUSED const CommonModelDataContainer &container) const;
+
+  /// @brief Create a data holder instance.
   virtual shared_ptr<Data> createData() const;
 };
 

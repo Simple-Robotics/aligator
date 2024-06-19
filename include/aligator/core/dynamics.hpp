@@ -19,6 +19,7 @@ struct DynamicsModelTpl : StageFunctionTpl<_Scalar> {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageFunctionTpl<Scalar>;
+  using BaseData = typename Base::Data;
   using Data = DynamicsDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using ManifoldPtr = shared_ptr<Manifold>;

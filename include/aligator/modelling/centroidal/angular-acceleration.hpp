@@ -53,6 +53,7 @@ public:
   shared_ptr<BaseData> createData() const {
     return allocate_shared_eigen_aligned<Data>(this);
   }
+  using Base::createData;
 
   ContactMap contact_map_;
 

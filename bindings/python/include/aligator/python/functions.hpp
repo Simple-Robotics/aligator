@@ -21,11 +21,22 @@ template <class FunctionBase = context::StageFunction>
 struct PyStageFunction : FunctionBase, bp::wrapper<FunctionBase> {
   using Scalar = typename FunctionBase::Scalar;
   using Data = StageFunctionDataTpl<Scalar>;
+  using CommonModelBuilderContainer = CommonModelBuilderContainerTpl<Scalar>;
+  using CommonModelDataContainer = CommonModelDataContainerTpl<Scalar>;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   // Use perfect forwarding to the FunctionBase constructors.
   template <typename... Args>
   PyStageFunction(Args &&...args) : FunctionBase(std::forward<Args>(args)...) {}
+
+  virtual void
+  configure(CommonModelBuilderContainer &container) const override {
+    ALIGATOR_PYTHON_OVERRIDE(void, FunctionBase, configure, container);
+  }
+
+  void default_configure(CommonModelBuilderContainer &container) const {
+    FunctionBase::configure(container);
+  }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &y, Data &data) const override {
@@ -47,12 +58,15 @@ struct PyStageFunction : FunctionBase, bp::wrapper<FunctionBase> {
                              x, u, y, lbda, boost::ref(data));
   }
 
-  shared_ptr<Data> createData() const override {
-    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<Data>, FunctionBase, createData, );
+  virtual shared_ptr<Data>
+  createData(const CommonModelDataContainer &container) const override {
+    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<Data>, FunctionBase, createData,
+                             container);
   }
 
-  shared_ptr<Data> default_createData() const {
-    return FunctionBase::createData();
+  shared_ptr<Data>
+  default_createData(const CommonModelDataContainer &container) const {
+    return FunctionBase::createData(container);
   }
 };
 

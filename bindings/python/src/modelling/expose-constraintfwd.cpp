@@ -48,12 +48,10 @@ void exposeConstrainedFwdDynamics() {
 
   bp::class_<MultibodyConstraintFwdData, bp::bases<ODEData>>(
       "MultibodyConstraintFwdData", bp::no_init)
-      .def_readwrite("tau", &MultibodyConstraintFwdData::tau_)
-      .def_readwrite("dtau_dx", &MultibodyConstraintFwdData::dtau_dx_)
-      .def_readwrite("dtau_du", &MultibodyConstraintFwdData::dtau_du_)
-      .def_readwrite("pin_data", &MultibodyConstraintFwdData::pin_data_)
-      .def_readwrite("constraint_datas",
-                     &MultibodyConstraintFwdData::constraint_datas_);
+      .add_property(
+          "multibody_data",
+          bp::make_getter(&MultibodyConstraintFwdData::multibody_data_,
+                          bp::return_internal_reference<>()));
 }
 } // namespace python
 } // namespace aligator

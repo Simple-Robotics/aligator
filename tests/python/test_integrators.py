@@ -1,8 +1,8 @@
 import numpy as np
 import aligator
-from aligator import dynamics, manifolds
+from aligator import dynamics, manifolds, CommonModelDataContainer
 import pytest
-from utils import create_linear_ode, create_multibody_ode
+from utils import create_linear_ode, create_multibody_ode, configure_functions
 
 EPSILON = 1e-5
 ATOL = EPSILON**0.5
@@ -23,14 +23,17 @@ def function_finite_difference(
     """
     if y0 is None:
         y0 = x0
-    data = fun.createData()
+    common_containers = configure_functions([fun])
+    data = fun.createData(common_containers.datas)
     Jx_nd = np.zeros((fun.nr, fun.ndx1))
     ei = np.zeros(fun.ndx1)
+    common_containers.evaluate(x0, u0)
     fun.evaluate(x0, u0, y0, data)
     r0 = data.value.copy()
     for i in range(fun.ndx1):
         ei[i] = eps
         xplus = space.integrate(x0, ei)
+        common_containers.evaluate(xplus, u0)
         fun.evaluate(xplus, u0, y0, data)
         Jx_nd[:, i] = (data.value - r0) / eps
         ei[i] = 0.0
@@ -39,7 +42,9 @@ def function_finite_difference(
     Ju_nd = np.zeros((fun.nr, fun.nu))
     for i in range(fun.nu):
         ei[i] = eps
-        fun.evaluate(x0, u0 + ei, y0, data)
+        uplus = u0 + ei
+        common_containers.evaluate(x0, uplus)
+        fun.evaluate(x0, uplus, y0, data)
         Ju_nd[:, i] = (data.value - r0) / eps
         ei[i] = 0.0
 
@@ -49,6 +54,7 @@ def function_finite_difference(
     for i in range(fun.ndx2):
         ei[i] = eps
         space.integrate(y0, ei, yplus)
+        common_containers.evaluate(x0, u0)
         fun.evaluate(x0, u0, yplus, data)
         Jy_nd[:, i] = (data.value - r0) / eps
         ei[i] = 0.0
@@ -57,16 +63,19 @@ def function_finite_difference(
 
 
 def finite_difference_explicit_dyn(dyn: dynamics.IntegratorAbstract, x0, u0, eps):
-    data = dyn.createData()
+    common_containers = configure_functions([dyn])
+    data = dyn.createData(common_containers.datas)
     space: manifolds.ManifoldAbstract = dyn.space
     Jx_nd = np.zeros((dyn.ndx2, dyn.ndx1))
     ei = np.zeros(dyn.ndx1)
+    common_containers.evaluate(x0, u0)
     dyn.forward(x0, u0, data)
     y0 = data.xnext.copy()
     yplus = y0.copy()
     for i in range(dyn.ndx1):
         ei[i] = eps
         xplus = space.integrate(x0, ei)
+        common_containers.evaluate(xplus, u0)
         dyn.forward(xplus, u0, data)
         yplus[:] = data.xnext
         Jx_nd[:, i] = space.difference(y0, yplus) / eps
@@ -78,6 +87,7 @@ def finite_difference_explicit_dyn(dyn: dynamics.IntegratorAbstract, x0, u0, eps
     for i in range(dyn.nu):
         ei[i] = eps
         uplus = uspace.integrate(u0, ei)
+        common_containers.evaluate(x0, uplus)
         dyn.forward(x0, uplus, data)
         yplus[:] = data.xnext
         Ju_nd[:, i] = space.difference(y0, yplus) / eps
@@ -112,12 +122,14 @@ def test_implicit_integrator(
     x = dae.space.rand()
     x = np.clip(x, -5, 5)
     u = np.random.randn(dyn.nu)
-    data = dyn.createData()
-    dyn.evaluate(x, u, x, data)
+    common_containers = configure_functions([dyn])
+    data = dyn.createData(common_containers.datas)
     assert isinstance(data, dynamics.IntegratorData)
 
     Jx_nd, Ju_nd, Jy_nd = function_finite_difference(dyn, dyn.space, x, u)
 
+    common_containers.evaluate(x, u)
+    common_containers.compute_gradients(x, u)
     dyn.evaluate(x, u, x, data)
     dyn.computeJacobians(x, u, x, data)
     assert np.allclose(data.Jx, Jx_nd, atol=ATOL)
@@ -129,7 +141,10 @@ def exp_dyn_fd_check(dyn, x, u, eps=EPSILON):
     Jx_nd, Ju_nd = finite_difference_explicit_dyn(dyn, x, u, eps=eps)
 
     np.set_printoptions(precision=3, linewidth=250)
-    data = dyn.createData()
+    common_containers = configure_functions([dyn])
+    data = dyn.createData(common_containers.datas)
+    common_containers.evaluate(x, u)
+    common_containers.compute_gradients(x, u)
     dyn.forward(x, u, data)
     dyn.dForward(x, u, data)
     assert np.allclose(data.Jx, Jx_nd, atol=ATOL)

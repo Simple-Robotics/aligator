@@ -12,4 +12,5 @@ template struct MultibodyConstraintFwdDataTpl<context::Scalar>;
 
 } // namespace dynamics
 } // namespace aligator
-#endif
+
+#endif // ALIGATOR_PINOCCHIO_V3

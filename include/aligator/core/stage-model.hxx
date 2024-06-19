@@ -62,11 +62,26 @@ void StageModelTpl<Scalar>::addConstraint(FunctionPtr func,
   constraints_.pushBack(Constraint{func, cstr_set});
 }
 
+template <typename Scalar> void StageModelTpl<Scalar>::configure() const {
+  // Create and configure builder
+  for (std::size_t j = 0; j < numConstraints(); j++) {
+    const Constraint &cstr = constraints_[j];
+    cstr.func->configure(common_model_builder_container_);
+  }
+  cost_->configure(common_model_builder_container_);
+  // TODO find a way to not store the builder container
+
+  // Create common_container_
+  common_model_container_ =
+      common_model_builder_container_.createCommonModelContainer();
+}
+
 template <typename Scalar>
 void StageModelTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                      const ConstVectorRef &u,
                                      const ConstVectorRef &y,
                                      Data &data) const {
+  common_model_container_.evaluate(x, u, data.common_model_data_container);
   dynamics_->evaluate(x, u, y, *data.dynamics_data);
   for (std::size_t j = 0; j < numConstraints(); j++) {
     const Constraint &cstr = constraints_[j];
@@ -79,6 +94,8 @@ template <typename Scalar>
 void StageModelTpl<Scalar>::computeFirstOrderDerivatives(
     const ConstVectorRef &x, const ConstVectorRef &u, const ConstVectorRef &y,
     Data &data) const {
+  common_model_container_.computeGradients(x, u,
+                                           data.common_model_data_container);
   dynamics_->computeJacobians(x, u, y, *data.dynamics_data);
   for (std::size_t j = 0; j < numConstraints(); j++) {
     const Constraint &cstr = constraints_[j];
@@ -90,6 +107,8 @@ void StageModelTpl<Scalar>::computeFirstOrderDerivatives(
 template <typename Scalar>
 void StageModelTpl<Scalar>::computeSecondOrderDerivatives(
     const ConstVectorRef &x, const ConstVectorRef &u, Data &data) const {
+  common_model_container_.computeHessians(x, u,
+                                          data.common_model_data_container);
   cost_->computeHessians(x, u, *data.cost_data);
 }
 

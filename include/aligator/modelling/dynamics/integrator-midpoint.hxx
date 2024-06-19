@@ -31,6 +31,7 @@ void IntegratorMidpointTpl<Scalar>::evaluate(
   // define x1 = midpoint of x,y
   space.integrate(x, d.dx1_, d.x1_);
   // evaluate on (x1, u, xdot)
+  d.common_models.evaluate(d.x1_, u, d.common_datas);
   contdyn.evaluate(d.x1_, u, d.xdot_, *contdata);
   d.value_ = contdata->value_ * timestep_;
 }
@@ -59,6 +60,7 @@ void IntegratorMidpointTpl<Scalar>::computeJacobians(
 
   // d.x1_ contains midpoint of x,y
   // compute jacobians
+  d.common_models.computeGradients(d.x1_, u, d.common_datas);
   contdyn.computeJacobians(d.x1_, u, d.xdot_, *contdata);
   // bring the Jacobian in arg1 from xmid to x
   space.JintegrateTransport(x, d.dx1_, contdata->Jx_, 1);
@@ -73,6 +75,12 @@ template <typename Scalar>
 shared_ptr<DynamicsDataTpl<Scalar>>
 IntegratorMidpointTpl<Scalar>::createData() const {
   return std::make_shared<Data>(this);
+}
+
+template <typename Scalar>
+shared_ptr<DynamicsDataTpl<Scalar>> IntegratorMidpointTpl<Scalar>::createData(
+    const CommonModelDataContainer &container) const {
+  return std::make_shared<Data>(this, container);
 }
 
 } // namespace dynamics
