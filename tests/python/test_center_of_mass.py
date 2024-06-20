@@ -113,6 +113,42 @@ def test_frame_velocity():
         assert np.allclose(fdata.Jx, fdata2.Jx, ATOL)
 
 
+def test_dcm_position():
+    space = manifolds.MultibodyPhaseSpace(model)
+    x, d, x0 = sample_gauss(space)
+    q0, v0 = x0[: model.nq], x0[model.nq :]
+    u0 = np.zeros(nu)
+
+    pin.centerOfMass(model, rdata, q0, v0)
+    dcm_ref = np.array([0.1, 0.1, 0.1])
+    alpha = 0.1
+
+    fun = aligator.DCMPositionResidual(space.ndx, nu, model, dcm_ref, alpha)
+    assert np.allclose(dcm_ref, fun.getReference())
+
+    fdata = fun.createData()
+    fun.evaluate(x0, fdata)
+    residual = rdata.com[0] + alpha * rdata.vcom[0] - dcm_ref
+
+    assert np.allclose(fdata.value, residual)
+
+    fun.computeJacobians(x0, fdata)
+
+    fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
+    fdata2 = fun_fd.createData()
+    fun_fd.evaluate(x0, u0, x0, fdata2)
+    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    assert fdata.Jx.shape == fdata2.Jx.shape
+
+    for i in range(100):
+        x, d, x0 = sample_gauss(space)
+        fun.evaluate(x0, fdata)
+        fun.computeJacobians(x0, fdata)
+        fun_fd.evaluate(x0, u0, x0, fdata2)
+        fun_fd.computeJacobians(x0, u0, x0, fdata2)
+        assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
+
+
 if __name__ == "__main__":
     import sys
     import pytest
