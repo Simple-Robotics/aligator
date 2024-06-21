@@ -25,14 +25,19 @@ using ContactMap = ContactMapTpl<Scalar>;
 void exposeContactMap() {
   bp::class_<ContactMap>(
       "ContactMap", "Store contact state and pose for centroidal problem",
-      bp::init<const std::vector<bool> &,
+      bp::init<const std::vector<std::string> &, const std::vector<bool> &,
                const StdVectorEigenAligned<context::Vector3s> &>(
-          ("self"_a, "contact_states", "contact_poses")))
-      .def("addContact", &ContactMap::addContact, ("self"_a, "state", "pose"),
+          ("self"_a, "contact_names", "contact_states", "contact_poses")))
+      .def("addContact", &ContactMap::addContact,
+           ("self"_a, "name", "state", "pose"),
            "Add a contact to the contact map.")
       .def("removeContact", &ContactMap::removeContact, ("self"_a, "i"),
            "Remove contact i from the contact map.")
       .add_property("size", &ContactMap::getSize, "Get map size.")
+      .add_property("contact_names",
+                    bp::make_function(&ContactMap::getContactNames,
+                                      bp::return_internal_reference<>()),
+                    "Get all the names in contact map.")
       .add_property("contact_states",
                     bp::make_function(&ContactMap::getContactStates,
                                       bp::return_internal_reference<>()),

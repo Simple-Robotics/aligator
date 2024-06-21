@@ -10,9 +10,11 @@ template <typename _Scalar> struct ContactMapTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using PoseVec = StdVectorEigenAligned<Vector3s>;
 
-  ContactMapTpl(const std::vector<bool> &contact_states,
+  ContactMapTpl(const std::vector<std::string> &contact_names,
+                const std::vector<bool> &contact_states,
                 const PoseVec &contact_poses)
-      : contact_states_(contact_states), contact_poses_(contact_poses) {
+      : contact_names_(contact_names), contact_states_(contact_states),
+        contact_poses_(contact_poses) {
     if (contact_states.size() != contact_poses.size()) {
       ALIGATOR_DOMAIN_ERROR(
           fmt::format("contact_states and contact_poses should have same size, "
@@ -22,7 +24,9 @@ template <typename _Scalar> struct ContactMapTpl {
     size_ = contact_states_.size();
   }
 
-  void addContact(const bool state, const Vector3s &pose) {
+  void addContact(const std::string &name, const bool state,
+                  const Vector3s &pose) {
+    contact_names_.push_back(name);
     contact_states_.push_back(state);
     contact_poses_.push_back(pose);
     size_ += 1;
@@ -32,15 +36,29 @@ template <typename _Scalar> struct ContactMapTpl {
     if (size_ == 0) {
       ALIGATOR_RUNTIME_ERROR("ContactMap is empty!");
     } else {
+      contact_names_.erase(contact_names_.begin() + long(i));
       contact_states_.erase(contact_states_.begin() + long(i));
       contact_poses_.erase(contact_poses_.begin() + long(i));
       size_ -= 1;
     }
   }
 
+  const std::vector<std::string> &getContactNames() const {
+    return contact_names_;
+  }
+
   const std::vector<bool> &getContactStates() const { return contact_states_; }
 
   bool getContactState(const std::size_t i) const { return contact_states_[i]; }
+
+  bool getContactState(const std::string &name) const {
+    auto id = std::find(contact_names_.begin(), contact_names_.end(), name);
+    if (id == contact_names_.end()) {
+      ALIGATOR_RUNTIME_ERROR("Contact name does not exist in this map!");
+    }
+
+    return contact_states_[id - contact_names_.begin()];
+  }
 
   const PoseVec &getContactPoses() const { return contact_poses_; }
 
@@ -48,9 +66,19 @@ template <typename _Scalar> struct ContactMapTpl {
     return contact_poses_[i];
   }
 
+  const Vector3s &getContactPose(const std::string &name) const {
+    auto id = std::find(contact_names_.begin(), contact_names_.end(), name);
+    if (id == contact_names_.end()) {
+      ALIGATOR_RUNTIME_ERROR("Contact name does not exist in this map!");
+    }
+
+    return contact_poses_[id - contact_names_.begin()];
+  }
+
   std::size_t getSize() const { return size_; }
 
 private:
+  std::vector<std::string> contact_names_;
   std::vector<bool> contact_states_;
   PoseVec contact_poses_;
   std::size_t size_;
