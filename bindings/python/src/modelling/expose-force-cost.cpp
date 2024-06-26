@@ -8,6 +8,7 @@
 #ifdef ALIGATOR_PINOCCHIO_V3
 #include "aligator/modelling/multibody/contact-force.hpp"
 #include "aligator/modelling/multibody/multibody-wrench-cone.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {
@@ -28,6 +29,8 @@ using RigidConstraintModelVector =
 using RigidConstraintDataVector =
     PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(RigidConstraintData);
 
+const PolymorphicMultiBaseVisitor<StageFunction> func_visitor;
+
 void exposeContactForce() {
   using ContactForceResidual = ContactForceResidualTpl<Scalar>;
   using ContactForceData = ContactForceDataTpl<Scalar>;
@@ -47,6 +50,7 @@ void exposeContactForce() {
           bp::args("self", "ndx", "model", "actuation_matrix",
                    "constraint_models", "prox_settings", "fref", "contact_id")))
       .def(FrameAPIVisitor<ContactForceResidual>())
+      .def(func_visitor)
       .def("getReference", &ContactForceResidual::getReference,
            bp::args("self"), bp::return_internal_reference<>(),
            "Get the target force.")
@@ -71,6 +75,7 @@ void exposeContactForce() {
           "self", "ndx", "model", "actuation_matrix", "constraint_models",
           "prox_settings", "contact_id", "mu", "half_length", "half_width")))
       .def(FrameAPIVisitor<MultibodyWrenchConeResidual>())
+      .def(func_visitor)
       .def_readwrite("constraint_models",
                      &MultibodyWrenchConeResidual::constraint_models_);
 

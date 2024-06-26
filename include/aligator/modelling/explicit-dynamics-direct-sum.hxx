@@ -21,7 +21,7 @@ void DirectSumExplicitDynamicsTpl<Scalar>::forward(const ConstVectorRef &x,
                                                    const ConstVectorRef &u,
                                                    BaseData &data) const {
   Data &d = data_cast(data);
-  const CartesianProduct &s = *this->product_space_;
+  const CartesianProduct &s = this->product_space_;
   auto xs = s.split(x);
   ConstVectorRef x1 = xs[0];
   ConstVectorRef x2 = xs[1];
@@ -47,7 +47,7 @@ void DirectSumExplicitDynamicsTpl<Scalar>::dForward(const ConstVectorRef &x,
   int ndxout_f = f_->ndx2;
   int ndxout_g = g_->ndx2;
   Data &d = data_cast(data);
-  const CartesianProduct &s = *this->product_space_;
+  const CartesianProduct &s = this->product_space_;
   auto xs = s.split(x);
   ConstVectorRef x1 = xs[0];
   ConstVectorRef x2 = xs[1];
@@ -71,7 +71,7 @@ void DirectSumExplicitDynamicsTpl<Scalar>::dForward(const ConstVectorRef &x,
 template <typename Scalar>
 auto DirectSumExplicitDynamicsTpl<Scalar>::get_product_space(Base const &f,
                                                              Base const &g) {
-  return f.space_next_ * g.space_next_;
+  return xyz::polymorphic<Manifold>(f.space_next_ * g.space_next_);
 }
 
 } // namespace aligator

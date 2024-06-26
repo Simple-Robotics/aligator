@@ -35,8 +35,9 @@ struct IntegratorMidpointTpl : IntegratorAbstractTpl<_Scalar> {
 
   Scalar timestep_;
 
-  IntegratorMidpointTpl(const shared_ptr<ContinuousDynamics> &cont_dynamics,
-                        const Scalar timestep);
+  IntegratorMidpointTpl(
+      const xyz::polymorphic<ContinuousDynamics> &cont_dynamics,
+      const Scalar timestep);
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &y, DynamicsDataTpl<Scalar> &data) const;

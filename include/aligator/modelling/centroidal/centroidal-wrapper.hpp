@@ -2,6 +2,7 @@
 
 #include "aligator/core/unary-function.hpp"
 #include "aligator/core/function-abstract.hpp"
+#include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 
 namespace aligator {
 
@@ -19,7 +20,7 @@ public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   ALIGATOR_UNARY_FUNCTION_INTERFACE(Scalar);
-  using FunPtr = shared_ptr<StageFunctionTpl<Scalar>>;
+  using FunPtr = xyz::polymorphic<StageFunctionTpl<Scalar>>;
   using BaseData = typename Base::Data;
   using Data = CentroidalWrapperDataTpl<Scalar>;
 

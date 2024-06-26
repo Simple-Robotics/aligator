@@ -30,19 +30,18 @@ struct MultibodyFreeFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using ContDataAbstract = ContinuousDynamicsDataTpl<Scalar>;
   using Data = MultibodyFreeFwdDataTpl<Scalar>;
   using Manifold = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
-  using ManifoldPtr = shared_ptr<Manifold>;
+  using ManifoldPtr = xyz::polymorphic<Manifold>;
 
   using Base::nu_;
 
-  ManifoldPtr space_;
+  Manifold space_;
   MatrixXs actuation_matrix_;
 
-  const Manifold &space() const { return *space_; }
-  int ntau() const { return space_->getModel().nv; }
+  const Manifold &space() const { return space_; }
+  int ntau() const { return space_.getModel().nv; }
 
-  MultibodyFreeFwdDynamicsTpl(const ManifoldPtr &state,
-                              const MatrixXs &actuation);
-  MultibodyFreeFwdDynamicsTpl(const ManifoldPtr &state);
+  MultibodyFreeFwdDynamicsTpl(const Manifold &state, const MatrixXs &actuation);
+  MultibodyFreeFwdDynamicsTpl(const Manifold &state);
 
   /**
    * @brief  Determine whether the system is underactuated.

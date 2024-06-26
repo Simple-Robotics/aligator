@@ -4,7 +4,9 @@
 
 #ifdef ALIGATOR_PINOCCHIO_V3
 
+#include "aligator/modelling/dynamics/context.hpp"
 #include "aligator/modelling/dynamics/multibody-constraint-fwd.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {
@@ -24,21 +26,25 @@ using RigidConstraintDataVector =
 
 void exposeConstrainedFwdDynamics() {
   using namespace aligator::dynamics;
+  using context::ContinuousDynamicsAbstract;
+  using context::ODEAbstract;
+  using context::ODEData;
   using context::Scalar;
-  using ODEData = ODEDataTpl<Scalar>;
-  using ODEAbstract = ODEAbstractTpl<Scalar>;
   using MultibodyConstraintFwdData = MultibodyConstraintFwdDataTpl<Scalar>;
   using MultibodyConstraintFwdDynamics =
       MultibodyConstraintFwdDynamicsTpl<Scalar>;
 
+  PolymorphicMultiBaseVisitor<ODEAbstract, ContinuousDynamicsAbstract>
+      ode_visitor;
   bp::class_<MultibodyConstraintFwdDynamics, bp::bases<ODEAbstract>>(
       "MultibodyConstraintFwdDynamics",
       "Constraint forward dynamics using Pinocchio.",
-      bp::init<const shared_ptr<proxsuite::nlp::MultibodyPhaseSpace<Scalar>> &,
+      bp::init<const proxsuite::nlp::MultibodyPhaseSpace<Scalar> &,
                const context::MatrixXs &, const RigidConstraintModelVector &,
                const pinocchio::ProximalSettingsTpl<Scalar> &>(
-          bp::args("self", "space", "actuation_matrix", "constraint_models",
-                   "prox_settings")))
+          ("self"_a, "space", "actuation_matrix", "constraint_models",
+           "prox_settings")))
+      .def(ode_visitor)
       .def_readwrite("constraint_models",
                      &MultibodyConstraintFwdDynamics::constraint_models_)
       .add_property("ntau", &MultibodyConstraintFwdDynamics::ntau,

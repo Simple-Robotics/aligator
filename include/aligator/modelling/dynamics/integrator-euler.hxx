@@ -7,7 +7,7 @@ namespace aligator {
 namespace dynamics {
 template <typename Scalar>
 IntegratorEulerTpl<Scalar>::IntegratorEulerTpl(
-    const shared_ptr<ODEType> &cont_dynamics, const Scalar timestep)
+    const xyz::polymorphic<ODEType> &cont_dynamics, const Scalar timestep)
     : Base(cont_dynamics), timestep_(timestep) {}
 
 template <typename Scalar>

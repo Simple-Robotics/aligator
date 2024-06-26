@@ -23,9 +23,10 @@ struct DirectSumExplicitDynamicsTpl : ExplicitDynamicsModelTpl<_Scalar> {
 
   struct Data;
 
-  DirectSumExplicitDynamicsTpl(shared_ptr<Base> f, shared_ptr<Base> g)
+  DirectSumExplicitDynamicsTpl(xyz::polymorphic<Base> f,
+                               xyz::polymorphic<Base> g)
       : Base(get_product_space(*f, *g), f->nu + g->nu), f_(f), g_(g) {
-    product_space_ = static_cast<CartesianProduct *>(this->space_next_.get());
+    product_space_ = dynamic_cast<CartesianProduct &>(*this->space_next_);
   }
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
@@ -38,7 +39,7 @@ struct DirectSumExplicitDynamicsTpl : ExplicitDynamicsModelTpl<_Scalar> {
     return std::make_shared<Data>(*this);
   }
 
-  shared_ptr<Base> f_, g_;
+  xyz::polymorphic<Base> f_, g_;
 
 private:
   static auto get_product_space(Base const &f, Base const &g);
@@ -46,13 +47,13 @@ private:
 
   /// pointer to casted cartesian product space; this pointer does not manage
   /// memory
-  CartesianProduct const *product_space_;
+  CartesianProduct product_space_;
 };
 
 template <typename Scalar>
-auto directSum(shared_ptr<ExplicitDynamicsModelTpl<Scalar>> const &m1,
-               shared_ptr<ExplicitDynamicsModelTpl<Scalar>> const &m2) {
-  return std::make_shared<DirectSumExplicitDynamicsTpl<Scalar>>(m1, m2);
+auto directSum(xyz::polymorphic<ExplicitDynamicsModelTpl<Scalar>> const &m1,
+               xyz::polymorphic<ExplicitDynamicsModelTpl<Scalar>> const &m2) {
+  return DirectSumExplicitDynamicsTpl<Scalar>(m1, m2);
 }
 
 } // namespace aligator

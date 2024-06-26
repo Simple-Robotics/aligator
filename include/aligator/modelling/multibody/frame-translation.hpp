@@ -5,6 +5,7 @@
 
 #include <pinocchio/multibody/model.hpp>
 #include <pinocchio/multibody/frame.hpp>
+#include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 
 namespace aligator {
 
@@ -18,14 +19,13 @@ struct FrameTranslationResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
   ALIGATOR_UNARY_FUNCTION_INTERFACE(Scalar);
   using BaseData = typename Base::Data;
   using Model = pinocchio::ModelTpl<Scalar>;
-  using ManifoldPtr = shared_ptr<ManifoldAbstractTpl<Scalar>>;
+  using ManifoldPtr = xyz::polymorphic<ManifoldAbstractTpl<Scalar>>;
   using SE3 = pinocchio::SE3Tpl<Scalar>;
   using Data = FrameTranslationDataTpl<Scalar>;
 
-  shared_ptr<Model> pin_model_;
+  Model pin_model_;
 
-  FrameTranslationResidualTpl(const int ndx, const int nu,
-                              const shared_ptr<Model> &model,
+  FrameTranslationResidualTpl(const int ndx, const int nu, const Model &model,
                               const Vector3s &frame_trans,
                               const pinocchio::FrameIndex frame_id);
 

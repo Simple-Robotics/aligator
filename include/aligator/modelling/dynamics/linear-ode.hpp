@@ -17,7 +17,7 @@ template <typename _Scalar> struct LinearODETpl : ODEAbstractTpl<_Scalar> {
   using Base = ODEAbstractTpl<Scalar>;
   using ODEData = ODEDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
-  using ManifoldPtr = shared_ptr<Manifold>;
+  using ManifoldPtr = xyz::polymorphic<Manifold>;
 
   MatrixXs A_, B_;
   VectorXs c_;
@@ -44,8 +44,8 @@ template <typename _Scalar> struct LinearODETpl : ODEAbstractTpl<_Scalar> {
    * The state space is inferred to be a vector space.
    */
   LinearODETpl(const MatrixXs &A, const MatrixXs &B, const VectorXs &c)
-      : LinearODETpl(std::make_shared<proxsuite::nlp::VectorSpaceTpl<Scalar>>(
-                         (int)A.rows()),
+      : LinearODETpl(xyz::polymorphic<Manifold>(
+                         proxsuite::nlp::VectorSpaceTpl<Scalar>((int)A.rows())),
                      A, B, c) {}
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,

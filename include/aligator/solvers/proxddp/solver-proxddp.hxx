@@ -371,9 +371,9 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
                                *prob_data.term_cost_data);
 
   for (std::size_t k = 0; k < problem.term_cstrs_.size(); ++k) {
-    const ConstraintType &tc = problem.term_cstrs_[k];
+    const auto &func = problem.term_cstrs_.funcs[k];
     StageFunctionData &td = *prob_data.term_cstr_data[k];
-    tc.func->evaluate(xs[nsteps], problem.unone_, xs[nsteps], td);
+    func->evaluate(xs[nsteps], problem.unone_, xs[nsteps], td);
   }
 
   // update multiplier
@@ -405,6 +405,7 @@ template <typename Scalar>
 bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
                                    const std::vector<VectorXs> &xs_init,
                                    const std::vector<VectorXs> &us_init,
+                                   const std::vector<VectorXs> &vs_init,
                                    const std::vector<VectorXs> &lams_init) {
   ZoneScoped;
   if (!workspace_.isInitialized() || !results_.isInitialized()) {
@@ -413,12 +414,8 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
 
   check_trajectory_and_assign(problem, xs_init, us_init, results_.xs,
                               results_.us);
-  if (lams_init.size() == results_.lams.size()) {
-    for (std::size_t i = 0; i < lams_init.size(); i++) {
-      long size = std::min(lams_init[i].rows(), results_.lams[i].rows());
-      results_.lams[i].head(size) = lams_init[i].head(size);
-    }
-  }
+  assign_no_resize(vs_init, results_.vs);
+  assign_no_resize(lams_init, results_.lams);
 
   if (force_initial_condition_) {
     workspace_.trial_xs[0] = problem.getInitState();

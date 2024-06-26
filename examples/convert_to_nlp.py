@@ -140,7 +140,7 @@ def convert_problem_to_proxsuite_nlp(problem: TrajOptProblem):
     prnlp_constraints = []
     for i in range(N):
         sm: aligator.StageModel = problem.stages[i]
-        fun = sm.constraints[0].func
+        fun = sm.constraints.funcs[0]
         cstr_fun = ProxnlpConstraintFromProblem(
             product_space, fun, i, N, st_idx[i], en_idx[i]
         )

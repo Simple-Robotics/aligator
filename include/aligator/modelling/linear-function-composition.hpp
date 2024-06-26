@@ -2,6 +2,7 @@
 
 #include "aligator/core/function-abstract.hpp"
 #include "aligator/core/unary-function.hpp"
+#include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 
 namespace aligator {
 
@@ -13,7 +14,7 @@ template <typename _FunType> struct linear_func_composition_impl : _FunType {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using BaseData = StageFunctionDataTpl<Scalar>;
 
-  shared_ptr<FunType> func;
+  xyz::polymorphic<FunType> func;
   MatrixXs A;
   VectorXs b;
 
@@ -24,13 +25,13 @@ template <typename _FunType> struct linear_func_composition_impl : _FunType {
           sub_data(ptr.func->createData()) {}
   };
 
-  linear_func_composition_impl(shared_ptr<FunType> func, const ConstMatrixRef A,
-                               const ConstVectorRef b)
+  linear_func_composition_impl(xyz::polymorphic<FunType> func,
+                               const ConstMatrixRef A, const ConstVectorRef b)
       : FunType(func->ndx1, func->nu, func->ndx2, (int)A.rows()), func(func),
         A(A), b(b) {
-    if (func == 0) {
-      ALIGATOR_RUNTIME_ERROR("Underlying function cannot be nullptr.");
-    }
+    // if (func == 0) {
+    //   ALIGATOR_RUNTIME_ERROR("Underlying function cannot be nullptr.");
+    // }
     if (A.rows() != b.rows()) {
       ALIGATOR_RUNTIME_ERROR("Incompatible dimensions: A.rows() != b.rows()");
     }
@@ -39,7 +40,8 @@ template <typename _FunType> struct linear_func_composition_impl : _FunType {
     }
   }
 
-  linear_func_composition_impl(shared_ptr<FunType> func, const ConstMatrixRef A)
+  linear_func_composition_impl(xyz::polymorphic<FunType> func,
+                               const ConstMatrixRef A)
       : linear_func_composition_impl(func, A, VectorXs::Zero(A.rows())) {}
 
   shared_ptr<BaseData> createData() const {
@@ -105,19 +107,18 @@ struct LinearUnaryFunctionCompositionTpl
 
 /// @brief Create a linear composition of the input function @p func.
 template <typename Scalar>
-auto linear_compose(shared_ptr<StageFunctionTpl<Scalar>> func,
+auto linear_compose(xyz::polymorphic<StageFunctionTpl<Scalar>> func,
                     const typename math_types<Scalar>::ConstMatrixRef A,
                     const typename math_types<Scalar>::ConstVectorRef b) {
-  return std::make_shared<LinearFunctionCompositionTpl<Scalar>>(func, A, b);
+  return LinearFunctionCompositionTpl<Scalar>(func, A, b);
 }
 
 /// @copybrief linear_compose This will return a UnaryFunctionTpl.
 template <typename Scalar>
-auto linear_compose(shared_ptr<UnaryFunctionTpl<Scalar>> func,
+auto linear_compose(xyz::polymorphic<UnaryFunctionTpl<Scalar>> func,
                     const typename math_types<Scalar>::ConstMatrixRef A,
                     const typename math_types<Scalar>::ConstVectorRef b) {
-  return std::make_shared<LinearUnaryFunctionCompositionTpl<Scalar>>(func, A,
-                                                                     b);
+  return LinearUnaryFunctionCompositionTpl<Scalar>(func, A, b);
 }
 
 } // namespace aligator

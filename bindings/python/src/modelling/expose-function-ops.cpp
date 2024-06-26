@@ -1,8 +1,8 @@
 /// @file
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
-#include "aligator/python/fwd.hpp"
-#include "aligator/python/eigen-member.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
+
 #include "aligator/modelling/function-xpr-slice.hpp"
 #include "aligator/modelling/linear-function-composition.hpp"
 
@@ -16,20 +16,24 @@ using context::StageFunctionData;
 using context::UnaryFunction;
 using context::VectorXs;
 
+const PolymorphicMultiBaseVisitor<StageFunction> func_visitor;
+const PolymorphicMultiBaseVisitor<UnaryFunction, StageFunction> unary_visitor;
+
 template <typename Base> void exposeSliceExpression(const char *name) {
   // FUNCTION SLICE
 
   using FunctionSliceXpr = FunctionSliceXprTpl<Scalar, Base>;
 
-  bp::register_ptr_to_python<shared_ptr<FunctionSliceXpr>>();
   bp::class_<FunctionSliceXpr, bp::bases<Base>>(
       name,
       "Represents a slice of an expression according to either a single index "
       "or an array of indices.",
-      bp::init<shared_ptr<Base>, std::vector<int> const &>(
-          bp::args("self", "func", "indices")))
-      .def(bp::init<shared_ptr<Base>, const int>(
-          "Constructor from a single index.", bp::args("self", "func", "idx")))
+      bp::init<xyz::polymorphic<Base>, std::vector<int> const &>(bp::args(
+          "self", "func", "indices"))[bp::with_custodian_and_ward<1, 2>()])
+      .def(func_visitor)
+      .def(bp::init<xyz::polymorphic<Base>, const int>(
+          "Constructor from a single index.",
+          bp::args("self", "func", "idx"))[bp::with_custodian_and_ward<1, 2>()])
       .def_readonly("func", &FunctionSliceXpr::func, "Underlying function.")
       .def_readonly("indices", &FunctionSliceXpr::indices,
                     "Indices of the slice.");
@@ -41,14 +45,15 @@ struct LinFunctionCompositionVisitor
   using FunType = typename LFC::Base;
 
   template <class PyClass> void visit(PyClass &cl) const {
-    cl.def(bp::init<shared_ptr<FunType>, const MatrixXs, const VectorXs>(
+    cl.def(bp::init<xyz::polymorphic<FunType>, const MatrixXs, const VectorXs>(
                "Construct a composition from the underlying function, weight "
                "matrix "
                ":math:`A` and bias :math:`b`.",
-               bp::args("self", "func", "A", "b")))
-        .def(bp::init<shared_ptr<FunType>, const context::MatrixXs>(
+               bp::args("self", "func", "A",
+                        "b"))[bp::with_custodian_and_ward<1, 2>()])
+        .def(bp::init<xyz::polymorphic<FunType>, const context::MatrixXs>(
             "Constructor where the bias :math:`b` is assumed to be zero.",
-            bp::args("self", "func", "A")))
+            bp::args("self", "func", "A"))[bp::with_custodian_and_ward<1, 2>()])
         .def_readonly("func", &LFC::func, "The underlying function.")
         .def_readonly("A", &LFC::A, "Weight matrix.")
         .def_readonly("b", &LFC::b, "Bias vector.");
@@ -58,10 +63,10 @@ struct LinFunctionCompositionVisitor
 
     bp::def(
         "linear_compose",
-        +[](shared_ptr<FunType> func, const MatrixXs &A, const VectorXs &b) {
-          return linear_compose(func, A, b);
-        },
-        bp::args("func", "A", "b"));
+        +[](xyz::polymorphic<FunType> func, const MatrixXs &A,
+            const VectorXs &b) { return linear_compose(func, A, b); },
+        bp::args("func", "A", "b"),
+        bp::with_custodian_and_ward_postcall<0, 1>());
   }
 };
 
@@ -82,18 +87,18 @@ void exposeFunctionExpressions() {
   using LinearUnaryFunctionComposition =
       LinearUnaryFunctionCompositionTpl<Scalar>;
 
-  bp::register_ptr_to_python<shared_ptr<LinearFunctionComposition>>();
   bp::class_<LinearFunctionComposition, bp::bases<StageFunction>>(
       "LinearFunctionComposition",
       "Function composition :math:`r(x) = Af(x, u, y) + b`.", bp::no_init)
-      .def(LinFunctionCompositionVisitor<LinearFunctionComposition>());
+      .def(LinFunctionCompositionVisitor<LinearFunctionComposition>())
+      .def(func_visitor);
 
-  bp::register_ptr_to_python<shared_ptr<LinearUnaryFunctionComposition>>();
   bp::class_<LinearUnaryFunctionComposition, bp::bases<UnaryFunction>>(
       "LinearUnaryFunctionComposition",
       "Function composition for unary functions: :math:`r(x) = Af(x) + b`.",
       bp::no_init)
-      .def(LinFunctionCompositionVisitor<LinearUnaryFunctionComposition>());
+      .def(LinFunctionCompositionVisitor<LinearUnaryFunctionComposition>())
+      .def(unary_visitor);
 }
 
 } // namespace python

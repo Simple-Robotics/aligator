@@ -10,8 +10,7 @@
 namespace aligator {
 
 /// @brief    Data struct for stage models StageModelTpl.
-template <typename _Scalar>
-struct StageDataTpl : Cloneable<StageDataTpl<_Scalar>> {
+template <typename _Scalar> struct StageDataTpl {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
@@ -38,7 +37,7 @@ struct StageDataTpl : Cloneable<StageDataTpl<_Scalar>> {
     const std::size_t nc = stage_model.numConstraints();
 
     for (std::size_t j = 0; j < nc; j++) {
-      const auto &func = stage_model.constraints_[j].func;
+      const auto &func = stage_model.constraints_.funcs[j];
       constraint_data[j] = func->createData();
     }
   }
@@ -54,12 +53,6 @@ struct StageDataTpl : Cloneable<StageDataTpl<_Scalar>> {
     if (dynamics_data == nullptr)
       ALIGATOR_RUNTIME_ERROR(
           fmt::format("{} (dynamics_data cannot be nullptr)", msg));
-  }
-
-protected:
-  StageDataTpl() = default;
-  virtual StageDataTpl *clone_impl() const override {
-    return new StageDataTpl(*this);
   }
 };
 

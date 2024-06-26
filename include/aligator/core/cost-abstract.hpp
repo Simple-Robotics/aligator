@@ -6,6 +6,7 @@
 #include "aligator/fwd.hpp"
 #include "aligator/core/clone.hpp"
 #include <proxsuite-nlp/manifold-base.hpp>
+#include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 
 namespace aligator {
 /** @brief Stage costs \f$ \ell(x, u) \f$ for control problems.
@@ -17,15 +18,16 @@ template <typename _Scalar> struct CostAbstractTpl {
   using Manifold = ManifoldAbstractTpl<Scalar>;
 
   /// @brief State dimension
-  shared_ptr<Manifold> space;
+  xyz::polymorphic<Manifold> space;
   /// @brief Control dimension
   int nu;
 
   int nx() const { return space->nx(); }
   int ndx() const { return space->ndx(); }
 
-  CostAbstractTpl(shared_ptr<Manifold> space, const int nu)
-      : space(space), nu(nu) {}
+  template <class U>
+  CostAbstractTpl(U &&space, const int nu)
+      : space(std::forward<U>(space)), nu(nu) {}
 
   /// @brief Evaluate the cost function.
   virtual void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,

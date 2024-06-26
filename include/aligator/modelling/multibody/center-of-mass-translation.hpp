@@ -30,10 +30,10 @@ public:
   using SE3 = pinocchio::SE3Tpl<Scalar>;
   using Data = CenterOfMassTranslationDataTpl<Scalar>;
 
-  shared_ptr<Model> pin_model_;
+  Model pin_model_;
 
   CenterOfMassTranslationResidualTpl(const int ndx, const int nu,
-                                     const shared_ptr<Model> &model,
+                                     const Model &model,
                                      const Vector3s &frame_trans)
       : Base(ndx, nu, 3), pin_model_(model), p_ref_(frame_trans) {}
 

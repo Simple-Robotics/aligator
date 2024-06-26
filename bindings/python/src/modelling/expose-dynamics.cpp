@@ -19,31 +19,34 @@ void exposeDynamics() {
 }
 
 using context::DynamicsModel;
-using ManifoldPtr = shared_ptr<context::Manifold>;
+using ManifoldPtr = xyz::polymorphic<context::Manifold>;
 using context::StageFunction;
 
 void exposeDynamicsBase() {
 
-  using PyDynamicsModel = internal::PyStageFunction<DynamicsModel>;
+  using PyDynamicsModel = PyStageFunction<DynamicsModel>;
 
-  StdVectorPythonVisitor<std::vector<shared_ptr<DynamicsModel>>, true>::expose(
-      "StdVec_Dynamics");
-
+  register_polymorphic_to_python<xyz::polymorphic<DynamicsModel>>();
+  StdVectorPythonVisitor<std::vector<xyz::polymorphic<DynamicsModel>>,
+                         true>::expose("StdVec_Dynamics");
   bp::class_<PyDynamicsModel, bp::bases<StageFunction>, boost::noncopyable>(
       "DynamicsModel",
       "Dynamics models are specific ternary functions f(x,u,x') which map "
       "to the tangent bundle of the next state variable x'.",
-      bp::init<ManifoldPtr, int>(bp::args("self", "space", "nu")))
+      bp::init<ManifoldPtr, int>(
+          ("self"_a, "space", "nu"))[bp::with_custodian_and_ward<1, 2>()])
       .def(bp::init<ManifoldPtr, int, ManifoldPtr>(
-          bp::args("self", "space", "nu", "space2")))
+          bp::args("self", "space", "nu", "space2"))
+               [bp::with_custodian_and_ward<
+                   1, 2, bp::with_custodian_and_ward<1, 4>>()])
       .def_readonly("space", &DynamicsModel::space_)
       .def_readonly("space_next", &DynamicsModel::space_next_)
       .add_property("nx1", &DynamicsModel::nx1)
       .add_property("nx2", &DynamicsModel::nx2)
       .add_property("is_explicit", &DynamicsModel::is_explicit,
                     "Return whether the current model is explicit.")
-      .def(
-          CreateDataPolymorphicPythonVisitor<DynamicsModel, PyDynamicsModel>());
+      .def(CreateDataPolymorphicPythonVisitor<DynamicsModel, PyDynamicsModel>())
+      .def(PolymorphicMultiBaseVisitor<DynamicsModel>());
 }
 
 } // namespace python
