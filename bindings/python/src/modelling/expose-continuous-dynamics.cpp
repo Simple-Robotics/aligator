@@ -33,10 +33,11 @@ void exposeContinuousDynamics() {
   bp::class_<PyContinuousDynamics<>, boost::noncopyable>(
       "ContinuousDynamicsAbstract",
       "Base class for continuous-time dynamical models (DAEs and ODEs).",
-      bp::init<ManifoldPtr, int>("Default constructor: provide the working "
-                                 "manifold and control space "
-                                 "dimension.",
-                                 bp::args("self", "space", "nu")))
+      bp::init<ManifoldPtr, int>(
+          "Default constructor: provide the working "
+          "manifold and control space "
+          "dimension.",
+          bp::args("self", "space", "nu"))[bp::with_custodian_and_ward<1, 2>()])
       .add_property("ndx", &ContinuousDynamicsAbstract::ndx,
                     "State space dimension.")
       .add_property("nu", &ContinuousDynamicsAbstract::nu,

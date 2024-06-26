@@ -35,7 +35,8 @@ void exposeODEs() {
       "ODEAbstract",
       "Continuous dynamics described by ordinary differential equations "
       "(ODEs).",
-      bp::init<const ManifoldPtr &, int>(bp::args("self", "space", "nu")))
+      bp::init<const ManifoldPtr &, int>(
+          bp::args("self", "space", "nu"))[bp::with_custodian_and_ward<1, 2>()])
       .def("forward", bp::pure_virtual(&ODEAbstract::forward),
            bp::args("self", "x", "u", "data"),
            "Compute the value of the ODE vector field, i.e. the "
@@ -51,7 +52,7 @@ void exposeODEs() {
       "LinearODE",
       "Linear ordinary differential equation, :math:`\\dot{x} = Ax + Bu`.",
       bp::init<ManifoldPtr, MatrixXs, MatrixXs, VectorXs>(
-          bp::args("self", "A", "B", "c")))
+          bp::args("self", "A", "B", "c"))[bp::with_custodian_and_ward<1, 2>()])
       .def(bp::init<MatrixXs, MatrixXs, VectorXs>(
           "Constructor with just the matrices; a Euclidean state space is "
           "assumed.",

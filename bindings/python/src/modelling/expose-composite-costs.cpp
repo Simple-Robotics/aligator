@@ -30,7 +30,9 @@ void exposeComposites() {
   bp::class_<QuadResCost, bp::bases<CostAbstract>>(
       "QuadraticResidualCost", "Weighted 2-norm of a given residual function.",
       bp::init<ManifoldPtr, PolyFunction, const ConstMatrixRef &>(
-          bp::args("self", "space", "function", "weights")))
+          bp::args("self", "space", "function", "weights"))
+          [bp::with_custodian_and_ward<1, 2,
+                                       bp::with_custodian_and_ward<1, 3>>()])
       .def_readwrite("residual", &QuadResCost::residual_)
       .def_readwrite("weights", &QuadResCost::weights_)
       .def(CopyableVisitor<QuadResCost>())
@@ -39,9 +41,12 @@ void exposeComposites() {
   bp::class_<LogResCost, bp::bases<CostAbstract>>(
       "LogResidualCost", "Weighted log-cost composite cost.",
       bp::init<ManifoldPtr, PolyFunction, const ConstVectorRef &>(
-          bp::args("self", "space", "function", "barrier_weights")))
+          bp::args("self", "space", "function", "barrier_weights"))
+          [bp::with_custodian_and_ward<1, 2,
+                                       bp::with_custodian_and_ward<1, 3>>()])
       .def(bp::init<ManifoldPtr, PolyFunction, Scalar>(
-          bp::args("self", "function", "scale")))
+          bp::args("self", "function", "scale"))[bp::with_custodian_and_ward<
+          1, 2, bp::with_custodian_and_ward<1, 3>>()])
       .def_readwrite("residual", &LogResCost::residual_)
       .def_readwrite("weights", &LogResCost::barrier_weights_)
       .def(CopyableVisitor<LogResCost>())
@@ -62,7 +67,8 @@ void exposeComposites() {
           bp::args("self", "resdl", "weights")))
       .def(bp::init<ManifoldPtr, const int, const ConstVectorRef &,
                     const MatrixXs &>(
-          bp::args("self", "space", "nu", "target", "weights")))
+          bp::args("self", "space", "nu", "target",
+                   "weights"))[bp::with_custodian_and_ward<1, 2>()])
       .add_property("target", &QuadStateCost::getTarget,
                     &QuadStateCost::setTarget,
                     "Target of the quadratic distance.")
@@ -70,12 +76,13 @@ void exposeComposites() {
 
   bp::class_<QuadControlCost, bp::bases<QuadResCost>>(
       "QuadraticControlCost", "Quadratic control cost.", bp::no_init)
-      .def(bp::init<ManifoldPtr, ConstVectorRef, const MatrixXs &>(
-          bp::args("space", "target", "weights")))
+      .def(bp::init<ManifoldPtr, ConstVectorRef, const MatrixXs &>(bp::args(
+          "space", "target", "weights"))[bp::with_custodian_and_ward<1, 2>()])
       .def(bp::init<ManifoldPtr, QuadControlCost::Error, const MatrixXs &>(
-          bp::args("self", "space", "resdl", "weights")))
-      .def(bp::init<ManifoldPtr, int, const MatrixXs &>(
-          bp::args("space", "nu", "weights")))
+          bp::args("self", "space", "resdl",
+                   "weights"))[bp::with_custodian_and_ward<1, 2>()])
+      .def(bp::init<ManifoldPtr, int, const MatrixXs &>(bp::args(
+          "space", "nu", "weights"))[bp::with_custodian_and_ward<1, 2>()])
       .add_property("target", &QuadControlCost::getTarget,
                     &QuadControlCost::setTarget,
                     "Reference of the control cost.")

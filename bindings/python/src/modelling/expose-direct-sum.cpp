@@ -24,7 +24,9 @@ void exposeExplicitDynDirectSum() {
       "Direct sum :math:`f \\oplus g` of two explicit dynamical models.",
       bp::no_init)
       .def(bp::init<xyz::polymorphic<ExplicitDynamics>,
-                    xyz::polymorphic<ExplicitDynamics>>(("self"_a, "f", "g")))
+                    xyz::polymorphic<ExplicitDynamics>>(
+          ("self"_a, "f", "g"))[bp::with_custodian_and_ward<
+          1, 2, bp::with_custodian_and_ward<1, 3>>()])
       .def(exp_dynamics_visitor);
 
   bp::class_<DirectSumExplicitDynamics::Data,
