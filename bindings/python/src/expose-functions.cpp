@@ -146,7 +146,8 @@ void exposeFunctions() {
       "StateErrorResidual",
       bp::init<const xyz::polymorphic<context::Manifold> &, const int,
                const context::VectorXs &>(
-          bp::args("self", "space", "nu", "target")))
+          bp::args("self", "space", "nu",
+                   "target"))[bp::with_custodian_and_ward<1, 2>()])
       .def_readonly("space", &StateErrorResidual::space_)
       .def_readwrite("target", &StateErrorResidual::target_)
       .def(PolymorphicMultiBaseVisitor<UnaryFunction, StageFunction>());
@@ -155,7 +156,8 @@ void exposeFunctions() {
       "ControlErrorResidual",
       bp::init<const int, const xyz::polymorphic<context::Manifold> &,
                const context::VectorXs &>(
-          bp::args("self", "ndx", "uspace", "target")))
+          bp::args("self", "ndx", "uspace",
+                   "target"))[bp::with_custodian_and_ward<1, 3>()])
       .def(bp::init<const int, const context::VectorXs &>(
           bp::args("self", "ndx", "target")))
       .def(bp::init<int, int>(bp::args("self", "ndx", "nu")))

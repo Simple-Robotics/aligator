@@ -18,15 +18,16 @@ void exposeCostStack() {
       "CostStack", "A weighted sum of other cost functions.",
       bp::init<xyz::polymorphic<Manifold>, int,
                const std::vector<xyz::polymorphic<CostAbstract>> &,
-               const std::vector<Scalar> &>(("self"_a, "space", "nu",
-                                             "components"_a = bp::list(),
-                                             "weights"_a = bp::list())))
+               const std::vector<Scalar> &>(
+          ("self"_a, "space", "nu", "components"_a = bp::list(),
+           "weights"_a = bp::list()))[bp::with_custodian_and_ward<1, 2>()])
       .def_readwrite("components", &CostStack::components_,
                      "Components of this cost stack.")
       .def_readonly("weights", &CostStack::weights_,
                     "Weights of this cost stack.")
       .def("addCost", &CostStack::addCost, ("self"_a, "cost", "weight"_a = 1.),
-           "Add a cost to the stack of costs.")
+           "Add a cost to the stack of costs.",
+           bp::with_custodian_and_ward<1, 2>())
       .def("size", &CostStack::size, "Get the number of cost components.")
       .def(CopyableVisitor<CostStack>())
       .def(PolymorphicMultiBaseVisitor<CostAbstract>());

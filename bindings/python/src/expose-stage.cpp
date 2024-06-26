@@ -41,15 +41,19 @@ void exposeStage() {
       "A stage of the control problem. Holds costs, dynamics, and constraints.",
       bp::no_init)
       .def(bp::init<const PolyCost &, const PolyDynamics &>(
-          ("self"_a, "cost", "dynamics")))
+          ("self"_a, "cost", "dynamics"))[bp::with_custodian_and_ward<
+          1, 2, bp::with_custodian_and_ward<1, 3>>()])
       .def<void (StageModel::*)(const context::StageConstraint &)>(
           "addConstraint", &StageModel::addConstraint, ("self"_a, "constraint"),
-          "Add an existing constraint to the stage.")
+          "Add an existing constraint to the stage.",
+          bp::with_custodian_and_ward<1, 2>())
       .def<void (StageModel::*)(const PolyFunction &, const PolyCstrSet &)>(
           "addConstraint", &StageModel::addConstraint,
           ("self"_a, "func", "cstr_set"),
           "Constructs a new constraint (from the underlying function and set) "
-          "and adds it to the stage.")
+          "and adds it to the stage.",
+          bp::with_custodian_and_ward<1, 2,
+                                      bp::with_custodian_and_ward<1, 3>>())
       .def_readonly("constraints", &StageModel::constraints_,
                     "Get the set of constraints.")
       .def_readonly("dynamics", &StageModel::dynamics_, "Stage dynamics.")

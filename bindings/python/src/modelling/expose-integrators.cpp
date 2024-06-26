@@ -26,14 +26,17 @@ void exposeIntegrators() {
       conversions_visitor;
 
   bp::class_<PyIntegratorAbstract, bp::bases<DynamicsModel>,
-             boost::noncopyable>("IntegratorAbstract",
-                                 "Base class for numerical integrators.",
-                                 bp::init<const xyz::polymorphic<DAEType> &>(
-                                     "Construct the integrator from a DAE.",
-                                     bp::args("self", "cont_dynamics")))
-      .def_readwrite("continuous_dynamics",
-                     &IntegratorAbstract::continuous_dynamics_,
-                     "The underlying ODE or DAE.")
+             boost::noncopyable>(
+      "IntegratorAbstract", "Base class for numerical integrators.",
+      bp::init<const xyz::polymorphic<DAEType> &>(
+          "Construct the integrator from a DAE.",
+          bp::args("self",
+                   "cont_dynamics"))[bp::with_custodian_and_ward<1, 2>()])
+      .add_property("continuous_dynamics",
+                    bp::make_getter(&IntegratorAbstract::continuous_dynamics_),
+                    bp::make_setter(&IntegratorAbstract::continuous_dynamics_,
+                                    bp::with_custodian_and_ward<1, 2>()),
+                    "The underlying ODE or DAE.")
       .add_property("space",
                     bp::make_function(&IntegratorAbstract::space,
                                       bp::return_internal_reference<>()),
@@ -49,8 +52,9 @@ void exposeIntegrators() {
 
   using MidpointIntegrator = IntegratorMidpointTpl<Scalar>;
   bp::class_<MidpointIntegrator, bp::bases<IntegratorAbstract>>(
-      "IntegratorMidpoint", bp::init<xyz::polymorphic<DAEType>, Scalar>(
-                                bp::args("self", "dae", "timestep")))
+      "IntegratorMidpoint",
+      bp::init<xyz::polymorphic<DAEType>, Scalar>(bp::args(
+          "self", "dae", "timestep"))[bp::with_custodian_and_ward<1, 2>()])
       .def_readwrite("timestep", &MidpointIntegrator::timestep_, "Time step.")
       .def(conversions_visitor);
 
