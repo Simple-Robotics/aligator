@@ -34,12 +34,10 @@ void exposeExplicitIntegrators() {
 
   register_polymorphic_to_python<polymorphic<ExplicitIntegratorAbstract>>();
   bp::class_<PyExplicitIntegrator, bp::bases<ExplicitDynamics>,
-             boost::noncopyable>(
-      "ExplicitIntegratorAbstract",
-      bp::init<const polymorphic<ODEType> &>(
-          "Construct the integrator from an ODE.",
-          bp::args("self",
-                   "cont_dynamics"))[bp::with_custodian_and_ward<1, 2>()])
+             boost::noncopyable>("ExplicitIntegratorAbstract",
+                                 bp::init<const polymorphic<ODEType> &>(
+                                     "Construct the integrator from an ODE.",
+                                     bp::args("self", "cont_dynamics")))
       .def_readonly("nx2", &ExplicitIntegratorAbstract::nx2,
                     "Next state dimension.")
       .def_readwrite("differential_dynamics", &ExplicitIntegratorAbstract::ode_,
@@ -60,8 +58,8 @@ void exposeExplicitIntegrators() {
       "The explicit Euler integrator :math:`x' = x \\oplus \\Delta t f(x, u)`; "
       "this integrator has error :math:`O(\\Delta t)` "
       "in the time step :math:`\\Delta t`.",
-      bp::init<const polymorphic<ODEType> &, Scalar>(bp::args(
-          "self", "ode", "timestep"))[bp::with_custodian_and_ward<1, 2>()])
+      bp::init<const polymorphic<ODEType> &, Scalar>(
+          bp::args("self", "ode", "timestep")))
       .def_readwrite("timestep", &IntegratorEulerTpl<Scalar>::timestep_,
                      "Time step.")
       .def(conversions_visitor);
@@ -69,8 +67,8 @@ void exposeExplicitIntegrators() {
   bp::class_<IntegratorSemiImplEulerTpl<Scalar>,
              bp::bases<ExplicitIntegratorAbstract>>(
       "IntegratorSemiImplEuler", "The semi implicit Euler integrator.",
-      bp::init<const polymorphic<ODEType> &, Scalar>(bp::args(
-          "self", "ode", "timestep"))[bp::with_custodian_and_ward<1, 2>()])
+      bp::init<const polymorphic<ODEType> &, Scalar>(
+          bp::args("self", "ode", "timestep")))
       .def_readwrite("timestep", &IntegratorSemiImplEulerTpl<Scalar>::timestep_,
                      "Time step.")
       .def(conversions_visitor);
@@ -79,9 +77,8 @@ void exposeExplicitIntegrators() {
                                                 bp::no_init);
 
   bp::class_<IntegratorRK2Tpl<Scalar>, bp::bases<ExplicitIntegratorAbstract>>(
-      "IntegratorRK2",
-      bp::init<const polymorphic<ODEType> &, Scalar>(bp::args(
-          "self", "ode", "timestep"))[bp::with_custodian_and_ward<1, 2>()])
+      "IntegratorRK2", bp::init<const polymorphic<ODEType> &, Scalar>(
+                           bp::args("self", "ode", "timestep")))
       .def_readwrite("timestep", &IntegratorRK2Tpl<Scalar>::timestep_,
                      "Time step.")
       .def(conversions_visitor);

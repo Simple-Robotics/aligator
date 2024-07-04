@@ -33,12 +33,9 @@ void exposeDynamicsBase() {
       "DynamicsModel",
       "Dynamics models are specific ternary functions f(x,u,x') which map "
       "to the tangent bundle of the next state variable x'.",
-      bp::init<ManifoldPtr, int>(
-          ("self"_a, "space", "nu"))[bp::with_custodian_and_ward<1, 2>()])
+      bp::init<ManifoldPtr, int>(("self"_a, "space", "nu")))
       .def(bp::init<ManifoldPtr, int, ManifoldPtr>(
-          bp::args("self", "space", "nu", "space2"))
-               [bp::with_custodian_and_ward<
-                   1, 2, bp::with_custodian_and_ward<1, 4>>()])
+          bp::args("self", "space", "nu", "space2")))
       .def_readonly("space", &DynamicsModel::space_)
       .def_readonly("space_next", &DynamicsModel::space_next_)
       .add_property("nx1", &DynamicsModel::nx1)

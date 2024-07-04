@@ -25,17 +25,15 @@ void exposeConstraint() {
       "A stage-wise constraint, of the form :math:`c(x,u) \\leq 0 c(x,u)`.\n"
       ":param f: underlying function\n"
       ":param cs: constraint set",
-      bp::init<const PolyFunc &, const PolySet &>(
-          ("self"_a, "func", "cstr_set"),
-          "Contruct a StageConstraint from a StageFunction and a constraint "
-          "set.")[bp::with_custodian_and_ward<
-          1, 2, bp::with_custodian_and_ward<1, 3>>()])
-      .add_property("func", bp::make_getter(&StageConstraint::func),
-                    bp::make_setter(&StageConstraint::func,
-                                    bp::with_custodian_and_ward<1, 2>()))
-      .add_property("set", bp::make_getter(&StageConstraint::set),
-                    bp::make_setter(&StageConstraint::set,
-                                    bp::with_custodian_and_ward<1, 2>()))
+      bp::no_init)
+      .def("__init__",
+           bp::make_constructor(make_constraint_wrap,
+                                bp::default_call_policies(),
+                                ("func"_a, "cstr_set")),
+           "Contruct a StageConstraint from a StageFunction and a constraint "
+           "set.")
+      .def_readwrite("func", &StageConstraint::func)
+      .def_readwrite("set", &StageConstraint::set)
       .add_property(
           "nr", +[](StageConstraint const &el) { return el.func->nr; },
           "Get constraint dimension.");

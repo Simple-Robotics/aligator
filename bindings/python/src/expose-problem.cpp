@@ -5,8 +5,6 @@
 #include "aligator/core/traj-opt-data.hpp"
 #include "aligator/core/cost-abstract.hpp"
 
-#include "proxsuite-nlp/python/polymorphic.hpp"
-
 namespace aligator {
 namespace python {
 void exposeProblem() {
@@ -20,7 +18,6 @@ void exposeProblem() {
   using context::TrajOptProblem;
   using context::UnaryFunction;
 
-  using proxsuite::nlp::python::with_custodian_and_ward_list_content;
   using PolyFunction = xyz::polymorphic<UnaryFunction>;
   using PolyStage = xyz::polymorphic<StageModel>;
   using PolyCost = xyz::polymorphic<CostAbstract>;
@@ -30,37 +27,21 @@ void exposeProblem() {
                              bp::no_init)
       .def(bp::init<PolyFunction, const std::vector<PolyStage> &, PolyCost>(
           "Constructor adding the initial constraint explicitly.",
-          ("self"_a, "init_constraint", "stages", "term_cost"))
-               [bp::with_custodian_and_ward<
-                   1, 2,
-                   with_custodian_and_ward_list_content<
-                       1, 3, bp::with_custodian_and_ward<1, 4>>>()])
+          ("self"_a, "init_constraint", "stages", "term_cost")))
       .def(bp::init<ConstVectorRef, const std::vector<PolyStage> &, PolyCost>(
           "Constructor for an initial value problem.",
-          ("self"_a, "x0", "stages", "term_cost"))
-               [with_custodian_and_ward_list_content<
-                   1, 3, bp::with_custodian_and_ward<1, 4>>()])
-      .def(
-          bp::init<PolyFunction, PolyCost>(
-              "Constructor adding the initial constraint explicitly (without "
-              "stages).",
-              ("self"_a, "init_constraint", "term_cost"))
-              [bp::with_custodian_and_ward<1, 2,
-                                           bp::with_custodian_and_ward<1, 3>>()]
-
-          )
-      .def(
-          bp::init<ConstVectorRef, const int, PolyManifold, PolyCost>(
-              "Constructor for an initial value problem (without pre-allocated "
-              "stages).",
-              ("self"_a, "x0", "nu", "space", "term_cost"))
-              [bp::with_custodian_and_ward<1, 3,
-                                           bp::with_custodian_and_ward<1, 4>>()]
-
-          )
+          ("self"_a, "x0", "stages", "term_cost")))
+      .def(bp::init<PolyFunction, PolyCost>(
+          "Constructor adding the initial constraint explicitly (without "
+          "stages).",
+          ("self"_a, "init_constraint", "term_cost")))
+      .def(bp::init<ConstVectorRef, const int, PolyManifold, PolyCost>(
+          "Constructor for an initial value problem (without pre-allocated "
+          "stages).",
+          ("self"_a, "x0", "nu", "space", "term_cost")))
       .def<void (TrajOptProblem::*)(const PolyStage &)>(
           "addStage", &TrajOptProblem::addStage, ("self"_a, "new_stage"),
-          "Add a stage to the problem.", bp::with_custodian_and_ward<1, 2>())
+          "Add a stage to the problem.")
       .def_readonly("stages", &TrajOptProblem::stages_,
                     "Stages of the shooting problem.")
       .def_readwrite("term_cost", &TrajOptProblem::term_cost_,
@@ -74,8 +55,7 @@ void exposeProblem() {
       .add_property("init_constraint", &TrajOptProblem::init_condition_,
                     "Get initial state constraint.")
       .def("addTerminalConstraint", &TrajOptProblem::addTerminalConstraint,
-           ("self"_a, "constraint"), "Add a terminal constraint.",
-           bp::with_custodian_and_ward<1, 2>())
+           ("self"_a, "constraint"), "Add a terminal constraint.")
       .def("removeTerminalConstraint",
            &TrajOptProblem::removeTerminalConstraints, "self"_a,
            "Remove all terminal constraints.")

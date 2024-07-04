@@ -28,12 +28,11 @@ template <typename Base> void exposeSliceExpression(const char *name) {
       name,
       "Represents a slice of an expression according to either a single index "
       "or an array of indices.",
-      bp::init<xyz::polymorphic<Base>, std::vector<int> const &>(bp::args(
-          "self", "func", "indices"))[bp::with_custodian_and_ward<1, 2>()])
+      bp::init<xyz::polymorphic<Base>, std::vector<int> const &>(
+          bp::args("self", "func", "indices")))
       .def(func_visitor)
       .def(bp::init<xyz::polymorphic<Base>, const int>(
-          "Constructor from a single index.",
-          bp::args("self", "func", "idx"))[bp::with_custodian_and_ward<1, 2>()])
+          "Constructor from a single index.", bp::args("self", "func", "idx")))
       .def_readonly("func", &FunctionSliceXpr::func, "Underlying function.")
       .def_readonly("indices", &FunctionSliceXpr::indices,
                     "Indices of the slice.");
@@ -49,11 +48,10 @@ struct LinFunctionCompositionVisitor
                "Construct a composition from the underlying function, weight "
                "matrix "
                ":math:`A` and bias :math:`b`.",
-               bp::args("self", "func", "A",
-                        "b"))[bp::with_custodian_and_ward<1, 2>()])
+               bp::args("self", "func", "A", "b")))
         .def(bp::init<xyz::polymorphic<FunType>, const context::MatrixXs>(
             "Constructor where the bias :math:`b` is assumed to be zero.",
-            bp::args("self", "func", "A"))[bp::with_custodian_and_ward<1, 2>()])
+            bp::args("self", "func", "A")))
         .def_readonly("func", &LFC::func, "The underlying function.")
         .def_readonly("A", &LFC::A, "Weight matrix.")
         .def_readonly("b", &LFC::b, "Bias vector.");
@@ -65,8 +63,7 @@ struct LinFunctionCompositionVisitor
         "linear_compose",
         +[](xyz::polymorphic<FunType> func, const MatrixXs &A,
             const VectorXs &b) { return linear_compose(func, A, b); },
-        bp::args("func", "A", "b"),
-        bp::with_custodian_and_ward_postcall<0, 1>());
+        bp::args("func", "A", "b"));
   }
 };
 

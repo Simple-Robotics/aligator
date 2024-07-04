@@ -6,7 +6,6 @@
 
 #include "aligator/core/function-abstract.hpp"
 
-#include <proxsuite-nlp/constraint-base.hpp>
 #include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 
 namespace aligator {
@@ -14,11 +13,6 @@ namespace aligator {
 /// @brief Simple struct holding together a function and set, to describe a
 /// constraint.
 template <typename Scalar> struct StageConstraintTpl {
-  StageConstraintTpl() = default;
-  StageConstraintTpl(const xyz::polymorphic<StageFunctionTpl<Scalar>> &f,
-                     const xyz::polymorphic<ConstraintSetBase<Scalar>> &s)
-      : func(f), set(s) {}
-
   xyz::polymorphic<StageFunctionTpl<Scalar>> func;
   xyz::polymorphic<ConstraintSetBase<Scalar>> set;
 };

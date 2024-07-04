@@ -48,7 +48,7 @@ void exposeExplicitBase() {
       "ExplicitDynamicsModel", "Base class for explicit dynamics.",
       bp::init<ManifoldPtr, const int>(
           "Constructor with state space and control dimension.",
-          ("self"_a, "space", "nu"))[bp::with_custodian_and_ward<1, 2>()])
+          ("self"_a, "space", "nu")))
       .def("forward", bp::pure_virtual(&ExplicitDynamics::forward),
            ("self"_a, "x", "u", "data"), "Call for forward discrete dynamics.")
       .def("dForward", bp::pure_virtual(&ExplicitDynamics::dForward),
