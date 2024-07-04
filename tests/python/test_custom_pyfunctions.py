@@ -9,6 +9,9 @@ class CustomFunction(aligator.StageFunction):
         ndx = space.ndx
         super().__init__(ndx, nu, ndx, ndx)
 
+    def __getinitargs__(self):
+        return (self.space, self.nu)
+
     def evaluate(self, x, u, y, data: aligator.StageFunctionData):
         data.value[:] = self.space.difference(x, self.space.neutral())
 
@@ -22,6 +25,9 @@ class TwistModelExplicit(aligator.dynamics.ExplicitDynamicsModel):
         self.B = B
         self.dt = dt
         super().__init__(space, nu)
+
+    def __getinitargs__(self):
+        return (self.space, self.nu, self.dt)
 
     def forward(self, x, u, data: aligator.dynamics.ExplicitDynamicsData):
         self.space.integrate(x, self.dt * self.B @ u, data.xnext)
