@@ -37,6 +37,9 @@ class TwistModelExplicit(aligator.dynamics.ExplicitDynamicsModel):
         self.dt = dt
         super().__init__(space, nu)
 
+    def __getinitargs__(self):
+        return (self.dt, self.B)
+
     def forward(self, x, u, data: aligator.dynamics.ExplicitDynamicsData):
         assert data.good
         space.integrate(x, self.dt * self.B @ u, data.xnext)
@@ -72,6 +75,12 @@ class MyQuadCost(aligator.CostAbstract):
         self.W = W
         super().__init__(space, nu)
         self._basis = costs.QuadraticDistanceCost(space, self.x_ref, self.W)
+
+    def __getinitargs__(self):
+        return (self.W, self.x_ref)
+
+    def __getstate__(self):
+        return dict()
 
     def evaluate(self, x, u, data):
         assert isinstance(data, MyCostData)
