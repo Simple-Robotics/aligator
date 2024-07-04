@@ -7,8 +7,10 @@
 namespace aligator {
 namespace python {
 /// @brief Wrapper for the CostDataAbstractTpl class and its children.
-struct PyCostFunction final : context::CostAbstract,
-                              bp::wrapper<context::CostAbstract> {
+struct PyCostFunction final
+    : context::CostAbstract,
+      proxsuite::nlp::python::PolymorphicWrapper<PyCostFunction,
+                                                 context::CostAbstract> {
   using Scalar = context::Scalar;
   using T = context::CostAbstract;
   using CostData = CostDataAbstractTpl<Scalar>;
@@ -40,3 +42,14 @@ struct PyCostFunction final : context::CostAbstract,
 };
 } // namespace python
 } // namespace aligator
+
+namespace boost::python::objects {
+
+template <>
+struct value_holder<aligator::python::PyCostFunction>
+    : proxsuite::nlp::python::OwningNonOwningHolder<
+          aligator::python::PyCostFunction> {
+  using OwningNonOwningHolder::OwningNonOwningHolder;
+};
+
+} // namespace boost::python::objects

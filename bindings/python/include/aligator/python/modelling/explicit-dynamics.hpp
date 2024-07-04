@@ -5,6 +5,11 @@
 #include "aligator/python/fwd.hpp"
 #include "aligator/core/explicit-dynamics.hpp"
 
+#include "aligator/modelling/dynamics/context.hpp"
+#include "aligator/modelling/dynamics/integrator-explicit.hpp"
+
+#include "proxsuite-nlp/python/polymorphic.hpp"
+
 namespace aligator {
 namespace python {
 
@@ -13,7 +18,10 @@ namespace python {
 /// @tparam ExplicitBase The derived virtual class that is being exposed.
 /// @sa PyStageFunction
 template <class ExplicitBase = context::ExplicitDynamics>
-struct PyExplicitDynamics final : ExplicitBase, bp::wrapper<ExplicitBase> {
+struct PyExplicitDynamics final
+    : ExplicitBase,
+      proxsuite::nlp::python::PolymorphicWrapper<
+          PyExplicitDynamics<ExplicitBase>, ExplicitBase> {
   using Scalar = context::Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   // All functions in the interface take this type for output
@@ -44,3 +52,23 @@ struct PyExplicitDynamics final : ExplicitBase, bp::wrapper<ExplicitBase> {
 
 } // namespace python
 } // namespace aligator
+
+namespace boost::python::objects {
+
+template <>
+struct value_holder<aligator::python::PyExplicitDynamics<>>
+    : proxsuite::nlp::python::OwningNonOwningHolder<
+          aligator::python::PyExplicitDynamics<>> {
+  using OwningNonOwningHolder::OwningNonOwningHolder;
+};
+
+template <>
+struct value_holder<aligator::python::PyExplicitDynamics<
+    aligator::context::ExplicitIntegratorAbstract>>
+    : proxsuite::nlp::python::OwningNonOwningHolder<
+          aligator::python::PyExplicitDynamics<
+              aligator::context::ExplicitIntegratorAbstract>> {
+  using OwningNonOwningHolder::OwningNonOwningHolder;
+};
+
+} // namespace boost::python::objects

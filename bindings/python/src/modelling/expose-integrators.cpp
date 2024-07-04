@@ -19,8 +19,9 @@ using context::IntegratorAbstract;
 void exposeIntegrators() {
   using DAEType = ContinuousDynamicsAbstractTpl<Scalar>;
 
+  using PolyIntegrator = xyz::polymorphic<IntegratorAbstract>;
   using PyIntegratorAbstract = PyStageFunction<IntegratorAbstract>;
-  register_polymorphic_to_python<xyz::polymorphic<IntegratorAbstract>>();
+  register_polymorphic_to_python<PolyIntegrator>();
 
   PolymorphicMultiBaseVisitor<DynamicsModel, IntegratorAbstract>
       conversions_visitor;
