@@ -25,10 +25,13 @@ using context::StageFunction;
 void exposeDynamicsBase() {
 
   using PyDynamicsModel = PyStageFunction<DynamicsModel>;
+  using PolyDynamicsModel = xyz::polymorphic<DynamicsModel>;
 
-  register_polymorphic_to_python<xyz::polymorphic<DynamicsModel>>();
-  StdVectorPythonVisitor<std::vector<xyz::polymorphic<DynamicsModel>>,
-                         true>::expose("StdVec_Dynamics");
+  register_polymorphic_to_python<PolyDynamicsModel>();
+  StdVectorPythonVisitor<std::vector<PolyDynamicsModel>, true>::expose(
+      "StdVec_Dynamics",
+      eigenpy::details::overload_base_get_item_for_std_vector<
+          std::vector<PolyDynamicsModel>>{});
   bp::class_<PyDynamicsModel, bp::bases<StageFunction>, boost::noncopyable>(
       "DynamicsModel",
       "Dynamics models are specific ternary functions f(x,u,x') which map "

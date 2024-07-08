@@ -39,7 +39,9 @@ void exposeExplicitBase() {
 
   using PolyExplicitDynamics = xyz::polymorphic<ExplicitDynamics>;
   StdVectorPythonVisitor<std::vector<PolyExplicitDynamics>, true>::expose(
-      "StdVec_ExplicitDynamics");
+      "StdVec_ExplicitDynamics",
+      eigenpy::details::overload_base_get_item_for_std_vector<
+          std::vector<PolyExplicitDynamics>>{});
 
   register_polymorphic_to_python<PolyExplicitDynamics>();
 

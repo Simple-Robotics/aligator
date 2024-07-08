@@ -126,7 +126,9 @@ void exposeCostAbstract() {
                                bp::return_value_policy<bp::return_by_value>()));
 
   StdVectorPythonVisitor<std::vector<PolyCost>, true>::expose(
-      "StdVec_CostAbstract");
+      "StdVec_CostAbstract",
+      eigenpy::details::overload_base_get_item_for_std_vector<
+          std::vector<PolyCost>>{});
   StdVectorPythonVisitor<std::vector<shared_ptr<CostData>>, true>::expose(
       "StdVec_CostData");
 }
