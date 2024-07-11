@@ -2,7 +2,7 @@
 # Visit https://bit.ly/cffinit to generate yours today!
 
 cff-version: 1.2.0
-title: aligator
+title: aligator, a versatile and efficient framework for constrained trajectory optimization
 message: 'If you use this software, please cite it as below.'
 type: software
 authors:
@@ -18,18 +18,15 @@ authors:
   - given-names: Sarah
     family-names: El Kazdadi
     email: sarahelkazdadi@gmail.com
-  - given-names: Carpentier
-    family-names: Justin
+  - given-names: Justin
+    family-names: Carpentier
     email: justin.carpentier@inria.fr
     affiliation: INRIA
     orcid: 'https://orcid.org/0000-0001-6585-2894'
-  - given-names: Mansard
-    family-names: Nicolas
+  - given-names: Nicolas
+    family-names: Mansard
     email: nmansard@laas.fr
     affiliation: LAAS-CNRS
     orcid: 'https://orcid.org/0000-0002-8090-0601'
 repository-code: 'https://github.com/Simple-Robotics/aligator'
-abstract: >-
-  A versatile and efficient framework for constrained
-  trajectory optimization
 license: BSD-2-Clause
