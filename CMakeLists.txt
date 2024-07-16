@@ -11,7 +11,10 @@ set(PROJECT_DESCRIPTION
 set(PROJECT_URL "https://github.com/Simple-Robotics/aligator")
 set(PROJECT_CUSTOM_HEADER_EXTENSION "hpp")
 set(PROJECT_USE_KEYWORD_LINK_LIBRARIES True)
+# To enable jrl-cmakemodules compatibility with workspace we must define the two
+# following lines
 set(PROJECT_AUTO_RUN_FINALIZE FALSE)
+set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 set(CXX_DISABLE_WERROR True)
 
