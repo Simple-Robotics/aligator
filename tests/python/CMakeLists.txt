@@ -24,7 +24,7 @@ make_directory(${CMAKE_CURRENT_BINARY_DIR})
 
 foreach(pyfile ${PYTHON_TESTS})
   get_filename_component(test_name ${pyfile} NAME_WE)
-  string(REGEX REPLACE "^test_" "test-py-" test_name ${test_name})
+  string(REGEX REPLACE "^test_" "${PROJECT_NAME}-test-py-" test_name ${test_name})
   string(REGEX REPLACE "_" "-" test_name ${test_name})
   execute_process(
     COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/${pyfile}
@@ -38,17 +38,24 @@ endforeach()
 function(add_test_binding_lib test_name)
   create_ctest_build_tests_target()
 
-  add_library(${test_name} SHARED "${test_name}.cpp")
-  set_standard_output_directory(${test_name})
-  target_link_libraries(${test_name} PUBLIC ${PYLIB_NAME})
-  target_link_libraries(${test_name} PUBLIC eigenpy::eigenpy)
-  set_target_properties(${test_name} PROPERTIES PREFIX "" SUFFIX ${PYTHON_EXT_SUFFIX})
+  set(target_name "${PROJECT_NAME}-${test_name}")
+  add_library(${target_name} SHARED "${test_name}.cpp")
+  set_standard_output_directory(${target_name})
+  target_link_libraries(${target_name} PUBLIC ${PYLIB_NAME})
+  target_link_libraries(${target_name} PUBLIC eigenpy::eigenpy)
+  set_target_properties(
+    ${target_name}
+    PROPERTIES PREFIX ""
+               SUFFIX ${PYTHON_EXT_SUFFIX}
+               LIBRARY_OUTPUT_NAME ${test_name}
+               RUNTIME_OUTPUT_NAME ${test_name}
+  )
   # test for possible import segfault
-  add_test(NAME ${test_name} COMMAND ${PYTHON_EXECUTABLE} -c "import ${test_name}")
+  add_test(NAME ${target_name} COMMAND ${PYTHON_EXECUTABLE} -c "import ${test_name}")
   message(STATUS "Adding Python/C++ test ${test_name}")
 
-  add_dependencies(build_tests ${test_name})
+  add_dependencies(build_tests ${target_name})
   if(NOT BUILD_TESTING)
-    set_tests_properties(${test_name} PROPERTIES DEPENDS ctest_build_tests)
+    set_tests_properties(${target_name} PROPERTIES DEPENDS ctest_build_tests)
   endif()
 endfunction()

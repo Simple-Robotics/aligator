@@ -16,7 +16,7 @@ file(GLOB TEST_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
 message(STATUS "Test headers: ${TEST_HEADERS}")
 
 function(_add_test_prototype name prefix dependencies)
-  set(test_name "test-cpp-${prefix}${name}")
+  set(test_name "${PROJECT_NAME}-test-cpp-${prefix}${name}")
   set(test_file ${name}.cpp)
   message(STATUS "Adding C++ test: ${test_file} (${test_name})")
 

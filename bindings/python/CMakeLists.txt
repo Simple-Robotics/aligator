@@ -25,6 +25,7 @@ function(make_bindings)
     src/gar/expose-parallel.cpp src/gar/expose-prox-riccati.cpp
   )
   add_library(aligator::python ALIAS ${PYLIB_NAME})
+  add_library(${PYLIB_NAME}::${PYLIB_NAME} ALIAS ${PYLIB_NAME})
 
   if(BUILD_WITH_CHOLMOD_SUPPORT)
     target_sources(${PYLIB_NAME} PRIVATE src/gar/expose-cholmod-solver.cpp)
@@ -33,6 +34,7 @@ function(make_bindings)
   set_target_properties(
     ${PYLIB_NAME}
     PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_NAME}
+               RUNTIME_OUTPUT_DIRECTORY ${PROJECT_NAME}
                PREFIX ""
                SUFFIX ${PYTHON_EXT_SUFFIX}
                VERSION ${PROJECT_VERSION}
@@ -49,7 +51,9 @@ function(make_bindings)
     ${PYLIB_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   )
 
-  target_link_libraries(${PYLIB_NAME} PUBLIC ${PROJECT_NAME} eigenpy::eigenpy)
+  target_link_libraries(
+    ${PYLIB_NAME} PUBLIC ${PROJECT_NAME} eigenpy::eigenpy pyproxsuite_nlp::pyproxsuite_nlp
+  )
 
   if(BUILD_CROCODDYL_COMPAT)
     target_link_libraries(${PYLIB_NAME} PUBLIC aligator::croc_compat)
