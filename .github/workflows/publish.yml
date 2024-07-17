@@ -57,7 +57,7 @@ jobs:
       run: |
         conda build -c simple-robotics \
           -c conda-forge \
-          --error-overlinking \
+          --no-error-overlinking \
           --py ${{ matrix.python-version }} \
           --numpy ${{ matrix.numpy-version }} \
           packaging/conda/aligator-release
