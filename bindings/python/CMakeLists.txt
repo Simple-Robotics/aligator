@@ -52,7 +52,7 @@ function(make_bindings)
   )
 
   target_link_libraries(
-    ${PYLIB_NAME} PUBLIC ${PROJECT_NAME} eigenpy::eigenpy pyproxsuite_nlp::pyproxsuite_nlp
+    ${PYLIB_NAME} PUBLIC ${PROJECT_NAME} eigenpy::eigenpy proxsuite-nlp::pyproxsuite_nlp
   )
 
   if(BUILD_CROCODDYL_COMPAT)
