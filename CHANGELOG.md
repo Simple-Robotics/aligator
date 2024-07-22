@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix RiccatiSolverDense initialization ([#174](https://github.com/Simple-Robotics/aligator/pull/174))
+
 ## [0.6.1] - 2024-05-27
 
 ### Added
