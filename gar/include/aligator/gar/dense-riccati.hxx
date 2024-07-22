@@ -202,10 +202,12 @@ bool RiccatiSolverDense<Scalar>::forward(
 
   uint N = (uint)problem_->horizon();
   assert(xs.size() == N + 1);
+  assert(us.size() >= N);
   assert(vs.size() == N + 1);
   assert(lbdas.size() == N + 1);
   for (uint i = 0; i <= N; i++) {
     const FactorData &d = datas[i];
+    const KnotType &model = problem_->stages[i];
     ConstVectorRef kff = d.ff[0];
     ConstVectorRef zff = d.ff[1];
     ConstVectorRef lff = d.ff[2];
@@ -221,10 +223,12 @@ bool RiccatiSolverDense<Scalar>::forward(
     ConstRowMatrixRef Lth = d.fth.blockRow(2);
     ConstRowMatrixRef Yth = d.fth.blockRow(3);
 
-    us[i].noalias() = kff + K * xs[i];
+    if (model.nu > 0)
+      us[i].noalias() = kff + K * xs[i];
     vs[i].noalias() = zff + Z * xs[i];
     if (theta_.has_value()) {
-      us[i].noalias() += Kth * theta_.value();
+      if (model.nu > 0)
+        us[i].noalias() += Kth * theta_.value();
       vs[i].noalias() += Zth * theta_.value();
     }
 
