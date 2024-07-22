@@ -123,6 +123,12 @@ public:
   }
 
   void setZero() { m_data.setZero(); }
+  static BlkMatrix Zero(const row_dim_t &rowDims, const col_dim_t &colDims) {
+
+    BlkMatrix out(rowDims, colDims);
+    out.setZero();
+    return out;
+  }
 
   template <typename Other> inline void swap(BlkMatrix<Other, N, M> &other) {
     m_data.swap(other.matrix());
