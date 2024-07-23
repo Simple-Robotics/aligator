@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Do not compile or use `gar::ParallelRiccatiSolver<>` when OpenMP support is disabled ([#160](https://github.com/Simple-Robotics/aligator/pull/160))
+- Allow to build with fmt 11 ([#173](https://github.com/Simple-Robotics/aligator/pull/173))
+
 
 ## [0.6.0] - 2024-05-23
 
