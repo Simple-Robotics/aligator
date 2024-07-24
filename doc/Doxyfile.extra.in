@@ -1,8 +1,8 @@
-INPUT                   = @CMAKE_SOURCE_DIR@/doc \
-                          @CMAKE_SOURCE_DIR@/include \
-                          @CMAKE_SOURCE_DIR@/gar \
-                          @CMAKE_SOURCE_DIR@/bindings/python \
-                          @CMAKE_SOURCE_DIR@/README.md
+INPUT                   = @PROJECT_SOURCE_DIR@/doc \
+                          @PROJECT_SOURCE_DIR@/include \
+                          @PROJECT_SOURCE_DIR@/gar \
+                          @PROJECT_SOURCE_DIR@/bindings/python \
+                          @PROJECT_SOURCE_DIR@/README.md
 
 RECURSIVE               = YES
 
