@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fix RiccatiSolverDense initialization ([#174](https://github.com/Simple-Robotics/aligator/pull/174))
+- Remove CMake CMP0167 and CMP0169 warnings ([#176](https://github.com/Simple-Robotics/aligator/pull/176))
 
 ### Added
 - Add compatibility with jrl-cmakemodules workspace ([#172](https://github.com/Simple-Robotics/aligator/pull/172))
