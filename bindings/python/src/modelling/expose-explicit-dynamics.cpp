@@ -39,7 +39,9 @@ void exposeExplicitBase() {
 
   using PolyExplicitDynamics = xyz::polymorphic<ExplicitDynamics>;
   StdVectorPythonVisitor<std::vector<PolyExplicitDynamics>, true>::expose(
-      "StdVec_ExplicitDynamics");
+      "StdVec_ExplicitDynamics",
+      eigenpy::details::overload_base_get_item_for_std_vector<
+          std::vector<PolyExplicitDynamics>>{});
 
   register_polymorphic_to_python<PolyExplicitDynamics>();
 
@@ -48,7 +50,7 @@ void exposeExplicitBase() {
       "ExplicitDynamicsModel", "Base class for explicit dynamics.",
       bp::init<ManifoldPtr, const int>(
           "Constructor with state space and control dimension.",
-          ("self"_a, "space", "nu"))[bp::with_custodian_and_ward<1, 2>()])
+          ("self"_a, "space", "nu")))
       .def("forward", bp::pure_virtual(&ExplicitDynamics::forward),
            ("self"_a, "x", "u", "data"), "Call for forward discrete dynamics.")
       .def("dForward", bp::pure_virtual(&ExplicitDynamics::dForward),

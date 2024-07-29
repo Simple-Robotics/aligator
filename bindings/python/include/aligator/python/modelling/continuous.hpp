@@ -5,12 +5,18 @@
 #include "aligator/python/fwd.hpp"
 
 #include "aligator/modelling/dynamics/context.hpp"
+#include "aligator/modelling/dynamics/continuous-dynamics-abstract.hpp"
+#include "aligator/modelling/dynamics/ode-abstract.hpp"
+
+#include "proxsuite-nlp/python/polymorphic.hpp"
 
 namespace aligator {
 namespace python {
 
 template <class T = context::ContinuousDynamicsAbstract>
-struct PyContinuousDynamics final : T, bp::wrapper<T> {
+struct PyContinuousDynamics final
+    : T,
+      proxsuite::nlp::python::PolymorphicWrapper<PyContinuousDynamics<T>, T> {
   using Data = context::ContinuousDynamicsData;
   ALIGATOR_DYNAMIC_TYPEDEFS(context::Scalar);
   using T::T;
@@ -35,7 +41,9 @@ struct PyContinuousDynamics final : T, bp::wrapper<T> {
 };
 
 template <class T = context::ODEAbstract>
-struct PyODEAbstract final : T, bp::wrapper<T> {
+struct PyODEAbstract final
+    : T,
+      proxsuite::nlp::python::PolymorphicWrapper<PyODEAbstract<T>, T> {
   using Scalar = context::Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Data = context::ODEData;
@@ -61,3 +69,21 @@ struct PyODEAbstract final : T, bp::wrapper<T> {
 
 } // namespace python
 } // namespace aligator
+//
+namespace boost::python::objects {
+
+template <>
+struct value_holder<aligator::python::PyContinuousDynamics<>>
+    : proxsuite::nlp::python::OwningNonOwningHolder<
+          aligator::python::PyContinuousDynamics<>> {
+  using OwningNonOwningHolder::OwningNonOwningHolder;
+};
+
+template <>
+struct value_holder<aligator::python::PyODEAbstract<>>
+    : proxsuite::nlp::python::OwningNonOwningHolder<
+          aligator::python::PyODEAbstract<>> {
+  using OwningNonOwningHolder::OwningNonOwningHolder;
+};
+
+} // namespace boost::python::objects

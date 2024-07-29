@@ -30,8 +30,8 @@ void exposeQuadCost() {
 
   bp::class_<ConstantCostTpl<Scalar>, bp::bases<CostAbstract>>(
       "ConstantCost", "A constant cost term.",
-      bp::init<xyz::polymorphic<Manifold>, int, Scalar>(bp::args(
-          "self", "space", "nu", "value"))[bp::with_custodian_and_ward<1, 2>()])
+      bp::init<xyz::polymorphic<Manifold>, int, Scalar>(
+          bp::args("self", "space", "nu", "value")))
       .def_readwrite("value", &ConstantCostTpl<Scalar>::value_)
       .def(CopyableVisitor<ConstantCostTpl<Scalar>>())
       .def(poly_visitor);

@@ -6,7 +6,14 @@
 
 #include "aligator/core/function-abstract.hpp"
 #include "aligator/core/unary-function.hpp"
+#include "aligator/core/dynamics.hpp"
+
+#include "aligator/modelling/dynamics/context.hpp"
+#include "aligator/modelling/dynamics/integrator-abstract.hpp"
+
 #include "aligator/python/polymorphic-convertible.hpp"
+
+#include "proxsuite-nlp/python/polymorphic.hpp"
 
 namespace aligator {
 namespace python {
@@ -18,7 +25,10 @@ namespace python {
 ///
 /// @tparam FunctionBase The virtual class to expose.
 template <class FunctionBase = context::StageFunction>
-struct PyStageFunction final : FunctionBase, bp::wrapper<FunctionBase> {
+struct PyStageFunction final
+    : FunctionBase,
+      proxsuite::nlp::python::PolymorphicWrapper<PyStageFunction<FunctionBase>,
+                                                 FunctionBase> {
   using Scalar = typename FunctionBase::Scalar;
   using Data = StageFunctionDataTpl<Scalar>;
   using FunctionBase::FunctionBase;
@@ -54,7 +64,10 @@ struct PyStageFunction final : FunctionBase, bp::wrapper<FunctionBase> {
 };
 
 template <typename UFunction = context::UnaryFunction>
-struct PyUnaryFunction final : UFunction, bp::wrapper<UFunction> {
+struct PyUnaryFunction final
+    : UFunction,
+      proxsuite::nlp::python::PolymorphicWrapper<PyUnaryFunction<UFunction>,
+                                                 UFunction> {
   using Scalar = typename UFunction::Scalar;
   static_assert(
       std::is_base_of_v<UnaryFunctionTpl<Scalar>, UFunction>,
@@ -139,3 +152,38 @@ struct SlicingVisitor : bp::def_visitor<SlicingVisitor<Class>> {
 
 } // namespace python
 } // namespace aligator
+
+namespace boost::python::objects {
+
+template <>
+struct value_holder<aligator::python::PyStageFunction<>>
+    : proxsuite::nlp::python::OwningNonOwningHolder<
+          aligator::python::PyStageFunction<>> {
+  using OwningNonOwningHolder::OwningNonOwningHolder;
+};
+
+template <>
+struct value_holder<
+    aligator::python::PyStageFunction<aligator::context::DynamicsModel>>
+    : proxsuite::nlp::python::OwningNonOwningHolder<
+          aligator::python::PyStageFunction<aligator::context::DynamicsModel>> {
+  using OwningNonOwningHolder::OwningNonOwningHolder;
+};
+
+template <>
+struct value_holder<
+    aligator::python::PyStageFunction<aligator::context::IntegratorAbstract>>
+    : proxsuite::nlp::python::OwningNonOwningHolder<
+          aligator::python::PyStageFunction<
+              aligator::context::IntegratorAbstract>> {
+  using OwningNonOwningHolder::OwningNonOwningHolder;
+};
+
+template <>
+struct value_holder<aligator::python::PyUnaryFunction<>>
+    : proxsuite::nlp::python::OwningNonOwningHolder<
+          aligator::python::PyUnaryFunction<>> {
+  using OwningNonOwningHolder::OwningNonOwningHolder;
+};
+
+} // namespace boost::python::objects
