@@ -1,14 +1,14 @@
 #pragma once
 
-#include "aligator/modelling/centroidal/wrench-cone.hpp"
+#include "aligator/modelling/centroidal/centroidal-wrench-cone.hpp"
 
 namespace aligator {
 
 template <typename Scalar>
-void WrenchConeResidualTpl<Scalar>::evaluate(const ConstVectorRef &,
-                                             const ConstVectorRef &u,
-                                             const ConstVectorRef &,
-                                             BaseData &data) const {
+void CentroidalWrenchConeResidualTpl<Scalar>::evaluate(const ConstVectorRef &,
+                                                       const ConstVectorRef &u,
+                                                       const ConstVectorRef &,
+                                                       BaseData &data) const {
   Data &d = static_cast<Data &>(data);
 
   // Unilateral contact
@@ -55,10 +55,9 @@ void WrenchConeResidualTpl<Scalar>::evaluate(const ConstVectorRef &,
 }
 
 template <typename Scalar>
-void WrenchConeResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
-                                                     const ConstVectorRef &,
-                                                     const ConstVectorRef &,
-                                                     BaseData &data) const {
+void CentroidalWrenchConeResidualTpl<Scalar>::computeJacobians(
+    const ConstVectorRef &, const ConstVectorRef &, const ConstVectorRef &,
+    BaseData &data) const {
   Data &d = static_cast<Data &>(data);
 
   d.Jtemp_ << 0, 0, -1, 0, 0, 0, -1, 0, -mu_, 0, 0, 0, 1, 0, -mu_, 0, 0, 0, 0,
@@ -75,8 +74,8 @@ void WrenchConeResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
 }
 
 template <typename Scalar>
-WrenchConeDataTpl<Scalar>::WrenchConeDataTpl(
-    const WrenchConeResidualTpl<Scalar> *model)
+CentroidalWrenchConeDataTpl<Scalar>::CentroidalWrenchConeDataTpl(
+    const CentroidalWrenchConeResidualTpl<Scalar> *model)
     : Base(model->ndx1, model->nu, model->ndx2, 17) {
   Jtemp_.setZero();
 }

@@ -164,7 +164,7 @@ def createStage(cp):
         if cp[0][i]:
             cone_cstr = aligator.FrictionConeResidual(space.ndx, nu, i, mu, 0)
             if force_size == 6:
-                cone_cstr = aligator.WrenchConeResidual(
+                cone_cstr = aligator.CentroidalWrenchConeResidual(
                     space.ndx, nu, i, mu, foot_length, foot_width
                 )
             stm.addConstraint(cone_cstr, constraints.NegativeOrthant())
@@ -200,11 +200,11 @@ init_angular_acc_cstr = aligator.AngularAccelerationResidual(
 init_linear_mom = aligator.LinearMomentumResidual(nx, nu, np.array([0, 0, 0]))
 ter_angular_mom = aligator.AngularMomentumResidual(nx, nu, np.array([0, 0, 0]))
 stages[0].addConstraint(init_linear_acc_cstr, constraints.EqualityConstraintSet())
-stages[0].addConstraint(init_angular_acc_cstr, constraints.EqualityConstraintSet())
+# stages[0].addConstraint(init_angular_acc_cstr, constraints.EqualityConstraintSet())
 stages[0].addConstraint(init_linear_mom, constraints.EqualityConstraintSet())
 
-stages[-1].addConstraint(init_linear_mom, constraints.EqualityConstraintSet())
-stages[-1].addConstraint(ter_linear_acc_cstr, constraints.EqualityConstraintSet())
+# stages[-1].addConstraint(init_linear_mom, constraints.EqualityConstraintSet())
+# stages[-1].addConstraint(ter_linear_acc_cstr, constraints.EqualityConstraintSet())
 stages[-1].addConstraint(ter_angular_mom, constraints.EqualityConstraintSet())
 stages[-1].addConstraint(ter_angular_acc_cstr, constraints.EqualityConstraintSet())
 problem = aligator.TrajOptProblem(x0, stages, term_cost)

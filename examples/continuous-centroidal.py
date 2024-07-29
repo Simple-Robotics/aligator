@@ -195,7 +195,7 @@ def createStage(cp, cp_previous):
         if cp[0][i]:
             cone_cstr = aligator.FrictionConeResidual(nxc, nu, i, mu, 1e-3)
             if force_size == 6:
-                cone_cstr = aligator.WrenchConeResidual(
+                cone_cstr = aligator.CentroidalWrenchConeResidual(
                     nxc, nu, i, mu, foot_length, foot_width
                 )
             wrapped_cstr = aligator.CentroidalWrapperResidual(cone_cstr)

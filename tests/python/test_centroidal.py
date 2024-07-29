@@ -280,7 +280,7 @@ def test_wrench_cone():
     L = 0.1
     W = 0.05
 
-    fun = aligator.WrenchConeResidual(ndx, nu, k, mu, L, W)
+    fun = aligator.CentroidalWrenchConeResidual(ndx, nu, k, mu, L, W)
     fdata = fun.createData()
 
     fun.evaluate(x0, u0, x0, fdata)

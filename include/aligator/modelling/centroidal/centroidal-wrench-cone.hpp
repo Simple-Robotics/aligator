@@ -17,21 +17,21 @@ namespace aligator {
  * The frame in contact is supposed to be rectangular.
  */
 
-template <typename Scalar> struct WrenchConeDataTpl;
+template <typename Scalar> struct CentroidalWrenchConeDataTpl;
 
 template <typename _Scalar>
-struct WrenchConeResidualTpl : StageFunctionTpl<_Scalar> {
+struct CentroidalWrenchConeResidualTpl : StageFunctionTpl<_Scalar> {
 
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageFunctionTpl<Scalar>;
   using BaseData = typename Base::Data;
-  using Data = WrenchConeDataTpl<Scalar>;
+  using Data = CentroidalWrenchConeDataTpl<Scalar>;
 
-  WrenchConeResidualTpl(const int ndx, const int nu, const int k,
-                        const double mu, const double half_length,
-                        const double half_width)
+  CentroidalWrenchConeResidualTpl(const int ndx, const int nu, const int k,
+                                  const double mu, const double half_length,
+                                  const double half_width)
       : Base(ndx, nu, 17), k_(k), mu_(mu), hL_(half_length), hW_(half_width) {}
 
   void evaluate(const ConstVectorRef &, const ConstVectorRef &u,
@@ -52,17 +52,20 @@ protected:
 };
 
 template <typename Scalar>
-struct WrenchConeDataTpl : StageFunctionDataTpl<Scalar> {
+struct CentroidalWrenchConeDataTpl : StageFunctionDataTpl<Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Base = StageFunctionDataTpl<Scalar>;
 
   Eigen::Matrix<Scalar, 17, 6> Jtemp_;
 
-  WrenchConeDataTpl(const WrenchConeResidualTpl<Scalar> *model);
+  CentroidalWrenchConeDataTpl(
+      const CentroidalWrenchConeResidualTpl<Scalar> *model);
 };
 
 } // namespace aligator
 
+#include "aligator/modelling/centroidal/centroidal-wrench-cone.hxx"
+
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/modelling/centroidal/wrench-cone.txx"
+#include "./centroidal-wrench-cone.txx"
 #endif
