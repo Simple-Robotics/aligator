@@ -267,7 +267,6 @@ def main(args: Args):
         prob = aligator.TrajOptProblem(x0, nu, space, term_cost=term_cost)
 
         floor = create_halfspace_z(space.ndx, nu, 0.0, True)
-        stages = []
         if args.bounds:
             u_identity_fn = aligator.ControlErrorResidual(space.ndx, np.zeros(nu))
             box_set = constraints.BoxConstraint(u_min, u_max)
