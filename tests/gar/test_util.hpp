@@ -1,11 +1,10 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "aligator/gar/proximal-riccati.hpp"
+#include "aligator/gar/lqr-problem.hpp"
 #include <random>
 
 ALIGATOR_DYNAMIC_TYPEDEFS(double);
-using prox_riccati_t = aligator::gar::ProximalRiccatiSolver<double>;
 using problem_t = aligator::gar::LQRProblemTpl<double>;
 using knot_t = aligator::gar::LQRKnotTpl<double>;
 using aligator::math::infty_norm;

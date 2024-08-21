@@ -3,6 +3,7 @@
 #include "aligator/core/traj-opt-problem.hpp"
 #include "aligator/core/cost-abstract.hpp"
 #include "aligator/gar/blk-matrix.hpp"
+#include "aligator/tracy.hpp"
 
 namespace aligator {
 
@@ -24,7 +25,7 @@ template <typename Scalar> struct LagrangianDerivatives {
     using StageData = StageDataTpl<Scalar>;
     const std::size_t nsteps = problem.numSteps();
 
-    ZoneScopedN("LagrangianDerivatives::compute");
+    ALIGATOR_TRACY_ZONE_SCOPED_N("LagrangianDerivatives::compute");
     ALIGATOR_NOMALLOC_SCOPED;
 
     math::setZero(Lxs);

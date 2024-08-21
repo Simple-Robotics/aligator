@@ -6,9 +6,12 @@
 // used for timings, numbers are merely indicative, this *not* a benchmark
 #include <chrono>
 
-#include "./test_util.hpp"
 #include "aligator/gar/utils.hpp"
+#include "aligator/gar/proximal-riccati.hpp"
 #include "aligator/gar/dense-riccati.hpp"
+
+#include "test_util.hpp"
+#include <proxsuite-nlp/fmt-eigen.hpp>
 
 using namespace aligator::gar;
 
@@ -50,7 +53,7 @@ BOOST_AUTO_TEST_CASE(short_horz_pb) {
   problem_t prob(knots, nx);
   prob.g0 = -x0;
   prob.G0.setIdentity();
-  prox_riccati_t solver{prob};
+  ProximalRiccatiSolver<double> solver{prob};
   fmt::print("Horizon: {:d}\n", prob.horizon());
 
   auto bwbeg = std::chrono::system_clock::now();
@@ -92,7 +95,7 @@ BOOST_AUTO_TEST_CASE(one_knot_prob) {
   Eigen::VectorXd x0;
   x0.setZero(nx);
   auto problem = generate_problem(x0, 0, nx, nu);
-  prox_riccati_t solver(problem);
+  ProximalRiccatiSolver<double> solver(problem);
   auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
   BOOST_CHECK_EQUAL(xs.size(), 1);
   BOOST_CHECK_EQUAL(us.size(), 0);
@@ -113,7 +116,7 @@ BOOST_AUTO_TEST_CASE(random_long_problem) {
   x0.setZero(nx);
   uint horz = 100;
   auto prob = generate_problem(x0, horz, nx, nu);
-  prox_riccati_t solver{prob};
+  ProximalRiccatiSolver<double> solver{prob};
   const double mu = 1e-14;
   auto bwbeg = std::chrono::system_clock::now();
   solver.backward(mu, mu);

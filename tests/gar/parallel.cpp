@@ -6,6 +6,7 @@
 
 #include "./test_util.hpp"
 #include "aligator/gar/parallel-solver.hpp"
+#include "aligator/gar/proximal-riccati.hpp"
 #include "aligator/gar/utils.hpp"
 #include <Eigen/Cholesky>
 
@@ -69,7 +70,7 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
   problem_t problem = generate_problem(x0, horizon, nx, nu);
 
   BOOST_TEST_MESSAGE("Classical solve");
-  prox_riccati_t solver_full_horz(problem);
+  ProximalRiccatiSolver<double> solver_full_horz(problem);
   solver_full_horz.backward(mu, mu);
 
   auto solution_full_horz = lqrInitializeSolution(problem);
@@ -90,8 +91,8 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
 
   BOOST_CHECK_EQUAL(pr1.horizon() + pr2.horizon() + 1, horizon);
 
-  prox_riccati_t subSolve1(pr1);
-  prox_riccati_t subSolve2(pr2);
+  ProximalRiccatiSolver<double> subSolve1(pr1);
+  ProximalRiccatiSolver<double> subSolve2(pr2);
 
   auto sol_leg1 = lqrInitializeSolution(pr1);
   auto sol_leg2 = lqrInitializeSolution(pr2);

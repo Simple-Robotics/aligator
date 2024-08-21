@@ -11,6 +11,10 @@ set(PROJECT_DESCRIPTION
 set(PROJECT_URL "https://github.com/Simple-Robotics/aligator")
 set(PROJECT_CUSTOM_HEADER_EXTENSION "hpp")
 set(PROJECT_USE_KEYWORD_LINK_LIBRARIES True)
+# To enable jrl-cmakemodules compatibility with workspace we must define the two
+# following lines
+set(PROJECT_AUTO_RUN_FINALIZE FALSE)
+set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 set(CXX_DISABLE_WERROR True)
 
@@ -21,11 +25,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(PROJECT_USE_CMAKE_EXPORT True)
 
 option(INSTALL_DOCUMENTATION "Generate and install the documentation" ON)
-
-set(DOXYGEN_USE_MATHJAX NO)
-set(DOXYGEN_USE_TEMPLATE_CSS YES)
-set(DOXYGEN_HTML_HEADER "${CMAKE_SOURCE_DIR}/doc/header.html")
-set(DOXYGEN_HTML_STYLESHEET "")
 
 include(FetchContent)
 
@@ -60,13 +59,25 @@ else()
   endif()
 endif()
 
+set(DOXYGEN_USE_MATHJAX NO)
+set(DOXYGEN_USE_TEMPLATE_CSS YES)
+set(DOXYGEN_HTML_HEADER "${PROJECT_SOURCE_DIR}/doc/header.html")
+set(DOXYGEN_HTML_STYLESHEET "")
+
+# Use BoostConfig module distributed by boost library instead of using FindBoost module distributed
+# by CMake
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
+endif()
 include(${JRL_CMAKE_MODULES}/base.cmake)
 compute_project_args(PROJECT_ARGS LANGUAGES CXX)
 project(${PROJECT_NAME} ${PROJECT_ARGS})
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
+include(${JRL_CMAKE_MODULES}/tracy.cmake)
 include(${JRL_CMAKE_MODULES}/boost.cmake)
 include(${JRL_CMAKE_MODULES}/ide.cmake)
+include(${JRL_CMAKE_MODULES}/python.cmake)
 include(${JRL_CMAKE_MODULES}/apple.cmake)
 if(APPLE) # Use the handmade approach
   set(CMAKE_MODULE_PATH ${JRL_CMAKE_MODULES}/find-external/OpenMP ${CMAKE_MODULE_PATH})
@@ -150,7 +161,7 @@ endif()
 # --- DEPENDENCIES -----------------------------------
 # ----------------------------------------------------
 add_project_dependency(Eigen3 3.3.7 REQUIRED PKG_CONFIG_REQUIRES "eigen3 >= 3.3.7")
-add_project_dependency(fmt "9.1.0...<11" REQUIRED PKG_CONFIG_REQUIRES "fmt >= 9.1.0")
+add_project_dependency(fmt "9.1.0...<12" REQUIRED PKG_CONFIG_REQUIRES "fmt >= 9.1.0")
 
 if(BUILD_WITH_OPENMP_SUPPORT)
   add_project_dependency(OpenMP REQUIRED)
@@ -185,12 +196,15 @@ add_project_dependency(Boost REQUIRED COMPONENTS ${BOOST_REQUIRED_COMPONENTS})
 
 if(BUILD_PYTHON_INTERFACE)
   set(PYTHON_COMPONENTS Interpreter Development NumPy)
+  findpython(REQUIRED)
   add_project_dependency(eigenpy 3.4.0 REQUIRED PKG_CONFIG_REQUIRES "eigenpy >= 3.4.0")
   set(PYLIB_NAME "py${PROJECT_NAME}")
   set(${PYLIB_NAME}_INSTALL_DIR ${PYTHON_SITELIB}/${PROJECT_NAME})
 endif()
 
-add_project_dependency(proxsuite-nlp 0.6.1 REQUIRED PKG_CONFIG_REQUIRES "proxsuite-nlp >= 0.6.1")
+add_project_dependency(
+  proxsuite-nlp 0.7.0 REQUIRED PKG_CONFIG_REQUIRES "0.7.0 <= proxsuite-nlp < 0.8.0"
+)
 
 set(LIB_SOURCES src/utils/logger.cpp)
 
@@ -210,9 +224,16 @@ endif()
 
 list(FILTER LIB_HEADERS EXCLUDE REGEX ${PROJECT_SOURCE_DIR}/include/aligator/compat/*)
 
-option(ENABLE_TRACY_PROFILING "Enable Tracy profiler" OFF)
-option(DOWNLOAD_TRACY "Use FetchContent to install Tracy." ON)
-if(DOWNLOAD_TRACY)
+option(DOWNLOAD_TRACY "Use FetchContent to install Tracy." OFF)
+if(ALIGATOR_TRACY_ENABLE AND DOWNLOAD_TRACY)
+
+  # We use FetchContent_Populate because we need EXCLUDE_FROM_ALL to avoid
+  # installing Tracy with aligator.
+  # We can directly use EXCLUDE_FROM_ALL in FetchContent_Declare when CMake minimum version
+  # will be 3.28.
+  if(POLICY CMP0169)
+    cmake_policy(SET CMP0169 OLD)
+  endif()
   FetchContent_Declare(
     tracy
     GIT_REPOSITORY https://github.com/Simple-Robotics/tracy.git
@@ -228,7 +249,7 @@ if(DOWNLOAD_TRACY)
         CACHE INTERNAL ""
     )
     set(TRACY_ENABLE
-        ${ENABLE_TRACY_PROFILING}
+        ${ALIGATOR_TRACY_ENABLE}
         CACHE INTERNAL ""
     )
     add_subdirectory(${tracy_SOURCE_DIR} ${tracy_BINARY_DIR} EXCLUDE_FROM_ALL)
@@ -239,10 +260,18 @@ if(DOWNLOAD_TRACY)
                                                             "${tracy_INCLUDE_DIR}"
     )
   endif()
-else()
+elseif(ALIGATOR_TRACY_ENABLE)
   # assume it is installed somewhere
-  find_package(Tracy REQUIRED)
+  add_project_dependency(Tracy)
   set_target_properties(Tracy::TracyClient PROPERTIES POSITION_INDEPENDENT_CODE True)
+  if(NOT ${tracy_FOUND})
+    message(
+      FATAL_ERROR "Aligator support for tracy is enabled, but tracy was not found on your system."
+                  " Install it, or set the option DOWNLOAD_TRACY to ON so we can fetch it."
+    )
+  else()
+    message(STATUS "Tracy found on your system at ${Tracy_DIR}")
+  endif()
 endif()
 
 add_subdirectory(gar)
@@ -250,6 +279,7 @@ add_subdirectory(gar)
 # Create the main shared library.
 function(create_library)
   add_library(${PROJECT_NAME} SHARED ${LIB_HEADERS} ${LIB_SOURCES})
+  add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
   set_target_properties(
     ${PROJECT_NAME}
     PROPERTIES LINKER_LANGUAGE CXX
@@ -270,13 +300,15 @@ function(create_library)
   if(BUILD_WITH_OPENMP_SUPPORT)
     target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
   endif()
-
   target_link_libraries(${PROJECT_NAME} PUBLIC proxsuite-nlp::proxsuite-nlp)
-  target_link_libraries(${PROJECT_NAME} PUBLIC Boost::boost)
   target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt)
   # set the install-tree include dirs
   # used by dependent projects to consume this target
-  target_include_directories(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:include>)
+  target_include_directories(
+    ${PROJECT_NAME}
+    PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  )
 
   foreach(headerFile ${LIB_HEADERS})
     string(REGEX REPLACE "${PROJECT_SOURCE_DIR}/" "" headerFileRelative ${headerFile})
@@ -338,17 +370,17 @@ macro(target_add_example_robot_data target_name)
 endmacro()
 
 if(BUILD_WITH_PINOCCHIO_SUPPORT AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
-  find_package(example-robot-data 4.0.9 REQUIRED)
+  add_project_private_dependency(example-robot-data 4.0.9 REQUIRED)
 endif()
 
 # create an utility library to avoid recompiling crocoddyl talos arm problem
 # used in examples and benchmarks
 if(BUILD_CROCODDYL_COMPAT AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
   add_library(
-    croc_talos_arm_utils STATIC ${CMAKE_SOURCE_DIR}/examples/croc-talos-arm.cpp
-                                ${CMAKE_SOURCE_DIR}/examples/croc-talos-arm.hpp
+    croc_talos_arm_utils STATIC ${PROJECT_SOURCE_DIR}/examples/croc-talos-arm.cpp
+                                ${PROJECT_SOURCE_DIR}/examples/croc-talos-arm.hpp
   )
-  target_include_directories(croc_talos_arm_utils PUBLIC ${CMAKE_SOURCE_DIR}/examples)
+  target_include_directories(croc_talos_arm_utils PUBLIC ${PROJECT_SOURCE_DIR}/examples)
   target_link_libraries(
     croc_talos_arm_utils PUBLIC ${PROJECT_NAME} Boost::boost crocoddyl::crocoddyl
   )
@@ -357,7 +389,7 @@ if(BUILD_CROCODDYL_COMPAT AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
 endif()
 
 if(BUILD_BENCHMARKS OR BUILD_TESTING)
-  add_library(gar_test_utils STATIC ${CMAKE_SOURCE_DIR}/tests/gar/test_util.cpp)
+  add_library(gar_test_utils STATIC ${PROJECT_SOURCE_DIR}/tests/gar/test_util.cpp)
   target_link_libraries(gar_test_utils PRIVATE aligator::gar)
   set_standard_output_directory(gar_test_utils)
 endif()
@@ -366,12 +398,12 @@ if(${pinocchio_VERSION} VERSION_GREATER "2.9.0")
   set(PINOCCHIO_V3 True)
 endif()
 
-if(BUILD_EXAMPLES AND PINOCCHIO_V3)
+if(PINOCCHIO_V3)
   add_library(
-    talos_walk_utils STATIC ${CMAKE_SOURCE_DIR}/examples/talos-walk-utils.cpp
-                            ${CMAKE_SOURCE_DIR}/examples/talos-walk-utils.hpp
+    talos_walk_utils STATIC ${PROJECT_SOURCE_DIR}/examples/talos-walk-utils.cpp
+                            ${PROJECT_SOURCE_DIR}/examples/talos-walk-utils.hpp
   )
-  target_include_directories(talos_walk_utils PUBLIC ${CMAKE_SOURCE_DIR}/examples)
+  target_include_directories(talos_walk_utils PUBLIC ${PROJECT_SOURCE_DIR}/examples)
   set_standard_output_directory(talos_walk_utils)
   target_link_libraries(talos_walk_utils PUBLIC ${PROJECT_NAME})
   target_add_example_robot_data(talos_walk_utils)
@@ -430,3 +462,5 @@ pkg_config_append_cflags("${CFLAGS_DEPENDENCIES}")
 
 # Install catkin package.xml
 install(FILES package.xml DESTINATION share/${PROJECT_NAME})
+
+setup_project_finalize()

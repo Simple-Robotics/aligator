@@ -1,3 +1,4 @@
+#ifdef ALIGATOR_WITH_CHOLMOD
 #include "aligator/python/fwd.hpp"
 #include "aligator/gar/cholmod-solver.hpp"
 
@@ -26,3 +27,4 @@ void exposeCholmodSolver() {
 }
 
 } // namespace aligator::python
+#endif

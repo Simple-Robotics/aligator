@@ -7,7 +7,7 @@ cmake_policy(SET CMP0057 NEW)
 # Create an example
 macro(create_example exfile)
   get_filename_component(exname ${exfile} NAME_WE)
-  set(exname "example-${exname}")
+  set(exname "${PROJECT_NAME}-example-${exname}")
   create_ex_or_bench(${exfile} ${exname})
 endmacro()
 
@@ -18,7 +18,7 @@ endfunction()
 
 function(create_example_with_walk exfile)
   create_example(${exfile})
-  target_link_libraries(${exname} PRIVATE talos_walk_utils)
+  target_add_talos_walk(${exname})
 endfunction()
 
 create_example(se2-car.cpp)
@@ -29,7 +29,7 @@ endif()
 
 if(BUILD_CROCODDYL_COMPAT)
   create_example_with_croco(talos-arm.cpp)
-  target_add_example_robot_data(example-talos-arm)
+  target_add_example_robot_data(${PROJECT_NAME}-example-talos-arm)
 endif()
 
 file(GLOB EXAMPLES_PY *.py)

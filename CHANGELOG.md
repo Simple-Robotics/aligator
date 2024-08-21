@@ -12,6 +12,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Change storage for `ConstraintStack` to using two `std::vector<polymorphic<>>` the struct `StageConstraintTpl` is now merely a convenient API shortcut for the end-user.
 * Remove `StageConstraintTpl::nr()` (in C++ only)
 
+## [0.7.0] - 2024-09-12
+
+### Changed
+
+- Use placement-new for `Workspace` and `Results` in solvers (FDDP and ProxDDP)
+- Deprecate typedef for `std::vector<T, Eigen::aligned_allocator<T>>`
+- Deprecate function template `allocate_shared_eigen_aligned<T>`
+- Use custom macro defined in `aligator/tracy.hpp` to call Tracy ([#191](https://github.com/Simple-Robotics/aligator/pull/191))
+- Change default behaviour with regards to Tracy (`DOWNLOAD_TRACY` is set to `OFF`)
+- Upgrade minimum required version of proxsuite-nlp to 0.7.0
+
+### Fixed
+
+- Fix RiccatiSolverDense initialization ([#174](https://github.com/Simple-Robotics/aligator/pull/174))
+- Remove CMake CMP0167 and CMP0169 warnings ([#176](https://github.com/Simple-Robotics/aligator/pull/176))
+
+### Added
+
+- Add compatibility with jrl-cmakemodules workspace ([#172](https://github.com/Simple-Robotics/aligator/pull/172))
+
 ## [0.6.1] - 2024-05-27
 
 ### Added
@@ -22,6 +42,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Do not compile or use `gar::ParallelRiccatiSolver<>` when OpenMP support is disabled ([#160](https://github.com/Simple-Robotics/aligator/pull/160))
+- Allow to build with fmt 11 ([#173](https://github.com/Simple-Robotics/aligator/pull/173))
+
 
 ## [0.6.0] - 2024-05-23
 
@@ -111,7 +133,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * This is the first release of `aligator`. This library is a joint effort between INRIA and LAAS-CNRS, and will be maintained and expanded in the future. Please provide constructive feedback and contribute!
 
-[Unreleased]: https://github.com/Simple-Robotics/aligator/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/Simple-Robotics/aligator/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/Simple-Robotics/aligator/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/Simple-Robotics/aligator/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/Simple-Robotics/aligator/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/Simple-Robotics/aligator/compare/v0.5.0...v0.5.1

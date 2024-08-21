@@ -1,4 +1,4 @@
-#include "aligator/solvers/fddp/solver-fddp.hpp"
+#include "aligator/solvers/fddp/solver-fddp.hxx"
 #include "aligator/core/cost-abstract.hpp"
 
 namespace aligator {

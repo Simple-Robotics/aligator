@@ -91,7 +91,7 @@ template <typename Scalar> void WorkspaceTpl<Scalar>::cycleLeft() {
   rotate_vec_left(Lxs);
   rotate_vec_left(Lus);
   rotate_vec_left(Lds);
-  rotate_vec_left(Lvs);
+  rotate_vec_left(Lvs, 0, 1);
 
   rotate_vec_left(trial_lams, 1);
   rotate_vec_left(lams_plus, 1);

@@ -1,17 +1,15 @@
 #include "aligator/modelling/linear-discrete-dynamics.hpp"
-#include "aligator/modelling/linear-function.hpp"
 #include "aligator/modelling/costs/quad-costs.hpp"
-#include "aligator/modelling/state-error.hpp"
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
 
 #include <proxsuite-nlp/modelling/constraints.hpp>
+#include <proxsuite-nlp/fmt-eigen.hpp>
 
 #include <boost/test/unit_test.hpp>
 #include <boost/random.hpp>
 
 using namespace aligator;
 
-using Space = proxsuite::nlp::VectorSpaceTpl<double>;
 using LinearDynamics = dynamics::LinearDiscreteDynamicsTpl<double>;
 using QuadraticCost = QuadraticCostTpl<double>;
 using context::CostAbstract;
@@ -32,7 +30,6 @@ BOOST_AUTO_TEST_CASE(lqr_proxddp) {
   const size_t nsteps = 100;
   const auto nx = 4;
   const auto nu = 2;
-  const auto space = std::make_shared<Space>(nx);
 
   NormalGen norm_gen;
   MatrixXd A;

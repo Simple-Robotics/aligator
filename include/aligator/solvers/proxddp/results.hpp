@@ -3,6 +3,7 @@
 #pragma once
 
 #include "aligator/core/results-base.hpp"
+#include <fmt/ostream.h>
 
 namespace aligator {
 

@@ -5,6 +5,8 @@
 #include "./solver-fddp.hpp"
 #include "./linesearch.hpp"
 
+#include <fmt/ranges.h>
+
 namespace aligator {
 
 /* SolverFDDPTpl<Scalar> */
@@ -21,8 +23,10 @@ SolverFDDPTpl<Scalar>::SolverFDDPTpl(const Scalar tol, VerboseLevel verbose,
 template <typename Scalar>
 void SolverFDDPTpl<Scalar>::setup(const Problem &problem) {
   problem.checkIntegrity();
-  results_ = Results(problem);
-  workspace_ = Workspace(problem);
+  results_.~Results();
+  workspace_.~Workspace();
+  new (&results_) Results(problem);
+  new (&workspace_) Workspace(problem);
   // check if there are any constraints other than dynamics and throw a warning
   std::vector<std::size_t> idx_where_constraints;
   for (std::size_t i = 0; i < problem.numSteps(); i++) {

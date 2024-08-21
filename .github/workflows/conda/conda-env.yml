@@ -10,7 +10,7 @@ dependencies:
   - ccache
   - suitesparse
   - eigenpy
-  - pinocchio
+  - pinocchio>=3.0.0
   - eigen
   - fmt
   - proxsuite-nlp

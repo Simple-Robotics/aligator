@@ -7,6 +7,7 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <proxsuite-nlp/fmt-eigen.hpp>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 
@@ -41,12 +42,11 @@ BOOST_AUTO_TEST_CASE(lqr) {
   fmt::print("Lx  : {}\n", lqr_data->Lx.transpose());
   fmt::print("Lu  : {}\n", lqr_data->Lu.transpose());
 
-  auto act_wrapper =
-      std::make_shared<pcroc::context::ActionModelWrapper>(lqr_model);
-  auto act_wrap_data = act_wrapper->createData();
+  pcroc::context::ActionModelWrapper act_wrapper(lqr_model);
+  auto act_wrap_data = act_wrapper.createData();
 
-  act_wrapper->evaluate(x0, u0, x0, *act_wrap_data);
-  act_wrapper->computeFirstOrderDerivatives(x0, u0, x0, *act_wrap_data);
+  act_wrapper.evaluate(x0, u0, x0, *act_wrap_data);
+  act_wrapper.computeFirstOrderDerivatives(x0, u0, x0, *act_wrap_data);
 
   auto cd = *act_wrap_data->cost_data;
   fmt::print("act cost_data\n");
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(lqr) {
   BOOST_TEST_CHECK(cd.Lxx_.isApprox(lqr_data->Lxx));
   BOOST_TEST_CHECK(cd.Luu_.isApprox(lqr_data->Luu));
 
-  act_wrapper->evaluate(x0, u0, x1, *act_wrap_data);
+  act_wrapper.evaluate(x0, u0, x1, *act_wrap_data);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

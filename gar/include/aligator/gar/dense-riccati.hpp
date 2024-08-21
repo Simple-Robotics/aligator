@@ -5,7 +5,7 @@
 #include "blk-matrix.hpp"
 #include "lqr-problem.hpp"
 #include "riccati-base.hpp"
-#include <tracy/Tracy.hpp>
+#include <aligator/tracy.hpp>
 
 namespace aligator::gar {
 
@@ -34,9 +34,9 @@ public:
     using ldl_t = decltype(FactorData::ldl);
     long ntot = std::accumulate(dims.begin(), dims.end(), 0);
     uint nth = knot.nth;
-    return FactorData{BlkMat44(dims, dims), BlkVec4(dims, {1}),
-                      BlkRowMat41(dims, {knot.nx}), BlkRowMat41(dims, {nth}),
-                      ldl_t{ntot}};
+    return FactorData{BlkMat44::Zero(dims, dims), BlkVec4::Zero(dims, {1}),
+                      BlkRowMat41::Zero(dims, {knot.nx}),
+                      BlkRowMat41::Zero(dims, {nth}), ldl_t{ntot}};
   }
 
   std::vector<FactorData> datas;

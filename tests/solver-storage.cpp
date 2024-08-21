@@ -2,8 +2,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <fmt/core.h>
-#include <fmt/ostream.h>
+#include <proxsuite-nlp/fmt-eigen.hpp>
 
 BOOST_AUTO_TEST_SUITE(solver_workspace)
 

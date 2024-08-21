@@ -9,10 +9,10 @@
 #include "aligator/core/enums.hpp"
 #include "aligator/threads.hpp"
 #include "aligator/utils/logger.hpp"
+#include "aligator/gar/riccati-base.hpp"
 
 #include "workspace.hpp"
 #include "results.hpp"
-#include "merit-function.hpp"
 
 #include <proxsuite-nlp/bcl-params.hpp>
 
@@ -312,8 +312,6 @@ protected:
 };
 
 } // namespace aligator
-
-#include "solver-proxddp.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "solver-proxddp.txx"

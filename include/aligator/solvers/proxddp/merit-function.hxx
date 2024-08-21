@@ -4,6 +4,7 @@
 #include "merit-function.hpp"
 #include "workspace.hpp"
 #include "aligator/core/lagrangian.hpp"
+#include "aligator/tracy.hpp"
 
 namespace aligator {
 
@@ -31,7 +32,7 @@ Scalar PDALFunction<Scalar>::evaluate(const Scalar mu,
                                       const std::vector<VectorXs> &lams,
                                       const std::vector<VectorXs> &vs,
                                       Workspace &workspace) {
-  ZoneScoped;
+  ALIGATOR_TRACY_ZONE_SCOPED;
   TrajOptData &prob_data = workspace.problem_data;
   Scalar penalty_value = 0.;
   const std::vector<VectorXs> &lams_plus = workspace.lams_plus;
@@ -62,7 +63,7 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
     const Scalar mu, const TrajOptProblem &problem,
     const std::vector<VectorXs> &lams, const std::vector<VectorXs> &vs,
     Workspace &workspace) {
-  ZoneScoped;
+  ALIGATOR_TRACY_ZONE_SCOPED;
   TrajOptData &prob_data = workspace.problem_data;
   const std::size_t nsteps = workspace.nsteps;
 

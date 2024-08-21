@@ -8,9 +8,7 @@ file(
   GLOB HEADERS
   RELATIVE ${CMAKE_CURRENT_LIST_DIR}/include
   CONFIGURE_DEPENDS include/aligator/gar/*.hpp include/aligator/gar/*.hxx
-  include/aligator/third-party/boost/core/*.hpp
 )
-message(STATUS "GAR HEADERS: ${HEADERS}")
 
 add_library(aligator_gar SHARED)
 target_include_directories(aligator_gar PRIVATE ${PROJECT_SOURCE_DIR}/include/aligator)
@@ -22,7 +20,9 @@ target_link_libraries(aligator_gar PUBLIC proxsuite-nlp::proxsuite-nlp)
 if(BUILD_WITH_OPENMP_SUPPORT)
   target_link_libraries(aligator_gar PUBLIC OpenMP::OpenMP_CXX)
 endif()
-target_link_libraries(aligator_gar PUBLIC Tracy::TracyClient)
+if(ALIGATOR_TRACY_ENABLE)
+  target_link_libraries(aligator_gar PUBLIC Tracy::TracyClient)
+endif()
 
 add_library(aligator::gar ALIAS aligator_gar)
 

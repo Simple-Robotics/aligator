@@ -1,4 +1,4 @@
-#include "aligator/solvers/proxddp/solver-proxddp.hpp"
+#include "aligator/solvers/proxddp/solver-proxddp.hxx"
 #include "aligator/gar/riccati-base.hpp"
 #include "aligator/core/cost-abstract.hpp"
 
