@@ -8,6 +8,7 @@
 #include <Eigen/Cholesky>
 
 #include "test_util.hpp"
+#include <proxsuite-nlp/fmt-eigen.hpp>
 
 using namespace aligator;
 using namespace aligator::context;

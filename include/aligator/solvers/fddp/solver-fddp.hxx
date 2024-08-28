@@ -5,6 +5,8 @@
 #include "./solver-fddp.hpp"
 #include "./linesearch.hpp"
 
+#include <fmt/ranges.h>
+
 namespace aligator {
 
 /* SolverFDDPTpl<Scalar> */

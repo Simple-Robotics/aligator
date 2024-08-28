@@ -2,6 +2,8 @@
 #include "aligator/gar/cholmod-solver.hpp"
 #include "aligator/gar/utils.hpp"
 
+#include <proxsuite-nlp/fmt-eigen.hpp>
+
 #include <boost/test/unit_test.hpp>
 #include "test_util.hpp"
 

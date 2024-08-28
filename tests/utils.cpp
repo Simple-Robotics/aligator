@@ -1,11 +1,9 @@
 #include "aligator/utils/newton-raphson.hpp"
 
 #include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
+#include <proxsuite-nlp/fmt-eigen.hpp>
 
 #include <boost/test/unit_test.hpp>
-
-#include <fmt/core.h>
-#include <fmt/ostream.h>
 
 BOOST_AUTO_TEST_SUITE(utils)
 

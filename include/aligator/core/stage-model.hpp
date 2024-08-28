@@ -6,7 +6,7 @@
 #include "aligator/core/dynamics.hpp"
 #include "aligator/core/constraint.hpp"
 
-#include "aligator/core/clone.hpp"
+#include <fmt/ostream.h>
 
 namespace aligator {
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <proxsuite-nlp/modelling/spaces/pinocchio-groups.hpp>
+#include <proxsuite-nlp/fmt-eigen.hpp>
 #include <pinocchio/multibody/liegroup/special-euclidean.hpp>
 
 #include "aligator/core/traj-opt-problem.hpp"
