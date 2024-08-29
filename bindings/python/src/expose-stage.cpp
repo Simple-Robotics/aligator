@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #include "aligator/python/polymorphic-convertible.hpp"
 #include "aligator/python/visitors.hpp"
 
@@ -14,12 +14,14 @@ namespace python {
 using proxsuite::nlp::python::PolymorphicVisitor;
 using proxsuite::nlp::python::register_polymorphic_to_python;
 
+// fwd
+void exposeStageData();
+
 void exposeStage() {
   using context::ConstraintSet;
   using context::Manifold;
   using context::Scalar;
   using context::StageModel;
-  using StageData = StageDataTpl<Scalar>;
 
   using PolyCost = xyz::polymorphic<context::CostAbstract>;
   using PolyDynamics = xyz::polymorphic<context::DynamicsModel>;
@@ -93,15 +95,7 @@ void exposeStage() {
       .def(PolymorphicVisitor<PolyStage>());
 #pragma GCC diagnostic pop
 
-  bp::register_ptr_to_python<shared_ptr<StageData>>();
-  StdVectorPythonVisitor<std::vector<shared_ptr<StageData>>, true>::expose(
-      "StdVec_StageData");
-
-  bp::class_<StageData>("StageData", "Data struct for StageModel objects.",
-                        bp::init<const StageModel &>())
-      .def_readonly("cost_data", &StageData::cost_data)
-      .def_readwrite("dynamics_data", &StageData::dynamics_data)
-      .def_readwrite("constraint_data", &StageData::constraint_data);
+  exposeStageData();
 }
 
 } // namespace python
