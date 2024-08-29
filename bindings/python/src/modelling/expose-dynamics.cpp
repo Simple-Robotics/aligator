@@ -46,7 +46,8 @@ void exposeDynamicsBase() {
       .add_property("is_explicit", &DynamicsModel::is_explicit,
                     "Return whether the current model is explicit.")
       .def(CreateDataPolymorphicPythonVisitor<DynamicsModel, PyDynamicsModel>())
-      .def(PolymorphicMultiBaseVisitor<DynamicsModel>());
+      .def(PolymorphicMultiBaseVisitor<DynamicsModel>())
+      .enable_pickling_(true);
 }
 
 } // namespace python

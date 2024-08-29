@@ -55,7 +55,8 @@ void exposeFunctionBase() {
       .def(SlicingVisitor<StageFunction>())
       .def(func_visitor)
       .def(CreateDataPolymorphicPythonVisitor<StageFunction,
-                                              PyStageFunction<>>());
+                                              PyStageFunction<>>())
+      .enable_pickling_(true);
 
   bp::register_ptr_to_python<shared_ptr<StageFunctionData>>();
 
