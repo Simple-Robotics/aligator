@@ -256,12 +256,11 @@ def manage_lights(vizer: pin.visualize.MeshcatVisualizer):
     apply_props(
         spotlight,
         props={
-            # default: 0.8 * pi
-            "intensity": 8.0,
+            "intensity": 1.0,
             "penumbra": 1.0,
             "decay": 1.0,
-            # default: false
-            "castShadow": True,
+            # default: False
+            "castShadow": False,
             # default: pi / 3
             "angle": np.pi / 3,
             "position": [4, -4, 4],
@@ -273,7 +272,7 @@ def manage_lights(vizer: pin.visualize.MeshcatVisualizer):
         ambient_light,
         props={
             # default: 0.6
-            "intensity": 0.4
+            "intensity": 0.2
         },
     )
 
@@ -284,6 +283,5 @@ def manage_lights(vizer: pin.visualize.MeshcatVisualizer):
     apply_props(plpx, props={"visible": False})
     plnx = viewer["/Lights/PointLightNegativeX"]
     apply_props(plnx, props={"visible": False})
-
     plpx.delete()
     plnx.delete()

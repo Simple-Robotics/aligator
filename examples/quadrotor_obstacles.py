@@ -52,20 +52,23 @@ def create_halfspace_z(ndx, nu, offset: float = 0.0, neg: bool = False):
 class Column(aligator.StageFunction):
     def __init__(
         self,
-        space: manifolds.MultibodyPhaseSpace,
+        rmodel: pin.Model,
+        ndx,
         nu,
         center,
         radius,
         margin: float = 0.0,
     ) -> None:
-        ndx = space.ndx
         super().__init__(ndx, nu, 1)
-        self.rmodel = space.model.copy()
+        self.rmodel = rmodel.copy()
         self.rdata = self.rmodel.createData()
         self.ndx = ndx
         self.center = center.copy()
         self.radius = radius
         self.margin = margin
+
+    def __getinitargs__(self):
+        return (self.rmodel, self.ndx, self.nu, self.center, self.radius, self.margin)
 
     def evaluate(self, x, u, y, data):  # distance function
         q = x[:nq]
@@ -180,8 +183,8 @@ def main(args: Args):
     space = manifolds.MultibodyPhaseSpace(rmodel)
     ode_dynamics = aligator.dynamics.MultibodyFreeFwdDynamics(space, QUAD_ACT_MATRIX)
 
-    dt = 0.5
-    Tf = 0.5
+    dt = 0.02
+    Tf = 1.0
     nsteps = int(Tf / dt)
     print("nsteps: {:d}".format(nsteps))
 
@@ -288,7 +291,9 @@ def main(args: Args):
             if args.bounds:
                 stage.addConstraint(ctrl_cstr)
             if args.obstacles:  # add obstacles' constraints
-                column1 = Column(space, nu, center_column1[:2], cyl_radius, quad_radius)
+                column1 = Column(
+                    rmodel, space.ndx, nu, center_column1[:2], cyl_radius, quad_radius
+                )
                 stage.addConstraint(floor, constraints.NegativeOrthant())
                 stage.addConstraint(column1, constraints.NegativeOrthant())
                 # column2 = Column(space, nu, center_column2[:2], cyl_radius, quad_radius)
@@ -304,10 +309,6 @@ def main(args: Args):
 
     _, x_term = task_schedule(nsteps)
     problem = setup()
-    print("DERP")
-    problem.stages[0].createData()
-    # pd = aligator.TrajOptData(problem)
-    print("LOL")
 
     if args.display:
         vizer = pin.visualize.MeshcatVisualizer(
