@@ -40,7 +40,7 @@ public:
   void setReference(const Eigen::Ref<const Vector6s> &h_new) { h_ref_ = h_new; }
 
   shared_ptr<BaseData> createData() const {
-    return allocate_shared_eigen_aligned<Data>(this);
+    return std::make_shared<Data>(this);
   }
 };
 

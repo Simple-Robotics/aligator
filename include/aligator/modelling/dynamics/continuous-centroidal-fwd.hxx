@@ -96,7 +96,7 @@ void ContinuousCentroidalFwdDynamicsTpl<Scalar>::dForward(
 template <typename Scalar>
 shared_ptr<ContinuousDynamicsDataTpl<Scalar>>
 ContinuousCentroidalFwdDynamicsTpl<Scalar>::createData() const {
-  return allocate_shared_eigen_aligned<Data>(this);
+  return std::make_shared<Data>(this);
 }
 
 template <typename Scalar>
