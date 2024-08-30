@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Use placement-new for `Workspace` and `Results` in solvers (FDDP and ProxDDP)
+- Deprecate typedef for `std::vector<T, Eigen::aligned_allocator<T>>`
+- Deprecate function template `allocate_shared_eigen_aligned<T>`
 
 ### Fixed
 

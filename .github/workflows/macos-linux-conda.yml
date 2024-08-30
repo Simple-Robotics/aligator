@@ -8,6 +8,7 @@ on:
       - '.gitlab-ci.yml'
       - '.gitignore'
       - '*.md'
+      - 'CHANGELOG.md'
       - 'CITATION.cff'
       - 'CITATIONS.bib'
   pull_request:
@@ -17,6 +18,7 @@ on:
       - '.gitlab-ci.yml'
       - '.gitignore'
       - '*.md'
+      - 'CHANGELOG.md'
       - 'CITATION.cff'
       - 'CITATIONS.bib'
 

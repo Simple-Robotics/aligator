@@ -64,7 +64,7 @@ void MultibodyFreeFwdDynamicsTpl<Scalar>::dForward(const ConstVectorRef &x,
 template <typename Scalar>
 shared_ptr<ContinuousDynamicsDataTpl<Scalar>>
 MultibodyFreeFwdDynamicsTpl<Scalar>::createData() const {
-  return allocate_shared_eigen_aligned<Data>(this);
+  return std::make_shared<Data>(this);
 }
 
 template <typename Scalar>

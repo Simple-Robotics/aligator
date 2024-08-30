@@ -37,7 +37,7 @@ struct FrameTranslationResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
   void computeJacobians(const ConstVectorRef &x, BaseData &data) const;
 
   shared_ptr<BaseData> createData() const {
-    return allocate_shared_eigen_aligned<Data>(*this);
+    return std::make_shared<Data>(*this);
   }
 
 protected:
