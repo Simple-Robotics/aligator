@@ -254,16 +254,6 @@ void SolverFDDPTpl<Scalar>::backwardPass(const Problem &problem,
     llt.compute(qparam.Quu);
     llt.solveInPlace(kkt_rhs);
 
-#ifndef NDEBUG
-    {
-      ALIGATOR_NOMALLOC_END;
-      std::FILE *fi = std::fopen("fddp.log", "a");
-      fmt::print(fi, "uff[{:d}]={}\n", i, kkt_ff.head(nu).transpose());
-      fmt::print(fi, "V'x[{:d}]={}\n", i, vnext.Vx_.transpose());
-      std::fclose(fi);
-      ALIGATOR_NOMALLOC_BEGIN;
-    }
-#endif
     workspace.Quuks_[i].noalias() = qparam.Quu * kkt_ff;
 
     /* Compute value function */
@@ -287,11 +277,6 @@ bool SolverFDDPTpl<Scalar>::run(const Problem &problem,
                                 const std::vector<VectorXs> &xs_init,
                                 const std::vector<VectorXs> &us_init) {
   preg_ = reg_init;
-
-#ifndef NDEBUG
-  std::FILE *fi = std::fopen("fddp.log", "w");
-  std::fclose(fi);
-#endif
 
   if (!results_.isInitialized() || !workspace_.isInitialized()) {
     ALIGATOR_RUNTIME_ERROR(
