@@ -139,13 +139,19 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   }
 };
 
+template <typename Scalar>
+std::ostream &operator<<(std::ostream &oss, const WorkspaceTpl<Scalar> &self) {
+  oss << "Workspace {" << fmt::format("\n  nsteps:         {:d}", self.nsteps)
+      << fmt::format("\n  n_multipliers:  {:d}", self.lams_pdal.size());
+  oss << "\n}";
+  return oss;
+}
+
 } // namespace aligator
 
 template <typename Scalar>
 struct fmt::formatter<aligator::WorkspaceTpl<Scalar>> : fmt::ostream_formatter {
 };
-
-#include "./workspace.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./workspace.txx"

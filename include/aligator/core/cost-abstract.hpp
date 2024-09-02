@@ -4,7 +4,6 @@
 #pragma once
 
 #include "aligator/fwd.hpp"
-#include "aligator/core/clone.hpp"
 #include <proxsuite-nlp/manifold-base.hpp>
 #include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 

@@ -1,6 +1,6 @@
 /// @file
-/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
-#include "aligator/solvers/proxddp/results.hpp"
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+#include "aligator/solvers/proxddp/results.hxx"
 #include "aligator/core/cost-abstract.hpp"
 
 namespace aligator {
