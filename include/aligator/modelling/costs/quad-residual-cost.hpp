@@ -3,6 +3,7 @@
 #pragma once
 
 #include "./composite-costs.hpp"
+#include <aligator/context.hpp>
 
 namespace aligator {
 

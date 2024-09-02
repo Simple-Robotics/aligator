@@ -8,7 +8,6 @@
 #include "aligator/modelling/multibody/dcm-position.hpp"
 #include "aligator/modelling/multibody/centroidal-momentum.hpp"
 #include "aligator/modelling/multibody/centroidal-momentum-derivative.hpp"
-#include "aligator/modelling/contact-map.hpp"
 #include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
@@ -20,7 +19,6 @@ using context::Scalar;
 using context::StageFunction;
 using context::StageFunctionData;
 using context::UnaryFunction;
-using ContactMap = ContactMapTpl<Scalar>;
 
 void exposeCenterOfMassFunctions() {
   using CenterOfMassTranslation = CenterOfMassTranslationResidualTpl<Scalar>;
