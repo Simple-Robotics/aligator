@@ -1,4 +1,5 @@
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @brief Implementation header. Should be included when necessary.
 #pragma once
 
 #include "merit-function.hpp"
