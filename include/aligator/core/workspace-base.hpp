@@ -5,6 +5,7 @@
 #include "aligator/fwd.hpp"
 #include "aligator/core/solver-util.hpp"
 #include "aligator/core/traj-opt-data.hpp"
+#include "aligator/utils/mpc-util.hpp"
 
 namespace aligator {
 

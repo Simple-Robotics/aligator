@@ -31,23 +31,6 @@ StageModelTpl<Scalar>::StageModelTpl(const PolyCost &cost,
   }
 }
 
-/* template <typename Scalar>
-StageModelTpl<Scalar>::StageModelTpl(ManifoldPtr space, const int nu)
-    : xspace_(space), xspace_next_(space),
-      uspace_(make_vector_space<Scalar>(nu)) {} */
-
-template <typename Scalar>
-template <typename Cstr>
-void StageModelTpl<Scalar>::addConstraint(Cstr &&cstr) {
-  const int c_nu = cstr.func->nu;
-  if (c_nu != this->nu()) {
-    ALIGATOR_RUNTIME_ERROR(fmt::format(
-        "Function has the wrong dimension for u: got {:d}, expected {:d}", c_nu,
-        this->nu()));
-  }
-  constraints_.pushBack(std::forward<Cstr>(cstr));
-}
-
 template <typename Scalar>
 void StageModelTpl<Scalar>::addConstraint(const FunctionPtr &func,
                                           const ConstraintSetPtr &cstr_set) {

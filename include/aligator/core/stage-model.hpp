@@ -130,13 +130,23 @@ public:
   }
 };
 
+template <typename Scalar>
+template <typename Cstr>
+void StageModelTpl<Scalar>::addConstraint(Cstr &&cstr) {
+  const int c_nu = cstr.func->nu;
+  if (c_nu != this->nu()) {
+    ALIGATOR_RUNTIME_ERROR(fmt::format(
+        "Function has the wrong dimension for u: got {:d}, expected {:d}", c_nu,
+        this->nu()));
+  }
+  constraints_.pushBack(std::forward<Cstr>(cstr));
+}
+
 } // namespace aligator
 
 template <typename Scalar>
 struct fmt::formatter<aligator::StageModelTpl<Scalar>>
     : fmt::ostream_formatter {};
-
-#include "aligator/core/stage-model.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/core/stage-model.txx"

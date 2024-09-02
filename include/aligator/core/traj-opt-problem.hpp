@@ -211,8 +211,6 @@ int problem_last_ndx_helper(const TrajOptProblemTpl<Scalar> &problem) {
 
 } // namespace aligator
 
-#include "aligator/core/traj-opt-problem.hxx"
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/core/traj-opt-problem.txx"
 #endif

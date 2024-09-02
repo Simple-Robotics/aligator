@@ -1,5 +1,6 @@
 /// @file
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @brief Template definitions header.
 #pragma once
 
 #include "aligator/core/traj-opt-problem.hpp"
