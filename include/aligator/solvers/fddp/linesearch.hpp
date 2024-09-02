@@ -2,8 +2,10 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "aligator/fwd.hpp"
+#include "aligator/macros.hpp"
+#include "aligator/utils/exceptions.hpp"
 #include "aligator/core/linesearch.hpp"
+#include <utility>
 
 namespace aligator {
 
