@@ -4,6 +4,7 @@
 
 #include "./solver-fddp.hpp"
 #include "./linesearch.hpp"
+#include "aligator/core/stage-data.hpp"
 
 #include <fmt/ranges.h>
 
@@ -390,4 +391,12 @@ bool SolverFDDPTpl<Scalar>::run(const Problem &problem,
   logger.finish(results_.conv);
   return results_.conv;
 }
+
+template <typename Scalar>
+auto SolverFDDPTpl<Scalar>::stage_get_dynamics_data(
+    const StageDataTpl<Scalar> &data) -> const ExplicitDynamicsData & {
+  const DynamicsDataTpl<Scalar> &dd = *data.dynamics_data;
+  return static_cast<const ExplicitDynamicsData &>(dd);
+}
+
 } // namespace aligator

@@ -3,9 +3,6 @@
 #pragma once
 
 #include "aligator/fwd.hpp"
-#include "aligator/core/dynamics.hpp"
-#include "aligator/core/constraint.hpp"
-#include "aligator/core/clone.hpp"
 
 namespace aligator {
 
@@ -30,30 +27,12 @@ template <typename _Scalar> struct StageDataTpl {
   ///
   /// @details  The constructor initializes or fills in the data members using
   /// move semantics.
-  explicit StageDataTpl(const StageModel &stage_model)
-      : constraint_data(stage_model.numConstraints()),
-        cost_data(stage_model.cost_->createData()),
-        dynamics_data(stage_model.dynamics_->createData()) {
-    const std::size_t nc = stage_model.numConstraints();
-
-    for (std::size_t j = 0; j < nc; j++) {
-      const auto &func = stage_model.constraints_.funcs[j];
-      constraint_data[j] = func->createData();
-    }
-  }
+  explicit StageDataTpl(const StageModel &stage_model);
 
   virtual ~StageDataTpl() = default;
 
   /// @brief Check data integrity.
-  virtual void checkData() {
-    const char msg[] = "StageData integrity check failed.";
-    if (cost_data == nullptr)
-      ALIGATOR_RUNTIME_ERROR(
-          fmt::format("{} (cost_data cannot be nullptr)", msg));
-    if (dynamics_data == nullptr)
-      ALIGATOR_RUNTIME_ERROR(
-          fmt::format("{} (dynamics_data cannot be nullptr)", msg));
-  }
+  virtual void checkData();
 };
 
 } // namespace aligator

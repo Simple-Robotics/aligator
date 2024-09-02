@@ -1,8 +1,6 @@
 /// @file
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
-#include "aligator/core/stage-data.hpp"
-#include "aligator/core/stage-model.hpp"
-#include "aligator/core/cost-abstract.hpp"
+#include "aligator/core/stage-data.hxx" // include impl
 
 namespace aligator {
 

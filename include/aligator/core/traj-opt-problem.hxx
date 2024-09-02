@@ -4,6 +4,7 @@
 #pragma once
 
 #include "aligator/core/traj-opt-problem.hpp"
+#include "aligator/core/stage-data.hpp"
 #include "aligator/utils/mpc-util.hpp"
 #include "aligator/tracy.hpp"
 

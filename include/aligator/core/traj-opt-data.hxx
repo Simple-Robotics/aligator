@@ -3,6 +3,9 @@
 #pragma once
 
 #include "aligator/core/traj-opt-data.hpp"
+#include "aligator/core/traj-opt-problem.hpp"
+#include "stage-data.hpp"
+#include "cost-abstract.hpp"
 
 namespace aligator {
 

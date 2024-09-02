@@ -1,12 +1,9 @@
-/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 /// @file function-abstract.hpp
 /// @brief  Base definitions for ternary functions.
 #pragma once
 
 #include "aligator/fwd.hpp"
-#include "aligator/core/clone.hpp"
-
-#include <fmt/format.h>
 #include <ostream>
 
 namespace aligator {
@@ -120,20 +117,13 @@ template <typename _Scalar> struct StageFunctionDataTpl {
   StageFunctionDataTpl(const int ndx1, const int nu, const int ndx2,
                        const int nr);
   virtual ~StageFunctionDataTpl() = default;
-
-  template <typename T>
-  friend std::ostream &operator<<(std::ostream &oss,
-                                  const StageFunctionDataTpl<T> &self);
-
-protected:
-  virtual StageFunctionDataTpl *clone_impl() const {
-    return new StageFunctionDataTpl(*this);
-  }
 };
 
-} // namespace aligator
+template <typename T>
+std::ostream &operator<<(std::ostream &oss,
+                         const StageFunctionDataTpl<T> &self);
 
-#include "aligator/core/function-abstract.hxx"
+} // namespace aligator
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/core/function-abstract.txx"

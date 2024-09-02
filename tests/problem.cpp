@@ -1,10 +1,11 @@
 #include "aligator/core/traj-opt-problem.hpp"
+#include "aligator/core/traj-opt-data.hpp"
+#include "aligator/core/stage-data.hpp"
 #include "aligator/solvers/proxddp/results.hpp"
 #include "aligator/solvers/proxddp/workspace.hpp"
 #include "aligator/core/explicit-dynamics.hpp"
 #include "aligator/core/cost-abstract.hpp"
 #include "aligator/utils/rollout.hpp"
-#include "aligator/modelling/state-error.hpp"
 #include <proxsuite-nlp/modelling/spaces/pinocchio-groups.hpp>
 #include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 #include <boost/test/unit_test.hpp>

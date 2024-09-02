@@ -2,7 +2,7 @@
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
-#include "aligator/core/stage-data.hpp"
+#include "aligator/fwd.hpp"
 
 namespace aligator {
 
@@ -34,8 +34,6 @@ template <typename _Scalar> struct TrajOptDataTpl {
 };
 
 } // namespace aligator
-
-#include "aligator/core/traj-opt-data.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/core/traj-opt-data.txx"
