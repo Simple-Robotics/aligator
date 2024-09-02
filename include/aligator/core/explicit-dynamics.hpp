@@ -30,7 +30,7 @@ public:
   bool is_explicit() const { return true; }
 
   /// Constructor requires providing the next state's manifold.
-  ExplicitDynamicsModelTpl(ManifoldPtr next_state, const int nu);
+  ExplicitDynamicsModelTpl(const ManifoldPtr &space, const int nu);
   virtual ~ExplicitDynamicsModelTpl() = default;
 
   /// @brief Evaluate the forward discrete dynamics.

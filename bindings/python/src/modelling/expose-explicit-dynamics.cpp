@@ -48,7 +48,7 @@ void exposeExplicitBase() {
   bp::class_<PyExplicitDynamics<>, bp::bases<DynamicsModel>,
              boost::noncopyable>(
       "ExplicitDynamicsModel", "Base class for explicit dynamics.",
-      bp::init<ManifoldPtr, const int>(
+      bp::init<const ManifoldPtr &, const int>(
           "Constructor with state space and control dimension.",
           ("self"_a, "space", "nu")))
       .def("forward", bp::pure_virtual(&ExplicitDynamics::forward),
