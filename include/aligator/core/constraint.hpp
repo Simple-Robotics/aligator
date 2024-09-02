@@ -23,7 +23,6 @@ template <typename Scalar> struct ConstraintStackTpl {
   using ConstraintType = StageConstraintTpl<Scalar>;
   using value_type = ConstraintType;
   using data_type = ConstraintType;
-  using iterator = typename std::vector<ConstraintType>::iterator;
   using PolyFunc = xyz::polymorphic<StageFunctionTpl<Scalar>>;
   using PolySet = xyz::polymorphic<ConstraintSetBase<Scalar>>;
 
