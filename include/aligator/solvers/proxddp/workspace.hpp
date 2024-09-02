@@ -10,9 +10,6 @@
 #include <proxsuite-nlp/modelling/constraints.hpp>
 
 namespace aligator {
-namespace {
-using proxsuite::nlp::ConstraintSetProductTpl;
-} // namespace
 
 template <typename Scalar>
 auto getConstraintProductSet(const ConstraintStackTpl<Scalar> &constraints) {
@@ -20,7 +17,8 @@ auto getConstraintProductSet(const ConstraintStackTpl<Scalar> &constraints) {
   for (size_t i = 0; i < constraints.size(); i++) {
     components.push_back(constraints.sets[i]);
   }
-  return ConstraintSetProductTpl<Scalar>{components, constraints.dims()};
+  return proxsuite::nlp::ConstraintSetProductTpl<Scalar>{components,
+                                                         constraints.dims()};
 }
 
 /// @brief Workspace for solver SolverProxDDP.
@@ -34,7 +32,7 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using VecBool = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
   using CstrProxScaler = ConstraintProximalScalerTpl<Scalar>;
   using KnotType = gar::LQRKnotTpl<Scalar>;
-  using ConstraintSetProduct = ConstraintSetProductTpl<Scalar>;
+  using ConstraintSetProduct = proxsuite::nlp::ConstraintSetProductTpl<Scalar>;
   using BlkJacobianType = BlkMatrix<MatrixXs, -1, 2>; // jacobians
 
   using Base::dyn_slacks;

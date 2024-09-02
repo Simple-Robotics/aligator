@@ -21,8 +21,8 @@ namespace aligator {
 template <typename Scalar>
 void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
                                WorkspaceTpl<Scalar> &workspace) {
-  ALIGATOR_TRACY_ZONE_SCOPED;
-  using ProductOp = ConstraintSetProductTpl<Scalar>;
+  ZoneScoped;
+  using ProductOp = proxsuite::nlp::ConstraintSetProductTpl<Scalar>;
   auto &sif = workspace.shifted_constraints;
 
   const TrajOptDataTpl<Scalar> &prob_data = workspace.problem_data;
@@ -198,6 +198,7 @@ void SolverProxDDPTpl<Scalar>::computeMultipliers(
     Lds[0] = mu() * (lams_plus[0] - lams[0]);
     ALIGATOR_RAISE_IF_NAN(Lds[0]);
   }
+  using ConstraintSetProd = proxsuite::nlp::ConstraintSetProductTpl<Scalar>;
 
   // loop over the stages
   for (std::size_t i = 0; i < nsteps; i++) {
@@ -219,7 +220,7 @@ void SolverProxDDPTpl<Scalar>::computeMultipliers(
 
     // 2. use product constraint operator
     // to compute the new multiplier estimates
-    const ConstraintSetProductTpl<Scalar> &op = workspace_.cstr_product_sets[i];
+    const ConstraintSetProd &op = workspace_.cstr_product_sets[i];
 
     // fill in shifted constraints buffer
     BlkView scvView(shifted_constraints[i], cstr_stack.dims());
@@ -243,8 +244,7 @@ void SolverProxDDPTpl<Scalar>::computeMultipliers(
     const ConstraintStack &cstr_stack = problem.term_cstrs_;
     const CstrProximalScaler &scaler = workspace_.cstr_scalers[nsteps];
 
-    const ConstraintSetProductTpl<Scalar> &op =
-        workspace_.cstr_product_sets[nsteps];
+    const ConstraintSetProd &op = workspace_.cstr_product_sets[nsteps];
 
     BlkView scvView(shifted_constraints[nsteps], cstr_stack.dims());
     for (size_t j = 0; j < cstr_stack.size(); j++) {
