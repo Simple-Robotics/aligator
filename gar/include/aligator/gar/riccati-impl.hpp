@@ -9,7 +9,7 @@
 #include <Eigen/LU>
 #include <Eigen/Cholesky>
 
-#include <boost/core/make_span.hpp>
+#include "aligator/third-party/boost/core/make_span.hpp"
 
 #include <optional>
 

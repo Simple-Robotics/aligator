@@ -8,9 +8,7 @@ file(
   GLOB HEADERS
   RELATIVE ${CMAKE_CURRENT_LIST_DIR}/include
   CONFIGURE_DEPENDS include/aligator/gar/*.hpp include/aligator/gar/*.hxx
-  include/aligator/third-party/boost/core/*.hpp
 )
-message(STATUS "GAR HEADERS: ${HEADERS}")
 
 add_library(aligator_gar SHARED)
 target_include_directories(aligator_gar PRIVATE ${PROJECT_SOURCE_DIR}/include/aligator)
