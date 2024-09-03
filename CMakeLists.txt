@@ -222,47 +222,10 @@ endif()
 list(FILTER LIB_HEADERS EXCLUDE REGEX ${PROJECT_SOURCE_DIR}/include/aligator/compat/*)
 
 option(ENABLE_TRACY_PROFILING "Enable Tracy profiler" OFF)
-option(DOWNLOAD_TRACY "Use FetchContent to install Tracy." ON)
-if(DOWNLOAD_TRACY)
 
-  # We use FetchContent_Populate because we need EXCLUDE_FROM_ALL to avoid
-  # installing Tracy with aligator.
-  # We can directly use EXCLUDE_FROM_ALL in FetchContent_Declare when CMake minimum version
-  # will be 3.28.
-  if(POLICY CMP0169)
-    cmake_policy(SET CMP0169 OLD)
-  endif()
-  FetchContent_Declare(
-    tracy
-    GIT_REPOSITORY https://github.com/Simple-Robotics/tracy.git
-    GIT_TAG patches
-    GIT_SHALLOW TRUE
-    GIT_PROGRESS TRUE
-  )
-  FetchContent_GetProperties(tracy)
-  if(NOT tracy_POPULATED)
-    FetchContent_Populate(tracy)
-    set(TRACY_STATIC
-        ON
-        CACHE INTERNAL ""
-    )
-    set(TRACY_ENABLE
-        ${ENABLE_TRACY_PROFILING}
-        CACHE INTERNAL ""
-    )
-    add_subdirectory(${tracy_SOURCE_DIR} ${tracy_BINARY_DIR} EXCLUDE_FROM_ALL)
-    # Extract the target include directories, set as system
-    get_target_property(tracy_INCLUDE_DIR TracyClient INTERFACE_INCLUDE_DIRECTORIES)
-    set_target_properties(
-      TracyClient PROPERTIES POSITION_INDEPENDENT_CODE True INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
-                                                            "${tracy_INCLUDE_DIR}"
-    )
-  endif()
-else()
-  # assume it is installed somewhere
-  find_package(Tracy REQUIRED)
-  set_target_properties(Tracy::TracyClient PROPERTIES POSITION_INDEPENDENT_CODE True)
-endif()
+set(THIRD_PARTY_HEADERS_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/aligator/third-party)
+set(TRACY_DIR external/tracy)
+include(tracy.cmake)
 
 add_subdirectory(gar)
 
@@ -292,11 +255,11 @@ function(create_library)
   endif()
 
   target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt)
-  # set the install-tree include dirs
-  # used by dependent projects to consume this target
+  # set include dirs used by dependent projects to consume this target
   target_include_directories(
     ${PROJECT_NAME}
-    PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+    PUBLIC $<INSTALL_INTERFACE:include> $<INSTALL_INTERFACE:${THIRD_PARTY_HEADERS_INSTALL_DIR}>
+           $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   )
 
@@ -324,16 +287,6 @@ install(
   DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
 )
-
-if(DOWNLOAD_TRACY)
-  install(
-    TARGETS TracyClient
-    EXPORT ${TARGETS_EXPORT_NAME}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/aligator
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/aligator
-  )
-  message(STATUS "Installing TracyClient target to ${CMAKE_INSTALL_FULL_LIBDIR}/aligator")
-endif()
 
 if(BUILD_CROCODDYL_COMPAT)
   add_project_dependency(crocoddyl REQUIRED)
