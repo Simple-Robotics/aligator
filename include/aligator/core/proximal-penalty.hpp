@@ -1,8 +1,9 @@
 /// @file
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include "aligator/fwd.hpp"
+#include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 
 namespace aligator {
 
@@ -20,18 +21,18 @@ struct ProximalPenaltyTpl : CostAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
-  using ManifoldPtr = shared_ptr<ManifoldAbstractTpl<Scalar>>;
+  using PolyManifold = xyz::polymorphic<ManifoldAbstractTpl<Scalar>>;
   using Base = CostAbstractTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using Data = ProximalDataTpl<Scalar>;
 
-  const ManifoldPtr uspace_;
+  const PolyManifold uspace_;
   const VectorXs &x_ref, u_ref;
   /// Whether to exclude the control term of the penalty. Switch to true e.g.
   /// for terminal node.
   const bool no_ctrl_term;
 
-  ProximalPenaltyTpl(const ManifoldPtr &xspace, const ManifoldPtr &uspace,
+  ProximalPenaltyTpl(const PolyManifold &xspace, const PolyManifold &uspace,
                      const VectorXs &xt, const VectorXs &ut,
                      const bool no_ctrl_term)
       : Base(xspace, uspace->ndx()), uspace_(uspace), x_ref(xt), u_ref(ut),
