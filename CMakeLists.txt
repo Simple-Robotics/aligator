@@ -255,6 +255,7 @@ function(create_library)
   endif()
 
   target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt)
+  target_link_libraries(${PROJECT_NAME} PRIVATE Tracy::TracyClient)
   # set include dirs used by dependent projects to consume this target
   target_include_directories(
     ${PROJECT_NAME}
