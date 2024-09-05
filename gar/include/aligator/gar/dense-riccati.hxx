@@ -1,7 +1,7 @@
 #pragma once
 
 #include "dense-riccati.hpp"
-#include "lqr-problem.hpp"
+#include "aligator/third-party/tracy/Tracy.hpp"
 
 namespace aligator::gar {
 

@@ -219,9 +219,18 @@ list(FILTER LIB_HEADERS EXCLUDE REGEX ${PROJECT_SOURCE_DIR}/include/aligator/com
 
 option(ENABLE_TRACY_PROFILING "Enable Tracy profiler" OFF)
 
-set(THIRD_PARTY_HEADERS_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/aligator/third-party)
+set(THIRD_PARTY_HEADERS_DIR ${PROJECT_NAME}/third-party)
+set(THIRD_PARTY_HEADERS_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/${THIRD_PARTY_HEADERS_DIR})
 set(TRACY_DIR external/tracy)
 include(tracy.cmake)
+
+# Copy tracy headers to the build tree
+foreach(headerFile IN LISTS tracy_includes client_includes common_includes)
+  string(REPLACE "${TRACY_PUBLIC_DIR}/" "" headerFileRelative ${headerFile})
+  set(headerCopyPath include/${THIRD_PARTY_HEADERS_DIR}/${headerFileRelative})
+  message(DEBUG "Copy header ${headerFile} to build tree at path <build-dir>/${headerCopyPath}")
+  execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${headerFile} ${PROJECT_BINARY_DIR}/${headerCopyPath})
+endforeach()
 
 function(hide_tracy_symbols target_name)
   # On Linux, don't export libTracyClient symbols to avoid conflict with other libraries
@@ -273,9 +282,8 @@ function(create_library)
   # set include dirs used by dependent projects to consume this target
   target_include_directories(
     ${PROJECT_NAME}
-    PUBLIC $<INSTALL_INTERFACE:include> $<INSTALL_INTERFACE:${THIRD_PARTY_HEADERS_INSTALL_DIR}>
-           $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
-           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<BUILD_INTERFACE:${TRACY_PUBLIC_DIR}>
+    PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   )
 
   foreach(headerFile ${LIB_HEADERS})

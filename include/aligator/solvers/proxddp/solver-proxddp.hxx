@@ -11,7 +11,7 @@
 #include "aligator/gar/parallel-solver.hpp"
 #include "aligator/gar/dense-riccati.hpp"
 
-#include <tracy/Tracy.hpp>
+#include "aligator/third-party/tracy/Tracy.hpp"
 
 namespace aligator {
 
