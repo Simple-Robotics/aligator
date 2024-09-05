@@ -22,10 +22,8 @@ endif()
 # Link to tracy, and add installed tracy headers to install interface
 # for other targets to consume us without having to get tracy.
 target_link_libraries(aligator_gar PRIVATE Tracy::TracyClient)
-# Same as in main CMake listfile
-if(UNIX AND NOT APPLE)
-  set_target_properties(aligator_gar PROPERTIES LINK_FLAGS "-Wl,--exclude-libs,libTracyClient")
-endif()
+hide_tracy_symbols(aligator_gar)
+
 target_include_directories(
   aligator_gar INTERFACE $<INSTALL_INTERFACE:${THIRD_PARTY_HEADERS_INSTALL_DIR}>
                          $<BUILD_INTERFACE:${TRACY_PUBLIC_DIR}>

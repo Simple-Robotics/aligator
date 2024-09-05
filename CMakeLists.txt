@@ -102,9 +102,7 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
       CACHE STRING "Choose the type of build." FORCE
   )
   # Set the possible values of build type for cmake-gui
-  set_property(
-    CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo"
-  )
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
 function(set_standard_output_directory target)
@@ -182,9 +180,7 @@ endif()
 if(BUILD_WITH_CHOLMOD_SUPPORT)
   set(CMAKE_MODULE_PATH ${JRL_CMAKE_MODULES}/find-external/CHOLMOD ${CMAKE_MODULE_PATH})
   add_project_dependency(CHOLMOD REQUIRED)
-  message(
-    STATUS "Build with CHOLMOD support (LGPL). See CHOLMOD/Doc/License.txt for further details."
-  )
+  message(STATUS "Build with CHOLMOD support (LGPL). See CHOLMOD/Doc/License.txt for further details.")
   add_compile_definitions(ALIGATOR_WITH_CHOLMOD)
 endif()
 
@@ -227,6 +223,23 @@ set(THIRD_PARTY_HEADERS_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/aligator/third-p
 set(TRACY_DIR external/tracy)
 include(tracy.cmake)
 
+function(hide_tracy_symbols target_name)
+  # On Linux, don't export libTracyClient symbols to avoid conflict with other libraries
+  # that also use Tracy
+  if(UNIX AND NOT APPLE)
+    set_target_properties(
+      ${target_name} PROPERTIES LINK_OPTIONS "-Wl,--exclude-libs,$<TARGET_FILE_NAME:Tracy::TracyClient>"
+    )
+  elseif(APPLE)
+    set_target_properties(
+      ${target_name}
+      PROPERTIES
+        LINK_OPTIONS
+        "-Wl,-L$<TARGET_FILE_DIR:Tracy::TracyClient>;-Wl,-hidden-l$<TARGET_FILE_BASE_NAME:Tracy::TracyClient>"
+    )
+  endif()
+endfunction()
+
 add_subdirectory(gar)
 
 # Create the main shared library.
@@ -256,19 +269,13 @@ function(create_library)
 
   target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt)
   target_link_libraries(${PROJECT_NAME} PRIVATE Tracy::TracyClient)
-  # On Linux, don't export libTracyClient symbols to avoid conflict with other libraries
-  # that also use Tracy
-  if(UNIX AND NOT APPLE)
-    set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-Wl,--exclude-libs,libTracyClient")
-  endif()
+  hide_tracy_symbols(${PROJECT_NAME})
   # set include dirs used by dependent projects to consume this target
   target_include_directories(
     ${PROJECT_NAME}
-    PUBLIC $<INSTALL_INTERFACE:include>
-           $<INSTALL_INTERFACE:${THIRD_PARTY_HEADERS_INSTALL_DIR}>
+    PUBLIC $<INSTALL_INTERFACE:include> $<INSTALL_INTERFACE:${THIRD_PARTY_HEADERS_INSTALL_DIR}>
            $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
-           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-           $<BUILD_INTERFACE:${TRACY_PUBLIC_DIR}>
+           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<BUILD_INTERFACE:${TRACY_PUBLIC_DIR}>
   )
 
   foreach(headerFile ${LIB_HEADERS})
@@ -332,9 +339,7 @@ if(BUILD_CROCODDYL_COMPAT AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
                                 ${PROJECT_SOURCE_DIR}/examples/croc-talos-arm.hpp
   )
   target_include_directories(croc_talos_arm_utils PUBLIC ${PROJECT_SOURCE_DIR}/examples)
-  target_link_libraries(
-    croc_talos_arm_utils PUBLIC ${PROJECT_NAME} Boost::boost crocoddyl::crocoddyl
-  )
+  target_link_libraries(croc_talos_arm_utils PUBLIC ${PROJECT_NAME} Boost::boost crocoddyl::crocoddyl)
   set_standard_output_directory(croc_talos_arm_utils)
   target_add_example_robot_data(croc_talos_arm_utils)
 endif()
