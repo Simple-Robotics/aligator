@@ -259,9 +259,11 @@ function(create_library)
   # set include dirs used by dependent projects to consume this target
   target_include_directories(
     ${PROJECT_NAME}
-    PUBLIC $<INSTALL_INTERFACE:include> $<INSTALL_INTERFACE:${THIRD_PARTY_HEADERS_INSTALL_DIR}>
+    PUBLIC $<INSTALL_INTERFACE:include>
+           $<INSTALL_INTERFACE:${THIRD_PARTY_HEADERS_INSTALL_DIR}>
            $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+           $<BUILD_INTERFACE:${TRACY_PUBLIC_DIR}>
   )
 
   foreach(headerFile ${LIB_HEADERS})

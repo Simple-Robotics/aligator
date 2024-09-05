@@ -24,6 +24,7 @@ endif()
 target_link_libraries(aligator_gar PRIVATE Tracy::TracyClient)
 target_include_directories(
   aligator_gar INTERFACE $<INSTALL_INTERFACE:${THIRD_PARTY_HEADERS_INSTALL_DIR}>
+                         $<BUILD_INTERFACE:${TRACY_PUBLIC_DIR}>
 )
 
 add_library(aligator::gar ALIAS aligator_gar)
