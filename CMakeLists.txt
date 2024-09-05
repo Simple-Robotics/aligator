@@ -256,6 +256,11 @@ function(create_library)
 
   target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt)
   target_link_libraries(${PROJECT_NAME} PRIVATE Tracy::TracyClient)
+  # On Linux, don't export libTracyClient symbols to avoid conflict with other libraries
+  # that also use Tracy
+  if(UNIX AND NOT APPLE)
+    set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-Wl,--exclude-libs,libTracyClient")
+  endif()
   # set include dirs used by dependent projects to consume this target
   target_include_directories(
     ${PROJECT_NAME}
