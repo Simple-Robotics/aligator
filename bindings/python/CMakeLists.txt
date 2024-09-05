@@ -41,8 +41,9 @@ function(make_bindings)
     ${PYLIB_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   )
 
-  target_link_libraries(
-    ${PYLIB_NAME} PUBLIC ${PROJECT_NAME} eigenpy::eigenpy proxsuite-nlp::pyproxsuite_nlp
+  target_link_libraries(${PYLIB_NAME} PUBLIC ${PROJECT_NAME} eigenpy::eigenpy)
+  target_include_directories(
+    ${PYLIB_NAME} PUBLIC $<TARGET_PROPERTY:proxsuite-nlp::pyproxsuite_nlp,INCLUDE_DIRECTORIES>
   )
 
   if(BUILD_CROCODDYL_COMPAT)
