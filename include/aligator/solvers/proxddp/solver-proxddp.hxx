@@ -21,7 +21,7 @@ namespace aligator {
 template <typename Scalar>
 void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
                                WorkspaceTpl<Scalar> &workspace) {
-  ZoneScoped;
+  ALIGATOR_TRACY_ZONE_SCOPED;
   using ProductOp = proxsuite::nlp::ConstraintSetProductTpl<Scalar>;
   auto &sif = workspace.shifted_constraints;
 

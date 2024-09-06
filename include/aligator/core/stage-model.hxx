@@ -4,6 +4,7 @@
 
 #include "aligator/core/stage-model.hpp"
 #include "aligator/utils/exceptions.hpp"
+#include "aligator/tracy.hpp"
 
 #include <proxsuite-nlp/context.hpp>
 #include <proxsuite-nlp/modelling/constraints/equality-constraint.hpp>
@@ -47,6 +48,7 @@ void StageModelTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                      const ConstVectorRef &u,
                                      const ConstVectorRef &y,
                                      Data &data) const {
+  ALIGATOR_TRACY_ZONE_SCOPED_N("StageModel::evaluate");
   dynamics_->evaluate(x, u, y, *data.dynamics_data);
   for (std::size_t j = 0; j < numConstraints(); j++) {
     constraints_.funcs[j]->evaluate(x, u, y, *data.constraint_data[j]);
@@ -58,6 +60,7 @@ template <typename Scalar>
 void StageModelTpl<Scalar>::computeFirstOrderDerivatives(
     const ConstVectorRef &x, const ConstVectorRef &u, const ConstVectorRef &y,
     Data &data) const {
+  ALIGATOR_TRACY_ZONE_SCOPED_N("StageModel::computeFirstOrderDerivatives");
   dynamics_->computeJacobians(x, u, y, *data.dynamics_data);
   for (std::size_t j = 0; j < numConstraints(); j++) {
     constraints_.funcs[j]->computeJacobians(x, u, y, *data.constraint_data[j]);
@@ -68,6 +71,7 @@ void StageModelTpl<Scalar>::computeFirstOrderDerivatives(
 template <typename Scalar>
 void StageModelTpl<Scalar>::computeSecondOrderDerivatives(
     const ConstVectorRef &x, const ConstVectorRef &u, Data &data) const {
+  ALIGATOR_TRACY_ZONE_SCOPED_N("StageModel::computeSecondOrderDerivatives");
   cost_->computeHessians(x, u, *data.cost_data);
 }
 
