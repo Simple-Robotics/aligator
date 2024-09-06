@@ -22,8 +22,8 @@ if(BUILD_WITH_OPENMP_SUPPORT)
 endif()
 # Link to tracy, and add installed tracy headers to install interface
 # for other targets to consume us without having to get tracy.
-target_link_libraries(aligator_gar PRIVATE Tracy::TracyClient)
-hide_tracy_symbols(aligator_gar)
+# target_link_libraries(aligator_gar PRIVATE Tracy::TracyClient)
+target_link_libraries(aligator_gar PRIVATE aligator_profiling)
 
 add_library(aligator::gar ALIAS aligator_gar)
 

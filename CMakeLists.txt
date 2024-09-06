@@ -224,31 +224,6 @@ set(THIRD_PARTY_HEADERS_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/${THIRD_PARTY_HE
 set(TRACY_DIR external/tracy)
 include(tracy.cmake)
 
-# Copy tracy headers to the build tree
-foreach(headerFile IN LISTS tracy_includes client_includes common_includes)
-  string(REPLACE "${TRACY_PUBLIC_DIR}/" "" headerFileRelative ${headerFile})
-  set(headerCopyPath include/${THIRD_PARTY_HEADERS_DIR}/${headerFileRelative})
-  message(DEBUG "Copy header ${headerFile} to build tree at path <build-dir>/${headerCopyPath}")
-  execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${headerFile} ${PROJECT_BINARY_DIR}/${headerCopyPath})
-endforeach()
-
-function(hide_tracy_symbols target_name)
-  # On Linux, don't export libTracyClient symbols to avoid conflict with other libraries
-  # that also use Tracy
-  if(UNIX AND NOT APPLE)
-    set_target_properties(
-      ${target_name} PROPERTIES LINK_OPTIONS "-Wl,--exclude-libs,$<TARGET_FILE_NAME:Tracy::TracyClient>"
-    )
-  elseif(APPLE)
-    set_target_properties(
-      ${target_name}
-      PROPERTIES
-        LINK_OPTIONS
-        "-Wl,-L$<TARGET_FILE_DIR:Tracy::TracyClient>;-Wl,-hidden-l$<TARGET_FILE_BASE_NAME:Tracy::TracyClient>"
-    )
-  endif()
-endfunction()
-
 add_subdirectory(gar)
 
 # Create the main shared library.
@@ -277,8 +252,8 @@ function(create_library)
   endif()
   target_link_libraries(${PROJECT_NAME} PUBLIC proxsuite-nlp::proxsuite-nlp)
   target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt)
-  target_link_libraries(${PROJECT_NAME} PRIVATE Tracy::TracyClient)
-  hide_tracy_symbols(${PROJECT_NAME})
+  # target_link_libraries(${PROJECT_NAME} PRIVATE Tracy::TracyClient)
+  target_link_libraries(${PROJECT_NAME} PRIVATE aligator_profiling)
   # set include dirs used by dependent projects to consume this target
   target_include_directories(
     ${PROJECT_NAME}
@@ -302,6 +277,14 @@ create_library()
 
 add_header_group(LIB_HEADERS)
 add_source_group(LIB_SOURCES)
+
+install(
+  TARGETS aligator_profiling
+  EXPORT ${TARGETS_EXPORT_NAME}
+  INCLUDES
+  DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
+)
 
 install(
   TARGETS ${PROJECT_NAME}
