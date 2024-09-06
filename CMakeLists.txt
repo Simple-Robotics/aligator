@@ -102,9 +102,7 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
       CACHE STRING "Choose the type of build." FORCE
   )
   # Set the possible values of build type for cmake-gui
-  set_property(
-    CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo"
-  )
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
 function(set_standard_output_directory target)
@@ -182,9 +180,7 @@ endif()
 if(BUILD_WITH_CHOLMOD_SUPPORT)
   set(CMAKE_MODULE_PATH ${JRL_CMAKE_MODULES}/find-external/CHOLMOD ${CMAKE_MODULE_PATH})
   add_project_dependency(CHOLMOD REQUIRED)
-  message(
-    STATUS "Build with CHOLMOD support (LGPL). See CHOLMOD/Doc/License.txt for further details."
-  )
+  message(STATUS "Build with CHOLMOD support (LGPL). See CHOLMOD/Doc/License.txt for further details.")
   add_compile_definitions(ALIGATOR_WITH_CHOLMOD)
 endif()
 
@@ -222,47 +218,36 @@ endif()
 list(FILTER LIB_HEADERS EXCLUDE REGEX ${PROJECT_SOURCE_DIR}/include/aligator/compat/*)
 
 option(ENABLE_TRACY_PROFILING "Enable Tracy profiler" OFF)
-option(DOWNLOAD_TRACY "Use FetchContent to install Tracy." ON)
-if(DOWNLOAD_TRACY)
 
-  # We use FetchContent_Populate because we need EXCLUDE_FROM_ALL to avoid
-  # installing Tracy with aligator.
-  # We can directly use EXCLUDE_FROM_ALL in FetchContent_Declare when CMake minimum version
-  # will be 3.28.
-  if(POLICY CMP0169)
-    cmake_policy(SET CMP0169 OLD)
-  endif()
-  FetchContent_Declare(
-    tracy
-    GIT_REPOSITORY https://github.com/Simple-Robotics/tracy.git
-    GIT_TAG patches
-    GIT_SHALLOW TRUE
-    GIT_PROGRESS TRUE
-  )
-  FetchContent_GetProperties(tracy)
-  if(NOT tracy_POPULATED)
-    FetchContent_Populate(tracy)
-    set(TRACY_STATIC
-        ON
-        CACHE INTERNAL ""
-    )
-    set(TRACY_ENABLE
-        ${ENABLE_TRACY_PROFILING}
-        CACHE INTERNAL ""
-    )
-    add_subdirectory(${tracy_SOURCE_DIR} ${tracy_BINARY_DIR} EXCLUDE_FROM_ALL)
-    # Extract the target include directories, set as system
-    get_target_property(tracy_INCLUDE_DIR TracyClient INTERFACE_INCLUDE_DIRECTORIES)
+set(THIRD_PARTY_HEADERS_DIR ${PROJECT_NAME}/third-party)
+set(THIRD_PARTY_HEADERS_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/${THIRD_PARTY_HEADERS_DIR})
+set(TRACY_DIR external/tracy)
+include(tracy.cmake)
+
+# Copy tracy headers to the build tree
+foreach(headerFile IN LISTS tracy_includes client_includes common_includes)
+  string(REPLACE "${TRACY_PUBLIC_DIR}/" "" headerFileRelative ${headerFile})
+  set(headerCopyPath include/${THIRD_PARTY_HEADERS_DIR}/${headerFileRelative})
+  message(DEBUG "Copy header ${headerFile} to build tree at path <build-dir>/${headerCopyPath}")
+  execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${headerFile} ${PROJECT_BINARY_DIR}/${headerCopyPath})
+endforeach()
+
+function(hide_tracy_symbols target_name)
+  # On Linux, don't export libTracyClient symbols to avoid conflict with other libraries
+  # that also use Tracy
+  if(UNIX AND NOT APPLE)
     set_target_properties(
-      TracyClient PROPERTIES POSITION_INDEPENDENT_CODE True INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
-                                                            "${tracy_INCLUDE_DIR}"
+      ${target_name} PROPERTIES LINK_OPTIONS "-Wl,--exclude-libs,$<TARGET_FILE_NAME:Tracy::TracyClient>"
+    )
+  elseif(APPLE)
+    set_target_properties(
+      ${target_name}
+      PROPERTIES
+        LINK_OPTIONS
+        "-Wl,-L$<TARGET_FILE_DIR:Tracy::TracyClient>;-Wl,-hidden-l$<TARGET_FILE_BASE_NAME:Tracy::TracyClient>"
     )
   endif()
-else()
-  # assume it is installed somewhere
-  find_package(Tracy REQUIRED)
-  set_target_properties(Tracy::TracyClient PROPERTIES POSITION_INDEPENDENT_CODE True)
-endif()
+endfunction()
 
 add_subdirectory(gar)
 
@@ -290,12 +275,11 @@ function(create_library)
   if(BUILD_WITH_OPENMP_SUPPORT)
     target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
   endif()
-
   target_link_libraries(${PROJECT_NAME} PUBLIC proxsuite-nlp::proxsuite-nlp)
-  target_link_libraries(${PROJECT_NAME} PUBLIC Boost::boost)
   target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt)
-  # set the install-tree include dirs
-  # used by dependent projects to consume this target
+  target_link_libraries(${PROJECT_NAME} PRIVATE Tracy::TracyClient)
+  hide_tracy_symbols(${PROJECT_NAME})
+  # set include dirs used by dependent projects to consume this target
   target_include_directories(
     ${PROJECT_NAME}
     PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
@@ -326,16 +310,6 @@ install(
   DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
 )
-
-if(DOWNLOAD_TRACY)
-  install(
-    TARGETS TracyClient
-    EXPORT ${TARGETS_EXPORT_NAME}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/aligator
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/aligator
-  )
-  message(STATUS "Installing TracyClient target to ${CMAKE_INSTALL_FULL_LIBDIR}/aligator")
-endif()
 
 if(BUILD_CROCODDYL_COMPAT)
   add_project_dependency(crocoddyl REQUIRED)
@@ -373,9 +347,7 @@ if(BUILD_CROCODDYL_COMPAT AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
                                 ${PROJECT_SOURCE_DIR}/examples/croc-talos-arm.hpp
   )
   target_include_directories(croc_talos_arm_utils PUBLIC ${PROJECT_SOURCE_DIR}/examples)
-  target_link_libraries(
-    croc_talos_arm_utils PUBLIC ${PROJECT_NAME} Boost::boost crocoddyl::crocoddyl
-  )
+  target_link_libraries(croc_talos_arm_utils PUBLIC ${PROJECT_NAME} Boost::boost crocoddyl::crocoddyl)
   set_standard_output_directory(croc_talos_arm_utils)
   target_add_example_robot_data(croc_talos_arm_utils)
 endif()

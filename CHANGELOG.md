@@ -9,17 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Remove Tracy from link interface, change tracy to a submodule, install selected headers to new aligator/third-party include dir  ([#186](https://github.com/Simple-Robotics/aligator/pull/186))
 - Use placement-new for `Workspace` and `Results` in solvers (FDDP and ProxDDP)
 - Deprecate typedef for `std::vector<T, Eigen::aligned_allocator<T>>`
 - Deprecate function template `allocate_shared_eigen_aligned<T>`
 
 ### Fixed
 
+- Tracy is no longer publicly linked to, so you no longer need Tracy to be installed when using aligator as a CMake dependency ([#186](https://github.com/Simple-Robotics/aligator/pull/186))
 - Fix RiccatiSolverDense initialization ([#174](https://github.com/Simple-Robotics/aligator/pull/174))
 - Remove CMake CMP0167 and CMP0169 warnings ([#176](https://github.com/Simple-Robotics/aligator/pull/176))
 
 ### Added
 
+- Add `aligator/third-party` dir to the source tree, install Tracy headers into it ([#186](https://github.com/Simple-Robotics/aligator/pull/186))
 - Add compatibility with jrl-cmakemodules workspace ([#172](https://github.com/Simple-Robotics/aligator/pull/172))
 
 ## [0.6.1] - 2024-05-27

@@ -5,7 +5,6 @@
 #include "blk-matrix.hpp"
 #include "lqr-problem.hpp"
 #include "riccati-base.hpp"
-#include <tracy/Tracy.hpp>
 
 namespace aligator::gar {
 
