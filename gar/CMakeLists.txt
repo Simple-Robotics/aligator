@@ -12,8 +12,9 @@ file(
 
 add_library(aligator_gar SHARED ${SOURCES})
 target_include_directories(
-  aligator_gar PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-                      $<INSTALL_INTERFACE:include/aligator/gar>
+  aligator_gar
+  PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include> $<INSTALL_INTERFACE:include/aligator/gar>
 )
 target_link_libraries(aligator_gar PUBLIC proxsuite-nlp::proxsuite-nlp)
 if(BUILD_WITH_OPENMP_SUPPORT)
@@ -23,8 +24,6 @@ endif()
 # for other targets to consume us without having to get tracy.
 target_link_libraries(aligator_gar PRIVATE Tracy::TracyClient)
 hide_tracy_symbols(aligator_gar)
-
-target_include_directories(aligator_gar INTERFACE $<INSTALL_INTERFACE:${THIRD_PARTY_HEADERS_INSTALL_DIR}>)
 
 add_library(aligator::gar ALIAS aligator_gar)
 
