@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Tracy is no longer publicly linked to, so you no longer need Tracy to be installed when using aligator as a CMake dependency ([#186](https://github.com/Simple-Robotics/aligator/pull/186))
+- Build tracy ourselves into a `libaligator_profiling` library ([#187](https://github.com/Simple-Robotics/aligator/pull/187))
 - Fix RiccatiSolverDense initialization ([#174](https://github.com/Simple-Robotics/aligator/pull/174))
 - Remove CMake CMP0167 and CMP0169 warnings ([#176](https://github.com/Simple-Robotics/aligator/pull/176))
 
