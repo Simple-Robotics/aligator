@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(contact_forces) {
   VectorXd fref(6);
   fref.setZero();
   ContactForceResidual fun =
-      ContactForceResidual(space->ndx(), model, act_matrix, constraint_models,
+      ContactForceResidual(space.ndx(), model, act_matrix, constraint_models,
                            prox_settings, fref, "RF_foot");
   shared_ptr<StageFunctionData> sfdata = fun.createData();
   shared_ptr<ContactForceData> fdata =
@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE(wrench_cone) {
   double hL = 0.2;
   double hW = 0.2;
   MultibodyWrenchConeResidual fun = MultibodyWrenchConeResidual(
-      space->ndx(), model, act_matrix, constraint_models, prox_settings,
+      space.ndx(), model, act_matrix, constraint_models, prox_settings,
       "LF_foot", mu, hL, hW);
   shared_ptr<StageFunctionData> sfdata = fun.createData();
   shared_ptr<MultibodyWrenchConeData> fdata =
