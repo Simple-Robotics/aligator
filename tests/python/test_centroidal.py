@@ -44,6 +44,10 @@ def test_contact_map():
 
     assert contact_map.size == 3
 
+    contact_map.setContactPose("c2", np.array([1, 2, 3]))
+    boolvec = contact_map.contact_poses[1] == np.array([1, 2, 3])
+    assert boolvec.all()
+
 
 def test_com_translation():
     x, d, x0 = sample_gauss(space)

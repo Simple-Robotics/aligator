@@ -75,6 +75,15 @@ template <typename _Scalar> struct ContactMapTpl {
     return contact_poses_[id - contact_names_.begin()];
   }
 
+  void setContactPose(const std::string &name, const Vector3s &ref) {
+    auto id = std::find(contact_names_.begin(), contact_names_.end(), name);
+    if (id == contact_names_.end()) {
+      ALIGATOR_RUNTIME_ERROR("Contact name does not exist in this map!");
+    }
+
+    contact_poses_[id - contact_names_.begin()] = ref;
+  }
+
   std::size_t getSize() const { return size_; }
 
 private:

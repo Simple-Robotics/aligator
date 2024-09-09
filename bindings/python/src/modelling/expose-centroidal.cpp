@@ -33,6 +33,8 @@ void exposeContactMap() {
            "Add a contact to the contact map.")
       .def("removeContact", &ContactMap::removeContact, ("self"_a, "i"),
            "Remove contact i from the contact map.")
+      .def("setContactPose", &ContactMap::setContactPose,
+           ("self"_a, "name", "ref"))
       .add_property("size", &ContactMap::getSize, "Get map size.")
       .add_property("contact_names",
                     bp::make_function(&ContactMap::getContactNames,
