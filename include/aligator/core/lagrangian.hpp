@@ -25,7 +25,7 @@ template <typename Scalar> struct LagrangianDerivatives {
     using StageData = StageDataTpl<Scalar>;
     const std::size_t nsteps = problem.numSteps();
 
-    ALIGATOR_ZONE_SCOPED_N("LagrangianDerivatives::compute");
+    ALIGATOR_TRACY_ZONE_SCOPED_N("LagrangianDerivatives::compute");
     ALIGATOR_NOMALLOC_SCOPED;
 
     math::setZero(Lxs);

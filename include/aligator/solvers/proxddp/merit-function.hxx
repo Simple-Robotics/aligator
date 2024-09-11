@@ -32,7 +32,7 @@ Scalar PDALFunction<Scalar>::evaluate(const Scalar mu,
                                       const std::vector<VectorXs> &lams,
                                       const std::vector<VectorXs> &vs,
                                       Workspace &workspace) {
-  ALIGATOR_ZONE_SCOPED;
+  ALIGATOR_TRACY_ZONE_SCOPED;
   TrajOptData &prob_data = workspace.problem_data;
   Scalar penalty_value = 0.;
   const std::vector<VectorXs> &lams_plus = workspace.lams_plus;
@@ -63,7 +63,7 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
     const Scalar mu, const TrajOptProblem &problem,
     const std::vector<VectorXs> &lams, const std::vector<VectorXs> &vs,
     Workspace &workspace) {
-  ALIGATOR_ZONE_SCOPED;
+  ALIGATOR_TRACY_ZONE_SCOPED;
   TrajOptData &prob_data = workspace.problem_data;
   const std::size_t nsteps = workspace.nsteps;
 

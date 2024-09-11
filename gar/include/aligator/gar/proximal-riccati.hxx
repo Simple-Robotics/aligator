@@ -13,7 +13,7 @@ ProximalRiccatiSolver<Scalar>::ProximalRiccatiSolver(
     : Base(), kkt0(problem.stages[0].nx, problem.nc0(), problem.ntheta()),
       thGrad(problem.ntheta()), thHess(problem.ntheta(), problem.ntheta()),
       problem_(&problem) {
-  ALIGATOR_ZONE_SCOPED;
+  ALIGATOR_TRACY_ZONE_SCOPED;
   auto N = uint(problem_->horizon());
   auto &knots = problem_->stages;
   datas.reserve(N + 1);
@@ -30,7 +30,7 @@ template <typename Scalar>
 bool ProximalRiccatiSolver<Scalar>::backward(const Scalar mudyn,
                                              const Scalar mueq) {
   ALIGATOR_NOMALLOC_SCOPED;
-  ALIGATOR_ZONE_NAMED(Zone1, true);
+  ALIGATOR_TRACY_ZONE_NAMED(Zone1, true);
   bool ret = Impl::backwardImpl(problem_->stages, mudyn, mueq, datas);
 
   StageFactor<Scalar> &d0 = datas[0];
@@ -39,7 +39,7 @@ bool ProximalRiccatiSolver<Scalar>::backward(const Scalar mudyn,
   vinit.vx = vinit.pvec;
   // initial stage
   {
-    ALIGATOR_ZONE_NAMED_N(Zone2, "factor_initial", true);
+    ALIGATOR_TRACY_ZONE_NAMED_N(Zone2, "factor_initial", true);
     kkt0.mat(0, 0) = vinit.Vxx;
     kkt0.mat(1, 0) = problem_->G0;
     kkt0.mat(0, 1) = problem_->G0.transpose();
@@ -65,7 +65,7 @@ bool ProximalRiccatiSolver<Scalar>::forward(
     std::vector<VectorXs> &xs, std::vector<VectorXs> &us,
     std::vector<VectorXs> &vs, std::vector<VectorXs> &lbdas,
     const std::optional<ConstVectorRef> &theta_) const {
-  ALIGATOR_ZONE_SCOPED;
+  ALIGATOR_TRACY_ZONE_SCOPED;
 
   // solve initial stage
   Impl::computeInitial(xs[0], lbdas[0], kkt0, theta_);

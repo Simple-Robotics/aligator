@@ -45,7 +45,7 @@ template <typename Scalar> void RiccatiSolverDense<Scalar>::initialize() {
 template <typename Scalar>
 bool RiccatiSolverDense<Scalar>::backward(const Scalar mudyn,
                                           const Scalar mueq) {
-  ALIGATOR_ZONE_SCOPED;
+  ALIGATOR_TRACY_ZONE_SCOPED;
   const auto &stages = problem_->stages;
 
   const uint N = (uint)problem_->horizon();

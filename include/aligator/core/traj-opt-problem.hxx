@@ -57,7 +57,7 @@ template <typename Scalar>
 Scalar TrajOptProblemTpl<Scalar>::evaluate(
     const std::vector<VectorXs> &xs, const std::vector<VectorXs> &us,
     Data &prob_data, ALIGATOR_MAYBE_UNUSED std::size_t num_threads) const {
-  ALIGATOR_ZONE_SCOPED_N("TrajOptProblem::evaluate");
+  ALIGATOR_TRACY_ZONE_SCOPED_N("TrajOptProblem::evaluate");
   const std::size_t nsteps = numSteps();
   if (xs.size() != nsteps + 1)
     ALIGATOR_RUNTIME_ERROR(fmt::format(
@@ -93,7 +93,7 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
     const std::vector<VectorXs> &xs, const std::vector<VectorXs> &us,
     Data &prob_data, ALIGATOR_MAYBE_UNUSED std::size_t num_threads,
     bool compute_second_order) const {
-  ALIGATOR_ZONE_SCOPED_N("TrajOptProblem::computeDerivatives");
+  ALIGATOR_TRACY_ZONE_SCOPED_N("TrajOptProblem::computeDerivatives");
   const std::size_t nsteps = numSteps();
   if (xs.size() != nsteps + 1)
     ALIGATOR_RUNTIME_ERROR(fmt::format(
@@ -170,7 +170,7 @@ template <typename Scalar>
 Scalar TrajOptProblemTpl<Scalar>::computeTrajectoryCost(
     const Data &problem_data) const {
   ALIGATOR_NOMALLOC_SCOPED;
-  ALIGATOR_ZONE_SCOPED;
+  ALIGATOR_TRACY_ZONE_SCOPED;
   Scalar traj_cost = 0.;
 
   const std::size_t nsteps = numSteps();

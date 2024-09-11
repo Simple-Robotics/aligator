@@ -12,7 +12,7 @@ template <typename Scalar>
 bool ProximalRiccatiKernel<Scalar>::backwardImpl(
     boost::span<const KnotType> stages, const Scalar mudyn, const Scalar mueq,
     boost::span<StageFactorType> datas) {
-  ALIGATOR_ZONE_SCOPED;
+  ALIGATOR_TRACY_ZONE_SCOPED;
   // terminal node
   if (datas.size() == 0)
     return true;
@@ -38,7 +38,7 @@ template <typename Scalar>
 void ProximalRiccatiKernel<Scalar>::terminalSolve(const KnotType &model,
                                                   const Scalar mueq,
                                                   StageFactorType &d) {
-  ALIGATOR_ZONE_SCOPED;
+  ALIGATOR_TRACY_ZONE_SCOPED;
   value_t &vc = d.vm;
   // fill cost-to-go matrix
   VectorRef kff = d.ff.blockSegment(0);
@@ -101,7 +101,7 @@ template <typename Scalar>
 void ProximalRiccatiKernel<Scalar>::computeInitial(
     VectorRef x0, VectorRef lbd0, const kkt0_t &kkt0,
     const std::optional<ConstVectorRef> &theta_) {
-  ALIGATOR_ZONE_SCOPED;
+  ALIGATOR_TRACY_ZONE_SCOPED;
   assert(kkt0.chol.info() == Eigen::Success);
   x0 = kkt0.ff.blockSegment(0);
   lbd0 = kkt0.ff.blockSegment(1);
@@ -117,7 +117,7 @@ void ProximalRiccatiKernel<Scalar>::stageKernelSolve(const KnotType &model,
                                                      value_t &vn,
                                                      const Scalar mudyn,
                                                      const Scalar mueq) {
-  ALIGATOR_ZONE_SCOPED;
+  ALIGATOR_TRACY_ZONE_SCOPED;
   // step 1. compute decomposition of the E matrix
   d.Efact.compute(model.E);
   d.EinvP.setIdentity();
@@ -204,7 +204,7 @@ void ProximalRiccatiKernel<Scalar>::stageKernelSolve(const KnotType &model,
   RowMatrixRef Lth = d.fth.blockRow(2);
   RowMatrixRef Yth = d.fth.blockRow(3);
   if (model.nth > 0) {
-    ALIGATOR_ZONE_SCOPED_N("stage_solve_parameter");
+    ALIGATOR_TRACY_ZONE_SCOPED_N("stage_solve_parameter");
 
     // store Pxttilde = -Einv * Pxt
     // this is like ptilde
@@ -255,7 +255,7 @@ bool ProximalRiccatiKernel<Scalar>::forwardImpl(
     boost::span<const StageFactorType> datas, boost::span<VectorXs> xs,
     boost::span<VectorXs> us, boost::span<VectorXs> vs,
     boost::span<VectorXs> lbdas, const std::optional<ConstVectorRef> &theta_) {
-  ALIGATOR_ZONE_SCOPED;
+  ALIGATOR_TRACY_ZONE_SCOPED;
 
   uint N = (uint)(datas.size() - 1);
   for (uint t = 0; t <= N; t++) {

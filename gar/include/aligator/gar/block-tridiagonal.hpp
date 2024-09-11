@@ -81,7 +81,7 @@ bool symmetricBlockTridiagSolve(std::vector<MatrixType> &subdiagonal,
                                 const std::vector<MatrixType> &superdiagonal,
                                 BlkMatrix<RhsType, -1, 1> &rhs,
                                 std::vector<DecType> &facs) {
-  ALIGATOR_ZONE_SCOPED;
+  ALIGATOR_TRACY_ZONE_SCOPED;
   ALIGATOR_NOMALLOC_SCOPED;
 
   if (subdiagonal.size() != superdiagonal.size() ||
@@ -183,7 +183,7 @@ bool symmetricBlockTridiagSolveDownLooking(
     std::vector<MatrixType> &subdiagonal, std::vector<MatrixType> &diagonal,
     std::vector<MatrixType> &superdiagonal, BlkMatrix<RhsType, -1, 1> &rhs,
     std::vector<DecType> &facs) {
-  ALIGATOR_ZONE_SCOPED;
+  ALIGATOR_TRACY_ZONE_SCOPED;
   ALIGATOR_NOMALLOC_SCOPED;
 
   if (subdiagonal.size() != superdiagonal.size() ||
