@@ -44,8 +44,6 @@ struct ODEAbstractTpl : ContinuousDynamicsAbstractTpl<_Scalar> {
 } // namespace dynamics
 } // namespace aligator
 
-#include "aligator/modelling/dynamics/ode-abstract.hxx"
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/modelling/dynamics/ode-abstract.txx"
 #endif

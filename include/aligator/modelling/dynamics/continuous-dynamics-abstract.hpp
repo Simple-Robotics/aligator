@@ -1,6 +1,6 @@
 /// @file continuous-dynamics-abstract.hpp
 /// @brief Base definitions for continuous dynamics.
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include "aligator/fwd.hpp"
@@ -84,8 +84,6 @@ template <typename _Scalar> struct ContinuousDynamicsDataTpl {
 
 } // namespace dynamics
 } // namespace aligator
-
-#include "aligator/modelling/dynamics/continuous-dynamics-abstract.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/modelling/dynamics/continuous-dynamics-abstract.txx"

@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include "aligator/core/dynamics.hpp"
@@ -92,8 +92,6 @@ std::ostream &operator<<(std::ostream &oss,
 }
 
 } // namespace aligator
-
-#include "aligator/core/explicit-dynamics.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/core/explicit-dynamics.txx"

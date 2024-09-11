@@ -67,8 +67,6 @@ struct IntegratorDataTpl : DynamicsDataTpl<_Scalar> {
 } // namespace dynamics
 } // namespace aligator
 
-#include "aligator/modelling/dynamics/integrator-abstract.hxx"
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/modelling/dynamics/integrator-abstract.txx"
 #endif
