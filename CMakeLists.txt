@@ -222,7 +222,7 @@ endif()
 
 list(FILTER LIB_HEADERS EXCLUDE REGEX ${PROJECT_SOURCE_DIR}/include/aligator/compat/*)
 
-option(DOWNLOAD_TRACY "Use FetchContent to install Tracy." ON)
+option(DOWNLOAD_TRACY "Use FetchContent to install Tracy." OFF)
 if(ALIGATOR_TRACY_ENABLE AND DOWNLOAD_TRACY)
 
   # We use FetchContent_Populate because we need EXCLUDE_FROM_ALL to avoid
@@ -260,8 +260,16 @@ if(ALIGATOR_TRACY_ENABLE AND DOWNLOAD_TRACY)
   endif()
 elseif(ALIGATOR_TRACY_ENABLE)
   # assume it is installed somewhere
-  add_project_dependency(Tracy REQUIRED)
+  add_project_dependency(Tracy)
   set_target_properties(Tracy::TracyClient PROPERTIES POSITION_INDEPENDENT_CODE True)
+  if(NOT ${tracy_FOUND})
+    message(
+      FATAL_ERROR "Aligator support for tracy is enabled, but tracy was not found on your system."
+                  " Install it, or set the option DOWNLOAD_TRACY to ON so we can fetch it."
+    )
+  else()
+    message(STATUS "Tracy found on your system at ${Tracy_DIR}")
+  endif()
 endif()
 
 add_subdirectory(gar)
