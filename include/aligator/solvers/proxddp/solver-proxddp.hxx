@@ -4,6 +4,7 @@
 #pragma once
 
 #include "solver-proxddp.hpp"
+#include "merit-function.hpp"
 #include "aligator/core/lagrangian.hpp"
 #include "aligator/utils/forward-dyn.hpp"
 

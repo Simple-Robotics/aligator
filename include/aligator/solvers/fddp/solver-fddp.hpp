@@ -9,13 +9,12 @@
 #include "aligator/core/explicit-dynamics.hpp"
 #include "aligator/core/linesearch.hpp"
 
-#include "./results.hpp"
-#include "./workspace.hpp"
+#include "workspace.hpp"
+#include "results.hpp"
 
 #include "aligator/utils/logger.hpp"
 #include "aligator/threads.hpp"
 
-#include <fmt/ostream.h>
 #include <unordered_map>
 
 /// @brief  A warning for the FDDP module.
@@ -204,8 +203,6 @@ public:
 };
 
 } // namespace aligator
-
-#include "./solver-fddp.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./solver-fddp.txx"
