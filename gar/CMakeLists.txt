@@ -20,7 +20,9 @@ target_link_libraries(aligator_gar PUBLIC proxsuite-nlp::proxsuite-nlp)
 if(BUILD_WITH_OPENMP_SUPPORT)
   target_link_libraries(aligator_gar PUBLIC OpenMP::OpenMP_CXX)
 endif()
-target_link_libraries(aligator_gar PUBLIC Tracy::TracyClient)
+if(ALIGATOR_TRACY_ENABLE)
+  target_link_libraries(aligator_gar PUBLIC Tracy::TracyClient)
+endif()
 
 add_library(aligator::gar ALIAS aligator_gar)
 

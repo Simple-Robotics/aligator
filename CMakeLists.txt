@@ -222,9 +222,8 @@ endif()
 
 list(FILTER LIB_HEADERS EXCLUDE REGEX ${PROJECT_SOURCE_DIR}/include/aligator/compat/*)
 
-option(ENABLE_TRACY_PROFILING "Enable Tracy profiler" OFF)
 option(DOWNLOAD_TRACY "Use FetchContent to install Tracy." ON)
-if(DOWNLOAD_TRACY)
+if(ALIGATOR_TRACY_ENABLE AND DOWNLOAD_TRACY)
 
   # We use FetchContent_Populate because we need EXCLUDE_FROM_ALL to avoid
   # installing Tracy with aligator.
@@ -248,7 +247,7 @@ if(DOWNLOAD_TRACY)
         CACHE INTERNAL ""
     )
     set(TRACY_ENABLE
-        ${ENABLE_TRACY_PROFILING}
+        ${ALIGATOR_TRACY_ENABLE}
         CACHE INTERNAL ""
     )
     add_subdirectory(${tracy_SOURCE_DIR} ${tracy_BINARY_DIR} EXCLUDE_FROM_ALL)
@@ -259,9 +258,9 @@ if(DOWNLOAD_TRACY)
                                                             "${tracy_INCLUDE_DIR}"
     )
   endif()
-else()
+elseif(ALIGATOR_TRACY_ENABLE)
   # assume it is installed somewhere
-  find_package(Tracy REQUIRED)
+  add_project_dependency(Tracy REQUIRED)
   set_target_properties(Tracy::TracyClient PROPERTIES POSITION_INDEPENDENT_CODE True)
 endif()
 
