@@ -2,6 +2,7 @@
 
 #include "dense-riccati.hpp"
 #include "lqr-problem.hpp"
+#include "aligator/tracy.hpp"
 
 namespace aligator::gar {
 
@@ -44,7 +45,7 @@ template <typename Scalar> void RiccatiSolverDense<Scalar>::initialize() {
 template <typename Scalar>
 bool RiccatiSolverDense<Scalar>::backward(const Scalar mudyn,
                                           const Scalar mueq) {
-  ZoneScoped;
+  ALIGATOR_ZONE_SCOPED;
   const auto &stages = problem_->stages;
 
   const uint N = (uint)problem_->horizon();

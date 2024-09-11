@@ -6,6 +6,7 @@
 #include "aligator/gar/block-tridiagonal.hpp"
 #include "aligator/gar/work.hpp"
 #include "aligator/gar/lqr-problem.hpp"
+#include "aligator/tracy.hpp"
 
 #include "aligator/threads.hpp"
 
@@ -16,7 +17,7 @@ template <typename Scalar>
 ParallelRiccatiSolver<Scalar>::ParallelRiccatiSolver(
     LQRProblemTpl<Scalar> &problem, const uint num_threads)
     : Base(), numThreads(num_threads), problem_(&problem) {
-  ZoneScoped;
+  ALIGATOR_ZONE_SCOPED;
 
   uint N = (uint)problem.horizon();
   for (uint i = 0; i < num_threads; i++) {
@@ -40,7 +41,7 @@ ParallelRiccatiSolver<Scalar>::ParallelRiccatiSolver(
 template <typename Scalar>
 void ParallelRiccatiSolver<Scalar>::allocateLeg(uint start, uint end,
                                                 bool last_leg) {
-  ZoneScoped;
+  ALIGATOR_ZONE_SCOPED;
   for (uint t = start; t < end; t++) {
     KnotType &knot = problem_->stages[t];
     if (!last_leg)
@@ -52,7 +53,7 @@ void ParallelRiccatiSolver<Scalar>::allocateLeg(uint start, uint end,
 template <typename Scalar>
 void ParallelRiccatiSolver<Scalar>::assembleCondensedSystem(
     const Scalar mudyn) {
-  ZoneScoped;
+  ALIGATOR_ZONE_SCOPED;
   std::vector<MatrixXs> &subdiagonal = condensedKktSystem.subdiagonal;
   std::vector<MatrixXs> &diagonal = condensedKktSystem.diagonal;
   std::vector<MatrixXs> &superdiagonal = condensedKktSystem.superdiagonal;
@@ -102,7 +103,7 @@ bool ParallelRiccatiSolver<Scalar>::backward(const Scalar mudyn,
                                              const Scalar mueq) {
 
   ALIGATOR_NOMALLOC_SCOPED;
-  ZoneScopedN("parallel_backward");
+  ALIGATOR_ZONE_SCOPED_N("parallel_backward");
   auto N = static_cast<uint>(problem_->horizon());
   for (uint i = 0; i < numThreads - 1; i++) {
     uint end = get_work(N, i, numThreads).end;
@@ -116,7 +117,7 @@ bool ParallelRiccatiSolver<Scalar>::backward(const Scalar mudyn,
 #ifdef __linux__
     char *thrdname = new char[16];
     snprintf(thrdname, 16, "thread%d[c%d]", int(i), sched_getcpu());
-    tracy::SetThreadName(thrdname);
+    ALIGATOR_SET_THREAD_NAME(thrdname);
 #endif
     auto [beg, end] = get_work(N, i, numThreads);
     boost::span<const KnotType> stview =
@@ -164,7 +165,7 @@ bool ParallelRiccatiSolver<Scalar>::forward(
     VectorOfVectors &xs, VectorOfVectors &us, VectorOfVectors &vs,
     VectorOfVectors &lbdas, const std::optional<ConstVectorRef> &) const {
   ALIGATOR_NOMALLOC_SCOPED;
-  ZoneScopedN("parallel_forward");
+  ALIGATOR_ZONE_SCOPED_N("parallel_forward");
   uint N = (uint)problem_->horizon();
   for (uint i = 0; i < numThreads; i++) {
     uint i0 = get_work(N, i, numThreads).beg;
@@ -198,7 +199,7 @@ bool ParallelRiccatiSolver<Scalar>::forward(
 template <typename Scalar>
 void ParallelRiccatiSolver<Scalar>::initializeTridiagSystem(
     const std::vector<long> &dims) {
-  ZoneScoped;
+  ALIGATOR_ZONE_SCOPED;
   std::vector<MatrixXs> subdiagonal;
   std::vector<MatrixXs> diagonal;
   std::vector<MatrixXs> superdiagonal;

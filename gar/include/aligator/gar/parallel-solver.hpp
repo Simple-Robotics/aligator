@@ -5,6 +5,7 @@
 #include "aligator/gar/fwd.hpp"
 #include "aligator/gar/riccati-base.hpp"
 #include "aligator/gar/riccati-impl.hpp"
+#include "aligator/tracy.hpp"
 
 namespace aligator {
 namespace gar {
@@ -40,7 +41,7 @@ public:
   void allocateLeg(uint start, uint end, bool last_leg);
 
   static void setupKnot(KnotType &knot, const Scalar mudyn) {
-    ZoneScoped;
+    ALIGATOR_ZONE_SCOPED;
     ALIGATOR_NOMALLOC_SCOPED;
     knot.Gx = knot.A.transpose();
     knot.Gu = knot.B.transpose();

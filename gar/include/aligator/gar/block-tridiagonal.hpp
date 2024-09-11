@@ -4,7 +4,7 @@
 
 #include "aligator/gar/blk-matrix.hpp"
 #include "aligator/eigen-macros.hpp"
-#include <tracy/Tracy.hpp>
+#include "aligator/tracy.hpp"
 
 namespace aligator {
 namespace gar {
@@ -81,7 +81,7 @@ bool symmetricBlockTridiagSolve(std::vector<MatrixType> &subdiagonal,
                                 const std::vector<MatrixType> &superdiagonal,
                                 BlkMatrix<RhsType, -1, 1> &rhs,
                                 std::vector<DecType> &facs) {
-  ZoneScoped;
+  ALIGATOR_ZONE_SCOPED;
   ALIGATOR_NOMALLOC_SCOPED;
 
   if (subdiagonal.size() != superdiagonal.size() ||
@@ -183,7 +183,7 @@ bool symmetricBlockTridiagSolveDownLooking(
     std::vector<MatrixType> &subdiagonal, std::vector<MatrixType> &diagonal,
     std::vector<MatrixType> &superdiagonal, BlkMatrix<RhsType, -1, 1> &rhs,
     std::vector<DecType> &facs) {
-  ZoneScoped;
+  ALIGATOR_ZONE_SCOPED;
   ALIGATOR_NOMALLOC_SCOPED;
 
   if (subdiagonal.size() != superdiagonal.size() ||
