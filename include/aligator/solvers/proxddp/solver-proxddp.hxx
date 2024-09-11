@@ -118,8 +118,10 @@ Scalar SolverProxDDPTpl<Scalar>::tryLinearStep(const Problem &problem,
 template <typename Scalar>
 void SolverProxDDPTpl<Scalar>::setup(const Problem &problem) {
   problem.checkIntegrity();
-  new (&workspace_) Workspace(problem);
+  results_.~Results();
+  workspace_.~Workspace();
   new (&results_) Results(problem);
+  new (&workspace_) Workspace(problem);
   linesearch_.setOptions(ls_params);
 
   workspace_.configureScalers(problem, mu_penal_, DefaultScaling<Scalar>{});
