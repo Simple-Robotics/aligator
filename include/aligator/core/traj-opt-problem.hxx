@@ -4,7 +4,7 @@
 
 #include "aligator/core/traj-opt-problem.hpp"
 #include "aligator/utils/mpc-util.hpp"
-#include "aligator/third-party/tracy/Tracy.hpp"
+#include "tracy/Tracy.hpp"
 
 #include <fmt/format.h>
 

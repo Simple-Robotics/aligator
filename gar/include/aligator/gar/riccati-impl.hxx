@@ -1,10 +1,10 @@
-/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 
 #include "./riccati-impl.hpp"
 #include "./lqr-problem.hpp"
 
-#include "aligator/third-party/tracy/Tracy.hpp"
+#include <tracy/Tracy.hpp>
 
 namespace aligator {
 namespace gar {

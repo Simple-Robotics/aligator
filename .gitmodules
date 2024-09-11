@@ -1,7 +1,3 @@
 [submodule "cmake"]
 	path = cmake
 	url = https://github.com/jrl-umi3218/jrl-cmakemodules
-[submodule "external/tracy"]
-	path = external/tracy
-	url = https://github.com/Simple-Robotics/tracy.git
-	branch = patches

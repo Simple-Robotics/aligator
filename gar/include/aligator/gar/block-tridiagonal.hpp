@@ -2,9 +2,9 @@
 /// @author Wilson Jallet
 #pragma once
 
-#include "blk-matrix.hpp"
+#include "aligator/gar/blk-matrix.hpp"
 #include "aligator/eigen-macros.hpp"
-#include "aligator/third-party/tracy/Tracy.hpp"
+#include <tracy/Tracy.hpp>
 
 namespace aligator {
 namespace gar {
