@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Deprecate typedef for `std::vector<T, Eigen::aligned_allocator<T>>`
 - Deprecate function template `allocate_shared_eigen_aligned<T>`
 - Use custom macro defined in `aligator/tracy.hpp` to call Tracy ([#191](https://github.com/Simple-Robotics/aligator/pull/191))
+- Change default behaviour with regards to Tracy (`DOWNLOAD_TRACY` is set to `OFF`)
 
 ### Fixed
 
