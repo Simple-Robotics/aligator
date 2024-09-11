@@ -11,7 +11,7 @@
 #include "aligator/gar/parallel-solver.hpp"
 #include "aligator/gar/dense-riccati.hpp"
 
-#include <tracy/Tracy.hpp>
+#include "aligator/tracy.hpp"
 
 namespace aligator {
 
@@ -20,7 +20,7 @@ namespace aligator {
 template <typename Scalar>
 void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
                                WorkspaceTpl<Scalar> &workspace) {
-  ZoneScoped;
+  ALIGATOR_TRACY_ZONE_SCOPED;
   using ProductOp = ConstraintSetProductTpl<Scalar>;
   auto &sif = workspace.shifted_constraints;
 
@@ -86,7 +86,7 @@ Scalar SolverProxDDPTpl<Scalar>::tryLinearStep(const Problem &problem,
                                                Workspace &workspace,
                                                const Results &results,
                                                const Scalar alpha) {
-  ZoneScoped;
+  ALIGATOR_TRACY_ZONE_SCOPED;
 
   const std::size_t nsteps = workspace.nsteps;
   assert(results.xs.size() == nsteps + 1);
@@ -159,7 +159,7 @@ template <typename Scalar>
 void SolverProxDDPTpl<Scalar>::computeMultipliers(
     const Problem &problem, const std::vector<VectorXs> &lams,
     const std::vector<VectorXs> &vs) {
-  ZoneScoped;
+  ALIGATOR_TRACY_ZONE_SCOPED;
   using BlkView = BlkMatrix<VectorRef, -1, 1>;
 
   const TrajOptData &prob_data = workspace_.problem_data;
@@ -263,7 +263,7 @@ void SolverProxDDPTpl<Scalar>::computeMultipliers(
 }
 
 template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateGains() {
-  ZoneScoped;
+  ALIGATOR_TRACY_ZONE_SCOPED;
   ALIGATOR_NOMALLOC_SCOPED;
   using gar::StageFactor;
   const std::size_t N = workspace_.nsteps;
@@ -287,7 +287,7 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateGains() {
 template <typename Scalar>
 Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
                                                      const Scalar alpha) {
-  ZoneScoped;
+  ALIGATOR_TRACY_ZONE_SCOPED;
   using ExplicitDynData = ExplicitDynamicsDataTpl<Scalar>;
   using gar::StageFactor;
 
@@ -408,7 +408,7 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
                                    const std::vector<VectorXs> &xs_init,
                                    const std::vector<VectorXs> &us_init,
                                    const std::vector<VectorXs> &lams_init) {
-  ZoneScoped;
+  ALIGATOR_TRACY_ZONE_SCOPED;
   if (!workspace_.isInitialized() || !results_.isInitialized()) {
     ALIGATOR_RUNTIME_ERROR("workspace and results were not allocated yet!");
   }
@@ -516,7 +516,7 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
 template <typename Scalar>
 Scalar SolverProxDDPTpl<Scalar>::forwardPass(const Problem &problem,
                                              const Scalar alpha) {
-  ZoneScoped;
+  ALIGATOR_TRACY_ZONE_SCOPED;
   switch (rollout_type_) {
   case RolloutType::LINEAR:
     tryLinearStep(problem, workspace_, results_, alpha);
@@ -532,14 +532,14 @@ Scalar SolverProxDDPTpl<Scalar>::forwardPass(const Problem &problem,
 
 template <typename Scalar>
 bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
-  ZoneNamed(InnerLoop, true);
+  ALIGATOR_TRACY_ZONE_NAMED(InnerLoop, true);
 
   auto merit_eval_fun = [&](Scalar a0) -> Scalar {
     return forwardPass(problem, a0);
   };
 
   auto pair_eval_fun = [&](Scalar a0) -> std::pair<Scalar, Scalar> {
-    ZoneNamedN(FilterPairEval, "pair_eval_fun", true);
+    ALIGATOR_TRACY_ZONE_NAMED_N(FilterPairEval, "pair_eval_fun", true);
     std::pair<Scalar, Scalar> fpair;
     fpair.first = forwardPass(problem, a0);
     computeInfeasibilities(problem);
@@ -555,7 +555,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
       mu(), problem, results_.lams, results_.vs, workspace_);
 
   for (; iter < max_iters; iter++) {
-    ZoneNamedN(ZoneIteration, "inner_iteration", true);
+    ALIGATOR_TRACY_ZONE_NAMED_N(ZoneIteration, "inner_iteration", true);
     // ASSUMPTION: last evaluation in previous iterate
     // was during linesearch, at the current candidate solution (x,u).
     /// TODO: make this smarter using e.g. some caching mechanism
@@ -668,7 +668,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
 template <typename Scalar>
 void SolverProxDDPTpl<Scalar>::computeInfeasibilities(const Problem &problem) {
   ALIGATOR_NOMALLOC_SCOPED;
-  ZoneScoped;
+  ALIGATOR_TRACY_ZONE_SCOPED;
   const std::size_t nsteps = workspace_.nsteps;
 
   std::vector<VectorXs> &vs_plus = workspace_.vs_plus;
@@ -701,7 +701,7 @@ void SolverProxDDPTpl<Scalar>::computeInfeasibilities(const Problem &problem) {
 
 template <typename Scalar> void SolverProxDDPTpl<Scalar>::computeCriterion() {
   ALIGATOR_NOMALLOC_SCOPED;
-  ZoneScoped;
+  ALIGATOR_TRACY_ZONE_SCOPED;
   const std::size_t nsteps = workspace_.nsteps;
 
   workspace_.stage_inner_crits.setZero();
@@ -729,7 +729,7 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::computeCriterion() {
 
 template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
   ALIGATOR_NOMALLOC_SCOPED;
-  ZoneScoped;
+  ALIGATOR_TRACY_ZONE_SCOPED;
   LQProblem &prob = workspace_.lqr_problem;
   const TrajOptData &pd = workspace_.problem_data;
 
