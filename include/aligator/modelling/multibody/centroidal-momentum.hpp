@@ -15,7 +15,7 @@ template <typename Scalar> struct CentroidalMomentumDataTpl;
  */
 
 template <typename _Scalar>
-struct CentroidalMomentumResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
+struct CentroidalMomentumResidualTpl : UnaryFunctionTpl<_Scalar> {
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);

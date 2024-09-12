@@ -49,7 +49,6 @@ void exposeContactForce() {
                     const context::Vector6s &, const std::string &>(bp::args(
           "self", "ndx", "model", "actuation_matrix", "constraint_models",
           "prox_settings", "fref", "contact_name")))
-      .def(FrameAPIVisitor<ContactForceResidual>())
       .def(func_visitor)
       .def("getReference", &ContactForceResidual::getReference,
            bp::args("self"), bp::return_internal_reference<>(),
@@ -75,7 +74,6 @@ void exposeContactForce() {
                     const double>(bp::args(
           "self", "ndx", "model", "actuation_matrix", "constraint_models",
           "prox_settings", "contact_name", "mu", "half_length", "half_width")))
-      .def(FrameAPIVisitor<MultibodyWrenchConeResidual>())
       .def(func_visitor)
       .def_readwrite("constraint_models",
                      &MultibodyWrenchConeResidual::constraint_models_);

@@ -18,7 +18,7 @@ template <typename Scalar> struct ContactForceDataTpl;
  */
 
 template <typename _Scalar>
-struct ContactForceResidualTpl : StageFunctionTpl<_Scalar>, frame_api {
+struct ContactForceResidualTpl : StageFunctionTpl<_Scalar> {
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);

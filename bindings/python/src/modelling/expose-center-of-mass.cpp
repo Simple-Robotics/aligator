@@ -112,7 +112,6 @@ void exposeCenterOfMassFunctions() {
                const std::vector<pinocchio::FrameIndex> &, const int>(
           bp::args("self", "ndx", "model", "gravity", "contact_states",
                    "contact_ids", "force_size")))
-      .def(FrameAPIVisitor<CentroidalMomentumDerivativeResidual>())
       .def(func_visitor)
       .def_readwrite("contact_states",
                      &CentroidalMomentumDerivativeResidual::contact_states_);
@@ -130,7 +129,6 @@ void exposeCenterOfMassFunctions() {
       bp::init<const int, const int, const PinModel &,
                const context::Vector6s &>(
           bp::args("self", "ndx", "nu", "model", "h_ref")))
-      .def(FrameAPIVisitor<CentroidalMomentumResidual>())
       .def(unary_visitor)
       .def("getReference", &CentroidalMomentumResidual::getReference,
            bp::args("self"), bp::return_internal_reference<>(),

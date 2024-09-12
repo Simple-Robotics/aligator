@@ -14,8 +14,7 @@ template <typename Scalar> struct CentroidalMomentumDerivativeDataTpl;
  * for a kinodynamics model.
  */
 template <typename _Scalar>
-struct CentroidalMomentumDerivativeResidualTpl : StageFunctionTpl<_Scalar>,
-                                                 frame_api {
+struct CentroidalMomentumDerivativeResidualTpl : StageFunctionTpl<_Scalar> {
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);

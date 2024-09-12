@@ -18,7 +18,7 @@ template <typename Scalar> struct MultibodyWrenchConeDataTpl;
  */
 
 template <typename _Scalar>
-struct MultibodyWrenchConeResidualTpl : StageFunctionTpl<_Scalar>, frame_api {
+struct MultibodyWrenchConeResidualTpl : StageFunctionTpl<_Scalar> {
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
