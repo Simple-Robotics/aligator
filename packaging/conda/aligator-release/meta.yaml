@@ -32,7 +32,7 @@ requirements:
     - libboost-python-devel
     - fmt
     - pinocchio
-    - proxsuite-nlp
+    - proxsuite-nlp>=0.8.0
     - crocoddyl # [not win]
     - python
     - matplotlib
