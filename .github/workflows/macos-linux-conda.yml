@@ -78,7 +78,7 @@ jobs:
           -DBUILD_WITH_OPENMP_SUPPORT=ON \
           -DBUILD_CROCODDYL_COMPAT=ON \
           -DBUILD_BENCHMARKS=ON \
-          -DBUILD_EXAMPLES=OFF
+          -DBUILD_EXAMPLES=ON
         cmake --build .
         ctest --output-on-failure
         cmake --install .
