@@ -2,11 +2,12 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "aligator/compat/crocoddyl/cost-wrap.hpp"
 #include "aligator/compat/crocoddyl/state-wrap.hpp"
 #include "aligator/compat/crocoddyl/dynamics-wrap.hpp"
 
+#include "aligator/core/cost-abstract.hpp"
 #include "aligator/core/stage-model.hpp"
+#include "aligator/core/stage-data.hpp"
 #include <crocoddyl/core/action-base.hpp>
 
 namespace aligator {
@@ -23,7 +24,8 @@ struct ActionModelWrapperTpl : StageModelTpl<Scalar> {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageModelTpl<Scalar>;
   using Data = StageDataTpl<Scalar>;
-  using Dynamics = typename Base::Dynamics;
+  using CostAbstract = CostAbstractTpl<Scalar>;
+  using Dynamics = DynamicsModelTpl<Scalar>;
   using CrocActionModel = crocoddyl::ActionModelAbstractTpl<Scalar>;
   using StateWrapper = StateWrapperTpl<Scalar>;
   using ActionDataWrap = ActionDataWrapperTpl<Scalar>;
@@ -65,8 +67,7 @@ struct ActionDataWrapperTpl : public StageDataTpl<Scalar> {
 
   boost::shared_ptr<CrocActionData> croc_action_data;
 
-  ActionDataWrapperTpl(
-      const boost::shared_ptr<CrocActionModel> &croc_action_model);
+  ActionDataWrapperTpl(const ActionModelWrapperTpl<Scalar> &croc_action_model);
 
   void checkData();
 
@@ -80,4 +81,4 @@ protected:
 } // namespace compat
 } // namespace aligator
 
-#include "aligator/compat/crocoddyl/action-model-wrap.hxx"
+#include "aligator/compat/crocoddyl/action-model-wrap.txx"

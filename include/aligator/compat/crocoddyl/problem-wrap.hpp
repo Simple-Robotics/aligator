@@ -31,14 +31,13 @@ TrajOptProblemTpl<Scalar> convertCrocoddylProblem(
 
   // construct the std::vector of StageModel to provide the proxddp
   // TrajOptProblem.
-  std::vector<shared_ptr<StageModel>> stages;
+  std::vector<xyz::polymorphic<StageModel>> stages;
   stages.reserve(nsteps);
   for (std::size_t i = 0; i < nsteps; i++) {
-    stages.push_back(std::make_shared<ActionModelWrapper>(running_models[i]));
+    stages.emplace_back(ActionModelWrapper(running_models[i]));
   }
-  auto converted_cost = std::make_shared<CrocCostModelWrapperTpl<Scalar>>(
-      cpb.get_terminalModel());
-  TrajOptProblemTpl<Scalar> problem(x0, stages, converted_cost);
+  CrocCostModelWrapperTpl<Scalar> term_cost(cpb.get_terminalModel());
+  TrajOptProblemTpl<Scalar> problem(x0, stages, term_cost);
   return problem;
 }
 
