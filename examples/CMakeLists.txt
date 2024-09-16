@@ -18,7 +18,7 @@ endfunction()
 
 function(create_example_with_walk exfile)
   create_example(${exfile})
-  target_link_libraries(${exname} PRIVATE talos_walk_utils)
+  target_add_talos_walk(${exname})
 endfunction()
 
 create_example(se2-car.cpp)

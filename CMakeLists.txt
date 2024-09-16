@@ -396,7 +396,7 @@ if(${pinocchio_VERSION} VERSION_GREATER "2.9.0")
   set(PINOCCHIO_V3 True)
 endif()
 
-if(BUILD_EXAMPLES AND PINOCCHIO_V3)
+if(PINOCCHIO_V3)
   add_library(
     talos_walk_utils STATIC ${PROJECT_SOURCE_DIR}/examples/talos-walk-utils.cpp
                             ${PROJECT_SOURCE_DIR}/examples/talos-walk-utils.hpp
