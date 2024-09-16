@@ -23,7 +23,7 @@ public:
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   using Manifold = ManifoldAbstractTpl<Scalar>;
-  using ManifoldPtr = xyz::polymorphic<Manifold>;
+  using PolyManifold = xyz::polymorphic<Manifold>;
   using Dynamics = DynamicsModelTpl<Scalar>;
   using PolyDynamics = xyz::polymorphic<Dynamics>;
   using FunctionPtr = xyz::polymorphic<StageFunctionTpl<Scalar>>;
@@ -34,11 +34,11 @@ public:
   using Data = StageDataTpl<Scalar>;
 
   /// State space for the current state \f$x_k\f$.
-  ManifoldPtr xspace_;
+  PolyManifold xspace_;
   /// State space for the next state \f$x_{k+1}\f$.
-  ManifoldPtr xspace_next_;
+  PolyManifold xspace_next_;
   /// Control vector space -- by default, a simple Euclidean space.
-  ManifoldPtr uspace_;
+  PolyManifold uspace_;
   /// Constraint manager.
   ConstraintStackTpl<Scalar> constraints_;
   /// Stage cost function.
