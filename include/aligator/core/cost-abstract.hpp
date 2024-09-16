@@ -30,16 +30,15 @@ template <typename _Scalar> struct CostAbstractTpl {
 
   /// @brief Evaluate the cost function.
   virtual void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                        CostData &data) const = 0;
+                        CostData &data) const;
 
   /// @brief Compute the cost gradients \f$(\ell_x, \ell_u)\f$
   virtual void computeGradients(const ConstVectorRef &x,
-                                const ConstVectorRef &u,
-                                CostData &data) const = 0;
+                                const ConstVectorRef &u, CostData &data) const;
 
   /// @brief Compute the cost Hessians \f$(\ell_{ij})_{i,j \in \{x,u\}}\f$
   virtual void computeHessians(const ConstVectorRef &x, const ConstVectorRef &u,
-                               CostData &data) const = 0;
+                               CostData &data) const;
 
   virtual shared_ptr<CostData> createData() const {
     return std::make_shared<CostData>(ndx(), nu);
@@ -47,6 +46,27 @@ template <typename _Scalar> struct CostAbstractTpl {
 
   virtual ~CostAbstractTpl() = default;
 };
+
+template <typename Scalar>
+void CostAbstractTpl<Scalar>::evaluate(const ConstVectorRef &,
+                                       const ConstVectorRef &,
+                                       CostData &) const {
+  ALIGATOR_RUNTIME_ERROR("not implemented");
+}
+
+template <typename Scalar>
+void CostAbstractTpl<Scalar>::computeGradients(const ConstVectorRef &,
+                                               const ConstVectorRef &,
+                                               CostData &) const {
+  ALIGATOR_RUNTIME_ERROR("not implemented");
+}
+
+template <typename Scalar>
+void CostAbstractTpl<Scalar>::computeHessians(const ConstVectorRef &,
+                                              const ConstVectorRef &,
+                                              CostData &) const {
+  ALIGATOR_RUNTIME_ERROR("not implemented");
+}
 
 /// @brief  Data struct for CostAbstractTpl
 template <typename _Scalar> struct CostDataAbstractTpl {
