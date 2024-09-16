@@ -202,9 +202,7 @@ if(BUILD_PYTHON_INTERFACE)
   set(${PYLIB_NAME}_INSTALL_DIR ${PYTHON_SITELIB}/${PROJECT_NAME})
 endif()
 
-add_project_dependency(
-  proxsuite-nlp 0.7.0 REQUIRED PKG_CONFIG_REQUIRES "0.7.0 <= proxsuite-nlp < 0.8.0"
-)
+add_project_dependency(proxsuite-nlp 0.8.0 REQUIRED PKG_CONFIG_REQUIRES "proxsuite-nlp >= 0.8.0")
 
 set(LIB_SOURCES src/utils/logger.cpp)
 

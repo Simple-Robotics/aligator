@@ -13,7 +13,7 @@ dependencies:
   - pinocchio>=3.0.0
   - eigen
   - fmt
-  - proxsuite-nlp
+  - proxsuite-nlp>=0.8.0
   - benchmark
   - crocoddyl
   - example-robot-data
