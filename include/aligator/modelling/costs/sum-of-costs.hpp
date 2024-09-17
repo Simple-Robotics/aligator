@@ -1,6 +1,9 @@
 #pragma once
 
 #include "aligator/core/cost-abstract.hpp"
+// Faster than std::unordered_map with Bost 1.80
+// https://martin.ankerl.com/2022/08/27/hashmap-bench-01/#boost__unordered_map
+#include <boost/unordered_map.hpp>
 
 namespace aligator {
 
@@ -18,12 +21,15 @@ template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using CostBase = CostAbstractTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
-  using CostPtr = xyz::polymorphic<CostBase>;
+  using PolyCost = xyz::polymorphic<CostBase>;
   using SumCostData = CostStackDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
+  using CostItem = std::pair<PolyCost, Scalar>;
+  using CostKey = std::variant<std::size_t, std::string>;
+  using CostMap = boost::unordered::unordered_map<CostKey, CostItem>;
+  using CostIterator = typename CostMap::iterator;
 
-  std::vector<CostPtr> components_;
-  std::vector<Scalar> weights_;
+  CostMap components_;
 
   /// @brief    Check the dimension of a component.
   /// @returns  A bool value indicating whether the component is OK to be added
@@ -33,15 +39,41 @@ template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
   /// @brief  Constructor with a specified dimension, and optional vector of
   /// components and weights.
   CostStackTpl(xyz::polymorphic<Manifold> space, const int nu,
-               const std::vector<CostPtr> &comps = {},
+               const std::vector<PolyCost> &comps = {},
                const std::vector<Scalar> &weights = {});
 
+  CostStackTpl(xyz::polymorphic<Manifold> space, const int nu,
+               const CostMap &comps)
+      : CostBase(space, nu), components_(comps) {
+    for (const auto &[key, item] : comps) {
+      this->checkDimension(item.first);
+    }
+  }
+
   /// @brief  Constructor from a single CostBase instance.
-  CostStackTpl(const CostPtr &cost);
+  CostStackTpl(const PolyCost &cost);
 
-  void addCost(const CostPtr &cost, const Scalar weight = 1.);
+  inline CostItem &addCost(const PolyCost &cost, const Scalar weight = 1.) {
+    const std::size_t size = components_.size();
+    return this->addCost(size, cost, weight);
+  }
 
-  std::size_t size() const;
+  CostItem &addCost(const CostKey &key, const PolyCost &cost,
+                    const Scalar weight = 1.);
+
+  inline std::size_t size() const { return components_.size(); }
+
+  /// @brief Get component, cast down to the specified type.
+  template <typename Derived> Derived *getComponent(const CostKey &key) {
+    CostItem &item = components_.at(key);
+    return dynamic_cast<Derived *>(&*item.first);
+  }
+
+  template <typename Derived>
+  const Derived *getComponent(const CostKey &key) const {
+    CostItem &item = components_.at(key);
+    return dynamic_cast<const Derived *>(&*item.first);
+  }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 CostData &data) const;
@@ -90,15 +122,10 @@ operator+(const xyz::polymorphic<CostStackTpl<T>> &c1, CostPtr<T> &&c2) {
 }
 
 template <typename T>
-xyz::polymorphic<CostStackTpl<T>> operator*(T u, const CostPtr<T> &c1) {
-  return std::make_shared<CostStackTpl<T>>({c1}, {u});
-}
-
-template <typename T>
 xyz::polymorphic<CostStackTpl<T>>
 operator*(T u, xyz::polymorphic<CostStackTpl<T>> &&c1) {
-  for (std::size_t i = 0; i < c1->size(); i++) {
-    c1->weights_[i] *= u;
+  for (auto &[key, item] : c1->components_) {
+    item.second *= u;
   }
   return c1;
 }
@@ -107,7 +134,11 @@ template <typename _Scalar>
 struct CostStackDataTpl : CostDataAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
   using CostData = CostDataAbstractTpl<Scalar>;
-  std::vector<shared_ptr<CostData>> sub_cost_data;
+  using CostStack = CostStackTpl<Scalar>;
+  using CostKey = typename CostStack::CostKey;
+  using DataMap =
+      boost::unordered::unordered_map<CostKey, shared_ptr<CostData>>;
+  DataMap sub_cost_data;
   CostStackDataTpl(const CostStackTpl<Scalar> &obj);
 };
 } // namespace aligator
