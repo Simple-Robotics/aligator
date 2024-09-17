@@ -1,8 +1,9 @@
 /// @file dynamics.hpp
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include "aligator/core/function-abstract.hpp"
+#include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 
 namespace aligator {
 /**
@@ -21,12 +22,12 @@ struct DynamicsModelTpl : StageFunctionTpl<_Scalar> {
   using Base = StageFunctionTpl<Scalar>;
   using Data = DynamicsDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
-  using ManifoldPtr = shared_ptr<Manifold>;
+  using PolyManifold = xyz::polymorphic<Manifold>;
 
   /// State space for the input.
-  ManifoldPtr space_;
+  PolyManifold space_;
   /// State space for the output of this dynamics model.
-  ManifoldPtr space_next_;
+  PolyManifold space_next_;
 
   /// @copybrief space_
   const Manifold &space() const { return *space_; }
@@ -45,7 +46,7 @@ struct DynamicsModelTpl : StageFunctionTpl<_Scalar> {
    * @param   nu    Control dimension
    * @param   ndx2  Next state space dimension.
    */
-  DynamicsModelTpl(ManifoldPtr space, const int nu);
+  DynamicsModelTpl(PolyManifold space, const int nu);
 
   /**
    * @copybrief DynamicsModelTpl This constructor assumes same dimension for the
@@ -54,12 +55,16 @@ struct DynamicsModelTpl : StageFunctionTpl<_Scalar> {
    * @param   space State space for the current, and next node.
    * @param   nu    Control dimension
    */
-  DynamicsModelTpl(ManifoldPtr space, const int nu, ManifoldPtr space2);
+  DynamicsModelTpl(PolyManifold space, const int nu, PolyManifold space2);
+
+  virtual void evaluate(const ConstVectorRef &, const ConstVectorRef &,
+                        const ConstVectorRef &, Data &) const;
+
+  virtual void computeJacobians(const ConstVectorRef &, const ConstVectorRef &,
+                                const ConstVectorRef &, Data &) const;
 };
 
 } // namespace aligator
-
-#include "aligator/core/dynamics.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/core/dynamics.txx"

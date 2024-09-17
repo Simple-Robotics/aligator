@@ -50,24 +50,39 @@ def create_halfspace_z(ndx, nu, offset: float = 0.0, neg: bool = False):
 
 
 class Column(aligator.StageFunction):
-    def __init__(self, ndx, nu, center, radius, margin: float = 0.0) -> None:
+    def __init__(
+        self,
+        rmodel: pin.Model,
+        ndx,
+        nu,
+        center,
+        radius,
+        margin: float = 0.0,
+    ) -> None:
         super().__init__(ndx, nu, 1)
+        self.rmodel = rmodel.copy()
+        self.rdata = self.rmodel.createData()
         self.ndx = ndx
         self.center = center.copy()
         self.radius = radius
         self.margin = margin
 
+    def __getinitargs__(self):
+        return (self.rmodel, self.ndx, self.nu, self.center, self.radius, self.margin)
+
     def evaluate(self, x, u, y, data):  # distance function
         q = x[:nq]
-        pin.forwardKinematics(rmodel, rdata, q)
-        M: pin.SE3 = pin.updateFramePlacement(rmodel, rdata, 1)
+        pin.forwardKinematics(self.rmodel, self.rdata, q)
+        M: pin.SE3 = pin.updateFramePlacement(self.rmodel, self.rdata, 1)
         err = M.translation[:2] - self.center
         res = np.dot(err, err) - (self.radius + self.margin) ** 2
         data.value[:] = -res
 
     def computeJacobians(self, x, u, y, data):
         q = x[:nq]
-        J = pin.computeFrameJacobian(rmodel, rdata, q, 1, pin.LOCAL_WORLD_ALIGNED)
+        J = pin.computeFrameJacobian(
+            self.rmodel, self.rdata, q, 1, pin.LOCAL_WORLD_ALIGNED
+        )
         err = x[:2] - self.center
         data.Jx[:nv] = -2 * J[:2].T @ err
 
@@ -102,10 +117,10 @@ def main(args: Args):
         center_column2 = np.array([0.4, 2.4, 0.0])
 
         geom_cyl1 = pin.GeometryObject(
-            "column1", 0, pin.SE3(ROT_NULL, center_column1), cylinder
+            "column1", 0, cylinder, pin.SE3(ROT_NULL, center_column1)
         )
         geom_cyl2 = pin.GeometryObject(
-            "column2", 0, pin.SE3(ROT_NULL, center_column2), cylinder
+            "column2", 0, cylinder, pin.SE3(ROT_NULL, center_column2)
         )
         cyl_color1 = np.array([1.0, 0.2, 1.0, 0.4])
         cyl_color2 = np.array([0.2, 1.0, 1.0, 0.4])
@@ -120,7 +135,7 @@ def main(args: Args):
         # 1st arg is the plane normal
         # 2nd arg is offset from origin
         plane = fcl.Plane(np.array([0.0, 0.0, 1.0]), 0.0)
-        plane_obj = pin.GeometryObject("plane", 0, pin.SE3.Identity(), plane)
+        plane_obj = pin.GeometryObject("plane", 0, plane, pin.SE3.Identity())
         plane_obj.meshColor[:] = [1.0, 1.0, 0.95, 1.0]
         plane_obj.meshScale[:] = 2.0
         robot.visual_model.addGeometryObject(plane_obj)
@@ -131,16 +146,16 @@ def main(args: Args):
         objective_color = np.array([5, 104, 143, 200]) / 255.0
         if args.obstacles:
             sp1_obj = pin.GeometryObject(
-                "obj1", 0, pin.SE3(ROT_NULL, x_tar3[:3]), fcl.Sphere(0.05)
+                "obj1", 0, fcl.Sphere(0.05), pin.SE3(ROT_NULL, x_tar3[:3])
             )
             sp1_obj.meshColor[:] = objective_color
             robot.visual_model.addGeometryObject(sp1_obj)
         else:
             sp1_obj = pin.GeometryObject(
-                "obj1", 0, pin.SE3(ROT_NULL, x_tar1[:3]), fcl.Sphere(0.05)
+                "obj1", 0, fcl.Sphere(0.05), pin.SE3(ROT_NULL, x_tar1[:3])
             )
             sp2_obj = pin.GeometryObject(
-                "obj2", 0, pin.SE3(ROT_NULL, x_tar2[:3]), fcl.Sphere(0.05)
+                "obj2", 0, fcl.Sphere(0.05), pin.SE3(ROT_NULL, x_tar2[:3])
             )
             sp1_obj.meshColor[:] = objective_color
             sp2_obj.meshColor[:] = objective_color
@@ -149,8 +164,6 @@ def main(args: Args):
 
     robot.collision_model.geometryObjects[0].geometry.computeLocalAABB()
     quad_radius = robot.collision_model.geometryObjects[0].geometry.aabb_radius
-
-    space = manifolds.MultibodyPhaseSpace(rmodel)
 
     # The matrix below maps rotor controls to torques
 
@@ -167,10 +180,11 @@ def main(args: Args):
     )
     nu = QUAD_ACT_MATRIX.shape[1]  # = no. of nrotors
 
+    space = manifolds.MultibodyPhaseSpace(rmodel)
     ode_dynamics = aligator.dynamics.MultibodyFreeFwdDynamics(space, QUAD_ACT_MATRIX)
 
-    dt = 0.033
-    Tf = 1.5
+    dt = 0.02
+    Tf = 1.0
     nsteps = int(Tf / dt)
     print("nsteps: {:d}".format(nsteps))
 
@@ -193,7 +207,7 @@ def main(args: Args):
         )
 
     tau = pin.rnea(rmodel, rdata, robot.q0, np.zeros(nv), np.zeros(nv))
-    u0, _, _, _ = np.linalg.lstsq(QUAD_ACT_MATRIX, tau)
+    u0, _, _, _ = np.linalg.lstsq(QUAD_ACT_MATRIX, tau, rcond=-1)
 
     us_init = [u0] * nsteps
     xs_init = aligator.rollout(dynmodel, x0, us_init)
@@ -246,11 +260,16 @@ def main(args: Args):
 
     task_schedule = get_task_schedule()
 
-    def setup():
+    def setup() -> aligator.TrajOptProblem:
         w_u = np.eye(nu) * 1e-1
 
+        wterm, x_tar = task_schedule(nsteps)
+        if not args.term_cstr:
+            wterm *= 12.0
+        term_cost = aligator.QuadraticStateCost(space, nu, x_tar, np.diag(wterm))
+        prob = aligator.TrajOptProblem(x0, nu, space, term_cost=term_cost)
+
         floor = create_halfspace_z(space.ndx, nu, 0.0, True)
-        stages = []
         if args.bounds:
             u_identity_fn = aligator.ControlErrorResidual(space.ndx, np.zeros(nu))
             box_set = constraints.BoxConstraint(u_min, u_max)
@@ -273,21 +292,13 @@ def main(args: Args):
                 stage.addConstraint(ctrl_cstr)
             if args.obstacles:  # add obstacles' constraints
                 column1 = Column(
-                    space.ndx, nu, center_column1[:2], cyl_radius, quad_radius
-                )
-                column2 = Column(
-                    space.ndx, nu, center_column2[:2], cyl_radius, quad_radius
+                    rmodel, space.ndx, nu, center_column1[:2], cyl_radius, quad_radius
                 )
                 stage.addConstraint(floor, constraints.NegativeOrthant())
                 stage.addConstraint(column1, constraints.NegativeOrthant())
-                stage.addConstraint(column2, constraints.NegativeOrthant())
-            stages.append(stage)
-
-        wterm, x_tar = task_schedule(nsteps)
-        if not args.term_cstr:
-            wterm *= 12.0
-        term_cost = aligator.QuadraticStateCost(space, nu, x_tar, np.diag(wterm))
-        prob = aligator.TrajOptProblem(x0, stages, term_cost=term_cost)
+                # column2 = Column(space, nu, center_column2[:2], cyl_radius, quad_radius)
+                # stage.addConstraint(column2, constraints.NegativeOrthant())
+            prob.addStage(stage)
         if args.term_cstr:
             term_cstr = aligator.StageConstraint(
                 aligator.StateErrorResidual(space, nu, x_tar),

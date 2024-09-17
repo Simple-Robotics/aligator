@@ -24,11 +24,11 @@ struct QuadraticResidualCostTpl : CostAbstractTpl<_Scalar> {
   using Manifold = ManifoldAbstractTpl<Scalar>;
 
   MatrixXs weights_;
-  shared_ptr<StageFunction> residual_;
+  xyz::polymorphic<StageFunction> residual_;
   bool gauss_newton = true;
 
-  QuadraticResidualCostTpl(shared_ptr<Manifold> space,
-                           shared_ptr<StageFunction> function,
+  QuadraticResidualCostTpl(xyz::polymorphic<Manifold> space,
+                           xyz::polymorphic<StageFunction> function,
                            const ConstMatrixRef &weights);
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,

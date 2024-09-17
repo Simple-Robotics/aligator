@@ -1,14 +1,16 @@
 #include "aligator/python/fwd.hpp"
 
 #include "aligator/core/constraint.hpp"
+#include <proxsuite-nlp/python/polymorphic.hpp>
 #include <proxsuite-nlp/constraint-base.hpp>
 
 namespace aligator {
 namespace python {
+using PolyFunc = xyz::polymorphic<context::StageFunction>;
+using PolySet = xyz::polymorphic<context::ConstraintSet>;
 
-context::StageConstraint *
-make_constraint_wrap(const shared_ptr<context::StageFunction> &f,
-                     const shared_ptr<context::ConstraintSet> &c) {
+context::StageConstraint *make_constraint_wrap(const PolyFunc &f,
+                                               const PolySet &c) {
   return new context::StageConstraint{f, c};
 }
 
@@ -16,6 +18,7 @@ void exposeConstraint() {
   using context::ConstraintSet;
   using context::ConstraintStack;
   using context::StageConstraint;
+  using context::StageFunction;
 
   bp::class_<StageConstraint>(
       "StageConstraint",
@@ -31,18 +34,21 @@ void exposeConstraint() {
            "set.")
       .def_readwrite("func", &StageConstraint::func)
       .def_readwrite("set", &StageConstraint::set)
-      .add_property("nr", &StageConstraint::nr, "Get constraint dimension.");
+      .add_property(
+          "nr", +[](StageConstraint const &el) { return el.func->nr; },
+          "Get constraint dimension.");
 
   bp::class_<ConstraintStack>("ConstraintStack", "The stack of constraint.",
                               bp::no_init)
+      .def(bp::init<>("self"_a))
       .add_property("size", &ConstraintStack::size,
                     "Get number of individual constraints.")
+      .def_readonly("funcs", &ConstraintStack::funcs)
+      .def_readonly("sets", &ConstraintStack::sets)
       .add_property("dims",
                     bp::make_function(&ConstraintStack::dims,
                                       bp::return_internal_reference<>()),
                     "Get the individual dimensions of all constraints.")
-      .def(eigenpy::details::overload_base_get_item_for_std_vector<
-           ConstraintStack>())
       .add_property("total_dim", &ConstraintStack::totalDim,
                     "Get total dimension of all constraints.");
 }

@@ -4,6 +4,7 @@
 
 #include "./solver-fddp.hpp"
 #include "./linesearch.hpp"
+#include "aligator/core/stage-data.hpp"
 
 #include <fmt/ranges.h>
 
@@ -30,8 +31,8 @@ void SolverFDDPTpl<Scalar>::setup(const Problem &problem) {
   // check if there are any constraints other than dynamics and throw a warning
   std::vector<std::size_t> idx_where_constraints;
   for (std::size_t i = 0; i < problem.numSteps(); i++) {
-    const shared_ptr<StageModel> &sm = problem.stages_[i];
-    if (!sm->constraints_.empty())
+    const StageModel &sm = *problem.stages_[i];
+    if (!sm.constraints_.empty())
       idx_where_constraints.push_back(i);
   }
   if (idx_where_constraints.size() > 0) {
@@ -218,7 +219,7 @@ void SolverFDDPTpl<Scalar>::backwardPass(const Problem &problem,
     const VParams &vnext = workspace.value_params[i + 1];
     QParams &qparam = workspace.q_params[i];
 
-    StageModel &sm = *problem.stages_[i];
+    StageModel sm = *problem.stages_[i];
     StageData &sd = *prob_data.stage_data[i];
 
     const int nu = sm.nu();
@@ -254,16 +255,6 @@ void SolverFDDPTpl<Scalar>::backwardPass(const Problem &problem,
     llt.compute(qparam.Quu);
     llt.solveInPlace(kkt_rhs);
 
-#ifndef NDEBUG
-    {
-      ALIGATOR_NOMALLOC_END;
-      std::FILE *fi = std::fopen("fddp.log", "a");
-      fmt::print(fi, "uff[{:d}]={}\n", i, kkt_ff.head(nu).transpose());
-      fmt::print(fi, "V'x[{:d}]={}\n", i, vnext.Vx_.transpose());
-      std::fclose(fi);
-      ALIGATOR_NOMALLOC_BEGIN;
-    }
-#endif
     workspace.Quuks_[i].noalias() = qparam.Quu * kkt_ff;
 
     /* Compute value function */
@@ -287,11 +278,6 @@ bool SolverFDDPTpl<Scalar>::run(const Problem &problem,
                                 const std::vector<VectorXs> &xs_init,
                                 const std::vector<VectorXs> &us_init) {
   preg_ = reg_init;
-
-#ifndef NDEBUG
-  std::FILE *fi = std::fopen("fddp.log", "w");
-  std::fclose(fi);
-#endif
 
   if (!results_.isInitialized() || !workspace_.isInitialized()) {
     ALIGATOR_RUNTIME_ERROR(
@@ -405,4 +391,12 @@ bool SolverFDDPTpl<Scalar>::run(const Problem &problem,
   logger.finish(results_.conv);
   return results_.conv;
 }
+
+template <typename Scalar>
+auto SolverFDDPTpl<Scalar>::stage_get_dynamics_data(
+    const StageDataTpl<Scalar> &data) -> const ExplicitDynamicsData & {
+  const DynamicsDataTpl<Scalar> &dd = *data.dynamics_data;
+  return static_cast<const ExplicitDynamicsData &>(dd);
+}
+
 } // namespace aligator

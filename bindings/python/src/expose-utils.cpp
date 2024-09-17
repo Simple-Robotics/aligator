@@ -13,15 +13,15 @@ void exposeUtils() {
       const context::VectorOfVectors &);
 
   using rollout_vec_generic_t = context::VectorOfVectors (*)(
-      const std::vector<shared_ptr<DynamicsType>> &, const context::VectorXs &,
-      const context::VectorOfVectors &);
+      const std::vector<xyz::polymorphic<DynamicsType>> &,
+      const context::VectorXs &, const context::VectorOfVectors &);
 
   using rollout_explicit_t = context::VectorOfVectors (*)(
       const ExplicitDynamics &, const context::VectorXs &,
       const context::VectorOfVectors &);
 
   using rollout_vec_explicit_t = context::VectorOfVectors (*)(
-      const std::vector<shared_ptr<ExplicitDynamics>> &,
+      const std::vector<xyz::polymorphic<ExplicitDynamics>> &,
       const context::VectorXs &, const context::VectorOfVectors &);
 
   bp::def<rollout_generic_t>(

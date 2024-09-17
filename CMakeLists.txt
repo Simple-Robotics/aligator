@@ -197,14 +197,12 @@ add_project_dependency(Boost REQUIRED COMPONENTS ${BOOST_REQUIRED_COMPONENTS})
 if(BUILD_PYTHON_INTERFACE)
   set(PYTHON_COMPONENTS Interpreter Development NumPy)
   findpython(REQUIRED)
-  add_project_dependency(eigenpy 3.4.0 REQUIRED PKG_CONFIG_REQUIRES "eigenpy >= 3.4.0")
+  add_project_dependency(eigenpy 3.7.0 REQUIRED PKG_CONFIG_REQUIRES "eigenpy >= 3.7.0")
   set(PYLIB_NAME "py${PROJECT_NAME}")
   set(${PYLIB_NAME}_INSTALL_DIR ${PYTHON_SITELIB}/${PROJECT_NAME})
 endif()
 
-add_project_dependency(
-  proxsuite-nlp 0.7.0 REQUIRED PKG_CONFIG_REQUIRES "0.7.0 <= proxsuite-nlp < 0.8.0"
-)
+add_project_dependency(proxsuite-nlp 0.8.0 REQUIRED PKG_CONFIG_REQUIRES "proxsuite-nlp >= 0.8.0")
 
 set(LIB_SOURCES src/utils/logger.cpp)
 

@@ -39,11 +39,11 @@ TrajOptProblem define_problem(const std::size_t nsteps, const int dim = 56,
 
   using Dynamics = dynamics::LinearDiscreteDynamicsTpl<T>;
   using QuadCost = QuadraticCostTpl<T>;
-  auto dynptr = std::make_shared<Dynamics>(A, B, c_);
-  auto space = dynptr->space_next_;
+  auto dynptr = Dynamics(A, B, c_);
+  auto space = dynptr.space_next_;
 
-  auto rcost = std::make_shared<QuadCost>(w_x, w_u);
-  auto stage = std::make_shared<StageModel>(rcost, dynptr);
+  auto rcost = QuadCost(w_x, w_u);
+  auto stage = StageModel(rcost, dynptr);
   auto term_cost = rcost;
 
   VectorXd x0(dim);

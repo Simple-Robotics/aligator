@@ -4,9 +4,10 @@
 
 #include "aligator/fwd.hpp"
 #include "aligator/core/traj-opt-problem.hpp"
-#include "aligator/core/alm-weights.hpp"
 
 namespace aligator {
+
+template <typename Scalar> class ConstraintProximalScalerTpl;
 
 template <typename Scalar>
 Scalar costDirectionalDerivative(const WorkspaceTpl<Scalar> &workspace,
@@ -69,8 +70,6 @@ template <typename _Scalar> struct PDALFunction {
 };
 
 } // namespace aligator
-
-#include "merit-function.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "merit-function.txx"

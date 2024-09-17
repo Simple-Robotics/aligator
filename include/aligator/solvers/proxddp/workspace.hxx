@@ -1,5 +1,6 @@
 /// @file
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @brief Implementation file, to be included when necessary.
 #pragma once
 
 #include "./workspace.hpp"
@@ -111,14 +112,6 @@ template <typename Scalar> void WorkspaceTpl<Scalar>::cycleLeft() {
   rotate_vec_left(prev_lams, 1);
 
   rotate_vec_left(stage_infeasibilities, 0, 1);
-}
-
-template <typename Scalar>
-std::ostream &operator<<(std::ostream &oss, const WorkspaceTpl<Scalar> &self) {
-  oss << "Workspace {" << fmt::format("\n  nsteps:         {:d}", self.nsteps)
-      << fmt::format("\n  n_multipliers:  {:d}", self.lams_pdal.size());
-  oss << "\n}";
-  return oss;
 }
 
 } // namespace aligator

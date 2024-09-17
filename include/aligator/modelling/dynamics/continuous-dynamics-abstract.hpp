@@ -6,6 +6,7 @@
 #include "aligator/fwd.hpp"
 #include "aligator/modelling/dynamics/fwd.hpp"
 #include <proxsuite-nlp/manifold-base.hpp>
+#include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 
 namespace aligator {
 namespace dynamics {
@@ -18,8 +19,8 @@ namespace dynamics {
 template <typename _Scalar> struct ContinuousDynamicsAbstractTpl {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using Manifold = ManifoldAbstractTpl<Scalar>;
-  using ManifoldPtr = shared_ptr<Manifold>;
+  using Manifold = proxsuite::nlp::ManifoldAbstractTpl<Scalar>;
+  using ManifoldPtr = xyz::polymorphic<Manifold>;
   using Data = ContinuousDynamicsDataTpl<Scalar>;
 
   /// State space.

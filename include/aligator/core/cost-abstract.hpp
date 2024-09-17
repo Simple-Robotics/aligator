@@ -4,8 +4,8 @@
 #pragma once
 
 #include "aligator/fwd.hpp"
-#include "aligator/core/clone.hpp"
 #include <proxsuite-nlp/manifold-base.hpp>
+#include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 
 namespace aligator {
 /** @brief Stage costs \f$ \ell(x, u) \f$ for control problems.
@@ -17,28 +17,28 @@ template <typename _Scalar> struct CostAbstractTpl {
   using Manifold = ManifoldAbstractTpl<Scalar>;
 
   /// @brief State dimension
-  shared_ptr<Manifold> space;
+  xyz::polymorphic<Manifold> space;
   /// @brief Control dimension
   int nu;
 
   int nx() const { return space->nx(); }
   int ndx() const { return space->ndx(); }
 
-  CostAbstractTpl(shared_ptr<Manifold> space, const int nu)
-      : space(space), nu(nu) {}
+  template <class U>
+  CostAbstractTpl(U &&space, const int nu)
+      : space(std::forward<U>(space)), nu(nu) {}
 
   /// @brief Evaluate the cost function.
   virtual void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                        CostData &data) const = 0;
+                        CostData &data) const;
 
   /// @brief Compute the cost gradients \f$(\ell_x, \ell_u)\f$
   virtual void computeGradients(const ConstVectorRef &x,
-                                const ConstVectorRef &u,
-                                CostData &data) const = 0;
+                                const ConstVectorRef &u, CostData &data) const;
 
   /// @brief Compute the cost Hessians \f$(\ell_{ij})_{i,j \in \{x,u\}}\f$
   virtual void computeHessians(const ConstVectorRef &x, const ConstVectorRef &u,
-                               CostData &data) const = 0;
+                               CostData &data) const;
 
   virtual shared_ptr<CostData> createData() const {
     return std::make_shared<CostData>(ndx(), nu);
@@ -46,6 +46,27 @@ template <typename _Scalar> struct CostAbstractTpl {
 
   virtual ~CostAbstractTpl() = default;
 };
+
+template <typename Scalar>
+void CostAbstractTpl<Scalar>::evaluate(const ConstVectorRef &,
+                                       const ConstVectorRef &,
+                                       CostData &) const {
+  ALIGATOR_RUNTIME_ERROR("not implemented");
+}
+
+template <typename Scalar>
+void CostAbstractTpl<Scalar>::computeGradients(const ConstVectorRef &,
+                                               const ConstVectorRef &,
+                                               CostData &) const {
+  ALIGATOR_RUNTIME_ERROR("not implemented");
+}
+
+template <typename Scalar>
+void CostAbstractTpl<Scalar>::computeHessians(const ConstVectorRef &,
+                                              const ConstVectorRef &,
+                                              CostData &) const {
+  ALIGATOR_RUNTIME_ERROR("not implemented");
+}
 
 /// @brief  Data struct for CostAbstractTpl
 template <typename _Scalar> struct CostDataAbstractTpl {

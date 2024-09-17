@@ -6,8 +6,8 @@
 namespace aligator {
 template <typename Scalar>
 ExplicitDynamicsModelTpl<Scalar>::ExplicitDynamicsModelTpl(
-    ManifoldPtr next_state, const int nu)
-    : Base(next_state, nu, next_state) {}
+    const ManifoldPtr &space, const int nu)
+    : Base(space, nu, space) {}
 
 template <typename Scalar>
 void ExplicitDynamicsModelTpl<Scalar>::evaluate(const ConstVectorRef &x,

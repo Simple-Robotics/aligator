@@ -6,6 +6,8 @@
 #include <pinocchio/multibody/model.hpp>
 #include <pinocchio/multibody/frame.hpp>
 
+#include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
+
 namespace aligator {
 
 template <typename Scalar> struct FramePlacementDataTpl;
@@ -19,14 +21,14 @@ public:
   ALIGATOR_UNARY_FUNCTION_INTERFACE(Scalar);
   using BaseData = StageFunctionDataTpl<Scalar>;
   using Model = pinocchio::ModelTpl<Scalar>;
-  using ManifoldPtr = shared_ptr<ManifoldAbstractTpl<Scalar>>;
+  using PolyManifold = xyz::polymorphic<ManifoldAbstractTpl<Scalar>>;
   using SE3 = pinocchio::SE3Tpl<Scalar>;
   using Data = FramePlacementDataTpl<Scalar>;
 
-  shared_ptr<Model> pin_model_;
+  Model pin_model_;
 
-  FramePlacementResidualTpl(const int ndx, const int nu,
-                            const shared_ptr<Model> &model, const SE3 &frame,
+  FramePlacementResidualTpl(const int ndx, const int nu, const Model &model,
+                            const SE3 &frame,
                             const pinocchio::FrameIndex frame_id)
       : Base(ndx, nu, 6), pin_model_(model), p_ref_(frame),
         p_ref_inverse_(frame.inverse()) {

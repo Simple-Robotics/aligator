@@ -32,8 +32,8 @@ print("Velocity limit (before): {}".format(robot.model.velocityLimit))
 
 
 def load_projectile_model():
-    ball_urdf = Path("examples") / "mug.urdf"
-    packages_dirs = ["examples"]
+    ball_urdf = Path(__file__).parent / "mug.urdf"
+    packages_dirs = [str(Path(__file__).parent)]
     ball_scale = 1.0
     model, cmodel, vmodel = pin.buildModelsFromUrdf(
         str(ball_urdf),

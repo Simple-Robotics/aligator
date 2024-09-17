@@ -21,8 +21,8 @@ struct finite_difference_impl : virtual _Base<_Scalar> {
   using BaseData = typename Base::Data;
   using Manifold = ManifoldAbstractTpl<Scalar>;
 
-  shared_ptr<Manifold> space_;
-  shared_ptr<Base> func_;
+  xyz::polymorphic<Manifold> space_;
+  xyz::polymorphic<Base> func_;
   Scalar fd_eps;
   int nx1, nx2;
 
@@ -49,15 +49,16 @@ struct finite_difference_impl : virtual _Base<_Scalar> {
 
   template <typename U = Base, class = std::enable_if_t<
                                    std::is_same_v<U, StageFunctionTpl<Scalar>>>>
-  finite_difference_impl(shared_ptr<Manifold> space, shared_ptr<U> func,
-                         const Scalar fd_eps)
+  finite_difference_impl(xyz::polymorphic<Manifold> space,
+                         xyz::polymorphic<U> func, const Scalar fd_eps)
       : Base(func->ndx1, func->nu, func->ndx2, func->nr), space_(space),
         func_(func), fd_eps(fd_eps), nx1(space->nx()), nx2(space->nx()) {}
 
   template <typename U = Base, class = std::enable_if_t<
                                    std::is_same_v<U, DynamicsModelTpl<Scalar>>>>
-  finite_difference_impl(shared_ptr<Manifold> space, shared_ptr<U> func,
-                         const Scalar fd_eps, boost::mpl::false_ = {})
+  finite_difference_impl(xyz::polymorphic<Manifold> space,
+                         xyz::polymorphic<U> func, const Scalar fd_eps,
+                         boost::mpl::false_ = {})
       : Base(space, func->nu, space), space_(space), func_(func),
         fd_eps(fd_eps), nx1(space->nx()), nx2(space->nx()) {}
 
@@ -132,8 +133,9 @@ struct FiniteDifferenceHelper
 
   ALIGATOR_DYNAMIC_TYPEDEFS(_Scalar);
 
-  FiniteDifferenceHelper(shared_ptr<Manifold> space,
-                         shared_ptr<StageFunction> func, const Scalar fd_eps)
+  FiniteDifferenceHelper(xyz::polymorphic<Manifold> space,
+                         xyz::polymorphic<StageFunction> func,
+                         const Scalar fd_eps)
       : StageFunction(func->ndx1, func->nu, func->ndx2, func->nr),
         Base(space, func, fd_eps) {}
 };
@@ -152,8 +154,8 @@ struct DynamicsFiniteDifferenceHelper
 
   ALIGATOR_DYNAMIC_TYPEDEFS(_Scalar);
 
-  DynamicsFiniteDifferenceHelper(shared_ptr<Manifold> space,
-                                 shared_ptr<DynamicsModel> func,
+  DynamicsFiniteDifferenceHelper(xyz::polymorphic<Manifold> space,
+                                 xyz::polymorphic<DynamicsModel> func,
                                  const Scalar fd_eps)
       : DynamicsModel(space, func->nu, space), Base(space, func, fd_eps) {}
 };
@@ -181,7 +183,8 @@ struct CostFiniteDifferenceHelper : CostAbstractTpl<Scalar> {
     }
   };
 
-  CostFiniteDifferenceHelper(shared_ptr<CostBase> cost, const Scalar fd_eps)
+  CostFiniteDifferenceHelper(xyz::polymorphic<CostBase> cost,
+                             const Scalar fd_eps)
 
       : CostBase(cost->space, cost->nu), cost_(cost), fd_eps(fd_eps) {}
 
@@ -229,7 +232,7 @@ struct CostFiniteDifferenceHelper : CostAbstractTpl<Scalar> {
     return std::make_shared<Data>(*this);
   }
 
-  shared_ptr<CostBase> cost_;
+  xyz::polymorphic<CostBase> cost_;
   Scalar fd_eps;
 };
 

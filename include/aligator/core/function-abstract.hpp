@@ -1,20 +1,15 @@
-/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 /// @file function-abstract.hpp
 /// @brief  Base definitions for ternary functions.
 #pragma once
 
 #include "aligator/fwd.hpp"
-#include "aligator/core/clone.hpp"
-
-#include <fmt/format.h>
 #include <ostream>
 
 namespace aligator {
 
 /// @brief    Class representing ternary functions \f$f(x,u,x')\f$.
-template <typename _Scalar>
-struct StageFunctionTpl
-    : std::enable_shared_from_this<StageFunctionTpl<_Scalar>> {
+template <typename _Scalar> struct StageFunctionTpl {
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
@@ -83,8 +78,7 @@ public:
 };
 
 /// @brief  Base struct for function data.
-template <typename _Scalar>
-struct StageFunctionDataTpl : Cloneable<StageFunctionDataTpl<_Scalar>> {
+template <typename _Scalar> struct StageFunctionDataTpl {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -123,20 +117,13 @@ struct StageFunctionDataTpl : Cloneable<StageFunctionDataTpl<_Scalar>> {
   StageFunctionDataTpl(const int ndx1, const int nu, const int ndx2,
                        const int nr);
   virtual ~StageFunctionDataTpl() = default;
-
-  template <typename T>
-  friend std::ostream &operator<<(std::ostream &oss,
-                                  const StageFunctionDataTpl<T> &self);
-
-protected:
-  virtual StageFunctionDataTpl *clone_impl() const {
-    return new StageFunctionDataTpl(*this);
-  }
 };
 
-} // namespace aligator
+template <typename T>
+std::ostream &operator<<(std::ostream &oss,
+                         const StageFunctionDataTpl<T> &self);
 
-#include "aligator/core/function-abstract.hxx"
+} // namespace aligator
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/core/function-abstract.txx"

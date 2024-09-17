@@ -196,10 +196,7 @@ public:
            const std::vector<VectorXs> &us_init = {});
 
   static const ExplicitDynamicsData &
-  stage_get_dynamics_data(const StageDataTpl<Scalar> &data) {
-    const DynamicsDataTpl<Scalar> &dd = *data.dynamics_data;
-    return static_cast<const ExplicitDynamicsData &>(dd);
-  }
+  stage_get_dynamics_data(const StageDataTpl<Scalar> &data);
 };
 
 } // namespace aligator

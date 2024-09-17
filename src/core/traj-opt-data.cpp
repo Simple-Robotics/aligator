@@ -1,6 +1,4 @@
-#include "aligator/core/traj-opt-data.hpp"
-#include "aligator/core/traj-opt-problem.hpp"
-#include "aligator/core/cost-abstract.hpp"
+#include "aligator/core/traj-opt-data.hxx" // impl file
 
 namespace aligator {
 

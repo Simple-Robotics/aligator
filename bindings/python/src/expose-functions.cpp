@@ -18,11 +18,12 @@ using context::MatrixXs;
 using context::Scalar;
 using context::StageFunction;
 using context::StageFunctionData;
+using context::UnaryFunction;
 using context::VectorXs;
-using internal::PyStageFunction;
-using FunctionPtr = shared_ptr<StageFunction>;
+using PolyFunction = xyz::polymorphic<StageFunction>;
 using StateErrorResidual = StateErrorResidualTpl<Scalar>;
 using ControlErrorResidual = ControlErrorResidualTpl<Scalar>;
+PolymorphicMultiBaseVisitor<StageFunction> func_visitor;
 
 /// Required trampoline class
 struct FunctionDataWrapper : StageFunctionData, bp::wrapper<StageFunctionData> {
@@ -30,9 +31,7 @@ struct FunctionDataWrapper : StageFunctionData, bp::wrapper<StageFunctionData> {
 };
 
 void exposeFunctionBase() {
-
-  bp::register_ptr_to_python<FunctionPtr>();
-
+  register_polymorphic_to_python<PolyFunction>();
   bp::class_<PyStageFunction<>, boost::noncopyable>(
       "StageFunction",
       "Base class for ternary functions f(x,u,x') on a stage of the problem.",
@@ -54,8 +53,10 @@ void exposeFunctionBase() {
       .def_readonly("nu", &StageFunction::nu, "Control dimension.")
       .def_readonly("nr", &StageFunction::nr, "Function codimension.")
       .def(SlicingVisitor<StageFunction>())
+      .def(func_visitor)
       .def(CreateDataPolymorphicPythonVisitor<StageFunction,
-                                              PyStageFunction<>>());
+                                              PyStageFunction<>>())
+      .enable_pickling_(true);
 
   bp::register_ptr_to_python<shared_ptr<StageFunctionData>>();
 
@@ -121,11 +122,12 @@ void exposeFunctionBase() {
                           bp::return_value_policy<bp::return_by_value>()),
           "Hessian with respect to $(y, y)$.")
       .def(PrintableVisitor<StageFunctionData>())
-      .def(PrintAddressVisitor<StageFunctionData>())
-      .def(ClonePythonVisitor<StageFunctionData>());
+      .def(PrintAddressVisitor<StageFunctionData>());
 
-  StdVectorPythonVisitor<std::vector<FunctionPtr>, true>::expose(
-      "StdVec_StageFunction");
+  StdVectorPythonVisitor<std::vector<PolyFunction>, true>::expose(
+      "StdVec_StageFunction",
+      eigenpy::details::overload_base_get_item_for_std_vector<
+          std::vector<PolyFunction>>{});
   StdVectorPythonVisitor<std::vector<shared_ptr<StageFunctionData>>,
                          true>::expose("StdVec_StageFunctionData");
 }
@@ -141,23 +143,26 @@ void exposeFunctions() {
   exposeUnaryFunctions();
   exposeFunctionExpressions();
 
-  bp::class_<StateErrorResidual, bp::bases<context::UnaryFunction>>(
-      "StateErrorResidual", bp::init<const shared_ptr<context::Manifold> &,
-                                     const int, const context::VectorXs &>(
-                                bp::args("self", "space", "nu", "target")))
+  bp::class_<StateErrorResidual, bp::bases<UnaryFunction>>(
+      "StateErrorResidual",
+      bp::init<const xyz::polymorphic<context::Manifold> &, const int,
+               const context::VectorXs &>(
+          bp::args("self", "space", "nu", "target")))
       .def_readonly("space", &StateErrorResidual::space_)
-      .def_readwrite("target", &StateErrorResidual::target_);
+      .def_readwrite("target", &StateErrorResidual::target_)
+      .def(PolymorphicMultiBaseVisitor<UnaryFunction, StageFunction>());
 
   bp::class_<ControlErrorResidual, bp::bases<StageFunction>>(
       "ControlErrorResidual",
-      bp::init<const int, const shared_ptr<context::Manifold> &,
+      bp::init<const int, const xyz::polymorphic<context::Manifold> &,
                const context::VectorXs &>(
           bp::args("self", "ndx", "uspace", "target")))
       .def(bp::init<const int, const context::VectorXs &>(
           bp::args("self", "ndx", "target")))
       .def(bp::init<int, int>(bp::args("self", "ndx", "nu")))
       .def_readonly("space", &ControlErrorResidual::space_)
-      .def_readwrite("target", &ControlErrorResidual::target_);
+      .def_readwrite("target", &ControlErrorResidual::target_)
+      .def(func_visitor);
 
   using LinearFunction = LinearFunctionTpl<Scalar>;
   bp::class_<LinearFunction, bp::bases<StageFunction>>(
@@ -173,14 +178,16 @@ void exposeFunctions() {
       .def_readonly("A", &LinearFunction::A_)
       .def_readonly("B", &LinearFunction::B_)
       .def_readonly("C", &LinearFunction::C_)
-      .def_readonly("d", &LinearFunction::d_);
+      .def_readonly("d", &LinearFunction::d_)
+      .def(func_visitor);
 
   bp::class_<ControlBoxFunctionTpl<Scalar>, bp::bases<StageFunction>>(
       "ControlBoxFunction",
       bp::init<const int, const VectorXs &, const VectorXs &>(
           bp::args("self", "ndx", "umin", "umax")))
       .def(bp::init<const int, const int, const Scalar, const Scalar>(
-          bp::args("self", "ndx", "nu", "umin", "umax")));
+          bp::args("self", "ndx", "nu", "umin", "umax")))
+      .def(func_visitor);
 }
 
 } // namespace python

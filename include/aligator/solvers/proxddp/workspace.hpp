@@ -10,17 +10,15 @@
 #include <proxsuite-nlp/modelling/constraints.hpp>
 
 namespace aligator {
-namespace {
-using proxsuite::nlp::ConstraintSetProductTpl;
-} // namespace
 
 template <typename Scalar>
 auto getConstraintProductSet(const ConstraintStackTpl<Scalar> &constraints) {
-  std::vector<ConstraintSetBase<Scalar> *> components;
+  std::vector<xyz::polymorphic<ConstraintSetBase<Scalar>>> components;
   for (size_t i = 0; i < constraints.size(); i++) {
-    components.push_back(constraints[i].set.get());
+    components.push_back(constraints.sets[i]);
   }
-  return ConstraintSetProductTpl<Scalar>{components, constraints.dims()};
+  return proxsuite::nlp::ConstraintSetProductTpl<Scalar>{components,
+                                                         constraints.dims()};
 }
 
 /// @brief Workspace for solver SolverProxDDP.
@@ -34,7 +32,7 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using VecBool = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
   using CstrProxScaler = ConstraintProximalScalerTpl<Scalar>;
   using KnotType = gar::LQRKnotTpl<Scalar>;
-  using ConstraintSetProduct = ConstraintSetProductTpl<Scalar>;
+  using ConstraintSetProduct = proxsuite::nlp::ConstraintSetProductTpl<Scalar>;
   using BlkJacobianType = BlkMatrix<MatrixXs, -1, 2>; // jacobians
 
   using Base::dyn_slacks;
@@ -141,13 +139,19 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   }
 };
 
+template <typename Scalar>
+std::ostream &operator<<(std::ostream &oss, const WorkspaceTpl<Scalar> &self) {
+  oss << "Workspace {" << fmt::format("\n  nsteps:         {:d}", self.nsteps)
+      << fmt::format("\n  n_multipliers:  {:d}", self.lams_pdal.size());
+  oss << "\n}";
+  return oss;
+}
+
 } // namespace aligator
 
 template <typename Scalar>
 struct fmt::formatter<aligator::WorkspaceTpl<Scalar>> : fmt::ostream_formatter {
 };
-
-#include "./workspace.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./workspace.txx"

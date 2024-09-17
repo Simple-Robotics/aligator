@@ -8,7 +8,7 @@ namespace dynamics {
 
 template <typename Scalar>
 IntegratorSemiImplEulerTpl<Scalar>::IntegratorSemiImplEulerTpl(
-    const shared_ptr<ODEType> &cont_dynamics, const Scalar timestep)
+    const xyz::polymorphic<ODEType> &cont_dynamics, const Scalar timestep)
     : Base(cont_dynamics), timestep_(timestep) {
   assert(((this->ndx1) % 2 == 0) &&
          "IntegratorSemiImplEuler must be used with even ndx.");

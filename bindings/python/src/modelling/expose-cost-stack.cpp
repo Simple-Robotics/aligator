@@ -1,4 +1,4 @@
-#include "aligator/python/fwd.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
 #include "aligator/python/visitors.hpp"
 
 #include "aligator/modelling/costs/sum-of-costs.hpp"
@@ -16,8 +16,8 @@ void exposeCostStack() {
 
   bp::class_<CostStack, bp::bases<CostAbstract>>(
       "CostStack", "A weighted sum of other cost functions.",
-      bp::init<shared_ptr<Manifold>, int,
-               const std::vector<shared_ptr<CostAbstract>> &,
+      bp::init<xyz::polymorphic<Manifold>, int,
+               const std::vector<xyz::polymorphic<CostAbstract>> &,
                const std::vector<Scalar> &>(("self"_a, "space", "nu",
                                              "components"_a = bp::list(),
                                              "weights"_a = bp::list())))
@@ -28,7 +28,8 @@ void exposeCostStack() {
       .def("addCost", &CostStack::addCost, ("self"_a, "cost", "weight"_a = 1.),
            "Add a cost to the stack of costs.")
       .def("size", &CostStack::size, "Get the number of cost components.")
-      .def(CopyableVisitor<CostStack>());
+      .def(CopyableVisitor<CostStack>())
+      .def(PolymorphicMultiBaseVisitor<CostAbstract>());
 
   bp::register_ptr_to_python<shared_ptr<CostStackData>>();
   bp::class_<CostStackData, bp::bases<CostData>>(

@@ -90,7 +90,7 @@ def create_cartpole(N):
     shape_cart = fcl.Cylinder(cart_radius, cart_length)
 
     geom_cart = pin.GeometryObject(
-        "shape_cart", joint_id, geometry_placement, shape_cart
+        "shape_cart", joint_id, shape_cart, geometry_placement
     )
     geom_cart.meshColor = np.array([1.0, 0.1, 0.1, 1.0])
     geom_model.addGeometryObject(geom_cart)
@@ -112,7 +112,7 @@ def create_cartpole(N):
 
         geom1_name = "ball_" + str(k + 1)
         shape1 = fcl.Sphere(body_radius)
-        geom1_obj = pin.GeometryObject(geom1_name, joint_id, body_placement, shape1)
+        geom1_obj = pin.GeometryObject(geom1_name, joint_id, shape1, body_placement)
         geom1_obj.meshColor = np.ones((4))
         geom_model.addGeometryObject(geom1_obj)
 
@@ -121,7 +121,7 @@ def create_cartpole(N):
         shape2_placement = body_placement.copy()
         shape2_placement.translation[2] /= 2.0
 
-        geom2_obj = pin.GeometryObject(geom2_name, joint_id, shape2_placement, shape2)
+        geom2_obj = pin.GeometryObject(geom2_name, joint_id, shape2, shape2_placement)
         geom2_obj.meshColor = np.array([0.0, 0.0, 0.0, 1.0])
         geom_model.addGeometryObject(geom2_obj)
 
@@ -256,12 +256,11 @@ def manage_lights(vizer: pin.visualize.MeshcatVisualizer):
     apply_props(
         spotlight,
         props={
-            # default: 0.8 * pi
-            "intensity": 8.0,
+            "intensity": 1.0,
             "penumbra": 1.0,
             "decay": 1.0,
-            # default: false
-            "castShadow": True,
+            # default: False
+            "castShadow": False,
             # default: pi / 3
             "angle": np.pi / 3,
             "position": [4, -4, 4],
@@ -273,7 +272,7 @@ def manage_lights(vizer: pin.visualize.MeshcatVisualizer):
         ambient_light,
         props={
             # default: 0.6
-            "intensity": 0.4
+            "intensity": 0.2
         },
     )
 
@@ -284,6 +283,5 @@ def manage_lights(vizer: pin.visualize.MeshcatVisualizer):
     apply_props(plpx, props={"visible": False})
     plnx = viewer["/Lights/PointLightNegativeX"]
     apply_props(plnx, props={"visible": False})
-
     plpx.delete()
     plnx.delete()

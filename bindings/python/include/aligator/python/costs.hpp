@@ -6,42 +6,50 @@
 
 namespace aligator {
 namespace python {
-namespace internal {
 /// @brief Wrapper for the CostDataAbstractTpl class and its children.
-template <typename T = context::CostAbstract>
-struct PyCostFunction : T, bp::wrapper<T> {
+struct PyCostFunction final
+    : context::CostAbstract,
+      proxsuite::nlp::python::PolymorphicWrapper<PyCostFunction,
+                                                 context::CostAbstract> {
   using Scalar = context::Scalar;
-  using bp::wrapper<T>::get_override;
+  using T = context::CostAbstract;
   using CostData = CostDataAbstractTpl<Scalar>;
+  using context::CostAbstract::CostAbstractTpl;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
-  /// forwarding constructor
-  template <typename... Args>
-  PyCostFunction(Args &&...args) : T(std::forward<Args>(args)...) {}
-
-  virtual void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                        CostData &data) const override {
+  void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
+                CostData &data) const override {
     ALIGATOR_PYTHON_OVERRIDE_PURE(void, "evaluate", x, u, boost::ref(data));
   }
 
-  virtual void computeGradients(const ConstVectorRef &x,
-                                const ConstVectorRef &u,
-                                CostData &data) const override {
+  void computeGradients(const ConstVectorRef &x, const ConstVectorRef &u,
+                        CostData &data) const override {
     ALIGATOR_PYTHON_OVERRIDE_PURE(void, "computeGradients", x, u,
                                   boost::ref(data));
   }
 
-  virtual void computeHessians(const ConstVectorRef &x, const ConstVectorRef &u,
-                               CostData &data) const override {
+  void computeHessians(const ConstVectorRef &x, const ConstVectorRef &u,
+                       CostData &data) const override {
     ALIGATOR_PYTHON_OVERRIDE_PURE(void, "computeHessians", x, u,
                                   boost::ref(data));
   }
 
-  virtual shared_ptr<CostData> createData() const override {
+  shared_ptr<CostData> createData() const override {
     ALIGATOR_PYTHON_OVERRIDE(shared_ptr<CostData>, T, createData, );
   }
-};
-} // namespace internal
 
+  shared_ptr<CostData> default_createData() const { return T::createData(); }
+};
 } // namespace python
 } // namespace aligator
+
+namespace boost::python::objects {
+
+template <>
+struct value_holder<aligator::python::PyCostFunction>
+    : proxsuite::nlp::python::OwningNonOwningHolder<
+          aligator::python::PyCostFunction> {
+  using OwningNonOwningHolder::OwningNonOwningHolder;
+};
+
+} // namespace boost::python::objects

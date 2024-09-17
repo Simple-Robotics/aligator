@@ -41,8 +41,7 @@ BOOST_AUTO_TEST_CASE(lqr_proxddp) {
 
   VectorXd x0 = VectorXd::NullaryExpr(nx, norm_gen);
 
-  auto dyn_model = std::make_shared<LinearDynamics>(A, B, VectorXd::Zero(nx));
-  shared_ptr<CostAbstract> cost, term_cost;
+  auto dyn_model = LinearDynamics(A, B, VectorXd::Zero(nx));
   MatrixXd Q = MatrixXd::NullaryExpr(nx, nx, norm_gen);
   Q = Q.transpose() * Q;
   VectorXd q = VectorXd::NullaryExpr(nx, norm_gen);
@@ -51,14 +50,13 @@ BOOST_AUTO_TEST_CASE(lqr_proxddp) {
   R = R.transpose() * R;
   VectorXd r = VectorXd::Zero(nu);
 
-  cost = std::make_shared<QuadraticCost>(Q, R, q, r);
-  term_cost = std::make_shared<QuadraticCost>(Q * 10., MatrixXd());
-  assert(term_cost->nu == 0);
+  QuadraticCost cost = QuadraticCost(Q, R, q, r);
+  QuadraticCost term_cost = QuadraticCost(Q * 10., MatrixXd());
+  assert(term_cost.nu == 0);
 
-  auto stage = std::make_shared<StageModel>(cost, dyn_model);
+  auto stage = StageModel(cost, dyn_model);
 
-  std::vector<decltype(stage)> stages(nsteps);
-  std::fill(stages.begin(), stages.end(), stage);
+  std::vector<xyz::polymorphic<StageModel>> stages(nsteps, stage);
   TrajOptProblem problem(x0, stages, term_cost);
 
   double tol = 1e-6;

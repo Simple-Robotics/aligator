@@ -50,8 +50,6 @@ std::ostream &operator<<(std::ostream &oss, const ResultsTpl<Scalar> &self) {
 template <typename Scalar>
 struct fmt::formatter<aligator::ResultsTpl<Scalar>> : fmt::ostream_formatter {};
 
-#include "./results.hxx"
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./results.txx"
 #endif

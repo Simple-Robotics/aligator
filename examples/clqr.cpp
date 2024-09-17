@@ -35,7 +35,7 @@ int main() {
   const size_t nsteps = 100;
   const auto nx = 4;
   const auto nu = 2;
-  const auto space = std::make_shared<Space>(nx);
+  const auto space = Space(nx);
 
   NormalGen norm_gen;
   MatrixXd A;
@@ -47,42 +47,38 @@ int main() {
 
   VectorXd x0 = VectorXd::NullaryExpr(nx, norm_gen);
 
-  auto dyn_model = std::make_shared<LinearDynamics>(A, B, VectorXd::Zero(nx));
-  shared_ptr<CostAbstract> cost, term_cost;
-  {
-    MatrixXd Q = MatrixXd::NullaryExpr(nx, nx, norm_gen);
-    Q = Q.transpose() * Q;
-    VectorXd q = VectorXd::Zero(nx);
+  auto dyn_model = LinearDynamics(A, B, VectorXd::Zero(nx));
 
-    MatrixXd R = MatrixXd::NullaryExpr(nu, nu, norm_gen);
-    R = R.transpose() * R;
-    VectorXd r = VectorXd::Zero(nu);
+  MatrixXd Q = MatrixXd::NullaryExpr(nx, nx, norm_gen);
+  Q = Q.transpose() * Q;
+  VectorXd q = VectorXd::Zero(nx);
 
-    cost = std::make_shared<QuadraticCost>(Q, R, q, r);
-    term_cost = std::make_shared<QuadraticCost>(Q * 10., MatrixXd());
-    assert(term_cost->nu == 0);
-  }
+  MatrixXd R = MatrixXd::NullaryExpr(nu, nu, norm_gen);
+  R = R.transpose() * R;
+  VectorXd r = VectorXd::Zero(nu);
+
+  QuadraticCost cost = QuadraticCost(Q, R, q, r);
+  QuadraticCost term_cost = QuadraticCost(Q * 10., MatrixXd());
+  assert(term_cost.nu == 0);
 
   double ctrlUpperBound = 0.3;
-  auto stage = std::make_shared<StageModel>(cost, dyn_model);
+  auto stage = StageModel(cost, dyn_model);
   {
-    auto box =
-        std::make_shared<BoxConstraint>(-ctrlUpperBound * VectorXd::Ones(nu),
-                                        ctrlUpperBound * VectorXd::Ones(nu));
+    auto box = BoxConstraint(-ctrlUpperBound * VectorXd::Ones(nu),
+                             ctrlUpperBound * VectorXd::Ones(nu));
     auto u0 = VectorXd::Zero(nu);
-    auto func = std::make_shared<ControlErrorResidualTpl<double>>(nx, u0);
-    stage->addConstraint(func, box);
+    auto func = ControlErrorResidualTpl<double>(nx, u0);
+    stage.addConstraint(func, box);
   }
 
-  std::vector<decltype(stage)> stages(nsteps, stage);
+  std::vector<xyz::polymorphic<StageModel>> stages(nsteps, stage);
   TrajOptProblem problem(x0, stages, term_cost);
 
   bool terminal = false;
   if (terminal) {
     auto xf = VectorXd::Ones(nx);
-    auto func = std::make_shared<StateErrorResidualTpl<double>>(space, nu, xf);
-    problem.addTerminalConstraint(
-        {func, std::make_shared<EqualityConstraint>()});
+    auto func = StateErrorResidualTpl<double>(space, nu, xf);
+    problem.addTerminalConstraint({func, EqualityConstraint()});
   }
 
   const double tol = 1e-6;

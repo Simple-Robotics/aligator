@@ -1,8 +1,10 @@
 /// @file
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @brief Template definitions header.
 #pragma once
 
 #include "aligator/core/traj-opt-problem.hpp"
+#include "aligator/core/stage-data.hpp"
 #include "aligator/utils/mpc-util.hpp"
 #include "aligator/tracy.hpp"
 
@@ -12,45 +14,41 @@ namespace aligator {
 
 template <typename Scalar>
 TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
-    shared_ptr<UnaryFunction> init_constraint,
-    const std::vector<shared_ptr<StageModel>> &stages,
-    shared_ptr<CostAbstract> term_cost)
+    xyz::polymorphic<UnaryFunction> init_constraint,
+    const std::vector<xyz::polymorphic<StageModel>> &stages,
+    xyz::polymorphic<CostAbstract> term_cost)
     : init_condition_(init_constraint), stages_(stages), term_cost_(term_cost),
       unone_(term_cost->nu) {
   unone_.setZero();
   checkStages();
-  if (auto se =
-          std::dynamic_pointer_cast<StateErrorResidual>(init_condition_)) {
-    init_state_error_ = se.get();
-  }
+  init_state_error_ = &dynamic_cast<StateErrorResidual &>(*init_condition_);
 }
 
 template <typename Scalar>
 TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
-    const ConstVectorRef &x0, const std::vector<shared_ptr<StageModel>> &stages,
-    shared_ptr<CostAbstract> term_cost)
+    const ConstVectorRef &x0,
+    const std::vector<xyz::polymorphic<StageModel>> &stages,
+    xyz::polymorphic<CostAbstract> term_cost)
     : TrajOptProblemTpl(
           createStateError(x0, stages[0]->xspace_, stages[0]->nu()), stages,
           term_cost) {
-  init_state_error_ = static_cast<StateErrorResidual *>(init_condition_.get());
+  init_state_error_ = &dynamic_cast<StateErrorResidual &>(*init_condition_);
 }
 
 template <typename Scalar>
 TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
-    shared_ptr<UnaryFunction> init_constraint,
-    shared_ptr<CostAbstract> term_cost)
+    xyz::polymorphic<UnaryFunction> init_constraint,
+    xyz::polymorphic<CostAbstract> term_cost)
     : init_condition_(init_constraint), term_cost_(term_cost),
       unone_(term_cost->nu),
-      init_state_error_(
-          dynamic_cast<StateErrorResidual *>(init_condition_.get())) {
+      init_state_error_(&dynamic_cast<StateErrorResidual &>(*init_condition_)) {
   unone_.setZero();
 }
 
 template <typename Scalar>
-TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(const ConstVectorRef &x0,
-                                             const int nu,
-                                             shared_ptr<Manifold> space,
-                                             shared_ptr<CostAbstract> term_cost)
+TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
+    const ConstVectorRef &x0, const int nu, xyz::polymorphic<Manifold> space,
+    xyz::polymorphic<CostAbstract> term_cost)
     : TrajOptProblemTpl(createStateError(x0, space, nu), term_cost) {}
 
 template <typename Scalar>
@@ -80,9 +78,9 @@ Scalar TrajOptProblemTpl<Scalar>::evaluate(
   term_cost_->evaluate(xs[nsteps], unone_, *prob_data.term_cost_data);
 
   for (std::size_t k = 0; k < term_cstrs_.size(); ++k) {
-    const ConstraintType &tc = term_cstrs_[k];
+    const auto &func = term_cstrs_.funcs[k];
     auto &td = prob_data.term_cstr_data[k];
-    tc.func->evaluate(xs[nsteps], unone_, xs[nsteps], *td);
+    func->evaluate(xs[nsteps], unone_, xs[nsteps], *td);
   }
   prob_data.cost_ = computeTrajectoryCost(prob_data);
   return prob_data.cost_;
@@ -116,34 +114,32 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
   }
   Eigen::setNbThreads(0);
 
-  if (term_cost_) {
-    term_cost_->computeGradients(xs[nsteps], unone_, *prob_data.term_cost_data);
-    if (compute_second_order) {
-      term_cost_->computeHessians(xs[nsteps], unone_,
-                                  *prob_data.term_cost_data);
-    }
+  term_cost_->computeGradients(xs[nsteps], unone_, *prob_data.term_cost_data);
+  if (compute_second_order) {
+    term_cost_->computeHessians(xs[nsteps], unone_, *prob_data.term_cost_data);
   }
 
   for (std::size_t k = 0; k < term_cstrs_.size(); ++k) {
-    const ConstraintType &tc = term_cstrs_[k];
+    const auto &func = term_cstrs_.funcs[k];
     auto &td = prob_data.term_cstr_data[k];
-    tc.func->computeJacobians(xs[nsteps], unone_, xs[nsteps], *td);
+    func->computeJacobians(xs[nsteps], unone_, xs[nsteps], *td);
   }
 }
 
 template <typename Scalar>
-void TrajOptProblemTpl<Scalar>::addStage(const shared_ptr<StageModel> &stage) {
-  if (stage == nullptr)
-    ALIGATOR_RUNTIME_ERROR("Input stage is null.");
+void TrajOptProblemTpl<Scalar>::addStage(
+    const xyz::polymorphic<StageModel> &stage) {
+  // if (stage == nullptr)
+  //   ALIGATOR_RUNTIME_ERROR("Input stage is null.");
   stages_.push_back(stage);
 }
 
 template <typename Scalar> void TrajOptProblemTpl<Scalar>::checkStages() const {
   for (auto st = begin(stages_); st != end(stages_); ++st) {
-    if (*st == nullptr) {
+    /*if (*st == nullptr) {
       long d = std::distance(stages_.begin(), st);
       ALIGATOR_RUNTIME_ERROR(fmt::format("Stage {:d} is null.", d));
-    }
+    }*/
   }
 }
 
@@ -160,7 +156,7 @@ inline std::size_t TrajOptProblemTpl<Scalar>::numSteps() const {
 
 template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::replaceStageCircular(
-    const shared_ptr<StageModel> &model) {
+    const xyz::polymorphic<StageModel> &model) {
   addStage(model);
   rotate_vec_left(stages_);
   stages_.pop_back();

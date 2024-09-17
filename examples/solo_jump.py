@@ -89,7 +89,7 @@ w_u = np.eye(nu) * 1e-4
 def add_fly_high_cost(costs: aligator.CostStack, slope):
     fly_high_w = 1.0
     for fname, fid in FOOT_FRAME_IDS.items():
-        fn = aligator.FlyHighResidual(space, fid, slope, nu)
+        fn = aligator.FlyHighResidual(space.ndx, rmodel, fid, slope, nu)
         fl_cost = aligator.QuadraticResidualCost(space, fn, np.eye(2) * dt)
         costs.addCost(fl_cost, fly_high_w / len(FOOT_FRAME_IDS))
 

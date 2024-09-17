@@ -5,32 +5,38 @@
 #include "aligator/python/fwd.hpp"
 #include "aligator/core/explicit-dynamics.hpp"
 
+#include "aligator/modelling/dynamics/context.hpp"
+#include "aligator/modelling/dynamics/integrator-explicit.hpp"
+
+#include "proxsuite-nlp/python/polymorphic.hpp"
+
 namespace aligator {
 namespace python {
-namespace internal {
 
 /// Wrapper for ExplicitDynamicsModel which avoids redeclaring overrides for any
 /// child virtual class (e.g. integrator classes).
 /// @tparam ExplicitBase The derived virtual class that is being exposed.
 /// @sa PyStageFunction
 template <class ExplicitBase = context::ExplicitDynamics>
-struct PyExplicitDynamics : ExplicitBase, bp::wrapper<ExplicitBase> {
+struct PyExplicitDynamics final
+    : ExplicitBase,
+      proxsuite::nlp::python::PolymorphicWrapper<
+          PyExplicitDynamics<ExplicitBase>, ExplicitBase> {
   using Scalar = context::Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   // All functions in the interface take this type for output
   using Data = ExplicitDynamicsDataTpl<Scalar>;
   using StageFunctionData = StageFunctionDataTpl<Scalar>;
 
-  template <typename... Args>
-  PyExplicitDynamics(Args &&...args) : ExplicitBase(args...) {}
+  using ExplicitBase::ExplicitBase;
 
-  virtual void forward(const ConstVectorRef &x, const ConstVectorRef &u,
-                       Data &data) const {
+  void forward(const ConstVectorRef &x, const ConstVectorRef &u,
+               Data &data) const {
     ALIGATOR_PYTHON_OVERRIDE_PURE(void, "forward", x, u, boost::ref(data));
   }
 
-  virtual void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
-                        Data &data) const {
+  void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
+                Data &data) const {
     ALIGATOR_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, boost::ref(data));
   }
 
@@ -44,6 +50,25 @@ struct PyExplicitDynamics : ExplicitBase, bp::wrapper<ExplicitBase> {
   }
 };
 
-} // namespace internal
 } // namespace python
 } // namespace aligator
+
+namespace boost::python::objects {
+
+template <>
+struct value_holder<aligator::python::PyExplicitDynamics<>>
+    : proxsuite::nlp::python::OwningNonOwningHolder<
+          aligator::python::PyExplicitDynamics<>> {
+  using OwningNonOwningHolder::OwningNonOwningHolder;
+};
+
+template <>
+struct value_holder<aligator::python::PyExplicitDynamics<
+    aligator::context::ExplicitIntegratorAbstract>>
+    : proxsuite::nlp::python::OwningNonOwningHolder<
+          aligator::python::PyExplicitDynamics<
+              aligator::context::ExplicitIntegratorAbstract>> {
+  using OwningNonOwningHolder::OwningNonOwningHolder;
+};
+
+} // namespace boost::python::objects

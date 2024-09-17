@@ -61,14 +61,14 @@ BOOST_AUTO_TEST_CASE(contact_forces) {
   const double mu0 = 0.;
   ProximalSettings prox_settings(1e-12, mu0, 1);
 
-  shared_ptr<Manifold> space = std::make_shared<Manifold>(model);
+  Manifold space{model};
   MatrixXd act_matrix(model.nv, model.nv - 6);
   act_matrix.setZero();
   act_matrix.bottomRows(model.nv - 6).setIdentity();
   VectorXd fref(6);
   fref.setZero();
   ContactForceResidual fun =
-      ContactForceResidual(space->ndx(), model, act_matrix, constraint_models,
+      ContactForceResidual(space.ndx(), model, act_matrix, constraint_models,
                            prox_settings, fref, 1);
   shared_ptr<StageFunctionData> sfdata = fun.createData();
   shared_ptr<ContactForceData> fdata =
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE(contact_forces) {
 
   for (int k = 0; k < model.nv * 2; ++k) {
     v_eps[k] += alpha;
-    x_plus = space->integrate(x0, v_eps);
+    x_plus = space.integrate(x0, v_eps);
     fun.evaluate(x_plus, u0, x_plus, *fdata);
     lambda_partial_dx_fd.col(k) = (fdata->value_ - lambda0) / alpha;
     v_eps[k] = 0.;
@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE(wrench_cone) {
   const double mu0 = 0.;
   ProximalSettings prox_settings(1e-12, mu0, 1);
 
-  shared_ptr<Manifold> space = std::make_shared<Manifold>(model);
+  Manifold space{model};
   MatrixXd act_matrix(model.nv, model.nv - 6);
   act_matrix.setZero();
   act_matrix.bottomRows(model.nv - 6).setIdentity();
@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE(wrench_cone) {
   double hL = 0.2;
   double hW = 0.2;
   MultibodyWrenchConeResidual fun = MultibodyWrenchConeResidual(
-      space->ndx(), model, act_matrix, constraint_models, prox_settings, 0, mu,
+      space.ndx(), model, act_matrix, constraint_models, prox_settings, 0, mu,
       hL, hW);
   shared_ptr<StageFunctionData> sfdata = fun.createData();
   shared_ptr<MultibodyWrenchConeData> fdata =
@@ -213,7 +213,7 @@ BOOST_AUTO_TEST_CASE(wrench_cone) {
 
   for (int k = 0; k < model.nv * 2; ++k) {
     v_eps[k] += alpha;
-    x_plus = space->integrate(x0, v_eps);
+    x_plus = space.integrate(x0, v_eps);
     fun.evaluate(x_plus, u0, x_plus, *fdata);
     cone_partial_dx_fd.col(k) = (fdata->value_ - cone0) / alpha;
     v_eps[k] = 0.;

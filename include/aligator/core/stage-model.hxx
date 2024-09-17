@@ -4,27 +4,25 @@
 
 #include "aligator/core/stage-model.hpp"
 #include "aligator/utils/exceptions.hpp"
+#include "aligator/tracy.hpp"
 
+#include <proxsuite-nlp/context.hpp>
 #include <proxsuite-nlp/modelling/constraints/equality-constraint.hpp>
 #include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
 
 namespace aligator {
 
 namespace {
-
 using proxsuite::nlp::VectorSpaceTpl;
-template <typename T> auto make_vector_space(const int n) {
-  return std::make_shared<VectorSpaceTpl<T>>(n);
-}
-
 } // namespace
 
 /* StageModelTpl */
 
 template <typename Scalar>
-StageModelTpl<Scalar>::StageModelTpl(CostPtr cost, DynamicsPtr dynamics)
+StageModelTpl<Scalar>::StageModelTpl(const PolyCost &cost,
+                                     const PolyDynamics &dynamics)
     : xspace_(dynamics->space_), xspace_next_(dynamics->space_next_),
-      uspace_(make_vector_space<Scalar>(dynamics->nu)), cost_(cost),
+      uspace_(VectorSpaceTpl<Scalar>(dynamics->nu)), cost_(cost),
       dynamics_(dynamics) {
 
   if (cost->nu != dynamics->nu) {
@@ -35,31 +33,14 @@ StageModelTpl<Scalar>::StageModelTpl(CostPtr cost, DynamicsPtr dynamics)
 }
 
 template <typename Scalar>
-StageModelTpl<Scalar>::StageModelTpl(ManifoldPtr space, const int nu)
-    : xspace_(space), xspace_next_(space),
-      uspace_(make_vector_space<Scalar>(nu)) {}
-
-template <typename Scalar>
-template <typename Cstr>
-void StageModelTpl<Scalar>::addConstraint(Cstr &&cstr) {
-  const int c_nu = cstr.func->nu;
-  if (c_nu != this->nu()) {
-    ALIGATOR_RUNTIME_ERROR(fmt::format(
-        "Function has the wrong dimension for u: got {:d}, expected {:d}", c_nu,
-        this->nu()));
-  }
-  constraints_.pushBack(std::forward<Cstr>(cstr));
-}
-
-template <typename Scalar>
-void StageModelTpl<Scalar>::addConstraint(FunctionPtr func,
-                                          ConstraintSetPtr cstr_set) {
+void StageModelTpl<Scalar>::addConstraint(const FunctionPtr &func,
+                                          const ConstraintSetPtr &cstr_set) {
   if (func->nu != this->nu()) {
     ALIGATOR_RUNTIME_ERROR(fmt::format(
         "Function has the wrong dimension for u: got {:d}, expected {:d}",
         func->nu, this->nu()));
   }
-  constraints_.pushBack(Constraint{func, cstr_set});
+  constraints_.pushBack(func, cstr_set);
 }
 
 template <typename Scalar>
@@ -67,10 +48,10 @@ void StageModelTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                      const ConstVectorRef &u,
                                      const ConstVectorRef &y,
                                      Data &data) const {
+  ALIGATOR_TRACY_ZONE_SCOPED_N("StageModel::evaluate");
   dynamics_->evaluate(x, u, y, *data.dynamics_data);
   for (std::size_t j = 0; j < numConstraints(); j++) {
-    const Constraint &cstr = constraints_[j];
-    cstr.func->evaluate(x, u, y, *data.constraint_data[j]);
+    constraints_.funcs[j]->evaluate(x, u, y, *data.constraint_data[j]);
   }
   cost_->evaluate(x, u, *data.cost_data);
 }
@@ -79,10 +60,10 @@ template <typename Scalar>
 void StageModelTpl<Scalar>::computeFirstOrderDerivatives(
     const ConstVectorRef &x, const ConstVectorRef &u, const ConstVectorRef &y,
     Data &data) const {
+  ALIGATOR_TRACY_ZONE_SCOPED_N("StageModel::computeFirstOrderDerivatives");
   dynamics_->computeJacobians(x, u, y, *data.dynamics_data);
   for (std::size_t j = 0; j < numConstraints(); j++) {
-    const Constraint &cstr = constraints_[j];
-    cstr.func->computeJacobians(x, u, y, *data.constraint_data[j]);
+    constraints_.funcs[j]->computeJacobians(x, u, y, *data.constraint_data[j]);
   }
   cost_->computeGradients(x, u, *data.cost_data);
 }
@@ -90,6 +71,7 @@ void StageModelTpl<Scalar>::computeFirstOrderDerivatives(
 template <typename Scalar>
 void StageModelTpl<Scalar>::computeSecondOrderDerivatives(
     const ConstVectorRef &x, const ConstVectorRef &u, Data &data) const {
+  ALIGATOR_TRACY_ZONE_SCOPED_N("StageModel::computeSecondOrderDerivatives");
   cost_->computeHessians(x, u, *data.cost_data);
 }
 

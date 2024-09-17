@@ -7,9 +7,7 @@
 #include <crocoddyl/core/cost-base.hpp>
 #include <crocoddyl/core/action-base.hpp>
 
-namespace aligator {
-namespace compat {
-namespace croc {
+namespace aligator::compat::croc {
 
 template <typename _Scalar>
 struct CrocCostModelWrapperTpl : CostAbstractTpl<_Scalar> {
@@ -26,14 +24,13 @@ struct CrocCostModelWrapperTpl : CostAbstractTpl<_Scalar> {
 
   /// Constructor from a crocoddyl cost model.
   explicit CrocCostModelWrapperTpl(boost::shared_ptr<CrocCostModel> cost)
-      : Base(get_state_wrap(cost->get_state()), (int)cost->get_nu()),
+      : Base(StateWrap(cost->get_state()), (int)cost->get_nu()),
         croc_cost_(cost) {}
 
   /// Constructor using a terminal action model.
   explicit CrocCostModelWrapperTpl(
       boost::shared_ptr<CrocActionModel> action_model)
-      : Base(get_state_wrap(action_model->get_state()),
-             (int)action_model->get_nu()),
+      : Base(StateWrap(action_model->get_state()), (int)action_model->get_nu()),
         action_model_(action_model) {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
@@ -91,12 +88,6 @@ struct CrocCostModelWrapperTpl : CostAbstractTpl<_Scalar> {
                             "crocoddyl cost model only.");
     }
   }
-
-private:
-  static auto
-  get_state_wrap(boost::shared_ptr<crocoddyl::StateAbstractTpl<Scalar>> state) {
-    return std::make_shared<StateWrap>(state);
-  }
 };
 
 template <typename Scalar>
@@ -116,6 +107,9 @@ struct CrocCostDataWrapperTpl : CostDataAbstractTpl<Scalar> {
         croc_act_data_(actdata) {}
 };
 
-} // namespace croc
-} // namespace compat
-} // namespace aligator
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct CrocCostModelWrapperTpl<context::Scalar>;
+extern template struct CrocCostDataWrapperTpl<context::Scalar>;
+#endif
+
+} // namespace aligator::compat::croc

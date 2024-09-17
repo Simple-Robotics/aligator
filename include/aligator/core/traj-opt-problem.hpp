@@ -87,11 +87,11 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   /// Initial condition
-  shared_ptr<UnaryFunction> init_condition_;
+  xyz::polymorphic<UnaryFunction> init_condition_;
   /// Stages of the control problem.
-  std::vector<shared_ptr<StageModel>> stages_;
+  std::vector<xyz::polymorphic<StageModel>> stages_;
   /// Terminal cost.
-  shared_ptr<CostAbstract> term_cost_;
+  xyz::polymorphic<CostAbstract> term_cost_;
   /// Terminal constraints.
   ConstraintStackTpl<Scalar> term_cstrs_;
   /// Dummy, "neutral" control value.
@@ -100,32 +100,32 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// @defgroup ctor1 Constructors with pre-allocated stages
 
   /// @ingroup ctor1
-  TrajOptProblemTpl(shared_ptr<UnaryFunction> init_constraint,
-                    const std::vector<shared_ptr<StageModel>> &stages,
-                    shared_ptr<CostAbstract> term_cost);
+  TrajOptProblemTpl(xyz::polymorphic<UnaryFunction> init_constraint,
+                    const std::vector<xyz::polymorphic<StageModel>> &stages,
+                    xyz::polymorphic<CostAbstract> term_cost);
 
   /// @ingroup ctor1
   /// @brief Constructor for an initial value problem.
   TrajOptProblemTpl(const ConstVectorRef &x0,
-                    const std::vector<shared_ptr<StageModel>> &stages,
-                    shared_ptr<CostAbstract> term_cost);
+                    const std::vector<xyz::polymorphic<StageModel>> &stages,
+                    xyz::polymorphic<CostAbstract> term_cost);
 
   /// @defgroup ctor2 Constructors without pre-allocated stages
 
   /// @ingroup ctor2
-  TrajOptProblemTpl(shared_ptr<UnaryFunction> init_constraint,
-                    shared_ptr<CostAbstract> term_cost);
+  TrajOptProblemTpl(xyz::polymorphic<UnaryFunction> init_constraint,
+                    xyz::polymorphic<CostAbstract> term_cost);
 
   /// @ingroup ctor2
   /// @brief Constructor for an initial value problem.
   TrajOptProblemTpl(const ConstVectorRef &x0, const int nu,
-                    shared_ptr<Manifold> space,
-                    shared_ptr<CostAbstract> term_cost);
+                    xyz::polymorphic<Manifold> space,
+                    xyz::polymorphic<CostAbstract> term_cost);
 
   bool initCondIsStateError() const { return init_state_error_ != nullptr; }
 
   /// @brief Add a stage to the control problem.
-  void addStage(const shared_ptr<StageModel> &stage);
+  void addStage(const xyz::polymorphic<StageModel> &stage);
 
   /// @brief Get initial state constraint.
   ConstVectorRef getInitState() const {
@@ -173,20 +173,14 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 
   /// @brief Pop out the first StageModel and replace by the supplied one;
   /// updates the supplied problem data (TrajOptDataTpl) object.
-  void replaceStageCircular(const shared_ptr<StageModel> &model);
+  void replaceStageCircular(const xyz::polymorphic<StageModel> &model);
 
   /// @brief Helper for computing the trajectory cost (from pre-computed problem
   /// data).
   /// @warning Call TrajOptProblemTpl::evaluate() first!
   Scalar computeTrajectoryCost(const Data &problem_data) const;
 
-  inline void checkIntegrity() const {
-    checkStages();
-
-    if (term_cost_ == nullptr) {
-      ALIGATOR_RUNTIME_ERROR("Problem has no terminal cost.");
-    }
-  }
+  inline void checkIntegrity() const { checkStages(); }
 
 protected:
   /// Pointer to underlying state error residual
@@ -196,9 +190,9 @@ protected:
 
 private:
   static auto createStateError(const ConstVectorRef &x0,
-                               const shared_ptr<Manifold> &space,
+                               const xyz::polymorphic<Manifold> &space,
                                const int nu) {
-    return std::make_shared<StateErrorResidual>(space, nu, x0);
+    return StateErrorResidual(space, nu, x0);
   }
 };
 
@@ -216,8 +210,6 @@ int problem_last_ndx_helper(const TrajOptProblemTpl<Scalar> &problem) {
 } // namespace internal
 
 } // namespace aligator
-
-#include "aligator/core/traj-opt-problem.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/core/traj-opt-problem.txx"

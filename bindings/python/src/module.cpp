@@ -15,6 +15,8 @@
 namespace aligator {
 namespace python {
 
+void exposeExplicitIntegrators();
+
 static void exposeEnums() {
   register_enum_symlink<VerboseLevel>(true);
 
@@ -94,6 +96,7 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
     bp::scope dynamics = get_namespace("dynamics");
     exposeContinuousDynamics();
     exposeDynamics();
+    exposeExplicitIntegrators();
     exposeIntegrators();
   }
   exposeUtils();

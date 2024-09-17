@@ -1,11 +1,10 @@
 /// @file
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @brief Implementation file. Include when template definitions required.
 #pragma once
 
 #include "./results.hpp"
 #include "aligator/core/solver-util.hpp"
-
-#include <fmt/format.h>
 
 namespace aligator {
 

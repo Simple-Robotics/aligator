@@ -5,6 +5,7 @@
 #include <pinocchio/multibody/fwd.hpp>
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 #include <pinocchio/multibody/model.hpp>
+#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {
@@ -16,25 +17,29 @@ void exposeKinodynamics() {
   using context::UnaryFunction;
   using ODEData = ODEDataTpl<Scalar>;
   using ODEAbstract = ODEAbstractTpl<Scalar>;
+  using ContinuousDynamicsAbstract = ContinuousDynamicsAbstractTpl<Scalar>;
   using KinodynamicsFwdData = KinodynamicsFwdDataTpl<Scalar>;
   using KinodynamicsFwdDynamics = KinodynamicsFwdDynamicsTpl<Scalar>;
   using Manifold = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
-  using ManifoldPtr = shared_ptr<Manifold>;
   using Vector3s = typename math_types<Scalar>::Vector3s;
 
   using Model = pinocchio::ModelTpl<Scalar>;
 
+  const PolymorphicMultiBaseVisitor<ODEAbstract, ContinuousDynamicsAbstract>
+      ode_visitor;
+
   bp::class_<KinodynamicsFwdDynamics, bp::bases<ODEAbstract>>(
       "KinodynamicsFwdDynamics",
       "Centroidal forward dynamics + kinematics using Pinocchio.",
-      bp::init<const ManifoldPtr &, const Model &, const Vector3s &,
+      bp::init<const Manifold &, const Model &, const Vector3s &,
                const std::vector<bool> &,
                const std::vector<pinocchio::FrameIndex> &, const int>(
           "Constructor.",
           bp::args("self", "space", "model", "gravity", "contact_states",
                    "contact_ids", "force_size")))
       .def_readwrite("contact_states",
-                     &KinodynamicsFwdDynamics::contact_states_);
+                     &KinodynamicsFwdDynamics::contact_states_)
+      .def(ode_visitor);
 
   bp::register_ptr_to_python<shared_ptr<KinodynamicsFwdData>>();
 

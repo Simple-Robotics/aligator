@@ -1,8 +1,8 @@
 /// @file
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #ifdef ALIGATOR_WITH_CROCODDYL_COMPAT
 #include "aligator/python/compat/croco.hpp"
-#include "aligator/python/utils.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/compat/crocoddyl/instantiate.txx"
@@ -28,17 +28,17 @@ void exposeCrocoddylCompat() {
   using ns_croc::context::DynamicsDataWrapper;
   using ns_croc::context::StateWrapper;
 
-  bp::register_ptr_to_python<shared_ptr<ActionModelWrapper>>();
   bp::class_<ActionModelWrapper, bp::bases<context::StageModel>>(
       "ActionModelWrapper", "Wrapper for Crocoddyl action models.",
       bp::init<boost::shared_ptr<CrocActionModel>>(bp::args("action_model")))
       .def_readonly("action_model", &ActionModelWrapper::action_model_,
-                    "Underlying Crocoddyl ActionModel.");
+                    "Underlying Crocoddyl ActionModel.")
+      .def(PolymorphicMultiBaseVisitor<context::StageModel>());
 
   bp::register_ptr_to_python<shared_ptr<ActionDataWrapper>>();
   bp::class_<ActionDataWrapper, bp::bases<context::StageData>>(
       "ActionDataWrapper", bp::no_init)
-      .def(bp::init<const boost::shared_ptr<CrocActionModel> &>(
+      .def(bp::init<const ActionModelWrapper &>(
           bp::args("self", "croc_action_model")))
       .def_readonly("croc_action_data", &ActionDataWrapper::croc_action_data,
                     "Underlying Crocoddyl action data.");
@@ -51,7 +51,8 @@ void exposeCrocoddylCompat() {
       "StateWrapper", "Wrapper for a Crocoddyl state.", bp::no_init)
       .def(
           bp::init<boost::shared_ptr<StateAbstract>>(bp::args("self", "state")))
-      .def_readonly("croc_state", &StateWrapper::croc_state);
+      .def_readonly("croc_state", &StateWrapper::croc_state)
+      .def(PolymorphicMultiBaseVisitor<context::Manifold>());
 }
 
 } // namespace python

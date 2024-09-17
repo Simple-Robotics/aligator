@@ -1,7 +1,9 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+#include "aligator/modelling/dynamics/context.hpp"
 #include "aligator/python/fwd.hpp"
 
 #include "aligator/modelling/dynamics/multibody-free-fwd.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {
@@ -10,23 +12,27 @@ void exposeFreeFwdDynamics() {
   using context::Scalar;
   using ODEData = ODEDataTpl<Scalar>;
   using ODEAbstract = ODEAbstractTpl<Scalar>;
+  using ContinuousDynamicsAbstract = ContinuousDynamicsAbstractTpl<Scalar>;
   using MultibodyFreeFwdData = MultibodyFreeFwdDataTpl<Scalar>;
   using MultibodyFreeFwdDynamics = MultibodyFreeFwdDynamicsTpl<Scalar>;
   using proxsuite::nlp::MultibodyPhaseSpace;
 
-  using StateManifoldPtr = shared_ptr<MultibodyPhaseSpace<Scalar>>;
+  using StateManifold = MultibodyPhaseSpace<Scalar>;
+
+  PolymorphicMultiBaseVisitor<ODEAbstract, ContinuousDynamicsAbstract>
+      ode_visitor;
 
   bp::class_<MultibodyFreeFwdDynamics, bp::bases<ODEAbstract>>(
       "MultibodyFreeFwdDynamics",
       "Free-space forward dynamics on multibodies using Pinocchio's ABA "
       "algorithm.",
-      bp::init<StateManifoldPtr, const context::MatrixXs &>(
+      bp::init<StateManifold, const context::MatrixXs &>(
           "Constructor where the actuation matrix is provided.",
-          bp::args("self", "space", "actuation_matrix")))
-      .def(bp::init<StateManifoldPtr>(
+          ("self"_a, "space", "actuation_matrix")))
+      .def(bp::init<StateManifold>(
           "Constructor without actuation matrix (assumed to be the (nu,nu) "
           "identity matrix).",
-          bp::args("self", "space")))
+          ("self"_a, "space")))
       .add_property("ntau", &MultibodyFreeFwdDynamics::ntau,
                     "Torque dimension.")
       .add_property(
@@ -35,7 +41,8 @@ void exposeFreeFwdDynamics() {
           "rank is lower than the acceleration vector's dimension.")
       .add_property("actuationMatrixRank",
                     &MultibodyFreeFwdDynamics::getActuationMatrixRank,
-                    "Get the rank of the actuation matrix.");
+                    "Get the rank of the actuation matrix.")
+      .def(ode_visitor);
 
   bp::register_ptr_to_python<shared_ptr<MultibodyFreeFwdData>>();
 

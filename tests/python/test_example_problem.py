@@ -37,6 +37,9 @@ class TwistModelExplicit(aligator.dynamics.ExplicitDynamicsModel):
         self.dt = dt
         super().__init__(space, nu)
 
+    def __getinitargs__(self):
+        return (self.dt, self.B)
+
     def forward(self, x, u, data: aligator.dynamics.ExplicitDynamicsData):
         assert data.good
         space.integrate(x, self.dt * self.B @ u, data.xnext)
@@ -72,6 +75,12 @@ class MyQuadCost(aligator.CostAbstract):
         self.W = W
         super().__init__(space, nu)
         self._basis = costs.QuadraticDistanceCost(space, self.x_ref, self.W)
+
+    def __getinitargs__(self):
+        return (self.W, self.x_ref)
+
+    def __getstate__(self):
+        return dict()
 
     def evaluate(self, x, u, data):
         assert isinstance(data, MyCostData)
@@ -110,6 +119,8 @@ class TestClass:
         dyn_data.Ju[:, :] = np.arange(ndx**2, ndx**2 + ndx * nu).reshape(ndx, nu)
         self.dynmodel.evaluate(x0, u0, x1, dyn_data)
         self.dynmodel.computeJacobians(x0, u0, x1, dyn_data)
+        print(self.stage_model.dynamics)
+        assert isinstance(self.stage_model.dynamics, TwistModelExplicit)
 
     def test_cost(self, nsteps):
         cost = self.cost
@@ -117,6 +128,7 @@ class TestClass:
         cost.evaluate(x0, u0, cost_data)
         cost.computeGradients(x0, u0, cost_data)
         cost.computeHessians(x0, u0, cost_data)
+        assert isinstance(self.stage_model.cost, MyQuadCost)
 
     def test_stage(self, nsteps):
         stage_model = self.stage_model
@@ -139,13 +151,12 @@ class TestClass:
             problem.addStage(stage_model)
 
         problem_data = aligator.TrajOptData(problem)
-        stage_datas = problem_data.stage_data
 
         print("term cost data:", problem_data.term_cost)
         print("term cstr data:", problem_data.term_constraint)
 
-        stage2 = stage_model.clone()
-        sd0 = stage_datas[0].clone()
+        stage2 = stage_model.copy()
+        sd0 = stage2.createData()
         print("Clone stage:", stage2)
         print("Clone stage data:", sd0)
 

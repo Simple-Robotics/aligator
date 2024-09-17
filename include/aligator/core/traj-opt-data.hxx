@@ -3,6 +3,9 @@
 #pragma once
 
 #include "aligator/core/traj-opt-data.hpp"
+#include "aligator/core/traj-opt-problem.hpp"
+#include "stage-data.hpp"
+#include "cost-abstract.hpp"
 
 namespace aligator {
 
@@ -14,16 +17,13 @@ TrajOptDataTpl<Scalar>::TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem)
     stage_data.push_back(problem.stages_[i]->createData());
     stage_data[i]->checkData();
   }
-
-  if (problem.term_cost_) {
-    term_cost_data = problem.term_cost_->createData();
-  }
+  term_cost_data = problem.term_cost_->createData();
 
   if (!problem.term_cstrs_.empty())
     term_cstr_data.reserve(problem.term_cstrs_.size());
   for (std::size_t k = 0; k < problem.term_cstrs_.size(); k++) {
-    const ConstraintType &tc = problem.term_cstrs_[k];
-    term_cstr_data.push_back(tc.func->createData());
+    const auto &func = problem.term_cstrs_.funcs[k];
+    term_cstr_data.push_back(func->createData());
   }
 }
 

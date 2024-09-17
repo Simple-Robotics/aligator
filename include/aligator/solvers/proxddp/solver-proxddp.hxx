@@ -1,6 +1,6 @@
 /// @file solver-proxddp.hxx
 /// @brief  Implementations for the trajectory optimization algorithm.
-/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include "solver-proxddp.hpp"
@@ -22,7 +22,7 @@ template <typename Scalar>
 void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
                                WorkspaceTpl<Scalar> &workspace) {
   ALIGATOR_TRACY_ZONE_SCOPED;
-  using ProductOp = ConstraintSetProductTpl<Scalar>;
+  using ProductOp = proxsuite::nlp::ConstraintSetProductTpl<Scalar>;
   auto &sif = workspace.shifted_constraints;
 
   const TrajOptDataTpl<Scalar> &prob_data = workspace.problem_data;
@@ -198,6 +198,7 @@ void SolverProxDDPTpl<Scalar>::computeMultipliers(
     Lds[0] = mu() * (lams_plus[0] - lams[0]);
     ALIGATOR_RAISE_IF_NAN(Lds[0]);
   }
+  using ConstraintSetProd = proxsuite::nlp::ConstraintSetProductTpl<Scalar>;
 
   // loop over the stages
   for (std::size_t i = 0; i < nsteps; i++) {
@@ -219,7 +220,7 @@ void SolverProxDDPTpl<Scalar>::computeMultipliers(
 
     // 2. use product constraint operator
     // to compute the new multiplier estimates
-    const ConstraintSetProductTpl<Scalar> &op = workspace_.cstr_product_sets[i];
+    const ConstraintSetProd &op = workspace_.cstr_product_sets[i];
 
     // fill in shifted constraints buffer
     BlkView scvView(shifted_constraints[i], cstr_stack.dims());
@@ -243,8 +244,7 @@ void SolverProxDDPTpl<Scalar>::computeMultipliers(
     const ConstraintStack &cstr_stack = problem.term_cstrs_;
     const CstrProximalScaler &scaler = workspace_.cstr_scalers[nsteps];
 
-    const ConstraintSetProductTpl<Scalar> &op =
-        workspace_.cstr_product_sets[nsteps];
+    const ConstraintSetProd &op = workspace_.cstr_product_sets[nsteps];
 
     BlkView scvView(shifted_constraints[nsteps], cstr_stack.dims());
     for (size_t j = 0; j < cstr_stack.size(); j++) {
@@ -374,9 +374,9 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
                                *prob_data.term_cost_data);
 
   for (std::size_t k = 0; k < problem.term_cstrs_.size(); ++k) {
-    const ConstraintType &tc = problem.term_cstrs_[k];
+    const auto &func = problem.term_cstrs_.funcs[k];
     StageFunctionData &td = *prob_data.term_cstr_data[k];
-    tc.func->evaluate(xs[nsteps], problem.unone_, xs[nsteps], td);
+    func->evaluate(xs[nsteps], problem.unone_, xs[nsteps], td);
   }
 
   // update multiplier
@@ -408,6 +408,7 @@ template <typename Scalar>
 bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
                                    const std::vector<VectorXs> &xs_init,
                                    const std::vector<VectorXs> &us_init,
+                                   const std::vector<VectorXs> &vs_init,
                                    const std::vector<VectorXs> &lams_init) {
   ALIGATOR_TRACY_ZONE_SCOPED;
   if (!workspace_.isInitialized() || !results_.isInitialized()) {
@@ -416,12 +417,8 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
 
   check_trajectory_and_assign(problem, xs_init, us_init, results_.xs,
                               results_.us);
-  if (lams_init.size() == results_.lams.size()) {
-    for (std::size_t i = 0; i < lams_init.size(); i++) {
-      long size = std::min(lams_init[i].rows(), results_.lams[i].rows());
-      results_.lams[i].head(size) = lams_init[i].head(size);
-    }
-  }
+  assign_no_resize(vs_init, results_.vs);
+  assign_no_resize(lams_init, results_.lams);
 
   if (force_initial_condition_) {
     workspace_.trial_xs[0] = problem.getInitState();

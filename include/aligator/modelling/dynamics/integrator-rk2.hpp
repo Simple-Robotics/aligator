@@ -27,7 +27,7 @@ struct IntegratorRK2Tpl : ExplicitIntegratorAbstractTpl<_Scalar> {
 
   Scalar timestep_;
 
-  IntegratorRK2Tpl(const shared_ptr<ODEType> &cont_dynamics,
+  IntegratorRK2Tpl(const xyz::polymorphic<ODEType> &cont_dynamics,
                    const Scalar timestep);
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                BaseData &data) const;

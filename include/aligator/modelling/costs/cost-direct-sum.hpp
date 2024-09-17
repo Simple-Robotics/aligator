@@ -13,15 +13,16 @@ template <typename _Scalar> struct DirectSumCostTpl : CostAbstractTpl<_Scalar> {
   using BaseCost = CostAbstractTpl<Scalar>;
   using BaseData = CostDataAbstractTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
+  using PolyCost = xyz::polymorphic<BaseCost>;
 
   struct Data;
 
-  DirectSumCostTpl(shared_ptr<BaseCost> c1, shared_ptr<BaseCost> c2)
+  DirectSumCostTpl(const PolyCost &c1, const PolyCost &c2)
       : BaseCost(c1->space * c2->space, c1->nu + c2->nu), c1_(c1), c2_(c2) {
-    assert(c1 != nullptr && c2 != nullptr);
+    assert(!c1.valueless_after_move() && !c2.valueless_after_move());
   }
 
-  shared_ptr<BaseCost> c1_, c2_;
+  xyz::polymorphic<BaseCost> c1_, c2_;
 
   shared_ptr<BaseData> createData() const override;
 
@@ -35,7 +36,7 @@ template <typename _Scalar> struct DirectSumCostTpl : CostAbstractTpl<_Scalar> {
 private:
   using CartesianProduct = proxsuite::nlp::CartesianProductTpl<Scalar>;
   auto get_product_space() const {
-    return static_cast<CartesianProduct const *>(this->space.get());
+    return dynamic_cast<CartesianProduct const &>(*this->space);
   }
   static Data &data_cast(BaseData &data) { return static_cast<Data &>(data); }
 };
@@ -52,9 +53,9 @@ template <typename Scalar>
 void DirectSumCostTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                         const ConstVectorRef &u,
                                         BaseData &data) const {
-  CartesianProduct const *space = get_product_space();
+  CartesianProduct const space = get_product_space();
   Data &d = data_cast(data);
-  auto xs = space->split(x);
+  auto xs = space.split(x);
   ConstVectorRef u1 = u.head(c1_->nu);
   ConstVectorRef u2 = u.tail(c2_->nu);
 
@@ -68,9 +69,9 @@ template <typename Scalar>
 void DirectSumCostTpl<Scalar>::computeGradients(const ConstVectorRef &x,
                                                 const ConstVectorRef &u,
                                                 BaseData &data) const {
-  CartesianProduct const *space = get_product_space();
+  CartesianProduct const space = get_product_space();
   Data &d = data_cast(data);
-  auto xs = space->split(x);
+  auto xs = space.split(x);
   ConstVectorRef u1 = u.head(c1_->nu);
   ConstVectorRef u2 = u.tail(c2_->nu);
 
@@ -90,9 +91,9 @@ template <typename Scalar>
 void DirectSumCostTpl<Scalar>::computeHessians(const ConstVectorRef &x,
                                                const ConstVectorRef &u,
                                                BaseData &data) const {
-  CartesianProduct const *space = get_product_space();
+  CartesianProduct const space = get_product_space();
   Data &d = data_cast(data);
-  auto xs = space->split(x);
+  auto xs = space.split(x);
   ConstVectorRef u1 = u.head(c1_->nu);
   ConstVectorRef u2 = u.tail(c2_->nu);
 
@@ -120,9 +121,9 @@ auto DirectSumCostTpl<Scalar>::createData() const -> shared_ptr<BaseData> {
 }
 
 template <typename Scalar>
-auto directSum(shared_ptr<CostAbstractTpl<Scalar>> const &c1,
-               shared_ptr<CostAbstractTpl<Scalar>> const &c2) {
-  return std::make_shared<DirectSumCostTpl<Scalar>>(c1, c2);
+auto directSum(xyz::polymorphic<CostAbstractTpl<Scalar>> const &c1,
+               xyz::polymorphic<CostAbstractTpl<Scalar>> const &c2) {
+  return DirectSumCostTpl<Scalar>(c1, c2);
 }
 
 } // namespace aligator

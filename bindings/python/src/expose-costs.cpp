@@ -5,6 +5,7 @@
 
 #include "aligator/modelling/costs/quad-costs.hpp"
 #include "aligator/modelling/costs/constant-cost.hpp"
+#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {
@@ -16,22 +17,24 @@ using context::Manifold;
 using context::MatrixXs;
 using context::Scalar;
 using context::VectorXs;
-using internal::PyCostFunction;
 using QuadraticCost = QuadraticCostTpl<Scalar>;
-using CostPtr = shared_ptr<CostAbstract>;
+using PolyCost = xyz::polymorphic<CostAbstract>;
 
 struct CostDataWrapper : CostData, bp::wrapper<CostData> {
   using CostData::CostData;
 };
 
+PolymorphicVisitor<PolyCost> poly_visitor;
+
 void exposeQuadCost() {
 
   bp::class_<ConstantCostTpl<Scalar>, bp::bases<CostAbstract>>(
       "ConstantCost", "A constant cost term.",
-      bp::init<shared_ptr<Manifold>, int, Scalar>(
+      bp::init<xyz::polymorphic<Manifold>, int, Scalar>(
           bp::args("self", "space", "nu", "value")))
       .def_readwrite("value", &ConstantCostTpl<Scalar>::value_)
-      .def(CopyableVisitor<ConstantCostTpl<Scalar>>());
+      .def(CopyableVisitor<ConstantCostTpl<Scalar>>())
+      .def(poly_visitor);
 
   bp::class_<QuadraticCost, bp::bases<CostAbstract>>(
       "QuadraticCost",
@@ -57,7 +60,8 @@ void exposeQuadCost() {
                     "Whether there is a cross term.")
       .add_property("weights_cross", &QuadraticCost::getCrossWeights,
                     &QuadraticCost::setCrossWeight, "Cross term weight.")
-      .def(CopyableVisitor<QuadraticCostTpl<Scalar>>());
+      .def(CopyableVisitor<QuadraticCostTpl<Scalar>>())
+      .def(poly_visitor);
 
   bp::class_<QuadraticCost::Data, bp::bases<CostData>>(
       "QuadraticCostData", "Quadratic cost data.", bp::no_init);
@@ -73,11 +77,10 @@ void exposeCentroidalFunctions();
 void exposeCostStack();
 
 void exposeCostAbstract() {
-  bp::register_ptr_to_python<CostPtr>();
-
-  bp::class_<PyCostFunction<>, boost::noncopyable>(
+  register_polymorphic_to_python<PolyCost>();
+  bp::class_<PyCostFunction, boost::noncopyable>(
       "CostAbstract", "Base class for cost functions.", bp::no_init)
-      .def(bp::init<shared_ptr<Manifold>, const int>(
+      .def(bp::init<const xyz::polymorphic<Manifold> &, const int>(
           bp::args("self", "space", "nu")))
       .def("evaluate", bp::pure_virtual(&CostAbstract::evaluate),
            bp::args("self", "x", "u", "data"), "Evaluate the cost function.")
@@ -92,7 +95,8 @@ void exposeCostAbstract() {
       .add_property("nx", &CostAbstract::nx)
       .add_property("ndx", &CostAbstract::ndx)
       .add_property("nu", &CostAbstract::nu)
-      .def(CreateDataPythonVisitor<CostAbstract>());
+      .def(CreateDataPolymorphicPythonVisitor<CostAbstract, PyCostFunction>())
+      .def(poly_visitor);
 
   bp::register_ptr_to_python<shared_ptr<CostData>>();
   bp::class_<CostDataWrapper, boost::noncopyable>(
@@ -121,8 +125,10 @@ void exposeCostAbstract() {
                                &CostData::Luu_,
                                bp::return_value_policy<bp::return_by_value>()));
 
-  StdVectorPythonVisitor<std::vector<CostPtr>, true>::expose(
-      "StdVec_CostAbstract");
+  StdVectorPythonVisitor<std::vector<PolyCost>, true>::expose(
+      "StdVec_CostAbstract",
+      eigenpy::details::overload_base_get_item_for_std_vector<
+          std::vector<PolyCost>>{});
   StdVectorPythonVisitor<std::vector<shared_ptr<CostData>>, true>::expose(
       "StdVec_CostData");
 }
