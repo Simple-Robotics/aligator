@@ -39,6 +39,17 @@ template <typename Scalar> struct LogResidualCostTpl : CostAbstractTpl<Scalar> {
     return std::make_shared<Data>(this->ndx(), this->nu,
                                   residual_->createData());
   }
+
+  /// @brief Get a pointer to the underlying type of the residual, by attempting
+  /// to cast.
+  template <typename Derived> Derived *getResidual() {
+    return dynamic_cast<Derived *>(&*residual_);
+  }
+
+  /// @copybrief getResidual().
+  template <typename Derived> const Derived *getResidual() const {
+    return dynamic_cast<const Derived *>(&*residual_);
+  }
 };
 
 extern template struct LogResidualCostTpl<context::Scalar>;
