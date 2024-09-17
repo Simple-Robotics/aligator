@@ -2,10 +2,9 @@
 
 #include <proxsuite-nlp/linalg/bunchkaufman.hpp>
 
+#include "fwd.hpp"
 #include "blk-matrix.hpp"
-#include "lqr-problem.hpp"
 #include "riccati-base.hpp"
-#include <aligator/tracy.hpp>
 
 namespace aligator::gar {
 
@@ -71,8 +70,6 @@ protected:
 };
 
 } // namespace aligator::gar
-
-#include "dense-riccati.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "dense-riccati.txx"

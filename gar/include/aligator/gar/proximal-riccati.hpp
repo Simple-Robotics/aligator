@@ -46,8 +46,6 @@ protected:
 } // namespace gar
 } // namespace aligator
 
-#include "./proximal-riccati.hxx"
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./proximal-riccati.txx"
 #endif

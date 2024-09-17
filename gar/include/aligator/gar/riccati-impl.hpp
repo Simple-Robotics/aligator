@@ -54,39 +54,7 @@ template <typename _Scalar> struct StageFactor {
     }
   };
 
-  StageFactor(uint nx, uint nu, uint nc, uint nx2, uint nth)
-      : Qhat(nx, nx), Rhat(nu, nu), Shat(nx, nu), qhat(nx), rhat(nu),
-        AtV(nx, nx2), BtV(nu, nx2), Gxhat(nx, nth), Guhat(nu, nth),
-        ff({nu, nc, nx2, nx2}, {1}), fb({nu, nc, nx2, nx2}, {nx}),
-        fth({nu, nc, nx2, nx2}, {nth}), kktMat({nu, nc}, {nu, nc}),
-        kktChol(nu + nc), Efact(nx), yff_pre(nx2), A_pre(nx, nx),
-        Yth_pre(nx2, nth), Ptilde(nx, nx), Einv(nx2, nx2), EinvP(nx2, nx2),
-        schurMat(nx2, nx2), schurChol(nx2), vm(nx, nth) {
-    Qhat.setZero();
-    Rhat.setZero();
-    Shat.setZero();
-    qhat.setZero();
-    rhat.setZero();
-
-    AtV.setZero();
-    BtV.setZero();
-
-    Gxhat.setZero();
-    Guhat.setZero();
-
-    ff.setZero();
-    fb.setZero();
-    fth.setZero();
-    kktMat.setZero();
-
-    yff_pre.setZero();
-    A_pre.setZero();
-    Yth_pre.setZero();
-    Ptilde.setZero();
-    Einv.setZero();
-    EinvP.setZero();
-    schurMat.setZero();
-  }
+  StageFactor(uint nx, uint nu, uint nc, uint nx2, uint nth);
 
   MatrixXs Qhat;
   MatrixXs Rhat;

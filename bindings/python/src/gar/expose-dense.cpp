@@ -2,6 +2,7 @@
 #include "aligator/python/fwd.hpp"
 
 #include "aligator/gar/dense-riccati.hpp"
+#include "aligator/gar/lqr-problem.hpp"
 
 namespace aligator::python {
 using namespace gar;

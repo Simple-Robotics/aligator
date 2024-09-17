@@ -8,6 +8,7 @@
 #include "aligator/gar/parallel-solver.hpp"
 #include "aligator/gar/proximal-riccati.hpp"
 #include "aligator/gar/utils.hpp"
+#include "aligator/threads.hpp"
 #include <Eigen/Cholesky>
 
 using namespace aligator::gar;

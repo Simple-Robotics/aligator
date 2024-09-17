@@ -5,6 +5,35 @@
 namespace aligator::gar {
 
 template <typename Scalar>
+LQRKnotTpl<Scalar>::LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth)
+    : nx(nx), nu(nu), nc(nc), nx2(nx2), nth(nth),    //
+      Q(nx, nx), S(nx, nu), R(nu, nu), q(nx), r(nu), //
+      A(nx2, nx), B(nx2, nu), E(nx2, nx), f(nx2),    //
+      C(nc, nx), D(nc, nu), d(nc), Gth(nth, nth), Gx(nx, nth), Gu(nu, nth),
+      Gv(nc, nth), gamma(nth) {
+  Q.setZero();
+  S.setZero();
+  R.setZero();
+  q.setZero();
+  r.setZero();
+
+  A.setZero();
+  B.setZero();
+  E.setZero();
+  f.setZero();
+
+  C.setZero();
+  D.setZero();
+  d.setZero();
+
+  Gth.setZero();
+  Gx.setZero();
+  Gu.setZero();
+  Gv.setZero();
+  gamma.setZero();
+}
+
+template <typename Scalar>
 Scalar LQRProblemTpl<Scalar>::evaluate(
     const VectorOfVectors &xs, const VectorOfVectors &us,
     const std::optional<ConstVectorRef> &theta_) const {

@@ -5,7 +5,6 @@
 #include "aligator/gar/fwd.hpp"
 #include "aligator/gar/riccati-base.hpp"
 #include "aligator/gar/riccati-impl.hpp"
-#include "aligator/tracy.hpp"
 
 namespace aligator {
 namespace gar {
@@ -107,8 +106,6 @@ protected:
 
 } // namespace gar
 } // namespace aligator
-
-#include "aligator/gar/parallel-solver.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/gar/parallel-solver.txx"
