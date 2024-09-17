@@ -15,6 +15,7 @@ using T = double;
 using context::MatrixXs;
 using context::VectorXs;
 using QuadraticResidualCost = QuadraticResidualCostTpl<T>;
+using StateError = StateErrorResidualTpl<T>;
 
 void fd_test(VectorXs x0, VectorXs u0, MatrixXs weights,
              QuadraticResidualCost qres, shared_ptr<context::CostData> data) {
@@ -42,63 +43,70 @@ void fd_test(VectorXs x0, VectorXs u0, MatrixXs weights,
 
 BOOST_AUTO_TEST_CASE(quad_state_se2) {
   using SE2 = proxsuite::nlp::SETpl<2, T>;
-  auto space = std::make_shared<SE2>();
+  SE2 space;
 
-  const Eigen::Index ndx = space->ndx();
+  const Eigen::Index ndx = space.ndx();
   const Eigen::Index nu = 1UL;
   Eigen::VectorXd u0(nu);
   u0.setZero();
 
-  const auto target = space->rand();
+  const auto target = space.rand();
 
-  const auto fun =
-      std::make_shared<StateErrorResidualTpl<T>>(*space, nu, target);
+  const StateError fun(space, nu, target);
 
-  BOOST_CHECK_EQUAL(fun->nr, ndx);
+  BOOST_CHECK_EQUAL(fun.nr, ndx);
   Eigen::MatrixXd weights(ndx, ndx);
   weights.setIdentity();
-  const auto qres =
-      std::make_shared<QuadraticStateCostTpl<T>>(*space, nu, target, weights);
+  const QuadraticStateCostTpl<T> qres(space, nu, target, weights);
 
-  shared_ptr<context::CostData> data = qres->createData();
-  auto fd = fun->createData();
+  shared_ptr<context::CostData> data = qres.createData();
+  auto fd = fun.createData();
 
   const int nrepeats = 10;
 
   for (int k = 0; k < nrepeats; k++) {
-    Eigen::VectorXd x0 = space->rand();
-    fd_test(x0, u0, weights, *qres, data);
+    Eigen::VectorXd x0 = space.rand();
+    fd_test(x0, u0, weights, qres, data);
   }
+
+  const StateError *fun_cast = qres.getResidual<StateError>();
+  BOOST_CHECK(fun_cast != nullptr);
 }
 
 BOOST_AUTO_TEST_CASE(quad_state_highdim) {
   using VectorSpace = proxsuite::nlp::VectorSpaceTpl<T>;
   const Eigen::Index ndx = 56;
-  const auto space = std::make_shared<VectorSpace>(ndx);
+  const VectorSpace space(ndx);
   const Eigen::Index nu = 1UL;
 
   Eigen::VectorXd u0(nu);
   u0.setZero();
 
-  const auto target = space->rand();
+  const auto target = space.rand();
 
-  const auto fun =
-      std::make_shared<StateErrorResidualTpl<T>>(*space, nu, target);
+  const StateErrorResidualTpl<T> fun(space, nu, target);
 
-  BOOST_CHECK_EQUAL(fun->nr, ndx);
+  BOOST_CHECK_EQUAL(fun.nr, ndx);
   Eigen::MatrixXd weights(ndx, ndx);
   weights.setIdentity();
-  const auto qres =
-      std::make_shared<QuadraticStateCostTpl<T>>(*space, nu, target, weights);
+  const QuadraticStateCostTpl<T> qres(space, nu, target, weights);
 
-  shared_ptr<context::CostData> data = qres->createData();
-  auto fd = fun->createData();
+  shared_ptr<context::CostData> data = qres.createData();
+  auto fd = fun.createData();
 
   const int nrepeats = 10;
 
   for (int k = 0; k < nrepeats; k++) {
-    Eigen::VectorXd x0 = space->rand();
-    fd_test(x0, u0, weights, *qres, data);
+    Eigen::VectorXd x0 = space.rand();
+    fd_test(x0, u0, weights, qres, data);
+  }
+
+  const StateError *fun_cast = qres.getResidual<StateError>();
+  BOOST_CHECK(fun_cast != nullptr);
+
+  {
+    const auto *try_cast = qres.getResidual<ControlErrorResidualTpl<T>>();
+    BOOST_CHECK(try_cast == nullptr);
   }
 }
 
