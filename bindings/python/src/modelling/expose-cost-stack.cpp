@@ -4,8 +4,10 @@
 #include "aligator/modelling/costs/sum-of-costs.hpp"
 
 #include <eigenpy/std-pair.hpp>
-#include <eigenpy/std-map.hpp>
 #include <eigenpy/variant.hpp>
+#if EIGENPY_VERSION_AT_LEAST(3, 9, 1)
+#include <eigenpy/std-map.hpp>
+#endif
 
 namespace aligator {
 namespace python {
@@ -57,7 +59,9 @@ void exposeCostStack() {
             .def("size", &CostStack::size, "Get the number of cost components.")
             .def(CopyableVisitor<CostStack>())
             .def(PolymorphicMultiBaseVisitor<CostAbstract>());
+#if EIGENPY_VERSION_AT_LEAST(3, 9, 1)
     eigenpy::GenericMapVisitor<CostMap, true>::expose("CostMap");
+#endif
   }
 
   {
@@ -66,7 +70,9 @@ void exposeCostStack() {
         bp::class_<CostStackData, bp::bases<CostData>>(
             "CostStackData", "Data struct for CostStack.", bp::no_init)
             .def_readonly("sub_cost_data", &CostStackData::sub_cost_data);
+#if EIGENPY_VERSION_AT_LEAST(3, 9, 1)
     eigenpy::GenericMapVisitor<CostStackData::DataMap, true>::expose("DataMap");
+#endif
   }
 }
 
