@@ -3,7 +3,7 @@
 
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
 
-#include <Eigen/src/LU/PartialPivLU.h>
+#include <Eigen/LU>
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 #include <pinocchio/multibody/model.hpp>
 
