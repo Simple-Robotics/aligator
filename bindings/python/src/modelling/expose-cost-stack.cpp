@@ -3,8 +3,8 @@
 
 #include "aligator/modelling/costs/sum-of-costs.hpp"
 
-#include <eigenpy/std-map.hpp>
 #include <eigenpy/std-pair.hpp>
+#include <eigenpy/variant.hpp>
 
 namespace aligator {
 namespace python {
@@ -21,6 +21,7 @@ void exposeCostStack() {
   using CostItem = CostStack::CostItem;
   using CostMap = CostStack::CostMap;
   eigenpy::StdPairConverter<CostItem>::registration();
+  eigenpy::VariantConverter<CostKey>::registration();
 
   bp::class_<CostStack, bp::bases<CostAbstract>>(
       "CostStack", "A weighted sum of other cost functions.", bp::no_init)
@@ -33,15 +34,18 @@ void exposeCostStack() {
       //                "Components of this cost stack.")
       .def(
           "addCost",
-          +[](CostStack &self, const PolyCost &cost, const Scalar weight)
-              -> CostItem & { return self.addCost(cost, weight); },
+          +[](CostStack &self, const PolyCost &cost, const Scalar weight) {
+            // return
+            self.addCost(cost, weight);
+          },
           ("self"_a, "cost", "weight"_a = 1.),
           bp::return_internal_reference<>())
       .def(
           "addCost",
           +[](CostStack &self, CostKey key, const PolyCost &cost,
-              const Scalar weight) -> CostItem & {
-            return self.addCost(key, cost, weight);
+              const Scalar weight) {
+            // return
+            self.addCost(key, cost, weight);
           },
           ("self"_a, "key", "cost", "weight"_a = 1.),
           bp::return_internal_reference<>())
