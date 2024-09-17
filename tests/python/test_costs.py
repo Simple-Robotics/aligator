@@ -145,11 +145,14 @@ def test_stack_error():
     rcost = QuadraticCost(Q, R)
     cost_stack.addCost(rcost)  # optional
 
+    cost_stack.components
+    print(cost_stack.components.todict())
+
     rc2 = QuadraticCost(np.eye(3), np.eye(nu))
     rc3 = QuadraticCost(np.eye(nx), np.eye(nu * 2))
 
     cost_data = cost_stack.createData()
-    print(cost_data.sub_cost_data.tolist())
+    print(cost_data.sub_cost_data.todict())
 
     with pytest.raises(Exception) as e_info:
         cost_stack.addCost(rc2)

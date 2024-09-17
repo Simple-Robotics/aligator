@@ -4,6 +4,7 @@
 #include "aligator/modelling/costs/sum-of-costs.hpp"
 
 #include <eigenpy/std-pair.hpp>
+#include <eigenpy/std-map.hpp>
 #include <eigenpy/variant.hpp>
 
 namespace aligator {
@@ -23,40 +24,50 @@ void exposeCostStack() {
   eigenpy::StdPairConverter<CostItem>::registration();
   eigenpy::VariantConverter<CostKey>::registration();
 
-  bp::class_<CostStack, bp::bases<CostAbstract>>(
-      "CostStack", "A weighted sum of other cost functions.", bp::no_init)
-      .def(bp::init<xyz::polymorphic<Manifold>, const int,
-                    const std::vector<PolyCost> &, const std::vector<Scalar> &>(
-          ("self"_a, "space", "nu", "components"_a = bp::list(),
-           "weights"_a = bp::list())))
-      .def(bp::init<const PolyCost &>(("self"_a, "cost")))
-      // .def_readwrite("components", &CostStack::components_,
-      //                "Components of this cost stack.")
-      .def(
-          "addCost",
-          +[](CostStack &self, const PolyCost &cost, const Scalar weight) {
-            // return
-            self.addCost(cost, weight);
-          },
-          ("self"_a, "cost", "weight"_a = 1.),
-          bp::return_internal_reference<>())
-      .def(
-          "addCost",
-          +[](CostStack &self, CostKey key, const PolyCost &cost,
-              const Scalar weight) {
-            // return
-            self.addCost(key, cost, weight);
-          },
-          ("self"_a, "key", "cost", "weight"_a = 1.),
-          bp::return_internal_reference<>())
-      .def("size", &CostStack::size, "Get the number of cost components.")
-      .def(CopyableVisitor<CostStack>())
-      .def(PolymorphicMultiBaseVisitor<CostAbstract>());
+  {
+    bp::scope scope =
+        bp::class_<CostStack, bp::bases<CostAbstract>>(
+            "CostStack", "A weighted sum of other cost functions.", bp::no_init)
+            .def(bp::init<xyz::polymorphic<Manifold>, const int,
+                          const std::vector<PolyCost> &,
+                          const std::vector<Scalar> &>(
+                ("self"_a, "space", "nu", "components"_a = bp::list(),
+                 "weights"_a = bp::list())))
+            .def(bp::init<const PolyCost &>(("self"_a, "cost")))
+            .def_readwrite("components", &CostStack::components_,
+                           "Components of this cost stack.")
+            .def(
+                "addCost",
+                +[](CostStack &self, const PolyCost &cost,
+                    const Scalar weight) {
+                  // return
+                  self.addCost(cost, weight);
+                },
+                ("self"_a, "cost", "weight"_a = 1.),
+                bp::return_internal_reference<>())
+            .def(
+                "addCost",
+                +[](CostStack &self, CostKey key, const PolyCost &cost,
+                    const Scalar weight) {
+                  // return
+                  self.addCost(key, cost, weight);
+                },
+                ("self"_a, "key", "cost", "weight"_a = 1.),
+                bp::return_internal_reference<>())
+            .def("size", &CostStack::size, "Get the number of cost components.")
+            .def(CopyableVisitor<CostStack>())
+            .def(PolymorphicMultiBaseVisitor<CostAbstract>());
+    eigenpy::GenericMapVisitor<CostMap, true>::expose("CostMap");
+  }
 
-  bp::register_ptr_to_python<shared_ptr<CostStackData>>();
-  bp::class_<CostStackData, bp::bases<CostData>>(
-      "CostStackData", "Data struct for CostStack.", bp::no_init)
-      .def_readonly("sub_cost_data", &CostStackData::sub_cost_data);
+  {
+    bp::register_ptr_to_python<shared_ptr<CostStackData>>();
+    bp::scope scope =
+        bp::class_<CostStackData, bp::bases<CostData>>(
+            "CostStackData", "Data struct for CostStack.", bp::no_init)
+            .def_readonly("sub_cost_data", &CostStackData::sub_cost_data);
+    eigenpy::GenericMapVisitor<CostStackData::DataMap, true>::expose("DataMap");
+  }
 }
 
 } // namespace python
