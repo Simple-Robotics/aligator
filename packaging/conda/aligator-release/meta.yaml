@@ -42,6 +42,7 @@ requirements:
     - eigen
     - python
     - matplotlib
+    - proxsuite-nlp>=0.8.0
     - typed-argument-parser
 
 test:
