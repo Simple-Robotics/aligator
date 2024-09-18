@@ -10,7 +10,7 @@
 #include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 #include <boost/test/unit_test.hpp>
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 #include <fmt/ostream.h>
 
 using namespace aligator;

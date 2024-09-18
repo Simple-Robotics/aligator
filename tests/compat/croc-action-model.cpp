@@ -8,7 +8,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <proxsuite-nlp/fmt-eigen.hpp>
-#include <fmt/core.h>
+#include <fmt/format.h>
 #include <fmt/ostream.h>
 
 BOOST_AUTO_TEST_SUITE(croc_action_model)

@@ -6,7 +6,7 @@
 
 #include <proxsuite-nlp/manifold-base.hpp>
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 namespace aligator {
 
