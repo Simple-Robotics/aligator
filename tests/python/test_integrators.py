@@ -2,10 +2,9 @@ import numpy as np
 import aligator
 from aligator import dynamics, manifolds
 import pytest
-from utils import create_linear_ode, create_multibody_ode
+from utils import create_linear_ode, create_multibody_ode, infNorm
 
 EPSILON = 1e-5
-ATOL = EPSILON**0.5
 
 
 def function_finite_difference(
@@ -85,7 +84,10 @@ def finite_difference_explicit_dyn(dyn: dynamics.IntegratorAbstract, x0, u0, eps
     return Jx_nd, Ju_nd
 
 
-@pytest.mark.parametrize("ode", [create_linear_ode(4, 2), create_multibody_ode()])
+@pytest.mark.parametrize(
+    "ode",
+    [create_linear_ode(4, 2), create_multibody_ode()],
+)
 @pytest.mark.parametrize(
     "integrator",
     [
@@ -98,12 +100,19 @@ def test_explicit_integrator_combinations(ode, integrator):
     dt = 0.1
     if ode is None:
         return True
-    dyn = integrator(ode, dt)
-    x = ode.space.rand()
-    x = np.clip(x, -5, 5)
-    u = np.random.randn(ode.nu)
+    for i in range(100):
+        aligator.seed(i)
+        np.random.seed(i)
+        dyn = integrator(ode, dt)
+        try:
+            x = ode.space.rand()
+            x = np.clip(x, -5, 5)
+            u = np.random.randn(ode.nu)
 
-    exp_dyn_fd_check(dyn, x, u, eps=EPSILON)
+            exp_dyn_fd_check(dyn, x, u, eps=1e-7)
+        except AssertionError:
+            print("Random seed:", i)
+            raise
 
 
 @pytest.mark.parametrize("dae", [create_linear_ode(4, 3), create_multibody_ode()])
@@ -124,20 +133,24 @@ def test_implicit_integrator(
 
     dyn.evaluate(x, u, x, data)
     dyn.computeJacobians(x, u, x, data)
-    assert np.allclose(data.Jx, Jx_nd, atol=ATOL)
-    assert np.allclose(data.Ju, Ju_nd, atol=ATOL)
-    assert np.allclose(data.Jy, Jy_nd, atol=ATOL)
+    atol = EPSILON**0.5
+    assert np.allclose(data.Jx, Jx_nd, atol=atol)
+    assert np.allclose(data.Ju, Ju_nd, atol=atol)
+    assert np.allclose(data.Jy, Jy_nd, atol=atol)
 
 
-def exp_dyn_fd_check(dyn, x, u, eps):
+def exp_dyn_fd_check(dyn: dynamics.ExplicitDynamicsModel, x, u, eps: float):
     Jx_nd, Ju_nd = finite_difference_explicit_dyn(dyn, x, u, eps=eps)
 
     np.set_printoptions(precision=3, linewidth=250)
     data = dyn.createData()
     dyn.forward(x, u, data)
     dyn.dForward(x, u, data)
-    assert np.allclose(data.Jx, Jx_nd, atol=ATOL)
-    assert np.allclose(data.Ju, Ju_nd, atol=ATOL)
+    atol = eps**0.5
+    assert np.allclose(
+        data.Jx, Jx_nd, atol=atol
+    ), f"Error value: {infNorm(data.Jx - Jx_nd)}"
+    assert np.allclose(data.Ju, Ju_nd, atol=atol)
 
 
 if __name__ == "__main__":
