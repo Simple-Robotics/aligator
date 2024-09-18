@@ -63,8 +63,6 @@ struct WrenchConeDataTpl : StageFunctionDataTpl<Scalar> {
 
 } // namespace aligator
 
-#include "aligator/modelling/centroidal/wrench-cone.hxx"
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./wrench-cone.txx"
+#include "aligator/modelling/centroidal/wrench-cone.txx"
 #endif

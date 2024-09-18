@@ -75,8 +75,6 @@ struct FramePlacementDataTpl : StageFunctionDataTpl<Scalar> {
 
 } // namespace aligator
 
-#include "aligator/modelling/multibody/frame-placement.hxx"
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/modelling/multibody/frame-placement.txx"
 #endif

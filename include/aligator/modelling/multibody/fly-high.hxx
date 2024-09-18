@@ -2,6 +2,7 @@
 
 #include "aligator/modelling/multibody/fly-high.hpp"
 #include <pinocchio/algorithm/compute-all-terms.hpp>
+#include <pinocchio/algorithm/frames-derivatives.hpp>
 
 namespace aligator {
 

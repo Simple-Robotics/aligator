@@ -1,4 +1,4 @@
-#include "aligator/modelling/multibody/center-of-mass-translation.hpp"
+#include "aligator/modelling/multibody/center-of-mass-translation.hxx"
 
 namespace aligator {
 

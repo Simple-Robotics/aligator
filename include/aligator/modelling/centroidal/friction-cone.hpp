@@ -61,8 +61,6 @@ struct FrictionConeDataTpl : StageFunctionDataTpl<Scalar> {
 
 } // namespace aligator
 
-#include "aligator/modelling/centroidal/friction-cone.hxx"
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./friction-cone.txx"
+#include "aligator/modelling/centroidal/friction-cone.txx"
 #endif

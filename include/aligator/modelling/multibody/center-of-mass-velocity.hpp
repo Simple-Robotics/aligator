@@ -58,8 +58,6 @@ struct CenterOfMassVelocityDataTpl : StageFunctionDataTpl<Scalar> {
 
 } // namespace aligator
 
-#include "aligator/modelling/multibody/center-of-mass-velocity.hxx"
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./center-of-mass-velocity.txx"
 #endif

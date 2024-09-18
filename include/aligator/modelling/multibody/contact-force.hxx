@@ -1,11 +1,9 @@
 #pragma once
 
-#include "aligator/macros.hpp"
 #include "aligator/modelling/multibody/contact-force.hpp"
 
 #include <pinocchio/algorithm/constrained-dynamics.hpp>
 #include <pinocchio/algorithm/constrained-dynamics-derivatives.hpp>
-#include <aligator/macros.hpp>
 
 namespace aligator {
 

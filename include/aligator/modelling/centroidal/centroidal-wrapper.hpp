@@ -1,7 +1,6 @@
 #pragma once
 
 #include "aligator/core/unary-function.hpp"
-#include "aligator/core/function-abstract.hpp"
 #include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 
 namespace aligator {
@@ -52,8 +51,6 @@ struct CentroidalWrapperDataTpl : StageFunctionDataTpl<Scalar> {
 
 } // namespace aligator
 
-#include "aligator/modelling/centroidal/centroidal-wrapper.hxx"
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./centroidal-wrapper.txx"
+#include "aligator/modelling/centroidal/centroidal-wrapper.txx"
 #endif

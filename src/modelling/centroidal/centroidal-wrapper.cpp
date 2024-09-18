@@ -1,4 +1,4 @@
-#include "aligator/modelling/centroidal/centroidal-wrapper.hpp"
+#include "aligator/modelling/centroidal/centroidal-wrapper.hxx"
 
 namespace aligator {
 

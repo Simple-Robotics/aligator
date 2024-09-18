@@ -1,4 +1,4 @@
-#include "aligator/modelling/multibody/contact-force.hpp"
+#include "aligator/modelling/multibody/contact-force.hxx"
 #ifdef ALIGATOR_PINOCCHIO_V3
 namespace aligator {
 

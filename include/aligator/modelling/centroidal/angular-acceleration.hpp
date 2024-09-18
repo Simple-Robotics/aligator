@@ -77,8 +77,6 @@ struct AngularAccelerationDataTpl : StageFunctionDataTpl<Scalar> {
 
 } // namespace aligator
 
-#include "aligator/modelling/centroidal/angular-acceleration.hxx"
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./angular-acceleration.txx"
+#include "aligator/modelling/centroidal/angular-acceleration.txx"
 #endif

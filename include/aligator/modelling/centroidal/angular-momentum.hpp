@@ -53,8 +53,6 @@ struct AngularMomentumDataTpl : StageFunctionDataTpl<Scalar> {
 
 } // namespace aligator
 
-#include "aligator/modelling/centroidal/angular-momentum.hxx"
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./angular-momentum.txx"
+#include "aligator/modelling/centroidal/angular-momentum.txx"
 #endif

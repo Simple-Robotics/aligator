@@ -61,8 +61,6 @@ struct FrameTranslationDataTpl : StageFunctionDataTpl<Scalar> {
 
 } // namespace aligator
 
-#include "aligator/modelling/multibody/frame-translation.hxx"
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./frame-translation.txx"
+#include "aligator/modelling/multibody/frame-translation.txx"
 #endif

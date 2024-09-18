@@ -1,4 +1,4 @@
-#include "aligator/modelling/centroidal/linear-momentum.hpp"
+#include "aligator/modelling/centroidal/linear-momentum.hxx"
 
 namespace aligator {
 

@@ -3,9 +3,7 @@
 #include "./fwd.hpp"
 #include "aligator/core/function-abstract.hpp"
 
-#include <pinocchio/multibody/model.hpp>
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
-#include <pinocchio/multibody/data.hpp>
 
 #ifdef ALIGATOR_PINOCCHIO_V3
 #include <pinocchio/algorithm/proximal.hpp>
@@ -107,10 +105,8 @@ struct MultibodyWrenchConeDataTpl : StageFunctionDataTpl<Scalar> {
 
 } // namespace aligator
 
-#include "aligator/modelling/multibody/multibody-wrench-cone.hxx"
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./multibody-wrench-cone.txx"
+#include "aligator/modelling/multibody/multibody-wrench-cone.txx"
 #endif
 
 #endif // ALIGATOR_PINOCCHIO_V3

@@ -1,4 +1,4 @@
-#include "aligator/modelling/centroidal/friction-cone.hpp"
+#include "aligator/modelling/centroidal/friction-cone.hxx"
 
 namespace aligator {
 

@@ -62,8 +62,6 @@ struct FrameVelocityDataTpl : StageFunctionDataTpl<Scalar> {
 
 } // namespace aligator
 
-#include "aligator/modelling/multibody/frame-velocity.hxx"
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./frame-velocity.txx"
+#include "aligator/modelling/multibody/frame-velocity.txx"
 #endif

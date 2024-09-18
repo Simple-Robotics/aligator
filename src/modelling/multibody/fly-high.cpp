@@ -1,4 +1,4 @@
-#include "aligator/modelling/multibody/fly-high.hpp"
+#include "aligator/modelling/multibody/fly-high.hxx"
 
 namespace aligator {
 

@@ -67,8 +67,6 @@ struct CenterOfMassTranslationDataTpl : StageFunctionDataTpl<Scalar> {
 
 } // namespace aligator
 
-#include "aligator/modelling/multibody/center-of-mass-translation.hxx"
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./center-of-mass-translation.txx"
 #endif

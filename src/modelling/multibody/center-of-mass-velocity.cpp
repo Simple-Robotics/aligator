@@ -1,4 +1,4 @@
-#include "aligator/modelling/multibody/center-of-mass-velocity.hpp"
+#include "aligator/modelling/multibody/center-of-mass-velocity.hxx"
 
 namespace aligator {
 

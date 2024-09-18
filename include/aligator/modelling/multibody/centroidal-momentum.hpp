@@ -63,8 +63,6 @@ struct CentroidalMomentumDataTpl : StageFunctionDataTpl<Scalar> {
 
 } // namespace aligator
 
-#include "aligator/modelling/multibody/centroidal-momentum.hxx"
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./centroidal-momentum.txx"
+#include "aligator/modelling/multibody/centroidal-momentum.txx"
 #endif
