@@ -26,7 +26,7 @@ struct MultibodyFreeFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ODEAbstractTpl<Scalar>;
-  using BaseData = ODEDataTpl<Scalar>;
+  using BaseData = ContinuousDynamicsDataTpl<Scalar>;
   using ContDataAbstract = ContinuousDynamicsDataTpl<Scalar>;
   using Data = MultibodyFreeFwdDataTpl<Scalar>;
   using Manifold = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
@@ -67,8 +67,9 @@ private:
   Eigen::Index act_matrix_rank;
 };
 
-template <typename Scalar> struct MultibodyFreeFwdDataTpl : ODEDataTpl<Scalar> {
-  using Base = ODEDataTpl<Scalar>;
+template <typename Scalar>
+struct MultibodyFreeFwdDataTpl : ContinuousDynamicsDataTpl<Scalar> {
+  using Base = ContinuousDynamicsDataTpl<Scalar>;
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
   using PinDataType = pinocchio::DataTpl<Scalar>;

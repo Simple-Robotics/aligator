@@ -19,8 +19,8 @@ void IntegratorSemiImplEulerTpl<Scalar>::forward(
     const ConstVectorRef &x, const ConstVectorRef &u,
     ExplicitDynamicsDataTpl<Scalar> &data) const {
   Data &d = static_cast<Data &>(data);
-  ODEDataTpl<Scalar> &cdata =
-      static_cast<ODEDataTpl<Scalar> &>(*d.continuous_data);
+  ContinuousDynamicsDataTpl<Scalar> &cdata =
+      static_cast<ContinuousDynamicsDataTpl<Scalar> &>(*d.continuous_data);
   this->ode_->forward(x, u, cdata);
   int ndx = this->ndx1;
   const int ndx_2 = ndx / 2;
@@ -35,8 +35,8 @@ void IntegratorSemiImplEulerTpl<Scalar>::dForward(
     const ConstVectorRef &x, const ConstVectorRef &u,
     ExplicitDynamicsDataTpl<Scalar> &data) const {
   Data &d = static_cast<Data &>(data);
-  ODEDataTpl<Scalar> &cdata =
-      static_cast<ODEDataTpl<Scalar> &>(*d.continuous_data);
+  ContinuousDynamicsDataTpl<Scalar> &cdata =
+      static_cast<ContinuousDynamicsDataTpl<Scalar> &>(*d.continuous_data);
   int ndx = this->ndx1;
   const int ndx_2 = ndx / 2;
   const auto &space = this->space_next();

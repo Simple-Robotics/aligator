@@ -44,7 +44,7 @@ template <typename Scalar>
 struct IntegratorSemiImplDataTpl : ExplicitIntegratorDataTpl<Scalar> {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ExplicitIntegratorDataTpl<Scalar>;
-  using ODEData = ODEDataTpl<Scalar>;
+  using ODEData = ContinuousDynamicsDataTpl<Scalar>;
 
   MatrixXs Jtmp_xnext2;
   MatrixXs Jtmp_u;

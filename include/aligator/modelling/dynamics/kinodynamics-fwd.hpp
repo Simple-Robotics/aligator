@@ -31,7 +31,7 @@ struct KinodynamicsFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ODEAbstractTpl<Scalar>;
-  using BaseData = ODEDataTpl<Scalar>;
+  using BaseData = ContinuousDynamicsDataTpl<Scalar>;
   using ContDataAbstract = ContinuousDynamicsDataTpl<Scalar>;
   using Data = KinodynamicsFwdDataTpl<Scalar>;
   using Manifold = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
@@ -65,8 +65,9 @@ struct KinodynamicsFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   shared_ptr<ContDataAbstract> createData() const;
 };
 
-template <typename Scalar> struct KinodynamicsFwdDataTpl : ODEDataTpl<Scalar> {
-  using Base = ODEDataTpl<Scalar>;
+template <typename Scalar>
+struct KinodynamicsFwdDataTpl : ContinuousDynamicsDataTpl<Scalar> {
+  using Base = ContinuousDynamicsDataTpl<Scalar>;
   using PinData = pinocchio::DataTpl<Scalar>;
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using Matrix6Xs = typename math_types<Scalar>::Matrix6Xs;

@@ -43,7 +43,7 @@ template <typename _Scalar>
 struct ExplicitIntegratorDataTpl : ExplicitDynamicsDataTpl<_Scalar> {
   using Scalar = _Scalar;
   using Base = ExplicitDynamicsDataTpl<Scalar>;
-  using ODEData = ODEDataTpl<Scalar>;
+  using ODEData = ContinuousDynamicsDataTpl<Scalar>;
   shared_ptr<ODEData> continuous_data;
 
   explicit ExplicitIntegratorDataTpl(

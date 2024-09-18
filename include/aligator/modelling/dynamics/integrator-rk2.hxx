@@ -15,7 +15,7 @@ void IntegratorRK2Tpl<Scalar>::forward(const ConstVectorRef &x,
                                        const ConstVectorRef &u,
                                        BaseData &data) const {
   Data &d = static_cast<Data &>(data);
-  using ODEData = ODEDataTpl<Scalar>;
+  using ODEData = ContinuousDynamicsDataTpl<Scalar>;
   ODEData &cd1 = static_cast<ODEData &>(*d.continuous_data);
   ODEData &cd2 = static_cast<ODEData &>(*d.continuous_data2);
 
@@ -33,7 +33,7 @@ void IntegratorRK2Tpl<Scalar>::dForward(const ConstVectorRef &x,
                                         const ConstVectorRef &u,
                                         BaseData &data) const {
   Data &d = static_cast<Data &>(data);
-  using ODEData = ODEDataTpl<Scalar>;
+  using ODEData = ContinuousDynamicsDataTpl<Scalar>;
   ODEData &cd1 = static_cast<ODEData &>(*d.continuous_data);
   ODEData &cd2 = static_cast<ODEData &>(*d.continuous_data2);
 

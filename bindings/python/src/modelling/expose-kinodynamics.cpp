@@ -15,7 +15,7 @@ void exposeKinodynamics() {
   using context::StageFunction;
   using context::StageFunctionData;
   using context::UnaryFunction;
-  using ODEData = ODEDataTpl<Scalar>;
+  using ODEData = ContinuousDynamicsDataTpl<Scalar>;
   using ODEAbstract = ODEAbstractTpl<Scalar>;
   using ContinuousDynamicsAbstract = ContinuousDynamicsAbstractTpl<Scalar>;
   using KinodynamicsFwdData = KinodynamicsFwdDataTpl<Scalar>;

@@ -27,7 +27,7 @@ struct ContinuousCentroidalFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ODEAbstractTpl<Scalar>;
-  using BaseData = ODEDataTpl<Scalar>;
+  using BaseData = ContinuousDynamicsDataTpl<Scalar>;
   using ContDataAbstract = ContinuousDynamicsDataTpl<Scalar>;
   using Data = ContinuousCentroidalFwdDataTpl<Scalar>;
   using Manifold = proxsuite::nlp::VectorSpaceTpl<Scalar>;
@@ -59,8 +59,8 @@ struct ContinuousCentroidalFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
 };
 
 template <typename Scalar>
-struct ContinuousCentroidalFwdDataTpl : ODEDataTpl<Scalar> {
-  using Base = ODEDataTpl<Scalar>;
+struct ContinuousCentroidalFwdDataTpl : ContinuousDynamicsDataTpl<Scalar> {
+  using Base = ContinuousDynamicsDataTpl<Scalar>;
   using Matrix3s = Eigen::Matrix<Scalar, 3, 3>;
 
   Matrix3s Jtemp_;

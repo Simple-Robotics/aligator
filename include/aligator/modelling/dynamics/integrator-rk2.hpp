@@ -46,7 +46,7 @@ template <typename Scalar>
 struct IntegratorRK2DataTpl : ExplicitIntegratorDataTpl<Scalar> {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ExplicitIntegratorDataTpl<Scalar>;
-  using ODEData = ODEDataTpl<Scalar>;
+  using ODEData = ContinuousDynamicsDataTpl<Scalar>;
   shared_ptr<ODEData> continuous_data2;
 
   VectorXs x1_;

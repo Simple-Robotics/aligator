@@ -10,7 +10,7 @@ namespace python {
 void exposeFreeFwdDynamics() {
   using namespace aligator::dynamics;
   using context::Scalar;
-  using ODEData = ODEDataTpl<Scalar>;
+  using ODEData = ContinuousDynamicsDataTpl<Scalar>;
   using ODEAbstract = ODEAbstractTpl<Scalar>;
   using ContinuousDynamicsAbstract = ContinuousDynamicsAbstractTpl<Scalar>;
   using MultibodyFreeFwdData = MultibodyFreeFwdDataTpl<Scalar>;

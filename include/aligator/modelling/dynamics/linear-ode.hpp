@@ -15,7 +15,7 @@ template <typename _Scalar> struct LinearODETpl : ODEAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ODEAbstractTpl<Scalar>;
-  using ODEData = ODEDataTpl<Scalar>;
+  using ODEData = ContinuousDynamicsDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using ManifoldPtr = xyz::polymorphic<Manifold>;
 

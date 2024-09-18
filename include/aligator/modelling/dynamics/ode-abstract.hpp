@@ -17,7 +17,7 @@ struct ODEAbstractTpl : ContinuousDynamicsAbstractTpl<_Scalar> {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   using Base = ContinuousDynamicsAbstractTpl<Scalar>;
-  using Data = ODEDataTpl<Scalar>;
+  using Data = ContinuousDynamicsDataTpl<Scalar>;
   using Base::Base;
   using Base::nu_;
   using Base::space_;

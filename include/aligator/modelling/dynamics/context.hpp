@@ -13,7 +13,7 @@ using ContinuousDynamicsData = dynamics::ContinuousDynamicsDataTpl<Scalar>;
 
 using ODEAbstract = dynamics::ODEAbstractTpl<Scalar>;
 
-using ODEData = dynamics::ODEDataTpl<Scalar>;
+using ODEData = dynamics::ContinuousDynamicsDataTpl<Scalar>;
 
 using IntegratorAbstract = dynamics::IntegratorAbstractTpl<Scalar>;
 

@@ -22,7 +22,7 @@ struct MultibodyConstraintFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ODEAbstractTpl<Scalar>;
-  using BaseData = ODEDataTpl<Scalar>;
+  using BaseData = ContinuousDynamicsDataTpl<Scalar>;
   using ContDataAbstract = ContinuousDynamicsDataTpl<Scalar>;
   using Data = MultibodyConstraintFwdDataTpl<Scalar>;
   using RigidConstraintModelVector = PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(
@@ -54,8 +54,8 @@ struct MultibodyConstraintFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
 };
 
 template <typename Scalar>
-struct MultibodyConstraintFwdDataTpl : ODEDataTpl<Scalar> {
-  using Base = ODEDataTpl<Scalar>;
+struct MultibodyConstraintFwdDataTpl : ContinuousDynamicsDataTpl<Scalar> {
+  using Base = ContinuousDynamicsDataTpl<Scalar>;
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
   using PinDataType = pinocchio::DataTpl<Scalar>;

@@ -15,8 +15,8 @@ void IntegratorEulerTpl<Scalar>::forward(
     const ConstVectorRef &x, const ConstVectorRef &u,
     ExplicitDynamicsDataTpl<Scalar> &data) const {
   Data &d = static_cast<Data &>(data);
-  ODEDataTpl<Scalar> &cdata =
-      static_cast<ODEDataTpl<Scalar> &>(*d.continuous_data);
+  ContinuousDynamicsDataTpl<Scalar> &cdata =
+      static_cast<ContinuousDynamicsDataTpl<Scalar> &>(*d.continuous_data);
   this->ode_->forward(x, u, cdata);
   d.dx_ = timestep_ * cdata.xdot_;
   this->space_next().integrate(x, d.dx_, d.xnext_);
@@ -27,8 +27,8 @@ void IntegratorEulerTpl<Scalar>::dForward(
     const ConstVectorRef &x, const ConstVectorRef &u,
     ExplicitDynamicsDataTpl<Scalar> &data) const {
   Data &d = static_cast<Data &>(data);
-  ODEDataTpl<Scalar> &cdata =
-      static_cast<ODEDataTpl<Scalar> &>(*d.continuous_data);
+  ContinuousDynamicsDataTpl<Scalar> &cdata =
+      static_cast<ContinuousDynamicsDataTpl<Scalar> &>(*d.continuous_data);
 
   // d(dx)_z = dt * df_dz
   // then transport to x+dx
