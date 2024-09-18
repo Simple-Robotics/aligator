@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2024-09-18
+
 ### Added
 
 - Getter `getResidual<Derived>()` for composite cost functions ([#198](https://github.com/Simple-Robotics/aligator/pull/198))
@@ -144,7 +146,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * This is the first release of `aligator`. This library is a joint effort between INRIA and LAAS-CNRS, and will be maintained and expanded in the future. Please provide constructive feedback and contribute!
 
-[Unreleased]: https://github.com/Simple-Robotics/aligator/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/Simple-Robotics/aligator/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/Simple-Robotics/aligator/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/Simple-Robotics/aligator/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/Simple-Robotics/aligator/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/Simple-Robotics/aligator/compare/v0.5.1...v0.6.0
