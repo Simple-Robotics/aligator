@@ -34,7 +34,7 @@ template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
   /// @brief    Check the dimension of a component.
   /// @returns  A bool value indicating whether the component is OK to be added
   /// to this instance.
-  bool checkDimension(const xyz::polymorphic<CostBase> comp) const;
+  bool checkDimension(const CostBase &comp) const;
 
   /// @brief  Constructor with a specified dimension, and optional vector of
   /// components and weights.
@@ -46,7 +46,13 @@ template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
                const CostMap &comps)
       : CostBase(space, nu), components_(comps) {
     for (const auto &[key, item] : comps) {
-      this->checkDimension(item.first);
+      auto &cost = *item.first;
+      if (!this->checkDimension(cost)) {
+        ALIGATOR_DOMAIN_ERROR(fmt::format(
+            "Cannot add new component due to inconsistent input dimensions "
+            "(got ({:d}, {:d}), expected ({:d}, {:d}))",
+            cost.ndx(), cost.nu, this->ndx(), this->nu));
+      }
     }
   }
 
