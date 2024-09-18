@@ -41,6 +41,12 @@ def test_cost_stack():
         assert np.allclose(data1.Lxx, Q)
         assert np.allclose(data1.Luu, R)
 
+    if eigenpy.__version__ >= "3.9.1":
+        # test other API for cost,
+        # building from dict
+        cost_stack = CostStack(space, nu, {"quad": (rcost, 1.0)})
+        assert cost_stack.size() == 1
+
 
 def test_composite_cost():
     space = manifolds.VectorSpace(3)
