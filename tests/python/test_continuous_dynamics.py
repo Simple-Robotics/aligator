@@ -7,7 +7,7 @@ import numpy as np
 import aligator
 from aligator import dynamics, manifolds
 from pinocchio import Quaternion
-from utils import finite_diff, infNorm
+from utils import finite_diff, infNorm, create_multibody_ode
 
 epsilon = 1e-6
 aligator.seed(42)
@@ -72,18 +72,18 @@ def test_custom_ode():
 
 
 def test_multibody_free():
-    try:
-        import pinocchio as pin
+    ode = create_multibody_ode(True)
+    if ode is None:
+        pass
+    space = ode.space
+    nu = ode.nu
+    data = ode.createData()
+    assert isinstance(data, dynamics.MultibodyFreeFwdData)
+    assert hasattr(data, "tau")
 
-        model = pin.buildSampleModelHumanoid()
-        space = manifolds.MultibodyPhaseSpace(model)
-        nu = model.nv
-        B = np.eye(nu)
-        ode = dynamics.MultibodyFreeFwdDynamics(space, B)
-        data = ode.createData()
-        assert isinstance(data, dynamics.MultibodyFreeFwdData)
-        assert hasattr(data, "tau")
-
+    for i in range(100):
+        aligator.seed(i)
+        np.random.seed(i)
         x0 = space.rand()
         x0[:3] = 0.0
         u0 = np.random.randn(nu)
@@ -99,8 +99,6 @@ def test_multibody_free():
         assert np.allclose(Judiff, data.Ju, atol, atol), "Juerr={}".format(
             infNorm(Judiff - data.Ju)
         )
-    except ImportError:
-        pass
 
 
 def test_centroidal():
