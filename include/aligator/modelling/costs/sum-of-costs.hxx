@@ -27,8 +27,7 @@ CostStackTpl<Scalar>::CostStackTpl(xyz::polymorphic<Manifold> space,
     }
 
     for (std::size_t i = 0; i < comps.size(); i++) {
-      components_.emplace(
-          std::make_pair(i, std::make_pair(comps[i], weights[i])));
+      components_.emplace(i, std::make_pair(comps[i], weights[i]));
     }
   }
 }
