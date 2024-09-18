@@ -99,7 +99,11 @@ def test_explicit_integrator_combinations(ode, integrator):
     if ode is None:
         return True
     dyn = integrator(ode, dt)
-    ode_int_run(ode, dyn)
+    x = ode.space.rand()
+    x = np.clip(x, -5, 5)
+    u = np.random.randn(ode.nu)
+
+    exp_dyn_fd_check(dyn, x, u, eps=EPSILON)
 
 
 @pytest.mark.parametrize("dae", [create_linear_ode(4, 3), create_multibody_ode()])
@@ -116,7 +120,7 @@ def test_implicit_integrator(
     dyn.evaluate(x, u, x, data)
     assert isinstance(data, dynamics.IntegratorData)
 
-    Jx_nd, Ju_nd, Jy_nd = function_finite_difference(dyn, dyn.space, x, u)
+    Jx_nd, Ju_nd, Jy_nd = function_finite_difference(dyn, dyn.space, x, u, eps=EPSILON)
 
     dyn.evaluate(x, u, x, data)
     dyn.computeJacobians(x, u, x, data)
@@ -125,7 +129,7 @@ def test_implicit_integrator(
     assert np.allclose(data.Jy, Jy_nd, atol=ATOL)
 
 
-def exp_dyn_fd_check(dyn, x, u, eps=EPSILON):
+def exp_dyn_fd_check(dyn, x, u, eps):
     Jx_nd, Ju_nd = finite_difference_explicit_dyn(dyn, x, u, eps=eps)
 
     np.set_printoptions(precision=3, linewidth=250)
@@ -134,14 +138,6 @@ def exp_dyn_fd_check(dyn, x, u, eps=EPSILON):
     dyn.dForward(x, u, data)
     assert np.allclose(data.Jx, Jx_nd, atol=ATOL)
     assert np.allclose(data.Ju, Ju_nd, atol=ATOL)
-
-
-def ode_int_run(ode, dyn):
-    x = ode.space.rand()
-    x = np.clip(x, -5, 5)
-    u = np.random.randn(ode.nu)
-
-    exp_dyn_fd_check(dyn, x, u)
 
 
 if __name__ == "__main__":
