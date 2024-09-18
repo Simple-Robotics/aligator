@@ -1,6 +1,7 @@
 /// @file  context.hpp
 /// @brief Defines the context for instantiating the templates.
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+#pragma once
 #include "aligator/compat/crocoddyl/fwd.hpp"
 #include "aligator/context.hpp"
 
