@@ -8,7 +8,7 @@
 #if EIGENPY_VERSION_AT_LEAST(3, 9, 1)
 #define ALIGATOR_EIGENPY_HAS_MAP_SUPPORT 1
 #else
-#define ALIGATOR_EIGENPY_HAS_MAP_SUPPORT 1
+#define ALIGATOR_EIGENPY_HAS_MAP_SUPPORT 0
 #endif
 
 #if ALIGATOR_EIGENPY_HAS_MAP_SUPPORT
@@ -52,19 +52,17 @@ void exposeCostStack() {
 #endif
             .def(
                 "addCost",
-                +[](CostStack &self, const PolyCost &cost,
-                    const Scalar weight) {
-                  // return
-                  self.addCost(cost, weight);
-                },
+                +[](CostStack &self, const PolyCost &cost, const Scalar weight)
+                    -> PolyCost & { return self.addCost(cost, weight).first; },
+                bp::return_internal_reference<>(),
                 ("self"_a, "cost", "weight"_a = 1.))
             .def(
                 "addCost",
                 +[](CostStack &self, CostKey key, const PolyCost &cost,
-                    const Scalar weight) {
-                  // return
-                  self.addCost(key, cost, weight);
+                    const Scalar weight) -> PolyCost & {
+                  return self.addCost(key, cost, weight).first;
                 },
+                bp::return_internal_reference<>(),
                 ("self"_a, "key", "cost", "weight"_a = 1.))
             .def("size", &CostStack::size, "Get the number of cost components.")
             .def(CopyableVisitor<CostStack>())
