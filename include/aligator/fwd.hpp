@@ -7,7 +7,7 @@
 
 #ifdef ALIGATOR_WITH_PINOCCHIO
 #include <pinocchio/config.hpp>
-#if PINOCCHIO_VERSION_AT_LEAST(2, 9, 2)
+#if PINOCCHIO_VERSION_AT_LEAST(3, 0, 0)
 #define ALIGATOR_PINOCCHIO_V3
 #endif
 #endif
