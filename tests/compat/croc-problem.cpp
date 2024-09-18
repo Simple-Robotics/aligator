@@ -1,6 +1,7 @@
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #include "aligator/compat/crocoddyl/context.hpp"
 #include "aligator/compat/crocoddyl/problem-wrap.hpp"
+#include "aligator/compat/crocoddyl/action-model-wrap.hpp"
 
 #include <crocoddyl/core/optctrl/shooting.hpp>
 #include <crocoddyl/core/actions/lqr.hpp>

@@ -20,7 +20,6 @@ file(
 )
 
 if(BUILD_CROCODDYL_COMPAT)
-  list(APPEND PY_HEADERS ${PY_HEADER_DIR}/compat/croco.hpp)
   list(APPEND PY_SOURCES src/compat/expose-croco-compat.cpp)
 endif()
 

@@ -1,14 +1,12 @@
 #pragma once
 
-#include "aligator/fwd.hpp"
+#include "aligator/context.hpp"
 #include <proxsuite-nlp/manifold-base.hpp>
 
 #include <crocoddyl/core/state-base.hpp>
 #include <boost/shared_ptr.hpp>
 
-namespace aligator {
-namespace compat {
-namespace croc {
+namespace aligator::compat::croc {
 
 /// @brief Wraps a crocoddyl::StateAbstractTpl to a manifold
 /// (proxsuite::nlp::ManifoldAbstractTpl).
@@ -68,6 +66,8 @@ struct StateWrapperTpl : ManifoldAbstractTpl<_Scalar> {
   }
 };
 
-} // namespace croc
-} // namespace compat
-} // namespace aligator
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct StateWrapperTpl<context::Scalar>;
+#endif
+
+} // namespace aligator::compat::croc

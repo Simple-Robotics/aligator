@@ -8,14 +8,13 @@
 
 #include <eigenpy/optional.hpp>
 
-#ifdef ALIGATOR_WITH_CROCODDYL_COMPAT
-#include "aligator/python/compat/croco.hpp"
-#endif
-
 namespace aligator {
 namespace python {
 
 void exposeExplicitIntegrators();
+#ifdef ALIGATOR_WITH_CROCODDYL_COMPAT
+void exposeCrocoddylCompat();
+#endif
 
 static void exposeEnums() {
   register_enum_symlink<VerboseLevel>(true);

@@ -1,11 +1,13 @@
 /// @file
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #ifdef ALIGATOR_WITH_CROCODDYL_COMPAT
-#include "aligator/python/compat/croco.hpp"
 #include "aligator/python/polymorphic-convertible.hpp"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/compat/crocoddyl/instantiate.txx"
+#include "aligator/core/traj-opt-problem.hpp"
+#include "aligator/compat/crocoddyl/action-model-wrap.hpp"
+#include "aligator/compat/crocoddyl/problem-wrap.hpp"
+#include "aligator/compat/crocoddyl/state-wrap.hpp"
 #endif
 
 namespace aligator {

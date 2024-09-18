@@ -1,7 +1,8 @@
 /// @file
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
+#include "aligator/compat/crocoddyl/fwd.hpp"
 #include "aligator/compat/crocoddyl/state-wrap.hpp"
 #include "aligator/compat/crocoddyl/dynamics-wrap.hpp"
 
