@@ -10,9 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Getter `getResidual<Derived>()` for composite cost functions ([#198](https://github.com/Simple-Robotics/aligator/pull/198))
+- Getter `getComponent<Derived>()` for `CostStack` ([#199](https://github.com/Simple-Robotics/aligator/pull/199))
 
 ### Changed
 
+- Change storage of `CostStack` to `boost::unordered::unordered_map`, pointing to pair of cost function and weight ([#199](https://github.com/Simple-Robotics/aligator/pull/199))
 - Change storage for `ConstraintStack` to using two `std::vector<polymorphic<>>` the struct `StageConstraintTpl` is now merely a convenient API shortcut for the end-user.
 - Remove `StageConstraintTpl::nr()` (in C++ only)
 - Update minimum required version of eigenpy to 3.7.0

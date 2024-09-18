@@ -3,6 +3,7 @@
 
 #include "aligator/core/function-abstract.hpp"
 #include "aligator/modelling/state-error.hpp"
+#include "aligator/modelling/costs/sum-of-costs.hpp"
 
 #include "aligator/modelling/costs/quad-state-cost.hpp"
 #include <proxsuite-nlp/modelling/spaces/pinocchio-groups.hpp>
@@ -16,6 +17,8 @@ using context::MatrixXs;
 using context::VectorXs;
 using QuadraticResidualCost = QuadraticResidualCostTpl<T>;
 using StateError = StateErrorResidualTpl<T>;
+using SE2 = proxsuite::nlp::SETpl<2, T>;
+using VectorSpace = proxsuite::nlp::VectorSpaceTpl<T>;
 
 void fd_test(VectorXs x0, VectorXs u0, MatrixXs weights,
              QuadraticResidualCost qres, shared_ptr<context::CostData> data) {
@@ -42,7 +45,6 @@ void fd_test(VectorXs x0, VectorXs u0, MatrixXs weights,
 }
 
 BOOST_AUTO_TEST_CASE(quad_state_se2) {
-  using SE2 = proxsuite::nlp::SETpl<2, T>;
   SE2 space;
 
   const Eigen::Index ndx = space.ndx();
@@ -74,7 +76,6 @@ BOOST_AUTO_TEST_CASE(quad_state_se2) {
 }
 
 BOOST_AUTO_TEST_CASE(quad_state_highdim) {
-  using VectorSpace = proxsuite::nlp::VectorSpaceTpl<T>;
   const Eigen::Index ndx = 56;
   const VectorSpace space(ndx);
   const Eigen::Index nu = 1UL;
@@ -84,7 +85,7 @@ BOOST_AUTO_TEST_CASE(quad_state_highdim) {
 
   const auto target = space.rand();
 
-  const StateErrorResidualTpl<T> fun(space, nu, target);
+  const StateError fun(space, nu, target);
 
   BOOST_CHECK_EQUAL(fun.nr, ndx);
   Eigen::MatrixXd weights(ndx, ndx);
@@ -107,6 +108,25 @@ BOOST_AUTO_TEST_CASE(quad_state_highdim) {
   {
     const auto *try_cast = qres.getResidual<ControlErrorResidualTpl<T>>();
     BOOST_CHECK(try_cast == nullptr);
+  }
+}
+
+BOOST_AUTO_TEST_CASE(cost_stack) {
+  using CostStack = CostStackTpl<T>;
+  SE2 space;
+  auto nu = space.ndx();
+  StateError err{space, nu, space.rand()};
+  QuadraticResidualCost qres{space, err,
+                             MatrixXs::Identity(err.ndx1, err.ndx1)};
+  CostStack cost{space, nu};
+  cost.addCost("state", qres, 1.);
+  {
+    QuadraticResidualCost *pres =
+        cost.getComponent<QuadraticResidualCost>("state");
+    BOOST_CHECK(pres != nullptr);
+
+    StateError *perr = pres->getResidual<StateError>();
+    BOOST_CHECK(perr != nullptr);
   }
 }
 

@@ -79,7 +79,7 @@ jobs:
           -DBUILD_CROCODDYL_COMPAT=ON \
           -DBUILD_BENCHMARKS=ON \
           -DBUILD_EXAMPLES=ON
-        cmake --build .
+        cmake --build . -j2
         ctest --output-on-failure
         cmake --install .
 

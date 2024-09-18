@@ -2,6 +2,7 @@ from aligator import QuadraticCost, CostStack
 from aligator import manifolds
 import aligator
 import numpy as np
+import eigenpy
 
 import pytest
 
@@ -39,6 +40,12 @@ def test_cost_stack():
 
         assert np.allclose(data1.Lxx, Q)
         assert np.allclose(data1.Luu, R)
+
+    if eigenpy.__version__ >= "3.9.1":
+        # test other API for cost,
+        # building from dict
+        cost_stack = CostStack(space, nu, {"quad": (rcost, 1.0)})
+        assert cost_stack.size() == 1
 
 
 def test_composite_cost():
@@ -145,11 +152,15 @@ def test_stack_error():
     rcost = QuadraticCost(Q, R)
     cost_stack.addCost(rcost)  # optional
 
+    if eigenpy.__version__ >= "3.9.1":
+        print(cost_stack.components.todict())
+
     rc2 = QuadraticCost(np.eye(3), np.eye(nu))
     rc3 = QuadraticCost(np.eye(nx), np.eye(nu * 2))
 
-    cost_data = cost_stack.createData()
-    print(cost_data.sub_cost_data.tolist())
+    if eigenpy.__version__ >= "3.9.1":
+        cost_data = cost_stack.createData()
+        print(cost_data.sub_cost_data.todict())
 
     with pytest.raises(Exception) as e_info:
         cost_stack.addCost(rc2)
