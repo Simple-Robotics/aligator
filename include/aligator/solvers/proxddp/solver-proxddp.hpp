@@ -16,7 +16,7 @@
 
 #include <proxsuite-nlp/bcl-params.hpp>
 
-#include <unordered_map>
+#include <boost/unordered_map.hpp>
 
 namespace aligator {
 namespace gar {
@@ -58,7 +58,7 @@ public:
   using ConstraintType = StageConstraintTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
   using CallbackPtr = shared_ptr<CallbackBaseTpl<Scalar>>;
-  using CallbackMap = std::unordered_map<std::string, CallbackPtr>;
+  using CallbackMap = boost::unordered_map<std::string, CallbackPtr>;
   using ConstraintStack = ConstraintStackTpl<Scalar>;
   using CstrSet = ConstraintSetBase<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;

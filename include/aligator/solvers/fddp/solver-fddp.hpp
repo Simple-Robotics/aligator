@@ -15,7 +15,7 @@
 #include "aligator/utils/logger.hpp"
 #include "aligator/threads.hpp"
 
-#include <unordered_map>
+#include <boost/unordered_map.hpp>
 
 /// @brief  A warning for the FDDP module.
 #define ALIGATOR_FDDP_WARNING(msg) ALIGATOR_WARNING("SolverFDDP", msg)
@@ -42,7 +42,7 @@ template <typename Scalar> struct SolverFDDPTpl {
   using ExpModel = ExplicitDynamicsModelTpl<Scalar>;
   using ExplicitDynamicsData = ExplicitDynamicsDataTpl<Scalar>;
   using CallbackPtr = shared_ptr<CallbackBaseTpl<Scalar>>;
-  using CallbackMap = std::unordered_map<std::string, CallbackPtr>;
+  using CallbackMap = boost::unordered_map<std::string, CallbackPtr>;
 
   Scalar target_tol_;
 
