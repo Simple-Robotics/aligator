@@ -16,20 +16,16 @@ function(create_example_with_croco exfile)
   target_link_libraries(${exname} PRIVATE aligator::croc_compat croc_talos_arm_utils)
 endfunction()
 
-function(create_example_with_walk exfile)
-  create_example(${exfile})
-  target_add_talos_walk(${exname})
-endfunction()
-
 create_example(se2-car.cpp)
 create_example(clqr.cpp)
 if(PINOCCHIO_V3)
-  create_example_with_walk(talos-walk.cpp)
+  create_example(talos-walk.cpp)
+  target_add_talos_walk(${exname})
 endif()
 
 if(BUILD_CROCODDYL_COMPAT)
   create_example_with_croco(talos-arm.cpp)
-  target_add_example_robot_data(${PROJECT_NAME}-example-talos-arm)
+  target_add_example_robot_data(${exname})
 endif()
 
 file(GLOB EXAMPLES_PY *.py)

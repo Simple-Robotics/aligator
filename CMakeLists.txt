@@ -124,7 +124,10 @@ option(ENABLE_TEMPLATE_INSTANTIATION "Template instantiation of the main library
 
 # --- OPTIONAL DEPENDENCIES -------------------------
 option(BUILD_WITH_PINOCCHIO_SUPPORT "Build the library with support for Pinocchio" ON)
-option(BUILD_CROCODDYL_COMPAT "Build the Crocoddyl compatibility module" OFF)
+cmake_dependent_option(
+  BUILD_CROCODDYL_COMPAT "Build the Crocoddyl compatibility module" OFF
+  BUILD_WITH_PINOCCHIO_SUPPORT OFF
+)
 option(BUILD_WITH_OPENMP_SUPPORT "Build the library with the OpenMP support" ON)
 option(BUILD_WITH_CHOLMOD_SUPPORT "Build with support for backends enabled by Cholmod" OFF)
 option(BUILD_BENCHMARKS "Build benchmarks" ON)
@@ -360,15 +363,13 @@ macro(create_ex_or_bench exfile exname)
   target_include_directories(${exname} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
   target_link_libraries(${exname} PUBLIC ${PROJECT_NAME})
-  target_link_libraries(${exname} PUBLIC example-robot-data::example-robot-data)
-endmacro()
-
-macro(target_add_example_robot_data target_name)
-  target_link_libraries(${target_name} PRIVATE example-robot-data::example-robot-data)
 endmacro()
 
 if(BUILD_WITH_PINOCCHIO_SUPPORT AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
   add_project_private_dependency(example-robot-data 4.0.9 REQUIRED)
+  macro(target_add_example_robot_data target_name)
+    target_link_libraries(${target_name} PRIVATE example-robot-data::example-robot-data)
+  endmacro()
 endif()
 
 # create an utility library to avoid recompiling crocoddyl talos arm problem
@@ -392,11 +393,11 @@ if(BUILD_BENCHMARKS OR BUILD_TESTING)
   set_standard_output_directory(gar_test_utils)
 endif()
 
-if(${pinocchio_VERSION} VERSION_GREATER "2.9.0")
+if(BUILD_WITH_PINOCCHIO_SUPPORT AND ${pinocchio_VERSION} VERSION_GREATER "2.9.0")
   set(PINOCCHIO_V3 True)
 endif()
 
-if(PINOCCHIO_V3)
+if(PINOCCHIO_V3 AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
   add_library(
     talos_walk_utils STATIC ${PROJECT_SOURCE_DIR}/examples/talos-walk-utils.cpp
                             ${PROJECT_SOURCE_DIR}/examples/talos-walk-utils.hpp
