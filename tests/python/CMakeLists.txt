@@ -26,7 +26,7 @@ make_directory(${CMAKE_CURRENT_BINARY_DIR})
 foreach(pyfile ${PYTHON_TESTS})
   get_filename_component(test_name ${pyfile} NAME_WE)
   string(REGEX REPLACE "^test_" "${PROJECT_NAME}-test-py-" test_name ${test_name})
-  string(REGEX REPLACE "_" "-" test_name ${test_name})
+  string(REPLACE "_" "-" test_name ${test_name})
   execute_process(
     COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/${pyfile}
             ${CMAKE_CURRENT_BINARY_DIR}/${pyfile}
