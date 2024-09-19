@@ -1,5 +1,6 @@
 """
-Test function related to frames.
+Test function related to Pinocchio frames.
+This test is not added to CTest when CMake does not detect Pinocchio.
 """
 
 import aligator
@@ -194,4 +195,3 @@ if __name__ == "__main__":
     import pytest
 
     sys.exit(pytest.main(sys.argv))
-    # test_frame_placement()

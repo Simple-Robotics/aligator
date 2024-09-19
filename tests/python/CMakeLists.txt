@@ -10,13 +10,13 @@ file(
 if(NOT BUILD_CROCODDYL_COMPAT)
   list(REMOVE_ITEM PYTHON_TESTS test_compat_croc.py)
 endif()
-if(NOT BUILD_WITH_PINOCCHIO_PYTHON_BINDINGS)
-  list(REMOVE_ITEM PYTHON_TESTS test_constrained_dynamics.py)
+if(NOT BUILD_WITH_PINOCCHIO_SUPPORT)
+  list(REMOVE_ITEM PYTHON_TESTS test_center_of_mass.py)
   list(REMOVE_ITEM PYTHON_TESTS test_frames.py)
-endif()
-if(NOT PINOCCHIO_V3)
+  list(REMOVE_ITEM PYTHON_TESTS test_rollout.py)
+elseif(NOT PINOCCHIO_V3)
+  # Pinocchio support, but not Pinocchio 3
   list(REMOVE_ITEM PYTHON_TESTS test_constrained_dynamics.py)
-  list(REMOVE_ITEM PYTHON_TESTS test_frames.py)
 endif()
 make_directory(${CMAKE_CURRENT_BINARY_DIR})
 

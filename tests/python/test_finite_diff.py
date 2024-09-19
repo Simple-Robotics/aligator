@@ -42,7 +42,9 @@ def test_compute_jac_vs():
         assert np.allclose(fdata1.Jy, fdata1b.Jy, 1e-2)
 
 
-@pytest.mark.skipif(not HAS_PINOCCHIO, reason="Pinocchio bindings not present.")
+@pytest.mark.skipif(
+    not HAS_PINOCCHIO, reason="Aligator was compiled without Pinocchio."
+)
 def test_compute_jac_multibody():
     model = pin.buildSampleModelHumanoid()
     space = manifolds.MultibodyConfiguration(model)
@@ -87,7 +89,6 @@ def test_compute_cost_se3():
 
 
 if __name__ == "__main__":
-    import pytest
     import sys
 
     sys.exit(pytest.main(sys.argv))

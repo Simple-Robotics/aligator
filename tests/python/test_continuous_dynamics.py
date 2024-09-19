@@ -6,12 +6,13 @@ import pytest
 import numpy as np
 import aligator
 from aligator import dynamics, manifolds
-from pinocchio import Quaternion
+from eigenpy import Quaternion
 from utils import finite_diff, infNorm, create_multibody_ode
 
 epsilon = 1e-6
 aligator.seed(42)
 np.random.seed(42)
+HAS_PINOCCHIO = aligator.has_pinocchio_features()
 
 
 class MyODE(dynamics.ODEAbstract):
@@ -71,6 +72,9 @@ def test_custom_ode():
     assert len(xs) == 11
 
 
+@pytest.mark.skipif(
+    not HAS_PINOCCHIO, reason="Aligator was compiled without Pinocchio."
+)
 def test_multibody_free():
     ode = create_multibody_ode(True)
     if ode is None:
@@ -304,6 +308,9 @@ def test_continuous_centroidal_diff():
     assert np.allclose(Judiff, Ju0, epsilon), "err={}".format(infNorm(Judiff - Ju0))
 
 
+@pytest.mark.skipif(
+    not HAS_PINOCCHIO, reason="Aligator was compiled without Pinocchio."
+)
 def test_kinodynamics():
     import pinocchio as pin
 
@@ -337,6 +344,9 @@ def test_kinodynamics():
     ode.dForward(x0, u0, data)
 
 
+@pytest.mark.skipif(
+    not HAS_PINOCCHIO, reason="Aligator was compiled without Pinocchio."
+)
 def test_kinodynamics_diff():
     import pinocchio as pin
 
