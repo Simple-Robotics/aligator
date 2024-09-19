@@ -166,7 +166,7 @@ def test_fly_high():
     fr_name1 = "larm_shoulder2_body"
     fr_id1 = model.getFrameId(fr_name1)
     space = manifolds.MultibodyPhaseSpace(model)
-    fun = aligator.FlyHighResidual(space, fr_id1, 0.1, nu)
+    fun = aligator.FlyHighResidual(space.ndx, model, fr_id1, 0.1, nu)
     data = fun.createData()
     data2 = fun.createData()
     Jx_nd = data.Jx.copy()
