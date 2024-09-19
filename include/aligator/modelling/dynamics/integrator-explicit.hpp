@@ -32,6 +32,11 @@ struct ExplicitIntegratorAbstractTpl : ExplicitDynamicsModelTpl<_Scalar> {
 
   xyz::polymorphic<ODEType> ode_;
 
+  template <typename U> U *getDynamics() { return dynamic_cast<U *>(&*ode_); }
+  template <typename U> const U *getDynamics() const {
+    return dynamic_cast<const U *>(&*ode_);
+  }
+
   explicit ExplicitIntegratorAbstractTpl(
       const xyz::polymorphic<ODEType> &cont_dynamics);
   virtual ~ExplicitIntegratorAbstractTpl() = default;
