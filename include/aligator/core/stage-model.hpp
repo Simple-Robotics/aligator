@@ -10,6 +10,10 @@
 
 namespace aligator {
 
+#define ALIGATOR_CHECK_DERIVED_CLASS(Base, Derived)                            \
+  static_assert((std::is_base_of_v<Base, Derived>),                            \
+                "Failed check for derived class.")
+
 /** @brief    A stage in the control problem.
  *
  *  @details  Each stage containts cost functions, dynamical
@@ -45,6 +49,30 @@ public:
   PolyCost cost_;
   /// Dynamics model
   PolyDynamics dynamics_;
+
+  /// @brief Get a pointer to an expected concrete type for the cost function.
+  template <typename U> U *getCost() {
+    ALIGATOR_CHECK_DERIVED_CLASS(Cost, U);
+    return dynamic_cast<U *>(&*cost_);
+  }
+
+  /// @copybrief castCost()
+  template <typename U> const U *getCost() const {
+    ALIGATOR_CHECK_DERIVED_CLASS(Cost, U);
+    return dynamic_cast<const U *>(&*cost_);
+  }
+
+  /// @brief Get a pointer to an expected concrete type for the dynamics class.
+  template <typename U> U *getDynamics() {
+    ALIGATOR_CHECK_DERIVED_CLASS(Dynamics, U);
+    return dynamic_cast<U *>(&*dynamics_);
+  }
+
+  /// @copybrief castDynamics()
+  template <typename U> const U *getDynamics() const {
+    ALIGATOR_CHECK_DERIVED_CLASS(Dynamics, U);
+    return dynamic_cast<const U *>(&*dynamics_);
+  }
 
   /// Constructor assumes the control space is a Euclidean space of
   /// dimension @p nu.

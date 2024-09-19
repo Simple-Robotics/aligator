@@ -86,9 +86,14 @@ BOOST_AUTO_TEST_CASE(test_problem) {
 
   auto nu = f.nu;
   auto &space = f.space;
-  auto &stage = *f.problem.stages_[0];
+  const auto &stage = *f.problem.stages_[0];
   BOOST_CHECK_EQUAL(stage.numPrimal(), space.ndx() + nu);
   BOOST_CHECK_EQUAL(stage.numDual(), space.ndx());
+
+  auto *p_dyn = stage.getDynamics<MyModel>();
+  BOOST_CHECK(p_dyn);
+  auto *p_cost = stage.getCost<MyCost>();
+  BOOST_CHECK(p_cost);
 
   Eigen::VectorXd u0(nu);
   u0.setZero();
