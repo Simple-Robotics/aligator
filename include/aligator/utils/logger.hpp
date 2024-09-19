@@ -5,7 +5,7 @@
 #include <array>
 #include <string_view>
 #include <vector>
-#include <map>
+#include <boost/unordered_map.hpp>
 
 namespace aligator {
 using uint = unsigned int;
@@ -54,8 +54,9 @@ struct Logger {
 protected:
   // sizes and formats
   std::vector<std::string_view> m_colNames;
-  std::map<std::string_view, std::pair<uint, std::string>> m_colSpecs;
-  std::map<std::string_view, std::string> m_currentLine;
+  boost::unordered_map<std::string_view, std::pair<uint, std::string>>
+      m_colSpecs;
+  boost::unordered_map<std::string_view, std::string> m_currentLine;
 };
 
 } // namespace aligator
