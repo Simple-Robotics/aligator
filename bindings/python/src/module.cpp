@@ -81,6 +81,19 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
   bp::import("warnings");
   bp::import("proxsuite_nlp");
 
+  bp::def(
+      "has_pinocchio_features",
+      +[]() constexpr -> bool {
+        return
+#ifdef ALIGATOR_WITH_PINOCCHIO
+            true;
+#else
+            false;
+#endif
+      },
+      "Whether Aligator (and its Python bindings) were compiled with support "
+      "for Pinocchio.");
+
   exposeContainers();
   exposeGAR();
   exposeEnums();
