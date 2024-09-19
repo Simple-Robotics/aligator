@@ -1,5 +1,6 @@
 """
-Test function related to frames.
+Test function related to Pinocchio frames.
+This test is not added to CTest when CMake does not detect Pinocchio.
 """
 
 import aligator
@@ -165,7 +166,7 @@ def test_fly_high():
     fr_name1 = "larm_shoulder2_body"
     fr_id1 = model.getFrameId(fr_name1)
     space = manifolds.MultibodyPhaseSpace(model)
-    fun = aligator.FlyHighResidual(space, fr_id1, 0.1, nu)
+    fun = aligator.FlyHighResidual(space.ndx, model, fr_id1, 0.1, nu)
     data = fun.createData()
     data2 = fun.createData()
     Jx_nd = data.Jx.copy()
@@ -194,4 +195,3 @@ if __name__ == "__main__":
     import pytest
 
     sys.exit(pytest.main(sys.argv))
-    # test_frame_placement()

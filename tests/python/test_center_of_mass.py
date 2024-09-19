@@ -12,8 +12,8 @@ from aligator import manifolds
 model = pin.buildSampleModelHumanoid()
 rdata: pin.Data = model.createData()
 np.random.seed(0)
-FD_EPS = 1e-8
-THRESH = 2 * FD_EPS**0.5
+EPS = 1e-7
+ATOL = 2 * EPS**0.5
 
 nq = model.nq
 nv = model.nv
@@ -55,7 +55,7 @@ def test_com_placement():
     assert J.shape == realJ.shape
     assert np.allclose(fdata.Jx[:, :nv], realJ)
 
-    fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
+    fun_fd = aligator.FiniteDifferenceHelper(space, fun, EPS)
     fdata2 = fun_fd.createData()
     fun_fd.evaluate(x0, u0, x0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
@@ -70,7 +70,7 @@ def test_com_placement():
         fun.computeJacobians(x0, u0, x0, fdata)
         fun_fd.evaluate(x0, u0, x0, fdata2)
         fun_fd.computeJacobians(x0, u0, x0, fdata2)
-        assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
+        assert np.allclose(fdata.Jx, fdata2.Jx, ATOL)
 
 
 def test_frame_velocity():
@@ -94,7 +94,7 @@ def test_frame_velocity():
 
     fun.computeJacobians(x0, fdata)
 
-    fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
+    fun_fd = aligator.FiniteDifferenceHelper(space, fun, EPS)
     fdata2 = fun_fd.createData()
     fun_fd.evaluate(x0, u0, x0, fdata2)
     fun_fd.computeJacobians(x0, u0, x0, fdata2)
@@ -110,7 +110,7 @@ def test_frame_velocity():
         print(fdata.Jx)
         print(fdata2.Jx)
         print(fdata.Jx)
-        assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
+        assert np.allclose(fdata.Jx, fdata2.Jx, ATOL)
 
 
 if __name__ == "__main__":

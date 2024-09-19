@@ -10,22 +10,20 @@ file(
 if(NOT BUILD_CROCODDYL_COMPAT)
   list(REMOVE_ITEM PYTHON_TESTS test_compat_croc.py)
 endif()
-if(NOT BUILD_WITH_PINOCCHIO_PYTHON_BINDINGS)
-  list(REMOVE_ITEM PYTHON_TESTS test_constrained_dynamics.py)
+if(NOT BUILD_WITH_PINOCCHIO_SUPPORT)
+  list(REMOVE_ITEM PYTHON_TESTS test_center_of_mass.py)
   list(REMOVE_ITEM PYTHON_TESTS test_frames.py)
+  list(REMOVE_ITEM PYTHON_TESTS test_rollout.py)
 endif()
-# TODO Add tests when Pinocchio 3 is released
-list(REMOVE_ITEM PYTHON_TESTS test_center_of_mass.py)
-list(REMOVE_ITEM PYTHON_TESTS test_constrained_dynamics.py)
-list(REMOVE_ITEM PYTHON_TESTS test_finite_diff.py)
-list(REMOVE_ITEM PYTHON_TESTS test_frames.py)
-list(REMOVE_ITEM PYTHON_TESTS test_rollout.py)
+if(NOT PINOCCHIO_V3)
+  list(REMOVE_ITEM PYTHON_TESTS test_constrained_dynamics.py)
+endif()
 make_directory(${CMAKE_CURRENT_BINARY_DIR})
 
 foreach(pyfile ${PYTHON_TESTS})
   get_filename_component(test_name ${pyfile} NAME_WE)
   string(REGEX REPLACE "^test_" "${PROJECT_NAME}-test-py-" test_name ${test_name})
-  string(REGEX REPLACE "_" "-" test_name ${test_name})
+  string(REPLACE "_" "-" test_name ${test_name})
   execute_process(
     COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/${pyfile}
             ${CMAKE_CURRENT_BINARY_DIR}/${pyfile}
