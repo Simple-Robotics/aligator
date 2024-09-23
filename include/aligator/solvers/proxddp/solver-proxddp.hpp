@@ -172,9 +172,6 @@ public:
   }
   std::size_t getNumThreads() const { return num_threads_; }
 
-  ALIGATOR_DEPRECATED const Results &getResults() { return results_; }
-  ALIGATOR_DEPRECATED const Workspace &getWorkspace() { return workspace_; }
-
   /// @brief    Try a step of size \f$\alpha\f$.
   /// @returns  A primal-dual trial point
   ///           \f$(\bfx \oplus\alpha\delta\bfx, \bfu+\alpha\delta\bfu,

@@ -28,8 +28,6 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
   }
 
   template <typename PyClass> void visit(PyClass &obj) const {
-    using proxsuite::nlp::deprecation_warning_policy;
-    using proxsuite::nlp::DeprecationType;
     obj.def_readwrite("verbose", &SolverType::verbose_,
                       "Verbosity level of the solver.")
         .def_readwrite("max_iters", &SolverType::max_iters,
@@ -45,18 +43,6 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
         .add_property("num_threads", &SolverType::getNumThreads)
         .def("setNumThreads", &SolverType::setNumThreads,
              ("self"_a, "num_threads"))
-        .def("getResults", &SolverType::getResults, ("self"_a),
-             deprecation_warning_policy<DeprecationType::DEPRECATION,
-                                        bp::return_internal_reference<>>(
-                 "This getter is deprecated. Access the results using "
-                 "`solver.results` instead."),
-             "Get the results instance.")
-        .def("getWorkspace", &SolverType::getWorkspace, ("self"_a),
-             deprecation_warning_policy<DeprecationType::DEPRECATION,
-                                        bp::return_internal_reference<>>(
-                 "This getter is deprecated. Access the workspace using "
-                 "`solver.workspace` instead."),
-             "Get the workspace instance.")
         .def_readonly("results", &SolverType::results_, "Solver results.")
         .def_readonly("workspace", &SolverType::workspace_, "Solver workspace.")
         .def("setup", &SolverType::setup, ("self"_a, "problem"),
