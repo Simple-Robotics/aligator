@@ -41,6 +41,9 @@ def test_cost_stack():
         assert np.allclose(data1.Lxx, Q)
         assert np.allclose(data1.Luu, R)
 
+    rcost_ref = cost_stack.getComponent(0)
+    assert isinstance(rcost_ref, QuadraticCost)
+
     if eigenpy.__version__ >= "3.9.1":
         # test other API for cost,
         # building from dict

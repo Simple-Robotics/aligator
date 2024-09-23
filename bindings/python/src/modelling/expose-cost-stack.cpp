@@ -51,6 +51,17 @@ void exposeCostStack() {
                           "Components of this cost stack.")
 #endif
             .def(
+                "getComponent",
+                +[](CostStack &self, const CostKey &key) -> PolyCost & {
+                  if (!self.components_.contains(key)) {
+                    PyErr_SetString(PyExc_KeyError, "Key not found.");
+                    bp::throw_error_already_set();
+                  }
+                  auto &c = self.components_.at(key);
+                  return c.first;
+                },
+                ("self"_a, "key"), bp::return_internal_reference<>())
+            .def(
                 "addCost",
                 +[](CostStack &self, const PolyCost &cost, const Scalar weight)
                     -> PolyCost & { return self.addCost(cost, weight).first; },
@@ -68,8 +79,7 @@ void exposeCostStack() {
             .def(CopyableVisitor<CostStack>())
             .def(PolymorphicMultiBaseVisitor<CostAbstract>());
 #if ALIGATOR_EIGENPY_HAS_MAP_SUPPORT
-    eigenpy::GenericMapVisitor<CostMap, true>::expose(
-        "CostMap", eigenpy::overload_base_get_item_for_map<CostMap>());
+    eigenpy::GenericMapVisitor<CostMap, true>::expose("CostMap");
 #endif
   }
 
@@ -80,8 +90,7 @@ void exposeCostStack() {
             "CostStackData", "Data struct for CostStack.", bp::no_init)
             .def_readonly("sub_cost_data", &CostStackData::sub_cost_data);
 #if ALIGATOR_EIGENPY_HAS_MAP_SUPPORT
-    eigenpy::GenericMapVisitor<CostStackData::DataMap, true>::expose(
-        "CostMap", eigenpy::overload_base_get_item_for_map<CostMap>());
+    eigenpy::GenericMapVisitor<CostStackData::DataMap, true>::expose("CostMap");
 #endif
   }
 }
