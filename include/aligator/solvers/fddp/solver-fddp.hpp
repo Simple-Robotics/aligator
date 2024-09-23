@@ -168,6 +168,13 @@ public:
 
   const CallbackMap &getCallbacks() const { return callbacks_; }
   void removeCallback(const std::string &name) { callbacks_.erase(name); }
+  auto getCallbackNames() const {
+    std::vector<std::string> keys;
+    for (const auto &item : callbacks_) {
+      keys.push_back(item.first);
+    }
+    return keys;
+  }
   auto getCallback(const std::string &name) -> CallbackPtr {
     auto cb = callbacks_.find(name);
     if (cb != end(callbacks_)) {

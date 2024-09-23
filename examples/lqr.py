@@ -83,6 +83,7 @@ solver = aligator.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
 
 his_cb = aligator.HistoryCallback()
 solver.registerCallback("his", his_cb)
+print("Registered callbacks:", solver.getCallbackNames().tolist())
 solver.max_iters = 20
 solver.rollout_type = aligator.ROLLOUT_LINEAR
 
