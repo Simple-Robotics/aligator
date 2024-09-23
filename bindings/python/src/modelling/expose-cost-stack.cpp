@@ -68,7 +68,8 @@ void exposeCostStack() {
             .def(CopyableVisitor<CostStack>())
             .def(PolymorphicMultiBaseVisitor<CostAbstract>());
 #if ALIGATOR_EIGENPY_HAS_MAP_SUPPORT
-    eigenpy::GenericMapVisitor<CostMap, true>::expose("CostMap");
+    eigenpy::GenericMapVisitor<CostMap, true>::expose(
+        "CostMap", eigenpy::overload_base_get_item_for_map<CostMap>());
 #endif
   }
 
@@ -79,7 +80,8 @@ void exposeCostStack() {
             "CostStackData", "Data struct for CostStack.", bp::no_init)
             .def_readonly("sub_cost_data", &CostStackData::sub_cost_data);
 #if ALIGATOR_EIGENPY_HAS_MAP_SUPPORT
-    eigenpy::GenericMapVisitor<CostStackData::DataMap, true>::expose("DataMap");
+    eigenpy::GenericMapVisitor<CostStackData::DataMap, true>::expose(
+        "CostMap", eigenpy::overload_base_get_item_for_map<CostMap>());
 #endif
   }
 }
