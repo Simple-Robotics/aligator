@@ -21,6 +21,9 @@ on:
       - 'CHANGELOG.md'
       - 'CITATION.cff'
       - 'CITATIONS.bib'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   aligator-conda:
