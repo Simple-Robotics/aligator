@@ -76,8 +76,6 @@ struct MultibodyConstraintFwdDataTpl : ContinuousDynamicsDataTpl<Scalar> {
 } // namespace dynamics
 } // namespace aligator
 
-#include "aligator/modelling/dynamics/multibody-constraint-fwd.hxx"
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/modelling/dynamics/multibody-constraint-fwd.txx"
 #endif

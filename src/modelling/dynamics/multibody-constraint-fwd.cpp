@@ -2,14 +2,12 @@
 #include "aligator/fwd.hpp"
 
 #ifdef ALIGATOR_PINOCCHIO_V3
-#include "aligator/modelling/dynamics/multibody-constraint-fwd.hpp"
+#include "aligator/modelling/dynamics/multibody-constraint-fwd.hxx"
 
-namespace aligator {
-namespace dynamics {
+namespace aligator::dynamics {
 
 template struct MultibodyConstraintFwdDynamicsTpl<context::Scalar>;
 template struct MultibodyConstraintFwdDataTpl<context::Scalar>;
 
-} // namespace dynamics
-} // namespace aligator
+} // namespace aligator::dynamics
 #endif
