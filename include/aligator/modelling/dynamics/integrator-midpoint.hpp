@@ -76,7 +76,10 @@ struct IntegratorMidpointDataTpl : IntegratorDataTpl<_Scalar> {
   }
 };
 
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct IntegratorMidpointTpl<context::Scalar>;
+extern template struct IntegratorMidpointDataTpl<context::Scalar>;
+#endif
+
 } // namespace dynamics
 } // namespace aligator
-
-#include "aligator/modelling/dynamics/integrator-midpoint.hxx"

@@ -64,8 +64,6 @@ struct IntegratorRK2DataTpl : ExplicitIntegratorDataTpl<Scalar> {
 } // namespace dynamics
 } // namespace aligator
 
-#include "aligator/modelling/dynamics/integrator-rk2.hxx"
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/modelling/dynamics/integrator-rk2.txx"
 #endif

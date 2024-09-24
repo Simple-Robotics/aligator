@@ -31,7 +31,9 @@ struct IntegratorEulerTpl : ExplicitIntegratorAbstractTpl<_Scalar> {
                 ExplicitDynamicsDataTpl<Scalar> &data) const;
 };
 
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct IntegratorEulerTpl<context::Scalar>;
+#endif
+
 } // namespace dynamics
 } // namespace aligator
-
-#include "aligator/modelling/dynamics/integrator-euler.hxx"

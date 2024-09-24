@@ -59,7 +59,10 @@ struct IntegratorSemiImplDataTpl : ExplicitIntegratorDataTpl<Scalar> {
   using Base::xnext_;
 };
 
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct IntegratorSemiImplEulerTpl<context::Scalar>;
+extern template struct IntegratorSemiImplDataTpl<context::Scalar>;
+#endif
+
 } // namespace dynamics
 } // namespace aligator
-
-#include "aligator/modelling/dynamics/integrator-semi-euler.hxx"

@@ -1,11 +1,9 @@
 /// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
-#include "aligator/modelling/dynamics/multibody-free-fwd.hpp"
+#include "aligator/modelling/dynamics/multibody-free-fwd.hxx"
 
-namespace aligator {
-namespace dynamics {
+namespace aligator::dynamics {
 
 template struct MultibodyFreeFwdDynamicsTpl<context::Scalar>;
 template struct MultibodyFreeFwdDataTpl<context::Scalar>;
 
-} // namespace dynamics
-} // namespace aligator
+} // namespace aligator::dynamics

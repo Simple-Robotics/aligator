@@ -83,8 +83,6 @@ struct MultibodyFreeFwdDataTpl : ContinuousDynamicsDataTpl<Scalar> {
 } // namespace dynamics
 } // namespace aligator
 
-#include "aligator/modelling/dynamics/multibody-free-fwd.hxx"
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/modelling/dynamics/multibody-free-fwd.txx"
 #endif
