@@ -40,7 +40,7 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using Base::problem_data;
 
   typename LQRProblemType::KnotVector knots;
-  gar::LQRProblemTpl<Scalar> lqr_problem;   //< Linear-quadratic subproblem
+  gar::LQRProblemTpl<Scalar> lqr_problem; //< Linear-quadratic subproblem
 
   /// @name Lagrangian Gradients
   /// @{
@@ -115,7 +115,7 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   WorkspaceTpl(WorkspaceTpl &&) = default;
   WorkspaceTpl &operator=(WorkspaceTpl &&) = default;
 
-  void cycleAppend(const TrajOptProblemTpl<Scalar> &problem, 
+  void cycleAppend(const TrajOptProblemTpl<Scalar> &problem,
                    shared_ptr<StageDataTpl<Scalar>> data);
   template <typename T>
   friend std::ostream &operator<<(std::ostream &oss,

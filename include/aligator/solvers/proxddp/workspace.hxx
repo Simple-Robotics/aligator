@@ -87,7 +87,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 
 template <typename Scalar>
 void WorkspaceTpl<Scalar>::cycleAppend(const TrajOptProblemTpl<Scalar> &problem,
-                                     shared_ptr<StageDataTpl<Scalar>> data) {
+                                       shared_ptr<StageDataTpl<Scalar>> data) {
   rotate_vec_left(problem_data.stage_data);
   problem_data.stage_data[nsteps - 1] = data;
 
