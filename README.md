@@ -1,6 +1,7 @@
 # Aligator
 
 <a href="https://simple-robotics.github.io/aligator/"><img src="https://img.shields.io/badge/docs-online-brightgreen" alt="Documentation"/></a>
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/aligator.svg)](https://anaconda.org/conda-forge/aligator)
 
 **Aligator** is an efficient and versatile trajectory optimization library for robotics and beyond.
 
@@ -33,7 +34,7 @@ Please refer to the [Citation section](#citing-aligator) for further details.
 From either conda-forge or [our channel](https://anaconda.org/simple-robotics/aligator).
 
 ```bash
-conda install -c conda-forge aligator  # or -c conda-forge
+conda install -c conda-forge aligator
 ```
 
 ### Build from source
