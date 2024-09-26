@@ -19,7 +19,7 @@ int main(int, char **) {
   auto croc_problem = defineCrocoddylProblem(nsteps);
   auto problem = aligator::compat::croc::convertCrocoddylProblem(croc_problem);
 
-  double mu_init = 0.01;
+  double mu_init = 0.001;
   SolverProxDDPTpl<double> solver(TOL, mu_init, 0., max_iters,
                                   aligator::VERBOSE);
 
