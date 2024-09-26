@@ -1,4 +1,4 @@
-#include "aligator/modelling/multibody/dcm-position.hpp"
+#include "aligator/modelling/multibody/dcm-position.hxx"
 
 namespace aligator {
 

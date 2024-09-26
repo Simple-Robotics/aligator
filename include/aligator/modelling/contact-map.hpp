@@ -43,14 +43,6 @@ template <typename _Scalar> struct ContactMapTpl {
     }
   }
 
-  const std::vector<std::string> &getContactNames() const {
-    return contact_names_;
-  }
-
-  const std::vector<bool> &getContactStates() const { return contact_states_; }
-
-  bool getContactState(const std::size_t i) const { return contact_states_[i]; }
-
   bool getContactState(const std::string &name) const {
     auto id = std::find(contact_names_.begin(), contact_names_.end(), name);
     if (id == contact_names_.end()) {
@@ -58,12 +50,6 @@ template <typename _Scalar> struct ContactMapTpl {
     }
 
     return contact_states_[id - contact_names_.begin()];
-  }
-
-  const PoseVec &getContactPoses() const { return contact_poses_; }
-
-  const Vector3s &getContactPose(const std::size_t i) const {
-    return contact_poses_[i];
   }
 
   const Vector3s &getContactPose(const std::string &name) const {
@@ -84,9 +70,6 @@ template <typename _Scalar> struct ContactMapTpl {
     contact_poses_[id - contact_names_.begin()] = ref;
   }
 
-  std::size_t getSize() const { return size_; }
-
-private:
   std::vector<std::string> contact_names_;
   std::vector<bool> contact_states_;
   PoseVec contact_poses_;

@@ -10,8 +10,8 @@ template <typename Scalar>
 ContinuousCentroidalFwdDynamicsTpl<Scalar>::ContinuousCentroidalFwdDynamicsTpl(
     const Manifold &state, const double mass, const Vector3s &gravity,
     const ContactMap &contact_map, const int force_size)
-    : Base(state, (int)contact_map.getSize() * force_size), space_(state),
-      nk_(contact_map.getSize()), mass_(mass), gravity_(gravity),
+    : Base(state, (int)contact_map.size_ * force_size), space_(state),
+      nk_(contact_map.size_), mass_(mass), gravity_(gravity),
       contact_map_(contact_map), force_size_(force_size) {
   if (space_.nx() != 9 + nu_) {
     ALIGATOR_DOMAIN_ERROR(fmt::format("State space should be of size: "
@@ -31,21 +31,21 @@ void ContinuousCentroidalFwdDynamicsTpl<Scalar>::forward(
   for (std::size_t i = 0; i < nk_; i++) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wconversion"
-    if (contact_map_.getContactState(i)) {
+    if (contact_map_.contact_states_[i]) {
       d.xdot_.template segment<3>(3) +=
           x.template segment<3>(9 + i * force_size_);
-      d.xdot_[6] += (contact_map_.getContactPose(i)[1] - x[1]) *
+      d.xdot_[6] += (contact_map_.contact_poses_[i][1] - x[1]) *
                         x[9 + i * force_size_ + 2] -
-                    (contact_map_.getContactPose(i)[2] - x[2]) *
+                    (contact_map_.contact_poses_[i][2] - x[2]) *
                         x[9 + i * force_size_ + 1];
       d.xdot_[7] +=
-          (contact_map_.getContactPose(i)[2] - x[2]) * x[9 + i * force_size_] -
-          (contact_map_.getContactPose(i)[0] - x[0]) *
+          (contact_map_.contact_poses_[i][2] - x[2]) * x[9 + i * force_size_] -
+          (contact_map_.contact_poses_[i][0] - x[0]) *
               x[9 + i * force_size_ + 2];
       d.xdot_[8] +=
-          (contact_map_.getContactPose(i)[0] - x[0]) *
+          (contact_map_.contact_poses_[i][0] - x[0]) *
               x[9 + i * force_size_ + 1] -
-          (contact_map_.getContactPose(i)[1] - x[1]) * x[9 + i * force_size_];
+          (contact_map_.contact_poses_[i][1] - x[1]) * x[9 + i * force_size_];
       if (force_size_ == 6) {
         d.xdot_.template segment<3>(6) +=
             x.template segment<3>(9 + i * force_size_ + 3);
@@ -66,7 +66,7 @@ void ContinuousCentroidalFwdDynamicsTpl<Scalar>::dForward(
   for (std::size_t i = 0; i < nk_; i++) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wconversion"
-    if (contact_map_.getContactState(i)) {
+    if (contact_map_.contact_states_[i]) {
       d.Jx_(6, 1) -= x[9 + i * force_size_ + 2];
       d.Jx_(6, 2) += x[9 + i * force_size_ + 1];
       d.Jx_(7, 0) += x[9 + i * force_size_ + 2];
@@ -74,12 +74,12 @@ void ContinuousCentroidalFwdDynamicsTpl<Scalar>::dForward(
       d.Jx_(8, 0) -= x[9 + i * force_size_ + 1];
       d.Jx_(8, 1) += x[9 + i * force_size_];
 
-      d.Jtemp_ << 0.0, -(contact_map_.getContactPose(i)[2] - x[2]),
-          (contact_map_.getContactPose(i)[1] - x[1]),
-          (contact_map_.getContactPose(i)[2] - x[2]), 0.0,
-          -(contact_map_.getContactPose(i)[0] - x[0]),
-          -(contact_map_.getContactPose(i)[1] - x[1]),
-          (contact_map_.getContactPose(i)[0] - x[0]), 0.0;
+      d.Jtemp_ << 0.0, -(contact_map_.contact_poses_[i][2] - x[2]),
+          (contact_map_.contact_poses_[i][1] - x[1]),
+          (contact_map_.contact_poses_[i][2] - x[2]), 0.0,
+          -(contact_map_.contact_poses_[i][0] - x[0]),
+          -(contact_map_.contact_poses_[i][1] - x[1]),
+          (contact_map_.contact_poses_[i][0] - x[0]), 0.0;
 
       d.Jx_.template block<3, 3>(6, 9 + force_size_ * i) = d.Jtemp_;
       d.Jx_.template block<3, 3>(3, 9 + force_size_ * i).setIdentity();

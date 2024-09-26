@@ -35,19 +35,11 @@ void exposeContactMap() {
            "Remove contact i from the contact map.")
       .def("setContactPose", &ContactMap::setContactPose,
            ("self"_a, "name", "ref"))
-      .add_property("size", &ContactMap::getSize, "Get map size.")
-      .add_property("contact_names",
-                    bp::make_function(&ContactMap::getContactNames,
-                                      bp::return_internal_reference<>()),
-                    "Get all the names in contact map.")
-      .add_property("contact_states",
-                    bp::make_function(&ContactMap::getContactStates,
-                                      bp::return_internal_reference<>()),
-                    "Get all the states in contact map.")
-      .add_property("contact_poses",
-                    bp::make_function(&ContactMap::getContactPoses,
-                                      bp::return_internal_reference<>()),
-                    "Get all the poses in contact map.");
+      .def("getContactPose", &ContactMap::getContactPose, ("self"_a, "name"),
+           bp::return_internal_reference<>())
+      .def_readwrite("contact_states", &ContactMap::contact_states_)
+      .def_readwrite("contact_poses", &ContactMap::contact_poses_)
+      .def_readwrite("contact_names", &ContactMap::contact_names_);
 }
 
 void exposeCentroidalFunctions() {

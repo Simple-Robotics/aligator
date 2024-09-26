@@ -1,4 +1,4 @@
-#include "aligator/modelling/centroidal/centroidal-wrench-cone.hpp"
+#include "aligator/modelling/centroidal/centroidal-wrench-cone.hxx"
 
 namespace aligator {
 

@@ -60,8 +60,6 @@ struct DCMPositionDataTpl : StageFunctionDataTpl<Scalar> {
 
 } // namespace aligator
 
-#include "aligator/modelling/multibody/dcm-position.hxx"
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./dcm-position.txx"
 #endif
