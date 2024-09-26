@@ -54,15 +54,15 @@ template <typename _Scalar> struct PDALFunction {
   using Workspace = WorkspaceTpl<Scalar>;
   using TrajOptProblem = TrajOptProblemTpl<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
-  using CstrProximalScaler = ConstraintProximalScalerTpl<Scalar>;
 
   /// @brief    Compute the merit function at the trial point.
   /// @warning  Evaluate the problem and proximal terms first!
-  static Scalar evaluate(const Scalar mu, const TrajOptProblem &problem,
+  static Scalar evaluate(const Scalar mudyn, const Scalar mucstr,
+                         const TrajOptProblem &problem,
                          const std::vector<VectorXs> &lams,
                          const std::vector<VectorXs> &vs, Workspace &workspace);
 
-  static Scalar directionalDerivative(const Scalar mu,
+  static Scalar directionalDerivative(const Scalar mudyn, const Scalar mucstr,
                                       const TrajOptProblem &problem,
                                       const std::vector<VectorXs> &lams,
                                       const std::vector<VectorXs> &vs,

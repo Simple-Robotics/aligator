@@ -23,15 +23,6 @@ namespace gar {
 template <typename Scalar> class RiccatiSolverBase;
 } // namespace gar
 
-/// TODO: NEW G.A.R. BACKEND CAN'T HANDLE DIFFERENT WEIGHTS, PLS FIX
-template <typename Scalar> struct DefaultScaling {
-  void operator()(ConstraintProximalScalerTpl<Scalar> &scaler) {
-    for (std::size_t j = 0; j < scaler.size(); j++)
-      scaler.setWeight(scale, j);
-  }
-  static constexpr Scalar scale = 10.;
-};
-
 enum class LQSolverChoice { SERIAL, PARALLEL, STAGEDENSE };
 
 /// @brief A proximal, augmented Lagrangian-type solver for trajectory
@@ -63,7 +54,6 @@ public:
   using CstrSet = ConstraintSetBase<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
   using LinesearchOptions = typename Linesearch<Scalar>::Options;
-  using CstrProximalScaler = ConstraintProximalScalerTpl<Scalar>;
   using LinesearchType = proxsuite::nlp::ArmijoLinesearch<Scalar>;
   using LQProblem = gar::LQRProblemTpl<Scalar>;
   using Filter = FilterTpl<Scalar>;

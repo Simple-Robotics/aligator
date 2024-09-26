@@ -10,7 +10,7 @@ using Eigen::VectorXd;
 using aligator::SolverProxDDPTpl;
 
 constexpr double TOL = 1e-4;
-constexpr std::size_t max_iters = 10;
+constexpr std::size_t max_iters = 15;
 
 const std::size_t nsteps = 30;
 

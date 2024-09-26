@@ -88,7 +88,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 template <typename Scalar> void WorkspaceTpl<Scalar>::cycleLeft() {
   Base::cycleLeft();
 
-  rotate_vec_left(cstr_scalers);
+  // rotate_vec_left(cstr_scalers);
   rotate_vec_left(Lxs);
   rotate_vec_left(Lus);
   rotate_vec_left(Lds);
