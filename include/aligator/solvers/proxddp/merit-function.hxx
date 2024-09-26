@@ -28,7 +28,7 @@ Scalar costDirectionalDerivative(const WorkspaceTpl<Scalar> &workspace,
 
 // TODO: add missing dual terms
 template <typename Scalar>
-Scalar PDALFunction<Scalar>::evaluate(const Scalar mu,
+Scalar PDALFunction<Scalar>::evaluate(const Scalar mudyn, const Scalar mucstr,
                                       const TrajOptProblem &problem,
                                       const std::vector<VectorXs> &lams,
                                       const std::vector<VectorXs> &vs,
@@ -39,20 +39,22 @@ Scalar PDALFunction<Scalar>::evaluate(const Scalar mu,
   const std::vector<VectorXs> &lams_plus = workspace.lams_plus;
   const std::vector<VectorXs> &vs_plus = workspace.vs_plus;
 
+  auto weighted_norm = [](auto &v, Scalar m) -> Scalar {
+    return m * v.squaredNorm();
+  };
+
   // initial constraint
-  penalty_value = 0.5 * mu * lams_plus[0].squaredNorm();
+  penalty_value = 0.5 * weighted_norm(lams_plus[0], mudyn);
 
   // stage-per-stage
   const std::size_t nsteps = problem.numSteps();
   for (std::size_t i = 0; i < nsteps; i++) {
-    const CstrProximalScaler &scaler = workspace.cstr_scalers[i];
-    penalty_value += 0.5 * mu * lams_plus[i + 1].squaredNorm();
-    penalty_value += 0.5 * scaler.weightedNorm(vs_plus[i]);
+    penalty_value += 0.5 * weighted_norm(lams_plus[i + 1], mudyn);
+    penalty_value += 0.5 * weighted_norm(vs_plus[i], mucstr);
   }
 
   if (!problem.term_cstrs_.empty()) {
-    const CstrProximalScaler &scaler = workspace.cstr_scalers[nsteps];
-    penalty_value += 0.5 * scaler.weightedNorm(vs_plus[nsteps]);
+    penalty_value += 0.5 * weighted_norm(vs_plus[nsteps], mucstr);
   }
 
   return prob_data.cost_ + penalty_value;
@@ -61,7 +63,7 @@ Scalar PDALFunction<Scalar>::evaluate(const Scalar mu,
 // TODO: restore missing dual terms
 template <typename Scalar>
 Scalar PDALFunction<Scalar>::directionalDerivative(
-    const Scalar mu, const TrajOptProblem &problem,
+    const Scalar mudyn, const Scalar mucstr, const TrajOptProblem &problem,
     const std::vector<VectorXs> &lams, const std::vector<VectorXs> &vs,
     Workspace &workspace) {
   ALIGATOR_TRACY_ZONE_SCOPED;

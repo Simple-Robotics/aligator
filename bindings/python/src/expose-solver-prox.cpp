@@ -34,49 +34,10 @@ void exposeProxDDP() {
       .value("LQ_SOLVER_STAGEDENSE", LQSolverChoice::STAGEDENSE)
       .export_values();
 
-  using ProxScaler = ConstraintProximalScalerTpl<Scalar>;
-  bp::class_<ProxScaler, boost::noncopyable>("ProxScaler", bp::no_init)
-      .def(
-          "set_weight",
-          +[](ProxScaler &s, Scalar v, std::size_t j) {
-            if (j >= s.size()) {
-              PyErr_SetString(PyExc_IndexError, "Index out of bounds.");
-              bp::throw_error_already_set();
-            }
-            s.setWeight(v, j);
-          },
-          ("self"_a, "value", "j"))
-      .add_property("size", &ProxScaler::size,
-                    "Get the number of constraint blocks.")
-      .def(
-          "setWeights",
-          +[](ProxScaler &s, const ConstVectorRef &w) {
-            if (s.size() != std::size_t(w.size())) {
-              PyErr_SetString(PyExc_ValueError, "Input has wrong dimension.");
-            }
-            s.setWeights(w);
-          },
-          "Vector of weights for each constraint in the stack.")
-      .add_property(
-          "matrix", +[](ProxScaler &sc) -> ConstVectorRef {
-            return sc.diagMatrix().toDenseMatrix();
-          });
-
   bp::class_<Workspace, bp::bases<WorkspaceBaseTpl<Scalar>>,
              boost::noncopyable>(
       "Workspace", "Workspace for ProxDDP.",
       bp::init<const TrajOptProblem &>(("self"_a, "problem")))
-      .def(
-          "getConstraintScaler",
-          +[](const Workspace &ws, std::size_t j) -> const ProxScaler & {
-            if (j >= ws.cstr_scalers.size()) {
-              PyErr_SetString(PyExc_IndexError, "Index out of bounds.");
-              bp::throw_error_already_set();
-            }
-            return ws.cstr_scalers[j];
-          },
-          ("self"_a, "j"), bp::return_internal_reference<>(),
-          "Scalers of the constraints in the proximal algorithm.")
       .def_readonly("lqr_problem", &Workspace::lqr_problem,
                     "Buffers for the LQ subproblem.")
       .def_readonly("Lxs", &Workspace::Lxs)

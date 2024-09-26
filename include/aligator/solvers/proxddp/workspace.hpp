@@ -4,7 +4,7 @@
 #pragma once
 
 #include "aligator/core/workspace-base.hpp"
-#include "aligator/core/alm-weights.hpp"
+#include "aligator/gar/blk-matrix.hpp"
 #include "aligator/gar/lqr-problem.hpp"
 
 #include <proxsuite-nlp/modelling/constraints.hpp>
@@ -30,7 +30,6 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using StageModel = StageModelTpl<Scalar>;
   using Base = WorkspaceBaseTpl<Scalar>;
   using VecBool = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
-  using CstrProxScaler = ConstraintProximalScalerTpl<Scalar>;
   using KnotType = gar::LQRKnotTpl<Scalar>;
   using ConstraintSetProduct = proxsuite::nlp::ConstraintSetProductTpl<Scalar>;
   using BlkJacobianType = BlkMatrix<MatrixXs, -1, 2>; // jacobians
@@ -39,8 +38,7 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using Base::nsteps;
   using Base::problem_data;
 
-  gar::LQRProblemTpl<Scalar> lqr_problem;   //< Linear-quadratic subproblem
-  std::vector<CstrProxScaler> cstr_scalers; //< Scaling for the constraints
+  gar::LQRProblemTpl<Scalar> lqr_problem; //< Linear-quadratic subproblem
 
   /// @name Lagrangian Gradients
   /// @{
@@ -121,22 +119,22 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   friend std::ostream &operator<<(std::ostream &oss,
                                   const WorkspaceTpl<T> &self);
 
-  template <typename F>
-  void configureScalers(const TrajOptProblemTpl<Scalar> &problem,
-                        const Scalar &mu, F &&strat) {
-    cstr_scalers.reserve(nsteps + 1);
+  // template <typename F>
+  // void configureScalers(const TrajOptProblemTpl<Scalar> &problem,
+  //                       const Scalar &mu, F &&strat) {
+  //   cstr_scalers.reserve(nsteps + 1);
 
-    for (std::size_t t = 0; t < nsteps; t++) {
-      const StageModel &stage = *problem.stages_[t];
-      cstr_scalers.emplace_back(stage.constraints_, mu);
-      std::forward<F>(strat)(cstr_scalers[t]);
-    }
+  //   for (std::size_t t = 0; t < nsteps; t++) {
+  //     const StageModel &stage = *problem.stages_[t];
+  //     cstr_scalers.emplace_back(stage.constraints_, mu);
+  //     std::forward<F>(strat)(cstr_scalers[t]);
+  //   }
 
-    const ConstraintStackTpl<Scalar> &term_stack = problem.term_cstrs_;
-    if (!term_stack.empty()) {
-      cstr_scalers.emplace_back(term_stack, mu);
-    }
-  }
+  //   const ConstraintStackTpl<Scalar> &term_stack = problem.term_cstrs_;
+  //   if (!term_stack.empty()) {
+  //     cstr_scalers.emplace_back(term_stack, mu);
+  //   }
+  // }
 };
 
 template <typename Scalar>
