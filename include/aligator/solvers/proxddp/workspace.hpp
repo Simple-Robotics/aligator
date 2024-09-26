@@ -33,11 +33,13 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using KnotType = gar::LQRKnotTpl<Scalar>;
   using ConstraintSetProduct = proxsuite::nlp::ConstraintSetProductTpl<Scalar>;
   using BlkJacobianType = BlkMatrix<MatrixXs, -1, 2>; // jacobians
+  using LQRProblemType = gar::LQRProblemTpl<Scalar>;
 
   using Base::dyn_slacks;
   using Base::nsteps;
   using Base::problem_data;
 
+  typename LQRProblemType::KnotVector knots;
   gar::LQRProblemTpl<Scalar> lqr_problem; //< Linear-quadratic subproblem
 
   /// @name Lagrangian Gradients
@@ -113,7 +115,8 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   WorkspaceTpl(WorkspaceTpl &&) = default;
   WorkspaceTpl &operator=(WorkspaceTpl &&) = default;
 
-  void cycleLeft();
+  void cycleAppend(const TrajOptProblemTpl<Scalar> &problem,
+                   shared_ptr<StageDataTpl<Scalar>> data);
 
   template <typename T>
   friend std::ostream &operator<<(std::ostream &oss,
