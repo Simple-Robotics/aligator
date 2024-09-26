@@ -118,23 +118,6 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   template <typename T>
   friend std::ostream &operator<<(std::ostream &oss,
                                   const WorkspaceTpl<T> &self);
-
-  // template <typename F>
-  // void configureScalers(const TrajOptProblemTpl<Scalar> &problem,
-  //                       const Scalar &mu, F &&strat) {
-  //   cstr_scalers.reserve(nsteps + 1);
-
-  //   for (std::size_t t = 0; t < nsteps; t++) {
-  //     const StageModel &stage = *problem.stages_[t];
-  //     cstr_scalers.emplace_back(stage.constraints_, mu);
-  //     std::forward<F>(strat)(cstr_scalers[t]);
-  //   }
-
-  //   const ConstraintStackTpl<Scalar> &term_stack = problem.term_cstrs_;
-  //   if (!term_stack.empty()) {
-  //     cstr_scalers.emplace_back(term_stack, mu);
-  //   }
-  // }
 };
 
 template <typename Scalar>
