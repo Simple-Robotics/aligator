@@ -185,6 +185,8 @@ public:
   /// @param problem  The problem instance with respect to which memory will be
   /// allocated.
   void setup(const Problem &problem);
+  void cycleProblem(const Problem &problem,
+                    shared_ptr<StageDataTpl<Scalar>> data);
 
   /// @brief Run the numerical solver.
   /// @param problem  The trajectory optimization problem to solve.

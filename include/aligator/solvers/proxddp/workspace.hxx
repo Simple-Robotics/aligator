@@ -4,8 +4,10 @@
 #pragma once
 
 #include "./workspace.hpp"
+#include "aligator/core/traj-opt-data.hpp"
+#include "aligator/gar/lqr-problem.hpp"
 #include "aligator/gar/utils.hpp"
-
+#include <iostream>
 namespace aligator {
 
 template <typename Scalar>
@@ -34,8 +36,6 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   active_constraints.resize(nsteps + 1);
   cstr_proj_jacs.resize(nsteps + 1);
 
-  using LQRProblemType = gar::LQRProblemTpl<Scalar>;
-  typename LQRProblemType::KnotVector knots;
   {
     for (size_t i = 0; i < nsteps; i++) {
       const StageModel &stage = *problem.stages_[i];
@@ -85,32 +85,65 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   control_dual_infeas.setZero();
 }
 
-template <typename Scalar> void WorkspaceTpl<Scalar>::cycleLeft() {
-  Base::cycleLeft();
+template <typename Scalar>
+void WorkspaceTpl<Scalar>::cycleAppend(const TrajOptProblemTpl<Scalar> &problem,
+                                     shared_ptr<StageDataTpl<Scalar>> data) {
+  rotate_vec_left(problem_data.stage_data);
+  problem_data.stage_data[nsteps - 1] = data;
 
-  rotate_vec_left(Lxs);
-  rotate_vec_left(Lus);
-  rotate_vec_left(Lds);
-  rotate_vec_left(Lvs, 0, 1);
+  const StageModel &stage = *problem.stages_[nsteps - 1];
 
+  problem.checkIntegrity();
+
+  rotate_vec_left(trial_xs, 1);
+  rotate_vec_left(trial_us, 1);
+  rotate_vec_left(trial_vs, 0, 1);
+  trial_vs[nsteps - 1].setZero(stage.nc());
   rotate_vec_left(trial_lams, 1);
-  rotate_vec_left(lams_plus, 1);
-  rotate_vec_left(lams_pdal, 1);
-  rotate_vec_left(shifted_constraints, 0, 1);
-  rotate_vec_left(cstr_proj_jacs, 0, 1);
-  rotate_vec_left(active_constraints, 0, 1);
-
-  rotate_vec_left(dxs);
-  rotate_vec_left(dus);
-  rotate_vec_left(dvs, 0, 1);
-  rotate_vec_left(dlams, 1);
 
   rotate_vec_left(prev_xs);
   rotate_vec_left(prev_us);
   rotate_vec_left(prev_vs, 0, 1);
-  rotate_vec_left(prev_lams, 1);
+  prev_vs[nsteps - 1].setZero(stage.nc());
+  rotate_vec_left(prev_lams);
 
-  rotate_vec_left(stage_infeasibilities, 0, 1);
+  vs_plus = vs_pdal = trial_vs;
+  lams_plus = lams_pdal = trial_lams;
+
+  dyn_slacks = trial_lams; // same dimensions
+  stage_cstr_violations.setZero();
+  stage_infeasibilities = trial_vs;
+
+  shifted_constraints = prev_vs;
+  rotate_vec_left(knots, 0, 1);
+  knots[nsteps - 1] =
+      gar::LQRKnotTpl<double>(stage.ndx1(), stage.nu(), stage.nc());
+
+  rotate_vec_left(cstr_product_sets, 0, 1);
+  cstr_product_sets[nsteps - 1] =
+      ConstraintSetProduct(getConstraintProductSet(stage.constraints_));
+  rotate_vec_left(cstr_proj_jacs, 0, 1);
+  cstr_proj_jacs[nsteps - 1] =
+      BlkJacobianType(stage.constraints_.dims(), {stage.ndx1(), stage.nu()});
+  rotate_vec_left(active_constraints, 0, 1);
+  active_constraints[nsteps - 1].setZero(stage.nc());
+
+  // initial condition
+  long nc0 = (long)problem.init_condition_->nr;
+  lqr_problem = LQRProblemType(knots, nc0);
+  std::tie(dxs, dus, dvs, dlams) =
+      gar::lqrInitializeSolution(lqr_problem); // lqr subproblem variables
+
+  Lxs = dxs;
+  Lus = dus;
+  Lvs = dvs;
+  Lds = dlams;
+  cstr_lx_corr = Lxs;
+  cstr_lu_corr = Lus;
+
+  stage_inner_crits.setZero();
+  state_dual_infeas.setZero();
+  control_dual_infeas.setZero();
 }
 
 } // namespace aligator

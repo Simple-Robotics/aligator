@@ -70,6 +70,8 @@ void exposeProxDDP() {
   bp::class_<Results, bp::bases<ResultsBaseTpl<Scalar>>, boost::noncopyable>(
       "Results", "Results struct for proxDDP.",
       bp::init<const TrajOptProblem &>(("self"_a, "problem")))
+      .def("cycleAppend", &Results::cycleAppend, ("self"_a, "problem", "x0"),
+           "Cycle the results.")
       .def_readonly("al_iter", &Results::al_iter)
       .def_readonly("lams", &Results::lams)
       .def(PrintableVisitor<Results>());
@@ -87,6 +89,9 @@ void exposeProxDDP() {
                                "rho_init"_a = 0., "max_iters"_a = 1000,
                                "verbose"_a = VerboseLevel::QUIET,
                                "hess_approx"_a = HessianApprox::GAUSS_NEWTON)))
+      .def("cycleProblem", &SolverType::cycleProblem,
+           ("self"_a, "problem", "data"),
+           "Cycle the problem data for MPC applications.")
       .def_readwrite("bcl_params", &SolverType::bcl_params, "BCL parameters.")
       .def_readwrite("max_refinement_steps", &SolverType::maxRefinementSteps_)
       .def_readwrite("refinement_threshold", &SolverType::refinementThreshold_)
