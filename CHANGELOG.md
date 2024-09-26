@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - All map types are now `boost::unordered_map` ([#203](https://github.com/Simple-Robotics/aligator/pull/203))
+- Separate CostFiniteDifference out of finite-difference.hpp ([#212](https://github.com/Simple-Robotics/aligator/pull/212))
 
 ### Fixed
 
