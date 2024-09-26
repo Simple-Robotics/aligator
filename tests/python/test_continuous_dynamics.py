@@ -112,13 +112,14 @@ def test_centroidal():
     nu = force_size * nk
     mass = 10.5
     gravity = np.array([0, 0, -9.81])
+    contact_names = ["foot1", "foot2", "foot3"]
     contact_states = [True, True, False]
     contact_poses = [
         np.array([0, 0.1, 0]),
         np.array([0.1, -0.1, 0]),
         np.array([0.1, 0.2, 0]),
     ]
-    contact_map = aligator.ContactMap(contact_states, contact_poses)
+    contact_map = aligator.ContactMap(contact_names, contact_states, contact_poses)
     ode = dynamics.CentroidalFwdDynamics(space, mass, gravity, contact_map, force_size)
     data = ode.createData()
 
@@ -158,13 +159,14 @@ def test_centroidal_diff():
     nu = force_size * nk
     mass = 10.5
     gravity = np.array([0, 0, -9.81])
+    contact_names = ["foot1", "foot2", "foot3"]
     contact_states = [True, True, False]
     contact_poses = [
         np.array([0, 0.1, 0]),
         np.array([0.1, -0.1, 0]),
         np.array([0.1, 0.2, 0]),
     ]
-    contact_map = aligator.ContactMap(contact_states, contact_poses)
+    contact_map = aligator.ContactMap(contact_names, contact_states, contact_poses)
     ode = dynamics.CentroidalFwdDynamics(space, mass, gravity, contact_map, force_size)
     data = ode.createData()
 
@@ -207,13 +209,14 @@ def test_continuous_centroidal():
     space = manifolds.VectorSpace(9 + nu)
     mass = 10.5
     gravity = np.array([0, 0, -9.81])
+    contact_names = ["foot1", "foot2", "foot3"]
     contact_states = [True, True, False]
     contact_poses = [
         np.array([0, 0.1, 0]),
         np.array([0.1, -0.1, 0]),
         np.array([0.1, 0.2, 0]),
     ]
-    contact_map = aligator.ContactMap(contact_states, contact_poses)
+    contact_map = aligator.ContactMap(contact_names, contact_states, contact_poses)
     ode = dynamics.ContinuousCentroidalFwdDynamics(
         space, mass, gravity, contact_map, force_size
     )
@@ -258,13 +261,14 @@ def test_continuous_centroidal_diff():
     space = manifolds.VectorSpace(nx)
     mass = 10.5
     gravity = np.array([0, 0, -9.81])
+    contact_names = ["foot1", "foot2", "foot3"]
     contact_states = [True, True, False]
     contact_poses = [
         np.array([0, 0.1, 0]),
         np.array([0.1, -0.1, 0]),
         np.array([0.1, 0.2, 0]),
     ]
-    contact_map = aligator.ContactMap(contact_states, contact_poses)
+    contact_map = aligator.ContactMap(contact_names, contact_states, contact_poses)
     ode = dynamics.ContinuousCentroidalFwdDynamics(
         space, mass, gravity, contact_map, force_size
     )
