@@ -134,7 +134,7 @@ def test_dcm_position():
 
     fun.computeJacobians(x0, fdata)
 
-    fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
+    fun_fd = aligator.FiniteDifferenceHelper(space, fun, EPS)
     fdata2 = fun_fd.createData()
     fun_fd.evaluate(x0, u0, x0, fdata2)
     fun_fd.computeJacobians(x0, u0, x0, fdata2)
@@ -146,7 +146,7 @@ def test_dcm_position():
         fun.computeJacobians(x0, fdata)
         fun_fd.evaluate(x0, u0, x0, fdata2)
         fun_fd.computeJacobians(x0, u0, x0, fdata2)
-        assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
+        assert np.allclose(fdata.Jx, fdata2.Jx, ATOL)
 
 
 if __name__ == "__main__":
