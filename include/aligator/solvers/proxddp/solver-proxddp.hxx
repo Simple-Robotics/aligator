@@ -14,7 +14,6 @@
 #include "aligator/gar/dense-riccati.hpp"
 
 #include "aligator/tracy.hpp"
-#include <iostream>
 
 namespace aligator {
 

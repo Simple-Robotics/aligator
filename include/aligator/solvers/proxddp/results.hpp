@@ -38,7 +38,7 @@ template <typename _Scalar> struct ResultsTpl : ResultsBaseTpl<_Scalar> {
   explicit ResultsTpl(const TrajOptProblemTpl<Scalar> &problem);
 
   void cycleAppend(const TrajOptProblemTpl<Scalar> &problem,
-                   const Eigen::VectorXd &x0);
+                   const ConstVectorRef &x0);
 };
 
 template <typename Scalar>

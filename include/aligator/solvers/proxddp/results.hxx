@@ -41,7 +41,7 @@ ResultsTpl<Scalar>::ResultsTpl(const TrajOptProblemTpl<Scalar> &problem)
 
 template <typename Scalar>
 void ResultsTpl<Scalar>::cycleAppend(const TrajOptProblemTpl<Scalar> &problem,
-                                     const Eigen::VectorXd &x0) {
+                                     const ConstVectorRef &x0) {
   xs.front() = xs.back();
   us.front() = us.back();
 

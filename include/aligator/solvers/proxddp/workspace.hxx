@@ -7,7 +7,6 @@
 #include "aligator/core/traj-opt-data.hpp"
 #include "aligator/gar/lqr-problem.hpp"
 #include "aligator/gar/utils.hpp"
-#include <iostream>
 namespace aligator {
 
 template <typename Scalar>

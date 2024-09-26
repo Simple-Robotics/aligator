@@ -91,7 +91,7 @@ void exposeProxDDP() {
                                "hess_approx"_a = HessianApprox::GAUSS_NEWTON)))
       .def("cycleProblem", &SolverType::cycleProblem,
            ("self"_a, "problem", "data"),
-           "Cycle the problem data for MPC applications.")
+           "Cycle the problem data (for MPC applications).")
       .def_readwrite("bcl_params", &SolverType::bcl_params, "BCL parameters.")
       .def_readwrite("max_refinement_steps", &SolverType::maxRefinementSteps_)
       .def_readwrite("refinement_threshold", &SolverType::refinementThreshold_)

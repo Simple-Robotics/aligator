@@ -117,6 +117,7 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
 
   void cycleAppend(const TrajOptProblemTpl<Scalar> &problem,
                    shared_ptr<StageDataTpl<Scalar>> data);
+
   template <typename T>
   friend std::ostream &operator<<(std::ostream &oss,
                                   const WorkspaceTpl<T> &self);
