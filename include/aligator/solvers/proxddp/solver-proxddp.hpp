@@ -254,11 +254,11 @@ public:
                           const std::vector<VectorXs> &lams,
                           const std::vector<VectorXs> &vs);
 
-  /// @copydoc mu_penal_
-  ALIGATOR_INLINE Scalar mu() const { return mu_penal_; }
+  static constexpr Scalar cstr_scale = 100.;
 
-  /// @copydoc mu_inverse_
-  ALIGATOR_INLINE Scalar mu_inv() const { return 1. / mu_penal_; }
+  ALIGATOR_INLINE Scalar mudyn() const { return mu_penal_; }
+  ALIGATOR_INLINE Scalar mu() const { return cstr_scale * mu_penal_; }
+  ALIGATOR_INLINE Scalar mu_inv() const { return 1. / mu(); }
 
   /// @copydoc rho_penal_
   ALIGATOR_INLINE Scalar rho() const { return rho_penal_; }

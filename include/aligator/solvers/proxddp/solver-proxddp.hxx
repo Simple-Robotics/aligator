@@ -189,11 +189,11 @@ void SolverProxDDPTpl<Scalar>::computeMultipliers(
   // initial constraint
   {
     StageFunctionData &dd = *prob_data.init_data;
-    lams_plus[0] = lams_prev[0] + dd.value_ * mu_inv();
+    lams_plus[0] = lams_prev[0] + dd.value_ / mudyn();
     lams_pdal[0] = 2 * lams_plus[0] - lams[0];
     /// TODO: generalize to the other types of initial constraint (non-equality)
     workspace_.dyn_slacks[0] = dd.value_;
-    Lds[0] = mu() * (lams_plus[0] - lams[0]);
+    Lds[0] = mudyn() * (lams_plus[0] - lams[0]);
     ALIGATOR_RAISE_IF_NAN(Lds[0]);
   }
   using ConstraintSetProd = proxsuite::nlp::ConstraintSetProductTpl<Scalar>;
@@ -210,9 +210,9 @@ void SolverProxDDPTpl<Scalar>::computeMultipliers(
 
     // 1. compute shifted dynamics error
     workspace_.dyn_slacks[i + 1] = dd.value_;
-    lams_plus[i + 1] = lams_prev[i + 1] + dd.value_ * mu_inv();
+    lams_plus[i + 1] = lams_prev[i + 1] + dd.value_ / mudyn();
     lams_pdal[i + 1] = 2 * lams_plus[i + 1] - lams[i + 1];
-    Lds[i + 1] = mu() * (lams_plus[i + 1] - lams[i + 1]);
+    Lds[i + 1] = mudyn() * (lams_plus[i + 1] - lams[i + 1]);
     ALIGATOR_RAISE_IF_NAN(Lds[i + 1]);
 
     // 2. use product constraint operator
@@ -343,7 +343,7 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
     stage.evaluate(xs[t], us[t], xs[t + 1], data);
 
     // compute desired multiple-shooting gap from the multipliers
-    dyn_slacks[t] = mu() * (lams_prev[t + 1] - lams[t + 1]);
+    dyn_slacks[t] = mudyn() * (lams_prev[t + 1] - lams[t + 1]);
 
     DynamicsData &dd = *data.dynamics_data;
 
@@ -519,7 +519,7 @@ Scalar SolverProxDDPTpl<Scalar>::forwardPass(const Problem &problem,
     break;
   }
   computeMultipliers(problem, workspace_.trial_lams, workspace_.trial_vs);
-  return PDALFunction<Scalar>::evaluate(mu(), mu(), problem,
+  return PDALFunction<Scalar>::evaluate(mudyn(), mu(), problem,
                                         workspace_.trial_lams,
                                         workspace_.trial_vs, workspace_);
 }
@@ -546,7 +546,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
                                          workspace_.problem_data, num_threads_);
   computeMultipliers(problem, results_.lams, results_.vs);
   results_.merit_value_ = PDALFunction<Scalar>::evaluate(
-      mu(), mu(), problem, results_.lams, results_.vs, workspace_);
+      mudyn(), mu(), problem, results_.lams, results_.vs, workspace_);
 
   for (; iter < max_iters; iter++) {
     ALIGATOR_TRACY_ZONE_NAMED_N(ZoneIteration, "inner_iteration", true);
@@ -587,7 +587,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     //  Dynamic Programming Section B Backward. The backward pass
     // computes the gains, and the forward pass computes the new
     // control and state trajectories.
-    linearSolver_->backward(mu(), mu());
+    linearSolver_->backward(mudyn(), mu());
 
     linearSolver_->forward(workspace_.dxs, workspace_.dus, workspace_.dvs,
                            workspace_.dlams);
@@ -598,7 +598,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
       workspace_.dlams[0].setZero();
     }
     Scalar dphi0 = PDALFunction<Scalar>::directionalDerivative(
-        mu(), mu(), problem, results_.lams, results_.vs, workspace_);
+        mudyn(), mu(), problem, results_.lams, results_.vs, workspace_);
     ALIGATOR_RAISE_IF_NAN(dphi0);
 
     // check if we can early stop
@@ -644,7 +644,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     logger.addEntry("merit", phi_new);
     logger.addEntry("ΔM", phi_new - phi0);
     logger.addEntry("aliter", results_.al_iter + 1);
-    logger.addEntry("mu", mu());
+    logger.addEntry("mu", mudyn());
 
     if (alpha_opt <= ls_params.alpha_min) {
       if (preg_ >= reg_max)
