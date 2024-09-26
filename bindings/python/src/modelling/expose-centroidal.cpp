@@ -37,6 +37,7 @@ void exposeContactMap() {
            ("self"_a, "name", "ref"))
       .def("getContactPose", &ContactMap::getContactPose, ("self"_a, "name"),
            bp::return_internal_reference<>())
+      .def_readonly("size", &ContactMap::size_)
       .def_readwrite("contact_states", &ContactMap::contact_states_)
       .def_readwrite("contact_poses", &ContactMap::contact_poses_)
       .def_readwrite("contact_names", &ContactMap::contact_names_);
