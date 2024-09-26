@@ -18,7 +18,7 @@ template <typename Scalar> struct ContactForceDataTpl;
  */
 
 template <typename _Scalar>
-struct ContactForceResidualTpl : StageFunctionTpl<_Scalar>, frame_api {
+struct ContactForceResidualTpl : StageFunctionTpl<_Scalar> {
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
@@ -37,27 +37,41 @@ public:
   MatrixXs actuation_matrix_;
   RigidConstraintModelVector constraint_models_;
   ProxSettings prox_settings_;
-  Vector6s fref_;
+  Eigen::VectorXd fref_;
+  long force_size_;
   int contact_id_;
 
   ContactForceResidualTpl(const int ndx, const Model &model,
                           const MatrixXs &actuation,
                           const RigidConstraintModelVector &constraint_models,
                           const ProxSettings &prox_settings,
-                          const Vector6s &fref, const int contact_id)
-      : Base(ndx, (int)actuation.cols(), 6), pin_model_(model),
+                          const Eigen::VectorXd &fref,
+                          const std::string &contact_name)
+      : Base(ndx, (int)actuation.cols(), fref.size()), pin_model_(model),
         actuation_matrix_(actuation), constraint_models_(constraint_models),
-        prox_settings_(prox_settings), fref_(fref), contact_id_(contact_id) {
+        prox_settings_(prox_settings), fref_(fref), force_size_(fref.size()) {
     if (model.nv != actuation.rows()) {
       ALIGATOR_DOMAIN_ERROR(
           fmt::format("actuation matrix should have number of rows = pinocchio "
                       "model nv ({} and {}).",
                       actuation.rows(), model.nv));
     }
+    contact_id_ = -1;
+    for (std::size_t i = 0; i < constraint_models.size(); i++) {
+      if (constraint_models[i].name == contact_name) {
+        contact_id_ = (int)i;
+      }
+    }
+    if (contact_id_ == -1) {
+      ALIGATOR_RUNTIME_ERROR(
+          "Contact name is not included in constraint models");
+    }
   }
 
-  const Vector6s &getReference() const { return fref_; }
-  void setReference(const Eigen::Ref<const Vector6s> &fnew) { fref_ = fnew; }
+  const Eigen::VectorXd &getReference() const { return fref_; }
+  void setReference(const Eigen::Ref<const Eigen::VectorXd> &fnew) {
+    fref_ = fnew;
+  }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &, BaseData &data) const;

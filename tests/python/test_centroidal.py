@@ -28,20 +28,25 @@ def sample_gauss(space):
 
 
 def test_contact_map():
+    contact_names = ["c1", "c2", "c3"]
     contact_states = [True, False, True]
     contact_poses = [
         np.array([0.2, 0.1, 0.0]),
         np.array([0.2, 0.0, 0.0]),
         np.array([0.0, 0.1, 0.0]),
     ]
-    contact_map = aligator.ContactMap(contact_states, contact_poses)
-    contact_map.addContact(False, np.array([0.0, 0.0, 0.0]))
+    contact_map = aligator.ContactMap(contact_names, contact_states, contact_poses)
+    contact_map.addContact("c4", False, np.array([0.0, 0.0, 0.0]))
 
     assert contact_map.size == 4
 
     contact_map.removeContact(3)
 
     assert contact_map.size == 3
+
+    contact_map.setContactPose("c2", np.array([1, 2, 3]))
+    boolvec = contact_map.contact_poses[1] == np.array([1, 2, 3])
+    assert boolvec.all()
 
 
 def test_com_translation():
@@ -143,6 +148,7 @@ def test_acceleration():
     nu = force_size * nk
     u0 = np.random.randn(nu)
 
+    contact_names = ["c1", "c2", "c3", "c4"]
     contact_states = [True, False, True, True]
     contact_poses = [
         np.array([0.2, 0.1, 0.0]),
@@ -150,7 +156,7 @@ def test_acceleration():
         np.array([0.0, 0.1, 0.0]),
         np.array([0.0, 0.0, 0]),
     ]
-    contact_map = aligator.ContactMap(contact_states, contact_poses)
+    contact_map = aligator.ContactMap(contact_names, contact_states, contact_poses)
 
     fun = aligator.CentroidalAccelerationResidual(
         ndx, nu, mass, gravity, contact_map, force_size
@@ -278,7 +284,7 @@ def test_wrench_cone():
     L = 0.1
     W = 0.05
 
-    fun = aligator.WrenchConeResidual(ndx, nu, k, mu, L, W)
+    fun = aligator.CentroidalWrenchConeResidual(ndx, nu, k, mu, L, W)
     fdata = fun.createData()
 
     fun.evaluate(x0, u0, x0, fdata)
@@ -308,6 +314,8 @@ def test_angular_acceleration():
     force_size = 3
     nu = force_size * nk
     u0 = np.random.randn(nu)
+
+    contact_names = ["c1", "c2", "c3", "c4"]
     contact_states = [True, False, True, True]
     contact_poses = [
         np.array([0.2, 0.1, 0.0]),
@@ -315,7 +323,7 @@ def test_angular_acceleration():
         np.array([0.0, 0.1, 0.0]),
         np.array([0.0, 0.0, 0]),
     ]
-    contact_map = aligator.ContactMap(contact_states, contact_poses)
+    contact_map = aligator.ContactMap(contact_names, contact_states, contact_poses)
 
     fun = aligator.AngularAccelerationResidual(
         ndx, nu, mass, gravity, contact_map, force_size
@@ -405,6 +413,7 @@ def test_wrapper_angular_acceleration():
     u0 = np.random.randn(nu)
     wrapping_space = manifolds.VectorSpace(ndx_w)
 
+    contact_names = ["c1", "c2", "c3", "c4"]
     contact_states = [True, False, True, True]
     contact_poses = [
         np.array([0.2, 0.1, 0.0]),
@@ -412,7 +421,7 @@ def test_wrapper_angular_acceleration():
         np.array([0.0, 0.1, 0.0]),
         np.array([0.0, 0.0, 0]),
     ]
-    contact_map = aligator.ContactMap(contact_states, contact_poses)
+    contact_map = aligator.ContactMap(contact_names, contact_states, contact_poses)
 
     wrapped_fun = aligator.AngularAccelerationResidual(
         ndx, nu, mass, gravity, contact_map, force_size

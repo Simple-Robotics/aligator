@@ -13,7 +13,6 @@ void MultibodyWrenchConeResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                                       const ConstVectorRef &,
                                                       BaseData &data) const {
   Data &d = static_cast<Data &>(data);
-  pinocchio::DataTpl<Scalar> &pdata = d.pin_data_;
 
   const auto q = x.head(pin_model_.nq);
   const auto v = x.tail(pin_model_.nv);

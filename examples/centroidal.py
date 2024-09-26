@@ -43,6 +43,7 @@ T_ss = 40  # Singel support time
 
 """ Define contact points throughout horizon"""
 cp1 = [
+    ["LF", "RF", "LB", "RB"],
     [True, True, True, True],
     [
         np.array([0.2, 0.1, 0.0]),
@@ -52,6 +53,7 @@ cp1 = [
     ],
 ]
 cp2 = [
+    ["LF", "RF", "LB", "RB"],
     [False, True, True, False],
     [
         np.array([0.2, 0.1, 0.0]),
@@ -61,6 +63,7 @@ cp2 = [
     ],
 ]
 cp3 = [
+    ["LF", "RF", "LB", "RB"],
     [True, True, True, True],
     [
         np.array([0.25, 0.1, 0.0]),
@@ -70,6 +73,7 @@ cp3 = [
     ],
 ]
 cp4 = [
+    ["LF", "RF", "LB", "RB"],
     [True, False, False, True],
     [
         np.array([0.25, 0.1, 0.0]),
@@ -79,6 +83,7 @@ cp4 = [
     ],
 ]
 cp5 = [
+    ["LF", "RF", "LB", "RB"],
     [True, True, True, True],
     [
         np.array([0.25, 0.1, 0.0]),
@@ -88,6 +93,7 @@ cp5 = [
     ],
 ]
 cp6 = [
+    ["LF", "RF", "LB", "RB"],
     [False, True, True, False],
     [
         np.array([0.25, 0.1, 0.0]),
@@ -97,6 +103,7 @@ cp6 = [
     ],
 ]
 cp7 = [
+    ["LF", "RF", "LB", "RB"],
     [True, True, True, True],
     [
         np.array([0.3, 0.1, 0.0]),
@@ -137,7 +144,7 @@ def create_dynamics(contact_map):
 
 
 def createStage(cp):
-    contact_map = aligator.ContactMap(cp[0], cp[1])
+    contact_map = aligator.ContactMap(cp[0], cp[1], cp[2])
     rcost = aligator.CostStack(space, nu)
 
     linear_acc = aligator.CentroidalAccelerationResidual(
@@ -157,7 +164,7 @@ def createStage(cp):
         if cp[0][i]:
             cone_cstr = aligator.FrictionConeResidual(space.ndx, nu, i, mu, 0)
             if force_size == 6:
-                cone_cstr = aligator.WrenchConeResidual(
+                cone_cstr = aligator.CentroidalWrenchConeResidual(
                     space.ndx, nu, i, mu, foot_length, foot_width
                 )
             stm.addConstraint(cone_cstr, constraints.NegativeOrthant())
@@ -172,8 +179,12 @@ stages = []
 for i in range(T):
     stages.append(createStage(contact_points[i]))
 
-contact_map_init = aligator.ContactMap(contact_points[0][0], contact_points[0][1])
-contact_map_ter = aligator.ContactMap(contact_points[-1][0], contact_points[-1][1])
+contact_map_init = aligator.ContactMap(
+    contact_points[0][0], contact_points[0][1], contact_points[0][2]
+)
+contact_map_ter = aligator.ContactMap(
+    contact_points[-1][0], contact_points[-1][1], contact_points[-1][2]
+)
 init_linear_acc_cstr = aligator.CentroidalAccelerationResidual(
     nx, nu, mass, gravity, contact_map_init, force_size
 )
@@ -189,11 +200,11 @@ init_angular_acc_cstr = aligator.AngularAccelerationResidual(
 init_linear_mom = aligator.LinearMomentumResidual(nx, nu, np.array([0, 0, 0]))
 ter_angular_mom = aligator.AngularMomentumResidual(nx, nu, np.array([0, 0, 0]))
 stages[0].addConstraint(init_linear_acc_cstr, constraints.EqualityConstraintSet())
-stages[0].addConstraint(init_angular_acc_cstr, constraints.EqualityConstraintSet())
+# stages[0].addConstraint(init_angular_acc_cstr, constraints.EqualityConstraintSet())
 stages[0].addConstraint(init_linear_mom, constraints.EqualityConstraintSet())
 
-stages[-1].addConstraint(init_linear_mom, constraints.EqualityConstraintSet())
-stages[-1].addConstraint(ter_linear_acc_cstr, constraints.EqualityConstraintSet())
+# stages[-1].addConstraint(init_linear_mom, constraints.EqualityConstraintSet())
+# stages[-1].addConstraint(ter_linear_acc_cstr, constraints.EqualityConstraintSet())
 stages[-1].addConstraint(ter_angular_mom, constraints.EqualityConstraintSet())
 stages[-1].addConstraint(ter_angular_acc_cstr, constraints.EqualityConstraintSet())
 problem = aligator.TrajOptProblem(x0, stages, term_cost)
@@ -248,12 +259,12 @@ angular_acceleration = [[], [], []]
 for i in range(T):
     linacc = gravity * mass
     angacc = np.zeros(3)
-    ncontact = len(contact_points[i])
+    ncontact = len(contact_points[i][2])
     for j in range(ncontact):
         fj = results.us[i][j * force_size : (j + 1) * force_size]
         ci = results.xs[i][0:3]
         linacc += fj[:3]
-        angacc += np.cross(contact_points[i][j][1] - ci, fj[:3])
+        angacc += np.cross(contact_points[i][2][j] - ci, fj[:3])
         if force_size == 6:
             angacc += fj[3:]
     for z in range(3):
