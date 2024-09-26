@@ -13,12 +13,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Templated getters `getCost<U>()` and `getDynamics<U>()` in the StageModel class, and another `getDynamics<U>()` for integrator classes, to get the concrete types ([##205](https://github.com/Simple-Robotics/aligator/pull/205))
 - python: Add helper `aligator.has_pinocchio_features()` ([#206](https://github.com/Simple-Robotics/aligator/pull/206))
 - Add a cycleProblem function that properly rotates the problem data for MPC applications ([#215](https://github.com/Simple-Robotics/aligator/pull/215))
+- Add a DCM cost function
 
 ### Changed
 
 - All map types are now `boost::unordered_map` ([#203](https://github.com/Simple-Robotics/aligator/pull/203))
 - Separate CostFiniteDifference out of finite-difference.hpp ([#212](https://github.com/Simple-Robotics/aligator/pull/212))
 - Remove constraint scalers (including header `core/alm-weights.hpp`) from ProxDDP algorithm ([#214](https://github.com/Simple-Robotics/aligator/pull/214))
+- Change the API of the wrench cost functions to allow 3D and 6D forces
+- Separate centroidal wrench cone and multibody wrench cone costs
+- Add a contact_name item to the CostMap structure
 
 ### Fixed
 
