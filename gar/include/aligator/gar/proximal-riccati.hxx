@@ -73,4 +73,14 @@ bool ProximalRiccatiSolver<Scalar>::forward(
   return Impl::forwardImpl(problem_->stages, datas, xs, us, vs, lbdas, theta_);
 }
 
+template <typename Scalar>
+void ProximalRiccatiSolver<Scalar>::cycleAppend(const KnotType &knot) {
+  rotate_vec_left(datas, 0, 1);
+  datas[problem_->horizon() - 1] =
+      StageFactor<Scalar>(knot.nx, knot.nu, knot.nc, knot.nx2, knot.nth);
+  thGrad.setZero();
+  thHess.setZero();
+  kkt0.mat.setZero();
+};
+
 } // namespace aligator::gar
