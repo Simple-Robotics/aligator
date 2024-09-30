@@ -157,7 +157,7 @@ void SolverProxDDPTpl<Scalar>::cycleProblem(
     const Problem &problem, shared_ptr<StageDataTpl<Scalar>> data) {
   results_.cycleAppend(problem, problem.getInitState());
   workspace_.cycleAppend(problem, data);
-
+  // linearSolver_->cycleAppend(workspace_.knots[workspace_.nsteps - 1]);
   switch (linear_solver_choice) {
   case LQSolverChoice::SERIAL: {
     linearSolver_ = std::make_unique<gar::ProximalRiccatiSolver<Scalar>>(

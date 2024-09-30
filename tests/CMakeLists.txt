@@ -51,6 +51,7 @@ set(TEST_NAMES
     solver-storage
     utils
     forces
+    cycling
 )
 
 foreach(test_name ${TEST_NAMES})
