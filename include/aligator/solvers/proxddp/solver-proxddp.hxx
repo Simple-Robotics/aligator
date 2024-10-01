@@ -443,11 +443,11 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
   if (!workspace_.isInitialized() || !results_.isInitialized()) {
     ALIGATOR_RUNTIME_ERROR("workspace and results were not allocated yet!");
   }
-  if (mu_init < mu_lower_bound) {
+  if (mu_init < bcl_params.mu_lower_bound) {
     ALIGATOR_WARNING(
         "SolverProxDDP",
         fmt::format("Initial value of mu_init < mu_lower_bound ({:.3g})",
-                    mu_lower_bound));
+                    bcl_params.mu_lower_bound));
     setAlmPenalty(mu_init);
   }
 

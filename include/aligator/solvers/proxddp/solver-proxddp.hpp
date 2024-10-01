@@ -14,8 +14,6 @@
 #include "workspace.hpp"
 #include "results.hpp"
 
-#include <proxsuite-nlp/bcl-params.hpp>
-
 #include <boost/unordered_map.hpp>
 
 namespace aligator {
@@ -57,6 +55,25 @@ public:
   using LinesearchType = proxsuite::nlp::ArmijoLinesearch<Scalar>;
   using LQProblem = gar::LQRProblemTpl<Scalar>;
   using Filter = FilterTpl<Scalar>;
+
+  struct AlmParams {
+    /// Log-factor \f$\alpha_\eta\f$ for primal tolerance (failure)
+    Scalar prim_alpha = 0.1;
+    /// Log-factor \f$\beta_\eta\f$ for primal tolerance (success)
+    Scalar prim_beta = 0.9;
+    /// Log-factor \f$\alpha_\eta\f$ for dual tolerance (failure)
+    Scalar dual_alpha = 1.;
+    /// Log-factor \f$\beta_\eta\f$ for dual tolerance (success)
+    Scalar dual_beta = 1.;
+    /// Scale factor for the dual proximal penalty.
+    Scalar mu_update_factor = 0.01;
+    /// Scale factor for the primal proximal penalty.
+    Scalar rho_update_factor = 1.0;
+    /// Constraints AL scaling
+    Scalar constraints_al_scale = 100.;
+    /// Lower bound on AL parameter
+    Scalar mu_lower_bound = 1e-8; //< Minimum possible penalty parameter.
+  };
 
   /// Subproblem tolerance
   Scalar inner_tol_;
@@ -107,7 +124,7 @@ public:
   /// Type of rollout for the forward pass.
   RolloutType rollout_type_ = RolloutType::NONLINEAR;
   /// Parameters for the BCL outer loop of the augmented Lagrangian algorithm.
-  BCLParamsTpl<Scalar> bcl_params;
+  AlmParams bcl_params;
   /// Step acceptance mode.
   StepAcceptanceStrategy sa_strategy = StepAcceptanceStrategy::LINESEARCH;
 
@@ -120,7 +137,6 @@ public:
   Scalar refinementThreshold_ = 1e-13; //< Target tol. for the KKT system.
   std::size_t max_iters;               //< Max number of Newton iterations.
   std::size_t max_al_iters = 100;      //< Maximum number of ALM iterations.
-  Scalar mu_lower_bound = 1e-8;        //< Minimum possible penalty parameter.
   uint rollout_max_iters;              //< Nonlinear rollout options
 
   /// Callbacks
@@ -256,10 +272,10 @@ public:
                           const std::vector<VectorXs> &lams,
                           const std::vector<VectorXs> &vs);
 
-  static constexpr Scalar cstr_scale = 100.;
-
   ALIGATOR_INLINE Scalar mudyn() const { return mu_penal_; }
-  ALIGATOR_INLINE Scalar mu() const { return cstr_scale * mu_penal_; }
+  ALIGATOR_INLINE Scalar mu() const {
+    return bcl_params.constraints_al_scale * mu_penal_;
+  }
   ALIGATOR_INLINE Scalar mu_inv() const { return 1. / mu(); }
 
   /// @copydoc rho_penal_
@@ -282,7 +298,7 @@ protected:
 
   /// Set dual proximal/ALM penalty parameter.
   ALIGATOR_INLINE void setAlmPenalty(Scalar new_mu) noexcept {
-    mu_penal_ = std::max(new_mu, mu_lower_bound);
+    mu_penal_ = std::max(new_mu, bcl_params.mu_lower_bound);
   }
 
   ALIGATOR_INLINE void setRho(Scalar new_rho) noexcept { rho_penal_ = new_rho; }
