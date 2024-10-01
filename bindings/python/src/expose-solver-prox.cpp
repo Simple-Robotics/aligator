@@ -26,7 +26,6 @@ void exposeProxDDP() {
   eigenpy::register_symbolic_link_to_registered_type<LinesearchStrategy>();
   eigenpy::register_symbolic_link_to_registered_type<
       proxsuite::nlp::LSInterpolation>();
-  eigenpy::register_symbolic_link_to_registered_type<context::BCLParams>();
 
   bp::enum_<LQSolverChoice>("LQSolverChoice")
       .value("LQ_SOLVER_SERIAL", LQSolverChoice::SERIAL)
@@ -78,70 +77,91 @@ void exposeProxDDP() {
 
   using SolverType = SolverProxDDPTpl<Scalar>;
 
-  bp::class_<SolverType, boost::noncopyable>(
-      "SolverProxDDP",
-      "A proximal, augmented Lagrangian solver, using a DDP-type scheme to "
-      "compute "
-      "search directions and feedforward, feedback gains."
-      " The solver instance initializes both a Workspace and a Results struct.",
-      bp::init<Scalar, Scalar, Scalar, std::size_t, VerboseLevel,
-               HessianApprox>(("self"_a, "tol", "mu_init"_a = 1e-2,
-                               "rho_init"_a = 0., "max_iters"_a = 1000,
-                               "verbose"_a = VerboseLevel::QUIET,
-                               "hess_approx"_a = HessianApprox::GAUSS_NEWTON)))
-      .def("cycleProblem", &SolverType::cycleProblem,
-           ("self"_a, "problem", "data"),
-           "Cycle the problem data (for MPC applications).")
-      .def_readwrite("bcl_params", &SolverType::bcl_params, "BCL parameters.")
-      .def_readwrite("max_refinement_steps", &SolverType::maxRefinementSteps_)
-      .def_readwrite("refinement_threshold", &SolverType::refinementThreshold_)
-      .def_readwrite("linear_solver_choice", &SolverType::linear_solver_choice)
-      .def_readwrite("multiplier_update_mode",
-                     &SolverType::multiplier_update_mode)
-      .def_readwrite("mu_init", &SolverType::mu_init,
-                     "Initial AL penalty parameter.")
-      .add_property("mu", &SolverType::mu)
-      .def_readwrite("rho_init", &SolverType::rho_init,
-                     "Initial proximal regularization.")
-      .def_readwrite("mu_min", &SolverType::mu_lower_bound,
-                     "Lower bound on the AL penalty parameter.")
-      .def_readwrite(
-          "rollout_max_iters", &SolverType::rollout_max_iters,
-          "Maximum number of iterations when solving the forward dynamics.")
-      .def_readwrite("max_al_iters", &SolverType::max_al_iters,
-                     "Maximum number of AL iterations.")
-      .def_readwrite("ls_mode", &SolverType::ls_mode, "Linesearch mode.")
-      .def_readwrite("sa_strategy", &SolverType::sa_strategy,
-                     "StepAcceptance strategy.")
-      .def_readwrite("rollout_type", &SolverType::rollout_type_,
-                     "Rollout type.")
-      .def_readwrite("dual_weight", &SolverType::dual_weight,
-                     "Dual penalty weight.")
-      .def_readwrite("reg_min", &SolverType::reg_min,
-                     "Minimum regularization value.")
-      .def_readwrite("reg_max", &SolverType::reg_max,
-                     "Maximum regularization value.")
-      .def_readwrite("preg", &SolverType::preg_,
-                     "Primal regularization parameter.")
-      .def_readwrite("lq_print_detailed", &SolverType::lq_print_detailed)
-      .def("updateLQSubproblem", &SolverType::updateLQSubproblem, "self"_a)
-      .def("computeCriterion", &SolverType::computeCriterion, "self"_a,
-           "Compute problem stationarity.")
-      .add_property("linearSolver",
-                    bp::make_getter(&SolverType::linearSolver_,
-                                    eigenpy::ReturnInternalStdUniquePtr{}),
-                    "Linear solver for the semismooth Newton method.")
-      .def_readwrite("filter", &SolverType::filter_,
-                     "Pair filter used to accept a step.")
-      .def("computeInfeasibilities", &SolverType::computeInfeasibilities,
-           ("self"_a, "problem"), "Compute problem infeasibilities.")
-      .def(SolverVisitor<SolverType>())
-      .def(
-          "run", &SolverType::run,
-          prox_run_overloads(("self"_a, "problem", "xs_init", "us_init",
-                              "vs_init", "lams_init"),
-                             "Run the algorithm. Can receive initial guess for "
-                             "multiplier trajectory."));
+  auto cls =
+      bp::class_<SolverType, boost::noncopyable>(
+          "SolverProxDDP",
+          "A proximal, augmented Lagrangian solver, using a DDP-type scheme to "
+          "compute "
+          "search directions and feedforward, feedback gains."
+          " The solver instance initializes both a Workspace and a Results "
+          "struct.",
+          bp::init<Scalar, Scalar, Scalar, std::size_t, VerboseLevel,
+                   HessianApprox>(
+              ("self"_a, "tol", "mu_init"_a = 1e-2, "rho_init"_a = 0.,
+               "max_iters"_a = 1000, "verbose"_a = VerboseLevel::QUIET,
+               "hess_approx"_a = HessianApprox::GAUSS_NEWTON)))
+          .def("cycleProblem", &SolverType::cycleProblem,
+               ("self"_a, "problem", "data"),
+               "Cycle the problem data (for MPC applications).")
+          .def_readwrite("bcl_params", &SolverType::bcl_params,
+                         "BCL parameters.")
+          .def_readwrite("max_refinement_steps",
+                         &SolverType::maxRefinementSteps_)
+          .def_readwrite("refinement_threshold",
+                         &SolverType::refinementThreshold_)
+          .def_readwrite("linear_solver_choice",
+                         &SolverType::linear_solver_choice)
+          .def_readwrite("multiplier_update_mode",
+                         &SolverType::multiplier_update_mode)
+          .def_readwrite("mu_init", &SolverType::mu_init,
+                         "Initial AL penalty parameter.")
+          .add_property("mu", &SolverType::mu)
+          .def_readwrite("rho_init", &SolverType::rho_init,
+                         "Initial proximal regularization.")
+          .def_readwrite(
+              "rollout_max_iters", &SolverType::rollout_max_iters,
+              "Maximum number of iterations when solving the forward dynamics.")
+          .def_readwrite("max_al_iters", &SolverType::max_al_iters,
+                         "Maximum number of AL iterations.")
+          .def_readwrite("ls_mode", &SolverType::ls_mode, "Linesearch mode.")
+          .def_readwrite("sa_strategy", &SolverType::sa_strategy,
+                         "StepAcceptance strategy.")
+          .def_readwrite("rollout_type", &SolverType::rollout_type_,
+                         "Rollout type.")
+          .def_readwrite("dual_weight", &SolverType::dual_weight,
+                         "Dual penalty weight.")
+          .def_readwrite("reg_min", &SolverType::reg_min,
+                         "Minimum regularization value.")
+          .def_readwrite("reg_max", &SolverType::reg_max,
+                         "Maximum regularization value.")
+          .def_readwrite("preg", &SolverType::preg_,
+                         "Primal regularization parameter.")
+          .def_readwrite("lq_print_detailed", &SolverType::lq_print_detailed)
+          .def("updateLQSubproblem", &SolverType::updateLQSubproblem, "self"_a)
+          .def("computeCriterion", &SolverType::computeCriterion, "self"_a,
+               "Compute problem stationarity.")
+          .add_property("linearSolver",
+                        bp::make_getter(&SolverType::linearSolver_,
+                                        eigenpy::ReturnInternalStdUniquePtr{}),
+                        "Linear solver for the semismooth Newton method.")
+          .def_readwrite("filter", &SolverType::filter_,
+                         "Pair filter used to accept a step.")
+          .def("computeInfeasibilities", &SolverType::computeInfeasibilities,
+               ("self"_a, "problem"), "Compute problem infeasibilities.")
+          .def(SolverVisitor<SolverType>())
+          .def("run", &SolverType::run,
+               prox_run_overloads(
+                   ("self"_a, "problem", "xs_init", "us_init", "vs_init",
+                    "lams_init"),
+                   "Run the algorithm. Can receive initial guess for "
+                   "multiplier trajectory."));
+
+  {
+    using AlmParams = SolverType::AlmParams;
+    bp::scope scope{cls};
+#define _c(name) def_readwrite(#name, &AlmParams::name)
+    bp::class_<AlmParams>("AlmParams", "Parameters for the ALM algorithm",
+                          bp::init<>("self"_a))
+        ._c(prim_alpha)
+        ._c(prim_beta)
+        ._c(dual_alpha)
+        ._c(dual_beta)
+        ._c(mu_update_factor)
+        ._c(rho_update_factor)
+        ._c(constraints_al_scale)
+        ._c(mu_lower_bound);
+#undef _c
+  }
 }
 
 } // namespace python

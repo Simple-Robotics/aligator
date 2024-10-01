@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change the API of the wrench cost functions to allow 3D and 6D forces
 - Separate centroidal wrench cone and multibody wrench cone costs
 - Add a contact_name item to the CostMap structure
+- Re-define ALM params struct internally to aligator ([#219](https://github.com/Simple-Robotics/aligator/pull/219))
 
 ### Fixed
 

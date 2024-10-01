@@ -6,7 +6,6 @@
 #include "solver-proxddp.hpp"
 #include "merit-function.hpp"
 #include "aligator/core/lagrangian.hpp"
-#include "aligator/gar/utils.hpp"
 #include "aligator/utils/forward-dyn.hpp"
 
 #include "aligator/gar/proximal-riccati.hpp"
@@ -443,6 +442,13 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
   ALIGATOR_TRACY_ZONE_SCOPED;
   if (!workspace_.isInitialized() || !results_.isInitialized()) {
     ALIGATOR_RUNTIME_ERROR("workspace and results were not allocated yet!");
+  }
+  if (mu_init < bcl_params.mu_lower_bound) {
+    ALIGATOR_WARNING(
+        "SolverProxDDP",
+        fmt::format("Initial value of mu_init < mu_lower_bound ({:.3g})",
+                    bcl_params.mu_lower_bound));
+    setAlmPenalty(mu_init);
   }
 
   check_trajectory_and_assign(problem, xs_init, us_init, results_.xs,

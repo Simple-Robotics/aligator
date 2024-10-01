@@ -24,8 +24,6 @@ namespace aligator {
 
 // NOLINTBEGIN(misc-unused-using-decls)
 
-// Use the shared_ptr used in proxsuite-nlp.
-using proxsuite::nlp::BCLParamsTpl;
 using proxsuite::nlp::ConstraintSetBase;
 using proxsuite::nlp::ManifoldAbstractTpl;
 // Use the math_types template from proxsuite-nlp.

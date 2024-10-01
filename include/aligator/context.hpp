@@ -13,7 +13,6 @@ ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
 using Manifold = ManifoldAbstractTpl<Scalar>;
 
-using BCLParams = BCLParamsTpl<Scalar>;
 using StageFunction = StageFunctionTpl<Scalar>;
 using UnaryFunction = UnaryFunctionTpl<Scalar>;
 using StageFunctionData = StageFunctionDataTpl<Scalar>;
