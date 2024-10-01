@@ -6,7 +6,6 @@
 #include "solver-proxddp.hpp"
 #include "merit-function.hpp"
 #include "aligator/core/lagrangian.hpp"
-#include "aligator/gar/utils.hpp"
 #include "aligator/utils/forward-dyn.hpp"
 
 #include "aligator/gar/proximal-riccati.hpp"
