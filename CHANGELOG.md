@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [python] Added getter `getComponent()` for `CostStack`, similar to C++ API
 - Templated getters `getCost<U>()` and `getDynamics<U>()` in the StageModel class, and another `getDynamics<U>()` for integrator classes, to get the concrete types ([##205](https://github.com/Simple-Robotics/aligator/pull/205))
+- Add a templated getter `getConstraint<U>` to ConstraintStack ([#222](https://github.com/Simple-Robotics/aligator/pull/222))
 - python: Add helper `aligator.has_pinocchio_features()` ([#206](https://github.com/Simple-Robotics/aligator/pull/206))
 - Add a cycleProblem function that properly rotates the problem data for MPC applications ([#215](https://github.com/Simple-Robotics/aligator/pull/215))
 - Add a DCM cost function

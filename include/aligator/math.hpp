@@ -3,8 +3,8 @@
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "aligator/utils/exceptions.hpp"
 #include <proxsuite-nlp/math.hpp>
+#include "aligator/utils/exceptions.hpp"
 
 #define ALIGATOR_RAISE_IF_NAN(value)                                           \
   if (::aligator::math::check_value(value))                                    \
