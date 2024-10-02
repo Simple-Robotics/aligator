@@ -299,7 +299,7 @@ protected:
   inline void initializeRegularization() noexcept {
     if (preg_last_ == 0.) {
       // this is the 1st iteration
-      preg_ = reg_init;
+      preg_ = std::max(reg_init, reg_min);
     } else {
       // attempt decrease from last "good" value
       preg_ = std::max(reg_min, preg_last_ * reg_dec_k_);
