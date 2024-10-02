@@ -20,8 +20,7 @@ int main(int, char **) {
   auto problem = aligator::compat::croc::convertCrocoddylProblem(croc_problem);
 
   double mu_init = 0.001;
-  SolverProxDDPTpl<double> solver(TOL, mu_init, 0., max_iters,
-                                  aligator::VERBOSE);
+  SolverProxDDPTpl<double> solver(TOL, mu_init, max_iters, aligator::VERBOSE);
 
   std::vector<VectorXd> xs_i, us_i;
   getInitialGuesses(croc_problem, xs_i, us_i);

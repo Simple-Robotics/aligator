@@ -83,7 +83,8 @@ template <uint NPROC> void BM_aligator(benchmark::State &state) {
   getInitialGuesses(croc_problem, xs_i, us_i);
 
   const double mu_init = 1e-10;
-  SolverProxDDP solver(TOL, mu_init, 0., maxiters, get_verbose_flag(verbose));
+  SolverProxDDP solver(TOL, mu_init, maxiters);
+  solver.verbose_ = get_verbose_flag(verbose);
   solver.setNumThreads(NPROC);
   solver.setup(prob_wrap);
 

@@ -85,10 +85,10 @@ void exposeProxDDP() {
           "search directions and feedforward, feedback gains."
           " The solver instance initializes both a Workspace and a Results "
           "struct.",
-          bp::init<Scalar, Scalar, Scalar, std::size_t, VerboseLevel,
+          bp::init<const Scalar, const Scalar, std::size_t, VerboseLevel,
                    HessianApprox>(
-              ("self"_a, "tol", "mu_init"_a = 1e-2, "rho_init"_a = 0.,
-               "max_iters"_a = 1000, "verbose"_a = VerboseLevel::QUIET,
+              ("self"_a, "tol", "mu_init"_a = 1e-2, "max_iters"_a = 1000,
+               "verbose"_a = VerboseLevel::QUIET,
                "hess_approx"_a = HessianApprox::GAUSS_NEWTON)))
           .def("cycleProblem", &SolverType::cycleProblem,
                ("self"_a, "problem", "data"),
@@ -106,8 +106,6 @@ void exposeProxDDP() {
           .def_readwrite("mu_init", &SolverType::mu_init,
                          "Initial AL penalty parameter.")
           .add_property("mu", &SolverType::mu)
-          .def_readwrite("rho_init", &SolverType::rho_init,
-                         "Initial proximal regularization.")
           .def_readwrite(
               "rollout_max_iters", &SolverType::rollout_max_iters,
               "Maximum number of iterations when solving the forward dynamics.")
@@ -157,7 +155,6 @@ void exposeProxDDP() {
         ._c(dual_alpha)
         ._c(dual_beta)
         ._c(mu_update_factor)
-        ._c(rho_update_factor)
         ._c(constraints_al_scale)
         ._c(mu_lower_bound);
 #undef _c

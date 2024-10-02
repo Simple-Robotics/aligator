@@ -70,7 +70,7 @@ static void BM_lqr_prox(benchmark::State &state) {
   SETUP_PROBLEM_VARS(nsteps);
   const T mu_init = 1e-10;
   const auto num_threads = static_cast<std::size_t>(state.range(1));
-  SolverProxDDPTpl<T> solver(TOL, mu_init, 0., max_iters, verbose);
+  SolverProxDDPTpl<T> solver(TOL, mu_init, max_iters, verbose);
   solver.linear_solver_choice = lqsc;
   solver.rollout_type_ = RolloutType::LINEAR;
   solver.force_initial_condition_ = false;

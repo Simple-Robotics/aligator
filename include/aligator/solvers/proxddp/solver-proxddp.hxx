@@ -68,11 +68,10 @@ void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
 template <typename Scalar>
 SolverProxDDPTpl<Scalar>::SolverProxDDPTpl(const Scalar tol,
                                            const Scalar mu_init,
-                                           const Scalar rho_init,
                                            const std::size_t max_iters,
                                            VerboseLevel verbose,
                                            HessianApprox hess_approx)
-    : target_tol_(tol), mu_init(mu_init), rho_init(rho_init), verbose_(verbose),
+    : target_tol_(tol), mu_init(mu_init), verbose_(verbose),
       hess_approx_(hess_approx), max_iters(max_iters), rollout_max_iters(1),
       filter_(0.0, ls_params.alpha_min, ls_params.max_num_steps),
       linesearch_(ls_params) {
@@ -468,7 +467,6 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
   logger.printHeadline();
 
   setAlmPenalty(mu_init);
-  setRho(rho_init);
 
   workspace_.prev_xs = results_.xs;
   workspace_.prev_us = results_.us;
@@ -533,7 +531,6 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
         setAlmPenalty(mu_init);
       }
     }
-    rho_penal_ *= bcl_params.rho_update_factor;
 
     inner_tol_ = std::max(inner_tol_, 0.01 * target_tol_);
     prim_tol_ = std::max(prim_tol_, target_tol_);

@@ -67,8 +67,6 @@ public:
     Scalar dual_beta = 1.;
     /// Scale factor for the dual proximal penalty.
     Scalar mu_update_factor = 0.01;
-    /// Scale factor for the primal proximal penalty.
-    Scalar rho_update_factor = 1.0;
     /// Constraints AL scaling
     Scalar constraints_al_scale = 100.;
     /// Lower bound on AL parameter
@@ -83,7 +81,6 @@ public:
   Scalar target_tol_ = 1e-6;
 
   Scalar mu_init = 0.01; //< Initial AL parameter
-  Scalar rho_init = 0.;
 
   //// Inertia-correcting heuristic
 
@@ -154,14 +151,11 @@ private:
   /// This is the global parameter: scales may be applied for stagewise
   /// constraints, dynamicals...
   Scalar mu_penal_ = mu_init;
-  /// Primal proximal parameter \f$\rho > 0\f$
-  Scalar rho_penal_ = rho_init;
   /// Linesearch function
   LinesearchType linesearch_;
 
 public:
   SolverProxDDPTpl(const Scalar tol = 1e-6, const Scalar mu_init = 0.01,
-                   const Scalar rho_init = 0.,
                    const std::size_t max_iters = 1000,
                    VerboseLevel verbose = VerboseLevel::QUIET,
                    HessianApprox hess_approx = HessianApprox::GAUSS_NEWTON);
@@ -278,9 +272,6 @@ public:
   }
   ALIGATOR_INLINE Scalar mu_inv() const { return 1. / mu(); }
 
-  /// @copydoc rho_penal_
-  ALIGATOR_INLINE Scalar rho() const { return rho_penal_; }
-
   /// @brief Update primal-dual feedback gains (control, costate, path
   /// multiplier)
   inline void updateGains();
@@ -300,8 +291,6 @@ protected:
   ALIGATOR_INLINE void setAlmPenalty(Scalar new_mu) noexcept {
     mu_penal_ = std::max(new_mu, bcl_params.mu_lower_bound);
   }
-
-  ALIGATOR_INLINE void setRho(Scalar new_rho) noexcept { rho_penal_ = new_rho; }
 
   // See sec. 3.1 of the IPOPT paper [Wächter, Biegler 2006]
   // called before first bwd pass attempt
