@@ -679,6 +679,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     logger.addEntry("dual_err", results_.dual_infeas);
     logger.addEntry("preg", preg_);
     logger.addEntry("dphi0", dphi0);
+    logger.addEntry("cost", results_.traj_cost_);
     logger.addEntry("merit", phi_new);
     logger.addEntry("ΔM", phi_new - phi0);
     logger.addEntry("aliter", results_.al_iter + 1);

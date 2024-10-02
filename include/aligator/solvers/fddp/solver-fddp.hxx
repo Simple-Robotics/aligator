@@ -300,7 +300,7 @@ bool SolverFDDPTpl<Scalar>::run(const Problem &problem,
   logger.addColumn(BASIC_KEYS[5]);
   logger.addColumn(BASIC_KEYS[6]);
   logger.addColumn(BASIC_KEYS[7]);
-  logger.addColumn(BASIC_KEYS[8]);
+  logger.addColumn(BASIC_KEYS[9]);
   logger.printHeadline();
 
   // in Crocoddyl, linesearch xs is primed to use problem x0
