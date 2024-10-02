@@ -110,7 +110,7 @@ class TestClass:
     stage_model = aligator.StageModel(cost, dynmodel)
     tol = 1e-5
     mu_init = 1e-2
-    solver = aligator.SolverProxDDP(tol, mu_init, 0.0)
+    solver = aligator.SolverProxDDP(tol, mu_init)
 
     def test_dyn(self, nsteps):
         dyn_data = self.dynmodel.createData()
