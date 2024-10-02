@@ -155,7 +155,7 @@ void exposeProxDDP() {
         ._c(dual_alpha)
         ._c(dual_beta)
         ._c(mu_update_factor)
-        ._c(constraints_al_scale)
+        ._c(dyn_al_scale)
         ._c(mu_lower_bound);
 #undef _c
   }

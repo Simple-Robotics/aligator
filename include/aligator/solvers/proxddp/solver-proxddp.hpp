@@ -68,7 +68,7 @@ public:
     /// Scale factor for the dual proximal penalty.
     Scalar mu_update_factor = 0.01;
     /// Constraints AL scaling
-    Scalar constraints_al_scale = 100.;
+    Scalar dyn_al_scale = 1e-3;
     /// Lower bound on AL parameter
     Scalar mu_lower_bound = 1e-8; //< Minimum possible penalty parameter.
   };
@@ -266,10 +266,10 @@ public:
                           const std::vector<VectorXs> &lams,
                           const std::vector<VectorXs> &vs);
 
-  ALIGATOR_INLINE Scalar mudyn() const { return mu_penal_; }
-  ALIGATOR_INLINE Scalar mu() const {
-    return bcl_params.constraints_al_scale * mu_penal_;
+  ALIGATOR_INLINE Scalar mudyn() const {
+    return bcl_params.dyn_al_scale * mu_penal_;
   }
+  ALIGATOR_INLINE Scalar mu() const { return mu_penal_; }
   ALIGATOR_INLINE Scalar mu_inv() const { return 1. / mu(); }
 
   /// @brief Update primal-dual feedback gains (control, costate, path

@@ -682,7 +682,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     logger.addEntry("merit", phi_new);
     logger.addEntry("ΔM", phi_new - phi0);
     logger.addEntry("aliter", results_.al_iter + 1);
-    logger.addEntry("mu", mudyn());
+    logger.addEntry("mu", mu());
 
     if (alpha_opt <= ls_params.alpha_min) {
       if (preg_ >= reg_max)
