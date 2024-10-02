@@ -118,12 +118,9 @@ problem = aligator.TrajOptProblem(x0, stages, term_cost=term_cost)
 tol = 1e-7
 
 mu_init = 1e-7
-rho_init = 0.0
 verbose = aligator.VerboseLevel.VERBOSE
 max_iters = 40
-solver = aligator.SolverProxDDP(
-    tol, mu_init, rho_init, max_iters=max_iters, verbose=verbose
-)
+solver = aligator.SolverProxDDP(tol, mu_init, max_iters=max_iters, verbose=verbose)
 solver.rollout_type = aligator.ROLLOUT_NONLINEAR
 solver.sa_strategy = aligator.SA_LINESEARCH
 if args.fddp:

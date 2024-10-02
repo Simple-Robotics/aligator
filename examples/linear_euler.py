@@ -39,11 +39,10 @@ xs_init = [x0] * (nsteps + 1)
 us_init = [np.zeros(nu)] * nsteps
 
 mu_init = 0.001
-rho_init = 0.0
 tol = 1e-5
 verbose = aligator.VerboseLevel.VERBOSE
 
-solver = aligator.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
+solver = aligator.SolverProxDDP(tol, mu_init, verbose=verbose)
 # solver = aligator.SolverFDDP(tol, verbose=verbose)
 
 solver.setup(problem)

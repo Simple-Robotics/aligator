@@ -79,7 +79,7 @@ mu_init = 1e-3 if args.bounds else 1e-6
 rho_init = 0.0
 verbose = aligator.VerboseLevel.VERBOSE
 tol = 1e-8
-solver = aligator.SolverProxDDP(tol, mu_init, rho_init, verbose=verbose)
+solver = aligator.SolverProxDDP(tol, mu_init, verbose=verbose)
 
 his_cb = aligator.HistoryCallback()
 solver.registerCallback("his", his_cb)
