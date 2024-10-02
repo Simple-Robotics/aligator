@@ -63,6 +63,17 @@ template <typename Scalar> struct ConstraintStackTpl {
 
   long totalDim() const { return total_dim_; }
 
+  /// @brief Get constraint function, cast down to the specified type.
+  template <typename Derived> Derived *getConstraint(const size_t id) {
+    return dynamic_cast<Derived *>(&*funcs[id]);
+  }
+
+  /// @copybrief getConstraint()
+  template <typename Derived>
+  const Derived *getConstraint(const size_t id) const {
+    return dynamic_cast<const Derived *>(&*funcs[id]);
+  }
+
   std::vector<PolyFunc> funcs;
   std::vector<PolySet> sets;
 
