@@ -278,13 +278,15 @@ public:
 
 protected:
   void updateTolsOnFailure() noexcept {
-    prim_tol_ = prim_tol0 * std::pow(mu_penal_, bcl_params.prim_alpha);
-    inner_tol_ = inner_tol0 * std::pow(mu_penal_, bcl_params.dual_alpha);
+    const Scalar arg = std::min(mu_penal_, 0.99);
+    prim_tol_ = prim_tol0 * std::pow(arg, bcl_params.prim_alpha);
+    inner_tol_ = inner_tol0 * std::pow(arg, bcl_params.dual_alpha);
   }
 
   void updateTolsOnSuccess() noexcept {
-    prim_tol_ = prim_tol_ * std::pow(mu_penal_, bcl_params.prim_beta);
-    inner_tol_ = inner_tol_ * std::pow(mu_penal_, bcl_params.dual_beta);
+    const Scalar arg = std::min(mu_penal_, 0.99);
+    prim_tol_ = prim_tol_ * std::pow(arg, bcl_params.prim_beta);
+    inner_tol_ = inner_tol_ * std::pow(arg, bcl_params.dual_beta);
   }
 
   /// Set dual proximal/ALM penalty parameter.
