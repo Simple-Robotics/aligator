@@ -3,7 +3,6 @@
 #pragma once
 
 #include "aligator/core/stage-model.hpp"
-#include "aligator/utils/exceptions.hpp"
 #include "aligator/tracy.hpp"
 
 #include <proxsuite-nlp/context.hpp>
