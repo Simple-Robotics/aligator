@@ -296,8 +296,10 @@ def main(args: Args):
                 )
                 stage.addConstraint(floor, constraints.NegativeOrthant())
                 stage.addConstraint(column1, constraints.NegativeOrthant())
-                # column2 = Column(space, nu, center_column2[:2], cyl_radius, quad_radius)
-                # stage.addConstraint(column2, constraints.NegativeOrthant())
+                column2 = Column(
+                    rmodel, space.ndx, nu, center_column2[:2], cyl_radius, quad_radius
+                )
+                stage.addConstraint(column2, constraints.NegativeOrthant())
             prob.addStage(stage)
         if args.term_cstr:
             term_cstr = aligator.StageConstraint(
