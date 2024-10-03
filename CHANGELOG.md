@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Remove constraint scalers (including header `core/alm-weights.hpp`) from ProxDDP algorithm ([#214](https://github.com/Simple-Robotics/aligator/pull/214))
-- SolverProxDDP: remove parameter solver parameter `rho_` ([#221](https://github.com/Simple-Robotics/aligator/pull/221))
+- SolverProxDDP: remove solver parameter `rho_` ([#221](https://github.com/Simple-Robotics/aligator/pull/221))
 
 ### Fixed
 
