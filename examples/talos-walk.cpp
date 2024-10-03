@@ -22,8 +22,7 @@ int main(int, char **) {
 
   auto problem = defineLocomotionProblem(T_ss, T_ds);
 
-  SolverProxDDPTpl<double> solver(TOL, mu_init, 0., max_iters,
-                                  aligator::VERBOSE);
+  SolverProxDDPTpl<double> solver(TOL, mu_init, max_iters, aligator::VERBOSE);
   std::vector<VectorXd> xs_i, us_i;
   Eigen::VectorXd u0 = Eigen::VectorXd::Zero(22);
   xs_i.assign(nsteps + 1, problem.getInitState());

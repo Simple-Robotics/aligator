@@ -286,10 +286,9 @@ problem = aligator.TrajOptProblem(x0, stages, term_cost)
 
 TOL = 1e-4
 mu_init = 1e-8
-rho_init = 0.0
 max_iters = 200
 verbose = aligator.VerboseLevel.VERBOSE
-solver = aligator.SolverProxDDP(TOL, mu_init, rho_init, verbose=verbose)
+solver = aligator.SolverProxDDP(TOL, mu_init, verbose=verbose)
 # solver = aligator.SolverFDDP(TOL, verbose=verbose)
 solver.rollout_type = aligator.ROLLOUT_LINEAR
 # solver = aligator.SolverFDDP(TOL, verbose=verbose)

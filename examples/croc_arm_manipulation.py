@@ -190,7 +190,6 @@ if True:
     prox_problem = convertCrocoddylProblem(problem)
 
     # mu_init = 1e-7
-    # rho_init = 1e-10
     # proxsolver = aligator.SolverProxDDP(croc_dual_err * 0.8, 0.001, max_iters=300)
     proxsolver = aligator.SolverFDDP(tol=croc_dual_err)
     proxsolver.verbose = aligator.VerboseLevel.VERBOSE

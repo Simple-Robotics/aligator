@@ -41,7 +41,7 @@ static void BM_aligator(benchmark::State &state) {
   xs_i.assign(nsteps + 1, problem.getInitState());
   us_i.assign(nsteps, u0);
 
-  SolverProxDDPTpl<double> solver(TOL, mu_init, 0., maxiters, aligator::QUIET);
+  SolverProxDDPTpl<double> solver(TOL, mu_init, maxiters, aligator::QUIET);
 
   solver.rollout_type_ = aligator::RolloutType::LINEAR;
   solver.linear_solver_choice = lqsc;

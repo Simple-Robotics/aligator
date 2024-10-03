@@ -127,9 +127,8 @@ pb_prox = aligator.croc.convertCrocoddylProblem(problem)
 verbose = aligator.VerboseLevel.VERBOSE
 solver2 = aligator.SolverFDDP(1e-6, verbose=verbose)
 mu_init = 1e-8
-rho_init = 1e-9
 
-# solver2 = aligator.SolverProxDDP(tol / nsteps, mu_init, rho_init, verbose=verbose)
+# solver2 = aligator.SolverProxDDP(tol / nsteps, mu_init, verbose=verbose)
 solver2.setup(pb_prox)
 conv = solver2.run(pb_prox, init_xs, init_us)
 results = solver2.results

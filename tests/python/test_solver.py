@@ -55,7 +55,7 @@ def test_no_node():
     terminal_cost = aligator.CostStack(space, nu)
     problem = aligator.TrajOptProblem(x0, nu, space, terminal_cost)
     solver = aligator.SolverProxDDP(
-        TOL, mu_init, rho_init=0.0, max_iters=MAX_ITER, verbose=aligator.VERBOSE
+        TOL, mu_init, max_iters=MAX_ITER, verbose=aligator.VERBOSE
     )
     solver.setup(problem)
 
@@ -100,7 +100,7 @@ def test_proxddp_lqr(strategy):
 
     tol = 1e-6
     mu_init = 1e-4
-    solver = aligator.SolverProxDDP(tol, mu_init, 0.0, verbose=aligator.VERBOSE)
+    solver = aligator.SolverProxDDP(tol, mu_init, verbose=aligator.VERBOSE)
     solver.setup(problem)
     solver.sa_strategy = strategy
     solver.max_iters = 3

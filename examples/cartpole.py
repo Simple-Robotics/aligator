@@ -97,13 +97,10 @@ else:
 
 
 mu_init = 1e-2
-rho_init = 0.0
 verbose = aligator.VerboseLevel.VERBOSE
 TOL = 1e-4
 MAX_ITER = 300
-solver = aligator.SolverProxDDP(
-    TOL, mu_init, rho_init, max_iters=MAX_ITER, verbose=verbose
-)
+solver = aligator.SolverProxDDP(TOL, mu_init, max_iters=MAX_ITER, verbose=verbose)
 solver.rollout_type = aligator.ROLLOUT_LINEAR
 callback = aligator.HistoryCallback()
 solver.registerCallback("his", callback)
