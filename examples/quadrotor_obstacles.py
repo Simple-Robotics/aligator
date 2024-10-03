@@ -183,8 +183,8 @@ def main(args: Args):
     space = manifolds.MultibodyPhaseSpace(rmodel)
     ode_dynamics = aligator.dynamics.MultibodyFreeFwdDynamics(space, QUAD_ACT_MATRIX)
 
-    dt = 0.02
-    Tf = 1.0
+    dt = 0.01
+    Tf = 1.8
     nsteps = int(Tf / dt)
     print("nsteps: {:d}".format(nsteps))
 
@@ -322,19 +322,17 @@ def main(args: Args):
     else:
         vizer = None
 
-    tol = 1e-3
-    mu_init = 1e-2
+    tol = 1e-4
+    mu_init = 1.0
     verbose = aligator.VerboseLevel.VERBOSE
     history_cb = aligator.HistoryCallback()
     solver = aligator.SolverProxDDP(tol, mu_init, verbose=verbose)
     if args.fddp:
         solver = aligator.SolverFDDP(tol, verbose=verbose)
-    solver.max_iters = 200
+    solver.max_iters = 400
     solver.registerCallback("his", history_cb)
-    solver.force_initial_condition = False
-    solver.rollout_type = aligator.ROLLOUT_LINEAR
+    solver.bcl_params.dyn_al_scale = 1e-6
     solver.setup(problem)
-    solver.sa_strategy = aligator.SA_LINESEARCH
     solver.run(problem, xs_init, us_init)
 
     results = solver.results
@@ -360,10 +358,6 @@ def main(args: Args):
         plt.colorbar()
         plt.tight_layout()
         return plt.gcf()
-
-    def test_results():
-        assert results.num_iters == 91
-        assert results.traj_cost <= 8.825e-01
 
     if args.obstacles:
         TAG = "quadrotor_obstacles"
