@@ -380,7 +380,7 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
 
     DynamicsData &dd = *data.dynamics_data;
 
-    if (!stage.has_dyn_model() || stage.dynamics_->is_explicit()) {
+    if (!stage.hasDynModel() || stage.dynamics_->isExplicit()) {
       ExplicitDynData &exp_dd = static_cast<ExplicitDynData &>(dd);
       stage.xspace_next().integrate(exp_dd.xnext_, dyn_slacks[t], xs[t + 1]);
       // at xs[i+1], the dynamics gap = the slack dyn_slack[i].

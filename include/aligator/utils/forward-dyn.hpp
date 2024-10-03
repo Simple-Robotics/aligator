@@ -30,7 +30,7 @@ template <typename T> struct forwardDynamics {
     using ExpModel = ExplicitDynamicsModelTpl<T>;
     using ExpData = ExplicitDynamicsDataTpl<T>;
 
-    if (model.is_explicit()) {
+    if (model.isExplicit()) {
       const ExpModel &model_cast = static_cast<const ExpModel &>(model);
       ExpData &data_cast = static_cast<ExpData &>(data);
       run(model_cast, x, u, data_cast, xout, gap);

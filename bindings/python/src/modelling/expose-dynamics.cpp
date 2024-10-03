@@ -43,7 +43,7 @@ void exposeDynamicsBase() {
       .def_readonly("space_next", &DynamicsModel::space_next_)
       .add_property("nx1", &DynamicsModel::nx1)
       .add_property("nx2", &DynamicsModel::nx2)
-      .add_property("is_explicit", &DynamicsModel::is_explicit,
+      .add_property("isExplicit", &DynamicsModel::isExplicit,
                     "Return whether the current model is explicit.")
       .def(CreateDataPolymorphicPythonVisitor<DynamicsModel, PyDynamicsModel>())
       .def(PolymorphicMultiBaseVisitor<DynamicsModel>())

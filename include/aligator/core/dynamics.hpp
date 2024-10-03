@@ -34,7 +34,7 @@ struct DynamicsModelTpl : StageFunctionTpl<_Scalar> {
   /// @copybrief space_next_
   const Manifold &space_next() const { return *space_next_; }
   /// @brief Check if this dynamics model is implicit or explicit.
-  virtual bool is_explicit() const { return false; }
+  virtual bool isExplicit() const { return false; }
 
   inline int nx1() const { return space_->nx(); }
   inline int nx2() const { return space_next_->nx(); }
