@@ -136,8 +136,6 @@ public:
   std::size_t max_al_iters = 100;      //< Maximum number of ALM iterations.
   uint rollout_max_iters;              //< Nonlinear rollout options
 
-  /// Callbacks
-  CallbackMap callbacks_;
   Workspace workspace_;
   Results results_;
   /// LQR subproblem solver
@@ -145,6 +143,8 @@ public:
   Filter filter_;
 
 private:
+  /// Callbacks
+  CallbackMap callbacks_;
   /// Number of threads
   std::size_t num_threads_ = 1;
   /// Dual proximal/ALM penalty parameter \f$\mu\f$
@@ -227,12 +227,10 @@ public:
   /// \{
 
   /// @brief    Add a callback to the solver instance.
-  void registerCallback(const std::string &name, CallbackPtr cb) {
-    callbacks_[name] = cb;
-  }
+  void registerCallback(const std::string &name, CallbackPtr cb);
 
   /// @brief    Remove all callbacks from the instance.
-  void clearCallbacks() noexcept { callbacks_.clear(); }
+  inline void clearCallbacks() noexcept { callbacks_.clear(); }
 
   const CallbackMap &getCallbacks() const { return callbacks_; }
   void removeCallback(const std::string &name) { callbacks_.erase(name); }
@@ -243,7 +241,8 @@ public:
     }
     return keys;
   }
-  auto getCallback(const std::string &name) -> CallbackPtr {
+
+  CallbackPtr getCallback(const std::string &name) const {
     auto cb = callbacks_.find(name);
     if (cb != end(callbacks_)) {
       return cb->second;

@@ -17,14 +17,13 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
   using CallbackPtr = typename SolverType::CallbackPtr;
   static auto getCallback(const SolverType &obj,
                           const std::string &name) -> CallbackPtr {
-    const auto &cbs = obj.getCallbacks();
-    auto cb = cbs.find(name);
-    if (cb == cbs.end()) {
+    const CallbackPtr &cb = obj.getCallback(name);
+    if (!cb) {
       PyErr_SetString(PyExc_KeyError,
                       fmt::format("Key {} not found.", name).c_str());
       bp::throw_error_already_set();
     }
-    return cb->second;
+    return cb;
   }
 
   template <typename... Args> void visit(bp::class_<Args...> &obj) const {

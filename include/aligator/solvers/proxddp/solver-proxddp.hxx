@@ -758,6 +758,12 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::computeCriterion() {
                math::infty_norm(workspace_.control_dual_infeas));
 }
 
+template <typename Scalar>
+void SolverProxDDPTpl<Scalar>::registerCallback(const std::string &name,
+                                                CallbackPtr cb) {
+  callbacks_.insert_or_assign(name, cb);
+}
+
 template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
   ALIGATOR_NOMALLOC_SCOPED;
   ALIGATOR_TRACY_ZONE_SCOPED;
