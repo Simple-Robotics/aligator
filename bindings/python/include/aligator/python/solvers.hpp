@@ -27,7 +27,7 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
     return cb->second;
   }
 
-  template <typename PyClass> void visit(PyClass &obj) const {
+  template <typename... Args> void visit(bp::class_<Args...> &obj) const {
     obj.def_readwrite("verbose", &SolverType::verbose_,
                       "Verbosity level of the solver.")
         .def_readwrite("max_iters", &SolverType::max_iters,
@@ -37,6 +37,7 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
         .def_readwrite("target_tol", &SolverType::target_tol_,
                        "Target tolerance.")
         .def_readwrite("reg_init", &SolverType::reg_init)
+        .def_readwrite("preg", &SolverType::preg_)
         .def_readwrite("force_initial_condition",
                        &SolverType::force_initial_condition_,
                        "Set x0 to be fixed to the initial condition.")
