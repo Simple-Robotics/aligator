@@ -94,7 +94,10 @@ def plot_velocity_traj(
     figsize=(6.4, 6.4),
 ) -> tuple[plt.Figure, list[plt.Axes]]:
     vs = np.asarray(vs)
-    nv = vs.shape[1]
+    nv = rmodel.nv
+    assert nv == vs.shape[1]
+    if vel_limit is not None:
+        assert nv == vel_limit.shape[0]
     idx_to_joint_id_map = {}
     jid = 0
     for i in range(nv):
