@@ -329,22 +329,23 @@ if args.display:
     with vid_ctx:
         viz.play(qs, dt, callback=viz_callback)
 
-times = np.linspace(0.0, tf, nsteps + 1)
-_joint_names = rmodel.names[2:]
-_eff = robot.model.effortLimit
-(fig1,) = plot_controls_traj(times, us, joint_names=_joint_names, effort_limit=_eff)
-(fig2,) = plot_velocity_traj(times, vs[:, 6:], rmodel=robot.model)
+if args.plot:
+    times = np.linspace(0.0, tf, nsteps + 1)
+    _joint_names = rmodel.names[2:]
+    _eff = robot.model.effortLimit
+    fig1, _ = plot_controls_traj(times, us, joint_names=_joint_names, effort_limit=_eff)
+    fig2, _ = plot_velocity_traj(times, vs[:, 6:], rmodel=robot.model)
 
-for fig, name in [(fig1, "controls"), (fig2, "velocity")]:
-    PLOTDIR = Path("assets")
-    for ext in [".png", ".pdf"]:
-        figpath: Path = PLOTDIR / f"{EXPERIMENT_NAME}_{name}"
-        fig.savefig(figpath.with_suffix(ext))
+    for fig, name in [(fig1, "controls"), (fig2, "velocity")]:
+        PLOTDIR = Path("assets")
+        for ext in [".png", ".pdf"]:
+            figpath: Path = PLOTDIR / f"{EXPERIMENT_NAME}_{name}"
+            fig.savefig(figpath.with_suffix(ext))
 
-fig3 = plt.figure()
-ax: plt.Axes = fig3.add_subplot(111)
-ax.plot(dyn_slackn_slacks)
-ax.set_yscale("log")
-ax.set_title("Dynamic slack errors $\\|s\\|_\\infty$")
+    fig3 = plt.figure()
+    ax: plt.Axes = fig3.add_subplot(111)
+    ax.plot(dyn_slackn_slacks)
+    ax.set_yscale("log")
+    ax.set_title("Dynamic slack errors $\\|s\\|_\\infty$")
 
-plt.show()
+    plt.show()
