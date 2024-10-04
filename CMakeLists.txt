@@ -209,7 +209,7 @@ add_project_dependency(proxsuite-nlp 0.8.0 REQUIRED PKG_CONFIG_REQUIRES "proxsui
 
 set(LIB_SOURCES src/utils/logger.cpp)
 
-file(GLOB_RECURSE LIB_HEADERS ${PROJECT_SOURCE_DIR}/include/aligator/*.hpp
+file(GLOB_RECURSE LIB_HEADERS CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/include/aligator/*.hpp
      ${PROJECT_SOURCE_DIR}/include/aligator/*.hxx
 )
 
