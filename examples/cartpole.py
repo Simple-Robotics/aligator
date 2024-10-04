@@ -173,8 +173,8 @@ fig2 = plt.figure(figsize=(6.4, 4.8))
 ax: plt.Axes = plt.subplot(111)
 ax.hlines(TOL, 0, res.num_iters, lw=2.2, alpha=0.8, colors="k")
 plot_convergence(callback, ax, res)
-prim_tols = np.array(callback.storage.prim_tols)
-al_iters = np.array(callback.storage.al_iters)
+prim_tols = np.array(callback.prim_tols)
+al_iters = np.array(callback.al_iters)
 
 itrange = np.arange(len(al_iters))
 legends_ = [

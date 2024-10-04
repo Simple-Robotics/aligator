@@ -236,12 +236,12 @@ plt.savefig(ASSET_DIR / "pendulum_controls{}.pdf".format(TAG))
 if True:
     from proxsuite_nlp.utils import plot_pd_errs
 
-    prim_errs = callback.storage.prim_infeas
-    dual_errs = callback.storage.dual_infeas
+    prim_errs = callback.prim_infeas
+    dual_errs = callback.dual_infeas
     if len(prim_errs) != 0:
         plt.figure(figsize=(6.4, 4.8))
-        prim_tols = np.array(callback.storage.prim_tols.tolist())
-        al_iters = np.array(callback.storage.al_iters.tolist())
+        prim_tols = np.array(callback.prim_tols.tolist())
+        al_iters = np.array(callback.al_iters.tolist())
 
         ax: plt.Axes = plt.subplot(111)
         plot_pd_errs(ax, prim_errs, dual_errs)

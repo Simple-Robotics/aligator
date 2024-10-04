@@ -9,7 +9,6 @@ using context::Scalar;
 
 void exposeHistoryCallback() {
   using HistoryCallback = HistoryCallbackTpl<Scalar>;
-  using history_storage_t = decltype(HistoryCallback::storage);
 
   bp::scope in_history =
       bp::class_<HistoryCallback, bp::bases<CallbackBase>>(
@@ -18,19 +17,20 @@ void exposeHistoryCallback() {
                                       bp::arg("store_pd_vars") = true,
                                       bp::arg("store_values") = true,
                                       bp::arg("store_residuals") = true)))
-          .def_readonly("storage", &HistoryCallback::storage);
-
-  bp::class_<history_storage_t>("history_storage")
-      .def_readonly("xs", &history_storage_t::xs)
-      .def_readonly("us", &history_storage_t::us)
-      .def_readonly("lams", &history_storage_t::lams)
-      .def_readonly("values", &history_storage_t::values)
-      .def_readonly("merit_values", &history_storage_t::merit_values)
-      .def_readonly("prim_infeas", &history_storage_t::prim_infeas)
-      .def_readonly("dual_infeas", &history_storage_t::dual_infeas)
-      .def_readonly("al_iters", &history_storage_t::al_index)
-      .def_readonly("prim_tols", &history_storage_t::prim_tols)
-      .def_readonly("dual_tols", &history_storage_t::dual_tols);
+#define _c(name) def_readonly(#name, &HistoryCallback::name)
+          ._c(xs)
+          ._c(us)
+          ._c(lams)
+          ._c(values)
+          ._c(merit_values)
+          ._c(merit_values)
+          ._c(prim_infeas)
+          ._c(dual_infeas)
+          ._c(inner_crits)
+          ._c(al_index)
+          ._c(prim_tols)
+          ._c(dual_tols);
+#undef _c
 }
 
 void exposeCallbacks() {

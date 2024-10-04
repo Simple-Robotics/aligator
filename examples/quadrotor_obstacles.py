@@ -381,11 +381,11 @@ def main(args: Args):
         plt.legend(["$x$", "$y$", "$z$"])
         ax1.scatter([times_wp[-1]] * 3, x_term[:3], marker=".", c=["C0", "C1", "C2"])
         ax2: plt.Axes = fig.add_subplot(1, nplot, 3)
-        n_iter = np.arange(len(history_cb.storage.prim_infeas.tolist()))
+        n_iter = np.arange(len(history_cb.prim_infeas.tolist()))
         ax2.semilogy(
-            n_iter[1:], history_cb.storage.prim_infeas.tolist()[1:], label="Primal err."
+            n_iter[1:], history_cb.prim_infeas.tolist()[1:], label="Primal err."
         )
-        ax2.semilogy(n_iter, history_cb.storage.dual_infeas.tolist(), label="Dual err.")
+        ax2.semilogy(n_iter, history_cb.dual_infeas.tolist(), label="Dual err.")
         ax2.set_xlabel("Iterations")
         ax2.legend()
 

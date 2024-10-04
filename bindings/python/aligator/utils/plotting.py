@@ -7,8 +7,8 @@ from aligator import HistoryCallback, Results
 def plot_convergence(cb: HistoryCallback, ax: plt.Axes, res: Results = None):
     from proxsuite_nlp.utils import plot_pd_errs
 
-    prim_infeas = cb.storage.prim_infeas.tolist()
-    dual_infeas = cb.storage.dual_infeas.tolist()
+    prim_infeas = cb.prim_infeas.tolist()
+    dual_infeas = cb.dual_infeas.tolist()
     if res is not None:
         prim_infeas.append(res.primal_infeas)
         dual_infeas.append(res.dual_infeas)

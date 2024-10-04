@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `TrajOptProblem`: rename member `init_condition_` to `init_constraint_` (fitting with ctor argument name)
 - python/utils: return axes instances from velocity/controls plotting helpers
 - make `LinearFuntionTpl::evaluate()` call more efficient (using `.noalias()`)
+- `HistoryCallbackTpl` now stores stored data directly
 
 ### Removed
 
