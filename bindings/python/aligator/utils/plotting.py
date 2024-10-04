@@ -79,7 +79,7 @@ def plot_controls_traj(
     fig.supxlabel("Time $t$")
     fig.suptitle("Control trajectories")
     fig.tight_layout()
-    return fig
+    return fig, axes
 
 
 def plot_velocity_traj(
@@ -121,4 +121,4 @@ def plot_velocity_traj(
     fig.supxlabel("Time $t$")
     fig.suptitle("Velocity trajectories")
     fig.tight_layout()
-    return fig
+    return fig, axes
