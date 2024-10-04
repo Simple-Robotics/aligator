@@ -72,7 +72,8 @@ auto problemInitializeSolution(const TrajOptProblemTpl<Scalar> &problem) {
 /// @brief Assign a vector of Eigen types into another, ensure there is no
 /// resize
 template <typename T1, typename T2>
-bool assign_no_resize(const std::vector<T1> &lhs, std::vector<T2> &rhs) {
+[[nodiscard]] bool assign_no_resize(const std::vector<T1> &lhs,
+                                    std::vector<T2> &rhs) {
   static_assert(std::is_base_of_v<Eigen::EigenBase<T1>, T1>,
                 "T1 should be an Eigen object!");
   static_assert(std::is_base_of_v<Eigen::EigenBase<T2>, T2>,
@@ -104,12 +105,12 @@ void check_trajectory_and_assign(
   const std::size_t nsteps = problem.numSteps();
   xs_out.reserve(nsteps + 1);
   us_out.reserve(nsteps);
-  if (xs_init.size() == 0) {
+  if (xs_init.empty()) {
     xs_default_init(problem, xs_out);
   } else if (!assign_no_resize(xs_init, xs_out)) {
     ALIGATOR_RUNTIME_ERROR("warm-start for xs has wrong size!");
   }
-  if (us_init.size() == 0) {
+  if (us_init.empty()) {
     us_default_init(problem, us_out);
   } else if (!assign_no_resize(us_init, us_out)) {
     ALIGATOR_RUNTIME_ERROR("warm-start for us has wrong size!");
