@@ -331,11 +331,14 @@ if args.display:
 
 if args.plot:
     times = np.linspace(0.0, tf, nsteps + 1)
-    _joint_names = rmodel.names[2:]
-    _eff = robot.model.effortLimit
-    fig1, _ = plot_controls_traj(times, us, joint_names=_joint_names, effort_limit=_eff)
+    _joint_names = robot.model.names
+    _efflims = robot.model.effortLimit
+    _vlims = robot.model.velocityLimit
+    fig1, _ = plot_controls_traj(
+        times, us, joint_names=_joint_names, effort_limit=_efflims
+    )
     fig2, _ = plot_velocity_traj(
-        times, vs[:, 6:], rmodel=robot.model, vel_limit=rmodel.velocityLimit
+        times, vs[:, :-6], rmodel=robot.model, vel_limit=_vlims
     )
 
     for fig, name in [(fig1, "controls"), (fig2, "velocity")]:
