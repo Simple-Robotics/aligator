@@ -28,7 +28,7 @@ args = Args().parse_args()
 robot = erd.load("ur10")
 q0_ref_arm = np.array([0.0, np.deg2rad(-120), 2 * np.pi / 3, np.deg2rad(-45), 0.0, 0.0])
 robot.q0[:] = q0_ref_arm
-print("Velocity limit (before): {}".format(robot.model.velocityLimit))
+print(f"Velocity limit (before): {robot.model.velocityLimit}")
 
 
 def load_projectile_model():
@@ -77,6 +77,7 @@ def append_ball_to_robot_model(
 
 
 rmodel, cmodel, vmodel, ref_q0 = append_ball_to_robot_model(robot)
+print(f"New model velocity lims: {rmodel.velocityLimit}")
 space = manifolds.MultibodyPhaseSpace(rmodel)
 rdata: pin.Data = rmodel.createData()
 nq = rmodel.nq
@@ -235,9 +236,10 @@ def get_position_limit_constraint():
 
 def get_velocity_limit_constraint():
     state_fn = aligator.StateErrorResidual(space, nu, space.neutral())
-    idx = [3, 4]
+    idx = [1, 3, 4, 5]
     vel_fn = state_fn[[nv + i for i in idx]]
-    vlim = robot.model.velocityLimit[idx]
+    vlim = rmodel.velocityLimit[idx]
+    assert vel_fn.nr == vlim.shape[0]
     box_cstr = constraints.BoxConstraint(-vlim, vlim)
     return aligator.StageConstraint(vel_fn, box_cstr)
 
@@ -271,11 +273,11 @@ problem = aligator.TrajOptProblem(x0, stages, term_cost)
 problem.addTerminalConstraint(term_constraint)
 problem.addTerminalConstraint(get_velocity_limit_constraint())
 tol = 1e-4
-mu_init = 1e-2
+mu_init = 1e-1
 solver = aligator.SolverProxDDP(tol, mu_init, max_iters=300, verbose=aligator.VERBOSE)
-solver.linear_solver_choice = aligator.LQ_SOLVER_PARALLEL
-solver.rollout_type = aligator.ROLLOUT_LINEAR
-solver.sa_strategy = aligator.SA_FILTER
+# solver.linear_solver_choice = aligator.LQ_SOLVER_PARALLEL
+# solver.rollout_type = aligator.ROLLOUT_LINEAR
+# solver.sa_strategy = aligator.SA_FILTER
 his_cb = aligator.HistoryCallback()
 solver.setNumThreads(4)
 solver.registerCallback("his", his_cb)
