@@ -334,7 +334,9 @@ if args.plot:
     _joint_names = rmodel.names[2:]
     _eff = robot.model.effortLimit
     fig1, _ = plot_controls_traj(times, us, joint_names=_joint_names, effort_limit=_eff)
-    fig2, _ = plot_velocity_traj(times, vs[:, 6:], rmodel=robot.model)
+    fig2, _ = plot_velocity_traj(
+        times, vs[:, 6:], rmodel=robot.model, vel_limit=rmodel.velocityLimit
+    )
 
     for fig, name in [(fig1, "controls"), (fig2, "velocity")]:
         PLOTDIR = Path("assets")
