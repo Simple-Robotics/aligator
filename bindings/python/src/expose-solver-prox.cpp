@@ -134,6 +134,16 @@ void exposeProxDDP() {
                          "Pair filter used to accept a step.")
           .def("computeInfeasibilities", &SolverType::computeInfeasibilities,
                ("self"_a, "problem"), "Compute problem infeasibilities.")
+          .add_property("num_threads", &SolverType::getNumThreads)
+          .def("setNumThreads", &SolverType::setNumThreads,
+               ("self"_a, "num_threads"))
+          .add_property("target_dual_tol", &SolverType::getDualTolerance)
+          .def("setDualTolerance", &SolverType::setDualTolerance,
+               ("self"_a, "tol"),
+               "Manually set the solver's dual infeasibility tolerance. Once "
+               "this method is called, the dual tolerance and primal tolerance "
+               "(target_tol) will not be synced when the latter changes and "
+               "`solver.run()` is called.")
           .def(SolverVisitor<SolverType>())
           .def("run", &SolverType::run,
                prox_run_overloads(
