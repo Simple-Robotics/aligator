@@ -426,8 +426,14 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
 
   check_trajectory_and_assign(problem, xs_init, us_init, results_.xs,
                               results_.us);
-  assign_no_resize(vs_init, results_.vs);
-  assign_no_resize(lams_init, results_.lams);
+  const bool v_was_resized =
+      !vs_init.empty() && !assign_no_resize(vs_init, results_.vs);
+  const bool l_was_resized =
+      !lams_init.empty() && !assign_no_resize(lams_init, results_.lams);
+  if (v_was_resized || l_was_resized) {
+    ALIGATOR_WARNING("SolverProxDDP",
+                     "Resize happened when initializing multipliers.\n");
+  }
 
   if (force_initial_condition_) {
     workspace_.trial_xs[0] = problem.getInitState();
@@ -497,10 +503,9 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
         break;
       }
     } else {
-      Scalar old_mu = mu_penal_;
       setAlmPenalty(mu_penal_ * bcl_params.mu_update_factor);
       updateTolsOnFailure();
-      if (math::scalar_close(old_mu, mu_penal_)) {
+      if (math::scalar_close(mu_penal_, bcl_params.mu_lower_bound)) {
         // reset penalty to initial value
         setAlmPenalty(mu_init);
       }
