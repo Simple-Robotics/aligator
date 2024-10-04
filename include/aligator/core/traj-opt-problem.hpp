@@ -87,7 +87,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   /// Initial condition
-  xyz::polymorphic<UnaryFunction> init_condition_;
+  xyz::polymorphic<UnaryFunction> init_constraint_;
   /// Stages of the control problem.
   std::vector<xyz::polymorphic<StageModel>> stages_;
   /// Terminal cost.

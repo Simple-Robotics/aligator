@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SolverProxDDP: add dynamics AL parameter scaling
 - Rename `has_dyn_model` -> `hasDynModel` and `is_explicit` -> `isExplicit`
 - Add `cost` (trajectory cost) column to logger
+- `TrajOptProblem`: rename member `init_condition_` to `init_constraint_` (fitting with ctor argument name)
 
 ### Removed
 

@@ -11,7 +11,7 @@ namespace aligator {
 
 template <typename Scalar>
 TrajOptDataTpl<Scalar>::TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem)
-    : init_data(problem.init_condition_->createData()) {
+    : init_data(problem.init_constraint_->createData()) {
   stage_data.reserve(problem.numSteps());
   for (std::size_t i = 0; i < problem.numSteps(); i++) {
     stage_data.push_back(problem.stages_[i]->createData());

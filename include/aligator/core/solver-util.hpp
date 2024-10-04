@@ -54,7 +54,7 @@ auto problemInitializeSolution(const TrajOptProblemTpl<Scalar> &problem) {
   // initialize multipliers...
   vs.resize(nsteps + 1);
   lbdas.resize(nsteps + 1);
-  lbdas[0].setZero(problem.init_condition_->nr);
+  lbdas[0].setZero(problem.init_constraint_->nr);
   for (size_t i = 0; i < nsteps; i++) {
     const StageModelTpl<Scalar> &sm = *problem.stages_[i];
     lbdas[i + 1].setZero(sm.ndx2());

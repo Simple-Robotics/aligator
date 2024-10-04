@@ -59,7 +59,7 @@ void ResultsTpl<Scalar>::cycleAppend(const TrajOptProblemTpl<Scalar> &problem,
   vs[nsteps - 1].setZero(sm.nc());
   lams[nsteps].setZero(sm.ndx2());
 
-  lams[0].setZero(problem.init_condition_->nr);
+  lams[0].setZero(problem.init_constraint_->nr);
 
   if (!problem.term_cstrs_.empty()) {
     const int ndx_ter = internal::problem_last_ndx_helper(problem);
