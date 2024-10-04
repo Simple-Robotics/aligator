@@ -15,8 +15,8 @@ bp::arg operator""_a(const char *argname, std::size_t);
 template <typename SolverType>
 struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
   using CallbackPtr = typename SolverType::CallbackPtr;
-  static auto getCallback(const SolverType &obj,
-                          const std::string &name) -> CallbackPtr {
+  static auto getCallback(const SolverType &obj, const std::string &name)
+      -> CallbackPtr {
     const CallbackPtr &cb = obj.getCallback(name);
     if (!cb) {
       PyErr_SetString(PyExc_KeyError,
