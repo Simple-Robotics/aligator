@@ -8,19 +8,26 @@
 namespace aligator {
 
 template <typename Scalar>
-struct DirectSumExplicitDynamicsTpl<Scalar>::Data : BaseData {
-  shared_ptr<BaseData> data1_, data2_;
-  Data(DirectSumExplicitDynamicsTpl const &model)
-      : BaseData(model.ndx1, model.nu, model.nx2(), model.ndx2),
-        data1_(std::static_pointer_cast<BaseData>(model.f_->createData())),
-        data2_(std::static_pointer_cast<BaseData>(model.g_->createData())) {}
-};
+DirectSumExplicitDynamicsTpl<Scalar>::DirectSumExplicitDynamicsTpl(
+    xyz::polymorphic<Base> f, xyz::polymorphic<Base> g)
+    : Base(xyz::polymorphic<Manifold>{f->space_next_ * g->space_next_},
+           f->nu + g->nu),
+      f_(f), g_(g) {
+  product_space_ = dynamic_cast<CartesianProduct &>(*this->space_next_);
+}
+
+template <typename Scalar>
+DirectSumExplicitDynamicsTpl<Scalar>::Data::Data(
+    DirectSumExplicitDynamicsTpl const &model)
+    : BaseData(model.ndx1, model.nu, model.nx2(), model.ndx2),
+      data1_(std::static_pointer_cast<BaseData>(model.f_->createData())),
+      data2_(std::static_pointer_cast<BaseData>(model.g_->createData())) {}
 
 template <typename Scalar>
 void DirectSumExplicitDynamicsTpl<Scalar>::forward(const ConstVectorRef &x,
                                                    const ConstVectorRef &u,
                                                    BaseData &data) const {
-  Data &d = data_cast(data);
+  Data &d = static_cast<Data &>(data);
   const CartesianProduct &s = this->product_space_;
   auto xs = s.split(x);
   ConstVectorRef x1 = xs[0];
@@ -46,7 +53,7 @@ void DirectSumExplicitDynamicsTpl<Scalar>::dForward(const ConstVectorRef &x,
   int nu_g = g_->nu;
   int ndxout_f = f_->ndx2;
   int ndxout_g = g_->ndx2;
-  Data &d = data_cast(data);
+  Data &d = static_cast<Data &>(data);
   const CartesianProduct &s = this->product_space_;
   auto xs = s.split(x);
   ConstVectorRef x1 = xs[0];
@@ -66,12 +73,6 @@ void DirectSumExplicitDynamicsTpl<Scalar>::dForward(const ConstVectorRef &x,
 
   d.Ju_.topLeftCorner(ndxout_f, nu_f) = d.data1_->Ju_;
   d.Ju_.bottomRightCorner(ndxout_g, nu_g) = d.data2_->Ju_;
-}
-
-template <typename Scalar>
-auto DirectSumExplicitDynamicsTpl<Scalar>::get_product_space(Base const &f,
-                                                             Base const &g) {
-  return xyz::polymorphic<Manifold>(f.space_next_ * g.space_next_);
 }
 
 } // namespace aligator
