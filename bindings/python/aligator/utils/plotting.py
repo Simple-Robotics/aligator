@@ -17,7 +17,9 @@ def plot_convergence(cb: HistoryCallback, ax: plt.Axes, res: Results = None):
     return
 
 
-def plot_se2_pose(q: np.ndarray, ax: plt.Axes, alpha=0.5, fc="tab:blue"):
+def plot_se2_pose(
+    q: np.ndarray, ax: plt.Axes, alpha=0.5, fc="tab:blue"
+) -> plt.Rectangle:
     from matplotlib import transforms
 
     w = 1.0
@@ -31,7 +33,7 @@ def plot_se2_pose(q: np.ndarray, ax: plt.Axes, alpha=0.5, fc="tab:blue"):
     return rect
 
 
-def _axes_flatten_if_ndarray(axes):
+def _axes_flatten_if_ndarray(axes) -> list[plt.Axes]:
     if isinstance(axes, np.ndarray):
         axes = axes.flatten()
     elif not isinstance(axes, list):
@@ -48,7 +50,7 @@ def plot_controls_traj(
     joint_names=None,
     rmodel=None,
     figsize=(6.4, 6.4),
-) -> plt.Figure:
+) -> tuple[plt.Figure, list[plt.Axes]]:
     t0 = times[0]
     tf = times[-1]
     us = np.asarray(us)
@@ -83,8 +85,14 @@ def plot_controls_traj(
 
 
 def plot_velocity_traj(
-    times, vs, rmodel, axes=None, ncols=2, figsize=(6.4, 6.4)
-) -> plt.Figure:
+    times,
+    vs,
+    rmodel,
+    axes=None,
+    ncols=2,
+    vel_limit=None,
+    figsize=(6.4, 6.4),
+) -> tuple[plt.Figure, list[plt.Axes]]:
     vs = np.asarray(vs)
     nv = vs.shape[1]
     idx_to_joint_id_map = {}
@@ -96,7 +104,6 @@ def plot_velocity_traj(
     nrows, r = divmod(nv, ncols)
     nrows += int(r > 0)
 
-    vel_limit = rmodel.velocityLimit
     t0 = times[0]
     tf = times[-1]
 
@@ -112,10 +119,11 @@ def plot_velocity_traj(
         ax.plot(times, vs[:, i])
         jid = idx_to_joint_id_map[i]
         joint_name = rmodel.names[jid].lower()
-        ylim = ax.get_ylim()
-        ax.hlines(-vel_limit[i], t0, tf, colors="k", linestyles="--")
-        ax.hlines(+vel_limit[i], t0, tf, colors="r", linestyles="dashdot")
-        ax.set_ylim(*ylim)
+        if vel_limit is not None:
+            ylim = ax.get_ylim()
+            ax.hlines(-vel_limit[i], t0, tf, colors="k", linestyles="--")
+            ax.hlines(+vel_limit[i], t0, tf, colors="r", linestyles="dashdot")
+            ax.set_ylim(*ylim)
         ax.set_ylabel(joint_name)
 
     fig.supxlabel("Time $t$")
