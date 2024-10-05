@@ -40,7 +40,6 @@ void exposeConstraint() {
 
   bp::class_<ConstraintStack>("ConstraintStack", "The stack of constraint.",
                               bp::no_init)
-      .def(bp::init<>("self"_a))
       .add_property("size", &ConstraintStack::size,
                     "Get number of individual constraints.")
       .def_readonly("funcs", &ConstraintStack::funcs)
