@@ -23,7 +23,8 @@ SolverFDDPTpl<Scalar>::SolverFDDPTpl(const Scalar tol, VerboseLevel verbose,
 
 template <typename Scalar>
 void SolverFDDPTpl<Scalar>::setup(const Problem &problem) {
-  problem.checkIntegrity();
+  if (!problem.checkIntegrity())
+    ALIGATOR_RUNTIME_ERROR("Problem failed integrity check.");
   results_.~Results();
   workspace_.~Workspace();
   new (&results_) Results(problem);

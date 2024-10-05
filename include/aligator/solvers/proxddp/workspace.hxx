@@ -15,7 +15,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
       stage_cstr_violations(nsteps + 1), stage_infeasibilities(nsteps + 1),
       state_dual_infeas(nsteps + 1), control_dual_infeas(nsteps + 1) {
 
-  problem.checkIntegrity();
+  if (!problem.checkIntegrity())
+    ALIGATOR_RUNTIME_ERROR("Problem failed integrity check.");
 
   std::tie(trial_xs, trial_us, trial_vs, trial_lams) =
       problemInitializeSolution(problem);
@@ -92,7 +93,8 @@ void WorkspaceTpl<Scalar>::cycleAppend(const TrajOptProblemTpl<Scalar> &problem,
 
   const StageModel &stage = *problem.stages_[nsteps - 1];
 
-  problem.checkIntegrity();
+  if (!problem.checkIntegrity())
+    ALIGATOR_RUNTIME_ERROR("Problem failed integrity check.");
 
   rotate_vec_left(trial_xs, 1);
   rotate_vec_left(trial_us, 1);

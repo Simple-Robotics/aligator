@@ -186,13 +186,12 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// @warning Call TrajOptProblemTpl::evaluate() first!
   Scalar computeTrajectoryCost(const Data &problem_data) const;
 
-  inline void checkIntegrity() const { checkStages(); }
+  bool checkIntegrity() const;
 
 protected:
   /// Pointer to underlying state error residual
   StateErrorResidual *init_state_error_;
   /// @brief Check if all stages are non-null.
-  void checkStages() const;
 
 private:
   static auto createStateError(const ConstVectorRef &x0,

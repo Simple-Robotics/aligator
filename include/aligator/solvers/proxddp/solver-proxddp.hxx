@@ -117,7 +117,9 @@ Scalar SolverProxDDPTpl<Scalar>::tryLinearStep(const Problem &problem,
 
 template <typename Scalar>
 void SolverProxDDPTpl<Scalar>::setup(const Problem &problem) {
-  problem.checkIntegrity();
+  if (!problem.checkIntegrity())
+    ALIGATOR_RUNTIME_ERROR("Problem failed integrity check.");
+
   results_.~Results();
   workspace_.~Workspace();
   new (&results_) Results(problem);
