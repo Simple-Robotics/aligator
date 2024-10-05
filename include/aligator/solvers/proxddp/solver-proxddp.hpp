@@ -185,7 +185,7 @@ public:
 
   Scalar getDualTolerance() const { return target_dual_tol_; }
   /// Manually set desired dual feasibility tolerance.
-  bool setDualTolerance(const Scalar tol) {
+  void setDualTolerance(const Scalar tol) {
     target_dual_tol_ = tol;
     sync_dual_tol = false;
   }
