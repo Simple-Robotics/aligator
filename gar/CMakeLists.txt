@@ -7,14 +7,18 @@ file(GLOB SOURCES CONFIGURE_DEPENDS src/*.cpp)
 file(
   GLOB HEADERS
   RELATIVE ${CMAKE_CURRENT_LIST_DIR}/include
-  CONFIGURE_DEPENDS include/aligator/gar/*.hpp include/aligator/gar/*.hxx
+  CONFIGURE_DEPENDS
+  include/aligator/gar/*.hpp
+  include/aligator/gar/*.hxx
 )
 
 add_library(aligator_gar SHARED)
 target_include_directories(
   aligator_gar
   PRIVATE ${PROJECT_SOURCE_DIR}/include
-  PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
 )
 target_link_libraries(aligator_gar PUBLIC proxsuite-nlp::proxsuite-nlp)
 if(BUILD_WITH_OPENMP_SUPPORT)
@@ -34,7 +38,8 @@ if(ENABLE_TEMPLATE_INSTANTIATION)
   file(
     GLOB TEMPL_DECL_HEADERS
     RELATIVE ${CMAKE_CURRENT_LIST_DIR}/include
-    CONFIGURE_DEPENDS include/aligator/gar/*.txx
+    CONFIGURE_DEPENDS
+    include/aligator/gar/*.txx
   )
   list(APPEND HEADERS ${TEMPL_DECL_HEADERS})
   target_sources(aligator_gar PRIVATE ${SOURCES})
@@ -50,5 +55,8 @@ install(
 )
 foreach(header ${HEADERS})
   get_filename_component(DIR ${header} DIRECTORY)
-  install(FILES include/${header} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${DIR})
+  install(
+    FILES include/${header}
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${DIR}
+  )
 endforeach()

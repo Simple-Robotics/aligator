@@ -1,5 +1,8 @@
 set(INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}/compat/crocoddyl)
-set(CROC_INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_FULL_INCLUDEDIR}/${PROJECT_NAME}/compat/crocoddyl)
+set(
+  CROC_INSTALL_INCLUDE_DIR
+  ${CMAKE_INSTALL_FULL_INCLUDEDIR}/${PROJECT_NAME}/compat/crocoddyl
+)
 
 file(GLOB_RECURSE HEADERS ${INCLUDE_DIR}/*.hpp ${INCLUDE_DIR}/*.hxx)
 add_library(aligator_croc_compat SHARED ${HEADERS})
@@ -16,14 +19,18 @@ endif()
 
 set_target_properties(
   aligator_croc_compat
-  PROPERTIES LINKER_LANGUAGE CXX
-             PUBLIC_HEADER "${HEADERS}"
-             INSTALL_RPATH "\$ORIGIN"
-             VERSION ${PROJECT_VERSION}
+  PROPERTIES
+    LINKER_LANGUAGE CXX
+    PUBLIC_HEADER "${HEADERS}"
+    INSTALL_RPATH "\$ORIGIN"
+    VERSION ${PROJECT_VERSION}
 )
 set_standard_output_directory(aligator_croc_compat)
 
-target_link_libraries(aligator_croc_compat PUBLIC ${PROJECT_NAME} crocoddyl::crocoddyl)
+target_link_libraries(
+  aligator_croc_compat
+  PUBLIC ${PROJECT_NAME} crocoddyl::crocoddyl
+)
 
 install(
   TARGETS aligator_croc_compat

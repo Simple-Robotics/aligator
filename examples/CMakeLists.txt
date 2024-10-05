@@ -13,7 +13,10 @@ endmacro()
 
 function(create_example_with_croco exfile)
   create_example(${exfile})
-  target_link_libraries(${exname} PRIVATE aligator::croc_compat croc_talos_arm_utils)
+  target_link_libraries(
+    ${exname}
+    PRIVATE aligator::croc_compat croc_talos_arm_utils
+  )
 endfunction()
 
 create_example(se2-car.cpp)
@@ -33,6 +36,8 @@ file(GLOB EXAMPLES_PY *.py)
 foreach(pyfile ${EXAMPLES_PY})
   get_filename_component(pyfile_name ${pyfile} NAME)
   execute_process(
-    COMMAND ${CMAKE_COMMAND} -E create_symlink ${pyfile} ${CMAKE_CURRENT_BINARY_DIR}/${pyfile_name}
+    COMMAND
+      ${CMAKE_COMMAND} -E create_symlink ${pyfile}
+      ${CMAKE_CURRENT_BINARY_DIR}/${pyfile_name}
   )
 endforeach()

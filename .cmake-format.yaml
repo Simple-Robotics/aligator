@@ -1,7 +1,0 @@
-enable_markup: false
-first_comment_is_literal: true
-dangle_parens: true
-line_width: 100
-disabled_codes:
-  - C0103
-  - C0111
