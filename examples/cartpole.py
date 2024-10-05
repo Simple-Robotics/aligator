@@ -71,7 +71,7 @@ u_max = +6.0 * np.ones(nu)
 
 def get_box_cstr():
     ctrl_fn = aligator.ControlErrorResidual(ndx, nu)
-    return aligator.StageConstraint(ctrl_fn, constraints.BoxConstraint(u_min, u_max))
+    return ctrl_fn, constraints.BoxConstraint(u_min, u_max)
 
 
 nsteps = 500
@@ -81,15 +81,13 @@ problem = aligator.TrajOptProblem(x0, nu, space, term_cost)
 for i in range(nsteps):
     stage = aligator.StageModel(rcost, disc_dyn)
     if args.bounds:
-        box_cstr = get_box_cstr()
-        stage.addConstraint(box_cstr)
+        stage.addConstraint(*get_box_cstr())
     problem.addStage(stage)
 
 term_fun = aligator.FrameTranslationResidual(ndx, nu, model, target_pos, frame_id)
 
 if args.term_cstr:
-    term_cstr = aligator.StageConstraint(term_fun, constraints.EqualityConstraintSet())
-    problem.addTerminalConstraint(term_cstr)
+    problem.addTerminalConstraint(term_fun, constraints.EqualityConstraintSet())
 else:
     term_cost.addCost(
         aligator.QuadraticResidualCost(space, frame_err, weights_frame_place)

@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - make `LinearFuntionTpl::evaluate()` call more efficient (using `.noalias()`)
 - `HistoryCallbackTpl` now stores stored data directly
 - Deprecate the `StageConstraintTpl` template struct, deprecate the related typedefs
+- [python] Deprecate `aligator.StageConstraint`, functions and methods (e.g. `StageModel.addConstraint(cstr: StageConstraint)`) which use it
 
 ### Removed
 

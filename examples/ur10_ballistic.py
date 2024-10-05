@@ -222,7 +222,7 @@ def get_ball_fn(target_pos):
 
 def create_term_constraint(target_pos):
     term_fn = get_ball_fn(target_pos)
-    return aligator.StageConstraint(term_fn, constraints.EqualityConstraintSet())
+    return (term_fn, constraints.EqualityConstraintSet())
 
 
 def get_position_limit_constraint():
@@ -231,7 +231,7 @@ def get_position_limit_constraint():
     box_cstr = constraints.BoxConstraint(
         robot.model.lowerPositionLimit, robot.model.upperPositionLimit
     )
-    return aligator.StageConstraint(pos_fn, box_cstr)
+    return (pos_fn, box_cstr)
 
 
 def get_velocity_limit_constraint():
@@ -241,23 +241,23 @@ def get_velocity_limit_constraint():
     vlim = rmodel.velocityLimit[idx]
     assert vel_fn.nr == vlim.shape[0]
     box_cstr = constraints.BoxConstraint(-vlim, vlim)
-    return aligator.StageConstraint(vel_fn, box_cstr)
+    return (vel_fn, box_cstr)
 
 
 def get_torque_limit_constraint():
     ctrlfn = aligator.ControlErrorResidual(ndx, np.zeros(nu))
     eff = robot.model.effortLimit
     box_cstr = constraints.BoxConstraint(-eff, eff)
-    return aligator.StageConstraint(ctrlfn, box_cstr)
+    return (ctrlfn, box_cstr)
 
 
 def create_stage(contact: bool):
     dm = dyn_model1 if contact else dyn_model2
     rc = create_running_cost()
     stm = aligator.StageModel(rc, dm)
-    stm.addConstraint(get_torque_limit_constraint())
+    stm.addConstraint(*get_torque_limit_constraint())
     # stm.addConstraint(get_position_limit_constraint())
-    stm.addConstraint(get_velocity_limit_constraint())
+    stm.addConstraint(*get_velocity_limit_constraint())
     return stm
 
 
@@ -267,11 +267,10 @@ for k in range(nsteps):
     stages.append(create_stage(k <= t_contact))
 
 term_cost = create_term_cost()
-term_constraint = create_term_constraint(target_pos=target_pos)
 
 problem = aligator.TrajOptProblem(x0, stages, term_cost)
-problem.addTerminalConstraint(term_constraint)
-problem.addTerminalConstraint(get_velocity_limit_constraint())
+problem.addTerminalConstraint(*create_term_constraint(target_pos))
+problem.addTerminalConstraint(*get_velocity_limit_constraint())
 tol = 1e-4
 mu_init = 1e-1
 solver = aligator.SolverProxDDP(tol, mu_init, max_iters=300, verbose=aligator.VERBOSE)

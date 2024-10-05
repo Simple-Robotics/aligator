@@ -70,9 +70,7 @@ for i in range(nsteps):
 xtar2 = 0.1 * np.ones(nx)
 if args.term_cstr:
     term_fun = aligator.StateErrorResidual(space, nu, xtar2)
-    problem.addTerminalConstraint(
-        aligator.StageConstraint(term_fun, constraints.EqualityConstraintSet())
-    )
+    problem.addTerminalConstraint(term_fun, constraints.EqualityConstraintSet())
 
 # Instantiate a solver separately
 mu_init = 1e-1 if args.bounds else 1e-4
