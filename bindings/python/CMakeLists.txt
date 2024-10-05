@@ -6,12 +6,17 @@ if(GENERATE_PYTHON_STUBS)
   include(${JRL_CMAKE_MODULES}/stubs.cmake)
 endif()
 
-file(GLOB PY_SOURCES CONFIGURE_DEPENDS src/*.cpp src/gar/*.cpp src/modelling/*.cpp)
+file(
+  GLOB PY_SOURCES
+  CONFIGURE_DEPENDS
+  src/*.cpp
+  src/gar/*.cpp
+  src/modelling/*.cpp
+)
 
 set(PY_HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/python)
 file(
-  GLOB
-  PY_HEADERS
+  GLOB PY_HEADERS
   CONFIGURE_DEPENDS
   ${PY_HEADER_DIR}/*.hpp
   ${PY_HEADER_DIR}/modelling/*.hpp
@@ -24,25 +29,39 @@ if(BUILD_CROCODDYL_COMPAT)
 endif()
 
 function(make_bindings)
-  python3_add_library(${PYLIB_NAME} MODULE WITH_SOABI ${PY_HEADERS} ${PY_SOURCES})
+  python3_add_library(
+    ${PYLIB_NAME}
+    MODULE
+    WITH_SOABI
+    ${PY_HEADERS}
+    ${PY_SOURCES}
+  )
   add_library(aligator::python ALIAS ${PYLIB_NAME})
 
-  set_target_properties(${PYLIB_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_NAME})
+  set_target_properties(
+    ${PYLIB_NAME}
+    PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_NAME}
+  )
   if(UNIX)
     get_relative_rpath(${${PYLIB_NAME}_INSTALL_DIR} PYLIB_INSTALL_RPATH)
-    set_target_properties(${PYLIB_NAME} PROPERTIES INSTALL_RPATH "${PYLIB_INSTALL_RPATH}")
+    set_target_properties(
+      ${PYLIB_NAME}
+      PROPERTIES INSTALL_RPATH "${PYLIB_INSTALL_RPATH}"
+    )
   endif()
 
   # deprecated functions are exposed up until they are removed. remove warnings.
   target_compile_options(${PYLIB_NAME} PRIVATE "-Wno-deprecated-declarations")
   target_compile_definitions(${PYLIB_NAME} PRIVATE MODULE_NAME=${PYLIB_NAME})
   target_include_directories(
-    ${PYLIB_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    ${PYLIB_NAME}
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   )
 
   target_link_libraries(${PYLIB_NAME} PUBLIC ${PROJECT_NAME} eigenpy::eigenpy)
   target_include_directories(
-    ${PYLIB_NAME} PUBLIC $<TARGET_PROPERTY:proxsuite-nlp::pyproxsuite_nlp,INCLUDE_DIRECTORIES>
+    ${PYLIB_NAME}
+    PUBLIC $<TARGET_PROPERTY:proxsuite-nlp::pyproxsuite_nlp,INCLUDE_DIRECTORIES>
   )
 
   if(BUILD_CROCODDYL_COMPAT)
@@ -55,7 +74,6 @@ function(make_bindings)
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/aligator/python
     LIBRARY DESTINATION ${${PYLIB_NAME}_INSTALL_DIR}
   )
-
 endfunction()
 
 make_bindings()
