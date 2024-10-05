@@ -11,7 +11,6 @@ template <typename _Scalar> struct TrajOptDataTpl {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using StageFunctionData = StageFunctionDataTpl<Scalar>;
-  using ConstraintType = StageConstraintTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
 

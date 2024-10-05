@@ -147,8 +147,8 @@ template <typename Scalar> void TrajOptProblemTpl<Scalar>::checkStages() const {
 
 template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::addTerminalConstraint(
-    const ConstraintType &cstr) {
-  term_cstrs_.pushBack(cstr);
+    const StageConstraintTpl<Scalar> &cstr) {
+  term_cstrs_.pushBack(cstr.func, cstr.set);
 }
 
 template <typename Scalar>

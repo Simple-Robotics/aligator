@@ -23,11 +23,12 @@ namespace aligator {
 template <typename _Scalar> struct TrajOptProblemTpl {
   using Scalar = _Scalar;
   using StageModel = StageModelTpl<Scalar>;
+  using StageFunction = StageFunctionTpl<Scalar>;
   using UnaryFunction = UnaryFunctionTpl<Scalar>;
   using Data = TrajOptDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using CostAbstract = CostAbstractTpl<Scalar>;
-  using ConstraintType = StageConstraintTpl<Scalar>;
+  using ConstraintSet = ConstraintSetBase<Scalar>;
   using StateErrorResidual = StateErrorResidualTpl<Scalar>;
 
   /**
@@ -146,7 +147,12 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   }
 
   /// @brief Add a terminal constraint for the model.
-  void addTerminalConstraint(const ConstraintType &cstr);
+  ALIGATOR_DEPRECATED void
+  addTerminalConstraint(const StageConstraintTpl<Scalar> &cstr);
+  void addTerminalConstraint(const xyz::polymorphic<StageFunction> &func,
+                             const xyz::polymorphic<ConstraintSet> &set) {
+    this->term_cstrs_.pushBack(func, set);
+  }
   /// @brief Remove all terminal constraints.
   void removeTerminalConstraints() { term_cstrs_.clear(); }
 

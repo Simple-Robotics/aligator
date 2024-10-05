@@ -44,7 +44,6 @@ public:
   using DynamicsData = DynamicsDataTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using StageModel = StageModelTpl<Scalar>;
-  using ConstraintType = StageConstraintTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
   using CallbackPtr = shared_ptr<CallbackBaseTpl<Scalar>>;
   using CallbackMap = boost::unordered_map<std::string, CallbackPtr>;
