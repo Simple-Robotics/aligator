@@ -101,11 +101,11 @@ problem.addTerminalConstraint(frame_cstr)
 
 
 tol = 1e-4
-mu_init = 1e-3
+mu_init = 1e-1
 max_iters = 150
 verbose = aligator.VerboseLevel.VERBOSE
 solver = aligator.SolverProxDDP(tol, mu_init, max_iters=max_iters, verbose=verbose)
-solver.rollout_type = aligator.ROLLOUT_LINEAR
+solver.rollout_type = aligator.ROLLOUT_NONLINEAR
 solver.setNumThreads(4)
 cb = aligator.HistoryCallback()
 solver.registerCallback("his", cb)
