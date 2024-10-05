@@ -153,7 +153,6 @@ term_cost = aligator.CostStack(space, nu)
 umin = -20.0 * np.ones(nu)
 umax = +20.0 * np.ones(nu)
 ctrl_fn = aligator.ControlErrorResidual(ndx, np.zeros(nu))
-box_cstr = aligator.StageConstraint(ctrl_fn, constraints.BoxConstraint(umin, umax))
 
 nsteps = 200
 Tf = nsteps * dt
@@ -162,13 +161,12 @@ problem = aligator.TrajOptProblem(x0, nu, space, term_cost)
 for i in range(nsteps):
     stage = aligator.StageModel(rcost, dyn_model)
     if args.bounds:
-        stage.addConstraint(box_cstr)
+        stage.addConstraint(ctrl_fn, constraints.BoxConstraint(umin, umax))
     problem.addStage(stage)
 
 term_fun = aligator.FrameTranslationResidual(ndx, nu, model, target_pos, frame_id)
 if args.term_cstr:
-    term_cstr = aligator.StageConstraint(term_fun, constraints.EqualityConstraintSet())
-    problem.addTerminalConstraint(term_cstr)
+    problem.addTerminalConstraint(term_fun, constraints.EqualityConstraintSet())
 else:
     term_cost.addCost(
         aligator.QuadraticResidualCost(space, frame_err, np.diag(weights_frame_place))

@@ -273,7 +273,7 @@ def main(args: Args):
         if args.bounds:
             u_identity_fn = aligator.ControlErrorResidual(space.ndx, np.zeros(nu))
             box_set = constraints.BoxConstraint(u_min, u_max)
-            ctrl_cstr = aligator.StageConstraint(u_identity_fn, box_set)
+            ctrl_cstr = (u_identity_fn, box_set)
 
         for i in range(nsteps):
             rcost = aligator.CostStack(space, nu)
@@ -289,7 +289,7 @@ def main(args: Args):
 
             stage = aligator.StageModel(rcost, dynmodel)
             if args.bounds:
-                stage.addConstraint(ctrl_cstr)
+                stage.addConstraint(*ctrl_cstr)
             if args.obstacles:  # add obstacles' constraints
                 column1 = Column(
                     rmodel, space.ndx, nu, center_column1[:2], cyl_radius, quad_radius
@@ -302,11 +302,10 @@ def main(args: Args):
                 stage.addConstraint(column2, constraints.NegativeOrthant())
             prob.addStage(stage)
         if args.term_cstr:
-            term_cstr = aligator.StageConstraint(
+            prob.addTerminalConstraint(
                 aligator.StateErrorResidual(space, nu, x_tar),
                 constraints.EqualityConstraintSet(),
             )
-            prob.addTerminalConstraint(term_cstr)
         return prob
 
     _, x_term = task_schedule(nsteps)

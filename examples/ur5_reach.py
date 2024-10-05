@@ -87,7 +87,7 @@ u_min = -u_max
 def make_control_bounds():
     fun = aligator.ControlErrorResidual(ndx, nu)
     cstr_set = constraints.BoxConstraint(u_min, u_max)
-    return aligator.StageConstraint(fun, cstr_set)
+    return (fun, cstr_set)
 
 
 def computeQuasistatic(model: pin.Model, x0, a):
@@ -110,7 +110,7 @@ for i in range(nsteps):
 
     stm = aligator.StageModel(rcost, discrete_dynamics)
     if args.bounds:
-        stm.addConstraint(make_control_bounds())
+        stm.addConstraint(*make_control_bounds())
     stages.append(stm)
 
 

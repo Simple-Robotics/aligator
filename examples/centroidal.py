@@ -214,18 +214,12 @@ com_cstr = aligator.CentroidalCoMResidual(space.ndx, nu, com_final)
 linear_mom_cstr = aligator.LinearMomentumResidual(nx, nu, np.array([0, 0, 0]))
 ang_mom_cstr = aligator.AngularMomentumResidual(nx, nu, np.array([0, 0, 0]))
 
-term_constraint_com = aligator.StageConstraint(
-    com_cstr, constraints.EqualityConstraintSet()
-)
-term_constraint_linmom = aligator.StageConstraint(
-    linear_mom_cstr, constraints.EqualityConstraintSet()
-)
-term_constraint_angmom = aligator.StageConstraint(
-    ang_mom_cstr, constraints.EqualityConstraintSet()
-)
-problem.addTerminalConstraint(term_constraint_com)
-# problem.addTerminalConstraint(term_constraint_linmom)
-# problem.addTerminalConstraint(term_constraint_angmom)
+term_constraint_com = (com_cstr, constraints.EqualityConstraintSet())
+term_constraint_linmom = (linear_mom_cstr, constraints.EqualityConstraintSet())
+term_constraint_angmom = (ang_mom_cstr, constraints.EqualityConstraintSet())
+problem.addTerminalConstraint(*term_constraint_com)
+# problem.addTerminalConstraint(*term_constraint_linmom)
+# problem.addTerminalConstraint(*term_constraint_angmom)
 
 """ Solver initialization """
 TOL = 1e-5
@@ -242,11 +236,7 @@ solver.filter.beta = 1e-5
 us_init = [np.zeros(nk * force_size)] * T
 xs_init = [x0] * (T + 1)
 
-solver.run(
-    problem,
-    xs_init,
-    us_init,
-)
+solver.run(problem, xs_init, us_init)
 
 workspace = solver.workspace
 results = solver.results
