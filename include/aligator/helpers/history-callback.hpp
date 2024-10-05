@@ -5,6 +5,8 @@
 #include "aligator/core/workspace-base.hpp"
 #include "aligator/core/results-base.hpp"
 
+#include "aligator/solvers/proxddp/results.hpp"
+
 namespace aligator {
 
 /// @brief  Store the history of results.
@@ -47,9 +49,9 @@ template <typename Scalar> struct HistoryCallbackTpl : CallbackBaseTpl<Scalar> {
     // if (auto w = dynamic_cast<const WorkspaceTpl<Scalar> *>(&workspace)) {
     //   inner_crits.push_back(w->inner_criterion);
     // }
-    // if (auto r = dynamic_cast<const ResultsTpl<Scalar> *>(&results)) {
-    //   al_index.push_back(r->al_iter);
-    // }
+    if (auto r = dynamic_cast<const ResultsTpl<Scalar> *>(&results)) {
+      al_index.push_back(r->al_iter);
+    }
   }
 
   bool store_primal_dual_vars_;
