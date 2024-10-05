@@ -187,12 +187,10 @@ ax.set_zlabel("$z$")
 
 plt.figure()
 
-cb_store: aligator.HistoryCallback.history_storage = cb.storage
-
 nrang = range(1, results.num_iters + 1)
 ax: plt.Axes = plt.gca()
-plt.plot(nrang, cb_store.prim_infeas, ls="--", marker=".", label="primal err")
-plt.plot(nrang, cb_store.dual_infeas, ls="--", marker=".", label="dual err")
+plt.plot(nrang, cb.prim_infeas, ls="--", marker=".", label="primal err")
+plt.plot(nrang, cb.dual_infeas, ls="--", marker=".", label="dual err")
 ax.set_xlabel("iter")
 ax.set_yscale("log")
 plt.legend()
