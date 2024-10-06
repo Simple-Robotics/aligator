@@ -32,8 +32,8 @@ void fd_test(VectorXs x0, VectorXs u0, MatrixXs weights,
   qres.computeHessians(x0, u0, *data);
 
   // analytical formula
-  fun->evaluate(x0, u0, x0, *fd);
-  fun->computeJacobians(x0, u0, x0, *fd);
+  fun->evaluate(x0, u0, *fd);
+  fun->computeJacobians(x0, u0, *fd);
 
   auto n = (long)(ndx + nu);
   auto J = fd->jac_buffer_.leftCols(n);

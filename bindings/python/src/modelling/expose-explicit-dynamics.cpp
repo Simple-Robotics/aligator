@@ -8,11 +8,12 @@
 namespace aligator {
 namespace python {
 
+using context::DynamicsData;
 using context::DynamicsModel;
 using context::ExplicitDynamics;
 using context::ExplicitDynamicsData;
 using context::Scalar;
-using ManifoldPtr = xyz::polymorphic<context::Manifold>;
+using PolyManifold = xyz::polymorphic<context::Manifold>;
 PolymorphicMultiBaseVisitor<DynamicsModel, ExplicitDynamics>
     exp_dynamics_visitor;
 
@@ -48,7 +49,7 @@ void exposeExplicitBase() {
   bp::class_<PyExplicitDynamics<>, bp::bases<DynamicsModel>,
              boost::noncopyable>(
       "ExplicitDynamicsModel", "Base class for explicit dynamics.",
-      bp::init<const ManifoldPtr &, const int>(
+      bp::init<const PolyManifold &, const int>(
           "Constructor with state space and control dimension.",
           ("self"_a, "space", "nu")))
       .def("forward", bp::pure_virtual(&ExplicitDynamics::forward),
@@ -62,8 +63,7 @@ void exposeExplicitBase() {
 
   bp::register_ptr_to_python<shared_ptr<ExplicitDynamicsData>>();
 
-  bp::class_<ExplicitDataWrapper, bp::bases<context::StageFunctionData>,
-             boost::noncopyable>(
+  bp::class_<ExplicitDataWrapper, bp::bases<DynamicsData>, boost::noncopyable>(
       "ExplicitDynamicsData", "Data struct for explicit dynamics models.",
       bp::init<int, int, int, int>(("self"_a, "ndx1", "nu", "nx2", "ndx2")))
       .add_property(
