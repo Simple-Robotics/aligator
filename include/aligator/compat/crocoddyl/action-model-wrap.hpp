@@ -23,11 +23,11 @@ struct NoOpDynamics final : DynamicsModelTpl<Scalar> {
   NoOpDynamics(xyz::polymorphic<Manifold> state, const int nu)
       : Base(state, nu) {}
 
-  void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                const ConstVectorRef &xn, DynData &) const override {}
+  void evaluate(const ConstVectorRef &, const ConstVectorRef &,
+                const ConstVectorRef &, DynData &) const override {}
 
-  void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
-                        const ConstVectorRef &xn, DynData &) const override {}
+  void computeJacobians(const ConstVectorRef &, const ConstVectorRef &,
+                        const ConstVectorRef &, DynData &) const override {}
 };
 
 /**
