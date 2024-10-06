@@ -26,6 +26,11 @@ void DynamicsModelTpl<Scalar>::computeVectorHessianProducts(
 }
 
 template <typename Scalar>
+auto DynamicsModelTpl<Scalar>::createData() const -> shared_ptr<Data> {
+  return std::make_shared<Data>(*this);
+}
+
+template <typename Scalar>
 DynamicsDataTpl<Scalar>::DynamicsDataTpl(const DynamicsModelTpl<Scalar> &model)
     : DynamicsDataTpl(model.ndx1, model.nu, model.ndx2) {}
 
