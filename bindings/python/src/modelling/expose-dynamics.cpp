@@ -20,7 +20,7 @@ void exposeDynamics() {
 
 using context::DynamicsData;
 using context::DynamicsModel;
-using ManifoldPtr = xyz::polymorphic<context::Manifold>;
+using PolyManifold = xyz::polymorphic<context::Manifold>;
 
 void exposeDynamicsBase() {
 
@@ -36,8 +36,8 @@ void exposeDynamicsBase() {
       "DynamicsModel",
       "Dynamics models are specific ternary functions f(x,u,x') which map "
       "to the tangent bundle of the next state variable x'.",
-      bp::init<ManifoldPtr, int>(("self"_a, "space", "nu")))
-      .def(bp::init<ManifoldPtr, int, ManifoldPtr>(
+      bp::init<PolyManifold, int>(("self"_a, "space", "nu")))
+      .def(bp::init<PolyManifold, int, PolyManifold>(
           bp::args("self", "space", "nu", "space2")))
       .def_readonly("space", &DynamicsModel::space_)
       .def_readonly("space_next", &DynamicsModel::space_next_)
@@ -96,7 +96,7 @@ void exposeDynamicsBase() {
                     "Hessian with respect to $(x, y)$.")
       .add_property("Hyy", make_getter_eigen_matrix(&DynamicsData::Hyy_),
                     "Hessian with respect to $(y, y)$.")
-      .def(PrintableVisitor<DynamicsData>())
+      // .def(PrintableVisitor<DynamicsData>())
       .def(PrintAddressVisitor<DynamicsData>());
 }
 
