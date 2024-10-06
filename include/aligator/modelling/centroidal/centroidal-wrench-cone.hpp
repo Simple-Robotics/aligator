@@ -35,10 +35,10 @@ public:
       : Base(ndx, nu, 17), k_(k), mu_(mu), hL_(half_length), hW_(half_width) {}
 
   void evaluate(const ConstVectorRef &, const ConstVectorRef &u,
-                const ConstVectorRef &, BaseData &data) const;
+                BaseData &data) const;
 
   void computeJacobians(const ConstVectorRef &, const ConstVectorRef &,
-                        const ConstVectorRef &, BaseData &data) const;
+                        BaseData &data) const;
 
   shared_ptr<BaseData> createData() const {
     return std::make_shared<Data>(this);
