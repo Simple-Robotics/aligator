@@ -21,29 +21,29 @@ void exposeUnaryFunctions() {
                                                StageFunctionData &) const;
   using full_eval_t =
       void (UnaryFunction::*)(const ConstVectorRef &, const ConstVectorRef &,
-                              const ConstVectorRef &, StageFunctionData &)
-          const;
+                              StageFunctionData &) const;
   using unary_vhp_t =
       void (UnaryFunction::*)(const ConstVectorRef &, const ConstVectorRef &,
                               StageFunctionData &) const;
-  using full_vhp_t = void (UnaryFunction::*)(
-      const ConstVectorRef &, const ConstVectorRef &, const ConstVectorRef &,
-      const ConstVectorRef &, StageFunctionData &) const;
+  using full_vhp_t =
+      void (UnaryFunction::*)(const ConstVectorRef &, const ConstVectorRef &,
+                              const ConstVectorRef &, StageFunctionData &)
+          const;
   bp::class_<PyUnaryFunction<>, bp::bases<StageFunction>, boost::noncopyable>(
       "UnaryFunction",
       "Base class for unary functions of the form :math:`x \\mapsto f(x)`.",
       bp::no_init)
-      .def(bp::init<const int, const int, const int, const int>(
-          ("self"_a, "ndx1", "nu", "ndx2", "nr")))
+      .def(bp::init<const int, const int, const int>(
+          ("self"_a, "ndx1", "nu", "nr")))
       .def("evaluate", bp::pure_virtual<unary_eval_t>(&UnaryFunction::evaluate),
            ("self"_a, "x", "data"))
       .def<full_eval_t>("evaluate", &UnaryFunction::evaluate,
-                        ("self"_a, "x", "u", "y", "data"))
+                        ("self"_a, "x", "u", "data"))
       .def("computeJacobians",
            bp::pure_virtual<unary_eval_t>(&UnaryFunction::computeJacobians),
            ("self"_a, "x", "data"))
       .def<full_eval_t>("computeJacobians", &UnaryFunction::computeJacobians,
-                        ("self"_a, "x", "u", "y", "data"))
+                        ("self"_a, "x", "u", "data"))
       .def<unary_vhp_t>(
           "computeVectorHessianProducts",
           &UnaryFunction::computeVectorHessianProducts,
@@ -51,7 +51,7 @@ void exposeUnaryFunctions() {
           ("self"_a, "x", "lbda", "data"))
       .def<full_vhp_t>("computeVectorHessianProducts",
                        &UnaryFunction::computeVectorHessianProducts,
-                       ("self"_a, "x", "u", "y", "lbda", "data"))
+                       ("self"_a, "x", "u", "lbda", "data"))
       .def(unary_visitor)
       .def(SlicingVisitor<UnaryFunction>())
       .def(CreateDataPolymorphicPythonVisitor<UnaryFunction,
