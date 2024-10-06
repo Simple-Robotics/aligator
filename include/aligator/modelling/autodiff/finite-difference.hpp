@@ -12,23 +12,39 @@ namespace autodiff {
 
 namespace internal {
 
-/// @brief Implementation details for finite-differencing.
 template <typename _Scalar, template <typename> class _BaseTpl>
-struct finite_difference_impl {
-  using Scalar = _Scalar;
+struct finite_diff_traits;
+
+template <typename Scalar> struct finite_diff_traits<Scalar, StageFunctionTpl> {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using Base = _BaseTpl<Scalar>;
-  using BaseData = typename Base::Data;
-  using Manifold = ManifoldAbstractTpl<Scalar>;
+  struct Data : StageFunctionDataTpl<Scalar> {
+    using SFD = StageFunctionDataTpl<Scalar>;
+    using SFD::ndx1;
+    using SFD::nu;
+    shared_ptr<SFD> data_0;
+    shared_ptr<SFD> data_1;
+    VectorXs dx, du;
+    VectorXs xp, up;
 
-  xyz::polymorphic<Manifold> space_;
-  xyz::polymorphic<Base> func_;
-  Scalar fd_eps;
-  int nx1, nu, nx2;
+    template <typename U>
+    Data(U const &model)
+        : SFD(model.func_), data_0(model.func_->createData()),
+          data_1(model.func_->createData()), dx(ndx1), du(nu), xp(model.nx1),
+          up(model.nu) {
+      dx.setZero();
+      du.setZero();
+    }
+  };
 
-  template <bool> struct DataTpl;
+  struct Args {
+    ConstVectorRef x;
+    ConstVectorRef u;
+  };
+};
 
-  template <> struct DataTpl<true> : DynamicsDataTpl<Scalar> {
+template <typename Scalar> struct finite_diff_traits<Scalar, DynamicsModelTpl> {
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  struct Data : DynamicsDataTpl<Scalar> {
     using DD = DynamicsDataTpl<Scalar>;
     using DD::ndx1;
     using DD::ndx2;
@@ -38,7 +54,8 @@ struct finite_difference_impl {
     VectorXs dx, du, dy;
     VectorXs xp, up, yp;
 
-    DataTpl(finite_difference_impl const &model)
+    template <typename U>
+    Data(U const &model)
         : DD(model.func_), data_0(model.func_->createData()),
           data_1(model.func_->createData()), dx(ndx1), du(nu), dy(ndx2),
           xp(model.nx1), up(model.nu), yp(model.nx2) {
@@ -48,43 +65,32 @@ struct finite_difference_impl {
     }
   };
 
-  template <> struct DataTpl<false> : StageFunctionDataTpl<Scalar> {
-    using SFD = StageFunctionDataTpl<Scalar>;
-    using SFD::ndx1;
-    using SFD::nu;
-    shared_ptr<SFD> data_0;
-    shared_ptr<SFD> data_1;
-    VectorXs dx, du;
-    VectorXs xp, up;
-
-    DataTpl(finite_difference_impl const &model)
-        : SFD(model.func_), data_0(model.func_->createData()),
-          data_1(model.func_->createData()), dx(ndx1), du(nu), xp(model.nx1),
-          up(model.nu) {
-      dx.setZero();
-      du.setZero();
-    }
-  };
-
-  static constexpr bool IsDynamics =
-      std::is_same_v<Base, DynamicsModelTpl<Scalar>>;
-
-  using Data = DataTpl<IsDynamics>;
-
-  template <bool> struct ArgsTpl;
-
-  template <> struct ArgsTpl<false> {
-    ConstVectorRef x;
-    ConstVectorRef u;
-  };
-
-  template <> struct ArgsTpl<true> {
+  struct Args {
     ConstVectorRef x;
     ConstVectorRef u;
     ConstVectorRef y;
   };
+};
 
-  using Args = ArgsTpl<IsDynamics>;
+/// @brief Implementation details for finite-differencing.
+template <typename _Scalar, template <typename> class _BaseTpl>
+struct finite_difference_impl : finite_diff_traits<_Scalar, _BaseTpl> {
+  using Scalar = _Scalar;
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  using Traits = finite_diff_traits<Scalar, _BaseTpl>;
+  using Data = typename Traits::Data;
+  using Args = typename Traits::Args;
+  using Base = _BaseTpl<Scalar>;
+  using BaseData = typename Base::Data;
+  using Manifold = ManifoldAbstractTpl<Scalar>;
+
+  xyz::polymorphic<Manifold> space_;
+  xyz::polymorphic<Base> func_;
+  Scalar fd_eps;
+  int nx1, nu, nx2;
+
+  static constexpr bool IsDynamics =
+      std::is_same_v<Base, DynamicsModelTpl<Scalar>>;
 
   template <typename U = Base, class = std::enable_if_t<
                                    std::is_same_v<U, StageFunctionTpl<Scalar>>>>
