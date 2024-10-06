@@ -13,11 +13,8 @@ namespace internal {
 
 template <typename ret_type>
 ret_type suppress_if_void(boost::python::detail::method_result &&o) {
-  if constexpr (!std::is_void_v<ret_type>) {
-    return o;
-  } else {
-    return;
-  }
+  if constexpr (!std::is_void_v<ret_type>)
+    return o.operator ret_type();
 }
 
 } // namespace internal
