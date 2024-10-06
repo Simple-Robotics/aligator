@@ -12,10 +12,10 @@ class CustomFunction(aligator.StageFunction):
     def __getinitargs__(self):
         return (self.space, self.nu)
 
-    def evaluate(self, x, u, y, data: aligator.StageFunctionData):
+    def evaluate(self, x, u, data: aligator.StageFunctionData):
         data.value[:] = self.space.difference(x, self.space.neutral())
 
-    def computeJacobians(self, x, u, y, data: aligator.StageFunctionData):
+    def computeJacobians(self, x, u, data: aligator.StageFunctionData):
         data.Jx[:] = self.space.Jdifference(x, self.space.neutral(), 0)
 
 
