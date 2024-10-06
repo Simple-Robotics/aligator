@@ -7,7 +7,7 @@ class CustomFunction(aligator.StageFunction):
     def __init__(self, space: aligator.manifolds.ManifoldAbstract, nu):
         self.space = space
         ndx = space.ndx
-        super().__init__(ndx, nu, ndx, ndx)
+        super().__init__(ndx, nu, ndx)
 
     def __getinitargs__(self):
         return (self.space, self.nu)
