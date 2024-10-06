@@ -78,8 +78,8 @@ BOOST_AUTO_TEST_CASE(contact_forces) {
 
   forwardKinematics(model, fdata->pin_data_, q);
   updateFramePlacements(model, data);
-  fun.evaluate(x0, u0, x0, *fdata);
-  fun.computeJacobians(x0, u0, x0, *fdata);
+  fun.evaluate(x0, u0, *fdata);
+  fun.computeJacobians(x0, u0, *fdata);
 
   MatrixXd lambda_partial_dx(6, model.nv * 2);
   MatrixXd lambda_partial_du(6, model.nv - 6);
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(contact_forces) {
   for (int k = 0; k < model.nv * 2; ++k) {
     v_eps[k] += alpha;
     x_plus = space.integrate(x0, v_eps);
-    fun.evaluate(x_plus, u0, x_plus, *fdata);
+    fun.evaluate(x_plus, u0, *fdata);
     lambda_partial_dx_fd.col(k) = (fdata->value_ - lambda0) / alpha;
     v_eps[k] = 0.;
   }
@@ -111,7 +111,7 @@ BOOST_AUTO_TEST_CASE(contact_forces) {
   for (int k = 0; k < model.nv - 6; ++k) {
     u_eps[k] += alpha;
     u_plus = u0 + u_eps;
-    fun.evaluate(x0, u_plus, x0, *fdata);
+    fun.evaluate(x0, u_plus, *fdata);
     lambda_partial_du_fd.col(k) = (fdata->value_ - lambda0) / alpha;
     u_eps[k] = 0.;
   }
@@ -189,8 +189,8 @@ BOOST_AUTO_TEST_CASE(wrench_cone) {
 
   forwardKinematics(model, fdata->pin_data_, q);
   updateFramePlacements(model, data);
-  fun.evaluate(x0, u0, x0, *fdata);
-  fun.computeJacobians(x0, u0, x0, *fdata);
+  fun.evaluate(x0, u0, *fdata);
+  fun.computeJacobians(x0, u0, *fdata);
 
   MatrixXd cone_partial_dx(17, model.nv * 2);
   MatrixXd cone_partial_du(17, model.nv - 6);
@@ -214,7 +214,7 @@ BOOST_AUTO_TEST_CASE(wrench_cone) {
   for (int k = 0; k < model.nv * 2; ++k) {
     v_eps[k] += alpha;
     x_plus = space.integrate(x0, v_eps);
-    fun.evaluate(x_plus, u0, x_plus, *fdata);
+    fun.evaluate(x_plus, u0, *fdata);
     cone_partial_dx_fd.col(k) = (fdata->value_ - cone0) / alpha;
     v_eps[k] = 0.;
   }
@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE(wrench_cone) {
   for (int k = 0; k < model.nv - 6; ++k) {
     u_eps[k] += alpha;
     u_plus = u0 + u_eps;
-    fun.evaluate(x0, u_plus, x0, *fdata);
+    fun.evaluate(x0, u_plus, *fdata);
     cone_partial_du_fd.col(k) = (fdata->value_ - cone0) / alpha;
     u_eps[k] = 0.;
   }
