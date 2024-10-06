@@ -2,7 +2,7 @@
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 
 #include "aligator/python/fwd.hpp"
-#include "aligator/python/functions.hpp"
+#include "aligator/python/dynamics.hpp"
 #include "aligator/python/polymorphic-convertible.hpp"
 
 #include "aligator/modelling/dynamics/context.hpp"
@@ -13,6 +13,7 @@ namespace aligator {
 namespace python {
 using context::Scalar;
 using namespace aligator::dynamics;
+using context::DynamicsData;
 using context::DynamicsModel;
 using context::IntegratorAbstract;
 
@@ -20,7 +21,7 @@ void exposeIntegrators() {
   using DAEType = ContinuousDynamicsAbstractTpl<Scalar>;
 
   using PolyIntegrator = xyz::polymorphic<IntegratorAbstract>;
-  using PyIntegratorAbstract = PyStageFunction<IntegratorAbstract>;
+  using PyIntegratorAbstract = PyDynamics<IntegratorAbstract>;
   register_polymorphic_to_python<PolyIntegrator>();
 
   PolymorphicMultiBaseVisitor<DynamicsModel, IntegratorAbstract>
@@ -43,7 +44,7 @@ void exposeIntegrators() {
       .def(conversions_visitor);
 
   bp::register_ptr_to_python<shared_ptr<IntegratorDataTpl<Scalar>>>();
-  bp::class_<IntegratorDataTpl<Scalar>, bp::bases<DynamicsDataTpl<Scalar>>>(
+  bp::class_<IntegratorDataTpl<Scalar>, bp::bases<DynamicsData>>(
       "IntegratorData", "Base class for integrators' data.", bp::no_init)
       .def_readwrite("continuous_data",
                      &IntegratorDataTpl<Scalar>::continuous_data);

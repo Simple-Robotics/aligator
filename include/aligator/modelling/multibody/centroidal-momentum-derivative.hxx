@@ -30,8 +30,7 @@ CentroidalMomentumDerivativeResidualTpl<Scalar>::
 
 template <typename Scalar>
 void CentroidalMomentumDerivativeResidualTpl<Scalar>::evaluate(
-    const ConstVectorRef &x, const ConstVectorRef &u, const ConstVectorRef &,
-    BaseData &data) const {
+    const ConstVectorRef &x, const ConstVectorRef &u, BaseData &data) const {
   Data &d = static_cast<Data &>(data);
   pinocchio::DataTpl<Scalar> &pdata = d.pin_data_;
 
@@ -73,8 +72,7 @@ void CentroidalMomentumDerivativeResidualTpl<Scalar>::evaluate(
 
 template <typename Scalar>
 void CentroidalMomentumDerivativeResidualTpl<Scalar>::computeJacobians(
-    const ConstVectorRef &x, const ConstVectorRef &u, const ConstVectorRef &,
-    BaseData &data) const {
+    const ConstVectorRef &x, const ConstVectorRef &u, BaseData &data) const {
   Data &d = static_cast<Data &>(data);
   pinocchio::DataTpl<Scalar> &pdata = d.pin_data_;
 
@@ -123,9 +121,8 @@ template <typename Scalar>
 CentroidalMomentumDerivativeDataTpl<Scalar>::
     CentroidalMomentumDerivativeDataTpl(
         const CentroidalMomentumDerivativeResidualTpl<Scalar> *model)
-    : Base(model->ndx1, model->nu, model->ndx2, 6),
-      pin_data_(model->pin_model_), temp_(3, model->pin_model_.nv),
-      fJf_(6, model->pin_model_.nv) {
+    : Base(model->ndx1, model->nu, 6), pin_data_(model->pin_model_),
+      temp_(3, model->pin_model_.nv), fJf_(6, model->pin_model_.nv) {
   fJf_.setZero();
   temp_.setZero();
 }

@@ -50,7 +50,7 @@ void StageModelTpl<Scalar>::evaluate(const ConstVectorRef &x,
   ALIGATOR_TRACY_ZONE_SCOPED_N("StageModel::evaluate");
   dynamics_->evaluate(x, u, y, *data.dynamics_data);
   for (std::size_t j = 0; j < numConstraints(); j++) {
-    constraints_.funcs[j]->evaluate(x, u, y, *data.constraint_data[j]);
+    constraints_.funcs[j]->evaluate(x, u, *data.constraint_data[j]);
   }
   cost_->evaluate(x, u, *data.cost_data);
 }
@@ -62,7 +62,7 @@ void StageModelTpl<Scalar>::computeFirstOrderDerivatives(
   ALIGATOR_TRACY_ZONE_SCOPED_N("StageModel::computeFirstOrderDerivatives");
   dynamics_->computeJacobians(x, u, y, *data.dynamics_data);
   for (std::size_t j = 0; j < numConstraints(); j++) {
-    constraints_.funcs[j]->computeJacobians(x, u, y, *data.constraint_data[j]);
+    constraints_.funcs[j]->computeJacobians(x, u, *data.constraint_data[j]);
   }
   cost_->computeGradients(x, u, *data.cost_data);
 }

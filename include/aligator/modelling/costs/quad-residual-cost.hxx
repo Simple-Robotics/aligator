@@ -23,7 +23,7 @@ void QuadraticResidualCostTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                                 CostData &data_) const {
   Data &data = static_cast<Data &>(data_);
   StageFunctionDataTpl<Scalar> &under_data = *data.residual_data;
-  residual_->evaluate(x, u, x, under_data);
+  residual_->evaluate(x, u, under_data);
   ALIGATOR_NOMALLOC_SCOPED;
   data.Wv_buf.noalias() = weights_ * under_data.value_;
   data.value_ = .5 * under_data.value_.dot(data.Wv_buf);
@@ -35,7 +35,7 @@ void QuadraticResidualCostTpl<Scalar>::computeGradients(const ConstVectorRef &x,
                                                         CostData &data_) const {
   Data &data = static_cast<Data &>(data_);
   StageFunctionDataTpl<Scalar> &under_data = *data.residual_data;
-  residual_->computeJacobians(x, u, x, under_data);
+  residual_->computeJacobians(x, u, under_data);
   const Eigen::Index size = data.grad_.size();
   ALIGATOR_NOMALLOC_SCOPED;
   MatrixRef J = under_data.jac_buffer_.leftCols(size);
@@ -56,7 +56,7 @@ void QuadraticResidualCostTpl<Scalar>::computeHessians(const ConstVectorRef &x,
   data.hess_.noalias() = data.JtW_buf * J;
   if (!gauss_newton) {
     ALIGATOR_NOMALLOC_END;
-    residual_->computeVectorHessianProducts(x, u, x, data.Wv_buf, under_data);
+    residual_->computeVectorHessianProducts(x, u, data.Wv_buf, under_data);
     data.hess_ = under_data.vhp_buffer_;
   }
 }

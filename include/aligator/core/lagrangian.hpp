@@ -22,6 +22,7 @@ template <typename Scalar> struct LagrangianDerivatives {
                       std::vector<VectorXs> &Lxs, std::vector<VectorXs> &Lus) {
     using ConstraintStack = ConstraintStackTpl<Scalar>;
     using StageFunctionData = StageFunctionDataTpl<Scalar>;
+    using DynamicsData = DynamicsDataTpl<Scalar>;
     using CostData = CostDataAbstractTpl<Scalar>;
     using StageModel = StageModelTpl<Scalar>;
     using StageData = StageDataTpl<Scalar>;
@@ -41,7 +42,7 @@ template <typename Scalar> struct LagrangianDerivatives {
       const StageModel &sm = *problem.stages_[i];
       const StageData &sd = *pd.stage_data[i];
       const ConstraintStack &stack = sm.constraints_;
-      const StageFunctionData &dd = *sd.dynamics_data;
+      const DynamicsData &dd = *sd.dynamics_data;
       Lxs[i].noalias() +=
           sd.cost_data->Lx_ + dd.Jx_.transpose() * lams[i + 1]; // [1] eqn. 24c
       Lus[i].noalias() =

@@ -67,7 +67,7 @@ struct IntegratorDataTpl : DynamicsDataTpl<_Scalar> {
   /// Value of the time-derivative to use in the integration rule.
   VectorXs xdot_;
 
-  explicit IntegratorDataTpl(const IntegratorAbstractTpl<Scalar> *integrator);
+  explicit IntegratorDataTpl(const IntegratorAbstractTpl<Scalar> &integrator);
   virtual ~IntegratorDataTpl() = default;
 };
 

@@ -38,10 +38,10 @@ public:
       const int force_size);
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                const ConstVectorRef &, BaseData &data) const;
+                BaseData &data) const;
 
   void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
-                        const ConstVectorRef &, BaseData &data) const;
+                        BaseData &data) const;
 
   shared_ptr<BaseData> createData() const {
     return std::make_shared<Data>(this);

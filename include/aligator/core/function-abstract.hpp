@@ -19,25 +19,19 @@ public:
   const int ndx1;
   /// @brief Control dimension
   const int nu;
-  /// @brief Next state dimension
-  const int ndx2;
   /// @brief Function codimension
   const int nr;
 
-  StageFunctionTpl(const int ndx1, const int nu, const int ndx2, const int nr);
-
-  /// Constructor where ndx2 = ndx1.
   StageFunctionTpl(const int ndx, const int nu, const int nr);
 
   /**
    * @brief       Evaluate the function.
    * @param x     Current state.
    * @param u     Controls.
-   * @param y     Next state.
    * @param data  Data holding struct.
    */
   virtual void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                        const ConstVectorRef &y, Data &data) const = 0;
+                        Data &data) const = 0;
 
   /** @brief    Compute Jacobians of this function.
    *
@@ -54,8 +48,7 @@ public:
    * @param data  Data holding struct.
    */
   virtual void computeJacobians(const ConstVectorRef &x,
-                                const ConstVectorRef &u,
-                                const ConstVectorRef &y, Data &data) const = 0;
+                                const ConstVectorRef &u, Data &data) const = 0;
 
   /** @brief    Compute the vector-hessian products of this function.
    *
@@ -67,7 +60,6 @@ public:
    */
   virtual void computeVectorHessianProducts(const ConstVectorRef &x,
                                             const ConstVectorRef &u,
-                                            const ConstVectorRef &y,
                                             const ConstVectorRef &lbda,
                                             Data &data) const;
 
@@ -81,14 +73,12 @@ public:
 template <typename _Scalar> struct StageFunctionDataTpl {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   const int ndx1;
   const int nu;
-  const int ndx2;
   const int nr;
   /// @brief Total number of variables.
-  const int nvar = ndx1 + nu + ndx2;
+  const int nvar = ndx1 + nu;
 
   /// Function value.
   VectorXs value_;
@@ -101,21 +91,17 @@ template <typename _Scalar> struct StageFunctionDataTpl {
   MatrixRef Jx_;
   /// Jacobian with respect to \f$u\f$.
   MatrixRef Ju_;
-  /// Jacobian with respect to \f$y\f$.
-  MatrixRef Jy_;
 
   /* Vector-Hessian product buffers */
 
   MatrixRef Hxx_;
   MatrixRef Hxu_;
-  MatrixRef Hxy_;
   MatrixRef Huu_;
-  MatrixRef Huy_;
-  MatrixRef Hyy_;
 
   /// @brief Default constructor.
-  StageFunctionDataTpl(const int ndx1, const int nu, const int ndx2,
-                       const int nr);
+  StageFunctionDataTpl(const int ndx, const int nu, const int nr);
+  StageFunctionDataTpl(const StageFunctionTpl<Scalar> &model)
+      : StageFunctionDataTpl(model.ndx1, model.nu, model.nr) {}
   virtual ~StageFunctionDataTpl() = default;
 };
 

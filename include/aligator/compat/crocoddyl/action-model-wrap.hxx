@@ -15,8 +15,8 @@ ActionModelWrapperTpl<Scalar>::ActionModelWrapperTpl(
     boost::shared_ptr<CrocActionModel> action_model)
     : Base(CostAbstract{StateWrapper{action_model->get_state()},
                         int(action_model->get_nu())},
-           Dynamics{StateWrapper{action_model->get_state()},
-                    int(action_model->get_nu())}),
+           NoOpDynamics<Scalar>{StateWrapper{action_model->get_state()},
+                                int(action_model->get_nu())}),
       action_model_(action_model) {}
 
 template <typename Scalar>
@@ -72,7 +72,6 @@ ActionDataWrapperTpl<Scalar>::ActionDataWrapperTpl(
   dynamics_data =
       std::make_shared<DynamicsDataWrapper>(*action_model_wrap.action_model_);
   Base::dynamics_data = dynamics_data;
-  this->constraint_data = {dynamics_data};
   this->cost_data =
       std::make_shared<CrocCostDataWrapperTpl<Scalar>>(croc_action_data);
   checkData();

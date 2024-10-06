@@ -23,6 +23,6 @@ void LinearMomentumResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
 template <typename Scalar>
 LinearMomentumDataTpl<Scalar>::LinearMomentumDataTpl(
     const LinearMomentumResidualTpl<Scalar> *model)
-    : Base(model->ndx1, model->nu, model->ndx2, 3) {}
+    : Base(*model) {}
 
 } // namespace aligator

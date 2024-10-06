@@ -10,7 +10,6 @@ namespace aligator {
 template <typename Scalar>
 void ContactForceResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                                const ConstVectorRef &u,
-                                               const ConstVectorRef &,
                                                BaseData &data) const {
   Data &d = static_cast<Data &>(data);
 
@@ -28,7 +27,6 @@ void ContactForceResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
 
 template <typename Scalar>
 void ContactForceResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
-                                                       const ConstVectorRef &,
                                                        const ConstVectorRef &,
                                                        BaseData &data) const {
   Data &d = static_cast<Data &>(data);
@@ -48,7 +46,7 @@ void ContactForceResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
 template <typename Scalar>
 ContactForceDataTpl<Scalar>::ContactForceDataTpl(
     const ContactForceResidualTpl<Scalar> *model)
-    : Base(model->ndx1, model->nu, model->ndx2, model->force_size_),
+    : Base(model->ndx1, model->nu, model->force_size_),
       pin_data_(model->pin_model_), tau_(model->pin_model_.nv) {
   tau_.setZero();
 

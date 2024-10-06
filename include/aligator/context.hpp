@@ -25,6 +25,7 @@ using CostBase ALIGATOR_DEPRECATED_MESSAGE(
 using CostAbstract = CostAbstractTpl<Scalar>;
 using CostData = CostDataAbstractTpl<Scalar>;
 using DynamicsModel = DynamicsModelTpl<Scalar>;
+using DynamicsData = DynamicsDataTpl<Scalar>;
 using StageModel = StageModelTpl<Scalar>;
 using StageData = StageDataTpl<Scalar>;
 

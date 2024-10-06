@@ -69,7 +69,7 @@ void AngularAccelerationResidualTpl<Scalar>::computeJacobians(
 template <typename Scalar>
 AngularAccelerationDataTpl<Scalar>::AngularAccelerationDataTpl(
     const AngularAccelerationResidualTpl<Scalar> *model)
-    : Base(model->ndx1, model->nu, model->ndx2, 3) {
+    : Base(model->ndx1, model->nu, 3) {
   Jtemp_.setZero();
 }
 

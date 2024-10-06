@@ -7,7 +7,6 @@ namespace aligator {
 template <typename Scalar>
 void FrictionConeResidualTpl<Scalar>::evaluate(const ConstVectorRef &,
                                                const ConstVectorRef &u,
-                                               const ConstVectorRef &,
                                                BaseData &data) const {
   Data &d = static_cast<Data &>(data);
 
@@ -19,7 +18,6 @@ void FrictionConeResidualTpl<Scalar>::evaluate(const ConstVectorRef &,
 template <typename Scalar>
 void FrictionConeResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
                                                        const ConstVectorRef &u,
-                                                       const ConstVectorRef &,
                                                        BaseData &data) const {
   Data &d = static_cast<Data &>(data);
 
@@ -31,7 +29,7 @@ void FrictionConeResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
 template <typename Scalar>
 FrictionConeDataTpl<Scalar>::FrictionConeDataTpl(
     const FrictionConeResidualTpl<Scalar> *model)
-    : Base(model->ndx1, model->nu, model->ndx2, 2) {
+    : Base(*model) {
   Jtemp_.setZero();
 }
 
