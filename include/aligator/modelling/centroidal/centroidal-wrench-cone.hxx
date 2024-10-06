@@ -7,7 +7,6 @@ namespace aligator {
 template <typename Scalar>
 void CentroidalWrenchConeResidualTpl<Scalar>::evaluate(const ConstVectorRef &,
                                                        const ConstVectorRef &u,
-                                                       const ConstVectorRef &,
                                                        BaseData &data) const {
   Data &d = static_cast<Data &>(data);
 
@@ -56,8 +55,7 @@ void CentroidalWrenchConeResidualTpl<Scalar>::evaluate(const ConstVectorRef &,
 
 template <typename Scalar>
 void CentroidalWrenchConeResidualTpl<Scalar>::computeJacobians(
-    const ConstVectorRef &, const ConstVectorRef &, const ConstVectorRef &,
-    BaseData &data) const {
+    const ConstVectorRef &, const ConstVectorRef &, BaseData &data) const {
   Data &d = static_cast<Data &>(data);
 
   d.Jtemp_ << 0, 0, -1, 0, 0, 0, -1, 0, -mu_, 0, 0, 0, 1, 0, -mu_, 0, 0, 0, 0,

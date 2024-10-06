@@ -180,7 +180,8 @@ struct FiniteDifferenceHelper : StageFunctionTpl<_Scalar> {
 
   using StageFunction = StageFunctionTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
-  using Data = StageFunctionDataTpl<Scalar>;
+  using Data = typename Impl::Data;
+  using BaseData = StageFunctionDataTpl<Scalar>;
 
   ALIGATOR_DYNAMIC_TYPEDEFS(_Scalar);
 
@@ -191,12 +192,12 @@ struct FiniteDifferenceHelper : StageFunctionTpl<_Scalar> {
         impl(space, func, fd_eps) {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                Data &data) const {
+                BaseData &data) const {
     impl.evaluateImpl({x, u}, data);
   }
 
   void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
-                        Data &data) const {
+                        BaseData &data) const {
     impl.computeJacobiansImpl({x, u}, data);
   }
 
@@ -210,7 +211,8 @@ struct DynamicsFiniteDifferenceHelper : DynamicsModelTpl<_Scalar> {
   using DynamicsModel = DynamicsModelTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using Impl = internal::finite_difference_impl<Scalar, DynamicsModelTpl>;
-  using Data = DynamicsDataTpl<Scalar>;
+  using Data = typename Impl::Data;
+  using BaseData = DynamicsDataTpl<Scalar>;
 
   ALIGATOR_DYNAMIC_TYPEDEFS(_Scalar);
 
@@ -220,12 +222,12 @@ struct DynamicsFiniteDifferenceHelper : DynamicsModelTpl<_Scalar> {
       : DynamicsModel(space, func->nu, space), impl(space, func, fd_eps) {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                const ConstVectorRef &xn, Data &data) const {
+                const ConstVectorRef &xn, BaseData &data) const {
     impl.evaluateImpl({x, u, xn}, data);
   }
 
   void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
-                        const ConstVectorRef &xn, Data &data) const {
+                        const ConstVectorRef &xn, BaseData &data) const {
     impl.computeJacobiansImpl({x, u, xn}, data);
   }
 
