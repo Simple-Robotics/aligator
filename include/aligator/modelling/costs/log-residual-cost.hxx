@@ -34,7 +34,7 @@ void LogResidualCostTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                           const ConstVectorRef &u,
                                           CostDataAbstract &data) const {
   Data &d = static_cast<Data &>(data);
-  residual_->evaluate(x, u, x, *d.residual_data);
+  residual_->evaluate(x, u, *d.residual_data);
   d.value_ =
       barrier_weights_.dot(d.residual_data->value_.array().log().matrix());
 }
@@ -46,7 +46,7 @@ void LogResidualCostTpl<Scalar>::computeGradients(
   Data &d = static_cast<Data &>(data);
   StageFunctionDataTpl<Scalar> &res_data = *d.residual_data;
   MatrixRef J = res_data.jac_buffer_.leftCols(data.grad_.size());
-  residual_->computeJacobians(x, u, x, res_data);
+  residual_->computeJacobians(x, u, res_data);
   d.grad_.setZero();
   VectorXs &v = res_data.value_;
   const int nrows = residual_->nr;

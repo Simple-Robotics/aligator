@@ -33,10 +33,10 @@ public:
       : Base(ndx, nu, 2), k_(k), mu2_(mu * mu), epsilon_(epsilon) {}
 
   void evaluate(const ConstVectorRef &, const ConstVectorRef &u,
-                const ConstVectorRef &, BaseData &data) const;
+                BaseData &data) const;
 
   void computeJacobians(const ConstVectorRef &, const ConstVectorRef &u,
-                        const ConstVectorRef &, BaseData &data) const;
+                        BaseData &data) const;
 
   shared_ptr<BaseData> createData() const {
     return std::make_shared<Data>(this);

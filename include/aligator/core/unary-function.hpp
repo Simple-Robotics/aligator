@@ -1,5 +1,5 @@
 /// @file unary-function.hpp
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include "aligator/core/function-abstract.hpp"
@@ -24,17 +24,16 @@ struct UnaryFunctionTpl : StageFunctionTpl<_Scalar> {
                                             Data & /*data*/) const {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &,
-                const ConstVectorRef &, Data &data) const override {
+                Data &data) const override {
     this->evaluate(x, data);
   }
 
   void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &,
-                        const ConstVectorRef &, Data &data) const override {
+                        Data &data) const override {
     this->computeJacobians(x, data);
   }
 
   void computeVectorHessianProducts(const ConstVectorRef &x,
-                                    const ConstVectorRef &,
                                     const ConstVectorRef &,
                                     const ConstVectorRef &lbda,
                                     Data &data) const override {

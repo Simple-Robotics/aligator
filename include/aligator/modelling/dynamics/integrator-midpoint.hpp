@@ -32,6 +32,7 @@ struct IntegratorMidpointTpl : IntegratorAbstractTpl<_Scalar> {
   using ContinuousDynamics = ContinuousDynamicsAbstractTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using Data = IntegratorMidpointDataTpl<Scalar>;
+  using BaseData = DynamicsDataTpl<Scalar>;
 
   Scalar timestep_;
 
@@ -40,13 +41,12 @@ struct IntegratorMidpointTpl : IntegratorAbstractTpl<_Scalar> {
       const Scalar timestep);
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                const ConstVectorRef &y, DynamicsDataTpl<Scalar> &data) const;
+                const ConstVectorRef &y, BaseData &data) const;
 
   void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
-                        const ConstVectorRef &y,
-                        DynamicsDataTpl<Scalar> &data) const;
+                        const ConstVectorRef &y, BaseData &data) const;
 
-  shared_ptr<DynamicsDataTpl<Scalar>> createData() const;
+  shared_ptr<BaseData> createData() const;
 };
 
 template <typename _Scalar>
@@ -63,8 +63,8 @@ struct IntegratorMidpointDataTpl : IntegratorDataTpl<_Scalar> {
   MatrixXs Jtm1;
 
   explicit IntegratorMidpointDataTpl(
-      const IntegratorMidpointTpl<Scalar> *integrator)
-      : Base(integrator), x1_(integrator->space().neutral()), dx1_(this->ndx1),
+      const IntegratorMidpointTpl<Scalar> &integrator)
+      : Base(integrator), x1_(integrator.space().neutral()), dx1_(this->ndx1),
         J_v_0(this->ndx1, this->ndx1), J_v_1(this->ndx1, this->ndx1),
         Jtm0(this->ndx1, this->ndx1), Jtm1(this->ndx1, this->ndx1) {
     x1_.setZero();

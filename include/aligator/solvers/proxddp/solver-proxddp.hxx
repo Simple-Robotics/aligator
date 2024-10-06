@@ -212,7 +212,7 @@ void SolverProxDDPTpl<Scalar>::computeMultipliers(
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
     const StageData &sd = *prob_data.stage_data[i];
-    const StageFunctionData &dd = *sd.dynamics_data;
+    const DynamicsData &dd = *sd.dynamics_data;
     const ConstraintStack &cstr_stack = stage.constraints_;
 
     assert(vs[i].size() == stage.nc());
@@ -381,7 +381,7 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
   for (std::size_t k = 0; k < problem.term_cstrs_.size(); ++k) {
     const auto &func = problem.term_cstrs_.funcs[k];
     StageFunctionData &td = *prob_data.term_cstr_data[k];
-    func->evaluate(xs[nsteps], problem.unone_, xs[nsteps], td);
+    func->evaluate(xs[nsteps], problem.unone_, td);
   }
 
   // update multiplier
@@ -764,7 +764,7 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
   for (size_t t = 0; t < N; t++) {
     const StageData &sd = *pd.stage_data[t];
     LQRKnotTpl<Scalar> &knot = prob.stages[t];
-    const StageFunctionData &dd = *sd.dynamics_data;
+    const DynamicsData &dd = *sd.dynamics_data;
     const CostData &cd = *sd.cost_data;
     uint nx = knot.nx;
     uint nu = knot.nu;

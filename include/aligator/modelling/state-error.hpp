@@ -50,7 +50,7 @@ struct StateOrControlErrorResidual<_Scalar, 0> : UnaryFunctionTpl<_Scalar> {
 
 template <typename _Scalar, unsigned int arg>
 struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
-  static_assert(arg > 0 && arg <= 2, "arg value must be 1 or 2!");
+  static_assert(arg == 1, "arg value must be 1");
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageFunctionTpl<Scalar>;
@@ -60,12 +60,6 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
 
   xyz::polymorphic<Manifold> space_;
   VectorXs target_;
-
-  /// @brief Constructor using the state space, control dimension and state
-  /// target.
-  template <unsigned int N = arg, typename = std::enable_if_t<N == 2>>
-  StateOrControlErrorResidual(const xyz::polymorphic<Manifold> &xspace,
-                              const int nu, const ConstVectorRef &target);
 
   /// @brief Constructor using the state space dimension, control manifold and
   ///        control target.
@@ -91,20 +85,15 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
 
   template <unsigned int N = arg, typename = std::enable_if_t<N == 1>>
   StateOrControlErrorResidual(const int ndx, const int nu)
-      : Base(ndx, nu, ndx, nu),
-        space_(xyz::polymorphic<Manifold>(VectorSpace(nu))),
-        target_(space_->neutral()) {
+      : Base(ndx, nu, nu), space_(VectorSpace(nu)), target_(space_->neutral()) {
     check_target_viable();
   }
 
   void evaluate(const ConstVectorRef &, const ConstVectorRef &u,
-                const ConstVectorRef &y, Data &data) const {
+                Data &data) const override {
     switch (arg) {
     case 1:
       space_->difference(target_, u, data.value_);
-      break;
-    case 2:
-      space_->difference(target_, y, data.value_);
       break;
     default:
       break;
@@ -112,13 +101,10 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
   }
 
   void computeJacobians(const ConstVectorRef &, const ConstVectorRef &u,
-                        const ConstVectorRef &y, Data &data) const {
+                        Data &data) const override {
     switch (arg) {
     case 1:
       space_->Jdifference(target_, u, data.Ju_, 1);
-      break;
-    case 2:
-      space_->Jdifference(target_, y, data.Jy_, 1);
       break;
     default:
       break;
@@ -134,14 +120,6 @@ private:
   }
 };
 
-template <typename Scalar, unsigned int arg>
-template <unsigned int N, typename>
-StateOrControlErrorResidual<Scalar, arg>::StateOrControlErrorResidual(
-    const xyz::polymorphic<Manifold> &xspace, const int nu,
-    const ConstVectorRef &target)
-    : Base(xspace->ndx(), nu, xspace->ndx()), space_(xspace), target_(target) {
-  check_target_viable();
-}
 } // namespace detail
 
 template <typename Scalar>

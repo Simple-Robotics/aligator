@@ -14,6 +14,21 @@
 namespace aligator {
 namespace compat {
 namespace croc {
+template <typename Scalar>
+struct NoOpDynamics final : DynamicsModelTpl<Scalar> {
+  using Base = DynamicsModelTpl<Scalar>;
+  using DynData = DynamicsDataTpl<Scalar>;
+  using Manifold = ManifoldAbstractTpl<Scalar>;
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  NoOpDynamics(xyz::polymorphic<Manifold> state, const int nu)
+      : Base(state, nu) {}
+
+  void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
+                const ConstVectorRef &xn, DynData &) const override {}
+
+  void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
+                        const ConstVectorRef &xn, DynData &) const override {}
+};
 
 /**
  * @brief Wraps a crocoddyl::ActionModelAbstract
@@ -26,11 +41,11 @@ struct ActionModelWrapperTpl : StageModelTpl<Scalar> {
   using Base = StageModelTpl<Scalar>;
   using Data = StageDataTpl<Scalar>;
   using CostAbstract = CostAbstractTpl<Scalar>;
-  using Dynamics = DynamicsModelTpl<Scalar>;
   using CrocActionModel = crocoddyl::ActionModelAbstractTpl<Scalar>;
   using StateWrapper = StateWrapperTpl<Scalar>;
   using ActionDataWrap = ActionDataWrapperTpl<Scalar>;
   using DynDataWrap = DynamicsDataWrapperTpl<Scalar>;
+  using Manifold = ManifoldAbstractTpl<Scalar>;
 
   boost::shared_ptr<CrocActionModel> action_model_;
 

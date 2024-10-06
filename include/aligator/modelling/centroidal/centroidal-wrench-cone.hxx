@@ -76,7 +76,7 @@ void CentroidalWrenchConeResidualTpl<Scalar>::computeJacobians(
 template <typename Scalar>
 CentroidalWrenchConeDataTpl<Scalar>::CentroidalWrenchConeDataTpl(
     const CentroidalWrenchConeResidualTpl<Scalar> *model)
-    : Base(model->ndx1, model->nu, model->ndx2, 17) {
+    : Base(*model) {
   Jtemp_.setZero();
 }
 

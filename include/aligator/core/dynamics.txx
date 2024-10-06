@@ -8,5 +8,6 @@
 namespace aligator {
 
 extern template struct DynamicsModelTpl<context::Scalar>;
+extern template struct DynamicsDataTpl<context::Scalar>;
 
 } // namespace aligator

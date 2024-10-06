@@ -23,6 +23,6 @@ void AngularMomentumResidualTpl<Scalar>::computeJacobians(
 template <typename Scalar>
 AngularMomentumDataTpl<Scalar>::AngularMomentumDataTpl(
     const AngularMomentumResidualTpl<Scalar> *model)
-    : Base(model->ndx1, model->nu, model->ndx2, 3) {}
+    : Base(*model) {}
 
 } // namespace aligator

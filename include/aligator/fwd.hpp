@@ -56,7 +56,7 @@ template <typename Scalar> struct CostDataAbstractTpl;
 template <typename Scalar> struct DynamicsModelTpl;
 
 // fwd DynamicsDataTpl
-template <typename Scalar> using DynamicsDataTpl = StageFunctionDataTpl<Scalar>;
+template <typename Scalar> struct DynamicsDataTpl;
 
 // fwd StageConstraintTpl
 template <typename Scalar> struct StageConstraintTpl;

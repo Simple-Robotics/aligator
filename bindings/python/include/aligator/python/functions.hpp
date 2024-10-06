@@ -6,7 +6,6 @@
 
 #include "aligator/core/function-abstract.hpp"
 #include "aligator/core/unary-function.hpp"
-#include "aligator/core/dynamics.hpp"
 
 #include "aligator/modelling/dynamics/context.hpp"
 #include "aligator/modelling/dynamics/integrator-abstract.hpp"
@@ -35,23 +34,22 @@ struct PyStageFunction final
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                const ConstVectorRef &y, Data &data) const override {
-    ALIGATOR_PYTHON_OVERRIDE_PURE(void, "evaluate", x, u, y, boost::ref(data));
+                Data &data) const override {
+    ALIGATOR_PYTHON_OVERRIDE_PURE(void, "evaluate", x, u, boost::ref(data));
   }
 
   void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
-                        const ConstVectorRef &y, Data &data) const override {
-    ALIGATOR_PYTHON_OVERRIDE_PURE(void, "computeJacobians", x, u, y,
+                        Data &data) const override {
+    ALIGATOR_PYTHON_OVERRIDE_PURE(void, "computeJacobians", x, u,
                                   boost::ref(data));
   }
 
   void computeVectorHessianProducts(const ConstVectorRef &x,
                                     const ConstVectorRef &u,
-                                    const ConstVectorRef &y,
                                     const ConstVectorRef &lbda,
                                     Data &data) const override {
     ALIGATOR_PYTHON_OVERRIDE(void, FunctionBase, computeVectorHessianProducts,
-                             x, u, y, lbda, boost::ref(data));
+                             x, u, lbda, boost::ref(data));
   }
 
   shared_ptr<Data> createData() const override {
@@ -159,23 +157,6 @@ template <>
 struct value_holder<aligator::python::PyStageFunction<>>
     : proxsuite::nlp::python::OwningNonOwningHolder<
           aligator::python::PyStageFunction<>> {
-  using OwningNonOwningHolder::OwningNonOwningHolder;
-};
-
-template <>
-struct value_holder<
-    aligator::python::PyStageFunction<aligator::context::DynamicsModel>>
-    : proxsuite::nlp::python::OwningNonOwningHolder<
-          aligator::python::PyStageFunction<aligator::context::DynamicsModel>> {
-  using OwningNonOwningHolder::OwningNonOwningHolder;
-};
-
-template <>
-struct value_holder<
-    aligator::python::PyStageFunction<aligator::context::IntegratorAbstract>>
-    : proxsuite::nlp::python::OwningNonOwningHolder<
-          aligator::python::PyStageFunction<
-              aligator::context::IntegratorAbstract>> {
   using OwningNonOwningHolder::OwningNonOwningHolder;
 };
 

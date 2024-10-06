@@ -41,10 +41,9 @@ void CentroidalMomentumResidualTpl<Scalar>::computeJacobians(
 template <typename Scalar>
 CentroidalMomentumDataTpl<Scalar>::CentroidalMomentumDataTpl(
     const CentroidalMomentumResidualTpl<Scalar> *model)
-    : Base(model->ndx1, model->nu, model->ndx2, 6),
-      pin_data_(model->pin_model_), dh_dq_(6, model->pin_model_.nv),
-      dhdot_dq_(6, model->pin_model_.nv), dhdot_dv_(6, model->pin_model_.nv),
-      dhdot_da_(6, model->pin_model_.nv) {
+    : Base(model->ndx1, model->nu, 6), pin_data_(model->pin_model_),
+      dh_dq_(6, model->pin_model_.nv), dhdot_dq_(6, model->pin_model_.nv),
+      dhdot_dv_(6, model->pin_model_.nv), dhdot_da_(6, model->pin_model_.nv) {
   dh_dq_.setZero();
   dhdot_dq_.setZero();
   dhdot_dv_.setZero();
