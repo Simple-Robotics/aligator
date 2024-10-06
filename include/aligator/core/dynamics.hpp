@@ -74,6 +74,8 @@ template <typename _Scalar> struct DynamicsModelTpl {
                                             Data &data) const;
 
   virtual shared_ptr<Data> createData() const;
+
+  virtual ~DynamicsModelTpl() = default;
 };
 
 template <typename _Scalar> struct DynamicsDataTpl {
