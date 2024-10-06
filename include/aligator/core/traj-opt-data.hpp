@@ -32,6 +32,12 @@ template <typename _Scalar> struct TrajOptDataTpl {
   TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem);
 };
 
+/// @brief Helper for computing the trajectory cost (from pre-computed problem
+/// data).
+/// @warning Call TrajOptProblemTpl::evaluate() first!
+template <typename Scalar>
+Scalar computeTrajectoryCost(const TrajOptDataTpl<Scalar> &problem_data);
+
 } // namespace aligator
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION

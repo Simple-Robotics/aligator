@@ -4,7 +4,6 @@
 #pragma once
 
 #include "aligator/core/traj-opt-problem.hpp"
-#include "aligator/core/stage-data.hpp"
 #include "aligator/utils/mpc-util.hpp"
 #include "aligator/tracy.hpp"
 
@@ -131,8 +130,6 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
 template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::addStage(
     const xyz::polymorphic<StageModel> &stage) {
-  // if (stage == nullptr)
-  //   ALIGATOR_RUNTIME_ERROR("Input stage is null.");
   stages_.push_back(stage);
 }
 
@@ -180,25 +177,6 @@ void TrajOptProblemTpl<Scalar>::replaceStageCircular(
   addStage(model);
   rotate_vec_left(stages_);
   stages_.pop_back();
-}
-
-template <typename Scalar>
-Scalar TrajOptProblemTpl<Scalar>::computeTrajectoryCost(
-    const Data &problem_data) const {
-  ALIGATOR_NOMALLOC_SCOPED;
-  ALIGATOR_TRACY_ZONE_SCOPED;
-  Scalar traj_cost = 0.;
-
-  const std::size_t nsteps = numSteps();
-  const auto &sds = problem_data.stage_data;
-
-#pragma omp simd reduction(+ : traj_cost)
-  for (std::size_t i = 0; i < nsteps; i++) {
-    traj_cost += sds[i]->cost_data->value_;
-  }
-  traj_cost += problem_data.term_cost_data->value_;
-
-  return traj_cost;
 }
 
 } // namespace aligator

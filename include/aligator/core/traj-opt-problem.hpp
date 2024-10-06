@@ -181,11 +181,6 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// updates the supplied problem data (TrajOptDataTpl) object.
   void replaceStageCircular(const xyz::polymorphic<StageModel> &model);
 
-  /// @brief Helper for computing the trajectory cost (from pre-computed problem
-  /// data).
-  /// @warning Call TrajOptProblemTpl::evaluate() first!
-  Scalar computeTrajectoryCost(const Data &problem_data) const;
-
   bool checkIntegrity() const;
 
 protected:

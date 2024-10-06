@@ -403,7 +403,7 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
     vs[nsteps] = results_.vs[nsteps] + dvs[nsteps];
   }
 
-  prob_data.cost_ = problem.computeTrajectoryCost(prob_data);
+  prob_data.cost_ = computeTrajectoryCost(prob_data);
   return prob_data.cost_;
 }
 

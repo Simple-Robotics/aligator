@@ -6,6 +6,7 @@
 #include "aligator/core/traj-opt-problem.hpp"
 #include "stage-data.hpp"
 #include "cost-abstract.hpp"
+#include "aligator/tracy.hpp"
 
 namespace aligator {
 
@@ -25,6 +26,24 @@ TrajOptDataTpl<Scalar>::TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem)
     const auto &func = problem.term_cstrs_.funcs[k];
     term_cstr_data.push_back(func->createData());
   }
+}
+
+template <typename Scalar>
+Scalar computeTrajectoryCost(const TrajOptDataTpl<Scalar> &problem_data) {
+  ALIGATOR_NOMALLOC_SCOPED;
+  ALIGATOR_TRACY_ZONE_SCOPED;
+  Scalar traj_cost = 0.;
+
+  const std::size_t nsteps = problem_data.numSteps();
+  const auto &sds = problem_data.stage_data;
+
+#pragma omp simd reduction(+ : traj_cost)
+  for (std::size_t i = 0; i < nsteps; i++) {
+    traj_cost += sds[i]->cost_data->value_;
+  }
+  traj_cost += problem_data.term_cost_data->value_;
+
+  return traj_cost;
 }
 
 } // namespace aligator

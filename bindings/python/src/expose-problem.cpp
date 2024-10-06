@@ -85,9 +85,13 @@ void exposeProblem() {
       .def("replaceStageCircular", &TrajOptProblem::replaceStageCircular,
            ("self"_a, "model"),
            "Circularly replace the last stage in the problem, dropping the "
-           "first stage.");
+           "first stage.")
+      .def("checkIntegrity", &TrajOptProblem::checkIntegrity, ("self"_a));
 
-  bp::register_ptr_to_python<shared_ptr<TrajOptData>>();
+  bp::def("computeTrajectoryCost", computeTrajectoryCost<Scalar>,
+          ("problem_data"_a),
+          "Compute trajectory cost (call evaluate() first!)");
+
   bp::class_<TrajOptData>(
       "TrajOptData", "Data struct for shooting problems.",
       bp::init<const TrajOptProblem &>(("self"_a, "problem")))
