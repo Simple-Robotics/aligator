@@ -380,7 +380,7 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
 
     DynamicsData &dd = *data.dynamics_data;
 
-    if (!stage.has_dyn_model() || stage.dynamics_->is_explicit()) {
+    if (!stage.hasDynModel() || stage.dynamics_->isExplicit()) {
       ExplicitDynData &exp_dd = static_cast<ExplicitDynData &>(dd);
       stage.xspace_next().integrate(exp_dd.xnext_, dyn_slacks[t], xs[t + 1]);
       // at xs[i+1], the dynamics gap = the slack dyn_slack[i].
@@ -679,10 +679,11 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     logger.addEntry("dual_err", results_.dual_infeas);
     logger.addEntry("preg", preg_);
     logger.addEntry("dphi0", dphi0);
+    logger.addEntry("cost", results_.traj_cost_);
     logger.addEntry("merit", phi_new);
     logger.addEntry("ΔM", phi_new - phi0);
     logger.addEntry("aliter", results_.al_iter + 1);
-    logger.addEntry("mu", mudyn());
+    logger.addEntry("mu", mu());
 
     if (alpha_opt <= ls_params.alpha_min) {
       if (preg_ >= reg_max)
@@ -755,6 +756,12 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::computeCriterion() {
   results_.dual_infeas =
       std::max(math::infty_norm(workspace_.state_dual_infeas),
                math::infty_norm(workspace_.control_dual_infeas));
+}
+
+template <typename Scalar>
+void SolverProxDDPTpl<Scalar>::registerCallback(const std::string &name,
+                                                CallbackPtr cb) {
+  callbacks_.insert_or_assign(name, cb);
 }
 
 template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {

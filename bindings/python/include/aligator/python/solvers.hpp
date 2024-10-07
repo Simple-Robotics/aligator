@@ -17,17 +17,16 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
   using CallbackPtr = typename SolverType::CallbackPtr;
   static auto getCallback(const SolverType &obj,
                           const std::string &name) -> CallbackPtr {
-    const auto &cbs = obj.getCallbacks();
-    auto cb = cbs.find(name);
-    if (cb == cbs.end()) {
+    const CallbackPtr &cb = obj.getCallback(name);
+    if (!cb) {
       PyErr_SetString(PyExc_KeyError,
                       fmt::format("Key {} not found.", name).c_str());
       bp::throw_error_already_set();
     }
-    return cb->second;
+    return cb;
   }
 
-  template <typename PyClass> void visit(PyClass &obj) const {
+  template <typename... Args> void visit(bp::class_<Args...> &obj) const {
     obj.def_readwrite("verbose", &SolverType::verbose_,
                       "Verbosity level of the solver.")
         .def_readwrite("max_iters", &SolverType::max_iters,
@@ -37,6 +36,7 @@ struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
         .def_readwrite("target_tol", &SolverType::target_tol_,
                        "Target tolerance.")
         .def_readwrite("reg_init", &SolverType::reg_init)
+        .def_readwrite("preg", &SolverType::preg_)
         .def_readwrite("force_initial_condition",
                        &SolverType::force_initial_condition_,
                        "Set x0 to be fixed to the initial condition.")

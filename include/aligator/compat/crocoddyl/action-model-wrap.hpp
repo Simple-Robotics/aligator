@@ -37,7 +37,7 @@ struct ActionModelWrapperTpl : StageModelTpl<Scalar> {
   explicit ActionModelWrapperTpl(
       boost::shared_ptr<CrocActionModel> action_model);
 
-  bool has_dyn_model() const override { return false; }
+  bool hasDynModel() const override { return false; }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &y, Data &data) const override;

@@ -75,8 +75,7 @@ if args.term_cstr:
     )
 
 # Instantiate a solver separately
-mu_init = 1e-3 if args.bounds else 1e-6
-rho_init = 0.0
+mu_init = 1e-1 if args.bounds else 1e-4
 verbose = aligator.VerboseLevel.VERBOSE
 tol = 1e-8
 solver = aligator.SolverProxDDP(tol, mu_init, verbose=verbose)

@@ -68,7 +68,7 @@ public:
     /// Scale factor for the dual proximal penalty.
     Scalar mu_update_factor = 0.01;
     /// Constraints AL scaling
-    Scalar constraints_al_scale = 100.;
+    Scalar dyn_al_scale = 1e-3;
     /// Lower bound on AL parameter
     Scalar mu_lower_bound = 1e-8; //< Minimum possible penalty parameter.
   };
@@ -136,8 +136,6 @@ public:
   std::size_t max_al_iters = 100;      //< Maximum number of ALM iterations.
   uint rollout_max_iters;              //< Nonlinear rollout options
 
-  /// Callbacks
-  CallbackMap callbacks_;
   Workspace workspace_;
   Results results_;
   /// LQR subproblem solver
@@ -145,6 +143,8 @@ public:
   Filter filter_;
 
 private:
+  /// Callbacks
+  CallbackMap callbacks_;
   /// Number of threads
   std::size_t num_threads_ = 1;
   /// Dual proximal/ALM penalty parameter \f$\mu\f$
@@ -227,9 +227,7 @@ public:
   /// \{
 
   /// @brief    Add a callback to the solver instance.
-  void registerCallback(const std::string &name, CallbackPtr cb) {
-    callbacks_[name] = cb;
-  }
+  void registerCallback(const std::string &name, CallbackPtr cb);
 
   /// @brief    Remove all callbacks from the instance.
   void clearCallbacks() noexcept { callbacks_.clear(); }
@@ -243,7 +241,8 @@ public:
     }
     return keys;
   }
-  auto getCallback(const std::string &name) -> CallbackPtr {
+
+  CallbackPtr getCallback(const std::string &name) const {
     auto cb = callbacks_.find(name);
     if (cb != end(callbacks_)) {
       return cb->second;
@@ -266,10 +265,10 @@ public:
                           const std::vector<VectorXs> &lams,
                           const std::vector<VectorXs> &vs);
 
-  ALIGATOR_INLINE Scalar mudyn() const { return mu_penal_; }
-  ALIGATOR_INLINE Scalar mu() const {
-    return bcl_params.constraints_al_scale * mu_penal_;
+  ALIGATOR_INLINE Scalar mudyn() const {
+    return bcl_params.dyn_al_scale * mu_penal_;
   }
+  ALIGATOR_INLINE Scalar mu() const { return mu_penal_; }
   ALIGATOR_INLINE Scalar mu_inv() const { return 1. / mu(); }
 
   /// @brief Update primal-dual feedback gains (control, costate, path
@@ -278,13 +277,15 @@ public:
 
 protected:
   void updateTolsOnFailure() noexcept {
-    prim_tol_ = prim_tol0 * std::pow(mu_penal_, bcl_params.prim_alpha);
-    inner_tol_ = inner_tol0 * std::pow(mu_penal_, bcl_params.dual_alpha);
+    const Scalar arg = std::min(mu_penal_, 0.99);
+    prim_tol_ = prim_tol0 * std::pow(arg, bcl_params.prim_alpha);
+    inner_tol_ = inner_tol0 * std::pow(arg, bcl_params.dual_alpha);
   }
 
   void updateTolsOnSuccess() noexcept {
-    prim_tol_ = prim_tol_ * std::pow(mu_penal_, bcl_params.prim_beta);
-    inner_tol_ = inner_tol_ * std::pow(mu_penal_, bcl_params.dual_beta);
+    const Scalar arg = std::min(mu_penal_, 0.99);
+    prim_tol_ = prim_tol_ * std::pow(arg, bcl_params.prim_beta);
+    inner_tol_ = inner_tol_ * std::pow(arg, bcl_params.dual_beta);
   }
 
   /// Set dual proximal/ALM penalty parameter.
@@ -297,7 +298,7 @@ protected:
   inline void initializeRegularization() noexcept {
     if (preg_last_ == 0.) {
       // this is the 1st iteration
-      preg_ = reg_init;
+      preg_ = std::max(reg_init, reg_min);
     } else {
       // attempt decrease from last "good" value
       preg_ = std::max(reg_min, preg_last_ * reg_dec_k_);

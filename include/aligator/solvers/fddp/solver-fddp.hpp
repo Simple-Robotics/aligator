@@ -17,9 +17,6 @@
 
 #include <boost/unordered_map.hpp>
 
-/// @brief  A warning for the FDDP module.
-#define ALIGATOR_FDDP_WARNING(msg) ALIGATOR_WARNING("SolverFDDP", msg)
-
 namespace aligator {
 
 /**
@@ -175,7 +172,7 @@ public:
     }
     return keys;
   }
-  auto getCallback(const std::string &name) -> CallbackPtr {
+  CallbackPtr getCallback(const std::string &name) const {
     auto cb = callbacks_.find(name);
     if (cb != end(callbacks_)) {
       return cb->second;

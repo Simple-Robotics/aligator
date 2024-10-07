@@ -17,11 +17,11 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     xyz::polymorphic<UnaryFunction> init_constraint,
     const std::vector<xyz::polymorphic<StageModel>> &stages,
     xyz::polymorphic<CostAbstract> term_cost)
-    : init_condition_(init_constraint), stages_(stages), term_cost_(term_cost),
-      unone_(term_cost->nu) {
+    : init_constraint_(std::move(init_constraint)), stages_(stages),
+      term_cost_(std::move(term_cost)), unone_(term_cost_->nu) {
   unone_.setZero();
   checkStages();
-  init_state_error_ = &dynamic_cast<StateErrorResidual &>(*init_condition_);
+  init_state_error_ = &dynamic_cast<StateErrorResidual &>(*init_constraint_);
 }
 
 template <typename Scalar>
@@ -31,17 +31,18 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     xyz::polymorphic<CostAbstract> term_cost)
     : TrajOptProblemTpl(
           createStateError(x0, stages[0]->xspace_, stages[0]->nu()), stages,
-          term_cost) {
-  init_state_error_ = &dynamic_cast<StateErrorResidual &>(*init_condition_);
+          std::move(term_cost)) {
+  init_state_error_ = &dynamic_cast<StateErrorResidual &>(*init_constraint_);
 }
 
 template <typename Scalar>
 TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     xyz::polymorphic<UnaryFunction> init_constraint,
     xyz::polymorphic<CostAbstract> term_cost)
-    : init_condition_(init_constraint), term_cost_(term_cost),
-      unone_(term_cost->nu),
-      init_state_error_(&dynamic_cast<StateErrorResidual &>(*init_condition_)) {
+    : init_constraint_(std::move(init_constraint)),
+      term_cost_(std::move(term_cost)), unone_(term_cost_->nu),
+      init_state_error_(
+          &dynamic_cast<StateErrorResidual &>(*init_constraint_)) {
   unone_.setZero();
 }
 
@@ -49,7 +50,8 @@ template <typename Scalar>
 TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     const ConstVectorRef &x0, const int nu, xyz::polymorphic<Manifold> space,
     xyz::polymorphic<CostAbstract> term_cost)
-    : TrajOptProblemTpl(createStateError(x0, space, nu), term_cost) {}
+    : TrajOptProblemTpl(createStateError(x0, std::move(space), nu),
+                        std::move(term_cost)) {}
 
 template <typename Scalar>
 Scalar TrajOptProblemTpl<Scalar>::evaluate(
@@ -64,7 +66,7 @@ Scalar TrajOptProblemTpl<Scalar>::evaluate(
     ALIGATOR_RUNTIME_ERROR(fmt::format(
         "Wrong size for us (got {:d}, expected {:d})", us.size(), nsteps));
 
-  init_condition_->evaluate(xs[0], *prob_data.init_data);
+  init_constraint_->evaluate(xs[0], *prob_data.init_data);
 
   auto &sds = prob_data.stage_data;
 
@@ -100,7 +102,7 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
     ALIGATOR_RUNTIME_ERROR(fmt::format(
         "Wrong size for us (got {:d}, expected {:d})", us.size(), nsteps));
 
-  init_condition_->computeJacobians(xs[0], *prob_data.init_data);
+  init_constraint_->computeJacobians(xs[0], *prob_data.init_data);
 
   auto &sds = prob_data.stage_data;
 

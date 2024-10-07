@@ -20,7 +20,7 @@ struct LogColumn {
 };
 
 // log columns names and widths
-static const std::array<LogColumn, 11> BASIC_KEYS = {
+static const std::array<LogColumn, 12> BASIC_KEYS = {
     {{"iter", int_format, 5U},
      {"alpha", sci_format, 10U},
      {"inner_crit", sci_format, 10U},
@@ -28,6 +28,7 @@ static const std::array<LogColumn, 11> BASIC_KEYS = {
      {"dual_err", sci_format, 10U},
      {"preg", sci_format, 10U},
      {"dphi0", sci_format, 11U},
+     {"cost", sci_format, 11U},
      {"merit", sci_format, 11U},
      {"ΔM", sci_format, 11U},
      {"aliter", int_format, 7U},

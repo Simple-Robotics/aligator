@@ -24,11 +24,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Separate centroidal wrench cone and multibody wrench cone costs
 - Add a contact_name item to the CostMap structure
 - Re-define ALM params struct internally to aligator ([#219](https://github.com/Simple-Robotics/aligator/pull/219))
+- SolverProxDDP: add dynamics AL parameter scaling
+- Rename `has_dyn_model` -> `hasDynModel` and `is_explicit` -> `isExplicit`
+- Add `cost` (trajectory cost) column to logger
+- `TrajOptProblem`: rename member `init_condition_` to `init_constraint_` (fitting with ctor argument name)
 
 ### Removed
 
 - Remove constraint scalers (including header `core/alm-weights.hpp`) from ProxDDP algorithm ([#214](https://github.com/Simple-Robotics/aligator/pull/214))
 - SolverProxDDP: remove solver parameter `rho_` ([#221](https://github.com/Simple-Robotics/aligator/pull/221))
+- Remove deprecated functions `ConstraintStackTpl::getDims` and `StageModelTpl::dyn_model`
+- Remove `CallbackBaseTpl::post_linesearch_call(boost::any)`
 
 ### Fixed
 

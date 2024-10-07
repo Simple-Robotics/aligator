@@ -87,10 +87,7 @@ public:
   /// Whether the stage's dynamics model can be accessed.
   /// This boolean allows flexibility in solvers when dealing
   /// with different frontends e.g. Crocoddyl's API.
-  virtual bool has_dyn_model() const { return true; }
-  ALIGATOR_DEPRECATED virtual const Dynamics &dyn_model() const {
-    return *dynamics_;
-  }
+  virtual bool hasDynModel() const { return true; }
 
   int nx1() const { return xspace_->nx(); }
   int ndx1() const { return xspace_->ndx(); }

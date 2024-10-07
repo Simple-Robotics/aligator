@@ -52,7 +52,7 @@ void exposeProblem() {
                     "Number of stages in the problem.CostPtr")
       .add_property("x0_init", &TrajOptProblem::getInitState,
                     &TrajOptProblem::setInitState, "Initial state.")
-      .add_property("init_constraint", &TrajOptProblem::init_condition_,
+      .add_property("init_constraint", &TrajOptProblem::init_constraint_,
                     "Get initial state constraint.")
       .def("addTerminalConstraint", &TrajOptProblem::addTerminalConstraint,
            ("self"_a, "constraint"), "Add a terminal constraint.")

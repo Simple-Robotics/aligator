@@ -27,7 +27,7 @@ public:
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using ManifoldPtr = xyz::polymorphic<Manifold>;
 
-  bool is_explicit() const { return true; }
+  bool isExplicit() const { return true; }
 
   /// Constructor requires providing the next state's manifold.
   ExplicitDynamicsModelTpl(const ManifoldPtr &space, const int nu);

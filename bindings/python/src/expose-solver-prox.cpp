@@ -122,8 +122,6 @@ void exposeProxDDP() {
                          "Minimum regularization value.")
           .def_readwrite("reg_max", &SolverType::reg_max,
                          "Maximum regularization value.")
-          .def_readwrite("preg", &SolverType::preg_,
-                         "Primal regularization parameter.")
           .def_readwrite("lq_print_detailed", &SolverType::lq_print_detailed)
           .def("updateLQSubproblem", &SolverType::updateLQSubproblem, "self"_a)
           .def("computeCriterion", &SolverType::computeCriterion, "self"_a,
@@ -155,7 +153,7 @@ void exposeProxDDP() {
         ._c(dual_alpha)
         ._c(dual_beta)
         ._c(mu_update_factor)
-        ._c(constraints_al_scale)
+        ._c(dyn_al_scale)
         ._c(mu_lower_bound);
 #undef _c
   }
