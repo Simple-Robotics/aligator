@@ -5,18 +5,18 @@
 #include <cassert>
 
 namespace aligator {
+static constexpr char fstr[] = "{:─^{}s}";
 Logger::Logger() {}
 
 void Logger::printHeadline() {
   if (!active)
     return;
-  static constexpr char fstr[] = "{:^{}s}";
   std::vector<std::string> formattedCols;
   for (const auto name : m_colNames) {
     const auto spec = m_colSpecs[name];
-    formattedCols.push_back(fmt::format(fstr, name, spec.first));
+    formattedCols.push_back(fmt::format(fstr, name, spec.first + 1));
   }
-  fmt::print(fmt::emphasis::bold, "{}", fmt::join(formattedCols, join_str));
+  fmt::print(fmt::emphasis::bold, "{}", fmt::join(formattedCols, "┬"));
   fmt::print("\n");
 }
 
@@ -28,7 +28,7 @@ void Logger::log() {
     auto line = m_currentLine[name];
     cols.push_back(line);
   }
-  fmt::print("{}\n", fmt::join(cols, join_str));
+  fmt::print("{}\n", fmt::join(cols, "│"));
 }
 
 void Logger::reset() {
@@ -40,10 +40,10 @@ void Logger::reset() {
 void Logger::finish(bool conv) {
   if (!active)
     return;
-  if (conv)
-    fmt::print(fmt::fg(fmt::color::dodger_blue), "Successfully converged.");
-  else
-    fmt::print(fmt::fg(fmt::color::red), "Convergence failure.");
+
+  auto ts = fmt::fg(conv ? fmt::color::dodger_blue : fmt::color::red);
+  const char *msg = conv ? "Successfully converged." : "Convergence failure.";
+  fmt::print(ts, msg);
   fmt::print("\n");
 }
 
