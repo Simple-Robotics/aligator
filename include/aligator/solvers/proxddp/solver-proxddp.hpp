@@ -230,7 +230,7 @@ public:
   void registerCallback(const std::string &name, CallbackPtr cb);
 
   /// @brief    Remove all callbacks from the instance.
-  inline void clearCallbacks() noexcept { callbacks_.clear(); }
+  void clearCallbacks() noexcept { callbacks_.clear(); }
 
   const CallbackMap &getCallbacks() const { return callbacks_; }
   void removeCallback(const std::string &name) { callbacks_.erase(name); }
