@@ -38,12 +38,13 @@ void exposeDynamicsBase() {
       "to the tangent bundle of the next state variable x'.",
       bp::init<PolyManifold, int>(("self"_a, "space", "nu")))
       .def(bp::init<PolyManifold, int, PolyManifold>(
-          bp::args("self", "space", "nu", "space2")))
+          bp::args("self", "space", "nu", "space_next")))
       .def_readonly("space", &DynamicsModel::space_)
       .def_readonly("space_next", &DynamicsModel::space_next_)
       .add_property("nx1", &DynamicsModel::nx1)
       .add_property("nx2", &DynamicsModel::nx2)
       .def_readonly("ndx1", &DynamicsModel::ndx1)
+      .def_readonly("nu", &DynamicsModel::nu)
       .def_readonly("ndx2", &DynamicsModel::ndx2)
       .add_property("isExplicit", &DynamicsModel::isExplicit,
                     "Return whether the current model is explicit.")

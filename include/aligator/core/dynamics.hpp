@@ -23,11 +23,13 @@ template <typename _Scalar> struct DynamicsModelTpl {
 
   /// State space for the input.
   xyz::polymorphic<Manifold> space_;
-  /// Control dimension
   /// State space for the output of this dynamics model.
   xyz::polymorphic<Manifold> space_next_;
+  /// State space dimension
   const int ndx1;
+  /// Control dimension
   const int nu;
+  /// Next state space dimension
   const int ndx2;
 
   /// @copybrief space_
