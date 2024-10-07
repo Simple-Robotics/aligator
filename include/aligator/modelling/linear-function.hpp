@@ -27,7 +27,7 @@ template <typename Scalar> struct LinearFunctionTpl : StageFunctionTpl<Scalar> {
                     const ConstVectorRef d)
       : Base((int)A.cols(), (int)B.cols(), (int)d.rows()), A_(A), B_(B), d_(d) {
     assert((A_.rows() == d_.rows()) && (B_.rows() == d_.rows()) &&
-           &&"Number of rows not consistent.");
+           "Number of rows not consistent.");
   }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
