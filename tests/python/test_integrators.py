@@ -7,8 +7,8 @@ from utils import create_linear_ode, create_multibody_ode, infNorm
 EPSILON = 1e-5
 
 
-def function_finite_difference(
-    fun: aligator.StageFunction,
+def dynamics_finite_difference(
+    fun: aligator.dynamics.DynamicsModel,
     space: manifolds.ManifoldAbstract,
     x0,
     u0,
@@ -16,14 +16,14 @@ def function_finite_difference(
     eps=EPSILON,
 ):
     """Use finite differences to compute Jacobians
-    of a `aligator.StageFunction`.
+    of a `aligator.dynamics.DynamicsModel`.
 
     TODO: move to a test utils file
     """
     if y0 is None:
         y0 = x0
     data = fun.createData()
-    Jx_nd = np.zeros((fun.nr, fun.ndx1))
+    Jx_nd = np.zeros((fun.ndx2, fun.ndx1))
     ei = np.zeros(fun.ndx1)
     fun.evaluate(x0, u0, y0, data)
     r0 = data.value.copy()
@@ -35,7 +35,7 @@ def function_finite_difference(
         ei[i] = 0.0
 
     ei = np.zeros(fun.nu)
-    Ju_nd = np.zeros((fun.nr, fun.nu))
+    Ju_nd = np.zeros((fun.ndx2, fun.nu))
     for i in range(fun.nu):
         ei[i] = eps
         fun.evaluate(x0, u0 + ei, y0, data)
@@ -44,7 +44,7 @@ def function_finite_difference(
 
     ei = np.zeros(fun.ndx2)
     yplus = y0.copy()
-    Jy_nd = np.zeros((fun.nr, fun.ndx2))
+    Jy_nd = np.zeros((fun.ndx2, fun.ndx2))
     for i in range(fun.ndx2):
         ei[i] = eps
         space.integrate(y0, ei, yplus)
@@ -53,6 +53,41 @@ def function_finite_difference(
         ei[i] = 0.0
 
     return Jx_nd, Ju_nd, Jy_nd
+
+
+def function_finite_difference(
+    fun: aligator.StageFunction,
+    space: manifolds.ManifoldAbstract,
+    x0,
+    u0,
+    eps=EPSILON,
+):
+    """Use finite differences to compute Jacobians
+    of a `aligator.StageFunction`.
+
+    TODO: move to a test utils file
+    """
+    data = fun.createData()
+    Jx_nd = np.zeros((fun.nr, fun.ndx1))
+    ei = np.zeros(fun.ndx1)
+    fun.evaluate(x0, u0, data)
+    r0 = data.value.copy()
+    for i in range(fun.ndx1):
+        ei[i] = eps
+        xplus = space.integrate(x0, ei)
+        fun.evaluate(xplus, u0, data)
+        Jx_nd[:, i] = (data.value - r0) / eps
+        ei[i] = 0.0
+
+    ei = np.zeros(fun.nu)
+    Ju_nd = np.zeros((fun.nr, fun.nu))
+    for i in range(fun.nu):
+        ei[i] = eps
+        fun.evaluate(x0, u0 + ei, data)
+        Ju_nd[:, i] = (data.value - r0) / eps
+        ei[i] = 0.0
+
+    return Jx_nd, Ju_nd
 
 
 def finite_difference_explicit_dyn(dyn: dynamics.IntegratorAbstract, x0, u0, eps):
@@ -129,7 +164,7 @@ def test_implicit_integrator(
     dyn.evaluate(x, u, x, data)
     assert isinstance(data, dynamics.IntegratorData)
 
-    Jx_nd, Ju_nd, Jy_nd = function_finite_difference(dyn, dyn.space, x, u, eps=EPSILON)
+    Jx_nd, Ju_nd, Jy_nd = dynamics_finite_difference(dyn, dyn.space, x, u, eps=EPSILON)
 
     dyn.evaluate(x, u, x, data)
     dyn.computeJacobians(x, u, x, data)

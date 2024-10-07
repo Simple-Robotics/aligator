@@ -63,19 +63,19 @@ def test_frame_placement():
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
-    fun_fd.evaluate(x0, u0, x0, fdata2)
+    fun_fd.evaluate(x0, u0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
-    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    fun_fd.computeJacobians(x0, u0, fdata2)
     J_fd = fdata2.Jx[:]
     assert fdata.Jx.shape == J_fd.shape
 
     for i in range(100):
         x0 = sample_gauss(space)
-        fun.evaluate(x0, u0, x0, fdata)
-        fun.computeJacobians(x0, u0, x0, fdata)
-        fun_fd.evaluate(x0, u0, x0, fdata2)
-        fun_fd.computeJacobians(x0, u0, x0, fdata2)
+        fun.evaluate(x0, u0, fdata)
+        fun.computeJacobians(x0, u0, fdata)
+        fun_fd.evaluate(x0, u0, fdata2)
+        fun_fd.computeJacobians(x0, u0, fdata2)
         assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
 
 
@@ -99,16 +99,16 @@ def test_frame_translation():
     assert fr_id1 == fun.frame_id
 
     fdata = fun.createData()
-    fun.evaluate(x0, u0, x0, fdata)
+    fun.evaluate(x0, u0, fdata)
 
     assert np.allclose(fdata.value, 0.0)
 
-    fun.computeJacobians(x0, u0, x0, fdata)
+    fun.computeJacobians(x0, u0, fdata)
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
-    fun_fd.evaluate(x0, u0, x0, fdata2)
-    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    fun_fd.evaluate(x0, u0, fdata2)
+    fun_fd.computeJacobians(x0, u0, fdata2)
     # just check dims for now
     assert fdata.Jx.shape == fdata2.Jx.shape
 
@@ -116,8 +116,8 @@ def test_frame_translation():
         x0 = sample_gauss(space)
         fun.evaluate(x0, fdata)
         fun.computeJacobians(x0, fdata)
-        fun_fd.evaluate(x0, u0, x0, fdata2)
-        fun_fd.computeJacobians(x0, u0, x0, fdata2)
+        fun_fd.evaluate(x0, u0, fdata2)
+        fun_fd.computeJacobians(x0, u0, fdata2)
         assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
 
 
@@ -149,16 +149,16 @@ def test_frame_velocity():
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
-    fun_fd.evaluate(x0, u0, x0, fdata2)
-    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    fun_fd.evaluate(x0, u0, fdata2)
+    fun_fd.computeJacobians(x0, u0, fdata2)
     assert fdata.Jx.shape == fdata2.Jx.shape
 
     for i in range(100):
         x0 = sample_gauss(space)
         fun.evaluate(x0, fdata)
         fun.computeJacobians(x0, fdata)
-        fun_fd.evaluate(x0, u0, x0, fdata2)
-        fun_fd.computeJacobians(x0, u0, x0, fdata2)
+        fun_fd.evaluate(x0, u0, fdata2)
+        fun_fd.computeJacobians(x0, u0, fdata2)
         assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
 
 
