@@ -105,7 +105,7 @@ template <typename _Scalar> struct DynamicsDataTpl {
   MatrixXs Huy_;
   MatrixXs Hyy_;
 
-  DynamicsDataTpl(const DynamicsModelTpl<Scalar> &model);
+  explicit DynamicsDataTpl(const DynamicsModelTpl<Scalar> &model);
   DynamicsDataTpl(const int ndx1, const int nu, const int ndx2);
   virtual ~DynamicsDataTpl() = default;
 };
