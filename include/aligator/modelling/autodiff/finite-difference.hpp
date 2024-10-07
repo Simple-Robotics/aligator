@@ -28,7 +28,7 @@ template <typename Scalar> struct finite_diff_traits<Scalar, StageFunctionTpl> {
 
     template <typename U>
     Data(U const &model)
-        : SFD(model.func_), data_0(model.func_->createData()),
+        : SFD(*model.func_), data_0(model.func_->createData()),
           data_1(model.func_->createData()), dx(ndx1), du(nu), xp(model.nx1),
           up(model.nu) {
       dx.setZero();
@@ -56,7 +56,7 @@ template <typename Scalar> struct finite_diff_traits<Scalar, DynamicsModelTpl> {
 
     template <typename U>
     Data(U const &model)
-        : DD(model.func_), data_0(model.func_->createData()),
+        : DD(*model.func_), data_0(model.func_->createData()),
           data_1(model.func_->createData()), dx(ndx1), du(nu), dy(ndx2),
           xp(model.nx1), up(model.nu), yp(model.nx2) {
       dx.setZero();
@@ -83,6 +83,8 @@ struct finite_difference_impl : finite_diff_traits<_Scalar, _BaseTpl> {
   using Base = _BaseTpl<Scalar>;
   using BaseData = typename Base::Data;
   using Manifold = ManifoldAbstractTpl<Scalar>;
+
+  static_assert(std::is_base_of_v<BaseData, Data>);
 
   xyz::polymorphic<Manifold> space_;
   xyz::polymorphic<Base> func_;
@@ -111,6 +113,8 @@ struct finite_difference_impl : finite_diff_traits<_Scalar, _BaseTpl> {
   /// null.
   void evaluateImpl(const Args &args, BaseData &data) const {
     Data &d = static_cast<Data &>(data);
+    assert(d.data_0);
+    assert(d.data_1);
     if constexpr (IsDynamics) {
       func_->evaluate(args.x, args.u, args.y, *d.data_0);
     } else {
@@ -121,6 +125,8 @@ struct finite_difference_impl : finite_diff_traits<_Scalar, _BaseTpl> {
 
   void computeJacobiansImpl(const Args &args, BaseData &data) const {
     Data &d = static_cast<Data &>(data);
+    assert(d.data_0);
+    assert(d.data_1);
 
     VectorXs &v0 = d.data_0->value_;
     VectorXs &vp = d.data_1->value_;
@@ -166,7 +172,7 @@ struct finite_difference_impl : finite_diff_traits<_Scalar, _BaseTpl> {
                                         const ConstVectorRef &,
                                         BaseData &) const {}
 
-  shared_ptr<BaseData> createData() const {
+  shared_ptr<BaseData> createDataImpl() const {
     return std::make_shared<Data>(*this);
   }
 };
@@ -207,6 +213,9 @@ struct FiniteDifferenceHelper : StageFunctionTpl<_Scalar> {
     impl.computeJacobiansImpl({x, u}, data);
   }
 
+  shared_ptr<BaseData> createData() const { return impl.createDataImpl(); }
+
+private:
   Impl impl;
 };
 
@@ -237,6 +246,9 @@ struct DynamicsFiniteDifferenceHelper : DynamicsModelTpl<_Scalar> {
     impl.computeJacobiansImpl({x, u, xn}, data);
   }
 
+  shared_ptr<BaseData> createData() const { return impl.createDataImpl(); }
+
+private:
   Impl impl;
 };
 
