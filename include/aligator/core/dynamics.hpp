@@ -6,15 +6,11 @@
 #include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 
 namespace aligator {
-/**
- * @brief   Dynamics model: describes system dynamics through an implicit
- * relation \f$f(x,u,x') = 0\f$.
- *
- * @details A dynamics model is a function  \f$f(x,u,x')\f$ that must be set to
- * zero, describing the dynamics mapping \f$(x, u) \mapsto x'\f$.
- *          DynamicsModelTpl::nr is assumed to be equal to
- * DynamicsModelTpl::ndx2.
- */
+/// @brief   Dynamics model: describes system dynamics through an implicit
+/// relation \f$f(x,u,x') = 0\f$.
+///
+/// @details A dynamics model is a function  \f$f(x,u,x')\f$ that must be set to
+/// zero, describing the dynamics mapping \f$(x, u) \mapsto x'\f$.
 template <typename _Scalar> struct DynamicsModelTpl {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
@@ -42,23 +38,21 @@ template <typename _Scalar> struct DynamicsModelTpl {
   inline int nx1() const { return space_->nx(); }
   inline int nx2() const { return space_next_->nx(); }
 
-  /**
-   * @brief  Constructor for dynamics.
-   *
-   * @param   space State space.
-   * @param   nu    Control dimension
-   * @param   ndx2  Next state space dimension.
-   */
+  /// @brief  Constructor for dynamics.
+  ///
+  /// @param   space State space.
+  /// @param   nu    Control dimension
+  /// @param   ndx2  Next state space dimension.
+  ///
   DynamicsModelTpl(xyz::polymorphic<Manifold> space, const int nu);
 
-  /**
-   * @copybrief DynamicsModelTpl This constructor assumes same dimension for the
-   * current and next state.
-   *
-   * @param   space      State space for the current node.
-   * @param   nu         Control dimension
-   * @param   space_next State space for the next node.
-   */
+  /// @copybrief DynamicsModelTpl This constructor assumes same dimension for
+  /// the current and next state.
+  ///
+  /// @param   space      State space for the current node.
+  /// @param   nu         Control dimension
+  /// @param   space_next State space for the next node.
+  ///
   DynamicsModelTpl(xyz::polymorphic<Manifold> space, const int nu,
                    xyz::polymorphic<Manifold> space_next);
 
