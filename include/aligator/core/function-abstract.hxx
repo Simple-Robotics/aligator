@@ -38,6 +38,11 @@ StageFunctionDataTpl<Scalar>::StageFunctionDataTpl(const int ndx1, const int nu,
   vhp_buffer_.setZero();
 }
 
+template <typename Scalar>
+StageFunctionDataTpl<Scalar>::StageFunctionDataTpl(
+    const StageFunctionTpl<Scalar> &model)
+    : StageFunctionDataTpl(model.ndx1, model.nu, model.nr) {}
+
 template <typename T>
 std::ostream &operator<<(std::ostream &oss,
                          const StageFunctionDataTpl<T> &self) {

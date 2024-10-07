@@ -100,8 +100,7 @@ template <typename _Scalar> struct StageFunctionDataTpl {
 
   /// @brief Default constructor.
   StageFunctionDataTpl(const int ndx, const int nu, const int nr);
-  StageFunctionDataTpl(const StageFunctionTpl<Scalar> &model)
-      : StageFunctionDataTpl(model.ndx1, model.nu, model.nr) {}
+  explicit StageFunctionDataTpl(const StageFunctionTpl<Scalar> &model);
   virtual ~StageFunctionDataTpl() = default;
 };
 
