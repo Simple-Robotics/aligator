@@ -7,9 +7,6 @@
 #include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 #include <boost/test/unit_test.hpp>
 
-#include <fmt/format.h>
-#include <fmt/ostream.h>
-
 using namespace aligator;
 using context::SolverProxDDP;
 
@@ -82,10 +79,7 @@ struct MyFixture {
 BOOST_AUTO_TEST_CASE(test_cycling) {
   MyFixture f;
 
-  auto nu = f.nu;
   auto nsteps = f.problem.numSteps();
-  auto &space = f.space;
-
   double tol = 1e-6;
   double mu_init = 1e-8;
   SolverProxDDP ddp(tol, mu_init);
