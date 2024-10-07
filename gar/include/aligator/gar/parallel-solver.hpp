@@ -83,6 +83,7 @@ public:
                VectorOfVectors &lbdas,
                const std::optional<ConstVectorRef> & = std::nullopt) const;
 
+  void cycleAppend(const KnotType &knot);
   VectorRef getFeedforward(size_t i) { return datas[i].ff.matrix(); }
   RowMatrixRef getFeedback(size_t i) { return datas[i].fb.matrix(); }
 

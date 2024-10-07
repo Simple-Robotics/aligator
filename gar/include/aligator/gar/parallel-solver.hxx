@@ -197,12 +197,32 @@ bool ParallelRiccatiSolver<Scalar>::forward(
 }
 
 template <typename Scalar>
+void ParallelRiccatiSolver<Scalar>::cycleAppend(const KnotType &knot) {
+  rotate_vec_left(datas, 0, 1);
+  datas[problem_->horizon() - 1] =
+      StageFactor<Scalar>(knot.nx, knot.nu, knot.nc, knot.nx2, knot.nth);
+  rotate_vec_left(condensedKktSystem.subdiagonal);
+  rotate_vec_left(condensedKktSystem.diagonal);
+  rotate_vec_left(condensedKktSystem.superdiagonal);
+  rotate_vec_left(condensedFacs.diagonalFacs);
+  rotate_vec_left(condensedFacs.upFacs);
+  rotate_vec_left(condensedFacs.ldlt);
+
+  auto [i0, i1] = get_work(problem_->horizon(), numThreads - 2, numThreads);
+  int dim0 = problem_->stages[i0].nx;
+  int dim1 = problem_->stages[i1 - 1].nx;
+  condensedKktSystem.subdiagonal.back() = Eigen::MatrixXd::Zero(dim1, dim0);
+  condensedKktSystem.diagonal.back() = Eigen::MatrixXd::Zero(dim1, dim1);
+  condensedKktSystem.diagonal.back() = Eigen::MatrixXd::Zero(dim0, dim1);
+  condensedFacs.diagonalFacs.back() = Eigen::MatrixXd::Zero(dim1, dim1);
+  condensedFacs.upFacs.back() = Eigen::MatrixXd::Zero(dim1, dim1);
+  condensedFacs.ldlt.back() = Eigen::BunchKaufman<MatrixXs>(dim1);
+};
+
+template <typename Scalar>
 void ParallelRiccatiSolver<Scalar>::initializeTridiagSystem(
     const std::vector<long> &dims) {
   ALIGATOR_TRACY_ZONE_SCOPED;
-  std::vector<MatrixXs> subdiagonal;
-  std::vector<MatrixXs> diagonal;
-  std::vector<MatrixXs> superdiagonal;
 
   condensedKktSystem.subdiagonal.reserve(dims.size() - 1);
   condensedKktSystem.diagonal.reserve(dims.size());

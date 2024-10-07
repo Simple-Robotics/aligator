@@ -244,4 +244,26 @@ bool RiccatiSolverDense<Scalar>::forward(
   }
   return true;
 }
+
+template <typename Scalar>
+void RiccatiSolverDense<Scalar>::cycleAppend(const KnotType &knot) {
+  auto N = (uint)problem_->horizon();
+
+  rotate_vec_left(datas, 0, 1);
+  datas[N - 1] = FactorData(init_factor(knot));
+  rotate_vec_left(Pxx, 0, 1);
+  rotate_vec_left(Pxt);
+  rotate_vec_left(Ptt, 0, 1);
+  rotate_vec_left(px, 0, 1);
+  rotate_vec_left(pt, 0, 1);
+
+  uint nx = knot.nx;
+  uint nth = knot.nth;
+  Pxx[N - 1].setZero(nx, nx);
+  Pxt[N - 1].setZero(nx, nth);
+  Ptt[N - 1].setZero(nth, nth);
+  px[N - 1].setZero(nx);
+  pt[N - 1].setZero(nth);
+};
+
 } // namespace aligator::gar
