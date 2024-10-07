@@ -62,8 +62,8 @@ def test_composite_cost():
     fun = aligator.StateErrorResidual(space, nu, target)
     # for debug
     fd = fun.createData()
-    fun.evaluate(x0, u0, x0, fd)
-    fun.computeJacobians(x0, u0, x0, fd)
+    fun.evaluate(x0, u0, fd)
+    fun.computeJacobians(x0, u0, fd)
 
     # costs
 

@@ -64,19 +64,19 @@ def test_com_translation():
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
-    fun_fd.evaluate(x0, u0, x0, fdata2)
+    fun_fd.evaluate(x0, u0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
-    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    fun_fd.computeJacobians(x0, u0, fdata2)
     J_fd = fdata2.Jx
     assert fdata.Jx.shape == J_fd.shape
 
     for i in range(100):
         x, d, x0 = sample_gauss(space)
-        fun.evaluate(x0, u0, x0, fdata)
-        fun.computeJacobians(x0, u0, x0, fdata)
-        fun_fd.evaluate(x0, u0, x0, fdata2)
-        fun_fd.computeJacobians(x0, u0, x0, fdata2)
+        fun.evaluate(x0, u0, fdata)
+        fun.computeJacobians(x0, u0, fdata)
+        fun_fd.evaluate(x0, u0, fdata2)
+        fun_fd.computeJacobians(x0, u0, fdata2)
         assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
 
 
@@ -95,19 +95,19 @@ def test_linear_momentum():
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
-    fun_fd.evaluate(x0, u0, x0, fdata2)
+    fun_fd.evaluate(x0, u0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
-    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    fun_fd.computeJacobians(x0, u0, fdata2)
     J_fd = fdata2.Jx
     assert fdata.Jx.shape == J_fd.shape
 
     for i in range(100):
         x, d, x0 = sample_gauss(space)
-        fun.evaluate(x0, u0, x0, fdata)
-        fun.computeJacobians(x0, u0, x0, fdata)
-        fun_fd.evaluate(x0, u0, x0, fdata2)
-        fun_fd.computeJacobians(x0, u0, x0, fdata2)
+        fun.evaluate(x0, u0, fdata)
+        fun.computeJacobians(x0, u0, fdata)
+        fun_fd.evaluate(x0, u0, fdata2)
+        fun_fd.computeJacobians(x0, u0, fdata2)
         assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
 
 
@@ -126,19 +126,19 @@ def test_angular_momentum():
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
-    fun_fd.evaluate(x0, u0, x0, fdata2)
+    fun_fd.evaluate(x0, u0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
-    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    fun_fd.computeJacobians(x0, u0, fdata2)
     J_fd = fdata2.Jx
     assert fdata.Jx.shape == J_fd.shape
 
     for i in range(100):
         x, d, x0 = sample_gauss(space)
-        fun.evaluate(x0, u0, x0, fdata)
-        fun.computeJacobians(x0, u0, x0, fdata)
-        fun_fd.evaluate(x0, u0, x0, fdata2)
-        fun_fd.computeJacobians(x0, u0, x0, fdata2)
+        fun.evaluate(x0, u0, fdata)
+        fun.computeJacobians(x0, u0, fdata)
+        fun_fd.evaluate(x0, u0, fdata2)
+        fun_fd.computeJacobians(x0, u0, fdata2)
         assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
 
 
@@ -162,7 +162,7 @@ def test_acceleration():
         ndx, nu, mass, gravity, contact_map, force_size
     )
     fdata = fun.createData()
-    fun.evaluate(x0, u0, x0, fdata)
+    fun.evaluate(x0, u0, fdata)
 
     comddot = np.zeros(3)
     for i in range(nk):
@@ -176,10 +176,10 @@ def test_acceleration():
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
-    fun_fd.evaluate(x0, u0, x0, fdata2)
+    fun_fd.evaluate(x0, u0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
-    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    fun_fd.computeJacobians(x0, u0, fdata2)
     J_fd = fdata2.Jx
     J_fd_u = fdata2.Ju
     assert fdata.Jx.shape == J_fd.shape
@@ -188,10 +188,10 @@ def test_acceleration():
     for i in range(100):
         du = np.random.randn(nu) * 0.1
         u1 = u0 + du
-        fun.evaluate(x0, u1, x0, fdata)
-        fun.computeJacobians(x0, u1, x0, fdata)
-        fun_fd.evaluate(x0, u1, x0, fdata2)
-        fun_fd.computeJacobians(x0, u1, x0, fdata2)
+        fun.evaluate(x0, u1, fdata)
+        fun.computeJacobians(x0, u1, fdata)
+        fun_fd.evaluate(x0, u1, fdata2)
+        fun_fd.computeJacobians(x0, u1, fdata2)
         assert np.allclose(fdata.Ju, fdata2.Ju, THRESH)
 
     force_size = 6
@@ -202,7 +202,7 @@ def test_acceleration():
         ndx, nu, mass, gravity, contact_map, force_size
     )
     fdata = fun.createData()
-    fun.evaluate(x0, u0, x0, fdata)
+    fun.evaluate(x0, u0, fdata)
 
     comddot = np.zeros(3)
     for i in range(nk):
@@ -216,10 +216,10 @@ def test_acceleration():
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
-    fun_fd.evaluate(x0, u0, x0, fdata2)
+    fun_fd.evaluate(x0, u0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
-    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    fun_fd.computeJacobians(x0, u0, fdata2)
     J_fd = fdata2.Jx
     J_fd_u = fdata2.Ju
     assert fdata.Jx.shape == J_fd.shape
@@ -228,10 +228,10 @@ def test_acceleration():
     for i in range(100):
         du = np.random.randn(nu) * 0.1
         u1 = u0 + du
-        fun.evaluate(x0, u1, x0, fdata)
-        fun.computeJacobians(x0, u1, x0, fdata)
-        fun_fd.evaluate(x0, u1, x0, fdata2)
-        fun_fd.computeJacobians(x0, u1, x0, fdata2)
+        fun.evaluate(x0, u1, fdata)
+        fun.computeJacobians(x0, u1, fdata)
+        fun_fd.evaluate(x0, u1, fdata2)
+        fun_fd.computeJacobians(x0, u1, fdata2)
         assert np.allclose(fdata.Ju, fdata2.Ju, THRESH)
 
 
@@ -246,7 +246,7 @@ def test_friction_cone():
     fun = aligator.FrictionConeResidual(ndx, nu, k, mu, epsilon)
 
     fdata = fun.createData()
-    fun.evaluate(x0, u0, x0, fdata)
+    fun.evaluate(x0, u0, fdata)
     fcone = np.zeros(2)
     fcone[0] = epsilon - u0[k * 3 + 2]
     fcone[1] = -(mu**2) * u0[k * 3 + 2] ** 2 + u0[k * 3] ** 2 + u0[k * 3 + 1] ** 2
@@ -255,10 +255,10 @@ def test_friction_cone():
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
-    fun_fd.evaluate(x0, u0, x0, fdata2)
+    fun_fd.evaluate(x0, u0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
-    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    fun_fd.computeJacobians(x0, u0, fdata2)
     J_fd = fdata2.Jx
     J_fd_u = fdata2.Ju
     assert fdata.Jx.shape == J_fd.shape
@@ -267,10 +267,10 @@ def test_friction_cone():
     for i in range(100):
         du = np.random.randn(nu) * sample_factor
         u1 = u0 + du
-        fun.evaluate(x0, u1, x0, fdata)
-        fun.computeJacobians(x0, u1, x0, fdata)
-        fun_fd.evaluate(x0, u1, x0, fdata2)
-        fun_fd.computeJacobians(x0, u1, x0, fdata2)
+        fun.evaluate(x0, u1, fdata)
+        fun.computeJacobians(x0, u1, fdata)
+        fun_fd.evaluate(x0, u1, fdata2)
+        fun_fd.computeJacobians(x0, u1, fdata2)
         assert np.allclose(fdata.Ju, fdata2.Ju, THRESH)
 
 
@@ -287,13 +287,13 @@ def test_wrench_cone():
     fun = aligator.CentroidalWrenchConeResidual(ndx, nu, k, mu, L, W)
     fdata = fun.createData()
 
-    fun.evaluate(x0, u0, x0, fdata)
+    fun.evaluate(x0, u0, fdata)
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
-    fun_fd.evaluate(x0, u0, x0, fdata2)
+    fun_fd.evaluate(x0, u0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
-    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    fun_fd.computeJacobians(x0, u0, fdata2)
     J_fd = fdata2.Jx
     J_fd_u = fdata2.Ju
     assert fdata.Jx.shape == J_fd.shape
@@ -302,10 +302,10 @@ def test_wrench_cone():
     for i in range(100):
         du = np.random.randn(nu) * sample_factor
         u1 = u0 + du
-        fun.evaluate(x0, u1, x0, fdata)
-        fun.computeJacobians(x0, u1, x0, fdata)
-        fun_fd.evaluate(x0, u1, x0, fdata2)
-        fun_fd.computeJacobians(x0, u1, x0, fdata2)
+        fun.evaluate(x0, u1, fdata)
+        fun.computeJacobians(x0, u1, fdata)
+        fun_fd.evaluate(x0, u1, fdata2)
+        fun_fd.computeJacobians(x0, u1, fdata2)
         assert np.allclose(fdata.Ju, fdata2.Ju, THRESH)
 
 
@@ -330,7 +330,7 @@ def test_angular_acceleration():
     )
     fdata = fun.createData()
 
-    fun.evaluate(x0, u0, x0, fdata)
+    fun.evaluate(x0, u0, fdata)
 
     Ldot = np.zeros(3)
     for i in range(nk):
@@ -341,10 +341,10 @@ def test_angular_acceleration():
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
-    fun_fd.evaluate(x0, u0, x0, fdata2)
+    fun_fd.evaluate(x0, u0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
-    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    fun_fd.computeJacobians(x0, u0, fdata2)
     J_fd = fdata2.Jx
     J_fd_u = fdata2.Ju
     assert fdata.Jx.shape == J_fd.shape
@@ -354,10 +354,10 @@ def test_angular_acceleration():
         du = np.random.randn(nu) * sample_factor
         u1 = u0 + du
         x, d, x0 = sample_gauss(space)
-        fun.evaluate(x0, u1, x0, fdata)
-        fun.computeJacobians(x0, u1, x0, fdata)
-        fun_fd.evaluate(x0, u1, x0, fdata2)
-        fun_fd.computeJacobians(x0, u1, x0, fdata2)
+        fun.evaluate(x0, u1, fdata)
+        fun.computeJacobians(x0, u1, fdata)
+        fun_fd.evaluate(x0, u1, fdata2)
+        fun_fd.computeJacobians(x0, u1, fdata2)
         assert np.allclose(fdata.Ju, fdata2.Ju, THRESH)
         assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
 
@@ -370,7 +370,7 @@ def test_angular_acceleration():
     )
     fdata = fun.createData()
 
-    fun.evaluate(x0, u0, x0, fdata)
+    fun.evaluate(x0, u0, fdata)
 
     Ldot = np.zeros(3)
     for i in range(nk):
@@ -382,10 +382,10 @@ def test_angular_acceleration():
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
-    fun_fd.evaluate(x0, u0, x0, fdata2)
+    fun_fd.evaluate(x0, u0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
-    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    fun_fd.computeJacobians(x0, u0, fdata2)
     J_fd = fdata2.Jx
     J_fd_u = fdata2.Ju
     assert fdata.Jx.shape == J_fd.shape
@@ -395,10 +395,10 @@ def test_angular_acceleration():
         du = np.random.randn(nu) * sample_factor
         u1 = u0 + du
         x, d, x0 = sample_gauss(space)
-        fun.evaluate(x0, u1, x0, fdata)
-        fun.computeJacobians(x0, u1, x0, fdata)
-        fun_fd.evaluate(x0, u1, x0, fdata2)
-        fun_fd.computeJacobians(x0, u1, x0, fdata2)
+        fun.evaluate(x0, u1, fdata)
+        fun.computeJacobians(x0, u1, fdata)
+        fun_fd.evaluate(x0, u1, fdata2)
+        fun_fd.computeJacobians(x0, u1, fdata2)
         assert np.allclose(fdata.Ju, fdata2.Ju, THRESH)
         assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
 
@@ -430,17 +430,17 @@ def test_wrapper_angular_acceleration():
 
     fdata = fun.createData()
     wrapped_fdata = wrapped_fun.createData()
-    wrapped_fun.evaluate(wx0, wu0, wx0, wrapped_fdata)
+    wrapped_fun.evaluate(wx0, wu0, wrapped_fdata)
     fun.evaluate(x0, fdata)
 
     assert np.allclose(fdata.value, wrapped_fdata.value)
 
     fun_fd = aligator.FiniteDifferenceHelper(wrapping_space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
-    fun_fd.evaluate(x0, u0, x0, fdata2)
+    fun_fd.evaluate(x0, u0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
-    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    fun_fd.computeJacobians(x0, u0, fdata2)
     J_fd = fdata2.Jx
     J_fd_u = fdata2.Ju
     assert fdata.Jx.shape == J_fd.shape
@@ -450,8 +450,8 @@ def test_wrapper_angular_acceleration():
         x, d, x1 = sample_gauss(wrapping_space)
         fun.evaluate(x1, fdata)
         fun.computeJacobians(x1, fdata)
-        fun_fd.evaluate(x1, u0, x1, fdata2)
-        fun_fd.computeJacobians(x1, u0, x1, fdata2)
+        fun_fd.evaluate(x1, u0, fdata2)
+        fun_fd.computeJacobians(x1, u0, fdata2)
         assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
 
 
@@ -470,17 +470,17 @@ def test_wrapper_linear_momentum():
 
     fdata = fun.createData()
     wrapped_fdata = wrapped_fun.createData()
-    wrapped_fun.evaluate(wx0, wu0, wx0, wrapped_fdata)
+    wrapped_fun.evaluate(wx0, wu0, wrapped_fdata)
     fun.evaluate(x0, fdata)
 
     assert np.allclose(fdata.value, wrapped_fdata.value)
 
     fun_fd = aligator.FiniteDifferenceHelper(wrapping_space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
-    fun_fd.evaluate(x0, u0, x0, fdata2)
+    fun_fd.evaluate(x0, u0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
-    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    fun_fd.computeJacobians(x0, u0, fdata2)
     J_fd = fdata2.Jx
     J_fd_u = fdata2.Ju
     assert fdata.Jx.shape == J_fd.shape
@@ -490,8 +490,8 @@ def test_wrapper_linear_momentum():
         x, d, x1 = sample_gauss(wrapping_space)
         fun.evaluate(x1, fdata)
         fun.computeJacobians(x1, fdata)
-        fun_fd.evaluate(x1, u0, x0, fdata2)
-        fun_fd.computeJacobians(x1, u0, x0, fdata2)
+        fun_fd.evaluate(x1, u0, fdata2)
+        fun_fd.computeJacobians(x1, u0, fdata2)
         assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
 
 
