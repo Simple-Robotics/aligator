@@ -448,8 +448,8 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
   }
 
   logger.active = (verbose_ > 0);
-  for (const auto &col : BASIC_KEYS) {
-    logger.addColumn(col);
+  for (size_t j = 0; j < std::size(BASIC_KEYS); j++) {
+    logger.addColumn(BASIC_KEYS[j]);
   }
   logger.printHeadline();
 
