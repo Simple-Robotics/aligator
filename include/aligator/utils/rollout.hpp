@@ -65,10 +65,9 @@ void rollout(
   xout.resize(N + 1);
   xout[0] = x0;
   if (dyn_models.size() != N) {
-    ALIGATOR_RUNTIME_ERROR(
-        fmt::format("Number of controls ({}) should be the same as number of "
-                    "dynamical models ({})!",
-                    N, dyn_models.size()));
+    ALIGATOR_RUNTIME_ERROR("Number of controls ({:d}) should be the same as "
+                           "number of dynamical models ({:d})!",
+                           N, dyn_models.size());
   }
 
   for (std::size_t i = 0; i < N; i++) {

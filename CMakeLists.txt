@@ -250,7 +250,7 @@ endif()
 
 add_project_dependency(proxsuite-nlp 0.8.0 REQUIRED PKG_CONFIG_REQUIRES "proxsuite-nlp >= 0.8.0")
 
-set(LIB_SOURCES src/utils/logger.cpp)
+set(LIB_SOURCES src/utils/exceptions.cpp src/utils/logger.cpp)
 
 file(
   GLOB_RECURSE LIB_HEADERS

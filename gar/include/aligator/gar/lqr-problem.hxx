@@ -38,11 +38,11 @@ Scalar LQRProblemTpl<Scalar>::evaluate(
     const VectorOfVectors &xs, const VectorOfVectors &us,
     const std::optional<ConstVectorRef> &theta_) const {
   if ((int)xs.size() != horizon() + 1)
-    ALIGATOR_RUNTIME_ERROR(fmt::format(
-        "Wrong size for vector xs (expected {:d}).", horizon() + 1));
+    ALIGATOR_RUNTIME_ERROR("Wrong size for vector xs (expected {:d}).",
+                           horizon() + 1);
   if ((int)us.size() < horizon())
-    ALIGATOR_RUNTIME_ERROR(
-        fmt::format("Wrong size for vector us (expected {:d}).", horizon()));
+    ALIGATOR_RUNTIME_ERROR("Wrong size for vector us (expected {:d}).",
+                           horizon());
 
   if (!isInitialized())
     return 0.;

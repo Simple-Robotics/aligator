@@ -37,11 +37,10 @@ void SolverFDDPTpl<Scalar>::setup(const Problem &problem) {
       idx_where_constraints.push_back(i);
   }
   if (idx_where_constraints.size() > 0) {
-    ALIGATOR_WARNING("SolverFDDP",
-                     fmt::format("problem stages [{}] have constraints, "
-                                 "which this solver cannot handle. "
-                                 "Please use a penalized cost formulation.\n",
-                                 fmt::join(idx_where_constraints, ", ")));
+    ALIGATOR_WARNING(
+        "SolverFDDP",
+        "Some problem stages have constraints, which this solver cannot "
+        "handle. Please use a penalized cost formulation.\n");
   }
   if (!problem.term_cstrs_.empty()) {
     ALIGATOR_WARNING("SolverFDDP",
