@@ -13,10 +13,19 @@
 #endif
 
 #include "aligator/math.hpp"
+#include "aligator/utils/exceptions.hpp"
 #include "aligator/macros.hpp"
 #include "aligator/eigen-macros.hpp"
 #include "aligator/config.hpp"
 #include "aligator/deprecated.hpp"
+
+#define ALIGATOR_RAISE_IF_NAN(value)                                           \
+  if (::aligator::math::check_value(value))                                    \
+  ALIGATOR_RUNTIME_ERROR("Encountered NaN.\n")
+
+#define ALIGATOR_RAISE_IF_NAN_NAME(value, name)                                \
+  if (::aligator::math::check_value(value))                                    \
+  ALIGATOR_RUNTIME_ERROR("Encountered NaN for variable {:s}\n", name)
 
 /// @brief  Main package namespace.
 namespace aligator {
