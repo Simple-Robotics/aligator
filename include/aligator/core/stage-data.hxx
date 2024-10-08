@@ -22,11 +22,9 @@ StageDataTpl<Scalar>::StageDataTpl(const StageModel &stage_model)
 template <typename Scalar> void StageDataTpl<Scalar>::checkData() {
   const char msg[] = "StageData integrity check failed.";
   if (cost_data == nullptr)
-    ALIGATOR_RUNTIME_ERROR(
-        fmt::format("{} (cost_data cannot be nullptr)", msg));
+    ALIGATOR_RUNTIME_ERROR("{} (cost_data cannot be nullptr)", msg);
   if (dynamics_data == nullptr)
-    ALIGATOR_RUNTIME_ERROR(
-        fmt::format("{} (dynamics_data cannot be nullptr)", msg));
+    ALIGATOR_RUNTIME_ERROR("{} (dynamics_data cannot be nullptr)", msg);
 }
 
 } // namespace aligator

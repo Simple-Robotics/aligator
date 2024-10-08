@@ -2,6 +2,7 @@
 #pragma once
 
 #include "aligator/math.hpp"
+#include <fmt/format.h>
 
 #include <optional>
 

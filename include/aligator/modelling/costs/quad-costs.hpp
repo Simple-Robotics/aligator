@@ -121,8 +121,8 @@ protected:
 private:
   static void _check_dim_equal(long n, long m, const std::string &msg = "") {
     if (n != m)
-      ALIGATOR_RUNTIME_ERROR(fmt::format(
-          "Dimensions inconsistent: got {:d} and {:d}{}.\n", n, m, msg));
+      ALIGATOR_RUNTIME_ERROR("Dimensions inconsistent: got {:d} and {:d}{}.\n",
+                             n, m, msg);
   }
 
   void debug_check_dims() const {

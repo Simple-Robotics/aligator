@@ -25,9 +25,9 @@ StageModelTpl<Scalar>::StageModelTpl(const PolyCost &cost,
       dynamics_(dynamics) {
 
   if (cost->nu != dynamics->nu) {
-    ALIGATOR_RUNTIME_ERROR(fmt::format("Control dimensions cost.nu ({:d}) and "
-                                       "dynamics.nu ({:d}) are inconsistent.",
-                                       cost->nu, dynamics->nu));
+    ALIGATOR_RUNTIME_ERROR("Control dimensions cost.nu ({:d}) and dynamics.nu "
+                           "({:d}) are inconsistent.",
+                           cost->nu, dynamics->nu);
   }
 }
 
@@ -35,9 +35,9 @@ template <typename Scalar>
 void StageModelTpl<Scalar>::addConstraint(const PolyFunction &func,
                                           const PolyConstraintSet &cstr_set) {
   if (func->nu != this->nu()) {
-    ALIGATOR_RUNTIME_ERROR(fmt::format(
+    ALIGATOR_RUNTIME_ERROR(
         "Function has the wrong dimension for u: got {:d}, expected {:d}",
-        func->nu, this->nu()));
+        func->nu, this->nu());
   }
   constraints_.pushBack(func, cstr_set);
 }

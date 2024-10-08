@@ -53,11 +53,11 @@ Scalar TrajOptProblemTpl<Scalar>::evaluate(
   ALIGATOR_TRACY_ZONE_SCOPED_N("TrajOptProblem::evaluate");
   const std::size_t nsteps = numSteps();
   if (xs.size() != nsteps + 1)
-    ALIGATOR_RUNTIME_ERROR(fmt::format(
-        "Wrong size for xs (got {:d}, expected {:d})", xs.size(), nsteps + 1));
+    ALIGATOR_RUNTIME_ERROR("Wrong size for xs (got {:d}, expected {:d})",
+                           xs.size(), nsteps + 1);
   if (us.size() != nsteps)
-    ALIGATOR_RUNTIME_ERROR(fmt::format(
-        "Wrong size for us (got {:d}, expected {:d})", us.size(), nsteps));
+    ALIGATOR_RUNTIME_ERROR("Wrong size for us (got {:d}, expected {:d})",
+                           us.size(), nsteps);
 
   init_constraint_->evaluate(xs[0], *prob_data.init_data);
 
@@ -89,11 +89,11 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
   ALIGATOR_TRACY_ZONE_SCOPED_N("TrajOptProblem::computeDerivatives");
   const std::size_t nsteps = numSteps();
   if (xs.size() != nsteps + 1)
-    ALIGATOR_RUNTIME_ERROR(fmt::format(
-        "Wrong size for xs (got {:d}, expected {:d})", xs.size(), nsteps + 1));
+    ALIGATOR_RUNTIME_ERROR("Wrong size for xs (got {:d}, expected {:d})",
+                           xs.size(), nsteps + 1);
   if (us.size() != nsteps)
-    ALIGATOR_RUNTIME_ERROR(fmt::format(
-        "Wrong size for us (got {:d}, expected {:d})", us.size(), nsteps));
+    ALIGATOR_RUNTIME_ERROR("Wrong size for us (got {:d}, expected {:d})",
+                           us.size(), nsteps);
 
   init_constraint_->computeJacobians(xs[0], *prob_data.init_data);
 
