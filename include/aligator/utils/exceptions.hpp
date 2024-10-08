@@ -4,14 +4,15 @@
 #include <fmt/base.h>
 
 #define ALIGATOR_RUNTIME_ERROR(...)                                            \
-  throw aligator::RuntimeError(                                                \
-      detail::exception_msg(__FILE__, __LINE__, __VA_ARGS__))
+  throw ::aligator::RuntimeError(                                              \
+      ::aligator::detail::exception_msg(__FILE__, __LINE__, __VA_ARGS__))
 
 #define ALIGATOR_DOMAIN_ERROR(msg)                                             \
-  throw std::domain_error(detail::exception_msg(__FILE__, __LINE__, msg))
+  throw std::domain_error(                                                     \
+      ::aligator::detail::exception_msg(__FILE__, __LINE__, msg))
 
 #define ALIGATOR_WARNING(loc, ...)                                             \
-  detail::warning_call(loc, __FUNCTION__, __VA_ARGS__)
+  ::aligator::detail::warning_call(loc, __FUNCTION__, __VA_ARGS__)
 
 namespace aligator {
 namespace detail {
