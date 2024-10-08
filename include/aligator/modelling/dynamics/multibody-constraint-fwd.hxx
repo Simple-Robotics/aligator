@@ -37,9 +37,12 @@ void MultibodyConstraintFwdDynamicsTpl<Scalar>::forward(const ConstVectorRef &x,
   const auto q = x.head(nq);
   const auto v = x.segment(nq, nv);
   d.xdot_.head(nv) = v;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   d.xdot_.segment(nv, nv) = pinocchio::constraintDynamics(
       model, d.pin_data_, q, v, d.tau_, constraint_models_, d.constraint_datas_,
       d.settings);
+#pragma GCC diagnostic pop
 }
 
 template <typename Scalar>
@@ -49,8 +52,11 @@ void MultibodyConstraintFwdDynamicsTpl<Scalar>::dForward(const ConstVectorRef &,
   Data &d = static_cast<Data &>(data);
   const pinocchio::ModelTpl<Scalar> &model = space_.getModel();
   const int nv = model.nv;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   pinocchio::computeConstraintDynamicsDerivatives(
       model, d.pin_data_, constraint_models_, d.constraint_datas_, d.settings);
+#pragma GCC diagnostic pop
   d.Jx_.bottomRows(nv).leftCols(nv) = d.pin_data_.ddq_dq;
   d.Jx_.bottomRows(nv).rightCols(nv) = d.pin_data_.ddq_dv;
   d.Ju_.bottomRows(nv) = d.pin_data_.ddq_dtau * d.dtau_du_;
@@ -73,12 +79,14 @@ MultibodyConstraintFwdDataTpl<Scalar>::MultibodyConstraintFwdDataTpl(
 
   const pinocchio::ModelTpl<Scalar> &model = cont_dyn.space_.getModel();
   pin_data_ = PinDataType(model);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   pinocchio::initConstraintDynamics(model, pin_data_,
                                     cont_dyn.constraint_models_);
+#pragma GCC diagnostic pop
   for (auto cm = std::begin(cont_dyn.constraint_models_);
        cm != std::end(cont_dyn.constraint_models_); ++cm) {
-    constraint_datas_.push_back(
-        pinocchio::RigidConstraintDataTpl<Scalar, 0>(*cm));
+    constraint_datas_.emplace_back(*cm);
   }
   this->Jx_.topRightCorner(model.nv, model.nv).setIdentity();
 }
