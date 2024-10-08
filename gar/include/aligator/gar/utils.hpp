@@ -119,6 +119,9 @@ bool lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
   if (!problem.isInitialized())
     return false;
 
+  const uint nrows = lqrNumRows(problem);
+  mat.conservativeResize(nrows, nrows);
+  rhs.conservativeResize(nrows);
   mat.setZero();
 
   uint idx = 0;
@@ -211,7 +214,7 @@ auto lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
   VectorXs rhs(nrows);
 
   if (!lqrDenseMatrix(problem, mudyn, mueq, mat, rhs)) {
-    ALIGATOR_RUNTIME_ERROR("Problem was not initialized.");
+    fmt::print("{:s} WARNING! Problem was not initialized.", __FUNCTION__);
   }
   return std::make_pair(mat, rhs);
 }

@@ -4,15 +4,6 @@
 #pragma once
 
 #include <proxsuite-nlp/math.hpp>
-#include "aligator/utils/exceptions.hpp"
-
-#define ALIGATOR_RAISE_IF_NAN(value)                                           \
-  if (::aligator::math::check_value(value))                                    \
-  ALIGATOR_RUNTIME_ERROR("Encountered NaN.\n")
-
-#define ALIGATOR_RAISE_IF_NAN_NAME(value, name)                                \
-  if (::aligator::math::check_value(value))                                    \
-  ALIGATOR_RUNTIME_ERROR("Encountered NaN for variable {:s}\n", name)
 
 #define ALIGATOR_DYNAMIC_TYPEDEFS(Scalar) PROXSUITE_NLP_DYNAMIC_TYPEDEFS(Scalar)
 
