@@ -186,14 +186,6 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 protected:
   /// Pointer to underlying state error residual
   StateErrorResidual *init_state_error_;
-  /// @brief Check if all stages are non-null.
-
-private:
-  static auto createStateError(const ConstVectorRef &x0,
-                               const xyz::polymorphic<Manifold> &space,
-                               const int nu) {
-    return StateErrorResidual(space, nu, x0);
-  }
 };
 
 namespace internal {

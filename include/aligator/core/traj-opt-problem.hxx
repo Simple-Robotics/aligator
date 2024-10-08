@@ -19,8 +19,7 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     : init_constraint_(std::move(init_constraint)), stages_(stages),
       term_cost_(std::move(term_cost)), unone_(term_cost_->nu) {
   unone_.setZero();
-  checkIntegrity();
-  init_state_error_ = &dynamic_cast<StateErrorResidual &>(*init_constraint_);
+  init_state_error_ = dynamic_cast<StateErrorResidual *>(&*init_constraint_);
 }
 
 template <typename Scalar>
@@ -29,27 +28,22 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     const std::vector<xyz::polymorphic<StageModel>> &stages,
     xyz::polymorphic<CostAbstract> term_cost)
     : TrajOptProblemTpl(
-          createStateError(x0, stages[0]->xspace_, stages[0]->nu()), stages,
+          StateErrorResidual(stages[0]->xspace_, stages[0]->nu(), x0), stages,
           std::move(term_cost)) {
-  init_state_error_ = &dynamic_cast<StateErrorResidual &>(*init_constraint_);
+  init_state_error_ = static_cast<StateErrorResidual *>(&*init_constraint_);
 }
 
 template <typename Scalar>
 TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     xyz::polymorphic<UnaryFunction> init_constraint,
     xyz::polymorphic<CostAbstract> term_cost)
-    : init_constraint_(std::move(init_constraint)),
-      term_cost_(std::move(term_cost)), unone_(term_cost_->nu),
-      init_state_error_(
-          &dynamic_cast<StateErrorResidual &>(*init_constraint_)) {
-  unone_.setZero();
-}
+    : TrajOptProblemTpl(std::move(init_constraint), {}, std::move(term_cost)) {}
 
 template <typename Scalar>
 TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     const ConstVectorRef &x0, const int nu, xyz::polymorphic<Manifold> space,
     xyz::polymorphic<CostAbstract> term_cost)
-    : TrajOptProblemTpl(createStateError(x0, std::move(space), nu),
+    : TrajOptProblemTpl(StateErrorResidual{std::move(space), nu, x0},
                         std::move(term_cost)) {}
 
 template <typename Scalar>
