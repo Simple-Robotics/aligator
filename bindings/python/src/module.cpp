@@ -3,7 +3,6 @@
 #include "aligator/python/utils.hpp"
 
 #include "aligator/core/enums.hpp"
-#include "aligator/version.hpp"
 #include "aligator/threads.hpp"
 
 #include <eigenpy/optional.hpp>
@@ -64,7 +63,7 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
 
   bp::docstring_options module_docstring_options(true, true, true);
 
-  bp::scope().attr("__version__") = aligator::printVersion();
+  bp::scope().attr("__version__") = ALIGATOR_VERSION;
 #ifdef ALIGATOR_MULTITHREADING
   bp::def("get_available_threads", &aligator::omp::get_available_threads,
           "Get the number of available threads.");
