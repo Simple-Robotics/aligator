@@ -42,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SolverProxDDP: remove solver parameter `rho_` ([#221](https://github.com/Simple-Robotics/aligator/pull/221))
 - Remove deprecated functions `ConstraintStackTpl::getDims` and `StageModelTpl::dyn_model`
 - Remove `CallbackBaseTpl::post_linesearch_call(boost::any)`
+- Remove unused headers `clone.hpp` and `version.hpp`
 
 ### Fixed
 
