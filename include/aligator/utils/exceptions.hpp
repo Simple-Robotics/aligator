@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdexcept>
+#include <string>
 #include <fmt/base.h>
 
 #define ALIGATOR_RUNTIME_ERROR(...)                                            \
