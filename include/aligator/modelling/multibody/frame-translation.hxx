@@ -38,7 +38,7 @@ void FrameTranslationResidualTpl<Scalar>::computeJacobians(
 template <typename Scalar>
 FrameTranslationDataTpl<Scalar>::FrameTranslationDataTpl(
     const FrameTranslationResidualTpl<Scalar> &model)
-    : Base(model.ndx1, model.nu, model.ndx2, 3), pin_data_(model.pin_model_),
+    : Base(model.ndx1, model.nu, 3), pin_data_(model.pin_model_),
       fJf_(6, model.pin_model_.nv) {
   fJf_.setZero();
 }

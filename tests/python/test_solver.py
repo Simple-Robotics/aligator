@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Copyright 2023 Inria
+# Copyright 2023-2024 LAAS-CNRS, Inria
 
 """Unit tests for SolverProxDDP."""
 

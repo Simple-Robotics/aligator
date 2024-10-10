@@ -15,15 +15,14 @@ def test_manifold_diff():
 
     x = space.rand()
     u = np.random.randn(nu)
-    y = x
-    fun.evaluate(x, u, y, data)
+    fun.evaluate(x, u, data)
     assert np.allclose(data.value, space.difference(x, target))
     cp = data.value.copy()
     cp[0] = -1.0
     data.value[0] = -1.0
     assert np.allclose(data.value, cp)
 
-    fun.computeJacobians(x, u, y, data)
+    fun.computeJacobians(x, u, data)
 
     # TEST LINEAR COMPOSE
     A = np.array([[1.0, 1.0, 0.0]])
@@ -33,12 +32,12 @@ def test_manifold_diff():
     assert fun_lin.nr == A.shape[0]
     data3 = fun_lin.createData()
     sd3 = data3.sub_data
-    fun_lin.evaluate(x, u, y, data3)
+    fun_lin.evaluate(x, u, data3)
     print("d3 value:", data3.value)
     print(sd3.value)
     assert np.allclose(data3.value, A @ sd3.value + b)
 
-    fun_lin.computeJacobians(x, u, y, data3)
+    fun_lin.computeJacobians(x, u, data3)
     assert np.allclose(data3.jac_buffer, A @ sd3.jac_buffer)
 
     # TEST UNARY COMPOSE W/ FUNCTION CALL
@@ -66,13 +65,13 @@ def test_slicing():
     dslice = fslice.createData()
     assert idxs == fslice.indices.tolist()
 
-    fn.evaluate(x0, u0, x0, dfull)
-    fslice.evaluate(x0, u0, x0, dslice)
+    fn.evaluate(x0, u0, dfull)
+    fslice.evaluate(x0, u0, dslice)
 
     assert np.allclose(dfull.value[idxs], dslice.value)
 
-    fn.computeJacobians(x0, u0, x0, dfull)
-    fslice.computeJacobians(x0, u0, x0, dslice)
+    fn.computeJacobians(x0, u0, dfull)
+    fslice.computeJacobians(x0, u0, dslice)
 
     assert np.allclose(dfull.jac_buffer[idxs, :], dslice.jac_buffer)
 

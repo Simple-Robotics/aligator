@@ -70,7 +70,7 @@ class Column(aligator.StageFunction):
     def __getinitargs__(self):
         return (self.rmodel, self.ndx, self.nu, self.center, self.radius, self.margin)
 
-    def evaluate(self, x, u, y, data):  # distance function
+    def evaluate(self, x, u, data):  # distance function
         q = x[:nq]
         pin.forwardKinematics(self.rmodel, self.rdata, q)
         M: pin.SE3 = pin.updateFramePlacement(self.rmodel, self.rdata, 1)
@@ -78,7 +78,7 @@ class Column(aligator.StageFunction):
         res = np.dot(err, err) - (self.radius + self.margin) ** 2
         data.value[:] = -res
 
-    def computeJacobians(self, x, u, y, data):
+    def computeJacobians(self, x, u, data):
         q = x[:nq]
         J = pin.computeFrameJacobian(
             self.rmodel, self.rdata, q, 1, pin.LOCAL_WORLD_ALIGNED

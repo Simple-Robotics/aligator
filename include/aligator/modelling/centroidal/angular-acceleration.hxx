@@ -7,7 +7,6 @@ namespace aligator {
 template <typename Scalar>
 void AngularAccelerationResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                                       const ConstVectorRef &u,
-                                                      const ConstVectorRef &,
                                                       BaseData &data) const {
   Data &d = static_cast<Data &>(data);
 
@@ -34,8 +33,7 @@ void AngularAccelerationResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
 
 template <typename Scalar>
 void AngularAccelerationResidualTpl<Scalar>::computeJacobians(
-    const ConstVectorRef &x, const ConstVectorRef &u, const ConstVectorRef &,
-    BaseData &data) const {
+    const ConstVectorRef &x, const ConstVectorRef &u, BaseData &data) const {
   Data &d = static_cast<Data &>(data);
 
   d.Jx_.setZero();
@@ -69,7 +67,7 @@ void AngularAccelerationResidualTpl<Scalar>::computeJacobians(
 template <typename Scalar>
 AngularAccelerationDataTpl<Scalar>::AngularAccelerationDataTpl(
     const AngularAccelerationResidualTpl<Scalar> *model)
-    : Base(model->ndx1, model->nu, model->ndx2, 3) {
+    : Base(model->ndx1, model->nu, 3) {
   Jtemp_.setZero();
 }
 

@@ -7,15 +7,15 @@ class CustomFunction(aligator.StageFunction):
     def __init__(self, space: aligator.manifolds.ManifoldAbstract, nu):
         self.space = space
         ndx = space.ndx
-        super().__init__(ndx, nu, ndx, ndx)
+        super().__init__(ndx, nu, ndx)
 
     def __getinitargs__(self):
         return (self.space, self.nu)
 
-    def evaluate(self, x, u, y, data: aligator.StageFunctionData):
+    def evaluate(self, x, u, data: aligator.StageFunctionData):
         data.value[:] = self.space.difference(x, self.space.neutral())
 
-    def computeJacobians(self, x, u, y, data: aligator.StageFunctionData):
+    def computeJacobians(self, x, u, data: aligator.StageFunctionData):
         data.Jx[:] = self.space.Jdifference(x, self.space.neutral(), 0)
 
 
@@ -65,8 +65,8 @@ def test_custom_controlbox():
     x0 = space.rand()
     u0 = np.random.randn(nu)
 
-    fun.evaluate(x0, u0, x0, data1)
-    fun.computeJacobians(x0, u0, x0, data1)
+    fun.evaluate(x0, u0, data1)
+    fun.computeJacobians(x0, u0, data1)
     print(data1.value)
     print(data1.Ju)
 
@@ -75,7 +75,7 @@ def test_custom_controlbox():
 
     rdm = np.random.randn(*data1.vhp_buffer.shape)
     data1.vhp_buffer[:, :] = rdm
-    fun.computeVectorHessianProducts(x0, u0, x0, lbd0, data1)
+    fun.computeVectorHessianProducts(x0, u0, lbd0, data1)
     # expected behavior: unimplemented computeVectorHessianProducts does nothing.
     assert np.allclose(data1.vhp_buffer, rdm)
 

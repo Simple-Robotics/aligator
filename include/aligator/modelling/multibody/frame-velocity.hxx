@@ -50,6 +50,6 @@ void FrameVelocityResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &x,
 template <typename Scalar>
 FrameVelocityDataTpl<Scalar>::FrameVelocityDataTpl(
     const FrameVelocityResidualTpl<Scalar> &model)
-    : Base(model.ndx1, model.nu, model.ndx2, 6), pin_data_(model.pin_model_) {}
+    : Base(model.ndx1, model.nu, 6), pin_data_(model.pin_model_) {}
 
 } // namespace aligator

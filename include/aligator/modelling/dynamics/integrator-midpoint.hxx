@@ -71,9 +71,8 @@ void IntegratorMidpointTpl<Scalar>::computeJacobians(
 }
 
 template <typename Scalar>
-shared_ptr<DynamicsDataTpl<Scalar>>
-IntegratorMidpointTpl<Scalar>::createData() const {
-  return std::make_shared<Data>(this);
+auto IntegratorMidpointTpl<Scalar>::createData() const -> shared_ptr<BaseData> {
+  return std::make_shared<Data>(*this);
 }
 
 } // namespace dynamics

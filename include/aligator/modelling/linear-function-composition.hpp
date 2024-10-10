@@ -20,15 +20,14 @@ template <typename _FunType> struct linear_func_composition_impl : _FunType {
 
   struct Data : BaseData {
     shared_ptr<BaseData> sub_data;
-    Data(const linear_func_composition_impl &ptr)
-        : BaseData(ptr.ndx1, ptr.nu, ptr.ndx2, ptr.nr),
-          sub_data(ptr.func->createData()) {}
+    Data(const linear_func_composition_impl &model)
+        : BaseData(model.ndx1, model.nu, model.nr),
+          sub_data(model.func->createData()) {}
   };
 
   linear_func_composition_impl(xyz::polymorphic<FunType> func,
                                const ConstMatrixRef A, const ConstVectorRef b)
-      : FunType(func->ndx1, func->nu, func->ndx2, (int)A.rows()), func(func),
-        A(A), b(b) {
+      : FunType(func->ndx1, func->nu, (int)A.rows()), func(func), A(A), b(b) {
     // if (func == 0) {
     //   ALIGATOR_RUNTIME_ERROR("Underlying function cannot be nullptr.");
     // }
@@ -67,10 +66,10 @@ struct LinearFunctionCompositionTpl
   using Impl::Impl;
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                const ConstVectorRef &y, BaseData &data) const;
+                BaseData &data) const override;
 
   void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
-                        const ConstVectorRef &y, BaseData &data) const;
+                        BaseData &data) const override;
 };
 
 template <typename _Scalar>
@@ -89,20 +88,8 @@ struct LinearUnaryFunctionCompositionTpl
   using Impl::func;
   using Impl::Impl;
 
-  void evaluate(const ConstVectorRef &x, BaseData &data) const {
-    Data &d = static_cast<Data &>(data);
-
-    func->evaluate(x, *d.sub_data);
-    data.value_ = b;
-    data.value_.noalias() += A * d.sub_data->value_;
-  }
-
-  void computeJacobians(const ConstVectorRef &x, BaseData &data) const {
-    Data &d = static_cast<Data &>(data);
-
-    func->computeJacobians(x, *d.sub_data);
-    data.jac_buffer_.noalias() = A * d.sub_data->jac_buffer_;
-  }
+  void evaluate(const ConstVectorRef &x, BaseData &data) const override;
+  void computeJacobians(const ConstVectorRef &x, BaseData &data) const override;
 };
 
 /// @brief Create a linear composition of the input function @p func.

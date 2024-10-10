@@ -33,7 +33,7 @@ struct ALIGATOR_DEPRECATED_MESSAGE(
                         const Scalar umax);
 
   void evaluate(const ConstVectorRef &, const ConstVectorRef &u,
-                const ConstVectorRef &, Data &data) const;
+                Data &data) const override;
 
   /**
    * @copybrief Base::computeJacobians()
@@ -41,11 +41,11 @@ struct ALIGATOR_DEPRECATED_MESSAGE(
    * are already set in createData().
    */
   void computeJacobians(const ConstVectorRef &, const ConstVectorRef &,
-                        const ConstVectorRef &, Data &data) const;
+                        Data &data) const override;
 
   /// @copybrief Base::createData()
   /// @details   This override sets the appropriate values of the Jacobians.
-  virtual shared_ptr<Data> createData() const;
+  virtual shared_ptr<Data> createData() const override;
 };
 
 } // namespace aligator

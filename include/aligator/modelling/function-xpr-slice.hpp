@@ -18,38 +18,42 @@ template <typename Scalar> struct FunctionSliceDataTpl;
 /// function, for instance \f$x \mapsto f_\{0, 1, 3\}(x) \f$ where \f$f\f$ is
 /// given.
 template <typename Scalar, typename Base = StageFunctionTpl<Scalar>>
-struct FunctionSliceXprTpl : Base, detail::slice_impl_tpl<Base> {
+struct FunctionSliceXprTpl;
+
+template <typename Scalar>
+struct FunctionSliceXprTpl<Scalar, StageFunctionTpl<Scalar>>
+    : StageFunctionTpl<Scalar>,
+      detail::slice_impl_tpl<StageFunctionTpl<Scalar>> {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  using Base = StageFunctionTpl<Scalar>;
   using BaseData = StageFunctionDataTpl<Scalar>;
   using SliceImpl = detail::slice_impl_tpl<StageFunctionTpl<Scalar>>;
   using Data = FunctionSliceDataTpl<Scalar>;
 
   FunctionSliceXprTpl(xyz::polymorphic<Base> func,
                       std::vector<int> const &indices)
-      : Base(func->ndx1, func->nu, func->ndx2, (int)indices.size()),
+      : Base(func->ndx1, func->nu, (int)indices.size()),
         SliceImpl(func, indices) {}
 
   FunctionSliceXprTpl(xyz::polymorphic<Base> func, const int idx)
       : FunctionSliceXprTpl(func, std::vector<int>{idx}) {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                const ConstVectorRef &y, BaseData &data) const override {
+                BaseData &data) const override {
 
-    this->evaluate_impl(data, x, u, y);
+    this->evaluate_impl(data, x, u);
   }
 
   void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
-                        const ConstVectorRef &y,
                         BaseData &data) const override {
-    this->computeJacobians_impl(data, x, u, y);
+    this->computeJacobians_impl(data, x, u);
   }
 
   void computeVectorHessianProducts(const ConstVectorRef &x,
                                     const ConstVectorRef &u,
-                                    const ConstVectorRef &y,
                                     const ConstVectorRef &lbda,
                                     BaseData &data) const override {
-    this->computeVectorHessianProducts_impl(data, lbda, x, u, y);
+    this->computeVectorHessianProducts_impl(data, lbda, x, u);
   }
 
   shared_ptr<BaseData> createData() const override {
@@ -69,7 +73,7 @@ struct FunctionSliceXprTpl<Scalar, UnaryFunctionTpl<Scalar>>
 
   FunctionSliceXprTpl(xyz::polymorphic<Base> func,
                       std::vector<int> const &indices)
-      : Base(func->ndx1, func->nu, func->ndx2, (int)indices.size()),
+      : Base(func->ndx1, func->nu, (int)indices.size()),
         SliceImpl(func, indices) {}
 
   FunctionSliceXprTpl(xyz::polymorphic<Base> func, const int idx)
@@ -106,8 +110,8 @@ struct FunctionSliceDataTpl : StageFunctionDataTpl<Scalar> {
 
   template <typename Base>
   FunctionSliceDataTpl(FunctionSliceXprTpl<Scalar, Base> const &obj)
-      : BaseData(obj.ndx1, obj.nu, obj.ndx2, obj.nr),
-        sub_data(obj.func->createData()), lbda_sub(obj.nr) {}
+      : BaseData(obj.ndx1, obj.nu, obj.nr), sub_data(obj.func->createData()),
+        lbda_sub(obj.nr) {}
 };
 
 namespace detail {

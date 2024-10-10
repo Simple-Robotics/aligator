@@ -6,8 +6,7 @@ namespace aligator {
 
 template <typename Scalar>
 void CentroidalAccelerationResidualTpl<Scalar>::evaluate(
-    const ConstVectorRef &, const ConstVectorRef &u, const ConstVectorRef &,
-    BaseData &data) const {
+    const ConstVectorRef &, const ConstVectorRef &u, BaseData &data) const {
   Data &d = static_cast<Data &>(data);
 
   d.value_.setZero();
@@ -23,8 +22,7 @@ void CentroidalAccelerationResidualTpl<Scalar>::evaluate(
 
 template <typename Scalar>
 void CentroidalAccelerationResidualTpl<Scalar>::computeJacobians(
-    const ConstVectorRef &, const ConstVectorRef &, const ConstVectorRef &,
-    BaseData &data) const {
+    const ConstVectorRef &, const ConstVectorRef &, BaseData &data) const {
   Data &d = static_cast<Data &>(data);
 
   d.Ju_.setZero();
@@ -39,6 +37,6 @@ void CentroidalAccelerationResidualTpl<Scalar>::computeJacobians(
 template <typename Scalar>
 CentroidalAccelerationDataTpl<Scalar>::CentroidalAccelerationDataTpl(
     const CentroidalAccelerationResidualTpl<Scalar> *model)
-    : Base(model->ndx1, model->nu, model->ndx2, 3) {}
+    : Base(*model) {}
 
 } // namespace aligator

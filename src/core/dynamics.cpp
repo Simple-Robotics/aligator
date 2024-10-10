@@ -6,5 +6,6 @@
 namespace aligator {
 
 template struct DynamicsModelTpl<context::Scalar>;
+template struct DynamicsDataTpl<context::Scalar>;
 
-}
+} // namespace aligator

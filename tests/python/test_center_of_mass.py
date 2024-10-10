@@ -27,7 +27,7 @@ def sample_gauss(space):
     return x0, d, x1
 
 
-def test_com_placement():
+def test_com_translation():
     space = manifolds.MultibodyConfiguration(model)
     ndx = space.ndx
     x0 = space.neutral()
@@ -57,19 +57,19 @@ def test_com_placement():
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, EPS)
     fdata2 = fun_fd.createData()
-    fun_fd.evaluate(x0, u0, x0, fdata2)
+    fun_fd.evaluate(x0, u0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
-    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    fun_fd.computeJacobians(x0, u0, fdata2)
     J_fd = fdata2.Jx[:]
     assert fdata.Jx.shape == J_fd.shape
 
     for i in range(100):
         x, d, x0 = sample_gauss(space)
-        fun.evaluate(x0, u0, x0, fdata)
-        fun.computeJacobians(x0, u0, x0, fdata)
-        fun_fd.evaluate(x0, u0, x0, fdata2)
-        fun_fd.computeJacobians(x0, u0, x0, fdata2)
+        fun.evaluate(x0, u0, fdata)
+        fun.computeJacobians(x0, u0, fdata)
+        fun_fd.evaluate(x0, u0, fdata2)
+        fun_fd.computeJacobians(x0, u0, fdata2)
         assert np.allclose(fdata.Jx, fdata2.Jx, ATOL)
 
 
@@ -96,16 +96,16 @@ def test_frame_velocity():
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, EPS)
     fdata2 = fun_fd.createData()
-    fun_fd.evaluate(x0, u0, x0, fdata2)
-    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    fun_fd.evaluate(x0, u0, fdata2)
+    fun_fd.computeJacobians(x0, u0, fdata2)
     assert fdata.Jx.shape == fdata2.Jx.shape
 
     for i in range(100):
         x, d, x0 = sample_gauss(space)
         fun.evaluate(x0, fdata)
         fun.computeJacobians(x0, fdata)
-        fun_fd.evaluate(x0, u0, x0, fdata2)
-        fun_fd.computeJacobians(x0, u0, x0, fdata2)
+        fun_fd.evaluate(x0, u0, fdata2)
+        fun_fd.computeJacobians(x0, u0, fdata2)
         print(i)
         print(fdata.Jx)
         print(fdata2.Jx)
@@ -136,16 +136,16 @@ def test_dcm_position():
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, EPS)
     fdata2 = fun_fd.createData()
-    fun_fd.evaluate(x0, u0, x0, fdata2)
-    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    fun_fd.evaluate(x0, u0, fdata2)
+    fun_fd.computeJacobians(x0, u0, fdata2)
     assert fdata.Jx.shape == fdata2.Jx.shape
 
     for i in range(100):
         x, d, x0 = sample_gauss(space)
         fun.evaluate(x0, fdata)
         fun.computeJacobians(x0, fdata)
-        fun_fd.evaluate(x0, u0, x0, fdata2)
-        fun_fd.computeJacobians(x0, u0, x0, fdata2)
+        fun_fd.evaluate(x0, u0, fdata2)
+        fun_fd.computeJacobians(x0, u0, fdata2)
         assert np.allclose(fdata.Jx, fdata2.Jx, ATOL)
 
 

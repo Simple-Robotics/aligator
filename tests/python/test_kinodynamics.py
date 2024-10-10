@@ -45,11 +45,11 @@ def test_centroidal_momentum():
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
-    fun.evaluate(x0, u0, x0, fdata)
-    fun_fd.evaluate(x0, u0, x0, fdata2)
+    fun.evaluate(x0, u0, fdata)
+    fun_fd.evaluate(x0, u0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
-    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    fun_fd.computeJacobians(x0, u0, fdata2)
     J_fd = fdata2.Jx
     J_fd_u = fdata2.Ju
     assert fdata.Jx.shape == J_fd.shape
@@ -59,10 +59,10 @@ def test_centroidal_momentum():
         du = np.random.randn(nu) * sample_factor
         u1 = u0 + du
         x, d, x0 = sample_gauss(space)
-        fun.evaluate(x0, u1, x0, fdata)
-        fun.computeJacobians(x0, u1, x0, fdata)
-        fun_fd.evaluate(x0, u1, x0, fdata2)
-        fun_fd.computeJacobians(x0, u1, x0, fdata2)
+        fun.evaluate(x0, u1, fdata)
+        fun.computeJacobians(x0, u1, fdata)
+        fun_fd.evaluate(x0, u1, fdata2)
+        fun_fd.computeJacobians(x0, u1, fdata2)
         assert np.linalg.norm(fdata.Ju - fdata2.Ju) <= THRESH
         assert np.linalg.norm(fdata.Jx - fdata2.Jx) <= THRESH
 
@@ -90,11 +90,11 @@ def test_centroidal_momentum_derivative():
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
-    fun.evaluate(x0, u0, x0, fdata)
-    fun_fd.evaluate(x0, u0, x0, fdata2)
+    fun.evaluate(x0, u0, fdata)
+    fun_fd.evaluate(x0, u0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
-    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    fun_fd.computeJacobians(x0, u0, fdata2)
     J_fd = fdata2.Jx
     J_fd_u = fdata2.Ju
     assert fdata.Jx.shape == J_fd.shape
@@ -104,10 +104,10 @@ def test_centroidal_momentum_derivative():
         du = np.random.randn(nu) * sample_factor
         u1 = u0 + du
         x, d, x0 = sample_gauss(space)
-        fun.evaluate(x0, u1, x0, fdata)
-        fun.computeJacobians(x0, u1, x0, fdata)
-        fun_fd.evaluate(x0, u1, x0, fdata2)
-        fun_fd.computeJacobians(x0, u1, x0, fdata2)
+        fun.evaluate(x0, u1, fdata)
+        fun.computeJacobians(x0, u1, fdata)
+        fun_fd.evaluate(x0, u1, fdata2)
+        fun_fd.computeJacobians(x0, u1, fdata2)
         assert np.linalg.norm(fdata.Ju - fdata2.Ju) <= THRESH
         assert np.linalg.norm(fdata.Jx - fdata2.Jx) <= THRESH
 
@@ -121,11 +121,11 @@ def test_centroidal_momentum_derivative():
 
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
-    fun.evaluate(x0, u0, x0, fdata)
-    fun_fd.evaluate(x0, u0, x0, fdata2)
+    fun.evaluate(x0, u0, fdata)
+    fun_fd.evaluate(x0, u0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
-    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    fun_fd.computeJacobians(x0, u0, fdata2)
     J_fd = fdata2.Jx
     J_fd_u = fdata2.Ju
     assert fdata.Jx.shape == J_fd.shape
@@ -135,10 +135,10 @@ def test_centroidal_momentum_derivative():
         du = np.random.randn(nu) * sample_factor
         u1 = u0 + du
         x, d, x0 = sample_gauss(space)
-        fun.evaluate(x0, u1, x0, fdata)
-        fun.computeJacobians(x0, u1, x0, fdata)
-        fun_fd.evaluate(x0, u1, x0, fdata2)
-        fun_fd.computeJacobians(x0, u1, x0, fdata2)
+        fun.evaluate(x0, u1, fdata)
+        fun.computeJacobians(x0, u1, fdata)
+        fun_fd.evaluate(x0, u1, fdata2)
+        fun_fd.computeJacobians(x0, u1, fdata2)
         assert np.linalg.norm(fdata.Ju - fdata2.Ju) <= THRESH
         assert np.linalg.norm(fdata.Jx - fdata2.Jx) <= THRESH
 

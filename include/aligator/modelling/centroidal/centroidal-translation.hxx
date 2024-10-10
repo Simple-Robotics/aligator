@@ -23,6 +23,6 @@ void CentroidalCoMResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
 template <typename Scalar>
 CentroidalCoMDataTpl<Scalar>::CentroidalCoMDataTpl(
     const CentroidalCoMResidualTpl<Scalar> *model)
-    : Base(model->ndx1, model->nu, model->ndx2, 3) {}
+    : Base(*model) {}
 
 } // namespace aligator

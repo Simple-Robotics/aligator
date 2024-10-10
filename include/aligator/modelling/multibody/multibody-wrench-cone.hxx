@@ -10,7 +10,6 @@ namespace aligator {
 template <typename Scalar>
 void MultibodyWrenchConeResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                                       const ConstVectorRef &u,
-                                                      const ConstVectorRef &,
                                                       BaseData &data) const {
   Data &d = static_cast<Data &>(data);
 
@@ -29,8 +28,7 @@ void MultibodyWrenchConeResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
 
 template <typename Scalar>
 void MultibodyWrenchConeResidualTpl<Scalar>::computeJacobians(
-    const ConstVectorRef &, const ConstVectorRef &, const ConstVectorRef &,
-    BaseData &data) const {
+    const ConstVectorRef &, const ConstVectorRef &, BaseData &data) const {
   Data &d = static_cast<Data &>(data);
 
   pinocchio::computeConstraintDynamicsDerivatives(
@@ -52,9 +50,8 @@ void MultibodyWrenchConeResidualTpl<Scalar>::computeJacobians(
 template <typename Scalar>
 MultibodyWrenchConeDataTpl<Scalar>::MultibodyWrenchConeDataTpl(
     const MultibodyWrenchConeResidualTpl<Scalar> *model)
-    : Base(model->ndx1, model->nu, model->ndx2, 17),
-      pin_data_(model->pin_model_), tau_(model->pin_model_.nv),
-      temp_(6, model->nu) {
+    : Base(model->ndx1, model->nu, 17), pin_data_(model->pin_model_),
+      tau_(model->pin_model_.nv), temp_(6, model->nu) {
   tau_.setZero();
   temp_.setZero();
 

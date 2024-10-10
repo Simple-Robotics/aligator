@@ -12,6 +12,7 @@
 
 namespace aligator {
 namespace python {
+using context::DynamicsData;
 
 /// Wrapper for ExplicitDynamicsModel which avoids redeclaring overrides for any
 /// child virtual class (e.g. integrator classes).
@@ -26,7 +27,6 @@ struct PyExplicitDynamics final
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   // All functions in the interface take this type for output
   using Data = ExplicitDynamicsDataTpl<Scalar>;
-  using StageFunctionData = StageFunctionDataTpl<Scalar>;
 
   using ExplicitBase::ExplicitBase;
 
@@ -40,12 +40,12 @@ struct PyExplicitDynamics final
     ALIGATOR_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, boost::ref(data));
   }
 
-  shared_ptr<StageFunctionData> createData() const {
-    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<StageFunctionData>, ExplicitBase,
+  shared_ptr<DynamicsData> createData() const {
+    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<DynamicsData>, ExplicitBase,
                              createData, );
   }
 
-  shared_ptr<StageFunctionData> default_createData() const {
+  shared_ptr<DynamicsData> default_createData() const {
     return ExplicitBase::createData();
   }
 };
