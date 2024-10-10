@@ -264,10 +264,7 @@ com_cstr = aligator.CentroidalWrapperResidual(
     aligator.CentroidalCoMResidual(nxc, nu, com_final)
 )
 
-term_constraint_com = aligator.StageConstraint(
-    com_cstr, constraints.EqualityConstraintSet()
-)
-problem.addTerminalConstraint(term_constraint_com)
+problem.addTerminalConstraint(com_cstr, constraints.EqualityConstraintSet())
 
 # Solver initialization
 TOL = 1e-5

@@ -24,10 +24,7 @@ struct DirectSumExplicitDynamicsTpl : ExplicitDynamicsModelTpl<_Scalar> {
   struct Data;
 
   DirectSumExplicitDynamicsTpl(xyz::polymorphic<Base> f,
-                               xyz::polymorphic<Base> g)
-      : Base(get_product_space(*f, *g), f->nu + g->nu), f_(f), g_(g) {
-    product_space_ = dynamic_cast<CartesianProduct &>(*this->space_next_);
-  }
+                               xyz::polymorphic<Base> g);
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                BaseData &data) const override;
@@ -42,12 +39,15 @@ struct DirectSumExplicitDynamicsTpl : ExplicitDynamicsModelTpl<_Scalar> {
   xyz::polymorphic<Base> f_, g_;
 
 private:
-  static auto get_product_space(Base const &f, Base const &g);
-  static Data &data_cast(BaseData &data) { return static_cast<Data &>(data); }
-
   /// pointer to casted cartesian product space; this pointer does not manage
   /// memory
   CartesianProduct product_space_;
+};
+
+template <typename Scalar>
+struct DirectSumExplicitDynamicsTpl<Scalar>::Data : BaseData {
+  shared_ptr<BaseData> data1_, data2_;
+  Data(DirectSumExplicitDynamicsTpl const &model);
 };
 
 template <typename Scalar>
@@ -57,8 +57,6 @@ auto directSum(xyz::polymorphic<ExplicitDynamicsModelTpl<Scalar>> const &m1,
 }
 
 } // namespace aligator
-
-#include "aligator/modelling/explicit-dynamics-direct-sum.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./explicit-dynamics-direct-sum.txx"

@@ -16,7 +16,7 @@ using Manifold = ManifoldAbstractTpl<Scalar>;
 using StageFunction = StageFunctionTpl<Scalar>;
 using UnaryFunction = UnaryFunctionTpl<Scalar>;
 using StageFunctionData = StageFunctionDataTpl<Scalar>;
-using StageConstraint = StageConstraintTpl<Scalar>;
+using StageConstraint ALIGATOR_DEPRECATED = StageConstraintTpl<Scalar>;
 
 using ConstraintSet = ConstraintSetBase<Scalar>;
 

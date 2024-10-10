@@ -11,7 +11,6 @@ template <typename _Scalar> struct TrajOptDataTpl {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using StageFunctionData = StageFunctionDataTpl<Scalar>;
-  using ConstraintType = StageConstraintTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
 
@@ -32,6 +31,12 @@ template <typename _Scalar> struct TrajOptDataTpl {
   TrajOptDataTpl() = default;
   TrajOptDataTpl(const TrajOptProblemTpl<Scalar> &problem);
 };
+
+/// @brief Helper for computing the trajectory cost (from pre-computed problem
+/// data).
+/// @warning Call TrajOptProblemTpl::evaluate() first!
+template <typename Scalar>
+Scalar computeTrajectoryCost(const TrajOptDataTpl<Scalar> &problem_data);
 
 } // namespace aligator
 

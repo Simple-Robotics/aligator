@@ -28,7 +28,7 @@ args = Args().parse_args()
 robot = erd.load("ur10")
 q0_ref_arm = np.array([0.0, np.deg2rad(-120), 2 * np.pi / 3, np.deg2rad(-45), 0.0, 0.0])
 robot.q0[:] = q0_ref_arm
-print("Velocity limit (before): {}".format(robot.model.velocityLimit))
+print(f"Velocity limit (before): {robot.model.velocityLimit}")
 
 
 def load_projectile_model():
@@ -77,6 +77,7 @@ def append_ball_to_robot_model(
 
 
 rmodel, cmodel, vmodel, ref_q0 = append_ball_to_robot_model(robot)
+print(f"New model velocity lims: {rmodel.velocityLimit}")
 space = manifolds.MultibodyPhaseSpace(rmodel)
 rdata: pin.Data = rmodel.createData()
 nq = rmodel.nq
@@ -221,7 +222,7 @@ def get_ball_fn(target_pos):
 
 def create_term_constraint(target_pos):
     term_fn = get_ball_fn(target_pos)
-    return aligator.StageConstraint(term_fn, constraints.EqualityConstraintSet())
+    return (term_fn, constraints.EqualityConstraintSet())
 
 
 def get_position_limit_constraint():
@@ -230,32 +231,33 @@ def get_position_limit_constraint():
     box_cstr = constraints.BoxConstraint(
         robot.model.lowerPositionLimit, robot.model.upperPositionLimit
     )
-    return aligator.StageConstraint(pos_fn, box_cstr)
+    return (pos_fn, box_cstr)
 
 
 def get_velocity_limit_constraint():
     state_fn = aligator.StateErrorResidual(space, nu, space.neutral())
-    idx = [3, 4]
+    idx = [1, 3, 4, 5]
     vel_fn = state_fn[[nv + i for i in idx]]
-    vlim = robot.model.velocityLimit[idx]
+    vlim = rmodel.velocityLimit[idx]
+    assert vel_fn.nr == vlim.shape[0]
     box_cstr = constraints.BoxConstraint(-vlim, vlim)
-    return aligator.StageConstraint(vel_fn, box_cstr)
+    return (vel_fn, box_cstr)
 
 
 def get_torque_limit_constraint():
     ctrlfn = aligator.ControlErrorResidual(ndx, np.zeros(nu))
     eff = robot.model.effortLimit
     box_cstr = constraints.BoxConstraint(-eff, eff)
-    return aligator.StageConstraint(ctrlfn, box_cstr)
+    return (ctrlfn, box_cstr)
 
 
 def create_stage(contact: bool):
     dm = dyn_model1 if contact else dyn_model2
     rc = create_running_cost()
     stm = aligator.StageModel(rc, dm)
-    stm.addConstraint(get_torque_limit_constraint())
+    stm.addConstraint(*get_torque_limit_constraint())
     # stm.addConstraint(get_position_limit_constraint())
-    stm.addConstraint(get_velocity_limit_constraint())
+    stm.addConstraint(*get_velocity_limit_constraint())
     return stm
 
 
@@ -265,16 +267,16 @@ for k in range(nsteps):
     stages.append(create_stage(k <= t_contact))
 
 term_cost = create_term_cost()
-term_constraint = create_term_constraint(target_pos=target_pos)
 
 problem = aligator.TrajOptProblem(x0, stages, term_cost)
-problem.addTerminalConstraint(term_constraint)
+problem.addTerminalConstraint(*create_term_constraint(target_pos))
+problem.addTerminalConstraint(*get_velocity_limit_constraint())
 tol = 1e-4
-mu_init = 1e-2
+mu_init = 1e-1
 solver = aligator.SolverProxDDP(tol, mu_init, max_iters=300, verbose=aligator.VERBOSE)
-solver.linear_solver_choice = aligator.LQ_SOLVER_PARALLEL
-solver.rollout_type = aligator.ROLLOUT_LINEAR
-solver.sa_strategy = aligator.SA_FILTER
+# solver.linear_solver_choice = aligator.LQ_SOLVER_PARALLEL
+# solver.rollout_type = aligator.ROLLOUT_LINEAR
+# solver.sa_strategy = aligator.SA_FILTER
 his_cb = aligator.HistoryCallback()
 solver.setNumThreads(4)
 solver.registerCallback("his", his_cb)
@@ -329,22 +331,28 @@ if args.display:
     with vid_ctx:
         viz.play(qs, dt, callback=viz_callback)
 
-times = np.linspace(0.0, tf, nsteps + 1)
-_joint_names = rmodel.names[2:]
-_eff = robot.model.effortLimit
-fig1 = plot_controls_traj(times, us, joint_names=_joint_names, effort_limit=_eff)
-fig2 = plot_velocity_traj(times, vs[:, 6:], rmodel=robot.model)
+if args.plot:
+    times = np.linspace(0.0, tf, nsteps + 1)
+    _joint_names = robot.model.names
+    _efflims = robot.model.effortLimit
+    _vlims = robot.model.velocityLimit
+    fig1, _ = plot_controls_traj(
+        times, us, joint_names=_joint_names, effort_limit=_efflims
+    )
+    fig2, _ = plot_velocity_traj(
+        times, vs[:, :-6], rmodel=robot.model, vel_limit=_vlims
+    )
 
-for fig, name in [(fig1, "controls"), (fig2, "velocity")]:
-    PLOTDIR = Path("assets")
-    for ext in [".png", ".pdf"]:
-        figpath: Path = PLOTDIR / f"{EXPERIMENT_NAME}_{name}"
-        fig.savefig(figpath.with_suffix(ext))
+    for fig, name in [(fig1, "controls"), (fig2, "velocity")]:
+        PLOTDIR = Path("assets")
+        for ext in [".png", ".pdf"]:
+            figpath: Path = PLOTDIR / f"{EXPERIMENT_NAME}_{name}"
+            fig.savefig(figpath.with_suffix(ext))
 
-fig3 = plt.figure()
-ax: plt.Axes = fig3.add_subplot(111)
-ax.plot(dyn_slackn_slacks)
-ax.set_yscale("log")
-ax.set_title("Dynamic slack errors $\\|s\\|_\\infty$")
+    fig3 = plt.figure()
+    ax: plt.Axes = fig3.add_subplot(111)
+    ax.plot(dyn_slackn_slacks)
+    ax.set_yscale("log")
+    ax.set_title("Dynamic slack errors $\\|s\\|_\\infty$")
 
-plt.show()
+    plt.show()

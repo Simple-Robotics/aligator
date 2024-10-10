@@ -12,7 +12,7 @@ namespace aligator {
 
 /// @brief Simple struct holding together a function and set, to describe a
 /// constraint.
-template <typename Scalar> struct StageConstraintTpl {
+template <typename Scalar> struct ALIGATOR_DEPRECATED StageConstraintTpl {
   xyz::polymorphic<StageFunctionTpl<Scalar>> func;
   xyz::polymorphic<ConstraintSetBase<Scalar>> set;
 };
@@ -20,9 +20,6 @@ template <typename Scalar> struct StageConstraintTpl {
 /// @brief Convenience class to manage a stack of constraints.
 template <typename Scalar> struct ConstraintStackTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using ConstraintType = StageConstraintTpl<Scalar>;
-  using value_type = ConstraintType;
-  using data_type = ConstraintType;
   using PolyFunc = xyz::polymorphic<StageFunctionTpl<Scalar>>;
   using PolySet = xyz::polymorphic<ConstraintSetBase<Scalar>>;
 
@@ -36,7 +33,7 @@ template <typename Scalar> struct ConstraintStackTpl {
   bool empty() const { return size() == 0; }
   void clear();
 
-  template <typename Cstr> void pushBack(Cstr &&el) {
+  template <typename Cstr> ALIGATOR_DEPRECATED void pushBack(Cstr &&el) {
     assert(!el.func.valueless_after_move() &&
            "constraint must have non-null underlying function.");
     assert(!el.set.valueless_after_move() &&

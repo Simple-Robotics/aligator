@@ -71,8 +71,9 @@ SolverProxDDPTpl<Scalar>::SolverProxDDPTpl(const Scalar tol,
                                            const std::size_t max_iters,
                                            VerboseLevel verbose,
                                            HessianApprox hess_approx)
-    : target_tol_(tol), mu_init(mu_init), verbose_(verbose),
-      hess_approx_(hess_approx), max_iters(max_iters), rollout_max_iters(1),
+    : target_tol_(tol), target_dual_tol_(tol), sync_dual_tol(true),
+      mu_init(mu_init), verbose_(verbose), hess_approx_(hess_approx),
+      max_iters(max_iters), rollout_max_iters(1),
       filter_(0.0, ls_params.alpha_min, ls_params.max_num_steps),
       linesearch_(ls_params) {
   ls_params.interp_type = proxsuite::nlp::LSInterpolation::CUBIC;
@@ -116,7 +117,9 @@ Scalar SolverProxDDPTpl<Scalar>::tryLinearStep(const Problem &problem,
 
 template <typename Scalar>
 void SolverProxDDPTpl<Scalar>::setup(const Problem &problem) {
-  problem.checkIntegrity();
+  if (!problem.checkIntegrity())
+    ALIGATOR_RUNTIME_ERROR("Problem failed integrity check.");
+
   results_.~Results();
   workspace_.~Workspace();
   new (&results_) Results(problem);
@@ -400,7 +403,7 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
     vs[nsteps] = results_.vs[nsteps] + dvs[nsteps];
   }
 
-  prob_data.cost_ = problem.computeTrajectoryCost(prob_data);
+  prob_data.cost_ = computeTrajectoryCost(prob_data);
   return prob_data.cost_;
 }
 
@@ -412,6 +415,10 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
                                    const std::vector<VectorXs> &us_init,
                                    const std::vector<VectorXs> &vs_init,
                                    const std::vector<VectorXs> &lams_init) {
+
+  if (sync_dual_tol)
+    target_dual_tol_ = target_tol_;
+
   ALIGATOR_TRACY_ZONE_SCOPED;
   if (!workspace_.isInitialized() || !results_.isInitialized()) {
     ALIGATOR_RUNTIME_ERROR("workspace and results were not allocated yet!");
@@ -426,8 +433,14 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
 
   check_trajectory_and_assign(problem, xs_init, us_init, results_.xs,
                               results_.us);
-  assign_no_resize(vs_init, results_.vs);
-  assign_no_resize(lams_init, results_.lams);
+  const bool v_was_resized =
+      !vs_init.empty() && !assign_no_resize(vs_init, results_.vs);
+  const bool l_was_resized =
+      !lams_init.empty() && !assign_no_resize(lams_init, results_.lams);
+  if (v_was_resized || l_was_resized) {
+    ALIGATOR_WARNING("SolverProxDDP",
+                     "Resize happened when initializing multipliers.\n");
+  }
 
   if (force_initial_condition_) {
     workspace_.trial_xs[0] = problem.getInitState();
@@ -451,7 +464,7 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
   prim_tol_ = prim_tol0;
   updateTolsOnFailure();
 
-  inner_tol_ = std::max(inner_tol_, target_tol_);
+  inner_tol_ = std::max(inner_tol_, target_dual_tol_);
   prim_tol_ = std::max(prim_tol_, target_tol_);
 
   bool &conv = results_.conv = false;
@@ -491,22 +504,21 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
         break;
       }
 
-      Scalar criterion = std::max(results_.dual_infeas, results_.prim_infeas);
-      if (criterion <= target_tol_) {
+      if ((results_.dual_infeas <= target_dual_tol_) &&
+          (results_.prim_infeas <= target_tol_)) {
         conv = true;
         break;
       }
     } else {
-      Scalar old_mu = mu_penal_;
       setAlmPenalty(mu_penal_ * bcl_params.mu_update_factor);
       updateTolsOnFailure();
-      if (math::scalar_close(old_mu, mu_penal_)) {
+      if (math::scalar_close(mu_penal_, bcl_params.mu_lower_bound)) {
         // reset penalty to initial value
         setAlmPenalty(mu_init);
       }
     }
 
-    inner_tol_ = std::max(inner_tol_, 0.01 * target_tol_);
+    inner_tol_ = std::max(inner_tol_, 0.01 * target_dual_tol_);
     prim_tol_ = std::max(prim_tol_, target_tol_);
 
     al_iter++;
@@ -583,9 +595,9 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     computeCriterion();
 
     // exit if either the subproblem or overall problem converged
-    Scalar outer_crit = std::max(results_.dual_infeas, results_.prim_infeas);
-    if ((workspace_.inner_criterion <= inner_tol_) ||
-        (outer_crit <= target_tol_))
+    const bool overall_converged = (results_.dual_infeas <= target_dual_tol_) &&
+                                   (results_.prim_infeas <= target_tol_);
+    if ((workspace_.inner_criterion <= inner_tol_) || overall_converged)
       return true;
 
     computeProjectedJacobians(problem, mu_inv(), workspace_);

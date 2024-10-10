@@ -7,7 +7,7 @@
 #include "aligator/core/stage-data.hpp"
 #include "aligator/core/cost-abstract.hpp"
 
-#include <proxsuite-nlp/python/deprecation-policy.hpp>
+#include <eigenpy/deprecation-policy.hpp>
 
 namespace aligator {
 namespace python {
@@ -45,8 +45,10 @@ void exposeStage() {
       .def(bp::init<const PolyCost &, const PolyDynamics &>(
           ("self"_a, "cost", "dynamics")))
       .def<void (StageModel::*)(const context::StageConstraint &)>(
-          "addConstraint", &StageModel::addConstraint, ("self"_a, "constraint"),
-          "Add an existing constraint to the stage.")
+          "addConstraint", &StageModel::addConstraint,
+          eigenpy::deprecated_member<>("This method has been deprecated since "
+                                       "StageConstraint is deprecated."),
+          ("self"_a, "constraint"), "Add an existing constraint to the stage.")
       .def<void (StageModel::*)(const PolyFunction &, const PolyCstrSet &)>(
           "addConstraint", &StageModel::addConstraint,
           ("self"_a, "func", "cstr_set"),

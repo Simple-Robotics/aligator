@@ -3,6 +3,7 @@
 #include "aligator/core/constraint.hpp"
 #include <proxsuite-nlp/python/polymorphic.hpp>
 #include <proxsuite-nlp/constraint-base.hpp>
+#include <eigenpy/deprecation-policy.hpp>
 
 namespace aligator {
 namespace python {
@@ -27,9 +28,12 @@ void exposeConstraint() {
       ":param cs: constraint set",
       bp::no_init)
       .def("__init__",
-           bp::make_constructor(make_constraint_wrap,
-                                bp::default_call_policies(),
-                                ("func"_a, "cstr_set")),
+           bp::make_constructor(
+               make_constraint_wrap,
+               eigenpy::deprecation_warning_policy<>(
+                   "This class has been deprecated and will be removed in a "
+                   "future version of aligator."),
+               ("func"_a, "cstr_set")),
            "Contruct a StageConstraint from a StageFunction and a constraint "
            "set.")
       .def_readwrite("func", &StageConstraint::func)
@@ -40,7 +44,6 @@ void exposeConstraint() {
 
   bp::class_<ConstraintStack>("ConstraintStack", "The stack of constraint.",
                               bp::no_init)
-      .def(bp::init<>("self"_a))
       .add_property("size", &ConstraintStack::size,
                     "Get number of individual constraints.")
       .def_readonly("funcs", &ConstraintStack::funcs)

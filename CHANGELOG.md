@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add a cycleProblem function that properly rotates the problem data for MPC applications ([#215](https://github.com/Simple-Robotics/aligator/pull/215))
 - Add a DCM cost function
 - Add a cycleAppend function in Riccati solver headers to cycle the LQR solver
+- `SolverProxDDP`: add manually settable dual feasibility tolerance `target_dual_tol_` with a getter and setter (with side effects)
 
 ### Changed
 
@@ -29,6 +30,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rename `has_dyn_model` -> `hasDynModel` and `is_explicit` -> `isExplicit`
 - Add `cost` (trajectory cost) column to logger
 - `TrajOptProblem`: rename member `init_condition_` to `init_constraint_` (fitting with ctor argument name)
+- python/utils: return axes instances from velocity/controls plotting helpers
+- make `LinearFuntionTpl::evaluate()` call more efficient (using `.noalias()`)
+- `HistoryCallbackTpl` now stores stored data directly
+- Deprecate the `StageConstraintTpl` template struct, deprecate the related typedefs
+- [python] Deprecate `aligator.StageConstraint`, functions and methods (e.g. `StageModel.addConstraint(cstr: StageConstraint)`) which use it
 
 ### Removed
 

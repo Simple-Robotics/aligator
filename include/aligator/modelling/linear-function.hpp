@@ -40,7 +40,10 @@ template <typename Scalar> struct LinearFunctionTpl : StageFunctionTpl<Scalar> {
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &y, Data &data) const {
-    data.value_ = A_ * x + B_ * u + C_ * y + d_;
+    data.value_ = d_;
+    data.value_.noalias() += A_ * x;
+    data.value_.noalias() += B_ * u;
+    data.value_.noalias() += C_ * y;
   }
 
   /**

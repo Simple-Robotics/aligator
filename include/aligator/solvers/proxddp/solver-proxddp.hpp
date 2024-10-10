@@ -44,7 +44,6 @@ public:
   using DynamicsData = DynamicsDataTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using StageModel = StageModelTpl<Scalar>;
-  using ConstraintType = StageConstraintTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
   using CallbackPtr = shared_ptr<CallbackBaseTpl<Scalar>>;
   using CallbackMap = boost::unordered_map<std::string, CallbackPtr>;
@@ -75,11 +74,22 @@ public:
 
   /// Subproblem tolerance
   Scalar inner_tol_;
-  /// Desired primal feasibility
+  /// Desired primal feasibility (for each outer loop)
   Scalar prim_tol_;
-  /// Solver tolerance \f$\epsilon > 0\f$.
+  /// Solver tolerance \f$\epsilon > 0\f$. When sync_dual_tol is false, this
+  /// will be the desired primal feasibility, where the dual feasibility
+  /// tolerance is controlled by SolverProxDDPTpl::target_tol_dual.
   Scalar target_tol_ = 1e-6;
 
+private:
+  /// Solver desired dual feasibility (by default, same as
+  /// SolverProxDDPTpl::target_tol_)
+  Scalar target_dual_tol_;
+  /// When this is true, dual tolerance will be set to
+  /// SolverProxDDPTpl::target_tol_ when SolverProxDDPTpl::run() is called.
+  bool sync_dual_tol;
+
+public:
   Scalar mu_init = 0.01; //< Initial AL parameter
 
   //// Inertia-correcting heuristic
@@ -160,6 +170,7 @@ public:
                    VerboseLevel verbose = VerboseLevel::QUIET,
                    HessianApprox hess_approx = HessianApprox::GAUSS_NEWTON);
 
+  inline std::size_t getNumThreads() const { return num_threads_; }
   void setNumThreads(const std::size_t num_threads) {
     if (linearSolver_) {
       ALIGATOR_WARNING(
@@ -170,7 +181,13 @@ public:
     num_threads_ = num_threads;
     omp::set_default_options(num_threads);
   }
-  std::size_t getNumThreads() const { return num_threads_; }
+
+  Scalar getDualTolerance() const { return target_dual_tol_; }
+  /// Manually set desired dual feasibility tolerance.
+  void setDualTolerance(const Scalar tol) {
+    target_dual_tol_ = tol;
+    sync_dual_tol = false;
+  }
 
   /// @brief    Try a step of size \f$\alpha\f$.
   /// @returns  A primal-dual trial point

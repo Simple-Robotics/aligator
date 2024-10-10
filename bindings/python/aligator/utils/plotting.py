@@ -7,8 +7,8 @@ from aligator import HistoryCallback, Results
 def plot_convergence(cb: HistoryCallback, ax: plt.Axes, res: Results = None):
     from proxsuite_nlp.utils import plot_pd_errs
 
-    prim_infeas = cb.storage.prim_infeas.tolist()
-    dual_infeas = cb.storage.dual_infeas.tolist()
+    prim_infeas = cb.prim_infeas.tolist()
+    dual_infeas = cb.dual_infeas.tolist()
     if res is not None:
         prim_infeas.append(res.primal_infeas)
         dual_infeas.append(res.dual_infeas)
@@ -17,7 +17,9 @@ def plot_convergence(cb: HistoryCallback, ax: plt.Axes, res: Results = None):
     return
 
 
-def plot_se2_pose(q: np.ndarray, ax: plt.Axes, alpha=0.5, fc="tab:blue"):
+def plot_se2_pose(
+    q: np.ndarray, ax: plt.Axes, alpha=0.5, fc="tab:blue"
+) -> plt.Rectangle:
     from matplotlib import transforms
 
     w = 1.0
@@ -31,7 +33,7 @@ def plot_se2_pose(q: np.ndarray, ax: plt.Axes, alpha=0.5, fc="tab:blue"):
     return rect
 
 
-def _axes_flatten_if_ndarray(axes):
+def _axes_flatten_if_ndarray(axes) -> list[plt.Axes]:
     if isinstance(axes, np.ndarray):
         axes = axes.flatten()
     elif not isinstance(axes, list):
@@ -48,7 +50,7 @@ def plot_controls_traj(
     joint_names=None,
     rmodel=None,
     figsize=(6.4, 6.4),
-) -> plt.Figure:
+) -> tuple[plt.Figure, list[plt.Axes]]:
     t0 = times[0]
     tf = times[-1]
     us = np.asarray(us)
@@ -79,14 +81,23 @@ def plot_controls_traj(
     fig.supxlabel("Time $t$")
     fig.suptitle("Control trajectories")
     fig.tight_layout()
-    return fig
+    return fig, axes
 
 
 def plot_velocity_traj(
-    times, vs, rmodel, axes=None, ncols=2, figsize=(6.4, 6.4)
-) -> plt.Figure:
+    times,
+    vs,
+    rmodel,
+    axes=None,
+    ncols=2,
+    vel_limit=None,
+    figsize=(6.4, 6.4),
+) -> tuple[plt.Figure, list[plt.Axes]]:
     vs = np.asarray(vs)
-    nv = vs.shape[1]
+    nv = rmodel.nv
+    assert nv == vs.shape[1]
+    if vel_limit is not None:
+        assert nv == vel_limit.shape[0]
     idx_to_joint_id_map = {}
     jid = 0
     for i in range(nv):
@@ -96,7 +107,6 @@ def plot_velocity_traj(
     nrows, r = divmod(nv, ncols)
     nrows += int(r > 0)
 
-    vel_limit = rmodel.velocityLimit
     t0 = times[0]
     tf = times[-1]
 
@@ -112,13 +122,14 @@ def plot_velocity_traj(
         ax.plot(times, vs[:, i])
         jid = idx_to_joint_id_map[i]
         joint_name = rmodel.names[jid].lower()
-        ylim = ax.get_ylim()
-        ax.hlines(-vel_limit[i], t0, tf, colors="k", linestyles="--")
-        ax.hlines(+vel_limit[i], t0, tf, colors="r", linestyles="dashdot")
-        ax.set_ylim(*ylim)
+        if vel_limit is not None:
+            ylim = ax.get_ylim()
+            ax.hlines(-vel_limit[i], t0, tf, colors="k", linestyles="--")
+            ax.hlines(+vel_limit[i], t0, tf, colors="r", linestyles="dashdot")
+            ax.set_ylim(*ylim)
         ax.set_ylabel(joint_name)
 
     fig.supxlabel("Time $t$")
     fig.suptitle("Velocity trajectories")
     fig.tight_layout()
-    return fig
+    return fig, axes

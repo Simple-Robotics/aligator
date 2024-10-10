@@ -30,9 +30,8 @@ public:
   using PolyManifold = xyz::polymorphic<Manifold>;
   using Dynamics = DynamicsModelTpl<Scalar>;
   using PolyDynamics = xyz::polymorphic<Dynamics>;
-  using FunctionPtr = xyz::polymorphic<StageFunctionTpl<Scalar>>;
-  using ConstraintSetPtr = xyz::polymorphic<ConstraintSetBase<Scalar>>;
-  using Constraint = StageConstraintTpl<Scalar>;
+  using PolyFunction = xyz::polymorphic<StageFunctionTpl<Scalar>>;
+  using PolyConstraintSet = xyz::polymorphic<ConstraintSetBase<Scalar>>;
   using Cost = CostAbstractTpl<Scalar>;
   using PolyCost = xyz::polymorphic<Cost>;
   using Data = StageDataTpl<Scalar>;
@@ -106,11 +105,14 @@ public:
   int numDual() const { return ndx2() + nc(); }
 
   /// @brief    Add a constraint to the stage.
-  template <typename T> void addConstraint(T &&cstr);
+  template <typename Cstr, typename = std::enable_if_t<std::is_same_v<
+                               std::decay_t<Cstr>, StageConstraintTpl<Scalar>>>>
+  ALIGATOR_DEPRECATED void addConstraint(Cstr &&cstr);
 
   /// @copybrief  addConstraint().
   /// @details    Adds a constraint by allocating a new StageConstraintTpl.
-  void addConstraint(const FunctionPtr &func, const ConstraintSetPtr &cstr_set);
+  void addConstraint(const PolyFunction &func,
+                     const PolyConstraintSet &cstr_set);
 
   /* Evaluate costs, constraints, ... */
 
@@ -156,7 +158,7 @@ public:
 };
 
 template <typename Scalar>
-template <typename Cstr>
+template <typename Cstr, typename>
 void StageModelTpl<Scalar>::addConstraint(Cstr &&cstr) {
   const int c_nu = cstr.func->nu;
   if (c_nu != this->nu()) {

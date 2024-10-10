@@ -84,7 +84,7 @@ term_cost = aligator.CostStack(space, nu)
 term_cost.addCost(aligator.QuadraticResidualCost(space, frame_obj_fn, weights_ee_term))
 
 frame_fn_z = make_ee_residual()
-frame_cstr = aligator.StageConstraint(frame_fn_z, constraints.NegativeOrthant())
+frame_cstr = (frame_fn_z, constraints.NegativeOrthant())
 
 
 time_idx_below_ = int(0.3 * nsteps)
@@ -92,20 +92,20 @@ stages = []
 for i in range(nsteps):
     stm = aligator.StageModel(rcost, dyn_model)
     if i > time_idx_below_:
-        stm.addConstraint(frame_cstr)
+        stm.addConstraint(*frame_cstr)
     stages.append(stm)
 
 
 problem = aligator.TrajOptProblem(x0, stages, term_cost)
-problem.addTerminalConstraint(frame_cstr)
+problem.addTerminalConstraint(*frame_cstr)
 
 
 tol = 1e-4
-mu_init = 1e-3
+mu_init = 1e-1
 max_iters = 150
 verbose = aligator.VerboseLevel.VERBOSE
 solver = aligator.SolverProxDDP(tol, mu_init, max_iters=max_iters, verbose=verbose)
-solver.rollout_type = aligator.ROLLOUT_LINEAR
+solver.rollout_type = aligator.ROLLOUT_NONLINEAR
 solver.setNumThreads(4)
 cb = aligator.HistoryCallback()
 solver.registerCallback("his", cb)

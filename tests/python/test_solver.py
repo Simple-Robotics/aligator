@@ -93,10 +93,9 @@ def test_proxddp_lqr(strategy):
     stages = [stage] * nsteps
     problem = aligator.TrajOptProblem(x0, stages, term_cost)
 
-    term_cstr = aligator.StageConstraint(
+    problem.addTerminalConstraint(
         state_fn, aligator.constraints.EqualityConstraintSet()
     )
-    problem.addTerminalConstraint(term_cstr)
 
     tol = 1e-6
     mu_init = 1e-4

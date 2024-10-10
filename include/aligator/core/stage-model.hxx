@@ -32,8 +32,8 @@ StageModelTpl<Scalar>::StageModelTpl(const PolyCost &cost,
 }
 
 template <typename Scalar>
-void StageModelTpl<Scalar>::addConstraint(const FunctionPtr &func,
-                                          const ConstraintSetPtr &cstr_set) {
+void StageModelTpl<Scalar>::addConstraint(const PolyFunction &func,
+                                          const PolyConstraintSet &cstr_set) {
   if (func->nu != this->nu()) {
     ALIGATOR_RUNTIME_ERROR(fmt::format(
         "Function has the wrong dimension for u: got {:d}, expected {:d}",

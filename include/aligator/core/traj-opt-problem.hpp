@@ -23,11 +23,12 @@ namespace aligator {
 template <typename _Scalar> struct TrajOptProblemTpl {
   using Scalar = _Scalar;
   using StageModel = StageModelTpl<Scalar>;
+  using StageFunction = StageFunctionTpl<Scalar>;
   using UnaryFunction = UnaryFunctionTpl<Scalar>;
   using Data = TrajOptDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using CostAbstract = CostAbstractTpl<Scalar>;
-  using ConstraintType = StageConstraintTpl<Scalar>;
+  using ConstraintSet = ConstraintSetBase<Scalar>;
   using StateErrorResidual = StateErrorResidualTpl<Scalar>;
 
   /**
@@ -146,7 +147,12 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   }
 
   /// @brief Add a terminal constraint for the model.
-  void addTerminalConstraint(const ConstraintType &cstr);
+  ALIGATOR_DEPRECATED void
+  addTerminalConstraint(const StageConstraintTpl<Scalar> &cstr);
+  void addTerminalConstraint(const xyz::polymorphic<StageFunction> &func,
+                             const xyz::polymorphic<ConstraintSet> &set) {
+    this->term_cstrs_.pushBack(func, set);
+  }
   /// @brief Remove all terminal constraints.
   void removeTerminalConstraints() { term_cstrs_.clear(); }
 
@@ -175,18 +181,12 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// updates the supplied problem data (TrajOptDataTpl) object.
   void replaceStageCircular(const xyz::polymorphic<StageModel> &model);
 
-  /// @brief Helper for computing the trajectory cost (from pre-computed problem
-  /// data).
-  /// @warning Call TrajOptProblemTpl::evaluate() first!
-  Scalar computeTrajectoryCost(const Data &problem_data) const;
-
-  inline void checkIntegrity() const { checkStages(); }
+  bool checkIntegrity() const;
 
 protected:
   /// Pointer to underlying state error residual
   StateErrorResidual *init_state_error_;
   /// @brief Check if all stages are non-null.
-  void checkStages() const;
 
 private:
   static auto createStateError(const ConstVectorRef &x0,

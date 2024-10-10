@@ -87,7 +87,7 @@ u_min = -u_max
 def make_control_bounds():
     fun = aligator.ControlErrorResidual(ndx, nu)
     cstr_set = constraints.BoxConstraint(u_min, u_max)
-    return aligator.StageConstraint(fun, cstr_set)
+    return (fun, cstr_set)
 
 
 def computeQuasistatic(model: pin.Model, x0, a):
@@ -110,7 +110,7 @@ for i in range(nsteps):
 
     stm = aligator.StageModel(rcost, discrete_dynamics)
     if args.bounds:
-        stm.addConstraint(make_control_bounds())
+        stm.addConstraint(*make_control_bounds())
     stages.append(stm)
 
 
@@ -187,12 +187,10 @@ ax.set_zlabel("$z$")
 
 plt.figure()
 
-cb_store: aligator.HistoryCallback.history_storage = cb.storage
-
 nrang = range(1, results.num_iters + 1)
 ax: plt.Axes = plt.gca()
-plt.plot(nrang, cb_store.prim_infeas, ls="--", marker=".", label="primal err")
-plt.plot(nrang, cb_store.dual_infeas, ls="--", marker=".", label="dual err")
+plt.plot(nrang, cb.prim_infeas, ls="--", marker=".", label="primal err")
+plt.plot(nrang, cb.dual_infeas, ls="--", marker=".", label="dual err")
 ax.set_xlabel("iter")
 ax.set_yscale("log")
 plt.legend()

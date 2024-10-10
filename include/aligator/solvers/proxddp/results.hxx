@@ -12,7 +12,8 @@ namespace aligator {
 template <typename Scalar>
 ResultsTpl<Scalar>::ResultsTpl(const TrajOptProblemTpl<Scalar> &problem)
     : Base() {
-  problem.checkIntegrity();
+  if (!problem.checkIntegrity())
+    ALIGATOR_RUNTIME_ERROR("Problem failed integrity check.");
 
   const std::size_t nsteps = problem.numSteps();
   std::tie(xs, us, vs, lams) = problemInitializeSolution(problem);

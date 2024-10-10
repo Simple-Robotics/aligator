@@ -21,7 +21,8 @@ template <typename Scalar> struct ResultsFDDPTpl : ResultsBaseTpl<Scalar> {
 template <typename Scalar>
 ResultsFDDPTpl<Scalar>::ResultsFDDPTpl(
     const TrajOptProblemTpl<Scalar> &problem) {
-  problem.checkIntegrity();
+  if (!problem.checkIntegrity())
+    ALIGATOR_RUNTIME_ERROR("Problem failed integrity check.");
   using StageModel = StageModelTpl<Scalar>;
 
   const std::size_t nsteps = problem.numSteps();

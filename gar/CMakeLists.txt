@@ -34,7 +34,7 @@ if(ENABLE_TEMPLATE_INSTANTIATION)
   file(
     GLOB TEMPL_DECL_HEADERS
     RELATIVE ${CMAKE_CURRENT_LIST_DIR}/include
-    include/aligator/gar/*.txx
+    CONFIGURE_DEPENDS include/aligator/gar/*.txx
   )
   list(APPEND HEADERS ${TEMPL_DECL_HEADERS})
   target_sources(aligator_gar PRIVATE ${SOURCES})

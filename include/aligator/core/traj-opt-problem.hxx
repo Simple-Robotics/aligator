@@ -4,7 +4,6 @@
 #pragma once
 
 #include "aligator/core/traj-opt-problem.hpp"
-#include "aligator/core/stage-data.hpp"
 #include "aligator/utils/mpc-util.hpp"
 #include "aligator/tracy.hpp"
 
@@ -20,7 +19,7 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     : init_constraint_(std::move(init_constraint)), stages_(stages),
       term_cost_(std::move(term_cost)), unone_(term_cost_->nu) {
   unone_.setZero();
-  checkStages();
+  checkIntegrity();
   init_state_error_ = &dynamic_cast<StateErrorResidual &>(*init_constraint_);
 }
 
@@ -131,24 +130,40 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
 template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::addStage(
     const xyz::polymorphic<StageModel> &stage) {
-  // if (stage == nullptr)
-  //   ALIGATOR_RUNTIME_ERROR("Input stage is null.");
   stages_.push_back(stage);
 }
 
-template <typename Scalar> void TrajOptProblemTpl<Scalar>::checkStages() const {
-  for (auto st = begin(stages_); st != end(stages_); ++st) {
-    /*if (*st == nullptr) {
-      long d = std::distance(stages_.begin(), st);
-      ALIGATOR_RUNTIME_ERROR(fmt::format("Stage {:d} is null.", d));
-    }*/
+template <typename Scalar>
+bool TrajOptProblemTpl<Scalar>::checkIntegrity() const {
+  bool ok = true;
+
+  if (numSteps() == 0)
+    return true;
+
+  if (numSteps() > 0) {
+    if (stages_[0].valueless_after_move())
+      return false;
+    ok &= stages_[0]->ndx1() == init_constraint_->ndx1;
   }
+
+  std::size_t k = 1;
+  for (; k < numSteps(); k++) {
+    if (stages_[k].valueless_after_move())
+      return false;
+    ok &= stages_[k - 1]->nx2() == stages_[k]->nx1();
+    ok &= stages_[k - 1]->ndx2() == stages_[k]->ndx1();
+  }
+  if (term_cost_.valueless_after_move())
+    return false;
+  ok &= stages_[k - 1]->nx2() == term_cost_->nx();
+  ok &= stages_[k - 1]->ndx2() == term_cost_->ndx();
+  return ok;
 }
 
 template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::addTerminalConstraint(
-    const ConstraintType &cstr) {
-  term_cstrs_.pushBack(cstr);
+    const StageConstraintTpl<Scalar> &cstr) {
+  term_cstrs_.pushBack(cstr.func, cstr.set);
 }
 
 template <typename Scalar>
@@ -162,25 +177,6 @@ void TrajOptProblemTpl<Scalar>::replaceStageCircular(
   addStage(model);
   rotate_vec_left(stages_);
   stages_.pop_back();
-}
-
-template <typename Scalar>
-Scalar TrajOptProblemTpl<Scalar>::computeTrajectoryCost(
-    const Data &problem_data) const {
-  ALIGATOR_NOMALLOC_SCOPED;
-  ALIGATOR_TRACY_ZONE_SCOPED;
-  Scalar traj_cost = 0.;
-
-  const std::size_t nsteps = numSteps();
-  const auto &sds = problem_data.stage_data;
-
-#pragma omp simd reduction(+ : traj_cost)
-  for (std::size_t i = 0; i < nsteps; i++) {
-    traj_cost += sds[i]->cost_data->value_;
-  }
-  traj_cost += problem_data.term_cost_data->value_;
-
-  return traj_cost;
 }
 
 } // namespace aligator

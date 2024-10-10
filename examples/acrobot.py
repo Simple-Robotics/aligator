@@ -59,19 +59,15 @@ box_set = constraints.BoxConstraint(umin, umax)
 for i in range(nsteps):
     stm = aligator.StageModel(cost, dyn_model)
     if args.bounds:
-        stm.addConstraint(
-            func=aligator.ControlErrorResidual(space.ndx, nu),
-            cstr_set=box_set,
-        )
+        stm.addConstraint(aligator.ControlErrorResidual(space.ndx, nu), box_set)
     stages.append(stm)
 
 problem = aligator.TrajOptProblem(x0, stages, term_cost)
 if args.term_cstr:
-    term_cstr = aligator.StageConstraint(
+    problem.addTerminalConstraint(
         aligator.StateErrorResidual(space, nu, target),
         constraints.EqualityConstraintSet(),
     )
-    problem.addTerminalConstraint(term_cstr)
 
 tol = 1e-3
 mu_init = 0.01
