@@ -36,6 +36,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Deprecate the `StageConstraintTpl` template struct, deprecate the related typedefs
 - [python] Deprecate `aligator.StageConstraint`, functions and methods (e.g. `StageModel.addConstraint(cstr: StageConstraint)`) which use it
 
+The following **API-BREAKING** changes come from PR [#229](https://github.com/Simple-Robotics/aligator/pull/229)
+
+- Separate `DynamicsModelTpl` and its subclasses from the `StageFunctionTpl` class hierarchy
+- Methods (`.evaluate()`, `.computeJacobians()`) in `StageFunctionTpl` are now binary (take only `(x, u)`)
+
 ### Removed
 
 - Remove constraint scalers (including header `core/alm-weights.hpp`) from ProxDDP algorithm ([#214](https://github.com/Simple-Robotics/aligator/pull/214))
