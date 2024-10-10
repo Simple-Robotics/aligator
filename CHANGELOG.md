@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `HistoryCallbackTpl` now stores stored data directly
 - Deprecate the `StageConstraintTpl` template struct, deprecate the related typedefs
 - [python] Deprecate `aligator.StageConstraint`, functions and methods (e.g. `StageModel.addConstraint(cstr: StageConstraint)`) which use it
+- Fix warnings in `multibody-constraint-fwd.{hpp, hxx}` about deprecated Pinocchio types and functions (commit df04100c)
 
 The following **API-BREAKING** changes come from PR [#229](https://github.com/Simple-Robotics/aligator/pull/229)
 
