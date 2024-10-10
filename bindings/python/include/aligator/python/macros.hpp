@@ -3,7 +3,6 @@
 #pragma once
 
 #include <type_traits>
-#include <fmt/format.h>
 #include "aligator/utils/exceptions.hpp"
 #include <eigenpy/fwd.hpp>
 
@@ -37,8 +36,7 @@ ret_type suppress_if_void(boost::python::detail::method_result &&o) {
  */
 #define ALIGATOR_PYTHON_OVERRIDE_PURE(ret_type, pyname, ...)                   \
   ALIGATOR_PYTHON_OVERRIDE_IMPL(ret_type, pyname, __VA_ARGS__);                \
-  ALIGATOR_RUNTIME_ERROR(                                                      \
-      fmt::format("Tried to call pure virtual function {:s}.", pyname))
+  ALIGATOR_RUNTIME_ERROR("Tried to call pure virtual function {:s}.", pyname)
 
 /**
  * @def ALIGATOR_PYTHON_OVERRIDE(ret_type, cname, fname, ...)

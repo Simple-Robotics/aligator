@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Deprecate the `StageConstraintTpl` template struct, deprecate the related typedefs
 - [python] Deprecate `aligator.StageConstraint`, functions and methods (e.g. `StageModel.addConstraint(cstr: StageConstraint)`) which use it
 - Fix warnings in `multibody-constraint-fwd.{hpp, hxx}` about deprecated Pinocchio types and functions (commit df04100c)
+- Change formatting of exceptions, using variadic macro and type-erased implementation ([#230](https://github.com/Simple-Robotics/aligator/pull/230))
 
 The following **API-BREAKING** changes come from PR [#229](https://github.com/Simple-Robotics/aligator/pull/229)
 

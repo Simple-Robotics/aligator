@@ -12,9 +12,9 @@ LogResidualCostTpl<Scalar>::LogResidualCostTpl(
     const ConstVectorRef &scale)
     : Base(space, function->nu), barrier_weights_(scale), residual_(function) {
   if (scale.size() != function->nr) {
-    ALIGATOR_RUNTIME_ERROR(fmt::format(
+    ALIGATOR_RUNTIME_ERROR(
         "scale argument dimension ({:d}) != function codimension ({:d})",
-        scale.size(), function->nr));
+        scale.size(), function->nr);
   }
   bool negs = (scale.array() <= 0.0).any();
   if (negs) {

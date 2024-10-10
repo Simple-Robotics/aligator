@@ -424,10 +424,9 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
     ALIGATOR_RUNTIME_ERROR("workspace and results were not allocated yet!");
   }
   if (mu_init < bcl_params.mu_lower_bound) {
-    ALIGATOR_WARNING(
-        "SolverProxDDP",
-        fmt::format("Initial value of mu_init < mu_lower_bound ({:.3g})",
-                    bcl_params.mu_lower_bound));
+    ALIGATOR_WARNING("SolverProxDDP",
+                     "Initial value of mu_init < mu_lower_bound ({:.3g})",
+                     bcl_params.mu_lower_bound);
     setAlmPenalty(mu_init);
   }
 
@@ -448,8 +447,8 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
   }
 
   logger.active = (verbose_ > 0);
-  for (const auto &col : BASIC_KEYS) {
-    logger.addColumn(col);
+  for (size_t j = 0; j < std::size(BASIC_KEYS); j++) {
+    logger.addColumn(BASIC_KEYS[j]);
   }
   logger.printHeadline();
 
