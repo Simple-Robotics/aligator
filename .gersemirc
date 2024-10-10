@@ -1,0 +1,6 @@
+line_length: 80
+cache: true
+indent: 2
+quiet: true
+warn_about_unknown_commands: false
+workers: 8

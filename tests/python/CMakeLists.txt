@@ -5,7 +5,8 @@
 file(
   GLOB PYTHON_TESTS
   RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-  CONFIGURE_DEPENDS test_*.py
+  CONFIGURE_DEPENDS
+  test_*.py
 )
 if(NOT BUILD_CROCODDYL_COMPAT)
   list(REMOVE_ITEM PYTHON_TESTS test_compat_croc.py)
@@ -22,11 +23,18 @@ make_directory(${CMAKE_CURRENT_BINARY_DIR})
 
 foreach(pyfile ${PYTHON_TESTS})
   get_filename_component(test_name ${pyfile} NAME_WE)
-  string(REGEX REPLACE "^test_" "${PROJECT_NAME}-test-py-" test_name ${test_name})
+  string(
+    REGEX REPLACE
+    "^test_"
+    "${PROJECT_NAME}-test-py-"
+    test_name
+    ${test_name}
+  )
   string(REPLACE "_" "-" test_name ${test_name})
   execute_process(
-    COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/${pyfile}
-            ${CMAKE_CURRENT_BINARY_DIR}/${pyfile}
+    COMMAND
+      ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/${pyfile}
+      ${CMAKE_CURRENT_BINARY_DIR}/${pyfile}
   )
   message(STATUS "Adding Python test: ${test_name}")
   add_python_unit_test(${test_name} "tests/python/${pyfile}" "tests/python" "bindings/python")
@@ -43,13 +51,17 @@ function(add_test_binding_lib test_name)
   target_link_libraries(${target_name} PUBLIC eigenpy::eigenpy)
   set_target_properties(
     ${target_name}
-    PROPERTIES PREFIX ""
-               SUFFIX ${PYTHON_EXT_SUFFIX}
-               LIBRARY_OUTPUT_NAME ${test_name}
-               RUNTIME_OUTPUT_NAME ${test_name}
+    PROPERTIES
+      PREFIX ""
+      SUFFIX ${PYTHON_EXT_SUFFIX}
+      LIBRARY_OUTPUT_NAME ${test_name}
+      RUNTIME_OUTPUT_NAME ${test_name}
   )
   # test for possible import segfault
-  add_test(NAME ${target_name} COMMAND ${PYTHON_EXECUTABLE} -c "import ${test_name}")
+  add_test(
+    NAME ${target_name}
+    COMMAND ${PYTHON_EXECUTABLE} -c "import ${test_name}"
+  )
   message(STATUS "Adding Python/C++ test ${test_name}")
 
   add_dependencies(build_tests ${target_name})
