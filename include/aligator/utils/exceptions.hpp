@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 #include <string>
-#include <fmt/base.h>
+#include <fmt/core.h>
 
 #define ALIGATOR_RUNTIME_ERROR(...)                                            \
   throw ::aligator::RuntimeError(                                              \
