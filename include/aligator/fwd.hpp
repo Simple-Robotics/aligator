@@ -4,6 +4,7 @@
 #pragma once
 
 #include <proxsuite-nlp/fwd.hpp>
+#include <proxsuite-nlp/config.hpp>
 
 #ifdef ALIGATOR_WITH_PINOCCHIO
 #include <pinocchio/config.hpp>
@@ -33,7 +34,12 @@ namespace aligator {
 
 // NOLINTBEGIN(misc-unused-using-decls)
 
-using proxsuite::nlp::ConstraintSetBase;
+#if PROXSUITE_NLP_VERSION_AT_LEAST(0, 9, 0)
+using proxsuite::nlp::ConstraintSetTpl;
+#else
+template <typename T>
+using ConstraintSetTpl = proxsuite::nlp::ConstraintSetBase<T>;
+#endif
 using proxsuite::nlp::ManifoldAbstractTpl;
 // Use the math_types template from proxsuite-nlp.
 using proxsuite::nlp::VerboseLevel;

@@ -31,7 +31,7 @@ public:
   using Dynamics = DynamicsModelTpl<Scalar>;
   using PolyDynamics = xyz::polymorphic<Dynamics>;
   using PolyFunction = xyz::polymorphic<StageFunctionTpl<Scalar>>;
-  using PolyConstraintSet = xyz::polymorphic<ConstraintSetBase<Scalar>>;
+  using PolyConstraintSet = xyz::polymorphic<ConstraintSetTpl<Scalar>>;
   using Cost = CostAbstractTpl<Scalar>;
   using PolyCost = xyz::polymorphic<Cost>;
   using Data = StageDataTpl<Scalar>;

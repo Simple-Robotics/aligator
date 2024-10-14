@@ -28,7 +28,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   using Data = TrajOptDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
   using CostAbstract = CostAbstractTpl<Scalar>;
-  using ConstraintSet = ConstraintSetBase<Scalar>;
+  using ConstraintSet = ConstraintSetTpl<Scalar>;
   using StateErrorResidual = StateErrorResidualTpl<Scalar>;
 
   /**

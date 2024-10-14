@@ -18,7 +18,7 @@ using UnaryFunction = UnaryFunctionTpl<Scalar>;
 using StageFunctionData = StageFunctionDataTpl<Scalar>;
 using StageConstraint ALIGATOR_DEPRECATED = StageConstraintTpl<Scalar>;
 
-using ConstraintSet = ConstraintSetBase<Scalar>;
+using ConstraintSet = ConstraintSetTpl<Scalar>;
 
 using CostBase ALIGATOR_DEPRECATED_MESSAGE(
     "Use the CostAbstract typedef instead.") = CostAbstractTpl<Scalar>;

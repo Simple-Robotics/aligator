@@ -48,7 +48,7 @@ public:
   using CallbackPtr = shared_ptr<CallbackBaseTpl<Scalar>>;
   using CallbackMap = boost::unordered_map<std::string, CallbackPtr>;
   using ConstraintStack = ConstraintStackTpl<Scalar>;
-  using CstrSet = ConstraintSetBase<Scalar>;
+  using CstrSet = ConstraintSetTpl<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
   using LinesearchOptions = typename Linesearch<Scalar>::Options;
   using LinesearchType = proxsuite::nlp::ArmijoLinesearch<Scalar>;

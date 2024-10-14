@@ -14,14 +14,14 @@ namespace aligator {
 /// constraint.
 template <typename Scalar> struct ALIGATOR_DEPRECATED StageConstraintTpl {
   xyz::polymorphic<StageFunctionTpl<Scalar>> func;
-  xyz::polymorphic<ConstraintSetBase<Scalar>> set;
+  xyz::polymorphic<ConstraintSetTpl<Scalar>> set;
 };
 
 /// @brief Convenience class to manage a stack of constraints.
 template <typename Scalar> struct ConstraintStackTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using PolyFunc = xyz::polymorphic<StageFunctionTpl<Scalar>>;
-  using PolySet = xyz::polymorphic<ConstraintSetBase<Scalar>>;
+  using PolySet = xyz::polymorphic<ConstraintSetTpl<Scalar>>;
 
   ConstraintStackTpl() : indices_({0}) {};
   ConstraintStackTpl(const ConstraintStackTpl &) = default;
