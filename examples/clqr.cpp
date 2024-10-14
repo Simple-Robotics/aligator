@@ -78,7 +78,7 @@ int main() {
   if (terminal) {
     auto xf = VectorXd::Ones(nx);
     auto func = StateErrorResidualTpl<double>(space, nu, xf);
-    problem.addTerminalConstraint({func, EqualityConstraint()});
+    problem.addTerminalConstraint(func, EqualityConstraint());
   }
 
   const double tol = 1e-6;

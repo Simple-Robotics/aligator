@@ -13,7 +13,7 @@ namespace aligator {
 
 template <typename Scalar>
 auto getConstraintProductSet(const ConstraintStackTpl<Scalar> &constraints) {
-  std::vector<xyz::polymorphic<ConstraintSetBase<Scalar>>> components;
+  std::vector<xyz::polymorphic<ConstraintSetTpl<Scalar>>> components;
   for (size_t i = 0; i < constraints.size(); i++) {
     components.push_back(constraints.sets[i]);
   }
