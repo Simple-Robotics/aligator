@@ -161,6 +161,7 @@ private:
   /// This is the global parameter: scales may be applied for stagewise
   /// constraints, dynamicals...
   Scalar mu_penal_ = mu_init;
+  Scalar mu_penal_inv_ = 1. / mu_penal_;
   /// Linesearch function
   LinesearchType linesearch_;
 
@@ -286,7 +287,7 @@ public:
     return bcl_params.dyn_al_scale * mu_penal_;
   }
   ALIGATOR_INLINE Scalar mu() const { return mu_penal_; }
-  ALIGATOR_INLINE Scalar mu_inv() const { return 1. / mu(); }
+  ALIGATOR_INLINE Scalar mu_inv() const { return mu_penal_inv_; }
 
   /// @brief Update primal-dual feedback gains (control, costate, path
   /// multiplier)
@@ -308,6 +309,7 @@ protected:
   /// Set dual proximal/ALM penalty parameter.
   ALIGATOR_INLINE void setAlmPenalty(Scalar new_mu) noexcept {
     mu_penal_ = std::max(new_mu, bcl_params.mu_lower_bound);
+    mu_penal_inv_ = 1. / mu_penal_;
   }
 
   // See sec. 3.1 of the IPOPT paper [Wächter, Biegler 2006]
