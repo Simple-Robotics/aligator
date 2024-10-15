@@ -18,6 +18,11 @@ ParallelRiccatiSolver<Scalar>::ParallelRiccatiSolver(
     LQRProblemTpl<Scalar> &problem, const uint num_threads)
     : Base(), numThreads(num_threads), problem_(&problem) {
   ALIGATOR_TRACY_ZONE_SCOPED;
+  if (num_threads < 2) {
+    throw std::runtime_error(fmt::format(
+        "{:s} ({:s}:{:s}) num_threads should be greater than or equal to 2.",
+        __FUNCTION__, __FILE__, __LINE__));
+  }
 
   uint N = (uint)problem.horizon();
   for (uint i = 0; i < num_threads; i++) {
@@ -209,8 +214,8 @@ void ParallelRiccatiSolver<Scalar>::cycleAppend(const KnotType &knot) {
   rotate_vec_left(condensedFacs.ldlt);
 
   auto [i0, i1] = get_work(problem_->horizon(), numThreads - 2, numThreads);
-  int dim0 = problem_->stages[i0].nx;
-  int dim1 = problem_->stages[i1 - 1].nx;
+  uint dim0 = problem_->stages[i0].nx;
+  uint dim1 = problem_->stages[i1 - 1].nx;
   condensedKktSystem.subdiagonal.back() = Eigen::MatrixXd::Zero(dim1, dim0);
   condensedKktSystem.diagonal.back() = Eigen::MatrixXd::Zero(dim1, dim1);
   condensedKktSystem.diagonal.back() = Eigen::MatrixXd::Zero(dim0, dim1);
