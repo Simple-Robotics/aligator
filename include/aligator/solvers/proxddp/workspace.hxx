@@ -117,8 +117,8 @@ void WorkspaceTpl<Scalar>::cycleAppend(const TrajOptProblemTpl<Scalar> &problem,
 
   shifted_constraints = prev_vs;
   rotate_vec_left(knots, 0, 1);
-  knots[nsteps - 1] =
-      gar::LQRKnotTpl<double>(stage.ndx1(), stage.nu(), stage.nc());
+  knots[nsteps - 1] = gar::LQRKnotTpl<double>(
+      uint(stage.ndx1()), uint(stage.nu()), uint(stage.nc()));
 
   rotate_vec_left(cstr_product_sets, 0, 1);
   cstr_product_sets[nsteps - 1] =
