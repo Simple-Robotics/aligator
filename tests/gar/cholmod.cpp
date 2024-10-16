@@ -20,13 +20,13 @@ BOOST_AUTO_TEST_CASE(helper_assignment_dense) {
   MatrixXs submat(10, 9);
   submat.setRandom();
   densemat.bottomRightCorner(10, 9) = submat;
-  gar::helpers::sparseAssignDenseBlock<false>(10, 11, submat, mat);
+  gar::helpers::sparseAssignDenseBlock(10, 11, submat, mat, false);
   BOOST_CHECK(densemat.isApprox(mat.toDense()));
   fmt::println("submat 1:\n{}", submat);
 
   submat.setRandom(5, 5);
   densemat.block(3, 4, 5, 5) = submat;
-  gar::helpers::sparseAssignDenseBlock<false>(3, 4, submat, mat);
+  gar::helpers::sparseAssignDenseBlock(3, 4, submat, mat, false);
   BOOST_CHECK(densemat.isApprox(mat.toDense()));
   fmt::println("submat 2:\n{}", submat);
 
@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(helper_assignment_dense) {
   densemat.setZero();
   mat.setZero();
   densemat.block(3, 4, 5, 5) = submat;
-  gar::helpers::sparseAssignDenseBlock<true>(3, 4, submat, mat);
+  gar::helpers::sparseAssignDenseBlock(3, 4, submat, mat, true);
   BOOST_CHECK(densemat.isApprox(mat.toDense()));
 }
 
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE(create_sparse_problem) {
   problem_t problem = short_problem(x0, horz, nx, nu, nc);
   Eigen::SparseMatrix<double> kktMat;
   VectorXs kktRhs;
-  gar::lqrCreateSparseMatrix<false>(problem, 1e-8, 1e-6, kktMat, kktRhs);
+  gar::lqrCreateSparseMatrix(problem, 1e-8, 1e-6, kktMat, kktRhs, false);
 
   auto test_equal = [&] {
     auto [kktDense, rhsDense] = gar::lqrDenseMatrix(problem, 1e-8, 1e-6);
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE(create_sparse_problem) {
   problem.stages[0].Q = sampleWishartDistributedMatrix(nx, nx + 1);
   problem.stages[0].R = sampleWishartDistributedMatrix(nu, nu + 1);
   // update
-  gar::lqrCreateSparseMatrix<true>(problem, 1e-8, 1e-6, kktMat, kktRhs);
+  gar::lqrCreateSparseMatrix(problem, 1e-8, 1e-6, kktMat, kktRhs, true);
 
   test_equal();
 }
