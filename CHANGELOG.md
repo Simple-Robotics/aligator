@@ -19,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change uses of `ConstraintSetBase` template class to `ConstraintSetTpl` (following changes in proxsuite-nlp 0.9.0) ([#223](https://github.com/Simple-Robotics/aligator/pull/233))
 - [gar] Throw an exception if trying to instantiate `ParallelRiccatiSolver` with num_threads smaller than 2.
 - [API BREAKING] Rename friction cone for centroidal into CentroidalFrictionCone ([#234](https://github.com/Simple-Robotics/aligator/pull/234))
+- [gar] Rework `RiccatiSolverDense` to not use inner struct `FactorData`
+
+### Removed
+
+- Default constructor for `LQRProblemTpl`
 
 ## [0.9.0] - 2024-10-11
 

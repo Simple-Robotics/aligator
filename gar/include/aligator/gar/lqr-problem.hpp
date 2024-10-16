@@ -42,8 +42,6 @@ template <typename Scalar> struct LQRKnotTpl {
   MatrixXs Gv;
   VectorXs gamma;
 
-  LQRKnotTpl() = default;
-
   LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth = 0);
 
   LQRKnotTpl(uint nx, uint nu, uint nc) : LQRKnotTpl(nx, nu, nc, nx) {}
