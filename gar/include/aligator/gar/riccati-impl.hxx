@@ -84,7 +84,7 @@ void ProximalRiccatiKernel<Scalar>::terminalSolve(const KnotType &model,
   RowMatrixRef Kth = d.fth.blockRow(0);
   RowMatrixRef Zth = d.fth.blockRow(1);
 
-  Eigen::Transpose<const MatrixXs> Ct = model.C.transpose();
+  Eigen::Transpose Ct = model.C.transpose();
 
   if (model.nu == 0) {
     Z = model.C / mueq;
