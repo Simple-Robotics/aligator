@@ -34,6 +34,10 @@ public:
   using PolyConstraintSet = xyz::polymorphic<ConstraintSetTpl<Scalar>>;
   using Cost = CostAbstractTpl<Scalar>;
   using PolyCost = xyz::polymorphic<Cost>;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+  using StageConstraint = StageConstraintTpl<Scalar>;
+#pragma GCC diagnostic pop
   using Data = StageDataTpl<Scalar>;
 
   /// State space for the current state \f$x_k\f$.
@@ -106,7 +110,7 @@ public:
 
   /// @brief    Add a constraint to the stage.
   template <typename Cstr, typename = std::enable_if_t<std::is_same_v<
-                               std::decay_t<Cstr>, StageConstraintTpl<Scalar>>>>
+                               std::decay_t<Cstr>, StageConstraint>>>
   ALIGATOR_DEPRECATED void addConstraint(Cstr &&cstr);
 
   /// @copybrief  addConstraint().

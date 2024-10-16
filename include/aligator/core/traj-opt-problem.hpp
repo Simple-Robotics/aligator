@@ -30,6 +30,10 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   using CostAbstract = CostAbstractTpl<Scalar>;
   using ConstraintSet = ConstraintSetTpl<Scalar>;
   using StateErrorResidual = StateErrorResidualTpl<Scalar>;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+  using StageConstraint = StageConstraintTpl<Scalar>;
+#pragma GCC diagnostic pop
 
   /**
    * @page trajoptproblem Trajectory optimization problems
@@ -147,8 +151,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   }
 
   /// @brief Add a terminal constraint for the model.
-  ALIGATOR_DEPRECATED void
-  addTerminalConstraint(const StageConstraintTpl<Scalar> &cstr);
+  ALIGATOR_DEPRECATED void addTerminalConstraint(const StageConstraint &cstr);
   void addTerminalConstraint(const xyz::polymorphic<StageFunction> &func,
                              const xyz::polymorphic<ConstraintSet> &set) {
     this->term_cstrs_.pushBack(func, set);

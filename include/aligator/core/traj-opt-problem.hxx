@@ -156,7 +156,7 @@ bool TrajOptProblemTpl<Scalar>::checkIntegrity() const {
 
 template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::addTerminalConstraint(
-    const StageConstraintTpl<Scalar> &cstr) {
+    const StageConstraint &cstr) {
   term_cstrs_.pushBack(cstr.func, cstr.set);
 }
 
