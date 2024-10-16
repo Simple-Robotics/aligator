@@ -34,6 +34,16 @@ LQRKnotTpl<Scalar>::LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth)
 }
 
 template <typename Scalar>
+void LQRKnotTpl<Scalar>::addParameterization(uint nth) {
+  this->nth = nth;
+  Gth.setZero(nth, nth);
+  Gx.setZero(nx, nth);
+  Gu.setZero(nu, nth);
+  Gv.setZero(nc, nth);
+  gamma.setZero(nth);
+}
+
+template <typename Scalar>
 Scalar LQRProblemTpl<Scalar>::evaluate(
     const VectorOfVectors &xs, const VectorOfVectors &us,
     const std::optional<ConstVectorRef> &theta_) const {
