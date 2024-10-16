@@ -138,8 +138,6 @@ std::ostream &operator<<(std::ostream &oss, const LQRKnotTpl<Scalar> &self) {
 } // namespace gar
 } // namespace aligator
 
-#include "lqr-problem.hxx"
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "lqr-problem.txx"
 #endif
