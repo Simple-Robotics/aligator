@@ -47,14 +47,7 @@ template <typename Scalar> struct LQRKnotTpl {
   LQRKnotTpl(uint nx, uint nu, uint nc) : LQRKnotTpl(nx, nu, nc, nx) {}
 
   // reallocates entire buffer for contigousness
-  inline void addParameterization(uint nth) {
-    this->nth = nth;
-    Gth.setZero(nth, nth);
-    Gx.setZero(nx, nth);
-    Gu.setZero(nu, nth);
-    Gv.setZero(nc, nth);
-    gamma.setZero(nth);
-  }
+  void addParameterization(uint nth);
 };
 
 template <typename Scalar> struct LQRProblemTpl {
@@ -144,8 +137,6 @@ std::ostream &operator<<(std::ostream &oss, const LQRKnotTpl<Scalar> &self) {
 
 } // namespace gar
 } // namespace aligator
-
-#include "lqr-problem.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "lqr-problem.txx"
