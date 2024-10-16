@@ -44,11 +44,12 @@ BOOST_AUTO_TEST_CASE(helper_assignment_dense) {
 
 problem_t short_problem(VectorXs x0, uint horz, uint nx, uint nu, uint nc) {
 
-  problem_t::KnotVector knots{horz + 1};
+  problem_t::KnotVector knots;
+  knots.reserve(horz + 1);
   const uint nc0 = (uint)x0.size();
 
   for (uint t = 0; t <= horz; t++) {
-    problem_t::KnotType knot{nx, nu, nc};
+    problem_t::KnotType &knot = knots.emplace_back(nx, nu, nc);
     knot.Q.setConstant(+0.11);
     knot.R.setConstant(+0.12);
     knot.S.setConstant(-0.2);
@@ -64,9 +65,8 @@ problem_t short_problem(VectorXs x0, uint horz, uint nx, uint nu, uint nc) {
     knot.B.setConstant(0.3);
     knot.E.setIdentity();
     knot.E *= -1;
-    knots[t] = knot;
   }
-  auto out = problem_t{knots, nc0};
+  problem_t out{std::move(knots), nc0};
   out.G0.setConstant(-3.14);
   out.g0.setConstant(42);
   return out;
