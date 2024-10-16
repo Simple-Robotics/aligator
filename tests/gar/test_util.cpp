@@ -14,7 +14,8 @@ problem_t generate_problem(const ConstVectorRef &x0, uint horz, uint nx,
                            uint nu, uint nth) {
   assert(x0.size() == nx);
 
-  problem_t::KnotVector knots(horz + 1);
+  problem_t::KnotVector knots;
+  knots.reserve(horz + 1);
   uint wishartDof = nx + nu + 1;
 
   auto gen = [&](uint nu, bool sing = false) {
@@ -53,11 +54,11 @@ problem_t generate_problem(const ConstVectorRef &x0, uint horz, uint nx,
 
   auto knb = gen(nu, true);
   for (uint i = 0; i < horz; i++) {
-    knots[i] = knb;
+    knots.push_back(knb);
   }
-  knots[horz] = gen(0); // terminal node
+  knots.push_back(gen(0)); // terminal node
 
-  problem_t prob(knots, nx);
+  problem_t prob(std::move(knots), nx);
   prob.g0 = -x0;
   prob.G0.setIdentity();
   return prob;
