@@ -13,4 +13,5 @@ if(BUILD_WITH_OPENMP_SUPPORT)
   add_gar_test(parallel aligator)
 endif()
 
+add_gar_test(knot)
 add_gar_test(mem-req)
