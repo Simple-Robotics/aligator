@@ -33,8 +33,10 @@ template <typename Scalar> struct LQRKnotTpl {
   using MatrixMap = Eigen::Map<MatrixXs, Alignment>;
 
   // tag type
-  struct no_alloc_t {};
-  static constexpr no_alloc_t no_alloc;
+  struct no_alloc_t {
+    explicit constexpr no_alloc_t() {}
+  };
+  static constexpr no_alloc_t no_alloc{};
 
   uint nx, nu, nc, nx2, nth;
 
