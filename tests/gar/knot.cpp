@@ -44,17 +44,6 @@ BOOST_FIXTURE_TEST_CASE(move, knot_fixture) {
 BOOST_FIXTURE_TEST_CASE(copy, knot_fixture) {
 
   knot_t knot2{knot};
-  BOOST_CHECK_EQUAL(knot.Q, knot2.Q);
-  BOOST_CHECK_EQUAL(knot.S, knot2.S);
-  BOOST_CHECK_EQUAL(knot.R, knot2.R);
-  BOOST_CHECK_EQUAL(knot.q, knot2.q);
-  BOOST_CHECK_EQUAL(knot.r, knot2.r);
-
-  BOOST_CHECK_EQUAL(knot.A, knot2.A);
-  BOOST_CHECK_EQUAL(knot.B, knot2.B);
-  BOOST_CHECK_EQUAL(knot.E, knot2.E);
-  BOOST_CHECK_EQUAL(knot.f, knot2.f);
-
   BOOST_CHECK_EQUAL(knot, knot2);
 }
 
@@ -98,5 +87,34 @@ BOOST_AUTO_TEST_CASE(knot_vec) {
   for (size_t i = 0; i < 10; i++) {
     fmt::println("vc[{:d}].q = {}", i, vc[i].q.transpose());
     BOOST_CHECK_EQUAL(v2[i], vc[i]);
+  }
+}
+
+auto make_problem() -> problem_t {
+  uint nx = 4;
+  uint nu = 2;
+  std::vector<knot_t> v;
+  v.reserve(10);
+  for (int i = 0; i < 10; i++) {
+    v.push_back(generate_knot(nx, nu, 0));
+  }
+  problem_t prob{v, nx};
+  return prob;
+}
+
+BOOST_AUTO_TEST_CASE(problem) {
+  BOOST_TEST_MESSAGE("problem");
+  auto prob = make_problem();
+  fmt::print("Q[0] = \n{}\n", prob.stages[0].Q);
+
+  problem_t prob_copy{prob};
+
+  for (size_t i = 0; i < 10; i++) {
+    BOOST_CHECK_EQUAL(prob.stages[i], prob_copy.stages[i]);
+  }
+
+  prob_copy.addParameterization(1);
+  for (size_t i = 0; i < 10; i++) {
+    BOOST_CHECK_EQUAL(prob.stages[i].Q, prob_copy.stages[i].Q);
   }
 }
