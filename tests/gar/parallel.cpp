@@ -33,7 +33,7 @@ std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem, uint t0,
 
   knot_t kn1_last = knots1.back(); // copy
 
-  problem_t p1(knots1, problem.nc0());
+  problem_t p1(std::move(knots1), problem.nc0());
   p1.G0 = problem.G0;
   p1.g0 = problem.g0;
   p1.addParameterization(nx_t0);
@@ -48,7 +48,7 @@ std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem, uint t0,
     kn1_last.f.setZero();
   }
 
-  problem_t p2(knots2, 0);
+  problem_t p2(std::move(knots2), 0);
   p2.addParameterization(nx_t0);
   {
     knot_t &p2_first = p2.stages[0];
