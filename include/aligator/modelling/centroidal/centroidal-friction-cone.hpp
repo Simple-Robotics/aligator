@@ -16,20 +16,20 @@ namespace aligator {
  * \f$ small threshold and \f$ \mu \f$ friction coefficient.
  */
 
-template <typename Scalar> struct FrictionConeDataTpl;
+template <typename Scalar> struct CentroidalFrictionConeDataTpl;
 
 template <typename _Scalar>
-struct FrictionConeResidualTpl : StageFunctionTpl<_Scalar> {
+struct CentroidalFrictionConeResidualTpl : StageFunctionTpl<_Scalar> {
 
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageFunctionTpl<Scalar>;
   using BaseData = typename Base::Data;
-  using Data = FrictionConeDataTpl<Scalar>;
+  using Data = CentroidalFrictionConeDataTpl<Scalar>;
 
-  FrictionConeResidualTpl(const int ndx, const int nu, const int k,
-                          const double mu, const double epsilon)
+  CentroidalFrictionConeResidualTpl(const int ndx, const int nu, const int k,
+                                    const double mu, const double epsilon)
       : Base(ndx, nu, 2), k_(k), mu2_(mu * mu), epsilon_(epsilon) {}
 
   void evaluate(const ConstVectorRef &, const ConstVectorRef &u,
@@ -49,18 +49,19 @@ protected:
 };
 
 template <typename Scalar>
-struct FrictionConeDataTpl : StageFunctionDataTpl<Scalar> {
+struct CentroidalFrictionConeDataTpl : StageFunctionDataTpl<Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Base = StageFunctionDataTpl<Scalar>;
   using Matrix23s = Eigen::Matrix<Scalar, 2, 3>;
 
   Matrix23s Jtemp_;
 
-  FrictionConeDataTpl(const FrictionConeResidualTpl<Scalar> *model);
+  CentroidalFrictionConeDataTpl(
+      const CentroidalFrictionConeResidualTpl<Scalar> *model);
 };
 
 } // namespace aligator
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/modelling/centroidal/friction-cone.txx"
+#include "aligator/modelling/centroidal/centroidal-friction-cone.txx"
 #endif
