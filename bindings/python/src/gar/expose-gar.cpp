@@ -69,8 +69,9 @@ void exposeGAR() {
   exposeBlockMatrices();
 
   bp::class_<knot_t>("LQRKnot", bp::no_init)
-      .def(bp::init<uint, uint, uint>(("nx"_a, "nu", "nc")))
-      .def(bp::init<uint, uint, uint, uint>(("nx"_a, "nu", "nc", "nx2")))
+      .def(bp::init<uint, uint, uint>(("self"_a, "nx", "nu", "nc")))
+      .def(bp::init<uint, uint, uint, uint, uint>(
+          ("self"_a, "nx"_a, "nu", "nc", "nx2", "nth"_a = 0)))
       .def_readonly("nx", &knot_t::nx)
       .def_readonly("nu", &knot_t::nu)
       .def_readonly("nc", &knot_t::nc)
@@ -96,6 +97,9 @@ void exposeGAR() {
       .def_readwrite("Gx", &knot_t::Gx)
       .def_readwrite("Gu", &knot_t::Gu)
       .def_readwrite("gamma", &knot_t::gamma)
+      //
+      .def("isApprox", &knot_t::isApprox,
+           ("self"_a, "prec"_a = std::numeric_limits<Scalar>::epsilon()))
       //
       .def(CopyableVisitor<knot_t>())
       .def(PrintableVisitor<knot_t>());
