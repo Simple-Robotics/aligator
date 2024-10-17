@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(short_horz_pb) {
   // check error
   KktError err = computeKktError(prob, xs, us, vs, lbdas);
 
-  printKktError(err);
+  fmt::println("{}", err);
 
   BOOST_CHECK_LE(err.max, 1e-9);
 
@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE(random_long_problem) {
   fmt::print("Elapsed time (fwd): {:d}\n", t_fwd.count());
 
   KktError err = computeKktError(prob, xs, us, vs, lbdas);
-  printKktError(err);
+  fmt::println("{}", err);
 
   BOOST_CHECK_LE(err.max, 1e-9);
 
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE(random_long_problem) {
     auto [xsd, usd, vsd, lbdasd] = lqrInitializeSolution(prob);
     denseSolver.forward(xsd, usd, vsd, lbdasd);
     KktError err = computeKktError(prob, xsd, usd, vsd, lbdasd);
-    printKktError(err);
+    fmt::println("{}", err);
     BOOST_CHECK_LE(err.max, 1e-9);
   }
 }
@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE(parametric) {
     fmt::print("e = {}\n", e.transpose());
 
     KktError err = computeKktError(problem, xs, us, vs, lbdas, theta);
-    printKktError(err);
+    fmt::println("{}", err);
     BOOST_CHECK_LE(err.max, 1e-10);
   };
 
