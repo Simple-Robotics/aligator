@@ -28,10 +28,14 @@ struct MemReq {
 
   void *allocate() const;
 
+  /// Advance the pointer to the memory buffer to the next chunk.
   template <typename T> void advance(T *&memory) {
     assert(_cursor != _chunkSizes.size() && "Reached end of the chunks.");
     memory += _chunkSizes[_cursor++] / sizeof(T);
   }
+
+  /// Reset the cursor for the advance() method.
+  void reset() { _cursor = 0; }
 
   uint totalBytes() const { return _totalBytes; }
 
