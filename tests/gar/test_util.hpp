@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include "aligator/gar/lqr-problem.hpp"
@@ -18,12 +18,10 @@ struct KktError {
   double max = std::max({dyn, cstr, dual});
 };
 
-inline void printKktError(const KktError &err,
-                          const std::string &msg = "Max KKT error") {
-  fmt::print("{}: {:.3e}\n", msg, err.max);
-  fmt::print("> dual: {:.3e}, cstr: {:.3e}, dyn: {:.3e}\n", err.dual, err.cstr,
-             err.dyn);
-}
+template <> struct fmt::formatter<KktError> : formatter<std::string> {
+  auto format(const KktError &err, format_context &ctx) const
+      -> format_context::iterator;
+};
 
 KktError
 computeKktError(const problem_t &problem, const VectorOfVectors &xs,
