@@ -2,6 +2,7 @@
 #pragma once
 
 #include "aligator/math.hpp"
+#include "mem-req.hpp"
 #include <fmt/format.h>
 
 #include <optional>
@@ -27,34 +28,80 @@ namespace gar {
 ///
 template <typename Scalar> struct LQRKnotTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  enum { Alignment = Eigen::AlignedMax };
+  using VectorMap = Eigen::Map<VectorXs, Alignment>;
+  using MatrixMap = Eigen::Map<MatrixXs, Alignment>;
+
+  // tag type
+  struct no_alloc_t {
+    explicit constexpr no_alloc_t() {}
+  };
+  static constexpr no_alloc_t no_alloc{};
 
   uint nx, nu, nc, nx2, nth;
-  MatrixXs Q, S, R;
-  VectorXs q, r;
-  MatrixXs A, B, E;
-  VectorXs f;
-  MatrixXs C, D;
-  VectorXs d;
 
-  MatrixXs Gth;
-  MatrixXs Gx;
-  MatrixXs Gu;
-  MatrixXs Gv;
-  VectorXs gamma;
+  MatrixMap Q, S, R;
+  VectorMap q, r;
+  MatrixMap A, B, E;
+  VectorMap f;
+  MatrixMap C, D;
+  VectorMap d;
+
+  MatrixMap Gth;
+  MatrixMap Gx;
+  MatrixMap Gu;
+  MatrixMap Gv;
+  VectorMap gamma;
 
   LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth = 0);
 
   LQRKnotTpl(uint nx, uint nu, uint nc) : LQRKnotTpl(nx, nu, nc, nx) {}
 
+  void allocate();
+  // initialize the matrices.
+  void initialize();
   // reallocates entire buffer for contigousness
   void addParameterization(uint nth);
+
+  LQRKnotTpl(const LQRKnotTpl &other);
+  LQRKnotTpl(LQRKnotTpl &&other);
+  LQRKnotTpl &operator=(const LQRKnotTpl &other);
+  LQRKnotTpl &operator=(LQRKnotTpl &&other);
+
+  ~LQRKnotTpl();
+
+  friend void swap(LQRKnotTpl &lhs, LQRKnotTpl &rhs) {
+    using std::swap;
+    swap(lhs.nx, rhs.nx);
+    swap(lhs.nu, rhs.nu);
+    swap(lhs.nc, rhs.nc);
+    swap(lhs.nx2, rhs.nx2);
+    swap(lhs.nth, rhs.nth);
+    // only swap the memory ptr, do not swap the Eigen::Map objects.
+    swap(lhs.memory, rhs.memory);
+    swap(lhs.req, rhs.req);
+
+    lhs.initialize();
+    rhs.initialize();
+  }
+
   bool isApprox(const LQRKnotTpl &other,
                 Scalar prec = std::numeric_limits<Scalar>::epsilon()) const;
 
   friend bool operator==(const LQRKnotTpl &lhs, const LQRKnotTpl &rhs) {
     return lhs.isApprox(rhs);
   }
+
+private:
+  LQRKnotTpl(no_alloc_t, uint nx, uint nu, uint nc, uint nx2, uint nth);
+  Scalar *memory;
+  MemReq req;
 };
+
+template <typename Scalar> LQRKnotTpl<Scalar>::~LQRKnotTpl() {
+  if (memory)
+    std::free(memory);
+}
 
 template <typename Scalar> struct LQRProblemTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
