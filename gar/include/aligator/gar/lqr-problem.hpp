@@ -48,6 +48,12 @@ template <typename Scalar> struct LQRKnotTpl {
 
   // reallocates entire buffer for contigousness
   void addParameterization(uint nth);
+  bool isApprox(const LQRKnotTpl &other,
+                Scalar prec = std::numeric_limits<Scalar>::epsilon()) const;
+
+  friend bool operator==(const LQRKnotTpl &lhs, const LQRKnotTpl &rhs) {
+    return lhs.isApprox(rhs);
+  }
 };
 
 template <typename Scalar> struct LQRProblemTpl {

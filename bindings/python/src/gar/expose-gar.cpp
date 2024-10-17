@@ -97,6 +97,9 @@ void exposeGAR() {
       .def_readwrite("Gu", &knot_t::Gu)
       .def_readwrite("gamma", &knot_t::gamma)
       //
+      .def("isApprox", &knot_t::isApprox,
+           ("self"_a, "prec"_a = std::numeric_limits<Scalar>::epsilon()))
+      //
       .def(CopyableVisitor<knot_t>())
       .def(PrintableVisitor<knot_t>());
 

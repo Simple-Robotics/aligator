@@ -54,6 +54,8 @@ BOOST_FIXTURE_TEST_CASE(copy, knot_fixture) {
   BOOST_CHECK_EQUAL(knot.B, knot2.B);
   BOOST_CHECK_EQUAL(knot.E, knot2.E);
   BOOST_CHECK_EQUAL(knot.f, knot2.f);
+
+  BOOST_CHECK_EQUAL(knot, knot2);
 }
 
 BOOST_FIXTURE_TEST_CASE(swap, knot_fixture) {
@@ -90,5 +92,11 @@ BOOST_AUTO_TEST_CASE(knot_vec) {
   std::vector<knot_t> v2 = std::move(v);
   for (size_t i = 0; i < 10; i++) {
     fmt::println("v2[{:d}].q = {}", i, v2[i].q.transpose());
+  }
+
+  std::vector<knot_t> vc{v2};
+  for (size_t i = 0; i < 10; i++) {
+    fmt::println("vc[{:d}].q = {}", i, vc[i].q.transpose());
+    BOOST_CHECK_EQUAL(v2[i], vc[i]);
   }
 }
