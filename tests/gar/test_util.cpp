@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
 #include "./test_util.hpp"
 #include "aligator/gar/utils.hpp"
 
@@ -26,18 +26,18 @@ knot_t generate_knot(uint nx, uint nu, uint nth, bool singular) {
   out.q = VectorXs::NullaryExpr(nx, normal_unary_op{});
   out.r = VectorXs::NullaryExpr(nu, normal_unary_op{});
 
-  // out.A = MatrixXs::NullaryExpr(nx, nx, normal_unary_op{});
-  // out.B.setRandom();
-  // out.E = out.E.NullaryExpr(nx, nx, normal_unary_op{});
-  // out.E *= 1000;
-  // out.f = VectorXs::NullaryExpr(nx, normal_unary_op{});
+  out.A = MatrixXs::NullaryExpr(nx, nx, normal_unary_op{});
+  out.B.setRandom();
+  out.E = out.E.NullaryExpr(nx, nx, normal_unary_op{});
+  out.E *= 1000;
+  out.f = VectorXs::NullaryExpr(nx, normal_unary_op{});
 
-  // if (nth > 0) {
-  //   out.Gx = MatrixXs::NullaryExpr(nx, nth, normal_unary_op{});
-  //   out.Gu = MatrixXs::NullaryExpr(nu, nth, normal_unary_op{});
-  //   out.Gth = sampleWishartDistributedMatrix(nth, nth + 2);
-  //   out.gamma = VectorXs::NullaryExpr(nth, normal_unary_op{});
-  // }
+  if (nth > 0) {
+    out.Gx = MatrixXs::NullaryExpr(nx, nth, normal_unary_op{});
+    out.Gu = MatrixXs::NullaryExpr(nu, nth, normal_unary_op{});
+    out.Gth = sampleWishartDistributedMatrix(nth, nth + 2);
+    out.gamma = VectorXs::NullaryExpr(nth, normal_unary_op{});
+  }
 
   return out;
 }
@@ -59,6 +59,15 @@ problem_t generate_problem(const ConstVectorRef &x0, uint horz, uint nx,
   prob.g0 = -x0;
   prob.G0.setIdentity();
   return prob;
+}
+
+auto fmt::formatter<KktError>::format(const KktError &err,
+                                      format_context &ctx) const
+    -> format_context::iterator {
+  std::string s = fmt::format(
+      "{{ max: {:.3e}, dual: {:.3e}, cstr: {:.3e}, dyn: {:.3e} }}\n", err.max,
+      err.dual, err.cstr, err.dyn);
+  return formatter<std::string>::format(s, ctx);
 }
 
 KktError computeKktError(const problem_t &problem, const VectorOfVectors &xs,
