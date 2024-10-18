@@ -52,7 +52,6 @@ public:
   using TrajOptData = TrajOptDataTpl<Scalar>;
   using LinesearchOptions = typename Linesearch<Scalar>::Options;
   using LinesearchType = proxsuite::nlp::ArmijoLinesearch<Scalar>;
-  using LQProblem = gar::LQRProblemTpl<Scalar>;
   using Filter = FilterTpl<Scalar>;
 
   struct AlmParams {
@@ -195,8 +194,7 @@ public:
   ///           \f$(\bfx \oplus\alpha\delta\bfx, \bfu+\alpha\delta\bfu,
   ///           \bmlam+\alpha\delta\bmlam)\f$
   /// @returns  The trajectory cost.
-  static Scalar tryLinearStep(const Problem &problem, Workspace &workspace,
-                              const Results &results, const Scalar alpha);
+  Scalar tryLinearStep(const Problem &problem, const Scalar alpha);
 
   /// @brief    Policy rollout using the full nonlinear dynamics. The feedback
   /// gains need to be computed first. This will evaluate all the terms in the

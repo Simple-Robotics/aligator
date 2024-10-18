@@ -83,35 +83,34 @@ SolverProxDDPTpl<Scalar>::SolverProxDDPTpl(const Scalar tol,
 // C. Forward pass
 template <typename Scalar>
 Scalar SolverProxDDPTpl<Scalar>::tryLinearStep(const Problem &problem,
-                                               Workspace &workspace,
-                                               const Results &results,
                                                const Scalar alpha) {
   ALIGATOR_TRACY_ZONE_SCOPED;
 
-  const std::size_t nsteps = workspace.nsteps;
+  const std::size_t nsteps = workspace_.nsteps;
   assert(results.xs.size() == nsteps + 1);
   assert(results.us.size() == nsteps);
   assert(results.lams.size() == nsteps + 1);
   assert(results.vs.size() == nsteps + 1);
 
-  math::vectorMultiplyAdd(results.lams, workspace.dlams, workspace.trial_lams,
+  math::vectorMultiplyAdd(results_.lams, workspace_.dlams,
+                          workspace_.trial_lams, alpha);
+  math::vectorMultiplyAdd(results_.vs, workspace_.dvs, workspace_.trial_vs,
                           alpha);
-  math::vectorMultiplyAdd(results.vs, workspace.dvs, workspace.trial_vs, alpha);
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
-    stage.xspace_->integrate(results.xs[i], alpha * workspace.dxs[i],
-                             workspace.trial_xs[i]);
-    stage.uspace_->integrate(results.us[i], alpha * workspace.dus[i],
-                             workspace.trial_us[i]);
+    stage.xspace_->integrate(results_.xs[i], alpha * workspace_.dxs[i],
+                             workspace_.trial_xs[i]);
+    stage.uspace_->integrate(results_.us[i], alpha * workspace_.dus[i],
+                             workspace_.trial_us[i]);
   }
   const StageModel &stage = *problem.stages_[nsteps - 1];
-  stage.xspace_next_->integrate(results.xs[nsteps],
-                                alpha * workspace.dxs[nsteps],
-                                workspace.trial_xs[nsteps]);
-  TrajOptData &prob_data = workspace.problem_data;
+  stage.xspace_next_->integrate(results_.xs[nsteps],
+                                alpha * workspace_.dxs[nsteps],
+                                workspace_.trial_xs[nsteps]);
+  TrajOptData &prob_data = workspace_.problem_data;
   prob_data.cost_ =
-      problem.evaluate(workspace.trial_xs, workspace.trial_us, prob_data);
+      problem.evaluate(workspace_.trial_xs, workspace_.trial_us, prob_data);
   return prob_data.cost_;
 }
 
@@ -163,7 +162,6 @@ void SolverProxDDPTpl<Scalar>::cycleProblem(
   linearSolver_->cycleAppend(workspace_.knots[workspace_.nsteps - 1]);
 }
 
-/// TODO: REWORK FOR NEW MULTIPLIERS
 template <typename Scalar>
 void SolverProxDDPTpl<Scalar>::computeMultipliers(
     const Problem &problem, const std::vector<VectorXs> &lams,
@@ -536,7 +534,7 @@ Scalar SolverProxDDPTpl<Scalar>::forwardPass(const Problem &problem,
   ALIGATOR_TRACY_ZONE_SCOPED;
   switch (rollout_type_) {
   case RolloutType::LINEAR:
-    tryLinearStep(problem, workspace_, results_, alpha);
+    tryLinearStep(problem, alpha);
     break;
   case RolloutType::NONLINEAR:
     tryNonlinearRollout(problem, alpha);
@@ -753,7 +751,7 @@ void SolverProxDDPTpl<Scalar>::registerCallback(const std::string &name,
 template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
   ALIGATOR_NOMALLOC_SCOPED;
   ALIGATOR_TRACY_ZONE_SCOPED;
-  LQProblem &prob = workspace_.lqr_problem;
+  gar::LQRProblemTpl<Scalar> &prob = workspace_.lqr_problem;
   const TrajOptData &pd = workspace_.problem_data;
 
   using gar::LQRKnotTpl;
