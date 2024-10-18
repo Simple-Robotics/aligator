@@ -425,7 +425,7 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
   }
   if (mu_init < bcl_params.mu_lower_bound) {
     ALIGATOR_WARNING("SolverProxDDP",
-                     "Initial value of mu_init < mu_lower_bound ({:.3g})",
+                     "Initial value of mu_init < mu_lower_bound ({:.3g})\n",
                      bcl_params.mu_lower_bound);
     setAlmPenalty(mu_init);
   }
