@@ -87,10 +87,10 @@ Scalar SolverProxDDPTpl<Scalar>::tryLinearStep(const Problem &problem,
   ALIGATOR_TRACY_ZONE_SCOPED;
 
   const std::size_t nsteps = workspace_.nsteps;
-  assert(results.xs.size() == nsteps + 1);
-  assert(results.us.size() == nsteps);
-  assert(results.lams.size() == nsteps + 1);
-  assert(results.vs.size() == nsteps + 1);
+  assert(results_.xs.size() == nsteps + 1);
+  assert(results_.us.size() == nsteps);
+  assert(results_.lams.size() == nsteps + 1);
+  assert(results_.vs.size() == nsteps + 1);
 
   math::vectorMultiplyAdd(results_.lams, workspace_.dlams,
                           workspace_.trial_lams, alpha);
