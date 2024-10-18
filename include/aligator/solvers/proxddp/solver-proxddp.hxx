@@ -221,9 +221,10 @@ void SolverProxDDPTpl<Scalar>::computeMultipliers(
     // 1. compute shifted dynamics error
     workspace_.dyn_slacks[i + 1] = dd.value_;
     lams_plus[i + 1] = lams_prev[i + 1] + dd.value_ / mudyn();
+    ALIGATOR_RAISE_IF_NAN_NAME(lams_plus[i + 1],
+                               fmt::format("lams_plus[{:d}]", i + 1));
     lams_pdal[i + 1] = 2 * lams_plus[i + 1] - lams[i + 1];
     Lds[i + 1] = mudyn() * (lams_plus[i + 1] - lams[i + 1]);
-    ALIGATOR_RAISE_IF_NAN(Lds[i + 1]);
 
     // 2. use product constraint operator
     // to compute the new multiplier estimates

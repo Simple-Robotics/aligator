@@ -70,7 +70,7 @@ def update_target(sphere, x):
 
 
 # Define cost functions
-base_weight = 0.5
+base_weight = 2.0
 w_xreg = np.diag([1e-3] * nv + [1e-3] * nv)
 w_xreg[range(3), range(3)] = base_weight
 
@@ -108,7 +108,8 @@ def main():
 
     problem = aligator.TrajOptProblem(x0, stages, term_cost)
 
-    solver = aligator.SolverProxDDP(1e-3, 1e-4, verbose=aligator.VERBOSE)
+    mu_init = 1e-2
+    solver = aligator.SolverProxDDP(1e-3, mu_init, verbose=aligator.VERBOSE)
     solver.reg_init = 1e-8
     solver.setup(problem)
     flag = solver.run(problem, xs_i, us_i)
