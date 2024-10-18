@@ -91,10 +91,15 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
 
   // constraints
   d1 += workspace.Lxs[0].dot(dxs[0]);
+  ALIGATOR_RAISE_IF_NAN(d1);
 
   for (std::size_t i = 0; i < nsteps; i++) {
     d1 += workspace.Lxs[i + 1].dot(dxs[i + 1]);
+    ALIGATOR_RAISE_IF_NAN_NAME(dxs[i + 1], fmt::format("dxs[{:d}]", i + 1));
+    ALIGATOR_RAISE_IF_NAN(d1);
     d1 += workspace.Lus[i].dot(dus[i]);
+    ALIGATOR_RAISE_IF_NAN_NAME(dus[i], fmt::format("dus[{:d}]", i));
+    ALIGATOR_RAISE_IF_NAN(d1);
   }
 
   return d1;
