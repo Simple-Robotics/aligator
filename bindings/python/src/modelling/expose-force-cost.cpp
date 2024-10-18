@@ -8,6 +8,7 @@
 #ifdef ALIGATOR_PINOCCHIO_V3
 #include "aligator/modelling/multibody/contact-force.hpp"
 #include "aligator/modelling/multibody/multibody-wrench-cone.hpp"
+#include "aligator/modelling/multibody/multibody-friction-cone.hpp"
 #include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
@@ -37,6 +38,10 @@ void exposeContactForce() {
 
   using MultibodyWrenchConeResidual = MultibodyWrenchConeResidualTpl<Scalar>;
   using MultibodyWrenchConeData = MultibodyWrenchConeDataTpl<Scalar>;
+
+  using MultibodyFrictionConeResidual =
+      MultibodyFrictionConeResidualTpl<Scalar>;
+  using MultibodyFrictionConeData = MultibodyFrictionConeDataTpl<Scalar>;
 
   bp::class_<ContactForceResidual, bp::bases<StageFunction>>(
       "ContactForceResidual",
@@ -84,6 +89,26 @@ void exposeContactForce() {
       .def_readwrite("pin_data", &MultibodyWrenchConeData::pin_data_)
       .def_readwrite("constraint_datas",
                      &MultibodyWrenchConeData::constraint_datas_);
+
+  bp::class_<MultibodyFrictionConeResidual, bp::bases<StageFunction>>(
+      "MultibodyFrictionConeResidual", "A residual function :math:`r(x) = Af` ",
+      bp::no_init)
+      .def(bp::init<int, PinModel, const context::MatrixXs &,
+                    const RigidConstraintModelVector &,
+                    const pinocchio::ProximalSettingsTpl<Scalar> &,
+                    const std::string &, const double>(
+          bp::args("self", "ndx", "model", "actuation_matrix",
+                   "constraint_models", "prox_settings", "contact_name", "mu")))
+      .def(func_visitor)
+      .def_readwrite("constraint_models",
+                     &MultibodyFrictionConeResidual::constraint_models_);
+
+  bp::class_<MultibodyFrictionConeData, bp::bases<StageFunctionData>>(
+      "MultibodyFrictionConeData", bp::no_init)
+      .def_readwrite("tau", &MultibodyFrictionConeData::tau_)
+      .def_readwrite("pin_data", &MultibodyFrictionConeData::pin_data_)
+      .def_readwrite("constraint_datas",
+                     &MultibodyFrictionConeData::constraint_datas_);
 }
 
 } // namespace python

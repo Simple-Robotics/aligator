@@ -7,7 +7,7 @@
 #include "aligator/modelling/centroidal/linear-momentum.hpp"
 #include "aligator/modelling/centroidal/angular-momentum.hpp"
 #include "aligator/modelling/centroidal/centroidal-acceleration.hpp"
-#include "aligator/modelling/centroidal/friction-cone.hpp"
+#include "aligator/modelling/centroidal/centroidal-friction-cone.hpp"
 #include "aligator/modelling/centroidal/centroidal-wrench-cone.hpp"
 #include "aligator/modelling/centroidal/angular-acceleration.hpp"
 #include "aligator/modelling/centroidal/centroidal-wrapper.hpp"
@@ -57,8 +57,9 @@ void exposeCentroidalFunctions() {
       CentroidalAccelerationResidualTpl<Scalar>;
   using CentroidalAccelerationData = CentroidalAccelerationDataTpl<Scalar>;
 
-  using FrictionConeResidual = FrictionConeResidualTpl<Scalar>;
-  using FrictionConeData = FrictionConeDataTpl<Scalar>;
+  using CentroidalFrictionConeResidual =
+      CentroidalFrictionConeResidualTpl<Scalar>;
+  using CentroidalFrictionConeData = CentroidalFrictionConeDataTpl<Scalar>;
 
   using CentroidalWrenchConeResidual = CentroidalWrenchConeResidualTpl<Scalar>;
   using CentroidalWrenchConeData = CentroidalWrenchConeDataTpl<Scalar>;
@@ -137,17 +138,18 @@ void exposeCentroidalFunctions() {
       "CentroidalAccelerationData", "Data Structure for CentroidalAcceleration",
       bp::no_init);
 
-  bp::class_<FrictionConeResidual, bp::bases<StageFunction>>(
-      "FrictionConeResidual",
+  bp::class_<CentroidalFrictionConeResidual, bp::bases<StageFunction>>(
+      "CentroidalFrictionConeResidual",
       "A residual function :math:`r(x) = [fz, mu2 * fz2 - (fx2 + fy2)]` ",
       bp::init<const int, const int, const int, const double, const double>(
           ("self"_a, "ndx", "nu", "k", "mu", "epsilon")))
       .def(func_visitor);
 
-  bp::register_ptr_to_python<shared_ptr<FrictionConeData>>();
+  bp::register_ptr_to_python<shared_ptr<CentroidalFrictionConeData>>();
 
-  bp::class_<FrictionConeData, bp::bases<StageFunctionData>>(
-      "FrictionConeData", "Data Structure for FrictionCone", bp::no_init);
+  bp::class_<CentroidalFrictionConeData, bp::bases<StageFunctionData>>(
+      "CentroidalFrictionConeData", "Data Structure for CentroidalFrictionCone",
+      bp::no_init);
 
   bp::class_<CentroidalWrenchConeResidual, bp::bases<StageFunction>>(
       "CentroidalWrenchConeResidual",
