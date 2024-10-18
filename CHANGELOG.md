@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add a multibody friction cone cost ([#234](https://github.com/Simple-Robotics/aligator/pull/234))
+- Add a `GravityCompensationResidual`
 
 ### Changed
 
