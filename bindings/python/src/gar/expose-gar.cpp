@@ -3,7 +3,6 @@
 #include "aligator/python/blk-matrix.hpp"
 #include "aligator/gar/lqr-problem.hpp"
 #include "aligator/gar/riccati-base.hpp"
-#include "aligator/gar/utils.hpp"
 
 #include "aligator/python/utils.hpp"
 #include "aligator/python/visitors.hpp"
@@ -23,17 +22,6 @@ using RowMatrixXs = Eigen::Transpose<MatrixXs>::PlainMatrix;
 using context::VectorXs;
 
 using knot_vec_t = lqr_t::KnotVector;
-
-bp::dict lqr_sol_initialize_wrap(const lqr_t &problem) {
-  bp::dict out;
-  auto ss = lqrInitializeSolution(problem);
-  auto &[xs, us, vs, lbdas] = ss;
-  out["xs"] = xs;
-  out["us"] = us;
-  out["vs"] = vs;
-  out["lbdas"] = lbdas;
-  return out;
-}
 
 static void exposeBlockMatrices() {
   BlkMatrixPythonVisitor<BlkMatrix<MatrixXs, 2, 2>>::expose("BlockMatrix22");
@@ -61,6 +49,8 @@ void exposeParallelSolver();
 void exposeDenseSolver();
 // fwd-declare exposeProxRiccati()
 void exposeProxRiccati();
+// fwd-declare exposeGarUtils()
+void exposeGarUtils();
 
 void exposeGAR() {
 
@@ -129,19 +119,7 @@ void exposeGAR() {
       .def("forward", &riccati_base_t::forward,
            ("self"_a, "xs", "us", "vs", "lbdas", "theta"_a = std::nullopt));
 
-  bp::def(
-      "lqrDenseMatrix",
-      +[](const lqr_t &problem, Scalar mudyn, Scalar mueq) {
-        auto mat_rhs = lqrDenseMatrix(problem, mudyn, mueq);
-        return bp::make_tuple(std::get<0>(mat_rhs), std::get<1>(mat_rhs));
-      },
-      ("problem"_a, "mudyn", "mueq"));
-
-  bp::def("lqrCreateSparseMatrix", lqrCreateSparseMatrix<Scalar>,
-          ("problem"_a, "mudyn", "mueq", "mat", "rhs", "update"),
-          "Create or update a sparse matrix from an LQRProblem.");
-
-  bp::def("lqrInitializeSolution", lqr_sol_initialize_wrap, ("problem"_a));
+  exposeGarUtils();
 
 #ifdef ALIGATOR_WITH_CHOLMOD
   exposeCholmodSolver();
