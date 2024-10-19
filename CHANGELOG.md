@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `gar`: rework and move sparse matrix utilities to `gar/utils.hpp`
 - `SolverProxDDP`: Rename `maxRefinementSteps_` and `refinementThreshold_` to snake-case
 - `SolverProxDDP`: make `linesearch_` public
 - Change uses of `ConstraintSetBase` template class to `ConstraintSetTpl` (following changes in proxsuite-nlp 0.9.0) ([#223](https://github.com/Simple-Robotics/aligator/pull/233))

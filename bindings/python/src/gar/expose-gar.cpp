@@ -137,6 +137,10 @@ void exposeGAR() {
       },
       ("problem"_a, "mudyn", "mueq"));
 
+  bp::def("lqrCreateSparseMatrix", lqrCreateSparseMatrix<Scalar>,
+          ("problem"_a, "mudyn", "mueq", "mat", "rhs", "update"),
+          "Create or update a sparse matrix from an LQRProblem.");
+
   bp::def("lqrInitializeSolution", lqr_sol_initialize_wrap, ("problem"_a));
 
 #ifdef ALIGATOR_WITH_CHOLMOD

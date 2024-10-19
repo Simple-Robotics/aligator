@@ -1,9 +1,13 @@
-/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
-#include "aligator/gar/utils.hpp"
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
+#include "aligator/gar/utils.hxx"
 
 namespace aligator {
 namespace gar {
-template auto lqrComputeKktError<context::Scalar>(
+template void lqrCreateSparseMatrix<context::Scalar>(
+    const LQRProblemTpl<context::Scalar> &problem, const context::Scalar mudyn,
+    const context::Scalar mueq, Eigen::SparseMatrix<context::Scalar> &mat,
+    context::VectorXs &rhs, bool update);
+template std::array<context::Scalar, 3> lqrComputeKktError<context::Scalar>(
     const LQRProblemTpl<context::Scalar> &,
     boost::span<const context::VectorXs>, boost::span<const context::VectorXs>,
     boost::span<const context::VectorXs>, boost::span<const context::VectorXs>,
