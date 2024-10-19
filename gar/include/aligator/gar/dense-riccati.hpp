@@ -4,7 +4,6 @@
 
 #include <proxsuite-nlp/linalg/bunchkaufman.hpp>
 
-#include "fwd.hpp"
 #include "blk-matrix.hpp"
 #include "riccati-base.hpp"
 

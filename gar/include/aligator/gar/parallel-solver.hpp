@@ -2,7 +2,6 @@
 /// @author Wilson Jallet
 #pragma once
 
-#include "aligator/gar/fwd.hpp"
 #include "aligator/gar/riccati-base.hpp"
 #include "aligator/gar/riccati-impl.hpp"
 
