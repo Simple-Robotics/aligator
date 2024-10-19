@@ -92,6 +92,106 @@ void lqrCreateSparseMatrix(const LQRProblemTpl<Scalar> &problem,
 }
 
 template <typename Scalar>
+std::array<Scalar, 3> lqrComputeKktError(
+    const LQRProblemTpl<Scalar> &problem,
+    boost::span<const typename math_types<Scalar>::VectorXs> xs,
+    boost::span<const typename math_types<Scalar>::VectorXs> us,
+    boost::span<const typename math_types<Scalar>::VectorXs> vs,
+    boost::span<const typename math_types<Scalar>::VectorXs> lbdas,
+    const Scalar mudyn, const Scalar mueq,
+    const std::optional<typename math_types<Scalar>::ConstVectorRef> &theta_,
+    bool verbose) {
+  if (verbose)
+    fmt::print("[{}] ", __func__);
+  uint N = (uint)problem.horizon();
+  assert(xs.size() == N + 1);
+  using VectorXs = typename math_types<Scalar>::VectorXs;
+  using KnotType = LQRKnotTpl<Scalar>;
+
+  Scalar dynErr = 0.;
+  Scalar cstErr = 0.;
+  Scalar dualErr = 0.;
+  Scalar dNorm;
+
+  VectorXs _dyn;
+  VectorXs _cst;
+  VectorXs _gx;
+  VectorXs _gu;
+  VectorXs _gt;
+
+  // initial stage
+  {
+    _dyn = problem.g0 + problem.G0 * xs[0] - mudyn * lbdas[0];
+    dNorm = math::infty_norm(_dyn);
+    dynErr = std::max(dynErr, dNorm);
+    if (verbose)
+      fmt::print("d0 = {:.3e} \n", dNorm);
+  }
+  for (uint t = 0; t <= N; t++) {
+    const KnotType &knot = problem.stages[t];
+    auto _Str = knot.S.transpose();
+
+    if (verbose)
+      fmt::print("[{: >2d}] ", t);
+    _gx.setZero(knot.nx);
+    _gu.setZero(knot.nu);
+    _gt.setZero(knot.nth);
+
+    _cst = knot.C * xs[t] + knot.d - mueq * vs[t];
+    _gx.noalias() = knot.q + knot.Q * xs[t] + knot.C.transpose() * vs[t];
+    _gu.noalias() = knot.r + _Str * xs[t] + knot.D.transpose() * vs[t];
+
+    if (knot.nu > 0) {
+      _cst.noalias() += knot.D * us[t];
+      _gx.noalias() += knot.S * us[t];
+      _gu.noalias() += knot.R * us[t];
+    }
+
+    if (t == 0) {
+      _gx += problem.G0.transpose() * lbdas[0];
+    } else {
+      auto Et = problem.stages[t - 1].E.transpose();
+      _gx += Et * lbdas[t];
+    }
+
+    if (t < N) {
+      _dyn = knot.A * xs[t] + knot.B * us[t] + knot.f + knot.E * xs[t + 1] -
+             mudyn * lbdas[t + 1];
+      _gx += knot.A.transpose() * lbdas[t + 1];
+      _gu += knot.B.transpose() * lbdas[t + 1];
+
+      dNorm = math::infty_norm(_dyn);
+      if (verbose)
+        fmt::print(" |d| = {:.3e} | ", dNorm);
+      dynErr = std::max(dynErr, dNorm);
+    }
+
+    if (theta_.has_value()) {
+      Eigen::Ref<const VectorXs> th = theta_.value();
+      _gx.noalias() += knot.Gx * th;
+      _gu.noalias() += knot.Gu * th;
+      _gt = knot.gamma;
+      _gt.noalias() += knot.Gx.transpose() * xs[t];
+      if (knot.nu > 0)
+        _gt.noalias() += knot.Gu.transpose() * us[t];
+      _gt.noalias() += knot.Gth * th;
+    }
+
+    Scalar gxNorm = math::infty_norm(_gx);
+    Scalar guNorm = math::infty_norm(_gu);
+    Scalar cstNorm = math::infty_norm(_cst);
+    if (verbose)
+      fmt::print("|gx| = {:.3e} | |gu| = {:.3e} | |cst| = {:.3e}\n", gxNorm,
+                 guNorm, cstNorm);
+
+    dualErr = std::max({dualErr, gxNorm, guNorm});
+    cstErr = std::max(cstErr, cstNorm);
+  }
+
+  return std::array{dynErr, cstErr, dualErr};
+}
+
+template <typename Scalar>
 bool lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
                     Scalar mueq, typename math_types<Scalar>::MatrixXs &mat,
                     typename math_types<Scalar>::VectorXs &rhs) {
