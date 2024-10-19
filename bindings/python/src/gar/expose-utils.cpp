@@ -1,6 +1,8 @@
 #include "aligator/python/fwd.hpp"
 #include "aligator/gar/utils.hpp"
 
+#include <eigenpy/std-array.hpp>
+
 namespace aligator::python {
 using namespace gar;
 
@@ -33,5 +35,10 @@ void exposeGarUtils() {
           "Create or update a sparse matrix from an LQRProblem.");
 
   bp::def("lqrInitializeSolution", lqr_sol_initialize_wrap, ("problem"_a));
+
+  bp::def("lqrComputeKktError", lqrComputeKktError<Scalar>,
+          ("problem"_a, "xs", "us", "vs", "lbdas", "mudyn", "mueq", "theta",
+           "verbose"_a = false),
+          "Compute the KKT residual of the LQR problem.");
 }
 } // namespace aligator::python
