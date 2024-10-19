@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Default constructor for `LQRProblemTpl`
+- Removed header `gar/fwd.hpp` with forward-declarations
 
 ## [0.9.0] - 2024-10-11
 

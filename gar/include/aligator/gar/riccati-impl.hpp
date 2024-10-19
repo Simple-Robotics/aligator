@@ -2,7 +2,6 @@
 /// @author Wilson Jallet
 #pragma once
 
-#include "fwd.hpp"
 #include "blk-matrix.hpp"
 
 #include <proxsuite-nlp/linalg/bunchkaufman.hpp>
@@ -15,6 +14,8 @@
 
 namespace aligator {
 namespace gar {
+template <typename Scalar> struct LQRKnotTpl;
+template <typename Scalar> struct LQRProblemTpl;
 
 /// Create a boost::span object from a vector and two indices.
 template <class T, class A>

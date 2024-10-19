@@ -1,6 +1,5 @@
 #pragma once
 
-#include "fwd.hpp"
 #include "riccati-base.hpp"
 #include "riccati-impl.hpp"
 
