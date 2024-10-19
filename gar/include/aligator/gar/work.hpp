@@ -1,10 +1,10 @@
 #pragma once
 
 #include <cassert>
-#include <sys/types.h>
 
 namespace aligator {
 namespace gar {
+using uint = unsigned int;
 
 struct workrange_t {
   uint beg;
