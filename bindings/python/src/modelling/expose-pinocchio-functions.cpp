@@ -21,12 +21,22 @@ using context::PinModel;
 using context::StageFunction;
 using context::UnaryFunction;
 
-// fwd declaration, see expose-fly-high.cpp
+//
+// FORWARD DECLARATIONS
+//
+
 void exposeFlyHigh();
 #ifdef ALIGATOR_PINOCCHIO_V3
 void exposeContactForce();
 #endif
 void exposeCenterOfMassFunctions();
+void exposeFrameFunctions();
+void exposeGravityCompensation();
+
+//
+// DEFINITIONS
+//
+
 void exposeFrameFunctions() {
   using context::Manifold;
   using context::Scalar;
@@ -138,6 +148,7 @@ void exposePinocchioFunctions() {
   exposeContactForce();
 #endif
   exposeCenterOfMassFunctions();
+  exposeGravityCompensation();
 
 #ifdef ALIGATOR_PINOCCHIO_V3
   bp::def("underactuatedConstrainedInverseDynamics",
