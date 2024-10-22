@@ -68,6 +68,7 @@ stm = aligator.StageModel(rcost, dyn_model)
 if args.bounds:
     umax = rmodel.effortLimit
     umin = -umax
+    print(f"Effort limit: {umax}")
     # fun: u -> u
     ctrl_fn = aligator.ControlErrorResidual(space.ndx, np.zeros(nu))
     stm.addConstraint(ctrl_fn, constraints.BoxConstraint(umin, umax))
@@ -118,12 +119,13 @@ plt.subplot(122)
 times = np.linspace(0.0, Tf, nsteps + 1)
 us_opt = np.array(results.us)
 ls = plt.plot(times[1:], results.us)
-mask_where_ctrl_saturate = np.any((us_opt <= umin) | (us_opt >= umax), axis=0)
-idx_hit = np.argwhere(mask_where_ctrl_saturate).flatten()
-if len(idx_hit) > 0:
-    ls[idx_hit[0]].set_label("u{}".format(idx_hit[0]))
-    plt.hlines(umin[idx_hit], *times[[0, -1]], colors="r", linestyles="--")
-    plt.hlines(umax[idx_hit], *times[[0, -1]], colors="b", linestyles="--")
+if args.bounds:
+    mask_where_ctrl_saturate = np.any((us_opt <= umin) | (us_opt >= umax), axis=0)
+    idx_hit = np.argwhere(mask_where_ctrl_saturate).flatten()
+    if len(idx_hit) > 0:
+        ls[idx_hit[0]].set_label("u{}".format(idx_hit[0]))
+        plt.hlines(umin[idx_hit], *times[[0, -1]], colors="r", linestyles="--")
+        plt.hlines(umax[idx_hit], *times[[0, -1]], colors="b", linestyles="--")
 plt.title("Controls trajectory")
 plt.legend()
 plt.tight_layout()
