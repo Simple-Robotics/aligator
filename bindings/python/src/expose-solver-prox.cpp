@@ -96,9 +96,9 @@ void exposeProxDDP() {
           .def_readwrite("bcl_params", &SolverType::bcl_params,
                          "BCL parameters.")
           .def_readwrite("max_refinement_steps",
-                         &SolverType::maxRefinementSteps_)
+                         &SolverType::max_refinement_steps_)
           .def_readwrite("refinement_threshold",
-                         &SolverType::refinementThreshold_)
+                         &SolverType::refinement_threshold_)
           .def_readwrite("linear_solver_choice",
                          &SolverType::linear_solver_choice)
           .def_readwrite("multiplier_update_mode",

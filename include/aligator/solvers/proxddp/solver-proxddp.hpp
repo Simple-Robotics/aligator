@@ -138,12 +138,12 @@ public:
   /// condition.
   bool force_initial_condition_ = true;
 
-  std::size_t maxRefinementSteps_ =
+  std::size_t max_refinement_steps_ =
       0; //< Max number of KKT system refinement iters
-  Scalar refinementThreshold_ = 1e-13; //< Target tol. for the KKT system.
-  std::size_t max_iters;               //< Max number of Newton iterations.
-  std::size_t max_al_iters = 100;      //< Maximum number of ALM iterations.
-  uint rollout_max_iters;              //< Nonlinear rollout options
+  Scalar refinement_threshold_ = 1e-13; //< Target tol. for the KKT system.
+  std::size_t max_iters;                //< Max number of Newton iterations.
+  std::size_t max_al_iters = 100;       //< Maximum number of ALM iterations.
+  uint rollout_max_iters;               //< Nonlinear rollout options
 
   Workspace workspace_;
   Results results_;
