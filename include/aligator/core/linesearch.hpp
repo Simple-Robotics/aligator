@@ -4,6 +4,7 @@
 
 namespace aligator {
 
+using proxsuite::nlp::ArmijoLinesearch;
 using proxsuite::nlp::Linesearch;
 using proxsuite::nlp::LinesearchStrategy;
 
