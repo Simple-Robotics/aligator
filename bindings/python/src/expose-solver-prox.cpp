@@ -19,8 +19,8 @@ void exposeProxDDP() {
   using context::VectorRef;
   using context::Workspace;
 
-  eigenpy::register_symbolic_link_to_registered_type<
-      Linesearch<Scalar>::Options>();
+  using LsOptions = Linesearch<Scalar>::Options;
+  eigenpy::register_symbolic_link_to_registered_type<LsOptions>();
   eigenpy::register_symbolic_link_to_registered_type<LinesearchStrategy>();
   eigenpy::register_symbolic_link_to_registered_type<
       proxsuite::nlp::LSInterpolation>();
@@ -143,12 +143,19 @@ void exposeProxDDP() {
                "(target_tol) will not be synced when the latter changes and "
                "`solver.run()` is called.")
           .def(SolverVisitor<SolverType>())
+          .def_readonly("linesearch", &SolverType::linesearch_)
           .def("run", &SolverType::run,
                ("self"_a, "problem", "xs_init"_a = bp::list(),
                 "us_init"_a = bp::list(), "vs_init"_a = bp::list(),
                 "lams_init"_a = bp::list()),
                "Run the algorithm. Can receive initial guess for "
                "multiplier trajectory.");
+
+  bp::class_<NonmonotoneLinesearch<Scalar>, bp::bases<Linesearch<Scalar>>>(
+      "NonmonotoneLinesearch", bp::no_init)
+      .def(bp::init<LsOptions>(("self"_a, "options")))
+      .def_readwrite("avg_eta", &NonmonotoneLinesearch<Scalar>::avg_eta)
+      .def_readwrite("beta_dec", &NonmonotoneLinesearch<Scalar>::beta_dec);
 
   {
     using AlmParams = SolverType::AlmParams;
