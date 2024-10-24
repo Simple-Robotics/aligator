@@ -150,6 +150,8 @@ public:
   /// LQR subproblem solver
   std::unique_ptr<gar::RiccatiSolverBase<Scalar>> linearSolver_;
   Filter filter_;
+  /// Linesearch function
+  LinesearchType linesearch_;
 
 private:
   /// Callbacks
@@ -161,8 +163,6 @@ private:
   /// constraints, dynamicals...
   Scalar mu_penal_ = mu_init;
   Scalar mu_penal_inv_ = 1. / mu_penal_;
-  /// Linesearch function
-  LinesearchType linesearch_;
 
 public:
   SolverProxDDPTpl(const Scalar tol = 1e-6, const Scalar mu_init = 0.01,
