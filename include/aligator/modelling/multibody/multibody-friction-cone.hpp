@@ -40,14 +40,12 @@ public:
   double mu_;
   int contact_id_;
 
-  Eigen::Matrix<Scalar, 5, 3> Acone_;
-
   MultibodyFrictionConeResidualTpl(
       const int ndx, const Model &model, const MatrixXs &actuation,
       const RigidConstraintModelVector &constraint_models,
       const ProxSettings &prox_settings, const std::string &contact_name,
       const double mu)
-      : Base(ndx, (int)actuation.cols(), 5), pin_model_(model),
+      : Base(ndx, (int)actuation.cols(), 2), pin_model_(model),
         actuation_matrix_(actuation), constraint_models_(constraint_models),
         prox_settings_(prox_settings), mu_(mu) {
     if (model.nv != actuation.rows()) {
@@ -66,7 +64,6 @@ public:
       ALIGATOR_RUNTIME_ERROR(
           "Contact name is not included in constraint models");
     }
-    Acone_ << 0, 0, -1, -1, 0, -mu_, 1, 0, -mu_, 0, -1, -mu_, 0, 1, -mu_;
   }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
@@ -86,6 +83,7 @@ struct MultibodyFrictionConeDataTpl : StageFunctionDataTpl<Scalar> {
   using Base = StageFunctionDataTpl<Scalar>;
   using PinData = pinocchio::DataTpl<Scalar>;
   using VectorXs = typename math_types<Scalar>::VectorXs;
+  using Vector3s = typename math_types<Scalar>::Vector3s;
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
   using Matrix6Xs = typename math_types<Scalar>::Matrix6Xs;
   using RigidConstraintDataVector =
@@ -95,6 +93,7 @@ struct MultibodyFrictionConeDataTpl : StageFunctionDataTpl<Scalar> {
   PinData pin_data_;
   VectorXs tau_;
   MatrixXs temp_;
+  MatrixXs dcone_df_;
 
   RigidConstraintDataVector constraint_datas_;
   pinocchio::ProximalSettingsTpl<Scalar> settings;

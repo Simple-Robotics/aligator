@@ -160,6 +160,25 @@ void SolverProxDDPTpl<Scalar>::cycleProblem(
   results_.cycleAppend(problem, problem.getInitState());
   workspace_.cycleAppend(problem, data);
   linearSolver_->cycleAppend(workspace_.knots[workspace_.nsteps - 1]);
+
+  switch (linear_solver_choice) {
+  case LQSolverChoice::SERIAL: {
+    // linearSolver_->cycleAppend(workspace_.knots[workspace_.nsteps - 1]);
+    linearSolver_ = std::make_unique<gar::ProximalRiccatiSolver<Scalar>>(
+        workspace_.lqr_problem);
+    break;
+  }
+  case LQSolverChoice::PARALLEL: {
+    linearSolver_ = std::make_unique<gar::ParallelRiccatiSolver<Scalar>>(
+        workspace_.lqr_problem, num_threads_);
+    break;
+  }
+  case LQSolverChoice::STAGEDENSE: {
+    linearSolver_ = std::make_unique<gar::RiccatiSolverDense<Scalar>>(
+        workspace_.lqr_problem);
+    break;
+  }
+  }
 }
 
 template <typename Scalar>
