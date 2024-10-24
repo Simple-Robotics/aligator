@@ -11,8 +11,6 @@
 namespace aligator {
 namespace python {
 
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(prox_run_overloads, run, 1, 5)
-
 void exposeProxDDP() {
   using context::ConstVectorRef;
   using context::Results;
@@ -146,11 +144,11 @@ void exposeProxDDP() {
                "`solver.run()` is called.")
           .def(SolverVisitor<SolverType>())
           .def("run", &SolverType::run,
-               prox_run_overloads(
-                   ("self"_a, "problem", "xs_init", "us_init", "vs_init",
-                    "lams_init"),
-                   "Run the algorithm. Can receive initial guess for "
-                   "multiplier trajectory."));
+               ("self"_a, "problem", "xs_init"_a = bp::list(),
+                "us_init"_a = bp::list(), "vs_init"_a = bp::list(),
+                "lams_init"_a = bp::list()),
+               "Run the algorithm. Can receive initial guess for "
+               "multiplier trajectory.");
 
   {
     using AlmParams = SolverType::AlmParams;
