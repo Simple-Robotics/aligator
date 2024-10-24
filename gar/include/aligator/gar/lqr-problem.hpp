@@ -42,20 +42,17 @@ template <typename Scalar> struct LQRKnotTpl {
   MatrixXs Gv;
   VectorXs gamma;
 
-  LQRKnotTpl() = default;
-
   LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth = 0);
 
   LQRKnotTpl(uint nx, uint nu, uint nc) : LQRKnotTpl(nx, nu, nc, nx) {}
 
   // reallocates entire buffer for contigousness
-  inline void addParameterization(uint nth) {
-    this->nth = nth;
-    Gth.setZero(nth, nth);
-    Gx.setZero(nx, nth);
-    Gu.setZero(nu, nth);
-    Gv.setZero(nc, nth);
-    gamma.setZero(nth);
+  void addParameterization(uint nth);
+  bool isApprox(const LQRKnotTpl &other,
+                Scalar prec = std::numeric_limits<Scalar>::epsilon()) const;
+
+  friend bool operator==(const LQRKnotTpl &lhs, const LQRKnotTpl &rhs) {
+    return lhs.isApprox(rhs);
   }
 };
 
@@ -146,8 +143,6 @@ std::ostream &operator<<(std::ostream &oss, const LQRKnotTpl<Scalar> &self) {
 
 } // namespace gar
 } // namespace aligator
-
-#include "lqr-problem.hxx"
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "lqr-problem.txx"

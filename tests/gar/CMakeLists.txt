@@ -12,3 +12,5 @@ add_gar_test(block-matrix)
 if(BUILD_WITH_OPENMP_SUPPORT)
   add_gar_test(parallel aligator)
 endif()
+
+add_gar_test(knot)
