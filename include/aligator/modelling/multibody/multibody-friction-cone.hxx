@@ -22,8 +22,10 @@ void MultibodyFrictionConeResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                 d.settings);
 
   // Unilateral contact
-  d.value_.noalias() =
-      Acone_ * d.pin_data_.lambda_c.segment(contact_id_ * 3, 3);
+  d.value_[0] = -d.pin_data_.lambda_c[contact_id_ * 3 + 2];
+  d.value_[1] = -mu_ * d.pin_data_.lambda_c[contact_id_ * 3 + 2] +
+                sqrt(pow(d.pin_data_.lambda_c[contact_id_ * 3], 2) +
+                     pow(d.pin_data_.lambda_c[contact_id_ * 3 + 1], 2));
 }
 
 template <typename Scalar>
@@ -35,25 +37,42 @@ void MultibodyFrictionConeResidualTpl<Scalar>::computeJacobians(
       pin_model_, d.pin_data_, constraint_models_, d.constraint_datas_,
       d.settings);
 
-  d.Jx_.leftCols(pin_model_.nv).noalias() =
-      Acone_ *
-      d.pin_data_.dlambda_dq.block(contact_id_ * 3, 0, 3, pin_model_.nv);
-  d.Jx_.rightCols(pin_model_.nv).noalias() =
-      Acone_ *
-      d.pin_data_.dlambda_dv.block(contact_id_ * 3, 0, 3, pin_model_.nv);
   d.temp_.noalias() =
       d.pin_data_.dlambda_dtau.block(contact_id_ * 3, 0, 3, pin_model_.nv) *
       actuation_matrix_;
-  d.Ju_.noalias() = Acone_ * d.temp_;
+  d.dcone_df_ << d.pin_data_.lambda_c[contact_id_ * 3] /
+                     sqrt(pow(d.pin_data_.lambda_c[contact_id_ * 3], 2) +
+                          pow(d.pin_data_.lambda_c[contact_id_ * 3 + 1], 2)),
+      d.pin_data_.lambda_c[contact_id_ * 3 + 1] /
+          sqrt(pow(d.pin_data_.lambda_c[contact_id_ * 3], 2) +
+               pow(d.pin_data_.lambda_c[contact_id_ * 3 + 1], 2)),
+      -mu_;
+
+  d.Jx_.block(0, 0, 1, pin_model_.nv).noalias() =
+      -d.pin_data_.dlambda_dq.block(contact_id_ * 3 + 2, 0, 1, pin_model_.nv);
+  d.Jx_.block(0, pin_model_.nv, 1, pin_model_.nv).noalias() =
+      -d.pin_data_.dlambda_dv.block(contact_id_ * 3 + 2, 0, 1, pin_model_.nv);
+  d.Ju_.block(0, 0, 1, actuation_matrix_.cols()).noalias() =
+      -d.temp_.block(2, 0, 1, actuation_matrix_.cols());
+
+  d.Jx_.block(1, 0, 1, pin_model_.nv).noalias() =
+      d.dcone_df_ *
+      d.pin_data_.dlambda_dq.block(contact_id_ * 3, 0, 3, pin_model_.nv);
+  d.Jx_.block(1, pin_model_.nv, 1, pin_model_.nv).noalias() =
+      d.dcone_df_ *
+      d.pin_data_.dlambda_dv.block(contact_id_ * 3, 0, 3, pin_model_.nv);
+  d.Ju_.block(1, 0, 1, actuation_matrix_.cols()).noalias() =
+      d.dcone_df_ * d.temp_;
 }
 
 template <typename Scalar>
 MultibodyFrictionConeDataTpl<Scalar>::MultibodyFrictionConeDataTpl(
     const MultibodyFrictionConeResidualTpl<Scalar> *model)
-    : Base(model->ndx1, model->nu, 5), pin_data_(model->pin_model_),
-      tau_(model->pin_model_.nv), temp_(3, model->nu) {
+    : Base(model->ndx1, model->nu, 2), pin_data_(model->pin_model_),
+      tau_(model->pin_model_.nv), temp_(3, model->nu), dcone_df_(1, 3) {
   tau_.setZero();
   temp_.setZero();
+  dcone_df_.setZero();
 
   pinocchio::initConstraintDynamics(model->pin_model_, pin_data_,
                                     model->constraint_models_);

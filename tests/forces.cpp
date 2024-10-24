@@ -303,15 +303,15 @@ BOOST_AUTO_TEST_CASE(friction_cone) {
   fun.evaluate(x0, u0, *fdata);
   fun.computeJacobians(x0, u0, *fdata);
 
-  MatrixXd cone_partial_dx(5, model.nv * 2);
-  MatrixXd cone_partial_du(5, model.nv - 6);
+  MatrixXd cone_partial_dx(2, model.nv * 2);
+  MatrixXd cone_partial_du(2, model.nv - 6);
   cone_partial_dx = fdata->Jx_;
   cone_partial_du = fdata->Ju_;
 
   // Data_fd
-  MatrixXd cone_partial_dx_fd(5, model.nv * 2);
+  MatrixXd cone_partial_dx_fd(2, model.nv * 2);
   cone_partial_dx_fd.setZero();
-  MatrixXd cone_partial_du_fd(5, model.nv - 6);
+  MatrixXd cone_partial_du_fd(2, model.nv - 6);
   cone_partial_du_fd.setZero();
 
   const VectorXd cone0 = fdata->value_;

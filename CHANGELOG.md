@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change uses of `ConstraintSetBase` template class to `ConstraintSetTpl` (following changes in proxsuite-nlp 0.9.0) ([#223](https://github.com/Simple-Robotics/aligator/pull/233))
 - [gar] Throw an exception if trying to instantiate `ParallelRiccatiSolver` with num_threads smaller than 2.
 - [API BREAKING] Rename friction cone for centroidal into CentroidalFrictionCone ([#234](https://github.com/Simple-Robotics/aligator/pull/234))
+- Change the linear multibody friction cone to the true "ice cream" cone
 
 ## [0.9.0] - 2024-10-11
 

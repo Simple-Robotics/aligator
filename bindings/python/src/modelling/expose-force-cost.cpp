@@ -51,7 +51,7 @@ void exposeContactForce() {
       .def(bp::init<int, PinModel, const context::MatrixXs &,
                     const RigidConstraintModelVector &,
                     const pinocchio::ProximalSettingsTpl<Scalar> &,
-                    const context::Vector6s &, const std::string &>(bp::args(
+                    const context::VectorXs &, const std::string &>(bp::args(
           "self", "ndx", "model", "actuation_matrix", "constraint_models",
           "prox_settings", "fref", "contact_name")))
       .def(func_visitor)
