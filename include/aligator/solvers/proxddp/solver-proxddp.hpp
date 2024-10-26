@@ -277,7 +277,8 @@ public:
   /// Compute the merit function and stopping criterion dual terms:
   /// first-order Lagrange multiplier estimates, shifted and
   /// projected constraints.
-  void computeMultipliers(const Problem &problem,
+  /// @return bool: whether the op succeeded.
+  bool computeMultipliers(const Problem &problem,
                           const std::vector<VectorXs> &lams,
                           const std::vector<VectorXs> &vs);
 

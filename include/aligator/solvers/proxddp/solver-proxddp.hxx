@@ -162,8 +162,16 @@ void SolverProxDDPTpl<Scalar>::cycleProblem(
   linearSolver_->cycleAppend(workspace_.knots[workspace_.nsteps - 1]);
 }
 
+template <typename... VArgs> bool is_nan_any(const VArgs &...args) {
+  return (math::check_value(args) || ...);
+}
+
+#define RET_FALSE_IF_NAN(...)                                                  \
+  if (is_nan_any(__VA_ARGS__))                                                 \
+    return false;
+
 template <typename Scalar>
-void SolverProxDDPTpl<Scalar>::computeMultipliers(
+bool SolverProxDDPTpl<Scalar>::computeMultipliers(
     const Problem &problem, const std::vector<VectorXs> &lams,
     const std::vector<VectorXs> &vs) {
   ALIGATOR_TRACY_ZONE_SCOPED;
@@ -202,7 +210,7 @@ void SolverProxDDPTpl<Scalar>::computeMultipliers(
     /// TODO: generalize to the other types of initial constraint (non-equality)
     workspace_.dyn_slacks[0] = dd.value_;
     Lds[0] = mudyn() * (lams_plus[0] - lams[0]);
-    ALIGATOR_RAISE_IF_NAN(Lds[0]);
+    RET_FALSE_IF_NAN(Lds[0]);
   }
   using ConstraintSetProd = proxsuite::nlp::ConstraintSetProductTpl<Scalar>;
 
@@ -219,8 +227,7 @@ void SolverProxDDPTpl<Scalar>::computeMultipliers(
     // 1. compute shifted dynamics error
     workspace_.dyn_slacks[i + 1] = dd.value_;
     lams_plus[i + 1] = lams_prev[i + 1] + dd.value_ / mudyn();
-    ALIGATOR_RAISE_IF_NAN_NAME(lams_plus[i + 1],
-                               fmt::format("lams_plus[{:d}]", i + 1));
+    RET_FALSE_IF_NAN(lams_plus[i + 1]);
     lams_pdal[i + 1] = 2 * lams_plus[i + 1] - lams[i + 1];
     Lds[i + 1] = mudyn() * (lams_plus[i + 1] - lams[i + 1]);
 
@@ -242,7 +249,7 @@ void SolverProxDDPTpl<Scalar>::computeMultipliers(
     Lvs[i].noalias() -= mu() * vs[i];
     vs_plus[i] = mu_inv() * vs_plus[i];
     assert(Lvs[i].size() == stage.nc());
-    ALIGATOR_RAISE_IF_NAN(Lvs[i]);
+    RET_FALSE_IF_NAN(Lvs[i]);
   }
 
   if (!problem.term_cstrs_.empty()) {
@@ -263,9 +270,12 @@ void SolverProxDDPTpl<Scalar>::computeMultipliers(
     Lvs[nsteps].noalias() -= mu() * vs[nsteps];
     vs_plus[nsteps] = mu_inv() * vs_plus[nsteps];
     assert(Lvs[nsteps].size() == cstr_stack.totalDim());
-    ALIGATOR_RAISE_IF_NAN(Lvs[nsteps]);
+    RET_FALSE_IF_NAN(Lvs[nsteps]);
   }
+  return true;
 }
+
+#undef RET_FALSE_IF_NAN
 
 template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateGains() {
   ALIGATOR_TRACY_ZONE_SCOPED;
@@ -540,7 +550,9 @@ Scalar SolverProxDDPTpl<Scalar>::forwardPass(const Problem &problem,
     tryNonlinearRollout(problem, alpha);
     break;
   }
-  computeMultipliers(problem, workspace_.trial_lams, workspace_.trial_vs);
+  if (!computeMultipliers(problem, workspace_.trial_lams, workspace_.trial_vs))
+    ALIGATOR_RUNTIME_ERROR(
+        "computeMultipliers() returned false. NaN or Inf detected.");
   return PDALFunction<Scalar>::evaluate(mudyn(), mu(), problem,
                                         workspace_.trial_lams,
                                         workspace_.trial_vs, workspace_);
