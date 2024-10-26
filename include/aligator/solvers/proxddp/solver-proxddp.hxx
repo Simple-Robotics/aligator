@@ -97,16 +97,31 @@ Scalar SolverProxDDPTpl<Scalar>::tryLinearStep(const Problem &problem,
   math::vectorMultiplyAdd(results_.vs, workspace_.dvs, workspace_.trial_vs,
                           alpha);
 
+  long ndx_max = 0U;
+  long nu_max = 0U;
+  for (size_t i = 0; i < nsteps; i++) {
+    ndx_max = std::max(ndx_max, workspace_.dxs[i].size());
+    nu_max = std::max(nu_max, workspace_.dus[i].size());
+  }
+  ndx_max = std::max(ndx_max, workspace_.dxs.back().size());
+  VectorXs dx_tmp(ndx_max);
+  VectorXs du_tmp(nu_max);
+
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
-    stage.xspace_->integrate(results_.xs[i], alpha * workspace_.dxs[i],
+    const int ndx = stage.ndx1();
+    const int nu = stage.nu();
+    dx_tmp.head(ndx) = alpha * workspace_.dxs[i];
+    du_tmp.head(nu) = alpha * workspace_.dus[i];
+    stage.xspace_->integrate(results_.xs[i], dx_tmp.head(ndx),
                              workspace_.trial_xs[i]);
-    stage.uspace_->integrate(results_.us[i], alpha * workspace_.dus[i],
+    stage.uspace_->integrate(results_.us[i], du_tmp.head(nu),
                              workspace_.trial_us[i]);
   }
   const StageModel &stage = *problem.stages_[nsteps - 1];
-  stage.xspace_next_->integrate(results_.xs[nsteps],
-                                alpha * workspace_.dxs[nsteps],
+  const long ndxN = workspace_.dxs[nsteps].size();
+  dx_tmp.head(ndxN) = alpha * workspace_.dxs[nsteps];
+  stage.xspace_next_->integrate(results_.xs[nsteps], dx_tmp.head(ndxN),
                                 workspace_.trial_xs[nsteps]);
   TrajOptData &prob_data = workspace_.problem_data;
   prob_data.cost_ =
@@ -485,6 +500,7 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
       al_iter++;
       break;
     }
+    linesearch_.reset();
 
     // accept primal updates
     workspace_.prev_xs = results_.xs;
