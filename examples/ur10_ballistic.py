@@ -141,12 +141,6 @@ def configure_viz(target_pos):
 
 target_pos = np.array([2.4, -0.2, 0.0])
 
-if args.display:
-    viz = configure_viz(target_pos=target_pos)
-    viz.display(ref_q0)
-else:
-    viz = None
-
 dt = 0.01
 tf = 2.0  # seconds
 nsteps = int(tf / dt)
@@ -189,7 +183,10 @@ xs_i = aligator.rollout(dms, x0, us_i)
 qs_i = [x[:nq_b] for x in xs_i]
 
 if args.display:
+    viz = configure_viz(target_pos=target_pos)
     viz.play(qs_i, dt=dt)
+else:
+    viz = None
 
 
 def create_running_cost():
