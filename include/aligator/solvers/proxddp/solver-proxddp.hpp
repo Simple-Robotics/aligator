@@ -4,6 +4,7 @@
 #pragma once
 
 #include "aligator/core/linesearch.hpp"
+#include "aligator/core/linesearch-nonmonotone.hpp"
 #include "aligator/core/filter.hpp"
 #include "aligator/core/callback-base.hpp"
 #include "aligator/core/enums.hpp"
@@ -50,7 +51,8 @@ public:
   using CstrSet = ConstraintSetTpl<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
   using LinesearchOptions = typename Linesearch<Scalar>::Options;
-  using LinesearchType = proxsuite::nlp::ArmijoLinesearch<Scalar>;
+  using LinesearchType = NonmonotoneLinesearch<Scalar>;
+  // using LinesearchType = ArmijoLinesearch<Scalar>;
   using Filter = FilterTpl<Scalar>;
 
   struct AlmParams {
