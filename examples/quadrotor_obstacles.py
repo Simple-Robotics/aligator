@@ -322,15 +322,18 @@ def main(args: Args):
         vizer = None
 
     tol = 1e-4
-    mu_init = 1.0
+    if args.bounds:
+        mu_init = 1e1
+    else:
+        mu_init = 1e-6
     verbose = aligator.VerboseLevel.VERBOSE
-    history_cb = aligator.HistoryCallback()
     solver = aligator.SolverProxDDP(tol, mu_init, verbose=verbose)
+    history_cb = aligator.HistoryCallback(solver)
     if args.fddp:
         solver = aligator.SolverFDDP(tol, verbose=verbose)
     solver.max_iters = 400
+    solver.reg_min = 1e-5
     solver.registerCallback("his", history_cb)
-    solver.bcl_params.dyn_al_scale = 1e-6
     solver.setup(problem)
     solver.run(problem, xs_init, us_init)
 
@@ -351,17 +354,20 @@ def main(args: Args):
         plt.vlines(idx_switch, *plt.ylim(), colors="r", label="switch")
 
         plt.legend()
-        plt.xlabel("Time $t$")
+        plt.xlabel("Time $t$ (s)")
         plt.ylabel("Dimension")
         plt.title("Multipliers")
         plt.colorbar()
         plt.tight_layout()
         return plt.gcf()
 
+    TAG = "quadrotor"
     if args.obstacles:
-        TAG = "quadrotor_obstacles"
-    else:
-        TAG = "quadrotor"
+        TAG += "_obstacles"
+    if args.bounds:
+        TAG += "_bounds"
+    if args.term_cstr:
+        TAG += "_termcstr"
 
     root_pt_opt = np.stack(xs_opt)[:, :3]
     if args.plot:
@@ -369,14 +375,16 @@ def main(args: Args):
             plot_costate_value()
 
         nplot = 3
-        fig: plt.Figure = plt.figure(figsize=(9.6, 5.4))
+        fig: plt.Figure = plt.figure(figsize=(7.2, 4.0))
         ax0: plt.Axes = fig.add_subplot(1, nplot, 1)
         ax0.plot(times[:-1], us_opt)
         ax0.hlines((u_min[0], u_max[0]), *times[[0, -1]], colors="k", alpha=0.3, lw=1.4)
-        ax0.set_title("Controls")
-        ax0.set_xlabel("Time")
+        ax0.set_title("Controls (N/m)")
+        ax0.set_xlabel("Time (s)")
         ax1: plt.Axes = fig.add_subplot(1, nplot, 2)
         ax1.plot(times, root_pt_opt)
+        ax1.set_xlabel("Time (s)")
+        ax1.set_title("Quadrotor position (m)")
         plt.legend(["$x$", "$y$", "$z$"])
         ax1.scatter([times_wp[-1]] * 3, x_term[:3], marker=".", c=["C0", "C1", "C2"])
         ax2: plt.Axes = fig.add_subplot(1, nplot, 3)

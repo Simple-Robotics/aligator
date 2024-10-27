@@ -46,7 +46,13 @@ frame_id = model.getFrameId("end_effector_frame")
 # running cost regularizes the control input
 rcost = aligator.CostStack(space, nu)
 wu = np.ones(nu) * 1e-2
-rcost.addCost(aligator.QuadraticControlCost(space, np.zeros(nu), np.diag(wu) * dt))
+rcost.addCost(
+    "ureg", aligator.QuadraticControlCost(space, np.zeros(nu), np.diag(wu) * dt)
+)
+rcost.addCost(
+    "xreg",
+    aligator.QuadraticStateCost(space, nu, space.neutral(), 1e-2 * np.eye(ndx) * dt),
+)
 frame_place_target = pin.SE3.Identity()
 frame_place_target.translation[:] = target_pos
 frame_err = aligator.FramePlacementResidual(
@@ -59,14 +65,11 @@ frame_err = aligator.FramePlacementResidual(
 weights_frame_place = np.zeros(6)
 weights_frame_place[:3] = 1.0
 weights_frame_place = np.diag(weights_frame_place)
-rcost.addCost(
-    aligator.QuadraticResidualCost(space, frame_err, weights_frame_place * dt)
-)
 term_cost = aligator.CostStack(space, nu)
 
 # box constraint on control
-u_min = -6.0 * np.ones(nu)
-u_max = +6.0 * np.ones(nu)
+u_min = -5.0 * np.ones(nu)
+u_max = +5.0 * np.ones(nu)
 
 
 def get_box_cstr():
@@ -125,15 +128,15 @@ if args.plot:
     ax1 = fig1.add_subplot(gs0[0])
     ax2 = fig1.add_subplot(gs0[1])
     lstyle = {"lw": 0.9}
-    ax1.plot(trange, xs_opt[:, 0], ls="-", **lstyle)
-    ax1.plot(trange, xs_opt[:, 2], ls="-", label="$\\dot{x}$", **lstyle)
-    ax1.set_ylabel("$q(t)$")
+    ax1.plot(trange, xs_opt[:, 0], ls="-", label="$x$ (m)", **lstyle)
+    ax1.plot(trange, xs_opt[:, 2], ls="-", label="$\\dot{x}$ (m/s)", **lstyle)
+    ax1.set_title("Cartpole position $x$")
     if args.term_cstr:
         pass
     ax1.legend()
-    ax2.plot(trange, xs_opt[:, 1], ls="-", **lstyle)
-    ax2.plot(trange, xs_opt[:, 3], ls="-", label="$\\dot{\\theta}$", **lstyle)
-    ax2.set_ylabel("Angle $\\theta(t)$")
+    ax2.plot(trange, xs_opt[:, 1], ls="-", label="$\\theta$ (rad)", **lstyle)
+    ax2.plot(trange, xs_opt[:, 3], ls="-", label="$\\dot{\\theta}$ (rad/s)", **lstyle)
+    ax2.set_title("Angle $\\theta(t)$")
     ax2.legend()
 
     plt.xlabel("Time $t$")
@@ -142,6 +145,8 @@ if args.plot:
     ax3 = plt.subplot(gs1[0])
     plt.plot(*_pts.T, ls=":")
     plt.scatter(*target_pos[1:], c="r", marker="^", zorder=2, label="EE target")
+    plt.xlabel("$x$ (m)")
+    plt.ylabel("$z$ (m)")
     plt.legend()
     ax3.set_aspect("equal")
     plt.title("Endpoint trajectory")
@@ -156,13 +161,13 @@ if args.plot:
             colors="k",
             lw=2.5,
             alpha=0.4,
-            label=r"$\bar{u}$",
+            label=r"bound $\overline{u}$",
         )
-    plt.title("Controls $u(t)$")
+    plt.title(r"Controls $u$ (N/m)")
     plt.legend()
     fig1.tight_layout()
 
-    fig2 = plt.figure(figsize=(6.4, 4.8))
+    fig2 = plt.figure(figsize=(7.2, 4))
     ax: plt.Axes = plt.subplot(111)
     ax.hlines(TOL, 0, res.num_iters, lw=2.2, alpha=0.8, colors="k")
     plot_convergence(callback, ax, res)
@@ -181,7 +186,7 @@ if args.plot:
         al_change_idx = itrange[:-1][al_change > 0]
         legends_.extend(
             [
-                "Prim tol $\\eta_k$",
+                "$\\eta_k$",
                 "AL iters",
             ]
         )
@@ -192,7 +197,7 @@ if args.plot:
             "$\\epsilon_\\mathrm{tol}$",
             "Prim. err $p$",
             "Dual err $d$",
-            "Prim tol $\\eta_k$",
+            "$\\eta_k$",
             "AL iters",
         ]
     )
