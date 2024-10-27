@@ -70,10 +70,10 @@ if args.term_cstr:
     )
 
 tol = 1e-3
-mu_init = 10.0
+mu_init = 1e-2
 solver = aligator.SolverProxDDP(tol, mu_init=mu_init, verbose=aligator.VERBOSE)
 solver.max_iters = 200
-solver.rollout_type = aligator.ROLLOUT_LINEAR
+solver.rollout_type = aligator.ROLLOUT_NONLINEAR
 solver.linear_solver_choice = aligator.LQ_SOLVER_STAGEDENSE
 solver.setup(problem)
 
@@ -96,7 +96,9 @@ if args.plot:
     from aligator.utils.plotting import plot_controls_traj
 
     times = np.linspace(0, Tf, nsteps + 1)
-    fig1 = plot_controls_traj(times, res.us, ncols=1, rmodel=rmodel, figsize=(6.4, 3.2))
+    fig1, axes = plot_controls_traj(
+        times, res.us, ncols=1, rmodel=rmodel, figsize=(6.4, 3.2)
+    )
     fig1.tight_layout()
     xs = np.stack(res.xs)
     vs = xs[:, nq:]
