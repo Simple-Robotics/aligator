@@ -78,7 +78,7 @@ verbose = aligator.VerboseLevel.VERBOSE
 tol = 1e-8
 solver = aligator.SolverProxDDP(tol, mu_init, verbose=verbose)
 
-his_cb = aligator.HistoryCallback()
+his_cb = aligator.HistoryCallback(solver)
 solver.registerCallback("his", his_cb)
 print("Registered callbacks:", solver.getCallbackNames().tolist())
 solver.max_iters = 20

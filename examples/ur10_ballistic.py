@@ -276,8 +276,7 @@ mu_init = 1e-1
 solver = aligator.SolverProxDDP(tol, mu_init, max_iters=300, verbose=aligator.VERBOSE)
 # solver.linear_solver_choice = aligator.LQ_SOLVER_PARALLEL
 # solver.rollout_type = aligator.ROLLOUT_LINEAR
-# solver.sa_strategy = aligator.SA_FILTER
-his_cb = aligator.HistoryCallback()
+his_cb = aligator.HistoryCallback(solver)
 solver.setNumThreads(4)
 solver.registerCallback("his", his_cb)
 solver.setup(problem)

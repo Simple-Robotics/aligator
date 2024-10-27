@@ -125,7 +125,7 @@ solver.rollout_type = aligator.ROLLOUT_NONLINEAR
 solver.sa_strategy = aligator.SA_LINESEARCH
 if args.fddp:
     solver = aligator.SolverFDDP(tol, verbose, max_iters=max_iters)
-cb = aligator.HistoryCallback()
+cb = aligator.HistoryCallback(solver)
 solver.registerCallback("his", cb)
 solver.setup(problem)
 solver.run(problem, init_xs, init_us)

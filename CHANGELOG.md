@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `SolverProxDDP`: add temporary vectors for linesearch
 - `SolverProxDDP`: remove exceptions from `computeMultipliers()`, return a bool flag
+- HistoryCallback: take solver instance as argument
 - `gar`: rework and move sparse matrix utilities to `gar/utils.hpp`
 - `SolverProxDDP`: Rename `maxRefinementSteps_` and `refinementThreshold_` to snake-case
 - `SolverProxDDP`: make `linesearch_` public
