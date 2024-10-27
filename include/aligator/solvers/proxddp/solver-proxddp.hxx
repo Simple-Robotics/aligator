@@ -6,6 +6,7 @@
 #include "solver-proxddp.hpp"
 #include "merit-function.hpp"
 #include "aligator/core/lagrangian.hpp"
+#include "aligator/threads.hpp"
 #include "aligator/utils/forward-dyn.hpp"
 
 #include "aligator/gar/proximal-riccati.hpp"
@@ -79,6 +80,17 @@ SolverProxDDPTpl<Scalar>::SolverProxDDPTpl(const Scalar tol,
   ls_params.interp_type = proxsuite::nlp::LSInterpolation::CUBIC;
 }
 
+template <typename Scalar>
+void SolverProxDDPTpl<Scalar>::setNumThreads(const std::size_t num_threads) {
+  if (linearSolver_) {
+    ALIGATOR_WARNING(
+        "SolverProxDDP",
+        "Linear solver already set: setNumThreads() should be called before "
+        "you call setup() if you want to use the parallel linear solver.\n");
+  }
+  num_threads_ = num_threads;
+  omp::set_default_options(num_threads);
+}
 // [1] Section IV. Proximal Differential Dynamic Programming
 // C. Forward pass
 template <typename Scalar>
