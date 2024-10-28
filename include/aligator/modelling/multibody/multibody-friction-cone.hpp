@@ -83,9 +83,7 @@ struct MultibodyFrictionConeDataTpl : StageFunctionDataTpl<Scalar> {
   using Base = StageFunctionDataTpl<Scalar>;
   using PinData = pinocchio::DataTpl<Scalar>;
   using VectorXs = typename math_types<Scalar>::VectorXs;
-  using Vector3s = typename math_types<Scalar>::Vector3s;
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
-  using Matrix6Xs = typename math_types<Scalar>::Matrix6Xs;
   using RigidConstraintDataVector =
       PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(pinocchio::RigidConstraintData);
 
@@ -93,7 +91,7 @@ struct MultibodyFrictionConeDataTpl : StageFunctionDataTpl<Scalar> {
   PinData pin_data_;
   VectorXs tau_;
   MatrixXs temp_;
-  MatrixXs dcone_df_;
+  Eigen::Matrix<Scalar, 1, 3> dcone_df_;
 
   RigidConstraintDataVector constraint_datas_;
   pinocchio::ProximalSettingsTpl<Scalar> settings;
