@@ -1,5 +1,6 @@
 assets/
 build*/
+!build_scripts/
 *.pyc
 **/__pycache__
 *.aux
@@ -7,3 +8,7 @@ build*/
 .cache/
 
 *.mp4
+
+# pixi environments
+.pixi
+*.egg-info

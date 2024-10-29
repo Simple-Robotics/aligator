@@ -1,0 +1,89 @@
+[project]
+name = "aligator"
+version = "0.9.0"
+channels = ["conda-forge"]
+description = "A primal-dual augmented Lagrangian-type solver for trajectory optimization"
+platforms = ["linux-64", "osx-64", "osx-arm64"]
+license = "BSD-2-Clause"
+license-file = "LICENSE"
+
+[build-dependencies]
+ccache = ">=4.9.1"
+cmake = ">=3.10"
+cxx-compiler = ">=1.7.0"
+ninja = ">=1.11"
+pkg-config = ">=0.29.2"
+
+[dependencies]
+libboost-devel = ">=1.80.0"
+libboost-python-devel = ">=1.80.0"
+eigen = ">=3.4.0"
+python = ">=3.9.0"
+eigenpy = ">=3.8.0"
+proxsuite-nlp = ">=0.8.0"
+fmt = ">=10.0.0"
+benchmark = ">=1.8.0"
+pytest = ">=8.3.0"
+matplotlib-base = ">=3.9.0"
+typed-argument-parser = ">=1.10.0"
+meshcat-python = ">=0.3"
+
+[activation]
+scripts = ["build_scripts/pixi/activation.sh"]
+
+[tasks]
+# We must avoid to set CMAKE_CXX_FLAGS because of WIN32
+# https://discourse.cmake.org/t/strictly-appending-to-cmake-lang-flags/6478
+configure = { cmd = [
+  "CXXFLAGS=$PROXSUITE_NLP_CXX_FLAGS",
+  "cmake",
+  "-G",
+  "Ninja",
+  "-B",
+  "build",
+  "-S",
+  ".",
+  "-DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX",
+  "-DCMAKE_BUILD_TYPE=$ALIGATOR_BUILD_TYPE",
+  "-DBUILD_WITH_PINOCCHIO_SUPPORT=$ALIGATOR_PINOCCHIO_SUPPORT",
+  "-DBUILD_WITH_CROCODDYL_COMPAT=$ALIGATOR_CROCODDYL_COMPAT",
+  "-DBUILD_WITH_OPENMP_SUPPORT=$ALIGATOR_OPENMP_SUPPORT",
+  "-DBUILD_WITH_CHOLMOD_SUPPORT=$ALIGATOR_CHOLMOD_SUPPORT",
+  "-DBUILD_BENCHMARK=$ALIGATOR_BENCHMARK",
+  "-DBUILD_EXAMPLES=$ALIGATOR_EXAMPLES",
+  "-DGENERATE_PYTHON_STUBS=$ALIGATOR_PYTHON_STUBS",
+] }
+build = { cmd = "cmake --build build --target all", depends_on = ["configure"] }
+clean = { cmd = "rm -rf build" }
+test = { cmd = "ctest --test-dir build --output-on-failure", depends_on = [
+  "build",
+] }
+
+[feature.lint]
+dependencies = { pre-commit = ">=3.6.2" }
+tasks = { lint = { cmd = "pre-commit run --all" } }
+
+[feature.tracy]
+dependencies = { tracy-client = ">=0.11.1" }
+activation = { env = { ALIGATOR_TRACY_ENABLE = "ON" } }
+
+[feature.pinocchio]
+dependencies = { pinocchio = ">=3.1", example-robot-data = ">=4.1.0" }
+activation = { env = { ALIGATOR_PINOCCHIO_SUPPORT = "ON" } }
+
+[feature.crocoddyl]
+dependencies = { crocoddyl = ">=2.1" }
+activation = { env = { ALIGATOR_CROCODDYL_COMPAT = "ON" } }
+
+[feature.cholmod]
+dependencies = { suitesparse = ">=5" }
+activation = { env = { ALIGATOR_CHOLMOD_SUPPORT = "ON" } }
+
+# Not supported by Windows (because of conda-forge issue)
+[feature.openmp]
+[feature.openmp.target.linux]
+dependencies = { libgomp = ">=14.2" }
+activation = { env = { ALIGATOR_OPENMP_SUPPORT = "ON" } }
+[feature.openmp.target.osx]
+dependencies = { llvm-openmp = ">=19.1" }
+activation = { env = { ALIGATOR_OPENMP_SUPPORT = "ON" } }
