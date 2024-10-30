@@ -9,7 +9,11 @@ import contextlib
 from pathlib import Path
 from typing import Tuple
 from pinocchio.visualize import MeshcatVisualizer
-from aligator.utils.plotting import plot_controls_traj, plot_velocity_traj
+from aligator.utils.plotting import (
+    plot_controls_traj,
+    plot_convergence,
+    plot_velocity_traj,
+)
 from utils import (
     add_namespace_prefix_to_models,
     ArgsBase,
@@ -272,7 +276,7 @@ problem = aligator.TrajOptProblem(x0, stages, term_cost)
 problem.addTerminalConstraint(*create_term_constraint(target_pos))
 problem.addTerminalConstraint(*get_velocity_limit_constraint())
 tol = 1e-4
-mu_init = 1e-1
+mu_init = 2e-1
 solver = aligator.SolverProxDDP(tol, mu_init, max_iters=300, verbose=aligator.VERBOSE)
 # solver.linear_solver_choice = aligator.LQ_SOLVER_PARALLEL
 # solver.rollout_type = aligator.ROLLOUT_LINEAR
@@ -335,23 +339,39 @@ if args.plot:
     _joint_names = robot.model.names
     _efflims = robot.model.effortLimit
     _vlims = robot.model.velocityLimit
+    figsize = (6.4, 4.0)
     fig1, _ = plot_controls_traj(
-        times, us, joint_names=_joint_names, effort_limit=_efflims
+        times, us, rmodel=rmodel, effort_limit=_efflims, figsize=figsize
     )
+    fig1.suptitle("Controls (N/m)")
     fig2, _ = plot_velocity_traj(
-        times, vs[:, :-6], rmodel=robot.model, vel_limit=_vlims
+        times, vs[:, :-6], rmodel=robot.model, vel_limit=_vlims, figsize=figsize
     )
 
-    for fig, name in [(fig1, "controls"), (fig2, "velocity")]:
-        PLOTDIR = Path("assets")
-        for ext in [".png", ".pdf"]:
-            figpath: Path = PLOTDIR / f"{EXPERIMENT_NAME}_{name}"
-            fig.savefig(figpath.with_suffix(ext))
+    PLOTDIR = Path("assets")
 
     fig3 = plt.figure()
     ax: plt.Axes = fig3.add_subplot(111)
     ax.plot(dyn_slackn_slacks)
     ax.set_yscale("log")
     ax.set_title("Dynamic slack errors $\\|s\\|_\\infty$")
+
+    fig4 = plt.figure(figsize=(6.4, 3.6))
+    ax = fig4.add_subplot(111)
+    plot_convergence(
+        his_cb,
+        ax,
+        res=solver.results,
+        show_al_iters=True,
+        legend_kwargs=dict(fontsize=8),
+    )
+    ax.set_title("Convergence")
+    fig4.tight_layout()
+
+    _fig_dict = {"controls": fig1, "velocity": fig2, "conv": fig4}
+    for name, fig in _fig_dict.items():
+        for ext in [".png", ".pdf"]:
+            figpath: Path = PLOTDIR / f"{EXPERIMENT_NAME}_{name}"
+            fig.savefig(figpath.with_suffix(ext))
 
     plt.show()

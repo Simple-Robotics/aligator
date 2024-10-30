@@ -45,31 +45,27 @@ frame_id = model.getFrameId("end_effector_frame")
 
 # running cost regularizes the control input
 rcost = aligator.CostStack(space, nu)
-wu = np.ones(nu) * 1e-2
+wu = np.ones(nu) * 1e-3
+wx_reg = np.eye(ndx) * 1e-3
 rcost.addCost(
     "ureg", aligator.QuadraticControlCost(space, np.zeros(nu), np.diag(wu) * dt)
 )
 rcost.addCost(
-    "xreg",
-    aligator.QuadraticStateCost(space, nu, space.neutral(), 1e-2 * np.eye(ndx) * dt),
+    "xreg", aligator.QuadraticStateCost(space, nu, space.neutral(), wx_reg * dt)
 )
-frame_place_target = pin.SE3.Identity()
-frame_place_target.translation[:] = target_pos
-frame_err = aligator.FramePlacementResidual(
+frame_err = aligator.FrameTranslationResidual(
     ndx,
     nu,
     model,
-    frame_place_target,
+    target_pos,
     frame_id,
 )
-weights_frame_place = np.zeros(6)
-weights_frame_place[:3] = 1.0
-weights_frame_place = np.diag(weights_frame_place)
 term_cost = aligator.CostStack(space, nu)
+term_cost.addCost("xreg", aligator.QuadraticStateCost(space, nu, x0, wx_reg))
 
 # box constraint on control
-u_min = -5.0 * np.ones(nu)
-u_max = +5.0 * np.ones(nu)
+u_min = -2.0 * np.ones(nu)
+u_max = +2.0 * np.ones(nu)
 
 
 def get_box_cstr():
@@ -79,6 +75,7 @@ def get_box_cstr():
 
 nsteps = 500
 Tf = nsteps * dt
+print(f"Tf = {Tf}")
 problem = aligator.TrajOptProblem(x0, nu, space, term_cost)
 
 for i in range(nsteps):
@@ -87,11 +84,13 @@ for i in range(nsteps):
         stage.addConstraint(*get_box_cstr())
     problem.addStage(stage)
 
-term_fun = aligator.FrameTranslationResidual(ndx, nu, model, target_pos, frame_id)
+term_fun = frame_err
 
 if args.term_cstr:
     problem.addTerminalConstraint(term_fun, constraints.EqualityConstraintSet())
 else:
+    weights_frame_place = 5 * np.ones(3)
+    weights_frame_place = np.diag(weights_frame_place)
     term_cost.addCost(
         aligator.QuadraticResidualCost(space, frame_err, weights_frame_place)
     )
@@ -139,7 +138,7 @@ if args.plot:
     ax2.set_title("Angle $\\theta(t)$")
     ax2.legend()
 
-    plt.xlabel("Time $t$")
+    plt.xlabel("Time (s)")
 
     gs1 = gs[1].subgridspec(1, 2, width_ratios=[1, 2])
     ax3 = plt.subplot(gs1[0])
@@ -170,37 +169,8 @@ if args.plot:
     fig2 = plt.figure(figsize=(7.2, 4))
     ax: plt.Axes = plt.subplot(111)
     ax.hlines(TOL, 0, res.num_iters, lw=2.2, alpha=0.8, colors="k")
-    plot_convergence(callback, ax, res)
-    prim_tols = np.array(callback.prim_tols)
-    al_iters = np.array(callback.al_index)
+    plot_convergence(callback, ax, res, show_al_iters=True)
 
-    itrange = np.arange(len(al_iters))
-    legends_ = [
-        "$\\epsilon_\\mathrm{tol}$",
-        "Prim. err $p$",
-        "Dual err $d$",
-    ]
-    if len(itrange) > 0:
-        ax.step(itrange, prim_tols, c="green", alpha=0.9, lw=1.1)
-        al_change = al_iters[1:] - al_iters[:-1]
-        al_change_idx = itrange[:-1][al_change > 0]
-        legends_.extend(
-            [
-                "$\\eta_k$",
-                "AL iters",
-            ]
-        )
-
-        ax.vlines(al_change_idx, *ax.get_ylim(), colors="gray", lw=4.0, alpha=0.5)
-    ax.legend(
-        [
-            "$\\epsilon_\\mathrm{tol}$",
-            "Prim. err $p$",
-            "Dual err $d$",
-            "$\\eta_k$",
-            "AL iters",
-        ]
-    )
     fig2.tight_layout()
 
     fig_dict = {"traj": fig1, "conv": fig2}
@@ -226,7 +196,9 @@ if args.display:
     qs = [x[:nq] for x in res.xs.tolist()]
     vs = [x[nq:] for x in res.xs.tolist()]
 
-    obj = pin.GeometryObject("objective", 0, hppfcl.Sphere(0.05), frame_place_target)
+    obj = pin.GeometryObject(
+        "objective", 0, hppfcl.Sphere(0.05), pin.SE3(np.eye(3), target_pos)
+    )
     color = [255, 20, 83, 255]
     obj.meshColor[:] = color
     obj.meshColor /= 255
