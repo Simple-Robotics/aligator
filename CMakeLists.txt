@@ -82,16 +82,15 @@ include(${JRL_CMAKE_MODULES}/ide.cmake)
 include(${JRL_CMAKE_MODULES}/python.cmake)
 include(${JRL_CMAKE_MODULES}/apple.cmake)
 if(APPLE) # Use the handmade approach
-  set(
-    CMAKE_MODULE_PATH
-    ${JRL_CMAKE_MODULES}/find-external/OpenMP
-    ${CMAKE_MODULE_PATH}
-  )
+  if(${CMAKE_VERSION} VERSION_LESS "3.18.0") # Need to find the right version
+    set(
+      CMAKE_MODULE_PATH
+      ${JRL_CMAKE_MODULES}/find-external/OpenMP
+      ${CMAKE_MODULE_PATH}
+    )
+  endif()
 elseif(UNIX)
-  if(
-    ${CMAKE_VERSION} VERSION_GREATER "3.20.0"
-    OR ${CMAKE_VERSION} VERSION_EQUAL "3.20.0"
-  )
+  if(${CMAKE_VERSION} VERSION_EQUAL "3.20.0")
     set(
       CMAKE_MODULE_PATH
       ${JRL_CMAKE_MODULES}/find-external/OpenMP
