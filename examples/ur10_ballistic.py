@@ -35,14 +35,16 @@ robot.q0[:] = q0_ref_arm
 print(f"Velocity limit (before): {robot.model.velocityLimit}")
 
 
-def load_projectile_model():
+def load_projectile_model(free_flyer: bool = True):
     ball_urdf = Path(__file__).parent / "mug.urdf"
     packages_dirs = [str(Path(__file__).parent)]
     ball_scale = 1.0
     model, cmodel, vmodel = pin.buildModelsFromUrdf(
         str(ball_urdf),
         package_dirs=packages_dirs,
-        root_joint=pin.JointModelFreeFlyer(),
+        root_joint=pin.JointModelFreeFlyer()
+        if free_flyer
+        else pin.JointModelTranslation(),
     )
     print("Projectile model:\n", model)
     for geom in cmodel.geometryObjects:
@@ -80,21 +82,23 @@ def append_ball_to_robot_model(
     return rmodel, cmodel, vmodel, ref_q0
 
 
+nq_o = robot.model.nq
+nv_o = robot.model.nv
 rmodel, cmodel, vmodel, ref_q0 = append_ball_to_robot_model(robot)
 print(f"New model velocity lims: {rmodel.velocityLimit}")
 space = manifolds.MultibodyPhaseSpace(rmodel)
 rdata: pin.Data = rmodel.createData()
-nq = rmodel.nq
-nv = rmodel.nv
-nu = nv - 6
+nq_b = rmodel.nq
+nv_b = rmodel.nv
+nu = nv_b - 6
 ndx = space.ndx
 x0 = space.neutral()
-x0[:nq] = ref_q0
+x0[:nq_b] = ref_q0
 print("X0 = {}".format(x0))
-MUG_VEL_IDX = slice(robot.nv, nv)
+MUG_VEL_IDX = slice(robot.nv, nv_b)
 
 
-def create_rcm():
+def create_rcm(contact_type=pin.ContactType.CONTACT_6D):
     # create rigid constraint between ball & tool0
     tool_fid = rmodel.getFrameId("tool0")
     frame: pin.Frame = rmodel.frames[tool_fid]
@@ -104,7 +108,7 @@ def create_rcm():
     pl1 = rmodel.frames[tool_fid].placement
     pl2 = rdata.oMf[tool_fid]
     rcm = pin.RigidConstraintModel(
-        pin.ContactType.CONTACT_6D,
+        contact_type,
         rmodel,
         joint1_id,
         pl1,
@@ -146,7 +150,7 @@ else:
 dt = 0.01
 tf = 2.0  # seconds
 nsteps = int(tf / dt)
-actuation_matrix = np.eye(nv, nu)
+actuation_matrix = np.eye(nv_b, nu)
 
 prox_settings = pin.ProximalSettings(accuracy=1e-8, mu=1e-6, max_iter=20)
 rcm = create_rcm()
@@ -157,8 +161,8 @@ ode2 = dynamics.MultibodyFreeFwdDynamics(space, actuation_matrix)
 dyn_model1 = dynamics.IntegratorSemiImplEuler(ode1, dt)
 dyn_model2 = dynamics.IntegratorSemiImplEuler(ode2, dt)
 
-q0 = x0[:nq]
-v0 = x0[nq:]
+q0 = x0[:nq_b]
+v0 = x0[nq_b:]
 u0_free = pin.rnea(robot.model, robot.data, robot.q0, robot.v0, robot.v0)
 u0, lam_c = aligator.underactuatedConstrainedInverseDynamics(
     rmodel, rdata, q0, v0, actuation_matrix, [rcm], [rcm.createData()]
@@ -182,7 +186,7 @@ with np.printoptions(precision=4, linewidth=200):
 dms = [dyn_model1] * nsteps
 us_i = [u0] * len(dms)
 xs_i = aligator.rollout(dms, x0, us_i)
-qs_i = [x[:nq] for x in xs_i]
+qs_i = [x[:nq_b] for x in xs_i]
 
 if args.display:
     viz.play(qs_i, dt=dt)
@@ -190,8 +194,8 @@ if args.display:
 
 def create_running_cost():
     costs = aligator.CostStack(space, nu)
-    w_x = np.array([1e-3] * nv + [0.1] * nv)
-    w_v = w_x[nv:]
+    w_x = np.array([1e-3] * nv_b + [0.1] * nv_b)
+    w_v = w_x[nv_b:]
     # no costs on mug
     w_x[MUG_VEL_IDX] = 0.0
     w_v[MUG_VEL_IDX] = 0.0
@@ -207,7 +211,7 @@ def create_running_cost():
 def create_term_cost(has_frame_cost=False, w_ball=1.0):
     w_xf = np.zeros(ndx)
     w_xf[: robot.nv] = 1e-4
-    w_xf[nv + 6 :] = 1e-6
+    w_xf[nv_b + 6 :] = 1e-6
     costs = aligator.CostStack(space, nu)
     xreg = aligator.QuadraticStateCost(space, nu, x0, np.diag(w_xf))
     costs.addCost(xreg)
@@ -238,11 +242,16 @@ def get_position_limit_constraint():
     return (pos_fn, box_cstr)
 
 
+JOINT_VEL_LIM_IDX = [0, 1, 3, 4, 5, 6]
+print("Joint vel. limits enforced for:")
+for i in JOINT_VEL_LIM_IDX:
+    print(robot.model.names[i])
+
+
 def get_velocity_limit_constraint():
     state_fn = aligator.StateErrorResidual(space, nu, space.neutral())
-    idx = [1, 3, 4, 5]
-    vel_fn = state_fn[[nv + i for i in idx]]
-    vlim = rmodel.velocityLimit[idx]
+    vel_fn = state_fn[[nv_b + i for i in JOINT_VEL_LIM_IDX]]
+    vlim = rmodel.velocityLimit[JOINT_VEL_LIM_IDX]
     assert vel_fn.nr == vlim.shape[0]
     box_cstr = constraints.BoxConstraint(-vlim, vlim)
     return (vel_fn, box_cstr)
@@ -293,8 +302,8 @@ dyn_slackn_slacks = [np.max(np.abs(s)) for s in ws.dyn_slacks]
 
 xs = solver.results.xs
 us = solver.results.us
-qs = [x[:nq] for x in xs]
-vs = [x[nq:] for x in xs]
+qs = [x[:nq_b] for x in xs]
+vs = [x[nq_b:] for x in xs]
 vs = np.asarray(vs)
 proj_frame_id = rmodel.getFrameId("ball/root_joint")
 
@@ -314,7 +323,7 @@ EXPERIMENT_NAME = "ur10_mug_throw"
 if args.display:
 
     def viz_callback(i: int):
-        pin.forwardKinematics(rmodel, rdata, qs[i], xs[i][nq:])
+        pin.forwardKinematics(rmodel, rdata, qs[i], xs[i][nq_b:])
         viz.drawFrameVelocities(proj_frame_id, v_scale=0.06)
         fid = rmodel.getFrameId("ball/root_joint")
         ctar: pin.SE3 = rdata.oMf[fid]
@@ -339,6 +348,9 @@ if args.plot:
     _joint_names = robot.model.names
     _efflims = robot.model.effortLimit
     _vlims = robot.model.velocityLimit
+    for i in range(nv_o):
+        if i not in JOINT_VEL_LIM_IDX:
+            _vlims[i] = np.inf
     figsize = (6.4, 4.0)
     fig1, _ = plot_controls_traj(
         times, us, rmodel=rmodel, effort_limit=_efflims, figsize=figsize
