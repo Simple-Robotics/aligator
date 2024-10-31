@@ -96,11 +96,12 @@ else:
     )
 
 
-mu_init = 1e-5
+mu_init = 1e-8
 verbose = aligator.VerboseLevel.VERBOSE
-TOL = 1e-4
+TOL = 1e-6
 MAX_ITER = 300
 solver = aligator.SolverProxDDP(TOL, mu_init, max_iters=MAX_ITER, verbose=verbose)
+solver.bcl_params.mu_lower_bound = 1e-11
 callback = aligator.HistoryCallback(solver)
 solver.registerCallback("his", callback)
 
