@@ -7,7 +7,6 @@
 #include "aligator/core/filter.hpp"
 #include "aligator/core/callback-base.hpp"
 #include "aligator/core/enums.hpp"
-#include "aligator/threads.hpp"
 #include "aligator/utils/logger.hpp"
 #include "aligator/gar/riccati-base.hpp"
 
@@ -171,16 +170,7 @@ public:
                    HessianApprox hess_approx = HessianApprox::GAUSS_NEWTON);
 
   inline std::size_t getNumThreads() const { return num_threads_; }
-  void setNumThreads(const std::size_t num_threads) {
-    if (linearSolver_) {
-      ALIGATOR_WARNING(
-          "SolverProxDDP",
-          "Linear solver already set: setNumThreads() should be called before "
-          "you call setup() if you want to use the parallel linear solver.\n");
-    }
-    num_threads_ = num_threads;
-    omp::set_default_options(num_threads);
-  }
+  void setNumThreads(const std::size_t num_threads);
 
   Scalar getDualTolerance() const { return target_dual_tol_; }
   /// Manually set desired dual feasibility tolerance.
@@ -277,7 +267,8 @@ public:
   /// Compute the merit function and stopping criterion dual terms:
   /// first-order Lagrange multiplier estimates, shifted and
   /// projected constraints.
-  void computeMultipliers(const Problem &problem,
+  /// @return bool: whether the op succeeded.
+  bool computeMultipliers(const Problem &problem,
                           const std::vector<VectorXs> &lams,
                           const std::vector<VectorXs> &vs);
 
