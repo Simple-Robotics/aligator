@@ -512,7 +512,6 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
       al_iter++;
       break;
     }
-    linesearch_.reset();
 
     // accept primal updates
     workspace_.prev_xs = results_.xs;
