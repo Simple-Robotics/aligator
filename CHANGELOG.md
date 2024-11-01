@@ -12,9 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add a multibody friction cone cost ([#234](https://github.com/Simple-Robotics/aligator/pull/234))
 - Add a `GravityCompensationResidual`, modelling $r(x,u) = Bu - G(q)$ ([#235](https://github.com/Simple-Robotics/aligator/pull/235))
 - Add Pixi support ([#240](https://github.com/Simple-Robotics/aligator/pull/240))
+- Added a nonmonotone linesearch procedure ([#244](https://github.com/Simple-Robotics/aligator/pull/244))
 
 ### Changed
 
+- The minimum required version of proxsuite-nlp is now 0.10.0 ([#244](https://github.com/Simple-Robotics/aligator/pull/244))
 - `SolverProxDDP`: add temporary vectors for linesearch
 - `SolverProxDDP`: remove exceptions from `computeMultipliers()`, return a bool flag
 - HistoryCallback: take solver instance as argument
