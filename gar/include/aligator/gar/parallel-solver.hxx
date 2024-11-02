@@ -6,6 +6,7 @@
 #include "aligator/gar/block-tridiagonal.hpp"
 #include "aligator/gar/work.hpp"
 #include "aligator/gar/lqr-problem.hpp"
+#include "aligator/utils/mpc-util.hpp"
 #include "aligator/tracy.hpp"
 
 #include "aligator/threads.hpp"
