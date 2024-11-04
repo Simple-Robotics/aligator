@@ -14,6 +14,7 @@
 namespace aligator {
 namespace python {
 
+using Vector3or6 = Eigen::Matrix<double, -1, 1, Eigen::ColMajor, 6, 1>;
 using context::ConstVectorRef;
 using context::MultibodyPhaseSpace;
 using context::PinModel;
@@ -51,7 +52,7 @@ void exposeContactForce() {
       .def(bp::init<int, PinModel, const context::MatrixXs &,
                     const RigidConstraintModelVector &,
                     const pinocchio::ProximalSettingsTpl<Scalar> &,
-                    const context::VectorXs &, const std::string &>(bp::args(
+                    const Eigen::VectorXd &, const std::string &>(bp::args(
           "self", "ndx", "model", "actuation_matrix", "constraint_models",
           "prox_settings", "fref", "contact_name")))
       .def(func_visitor)
