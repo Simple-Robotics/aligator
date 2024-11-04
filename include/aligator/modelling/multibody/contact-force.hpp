@@ -3,6 +3,7 @@
 #include "./fwd.hpp"
 #include "aligator/core/function-abstract.hpp"
 
+#include <Eigen/src/Core/util/Constants.h>
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 
 #ifdef ALIGATOR_PINOCCHIO_V3
@@ -32,12 +33,13 @@ public:
   using RigidConstraintDataVector =
       PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(pinocchio::RigidConstraintData);
   using ProxSettings = pinocchio::ProximalSettingsTpl<Scalar>;
+  using Vector3or6 = Eigen::Matrix<Scalar, -1, 1, Eigen::ColMajor, 6, 1>;
 
   Model pin_model_;
   MatrixXs actuation_matrix_;
   RigidConstraintModelVector constraint_models_;
   ProxSettings prox_settings_;
-  Eigen::VectorXd fref_;
+  Vector3or6 fref_;
   long force_size_;
   int contact_id_;
 
@@ -45,7 +47,7 @@ public:
                           const MatrixXs &actuation,
                           const RigidConstraintModelVector &constraint_models,
                           const ProxSettings &prox_settings,
-                          const Eigen::VectorXd &fref,
+                          const Vector3or6 &fref,
                           const std::string &contact_name)
       : Base(ndx, (int)actuation.cols(), fref.size()), pin_model_(model),
         actuation_matrix_(actuation), constraint_models_(constraint_models),
@@ -68,10 +70,8 @@ public:
     }
   }
 
-  const Eigen::VectorXd &getReference() const { return fref_; }
-  void setReference(const Eigen::Ref<const Eigen::VectorXd> &fnew) {
-    fref_ = fnew;
-  }
+  const Vector3or6 &getReference() const { return fref_; }
+  void setReference(const Eigen::Ref<const Vector3or6> &fnew) { fref_ = fnew; }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 BaseData &data) const;
