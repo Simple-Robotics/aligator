@@ -70,10 +70,11 @@ if args.term_cstr:
     )
 
 tol = 1e-3
-mu_init = 0.01
+mu_init = 10.0
 solver = aligator.SolverProxDDP(tol, mu_init=mu_init, verbose=aligator.VERBOSE)
 solver.max_iters = 200
 solver.rollout_type = aligator.ROLLOUT_LINEAR
+solver.linear_solver_choice = aligator.LQ_SOLVER_STAGEDENSE
 solver.setup(problem)
 
 

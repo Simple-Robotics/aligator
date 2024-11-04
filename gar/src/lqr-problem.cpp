@@ -1,5 +1,5 @@
-/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
-#include "aligator/gar/lqr-problem.hpp"
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
+#include "aligator/gar/lqr-problem.hxx"
 
 namespace aligator {
 namespace gar {

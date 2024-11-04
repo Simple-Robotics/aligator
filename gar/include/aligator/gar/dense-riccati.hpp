@@ -1,14 +1,18 @@
+/// @copyright Copyright (C) 2024 LAAS-CNRS, INRIA
+/// @author Wilson Jallet
 #pragma once
 
 #include <proxsuite-nlp/linalg/bunchkaufman.hpp>
 
-#include "fwd.hpp"
 #include "blk-matrix.hpp"
 #include "riccati-base.hpp"
 
 namespace aligator::gar {
 
-/// A stagewise-dense Riccati solver
+/// @brief A stagewise-dense Riccati solver.
+/// This algorithm uses a dense Bunch-Kaufman factorization at every stage.
+/// @remark This is the approach from the T-RO journal submission and 2022 IROS
+/// paper.
 template <typename _Scalar>
 class RiccatiSolverDense : public RiccatiSolverBase<_Scalar> {
 public:
@@ -20,25 +24,11 @@ public:
   using BlkVec4 = BlkMatrix<VectorXs, 4, 1>;
   using KnotType = LQRKnotTpl<Scalar>;
 
-  struct FactorData {
-    BlkMat44 kkt;
-    BlkVec4 ff;
-    BlkRowMat41 fb;
-    BlkRowMat41 fth;
-    Eigen::BunchKaufman<MatrixXs> ldl;
-  };
-
-  static FactorData init_factor(const LQRKnotTpl<Scalar> &knot) {
-    std::array<long, 4> dims = {knot.nu, knot.nc, knot.nx2, knot.nx2};
-    using ldl_t = decltype(FactorData::ldl);
-    long ntot = std::accumulate(dims.begin(), dims.end(), 0);
-    uint nth = knot.nth;
-    return FactorData{BlkMat44::Zero(dims, dims), BlkVec4::Zero(dims, {1}),
-                      BlkRowMat41::Zero(dims, {knot.nx}),
-                      BlkRowMat41::Zero(dims, {nth}), ldl_t{ntot}};
-  }
-
-  std::vector<FactorData> datas;
+  std::vector<BlkMat44> kkts;
+  std::vector<BlkVec4> ffs;
+  std::vector<BlkRowMat41> fbs;
+  std::vector<BlkRowMat41> fts;
+  std::vector<Eigen::BunchKaufman<MatrixXs>> ldls;
   std::vector<MatrixXs> Pxx;
   std::vector<MatrixXs> Pxt;
   std::vector<MatrixXs> Ptt;
@@ -62,10 +52,11 @@ public:
                const std::optional<ConstVectorRef> &theta = std::nullopt) const;
 
   void cycleAppend(const KnotType &knot);
-  VectorRef getFeedforward(size_t i) { return datas[i].ff.matrix(); }
-  RowMatrixRef getFeedback(size_t i) { return datas[i].fb.matrix(); }
+  VectorRef getFeedforward(size_t i) { return ffs[i].matrix(); }
+  RowMatrixRef getFeedback(size_t i) { return fbs[i].matrix(); }
 
 protected:
+  void init_factor(const LQRKnotTpl<Scalar> &knot);
   void initialize();
   const LQRProblemTpl<Scalar> *problem_;
 };

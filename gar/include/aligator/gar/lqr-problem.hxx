@@ -34,6 +34,31 @@ LQRKnotTpl<Scalar>::LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth)
 }
 
 template <typename Scalar>
+void LQRKnotTpl<Scalar>::addParameterization(uint nth) {
+  this->nth = nth;
+  Gth.setZero(nth, nth);
+  Gx.setZero(nx, nth);
+  Gu.setZero(nu, nth);
+  Gv.setZero(nc, nth);
+  gamma.setZero(nth);
+}
+
+template <typename Scalar>
+bool LQRKnotTpl<Scalar>::isApprox(const LQRKnotTpl &other, Scalar prec) const {
+  bool cost = Q.isApprox(other.Q, prec) && S.isApprox(other.S, prec) &&
+              R.isApprox(other.R, prec) && q.isApprox(other.q, prec) &&
+              r.isApprox(other.r, prec);
+  bool dyn = A.isApprox(other.A, prec) && B.isApprox(other.B, prec) &&
+             E.isApprox(other.E, prec) && f.isApprox(other.f, prec);
+  bool cstr = C.isApprox(other.C, prec) && D.isApprox(other.D, prec) &&
+              d.isApprox(other.d, prec);
+  bool th = Gth.isApprox(other.Gth, prec) && Gx.isApprox(other.Gx, prec) &&
+            Gu.isApprox(other.Gu, prec) && Gv.isApprox(other.Gv, prec) &&
+            gamma.isApprox(other.gamma, prec);
+  return cost && dyn && cstr && th;
+}
+
+template <typename Scalar>
 Scalar LQRProblemTpl<Scalar>::evaluate(
     const VectorOfVectors &xs, const VectorOfVectors &us,
     const std::optional<ConstVectorRef> &theta_) const {

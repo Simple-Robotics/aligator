@@ -33,7 +33,7 @@ std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem, uint t0,
 
   knot_t kn1_last = knots1.back(); // copy
 
-  problem_t p1(knots1, problem.nc0());
+  problem_t p1(std::move(knots1), problem.nc0());
   p1.G0 = problem.G0;
   p1.g0 = problem.g0;
   p1.addParameterization(nx_t0);
@@ -48,7 +48,7 @@ std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem, uint t0,
     kn1_last.f.setZero();
   }
 
-  problem_t p2(knots2, 0);
+  problem_t p2(std::move(knots2), 0);
   p2.addParameterization(nx_t0);
   {
     knot_t &p2_first = p2.stages[0];
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
     bool ret = solver_full_horz.forward(xs, us, vs, lbdas);
     BOOST_CHECK(ret);
     KktError err_full = computeKktError(problem, xs, us, vs, lbdas);
-    printKktError(err_full, "KKT error (full horz.)");
+    fmt::println("KKT error (full horz.): {}", err_full);
     BOOST_CHECK_LE(err_full.max, EPS);
   }
 
@@ -170,7 +170,7 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
 
   KktError err_merged =
       computeKktError(problem, xs_merged, us_merged, vs_merged, lbdas_merged);
-  printKktError(err_merged, "KKT error (merged)");
+  fmt::println("KKT error (merged) {}", err_merged);
 }
 
 /// Randomize some of the parameters of the problem. This simulates something
@@ -214,7 +214,7 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
     refSolver.forward(xs_ref, us_ref, vs_ref, lbdas_ref);
     KktError err_ref =
         computeKktError(problemRef, xs_ref, us_ref, vs_ref, lbdas_ref, mu, mu);
-    printKktError(err_ref);
+    fmt::println("{}", err_ref);
     BOOST_CHECK_LE(err_ref.max, tol);
   }
 
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
   parSolver.backward(mu, mu);
   parSolver.forward(xs, us, vs, lbdas);
   KktError err = computeKktError(problem, xs, us, vs, lbdas, mu, mu);
-  printKktError(err);
+  fmt::println("{}", err);
   BOOST_CHECK_LE(err.max, tol);
 
   // TODO: properly test feedback/feedforward gains
@@ -268,7 +268,7 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
     parSolver.backward(mu, mu);
     parSolver.forward(xs, us, vs, lbdas);
     KktError e = computeKktError(problem, xs, us, vs, lbdas, mu, mu);
-    printKktError(e);
+    fmt::println("{}", e);
     BOOST_CHECK_LE(e.max, tol);
   }
 }

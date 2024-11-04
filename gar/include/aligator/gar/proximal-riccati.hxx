@@ -3,6 +3,7 @@
 #include "./proximal-riccati.hpp"
 #include "./lqr-problem.hpp"
 
+#include "aligator/utils/mpc-util.hpp"
 #include "aligator/tracy.hpp"
 
 namespace aligator::gar {
