@@ -7,6 +7,7 @@ namespace aligator::python {
 using namespace gar;
 
 using context::Scalar;
+using context::VectorXs;
 using lqr_t = LQRProblemTpl<context::Scalar>;
 
 bp::dict lqr_sol_initialize_wrap(const lqr_t &problem) {
@@ -20,6 +21,15 @@ bp::dict lqr_sol_initialize_wrap(const lqr_t &problem) {
   return out;
 }
 
+bp::tuple lqr_create_sparse_wrap(const lqr_t &problem, const Scalar mudyn,
+                                 const Scalar mueq, bool update) {
+  Eigen::SparseMatrix<Scalar> mat;
+  VectorXs rhs;
+  lqrCreateSparseMatrix(problem, mudyn, mueq, mat, rhs, update);
+  mat.makeCompressed();
+  return bp::make_tuple(mat, rhs);
+}
+
 void exposeGarUtils() {
 
   bp::def(
@@ -30,8 +40,8 @@ void exposeGarUtils() {
       },
       ("problem"_a, "mudyn", "mueq"));
 
-  bp::def("lqrCreateSparseMatrix", lqrCreateSparseMatrix<Scalar>,
-          ("problem"_a, "mudyn", "mueq", "mat", "rhs", "update"),
+  bp::def("lqrCreateSparseMatrix", lqr_create_sparse_wrap,
+          ("problem"_a, "mudyn", "mueq", "update"),
           "Create or update a sparse matrix from an LQRProblem.");
 
   bp::def("lqrInitializeSolution", lqr_sol_initialize_wrap, ("problem"_a));
