@@ -40,3 +40,10 @@ export ALIGATOR_CHOLMOD_SUPPORT=${ALIGATOR_CHOLMOD_SUPPORT:=OFF}
 export ALIGATOR_BENCHMARK=${ALIGATOR_BENCHMARK:=ON}
 export ALIGATOR_EXAMPLES=${ALIGATOR_EXAMPLES:=ON}
 export ALIGATOR_PYTHON_STUBS=${ALIGATOR_PYTHON_STUBS:=ON}
+
+# Bugfix:
+# Use BoostConfig module distributed by boost library instead of using FindBoost module distributed
+# by CMake.
+# But find_package(SDFormat14) reset this policy (with cmake_minimum_required) and redefine the find_dependency macro.
+# Then, futur call of this macro don't use the right version of this policy.
+export CMAKE_POLICY_DEFAULT_CMP0167=NEW
