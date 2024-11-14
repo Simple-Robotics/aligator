@@ -70,6 +70,10 @@ set(DOXYGEN_HTML_STYLESHEET "")
 # by CMake
 if(POLICY CMP0167)
   cmake_policy(SET CMP0167 NEW)
+  # find_package(SDFormat14) reset this policy (with cmake_minimum_required) and redefine the find_dependency macro.
+  # Then, futur call of this macro don't use the right version of this policy.
+  # To avoid that, we define the CMP0167 default value.
+  set(CMAKE_POLICY_DEFAULT_CMP0167 NEW)
 endif()
 include(${JRL_CMAKE_MODULES}/base.cmake)
 compute_project_args(PROJECT_ARGS LANGUAGES CXX)
