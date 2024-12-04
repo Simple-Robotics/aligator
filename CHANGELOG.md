@@ -32,6 +32,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Default constructor for `LQRProblemTpl`
 - Removed header `gar/fwd.hpp` with forward-declarations
 
+### Fixed
+
+- Building aligator without Pinocchio support (including without Pinocchio support in the proxsuite-nlp dependency) is now supported. ([#250](https://github.com/Simple-Robotics/aligator/pull/250))
+
 ## [0.9.0] - 2024-10-11
 
 ### Added

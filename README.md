@@ -48,7 +48,7 @@ It's used by our CI agent so you have the guarantee to get the right dependencie
 Run the following command to install dependencies, configure, build and test the project:
 
 ```bash
-pixi run -e all test
+pixi run test
 ```
 
 The project will be built in the `build` directory.

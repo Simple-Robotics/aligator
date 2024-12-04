@@ -1,5 +1,6 @@
 #pragma once
 
+#ifdef ALIGATOR_WITH_PINOCCHIO
 #include "aligator/core/unary-function.hpp"
 #include "./fwd.hpp"
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
@@ -74,4 +75,5 @@ struct FlyHighResidualTpl<Scalar>::Data : StageFunctionDataTpl<Scalar> {
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/modelling/multibody/fly-high.txx"
+#endif
 #endif

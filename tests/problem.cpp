@@ -6,7 +6,11 @@
 #include "aligator/core/explicit-dynamics.hpp"
 #include "aligator/core/cost-abstract.hpp"
 #include "aligator/utils/rollout.hpp"
+#ifdef PROXSUITE_NLP_WITH_PINOCCHIO
 #include <proxsuite-nlp/modelling/spaces/pinocchio-groups.hpp>
+#else
+#include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
+#endif
 #include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 #include <boost/test/unit_test.hpp>
 
@@ -54,7 +58,14 @@ struct MyCost : CostAbstractTpl<double> {
   }
 };
 
+#ifdef PROXSUITE_NLP_WITH_PINOCCHIO
 using Manifold = proxsuite::nlp::SETpl<3, double>;
+static const Manifold my_space;
+#else
+using Manifold = proxsuite::nlp::VectorSpaceTpl<double>;
+static const Manifold my_space(6);
+#endif
+
 using StageModel = aligator::StageModelTpl<double>;
 using EqualityConstraint = proxsuite::nlp::EqualityConstraintTpl<double>;
 
@@ -66,7 +77,7 @@ struct MyFixture {
   TrajOptProblemTpl<double> problem;
 
   MyFixture()
-      : space(Manifold()), nu(space.ndx()), dyn_model(MyModel(space)),
+      : space(::my_space), nu(space.ndx()), dyn_model(MyModel(space)),
         cost(MyCost(space, nu)), problem(space.neutral(), nu, space, cost) {
     auto stage = StageModel(cost, dyn_model);
     auto func = StateErrorResidualTpl<double>(space, nu, space.neutral());

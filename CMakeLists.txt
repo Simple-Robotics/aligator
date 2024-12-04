@@ -212,14 +212,37 @@ if(BUILD_WITH_OPENMP_SUPPORT)
   add_compile_definitions(ALIGATOR_MULTITHREADING)
 endif()
 
+set(BOOST_REQUIRED_COMPONENTS filesystem)
+set_boost_default_options()
+export_boost_default_options()
+add_project_dependency(Boost REQUIRED COMPONENTS ${BOOST_REQUIRED_COMPONENTS})
+add_project_dependency(proxsuite-nlp 0.8.0 REQUIRED PKG_CONFIG_REQUIRES "proxsuite-nlp >= 0.8.0")
+
 if(BUILD_WITH_PINOCCHIO_SUPPORT)
-  message(STATUS "Building with Pinocchio support.")
+  message(STATUS "Building aligator with Pinocchio support.")
+  if(NOT DEFINED PROXSUITE_NLP_WITH_PINOCCHIO_SUPPORT)
+    message(
+      FATAL_ERROR
+      "The aligator Pinocchio features require Pinocchio support in proxsuite-nlp. Please check your installation of proxsuite-nlp (found at ${proxsuite-nlp_DIR}).\n"
+      "If you didn't build proxsuite-nlp yourself, please contact the maintainer for the distribution you used."
+    )
+  endif()
   add_compile_definitions(ALIGATOR_WITH_PINOCCHIO)
   list(APPEND CFLAGS_DEPENDENCIES "-DALIGATOR_WITH_PINOCCHIO")
+  set(PINOCCHIO_V3 ${pinocchio_VERSION} VERSION_GREATER "3.0.0")
+  if(PINOCCHIO_V3)
+    add_compile_definitions(ALIGATOR_PINOCCHIO_V3)
+  endif()
+elseif(PROXSUITE_NLP_WITH_PINOCCHIO_SUPPORT)
+  message(
+    WARNING
+    "Aligator is being built without Pinocchio features, although the provided version of proxsuite-nlp has Pinocchio support. "
+    "Make sure this is what you want."
+  )
 endif()
 
 if(BUILD_CROCODDYL_COMPAT)
-  message(STATUS "Building with Crocoddyl compatibility.")
+  message(STATUS "Building with Crocoddyl support.")
   add_compile_definitions(ALIGATOR_WITH_CROCODDYL_COMPAT)
   list(APPEND CFLAGS_DEPENDENCIES "-DALIGATOR_WITH_CROCODDYL_COMPAT")
 endif()
@@ -238,20 +261,12 @@ if(BUILD_WITH_CHOLMOD_SUPPORT)
   add_compile_definitions(ALIGATOR_WITH_CHOLMOD)
 endif()
 
-set(BOOST_REQUIRED_COMPONENTS filesystem)
-set_boost_default_options()
-export_boost_default_options()
-add_project_dependency(Boost REQUIRED COMPONENTS ${BOOST_REQUIRED_COMPONENTS})
-
 if(BUILD_PYTHON_INTERFACE)
   set(PYTHON_COMPONENTS Interpreter Development NumPy)
-  findpython(REQUIRED)
   add_project_dependency(eigenpy 3.7.0 REQUIRED PKG_CONFIG_REQUIRES "eigenpy >= 3.7.0")
   set(PYLIB_NAME "py${PROJECT_NAME}")
   set(${PYLIB_NAME}_INSTALL_DIR ${PYTHON_SITELIB}/${PROJECT_NAME})
 endif()
-
-add_project_dependency(proxsuite-nlp 0.8.0 REQUIRED PKG_CONFIG_REQUIRES "proxsuite-nlp >= 0.8.0")
 
 set(LIB_SOURCES src/utils/exceptions.cpp src/utils/logger.cpp)
 
@@ -432,9 +447,14 @@ add_subdirectory(bindings)
 
 # benchmarks, examples, and tests
 
-macro(create_ex_or_bench exfile exname)
+macro(create_ex_or_bench is_bench exfile exname)
   add_executable(${exname} ${exfile})
-  message(STATUS "Adding cpp example ${exname}")
+  if(${is_bench})
+    set(ex_type "bench")
+  else()
+    set(ex_type "example")
+  endif()
+  message(STATUS "Adding cpp ${ex_type} ${exname}")
   set_target_properties(${exname} PROPERTIES LINKER_LANGUAGE CXX)
   set_standard_output_directory(${exname})
   target_include_directories(${exname} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -483,13 +503,6 @@ if(BUILD_BENCHMARKS OR BUILD_TESTING)
   set_standard_output_directory(gar_test_utils)
 endif()
 
-if(
-  BUILD_WITH_PINOCCHIO_SUPPORT
-  AND ${pinocchio_VERSION} VERSION_GREATER "2.9.0"
-)
-  set(PINOCCHIO_V3 True)
-endif()
-
 if(PINOCCHIO_V3 AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
   add_library(
     talos_walk_utils
@@ -534,19 +547,19 @@ macro(EXPORT_VARIABLE var_name var_value)
 endmacro()
 
 if(BUILD_WITH_PINOCCHIO_SUPPORT)
-  export_variable(ALIGATOR_WITH_PINOCCHIO_SUPPORT ON)
+  EXPORT_VARIABLE(ALIGATOR_WITH_PINOCCHIO_SUPPORT ON)
 endif()
 if(ENABLE_TEMPLATE_INSTANTIATION)
-  export_variable(ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION ON)
+  EXPORT_VARIABLE(ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION ON)
 endif()
 if(BUILD_PYTHON_INTERFACE)
-  export_variable(ALIGATOR_WITH_PYTHON_INTERFACE ON)
+  EXPORT_VARIABLE(ALIGATOR_WITH_PYTHON_INTERFACE ON)
 endif()
 if(BUILD_WITH_OPENMP_SUPPORT)
-  export_variable(ALIGATOR_WITH_OPENMP_SUPPORT ON)
+  EXPORT_VARIABLE(ALIGATOR_WITH_OPENMP_SUPPORT ON)
 endif()
 if(BUILD_CROCODDYL_COMPAT)
-  export_variable(ALIGATOR_WITH_CROCODDYL_COMPAT ON)
+  EXPORT_VARIABLE(ALIGATOR_WITH_CROCODDYL_COMPAT ON)
   pkg_config_append_libs(aligator_croc_compat)
 endif()
 

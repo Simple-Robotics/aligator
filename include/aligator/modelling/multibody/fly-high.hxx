@@ -1,5 +1,6 @@
 #pragma once
 
+#ifdef ALIGATOR_WITH_PINOCCHIO
 #include "aligator/modelling/multibody/fly-high.hpp"
 #include <pinocchio/algorithm/compute-all-terms.hpp>
 #include <pinocchio/algorithm/frames-derivatives.hpp>
@@ -69,3 +70,4 @@ void FlyHighResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &x,
 }
 
 } // namespace aligator
+#endif

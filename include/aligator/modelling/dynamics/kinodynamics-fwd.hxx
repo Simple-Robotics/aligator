@@ -1,6 +1,8 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
+#include "aligator/fwd.hpp"
+#ifdef PROXSUITE_NLP_WITH_PINOCCHIO
 #include "aligator/modelling/dynamics/kinodynamics-fwd.hpp"
 
 #include <pinocchio/algorithm/centroidal-derivatives.hpp>
@@ -227,3 +229,4 @@ KinodynamicsFwdDataTpl<Scalar>::KinodynamicsFwdDataTpl(
 }
 } // namespace dynamics
 } // namespace aligator
+#endif

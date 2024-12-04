@@ -18,7 +18,7 @@ message(STATUS "Test headers: ${TEST_HEADERS}")
 function(_add_test_prototype name prefix dependencies)
   set(test_name "${PROJECT_NAME}-test-cpp-${prefix}${name}")
   set(test_file ${name}.cpp)
-  message(STATUS "Adding C++ test: ${test_file} (${test_name})")
+  message(STATUS "Adding cpp test: ${test_file} (${test_name})")
 
   add_unit_test(${test_name} ${test_file} ${TEST_HEADERS})
   set_target_properties(${test_name} PROPERTIES LINKER_LANGUAGE CXX)
@@ -31,8 +31,8 @@ function(_add_test_prototype name prefix dependencies)
   set(MODULE_NAME "${name}Test")
   string(REGEX REPLACE "-" "_" MODULE_NAME ${MODULE_NAME})
 
-  add_test_cflags(${test_name} "-DBOOST_TEST_DYN_LINK")
-  add_test_cflags(${test_name} "-DBOOST_TEST_MODULE=${MODULE_NAME}")
+  ADD_TEST_CFLAGS(${test_name} "-DBOOST_TEST_DYN_LINK")
+  ADD_TEST_CFLAGS(${test_name} "-DBOOST_TEST_MODULE=${MODULE_NAME}")
 
   target_link_libraries(${test_name} PUBLIC ${dependencies})
   target_link_libraries(${test_name} PRIVATE Boost::unit_test_framework)
@@ -51,9 +51,15 @@ set(
   problem
   solver-storage
   utils
-  forces
-  cycling
 )
+
+if(PROXSUITE_NLP_WITH_PINOCCHIO_SUPPORT)
+  list(APPEND TEST_NAMES cycling)
+endif()
+
+if(BUILD_WITH_PINOCCHIO_SUPPORT AND PINOCCHIO_V3)
+  list(APPEND TEST_NAMES forces)
+endif()
 
 foreach(test_name ${TEST_NAMES})
   add_aligator_test(${test_name})
