@@ -77,6 +77,8 @@ public:
 
     Scalar isValid() const { return impl_.index() == 0ul; }
 
+    operator const variant_t &() const { return impl_; }
+
   private:
     explicit LinesearchVariant() {}
     void init(StepAcceptanceStrategy strat, const LinesearchOptions &options) {
