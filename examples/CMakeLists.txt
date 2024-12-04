@@ -1,22 +1,32 @@
 #
-# Copyright (C) 2022-2023 LAAS-CNRS, INRIA
+# Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #
 
 cmake_policy(SET CMP0057 NEW)
 
 # Create an example
-macro(create_example exfile)
+function(create_example exfile)
+  set(options "")
+  set(oneValueArgs "")
+  set(multiValueArgs DEPENDENCIES)
+
+  cmake_parse_arguments(
+    arg_crex
+    "${options}"
+    "${oneValueArgs}"
+    "${multiValueArgs}"
+    ${ARGN}
+  )
+
   get_filename_component(exname ${exfile} NAME_WE)
   set(exname "${PROJECT_NAME}-example-${exname}")
   create_ex_or_bench(False ${exfile} ${exname})
-endmacro()
-
-function(create_example_with_croco exfile)
-  create_example(${exfile})
-  target_link_libraries(
-    ${exname}
-    PRIVATE aligator::croc_compat croc_talos_arm_utils
-  )
+  if(DEFINED arg_crex_DEPENDENCIES)
+    message("   > depends on ${arg_crex_DEPENDENCIES}")
+    foreach(dep ${arg_crex_DEPENDENCIES})
+      target_link_libraries(${exname} PRIVATE ${dep})
+    endforeach()
+  endif()
 endfunction()
 
 set(EXAMPLES_LIST clqr)
@@ -37,8 +47,14 @@ if(PINOCCHIO_V3)
 endif()
 
 if(BUILD_CROCODDYL_COMPAT)
-  create_example_with_croco(talos-arm.cpp)
-  target_add_example_robot_data(aligator-example-talos-arm)
+  add_project_private_dependency(example-robot-data 4.0.9 REQUIRED)
+  create_example(
+    talos-arm.cpp
+    DEPENDENCIES
+      aligator::croc_compat
+      croc_talos_arm_utils
+      example-robot-data::example-robot-data
+  )
 endif()
 
 file(GLOB EXAMPLES_PY *.py)

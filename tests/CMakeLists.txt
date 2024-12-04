@@ -31,8 +31,8 @@ function(_add_test_prototype name prefix dependencies)
   set(MODULE_NAME "${name}Test")
   string(REGEX REPLACE "-" "_" MODULE_NAME ${MODULE_NAME})
 
-  add_test_cflags(${test_name} "-DBOOST_TEST_DYN_LINK")
-  add_test_cflags(${test_name} "-DBOOST_TEST_MODULE=${MODULE_NAME}")
+  ADD_TEST_CFLAGS(${test_name} "-DBOOST_TEST_DYN_LINK")
+  ADD_TEST_CFLAGS(${test_name} "-DBOOST_TEST_MODULE=${MODULE_NAME}")
 
   target_link_libraries(${test_name} PUBLIC ${dependencies})
   target_link_libraries(${test_name} PRIVATE Boost::unit_test_framework)
