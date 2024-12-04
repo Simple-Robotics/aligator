@@ -7,6 +7,7 @@
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
 
 #include <eigenpy/std-unique-ptr.hpp>
+#include <eigenpy/variant.hpp>
 
 namespace aligator {
 namespace python {
@@ -74,6 +75,7 @@ void exposeProxDDP() {
       .def(PrintableVisitor<Results>());
 
   using SolverType = SolverProxDDPTpl<Scalar>;
+  using ls_variant_t = SolverType::LinesearchVariant::variant_t;
 
   auto cls =
       bp::class_<SolverType, boost::noncopyable>(
@@ -143,7 +145,12 @@ void exposeProxDDP() {
                "(target_tol) will not be synced when the latter changes and "
                "`solver.run()` is called.")
           .def(SolverVisitor<SolverType>())
-          .def_readonly("linesearch", &SolverType::linesearch_)
+          .add_property("linesearch",
+                        bp::make_function(
+                            +[](const SolverType &s) -> const ls_variant_t & {
+                              return s.linesearch_;
+                            },
+                            eigenpy::ReturnInternalVariant<ls_variant_t>{}))
           .def("run", &SolverType::run,
                ("self"_a, "problem", "xs_init"_a = bp::list(),
                 "us_init"_a = bp::list(), "vs_init"_a = bp::list(),
