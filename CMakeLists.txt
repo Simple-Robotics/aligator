@@ -447,9 +447,13 @@ add_subdirectory(bindings)
 
 # benchmarks, examples, and tests
 
-macro(create_ex_or_bench exfile exname)
+macro(create_ex_or_bench is_bench exfile exname)
   add_executable(${exname} ${exfile})
-  message(STATUS "Adding cpp example/bench ${exname}")
+  if(${is_bench})
+    message(STATUS "Adding cpp bench ${exname}")
+  else()
+    message(STATUS "Adding cpp example ${exname}")
+  endif()
   set_target_properties(${exname} PROPERTIES LINKER_LANGUAGE CXX)
   set_standard_output_directory(${exname})
   target_include_directories(${exname} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

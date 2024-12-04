@@ -1,12 +1,12 @@
 #
-# Copyright (C) 2023 LAAS-CNRS, INRIA
+# Copyright (C) 2023-2024 LAAS-CNRS, INRIA
 #
 
 # Create a benchmark
 function(create_bench exfile croc)
   get_filename_component(exname ${exfile} NAME_WE)
   set(exname "bench-${exname}")
-  create_ex_or_bench(${exfile} ${exname})
+  create_ex_or_bench(TRUE ${exfile} ${exname})
 
   target_include_directories(${exname} PRIVATE ../examples)
   target_link_libraries(${exname} PRIVATE benchmark::benchmark)
