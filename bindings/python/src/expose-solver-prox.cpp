@@ -84,9 +84,10 @@ void exposeProxDDP() {
           " The solver instance initializes both a Workspace and a Results "
           "struct.",
           bp::init<const Scalar, const Scalar, std::size_t, VerboseLevel,
-                   HessianApprox>(
+                   StepAcceptanceStrategy, HessianApprox>(
               ("self"_a, "tol", "mu_init"_a = 1e-2, "max_iters"_a = 1000,
                "verbose"_a = VerboseLevel::QUIET,
+               "sa_strategy"_a = StepAcceptanceStrategy::LINESEARCH_NONMONOTONE,
                "hess_approx"_a = HessianApprox::GAUSS_NEWTON)))
           .def("cycleProblem", &SolverType::cycleProblem,
                ("self"_a, "problem", "data"),
@@ -110,7 +111,7 @@ void exposeProxDDP() {
           .def_readwrite("max_al_iters", &SolverType::max_al_iters,
                          "Maximum number of AL iterations.")
           .def_readwrite("ls_mode", &SolverType::ls_mode, "Linesearch mode.")
-          .def_readwrite("sa_strategy", &SolverType::sa_strategy,
+          .def_readwrite("sa_strategy", &SolverType::sa_strategy_,
                          "StepAcceptance strategy.")
           .def_readwrite("rollout_type", &SolverType::rollout_type_,
                          "Rollout type.")
@@ -120,7 +121,6 @@ void exposeProxDDP() {
                          "Minimum regularization value.")
           .def_readwrite("reg_max", &SolverType::reg_max,
                          "Maximum regularization value.")
-          .def_readwrite("lq_print_detailed", &SolverType::lq_print_detailed)
           .def("updateLQSubproblem", &SolverType::updateLQSubproblem, "self"_a)
           .def("computeCriterion", &SolverType::computeCriterion, "self"_a,
                "Compute problem stationarity.")

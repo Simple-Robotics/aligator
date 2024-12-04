@@ -13,9 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add a `GravityCompensationResidual`, modelling $r(x,u) = Bu - G(q)$ ([#235](https://github.com/Simple-Robotics/aligator/pull/235))
 - Add Pixi support ([#240](https://github.com/Simple-Robotics/aligator/pull/240))
 - Added a nonmonotone linesearch procedure ([#244](https://github.com/Simple-Robotics/aligator/pull/244))
+- Add enum value `StepAcceptanceStrategy::LINESEARCH_NONMONOTONE` ([#244](https://github.com/Simple-Robotics/aligator/pull/244))
 
 ### Changed
 
+- Change enum value `StepAcceptanceStrategy::LINESEARCH` to `LINESEARCH_NONMONOTONE` ([#244](https://github.com/Simple-Robotics/aligator/pull/244))
 - The minimum required version of proxsuite-nlp is now 0.10.0 ([#244](https://github.com/Simple-Robotics/aligator/pull/244))
 - `SolverProxDDP`: add temporary vectors for linesearch
 - `SolverProxDDP`: remove exceptions from `computeMultipliers()`, return a bool flag

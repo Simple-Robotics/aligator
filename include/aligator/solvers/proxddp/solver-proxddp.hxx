@@ -71,12 +71,13 @@ SolverProxDDPTpl<Scalar>::SolverProxDDPTpl(const Scalar tol,
                                            const Scalar mu_init,
                                            const std::size_t max_iters,
                                            VerboseLevel verbose,
+                                           StepAcceptanceStrategy sa_strategy,
                                            HessianApprox hess_approx)
     : target_tol_(tol), target_dual_tol_(tol), sync_dual_tol(true),
       mu_init(mu_init), verbose_(verbose), hess_approx_(hess_approx),
-      max_iters(max_iters), rollout_max_iters(1),
+      sa_strategy_(sa_strategy), max_iters(max_iters), rollout_max_iters(1),
       filter_(0.0, ls_params.alpha_min, ls_params.max_num_steps),
-      linesearch_(ls_params) {
+      linesearch_() {
   ls_params.interp_type = proxsuite::nlp::LSInterpolation::CUBIC;
 }
 
@@ -146,11 +147,12 @@ void SolverProxDDPTpl<Scalar>::setup(const Problem &problem) {
   if (!problem.checkIntegrity())
     ALIGATOR_RUNTIME_ERROR("Problem failed integrity check.");
 
+  linesearch_.init(sa_strategy_, ls_params);
+
   results_.~Results();
   workspace_.~Workspace();
   new (&results_) Results(problem);
   new (&workspace_) Workspace(problem);
-  linesearch_.setOptions(ls_params);
 
   switch (linear_solver_choice) {
   case LQSolverChoice::SERIAL: {
@@ -671,8 +673,10 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     Scalar alpha_opt = 1;
     Scalar phi_new;
 
-    switch (sa_strategy) {
-    case StepAcceptanceStrategy::LINESEARCH:
+    switch (sa_strategy_) {
+    case StepAcceptanceStrategy::LINESEARCH_ARMIJO:
+    case StepAcceptanceStrategy::LINESEARCH_NONMONOTONE:
+      assert(linesearch_.isValid());
       phi_new = linesearch_.run(merit_eval_fun, phi0, dphi0, alpha_opt);
       break;
     case StepAcceptanceStrategy::FILTER:
