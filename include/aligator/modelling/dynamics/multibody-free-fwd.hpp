@@ -3,6 +3,7 @@
 
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
 
+#ifdef ALIGATOR_WITH_PINOCCHIO
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 #include <pinocchio/multibody/data.hpp>
 
@@ -85,4 +86,5 @@ struct MultibodyFreeFwdDataTpl : ContinuousDynamicsDataTpl<Scalar> {
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/modelling/dynamics/multibody-free-fwd.txx"
+#endif
 #endif

@@ -3,6 +3,8 @@
 
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
 
+#ifdef PROXSUITE_NLP_WITH_PINOCCHIO
+
 #include <Eigen/LU>
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 #include <pinocchio/multibody/model.hpp>
@@ -99,3 +101,4 @@ struct KinodynamicsFwdDataTpl : ContinuousDynamicsDataTpl<Scalar> {
 } // namespace aligator
 
 #include "aligator/modelling/dynamics/kinodynamics-fwd.hxx"
+#endif

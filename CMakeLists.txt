@@ -212,6 +212,12 @@ if(BUILD_WITH_OPENMP_SUPPORT)
   add_compile_definitions(ALIGATOR_MULTITHREADING)
 endif()
 
+set(BOOST_REQUIRED_COMPONENTS filesystem)
+set_boost_default_options()
+export_boost_default_options()
+add_project_dependency(Boost REQUIRED COMPONENTS ${BOOST_REQUIRED_COMPONENTS})
+add_project_dependency(proxsuite-nlp 0.8.0 REQUIRED PKG_CONFIG_REQUIRES "proxsuite-nlp >= 0.8.0")
+
 if(BUILD_WITH_PINOCCHIO_SUPPORT)
   message(STATUS "Building aligator with Pinocchio support.")
   if(NOT DEFINED PROXSUITE_NLP_WITH_PINOCCHIO_SUPPORT)
@@ -227,10 +233,16 @@ if(BUILD_WITH_PINOCCHIO_SUPPORT)
   if(PINOCCHIO_V3)
     add_compile_definitions(ALIGATOR_PINOCCHIO_V3)
   endif()
+elseif(PROXSUITE_NLP_WITH_PINOCCHIO_SUPPORT)
+  message(
+    WARNING
+    "Aligator is being built without Pinocchio features, although the provided version of proxsuite-nlp has Pinocchio support. "
+    "Make sure this is what you want."
+  )
 endif()
 
 if(BUILD_CROCODDYL_COMPAT)
-  message(STATUS "Building with Crocoddyl compatibility.")
+  message(STATUS "Building with Crocoddyl support.")
   add_compile_definitions(ALIGATOR_WITH_CROCODDYL_COMPAT)
   list(APPEND CFLAGS_DEPENDENCIES "-DALIGATOR_WITH_CROCODDYL_COMPAT")
 endif()
@@ -249,20 +261,12 @@ if(BUILD_WITH_CHOLMOD_SUPPORT)
   add_compile_definitions(ALIGATOR_WITH_CHOLMOD)
 endif()
 
-set(BOOST_REQUIRED_COMPONENTS filesystem)
-set_boost_default_options()
-export_boost_default_options()
-add_project_dependency(Boost REQUIRED COMPONENTS ${BOOST_REQUIRED_COMPONENTS})
-
 if(BUILD_PYTHON_INTERFACE)
   set(PYTHON_COMPONENTS Interpreter Development NumPy)
-  findpython(REQUIRED)
   add_project_dependency(eigenpy 3.7.0 REQUIRED PKG_CONFIG_REQUIRES "eigenpy >= 3.7.0")
   set(PYLIB_NAME "py${PROJECT_NAME}")
   set(${PYLIB_NAME}_INSTALL_DIR ${PYTHON_SITELIB}/${PROJECT_NAME})
 endif()
-
-add_project_dependency(proxsuite-nlp 0.8.0 REQUIRED PKG_CONFIG_REQUIRES "proxsuite-nlp >= 0.8.0")
 
 set(LIB_SOURCES src/utils/exceptions.cpp src/utils/logger.cpp)
 

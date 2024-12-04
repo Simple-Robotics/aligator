@@ -1,6 +1,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "aligator/python/fwd.hpp"
 
+#ifdef PROXSUITE_NLP_WITH_PINOCCHIO
 #include "aligator/modelling/dynamics/kinodynamics-fwd.hpp"
 #include <pinocchio/multibody/fwd.hpp>
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
@@ -49,3 +50,4 @@ void exposeKinodynamics() {
 }
 } // namespace python
 } // namespace aligator
+#endif
