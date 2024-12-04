@@ -217,7 +217,8 @@ if(BUILD_WITH_PINOCCHIO_SUPPORT)
   if(NOT DEFINED PROXSUITE_NLP_WITH_PINOCCHIO_SUPPORT)
     message(
       FATAL_ERROR
-      "Pinocchio support in aligator requires that proxsuite-nlp come with Pinocchio support!"
+      "The aligator Pinocchio features require Pinocchio support in proxsuite-nlp. Please check your installation of proxsuite-nlp (found at ${proxsuite-nlp_DIR}).\n"
+      "If you didn't build proxsuite-nlp yourself, please contact the maintainer for the distribution you used."
     )
   endif()
   add_compile_definitions(ALIGATOR_WITH_PINOCCHIO)
