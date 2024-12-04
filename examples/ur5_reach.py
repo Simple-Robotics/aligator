@@ -122,7 +122,7 @@ verbose = aligator.VerboseLevel.VERBOSE
 max_iters = 40
 solver = aligator.SolverProxDDP(tol, mu_init, max_iters=max_iters, verbose=verbose)
 solver.rollout_type = aligator.ROLLOUT_NONLINEAR
-solver.sa_strategy = aligator.SA_LINESEARCH
+solver.sa_strategy = aligator.SA_LINESEARCH_NONMONOTONE
 if args.fddp:
     solver = aligator.SolverFDDP(tol, verbose, max_iters=max_iters)
 cb = aligator.HistoryCallback(solver)

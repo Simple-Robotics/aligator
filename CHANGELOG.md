@@ -17,7 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Change enum value `StepAcceptanceStrategy::LINESEARCH` to `LINESEARCH_NONMONOTONE` ([#244](https://github.com/Simple-Robotics/aligator/pull/244))
+- **API BREAKING:** Change enum value `StepAcceptanceStrategy::LINESEARCH` to `LINESEARCH_NONMONOTONE` ([#244](https://github.com/Simple-Robotics/aligator/pull/244))
+  - Add constructor argument `StepAcceptanceStrategy sa_strategy`, defaults to nonmonotone
 - The minimum required version of proxsuite-nlp is now 0.10.0 ([#244](https://github.com/Simple-Robotics/aligator/pull/244))
 - `SolverProxDDP`: add temporary vectors for linesearch
 - `SolverProxDDP`: remove exceptions from `computeMultipliers()`, return a bool flag

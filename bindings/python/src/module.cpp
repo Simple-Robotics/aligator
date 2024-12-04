@@ -47,8 +47,6 @@ static void exposeEnums() {
              StepAcceptanceStrategy::LINESEARCH_NONMONOTONE)
       .value("SA_FILTER", StepAcceptanceStrategy::FILTER)
       .export_values();
-
-  bp::scope().attr("SA_LINESEARCH") = StepAcceptanceStrategy::LINESEARCH_ARMIJO;
 }
 
 static void exposeContainers() {
