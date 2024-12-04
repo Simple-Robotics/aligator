@@ -54,6 +54,8 @@ public:
 
   struct LinesearchVariant {
     using fun_t = std::function<Scalar(Scalar)>;
+    using variant_t = std::variant<std::monostate, ArmijoLinesearch<Scalar>,
+                                   NonmonotoneLinesearch<Scalar>>;
 
     Scalar run(const fun_t &fun, const Scalar phi0, const Scalar dphi0,
                Scalar &alpha_try) {
@@ -92,10 +94,7 @@ public:
       }
     }
     friend SolverProxDDPTpl;
-
-    std::variant<std::monostate, ArmijoLinesearch<Scalar>,
-                 NonmonotoneLinesearch<Scalar>>
-        impl_;
+    variant_t impl_;
   };
 
   struct AlmParams {
