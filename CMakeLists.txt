@@ -213,7 +213,13 @@ if(BUILD_WITH_OPENMP_SUPPORT)
 endif()
 
 if(BUILD_WITH_PINOCCHIO_SUPPORT)
-  message(STATUS "Building with Pinocchio support.")
+  message(STATUS "Building aligator with Pinocchio support.")
+  if(NOT DEFINED PROXSUITE_NLP_WITH_PINOCCHIO_SUPPORT)
+    message(
+      FATAL_ERROR
+      "Pinocchio support in aligator requires that proxsuite-nlp come with Pinocchio support!"
+    )
+  endif()
   add_compile_definitions(ALIGATOR_WITH_PINOCCHIO)
   list(APPEND CFLAGS_DEPENDENCIES "-DALIGATOR_WITH_PINOCCHIO")
   set(PINOCCHIO_V3 ${pinocchio_VERSION} VERSION_GREATER "3.0.0")
