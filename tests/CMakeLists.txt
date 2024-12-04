@@ -51,9 +51,12 @@ set(
   problem
   solver-storage
   utils
-  forces
   cycling
 )
+
+if(BUILD_WITH_PINOCCHIO_SUPPORT AND PINOCCHIO_V3)
+  list(APPEND TEST_NAMES forces)
+endif()
 
 foreach(test_name ${TEST_NAMES})
   add_aligator_test(${test_name})

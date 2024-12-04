@@ -1,9 +1,8 @@
 #include <Eigen/Core>
 #include <Eigen/src/Core/util/Constants.h>
 #include <pinocchio/parsers/sample-models.hpp>
-#include "aligator/core/function-abstract.hpp"
-#include "pinocchio/algorithm/kinematics.hpp"
-#include "pinocchio/algorithm/joint-configuration.hpp"
+#include <pinocchio/algorithm/kinematics.hpp>
+#include <pinocchio/algorithm/joint-configuration.hpp>
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 
 #include <boost/test/unit_test.hpp>
