@@ -7,7 +7,7 @@ robot = erd.load("solo12")
 rmodel: pin.Model = robot.model
 rdata: pin.Data = robot.data
 stance_name = "straight_standing"
-q0 = rmodel.referenceConfigurations[stance_name]
+q0 = rmodel.referenceConfigurations[stance_name].copy()
 
 FOOT_FRAME_IDS = {
     fname: rmodel.getFrameId(fname)

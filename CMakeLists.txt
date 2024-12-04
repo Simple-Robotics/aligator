@@ -216,7 +216,7 @@ set(BOOST_REQUIRED_COMPONENTS filesystem)
 set_boost_default_options()
 export_boost_default_options()
 add_project_dependency(Boost REQUIRED COMPONENTS ${BOOST_REQUIRED_COMPONENTS})
-add_project_dependency(proxsuite-nlp 0.8.0 REQUIRED PKG_CONFIG_REQUIRES "proxsuite-nlp >= 0.8.0")
+add_project_dependency(proxsuite-nlp 0.10.0 REQUIRED PKG_CONFIG_REQUIRES "proxsuite-nlp >= 0.10.0")
 
 if(BUILD_WITH_PINOCCHIO_SUPPORT)
   message(STATUS "Building aligator with Pinocchio support.")

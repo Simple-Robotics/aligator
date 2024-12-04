@@ -5,7 +5,8 @@
 #include "aligator/core/workspace-base.hpp"
 #include "aligator/core/results-base.hpp"
 
-#include "aligator/solvers/proxddp/results.hpp"
+#include <typeindex>
+#include <any>
 
 namespace aligator {
 
@@ -13,10 +14,11 @@ namespace aligator {
 template <typename Scalar> struct HistoryCallbackTpl : CallbackBaseTpl<Scalar> {
   using Workspace = WorkspaceBaseTpl<Scalar>;
   using Results = ResultsBaseTpl<Scalar>;
-  HistoryCallbackTpl(bool store_pd_vars = false, bool store_values = true,
-                     bool store_residuals = true)
+  template <typename Solver>
+  HistoryCallbackTpl(Solver *solver, bool store_pd_vars = false,
+                     bool store_values = true)
       : store_primal_dual_vars_(store_pd_vars), store_values_(store_values),
-        store_residuals_(store_residuals) {}
+        rtti_(typeid(*solver)), solver_(solver) {}
 
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
@@ -32,31 +34,14 @@ template <typename Scalar> struct HistoryCallbackTpl : CallbackBaseTpl<Scalar> {
   std::vector<Scalar> prim_tols;
   std::vector<Scalar> dual_tols;
 
-  void call(const Workspace & /*workspace*/, const Results &results) {
-    if (store_primal_dual_vars_) {
-      xs.push_back(results.xs);
-      us.push_back(results.us);
-      // lams.push_back(results.lams);
-    }
-    if (store_values_) {
-      values.push_back(results.traj_cost_);
-      merit_values.push_back(results.merit_value_);
-    }
-    if (store_residuals_) {
-      prim_infeas.push_back(results.prim_infeas);
-      dual_infeas.push_back(results.dual_infeas);
-    }
-    // if (auto w = dynamic_cast<const WorkspaceTpl<Scalar> *>(&workspace)) {
-    //   inner_crits.push_back(w->inner_criterion);
-    // }
-    if (auto r = dynamic_cast<const ResultsTpl<Scalar> *>(&results)) {
-      al_index.push_back(r->al_iter);
-    }
-  }
+  void call(const Workspace & /*workspace*/, const Results &results);
 
   bool store_primal_dual_vars_;
   bool store_values_;
-  bool store_residuals_;
+
+private:
+  std::type_index rtti_;
+  std::any solver_;
 };
 
 } // namespace aligator

@@ -258,9 +258,7 @@ def test_constrained_dynamics():
     tol = 1e-5
     mu_init = 0.01
     verbose = aligator.VerboseLevel.VERBOSE
-    history_cb = aligator.HistoryCallback()
     solver = aligator.SolverProxDDP(tol, mu_init, verbose=verbose, max_iters=200)
-    solver.registerCallback("his", history_cb)
     solver.setup(problem)
     conv = solver.run(problem, xs_init, us_init)
 

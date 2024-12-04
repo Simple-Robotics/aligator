@@ -3,7 +3,9 @@
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
+#include "aligator/overloads.hpp"
 #include "aligator/core/linesearch.hpp"
+#include "aligator/core/linesearch-nonmonotone.hpp"
 #include "aligator/core/filter.hpp"
 #include "aligator/core/callback-base.hpp"
 #include "aligator/core/enums.hpp"
@@ -14,6 +16,7 @@
 #include "results.hpp"
 
 #include <boost/unordered_map.hpp>
+#include <variant>
 
 namespace aligator {
 namespace gar {
@@ -32,8 +35,6 @@ enum class LQSolverChoice { SERIAL, PARALLEL, STAGEDENSE };
 /// implementation.
 template <typename _Scalar> struct SolverProxDDPTpl {
 public:
-  // typedefs
-
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Problem = TrajOptProblemTpl<Scalar>;
@@ -50,8 +51,53 @@ public:
   using CstrSet = ConstraintSetTpl<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
   using LinesearchOptions = typename Linesearch<Scalar>::Options;
-  using LinesearchType = proxsuite::nlp::ArmijoLinesearch<Scalar>;
-  using Filter = FilterTpl<Scalar>;
+
+  struct LinesearchVariant {
+    using fun_t = std::function<Scalar(Scalar)>;
+    using variant_t = std::variant<std::monostate, ArmijoLinesearch<Scalar>,
+                                   NonmonotoneLinesearch<Scalar>>;
+
+    Scalar run(const fun_t &fun, const Scalar phi0, const Scalar dphi0,
+               Scalar &alpha_try) {
+      return std::visit(
+          overloads{[](std::monostate &) {
+                      return std::numeric_limits<Scalar>::quiet_NaN();
+                    },
+                    [&](auto &&method) {
+                      return method.run(fun, phi0, dphi0, alpha_try);
+                    }},
+          impl_);
+    }
+
+    void reset() {
+      std::visit(overloads{[](std::monostate &) {},
+                           [&](auto &&method) { method.reset(); }},
+                 impl_);
+    }
+
+    Scalar isValid() const { return impl_.index() > 0ul; }
+
+    operator const variant_t &() const { return impl_; }
+
+  private:
+    explicit LinesearchVariant() {}
+    void init(StepAcceptanceStrategy strat, const LinesearchOptions &options) {
+      switch (strat) {
+      case StepAcceptanceStrategy::LINESEARCH_ARMIJO:
+        impl_ = ArmijoLinesearch<Scalar>(options);
+        break;
+      case StepAcceptanceStrategy::LINESEARCH_NONMONOTONE:
+        impl_ = NonmonotoneLinesearch<Scalar>(options);
+        break;
+      default:
+        ALIGATOR_WARNING("LinesearchVariant::",
+                         "provided StepAcceptanceStrategy is invalid.");
+        break;
+      }
+    }
+    friend SolverProxDDPTpl;
+    variant_t impl_;
+  };
 
   struct AlmParams {
     /// Log-factor \f$\alpha_\eta\f$ for primal tolerance (failure)
@@ -113,13 +159,10 @@ public:
   VerboseLevel verbose_;
   /// Choice of linear solver
   LQSolverChoice linear_solver_choice = LQSolverChoice::SERIAL;
-  bool lq_print_detailed = false;
   /// Type of Hessian approximation. Default is Gauss-Newton.
   HessianApprox hess_approx_ = HessianApprox::GAUSS_NEWTON;
   /// Linesearch options, as in proxsuite-nlp.
   LinesearchOptions ls_params;
-  /// Type of linesearch strategy. Default is Armijo.
-  LinesearchStrategy ls_strat = LinesearchStrategy::ARMIJO;
   /// Type of Lagrange multiplier update.
   MultiplierUpdateMode multiplier_update_mode = MultiplierUpdateMode::NEWTON;
   /// Linesearch mode.
@@ -131,7 +174,7 @@ public:
   /// Parameters for the BCL outer loop of the augmented Lagrangian algorithm.
   AlmParams bcl_params;
   /// Step acceptance mode.
-  StepAcceptanceStrategy sa_strategy = StepAcceptanceStrategy::LINESEARCH;
+  StepAcceptanceStrategy sa_strategy_;
 
   /// Force the initial state @f$ x_0 @f$ to be fixed to the problem initial
   /// condition.
@@ -148,9 +191,9 @@ public:
   Results results_;
   /// LQR subproblem solver
   std::unique_ptr<gar::RiccatiSolverBase<Scalar>> linearSolver_;
-  Filter filter_;
+  FilterTpl<Scalar> filter_;
   /// Linesearch function
-  LinesearchType linesearch_;
+  LinesearchVariant linesearch_;
 
 private:
   /// Callbacks
@@ -167,6 +210,8 @@ public:
   SolverProxDDPTpl(const Scalar tol = 1e-6, const Scalar mu_init = 0.01,
                    const std::size_t max_iters = 1000,
                    VerboseLevel verbose = VerboseLevel::QUIET,
+                   StepAcceptanceStrategy sa_strategy =
+                       StepAcceptanceStrategy::LINESEARCH_NONMONOTONE,
                    HessianApprox hess_approx = HessianApprox::GAUSS_NEWTON);
 
   inline std::size_t getNumThreads() const { return num_threads_; }

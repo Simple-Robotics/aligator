@@ -29,7 +29,7 @@ int main(int, char **) {
   us_i.assign(nsteps, u0);
 
   solver.rollout_type_ = aligator::RolloutType::LINEAR;
-  solver.sa_strategy = aligator::StepAcceptanceStrategy::FILTER;
+  solver.sa_strategy_ = aligator::StepAcceptanceStrategy::FILTER;
   solver.filter_.beta_ = 1e-5;
   solver.force_initial_condition_ = true;
   solver.reg_min = 1e-6;
