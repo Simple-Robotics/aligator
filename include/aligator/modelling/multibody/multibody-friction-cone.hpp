@@ -1,11 +1,11 @@
 #pragma once
 
+#ifdef ALIGATOR_PINOCCHIO_V3
 #include "./fwd.hpp"
 #include "aligator/core/function-abstract.hpp"
 
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 
-#ifdef ALIGATOR_PINOCCHIO_V3
 #include <pinocchio/algorithm/proximal.hpp>
 
 namespace aligator {
