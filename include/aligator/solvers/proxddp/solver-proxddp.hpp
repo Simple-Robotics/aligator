@@ -75,7 +75,7 @@ public:
                  impl_);
     }
 
-    Scalar isValid() const { return impl_.index() == 0ul; }
+    Scalar isValid() const { return impl_.index() > 0ul; }
 
     operator const variant_t &() const { return impl_; }
 
