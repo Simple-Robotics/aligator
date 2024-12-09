@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2024-12-09
+
 ### Added
 
 - Add a multibody friction cone cost ([#234](https://github.com/Simple-Robotics/aligator/pull/234))
@@ -231,7 +233,8 @@ The following **API-BREAKING** changes come from PR [#229](https://github.com/Si
 
 * This is the first release of `aligator`. This library is a joint effort between INRIA and LAAS-CNRS, and will be maintained and expanded in the future. Please provide constructive feedback and contribute!
 
-[Unreleased]: https://github.com/Simple-Robotics/aligator/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/Simple-Robotics/aligator/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/Simple-Robotics/aligator/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/Simple-Robotics/aligator/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/Simple-Robotics/aligator/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/Simple-Robotics/aligator/compare/v0.6.1...v0.7.0
