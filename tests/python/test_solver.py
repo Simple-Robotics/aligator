@@ -61,7 +61,12 @@ def test_no_node():
 
 
 @pytest.mark.parametrize(
-    "strategy", [aligator.SA_FILTER, aligator.SA_LINESEARCH_NONMONOTONE]
+    "strategy",
+    [
+        aligator.SA_FILTER,
+        aligator.SA_LINESEARCH_ARMIJO,
+        aligator.SA_LINESEARCH_NONMONOTONE,
+    ],
 )
 def test_proxddp_lqr(strategy):
     nx = 3
