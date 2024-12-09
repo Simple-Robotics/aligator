@@ -90,7 +90,9 @@ solver = aligator.SolverProxDDP(TOL, mu_init, verbose=verbose)
 solver.rollout_type = aligator.ROLLOUT_NONLINEAR
 # solver = aligator.SolverFDDP(TOL, verbose=verbose)
 solver.max_iters = max_iters
-solver.sa_strategy = aligator.SA_LINESEARCH  # FILTER or LINESEARCH
+solver.sa_strategy = (
+    aligator.SA_LINESEARCH_NONMONOTONE
+)  # FILTER or LINESEARCH_ARMIJO or LINESEARCH_NONMONOTONE
 solver.setup(problem)
 
 u0 = compute_quasistatic(rmodel, rdata, x0, acc=np.zeros(nv))

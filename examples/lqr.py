@@ -23,6 +23,12 @@ class Args(tap.Tap):
 args = Args().parse_args()
 np.random.seed(42)
 
+TAG = "LQR"
+if args.bounds:
+    TAG += "_bounded"
+if args.term_cstr:
+    TAG += "_cstr"
+
 nx = 3  # dimension of the state manifold
 nu = 3  # dimension of the input
 space = manifolds.VectorSpace(nx)
@@ -78,7 +84,7 @@ verbose = aligator.VerboseLevel.VERBOSE
 tol = 1e-8
 solver = aligator.SolverProxDDP(tol, mu_init, verbose=verbose)
 
-his_cb = aligator.HistoryCallback()
+his_cb = aligator.HistoryCallback(solver)
 solver.registerCallback("his", his_cb)
 print("Registered callbacks:", solver.getCallbackNames().tolist())
 solver.max_iters = 20
@@ -98,6 +104,8 @@ print(res)
 
 plt.subplot(121)
 fig1: plt.Figure = plt.gcf()
+fig1.set_figwidth(6.4)
+fig1.set_figheight(3.6)
 
 lstyle = {"lw": 0.9, "marker": ".", "markersize": 5}
 trange = np.arange(nsteps + 1)
@@ -144,7 +152,7 @@ plt.legend(frameon=False, loc="lower right")
 plt.tight_layout()
 
 
-fig2: plt.Figure = plt.figure()
+fig2: plt.Figure = plt.figure(figsize=(6.4, 3.6))
 ax: plt.Axes = fig2.add_subplot()
 niter = res.num_iters
 ax.hlines(
@@ -155,15 +163,13 @@ ax.hlines(
     linestyles="-",
     linewidth=2.0,
 )
-plot_convergence(his_cb, ax, res)
+plot_convergence(his_cb, ax, res, show_al_iters=True)
 ax.set_title("Convergence (constrained LQR)")
-ax.legend(
-    [
-        "Tolerance $\\epsilon_\\mathrm{tol}$",
-        "Primal error $p$",
-        "Dual error $d$",
-    ]
-)
 fig2.tight_layout()
+fig_dicts = {"traj": fig1, "conv": fig2}
+
+for name, _fig in fig_dicts.items():
+    _fig: plt.Figure
+    _fig.savefig(f"assets/{TAG}_{name}.pdf")
 
 plt.show()

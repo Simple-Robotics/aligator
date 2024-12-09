@@ -7,6 +7,7 @@
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
 
 #include <eigenpy/std-unique-ptr.hpp>
+#include <eigenpy/variant.hpp>
 
 namespace aligator {
 namespace python {
@@ -19,8 +20,8 @@ void exposeProxDDP() {
   using context::VectorRef;
   using context::Workspace;
 
-  eigenpy::register_symbolic_link_to_registered_type<
-      Linesearch<Scalar>::Options>();
+  using LsOptions = Linesearch<Scalar>::Options;
+  eigenpy::register_symbolic_link_to_registered_type<LsOptions>();
   eigenpy::register_symbolic_link_to_registered_type<LinesearchStrategy>();
   eigenpy::register_symbolic_link_to_registered_type<
       proxsuite::nlp::LSInterpolation>();
@@ -74,6 +75,7 @@ void exposeProxDDP() {
       .def(PrintableVisitor<Results>());
 
   using SolverType = SolverProxDDPTpl<Scalar>;
+  using ls_variant_t = SolverType::LinesearchVariant::variant_t;
 
   auto cls =
       bp::class_<SolverType, boost::noncopyable>(
@@ -84,9 +86,10 @@ void exposeProxDDP() {
           " The solver instance initializes both a Workspace and a Results "
           "struct.",
           bp::init<const Scalar, const Scalar, std::size_t, VerboseLevel,
-                   HessianApprox>(
+                   StepAcceptanceStrategy, HessianApprox>(
               ("self"_a, "tol", "mu_init"_a = 1e-2, "max_iters"_a = 1000,
                "verbose"_a = VerboseLevel::QUIET,
+               "sa_strategy"_a = StepAcceptanceStrategy::LINESEARCH_NONMONOTONE,
                "hess_approx"_a = HessianApprox::GAUSS_NEWTON)))
           .def("cycleProblem", &SolverType::cycleProblem,
                ("self"_a, "problem", "data"),
@@ -110,7 +113,7 @@ void exposeProxDDP() {
           .def_readwrite("max_al_iters", &SolverType::max_al_iters,
                          "Maximum number of AL iterations.")
           .def_readwrite("ls_mode", &SolverType::ls_mode, "Linesearch mode.")
-          .def_readwrite("sa_strategy", &SolverType::sa_strategy,
+          .def_readwrite("sa_strategy", &SolverType::sa_strategy_,
                          "StepAcceptance strategy.")
           .def_readwrite("rollout_type", &SolverType::rollout_type_,
                          "Rollout type.")
@@ -120,7 +123,6 @@ void exposeProxDDP() {
                          "Minimum regularization value.")
           .def_readwrite("reg_max", &SolverType::reg_max,
                          "Maximum regularization value.")
-          .def_readwrite("lq_print_detailed", &SolverType::lq_print_detailed)
           .def("updateLQSubproblem", &SolverType::updateLQSubproblem, "self"_a)
           .def("computeCriterion", &SolverType::computeCriterion, "self"_a,
                "Compute problem stationarity.")
@@ -143,12 +145,24 @@ void exposeProxDDP() {
                "(target_tol) will not be synced when the latter changes and "
                "`solver.run()` is called.")
           .def(SolverVisitor<SolverType>())
+          .add_property("linesearch",
+                        bp::make_function(
+                            +[](const SolverType &s) -> const ls_variant_t & {
+                              return s.linesearch_;
+                            },
+                            eigenpy::ReturnInternalVariant<ls_variant_t>{}))
           .def("run", &SolverType::run,
                ("self"_a, "problem", "xs_init"_a = bp::list(),
                 "us_init"_a = bp::list(), "vs_init"_a = bp::list(),
                 "lams_init"_a = bp::list()),
                "Run the algorithm. Can receive initial guess for "
                "multiplier trajectory.");
+
+  bp::class_<NonmonotoneLinesearch<Scalar>, bp::bases<Linesearch<Scalar>>>(
+      "NonmonotoneLinesearch", bp::no_init)
+      .def(bp::init<LsOptions>(("self"_a, "options")))
+      .def_readwrite("avg_eta", &NonmonotoneLinesearch<Scalar>::avg_eta)
+      .def_readwrite("beta_dec", &NonmonotoneLinesearch<Scalar>::beta_dec);
 
   {
     using AlmParams = SolverType::AlmParams;

@@ -42,7 +42,9 @@ static void exposeEnums() {
 
   bp::enum_<StepAcceptanceStrategy>("StepAcceptanceStrategy",
                                     "Step acceptance strategy.")
-      .value("SA_LINESEARCH", StepAcceptanceStrategy::LINESEARCH)
+      .value("SA_LINESEARCH_ARMIJO", StepAcceptanceStrategy::LINESEARCH_ARMIJO)
+      .value("SA_LINESEARCH_NONMONOTONE",
+             StepAcceptanceStrategy::LINESEARCH_NONMONOTONE)
       .value("SA_FILTER", StepAcceptanceStrategy::FILTER)
       .export_values();
 }
