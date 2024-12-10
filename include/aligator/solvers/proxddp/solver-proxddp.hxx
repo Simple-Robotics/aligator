@@ -147,7 +147,9 @@ void SolverProxDDPTpl<Scalar>::setup(const Problem &problem) {
   if (!problem.checkIntegrity())
     ALIGATOR_RUNTIME_ERROR("Problem failed integrity check.");
 
-  linesearch_.init(sa_strategy_, ls_params);
+  if (int(sa_strategy_) <= 1) {
+    linesearch_.init(sa_strategy_, ls_params);
+  }
 
   results_.~Results();
   workspace_.~Workspace();
