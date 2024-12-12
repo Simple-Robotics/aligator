@@ -14,8 +14,20 @@ namespace python {
 using proxsuite::nlp::python::PolymorphicVisitor;
 using proxsuite::nlp::python::register_polymorphic_to_python;
 
-// fwd
-void exposeStageData();
+void exposeStageData() {
+  using context::StageData;
+  using context::StageModel;
+
+  bp::register_ptr_to_python<shared_ptr<StageData>>();
+  StdVectorPythonVisitor<std::vector<shared_ptr<StageData>>, true>::expose(
+      "StdVec_StageData");
+
+  bp::class_<StageData>("StageData", "Data struct for StageModel objects.",
+                        bp::init<const StageModel &>())
+      .def_readonly("cost_data", &StageData::cost_data)
+      .def_readwrite("dynamics_data", &StageData::dynamics_data)
+      .def_readwrite("constraint_data", &StageData::constraint_data);
+}
 
 void exposeStage() {
   using context::ConstraintSet;
