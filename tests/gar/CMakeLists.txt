@@ -14,3 +14,5 @@ if(BUILD_WITH_OPENMP_SUPPORT)
 endif()
 
 add_gar_test(knot)
+add_gar_test(mem-req)
+add_gar_test(eigen-mapped-pmr)

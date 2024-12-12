@@ -1,5 +1,6 @@
 /// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
 #include "aligator/python/fwd.hpp"
+#include "aligator/gar/lqr-problem.hpp"
 #include "aligator/gar/proximal-riccati.hpp"
 
 namespace aligator::python {
