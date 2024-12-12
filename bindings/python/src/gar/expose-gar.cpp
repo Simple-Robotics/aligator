@@ -59,8 +59,9 @@ void exposeGAR() {
   exposeBlockMatrices();
 
   bp::class_<knot_t>("LQRKnot", bp::no_init)
-      .def(bp::init<uint, uint, uint>(("nx"_a, "nu", "nc")))
-      .def(bp::init<uint, uint, uint, uint>(("nx"_a, "nu", "nc", "nx2")))
+      .def(bp::init<uint, uint, uint>(("self"_a, "nx", "nu", "nc")))
+      .def(bp::init<uint, uint, uint, uint, uint>(
+          ("self"_a, "nx"_a, "nu", "nc", "nx2", "nth"_a = 0)))
       .def_readonly("nx", &knot_t::nx)
       .def_readonly("nu", &knot_t::nu)
       .def_readonly("nc", &knot_t::nc)

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "riccati-base.hpp"
-#include "riccati-impl.hpp"
+#include "riccati-kernel.hpp"
 
 namespace aligator {
 namespace gar {

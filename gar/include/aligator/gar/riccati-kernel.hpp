@@ -2,6 +2,8 @@
 /// @author Wilson Jallet
 #pragma once
 
+#include "aligator/context.hpp"
+#include "aligator/gar/fwd.hpp"
 #include "blk-matrix.hpp"
 
 #include <proxsuite-nlp/linalg/bunchkaufman.hpp>
@@ -14,8 +16,6 @@
 
 namespace aligator {
 namespace gar {
-template <typename Scalar> struct LQRKnotTpl;
-template <typename Scalar> struct LQRProblemTpl;
 
 /// Create a boost::span object from a vector and two indices.
 template <class T, class A>
@@ -107,24 +107,23 @@ template <typename Scalar> struct ProximalRiccatiKernel {
           fth(mat.rowDims(), {nth}) {}
   };
 
-  inline static void terminalSolve(const KnotType &model, const Scalar mueq,
-                                   StageFactorType &d);
+  static void terminalSolve(const KnotType &model, const Scalar mueq,
+                            StageFactorType &d);
 
-  inline static bool backwardImpl(boost::span<const KnotType> stages,
-                                  const Scalar mudyn, const Scalar mueq,
-                                  boost::span<StageFactorType> datas);
+  static bool backwardImpl(boost::span<const KnotType> stages,
+                           const Scalar mudyn, const Scalar mueq,
+                           boost::span<StageFactorType> datas);
 
   /// Solve initial stage
-  inline static void
-  computeInitial(VectorRef x0, VectorRef lbd0, const kkt0_t &kkt0,
-                 const std::optional<ConstVectorRef> &theta_);
+  static void computeInitial(VectorRef x0, VectorRef lbd0, const kkt0_t &kkt0,
+                             const std::optional<ConstVectorRef> &theta_);
 
-  inline static void stageKernelSolve(const KnotType &model, StageFactorType &d,
-                                      value_t &vn, const Scalar mudyn,
-                                      const Scalar mueq);
+  static void stageKernelSolve(const KnotType &model, StageFactorType &d,
+                               value_t &vn, const Scalar mudyn,
+                               const Scalar mueq);
 
   /// Forward sweep.
-  inline static bool
+  static bool
   forwardImpl(boost::span<const KnotType> stages,
               boost::span<const StageFactorType> datas,
               boost::span<VectorXs> xs, boost::span<VectorXs> us,
@@ -132,11 +131,10 @@ template <typename Scalar> struct ProximalRiccatiKernel {
               const std::optional<ConstVectorRef> &theta_ = std::nullopt);
 };
 
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct StageFactor<context::Scalar>;
+extern template struct ProximalRiccatiKernel<context::Scalar>;
+#endif
+
 } // namespace gar
 } // namespace aligator
-
-#include "./riccati-impl.hxx"
-
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./riccati-impl.txx"
-#endif

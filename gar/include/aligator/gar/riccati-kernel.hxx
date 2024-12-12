@@ -1,8 +1,8 @@
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #pragma once
 
-#include "./riccati-impl.hpp"
-#include "./lqr-problem.hpp"
+#include "riccati-kernel.hpp"
+#include "lqr-problem.hpp"
 
 #include "aligator/tracy.hpp"
 
