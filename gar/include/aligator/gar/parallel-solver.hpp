@@ -3,7 +3,8 @@
 #pragma once
 
 #include "aligator/gar/riccati-base.hpp"
-#include "aligator/gar/riccati-impl.hpp"
+#include "aligator/gar/riccati-kernel.hpp"
+#include "aligator/tracy.hpp"
 
 namespace aligator {
 namespace gar {
