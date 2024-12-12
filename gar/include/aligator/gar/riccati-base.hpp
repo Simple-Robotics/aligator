@@ -3,7 +3,7 @@
 #pragma once
 
 #include "aligator/math.hpp"
-#include "aligator/gar/lqr-problem.hpp"
+#include "aligator/gar/fwd.hpp"
 #include <optional>
 
 namespace aligator {
