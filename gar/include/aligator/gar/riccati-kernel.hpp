@@ -2,6 +2,8 @@
 /// @author Wilson Jallet
 #pragma once
 
+#include "aligator/context.hpp"
+#include "aligator/gar/fwd.hpp"
 #include "blk-matrix.hpp"
 
 #include <proxsuite-nlp/linalg/bunchkaufman.hpp>
@@ -14,8 +16,6 @@
 
 namespace aligator {
 namespace gar {
-template <typename Scalar> struct LQRKnotTpl;
-template <typename Scalar> struct LQRProblemTpl;
 
 /// Create a boost::span object from a vector and two indices.
 template <class T, class A>
@@ -132,11 +132,10 @@ template <typename Scalar> struct ProximalRiccatiKernel {
               const std::optional<ConstVectorRef> &theta_ = std::nullopt);
 };
 
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct StageFactor<context::Scalar>;
+extern template struct ProximalRiccatiKernel<context::Scalar>;
+#endif
+
 } // namespace gar
 } // namespace aligator
-
-#include "./riccati-impl.hxx"
-
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./riccati-impl.txx"
-#endif
