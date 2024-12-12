@@ -1,4 +1,4 @@
-#include "aligator/gar/riccati-kernel.hpp"
+#include "aligator/gar/riccati-kernel.hxx"
 
 namespace aligator {
 namespace gar {
