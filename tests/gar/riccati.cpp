@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(short_horz_pb) {
   knots[4] = init_knot(nu);
   knots[4].D.setIdentity();
   knots[4].d.setConstant(0.1);
-  knots[N] = knot1;
+  knots[N] = std::move(knot1);
   problem_t prob(knots, nx);
   prob.g0 = -x0;
   prob.G0.setIdentity();
