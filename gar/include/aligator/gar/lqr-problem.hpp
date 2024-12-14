@@ -63,11 +63,13 @@ template <typename Scalar> struct LQRKnotTpl {
       : LQRKnotTpl(nx, nu, nc, nx, 0, alloc) {}
 
   LQRKnotTpl(const LQRKnotTpl &);
+  LQRKnotTpl(LQRKnotTpl &&);
   LQRKnotTpl &operator=(const LQRKnotTpl &other);
   LQRKnotTpl &operator=(LQRKnotTpl &&);
-  LQRKnotTpl(LQRKnotTpl &&) = default;
 
   ~LQRKnotTpl();
+
+  void assign(const LQRKnotTpl<Scalar> &other);
 
   // reallocates entire buffer for contigousness
   LQRKnotTpl &addParameterization(uint nth);
