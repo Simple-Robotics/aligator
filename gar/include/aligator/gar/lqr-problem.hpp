@@ -118,6 +118,13 @@ protected:
 };
 
 template <typename Scalar>
+bool lqrKnotsSameDim(const LqrKnotTpl<Scalar> &lhs,
+                     const LqrKnotTpl<Scalar> &rhs) {
+  return (lhs.nx == rhs.nx) && (lhs.nu == rhs.nu) && (lhs.nc == rhs.nc) &&
+         (lhs.nx2 == rhs.nx2) && (lhs.nth == rhs.nth);
+}
+
+template <typename Scalar>
 std::ostream &operator<<(std::ostream &oss, const LqrKnotTpl<Scalar> &self) {
   oss << "LqrKnot {";
   oss << fmt::format("\n  nx:  {:d}", self.nx) //
