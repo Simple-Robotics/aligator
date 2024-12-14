@@ -5,6 +5,24 @@
 
 namespace aligator {
 
+template <typename MatrixType, int Alignment = Eigen::AlignedMax>
+auto allocate_eigen_map(polymorphic_allocator &alloc, Eigen::Index rows,
+                        Eigen::Index cols) {
+  using MapType = Eigen::Map<MatrixType, Alignment>;
+  using Scalar = typename MatrixType::Scalar;
+  size_t size = size_t(rows * cols);
+  Scalar *data = alloc.allocate<Scalar>(size, Alignment);
+  return MapType{data, rows, cols};
+}
+
+template <typename MatrixType, int Alignment = Eigen::AlignedMax>
+auto allocate_eigen_map(polymorphic_allocator &alloc, Eigen::Index size) {
+  using MapType = Eigen::Map<MatrixType, Alignment>;
+  using Scalar = typename MatrixType::Scalar;
+  Scalar *data = alloc.allocate<Scalar>(size_t(size), Alignment);
+  return MapType{data, size};
+}
+
 /// @brief In-place construct a map from another one by stealing the other's
 /// data.
 template <typename MatrixType, int Alignment>

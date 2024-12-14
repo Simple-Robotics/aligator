@@ -53,10 +53,13 @@ template <typename Scalar> struct LQRKnotTpl {
   MatrixMap Gv;
   VectorMap gamma;
 
-  LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth = 0,
-             const allocator_type &alloc = {});
+  LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth,
+             allocator_type alloc);
 
-  LQRKnotTpl(uint nx, uint nu, uint nc, const allocator_type &alloc = {})
+  LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, const allocator_type &alloc)
+      : LQRKnotTpl(nx, nu, nc, nx2, 0, alloc) {}
+
+  LQRKnotTpl(uint nx, uint nu, uint nc, const allocator_type &alloc)
       : LQRKnotTpl(nx, nu, nc, nx, 0, alloc) {}
 
   LQRKnotTpl(const LQRKnotTpl &);
@@ -83,6 +86,7 @@ template <typename Scalar> struct LQRKnotTpl {
 private:
   LQRKnotTpl(no_alloc_t, uint nx, uint nu, uint nc, uint nx2, uint nth,
              const allocator_type &alloc);
+  /// Whether the current knot is not allocated
   bool m_empty_after_move{true};
   allocator_type m_allocator;
 };
