@@ -64,9 +64,7 @@ template <typename Scalar> LQRKnotTpl<Scalar>::~LQRKnotTpl() {
 }
 
 template <typename Scalar>
-LQRKnotTpl<Scalar>::LQRKnotTpl(const LQRKnotTpl &other)
-    : LQRKnotTpl(other.nx, other.nu, other.nc, other.nx2, other.nth,
-                 other.get_allocator()) {
+void LQRKnotTpl<Scalar>::assign(const LQRKnotTpl &other) {
   this->Q = other.Q;
   this->S = other.S;
   this->R = other.R;
@@ -90,40 +88,105 @@ LQRKnotTpl<Scalar>::LQRKnotTpl(const LQRKnotTpl &other)
 }
 
 template <typename Scalar>
+LQRKnotTpl<Scalar>::LQRKnotTpl(const LQRKnotTpl &other)
+    : LQRKnotTpl(other.nx, other.nu, other.nc, other.nx2, other.nth,
+                 other.get_allocator()) {
+  this->assign(other);
+  assert(!m_empty_after_move);
+}
+
+#define _c(name) name(std::move(other.name))
+template <typename Scalar>
+LQRKnotTpl<Scalar>::LQRKnotTpl(LQRKnotTpl &&other)
+    : nx(other.nx), nu(other.nu), nc(other.nc), nx2(other.nx2),
+      nth(other.nth),                             //
+      _c(Q), _c(S), _c(R), _c(q), _c(r),          //
+      _c(A), _c(B), _c(E), _c(f),                 //
+      _c(C), _c(D), _c(d),                        //
+      _c(Gth), _c(Gx), _c(Gu), _c(Gv), _c(gamma), //
+      m_empty_after_move(false), m_allocator(std::move(other.m_allocator)) {
+  other.m_empty_after_move = true;
+}
+#undef _c
+
+template <typename Scalar>
 LQRKnotTpl<Scalar> &LQRKnotTpl<Scalar>::operator=(const LQRKnotTpl &other) {
-  LQRKnotTpl copy{other};
-  *this = std::move(copy);
+  const bool same_dim = lqrKnotsSameDim(*this, other);
+  if (same_dim) {
+    this->assign(other);
+  } else if (m_empty_after_move) {
+    assert(!other.empty_after_move() && "Other should not be empty");
+    // allow allocation
+    // replace our allocator
+    m_allocator.~allocator_type();
+    new (&m_allocator) allocator_type(other.m_allocator);
+    // define macro to deep-copy the maps
+#define _c(name) emplace_map_copy(name, other.name, m_allocator)
+    _c(Q);
+    _c(S);
+    _c(R);
+    _c(q);
+    _c(r);
+
+    _c(A);
+    _c(B);
+    _c(E);
+    _c(f);
+
+    _c(C);
+    _c(D);
+    _c(d);
+
+    _c(Gth);
+    _c(Gx);
+    _c(Gu);
+    _c(Gv);
+    _c(gamma);
+#undef _c
+    m_empty_after_move = false;
+  } else {
+    throw std::runtime_error(
+        "Copy assignment requires either same dimensions as "
+        "target, or that target is not allocated.");
+  }
   return *this;
 }
 
 template <typename Scalar>
 LQRKnotTpl<Scalar> &LQRKnotTpl<Scalar>::operator=(LQRKnotTpl &&other) {
+  m_allocator.~allocator_type();
+  new (&m_allocator) allocator_type(std::move(other.m_allocator));
   this->nx = other.nx;
   this->nu = other.nu;
   this->nc = other.nc;
   this->nx2 = other.nx2;
   this->nth = other.nth;
 
-  emplace_map_steal(this->Q, other.Q);
-  emplace_map_steal(this->S, other.S);
-  emplace_map_steal(this->R, other.R);
-  emplace_map_steal(this->q, other.q);
-  emplace_map_steal(this->r, other.r);
+  // steal data from the other maps.
+  // this is correct because the allocator for 'this'
+  // which will clean them up *is* the allocator for 'other'.
+#define _c(name) emplace_map_steal(name, other.name)
+  _c(Q);
+  _c(S);
+  _c(R);
+  _c(q);
+  _c(r);
 
-  emplace_map_steal(this->A, other.A);
-  emplace_map_steal(this->B, other.B);
-  emplace_map_steal(this->E, other.E);
-  emplace_map_steal(this->f, other.f);
+  _c(A);
+  _c(B);
+  _c(E);
+  _c(f);
 
-  emplace_map_steal(this->C, other.C);
-  emplace_map_steal(this->D, other.D);
-  emplace_map_steal(this->d, other.d);
+  _c(C);
+  _c(D);
+  _c(d);
 
-  emplace_map_steal(this->Gth, other.Gth);
-  emplace_map_steal(this->Gx, other.Gx);
-  emplace_map_steal(this->Gu, other.Gu);
-  emplace_map_steal(this->Gv, other.Gv);
-  emplace_map_steal(this->gamma, other.gamma);
+  _c(Gth);
+  _c(Gx);
+  _c(Gu);
+  _c(Gv);
+  _c(gamma);
+#undef _c
 
   other.m_empty_after_move = true;
   // reset flag if necessary
