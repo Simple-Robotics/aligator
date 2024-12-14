@@ -14,31 +14,29 @@ LQRKnotTpl<Scalar>::LQRKnotTpl(no_alloc_t, uint nx, uint nu, uint nc, uint nx2,
       C(NULL, 0, 0), D(NULL, 0, 0), d(NULL, 0),                            //
       Gth(NULL, 0, 0), Gx(NULL, 0, 0), Gu(NULL, 0, 0), Gv(NULL, 0, 0),
       gamma(NULL, 0), m_empty_after_move(true), m_allocator(alloc) {}
+
 template <typename Scalar>
 LQRKnotTpl<Scalar>::LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth,
-                               const allocator_type &alloc)
-    : LQRKnotTpl(no_alloc, nx, nu, nc, nx2, nth, alloc) {
-  emplace_allocated_map(Q, nx, nx, m_allocator);
-  emplace_allocated_map(S, nx, nu, m_allocator);
-  emplace_allocated_map(R, nu, nu, m_allocator);
-  emplace_allocated_map(q, nx, m_allocator);
-  emplace_allocated_map(r, nu, m_allocator);
-
-  emplace_allocated_map(A, nx2, nx, m_allocator);
-  emplace_allocated_map(B, nx2, nu, m_allocator);
-  emplace_allocated_map(E, nx2, nx2, m_allocator);
-  emplace_allocated_map(f, nx2, m_allocator);
-
-  emplace_allocated_map(C, nc, nx, m_allocator);
-  emplace_allocated_map(D, nc, nu, m_allocator);
-  emplace_allocated_map(d, nc, m_allocator);
-
-  emplace_allocated_map(Gth, nth, nth, m_allocator);
-  emplace_allocated_map(Gx, nx, nth, m_allocator);
-  emplace_allocated_map(Gu, nu, nth, m_allocator);
-  emplace_allocated_map(Gv, nc, nth, m_allocator);
-  emplace_allocated_map(gamma, nth, m_allocator);
-}
+                               allocator_type alloc)
+    : nx(nx), nu(nu), nc(nc), nx2(nx2), nth(nth), //
+      Q(allocate_eigen_map<MatrixXs>(alloc, nx, nx)),
+      S(allocate_eigen_map<MatrixXs>(alloc, nx, nu)),
+      R(allocate_eigen_map<MatrixXs>(alloc, nu, nu)),
+      q(allocate_eigen_map<VectorXs>(alloc, nx)),
+      r(allocate_eigen_map<VectorXs>(alloc, nu)),
+      A(allocate_eigen_map<MatrixXs>(alloc, nx2, nx)),
+      B(allocate_eigen_map<MatrixXs>(alloc, nx2, nu)),
+      E(allocate_eigen_map<MatrixXs>(alloc, nx2, nx2)),
+      f(allocate_eigen_map<VectorXs>(alloc, nx2)),
+      C(allocate_eigen_map<MatrixXs>(alloc, nc, nx)),
+      D(allocate_eigen_map<MatrixXs>(alloc, nc, nu)),
+      d(allocate_eigen_map<VectorXs>(alloc, nc)),
+      Gth(allocate_eigen_map<MatrixXs>(alloc, nth, nth)),
+      Gx(allocate_eigen_map<MatrixXs>(alloc, nx, nth)),
+      Gu(allocate_eigen_map<MatrixXs>(alloc, nu, nth)),
+      Gv(allocate_eigen_map<MatrixXs>(alloc, nc, nth)),
+      gamma(allocate_eigen_map<VectorXs>(alloc, nth)),
+      m_empty_after_move(false), m_allocator(std::move(alloc)) {}
 
 template <typename Scalar> LQRKnotTpl<Scalar>::~LQRKnotTpl() {
   if (!m_empty_after_move) {
