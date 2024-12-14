@@ -14,6 +14,8 @@
 #include <proxsuite-nlp/fmt-eigen.hpp>
 
 using namespace aligator::gar;
+static std::pmr::monotonic_buffer_resource mbr{1024 * 2048};
+static aligator::polymorphic_allocator alloc{&mbr};
 
 BOOST_AUTO_TEST_CASE(short_horz_pb) {
   // dual regularization parameters
@@ -24,7 +26,7 @@ BOOST_AUTO_TEST_CASE(short_horz_pb) {
   VectorXs x0 = VectorXs::Ones(nx);
   VectorXs x1 = -VectorXs::Ones(nx);
   auto init_knot = [&](uint nc = 0) {
-    knot_t knot(nx, nu, nc);
+    knot_t knot(nx, nu, nc, alloc);
     knot.A << 0.1, 0., -0.1, 0.01;
     knot.B.setRandom();
     knot.E.setIdentity();

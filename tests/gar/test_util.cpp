@@ -12,7 +12,7 @@ MatrixXs sampleWishartDistributedMatrix(uint n, uint p) {
 
 knot_t generate_knot(uint nx, uint nu, uint nth, bool singular) {
   uint wishartDof = nx + nu + 1;
-  knot_t out(nx, nu, 0, nx, nth);
+  knot_t out(nx, nu, 0, nx, nth, {});
 
   MatrixXs _qsr = sampleWishartDistributedMatrix(nx + nu, wishartDof);
 
