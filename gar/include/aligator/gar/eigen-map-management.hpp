@@ -26,8 +26,9 @@ void emplace_map_steal(Eigen::Map<MatrixType, Alignment> &map,
 /// @brief Use `placement new` to create an Eigen::Map object with given
 /// dimensions and data pointer.
 template <typename MatrixType, int Alignment>
-void emplace_map(Eigen::Map<MatrixType, Alignment> &map, Eigen::Index rows,
-                 Eigen::Index cols, typename MatrixType::Scalar *data) {
+void emplace_map_from_data(Eigen::Map<MatrixType, Alignment> &map,
+                           Eigen::Index rows, Eigen::Index cols,
+                           typename MatrixType::Scalar *data) {
   EIGEN_STATIC_ASSERT_DYNAMIC_SIZE(MatrixType);
   using MapType = Eigen::Map<MatrixType, Alignment>;
   new (&map) MapType{data, rows, cols};
@@ -35,8 +36,9 @@ void emplace_map(Eigen::Map<MatrixType, Alignment> &map, Eigen::Index rows,
 
 /// @copybrief emplace_map()
 template <typename MatrixType, int Alignment>
-void emplace_map(Eigen::Map<MatrixType, Alignment> &map, Eigen::Index size,
-                 typename MatrixType::Scalar *data) {
+void emplace_map_from_data(Eigen::Map<MatrixType, Alignment> &map,
+                           Eigen::Index size,
+                           typename MatrixType::Scalar *data) {
   EIGEN_STATIC_ASSERT_VECTOR_ONLY(MatrixType);
   EIGEN_STATIC_ASSERT_DYNAMIC_SIZE(MatrixType);
   using MapType = Eigen::Map<MatrixType, Alignment>;
@@ -51,7 +53,7 @@ void emplace_allocated_map(Eigen::Map<MatrixType, Alignment> &map,
                            polymorphic_allocator &alloc) {
   using Scalar = typename MatrixType::Scalar;
   Scalar *data = alloc.template allocate<Scalar>(size_t(rows * cols));
-  emplace_map(map, rows, cols, data);
+  emplace_map_from_data(map, rows, cols, data);
 }
 
 /// @copybrief emplace_allocated_map()
@@ -60,7 +62,7 @@ void emplace_allocated_map(Eigen::Map<MatrixType, Alignment> &map,
                            Eigen::Index size, polymorphic_allocator &alloc) {
   using Scalar = typename MatrixType::Scalar;
   Scalar *data = alloc.template allocate<Scalar>(size_t(size), Alignment);
-  emplace_map(map, size, data);
+  emplace_map_from_data(map, size, data);
 }
 
 template <typename MatrixType, int Alignment>
