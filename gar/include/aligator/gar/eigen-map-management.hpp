@@ -95,7 +95,7 @@ void deallocate_map(Eigen::Map<MatrixType, Alignment> &map,
 /// @brief Create a deep copy of a managed Eigen::Map object.
 template <typename MatrixType, int Alignment>
 void emplace_map_copy(Eigen::Map<MatrixType, Alignment> &map,
-                      const Eigen::Map<MatrixType> &other,
+                      const Eigen::Map<MatrixType, Alignment> &other,
                       polymorphic_allocator &alloc) {
   if constexpr (MatrixType::IsVectorAtCompileTime) {
     emplace_allocated_map(map, other.size(), alloc);
