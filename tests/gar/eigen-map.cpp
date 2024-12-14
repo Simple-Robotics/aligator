@@ -1,7 +1,7 @@
 #include <Eigen/Core>
 #include <boost/test/unit_test.hpp>
 
-#include "aligator/gar/memory-allocator.hpp"
+#include "aligator/gar/eigen-map-management.hpp"
 
 static aligator::polymorphic_allocator alloc{};
 using Eigen::MatrixXd;
@@ -16,10 +16,7 @@ MapType allocate_eigen_matrix(Eigen::Index n, Eigen::Index m) {
 struct map_owning_type {
   MapType view;
 
-  ~map_owning_type() {
-    alloc.deallocate<double>(view.data(), size_t(view.size()));
-    view.~MapType();
-  }
+  ~map_owning_type() { aligator::deallocate_map(view, alloc); }
 };
 
 BOOST_AUTO_TEST_CASE(struct_creating_matrix) {
