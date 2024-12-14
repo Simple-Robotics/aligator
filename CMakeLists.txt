@@ -76,7 +76,7 @@ if(POLICY CMP0167)
   set(CMAKE_POLICY_DEFAULT_CMP0167 NEW)
 endif()
 include(${JRL_CMAKE_MODULES}/base.cmake)
-compute_project_args(PROJECT_ARGS LANGUAGES CXX)
+COMPUTE_PROJECT_ARGS(PROJECT_ARGS LANGUAGES CXX)
 project(${PROJECT_NAME} ${PROJECT_ARGS})
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
@@ -104,7 +104,7 @@ elseif(UNIX)
 endif()
 include(CMakeDependentOption)
 
-apply_default_apple_configuration()
+APPLY_DEFAULT_APPLE_CONFIGURATION()
 
 if(WIN32)
   set(LINK copy_if_different)
@@ -204,19 +204,34 @@ endif()
 # ----------------------------------------------------
 # --- DEPENDENCIES -----------------------------------
 # ----------------------------------------------------
-add_project_dependency(Eigen3 3.3.7 REQUIRED PKG_CONFIG_REQUIRES "eigen3 >= 3.3.7")
-add_project_dependency(fmt "10.0.0...<12" REQUIRED PKG_CONFIG_REQUIRES "fmt >= 10.0.0")
+ADD_PROJECT_DEPENDENCY(
+  Eigen3
+  3.3.7
+  REQUIRED
+  PKG_CONFIG_REQUIRES "eigen3 >= 3.3.7"
+)
+ADD_PROJECT_DEPENDENCY(
+  fmt
+  "10.0.0...<12"
+  REQUIRED
+  PKG_CONFIG_REQUIRES "fmt >= 10.0.0"
+)
 
 if(BUILD_WITH_OPENMP_SUPPORT)
-  add_project_dependency(OpenMP REQUIRED)
+  ADD_PROJECT_DEPENDENCY(OpenMP REQUIRED)
   add_compile_definitions(ALIGATOR_MULTITHREADING)
 endif()
 
 set(BOOST_REQUIRED_COMPONENTS filesystem)
-set_boost_default_options()
-export_boost_default_options()
-add_project_dependency(Boost REQUIRED COMPONENTS ${BOOST_REQUIRED_COMPONENTS})
-add_project_dependency(proxsuite-nlp 0.10.0 REQUIRED PKG_CONFIG_REQUIRES "proxsuite-nlp >= 0.10.0")
+SET_BOOST_DEFAULT_OPTIONS()
+EXPORT_BOOST_DEFAULT_OPTIONS()
+ADD_PROJECT_DEPENDENCY(Boost REQUIRED COMPONENTS ${BOOST_REQUIRED_COMPONENTS})
+ADD_PROJECT_DEPENDENCY(
+  proxsuite-nlp
+  0.10.0
+  REQUIRED
+  PKG_CONFIG_REQUIRES "proxsuite-nlp >= 0.10.0"
+)
 
 if(BUILD_WITH_PINOCCHIO_SUPPORT)
   message(STATUS "Building aligator with Pinocchio support.")
@@ -253,7 +268,7 @@ if(BUILD_WITH_CHOLMOD_SUPPORT)
     ${JRL_CMAKE_MODULES}/find-external/CHOLMOD
     ${CMAKE_MODULE_PATH}
   )
-  add_project_dependency(CHOLMOD REQUIRED)
+  ADD_PROJECT_DEPENDENCY(CHOLMOD REQUIRED)
   message(
     STATUS
     "Build with CHOLMOD support (LGPL). See CHOLMOD/Doc/License.txt for further details."
@@ -263,7 +278,12 @@ endif()
 
 if(BUILD_PYTHON_INTERFACE)
   set(PYTHON_COMPONENTS Interpreter Development NumPy)
-  add_project_dependency(eigenpy 3.7.0 REQUIRED PKG_CONFIG_REQUIRES "eigenpy >= 3.7.0")
+  ADD_PROJECT_DEPENDENCY(
+    eigenpy
+    3.7.0
+    REQUIRED
+    PKG_CONFIG_REQUIRES "eigenpy >= 3.7.0"
+  )
   set(PYLIB_NAME "py${PROJECT_NAME}")
   set(${PYLIB_NAME}_INSTALL_DIR ${PYTHON_SITELIB}/${PROJECT_NAME})
 endif()
@@ -338,7 +358,7 @@ if(ALIGATOR_TRACY_ENABLE AND DOWNLOAD_TRACY)
   endif()
 elseif(ALIGATOR_TRACY_ENABLE)
   # assume it is installed somewhere
-  add_project_dependency(Tracy)
+  ADD_PROJECT_DEPENDENCY(Tracy)
   set_target_properties(
     Tracy::TracyClient
     PROPERTIES POSITION_INDEPENDENT_CODE True
@@ -415,8 +435,8 @@ endfunction()
 
 create_library()
 
-add_header_group(LIB_HEADERS)
-add_source_group(LIB_SOURCES)
+ADD_HEADER_GROUP(LIB_HEADERS)
+ADD_SOURCE_GROUP(LIB_SOURCES)
 
 install(
   TARGETS ${PROJECT_NAME}
@@ -439,7 +459,7 @@ if(DOWNLOAD_TRACY)
 endif()
 
 if(BUILD_CROCODDYL_COMPAT)
-  add_project_dependency(crocoddyl REQUIRED)
+  ADD_PROJECT_DEPENDENCY(crocoddyl REQUIRED)
   add_subdirectory(src/compat/crocoddyl)
 endif()
 
@@ -463,7 +483,7 @@ macro(create_ex_or_bench is_bench exfile exname)
 endmacro()
 
 if(BUILD_WITH_PINOCCHIO_SUPPORT AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
-  add_project_private_dependency(example-robot-data 4.0.9 REQUIRED)
+  ADD_PROJECT_PRIVATE_DEPENDENCY(example-robot-data 4.0.9 REQUIRED)
   macro(target_add_example_robot_data target_name)
     target_link_libraries(
       ${target_name}
@@ -560,14 +580,14 @@ if(BUILD_WITH_OPENMP_SUPPORT)
 endif()
 if(BUILD_CROCODDYL_COMPAT)
   EXPORT_VARIABLE(ALIGATOR_WITH_CROCODDYL_COMPAT ON)
-  pkg_config_append_libs(aligator_croc_compat)
+  PKG_CONFIG_APPEND_LIBS(aligator_croc_compat)
 endif()
 
-pkg_config_append_libs(${PROJECT_NAME})
-pkg_config_append_boost_libs(${BOOST_REQUIRED_COMPONENTS})
-pkg_config_append_cflags("${CFLAGS_DEPENDENCIES}")
+PKG_CONFIG_APPEND_LIBS(${PROJECT_NAME})
+PKG_CONFIG_APPEND_BOOST_LIBS(${BOOST_REQUIRED_COMPONENTS})
+PKG_CONFIG_APPEND_CFLAGS("${CFLAGS_DEPENDENCIES}")
 
 # Install catkin package.xml
 install(FILES package.xml DESTINATION share/${PROJECT_NAME})
 
-setup_project_finalize()
+SETUP_PROJECT_FINALIZE()

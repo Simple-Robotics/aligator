@@ -40,12 +40,17 @@ foreach(pyfile ${PYTHON_TESTS})
       ${CMAKE_CURRENT_BINARY_DIR}/${pyfile}
   )
   message(STATUS "Adding Python test: ${test_name}")
-  add_python_unit_test(${test_name} "tests/python/${pyfile}" "tests/python" "bindings/python")
+  ADD_PYTHON_UNIT_TEST(
+    ${test_name}
+    "tests/python/${pyfile}"
+    "tests/python"
+    "bindings/python"
+  )
   set_tests_properties("${test_name}" PROPERTIES DEPENDS ${PYLIB_NAME})
 endforeach()
 
 function(add_test_binding_lib test_name)
-  create_ctest_build_tests_target()
+  CREATE_CTEST_BUILD_TESTS_TARGET()
 
   set(target_name "${PROJECT_NAME}-${test_name}")
   python3_add_library(${target_name} MODULE "${test_name}.cpp")

@@ -20,7 +20,7 @@ function(_add_test_prototype name prefix dependencies)
   set(test_file ${name}.cpp)
   message(STATUS "Adding cpp test: ${test_file} (${test_name})")
 
-  add_unit_test(${test_name} ${test_file} ${TEST_HEADERS})
+  ADD_UNIT_TEST(${test_name} ${test_file} ${TEST_HEADERS})
   set_target_properties(${test_name} PROPERTIES LINKER_LANGUAGE CXX)
   set_standard_output_directory(${test_name})
   target_include_directories(${test_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
