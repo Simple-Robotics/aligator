@@ -6,6 +6,6 @@ namespace aligator {
 struct no_alloc_t {
   explicit constexpr no_alloc_t() {}
 };
-static constexpr no_alloc_t no_alloc{};
+inline constexpr no_alloc_t no_alloc{};
 
 } // namespace aligator
