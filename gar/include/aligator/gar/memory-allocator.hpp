@@ -8,11 +8,15 @@ namespace aligator {
 using byte_t = unsigned char;
 class polymorphic_allocator : public std::pmr::polymorphic_allocator<byte_t> {
 public:
-  polymorphic_allocator() noexcept
-      : std::pmr::polymorphic_allocator<byte_t>(
-            std::pmr::get_default_resource()) {}
+  using base = std::pmr::polymorphic_allocator<byte_t>;
+  polymorphic_allocator() noexcept : base{std::pmr::get_default_resource()} {}
 
   polymorphic_allocator(const polymorphic_allocator &other) = default;
+
+  template <typename U>
+  polymorphic_allocator(
+      const std::pmr::polymorphic_allocator<U> &other) noexcept
+      : base{other} {}
 
   polymorphic_allocator(std::pmr::memory_resource *resource) noexcept
       : std::pmr::polymorphic_allocator<byte_t>(resource) {}
@@ -40,3 +44,9 @@ public:
 };
 
 } // namespace aligator
+
+template <>
+struct std::allocator_traits<aligator::polymorphic_allocator>
+    : std::allocator_traits<aligator::polymorphic_allocator::base> {
+  using allocator_type = aligator::polymorphic_allocator;
+};
