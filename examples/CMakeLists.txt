@@ -47,7 +47,7 @@ if(PINOCCHIO_V3)
 endif()
 
 if(BUILD_CROCODDYL_COMPAT)
-  add_project_private_dependency(example-robot-data 4.0.9 REQUIRED)
+  ADD_PROJECT_PRIVATE_DEPENDENCY(example-robot-data 4.0.9 REQUIRED)
   create_example(
     talos-arm.cpp
     DEPENDENCIES
