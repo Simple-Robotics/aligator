@@ -56,14 +56,14 @@ template <typename Scalar> struct LQRKnotTpl {
   LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth,
              allocator_type alloc);
 
-  LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, const allocator_type &alloc)
+  LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, allocator_type alloc)
       : LQRKnotTpl(nx, nu, nc, nx2, 0, alloc) {}
 
-  LQRKnotTpl(uint nx, uint nu, uint nc, const allocator_type &alloc)
+  LQRKnotTpl(uint nx, uint nu, uint nc, allocator_type alloc)
       : LQRKnotTpl(nx, nu, nc, nx, 0, alloc) {}
 
-  LQRKnotTpl(const LQRKnotTpl &);
-  LQRKnotTpl(LQRKnotTpl &&);
+  LQRKnotTpl(const LQRKnotTpl &other, allocator_type alloc = {});
+  LQRKnotTpl(LQRKnotTpl &&other);
   LQRKnotTpl &operator=(const LQRKnotTpl &other);
   LQRKnotTpl &operator=(LQRKnotTpl &&);
 
@@ -86,8 +86,7 @@ template <typename Scalar> struct LQRKnotTpl {
   inline bool empty_after_move() const { return m_empty_after_move; }
 
 private:
-  LQRKnotTpl(no_alloc_t, uint nx, uint nu, uint nc, uint nx2, uint nth,
-             const allocator_type &alloc);
+  explicit LQRKnotTpl(no_alloc_t, allocator_type alloc = {});
   /// Whether the current knot is not allocated
   bool m_empty_after_move{true};
   allocator_type m_allocator;
@@ -97,14 +96,16 @@ template <typename Scalar> struct LQRProblemTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using KnotType = LQRKnotTpl<Scalar>;
   using KnotVector = std::vector<KnotType>;
+  using allocator_type = polymorphic_allocator;
   KnotVector stages;
   MatrixXs G0;
   VectorXs g0;
 
   inline int horizon() const noexcept { return int(stages.size()) - 1; }
+  /// @brief Dimension of the initial condition constraint.
   inline uint nc0() const noexcept { return (uint)g0.rows(); }
 
-  LQRProblemTpl() : stages(), G0(), g0() {}
+  explicit LQRProblemTpl() : stages(), G0(), g0() {}
 
   LQRProblemTpl(KnotVector &&knots, long nc0) : stages(knots), G0(), g0(nc0) {
     initialize();
@@ -134,6 +135,8 @@ template <typename Scalar> struct LQRProblemTpl {
   /// Evaluate the quadratic objective.
   Scalar evaluate(const VectorOfVectors &xs, const VectorOfVectors &us,
                   const std::optional<ConstVectorRef> &theta_) const;
+
+  allocator_type get_allocator() const { return stages[0].get_allocator(); }
 
 protected:
   void initialize() {
