@@ -6,10 +6,8 @@
 namespace aligator::gar {
 
 template <typename Scalar>
-LQRKnotTpl<Scalar>::LQRKnotTpl(no_alloc_t, uint nx, uint nu, uint nc, uint nx2,
-                               uint nth, const allocator_type &alloc)
-    : nx(nx), nu(nu), nc(nc), nx2(nx2), nth(nth),                          //
-      Q(NULL, 0, 0), S(NULL, 0, 0), R(NULL, 0, 0), q(NULL, 0), r(NULL, 0), //
+LQRKnotTpl<Scalar>::LQRKnotTpl(no_alloc_t, allocator_type alloc)
+    : Q(NULL, 0, 0), S(NULL, 0, 0), R(NULL, 0, 0), q(NULL, 0), r(NULL, 0), //
       A(NULL, 0, 0), B(NULL, 0, 0), E(NULL, 0, 0), f(NULL, 0),             //
       C(NULL, 0, 0), D(NULL, 0, 0), d(NULL, 0),                            //
       Gth(NULL, 0, 0), Gx(NULL, 0, 0), Gu(NULL, 0, 0), Gv(NULL, 0, 0),
@@ -88,9 +86,8 @@ void LQRKnotTpl<Scalar>::assign(const LQRKnotTpl &other) {
 }
 
 template <typename Scalar>
-LQRKnotTpl<Scalar>::LQRKnotTpl(const LQRKnotTpl &other)
-    : LQRKnotTpl(other.nx, other.nu, other.nc, other.nx2, other.nth,
-                 other.get_allocator()) {
+LQRKnotTpl<Scalar>::LQRKnotTpl(const LQRKnotTpl &other, allocator_type alloc)
+    : LQRKnotTpl(other.nx, other.nu, other.nc, other.nx2, other.nth, alloc) {
   this->assign(other);
   assert(!m_empty_after_move);
 }
