@@ -56,8 +56,7 @@ public:
   RowMatrixRef getFeedback(size_t i) { return fbs[i].matrix(); }
 
 protected:
-  void init_factor(const LQRKnotTpl<Scalar> &knot);
-  void initialize();
+  void init_factor(const KnotType &knot);
   const LQRProblemTpl<Scalar> *problem_;
 };
 
