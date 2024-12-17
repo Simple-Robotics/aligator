@@ -37,28 +37,31 @@ LQRKnotTpl<Scalar>::LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth,
       m_empty_after_move(false), m_allocator(std::move(alloc)) {}
 
 template <typename Scalar> LQRKnotTpl<Scalar>::~LQRKnotTpl() {
-  if (!m_empty_after_move) {
-    deallocate_map(Q, m_allocator);
-    deallocate_map(S, m_allocator);
-    deallocate_map(R, m_allocator);
-    deallocate_map(q, m_allocator);
-    deallocate_map(r, m_allocator);
+  if (!m_empty_after_move)
+    this->deallocate();
+}
 
-    deallocate_map(A, m_allocator);
-    deallocate_map(B, m_allocator);
-    deallocate_map(E, m_allocator);
-    deallocate_map(f, m_allocator);
+template <typename Scalar> void LQRKnotTpl<Scalar>::deallocate() {
+  deallocate_map(Q, m_allocator);
+  deallocate_map(S, m_allocator);
+  deallocate_map(R, m_allocator);
+  deallocate_map(q, m_allocator);
+  deallocate_map(r, m_allocator);
 
-    deallocate_map(C, m_allocator);
-    deallocate_map(D, m_allocator);
-    deallocate_map(d, m_allocator);
+  deallocate_map(A, m_allocator);
+  deallocate_map(B, m_allocator);
+  deallocate_map(E, m_allocator);
+  deallocate_map(f, m_allocator);
 
-    deallocate_map(Gth, m_allocator);
-    deallocate_map(Gx, m_allocator);
-    deallocate_map(Gu, m_allocator);
-    deallocate_map(Gv, m_allocator);
-    deallocate_map(gamma, m_allocator);
-  }
+  deallocate_map(C, m_allocator);
+  deallocate_map(D, m_allocator);
+  deallocate_map(d, m_allocator);
+
+  deallocate_map(Gth, m_allocator);
+  deallocate_map(Gx, m_allocator);
+  deallocate_map(Gu, m_allocator);
+  deallocate_map(Gv, m_allocator);
+  deallocate_map(gamma, m_allocator);
 }
 
 template <typename Scalar>
@@ -110,15 +113,17 @@ template <typename Scalar>
 LQRKnotTpl<Scalar> &LQRKnotTpl<Scalar>::operator=(const LQRKnotTpl &other) {
   const bool same_dim = lqrKnotsSameDim(*this, other);
   if (same_dim) {
+    // if dimensions compatible, do not reallocate memory.
     this->assign(other);
-  } else if (m_empty_after_move) {
+  } else {
     assert(!other.empty_after_move() && "Other should not be empty");
-    // allow allocation
-    // replace our allocator
-    m_allocator.~allocator_type();
-    new (&m_allocator) allocator_type(other.m_allocator);
-    // define macro to deep-copy the maps
-#define _c(name) emplace_map_copy(name, other.name, m_allocator)
+    // Allow allocation. Will use current allocator.
+    // step 1: check if we are initialized. if so, deallocate.
+    if (!m_empty_after_move)
+      this->deallocate();
+
+    // step 2: reallocate copies into the maps
+#define _c(name) emplace_map_copy(name, other.name, m_allocator) // copy macro
     _c(Q);
     _c(S);
     _c(R);
@@ -141,10 +146,6 @@ LQRKnotTpl<Scalar> &LQRKnotTpl<Scalar>::operator=(const LQRKnotTpl &other) {
     _c(gamma);
 #undef _c
     m_empty_after_move = false;
-  } else {
-    throw std::runtime_error(
-        "Copy assignment requires either same dimensions as "
-        "target, or that target is not allocated.");
   }
   return *this;
 }
