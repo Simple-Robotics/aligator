@@ -94,30 +94,35 @@ private:
 
 template <typename Scalar> struct LQRProblemTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  static constexpr int Alignment = Eigen::AlignedMax;
   using KnotType = LQRKnotTpl<Scalar>;
-  using KnotVector = std::vector<KnotType>;
+  using KnotVector = std::pmr::vector<KnotType>;
   using allocator_type = polymorphic_allocator;
+  using VectorMap = Eigen::Map<VectorXs, Alignment>;
+  using MatrixMap = Eigen::Map<MatrixXs, Alignment>;
   KnotVector stages;
-  MatrixXs G0;
-  VectorXs g0;
+  MatrixMap G0;
+  VectorMap g0;
 
-  inline int horizon() const noexcept { return int(stages.size()) - 1; }
+  inline int horizon() const noexcept { return (int)stages.size() - 1; }
   /// @brief Dimension of the initial condition constraint.
   inline uint nc0() const noexcept { return (uint)g0.rows(); }
 
-  explicit LQRProblemTpl() : stages(), G0(), g0() {}
+  explicit LQRProblemTpl(allocator_type alloc = {})
+      : stages(alloc), G0(NULL, 0, 0), g0(NULL, 0) {}
 
-  LQRProblemTpl(KnotVector &&knots, long nc0) : stages(knots), G0(), g0(nc0) {
-    initialize();
-  }
+  /// @brief This constructor will take the knots as-is, copying their specified
+  /// allocator.
+  LQRProblemTpl(const KnotVector &knots, long nc0);
+  LQRProblemTpl(KnotVector &&knots, long nc0);
 
-  LQRProblemTpl(const KnotVector &knots, long nc0)
-      : stages(knots), G0(), g0(nc0) {
-    initialize();
-  }
+  LQRProblemTpl(const LQRProblemTpl &other) = delete;
+  LQRProblemTpl(LQRProblemTpl &&other);
+
+  ~LQRProblemTpl();
 
   void addParameterization(uint nth) {
-    if (!isInitialized())
+    if (stages.empty())
       return;
     for (uint i = 0; i <= (uint)horizon(); i++) {
       stages[i].addParameterization(nth);
@@ -125,10 +130,10 @@ template <typename Scalar> struct LQRProblemTpl {
   }
 
   inline bool isParameterized() const {
-    return isInitialized() && (stages[0].nth > 0);
+    return !stages.empty() && (stages[0].nth > 0);
   }
 
-  inline bool isInitialized() const { return !stages.empty(); }
+  inline bool isInitialized() const { return !stages.empty() && !m_is_invalid; }
 
   inline uint ntheta() const { return stages[0].nth; }
 
@@ -136,14 +141,11 @@ template <typename Scalar> struct LQRProblemTpl {
   Scalar evaluate(const VectorOfVectors &xs, const VectorOfVectors &us,
                   const std::optional<ConstVectorRef> &theta_) const;
 
-  allocator_type get_allocator() const { return stages[0].get_allocator(); }
+  allocator_type get_allocator() const { return stages.get_allocator(); }
 
-protected:
-  void initialize() {
-    assert(isInitialized());
-    auto nx0 = stages[0].nx;
-    G0.resize(nc0(), nx0);
-  }
+private:
+  /// internal. tag object as empty after move op (or before initialization)
+  bool m_is_invalid{true};
 };
 
 template <typename Scalar>

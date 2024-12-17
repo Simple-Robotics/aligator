@@ -91,31 +91,25 @@ BOOST_AUTO_TEST_CASE(knot_vec) {
   }
 }
 
-auto make_problem() -> problem_t {
+BOOST_AUTO_TEST_CASE(problem) {
+  BOOST_TEST_MESSAGE("problem");
   uint nx = 4;
   uint nu = 2;
-  std::vector<knot_t> v;
+  std::pmr::vector<knot_t> v{alloc};
   v.reserve(10);
   for (int i = 0; i < 10; i++) {
     v.push_back(generate_knot(nx, nu, 0));
   }
   problem_t prob{v, nx};
-  return prob;
-}
-
-BOOST_AUTO_TEST_CASE(problem) {
-  BOOST_TEST_MESSAGE("problem");
-  auto prob = make_problem();
+  BOOST_CHECK(prob.get_allocator() == alloc);
+  BOOST_CHECK(prob.get_allocator().resource() == alloc.resource());
+  BOOST_CHECK(prob.G0.cols() == prob.stages[0].nx);
   fmt::print("Q[0] = \n{}\n", prob.stages[0].Q);
 
-  problem_t prob_copy{prob};
+  problem_t prob_move{std::move(prob)};
 
+  prob_move.addParameterization(1);
   for (size_t i = 0; i < 10; i++) {
-    BOOST_CHECK_EQUAL(prob.stages[i], prob_copy.stages[i]);
-  }
-
-  prob_copy.addParameterization(1);
-  for (size_t i = 0; i < 10; i++) {
-    BOOST_CHECK_EQUAL(prob.stages[i].Q, prob_copy.stages[i].Q);
+    BOOST_CHECK_EQUAL(prob_move.stages[i].nth, 1);
   }
 }
