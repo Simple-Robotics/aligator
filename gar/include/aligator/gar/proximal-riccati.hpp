@@ -20,7 +20,7 @@ public:
   using StageFactorType = StageFactor<Scalar>;
   using value_t = typename StageFactorType::value_t;
   using kkt0_t = typename Impl::kkt0_t;
-  using KnotType = LQRKnotTpl<Scalar>;
+  using KnotType = LqrKnotTpl<Scalar>;
 
   explicit ProximalRiccatiSolver(const LQRProblemTpl<Scalar> &problem);
 
