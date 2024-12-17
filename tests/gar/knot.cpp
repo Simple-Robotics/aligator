@@ -8,7 +8,10 @@
 using namespace aligator::gar;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
-static aligator::polymorphic_allocator alloc;
+char MEMORY_BUFFER[1'000'000];
+static std::pmr::monotonic_buffer_resource rs{MEMORY_BUFFER,
+                                              sizeof(MEMORY_BUFFER)};
+static aligator::polymorphic_allocator alloc{&rs};
 
 struct knot_fixture {
   uint nx = 2;
@@ -50,13 +53,15 @@ BOOST_FIXTURE_TEST_CASE(copy, knot_fixture) {
 
 BOOST_FIXTURE_TEST_CASE(swap, knot_fixture) {
   using std::swap;
+  MatrixXs Q0 = knot.Q;
   knot_t knot2 = knot;
   knot2.Q.setIdentity();
 
   fmt::println("knot.Q:\n{}", knot.Q);
   fmt::println("knot2.Q:\n{}", knot2.Q);
 
-  // swap(knot, knot2);
+  swap(knot, knot2);
+  BOOST_CHECK(Q0 == knot2.Q);
 
   fmt::println("knot2.Q:\n{}", knot2.Q);
 }
