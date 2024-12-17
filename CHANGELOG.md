@@ -46,8 +46,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change the linear multibody friction cone to the true "ice cream" cone ([#238](https://github.com/Simple-Robotics/aligator/pull/238))
 - [gar] Rework `RiccatiSolverDense` to not use inner struct `FactorData`
 - Various changes to `gar` tests and `test_util`, add `LQRKnot::isApprox()`
-- Add `MemReq` struct to handle requests for single blocks of memory for multiple arrays
-- Change `LQRKnotTpl` to work with a single block of allocated memory using `MemReq`
 
 ### Removed
 
