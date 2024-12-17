@@ -28,7 +28,7 @@ xterm = np.array([0.0])
 
 
 def knot_get_default(nx, nu, nc):
-    knot = gar.LQRKnot(nx, nu, nc)
+    knot = gar.LqrKnot(nx, nu, nc)
     knot.Q[:] = np.eye(nx, nx) * 0.1
     knot.q[:] = 0.0
     knot.R[:] = np.eye(nu) * 0.1

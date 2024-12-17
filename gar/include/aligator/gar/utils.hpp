@@ -122,7 +122,7 @@ void lqrDenseSolutionToTraj(
 
   uint idx = nc0;
   for (size_t t = 0; t <= N; t++) {
-    const LQRKnotTpl<Scalar> &knot = problem.stages[t];
+    const LqrKnotTpl<Scalar> &knot = problem.stages[t];
     const uint n = knot.nx + knot.nu + knot.nc;
     auto seg = solution.segment(idx, n);
     xs[t] = seg.head(knot.nx);
@@ -139,7 +139,7 @@ void lqrDenseSolutionToTraj(
 template <typename Scalar>
 auto lqrInitializeSolution(const LQRProblemTpl<Scalar> &problem) {
   using VectorXs = typename math_types<Scalar>::VectorXs;
-  using knot_t = LQRKnotTpl<Scalar>;
+  using knot_t = LqrKnotTpl<Scalar>;
   std::vector<VectorXs> xs;
   std::vector<VectorXs> us;
   std::vector<VectorXs> vs;

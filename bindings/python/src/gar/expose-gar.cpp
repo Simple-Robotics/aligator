@@ -14,7 +14,7 @@ using namespace gar;
 
 using context::Scalar;
 using riccati_base_t = RiccatiSolverBase<Scalar>;
-using knot_t = LQRKnotTpl<context::Scalar>;
+using knot_t = LqrKnotTpl<context::Scalar>;
 using lqr_t = LQRProblemTpl<context::Scalar>;
 
 using context::MatrixXs;
@@ -58,7 +58,7 @@ void exposeGAR() {
 
   exposeBlockMatrices();
 
-  bp::class_<knot_t>("LQRKnot", bp::no_init)
+  bp::class_<knot_t>("LqrKnot", bp::no_init)
       .def(bp::init<uint, uint, uint>(("self"_a, "nx", "nu", "nc")))
       .def(bp::init<uint, uint, uint, uint, uint>(
           ("self"_a, "nx"_a, "nu", "nc", "nx2", "nth"_a = 0)))
@@ -94,7 +94,7 @@ void exposeGAR() {
       .def(CopyableVisitor<knot_t>())
       .def(PrintableVisitor<knot_t>());
 
-  StdVectorPythonVisitor<knot_vec_t, false>::expose("StdVec_LQRKnot");
+  StdVectorPythonVisitor<knot_vec_t, false>::expose("StdVec_LqrKnot");
 
   bp::class_<lqr_t, boost::noncopyable>("LQRProblem", bp::no_init)
       .def(bp::init<const knot_vec_t &, long>(("self"_a, "stages", "nc0")))

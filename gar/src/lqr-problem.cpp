@@ -3,11 +3,11 @@
 
 namespace aligator {
 namespace gar {
-template struct LQRKnotTpl<context::Scalar>;
+template struct LqrKnotTpl<context::Scalar>;
 template struct LQRProblemTpl<context::Scalar>;
 
 static_assert(
-    std::uses_allocator_v<LQRKnotTpl<context::Scalar>, polymorphic_allocator>,
+    std::uses_allocator_v<LqrKnotTpl<context::Scalar>, polymorphic_allocator>,
     "");
 static_assert(std::uses_allocator_v<LQRProblemTpl<context::Scalar>,
                                     polymorphic_allocator>,

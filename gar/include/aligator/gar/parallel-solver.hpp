@@ -29,7 +29,7 @@ public:
   StageFactorVec datas;
 
   using Impl = ProximalRiccatiKernel<Scalar>;
-  using KnotType = LQRKnotTpl<Scalar>;
+  using KnotType = LqrKnotTpl<Scalar>;
 
   using BlkMat = BlkMatrix<MatrixXs, -1, -1>;
   using BlkVec = BlkMatrix<VectorXs, -1, 1>;

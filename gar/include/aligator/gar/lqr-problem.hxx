@@ -6,7 +6,7 @@
 namespace aligator::gar {
 
 template <typename Scalar>
-LQRKnotTpl<Scalar>::LQRKnotTpl(no_alloc_t, allocator_type alloc)
+LqrKnotTpl<Scalar>::LqrKnotTpl(no_alloc_t, allocator_type alloc)
     : Q(NULL, 0, 0), S(NULL, 0, 0), R(NULL, 0, 0), q(NULL, 0), r(NULL, 0), //
       A(NULL, 0, 0), B(NULL, 0, 0), E(NULL, 0, 0), f(NULL, 0),             //
       C(NULL, 0, 0), D(NULL, 0, 0), d(NULL, 0),                            //
@@ -14,7 +14,7 @@ LQRKnotTpl<Scalar>::LQRKnotTpl(no_alloc_t, allocator_type alloc)
       gamma(NULL, 0), m_empty_after_move(true), m_allocator(alloc) {}
 
 template <typename Scalar>
-LQRKnotTpl<Scalar>::LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth,
+LqrKnotTpl<Scalar>::LqrKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth,
                                allocator_type alloc)
     : nx(nx), nu(nu), nc(nc), nx2(nx2), nth(nth), //
       Q(allocate_eigen_map<MatrixXs>(alloc, nx, nx)),
@@ -36,12 +36,12 @@ LQRKnotTpl<Scalar>::LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth,
       gamma(allocate_eigen_map<VectorXs>(alloc, nth)),
       m_empty_after_move(false), m_allocator(std::move(alloc)) {}
 
-template <typename Scalar> LQRKnotTpl<Scalar>::~LQRKnotTpl() {
+template <typename Scalar> LqrKnotTpl<Scalar>::~LqrKnotTpl() {
   if (!m_empty_after_move)
     this->deallocate();
 }
 
-template <typename Scalar> void LQRKnotTpl<Scalar>::deallocate() {
+template <typename Scalar> void LqrKnotTpl<Scalar>::deallocate() {
   deallocate_map(Q, m_allocator);
   deallocate_map(S, m_allocator);
   deallocate_map(R, m_allocator);
@@ -65,7 +65,7 @@ template <typename Scalar> void LQRKnotTpl<Scalar>::deallocate() {
 }
 
 template <typename Scalar>
-void LQRKnotTpl<Scalar>::assign(const LQRKnotTpl &other) {
+void LqrKnotTpl<Scalar>::assign(const LqrKnotTpl &other) {
   this->Q = other.Q;
   this->S = other.S;
   this->R = other.R;
@@ -89,15 +89,15 @@ void LQRKnotTpl<Scalar>::assign(const LQRKnotTpl &other) {
 }
 
 template <typename Scalar>
-LQRKnotTpl<Scalar>::LQRKnotTpl(const LQRKnotTpl &other, allocator_type alloc)
-    : LQRKnotTpl(other.nx, other.nu, other.nc, other.nx2, other.nth, alloc) {
+LqrKnotTpl<Scalar>::LqrKnotTpl(const LqrKnotTpl &other, allocator_type alloc)
+    : LqrKnotTpl(other.nx, other.nu, other.nc, other.nx2, other.nth, alloc) {
   this->assign(other);
   assert(!m_empty_after_move);
 }
 
 #define _c(name) name(std::move(other.name))
 template <typename Scalar>
-LQRKnotTpl<Scalar>::LQRKnotTpl(LQRKnotTpl &&other)
+LqrKnotTpl<Scalar>::LqrKnotTpl(LqrKnotTpl &&other)
     : nx(other.nx), nu(other.nu), nc(other.nc), nx2(other.nx2),
       nth(other.nth),                             //
       _c(Q), _c(S), _c(R), _c(q), _c(r),          //
@@ -110,7 +110,7 @@ LQRKnotTpl<Scalar>::LQRKnotTpl(LQRKnotTpl &&other)
 #undef _c
 
 template <typename Scalar>
-LQRKnotTpl<Scalar> &LQRKnotTpl<Scalar>::operator=(const LQRKnotTpl &other) {
+LqrKnotTpl<Scalar> &LqrKnotTpl<Scalar>::operator=(const LqrKnotTpl &other) {
   const bool same_dim = lqrKnotsSameDim(*this, other);
   if (same_dim) {
     // if dimensions compatible, do not reallocate memory.
@@ -156,7 +156,7 @@ LQRKnotTpl<Scalar> &LQRKnotTpl<Scalar>::operator=(const LQRKnotTpl &other) {
 }
 
 template <typename Scalar>
-LQRKnotTpl<Scalar> &LQRKnotTpl<Scalar>::operator=(LQRKnotTpl &&other) {
+LqrKnotTpl<Scalar> &LqrKnotTpl<Scalar>::operator=(LqrKnotTpl &&other) {
   using allocator_traits = std::allocator_traits<allocator_type>;
   // for polymorphic_allocator types, the allocator is NOT moved on container
   // move assignment.
@@ -232,7 +232,7 @@ LQRKnotTpl<Scalar> &LQRKnotTpl<Scalar>::operator=(LQRKnotTpl &&other) {
 }
 
 template <typename Scalar>
-LQRKnotTpl<Scalar> &LQRKnotTpl<Scalar>::addParameterization(uint nth) {
+LqrKnotTpl<Scalar> &LqrKnotTpl<Scalar>::addParameterization(uint nth) {
   this->nth = nth;
   deallocate_map(Gth, m_allocator);
   deallocate_map(Gx, m_allocator);
@@ -249,7 +249,7 @@ LQRKnotTpl<Scalar> &LQRKnotTpl<Scalar>::addParameterization(uint nth) {
 }
 
 template <typename Scalar>
-bool LQRKnotTpl<Scalar>::isApprox(const LQRKnotTpl &other, Scalar prec) const {
+bool LqrKnotTpl<Scalar>::isApprox(const LqrKnotTpl &other, Scalar prec) const {
   bool cost = Q.isApprox(other.Q, prec) && S.isApprox(other.S, prec) &&
               R.isApprox(other.R, prec) && q.isApprox(other.q, prec) &&
               r.isApprox(other.r, prec);
@@ -308,7 +308,7 @@ Scalar LQRProblemTpl<Scalar>::evaluate(
   Scalar ret = 0.;
   const auto N = uint(horizon());
   for (uint i = 0; i <= N; i++) {
-    const LQRKnotTpl<Scalar> &knot = stages[i];
+    const LqrKnotTpl<Scalar> &knot = stages[i];
     ret += 0.5 * xs[i].dot(knot.Q * xs[i]) + xs[i].dot(knot.q);
     if (i == N)
       break;
