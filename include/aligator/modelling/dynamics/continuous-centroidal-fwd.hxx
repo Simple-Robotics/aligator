@@ -14,9 +14,9 @@ ContinuousCentroidalFwdDynamicsTpl<Scalar>::ContinuousCentroidalFwdDynamicsTpl(
       nk_(contact_map.size_), mass_(mass), gravity_(gravity),
       contact_map_(contact_map), force_size_(force_size) {
   if (space_.nx() != 9 + nu_) {
-    ALIGATOR_DOMAIN_ERROR(fmt::format("State space should be of size: "
-                                      "({}).",
-                                      9 + nu_));
+    ALIGATOR_DOMAIN_ERROR("State space should be of size: "
+                          "({}).",
+                          9 + nu_);
   }
 }
 

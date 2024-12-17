@@ -27,9 +27,9 @@ KinodynamicsFwdDynamicsTpl<Scalar>::KinodynamicsFwdDynamicsTpl(
   mass_ = pinocchio::computeTotalMass(pin_model_);
   if (contact_ids_.size() != contact_states_.size()) {
     ALIGATOR_DOMAIN_ERROR(
-        fmt::format("contact_ids and contact_states should have same size: "
-                    "now ({} and {}).",
-                    contact_ids_.size(), contact_states_.size()));
+        "contact_ids and contact_states should have same size: "
+        "now ({} and {}).",
+        contact_ids_.size(), contact_states_.size());
   }
 }
 

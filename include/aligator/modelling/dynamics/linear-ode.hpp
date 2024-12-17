@@ -28,9 +28,9 @@ template <typename _Scalar> struct LinearODETpl : ODEAbstractTpl<_Scalar> {
                const VectorXs &c)
       : Base(space, (int)B.cols()), A_(A), B_(B), c_(c) {
     if (A.cols() != space->ndx()) {
-      ALIGATOR_DOMAIN_ERROR(fmt::format(
+      ALIGATOR_DOMAIN_ERROR(
           "A.cols() should be equal to space.ndx()! (got {:d} and {:d})",
-          A.cols(), space->ndx()));
+          A.cols(), space->ndx());
     }
     bool rows_ok = (A.rows() == space->ndx()) && (B.rows() == space->ndx()) &&
                    (c.rows() == space->ndx());

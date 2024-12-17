@@ -48,10 +48,10 @@ template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
     for (const auto &[key, item] : comps) {
       auto &cost = *item.first;
       if (!this->checkDimension(cost)) {
-        ALIGATOR_DOMAIN_ERROR(fmt::format(
+        ALIGATOR_DOMAIN_ERROR(
             "Cannot add new component due to inconsistent input dimensions "
             "(got ({:d}, {:d}), expected ({:d}, {:d}))",
-            cost.ndx(), cost.nu, this->ndx(), this->nu));
+            cost.ndx(), cost.nu, this->ndx(), this->nu);
       }
     }
   }
