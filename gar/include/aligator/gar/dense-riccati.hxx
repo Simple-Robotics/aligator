@@ -10,7 +10,7 @@
 namespace aligator::gar {
 
 template <typename Scalar>
-void RiccatiSolverDense<Scalar>::init_factor(const LQRKnotTpl<Scalar> &knot) {
+void RiccatiSolverDense<Scalar>::init_factor(const KnotType &knot) {
   std::array<long, 4> dims = {knot.nu, knot.nc, knot.nx2, knot.nx2};
   long ntot = dims[0] + dims[1] + dims[2] + dims[3];
   kkts.emplace_back(BlkMat44::Zero(dims, dims));
@@ -24,10 +24,6 @@ template <typename Scalar>
 RiccatiSolverDense<Scalar>::RiccatiSolverDense(
     const LQRProblemTpl<Scalar> &problem)
     : Base(), problem_(&problem) {
-  initialize();
-}
-
-template <typename Scalar> void RiccatiSolverDense<Scalar>::initialize() {
   auto N = (uint)problem_->horizon();
   const auto &stages = problem_->stages;
   Pxx.resize(N + 1);
