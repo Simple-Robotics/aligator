@@ -55,7 +55,7 @@ std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem, uint t0,
     p2_first.Gx = kn1_last.E.transpose();
   }
 
-  return {p1, p2};
+  return {std::move(p1), std::move(p2)};
 }
 
 /// Test the max-only formulation, where both legs are parameterized
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
   const double tol = 1e-10;
 
   problem_t problem = generate_problem(x0, horizon, nx, nu);
-  problem_t problemRef = problem;
+  problem_t problemRef{problem.stages, problem.nc0()};
   const double mu = 1e-9;
 
   auto solutionRef = lqrInitializeSolution(problemRef);
