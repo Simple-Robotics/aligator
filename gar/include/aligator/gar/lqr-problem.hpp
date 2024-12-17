@@ -94,6 +94,8 @@ template <typename Scalar> struct LQRKnotTpl {
 
 private:
   explicit LQRKnotTpl(no_alloc_t, allocator_type alloc = {});
+  /// Deallocation helper. Used in constructor and copy assignment op.
+  void deallocate();
   /// Whether the current knot is not allocated
   bool m_empty_after_move{true};
   allocator_type m_allocator;
@@ -124,6 +126,7 @@ template <typename Scalar> struct LQRProblemTpl {
   LQRProblemTpl(KnotVector &&knots, long nc0);
 
   LQRProblemTpl(const LQRProblemTpl &other) = delete;
+  /// @brief Move constructor - we steal the allocator from the source object.
   LQRProblemTpl(LQRProblemTpl &&other);
 
   ~LQRProblemTpl();
