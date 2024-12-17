@@ -224,22 +224,53 @@ bool LQRKnotTpl<Scalar>::isApprox(const LQRKnotTpl &other, Scalar prec) const {
 }
 
 template <typename Scalar>
+LQRProblemTpl<Scalar>::LQRProblemTpl(const KnotVector &knots, long nc0)
+    : stages(knots),
+      G0(allocate_eigen_map<MatrixXs>(get_allocator(), nc0,
+                                      knots.empty() ? 0 : knots[0].nx)),
+      g0(allocate_eigen_map<VectorXs>(get_allocator(), nc0)),
+      m_is_invalid(false) {}
+
+template <typename Scalar>
+LQRProblemTpl<Scalar>::LQRProblemTpl(KnotVector &&knots, long nc0)
+    : stages(knots),
+      G0(allocate_eigen_map<MatrixXs>(get_allocator(), nc0,
+                                      knots.empty() ? 0 : knots[0].nx)),
+      g0(allocate_eigen_map<VectorXs>(get_allocator(), nc0)),
+      m_is_invalid(false) {}
+
+template <typename Scalar>
+LQRProblemTpl<Scalar>::LQRProblemTpl(LQRProblemTpl &&other)
+    : stages(std::move(other.stages)), G0(std::move(other.G0)),
+      g0(std::move(other.g0)), m_is_invalid(false) {
+  other.m_is_invalid = true;
+}
+
+template <typename Scalar> LQRProblemTpl<Scalar>::~LQRProblemTpl() {
+  if (!m_is_invalid) {
+    deallocate_map(G0, get_allocator());
+    deallocate_map(g0, get_allocator());
+  }
+}
+
+template <typename Scalar>
 Scalar LQRProblemTpl<Scalar>::evaluate(
     const VectorOfVectors &xs, const VectorOfVectors &us,
     const std::optional<ConstVectorRef> &theta_) const {
-  if ((int)xs.size() != horizon() + 1)
+  if (xs.size() != horizon() + 1)
     return 0.;
-  if ((int)us.size() < horizon())
+  if (us.size() < horizon())
     return 0.;
 
-  if (!isInitialized())
+  if (stages.empty())
     return 0.;
 
   Scalar ret = 0.;
-  for (uint i = 0; i <= (uint)horizon(); i++) {
+  const auto N = uint(horizon());
+  for (uint i = 0; i <= N; i++) {
     const LQRKnotTpl<Scalar> &knot = stages[i];
     ret += 0.5 * xs[i].dot(knot.Q * xs[i]) + xs[i].dot(knot.q);
-    if (i == (uint)horizon())
+    if (i == N)
       break;
     ret += 0.5 * us[i].dot(knot.R * us[i]) + us[i].dot(knot.r);
     ret += xs[i].dot(knot.S * us[i]);
@@ -250,7 +281,7 @@ Scalar LQRProblemTpl<Scalar>::evaluate(
 
   if (theta_.has_value()) {
     ConstVectorRef th = theta_.value();
-    for (uint i = 0; i <= (uint)horizon(); i++) {
+    for (uint i = 0; i <= N; i++) {
       const LQRKnotTpl<Scalar> &knot = stages[i];
       ret += 0.5 * th.dot(knot.Gth * th);
       ret += th.dot(knot.Gx.transpose() * xs[i]);
