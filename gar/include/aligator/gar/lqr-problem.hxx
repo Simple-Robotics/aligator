@@ -152,39 +152,73 @@ LQRKnotTpl<Scalar> &LQRKnotTpl<Scalar>::operator=(const LQRKnotTpl &other) {
 
 template <typename Scalar>
 LQRKnotTpl<Scalar> &LQRKnotTpl<Scalar>::operator=(LQRKnotTpl &&other) {
-  m_allocator.~allocator_type();
-  new (&m_allocator) allocator_type(std::move(other.m_allocator));
+  using allocator_traits = std::allocator_traits<allocator_type>;
+  // for polymorphic_allocator types, the allocator is NOT moved on container
+  // move assignment.
+  assert(!allocator_traits::propagate_on_container_move_assignment::value);
   this->nx = other.nx;
   this->nu = other.nu;
   this->nc = other.nc;
   this->nx2 = other.nx2;
   this->nth = other.nth;
 
-  // steal data from the other maps.
-  // this is correct because the allocator for 'this'
-  // which will clean them up *is* the allocator for 'other'.
+  // check if allocators are the same e.g. ALLOCATE FROM THE SAME RESOURCE
+  // operator== on polymorphic allocators check address and state of underlying
+  // memory resource.
+  if (m_allocator == other.m_allocator) {
+    // steal data from the other maps.
+    // this is correct because the allocator for 'this'
+    // which will clean them up *is* the allocator for 'other'.
 #define _c(name) emplace_map_steal(name, other.name)
-  _c(Q);
-  _c(S);
-  _c(R);
-  _c(q);
-  _c(r);
+    _c(Q);
+    _c(S);
+    _c(R);
+    _c(q);
+    _c(r);
 
-  _c(A);
-  _c(B);
-  _c(E);
-  _c(f);
+    _c(A);
+    _c(B);
+    _c(E);
+    _c(f);
 
-  _c(C);
-  _c(D);
-  _c(d);
+    _c(C);
+    _c(D);
+    _c(d);
 
-  _c(Gth);
-  _c(Gx);
-  _c(Gu);
-  _c(Gv);
-  _c(gamma);
+    _c(Gth);
+    _c(Gx);
+    _c(Gu);
+    _c(Gv);
+    _c(gamma);
 #undef _c
+  } else {
+    // otherwise, deallocate if necessary, allocate-copy data from other
+    if (!m_empty_after_move)
+      this->deallocate();
+
+#define _c(name) emplace_map_copy(name, other.name, m_allocator) // copy macro
+    _c(Q);
+    _c(S);
+    _c(R);
+    _c(q);
+    _c(r);
+
+    _c(A);
+    _c(B);
+    _c(E);
+    _c(f);
+
+    _c(C);
+    _c(D);
+    _c(d);
+
+    _c(Gth);
+    _c(Gx);
+    _c(Gu);
+    _c(Gv);
+    _c(gamma);
+#undef _c
+  }
 
   other.m_empty_after_move = true;
   // reset flag if necessary
