@@ -189,8 +189,9 @@ template <typename Scalar>
 void SolverProxDDPTpl<Scalar>::cycleProblem(
     const Problem &problem, shared_ptr<StageDataTpl<Scalar>> data) {
   results_.cycleAppend(problem, problem.getInitState());
+  const auto nsteps = workspace_.nsteps;
   workspace_.cycleAppend(problem, data);
-  linearSolver_->cycleAppend(workspace_.knots[workspace_.nsteps - 1]);
+  linearSolver_->cycleAppend(workspace_.lqr_problem.stages[nsteps - 1]);
 }
 
 template <typename... VArgs> bool is_nan_any(const VArgs &...args) {
