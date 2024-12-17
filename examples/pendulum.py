@@ -177,7 +177,7 @@ verbose = aligator.VerboseLevel.VERBOSE
 TOL = 1e-6
 MAX_ITER = 200
 solver = aligator.SolverProxDDP(TOL, mu_init, max_iters=MAX_ITER, verbose=verbose)
-callback = aligator.HistoryCallback()
+callback = aligator.HistoryCallback(solver)
 solver.registerCallback("his", callback)
 
 u0 = pin.rnea(model, data, x0[:1], x0[1:], np.zeros(nv))
