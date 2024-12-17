@@ -54,17 +54,24 @@ template <typename Scalar> struct LQRKnotTpl {
   VectorMap gamma;
 
   LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth,
-             allocator_type alloc);
+             allocator_type alloc = {});
 
-  LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, allocator_type alloc)
+  /// @brief Delegating constructor, assumes @ref nth = 0.
+  LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, allocator_type alloc = {})
       : LQRKnotTpl(nx, nu, nc, nx2, 0, alloc) {}
 
-  LQRKnotTpl(uint nx, uint nu, uint nc, allocator_type alloc)
+  /// @brief Delegating constructor, assumes @ref nx2 = nx, and @ref nth = 0.
+  LQRKnotTpl(uint nx, uint nu, uint nc, allocator_type alloc = {})
       : LQRKnotTpl(nx, nu, nc, nx, 0, alloc) {}
 
+  /// @brief Copy constructor. Allocator must be given.
   LQRKnotTpl(const LQRKnotTpl &other, allocator_type alloc = {});
+  /// @brief Move constructor. Allocator will be moved from other. Other will be
+  /// have @ref m_empty_after_move set to true.
   LQRKnotTpl(LQRKnotTpl &&other);
+  /// @brief Copy assignment. Current allocator will be reused if required.
   LQRKnotTpl &operator=(const LQRKnotTpl &other);
+  /// @brief Move assignment. Other allocator will be stolen.
   LQRKnotTpl &operator=(LQRKnotTpl &&);
 
   ~LQRKnotTpl();
