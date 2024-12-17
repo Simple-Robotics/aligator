@@ -51,7 +51,13 @@ struct normal_unary_op {
 
 MatrixXs sampleWishartDistributedMatrix(uint n, uint p);
 
-knot_t generate_knot(uint nx, uint nu, uint nth, bool singular = false);
+knot_t generate_knot(uint nx, uint nu, uint nth, bool singular = false,
+                     const aligator::polymorphic_allocator &alloc = {});
+
+inline knot_t generate_knot(uint nx, uint nu, uint nth,
+                            const aligator::polymorphic_allocator &alloc) {
+  return generate_knot(nx, nu, nth, false, alloc);
+}
 
 problem_t generate_problem(const ConstVectorRef &x0, uint horz, uint nx,
                            uint nu, uint nth = 0);

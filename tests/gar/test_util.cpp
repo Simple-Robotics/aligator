@@ -10,9 +10,10 @@ MatrixXs sampleWishartDistributedMatrix(uint n, uint p) {
   return root * root.transpose();
 };
 
-knot_t generate_knot(uint nx, uint nu, uint nth, bool singular) {
+knot_t generate_knot(uint nx, uint nu, uint nth, bool singular,
+                     const aligator::polymorphic_allocator &alloc) {
   uint wishartDof = nx + nu + 1;
-  knot_t out(nx, nu, 0, nx, nth, {});
+  knot_t out(nx, nu, 0, nx, nth, alloc);
 
   MatrixXs _qsr = sampleWishartDistributedMatrix(nx + nu, wishartDof);
 
@@ -39,6 +40,7 @@ knot_t generate_knot(uint nx, uint nu, uint nth, bool singular) {
     out.gamma = VectorXs::NullaryExpr(nth, normal_unary_op{});
   }
 
+  assert(out.get_allocator() == alloc);
   return out;
 }
 
