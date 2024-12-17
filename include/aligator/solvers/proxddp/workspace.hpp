@@ -33,7 +33,7 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using KnotType = gar::LqrKnotTpl<Scalar>;
   using ConstraintSetProduct = proxsuite::nlp::ConstraintSetProductTpl<Scalar>;
   using BlkJacobianType = BlkMatrix<MatrixXs, -1, 2>; // jacobians
-  using LqrProblemType = gar::LQRProblemTpl<Scalar>;
+  using LqrProblemType = gar::LqrProblemTpl<Scalar>;
 
   using Base::dyn_slacks;
   using Base::nsteps;

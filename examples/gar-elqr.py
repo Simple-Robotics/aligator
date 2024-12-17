@@ -76,7 +76,7 @@ for t in range(T - 1):
     knots.append(knot_mid)
 knots.append(knot1)
 # constructor creates a copy
-prob = gar.LQRProblem(knots, nx)
+prob = gar.LqrProblem(knots, nx)
 prob.G0 = -np.eye(nx)
 prob.g0 = x0
 

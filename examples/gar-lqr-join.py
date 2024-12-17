@@ -49,7 +49,7 @@ for t in range(t0):
 
 mu = 1e-12
 
-prob1 = gar.LQRProblem(knots, nx)
+prob1 = gar.LqrProblem(knots, nx)
 prob1.G0 = -np.eye(nx)
 prob1.g0 = x0
 prob1.addParameterization(nx)
@@ -64,7 +64,7 @@ solver1.backward(mu, mu)
 
 
 knots.append(knot_get_default(nx, 0, 0))
-prob2 = gar.LQRProblem(knots, 0)
+prob2 = gar.LqrProblem(knots, 0)
 prob2.addParameterization(nx)
 knots2 = prob2.stages
 knots2[0].Gx = E_.T

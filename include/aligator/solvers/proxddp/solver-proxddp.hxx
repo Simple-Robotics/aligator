@@ -798,7 +798,7 @@ void SolverProxDDPTpl<Scalar>::registerCallback(const std::string &name,
 template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
   ALIGATOR_NOMALLOC_SCOPED;
   ALIGATOR_TRACY_ZONE_SCOPED;
-  gar::LQRProblemTpl<Scalar> &prob = workspace_.lqr_problem;
+  gar::LqrProblemTpl<Scalar> &prob = workspace_.lqr_problem;
   const TrajOptData &pd = workspace_.problem_data;
 
   using gar::LqrKnotTpl;

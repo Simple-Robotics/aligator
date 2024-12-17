@@ -15,7 +15,7 @@ using namespace gar;
 using context::Scalar;
 using riccati_base_t = RiccatiSolverBase<Scalar>;
 using knot_t = LqrKnotTpl<context::Scalar>;
-using lqr_t = LQRProblemTpl<context::Scalar>;
+using lqr_t = LqrProblemTpl<context::Scalar>;
 
 using context::MatrixXs;
 using RowMatrixXs = Eigen::Transpose<MatrixXs>::PlainMatrix;
@@ -96,7 +96,7 @@ void exposeGAR() {
 
   StdVectorPythonVisitor<knot_vec_t, false>::expose("StdVec_LqrKnot");
 
-  bp::class_<lqr_t, boost::noncopyable>("LQRProblem", bp::no_init)
+  bp::class_<lqr_t, boost::noncopyable>("LqrProblem", bp::no_init)
       .def(bp::init<const knot_vec_t &, long>(("self"_a, "stages", "nc0")))
       .def_readwrite("stages", &lqr_t::stages)
       .add_property("horizon", &lqr_t::horizon)

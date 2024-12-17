@@ -101,7 +101,7 @@ private:
   allocator_type m_allocator;
 };
 
-template <typename Scalar> struct LQRProblemTpl {
+template <typename Scalar> struct LqrProblemTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   static constexpr int Alignment = Eigen::AlignedMax;
   using KnotType = LqrKnotTpl<Scalar>;
@@ -117,19 +117,19 @@ template <typename Scalar> struct LQRProblemTpl {
   /// @brief Dimension of the initial condition constraint.
   inline uint nc0() const noexcept { return (uint)g0.rows(); }
 
-  explicit LQRProblemTpl(allocator_type alloc = {})
+  explicit LqrProblemTpl(allocator_type alloc = {})
       : stages(alloc), G0(NULL, 0, 0), g0(NULL, 0) {}
 
   /// @brief This constructor will take the knots as-is, copying their specified
   /// allocator.
-  LQRProblemTpl(const KnotVector &knots, long nc0);
-  LQRProblemTpl(KnotVector &&knots, long nc0);
+  LqrProblemTpl(const KnotVector &knots, long nc0);
+  LqrProblemTpl(KnotVector &&knots, long nc0);
 
-  LQRProblemTpl(const LQRProblemTpl &other) = delete;
+  LqrProblemTpl(const LqrProblemTpl &other) = delete;
   /// @brief Move constructor - we steal the allocator from the source object.
-  LQRProblemTpl(LQRProblemTpl &&other);
+  LqrProblemTpl(LqrProblemTpl &&other);
 
-  ~LQRProblemTpl();
+  ~LqrProblemTpl();
 
   void addParameterization(uint nth) {
     if (stages.empty())
