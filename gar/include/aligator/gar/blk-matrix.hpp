@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
 /// @author Wilson Jallet
 #pragma once
 
