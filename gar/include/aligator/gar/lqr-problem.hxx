@@ -225,7 +225,7 @@ bool LQRKnotTpl<Scalar>::isApprox(const LQRKnotTpl &other, Scalar prec) const {
 
 template <typename Scalar>
 LQRProblemTpl<Scalar>::LQRProblemTpl(const KnotVector &knots, long nc0)
-    : stages(knots),
+    : stages(knots, knots.get_allocator()),
       G0(allocate_eigen_map<MatrixXs>(get_allocator(), nc0,
                                       knots.empty() ? 0 : knots[0].nx)),
       g0(allocate_eigen_map<VectorXs>(get_allocator(), nc0)),
@@ -233,7 +233,7 @@ LQRProblemTpl<Scalar>::LQRProblemTpl(const KnotVector &knots, long nc0)
 
 template <typename Scalar>
 LQRProblemTpl<Scalar>::LQRProblemTpl(KnotVector &&knots, long nc0)
-    : stages(knots),
+    : stages(knots, knots.get_allocator()),
       G0(allocate_eigen_map<MatrixXs>(get_allocator(), nc0,
                                       knots.empty() ? 0 : knots[0].nx)),
       g0(allocate_eigen_map<VectorXs>(get_allocator(), nc0)),
@@ -282,7 +282,7 @@ Scalar LQRProblemTpl<Scalar>::evaluate(
   if (theta_.has_value()) {
     ConstVectorRef th = theta_.value();
     for (uint i = 0; i <= N; i++) {
-      const LQRKnotTpl<Scalar> &knot = stages[i];
+      const KnotType &knot = stages[i];
       ret += 0.5 * th.dot(knot.Gth * th);
       ret += th.dot(knot.Gx.transpose() * xs[i]);
       ret += th.dot(knot.gamma);
