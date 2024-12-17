@@ -18,7 +18,7 @@ def random_unit(size):
 
 
 def create_knot(nx, nu):
-    knot = gar.LQRKnot(nx, nu, 0)
+    knot = gar.LqrKnot(nx, nu, 0)
     knot.Q[:] = np.eye(nx) * 1e-3
     knot.R[:] = np.eye(nu) * 0.1
     th = 0.156

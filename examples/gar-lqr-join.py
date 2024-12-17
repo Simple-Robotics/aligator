@@ -28,7 +28,7 @@ r_ = np.random.randn(nu)
 
 
 def knot_get_default(nx, nu, nc):
-    knot = gar.LQRKnot(nx, nu, nc)
+    knot = gar.LqrKnot(nx, nu, nc)
     knot.Q[:] = Q_
     knot.q[:] = -Q_ @ xbar
     knot.R[:] = np.eye(nu) * 0.1
@@ -117,7 +117,7 @@ us3 = sol3["us"]
 
 # compute error
 def computeError():
-    kn: gar.LQRKnot = knots1[-1]
+    kn: gar.LqrKnot = knots1[-1]
     knp = knots1[-2]
     x_ = xs1[-1]
     u_ = us1[-1]
@@ -144,7 +144,7 @@ def computeError():
     print("gu:", gu)
     print("gx:", gx)
     # second leg
-    knn: gar.LQRKnot = knots2[0]
+    knn: gar.LqrKnot = knots2[0]
     gxn = knn.q + knn.Q @ xs2[0] + knn.S @ us2[0] + knn.A.T @ ls2[1]
     gxn += kn.E.T @ thopt
     print("gxn:", gxn)

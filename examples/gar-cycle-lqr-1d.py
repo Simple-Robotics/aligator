@@ -14,7 +14,7 @@ nu = 1
 
 
 def create_knot(nx, nu):
-    knot = gar.LQRKnot(nx, nu, 0)
+    knot = gar.LqrKnot(nx, nu, 0)
     knot.Q[:] = np.eye(nx) * 0.01
     knot.R[:] = np.eye(nu) * 0.01
     knot.r[:] = (2 * np.random.rand(nx) - 1) * 0.01
