@@ -7,6 +7,7 @@
 #include "aligator/core/traj-opt-data.hpp"
 #include "aligator/gar/lqr-problem.hpp"
 #include "aligator/gar/utils.hpp"
+
 namespace aligator {
 
 template <typename Scalar>
@@ -36,15 +37,16 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   active_constraints.resize(nsteps + 1);
   cstr_proj_jacs.resize(nsteps + 1);
 
-  {
-    for (size_t i = 0; i < nsteps; i++) {
-      const StageModel &stage = *problem.stages_[i];
-      knots.emplace_back(stage.ndx1(), stage.nu(), stage.nc());
-    }
+  polymorphic_allocator alloc{};
+  typename LqrProblemType::KnotVector knots{alloc};
 
-    knots.emplace_back(internal::problem_last_ndx_helper(problem), 0,
-                       problem.term_cstrs_.totalDim(), 0);
+  for (size_t i = 0; i < nsteps; i++) {
+    const StageModel &stage = *problem.stages_[i];
+    knots.emplace_back(stage.ndx1(), stage.nu(), stage.nc());
   }
+
+  knots.emplace_back(internal::problem_last_ndx_helper(problem), 0,
+                     problem.term_cstrs_.totalDim(), 0);
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
@@ -70,7 +72,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 
   // initial condition
   long nc0 = (long)problem.init_constraint_->nr;
-  lqr_problem = LQRProblemType(knots, nc0);
+  lqr_problem.~LqrProblemType();
+  new (&lqr_problem) LqrProblemType(knots, nc0);
   std::tie(dxs, dus, dvs, dlams) =
       gar::lqrInitializeSolution(lqr_problem); // lqr subproblem variables
   Lxs = dxs;
@@ -116,9 +119,11 @@ void WorkspaceTpl<Scalar>::cycleAppend(const TrajOptProblemTpl<Scalar> &problem,
   stage_infeasibilities = trial_vs;
 
   shifted_constraints = prev_vs;
-  rotate_vec_left(knots, 0, 1);
-  knots[nsteps - 1] = gar::LQRKnotTpl<double>(
-      uint(stage.ndx1()), uint(stage.nu()), uint(stage.nc()));
+  rotate_vec_left(lqr_problem.stages, 0, 1);
+  // move assignment, will perform a copy if necessary
+  lqr_problem.stages[nsteps - 1] =
+      KnotType(uint(stage.ndx1()), uint(stage.nu()), uint(stage.nc()),
+               lqr_problem.get_allocator());
 
   rotate_vec_left(cstr_product_sets, 0, 1);
   cstr_product_sets[nsteps - 1] =
@@ -130,8 +135,6 @@ void WorkspaceTpl<Scalar>::cycleAppend(const TrajOptProblemTpl<Scalar> &problem,
   active_constraints[nsteps - 1].setZero(stage.nc());
 
   // initial condition
-  long nc0 = (long)problem.init_constraint_->nr;
-  lqr_problem = LQRProblemType(knots, nc0);
   std::tie(dxs, dus, dvs, dlams) =
       gar::lqrInitializeSolution(lqr_problem); // lqr subproblem variables
 
