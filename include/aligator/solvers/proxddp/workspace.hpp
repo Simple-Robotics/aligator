@@ -33,14 +33,13 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using KnotType = gar::LQRKnotTpl<Scalar>;
   using ConstraintSetProduct = proxsuite::nlp::ConstraintSetProductTpl<Scalar>;
   using BlkJacobianType = BlkMatrix<MatrixXs, -1, 2>; // jacobians
-  using LQRProblemType = gar::LQRProblemTpl<Scalar>;
+  using LqrProblemType = gar::LQRProblemTpl<Scalar>;
 
   using Base::dyn_slacks;
   using Base::nsteps;
   using Base::problem_data;
 
-  typename LQRProblemType::KnotVector knots;
-  gar::LQRProblemTpl<Scalar> lqr_problem; //< Linear-quadratic subproblem
+  LqrProblemType lqr_problem; //< Linear-quadratic subproblem
 
   /// @name Lagrangian Gradients
   /// @{
