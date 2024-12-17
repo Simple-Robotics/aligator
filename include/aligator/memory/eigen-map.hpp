@@ -1,6 +1,6 @@
 #pragma once
 
-#include "memory-allocator.hpp"
+#include "aligator/memory/allocator.hpp"
 #include <new>
 
 namespace aligator {

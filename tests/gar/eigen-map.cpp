@@ -1,7 +1,7 @@
 #include <Eigen/Core>
 #include <boost/test/unit_test.hpp>
 
-#include "aligator/gar/eigen-map-management.hpp"
+#include "aligator/memory/eigen-map.hpp"
 
 static aligator::polymorphic_allocator alloc{};
 using Eigen::MatrixXd;

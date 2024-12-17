@@ -2,7 +2,7 @@
 #pragma once
 
 #include "aligator/math.hpp"
-#include "memory-allocator.hpp"
+#include "aligator/memory/allocator.hpp"
 #include "tags.hpp"
 #include <fmt/format.h>
 
