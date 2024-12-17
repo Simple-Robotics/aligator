@@ -6,7 +6,7 @@
 namespace aligator {
 
 template <typename MatrixType, int Alignment = Eigen::AlignedMax>
-auto allocate_eigen_map(polymorphic_allocator &alloc, Eigen::Index rows,
+auto allocate_eigen_map(polymorphic_allocator alloc, Eigen::Index rows,
                         Eigen::Index cols) {
   using MapType = Eigen::Map<MatrixType, Alignment>;
   using Scalar = typename MatrixType::Scalar;
@@ -16,7 +16,7 @@ auto allocate_eigen_map(polymorphic_allocator &alloc, Eigen::Index rows,
 }
 
 template <typename MatrixType, int Alignment = Eigen::AlignedMax>
-auto allocate_eigen_map(polymorphic_allocator &alloc, Eigen::Index size) {
+auto allocate_eigen_map(polymorphic_allocator alloc, Eigen::Index size) {
   using MapType = Eigen::Map<MatrixType, Alignment>;
   using Scalar = typename MatrixType::Scalar;
   Scalar *data = alloc.allocate<Scalar>(size_t(size), Alignment);
@@ -68,7 +68,7 @@ void emplace_map_from_data(Eigen::Map<MatrixType, Alignment> &map,
 template <typename MatrixType, int Alignment>
 void emplace_allocated_map(Eigen::Map<MatrixType, Alignment> &map,
                            Eigen::Index rows, Eigen::Index cols,
-                           polymorphic_allocator &alloc) {
+                           polymorphic_allocator alloc) {
   using Scalar = typename MatrixType::Scalar;
   Scalar *data = alloc.template allocate<Scalar>(size_t(rows * cols));
   emplace_map_from_data(map, rows, cols, data);
@@ -77,7 +77,7 @@ void emplace_allocated_map(Eigen::Map<MatrixType, Alignment> &map,
 /// @copybrief emplace_allocated_map()
 template <typename MatrixType, int Alignment>
 void emplace_allocated_map(Eigen::Map<MatrixType, Alignment> &map,
-                           Eigen::Index size, polymorphic_allocator &alloc) {
+                           Eigen::Index size, polymorphic_allocator alloc) {
   using Scalar = typename MatrixType::Scalar;
   Scalar *data = alloc.template allocate<Scalar>(size_t(size), Alignment);
   emplace_map_from_data(map, size, data);
@@ -86,7 +86,7 @@ void emplace_allocated_map(Eigen::Map<MatrixType, Alignment> &map,
 template <typename MatrixType, int Alignment>
 void emplace_resize_map(Eigen::Map<MatrixType, Alignment> &map,
                         Eigen::Index rows, Eigen::Index cols,
-                        polymorphic_allocator &alloc) {
+                        polymorphic_allocator alloc) {
   EIGEN_STATIC_ASSERT_DYNAMIC_SIZE(MatrixType);
   using MapType = Eigen::Map<MatrixType, Alignment>;
   using Scalar = typename MatrixType::Scalar;
@@ -102,7 +102,7 @@ void emplace_resize_map(Eigen::Map<MatrixType, Alignment> &map,
 
 template <typename MatrixType, int Alignment>
 void deallocate_map(Eigen::Map<MatrixType, Alignment> &map,
-                    polymorphic_allocator &alloc) {
+                    polymorphic_allocator alloc) {
   EIGEN_STATIC_ASSERT_DYNAMIC_SIZE(MatrixType);
   using Scalar = typename MatrixType::Scalar;
   size_t dealloc_size = size_t(map.size());
@@ -114,7 +114,7 @@ void deallocate_map(Eigen::Map<MatrixType, Alignment> &map,
 template <typename MatrixType, int Alignment>
 void emplace_map_copy(Eigen::Map<MatrixType, Alignment> &map,
                       const Eigen::Map<MatrixType, Alignment> &other,
-                      polymorphic_allocator &alloc) {
+                      polymorphic_allocator alloc) {
   if constexpr (MatrixType::IsVectorAtCompileTime) {
     emplace_allocated_map(map, other.size(), alloc);
   } else {
