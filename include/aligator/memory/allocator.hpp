@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2024 INRIA
 #pragma once
 
 #include <Eigen/Core>
