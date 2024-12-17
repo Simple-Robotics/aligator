@@ -71,6 +71,40 @@ BOOST_FIXTURE_TEST_CASE(gen_knot, knot_fixture) {
   this->knot = std::move(knot2);
 }
 
+BOOST_AUTO_TEST_CASE(copy_assignment_diff_allocator) {
+  // test copying data from a different allocator
+  knot_t knot{2, 2, 0, alloc};
+  BOOST_CHECK(knot.get_allocator() == alloc);
+
+  aligator::polymorphic_allocator default_alloc{};
+  knot_t knot2{4, 2, 1, default_alloc};
+  knot = knot2;
+  BOOST_CHECK(knot.get_allocator() == alloc);
+  BOOST_CHECK(knot.nx == 4);
+  BOOST_CHECK(knot.nu == 2);
+  BOOST_CHECK(knot.nc == 1);
+
+  BOOST_CHECK(knot.q.rows() == 4);
+  BOOST_CHECK(knot.r.rows() == 2);
+  BOOST_CHECK(knot.d.rows() == 1);
+}
+
+BOOST_AUTO_TEST_CASE(move_assignment_diff_allocator) {
+  // test copying data from a different allocator
+  knot_t knot{2, 2, 0, alloc};
+  BOOST_CHECK(knot.get_allocator() == alloc);
+
+  aligator::polymorphic_allocator default_alloc{};
+  knot = generate_knot(2, 2, 0, default_alloc);
+  BOOST_CHECK(knot.get_allocator() == alloc);
+
+  // different dimensions: force reallocation
+  knot = generate_knot(4, 1, 0, default_alloc);
+  BOOST_CHECK(knot.get_allocator() == alloc);
+  BOOST_CHECK(knot.nx == 4);
+  BOOST_CHECK(knot.nu == 1);
+}
+
 BOOST_AUTO_TEST_SUITE(knot_vec)
 
 BOOST_AUTO_TEST_CASE(basic) {
