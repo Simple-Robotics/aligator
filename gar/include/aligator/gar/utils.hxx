@@ -4,7 +4,7 @@
 namespace aligator::gar {
 
 template <typename Scalar>
-void lqrCreateSparseMatrix(const LQRProblemTpl<Scalar> &problem,
+void lqrCreateSparseMatrix(const LqrProblemTpl<Scalar> &problem,
                            const Scalar mudyn, const Scalar mueq,
                            Eigen::SparseMatrix<Scalar> &mat,
                            Eigen::Matrix<Scalar, -1, 1> &rhs, bool update) {
@@ -93,7 +93,7 @@ void lqrCreateSparseMatrix(const LQRProblemTpl<Scalar> &problem,
 
 template <typename Scalar>
 std::array<Scalar, 3> lqrComputeKktError(
-    const LQRProblemTpl<Scalar> &problem,
+    const LqrProblemTpl<Scalar> &problem,
     boost::span<const typename math_types<Scalar>::VectorXs> xs,
     boost::span<const typename math_types<Scalar>::VectorXs> us,
     boost::span<const typename math_types<Scalar>::VectorXs> vs,
@@ -192,7 +192,7 @@ std::array<Scalar, 3> lqrComputeKktError(
 }
 
 template <typename Scalar>
-bool lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
+bool lqrDenseMatrix(const LqrProblemTpl<Scalar> &problem, Scalar mudyn,
                     Scalar mueq, typename math_types<Scalar>::MatrixXs &mat,
                     typename math_types<Scalar>::VectorXs &rhs) {
   using knot_t = LqrKnotTpl<Scalar>;

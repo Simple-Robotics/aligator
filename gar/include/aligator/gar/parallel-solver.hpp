@@ -34,7 +34,7 @@ public:
   using BlkMat = BlkMatrix<MatrixXs, -1, -1>;
   using BlkVec = BlkMatrix<VectorXs, -1, 1>;
 
-  explicit ParallelRiccatiSolver(LQRProblemTpl<Scalar> &problem,
+  explicit ParallelRiccatiSolver(LqrProblemTpl<Scalar> &problem,
                                  const uint num_threads);
 
   void allocateLeg(uint start, uint end, bool last_leg);
@@ -101,7 +101,7 @@ public:
   void initializeTridiagSystem(const std::vector<long> &dims);
 
 protected:
-  LQRProblemTpl<Scalar> *problem_;
+  LqrProblemTpl<Scalar> *problem_;
 };
 #endif
 

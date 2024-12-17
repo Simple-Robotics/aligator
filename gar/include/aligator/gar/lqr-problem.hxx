@@ -264,7 +264,7 @@ bool LqrKnotTpl<Scalar>::isApprox(const LqrKnotTpl &other, Scalar prec) const {
 }
 
 template <typename Scalar>
-LQRProblemTpl<Scalar>::LQRProblemTpl(const KnotVector &knots, long nc0)
+LqrProblemTpl<Scalar>::LqrProblemTpl(const KnotVector &knots, long nc0)
     : stages(knots, knots.get_allocator()),
       G0(allocate_eigen_map<MatrixXs>(get_allocator(), nc0,
                                       knots.empty() ? 0 : knots[0].nx)),
@@ -272,7 +272,7 @@ LQRProblemTpl<Scalar>::LQRProblemTpl(const KnotVector &knots, long nc0)
       m_is_invalid(false) {}
 
 template <typename Scalar>
-LQRProblemTpl<Scalar>::LQRProblemTpl(KnotVector &&knots, long nc0)
+LqrProblemTpl<Scalar>::LqrProblemTpl(KnotVector &&knots, long nc0)
     : stages(knots, knots.get_allocator()),
       G0(allocate_eigen_map<MatrixXs>(get_allocator(), nc0,
                                       knots.empty() ? 0 : knots[0].nx)),
@@ -280,13 +280,13 @@ LQRProblemTpl<Scalar>::LQRProblemTpl(KnotVector &&knots, long nc0)
       m_is_invalid(false) {}
 
 template <typename Scalar>
-LQRProblemTpl<Scalar>::LQRProblemTpl(LQRProblemTpl &&other)
+LqrProblemTpl<Scalar>::LqrProblemTpl(LqrProblemTpl &&other)
     : stages(std::move(other.stages)), G0(std::move(other.G0)),
       g0(std::move(other.g0)), m_is_invalid(false) {
   other.m_is_invalid = true;
 }
 
-template <typename Scalar> LQRProblemTpl<Scalar>::~LQRProblemTpl() {
+template <typename Scalar> LqrProblemTpl<Scalar>::~LqrProblemTpl() {
   if (!m_is_invalid) {
     deallocate_map(G0, get_allocator());
     deallocate_map(g0, get_allocator());
@@ -294,7 +294,7 @@ template <typename Scalar> LQRProblemTpl<Scalar>::~LQRProblemTpl() {
 }
 
 template <typename Scalar>
-Scalar LQRProblemTpl<Scalar>::evaluate(
+Scalar LqrProblemTpl<Scalar>::evaluate(
     const VectorOfVectors &xs, const VectorOfVectors &us,
     const std::optional<ConstVectorRef> &theta_) const {
   if (xs.size() != horizon() + 1)

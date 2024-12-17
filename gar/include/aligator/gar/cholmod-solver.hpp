@@ -15,7 +15,7 @@ template <typename _Scalar> class CholmodLqSolver {
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using Problem = LQRProblemTpl<Scalar>;
+  using Problem = LqrProblemTpl<Scalar>;
   using SparseType = Eigen::SparseMatrix<Scalar>;
   using Triplet = Eigen::Triplet<Scalar>;
 

@@ -35,7 +35,7 @@ T = 20
 base_knot = create_knot(nx, nu)
 knots = [base_knot for _ in range(T)]
 knots.append(create_knot(nx, 0))
-prob = gar.LQRProblem(knots, 0)
+prob = gar.LqrProblem(knots, 0)
 
 PARAM_DIM = nx
 prob.addParameterization(PARAM_DIM)
