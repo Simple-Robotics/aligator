@@ -96,7 +96,7 @@ void exposeGAR() {
 
   StdVectorPythonVisitor<knot_vec_t, false>::expose("StdVec_LQRKnot");
 
-  bp::class_<lqr_t>("LQRProblem", bp::no_init)
+  bp::class_<lqr_t, boost::noncopyable>("LQRProblem", bp::no_init)
       .def(bp::init<const knot_vec_t &, long>(("self"_a, "stages", "nc0")))
       .def_readwrite("stages", &lqr_t::stages)
       .add_property("horizon", &lqr_t::horizon)
@@ -111,8 +111,7 @@ void exposeGAR() {
       .add_property("ntheta", &lqr_t::ntheta)
       .def("evaluate", &lqr_t::evaluate,
            ("self"_a, "xs", "us", "theta"_a = std::nullopt),
-           "Evaluate the problem objective.")
-      .def(CopyableVisitor<lqr_t>());
+           "Evaluate the problem objective.");
 
   bp::class_<riccati_base_t, boost::noncopyable>("RiccatiSolverBase",
                                                  bp::no_init)
