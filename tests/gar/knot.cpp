@@ -71,7 +71,9 @@ BOOST_FIXTURE_TEST_CASE(gen_knot, knot_fixture) {
   this->knot = std::move(knot2);
 }
 
-BOOST_AUTO_TEST_CASE(knot_vec) {
+BOOST_AUTO_TEST_SUITE(knot_vec)
+
+BOOST_AUTO_TEST_CASE(basic) {
   uint nx = 4;
   uint nu = 2;
   std::vector<knot_t> v;
@@ -84,17 +86,39 @@ BOOST_AUTO_TEST_CASE(knot_vec) {
     fmt::println("v [{:d}].q = {}", i, v[i].q.transpose());
   }
 
-  std::vector<knot_t> v2 = std::move(v);
+  std::vector<knot_t> vm = std::move(v);
   for (size_t i = 0; i < 10; i++) {
-    fmt::println("v2[{:d}].q = {}", i, v2[i].q.transpose());
+    fmt::println("v2[{:d}].q = {}", i, vm[i].q.transpose());
   }
 
-  std::vector<knot_t> vc{v2};
+  std::vector<knot_t> vc{vm};
   for (size_t i = 0; i < 10; i++) {
     fmt::println("vc[{:d}].q = {}", i, vc[i].q.transpose());
-    BOOST_CHECK_EQUAL(v2[i], vc[i]);
+    BOOST_CHECK_EQUAL(vm[i], vc[i]);
   }
 }
+
+BOOST_AUTO_TEST_CASE(emplace) {
+  uint nx = 5;
+  uint nu = 2;
+  uint nc = 1;
+  std::pmr::vector<knot_t> vpmr{alloc};
+  BOOST_CHECK(vpmr.get_allocator() == alloc);
+  BOOST_CHECK(vpmr.get_allocator().resource() == &rs);
+
+  for (size_t i = 0; i < 20; i++) {
+    auto &knot = vpmr.emplace_back(nx, nu, nc);
+    BOOST_CHECK_EQUAL(knot.nx, nx);
+    BOOST_CHECK_EQUAL(knot.nu, nu);
+    BOOST_CHECK_EQUAL(knot.nc, nc);
+    BOOST_CHECK_EQUAL(knot.nx2, nx);
+    BOOST_CHECK(knot.get_allocator() == alloc);
+  }
+
+  BOOST_CHECK_EQUAL(vpmr.size(), 20);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_CASE(problem) {
   BOOST_TEST_MESSAGE("problem");
