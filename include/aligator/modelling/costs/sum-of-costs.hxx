@@ -48,10 +48,10 @@ template <typename Scalar>
 auto CostStackTpl<Scalar>::addCost(const CostKey &key, const PolyCost &cost,
                                    const Scalar weight) -> CostItem & {
   if (!this->checkDimension(*cost)) {
-    ALIGATOR_DOMAIN_ERROR(fmt::format(
+    ALIGATOR_DOMAIN_ERROR(
         "Cannot add new component due to inconsistent input dimensions "
         "(got ({:d}, {:d}), expected ({:d}, {:d}))",
-        cost->ndx(), cost->nu, this->ndx(), this->nu));
+        cost->ndx(), cost->nu, this->ndx(), this->nu);
   }
   components_.emplace(key, std::make_pair(cost, weight));
   return components_.at(key);
