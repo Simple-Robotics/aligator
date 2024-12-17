@@ -6,6 +6,13 @@
 namespace aligator {
 
 using byte_t = unsigned char;
+
+/// @brief A convenience subclass of @ref std::pmr::polymorphic_allocator for
+/// bytes.
+/// @details This subclass adds templated @ref allocate() and @ref deallocate()
+/// methods which take the desired pointer alignment as argument. This extends
+/// the standard C++ allocator API for convenience use with allocating buffers
+/// in vectorized linear algbera.
 class polymorphic_allocator : public std::pmr::polymorphic_allocator<byte_t> {
 public:
   using base = std::pmr::polymorphic_allocator<byte_t>;
