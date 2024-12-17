@@ -22,7 +22,7 @@ public:
   using BlkMat44 = BlkMatrix<MatrixXs, 4, 4>;
   using BlkRowMat41 = BlkMatrix<RowMatrixXs, 4, 1>;
   using BlkVec4 = BlkMatrix<VectorXs, 4, 1>;
-  using KnotType = LQRKnotTpl<Scalar>;
+  using KnotType = LqrKnotTpl<Scalar>;
 
   std::vector<BlkMat44> kkts;
   std::vector<BlkVec4> ffs;
@@ -43,7 +43,7 @@ public:
   VectorXs thGrad;
   MatrixXs thHess;
 
-  explicit RiccatiSolverDense(const LQRProblemTpl<Scalar> &problem);
+  explicit RiccatiSolverDense(const LqrProblemTpl<Scalar> &problem);
 
   bool backward(const Scalar mudyn, const Scalar mueq);
 
@@ -57,7 +57,7 @@ public:
 
 protected:
   void init_factor(const KnotType &knot);
-  const LQRProblemTpl<Scalar> *problem_;
+  const LqrProblemTpl<Scalar> *problem_;
 };
 
 } // namespace aligator::gar

@@ -5,8 +5,8 @@
 #include <random>
 
 ALIGATOR_DYNAMIC_TYPEDEFS(double);
-using problem_t = aligator::gar::LQRProblemTpl<double>;
-using knot_t = aligator::gar::LQRKnotTpl<double>;
+using problem_t = aligator::gar::LqrProblemTpl<double>;
+using knot_t = aligator::gar::LqrKnotTpl<double>;
 using aligator::math::infty_norm;
 
 struct KktError {

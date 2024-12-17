@@ -20,9 +20,9 @@ public:
   using StageFactorType = StageFactor<Scalar>;
   using value_t = typename StageFactorType::value_t;
   using kkt0_t = typename Impl::kkt0_t;
-  using KnotType = LQRKnotTpl<Scalar>;
+  using KnotType = LqrKnotTpl<Scalar>;
 
-  explicit ProximalRiccatiSolver(const LQRProblemTpl<Scalar> &problem);
+  explicit ProximalRiccatiSolver(const LqrProblemTpl<Scalar> &problem);
 
   /// Backward sweep.
   bool backward(const Scalar mudyn, const Scalar mueq);
@@ -40,7 +40,7 @@ public:
   MatrixXs thHess; //< optimal value Hessian wrt parameter
 
 protected:
-  const LQRProblemTpl<Scalar> *problem_;
+  const LqrProblemTpl<Scalar> *problem_;
 };
 
 } // namespace gar

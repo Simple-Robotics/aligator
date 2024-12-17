@@ -4,7 +4,7 @@
 
 namespace aligator::python {
 
-using lqr_t = gar::LQRProblemTpl<context::Scalar>;
+using lqr_t = gar::LqrProblemTpl<context::Scalar>;
 using cholmod_solver_t = gar::CholmodLqSolver<context::Scalar>;
 
 void exposeCholmodSolver() {

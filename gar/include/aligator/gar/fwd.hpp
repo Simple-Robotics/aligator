@@ -6,8 +6,8 @@ namespace aligator {
 namespace gar {
 // FORWARD DECLARATIONS
 
-template <typename Scalar> struct LQRKnotTpl;
-template <typename Scalar> struct LQRProblemTpl;
+template <typename Scalar> struct LqrKnotTpl;
+template <typename Scalar> struct LqrProblemTpl;
 template <typename Scalar> class RiccatiSolverBase;
 } // namespace gar
 } // namespace aligator

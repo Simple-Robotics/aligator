@@ -6,7 +6,7 @@
 
 namespace aligator {
 namespace gar {
-extern template struct LQRKnotTpl<context::Scalar>;
-extern template struct LQRProblemTpl<context::Scalar>;
+extern template struct LqrKnotTpl<context::Scalar>;
+extern template struct LqrProblemTpl<context::Scalar>;
 } // namespace gar
 } // namespace aligator

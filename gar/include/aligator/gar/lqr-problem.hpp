@@ -27,7 +27,7 @@ namespace gar {
 ///   Cx + Du + d = 0.
 /// \f\]
 ///
-template <typename Scalar> struct LQRKnotTpl {
+template <typename Scalar> struct LqrKnotTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   static constexpr int Alignment = Eigen::AlignedMax;
   using VectorMap = Eigen::Map<VectorXs, Alignment>;
@@ -53,38 +53,38 @@ template <typename Scalar> struct LQRKnotTpl {
   MatrixMap Gv;
   VectorMap gamma;
 
-  LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth,
+  LqrKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth,
              allocator_type alloc = {});
 
   /// @brief Delegating constructor, assumes @ref nth = 0.
-  LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, allocator_type alloc = {})
-      : LQRKnotTpl(nx, nu, nc, nx2, 0, alloc) {}
+  LqrKnotTpl(uint nx, uint nu, uint nc, uint nx2, allocator_type alloc = {})
+      : LqrKnotTpl(nx, nu, nc, nx2, 0, alloc) {}
 
   /// @brief Delegating constructor, assumes @ref nx2 = nx, and @ref nth = 0.
-  LQRKnotTpl(uint nx, uint nu, uint nc, allocator_type alloc = {})
-      : LQRKnotTpl(nx, nu, nc, nx, 0, alloc) {}
+  LqrKnotTpl(uint nx, uint nu, uint nc, allocator_type alloc = {})
+      : LqrKnotTpl(nx, nu, nc, nx, 0, alloc) {}
 
   /// @brief Copy constructor. Allocator must be given.
-  LQRKnotTpl(const LQRKnotTpl &other, allocator_type alloc = {});
+  LqrKnotTpl(const LqrKnotTpl &other, allocator_type alloc = {});
   /// @brief Move constructor. Allocator will be moved from other. Other will be
   /// have @ref m_empty_after_move set to true.
-  LQRKnotTpl(LQRKnotTpl &&other);
+  LqrKnotTpl(LqrKnotTpl &&other);
   /// @brief Copy assignment. Current allocator will be reused if required.
-  LQRKnotTpl &operator=(const LQRKnotTpl &other);
+  LqrKnotTpl &operator=(const LqrKnotTpl &other);
   /// @brief Move assignment. Other allocator will be stolen.
-  LQRKnotTpl &operator=(LQRKnotTpl &&);
+  LqrKnotTpl &operator=(LqrKnotTpl &&);
 
-  ~LQRKnotTpl();
+  ~LqrKnotTpl();
 
-  void assign(const LQRKnotTpl<Scalar> &other);
+  void assign(const LqrKnotTpl<Scalar> &other);
 
   // reallocates entire buffer for contigousness
-  LQRKnotTpl &addParameterization(uint nth);
+  LqrKnotTpl &addParameterization(uint nth);
 
-  bool isApprox(const LQRKnotTpl &other,
+  bool isApprox(const LqrKnotTpl &other,
                 Scalar prec = std::numeric_limits<Scalar>::epsilon()) const;
 
-  friend bool operator==(const LQRKnotTpl &lhs, const LQRKnotTpl &rhs) {
+  friend bool operator==(const LqrKnotTpl &lhs, const LqrKnotTpl &rhs) {
     return lhs.isApprox(rhs);
   }
 
@@ -93,7 +93,7 @@ template <typename Scalar> struct LQRKnotTpl {
   inline bool empty_after_move() const { return m_empty_after_move; }
 
 private:
-  explicit LQRKnotTpl(no_alloc_t, allocator_type alloc = {});
+  explicit LqrKnotTpl(no_alloc_t, allocator_type alloc = {});
   /// Deallocation helper. Used in constructor and copy assignment op.
   void deallocate();
   /// Whether the current knot is not allocated
@@ -101,10 +101,10 @@ private:
   allocator_type m_allocator;
 };
 
-template <typename Scalar> struct LQRProblemTpl {
+template <typename Scalar> struct LqrProblemTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   static constexpr int Alignment = Eigen::AlignedMax;
-  using KnotType = LQRKnotTpl<Scalar>;
+  using KnotType = LqrKnotTpl<Scalar>;
   using KnotVector = std::pmr::vector<KnotType>;
   using allocator_type = polymorphic_allocator;
   using VectorMap = Eigen::Map<VectorXs, Alignment>;
@@ -117,19 +117,19 @@ template <typename Scalar> struct LQRProblemTpl {
   /// @brief Dimension of the initial condition constraint.
   inline uint nc0() const noexcept { return (uint)g0.rows(); }
 
-  explicit LQRProblemTpl(allocator_type alloc = {})
+  explicit LqrProblemTpl(allocator_type alloc = {})
       : stages(alloc), G0(NULL, 0, 0), g0(NULL, 0) {}
 
   /// @brief This constructor will take the knots as-is, copying their specified
   /// allocator.
-  LQRProblemTpl(const KnotVector &knots, long nc0);
-  LQRProblemTpl(KnotVector &&knots, long nc0);
+  LqrProblemTpl(const KnotVector &knots, long nc0);
+  LqrProblemTpl(KnotVector &&knots, long nc0);
 
-  LQRProblemTpl(const LQRProblemTpl &other) = delete;
+  LqrProblemTpl(const LqrProblemTpl &other) = delete;
   /// @brief Move constructor - we steal the allocator from the source object.
-  LQRProblemTpl(LQRProblemTpl &&other);
+  LqrProblemTpl(LqrProblemTpl &&other);
 
-  ~LQRProblemTpl();
+  ~LqrProblemTpl();
 
   void addParameterization(uint nth) {
     if (stages.empty())
@@ -159,15 +159,15 @@ private:
 };
 
 template <typename Scalar>
-bool lqrKnotsSameDim(const LQRKnotTpl<Scalar> &lhs,
-                     const LQRKnotTpl<Scalar> &rhs) {
+bool lqrKnotsSameDim(const LqrKnotTpl<Scalar> &lhs,
+                     const LqrKnotTpl<Scalar> &rhs) {
   return (lhs.nx == rhs.nx) && (lhs.nu == rhs.nu) && (lhs.nc == rhs.nc) &&
          (lhs.nx2 == rhs.nx2) && (lhs.nth == rhs.nth);
 }
 
 template <typename Scalar>
-std::ostream &operator<<(std::ostream &oss, const LQRKnotTpl<Scalar> &self) {
-  oss << "LQRKnot {";
+std::ostream &operator<<(std::ostream &oss, const LqrKnotTpl<Scalar> &self) {
+  oss << "LqrKnot {";
   oss << fmt::format("\n  nx:  {:d}", self.nx) //
       << fmt::format("\n  nu:  {:d}", self.nu) //
       << fmt::format("\n  nc:  {:d}", self.nc);

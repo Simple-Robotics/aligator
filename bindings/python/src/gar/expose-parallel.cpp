@@ -10,8 +10,8 @@ namespace python {
 using namespace gar;
 using context::Scalar;
 using riccati_base_t = RiccatiSolverBase<Scalar>;
-using knot_t = LQRKnotTpl<context::Scalar>;
-using lqr_t = LQRProblemTpl<context::Scalar>;
+using knot_t = LqrKnotTpl<context::Scalar>;
+using lqr_t = LqrProblemTpl<context::Scalar>;
 
 void exposeParallelSolver() {
 #ifdef ALIGATOR_MULTITHREADING
