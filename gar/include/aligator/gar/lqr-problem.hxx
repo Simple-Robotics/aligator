@@ -147,6 +147,11 @@ LQRKnotTpl<Scalar> &LQRKnotTpl<Scalar>::operator=(const LQRKnotTpl &other) {
 #undef _c
     m_empty_after_move = false;
   }
+  this->nx = other.nx;
+  this->nu = other.nu;
+  this->nc = other.nc;
+  this->nx2 = other.nx2;
+  this->nth = other.nth;
   return *this;
 }
 
