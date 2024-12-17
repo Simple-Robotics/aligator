@@ -242,8 +242,8 @@ LqrKnotTpl<Scalar> &LqrKnotTpl<Scalar>::addParameterization(uint nth) {
 
   emplace_allocated_map(Gth, nth, nth, m_allocator);
   emplace_allocated_map(Gx, nx, nth, m_allocator);
-  emplace_allocated_map(Gu, nx, nu, m_allocator);
-  emplace_allocated_map(Gv, nx, nc, m_allocator);
+  emplace_allocated_map(Gu, nu, nth, m_allocator);
+  emplace_allocated_map(Gv, nc, nth, m_allocator);
   emplace_allocated_map(gamma, nth, m_allocator);
   return *this;
 }
