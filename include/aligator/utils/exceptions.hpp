@@ -8,9 +8,9 @@
   throw ::aligator::RuntimeError(                                              \
       ::aligator::detail::exception_msg(__FILE__, __LINE__, __VA_ARGS__))
 
-#define ALIGATOR_DOMAIN_ERROR(msg)                                             \
+#define ALIGATOR_DOMAIN_ERROR(...)                                             \
   throw std::domain_error(                                                     \
-      ::aligator::detail::exception_msg(__FILE__, __LINE__, msg))
+      ::aligator::detail::exception_msg(__FILE__, __LINE__, __VA_ARGS__))
 
 #define ALIGATOR_WARNING(loc, ...)                                             \
   ::aligator::detail::warning_call(loc, __FUNCTION__, __VA_ARGS__)
