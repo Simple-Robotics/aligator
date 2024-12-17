@@ -5,7 +5,7 @@
 
 namespace aligator {
 
-using byte_t = unsigned char;
+using byte_t = std::byte;
 
 /// @brief A convenience subclass of @ref std::pmr::polymorphic_allocator for
 /// bytes.
