@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lqr-problem.hpp"
-#include "eigen-map-management.hpp"
+#include "aligator/memory/eigen-map.hpp"
 
 namespace aligator::gar {
 
