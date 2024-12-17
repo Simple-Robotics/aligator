@@ -22,7 +22,7 @@ void RiccatiSolverDense<Scalar>::init_factor(const KnotType &knot) {
 
 template <typename Scalar>
 RiccatiSolverDense<Scalar>::RiccatiSolverDense(
-    const LQRProblemTpl<Scalar> &problem)
+    const LqrProblemTpl<Scalar> &problem)
     : Base(), problem_(&problem) {
   auto N = (uint)problem_->horizon();
   const auto &stages = problem_->stages;

@@ -8,7 +8,7 @@ namespace aligator::python {
 using namespace gar;
 using context::Scalar;
 using riccati_base_t = RiccatiSolverBase<Scalar>;
-using lqr_t = LQRProblemTpl<context::Scalar>;
+using lqr_t = LqrProblemTpl<context::Scalar>;
 
 void exposeDenseSolver() {
 
