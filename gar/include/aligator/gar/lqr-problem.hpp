@@ -1,6 +1,7 @@
 /// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
 #pragma once
 
+#include "aligator/context.hpp"
 #include "aligator/math.hpp"
 #include "aligator/memory/allocator.hpp"
 #include "tags.hpp"
@@ -200,9 +201,10 @@ std::ostream &operator<<(std::ostream &oss, const LqrKnotTpl<Scalar> &self) {
   return oss;
 }
 
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct LqrKnotTpl<context::Scalar>;
+extern template struct LqrProblemTpl<context::Scalar>;
+#endif
+
 } // namespace gar
 } // namespace aligator
-
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "lqr-problem.txx"
-#endif
