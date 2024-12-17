@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Rename `LQRKnotTpl` (C++)/`LQRKnot` (Python) to `LqrKnot(Tpl)`
 - Rename `LQRProblemTpl` (C++)/`LQRProblem` (Python) to `LqrProblem(Tpl)`
+- Add class `aligator::polymorphic_allocator` leveraging C++17 memory resources
+- Add memory allocator support for `LqrKnot` and `LqrProblem`
 
 ### Fixed
 
