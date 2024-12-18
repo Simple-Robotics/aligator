@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `LinesearchVariant::init()` should not be called unless the step accpetance strategy is a linesearch
+- Fixed compilation issues with C++20 (resolving [#246](https://github.com/Simple-Robotics/aligator/issues/246) and [#254](https://github.com/Simple-Robotics/aligator/discussions/254))
 
 ## [0.10.0] - 2024-12-09
 
