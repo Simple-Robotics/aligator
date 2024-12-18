@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include "riccati-base.hpp"
