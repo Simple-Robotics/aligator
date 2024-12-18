@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include <cassert>
