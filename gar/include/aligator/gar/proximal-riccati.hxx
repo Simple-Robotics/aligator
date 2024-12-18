@@ -1,3 +1,4 @@
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include "./proximal-riccati.hpp"
@@ -10,7 +11,7 @@ namespace aligator::gar {
 
 template <typename Scalar>
 ProximalRiccatiSolver<Scalar>::ProximalRiccatiSolver(
-    const LQRProblemTpl<Scalar> &problem)
+    const LqrProblemTpl<Scalar> &problem)
     : Base(), kkt0(problem.stages[0].nx, problem.nc0(), problem.ntheta()),
       thGrad(problem.ntheta()), thHess(problem.ntheta(), problem.ntheta()),
       problem_(&problem) {

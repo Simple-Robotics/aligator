@@ -5,8 +5,8 @@
 #include <random>
 
 ALIGATOR_DYNAMIC_TYPEDEFS(double);
-using problem_t = aligator::gar::LQRProblemTpl<double>;
-using knot_t = aligator::gar::LQRKnotTpl<double>;
+using problem_t = aligator::gar::LqrProblemTpl<double>;
+using knot_t = aligator::gar::LqrKnotTpl<double>;
 using aligator::math::infty_norm;
 
 struct KktError {
@@ -51,7 +51,13 @@ struct normal_unary_op {
 
 MatrixXs sampleWishartDistributedMatrix(uint n, uint p);
 
-knot_t generate_knot(uint nx, uint nu, uint nth, bool singular = false);
+knot_t generate_knot(uint nx, uint nu, uint nth, bool singular = false,
+                     const aligator::polymorphic_allocator &alloc = {});
+
+inline knot_t generate_knot(uint nx, uint nu, uint nth,
+                            const aligator::polymorphic_allocator &alloc) {
+  return generate_knot(nx, nu, nth, false, alloc);
+}
 
 problem_t generate_problem(const ConstVectorRef &x0, uint horz, uint nx,
                            uint nu, uint nth = 0);

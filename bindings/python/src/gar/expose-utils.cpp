@@ -8,7 +8,7 @@ using namespace gar;
 
 using context::Scalar;
 using context::VectorXs;
-using lqr_t = LQRProblemTpl<context::Scalar>;
+using lqr_t = LqrProblemTpl<context::Scalar>;
 
 bp::dict lqr_sol_initialize_wrap(const lqr_t &problem) {
   bp::dict out;
@@ -42,7 +42,7 @@ void exposeGarUtils() {
 
   bp::def("lqrCreateSparseMatrix", lqr_create_sparse_wrap,
           ("problem"_a, "mudyn", "mueq", "update"),
-          "Create or update a sparse matrix from an LQRProblem.");
+          "Create or update a sparse matrix from an LqrProblem.");
 
   bp::def("lqrInitializeSolution", lqr_sol_initialize_wrap, ("problem"_a));
 

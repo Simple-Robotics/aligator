@@ -3,7 +3,8 @@
 #pragma once
 
 #include "aligator/gar/riccati-base.hpp"
-#include "aligator/gar/riccati-impl.hpp"
+#include "aligator/gar/riccati-kernel.hpp"
+#include "aligator/tracy.hpp"
 
 namespace aligator {
 namespace gar {
@@ -28,12 +29,12 @@ public:
   StageFactorVec datas;
 
   using Impl = ProximalRiccatiKernel<Scalar>;
-  using KnotType = LQRKnotTpl<Scalar>;
+  using KnotType = LqrKnotTpl<Scalar>;
 
   using BlkMat = BlkMatrix<MatrixXs, -1, -1>;
   using BlkVec = BlkMatrix<VectorXs, -1, 1>;
 
-  explicit ParallelRiccatiSolver(LQRProblemTpl<Scalar> &problem,
+  explicit ParallelRiccatiSolver(LqrProblemTpl<Scalar> &problem,
                                  const uint num_threads);
 
   void allocateLeg(uint start, uint end, bool last_leg);
@@ -100,7 +101,7 @@ public:
   void initializeTridiagSystem(const std::vector<long> &dims);
 
 protected:
-  LQRProblemTpl<Scalar> *problem_;
+  LqrProblemTpl<Scalar> *problem_;
 };
 #endif
 
