@@ -16,6 +16,8 @@ public:
   using PlainObject = typename MatrixType::PlainObject;
   using Scalar = typename MatrixType::Scalar;
   enum { N = _N, M = _M, Options = PlainObject::Options };
+  static constexpr bool IsVectorAtCompileTime =
+      MatrixType::IsVectorAtCompileTime;
 
   using row_dim_t = std::conditional_t<N != -1, std::array<long, size_t(N)>,
                                        std::vector<long>>;
@@ -26,7 +28,7 @@ public:
                 "The BlkMatrix template class only supports nonzero numbers of "
                 "blocks in either direction.");
 
-  static_assert(!MatrixType::IsVectorAtCompileTime || (M == 1),
+  static_assert(!IsVectorAtCompileTime || (M == 1),
                 "Compile-time vector cannot have more than one column block.");
 
   BlkMatrix()
@@ -34,8 +36,7 @@ public:
         m_totalRows(0), m_totalCols(0) {}
 
   BlkMatrix(const row_dim_t &rowDims, const col_dim_t &colDims)
-      : m_data(), //
-        m_rowDims(rowDims), m_colDims(colDims), m_rowIndices(rowDims),
+      : m_data(), m_rowDims(rowDims), m_colDims(colDims), m_rowIndices(rowDims),
         m_colIndices(colDims), m_totalRows(0), m_totalCols(0) {
     initialize();
   }
@@ -68,8 +69,14 @@ public:
   BlkMatrix(Eigen::MatrixBase<Other> &data, const row_dim_t &dims)
       : BlkMatrix(data, dims, {data.cols()}) {}
 
+  operator Eigen::Ref<PlainObject>() { return m_data; }
+  operator Eigen::Ref<const PlainObject>() const { return m_data; }
+
   /// Only-rows constructor (only for vectors)
-  explicit BlkMatrix(const row_dim_t &dims) : BlkMatrix(dims, {1}) {}
+  explicit BlkMatrix(const row_dim_t &dims) : BlkMatrix(dims, {1}) {
+    static_assert(IsVectorAtCompileTime,
+                  "Constructor only supported for vector types.");
+  }
 
   /// @brief Get the block in position ( @p i, @p j )
   inline auto operator()(size_t i, size_t j) {
@@ -177,11 +184,6 @@ protected:
   col_dim_t m_colIndices;
   long m_totalRows;
   long m_totalCols;
-
-  explicit BlkMatrix(const row_dim_t &dims, std::true_type)
-      : BlkMatrix(dims, dims) {}
-  explicit BlkMatrix(const row_dim_t &dims, std::false_type)
-      : BlkMatrix(dims, {1}) {}
 
   void initialize() {
     for (size_t i = 0; i < m_rowDims.size(); i++) {
