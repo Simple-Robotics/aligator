@@ -33,7 +33,7 @@ bool ProximalRiccatiSolver<Scalar>::backward(const Scalar mudyn,
                                              const Scalar mueq) {
   ALIGATOR_NOMALLOC_SCOPED;
   ALIGATOR_TRACY_ZONE_NAMED(Zone1, true);
-  bool ret = Impl::backwardImpl(problem_->stages, mudyn, mueq, datas);
+  bool ret = Kernel::backwardImpl(problem_->stages, mudyn, mueq, datas);
 
   StageFactor<Scalar> &d0 = datas[0];
   value_t &vinit = d0.vm;
@@ -70,9 +70,10 @@ bool ProximalRiccatiSolver<Scalar>::forward(
   ALIGATOR_TRACY_ZONE_SCOPED;
 
   // solve initial stage
-  Impl::computeInitial(xs[0], lbdas[0], kkt0, theta_);
+  Kernel::computeInitial(xs[0], lbdas[0], kkt0, theta_);
 
-  return Impl::forwardImpl(problem_->stages, datas, xs, us, vs, lbdas, theta_);
+  return Kernel::forwardImpl(problem_->stages, datas, xs, us, vs, lbdas,
+                             theta_);
 }
 
 template <typename Scalar>
