@@ -1,19 +1,13 @@
 /// @file fwd.hpp
 /// @brief Forward declarations.
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include <proxsuite-nlp/fwd.hpp>
-#include <proxsuite-nlp/config.hpp>
-
-#ifdef ALIGATOR_WITH_PINOCCHIO
-#include <pinocchio/config.hpp>
-#endif
 
 #include "aligator/math.hpp"
 #include "aligator/utils/exceptions.hpp"
 #include "aligator/macros.hpp"
-#include "aligator/eigen-macros.hpp"
 #include "aligator/config.hpp"
 #include "aligator/deprecated.hpp"
 
