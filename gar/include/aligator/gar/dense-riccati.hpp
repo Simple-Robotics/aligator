@@ -4,8 +4,8 @@
 
 #include <proxsuite-nlp/linalg/bunchkaufman.hpp>
 
-#include "blk-matrix.hpp"
 #include "riccati-base.hpp"
+#include "dense-kernel.hpp"
 
 namespace aligator::gar {
 
@@ -23,12 +23,10 @@ public:
   using BlkRowMat41 = BlkMatrix<RowMatrixXs, 4, 1>;
   using BlkVec4 = BlkMatrix<VectorXs, 4, 1>;
   using KnotType = LqrKnotTpl<Scalar>;
+  using Kernel = DenseKernel<Scalar>;
+  using Data = typename Kernel::Data;
 
-  std::vector<BlkMat44> kkts;
-  std::vector<BlkVec4> ffs;
-  std::vector<BlkRowMat41> fbs;
-  std::vector<BlkRowMat41> fts;
-  std::vector<Eigen::BunchKaufman<MatrixXs>> ldls;
+  std::vector<Data> stage_factors;
   std::vector<MatrixXs> Pxx;
   std::vector<MatrixXs> Pxt;
   std::vector<MatrixXs> Ptt;
@@ -52,16 +50,14 @@ public:
                const std::optional<ConstVectorRef> &theta = std::nullopt) const;
 
   void cycleAppend(const KnotType &knot);
-  VectorRef getFeedforward(size_t i) { return ffs[i].matrix(); }
-  RowMatrixRef getFeedback(size_t i) { return fbs[i].matrix(); }
+  VectorRef getFeedforward(size_t i) { return stage_factors[i].ff; }
+  RowMatrixRef getFeedback(size_t i) { return stage_factors[i].fb; }
 
 protected:
-  void init_factor(const KnotType &knot);
   const LqrProblemTpl<Scalar> *problem_;
 };
 
-} // namespace aligator::gar
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "dense-riccati.txx"
+extern template class RiccatiSolverDense<context::Scalar>;
 #endif
+} // namespace aligator::gar
