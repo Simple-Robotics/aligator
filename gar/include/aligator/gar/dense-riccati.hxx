@@ -10,17 +10,6 @@
 namespace aligator::gar {
 
 template <typename Scalar>
-void RiccatiSolverDense<Scalar>::init_factor(const KnotType &knot) {
-  std::array<long, 4> dims = {knot.nu, knot.nc, knot.nx2, knot.nx2};
-  long ntot = dims[0] + dims[1] + dims[2] + dims[3];
-  kkts.emplace_back(BlkMat44::Zero(dims, dims));
-  ffs.emplace_back(BlkVec4::Zero(dims, {1}));
-  fbs.emplace_back(BlkRowMat41::Zero(dims, {knot.nx}));
-  fts.emplace_back(BlkRowMat41::Zero(dims, {knot.nth}));
-  ldls.emplace_back(ntot);
-}
-
-template <typename Scalar>
 RiccatiSolverDense<Scalar>::RiccatiSolverDense(
     const LqrProblemTpl<Scalar> &problem)
     : Base(), problem_(&problem) {
@@ -39,7 +28,8 @@ RiccatiSolverDense<Scalar>::RiccatiSolverDense(
     Ptt[i].setZero(nth, nth);
     px[i].setZero(nx);
     pt[i].setZero(nth);
-    this->init_factor(stages[i]);
+    stage_factors.emplace_back(nx, stages[i].nu, stages[i].nc, stages[i].nx2,
+                               nth);
   }
 
   uint nx0 = stages[0].nx;
@@ -59,117 +49,16 @@ bool RiccatiSolverDense<Scalar>::backward(const Scalar mudyn,
   const auto &stages = problem_->stages;
 
   const uint N = (uint)problem_->horizon();
-  {
-    const KnotType &knot = stages[N];
-    // FactorData &fac = datas[N];
-    // fac.kkt.setZero();
-    kkts[N].setZero();
-    VectorRef kff = ffs[N][0];
-    VectorRef zff = ffs[N][1];
-    RowMatrixRef K = fbs[N].blockRow(0);
-    RowMatrixRef Z = fbs[N].blockRow(1);
-
-    // assemble last-stage kkt matrix - includes input 'u'
-    kkts[N](0, 0) = knot.R;
-    kkts[N](0, 1) = knot.D.transpose();
-    kkts[N](1, 0) = knot.D;
-    kkts[N](1, 1).diagonal().array() = -mueq;
-
-    kff = -knot.r;
-    zff = -knot.d;
-    K = -knot.S.transpose();
-    Z = -knot.C;
-
-    ldls[N].compute(kkts[N].matrix());
-    ldls[N].solveInPlace(ffs[N].matrix());
-    ldls[N].solveInPlace(fbs[N].matrix());
-
-    RowMatrixRef Kth = fts[N].blockRow(0);
-    Kth = -knot.Gu;
-    RowMatrixRef Zth = fts[N].blockRow(1);
-    Zth = -knot.Gv;
-    ldls[N].solveInPlace(fts[N].matrix());
-
-    Eigen::Transpose Ct = knot.C.transpose();
-
-    Pxx[N].noalias() = knot.Q + knot.S * K;
-    Pxx[N].noalias() += Ct * Z;
-
-    Pxt[N].noalias() = knot.Gx + K.transpose() * knot.Gu;
-    Pxt[N].noalias() += Z.transpose() * knot.Gv;
-
-    Ptt[N].noalias() = knot.Gth + knot.Gu.transpose() * Kth;
-    Ptt[N].noalias() += knot.Gv.transpose() * Zth;
-
-    px[N].noalias() = knot.q + knot.S * kff;
-    px[N].noalias() += Ct * zff;
-
-    pt[N].noalias() = knot.gamma + knot.Gu.transpose() * kff;
-    pt[N].noalias() += knot.Gv.transpose() * zff;
-  }
+  Kernel::terminalSolve(stages[N], stage_factors[N],
+                        {Pxx[N], Pxt[N], Ptt[N], px[N], pt[N]}, mueq);
 
   uint i = N - 1;
   while (true) {
-    const KnotType &knot = stages[i];
-    // FactorData &fac = datas[i];
-
-    kkts[i].setZero();
-    kkts[i](0, 0) = knot.R;
-    kkts[i](1, 0) = knot.D;
-    kkts[i](0, 1) = knot.D.transpose();
-    kkts[i](1, 1).diagonal().array() = -mueq;
-
-    kkts[i](2, 0) = knot.B;
-    kkts[i](0, 2) = knot.B.transpose();
-    kkts[i](2, 2).diagonal().array() = -mudyn;
-    kkts[i](3, 2) = knot.E.transpose();
-    kkts[i](2, 3) = knot.E;
-    kkts[i](3, 3) = Pxx[i + 1];
-
-    VectorRef kff = ffs[i][0] = -knot.r;
-    VectorRef zff = ffs[i][1] = -knot.d;
-    VectorRef lff = ffs[i][2] = -knot.f;
-    VectorRef yff = ffs[i][3] = -px[i + 1];
-
-    RowMatrixRef K = fbs[i].blockRow(0) = -knot.S.transpose();
-    RowMatrixRef Z = fbs[i].blockRow(1) = -knot.C;
-    RowMatrixRef L = fbs[i].blockRow(2) = -knot.A;
-    RowMatrixRef Y = fbs[i].blockRow(3);
-    Y.setZero();
-
-    RowMatrixRef Kth = fts[i].blockRow(0) = -knot.Gu;
-    RowMatrixRef Zth = fts[i].blockRow(1) = -knot.Gv;
-    fts[i].blockRow(2).setZero();
-    RowMatrixRef Yth = fts[i].blockRow(3) = -Pxt[i + 1];
-
-    ldls[i].compute(kkts[i].matrix());
-    ldls[i].solveInPlace(ffs[i].matrix());
-    ldls[i].solveInPlace(fbs[i].matrix());
-    ldls[i].solveInPlace(fts[i].matrix());
-
-    Eigen::Transpose At = knot.A.transpose();
-    Eigen::Transpose Ct = knot.C.transpose();
-    Pxx[i].noalias() = knot.Q + knot.S * K;
-    Pxx[i].noalias() += Ct * Z;
-    Pxx[i].noalias() += At * L;
-
-    Pxt[i] = knot.Gx;
-    Pxt[i].noalias() += K.transpose() * knot.Gu;
-    Pxt[i].noalias() += Z.transpose() * knot.Gv;
-    Pxt[i].noalias() += Y.transpose() * Pxt[i + 1];
-
-    Ptt[i] = knot.Gth;
-    Ptt[i].noalias() += Kth.transpose() * knot.Gu;
-    Ptt[i].noalias() += Zth.transpose() * knot.Gv;
-    Ptt[i].noalias() += Yth.transpose() * Pxt[i + 1];
-
-    px[i].noalias() = knot.q + knot.S * kff;
-    px[i].noalias() += Ct * zff;
-    px[i].noalias() += At * lff;
-
-    pt[i].noalias() = knot.gamma + knot.Gu.transpose() * kff;
-    pt[i].noalias() += knot.Gv.transpose() * zff;
-    pt[i].noalias() += Pxt[i + 1].transpose() * yff;
+    typename Kernel::value vn{Pxx[i + 1], Pxt[i + 1], Ptt[i + 1], px[i + 1],
+                              pt[i + 1]};
+    Kernel::stageKernelSolve(stages[i], stage_factors[i],
+                             {Pxx[i], Pxt[i], Ptt[i], px[i], pt[i]}, &vn, mudyn,
+                             mueq);
 
     if (i == 0)
       break;
@@ -218,40 +107,9 @@ bool RiccatiSolverDense<Scalar>::forward(
   assert(vs.size() == N + 1);
   assert(lbdas.size() == N + 1);
   for (uint i = 0; i <= N; i++) {
-    // const FactorData &d = datas[i];
     const KnotType &model = problem_->stages[i];
-    ConstVectorRef kff = ffs[i][0];
-    ConstVectorRef zff = ffs[i][1];
-    ConstVectorRef lff = ffs[i][2];
-    ConstVectorRef yff = ffs[i][3];
-
-    ConstRowMatrixRef K = fbs[i].blockRow(0);
-    ConstRowMatrixRef Z = fbs[i].blockRow(1);
-    ConstRowMatrixRef Lfb = fbs[i].blockRow(2);
-    ConstRowMatrixRef Yfb = fbs[i].blockRow(3);
-
-    ConstRowMatrixRef Kth = fts[i].blockRow(0);
-    ConstRowMatrixRef Zth = fts[i].blockRow(1);
-    ConstRowMatrixRef Lth = fts[i].blockRow(2);
-    ConstRowMatrixRef Yth = fts[i].blockRow(3);
-
-    if (model.nu > 0)
-      us[i].noalias() = kff + K * xs[i];
-    vs[i].noalias() = zff + Z * xs[i];
-    if (theta_.has_value()) {
-      if (model.nu > 0)
-        us[i].noalias() += Kth * theta_.value();
-      vs[i].noalias() += Zth * theta_.value();
-    }
-
-    if (i == N)
-      break;
-    lbdas[i + 1].noalias() = lff + Lfb * xs[i];
-    xs[i + 1].noalias() = yff + Yfb * xs[i];
-    if (theta_.has_value()) {
-      lbdas[i + 1].noalias() += Lth * theta_.value();
-      xs[i + 1].noalias() += Yth * theta_.value();
-    }
+    const Data &data = stage_factors[i];
+    Kernel::forwardStep(i, i == N, model, data, xs, us, vs, lbdas, theta_);
   }
   return true;
 }
@@ -260,11 +118,7 @@ template <typename Scalar>
 void RiccatiSolverDense<Scalar>::cycleAppend(const KnotType &knot) {
   auto N = (uint)problem_->horizon();
 
-  rotate_vec_left(kkts, 0, 1);
-  rotate_vec_left(ffs, 0, 1);
-  rotate_vec_left(fbs, 0, 1);
-  rotate_vec_left(fts, 0, 1);
-  rotate_vec_left(ldls, 0, 1);
+  rotate_vec_left(stage_factors, 0, 1);
 
   rotate_vec_left(Pxx, 0, 1);
   rotate_vec_left(Pxt, 0, 1);
@@ -276,13 +130,12 @@ void RiccatiSolverDense<Scalar>::cycleAppend(const KnotType &knot) {
   uint nth = knot.nth;
   std::array<long, 4> dims = {knot.nu, knot.nc, knot.nx2, knot.nx2};
   long ntot = dims[0] + dims[1] + dims[2] + dims[3];
+
+  Data &fN = stage_factors[N - 1];
+  fN.setZero();
   // resize last ldl
-  kkts[N - 1] = BlkMat44::Zero(dims, dims);
-  ffs[N - 1] = BlkVec4::Zero(dims, {1});
-  fbs[N - 1] = BlkRowMat41::Zero(dims, {nx});
-  fts[N - 1] = BlkRowMat41::Zero(dims, {nth});
-  using ldl_t = std::decay_t<decltype(ldls[0])>;
-  ldls[N - 1] = ldl_t(ntot);
+  using ldl_t = std::decay_t<decltype(fN.ldl)>;
+  fN.ldl = ldl_t(ntot);
 
   Pxx[N - 1].setZero(nx, nx);
   Pxt[N - 1].setZero(nx, nth);
