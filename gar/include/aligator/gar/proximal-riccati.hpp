@@ -44,9 +44,9 @@ protected:
   const LqrProblemTpl<Scalar> *problem_;
 };
 
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template class ProximalRiccatiSolver<context::Scalar>;
+#endif
+
 } // namespace gar
 } // namespace aligator
-
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./proximal-riccati.txx"
-#endif
