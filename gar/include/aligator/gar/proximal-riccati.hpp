@@ -17,10 +17,10 @@ public:
   using StageFactorVec = std::vector<StageFactor<Scalar>>;
   StageFactorVec datas;
 
-  using Impl = ProximalRiccatiKernel<Scalar>;
-  using StageFactorType = StageFactor<Scalar>;
+  using Kernel = ProximalRiccatiKernel<Scalar>;
+  using StageFactorType = typename Kernel::StageFactorType;
   using value_t = typename StageFactorType::value_t;
-  using kkt0_t = typename Impl::kkt0_t;
+  using kkt0_t = typename Kernel::kkt0_t;
   using KnotType = LqrKnotTpl<Scalar>;
 
   explicit ProximalRiccatiSolver(const LqrProblemTpl<Scalar> &problem);
@@ -44,9 +44,9 @@ protected:
   const LqrProblemTpl<Scalar> *problem_;
 };
 
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template class ProximalRiccatiSolver<context::Scalar>;
+#endif
+
 } // namespace gar
 } // namespace aligator
-
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./proximal-riccati.txx"
-#endif
