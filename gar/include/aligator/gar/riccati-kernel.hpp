@@ -34,8 +34,7 @@ inline boost::span<const T> make_span_from_indices(const std::vector<T, A> &vec,
 /// Per-node struct for all computations in the factorization.
 template <typename _Scalar> struct StageFactor {
   using Scalar = _Scalar;
-  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using RowMatrixXs = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
+  ALIGATOR_DYNAMIC_TYPEDEFS_WITH_ROW_TYPES(Scalar);
 
   struct value_t {
     MatrixXs Pmat; //< Riccati matrix
@@ -89,10 +88,7 @@ template <typename _Scalar> struct StageFactor {
 /// @brief Kernel for use in Riccati-like algorithms for the proximal LQ
 /// subproblem.
 template <typename Scalar> struct ProximalRiccatiKernel {
-  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using RowMatrixXs = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
-  using RowMatrixRef = Eigen::Ref<RowMatrixXs>;
-  using ConstRowMatrixRef = Eigen::Ref<const RowMatrixXs>;
+  ALIGATOR_DYNAMIC_TYPEDEFS_WITH_ROW_TYPES(Scalar);
   using KnotType = LqrKnotTpl<Scalar>;
   using StageFactorType = StageFactor<Scalar>;
   using value_t = typename StageFactor<Scalar>::value_t;
