@@ -126,7 +126,13 @@ template <typename Scalar> struct LqrProblemTpl {
   LqrProblemTpl(const KnotVector &knots, long nc0);
   LqrProblemTpl(KnotVector &&knots, long nc0);
 
-  LqrProblemTpl(const LqrProblemTpl &other) = delete;
+  /// @brief Copy constructor. Will copy the allocator from @p other.
+  LqrProblemTpl(const LqrProblemTpl &other)
+      : LqrProblemTpl(other.stages, other.nc0()) {
+    this->G0 = other.G0;
+    this->g0 = other.g0;
+  }
+
   /// @brief Move constructor - we steal the allocator from the source object.
   LqrProblemTpl(LqrProblemTpl &&other);
 
@@ -147,6 +153,17 @@ template <typename Scalar> struct LqrProblemTpl {
   inline bool isInitialized() const { return !stages.empty() && !m_is_invalid; }
 
   inline uint ntheta() const { return stages[0].nth; }
+
+  inline bool isApprox(const LqrProblemTpl &other) {
+    if (horizon() != other.horizon() || !G0.isApprox(other.G0) ||
+        !g0.isApprox(other.g0))
+      return false;
+    for (uint i = 0; i < uint(horizon()); i++) {
+      if (!stages[i].isApprox(other.stages[i]))
+        return false;
+    }
+    return true;
+  }
 
   /// Evaluate the quadratic objective.
   Scalar evaluate(const VectorOfVectors &xs, const VectorOfVectors &us,
