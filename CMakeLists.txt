@@ -242,12 +242,12 @@ if(BUILD_WITH_PINOCCHIO_SUPPORT)
       "If you didn't build proxsuite-nlp yourself, please contact the maintainer for the distribution you used."
     )
   endif()
-  add_compile_definitions(ALIGATOR_WITH_PINOCCHIO)
-  list(APPEND CFLAGS_DEPENDENCIES "-DALIGATOR_WITH_PINOCCHIO")
-  set(PINOCCHIO_V3 ${pinocchio_VERSION} VERSION_GREATER "3.0.0")
-  if(PINOCCHIO_V3)
-    add_compile_definitions(ALIGATOR_PINOCCHIO_V3)
+
+  if(${pinocchio_VERSION} VERSION_GREATER "3.0.0")
+    set(PINOCCHIO_V3 TRUE)
   endif()
+
+  list(APPEND CFLAGS_DEPENDENCIES "-DALIGATOR_WITH_PINOCCHIO")
 elseif(PROXSUITE_NLP_WITH_PINOCCHIO_SUPPORT)
   message(
     WARNING
@@ -258,7 +258,6 @@ endif()
 
 if(BUILD_CROCODDYL_COMPAT)
   message(STATUS "Building with Crocoddyl support.")
-  add_compile_definitions(ALIGATOR_WITH_CROCODDYL_COMPAT)
   list(APPEND CFLAGS_DEPENDENCIES "-DALIGATOR_WITH_CROCODDYL_COMPAT")
 endif()
 
@@ -398,6 +397,10 @@ function(create_library)
 
   if(BUILD_WITH_PINOCCHIO_SUPPORT)
     target_link_libraries(${PROJECT_NAME} PUBLIC pinocchio::pinocchio)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC ALIGATOR_WITH_PINOCCHIO)
+    if(PINOCCHIO_V3)
+      target_compile_definitions(${PROJECT_NAME} PUBLIC ALIGATOR_PINOCCHIO_V3)
+    endif()
   endif()
 
   if(BUILD_WITH_OPENMP_SUPPORT)
