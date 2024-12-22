@@ -201,9 +201,12 @@ bool ParallelRiccatiSolver<Scalar>::forward(
     auto lsview = make_span_from_indices(lbdas, beg, end);
     auto stview = make_span_from_indices(stages, beg, end);
     auto dsview = make_span_from_indices(datas, beg, end);
-    auto th = (i < numThreads - 1) ? std::optional<ConstVectorRef>{lbdas[end]}
-                                   : std::nullopt;
-    Kernel::forwardImpl(stview, dsview, xsview, usview, vsview, lsview, th);
+    if (i < numThreads - 1) {
+      Kernel::forwardImpl(stview, dsview, xsview, usview, vsview, lsview,
+                          lbdas[end]);
+    } else {
+      Kernel::forwardImpl(stview, dsview, xsview, usview, vsview, lsview);
+    }
   }
   Eigen::setNbThreads(0);
   return true;
