@@ -18,7 +18,7 @@ message(STATUS "Test headers: ${TEST_HEADERS}")
 function(_add_test_prototype name prefix dependencies)
   set(test_name "${PROJECT_NAME}-test-cpp-${prefix}${name}")
   set(test_file ${name}.cpp)
-  message(STATUS "Adding cpp test: ${test_file} (${test_name})")
+  message(STATUS "Adding cpp test: ${test_name} (${test_file})")
 
   ADD_UNIT_TEST(${test_name} ${test_file} ${TEST_HEADERS})
   set_target_properties(${test_name} PROPERTIES LINKER_LANGUAGE CXX)
