@@ -15,11 +15,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rename `LQRProblemTpl` (C++)/`LQRProblem` (Python) to `LqrProblem(Tpl)`
 - Add class `aligator::polymorphic_allocator` leveraging C++17 memory resources
 - Add memory allocator support for `LqrKnot` and `LqrProblem`
+- `fwd.hpp`: do not include `<pinocchio/config.hpp>` header anymore
+- `blk-matrix.hpp`: remove protected ctors, add conversion ops
+- Headers `aligator/gar/*.hpp` merged into main library
+- Add class `DenseKernel` for the stagewise-dense Riccati algo -- rework `DenseRiccatiSolver` class
+- CMake: rework declaration of examples & benchmarks (applying liberal use of `cmake_parse_arguments()`)
+- CMake: add `bench/CMakeLists.txt` to gersemi defs, apply formatting
+- CMake: apply compile definitions to `aligator` target directly (reduce use of global compile definitions)
+- Add `LqrProblemTpl::isApprox()`
+- Only link against needed pinocchio libraries ([#260](https://github.com/Simple-Robotics/aligator/pull/260))
+- Use Pinocchio instantiated functions ([#261](https://github.com/Simple-Robotics/aligator/pull/261))
 
 ### Fixed
 
 - `LinesearchVariant::init()` should not be called unless the step accpetance strategy is a linesearch
 - Fixed compilation issues with C++20 (resolving [#246](https://github.com/Simple-Robotics/aligator/issues/246) and [#254](https://github.com/Simple-Robotics/aligator/discussions/254))
+
+### Removed
+
+- Removed `gar` as a separate CMake target and shared library, merge into main library
 
 ## [0.10.0] - 2024-12-09
 
