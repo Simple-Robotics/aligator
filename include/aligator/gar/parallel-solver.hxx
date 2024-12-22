@@ -40,6 +40,7 @@ ParallelRiccatiSolver<Scalar>::ParallelRiccatiSolver(
   }
   condensedKktRhs = BlkVec(dims);
   condensedKktSolution = condensedKktRhs;
+  condensedErr = condensedKktRhs;
   initializeTridiagSystem(dims);
 
   assert(datas.size() == (N + 1));
@@ -131,7 +132,7 @@ bool ParallelRiccatiSolver<Scalar>::backward(const Scalar mudyn,
         make_span_from_indices(problem_->stages, beg, end);
     boost::span<StageFactor<Scalar>> dtview =
         make_span_from_indices(datas, beg, end);
-    Impl::backwardImpl(stview, mudyn, mueq, dtview);
+    Kernel::backwardImpl(stview, mudyn, mueq, dtview);
   }
 
   {
@@ -141,7 +142,7 @@ bool ParallelRiccatiSolver<Scalar>::backward(const Scalar mudyn,
     condensedFacs.diagonalFacs = condensedKktSystem.diagonal;
     condensedFacs.upFacs = condensedKktSystem.subdiagonal;
 
-    // This routine has accuracy problems. Jesus H. Christ
+    // This routine may have accuracy issues
     symmetricBlockTridiagSolve(condensedKktSystem.subdiagonal,
                                condensedKktSystem.diagonal,
                                condensedKktSystem.superdiagonal,
@@ -150,18 +151,26 @@ bool ParallelRiccatiSolver<Scalar>::backward(const Scalar mudyn,
     condensedFacs.upFacs.swap(condensedKktSystem.subdiagonal);
 
     // iterative refinement
-    // 1. compute residual into rhs
-    blockTridiagMatMul(condensedKktSystem.subdiagonal,
-                       condensedKktSystem.diagonal,
-                       condensedKktSystem.superdiagonal, condensedKktSolution,
-                       condensedKktRhs, -1.0);
+    constexpr int maxRefinementSteps = 5;
+    for (int i = 0; i < maxRefinementSteps; i++) {
+      // 1. compute residual into rhs
+      blockTridiagMatMul(condensedKktSystem.subdiagonal,
+                         condensedKktSystem.diagonal,
+                         condensedKktSystem.superdiagonal, condensedKktSolution,
+                         condensedErr, -1.0);
+      condensedErr.matrix() *= -1;
 
-    condensedKktRhs.matrix() *= -1;
-    // 2. perform refinement step and swap
-    blockTridiagRefinementStep(condensedFacs.upFacs,
-                               condensedKktSystem.superdiagonal,
-                               condensedFacs.ldlt, condensedKktRhs);
-    condensedKktSolution.matrix() += condensedKktRhs.matrix();
+      Scalar resdl = math::infty_norm(condensedErr.matrix());
+      if (resdl <= condensedThreshold)
+        return true;
+
+      // 2. perform refinement step and swap
+      blockTridiagRefinementStep(condensedFacs.upFacs,
+                                 condensedKktSystem.superdiagonal,
+                                 condensedFacs.ldlt, condensedErr);
+      condensedKktSolution.matrix() += condensedErr.matrix();
+      condensedErr = condensedKktRhs.matrix();
+    }
   }
 
   return true;
@@ -192,12 +201,9 @@ bool ParallelRiccatiSolver<Scalar>::forward(
     auto lsview = make_span_from_indices(lbdas, beg, end);
     auto stview = make_span_from_indices(stages, beg, end);
     auto dsview = make_span_from_indices(datas, beg, end);
-    if (i < numThreads - 1) {
-      Impl::forwardImpl(stview, dsview, xsview, usview, vsview, lsview,
-                        lbdas[end]);
-    } else {
-      Impl::forwardImpl(stview, dsview, xsview, usview, vsview, lsview);
-    }
+    auto th = (i < numThreads - 1) ? std::optional<ConstVectorRef>{lbdas[end]}
+                                   : std::nullopt;
+    Kernel::forwardImpl(stview, dsview, xsview, usview, vsview, lsview, th);
   }
   Eigen::setNbThreads(0);
   return true;

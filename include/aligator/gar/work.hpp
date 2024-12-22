@@ -12,9 +12,11 @@ struct workrange_t {
   uint end;
 };
 
-inline workrange_t get_work(uint horz, uint tid, uint num_threads) {
-  uint start = tid * (horz + 1) / num_threads;
-  uint stop = (tid + 1) * (horz + 1) / num_threads;
+/// @brief Get a balanced work range corresponding to a horizon @p horz, thread
+/// ID @p tid, and number of threads @p num_threads.
+constexpr workrange_t get_work(uint horz, uint thread_id, uint num_threads) {
+  uint start = thread_id * (horz + 1) / num_threads;
+  uint stop = (thread_id + 1) * (horz + 1) / num_threads;
   assert(stop <= horz + 1);
   return {start, stop};
 }

@@ -45,7 +45,7 @@ struct normal_unary_op {
   // underlying normal distribution
   mutable std::normal_distribution<double> gen;
 
-  static void set_rng(size_t sd) { rng = std::mt19937{sd}; }
+  static void set_seed(size_t sd) { rng.seed(sd); }
 
   normal_unary_op(double stddev = 1.0) : gen(0.0, stddev) {}
   double operator()() const { return gen(rng); }
