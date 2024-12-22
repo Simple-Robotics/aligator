@@ -8,6 +8,7 @@
 #include "aligator/gar/lqr-problem.hpp"
 #include "aligator/utils/mpc-util.hpp"
 #include "aligator/tracy.hpp"
+#include "aligator/utils/exceptions.hpp"
 
 #include "aligator/threads.hpp"
 
@@ -20,9 +21,9 @@ ParallelRiccatiSolver<Scalar>::ParallelRiccatiSolver(
     : Base(), numThreads(num_threads), problem_(&problem) {
   ALIGATOR_TRACY_ZONE_SCOPED;
   if (num_threads < 2) {
-    throw std::runtime_error(fmt::format(
-        "{:s} ({:s}:{:s}) num_threads should be greater than or equal to 2.",
-        __FUNCTION__, __FILE__, __LINE__));
+    ALIGATOR_RUNTIME_ERROR(
+        "({:s}) num_threads (={:d}) should be greater than or equal to 2.",
+        __FUNCTION__, num_threads);
   }
 
   uint N = (uint)problem.horizon();

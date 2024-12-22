@@ -3,6 +3,7 @@
 #pragma once
 
 #include "aligator/gar/blk-matrix.hpp"
+#include "aligator/utils/exceptions.hpp"
 #include "aligator/tracy.hpp"
 
 namespace aligator {
@@ -15,7 +16,7 @@ blockTridiagToDenseMatrix(const std::vector<MatrixType> &subdiagonal,
                           const std::vector<MatrixType> &superdiagonal) {
   if (subdiagonal.size() != superdiagonal.size() ||
       diagonal.size() != superdiagonal.size() + 1) {
-    throw std::invalid_argument("Wrong lengths");
+    ALIGATOR_DOMAIN_ERROR("Wrong lengths");
   }
 
   using PlainObjectType = typename MatrixType::PlainObject;
