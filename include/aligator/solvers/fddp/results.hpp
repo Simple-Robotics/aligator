@@ -4,7 +4,8 @@
 
 namespace aligator {
 
-template <typename Scalar> struct ResultsFDDPTpl : ResultsBaseTpl<Scalar> {
+template <typename Scalar>
+struct ResultsFDDPTpl final : ResultsBaseTpl<Scalar> {
 
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ResultsBaseTpl<Scalar>;

@@ -8,7 +8,7 @@
 namespace aligator {
 
 /// @brief    Results holder struct.
-template <typename _Scalar> struct ResultsTpl : ResultsBaseTpl<_Scalar> {
+template <typename _Scalar> struct ResultsTpl final : ResultsBaseTpl<_Scalar> {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ResultsBaseTpl<Scalar>;
@@ -25,7 +25,7 @@ template <typename _Scalar> struct ResultsTpl : ResultsBaseTpl<_Scalar> {
   /// Proximal/AL iteration count
   std::size_t al_iter = 0;
 
-  ResultsTpl() : Base() {}
+  explicit ResultsTpl() : Base() {}
 
   ResultsTpl(const ResultsTpl &) = delete;
   ResultsTpl &operator=(const ResultsTpl &) = delete;
