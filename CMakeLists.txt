@@ -302,6 +302,7 @@ if(ENABLE_TEMPLATE_INSTANTIATION)
     GLOB_RECURSE LIB_TEMPLATE_SOURCES
     CONFIGURE_DEPENDS
     ${PROJECT_SOURCE_DIR}/src/core/*.cpp
+    ${PROJECT_SOURCE_DIR}/src/gar/*.cpp
     ${PROJECT_SOURCE_DIR}/src/solvers/fddp/*.cpp
     ${PROJECT_SOURCE_DIR}/src/solvers/proxddp/*.cpp
     ${PROJECT_SOURCE_DIR}/src/modelling/*.cpp
@@ -374,8 +375,6 @@ elseif(ALIGATOR_TRACY_ENABLE)
   endif()
 endif()
 
-add_subdirectory(gar)
-
 # Create the main shared library.
 function(create_library)
   add_library(${PROJECT_NAME} SHARED ${LIB_HEADERS} ${LIB_SOURCES})
@@ -389,7 +388,6 @@ function(create_library)
   )
   set_standard_output_directory(${PROJECT_NAME})
 
-  target_link_libraries(${PROJECT_NAME} PUBLIC aligator::gar)
   # Extract the compile definitions of the project for export
   get_directory_property(CURRENT_COMPILE_DEFINITIONS COMPILE_DEFINITIONS)
   target_compile_definitions(
@@ -519,7 +517,7 @@ if(BUILD_BENCHMARKS OR BUILD_TESTING)
     STATIC
     ${PROJECT_SOURCE_DIR}/tests/gar/test_util.cpp
   )
-  target_link_libraries(gar_test_utils PRIVATE aligator::gar)
+  target_link_libraries(gar_test_utils PRIVATE ${PROJECT_NAME})
   set_standard_output_directory(gar_test_utils)
 endif()
 
