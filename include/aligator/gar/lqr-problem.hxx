@@ -35,7 +35,28 @@ LqrKnotTpl<Scalar>::LqrKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth,
       Gu(allocate_eigen_map<MatrixXs>(alloc, nu, nth)),
       Gv(allocate_eigen_map<MatrixXs>(alloc, nc, nth)),
       gamma(allocate_eigen_map<VectorXs>(alloc, nth)),
-      m_empty_after_move(false), m_allocator(std::move(alloc)) {}
+      m_empty_after_move(false), m_allocator(std::move(alloc)) {
+  Q.setZero();
+  S.setZero();
+  R.setZero();
+  q.setZero();
+  r.setZero();
+
+  A.setZero();
+  B.setZero();
+  E.setZero();
+  f.setZero();
+
+  C.setZero();
+  D.setZero();
+  d.setZero();
+
+  Gth.setZero();
+  Gx.setZero();
+  Gu.setZero();
+  Gv.setZero();
+  gamma.setZero();
+}
 
 template <typename Scalar> LqrKnotTpl<Scalar>::~LqrKnotTpl() {
   if (!m_empty_after_move)
@@ -158,10 +179,12 @@ LqrKnotTpl<Scalar> &LqrKnotTpl<Scalar>::operator=(const LqrKnotTpl &other) {
 
 template <typename Scalar>
 LqrKnotTpl<Scalar> &LqrKnotTpl<Scalar>::operator=(LqrKnotTpl &&other) {
+#ifndef NDEBUG
   using allocator_traits = std::allocator_traits<allocator_type>;
+  assert(!allocator_traits::propagate_on_container_move_assignment::value);
+#endif
   // for polymorphic_allocator types, the allocator is NOT moved on container
   // move assignment.
-  assert(!allocator_traits::propagate_on_container_move_assignment::value);
   this->nx = other.nx;
   this->nu = other.nu;
   this->nc = other.nc;
@@ -246,6 +269,11 @@ LqrKnotTpl<Scalar> &LqrKnotTpl<Scalar>::addParameterization(uint nth) {
   emplace_allocated_map(Gu, nu, nth, m_allocator);
   emplace_allocated_map(Gv, nc, nth, m_allocator);
   emplace_allocated_map(gamma, nth, m_allocator);
+  Gth.setZero();
+  Gx.setZero();
+  Gu.setZero();
+  Gv.setZero();
+  gamma.setZero();
   return *this;
 }
 
