@@ -18,7 +18,7 @@ struct KktError {
   double max = std::max({dyn, cstr, dual});
 };
 
-template <> struct fmt::formatter<KktError> : formatter<std::string> {
+template <> struct fmt::formatter<KktError> : formatter<std::string_view> {
   auto format(const KktError &err, format_context &ctx) const
       -> format_context::iterator;
 };
@@ -28,15 +28,16 @@ computeKktError(const problem_t &problem, const VectorOfVectors &xs,
                 const VectorOfVectors &us, const VectorOfVectors &vs,
                 const VectorOfVectors &lbdas,
                 const std::optional<ConstVectorRef> &theta = std::nullopt,
-                const double mudyn = 0., const double mueq = 0.);
+                const double mudyn = 0., const double mueq = 0.,
+                bool verbose = true);
 
-inline KktError computeKktError(const problem_t &problem,
-                                const VectorOfVectors &xs,
-                                const VectorOfVectors &us,
-                                const VectorOfVectors &vs,
-                                const VectorOfVectors &lbdas,
-                                const double mudyn, const double mueq) {
-  return computeKktError(problem, xs, us, vs, lbdas, std::nullopt, mudyn, mueq);
+inline KktError
+computeKktError(const problem_t &problem, const VectorOfVectors &xs,
+                const VectorOfVectors &us, const VectorOfVectors &vs,
+                const VectorOfVectors &lbdas, const double mudyn,
+                const double mueq, bool verbose = true) {
+  return computeKktError(problem, xs, us, vs, lbdas, std::nullopt, mudyn, mueq,
+                         verbose);
 }
 
 struct normal_unary_op {
@@ -44,8 +45,9 @@ struct normal_unary_op {
   // underlying normal distribution
   mutable std::normal_distribution<double> gen;
 
-  normal_unary_op(double stddev = 1.0) : gen(0.0, stddev) {}
+  static void set_rng(size_t sd) { rng = std::mt19937{sd}; }
 
+  normal_unary_op(double stddev = 1.0) : gen(0.0, stddev) {}
   double operator()() const { return gen(rng); }
 };
 
