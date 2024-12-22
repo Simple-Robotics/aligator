@@ -31,6 +31,10 @@ target_link_libraries(
   aligator_croc_compat
   PUBLIC ${PROJECT_NAME} crocoddyl::crocoddyl
 )
+target_compile_definitions(
+  aligator_croc_compat
+  PUBLIC ALIGATOR_WITH_CROCODDYL_COMPAT
+)
 
 install(
   TARGETS aligator_croc_compat
