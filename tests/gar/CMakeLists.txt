@@ -1,4 +1,4 @@
-set(_gar_test_deps aligator::gar gar_test_utils)
+set(_gar_test_deps ${PROJECT_NAME} gar_test_utils)
 
 function(add_gar_test name)
   _add_test_prototype(${name} "gar-" "${_gar_test_deps}")
