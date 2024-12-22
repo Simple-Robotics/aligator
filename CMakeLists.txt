@@ -272,7 +272,6 @@ if(BUILD_WITH_CHOLMOD_SUPPORT)
     STATUS
     "Build with CHOLMOD support (LGPL). See CHOLMOD/Doc/License.txt for further details."
   )
-  add_compile_definitions(ALIGATOR_WITH_CHOLMOD)
 endif()
 
 if(BUILD_PYTHON_INTERFACE)
@@ -401,6 +400,11 @@ function(create_library)
     if(PINOCCHIO_V3)
       target_compile_definitions(${PROJECT_NAME} PUBLIC ALIGATOR_PINOCCHIO_V3)
     endif()
+  endif()
+
+  if(BUILD_WITH_CHOLMOD_SUPPORT)
+    target_link_libraries(${PROJECT_NAME} PUBLIC CHOLMOD::CHOLMOD)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC ALIGATOR_WITH_CHOLMOD)
   endif()
 
   if(BUILD_WITH_OPENMP_SUPPORT)
