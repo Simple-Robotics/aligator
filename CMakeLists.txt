@@ -288,6 +288,7 @@ if(BUILD_PYTHON_INTERFACE)
   set(${PYLIB_NAME}_INSTALL_DIR ${PYTHON_SITELIB}/${PROJECT_NAME})
 endif()
 
+# Without template instantiation, library only compiles exceptions and logging.
 set(LIB_SOURCES src/utils/exceptions.cpp src/utils/logger.cpp)
 
 file(
