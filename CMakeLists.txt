@@ -469,29 +469,37 @@ add_subdirectory(bindings)
 
 # benchmarks, examples, and tests
 
-macro(create_ex_or_bench is_bench exfile exname)
+macro(create_ex_or_bench exfile exname)
+  cmake_parse_arguments(arg_ex "BENCHMARK" "" "DEPENDENCIES" ${ARGN})
+
   add_executable(${exname} ${exfile})
-  if(${is_bench})
-    set(ex_type "bench")
+  if(${arg_ex_BENCHMARK})
+    set(ex_type "benchmark")
   else()
     set(ex_type "example")
   endif()
-  message(STATUS "Adding cpp ${ex_type} ${exname}")
+  message(STATUS "Adding cpp ${ex_type} ${exname} (${exfile})")
   set_target_properties(${exname} PROPERTIES LINKER_LANGUAGE CXX)
   set_standard_output_directory(${exname})
   target_include_directories(${exname} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-  target_link_libraries(${exname} PUBLIC ${PROJECT_NAME})
+  target_link_libraries(
+    ${exname}
+    PRIVATE ${PROJECT_NAME} ${arg_ex_DEPENDENCIES}
+  )
+  if(${arg_ex_BENCHMARK})
+    target_link_libraries(${exname} PRIVATE benchmark::benchmark)
+  endif()
+  if(DEFINED arg_ex_DEPENDENCIES)
+    message("   Dependencies:")
+    foreach(_dep ${arg_ex_DEPENDENCIES})
+      message("     ${_dep}")
+    endforeach()
+  endif()
 endmacro()
 
 if(BUILD_WITH_PINOCCHIO_SUPPORT AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
   ADD_PROJECT_PRIVATE_DEPENDENCY(example-robot-data 4.0.9 REQUIRED)
-  macro(target_add_example_robot_data target_name)
-    target_link_libraries(
-      ${target_name}
-      PRIVATE example-robot-data::example-robot-data
-    )
-  endmacro()
 endif()
 
 # create an utility library to avoid recompiling crocoddyl talos arm problem
@@ -509,10 +517,13 @@ if(BUILD_CROCODDYL_COMPAT AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
   )
   target_link_libraries(
     croc_talos_arm_utils
-    PUBLIC ${PROJECT_NAME} Boost::boost crocoddyl::crocoddyl
+    PUBLIC
+      ${PROJECT_NAME}
+      Boost::boost
+      crocoddyl::crocoddyl
+      example-robot-data::example-robot-data
   )
   set_standard_output_directory(croc_talos_arm_utils)
-  target_add_example_robot_data(croc_talos_arm_utils)
 endif()
 
 if(BUILD_BENCHMARKS OR BUILD_TESTING)
@@ -537,11 +548,10 @@ if(PINOCCHIO_V3 AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
     PUBLIC ${PROJECT_SOURCE_DIR}/examples
   )
   set_standard_output_directory(talos_walk_utils)
-  target_link_libraries(talos_walk_utils PUBLIC ${PROJECT_NAME})
-  target_add_example_robot_data(talos_walk_utils)
-  function(target_add_talos_walk target)
-    target_link_libraries(${target} PRIVATE talos_walk_utils)
-  endfunction()
+  target_link_libraries(
+    talos_walk_utils
+    PUBLIC ${PROJECT_NAME} example-robot-data::example-robot-data
+  )
 endif()
 
 if(BUILD_EXAMPLES)

@@ -20,40 +20,24 @@ function(create_example exfile)
 
   get_filename_component(exname ${exfile} NAME_WE)
   set(exname "${PROJECT_NAME}-example-${exname}")
-  create_ex_or_bench(False ${exfile} ${exname})
-  if(DEFINED arg_crex_DEPENDENCIES)
-    message("   > depends on ${arg_crex_DEPENDENCIES}")
-    foreach(dep ${arg_crex_DEPENDENCIES})
-      target_link_libraries(${exname} PRIVATE ${dep})
-    endforeach()
-  endif()
+  create_ex_or_bench(${exfile} ${exname} DEPENDENCIES ${arg_crex_DEPENDENCIES})
 endfunction()
 
-set(EXAMPLES_LIST clqr)
+create_example(clqr.cpp)
 
 if(PROXSUITE_NLP_WITH_PINOCCHIO_SUPPORT)
-  list(APPEND EXAMPLES_LIST se2-car)
-endif()
-if(PINOCCHIO_V3)
-  list(APPEND EXAMPLES_LIST talos-walk)
+  create_example(se2-car.cpp)
 endif()
 
-foreach(filename ${EXAMPLES_LIST})
-  create_example(${filename}.cpp)
-endforeach()
-
 if(PINOCCHIO_V3)
-  target_add_talos_walk(aligator-example-talos-walk)
+  create_example(talos-walk.cpp DEPENDENCIES talos_walk_utils)
 endif()
 
 if(BUILD_CROCODDYL_COMPAT)
   ADD_PROJECT_PRIVATE_DEPENDENCY(example-robot-data 4.0.9 REQUIRED)
   create_example(
     talos-arm.cpp
-    DEPENDENCIES
-      aligator::croc_compat
-      croc_talos_arm_utils
-      example-robot-data::example-robot-data
+    DEPENDENCIES aligator::croc_compat croc_talos_arm_utils
   )
 endif()
 
