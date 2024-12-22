@@ -7,8 +7,8 @@
 namespace aligator {
 
 template <typename MatrixType, int Alignment = Eigen::AlignedMax>
-auto allocate_eigen_map(polymorphic_allocator alloc, Eigen::Index rows,
-                        Eigen::Index cols) {
+[[nodiscard]] auto allocate_eigen_map(polymorphic_allocator alloc,
+                                      Eigen::Index rows, Eigen::Index cols) {
   using MapType = Eigen::Map<MatrixType, Alignment>;
   using Scalar = typename MatrixType::Scalar;
   size_t size = size_t(rows * cols);
@@ -17,7 +17,8 @@ auto allocate_eigen_map(polymorphic_allocator alloc, Eigen::Index rows,
 }
 
 template <typename MatrixType, int Alignment = Eigen::AlignedMax>
-auto allocate_eigen_map(polymorphic_allocator alloc, Eigen::Index size) {
+[[nodiscard]] auto allocate_eigen_map(polymorphic_allocator alloc,
+                                      Eigen::Index size) {
   using MapType = Eigen::Map<MatrixType, Alignment>;
   using Scalar = typename MatrixType::Scalar;
   Scalar *data = alloc.allocate<Scalar>(size_t(size), Alignment);
