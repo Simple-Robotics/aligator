@@ -45,6 +45,8 @@ blockTridiagToDenseMatrix(const std::vector<MatrixType> &subdiagonal,
   return out;
 }
 
+/// @brief Evaluate c <- beta * c + A * b, where `A` is the block-tridiagonal
+/// matrix described by the first three inputs.
 template <typename MatrixType, typename InputType, typename OutType,
           typename Scalar = typename MatrixType::Scalar>
 bool blockTridiagMatMul(const std::vector<MatrixType> &Asub,

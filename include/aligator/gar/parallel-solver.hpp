@@ -28,7 +28,7 @@ public:
   using StageFactorVec = std::vector<StageFactor<Scalar>>;
   StageFactorVec datas;
 
-  using Impl = ProximalRiccatiKernel<Scalar>;
+  using Kernel = ProximalRiccatiKernel<Scalar>;
   using KnotType = LqrKnotTpl<Scalar>;
 
   using BlkMat = BlkMatrix<MatrixXs, -1, -1>;
@@ -95,7 +95,9 @@ public:
   /// Condensed KKT system factors.
   condensed_system_factor condensedFacs;
   /// Contains the right-hand side and solution of the condensed KKT system.
-  BlkVec condensedKktRhs, condensedKktSolution;
+  BlkVec condensedKktRhs, condensedKktSolution, condensedErr;
+
+  Scalar condensedThreshold{1e-11};
 
   /// @brief Initialize the buffers for the block-tridiagonal system.
   void initializeTridiagSystem(const std::vector<long> &dims);

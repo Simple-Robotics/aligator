@@ -201,7 +201,7 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
   problem_t problem = generate_problem(x0, horizon, nx, nu);
   const problem_t problemRef{problem};
   BOOST_CHECK(problem.get_allocator() == problemRef.get_allocator());
-  const double mu = 1e-5;
+  const double mu = 1e-9;
 
   auto solutionRef = lqrInitializeSolution(problemRef);
   auto [xs_ref, us_ref, vs_ref, lbdas_ref] = solutionRef;
