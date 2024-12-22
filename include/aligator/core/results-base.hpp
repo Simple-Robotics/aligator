@@ -58,6 +58,7 @@ public:
   std::vector<MatrixXs> getCtrlFeedbacks() const {
     const std::size_t N = us.size();
     std::vector<MatrixXs> out;
+    out.reserve(N);
     for (std::size_t i = 0; i < N; i++) {
       const Eigen::Index nu = us[i].rows();
       out.emplace_back(getFeedback(i).topRows(nu));
@@ -68,6 +69,7 @@ public:
   std::vector<VectorXs> getCtrlFeedforwards() const {
     const std::size_t N = us.size();
     std::vector<VectorXs> out;
+    out.reserve(N);
     for (std::size_t i = 0; i < N; i++) {
       const Eigen::Index nu = us[i].rows();
       out.emplace_back(getFeedforward(i).head(nu));
