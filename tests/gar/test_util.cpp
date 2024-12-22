@@ -29,9 +29,9 @@ knot_t generate_knot(uint nx, uint nu, uint nth, bool singular,
 
   out.A = MatrixXs::NullaryExpr(nx, nx, normal_unary_op{});
   out.B.setRandom();
-  out.E = out.E.NullaryExpr(nx, nx, normal_unary_op{});
+  out.E = MatrixXs::NullaryExpr(nx, nx, normal_unary_op{});
   out.E *= 1000;
-  out.f = VectorXs::NullaryExpr(nx, normal_unary_op{});
+  out.f = VectorXs::NullaryExpr(nx, normal_unary_op{100.});
 
   if (nth > 0) {
     out.Gx = MatrixXs::NullaryExpr(nx, nth, normal_unary_op{});
@@ -47,15 +47,16 @@ knot_t generate_knot(uint nx, uint nu, uint nth, bool singular,
 problem_t generate_problem(const ConstVectorRef &x0, uint horz, uint nx,
                            uint nu, uint nth) {
   assert(x0.size() == nx);
+  aligator::polymorphic_allocator alloc{};
 
-  problem_t::KnotVector knots;
+  problem_t::KnotVector knots{alloc};
   knots.reserve(horz + 1);
 
-  auto knb = generate_knot(nx, nu, nth, true);
+  auto knb = generate_knot(nx, nu, nth, true, alloc);
   for (uint i = 0; i < horz; i++) {
     knots.push_back(knb);
   }
-  knots.push_back(generate_knot(nx, 0, nth)); // terminal node
+  knots.push_back(generate_knot(nx, 0, nth, false, alloc));
 
   problem_t prob(std::move(knots), nx);
   prob.g0 = -x0;
@@ -66,18 +67,18 @@ problem_t generate_problem(const ConstVectorRef &x0, uint horz, uint nx,
 auto fmt::formatter<KktError>::format(const KktError &err,
                                       format_context &ctx) const
     -> format_context::iterator {
-  std::string s = fmt::format(
-      "{{ max: {:.3e}, dual: {:.3e}, cstr: {:.3e}, dyn: {:.3e} }}\n", err.max,
-      err.dual, err.cstr, err.dyn);
-  return formatter<std::string>::format(s, ctx);
+  std::string s =
+      fmt::format("{{ max: {:.3e}, dual: {:.3e}, cstr: {:.3e}, dyn: {:.3e} }}",
+                  err.max, err.dual, err.cstr, err.dyn);
+  return formatter<std::string_view>::format(s, ctx);
 }
 
 KktError computeKktError(const problem_t &problem, const VectorOfVectors &xs,
                          const VectorOfVectors &us, const VectorOfVectors &vs,
                          const VectorOfVectors &lbdas,
                          const std::optional<ConstVectorRef> &theta_,
-                         const double mudyn, const double mueq) {
+                         const double mudyn, const double mueq, bool verbose) {
   auto r = aligator::gar::lqrComputeKktError(problem, xs, us, vs, lbdas, mudyn,
-                                             mueq, theta_, true);
+                                             mueq, theta_, verbose);
   return {r[0], r[1], r[2]};
 }
