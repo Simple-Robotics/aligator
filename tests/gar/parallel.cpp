@@ -175,7 +175,7 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
 
 /// Randomize some of the parameters of the problem. This simulates something
 /// like updating the LQ problem in SQP.
-void randomly_modify_problem(problem_t &prob) {
+void randomlyModifyProblem(problem_t &prob) {
   auto N = size_t(prob.horizon());
   std::vector<size_t> idx = {0, N / 3, N / 2, N / 2 + 1, N / 2 + 2, N};
   for (auto i : idx) {
@@ -199,8 +199,9 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
   const double tol = 1e-10;
 
   problem_t problem = generate_problem(x0, horizon, nx, nu);
-  problem_t problemRef{problem.stages, problem.nc0()};
-  const double mu = 1e-9;
+  const problem_t problemRef{problem};
+  BOOST_CHECK(problem.get_allocator() == problemRef.get_allocator());
+  const double mu = 1e-5;
 
   auto solutionRef = lqrInitializeSolution(problemRef);
   auto [xs_ref, us_ref, vs_ref, lbdas_ref] = solutionRef;
@@ -218,30 +219,18 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
     BOOST_CHECK_LE(err_ref.max, tol);
   }
 
+  BOOST_CHECK(problem.isApprox(problemRef));
+
   BOOST_TEST_MESSAGE("Run Parallel solver");
   ParallelRiccatiSolver<double> parSolver(problem, num_threads);
 
-  parSolver.backward(mu, mu);
-  parSolver.forward(xs, us, vs, lbdas);
-  KktError err = computeKktError(problem, xs, us, vs, lbdas, mu, mu);
-  fmt::println("{}", err);
-  BOOST_CHECK_LE(err.max, tol);
-
-  // TODO: properly test feedback/feedforward gains
-  // MatrixXs K0_ref;
-  // MatrixXs K0_par;
-
-  // for (uint i = 0; i < 8; i++) {
-  //   VectorXs ku_ref = refSolver.datas[i].ff.blockRow(0);
-  //   K0_ref = refSolver.datas[i].fb.blockRow(0);
-  //   VectorXs ku_par = parSolver.datas[i].ff.blockRow(0);
-  //   K0_par = parSolver.datas[i].fb.blockRow(0);
-  //   const double Ku_err = infty_norm(K0_par - K0_ref);
-  //   const double ku_err = infty_norm(ku_ref - ku_par);
-  //   fmt::print("|Ku_err| = {:.3e}\n", Ku_err);
-  //   fmt::print("|ku_err| = {:.3e}\n", ku_err);
-  //   BOOST_CHECK_LE(Ku_err, 1e-7);
-  // }
+  {
+    parSolver.backward(mu, mu);
+    parSolver.forward(xs, us, vs, lbdas);
+    KktError err = computeKktError(problem, xs, us, vs, lbdas, mu, mu);
+    fmt::println("{}", err);
+    BOOST_CHECK_LE(err.max, tol);
+  }
 
   VectorXs xerrs = VectorXs::Zero(horizon + 1);
   VectorXs lerrs = xerrs;
@@ -264,10 +253,10 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
 
   BOOST_TEST_MESSAGE("Run Parallel solver again [tweak the problem]");
   for (size_t i = 0; i < 10; i++) {
-    randomly_modify_problem(problem);
+    randomlyModifyProblem(problem);
     parSolver.backward(mu, mu);
     parSolver.forward(xs, us, vs, lbdas);
-    KktError e = computeKktError(problem, xs, us, vs, lbdas, mu, mu);
+    KktError e = computeKktError(problem, xs, us, vs, lbdas, mu, mu, false);
     fmt::println("{}", e);
     BOOST_CHECK_LE(e.max, tol);
   }

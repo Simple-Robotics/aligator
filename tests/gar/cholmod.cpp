@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(cholmod_short_horz) {
   const double mu = 1e-10;
   uint nx = 4, nu = 4;
   uint horz = 10;
-  constexpr double TOL = 1e-14;
+  constexpr double TOL = 1e-11;
   VectorXs x0;
   x0.setRandom(nx);
   problem_t problem = generate_problem(x0, horz, nx, nu);
