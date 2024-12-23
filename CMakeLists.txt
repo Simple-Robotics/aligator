@@ -302,8 +302,7 @@ if(ENABLE_TEMPLATE_INSTANTIATION)
     CONFIGURE_DEPENDS
     ${PROJECT_SOURCE_DIR}/src/core/*.cpp
     ${PROJECT_SOURCE_DIR}/src/gar/*.cpp
-    ${PROJECT_SOURCE_DIR}/src/solvers/fddp/*.cpp
-    ${PROJECT_SOURCE_DIR}/src/solvers/proxddp/*.cpp
+    ${PROJECT_SOURCE_DIR}/src/solvers/*.cpp
     ${PROJECT_SOURCE_DIR}/src/modelling/*.cpp
   )
   file(

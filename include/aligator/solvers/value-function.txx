@@ -1,6 +1,6 @@
 #pragma once
 #include "aligator/context.hpp"
-#include "aligator/core/value-function.hpp"
+#include "aligator/solvers/value-function.hpp"
 
 namespace aligator {
 extern template struct ValueFunctionTpl<context::Scalar>;

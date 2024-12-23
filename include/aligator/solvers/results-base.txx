@@ -3,7 +3,7 @@
 #pragma once
 
 #include "aligator/context.hpp"
-#include "aligator/core/results-base.hpp"
+#include "aligator/solvers/results-base.hpp"
 
 namespace aligator {
 

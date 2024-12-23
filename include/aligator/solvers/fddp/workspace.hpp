@@ -1,7 +1,7 @@
 #pragma once
 
-#include "aligator/core/workspace-base.hpp"
-#include "aligator/core/value-function.hpp"
+#include "aligator/solvers/workspace-base.hpp"
+#include "aligator/solvers/value-function.hpp"
 #include <Eigen/Cholesky>
 
 namespace aligator {

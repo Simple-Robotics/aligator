@@ -1,8 +1,8 @@
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/visitors.hpp"
 
-#include "aligator/solvers/proxddp/results.hpp"
-#include "aligator/core/workspace-base.hpp"
+#include "aligator/solvers/results-base.hpp"
+#include "aligator/solvers/workspace-base.hpp"
 
 namespace aligator {
 namespace python {
