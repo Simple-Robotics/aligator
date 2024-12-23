@@ -77,7 +77,7 @@ public:
     return out;
   }
 
-  void printBase(std::ostream &oss) const;
+  std::string printBase() const;
   virtual ~ResultsBaseTpl() = default;
 
 private:
@@ -87,26 +87,25 @@ private:
 };
 
 template <typename Scalar>
-void ResultsBaseTpl<Scalar>::printBase(std::ostream &oss) const {
-  oss << fmt::format("\n  num_iters:    {:d},", num_iters)
-      << fmt::format("\n  converged:    {},", conv)
-      << fmt::format("\n  traj. cost:   {:.3e},", traj_cost_)
-      << fmt::format("\n  merit.value:  {:.3e},", merit_value_)
-      << fmt::format("\n  prim_infeas:  {:.3e},", prim_infeas)
-      << fmt::format("\n  dual_infeas:  {:.3e},", dual_infeas);
+std::string ResultsBaseTpl<Scalar>::printBase() const {
+  return fmt::format("\n  num_iters:    {:d},"
+                     "\n  converged:    {},"
+                     "\n  traj. cost:   {:.3e},"
+                     "\n  merit.value:  {:.3e},"
+                     "\n  prim_infeas:  {:.3e},"
+                     "\n  dual_infeas:  {:.3e},",
+                     num_iters, conv, traj_cost_, merit_value_, prim_infeas,
+                     dual_infeas);
 }
 
 template <typename Scalar>
 std::ostream &operator<<(std::ostream &oss,
                          const ResultsBaseTpl<Scalar> &self) {
-  oss << "Results {";
-  self.printBase(oss);
-  oss << "\n}";
-  return oss;
+  return oss << "Results {" << self.printBase() << "\n}";
 }
 
 } // namespace aligator
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./results-base.txx"
+#include "results-base.txx"
 #endif
