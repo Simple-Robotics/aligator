@@ -4,6 +4,7 @@
 
 #include "aligator/solvers/results-base.hpp"
 #include <fmt/ostream.h>
+#include <sstream>
 
 namespace aligator {
 
@@ -43,15 +44,23 @@ template <typename _Scalar> struct ResultsTpl final : ResultsBaseTpl<_Scalar> {
 
 template <typename Scalar>
 std::ostream &operator<<(std::ostream &oss, const ResultsTpl<Scalar> &self) {
-  oss << "Results {";
-  self.printBase(oss);
-  return oss << fmt::format("\n  al_iters:     {:d},", self.al_iter) << "\n}";
+  return oss << fmt::format("{}", self);
 }
 
 } // namespace aligator
 
-template <typename Scalar>
-struct fmt::formatter<aligator::ResultsTpl<Scalar>> : fmt::ostream_formatter {};
+template <typename Scalar> struct fmt::formatter<aligator::ResultsTpl<Scalar>> {
+  constexpr auto parse(format_parse_context &ctx) const
+      -> decltype(ctx.begin()) {
+    return ctx.end();
+  }
+
+  auto format(const aligator::ResultsTpl<Scalar> &self,
+              format_context &ctx) const -> decltype(ctx.out()) {
+    auto s = self.printBase();
+    return fmt::format_to(ctx.out(), "Results {{{}\n}}", s);
+  }
+};
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "./results.txx"
