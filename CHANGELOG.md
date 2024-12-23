@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Only link against needed pinocchio libraries ([#260](https://github.com/Simple-Robotics/aligator/pull/260))
 - Use Pinocchio instantiated functions ([#261](https://github.com/Simple-Robotics/aligator/pull/261))
 - Rename `LQRKnotTpl` (C++)/`LqrKnot` (Python) to `LqrKnot(Tpl)`
+- Move `HistoryCallbackTpl` to `aligator/core`
+- Move headers `results-base`, `solver-util`, `value-function`, `workspace-base` to `aligator/core`
 - Rename `LQRProblemTpl` (C++)/`LQRProblem` (Python) to `LqrProblem(Tpl)`
 - Add class `aligator::polymorphic_allocator` leveraging C++17 memory resources
 - Add memory allocator support for `LqrKnot` and `LqrProblem`
@@ -34,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Removed `gar` as a separate CMake target and shared library, merge into main library
+- Remove subdirectory `aligator/helpers` from include dir
 
 ## [0.10.0] - 2024-12-09
 
