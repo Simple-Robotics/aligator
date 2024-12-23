@@ -1,9 +1,9 @@
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include "aligator/core/callback-base.hpp"
-#include "aligator/core/workspace-base.hpp"
-#include "aligator/core/results-base.hpp"
+#include "aligator/solvers/workspace-base.hpp"
+#include "aligator/solvers/results-base.hpp"
 
 #include <typeindex>
 #include <any>

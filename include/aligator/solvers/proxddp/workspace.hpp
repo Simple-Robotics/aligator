@@ -3,7 +3,7 @@
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
-#include "aligator/core/workspace-base.hpp"
+#include "aligator/solvers/workspace-base.hpp"
 #include "aligator/gar/blk-matrix.hpp"
 #include "aligator/gar/lqr-problem.hpp"
 

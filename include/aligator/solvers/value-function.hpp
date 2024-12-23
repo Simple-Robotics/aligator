@@ -149,5 +149,5 @@ protected:
 } // namespace aligator
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/core/value-function.txx"
+#include "aligator/solvers/value-function.txx"
 #endif
