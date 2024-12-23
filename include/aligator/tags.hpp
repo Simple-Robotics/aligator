@@ -3,7 +3,7 @@
 
 namespace aligator {
 
-// tag type
+/// @brief Tag type for e.g. non-allocating constructors.
 struct no_alloc_t {
   explicit constexpr no_alloc_t() {}
 };
