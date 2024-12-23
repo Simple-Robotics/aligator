@@ -65,6 +65,7 @@ if args.bounds:
     ctrl_fn = aligator.ControlErrorResidual(nx, np.zeros(nu))
     stage.addConstraint(ctrl_fn, constraints.BoxConstraint(u_min, u_max))
 
+print(stage)
 
 # Build our problem by appending stages and the optional terminal constraint
 nsteps = 20

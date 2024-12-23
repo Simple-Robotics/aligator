@@ -64,15 +64,6 @@ problem_t generate_problem(const ConstVectorRef &x0, uint horz, uint nx,
   return prob;
 }
 
-auto fmt::formatter<KktError>::format(const KktError &err,
-                                      format_context &ctx) const
-    -> format_context::iterator {
-  std::string s =
-      fmt::format("{{ max: {:.3e}, dual: {:.3e}, cstr: {:.3e}, dyn: {:.3e} }}",
-                  err.max, err.dual, err.cstr, err.dyn);
-  return formatter<std::string_view>::format(s, ctx);
-}
-
 KktError computeKktError(const problem_t &problem, const VectorOfVectors &xs,
                          const VectorOfVectors &us, const VectorOfVectors &vs,
                          const VectorOfVectors &lbdas,

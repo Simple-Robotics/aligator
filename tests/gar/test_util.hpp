@@ -18,9 +18,18 @@ struct KktError {
   double max = std::max({dyn, cstr, dual});
 };
 
-template <> struct fmt::formatter<KktError> : formatter<std::string_view> {
+template <> struct fmt::formatter<KktError> {
+  constexpr auto parse(format_parse_context &ctx) const
+      -> decltype(ctx.begin()) {
+    return ctx.end();
+  }
+
   auto format(const KktError &err, format_context &ctx) const
-      -> format_context::iterator;
+      -> decltype(ctx.out()) {
+    return fmt::format_to(
+        ctx.out(), "{{ max: {:.3e}, dual: {:.3e}, cstr: {:.3e}, dyn: {:.3e} }}",
+        err.max, err.dual, err.cstr, err.dyn);
+  }
 };
 
 KktError
