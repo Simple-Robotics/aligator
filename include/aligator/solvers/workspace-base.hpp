@@ -3,7 +3,7 @@
 #pragma once
 
 #include "aligator/fwd.hpp"
-#include "aligator/core/solver-util.hpp"
+#include "solver-util.hpp"
 #include "aligator/core/traj-opt-data.hpp"
 #include "aligator/utils/mpc-util.hpp"
 
@@ -78,5 +78,5 @@ template <typename Scalar> void WorkspaceBaseTpl<Scalar>::cycleLeft() {
 } // namespace aligator
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./workspace-base.txx"
+#include "workspace-base.txx"
 #endif

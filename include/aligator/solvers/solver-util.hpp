@@ -1,6 +1,6 @@
 /// @file solver-util.hpp
 /// @brief Common utilities for all solvers.
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include "aligator/core/traj-opt-problem.hpp"

@@ -1,4 +1,4 @@
-#include "aligator/core/workspace-base.hpp"
+#include "aligator/solvers/workspace-base.hpp"
 
 namespace aligator {
 
