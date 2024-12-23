@@ -6,7 +6,6 @@
 
 namespace aligator {
 static constexpr char fstr[] = "{:─^{}s}";
-Logger::Logger() {}
 
 void Logger::printHeadline() {
   if (!active)
