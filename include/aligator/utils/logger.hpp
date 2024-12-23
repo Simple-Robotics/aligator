@@ -31,7 +31,7 @@ static const LogColumn BASIC_KEYS[12] = {
 struct Logger {
   bool active = true;
 
-  Logger();
+  explicit Logger() = default;
 
   void printHeadline();
   void log();
