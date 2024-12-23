@@ -409,8 +409,17 @@ function(create_library)
   if(BUILD_WITH_OPENMP_SUPPORT)
     target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
   endif()
-  target_link_libraries(${PROJECT_NAME} PUBLIC proxsuite-nlp::proxsuite-nlp)
-  target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt)
+  target_link_libraries(
+    ${PROJECT_NAME}
+    PUBLIC proxsuite-nlp::proxsuite-nlp fmt::fmt
+  )
+  target_precompile_headers(
+    ${PROJECT_NAME}
+    PRIVATE
+      <Eigen/Dense>
+      include/aligator/pinocchio-algorithm.pch.h
+      include/aligator/pinocchio-multibody.pch.h
+  )
   # set the install-tree include dirs
   # used by dependent projects to consume this target
   target_include_directories(
