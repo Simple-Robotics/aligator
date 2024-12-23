@@ -239,7 +239,7 @@ if True:
     if len(prim_errs) != 0:
         plt.figure(figsize=(6.4, 4.8))
         prim_tols = np.array(callback.prim_tols.tolist())
-        al_iters = np.array(callback.al_iters.tolist())
+        al_iters = np.array(callback.al_index.tolist())
 
         ax: plt.Axes = plt.subplot(111)
         plot_pd_errs(ax, prim_errs, dual_errs)
