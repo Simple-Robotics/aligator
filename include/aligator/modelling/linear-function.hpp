@@ -16,19 +16,10 @@ template <typename Scalar> struct LinearFunctionTpl : StageFunctionTpl<Scalar> {
   MatrixXs B_;
   VectorXs d_;
 
-  LinearFunctionTpl(const int ndx, const int nu, const int nr)
-      : Base(ndx, nu, nr), A_(nr, ndx), B_(nr, nu), d_(nr) {
-    A_.setZero();
-    B_.setZero();
-    d_.setZero();
-  }
+  LinearFunctionTpl(const int ndx, const int nu, const int nr);
 
   LinearFunctionTpl(const ConstMatrixRef A, const ConstMatrixRef B,
-                    const ConstVectorRef d)
-      : Base((int)A.cols(), (int)B.cols(), (int)d.rows()), A_(A), B_(B), d_(d) {
-    assert((A_.rows() == d_.rows()) && (B_.rows() == d_.rows()) &&
-           "Number of rows not consistent.");
-  }
+                    const ConstVectorRef d);
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 Data &data) const override {
@@ -57,5 +48,23 @@ template <typename Scalar> struct LinearFunctionTpl : StageFunctionTpl<Scalar> {
     return data;
   }
 };
+
+template <typename Scalar>
+LinearFunctionTpl<Scalar>::LinearFunctionTpl(const int ndx, const int nu,
+                                             const int nr)
+    : Base(ndx, nu, nr), A_(nr, ndx), B_(nr, nu), d_(nr) {
+  A_.setZero();
+  B_.setZero();
+  d_.setZero();
+}
+
+template <typename Scalar>
+LinearFunctionTpl<Scalar>::LinearFunctionTpl(const ConstMatrixRef A,
+                                             const ConstMatrixRef B,
+                                             const ConstVectorRef d)
+    : Base((int)A.cols(), (int)B.cols(), (int)d.rows()), A_(A), B_(B), d_(d) {
+  assert((A_.rows() == d_.rows()) && (B_.rows() == d_.rows()) &&
+         "Number of rows not consistent.");
+}
 
 } // namespace aligator
