@@ -1,3 +1,6 @@
 [submodule "cmake"]
 	path = cmake
 	url = https://github.com/jrl-umi3218/jrl-cmakemodules
+[submodule "src/third-party/expected"]
+	path = src/third-party/expected
+	url = git@github.com:TartanLlama/expected.git

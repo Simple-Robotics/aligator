@@ -411,6 +411,7 @@ function(create_library)
   endif()
   target_link_libraries(${PROJECT_NAME} PUBLIC proxsuite-nlp::proxsuite-nlp)
   target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt)
+  target_link_libraries(${PROJECT_NAME} PUBLIC aligator_third_party)
   # set the install-tree include dirs
   # used by dependent projects to consume this target
   target_include_directories(
@@ -438,6 +439,7 @@ function(create_library)
   endforeach()
 endfunction()
 
+add_subdirectory(src/third-party)
 create_library()
 
 ADD_HEADER_GROUP(LIB_HEADERS)
