@@ -352,10 +352,7 @@ Scalar LqrProblemTpl<Scalar>::evaluate(
     ret += xs[i].dot(knot.S * us[i]);
   }
 
-  if (!isParameterized())
-    return ret;
-
-  if (theta_.has_value()) {
+  if (isParameterized() && theta_.has_value()) {
     ConstVectorRef th = theta_.value();
     for (uint i = 0; i <= N; i++) {
       const KnotType &knot = stages[i];
