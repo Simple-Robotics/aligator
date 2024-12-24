@@ -35,9 +35,9 @@ void emplace_map_steal(Eigen::Map<MatrixType, Alignment> &map,
   typename MatrixType::Scalar *data = other.data();
   if (data) {
     if constexpr (MatrixType::IsVectorAtCompileTime) {
-      new (&map) MapType{data, other.size()};
+      ::new (&map) MapType{data, other.size()};
     } else {
-      new (&map) MapType{data, other.rows(), other.cols()};
+      ::new (&map) MapType{data, other.rows(), other.cols()};
     }
   }
   other.~MapType();
@@ -51,7 +51,7 @@ void emplace_map_from_data(Eigen::Map<MatrixType, Alignment> &map,
                            typename MatrixType::Scalar *data) {
   EIGEN_STATIC_ASSERT_DYNAMIC_SIZE(MatrixType);
   using MapType = Eigen::Map<MatrixType, Alignment>;
-  new (&map) MapType{data, rows, cols};
+  ::new (&map) MapType{data, rows, cols};
 }
 
 /// @copybrief emplace_map()
@@ -62,7 +62,7 @@ void emplace_map_from_data(Eigen::Map<MatrixType, Alignment> &map,
   EIGEN_STATIC_ASSERT_VECTOR_ONLY(MatrixType);
   EIGEN_STATIC_ASSERT_DYNAMIC_SIZE(MatrixType);
   using MapType = Eigen::Map<MatrixType, Alignment>;
-  new (&map) MapType{data, size};
+  ::new (&map) MapType{data, size};
 }
 
 /// @brief Use `placement new` and an allocator to create an Eigen::Map object
@@ -99,7 +99,7 @@ void emplace_resize_map(Eigen::Map<MatrixType, Alignment> &map,
     data = alloc.template allocate<Scalar>(size_t(rows * cols));
   }
   map.~MapType();
-  new (&map) MapType{data, rows, cols};
+  ::new (&map) MapType{data, rows, cols};
 }
 
 template <typename MatrixType, int Alignment>
