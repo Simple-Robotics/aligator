@@ -465,9 +465,9 @@ endif()
 
 if(BUILD_CROCODDYL_COMPAT)
   ADD_PROJECT_DEPENDENCY(crocoddyl REQUIRED)
-  add_subdirectory(src/compat/crocoddyl)
 endif()
 
+add_subdirectory(src/compat)
 add_subdirectory(bindings)
 
 # benchmarks, examples, and tests
