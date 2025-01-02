@@ -398,7 +398,7 @@ function(create_library)
   )
 
   if(BUILD_WITH_PINOCCHIO_SUPPORT)
-    target_link_libraries(${PROJECT_NAME} PUBLIC pinocchio::pinocchio)
+    target_link_libraries(${PROJECT_NAME} PUBLIC pinocchio::pinocchio_default)
   endif()
 
   if(BUILD_WITH_OPENMP_SUPPORT)
@@ -538,7 +538,10 @@ if(PINOCCHIO_V3 AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
   target_link_libraries(talos_walk_utils PUBLIC ${PROJECT_NAME})
   target_add_example_robot_data(talos_walk_utils)
   function(target_add_talos_walk target)
-    target_link_libraries(${target} PRIVATE talos_walk_utils)
+    target_link_libraries(
+      ${target}
+      PRIVATE talos_walk_utils pinocchio::pinocchio_parsers
+    )
   endfunction()
 endif()
 
