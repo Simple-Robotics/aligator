@@ -15,3 +15,4 @@ endif()
 
 add_gar_test(knot)
 add_gar_test(eigen-map)
+add_gar_test(matrix-array)
