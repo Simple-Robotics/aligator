@@ -31,7 +31,7 @@ if(BUILD_CROCODDYL_COMPAT)
   create_bench(croc-talos-arm.cpp CROC)
 endif()
 if(PINOCCHIO_V3)
-  create_bench(talos-walk.cpp CROC DEPENDENCIES talos_walk_utils)
+  create_bench(talos-walk.cpp DEPENDENCIES talos_walk_utils)
 endif()
 
 create_gar_bench(gar-riccati.cpp)
