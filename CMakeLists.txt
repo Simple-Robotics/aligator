@@ -553,7 +553,10 @@ if(PINOCCHIO_V3 AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
   set_standard_output_directory(talos_walk_utils)
   target_link_libraries(
     talos_walk_utils
-    PUBLIC ${PROJECT_NAME} example-robot-data::example-robot-data
+    PUBLIC
+      ${PROJECT_NAME}
+      pinocchio::pinocchio_parsers
+      example-robot-data::example-robot-data
   )
 endif()
 
