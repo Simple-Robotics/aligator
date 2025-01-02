@@ -34,13 +34,14 @@ void MultibodyConstraintFwdDynamicsTpl<Scalar>::forward(const ConstVectorRef &x,
   const pinocchio::ModelTpl<Scalar> &model = space_.getModel();
   const int nq = model.nq;
   const int nv = model.nv;
-  const auto q = x.head(nq);
-  const auto v = x.segment(nq, nv);
+  const ConstVectorRef q = x.head(nq);
+  const ConstVectorRef v = x.segment(nq, nv);
+  const ConstVectorRef tau = d.tau_;
   d.xdot_.head(nv) = v;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   d.xdot_.segment(nv, nv) = pinocchio::constraintDynamics(
-      model, d.pin_data_, q, v, d.tau_, constraint_models_, d.constraint_datas_,
+      model, d.pin_data_, q, v, tau, constraint_models_, d.constraint_datas_,
       d.settings);
 #pragma GCC diagnostic pop
 }

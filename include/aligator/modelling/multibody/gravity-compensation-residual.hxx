@@ -21,7 +21,7 @@ void GravityCompensationResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                                       const ConstVectorRef &u,
                                                       BaseData &data_) const {
   Data &data = static_cast<Data &>(data_);
-  ConstVectorRef q = x.head(pin_model_.nq);
+  const ConstVectorRef q = x.head(pin_model_.nq);
   data.value_ =
       -pinocchio::computeGeneralizedGravity(pin_model_, data.pin_data_, q);
   if (use_actuation_matrix) {
@@ -33,11 +33,13 @@ void GravityCompensationResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
 
 template <typename Scalar>
 void GravityCompensationResidualTpl<Scalar>::computeJacobians(
-    const ConstVectorRef &x, const ConstVectorRef &u, BaseData &data_) const {
+    const ConstVectorRef &x, const ConstVectorRef & /*u*/,
+    BaseData &data_) const {
   Data &data = static_cast<Data &>(data_);
   ConstVectorRef q = x.head(pin_model_.nq);
-  pinocchio::computeGeneralizedGravityDerivatives(pin_model_, data.pin_data_, q,
-                                                  data.gravity_partial_dq_);
+  pinocchio::computeGeneralizedGravityDerivatives(
+      pin_model_, data.pin_data_, q,
+      pinocchio::make_ref(data.gravity_partial_dq_));
   if (use_actuation_matrix) {
     data_.Ju_ = actuation_matrix_;
   } else {

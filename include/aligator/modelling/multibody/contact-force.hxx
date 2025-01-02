@@ -15,13 +15,13 @@ void ContactForceResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                                BaseData &data) const {
   Data &d = static_cast<Data &>(data);
 
-  const auto q = x.head(pin_model_.nq);
-  const auto v = x.tail(pin_model_.nv);
+  const ConstVectorRef q = x.head(pin_model_.nq);
+  const ConstVectorRef v = x.tail(pin_model_.nv);
 
   d.tau_.noalias() = actuation_matrix_ * u;
-  pinocchio::constraintDynamics(pin_model_, d.pin_data_, q, v, d.tau_,
-                                constraint_models_, d.constraint_datas_,
-                                d.settings);
+  pinocchio::constraintDynamics(
+      pin_model_, d.pin_data_, q, v, pinocchio::make_const_ref(d.tau_),
+      constraint_models_, d.constraint_datas_, d.settings);
   d.value_ =
       d.pin_data_.lambda_c.segment(contact_id_ * force_size_, force_size_) -
       fref_;

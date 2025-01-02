@@ -5,6 +5,7 @@
 
 #include <pinocchio/algorithm/aba.hpp>
 #include <pinocchio/algorithm/aba-derivatives.hpp>
+#include <pinocchio/multibody/fwd.hpp>
 
 namespace aligator {
 namespace dynamics {
@@ -40,10 +41,12 @@ void MultibodyFreeFwdDynamicsTpl<Scalar>::forward(const ConstVectorRef &x,
   const pinocchio::ModelTpl<Scalar> &model = space_.getModel();
   const int nq = model.nq;
   const int nv = model.nv;
-  const auto q = x.head(nq);
-  const auto v = x.segment(nq, nv);
+  const ConstVectorRef q = x.head(nq);
+  const ConstVectorRef v = x.segment(nq, nv);
+  const ConstVectorRef tau = d.tau_;
   d.xdot_.head(nv) = v;
-  d.xdot_.segment(nv, nv) = pinocchio::aba(model, d.pin_data_, q, v, d.tau_);
+  d.xdot_.segment(nv, nv) = pinocchio::aba(model, d.pin_data_, q, v, tau,
+                                           pinocchio::Convention::LOCAL);
 }
 
 template <typename Scalar>
@@ -55,9 +58,13 @@ void MultibodyFreeFwdDynamicsTpl<Scalar>::dForward(const ConstVectorRef &x,
   const int nq = model.nq;
   const int nv = model.nv;
   auto da_dx = d.Jx_.bottomRows(nv);
-  pinocchio::computeABADerivatives(model, d.pin_data_, x.head(nq), x.tail(nv),
-                                   d.tau_, da_dx.leftCols(nv),
-                                   da_dx.rightCols(nv), d.pin_data_.Minv);
+  const ConstVectorRef q = x.head(nq);
+  const ConstVectorRef v = x.tail(nv);
+  const ConstVectorRef tau = d.tau_;
+  pinocchio::computeABADerivatives(model, d.pin_data_, q, v, tau,
+                                   pinocchio::make_ref(da_dx.leftCols(nv)),
+                                   pinocchio::make_ref(da_dx.rightCols(nv)),
+                                   pinocchio::make_ref(d.pin_data_.Minv));
   d.Ju_.bottomRows(nv) = d.pin_data_.Minv * d.dtau_du_;
 }
 
