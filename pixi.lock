@@ -182,7 +182,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-0.6.7-py312h68727a3_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py312h5cc9dfa_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py312h5cc9dfa_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pthread-stubs-0.4-hb9d3cd8_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -386,7 +386,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-0.6.7-py312h38eb264_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py312h42c1648_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py312h8f553d6_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pthread-stubs-0.4-h00291cd_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -589,7 +589,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-0.6.7-py312hb609a58_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py312heb7a149_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py312hfef4311_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pthread-stubs-0.4-hd74edd7_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -820,7 +820,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-0.6.7-py39h74842e3_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py39hc9fa1b4_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py39hc9fa1b4_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pthread-stubs-0.4-hb9d3cd8_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -1028,7 +1028,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-0.6.7-py39h1551cf9_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py39h60301fe_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py39h7a97658_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pthread-stubs-0.4-h00291cd_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -1235,7 +1235,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-0.6.7-py39h3ee6b94_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py39hda54ad8_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py39hc5c63ab_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pthread-stubs-0.4-hd74edd7_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -1462,7 +1462,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-0.6.7-py312h68727a3_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py312h5cc9dfa_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py312h5cc9dfa_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pthread-stubs-0.4-hb9d3cd8_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -1664,7 +1664,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-0.6.7-py312h38eb264_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py312h42c1648_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py312h8f553d6_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pthread-stubs-0.4-h00291cd_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -1865,7 +1865,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-0.6.7-py312hb609a58_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py312heb7a149_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py312hfef4311_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pthread-stubs-0.4-hd74edd7_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -2080,7 +2080,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-0.6.7-py312h68727a3_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py312h5cc9dfa_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py312h5cc9dfa_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pthread-stubs-0.4-hb9d3cd8_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -2293,7 +2293,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-0.6.7-py312h68727a3_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py312h5cc9dfa_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py312h5cc9dfa_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pthread-stubs-0.4-hb9d3cd8_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -2480,7 +2480,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-0.6.7-py312h38eb264_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py312h42c1648_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py312h8f553d6_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pthread-stubs-0.4-h00291cd_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -2666,7 +2666,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-0.6.7-py312hb609a58_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py312heb7a149_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py312hfef4311_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pthread-stubs-0.4-hd74edd7_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -2875,7 +2875,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-0.6.7-py312h68727a3_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py312h5cc9dfa_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py312h5cc9dfa_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pthread-stubs-0.4-hb9d3cd8_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -3060,7 +3060,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-0.6.7-py312h38eb264_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py312h42c1648_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py312h8f553d6_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pthread-stubs-0.4-h00291cd_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -3244,7 +3244,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-0.6.7-py312hb609a58_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py312heb7a149_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py312hfef4311_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pthread-stubs-0.4-hd74edd7_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -3461,7 +3461,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pre-commit-4.0.1-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-0.6.7-py312h68727a3_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py312h5cc9dfa_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py312h5cc9dfa_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pthread-stubs-0.4-hb9d3cd8_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -3658,7 +3658,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pre-commit-4.0.1-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-0.6.7-py312h38eb264_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py312h42c1648_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py312h8f553d6_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pthread-stubs-0.4-h00291cd_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -3854,7 +3854,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pre-commit-4.0.1-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-0.6.7-py312hb609a58_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py312heb7a149_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py312hfef4311_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pthread-stubs-0.4-hd74edd7_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -4067,7 +4067,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-0.6.7-py312h68727a3_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py312h5cc9dfa_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py312h5cc9dfa_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pthread-stubs-0.4-hb9d3cd8_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -4252,7 +4252,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-0.6.7-py312h38eb264_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py312h42c1648_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py312h8f553d6_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pthread-stubs-0.4-h00291cd_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -4436,7 +4436,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-0.6.7-py312hb609a58_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py312heb7a149_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py312hfef4311_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pthread-stubs-0.4-hd74edd7_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -4646,7 +4646,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-0.6.7-py312h68727a3_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py312h5cc9dfa_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py312h5cc9dfa_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pthread-stubs-0.4-hb9d3cd8_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -4832,7 +4832,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-0.6.7-py312h38eb264_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py312h42c1648_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py312h8f553d6_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pthread-stubs-0.4-h00291cd_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -5017,7 +5017,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-0.6.7-py312hb609a58_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py312heb7a149_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py312hfef4311_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pthread-stubs-0.4-hd74edd7_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -5229,7 +5229,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-0.6.7-py39h74842e3_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py39hc9fa1b4_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py39hc9fa1b4_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pthread-stubs-0.4-hb9d3cd8_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -5418,7 +5418,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-0.6.7-py39h1551cf9_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py39h60301fe_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py39h7a97658_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pthread-stubs-0.4-h00291cd_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -5606,7 +5606,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-0.6.7-py39h3ee6b94_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py39hda54ad8_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py39hc5c63ab_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pthread-stubs-0.4-hd74edd7_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -5816,7 +5816,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-0.6.7-py312h68727a3_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py312h5cc9dfa_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py312h5cc9dfa_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pthread-stubs-0.4-hb9d3cd8_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -6002,7 +6002,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-0.6.7-py312h38eb264_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py312h42c1648_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py312h8f553d6_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pthread-stubs-0.4-h00291cd_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -6187,7 +6187,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/pluggy-1.5.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/prompt-toolkit-3.0.48-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-0.6.7-py312hb609a58_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py312heb7a149_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py312hfef4311_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pthread-stubs-0.4-hd74edd7_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ptyprocess-0.7.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pure_eval-0.2.3-pyhd8ed1ab_1.conda
@@ -13544,12 +13544,11 @@ packages:
   license_family: BSD
   size: 699006
   timestamp: 1732825452897
-- conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py312h5cc9dfa_2.conda
-  sha256: e0f1a874489d8b5fbc449a9b28e3427a45953778d9784df0bfd44341f7b5fc7d
-  md5: 80d873266bc59e5f0aff5f7a60009155
+- conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py312h5cc9dfa_3.conda
+  sha256: bc2d5dbec8250d9914637aa1e9baa8cc180e66ecbb7d23966aca2dda972ff61a
+  md5: 5e0f19473fbbd23405cbd40594209264
   depends:
   - __glibc >=2.17,<3.0.a0
-  - _openmp_mutex >=4.5
   - eigen
   - eigenpy >=3.10.1,<3.10.2.0a0
   - fmt >=11.0.2,<12.0a0
@@ -13569,14 +13568,13 @@ packages:
   platform: linux
   license: BSD-2-Clause
   license_family: BSD
-  size: 1107798
-  timestamp: 1734328326998
-- conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py39hc9fa1b4_2.conda
-  sha256: e0bf28aa00de2c0252e21d92e77bf97064afc8c5c30c8874802922a6ff32751d
-  md5: 4ae8310ccf1860b8d66b4a0c9278ec18
+  size: 1104468
+  timestamp: 1735809417434
+- conda: https://conda.anaconda.org/conda-forge/linux-64/proxsuite-nlp-0.10.0-py39hc9fa1b4_3.conda
+  sha256: 905fb0162de9286d97d1bc9176026ddb51a748bc59c906b55bc488d2f489872b
+  md5: e89a336886f898c802d2c1033062d88f
   depends:
   - __glibc >=2.17,<3.0.a0
-  - _openmp_mutex >=4.5
   - eigen
   - eigenpy >=3.10.1,<3.10.2.0a0
   - fmt >=11.0.2,<12.0a0
@@ -13596,11 +13594,11 @@ packages:
   platform: linux
   license: BSD-2-Clause
   license_family: BSD
-  size: 1103894
-  timestamp: 1734328326665
-- conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py312h42c1648_2.conda
-  sha256: 35f8b1b6efd09e985c839cef351f14bcca263b3960743ef0754e5d6dfef161fc
-  md5: dfaf2aefed91fddddd3bf1bc02691ef7
+  size: 1097782
+  timestamp: 1735809521043
+- conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py312h8f553d6_3.conda
+  sha256: 6b6fe519691f8bcd5ed5602d201fc06fcd16e4dbf58f768d62197e1c0a0f8571
+  md5: 5dbe8925b8b908fe6e1961244f6ac7d3
   depends:
   - __osx >=10.13
   - eigen
@@ -13609,8 +13607,6 @@ packages:
   - libboost >=1.86.0,<1.87.0a0
   - libboost-python >=1.86.0,<1.87.0a0
   - libcxx >=18
-  - llvm-openmp >=18.1.8
-  - llvm-openmp >=19.1.5
   - matplotlib-base
   - meshcat-python
   - numpy >=1.19,<3
@@ -13623,11 +13619,11 @@ packages:
   platform: osx
   license: BSD-2-Clause
   license_family: BSD
-  size: 921426
-  timestamp: 1734328880961
-- conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py39h60301fe_2.conda
-  sha256: 7a93c85e710b1fd2d351bce32ce9c36093f9f0019b58b333744f43757b4a199e
-  md5: 355ac85f23e5afc2bd111c81c5ac9dcf
+  size: 922516
+  timestamp: 1735809781350
+- conda: https://conda.anaconda.org/conda-forge/osx-64/proxsuite-nlp-0.10.0-py39h7a97658_3.conda
+  sha256: 2b625f3c4d936893e8b0fd084109e0d09418702af147c78be07e2b712696818e
+  md5: 85fea0a2bd9005266c38e2708fd90c6e
   depends:
   - __osx >=10.13
   - eigen
@@ -13636,8 +13632,6 @@ packages:
   - libboost >=1.86.0,<1.87.0a0
   - libboost-python >=1.86.0,<1.87.0a0
   - libcxx >=18
-  - llvm-openmp >=18.1.8
-  - llvm-openmp >=19.1.5
   - matplotlib-base
   - meshcat-python
   - numpy >=1.19,<3
@@ -13650,11 +13644,11 @@ packages:
   platform: osx
   license: BSD-2-Clause
   license_family: BSD
-  size: 917094
-  timestamp: 1734328677386
-- conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py312heb7a149_2.conda
-  sha256: 10dd6f6fe795466a731a998cace25f65de0337dedf518527d95ab677064863d8
-  md5: efa9fde1f457d4708391a79f88df85ca
+  size: 913384
+  timestamp: 1735809741006
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py312hfef4311_3.conda
+  sha256: 6d06d935bde20e87062c502cfc05b74a1b438c05241cad79b028a4d702b3a6c2
+  md5: 3ab190462a518ab63c5e1d02aa3cb8ac
   depends:
   - __osx >=11.0
   - eigen
@@ -13663,8 +13657,6 @@ packages:
   - libboost >=1.86.0,<1.87.0a0
   - libboost-python >=1.86.0,<1.87.0a0
   - libcxx >=18
-  - llvm-openmp >=18.1.8
-  - llvm-openmp >=19.1.5
   - matplotlib-base
   - meshcat-python
   - numpy >=1.19,<3
@@ -13678,11 +13670,11 @@ packages:
   platform: osx
   license: BSD-2-Clause
   license_family: BSD
-  size: 840510
-  timestamp: 1734328970173
-- conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py39hda54ad8_2.conda
-  sha256: dbab7afcb57e8193647d8ed5a9b2be8e13a1394f69bb6c1423d71d430555d805
-  md5: ea42f9bfc16e5ee622bf2692050273e8
+  size: 836489
+  timestamp: 1735809773083
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/proxsuite-nlp-0.10.0-py39hc5c63ab_3.conda
+  sha256: c8cbf098e0ce212b72a7efabb33d75580f93a95704c13d2f3ee325e8e44a6dda
+  md5: edf2898ff50ecb69369b8bfc109dc55a
   depends:
   - __osx >=11.0
   - eigen
@@ -13691,8 +13683,6 @@ packages:
   - libboost >=1.86.0,<1.87.0a0
   - libboost-python >=1.86.0,<1.87.0a0
   - libcxx >=18
-  - llvm-openmp >=18.1.8
-  - llvm-openmp >=19.1.5
   - matplotlib-base
   - meshcat-python
   - numpy >=1.19,<3
@@ -13706,8 +13696,8 @@ packages:
   platform: osx
   license: BSD-2-Clause
   license_family: BSD
-  size: 832754
-  timestamp: 1734328640423
+  size: 828316
+  timestamp: 1735809685359
 - conda: https://conda.anaconda.org/conda-forge/linux-64/pthread-stubs-0.4-hb9d3cd8_1002.conda
   sha256: 9c88f8c64590e9567c6c80823f0328e58d3b1efb0e1c539c0315ceca764e0973
   md5: b3c17d95b5a10c6e64a21fa17573e70e
