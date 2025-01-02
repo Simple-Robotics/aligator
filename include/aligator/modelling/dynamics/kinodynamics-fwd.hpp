@@ -8,6 +8,7 @@
 #include <Eigen/LU>
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
 #include <pinocchio/multibody/model.hpp>
+#include <pinocchio/multibody/data.hpp>
 
 namespace aligator {
 namespace dynamics {
@@ -97,8 +98,12 @@ struct KinodynamicsFwdDataTpl : ContinuousDynamicsDataTpl<Scalar> {
   KinodynamicsFwdDataTpl(const KinodynamicsFwdDynamicsTpl<Scalar> *model);
 };
 
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct KinodynamicsFwdDynamicsTpl<context::Scalar>;
+extern template struct KinodynamicsFwdDataTpl<context::Scalar>;
+#endif
+
 } // namespace dynamics
 } // namespace aligator
 
-#include "aligator/modelling/dynamics/kinodynamics-fwd.hxx"
 #endif
