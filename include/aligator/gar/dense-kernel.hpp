@@ -9,11 +9,11 @@
 namespace aligator::gar {
 
 /// @brief Symmetrize a matrix using its lower triangular part.
-template <typename Derived>
+template <typename Derived, unsigned int UpLo = Eigen::Lower>
 void make_symmetric(const Eigen::MatrixBase<Derived> &matrix) {
   Derived &mat = matrix.const_cast_derived();
   // symmetrize upper part
-  Eigen::SelfAdjointView<Derived, Eigen::Lower> view{mat};
+  Eigen::SelfAdjointView<Derived, UpLo> view{mat};
   mat = view;
 }
 
