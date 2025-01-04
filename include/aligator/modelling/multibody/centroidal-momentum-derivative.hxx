@@ -34,8 +34,8 @@ void CentroidalMomentumDerivativeResidualTpl<Scalar>::evaluate(
   Data &d = static_cast<Data &>(data);
   pinocchio::DataTpl<Scalar> &pdata = d.pin_data_;
 
-  const auto q = x.head(pin_model_.nq);
-  const auto v = x.tail(pin_model_.nv);
+  const ConstVectorRef q = x.head(pin_model_.nq);
+  const ConstVectorRef v = x.tail(pin_model_.nv);
 
   pinocchio::forwardKinematics(pin_model_, pdata, q);
   pinocchio::centerOfMass(pin_model_, pdata, q, v);

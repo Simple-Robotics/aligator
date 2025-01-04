@@ -23,8 +23,8 @@ template <typename Scalar>
 void FrameVelocityResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                                 BaseData &data) const {
   Data &d = static_cast<Data &>(data);
-  auto q = x.head(pin_model_.nq);
-  auto v = x.segment(pin_model_.nq, pin_model_.nv);
+  const ConstVectorRef q = x.head(pin_model_.nq);
+  const ConstVectorRef v = x.segment(pin_model_.nq, pin_model_.nv);
   pinocchio::forwardKinematics(pin_model_, d.pin_data_, q, v);
   pinocchio::updateFramePlacement(pin_model_, d.pin_data_, pin_frame_id_);
   d.value_ = (pinocchio::getFrameVelocity(pin_model_, d.pin_data_,
@@ -37,14 +37,15 @@ template <typename Scalar>
 void FrameVelocityResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &x,
                                                         BaseData &data) const {
   Data &d = static_cast<Data &>(data);
-  auto q = x.head(pin_model_.nq);
-  auto v = x.segment(pin_model_.nq, pin_model_.nv);
+  const ConstVectorRef q = x.head(pin_model_.nq);
+  const ConstVectorRef v = x.segment(pin_model_.nq, pin_model_.nv);
   VectorXs a = VectorXs::Zero(pin_model_.nv);
   pinocchio::computeForwardKinematicsDerivatives(pin_model_, d.pin_data_, q, v,
-                                                 a);
+                                                 pinocchio::make_const_ref(a));
+  Eigen::Ref<Matrix6Xs> Jq = d.Jx_.leftCols(pin_model_.nv);
+  Eigen::Ref<Matrix6Xs> Jv = d.Jx_.rightCols(pin_model_.nv);
   pinocchio::getFrameVelocityDerivatives(pin_model_, d.pin_data_, pin_frame_id_,
-                                         type_, d.Jx_.leftCols(pin_model_.nv),
-                                         d.Jx_.rightCols(pin_model_.nv));
+                                         type_, Jq, Jv);
 }
 
 template <typename Scalar>

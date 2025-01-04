@@ -19,8 +19,8 @@ template <typename Scalar>
 void FlyHighResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                           BaseData &data) const {
   Data &d = static_cast<Data &>(data);
-  auto q = x.head(pin_model_.nq);
-  auto v = x.segment(pin_model_.nq, pin_model_.nv);
+  const ConstVectorRef q = x.head(pin_model_.nq);
+  const ConstVectorRef v = x.segment(pin_model_.nq, pin_model_.nv);
   pinocchio::forwardKinematics(pin_model_, d.pdata_, q, v);
   pinocchio::updateFramePlacement(pin_model_, d.pdata_, pin_frame_id_);
 
@@ -39,11 +39,12 @@ void FlyHighResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &x,
                                                   BaseData &data) const {
   Data &d = static_cast<Data &>(data);
   const int nv = pin_model_.nv;
-  auto q = x.head(pin_model_.nq);
-  auto v = x.segment(pin_model_.nq, nv);
-  auto a = VectorXs::Zero(nv);
+  const ConstVectorRef q = x.head(pin_model_.nq);
+  const ConstVectorRef v = x.segment(pin_model_.nq, nv);
+  VectorXs a = VectorXs::Zero(nv);
 
-  pinocchio::computeForwardKinematicsDerivatives(pin_model_, d.pdata_, q, v, a);
+  pinocchio::computeForwardKinematicsDerivatives(pin_model_, d.pdata_, q, v,
+                                                 pinocchio::make_const_ref(a));
   pinocchio::getFrameVelocityDerivatives(pin_model_, d.pdata_, pin_frame_id_,
                                          pinocchio::LOCAL, d.l_dnu_dq,
                                          d.l_dnu_dv);

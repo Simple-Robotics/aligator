@@ -11,7 +11,8 @@ void FramePlacementResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                                  BaseData &data) const {
   Data &d = static_cast<Data &>(data);
   pinocchio::DataTpl<Scalar> &pdata = d.pin_data_;
-  pinocchio::forwardKinematics(pin_model_, pdata, x.head(pin_model_.nq));
+  const ConstVectorRef q = x.head(pin_model_.nq);
+  pinocchio::forwardKinematics(pin_model_, pdata, q);
   pinocchio::updateFramePlacement(pin_model_, pdata, pin_frame_id_);
 
   d.rMf_ = p_ref_inverse_ * pdata.oMf[pin_frame_id_];

@@ -39,9 +39,9 @@ void KinodynamicsFwdDynamicsTpl<Scalar>::forward(const ConstVectorRef &x,
                                                  BaseData &data) const {
   Data &d = static_cast<Data &>(data);
   pinocchio::DataTpl<Scalar> &pdata = d.pin_data_;
-  const auto q = x.head(pin_model_.nq);
-  const auto v = x.tail(pin_model_.nv);
-  const auto a = u.tail(pin_model_.nv - 6);
+  const ConstVectorRef q = x.head(pin_model_.nq);
+  const ConstVectorRef v = x.tail(pin_model_.nv);
+  const ConstVectorRef a = u.tail(pin_model_.nv - 6);
 
   pinocchio::ccrba(pin_model_, pdata, q, v);  // Compute Ag
   pinocchio::dccrba(pin_model_, pdata, q, v); // Compute Ag_dot
@@ -99,9 +99,9 @@ void KinodynamicsFwdDynamicsTpl<Scalar>::dForward(const ConstVectorRef &x,
                                                   BaseData &data) const {
   Data &d = static_cast<Data &>(data);
   pinocchio::DataTpl<Scalar> &pdata = d.pin_data_;
-  const auto q = x.head(pin_model_.nq);
-  const auto v = x.tail(pin_model_.nv);
-  const auto a = u.tail(pin_model_.nv - 6);
+  const ConstVectorRef q = x.head(pin_model_.nq);
+  const ConstVectorRef v = x.tail(pin_model_.nv);
+  const ConstVectorRef a = u.tail(pin_model_.nv - 6);
 
   pinocchio::centerOfMass(pin_model_, pdata, q, v);
   pinocchio::jacobianCenterOfMass(pin_model_, pdata, q);

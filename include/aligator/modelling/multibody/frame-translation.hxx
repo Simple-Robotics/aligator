@@ -18,7 +18,8 @@ void FrameTranslationResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                                    BaseData &data) const {
   Data &d = static_cast<Data &>(data);
   pinocchio::DataTpl<Scalar> &pdata = d.pin_data_;
-  pinocchio::forwardKinematics(pin_model_, pdata, x.head(pin_model_.nq));
+  const ConstVectorRef q = x.head(pin_model_.nq);
+  pinocchio::forwardKinematics(pin_model_, pdata, q);
   pinocchio::updateFramePlacement(pin_model_, pdata, pin_frame_id_);
 
   d.value_ = pdata.oMf[pin_frame_id_].translation() - p_ref_;
