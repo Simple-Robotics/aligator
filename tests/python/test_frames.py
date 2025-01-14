@@ -190,6 +190,82 @@ def test_fly_high():
         assert np.allclose(data.Jx, Jx_nd, THRESH)
 
 
+def test_frame_collision():
+    import hppfcl
+
+    fr_name1 = "larm_shoulder2_body"
+    fr_id1 = model.getFrameId(fr_name1)
+    joint_id = model.frames[fr_id1].parentJoint
+
+    fr_name2 = "rleg_elbow_body"
+    fr_id2 = model.getFrameId(fr_name2)
+    joint_id2 = model.frames[fr_id2].parentJoint
+
+    frame_SE3 = pin.SE3.Random()
+    frame_SE3_bis = pin.SE3.Random()
+    alpha = np.random.rand()
+    beta = np.random.rand()
+
+    geometry = pin.GeometryModel()
+    ig_frame = geometry.addGeometryObject(
+        pin.GeometryObject(
+            "frame", fr_id1, joint_id, hppfcl.Capsule(0, alpha), frame_SE3
+        )
+    )
+
+    ig_frame2 = geometry.addGeometryObject(
+        pin.GeometryObject(
+            "frame2", fr_id2, joint_id2, hppfcl.Capsule(0, beta), frame_SE3_bis
+        )
+    )
+    geometry.addCollisionPair(pin.CollisionPair(ig_frame, ig_frame2))
+    gdata = geometry.createData()
+
+    space = manifolds.MultibodyConfiguration(model)
+    ndx = space.ndx
+    x0 = space.neutral()
+    d = np.random.randn(space.ndx) * 0.1
+    d[6:] = 0.0
+    x0 = space.integrate(x0, d)
+    u0 = np.zeros(nu)
+    q0 = x0[:nq]
+
+    pin.forwardKinematics(model, rdata, q0)
+    pin.updateGeometryPlacements(model, rdata, geometry, gdata, q0)
+    pin.computeDistance(geometry, gdata, 0)
+    dist = (
+        gdata.distanceResults[0].getNearestPoint1()
+        - gdata.distanceResults[0].getNearestPoint2()
+    )
+    alph_dist = 3
+    norm = 0.5 * (np.linalg.norm(dist) - alph_dist) * (np.linalg.norm(dist) - alph_dist)
+
+    fun = aligator.FrameCollisionResidual(ndx, nu, model, geometry, 0, alph_dist)
+
+    fdata = fun.createData()
+    fun.evaluate(x0, fdata)
+
+    assert np.allclose(fdata.value[0], norm)
+
+    fun.computeJacobians(x0, fdata)
+    fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
+    fdata2 = fun_fd.createData()
+    fun_fd.evaluate(x0, u0, x0, fdata2)
+    assert np.allclose(fdata.value, fdata2.value)
+
+    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    J_fd = fdata2.Jx[:]
+    assert fdata.Jx.shape == J_fd.shape
+
+    for i in range(100):
+        x0 = sample_gauss(space)
+        fun.evaluate(x0, u0, x0, fdata)
+        fun.computeJacobians(x0, u0, x0, fdata)
+        fun_fd.evaluate(x0, u0, x0, fdata2)
+        fun_fd.computeJacobians(x0, u0, x0, fdata2)
+        assert np.allclose(fdata.Jx, fdata2.Jx, THRESH, 1e-7)
+
+
 if __name__ == "__main__":
     import sys
     import pytest

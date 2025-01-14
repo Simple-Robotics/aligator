@@ -7,6 +7,7 @@
 #include "aligator/modelling/multibody/frame-placement.hpp"
 #include "aligator/modelling/multibody/frame-velocity.hpp"
 #include "aligator/modelling/multibody/frame-translation.hpp"
+#include "aligator/modelling/multibody/frame-collision.hpp"
 #include "aligator/python/polymorphic-convertible.hpp"
 #ifdef ALIGATOR_PINOCCHIO_V3
 #include "aligator/modelling/multibody/constrained-rnea.hpp"
@@ -51,6 +52,11 @@ void exposeFrameFunctions() {
 
   using FrameTranslation = FrameTranslationResidualTpl<Scalar>;
   using FrameTranslationData = FrameTranslationDataTpl<Scalar>;
+
+  using FrameCollision = FrameCollisionResidualTpl<Scalar>;
+  using FrameCollisionData = FrameCollisionDataTpl<Scalar>;
+
+  using GeometryModel = pinocchio::GeometryModel;
 
   bp::register_ptr_to_python<shared_ptr<PinData>>();
 
@@ -119,6 +125,24 @@ void exposeFrameFunctions() {
       .def_readonly("fJf", &FrameTranslationData::fJf_)
       .def_readonly("pin_data", &FrameTranslationData::pin_data_,
                     "Pinocchio data struct.");
+
+  bp::class_<FrameCollision, bp::bases<UnaryFunction>>(
+      "FrameCollisionResidual", "Frame collision residual function.",
+      bp::init<int, int, const PinModel &, const GeometryModel &,
+               pinocchio::PairIndex, pinocchio::JointIndex>(
+          bp::args("self", "ndx", "nu", "model", "geom_model", "frame_pair_id",
+                   "joint_id")))
+      .def(FrameAPIVisitor<FrameCollision>());
+
+  bp::register_ptr_to_python<shared_ptr<FrameCollisionData>>();
+
+  bp::class_<FrameCollisionData, bp::bases<context::StageFunctionData>>(
+      "FrameCollisionData", "Data struct for FrameCollisionResidual.",
+      bp::no_init)
+      .def_readonly("pin_data", &FrameCollisionData::pin_data_,
+                    "Pinocchio data struct.")
+      .def_readonly("geom_data", &FrameCollisionData::geometry_,
+                    "Geometry data struct.");
 }
 
 #ifdef ALIGATOR_PINOCCHIO_V3
