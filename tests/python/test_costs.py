@@ -6,6 +6,45 @@ import eigenpy
 
 import pytest
 
+EPS = 1e-7
+ATOL = 2 * EPS**0.5
+
+
+def finite_grad(costmodel, space, x, u, EPS=1e-8):
+    ndx = space.ndx
+    nu = u.size
+    grad = np.zeros(ndx + nu)
+    dx = np.zeros(ndx)
+    du = np.zeros(nu)
+    data = costmodel.createData()
+    costmodel.evaluate(x, u, data)
+    # distance to origin
+    _dx = space.difference(space.neutral(), x)
+    ex = EPS * max(1.0, np.linalg.norm(_dx))
+    vref = data.value
+    for i in range(ndx):
+        dx[i] = ex
+        x1 = space.integrate(x, dx)
+        costmodel.evaluate(x1, u, data)
+        grad[i] = (data.value - vref) / ex
+        dx[i] = 0.0
+
+    for i in range(ndx, ndx + nu):
+        du[i - ndx] = ex
+        u1 = u + du
+        costmodel.evaluate(x, u1, data)
+        grad[i] = (data.value - vref) / ex
+        du[i - ndx] = 0.0
+
+    return grad
+
+
+def sample_gauss(space):
+    x0 = space.neutral()
+    d = np.random.randn(space.ndx) * 0.1
+    x1 = space.integrate(x0, d)
+    return x1
+
 
 def test_cost_stack():
     nx = 2
@@ -107,6 +146,12 @@ def test_composite_cost():
     print(data.value)
     print(data.grad)
     print(data.hess)
+    for i in range(100):
+        x0 = sample_gauss(space)
+        cost.evaluate(x0, u0, data)
+        cost.computeGradients(x0, u0, data)
+        fgrad = finite_grad(cost, space, x0, u0)
+        assert np.allclose(fgrad, data.grad)
     print("----")
 
 
@@ -127,10 +172,9 @@ def test_log_barrier():
 
     np.random.seed(40)
 
-    weight = np.random.rand()
+    weights = np.ones(fun.nr)
     thresh = np.random.rand()
-    cost = aligator.RelaxedLogBarrierCost(space, fun, weight, thresh)
-    weights = np.array([weight] * fun.nr)
+    cost = aligator.RelaxedLogBarrierCost(space, fun, weights, thresh)
     assert np.array_equal(weights, cost.weights)
 
     data = cost.createData()
@@ -145,6 +189,13 @@ def test_log_barrier():
     print(data.value)
     print(data.grad)
     print(data.hess)
+
+    for i in range(100):
+        x0 = sample_gauss(space)
+        cost.evaluate(x0, u0, data)
+        cost.computeGradients(x0, u0, data)
+        fgrad = finite_grad(cost, space, x0, u0)
+        assert np.allclose(fgrad, data.grad)
     print("----")
 
 
