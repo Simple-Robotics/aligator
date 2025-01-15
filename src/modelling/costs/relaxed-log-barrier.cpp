@@ -1,0 +1,8 @@
+/// @file
+/// @copyright Copyright (C) 2024 LAAS-CNRS, INRIA
+
+#include "aligator/modelling/costs/relaxed-log-barrier.hpp"
+
+namespace aligator {
+template struct RelaxedLogBarrierCostTpl<context::Scalar>;
+} // namespace aligator

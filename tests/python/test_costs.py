@@ -110,6 +110,44 @@ def test_composite_cost():
     print("----")
 
 
+def test_log_barrier():
+    space = manifolds.VectorSpace(3)
+    x0 = space.rand()
+
+    nu = space.ndx
+    u0 = np.ones(nu)
+    target = space.rand()
+    fun = aligator.StateErrorResidual(space, nu, target)
+    # for debug
+    fd = fun.createData()
+    fun.evaluate(x0, u0, fd)
+    fun.computeJacobians(x0, u0, fd)
+
+    # costs
+
+    np.random.seed(40)
+
+    weight = np.random.rand()
+    thresh = np.random.rand()
+    cost = aligator.RelaxedLogBarrierCost(space, fun, weight, thresh)
+    weights = np.array([weight] * fun.nr)
+    assert np.array_equal(weights, cost.weights)
+
+    data = cost.createData()
+    print("Composite data:", data)
+    assert isinstance(data, aligator.CompositeCostData)
+
+    cost.evaluate(x0, u0, data)
+    cost.computeGradients(x0, u0, data)
+    cost.computeHessians(x0, u0, data)
+
+    print("RelaxedLogCost:")
+    print(data.value)
+    print(data.grad)
+    print(data.hess)
+    print("----")
+
+
 def test_quad_state():
     space = manifolds.SE2()
     ndx = space.ndx
