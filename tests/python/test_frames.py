@@ -205,17 +205,19 @@ def test_frame_collision():
     frame_SE3_bis = pin.SE3.Random()
     alpha = np.random.rand()
     beta = np.random.rand()
+    gamma = np.random.rand()
+    delta = np.random.rand()
 
     geometry = pin.GeometryModel()
     ig_frame = geometry.addGeometryObject(
         pin.GeometryObject(
-            "frame", fr_id1, joint_id, hppfcl.Capsule(0, alpha), frame_SE3
+            "frame", fr_id1, joint_id, hppfcl.Capsule(alpha, gamma), frame_SE3
         )
     )
 
     ig_frame2 = geometry.addGeometryObject(
         pin.GeometryObject(
-            "frame2", fr_id2, joint_id2, hppfcl.Capsule(0, beta), frame_SE3_bis
+            "frame2", fr_id2, joint_id2, hppfcl.Capsule(beta, delta), frame_SE3_bis
         )
     )
     geometry.addCollisionPair(pin.CollisionPair(ig_frame, ig_frame2))
@@ -233,14 +235,9 @@ def test_frame_collision():
     pin.forwardKinematics(model, rdata, q0)
     pin.updateGeometryPlacements(model, rdata, geometry, gdata, q0)
     pin.computeDistance(geometry, gdata, 0)
-    dist = (
-        gdata.distanceResults[0].getNearestPoint1()
-        - gdata.distanceResults[0].getNearestPoint2()
-    )
-    alph_dist = 3
-    norm = 0.5 * (np.linalg.norm(dist) - alph_dist) * (np.linalg.norm(dist) - alph_dist)
+    norm = gdata.distanceResults[0].min_distance
 
-    fun = aligator.FrameCollisionResidual(ndx, nu, model, geometry, 0, alph_dist)
+    fun = aligator.FrameCollisionResidual(ndx, nu, model, geometry, 0)
 
     fdata = fun.createData()
     fun.evaluate(x0, fdata)
@@ -250,19 +247,19 @@ def test_frame_collision():
     fun.computeJacobians(x0, fdata)
     fun_fd = aligator.FiniteDifferenceHelper(space, fun, FD_EPS)
     fdata2 = fun_fd.createData()
-    fun_fd.evaluate(x0, u0, x0, fdata2)
+    fun_fd.evaluate(x0, u0, fdata2)
     assert np.allclose(fdata.value, fdata2.value)
 
-    fun_fd.computeJacobians(x0, u0, x0, fdata2)
+    fun_fd.computeJacobians(x0, u0, fdata2)
     J_fd = fdata2.Jx[:]
     assert fdata.Jx.shape == J_fd.shape
 
     for i in range(100):
         x0 = sample_gauss(space)
-        fun.evaluate(x0, u0, x0, fdata)
-        fun.computeJacobians(x0, u0, x0, fdata)
-        fun_fd.evaluate(x0, u0, x0, fdata2)
-        fun_fd.computeJacobians(x0, u0, x0, fdata2)
+        fun.evaluate(x0, u0, fdata)
+        fun.computeJacobians(x0, u0, fdata)
+        fun_fd.evaluate(x0, u0, fdata2)
+        fun_fd.computeJacobians(x0, u0, fdata2)
         assert np.allclose(fdata.Jx, fdata2.Jx, THRESH, 1e-7)
 
 

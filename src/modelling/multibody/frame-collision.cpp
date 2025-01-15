@@ -1,4 +1,4 @@
-#include "aligator/modelling/multibody/frame-collision.hpp"
+#include "aligator/modelling/multibody/frame-collision.hxx"
 
 namespace aligator {
 

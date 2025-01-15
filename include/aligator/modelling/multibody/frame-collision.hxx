@@ -21,19 +21,7 @@ void FrameCollisionResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
   pinocchio::computeDistance(geom_model_, d.geometry_, frame_pair_id_);
 
   // calculate residual
-  d.witness_distance_ =
-      d.geometry_.distanceResults[frame_pair_id_].nearest_points[0] -
-      d.geometry_.distanceResults[frame_pair_id_].nearest_points[1];
-
-  d.witness_norm_ = d.witness_distance_.norm();
-  if (d.witness_norm_ < alpha_) {
-    d.value_[0] =
-        Scalar(0.5) * (d.witness_norm_ - alpha_) * (d.witness_norm_ - alpha_);
-  } else {
-    d.value_[0] = Scalar(0.0);
-  }
-  // d.value_[0] = -d.witness_distance_.norm() + alpha_;
-  // std::cout << "value " << d.value_[0] << std::endl;
+  d.value_[0] = d.geometry_.distanceResults[frame_pair_id_].min_distance;
 }
 
 template <typename Scalar>
@@ -42,14 +30,21 @@ void FrameCollisionResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
   Data &d = static_cast<Data &>(data);
   pinocchio::DataTpl<Scalar> &pdata = d.pin_data_;
 
-  // calculate vector from joint to collision p1 and joint to collision p2,
+  // Calculate vector from joint to collision p1 and joint to collision p2,
   // expressed in local world aligned
   d.distance_ = d.geometry_.distanceResults[frame_pair_id_].nearest_points[0] -
                 pdata.oMf[frame_id1_].translation();
   d.distance2_ = d.geometry_.distanceResults[frame_pair_id_].nearest_points[1] -
                  pdata.oMf[frame_id2_].translation();
-  pinocchio::computeJointJacobians(pin_model_, pdata);
 
+  d.jointToP1_.setIdentity();
+  d.jointToP1_.translation(d.distance_);
+
+  d.jointToP2_.setIdentity();
+  d.jointToP2_.translation(d.distance2_);
+
+  // Get frame Jacobians
+  pinocchio::computeJointJacobians(pin_model_, pdata);
   pinocchio::getFrameJacobian(pin_model_, pdata, frame_id1_,
                               pinocchio::LOCAL_WORLD_ALIGNED, d.Jcol_);
 
@@ -57,25 +52,16 @@ void FrameCollisionResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
                               pinocchio::LOCAL_WORLD_ALIGNED, d.Jcol2_);
 
   // compute Jacobian at p1
-  d.Jcol_.template topRows<3>().noalias() +=
-      pinocchio::skew(d.distance_).transpose() *
-      d.Jcol_.template bottomRows<3>();
+  d.Jcol_ = d.jointToP1_.toActionMatrixInverse() * d.Jcol_;
 
   // compute Jacobian at p2
-  d.Jcol2_.template topRows<3>().noalias() +=
-      pinocchio::skew(d.distance2_).transpose() *
-      d.Jcol2_.template bottomRows<3>();
-
-  Eigen::MatrixXd J =
-      d.Jcol_.template topRows<3>() - d.Jcol2_.template topRows<3>();
+  d.Jcol2_ = d.jointToP2_.toActionMatrixInverse() * d.Jcol2_;
 
   // compute the residual derivatives
   d.Jx_.setZero();
-  if (d.witness_norm_ < alpha_ and d.witness_norm_ > 0) {
-    d.Jx_.leftCols(pin_model_.nv) = d.witness_distance_.transpose() *
-                                    (d.witness_norm_ - alpha_) /
-                                    d.witness_norm_ * J;
-  }
+  d.Jx_.leftCols(pin_model_.nv) =
+      -d.geometry_.distanceResults[frame_pair_id_].normal.transpose() *
+      (d.Jcol_.template topRows<3>() - d.Jcol2_.template topRows<3>());
 }
 
 template <typename Scalar>
@@ -86,7 +72,6 @@ FrameCollisionDataTpl<Scalar>::FrameCollisionDataTpl(
       Jcol_(6, model.pin_model_.nv), Jcol2_(6, model.pin_model_.nv) {
   Jcol_.setZero();
   Jcol2_.setZero();
-  witness_norm_ = 0;
 }
 
 } // namespace aligator
