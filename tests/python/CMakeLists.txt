@@ -53,7 +53,7 @@ function(add_test_binding_lib test_name)
   CREATE_CTEST_BUILD_TESTS_TARGET()
 
   set(target_name "${PROJECT_NAME}-${test_name}")
-  python3_add_library(${target_name} MODULE "${test_name}.cpp")
+  Python3_add_library(${target_name} MODULE "${test_name}.cpp")
   set_standard_output_directory(${target_name})
   target_link_libraries(${target_name} PUBLIC ${PYLIB_NAME})
   target_link_libraries(${target_name} PUBLIC eigenpy::eigenpy)
