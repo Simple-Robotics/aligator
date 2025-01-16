@@ -56,7 +56,7 @@ void exposeFrameFunctions() {
   using FrameCollision = FrameCollisionResidualTpl<Scalar>;
   using FrameCollisionData = FrameCollisionDataTpl<Scalar>;
 
-  using GeometryModel = pinocchio::GeometryModel;
+  using pinocchio::GeometryModel;
 
   bp::register_ptr_to_python<shared_ptr<PinData>>();
 
