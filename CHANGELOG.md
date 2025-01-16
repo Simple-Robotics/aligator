@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed compilation issues with C++20 (resolving [#246](https://github.com/Simple-Robotics/aligator/issues/246) and [#254](https://github.com/Simple-Robotics/aligator/discussions/254))
 
 ### Added
+
 - Add a collision distance residual for collision pair
 - Add a relaxed log-barrier cost function
 
