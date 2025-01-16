@@ -17,6 +17,7 @@ class Args(ArgsBase):
     plot: bool = True
     fddp: bool = False
     bounds: bool = False
+    collisions: bool = False
 
 
 args = Args().parse_args()
@@ -33,30 +34,30 @@ vizer = MeshcatVisualizer(rmodel, robot.collision_model, robot.visual_model, dat
 vizer.initViewer(open=args.display, loadModel=True)
 vizer.setBackgroundColor()
 
-frname = "universe"
-fr_id = rmodel.getFrameId(frname)
+fr_name = "universe"
+fr_id = rmodel.getFrameId(fr_name)
 joint_id = rmodel.frames[fr_id].parentJoint
-obstacle_loc = pin.SE3.Identity()
-obstacle_loc.translation[0] = 0.3
-obstacle_loc.translation[1] = 0.5
-obstacle_loc.translation[2] = 0.3
-geom_object = pin.GeometryObject(
-    "capsule", fr_id, joint_id, hppfcl.Capsule(0.05, 0.4), obstacle_loc
-)
+if args.collisions:
+    obstacle_loc = pin.SE3.Identity()
+    obstacle_loc.translation[0] = 0.3
+    obstacle_loc.translation[1] = 0.5
+    obstacle_loc.translation[2] = 0.3
+    geom_object = pin.GeometryObject(
+        "capsule", fr_id, joint_id, hppfcl.Capsule(0.05, 0.4), obstacle_loc
+    )
 
-fr_id2 = rmodel.getFrameId("wrist_3_joint")
-joint_id2 = rmodel.frames[fr_id2].parentJoint
-geom_object2 = pin.GeometryObject(
-    "sphere2", fr_id2, joint_id2, hppfcl.Sphere(0.1), pin.SE3.Identity()
-)
+    fr_id2 = rmodel.getFrameId("wrist_3_joint")
+    joint_id2 = rmodel.frames[fr_id2].parentJoint
+    geom_object2 = pin.GeometryObject(
+        "endeffector", fr_id2, joint_id2, hppfcl.Sphere(0.1), pin.SE3.Identity()
+    )
 
-geometry = pin.GeometryModel()
-ig_frame = geometry.addGeometryObject(geom_object)
-ig_frame2 = geometry.addGeometryObject(geom_object2)
-geometry.addCollisionPair(pin.CollisionPair(ig_frame, ig_frame2))
+    geometry = pin.GeometryModel()
+    ig_frame = geometry.addGeometryObject(geom_object)
+    ig_frame2 = geometry.addGeometryObject(geom_object2)
+    geometry.addCollisionPair(pin.CollisionPair(ig_frame, ig_frame2))
 
-vizer.addGeometryObject(geom_object, [1.0, 1.0, 0.5, 1.0])
-
+    vizer.addGeometryObject(geom_object, [1.0, 1.0, 0.5, 1.0])
 
 x0 = space.neutral()
 
@@ -143,10 +144,11 @@ for i in range(nsteps):
     rcost.addCost("reg", aligator.QuadraticCost(wt_x * dt, wt_u * dt))
 
     stm = aligator.StageModel(rcost, discrete_dynamics)
-    # Distance to obstacle constrained between 0.1 and 100 m
-    cstr_set = constraints.BoxConstraint(np.array([0.1]), np.array([100]))
-    frame_col = aligator.FrameCollisionResidual(ndx, nu, rmodel, geometry, 0)
-    stm.addConstraint(frame_col, cstr_set)
+    if args.collisions:
+        # Distance to obstacle constrained between 0.1 and 100 m
+        cstr_set = constraints.BoxConstraint(np.array([0.1]), np.array([100]))
+        frame_col = aligator.FrameCollisionResidual(ndx, nu, rmodel, geometry, 0)
+        stm.addConstraint(frame_col, cstr_set)
     if args.bounds:
         stm.addConstraint(*make_control_bounds())
     stages.append(stm)

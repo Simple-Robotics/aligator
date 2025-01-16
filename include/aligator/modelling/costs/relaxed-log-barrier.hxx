@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2025 INRIA
 #pragma once
 
 #include "./relaxed-log-barrier.hpp"

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Only link against needed pinocchio libraries ([#260](https://github.com/Simple-Robotics/aligator/pull/260))
 - Use Pinocchio instantiated functions ([#261](https://github.com/Simple-Robotics/aligator/pull/261))
+- Link to pinocchio collision
 
 ### Fixed
 
