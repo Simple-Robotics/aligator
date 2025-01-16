@@ -5,7 +5,7 @@ ci:
   submodules: true
 repos:
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v19.1.4
+    rev: v19.1.7
     hooks:
     - id: clang-format
       types_or: []
@@ -29,13 +29,13 @@ repos:
             )$
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: 'v0.8.1'
+    rev: 'v0.9.1'
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
   - repo: https://github.com/BlankSpruce/gersemi
-    rev: 0.17.1
+    rev: 0.18.1
     hooks:
       - id: gersemi
   - repo: https://github.com/Lucas-C/pre-commit-hooks
