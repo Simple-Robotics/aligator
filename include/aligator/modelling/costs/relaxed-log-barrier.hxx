@@ -9,17 +9,17 @@ namespace aligator {
 template <typename Scalar>
 RelaxedLogBarrierCostTpl<Scalar>::RelaxedLogBarrierCostTpl(
     xyz::polymorphic<Manifold> space, xyz::polymorphic<StageFunction> function,
-    const ConstVectorRef &scale, const Scalar threshold)
-    : Base(space, function->nu), barrier_weights_(scale), residual_(function),
+    const ConstVectorRef &weight, const Scalar threshold)
+    : Base(space, function->nu), barrier_weights_(weight), residual_(function),
       threshold_(threshold) {
-  if (scale.size() != function->nr) {
+  if (weight.size() != function->nr) {
     ALIGATOR_RUNTIME_ERROR(
-        "scale argument dimension ({:d}) != function codimension ({:d})",
-        scale.size(), function->nr);
+        "weight argument dimension ({:d}) != function codimension ({:d})",
+        weight.size(), function->nr);
   }
-  bool negs = (scale.array() <= 0.0).any();
+  bool negs = (weight.array() <= 0.0).any();
   if (negs) {
-    ALIGATOR_RUNTIME_ERROR("scale coefficients must be > 0.");
+    ALIGATOR_RUNTIME_ERROR("weight coefficients must be > 0.");
   }
   if (threshold_ <= 0.) {
     ALIGATOR_RUNTIME_ERROR("threshold must be > 0.");
@@ -29,10 +29,10 @@ RelaxedLogBarrierCostTpl<Scalar>::RelaxedLogBarrierCostTpl(
 template <typename Scalar>
 RelaxedLogBarrierCostTpl<Scalar>::RelaxedLogBarrierCostTpl(
     xyz::polymorphic<Manifold> space, xyz::polymorphic<StageFunction> function,
-    const Scalar scale, const Scalar threshold)
-    : RelaxedLogBarrierCostTpl(
-          space, function, VectorXs::Constant(function->nr, scale), threshold) {
-}
+    const Scalar weight, const Scalar threshold)
+    : RelaxedLogBarrierCostTpl(space, function,
+                               VectorXs::Constant(function->nr, weight),
+                               threshold) {}
 
 template <typename Scalar>
 void RelaxedLogBarrierCostTpl<Scalar>::evaluate(const ConstVectorRef &x,
@@ -45,7 +45,7 @@ void RelaxedLogBarrierCostTpl<Scalar>::evaluate(const ConstVectorRef &x,
   for (size_t i = 0; i < nrows; i++) {
     if (d.residual_data->value_[i] < threshold_) {
       Scalar sq = (d.residual_data->value_[i] - 2 * threshold_) / threshold_;
-      d.value_ += 0.5 * barrier_weights_(i) * (sq * sq - 1) - log(threshold_);
+      d.value_ += barrier_weights_(i) * (0.5 * (sq * sq - 1) - log(threshold_));
     } else {
       d.value_ -= barrier_weights_(i) * log(d.residual_data->value_[i]);
     }
@@ -65,7 +65,7 @@ void RelaxedLogBarrierCostTpl<Scalar>::computeGradients(
   const int nrows = residual_->nr;
   for (int i = 0; i < nrows; i++) {
     auto g_i = J.row(i);
-    if (d.residual_data->value_[i] < threshold_) {
+    if (v(i) < threshold_) {
       d.grad_.noalias() += barrier_weights_(i) * g_i * (v(i) - 2 * threshold_) /
                            (threshold_ * threshold_);
     } else {
@@ -87,7 +87,7 @@ void RelaxedLogBarrierCostTpl<Scalar>::computeHessians(
   const int nrows = residual_->nr;
   for (int i = 0; i < nrows; i++) {
     auto g_i = J.row(i); // row vector
-    if (d.residual_data->value_[i] < threshold_) {
+    if (v(i) < threshold_) {
       Scalar sq = (v(i) - 2 * threshold_) / (threshold_ * threshold_);
       d.hess_.noalias() += barrier_weights_(i) * barrier_weights_(i) *
                            (g_i.transpose() * g_i) * sq * sq;

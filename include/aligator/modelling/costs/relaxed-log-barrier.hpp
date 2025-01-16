@@ -18,15 +18,16 @@ struct RelaxedLogBarrierCostTpl : CostAbstractTpl<Scalar> {
 
   VectorXs barrier_weights_;
   xyz::polymorphic<StageFunction> residual_;
-  double threshold_;
+  Scalar threshold_;
 
   RelaxedLogBarrierCostTpl(xyz::polymorphic<Manifold> space,
                            xyz::polymorphic<StageFunction> function,
-                           const ConstVectorRef &scale, const Scalar threshold);
+                           const ConstVectorRef &weight,
+                           const Scalar threshold);
 
   RelaxedLogBarrierCostTpl(xyz::polymorphic<Manifold> space,
                            xyz::polymorphic<StageFunction> function,
-                           const Scalar scale, const Scalar threshold);
+                           const Scalar weight, const Scalar threshold);
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 CostDataAbstract &data) const;

@@ -52,10 +52,10 @@ void exposeComposites() {
   bp::class_<RelaxedLogCost, bp::bases<CostAbstract>>(
       "RelaxedLogBarrierCost", "Relaxed log-barrier composite cost.",
       bp::init<PolyManifold, PolyFunction, const ConstVectorRef &,
-               const Scalar>(bp::args("self", "space", "function",
-                                      "barrier_weights", "threshold")))
+               const Scalar>(
+          bp::args("self", "space", "function", "weights", "threshold")))
       .def(bp::init<PolyManifold, PolyFunction, const Scalar, const Scalar>(
-          bp::args("self", "space", "function", "scale", "threshold")))
+          bp::args("self", "space", "function", "weights", "threshold")))
       .def_readwrite("residual", &RelaxedLogCost::residual_)
       .def_readwrite("weights", &RelaxedLogCost::barrier_weights_)
       .def(CopyableVisitor<RelaxedLogCost>())

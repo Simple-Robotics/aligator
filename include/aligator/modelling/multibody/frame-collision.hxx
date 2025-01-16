@@ -4,6 +4,7 @@
 #include <pinocchio/algorithm/frames.hpp>
 #include <pinocchio/algorithm/kinematics.hpp>
 #include <pinocchio/collision/distance.hpp>
+#include <iostream>
 
 namespace aligator {
 
@@ -60,8 +61,8 @@ void FrameCollisionResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
   // compute the residual derivatives
   d.Jx_.setZero();
   d.Jx_.leftCols(pin_model_.nv) =
-      -d.geometry_.distanceResults[frame_pair_id_].normal.transpose() *
-      (d.Jcol_.template topRows<3>() - d.Jcol2_.template topRows<3>());
+      d.geometry_.distanceResults[frame_pair_id_].normal.transpose() *
+      (d.Jcol2_.template topRows<3>() - d.Jcol_.template topRows<3>());
 }
 
 template <typename Scalar>
