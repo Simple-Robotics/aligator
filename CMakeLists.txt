@@ -398,7 +398,10 @@ function(create_library)
   )
 
   if(BUILD_WITH_PINOCCHIO_SUPPORT)
-    target_link_libraries(${PROJECT_NAME} PUBLIC pinocchio::pinocchio_default)
+    target_link_libraries(
+      ${PROJECT_NAME}
+      PUBLIC pinocchio::pinocchio_default pinocchio::pinocchio_collision
+    )
   endif()
 
   if(BUILD_WITH_OPENMP_SUPPORT)
