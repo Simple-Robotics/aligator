@@ -3,6 +3,7 @@
 
 #include "aligator/modelling/costs/quad-state-cost.hpp"
 #include "aligator/modelling/costs/log-residual-cost.hpp"
+#include "aligator/modelling/costs/relaxed-log-barrier.hpp"
 #include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
@@ -25,6 +26,7 @@ void exposeComposites() {
   using QuadStateCost = QuadraticStateCostTpl<Scalar>;
   using QuadControlCost = QuadraticControlCostTpl<Scalar>;
   using LogResCost = LogResidualCostTpl<Scalar>;
+  using RelaxedLogCost = RelaxedLogBarrierCostTpl<Scalar>;
 
   PolymorphicMultiBaseVisitor<CostAbstract> visitor;
   bp::class_<QuadResCost, bp::bases<CostAbstract>>(
@@ -45,6 +47,18 @@ void exposeComposites() {
       .def_readwrite("residual", &LogResCost::residual_)
       .def_readwrite("weights", &LogResCost::barrier_weights_)
       .def(CopyableVisitor<LogResCost>())
+      .def(visitor);
+
+  bp::class_<RelaxedLogCost, bp::bases<CostAbstract>>(
+      "RelaxedLogBarrierCost", "Relaxed log-barrier composite cost.",
+      bp::init<PolyManifold, PolyFunction, const ConstVectorRef &,
+               const Scalar>(
+          bp::args("self", "space", "function", "weights", "threshold")))
+      .def(bp::init<PolyManifold, PolyFunction, const Scalar, const Scalar>(
+          bp::args("self", "space", "function", "weights", "threshold")))
+      .def_readwrite("residual", &RelaxedLogCost::residual_)
+      .def_readwrite("weights", &RelaxedLogCost::barrier_weights_)
+      .def(CopyableVisitor<RelaxedLogCost>())
       .def(visitor);
 
   bp::class_<CompositeData, bp::bases<CostData>>(

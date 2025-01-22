@@ -129,7 +129,10 @@ template <typename _Scalar> struct TrajOptProblemTpl {
                     xyz::polymorphic<CostAbstract> term_cost);
   /// @}
 
-  bool initCondIsStateError() const { return init_state_error_ != nullptr; }
+  bool initCondIsStateError() const {
+    assert(init_cond_is_state_error_ == checkInitCondIsStateError());
+    return init_cond_is_state_error_;
+  }
 
   /// @brief Add a stage to the control problem.
   void addStage(const xyz::polymorphic<StageModel> &stage);
@@ -140,7 +143,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
       ALIGATOR_RUNTIME_ERROR(
           "Initial condition is not a StateErrorResidual.\n");
     }
-    return init_state_error_->target_;
+    return static_cast<StateErrorResidual const *>(&*init_constraint_)->target_;
   }
 
   /// @brief Set initial state constraint.
@@ -149,7 +152,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
       ALIGATOR_RUNTIME_ERROR(
           "Initial condition is not a StateErrorResidual.\n");
     }
-    init_state_error_->target_ = x0;
+    static_cast<StateErrorResidual *>(&*init_constraint_)->target_ = x0;
   }
 
   /// @brief Add a terminal constraint for the model.
@@ -189,9 +192,11 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 
   bool checkIntegrity() const;
 
-private:
-  /// Pointer to underlying state error residual
-  StateErrorResidual *init_state_error_;
+protected:
+  // Check if the initial state is a StateErrorResidual.
+  // Since this is a costly operation (dynamic_cast), we cache the result.
+  bool checkInitCondIsStateError() const;
+  bool init_cond_is_state_error_ = false;
 };
 
 namespace internal {

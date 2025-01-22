@@ -151,4 +151,24 @@ BOOST_AUTO_TEST_CASE(test_workspace) {
   ResultsTpl<double> results(f.problem);
 }
 
+BOOST_AUTO_TEST_CASE(test_copy) {
+  MyFixture f;
+
+  auto copy = f.problem;
+  BOOST_CHECK_EQUAL(copy.getInitState(), f.problem.getInitState());
+
+  Eigen::VectorXd state = f.problem.getInitState();
+
+  state[0] = 0.;
+  f.problem.setInitState(state);
+  BOOST_CHECK_EQUAL(f.problem.getInitState()[0], 0.);
+
+  state[0] = 1.;
+  BOOST_CHECK_EQUAL(f.problem.getInitState()[0], 0.);
+
+  copy.setInitState(state);
+  BOOST_CHECK_EQUAL(copy.getInitState()[0], 1.);
+  BOOST_CHECK_EQUAL(f.problem.getInitState()[0], 0.);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

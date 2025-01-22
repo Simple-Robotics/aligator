@@ -27,11 +27,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `LqrProblemTpl::isApprox()`
 - Only link against needed pinocchio libraries ([#260](https://github.com/Simple-Robotics/aligator/pull/260))
 - Use Pinocchio instantiated functions ([#261](https://github.com/Simple-Robotics/aligator/pull/261))
+- Link to pinocchio collision
 
 ### Fixed
 
+- Fixed copy of TrajOptProblem ([#265](https://github.com/Simple-Robotics/aligator/pull/265))
 - `LinesearchVariant::init()` should not be called unless the step accpetance strategy is a linesearch
 - Fixed compilation issues with C++20 (resolving [#246](https://github.com/Simple-Robotics/aligator/issues/246) and [#254](https://github.com/Simple-Robotics/aligator/discussions/254))
+- Prevent duplication of log columns ([#271](https://github.com/Simple-Robotics/aligator/pull/271))
+
+### Added
+
+- Add a collision distance residual for collision pair
+- Add a relaxed log-barrier cost function
+- Add Nix support ([#268](https://github.com/Simple-Robotics/aligator/pull/268))
 
 ### Removed
 
