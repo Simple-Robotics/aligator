@@ -285,8 +285,8 @@ bool SolverFDDPTpl<Scalar>::run(const Problem &problem,
         "Either results or workspace not allocated. Call setup() first!");
   }
 
-  check_trajectory_and_assign(problem, xs_init, us_init, results_.xs,
-                              results_.us);
+  detail::check_initial_guess_and_assign(problem, xs_init, us_init, results_.xs,
+                                         results_.us);
   // optionally override xs[0]
   if (force_initial_condition_) {
     workspace_.trial_xs[0] = problem.getInitState();

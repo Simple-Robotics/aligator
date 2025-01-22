@@ -7,6 +7,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add CMake macro `aligator_create_python_extension()` to export ([#298](https://github.com/Simple-Robotics/aligator/pull/298))
+- Add `LqrProblemTpl::isApprox()` and helper `lqrKnotsSameDim`, check dimensions in `LqrKnotTpl::isApprox()` ([#300](https://github.com/Simple-Robotics/aligator/pull/300))
+- Add class `aligator::polymorphic_allocator` leveraging C++17 memory resources
+- Add memory allocator support for `LqrKnot` and `LqrProblem`
+- Add class `DenseKernel` for the stagewise-dense Riccati algo -- rework `DenseRiccatiSolver` class
+- Add `gar/fwd.hpp` header ([#301](https://github.com/Simple-Robotics/aligator/pull/301/))
+
+### Changed
+
+- Rename `{ riccati-impl.hpp => riccati-kernel }` (and associated files) ([#301](https://github.com/Simple-Robotics/aligator/pull/301/))
+- Rename `LQRKnotTpl` (C++)/`LqrKnot` (Python) to `LqrKnot(Tpl)`
+- Move `HistoryCallbackTpl` to `aligator/core`
+- Move headers `results-base`, `solver-util`, `value-function`, `workspace-base` to `aligator/core`
+- Rename `LQRProblemTpl` (C++)/`LQRProblem` (Python) to `LqrProblem(Tpl)`
+- `fwd.hpp`: do not include `<pinocchio/config.hpp>` header anymore
+- `blk-matrix.hpp`: remove protected ctors, add conversion ops
+- Headers `aligator/gar/*.hpp` merged into main library
+- CMake: rework declaration of examples & benchmarks (applying liberal use of `cmake_parse_arguments()`)
+- CMake: add `bench/CMakeLists.txt` to gersemi defs, apply formatting
+- CMake: apply compile definitions to `aligator` target directly (reduce use of global compile definitions)
+
+### Removed
+
+- Removed `gar` as a separate CMake target and shared library, merge into main library
+- Remove subdirectory `aligator/helpers` from include dir
+- Remove function `allocate_shared_eigen_aligned()`
+
+## [0.13.0] - 2025-04-26
+
+### Added
+
+- Add macro `ALIGATOR_OUT_OF_RANGE_ERROR` to throw `std::out_of_range` exceptions ([#294](https://github.com/Simple-Robotics/aligator/pull/294))
+
+### Changed
+
+- Rename `LQRKnotTpl` (C++)/`LqrKnot` (Python) to `LqrKnot(Tpl)`
+- Rename `LQRProblemTpl` (C++)/`LQRProblem` (Python) to `LqrProblem(Tpl)`
+- Reverse sign of StateErrorResidual ([#292](https://github.com/Simple-Robotics/aligator/pull/292))
+
+### Fixed
+
+- Correct references to paper's equations ([#284](https://github.com/Simple-Robotics/aligator/pull/284))
+- Fix segfault in `FrameCollisionResidual`, instead throw `std::runtime_error` (**C++**, `RuntimeError` in **Python**) ([#294](https://github.com/Simple-Robotics/aligator/pull/294))
+
+## [0.12.0] - 2025-03-27
+
+### Changed
+
+- Update for crocoddyl v3: boost -> std pointers ([#278](https://github.com/Simple-Robotics/aligator/issues/278))
+
+## [0.11.0] - 2025-03-17
+
 ### Changed
 
 - Only link against needed pinocchio libraries ([#260](https://github.com/Simple-Robotics/aligator/pull/260))
@@ -27,17 +81,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `LqrProblemTpl::isApprox()`
 - Only link against needed pinocchio libraries ([#260](https://github.com/Simple-Robotics/aligator/pull/260))
 - Use Pinocchio instantiated functions ([#261](https://github.com/Simple-Robotics/aligator/pull/261))
+- Link to pinocchio collision
+- Some internal code now uses `TrajOptProblemTpl::initializeSolution()` to initialize state-control trajectories ([#274](https://github.com/Simple-Robotics/aligator/pull/274))
+- Fix `HistoryCallback` init in examples ([#277](https://github.com/Simple-Robotics/aligator/pull/277))
 
 ### Fixed
 
+- Fixed copy of TrajOptProblem ([#265](https://github.com/Simple-Robotics/aligator/pull/265))
 - `LinesearchVariant::init()` should not be called unless the step accpetance strategy is a linesearch
 - Fixed compilation issues with C++20 (resolving [#246](https://github.com/Simple-Robotics/aligator/issues/246) and [#254](https://github.com/Simple-Robotics/aligator/discussions/254))
+- Prevent duplication of log columns ([#271](https://github.com/Simple-Robotics/aligator/pull/271))
 
-### Removed
+### Added
 
-- Removed `gar` as a separate CMake target and shared library, merge into main library
-- Remove subdirectory `aligator/helpers` from include dir
-- Remove function `allocate_shared_eigen_aligned()`
+- Add MPC test/example ([#272](https://github.com/Simple-Robotics/aligator/pull/272))
+- Allow customization of the initial solution, introduce initialization strategies ([#274](https://github.com/Simple-Robotics/aligator/pull/274))
+- Add a collision distance residual for collision pair
+- Add a relaxed log-barrier cost function
+- Add Nix support ([#268](https://github.com/Simple-Robotics/aligator/pull/268))
 
 ## [0.10.0] - 2024-12-09
 
@@ -265,7 +326,10 @@ The following **API-BREAKING** changes come from PR [#229](https://github.com/Si
 
 * This is the first release of `aligator`. This library is a joint effort between INRIA and LAAS-CNRS, and will be maintained and expanded in the future. Please provide constructive feedback and contribute!
 
-[Unreleased]: https://github.com/Simple-Robotics/aligator/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/Simple-Robotics/aligator/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/Simple-Robotics/aligator/compare/v0.12.0...v0.13.0
+[0.12.0]: https://github.com/Simple-Robotics/aligator/compare/v0.11.0...v0.12.0
+[0.11.0]: https://github.com/Simple-Robotics/aligator/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/Simple-Robotics/aligator/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/Simple-Robotics/aligator/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/Simple-Robotics/aligator/compare/v0.7.0...v0.8.0

@@ -8,7 +8,7 @@ EPSILON = 1e-5
 
 
 def dynamics_finite_difference(
-    fun: aligator.dynamics.DynamicsModel,
+    dyn: aligator.dynamics.DynamicsModel,
     space: manifolds.ManifoldAbstract,
     x0,
     u0,
@@ -22,75 +22,43 @@ def dynamics_finite_difference(
     """
     if y0 is None:
         y0 = x0
-    data = fun.createData()
-    Jx_nd = np.zeros((fun.ndx2, fun.ndx1))
-    ei = np.zeros(fun.ndx1)
-    fun.evaluate(x0, u0, y0, data)
+    data = dyn.createData()
+    Jx_nd = np.zeros((dyn.ndx2, dyn.ndx1))
+    ei = np.zeros(dyn.ndx1)
+    dyn.evaluate(x0, u0, y0, data)
     r0 = data.value.copy()
-    for i in range(fun.ndx1):
+    for i in range(dyn.ndx1):
         ei[i] = eps
         xplus = space.integrate(x0, ei)
-        fun.evaluate(xplus, u0, y0, data)
+        dyn.evaluate(xplus, u0, y0, data)
         Jx_nd[:, i] = (data.value - r0) / eps
         ei[i] = 0.0
 
-    ei = np.zeros(fun.nu)
-    Ju_nd = np.zeros((fun.ndx2, fun.nu))
-    for i in range(fun.nu):
+    ei = np.zeros(dyn.nu)
+    Ju_nd = np.zeros((dyn.ndx2, dyn.nu))
+    for i in range(dyn.nu):
         ei[i] = eps
-        fun.evaluate(x0, u0 + ei, y0, data)
+        dyn.evaluate(x0, u0 + ei, y0, data)
         Ju_nd[:, i] = (data.value - r0) / eps
         ei[i] = 0.0
 
-    ei = np.zeros(fun.ndx2)
+    ei = np.zeros(dyn.ndx2)
     yplus = y0.copy()
-    Jy_nd = np.zeros((fun.ndx2, fun.ndx2))
-    for i in range(fun.ndx2):
+    Jy_nd = np.zeros((dyn.ndx2, dyn.ndx2))
+    for i in range(dyn.ndx2):
         ei[i] = eps
         space.integrate(y0, ei, yplus)
-        fun.evaluate(x0, u0, yplus, data)
+        dyn.evaluate(x0, u0, yplus, data)
         Jy_nd[:, i] = (data.value - r0) / eps
         ei[i] = 0.0
 
     return Jx_nd, Ju_nd, Jy_nd
 
 
-def function_finite_difference(
-    fun: aligator.StageFunction,
-    space: manifolds.ManifoldAbstract,
-    x0,
-    u0,
-    eps=EPSILON,
+def explicit_dynamics_finite_difference(
+    dyn: dynamics.ExplicitDynamicsModel, x0, u0, eps
 ):
-    """Use finite differences to compute Jacobians
-    of a `aligator.StageFunction`.
-
-    TODO: move to a test utils file
-    """
-    data = fun.createData()
-    Jx_nd = np.zeros((fun.nr, fun.ndx1))
-    ei = np.zeros(fun.ndx1)
-    fun.evaluate(x0, u0, data)
-    r0 = data.value.copy()
-    for i in range(fun.ndx1):
-        ei[i] = eps
-        xplus = space.integrate(x0, ei)
-        fun.evaluate(xplus, u0, data)
-        Jx_nd[:, i] = (data.value - r0) / eps
-        ei[i] = 0.0
-
-    ei = np.zeros(fun.nu)
-    Ju_nd = np.zeros((fun.nr, fun.nu))
-    for i in range(fun.nu):
-        ei[i] = eps
-        fun.evaluate(x0, u0 + ei, data)
-        Ju_nd[:, i] = (data.value - r0) / eps
-        ei[i] = 0.0
-
-    return Jx_nd, Ju_nd
-
-
-def finite_difference_explicit_dyn(dyn: dynamics.IntegratorAbstract, x0, u0, eps):
+    assert isinstance(dyn, dynamics.ExplicitDynamicsModel)
     data = dyn.createData()
     space: manifolds.ManifoldAbstract = dyn.space
     Jx_nd = np.zeros((dyn.ndx2, dyn.ndx1))
@@ -175,7 +143,7 @@ def test_implicit_integrator(
 
 
 def exp_dyn_fd_check(dyn: dynamics.ExplicitDynamicsModel, x, u, eps: float):
-    Jx_nd, Ju_nd = finite_difference_explicit_dyn(dyn, x, u, eps=eps)
+    Jx_nd, Ju_nd = explicit_dynamics_finite_difference(dyn, x, u, eps=eps)
 
     np.set_printoptions(precision=3, linewidth=250)
     data = dyn.createData()

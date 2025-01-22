@@ -1,13 +1,13 @@
 /// @file solver-util.hpp
 /// @brief Common utilities for all solvers.
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/core/traj-opt-problem.hpp"
 
 namespace aligator {
 
-/// @brief Default-intialize a trajectory to the neutral states for each state
+/// @brief Default-initialize a trajectory to the neutral states for each state
 /// space at each stage.
 template <typename Scalar>
 void xs_default_init(const TrajOptProblemTpl<Scalar> &problem,
@@ -44,31 +44,6 @@ void us_default_init(const TrajOptProblemTpl<Scalar> &problem,
   }
 }
 
-template <typename Scalar>
-auto problemInitializeSolution(const TrajOptProblemTpl<Scalar> &problem) {
-  using VectorXs = typename math_types<Scalar>::VectorXs;
-  std::vector<VectorXs> xs, us, vs, lbdas;
-  const size_t nsteps = problem.numSteps();
-  xs_default_init(problem, xs);
-  us_default_init(problem, us);
-  // initialize multipliers...
-  vs.resize(nsteps + 1);
-  lbdas.resize(nsteps + 1);
-  lbdas[0].setZero(problem.init_constraint_->nr);
-  for (size_t i = 0; i < nsteps; i++) {
-    const StageModelTpl<Scalar> &sm = *problem.stages_[i];
-    lbdas[i + 1].setZero(sm.ndx2());
-    vs[i].setZero(sm.nc());
-  }
-
-  if (!problem.term_cstrs_.empty()) {
-    vs[nsteps].setZero(problem.term_cstrs_.totalDim());
-  }
-
-  return std::make_tuple(std::move(xs), std::move(us), std::move(vs),
-                         std::move(lbdas));
-}
-
 /// @brief Assign a vector of Eigen types into another, ensure there is no
 /// resize
 template <typename T1, typename T2>
@@ -93,28 +68,34 @@ template <typename T1, typename T2>
   return true;
 }
 
+namespace detail {
 /// @brief Check the input state-control trajectory is a consistent warm-start
 /// for the output.
+///
+/// @details If the state trajectory @p xs_in is empty, then both states and
+/// controls will be reinitialized using the @p problem object's set
+/// initialization strategy. Otherwise, if the controls container is empty, they
+/// (**only** the controls) will be default-initialized. Finally, if neither
+/// are empty, we attempt to assign the given @p xs_in and
+/// @p us_in values.
 template <typename Scalar>
-void check_trajectory_and_assign(
+void check_initial_guess_and_assign(
     const TrajOptProblemTpl<Scalar> &problem,
-    const typename math_types<Scalar>::VectorOfVectors &xs_init,
-    const typename math_types<Scalar>::VectorOfVectors &us_init,
+    const typename math_types<Scalar>::VectorOfVectors &xs_in,
+    const typename math_types<Scalar>::VectorOfVectors &us_in,
     typename math_types<Scalar>::VectorOfVectors &xs_out,
     typename math_types<Scalar>::VectorOfVectors &us_out) {
-  const std::size_t nsteps = problem.numSteps();
-  xs_out.reserve(nsteps + 1);
-  us_out.reserve(nsteps);
-  if (xs_init.empty()) {
-    xs_default_init(problem, xs_out);
-  } else if (!assign_no_resize(xs_init, xs_out)) {
-    ALIGATOR_RUNTIME_ERROR("warm-start for xs has wrong size!");
-  }
-  if (us_init.empty()) {
+  if (xs_in.empty()) {
+    problem.initializeSolution(xs_out, us_out);
+  } else if (us_in.empty()) {
     us_default_init(problem, us_out);
-  } else if (!assign_no_resize(us_init, us_out)) {
-    ALIGATOR_RUNTIME_ERROR("warm-start for us has wrong size!");
+  } else {
+    if (!assign_no_resize(xs_in, xs_out))
+      ALIGATOR_RUNTIME_ERROR("warm-start for xs has wrong size!");
+    if (!assign_no_resize(us_in, us_out))
+      ALIGATOR_RUNTIME_ERROR("warm-start for us has wrong size!");
   }
 }
+} // namespace detail
 
 } // namespace aligator

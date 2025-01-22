@@ -19,9 +19,9 @@ struct StateWrapperTpl : ManifoldAbstractTpl<_Scalar> {
 
   using StateAbstract = crocoddyl::StateAbstractTpl<Scalar>;
 
-  boost::shared_ptr<StateAbstract> croc_state;
+  shared_ptr<StateAbstract> croc_state;
 
-  explicit StateWrapperTpl(const boost::shared_ptr<StateAbstract> &state)
+  explicit StateWrapperTpl(const shared_ptr<StateAbstract> &state)
       : croc_state(state) {}
 
   int nx() const { return (int)croc_state->get_nx(); }

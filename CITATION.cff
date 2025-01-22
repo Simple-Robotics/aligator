@@ -10,7 +10,12 @@ authors:
     family-names: Jallet
     email: wilson.jallet@polytechnique.org
     orcid: 'https://orcid.org/0000-0001-8222-2739'
-    affiliation: LAAS-CNRS & INRIA
+    affiliation: INRIA
+  - given-names: Ewen
+    family-names: Dantec
+    email: ewen.dantec@inria.fr
+    affiliation: INRIA
+    orcid: 'https://orcid.org/0000-0001-7059-894X'
   - given-names: Antoine
     family-names: Bambade
     affiliation: INRIA
@@ -29,6 +34,6 @@ authors:
     affiliation: LAAS-CNRS
     orcid: 'https://orcid.org/0000-0002-8090-0601'
 repository-code: 'https://github.com/Simple-Robotics/aligator'
-version: 0.10.0
-date-released: "2024-12-09"
+version: 0.13.0
+date-released: "2025-04-26"
 license: BSD-2-Clause

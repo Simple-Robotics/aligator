@@ -6,7 +6,7 @@ import hppfcl as fcl
 import aligator
 
 from aligator import manifolds, dynamics
-from utils import finite_diff
+from utils import ode_finite_difference
 
 TOL = 1e-4
 
@@ -212,7 +212,7 @@ def test_constrained_dynamics():
     Jx_ = data.Jx
     Ju_ = data.Ju
 
-    Jx, Ju = finite_diff(ode, space, x0, u0)
+    Jx, Ju = ode_finite_difference(ode, space, x0, u0)
     err_Jx = np.max(Jx_ - Jx)
     err_Ju = np.max(Ju_ - Ju)
 

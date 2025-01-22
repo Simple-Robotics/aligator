@@ -40,11 +40,11 @@ struct StateOrControlErrorResidual<_Scalar, 0> : UnaryFunctionTpl<_Scalar> {
   }
 
   void evaluate(const ConstVectorRef &x, Data &data) const override {
-    space_->difference(x, target_, data.value_);
+    space_->difference(target_, x, data.value_);
   }
 
   void computeJacobians(const ConstVectorRef &x, Data &data) const override {
-    space_->Jdifference(x, target_, data.Jx_, 0);
+    space_->Jdifference(target_, x, data.Jx_, 1);
   }
 };
 
@@ -69,24 +69,22 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
                               const ConstVectorRef &target)
       : Base(ndx, uspace->nx(), uspace->ndx()), space_(uspace),
         target_(target) {
-    check_target_viable();
+    if (!space_->isNormalized(target_)) {
+      ALIGATOR_RUNTIME_ERROR(
+          "Target parameter invalid (not a viable element of state manifold.)");
+    }
   }
 
   /// @brief Constructor using state space and control space dimensions,
   ///        the control space is assumed to be Euclidean.
-  auto get_polymorphic(const int &size) const {
-    VectorSpace vs = VectorSpace(size);
-    return xyz::polymorphic<Manifold>(VectorSpace(size));
-  }
   template <unsigned int N = arg, typename = std::enable_if_t<N == 1>>
   StateOrControlErrorResidual(const int ndx, const ConstVectorRef &target)
-      : StateOrControlErrorResidual(ndx, get_polymorphic((int)target.size()),
+      : StateOrControlErrorResidual(ndx, VectorSpace((int)target.size()),
                                     target) {}
 
   template <unsigned int N = arg, typename = std::enable_if_t<N == 1>>
   StateOrControlErrorResidual(const int ndx, const int nu)
       : Base(ndx, nu, nu), space_(VectorSpace(nu)), target_(space_->neutral()) {
-    check_target_viable();
   }
 
   void evaluate(const ConstVectorRef &, const ConstVectorRef &u,
@@ -110,18 +108,14 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
       break;
     }
   }
-
-private:
-  inline void check_target_viable() const {
-    if (!space_->isNormalized(target_)) {
-      ALIGATOR_RUNTIME_ERROR(
-          "Target parameter invalid (not a viable element of state manifold.)");
-    }
-  }
 };
 
 } // namespace detail
 
+/// \brief State error \f$x \ominus x_\text{ref}\f$.
+///
+/// This can be used, by using the manifold neutral element as the reference,
+/// to define constraints on the state (e.g. joint position or velocity limits).
 template <typename Scalar>
 struct StateErrorResidualTpl : detail::StateOrControlErrorResidual<Scalar, 0> {
   using Base = detail::StateOrControlErrorResidual<Scalar, 0>;

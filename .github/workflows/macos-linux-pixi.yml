@@ -2,13 +2,14 @@ name: CI - OSX/Linux via Pixi
 
 on:
   push:
+    branches:
+      - main
     paths-ignore:
       - 'doc/**'
       - 'scripts/**'
       - '.gitlab-ci.yml'
       - '.gitignore'
-      - '*.md'
-      - 'CHANGELOG.md'
+      - '**.md'
       - 'CITATION.cff'
       - 'CITATIONS.bib'
   pull_request:
@@ -17,8 +18,7 @@ on:
       - 'scripts/'
       - '.gitlab-ci.yml'
       - '.gitignore'
-      - '*.md'
-      - 'CHANGELOG.md'
+      - '**.md'
       - 'CITATION.cff'
       - 'CITATIONS.bib'
 concurrency:
@@ -67,7 +67,6 @@ jobs:
         pixi run -e ${{ matrix.environment }} test
 
   check:
-    if: always()
     name: check-macos-linux-pixi
 
     needs:

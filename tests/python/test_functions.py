@@ -16,7 +16,7 @@ def test_manifold_diff():
     x = space.rand()
     u = np.random.randn(nu)
     fun.evaluate(x, u, data)
-    assert np.allclose(data.value, space.difference(x, target))
+    assert np.allclose(data.value, space.difference(target, x))
     cp = data.value.copy()
     cp[0] = -1.0
     data.value[0] = -1.0

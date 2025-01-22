@@ -53,29 +53,29 @@ void LagrangianDerivatives<Scalar>::compute(const TrajOptProblem &problem,
     const ConstraintStack &stack = sm.constraints_;
     const DynamicsData &dd = *sd.dynamics_data;
     Lxs[i].noalias() +=
-        sd.cost_data->Lx_ + dd.Jx_.transpose() * lams[i + 1]; // [1] eqn. 24c
+        sd.cost_data->Lx_ + dd.Jx_.transpose() * lams[i + 1]; // [1] eqn. 24b/c
     Lus[i].noalias() =
-        sd.cost_data->Lu_ + dd.Ju_.transpose() * lams[i + 1]; // [1] eqn. 24b
+        sd.cost_data->Lu_ + dd.Ju_.transpose() * lams[i + 1]; // [1] eqn. 24a
 
     BlkView v_(vs[i], stack.dims());
     for (std::size_t j = 0; j < stack.size(); j++) {
       const StageFunctionData &cd = *sd.constraint_data[j];
-      Lxs[i].noalias() += cd.Jx_.transpose() * v_[j]; // [1] eqn. 24c
-      Lus[i].noalias() += cd.Ju_.transpose() * v_[j]; // [1] eqn. 24b
+      Lxs[i].noalias() += cd.Jx_.transpose() * v_[j]; // [1] eqn. 24b/c
+      Lus[i].noalias() += cd.Ju_.transpose() * v_[j]; // [1] eqn. 24a
     }
 
-    Lxs[i + 1].noalias() = dd.Jy_.transpose() * lams[i + 1]; // [1] eqn. 24b
+    Lxs[i + 1].noalias() = dd.Jy_.transpose() * lams[i + 1]; // [1] eqn. 24b/d
   }
 
   // terminal node
   {
     const CostData &cdterm = *pd.term_cost_data;
-    Lxs[nsteps] += cdterm.Lx_;
+    Lxs[nsteps] += cdterm.Lx_; // [1] eqn. 24d
     const ConstraintStack &stack = problem.term_cstrs_;
     BlkView vN(vs[nsteps], stack.dims());
     for (std::size_t j = 0; j < stack.size(); j++) {
       const StageFunctionData &cd = *pd.term_cstr_data[j];
-      Lxs[nsteps].noalias() += cd.Jx_.transpose() * vN[j];
+      Lxs[nsteps].noalias() += cd.Jx_.transpose() * vN[j]; // [1] eqn. 24d
     }
   }
 }

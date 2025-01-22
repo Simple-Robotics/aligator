@@ -60,10 +60,7 @@ template <typename Scalar>
 WorkspaceBaseTpl<Scalar>::WorkspaceBaseTpl(
     const TrajOptProblemTpl<Scalar> &problem)
     : m_isInitialized(true), nsteps(problem.numSteps()), problem_data(problem) {
-  trial_xs.resize(nsteps + 1);
-  trial_us.resize(nsteps);
-  xs_default_init(problem, trial_xs);
-  us_default_init(problem, trial_us);
+  problem.initializeSolution(trial_xs, trial_us);
 }
 
 template <typename Scalar> void WorkspaceBaseTpl<Scalar>::cycleLeft() {

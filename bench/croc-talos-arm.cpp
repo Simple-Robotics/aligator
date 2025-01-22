@@ -39,7 +39,7 @@ static void BM_croc_fddp(benchmark::State &state) {
   const double croc_tol = TOL * TOL * (double)nsteps;
   solver.set_th_stop(croc_tol);
   if (verbose)
-    solver.setCallbacks({boost::make_shared<croc::CallbackVerbose>()});
+    solver.setCallbacks({std::make_shared<croc::CallbackVerbose>()});
 
   for (auto _ : state) {
     solver.solve(xs_i, us_i, maxiters);

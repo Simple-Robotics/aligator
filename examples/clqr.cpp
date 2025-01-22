@@ -18,11 +18,10 @@ using BoxConstraint = proxsuite::nlp::BoxConstraintTpl<double>;
 using EqualityConstraint = proxsuite::nlp::EqualityConstraintTpl<double>;
 using QuadraticCost = QuadraticCostTpl<double>;
 using context::CostAbstract;
+using context::MatrixXs;
 using context::StageModel;
 using context::TrajOptProblem;
-
-using Eigen::MatrixXd;
-using Eigen::VectorXd;
+using context::VectorXs;
 
 static std::mt19937_64 urng{42};
 struct NormalGen {
@@ -38,35 +37,35 @@ int main() {
   const auto space = Space(nx);
 
   NormalGen norm_gen;
-  MatrixXd A;
+  MatrixXs A;
   // clang-format off
   A.setIdentity(nx, nx);
-  A.bottomRightCorner<2, 2>() = MatrixXd::NullaryExpr(2, 2, norm_gen);
-  MatrixXd B = MatrixXd::NullaryExpr(nx, nu, norm_gen);
+  A.bottomRightCorner<2, 2>() = MatrixXs::NullaryExpr(2, 2, norm_gen);
+  MatrixXs B = MatrixXs::NullaryExpr(nx, nu, norm_gen);
   // clang-format on
 
-  VectorXd x0 = VectorXd::NullaryExpr(nx, norm_gen);
+  VectorXs x0 = VectorXs::NullaryExpr(nx, norm_gen);
 
-  auto dyn_model = LinearDynamics(A, B, VectorXd::Zero(nx));
+  auto dyn_model = LinearDynamics(A, B, VectorXs::Zero(nx));
 
-  MatrixXd Q = MatrixXd::NullaryExpr(nx, nx, norm_gen);
+  MatrixXs Q = MatrixXs::NullaryExpr(nx, nx, norm_gen);
   Q = Q.transpose() * Q;
-  VectorXd q = VectorXd::Zero(nx);
+  VectorXs q = VectorXs::Zero(nx);
 
-  MatrixXd R = MatrixXd::NullaryExpr(nu, nu, norm_gen);
+  MatrixXs R = MatrixXs::NullaryExpr(nu, nu, norm_gen);
   R = R.transpose() * R;
-  VectorXd r = VectorXd::Zero(nu);
+  VectorXs r = VectorXs::Zero(nu);
 
   QuadraticCost cost = QuadraticCost(Q, R, q, r);
-  QuadraticCost term_cost = QuadraticCost(Q * 10., MatrixXd());
+  QuadraticCost term_cost = QuadraticCost(Q * 10., MatrixXs());
   assert(term_cost.nu == 0);
 
   double ctrlUpperBound = 0.3;
   auto stage = StageModel(cost, dyn_model);
   {
-    auto box = BoxConstraint(-ctrlUpperBound * VectorXd::Ones(nu),
-                             ctrlUpperBound * VectorXd::Ones(nu));
-    auto u0 = VectorXd::Zero(nu);
+    auto box = BoxConstraint(-ctrlUpperBound * VectorXs::Ones(nu),
+                             ctrlUpperBound * VectorXs::Ones(nu));
+    auto u0 = VectorXs::Zero(nu);
     auto func = ControlErrorResidualTpl<double>(nx, u0);
     stage.addConstraint(func, box);
   }
@@ -76,8 +75,7 @@ int main() {
 
   bool terminal = false;
   if (terminal) {
-    auto xf = VectorXd::Ones(nx);
-    auto func = StateErrorResidualTpl<double>(space, nu, xf);
+    StateErrorResidualTpl<double> func(space, nu, VectorXs::Ones(nx));
     problem.addTerminalConstraint(func, EqualityConstraint());
   }
 

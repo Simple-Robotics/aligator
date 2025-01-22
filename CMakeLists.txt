@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+# Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #
 
 cmake_minimum_required(VERSION 3.16)
@@ -61,10 +61,7 @@ else()
   endif()
 endif()
 
-set(DOXYGEN_USE_MATHJAX NO)
-set(DOXYGEN_USE_TEMPLATE_CSS YES)
 set(DOXYGEN_HTML_HEADER "${PROJECT_SOURCE_DIR}/doc/header.html")
-set(DOXYGEN_HTML_STYLESHEET "")
 
 # Use BoostConfig module distributed by boost library instead of using FindBoost module distributed
 # by CMake
@@ -358,10 +355,6 @@ if(ALIGATOR_TRACY_ENABLE AND DOWNLOAD_TRACY)
 elseif(ALIGATOR_TRACY_ENABLE)
   # assume it is installed somewhere
   ADD_PROJECT_DEPENDENCY(Tracy)
-  set_target_properties(
-    Tracy::TracyClient
-    PROPERTIES POSITION_INDEPENDENT_CODE True
-  )
   if(NOT ${tracy_FOUND})
     message(
       FATAL_ERROR
@@ -394,7 +387,10 @@ function(create_library)
   )
 
   if(BUILD_WITH_PINOCCHIO_SUPPORT)
-    target_link_libraries(${PROJECT_NAME} PUBLIC pinocchio::pinocchio_default)
+    target_link_libraries(
+      ${PROJECT_NAME}
+      PUBLIC pinocchio::pinocchio_default pinocchio::pinocchio_collision
+    )
     target_compile_definitions(${PROJECT_NAME} PUBLIC ALIGATOR_WITH_PINOCCHIO)
     if(PINOCCHIO_V3)
       target_compile_definitions(${PROJECT_NAME} PUBLIC ALIGATOR_PINOCCHIO_V3)
@@ -446,25 +442,25 @@ ADD_SOURCE_GROUP(LIB_SOURCES)
 install(
   TARGETS ${PROJECT_NAME}
   EXPORT ${TARGETS_EXPORT_NAME}
-  INCLUDES DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
 if(DOWNLOAD_TRACY)
   install(
     TARGETS TracyClient
     EXPORT ${TARGETS_EXPORT_NAME}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/aligator
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/aligator
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/aligator
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/aligator
   )
   message(
     STATUS
-    "Installing TracyClient target to ${CMAKE_INSTALL_FULL_LIBDIR}/aligator"
+    "Installing TracyClient target to ${CMAKE_INSTALL_LIBDIR}/aligator"
   )
 endif()
 
 if(BUILD_CROCODDYL_COMPAT)
-  ADD_PROJECT_DEPENDENCY(crocoddyl REQUIRED)
+  ADD_PROJECT_DEPENDENCY(crocoddyl 3.0.0 REQUIRED)
   add_subdirectory(src/compat/crocoddyl)
 endif()
 
@@ -574,6 +570,11 @@ if(BUILD_TESTING)
 endif()
 
 # --- PACKAGING ----------------------------------------------------------------
+
+if(BUILD_PYTHON_INTERFACE)
+  file(READ extra-python-macros.cmake PACKAGE_EXTRA_MACROS)
+endif()
+
 macro(EXPORT_VARIABLE var_name var_value)
   get_directory_property(has_parent PARENT_DIRECTORY)
   if(has_parent)

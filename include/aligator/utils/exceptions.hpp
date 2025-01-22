@@ -8,8 +8,12 @@
   throw ::aligator::RuntimeError(                                              \
       ::aligator::detail::exception_msg(__FILE__, __LINE__, __VA_ARGS__))
 
+#define ALIGATOR_OUT_OF_RANGE_ERROR(...)                                       \
+  throw ::std::out_of_range(                                                   \
+      ::aligator::detail::exception_msg(__FILE__, __LINE__, __VA_ARGS__))
+
 #define ALIGATOR_DOMAIN_ERROR(...)                                             \
-  throw std::domain_error(                                                     \
+  throw ::std::domain_error(                                                   \
       ::aligator::detail::exception_msg(__FILE__, __LINE__, __VA_ARGS__))
 
 #define ALIGATOR_WARNING(loc, ...)                                             \

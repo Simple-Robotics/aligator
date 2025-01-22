@@ -7,7 +7,7 @@ import numpy as np
 import aligator
 from aligator import dynamics, manifolds
 from eigenpy import Quaternion
-from utils import finite_diff, infNorm, create_multibody_ode
+from utils import ode_finite_difference, infNorm, create_multibody_ode
 
 epsilon = 1e-6
 aligator.seed(42)
@@ -95,7 +95,7 @@ def test_multibody_free():
         ode.forward(x0, u0, data)
         ode.dForward(x0, u0, data)
 
-        Jxdiff, Judiff = finite_diff(ode, space, x0, u0, epsilon)
+        Jxdiff, Judiff = ode_finite_difference(ode, space, x0, u0, epsilon)
         atol = epsilon
         assert np.allclose(Jxdiff, data.Jx, atol, atol), "Jxerr={}".format(
             infNorm(Jxdiff - data.Jx)
@@ -178,7 +178,7 @@ def test_centroidal_diff():
 
     Jx0 = data.Jx.copy()
     Ju0 = data.Ju.copy()
-    Jxdiff, Judiff = finite_diff(ode, space, x0, u0, epsilon)
+    Jxdiff, Judiff = ode_finite_difference(ode, space, x0, u0, epsilon)
 
     assert np.allclose(Jxdiff, Jx0, epsilon), "err={}".format(infNorm(Jxdiff - Jx0))
     assert np.allclose(Judiff, Ju0, epsilon), "err={}".format(infNorm(Judiff - Ju0))
@@ -196,7 +196,7 @@ def test_centroidal_diff():
 
     Jx0 = data.Jx.copy()
     Ju0 = data.Ju.copy()
-    Jxdiff, Judiff = finite_diff(ode, space, x0, u0, epsilon)
+    Jxdiff, Judiff = ode_finite_difference(ode, space, x0, u0, epsilon)
 
     assert np.allclose(Jxdiff, Jx0, epsilon), "err={}".format(infNorm(Jxdiff - Jx0))
     assert np.allclose(Judiff, Ju0, epsilon), "err={}".format(infNorm(Judiff - Ju0))
@@ -282,7 +282,7 @@ def test_continuous_centroidal_diff():
 
     Jx0 = data.Jx.copy()
     Ju0 = data.Ju.copy()
-    Jxdiff, Judiff = finite_diff(ode, space, x0, u0, epsilon)
+    Jxdiff, Judiff = ode_finite_difference(ode, space, x0, u0, epsilon)
 
     assert np.allclose(Jxdiff, Jx0, epsilon), "err={}".format(infNorm(Jxdiff - Jx0))
     assert np.allclose(Judiff, Ju0, epsilon), "err={}".format(infNorm(Judiff - Ju0))
@@ -306,7 +306,7 @@ def test_continuous_centroidal_diff():
 
     Jx0 = data.Jx.copy()
     Ju0 = data.Ju.copy()
-    Jxdiff, Judiff = finite_diff(ode, space, x0, u0, epsilon)
+    Jxdiff, Judiff = ode_finite_difference(ode, space, x0, u0, epsilon)
 
     assert np.allclose(Jxdiff, Jx0, epsilon), "err={}".format(infNorm(Jxdiff - Jx0))
     assert np.allclose(Judiff, Ju0, epsilon), "err={}".format(infNorm(Judiff - Ju0))
@@ -388,7 +388,7 @@ def test_kinodynamics_diff():
 
     Jx0 = data.Jx.copy()
     Ju0 = data.Ju.copy()
-    Jxdiff, Judiff = finite_diff(ode, space, x0, u0, epsilon)
+    Jxdiff, Judiff = ode_finite_difference(ode, space, x0, u0, epsilon)
 
     assert np.linalg.norm(Jxdiff - Jx0) <= epsilon
     assert np.linalg.norm(Judiff - Ju0) <= epsilon
@@ -408,7 +408,7 @@ def test_kinodynamics_diff():
 
     Jx0 = data.Jx.copy()
     Ju0 = data.Ju.copy()
-    Jxdiff, Judiff = finite_diff(ode, space, x0, u0, epsilon)
+    Jxdiff, Judiff = ode_finite_difference(ode, space, x0, u0, epsilon)
 
     assert np.linalg.norm(Jxdiff - Jx0) <= epsilon
     assert np.linalg.norm(Judiff - Ju0) <= epsilon
