@@ -1,9 +1,10 @@
 /// @file
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 /// @brief Template definitions header.
 #pragma once
 
 #include "aligator/core/traj-opt-problem.hpp"
+#include "aligator/core/solver-util.hpp"
 #include "aligator/utils/mpc-util.hpp"
 #include "aligator/tracy.hpp"
 
@@ -17,9 +18,10 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     const std::vector<xyz::polymorphic<StageModel>> &stages,
     xyz::polymorphic<CostAbstract> term_cost)
     : init_constraint_(std::move(init_constraint)), stages_(stages),
-      term_cost_(std::move(term_cost)), unone_(term_cost_->nu) {
+      term_cost_(std::move(term_cost)), unone_(term_cost_->nu),
+      xs_init_strategy_(xs_default_init<Scalar>),
+      init_cond_is_state_error_(checkInitCondIsStateError()) {
   unone_.setZero();
-  init_state_error_ = dynamic_cast<StateErrorResidual *>(&*init_constraint_);
 }
 
 template <typename Scalar>
@@ -29,9 +31,7 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     xyz::polymorphic<CostAbstract> term_cost)
     : TrajOptProblemTpl(
           StateErrorResidual(stages[0]->xspace_, stages[0]->nu(), x0), stages,
-          std::move(term_cost)) {
-  init_state_error_ = static_cast<StateErrorResidual *>(&*init_constraint_);
-}
+          std::move(term_cost)) {}
 
 template <typename Scalar>
 TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
@@ -131,6 +131,9 @@ template <typename Scalar>
 bool TrajOptProblemTpl<Scalar>::checkIntegrity() const {
   bool ok = true;
 
+  if (init_cond_is_state_error_ != checkInitCondIsStateError())
+    return false;
+
   if (numSteps() == 0)
     return true;
 
@@ -171,6 +174,13 @@ void TrajOptProblemTpl<Scalar>::replaceStageCircular(
   addStage(model);
   rotate_vec_left(stages_);
   stages_.pop_back();
+}
+
+template <typename Scalar>
+bool TrajOptProblemTpl<Scalar>::checkInitCondIsStateError() const {
+  if (init_constraint_.valueless_after_move())
+    return false;
+  return dynamic_cast<StateErrorResidual const *>(&*init_constraint_);
 }
 
 } // namespace aligator

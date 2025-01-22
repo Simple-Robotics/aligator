@@ -48,7 +48,8 @@ void Logger::finish(bool conv) {
 
 void Logger::addColumn(std::string_view name, uint width,
                        std::string_view format) {
-  m_colNames.push_back(name);
+  if (std::find(m_colNames.begin(), m_colNames.end(), name) == m_colNames.end())
+    m_colNames.push_back(name);
   m_colSpecs[name] = {width, std::string(format)};
 }
 
