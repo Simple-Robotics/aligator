@@ -107,7 +107,7 @@ verbose = aligator.VerboseLevel.VERBOSE
 solver = aligator.SolverProxDDP(tol, mu_init, max_iters=max_iters, verbose=verbose)
 solver.rollout_type = aligator.ROLLOUT_NONLINEAR
 solver.setNumThreads(4)
-cb = aligator.HistoryCallback()
+cb = aligator.HistoryCallback(solver)
 solver.registerCallback("his", cb)
 
 solver.setup(problem)

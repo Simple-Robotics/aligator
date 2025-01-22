@@ -5,6 +5,6 @@ namespace aligator::compat::croc {
 
 template ::aligator::context::TrajOptProblem
 convertCrocoddylProblem<context::Scalar>(
-    const boost::shared_ptr<context::CrocShootingProblem> &);
+    const shared_ptr<context::CrocShootingProblem> &);
 
 } // namespace aligator::compat::croc

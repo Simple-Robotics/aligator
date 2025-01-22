@@ -19,17 +19,16 @@ struct CrocCostModelWrapperTpl : CostAbstractTpl<_Scalar> {
   using BaseData = CostDataAbstractTpl<Scalar>;
   using StateWrap = StateWrapperTpl<Scalar>;
 
-  boost::shared_ptr<CrocCostModel> croc_cost_;
-  boost::shared_ptr<CrocActionModel> action_model_;
+  shared_ptr<CrocCostModel> croc_cost_;
+  shared_ptr<CrocActionModel> action_model_;
 
   /// Constructor from a crocoddyl cost model.
-  explicit CrocCostModelWrapperTpl(boost::shared_ptr<CrocCostModel> cost)
+  explicit CrocCostModelWrapperTpl(shared_ptr<CrocCostModel> cost)
       : Base(StateWrap(cost->get_state()), (int)cost->get_nu()),
         croc_cost_(cost) {}
 
   /// Constructor using a terminal action model.
-  explicit CrocCostModelWrapperTpl(
-      boost::shared_ptr<CrocActionModel> action_model)
+  explicit CrocCostModelWrapperTpl(shared_ptr<CrocActionModel> action_model)
       : Base(StateWrap(action_model->get_state()), (int)action_model->get_nu()),
         action_model_(action_model) {}
 
@@ -80,7 +79,7 @@ struct CrocCostModelWrapperTpl : CostAbstractTpl<_Scalar> {
 
   shared_ptr<BaseData> createData() const {
     if (action_model_ != 0) {
-      boost::shared_ptr<crocoddyl::ActionDataAbstractTpl<Scalar>> am_data =
+      shared_ptr<crocoddyl::ActionDataAbstractTpl<Scalar>> am_data =
           action_model_->createData();
       return std::make_shared<CrocCostDataWrapperTpl<Scalar>>(am_data);
     } else {
@@ -95,14 +94,14 @@ struct CrocCostDataWrapperTpl : CostDataAbstractTpl<Scalar> {
   using CostData = ::crocoddyl::CostDataAbstractTpl<Scalar>;
   using ActionData = ::crocoddyl::ActionDataAbstractTpl<Scalar>;
   using Base = CostDataAbstractTpl<Scalar>;
-  boost::shared_ptr<CostData> croc_cost_data_;
-  boost::shared_ptr<ActionData> croc_act_data_;
+  shared_ptr<CostData> croc_cost_data_;
+  shared_ptr<ActionData> croc_act_data_;
 
-  explicit CrocCostDataWrapperTpl(const boost::shared_ptr<CostData> &crocdata)
+  explicit CrocCostDataWrapperTpl(const shared_ptr<CostData> &crocdata)
       : Base((int)crocdata->Lx.rows(), (int)crocdata->Lu.rows()),
         croc_cost_data_(crocdata) {}
 
-  explicit CrocCostDataWrapperTpl(const boost::shared_ptr<ActionData> &actdata)
+  explicit CrocCostDataWrapperTpl(const shared_ptr<ActionData> &actdata)
       : Base((int)actdata->Lx.rows(), (int)actdata->Lu.rows()),
         croc_act_data_(actdata) {}
 };

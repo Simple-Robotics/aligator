@@ -18,21 +18,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: conda-incubator/setup-miniconda@v3
         with:
-          miniforge-variant: Mambaforge
           miniforge-version: latest
           channels: conda-forge
-          python-version: "3.10"
+          mamba-version: "*"
+          python-version: "3.12"
           activate-environment: doc
-
+          conda-remove-defaults: "true"
       - name: Dependencies
         shell: bash -l {0}
         run: |
-          # Workaround for https://github.com/conda-incubator/setup-miniconda/issues/186
-          conda config --remove channels defaults
-
           # Compilation related dependencies
           mamba install cmake make pkg-config doxygen graphviz
 
