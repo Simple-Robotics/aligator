@@ -61,10 +61,7 @@ else()
   endif()
 endif()
 
-set(DOXYGEN_USE_MATHJAX NO)
-set(DOXYGEN_USE_TEMPLATE_CSS YES)
 set(DOXYGEN_HTML_HEADER "${PROJECT_SOURCE_DIR}/doc/header.html")
-set(DOXYGEN_HTML_STYLESHEET "")
 
 # Use BoostConfig module distributed by boost library instead of using FindBoost module distributed
 # by CMake

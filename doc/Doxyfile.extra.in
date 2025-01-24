@@ -55,7 +55,8 @@ SHOW_FILES              = YES
 SHOW_NAMESPACES         = YES
 
 USE_MATHJAX             = YES
-MATHJAX_FORMAT          = SVG
+MATHJAX_VERSION         = MathJax_3
+MATHJAX_EXTENSIONS      = ams,boldsymbol
 
 SOURCE_BROWSER          = YES
 
