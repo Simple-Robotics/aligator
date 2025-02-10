@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed copy of TrajOptProblem ([#265](https://github.com/Simple-Robotics/aligator/pull/265))
 - `LinesearchVariant::init()` should not be called unless the step accpetance strategy is a linesearch
 - Fixed compilation issues with C++20 (resolving [#246](https://github.com/Simple-Robotics/aligator/issues/246) and [#254](https://github.com/Simple-Robotics/aligator/discussions/254))
+- Prevent duplication of log columns ([#271](https://github.com/Simple-Robotics/aligator/pull/271))
 
 ### Added
 
