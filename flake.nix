@@ -22,6 +22,8 @@
             inherit system;
             overlays = [
               (final: prev: {
+                # Fix aba explicit template instanciation
+                # Remove this for pinocchio > 3.3.1
                 pinocchio = prev.pinocchio.overrideAttrs (super: {
                   patches = (super.patches or [ ]) ++ [
                     (final.fetchpatch {
@@ -29,6 +31,15 @@
                       hash = "sha256-XIZpq1JK5mY5tv3MqRk/ep6/5cJOjV2gkW1ywLjXUBU=";
                     })
                   ];
+                });
+                # Ignore pinocchio #2563
+                # Remove this for pinocchio > 3.3.1 && crocoddyl >= 3.0.0
+                crocoddyl = prev.crocoddyl.overrideAttrs (super: {
+                  cmakeFlags =
+                    (super.cmakeFlags or [ ])
+                    ++ final.lib.optionals final.stdenv.hostPlatform.isDarwin [
+                      (final.lib.cmakeFeature "CMAKE_CTEST_ARGUMENTS" "--exclude-regex;test_pybinds_*")
+                    ];
                 });
               })
             ];
