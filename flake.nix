@@ -20,7 +20,7 @@
           devShells.default = pkgs.mkShell { inputsFrom = [ self'.packages.default ]; };
           packages = {
             default = self'.packages.aligator;
-            aligator = pkgs.python3Packages.aligator.overrideAttrs (super: {
+            aligator = pkgs.python3Packages.aligator.overrideAttrs {
               src = pkgs.lib.fileset.toSource {
                 root = ./.;
                 fileset = pkgs.lib.fileset.unions [
@@ -36,7 +36,7 @@
                   ./gar
                 ];
               };
-            });
+            };
           };
         };
     };
