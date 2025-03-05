@@ -1,5 +1,6 @@
 /// @file
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS
+///            Copyright (C) 2022-2025 INRIA
 /// @brief Implementation file. Include when template definitions required.
 #pragma once
 
@@ -16,10 +17,7 @@ ResultsTpl<Scalar>::ResultsTpl(const TrajOptProblemTpl<Scalar> &problem)
     ALIGATOR_RUNTIME_ERROR("Problem failed integrity check.");
 
   const std::size_t nsteps = problem.numSteps();
-  std::tie(xs, us, vs, lams) = problemInitializeSolution(problem);
-
-  assert(xs.size() == nsteps + 1);
-  assert(us.size() == nsteps);
+  std::tie(xs, us, vs, lams) = problem.initializeSolution();
 
   gains_.resize(nsteps + 1);
   for (std::size_t i = 0; i < nsteps; i++) {

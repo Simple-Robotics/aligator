@@ -62,7 +62,7 @@ WorkspaceBaseTpl<Scalar>::WorkspaceBaseTpl(
     : m_isInitialized(true), nsteps(problem.numSteps()), problem_data(problem) {
   trial_xs.resize(nsteps + 1);
   trial_us.resize(nsteps);
-  xs_default_init(problem, trial_xs);
+  problem.xs_traj_initializer_(problem, trial_xs);
   us_default_init(problem, trial_us);
 }
 

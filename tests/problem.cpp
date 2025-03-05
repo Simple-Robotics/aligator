@@ -1,6 +1,7 @@
 #include "aligator/core/traj-opt-problem.hpp"
 #include "aligator/core/traj-opt-data.hpp"
 #include "aligator/core/stage-data.hpp"
+#include "aligator/solvers/proxddp/solver-proxddp.hpp"
 #include "aligator/solvers/proxddp/results.hpp"
 #include "aligator/solvers/proxddp/workspace.hpp"
 #include "aligator/core/explicit-dynamics.hpp"
@@ -169,6 +170,68 @@ BOOST_AUTO_TEST_CASE(test_copy) {
   copy.setInitState(state);
   BOOST_CHECK_EQUAL(copy.getInitState()[0], 1.);
   BOOST_CHECK_EQUAL(f.problem.getInitState()[0], 0.);
+}
+
+BOOST_AUTO_TEST_CASE(test_default_init) {
+  MyFixture f;
+
+  Eigen::VectorXd state = f.problem.getInitState();
+  BOOST_CHECK_EQUAL(state, f.space.neutral());
+
+  state[0] += 1.;
+  f.problem.setInitState(state);
+
+  auto ddp = SolverProxDDPTpl<double>();
+  ddp.setup(f.problem);
+
+  const auto nsteps = f.problem.numSteps();
+  for (auto i = 0u; i < nsteps + 1; i++) {
+    const auto &xs = ddp.results_.xs;
+    const auto &trial_xs = ddp.workspace_.trial_xs;
+    const auto &prev_xs = ddp.workspace_.prev_xs;
+
+    BOOST_REQUIRE_EQUAL(xs.size(), nsteps + 1);
+    BOOST_REQUIRE_EQUAL(trial_xs.size(), nsteps + 1);
+    BOOST_REQUIRE_EQUAL(prev_xs.size(), nsteps + 1);
+
+    const auto expected = (i == 0) ? state : f.space.neutral();
+
+    BOOST_CHECK_EQUAL(xs[i], expected);
+    BOOST_CHECK_EQUAL(trial_xs[i], expected);
+    BOOST_CHECK_EQUAL(prev_xs[i], expected);
+  }
+}
+
+BOOST_AUTO_TEST_CASE(test_constant_init) {
+  MyFixture f;
+
+  Eigen::VectorXd state = f.problem.getInitState();
+  BOOST_CHECK_EQUAL(state, f.space.neutral());
+
+  state[0] += 1.;
+  f.problem.setInitState(state);
+
+  f.problem.xs_traj_initializer_ = [](const auto &problem, auto &xs) {
+    xs.assign(problem.numSteps() + 1, problem.getInitState());
+  };
+
+  auto ddp = SolverProxDDPTpl<double>();
+  ddp.setup(f.problem);
+
+  const auto nsteps = f.problem.numSteps();
+  for (auto i = 0u; i < nsteps + 1; i++) {
+    const auto &xs = ddp.results_.xs;
+    const auto &trial_xs = ddp.workspace_.trial_xs;
+    const auto &prev_xs = ddp.workspace_.prev_xs;
+
+    BOOST_REQUIRE_EQUAL(xs.size(), nsteps + 1);
+    BOOST_REQUIRE_EQUAL(trial_xs.size(), nsteps + 1);
+    BOOST_REQUIRE_EQUAL(prev_xs.size(), nsteps + 1);
+
+    BOOST_CHECK_EQUAL(xs[i], state);
+    BOOST_CHECK_EQUAL(trial_xs[i], state);
+    BOOST_CHECK_EQUAL(prev_xs[i], state);
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

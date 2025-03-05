@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add MPC test/example ([#272](https://github.com/Simple-Robotics/aligator/pull/272))
+- Allow customization of the initial solution ([#274](https://github.com/Simple-Robotics/aligator/pull/274))
 - Add a collision distance residual for collision pair
 - Add a relaxed log-barrier cost function
 - Add Nix support ([#268](https://github.com/Simple-Robotics/aligator/pull/268))

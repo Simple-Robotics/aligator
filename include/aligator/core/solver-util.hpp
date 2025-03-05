@@ -1,13 +1,13 @@
 /// @file solver-util.hpp
 /// @brief Common utilities for all solvers.
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/core/traj-opt-problem.hpp"
 
 namespace aligator {
 
-/// @brief Default-intialize a trajectory to the neutral states for each state
+/// @brief Default-initialize a trajectory to the neutral states for each state
 /// space at each stage.
 template <typename Scalar>
 void xs_default_init(const TrajOptProblemTpl<Scalar> &problem,
@@ -42,31 +42,6 @@ void us_default_init(const TrajOptProblemTpl<Scalar> &problem,
     const StageModelTpl<Scalar> &sm = *problem.stages_[i];
     us[i] = sm.uspace().neutral();
   }
-}
-
-template <typename Scalar>
-auto problemInitializeSolution(const TrajOptProblemTpl<Scalar> &problem) {
-  using VectorXs = typename math_types<Scalar>::VectorXs;
-  std::vector<VectorXs> xs, us, vs, lbdas;
-  const size_t nsteps = problem.numSteps();
-  xs_default_init(problem, xs);
-  us_default_init(problem, us);
-  // initialize multipliers...
-  vs.resize(nsteps + 1);
-  lbdas.resize(nsteps + 1);
-  lbdas[0].setZero(problem.init_constraint_->nr);
-  for (size_t i = 0; i < nsteps; i++) {
-    const StageModelTpl<Scalar> &sm = *problem.stages_[i];
-    lbdas[i + 1].setZero(sm.ndx2());
-    vs[i].setZero(sm.nc());
-  }
-
-  if (!problem.term_cstrs_.empty()) {
-    vs[nsteps].setZero(problem.term_cstrs_.totalDim());
-  }
-
-  return std::make_tuple(std::move(xs), std::move(us), std::move(vs),
-                         std::move(lbdas));
 }
 
 /// @brief Assign a vector of Eigen types into another, ensure there is no
@@ -106,7 +81,7 @@ void check_trajectory_and_assign(
   xs_out.reserve(nsteps + 1);
   us_out.reserve(nsteps);
   if (xs_init.empty()) {
-    xs_default_init(problem, xs_out);
+    problem.xs_traj_initializer_(problem, xs_out);
   } else if (!assign_no_resize(xs_init, xs_out)) {
     ALIGATOR_RUNTIME_ERROR("warm-start for xs has wrong size!");
   }

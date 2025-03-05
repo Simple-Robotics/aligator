@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 /// @brief Implementation file, to be included when necessary.
 #pragma once
 
@@ -19,7 +19,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     ALIGATOR_RUNTIME_ERROR("Problem failed integrity check.");
 
   std::tie(trial_xs, trial_us, trial_vs, trial_lams) =
-      problemInitializeSolution(problem);
+      problem.initializeSolution();
   std::tie(prev_xs, prev_us, prev_vs, prev_lams) = {trial_xs, trial_us,
                                                     trial_vs, trial_lams};
 

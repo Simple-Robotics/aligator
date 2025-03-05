@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/core/stage-model.hpp"
@@ -22,6 +22,9 @@ namespace aligator {
  */
 template <typename _Scalar> struct TrajOptProblemTpl {
   using Scalar = _Scalar;
+
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+
   using StageModel = StageModelTpl<Scalar>;
   using StageFunction = StageFunctionTpl<Scalar>;
   using UnaryFunction = UnaryFunctionTpl<Scalar>;
@@ -34,6 +37,8 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   using StageConstraint = StageConstraintTpl<Scalar>;
 #pragma GCC diagnostic pop
+  using StateInitFunction =
+      std::function<void(const TrajOptProblemTpl &, std::vector<VectorXs> &)>;
 
   /**
    * @page trajoptproblem Trajectory optimization problems
@@ -89,8 +94,6 @@ template <typename _Scalar> struct TrajOptProblemTpl {
    *
    */
 
-  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-
   /// Initial condition
   xyz::polymorphic<UnaryFunction> init_constraint_;
   /// Stages of the control problem.
@@ -101,6 +104,9 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   ConstraintStackTpl<Scalar> term_cstrs_;
   /// Dummy, "neutral" control value.
   VectorXs unone_;
+  /// Function to initialize the state trajectory. Default to xs_default_init.
+  /// Must be set before the solver's setup().
+  StateInitFunction xs_traj_initializer_;
 
   /// @defgroup ctor1 Constructors with pre-allocated stages
 
@@ -162,7 +168,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// @brief Remove all terminal constraints.
   void removeTerminalConstraints() { term_cstrs_.clear(); }
 
-  std::size_t numSteps() const;
+  [[nodiscard]] std::size_t numSteps() const;
 
   /// @brief Rollout the problem costs, constraints, dynamics, stage per stage.
   Scalar evaluate(const std::vector<VectorXs> &xs,
@@ -188,6 +194,29 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   void replaceStageCircular(const xyz::polymorphic<StageModel> &model);
 
   bool checkIntegrity() const;
+
+  [[nodiscard]] auto initializeSolution() const {
+    std::vector<VectorXs> xs, us, vs, lbdas;
+    const size_t nsteps = numSteps();
+    xs_traj_initializer_(*this, xs);
+    us_default_init(*this, us);
+    // initialize multipliers...
+    vs.resize(nsteps + 1);
+    lbdas.resize(nsteps + 1);
+    lbdas[0].setZero(init_constraint_->nr);
+    for (size_t i = 0; i < nsteps; i++) {
+      const StageModelTpl<Scalar> &sm = *stages_[i];
+      lbdas[i + 1].setZero(sm.ndx2());
+      vs[i].setZero(sm.nc());
+    }
+
+    if (!term_cstrs_.empty()) {
+      vs[nsteps].setZero(term_cstrs_.totalDim());
+    }
+
+    return std::make_tuple(std::move(xs), std::move(us), std::move(vs),
+                           std::move(lbdas));
+  }
 
 protected:
   // Check if the initial state is a StateErrorResidual.
