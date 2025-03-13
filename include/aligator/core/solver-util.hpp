@@ -70,25 +70,29 @@ template <typename T1, typename T2>
 
 /// @brief Check the input state-control trajectory is a consistent warm-start
 /// for the output.
+///
+/// @details If the state trajectory @p xs_in is empty, then both states and
+/// controls will be reinitialized using the @p problem object's set
+/// initialization strategy. Otherwise, if the controls container is empty, they
+/// (**only** the controls) will be default-initialized. Finally, if neither
+/// are empty, we attempt to assign the given @p xs_in and
+/// @p us_in values.
 template <typename Scalar>
 void check_trajectory_and_assign(
     const TrajOptProblemTpl<Scalar> &problem,
-    const typename math_types<Scalar>::VectorOfVectors &xs_init,
-    const typename math_types<Scalar>::VectorOfVectors &us_init,
+    const typename math_types<Scalar>::VectorOfVectors &xs_in,
+    const typename math_types<Scalar>::VectorOfVectors &us_in,
     typename math_types<Scalar>::VectorOfVectors &xs_out,
     typename math_types<Scalar>::VectorOfVectors &us_out) {
-  const std::size_t nsteps = problem.numSteps();
-  xs_out.reserve(nsteps + 1);
-  us_out.reserve(nsteps);
-  if (xs_init.empty()) {
-    problem.xs_traj_initializer_(problem, xs_out);
-  } else if (!assign_no_resize(xs_init, xs_out)) {
-    ALIGATOR_RUNTIME_ERROR("warm-start for xs has wrong size!");
-  }
-  if (us_init.empty()) {
+  if (xs_in.empty()) {
+    problem.executeInitialization(xs_out, us_out);
+  } else if (us_in.empty()) {
     us_default_init(problem, us_out);
-  } else if (!assign_no_resize(us_init, us_out)) {
-    ALIGATOR_RUNTIME_ERROR("warm-start for us has wrong size!");
+  } else {
+    if (!assign_no_resize(xs_in, xs_out))
+      ALIGATOR_RUNTIME_ERROR("warm-start for xs has wrong size!");
+    if (!assign_no_resize(us_in, us_out))
+      ALIGATOR_RUNTIME_ERROR("warm-start for us has wrong size!");
   }
 }
 

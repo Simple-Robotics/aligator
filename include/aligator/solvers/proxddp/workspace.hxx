@@ -18,8 +18,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   if (!problem.checkIntegrity())
     ALIGATOR_RUNTIME_ERROR("Problem failed integrity check.");
 
-  std::tie(trial_xs, trial_us, trial_vs, trial_lams) =
-      problem.initializeSolution();
+  problem.executeInitialization(trial_xs, trial_us, trial_vs, trial_lams);
   std::tie(prev_xs, prev_us, prev_vs, prev_lams) = {trial_xs, trial_us,
                                                     trial_vs, trial_lams};
 

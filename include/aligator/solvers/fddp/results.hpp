@@ -29,8 +29,7 @@ ResultsFDDPTpl<Scalar>::ResultsFDDPTpl(
   xs.resize(nsteps + 1);
   us.resize(nsteps);
 
-  problem.xs_traj_initializer_(problem, xs);
-  us_default_init(problem, us);
+  problem.executeInitialization(xs, us);
 
   gains_.resize(nsteps);
 

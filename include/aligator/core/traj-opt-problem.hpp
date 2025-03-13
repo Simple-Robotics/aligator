@@ -21,6 +21,7 @@ namespace aligator {
  * \f]
  */
 template <typename _Scalar> struct TrajOptProblemTpl {
+  using Self = TrajOptProblemTpl;
   using Scalar = _Scalar;
 
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
@@ -37,8 +38,8 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   using StageConstraint = StageConstraintTpl<Scalar>;
 #pragma GCC diagnostic pop
-  using StateInitFunction =
-      std::function<void(const TrajOptProblemTpl &, std::vector<VectorXs> &)>;
+  using InitializationStrategy =
+      std::function<void(const Self &, std::vector<VectorXs> &)>;
 
   /**
    * @page trajoptproblem Trajectory optimization problems
@@ -104,9 +105,6 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   ConstraintStackTpl<Scalar> term_cstrs_;
   /// Dummy, "neutral" control value.
   VectorXs unone_;
-  /// Function to initialize the state trajectory. Default to xs_default_init.
-  /// Must be set before the solver's setup().
-  StateInitFunction xs_traj_initializer_;
 
   /// @defgroup ctor1 Constructors with pre-allocated stages
 
@@ -195,11 +193,35 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 
   bool checkIntegrity() const;
 
-  [[nodiscard]] auto initializeSolution() const {
-    std::vector<VectorXs> xs, us, vs, lbdas;
-    const size_t nsteps = numSteps();
-    xs_traj_initializer_(*this, xs);
+  /// @brief Set a function to initialize the state trajectory.
+  //
+  /// The class constructor defaults the strategy function to xs_default_init.
+  /// @warning Call this set before the solver's setup().
+  /// @tparam Callable Functional type convertible to InitializationStrategy.
+  ///
+  /// @sa executeInitialization()
+  template <typename Callable> void setInitializationStrategy(Callable &&func) {
+    static_assert(std::is_convertible_v<Callable, InitializationStrategy>);
+    this->xs_init_strategy_ = std::forward<Callable>(func);
+  }
+
+  /// @brief Execute the initialization strategy to generate an initial
+  /// candidate solution to the problem.
+  ///
+  /// @sa setInitializationStrategy()
+  void executeInitialization(std::vector<VectorXs> &xs,
+                             std::vector<VectorXs> &us) const {
+    xs_init_strategy_(*this, xs);
     us_default_init(*this, us);
+  }
+
+  /// @copydoc executeInitialization()
+  void executeInitialization(std::vector<VectorXs> &xs,
+                             std::vector<VectorXs> &us,
+                             std::vector<VectorXs> &vs,
+                             std::vector<VectorXs> &lbdas) const {
+    const size_t nsteps = numSteps();
+    executeInitialization(xs, us);
     // initialize multipliers...
     vs.resize(nsteps + 1);
     lbdas.resize(nsteps + 1);
@@ -213,12 +235,19 @@ template <typename _Scalar> struct TrajOptProblemTpl {
     if (!term_cstrs_.empty()) {
       vs[nsteps].setZero(term_cstrs_.totalDim());
     }
+  }
 
+  /// @copydoc executeInitialization()
+  [[nodiscard]] auto initializeSolution() const {
+    std::vector<VectorXs> xs, us, vs, lbdas;
+    executeInitialization(xs, us, vs, lbdas);
     return std::make_tuple(std::move(xs), std::move(us), std::move(vs),
                            std::move(lbdas));
   }
 
-protected:
+private:
+  InitializationStrategy xs_init_strategy_;
+
   // Check if the initial state is a StateErrorResidual.
   // Since this is a costly operation (dynamic_cast), we cache the result.
   bool checkInitCondIsStateError() const;

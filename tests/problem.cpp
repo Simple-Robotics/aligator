@@ -211,9 +211,9 @@ BOOST_AUTO_TEST_CASE(test_constant_init) {
   state[0] += 1.;
   f.problem.setInitState(state);
 
-  f.problem.xs_traj_initializer_ = [](const auto &problem, auto &xs) {
+  f.problem.setInitializationStrategy([](const auto &problem, auto &xs) {
     xs.assign(problem.numSteps() + 1, problem.getInitState());
-  };
+  });
 
   auto ddp = SolverProxDDPTpl<double>();
   ddp.setup(f.problem);
