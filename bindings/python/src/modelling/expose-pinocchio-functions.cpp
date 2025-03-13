@@ -58,7 +58,8 @@ void exposeFrameFunctions() {
 
   using pinocchio::GeometryModel;
 
-  bp::register_ptr_to_python<shared_ptr<PinData>>();
+  if (!eigenpy::check_registration<shared_ptr<PinData>>())
+    bp::register_ptr_to_python<shared_ptr<PinData>>();
 
   PolymorphicMultiBaseVisitor<UnaryFunction, StageFunction> unary_visitor;
 
