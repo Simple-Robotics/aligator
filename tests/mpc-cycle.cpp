@@ -1,17 +1,11 @@
 #include "aligator/core/traj-opt-problem.hpp"
 #include "aligator/core/traj-opt-data.hpp"
-#include "aligator/core/cost-abstract.hpp"
-#include "aligator/core/stage-data.hpp"
-#include "aligator/utils/mpc-util.hpp"
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
 #include "aligator/modelling/dynamics/multibody-constraint-fwd.hpp"
 #include "aligator/modelling/dynamics/integrator-semi-euler.hpp"
-#include "aligator/modelling/dynamics/integrator-rk2.hpp"
-#include "aligator/modelling/multibody/frame-velocity.hpp"
 #include "aligator/modelling/multibody/frame-placement.hpp"
 #include "aligator/modelling/costs/sum-of-costs.hpp"
 #include "aligator/modelling/costs/quad-state-cost.hpp"
-#include "aligator/modelling/costs/constant-cost.hpp"
 
 #include <pinocchio/multibody/model.hpp>
 #include <pinocchio/algorithm/joint-configuration.hpp>
@@ -26,9 +20,9 @@ namespace {
 pinocchio::Model SimpleModel() {
   pinocchio::Model model;
 
-  auto const joint_id = model.addJoint(0, pinocchio::JointModelPZ(),
+  const auto joint_id = model.addJoint(0, pinocchio::JointModelPZ(),
                                        pinocchio::SE3::Identity(), "joint");
-  auto const frame_id = model.addJointFrame(joint_id, -1);
+  const auto frame_id = model.addJointFrame(joint_id, -1);
   model.addBodyFrame("link", joint_id, pinocchio::SE3::Identity(),
                      static_cast<int>(frame_id));
 
@@ -43,7 +37,7 @@ pinocchio::Model SimpleModel() {
 
 using StageSpace = proxsuite::nlp::MultibodyPhaseSpace<double>;
 
-auto height(double t) -> std::tuple<pinocchio::SE3, bool> {
+std::tuple<pinocchio::SE3, bool> height(double t) {
   double const t0 = std::floor(t);
   bool const support = static_cast<int>(t0) % 2 == 0;
 
@@ -70,7 +64,7 @@ auto makeCost(double t, pinocchio::Model const &model) {
   int const nv = model.nv;
   int const nx = nq + nv;
   int const nu = nv;
-  auto const stage_space = StageSpace(model);
+  const auto stage_space = StageSpace(model);
   auto rcost = CostStackTpl<double>(stage_space, nu);
 
   Eigen::VectorXd const x0 = Eigen::VectorXd::Zero(nx);
@@ -85,11 +79,11 @@ auto makeCost(double t, pinocchio::Model const &model) {
   rcost.addCost("quad_control",
                 QuadraticControlCostTpl<double>(stage_space, u0, w_u));
 
-  auto const [placement, support] = height(t);
+  const auto [placement, support] = height(t);
 
   if (!support) {
     Eigen::MatrixXd const w_height = 5000. * Eigen::MatrixXd::Identity(6, 6);
-    auto const frame_fn = makePositionResidual(model, placement);
+    const auto frame_fn = makePositionResidual(model, placement);
     rcost.addCost("frame_fn", QuadraticResidualCostTpl<double>(
                                   stage_space, frame_fn, w_height));
   }
@@ -98,8 +92,8 @@ auto makeCost(double t, pinocchio::Model const &model) {
 }
 
 auto makeConstraint(pinocchio::Model const &model) {
-  auto const &frame_id = model.getFrameId("link");
-  auto const &frame = model.frames[frame_id];
+  const auto &frame_id = model.getFrameId("link");
+  const auto &frame = model.frames[frame_id];
   auto constraint = pinocchio::RigidConstraintModel(
       pinocchio::ContactType::CONTACT_6D, model, frame.parentJoint,
       frame.placement, pinocchio::LOCAL_WORLD_ALIGNED);
@@ -113,26 +107,26 @@ auto makeConstraint(pinocchio::Model const &model) {
 auto makeDynamicsModel(double t, double dt, pinocchio::Model const &model) {
   auto constraint_models = typename dynamics::MultibodyConstraintFwdDynamicsTpl<
       double>::RigidConstraintModelVector();
-  auto const [placement, support] = height(t);
+  const auto [placement, support] = height(t);
 
   if (support)
     constraint_models.emplace_back(makeConstraint(model)).joint2_placement =
         placement;
 
-  auto const stage_space = StageSpace(model);
-  auto const proximal_settings = pinocchio::ProximalSettings(1e-9, 1e-10, 10);
+  const StageSpace stage_space(model);
+  const pinocchio::ProximalSettings proximal_settings(1e-9, 1e-10, 10);
   Eigen::MatrixXd actuation_matrix =
       Eigen::MatrixXd::Zero(model.nv, model.nv).eval();
   actuation_matrix.bottomRows(model.nv).setIdentity();
 
-  auto const ode = dynamics::MultibodyConstraintFwdDynamicsTpl<double>(
+  const dynamics::MultibodyConstraintFwdDynamicsTpl<double> ode(
       stage_space, actuation_matrix, constraint_models, proximal_settings);
   return dynamics::IntegratorSemiImplEulerTpl<double>(ode, dt);
 }
 
 auto makeStage(double t, double dt, pinocchio::Model const &model) {
-  auto const rcost = makeCost(t, model);
-  auto const dynModel = makeDynamicsModel(t, dt, model);
+  const auto rcost = makeCost(t, model);
+  const auto dynModel = makeDynamicsModel(t, dt, model);
 
   return StageModelTpl<double>(rcost, dynModel);
 }
@@ -141,15 +135,15 @@ auto makeStage(double t, double dt, pinocchio::Model const &model) {
 
 BOOST_AUTO_TEST_CASE(test_simple_mpc) {
 
-  auto const model = SimpleModel();
+  const auto model = SimpleModel();
   auto data = pinocchio::Data(model);
 
-  int const nq = model.nq;
-  int const nv = model.nv;
-  int const nx = nq + nv;
-  int const nu = model.nv;
-  int constexpr nsteps = 10;
-  double constexpr dt = 0.02;
+  const int nq = model.nq;
+  const int nv = model.nv;
+  const int nx = nq + nv;
+  const int nu = model.nv;
+  constexpr int nsteps = 10;
+  constexpr double dt = 0.02;
 
   fmt::print("nq: {:d}, nv: {:d}, nx: {:d}, nu: {:d}\n", nq, nv, nx, nu);
 
@@ -161,7 +155,7 @@ BOOST_AUTO_TEST_CASE(test_simple_mpc) {
   pinocchio::computeAllTerms(model, data, q, vq);
   pinocchio::updateFramePlacements(model, data);
 
-  auto const term_cost = makeCost(0., model);
+  const auto term_cost = makeCost(0., model);
   auto problem = TrajOptProblemTpl<double>(x, nu, StageSpace(model), term_cost);
 
   for (auto i = 0; i < nsteps; ++i)
@@ -170,7 +164,7 @@ BOOST_AUTO_TEST_CASE(test_simple_mpc) {
   double constexpr TOL = 1e-7;
   unsigned int constexpr max_iters = 100u;
   double constexpr mu_init = 1e-8;
-  VerboseLevel constexpr verbosity = QUIET;
+  constexpr VerboseLevel verbosity = QUIET;
 
   auto ddp = SolverProxDDPTpl<double>(TOL, mu_init, max_iters, verbosity);
   ddp.rollout_type_ = RolloutType::LINEAR;
@@ -186,14 +180,14 @@ BOOST_AUTO_TEST_CASE(test_simple_mpc) {
   BOOST_CHECK(converged);
 
   for (auto t = 0.; t < 5.; t += dt) {
-    auto const t0 = std::chrono::steady_clock::now();
-    auto const x = ddp.results_.xs[1];
+    const auto t0 = std::chrono::steady_clock::now();
+    const auto x = ddp.results_.xs[1];
     q = x.head(nq);
     vq = x.tail(nv);
     pinocchio::computeAllTerms(model, data, q, vq);
     pinocchio::updateFramePlacements(model, data);
 
-    auto const stage = makeStage(t, dt, model);
+    const auto stage = makeStage(t, dt, model);
     problem.replaceStageCircular(stage);
     ddp.cycleProblem(problem, stage.createData());
     problem.term_cost_ = makeCost(t + dt, model);
@@ -203,15 +197,15 @@ BOOST_AUTO_TEST_CASE(test_simple_mpc) {
 
     bool converged = ddp.run(problem);
     BOOST_CHECK(converged);
-    auto const [expected, support] =
+    const auto [expected, support] =
         height(std::max(0., t - (nsteps - 1) * dt));
-    auto const &actual = data.oMf[model.getFrameId("link")];
+    const auto &actual = data.oMf[model.getFrameId("link")];
     BOOST_CHECK((actual.inverse() * expected).isIdentity(2e-3));
     BOOST_CHECK_SMALL(actual.translation()[2] - expected.translation()[2],
                       2e-3);
 
-    auto const tf = std::chrono::steady_clock::now();
-    auto const time = std::chrono::duration<double, std::milli>(tf - t0);
+    const auto tf = std::chrono::steady_clock::now();
+    const auto time = std::chrono::duration<double, std::milli>(tf - t0);
     fmt::print("Elapsed time: {} ms\n", time.count());
   }
 }
