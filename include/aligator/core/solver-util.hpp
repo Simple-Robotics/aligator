@@ -68,6 +68,7 @@ template <typename T1, typename T2>
   return true;
 }
 
+namespace detail {
 /// @brief Check the input state-control trajectory is a consistent warm-start
 /// for the output.
 ///
@@ -78,7 +79,7 @@ template <typename T1, typename T2>
 /// are empty, we attempt to assign the given @p xs_in and
 /// @p us_in values.
 template <typename Scalar>
-void check_trajectory_and_assign(
+void check_initial_guess_and_assign(
     const TrajOptProblemTpl<Scalar> &problem,
     const typename math_types<Scalar>::VectorOfVectors &xs_in,
     const typename math_types<Scalar>::VectorOfVectors &us_in,
@@ -95,5 +96,6 @@ void check_trajectory_and_assign(
       ALIGATOR_RUNTIME_ERROR("warm-start for us has wrong size!");
   }
 }
+} // namespace detail
 
 } // namespace aligator
