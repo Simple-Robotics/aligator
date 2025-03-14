@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/core/stage-model.hpp"
@@ -21,7 +21,11 @@ namespace aligator {
  * \f]
  */
 template <typename _Scalar> struct TrajOptProblemTpl {
+  using Self = TrajOptProblemTpl;
   using Scalar = _Scalar;
+
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+
   using StageModel = StageModelTpl<Scalar>;
   using StageFunction = StageFunctionTpl<Scalar>;
   using UnaryFunction = UnaryFunctionTpl<Scalar>;
@@ -34,6 +38,8 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   using StageConstraint = StageConstraintTpl<Scalar>;
 #pragma GCC diagnostic pop
+  using InitializationStrategy =
+      std::function<void(const Self &, std::vector<VectorXs> &)>;
 
   /**
    * @page trajoptproblem Trajectory optimization problems
@@ -88,8 +94,6 @@ template <typename _Scalar> struct TrajOptProblemTpl {
    * @include{lineno} lqr.py
    *
    */
-
-  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   /// Initial condition
   xyz::polymorphic<UnaryFunction> init_constraint_;
@@ -162,7 +166,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// @brief Remove all terminal constraints.
   void removeTerminalConstraints() { term_cstrs_.clear(); }
 
-  std::size_t numSteps() const;
+  [[nodiscard]] std::size_t numSteps() const;
 
   /// @brief Rollout the problem costs, constraints, dynamics, stage per stage.
   Scalar evaluate(const std::vector<VectorXs> &xs,
@@ -189,7 +193,60 @@ template <typename _Scalar> struct TrajOptProblemTpl {
 
   bool checkIntegrity() const;
 
-protected:
+  /// @brief Set a function to initialize the state trajectory.
+  //
+  /// The class constructor defaults the strategy function to xs_default_init.
+  /// @warning Call this set before the solver's setup().
+  /// @tparam Callable Functional type convertible to InitializationStrategy.
+  ///
+  /// @sa initializeSolution()
+  template <typename Callable> void setInitializationStrategy(Callable &&func) {
+    static_assert(std::is_convertible_v<Callable, InitializationStrategy>);
+    this->xs_init_strategy_ = std::forward<Callable>(func);
+  }
+
+  /// @brief Execute the initialization strategy to generate an initial
+  /// candidate solution to the problem.
+  ///
+  /// @sa setInitializationStrategy()
+  void initializeSolution(std::vector<VectorXs> &xs,
+                          std::vector<VectorXs> &us) const {
+    xs_init_strategy_(*this, xs);
+    us_default_init(*this, us);
+  }
+
+  /// @copydoc initializeSolution()
+  void initializeSolution(std::vector<VectorXs> &xs, std::vector<VectorXs> &us,
+                          std::vector<VectorXs> &vs,
+                          std::vector<VectorXs> &lbdas) const {
+    const size_t nsteps = numSteps();
+    initializeSolution(xs, us);
+    // initialize multipliers...
+    vs.resize(nsteps + 1);
+    lbdas.resize(nsteps + 1);
+    lbdas[0].setZero(init_constraint_->nr);
+    for (size_t i = 0; i < nsteps; i++) {
+      const StageModelTpl<Scalar> &sm = *stages_[i];
+      lbdas[i + 1].setZero(sm.ndx2());
+      vs[i].setZero(sm.nc());
+    }
+
+    if (!term_cstrs_.empty()) {
+      vs[nsteps].setZero(term_cstrs_.totalDim());
+    }
+  }
+
+  /// @copydoc initializeSolution()
+  [[nodiscard]] auto initializeSolution() const {
+    std::vector<VectorXs> xs, us, vs, lbdas;
+    initializeSolution(xs, us, vs, lbdas);
+    return std::make_tuple(std::move(xs), std::move(us), std::move(vs),
+                           std::move(lbdas));
+  }
+
+private:
+  InitializationStrategy xs_init_strategy_;
+
   // Check if the initial state is a StateErrorResidual.
   // Since this is a costly operation (dynamic_cast), we cache the result.
   bool checkInitCondIsStateError() const;
