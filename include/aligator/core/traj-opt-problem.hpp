@@ -199,7 +199,7 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// @warning Call this set before the solver's setup().
   /// @tparam Callable Functional type convertible to InitializationStrategy.
   ///
-  /// @sa executeInitialization()
+  /// @sa initializeSolution()
   template <typename Callable> void setInitializationStrategy(Callable &&func) {
     static_assert(std::is_convertible_v<Callable, InitializationStrategy>);
     this->xs_init_strategy_ = std::forward<Callable>(func);
@@ -209,19 +209,18 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   /// candidate solution to the problem.
   ///
   /// @sa setInitializationStrategy()
-  void executeInitialization(std::vector<VectorXs> &xs,
-                             std::vector<VectorXs> &us) const {
+  void initializeSolution(std::vector<VectorXs> &xs,
+                          std::vector<VectorXs> &us) const {
     xs_init_strategy_(*this, xs);
     us_default_init(*this, us);
   }
 
-  /// @copydoc executeInitialization()
-  void executeInitialization(std::vector<VectorXs> &xs,
-                             std::vector<VectorXs> &us,
-                             std::vector<VectorXs> &vs,
-                             std::vector<VectorXs> &lbdas) const {
+  /// @copydoc initializeSolution()
+  void initializeSolution(std::vector<VectorXs> &xs, std::vector<VectorXs> &us,
+                          std::vector<VectorXs> &vs,
+                          std::vector<VectorXs> &lbdas) const {
     const size_t nsteps = numSteps();
-    executeInitialization(xs, us);
+    initializeSolution(xs, us);
     // initialize multipliers...
     vs.resize(nsteps + 1);
     lbdas.resize(nsteps + 1);
@@ -237,10 +236,10 @@ template <typename _Scalar> struct TrajOptProblemTpl {
     }
   }
 
-  /// @copydoc executeInitialization()
+  /// @copydoc initializeSolution()
   [[nodiscard]] auto initializeSolution() const {
     std::vector<VectorXs> xs, us, vs, lbdas;
-    executeInitialization(xs, us, vs, lbdas);
+    initializeSolution(xs, us, vs, lbdas);
     return std::make_tuple(std::move(xs), std::move(us), std::move(vs),
                            std::move(lbdas));
   }

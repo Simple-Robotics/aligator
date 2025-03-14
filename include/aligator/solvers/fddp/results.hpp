@@ -29,7 +29,7 @@ ResultsFDDPTpl<Scalar>::ResultsFDDPTpl(
   xs.resize(nsteps + 1);
   us.resize(nsteps);
 
-  problem.executeInitialization(xs, us);
+  problem.initializeSolution(xs, us);
 
   gains_.resize(nsteps);
 

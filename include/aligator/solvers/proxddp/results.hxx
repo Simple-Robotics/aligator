@@ -16,7 +16,7 @@ ResultsTpl<Scalar>::ResultsTpl(const TrajOptProblemTpl<Scalar> &problem)
     ALIGATOR_RUNTIME_ERROR("Problem failed integrity check.");
 
   const std::size_t nsteps = problem.numSteps();
-  problem.executeInitialization(xs, us, vs, lams);
+  problem.initializeSolution(xs, us, vs, lams);
 
   gains_.resize(nsteps + 1);
   for (std::size_t i = 0; i < nsteps; i++) {

@@ -85,7 +85,7 @@ void check_trajectory_and_assign(
     typename math_types<Scalar>::VectorOfVectors &xs_out,
     typename math_types<Scalar>::VectorOfVectors &us_out) {
   if (xs_in.empty()) {
-    problem.executeInitialization(xs_out, us_out);
+    problem.initializeSolution(xs_out, us_out);
   } else if (us_in.empty()) {
     us_default_init(problem, us_out);
   } else {
