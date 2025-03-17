@@ -177,7 +177,7 @@ verbose = aligator.VerboseLevel.VERBOSE
 TOL = 1e-6
 MAX_ITER = 200
 solver = aligator.SolverProxDDP(TOL, mu_init, max_iters=MAX_ITER, verbose=verbose)
-callback = aligator.HistoryCallback()
+callback = aligator.HistoryCallback(solver)
 solver.registerCallback("his", callback)
 
 u0 = pin.rnea(model, data, x0[:1], x0[1:], np.zeros(nv))
@@ -239,7 +239,7 @@ if True:
     if len(prim_errs) != 0:
         plt.figure(figsize=(6.4, 4.8))
         prim_tols = np.array(callback.prim_tols.tolist())
-        al_iters = np.array(callback.al_iters.tolist())
+        al_iters = np.array(callback.al_index.tolist())
 
         ax: plt.Axes = plt.subplot(111)
         plot_pd_errs(ax, prim_errs, dual_errs)
