@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use Pinocchio instantiated functions ([#261](https://github.com/Simple-Robotics/aligator/pull/261))
 - Link to pinocchio collision
 - Some internal code now uses `TrajOptProblemTpl::initializeSolution()` to initialize state-control trajectories ([#274](https://github.com/Simple-Robotics/aligator/pull/274))
+- Fix `HistoryCallback` init in examples ([#277](https://github.com/Simple-Robotics/aligator/pull/277))
 
 ### Fixed
 
