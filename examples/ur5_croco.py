@@ -111,11 +111,11 @@ solver.solve(init_xs, init_us, 300)
 print(
     "Results {"
     f"""
-  converged  :  {solver.isFeasible and solver.stop<solver.th_stop},
+  converged  :  {solver.isFeasible and solver.stop < solver.th_stop},
   traj. cost :  {solver.cost},
   merit.value:  0,
-  prim_infeas:  { sum([ sum(f**2) for f in solver.fs]) },
-  dual_infeas:  { np.max(np.array([ np.max(np.abs(q)) for q in solver.Qu])) }\n"""
+  prim_infeas:  {sum([sum(f**2) for f in solver.fs])},
+  dual_infeas:  {np.max(np.array([np.max(np.abs(q)) for q in solver.Qu]))}\n"""
     "}"
 )
 

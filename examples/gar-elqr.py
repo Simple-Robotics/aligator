@@ -28,7 +28,7 @@ xterm = np.array([0.0])
 
 
 def knot_get_default(nx, nu, nc):
-    knot = gar.LQRKnot(nx, nu, nc)
+    knot = gar.LqrKnot(nx, nu, nc)
     knot.Q[:] = np.eye(nx, nx) * 0.1
     knot.q[:] = 0.0
     knot.R[:] = np.eye(nu) * 0.1
@@ -76,7 +76,7 @@ for t in range(T - 1):
     knots.append(knot_mid)
 knots.append(knot1)
 # constructor creates a copy
-prob = gar.LQRProblem(knots, nx)
+prob = gar.LqrProblem(knots, nx)
 prob.G0 = -np.eye(nx)
 prob.g0 = x0
 

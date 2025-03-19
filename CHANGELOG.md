@@ -13,6 +13,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Only link against needed pinocchio libraries ([#260](https://github.com/Simple-Robotics/aligator/pull/260))
 - Use Pinocchio instantiated functions ([#261](https://github.com/Simple-Robotics/aligator/pull/261))
+- Rename `LQRKnotTpl` (C++)/`LqrKnot` (Python) to `LqrKnot(Tpl)`
+- Move `HistoryCallbackTpl` to `aligator/core`
+- Move headers `results-base`, `solver-util`, `value-function`, `workspace-base` to `aligator/core`
+- Rename `LQRProblemTpl` (C++)/`LQRProblem` (Python) to `LqrProblem(Tpl)`
+- Add class `aligator::polymorphic_allocator` leveraging C++17 memory resources
+- Add memory allocator support for `LqrKnot` and `LqrProblem`
+- `fwd.hpp`: do not include `<pinocchio/config.hpp>` header anymore
+- `blk-matrix.hpp`: remove protected ctors, add conversion ops
+- Headers `aligator/gar/*.hpp` merged into main library
+- Add class `DenseKernel` for the stagewise-dense Riccati algo -- rework `DenseRiccatiSolver` class
+- CMake: rework declaration of examples & benchmarks (applying liberal use of `cmake_parse_arguments()`)
+- CMake: add `bench/CMakeLists.txt` to gersemi defs, apply formatting
+- CMake: apply compile definitions to `aligator` target directly (reduce use of global compile definitions)
+- Add `LqrProblemTpl::isApprox()`
+- Only link against needed pinocchio libraries ([#260](https://github.com/Simple-Robotics/aligator/pull/260))
+- Use Pinocchio instantiated functions ([#261](https://github.com/Simple-Robotics/aligator/pull/261))
 - Link to pinocchio collision
 - Some internal code now uses `TrajOptProblemTpl::initializeSolution()` to initialize state-control trajectories ([#274](https://github.com/Simple-Robotics/aligator/pull/274))
 - Fix `HistoryCallback` init in examples ([#277](https://github.com/Simple-Robotics/aligator/pull/277))
@@ -31,6 +47,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add a collision distance residual for collision pair
 - Add a relaxed log-barrier cost function
 - Add Nix support ([#268](https://github.com/Simple-Robotics/aligator/pull/268))
+
+### Removed
+
+- Removed `gar` as a separate CMake target and shared library, merge into main library
+- Remove subdirectory `aligator/helpers` from include dir
+- Remove function `allocate_shared_eigen_aligned()`
 
 ## [0.10.0] - 2024-12-09
 

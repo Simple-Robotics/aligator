@@ -1,10 +1,11 @@
 #pragma once
 
-#include "aligator/core/results-base.hpp"
+#include "aligator/solvers/results-base.hpp"
 
 namespace aligator {
 
-template <typename Scalar> struct ResultsFDDPTpl : ResultsBaseTpl<Scalar> {
+template <typename Scalar>
+struct ResultsFDDPTpl final : ResultsBaseTpl<Scalar> {
 
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ResultsBaseTpl<Scalar>;
