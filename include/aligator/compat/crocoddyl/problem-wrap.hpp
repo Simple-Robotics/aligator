@@ -12,13 +12,12 @@ namespace aligator::compat::croc {
 /// to an aligator::TrajOptProblemTpl
 template <typename Scalar>
 TrajOptProblemTpl<Scalar> convertCrocoddylProblem(
-    const boost::shared_ptr<crocoddyl::ShootingProblemTpl<Scalar>>
-        &croc_problem);
+    const shared_ptr<crocoddyl::ShootingProblemTpl<Scalar>> &croc_problem);
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 extern template ::aligator::context::TrajOptProblem
 convertCrocoddylProblem<context::Scalar>(
-    const boost::shared_ptr<context::CrocShootingProblem> &);
+    const shared_ptr<context::CrocShootingProblem> &);
 #endif
 
 } // namespace aligator::compat::croc

@@ -11,8 +11,7 @@ namespace aligator::compat::croc {
 
 template <typename Scalar>
 TrajOptProblemTpl<Scalar> convertCrocoddylProblem(
-    const boost::shared_ptr<crocoddyl::ShootingProblemTpl<Scalar>>
-        &croc_problem) {
+    const shared_ptr<crocoddyl::ShootingProblemTpl<Scalar>> &croc_problem) {
   const crocoddyl::ShootingProblemTpl<Scalar> &cpb = *croc_problem;
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using StageModel = StageModelTpl<Scalar>;
