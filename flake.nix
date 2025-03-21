@@ -24,7 +24,7 @@
           devShells.default = pkgs.mkShell { inputsFrom = [ self'.packages.default ]; };
           packages = {
             default = self'.packages.aligator;
-            aligator = pkgs.python3Packages.aligator.overrideAttrs {
+            aligator = pkgs.python3Packages.aligator.overrideAttrs (super: {
               src = pkgs.lib.fileset.toSource {
                 root = ./.;
                 fileset = pkgs.lib.fileset.unions [
@@ -40,7 +40,11 @@
                   ./gar
                 ];
               };
-            };
+              # Remove this once https://github.com/NixOS/nixpkgs/pull/390922 hit nixos-unstable
+              cmakeFlags = super.cmakeFlags ++ [
+                (pkgs.lib.cmakeFeature "CMAKE_CTEST_ARGUMENTS" "--exclude-regex;aligator-test-py-rollout")
+              ];
+            });
           };
         };
     };
