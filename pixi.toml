@@ -53,9 +53,9 @@ configure = { cmd = [
   "-DBUILD_EXAMPLES=$ALIGATOR_EXAMPLES",
   "-DGENERATE_PYTHON_STUBS=$ALIGATOR_PYTHON_STUBS",
 ] }
-build = { cmd = "cmake --build build --target all", depends_on = ["configure"] }
+build = { cmd = "cmake --build build --target all", depends-on = ["configure"] }
 clean = { cmd = "rm -rf build" }
-test = { cmd = "ctest --test-dir build --output-on-failure", depends_on = [
+test = { cmd = "ctest --test-dir build --output-on-failure", depends-on = [
   "build",
 ] }
 
