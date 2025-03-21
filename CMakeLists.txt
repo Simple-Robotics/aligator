@@ -459,7 +459,7 @@ if(DOWNLOAD_TRACY)
 endif()
 
 if(BUILD_CROCODDYL_COMPAT)
-  ADD_PROJECT_DEPENDENCY(crocoddyl REQUIRED)
+  ADD_PROJECT_DEPENDENCY(crocoddyl 3.0.0 REQUIRED)
   add_subdirectory(src/compat/crocoddyl)
 endif()
 
