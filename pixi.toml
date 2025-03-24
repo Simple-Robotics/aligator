@@ -77,7 +77,7 @@ dependencies = { pinocchio = ">=3.1", example-robot-data = ">=4.1.0" }
 activation = { env = { ALIGATOR_PINOCCHIO_SUPPORT = "ON" } }
 
 [feature.crocoddyl]
-dependencies = { crocoddyl = ">=2.1" }
+dependencies = { crocoddyl = ">=3.0.1" }
 activation = { env = { ALIGATOR_CROCODDYL_COMPAT = "ON" } }
 
 [feature.cholmod]
