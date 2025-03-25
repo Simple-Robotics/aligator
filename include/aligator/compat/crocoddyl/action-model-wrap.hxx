@@ -12,7 +12,7 @@ namespace croc {
 
 template <typename Scalar>
 ActionModelWrapperTpl<Scalar>::ActionModelWrapperTpl(
-    boost::shared_ptr<CrocActionModel> action_model)
+    shared_ptr<CrocActionModel> action_model)
     : Base(CostAbstract{StateWrapper{action_model->get_state()},
                         int(action_model->get_nu())},
            NoOpDynamics<Scalar>{StateWrapper{action_model->get_state()},

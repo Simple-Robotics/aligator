@@ -47,10 +47,9 @@ struct ActionModelWrapperTpl : StageModelTpl<Scalar> {
   using DynDataWrap = DynamicsDataWrapperTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
 
-  boost::shared_ptr<CrocActionModel> action_model_;
+  shared_ptr<CrocActionModel> action_model_;
 
-  explicit ActionModelWrapperTpl(
-      boost::shared_ptr<CrocActionModel> action_model);
+  explicit ActionModelWrapperTpl(shared_ptr<CrocActionModel> action_model);
 
   bool hasDynModel() const override { return false; }
 
@@ -81,7 +80,7 @@ struct ActionDataWrapperTpl : public StageDataTpl<Scalar> {
   using CrocActionData = crocoddyl::ActionDataAbstractTpl<Scalar>;
   using DynamicsDataWrapper = DynamicsDataWrapperTpl<Scalar>;
 
-  boost::shared_ptr<CrocActionData> croc_action_data;
+  shared_ptr<CrocActionData> croc_action_data;
 
   ActionDataWrapperTpl(const ActionModelWrapperTpl<Scalar> &croc_action_model);
 

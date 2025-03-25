@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Update for crocoddyl v3: boost -> std pointers ([#278](https://github.com/Simple-Robotics/aligator/issues/278))
+
 ## [0.11.0] - 2025-03-17
 
 ### Changed

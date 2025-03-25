@@ -32,7 +32,7 @@ void exposeCrocoddylCompat() {
 
   bp::class_<ActionModelWrapper, bp::bases<context::StageModel>>(
       "ActionModelWrapper", "Wrapper for Crocoddyl action models.",
-      bp::init<boost::shared_ptr<CrocActionModel>>(bp::args("action_model")))
+      bp::init<shared_ptr<CrocActionModel>>(bp::args("action_model")))
       .def_readonly("action_model", &ActionModelWrapper::action_model_,
                     "Underlying Crocoddyl ActionModel.")
       .def(PolymorphicMultiBaseVisitor<context::StageModel>());
@@ -51,8 +51,7 @@ void exposeCrocoddylCompat() {
 
   bp::class_<StateWrapper, bp::bases<context::Manifold>>(
       "StateWrapper", "Wrapper for a Crocoddyl state.", bp::no_init)
-      .def(
-          bp::init<boost::shared_ptr<StateAbstract>>(bp::args("self", "state")))
+      .def(bp::init<shared_ptr<StateAbstract>>(bp::args("self", "state")))
       .def_readonly("croc_state", &StateWrapper::croc_state)
       .def(PolymorphicMultiBaseVisitor<context::Manifold>());
 }

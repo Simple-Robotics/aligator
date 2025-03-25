@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(lqr) {
   MatrixXd lxx = MatrixXd::Ones(nx, nx) * 1e-2;
   VectorXd lx0 = -lxx * x1;
 
-  auto lqr_model = boost::make_shared<ActionModelLQR>(nx, nu);
+  auto lqr_model = std::make_shared<ActionModelLQR>(nx, nu);
   lqr_model->set_Luu(luu);
   lqr_model->set_lx(lx0);
   lqr_model->set_lu(VectorXd::Zero(nu));
@@ -50,16 +50,16 @@ BOOST_AUTO_TEST_CASE(lqr) {
 
   const std::size_t nsteps = 10;
 
-  std::vector<boost::shared_ptr<crocoddyl::ActionModelAbstract>> running_models(
+  std::vector<std::shared_ptr<crocoddyl::ActionModelAbstract>> running_models(
       nsteps, lqr_model);
-  auto croc_problem = boost::make_shared<crocoddyl::ShootingProblem>(
+  auto croc_problem = std::make_shared<crocoddyl::ShootingProblem>(
       x0, running_models, lqr_model);
 
   std::vector<VectorXd> xs_init(nsteps + 1, x0);
   std::vector<VectorXd> us_init(nsteps, u0);
 
   crocoddyl::SolverDDP croc_solver(croc_problem);
-  croc_solver.setCallbacks({boost::make_shared<crocoddyl::CallbackVerbose>()});
+  croc_solver.setCallbacks({std::make_shared<crocoddyl::CallbackVerbose>()});
   const double TOL = 1e-8;
   croc_solver.set_th_stop(TOL * TOL);
   bool cr_converged = croc_solver.solve(xs_init, us_init);
