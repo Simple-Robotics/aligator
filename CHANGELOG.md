@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Bump fmt version requirement to 11.1.0 ([#280](https://github.com/Simple-Robotics/aligator/issues/280))
 - Update for crocoddyl v3: boost -> std pointers ([#278](https://github.com/Simple-Robotics/aligator/issues/278))
 
 ## [0.11.0] - 2025-03-17
