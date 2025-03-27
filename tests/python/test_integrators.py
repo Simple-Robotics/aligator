@@ -182,9 +182,9 @@ def exp_dyn_fd_check(dyn: dynamics.ExplicitDynamicsModel, x, u, eps: float):
     dyn.forward(x, u, data)
     dyn.dForward(x, u, data)
     atol = eps**0.5
-    assert np.allclose(
-        data.Jx, Jx_nd, atol=atol
-    ), f"Error value: {infNorm(data.Jx - Jx_nd)}"
+    assert np.allclose(data.Jx, Jx_nd, atol=atol), (
+        f"Error value: {infNorm(data.Jx - Jx_nd)}"
+    )
     assert np.allclose(data.Ju, Ju_nd, atol=atol)
 
 

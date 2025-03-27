@@ -29,7 +29,7 @@ if(BUILD_CROCODDYL_COMPAT)
 endif()
 
 function(make_bindings)
-  python3_add_library(
+  Python3_add_library(
     ${PYLIB_NAME}
     MODULE
     WITH_SOABI

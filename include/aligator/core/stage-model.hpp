@@ -138,27 +138,6 @@ public:
 
   /// @brief    Create a StageData object.
   virtual shared_ptr<Data> createData() const;
-
-  friend std::ostream &operator<<(std::ostream &oss,
-                                  const StageModelTpl &stage) {
-    oss << "StageModel { ";
-    if (stage.ndx1() == stage.ndx2()) {
-      oss << "ndx: " << stage.ndx1() << ", "
-          << "nu:  " << stage.nu();
-    } else {
-      oss << "ndx1:" << stage.ndx1() << ", "
-          << "nu:  " << stage.nu() << ", "
-          << "ndx2:" << stage.ndx2();
-    }
-
-    if (stage.numConstraints() > 0) {
-      oss << ", ";
-      oss << "nc: " << stage.numConstraints();
-    }
-
-    oss << " }";
-    return oss;
-  }
 };
 
 template <typename Scalar>
@@ -173,11 +152,45 @@ void StageModelTpl<Scalar>::addConstraint(Cstr &&cstr) {
   constraints_.pushBack(std::forward<Cstr>(cstr));
 }
 
+template <typename Scalar>
+std::ostream &operator<<(std::ostream &oss,
+                         const StageModelTpl<Scalar> &stage) {
+  return oss << fmt::format("{}", stage);
+}
+
 } // namespace aligator
 
 template <typename Scalar>
-struct fmt::formatter<aligator::StageModelTpl<Scalar>>
-    : fmt::ostream_formatter {};
+struct fmt::formatter<aligator::StageModelTpl<Scalar>> {
+  constexpr auto parse(format_parse_context &ctx) const
+      -> decltype(ctx.begin()) {
+    return ctx.end();
+  }
+
+  auto format(const aligator::StageModelTpl<Scalar> &stage,
+              format_context &ctx) const -> decltype(ctx.out()) {
+    if (stage.ndx1() == stage.ndx2()) {
+      return fmt::format_to(ctx.out(),
+                            "StageModel {{"
+                            "\n  ndx:   {:d},"
+                            "\n  nu:    {:d},"
+                            "\n  nc:    {:d}, [{:d} constraints]"
+                            "\n}}",
+                            stage.ndx1(), stage.nu(), stage.nc(),
+                            stage.numConstraints());
+    } else {
+      return fmt::format_to(ctx.out(),
+                            "StageModel {{"
+                            "\n  ndx1:  {:d},"
+                            "\n  nu:    {:d},"
+                            "\n  nc:    {:d}, [{:d} constraints]"
+                            "\n  ndx2:  {:d},"
+                            "\n}}",
+                            stage.ndx1(), stage.nu(), stage.nc(),
+                            stage.numConstraints(), stage.ndx2());
+    }
+  }
+};
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/core/stage-model.txx"

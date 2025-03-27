@@ -1,5 +1,6 @@
 /// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
 #include "aligator/python/fwd.hpp"
+#include "aligator/gar/lqr-problem.hpp"
 #include "aligator/gar/proximal-riccati.hpp"
 
 namespace aligator::python {
@@ -8,7 +9,7 @@ using context::Scalar;
 using prox_riccati_t = ProximalRiccatiSolver<Scalar>;
 using stage_factor_t = StageFactor<Scalar>;
 using riccati_base_t = RiccatiSolverBase<Scalar>;
-using lqr_t = LQRProblemTpl<context::Scalar>;
+using lqr_t = LqrProblemTpl<context::Scalar>;
 
 void exposeProxRiccati() {
 

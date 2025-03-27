@@ -3,7 +3,7 @@
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
-#include "aligator/core/workspace-base.hpp"
+#include "aligator/solvers/workspace-base.hpp"
 #include "aligator/gar/blk-matrix.hpp"
 #include "aligator/gar/lqr-problem.hpp"
 
@@ -30,17 +30,16 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using StageModel = StageModelTpl<Scalar>;
   using Base = WorkspaceBaseTpl<Scalar>;
   using VecBool = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
-  using KnotType = gar::LQRKnotTpl<Scalar>;
+  using KnotType = gar::LqrKnotTpl<Scalar>;
   using ConstraintSetProduct = proxsuite::nlp::ConstraintSetProductTpl<Scalar>;
   using BlkJacobianType = BlkMatrix<MatrixXs, -1, 2>; // jacobians
-  using LQRProblemType = gar::LQRProblemTpl<Scalar>;
+  using LqrProblemType = gar::LqrProblemTpl<Scalar>;
 
   using Base::dyn_slacks;
   using Base::nsteps;
   using Base::problem_data;
 
-  typename LQRProblemType::KnotVector knots;
-  gar::LQRProblemTpl<Scalar> lqr_problem; //< Linear-quadratic subproblem
+  LqrProblemType lqr_problem; //< Linear-quadratic subproblem
 
   /// @name Lagrangian Gradients
   /// @{
@@ -125,16 +124,27 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
 
 template <typename Scalar>
 std::ostream &operator<<(std::ostream &oss, const WorkspaceTpl<Scalar> &self) {
-  oss << "Workspace {" << fmt::format("\n  nsteps:         {:d}", self.nsteps)
-      << fmt::format("\n  n_multipliers:  {:d}", self.lams_pdal.size());
-  oss << "\n}";
-  return oss;
+  return oss << fmt::format("{}", self);
 }
 
 } // namespace aligator
 
 template <typename Scalar>
-struct fmt::formatter<aligator::WorkspaceTpl<Scalar>> : fmt::ostream_formatter {
+struct fmt::formatter<aligator::WorkspaceTpl<Scalar>> {
+  constexpr auto parse(format_parse_context &ctx) const
+      -> decltype(ctx.begin()) {
+    return ctx.end();
+  }
+
+  auto format(const aligator::WorkspaceTpl<Scalar> &ws,
+              format_context &ctx) const -> decltype(ctx.out()) {
+    return fmt::format_to(ctx.out(),
+                          "Workspace {{"
+                          "\n  nsteps:       \t{:d}"
+                          "\n  n_multipliers:\t{:d}"
+                          "\n}}",
+                          ws.nsteps, ws.lams_plus.size());
+  }
 };
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION

@@ -1,4 +1,4 @@
-set(_gar_test_deps aligator::gar gar_test_utils)
+set(_gar_test_deps ${PROJECT_NAME} gar_test_utils)
 
 function(add_gar_test name)
   _add_test_prototype(${name} "gar-" "${_gar_test_deps}")
@@ -14,3 +14,5 @@ if(BUILD_WITH_OPENMP_SUPPORT)
 endif()
 
 add_gar_test(knot)
+add_gar_test(eigen-map)
+add_gar_test(matrix-array)

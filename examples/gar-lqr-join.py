@@ -28,7 +28,7 @@ r_ = np.random.randn(nu)
 
 
 def knot_get_default(nx, nu, nc):
-    knot = gar.LQRKnot(nx, nu, nc)
+    knot = gar.LqrKnot(nx, nu, nc)
     knot.Q[:] = Q_
     knot.q[:] = -Q_ @ xbar
     knot.R[:] = np.eye(nu) * 0.1
@@ -49,7 +49,7 @@ for t in range(t0):
 
 mu = 1e-12
 
-prob1 = gar.LQRProblem(knots, nx)
+prob1 = gar.LqrProblem(knots, nx)
 prob1.G0 = -np.eye(nx)
 prob1.g0 = x0
 prob1.addParameterization(nx)
@@ -64,7 +64,7 @@ solver1.backward(mu, mu)
 
 
 knots.append(knot_get_default(nx, 0, 0))
-prob2 = gar.LQRProblem(knots, 0)
+prob2 = gar.LqrProblem(knots, 0)
 prob2.addParameterization(nx)
 knots2 = prob2.stages
 knots2[0].Gx = E_.T
@@ -117,7 +117,7 @@ us3 = sol3["us"]
 
 # compute error
 def computeError():
-    kn: gar.LQRKnot = knots1[-1]
+    kn: gar.LqrKnot = knots1[-1]
     knp = knots1[-2]
     x_ = xs1[-1]
     u_ = us1[-1]
@@ -144,7 +144,7 @@ def computeError():
     print("gu:", gu)
     print("gx:", gx)
     # second leg
-    knn: gar.LQRKnot = knots2[0]
+    knn: gar.LqrKnot = knots2[0]
     gxn = knn.q + knn.Q @ xs2[0] + knn.S @ us2[0] + knn.A.T @ ls2[1]
     gxn += kn.E.T @ thopt
     print("gxn:", gxn)
