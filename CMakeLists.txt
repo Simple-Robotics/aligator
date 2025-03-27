@@ -356,10 +356,6 @@ if(ALIGATOR_TRACY_ENABLE AND DOWNLOAD_TRACY)
 elseif(ALIGATOR_TRACY_ENABLE)
   # assume it is installed somewhere
   ADD_PROJECT_DEPENDENCY(Tracy)
-  set_target_properties(
-    Tracy::TracyClient
-    PROPERTIES POSITION_INDEPENDENT_CODE True
-  )
   if(NOT ${tracy_FOUND})
     message(
       FATAL_ERROR
