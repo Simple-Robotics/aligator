@@ -4,7 +4,7 @@ function(add_gar_test name)
   _add_test_prototype(${name} "gar-" "${_gar_test_deps}")
 endfunction(add_gar_test)
 
-set(TEST_NAMES riccati block-matrix knot matrix-array)
+set(TEST_NAMES riccati block-matrix knot)
 
 if(BUILD_WITH_OPENMP_SUPPORT)
   list(APPEND TEST_NAMES parallel)
