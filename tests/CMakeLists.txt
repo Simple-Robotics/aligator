@@ -62,13 +62,13 @@ if(BUILD_WITH_PINOCCHIO_SUPPORT AND PINOCCHIO_V3)
   list(APPEND TEST_NAMES forces)
 endif()
 
+if(CHECK_RUNTIME_MALLOC)
+  list(APPEND TEST_NAMES nomalloc)
+endif()
+
 foreach(test_name ${TEST_NAMES})
   add_aligator_test(${test_name})
 endforeach()
-
-if(CHECK_RUNTIME_MALLOC)
-  add_aligator_test(nomalloc)
-endif()
 
 add_subdirectory(gar)
 
