@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022-2023 LAAS-CNRS, INRIA
+# Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
@@ -46,6 +46,7 @@ set(
   TEST_NAMES
   continuous
   costs
+  eigen-map
   integrators
   lqr
   problem
