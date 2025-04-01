@@ -195,12 +195,12 @@ bool ParallelRiccatiSolver<Scalar>::forward(
   {
     uint i = (uint)omp::get_thread_id();
     auto [beg, end] = get_work(N, i, numThreads);
-    auto xsview = make_span_from_indices(xs, beg, end);
-    auto usview = make_span_from_indices(us, beg, end);
-    auto vsview = make_span_from_indices(vs, beg, end);
-    auto lsview = make_span_from_indices(lbdas, beg, end);
-    auto stview = make_span_from_indices(stages, beg, end);
-    auto dsview = make_span_from_indices(datas, beg, end);
+    boost::span xsview = make_span_from_indices(xs, beg, end);
+    boost::span usview = make_span_from_indices(us, beg, end);
+    boost::span vsview = make_span_from_indices(vs, beg, end);
+    boost::span lsview = make_span_from_indices(lbdas, beg, end);
+    boost::span stview = make_span_from_indices(stages, beg, end);
+    boost::span dsview = make_span_from_indices(datas, beg, end);
     if (i < numThreads - 1) {
       Kernel::forwardImpl(stview, dsview, xsview, usview, vsview, lsview,
                           lbdas[end]);
