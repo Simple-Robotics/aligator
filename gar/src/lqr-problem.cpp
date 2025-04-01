@@ -3,7 +3,7 @@
 
 namespace aligator {
 namespace gar {
-template struct LQRKnotTpl<context::Scalar>;
-template struct LQRProblemTpl<context::Scalar>;
+template struct LqrKnotTpl<context::Scalar>;
+template struct LqrProblemTpl<context::Scalar>;
 } // namespace gar
 } // namespace aligator

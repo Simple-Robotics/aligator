@@ -797,17 +797,17 @@ void SolverProxDDPTpl<Scalar>::registerCallback(const std::string &name,
 template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
   ALIGATOR_NOMALLOC_SCOPED;
   ALIGATOR_TRACY_ZONE_SCOPED;
-  gar::LQRProblemTpl<Scalar> &prob = workspace_.lqr_problem;
+  gar::LqrProblemTpl<Scalar> &prob = workspace_.lqr_problem;
   const TrajOptData &pd = workspace_.problem_data;
 
-  using gar::LQRKnotTpl;
+  using gar::LqrKnotTpl;
 
   size_t N = (size_t)prob.horizon();
   assert(N == workspace_.nsteps);
 
   for (size_t t = 0; t < N; t++) {
     const StageData &sd = *pd.stage_data[t];
-    LQRKnotTpl<Scalar> &knot = prob.stages[t];
+    LqrKnotTpl<Scalar> &knot = prob.stages[t];
     const DynamicsData &dd = *sd.dynamics_data;
     const CostData &cd = *sd.cost_data;
     uint nx = knot.nx;
@@ -847,7 +847,7 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
   }
 
   {
-    LQRKnotTpl<Scalar> &knot = prob.stages[N];
+    LqrKnotTpl<Scalar> &knot = prob.stages[N];
     const CostData &tcd = *pd.term_cost_data;
     knot.Q = tcd.Lxx_;
     knot.Q.diagonal().array() += preg_;
@@ -862,7 +862,7 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
   prob.G0 = id.Jx_;
   prob.g0.noalias() = workspace_.Lds[0];
 
-  LQRKnotTpl<Scalar> &model = prob.stages[0];
+  LqrKnotTpl<Scalar> &model = prob.stages[0];
   model.Q += id.Hxx_;
 }
 

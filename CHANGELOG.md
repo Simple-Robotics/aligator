@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Rename `LQRKnotTpl` (C++)/`LqrKnot` (Python) to `LqrKnot(Tpl)`
+- Rename `LQRProblemTpl` (C++)/`LQRProblem` (Python) to `LqrProblem(Tpl)`
+
 ## [0.12.0] - 2025-03-27
 
 ### Changed

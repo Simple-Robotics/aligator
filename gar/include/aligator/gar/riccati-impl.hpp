@@ -14,8 +14,8 @@
 
 namespace aligator {
 namespace gar {
-template <typename Scalar> struct LQRKnotTpl;
-template <typename Scalar> struct LQRProblemTpl;
+template <typename Scalar> struct LqrKnotTpl;
+template <typename Scalar> struct LqrProblemTpl;
 
 /// Create a boost::span object from a vector and two indices.
 template <class T, class A>
@@ -93,7 +93,7 @@ template <typename Scalar> struct ProximalRiccatiKernel {
   using RowMatrixXs = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
   using RowMatrixRef = Eigen::Ref<RowMatrixXs>;
   using ConstRowMatrixRef = Eigen::Ref<const RowMatrixXs>;
-  using KnotType = LQRKnotTpl<Scalar>;
+  using KnotType = LqrKnotTpl<Scalar>;
   using StageFactorType = StageFactor<Scalar>;
   using value_t = typename StageFactor<Scalar>::value_t;
 

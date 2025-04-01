@@ -25,7 +25,7 @@ namespace gar {
 ///   Cx + Du + d = 0.
 /// \f\]
 ///
-template <typename Scalar> struct LQRKnotTpl {
+template <typename Scalar> struct LqrKnotTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   uint nx, nu, nc, nx2, nth;
@@ -42,23 +42,23 @@ template <typename Scalar> struct LQRKnotTpl {
   MatrixXs Gv;
   VectorXs gamma;
 
-  LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth = 0);
+  LqrKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth = 0);
 
-  LQRKnotTpl(uint nx, uint nu, uint nc) : LQRKnotTpl(nx, nu, nc, nx) {}
+  LqrKnotTpl(uint nx, uint nu, uint nc) : LqrKnotTpl(nx, nu, nc, nx) {}
 
   // reallocates entire buffer for contigousness
   void addParameterization(uint nth);
-  bool isApprox(const LQRKnotTpl &other,
+  bool isApprox(const LqrKnotTpl &other,
                 Scalar prec = std::numeric_limits<Scalar>::epsilon()) const;
 
-  friend bool operator==(const LQRKnotTpl &lhs, const LQRKnotTpl &rhs) {
+  friend bool operator==(const LqrKnotTpl &lhs, const LqrKnotTpl &rhs) {
     return lhs.isApprox(rhs);
   }
 };
 
-template <typename Scalar> struct LQRProblemTpl {
+template <typename Scalar> struct LqrProblemTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using KnotType = LQRKnotTpl<Scalar>;
+  using KnotType = LqrKnotTpl<Scalar>;
   using KnotVector = std::vector<KnotType>;
   KnotVector stages;
   MatrixXs G0;
@@ -67,13 +67,13 @@ template <typename Scalar> struct LQRProblemTpl {
   inline int horizon() const noexcept { return int(stages.size()) - 1; }
   inline uint nc0() const noexcept { return (uint)g0.rows(); }
 
-  LQRProblemTpl() : stages(), G0(), g0() {}
+  LqrProblemTpl() : stages(), G0(), g0() {}
 
-  LQRProblemTpl(KnotVector &&knots, long nc0) : stages(knots), G0(), g0(nc0) {
+  LqrProblemTpl(KnotVector &&knots, long nc0) : stages(knots), G0(), g0(nc0) {
     initialize();
   }
 
-  LQRProblemTpl(const KnotVector &knots, long nc0)
+  LqrProblemTpl(const KnotVector &knots, long nc0)
       : stages(knots), G0(), g0(nc0) {
     initialize();
   }
@@ -107,8 +107,8 @@ protected:
 };
 
 template <typename Scalar>
-std::ostream &operator<<(std::ostream &oss, const LQRKnotTpl<Scalar> &self) {
-  oss << "LQRKnot {";
+std::ostream &operator<<(std::ostream &oss, const LqrKnotTpl<Scalar> &self) {
+  oss << "LqrKnot {";
   oss << fmt::format("\n  nx:  {:d}", self.nx) //
       << fmt::format("\n  nu:  {:d}", self.nu) //
       << fmt::format("\n  nc:  {:d}", self.nc);

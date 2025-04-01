@@ -43,14 +43,14 @@ void sparseAssignDiagonal(Eigen::Index i0, Eigen::Index i1, Scalar value,
 } // namespace helpers
 
 template <typename Scalar>
-void lqrCreateSparseMatrix(const LQRProblemTpl<Scalar> &problem,
+void lqrCreateSparseMatrix(const LqrProblemTpl<Scalar> &problem,
                            const Scalar mudyn, const Scalar mueq,
                            Eigen::SparseMatrix<Scalar> &mat,
                            Eigen::Matrix<Scalar, -1, 1> &rhs, bool update);
 
 template <typename Scalar>
 std::array<Scalar, 3> lqrComputeKktError(
-    const LQRProblemTpl<Scalar> &problem,
+    const LqrProblemTpl<Scalar> &problem,
     boost::span<const typename math_types<Scalar>::VectorXs> xs,
     boost::span<const typename math_types<Scalar>::VectorXs> us,
     boost::span<const typename math_types<Scalar>::VectorXs> vs,
@@ -63,13 +63,13 @@ std::array<Scalar, 3> lqrComputeKktError(
 /// with the given dual-regularization parameters @p mudyn and @p mueq.
 /// @returns Whether the matrices were successfully allocated.
 template <typename Scalar>
-bool lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
+bool lqrDenseMatrix(const LqrProblemTpl<Scalar> &problem, Scalar mudyn,
                     Scalar mueq, typename math_types<Scalar>::MatrixXs &mat,
                     typename math_types<Scalar>::VectorXs &rhs);
 
 /// @brief Compute the number of rows in the problem matrix.
 template <typename Scalar>
-uint lqrNumRows(const LQRProblemTpl<Scalar> &problem) {
+uint lqrNumRows(const LqrProblemTpl<Scalar> &problem) {
   const auto &knots = problem.stages;
   const uint nc0 = problem.nc0();
   const size_t N = knots.size() - 1UL;
@@ -85,7 +85,7 @@ uint lqrNumRows(const LQRProblemTpl<Scalar> &problem) {
 
 /// @copybrief lqrDenseMatrix()
 template <typename Scalar>
-auto lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
+auto lqrDenseMatrix(const LqrProblemTpl<Scalar> &problem, Scalar mudyn,
                     Scalar mueq) {
 
   decltype(auto) knots = problem.stages;
@@ -105,7 +105,7 @@ auto lqrDenseMatrix(const LQRProblemTpl<Scalar> &problem, Scalar mudyn,
 /// @brief Convert dense RHS solution to its trajectory [x,u,v,lambda] solution.
 template <typename Scalar>
 void lqrDenseSolutionToTraj(
-    const LQRProblemTpl<Scalar> &problem,
+    const LqrProblemTpl<Scalar> &problem,
     const typename math_types<Scalar>::ConstVectorRef solution,
     std::vector<typename math_types<Scalar>::VectorXs> &xs,
     std::vector<typename math_types<Scalar>::VectorXs> &us,
@@ -122,7 +122,7 @@ void lqrDenseSolutionToTraj(
 
   uint idx = nc0;
   for (size_t t = 0; t <= N; t++) {
-    const LQRKnotTpl<Scalar> &knot = problem.stages[t];
+    const LqrKnotTpl<Scalar> &knot = problem.stages[t];
     const uint n = knot.nx + knot.nu + knot.nc;
     auto seg = solution.segment(idx, n);
     xs[t] = seg.head(knot.nx);
@@ -137,9 +137,9 @@ void lqrDenseSolutionToTraj(
 }
 
 template <typename Scalar>
-auto lqrInitializeSolution(const LQRProblemTpl<Scalar> &problem) {
+auto lqrInitializeSolution(const LqrProblemTpl<Scalar> &problem) {
   using VectorXs = typename math_types<Scalar>::VectorXs;
-  using knot_t = LQRKnotTpl<Scalar>;
+  using knot_t = LqrKnotTpl<Scalar>;
   std::vector<VectorXs> xs;
   std::vector<VectorXs> us;
   std::vector<VectorXs> vs;
@@ -170,18 +170,18 @@ auto lqrInitializeSolution(const LQRProblemTpl<Scalar> &problem) {
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 extern template void lqrCreateSparseMatrix<context::Scalar>(
-    const LQRProblemTpl<context::Scalar> &problem, const context::Scalar mudyn,
+    const LqrProblemTpl<context::Scalar> &problem, const context::Scalar mudyn,
     const context::Scalar mueq, Eigen::SparseMatrix<context::Scalar> &mat,
     context::VectorXs &rhs, bool update);
 extern template std::array<context::Scalar, 3>
 lqrComputeKktError<context::Scalar>(
-    const LQRProblemTpl<context::Scalar> &,
+    const LqrProblemTpl<context::Scalar> &,
     boost::span<const context::VectorXs>, boost::span<const context::VectorXs>,
     boost::span<const context::VectorXs>, boost::span<const context::VectorXs>,
     const context::Scalar, const context::Scalar,
     const std::optional<context::ConstVectorRef> &, bool);
 extern template auto
-lqrDenseMatrix<context::Scalar>(const LQRProblemTpl<context::Scalar> &,
+lqrDenseMatrix<context::Scalar>(const LqrProblemTpl<context::Scalar> &,
                                 context::Scalar, context::Scalar);
 #endif
 

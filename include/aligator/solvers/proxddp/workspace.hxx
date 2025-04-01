@@ -69,7 +69,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 
   // initial condition
   long nc0 = (long)problem.init_constraint_->nr;
-  lqr_problem = LQRProblemType(knots, nc0);
+  lqr_problem = LqrProblemType(knots, nc0);
   std::tie(dxs, dus, dvs, dlams) =
       gar::lqrInitializeSolution(lqr_problem); // lqr subproblem variables
   Lxs = dxs;
@@ -116,7 +116,7 @@ void WorkspaceTpl<Scalar>::cycleAppend(const TrajOptProblemTpl<Scalar> &problem,
 
   shifted_constraints = prev_vs;
   rotate_vec_left(knots, 0, 1);
-  knots[nsteps - 1] = gar::LQRKnotTpl<double>(
+  knots[nsteps - 1] = gar::LqrKnotTpl<double>(
       uint(stage.ndx1()), uint(stage.nu()), uint(stage.nc()));
 
   rotate_vec_left(cstr_product_sets, 0, 1);
@@ -130,7 +130,7 @@ void WorkspaceTpl<Scalar>::cycleAppend(const TrajOptProblemTpl<Scalar> &problem,
 
   // initial condition
   long nc0 = (long)problem.init_constraint_->nr;
-  lqr_problem = LQRProblemType(knots, nc0);
+  lqr_problem = LqrProblemType(knots, nc0);
   std::tie(dxs, dus, dvs, dlams) =
       gar::lqrInitializeSolution(lqr_problem); // lqr subproblem variables
 
