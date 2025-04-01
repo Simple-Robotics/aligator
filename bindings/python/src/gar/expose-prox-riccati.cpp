@@ -8,7 +8,7 @@ using context::Scalar;
 using prox_riccati_t = ProximalRiccatiSolver<Scalar>;
 using stage_factor_t = StageFactor<Scalar>;
 using riccati_base_t = RiccatiSolverBase<Scalar>;
-using lqr_t = LQRProblemTpl<context::Scalar>;
+using lqr_t = LqrProblemTpl<context::Scalar>;
 
 void exposeProxRiccati() {
 

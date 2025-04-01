@@ -5,7 +5,7 @@
 namespace aligator::gar {
 
 template <typename Scalar>
-LQRKnotTpl<Scalar>::LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth)
+LqrKnotTpl<Scalar>::LqrKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth)
     : nx(nx), nu(nu), nc(nc), nx2(nx2), nth(nth),    //
       Q(nx, nx), S(nx, nu), R(nu, nu), q(nx), r(nu), //
       A(nx2, nx), B(nx2, nu), E(nx2, nx), f(nx2),    //
@@ -34,7 +34,7 @@ LQRKnotTpl<Scalar>::LQRKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth)
 }
 
 template <typename Scalar>
-void LQRKnotTpl<Scalar>::addParameterization(uint nth) {
+void LqrKnotTpl<Scalar>::addParameterization(uint nth) {
   this->nth = nth;
   Gth.setZero(nth, nth);
   Gx.setZero(nx, nth);
@@ -44,7 +44,7 @@ void LQRKnotTpl<Scalar>::addParameterization(uint nth) {
 }
 
 template <typename Scalar>
-bool LQRKnotTpl<Scalar>::isApprox(const LQRKnotTpl &other, Scalar prec) const {
+bool LqrKnotTpl<Scalar>::isApprox(const LqrKnotTpl &other, Scalar prec) const {
   bool cost = Q.isApprox(other.Q, prec) && S.isApprox(other.S, prec) &&
               R.isApprox(other.R, prec) && q.isApprox(other.q, prec) &&
               r.isApprox(other.r, prec);
@@ -59,7 +59,7 @@ bool LQRKnotTpl<Scalar>::isApprox(const LQRKnotTpl &other, Scalar prec) const {
 }
 
 template <typename Scalar>
-Scalar LQRProblemTpl<Scalar>::evaluate(
+Scalar LqrProblemTpl<Scalar>::evaluate(
     const VectorOfVectors &xs, const VectorOfVectors &us,
     const std::optional<ConstVectorRef> &theta_) const {
   if ((int)xs.size() != horizon() + 1)
@@ -72,7 +72,7 @@ Scalar LQRProblemTpl<Scalar>::evaluate(
 
   Scalar ret = 0.;
   for (uint i = 0; i <= (uint)horizon(); i++) {
-    const LQRKnotTpl<Scalar> &knot = stages[i];
+    const LqrKnotTpl<Scalar> &knot = stages[i];
     ret += 0.5 * xs[i].dot(knot.Q * xs[i]) + xs[i].dot(knot.q);
     if (i == (uint)horizon())
       break;
@@ -86,7 +86,7 @@ Scalar LQRProblemTpl<Scalar>::evaluate(
   if (theta_.has_value()) {
     ConstVectorRef th = theta_.value();
     for (uint i = 0; i <= (uint)horizon(); i++) {
-      const LQRKnotTpl<Scalar> &knot = stages[i];
+      const LqrKnotTpl<Scalar> &knot = stages[i];
       ret += 0.5 * th.dot(knot.Gth * th);
       ret += th.dot(knot.Gx.transpose() * xs[i]);
       ret += th.dot(knot.gamma);
