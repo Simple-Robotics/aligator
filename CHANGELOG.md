@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Rename `LQRKnotTpl` (C++)/`LqrKnot` (Python) to `LqrKnot(Tpl)`
 - Rename `LQRProblemTpl` (C++)/`LQRProblem` (Python) to `LqrProblem(Tpl)`
+### Fixed
+
+- Correct references to paper's equations ([#284](https://github.com/Simple-Robotics/aligator/pull/284))
 
 ## [0.12.0] - 2025-03-27
 
