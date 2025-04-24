@@ -67,7 +67,6 @@ jobs:
         pixi run -e ${{ matrix.environment }} test
 
   check:
-    if: always()
     name: check-macos-linux-pixi
 
     needs:
