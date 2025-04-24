@@ -10,7 +10,11 @@ authors:
     family-names: Jallet
     email: wilson.jallet@polytechnique.org
     orcid: 'https://orcid.org/0000-0001-8222-2739'
-    affiliation: LAAS-CNRS & INRIA
+    affiliation: INRIA
+  - given-names: Ewen
+    family-names: Dantec
+    email: ewen.dantec@inria.fr
+    affiliation: INRIA
   - given-names: Antoine
     family-names: Bambade
     affiliation: INRIA
