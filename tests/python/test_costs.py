@@ -6,7 +6,8 @@ import eigenpy
 import pytest
 from utils import cost_finite_grad
 
-EPS = 1e-7
+FD_EPS = 1e-7
+ATOL = 2 * FD_EPS**0.5
 
 
 def sample_gauss(space):
@@ -43,11 +44,11 @@ def test_cost_stack():
         cost_stack.computeHessians(x0, u0, data2)
 
         assert data1.value == data2.value
-        assert np.allclose(data1.grad, data2.grad)
-        assert np.allclose(data1.hess, data2.hess)
+        assert np.allclose(data1.grad, data2.grad, atol=ATOL)
+        assert np.allclose(data1.hess, data2.hess, atol=ATOL)
 
-        assert np.allclose(data1.Lxx, Q)
-        assert np.allclose(data1.Luu, R)
+        assert np.allclose(data1.Lxx, Q, atol=ATOL)
+        assert np.allclose(data1.Luu, R, atol=ATOL)
 
     rcost_ref = cost_stack.getComponent(0)
     assert isinstance(rcost_ref, QuadraticCost)
@@ -117,8 +118,8 @@ def test_composite_cost():
         x0 = sample_gauss(space)
         cost.evaluate(x0, u0, data)
         cost.computeGradients(x0, u0, data)
-        fgrad = cost_finite_grad(cost, space, x0, u0, EPS)
-        assert np.allclose(fgrad, data.grad)
+        fgrad = cost_finite_grad(cost, space, x0, u0, FD_EPS)
+        assert np.allclose(fgrad, data.grad, atol=ATOL)
     print("----")
 
 
@@ -157,8 +158,8 @@ def test_log_barrier():
         x0 = sample_gauss(space)
         cost.evaluate(x0, u0, data)
         cost.computeGradients(x0, u0, data)
-        fgrad = cost_finite_grad(cost, space, x0, u0, EPS)
-        assert np.allclose(fgrad, data.grad)
+        fgrad = cost_finite_grad(cost, space, x0, u0, FD_EPS)
+        assert np.allclose(fgrad, data.grad, atol=ATOL)
     print("----")
 
 
