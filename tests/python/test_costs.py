@@ -1,42 +1,12 @@
-from aligator import QuadraticCost, CostStack
-from aligator import manifolds
+from aligator import manifolds, QuadraticCost, CostStack
 import aligator
 import numpy as np
 import eigenpy
 
 import pytest
+from utils import cost_finite_grad
 
 EPS = 1e-7
-ATOL = 2 * EPS**0.5
-
-
-def finite_grad(costmodel, space, x, u, EPS=1e-8):
-    ndx = space.ndx
-    nu = u.size
-    grad = np.zeros(ndx + nu)
-    dx = np.zeros(ndx)
-    du = np.zeros(nu)
-    data = costmodel.createData()
-    costmodel.evaluate(x, u, data)
-    # distance to origin
-    _dx = space.difference(space.neutral(), x)
-    ex = EPS * max(1.0, np.linalg.norm(_dx))
-    vref = data.value
-    for i in range(ndx):
-        dx[i] = ex
-        x1 = space.integrate(x, dx)
-        costmodel.evaluate(x1, u, data)
-        grad[i] = (data.value - vref) / ex
-        dx[i] = 0.0
-
-    for i in range(ndx, ndx + nu):
-        du[i - ndx] = ex
-        u1 = u + du
-        costmodel.evaluate(x, u1, data)
-        grad[i] = (data.value - vref) / ex
-        du[i - ndx] = 0.0
-
-    return grad
 
 
 def sample_gauss(space):
@@ -147,9 +117,7 @@ def test_composite_cost():
         x0 = sample_gauss(space)
         cost.evaluate(x0, u0, data)
         cost.computeGradients(x0, u0, data)
-        fgrad = finite_grad(cost, space, x0, u0)
-        feeeerrr = np.linalg.norm(fgrad + data.grad, np.inf)
-        print("fucking feeer", feeeerrr)
+        fgrad = cost_finite_grad(cost, space, x0, u0, EPS)
         assert np.allclose(fgrad, data.grad)
     print("----")
 
@@ -189,7 +157,7 @@ def test_log_barrier():
         x0 = sample_gauss(space)
         cost.evaluate(x0, u0, data)
         cost.computeGradients(x0, u0, data)
-        fgrad = finite_grad(cost, space, x0, u0)
+        fgrad = cost_finite_grad(cost, space, x0, u0, EPS)
         assert np.allclose(fgrad, data.grad)
     print("----")
 

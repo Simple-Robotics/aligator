@@ -73,3 +73,32 @@ def finite_diff(dynmodel, space, x, u, EPS=1e-8):
         du[i] = 0.0
 
     return Jx, Ju
+
+
+def cost_finite_grad(costmodel, space, x, u, EPS=1e-8):
+    ndx = space.ndx
+    nu = u.size
+    grad = np.zeros(ndx + nu)
+    dx = np.zeros(ndx)
+    du = np.zeros(nu)
+    data = costmodel.createData()
+    costmodel.evaluate(x, u, data)
+    # distance to origin
+    _dx = space.difference(space.neutral(), x)
+    ex = EPS * max(1.0, np.linalg.norm(_dx))
+    vref = data.value
+    for i in range(ndx):
+        dx[i] = ex
+        x1 = space.integrate(x, dx)
+        costmodel.evaluate(x1, u, data)
+        grad[i] = (data.value - vref) / ex
+        dx[i] = 0.0
+
+    for i in range(ndx, ndx + nu):
+        du[i - ndx] = ex
+        u1 = u + du
+        costmodel.evaluate(x, u1, data)
+        grad[i] = (data.value - vref) / ex
+        du[i - ndx] = 0.0
+
+    return grad
