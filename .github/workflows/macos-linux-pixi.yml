@@ -2,6 +2,9 @@ name: CI - OSX/Linux via Pixi
 
 on:
   push:
+    branches:
+      - main
+      - devel
     paths-ignore:
       - 'doc/**'
       - 'scripts/**'
