@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add macro `ALIGATOR_OUT_OF_RANGE_ERROR` to throw `std::out_of_range` exceptions ([#294](https://github.com/Simple-Robotics/aligator/pull/294))
+
 ### Changed
 
 - Rename `LQRKnotTpl` (C++)/`LqrKnot` (Python) to `LqrKnot(Tpl)`
@@ -16,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Correct references to paper's equations ([#284](https://github.com/Simple-Robotics/aligator/pull/284))
+- Fix segfault in `FrameCollisionResidual`, instead throw `std::runtime_error` (**C++**, `RuntimeError` in **Python**) ([#294](https://github.com/Simple-Robotics/aligator/pull/294))
 
 ## [0.12.0] - 2025-03-27
 
