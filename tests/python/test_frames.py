@@ -193,7 +193,7 @@ def test_fly_high():
 
 
 def test_frame_collision():
-    import hppfcl
+    import coal
 
     fr_name1 = "larm_shoulder2_body"
     fr_id1 = model.getFrameId(fr_name1)
@@ -210,16 +210,16 @@ def test_frame_collision():
     gamma = np.random.rand()
     delta = np.random.rand()
 
-    geometry = pin.GeometryModel()
+    geometry = pin.buildSampleGeometryModelHumanoid(model)
     ig_frame = geometry.addGeometryObject(
         pin.GeometryObject(
-            "frame", fr_id1, joint_id, hppfcl.Capsule(alpha, gamma), frame_SE3
+            "frame", fr_id1, joint_id, coal.Capsule(alpha, gamma), frame_SE3
         )
     )
 
     ig_frame2 = geometry.addGeometryObject(
         pin.GeometryObject(
-            "frame2", fr_id2, joint_id2, hppfcl.Capsule(beta, delta), frame_SE3_bis
+            "frame2", fr_id2, joint_id2, coal.Capsule(beta, delta), frame_SE3_bis
         )
     )
     geometry.addCollisionPair(pin.CollisionPair(ig_frame, ig_frame2))
@@ -265,47 +265,16 @@ def test_frame_collision():
         assert np.allclose(fdata.Jx, fdata2.Jx, atol=ATOL)
 
 
-def test_FrameCollisionResidual_no_collision_pairs():
-    import hppfcl
-
-    fr_name1 = "larm_shoulder2_body"
-    fr_id1 = model.getFrameId(fr_name1)
-    joint_id = model.frames[fr_id1].parentJoint
-
-    fr_name2 = "rleg_elbow_body"
-    fr_id2 = model.getFrameId(fr_name2)
-    joint_id2 = model.frames[fr_id2].parentJoint
-
-    frame_SE3 = pin.SE3.Random()
-    frame_SE3_bis = pin.SE3.Random()
-    alpha = np.random.rand()
-    beta = np.random.rand()
-    gamma = np.random.rand()
-    delta = np.random.rand()
-
-    geometry = pin.GeometryModel()
-    ig_frame = geometry.addGeometryObject(
-        pin.GeometryObject(
-            "frame", fr_id1, joint_id, hppfcl.Capsule(alpha, gamma), frame_SE3
-        )
-    )
-
-    ig_frame2 = geometry.addGeometryObject(
-        pin.GeometryObject(
-            "frame2", fr_id2, joint_id2, hppfcl.Capsule(beta, delta), frame_SE3_bis
-        )
-    )
-
+def test_frame_collision_no_collision_pairs():
     space = manifolds.MultibodyConfiguration(model)
     ndx = space.ndx
     x0 = space.neutral()
     d = np.random.randn(space.ndx) * 0.1
     d[6:] = 0.0
     x0 = space.integrate(x0, d)
-    u0 = np.zeros(nu)
-    q0 = x0[:nq]
 
-    fun = aligator.FrameCollisionResidual(ndx, nu, model, geometry, 0)
+    geometry = pin.buildSampleGeometryModelHumanoid(model)
+    aligator.FrameCollisionResidual(ndx, nu, model, geometry, 0)
 
 
 if __name__ == "__main__":
