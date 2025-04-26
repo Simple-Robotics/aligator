@@ -64,23 +64,21 @@ template <typename Scalar>
 struct FrameCollisionDataTpl : StageFunctionDataTpl<Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Base = StageFunctionDataTpl<Scalar>;
-  using PinData = pinocchio::DataTpl<Scalar>;
-  using PinGeom = pinocchio::GeometryData;
-  using pinPlacement = pinocchio::SE3;
+  using typename Base::Matrix6Xs;
+  using typename Base::Vector3s;
+  using SE3 = pinocchio::SE3Tpl<Scalar>;
 
-  /// Pinocchio data object
-  PinData pin_data_;
-  /// Pinocchio geometry object
-  pinocchio::GeometryData geometry_;
+  pinocchio::DataTpl<Scalar> pin_data_;
+  pinocchio::GeometryData geom_data;
   /// Jacobian of the collision point
-  typename math_types<Scalar>::Matrix6Xs Jcol_;
-  typename math_types<Scalar>::Matrix6Xs Jcol2_;
+  Matrix6Xs Jcol_;
+  Matrix6Xs Jcol2_;
   /// Placement of collision point to joint
-  pinPlacement jointToP1_;
-  pinPlacement jointToP2_;
+  SE3 jointToP1_;
+  SE3 jointToP2_;
   /// Distance from nearest point to joint for each collision frame
-  typename math_types<Scalar>::Vector3s distance_;
-  typename math_types<Scalar>::Vector3s distance2_;
+  Vector3s distance_;
+  Vector3s distance2_;
 
   FrameCollisionDataTpl(const FrameCollisionResidualTpl<Scalar> &model);
 };

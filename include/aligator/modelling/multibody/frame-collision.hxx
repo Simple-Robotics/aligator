@@ -18,11 +18,11 @@ void FrameCollisionResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
 
   // computes the collision distance between pair of frames
   pinocchio::updateGeometryPlacements(pin_model_, pdata, geom_model_,
-                                      d.geometry_, x.head(pin_model_.nq));
-  pinocchio::computeDistance(geom_model_, d.geometry_, frame_pair_id_);
+                                      d.geom_data, x.head(pin_model_.nq));
+  pinocchio::computeDistance(geom_model_, d.geom_data, frame_pair_id_);
 
   // calculate residual
-  d.value_[0] = d.geometry_.distanceResults[frame_pair_id_].min_distance;
+  d.value_[0] = d.geom_data.distanceResults[frame_pair_id_].min_distance;
 }
 
 template <typename Scalar>
@@ -33,9 +33,9 @@ void FrameCollisionResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
 
   // Calculate vector from joint to collision p1 and joint to collision p2,
   // expressed in local world aligned
-  d.distance_ = d.geometry_.distanceResults[frame_pair_id_].nearest_points[0] -
+  d.distance_ = d.geom_data.distanceResults[frame_pair_id_].nearest_points[0] -
                 pdata.oMf[frame_id1_].translation();
-  d.distance2_ = d.geometry_.distanceResults[frame_pair_id_].nearest_points[1] -
+  d.distance2_ = d.geom_data.distanceResults[frame_pair_id_].nearest_points[1] -
                  pdata.oMf[frame_id2_].translation();
 
   d.jointToP1_.setIdentity();
@@ -61,7 +61,7 @@ void FrameCollisionResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
   // compute the residual derivatives
   d.Jx_.setZero();
   d.Jx_.leftCols(pin_model_.nv) =
-      d.geometry_.distanceResults[frame_pair_id_].normal.transpose() *
+      d.geom_data.distanceResults[frame_pair_id_].normal.transpose() *
       (d.Jcol2_.template topRows<3>() - d.Jcol_.template topRows<3>());
 }
 
@@ -69,7 +69,7 @@ template <typename Scalar>
 FrameCollisionDataTpl<Scalar>::FrameCollisionDataTpl(
     const FrameCollisionResidualTpl<Scalar> &model)
     : Base(model.ndx1, model.nu, 1), pin_data_(model.pin_model_),
-      geometry_(pinocchio::GeometryData(model.geom_model_)),
+      geom_data(pinocchio::GeometryData(model.geom_model_)),
       Jcol_(6, model.pin_model_.nv), Jcol2_(6, model.pin_model_.nv) {
   Jcol_.setZero();
   Jcol2_.setZero();
