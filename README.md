@@ -13,14 +13,14 @@ Please refer to the [Citation section](#citing-aligator) for further details.
 
 ## Features
 
-**Aligator** is a C++ template library, which provides
+**Aligator** is a C++ library, which provides
 
-* a modeling interface for optimal control problems, node-per-node
+* a modelling interface for optimal control problems, node-per-node
 * a set of efficient solvers for constrained trajectory optimization
 * multiple routines for factorization of linear problems arising in numerical OC
 * support for the [pinocchio](https://github.com/stack-of-tasks/pinocchio) rigid-body dynamics library and its analytical derivatives
 * an interface to the [Crocoddyl](https://github.com/loco-3d/crocoddyl) trajectory optimization library which can be used as an alternative frontend
-* Python bindings leveraging [eigenpy](https://github.com/stack-of-tasks/eigenpy)
+* a Python API which can be used for prototyping formulations or even deployment.
 
 **Aligator** provides efficient implementations of the following algorithms for (constrained) trajectory optimization:
 
