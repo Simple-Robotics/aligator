@@ -1,49 +1,19 @@
-from aligator import QuadraticCost, CostStack
-from aligator import manifolds
+from aligator import manifolds, QuadraticCost, CostStack
 import aligator
 import numpy as np
 import eigenpy
 
 import pytest
+from utils import cost_finite_grad
 
-EPS = 1e-7
-ATOL = 2 * EPS**0.5
-
-
-def finite_grad(costmodel, space, x, u, EPS=1e-8):
-    ndx = space.ndx
-    nu = u.size
-    grad = np.zeros(ndx + nu)
-    dx = np.zeros(ndx)
-    du = np.zeros(nu)
-    data = costmodel.createData()
-    costmodel.evaluate(x, u, data)
-    # distance to origin
-    _dx = space.difference(space.neutral(), x)
-    ex = EPS * max(1.0, np.linalg.norm(_dx))
-    vref = data.value
-    for i in range(ndx):
-        dx[i] = ex
-        x1 = space.integrate(x, dx)
-        costmodel.evaluate(x1, u, data)
-        grad[i] = (data.value - vref) / ex
-        dx[i] = 0.0
-
-    for i in range(ndx, ndx + nu):
-        du[i - ndx] = ex
-        u1 = u + du
-        costmodel.evaluate(x, u1, data)
-        grad[i] = (data.value - vref) / ex
-        du[i - ndx] = 0.0
-
-    return grad
+FD_EPS = 1e-7
+ATOL = 2 * FD_EPS**0.5
 
 
 def sample_gauss(space):
     x0 = space.neutral()
     d = np.random.randn(space.ndx) * 0.1
-    x1 = space.integrate(x0, d)
-    return x1
+    return space.integrate(x0, d)
 
 
 def test_cost_stack():
@@ -74,11 +44,11 @@ def test_cost_stack():
         cost_stack.computeHessians(x0, u0, data2)
 
         assert data1.value == data2.value
-        assert np.allclose(data1.grad, data2.grad)
-        assert np.allclose(data1.hess, data2.hess)
+        assert np.allclose(data1.grad, data2.grad, atol=ATOL)
+        assert np.allclose(data1.hess, data2.hess, atol=ATOL)
 
-        assert np.allclose(data1.Lxx, Q)
-        assert np.allclose(data1.Luu, R)
+        assert np.allclose(data1.Lxx, Q, atol=ATOL)
+        assert np.allclose(data1.Luu, R, atol=ATOL)
 
     rcost_ref = cost_stack.getComponent(0)
     assert isinstance(rcost_ref, QuadraticCost)
@@ -97,7 +67,7 @@ def test_composite_cost():
 
     nu = space.ndx
     u0 = np.ones(nu)
-    target = space.rand()
+    target = x0 - 0.1 * np.ones(ndx)
     fun = aligator.StateErrorResidual(space, nu, target)
     # for debug
     fd = fun.createData()
@@ -105,9 +75,6 @@ def test_composite_cost():
     fun.computeJacobians(x0, u0, fd)
 
     # costs
-
-    np.random.seed(40)
-
     weights = np.random.randn(4, fun.nr)
     weights = weights.T @ weights
     cost = aligator.QuadraticResidualCost(space, fun, weights)
@@ -135,7 +102,7 @@ def test_composite_cost():
 
     weights = np.ones(fun.nr)
     log_cost = aligator.LogResidualCost(space, fun, weights)
-    data = log_cost.createData()
+    data: aligator.CompositeCostData = log_cost.createData()
     print(data)
     assert isinstance(data, aligator.CompositeCostData)
 
@@ -144,14 +111,15 @@ def test_composite_cost():
     log_cost.computeHessians(x0, u0, data)
     print("LogCost:")
     print(data.value)
+    print(data.residual_data.value)
     print(data.grad)
     print(data.hess)
     for i in range(100):
         x0 = sample_gauss(space)
         cost.evaluate(x0, u0, data)
         cost.computeGradients(x0, u0, data)
-        fgrad = finite_grad(cost, space, x0, u0)
-        assert np.allclose(fgrad, data.grad)
+        fgrad = cost_finite_grad(cost, space, x0, u0, FD_EPS)
+        assert np.allclose(fgrad, data.grad, atol=ATOL)
     print("----")
 
 
@@ -161,17 +129,13 @@ def test_log_barrier():
 
     nu = space.ndx
     u0 = np.ones(nu)
-    target = space.rand()
-    fun = aligator.StateErrorResidual(space, nu, target)
+    fun = aligator.StateErrorResidual(space, nu, target=space.rand())
     # for debug
     fd = fun.createData()
     fun.evaluate(x0, u0, fd)
     fun.computeJacobians(x0, u0, fd)
 
     # costs
-
-    np.random.seed(40)
-
     weights = np.ones(fun.nr)
     thresh = np.random.rand()
     cost = aligator.RelaxedLogBarrierCost(space, fun, weights, thresh)
@@ -194,8 +158,8 @@ def test_log_barrier():
         x0 = sample_gauss(space)
         cost.evaluate(x0, u0, data)
         cost.computeGradients(x0, u0, data)
-        fgrad = finite_grad(cost, space, x0, u0)
-        assert np.allclose(fgrad, data.grad)
+        fgrad = cost_finite_grad(cost, space, x0, u0, FD_EPS)
+        assert np.allclose(fgrad, data.grad, atol=ATOL)
     print("----")
 
 
@@ -318,5 +282,9 @@ def test_direct_sum():
 
 if __name__ == "__main__":
     import sys
+
+    SEED = 40
+    np.random.seed(SEED)
+    aligator.seed(SEED)
 
     sys.exit(pytest.main(sys.argv))

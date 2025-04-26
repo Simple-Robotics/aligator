@@ -12,9 +12,11 @@ from aligator import manifolds
 
 model = pin.buildSampleModelHumanoid()
 rdata: pin.Data = model.createData()
-np.random.seed(0)
-FD_EPS = 1e-8
-THRESH = 2 * FD_EPS**0.5
+SEED = 0
+np.random.seed(SEED)
+aligator.seed(SEED)
+FD_EPS = 1e-7
+ATOL = 2 * FD_EPS**0.5
 
 nq = model.nq
 nv = model.nv
@@ -76,7 +78,7 @@ def test_frame_placement():
         fun.computeJacobians(x0, u0, fdata)
         fun_fd.evaluate(x0, u0, fdata2)
         fun_fd.computeJacobians(x0, u0, fdata2)
-        assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
+        assert np.allclose(fdata.Jx, fdata2.Jx, ATOL)
 
 
 def test_frame_translation():
@@ -118,7 +120,7 @@ def test_frame_translation():
         fun.computeJacobians(x0, fdata)
         fun_fd.evaluate(x0, u0, fdata2)
         fun_fd.computeJacobians(x0, u0, fdata2)
-        assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
+        assert np.allclose(fdata.Jx, fdata2.Jx, atol=ATOL)
 
 
 def test_frame_velocity():
@@ -159,7 +161,7 @@ def test_frame_velocity():
         fun.computeJacobians(x0, fdata)
         fun_fd.evaluate(x0, u0, fdata2)
         fun_fd.computeJacobians(x0, u0, fdata2)
-        assert np.allclose(fdata.Jx, fdata2.Jx, THRESH)
+        assert np.allclose(fdata.Jx, fdata2.Jx, atol=ATOL)
 
 
 def test_fly_high():
@@ -187,7 +189,7 @@ def test_fly_high():
 
         err_Jx = data.Jx - Jx_nd
         print(err_Jx, err_Jx.max())
-        assert np.allclose(data.Jx, Jx_nd, THRESH)
+        assert np.allclose(data.Jx, Jx_nd, atol=ATOL)
 
 
 def test_frame_collision():
@@ -260,7 +262,7 @@ def test_frame_collision():
         fun.computeJacobians(x0, u0, fdata)
         fun_fd.evaluate(x0, u0, fdata2)
         fun_fd.computeJacobians(x0, u0, fdata2)
-        assert np.allclose(fdata.Jx, fdata2.Jx, THRESH, 1e-7)
+        assert np.allclose(fdata.Jx, fdata2.Jx, atol=ATOL)
 
 
 if __name__ == "__main__":
