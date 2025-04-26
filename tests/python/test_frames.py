@@ -4,10 +4,11 @@ This test is not added to CTest when CMake does not detect Pinocchio.
 """
 
 import aligator
+from aligator import manifolds
+
 import numpy as np
 import pinocchio as pin
-
-from aligator import manifolds
+import pytest
 
 
 model = pin.buildSampleModelHumanoid()
@@ -274,11 +275,11 @@ def test_frame_collision_no_collision_pairs():
     x0 = space.integrate(x0, d)
 
     geometry = pin.buildSampleGeometryModelHumanoid(model)
-    aligator.FrameCollisionResidual(ndx, nu, model, geometry, 0)
+    with pytest.raises(IndexError, match="Provided collision pair index"):
+        aligator.FrameCollisionResidual(ndx, nu, model, geometry, 0)
 
 
 if __name__ == "__main__":
     import sys
-    import pytest
 
     sys.exit(pytest.main(sys.argv))

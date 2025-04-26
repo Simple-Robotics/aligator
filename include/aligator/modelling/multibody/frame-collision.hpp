@@ -23,7 +23,6 @@ public:
   ALIGATOR_UNARY_FUNCTION_INTERFACE(Scalar);
   using BaseData = typename Base::Data;
   using Model = pinocchio::ModelTpl<Scalar>;
-  using ManifoldPtr = xyz::polymorphic<ManifoldAbstractTpl<Scalar>>;
   using SE3 = pinocchio::SE3Tpl<Scalar>;
   using Data = FrameCollisionDataTpl<Scalar>;
   using GeometryModel = pinocchio::GeometryModel;
@@ -36,6 +35,12 @@ public:
                             const pinocchio::PairIndex frame_pair_id)
       : Base(ndx, nu, 1), pin_model_(model), geom_model_(geom_model),
         frame_pair_id_(frame_pair_id) {
+    if (frame_pair_id >= geom_model_.collisionPairs.size()) {
+      ALIGATOR_OUT_OF_RANGE_ERROR(
+          "Provided collision pair index {:d} is not valid "
+          "(geom model has {:d} pairs).",
+          frame_pair_id, geom_model.collisionPairs.size());
+    }
     frame_id1_ =
         geom_model
             .geometryObjects[geom_model.collisionPairs[frame_pair_id_].first]
