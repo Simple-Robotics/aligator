@@ -142,7 +142,7 @@ void exposeFrameFunctions() {
       bp::no_init)
       .def_readonly("pin_data", &FrameCollisionData::pin_data_,
                     "Pinocchio data struct.")
-      .def_readonly("geom_data", &FrameCollisionData::geometry_,
+      .def_readonly("geom_data", &FrameCollisionData::geom_data,
                     "Geometry data struct.");
 }
 

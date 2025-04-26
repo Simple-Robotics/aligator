@@ -4,10 +4,11 @@ This test is not added to CTest when CMake does not detect Pinocchio.
 """
 
 import aligator
+from aligator import manifolds
+
 import numpy as np
 import pinocchio as pin
-
-from aligator import manifolds
+import pytest
 
 
 model = pin.buildSampleModelHumanoid()
@@ -193,7 +194,7 @@ def test_fly_high():
 
 
 def test_frame_collision():
-    import hppfcl
+    import coal
 
     fr_name1 = "larm_shoulder2_body"
     fr_id1 = model.getFrameId(fr_name1)
@@ -210,16 +211,16 @@ def test_frame_collision():
     gamma = np.random.rand()
     delta = np.random.rand()
 
-    geometry = pin.GeometryModel()
+    geometry = pin.buildSampleGeometryModelHumanoid(model)
     ig_frame = geometry.addGeometryObject(
         pin.GeometryObject(
-            "frame", fr_id1, joint_id, hppfcl.Capsule(alpha, gamma), frame_SE3
+            "frame", fr_id1, joint_id, coal.Capsule(alpha, gamma), frame_SE3
         )
     )
 
     ig_frame2 = geometry.addGeometryObject(
         pin.GeometryObject(
-            "frame2", fr_id2, joint_id2, hppfcl.Capsule(beta, delta), frame_SE3_bis
+            "frame2", fr_id2, joint_id2, coal.Capsule(beta, delta), frame_SE3_bis
         )
     )
     geometry.addCollisionPair(pin.CollisionPair(ig_frame, ig_frame2))
@@ -265,8 +266,20 @@ def test_frame_collision():
         assert np.allclose(fdata.Jx, fdata2.Jx, atol=ATOL)
 
 
+def test_frame_collision_no_collision_pairs():
+    space = manifolds.MultibodyConfiguration(model)
+    ndx = space.ndx
+    x0 = space.neutral()
+    d = np.random.randn(space.ndx) * 0.1
+    d[6:] = 0.0
+    x0 = space.integrate(x0, d)
+
+    geometry = pin.buildSampleGeometryModelHumanoid(model)
+    with pytest.raises(IndexError, match="Provided collision pair index"):
+        aligator.FrameCollisionResidual(ndx, nu, model, geometry, 0)
+
+
 if __name__ == "__main__":
     import sys
-    import pytest
 
     sys.exit(pytest.main(sys.argv))

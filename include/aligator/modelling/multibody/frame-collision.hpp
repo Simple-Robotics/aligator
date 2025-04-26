@@ -23,7 +23,6 @@ public:
   ALIGATOR_UNARY_FUNCTION_INTERFACE(Scalar);
   using BaseData = typename Base::Data;
   using Model = pinocchio::ModelTpl<Scalar>;
-  using ManifoldPtr = xyz::polymorphic<ManifoldAbstractTpl<Scalar>>;
   using SE3 = pinocchio::SE3Tpl<Scalar>;
   using Data = FrameCollisionDataTpl<Scalar>;
   using GeometryModel = pinocchio::GeometryModel;
@@ -36,6 +35,12 @@ public:
                             const pinocchio::PairIndex frame_pair_id)
       : Base(ndx, nu, 1), pin_model_(model), geom_model_(geom_model),
         frame_pair_id_(frame_pair_id) {
+    if (frame_pair_id >= geom_model_.collisionPairs.size()) {
+      ALIGATOR_OUT_OF_RANGE_ERROR(
+          "Provided collision pair index {:d} is not valid "
+          "(geom model has {:d} pairs).",
+          frame_pair_id, geom_model.collisionPairs.size());
+    }
     frame_id1_ =
         geom_model
             .geometryObjects[geom_model.collisionPairs[frame_pair_id_].first]
@@ -64,23 +69,21 @@ template <typename Scalar>
 struct FrameCollisionDataTpl : StageFunctionDataTpl<Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Base = StageFunctionDataTpl<Scalar>;
-  using PinData = pinocchio::DataTpl<Scalar>;
-  using PinGeom = pinocchio::GeometryData;
-  using pinPlacement = pinocchio::SE3;
+  using typename Base::Matrix6Xs;
+  using typename Base::Vector3s;
+  using SE3 = pinocchio::SE3Tpl<Scalar>;
 
-  /// Pinocchio data object
-  PinData pin_data_;
-  /// Pinocchio geometry object
-  pinocchio::GeometryData geometry_;
+  pinocchio::DataTpl<Scalar> pin_data_;
+  pinocchio::GeometryData geom_data;
   /// Jacobian of the collision point
-  typename math_types<Scalar>::Matrix6Xs Jcol_;
-  typename math_types<Scalar>::Matrix6Xs Jcol2_;
+  Matrix6Xs Jcol_;
+  Matrix6Xs Jcol2_;
   /// Placement of collision point to joint
-  pinPlacement jointToP1_;
-  pinPlacement jointToP2_;
+  SE3 jointToP1_;
+  SE3 jointToP2_;
   /// Distance from nearest point to joint for each collision frame
-  typename math_types<Scalar>::Vector3s distance_;
-  typename math_types<Scalar>::Vector3s distance2_;
+  Vector3s distance_;
+  Vector3s distance2_;
 
   FrameCollisionDataTpl(const FrameCollisionResidualTpl<Scalar> &model);
 };
