@@ -50,6 +50,7 @@ set(
   eigen-map
   integrators
   lqr
+  managed-matrix
   problem
   manifolds
   solver-storage
