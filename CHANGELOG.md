@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Rename `LQRKnotTpl` (C++)/`LqrKnot` (Python) to `LqrKnot(Tpl)`
 - Rename `LQRProblemTpl` (C++)/`LQRProblem` (Python) to `LqrProblem(Tpl)`
+- Reverse sign of StateErrorResidual ([#292](https://github.com/Simple-Robotics/aligator/pull/292))
+
 ### Fixed
 
 - Correct references to paper's equations ([#284](https://github.com/Simple-Robotics/aligator/pull/284))
