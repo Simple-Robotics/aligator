@@ -42,8 +42,7 @@ def finite_grad(costmodel, space, x, u, EPS=1e-8):
 def sample_gauss(space):
     x0 = space.neutral()
     d = np.random.randn(space.ndx) * 0.1
-    x1 = space.integrate(x0, d)
-    return x1
+    return space.integrate(x0, d)
 
 
 def test_cost_stack():
@@ -97,7 +96,7 @@ def test_composite_cost():
 
     nu = space.ndx
     u0 = np.ones(nu)
-    target = space.rand()
+    target = x0 - 0.1 * np.ones(ndx)
     fun = aligator.StateErrorResidual(space, nu, target)
     # for debug
     fd = fun.createData()
@@ -105,9 +104,6 @@ def test_composite_cost():
     fun.computeJacobians(x0, u0, fd)
 
     # costs
-
-    np.random.seed(40)
-
     weights = np.random.randn(4, fun.nr)
     weights = weights.T @ weights
     cost = aligator.QuadraticResidualCost(space, fun, weights)
@@ -135,7 +131,7 @@ def test_composite_cost():
 
     weights = np.ones(fun.nr)
     log_cost = aligator.LogResidualCost(space, fun, weights)
-    data = log_cost.createData()
+    data: aligator.CompositeCostData = log_cost.createData()
     print(data)
     assert isinstance(data, aligator.CompositeCostData)
 
@@ -144,6 +140,7 @@ def test_composite_cost():
     log_cost.computeHessians(x0, u0, data)
     print("LogCost:")
     print(data.value)
+    print(data.residual_data.value)
     print(data.grad)
     print(data.hess)
     for i in range(100):
@@ -151,6 +148,8 @@ def test_composite_cost():
         cost.evaluate(x0, u0, data)
         cost.computeGradients(x0, u0, data)
         fgrad = finite_grad(cost, space, x0, u0)
+        feeeerrr = np.linalg.norm(fgrad + data.grad, np.inf)
+        print("fucking feeer", feeeerrr)
         assert np.allclose(fgrad, data.grad)
     print("----")
 
@@ -161,17 +160,13 @@ def test_log_barrier():
 
     nu = space.ndx
     u0 = np.ones(nu)
-    target = space.rand()
-    fun = aligator.StateErrorResidual(space, nu, target)
+    fun = aligator.StateErrorResidual(space, nu, target=space.rand())
     # for debug
     fd = fun.createData()
     fun.evaluate(x0, u0, fd)
     fun.computeJacobians(x0, u0, fd)
 
     # costs
-
-    np.random.seed(40)
-
     weights = np.ones(fun.nr)
     thresh = np.random.rand()
     cost = aligator.RelaxedLogBarrierCost(space, fun, weights, thresh)
@@ -318,5 +313,9 @@ def test_direct_sum():
 
 if __name__ == "__main__":
     import sys
+
+    SEED = 40
+    np.random.seed(SEED)
+    aligator.seed(SEED)
 
     sys.exit(pytest.main(sys.argv))

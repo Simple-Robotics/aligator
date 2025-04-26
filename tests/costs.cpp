@@ -13,6 +13,7 @@ BOOST_AUTO_TEST_SUITE(costs)
 
 using namespace aligator;
 using T = double;
+using context::CostData;
 using context::MatrixXs;
 using context::VectorXs;
 using QuadraticResidualCost = QuadraticResidualCostTpl<T>;
@@ -21,7 +22,7 @@ using SE2 = proxsuite::nlp::SETpl<2, T>;
 using VectorSpace = proxsuite::nlp::VectorSpaceTpl<T>;
 
 void fd_test(VectorXs x0, VectorXs u0, MatrixXs weights,
-             QuadraticResidualCost qres, shared_ptr<context::CostData> data) {
+             QuadraticResidualCost qres, shared_ptr<CostData> data) {
 
   const xyz::polymorphic<StageFunctionTpl<T>> fun = qres.residual_;
   const auto fd = fun->createData();
@@ -61,7 +62,7 @@ BOOST_AUTO_TEST_CASE(quad_state_se2) {
   weights.setIdentity();
   const QuadraticStateCostTpl<T> qres(space, nu, target, weights);
 
-  shared_ptr<context::CostData> data = qres.createData();
+  shared_ptr<CostData> data = qres.createData();
   auto fd = fun.createData();
 
   const int nrepeats = 10;
@@ -92,7 +93,7 @@ BOOST_AUTO_TEST_CASE(quad_state_highdim) {
   weights.setIdentity();
   const QuadraticStateCostTpl<T> qres(space, nu, target, weights);
 
-  shared_ptr<context::CostData> data = qres.createData();
+  shared_ptr<CostData> data = qres.createData();
   auto fd = fun.createData();
 
   const int nrepeats = 10;
