@@ -31,6 +31,7 @@
                   ./bench
                   ./bindings
                   ./CMakeLists.txt
+                  ./extra-python-macros.cmake
                   ./doc
                   ./examples
                   ./include

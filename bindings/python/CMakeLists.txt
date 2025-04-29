@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+# Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #
 include(${JRL_CMAKE_MODULES}/python.cmake)
 if(GENERATE_PYTHON_STUBS)

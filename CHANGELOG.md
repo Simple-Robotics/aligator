@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add CMake macro `aligator_create_python_extension()` to export ([#298](https://github.com/Simple-Robotics/aligator/pull/298))
 - Add macro `ALIGATOR_OUT_OF_RANGE_ERROR` to throw `std::out_of_range` exceptions ([#294](https://github.com/Simple-Robotics/aligator/pull/294))
 
 ### Changed
