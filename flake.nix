@@ -38,7 +38,6 @@
                   ./package.xml
                   ./src
                   ./tests
-                  ./gar
                 ];
               };
             };
