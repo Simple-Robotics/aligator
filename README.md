@@ -89,12 +89,9 @@ cmake --build . -jNCPUS
 
 ## Benchmarking
 
-We recommend using [Flame Graphs](https://github.com/brendangregg/FlameGraph) to evaluate performance.
-If you have the Rust toolchain and `cargo` installed, we suggest you install [cargo-flamegraph](https://github.com/flamegraph-rs/flamegraph). Then, you can create a flame graph with the following command:
+The repo [aligator-bench](https://github.com/Simple-Robotics/aligator-bench) provides a comparison of aligator against other solvers.
 
-```bash
-flamegraph -o my_flamegraph.svg -- ./build/examples/example-croc-talos-arm
-```
+For developer info on benchmarking, see [doc/developers-guide.md](doc/developers-guide.md).
 
 ## Citing Aligator
 

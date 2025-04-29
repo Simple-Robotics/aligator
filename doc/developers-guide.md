@@ -33,3 +33,20 @@ If you want to look at Eigen types such as vectors and matrices, you should look
 ## Hybrid debugging with Visual Studio Code
 
 **TODO** Finish documenting this
+
+## Profiling
+
+We use [google benchmark](https://github.com/google/benchmark/tree/v1.5.0) to define C++ benchmarks
+which are able to aggregate data from runs, and [Flame Graphs](https://github.com/brendangregg/FlameGraph) to produce a breakdown of the various function calls and their importance as a proportion of the call stack.
+
+If you have the Rust toolchain and `cargo` installed, we suggest you install [cargo-flamegraph](https://github.com/flamegraph-rs/flamegraph). Then, you can create a flame graph with the following command:
+
+```bash
+flamegraph -o my_flamegraph.svg -- ./build/examples/example-croc-talos-arm
+```
+
+
+Here's Crocoddyl's flame graph:
+![croc-talos-arm](images/flamegraph-croc.svg)
+Here's for `aligator::SolverFDDP`:
+![prox-talos-arm](images/flamegraph-prox.svg)
