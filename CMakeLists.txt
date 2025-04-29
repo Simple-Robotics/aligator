@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+# Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #
 
 cmake_minimum_required(VERSION 3.16)
@@ -555,6 +555,11 @@ if(BUILD_TESTING)
 endif()
 
 # --- PACKAGING ----------------------------------------------------------------
+
+if(BUILD_PYTHON_INTERFACE)
+  file(READ extra-python-macros.cmake PACKAGE_EXTRA_MACROS)
+endif()
+
 macro(EXPORT_VARIABLE var_name var_value)
   get_directory_property(has_parent PARENT_DIRECTORY)
   if(has_parent)
