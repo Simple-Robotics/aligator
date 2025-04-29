@@ -110,13 +110,18 @@ To cite **Aligator** in your academic research, please use the following bibtex 
 Please also consider citing the reference paper for the ProxDDP algorithm:
 
 ```bibtex
-@misc{jalletPROXDDPProximalConstrained2023,
-  title = {{PROXDDP: Proximal Constrained Trajectory Optimization}},
+@article{jalletPROXDDPProximalConstrained2025,
+  title = {PROXDDP: Proximal Constrained Trajectory Optimization},
+  shorttitle = {PROXDDP},
   author = {Jallet, Wilson and Bambade, Antoine and Arlaud, Etienne and {El-Kazdadi}, Sarah and Mansard, Nicolas and Carpentier, Justin},
-  year = {2023},
-  abstract = {Trajectory optimization (TO) has proven, over the last decade, to be a versatile and effective framework for robot control. Several numerical solvers have been demonstrated to be fast enough to allow recomputing full-dynamics trajectories for various systems at control time, enabling model predictive control (MPC) of complex robots. These first implementations of MPC in robotics predominantly utilize some differential dynamic programming (DDP) variant for its computational speed and ease of use in constraint-free settings. Nevertheless, many scenarios in robotics call for adding hard constraints in TO problems (e.g., torque limits, obstacle avoidance), which existing solvers, based on DDP, often struggle to handle. Effectively addressing path constraints still poses optimization challenges (e.g., numerical stability, efficiency, accuracy of constraint satisfaction) that we propose to solve by combining advances in numerical optimization with the foundational efficiency of DDP. In this article, we leverage proximal methods for constrained optimization and introduce a DDP-like method to achieve fast, constrained trajectory optimization with an efficient warm-starting strategy particularly suited for MPC applications. Compared to earlier solvers, our approach effectively manages hard constraints without warm-start limitations and exhibits commendable convergence accuracy. Additionally, we leverage the computational efficiency of DDP, enabling real-time resolution of complex problems such as whole-body quadruped locomotion. We provide a complete implementation as part of an open-source and flexible C++ trajectory optimization library called ALIGATOR. These algorithmic contributions are validated through several trajectory planning scenarios from the robotics literature and the real-time whole-body MPC of a quadruped robot.},
-  langid = {english},
-  note = {https://inria.hal.science/hal-04332348v1}
+  year = {2025},
+  month = mar,
+  journal = {IEEE Transactions on Robotics},
+  volume = {41},
+  pages = {2605--2624},
+  issn = {1941-0468},
+  doi = {10.1109/TRO.2025.3554437},
+  urldate = {2025-04-04}
 }
 ```
 
@@ -145,7 +150,7 @@ The development of **Aligator** is actively supported by the [Willow team](https
 * W. Jallet, N. Mansard, and J. Carpentier, ‘Implicit Differential Dynamic Programming’, in 2022 International Conference on Robotics and Automation (ICRA), Philadelphia, United States: IEEE Robotics and Automation Society, May 2022. doi: 10.1109/ICRA46639.2022.9811647.
 * W. Jallet, A. Bambade, N. Mansard, and J. Carpentier, ‘Constrained Differential Dynamic Programming: A primal-dual augmented Lagrangian approach’, in 2022 IEEE/RSJ International Conference on Intelligent Robots and Systems, Kyoto, Japan, Oct. 2022. doi: 10.1109/IROS47612.2022.9981586.
 * W. Jallet, A. Bambade, N. Mansard, and J. Carpentier, ‘ProxNLP: a primal-dual augmented Lagrangian solver for nonlinear programming in Robotics and beyond’, in 6th Legged Robots Workshop, Philadelphia, Pennsylvania, United States, May 2022. Accessed: Oct. 10, 2022. [Online]. Available: https://hal.archives-ouvertes.fr/hal-03680510
-* W. Jallet, A. Bambade, E. Arlaud, S. El-Kazdadi, N. Mansard, and J. Carpentier, ‘PROXDDP: Proximal Constrained Trajectory Optimization’. 2023. [Online]. Available: https://inria.hal.science/hal-04332348v1
+* W. Jallet, A. Bambade, E. Arlaud, S. El-Kazdadi, N. Mansard, and J. Carpentier, ‘PROXDDP: Proximal Constrained Trajectory Optimization’, IEEE Transactions on Robotics, vol. 41, pp. 2605–2624, Mar. 2025, doi: 10.1109/TRO.2025.3554437.
 * S. Kazdadi, J. Carpentier, and J. Ponce, ‘Equality Constrained Differential Dynamic Programming’, presented at the ICRA 2021 - IEEE International Conference on Robotics and Automation, May 2021. Accessed: Sep. 07, 2021. [Online]. Available: https://hal.inria.fr/hal-03184203
 * A. Bambade, S. El-Kazdadi, A. Taylor, and J. Carpentier, ‘PROX-QP: Yet another Quadratic Programming Solver for Robotics and beyond’, in Robotics: Science and Systems XVIII, Robotics: Science and Systems Foundation, Jun. 2022. doi: 10.15607/RSS.2022.XVIII.040.
 * W. Jallet, E. Dantec, E. Arlaud, N. Mansard, and J. Carpentier, ‘Parallel and Proximal Constrained Linear-Quadratic Methods for Real-Time Nonlinear MPC’, in Proceedings of Robotics: Science and Systems, Delft, Netherlands, Jul. 2024. doi: 10.15607/RSS.2024.XX.002.
