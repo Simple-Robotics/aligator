@@ -80,12 +80,20 @@ cmake --build . -jNCPUS
 * [typed-argument-parser](https://github.com/swansonk14/typed-argument-parser)
 * [matplotlib](https://matplotlib.org)
 
-### Notes
+### Notes on building
 
 * For developers, add the `-DCMAKE_EXPORT_COMPILE_COMMANDS=1` when working with language servers e.g. clangd.
 * To use the Crocoddyl interface, add `-DBUILD_CROCODDYL_COMPAT=ON`
 * By default, building the library will instantiate the templates for the `double` scalar type.
 * To build against a Conda environment, activate the environment and run `export CMAKE_PREFIX_PATH=$CONDA_PREFIX` before running CMake and use `$CONDA_PREFIX` as your install folder.
+
+## Usage
+
+**aligator** can be used in both C++ (with CMake to create builds) and Python.
+
+Users can refer to [examples](https://github.com/Simple-Robotics/aligator/tree/main/examples) in either language to see how to build a trajectory optimization problem, create a solver instance (with parameters), and solve their problem.
+
+For how to use **aligator** in CMake, including creation of a Python extension module in C++, please refer to the [developer's guide](doc/developers-guide.md).
 
 ## Benchmarking
 
