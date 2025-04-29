@@ -29,7 +29,7 @@ typed-argument-parser = ">=1.10.0"
 meshcat-python = ">=0.3"
 
 [activation]
-scripts = ["build_scripts/pixi/activation.sh"]
+scripts = ["development/pixi/activation.sh"]
 
 [tasks]
 # We must avoid to set CMAKE_CXX_FLAGS because of WIN32
@@ -104,7 +104,7 @@ python = "3.9.*"
 # to avoid cxx-compiler to overwrite them.
 [feature.clang]
 platforms = ["linux-64"]
-activation = { scripts = ["build_scripts/pixi/activation_clang.sh"] }
+activation = { scripts = ["development/pixi/activation_clang.sh"] }
 dependencies = { clangxx = "*" }
 
 [environments]
