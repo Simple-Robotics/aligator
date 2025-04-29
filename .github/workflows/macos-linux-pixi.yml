@@ -9,8 +9,7 @@ on:
       - 'scripts/**'
       - '.gitlab-ci.yml'
       - '.gitignore'
-      - '*.md'
-      - 'CHANGELOG.md'
+      - '**.md'
       - 'CITATION.cff'
       - 'CITATIONS.bib'
   pull_request:
@@ -19,8 +18,7 @@ on:
       - 'scripts/'
       - '.gitlab-ci.yml'
       - '.gitignore'
-      - '*.md'
-      - 'CHANGELOG.md'
+      - '**.md'
       - 'CITATION.cff'
       - 'CITATIONS.bib'
 concurrency:
