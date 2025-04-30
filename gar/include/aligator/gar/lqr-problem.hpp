@@ -94,6 +94,17 @@ template <typename Scalar> struct LqrProblemTpl {
 
   inline uint ntheta() const { return stages[0].nth; }
 
+  inline bool isApprox(const LqrProblemTpl &other) {
+    if (horizon() != other.horizon() || !G0.isApprox(other.G0) ||
+        !g0.isApprox(other.g0))
+      return false;
+    for (uint i = 0; i < uint(horizon()); i++) {
+      if (!stages[i].isApprox(other.stages[i]))
+        return false;
+    }
+    return true;
+  }
+
   /// Evaluate the quadratic objective.
   Scalar evaluate(const VectorOfVectors &xs, const VectorOfVectors &us,
                   const std::optional<ConstVectorRef> &theta_) const;
