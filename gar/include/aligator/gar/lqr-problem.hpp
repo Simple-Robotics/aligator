@@ -94,6 +94,17 @@ template <typename Scalar> struct LqrProblemTpl {
 
   inline uint ntheta() const { return stages[0].nth; }
 
+  inline bool isApprox(const LqrProblemTpl &other) {
+    if (horizon() != other.horizon() || !G0.isApprox(other.G0) ||
+        !g0.isApprox(other.g0))
+      return false;
+    for (uint i = 0; i < uint(horizon()); i++) {
+      if (!stages[i].isApprox(other.stages[i]))
+        return false;
+    }
+    return true;
+  }
+
   /// Evaluate the quadratic objective.
   Scalar evaluate(const VectorOfVectors &xs, const VectorOfVectors &us,
                   const std::optional<ConstVectorRef> &theta_) const;
@@ -105,6 +116,13 @@ protected:
     G0.resize(nc0(), nx0);
   }
 };
+
+template <typename Scalar>
+bool lqrKnotsSameDim(const LqrKnotTpl<Scalar> &lhs,
+                     const LqrKnotTpl<Scalar> &rhs) {
+  return (lhs.nx == rhs.nx) && (lhs.nu == rhs.nu) && (lhs.nc == rhs.nc) &&
+         (lhs.nx2 == rhs.nx2) && (lhs.nth == rhs.nth);
+}
 
 template <typename Scalar>
 std::ostream &operator<<(std::ostream &oss, const LqrKnotTpl<Scalar> &self) {

@@ -45,17 +45,24 @@ void LqrKnotTpl<Scalar>::addParameterization(uint nth) {
 
 template <typename Scalar>
 bool LqrKnotTpl<Scalar>::isApprox(const LqrKnotTpl &other, Scalar prec) const {
-  bool cost = Q.isApprox(other.Q, prec) && S.isApprox(other.S, prec) &&
-              R.isApprox(other.R, prec) && q.isApprox(other.q, prec) &&
-              r.isApprox(other.r, prec);
-  bool dyn = A.isApprox(other.A, prec) && B.isApprox(other.B, prec) &&
-             E.isApprox(other.E, prec) && f.isApprox(other.f, prec);
-  bool cstr = C.isApprox(other.C, prec) && D.isApprox(other.D, prec) &&
-              d.isApprox(other.d, prec);
-  bool th = Gth.isApprox(other.Gth, prec) && Gx.isApprox(other.Gx, prec) &&
-            Gu.isApprox(other.Gu, prec) && Gv.isApprox(other.Gv, prec) &&
-            gamma.isApprox(other.gamma, prec);
-  return cost && dyn && cstr && th;
+  if (!lqrKnotsSameDim(*this, other))
+    return false;
+  if (!(Q.isApprox(other.Q, prec) && S.isApprox(other.S, prec) &&
+        R.isApprox(other.R, prec) && q.isApprox(other.q, prec) &&
+        r.isApprox(other.r, prec)))
+    return false;
+
+  if (!(A.isApprox(other.A, prec) && B.isApprox(other.B, prec) &&
+        E.isApprox(other.E, prec) && f.isApprox(other.f, prec)))
+    return false;
+
+  if (!(C.isApprox(other.C, prec) && D.isApprox(other.D, prec) &&
+        d.isApprox(other.d, prec)))
+    return false;
+
+  return Gth.isApprox(other.Gth, prec) && Gx.isApprox(other.Gx, prec) &&
+         Gu.isApprox(other.Gu, prec) && Gv.isApprox(other.Gv, prec) &&
+         gamma.isApprox(other.gamma, prec);
 }
 
 template <typename Scalar>
