@@ -4,7 +4,7 @@
 
 #include <benchmark/benchmark.h>
 
-#include "aligator/gar/riccati-impl.hpp"
+#include "aligator/gar/riccati-kernel.hpp"
 #include "aligator/threads.hpp"
 
 #include "../tests/gar/test_util.hpp"

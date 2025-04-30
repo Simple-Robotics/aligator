@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add CMake macro `aligator_create_python_extension()` to export ([#298](https://github.com/Simple-Robotics/aligator/pull/298))
 - Add `LqrProblemTpl::isApprox()` and helper `lqrKnotsSameDim`, check dimensions in `LqrKnotTpl::isApprox()` ([#300](https://github.com/Simple-Robotics/aligator/pull/300))
+- Add `gar/fwd.hpp` header ([#301](https://github.com/Simple-Robotics/aligator/pull/301/))
+
+### Changed
+
+- Rename `{ riccati-impl.hpp => riccati-kernel }` (and associated files) ([#301](https://github.com/Simple-Robotics/aligator/pull/301/))
 
 ## [0.13.0] - 2025-04-26
 
