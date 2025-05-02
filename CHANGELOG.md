@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+This release officially **drops support for Pinocchio 2**.
+
 ### Added
 
 - Add CMake macro `aligator_create_python_extension()` to export ([#298](https://github.com/Simple-Robotics/aligator/pull/298))
@@ -32,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Removed `gar` as a separate CMake target and shared library, merge into main library ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
 - Remove function `allocate_shared_eigen_aligned()` ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
+- Officially remove support for Pinocchio 2, require Pinocchio >= 3.1 ([#307](https://github.com/Simple-Robotics/aligator/pull/307))
 
 ## [0.13.0] - 2025-04-26
 
