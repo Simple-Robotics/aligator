@@ -11,9 +11,7 @@ namespace python {
 void exposePinocchioFunctions();
 void exposeFreeFwdDynamics();
 void exposeKinodynamics();
-#ifdef ALIGATOR_PINOCCHIO_V3
 void exposeConstrainedFwdDynamics();
-#endif
 
 void exposePinocchioFeatures() {
   bp::import("pinocchio");
@@ -23,10 +21,7 @@ void exposePinocchioFeatures() {
     bp::scope dyn = get_namespace("dynamics");
     exposeFreeFwdDynamics();
     exposeKinodynamics();
-
-#ifdef ALIGATOR_PINOCCHIO_V3
     exposeConstrainedFwdDynamics();
-#endif
   }
 }
 

@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef ALIGATOR_PINOCCHIO_V3
-
 #include "aligator/modelling/multibody/contact-force.hpp"
 
 #include <pinocchio/algorithm/constrained-dynamics.hpp>
@@ -62,4 +60,3 @@ ContactForceDataTpl<Scalar>::ContactForceDataTpl(
 }
 
 } // namespace aligator
-#endif

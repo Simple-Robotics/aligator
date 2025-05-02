@@ -73,7 +73,7 @@ dependencies = { tracy-client = ">=0.11.1" }
 activation = { env = { ALIGATOR_TRACY_ENABLE = "ON" } }
 
 [feature.pinocchio]
-dependencies = { pinocchio = ">=3.1", example-robot-data = ">=4.1.0" }
+dependencies = { pinocchio = ">=3.4", example-robot-data = ">=4.1.0" }
 activation = { env = { ALIGATOR_PINOCCHIO_SUPPORT = "ON" } }
 
 [feature.crocoddyl]

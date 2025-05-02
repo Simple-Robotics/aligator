@@ -2,8 +2,6 @@
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #include "aligator/python/fwd.hpp"
 
-#ifdef ALIGATOR_PINOCCHIO_V3
-
 #include "aligator/modelling/dynamics/context.hpp"
 #include "aligator/modelling/dynamics/multibody-constraint-fwd.hpp"
 #include "aligator/python/polymorphic-convertible.hpp"
@@ -63,5 +61,3 @@ void exposeConstrainedFwdDynamics() {
 }
 } // namespace python
 } // namespace aligator
-
-#endif

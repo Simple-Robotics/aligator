@@ -2,7 +2,6 @@
 
 #include "aligator/modelling/multibody/multibody-wrench-cone.hpp"
 
-#ifdef ALIGATOR_PINOCCHIO_V3
 #include <pinocchio/algorithm/constrained-dynamics.hpp>
 #include <pinocchio/algorithm/constrained-dynamics-derivatives.hpp>
 
@@ -66,4 +65,3 @@ MultibodyWrenchConeDataTpl<Scalar>::MultibodyWrenchConeDataTpl(
 }
 
 } // namespace aligator
-#endif
