@@ -11,30 +11,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add CMake macro `aligator_create_python_extension()` to export ([#298](https://github.com/Simple-Robotics/aligator/pull/298))
 - Add `LqrProblemTpl::isApprox()` and helper `lqrKnotsSameDim`, check dimensions in `LqrKnotTpl::isApprox()` ([#300](https://github.com/Simple-Robotics/aligator/pull/300))
-- Add class `aligator::polymorphic_allocator` leveraging C++17 memory resources
-- Add memory allocator support for `LqrKnot` and `LqrProblem`
-- Add class `DenseKernel` for the stagewise-dense Riccati algo -- rework `DenseRiccatiSolver` class
+- Add class `aligator::polymorphic_allocator` leveraging C++17 memory resources ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
+- Add memory allocator support for `LqrKnot` and `LqrProblem` ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
+- Add class `DenseKernel` for the stagewise-dense Riccati algo -- rework `DenseRiccatiSolver` class ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
 - Add `gar/fwd.hpp` header ([#301](https://github.com/Simple-Robotics/aligator/pull/301/))
 
 ### Changed
 
 - Rename `{ riccati-impl.hpp => riccati-kernel }` (and associated files) ([#301](https://github.com/Simple-Robotics/aligator/pull/301/))
-- Rename `LQRKnotTpl` (C++)/`LqrKnot` (Python) to `LqrKnot(Tpl)`
-- Move `HistoryCallbackTpl` to `aligator/core`
-- Move headers `results-base`, `solver-util`, `value-function`, `workspace-base` to `aligator/core`
-- Rename `LQRProblemTpl` (C++)/`LQRProblem` (Python) to `LqrProblem(Tpl)`
-- `fwd.hpp`: do not include `<pinocchio/config.hpp>` header anymore
-- `blk-matrix.hpp`: remove protected ctors, add conversion ops
-- Headers `aligator/gar/*.hpp` merged into main library
-- CMake: rework declaration of examples & benchmarks (applying liberal use of `cmake_parse_arguments()`)
-- CMake: add `bench/CMakeLists.txt` to gersemi defs, apply formatting
-- CMake: apply compile definitions to `aligator` target directly (reduce use of global compile definitions)
+- Move `HistoryCallbackTpl` from `aligator/helpers` (subdirectory was removed) to `aligator/core` ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
+- Move headers `results-base`, `solver-util`, `value-function`, `workspace-base` to `aligator/core` ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
+- `fwd.hpp`: do not include `<pinocchio/config.hpp>` header anymore ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
+- `blk-matrix.hpp`: remove protected ctors, add conversion ops ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
+- Headers `aligator/gar/*.hpp` merged into main library ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
+- CMake: rework declaration of examples & benchmarks (applying liberal use of `cmake_parse_arguments()`) ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
+- CMake: add `bench/CMakeLists.txt` to gersemi defs, apply formatting ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
+- CMake: apply compile definitions to `aligator` target directly (reduce use of global compile definitions) ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
 
 ### Removed
 
-- Removed `gar` as a separate CMake target and shared library, merge into main library
-- Remove subdirectory `aligator/helpers` from include dir
-- Remove function `allocate_shared_eigen_aligned()`
+- Removed `gar` as a separate CMake target and shared library, merge into main library ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
+- Remove function `allocate_shared_eigen_aligned()` ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
 
 ## [0.13.0] - 2025-04-26
 
