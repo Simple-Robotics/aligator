@@ -1,19 +1,13 @@
 /// @file fwd.hpp
 /// @brief Forward declarations.
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
 #include <proxsuite-nlp/fwd.hpp>
-#include <proxsuite-nlp/config.hpp>
-
-#ifdef ALIGATOR_WITH_PINOCCHIO
-#include <pinocchio/config.hpp>
-#endif
 
 #include "aligator/math.hpp"
 #include "aligator/utils/exceptions.hpp"
 #include "aligator/macros.hpp"
-#include "aligator/eigen-macros.hpp"
 #include "aligator/config.hpp"
 #include "aligator/deprecated.hpp"
 
@@ -128,14 +122,5 @@ using StdVectorEigenAligned ALIGATOR_DEPRECATED_MESSAGE(
     "no longer useful. Please use std::vector<T> instead, this typedef will "
     "change to be an alias of that of the future, then will be removed.") =
     std::vector<T, Eigen::aligned_allocator<T>>;
-
-template <typename T, typename... Args>
-ALIGATOR_DEPRECATED_MESSAGE(
-    "Aligator now requires C++17 and the Eigen::aligned_allocator<T> class is "
-    "no longer useful. This function is now just an alias for "
-    "std::make_shared, and will be removed in the future.")
-inline auto allocate_shared_eigen_aligned(Args &&...args) {
-  return std::make_shared<T>(std::forward<Args>(args)...);
-}
 
 } // namespace aligator

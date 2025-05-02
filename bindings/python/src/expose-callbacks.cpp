@@ -1,6 +1,6 @@
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
 #include "aligator/python/callbacks.hpp"
-#include "aligator/helpers/history-callback.hpp"
+#include "aligator/core/history-callback.hpp"
 
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
 #include "aligator/solvers/fddp/solver-fddp.hpp"

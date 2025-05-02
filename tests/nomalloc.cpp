@@ -3,7 +3,6 @@
 
 #include <boost/test/unit_test.hpp>
 #include <aligator/math.hpp>
-#include <aligator/eigen-macros.hpp>
 
 BOOST_AUTO_TEST_CASE(begin_end_basic) {
   ALIGATOR_NOMALLOC_BEGIN;

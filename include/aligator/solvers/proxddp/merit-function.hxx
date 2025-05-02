@@ -67,7 +67,6 @@ Scalar PDALFunction<Scalar>::directionalDerivative(
     const std::vector<VectorXs> &lams, const std::vector<VectorXs> &vs,
     Workspace &workspace) {
   ALIGATOR_TRACY_ZONE_SCOPED;
-  TrajOptData &prob_data = workspace.problem_data;
   const std::size_t nsteps = workspace.nsteps;
 
   Scalar d1 = 0.;

@@ -108,6 +108,9 @@ auto linear_compose(xyz::polymorphic<UnaryFunctionTpl<Scalar>> func,
   return LinearUnaryFunctionCompositionTpl<Scalar>(func, A, b);
 }
 
-} // namespace aligator
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct LinearFunctionCompositionTpl<context::Scalar>;
+extern template struct LinearUnaryFunctionCompositionTpl<context::Scalar>;
+#endif
 
-#include "aligator/modelling/linear-function-composition.hxx"
+} // namespace aligator

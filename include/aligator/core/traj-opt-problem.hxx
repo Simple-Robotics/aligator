@@ -4,7 +4,7 @@
 #pragma once
 
 #include "aligator/core/traj-opt-problem.hpp"
-#include "aligator/core/solver-util.hpp"
+#include "aligator/solvers/solver-util.hpp"
 #include "aligator/utils/mpc-util.hpp"
 #include "aligator/tracy.hpp"
 

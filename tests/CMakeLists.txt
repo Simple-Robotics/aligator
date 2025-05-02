@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022-2023 LAAS-CNRS, INRIA
+# Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
@@ -18,7 +18,7 @@ message(STATUS "Test headers: ${TEST_HEADERS}")
 function(_add_test_prototype name prefix dependencies)
   set(test_name "${PROJECT_NAME}-test-cpp-${prefix}${name}")
   set(test_file ${name}.cpp)
-  message(STATUS "Adding cpp test: ${test_file} (${test_name})")
+  message(STATUS "Adding cpp test: ${test_name} (${test_file})")
 
   ADD_UNIT_TEST(${test_name} ${test_file} ${TEST_HEADERS})
   set_target_properties(${test_name} PROPERTIES LINKER_LANGUAGE CXX)
@@ -46,6 +46,7 @@ set(
   TEST_NAMES
   continuous
   costs
+  eigen-map
   integrators
   lqr
   problem
@@ -61,13 +62,13 @@ if(BUILD_WITH_PINOCCHIO_SUPPORT AND PINOCCHIO_V3)
   list(APPEND TEST_NAMES forces)
 endif()
 
+if(CHECK_RUNTIME_MALLOC)
+  list(APPEND TEST_NAMES nomalloc)
+endif()
+
 foreach(test_name ${TEST_NAMES})
   add_aligator_test(${test_name})
 endforeach()
-
-if(CHECK_RUNTIME_MALLOC)
-  add_aligator_test(nomalloc)
-endif()
 
 add_subdirectory(gar)
 

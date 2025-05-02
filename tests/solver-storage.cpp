@@ -1,4 +1,4 @@
-#include "aligator/core/value-function.hpp"
+#include "aligator/solvers/value-function.hpp"
 
 #include <boost/test/unit_test.hpp>
 

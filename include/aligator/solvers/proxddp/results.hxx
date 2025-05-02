@@ -3,8 +3,8 @@
 /// @brief Implementation file. Include when template definitions required.
 #pragma once
 
-#include "./results.hpp"
-#include "aligator/core/solver-util.hpp"
+#include "results.hpp"
+#include "aligator/solvers/solver-util.hpp"
 #include "aligator/utils/mpc-util.hpp"
 
 namespace aligator {

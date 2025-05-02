@@ -239,12 +239,12 @@ if(BUILD_WITH_PINOCCHIO_SUPPORT)
       "If you didn't build proxsuite-nlp yourself, please contact the maintainer for the distribution you used."
     )
   endif()
-  add_compile_definitions(ALIGATOR_WITH_PINOCCHIO)
-  list(APPEND CFLAGS_DEPENDENCIES "-DALIGATOR_WITH_PINOCCHIO")
-  set(PINOCCHIO_V3 ${pinocchio_VERSION} VERSION_GREATER "3.0.0")
-  if(PINOCCHIO_V3)
-    add_compile_definitions(ALIGATOR_PINOCCHIO_V3)
+
+  if(${pinocchio_VERSION} VERSION_GREATER "3.0.0")
+    set(PINOCCHIO_V3 TRUE)
   endif()
+
+  list(APPEND CFLAGS_DEPENDENCIES "-DALIGATOR_WITH_PINOCCHIO")
 elseif(PROXSUITE_NLP_WITH_PINOCCHIO_SUPPORT)
   message(
     WARNING
@@ -255,7 +255,6 @@ endif()
 
 if(BUILD_CROCODDYL_COMPAT)
   message(STATUS "Building with Crocoddyl support.")
-  add_compile_definitions(ALIGATOR_WITH_CROCODDYL_COMPAT)
   list(APPEND CFLAGS_DEPENDENCIES "-DALIGATOR_WITH_CROCODDYL_COMPAT")
 endif()
 
@@ -270,7 +269,6 @@ if(BUILD_WITH_CHOLMOD_SUPPORT)
     STATUS
     "Build with CHOLMOD support (LGPL). See CHOLMOD/Doc/License.txt for further details."
   )
-  add_compile_definitions(ALIGATOR_WITH_CHOLMOD)
 endif()
 
 if(BUILD_PYTHON_INTERFACE)
@@ -285,6 +283,7 @@ if(BUILD_PYTHON_INTERFACE)
   set(${PYLIB_NAME}_INSTALL_DIR ${PYTHON_SITELIB}/${PROJECT_NAME})
 endif()
 
+# Without template instantiation, library only compiles exceptions and logging.
 set(LIB_SOURCES src/utils/exceptions.cpp src/utils/logger.cpp)
 
 file(
@@ -299,8 +298,8 @@ if(ENABLE_TEMPLATE_INSTANTIATION)
     GLOB_RECURSE LIB_TEMPLATE_SOURCES
     CONFIGURE_DEPENDS
     ${PROJECT_SOURCE_DIR}/src/core/*.cpp
-    ${PROJECT_SOURCE_DIR}/src/solvers/fddp/*.cpp
-    ${PROJECT_SOURCE_DIR}/src/solvers/proxddp/*.cpp
+    ${PROJECT_SOURCE_DIR}/src/gar/*.cpp
+    ${PROJECT_SOURCE_DIR}/src/solvers/*.cpp
     ${PROJECT_SOURCE_DIR}/src/modelling/*.cpp
   )
   file(
@@ -367,8 +366,6 @@ elseif(ALIGATOR_TRACY_ENABLE)
   endif()
 endif()
 
-add_subdirectory(gar)
-
 # Create the main shared library.
 function(create_library)
   add_library(${PROJECT_NAME} SHARED ${LIB_HEADERS} ${LIB_SOURCES})
@@ -382,7 +379,6 @@ function(create_library)
   )
   set_standard_output_directory(${PROJECT_NAME})
 
-  target_link_libraries(${PROJECT_NAME} PUBLIC aligator::gar)
   # Extract the compile definitions of the project for export
   get_directory_property(CURRENT_COMPILE_DEFINITIONS COMPILE_DEFINITIONS)
   target_compile_definitions(
@@ -395,6 +391,15 @@ function(create_library)
       ${PROJECT_NAME}
       PUBLIC pinocchio::pinocchio_default pinocchio::pinocchio_collision
     )
+    target_compile_definitions(${PROJECT_NAME} PUBLIC ALIGATOR_WITH_PINOCCHIO)
+    if(PINOCCHIO_V3)
+      target_compile_definitions(${PROJECT_NAME} PUBLIC ALIGATOR_PINOCCHIO_V3)
+    endif()
+  endif()
+
+  if(BUILD_WITH_CHOLMOD_SUPPORT)
+    target_link_libraries(${PROJECT_NAME} PUBLIC CHOLMOD::CHOLMOD)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC ALIGATOR_WITH_CHOLMOD)
   endif()
 
   if(BUILD_WITH_OPENMP_SUPPORT)
@@ -463,29 +468,37 @@ add_subdirectory(bindings)
 
 # benchmarks, examples, and tests
 
-macro(create_ex_or_bench is_bench exfile exname)
+macro(create_ex_or_bench exfile exname)
+  cmake_parse_arguments(arg_ex "BENCHMARK" "" "DEPENDENCIES" ${ARGN})
+
   add_executable(${exname} ${exfile})
-  if(${is_bench})
-    set(ex_type "bench")
+  if(${arg_ex_BENCHMARK})
+    set(ex_type "benchmark")
   else()
     set(ex_type "example")
   endif()
-  message(STATUS "Adding cpp ${ex_type} ${exname}")
+  message(STATUS "Adding cpp ${ex_type} ${exname} (${exfile})")
   set_target_properties(${exname} PROPERTIES LINKER_LANGUAGE CXX)
   set_standard_output_directory(${exname})
   target_include_directories(${exname} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-  target_link_libraries(${exname} PUBLIC ${PROJECT_NAME})
+  target_link_libraries(
+    ${exname}
+    PRIVATE ${PROJECT_NAME} ${arg_ex_DEPENDENCIES}
+  )
+  if(${arg_ex_BENCHMARK})
+    target_link_libraries(${exname} PRIVATE benchmark::benchmark)
+  endif()
+  if(DEFINED arg_ex_DEPENDENCIES)
+    message("   Dependencies:")
+    foreach(_dep ${arg_ex_DEPENDENCIES})
+      message("     ${_dep}")
+    endforeach()
+  endif()
 endmacro()
 
 if(BUILD_WITH_PINOCCHIO_SUPPORT AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
   ADD_PROJECT_PRIVATE_DEPENDENCY(example-robot-data 4.0.9 REQUIRED)
-  macro(target_add_example_robot_data target_name)
-    target_link_libraries(
-      ${target_name}
-      PRIVATE example-robot-data::example-robot-data
-    )
-  endmacro()
 endif()
 
 # create an utility library to avoid recompiling crocoddyl talos arm problem
@@ -503,10 +516,13 @@ if(BUILD_CROCODDYL_COMPAT AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
   )
   target_link_libraries(
     croc_talos_arm_utils
-    PUBLIC ${PROJECT_NAME} Boost::boost crocoddyl::crocoddyl
+    PUBLIC
+      ${PROJECT_NAME}
+      Boost::boost
+      crocoddyl::crocoddyl
+      example-robot-data::example-robot-data
   )
   set_standard_output_directory(croc_talos_arm_utils)
-  target_add_example_robot_data(croc_talos_arm_utils)
 endif()
 
 if(BUILD_BENCHMARKS OR BUILD_TESTING)
@@ -515,7 +531,7 @@ if(BUILD_BENCHMARKS OR BUILD_TESTING)
     STATIC
     ${PROJECT_SOURCE_DIR}/tests/gar/test_util.cpp
   )
-  target_link_libraries(gar_test_utils PRIVATE aligator::gar)
+  target_link_libraries(gar_test_utils PRIVATE ${PROJECT_NAME})
   set_standard_output_directory(gar_test_utils)
 endif()
 
@@ -531,14 +547,13 @@ if(PINOCCHIO_V3 AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
     PUBLIC ${PROJECT_SOURCE_DIR}/examples
   )
   set_standard_output_directory(talos_walk_utils)
-  target_link_libraries(talos_walk_utils PUBLIC ${PROJECT_NAME})
-  target_add_example_robot_data(talos_walk_utils)
-  function(target_add_talos_walk target)
-    target_link_libraries(
-      ${target}
-      PRIVATE talos_walk_utils pinocchio::pinocchio_parsers
-    )
-  endfunction()
+  target_link_libraries(
+    talos_walk_utils
+    PUBLIC
+      ${PROJECT_NAME}
+      pinocchio::pinocchio_parsers
+      example-robot-data::example-robot-data
+  )
 endif()
 
 if(BUILD_EXAMPLES)
