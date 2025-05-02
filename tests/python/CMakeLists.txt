@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2023 LAAS-CNRS, INRIA
+# Copyright (C) 2023-2024 LAAS-CNRS, 2023-2025 INRIA
 #
 
 file(
@@ -15,11 +15,7 @@ if(NOT BUILD_WITH_PINOCCHIO_SUPPORT)
   list(REMOVE_ITEM PYTHON_TESTS test_center_of_mass.py)
   list(REMOVE_ITEM PYTHON_TESTS test_frames.py)
   list(REMOVE_ITEM PYTHON_TESTS test_rollout.py)
-endif()
-if(NOT PINOCCHIO_V3)
   list(REMOVE_ITEM PYTHON_TESTS test_constrained_dynamics.py)
-endif()
-if(NOT PROXSUITE_NLP_WITH_PINOCCHIO_SUPPORT)
   list(REMOVE_ITEM PYTHON_TESTS test_kinodynamics.py)
 endif()
 make_directory(${CMAKE_CURRENT_BINARY_DIR})

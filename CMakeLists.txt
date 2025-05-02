@@ -232,16 +232,21 @@ ADD_PROJECT_DEPENDENCY(
 
 if(BUILD_WITH_PINOCCHIO_SUPPORT)
   message(STATUS "Building aligator with Pinocchio support.")
+
+  set(PINOCCHIO_MINIMUM_VERSION "3.1.0")
+  ADD_PROJECT_DEPENDENCY(
+    pinocchio
+    ${PINOCCHIO_MINIMUM_VERSION}
+    REQUIRED
+    PKG_CONFIG_REQUIRES "pinocchio >= ${PINOCCHIO_MINIMUM_VERSION}"
+  )
+
   if(NOT DEFINED PROXSUITE_NLP_WITH_PINOCCHIO_SUPPORT)
     message(
       FATAL_ERROR
       "The aligator Pinocchio features require Pinocchio support in proxsuite-nlp. Please check your installation of proxsuite-nlp (found at ${proxsuite-nlp_DIR}).\n"
       "If you didn't build proxsuite-nlp yourself, please contact the maintainer for the distribution you used."
     )
-  endif()
-
-  if(${pinocchio_VERSION} VERSION_GREATER "3.0.0")
-    set(PINOCCHIO_V3 TRUE)
   endif()
 
   list(APPEND CFLAGS_DEPENDENCIES "-DALIGATOR_WITH_PINOCCHIO")
@@ -392,9 +397,6 @@ function(create_library)
       PUBLIC pinocchio::pinocchio_default pinocchio::pinocchio_collision
     )
     target_compile_definitions(${PROJECT_NAME} PUBLIC ALIGATOR_WITH_PINOCCHIO)
-    if(PINOCCHIO_V3)
-      target_compile_definitions(${PROJECT_NAME} PUBLIC ALIGATOR_PINOCCHIO_V3)
-    endif()
   endif()
 
   if(BUILD_WITH_CHOLMOD_SUPPORT)
@@ -535,7 +537,7 @@ if(BUILD_BENCHMARKS OR BUILD_TESTING)
   set_standard_output_directory(gar_test_utils)
 endif()
 
-if(PINOCCHIO_V3 AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
+if(BUILD_EXAMPLES OR BUILD_BENCHMARKS)
   add_library(
     talos_walk_utils
     STATIC
