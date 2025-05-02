@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef ALIGATOR_PINOCCHIO_V3
-
 #include "./fwd.hpp"
 #include "aligator/core/function-abstract.hpp"
 
@@ -109,5 +107,3 @@ struct ContactForceDataTpl : StageFunctionDataTpl<Scalar> {
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/modelling/multibody/contact-force.txx"
 #endif
-
-#endif // ALIGATOR_PINOCCHIO_V3

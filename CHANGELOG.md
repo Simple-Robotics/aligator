@@ -35,6 +35,7 @@ This release officially **drops support for Pinocchio 2**.
 - Removed `gar` as a separate CMake target and shared library, merge into main library ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
 - Remove function `allocate_shared_eigen_aligned()` ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
 - Officially remove support for Pinocchio 2, require Pinocchio >= 3.1 ([#307](https://github.com/Simple-Robotics/aligator/pull/307))
+  - Remove the `ALIGATOR_PINOCCHIO_V3` compile definition.
 
 ## [0.13.0] - 2025-04-26
 

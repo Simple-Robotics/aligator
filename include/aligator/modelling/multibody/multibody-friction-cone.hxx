@@ -1,6 +1,5 @@
 #pragma once
 
-#ifdef ALIGATOR_PINOCCHIO_V3
 #include "aligator/modelling/multibody/multibody-friction-cone.hpp"
 
 #include <pinocchio/algorithm/constrained-dynamics.hpp>
@@ -85,4 +84,3 @@ MultibodyFrictionConeDataTpl<Scalar>::MultibodyFrictionConeDataTpl(
 }
 
 } // namespace aligator
-#endif

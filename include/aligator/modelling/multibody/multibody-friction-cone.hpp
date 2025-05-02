@@ -1,7 +1,6 @@
 #pragma once
 
-#ifdef ALIGATOR_PINOCCHIO_V3
-#include "./fwd.hpp"
+#include "fwd.hpp"
 #include "aligator/core/function-abstract.hpp"
 
 #include <proxsuite-nlp/modelling/spaces/multibody.hpp>
@@ -105,5 +104,3 @@ struct MultibodyFrictionConeDataTpl : StageFunctionDataTpl<Scalar> {
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/modelling/multibody/multibody-friction-cone.txx"
 #endif
-
-#endif // ALIGATOR_PINOCCHIO_V3

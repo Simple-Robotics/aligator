@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #ifdef ALIGATOR_WITH_PINOCCHIO
 #include "aligator/fwd.hpp"
 #include "aligator/python/modelling/multibody-utils.hpp"
@@ -9,9 +9,8 @@
 #include "aligator/modelling/multibody/frame-translation.hpp"
 #include "aligator/modelling/multibody/frame-collision.hpp"
 #include "aligator/python/polymorphic-convertible.hpp"
-#ifdef ALIGATOR_PINOCCHIO_V3
+
 #include "aligator/modelling/multibody/constrained-rnea.hpp"
-#endif
 
 namespace aligator {
 namespace python {
@@ -27,9 +26,8 @@ using context::UnaryFunction;
 //
 
 void exposeFlyHigh();
-#ifdef ALIGATOR_PINOCCHIO_V3
+
 void exposeContactForce();
-#endif
 void exposeCenterOfMassFunctions();
 void exposeFrameFunctions();
 void exposeGravityCompensation();
@@ -146,7 +144,6 @@ void exposeFrameFunctions() {
                     "Geometry data struct.");
 }
 
-#ifdef ALIGATOR_PINOCCHIO_V3
 auto underactuatedConstraintInvDyn_proxy(
     const PinModel &model, PinData &data, const ConstVectorRef &q,
     const ConstVectorRef &v, const ConstMatrixRef &actMatrix,
@@ -164,25 +161,20 @@ auto underactuatedConstraintInvDyn_proxy(
   return bp::make_tuple((context::VectorXs)out.head(nu),
                         (context::VectorXs)out.tail(d));
 }
-#endif
 
 void exposePinocchioFunctions() {
   exposeFrameFunctions();
   exposeFlyHigh();
-#ifdef ALIGATOR_PINOCCHIO_V3
   exposeContactForce();
-#endif
   exposeCenterOfMassFunctions();
   exposeGravityCompensation();
 
-#ifdef ALIGATOR_PINOCCHIO_V3
   bp::def("underactuatedConstrainedInverseDynamics",
           underactuatedConstraintInvDyn_proxy,
           ("model"_a, "data", "q", "v", "actMatrix", "constraint_model",
            "constraint_data"),
           "Compute the gravity-compensating torque for a pinocchio Model under "
           "a rigid constraint.");
-#endif
 }
 } // namespace python
 } // namespace aligator

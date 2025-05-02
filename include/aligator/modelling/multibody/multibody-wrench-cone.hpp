@@ -4,7 +4,7 @@
 #include "aligator/core/function-abstract.hpp"
 
 #include <pinocchio/multibody/model.hpp>
-#ifdef ALIGATOR_PINOCCHIO_V3
+
 #include <pinocchio/algorithm/proximal.hpp>
 
 namespace aligator {
@@ -118,5 +118,3 @@ struct MultibodyWrenchConeDataTpl : StageFunctionDataTpl<Scalar> {
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/modelling/multibody/multibody-wrench-cone.txx"
 #endif
-
-#endif // ALIGATOR_PINOCCHIO_V3

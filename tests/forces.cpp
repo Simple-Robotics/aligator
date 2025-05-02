@@ -7,7 +7,6 @@
 
 #include <boost/test/unit_test.hpp>
 
-#ifdef ALIGATOR_PINOCCHIO_V3
 #include <aligator/modelling/multibody/contact-force.hpp>
 #include <aligator/modelling/multibody/multibody-wrench-cone.hpp>
 #include <aligator/modelling/multibody/multibody-friction-cone.hpp>
@@ -464,5 +463,3 @@ BOOST_AUTO_TEST_CASE(friction_cone) {
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-
-#endif
