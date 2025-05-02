@@ -54,12 +54,8 @@ set(
   utils
 )
 
-if(PROXSUITE_NLP_WITH_PINOCCHIO_SUPPORT)
-  list(APPEND TEST_NAMES cycling mpc-cycle)
-endif()
-
-if(BUILD_WITH_PINOCCHIO_SUPPORT AND PINOCCHIO_V3)
-  list(APPEND TEST_NAMES forces)
+if(BUILD_WITH_PINOCCHIO_SUPPORT)
+  list(APPEND TEST_NAMES forces cycling mpc-cycle)
 endif()
 
 if(CHECK_RUNTIME_MALLOC)

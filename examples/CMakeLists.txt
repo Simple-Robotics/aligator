@@ -24,14 +24,8 @@ function(create_example exfile)
 endfunction()
 
 create_example(clqr.cpp)
-
-if(PROXSUITE_NLP_WITH_PINOCCHIO_SUPPORT)
-  create_example(se2-car.cpp)
-endif()
-
-if(PINOCCHIO_V3)
-  create_example(talos-walk.cpp DEPENDENCIES talos_walk_utils)
-endif()
+create_example(talos-walk.cpp DEPENDENCIES talos_walk_utils)
+create_example(se2-car.cpp)
 
 if(BUILD_CROCODDYL_COMPAT)
   ADD_PROJECT_PRIVATE_DEPENDENCY(example-robot-data 4.0.9 REQUIRED)
