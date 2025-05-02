@@ -233,7 +233,7 @@ ADD_PROJECT_DEPENDENCY(
 if(BUILD_WITH_PINOCCHIO_SUPPORT)
   message(STATUS "Building aligator with Pinocchio support.")
 
-  set(PINOCCHIO_MINIMUM_VERSION "3.1.0")
+  set(PINOCCHIO_MINIMUM_VERSION "3.4.0")
   ADD_PROJECT_DEPENDENCY(
     pinocchio
     ${PINOCCHIO_MINIMUM_VERSION}
@@ -462,7 +462,7 @@ if(DOWNLOAD_TRACY)
 endif()
 
 if(BUILD_CROCODDYL_COMPAT)
-  ADD_PROJECT_DEPENDENCY(crocoddyl 3.0.0 REQUIRED)
+  ADD_PROJECT_DEPENDENCY(crocoddyl 3.0.1 REQUIRED)
   add_subdirectory(src/compat/crocoddyl)
 endif()
 
