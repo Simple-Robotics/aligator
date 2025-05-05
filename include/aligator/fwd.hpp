@@ -26,8 +26,13 @@ namespace aligator {
 
 // NOLINTBEGIN(misc-unused-using-decls)
 
+// fwd ManifoldAbstractTpl
+template <typename Scalar> struct ManifoldAbstractTpl;
+
+// fwd VectorSpaceTpl
+template <typename Scalar, int Dim = Eigen::Dynamic> struct VectorSpaceTpl;
+
 using proxsuite::nlp::ConstraintSetTpl;
-using proxsuite::nlp::ManifoldAbstractTpl;
 // Use the math_types template from proxsuite-nlp.
 using proxsuite::nlp::VerboseLevel;
 
