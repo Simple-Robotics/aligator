@@ -3,7 +3,7 @@
 #include <pinocchio/parsers/sample-models.hpp>
 #include <pinocchio/algorithm/kinematics.hpp>
 #include <pinocchio/algorithm/joint-configuration.hpp>
-#include <proxsuite-nlp/modelling/spaces/multibody.hpp>
+#include "aligator/modelling/spaces/multibody.hpp"
 
 #include <boost/test/unit_test.hpp>
 

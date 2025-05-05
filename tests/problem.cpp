@@ -7,10 +7,10 @@
 #include "aligator/core/explicit-dynamics.hpp"
 #include "aligator/core/cost-abstract.hpp"
 #include "aligator/utils/rollout.hpp"
-#ifdef PROXSUITE_NLP_WITH_PINOCCHIO
-#include <proxsuite-nlp/modelling/spaces/pinocchio-groups.hpp>
+#ifdef ALIGATOR_WITH_PINOCCHIO
+#include "aligator/modelling/spaces/pinocchio-groups.hpp"
 #else
-#include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
+#include "aligator/modelling/spaces/vector-space.hpp"
 #endif
 #include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 #include <boost/test/unit_test.hpp>
@@ -59,11 +59,11 @@ struct MyCost : CostAbstractTpl<double> {
   }
 };
 
-#ifdef PROXSUITE_NLP_WITH_PINOCCHIO
-using Manifold = proxsuite::nlp::SETpl<3, double>;
+#ifdef ALIGATOR_WITH_PINOCCHIO
+using Manifold = aligator::SETpl<3, double>;
 static const Manifold my_space;
 #else
-using Manifold = proxsuite::nlp::VectorSpaceTpl<double>;
+using Manifold = aligator::VectorSpaceTpl<double>;
 static const Manifold my_space(6);
 #endif
 

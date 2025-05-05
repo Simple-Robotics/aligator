@@ -6,8 +6,8 @@
 #include "aligator/modelling/costs/sum-of-costs.hpp"
 
 #include "aligator/modelling/costs/quad-state-cost.hpp"
-#include <proxsuite-nlp/modelling/spaces/pinocchio-groups.hpp>
-#include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
+#include "aligator/modelling/spaces/pinocchio-groups.hpp"
+#include "aligator/modelling/spaces/vector-space.hpp"
 
 BOOST_AUTO_TEST_SUITE(costs)
 
@@ -18,8 +18,8 @@ using context::MatrixXs;
 using context::VectorXs;
 using QuadraticResidualCost = QuadraticResidualCostTpl<T>;
 using StateError = StateErrorResidualTpl<T>;
-using SE2 = proxsuite::nlp::SETpl<2, T>;
-using VectorSpace = proxsuite::nlp::VectorSpaceTpl<T>;
+using SE2 = SETpl<2, T>;
+using VectorSpace = VectorSpaceTpl<T>;
 
 void fd_test(VectorXs x0, VectorXs u0, MatrixXs weights,
              QuadraticResidualCost qres, shared_ptr<CostData> data) {

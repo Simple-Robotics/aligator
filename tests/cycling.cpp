@@ -3,7 +3,7 @@
 #include "aligator/core/explicit-dynamics.hpp"
 #include "aligator/core/cost-abstract.hpp"
 #include "aligator/utils/mpc-util.hpp"
-#include <proxsuite-nlp/modelling/spaces/pinocchio-groups.hpp>
+#include "aligator/modelling/spaces/pinocchio-groups.hpp"
 #include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 #include <boost/test/unit_test.hpp>
 
@@ -49,8 +49,8 @@ struct MyCost : CostAbstractTpl<double> {
   }
 };
 
-using Manifold = proxsuite::nlp::SETpl<3, double>;
-using StageModel = aligator::StageModelTpl<double>;
+using Manifold = SETpl<3, double>;
+using StageModel = StageModelTpl<double>;
 using EqualityConstraint = proxsuite::nlp::EqualityConstraintTpl<double>;
 
 struct MyFixture {
