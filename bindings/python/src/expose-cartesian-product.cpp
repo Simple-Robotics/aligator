@@ -1,8 +1,6 @@
 #include "aligator/python/fwd.hpp"
 #include "aligator/modelling/spaces/cartesian-product.hpp"
 
-#include <proxsuite-nlp/python/polymorphic.hpp>
-
 namespace aligator::python {
 
 using context::Manifold;

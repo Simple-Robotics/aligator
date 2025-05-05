@@ -1,7 +1,6 @@
 #include "aligator/python/fwd.hpp"
 
 #include "aligator/core/constraint.hpp"
-#include <proxsuite-nlp/python/polymorphic.hpp>
 #include <proxsuite-nlp/constraint-base.hpp>
 #include <eigenpy/deprecation-policy.hpp>
 

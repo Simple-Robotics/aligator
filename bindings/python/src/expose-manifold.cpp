@@ -5,7 +5,6 @@
 #include "aligator/modelling/spaces/cartesian-product.hpp"
 #include "aligator/modelling/spaces/tangent-bundle.hpp"
 
-#include <proxsuite-nlp/python/polymorphic.hpp>
 #include <eigenpy/std-vector.hpp>
 
 namespace aligator::python {
@@ -122,7 +121,7 @@ void exposeManifoldBase() {
             return a * b;
           });
 
-  eigenpy::StdVectorPythonVisitor<std::vector<PolyManifold>>::expose(
+  StdVectorPythonVisitor<std::vector<PolyManifold>>::expose(
       "StdVec_Manifold",
       eigenpy::details::overload_base_get_item_for_std_vector<
           std::vector<PolyManifold>>());

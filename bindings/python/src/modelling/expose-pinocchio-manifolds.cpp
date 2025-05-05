@@ -4,8 +4,6 @@
 #include "aligator/modelling/spaces/multibody.hpp"
 #include "aligator/modelling/spaces/pinocchio-groups.hpp"
 
-#include <proxsuite-nlp/python/polymorphic.hpp>
-
 namespace aligator::python {
 using context::Manifold;
 using context::Scalar;

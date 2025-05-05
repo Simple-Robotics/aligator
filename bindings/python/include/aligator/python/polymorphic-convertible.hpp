@@ -1,7 +1,6 @@
 #pragma once
 
 #include "aligator/python/fwd.hpp"
-#include <proxsuite-nlp/python/polymorphic.hpp>
 
 #include <boost/mpl/vector.hpp>
 
