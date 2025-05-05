@@ -46,11 +46,6 @@ public:
     return lg_.isNormalized(x);
   }
 
-  void JintegrateTransport(const ConstVectorRef &x, const ConstVectorRef &v,
-                           MatrixRef Jout, int arg) const {
-    lg_.dIntegrateTransport(x, v, Jout, pin::ArgumentPosition(arg));
-  }
-
 protected:
   /// \name Implementations
 
@@ -74,6 +69,12 @@ protected:
       lg_.dIntegrate_dv(x, v, Jout);
       break;
     }
+  }
+
+  void JintegrateTransport_impl(const ConstVectorRef &x,
+                                const ConstVectorRef &v, MatrixRef Jout,
+                                int arg) const {
+    lg_.dIntegrateTransport(x, v, Jout, pin::ArgumentPosition(arg));
   }
 
   void Jdifference_impl(const ConstVectorRef &x0, const ConstVectorRef &x1,

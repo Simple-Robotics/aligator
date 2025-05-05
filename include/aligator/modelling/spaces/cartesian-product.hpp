@@ -101,9 +101,6 @@ public:
 
   VectorXs merge_vector(const std::vector<VectorXs> &vs) const;
 
-  void JintegrateTransport(const ConstVectorRef &x, const ConstVectorRef &v,
-                           MatrixRef Jout, int arg) const;
-
 protected:
   std::vector<polymorphic<Base>> m_components;
 
@@ -115,6 +112,10 @@ protected:
 
   void Jintegrate_impl(const ConstVectorRef &x, const ConstVectorRef &v,
                        MatrixRef Jout, int arg) const;
+
+  void JintegrateTransport_impl(const ConstVectorRef &x,
+                                const ConstVectorRef &v, MatrixRef Jout,
+                                int arg) const;
 
   void Jdifference_impl(const ConstVectorRef &x0, const ConstVectorRef &x1,
                         MatrixRef Jout, int arg) const;

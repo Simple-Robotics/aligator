@@ -43,6 +43,7 @@ struct VectorSpaceTpl : public ManifoldAbstractTpl<_Scalar> {
     static_assert((Dim == OtherDim) || (Dim == Eigen::Dynamic));
   }
 
+protected:
   /// @name implementations
 
   /* Integrate */
@@ -57,8 +58,8 @@ struct VectorSpaceTpl : public ManifoldAbstractTpl<_Scalar> {
     Jout.setIdentity();
   }
 
-  void JintegrateTransport(const ConstVectorRef &, const ConstVectorRef &,
-                           MatrixRef, int) const {}
+  void JintegrateTransport_impl(const ConstVectorRef &, const ConstVectorRef &,
+                                MatrixRef, int) const {}
 
   /* Difference */
 

@@ -152,10 +152,9 @@ void CartesianProductTpl<Scalar>::Jintegrate_impl(const ConstVectorRef &x,
 }
 
 template <typename Scalar>
-void CartesianProductTpl<Scalar>::JintegrateTransport(const ConstVectorRef &x,
-                                                      const ConstVectorRef &v,
-                                                      MatrixRef Jout,
-                                                      int arg) const {
+void CartesianProductTpl<Scalar>::JintegrateTransport_impl(
+    const ConstVectorRef &x, const ConstVectorRef &v, MatrixRef Jout,
+    int arg) const {
   Eigen::Index cq = 0, cv = 0;
   for (std::size_t i = 0; i < numComponents(); i++) {
     const long nq = m_components[i]->nx();

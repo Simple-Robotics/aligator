@@ -66,9 +66,6 @@ public:
     return J.const_cast_derived().topLeftCorner(base_.ndx(), base_.ndx());
   }
 
-  void JintegrateTransport(const ConstVectorRef &x, const ConstVectorRef &v,
-                           MatrixRef Jout, int arg) const;
-
 protected:
   /// @name   Implementations of operators
 
@@ -83,6 +80,10 @@ protected:
 
   void Jintegrate_impl(const ConstVectorRef &x, const ConstVectorRef &v,
                        MatrixRef Jout, int arg) const;
+
+  void JintegrateTransport_impl(const ConstVectorRef &x,
+                                const ConstVectorRef &v, MatrixRef Jout,
+                                int arg) const;
 
   void Jdifference_impl(const ConstVectorRef &x0, const ConstVectorRef &x1,
                         MatrixRef Jout, int arg) const;

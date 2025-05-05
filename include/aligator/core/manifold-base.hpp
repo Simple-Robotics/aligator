@@ -64,9 +64,11 @@ public:
 
   /// @brief    Perform the parallel transport operation
   ///
-  virtual void JintegrateTransport(const ConstVectorRef &x,
-                                   const ConstVectorRef &v, MatrixRef Jout,
-                                   int arg) const = 0;
+  void JintegrateTransport(const ConstVectorRef &x, const ConstVectorRef &v,
+                           MatrixRef Jout, int arg) const {
+    assert(Jout.rows() == v.size());
+    JintegrateTransport_impl(x, v, Jout, arg);
+  }
 
   /// @brief Manifold difference/retraction operation \f$x_1 \ominus x_0\f$
   void difference(const ConstVectorRef &x0, const ConstVectorRef &x1,
@@ -118,6 +120,10 @@ protected:
 
   virtual void Jintegrate_impl(const ConstVectorRef &x, const ConstVectorRef &v,
                                MatrixRef Jout, int arg) const = 0;
+
+  virtual void JintegrateTransport_impl(const ConstVectorRef &x,
+                                        const ConstVectorRef &v, MatrixRef Jout,
+                                        int arg) const = 0;
 
   /// Implementation of the manifold retraction operation.
   virtual void difference_impl(const ConstVectorRef &x0,

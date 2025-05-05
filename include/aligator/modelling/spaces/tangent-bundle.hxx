@@ -65,10 +65,10 @@ void TangentBundleTpl<Base>::Jdifference_impl(const ConstVectorRef &x0,
 }
 
 template <class Base>
-void TangentBundleTpl<Base>::JintegrateTransport(const ConstVectorRef &x,
-                                                 const ConstVectorRef &v,
-                                                 MatrixRef Jout,
-                                                 int arg) const {
+void TangentBundleTpl<Base>::JintegrateTransport_impl(const ConstVectorRef &x,
+                                                      const ConstVectorRef &v,
+                                                      MatrixRef Jout,
+                                                      int arg) const {
   const int nv_ = base_.ndx();
   base_.JintegrateTransport(getBasePoint(x), getBaseTangent(v),
                             Jout.topRows(nv_), arg);

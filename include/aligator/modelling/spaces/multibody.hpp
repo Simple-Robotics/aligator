@@ -37,20 +37,6 @@ public:
   inline int nx() const { return model_.nq; }
   inline int ndx() const { return model_.nv; }
 
-  void JintegrateTransport(const ConstVectorRef &x, const ConstVectorRef &v,
-                           MatrixRef Jout, int arg) const {
-    switch (arg) {
-    case 0:
-      pinocchio::dIntegrateTransport(model_, x, v, Jout, pinocchio::ARG0);
-      break;
-    case 1:
-      pinocchio::dIntegrateTransport(model_, x, v, Jout, pinocchio::ARG1);
-      break;
-    default:
-      break;
-    }
-  }
-
 protected:
   ModelType model_;
 
@@ -70,6 +56,21 @@ protected:
       break;
     case 1:
       pinocchio::dIntegrate(model_, x, v, Jout, pinocchio::ARG1);
+      break;
+    }
+  }
+
+  void JintegrateTransport_impl(const ConstVectorRef &x,
+                                const ConstVectorRef &v, MatrixRef Jout,
+                                int arg) const {
+    switch (arg) {
+    case 0:
+      pinocchio::dIntegrateTransport(model_, x, v, Jout, pinocchio::ARG0);
+      break;
+    case 1:
+      pinocchio::dIntegrateTransport(model_, x, v, Jout, pinocchio::ARG1);
+      break;
+    default:
       break;
     }
   }
