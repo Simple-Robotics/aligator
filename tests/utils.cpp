@@ -1,5 +1,5 @@
 #include "aligator/utils/newton-raphson.hpp"
-#include "aligator/modelling/spaces/vector-space.hpp"
+#include "aligator/core/vector-space.hpp"
 #include <aligator/fmt-eigen.hpp>
 
 #include <boost/test/unit_test.hpp>

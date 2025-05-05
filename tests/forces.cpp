@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE(contact_forces_6d) {
   using ContactForceData = aligator::ContactForceDataTpl<double>;
   using ContactForceResidual = aligator::ContactForceResidualTpl<double>;
   using StageFunctionData = aligator::StageFunctionDataTpl<double>;
-  using Manifold = proxsuite::nlp::MultibodyPhaseSpace<double>;
+  using Manifold = aligator::MultibodyPhaseSpace<double>;
   using Vector3or6 = Eigen::Matrix<double, -1, 1, Eigen::ColMajor, 6, 1>;
 
   Model model;
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE(contact_forces_3d) {
   using ContactForceData = aligator::ContactForceDataTpl<double>;
   using ContactForceResidual = aligator::ContactForceResidualTpl<double>;
   using StageFunctionData = aligator::StageFunctionDataTpl<double>;
-  using Manifold = proxsuite::nlp::MultibodyPhaseSpace<double>;
+  using Manifold = aligator::MultibodyPhaseSpace<double>;
   using Vector3or6 = Eigen::Matrix<double, -1, 1, Eigen::ColMajor, 6, 1>;
 
   Model model;
@@ -250,7 +250,7 @@ BOOST_AUTO_TEST_CASE(wrench_cone) {
   using MultibodyWrenchConeResidual =
       aligator::MultibodyWrenchConeResidualTpl<double>;
   using StageFunctionData = aligator::StageFunctionDataTpl<double>;
-  using Manifold = proxsuite::nlp::MultibodyPhaseSpace<double>;
+  using Manifold = aligator::MultibodyPhaseSpace<double>;
 
   Model model;
   buildModels::humanoidRandom(model, true);
@@ -362,7 +362,7 @@ BOOST_AUTO_TEST_CASE(friction_cone) {
   using MultibodyFrictionConeResidual =
       aligator::MultibodyFrictionConeResidualTpl<double>;
   using StageFunctionData = aligator::StageFunctionDataTpl<double>;
-  using Manifold = proxsuite::nlp::MultibodyPhaseSpace<double>;
+  using Manifold = aligator::MultibodyPhaseSpace<double>;
 
   Model model;
   buildModels::humanoidRandom(model, true);

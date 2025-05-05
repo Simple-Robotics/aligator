@@ -35,7 +35,7 @@ pinocchio::Model SimpleModel() {
   return model;
 }
 
-using StageSpace = proxsuite::nlp::MultibodyPhaseSpace<double>;
+using StageSpace = aligator::MultibodyPhaseSpace<double>;
 
 std::tuple<pinocchio::SE3, bool> height(double t) {
   double const t0 = std::floor(t);

@@ -1,7 +1,7 @@
 #include "aligator/modelling/dynamics/integrator-euler.hpp"
 #include "aligator/modelling/dynamics/integrator-rk2.hpp"
 
-#include "aligator/modelling/spaces/vector-space.hpp"
+#include "aligator/core/vector-space.hpp"
 
 #include <boost/test/unit_test.hpp>
 

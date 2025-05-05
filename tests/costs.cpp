@@ -7,7 +7,7 @@
 
 #include "aligator/modelling/costs/quad-state-cost.hpp"
 #include "aligator/modelling/spaces/pinocchio-groups.hpp"
-#include "aligator/modelling/spaces/vector-space.hpp"
+#include "aligator/core/vector-space.hpp"
 
 BOOST_AUTO_TEST_SUITE(costs)
 

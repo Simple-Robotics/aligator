@@ -10,7 +10,7 @@
 #ifdef ALIGATOR_WITH_PINOCCHIO
 #include "aligator/modelling/spaces/pinocchio-groups.hpp"
 #else
-#include "aligator/modelling/spaces/vector-space.hpp"
+#include "aligator/core/vector-space.hpp"
 #endif
 #include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 #include <boost/test/unit_test.hpp>
