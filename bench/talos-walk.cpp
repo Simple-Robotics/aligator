@@ -1,11 +1,9 @@
 /// @file
 /// @brief Benchmark aligator::SolverFDDP against SolverProxDDP on a simple
 /// example
-/// @copyright Copyright (C) 2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2024 LAAS-CNRS, 2024-2025 INRIA
 
 #include <benchmark/benchmark.h>
-
-#include <proxsuite-nlp/fwd.hpp>
 
 #include "talos-walk-utils.hpp"
 
@@ -31,7 +29,7 @@ static void BM_aligator(benchmark::State &state) {
   const std::size_t nsteps = T_ss * 2 + T_ds * 3;
   const auto num_threads = static_cast<std::size_t>(state.range(1));
 
-  auto problem = defineLocomotionProblem(T_ss, T_ds);
+  TrajOptProblem problem = defineLocomotionProblem(T_ss, T_ds);
 
   std::vector<VectorXd> xs_i;
   std::vector<VectorXd> us_i;
