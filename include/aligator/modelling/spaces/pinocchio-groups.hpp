@@ -11,6 +11,11 @@ namespace aligator {
 
 namespace pin = pinocchio;
 
+/// Type trait. Indicates whether @tparam G is derived from
+/// pinocchio::LieGroupBase.
+template <typename G>
+using is_pinocchio_lie_group = std::is_base_of<pin::LieGroupBase<G>, G>;
+
 /// @brief  Wrap a Pinocchio Lie group into a ManifoldAbstractTpl object.
 ///
 template <typename _LieGroup>
@@ -21,7 +26,7 @@ public:
   using Scalar = typename LieGroup::Scalar;
   using Base = ManifoldAbstractTpl<Scalar>;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  static_assert(std::is_base_of_v<pin::LieGroupBase<LieGroup>, LieGroup>,
+  static_assert(is_pinocchio_lie_group<LieGroup>::value,
                 "LieGroup template argument should be a subclass of "
                 "pinocchio::LieGroupBase.");
 
@@ -101,11 +106,9 @@ protected:
 };
 
 template <int D, typename Scalar>
-using SETpl =
-    PinocchioLieGroup<pinocchio::SpecialEuclideanOperationTpl<D, Scalar>>;
+using SETpl = PinocchioLieGroup<pin::SpecialEuclideanOperationTpl<D, Scalar>>;
 
 template <int D, typename Scalar>
-using SOTpl =
-    PinocchioLieGroup<pinocchio::SpecialOrthogonalOperationTpl<D, Scalar>>;
+using SOTpl = PinocchioLieGroup<pin::SpecialOrthogonalOperationTpl<D, Scalar>>;
 
 } // namespace aligator

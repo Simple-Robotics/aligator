@@ -11,7 +11,7 @@
 
 using namespace aligator;
 
-using Space = proxsuite::nlp::VectorSpaceTpl<double>;
+using Space = VectorSpaceTpl<double>;
 using LinearDynamics = dynamics::LinearDiscreteDynamicsTpl<double>;
 using LinearFunction = LinearFunctionTpl<double>;
 using BoxConstraint = proxsuite::nlp::BoxConstraintTpl<double>;
