@@ -49,7 +49,7 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
 template <typename Scalar>
 Scalar TrajOptProblemTpl<Scalar>::evaluate(
     const std::vector<VectorXs> &xs, const std::vector<VectorXs> &us,
-    Data &prob_data, ALIGATOR_MAYBE_UNUSED std::size_t num_threads) const {
+    Data &prob_data, [[maybe_unused]] std::size_t num_threads) const {
   ALIGATOR_TRACY_ZONE_SCOPED_N("TrajOptProblem::evaluate");
   const std::size_t nsteps = numSteps();
   if (xs.size() != nsteps + 1)
@@ -84,7 +84,7 @@ Scalar TrajOptProblemTpl<Scalar>::evaluate(
 template <typename Scalar>
 void TrajOptProblemTpl<Scalar>::computeDerivatives(
     const std::vector<VectorXs> &xs, const std::vector<VectorXs> &us,
-    Data &prob_data, ALIGATOR_MAYBE_UNUSED std::size_t num_threads,
+    Data &prob_data, [[maybe_unused]] std::size_t num_threads,
     bool compute_second_order) const {
   ALIGATOR_TRACY_ZONE_SCOPED_N("TrajOptProblem::computeDerivatives");
   const std::size_t nsteps = numSteps();

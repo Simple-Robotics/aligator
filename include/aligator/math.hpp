@@ -1,10 +1,9 @@
 /// @file math.hpp
 /// @brief Math utilities.
-/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include <proxsuite-nlp/math.hpp>
-#include "aligator/macros.hpp"
 
 #define ALIGATOR_DYNAMIC_TYPEDEFS(Scalar) PROXSUITE_NLP_DYNAMIC_TYPEDEFS(Scalar)
 

@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, 2022-2025 INRIA
 #include "aligator/python/callbacks.hpp"
 #include "aligator/core/history-callback.hpp"
 

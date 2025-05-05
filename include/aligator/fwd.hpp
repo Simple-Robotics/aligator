@@ -1,13 +1,12 @@
 /// @file fwd.hpp
 /// @brief Forward declarations.
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include <proxsuite-nlp/fwd.hpp>
 
 #include "aligator/math.hpp"
 #include "aligator/utils/exceptions.hpp"
-#include "aligator/macros.hpp"
 #include "aligator/config.hpp"
 #include "aligator/deprecated.hpp"
 
@@ -18,6 +17,8 @@
 #define ALIGATOR_RAISE_IF_NAN_NAME(value, name)                                \
   if (::aligator::math::check_value(value))                                    \
   ALIGATOR_RUNTIME_ERROR("Encountered NaN for variable {:s}\n", name)
+
+#define ALIGATOR_INLINE inline __attribute__((always_inline))
 
 /// @brief  Main package namespace.
 namespace aligator {
