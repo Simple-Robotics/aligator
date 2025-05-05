@@ -7,7 +7,6 @@ You can run this file using pytest:
 Or also as a module.
 """
 
-from proxsuite_nlp import costs
 import aligator
 from aligator import manifolds
 import numpy as np
@@ -69,12 +68,27 @@ class MyCostData(aligator.CostData):
         super().__init__(space.ndx, nu)
 
 
+def _call(space: manifolds.ManifoldAbstract, x_ref, x, W):
+    err = space.difference(x_ref, x)
+    return err.dot(W @ err)
+
+
+def _jac(space: manifolds.ManifoldAbstract, x_ref, x, W):
+    err = space.difference(x_ref, x)
+    J = space.Jdifference(x_ref, x, 1)
+    return J.T @ (W @ err)
+
+
+def _hess(space: manifolds.ManifoldAbstract, x_ref, x, W):
+    J = space.Jdifference(x_ref, x, 1)
+    return J.T @ (W @ J)
+
+
 class MyQuadCost(aligator.CostAbstract):
     def __init__(self, W: np.ndarray, x_ref: np.ndarray):
         self.x_ref = x_ref
         self.W = W
         super().__init__(space, nu)
-        self._basis = costs.QuadraticDistanceCost(space, self.x_ref, self.W)
 
     def __getinitargs__(self):
         return (self.W, self.x_ref)
@@ -84,18 +98,17 @@ class MyQuadCost(aligator.CostAbstract):
 
     def evaluate(self, x, u, data):
         assert isinstance(data, MyCostData)
-        data.value = self._basis.call(x)
+        data.value = _call(space, self.x_ref, x, self.W)
 
     def computeGradients(self, x, u, data):
         assert isinstance(data, MyCostData)
-        self._basis.computeGradient(x, data.Lx)
+        data.Lx[:] = _jac(space, self.x_ref, x, self.W)
         data.Lu[:] = 0.0
 
     def computeHessians(self, x, u, data):
         assert isinstance(data, MyCostData)
-        self._basis.computeGradient(x, data.Lx)
         data.hess[:, :] = 0.0
-        self._basis.computeHessian(x, data.Lxx)
+        data.Lxx[:, :] = _hess(space, self.x_ref, x, self.W)
 
     def createData(self):
         return MyCostData()
