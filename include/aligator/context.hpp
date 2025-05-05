@@ -12,6 +12,7 @@ static constexpr int Options = 0;
 ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
 using Manifold = ManifoldAbstractTpl<Scalar>;
+using VectorSpace = VectorSpaceTpl<Scalar, Eigen::Dynamic>;
 
 using StageFunction = StageFunctionTpl<Scalar>;
 using UnaryFunction = UnaryFunctionTpl<Scalar>;
