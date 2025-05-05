@@ -4,6 +4,11 @@
 
 namespace aligator {
 
+#define ALIGATOR_CHECK_VEC_SIZE(v, n)                                          \
+  if (v.size() != n)                                                           \
+  ALIGATOR_DOMAIN_ERROR("Invalid size for vector (expected {:d}, got {:d})",   \
+                        v.size(), n)
+
 template <typename Scalar>
 void CartesianProductTpl<Scalar>::neutral_impl(VectorRef out) const {
   Eigen::Index c = 0;
@@ -37,7 +42,7 @@ bool CartesianProductTpl<Scalar>::isNormalized(const ConstVectorRef &x) const {
 template <typename Scalar>
 template <class VectorType, class U>
 std::vector<U> CartesianProductTpl<Scalar>::split_impl(VectorType &x) const {
-  PROXSUITE_NLP_DIM_CHECK(x, this->nx());
+  ALIGATOR_CHECK_VEC_SIZE(x, this->nx());
   std::vector<U> out;
   Eigen::Index c = 0;
   for (std::size_t i = 0; i < numComponents(); i++) {
@@ -52,7 +57,7 @@ template <typename Scalar>
 template <class VectorType, class U>
 std::vector<U>
 CartesianProductTpl<Scalar>::split_vector_impl(VectorType &v) const {
-  PROXSUITE_NLP_DIM_CHECK(v, this->ndx());
+  ALIGATOR_CHECK_VEC_SIZE(v, this->ndx());
   std::vector<U> out;
   Eigen::Index c = 0;
   for (std::size_t i = 0; i < numComponents(); i++) {

@@ -16,7 +16,7 @@ public:
   using Scalar = _Scalar;
 
   using Base = ManifoldAbstractTpl<Scalar>;
-  PROXSUITE_NLP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   const Base &getComponent(std::size_t i) const { return *m_components[i]; }
 

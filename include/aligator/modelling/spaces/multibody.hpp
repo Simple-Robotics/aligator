@@ -17,7 +17,7 @@ template <typename _Scalar>
 struct MultibodyConfiguration : public ManifoldAbstractTpl<_Scalar> {
 public:
   using Scalar = _Scalar;
-  PROXSUITE_NLP_DYNAMIC_TYPEDEFS(Scalar);
+  ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Self = MultibodyConfiguration<Scalar>;
   using ModelType = pinocchio::ModelTpl<Scalar>;
   using Base = ManifoldAbstractTpl<Scalar>;
