@@ -1,13 +1,11 @@
 """
-@Time    :   2022/06/29 15:58:26
-@Author  :   quentinll
-@License :   (C)Copyright 2021-2022, INRIA
+@Author  :   quentinll, ManifoldFR
+@License :   (C)Copyright 2022-2024 LAAS-CNRS, 2021-2025, INRIA
 """
 
 import pinocchio as pin
 import numpy as np
 import aligator
-import proxsuite_nlp
 import hppfcl as fcl
 import matplotlib.pyplot as plt
 
@@ -108,7 +106,7 @@ def create_pendulum(N, sincos=False):
 model, geom_model, data, geom_data, ddl = create_pendulum(1)
 dt = 0.01
 nu = model.nv
-space = proxsuite_nlp.manifolds.MultibodyPhaseSpace(model)
+space = aligator.manifolds.MultibodyPhaseSpace(model)
 nx = space.nx
 ndx = space.ndx
 cont_dyn = aligator.dynamics.MultibodyFreeFwdDynamics(space)
