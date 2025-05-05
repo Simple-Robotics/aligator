@@ -2,7 +2,7 @@
 
 #include "aligator/core/function-abstract.hpp"
 #include "aligator/core/unary-function.hpp"
-#include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
+#include "aligator/core/vector-space.hpp"
 #include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 
 namespace aligator {
@@ -24,7 +24,7 @@ struct StateOrControlErrorResidual<_Scalar, 0> : UnaryFunctionTpl<_Scalar> {
   ALIGATOR_UNARY_FUNCTION_INTERFACE(Scalar);
   using Data = StageFunctionDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
-  using VectorSpace = proxsuite::nlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
+  using VectorSpace = VectorSpaceTpl<Scalar, Eigen::Dynamic>;
 
   xyz::polymorphic<Manifold> space_;
   VectorXs target_;
@@ -56,7 +56,7 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
   using Base = StageFunctionTpl<Scalar>;
   using Data = StageFunctionDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
-  using VectorSpace = proxsuite::nlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
+  using VectorSpace = VectorSpaceTpl<Scalar, Eigen::Dynamic>;
 
   xyz::polymorphic<Manifold> space_;
   VectorXs target_;

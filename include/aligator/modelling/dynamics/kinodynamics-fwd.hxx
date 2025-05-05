@@ -2,7 +2,7 @@
 #pragma once
 
 #include "aligator/fwd.hpp"
-#ifdef PROXSUITE_NLP_WITH_PINOCCHIO
+#ifdef ALIGATOR_WITH_PINOCCHIO
 #include "aligator/modelling/dynamics/kinodynamics-fwd.hpp"
 
 #include <pinocchio/algorithm/centroidal-derivatives.hpp>

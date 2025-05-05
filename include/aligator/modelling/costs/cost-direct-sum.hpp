@@ -1,9 +1,9 @@
 /// @file
-/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/core/cost-abstract.hpp"
-#include <proxsuite-nlp/modelling/spaces/cartesian-product.hpp>
+#include "aligator/modelling/spaces/cartesian-product.hpp"
 
 namespace aligator {
 
@@ -34,7 +34,7 @@ template <typename _Scalar> struct DirectSumCostTpl : CostAbstractTpl<_Scalar> {
                        BaseData &data) const override;
 
 private:
-  using CartesianProduct = proxsuite::nlp::CartesianProductTpl<Scalar>;
+  using CartesianProduct = aligator::CartesianProductTpl<Scalar>;
   auto get_product_space() const {
     return dynamic_cast<CartesianProduct const &>(*this->space);
   }

@@ -4,7 +4,7 @@
 
 #include "aligator/compat/crocoddyl/action-model-wrap.hpp"
 #include "aligator/compat/crocoddyl/cost-wrap.hpp"
-#include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
+#include "aligator/core/vector-space.hpp"
 
 namespace aligator {
 namespace compat {

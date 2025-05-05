@@ -2,7 +2,7 @@
 #pragma once
 
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
-#include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
+#include "aligator/core/vector-space.hpp"
 
 namespace aligator {
 namespace dynamics {
@@ -45,7 +45,7 @@ template <typename _Scalar> struct LinearODETpl : ODEAbstractTpl<_Scalar> {
    */
   LinearODETpl(const MatrixXs &A, const MatrixXs &B, const VectorXs &c)
       : LinearODETpl(xyz::polymorphic<Manifold>(
-                         proxsuite::nlp::VectorSpaceTpl<Scalar>((int)A.rows())),
+                         ::aligator::VectorSpaceTpl<Scalar>((int)A.rows())),
                      A, B, c) {}
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,

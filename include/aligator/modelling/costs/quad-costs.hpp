@@ -2,8 +2,8 @@
 
 #include "aligator/context.hpp"
 #include "aligator/core/cost-abstract.hpp"
-#include <proxsuite-nlp/manifold-base.hpp>
-#include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
+#include "aligator/core/manifold-base.hpp"
+#include "aligator/core/vector-space.hpp"
 
 namespace aligator {
 
@@ -18,8 +18,8 @@ public:
   using CostData = CostDataAbstractTpl<Scalar>;
 
   using Data = QuadraticCostDataTpl<Scalar>;
-  using VectorSpace = proxsuite::nlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
-  using Manifold = proxsuite::nlp::ManifoldAbstractTpl<Scalar>;
+  using VectorSpace = ::aligator::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
+  using Manifold = ManifoldAbstractTpl<Scalar>;
 
   /// Weight @f$ Q @f$
   MatrixXs Wxx_;

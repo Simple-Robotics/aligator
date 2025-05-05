@@ -4,7 +4,7 @@
 
 #include "aligator/core/function-abstract.hpp"
 #include "aligator/core/dynamics.hpp"
-#include <proxsuite-nlp/manifold-base.hpp>
+#include "aligator/core/manifold-base.hpp"
 #include <boost/mpl/bool.hpp>
 
 namespace aligator {

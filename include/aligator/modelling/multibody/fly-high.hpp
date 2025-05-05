@@ -3,7 +3,7 @@
 #ifdef ALIGATOR_WITH_PINOCCHIO
 #include "aligator/core/unary-function.hpp"
 #include "./fwd.hpp"
-#include <proxsuite-nlp/modelling/spaces/multibody.hpp>
+#include "aligator/modelling/spaces/multibody.hpp"
 
 namespace aligator {
 

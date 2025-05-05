@@ -1,9 +1,9 @@
 /// @file
-/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/core/explicit-dynamics.hpp"
-#include <proxsuite-nlp/modelling/spaces/cartesian-product.hpp>
+#include "aligator/modelling/spaces/cartesian-product.hpp"
 
 namespace aligator {
 
@@ -18,7 +18,7 @@ struct DirectSumExplicitDynamicsTpl : ExplicitDynamicsModelTpl<_Scalar> {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = ExplicitDynamicsModelTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
-  using CartesianProduct = proxsuite::nlp::CartesianProductTpl<Scalar>;
+  using CartesianProduct = aligator::CartesianProductTpl<Scalar>;
   using BaseData = ExplicitDynamicsDataTpl<Scalar>;
 
   struct Data;

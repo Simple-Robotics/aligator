@@ -3,7 +3,7 @@
 #pragma once
 
 #include "./explicit-dynamics-direct-sum.hpp"
-#include <proxsuite-nlp/modelling/spaces/cartesian-product.hpp>
+#include "aligator/modelling/spaces/cartesian-product.hpp"
 
 namespace aligator {
 

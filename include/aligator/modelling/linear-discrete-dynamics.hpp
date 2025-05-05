@@ -1,7 +1,7 @@
 #pragma once
 
 #include "aligator/core/explicit-dynamics.hpp"
-#include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
+#include "aligator/core/vector-space.hpp"
 
 namespace aligator {
 
@@ -19,8 +19,7 @@ struct LinearDiscreteDynamicsTpl : ExplicitDynamicsModelTpl<_Scalar> {
   using Base = ExplicitDynamicsModelTpl<Scalar>;
   using DynData = DynamicsDataTpl<Scalar>;
   using Data = ExplicitDynamicsDataTpl<Scalar>;
-  using VectorSpaceType =
-      proxsuite::nlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
+  using VectorSpaceType = ::aligator::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
 
   /// @brief Constructor with state manifold and matrices.
   LinearDiscreteDynamicsTpl(const MatrixXs &A, const MatrixXs &B,

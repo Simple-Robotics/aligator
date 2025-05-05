@@ -4,7 +4,7 @@
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
 
 #ifdef ALIGATOR_WITH_PINOCCHIO
-#include <proxsuite-nlp/modelling/spaces/multibody.hpp>
+#include "aligator/modelling/spaces/multibody.hpp"
 #include <pinocchio/multibody/data.hpp>
 
 namespace aligator {
@@ -30,8 +30,8 @@ struct MultibodyFreeFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using BaseData = ContinuousDynamicsDataTpl<Scalar>;
   using ContDataAbstract = ContinuousDynamicsDataTpl<Scalar>;
   using Data = MultibodyFreeFwdDataTpl<Scalar>;
-  using Manifold = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
-  using ManifoldPtr = xyz::polymorphic<Manifold>;
+  using Manifold = MultibodyPhaseSpace<Scalar>;
+  using PolyManifold = xyz::polymorphic<Manifold>;
 
   using Base::nu_;
 
