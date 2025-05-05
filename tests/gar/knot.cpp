@@ -1,5 +1,5 @@
 #include "aligator/gar/lqr-problem.hpp"
-#include <proxsuite-nlp/fmt-eigen.hpp>
+#include <aligator/fmt-eigen.hpp>
 
 #include <boost/test/unit_test.hpp>
 

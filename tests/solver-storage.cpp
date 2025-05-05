@@ -2,7 +2,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <proxsuite-nlp/fmt-eigen.hpp>
+#include <aligator/fmt-eigen.hpp>
 
 BOOST_AUTO_TEST_SUITE(solver_workspace)
 

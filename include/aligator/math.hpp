@@ -40,6 +40,17 @@
 
 namespace aligator {
 
+template <typename T>
+inline constexpr bool is_eigen_dense_type =
+    std::is_base_of_v<Eigen::DenseBase<T>, T>;
+
+template <typename T>
+inline constexpr bool is_eigen_matrix_type =
+    std::is_base_of_v<Eigen::MatrixBase<T>, T>;
+
+template <typename T, typename T2 = void>
+using enable_if_eigen_dense = std::enable_if_t<is_eigen_dense_type<T>, T2>;
+
 #ifdef ALIGATOR_EIGEN_CHECK_MALLOC
 namespace internal {
 thread_local static bool g_cached_malloc_status = true;

@@ -11,7 +11,7 @@
 #include "aligator/gar/dense-riccati.hpp"
 
 #include "test_util.hpp"
-#include <proxsuite-nlp/fmt-eigen.hpp>
+#include <aligator/fmt-eigen.hpp>
 
 using namespace aligator::gar;
 static std::pmr::monotonic_buffer_resource mbr{1024 * 2048};

@@ -5,7 +5,7 @@
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
 
 #include <proxsuite-nlp/modelling/constraints.hpp>
-#include <proxsuite-nlp/fmt-eigen.hpp>
+#include <aligator/fmt-eigen.hpp>
 #include <iostream>
 #include <random>
 

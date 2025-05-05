@@ -7,7 +7,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <proxsuite-nlp/fmt-eigen.hpp>
+#include <aligator/fmt-eigen.hpp>
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 

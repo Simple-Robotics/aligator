@@ -1,7 +1,7 @@
 #include "aligator/utils/newton-raphson.hpp"
 
 #include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
-#include <proxsuite-nlp/fmt-eigen.hpp>
+#include <aligator/fmt-eigen.hpp>
 
 #include <boost/test/unit_test.hpp>
 
