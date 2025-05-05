@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-This release officially **drops support for Pinocchio 2**.
+This release brings many major changes to aligator.
+
+We officially **drop support for Pinocchio 2**. As we start looking forward to Pinocchio 4, aligator will require at least Pinocchio 3.4. If you need support for a lower version of Pinocchio 3, please contact us and suggest patches.
+
+Furthermore, aligator will no longer depend on the proxsuite-nlp library, which will be archived in the near future - all functionality (manifolds, constraints) has been merged into aligator itself.
 
 ### Added
 
@@ -17,9 +21,15 @@ This release officially **drops support for Pinocchio 2**.
 - Add memory allocator support for `LqrKnot` and `LqrProblem` ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
 - Add class `DenseKernel` for the stagewise-dense Riccati algo -- rework `DenseRiccatiSolver` class ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
 - Add `gar/fwd.hpp` header ([#301](https://github.com/Simple-Robotics/aligator/pull/301/))
+- Add `aligator/fmt-eigen.hpp` to use fmt with Eigen (from proxsuite-nlp: see [#309](https://github.com/Simple-Robotics/aligator/pull/309))
 
 ### Changed
 
+- Merge parts of proxsuite-nlp (manifolds and constraints) into aligator ([#309](https://github.com/Simple-Robotics/aligator/pull/309))
+  - Remove dependency on proxsuite-nlp.
+  - Make `aligator/math.hpp` independent: copy code for `math::check_value`, `math::check_scalar`, struct `math_types`.
+  - Change `VerboseLevel` from a using-decl to its own enum in the `aligator` namespace.
+  - Copy `ManifoldAbstractTpl` and subclasses over to aligator.
 - Rename `{ riccati-impl.hpp => riccati-kernel }` (and associated files) ([#301](https://github.com/Simple-Robotics/aligator/pull/301/))
 - Move `HistoryCallbackTpl` from `aligator/helpers` (subdirectory was removed) to `aligator/core` ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
 - Move headers `results-base`, `solver-util`, `value-function`, `workspace-base` to `aligator/core` ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
@@ -36,6 +46,7 @@ This release officially **drops support for Pinocchio 2**.
 - Remove function `allocate_shared_eigen_aligned()` ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
 - Officially remove support for Pinocchio 2, require Pinocchio >= 3.1 ([#307](https://github.com/Simple-Robotics/aligator/pull/307))
   - Remove the `ALIGATOR_PINOCCHIO_V3` compile definition.
+- Remove macro header `aligator/macros.hpp` and macros `ALIGATOR_WITH_CPP_14`, `ALIGATOR_WITH_CPP_17`, and `ALIGATOR_MAYBE_UNUSED` ([#309](https://github.com/Simple-Robotics/aligator/pull/309))
 
 ## [0.13.0] - 2025-04-26
 
