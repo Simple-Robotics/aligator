@@ -56,6 +56,9 @@ static void exposeContainers() {
   StdVectorPythonVisitor<std::vector<bool>, true>::expose("StdVec_bool");
 }
 
+/// Expose manifolds
+void exposeManifolds();
+
 } // namespace python
 } // namespace aligator
 
@@ -95,6 +98,10 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
       "Whether Aligator (and its Python bindings) were compiled with support "
       "for Pinocchio.");
 
+  {
+    bp::scope manifolds = get_namespace("manifolds");
+    exposeManifolds();
+  }
   exposeContainers();
   exposeGAR();
   exposeEnums();

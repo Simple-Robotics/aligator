@@ -18,6 +18,23 @@ using context::VectorRef;
 using PolyManifold = polymorphic<Manifold>;
 using CartesianProduct = CartesianProductTpl<Scalar>;
 
+void exposeManifoldBase();
+void exposeCartesianProduct();
+
+void exposeManifolds() {
+
+  exposeManifoldBase();
+
+  /* Basic vector space */
+  bp::class_<VectorSpaceTpl<Scalar>, bp::bases<Manifold>>(
+      "VectorSpace", "Basic Euclidean vector space.", bp::no_init)
+      .def(bp::init<const int>(("self"_a, "dim")))
+      .def(PolymorphicVisitor<PolyManifold>())
+      .enable_pickling_(true);
+
+  exposeCartesianProduct();
+}
+
 void exposeManifoldBase() {
   using context::MatrixXs;
   using context::VectorXs;
@@ -109,22 +126,6 @@ void exposeManifoldBase() {
       "StdVec_Manifold",
       eigenpy::details::overload_base_get_item_for_std_vector<
           std::vector<PolyManifold>>());
-}
-
-void exposeCartesianProduct();
-
-void exposeManifolds() {
-
-  exposeManifoldBase();
-
-  /* Basic vector space */
-  bp::class_<VectorSpaceTpl<Scalar>, bp::bases<Manifold>>(
-      "VectorSpace", "Basic Euclidean vector space.", bp::no_init)
-      .def(bp::init<const int>(("self"_a, "dim")))
-      .def(PolymorphicVisitor<PolyManifold>())
-      .enable_pickling_(true);
-
-  exposeCartesianProduct();
 }
 
 } // namespace aligator::python

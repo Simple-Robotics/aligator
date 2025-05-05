@@ -1,4 +1,5 @@
 #include "aligator/python/fwd.hpp"
+#include "aligator/python/utils.hpp"
 
 #include "aligator/modelling/spaces/multibody.hpp"
 #include "aligator/modelling/spaces/pinocchio-groups.hpp"
@@ -43,6 +44,8 @@ exposeTangentBundle(const char *name, const char *docstring, Init init) {
 }
 
 void exposePinocchioSpaces() {
+  bp::scope scope = get_namespace("manifolds");
+
   namespace pin = pinocchio;
   using pin::ModelTpl;
   using pin::SpecialEuclideanOperationTpl;
