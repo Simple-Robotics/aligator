@@ -4,7 +4,7 @@
 
 #include "aligator/core/dynamics.hpp"
 
-#include <proxsuite-nlp/manifold-base.hpp>
+#include "aligator/core/manifold-base.hpp"
 
 #include <fmt/format.h>
 

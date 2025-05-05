@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022 LAAS-CNRS, 2025 INRIA
 #pragma once
 
 #include "aligator/core/stage-model.hpp"
@@ -7,14 +7,9 @@
 
 #include <proxsuite-nlp/context.hpp>
 #include <proxsuite-nlp/modelling/constraints/equality-constraint.hpp>
-#include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
+#include "aligator/core/vector-space.hpp"
 
 namespace aligator {
-
-namespace {
-using proxsuite::nlp::VectorSpaceTpl;
-} // namespace
-
 /* StageModelTpl */
 
 template <typename Scalar>

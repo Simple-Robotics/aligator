@@ -4,7 +4,7 @@
 #pragma once
 
 #include "aligator/fwd.hpp"
-#include <proxsuite-nlp/manifold-base.hpp>
+#include "aligator/core/manifold-base.hpp"
 #include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 
 namespace aligator {
