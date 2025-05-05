@@ -33,8 +33,9 @@ template <typename Scalar> struct ManifoldAbstractTpl;
 template <typename Scalar, int Dim = Eigen::Dynamic> struct VectorSpaceTpl;
 
 using proxsuite::nlp::ConstraintSetTpl;
-// Use the math_types template from proxsuite-nlp.
-using proxsuite::nlp::VerboseLevel;
+
+/// @brief Verbosity level.
+enum VerboseLevel { QUIET = 0, VERBOSE = 1, VERYVERBOSE = 2 };
 
 using VerboseLevel::QUIET;
 using VerboseLevel::VERBOSE;
