@@ -46,7 +46,7 @@ void ContactForceResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
 template <typename Scalar>
 ContactForceDataTpl<Scalar>::ContactForceDataTpl(
     const ContactForceResidualTpl<Scalar> *model)
-    : Base(model->ndx1, model->nu, model->force_size_),
+    : Base(model->ndx1, model->nu, (int)model->force_size_),
       pin_data_(model->pin_model_), tau_(model->pin_model_.nv) {
   tau_.setZero();
 

@@ -47,7 +47,7 @@ public:
                           const ProxSettings &prox_settings,
                           const Vector3or6 &fref,
                           const std::string &contact_name)
-      : Base(ndx, (int)actuation.cols(), fref.size()), pin_model_(model),
+      : Base(ndx, (int)actuation.cols(), (int)fref.size()), pin_model_(model),
         actuation_matrix_(actuation), constraint_models_(constraint_models),
         prox_settings_(prox_settings), fref_(fref), force_size_(fref.size()) {
     if (model.nv != actuation.rows()) {
