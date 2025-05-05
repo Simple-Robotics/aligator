@@ -1,6 +1,6 @@
 #pragma once
 
-#include <proxsuite-nlp/modelling/spaces/pinocchio-groups.hpp>
+#include "aligator/modelling/spaces/pinocchio-groups.hpp"
 #include <aligator/fmt-eigen.hpp>
 #include <pinocchio/multibody/liegroup/special-euclidean.hpp>
 
@@ -12,7 +12,7 @@
 #include "aligator/modelling/dynamics/integrator-euler.hpp"
 
 using T = double;
-using SE2 = proxsuite::nlp::SETpl<2, T>;
+using SE2 = aligator::SETpl<2, T>;
 
 using namespace aligator;
 using StateError = StateErrorResidualTpl<T>;
