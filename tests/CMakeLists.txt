@@ -50,6 +50,7 @@ set(
   integrators
   lqr
   problem
+  manifolds
   solver-storage
   utils
 )
