@@ -9,7 +9,7 @@
 namespace aligator::compat::croc {
 
 /// @brief Wraps a crocoddyl::StateAbstractTpl to a manifold
-/// (proxsuite::nlp::ManifoldAbstractTpl).
+/// (aligator::ManifoldAbstractTpl).
 template <typename _Scalar>
 struct StateWrapperTpl : ManifoldAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
