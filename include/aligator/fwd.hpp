@@ -30,6 +30,12 @@ template <class T, class A> class polymorphic;
 /// @brief  Main package namespace.
 namespace aligator {
 
+template <typename Base, typename U, typename A = std::allocator<U>>
+using is_polymorphic_of = std::is_same<std::decay_t<U>, xyz::polymorphic<U, A>>;
+
+template <typename Base, typename U, typename A = std::allocator<U>>
+constexpr bool is_polymorphic_of_v = is_polymorphic_of<Base, U, A>::value;
+
 // NOLINTBEGIN(misc-unused-using-decls)
 
 // fwd ManifoldAbstractTpl
