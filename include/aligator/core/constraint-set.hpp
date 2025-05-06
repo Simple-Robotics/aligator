@@ -4,7 +4,6 @@
 
 #include "aligator/fwd.hpp"
 #include "aligator/context.hpp"
-#include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
 
 namespace aligator {
 
