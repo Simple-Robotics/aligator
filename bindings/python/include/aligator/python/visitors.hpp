@@ -3,7 +3,6 @@
 #pragma once
 
 #include <eigenpy/fwd.hpp>
-#include <fmt/format.h>
 
 namespace aligator {
 namespace python {
@@ -66,7 +65,7 @@ struct PrintAddressVisitor : bp::def_visitor<PrintAddressVisitor<T>> {
   }
   static void *getAddress(const T &a) { return (void *)&a; }
   static void printAddress(const T &a) {
-    fmt::print("Address: {:p}\n", getAddress(a));
+    printf("Address: %p\n", getAddress(a));
   }
 };
 

@@ -1,10 +1,9 @@
 #pragma once
+
+#include "aligator/python/fwd.hpp"
 #include "aligator/third-party/polymorphic_cxx14.h"
 
-#include <eigenpy/utils/traits.hpp>
-
 #include <boost/core/demangle.hpp>
-
 #include <variant>
 
 // Required class template specialization for
