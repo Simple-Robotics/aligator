@@ -6,7 +6,6 @@
 #include "aligator/modelling/spaces/multibody.hpp"
 #include "aligator/modelling/multibody/context.hpp"
 #include <pinocchio/multibody/model.hpp>
-#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {

@@ -99,6 +99,18 @@ struct PolymorphicVisitor<xyz::polymorphic<Base, A>>
   }
 };
 
+/// Declare to Boost.Python that a given class is implicitly convertible to
+/// polymorphic<U> for a set of base classes @tparam Bases passed as the
+/// variadic template arguments.
+template <class... Bases>
+struct PolymorphicMultiBaseVisitor
+    : bp::def_visitor<PolymorphicMultiBaseVisitor<Bases...>> {
+
+  template <class... Args> void visit(bp::class_<Args...> &cl) const {
+    (cl.def(PolymorphicVisitor<xyz::polymorphic<Bases>>{}), ...);
+  }
+};
+
 // Specialize value_holder to allow switching to a non owning holder.
 // This code is similar to boost::python::value_holder code but allow to switch
 // between value or ptr at runtime.

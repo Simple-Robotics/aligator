@@ -4,7 +4,6 @@
 #include "aligator/context.hpp"
 #include "aligator/python/fwd.hpp"
 #include "aligator/modelling/explicit-dynamics-direct-sum.hpp"
-#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {

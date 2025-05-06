@@ -3,7 +3,6 @@
 #include "aligator/python/fwd.hpp"
 #include "aligator/modelling/multibody/context.hpp"
 #include "aligator/modelling/multibody/gravity-compensation-residual.hpp"
-#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator::python {
 using context::MatrixXs;

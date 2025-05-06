@@ -1,4 +1,4 @@
-#include "aligator/python/polymorphic-convertible.hpp"
+#include "aligator/python/fwd.hpp"
 #include "aligator/python/visitors.hpp"
 
 #include "aligator/modelling/costs/sum-of-costs.hpp"

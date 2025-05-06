@@ -3,7 +3,6 @@
 
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/visitors.hpp"
-#include "aligator/python/polymorphic-convertible.hpp"
 
 #include "aligator/core/dynamics.hpp"
 

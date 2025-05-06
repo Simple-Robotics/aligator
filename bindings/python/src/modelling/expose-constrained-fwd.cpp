@@ -4,7 +4,7 @@
 
 #include "aligator/modelling/dynamics/context.hpp"
 #include "aligator/modelling/dynamics/multibody-constraint-fwd.hpp"
-#include "aligator/python/polymorphic-convertible.hpp"
+#include "aligator/python/fwd.hpp"
 
 namespace aligator {
 namespace python {

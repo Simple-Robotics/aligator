@@ -5,7 +5,6 @@
 #include "aligator/python/fwd.hpp"
 
 #include "aligator/modelling/dynamics/multibody-free-fwd.hpp"
-#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {

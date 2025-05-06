@@ -10,8 +10,6 @@
 #include "aligator/modelling/dynamics/context.hpp"
 #include "aligator/modelling/dynamics/integrator-abstract.hpp"
 
-#include "aligator/python/polymorphic-convertible.hpp"
-
 namespace aligator {
 namespace python {
 /// Wrapper for the StageFunction class and any virtual children that avoids

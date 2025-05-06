@@ -4,7 +4,6 @@
 #include "aligator/modelling/costs/quad-state-cost.hpp"
 #include "aligator/modelling/costs/log-residual-cost.hpp"
 #include "aligator/modelling/costs/relaxed-log-barrier.hpp"
-#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {

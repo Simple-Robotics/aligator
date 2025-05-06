@@ -1,7 +1,7 @@
 /// @file
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 
-#include "aligator/python/polymorphic-convertible.hpp"
+#include "aligator/python/fwd.hpp"
 
 #include "aligator/modelling/function-xpr-slice.hpp"
 #include "aligator/modelling/linear-function-composition.hpp"

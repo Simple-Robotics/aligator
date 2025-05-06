@@ -1,6 +1,6 @@
 /// @file
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
-#include "aligator/python/polymorphic-convertible.hpp"
+#include "aligator/python/fwd.hpp"
 #include "aligator/python/visitors.hpp"
 #include "aligator/python/modelling/continuous.hpp"
 #include "aligator/modelling/dynamics/continuous-dynamics-abstract.hpp"
