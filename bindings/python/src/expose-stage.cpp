@@ -11,8 +11,6 @@
 
 namespace aligator {
 namespace python {
-using proxsuite::nlp::python::PolymorphicVisitor;
-using proxsuite::nlp::python::register_polymorphic_to_python;
 
 void exposeStageData() {
   using context::StageData;

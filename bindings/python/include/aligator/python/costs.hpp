@@ -1,4 +1,5 @@
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @file
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/python/fwd.hpp"
@@ -9,8 +10,7 @@ namespace python {
 /// @brief Wrapper for the CostDataAbstractTpl class and its children.
 struct PyCostFunction final
     : context::CostAbstract,
-      proxsuite::nlp::python::PolymorphicWrapper<PyCostFunction,
-                                                 context::CostAbstract> {
+      PolymorphicWrapper<PyCostFunction, context::CostAbstract> {
   using Scalar = context::Scalar;
   using T = context::CostAbstract;
   using CostData = CostDataAbstractTpl<Scalar>;
@@ -47,7 +47,7 @@ namespace boost::python::objects {
 
 template <>
 struct value_holder<aligator::python::PyCostFunction>
-    : proxsuite::nlp::python::OwningNonOwningHolder<
+    : aligator::python::OwningNonOwningHolder<
           aligator::python::PyCostFunction> {
   using OwningNonOwningHolder::OwningNonOwningHolder;
 };

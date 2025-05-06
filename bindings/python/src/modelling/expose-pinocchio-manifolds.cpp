@@ -7,7 +7,6 @@
 namespace aligator::python {
 using context::Manifold;
 using context::Scalar;
-using proxsuite::nlp::python::PolymorphicVisitor;
 using PolyManifold = xyz::polymorphic<Manifold>;
 
 /// Expose a Pinocchio Lie group with a specified name, docstring,

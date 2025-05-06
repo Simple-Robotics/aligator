@@ -1,15 +1,11 @@
 #include "aligator/python/fwd.hpp"
 #include "aligator/modelling/constraints.hpp"
 
-#include <proxsuite-nlp/python/polymorphic.hpp>
-
 namespace aligator::python {
 
 using context::ConstraintSet;
 using context::ConstVectorRef;
 using context::Scalar;
-using proxsuite::nlp::python::PolymorphicVisitor;
-using proxsuite::nlp::python::register_polymorphic_to_python;
 
 using EqualityConstraint = EqualityConstraintTpl<Scalar>;
 using NegativeOrthant = NegativeOrthantTpl<Scalar>;

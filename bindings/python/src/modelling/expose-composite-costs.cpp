@@ -86,7 +86,8 @@ void exposeComposites() {
       "QuadraticControlCost", "Quadratic control cost.", bp::no_init)
       .def(bp::init<PolyManifold, ConstVectorRef, const MatrixXs &>(
           bp::args("space", "target", "weights")))
-      .def(bp::init<PolyManifold, QuadControlCost::Error, const MatrixXs &>(
+      .def(bp::init<PolyManifold, QuadControlCost::ControlError,
+                    const ConstMatrixRef &>(
           bp::args("self", "space", "resdl", "weights")))
       .def(bp::init<PolyManifold, int, const MatrixXs &>(
           bp::args("space", "nu", "weights")))

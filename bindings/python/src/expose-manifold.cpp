@@ -8,7 +8,6 @@
 #include <eigenpy/std-vector.hpp>
 
 namespace aligator::python {
-using namespace proxsuite::nlp::python;
 using context::ConstVectorRef;
 using context::Manifold;
 using context::MatrixRef;

@@ -3,8 +3,6 @@
 #include "aligator/python/fwd.hpp"
 
 namespace aligator::python {
-using proxsuite::nlp::python::PolymorphicVisitor;
-using proxsuite::nlp::python::register_polymorphic_to_python;
 
 /// Declare to Boost.Python that a given class is implicitly convertible to
 /// polymorphic<U> for a set of base classes @tparam Bases passed as the

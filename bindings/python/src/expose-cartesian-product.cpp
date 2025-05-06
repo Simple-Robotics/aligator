@@ -10,7 +10,6 @@ using context::ConstVectorRef;
 using context::VectorRef;
 using context::VectorXs;
 using CartesianProduct = CartesianProductTpl<Scalar>;
-using proxsuite::nlp::python::PolymorphicVisitor;
 
 std::vector<VectorXs> copy_vec_constref(const std::vector<ConstVectorRef> &x) {
   std::vector<VectorXs> out;
