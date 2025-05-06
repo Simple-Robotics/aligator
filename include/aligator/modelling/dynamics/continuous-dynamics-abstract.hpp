@@ -6,7 +6,7 @@
 #include "aligator/fwd.hpp"
 #include "aligator/modelling/dynamics/fwd.hpp"
 #include "aligator/core/manifold-base.hpp"
-#include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
+#include "aligator/third-party/polymorphic_cxx14.h"
 
 namespace aligator {
 namespace dynamics {

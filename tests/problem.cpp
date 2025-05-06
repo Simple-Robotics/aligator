@@ -13,7 +13,7 @@
 #else
 #include "aligator/core/vector-space.hpp"
 #endif
-#include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
+#include "aligator/third-party/polymorphic_cxx14.h"
 #include <boost/test/unit_test.hpp>
 
 #include <fmt/format.h>

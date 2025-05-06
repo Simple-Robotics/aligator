@@ -5,19 +5,19 @@
 #include "aligator/utils/mpc-util.hpp"
 #include "aligator/modelling/constraints/equality-constraint.hpp"
 #include "aligator/modelling/spaces/pinocchio-groups.hpp"
-#include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
+#include "aligator/third-party/polymorphic_cxx14.h"
 #include <boost/test/unit_test.hpp>
 
 using namespace aligator;
+using context::Manifold;
 using context::SolverProxDDP;
+using ManifoldPtr = xyz::polymorphic<Manifold>;
 
 /// @brief    Addition dynamics.
 /// @details  It maps \f$(x,u)\f$ to \f$ x + u \f$.
 struct MyModel : ExplicitDynamicsModelTpl<double> {
-  using Manifold = ManifoldAbstractTpl<double>;
-  using ManifoldPtr = xyz::polymorphic<Manifold>;
   using ExplicitData = ExplicitDynamicsDataTpl<double>;
-  explicit MyModel(const ManifoldPtr &space)
+  explicit MyModel(ManifoldPtr space)
       : ExplicitDynamicsModelTpl<double>(space, space->ndx()) {}
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
@@ -50,12 +50,12 @@ struct MyCost : CostAbstractTpl<double> {
   }
 };
 
-using Manifold = SETpl<3, double>;
+using PolyManifold = xyz::polymorphic<context::Manifold>;
 using StageModel = StageModelTpl<double>;
 using EqualityConstraint = EqualityConstraintTpl<double>;
 
 struct MyFixture {
-  Manifold space;
+  SETpl<3, double> space;
   const int nu;
   const MyModel dyn_model;
   const MyCost cost;
@@ -63,8 +63,8 @@ struct MyFixture {
   std::vector<shared_ptr<StageDataTpl<double>>> problem_data;
 
   MyFixture()
-      : space(Manifold()), nu(space.ndx()), dyn_model(MyModel(space)),
-        cost(MyCost(space, nu)), problem(space.neutral(), nu, space, cost) {
+      : space(), nu(space.ndx()), dyn_model(space), cost(MyCost(space, nu)),
+        problem(space.neutral(), nu, space, cost) {
     for (size_t i = 0; i < 20; i++) {
       auto stage = StageModel(cost, dyn_model);
       if (i >= 10) {

@@ -4,6 +4,7 @@
 
 #include "aligator/core/stage-model.hpp"
 #include "aligator/modelling/state-error.hpp"
+#include "aligator/third-party/polymorphic_cxx14.h"
 
 namespace aligator {
 
