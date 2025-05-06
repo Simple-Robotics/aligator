@@ -3,8 +3,6 @@
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
-#include <proxsuite-nlp/fwd.hpp>
-
 #include "aligator/math.hpp"
 #include "aligator/utils/exceptions.hpp"
 #include "aligator/config.hpp"
@@ -20,9 +18,17 @@
 
 #define ALIGATOR_INLINE inline __attribute__((always_inline))
 
+namespace xyz {
+// fwd-decl for boost override later
+template <class T, class A> class polymorphic;
+} // namespace xyz
+
+/// The following overload for get_pointer is defined here, to avoid conflicts
+/// with other Boost libraries using get_pointer() without seeing this overload
+/// if included later.
+
 /// @brief  Main package namespace.
 namespace aligator {
-/// TYPEDEFS FROM PROXNLP
 
 // NOLINTBEGIN(misc-unused-using-decls)
 
