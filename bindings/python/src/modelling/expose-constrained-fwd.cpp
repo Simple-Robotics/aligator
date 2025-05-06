@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, 2022-2025 INRIA
 #include "aligator/python/fwd.hpp"
 
 #include "aligator/modelling/dynamics/context.hpp"
