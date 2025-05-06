@@ -1,24 +1,27 @@
 #include "aligator/python/fwd.hpp"
 
 #include "aligator/core/constraint.hpp"
-#include <proxsuite-nlp/constraint-base.hpp>
+#include "aligator/core/constraint-set.hpp"
+
 #include <eigenpy/deprecation-policy.hpp>
 
-namespace aligator {
-namespace python {
-using PolyFunc = xyz::polymorphic<context::StageFunction>;
-using PolySet = xyz::polymorphic<context::ConstraintSet>;
+namespace aligator::python {
+using context::ConstraintSet;
+using context::ConstraintStack;
+using context::StageConstraint;
+using context::StageFunction;
+using PolyFunc = xyz::polymorphic<StageFunction>;
+using PolySet = xyz::polymorphic<ConstraintSet>;
 
 context::StageConstraint *make_constraint_wrap(const PolyFunc &f,
                                                const PolySet &c) {
   return new context::StageConstraint{f, c};
 }
 
+void exposeConstraintSets();
+
 void exposeConstraint() {
-  using context::ConstraintSet;
-  using context::ConstraintStack;
-  using context::StageConstraint;
-  using context::StageFunction;
+  exposeConstraintSets();
 
   bp::class_<StageConstraint>(
       "StageConstraint",
@@ -55,5 +58,4 @@ void exposeConstraint() {
                     "Get total dimension of all constraints.");
 }
 
-} // namespace python
-} // namespace aligator
+} // namespace aligator::python
