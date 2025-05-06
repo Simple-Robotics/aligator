@@ -55,6 +55,7 @@ Furthermore, aligator will no longer depend on the proxsuite-nlp library, which 
 - Remove macro header `aligator/macros.hpp` and macros `ALIGATOR_WITH_CPP_14`, `ALIGATOR_WITH_CPP_17`, and `ALIGATOR_MAYBE_UNUSED` ([#309](https://github.com/Simple-Robotics/aligator/pull/309))
 - Remove deprecated typedef `aligator::context::CostBase` ([#310](https://github.com/Simple-Robotics/aligator/pull/310))
 - Remove header `aligator/core/linesearch.hpp` (which using-decl linesearch classes from proxsuite-nlp) ([#312](https://github.com/Simple-Robotics/aligator/pull/312))
+- Remove header `aligator/python/polymorphic-convertible.hpp` ([#309](https://github.com/Simple-Robotics/aligator/pull/309))
 
 ## [0.13.0] - 2025-04-26
 
