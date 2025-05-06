@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023 LAAS-CNRS, 2023-2025 INRIA
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/utils.hpp"
 
@@ -8,6 +8,7 @@ namespace python {
 
 #ifdef ALIGATOR_WITH_PINOCCHIO
 
+void exposePinocchioSpaces();
 void exposePinocchioFunctions();
 void exposeFreeFwdDynamics();
 void exposeKinodynamics();
@@ -15,6 +16,7 @@ void exposeConstrainedFwdDynamics();
 
 void exposePinocchioFeatures() {
   bp::import("pinocchio");
+  exposePinocchioSpaces();
   exposePinocchioFunctions();
 
   {

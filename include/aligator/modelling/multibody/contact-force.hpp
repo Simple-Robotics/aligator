@@ -1,21 +1,21 @@
+/// @file
+/// @copyright Copyright (C) 2024 LAAS-CNRS, 2024-2025 INRIA
 #pragma once
 
 #include "./fwd.hpp"
 #include "aligator/core/function-abstract.hpp"
 
 #include <Eigen/src/Core/util/Constants.h>
-#include <proxsuite-nlp/modelling/spaces/multibody.hpp>
+#include "aligator/modelling/spaces/multibody.hpp"
 #include <pinocchio/algorithm/proximal.hpp>
 
 namespace aligator {
 
 template <typename Scalar> struct ContactForceDataTpl;
 
-/**
- * @brief This residual returns the derivative of centroidal momentum
- * for a kinodynamics model.
- */
-
+/// @brief This residual returns the derivative of centroidal momentum
+/// for a kinodynamics model.
+///
 template <typename _Scalar>
 struct ContactForceResidualTpl : StageFunctionTpl<_Scalar> {
 public:
@@ -26,10 +26,9 @@ public:
   using Model = pinocchio::ModelTpl<Scalar>;
   using SE3 = pinocchio::SE3Tpl<Scalar>;
   using Data = ContactForceDataTpl<Scalar>;
-  using RigidConstraintModelVector = PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(
-      pinocchio::RigidConstraintModel);
-  using RigidConstraintDataVector =
-      PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(pinocchio::RigidConstraintData);
+  using RigidConstraintModel = pinocchio::RigidConstraintModelTpl<Scalar>;
+  using RigidConstraintModelVector =
+      PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(RigidConstraintModel);
   using ProxSettings = pinocchio::ProximalSettingsTpl<Scalar>;
   using Vector3or6 = Eigen::Matrix<Scalar, -1, 1, Eigen::ColMajor, 6, 1>;
 
@@ -47,7 +46,7 @@ public:
                           const ProxSettings &prox_settings,
                           const Vector3or6 &fref,
                           const std::string &contact_name)
-      : Base(ndx, (int)actuation.cols(), fref.size()), pin_model_(model),
+      : Base(ndx, (int)actuation.cols(), (int)fref.size()), pin_model_(model),
         actuation_matrix_(actuation), constraint_models_(constraint_models),
         prox_settings_(prox_settings), fref_(fref), force_size_(fref.size()) {
     if (model.nv != actuation.rows()) {
@@ -89,14 +88,14 @@ struct ContactForceDataTpl : StageFunctionDataTpl<Scalar> {
   using PinData = pinocchio::DataTpl<Scalar>;
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
-  using RigidConstraintDataVector =
-      PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(pinocchio::RigidConstraintData);
+  using RigidConstraintData = pinocchio::RigidConstraintDataTpl<Scalar>;
 
   /// Pinocchio data object.
   PinData pin_data_;
   VectorXs tau_;
 
-  RigidConstraintDataVector constraint_datas_;
+  PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(RigidConstraintData)
+  constraint_datas_;
   pinocchio::ProximalSettingsTpl<Scalar> settings;
 
   ContactForceDataTpl(const ContactForceResidualTpl<Scalar> *model);

@@ -1,12 +1,12 @@
 /// @file constraint.hpp
 /// @brief Defines the constraint object and constraint stack manager for this
 /// library.
-/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/core/function-abstract.hpp"
 
-#include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
+#include "aligator/third-party/polymorphic_cxx14.h"
 
 namespace aligator {
 
@@ -86,9 +86,15 @@ private:
   }
 };
 
-} // namespace aligator
+template <typename Scalar> void ConstraintStackTpl<Scalar>::clear() {
+  funcs.clear();
+  sets.clear();
+  indices_ = {0};
+  dims_.clear();
+  total_dim_ = 0;
+}
 
-#include "aligator/core/constraint.hxx"
+} // namespace aligator
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 #include "aligator/core/constraint.txx"

@@ -1,7 +1,7 @@
 /// @file
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #include "aligator/core/dynamics.hxx"
-#include <proxsuite-nlp/manifold-base.hpp>
+#include "aligator/core/manifold-base.hpp"
 
 namespace aligator {
 

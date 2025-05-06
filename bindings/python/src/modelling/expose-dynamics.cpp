@@ -1,9 +1,9 @@
 /// @file
-/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, 2023-2025 INRIA
 #include "aligator/python/dynamics.hpp"
 #include "aligator/python/eigen-member.hpp"
 #include "aligator/python/visitors.hpp"
-#include <proxsuite-nlp/manifold-base.hpp>
+#include "aligator/core/manifold-base.hpp"
 
 namespace aligator {
 namespace python {

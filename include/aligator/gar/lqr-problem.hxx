@@ -333,9 +333,9 @@ template <typename Scalar>
 Scalar LqrProblemTpl<Scalar>::evaluate(
     const VectorOfVectors &xs, const VectorOfVectors &us,
     const std::optional<ConstVectorRef> &theta_) const {
-  if (xs.size() != horizon() + 1)
+  if ((int)xs.size() != horizon() + 1)
     return 0.;
-  if (us.size() < horizon())
+  if ((int)us.size() < horizon())
     return 0.;
 
   if (stages.empty())

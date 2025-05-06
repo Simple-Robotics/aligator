@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/python/fwd.hpp"
@@ -8,10 +8,6 @@
 
 #include "aligator/modelling/dynamics/context.hpp"
 #include "aligator/modelling/dynamics/integrator-abstract.hpp"
-
-#include "aligator/python/polymorphic-convertible.hpp"
-
-#include "proxsuite-nlp/python/polymorphic.hpp"
 
 namespace aligator {
 namespace python {
@@ -23,9 +19,7 @@ namespace python {
 ///
 /// @tparam FunctionBase The virtual class to expose.
 template <class Base = context::DynamicsModel>
-struct PyDynamics final
-    : Base,
-      proxsuite::nlp::python::PolymorphicWrapper<PyDynamics<Base>, Base> {
+struct PyDynamics final : Base, PolymorphicWrapper<PyDynamics<Base>, Base> {
   using Scalar = typename Base::Scalar;
   using Data = DynamicsDataTpl<Scalar>;
   using Base::Base;
@@ -65,15 +59,14 @@ namespace boost::python::objects {
 
 template <>
 struct value_holder<aligator::python::PyDynamics<>>
-    : proxsuite::nlp::python::OwningNonOwningHolder<
-          aligator::python::PyDynamics<>> {
+    : aligator::python::OwningNonOwningHolder<aligator::python::PyDynamics<>> {
   using OwningNonOwningHolder::OwningNonOwningHolder;
 };
 
 template <>
 struct value_holder<
     aligator::python::PyDynamics<aligator::context::IntegratorAbstract>>
-    : proxsuite::nlp::python::OwningNonOwningHolder<
+    : aligator::python::OwningNonOwningHolder<
           aligator::python::PyDynamics<aligator::context::IntegratorAbstract>> {
   using OwningNonOwningHolder::OwningNonOwningHolder;
 };

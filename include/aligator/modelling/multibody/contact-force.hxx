@@ -46,16 +46,14 @@ void ContactForceResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
 template <typename Scalar>
 ContactForceDataTpl<Scalar>::ContactForceDataTpl(
     const ContactForceResidualTpl<Scalar> *model)
-    : Base(model->ndx1, model->nu, model->force_size_),
+    : Base(model->ndx1, model->nu, (int)model->force_size_),
       pin_data_(model->pin_model_), tau_(model->pin_model_.nv) {
   tau_.setZero();
 
   pinocchio::initConstraintDynamics(model->pin_model_, pin_data_,
                                     model->constraint_models_);
-  for (auto cm = std::begin(model->constraint_models_);
-       cm != std::end(model->constraint_models_); ++cm) {
-    constraint_datas_.push_back(
-        pinocchio::RigidConstraintDataTpl<Scalar, 0>(*cm));
+  for (const auto &cm : model->constraint_models_) {
+    constraint_datas_.emplace_back(cm);
   }
 }
 

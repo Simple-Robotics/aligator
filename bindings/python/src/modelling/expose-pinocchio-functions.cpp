@@ -8,7 +8,6 @@
 #include "aligator/modelling/multibody/frame-velocity.hpp"
 #include "aligator/modelling/multibody/frame-translation.hpp"
 #include "aligator/modelling/multibody/frame-collision.hpp"
-#include "aligator/python/polymorphic-convertible.hpp"
 
 #include "aligator/modelling/multibody/constrained-rnea.hpp"
 

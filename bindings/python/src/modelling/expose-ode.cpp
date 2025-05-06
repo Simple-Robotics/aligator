@@ -1,8 +1,7 @@
 /// @file
 /// @copyright Copyright (C) 2024 LAAS-CNRS, INRIA
-#include "aligator/python/polymorphic-convertible.hpp"
-#include "aligator/python/visitors.hpp"
 #include "aligator/python/modelling/continuous.hpp"
+#include "aligator/python/visitors.hpp"
 #include "aligator/modelling/dynamics/context.hpp"
 #include "aligator/modelling/dynamics/linear-ode.hpp"
 #include "aligator/modelling/dynamics/centroidal-fwd.hpp"
@@ -16,6 +15,7 @@ using context::MatrixXs;
 using context::ODEAbstract;
 using context::ODEData;
 using context::Scalar;
+using context::VectorSpace;
 using context::VectorXs;
 using PolyManifold = xyz::polymorphic<context::Manifold>;
 
@@ -64,8 +64,8 @@ void exposeODEs() {
   bp::class_<CentroidalFwdDynamics, bp::bases<ODEAbstract>>(
       "CentroidalFwdDynamics",
       "Nonlinear centroidal dynamics with preplanned feet positions",
-      bp::init<const proxsuite::nlp::VectorSpaceTpl<Scalar> &, const double,
-               const Vector3s &, const ContactMap &, const int>(
+      bp::init<const VectorSpace &, const double, const Vector3s &,
+               const ContactMap &, const int>(
           bp::args("self", "space", "total mass", "gravity", "contact_map",
                    "force_size")))
       .def_readwrite("contact_map", &CentroidalFwdDynamics::contact_map_)
@@ -80,8 +80,8 @@ void exposeODEs() {
       "ContinuousCentroidalFwdDynamics",
       "Nonlinear centroidal dynamics with preplanned feet positions and smooth "
       "forces",
-      bp::init<const proxsuite::nlp::VectorSpaceTpl<Scalar> &, const double,
-               const Vector3s &, const ContactMap &, const int>(
+      bp::init<const VectorSpace &, const double, const Vector3s &,
+               const ContactMap &, const int>(
           bp::args("self", "space", "total mass", "gravity", "contact_map",
                    "force_size")))
       .def_readwrite("contact_map",

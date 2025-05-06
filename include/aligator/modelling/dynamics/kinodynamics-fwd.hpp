@@ -3,10 +3,10 @@
 
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
 
-#ifdef PROXSUITE_NLP_WITH_PINOCCHIO
+#ifdef ALIGATOR_WITH_PINOCCHIO
 
 #include <Eigen/LU>
-#include <proxsuite-nlp/modelling/spaces/multibody.hpp>
+#include "aligator/modelling/spaces/multibody.hpp"
 #include <pinocchio/multibody/model.hpp>
 #include <pinocchio/multibody/data.hpp>
 
@@ -37,7 +37,7 @@ struct KinodynamicsFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using BaseData = ContinuousDynamicsDataTpl<Scalar>;
   using ContDataAbstract = ContinuousDynamicsDataTpl<Scalar>;
   using Data = KinodynamicsFwdDataTpl<Scalar>;
-  using Manifold = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
+  using Manifold = MultibodyPhaseSpace<Scalar>;
   using Model = pinocchio::ModelTpl<Scalar>;
   using Matrix3s = Eigen::Matrix<Scalar, 3, 3>;
 

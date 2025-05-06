@@ -16,17 +16,24 @@ void exposeCrocoddylCompat();
 #endif
 
 static void exposeEnums() {
-  register_enum_symlink<VerboseLevel>(true);
+#define _c(Enum, name) value(#name, Enum::name)
+
+  bp::enum_<VerboseLevel>("VerboseLevel",
+                          "Verbosity level to be used in solvers.")
+      ._c(VerboseLevel, QUIET)
+      ._c(VerboseLevel, VERBOSE)
+      ._c(VerboseLevel, VERYVERBOSE)
+      .export_values();
 
   bp::enum_<MultiplierUpdateMode>(
       "MultiplierUpdateMode", "Enum for the kind of multiplier update to use.")
-      .value("NEWTON", MultiplierUpdateMode::NEWTON)
-      .value("PRIMAL", MultiplierUpdateMode::PRIMAL)
-      .value("PRIMAL_DUAL", MultiplierUpdateMode::PRIMAL_DUAL);
+      ._c(MultiplierUpdateMode, NEWTON)
+      ._c(MultiplierUpdateMode, PRIMAL)
+      ._c(MultiplierUpdateMode, PRIMAL_DUAL);
 
   bp::enum_<LinesearchMode>("LinesearchMode", "Linesearch mode.")
-      .value("PRIMAL", LinesearchMode::PRIMAL)
-      .value("PRIMAL_DUAL", LinesearchMode::PRIMAL_DUAL);
+      ._c(LinesearchMode, PRIMAL)
+      ._c(LinesearchMode, PRIMAL_DUAL);
 
   bp::enum_<RolloutType>("RolloutType", "Rollout type.")
       .value("ROLLOUT_LINEAR", RolloutType::LINEAR)
@@ -47,14 +54,34 @@ static void exposeEnums() {
              StepAcceptanceStrategy::LINESEARCH_NONMONOTONE)
       .value("SA_FILTER", StepAcceptanceStrategy::FILTER)
       .export_values();
+
+#undef _c
 }
 
 static void exposeContainers() {
+  using VecXBool = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
+  using context::MatrixRef;
+  using context::Scalar;
+  using context::VectorRef;
+
   StdVectorPythonVisitor<std::vector<long>, true>::expose("StdVec_long");
   eigenpy::exposeStdVectorEigenSpecificType<context::Vector3s>(
       "StdVec_Vector3s");
   StdVectorPythonVisitor<std::vector<bool>, true>::expose("StdVec_bool");
+  StdVectorPythonVisitor<std::vector<int>, true>::expose("StdVec_int");
+  StdVectorPythonVisitor<std::vector<Scalar>, true>::expose("StdVec_Scalar");
+  StdVectorPythonVisitor<context::VectorOfVectors, true>::expose(
+      "StdVec_Vector");
+  StdVectorPythonVisitor<std::vector<context::MatrixXs>, true>::expose(
+      "StdVec_Matrix");
+  StdVectorPythonVisitor<std::vector<VecXBool>, false>::expose(
+      "StdVec_VecBool");
+  StdVectorPythonVisitor<std::vector<VectorRef>, true>::expose("StdVec_VecRef");
+  StdVectorPythonVisitor<std::vector<MatrixRef>, true>::expose("StdVec_MatRef");
 }
+
+/// Expose manifolds
+void exposeManifolds();
 
 } // namespace python
 } // namespace aligator
@@ -80,7 +107,6 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
   eigenpy::detail::NoneToPython<std::nullopt_t>::registration();
 
   bp::import("warnings");
-  bp::import("proxsuite_nlp");
 
   bp::def(
       "has_pinocchio_features",
@@ -95,6 +121,10 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
       "Whether Aligator (and its Python bindings) were compiled with support "
       "for Pinocchio.");
 
+  {
+    bp::scope manifolds = get_namespace("manifolds");
+    exposeManifolds();
+  }
   exposeContainers();
   exposeGAR();
   exposeEnums();

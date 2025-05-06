@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023 LAAS-CNRS, 2023-2025 INRIA
 #pragma once
 
 #include "./composite-costs.hpp"
@@ -58,7 +58,9 @@ struct QuadraticResidualCostTpl : CostAbstractTpl<_Scalar> {
   }
 };
 
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 extern template struct QuadraticResidualCostTpl<context::Scalar>;
+#endif
 
 } // namespace aligator
 

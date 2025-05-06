@@ -1,9 +1,8 @@
 /// @file
-/// @copyright Copyright (C) 2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2024 LAAS-CNRS, 2024-2025 INRIA
 #pragma once
 
 #include <eigenpy/fwd.hpp>
-#include <proxsuite-nlp/python/deprecation-policy.hpp>
 #include <fmt/format.h>
 
 namespace aligator::python {

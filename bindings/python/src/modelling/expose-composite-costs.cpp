@@ -4,7 +4,6 @@
 #include "aligator/modelling/costs/quad-state-cost.hpp"
 #include "aligator/modelling/costs/log-residual-cost.hpp"
 #include "aligator/modelling/costs/relaxed-log-barrier.hpp"
-#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {
@@ -86,7 +85,8 @@ void exposeComposites() {
       "QuadraticControlCost", "Quadratic control cost.", bp::no_init)
       .def(bp::init<PolyManifold, ConstVectorRef, const MatrixXs &>(
           bp::args("space", "target", "weights")))
-      .def(bp::init<PolyManifold, QuadControlCost::Error, const MatrixXs &>(
+      .def(bp::init<PolyManifold, QuadControlCost::ControlError,
+                    const ConstMatrixRef &>(
           bp::args("self", "space", "resdl", "weights")))
       .def(bp::init<PolyManifold, int, const MatrixXs &>(
           bp::args("space", "nu", "weights")))

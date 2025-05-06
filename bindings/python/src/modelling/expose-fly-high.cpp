@@ -6,7 +6,6 @@
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/modelling/multibody-utils.hpp"
 #include "aligator/modelling/multibody/fly-high.hpp"
-#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {

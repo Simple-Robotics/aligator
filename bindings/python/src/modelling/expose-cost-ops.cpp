@@ -1,8 +1,7 @@
 /// @file
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #include "aligator/modelling/costs/cost-direct-sum.hpp"
-
-#include "aligator/python/polymorphic-convertible.hpp"
+#include "aligator/python/fwd.hpp"
 
 namespace aligator {
 namespace python {

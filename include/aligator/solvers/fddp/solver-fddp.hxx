@@ -2,8 +2,8 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "./solver-fddp.hpp"
-#include "./linesearch.hpp"
+#include "solver-fddp.hpp"
+#include "linesearch.hpp"
 #include "aligator/core/stage-data.hpp"
 
 #include <fmt/ranges.h>

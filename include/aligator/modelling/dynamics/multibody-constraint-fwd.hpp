@@ -3,7 +3,7 @@
 
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
 
-#include <proxsuite-nlp/modelling/spaces/multibody.hpp>
+#include "aligator/modelling/spaces/multibody.hpp"
 #include <pinocchio/multibody/data.hpp>
 
 #include <pinocchio/algorithm/proximal.hpp>
@@ -33,7 +33,7 @@ struct MultibodyConstraintFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
       PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(pinocchio::RigidConstraintData);
 #pragma GCC diagnostic pop
   using ProxSettings = pinocchio::ProximalSettingsTpl<Scalar>;
-  using Manifold = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
+  using Manifold = MultibodyPhaseSpace<Scalar>;
 
   Manifold space_;
   MatrixXs actuation_matrix_;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "aligator/context.hpp"
-#include <proxsuite-nlp/manifold-base.hpp>
+#include "aligator/core/manifold-base.hpp"
 
 #include <crocoddyl/core/state-base.hpp>
 #include <boost/shared_ptr.hpp>
@@ -9,12 +9,11 @@
 namespace aligator::compat::croc {
 
 /// @brief Wraps a crocoddyl::StateAbstractTpl to a manifold
-/// (proxsuite::nlp::ManifoldAbstractTpl).
+/// (aligator::ManifoldAbstractTpl).
 template <typename _Scalar>
 struct StateWrapperTpl : ManifoldAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using PointType = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
   using TangentVectorType = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
 
   using StateAbstract = crocoddyl::StateAbstractTpl<Scalar>;
@@ -27,8 +26,8 @@ struct StateWrapperTpl : ManifoldAbstractTpl<_Scalar> {
   int nx() const { return (int)croc_state->get_nx(); }
   int ndx() const { return (int)croc_state->get_ndx(); }
 
-  PointType neutral() const { return croc_state->zero(); }
-  PointType rand() const { return croc_state->rand(); }
+  void neutral_impl(VectorRef out) const { out = croc_state->zero(); }
+  void rand_impl(VectorRef out) const { out = croc_state->rand(); }
 
   void integrate_impl(const ConstVectorRef &x, const ConstVectorRef &v,
                       VectorRef out) const {
@@ -50,8 +49,9 @@ struct StateWrapperTpl : ManifoldAbstractTpl<_Scalar> {
     croc_state->Jdiff(x0, x1, Jout, Jout, convert_to_firstsecond(arg));
   }
 
-  void JintegrateTransport(const ConstVectorRef &x, const ConstVectorRef &v,
-                           MatrixRef Jout, int arg) const {
+  void JintegrateTransport_impl(const ConstVectorRef &x,
+                                const ConstVectorRef &v, MatrixRef Jout,
+                                int arg) const {
     croc_state->JintegrateTransport(x, v, Jout, convert_to_firstsecond(arg));
   }
 

@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022 LAAS-CNRS, 2022-2025 INRIA
 
 #include "aligator/core/traj-opt-problem.hpp"
 
@@ -24,7 +24,7 @@ using ProximalSettings = pin::ProximalSettingsTpl<double>;
 using MultibodyConstraintFwdDynamics =
     aligator::dynamics::MultibodyConstraintFwdDynamicsTpl<double>;
 using ODEAbstract = aligator::dynamics::ODEAbstractTpl<double>;
-using MultibodyPhaseSpace = proxsuite::nlp::MultibodyPhaseSpace<double>;
+using MultibodyPhaseSpace = aligator::MultibodyPhaseSpace<double>;
 using IntegratorSemiImplEuler =
     aligator::dynamics::IntegratorSemiImplEulerTpl<double>;
 using StageModel = aligator::StageModelTpl<double>;

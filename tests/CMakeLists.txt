@@ -45,11 +45,13 @@ endfunction()
 set(
   TEST_NAMES
   continuous
+  constraints
   costs
   eigen-map
   integrators
   lqr
   problem
+  manifolds
   solver-storage
   utils
 )

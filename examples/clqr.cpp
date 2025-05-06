@@ -4,18 +4,18 @@
 #include "aligator/modelling/state-error.hpp"
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
 
-#include <proxsuite-nlp/modelling/constraints.hpp>
-#include <proxsuite-nlp/fmt-eigen.hpp>
+#include "aligator/modelling/constraints.hpp"
+#include <aligator/fmt-eigen.hpp>
 #include <iostream>
 #include <random>
 
 using namespace aligator;
 
-using Space = proxsuite::nlp::VectorSpaceTpl<double>;
+using Space = VectorSpaceTpl<double>;
 using LinearDynamics = dynamics::LinearDiscreteDynamicsTpl<double>;
 using LinearFunction = LinearFunctionTpl<double>;
-using BoxConstraint = proxsuite::nlp::BoxConstraintTpl<double>;
-using EqualityConstraint = proxsuite::nlp::EqualityConstraintTpl<double>;
+using BoxConstraint = BoxConstraintTpl<double>;
+using EqualityConstraint = EqualityConstraintTpl<double>;
 using QuadraticCost = QuadraticCostTpl<double>;
 using context::CostAbstract;
 using context::MatrixXs;

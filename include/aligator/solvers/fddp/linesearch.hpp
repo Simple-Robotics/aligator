@@ -1,10 +1,10 @@
 /// @file
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
-#include "aligator/macros.hpp"
+#include "aligator/fwd.hpp"
 #include "aligator/utils/exceptions.hpp"
-#include "aligator/core/linesearch.hpp"
+#include "aligator/core/linesearch-base.hpp"
 #include <utility>
 
 namespace aligator {

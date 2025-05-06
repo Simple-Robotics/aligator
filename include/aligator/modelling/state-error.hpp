@@ -2,8 +2,8 @@
 
 #include "aligator/core/function-abstract.hpp"
 #include "aligator/core/unary-function.hpp"
-#include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
-#include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
+#include "aligator/core/vector-space.hpp"
+#include "aligator/third-party/polymorphic_cxx14.h"
 
 namespace aligator {
 
@@ -24,19 +24,26 @@ struct StateOrControlErrorResidual<_Scalar, 0> : UnaryFunctionTpl<_Scalar> {
   ALIGATOR_UNARY_FUNCTION_INTERFACE(Scalar);
   using Data = StageFunctionDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
-  using VectorSpace = proxsuite::nlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
+  using VectorSpace = VectorSpaceTpl<Scalar, Eigen::Dynamic>;
+  using PolyManifold = xyz::polymorphic<Manifold>;
 
-  xyz::polymorphic<Manifold> space_;
+  PolyManifold space_;
   VectorXs target_;
 
-  StateOrControlErrorResidual(const xyz::polymorphic<Manifold> &xspace,
-                              const int nu, const ConstVectorRef &target)
+  StateOrControlErrorResidual(const PolyManifold &xspace, const int nu,
+                              const ConstVectorRef &target)
       : Base(xspace->ndx(), nu, xspace->ndx()), space_(xspace),
         target_(target) {
-    if (!xspace->isNormalized(target)) {
-      ALIGATOR_RUNTIME_ERROR(
-          "Target parameter invalid (not a viable element of state manifold.)");
-    }
+    validate();
+  }
+
+  template <typename U, typename std::enable_if_t<
+                            is_polymorphic_of_v<Manifold, U>, int> = 0>
+  StateOrControlErrorResidual(U &&xspace, const int nu,
+                              const ConstVectorRef &target)
+      : Base(xspace.ndx(), nu, xspace.ndx()), space_{std::forward<U>(xspace)},
+        target_(target) {
+    validate();
   }
 
   void evaluate(const ConstVectorRef &x, Data &data) const override {
@@ -45,6 +52,14 @@ struct StateOrControlErrorResidual<_Scalar, 0> : UnaryFunctionTpl<_Scalar> {
 
   void computeJacobians(const ConstVectorRef &x, Data &data) const override {
     space_->Jdifference(target_, x, data.Jx_, 1);
+  }
+
+protected:
+  void validate() const {
+    if (!space_->isNormalized(target_)) {
+      ALIGATOR_RUNTIME_ERROR(
+          "Target parameter invalid (not a viable element of state manifold.)");
+    }
   }
 };
 
@@ -56,35 +71,39 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
   using Base = StageFunctionTpl<Scalar>;
   using Data = StageFunctionDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
-  using VectorSpace = proxsuite::nlp::VectorSpaceTpl<Scalar, Eigen::Dynamic>;
+  using VectorSpace = VectorSpaceTpl<Scalar, Eigen::Dynamic>;
 
   xyz::polymorphic<Manifold> space_;
   VectorXs target_;
 
   /// @brief Constructor using the state space dimension, control manifold and
   ///        control target.
-  template <unsigned int N = arg, typename = std::enable_if_t<N == 1>>
+  template <typename U,
+            typename = std::enable_if_t<!is_polymorphic_of_v<Manifold, U>>>
+  StateOrControlErrorResidual(const int ndx, U &&uspace,
+                              const ConstVectorRef &target)
+      : Base(ndx, uspace.nx(), uspace.ndx()), space_(std::forward<U>(uspace)),
+        target_(target) {
+    validate();
+  }
+
   StateOrControlErrorResidual(const int ndx,
                               const xyz::polymorphic<Manifold> &uspace,
                               const ConstVectorRef &target)
       : Base(ndx, uspace->nx(), uspace->ndx()), space_(uspace),
         target_(target) {
-    if (!space_->isNormalized(target_)) {
-      ALIGATOR_RUNTIME_ERROR(
-          "Target parameter invalid (not a viable element of state manifold.)");
-    }
+    validate();
+  }
+
+  StateOrControlErrorResidual(const int ndx, const int nu)
+      : Base(ndx, nu, nu), space_(VectorSpace(nu)), target_(space_->neutral()) {
   }
 
   /// @brief Constructor using state space and control space dimensions,
   ///        the control space is assumed to be Euclidean.
-  template <unsigned int N = arg, typename = std::enable_if_t<N == 1>>
   StateOrControlErrorResidual(const int ndx, const ConstVectorRef &target)
-      : StateOrControlErrorResidual(ndx, VectorSpace((int)target.size()),
-                                    target) {}
-
-  template <unsigned int N = arg, typename = std::enable_if_t<N == 1>>
-  StateOrControlErrorResidual(const int ndx, const int nu)
-      : Base(ndx, nu, nu), space_(VectorSpace(nu)), target_(space_->neutral()) {
+      : StateOrControlErrorResidual(ndx, (int)target.size()) {
+    target_ = target;
   }
 
   void evaluate(const ConstVectorRef &, const ConstVectorRef &u,
@@ -106,6 +125,14 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
       break;
     default:
       break;
+    }
+  }
+
+protected:
+  void validate() const {
+    if (!space_->isNormalized(target_)) {
+      ALIGATOR_RUNTIME_ERROR(
+          "Target parameter invalid (not a viable element of state manifold.)");
     }
   }
 };

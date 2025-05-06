@@ -1,15 +1,15 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #include "aligator/python/fwd.hpp"
 
-#ifdef PROXSUITE_NLP_WITH_PINOCCHIO
+#ifdef ALIGATOR_WITH_PINOCCHIO
 #include "aligator/modelling/dynamics/kinodynamics-fwd.hpp"
-#include <pinocchio/multibody/fwd.hpp>
-#include <proxsuite-nlp/modelling/spaces/multibody.hpp>
+#include "aligator/modelling/spaces/multibody.hpp"
+#include "aligator/modelling/multibody/context.hpp"
 #include <pinocchio/multibody/model.hpp>
-#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {
+
 void exposeKinodynamics() {
   using namespace aligator::dynamics;
   using context::Scalar;
@@ -21,7 +21,7 @@ void exposeKinodynamics() {
   using ContinuousDynamicsAbstract = ContinuousDynamicsAbstractTpl<Scalar>;
   using KinodynamicsFwdData = KinodynamicsFwdDataTpl<Scalar>;
   using KinodynamicsFwdDynamics = KinodynamicsFwdDynamicsTpl<Scalar>;
-  using Manifold = proxsuite::nlp::MultibodyPhaseSpace<Scalar>;
+  using context::MultibodyPhaseSpace;
   using Vector3s = typename math_types<Scalar>::Vector3s;
 
   using Model = pinocchio::ModelTpl<Scalar>;
@@ -32,7 +32,7 @@ void exposeKinodynamics() {
   bp::class_<KinodynamicsFwdDynamics, bp::bases<ODEAbstract>>(
       "KinodynamicsFwdDynamics",
       "Centroidal forward dynamics + kinematics using Pinocchio.",
-      bp::init<const Manifold &, const Model &, const Vector3s &,
+      bp::init<const MultibodyPhaseSpace &, const Model &, const Vector3s &,
                const std::vector<bool> &,
                const std::vector<pinocchio::FrameIndex> &, const int>(
           "Constructor.",
@@ -48,6 +48,7 @@ void exposeKinodynamics() {
                                                       bp::no_init)
       .def_readwrite("pin_data", &KinodynamicsFwdData::pin_data_);
 }
+
 } // namespace python
 } // namespace aligator
 #endif

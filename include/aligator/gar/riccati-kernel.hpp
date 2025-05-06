@@ -6,7 +6,7 @@
 #include "aligator/gar/fwd.hpp"
 #include "blk-matrix.hpp"
 
-#include <proxsuite-nlp/linalg/bunchkaufman.hpp>
+#include "aligator/core/bunchkaufman.hpp"
 #include <Eigen/LU>
 #include <Eigen/Cholesky>
 

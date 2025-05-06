@@ -16,7 +16,7 @@ using PolyUnaryFunction = xyz::polymorphic<UnaryFunction>;
 /// Expose the UnaryFunction type and its member function overloads.
 void exposeUnaryFunctions() {
   PolymorphicMultiBaseVisitor<UnaryFunction, StageFunction> unary_visitor;
-  proxsuite::nlp::python::register_polymorphic_to_python<PolyUnaryFunction>();
+  aligator::python::register_polymorphic_to_python<PolyUnaryFunction>();
   using unary_eval_t = void (UnaryFunction::*)(const ConstVectorRef &,
                                                StageFunctionData &) const;
   using full_eval_t =

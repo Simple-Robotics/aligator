@@ -1,15 +1,10 @@
 """
-Copyright (C) 2022 LAAS-CNRS, INRIA
+Copyright (C) 2022 LAAS-CNRS, 2022-2025 INRIA
 """
 
 from .pyaligator import *
 from .pyaligator import __version__
 from . import utils
-
-from proxsuite_nlp import (
-    constraints,
-    manifolds,
-)
 
 
 def _process():
@@ -24,8 +19,6 @@ def _process():
         sys.modules[mod_name] = mod_info[1]
         mod_info[1].__file__ = pyaligator.__file__
         mod_info[1].__name__ = mod_name
-    sys.modules["{}.manifolds".format(lib_name)] = manifolds
-    sys.modules["{}.constraints".format(lib_name)] = constraints
 
 
 _process()

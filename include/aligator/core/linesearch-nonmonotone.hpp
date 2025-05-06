@@ -1,11 +1,9 @@
 #pragma once
 
-#include <proxsuite-nlp/linesearch-base.hpp>
+#include "linesearch-base.hpp"
 #include <functional>
 
 namespace aligator {
-using proxsuite::nlp::Linesearch;
-using proxsuite::nlp::LinesearchStrategy;
 
 /// @brief Nonmonotone Linesearch algorithm. Modifies the Armijo condition with
 /// a moving average of function values.

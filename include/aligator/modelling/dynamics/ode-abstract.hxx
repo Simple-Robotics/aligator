@@ -4,7 +4,7 @@
 
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
 
-#include <proxsuite-nlp/manifold-base.hpp>
+#include "aligator/core/manifold-base.hpp"
 
 namespace aligator {
 namespace dynamics {

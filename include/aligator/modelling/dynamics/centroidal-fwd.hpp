@@ -4,7 +4,7 @@
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
 #include "aligator/modelling/contact-map.hpp"
 
-#include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
+#include "aligator/core/vector-space.hpp"
 
 namespace aligator {
 namespace dynamics {
@@ -29,7 +29,7 @@ struct CentroidalFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using BaseData = ContinuousDynamicsDataTpl<Scalar>;
   using ContDataAbstract = ContinuousDynamicsDataTpl<Scalar>;
   using Data = CentroidalFwdDataTpl<Scalar>;
-  using Manifold = proxsuite::nlp::VectorSpaceTpl<Scalar>;
+  using Manifold = ::aligator::VectorSpaceTpl<Scalar>;
   using Matrix3s = Eigen::Matrix<Scalar, 3, 3>;
   using ContactMap = ContactMapTpl<Scalar>;
 

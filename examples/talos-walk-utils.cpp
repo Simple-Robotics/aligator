@@ -1,6 +1,6 @@
 #include "talos-walk-utils.hpp"
 
-#include <proxsuite-nlp/modelling/spaces/multibody.hpp>
+#include "aligator/modelling/spaces/multibody.hpp"
 
 #include <pinocchio/context.hpp>
 #include <pinocchio/parsers/urdf.hpp>

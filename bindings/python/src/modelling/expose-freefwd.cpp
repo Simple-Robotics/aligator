@@ -1,10 +1,10 @@
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #ifdef ALIGATOR_WITH_PINOCCHIO
 #include "aligator/modelling/dynamics/context.hpp"
+#include "aligator/modelling/multibody/context.hpp"
 #include "aligator/python/fwd.hpp"
 
 #include "aligator/modelling/dynamics/multibody-free-fwd.hpp"
-#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {
@@ -16,9 +16,7 @@ void exposeFreeFwdDynamics() {
   using ContinuousDynamicsAbstract = ContinuousDynamicsAbstractTpl<Scalar>;
   using MultibodyFreeFwdData = MultibodyFreeFwdDataTpl<Scalar>;
   using MultibodyFreeFwdDynamics = MultibodyFreeFwdDynamicsTpl<Scalar>;
-  using proxsuite::nlp::MultibodyPhaseSpace;
-
-  using StateManifold = MultibodyPhaseSpace<Scalar>;
+  using context::MultibodyPhaseSpace;
 
   PolymorphicMultiBaseVisitor<ODEAbstract, ContinuousDynamicsAbstract>
       ode_visitor;
@@ -27,10 +25,10 @@ void exposeFreeFwdDynamics() {
       "MultibodyFreeFwdDynamics",
       "Free-space forward dynamics on multibodies using Pinocchio's ABA "
       "algorithm.",
-      bp::init<StateManifold, const context::MatrixXs &>(
+      bp::init<MultibodyPhaseSpace, const context::MatrixXs &>(
           "Constructor where the actuation matrix is provided.",
           ("self"_a, "space", "actuation_matrix")))
-      .def(bp::init<StateManifold>(
+      .def(bp::init<MultibodyPhaseSpace>(
           "Constructor without actuation matrix (assumed to be the (nu,nu) "
           "identity matrix).",
           ("self"_a, "space")))

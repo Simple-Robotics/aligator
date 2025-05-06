@@ -1,10 +1,10 @@
 /// @file
-/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, 2022-2025 INRIA
 #include "aligator/python/fwd.hpp"
 
 #include "aligator/modelling/dynamics/context.hpp"
 #include "aligator/modelling/dynamics/multibody-constraint-fwd.hpp"
-#include "aligator/python/polymorphic-convertible.hpp"
+#include "aligator/python/fwd.hpp"
 
 namespace aligator {
 namespace python {
@@ -37,8 +37,8 @@ void exposeConstrainedFwdDynamics() {
   bp::class_<MultibodyConstraintFwdDynamics, bp::bases<ODEAbstract>>(
       "MultibodyConstraintFwdDynamics",
       "Constraint forward dynamics using Pinocchio.",
-      bp::init<const proxsuite::nlp::MultibodyPhaseSpace<Scalar> &,
-               const context::MatrixXs &, const RigidConstraintModelVector &,
+      bp::init<const MultibodyPhaseSpace<Scalar> &, const context::MatrixXs &,
+               const RigidConstraintModelVector &,
                const pinocchio::ProximalSettingsTpl<Scalar> &>(
           ("self"_a, "space", "actuation_matrix", "constraint_models",
            "prox_settings")))

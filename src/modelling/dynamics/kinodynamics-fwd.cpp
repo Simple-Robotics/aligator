@@ -1,5 +1,5 @@
-/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
-#ifdef PROXSUITE_NLP_WITH_PINOCCHIO
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, 2023-2025 INRIA
+#ifdef ALIGATOR_WITH_PINOCCHIO
 #include "aligator/modelling/dynamics/kinodynamics-fwd.hxx"
 
 namespace aligator {

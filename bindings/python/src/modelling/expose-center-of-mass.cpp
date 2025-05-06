@@ -1,6 +1,7 @@
 /// @file
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #ifdef ALIGATOR_WITH_PINOCCHIO
+#include "aligator/python/fwd.hpp"
 #include "aligator/python/modelling/multibody-utils.hpp"
 
 #include "aligator/modelling/multibody/center-of-mass-translation.hpp"
@@ -8,7 +9,6 @@
 #include "aligator/modelling/multibody/dcm-position.hpp"
 #include "aligator/modelling/multibody/centroidal-momentum.hpp"
 #include "aligator/modelling/multibody/centroidal-momentum-derivative.hpp"
-#include "aligator/python/polymorphic-convertible.hpp"
 
 namespace aligator {
 namespace python {

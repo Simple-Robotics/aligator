@@ -7,12 +7,13 @@
 #include "aligator/core/explicit-dynamics.hpp"
 #include "aligator/core/cost-abstract.hpp"
 #include "aligator/utils/rollout.hpp"
-#ifdef PROXSUITE_NLP_WITH_PINOCCHIO
-#include <proxsuite-nlp/modelling/spaces/pinocchio-groups.hpp>
+#include "aligator/modelling/constraints/equality-constraint.hpp"
+#ifdef ALIGATOR_WITH_PINOCCHIO
+#include "aligator/modelling/spaces/pinocchio-groups.hpp"
 #else
-#include <proxsuite-nlp/modelling/spaces/vector-space.hpp>
+#include "aligator/core/vector-space.hpp"
 #endif
-#include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
+#include "aligator/third-party/polymorphic_cxx14.h"
 #include <boost/test/unit_test.hpp>
 
 #include <fmt/format.h>
@@ -59,16 +60,16 @@ struct MyCost : CostAbstractTpl<double> {
   }
 };
 
-#ifdef PROXSUITE_NLP_WITH_PINOCCHIO
-using Manifold = proxsuite::nlp::SETpl<3, double>;
+#ifdef ALIGATOR_WITH_PINOCCHIO
+using Manifold = aligator::SETpl<3, double>;
 static const Manifold my_space;
 #else
-using Manifold = proxsuite::nlp::VectorSpaceTpl<double>;
+using Manifold = aligator::VectorSpaceTpl<double>;
 static const Manifold my_space(6);
 #endif
 
 using StageModel = aligator::StageModelTpl<double>;
-using EqualityConstraint = proxsuite::nlp::EqualityConstraintTpl<double>;
+using EqualityConstraint = EqualityConstraintTpl<double>;
 
 struct MyFixture {
   Manifold space;

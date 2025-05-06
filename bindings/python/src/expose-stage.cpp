@@ -1,6 +1,6 @@
 /// @file
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
-#include "aligator/python/polymorphic-convertible.hpp"
+#include "aligator/python/fwd.hpp"
 #include "aligator/python/visitors.hpp"
 
 #include "aligator/core/stage-model.hpp"
@@ -11,8 +11,6 @@
 
 namespace aligator {
 namespace python {
-using proxsuite::nlp::python::PolymorphicVisitor;
-using proxsuite::nlp::python::register_polymorphic_to_python;
 
 void exposeStageData() {
   using context::StageData;

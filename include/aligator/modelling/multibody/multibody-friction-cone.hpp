@@ -2,8 +2,7 @@
 
 #include "fwd.hpp"
 #include "aligator/core/function-abstract.hpp"
-
-#include <proxsuite-nlp/modelling/spaces/multibody.hpp>
+#include "aligator/modelling/spaces/multibody.hpp"
 
 #include <pinocchio/algorithm/proximal.hpp>
 

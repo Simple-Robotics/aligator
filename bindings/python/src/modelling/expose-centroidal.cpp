@@ -1,7 +1,7 @@
 /// @file
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #include "aligator/context.hpp"
-#include "aligator/python/polymorphic-convertible.hpp"
+#include "aligator/python/fwd.hpp"
 #include "aligator/python/visitors.hpp"
 #include "aligator/modelling/centroidal/centroidal-translation.hpp"
 #include "aligator/modelling/centroidal/linear-momentum.hpp"
