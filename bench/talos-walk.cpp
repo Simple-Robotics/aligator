@@ -10,7 +10,6 @@
 #include "aligator/core/traj-opt-problem.hpp"
 #include "aligator/solvers/fddp/solver-fddp.hpp"
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
-#include <proxsuite-nlp/ldlt-allocator.hpp>
 
 using aligator::SolverFDDPTpl;
 using aligator::SolverProxDDPTpl;
