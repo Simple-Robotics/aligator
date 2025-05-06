@@ -161,7 +161,7 @@ public:
   LQSolverChoice linear_solver_choice = LQSolverChoice::SERIAL;
   /// Type of Hessian approximation. Default is Gauss-Newton.
   HessianApprox hess_approx_ = HessianApprox::GAUSS_NEWTON;
-  /// Linesearch options, as in proxsuite-nlp.
+  /// Linesearch options.
   LinesearchOptions ls_params;
   /// Type of Lagrange multiplier update.
   MultiplierUpdateMode multiplier_update_mode = MultiplierUpdateMode::NEWTON;
