@@ -59,10 +59,6 @@ function(make_bindings)
   )
 
   target_link_libraries(${PYLIB_NAME} PUBLIC ${PROJECT_NAME} eigenpy::eigenpy)
-  target_include_directories(
-    ${PYLIB_NAME}
-    PUBLIC $<TARGET_PROPERTY:proxsuite-nlp::pyproxsuite_nlp,INCLUDE_DIRECTORIES>
-  )
 
   if(BUILD_CROCODDYL_COMPAT)
     target_link_libraries(${PYLIB_NAME} PUBLIC aligator::croc_compat)

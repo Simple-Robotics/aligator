@@ -12,19 +12,57 @@
 namespace aligator {
 namespace python {
 
+using context::Scalar;
+using Linesearch = Linesearch<Scalar>;
+using LinesearchOptions = Linesearch::Options;
+
+static void exposeLinesearch() {
+
+  bp::enum_<LSInterpolation>("LSInterpolation",
+                             "Linesearch interpolation scheme.")
+      .value("BISECTION", LSInterpolation::BISECTION)
+      .value("QUADRATIC", LSInterpolation::QUADRATIC)
+      .value("CUBIC", LSInterpolation::CUBIC);
+  bp::class_<Linesearch>("Linesearch", bp::no_init)
+      .def(bp::init<const LinesearchOptions &>(("self"_a, "options")))
+      .def_readwrite("options", &Linesearch::options_);
+  bp::class_<ArmijoLinesearch<Scalar>, bp::bases<Linesearch>>(
+      "ArmijoLinesearch", bp::no_init)
+      .def(bp::init<const LinesearchOptions &>(("self"_a, "options")));
+  bp::class_<LinesearchOptions>("LinesearchOptions", "Linesearch options.",
+                                bp::init<>(("self"_a), "Default constructor."))
+      .def_readwrite("armijo_c1", &LinesearchOptions::armijo_c1)
+      .def_readwrite("wolfe_c2", &LinesearchOptions::wolfe_c2)
+      .def_readwrite(
+          "dphi_thresh", &LinesearchOptions::dphi_thresh,
+          "Threshold on the derivative at the initial point; the linesearch "
+          "will be early-terminated if the derivative is below this threshold.")
+      .def_readwrite("alpha_min", &LinesearchOptions::alpha_min,
+                     "Minimum step size.")
+      .def_readwrite("max_num_steps", &LinesearchOptions::max_num_steps)
+      .def_readwrite("interp_type", &LinesearchOptions::interp_type,
+                     "Interpolation type: bisection, quadratic or cubic.")
+      .def_readwrite("contraction_min", &LinesearchOptions::contraction_min,
+                     "Minimum step contraction.")
+      .def_readwrite("contraction_max", &LinesearchOptions::contraction_max,
+                     "Maximum step contraction.")
+      .def(bp::self_ns::str(bp::self));
+
+  bp::class_<NonmonotoneLinesearch<Scalar>, bp::bases<Linesearch>>(
+      "NonmonotoneLinesearch", bp::no_init)
+      .def(bp::init<LinesearchOptions>(("self"_a, "options")))
+      .def_readwrite("avg_eta", &NonmonotoneLinesearch<Scalar>::avg_eta)
+      .def_readwrite("beta_dec", &NonmonotoneLinesearch<Scalar>::beta_dec);
+}
+
 void exposeProxDDP() {
   using context::ConstVectorRef;
   using context::Results;
-  using context::Scalar;
   using context::TrajOptProblem;
   using context::VectorRef;
   using context::Workspace;
 
-  using LsOptions = Linesearch<Scalar>::Options;
-  eigenpy::register_symbolic_link_to_registered_type<LsOptions>();
-  eigenpy::register_symbolic_link_to_registered_type<LinesearchStrategy>();
-  eigenpy::register_symbolic_link_to_registered_type<
-      proxsuite::nlp::LSInterpolation>();
+  exposeLinesearch();
 
   bp::enum_<LQSolverChoice>("LQSolverChoice")
       .value("LQ_SOLVER_SERIAL", LQSolverChoice::SERIAL)
@@ -157,12 +195,6 @@ void exposeProxDDP() {
                 "lams_init"_a = bp::list()),
                "Run the algorithm. Can receive initial guess for "
                "multiplier trajectory.");
-
-  bp::class_<NonmonotoneLinesearch<Scalar>, bp::bases<Linesearch<Scalar>>>(
-      "NonmonotoneLinesearch", bp::no_init)
-      .def(bp::init<LsOptions>(("self"_a, "options")))
-      .def_readwrite("avg_eta", &NonmonotoneLinesearch<Scalar>::avg_eta)
-      .def_readwrite("beta_dec", &NonmonotoneLinesearch<Scalar>::beta_dec);
 
   {
     using AlmParams = SolverType::AlmParams;

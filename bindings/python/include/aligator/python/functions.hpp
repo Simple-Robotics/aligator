@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/python/fwd.hpp"
@@ -12,8 +12,6 @@
 
 #include "aligator/python/polymorphic-convertible.hpp"
 
-#include "proxsuite-nlp/python/polymorphic.hpp"
-
 namespace aligator {
 namespace python {
 /// Wrapper for the StageFunction class and any virtual children that avoids
@@ -26,8 +24,7 @@ namespace python {
 template <class FunctionBase = context::StageFunction>
 struct PyStageFunction final
     : FunctionBase,
-      proxsuite::nlp::python::PolymorphicWrapper<PyStageFunction<FunctionBase>,
-                                                 FunctionBase> {
+      PolymorphicWrapper<PyStageFunction<FunctionBase>, FunctionBase> {
   using Scalar = typename FunctionBase::Scalar;
   using Data = StageFunctionDataTpl<Scalar>;
   using FunctionBase::FunctionBase;
@@ -64,8 +61,7 @@ struct PyStageFunction final
 template <typename UFunction = context::UnaryFunction>
 struct PyUnaryFunction final
     : UFunction,
-      proxsuite::nlp::python::PolymorphicWrapper<PyUnaryFunction<UFunction>,
-                                                 UFunction> {
+      PolymorphicWrapper<PyUnaryFunction<UFunction>, UFunction> {
   using Scalar = typename UFunction::Scalar;
   static_assert(
       std::is_base_of_v<UnaryFunctionTpl<Scalar>, UFunction>,
@@ -155,14 +151,14 @@ namespace boost::python::objects {
 
 template <>
 struct value_holder<aligator::python::PyStageFunction<>>
-    : proxsuite::nlp::python::OwningNonOwningHolder<
+    : aligator::python::OwningNonOwningHolder<
           aligator::python::PyStageFunction<>> {
   using OwningNonOwningHolder::OwningNonOwningHolder;
 };
 
 template <>
 struct value_holder<aligator::python::PyUnaryFunction<>>
-    : proxsuite::nlp::python::OwningNonOwningHolder<
+    : aligator::python::OwningNonOwningHolder<
           aligator::python::PyUnaryFunction<>> {
   using OwningNonOwningHolder::OwningNonOwningHolder;
 };

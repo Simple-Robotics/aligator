@@ -59,10 +59,25 @@ static void exposeEnums() {
 }
 
 static void exposeContainers() {
+  using VecXBool = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
+  using context::MatrixRef;
+  using context::Scalar;
+  using context::VectorRef;
+
   StdVectorPythonVisitor<std::vector<long>, true>::expose("StdVec_long");
   eigenpy::exposeStdVectorEigenSpecificType<context::Vector3s>(
       "StdVec_Vector3s");
   StdVectorPythonVisitor<std::vector<bool>, true>::expose("StdVec_bool");
+  StdVectorPythonVisitor<std::vector<int>, true>::expose("StdVec_int");
+  StdVectorPythonVisitor<std::vector<Scalar>, true>::expose("StdVec_Scalar");
+  StdVectorPythonVisitor<context::VectorOfVectors, true>::expose(
+      "StdVec_Vector");
+  StdVectorPythonVisitor<std::vector<context::MatrixXs>, true>::expose(
+      "StdVec_Matrix");
+  StdVectorPythonVisitor<std::vector<VecXBool>, false>::expose(
+      "StdVec_VecBool");
+  StdVectorPythonVisitor<std::vector<VectorRef>, true>::expose("StdVec_VecRef");
+  StdVectorPythonVisitor<std::vector<MatrixRef>, true>::expose("StdVec_MatRef");
 }
 
 /// Expose manifolds
@@ -92,7 +107,6 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
   eigenpy::detail::NoneToPython<std::nullopt_t>::registration();
 
   bp::import("warnings");
-  bp::import("proxsuite_nlp");
 
   bp::def(
       "has_pinocchio_features",

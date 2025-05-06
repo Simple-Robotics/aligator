@@ -8,8 +8,6 @@
 #include "aligator/modelling/dynamics/context.hpp"
 #include "aligator/modelling/dynamics/integrator-explicit.hpp"
 
-#include "proxsuite-nlp/python/polymorphic.hpp"
-
 namespace aligator {
 namespace python {
 using context::DynamicsData;
@@ -21,8 +19,7 @@ using context::DynamicsData;
 template <class ExplicitBase = context::ExplicitDynamics>
 struct PyExplicitDynamics final
     : ExplicitBase,
-      proxsuite::nlp::python::PolymorphicWrapper<
-          PyExplicitDynamics<ExplicitBase>, ExplicitBase> {
+      PolymorphicWrapper<PyExplicitDynamics<ExplicitBase>, ExplicitBase> {
   using Scalar = context::Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   // All functions in the interface take this type for output
@@ -57,7 +54,7 @@ namespace boost::python::objects {
 
 template <>
 struct value_holder<aligator::python::PyExplicitDynamics<>>
-    : proxsuite::nlp::python::OwningNonOwningHolder<
+    : aligator::python::OwningNonOwningHolder<
           aligator::python::PyExplicitDynamics<>> {
   using OwningNonOwningHolder::OwningNonOwningHolder;
 };
@@ -65,7 +62,7 @@ struct value_holder<aligator::python::PyExplicitDynamics<>>
 template <>
 struct value_holder<aligator::python::PyExplicitDynamics<
     aligator::context::ExplicitIntegratorAbstract>>
-    : proxsuite::nlp::python::OwningNonOwningHolder<
+    : aligator::python::OwningNonOwningHolder<
           aligator::python::PyExplicitDynamics<
               aligator::context::ExplicitIntegratorAbstract>> {
   using OwningNonOwningHolder::OwningNonOwningHolder;

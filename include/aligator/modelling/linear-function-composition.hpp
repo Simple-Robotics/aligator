@@ -2,7 +2,7 @@
 
 #include "aligator/core/function-abstract.hpp"
 #include "aligator/core/unary-function.hpp"
-#include <proxsuite-nlp/third-party/polymorphic_cxx14.hpp>
+#include "aligator/third-party/polymorphic_cxx14.h"
 
 namespace aligator {
 

@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022 LAAS-CNRS, 2022, 2025 INRIA
 ///
 /// @page fddp_intro The FDDP algorithm
 /// @htmlinclude fddp.html
@@ -7,7 +7,7 @@
 
 #include "aligator/core/callback-base.hpp"
 #include "aligator/core/explicit-dynamics.hpp"
-#include "aligator/core/linesearch.hpp"
+#include "aligator/core/linesearch-base.hpp"
 
 #include "workspace.hpp"
 #include "results.hpp"

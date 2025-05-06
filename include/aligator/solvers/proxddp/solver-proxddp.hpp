@@ -4,7 +4,7 @@
 #pragma once
 
 #include "aligator/overloads.hpp"
-#include "aligator/core/linesearch.hpp"
+#include "aligator/core/linesearch-armijo.hpp"
 #include "aligator/core/linesearch-nonmonotone.hpp"
 #include "aligator/core/filter.hpp"
 #include "aligator/core/callback-base.hpp"
@@ -161,7 +161,7 @@ public:
   LQSolverChoice linear_solver_choice = LQSolverChoice::SERIAL;
   /// Type of Hessian approximation. Default is Gauss-Newton.
   HessianApprox hess_approx_ = HessianApprox::GAUSS_NEWTON;
-  /// Linesearch options, as in proxsuite-nlp.
+  /// Linesearch options.
   LinesearchOptions ls_params;
   /// Type of Lagrange multiplier update.
   MultiplierUpdateMode multiplier_update_mode = MultiplierUpdateMode::NEWTON;
