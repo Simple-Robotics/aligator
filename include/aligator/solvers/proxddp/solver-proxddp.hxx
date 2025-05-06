@@ -24,7 +24,7 @@ void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
                                const Scalar mu_inv,
                                WorkspaceTpl<Scalar> &workspace) {
   ALIGATOR_TRACY_ZONE_SCOPED;
-  using ProductOp = proxsuite::nlp::ConstraintSetProductTpl<Scalar>;
+  using ProductOp = ConstraintSetProductTpl<Scalar>;
   auto &sif = workspace.shifted_constraints;
 
   const TrajOptDataTpl<Scalar> &prob_data = workspace.problem_data;
@@ -244,7 +244,7 @@ bool SolverProxDDPTpl<Scalar>::computeMultipliers(
     Lds[0] = mudyn() * (lams_plus[0] - lams[0]);
     RET_FALSE_IF_NAN(Lds[0]);
   }
-  using ConstraintSetProd = proxsuite::nlp::ConstraintSetProductTpl<Scalar>;
+  using ConstraintSetProd = ConstraintSetProductTpl<Scalar>;
 
   // loop over the stages
   for (std::size_t i = 0; i < nsteps; i++) {

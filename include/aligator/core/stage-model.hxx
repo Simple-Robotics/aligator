@@ -3,14 +3,10 @@
 #pragma once
 
 #include "aligator/core/stage-model.hpp"
+#include "aligator/core/vector-space.hpp"
 #include "aligator/tracy.hpp"
 
-#include <proxsuite-nlp/context.hpp>
-#include <proxsuite-nlp/modelling/constraints/equality-constraint.hpp>
-#include "aligator/core/vector-space.hpp"
-
 namespace aligator {
-/* StageModelTpl */
 
 template <typename Scalar>
 StageModelTpl<Scalar>::StageModelTpl(const PolyCost &cost,

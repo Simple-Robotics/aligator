@@ -5,7 +5,7 @@ namespace aligator::python {
 
 using context::Manifold;
 using context::Scalar;
-using PolymorphicManifold = polymorphic<Manifold>;
+using PolymorphicManifold = xyz::polymorphic<Manifold>;
 using context::ConstVectorRef;
 using context::VectorRef;
 using context::VectorXs;

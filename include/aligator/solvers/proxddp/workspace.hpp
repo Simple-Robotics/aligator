@@ -1,13 +1,13 @@
 /// @file    workspace.hpp
 /// @brief   Define workspace for the ProxDDP solver.
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/solvers/workspace-base.hpp"
 #include "aligator/gar/blk-matrix.hpp"
 #include "aligator/gar/lqr-problem.hpp"
 
-#include <proxsuite-nlp/modelling/constraints.hpp>
+#include "aligator/modelling/constraints/constraint-set-product.hpp"
 
 namespace aligator {
 
@@ -17,8 +17,7 @@ auto getConstraintProductSet(const ConstraintStackTpl<Scalar> &constraints) {
   for (size_t i = 0; i < constraints.size(); i++) {
     components.push_back(constraints.sets[i]);
   }
-  return proxsuite::nlp::ConstraintSetProductTpl<Scalar>{components,
-                                                         constraints.dims()};
+  return ConstraintSetProductTpl<Scalar>{components, constraints.dims()};
 }
 
 /// @brief Workspace for solver SolverProxDDP.
@@ -31,7 +30,7 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using Base = WorkspaceBaseTpl<Scalar>;
   using VecBool = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
   using KnotType = gar::LqrKnotTpl<Scalar>;
-  using ConstraintSetProduct = proxsuite::nlp::ConstraintSetProductTpl<Scalar>;
+  using ConstraintSetProduct = ConstraintSetProductTpl<Scalar>;
   using BlkJacobianType = BlkMatrix<MatrixXs, -1, 2>; // jacobians
   using LqrProblemType = gar::LqrProblemTpl<Scalar>;
 

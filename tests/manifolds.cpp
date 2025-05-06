@@ -14,6 +14,7 @@
 BOOST_AUTO_TEST_SUITE(manifold)
 
 using namespace aligator;
+using xyz::polymorphic;
 using Manifold = ManifoldAbstractTpl<double>;
 using VectorSpace = VectorSpaceTpl<double>;
 
