@@ -18,6 +18,29 @@
 
 #define ALIGATOR_INLINE inline __attribute__((always_inline))
 
+/// \brief macros for pragma push/pop/ignore deprecated warnings
+#if defined(__GNUC__) || defined(__clang__)
+#define ALIGATOR_COMPILER_DIAGNOSTIC_PUSH ALIGATOR_PRAGMA(GCC diagnostic push)
+#define ALIGATOR_COMPILER_DIAGNOSTIC_POP ALIGATOR_PRAGMA(GCC diagnostic pop)
+#if defined(__clang__)
+#define ALIGATOR_COMPILER_DIAGNOSTIC_IGNORED_DELETE_NON_ABSTRACT_NON_VIRTUAL_DTOR
+ALIGATOR_PRAGMA(GCC diagnostic ignored "-Wdelete-non-abstract-non-virtual-dtor")
+#else
+#define ALIGATOR_COMPILER_DIAGNOSTIC_IGNORED_DELETE_NON_ABSTRACT_NON_VIRTUAL_DTOR
+#endif
+#elif defined(WIN32)
+#define ALIGATOR_COMPILER_DIAGNOSTIC_PUSH _Pragma("warning(push)")
+#define ALIGATOR_COMPILER_DIAGNOSTIC_POP _Pragma("warning(pop)")
+#define ALIGATOR_COMPILER_DIAGNOSTIC_IGNORED_DELETE_NON_ABSTRACT_NON_VIRTUAL_DTOR
+#else
+#define ALIGATOR_COMPILER_DIAGNOSTIC_PUSH
+#define ALIGATOR_COMPILER_DIAGNOSTIC_POP
+#define ALIGATOR_COMPILER_DIAGNOSTIC_IGNORED_DEPRECECATED_DECLARATIONS
+#define ALIGATOR_COMPILER_DIAGNOSTIC_IGNORED_VARIADIC_MACROS
+#define ALIGATOR_COMPILER_DIAGNOSTIC_IGNORED_SELF_ASSIGN_OVERLOADED
+#define ALIGATOR_COMPILER_DIAGNOSTIC_IGNORED_MAYBE_UNINITIALIZED
+#endif // __GNUC__ || __clang__
+
 namespace xyz {
 // fwd-decl for boost override later
 template <class T, class A> class polymorphic;
