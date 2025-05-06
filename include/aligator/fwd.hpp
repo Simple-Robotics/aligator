@@ -14,6 +14,8 @@
 #include "aligator/config.hpp"
 #include "aligator/deprecated.hpp"
 
+#include <memory>
+
 #define ALIGATOR_RAISE_IF_NAN(value)                                           \
   if (::aligator::math::check_value(value))                                    \
   ALIGATOR_RUNTIME_ERROR("Encountered NaN.\n")
