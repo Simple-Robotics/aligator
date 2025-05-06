@@ -24,6 +24,7 @@ Furthermore, aligator will no longer depend on the proxsuite-nlp library, which 
 - Add/transfer some headers from proxsuite-nlp (see [#309](https://github.com/Simple-Robotics/aligator/pull/309)):
   - Add `aligator/fmt-eigen.hpp` to use fmt with Eigen
   - Add `aligator/third-party/polymorphic_cxx14.h`
+  - Add Bunch-Kaufman solver, port from proxsuite-nlp in `aligator/bunchkaufman.hpp`
 
 ### Changed
 

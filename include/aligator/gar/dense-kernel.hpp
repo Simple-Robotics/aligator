@@ -1,6 +1,6 @@
 #pragma once
 
-#include <proxsuite-nlp/linalg/bunchkaufman.hpp>
+#include "aligator/core/bunchkaufman.hpp"
 
 #include "blk-matrix.hpp"
 #include "lqr-problem.hpp"
