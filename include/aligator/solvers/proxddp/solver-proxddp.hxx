@@ -78,7 +78,7 @@ SolverProxDDPTpl<Scalar>::SolverProxDDPTpl(const Scalar tol,
       sa_strategy_(sa_strategy), max_iters(max_iters), rollout_max_iters(1),
       filter_(0.0, ls_params.alpha_min, ls_params.max_num_steps),
       linesearch_() {
-  ls_params.interp_type = proxsuite::nlp::LSInterpolation::CUBIC;
+  ls_params.interp_type = LSInterpolation::CUBIC;
 }
 
 template <typename Scalar>

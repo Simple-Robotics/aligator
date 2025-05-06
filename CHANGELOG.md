@@ -23,8 +23,9 @@ Furthermore, aligator will no longer depend on the proxsuite-nlp library, which 
 - Add `gar/fwd.hpp` header ([#301](https://github.com/Simple-Robotics/aligator/pull/301/))
 - Add/transfer some headers from proxsuite-nlp (see [#309](https://github.com/Simple-Robotics/aligator/pull/309)):
   - Add `aligator/fmt-eigen.hpp` to use fmt with Eigen
-  - Add `aligator/third-party/polymorphic_cxx14.h`
-  - Add Bunch-Kaufman solver, port from proxsuite-nlp in `aligator/bunchkaufman.hpp`
+  - Add `aligator/third-party/polymorphic_cxx14.h` ([#312](https://github.com/Simple-Robotics/aligator/pull/312))
+  - Add Bunch-Kaufman solver, port from proxsuite-nlp in `aligator/bunchkaufman.hpp` ([#312](https://github.com/Simple-Robotics/aligator/pull/312))
+  - Add linesearch classes `LinesearchBase` and `ArmijoLinesearch` ([#312](https://github.com/Simple-Robotics/aligator/pull/312))
 
 ### Changed
 
@@ -53,6 +54,7 @@ Furthermore, aligator will no longer depend on the proxsuite-nlp library, which 
   - Remove the `ALIGATOR_PINOCCHIO_V3` compile definition.
 - Remove macro header `aligator/macros.hpp` and macros `ALIGATOR_WITH_CPP_14`, `ALIGATOR_WITH_CPP_17`, and `ALIGATOR_MAYBE_UNUSED` ([#309](https://github.com/Simple-Robotics/aligator/pull/309))
 - Remove deprecated typedef `aligator::context::CostBase` ([#310](https://github.com/Simple-Robotics/aligator/pull/310))
+- Remove header `aligator/core/linesearch.hpp` (which using-decl linesearch classes from proxsuite-nlp) ([#312](https://github.com/Simple-Robotics/aligator/pull/312))
 
 ## [0.13.0] - 2025-04-26
 

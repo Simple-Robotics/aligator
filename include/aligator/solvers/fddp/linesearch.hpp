@@ -4,7 +4,7 @@
 
 #include "aligator/fwd.hpp"
 #include "aligator/utils/exceptions.hpp"
-#include "aligator/core/linesearch.hpp"
+#include "aligator/core/linesearch-base.hpp"
 #include <utility>
 
 namespace aligator {
