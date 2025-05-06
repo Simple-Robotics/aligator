@@ -223,12 +223,6 @@ set(BOOST_REQUIRED_COMPONENTS filesystem)
 SET_BOOST_DEFAULT_OPTIONS()
 EXPORT_BOOST_DEFAULT_OPTIONS()
 ADD_PROJECT_DEPENDENCY(Boost REQUIRED COMPONENTS ${BOOST_REQUIRED_COMPONENTS})
-ADD_PROJECT_DEPENDENCY(
-  proxsuite-nlp
-  0.10.0
-  REQUIRED
-  PKG_CONFIG_REQUIRES "proxsuite-nlp >= 0.10.0"
-)
 
 if(BUILD_WITH_PINOCCHIO_SUPPORT)
   message(STATUS "Building aligator with Pinocchio support.")
@@ -241,21 +235,7 @@ if(BUILD_WITH_PINOCCHIO_SUPPORT)
     PKG_CONFIG_REQUIRES "pinocchio >= ${PINOCCHIO_MINIMUM_VERSION}"
   )
 
-  if(NOT DEFINED PROXSUITE_NLP_WITH_PINOCCHIO_SUPPORT)
-    message(
-      FATAL_ERROR
-      "The aligator Pinocchio features require Pinocchio support in proxsuite-nlp. Please check your installation of proxsuite-nlp (found at ${proxsuite-nlp_DIR}).\n"
-      "If you didn't build proxsuite-nlp yourself, please contact the maintainer for the distribution you used."
-    )
-  endif()
-
   list(APPEND CFLAGS_DEPENDENCIES "-DALIGATOR_WITH_PINOCCHIO")
-elseif(PROXSUITE_NLP_WITH_PINOCCHIO_SUPPORT)
-  message(
-    WARNING
-    "Aligator is being built without Pinocchio features, although the provided version of proxsuite-nlp has Pinocchio support. "
-    "Make sure this is what you want."
-  )
 endif()
 
 if(BUILD_CROCODDYL_COMPAT)
@@ -407,7 +387,6 @@ function(create_library)
   if(BUILD_WITH_OPENMP_SUPPORT)
     target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
   endif()
-  target_link_libraries(${PROJECT_NAME} PUBLIC proxsuite-nlp::proxsuite-nlp)
   target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt)
   # set the install-tree include dirs
   # used by dependent projects to consume this target
