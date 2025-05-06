@@ -10,7 +10,8 @@ template <typename Scalar>
 QuadraticResidualCostTpl<Scalar>::QuadraticResidualCostTpl(
     xyz::polymorphic<Manifold> space, xyz::polymorphic<StageFunction> function,
     const ConstMatrixRef &weights)
-    : Base(space, function->nu), weights_(weights), residual_(function) {
+    : Base(std::move(space), function->nu), weights_(weights),
+      residual_(std::move(function)) {
   if (residual_->nr != weights_.cols()) {
     ALIGATOR_RUNTIME_ERROR(
         "Weight matrix and residual codimension are inconsistent.");
