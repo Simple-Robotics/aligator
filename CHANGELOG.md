@@ -30,6 +30,8 @@ Furthermore, aligator will no longer depend on the proxsuite-nlp library, which 
   - Make `aligator/math.hpp` independent: copy code for `math::check_value`, `math::check_scalar`, struct `math_types`.
   - Change `VerboseLevel` from a using-decl to its own enum in the `aligator` namespace.
   - Copy `ManifoldAbstractTpl` and subclasses over to aligator.
+  - Copy `ConstraintSetTpl` and subclasses over to aligator, change using-decl in `fwd.hpp` to a proper fwd-declaration in the `aligator` namespace ([#310](https://github.com/Simple-Robotics/aligator/pull/310))
+- `control-box-function.hpp`: update docstring, add deprecation dox tag ([#310](https://github.com/Simple-Robotics/aligator/pull/310))
 - Rename `{ riccati-impl.hpp => riccati-kernel }` (and associated files) ([#301](https://github.com/Simple-Robotics/aligator/pull/301/))
 - Move `HistoryCallbackTpl` from `aligator/helpers` (subdirectory was removed) to `aligator/core` ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
 - Move headers `results-base`, `solver-util`, `value-function`, `workspace-base` to `aligator/core` ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
@@ -47,6 +49,7 @@ Furthermore, aligator will no longer depend on the proxsuite-nlp library, which 
 - Officially remove support for Pinocchio 2, require Pinocchio >= 3.1 ([#307](https://github.com/Simple-Robotics/aligator/pull/307))
   - Remove the `ALIGATOR_PINOCCHIO_V3` compile definition.
 - Remove macro header `aligator/macros.hpp` and macros `ALIGATOR_WITH_CPP_14`, `ALIGATOR_WITH_CPP_17`, and `ALIGATOR_MAYBE_UNUSED` ([#309](https://github.com/Simple-Robotics/aligator/pull/309))
+- Remove deprecated typedef `aligator::context::CostBase` ([#310](https://github.com/Simple-Robotics/aligator/pull/310))
 
 ## [0.13.0] - 2025-04-26
 

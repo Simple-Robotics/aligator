@@ -6,7 +6,6 @@
 #include <type_traits>
 
 namespace aligator {
-using xyz::polymorphic;
 
 /** @brief    The cartesian product of two or more manifolds.
  */
@@ -25,7 +24,7 @@ public:
   template <class Concrete> inline void addComponent(const Concrete &c) {
     static_assert(
         std::is_base_of_v<Base, Concrete> ||
-            std::is_same_v<Concrete, polymorphic<Base>>,
+            std::is_same_v<Concrete, xyz::polymorphic<Base>>,
         "Input type should either be derived from ManifoldAbstractTpl or be "
         "polymorphic<ManifoldAbstractTpl>.");
     m_components.emplace_back(c);
@@ -37,23 +36,24 @@ public:
     }
   }
 
-  CartesianProductTpl() = default;
+  explicit CartesianProductTpl() = default;
   CartesianProductTpl(const CartesianProductTpl &) = default;
   CartesianProductTpl &operator=(const CartesianProductTpl &) = default;
   CartesianProductTpl(CartesianProductTpl &&) = default;
   CartesianProductTpl &operator=(CartesianProductTpl &&) = default;
 
-  CartesianProductTpl(const std::vector<polymorphic<Base>> &components)
+  CartesianProductTpl(const std::vector<xyz::polymorphic<Base>> &components)
       : m_components(components) {}
 
-  CartesianProductTpl(std::initializer_list<polymorphic<Base>> components)
+  CartesianProductTpl(std::vector<xyz::polymorphic<Base>> &&components)
+      : m_components(std::move(components)) {}
+
+  CartesianProductTpl(std::initializer_list<xyz::polymorphic<Base>> components)
       : m_components(components) {}
 
-  CartesianProductTpl(const polymorphic<Base> &left,
-                      const polymorphic<Base> &right) {
-    addComponent(left);
-    addComponent(right);
-  }
+  CartesianProductTpl(const xyz::polymorphic<Base> &left,
+                      const xyz::polymorphic<Base> &right)
+      : m_components{left, right} {}
 
   inline int nx() const {
     int r = 0;
@@ -102,7 +102,7 @@ public:
   VectorXs merge_vector(const std::vector<VectorXs> &vs) const;
 
 protected:
-  std::vector<polymorphic<Base>> m_components;
+  std::vector<xyz::polymorphic<Base>> m_components;
 
   void integrate_impl(const ConstVectorRef &x, const ConstVectorRef &v,
                       VectorRef out) const;
@@ -122,21 +122,21 @@ protected:
 };
 
 template <typename T>
-auto operator*(const polymorphic<ManifoldAbstractTpl<T>> &left,
-               const polymorphic<ManifoldAbstractTpl<T>> &right) {
+auto operator*(const xyz::polymorphic<ManifoldAbstractTpl<T>> &left,
+               const xyz::polymorphic<ManifoldAbstractTpl<T>> &right) {
   return CartesianProductTpl<T>(left, right);
 }
 
 template <typename T>
 auto operator*(const CartesianProductTpl<T> &left,
-               const polymorphic<ManifoldAbstractTpl<T>> &right) {
+               const xyz::polymorphic<ManifoldAbstractTpl<T>> &right) {
   CartesianProductTpl<T> out(left);
   out.addComponent(right);
   return out;
 }
 
 template <typename T>
-auto operator*(const polymorphic<ManifoldAbstractTpl<T>> &left,
+auto operator*(const xyz::polymorphic<ManifoldAbstractTpl<T>> &left,
                const CartesianProductTpl<T> &right) {
   return right * left;
 }

@@ -32,7 +32,8 @@ template <typename Scalar> struct ManifoldAbstractTpl;
 // fwd VectorSpaceTpl
 template <typename Scalar, int Dim = Eigen::Dynamic> struct VectorSpaceTpl;
 
-using proxsuite::nlp::ConstraintSetTpl;
+// fwd ConstraintSetTpl
+template <typename Scalar> struct ConstraintSetTpl;
 
 /// @brief Verbosity level.
 enum VerboseLevel { QUIET = 0, VERBOSE = 1, VERYVERBOSE = 2 };

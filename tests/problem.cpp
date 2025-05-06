@@ -7,6 +7,7 @@
 #include "aligator/core/explicit-dynamics.hpp"
 #include "aligator/core/cost-abstract.hpp"
 #include "aligator/utils/rollout.hpp"
+#include "aligator/modelling/constraints/equality-constraint.hpp"
 #ifdef ALIGATOR_WITH_PINOCCHIO
 #include "aligator/modelling/spaces/pinocchio-groups.hpp"
 #else
@@ -68,7 +69,7 @@ static const Manifold my_space(6);
 #endif
 
 using StageModel = aligator::StageModelTpl<double>;
-using EqualityConstraint = proxsuite::nlp::EqualityConstraintTpl<double>;
+using EqualityConstraint = EqualityConstraintTpl<double>;
 
 struct MyFixture {
   Manifold space;

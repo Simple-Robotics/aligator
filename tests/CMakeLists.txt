@@ -45,6 +45,7 @@ endfunction()
 set(
   TEST_NAMES
   continuous
+  constraints
   costs
   eigen-map
   integrators

@@ -9,13 +9,12 @@
 #include "aligator/modelling/spaces/multibody.hpp"
 #endif
 
-#include "aligator/fmt-eigen.hpp"
-
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE(manifold)
 
 using namespace aligator;
+using xyz::polymorphic;
 using Manifold = ManifoldAbstractTpl<double>;
 using VectorSpace = VectorSpaceTpl<double>;
 

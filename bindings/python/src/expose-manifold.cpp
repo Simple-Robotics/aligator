@@ -14,7 +14,7 @@ using context::Manifold;
 using context::MatrixRef;
 using context::Scalar;
 using context::VectorRef;
-using PolyManifold = polymorphic<Manifold>;
+using PolyManifold = xyz::polymorphic<Manifold>;
 using CartesianProduct = CartesianProductTpl<Scalar>;
 
 void exposeManifoldBase();
