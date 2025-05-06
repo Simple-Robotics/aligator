@@ -56,7 +56,9 @@ void exposeSolvers();
 void exposeCallbacks();
 /// Expose autodiff helpers
 void exposeAutodiff();
+/// Expose utils
 void exposeUtils();
+/// Expose filter strategy
 void exposeFilter();
 
 #ifdef ALIGATOR_WITH_PINOCCHIO
