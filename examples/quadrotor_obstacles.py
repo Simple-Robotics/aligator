@@ -13,8 +13,7 @@ import matplotlib.pyplot as plt
 
 import aligator
 
-from aligator import manifolds
-from proxsuite_nlp import constraints
+from aligator import manifolds, constraints
 
 from utils import ArgsBase, manage_lights
 
