@@ -9,8 +9,6 @@
 #include "aligator/modelling/spaces/multibody.hpp"
 #endif
 
-#include "aligator/fmt-eigen.hpp"
-
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE(manifold)
