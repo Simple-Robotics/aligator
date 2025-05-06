@@ -1,4 +1,5 @@
 #include "aligator/python/fwd.hpp"
+#include "aligator/python/utils.hpp"
 
 #include "aligator/core/constraint.hpp"
 #include "aligator/core/constraint-set.hpp"
@@ -21,7 +22,10 @@ context::StageConstraint *make_constraint_wrap(const PolyFunc &f,
 void exposeConstraintSets();
 
 void exposeConstraint() {
-  exposeConstraintSets();
+  {
+    bp::scope scope = get_namespace("constraints");
+    exposeConstraintSets();
+  }
 
   bp::class_<StageConstraint>(
       "StageConstraint",
