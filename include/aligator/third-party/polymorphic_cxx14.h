@@ -308,7 +308,7 @@ class polymorphic : private detail::empty_base_optimization<A> {
               T, typename std::remove_cv<
                      typename std::remove_reference<U>::type>::type>::value,
           int>::type = 0>
-  explicit polymorphic(U&& u)
+  /* explicit */ polymorphic(U&& u)
       : polymorphic(std::allocator_arg_t{}, A{},
                     in_place_type_t<typename std::remove_cv<
                         typename std::remove_reference<U>::type>::type>{},
