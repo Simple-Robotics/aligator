@@ -3,6 +3,12 @@
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
+#ifdef EIGEN_DEFAULT_IO_FORMAT
+#undef EIGEN_DEFAULT_IO_FORMAT
+#endif
+#define EIGEN_DEFAULT_IO_FORMAT                                                \
+  Eigen::IOFormat(Eigen::StreamPrecision, 0, ",", "\n", "[", "]")
+
 #include "aligator/math.hpp"
 #include "aligator/utils/exceptions.hpp"
 #include "aligator/config.hpp"

@@ -1,14 +1,20 @@
 #pragma once
 
+#include "aligator/fwd.hpp"
 #include "aligator/context.hpp"
-#include "aligator/utils/exceptions.hpp"
+
+namespace boost {
+template <typename T, typename A>
+inline T *get_pointer(::xyz::polymorphic<T, A> const &x) {
+  const T *r = x.operator->();
+  return const_cast<T *>(r);
+}
+} // namespace boost
 
 #include <eigenpy/eigenpy.hpp>
 #include <eigenpy/std-vector.hpp>
 
-#include <type_traits>
-
-#include <proxsuite-nlp/python/polymorphic.hpp>
+#include "aligator/python/polymorphic.hpp"
 
 /// @brief  The Python bindings.
 namespace aligator::python {
