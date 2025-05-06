@@ -33,7 +33,7 @@ jobs:
           mamba install cmake make pkg-config doxygen graphviz
 
           # Main dependencies
-          mamba install eigen pinocchio fmt proxsuite-nlp example-robot-data
+          mamba install eigen pinocchio fmt example-robot-data
 
       - name: Print environment
         shell: bash -l {0}
