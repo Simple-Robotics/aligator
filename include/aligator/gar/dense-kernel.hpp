@@ -219,4 +219,7 @@ template <typename _Scalar> struct DenseKernel {
   }
 };
 
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct DenseKernel<context::Scalar>;
+#endif
 } // namespace aligator::gar
