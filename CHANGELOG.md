@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.0] - 2025-05-07
+
 This release brings many major changes to aligator.
 
 We officially **drop support for Pinocchio 2**. As we start looking forward to Pinocchio 4, aligator will require at least Pinocchio 3.4. If you need support for a lower version of Pinocchio 3, please contact us and suggest patches.
@@ -332,7 +334,8 @@ The following **API-BREAKING** changes come from PR [#229](https://github.com/Si
 
 * This is the first release of `aligator`. This library is a joint effort between INRIA and LAAS-CNRS, and will be maintained and expanded in the future. Please provide constructive feedback and contribute!
 
-[Unreleased]: https://github.com/Simple-Robotics/aligator/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/Simple-Robotics/aligator/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/Simple-Robotics/aligator/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/Simple-Robotics/aligator/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/Simple-Robotics/aligator/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/Simple-Robotics/aligator/compare/v0.10.0...v0.11.0
