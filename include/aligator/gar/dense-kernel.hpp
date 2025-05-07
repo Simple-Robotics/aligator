@@ -1,3 +1,5 @@
+/// @file
+/// @copyright Copyright (C) 2025 INRIA
 #pragma once
 
 #include "aligator/core/bunchkaufman.hpp"
@@ -8,20 +10,11 @@
 
 namespace aligator::gar {
 
-/// @brief Symmetrize a matrix using its lower triangular part.
-template <typename Derived, unsigned int UpLo = Eigen::Lower>
-void make_symmetric(const Eigen::MatrixBase<Derived> &matrix) {
-  Derived &mat = matrix.const_cast_derived();
-  // symmetrize upper part
-  Eigen::SelfAdjointView<Derived, UpLo> view{mat};
-  mat = view;
-}
-
 /// @brief A dense Bunch-Kaufman based kernel.
 template <typename _Scalar> struct DenseKernel {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS_WITH_ROW_TYPES(Scalar);
-  using KnotType = LqrKnotTpl<Scalar>;
+  using const_view_t = typename LqrKnotTpl<Scalar>::const_view_t;
 
   struct Data {
     using BlkMat44 = BlkMatrix<MatrixXs, 4, 4>;
@@ -58,7 +51,7 @@ template <typename _Scalar> struct DenseKernel {
     VectorRef pt;
   };
 
-  inline static void terminalSolve(const KnotType &knot, Data &d, value v,
+  inline static void terminalSolve(const_view_t knot, Data &d, value v,
                                    Scalar mueq) {
     d.kktMat.setZero();
 
@@ -99,7 +92,7 @@ template <typename _Scalar> struct DenseKernel {
     v.pt.noalias() += knot.Gv.transpose() * zff;
   }
 
-  inline static void stageKernelSolve(const KnotType &knot, Data &d, value v,
+  inline static void stageKernelSolve(const_view_t knot, Data &d, value v,
                                       const value *vn, Scalar mudyn,
                                       Scalar mueq) {
     d.kktMat.setZero();
@@ -176,7 +169,7 @@ template <typename _Scalar> struct DenseKernel {
       v.pt.noalias() += vn->Pxt.transpose() * yff;
   }
 
-  static bool forwardStep(size_t i, bool isTerminal, const KnotType &knot,
+  static bool forwardStep(size_t i, bool isTerminal, const_view_t knot,
                           const Data &d, boost::span<VectorXs> xs,
                           boost::span<VectorXs> us, boost::span<VectorXs> vs,
                           boost::span<VectorXs> lbdas,
@@ -217,4 +210,7 @@ template <typename _Scalar> struct DenseKernel {
   }
 };
 
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct DenseKernel<context::Scalar>;
+#endif
 } // namespace aligator::gar

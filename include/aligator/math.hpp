@@ -182,6 +182,15 @@ template <typename T> T sign(const T &x) {
   return T((x > T(0)) - (x < T(0)));
 }
 
+/// @brief Symmetrize a matrix using its lower triangular part.
+template <typename Derived, unsigned int UpLo = Eigen::Lower>
+void make_symmetric(const Eigen::MatrixBase<Derived> &matrix) {
+  Derived &mat = matrix.const_cast_derived();
+  // symmetrize upper part
+  Eigen::SelfAdjointView<Derived, UpLo> view{mat};
+  mat = view;
+}
+
 template <typename T> void setZero(std::vector<T> &mats) {
   for (std::size_t i = 0; i < mats.size(); i++) {
     mats[i].setZero();

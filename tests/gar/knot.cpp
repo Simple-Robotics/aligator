@@ -32,14 +32,14 @@ struct knot_fixture {
 
 BOOST_FIXTURE_TEST_CASE(move, knot_fixture) {
 
-  MatrixXd Q = knot.Q;
-  MatrixXd R = knot.R;
+  MatrixXd Q = knot.Q.to_map();
+  MatrixXd R = knot.R.to_map();
 
   knot_t knot_moved{std::move(knot)};
   BOOST_CHECK_EQUAL(knot_moved.nx, nx);
   BOOST_CHECK_EQUAL(knot_moved.nu, nu);
-  BOOST_CHECK(Q == knot_moved.Q);
-  BOOST_CHECK(R == knot_moved.R);
+  BOOST_CHECK(knot_moved.Q.isApprox(Q));
+  BOOST_CHECK(knot_moved.R.isApprox(R));
 
   // copy ctor
   knot_t knot_move2 = std::move(knot_moved);
@@ -53,17 +53,17 @@ BOOST_FIXTURE_TEST_CASE(copy, knot_fixture) {
 
 BOOST_FIXTURE_TEST_CASE(swap, knot_fixture) {
   using std::swap;
-  MatrixXs Q0 = knot.Q;
+  MatrixXs Q0 = knot.Q.to_const_map();
   knot_t knot2 = knot;
   knot2.Q.setIdentity();
 
-  fmt::println("knot.Q:\n{}", knot.Q);
-  fmt::println("knot2.Q:\n{}", knot2.Q);
+  fmt::println("knot.Q:\n{}", knot.Q.to_map());
+  fmt::println("knot2.Q:\n{}", knot2.Q.to_map());
 
   swap(knot, knot2);
-  BOOST_CHECK(Q0 == knot2.Q);
+  BOOST_CHECK(knot2.Q.isApprox(Q0));
 
-  fmt::println("knot2.Q:\n{}", knot2.Q);
+  fmt::println("knot2.Q:\n{}", knot2.Q.to_map());
 }
 
 BOOST_FIXTURE_TEST_CASE(gen_knot, knot_fixture) {
@@ -117,17 +117,17 @@ BOOST_AUTO_TEST_CASE(basic) {
   }
 
   for (size_t i = 0; i < 10; i++) {
-    fmt::println("v [{:d}].q = {}", i, v[i].q.transpose());
+    fmt::println("v [{:d}].q = {}", i, v[i].q.to_map().transpose());
   }
 
   std::vector<knot_t> vm = std::move(v);
   for (size_t i = 0; i < 10; i++) {
-    fmt::println("v2[{:d}].q = {}", i, vm[i].q.transpose());
+    fmt::println("v2[{:d}].q = {}", i, vm[i].q.to_map().transpose());
   }
 
   std::vector<knot_t> vc{vm};
   for (size_t i = 0; i < 10; i++) {
-    fmt::println("vc[{:d}].q = {}", i, vc[i].q.transpose());
+    fmt::println("vc[{:d}].q = {}", i, vc[i].q.to_map().transpose());
     BOOST_CHECK_EQUAL(vm[i], vc[i]);
   }
 }
@@ -163,11 +163,9 @@ BOOST_AUTO_TEST_CASE(problem) {
   for (int i = 0; i < 10; i++) {
     v.push_back(generate_knot(nx, nu, 0));
   }
-  problem_t prob{v, nx};
+  problem_t prob{v, nx, alloc};
   BOOST_CHECK(prob.get_allocator() == alloc);
-  BOOST_CHECK(prob.get_allocator().resource() == alloc.resource());
   BOOST_CHECK(prob.G0.cols() == prob.stages[0].nx);
-  fmt::print("Q[0] = \n{}\n", prob.stages[0].Q);
 
   problem_t prob_move{std::move(prob)};
 

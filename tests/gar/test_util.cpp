@@ -17,11 +17,12 @@ knot_t generate_knot(uint nx, uint nu, uint nth, bool singular,
 
   MatrixXs _qsr = sampleWishartDistributedMatrix(nx + nu, wishartDof);
 
-  out.Q = _qsr.topLeftCorner(nx, nx);
+  auto Q = out.Q.to_map();
+  Q = _qsr.topLeftCorner(nx, nx);
   out.S = _qsr.topRightCorner(nx, nu);
   if (singular) {
     auto n = nx / 2;
-    out.Q.topLeftCorner(n, n).setZero();
+    Q.topLeftCorner(n, n).setZero();
   }
   out.R = _qsr.bottomRightCorner(nu, nu);
   out.q = VectorXs::NullaryExpr(nx, normal_unary_op{});
@@ -30,7 +31,7 @@ knot_t generate_knot(uint nx, uint nu, uint nth, bool singular,
   out.A = MatrixXs::NullaryExpr(nx, nx, normal_unary_op{});
   out.B.setRandom();
   out.E = MatrixXs::NullaryExpr(nx, nx, normal_unary_op{});
-  out.E *= 1000;
+  out.E.to_map() *= 1000;
   out.f = VectorXs::NullaryExpr(nx, normal_unary_op{100.});
 
   if (nth > 0) {

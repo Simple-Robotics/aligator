@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2024 LAAS-CNRS, 2024-2025 INRIA
 /// @author Wilson Jallet
 #pragma once
 
@@ -12,7 +12,7 @@ namespace gar {
 template <typename _Scalar> class RiccatiSolverBase {
 public:
   using Scalar = _Scalar;
-  using LqrKnot = LqrKnotTpl<double>;
+  using LqrKnot = LqrKnotTpl<Scalar>;
   ALIGATOR_DYNAMIC_TYPEDEFS_WITH_ROW_TYPES(Scalar);
 
   virtual bool backward(const Scalar mudyn, const Scalar mueq) = 0;

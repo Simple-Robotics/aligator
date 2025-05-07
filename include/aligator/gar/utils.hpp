@@ -139,7 +139,6 @@ void lqrDenseSolutionToTraj(
 template <typename Scalar>
 auto lqrInitializeSolution(const LqrProblemTpl<Scalar> &problem) {
   using VectorXs = typename math_types<Scalar>::VectorXs;
-  using knot_t = LqrKnotTpl<Scalar>;
   std::vector<VectorXs> xs;
   std::vector<VectorXs> us;
   std::vector<VectorXs> vs;
@@ -153,7 +152,7 @@ auto lqrInitializeSolution(const LqrProblemTpl<Scalar> &problem) {
 
   lbdas[0].setZero(problem.nc0());
   for (uint i = 0; i <= N; i++) {
-    const knot_t &kn = problem.stages[i];
+    const LqrKnotTpl<Scalar> &kn = problem.stages[i];
     xs[i].setZero(kn.nx);
     us[i].setZero(kn.nu);
     vs[i].setZero(kn.nc);

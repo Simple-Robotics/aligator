@@ -274,6 +274,7 @@ set(LIB_SOURCES src/utils/exceptions.cpp src/utils/logger.cpp)
 file(
   GLOB_RECURSE LIB_HEADERS
   CONFIGURE_DEPENDS
+  ${PROJECT_SOURCE_DIR}/include/aligator/*.h
   ${PROJECT_SOURCE_DIR}/include/aligator/*.hpp
   ${PROJECT_SOURCE_DIR}/include/aligator/*.hxx
 )
