@@ -39,6 +39,12 @@ BOOST_AUTO_TEST_CASE(managed_matrix_copy_asignment) {
   AllocMatrixType d;
   d = a;
   BOOST_CHECK(a.get_allocator() != d.get_allocator());
+  BOOST_CHECK(a.isApprox(d));
+
+  AllocMatrixType c{g_alloc};
+  c = a;
+  BOOST_CHECK(a.get_allocator() == c.get_allocator());
+  BOOST_CHECK(a.isApprox(c));
 }
 
 BOOST_AUTO_TEST_CASE(managed_matrix_create_move) {
