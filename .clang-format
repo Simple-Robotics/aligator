@@ -1,2 +1,5 @@
+---
 BasedOnStyle: LLVM
 SortIncludes: false
+
+BreakConstructorInitializers: BeforeComma
