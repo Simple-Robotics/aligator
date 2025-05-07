@@ -27,15 +27,15 @@ BOOST_AUTO_TEST_CASE(short_horz_pb) {
   VectorXs x1 = -VectorXs::Ones(nx);
   auto init_knot = [&](uint nc = 0) {
     knot_t knot(nx, nu, nc, alloc);
-    knot.A << 0.1, 0., -0.1, 0.01;
+    knot.A.to_map() << 0.1, 0., -0.1, 0.01;
     knot.B.setRandom();
     knot.E.setIdentity();
-    knot.E *= -1;
+    knot.E.to_map() *= -1;
     knot.f.setRandom();
     knot.Q.setIdentity();
-    knot.Q *= 0.01;
+    knot.Q.to_map() *= 0.01;
     knot.R.setIdentity();
-    knot.R *= 0.1;
+    knot.R.to_map() *= 0.1;
     return knot;
   };
   auto base_knot = init_knot();

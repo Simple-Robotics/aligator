@@ -39,8 +39,8 @@ std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem, uint t0,
   p1.addParameterization(nx_t0);
   {
     knot_t &p1_last = p1.stages.back();
-    p1_last.Gx = kn1_last.A.transpose();
-    p1_last.Gu = kn1_last.B.transpose();
+    p1_last.Gx = kn1_last.A.to_map().transpose();
+    p1_last.Gu = kn1_last.B.to_map().transpose();
     p1_last.gamma = kn1_last.f;
     p1_last.Gth.diagonal().setConstant(-mu);
     kn1_last.A.setZero();
@@ -52,7 +52,7 @@ std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem, uint t0,
   p2.addParameterization(nx_t0);
   {
     knot_t &p2_first = p2.stages[0];
-    p2_first.Gx = kn1_last.E.transpose();
+    p2_first.Gx = kn1_last.E.to_map().transpose();
   }
 
   return {std::move(p1), std::move(p2)};
@@ -173,6 +173,14 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
   fmt::println("KKT error (merged) {}", err_merged);
 }
 
+auto sample_normal(Eigen::Index n) {
+  return VectorXs::NullaryExpr(n, normal_unary_op{});
+}
+
+auto sample_normal(Eigen::Index n, Eigen::Index m) {
+  return MatrixXs::NullaryExpr(n, m, normal_unary_op{});
+}
+
 /// Randomize some of the parameters of the problem. This simulates something
 /// like updating the LQ problem in SQP.
 void randomlyModifyProblem(problem_t &prob) {
@@ -180,9 +188,9 @@ void randomlyModifyProblem(problem_t &prob) {
   std::vector<size_t> idx = {0, N / 3, N / 2, N / 2 + 1, N / 2 + 2, N};
   for (auto i : idx) {
     auto &kn = prob.stages.at(i);
-    kn.A = kn.A.NullaryExpr(kn.nx, kn.nx, normal_unary_op{});
+    kn.A = sample_normal(kn.nx, kn.nx);
     kn.B.setRandom();
-    kn.q = kn.q.NullaryExpr(kn.nx, normal_unary_op{});
+    kn.q = sample_normal(kn.nx);
     kn.R.setIdentity();
     kn.S.setZero();
   }
