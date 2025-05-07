@@ -193,7 +193,7 @@ def createStage(cp, cp_previous):
     stm = aligator.StageModel(rcost, create_dynamics(space, contact_map))
     for i in range(len(cp[0])):
         if cp[0][i]:
-            cone_cstr = aligator.FrictionConeResidual(nxc, nu, i, mu, 1e-3)
+            cone_cstr = aligator.CentroidalFrictionConeResidual(nxc, nu, i, mu, 1e-3)
             if force_size == 6:
                 cone_cstr = aligator.CentroidalWrenchConeResidual(
                     nxc, nu, i, mu, foot_length, foot_width
