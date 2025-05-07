@@ -68,26 +68,6 @@ void exposeGAR() {
       .def_readonly("nx2", &knot_t::nx2)
       .def_readonly("nth", &knot_t::nth)
       //
-      .def_readwrite("Q", &knot_t::Q)
-      .def_readwrite("S", &knot_t::S)
-      .def_readwrite("R", &knot_t::R)
-      .def_readwrite("q", &knot_t::q)
-      .def_readwrite("r", &knot_t::r)
-      //
-      .def_readwrite("A", &knot_t::A)
-      .def_readwrite("B", &knot_t::B)
-      .def_readwrite("E", &knot_t::E)
-      .def_readwrite("f", &knot_t::f)
-      //
-      .def_readwrite("C", &knot_t::C)
-      .def_readwrite("D", &knot_t::D)
-      .def_readwrite("d", &knot_t::d)
-      //
-      .def_readwrite("Gth", &knot_t::Gth)
-      .def_readwrite("Gx", &knot_t::Gx)
-      .def_readwrite("Gu", &knot_t::Gu)
-      .def_readwrite("gamma", &knot_t::gamma)
-      //
       .def("isApprox", &knot_t::isApprox,
            ("self"_a, "prec"_a = std::numeric_limits<Scalar>::epsilon()))
       //
@@ -97,21 +77,7 @@ void exposeGAR() {
   StdVectorPythonVisitor<knot_vec_t, false>::expose("StdVec_LqrKnot");
 
   bp::class_<lqr_t, boost::noncopyable>("LqrProblem", bp::no_init)
-      .def(bp::init<const knot_vec_t &, long>(("self"_a, "stages", "nc0")))
-      .def_readwrite("stages", &lqr_t::stages)
-      .add_property("horizon", &lqr_t::horizon)
-      .def_readwrite("G0", &lqr_t::G0)
-      .def_readwrite("g0", &lqr_t::g0)
-      .add_property("isInitialized", &lqr_t::isInitialized,
-                    "Whether the problem is initialized.")
-      .add_property("isParameterized", &lqr_t::isParameterized,
-                    "Whether the problem is parameterized.")
-      .def("addParameterization", &lqr_t::addParameterization,
-           ("self"_a, "nth"))
-      .add_property("ntheta", &lqr_t::ntheta)
-      .def("evaluate", &lqr_t::evaluate,
-           ("self"_a, "xs", "us", "theta"_a = std::nullopt),
-           "Evaluate the problem objective.");
+      .def(bp::init<const knot_vec_t &, long>(("self"_a, "stages", "nc0")));
 
   bp::class_<riccati_base_t, boost::noncopyable>("RiccatiSolverBase",
                                                  bp::no_init)
