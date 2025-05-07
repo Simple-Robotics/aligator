@@ -145,10 +145,8 @@ public:
       m_data = other.m_data;
       other.m_data = nullptr;
       return *this;
-    } else if (m_allocated_size < other.size()) {
-      // rellocate
-      this->deallocate();
-      this->allocate();
+    } else {
+      this->resize(other.rows(), other.cols());
     }
     this->to_map() = other.to_const_map();
     return *this;
@@ -156,12 +154,7 @@ public:
 
   template <typename Derived>
   ManagedMatrix &operator=(const Eigen::MatrixBase<Derived> &mat) {
-    const Index new_size = mat.size();
     this->resize(mat.rows(), mat.cols());
-    if (m_allocated_size < new_size) {
-      this->deallocate();
-      this->allocate();
-    }
     this->to_map() = mat;
     return *this;
   }
@@ -231,6 +224,49 @@ public:
 
   /// \brief Obtain a const map.
   ConstMapType to_const_map() const { return ConstMapType{*this}; }
+
+  void setZero() { this->to_map().setZero(); }
+
+  void setZero(Index rows, Index cols) {
+    this->resize(rows, cols);
+    this->setZero();
+  }
+
+  void setZero(Index size) {
+    this->resize(size);
+    this->setZero();
+  }
+
+  void setRandom() { this->to_map().setRandom(); }
+
+  void setIdentity() { this->to_map().setIdentity(); }
+
+  void setConstant(Scalar s) { this->to_map().setConstant(s); }
+
+  auto noalias() { return to_map().noalias(); }
+
+  auto diagonal() { return to_map().diagonal(); }
+  auto diagonal() const { return to_const_map().diagonal(); }
+
+  auto topRows(Index n) { return to_map().topRows(n); }
+  auto topRows(Index n) const { return to_const_map().topRows(n); }
+
+  auto head(Index n) { return to_map().head(n); }
+  auto head(Index n) const { return to_const_map().head(n); }
+
+  auto tail(Index n) { return to_map().tail(n); }
+  auto tail(Index n) const { return to_const_map().tail(n); }
+
+  bool isApprox(const ManagedMatrix &other,
+                Scalar prec = std::numeric_limits<Scalar>::epsilon()) const {
+    return to_const_map().isApprox(other.to_const_map(), prec);
+  }
+
+  template <typename Derived>
+  bool isApprox(const Eigen::DenseBase<Derived> &mat,
+                Scalar prec = std::numeric_limits<Scalar>::epsilon()) const {
+    return to_const_map().isApprox(mat, prec);
+  }
 
   /// \brief Pointer to stored data.
   [[nodiscard]] Scalar *data() { return m_data; }
