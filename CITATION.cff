@@ -34,6 +34,6 @@ authors:
     affiliation: LAAS-CNRS
     orcid: 'https://orcid.org/0000-0002-8090-0601'
 repository-code: 'https://github.com/Simple-Robotics/aligator'
-version: 0.13.0
-date-released: "2025-04-26"
+version: 0.14.0
+date-released: "2025-05-07"
 license: BSD-2-Clause
