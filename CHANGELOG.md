@@ -15,6 +15,7 @@ Furthermore, aligator will no longer depend on the proxsuite-nlp library, which 
 
 ### Added
 
+- Add allocator-aware class `ManagedMatrix` to wrap Eigen::Map types along with allocator-managed memory. Update `gar` classes to use `ManagedMatrix`. ([#313](https://github.com/Simple-Robotics/aligator/pull/313))
 - Add CMake macro `aligator_create_python_extension()` to export ([#298](https://github.com/Simple-Robotics/aligator/pull/298))
 - Add `LqrProblemTpl::isApprox()` and helper `lqrKnotsSameDim`, check dimensions in `LqrKnotTpl::isApprox()` ([#300](https://github.com/Simple-Robotics/aligator/pull/300))
 - Add class `aligator::polymorphic_allocator` leveraging C++17 memory resources ([#243](https://github.com/Simple-Robotics/aligator/pull/243))
