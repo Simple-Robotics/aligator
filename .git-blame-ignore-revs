@@ -1,2 +1,5 @@
 # pre-commit run -a for gersemi (ManifoldFR)
 141a1dc622d80e1cf822df79ca66b2e84d84c846
+
+# pre-commit run -a for clang-format (ManifoldFR)
+0888454829fe8752cc15d16120010da5809ef7fb
