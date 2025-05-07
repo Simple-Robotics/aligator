@@ -808,6 +808,8 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
 
   for (size_t t = 0; t < N; t++) {
     const StageData &sd = *pd.stage_data[t];
+    // taking the knot and not a view, since resizes might
+    // happen here.
     LqrKnotTpl<Scalar> &knot = prob.stages[t];
     const DynamicsData &dd = *sd.dynamics_data;
     const CostData &cd = *sd.cost_data;
@@ -831,9 +833,9 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
 
     // dynamics hessians
     if (hess_approx_ == HessianApprox::EXACT) {
-      knot.Q += dd.Hxx_;
-      knot.S += dd.Hxu_;
-      knot.R += dd.Huu_;
+      knot.Q.to_map() += dd.Hxx_;
+      knot.S.to_map() += dd.Hxu_;
+      knot.R.to_map() += dd.Huu_;
     }
 
     // TODO: handle the bloody constraints
@@ -856,15 +858,15 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
     knot.C = workspace_.cstr_proj_jacs[N].blockCol(0);
     knot.d = workspace_.Lvs[N];
     // correct right-hand side
-    knot.q += workspace_.cstr_lx_corr[N];
+    knot.q.to_map() += workspace_.cstr_lx_corr[N];
   }
 
   const StageFunctionData &id = *pd.init_data;
   prob.G0 = id.Jx_;
-  prob.g0.noalias() = workspace_.Lds[0];
+  prob.g0 = workspace_.Lds[0];
 
   LqrKnotTpl<Scalar> &model = prob.stages[0];
-  model.Q += id.Hxx_;
+  model.Q.to_map() += id.Hxx_;
 }
 
 } // namespace aligator

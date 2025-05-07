@@ -10,7 +10,6 @@ void lqrCreateSparseMatrix(const LqrProblemTpl<Scalar> &problem,
                            Eigen::Matrix<Scalar, -1, 1> &rhs, bool update) {
   using Eigen::Index;
   const uint nrows = lqrNumRows(problem);
-  using knot_t = LqrKnotTpl<Scalar>;
   const auto &knots = problem.stages;
 
   if (!update) {
@@ -24,10 +23,11 @@ void lqrCreateSparseMatrix(const LqrProblemTpl<Scalar> &problem,
   uint idx = 0;
   {
     uint nc0 = problem.nc0();
-    rhs.head(nc0) = problem.g0;
-    helpers::sparseAssignDenseBlock(0, nc0, problem.G0, mat, update);
-    helpers::sparseAssignDenseBlock(nc0, 0, problem.G0.transpose(), mat,
+    rhs.head(nc0) = problem.g0.to_const_map();
+    helpers::sparseAssignDenseBlock(0, nc0, problem.G0.to_const_map(), mat,
                                     update);
+    helpers::sparseAssignDenseBlock(
+        nc0, 0, problem.G0.to_const_map().transpose(), mat, update);
     for (Index kk = 0; kk < nc0; kk++) {
       if (update) {
         mat.coeffRef(kk, kk) = -mudyn;
@@ -39,7 +39,7 @@ void lqrCreateSparseMatrix(const LqrProblemTpl<Scalar> &problem,
   }
 
   for (size_t t = 0; t <= N; t++) {
-    const knot_t &model = knots[t];
+    auto model = knots[t].to_const_view();
     const uint n = model.nx + model.nu + model.nc;
     // get block for current variables
     auto rhsblk = rhs.segment(idx, n);
@@ -106,7 +106,6 @@ std::array<Scalar, 3> lqrComputeKktError(
   uint N = (uint)problem.horizon();
   assert(xs.size() == N + 1);
   using VectorXs = typename math_types<Scalar>::VectorXs;
-  using KnotType = LqrKnotTpl<Scalar>;
 
   Scalar dynErr = 0.;
   Scalar cstErr = 0.;
@@ -121,14 +120,15 @@ std::array<Scalar, 3> lqrComputeKktError(
 
   // initial stage
   {
-    _dyn = problem.g0 + problem.G0 * xs[0] - mudyn * lbdas[0];
+    _dyn = problem.g0.to_const_map() + problem.G0.to_const_map() * xs[0] -
+           mudyn * lbdas[0];
     dNorm = math::infty_norm(_dyn);
     dynErr = std::max(dynErr, dNorm);
     if (verbose)
       fmt::print("d0 = {:.3e} \n", dNorm);
   }
   for (uint t = 0; t <= N; t++) {
-    const KnotType &knot = problem.stages[t];
+    auto knot = problem.stages[t].to_const_view();
     auto _Str = knot.S.transpose();
 
     if (verbose)
@@ -148,9 +148,9 @@ std::array<Scalar, 3> lqrComputeKktError(
     }
 
     if (t == 0) {
-      _gx += problem.G0.transpose() * lbdas[0];
+      _gx += problem.G0.to_const_map().transpose() * lbdas[0];
     } else {
-      auto Et = problem.stages[t - 1].E.transpose();
+      auto Et = problem.stages[t - 1].E.to_const_map().transpose();
       _gx += Et * lbdas[t];
     }
 
@@ -195,7 +195,6 @@ template <typename Scalar>
 bool lqrDenseMatrix(const LqrProblemTpl<Scalar> &problem, Scalar mudyn,
                     Scalar mueq, typename math_types<Scalar>::MatrixXs &mat,
                     typename math_types<Scalar>::VectorXs &rhs) {
-  using knot_t = LqrKnotTpl<Scalar>;
   const auto &knots = problem.stages;
   const size_t N = size_t(problem.horizon());
 
@@ -211,16 +210,16 @@ bool lqrDenseMatrix(const LqrProblemTpl<Scalar> &problem, Scalar mudyn,
   {
     const uint nc0 = problem.nc0();
     const uint nx0 = knots[0].nx;
-    mat.block(nc0, 0, nx0, nc0) = problem.G0.transpose();
-    mat.block(0, nc0, nc0, nx0) = problem.G0;
+    mat.block(nc0, 0, nx0, nc0) = problem.G0.to_const_map().transpose();
+    mat.block(0, nc0, nc0, nx0) = problem.G0.to_const_map();
     mat.topLeftCorner(nc0, nc0).diagonal().setConstant(-mudyn);
 
-    rhs.head(nc0) = problem.g0;
+    rhs.head(nc0) = problem.g0.to_const_map();
     idx += nc0;
   }
 
   for (size_t t = 0; t <= N; t++) {
-    const knot_t &model = knots[t];
+    const auto model = knots[t].to_const_view();
     // get block for current variables
     const uint n = model.nx + model.nu + model.nc;
     auto block = mat.block(idx, idx, n, n);

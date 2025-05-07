@@ -1,9 +1,10 @@
-/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, 2023-2025 INRIA
 /// @author Wilson Jallet
 #pragma once
 
 #include "aligator/gar/riccati-base.hpp"
 #include "aligator/gar/riccati-kernel.hpp"
+#include "aligator/gar/lqr-problem.hpp"
 #include "aligator/tracy.hpp"
 
 namespace aligator {
@@ -39,7 +40,7 @@ public:
 
   void allocateLeg(uint start, uint end, bool last_leg);
 
-  static void setupKnot(KnotType &knot, const Scalar mudyn) {
+  static void setupKnot(typename KnotType::view_t knot, const Scalar mudyn) {
     ALIGATOR_TRACY_ZONE_SCOPED;
     ALIGATOR_NOMALLOC_SCOPED;
     knot.Gx = knot.A.transpose();

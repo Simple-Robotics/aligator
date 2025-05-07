@@ -3,7 +3,7 @@
 #pragma once
 
 #include "aligator/context.hpp"
-#include "aligator/gar/fwd.hpp"
+#include "aligator/gar/lqr-problem.hpp"
 #include "blk-matrix.hpp"
 
 #include "aligator/core/bunchkaufman.hpp"
@@ -103,8 +103,8 @@ template <typename Scalar> struct ProximalRiccatiKernel {
           fth(mat.rowDims(), {nth}) {}
   };
 
-  static void terminalSolve(const KnotType &model, const Scalar mueq,
-                            StageFactorType &d);
+  static void terminalSolve(typename KnotType::const_view_t model,
+                            const Scalar mueq, StageFactorType &d);
 
   static bool backwardImpl(boost::span<const KnotType> stages,
                            const Scalar mudyn, const Scalar mueq,
@@ -114,9 +114,9 @@ template <typename Scalar> struct ProximalRiccatiKernel {
   static void computeInitial(VectorRef x0, VectorRef lbd0, const kkt0_t &kkt0,
                              const std::optional<ConstVectorRef> &theta_);
 
-  static void stageKernelSolve(const KnotType &model, StageFactorType &d,
-                               value_t &vn, const Scalar mudyn,
-                               const Scalar mueq);
+  static void stageKernelSolve(typename KnotType::const_view_t model,
+                               StageFactorType &d, value_t &vn,
+                               const Scalar mudyn, const Scalar mueq);
 
   /// Forward sweep.
   static bool
