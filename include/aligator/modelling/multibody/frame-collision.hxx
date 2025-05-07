@@ -68,9 +68,11 @@ void FrameCollisionResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
 template <typename Scalar>
 FrameCollisionDataTpl<Scalar>::FrameCollisionDataTpl(
     const FrameCollisionResidualTpl<Scalar> &model)
-    : Base(model.ndx1, model.nu, 1), pin_data_(model.pin_model_),
-      geom_data(pinocchio::GeometryData(model.geom_model_)),
-      Jcol_(6, model.pin_model_.nv), Jcol2_(6, model.pin_model_.nv) {
+    : Base(model.ndx1, model.nu, 1)
+    , pin_data_(model.pin_model_)
+    , geom_data(pinocchio::GeometryData(model.geom_model_))
+    , Jcol_(6, model.pin_model_.nv)
+    , Jcol2_(6, model.pin_model_.nv) {
   Jcol_.setZero();
   Jcol2_.setZero();
 }

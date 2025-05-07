@@ -7,14 +7,18 @@ namespace aligator {
 template <typename Scalar>
 GravityCompensationResidualTpl<Scalar>::GravityCompensationResidualTpl(
     int ndx, const MatrixXs &actuation_matrix, const Model &model)
-    : Base(ndx, (int)actuation_matrix.cols(), model.nv), pin_model_(model),
-      actuation_matrix_(actuation_matrix), use_actuation_matrix(true) {}
+    : Base(ndx, (int)actuation_matrix.cols(), model.nv)
+    , pin_model_(model)
+    , actuation_matrix_(actuation_matrix)
+    , use_actuation_matrix(true) {}
 
 template <typename Scalar>
 GravityCompensationResidualTpl<Scalar>::GravityCompensationResidualTpl(
     int ndx, const Model &model)
-    : Base(ndx, model.nv, model.nv), pin_model_(model), actuation_matrix_(),
-      use_actuation_matrix(false) {}
+    : Base(ndx, model.nv, model.nv)
+    , pin_model_(model)
+    , actuation_matrix_()
+    , use_actuation_matrix(false) {}
 
 template <typename Scalar>
 void GravityCompensationResidualTpl<Scalar>::evaluate(const ConstVectorRef &x,
@@ -51,9 +55,10 @@ void GravityCompensationResidualTpl<Scalar>::computeJacobians(
 template <typename Scalar>
 GravityCompensationResidualTpl<Scalar>::Data::Data(
     const GravityCompensationResidualTpl &resdl)
-    : BaseData(resdl), pin_data_(resdl.pin_model_),
-      tmp_torque_(resdl.pin_model_.nv),
-      gravity_partial_dq_(resdl.pin_model_.nv, resdl.pin_model_.nv) {}
+    : BaseData(resdl)
+    , pin_data_(resdl.pin_model_)
+    , tmp_torque_(resdl.pin_model_.nv)
+    , gravity_partial_dq_(resdl.pin_model_.nv, resdl.pin_model_.nv) {}
 
 template <typename Scalar>
 auto GravityCompensationResidualTpl<Scalar>::createData() const

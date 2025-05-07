@@ -17,7 +17,8 @@ using byte_t = std::byte;
 class polymorphic_allocator : public std::pmr::polymorphic_allocator<byte_t> {
 public:
   using base = std::pmr::polymorphic_allocator<byte_t>;
-  polymorphic_allocator() noexcept : base{std::pmr::get_default_resource()} {}
+  polymorphic_allocator() noexcept
+      : base{std::pmr::get_default_resource()} {}
 
   polymorphic_allocator(const polymorphic_allocator &other) = default;
 

@@ -32,8 +32,8 @@ struct FunctionSliceXprTpl<Scalar, StageFunctionTpl<Scalar>>
 
   FunctionSliceXprTpl(xyz::polymorphic<Base> func,
                       std::vector<int> const &indices)
-      : Base(func->ndx1, func->nu, (int)indices.size()),
-        SliceImpl(func, indices) {}
+      : Base(func->ndx1, func->nu, (int)indices.size())
+      , SliceImpl(func, indices) {}
 
   FunctionSliceXprTpl(xyz::polymorphic<Base> func, const int idx)
       : FunctionSliceXprTpl(func, std::vector<int>{idx}) {}
@@ -73,8 +73,8 @@ struct FunctionSliceXprTpl<Scalar, UnaryFunctionTpl<Scalar>>
 
   FunctionSliceXprTpl(xyz::polymorphic<Base> func,
                       std::vector<int> const &indices)
-      : Base(func->ndx1, func->nu, (int)indices.size()),
-        SliceImpl(func, indices) {}
+      : Base(func->ndx1, func->nu, (int)indices.size())
+      , SliceImpl(func, indices) {}
 
   FunctionSliceXprTpl(xyz::polymorphic<Base> func, const int idx)
       : FunctionSliceXprTpl(func, std::vector<int>{idx}) {}
@@ -110,8 +110,9 @@ struct FunctionSliceDataTpl : StageFunctionDataTpl<Scalar> {
 
   template <typename Base>
   FunctionSliceDataTpl(FunctionSliceXprTpl<Scalar, Base> const &obj)
-      : BaseData(obj.ndx1, obj.nu, obj.nr), sub_data(obj.func->createData()),
-        lbda_sub(obj.nr) {}
+      : BaseData(obj.ndx1, obj.nu, obj.nr)
+      , sub_data(obj.func->createData())
+      , lbda_sub(obj.nr) {}
 };
 
 namespace detail {

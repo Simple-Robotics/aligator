@@ -7,21 +7,52 @@ namespace aligator::gar {
 
 template <typename Scalar>
 LqrKnotTpl<Scalar>::LqrKnotTpl(no_alloc_t, allocator_type alloc)
-    : Q(alloc), S(alloc), R(alloc), q(alloc), r(alloc), //
-      A(alloc), B(alloc), E(alloc), f(alloc),           //
-      C(alloc), D(alloc), d(alloc),                     //
-      Gth(alloc), Gx(alloc), Gu(alloc), Gv(alloc), gamma(alloc),
-      m_allocator(alloc) {}
+    : Q(alloc)
+    , S(alloc)
+    , R(alloc)
+    , q(alloc)
+    , r(alloc)
+    , A(alloc)
+    , B(alloc)
+    , E(alloc)
+    , f(alloc)
+    , C(alloc)
+    , D(alloc)
+    , d(alloc)
+    , Gth(alloc)
+    , Gx(alloc)
+    , Gu(alloc)
+    , Gv(alloc)
+    , gamma(alloc)
+    , m_allocator(alloc) {}
 
 template <typename Scalar>
 LqrKnotTpl<Scalar>::LqrKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth,
                                allocator_type alloc)
-    : nx(nx), nu(nu), nc(nc), nx2(nx2), nth(nth), //
-      Q(nx, nx, alloc), S(nx, nu, alloc), R(nu, nu, alloc), q(nx, alloc),
-      r(nu, alloc), A(nx2, nx, alloc), B(nx2, nu, alloc), E(nx2, nx2, alloc),
-      f(nx2, alloc), C(nc, nx, alloc), D(nc, nu, alloc), d(nc, alloc),
-      Gth(nth, nth, alloc), Gx(nx, nth, alloc), Gu(nu, nth, alloc),
-      Gv(nc, nth, alloc), gamma(nth, alloc), m_allocator(std::move(alloc)) {
+    : nx(nx)
+    , nu(nu)
+    , nc(nc)
+    , nx2(nx2)
+    , nth(nth)
+    , //
+    Q(nx, nx, alloc)
+    , S(nx, nu, alloc)
+    , R(nu, nu, alloc)
+    , q(nx, alloc)
+    , r(nu, alloc)
+    , A(nx2, nx, alloc)
+    , B(nx2, nu, alloc)
+    , E(nx2, nx2, alloc)
+    , f(nx2, alloc)
+    , C(nc, nx, alloc)
+    , D(nc, nu, alloc)
+    , d(nc, alloc)
+    , Gth(nth, nth, alloc)
+    , Gx(nx, nth, alloc)
+    , Gu(nu, nth, alloc)
+    , Gv(nc, nth, alloc)
+    , gamma(nth, alloc)
+    , m_allocator(std::move(alloc)) {
   Q.setZero();
   S.setZero();
   R.setZero();
@@ -79,25 +110,57 @@ void LqrKnotTpl<Scalar>::assign(const LqrKnotTpl &other) {
 #define _c(name) name(other.name, alloc)
 template <typename Scalar>
 LqrKnotTpl<Scalar>::LqrKnotTpl(const LqrKnotTpl &other, allocator_type alloc)
-    : nx(other.nx), nu(other.nu), nc(other.nc), nx2(other.nx2),
-      nth(other.nth),                             //
-      _c(Q), _c(S), _c(R), _c(q), _c(r),          //
-      _c(A), _c(B), _c(E), _c(f),                 //
-      _c(C), _c(D), _c(d),                        //
-      _c(Gth), _c(Gx), _c(Gu), _c(Gv), _c(gamma), //
-      m_allocator(other.m_allocator) {}
+    : nx(other.nx)
+    , nu(other.nu)
+    , nc(other.nc)
+    , nx2(other.nx2)
+    , nth(other.nth)
+    , _c(Q)
+    , _c(S)
+    , _c(R)
+    , _c(q)
+    , _c(r)
+    , _c(A)
+    , _c(B)
+    , _c(E)
+    , _c(f)
+    , _c(C)
+    , _c(D)
+    , _c(d)
+    , _c(Gth)
+    , _c(Gx)
+    , _c(Gu)
+    , _c(Gv)
+    , _c(gamma)
+    , m_allocator(other.m_allocator) {}
 #undef _c
 
 #define _c(name) name(std::move(other.name))
 template <typename Scalar>
 LqrKnotTpl<Scalar>::LqrKnotTpl(LqrKnotTpl &&other)
-    : nx(other.nx), nu(other.nu), nc(other.nc), nx2(other.nx2),
-      nth(other.nth),                             //
-      _c(Q), _c(S), _c(R), _c(q), _c(r),          //
-      _c(A), _c(B), _c(E), _c(f),                 //
-      _c(C), _c(D), _c(d),                        //
-      _c(Gth), _c(Gx), _c(Gu), _c(Gv), _c(gamma), //
-      m_allocator(other.m_allocator) {}
+    : nx(other.nx)
+    , nu(other.nu)
+    , nc(other.nc)
+    , nx2(other.nx2)
+    , nth(other.nth)
+    , _c(Q)
+    , _c(S)
+    , _c(R)
+    , _c(q)
+    , _c(r)
+    , _c(A)
+    , _c(B)
+    , _c(E)
+    , _c(f)
+    , _c(C)
+    , _c(D)
+    , _c(d)
+    , _c(Gth)
+    , _c(Gx)
+    , _c(Gu)
+    , _c(Gv)
+    , _c(gamma)
+    , m_allocator(other.m_allocator) {}
 #undef _c
 
 template <typename Scalar>
@@ -184,16 +247,19 @@ bool LqrKnotTpl<Scalar>::isApprox(const LqrKnotTpl &other, Scalar prec) const {
 template <typename Scalar>
 LqrProblemTpl<Scalar>::LqrProblemTpl(const KnotVector &knots, long nc0,
                                      allocator_type alloc)
-    : G0(nc0, knots.empty() ? 0 : knots[0].nx, alloc), g0(nc0, alloc),
-      stages(knots, alloc), m_is_invalid(false) {
+    : G0(nc0, knots.empty() ? 0 : knots[0].nx, alloc)
+    , g0(nc0, alloc)
+    , stages(knots, alloc)
+    , m_is_invalid(false) {
   assert(check_allocators());
 }
 
 template <typename Scalar>
 LqrProblemTpl<Scalar>::LqrProblemTpl(KnotVector &&knots, long nc0)
-    : G0(nc0, knots.empty() ? 0 : knots[0].nx, knots.get_allocator()),
-      g0(nc0, get_allocator()), stages(std::move(knots), get_allocator()),
-      m_is_invalid(false) {
+    : G0(nc0, knots.empty() ? 0 : knots[0].nx, knots.get_allocator())
+    , g0(nc0, get_allocator())
+    , stages(std::move(knots), get_allocator())
+    , m_is_invalid(false) {
   assert(check_allocators());
 }
 

@@ -33,8 +33,9 @@ void DCMPositionResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &x,
 template <typename Scalar>
 DCMPositionDataTpl<Scalar>::DCMPositionDataTpl(
     const DCMPositionResidualTpl<Scalar> &model)
-    : Base(model.ndx1, model.nu, 3), pin_data_(model.pin_model_),
-      fJf_(3, model.pin_model_.nv) {
+    : Base(model.ndx1, model.nu, 3)
+    , pin_data_(model.pin_model_)
+    , fJf_(3, model.pin_model_.nv) {
   fJf_.setZero();
 }
 

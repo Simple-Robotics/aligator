@@ -10,13 +10,30 @@ namespace gar {
 
 template <typename Scalar>
 StageFactor<Scalar>::StageFactor(uint nx, uint nu, uint nc, uint nx2, uint nth)
-    : Qhat(nx, nx), Rhat(nu, nu), Shat(nx, nu), qhat(nx), rhat(nu),
-      AtV(nx, nx2), BtV(nu, nx2), Gxhat(nx, nth), Guhat(nu, nth),
-      ff({nu, nc, nx2, nx2}, {1}), fb({nu, nc, nx2, nx2}, {nx}),
-      fth({nu, nc, nx2, nx2}, {nth}), kktMat({nu, nc}, {nu, nc}),
-      kktChol(nu + nc), Efact(nx), yff_pre(nx2), A_pre(nx, nx),
-      Yth_pre(nx2, nth), Ptilde(nx, nx), Einv(nx2, nx2), EinvP(nx2, nx2),
-      schurMat(nx2, nx2), schurChol(nx2), vm(nx, nth) {
+    : Qhat(nx, nx)
+    , Rhat(nu, nu)
+    , Shat(nx, nu)
+    , qhat(nx)
+    , rhat(nu)
+    , AtV(nx, nx2)
+    , BtV(nu, nx2)
+    , Gxhat(nx, nth)
+    , Guhat(nu, nth)
+    , ff({nu, nc, nx2, nx2}, {1})
+    , fb({nu, nc, nx2, nx2}, {nx})
+    , fth({nu, nc, nx2, nx2}, {nth})
+    , kktMat({nu, nc}, {nu, nc})
+    , kktChol(nu + nc)
+    , Efact(nx)
+    , yff_pre(nx2)
+    , A_pre(nx, nx)
+    , Yth_pre(nx2, nth)
+    , Ptilde(nx, nx)
+    , Einv(nx2, nx2)
+    , EinvP(nx2, nx2)
+    , schurMat(nx2, nx2)
+    , schurChol(nx2)
+    , vm(nx, nth) {
   Qhat.setZero();
   Rhat.setZero();
   Shat.setZero();

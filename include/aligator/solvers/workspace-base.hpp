@@ -32,7 +32,9 @@ public:
   /// Dynamical infeasibility gaps
   std::vector<VectorXs> dyn_slacks;
 
-  WorkspaceBaseTpl() : m_isInitialized(false), problem_data() {}
+  WorkspaceBaseTpl()
+      : m_isInitialized(false)
+      , problem_data() {}
 
   explicit WorkspaceBaseTpl(const TrajOptProblemTpl<Scalar> &problem);
 
@@ -59,7 +61,9 @@ public:
 template <typename Scalar>
 WorkspaceBaseTpl<Scalar>::WorkspaceBaseTpl(
     const TrajOptProblemTpl<Scalar> &problem)
-    : m_isInitialized(true), nsteps(problem.numSteps()), problem_data(problem) {
+    : m_isInitialized(true)
+    , nsteps(problem.numSteps())
+    , problem_data(problem) {
   problem.initializeSolution(trial_xs, trial_us);
 }
 

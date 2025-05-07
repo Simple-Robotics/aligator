@@ -32,30 +32,50 @@ public:
                 "Compile-time vector cannot have more than one column block.");
 
   BlkMatrix()
-      : m_data(), m_rowDims(), m_colDims(), m_rowIndices(), m_colIndices(),
-        m_totalRows(0), m_totalCols(0) {}
+      : m_data()
+      , m_rowDims()
+      , m_colDims()
+      , m_rowIndices()
+      , m_colIndices()
+      , m_totalRows(0)
+      , m_totalCols(0) {}
 
   BlkMatrix(const row_dim_t &rowDims, const col_dim_t &colDims)
-      : m_data(), m_rowDims(rowDims), m_colDims(colDims), m_rowIndices(rowDims),
-        m_colIndices(colDims), m_totalRows(0), m_totalCols(0) {
+      : m_data()
+      , m_rowDims(rowDims)
+      , m_colDims(colDims)
+      , m_rowIndices(rowDims)
+      , m_colIndices(colDims)
+      , m_totalRows(0)
+      , m_totalCols(0) {
     initialize();
   }
 
   template <typename Other>
   BlkMatrix(const Eigen::MatrixBase<Other> &data, const row_dim_t &rowDims,
             const col_dim_t &colDims)
-      : m_data(data.derived()), //
-        m_rowDims(rowDims), m_colDims(colDims), m_rowIndices(rowDims),
-        m_colIndices(colDims), m_totalRows(0), m_totalCols(0) {
+      : m_data(data.derived())
+      , //
+      m_rowDims(rowDims)
+      , m_colDims(colDims)
+      , m_rowIndices(rowDims)
+      , m_colIndices(colDims)
+      , m_totalRows(0)
+      , m_totalCols(0) {
     initialize();
   }
 
   template <typename Other>
   BlkMatrix(Eigen::MatrixBase<Other> &data, const row_dim_t &rowDims,
             const col_dim_t &colDims)
-      : m_data(data.derived()), //
-        m_rowDims(rowDims), m_colDims(colDims), m_rowIndices(rowDims),
-        m_colIndices(colDims), m_totalRows(0), m_totalCols(0) {
+      : m_data(data.derived())
+      , //
+      m_rowDims(rowDims)
+      , m_colDims(colDims)
+      , m_rowIndices(rowDims)
+      , m_colIndices(colDims)
+      , m_totalRows(0)
+      , m_totalCols(0) {
     initialize();
   }
 
@@ -73,7 +93,8 @@ public:
   operator Eigen::Ref<const PlainObject>() const { return m_data; }
 
   /// Only-rows constructor (only for vectors)
-  explicit BlkMatrix(const row_dim_t &dims) : BlkMatrix(dims, {1}) {
+  explicit BlkMatrix(const row_dim_t &dims)
+      : BlkMatrix(dims, {1}) {
     static_assert(IsVectorAtCompileTime,
                   "Constructor only supported for vector types.");
   }

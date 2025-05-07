@@ -52,7 +52,10 @@ template <typename Scalar> struct LinearFunctionTpl : StageFunctionTpl<Scalar> {
 template <typename Scalar>
 LinearFunctionTpl<Scalar>::LinearFunctionTpl(const int ndx, const int nu,
                                              const int nr)
-    : Base(ndx, nu, nr), A_(nr, ndx), B_(nr, nu), d_(nr) {
+    : Base(ndx, nu, nr)
+    , A_(nr, ndx)
+    , B_(nr, nu)
+    , d_(nr) {
   A_.setZero();
   B_.setZero();
   d_.setZero();
@@ -62,7 +65,10 @@ template <typename Scalar>
 LinearFunctionTpl<Scalar>::LinearFunctionTpl(const ConstMatrixRef A,
                                              const ConstMatrixRef B,
                                              const ConstVectorRef d)
-    : Base((int)A.cols(), (int)B.cols(), (int)d.rows()), A_(A), B_(B), d_(d) {
+    : Base((int)A.cols(), (int)B.cols(), (int)d.rows())
+    , A_(A)
+    , B_(B)
+    , d_(d) {
   assert((A_.rows() == d_.rows()) && (B_.rows() == d_.rows()) &&
          "Number of rows not consistent.");
 }

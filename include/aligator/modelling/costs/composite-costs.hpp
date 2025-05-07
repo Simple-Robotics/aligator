@@ -23,8 +23,10 @@ struct CompositeCostDataTpl : CostDataAbstractTpl<Scalar> {
   VectorXs Wv_buf;
   CompositeCostDataTpl(const int ndx, const int nu,
                        shared_ptr<StageFunctionData> rdata)
-      : Base(ndx, nu), residual_data(rdata), JtW_buf(ndx + nu, rdata->nr),
-        Wv_buf(rdata->nr) {
+      : Base(ndx, nu)
+      , residual_data(rdata)
+      , JtW_buf(ndx + nu, rdata->nr)
+      , Wv_buf(rdata->nr) {
     JtW_buf.setZero();
     Wv_buf.setZero();
   }

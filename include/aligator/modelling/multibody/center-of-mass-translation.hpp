@@ -35,7 +35,9 @@ public:
   CenterOfMassTranslationResidualTpl(const int ndx, const int nu,
                                      const Model &model,
                                      const Vector3s &frame_trans)
-      : Base(ndx, nu, 3), pin_model_(model), p_ref_(frame_trans) {}
+      : Base(ndx, nu, 3)
+      , pin_model_(model)
+      , p_ref_(frame_trans) {}
 
   const Vector3s &getReference() const { return p_ref_; }
   void setReference(const Eigen::Ref<const Vector3s> &p_new) { p_ref_ = p_new; }

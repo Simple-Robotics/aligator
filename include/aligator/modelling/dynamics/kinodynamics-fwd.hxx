@@ -20,10 +20,13 @@ KinodynamicsFwdDynamicsTpl<Scalar>::KinodynamicsFwdDynamicsTpl(
     const Manifold &state, const Model &model, const Vector3s &gravity,
     const std::vector<bool> &contact_states,
     const std::vector<pinocchio::FrameIndex> &contact_ids, const int force_size)
-    : Base(state, model.nv - 6 + int(contact_states.size()) * force_size),
-      space_(state), pin_model_(model), gravity_(gravity),
-      force_size_(force_size), contact_states_(contact_states),
-      contact_ids_(contact_ids) {
+    : Base(state, model.nv - 6 + int(contact_states.size()) * force_size)
+    , space_(state)
+    , pin_model_(model)
+    , gravity_(gravity)
+    , force_size_(force_size)
+    , contact_states_(contact_states)
+    , contact_ids_(contact_ids) {
   mass_ = pinocchio::computeTotalMass(pin_model_);
   if (contact_ids_.size() != contact_states_.size()) {
     ALIGATOR_DOMAIN_ERROR(
@@ -202,12 +205,18 @@ KinodynamicsFwdDynamicsTpl<Scalar>::createData() const {
 template <typename Scalar>
 KinodynamicsFwdDataTpl<Scalar>::KinodynamicsFwdDataTpl(
     const KinodynamicsFwdDynamicsTpl<Scalar> *model)
-    : Base(model->ndx(), model->nu()), pin_data_(model->pin_model_),
-      dh_dq_(6, model->pin_model_.nv), dhdot_dq_(6, model->pin_model_.nv),
-      dhdot_dv_(6, model->pin_model_.nv), dhdot_da_(6, model->pin_model_.nv),
-      temp1_(6, 3), temp2_(3, model->pin_model_.nv),
-      fJf_(6, model->pin_model_.nv), v0_(model->pin_model_.nv),
-      a0_(model->pin_model_.nv), PivLU_(6) {
+    : Base(model->ndx(), model->nu())
+    , pin_data_(model->pin_model_)
+    , dh_dq_(6, model->pin_model_.nv)
+    , dhdot_dq_(6, model->pin_model_.nv)
+    , dhdot_dv_(6, model->pin_model_.nv)
+    , dhdot_da_(6, model->pin_model_.nv)
+    , temp1_(6, 3)
+    , temp2_(3, model->pin_model_.nv)
+    , fJf_(6, model->pin_model_.nv)
+    , v0_(model->pin_model_.nv)
+    , a0_(model->pin_model_.nv)
+    , PivLU_(6) {
   this->Jx_.topRightCorner(model->pin_model_.nv, model->pin_model_.nv)
       .setIdentity();
   this->Ju_

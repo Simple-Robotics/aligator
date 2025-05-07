@@ -50,10 +50,15 @@ public:
 
   /// Extended default constructor.
   explicit ManagedMatrix(const allocator_type &allocator = {})
-      : m_allocated_size(0), m_rows(), m_cols(), m_allocator(allocator) {}
+      : m_allocated_size(0)
+      , m_rows()
+      , m_cols()
+      , m_allocator(allocator) {}
 
   explicit ManagedMatrix(Index size, const allocator_type &allocator)
-      : m_rows(), m_cols(), m_allocator(allocator) {
+      : m_rows()
+      , m_cols()
+      , m_allocator(allocator) {
     static_assert(IsVectorAtCompileTime);
     if constexpr (Rows == 1) {
       m_rows = 1;
@@ -68,7 +73,9 @@ public:
 
   explicit ManagedMatrix(Index rows, Index cols,
                          const allocator_type &allocator)
-      : m_rows(rows), m_cols(cols), m_allocator(allocator) {
+      : m_rows(rows)
+      , m_cols(cols)
+      , m_allocator(allocator) {
     this->allocate();
     assert(m_data);
   }

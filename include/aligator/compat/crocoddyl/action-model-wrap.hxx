@@ -16,8 +16,8 @@ ActionModelWrapperTpl<Scalar>::ActionModelWrapperTpl(
     : Base(CostAbstract{StateWrapper{action_model->get_state()},
                         int(action_model->get_nu())},
            NoOpDynamics<Scalar>{StateWrapper{action_model->get_state()},
-                                int(action_model->get_nu())}),
-      action_model_(action_model) {}
+                                int(action_model->get_nu())})
+    , action_model_(action_model) {}
 
 template <typename Scalar>
 void ActionModelWrapperTpl<Scalar>::evaluate(const ConstVectorRef &x,
@@ -67,8 +67,8 @@ auto ActionModelWrapperTpl<Scalar>::createData() const -> shared_ptr<Data> {
 template <typename Scalar>
 ActionDataWrapperTpl<Scalar>::ActionDataWrapperTpl(
     const ActionModelWrapperTpl<Scalar> &action_model_wrap)
-    : Base(action_model_wrap),
-      croc_action_data(action_model_wrap.action_model_->createData()) {
+    : Base(action_model_wrap)
+    , croc_action_data(action_model_wrap.action_model_->createData()) {
   dynamics_data =
       std::make_shared<DynamicsDataWrapper>(*action_model_wrap.action_model_);
   Base::dynamics_data = dynamics_data;

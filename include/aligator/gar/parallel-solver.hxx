@@ -18,7 +18,9 @@ namespace aligator::gar {
 template <typename Scalar>
 ParallelRiccatiSolver<Scalar>::ParallelRiccatiSolver(
     LqrProblemTpl<Scalar> &problem, const uint num_threads)
-    : Base(), numThreads(num_threads), problem_(&problem) {
+    : Base()
+    , numThreads(num_threads)
+    , problem_(&problem) {
   ALIGATOR_TRACY_ZONE_SCOPED;
   if (num_threads < 2) {
     ALIGATOR_RUNTIME_ERROR(

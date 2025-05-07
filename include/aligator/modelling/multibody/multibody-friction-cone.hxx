@@ -68,8 +68,10 @@ void MultibodyFrictionConeResidualTpl<Scalar>::computeJacobians(
 template <typename Scalar>
 MultibodyFrictionConeDataTpl<Scalar>::MultibodyFrictionConeDataTpl(
     const MultibodyFrictionConeResidualTpl<Scalar> *model)
-    : Base(model->ndx1, model->nu, 2), pin_data_(model->pin_model_),
-      tau_(model->pin_model_.nv), temp_(3, model->nu) {
+    : Base(model->ndx1, model->nu, 2)
+    , pin_data_(model->pin_model_)
+    , tau_(model->pin_model_.nv)
+    , temp_(3, model->nu) {
   tau_.setZero();
   temp_.setZero();
   dcone_df_.setZero();

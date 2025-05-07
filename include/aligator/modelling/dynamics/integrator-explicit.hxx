@@ -8,7 +8,8 @@ namespace dynamics {
 template <typename Scalar>
 ExplicitIntegratorAbstractTpl<Scalar>::ExplicitIntegratorAbstractTpl(
     const xyz::polymorphic<ODEType> &cont_dynamics)
-    : Base(cont_dynamics->space_, cont_dynamics->nu()), ode_(cont_dynamics) {}
+    : Base(cont_dynamics->space_, cont_dynamics->nu())
+    , ode_(cont_dynamics) {}
 
 template <typename Scalar>
 shared_ptr<DynamicsDataTpl<Scalar>>

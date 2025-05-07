@@ -17,7 +17,8 @@ public:
   using Data = CentroidalCoMDataTpl<Scalar>;
 
   CentroidalCoMResidualTpl(const int ndx, const int nu, const Vector3s &p_ref)
-      : Base(ndx, nu, 3), p_ref_(p_ref) {}
+      : Base(ndx, nu, 3)
+      , p_ref_(p_ref) {}
 
   const Vector3s &getReference() const { return p_ref_; }
   void setReference(const Eigen::Ref<const Vector3s> &p_new) { p_ref_ = p_new; }

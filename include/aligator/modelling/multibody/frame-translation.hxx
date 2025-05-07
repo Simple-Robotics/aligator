@@ -9,7 +9,9 @@ template <typename Scalar>
 FrameTranslationResidualTpl<Scalar>::FrameTranslationResidualTpl(
     const int ndx, const int nu, const Model &model,
     const Vector3s &frame_trans, const pinocchio::FrameIndex frame_id)
-    : Base(ndx, nu, 3), pin_model_(model), p_ref_(frame_trans) {
+    : Base(ndx, nu, 3)
+    , pin_model_(model)
+    , p_ref_(frame_trans) {
   pin_frame_id_ = frame_id;
 }
 
@@ -39,8 +41,9 @@ void FrameTranslationResidualTpl<Scalar>::computeJacobians(
 template <typename Scalar>
 FrameTranslationDataTpl<Scalar>::FrameTranslationDataTpl(
     const FrameTranslationResidualTpl<Scalar> &model)
-    : Base(model.ndx1, model.nu, 3), pin_data_(model.pin_model_),
-      fJf_(6, model.pin_model_.nv) {
+    : Base(model.ndx1, model.nu, 3)
+    , pin_data_(model.pin_model_)
+    , fJf_(6, model.pin_model_.nv) {
   fJf_.setZero();
 }
 

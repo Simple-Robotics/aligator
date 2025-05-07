@@ -42,7 +42,10 @@ template <typename Scalar> struct WorkspaceFDDPTpl : WorkspaceBaseTpl<Scalar> {
   Scalar d1_ = 0.;
   Scalar d2_ = 0.;
 
-  WorkspaceFDDPTpl() : Base(), value_params(), q_params() {}
+  WorkspaceFDDPTpl()
+      : Base()
+      , value_params()
+      , q_params() {}
   explicit WorkspaceFDDPTpl(const TrajOptProblemTpl<Scalar> &problem);
 
   void cycleLeft();

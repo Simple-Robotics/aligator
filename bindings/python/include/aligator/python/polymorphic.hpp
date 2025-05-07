@@ -188,7 +188,8 @@ struct PolymorphicWrapper : boost::python::wrapper<_Base> {
   using Base = _Base;
 
   PolymorphicWrapper() = default;
-  PolymorphicWrapper(const PolymorphicWrapper &o) : bp::wrapper<Base>(o) {
+  PolymorphicWrapper(const PolymorphicWrapper &o)
+      : bp::wrapper<Base>(o) {
     deepcopy_owner();
   }
   PolymorphicWrapper(PolymorphicWrapper &&o) = default;

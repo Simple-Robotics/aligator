@@ -32,7 +32,9 @@ private:
 
 template <typename Scalar>
 NonmonotoneLinesearch<Scalar>::NonmonotoneLinesearch(const Options &options)
-    : Linesearch<Scalar>(options), mov_avg(0.), avg_weight(0.) {}
+    : Linesearch<Scalar>(options)
+    , mov_avg(0.)
+    , avg_weight(0.) {}
 
 template <typename Scalar>
 Scalar NonmonotoneLinesearch<Scalar>::run(fun_t f, Scalar phi0, Scalar dphi0,

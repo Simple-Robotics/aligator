@@ -22,7 +22,8 @@ public:
   using ModelType = pinocchio::ModelTpl<Scalar>;
   using Base = ManifoldAbstractTpl<Scalar>;
 
-  MultibodyConfiguration(const ModelType &model) : model_(model) {};
+  MultibodyConfiguration(const ModelType &model)
+      : model_(model) {};
   MultibodyConfiguration(const MultibodyConfiguration &) = default;
   MultibodyConfiguration &operator=(const MultibodyConfiguration &) = default;
   MultibodyConfiguration(MultibodyConfiguration &&) = default;

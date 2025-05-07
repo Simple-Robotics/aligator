@@ -212,7 +212,9 @@ template <typename Scalar> struct LqrProblemTpl {
   inline uint nc0() const noexcept { return (uint)g0.rows(); }
 
   explicit LqrProblemTpl(allocator_type alloc = {})
-      : G0(alloc), g0(alloc), stages(alloc) {
+      : G0(alloc)
+      , g0(alloc)
+      , stages(alloc) {
     assert(check_allocators());
   }
 

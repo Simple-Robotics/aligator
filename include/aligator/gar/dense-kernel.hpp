@@ -28,9 +28,11 @@ template <typename _Scalar> struct DenseKernel {
     Eigen::BunchKaufman<MatrixXs> ldl;
 
     Data(uint nx, uint nu, uint nc, uint nx2, uint nth)
-        : kktMat({nu, nc, nx2, nx2}, {nu, nc, nx2, nx2}),
-          fb({nu, nc, nx2, nx2}, {nx}), ft({nu, nc, nx2, nx2}, {nth}),
-          ff({nu, nc, nx2, nx2}), ldl{nu + nc + 2 * nx2} {
+        : kktMat({nu, nc, nx2, nx2}, {nu, nc, nx2, nx2})
+        , fb({nu, nc, nx2, nx2}, {nx})
+        , ft({nu, nc, nx2, nx2}, {nth})
+        , ff({nu, nc, nx2, nx2})
+        , ldl{nu + nc + 2 * nx2} {
       setZero();
     }
 

@@ -8,7 +8,8 @@ namespace detail {
 template <typename Base>
 slice_impl_tpl<Base>::slice_impl_tpl(xyz::polymorphic<Base> func,
                                      std::vector<int> const &indices)
-    : func(func), indices(indices) {}
+    : func(func)
+    , indices(indices) {}
 
 template <typename Base>
 slice_impl_tpl<Base>::slice_impl_tpl(xyz::polymorphic<Base> func, int idx)

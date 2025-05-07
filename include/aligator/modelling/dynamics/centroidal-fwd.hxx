@@ -10,9 +10,13 @@ template <typename Scalar>
 CentroidalFwdDynamicsTpl<Scalar>::CentroidalFwdDynamicsTpl(
     const Manifold &state, const double mass, const Vector3s &gravity,
     const ContactMap &contact_map, const int force_size)
-    : Base(state, int(contact_map.size_) * force_size), space_(state),
-      nk_(contact_map.size_), mass_(mass), gravity_(gravity),
-      contact_map_(contact_map), force_size_(force_size) {}
+    : Base(state, int(contact_map.size_) * force_size)
+    , space_(state)
+    , nk_(contact_map.size_)
+    , mass_(mass)
+    , gravity_(gravity)
+    , contact_map_(contact_map)
+    , force_size_(force_size) {}
 
 template <typename Scalar>
 void CentroidalFwdDynamicsTpl<Scalar>::forward(const ConstVectorRef &x,

@@ -24,7 +24,9 @@ public:
 
   CenterOfMassVelocityResidualTpl(const int ndx, const int nu,
                                   const Model &model, const Vector3s &frame_vel)
-      : Base(ndx, nu, 3), pin_model_(model), v_ref_(frame_vel) {}
+      : Base(ndx, nu, 3)
+      , pin_model_(model)
+      , v_ref_(frame_vel) {}
 
   const Vector3s &getReference() const { return v_ref_; }
   void setReference(const Eigen::Ref<const Vector3s> &v_new) { v_ref_ = v_new; }

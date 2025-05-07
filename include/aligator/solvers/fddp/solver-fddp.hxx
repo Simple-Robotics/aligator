@@ -16,8 +16,12 @@ template <typename Scalar>
 SolverFDDPTpl<Scalar>::SolverFDDPTpl(const Scalar tol, VerboseLevel verbose,
                                      const Scalar reg_init,
                                      const std::size_t max_iters)
-    : target_tol_(tol), reg_init(reg_init), verbose_(verbose),
-      max_iters(max_iters), force_initial_condition_(false), num_threads_(1) {
+    : target_tol_(tol)
+    , reg_init(reg_init)
+    , verbose_(verbose)
+    , max_iters(max_iters)
+    , force_initial_condition_(false)
+    , num_threads_(1) {
   ls_params.alpha_min = pow(2., -9.);
 }
 

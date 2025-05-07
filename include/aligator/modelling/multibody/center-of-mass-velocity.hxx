@@ -35,8 +35,9 @@ void CenterOfMassVelocityResidualTpl<Scalar>::computeJacobians(
 template <typename Scalar>
 CenterOfMassVelocityDataTpl<Scalar>::CenterOfMassVelocityDataTpl(
     const CenterOfMassVelocityResidualTpl<Scalar> &model)
-    : Base(model.ndx1, model.nu, 3), pin_data_(model.pin_model_),
-      fJf_(3, model.pin_model_.nv) {
+    : Base(model.ndx1, model.nu, 3)
+    , pin_data_(model.pin_model_)
+    , fJf_(3, model.pin_model_.nv) {
   fJf_.setZero();
 }
 

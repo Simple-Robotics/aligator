@@ -8,7 +8,8 @@ namespace dynamics {
 template <typename Scalar>
 ContinuousDynamicsAbstractTpl<Scalar>::ContinuousDynamicsAbstractTpl(
     ManifoldPtr space, const int nu)
-    : space_(space), nu_(nu) {}
+    : space_(space)
+    , nu_(nu) {}
 
 template <typename Scalar>
 shared_ptr<ContinuousDynamicsDataTpl<Scalar>>
@@ -19,7 +20,11 @@ ContinuousDynamicsAbstractTpl<Scalar>::createData() const {
 template <typename Scalar>
 ContinuousDynamicsDataTpl<Scalar>::ContinuousDynamicsDataTpl(const int ndx,
                                                              const int nu)
-    : value_(ndx), Jx_(ndx, ndx), Ju_(ndx, nu), Jxdot_(ndx, ndx), xdot_(ndx) {
+    : value_(ndx)
+    , Jx_(ndx, ndx)
+    , Ju_(ndx, nu)
+    , Jxdot_(ndx, ndx)
+    , xdot_(ndx) {
   value_.setZero();
   Jx_.setZero();
   Ju_.setZero();

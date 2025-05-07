@@ -7,7 +7,9 @@ namespace aligator::autodiff {
 template <typename Scalar>
 CostFiniteDifferenceHelper<Scalar>::CostFiniteDifferenceHelper(
     xyz::polymorphic<CostBase> cost, const Scalar fd_eps)
-    : CostBase(cost->space, cost->nu), cost_(cost), fd_eps(fd_eps) {}
+    : CostBase(cost->space, cost->nu)
+    , cost_(cost)
+    , fd_eps(fd_eps) {}
 
 template <typename Scalar>
 void CostFiniteDifferenceHelper<Scalar>::evaluate(const ConstVectorRef &x,

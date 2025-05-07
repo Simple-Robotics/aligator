@@ -79,8 +79,11 @@ struct MyFixture {
   TrajOptProblemTpl<double> problem;
 
   MyFixture()
-      : space(::my_space), nu(space.ndx()), dyn_model(MyModel(space)),
-        cost(MyCost(space, nu)), problem(space.neutral(), nu, space, cost) {
+      : space(::my_space)
+      , nu(space.ndx())
+      , dyn_model(MyModel(space))
+      , cost(MyCost(space, nu))
+      , problem(space.neutral(), nu, space, cost) {
     auto stage = StageModel(cost, dyn_model);
     auto func = StateErrorResidualTpl<double>(space, nu, space.neutral());
     auto stage2 = StageModel(cost, dyn_model);

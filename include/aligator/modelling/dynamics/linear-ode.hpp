@@ -26,7 +26,10 @@ template <typename _Scalar> struct LinearODETpl : ODEAbstractTpl<_Scalar> {
   /// constant term \f$c\f$.
   LinearODETpl(const ManifoldPtr &space, const MatrixXs &A, const MatrixXs &B,
                const VectorXs &c)
-      : Base(space, (int)B.cols()), A_(A), B_(B), c_(c) {
+      : Base(space, (int)B.cols())
+      , A_(A)
+      , B_(B)
+      , c_(c) {
     if (A.cols() != space->ndx()) {
       ALIGATOR_DOMAIN_ERROR(
           "A.cols() should be equal to space.ndx()! (got {:d} and {:d})",

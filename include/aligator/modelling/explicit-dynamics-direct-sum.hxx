@@ -11,17 +11,18 @@ template <typename Scalar>
 DirectSumExplicitDynamicsTpl<Scalar>::DirectSumExplicitDynamicsTpl(
     xyz::polymorphic<Base> f, xyz::polymorphic<Base> g)
     : Base(xyz::polymorphic<Manifold>{f->space_next_ * g->space_next_},
-           f->nu + g->nu),
-      f_(f), g_(g) {
+           f->nu + g->nu)
+    , f_(f)
+    , g_(g) {
   product_space_ = dynamic_cast<CartesianProduct &>(*this->space_next_);
 }
 
 template <typename Scalar>
 DirectSumExplicitDynamicsTpl<Scalar>::Data::Data(
     DirectSumExplicitDynamicsTpl const &model)
-    : BaseData(model.ndx1, model.nu, model.nx2(), model.ndx2),
-      data1_(std::static_pointer_cast<BaseData>(model.f_->createData())),
-      data2_(std::static_pointer_cast<BaseData>(model.g_->createData())) {}
+    : BaseData(model.ndx1, model.nu, model.nx2(), model.ndx2)
+    , data1_(std::static_pointer_cast<BaseData>(model.f_->createData()))
+    , data2_(std::static_pointer_cast<BaseData>(model.g_->createData())) {}
 
 template <typename Scalar>
 void DirectSumExplicitDynamicsTpl<Scalar>::forward(const ConstVectorRef &x,

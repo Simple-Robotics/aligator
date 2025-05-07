@@ -65,7 +65,11 @@ struct BTAG_Fixture {
   BlkVec rhs;
   std::vector<Eigen::LDLT<MatrixXs>> facs;
 
-  BTAG_Fixture() : diagonal(N + 1), sup(N), sub(N), facs() {
+  BTAG_Fixture()
+      : diagonal(N + 1)
+      , sup(N)
+      , sub(N)
+      , facs() {
     for (size_t i = 0; i <= N; i++) {
       diagonal[i] = sampleWishartDistributedMatrix(nx, nx + 1);
     }

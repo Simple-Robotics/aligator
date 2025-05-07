@@ -32,7 +32,8 @@ public:
   /// Controls
   std::vector<VectorXs> us;
 
-  ResultsBaseTpl() : m_isInitialized(false) {}
+  ResultsBaseTpl()
+      : m_isInitialized(false) {}
   bool isInitialized() const { return m_isInitialized; }
 
   /// @brief Get column expression of the primal-dual feedforward gain.

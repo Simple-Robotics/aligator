@@ -33,7 +33,8 @@ ALIGATOR_DYNAMIC_TYPEDEFS(T);
 struct CarDynamics : dynamics::ODEAbstractTpl<T> {
   using Base = dynamics::ODEAbstractTpl<T>;
   using ODEData = dynamics::ContinuousDynamicsDataTpl<T>;
-  CarDynamics() : Base(SE2(), 2) {}
+  CarDynamics()
+      : Base(SE2(), 2) {}
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                ODEData &data) const override {

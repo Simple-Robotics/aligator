@@ -15,7 +15,8 @@ struct ResultsFDDPTpl final : ResultsBaseTpl<Scalar> {
   using Base::us;
   using Base::xs;
 
-  ResultsFDDPTpl() : Base() {}
+  ResultsFDDPTpl()
+      : Base() {}
   explicit ResultsFDDPTpl(const TrajOptProblemTpl<Scalar> &problem);
 };
 

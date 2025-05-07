@@ -16,7 +16,9 @@ template <typename Scalar> struct BoxConstraintTpl : ConstraintSetTpl<Scalar> {
   VectorXs upper_limit;
 
   BoxConstraintTpl(const ConstVectorRef lower, const ConstVectorRef upper)
-      : Base(), lower_limit(lower), upper_limit(upper) {}
+      : Base()
+      , lower_limit(lower)
+      , upper_limit(upper) {}
   BoxConstraintTpl(const BoxConstraintTpl &) = default;
   BoxConstraintTpl &operator=(const BoxConstraintTpl &) = default;
   BoxConstraintTpl(BoxConstraintTpl &&) = default;

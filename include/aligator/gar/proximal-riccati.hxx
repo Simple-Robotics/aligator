@@ -12,9 +12,11 @@ namespace aligator::gar {
 template <typename Scalar>
 ProximalRiccatiSolver<Scalar>::ProximalRiccatiSolver(
     const LqrProblemTpl<Scalar> &problem)
-    : Base(), kkt0(problem.stages[0].nx, problem.nc0(), problem.ntheta()),
-      thGrad(problem.ntheta()), thHess(problem.ntheta(), problem.ntheta()),
-      problem_(&problem) {
+    : Base()
+    , kkt0(problem.stages[0].nx, problem.nc0(), problem.ntheta())
+    , thGrad(problem.ntheta())
+    , thHess(problem.ntheta(), problem.ntheta())
+    , problem_(&problem) {
   ALIGATOR_TRACY_ZONE_SCOPED;
   auto N = uint(problem_->horizon());
   datas.reserve(N + 1);

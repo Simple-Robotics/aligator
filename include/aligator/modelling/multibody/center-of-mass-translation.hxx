@@ -28,6 +28,7 @@ void CenterOfMassTranslationResidualTpl<Scalar>::computeJacobians(
 template <typename Scalar>
 CenterOfMassTranslationDataTpl<Scalar>::CenterOfMassTranslationDataTpl(
     const CenterOfMassTranslationResidualTpl<Scalar> *model)
-    : Base(model->ndx1, model->nu, 3), pin_data_(model->pin_model_) {}
+    : Base(model->ndx1, model->nu, 3)
+    , pin_data_(model->pin_model_) {}
 
 } // namespace aligator

@@ -19,7 +19,9 @@ struct VectorSpaceTpl : public ManifoldAbstractTpl<_Scalar> {
   int dim_;
 
   /// @brief    Default constructor where the dimension is supplied.
-  VectorSpaceTpl(const int dim) : Base(), dim_(dim) {
+  VectorSpaceTpl(const int dim)
+      : Base()
+      , dim_(dim) {
     static_assert(
         Dim == Eigen::Dynamic,
         "This constructor is only valid if the dimension is dynamic.");
@@ -31,7 +33,9 @@ struct VectorSpaceTpl : public ManifoldAbstractTpl<_Scalar> {
   /// compile time.
   template <int N = Dim,
             typename = typename std::enable_if_t<N != Eigen::Dynamic>>
-  VectorSpaceTpl() : Base(), dim_(Dim) {}
+  VectorSpaceTpl()
+      : Base()
+      , dim_(Dim) {}
 
   inline int nx() const { return dim_; }
   inline int ndx() const { return dim_; }
@@ -39,7 +43,8 @@ struct VectorSpaceTpl : public ManifoldAbstractTpl<_Scalar> {
   /// Build from VectorSpaceTpl of different dimension
   template <int OtherDim>
   VectorSpaceTpl(const VectorSpaceTpl<Scalar, OtherDim> &other)
-      : Base(), dim_(other.dim_) {
+      : Base()
+      , dim_(other.dim_) {
     static_assert((Dim == OtherDim) || (Dim == Eigen::Dynamic));
   }
 

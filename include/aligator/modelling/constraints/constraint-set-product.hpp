@@ -42,7 +42,8 @@ struct ConstraintSetProductTpl : ConstraintSetTpl<Scalar> {
 
   ConstraintSetProductTpl(const std::vector<xyz::polymorphic<Base>> components,
                           const std::vector<Eigen::Index> &blockSizes)
-      : m_components(components), m_blockSizes(blockSizes) {
+      : m_components(components)
+      , m_blockSizes(blockSizes) {
     if (components.size() != blockSizes.size()) {
       ALIGATOR_RUNTIME_ERROR("Number of components and corresponding "
                              "block sizes should be the same.");

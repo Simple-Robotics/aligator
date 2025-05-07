@@ -24,7 +24,10 @@ public:
 
   DCMPositionResidualTpl(const int ndx, const int nu, const Model &model,
                          const Vector3s &dcm_ref, const double alpha)
-      : Base(ndx, nu, 3), pin_model_(model), dcm_ref_(dcm_ref), alpha_(alpha) {}
+      : Base(ndx, nu, 3)
+      , pin_model_(model)
+      , dcm_ref_(dcm_ref)
+      , alpha_(alpha) {}
 
   const Vector3s &getReference() const { return dcm_ref_; }
   void setReference(const Eigen::Ref<const Vector3s> &new_ref) {

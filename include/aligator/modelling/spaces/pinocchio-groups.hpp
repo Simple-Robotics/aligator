@@ -32,13 +32,16 @@ public:
 
   LieGroup lg_;
   PinocchioLieGroup() {}
-  PinocchioLieGroup(const LieGroup &lg) : lg_(lg) {}
-  PinocchioLieGroup(LieGroup &&lg) : lg_(std::move(lg)) {}
+  PinocchioLieGroup(const LieGroup &lg)
+      : lg_(lg) {}
+  PinocchioLieGroup(LieGroup &&lg)
+      : lg_(std::move(lg)) {}
   PinocchioLieGroup(const PinocchioLieGroup &lg) = default;
   PinocchioLieGroup(PinocchioLieGroup &&lg) = default;
 
   template <typename... Args>
-  PinocchioLieGroup(Args &&...args) : lg_(std::forward<Args>(args)...) {}
+  PinocchioLieGroup(Args &&...args)
+      : lg_(std::forward<Args>(args)...) {}
 
   operator LieGroup() { return lg_; }
 

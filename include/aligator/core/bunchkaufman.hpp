@@ -539,22 +539,34 @@ struct BunchKaufman : SolverBase<BunchKaufman<MatrixType_, UpLo_>> {
       PermutationMatrix<RowsAtCompileTime, MaxRowsAtCompileTime>;
 
   BunchKaufman()
-      : m_matrix(), m_subdiag(), m_pivot_count(0), m_pivots(),
-        m_isInitialized(false), m_info(ComputationInfo::InvalidInput),
-        m_blocksize(), m_workspace() {}
+      : m_matrix()
+      , m_subdiag()
+      , m_pivot_count(0)
+      , m_pivots()
+      , m_isInitialized(false)
+      , m_info(ComputationInfo::InvalidInput)
+      , m_blocksize()
+      , m_workspace() {}
   explicit BunchKaufman(Index size)
-      : m_matrix(size, size), m_subdiag(size), m_pivot_count(0), m_pivots(size),
-        m_isInitialized(false), m_info(ComputationInfo::InvalidInput),
-        m_blocksize(size <= BlockSize ? 0 : BlockSize),
-        m_workspace(size, m_blocksize) {}
+      : m_matrix(size, size)
+      , m_subdiag(size)
+      , m_pivot_count(0)
+      , m_pivots(size)
+      , m_isInitialized(false)
+      , m_info(ComputationInfo::InvalidInput)
+      , m_blocksize(size <= BlockSize ? 0 : BlockSize)
+      , m_workspace(size, m_blocksize) {}
 
   template <typename InputType>
   explicit BunchKaufman(const EigenBase<InputType> &matrix)
-      : m_matrix(matrix.rows(), matrix.cols()), m_subdiag(matrix.rows()),
-        m_pivot_count(0), m_pivots(matrix.rows()), m_isInitialized(false),
-        m_info(ComputationInfo::InvalidInput),
-        m_blocksize(matrix.rows() <= BlockSize ? 0 : BlockSize),
-        m_workspace(matrix.rows(), m_blocksize) {
+      : m_matrix(matrix.rows(), matrix.cols())
+      , m_subdiag(matrix.rows())
+      , m_pivot_count(0)
+      , m_pivots(matrix.rows())
+      , m_isInitialized(false)
+      , m_info(ComputationInfo::InvalidInput)
+      , m_blocksize(matrix.rows() <= BlockSize ? 0 : BlockSize)
+      , m_workspace(matrix.rows(), m_blocksize) {
     this->compute(matrix.derived());
   }
 

@@ -17,7 +17,8 @@ struct knot_fixture {
   uint nx = 2;
   uint nu = 2;
   knot_t knot;
-  knot_fixture() : knot(nx, nu, 0, alloc) {
+  knot_fixture()
+      : knot(nx, nu, 0, alloc) {
     knot.Q.setRandom();
     knot.R.setRandom();
     knot.q.setRandom();

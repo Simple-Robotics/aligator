@@ -30,7 +30,10 @@ public:
 
   CentroidalFrictionConeResidualTpl(const int ndx, const int nu, const int k,
                                     const double mu, const double epsilon)
-      : Base(ndx, nu, 2), k_(k), mu2_(mu * mu), epsilon_(epsilon) {}
+      : Base(ndx, nu, 2)
+      , k_(k)
+      , mu2_(mu * mu)
+      , epsilon_(epsilon) {}
 
   void evaluate(const ConstVectorRef &, const ConstVectorRef &u,
                 BaseData &data) const;

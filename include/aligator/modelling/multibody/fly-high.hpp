@@ -50,11 +50,15 @@ struct FlyHighResidualTpl<Scalar>::Data : StageFunctionDataTpl<Scalar> {
   using BaseData::nu;
 
   Data(FlyHighResidualTpl const &model)
-      : BaseData(model.ndx1, model.nu, model.nr), pdata_(model.pin_model_),
-        d_dq(6, model.pin_model_.nv), d_dv(6, model.pin_model_.nv),
-        l_dnu_dq(6, model.pin_model_.nv), l_dnu_dv(6, model.pin_model_.nv),
-        o_dv_dq(3, model.pin_model_.nv), o_dv_dv(3, model.pin_model_.nv),
-        vxJ(3, model.pin_model_.nv) {
+      : BaseData(model.ndx1, model.nu, model.nr)
+      , pdata_(model.pin_model_)
+      , d_dq(6, model.pin_model_.nv)
+      , d_dv(6, model.pin_model_.nv)
+      , l_dnu_dq(6, model.pin_model_.nv)
+      , l_dnu_dv(6, model.pin_model_.nv)
+      , o_dv_dq(3, model.pin_model_.nv)
+      , o_dv_dv(3, model.pin_model_.nv)
+      , vxJ(3, model.pin_model_.nv) {
     d_dq.setZero();
     d_dv.setZero();
     l_dnu_dq.setZero();

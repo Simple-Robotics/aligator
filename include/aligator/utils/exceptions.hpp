@@ -45,7 +45,8 @@ std::string exception_msg(const char *filename, int lineno,
 
 class RuntimeError : public std::runtime_error {
 public:
-  explicit RuntimeError(const std::string &what) : std::runtime_error(what) {}
+  explicit RuntimeError(const std::string &what)
+      : std::runtime_error(what) {}
 };
 
 } // namespace aligator

@@ -26,7 +26,8 @@ template <typename _Scalar> struct ResultsTpl final : ResultsBaseTpl<_Scalar> {
   /// Proximal/AL iteration count
   std::size_t al_iter = 0;
 
-  explicit ResultsTpl() : Base() {}
+  explicit ResultsTpl()
+      : Base() {}
 
   ResultsTpl(const ResultsTpl &) = delete;
   ResultsTpl &operator=(const ResultsTpl &) = delete;

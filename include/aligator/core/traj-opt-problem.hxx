@@ -17,10 +17,12 @@ TrajOptProblemTpl<Scalar>::TrajOptProblemTpl(
     xyz::polymorphic<UnaryFunction> init_constraint,
     const std::vector<xyz::polymorphic<StageModel>> &stages,
     xyz::polymorphic<CostAbstract> term_cost)
-    : init_constraint_(std::move(init_constraint)), stages_(stages),
-      term_cost_(std::move(term_cost)), unone_(term_cost_->nu),
-      xs_init_strategy_(xs_default_init<Scalar>),
-      init_cond_is_state_error_(checkInitCondIsStateError()) {
+    : init_constraint_(std::move(init_constraint))
+    , stages_(stages)
+    , term_cost_(std::move(term_cost))
+    , unone_(term_cost_->nu)
+    , xs_init_strategy_(xs_default_init<Scalar>)
+    , init_cond_is_state_error_(checkInitCondIsStateError()) {
   unone_.setZero();
 }
 

@@ -13,8 +13,9 @@ template <typename _Scalar> struct ContactMapTpl {
   ContactMapTpl(const std::vector<std::string> &contact_names,
                 const std::vector<bool> &contact_states,
                 const PoseVec &contact_poses)
-      : contact_names_(contact_names), contact_states_(contact_states),
-        contact_poses_(contact_poses) {
+      : contact_names_(contact_names)
+      , contact_states_(contact_states)
+      , contact_poses_(contact_poses) {
     if (contact_states.size() != contact_poses.size()) {
       ALIGATOR_DOMAIN_ERROR(
           fmt::format("contact_states and contact_poses should have same size, "

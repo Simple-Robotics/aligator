@@ -32,8 +32,9 @@ struct StateOrControlErrorResidual<_Scalar, 0> : UnaryFunctionTpl<_Scalar> {
 
   StateOrControlErrorResidual(const PolyManifold &xspace, const int nu,
                               const ConstVectorRef &target)
-      : Base(xspace->ndx(), nu, xspace->ndx()), space_(xspace),
-        target_(target) {
+      : Base(xspace->ndx(), nu, xspace->ndx())
+      , space_(xspace)
+      , target_(target) {
     validate();
   }
 
@@ -41,8 +42,9 @@ struct StateOrControlErrorResidual<_Scalar, 0> : UnaryFunctionTpl<_Scalar> {
                             is_polymorphic_of_v<Manifold, U>, int> = 0>
   StateOrControlErrorResidual(U &&xspace, const int nu,
                               const ConstVectorRef &target)
-      : Base(xspace.ndx(), nu, xspace.ndx()), space_{std::forward<U>(xspace)},
-        target_(target) {
+      : Base(xspace.ndx(), nu, xspace.ndx())
+      , space_{std::forward<U>(xspace)}
+      , target_(target) {
     validate();
   }
 
@@ -82,22 +84,25 @@ struct StateOrControlErrorResidual : StageFunctionTpl<_Scalar> {
             typename = std::enable_if_t<!is_polymorphic_of_v<Manifold, U>>>
   StateOrControlErrorResidual(const int ndx, U &&uspace,
                               const ConstVectorRef &target)
-      : Base(ndx, uspace.nx(), uspace.ndx()), space_(std::forward<U>(uspace)),
-        target_(target) {
+      : Base(ndx, uspace.nx(), uspace.ndx())
+      , space_(std::forward<U>(uspace))
+      , target_(target) {
     validate();
   }
 
   StateOrControlErrorResidual(const int ndx,
                               const xyz::polymorphic<Manifold> &uspace,
                               const ConstVectorRef &target)
-      : Base(ndx, uspace->nx(), uspace->ndx()), space_(uspace),
-        target_(target) {
+      : Base(ndx, uspace->nx(), uspace->ndx())
+      , space_(uspace)
+      , target_(target) {
     validate();
   }
 
   StateOrControlErrorResidual(const int ndx, const int nu)
-      : Base(ndx, nu, nu), space_(VectorSpace(nu)), target_(space_->neutral()) {
-  }
+      : Base(ndx, nu, nu)
+      , space_(VectorSpace(nu))
+      , target_(space_->neutral()) {}
 
   /// @brief Constructor using state space and control space dimensions,
   ///        the control space is assumed to be Euclidean.

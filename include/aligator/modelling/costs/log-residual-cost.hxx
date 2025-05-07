@@ -10,7 +10,9 @@ template <typename Scalar>
 LogResidualCostTpl<Scalar>::LogResidualCostTpl(
     xyz::polymorphic<Manifold> space, xyz::polymorphic<StageFunction> function,
     const ConstVectorRef &scale)
-    : Base(space, function->nu), barrier_weights_(scale), residual_(function) {
+    : Base(space, function->nu)
+    , barrier_weights_(scale)
+    , residual_(function) {
   if (scale.size() != function->nr) {
     ALIGATOR_RUNTIME_ERROR(
         "scale argument dimension ({:d}) != function codimension ({:d})",

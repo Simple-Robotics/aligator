@@ -11,8 +11,11 @@ namespace aligator::gar {
 template <typename Scalar>
 CholmodLqSolver<Scalar>::CholmodLqSolver(const Problem &problem,
                                          uint numRefinementSteps)
-    : kktMatrix(), kktRhs(), cholmod(), numRefinementSteps(numRefinementSteps),
-      problem_(&problem) {
+    : kktMatrix()
+    , kktRhs()
+    , cholmod()
+    , numRefinementSteps(numRefinementSteps)
+    , problem_(&problem) {
   lqrCreateSparseMatrix(problem, 1., 1., kktMatrix, kktRhs, false);
   assert(kktMatrix.cols() == kktRhs.rows());
   kktSol.resize(kktRhs.rows());

@@ -11,9 +11,11 @@ namespace aligator {
 template <typename Scalar>
 StageModelTpl<Scalar>::StageModelTpl(const PolyCost &cost,
                                      const PolyDynamics &dynamics)
-    : xspace_(dynamics->space_), xspace_next_(dynamics->space_next_),
-      uspace_(VectorSpaceTpl<Scalar>(dynamics->nu)), cost_(cost),
-      dynamics_(dynamics) {
+    : xspace_(dynamics->space_)
+    , xspace_next_(dynamics->space_next_)
+    , uspace_(VectorSpaceTpl<Scalar>(dynamics->nu))
+    , cost_(cost)
+    , dynamics_(dynamics) {
 
   if (cost->nu != dynamics->nu) {
     ALIGATOR_RUNTIME_ERROR("Control dimensions cost.nu ({:d}) and dynamics.nu "

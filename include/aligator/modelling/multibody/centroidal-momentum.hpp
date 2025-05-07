@@ -30,7 +30,9 @@ public:
 
   CentroidalMomentumResidualTpl(const int ndx, const int nu, const Model &model,
                                 const Vector6s &h_ref)
-      : Base(ndx, nu, 6), pin_model_(model), h_ref_(h_ref) {}
+      : Base(ndx, nu, 6)
+      , pin_model_(model)
+      , h_ref_(h_ref) {}
 
   void evaluate(const ConstVectorRef &x, BaseData &data) const;
 

@@ -23,7 +23,8 @@ template <typename Scalar> struct ConstraintStackTpl {
   using PolyFunc = xyz::polymorphic<StageFunctionTpl<Scalar>>;
   using PolySet = xyz::polymorphic<ConstraintSetTpl<Scalar>>;
 
-  ConstraintStackTpl() : indices_({0}) {};
+  ConstraintStackTpl()
+      : indices_({0}) {};
   ConstraintStackTpl(const ConstraintStackTpl &) = default;
   ConstraintStackTpl &operator=(const ConstraintStackTpl &) = default;
   ConstraintStackTpl(ConstraintStackTpl &&) = default;

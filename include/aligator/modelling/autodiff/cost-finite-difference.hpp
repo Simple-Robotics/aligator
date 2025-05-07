@@ -44,7 +44,11 @@ struct CostFiniteDifferenceHelper<Scalar>::Data : CostData {
   VectorXs xp, up;
 
   Data(CostFiniteDifferenceHelper const &obj)
-      : CostData(obj), dx(obj.ndx()), du(obj.nu), xp(obj.nx()), up(obj.nu) {
+      : CostData(obj)
+      , dx(obj.ndx())
+      , du(obj.nu)
+      , xp(obj.nx())
+      , up(obj.nu) {
     c1 = obj.cost_->createData();
     c2 = obj.cost_->createData();
   }

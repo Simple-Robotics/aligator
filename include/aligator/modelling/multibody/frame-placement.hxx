@@ -34,8 +34,10 @@ void FramePlacementResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
 template <typename Scalar>
 FramePlacementDataTpl<Scalar>::FramePlacementDataTpl(
     const FramePlacementResidualTpl<Scalar> &model)
-    : Base(model.ndx1, model.nu, 6), pin_data_(model.pin_model_), rJf_(6, 6),
-      fJf_(6, model.pin_model_.nv) {
+    : Base(model.ndx1, model.nu, 6)
+    , pin_data_(model.pin_model_)
+    , rJf_(6, 6)
+    , fJf_(6, model.pin_model_.nv) {
   rJf_.setZero();
   fJf_.setZero();
 }

@@ -30,8 +30,10 @@ public:
   FramePlacementResidualTpl(const int ndx, const int nu, const Model &model,
                             const SE3 &frame,
                             const pinocchio::FrameIndex frame_id)
-      : Base(ndx, nu, 6), pin_model_(model), p_ref_(frame),
-        p_ref_inverse_(frame.inverse()) {
+      : Base(ndx, nu, 6)
+      , pin_model_(model)
+      , p_ref_(frame)
+      , p_ref_inverse_(frame.inverse()) {
     pin_frame_id_ = frame_id;
   }
 

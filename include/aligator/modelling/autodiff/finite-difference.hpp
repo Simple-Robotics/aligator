@@ -28,9 +28,13 @@ template <typename Scalar> struct finite_diff_traits<Scalar, StageFunctionTpl> {
 
     template <typename U>
     Data(U const &model)
-        : SFD(*model.func_), data_0(model.func_->createData()),
-          data_1(model.func_->createData()), dx(ndx1), du(nu), xp(model.nx1),
-          up(model.nu) {
+        : SFD(*model.func_)
+        , data_0(model.func_->createData())
+        , data_1(model.func_->createData())
+        , dx(ndx1)
+        , du(nu)
+        , xp(model.nx1)
+        , up(model.nu) {
       dx.setZero();
       du.setZero();
     }
@@ -56,9 +60,15 @@ template <typename Scalar> struct finite_diff_traits<Scalar, DynamicsModelTpl> {
 
     template <typename U>
     Data(U const &model)
-        : DD(*model.func_), data_0(model.func_->createData()),
-          data_1(model.func_->createData()), dx(ndx1), du(nu), dy(ndx2),
-          xp(model.nx1), up(model.nu), yp(model.nx2) {
+        : DD(*model.func_)
+        , data_0(model.func_->createData())
+        , data_1(model.func_->createData())
+        , dx(ndx1)
+        , du(nu)
+        , dy(ndx2)
+        , xp(model.nx1)
+        , up(model.nu)
+        , yp(model.nx2) {
       dx.setZero();
       du.setZero();
       dy.setZero();
@@ -98,16 +108,23 @@ struct finite_difference_impl : finite_diff_traits<_Scalar, _BaseTpl> {
                                    std::is_same_v<U, StageFunctionTpl<Scalar>>>>
   finite_difference_impl(xyz::polymorphic<Manifold> space,
                          xyz::polymorphic<U> func, const Scalar fd_eps)
-      : space_(space), func_(func), fd_eps(fd_eps), nx1(space->nx()),
-        nx2(space->nx()) {}
+      : space_(space)
+      , func_(func)
+      , fd_eps(fd_eps)
+      , nx1(space->nx())
+      , nx2(space->nx()) {}
 
   template <typename U = Base, class = std::enable_if_t<
                                    std::is_same_v<U, DynamicsModelTpl<Scalar>>>>
   finite_difference_impl(xyz::polymorphic<Manifold> space,
                          xyz::polymorphic<U> func, const Scalar fd_eps,
                          boost::mpl::false_ = {})
-      : space_(space), func_(func), fd_eps(fd_eps), nx1(space->nx()),
-        nu(func->nu), nx2(space->nx()) {}
+      : space_(space)
+      , func_(func)
+      , fd_eps(fd_eps)
+      , nx1(space->nx())
+      , nu(func->nu)
+      , nx2(space->nx()) {}
 
   /// @details The @p y parameter is provided as a pointer, since is can be
   /// null.
@@ -200,8 +217,8 @@ struct FiniteDifferenceHelper : StageFunctionTpl<_Scalar> {
   FiniteDifferenceHelper(xyz::polymorphic<Manifold> space,
                          xyz::polymorphic<StageFunction> func,
                          const Scalar fd_eps)
-      : StageFunction(func->ndx1, func->nu, func->nr),
-        impl(space, func, fd_eps) {}
+      : StageFunction(func->ndx1, func->nu, func->nr)
+      , impl(space, func, fd_eps) {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 BaseData &data) const {
@@ -234,7 +251,8 @@ struct DynamicsFiniteDifferenceHelper : DynamicsModelTpl<_Scalar> {
   DynamicsFiniteDifferenceHelper(xyz::polymorphic<Manifold> space,
                                  xyz::polymorphic<DynamicsModel> func,
                                  const Scalar fd_eps)
-      : DynamicsModel(space, func->nu, space), impl(space, func, fd_eps) {}
+      : DynamicsModel(space, func->nu, space)
+      , impl(space, func, fd_eps) {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 const ConstVectorRef &xn, BaseData &data) const {

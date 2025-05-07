@@ -16,9 +16,14 @@ template <typename T> class Linesearch {
 public:
   struct Options {
     Options()
-        : armijo_c1(1e-4), wolfe_c2(0.9), dphi_thresh(1e-13), alpha_min(1e-6),
-          max_num_steps(20), interp_type(LSInterpolation::CUBIC),
-          contraction_min(0.5), contraction_max(0.8) {}
+        : armijo_c1(1e-4)
+        , wolfe_c2(0.9)
+        , dphi_thresh(1e-13)
+        , alpha_min(1e-6)
+        , max_num_steps(20)
+        , interp_type(LSInterpolation::CUBIC)
+        , contraction_min(0.5)
+        , contraction_max(0.8) {}
     T armijo_c1;
     T wolfe_c2;
     T dphi_thresh;
@@ -46,9 +51,21 @@ public:
     T phi;
     T dphi;
     bool valid;
-    FunctionSample() : alpha(0.), phi(0.), dphi(0.), valid(false) {}
-    FunctionSample(T a, T v) : alpha(a), phi(v), dphi(0.), valid(true) {}
-    FunctionSample(T a, T v, T g) : alpha(a), phi(v), dphi(g), valid(true) {}
+    FunctionSample()
+        : alpha(0.)
+        , phi(0.)
+        , dphi(0.)
+        , valid(false) {}
+    FunctionSample(T a, T v)
+        : alpha(a)
+        , phi(v)
+        , dphi(0.)
+        , valid(true) {}
+    FunctionSample(T a, T v, T g)
+        : alpha(a)
+        , phi(v)
+        , dphi(g)
+        , valid(true) {}
   };
 
   void setOptions(const Linesearch::Options &options) { options_ = options; }

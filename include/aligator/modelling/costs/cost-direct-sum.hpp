@@ -18,7 +18,9 @@ template <typename _Scalar> struct DirectSumCostTpl : CostAbstractTpl<_Scalar> {
   struct Data;
 
   DirectSumCostTpl(const PolyCost &c1, const PolyCost &c2)
-      : BaseCost(c1->space * c2->space, c1->nu + c2->nu), c1_(c1), c2_(c2) {
+      : BaseCost(c1->space * c2->space, c1->nu + c2->nu)
+      , c1_(c1)
+      , c2_(c2) {
     assert(!c1.valueless_after_move() && !c2.valueless_after_move());
   }
 
@@ -45,8 +47,9 @@ template <typename Scalar> struct DirectSumCostTpl<Scalar>::Data : BaseData {
 
   shared_ptr<BaseData> data1_, data2_;
   Data(const DirectSumCostTpl &model)
-      : BaseData(model.ndx(), model.nu), data1_(model.c1_->createData()),
-        data2_(model.c2_->createData()) {}
+      : BaseData(model.ndx(), model.nu)
+      , data1_(model.c1_->createData())
+      , data2_(model.c2_->createData()) {}
 };
 
 template <typename Scalar>

@@ -48,10 +48,14 @@ public:
       const RigidConstraintModelVector &constraint_models,
       const ProxSettings &prox_settings, const std::string &contact_name,
       const double mu, const double half_length, const double half_width)
-      : Base(ndx, (int)actuation.cols(), 17), pin_model_(model),
-        actuation_matrix_(actuation), constraint_models_(constraint_models),
-        prox_settings_(prox_settings), mu_(mu), hL_(half_length),
-        hW_(half_width) {
+      : Base(ndx, (int)actuation.cols(), 17)
+      , pin_model_(model)
+      , actuation_matrix_(actuation)
+      , constraint_models_(constraint_models)
+      , prox_settings_(prox_settings)
+      , mu_(mu)
+      , hL_(half_length)
+      , hW_(half_width) {
     if (model.nv != actuation.rows()) {
       ALIGATOR_DOMAIN_ERROR(
           fmt::format("actuation matrix should have number of rows = pinocchio "

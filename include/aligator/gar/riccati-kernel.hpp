@@ -46,8 +46,13 @@ template <typename _Scalar> struct StageFactor {
     VectorXs vt;
 
     value_t(uint nx, uint nth)
-        : Pmat(nx, nx), pvec(nx), Vxx(nx, nx), vx(nx), Vxt(nx, nth),
-          Vtt(nth, nth), vt(nth) {
+        : Pmat(nx, nx)
+        , pvec(nx)
+        , Vxx(nx, nx)
+        , vx(nx)
+        , Vxt(nx, nth)
+        , Vtt(nth, nth)
+        , vt(nth) {
       Vxt.setZero();
       Vtt.setZero();
       vt.setZero();
@@ -99,8 +104,9 @@ template <typename Scalar> struct ProximalRiccatiKernel {
     BlkMatrix<RowMatrixXs, 2, 1> fth;
     Eigen::BunchKaufman<MatrixXs> chol{mat.rows()};
     kkt0_t(uint nx, uint nc, uint nth)
-        : mat({nx, nc}, {nx, nc}), ff(mat.rowDims()),
-          fth(mat.rowDims(), {nth}) {}
+        : mat({nx, nc}, {nx, nc})
+        , ff(mat.rowDims())
+        , fth(mat.rowDims(), {nth}) {}
   };
 
   static void terminalSolve(typename KnotType::const_view_t model,

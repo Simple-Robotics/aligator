@@ -7,8 +7,9 @@ template <typename Scalar>
 ControlBoxFunctionTpl<Scalar>::ControlBoxFunctionTpl(const int ndx,
                                                      const VectorXs &umin,
                                                      const VectorXs &umax)
-    : Base(ndx, (int)umin.size(), 2 * (int)umin.size()), umin_(umin),
-      umax_(umax) {
+    : Base(ndx, (int)umin.size(), 2 * (int)umin.size())
+    , umin_(umin)
+    , umax_(umax) {
   if (umin.size() != umax.size()) {
     ALIGATOR_DOMAIN_ERROR("Size of umin and umax should be the same!");
   }

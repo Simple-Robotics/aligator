@@ -43,9 +43,13 @@ public:
   QuadraticCostTpl(const ConstMatrixRef &w_x, const ConstMatrixRef &w_u,
                    const ConstVectorRef &interp_x,
                    const ConstVectorRef &interp_u)
-      : Base(get_vector_space(w_x.cols()), (int)w_u.cols()), Wxx_(w_x),
-        Wuu_(w_u), Wxu_(this->ndx(), this->nu), interp_x(interp_x),
-        interp_u(interp_u), has_cross_term_(false) {
+      : Base(get_vector_space(w_x.cols()), (int)w_u.cols())
+      , Wxx_(w_x)
+      , Wuu_(w_u)
+      , Wxu_(this->ndx(), this->nu)
+      , interp_x(interp_x)
+      , interp_u(interp_u)
+      , has_cross_term_(false) {
     debug_check_dims();
     Wxu_.setZero();
   }
@@ -54,9 +58,13 @@ public:
                    const ConstMatrixRef &w_cross,
                    const ConstVectorRef &interp_x,
                    const ConstVectorRef &interp_u)
-      : Base(get_vector_space(w_x.cols()), (int)w_u.cols()), Wxx_(w_x),
-        Wuu_(w_u), Wxu_(w_cross), interp_x(interp_x), interp_u(interp_u),
-        has_cross_term_(true) {
+      : Base(get_vector_space(w_x.cols()), (int)w_u.cols())
+      , Wxx_(w_x)
+      , Wuu_(w_u)
+      , Wxu_(w_cross)
+      , interp_x(interp_x)
+      , interp_u(interp_u)
+      , has_cross_term_(true) {
     debug_check_dims();
   }
 
@@ -144,8 +152,11 @@ struct QuadraticCostDataTpl : CostDataAbstractTpl<Scalar> {
   VectorXs w_times_x_, w_times_u_, cross_x_, cross_u_;
 
   QuadraticCostDataTpl(const int nx, const int nu)
-      : Base(nx, nu), w_times_x_(nx), w_times_u_(nu), cross_x_(nu),
-        cross_u_(nu) {
+      : Base(nx, nu)
+      , w_times_x_(nx)
+      , w_times_u_(nu)
+      , cross_x_(nu)
+      , cross_u_(nu) {
     w_times_x_.setZero();
     w_times_u_.setZero();
     cross_x_.setZero();

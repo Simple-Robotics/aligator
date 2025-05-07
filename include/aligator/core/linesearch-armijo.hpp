@@ -17,7 +17,8 @@ template <typename T> struct PolynomialTpl {
   using VectorXs = typename math_types<T>::VectorXs;
   VectorXs coeffs;
   PolynomialTpl() {}
-  PolynomialTpl(const Eigen::Ref<const VectorXs> &c) : coeffs(c) {}
+  PolynomialTpl(const Eigen::Ref<const VectorXs> &c)
+      : coeffs(c) {}
   /// @brief Polynomial degree (number of coefficients minus one).
   Eigen::Index degree() const { return coeffs.size() - 1; }
   inline T evaluate(T a) const {
@@ -51,7 +52,8 @@ public:
   using Matrix2s = Eigen::Matrix<Scalar, 2, 2>;
   using Vector2s = Eigen::Matrix<Scalar, 2, 1>;
 
-  ArmijoLinesearch(const typename Base::Options &options) : Base(options) {}
+  ArmijoLinesearch(const typename Base::Options &options)
+      : Base(options) {}
 
   using fun_t = std::function<Scalar(Scalar)>;
 

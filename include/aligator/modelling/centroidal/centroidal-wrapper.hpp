@@ -25,8 +25,8 @@ public:
 
   CentroidalWrapperResidualTpl(FunPtr centroidal_cost)
       : Base(centroidal_cost->ndx1 + centroidal_cost->nu, centroidal_cost->nu,
-             centroidal_cost->nr),
-        centroidal_cost_(centroidal_cost) {}
+             centroidal_cost->nr)
+      , centroidal_cost_(centroidal_cost) {}
 
   void evaluate(const ConstVectorRef &x, BaseData &data) const;
 

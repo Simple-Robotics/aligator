@@ -11,7 +11,10 @@ template <typename Scalar>
 FrameVelocityResidualTpl<Scalar>::FrameVelocityResidualTpl(
     const int ndx, const int nu, const Model &model, const Motion &velocity,
     const pinocchio::FrameIndex frame_id, const pinocchio::ReferenceFrame type)
-    : Base(ndx, nu, 6), pin_model_(model), vref_(velocity), type_(type) {
+    : Base(ndx, nu, 6)
+    , pin_model_(model)
+    , vref_(velocity)
+    , type_(type) {
   pin_frame_id_ = frame_id;
   if (ndx < model.nv * 2) {
     ALIGATOR_RUNTIME_ERROR("Specified manifold dimension is incompatible. It "
@@ -51,6 +54,7 @@ void FrameVelocityResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &x,
 template <typename Scalar>
 FrameVelocityDataTpl<Scalar>::FrameVelocityDataTpl(
     const FrameVelocityResidualTpl<Scalar> &model)
-    : Base(model.ndx1, model.nu, 6), pin_data_(model.pin_model_) {}
+    : Base(model.ndx1, model.nu, 6)
+    , pin_data_(model.pin_model_) {}
 
 } // namespace aligator

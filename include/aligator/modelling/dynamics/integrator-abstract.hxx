@@ -8,8 +8,8 @@ namespace dynamics {
 template <typename Scalar>
 IntegratorAbstractTpl<Scalar>::IntegratorAbstractTpl(
     const xyz::polymorphic<ContinuousDynamics> &cont_dynamics)
-    : Base(cont_dynamics->space_, cont_dynamics->nu()),
-      continuous_dynamics_(cont_dynamics) {}
+    : Base(cont_dynamics->space_, cont_dynamics->nu())
+    , continuous_dynamics_(cont_dynamics) {}
 
 template <typename Scalar>
 auto IntegratorAbstractTpl<Scalar>::createData() const -> shared_ptr<BaseData> {
@@ -19,8 +19,9 @@ auto IntegratorAbstractTpl<Scalar>::createData() const -> shared_ptr<BaseData> {
 template <typename Scalar>
 IntegratorDataTpl<Scalar>::IntegratorDataTpl(
     const IntegratorAbstractTpl<Scalar> &model)
-    : Base(model), continuous_data(model.continuous_dynamics_->createData()),
-      xdot_(model.continuous_dynamics_->ndx()) {
+    : Base(model)
+    , continuous_data(model.continuous_dynamics_->createData())
+    , xdot_(model.continuous_dynamics_->ndx()) {
   xdot_.setZero();
 }
 

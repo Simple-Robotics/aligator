@@ -44,7 +44,8 @@ template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
 
   CostStackTpl(xyz::polymorphic<Manifold> space, const int nu,
                const CostMap &comps)
-      : CostBase(space, nu), components_(comps) {
+      : CostBase(space, nu)
+      , components_(comps) {
     for (const auto &[key, item] : comps) {
       auto &cost = *item.first;
       if (!this->checkDimension(cost)) {

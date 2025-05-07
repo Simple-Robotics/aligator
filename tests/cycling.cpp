@@ -63,8 +63,11 @@ struct MyFixture {
   std::vector<shared_ptr<StageDataTpl<double>>> problem_data;
 
   MyFixture()
-      : space(), nu(space.ndx()), dyn_model(space), cost(MyCost(space, nu)),
-        problem(space.neutral(), nu, space, cost) {
+      : space()
+      , nu(space.ndx())
+      , dyn_model(space)
+      , cost(MyCost(space, nu))
+      , problem(space.neutral(), nu, space, cost) {
     for (size_t i = 0; i < 20; i++) {
       auto stage = StageModel(cost, dyn_model);
       if (i >= 10) {

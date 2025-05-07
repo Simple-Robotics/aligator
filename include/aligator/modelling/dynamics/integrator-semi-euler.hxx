@@ -9,7 +9,8 @@ namespace dynamics {
 template <typename Scalar>
 IntegratorSemiImplEulerTpl<Scalar>::IntegratorSemiImplEulerTpl(
     const xyz::polymorphic<ODEType> &cont_dynamics, const Scalar timestep)
-    : Base(cont_dynamics), timestep_(timestep) {
+    : Base(cont_dynamics)
+    , timestep_(timestep) {
   assert(((this->ndx1) % 2 == 0) &&
          "IntegratorSemiImplEuler must be used with even ndx.");
 }
@@ -66,8 +67,9 @@ void IntegratorSemiImplEulerTpl<Scalar>::dForward(
 template <typename Scalar>
 IntegratorSemiImplDataTpl<Scalar>::IntegratorSemiImplDataTpl(
     const IntegratorSemiImplEulerTpl<Scalar> *integrator)
-    : Base(integrator), Jtmp_xnext2(integrator->ndx1, integrator->ndx1),
-      Jtmp_u(integrator->ndx1, integrator->nu) {
+    : Base(integrator)
+    , Jtmp_xnext2(integrator->ndx1, integrator->ndx1)
+    , Jtmp_u(integrator->ndx1, integrator->nu) {
   Jtmp_xnext2.setZero();
   Jtmp_u.setZero();
 }

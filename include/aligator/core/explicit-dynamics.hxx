@@ -46,8 +46,12 @@ ExplicitDynamicsDataTpl<Scalar>::ExplicitDynamicsDataTpl(const int ndx1,
                                                          const int nu,
                                                          const int nx2,
                                                          const int ndx2)
-    : Base(ndx1, nu, ndx2), xnext_(nx2), dx_(ndx2), Jtmp_xnext(ndx2, ndx2),
-      xnext_ref(xnext_), dx_ref(dx_) {
+    : Base(ndx1, nu, ndx2)
+    , xnext_(nx2)
+    , dx_(ndx2)
+    , Jtmp_xnext(ndx2, ndx2)
+    , xnext_ref(xnext_)
+    , dx_ref(dx_) {
   xnext_.setZero();
   dx_.setZero();
   Jtmp_xnext.setZero();

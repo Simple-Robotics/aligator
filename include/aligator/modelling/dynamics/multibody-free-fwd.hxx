@@ -13,8 +13,10 @@ namespace dynamics {
 template <typename Scalar>
 MultibodyFreeFwdDynamicsTpl<Scalar>::MultibodyFreeFwdDynamicsTpl(
     const Manifold &state, const MatrixXs &actuation)
-    : Base(state, (int)actuation.cols()), space_(state),
-      actuation_matrix_(actuation), lu_decomp_(actuation_matrix_) {
+    : Base(state, (int)actuation.cols())
+    , space_(state)
+    , actuation_matrix_(actuation)
+    , lu_decomp_(actuation_matrix_) {
   const int nv = space().getModel().nv;
   if (nv != actuation.rows()) {
     ALIGATOR_DOMAIN_ERROR(
@@ -77,10 +79,11 @@ MultibodyFreeFwdDynamicsTpl<Scalar>::createData() const {
 template <typename Scalar>
 MultibodyFreeFwdDataTpl<Scalar>::MultibodyFreeFwdDataTpl(
     const MultibodyFreeFwdDynamicsTpl<Scalar> *cont_dyn)
-    : Base(cont_dyn->ndx(), cont_dyn->nu()),
-      tau_(cont_dyn->space_.getModel().nv),
-      dtau_dx_(cont_dyn->ntau(), cont_dyn->ndx()),
-      dtau_du_(cont_dyn->actuation_matrix_), pin_data_() {
+    : Base(cont_dyn->ndx(), cont_dyn->nu())
+    , tau_(cont_dyn->space_.getModel().nv)
+    , dtau_dx_(cont_dyn->ntau(), cont_dyn->ndx())
+    , dtau_du_(cont_dyn->actuation_matrix_)
+    , pin_data_() {
   tau_.setZero();
   const pinocchio::ModelTpl<Scalar> &model = cont_dyn->space_.getModel();
   pin_data_ = PinDataType(model);

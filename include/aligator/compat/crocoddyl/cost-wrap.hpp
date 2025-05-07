@@ -24,13 +24,13 @@ struct CrocCostModelWrapperTpl : CostAbstractTpl<_Scalar> {
 
   /// Constructor from a crocoddyl cost model.
   explicit CrocCostModelWrapperTpl(shared_ptr<CrocCostModel> cost)
-      : Base(StateWrap(cost->get_state()), (int)cost->get_nu()),
-        croc_cost_(cost) {}
+      : Base(StateWrap(cost->get_state()), (int)cost->get_nu())
+      , croc_cost_(cost) {}
 
   /// Constructor using a terminal action model.
   explicit CrocCostModelWrapperTpl(shared_ptr<CrocActionModel> action_model)
-      : Base(StateWrap(action_model->get_state()), (int)action_model->get_nu()),
-        action_model_(action_model) {}
+      : Base(StateWrap(action_model->get_state()), (int)action_model->get_nu())
+      , action_model_(action_model) {}
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
                 BaseData &data) const {
@@ -98,12 +98,12 @@ struct CrocCostDataWrapperTpl : CostDataAbstractTpl<Scalar> {
   shared_ptr<ActionData> croc_act_data_;
 
   explicit CrocCostDataWrapperTpl(const shared_ptr<CostData> &crocdata)
-      : Base((int)crocdata->Lx.rows(), (int)crocdata->Lu.rows()),
-        croc_cost_data_(crocdata) {}
+      : Base((int)crocdata->Lx.rows(), (int)crocdata->Lu.rows())
+      , croc_cost_data_(crocdata) {}
 
   explicit CrocCostDataWrapperTpl(const shared_ptr<ActionData> &actdata)
-      : Base((int)actdata->Lx.rows(), (int)actdata->Lu.rows()),
-        croc_act_data_(actdata) {}
+      : Base((int)actdata->Lx.rows(), (int)actdata->Lu.rows())
+      , croc_act_data_(actdata) {}
 };
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION

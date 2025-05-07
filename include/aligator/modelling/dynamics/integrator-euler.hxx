@@ -8,7 +8,8 @@ namespace dynamics {
 template <typename Scalar>
 IntegratorEulerTpl<Scalar>::IntegratorEulerTpl(
     const xyz::polymorphic<ODEType> &cont_dynamics, const Scalar timestep)
-    : Base(cont_dynamics), timestep_(timestep) {}
+    : Base(cont_dynamics)
+    , timestep_(timestep) {}
 
 template <typename Scalar>
 void IntegratorEulerTpl<Scalar>::forward(

@@ -20,7 +20,10 @@ template <typename _Scalar> struct ValueFunctionTpl {
   MatrixXs Vxx_;
   Scalar v_;
 
-  ValueFunctionTpl(const int ndx) : ndx_(ndx), Vx_(ndx), Vxx_(ndx, ndx) {
+  ValueFunctionTpl(const int ndx)
+      : ndx_(ndx)
+      , Vx_(ndx)
+      , Vxx_(ndx, ndx) {
     Vx_.setZero();
     Vxx_.setZero();
   }
@@ -62,12 +65,19 @@ template <typename _Scalar> struct QFunctionTpl {
   MatrixRef Qyy;
 
   QFunctionTpl(const long ndx, const long nu, const long ndy)
-      : ndx_(ndx), nu_(nu), ndy_(ndy), grad_(ndx_ + nu_), hess_(ntot(), ntot()),
-        Qx(grad_.head(ndx)), Qu(grad_.segment(ndx, nu)),
-        Qxx(hess_.topLeftCorner(ndx, ndx)), Qxu(hess_.block(0, ndx, ndx, nu)),
-        Qxy(hess_.topRightCorner(ndx, ndy)), Quu(hess_.block(ndx, ndx, nu, nu)),
-        Quy(hess_.block(ndx, ndx + nu, nu, ndy)),
-        Qyy(hess_.bottomRightCorner(ndy, ndy)) {
+      : ndx_(ndx)
+      , nu_(nu)
+      , ndy_(ndy)
+      , grad_(ndx_ + nu_)
+      , hess_(ntot(), ntot())
+      , Qx(grad_.head(ndx))
+      , Qu(grad_.segment(ndx, nu))
+      , Qxx(hess_.topLeftCorner(ndx, ndx))
+      , Qxu(hess_.block(0, ndx, ndx, nu))
+      , Qxy(hess_.topRightCorner(ndx, ndy))
+      , Quu(hess_.block(ndx, ndx, nu, nu))
+      , Quy(hess_.block(ndx, ndx + nu, nu, ndy))
+      , Qyy(hess_.bottomRightCorner(ndy, ndy)) {
     grad_.setZero();
     hess_.setZero();
     assert(hess_.rows() == ntot());
@@ -86,7 +96,10 @@ template <typename _Scalar> struct QFunctionTpl {
     redef_refs(*this);
   }
 
-  QFunctionTpl(QFunctionTpl &&qf) : QFunctionTpl(0, 0, 0) { swap(*this, qf); }
+  QFunctionTpl(QFunctionTpl &&qf)
+      : QFunctionTpl(0, 0, 0) {
+    swap(*this, qf);
+  }
 
   QFunctionTpl &operator=(QFunctionTpl &&qf) {
     swap(*this, qf);

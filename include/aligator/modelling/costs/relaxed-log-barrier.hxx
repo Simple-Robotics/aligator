@@ -10,8 +10,10 @@ template <typename Scalar>
 RelaxedLogBarrierCostTpl<Scalar>::RelaxedLogBarrierCostTpl(
     xyz::polymorphic<Manifold> space, xyz::polymorphic<StageFunction> function,
     const ConstVectorRef &weight, const Scalar threshold)
-    : Base(space, function->nu), barrier_weights_(weight), residual_(function),
-      threshold_(threshold) {
+    : Base(space, function->nu)
+    , barrier_weights_(weight)
+    , residual_(function)
+    , threshold_(threshold) {
   if (weight.size() != function->nr) {
     ALIGATOR_RUNTIME_ERROR(
         "weight argument dimension ({:d}) != function codimension ({:d})",

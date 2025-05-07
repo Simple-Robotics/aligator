@@ -21,13 +21,16 @@ template <typename _FunType> struct linear_func_composition_impl : _FunType {
   struct Data : BaseData {
     shared_ptr<BaseData> sub_data;
     Data(const linear_func_composition_impl &model)
-        : BaseData(model.ndx1, model.nu, model.nr),
-          sub_data(model.func->createData()) {}
+        : BaseData(model.ndx1, model.nu, model.nr)
+        , sub_data(model.func->createData()) {}
   };
 
   linear_func_composition_impl(xyz::polymorphic<FunType> func,
                                const ConstMatrixRef A, const ConstVectorRef b)
-      : FunType(func->ndx1, func->nu, (int)A.rows()), func(func), A(A), b(b) {
+      : FunType(func->ndx1, func->nu, (int)A.rows())
+      , func(func)
+      , A(A)
+      , b(b) {
     // if (func == 0) {
     //   ALIGATOR_RUNTIME_ERROR("Underlying function cannot be nullptr.");
     // }

@@ -17,8 +17,10 @@ template <typename Scalar> struct HistoryCallbackTpl : CallbackBaseTpl<Scalar> {
   template <typename Solver>
   HistoryCallbackTpl(Solver *solver, bool store_pd_vars = false,
                      bool store_values = true)
-      : store_primal_dual_vars_(store_pd_vars), store_values_(store_values),
-        rtti_(typeid(*solver)), solver_(solver) {}
+      : store_primal_dual_vars_(store_pd_vars)
+      , store_values_(store_values)
+      , rtti_(typeid(*solver))
+      , solver_(solver) {}
 
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 

@@ -12,9 +12,12 @@ namespace aligator {
 
 template <typename Scalar>
 WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
-    : Base(problem), stage_inner_crits(nsteps + 1),
-      stage_cstr_violations(nsteps + 1), stage_infeasibilities(nsteps + 1),
-      state_dual_infeas(nsteps + 1), control_dual_infeas(nsteps + 1) {
+    : Base(problem)
+    , stage_inner_crits(nsteps + 1)
+    , stage_cstr_violations(nsteps + 1)
+    , stage_infeasibilities(nsteps + 1)
+    , state_dual_infeas(nsteps + 1)
+    , control_dual_infeas(nsteps + 1) {
 
   if (!problem.checkIntegrity())
     ALIGATOR_RUNTIME_ERROR("Problem failed integrity check.");

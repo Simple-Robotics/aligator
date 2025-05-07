@@ -17,10 +17,12 @@ public:
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   /// Constructor using base space instance.
-  TangentBundleTpl(Base base) : base_(base) {};
+  TangentBundleTpl(Base base)
+      : base_(base) {};
   /// Constructor using base space constructor.
   template <typename... BaseCtorArgs>
-  TangentBundleTpl(BaseCtorArgs... args) : base_(Base(args...)) {}
+  TangentBundleTpl(BaseCtorArgs... args)
+      : base_(Base(args...)) {}
 
   /// Declare implementations
 

@@ -32,7 +32,11 @@ public:
   CentroidalWrenchConeResidualTpl(const int ndx, const int nu, const int k,
                                   const double mu, const double half_length,
                                   const double half_width)
-      : Base(ndx, nu, 17), k_(k), mu_(mu), hL_(half_length), hW_(half_width) {}
+      : Base(ndx, nu, 17)
+      , k_(k)
+      , mu_(mu)
+      , hL_(half_length)
+      , hW_(half_width) {}
 
   void evaluate(const ConstVectorRef &, const ConstVectorRef &u,
                 BaseData &data) const;

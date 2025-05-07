@@ -11,7 +11,9 @@ template <typename Scalar>
 FlyHighResidualTpl<Scalar>::FlyHighResidualTpl(
     const int ndx, const Model &model, const pinocchio::FrameIndex frame_id,
     Scalar slope, int nu)
-    : Base(ndx, nu, NR), slope_(slope), pin_model_(model) {
+    : Base(ndx, nu, NR)
+    , slope_(slope)
+    , pin_model_(model) {
   pin_frame_id_ = frame_id;
 }
 

@@ -50,8 +50,10 @@ void MultibodyWrenchConeResidualTpl<Scalar>::computeJacobians(
 template <typename Scalar>
 MultibodyWrenchConeDataTpl<Scalar>::MultibodyWrenchConeDataTpl(
     const MultibodyWrenchConeResidualTpl<Scalar> *model)
-    : Base(model->ndx1, model->nu, 17), pin_data_(model->pin_model_),
-      tau_(model->pin_model_.nv), temp_(6, model->nu) {
+    : Base(model->ndx1, model->nu, 17)
+    , pin_data_(model->pin_model_)
+    , tau_(model->pin_model_.nv)
+    , temp_(6, model->nu) {
   tau_.setZero();
   temp_.setZero();
 
