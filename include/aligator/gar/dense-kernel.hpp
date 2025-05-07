@@ -1,3 +1,5 @@
+/// @file
+/// @copyright Copyright (C) 2025 INRIA
 #pragma once
 
 #include "aligator/core/bunchkaufman.hpp"
