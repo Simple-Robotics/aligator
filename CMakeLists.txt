@@ -61,6 +61,7 @@ else()
   endif()
 endif()
 
+set(AWESOME_CSS_DIR ${PROJECT_SOURCE_DIR}/doc/doxygen-awesome-css)
 set(DOXYGEN_HTML_HEADER "${PROJECT_SOURCE_DIR}/doc/header.html")
 
 # Use BoostConfig module distributed by boost library instead of using FindBoost module distributed
