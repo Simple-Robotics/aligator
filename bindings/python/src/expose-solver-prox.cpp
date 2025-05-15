@@ -110,6 +110,7 @@ void exposeProxDDP() {
            "Cycle the results.")
       .def_readonly("al_iter", &Results::al_iter)
       .def_readonly("lams", &Results::lams)
+      .def_readonly("vs",&Results::vs)
       .def(PrintableVisitor<Results>());
 
   using SolverType = SolverProxDDPTpl<Scalar>;
