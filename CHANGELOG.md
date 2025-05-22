@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Expose vs in ProxDDP result
+
 ## [0.14.0] - 2025-05-07
 
 This release brings many major changes to aligator.
