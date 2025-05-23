@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+
+- CMake : sync submodule (https://github.com/Simple-Robotics/aligator/pull/318)
 - Update minimum required version of CMake to 3.22 (https://github.com/Simple-Robotics/aligator/pull/318)
 
 ## [0.14.1] - 2025-05-23
