@@ -11,7 +11,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ampl-asl-1.0.0-h5888daf_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/assimp-5.4.3-h8943939_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.2-h5888daf_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.4-h5888daf_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils-2.43-h4852527_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_impl_linux-64-2.43-h4bf12b8_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_linux-64-2.43-h4852527_4.conda
@@ -154,7 +154,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libzlib-1.3.1-hb9d3cd8_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/lz4-c-1.10.0-h5888daf_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/lzo-2.10-hd590300_1001.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.10.1-py312hd3ec401_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.10.3-py312hd3ec401_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/metis-5.1.0-hd0bcaf9_1007.conda
@@ -230,7 +230,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/ampl-asl-1.0.0-h240833e_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/assimp-5.4.3-hf9fe5ce_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/benchmark-1.9.2-h240833e_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/benchmark-1.9.4-h240833e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/brotli-1.1.0-h00291cd_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/brotli-bin-1.1.0-h00291cd_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/bzip2-1.0.8-hfdf4475_7.conda
@@ -363,7 +363,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-openmp-20.1.4-ha54dae1_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-tools-18-18.1.8-default_h3571c67_5.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-tools-18.1.8-default_h3571c67_5.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/matplotlib-base-3.10.1-py312h535dea3_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/matplotlib-base-3.10.3-py312h535dea3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/metis-5.1.0-h3023b02_1007.conda
@@ -434,7 +434,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/ampl-asl-1.0.0-h286801f_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/assimp-5.4.3-ha9c0b8d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/benchmark-1.9.2-h286801f_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/benchmark-1.9.4-h286801f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/brotli-1.1.0-hd74edd7_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/brotli-bin-1.1.0-hd74edd7_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/bzip2-1.0.8-h99b78c6_7.conda
@@ -567,7 +567,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-openmp-20.1.4-hdb05f8b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-tools-18-18.1.8-default_hb458b26_5.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-tools-18.1.8-default_hb458b26_5.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/matplotlib-base-3.10.1-py312hdbc7e53_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/matplotlib-base-3.10.3-py312hdbc7e53_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/metis-5.1.0-h15f6cfe_1007.conda
@@ -646,7 +646,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ampl-asl-1.0.0-h5888daf_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/assimp-5.4.3-h8943939_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.2-h5888daf_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.4-h5888daf_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils-2.43-h4852527_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_impl_linux-64-2.43-h4bf12b8_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_linux-64-2.43-h4852527_4.conda
@@ -868,7 +868,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/ampl-asl-1.0.0-h240833e_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/assimp-5.4.3-hf9fe5ce_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/benchmark-1.9.2-h240833e_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/benchmark-1.9.4-h240833e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/brotli-1.1.0-h00291cd_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/brotli-bin-1.1.0-h00291cd_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/bzip2-1.0.8-hfdf4475_7.conda
@@ -1075,7 +1075,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/ampl-asl-1.0.0-h286801f_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/assimp-5.4.3-ha9c0b8d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/benchmark-1.9.2-h286801f_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/benchmark-1.9.4-h286801f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/brotli-1.1.0-hd74edd7_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/brotli-bin-1.1.0-hd74edd7_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/bzip2-1.0.8-h99b78c6_7.conda
@@ -1287,7 +1287,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-2_gnu.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.2-h5888daf_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.4-h5888daf_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils-2.43-h4852527_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_impl_linux-64-2.43-h4bf12b8_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_linux-64-2.43-h4852527_4.conda
@@ -1393,7 +1393,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libxcb-1.17.0-h8a09558_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libxcrypt-4.4.36-hd590300_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libzlib-1.3.1-hb9d3cd8_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.10.1-py312hd3ec401_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.10.3-py312hd3ec401_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/metis-5.1.0-hd0bcaf9_1007.conda
@@ -1451,7 +1451,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zstd-1.5.7-hb8e6e7a_2.conda
       osx-64:
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/benchmark-1.9.2-h240833e_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/benchmark-1.9.4-h240833e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/brotli-1.1.0-h00291cd_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/brotli-bin-1.1.0-h00291cd_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/bzip2-1.0.8-hfdf4475_7.conda
@@ -1555,7 +1555,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-openmp-20.1.4-ha54dae1_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-tools-18-18.1.8-default_h3571c67_5.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-tools-18.1.8-default_h3571c67_5.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/matplotlib-base-3.10.1-py312h535dea3_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/matplotlib-base-3.10.3-py312h535dea3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/metis-5.1.0-h3023b02_1007.conda
@@ -1614,7 +1614,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/zstd-1.5.7-h8210216_2.conda
       osx-arm64:
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/benchmark-1.9.2-h286801f_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/benchmark-1.9.4-h286801f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/brotli-1.1.0-hd74edd7_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/brotli-bin-1.1.0-hd74edd7_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/bzip2-1.0.8-h99b78c6_7.conda
@@ -1720,7 +1720,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-openmp-20.1.4-hdb05f8b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-tools-18-18.1.8-default_hb458b26_5.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-tools-18.1.8-default_hb458b26_5.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/matplotlib-base-3.10.1-py312hdbc7e53_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/matplotlib-base-3.10.3-py312hdbc7e53_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/metis-5.1.0-h15f6cfe_1007.conda
@@ -1786,7 +1786,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-2_gnu.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.2-h5888daf_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.4-h5888daf_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils-2.43-h4852527_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_impl_linux-64-2.43-h4bf12b8_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_linux-64-2.43-h4852527_4.conda
@@ -1883,7 +1883,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libxcrypt-4.4.36-hd590300_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libxml2-2.13.7-h4bc477f_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libzlib-1.3.1-hb9d3cd8_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.10.1-py312hd3ec401_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.10.3-py312hd3ec401_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/munkres-1.1.4-pyh9f0ad1d_0.tar.bz2
@@ -1947,7 +1947,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ampl-asl-1.0.0-h5888daf_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/assimp-5.4.3-h8943939_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.2-h5888daf_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.4-h5888daf_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils-2.43-h4852527_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_impl_linux-64-2.43-h4bf12b8_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_linux-64-2.43-h4852527_4.conda
@@ -2075,7 +2075,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libzlib-1.3.1-hb9d3cd8_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/lz4-c-1.10.0-h5888daf_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/lzo-2.10-hd590300_1001.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.10.1-py312hd3ec401_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.10.3-py312hd3ec401_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/metis-5.1.0-hd0bcaf9_1007.conda
@@ -2149,7 +2149,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/ampl-asl-1.0.0-h240833e_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/assimp-5.4.3-hf9fe5ce_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/benchmark-1.9.2-h240833e_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/benchmark-1.9.4-h240833e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/brotli-1.1.0-h00291cd_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/brotli-bin-1.1.0-h00291cd_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/bzip2-1.0.8-hfdf4475_7.conda
@@ -2267,7 +2267,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-openmp-20.1.4-ha54dae1_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-tools-18-18.1.8-default_h3571c67_5.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-tools-18.1.8-default_h3571c67_5.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/matplotlib-base-3.10.1-py312h535dea3_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/matplotlib-base-3.10.3-py312h535dea3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/metis-5.1.0-h3023b02_1007.conda
@@ -2336,7 +2336,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/ampl-asl-1.0.0-h286801f_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/assimp-5.4.3-ha9c0b8d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/benchmark-1.9.2-h286801f_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/benchmark-1.9.4-h286801f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/brotli-1.1.0-hd74edd7_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/brotli-bin-1.1.0-hd74edd7_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/bzip2-1.0.8-h99b78c6_7.conda
@@ -2454,7 +2454,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-openmp-20.1.4-hdb05f8b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-tools-18-18.1.8-default_hb458b26_5.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-tools-18.1.8-default_hb458b26_5.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/matplotlib-base-3.10.1-py312hdbc7e53_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/matplotlib-base-3.10.3-py312hdbc7e53_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/metis-5.1.0-h15f6cfe_1007.conda
@@ -2528,7 +2528,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-2_gnu.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.2-h5888daf_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.4-h5888daf_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils-2.43-h4852527_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_impl_linux-64-2.43-h4bf12b8_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_linux-64-2.43-h4852527_4.conda
@@ -2618,7 +2618,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libxcb-1.17.0-h8a09558_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libxcrypt-4.4.36-hd590300_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libzlib-1.3.1-hb9d3cd8_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.10.1-py312hd3ec401_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.10.3-py312hd3ec401_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/munkres-1.1.4-pyh9f0ad1d_0.tar.bz2
@@ -2673,7 +2673,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zstd-1.5.7-hb8e6e7a_2.conda
       osx-64:
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/benchmark-1.9.2-h240833e_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/benchmark-1.9.4-h240833e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/brotli-1.1.0-h00291cd_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/brotli-bin-1.1.0-h00291cd_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/bzip2-1.0.8-hfdf4475_7.conda
@@ -2761,7 +2761,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-openmp-20.1.4-ha54dae1_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-tools-18-18.1.8-default_h3571c67_5.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-tools-18.1.8-default_h3571c67_5.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/matplotlib-base-3.10.1-py312h535dea3_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/matplotlib-base-3.10.3-py312h535dea3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/munkres-1.1.4-pyh9f0ad1d_0.tar.bz2
@@ -2817,7 +2817,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/zstd-1.5.7-h8210216_2.conda
       osx-arm64:
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/benchmark-1.9.2-h286801f_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/benchmark-1.9.4-h286801f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/brotli-1.1.0-hd74edd7_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/brotli-bin-1.1.0-hd74edd7_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/bzip2-1.0.8-h99b78c6_7.conda
@@ -2907,7 +2907,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-openmp-20.1.4-hdb05f8b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-tools-18-18.1.8-default_hb458b26_5.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-tools-18.1.8-default_hb458b26_5.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/matplotlib-base-3.10.1-py312hdbc7e53_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/matplotlib-base-3.10.3-py312hdbc7e53_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/munkres-1.1.4-pyh9f0ad1d_0.tar.bz2
@@ -2970,7 +2970,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-2_gnu.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.2-h5888daf_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.4-h5888daf_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils-2.43-h4852527_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_impl_linux-64-2.43-h4bf12b8_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_linux-64-2.43-h4852527_4.conda
@@ -3065,7 +3065,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libxcb-1.17.0-h8a09558_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libxcrypt-4.4.36-hd590300_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libzlib-1.3.1-hb9d3cd8_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.10.1-py312hd3ec401_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.10.3-py312hd3ec401_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/munkres-1.1.4-pyh9f0ad1d_0.tar.bz2
@@ -3127,7 +3127,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zstd-1.5.7-hb8e6e7a_2.conda
       osx-64:
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/benchmark-1.9.2-h240833e_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/benchmark-1.9.4-h240833e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/brotli-1.1.0-h00291cd_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/brotli-bin-1.1.0-h00291cd_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/bzip2-1.0.8-hfdf4475_7.conda
@@ -3220,7 +3220,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-openmp-20.1.4-ha54dae1_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-tools-18-18.1.8-default_h3571c67_5.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-tools-18.1.8-default_h3571c67_5.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/matplotlib-base-3.10.1-py312h535dea3_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/matplotlib-base-3.10.3-py312h535dea3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/munkres-1.1.4-pyh9f0ad1d_0.tar.bz2
@@ -3283,7 +3283,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/zstd-1.5.7-h8210216_2.conda
       osx-arm64:
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/benchmark-1.9.2-h286801f_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/benchmark-1.9.4-h286801f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/brotli-1.1.0-hd74edd7_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/brotli-bin-1.1.0-hd74edd7_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/bzip2-1.0.8-h99b78c6_7.conda
@@ -3378,7 +3378,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-openmp-20.1.4-hdb05f8b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-tools-18-18.1.8-default_hb458b26_5.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-tools-18.1.8-default_hb458b26_5.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/matplotlib-base-3.10.1-py312hdbc7e53_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/matplotlib-base-3.10.3-py312hdbc7e53_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/munkres-1.1.4-pyh9f0ad1d_0.tar.bz2
@@ -3448,7 +3448,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-2_gnu.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.2-h5888daf_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.4-h5888daf_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils-2.43-h4852527_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_impl_linux-64-2.43-h4bf12b8_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_linux-64-2.43-h4852527_4.conda
@@ -3538,7 +3538,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libxcb-1.17.0-h8a09558_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libxcrypt-4.4.36-hd590300_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libzlib-1.3.1-hb9d3cd8_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.10.1-py312hd3ec401_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.10.3-py312hd3ec401_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/munkres-1.1.4-pyh9f0ad1d_0.tar.bz2
@@ -3593,7 +3593,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zstd-1.5.7-hb8e6e7a_2.conda
       osx-64:
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/benchmark-1.9.2-h240833e_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/benchmark-1.9.4-h240833e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/brotli-1.1.0-h00291cd_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/brotli-bin-1.1.0-h00291cd_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/bzip2-1.0.8-hfdf4475_7.conda
@@ -3681,7 +3681,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-openmp-20.1.4-ha54dae1_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-tools-18-18.1.8-default_h3571c67_5.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-tools-18.1.8-default_h3571c67_5.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/matplotlib-base-3.10.1-py312h535dea3_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/matplotlib-base-3.10.3-py312h535dea3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/munkres-1.1.4-pyh9f0ad1d_0.tar.bz2
@@ -3737,7 +3737,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/zstd-1.5.7-h8210216_2.conda
       osx-arm64:
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/benchmark-1.9.2-h286801f_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/benchmark-1.9.4-h286801f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/brotli-1.1.0-hd74edd7_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/brotli-bin-1.1.0-hd74edd7_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/bzip2-1.0.8-h99b78c6_7.conda
@@ -3827,7 +3827,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-openmp-20.1.4-hdb05f8b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-tools-18-18.1.8-default_hb458b26_5.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-tools-18.1.8-default_hb458b26_5.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/matplotlib-base-3.10.1-py312hdbc7e53_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/matplotlib-base-3.10.3-py312hdbc7e53_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/munkres-1.1.4-pyh9f0ad1d_0.tar.bz2
@@ -3893,7 +3893,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ampl-asl-1.0.0-h5888daf_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/assimp-5.4.3-h8943939_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.2-h5888daf_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.4-h5888daf_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils-2.43-h4852527_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_impl_linux-64-2.43-h4bf12b8_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_linux-64-2.43-h4852527_4.conda
@@ -4020,7 +4020,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libzlib-1.3.1-hb9d3cd8_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/lz4-c-1.10.0-h5888daf_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/lzo-2.10-hd590300_1001.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.10.1-py312hd3ec401_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.10.3-py312hd3ec401_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/metis-5.1.0-hd0bcaf9_1007.conda
@@ -4094,7 +4094,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/ampl-asl-1.0.0-h240833e_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/assimp-5.4.3-hf9fe5ce_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/benchmark-1.9.2-h240833e_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/benchmark-1.9.4-h240833e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/brotli-1.1.0-h00291cd_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/brotli-bin-1.1.0-h00291cd_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/bzip2-1.0.8-hfdf4475_7.conda
@@ -4211,7 +4211,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-openmp-20.1.4-ha54dae1_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-tools-18-18.1.8-default_h3571c67_5.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-tools-18.1.8-default_h3571c67_5.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/matplotlib-base-3.10.1-py312h535dea3_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/matplotlib-base-3.10.3-py312h535dea3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/metis-5.1.0-h3023b02_1007.conda
@@ -4280,7 +4280,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/ampl-asl-1.0.0-h286801f_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/assimp-5.4.3-ha9c0b8d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/benchmark-1.9.2-h286801f_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/benchmark-1.9.4-h286801f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/brotli-1.1.0-hd74edd7_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/brotli-bin-1.1.0-hd74edd7_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/bzip2-1.0.8-h99b78c6_7.conda
@@ -4397,7 +4397,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-openmp-20.1.4-hdb05f8b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-tools-18-18.1.8-default_hb458b26_5.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-tools-18.1.8-default_hb458b26_5.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/matplotlib-base-3.10.1-py312hdbc7e53_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/matplotlib-base-3.10.3-py312hdbc7e53_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/metis-5.1.0-h15f6cfe_1007.conda
@@ -4471,7 +4471,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-2_gnu.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.2-h5888daf_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.4-h5888daf_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils-2.43-h4852527_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_impl_linux-64-2.43-h4bf12b8_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_linux-64-2.43-h4852527_4.conda
@@ -4619,7 +4619,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zstd-1.5.7-hb8e6e7a_2.conda
       osx-64:
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/benchmark-1.9.2-h240833e_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/benchmark-1.9.4-h240833e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/brotli-1.1.0-h00291cd_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/brotli-bin-1.1.0-h00291cd_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/bzip2-1.0.8-hfdf4475_7.conda
@@ -4766,7 +4766,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/zstd-1.5.7-h8210216_2.conda
       osx-arm64:
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/benchmark-1.9.2-h286801f_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/benchmark-1.9.4-h286801f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/brotli-1.1.0-hd74edd7_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/brotli-bin-1.1.0-hd74edd7_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/bzip2-1.0.8-h99b78c6_7.conda
@@ -4922,7 +4922,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-2_gnu.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.2-h5888daf_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.4-h5888daf_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils-2.43-h4852527_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_impl_linux-64-2.43-h4bf12b8_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_linux-64-2.43-h4852527_4.conda
@@ -5012,7 +5012,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libxcb-1.17.0-h8a09558_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libxcrypt-4.4.36-hd590300_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libzlib-1.3.1-hb9d3cd8_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.10.1-py312hd3ec401_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.10.3-py312hd3ec401_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/munkres-1.1.4-pyh9f0ad1d_0.tar.bz2
@@ -5068,7 +5068,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zstd-1.5.7-hb8e6e7a_2.conda
       osx-64:
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/benchmark-1.9.2-h240833e_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/benchmark-1.9.4-h240833e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/brotli-1.1.0-h00291cd_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/brotli-bin-1.1.0-h00291cd_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/bzip2-1.0.8-hfdf4475_7.conda
@@ -5156,7 +5156,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-openmp-20.1.4-ha54dae1_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-tools-18-18.1.8-default_h3571c67_5.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-tools-18.1.8-default_h3571c67_5.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/matplotlib-base-3.10.1-py312h535dea3_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/matplotlib-base-3.10.3-py312h535dea3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/munkres-1.1.4-pyh9f0ad1d_0.tar.bz2
@@ -5213,7 +5213,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/zstd-1.5.7-h8210216_2.conda
       osx-arm64:
       - conda: https://conda.anaconda.org/conda-forge/noarch/asttokens-3.0.0-pyhd8ed1ab_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/benchmark-1.9.2-h286801f_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/benchmark-1.9.4-h286801f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/brotli-1.1.0-hd74edd7_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/brotli-bin-1.1.0-hd74edd7_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/bzip2-1.0.8-h99b78c6_7.conda
@@ -5303,7 +5303,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-openmp-20.1.4-hdb05f8b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-tools-18-18.1.8-default_hb458b26_5.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-tools-18.1.8-default_hb458b26_5.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/matplotlib-base-3.10.1-py312hdbc7e53_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/matplotlib-base-3.10.3-py312hdbc7e53_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.1.7-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/meshcat-python-0.3.2-pyhff2d567_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/munkres-1.1.4-pyh9f0ad1d_0.tar.bz2
@@ -5473,37 +5473,37 @@ packages:
   license_family: Apache
   size: 28206
   timestamp: 1733250564754
-- conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.2-h5888daf_0.conda
-  sha256: 14eb7c7a9c40187590934cf899393ee97043af9cb51efa5961bfc63e440f1828
-  md5: 2060be7e0ec2209f1d46c747e45f8685
+- conda: https://conda.anaconda.org/conda-forge/linux-64/benchmark-1.9.4-h5888daf_0.conda
+  sha256: d9a8e7243b4aad9352cc6ad2165396192d23b7b4c69276dee45659111babed47
+  md5: 8dc41abc97df6e4aae27c4e2e0e83c94
   depends:
   - __glibc >=2.17,<3.0.a0
   - libgcc >=13
   - libstdcxx >=13
   license: Apache-2.0
   license_family: Apache
-  size: 269957
-  timestamp: 1742907904239
-- conda: https://conda.anaconda.org/conda-forge/osx-64/benchmark-1.9.2-h240833e_0.conda
-  sha256: bc661d68284157ab5180813402657b6ed72afbf33f0671859ec39180ea8c2d96
-  md5: 144e916e8217da041fa299f4b18e63f2
+  size: 273265
+  timestamp: 1747680846005
+- conda: https://conda.anaconda.org/conda-forge/osx-64/benchmark-1.9.4-h240833e_0.conda
+  sha256: eee5a0b1bacfd9a097d8251c8c9eceeb3aad4ccd58f936cf8e217cd8f6b28f2b
+  md5: 86ce129128a343e087b5f1183b442303
   depends:
   - __osx >=10.13
   - libcxx >=18
   license: Apache-2.0
   license_family: Apache
-  size: 212826
-  timestamp: 1742908036351
-- conda: https://conda.anaconda.org/conda-forge/osx-arm64/benchmark-1.9.2-h286801f_0.conda
-  sha256: 0447680615842d91625063598da526517a657da80fc6c15969c5459f27bbb8fa
-  md5: b9b1ebfbf3cab5f881bd138cd63cbfeb
+  size: 216184
+  timestamp: 1747680920194
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/benchmark-1.9.4-h286801f_0.conda
+  sha256: 84c5e3bff081133fa9312eba26f4aa800768dd71330b47a5104296fe2da3ab55
+  md5: 6a03d93df7fff16c06985aa979c562c6
   depends:
   - __osx >=11.0
   - libcxx >=18
   license: Apache-2.0
   license_family: Apache
-  size: 206193
-  timestamp: 1742908061751
+  size: 208949
+  timestamp: 1747681218396
 - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils-2.43-h4852527_4.conda
   sha256: 99a94eead18e7704225ac43682cce3f316fd33bc483749c093eaadef1d31de75
   md5: 29782348a527eda3ecfc673109d28e93
@@ -10747,16 +10747,18 @@ packages:
   license_family: GPL2
   size: 171416
   timestamp: 1713515738503
-- conda: https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.10.1-py312hd3ec401_0.conda
-  sha256: 0fffd86b49f74e826be54b3bf26e5bbdebaecd2ed5538fc78292f4c0ff827555
-  md5: 514d8a6894286f6d9894b352782c7e18
+- conda: https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.10.3-py312hd3ec401_0.conda
+  sha256: 3b5be100ddfcd5697140dbb8d4126e3afd0147d4033defd6c6eeac78fe089bd2
+  md5: 2d69618b52d70970c81cc598e4b51118
   depends:
   - __glibc >=2.17,<3.0.a0
   - contourpy >=1.0.1
   - cycler >=0.10
   - fonttools >=4.22.0
-  - freetype >=2.12.1,<3.0a0
+  - freetype
   - kiwisolver >=1.3.1
+  - libfreetype >=2.13.3
+  - libfreetype6 >=2.13.3
   - libgcc >=13
   - libstdcxx >=13
   - numpy >=1.19,<3
@@ -10771,8 +10773,8 @@ packages:
   - tk >=8.6.13,<8.7.0a0
   license: PSF-2.0
   license_family: PSF
-  size: 8304072
-  timestamp: 1740781077913
+  size: 8188885
+  timestamp: 1746820680864
 - conda: https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.9.4-py39h16632d1_0.conda
   sha256: e7f5e9a07bca4dc4f580b3597041173a712646bfff668f5ca6f4e681996b8ed7
   md5: f149592d52f9c1ab1bfe3dc055458e13
@@ -10801,17 +10803,19 @@ packages:
   license_family: PSF
   size: 6986552
   timestamp: 1734120429344
-- conda: https://conda.anaconda.org/conda-forge/osx-64/matplotlib-base-3.10.1-py312h535dea3_0.conda
-  sha256: 883fe38695b3b3c6e1d42f7e2174eddbae6b47623dcea9fa6c7ef70c1adede7b
-  md5: 9cbfac1eb73702dd1e4f379564658d48
+- conda: https://conda.anaconda.org/conda-forge/osx-64/matplotlib-base-3.10.3-py312h535dea3_0.conda
+  sha256: a5d1324658d173211db6c78ecbf0b3bd32c85477d293e347820adb528b1719a2
+  md5: 8583ca3cb002ae887cbc747f8eb5ffdf
   depends:
   - __osx >=10.13
   - contourpy >=1.0.1
   - cycler >=0.10
   - fonttools >=4.22.0
-  - freetype >=2.12.1,<3.0a0
+  - freetype
   - kiwisolver >=1.3.1
   - libcxx >=18
+  - libfreetype >=2.13.3
+  - libfreetype6 >=2.13.3
   - numpy >=1.19,<3
   - numpy >=1.23
   - packaging >=20.0
@@ -10823,8 +10827,8 @@ packages:
   - qhull >=2020.2,<2020.3.0a0
   license: PSF-2.0
   license_family: PSF
-  size: 8188377
-  timestamp: 1740781180493
+  size: 8221825
+  timestamp: 1746821002072
 - conda: https://conda.anaconda.org/conda-forge/osx-64/matplotlib-base-3.9.4-py39hda06d36_0.conda
   sha256: 4bdc9d1f58c6ff5615b3fdf9d6184fd6a178263b7312caa506c62f1c89df0905
   md5: 57de84ecef2e11b42dadc68f80848dfe
@@ -10851,17 +10855,19 @@ packages:
   license_family: PSF
   size: 6910471
   timestamp: 1734120702452
-- conda: https://conda.anaconda.org/conda-forge/osx-arm64/matplotlib-base-3.10.1-py312hdbc7e53_0.conda
-  sha256: 45c20d3523cd6581950a804b0522d4d0fc1ed04306c06283156dbf572a48bbb5
-  md5: 81e256fa3f734686f049a8cdb930887f
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/matplotlib-base-3.10.3-py312hdbc7e53_0.conda
+  sha256: 2ede5ebc11eaf773b1db8cf7ba138ab3b26306bcf84cb9aacb5eb745f150b008
+  md5: 00c90634afc6285c57ed54c3ff0247df
   depends:
   - __osx >=11.0
   - contourpy >=1.0.1
   - cycler >=0.10
   - fonttools >=4.22.0
-  - freetype >=2.12.1,<3.0a0
+  - freetype
   - kiwisolver >=1.3.1
   - libcxx >=18
+  - libfreetype >=2.13.3
+  - libfreetype6 >=2.13.3
   - numpy >=1.19,<3
   - numpy >=1.23
   - packaging >=20.0
@@ -10874,8 +10880,8 @@ packages:
   - qhull >=2020.2,<2020.3.0a0
   license: PSF-2.0
   license_family: PSF
-  size: 8025969
-  timestamp: 1740781197157
+  size: 8144960
+  timestamp: 1746820800312
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/matplotlib-base-3.9.4-py39h7251d6c_0.conda
   sha256: 30939a290f4aba0775217fcc9cd8c7a54531e4e584b86c0ed61fd7c7080332d9
   md5: 332067642fc8951daf39ff059b79d821

@@ -15,17 +15,17 @@ ninja = ">=1.11"
 pkg-config = ">=0.29.2"
 
 [dependencies]
-libboost-devel = ">=1.80.0"
-libboost-python-devel = ">=1.80.0"
-eigen = ">=3.4.0"
-python = ">=3.9.0"
-eigenpy = ">=3.8.0,!=3.10.0"
-fmt = ">=10.0.0"
-benchmark = ">=1.8.0"
-pytest = ">=8.3.0"
-matplotlib-base = ">=3.9.0"
-typed-argument-parser = ">=1.10.0"
-meshcat-python = ">=0.3"
+libboost-devel = ">=1.86.0,<2"
+libboost-python-devel = ">=1.86.0,<2"
+eigen = ">=3.4.0,<4"
+python = ">=3.9.22,<3.13"
+eigenpy = ">=3.10.3,<4"
+fmt = ">=11.1.4,<12"
+benchmark = ">=1.9.4,<2"
+pytest = ">=8.3.5,<9"
+matplotlib-base = ">=3.9.4,<4"
+typed-argument-parser = ">=1.10.1,<2"
+meshcat-python = ">=0.3.2,<0.4"
 
 [activation]
 scripts = ["development/pixi/activation.sh"]
