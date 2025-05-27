@@ -167,8 +167,8 @@ void exposeProxDDP() {
           .def("updateLQSubproblem", &SolverType::updateLQSubproblem, "self"_a)
           .def("computeCriterion", &SolverType::computeCriterion, "self"_a,
                "Compute problem stationarity.")
-          .add_property("linearSolver",
-                        bp::make_getter(&SolverType::linearSolver_,
+          .add_property("linear_solver",
+                        bp::make_getter(&SolverType::linear_solver_,
                                         eigenpy::ReturnInternalStdUniquePtr{}),
                         "Linear solver for the semismooth Newton method.")
           .def_readwrite("filter", &SolverType::filter_,
