@@ -1,10 +1,9 @@
 /// @file
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/solvers/results-base.hpp"
 #include <fmt/ostream.h>
-#include <sstream>
 
 namespace aligator {
 

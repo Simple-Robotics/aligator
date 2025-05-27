@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/visitors.hpp"
 #include "aligator/python/solvers.hpp"
