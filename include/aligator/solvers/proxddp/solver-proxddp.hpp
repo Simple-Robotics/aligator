@@ -54,12 +54,11 @@ public:
   using LinearSolverPtr = std::unique_ptr<gar::RiccatiSolverBase<Scalar>>;
 
   struct LinesearchVariant {
-    using fun_t = std::function<Scalar(Scalar)>;
-    using variant_t = std::variant<std::monostate, ArmijoLinesearch<Scalar>,
-                                   NonmonotoneLinesearch<Scalar>>;
+    using VariantType = std::variant<std::monostate, ArmijoLinesearch<Scalar>,
+                                     NonmonotoneLinesearch<Scalar>>;
 
-    Scalar run(const fun_t &fun, const Scalar phi0, const Scalar dphi0,
-               Scalar &alpha_try) {
+    Scalar run(const std::function<Scalar(Scalar)> &fun, const Scalar phi0,
+               const Scalar dphi0, Scalar &alpha_try) {
       return std::visit(
           overloads{[](std::monostate &) {
                       return std::numeric_limits<Scalar>::quiet_NaN();
@@ -78,7 +77,7 @@ public:
 
     Scalar isValid() const { return impl_.index() > 0ul; }
 
-    operator const variant_t &() const { return impl_; }
+    operator const VariantType &() const { return impl_; }
 
   private:
     explicit LinesearchVariant() {}
@@ -97,7 +96,7 @@ public:
       }
     }
     friend SolverProxDDPTpl;
-    variant_t impl_;
+    VariantType impl_;
   };
 
   struct AlmParams {
