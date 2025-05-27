@@ -24,8 +24,8 @@ Please refer to the [Citation section](#citing-aligator) for further details.
 
 **Aligator** provides efficient implementations of the following algorithms for (constrained) trajectory optimization:
 
-* ProxDDP: Proximal Differentiable Dynamic Programming, detailed in [this paper](https://inria.hal.science/hal-04332348/document)
-* FeasibleDDP: Feasible Differentiable Dynamic Programming, detailed in [this paper](https://inria.hal.science/hal-02294059v1/document)
+* ProxDDP: Proximal Differential Dynamic Programming, detailed in [this paper](https://inria.hal.science/hal-04332348/document)
+* FeasibleDDP: Feasible Differential Dynamic Programming, detailed in [this paper](https://inria.hal.science/hal-02294059v1/document)
 
 ## Installation
 
