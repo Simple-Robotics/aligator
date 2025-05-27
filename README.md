@@ -69,7 +69,7 @@ cmake --build . -jNCPUS
 * [Boost](https://www.boost.org) >= 1.71.0
 * OpenMP
 * [fmtlib](https://github.com/fmtlib/fmt) >= 10.0.0 | [conda](https://github.com/fmtlib/fmt)
-* (optional) [eigenpy](https://github.com/stack-of-tasks/eigenpy)>=3.4.0 | [conda](https://anaconda.org/conda-forge/eigenpy) (Python bindings)
+* (optional) [eigenpy](https://github.com/stack-of-tasks/eigenpy)>=3.9.0 | [conda](https://anaconda.org/conda-forge/eigenpy) (Python bindings)
 * (optional) [Pinocchio](https://github.com/stack-of-tasks/pinocchio) | [conda](https://anaconda.org/conda-forge/pinocchio)
 * (optional) [Crocoddyl](https://github.com/loco-3d/crocoddyl) | [conda](https://anaconda.org/conda-forge/crocoddyl)
 * (optional) [example-robot-data](https://github.com/Gepetto/example-robot-data) | [conda](https://anaconda.org/conda-forge/example-robot-data) (required for some examples and benchmarks)
