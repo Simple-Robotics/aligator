@@ -19,7 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - python : make `Results` copyable (using `CopyableVisitor`) (https://github.com/Simple-Robotics/aligator/pull/322)
 
 ### Added
-- Added wheeled inverted pendulum dynamics
+
+- modelling : added wheeled inverted pendulum dynamics (https://github.com/Simple-Robotics/aligator/pull/326)
+
 ## [0.15.0] - 2025-05-23
 
 ### Changed
