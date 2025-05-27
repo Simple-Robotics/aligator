@@ -2,6 +2,7 @@
 
 <a href="https://simple-robotics.github.io/aligator/"><img src="https://img.shields.io/badge/docs-online-brightgreen" alt="Documentation"/></a>
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/aligator.svg)](https://anaconda.org/conda-forge/aligator)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Simple-Robotics/aligator)
 
 **Aligator** is an efficient and versatile trajectory optimization library for robotics and beyond.
 
