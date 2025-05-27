@@ -12,13 +12,6 @@ namespace bp = boost::python;
 bp::arg operator""_a(const char *argname, std::size_t);
 
 template <typename T>
-struct ClonePythonVisitor : bp::def_visitor<ClonePythonVisitor<T>> {
-  template <typename PyT> void visit(PyT &obj) const {
-    obj.def("clone", &T::clone, bp::args("self"), "Clone the object.");
-  }
-};
-
-template <typename T>
 struct CreateDataPythonVisitor : bp::def_visitor<CreateDataPythonVisitor<T>> {
   template <typename Pyclass> void visit(Pyclass &obj) const {
     obj.def("createData", &T::createData, bp::args("self"),
