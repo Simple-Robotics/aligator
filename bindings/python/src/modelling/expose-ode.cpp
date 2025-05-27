@@ -18,6 +18,7 @@ using context::ODEData;
 using context::Scalar;
 using context::VectorSpace;
 using context::VectorXs;
+using context::Vector3s;
 using PolyManifold = xyz::polymorphic<context::Manifold>;
 
 using CentroidalFwdDynamics = CentroidalFwdDynamicsTpl<Scalar>;
@@ -25,7 +26,6 @@ using ContinuousCentroidalFwdDynamics =
     ContinuousCentroidalFwdDynamicsTpl<Scalar>;
 using WheeledInvertedPendulumDynamics =
     WheeledInvertedPendulumDynamicsTpl<Scalar>;
-using Vector3s = typename math_types<Scalar>::Vector3s;
 using ContactMap = ContactMapTpl<Scalar>;
 
 void exposeODEs() {
