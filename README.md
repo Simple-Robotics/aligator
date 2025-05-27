@@ -2,6 +2,7 @@
 
 <a href="https://simple-robotics.github.io/aligator/"><img src="https://img.shields.io/badge/docs-online-brightgreen" alt="Documentation"/></a>
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/aligator.svg)](https://anaconda.org/conda-forge/aligator)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Simple-Robotics/aligator)
 
 **Aligator** is an efficient and versatile trajectory optimization library for robotics and beyond.
 
@@ -24,8 +25,8 @@ Please refer to the [Citation section](#citing-aligator) for further details.
 
 **Aligator** provides efficient implementations of the following algorithms for (constrained) trajectory optimization:
 
-* ProxDDP: Proximal Differentiable Dynamic Programming, detailed in [this paper](https://inria.hal.science/hal-04332348/document)
-* FeasibleDDP: Feasible Differentiable Dynamic Programming, detailed in [this paper](https://inria.hal.science/hal-02294059v1/document)
+* ProxDDP: Proximal Differential Dynamic Programming, detailed in [this paper](https://inria.hal.science/hal-04332348/document)
+* FeasibleDDP: Feasible Differential Dynamic Programming, detailed in [this paper](https://inria.hal.science/hal-02294059v1/document)
 
 ## Installation
 
@@ -68,7 +69,7 @@ cmake --build . -jNCPUS
 * [Boost](https://www.boost.org) >= 1.71.0
 * OpenMP
 * [fmtlib](https://github.com/fmtlib/fmt) >= 10.0.0 | [conda](https://github.com/fmtlib/fmt)
-* (optional) [eigenpy](https://github.com/stack-of-tasks/eigenpy)>=3.4.0 | [conda](https://anaconda.org/conda-forge/eigenpy) (Python bindings)
+* (optional) [eigenpy](https://github.com/stack-of-tasks/eigenpy)>=3.9.0 | [conda](https://anaconda.org/conda-forge/eigenpy) (Python bindings)
 * (optional) [Pinocchio](https://github.com/stack-of-tasks/pinocchio) | [conda](https://anaconda.org/conda-forge/pinocchio)
 * (optional) [Crocoddyl](https://github.com/loco-3d/crocoddyl) | [conda](https://anaconda.org/conda-forge/crocoddyl)
 * (optional) [example-robot-data](https://github.com/Gepetto/example-robot-data) | [conda](https://anaconda.org/conda-forge/example-robot-data) (required for some examples and benchmarks)
