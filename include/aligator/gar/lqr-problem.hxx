@@ -249,8 +249,7 @@ LqrProblemTpl<Scalar>::LqrProblemTpl(const KnotVector &knots, long nc0,
                                      allocator_type alloc)
     : G0(nc0, knots.empty() ? 0 : knots[0].nx, alloc)
     , g0(nc0, alloc)
-    , stages(knots, alloc)
-    , m_is_invalid(false) {
+    , stages(knots, alloc) {
   assert(check_allocators());
 }
 
@@ -258,8 +257,7 @@ template <typename Scalar>
 LqrProblemTpl<Scalar>::LqrProblemTpl(KnotVector &&knots, long nc0)
     : G0(nc0, knots.empty() ? 0 : knots[0].nx, knots.get_allocator())
     , g0(nc0, get_allocator())
-    , stages(std::move(knots), get_allocator())
-    , m_is_invalid(false) {
+    , stages(std::move(knots), get_allocator()) {
   assert(check_allocators());
 }
 

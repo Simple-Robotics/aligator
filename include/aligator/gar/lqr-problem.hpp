@@ -238,6 +238,13 @@ template <typename Scalar> struct LqrProblemTpl {
     this->g0 = other.g0;
   }
 
+  LqrProblemTpl &operator=(LqrProblemTpl &&other) {
+    this->G0 = std::move(other.G0);
+    this->g0 = std::move(other.g0);
+    this->stages = std::move(other.stages);
+    return *this;
+  }
+
   ~LqrProblemTpl();
 
   void addParameterization(uint nth) {
@@ -252,7 +259,7 @@ template <typename Scalar> struct LqrProblemTpl {
     return !stages.empty() && (stages[0].nth > 0);
   }
 
-  inline bool isInitialized() const { return !stages.empty() && !m_is_invalid; }
+  inline bool isInitialized() const { return !stages.empty(); }
 
   inline uint ntheta() const { return stages[0].nth; }
 
@@ -274,8 +281,6 @@ template <typename Scalar> struct LqrProblemTpl {
   allocator_type get_allocator() const { return G0.get_allocator(); }
 
 private:
-  /// internal. tag object as empty after move op (or before initialization)
-  bool m_is_invalid{true};
   /// Check consistency of all allocators.
   [[nodiscard]] bool check_allocators() const {
     return get_allocator() == g0.get_allocator() &&
