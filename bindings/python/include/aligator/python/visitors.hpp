@@ -37,7 +37,8 @@ struct CreateDataPolymorphicPythonVisitor
 template <typename T>
 struct CopyableVisitor : bp::def_visitor<CopyableVisitor<T>> {
   template <typename PyClass> void visit(PyClass &obj) const {
-    obj.def("copy", &copy, bp::arg("self"), "Returns a copy of this.");
+    obj.def("copy", &copy, bp::arg("self"), "Returns a copy of this.")
+        .def("__copy__", &copy, bp::arg("self"), "Returns a copy of this.");
   }
 
 private:
