@@ -23,7 +23,8 @@ using PolyManifold = xyz::polymorphic<context::Manifold>;
 using CentroidalFwdDynamics = CentroidalFwdDynamicsTpl<Scalar>;
 using ContinuousCentroidalFwdDynamics =
     ContinuousCentroidalFwdDynamicsTpl<Scalar>;
-using WheeledInvertedPendulumDynamics = WheeledInvertedPendulumDynamicsTpl<Scalar>;
+using WheeledInvertedPendulumDynamics =
+    WheeledInvertedPendulumDynamicsTpl<Scalar>;
 using Vector3s = typename math_types<Scalar>::Vector3s;
 using ContactMap = ContactMapTpl<Scalar>;
 
