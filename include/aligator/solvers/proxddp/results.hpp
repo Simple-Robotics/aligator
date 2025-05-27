@@ -29,8 +29,8 @@ template <typename _Scalar> struct ResultsTpl final : ResultsBaseTpl<_Scalar> {
   explicit ResultsTpl()
       : Base() {}
 
-  ResultsTpl(const ResultsTpl &) = delete;
-  ResultsTpl &operator=(const ResultsTpl &) = delete;
+  ResultsTpl(const ResultsTpl &) = default;
+  ResultsTpl &operator=(const ResultsTpl &) = default;
 
   ResultsTpl(ResultsTpl &&) = default;
   ResultsTpl &operator=(ResultsTpl &&) = default;
