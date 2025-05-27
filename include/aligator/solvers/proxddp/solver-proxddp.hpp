@@ -199,10 +199,9 @@ private:
   /// Number of threads
   std::size_t num_threads_ = 1;
   /// Dual proximal/ALM penalty parameter \f$\mu\f$
-  /// This is the global parameter: scales may be applied for stagewise
-  /// constraints, dynamicals...
+  /// This is the global parameter: scales may be applied for each stagewise
+  /// constraint.
   Scalar mu_penal_ = mu_init;
-  Scalar mu_penal_inv_ = 1. / mu_penal_;
 
 public:
   SolverProxDDPTpl(const Scalar tol = 1e-6, const Scalar mu_init = 0.01,
@@ -319,7 +318,7 @@ public:
     return bcl_params.dyn_al_scale * mu_penal_;
   }
   ALIGATOR_INLINE Scalar mu() const { return mu_penal_; }
-  ALIGATOR_INLINE Scalar mu_inv() const { return mu_penal_inv_; }
+  ALIGATOR_INLINE Scalar mu_inv() const { return 1. / mu_penal_; }
 
   /// @brief Update primal-dual feedback gains (control, costate, path
   /// multiplier)
@@ -341,7 +340,6 @@ protected:
   /// Set dual proximal/ALM penalty parameter.
   ALIGATOR_INLINE void setAlmPenalty(Scalar new_mu) noexcept {
     mu_penal_ = std::max(new_mu, bcl_params.mu_lower_bound);
-    mu_penal_inv_ = 1. / mu_penal_;
   }
 
   // See sec. 3.1 of the IPOPT paper [Wächter, Biegler 2006]
