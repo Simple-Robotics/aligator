@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- readme/cmake : update actually expected minimum version of eigenpy to 3.9
 - solvers : make proxddp algo's Results class copyable again (in C++ and Python) (https://github.com/Simple-Robotics/aligator/pull/322)
 - python/visitors : also set `__copy__` method on exposed class with `CopyableVisitor` (https://github.com/Simple-Robotics/aligator/pull/322)
 - python : make `Results` copyable (using `CopyableVisitor`) (https://github.com/Simple-Robotics/aligator/pull/322)
