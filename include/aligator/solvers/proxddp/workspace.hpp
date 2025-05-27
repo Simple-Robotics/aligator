@@ -104,9 +104,9 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   /// Overall subproblem termination criterion.
   Scalar inner_criterion = 0.;
 
-  WorkspaceTpl()
+  explicit WorkspaceTpl()
       : Base() {}
-  WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem);
+  explicit WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem);
 
   WorkspaceTpl(const WorkspaceTpl &) = delete;
   WorkspaceTpl &operator=(const WorkspaceTpl &) = delete;

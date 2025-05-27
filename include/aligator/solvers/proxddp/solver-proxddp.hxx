@@ -157,10 +157,8 @@ void SolverProxDDPTpl<Scalar>::setup(const Problem &problem) {
     linesearch_.init(sa_strategy_, ls_params);
   }
 
-  results_.~Results();
-  workspace_.~Workspace();
-  new (&results_) Results(problem);
-  new (&workspace_) Workspace(problem);
+  results_ = Results(problem);
+  workspace_ = Workspace(problem);
 
   switch (linear_solver_choice) {
   case LQSolverChoice::SERIAL: {

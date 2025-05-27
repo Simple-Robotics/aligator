@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- gar : fix missing move assignment operator in `LqrProblemTpl`
+
 ### Changed
 
 - solvers : make proxddp algo's Results class copyable again (in C++ and Python) (https://github.com/Simple-Robotics/aligator/pull/322)
