@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include <eigenpy/fwd.hpp>
@@ -10,13 +10,6 @@ namespace bp = boost::python;
 
 // fwd-declaration
 bp::arg operator""_a(const char *argname, std::size_t);
-
-template <typename T>
-struct ClonePythonVisitor : bp::def_visitor<ClonePythonVisitor<T>> {
-  template <typename PyT> void visit(PyT &obj) const {
-    obj.def("clone", &T::clone, bp::args("self"), "Clone the object.");
-  }
-};
 
 template <typename T>
 struct CreateDataPythonVisitor : bp::def_visitor<CreateDataPythonVisitor<T>> {
@@ -44,7 +37,8 @@ struct CreateDataPolymorphicPythonVisitor
 template <typename T>
 struct CopyableVisitor : bp::def_visitor<CopyableVisitor<T>> {
   template <typename PyClass> void visit(PyClass &obj) const {
-    obj.def("copy", &copy, bp::arg("self"), "Returns a copy of this.");
+    obj.def("copy", &copy, bp::arg("self"), "Returns a copy of this.")
+        .def("__copy__", &copy, bp::arg("self"), "Returns a copy of this.");
   }
 
 private:

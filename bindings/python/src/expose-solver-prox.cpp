@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/visitors.hpp"
 #include "aligator/python/solvers.hpp"
@@ -103,7 +103,7 @@ void exposeProxDDP() {
       .def_readonly("control_dual_infeas", &Workspace::control_dual_infeas)
       .def(PrintableVisitor<Workspace>());
 
-  bp::class_<Results, bp::bases<ResultsBaseTpl<Scalar>>, boost::noncopyable>(
+  bp::class_<Results, bp::bases<ResultsBaseTpl<Scalar>>>(
       "Results", "Results struct for proxDDP.",
       bp::init<const TrajOptProblem &>(("self"_a, "problem")))
       .def("cycleAppend", &Results::cycleAppend, ("self"_a, "problem", "x0"),
@@ -111,7 +111,9 @@ void exposeProxDDP() {
       .def_readonly("al_iter", &Results::al_iter)
       .def_readonly("lams", &Results::lams)
       .def_readonly("vs", &Results::vs)
-      .def(PrintableVisitor<Results>());
+      .def(PrintableVisitor<Results>())
+      .def(PrintAddressVisitor<Results>())
+      .def(CopyableVisitor<Results>());
 
   using SolverType = SolverProxDDPTpl<Scalar>;
   using ls_variant_t = SolverType::LinesearchVariant::variant_t;

@@ -1,10 +1,9 @@
 /// @file
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/solvers/results-base.hpp"
 #include <fmt/ostream.h>
-#include <sstream>
 
 namespace aligator {
 
@@ -29,8 +28,8 @@ template <typename _Scalar> struct ResultsTpl final : ResultsBaseTpl<_Scalar> {
   explicit ResultsTpl()
       : Base() {}
 
-  ResultsTpl(const ResultsTpl &) = delete;
-  ResultsTpl &operator=(const ResultsTpl &) = delete;
+  ResultsTpl(const ResultsTpl &) = default;
+  ResultsTpl &operator=(const ResultsTpl &) = default;
 
   ResultsTpl(ResultsTpl &&) = default;
   ResultsTpl &operator=(ResultsTpl &&) = default;
