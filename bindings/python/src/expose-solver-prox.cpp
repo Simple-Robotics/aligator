@@ -112,7 +112,8 @@ void exposeProxDDP() {
       .def_readonly("lams", &Results::lams)
       .def_readonly("vs", &Results::vs)
       .def(PrintableVisitor<Results>())
-      .def(PrintAddressVisitor<Results>());
+      .def(PrintAddressVisitor<Results>())
+      .def(CopyableVisitor<Results>());
 
   using SolverType = SolverProxDDPTpl<Scalar>;
   using ls_variant_t = SolverType::LinesearchVariant::variant_t;
