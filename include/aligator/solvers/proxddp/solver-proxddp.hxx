@@ -75,7 +75,7 @@ SolverProxDDPTpl<Scalar>::SolverProxDDPTpl(const Scalar tol,
                                            HessianApprox hess_approx)
     : target_tol_(tol)
     , target_dual_tol_(tol)
-    , sync_dual_tol(true)
+    , sync_dual_tol_(true)
     , mu_init(mu_init)
     , verbose_(verbose)
     , hess_approx_(hess_approx)
@@ -89,7 +89,7 @@ SolverProxDDPTpl<Scalar>::SolverProxDDPTpl(const Scalar tol,
 
 template <typename Scalar>
 void SolverProxDDPTpl<Scalar>::setNumThreads(const std::size_t num_threads) {
-  if (linearSolver_) {
+  if (linear_solver_) {
     ALIGATOR_WARNING(
         "SolverProxDDP",
         "Linear solver already set: setNumThreads() should be called before "
@@ -162,7 +162,7 @@ void SolverProxDDPTpl<Scalar>::setup(const Problem &problem) {
 
   switch (linear_solver_choice) {
   case LQSolverChoice::SERIAL: {
-    linearSolver_ = std::make_unique<gar::ProximalRiccatiSolver<Scalar>>(
+    linear_solver_ = std::make_unique<gar::ProximalRiccatiSolver<Scalar>>(
         workspace_.lqr_problem);
     break;
   }
@@ -176,12 +176,12 @@ void SolverProxDDPTpl<Scalar>::setup(const Problem &problem) {
         "Aligator was not compiled with OpenMP support. The parallel Riccati "
         "solver is not available.");
 #else
-    linearSolver_ = std::make_unique<gar::ParallelRiccatiSolver<Scalar>>(
+    linear_solver_ = std::make_unique<gar::ParallelRiccatiSolver<Scalar>>(
         workspace_.lqr_problem, num_threads_);
 #endif
     break;
   case LQSolverChoice::STAGEDENSE:
-    linearSolver_ = std::make_unique<gar::RiccatiSolverDense<Scalar>>(
+    linear_solver_ = std::make_unique<gar::RiccatiSolverDense<Scalar>>(
         workspace_.lqr_problem);
     break;
   }
@@ -190,12 +190,12 @@ void SolverProxDDPTpl<Scalar>::setup(const Problem &problem) {
 }
 
 template <typename Scalar>
-void SolverProxDDPTpl<Scalar>::cycleProblem(
-    const Problem &problem, shared_ptr<StageDataTpl<Scalar>> data) {
+void SolverProxDDPTpl<Scalar>::cycleProblem(const Problem &problem,
+                                            const shared_ptr<StageData> &data) {
   results_.cycleAppend(problem, problem.getInitState());
   const auto nsteps = workspace_.nsteps;
   workspace_.cycleAppend(problem, data);
-  linearSolver_->cycleAppend(workspace_.lqr_problem.stages[nsteps - 1]);
+  linear_solver_->cycleAppend(workspace_.lqr_problem.stages[nsteps - 1]);
 }
 
 template <typename... VArgs> bool is_nan_any(const VArgs &...args) {
@@ -318,19 +318,19 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateGains() {
   ALIGATOR_NOMALLOC_SCOPED;
   using gar::StageFactor;
   const std::size_t N = workspace_.nsteps;
-  linearSolver_->collapseFeedback(); // will alter feedback gains
+  linear_solver_->collapseFeedback(); // will alter feedback gains
   for (std::size_t i = 0; i < N; i++) {
     VectorRef ff = results_.getFeedforward(i);
     MatrixRef fb = results_.getFeedback(i);
 
-    ff = linearSolver_->getFeedforward(i);
-    fb = linearSolver_->getFeedback(i);
+    ff = linear_solver_->getFeedforward(i);
+    fb = linear_solver_->getFeedback(i);
   }
   VectorRef ff = results_.getFeedforward(N);
   MatrixRef fb = results_.getFeedback(N);
 
-  ff = linearSolver_->getFeedforward(N).tail(ff.rows());
-  fb = linearSolver_->getFeedback(N).bottomRows(fb.rows());
+  ff = linear_solver_->getFeedforward(N).tail(ff.rows());
+  fb = linear_solver_->getFeedback(N).bottomRows(fb.rows());
 }
 
 // [1] Section IV. Proximal Differential Dynamic Programming
@@ -373,9 +373,9 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
     const std::array<long, 4> _dims{stage.nu(), stage.nc(), stage.ndx2(),
                                     stage.ndx2()};
     BlkMatrix<ConstVectorRef, 4, 1> ff{
-        linearSolver_->getFeedforward(t), _dims, {1}};
+        linear_solver_->getFeedforward(t), _dims, {1}};
     BlkMatrix<ConstMatrixRef, 4, 1> fb{
-        linearSolver_->getFeedback(t), _dims, {stage.ndx1()}};
+        linear_solver_->getFeedback(t), _dims, {stage.ndx1()}};
     ConstVectorRef kff = ff[0];
     ConstVectorRef zff = ff[1];
     ConstVectorRef lff = ff[2];
@@ -437,9 +437,9 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
     };
     const uint ndx = workspace_.lqr_problem.stages[nsteps].nx;
     BlkMatrix<ConstVectorRef, 2, 1> ff{
-        linearSolver_->getFeedforward(nsteps), _dims, {1}};
+        linear_solver_->getFeedforward(nsteps), _dims, {1}};
     BlkMatrix<ConstMatrixRef, 2, 1> fb{
-        linearSolver_->getFeedback(nsteps), _dims, {ndx}};
+        linear_solver_->getFeedback(nsteps), _dims, {ndx}};
     ConstVectorRef zff = ff[1];
     ConstMatrixRef Zfb = fb.blockRow(1);
 
@@ -461,7 +461,7 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
                                    const std::vector<VectorXs> &vs_init,
                                    const std::vector<VectorXs> &lams_init) {
 
-  if (sync_dual_tol)
+  if (sync_dual_tol_)
     target_dual_tol_ = target_tol_;
 
   ALIGATOR_TRACY_ZONE_SCOPED;
@@ -658,10 +658,10 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     //  Dynamic Programming Section B Backward. The backward pass
     // computes the gains, and the forward pass computes the new
     // control and state trajectories.
-    linearSolver_->backward(mudyn(), mu());
+    linear_solver_->backward(mudyn(), mu());
 
-    linearSolver_->forward(workspace_.dxs, workspace_.dus, workspace_.dvs,
-                           workspace_.dlams);
+    linear_solver_->forward(workspace_.dxs, workspace_.dus, workspace_.dvs,
+                            workspace_.dlams);
     updateGains();
 
     if (force_initial_condition_) {
