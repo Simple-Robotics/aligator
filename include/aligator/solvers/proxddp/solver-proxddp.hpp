@@ -1,6 +1,6 @@
 /// @file solver-proxddp.hpp
 /// @brief  Definitions for the proximal trajectory optimization algorithm.
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/overloads.hpp"
