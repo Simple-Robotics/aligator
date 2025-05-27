@@ -51,6 +51,7 @@ public:
   using CstrSet = ConstraintSetTpl<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
   using LinesearchOptions = typename Linesearch<Scalar>::Options;
+  using LinearSolverPtr = std::unique_ptr<gar::RiccatiSolverBase<Scalar>>;
 
   struct LinesearchVariant {
     using fun_t = std::function<Scalar(Scalar)>;
@@ -180,17 +181,15 @@ public:
   /// condition.
   bool force_initial_condition_ = true;
 
-  std::size_t max_refinement_steps_ =
-      0; //< Max number of KKT system refinement iters
+  size_t max_refinement_steps_ = 0;     //< Max KKT system refinement iters.
   Scalar refinement_threshold_ = 1e-13; //< Target tol. for the KKT system.
-  std::size_t max_iters;                //< Max number of Newton iterations.
-  std::size_t max_al_iters = 100;       //< Maximum number of ALM iterations.
-  uint rollout_max_iters;               //< Nonlinear rollout options
+  size_t max_iters;                     //< Max number of Newton iterations.
 
   Workspace workspace_;
   Results results_;
   /// LQR subproblem solver
-  std::unique_ptr<gar::RiccatiSolverBase<Scalar>> linearSolver_;
+  LinearSolverPtr linear_solver_;
+  /// Filter linesearch
   FilterTpl<Scalar> filter_;
   /// Linesearch function
   LinesearchVariant linesearch_;
