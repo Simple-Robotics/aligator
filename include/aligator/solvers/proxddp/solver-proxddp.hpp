@@ -136,7 +136,8 @@ private:
 public:
   Scalar mu_init = 0.01; //< Initial AL parameter
 
-  //// Inertia-correcting heuristic
+  /// @name Inertia-correcting heuristic
+  /// @{
 
   Scalar reg_min = 1e-10;         //< Minimal nonzero regularization
   Scalar reg_max = 1e9;           //< Maximum regularization value
@@ -147,10 +148,10 @@ public:
   Scalar preg_ = reg_init;        //< Primal regularization value
   Scalar preg_last_ = 0.;         //< Last "good" regularization value
 
-  //// Initial BCL tolerances
+  /// @}
 
-  Scalar inner_tol0 = 1.;
-  Scalar prim_tol0 = 1.;
+  Scalar inner_tol0 = 1.; //< Initial BCL inner subproblem tolerance
+  Scalar prim_tol0 = 1.;  //< Initial BCL constraint infeasibility tolerance
 
   /// Logger
   Logger logger{};
