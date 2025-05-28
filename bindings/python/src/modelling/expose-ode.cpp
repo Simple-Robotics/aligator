@@ -7,6 +7,7 @@
 #include "aligator/modelling/dynamics/centroidal-fwd.hpp"
 #include "aligator/modelling/dynamics/continuous-centroidal-fwd.hpp"
 #include "aligator/modelling/contact-map.hpp"
+#include "aligator/modelling/dynamics/wheeled-inverted-pendulum.hpp"
 
 namespace aligator::python {
 using namespace ::aligator::dynamics;
@@ -22,6 +23,8 @@ using PolyManifold = xyz::polymorphic<context::Manifold>;
 using CentroidalFwdDynamics = CentroidalFwdDynamicsTpl<Scalar>;
 using ContinuousCentroidalFwdDynamics =
     ContinuousCentroidalFwdDynamicsTpl<Scalar>;
+using WheeledInvertedPendulumDynamics =
+    WheeledInvertedPendulumDynamicsTpl<Scalar>;
 using Vector3s = typename math_types<Scalar>::Vector3s;
 using ContactMap = ContactMapTpl<Scalar>;
 
@@ -93,5 +96,12 @@ void exposeODEs() {
       shared_ptr<ContinuousCentroidalFwdDataTpl<Scalar>>>();
   bp::class_<ContinuousCentroidalFwdDataTpl<Scalar>, bp::bases<ODEData>>(
       "ContinuousCentroidalFwdData", bp::no_init);
+  bp::class_<WheeledInvertedPendulumDynamics, bp::bases<ODEAbstract>>(
+      "WheeledInvertedPendulumDynamics",
+      "Wheeled inverted pendulum dynamics with integrator dynamics for the yaw",
+      bp::init<const Scalar, const Scalar>(
+          bp::args("self", "gravity", "length")))
+      .def(CreateDataPythonVisitor<WheeledInvertedPendulumDynamics>())
+      .def(ode_visitor);
 }
 } // namespace aligator::python

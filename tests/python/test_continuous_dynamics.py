@@ -414,6 +414,53 @@ def test_kinodynamics_diff():
     assert np.linalg.norm(Judiff - Ju0) <= epsilon
 
 
+def test_wip():
+    gravity = 9.81
+    length = 0.6
+    ode = aligator.dynamics.WheeledInvertedPendulumDynamics(
+        gravity=gravity, length=length
+    )
+    ndx = ode.ndx
+    nu = ode.nu
+    space = manifolds.VectorSpace(ndx)
+    data = ode.createData()
+
+    x0 = space.neutral()
+    u0 = np.random.randn(nu)
+
+    ode.forward(x0, u0, data)
+    ode.dForward(x0, u0, data)
+
+
+def test_wip_diff():
+    gravity = 9.81
+    length = 0.6
+    ode = aligator.dynamics.WheeledInvertedPendulumDynamics(
+        gravity=gravity, length=length
+    )
+    ndx = ode.ndx
+    nu = ode.nu
+    space = manifolds.VectorSpace(ndx)
+    data = ode.createData()
+
+    x0 = space.neutral()
+    ndx = space.ndx
+    dx = np.random.randn(ndx)
+    x0 = space.integrate(x0, dx)
+    u0 = np.random.randn(nu)
+    epsilon = 1e-6
+
+    ode.forward(x0, u0, data)
+    ode.dForward(x0, u0, data)
+
+    Jx0 = data.Jx.copy()
+    Ju0 = data.Ju.copy()
+    Jxdiff, Judiff = ode_finite_difference(ode, space, x0, u0, epsilon)
+
+    assert np.linalg.norm(Jxdiff - Jx0) <= epsilon
+    assert np.linalg.norm(Judiff - Ju0) <= epsilon
+
+
 if __name__ == "__main__":
     import sys
 
