@@ -10,7 +10,7 @@ struct WheeledInvertedPendulumDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using Base = dynamics::ODEAbstractTpl<Scalar>;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using ODEData = dynamics::ContinuousDynamicsDataTpl<Scalar>;
-  using VectorSpace = aligator::VectorSpaceTpl<Scalar, 4>;
+  using VectorSpace = aligator::VectorSpaceTpl<Scalar, 7>;
   WheeledInvertedPendulumDynamicsTpl(const double gravity, const double length)
       : Base(VectorSpace{}, 2)
       , length_(length)
@@ -21,7 +21,8 @@ struct WheeledInvertedPendulumDynamicsTpl : ODEAbstractTpl<_Scalar> {
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                ODEData &data) const override {
-    Scalar rdot = x[0], phidot = x[1], theta = x[2], thetadot = x[3];
+    Scalar rdot = x[0], phidot = x[1], theta = x[2], thetadot = x[3],
+           phi = x[4], posx = x[5], posy = x[6];
     Scalar rdotdot = u[0], phidotdot = u[1];
 
     data.xdot_[0] = rdotdot;
@@ -29,16 +30,26 @@ struct WheeledInvertedPendulumDynamicsTpl : ODEAbstractTpl<_Scalar> {
     data.xdot_[2] = thetadot;
     data.xdot_[3] = std::sin(theta) * gravity_ / length_ -
                     std::cos(theta) * rdotdot / length_;
+    data.xdot_[4] = phidot;
+    data.xdot_[5] = rdot * std::cos(phi);
+    data.xdot_[6] = rdot * std::sin(phi);
   }
 
   void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
                 ODEData &data) const override {
-    Scalar theta = x[2], rdotdot = u[0];
+    Scalar rdot = x[0], phidot = x[1], theta = x[2], thetadot = x[3],
+           phi = x[4], rdotdot = u[0];
 
     data.Jx_.setZero();
-    data.Jx_(3, 2) = 1;
-    data.Jx_(2, 3) = std::cos(theta) * gravity_ / length_ +
+    data.Jx_(2, 3) = 1;
+    data.Jx_(3, 2) = std::cos(theta) * gravity_ / length_ +
                      std::sin(theta) * rdotdot / length_;
+
+    data.Jx_(4, 1) = 1;
+    data.Jx_(5, 0) = std::cos(phi);
+    data.Jx_(5, 4) = -rdot * std::sin(phi);
+    data.Jx_(6, 0) = std::sin(phi);
+    data.Jx_(6, 4) = rdot * std::cos(phi);
 
     data.Ju_.setZero();
     data.Ju_(0, 0) = 1;
