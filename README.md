@@ -144,6 +144,7 @@ Please also consider citing the reference paper for the ProxDDP algorithm:
 * [Ludovic De Matteïs](https://github.com/LudovicDeMatteis) (LAAS-CNRS/Inria): feature developer
 * [Ewen Dantec](https://edantec.github.io/) (Inria): feature developer
 * [Antoine Bussy](https://github.com/antoine-bussy) (Aldebaran)
+* [Valentin Tordjman--Levavasseur](https://github.com/Tordjx) (Inria): feature developper
 
 ## Acknowledgments
 
