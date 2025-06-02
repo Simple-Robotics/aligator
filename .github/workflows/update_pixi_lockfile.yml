@@ -44,6 +44,8 @@ jobs:
           body-path: diff.md
           branch: topic/update-pixi
           base: main
-          labels: pixi
+          labels: |
+            pixi
+            no changelog
           delete-branch: true
           add-paths: pixi.lock
