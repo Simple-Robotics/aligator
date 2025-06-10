@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.22)
 set(PROJECT_NAME aligator)
 set(
   PROJECT_DESCRIPTION
-  "A primal-dual augmented Lagrangian-type solver for nonlinear trajectory optimization."
+  "A versatile and efficient C++ library for real-time constrained trajectory optimization."
 )
 set(PROJECT_URL "https://github.com/Simple-Robotics/aligator")
 set(PROJECT_CUSTOM_HEADER_EXTENSION "hpp")
