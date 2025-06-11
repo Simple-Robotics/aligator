@@ -6,7 +6,6 @@ import aligator
 import aligator.dynamics
 import aligator.manifolds
 import numpy as np
-import pinocchio as pin
 import example_robot_data as erd
 
 import copy
@@ -22,6 +21,10 @@ nu = rmodel.nv
 ndx = 2*rmodel.nv
 dt = 0.01
 
+def get_xs(result):
+    return np.stack(result.xs.tolist())
+def get_us(result):
+    return np.stack(result.us.tolist())
 
 def test_copy():
     np.random.seed(1)
@@ -47,8 +50,6 @@ def test_copy():
     us_init = [np.zeros(nu)] * nsteps
     solver.run(problem,xs_init,us_init)
     traj_cost1 = float(solver.results.traj_cost)
-    get_xs = lambda result : np.stack(result.xs.tolist())
-    get_us = lambda result : np.stack(result.us.tolist())
     xs1 = get_xs(solver.results)
     us1 = get_us(solver.results)
     result1 = copy.copy(solver.results)
