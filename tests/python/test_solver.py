@@ -4,31 +4,43 @@ Unit tests for SolverProxDDP.
 
 import sys
 
-from aligator import has_pinocchio_features
-import example_robot_data as erd
-from aligator.manifolds import VectorSpace, MultibodyPhaseSpace
 import numpy as np
 import aligator
 import pytest
+import example_robot_data as erd
+
+from aligator.dynamics import LinearDiscreteDynamics
+from aligator.manifolds import VectorSpace, MultibodyPhaseSpace
 
 
-def test_fddp_lqr():
+@pytest.fixture
+def lqr_problem():
     nx = 3
-    nu = 2
+    nu = 3
     space = VectorSpace(nx)
     x0 = space.rand()
     A = np.eye(nx)
-    B = np.ones((nx, nu))
+    A[0, 1] = -0.2
+    A[1, 0] = 0.2
+    B = np.eye(nx, nu)
     c = np.zeros(nx)
-    dyn = aligator.dynamics.LinearDiscreteDynamics(A, B, c)
-    w_x = np.eye(nx)
-    w_u = np.eye(nu)
-    cost = aligator.QuadraticCost(w_x, w_u)
+    dyn = LinearDiscreteDynamics(A, B, c)
+    Q = 1e-2 * np.eye(nx)
+    R = 1e-2 * np.eye(nu)
+    N = 1e-5 * np.eye(nx, nu)
+    cost = aligator.QuadraticCost(w_x=Q, w_u=R, w_cross=N)
     problem = aligator.TrajOptProblem(x0, nu, space, cost)
     nsteps = 10
-    for i in range(nsteps):
+    for _ in range(nsteps):
         stage = aligator.StageModel(cost, dyn)
         problem.addStage(stage)
+    return problem, nx, nu, x0
+
+
+def test_fddp_lqr(lqr_problem):
+    problem, nx, nu, x0 = lqr_problem
+    problem: aligator.TrajOptProblem
+    nsteps = problem.num_steps
 
     tol = 1e-6
     solver = aligator.SolverFDDP(tol, verbose=aligator.VERBOSE)
@@ -40,7 +52,10 @@ def test_fddp_lqr():
     assert conv
 
 
-@pytest.mark.skipif(condition=not has_pinocchio_features())
+@pytest.mark.skipif(
+    not aligator.has_pinocchio_features(),
+    reason="Aligator was compiled without Pinocchio features.",
+)
 def test_no_node():
     robot = erd.load("ur5")
     rmodel = robot.model
@@ -59,62 +74,54 @@ def test_no_node():
     solver.setup(problem)
 
 
-@pytest.mark.parametrize(
-    "strategy",
-    [
-        aligator.SA_FILTER,
-        aligator.SA_LINESEARCH_ARMIJO,
-        aligator.SA_LINESEARCH_NONMONOTONE,
-    ],
-)
-def test_proxddp_lqr(strategy):
-    nx = 3
-    nu = 3
-    space = VectorSpace(nx)
-    x0 = space.neutral() + (0.2, 0.3, -0.1)
+@pytest.fixture
+def lqr_problem_constrained(lqr_problem):
+    problem, nx, nu, x0 = lqr_problem
+    ctrl_fn = aligator.ControlErrorResidual(nx, np.zeros(nu))
+    for stage in problem.stages:
+        stage: aligator.StageModel
+        umin = np.array([-1, -1, -1])
+        umax = np.array([1, 1, 1])
+        stage.addConstraint(ctrl_fn, aligator.constraints.BoxConstraint(umin, umax))
+        space = stage.xspace
     xf = x0 * 0.9
-    umin = np.array([-1, -1, -1])
-    umax = np.array([1, 1, 1])
-    A = np.eye(nx)
-    A[0, 1] = -0.2
-    A[1, 0] = 0.2
-    B = np.eye(nx)[:, :nu]
-    B[2, :] = 0.4
-    c = np.zeros(nx)
-    c[:] = (0.0, 0.0, 0.1)
-
-    Q = 1e-2 * np.eye(nx)
-    R = 1e-2 * np.eye(nu)
-    N = 1e-5 * np.eye(nx, nu)
-
-    run_cost = aligator.QuadraticCost(Q, R, N)
-    term_cost = aligator.QuadraticCost(Q, R)
-    dyn = aligator.dynamics.LinearDiscreteDynamics(A, B, c)
-    ctrl_fn = aligator.ControlErrorResidual(space.ndx, np.zeros(nu))
     state_fn = aligator.StateErrorResidual(space, nu, xf)
-    stage = aligator.StageModel(run_cost, dyn)
-    stage.addConstraint(ctrl_fn, aligator.constraints.BoxConstraint(umin, umax))
-
-    nsteps = 20
-    stages = [stage] * nsteps
-    problem = aligator.TrajOptProblem(x0, stages, term_cost)
-
     problem.addTerminalConstraint(
         state_fn, aligator.constraints.EqualityConstraintSet()
     )
+    return lqr_problem
 
-    tol = 1e-6
-    mu_init = 1e-4
-    solver = aligator.SolverProxDDP(tol, mu_init, verbose=aligator.VERBOSE)
-    solver.setup(problem)
-    solver.sa_strategy = strategy
-    solver.max_iters = 3
-    xs_init = [x0] * (nsteps + 1)
-    us_init = [np.zeros(nu)] * nsteps
-    conv = solver.run(problem, xs_init, us_init)
-    print(solver.results)
-    print(solver.mu)
-    assert conv
+
+class TestProxDDP:
+    def __init__(self, lqr_problem_constrained):
+        self.lqr_problem = lqr_problem_constrained
+
+    @pytest.mark.parametrize(
+        "strategy",
+        [
+            aligator.SA_FILTER,
+            aligator.SA_LINESEARCH_ARMIJO,
+            aligator.SA_LINESEARCH_NONMONOTONE,
+        ],
+    )
+    def test_proxddp_lqr(self, strategy):
+        problem, nx, nu, x0 = self.lqr_problem
+        problem: aligator.TrajOptProblem
+        nsteps = problem.num_steps
+
+        tol = 1e-6
+        mu_init = 1e-4
+        solver = aligator.SolverProxDDP(tol, mu_init, verbose=aligator.VERBOSE)
+        solver.setup(problem)
+        solver.sa_strategy = strategy
+        solver.max_iters = 3
+        xs_init = [x0] * (nsteps + 1)
+        us_init = [np.zeros(nu)] * nsteps
+        conv = solver.run(problem, xs_init, us_init)
+        print(solver.results)
+        print(solver.mu)
+        self.saved_results = solver.results.copy()
+        assert conv
 
 
 if __name__ == "__main__":
