@@ -1,12 +1,10 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#
-# Copyright 2023-2024 LAAS-CNRS, Inria
-
-"""Unit tests for SolverProxDDP."""
+"""
+Unit tests for SolverProxDDP.
+"""
 
 import sys
 
+from aligator import has_pinocchio_features
 import example_robot_data as erd
 from aligator.manifolds import VectorSpace, MultibodyPhaseSpace
 import numpy as np
@@ -42,6 +40,7 @@ def test_fddp_lqr():
     assert conv
 
 
+@pytest.mark.skipif(condition=not has_pinocchio_features())
 def test_no_node():
     robot = erd.load("ur5")
     rmodel = robot.model
