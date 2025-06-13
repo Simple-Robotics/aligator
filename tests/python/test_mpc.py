@@ -55,7 +55,7 @@ x0 = np.concatenate((q0, np.zeros(nv)))
 u0 = np.zeros(nu)
 
 
-def test_mpc():
+def test_parallel_mpc():
     T = 50
 
     stages = []
@@ -88,11 +88,9 @@ def test_mpc():
     solver.setup(problem)
 
     solver.run(problem, [], [])
-    results = solver.results
-    print(results)
 
-    xs = results.xs.tolist().copy()
-    us = results.us.tolist().copy()
+    xs = solver.results.xs.tolist().copy()
+    us = solver.results.us.tolist().copy()
 
     # Launch MPC
     for t in range(100):
@@ -108,7 +106,56 @@ def test_mpc():
         xs = solver.results.xs.tolist().copy()
         us = solver.results.us.tolist().copy()
 
-    print("MPC stable")
+
+def test_serial_mpc():
+    T = 50
+
+    stages = []
+    for _ in range(T):
+        rcost = aligator.CostStack(space, nu)
+        rcost.addCost(aligator.QuadraticStateCost(space, nu, x0, np.eye(space.ndx)))
+        rcost.addCost(aligator.QuadraticControlCost(space, u0, np.eye(nu) * 1e-4))
+
+        ode = aligator.dynamics.MultibodyConstraintFwdDynamics(
+            space, act_matrix, constraint_models, prox_settings
+        )
+        dyn_model = aligator.dynamics.IntegratorSemiImplEuler(ode, dt)
+        stm = aligator.StageModel(rcost, dyn_model)
+        stages.append(stm)
+
+    term_cost = aligator.CostStack(space, nu)
+    problem = aligator.TrajOptProblem(x0, stages, term_cost)
+
+    TOL = 1e-5
+    mu_init = 1e-8
+    verbose = aligator.VerboseLevel.QUIET
+    solver = aligator.SolverProxDDP(TOL, mu_init, verbose=verbose)
+    solver.rollout_type = aligator.ROLLOUT_LINEAR
+    solver.max_iters = 100
+    solver.sa_strategy = aligator.SA_FILTER
+    solver.force_initial_condition = True
+    solver.linear_solver_choice = aligator.LQ_SOLVER_SERIAL
+    solver.filter.beta = 1e-5
+    solver.setup(problem)
+
+    solver.run(problem, [], [])
+
+    xs = solver.results.xs.tolist().copy()
+    us = solver.results.us.tolist().copy()
+
+    # Launch MPC
+    for t in range(100):
+        print("Time " + str(t))
+
+        xs = xs[1:] + [xs[-1]]
+        us = us[1:] + [us[-1]]
+
+        problem.x0_init = xs[0]
+        solver.setup(problem)
+        solver.run(problem, xs, us)
+
+        xs = solver.results.xs.tolist().copy()
+        us = solver.results.us.tolist().copy()
 
 
 if __name__ == "__main__":
