@@ -2,7 +2,7 @@
 /// @copyright Copyright (C) 2025 INRIA
 #pragma once
 
-#include "./relaxed-log-barrier.hpp"
+#include "relaxed-log-barrier.hpp"
 
 namespace aligator {
 
@@ -44,7 +44,7 @@ void RelaxedLogBarrierCostTpl<Scalar>::evaluate(const ConstVectorRef &x,
   residual_->evaluate(x, u, *d.residual_data);
   d.value_ = 0.;
   const int nrows = residual_->nr;
-  for (size_t i = 0; i < nrows; i++) {
+  for (int i = 0; i < nrows; i++) {
     if (d.residual_data->value_[i] < threshold_) {
       Scalar sq = (d.residual_data->value_[i] - 2 * threshold_) / threshold_;
       d.value_ += barrier_weights_(i) * (0.5 * (sq * sq - 1) - log(threshold_));
