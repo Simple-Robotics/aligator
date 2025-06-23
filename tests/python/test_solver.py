@@ -123,6 +123,8 @@ def test_proxddp_lqr(lqr_problem_constrained, strategy):
     assert res_copy.traj_cost == res.traj_cost
     assert np.allclose(np.concat(res.xs), np.concat(res_copy.xs))
     assert np.allclose(np.concat(res.us), np.concat(res_copy.us))
+    assert np.allclose(np.concat(res.vs), np.concat(res_copy.vs))
+    assert np.allclose(np.concat(res.lams), np.concat(res_copy.lams))
 
 
 if __name__ == "__main__":
