@@ -92,36 +92,37 @@ def lqr_problem_constrained(lqr_problem):
     return lqr_problem
 
 
-class TestProxDDP:
-    def __init__(self, lqr_problem_constrained):
-        self.lqr_problem = lqr_problem_constrained
+@pytest.mark.parametrize(
+    "strategy",
+    [
+        aligator.SA_FILTER,
+        aligator.SA_LINESEARCH_ARMIJO,
+        aligator.SA_LINESEARCH_NONMONOTONE,
+    ],
+)
+def test_proxddp_lqr(lqr_problem_constrained, strategy):
+    problem, nx, nu, x0 = lqr_problem_constrained
+    problem: aligator.TrajOptProblem
+    nsteps = problem.num_steps
 
-    @pytest.mark.parametrize(
-        "strategy",
-        [
-            aligator.SA_FILTER,
-            aligator.SA_LINESEARCH_ARMIJO,
-            aligator.SA_LINESEARCH_NONMONOTONE,
-        ],
-    )
-    def test_proxddp_lqr(self, strategy):
-        problem, nx, nu, x0 = self.lqr_problem
-        problem: aligator.TrajOptProblem
-        nsteps = problem.num_steps
+    tol = 1e-6
+    mu_init = 1e-4
+    solver = aligator.SolverProxDDP(tol, mu_init, verbose=aligator.VERBOSE)
+    solver.setup(problem)
+    solver.sa_strategy = strategy
+    solver.max_iters = 3
+    xs_init = [np.random.randn(nx)] * (nsteps + 1)
+    xs_init[0] = x0
+    us_init = [np.zeros(nu)] * nsteps
+    assert solver.run(problem, xs_init, us_init)
+    print(solver.results)
+    print(solver.mu)
+    res: aligator.Results = solver.results
+    res_copy: aligator.Results = res.copy()
 
-        tol = 1e-6
-        mu_init = 1e-4
-        solver = aligator.SolverProxDDP(tol, mu_init, verbose=aligator.VERBOSE)
-        solver.setup(problem)
-        solver.sa_strategy = strategy
-        solver.max_iters = 3
-        xs_init = [x0] * (nsteps + 1)
-        us_init = [np.zeros(nu)] * nsteps
-        conv = solver.run(problem, xs_init, us_init)
-        print(solver.results)
-        print(solver.mu)
-        self.saved_results = solver.results.copy()
-        assert conv
+    assert res_copy.traj_cost == res.traj_cost
+    assert np.allclose(np.concat(res.xs), np.concat(res_copy.xs))
+    assert np.allclose(np.concat(res.us), np.concat(res_copy.us))
 
 
 if __name__ == "__main__":
