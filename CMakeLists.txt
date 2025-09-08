@@ -42,14 +42,6 @@ else()
       PROPERTY INTERFACE_INCLUDE_DIRECTORIES
     )
     message(STATUS "JRL cmakemodules found on system at ${JRL_CMAKE_MODULES}")
-  elseif(${CMAKE_VERSION} VERSION_LESS "3.14.0")
-    message(
-      FATAL_ERROR
-      "\nCan't find jrl-cmakemodules. Please either:\n"
-      "  - use git submodule: 'git submodule update --init'\n"
-      "  - or install https://github.com/jrl-umi3218/jrl-cmakemodules\n"
-      "  - or upgrade your CMake version to >= 3.14 to allow automatic fetching\n"
-    )
   else()
     message(STATUS "JRL cmakemodules not found. Let's fetch it.")
     FetchContent_Declare(
@@ -64,13 +56,14 @@ endif()
 set(AWESOME_CSS_DIR ${PROJECT_SOURCE_DIR}/doc/doxygen-awesome-css)
 set(DOXYGEN_HTML_HEADER "${PROJECT_SOURCE_DIR}/doc/header.html")
 
-# Use BoostConfig module distributed by boost library instead of using FindBoost module distributed
-# by CMake
+# Use BoostConfig module distributed by boost library instead of using FindBoost
+# module distributed by CMake
 if(POLICY CMP0167)
   cmake_policy(SET CMP0167 NEW)
-  # find_package(SDFormat14) reset this policy (with cmake_minimum_required) and redefine the find_dependency macro.
-  # Then, futur call of this macro don't use the right version of this policy.
-  # To avoid that, we define the CMP0167 default value.
+  # find_package(SDFormat14) reset this policy (with cmake_minimum_required) and
+  # redefine the find_dependency macro. Then, futur call of this macro don't use
+  # the right version of this policy. To avoid that, we define the CMP0167
+  # default value.
   set(CMAKE_POLICY_DEFAULT_CMP0167 NEW)
 endif()
 include(${JRL_CMAKE_MODULES}/base.cmake)
@@ -179,8 +172,8 @@ option(
   OFF
 )
 
-# Variable containing all the cflags definition relative to optional dependencies
-# and options
+# Variable containing all the cflags definition relative to optional
+# dependencies and options
 set(CFLAGS_DEPENDENCIES)
 
 if(INITIALIZE_WITH_NAN)
@@ -307,9 +300,8 @@ list(
 option(DOWNLOAD_TRACY "Use FetchContent to install Tracy." OFF)
 if(ALIGATOR_TRACY_ENABLE AND DOWNLOAD_TRACY)
   # We use FetchContent_Populate because we need EXCLUDE_FROM_ALL to avoid
-  # installing Tracy with aligator.
-  # We can directly use EXCLUDE_FROM_ALL in FetchContent_Declare when CMake minimum version
-  # will be 3.28.
+  # installing Tracy with aligator. We can directly use EXCLUDE_FROM_ALL in
+  # FetchContent_Declare when CMake minimum version will be 3.28.
   if(POLICY CMP0169)
     cmake_policy(SET CMP0169 OLD)
   endif()
@@ -390,8 +382,8 @@ function(create_library)
     target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
   endif()
   target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt)
-  # set the install-tree include dirs
-  # used by dependent projects to consume this target
+  # set the install-tree include dirs used by dependent projects to consume this
+  # target
   target_include_directories(
     ${PROJECT_NAME}
     PUBLIC
@@ -588,8 +580,5 @@ endif()
 PKG_CONFIG_APPEND_LIBS(${PROJECT_NAME})
 PKG_CONFIG_APPEND_BOOST_LIBS(${BOOST_REQUIRED_COMPONENTS})
 PKG_CONFIG_APPEND_CFLAGS("${CFLAGS_DEPENDENCIES}")
-
-# Install catkin package.xml
-install(FILES package.xml DESTINATION share/${PROJECT_NAME})
 
 SETUP_PROJECT_FINALIZE()
