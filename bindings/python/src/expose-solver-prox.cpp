@@ -86,8 +86,6 @@ void exposeProxDDP() {
       .def_readonly("dlams", &Workspace::dlams)
       .def_readonly("trial_vs", &Workspace::trial_vs)
       .def_readonly("trial_lams", &Workspace::trial_lams)
-      .def_readonly("lams_plus", &Workspace::lams_plus)
-      .def_readonly("lams_pdal", &Workspace::lams_pdal)
       .def_readonly("vs_plus", &Workspace::vs_plus)
       .def_readonly("vs_pdal", &Workspace::vs_pdal)
       .def_readonly("shifted_constraints", &Workspace::shifted_constraints)
@@ -96,7 +94,6 @@ void exposeProxDDP() {
       .def_readonly("active_constraints", &Workspace::active_constraints)
       .def_readonly("prev_xs", &Workspace::prev_xs)
       .def_readonly("prev_us", &Workspace::prev_us)
-      .def_readonly("prev_lams", &Workspace::prev_lams)
       .def_readonly("prev_vs", &Workspace::prev_vs)
       .def_readonly("stage_infeasibilities", &Workspace::stage_infeasibilities)
       .def_readonly("state_dual_infeas", &Workspace::state_dual_infeas)
@@ -148,9 +145,10 @@ void exposeProxDDP() {
           .def_readwrite("mu_init", &SolverType::mu_init,
                          "Initial AL penalty parameter.")
           .add_property("mu", &SolverType::mu)
-          .def_readwrite(
-              "rollout_max_iters", &SolverType::rollout_max_iters,
-              "Maximum number of iterations when solving the forward dynamics.")
+          //   .def_readwrite(
+          //       "rollout_max_iters", &SolverType::rollout_max_iters,
+          //       "Maximum number of iterations when solving the forward
+          //       dynamics.")
           .def_readwrite("max_al_iters", &SolverType::max_al_iters,
                          "Maximum number of AL iterations.")
           .def_readwrite("ls_mode", &SolverType::ls_mode, "Linesearch mode.")
@@ -210,7 +208,6 @@ void exposeProxDDP() {
         ._c(dual_alpha)
         ._c(dual_beta)
         ._c(mu_update_factor)
-        ._c(dyn_al_scale)
         ._c(mu_lower_bound);
 #undef _c
   }
