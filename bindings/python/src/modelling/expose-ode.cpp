@@ -16,9 +16,9 @@ using context::MatrixXs;
 using context::ODEAbstract;
 using context::ODEData;
 using context::Scalar;
+using context::Vector3s;
 using context::VectorSpace;
 using context::VectorXs;
-using context::Vector3s;
 using PolyManifold = xyz::polymorphic<context::Manifold>;
 
 using CentroidalFwdDynamics = CentroidalFwdDynamicsTpl<Scalar>;
