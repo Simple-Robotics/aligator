@@ -230,7 +230,7 @@ plt.savefig(ASSET_DIR / "pendulum_controls{}.png".format(TAG))
 plt.savefig(ASSET_DIR / "pendulum_controls{}.pdf".format(TAG))
 
 if True:
-    from proxsuite_nlp.utils import plot_pd_errs
+    from aligator.utils.plotting import plot_pd_errs
 
     prim_errs = callback.prim_infeas
     dual_errs = callback.dual_infeas
