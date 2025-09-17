@@ -45,7 +45,6 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   std::vector<VectorXs> Lxs; //< State gradients
   std::vector<VectorXs> Lus; //< Control gradients
   std::vector<VectorXs> Lvs; //< Path multiplier gradients
-  std::vector<VectorXs> Lds; //< Costate gradients
   /// @}
 
   /// @name Trial primal-dual step
@@ -56,10 +55,10 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   std::vector<VectorXs> trial_lams;
   /// @}
 
-  /// @name Lagrange multipliers.
+  /// @name Path constraint AL multipliers.
   /// @{
+  // used for linesearch
   std::vector<VectorXs> lams_plus;
-  std::vector<VectorXs> lams_pdal;
   std::vector<VectorXs> vs_plus;
   std::vector<VectorXs> vs_pdal;
   /// @}
@@ -88,7 +87,6 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   std::vector<VectorXs> prev_xs;
   std::vector<VectorXs> prev_us;
   std::vector<VectorXs> prev_vs;
-  std::vector<VectorXs> prev_lams;
   /// @}
 
   /// Subproblem termination criterion for each stage.
@@ -143,7 +141,7 @@ struct fmt::formatter<aligator::WorkspaceTpl<Scalar>> {
                           "\n  nsteps:       \t{:d}"
                           "\n  n_multipliers:\t{:d}"
                           "\n}}",
-                          ws.nsteps, ws.lams_plus.size());
+                          ws.nsteps, ws.dlams.size());
   }
 };
 
