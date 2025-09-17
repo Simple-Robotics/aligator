@@ -623,8 +623,8 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
       return true;
 
     computeProjectedJacobians(problem, mu_inv(), workspace_);
-    initializeRegularization();
-    updateLQSubproblem();
+    this->initializeRegularization();
+    this->updateLQSubproblem();
     // TODO: supply a penalty weight matrix for constraints
 
     // In the next two lines, the LQ subproblem is solved. This is
@@ -637,7 +637,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
 
     linear_solver_->forward(workspace_.dxs, workspace_.dus, workspace_.dvs,
                             workspace_.dlams);
-    updateGains();
+    this->updateGains();
 
     if (force_initial_condition_) {
       workspace_.dxs[0].setZero();
@@ -700,7 +700,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
         return false;
       increaseRegularization();
     }
-    invokeCallbacks(workspace_, results_);
+    this->invokeCallbacks();
     logger.log();
 
     preg_last_ = preg_;

@@ -387,7 +387,7 @@ bool SolverFDDPTpl<Scalar>::run(const Problem &problem,
       }
     }
 
-    invokeCallbacks(workspace_, results_);
+    this->invokeCallbacks();
     logger.log();
   }
 
