@@ -5,7 +5,7 @@
 
 namespace aligator {
 
-template struct PDALFunction<context::Scalar>;
+template struct ALFunction<context::Scalar>;
 template context::Scalar costDirectionalDerivative<context::Scalar>(
     const WorkspaceTpl<context::Scalar> &workspace,
     const TrajOptDataTpl<context::Scalar> &prob_data);

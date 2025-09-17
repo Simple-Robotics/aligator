@@ -1,5 +1,5 @@
 /// @file merit-function.hpp
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/fwd.hpp"
@@ -44,7 +44,7 @@ Scalar costDirectionalDerivative(const WorkspaceTpl<Scalar> &workspace,
  * Some of the parameters of this function are obtained from the linked
  * SolverProxDDPTpl<Scalar> instance.
  */
-template <typename _Scalar> struct PDALFunction {
+template <typename _Scalar> struct ALFunction {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using StageModel = StageModelTpl<Scalar>;
@@ -69,8 +69,10 @@ template <typename _Scalar> struct PDALFunction {
                                       Workspace &workspace);
 };
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "merit-function.txx"
+extern template struct ALFunction<context::Scalar>;
+extern template context::Scalar costDirectionalDerivative<context::Scalar>(
+    const WorkspaceTpl<context::Scalar> &workspace,
+    const TrajOptDataTpl<context::Scalar> &prob_data);
 #endif
+} // namespace aligator
