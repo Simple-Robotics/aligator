@@ -183,9 +183,9 @@ public:
   /// @brief    Remove all callbacks from the instance.
   void clearCallbacks() { callbacks_.clear(); }
 
-  void invokeCallbacks(Workspace &workspace, Results &results) {
+  void invokeCallbacks() {
     for (const auto &cb : callbacks_) {
-      cb.second->call(workspace, results);
+      cb.second->call(workspace_, results_);
     }
   }
 
