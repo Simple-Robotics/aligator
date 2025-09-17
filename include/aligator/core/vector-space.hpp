@@ -19,7 +19,7 @@ struct VectorSpaceTpl : public ManifoldAbstractTpl<_Scalar> {
   int dim_;
 
   /// @brief    Default constructor where the dimension is supplied.
-  VectorSpaceTpl(const int dim)
+  explicit VectorSpaceTpl(const int dim)
       : Base()
       , dim_(dim) {
     static_assert(
@@ -33,7 +33,7 @@ struct VectorSpaceTpl : public ManifoldAbstractTpl<_Scalar> {
   /// compile time.
   template <int N = Dim,
             typename = typename std::enable_if_t<N != Eigen::Dynamic>>
-  VectorSpaceTpl()
+  explicit VectorSpaceTpl()
       : Base()
       , dim_(Dim) {}
 
