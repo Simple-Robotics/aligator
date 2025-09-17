@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+This release brings a major change to the ProxDDP solver, which no longer uses proximal iteration the co-state (the dynamics' Lagrange multiplies). This choice is made to increase the solver's overall performance.
+
 ### Fixed
 
 - gar : fix missing move assignment operator in `LqrProblemTpl`
@@ -18,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - solvers : make proxddp algo's Results class copyable again (in C++ and Python) (https://github.com/Simple-Robotics/aligator/pull/322)
 - python/visitors : also set `__copy__` method on exposed class with `CopyableVisitor` (https://github.com/Simple-Robotics/aligator/pull/322)
 - python : make `Results` copyable (using `CopyableVisitor`) (https://github.com/Simple-Robotics/aligator/pull/322)
+- ProxDDP solver : remove proximal iteration/ALM over co-states
 
 ### Added
 

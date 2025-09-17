@@ -85,7 +85,7 @@ int main() {
   solver.max_iters = 10;
   solver.verbose_ = VERBOSE;
   solver.linear_solver_choice = LQSolverChoice::PARALLEL;
-  solver.force_initial_condition_ = false;
+  solver.force_initial_condition_ = true;
   solver.rollout_type_ = RolloutType::LINEAR;
   solver.setNumThreads(4);
 

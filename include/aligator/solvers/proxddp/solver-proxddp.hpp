@@ -110,8 +110,6 @@ public:
     Scalar dual_beta = 1.;
     /// Scale factor for the dual proximal penalty.
     Scalar mu_update_factor = 0.01;
-    /// Constraints AL scaling
-    Scalar dyn_al_scale = 1e-3;
     /// Lower bound on AL parameter
     Scalar mu_lower_bound = 1e-8; //< Minimum possible penalty parameter.
   };
@@ -131,7 +129,7 @@ private:
   Scalar target_dual_tol_;
   /// When this is true, dual tolerance will be set to
   /// SolverProxDDPTpl::target_tol_ when SolverProxDDPTpl::run() is called.
-  bool sync_dual_tol;
+  bool sync_dual_tol_;
 
 public:
   Scalar mu_init = 0.01; //< Initial AL parameter
@@ -184,6 +182,7 @@ public:
   size_t max_refinement_steps_ = 0;     //< Max KKT system refinement iters.
   Scalar refinement_threshold_ = 1e-13; //< Target tol. for the KKT system.
   size_t max_iters;                     //< Max number of Newton iterations.
+  size_t max_al_iters = 100;            //< Maximum number of ALM iterations.
 
   Workspace workspace_;
   Results results_;
@@ -219,7 +218,7 @@ public:
   /// Manually set desired dual feasibility tolerance.
   void setDualTolerance(const Scalar tol) {
     target_dual_tol_ = tol;
-    sync_dual_tol = false;
+    sync_dual_tol_ = false;
   }
 
   /// @brief    Try a step of size \f$\alpha\f$.
@@ -244,8 +243,7 @@ public:
   /// @param problem  The problem instance with respect to which memory will be
   /// allocated.
   void setup(const Problem &problem);
-  void cycleProblem(const Problem &problem,
-                    shared_ptr<StageDataTpl<Scalar>> data);
+  void cycleProblem(const Problem &problem, const shared_ptr<StageData> &data);
 
   /// @brief Run the numerical solver.
   /// @param problem  The trajectory optimization problem to solve.
@@ -315,9 +313,6 @@ public:
                           const std::vector<VectorXs> &lams,
                           const std::vector<VectorXs> &vs);
 
-  ALIGATOR_INLINE Scalar mudyn() const {
-    return bcl_params.dyn_al_scale * mu_penal_;
-  }
   ALIGATOR_INLINE Scalar mu() const { return mu_penal_; }
   ALIGATOR_INLINE Scalar mu_inv() const { return 1. / mu_penal_; }
 
