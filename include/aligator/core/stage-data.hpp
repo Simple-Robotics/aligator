@@ -2,7 +2,7 @@
 /// @copyright Copyright (C) 2024 LAAS-CNRS, INRIA
 #pragma once
 
-#include "aligator/fwd.hpp"
+#include "aligator/context.hpp"
 
 namespace aligator {
 
@@ -34,9 +34,7 @@ template <typename _Scalar> struct StageDataTpl {
   /// @brief Check data integrity.
   virtual void checkData();
 };
-
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/core/stage-data.txx"
+extern template struct StageDataTpl<context::Scalar>;
 #endif
+} // namespace aligator
