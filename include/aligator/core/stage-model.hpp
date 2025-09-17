@@ -157,6 +157,9 @@ std::ostream &operator<<(std::ostream &oss,
                          const StageModelTpl<Scalar> &stage) {
   return oss << fmt::format("{}", stage);
 }
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct StageModelTpl<context::Scalar>;
+#endif
 
 } // namespace aligator
 
@@ -191,7 +194,3 @@ struct fmt::formatter<aligator::StageModelTpl<Scalar>> {
     }
   }
 };
-
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/core/stage-model.txx"
-#endif
