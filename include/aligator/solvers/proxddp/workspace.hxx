@@ -23,11 +23,12 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
     ALIGATOR_RUNTIME_ERROR("Problem failed integrity check.");
 
   problem.initializeSolution(trial_xs, trial_us, trial_vs, trial_lams);
-  std::tie(prev_xs, prev_us, prev_vs, prev_lams) = {trial_xs, trial_us,
-                                                    trial_vs, trial_lams};
+  prev_xs = trial_xs;
+  prev_us = trial_us;
+  prev_vs = trial_vs;
 
   vs_plus = vs_pdal = trial_vs;
-  lams_plus = lams_pdal = trial_lams;
+  lams_plus = trial_lams;
 
   dyn_slacks = trial_lams; // same dimensions
   stage_cstr_violations.setZero();
@@ -81,7 +82,6 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   Lxs = dxs;
   Lus = dus;
   Lvs = dvs;
-  Lds = dlams;
   cstr_lx_corr = Lxs;
   cstr_lu_corr = Lus;
 
@@ -111,10 +111,9 @@ void WorkspaceTpl<Scalar>::cycleAppend(const TrajOptProblemTpl<Scalar> &problem,
   rotate_vec_left(prev_us);
   rotate_vec_left(prev_vs, 0, 1);
   prev_vs[nsteps - 1].setZero(stage.nc());
-  rotate_vec_left(prev_lams);
 
   vs_plus = vs_pdal = trial_vs;
-  lams_plus = lams_pdal = trial_lams;
+  lams_plus = trial_lams;
 
   dyn_slacks = trial_lams; // same dimensions
   stage_cstr_violations.setZero();
@@ -143,7 +142,6 @@ void WorkspaceTpl<Scalar>::cycleAppend(const TrajOptProblemTpl<Scalar> &problem,
   Lxs = dxs;
   Lus = dus;
   Lvs = dvs;
-  Lds = dlams;
   cstr_lx_corr = Lxs;
   cstr_lu_corr = Lus;
 

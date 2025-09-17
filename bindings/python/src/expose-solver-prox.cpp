@@ -78,7 +78,6 @@ void exposeProxDDP() {
                     "Buffers for the LQ subproblem.")
       .def_readonly("Lxs", &Workspace::Lxs)
       .def_readonly("Lus", &Workspace::Lus)
-      .def_readonly("Lds", &Workspace::Lds)
       .def_readonly("Lvs", &Workspace::Lvs)
       .def_readonly("dxs", &Workspace::dxs)
       .def_readonly("dus", &Workspace::dus)
