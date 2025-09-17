@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 /// @brief Implementation header. Should be included when necessary.
 #pragma once
 
@@ -28,15 +28,15 @@ Scalar costDirectionalDerivative(const WorkspaceTpl<Scalar> &workspace,
 
 // TODO: add missing dual terms
 template <typename Scalar>
-Scalar PDALFunction<Scalar>::evaluate(const Scalar mudyn, const Scalar mucstr,
-                                      const TrajOptProblem &problem,
-                                      const std::vector<VectorXs> &lams,
-                                      const std::vector<VectorXs> &vs,
-                                      Workspace &workspace) {
+Scalar ALFunction<Scalar>::evaluate(const Scalar mudyn, const Scalar mucstr,
+                                    const TrajOptProblem &problem,
+                                    const std::vector<VectorXs> &lams,
+                                    const std::vector<VectorXs> & /*vs*/,
+                                    Workspace &workspace) {
   ALIGATOR_TRACY_ZONE_SCOPED;
   TrajOptData &prob_data = workspace.problem_data;
   Scalar penalty_value = 0.;
-  const std::vector<VectorXs> &lams_plus = workspace.lams_plus;
+  bool has_lbdas = !lams.empty();
   const std::vector<VectorXs> &vs_plus = workspace.vs_plus;
 
   auto weighted_norm = [](auto &v, Scalar m) -> Scalar {
@@ -44,12 +44,14 @@ Scalar PDALFunction<Scalar>::evaluate(const Scalar mudyn, const Scalar mucstr,
   };
 
   // initial constraint
-  penalty_value = 0.5 * weighted_norm(lams_plus[0], mudyn);
+  if (has_lbdas)
+    penalty_value = 0.5 * weighted_norm(lams[0], mudyn);
 
   // stage-per-stage
   const std::size_t nsteps = problem.numSteps();
   for (std::size_t i = 0; i < nsteps; i++) {
-    penalty_value += 0.5 * weighted_norm(lams_plus[i + 1], mudyn);
+    if (has_lbdas)
+      penalty_value += 0.5 * weighted_norm(lams[i + 1], mudyn);
     penalty_value += 0.5 * weighted_norm(vs_plus[i], mucstr);
   }
 
@@ -62,9 +64,9 @@ Scalar PDALFunction<Scalar>::evaluate(const Scalar mudyn, const Scalar mucstr,
 
 // TODO: restore missing dual terms
 template <typename Scalar>
-Scalar PDALFunction<Scalar>::directionalDerivative(
+Scalar ALFunction<Scalar>::directionalDerivative(
     const Scalar mudyn, const Scalar mucstr, const TrajOptProblem &problem,
-    const std::vector<VectorXs> &lams, const std::vector<VectorXs> &vs,
+    const std::vector<VectorXs> &lams, const std::vector<VectorXs> & /*vs*/,
     Workspace &workspace) {
   ALIGATOR_TRACY_ZONE_SCOPED;
   const std::size_t nsteps = workspace.nsteps;

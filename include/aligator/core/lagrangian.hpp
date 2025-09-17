@@ -16,6 +16,8 @@ template <typename Scalar> struct LagrangianDerivatives {
   using TrajOptData = TrajOptDataTpl<Scalar>;
   using BlkView = BlkMatrix<ConstVectorRef, -1, 1>;
 
+  /// The \p lams parameter can be an empty vector. In this case, the
+  /// contribution of dynamical constraints will be ignored.
   static void compute(const TrajOptProblem &problem, const TrajOptData &pd,
                       const std::vector<VectorXs> &lams,
                       const std::vector<VectorXs> &vs,
@@ -36,6 +38,7 @@ void LagrangianDerivatives<Scalar>::compute(const TrajOptProblem &problem,
   using StageModel = StageModelTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
   const std::size_t nsteps = problem.numSteps();
+  bool has_lbdas = !lams.empty();
 
   ALIGATOR_TRACY_ZONE_SCOPED_N("LagrangianDerivatives::compute");
   ALIGATOR_NOMALLOC_SCOPED;
@@ -45,17 +48,20 @@ void LagrangianDerivatives<Scalar>::compute(const TrajOptProblem &problem,
 
   // initial condition
   const StageFunctionData &init_cond = *pd.init_data;
-  Lxs[0].noalias() = init_cond.Jx_.transpose() * lams[0];
+  if (has_lbdas)
+    Lxs[0].noalias() = init_cond.Jx_.transpose() * lams[0];
 
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &sm = *problem.stages_[i];
     const StageData &sd = *pd.stage_data[i];
     const ConstraintStack &stack = sm.constraints_;
     const DynamicsData &dd = *sd.dynamics_data;
-    Lxs[i].noalias() +=
-        sd.cost_data->Lx_ + dd.Jx_.transpose() * lams[i + 1]; // [1] eqn. 24b/c
-    Lus[i].noalias() =
-        sd.cost_data->Lu_ + dd.Ju_.transpose() * lams[i + 1]; // [1] eqn. 24a
+    Lxs[i] += sd.cost_data->Lx_;
+    Lus[i] = sd.cost_data->Lu_;
+    if (has_lbdas) {
+      Lxs[i].noalias() += dd.Jx_.transpose() * lams[i + 1]; // [1] eqn. 24b/c
+      Lus[i].noalias() += dd.Ju_.transpose() * lams[i + 1]; // [1] eqn. 24a
+    }
 
     BlkView v_(vs[i], stack.dims());
     for (std::size_t j = 0; j < stack.size(); j++) {
@@ -64,7 +70,11 @@ void LagrangianDerivatives<Scalar>::compute(const TrajOptProblem &problem,
       Lus[i].noalias() += cd.Ju_.transpose() * v_[j]; // [1] eqn. 24a
     }
 
-    Lxs[i + 1].noalias() = dd.Jy_.transpose() * lams[i + 1]; // [1] eqn. 24b/d
+    if (has_lbdas) {
+      Lxs[i + 1].noalias() = dd.Jy_.transpose() * lams[i + 1]; // [1] eqn. 24b/d
+    } else {
+      Lxs[i + 1].setZero();
+    }
   }
 
   // terminal node
