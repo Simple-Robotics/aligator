@@ -22,7 +22,7 @@ struct WheeledInvertedPendulumDynamicsTpl : ODEAbstractTpl<_Scalar> {
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                ODEData &data) const override {
     Scalar rdot = x[0], phidot = x[1], theta = x[2], thetadot = x[3],
-           phi = x[4], posx = x[5], posy = x[6];
+           phi = x[4];
     Scalar rdotdot = u[0], phidotdot = u[1];
 
     data.xdot_[0] = rdotdot;
