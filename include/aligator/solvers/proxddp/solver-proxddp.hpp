@@ -50,7 +50,6 @@ public:
   using ConstraintStack = ConstraintStackTpl<Scalar>;
   using CstrSet = ConstraintSetTpl<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
-  using LinesearchOptions = typename Linesearch<Scalar>::Options;
   using LinearSolverPtr = std::unique_ptr<gar::RiccatiSolverBase<Scalar>>;
 
   struct LinesearchVariant {
@@ -63,7 +62,7 @@ public:
           overloads{[](std::monostate &) {
                       return std::numeric_limits<Scalar>::quiet_NaN();
                     },
-                    [&](auto &&method) {
+                    [&](auto &method) {
                       return method.run(fun, phi0, dphi0, alpha_try);
                     }},
           impl_);
@@ -71,7 +70,7 @@ public:
 
     void reset() {
       std::visit(overloads{[](std::monostate &) {},
-                           [&](auto &&method) { method.reset(); }},
+                           [&](auto &method) { method.reset(); }},
                  impl_);
     }
 
@@ -81,13 +80,14 @@ public:
 
   private:
     explicit LinesearchVariant() {}
-    void init(StepAcceptanceStrategy strat, const LinesearchOptions &options) {
+    void init(StepAcceptanceStrategy strat,
+              const LinesearchOptions<Scalar> &options) {
       switch (strat) {
       case StepAcceptanceStrategy::LINESEARCH_ARMIJO:
-        impl_ = ArmijoLinesearch<Scalar>(options);
+        impl_ = ArmijoLinesearch(options);
         break;
       case StepAcceptanceStrategy::LINESEARCH_NONMONOTONE:
-        impl_ = NonmonotoneLinesearch<Scalar>(options);
+        impl_ = NonmonotoneLinesearch(options);
         break;
       default:
         ALIGATOR_WARNING("LinesearchVariant::",
@@ -161,7 +161,7 @@ public:
   /// Type of Hessian approximation. Default is Gauss-Newton.
   HessianApprox hess_approx_ = HessianApprox::GAUSS_NEWTON;
   /// Linesearch options.
-  LinesearchOptions ls_params;
+  LinesearchOptions<Scalar> ls_params;
   /// Type of Lagrange multiplier update.
   MultiplierUpdateMode multiplier_update_mode = MultiplierUpdateMode::NEWTON;
   /// Linesearch mode.

@@ -56,4 +56,8 @@ private:
   Scalar avg_weight;
 };
 
+template <typename Scalar>
+NonmonotoneLinesearch(const LinesearchOptions<Scalar> &)
+    -> NonmonotoneLinesearch<Scalar>;
+
 } // namespace aligator
