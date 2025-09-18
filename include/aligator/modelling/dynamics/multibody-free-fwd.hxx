@@ -20,9 +20,9 @@ MultibodyFreeFwdDynamicsTpl<Scalar>::MultibodyFreeFwdDynamicsTpl(
   const int nv = space().getModel().nv;
   if (nv != actuation.rows()) {
     ALIGATOR_DOMAIN_ERROR(
-        fmt::format("actuation matrix should have number of rows = pinocchio "
-                    "model nv ({} and {}).",
-                    actuation.rows(), nv));
+        "Actuation matrix should have number of rows = pinocchio "
+        "model nv ({} and {}).",
+        actuation.rows(), nv);
   }
   act_matrix_rank = lu_decomp_.rank();
 }

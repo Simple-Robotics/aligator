@@ -25,9 +25,8 @@ CentroidalMomentumDerivativeResidualTpl<Scalar>::
   mass_ = pinocchio::computeTotalMass(model);
   if (contact_ids_.size() != contact_states_.size()) {
     ALIGATOR_DOMAIN_ERROR(
-        fmt::format("contact_ids and contact_states should have same size: "
-                    "now ({} and {}).",
-                    contact_ids_.size(), contact_states_.size()));
+        "contact_ids and contact_states should have same size ({:d} and {:d}).",
+        contact_ids_.size(), contact_states_.size());
   }
 }
 

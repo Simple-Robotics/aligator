@@ -10,19 +10,16 @@ CostStackTpl<Scalar>::CostStackTpl(xyz::polymorphic<Manifold> space,
                                    const std::vector<Scalar> &weights)
     : CostBase(space, nu) {
   if (comps.size() != weights.size()) {
-    auto msg = fmt::format(
+    ALIGATOR_RUNTIME_ERROR(
         "Inconsistent number of components ({:d}) and weights ({:d}).",
         comps.size(), weights.size());
-    ALIGATOR_RUNTIME_ERROR(msg);
   } else {
     for (std::size_t i = 0; i < comps.size(); i++) {
       if (!this->checkDimension(*comps[i])) {
-        auto msg = fmt::format("Component #{:d} has wrong input dimensions "
-                               "({:d}, {:d}) (expected "
-                               "({:d}, {:d}))",
+        ALIGATOR_RUNTIME_ERROR("Component #{:d} has wrong input dimensions "
+                               "({:d}, {:d}) (expected ({:d}, {:d}))",
                                i, comps[i]->ndx(), comps[i]->nu, this->ndx(),
                                this->nu);
-        ALIGATOR_RUNTIME_ERROR(msg);
       }
     }
 
