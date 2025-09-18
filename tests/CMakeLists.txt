@@ -49,6 +49,7 @@ set(
   costs
   integrators
   lqr
+  arena-matrix
   managed-matrix
   problem
   manifolds
