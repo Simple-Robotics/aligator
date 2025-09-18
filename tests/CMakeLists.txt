@@ -47,7 +47,6 @@ set(
   continuous
   constraints
   costs
-  eigen-map
   integrators
   lqr
   managed-matrix
