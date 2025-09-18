@@ -21,6 +21,7 @@ This release brings a major change to the ProxDDP solver, which no longer uses p
 - python/visitors : also set `__copy__` method on exposed class with `CopyableVisitor` (https://github.com/Simple-Robotics/aligator/pull/322)
 - python : make `Results` copyable (using `CopyableVisitor`) (https://github.com/Simple-Robotics/aligator/pull/322)
 - ProxDDP solver : remove proximal iteration/ALM over co-states
+- ProxDDP solver : throw when given invalid linesearch enum value
 - core/linesearches : move `LinesearchOptions` struct out of the `Linesearch` template class, add CTAD
 
 ### Added
