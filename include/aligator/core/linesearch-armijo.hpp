@@ -16,15 +16,15 @@ namespace aligator {
 template <typename T> struct PolynomialTpl {
   using VectorXs = typename math_types<T>::VectorXs;
   VectorXs coeffs;
-  PolynomialTpl() {}
-  PolynomialTpl(const Eigen::Ref<const VectorXs> &c)
+  explicit PolynomialTpl() {}
+  explicit PolynomialTpl(const Eigen::Ref<const VectorXs> &c)
       : coeffs(c) {}
   /// @brief Polynomial degree (number of coefficients minus one).
   Eigen::Index degree() const { return coeffs.size() - 1; }
   inline T evaluate(T a) const {
     T r = 0.0;
     for (int i = 0; i < coeffs.size(); i++) {
-      r = r * a + coeffs(i);
+      r = r * a + coeffs[i];
     }
     return r;
   }
@@ -34,7 +34,7 @@ template <typename T> struct PolynomialTpl {
     }
     VectorXs out(degree());
     for (int i = 0; i < coeffs.size() - 1; i++) {
-      out(i) = coeffs(i) * (T(degree()) - i);
+      out[i] = coeffs[i] * (T(degree()) - i);
     }
     return PolynomialTpl(out);
   }
@@ -46,19 +46,18 @@ class ArmijoLinesearch final : public Linesearch<Scalar> {
 public:
   using Base = Linesearch<Scalar>;
   using Base::options_;
+  using typename Base::Options;
   using FunctionSample = typename Base::FunctionSample;
   using Polynomial = PolynomialTpl<Scalar>;
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using Matrix2s = Eigen::Matrix<Scalar, 2, 2>;
   using Vector2s = Eigen::Matrix<Scalar, 2, 1>;
 
-  ArmijoLinesearch(const typename Base::Options &options)
+  explicit ArmijoLinesearch(const Options &options) noexcept
       : Base(options) {}
 
-  using fun_t = std::function<Scalar(Scalar)>;
-
-  Scalar run(fun_t phi, const Scalar phi0, const Scalar dphi0,
-             Scalar &alpha_try) {
+  Scalar run(const std::function<Scalar(Scalar)> &phi, const Scalar phi0,
+             const Scalar dphi0, Scalar &alpha_try) {
     const FunctionSample lower_bound(0., phi0, dphi0);
 
     alpha_try = 1.;
