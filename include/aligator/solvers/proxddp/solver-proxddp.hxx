@@ -28,13 +28,13 @@ void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
   auto &sif = workspace.shifted_constraints;
 
   const TrajOptDataTpl<Scalar> &prob_data = workspace.problem_data;
-  const std::size_t N = workspace.nsteps;
-  for (std::size_t i = 0; i < N; i++) {
+  const size_t N = workspace.nsteps;
+  for (size_t i = 0; i < N; i++) {
     const StageModelTpl<Scalar> &sm = *problem.stages_[i];
     const StageDataTpl<Scalar> &sd = *prob_data.stage_data[i];
     auto &jac = workspace.cstr_proj_jacs[i];
 
-    for (std::size_t j = 0; j < sm.numConstraints(); j++) {
+    for (size_t j = 0; j < sm.numConstraints(); j++) {
       jac(j, 0) = sd.constraint_data[j]->Jx_;
       jac(j, 1) = sd.constraint_data[j]->Ju_;
     }
@@ -53,7 +53,7 @@ void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
   if (!problem.term_cstrs_.empty()) {
     auto &jac = workspace.cstr_proj_jacs[N];
     const auto &cds = prob_data.term_cstr_data;
-    for (std::size_t j = 0; j < cds.size(); j++) {
+    for (size_t j = 0; j < cds.size(); j++) {
       jac(j, 0) = cds[j]->Jx_;
     }
 
@@ -69,7 +69,7 @@ void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
 template <typename Scalar>
 SolverProxDDPTpl<Scalar>::SolverProxDDPTpl(const Scalar tol,
                                            const Scalar mu_init,
-                                           const std::size_t max_iters,
+                                           const size_t max_iters,
                                            VerboseLevel verbose,
                                            StepAcceptanceStrategy sa_strategy,
                                            HessianApprox hess_approx)
@@ -87,7 +87,7 @@ SolverProxDDPTpl<Scalar>::SolverProxDDPTpl(const Scalar tol,
 }
 
 template <typename Scalar>
-void SolverProxDDPTpl<Scalar>::setNumThreads(const std::size_t num_threads) {
+void SolverProxDDPTpl<Scalar>::setNumThreads(const size_t num_threads) {
   if (linear_solver_) {
     ALIGATOR_WARNING(
         "SolverProxDDP",
@@ -104,7 +104,7 @@ Scalar SolverProxDDPTpl<Scalar>::tryLinearStep(const Problem &problem,
                                                const Scalar alpha) {
   ALIGATOR_TRACY_ZONE_SCOPED;
 
-  const std::size_t nsteps = workspace_.nsteps;
+  const size_t nsteps = workspace_.nsteps;
   assert(results_.xs.size() == nsteps + 1);
   assert(results_.us.size() == nsteps);
   assert(results_.lams.size() == nsteps + 1);
@@ -125,7 +125,7 @@ Scalar SolverProxDDPTpl<Scalar>::tryLinearStep(const Problem &problem,
   VectorXs dx_tmp(ndx_max);
   VectorXs du_tmp(nu_max);
 
-  for (std::size_t i = 0; i < nsteps; i++) {
+  for (size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
     const int ndx = stage.ndx1();
     const int nu = stage.nu();
@@ -213,7 +213,7 @@ bool SolverProxDDPTpl<Scalar>::computeMultipliers(
   using BlkView = BlkMatrix<VectorRef, -1, 1>;
 
   const TrajOptData &prob_data = workspace_.problem_data;
-  const std::size_t nsteps = workspace_.nsteps;
+  const size_t nsteps = workspace_.nsteps;
 
   // [1] Section B. Augmented Lagrangian methods eqn. 5a and 5b for x_plus
   // and in subsection Primal-dual search x_k is prev_x. Then, more precisely
@@ -242,7 +242,7 @@ bool SolverProxDDPTpl<Scalar>::computeMultipliers(
   using ConstraintSetProd = ConstraintSetProductTpl<Scalar>;
 
   // loop over the stages
-  for (std::size_t i = 0; i < nsteps; i++) {
+  for (size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
     const StageData &sd = *prob_data.stage_data[i];
     const DynamicsData &dd = *sd.dynamics_data;
@@ -305,9 +305,9 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateGains() {
   ALIGATOR_TRACY_ZONE_SCOPED;
   ALIGATOR_NOMALLOC_SCOPED;
   using gar::StageFactor;
-  const std::size_t N = workspace_.nsteps;
+  const size_t N = workspace_.nsteps;
   linear_solver_->collapseFeedback(); // will alter feedback gains
-  for (std::size_t i = 0; i < N; i++) {
+  for (size_t i = 0; i < N; i++) {
     VectorRef ff = results_.getFeedforward(i);
     MatrixRef fb = results_.getFeedback(i);
 
@@ -329,7 +329,7 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
   ALIGATOR_TRACY_ZONE_SCOPED;
   using gar::StageFactor;
 
-  const std::size_t nsteps = workspace_.nsteps;
+  const size_t nsteps = workspace_.nsteps;
   std::vector<VectorXs> &xs = workspace_.trial_xs;
   std::vector<VectorXs> &us = workspace_.trial_us;
   std::vector<VectorXs> &vs = workspace_.trial_vs;
@@ -352,7 +352,7 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
     ALIGATOR_RAISE_IF_NAN_NAME(xs[0], fmt::format("xs[{:d}]", 0));
   }
 
-  for (std::size_t t = 0; t < nsteps; t++) {
+  for (size_t t = 0; t < nsteps; t++) {
     const StageModel &stage = *problem.stages_[t];
     StageData &data = *prob_data.stage_data[t];
 
@@ -404,7 +404,7 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
   problem.term_cost_->evaluate(xs[nsteps], problem.unone_,
                                *prob_data.term_cost_data);
 
-  for (std::size_t k = 0; k < problem.term_cstrs_.size(); ++k) {
+  for (size_t k = 0; k < problem.term_cstrs_.size(); ++k) {
     const auto &func = problem.term_cstrs_.funcs[k];
     StageFunctionData &td = *prob_data.term_cstr_data[k];
     func->evaluate(xs[nsteps], problem.unone_, td);
@@ -495,7 +495,7 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
 
   results_.al_iter = 0;
   results_.num_iters = 0;
-  std::size_t &al_iter = results_.al_iter;
+  size_t &al_iter = results_.al_iter;
   while ((al_iter < max_al_iters) && (results_.num_iters < max_iters)) {
     if (!innerLoop(problem)) {
       al_iter++;
@@ -588,7 +588,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     return fpair;
   };
 
-  std::size_t &iter = results_.num_iters;
+  size_t &iter = results_.num_iters;
   results_.traj_cost_ = problem.evaluate(results_.xs, results_.us,
                                          workspace_.problem_data, num_threads_);
   computeMultipliers(problem, results_.lams, results_.vs);
@@ -712,14 +712,14 @@ template <typename Scalar>
 void SolverProxDDPTpl<Scalar>::computeInfeasibilities(const Problem &problem) {
   ALIGATOR_NOMALLOC_SCOPED;
   ALIGATOR_TRACY_ZONE_SCOPED;
-  const std::size_t nsteps = workspace_.nsteps;
+  const size_t nsteps = workspace_.nsteps;
 
   std::vector<VectorXs> &vs_plus = workspace_.vs_plus;
   std::vector<VectorXs> &vs_prev = workspace_.prev_vs;
   std::vector<VectorXs> &stage_infeas = workspace_.stage_infeasibilities;
 
   // compute infeasibility of all stage constraints [1] eqn. 53
-  for (std::size_t i = 0; i < nsteps; i++) {
+  for (size_t i = 0; i < nsteps; i++) {
     stage_infeas[i] = vs_plus[i] - vs_prev[i];
     stage_infeas[i] = mu() * stage_infeas[i];
 
@@ -743,11 +743,11 @@ void SolverProxDDPTpl<Scalar>::computeInfeasibilities(const Problem &problem) {
 template <typename Scalar> void SolverProxDDPTpl<Scalar>::computeCriterion() {
   ALIGATOR_NOMALLOC_SCOPED;
   ALIGATOR_TRACY_ZONE_SCOPED;
-  const std::size_t nsteps = workspace_.nsteps;
+  const size_t nsteps = workspace_.nsteps;
 
   workspace_.stage_inner_crits.setZero();
 
-  for (std::size_t i = 0; i < nsteps; i++) {
+  for (size_t i = 0; i < nsteps; i++) {
     // dual residual
     Scalar rx = math::infty_norm(workspace_.Lxs[i]);
     Scalar ru = math::infty_norm(workspace_.Lus[i]);
