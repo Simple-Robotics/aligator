@@ -217,7 +217,7 @@ bool ParallelRiccatiSolver<Scalar>::forward(
 template <typename Scalar>
 void ParallelRiccatiSolver<Scalar>::cycleAppend(const KnotType &knot) {
   rotate_vec_left(datas, 0, 1);
-  datas[problem_->horizon() - 1] =
+  datas[problem_->horizon() - 1ul] =
       StageFactor<Scalar>(knot.nx, knot.nu, knot.nc, knot.nx2, knot.nth);
   rotate_vec_left(condensedKktSystem.subdiagonal);
   rotate_vec_left(condensedKktSystem.diagonal);
@@ -226,14 +226,13 @@ void ParallelRiccatiSolver<Scalar>::cycleAppend(const KnotType &knot) {
   rotate_vec_left(condensedFacs.upFacs);
   rotate_vec_left(condensedFacs.ldlt);
 
-  auto [i0, i1] = get_work(problem_->horizon(), numThreads - 2, numThreads);
+  auto [i0, i1] = get_work(problem_->horizon(), numThreads - 2u, numThreads);
   uint dim0 = problem_->stages[i0].nx;
-  uint dim1 = problem_->stages[i1 - 1].nx;
-  condensedKktSystem.subdiagonal.back() = Eigen::MatrixXd::Zero(dim1, dim0);
-  condensedKktSystem.diagonal.back() = Eigen::MatrixXd::Zero(dim1, dim1);
-  condensedKktSystem.diagonal.back() = Eigen::MatrixXd::Zero(dim0, dim1);
-  condensedFacs.diagonalFacs.back() = Eigen::MatrixXd::Zero(dim1, dim1);
-  condensedFacs.upFacs.back() = Eigen::MatrixXd::Zero(dim1, dim1);
+  uint dim1 = problem_->stages[i1 - 1u].nx;
+  condensedKktSystem.subdiagonal.back().setZero(dim1, dim0);
+  condensedKktSystem.diagonal.back().setZero(dim1, dim1);
+  condensedFacs.diagonalFacs.back().setZero(dim1, dim1);
+  condensedFacs.upFacs.back().setZero(dim1, dim1);
   condensedFacs.ldlt.back() = Eigen::BunchKaufman<MatrixXs>(dim1);
 };
 
