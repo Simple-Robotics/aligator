@@ -362,8 +362,7 @@ protected:
   }
 };
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "solver-proxddp.txx"
+extern template struct SolverProxDDPTpl<context::Scalar>;
 #endif
+} // namespace aligator
