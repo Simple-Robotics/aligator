@@ -125,6 +125,9 @@ std::ostream &operator<<(std::ostream &oss, const WorkspaceTpl<Scalar> &self) {
   return oss << fmt::format("{}", self);
 }
 
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct WorkspaceTpl<context::Scalar>;
+#endif
 } // namespace aligator
 
 template <typename Scalar>
@@ -144,7 +147,3 @@ struct fmt::formatter<aligator::WorkspaceTpl<Scalar>> {
                           ws.nsteps, ws.dlams.size());
   }
 };
-
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./workspace.txx"
-#endif
