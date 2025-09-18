@@ -197,7 +197,7 @@ private:
   /// Callbacks
   CallbackMap callbacks_;
   /// Number of threads
-  std::size_t num_threads_ = 1;
+  size_t num_threads_ = 1;
   /// Dual proximal/ALM penalty parameter \f$\mu\f$
   /// This is the global parameter: scales may be applied for each stagewise
   /// constraint.
@@ -205,14 +205,14 @@ private:
 
 public:
   SolverProxDDPTpl(const Scalar tol = 1e-6, const Scalar mu_init = 0.01,
-                   const std::size_t max_iters = 1000,
+                   const size_t max_iters = 1000,
                    VerboseLevel verbose = VerboseLevel::QUIET,
                    StepAcceptanceStrategy sa_strategy =
                        StepAcceptanceStrategy::LINESEARCH_NONMONOTONE,
                    HessianApprox hess_approx = HessianApprox::GAUSS_NEWTON);
 
-  inline std::size_t getNumThreads() const { return num_threads_; }
-  void setNumThreads(const std::size_t num_threads);
+  inline size_t getNumThreads() const { return num_threads_; }
+  void setNumThreads(const size_t num_threads);
 
   Scalar getDualTolerance() const { return target_dual_tol_; }
   /// Manually set desired dual feasibility tolerance.
