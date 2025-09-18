@@ -280,7 +280,11 @@ public:
   void clearCallbacks() noexcept { callbacks_.clear(); }
 
   const CallbackMap &getCallbacks() const { return callbacks_; }
-  void removeCallback(const std::string &name) { callbacks_.erase(name); }
+
+  bool removeCallback(const std::string &name) {
+    return callbacks_.erase(name);
+  }
+
   auto getCallbackNames() const {
     std::vector<std::string> keys;
     for (const auto &item : callbacks_) {
