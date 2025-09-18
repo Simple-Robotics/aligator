@@ -90,8 +90,8 @@ public:
         impl_ = NonmonotoneLinesearch(options);
         break;
       default:
-        ALIGATOR_WARNING("LinesearchVariant::",
-                         "provided StepAcceptanceStrategy is invalid.");
+        ALIGATOR_RUNTIME_ERROR(
+            "Provided StepAcceptanceStrategy value is invalid.");
         break;
       }
     }
