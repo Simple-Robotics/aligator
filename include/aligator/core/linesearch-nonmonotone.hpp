@@ -9,14 +9,40 @@ namespace aligator {
 /// a moving average of function values.
 /// @details This is the algorithm from Zhang and Hager, SiOpt 2004.
 template <typename Scalar> struct NonmonotoneLinesearch : Linesearch<Scalar> {
-  using typename Linesearch<Scalar>::FunctionSample;
-  using typename Linesearch<Scalar>::Options;
-  using fun_t = std::function<Scalar(Scalar)>;
+  using Base = Linesearch<Scalar>;
+  using Base::options_;
+  using typename Base::FunctionSample;
+  using typename Base::Options;
 
-  Scalar run(fun_t f, Scalar phi0, Scalar dphi0, Scalar &a_opt);
-  NonmonotoneLinesearch(const Options &options);
+  explicit NonmonotoneLinesearch(const Options &options) noexcept
+      : Base(options)
+      , mov_avg(0.)
+      , avg_weight(0.) {}
 
-  void reset() {
+  Scalar run(const std::function<Scalar(Scalar)> &f, Scalar phi0, Scalar dphi0,
+             Scalar &a_opt) {
+    mov_avg = avg_eta * avg_weight * mov_avg + phi0;
+    avg_weight = avg_eta * avg_weight + 1;
+    mov_avg /= avg_weight;
+
+    while (a_opt > options_.alpha_min) {
+      try {
+        const Scalar phia = f(a_opt);
+        bool suff_decrease =
+            phia <= mov_avg + options_.armijo_c1 * a_opt * dphi0;
+        if (suff_decrease)
+          return phia;
+      } catch (const std::runtime_error &) {
+      }
+      a_opt *= beta_dec;
+    }
+
+    // then, a_opt <= options_.alpha_min
+    a_opt = std::max(a_opt, options_.alpha_min);
+    return f(a_opt);
+  }
+
+  void reset() noexcept {
     mov_avg = Scalar(0.);
     avg_weight = Scalar(0.);
   }
@@ -29,35 +55,5 @@ private:
   Scalar mov_avg;
   Scalar avg_weight;
 };
-
-template <typename Scalar>
-NonmonotoneLinesearch<Scalar>::NonmonotoneLinesearch(const Options &options)
-    : Linesearch<Scalar>(options)
-    , mov_avg(0.)
-    , avg_weight(0.) {}
-
-template <typename Scalar>
-Scalar NonmonotoneLinesearch<Scalar>::run(fun_t f, Scalar phi0, Scalar dphi0,
-                                          Scalar &a_opt) {
-  const Options &opts = this->options_;
-  mov_avg = avg_eta * avg_weight * mov_avg + phi0;
-  avg_weight = avg_eta * avg_weight + 1;
-  mov_avg /= avg_weight;
-
-  while (a_opt > opts.alpha_min) {
-    try {
-      const Scalar phia = f(a_opt);
-      bool suff_decrease = phia <= mov_avg + opts.armijo_c1 * a_opt * dphi0;
-      if (suff_decrease)
-        return phia;
-    } catch (const std::runtime_error &) {
-    }
-    a_opt *= beta_dec;
-  }
-
-  // then, a_opt <= opts.alpha_min
-  a_opt = std::max(a_opt, opts.alpha_min);
-  return f(a_opt);
-}
 
 } // namespace aligator
