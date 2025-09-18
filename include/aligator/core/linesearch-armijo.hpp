@@ -226,4 +226,7 @@ protected:
   std::vector<FunctionSample> samples; // interpolation samples
 };
 
+template <typename Scalar>
+ArmijoLinesearch(const LinesearchOptions<Scalar> &) -> ArmijoLinesearch<Scalar>;
+
 } // namespace aligator
