@@ -54,10 +54,9 @@ public:
       , fref_(fref)
       , force_size_(fref.size()) {
     if (model.nv != actuation.rows()) {
-      ALIGATOR_DOMAIN_ERROR(
-          fmt::format("actuation matrix should have number of rows = pinocchio "
-                      "model nv ({} and {}).",
-                      actuation.rows(), model.nv));
+      ALIGATOR_DOMAIN_ERROR("Actuation matrix should have number of rows = "
+                            "model.nv ({:d} and {:d}).",
+                            actuation.rows(), model.nv);
     }
     contact_id_ = -1;
     for (std::size_t i = 0; i < constraint_models.size(); i++) {

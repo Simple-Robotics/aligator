@@ -21,9 +21,9 @@ MultibodyConstraintFwdDynamicsTpl<Scalar>::MultibodyConstraintFwdDynamicsTpl(
   const int nv = state.getModel().nv;
   if (nv != actuation.rows()) {
     ALIGATOR_DOMAIN_ERROR(
-        fmt::format("actuation matrix should have number of rows = pinocchio "
-                    "model nv ({} and {}).",
-                    actuation.rows(), nv));
+        "Actuation matrix should have number of rows = pinocchio "
+        "model nv ({} and {}).",
+        actuation.rows(), nv);
   }
 }
 

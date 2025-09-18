@@ -41,9 +41,8 @@ public:
       , force_size_(force_size) {
     if (contact_map.size_ != nk_) {
       ALIGATOR_DOMAIN_ERROR(
-          fmt::format("Contact ids and nk should be the same: now "
-                      "({} and {}).",
-                      contact_map.size_, nk_));
+          "Contact ids and nk should be the same ({:d} and {:d}).",
+          contact_map.size_, nk_);
     }
   }
 

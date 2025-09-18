@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - gar : fix missing move assignment operator in `LqrProblemTpl`
+- Fix C++20 support. Fix `consteval` compilation errors related to fmt
 
 ### Changed
 

@@ -40,10 +40,13 @@ void Logger::finish(bool conv) {
   if (!active)
     return;
 
-  auto ts = fmt::fg(conv ? fmt::color::dodger_blue : fmt::color::red);
-  const char *msg = conv ? "Successfully converged." : "Convergence failure.";
-  fmt::print(ts, msg);
-  fmt::print("\n");
+  fmt::text_style ts =
+      fmt::fg(conv ? fmt::color::dodger_blue : fmt::color::red);
+  if (conv) {
+    fmt::print(ts, "Successfully converged\n");
+  } else {
+    fmt::print(ts, "Convergence failure\n");
+  }
 }
 
 void Logger::addColumn(std::string_view name, uint width,
@@ -55,12 +58,12 @@ void Logger::addColumn(std::string_view name, uint width,
 
 void Logger::addEntry(std::string_view name, double val) {
   const auto spec = m_colSpecs[name];
-  m_currentLine[name] = fmt::format(spec.second, val, spec.first);
+  m_currentLine[name] = fmt::format(fmt::runtime(spec.second), val, spec.first);
 }
 
 void Logger::addEntry(std::string_view name, size_t val) {
   const auto spec = m_colSpecs[name];
-  m_currentLine[name] = fmt::format(spec.second, val, spec.first);
+  m_currentLine[name] = fmt::format(fmt::runtime(spec.second), val, spec.first);
 }
 
 } // namespace aligator

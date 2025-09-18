@@ -18,9 +18,9 @@ template <typename _Scalar> struct ContactMapTpl {
       , contact_poses_(contact_poses) {
     if (contact_states.size() != contact_poses.size()) {
       ALIGATOR_DOMAIN_ERROR(
-          fmt::format("contact_states and contact_poses should have same size, "
-                      "currently ({} and {}).",
-                      contact_states.size(), contact_poses.size()));
+          "Contact_states and contact_poses should have same size, "
+          "currently ({:d} and {:d}).",
+          contact_states.size(), contact_poses.size());
     }
     size_ = contact_states_.size();
   }
