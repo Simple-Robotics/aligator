@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, 2023-2O25 INRIA
 #pragma once
 
 #include "riccati-base.hpp"
@@ -14,8 +14,7 @@ public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS_WITH_ROW_TYPES(Scalar);
   using Base = RiccatiSolverBase<Scalar>;
-  using StageFactorVec = std::vector<StageFactor<Scalar>>;
-  StageFactorVec datas;
+  std::vector<StageFactor<Scalar>> datas;
 
   using Kernel = ProximalRiccatiKernel<Scalar>;
   using StageFactorType = typename Kernel::StageFactorType;

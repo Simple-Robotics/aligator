@@ -9,29 +9,30 @@ namespace aligator {
 namespace gar {
 
 template <typename Scalar>
-StageFactor<Scalar>::StageFactor(uint nx, uint nu, uint nc, uint nx2, uint nth)
-    : Qhat(nx, nx)
-    , Rhat(nu, nu)
-    , Shat(nx, nu)
-    , qhat(nx)
-    , rhat(nu)
-    , AtV(nx, nx2)
-    , BtV(nu, nx2)
-    , Gxhat(nx, nth)
-    , Guhat(nu, nth)
+StageFactor<Scalar>::StageFactor(uint nx, uint nu, uint nc, uint nx2, uint nth,
+                                 const allocator_type &alloc)
+    : Qhat(nx, nx, alloc)
+    , Rhat(nu, nu, alloc)
+    , Shat(nx, nu, alloc)
+    , qhat(nx, alloc)
+    , rhat(nu, alloc)
+    , AtV(nx, nx2, alloc)
+    , BtV(nu, nx2, alloc)
+    , Gxhat(nx, nth, alloc)
+    , Guhat(nu, nth, alloc)
     , ff({nu, nc, nx2, nx2}, {1})
     , fb({nu, nc, nx2, nx2}, {nx})
     , fth({nu, nc, nx2, nx2}, {nth})
     , kktMat({nu, nc}, {nu, nc})
     , kktChol(nu + nc)
     , Efact(nx)
-    , yff_pre(nx2)
-    , A_pre(nx, nx)
-    , Yth_pre(nx2, nth)
-    , Ptilde(nx, nx)
-    , Einv(nx2, nx2)
-    , EinvP(nx2, nx2)
-    , schurMat(nx2, nx2)
+    , yff_pre(nx2, alloc)
+    , A_pre(nx, nx, alloc)
+    , Yth_pre(nx2, nth, alloc)
+    , Ptilde(nx, nx, alloc)
+    , Einv(nx2, nx2, alloc)
+    , EinvP(nx2, nx2, alloc)
+    , schurMat(nx2, nx2, alloc)
     , schurChol(nx2)
     , vm(nx, nth) {
   Qhat.setZero();
@@ -62,7 +63,7 @@ StageFactor<Scalar>::StageFactor(uint nx, uint nu, uint nc, uint nx2, uint nth)
 
 template <typename Scalar>
 bool ProximalRiccatiKernel<Scalar>::backwardImpl(
-    boost::span<const KnotType> stages, const Scalar mudyn, const Scalar mueq,
+    boost::span<const KnotType> stages, const Scalar mueq,
     boost::span<StageFactorType> datas) {
   ALIGATOR_TRACY_ZONE_SCOPED;
   // terminal node
@@ -77,7 +78,7 @@ bool ProximalRiccatiKernel<Scalar>::backwardImpl(
   uint t = N - 1;
   while (true) {
     value_t &vn = datas[t + 1].vm;
-    stageKernelSolve(stages[t], datas[t], vn, mudyn, mueq);
+    stageKernelSolve(stages[t], datas[t], vn, mueq);
 
     if (t == 0)
       break;
@@ -167,9 +168,9 @@ template <typename Scalar>
 void ProximalRiccatiKernel<Scalar>::stageKernelSolve(const KnotType &model,
                                                      StageFactorType &d,
                                                      value_t &vn,
-                                                     const Scalar mudyn,
                                                      const Scalar mueq) {
   ALIGATOR_TRACY_ZONE_SCOPED;
+  const Scalar mudyn = 0.;
   // step 1. compute decomposition of the E matrix
   d.Efact.compute(model.E);
   d.EinvP.setIdentity();
