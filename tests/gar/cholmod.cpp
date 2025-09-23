@@ -4,12 +4,12 @@
 
 #include <aligator/fmt-eigen.hpp>
 
-#include <boost/test/unit_test.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include "test_util.hpp"
 
 using namespace aligator;
 
-BOOST_AUTO_TEST_CASE(helper_assignment_dense) {
+TEST_CASE("helper_assignment_dense", "[gar]") {
   using SparseType = Eigen::SparseMatrix<double>;
   using Eigen::Index;
   constexpr Index n = 20;
@@ -21,13 +21,13 @@ BOOST_AUTO_TEST_CASE(helper_assignment_dense) {
   submat.setRandom();
   densemat.bottomRightCorner(10, 9) = submat;
   gar::helpers::sparseAssignDenseBlock(10, 11, submat, mat, false);
-  BOOST_CHECK(densemat.isApprox(mat.toDense()));
+  REQUIRE(densemat.isApprox(mat.toDense()));
   fmt::println("submat 1:\n{}", submat);
 
   submat.setRandom(5, 5);
   densemat.block(3, 4, 5, 5) = submat;
   gar::helpers::sparseAssignDenseBlock(3, 4, submat, mat, false);
-  BOOST_CHECK(densemat.isApprox(mat.toDense()));
+  REQUIRE(densemat.isApprox(mat.toDense()));
   fmt::println("submat 2:\n{}", submat);
 
   fmt::println("dense mat:\n{}", densemat);
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(helper_assignment_dense) {
   mat.setZero();
   densemat.block(3, 4, 5, 5) = submat;
   gar::helpers::sparseAssignDenseBlock(3, 4, submat, mat, true);
-  BOOST_CHECK(densemat.isApprox(mat.toDense()));
+  REQUIRE(densemat.isApprox(mat.toDense()));
 }
 
 problem_t short_problem(VectorXs x0, uint horz, uint nx, uint nu, uint nc) {
@@ -72,7 +72,7 @@ problem_t short_problem(VectorXs x0, uint horz, uint nx, uint nu, uint nc) {
   return out;
 }
 
-BOOST_AUTO_TEST_CASE(create_sparse_problem) {
+TEST_CASE("create_sparse_problem", "[gar]") {
   uint nx = 3, nu = 2, nc = 1;
   uint horz = 1;
   VectorXs x0;
@@ -89,13 +89,12 @@ BOOST_AUTO_TEST_CASE(create_sparse_problem) {
     fmt::println("kktMatrix (dense):\n{}", kktDense);
     fmt::println("kktRhs (sparse) {}", kktRhs.transpose());
     fmt::println("kktRhs (dense)  {}", rhsDense.transpose());
-    BOOST_CHECK(rhsDense.isApprox(kktRhs));
-    BOOST_CHECK(kktDense.isApprox(kktMat.toDense()));
+    REQUIRE(rhsDense.isApprox(kktRhs));
+    REQUIRE(kktDense.isApprox(kktMat.toDense()));
   };
 
   test_equal();
 
-  BOOST_TEST_MESSAGE("Test after modifying problem parameters.");
   // modify problem
   problem.g0.setRandom();
   problem.stages[0].Q = sampleWishartDistributedMatrix(nx, nx + 1);
@@ -106,7 +105,7 @@ BOOST_AUTO_TEST_CASE(create_sparse_problem) {
   test_equal();
 }
 
-BOOST_AUTO_TEST_CASE(cholmod_short_horz) {
+TEST_CASE("cholmod_short_horz", "[gar]") {
   const double mu = 1e-10;
   uint nx = 4, nu = 4;
   uint horz = 10;
@@ -122,23 +121,23 @@ BOOST_AUTO_TEST_CASE(cholmod_short_horz) {
   {
     // test here because backward(mudyn, mueq) sets right values of mu
     auto [denseKkt, rhsDense] = gar::lqrDenseMatrix(problem, mu, mu);
-    BOOST_CHECK(denseKkt.isApprox(solver.kktMatrix.toDense()));
-    BOOST_CHECK(rhsDense.isApprox(solver.kktRhs));
+    REQUIRE(denseKkt.isApprox(solver.kktMatrix.toDense()));
+    REQUIRE(rhsDense.isApprox(solver.kktRhs));
   }
   solver.forward(xs, us, vs, lbdas);
 
   const double sparse_residual = solver.computeSparseResidual();
   fmt::println("Sparse solver residual: {:.4e}", sparse_residual);
-  BOOST_CHECK_LE(sparse_residual, TOL);
+  REQUIRE(sparse_residual <= TOL);
 
-  BOOST_CHECK(ret);
+  REQUIRE(ret);
 
   auto [dynErr, cstErr, dualErr] = gar::lqrComputeKktError(
       problem, xs, us, vs, lbdas, mu, mu, std::nullopt, true);
   fmt::print("KKT errors: d = {:.4e} / dual = {:.4e}\n", dynErr, dualErr);
-  BOOST_CHECK_LE(dynErr, TOL);
-  BOOST_CHECK_LE(cstErr, TOL);
-  BOOST_CHECK_LE(dualErr, TOL);
+  REQUIRE(dynErr <= TOL);
+  REQUIRE(cstErr <= TOL);
+  REQUIRE(dualErr <= TOL);
 
   {
     gar::ProximalRiccatiSolver<double> solver2{problem};
@@ -146,9 +145,9 @@ BOOST_AUTO_TEST_CASE(cholmod_short_horz) {
     auto [xs2, us2, vs2, lbdas2] = gar::lqrInitializeSolution(problem);
     solver2.forward(xs2, us2, vs2, lbdas2);
 
-    auto [dynErr, cstErr, dualErr] = gar::lqrComputeKktError(
+    auto [dynErr2, cstErr2, dualErr2] = gar::lqrComputeKktError(
         problem, xs2, us2, vs2, lbdas2, mu, mu, std::nullopt, true);
-    fmt::print("KKT errors: d = {:.4e} / dual = {:.4e}\n", dynErr, dualErr);
+    fmt::print("KKT errors: d = {:.4e} / dual = {:.4e}\n", dynErr2, dualErr2);
 
     for (uint i = 0; i <= horz; i++) {
       fmt::println("xerr[{:d}] = {:.3e}", i, math::infty_norm(xs[i] - xs2[i]));

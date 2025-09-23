@@ -2,13 +2,12 @@
 /// @author Wilson Jallet
 #define EIGEN_DEFAULT_IO_FORMAT Eigen::IOFormat(4, 0, ",", "\n", "[", "]")
 
-#include <boost/test/unit_test.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include "./test_util.hpp"
 #include "aligator/gar/parallel-solver.hpp"
 #include "aligator/gar/proximal-riccati.hpp"
 #include "aligator/gar/utils.hpp"
-#include "aligator/threads.hpp"
 #include <Eigen/Cholesky>
 
 using namespace aligator::gar;
@@ -60,7 +59,7 @@ std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem, uint t0,
 
 /// Test the max-only formulation, where both legs are parameterized
 /// by the splitting variable (= costate at t0)
-BOOST_AUTO_TEST_CASE(parallel_manual) {
+TEST_CASE("parallel_manual", "[gar]") {
   uint nx = 2;
   uint nu = 2;
   VectorXs x0;
@@ -70,7 +69,6 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
 
   problem_t problem = generate_problem(x0, horizon, nx, nu);
 
-  BOOST_TEST_MESSAGE("Classical solve");
   ProximalRiccatiSolver<double> solver_full_horz(problem);
   solver_full_horz.backward(mu, mu);
 
@@ -78,19 +76,18 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
   auto &[xs, us, vs, lbdas] = solution_full_horz;
   {
     bool ret = solver_full_horz.forward(xs, us, vs, lbdas);
-    BOOST_CHECK(ret);
+    REQUIRE(ret);
     KktError err_full = computeKktError(problem, xs, us, vs, lbdas);
     fmt::println("KKT error (full horz.): {}", err_full);
-    BOOST_CHECK_LE(err_full.max, EPS);
+    REQUIRE(err_full.max <= EPS);
   }
 
-  BOOST_TEST_MESSAGE("Solve in parallel");
   uint t0 = horizon / 2;
   auto prs = splitProblemInTwo(problem, t0, mu);
   auto &pr1 = prs[0];
   auto &pr2 = prs[1];
 
-  BOOST_CHECK_EQUAL(pr1.horizon() + pr2.horizon() + 1, horizon);
+  REQUIRE(pr1.horizon() + pr2.horizon() + 1 == horizon);
 
   ProximalRiccatiSolver<double> subSolve1(pr1);
   ProximalRiccatiSolver<double> subSolve2(pr2);
@@ -104,13 +101,8 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
   VectorXs thtopt = VectorXs::Zero(nx);
   Eigen::LDLT<MatrixXs> hessChol(nx);
 
-  fmt::print("Available threads: {:d}\n",
-             aligator::omp::get_available_threads());
-
 #pragma omp parallel sections num_threads(2)
   {
-    fmt::print("Current threads: {:d}\n", aligator::omp::get_current_threads());
-
 #pragma omp section
     subSolve1.backward(mu, mu);
 #pragma omp section
@@ -133,8 +125,8 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
   KktError err1 = computeKktError(pr1, xs1, us1, vs1, lbdas1, thtopt);
   KktError err2 = computeKktError(pr2, xs2, us2, vs2, lbdas2, thtopt);
 
-  BOOST_CHECK_LE(err1.max, EPS);
-  BOOST_CHECK_LE(err2.max, EPS);
+  REQUIRE(err1.max <= EPS);
+  REQUIRE(err2.max <= EPS);
 
   uint t1 = horizon - t0;
 
@@ -152,8 +144,8 @@ BOOST_AUTO_TEST_CASE(parallel_manual) {
     }
   }
 
-  BOOST_CHECK_EQUAL(xs1.size(), t0);
-  BOOST_CHECK_EQUAL(xs2.size(), t1 + 1);
+  REQUIRE(xs1.size() == t0);
+  REQUIRE(xs2.size() == t1 + 1);
 
   VectorXs x_errs(horizon + 1);
   VectorXs u_errs(horizon);
@@ -196,8 +188,7 @@ void randomlyModifyProblem(problem_t &prob) {
   }
 }
 
-BOOST_AUTO_TEST_CASE(parallel_solver_class) {
-  BOOST_TEST_MESSAGE("parallel_solver_class");
+TEST_CASE("parallel_solver_class", "[gar]") {
   uint nx = 32;
   uint nu = 12;
   VectorXs x0;
@@ -208,14 +199,13 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
 
   problem_t problem = generate_problem(x0, horizon, nx, nu);
   const problem_t problemRef{problem};
-  BOOST_CHECK(problem.get_allocator() == problemRef.get_allocator());
+  REQUIRE(problem.get_allocator() == problemRef.get_allocator());
   const double mu = 1e-9;
 
   auto solutionRef = lqrInitializeSolution(problemRef);
   auto [xs_ref, us_ref, vs_ref, lbdas_ref] = solutionRef;
   auto [xs, us, vs, lbdas] = solutionRef;
 
-  BOOST_TEST_MESSAGE("Run Serial solver (reference solution)");
   ProximalRiccatiSolver<double> refSolver{problemRef};
 
   {
@@ -224,12 +214,11 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
     KktError err_ref =
         computeKktError(problemRef, xs_ref, us_ref, vs_ref, lbdas_ref, mu, mu);
     fmt::println("{}", err_ref);
-    BOOST_CHECK_LE(err_ref.max, tol);
+    REQUIRE(err_ref.max <= tol);
   }
 
-  BOOST_CHECK(problem.isApprox(problemRef));
+  REQUIRE(problem.isApprox(problemRef));
 
-  BOOST_TEST_MESSAGE("Run Parallel solver");
   ParallelRiccatiSolver<double> parSolver(problem, num_threads);
 
   {
@@ -237,7 +226,7 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
     parSolver.forward(xs, us, vs, lbdas);
     KktError err = computeKktError(problem, xs, us, vs, lbdas, mu, mu);
     fmt::println("{}", err);
-    BOOST_CHECK_LE(err.max, tol);
+    REQUIRE(err.max <= tol);
   }
 
   VectorXs xerrs = VectorXs::Zero(horizon + 1);
@@ -246,26 +235,19 @@ BOOST_AUTO_TEST_CASE(parallel_solver_class) {
     xerrs[(long)i] = infty_norm(xs[i] - xs_ref[i]);
     lerrs[(long)i] = infty_norm(lbdas[i] - lbdas_ref[i]);
   }
-  for (uint i = 0; i <= horizon; i++) {
-    fmt::print("ex[{:d}] = {}\n", i, xerrs[long(i)]);
-  }
-  for (uint i = 0; i <= horizon; i++) {
-    fmt::print("eλ[{:d}] = {}\n", i, lerrs[long(i)]);
-  }
   double xerr = infty_norm(xerrs);
   double lerr = infty_norm(lerrs);
   fmt::print("xerrs = {}\n", xerr);
   fmt::print("lerrs = {}\n", lerr);
-  BOOST_CHECK_LE(xerr, tol);
-  BOOST_CHECK_LE(lerr, tol);
+  REQUIRE(xerr <= tol);
+  REQUIRE(lerr <= tol);
 
-  BOOST_TEST_MESSAGE("Run Parallel solver again [tweak the problem]");
   for (size_t i = 0; i < 10; i++) {
     randomlyModifyProblem(problem);
     parSolver.backward(mu, mu);
     parSolver.forward(xs, us, vs, lbdas);
     KktError e = computeKktError(problem, xs, us, vs, lbdas, mu, mu, false);
     fmt::println("{}", e);
-    BOOST_CHECK_LE(e.max, tol);
+    REQUIRE(e.max <= tol);
   }
 }

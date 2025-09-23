@@ -1,5 +1,4 @@
-
-#include <boost/test/unit_test.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include "aligator/core/function-abstract.hpp"
 #include "aligator/modelling/state-error.hpp"
@@ -7,8 +6,6 @@
 
 #include "aligator/modelling/costs/quad-state-cost.hpp"
 #include "aligator/modelling/spaces/pinocchio-groups.hpp"
-
-BOOST_AUTO_TEST_SUITE(costs)
 
 using namespace aligator;
 using T = context::Scalar;
@@ -40,11 +37,11 @@ void fd_test(VectorXs x0, VectorXs u0, MatrixXs weights,
 
   auto grad_ref = J.transpose() * weights * fd->value_;
   auto hess_ref = J.transpose() * weights * J;
-  BOOST_CHECK(grad_ref.isApprox(data->grad_));
-  BOOST_CHECK(hess_ref.isApprox(data->hess_));
+  REQUIRE(grad_ref.isApprox(data->grad_));
+  REQUIRE(hess_ref.isApprox(data->hess_));
 }
 
-BOOST_AUTO_TEST_CASE(quad_state_se2) {
+TEST_CASE("quad_state_se2", "[costs]") {
   SE2 space;
 
   const Eigen::Index ndx = space.ndx();
@@ -56,7 +53,7 @@ BOOST_AUTO_TEST_CASE(quad_state_se2) {
 
   const StateError fun(space, nu, target);
 
-  BOOST_CHECK_EQUAL(fun.nr, ndx);
+  REQUIRE(fun.nr == ndx);
   Eigen::MatrixXd weights(ndx, ndx);
   weights.setIdentity();
   const QuadraticStateCostTpl<T> qres(space, nu, target, weights);
@@ -72,10 +69,10 @@ BOOST_AUTO_TEST_CASE(quad_state_se2) {
   }
 
   const StateError *fun_cast = qres.getResidual<StateError>();
-  BOOST_CHECK(fun_cast != nullptr);
+  REQUIRE(fun_cast != nullptr);
 }
 
-BOOST_AUTO_TEST_CASE(quad_state_highdim) {
+TEST_CASE("quad_state_highdim", "[costs]") {
   const Eigen::Index ndx = 56;
   const VectorSpace space(ndx);
   const Eigen::Index nu = 1UL;
@@ -87,7 +84,7 @@ BOOST_AUTO_TEST_CASE(quad_state_highdim) {
 
   const StateError fun(space, nu, target);
 
-  BOOST_CHECK_EQUAL(fun.nr, ndx);
+  REQUIRE(fun.nr == ndx);
   Eigen::MatrixXd weights(ndx, ndx);
   weights.setIdentity();
   const QuadraticStateCostTpl<T> qres(space, nu, target, weights);
@@ -103,15 +100,15 @@ BOOST_AUTO_TEST_CASE(quad_state_highdim) {
   }
 
   const StateError *fun_cast = qres.getResidual<StateError>();
-  BOOST_CHECK(fun_cast != nullptr);
+  REQUIRE(fun_cast != nullptr);
 
   {
     const auto *try_cast = qres.getResidual<ControlErrorResidualTpl<T>>();
-    BOOST_CHECK(try_cast == nullptr);
+    REQUIRE(try_cast == nullptr);
   }
 }
 
-BOOST_AUTO_TEST_CASE(cost_stack) {
+TEST_CASE("cost_stack", "[costs]") {
   using CostStack = CostStackTpl<T>;
   SE2 space;
   auto nu = space.ndx();
@@ -123,11 +120,9 @@ BOOST_AUTO_TEST_CASE(cost_stack) {
   {
     QuadraticResidualCost *pres =
         cost.getComponent<QuadraticResidualCost>("state");
-    BOOST_CHECK(pres != nullptr);
+    REQUIRE(pres != nullptr);
 
     StateError *perr = pres->getResidual<StateError>();
-    BOOST_CHECK(perr != nullptr);
+    REQUIRE(perr != nullptr);
   }
 }
-
-BOOST_AUTO_TEST_SUITE_END()

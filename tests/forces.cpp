@@ -5,15 +5,13 @@
 #include <pinocchio/algorithm/joint-configuration.hpp>
 #include "aligator/modelling/spaces/multibody.hpp"
 
-#include <boost/test/unit_test.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include <aligator/modelling/multibody/contact-force.hpp>
 #include <aligator/modelling/multibody/multibody-wrench-cone.hpp>
 #include <aligator/modelling/multibody/multibody-friction-cone.hpp>
 
-BOOST_AUTO_TEST_SUITE(forces)
-
-BOOST_AUTO_TEST_CASE(contact_forces_6d) {
+TEST_CASE("contact_forces_6d", "[forces]") {
   using namespace Eigen;
   using namespace pinocchio;
   using namespace aligator;
@@ -78,7 +76,7 @@ BOOST_AUTO_TEST_CASE(contact_forces_6d) {
       ContactForceResidual(space.ndx(), model, act_matrix, constraint_models,
                            prox_settings, fref, "RF_foot");
 
-  BOOST_CHECK(fun.getReference().isApprox(fref));
+  REQUIRE(fun.getReference().isApprox(fref));
   shared_ptr<StageFunctionData> sfdata = fun.createData();
   shared_ptr<ContactForceData> fdata =
       std::static_pointer_cast<ContactForceData>(sfdata);
@@ -123,11 +121,11 @@ BOOST_AUTO_TEST_CASE(contact_forces_6d) {
     u_eps[k] = 0.;
   }
   // std::cout << sqrt(alpha) << std::endl;
-  BOOST_CHECK(lambda_partial_dx_fd.isApprox(lambda_partial_dx, sqrt(alpha)));
-  BOOST_CHECK(lambda_partial_du_fd.isApprox(lambda_partial_du, sqrt(alpha)));
+  REQUIRE(lambda_partial_dx_fd.isApprox(lambda_partial_dx, sqrt(alpha)));
+  REQUIRE(lambda_partial_du_fd.isApprox(lambda_partial_du, sqrt(alpha)));
 }
 
-BOOST_AUTO_TEST_CASE(contact_forces_3d) {
+TEST_CASE("contact_forces_3d", "[forces]") {
   using namespace Eigen;
   using namespace pinocchio;
   using namespace aligator;
@@ -195,7 +193,7 @@ BOOST_AUTO_TEST_CASE(contact_forces_3d) {
   shared_ptr<ContactForceData> fdata =
       std::static_pointer_cast<ContactForceData>(sfdata);
 
-  BOOST_CHECK(fun.getReference().isApprox(fref));
+  REQUIRE(fun.getReference().isApprox(fref));
 
   forwardKinematics(model, fdata->pin_data_, q);
   updateFramePlacements(model, data);
@@ -237,11 +235,11 @@ BOOST_AUTO_TEST_CASE(contact_forces_3d) {
     u_eps[k] = 0.;
   }
   // std::cout << sqrt(alpha) << std::endl;
-  BOOST_CHECK(lambda_partial_dx_fd.isApprox(lambda_partial_dx, sqrt(alpha)));
-  BOOST_CHECK(lambda_partial_du_fd.isApprox(lambda_partial_du, sqrt(alpha)));
+  REQUIRE(lambda_partial_dx_fd.isApprox(lambda_partial_dx, sqrt(alpha)));
+  REQUIRE(lambda_partial_du_fd.isApprox(lambda_partial_du, sqrt(alpha)));
 }
 
-BOOST_AUTO_TEST_CASE(wrench_cone) {
+TEST_CASE("wrench_cone", "[forces]") {
   using namespace Eigen;
   using namespace pinocchio;
   using namespace aligator;
@@ -348,11 +346,11 @@ BOOST_AUTO_TEST_CASE(wrench_cone) {
     u_eps[k] = 0.;
   }
 
-  BOOST_CHECK(cone_partial_dx_fd.isApprox(cone_partial_dx, sqrt(alpha)));
-  BOOST_CHECK(cone_partial_du_fd.isApprox(cone_partial_du, sqrt(alpha)));
+  REQUIRE(cone_partial_dx_fd.isApprox(cone_partial_dx, sqrt(alpha)));
+  REQUIRE(cone_partial_du_fd.isApprox(cone_partial_du, sqrt(alpha)));
 }
 
-BOOST_AUTO_TEST_CASE(friction_cone) {
+TEST_CASE("friction_cone", "[forces]") {
   using namespace Eigen;
   using namespace pinocchio;
   using namespace aligator;
@@ -458,8 +456,6 @@ BOOST_AUTO_TEST_CASE(friction_cone) {
     u_eps[k] = 0.;
   }
 
-  BOOST_CHECK(cone_partial_dx_fd.isApprox(cone_partial_dx, sqrt(alpha)));
-  BOOST_CHECK(cone_partial_du_fd.isApprox(cone_partial_du, sqrt(alpha)));
+  REQUIRE(cone_partial_dx_fd.isApprox(cone_partial_dx, sqrt(alpha)));
+  REQUIRE(cone_partial_du_fd.isApprox(cone_partial_du, sqrt(alpha)));
 }
-
-BOOST_AUTO_TEST_SUITE_END()
