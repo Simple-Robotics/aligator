@@ -2,11 +2,10 @@
 #include "aligator/modelling/costs/quad-costs.hpp"
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
 
-#include "aligator/modelling/constraints.hpp"
 #include <aligator/fmt-eigen.hpp>
 
-#include <boost/test/unit_test.hpp>
-#include <boost/random.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <random>
 
 using namespace aligator;
 
@@ -20,13 +19,13 @@ using context::TrajOptProblem;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-static boost::random::mt19937_64 urng{42};
+static std::mt19937_64 urng{42};
 struct NormalGen {
   double operator()() const { return norm(urng); }
-  mutable boost::random::normal_distribution<double> norm;
+  mutable std::normal_distribution<double> norm;
 };
 
-BOOST_AUTO_TEST_CASE(lqr_proxddp) {
+TEST_CASE("lqr_proxddp") {
   const size_t nsteps = 100;
   const auto nx = 4;
   const auto nu = 2;
@@ -68,8 +67,8 @@ BOOST_AUTO_TEST_CASE(lqr_proxddp) {
 
   ddp.setup(problem);
   bool conv = ddp.run(problem);
-  BOOST_CHECK(conv);
-  BOOST_CHECK_EQUAL(ddp.results_.num_iters, 1);
+  REQUIRE(conv);
+  REQUIRE(ddp.results_.num_iters == 1);
 
-  std::cout << ddp.results_ << std::endl;
+  fmt::println("{}", ddp.results_);
 }
