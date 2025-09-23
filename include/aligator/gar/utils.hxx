@@ -23,11 +23,10 @@ void lqrCreateSparseMatrix(const LqrProblemTpl<Scalar> &problem,
   uint idx = 0;
   {
     uint nc0 = problem.nc0();
-    rhs.head(nc0) = problem.g0.to_const_map();
-    helpers::sparseAssignDenseBlock(0, nc0, problem.G0.to_const_map(), mat,
+    rhs.head(nc0) = problem.g0;
+    helpers::sparseAssignDenseBlock(0, nc0, problem.G0, mat, update);
+    helpers::sparseAssignDenseBlock(nc0, 0, problem.G0.transpose(), mat,
                                     update);
-    helpers::sparseAssignDenseBlock(
-        nc0, 0, problem.G0.to_const_map().transpose(), mat, update);
     for (Index kk = 0; kk < nc0; kk++) {
       if (update) {
         mat.coeffRef(kk, kk) = -mudyn;
@@ -120,8 +119,7 @@ std::array<Scalar, 3> lqrComputeKktError(
 
   // initial stage
   {
-    _dyn = problem.g0.to_const_map() + problem.G0.to_const_map() * xs[0] -
-           mudyn * lbdas[0];
+    _dyn = problem.g0 + problem.G0 * xs[0] - mudyn * lbdas[0];
     dNorm = math::infty_norm(_dyn);
     dynErr = std::max(dynErr, dNorm);
     if (verbose)
@@ -148,9 +146,9 @@ std::array<Scalar, 3> lqrComputeKktError(
     }
 
     if (t == 0) {
-      _gx += problem.G0.to_const_map().transpose() * lbdas[0];
+      _gx += problem.G0.transpose() * lbdas[0];
     } else {
-      auto Et = problem.stages[t - 1].E.to_const_map().transpose();
+      auto Et = problem.stages[t - 1].E.transpose();
       _gx += Et * lbdas[t];
     }
 
@@ -210,11 +208,11 @@ bool lqrDenseMatrix(const LqrProblemTpl<Scalar> &problem, Scalar mudyn,
   {
     const uint nc0 = problem.nc0();
     const uint nx0 = knots[0].nx;
-    mat.block(nc0, 0, nx0, nc0) = problem.G0.to_const_map().transpose();
-    mat.block(0, nc0, nc0, nx0) = problem.G0.to_const_map();
+    mat.block(nc0, 0, nx0, nc0) = problem.G0.transpose();
+    mat.block(0, nc0, nc0, nx0) = problem.G0;
     mat.topLeftCorner(nc0, nc0).diagonal().setConstant(-mudyn);
 
-    rhs.head(nc0) = problem.g0.to_const_map();
+    rhs.head(nc0) = problem.g0;
     idx += nc0;
   }
 

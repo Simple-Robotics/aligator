@@ -33,8 +33,8 @@ struct knot_fixture {
 
 BOOST_FIXTURE_TEST_CASE(move, knot_fixture) {
 
-  MatrixXd Q = knot.Q.to_map();
-  MatrixXd R = knot.R.to_map();
+  MatrixXd Q = knot.Q;
+  MatrixXd R = knot.R;
 
   knot_t knot_moved{std::move(knot)};
   BOOST_CHECK_EQUAL(knot_moved.nx, nx);
@@ -54,17 +54,17 @@ BOOST_FIXTURE_TEST_CASE(copy, knot_fixture) {
 
 BOOST_FIXTURE_TEST_CASE(swap, knot_fixture) {
   using std::swap;
-  MatrixXs Q0 = knot.Q.to_const_map();
+  MatrixXs Q0 = knot.Q;
   knot_t knot2 = knot;
   knot2.Q.setIdentity();
 
-  fmt::println("knot.Q:\n{}", knot.Q.to_map());
-  fmt::println("knot2.Q:\n{}", knot2.Q.to_map());
+  fmt::println("knot.Q:\n{}", knot.Q);
+  fmt::println("knot2.Q:\n{}", knot2.Q);
 
   swap(knot, knot2);
   BOOST_CHECK(knot2.Q.isApprox(Q0));
 
-  fmt::println("knot2.Q:\n{}", knot2.Q.to_map());
+  fmt::println("knot2.Q:\n{}", knot2.Q);
 }
 
 BOOST_FIXTURE_TEST_CASE(gen_knot, knot_fixture) {
@@ -118,17 +118,17 @@ BOOST_AUTO_TEST_CASE(basic) {
   }
 
   for (size_t i = 0; i < 10; i++) {
-    fmt::println("v [{:d}].q = {}", i, v[i].q.to_map().transpose());
+    fmt::println("v [{:d}].q = {}", i, v[i].q.transpose());
   }
 
   std::vector<knot_t> vm = std::move(v);
   for (size_t i = 0; i < 10; i++) {
-    fmt::println("v2[{:d}].q = {}", i, vm[i].q.to_map().transpose());
+    fmt::println("v2[{:d}].q = {}", i, vm[i].q.transpose());
   }
 
   std::vector<knot_t> vc{vm};
   for (size_t i = 0; i < 10; i++) {
-    fmt::println("vc[{:d}].q = {}", i, vc[i].q.to_map().transpose());
+    fmt::println("vc[{:d}].q = {}", i, vc[i].q.transpose());
     BOOST_CHECK_EQUAL(vm[i], vc[i]);
   }
 }
