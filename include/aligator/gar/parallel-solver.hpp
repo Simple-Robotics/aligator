@@ -26,8 +26,7 @@ public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS_WITH_ROW_TYPES(Scalar);
   using Base = RiccatiSolverBase<Scalar>;
-  using StageFactorVec = std::vector<StageFactor<Scalar>>;
-  StageFactorVec datas;
+  std::vector<StageFactor<Scalar>> datas;
 
   using Kernel = ProximalRiccatiKernel<Scalar>;
   using KnotType = LqrKnotTpl<Scalar>;
