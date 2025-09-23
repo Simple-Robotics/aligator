@@ -35,15 +35,16 @@ inline boost::span<const T> make_span_from_indices(const std::vector<T, A> &vec,
 template <typename _Scalar> struct StageFactor {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS_WITH_ROW_TYPES(Scalar);
+  using allocator_type = polymorphic_allocator;
 
   struct value_t {
-    MatrixXs Pmat; //< Riccati matrix
-    VectorXs pvec; //< Riccati bias
-    MatrixXs Vxx;  //< "cost-to-go" matrix
-    VectorXs vx;   //< "cost-to-go" gradient
-    MatrixXs Vxt;
-    MatrixXs Vtt;
-    VectorXs vt;
+    ArenaMatrix<MatrixXs> Pmat; //< Riccati matrix
+    ArenaMatrix<VectorXs> pvec; //< Riccati bias
+    ArenaMatrix<MatrixXs> Vxx;  //< "cost-to-go" matrix
+    ArenaMatrix<VectorXs> vx;   //< "cost-to-go" gradient
+    ArenaMatrix<MatrixXs> Vxt;
+    ArenaMatrix<MatrixXs> Vtt;
+    ArenaMatrix<VectorXs> vt;
 
     value_t(uint nx, uint nth)
         : Pmat(nx, nx)
@@ -59,19 +60,22 @@ template <typename _Scalar> struct StageFactor {
     }
   };
 
-  StageFactor(uint nx, uint nu, uint nc, uint nx2, uint nth);
+  StageFactor(uint nx, uint nu, uint nc, uint nx2, uint nth,
+              const allocator_type &alloc = {});
 
-  MatrixXs Qhat;
-  MatrixXs Rhat;
-  MatrixXs Shat;
-  VectorXs qhat;
-  VectorXs rhat;
-  RowMatrixXs AtV;
-  RowMatrixXs BtV;
+  allocator_type get_allocator() const { return Qhat.get_allocator(); }
+
+  ArenaMatrix<MatrixXs> Qhat;
+  ArenaMatrix<MatrixXs> Rhat;
+  ArenaMatrix<MatrixXs> Shat;
+  ArenaMatrix<VectorXs> qhat;
+  ArenaMatrix<VectorXs> rhat;
+  ArenaMatrix<RowMatrixXs> AtV;
+  ArenaMatrix<RowMatrixXs> BtV;
 
   // Parametric
-  MatrixXs Gxhat;
-  MatrixXs Guhat;
+  ArenaMatrix<MatrixXs> Gxhat;
+  ArenaMatrix<MatrixXs> Guhat;
 
   BlkMatrix<VectorXs, 4, 1> ff;        //< feedforward gains
   BlkMatrix<RowMatrixXs, 4, 1> fb;     //< feedback gains
@@ -79,13 +83,13 @@ template <typename _Scalar> struct StageFactor {
   BlkMatrix<MatrixXs, 2, 2> kktMat;    //< reduced KKT matrix buffer
   BunchKaufman<MatrixXs> kktChol;      //< reduced KKT LDLT solver
   Eigen::PartialPivLU<MatrixXs> Efact; //< LU decomp. of E matrix
-  VectorXs yff_pre;
-  MatrixXs A_pre;
-  MatrixXs Yth_pre;
-  MatrixXs Ptilde;                //< product Et.inv P * E.inv
-  MatrixXs Einv;                  //< product P * E.inv
-  MatrixXs EinvP;                 //< product P * E.inv
-  MatrixXs schurMat;              //< Dual-space Schur matrix
+  ArenaMatrix<VectorXs> yff_pre;
+  ArenaMatrix<MatrixXs> A_pre;
+  ArenaMatrix<MatrixXs> Yth_pre;
+  ArenaMatrix<MatrixXs> Ptilde;   //< product Et.inv P * E.inv
+  ArenaMatrix<MatrixXs> Einv;     //< product P * E.inv
+  ArenaMatrix<MatrixXs> EinvP;    //< product P * E.inv
+  ArenaMatrix<MatrixXs> schurMat; //< Dual-space Schur matrix
   Eigen::LLT<MatrixXs> schurChol; //< Cholesky decomposition of Schur matrix
   value_t vm;                     //< cost-to-go parameters
 };
@@ -113,7 +117,7 @@ template <typename Scalar> struct ProximalRiccatiKernel {
                             StageFactorType &d);
 
   static bool backwardImpl(boost::span<const KnotType> stages,
-                           const Scalar mudyn, const Scalar mueq,
+                           const Scalar mueq,
                            boost::span<StageFactorType> datas);
 
   /// Solve initial stage
@@ -121,8 +125,7 @@ template <typename Scalar> struct ProximalRiccatiKernel {
                              const std::optional<ConstVectorRef> &theta_);
 
   static void stageKernelSolve(const KnotType &model, StageFactorType &d,
-                               value_t &vn, const Scalar mudyn,
-                               const Scalar mueq);
+                               value_t &vn, const Scalar mueq);
 
   /// Forward sweep.
   static bool
