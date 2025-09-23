@@ -7,10 +7,10 @@
 #include "aligator/gar/lqr-problem.hpp"
 #include "aligator/tracy.hpp"
 
+#ifdef ALIGATOR_MULTITHREADING
 namespace aligator {
 namespace gar {
 
-#ifdef ALIGATOR_MULTITHREADING
 /// @brief A parallel-condensing LQ solver.
 /// @details This solver condenses the problem into a
 /// reduced saddle-point problem in a subset of the states and costates,
@@ -110,11 +110,10 @@ protected:
 template <typename Scalar>
 ParallelRiccatiSolver(LqrProblemTpl<Scalar> &, const uint)
     -> ParallelRiccatiSolver<Scalar>;
-#endif
-
-} // namespace gar
-} // namespace aligator
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/gar/parallel-solver.txx"
+extern template class ParallelRiccatiSolver<context::Scalar>;
+#endif
+} // namespace gar
+} // namespace aligator
 #endif
