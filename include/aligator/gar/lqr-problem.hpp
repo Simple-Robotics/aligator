@@ -4,7 +4,7 @@
 #include "aligator/context.hpp"
 #include "aligator/math.hpp"
 #include "aligator/gar/fwd.hpp"
-#include "aligator/memory/managed-matrix.hpp"
+#include "aligator/memory/arena-matrix.hpp"
 #include "aligator/tags.hpp"
 #include <fmt/format.h>
 
@@ -32,8 +32,8 @@ namespace gar {
 template <typename Scalar> struct LqrKnotTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   static constexpr int Alignment = Eigen::AlignedMax;
-  using MVec = ManagedMatrix<Scalar, Eigen::Dynamic, 1>;
-  using MMat = ManagedMatrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+  using MVec = ArenaMatrix<VectorXs>;
+  using MMat = ArenaMatrix<MatrixXs>;
   using allocator_type = polymorphic_allocator;
 
   uint nx;
@@ -92,26 +92,26 @@ template <typename Scalar> struct LqrKnotTpl {
         nx2,
         nth,
         //
-        Q.to_map(),
-        S.to_map(),
-        R.to_map(),
-        q.to_map(),
-        r.to_map(),
+        Q,
+        S,
+        R,
+        q,
+        r,
         //
-        A.to_map(),
-        B.to_map(),
-        E.to_map(),
-        f.to_map(),
+        A,
+        B,
+        E,
+        f,
         //
-        C.to_map(),
-        D.to_map(),
-        d.to_map(),
+        C,
+        D,
+        d,
         //
-        Gth.to_map(),
-        Gx.to_map(),
-        Gu.to_map(),
-        Gv.to_map(),
-        gamma.to_map(),
+        Gth,
+        Gx,
+        Gu,
+        Gv,
+        gamma,
     };
   }
 
@@ -124,26 +124,26 @@ template <typename Scalar> struct LqrKnotTpl {
         nx2,
         nth,
         //
-        Q.to_const_map(),
-        S.to_const_map(),
-        R.to_const_map(),
-        q.to_const_map(),
-        r.to_const_map(),
+        Q,
+        S,
+        R,
+        q,
+        r,
         //
-        A.to_const_map(),
-        B.to_const_map(),
-        E.to_const_map(),
-        f.to_const_map(),
+        A,
+        B,
+        E,
+        f,
         //
-        C.to_const_map(),
-        D.to_const_map(),
-        d.to_const_map(),
+        C,
+        D,
+        d,
         //
-        Gth.to_const_map(),
-        Gx.to_const_map(),
-        Gu.to_const_map(),
-        Gv.to_const_map(),
-        gamma.to_const_map(),
+        Gth,
+        Gx,
+        Gu,
+        Gv,
+        gamma,
     };
   }
 
@@ -201,8 +201,8 @@ template <typename Scalar> struct LqrProblemTpl {
   using KnotType = LqrKnotTpl<Scalar>;
   using KnotVector = std::pmr::vector<KnotType>;
   using allocator_type = polymorphic_allocator;
-  using MVec = ManagedMatrix<Scalar, Eigen::Dynamic, 1>;
-  using MMat = ManagedMatrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+  using MVec = ArenaMatrix<VectorXs>;
+  using MMat = ArenaMatrix<MatrixXs>;
   MMat G0;
   MVec g0;
   KnotVector stages;

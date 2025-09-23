@@ -43,8 +43,8 @@ public:
   static void setupKnot(KnotType &knot, const Scalar mudyn) {
     ALIGATOR_TRACY_ZONE_SCOPED;
     ALIGATOR_NOMALLOC_SCOPED;
-    knot.Gx = knot.A.to_const_map().transpose();
-    knot.Gu = knot.B.to_const_map().transpose();
+    knot.Gx = knot.A.transpose();
+    knot.Gu = knot.B.transpose();
     knot.Gth.setZero();
     knot.Gth.diagonal().setConstant(-mudyn);
     knot.gamma = knot.f;

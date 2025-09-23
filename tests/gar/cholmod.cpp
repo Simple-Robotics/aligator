@@ -64,7 +64,7 @@ problem_t short_problem(VectorXs x0, uint horz, uint nx, uint nu, uint nc) {
     knot.A.setConstant(0.2);
     knot.B.setConstant(0.3);
     knot.E.setIdentity();
-    knot.E.to_map() *= -1;
+    knot.E *= -1;
   }
   problem_t out{std::move(knots), nc0};
   out.G0.setConstant(-3.14);

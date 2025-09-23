@@ -67,8 +67,8 @@ bool RiccatiSolverDense<Scalar>::backward(const Scalar mudyn,
   }
 
   // initial stage
-  Eigen::Map G0 = problem_->G0.to_const_map();
-  Eigen::Map g0 = problem_->g0.to_const_map();
+  Eigen::Map G0 = problem_->G0;
+  Eigen::Map g0 = problem_->g0;
   kkt0.mat.setZero();
   kkt0.mat(0, 0) = Pxx[0];
   kkt0.mat(0, 1) = G0.transpose();

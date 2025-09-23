@@ -720,8 +720,7 @@ void SolverProxDDPTpl<Scalar>::computeInfeasibilities(const Problem &problem) {
 
   // compute infeasibility of all stage constraints [1] eqn. 53
   for (size_t i = 0; i < nsteps; i++) {
-    stage_infeas[i] = vs_plus[i] - vs_prev[i];
-    stage_infeas[i] = mu() * stage_infeas[i];
+    stage_infeas[i] = mu() * (vs_plus[i] - vs_prev[i]);
 
     workspace_.stage_cstr_violations[long(i)] =
         math::infty_norm(stage_infeas[i]);
@@ -729,8 +728,7 @@ void SolverProxDDPTpl<Scalar>::computeInfeasibilities(const Problem &problem) {
 
   // compute infeasibility of terminal constraints
   if (!problem.term_cstrs_.empty()) {
-    stage_infeas[nsteps] = vs_plus[nsteps] - vs_prev[nsteps];
-    stage_infeas[nsteps] = mu() * stage_infeas[nsteps];
+    stage_infeas[nsteps] = mu() * (vs_plus[nsteps] - vs_prev[nsteps]);
 
     workspace_.stage_cstr_violations[long(nsteps)] =
         math::infty_norm(stage_infeas[nsteps]);
@@ -815,9 +813,9 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
 
     // dynamics hessians
     if (hess_approx_ == HessianApprox::EXACT) {
-      knot.Q.to_map() += dd.Hxx_;
-      knot.S.to_map() += dd.Hxu_;
-      knot.R.to_map() += dd.Huu_;
+      knot.Q += dd.Hxx_;
+      knot.S += dd.Hxu_;
+      knot.R += dd.Huu_;
     }
 
     // TODO: handle the bloody constraints
@@ -840,7 +838,7 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
     knot.C = workspace_.cstr_proj_jacs[N].blockCol(0);
     knot.d = workspace_.Lvs[N];
     // correct right-hand side
-    knot.q.to_map() += workspace_.cstr_lx_corr[N];
+    knot.q += workspace_.cstr_lx_corr[N];
   }
 
   const StageFunctionData &id = *pd.init_data;
@@ -848,7 +846,7 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
   prob.g0 = id.value_;
 
   LqrKnotTpl<Scalar> &model = prob.stages[0];
-  model.Q.to_map() += id.Hxx_;
+  model.Q += id.Hxx_;
 }
 
 } // namespace aligator
