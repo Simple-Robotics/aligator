@@ -1,9 +1,3 @@
-set(_gar_test_deps ${PROJECT_NAME} gar_test_utils)
-
-function(add_gar_test name)
-  _add_test_prototype(${name} "gar-" "${_gar_test_deps}")
-endfunction(add_gar_test)
-
 set(TEST_NAMES riccati block-matrix knot)
 
 if(BUILD_WITH_OPENMP_SUPPORT)
@@ -14,5 +8,5 @@ if(BUILD_WITH_CHOLMOD_SUPPORT)
 endif()
 
 foreach(test ${TEST_NAMES})
-  add_gar_test(${test})
+  add_aligator_test(${test} gar_test_utils)
 endforeach()
