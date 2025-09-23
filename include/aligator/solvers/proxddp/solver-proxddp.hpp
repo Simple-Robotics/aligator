@@ -121,7 +121,7 @@ public:
   /// Solver tolerance \f$\epsilon > 0\f$. When sync_dual_tol is false, this
   /// will be the desired primal feasibility, where the dual feasibility
   /// tolerance is controlled by SolverProxDDPTpl::target_tol_dual.
-  Scalar target_tol_ = 1e-6;
+  Scalar target_tol_;
 
 private:
   /// Solver desired dual feasibility (by default, same as
@@ -132,7 +132,7 @@ private:
   bool sync_dual_tol_;
 
 public:
-  Scalar mu_init = 0.01; //< Initial AL parameter
+  Scalar mu_init; //< Initial AL parameter
 
   /// @name Inertia-correcting heuristic
   /// @{
@@ -159,7 +159,7 @@ public:
   /// Choice of linear solver
   LQSolverChoice linear_solver_choice = LQSolverChoice::SERIAL;
   /// Type of Hessian approximation. Default is Gauss-Newton.
-  HessianApprox hess_approx_ = HessianApprox::GAUSS_NEWTON;
+  HessianApprox hess_approx_;
   /// Linesearch options.
   LinesearchOptions<Scalar> ls_params;
   /// Type of Lagrange multiplier update.
