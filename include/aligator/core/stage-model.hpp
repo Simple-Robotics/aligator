@@ -145,9 +145,9 @@ template <typename Cstr, typename>
 void StageModelTpl<Scalar>::addConstraint(Cstr &&cstr) {
   const int c_nu = cstr.func->nu;
   if (c_nu != this->nu()) {
-    ALIGATOR_RUNTIME_ERROR(fmt::format(
+    ALIGATOR_RUNTIME_ERROR(
         "Function has the wrong dimension for u: got {:d}, expected {:d}", c_nu,
-        this->nu()));
+        this->nu());
   }
   constraints_.pushBack(std::forward<Cstr>(cstr));
 }
