@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, 2023-2025 INRIA
 #pragma once
 
 #include "./proximal-riccati.hpp"
@@ -44,13 +44,13 @@ bool ProximalRiccatiSolver<Scalar>::backward(const Scalar mudyn,
   {
     ALIGATOR_TRACY_ZONE_NAMED_N(Zone2, "factor_initial", true);
     kkt0.mat(0, 0) = vinit.Vxx;
-    kkt0.mat(1, 0) = problem_->G0.to_map();
-    kkt0.mat(0, 1) = problem_->G0.to_map().transpose();
+    kkt0.mat(1, 0) = problem_->G0;
+    kkt0.mat(0, 1) = problem_->G0.transpose();
     kkt0.mat(1, 1).diagonal().setConstant(-mudyn);
     kkt0.chol.compute(kkt0.mat.matrix());
 
     kkt0.ff.blockSegment(0) = -vinit.vx;
-    kkt0.ff.blockSegment(1) = -problem_->g0.to_map();
+    kkt0.ff.blockSegment(1) = -problem_->g0;
     kkt0.chol.solveInPlace(kkt0.ff.matrix());
     kkt0.fth.blockRow(0) = -vinit.Vxt;
     kkt0.fth.blockRow(1).setZero();
@@ -80,7 +80,7 @@ bool ProximalRiccatiSolver<Scalar>::forward(
 template <typename Scalar>
 void ProximalRiccatiSolver<Scalar>::cycleAppend(const KnotType &knot) {
   rotate_vec_left(datas, 0, 1);
-  uint N = (uint)(problem_->horizon() - 1);
+  uint N = uint(problem_->horizon() - 1);
   datas[N] = StageFactor<Scalar>(knot.nx, knot.nu, knot.nc, knot.nx2, knot.nth);
   thGrad.setZero();
   thHess.setZero();

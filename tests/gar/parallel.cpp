@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, 2023-2025 INRIA
 /// @author Wilson Jallet
 #define EIGEN_DEFAULT_IO_FORMAT Eigen::IOFormat(4, 0, ",", "\n", "[", "]")
 
@@ -39,8 +39,8 @@ std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem, uint t0,
   p1.addParameterization(nx_t0);
   {
     knot_t &p1_last = p1.stages.back();
-    p1_last.Gx = kn1_last.A.to_map().transpose();
-    p1_last.Gu = kn1_last.B.to_map().transpose();
+    p1_last.Gx = kn1_last.A.transpose();
+    p1_last.Gu = kn1_last.B.transpose();
     p1_last.gamma = kn1_last.f;
     p1_last.Gth.diagonal().setConstant(-mu);
     kn1_last.A.setZero();
@@ -52,7 +52,7 @@ std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem, uint t0,
   p2.addParameterization(nx_t0);
   {
     knot_t &p2_first = p2.stages[0];
-    p2_first.Gx = kn1_last.E.to_map().transpose();
+    p2_first.Gx = kn1_last.E.transpose();
   }
 
   return {std::move(p1), std::move(p2)};

@@ -72,7 +72,7 @@ void ParallelRiccatiSolver<Scalar>::assembleCondensedSystem(
 
   diagonal[0].setZero();
   diagonal[0].diagonal().setConstant(-mudyn);
-  superdiagonal[0] = problem_->G0.to_map();
+  superdiagonal[0] = problem_->G0;
 
   diagonal[1] = datas[0].vm.Pmat;
   superdiagonal[1] = datas[0].vm.Vxt;
@@ -85,7 +85,7 @@ void ParallelRiccatiSolver<Scalar>::assembleCondensedSystem(
     diagonal[2 * ip1] = datas[i0].vm.Vtt;
 
     diagonal[2 * ip1 + 1] = datas[i1].vm.Pmat;
-    superdiagonal[2 * ip1] = stages[i1 - 1].E.to_map();
+    superdiagonal[2 * ip1] = stages[i1 - 1].E;
 
     if (ip1 + 1 < numThreads) {
       superdiagonal[2 * ip1 + 1] = datas[i1].vm.Vxt;
@@ -97,7 +97,7 @@ void ParallelRiccatiSolver<Scalar>::assembleCondensedSystem(
     subdiagonal[i] = superdiagonal[i].transpose();
   }
 
-  condensedKktRhs[0] = -problem_->g0.to_map();
+  condensedKktRhs[0] = -problem_->g0;
   condensedKktRhs[1] = -datas[0].vm.pvec;
 
   for (uint i = 0; i < numThreads - 1; i++) {
