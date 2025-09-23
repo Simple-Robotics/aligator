@@ -14,7 +14,8 @@
 #include "aligator/core/vector-space.hpp"
 #endif
 #include "aligator/third-party/polymorphic_cxx14.h"
-#include <boost/test/unit_test.hpp>
+// #include <boost/test/unit_test.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include <fmt/format.h>
 #include <fmt/ostream.h>
@@ -93,23 +94,21 @@ struct MyFixture {
   }
 };
 
-BOOST_AUTO_TEST_SUITE(node)
-
 using namespace aligator;
 
-BOOST_AUTO_TEST_CASE(test_problem) {
+TEST_CASE("test_problem", "[node]") {
   MyFixture f;
 
   auto nu = f.nu;
   auto &space = f.space;
   const auto &stage = *f.problem.stages_[0];
-  BOOST_CHECK_EQUAL(stage.numPrimal(), space.ndx() + nu);
-  BOOST_CHECK_EQUAL(stage.numDual(), space.ndx());
+  REQUIRE(stage.numPrimal() == space.ndx() + nu);
+  REQUIRE(stage.numDual() == space.ndx());
 
   auto *p_dyn = stage.getDynamics<MyModel>();
-  BOOST_CHECK(p_dyn);
+  REQUIRE(p_dyn != nullptr);
   auto *p_cost = stage.getCost<MyCost>();
-  BOOST_CHECK(p_cost);
+  REQUIRE(p_cost != nullptr);
 
   Eigen::VectorXd u0(nu);
   u0.setZero();
@@ -119,21 +118,21 @@ BOOST_AUTO_TEST_CASE(test_problem) {
 
   auto xs = rollout(f.dyn_model, x0, us);
   for (std::size_t i = 0; i < xs.size(); i++) {
-    BOOST_CHECK(x0.isApprox(xs[i]));
+    REQUIRE(x0.isApprox(xs[i]));
   }
 
   fmt::print("{}\n", stage);
 
   auto stage_data = stage.createData();
   stage.evaluate(x0, u0, x0, *stage_data);
-  BOOST_CHECK_EQUAL(stage_data->cost_data->value_, 0.);
+  REQUIRE(stage_data->cost_data->value_ == 0.);
 
   TrajOptDataTpl<double> prob_data(f.problem);
   f.problem.evaluate({x0, xs[1], xs[2]}, {u0, u0}, prob_data);
   f.problem.computeDerivatives({x0, xs[1], xs[2]}, {u0, u0}, prob_data);
 }
 
-BOOST_AUTO_TEST_CASE(test_workspace) {
+TEST_CASE("test_workspace", "[node]") {
   using Workspace = WorkspaceTpl<double>;
   MyFixture f;
   auto nu = f.nu;
@@ -141,46 +140,46 @@ BOOST_AUTO_TEST_CASE(test_workspace) {
   Workspace workspace(f.problem);
   fmt::print("{}", workspace);
   const std::size_t nsteps = f.problem.numSteps();
-  BOOST_CHECK_EQUAL(workspace.nsteps, nsteps);
-  BOOST_CHECK_EQUAL(workspace.trial_xs.size(), nsteps + 1);
+  REQUIRE(workspace.nsteps == nsteps);
+  REQUIRE(workspace.trial_xs.size() == nsteps + 1);
 
   for (std::size_t i = 0; i < nsteps; i++) {
     auto &x = workspace.trial_xs[i];
     auto &u = workspace.trial_us[i];
-    BOOST_CHECK_EQUAL(x.size(), space.nx());
-    BOOST_CHECK_EQUAL(u.size(), nu);
+    REQUIRE(x.size() == space.nx());
+    REQUIRE(u.size() == nu);
   }
   auto &x = workspace.trial_xs[nsteps];
-  BOOST_CHECK_EQUAL(x.size(), space.nx());
+  REQUIRE(x.size() == space.nx());
 
   ResultsTpl<double> results(f.problem);
 }
 
-BOOST_AUTO_TEST_CASE(test_copy) {
+TEST_CASE("test_copy", "[node]") {
   MyFixture f;
 
   auto copy = f.problem;
-  BOOST_CHECK_EQUAL(copy.getInitState(), f.problem.getInitState());
+  REQUIRE(copy.getInitState() == f.problem.getInitState());
 
   Eigen::VectorXd state = f.problem.getInitState();
 
   state[0] = 0.;
   f.problem.setInitState(state);
-  BOOST_CHECK_EQUAL(f.problem.getInitState()[0], 0.);
+  REQUIRE(f.problem.getInitState()[0] == 0.);
 
   state[0] = 1.;
-  BOOST_CHECK_EQUAL(f.problem.getInitState()[0], 0.);
+  REQUIRE(f.problem.getInitState()[0] == 0.);
 
   copy.setInitState(state);
-  BOOST_CHECK_EQUAL(copy.getInitState()[0], 1.);
-  BOOST_CHECK_EQUAL(f.problem.getInitState()[0], 0.);
+  REQUIRE(copy.getInitState()[0] == 1.);
+  REQUIRE(f.problem.getInitState()[0] == 0.);
 }
 
-BOOST_AUTO_TEST_CASE(test_default_init) {
+TEST_CASE("test_default_init", "[node]") {
   MyFixture f;
 
   Eigen::VectorXd state = f.problem.getInitState();
-  BOOST_CHECK_EQUAL(state, f.space.neutral());
+  REQUIRE(state == f.space.neutral());
 
   state[0] += 1.;
   f.problem.setInitState(state);
@@ -194,23 +193,23 @@ BOOST_AUTO_TEST_CASE(test_default_init) {
     const auto &trial_xs = ddp.workspace_.trial_xs;
     const auto &prev_xs = ddp.workspace_.prev_xs;
 
-    BOOST_REQUIRE_EQUAL(xs.size(), nsteps + 1);
-    BOOST_REQUIRE_EQUAL(trial_xs.size(), nsteps + 1);
-    BOOST_REQUIRE_EQUAL(prev_xs.size(), nsteps + 1);
+    REQUIRE(xs.size() == nsteps + 1);
+    REQUIRE(trial_xs.size() == nsteps + 1);
+    REQUIRE(prev_xs.size() == nsteps + 1);
 
     const auto expected = (i == 0) ? state : f.space.neutral();
 
-    BOOST_CHECK_EQUAL(xs[i], expected);
-    BOOST_CHECK_EQUAL(trial_xs[i], expected);
-    BOOST_CHECK_EQUAL(prev_xs[i], expected);
+    REQUIRE(xs[i] == expected);
+    REQUIRE(trial_xs[i] == expected);
+    REQUIRE(prev_xs[i] == expected);
   }
 }
 
-BOOST_AUTO_TEST_CASE(test_constant_init) {
+TEST_CASE("test_constant_init", "[node]") {
   MyFixture f;
 
   Eigen::VectorXd state = f.problem.getInitState();
-  BOOST_CHECK_EQUAL(state, f.space.neutral());
+  REQUIRE(state == f.space.neutral());
 
   state[0] += 1.;
   f.problem.setInitState(state);
@@ -228,14 +227,12 @@ BOOST_AUTO_TEST_CASE(test_constant_init) {
     const auto &trial_xs = ddp.workspace_.trial_xs;
     const auto &prev_xs = ddp.workspace_.prev_xs;
 
-    BOOST_REQUIRE_EQUAL(xs.size(), nsteps + 1);
-    BOOST_REQUIRE_EQUAL(trial_xs.size(), nsteps + 1);
-    BOOST_REQUIRE_EQUAL(prev_xs.size(), nsteps + 1);
+    REQUIRE(xs.size() == nsteps + 1);
+    REQUIRE(trial_xs.size() == nsteps + 1);
+    REQUIRE(prev_xs.size() == nsteps + 1);
 
-    BOOST_CHECK_EQUAL(xs[i], state);
-    BOOST_CHECK_EQUAL(trial_xs[i], state);
-    BOOST_CHECK_EQUAL(prev_xs[i], state);
+    REQUIRE(xs[i] == state);
+    REQUIRE(trial_xs[i] == state);
+    REQUIRE(prev_xs[i] == state);
   }
 }
-
-BOOST_AUTO_TEST_SUITE_END()

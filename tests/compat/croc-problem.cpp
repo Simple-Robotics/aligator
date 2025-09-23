@@ -10,16 +10,14 @@
 
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
 
-#include <boost/test/unit_test.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 
-BOOST_AUTO_TEST_SUITE(crocoddyl_problem)
-
 namespace pcroc = aligator::compat::croc;
 
-BOOST_AUTO_TEST_CASE(lqr) {
+TEST_CASE("lqr", "[croc-compat]") {
   using crocoddyl::ActionModelLQR;
   using Eigen::MatrixXd;
   using Eigen::VectorXd;
@@ -72,7 +70,7 @@ BOOST_AUTO_TEST_CASE(lqr) {
   fmt::print("croc #iters: {:d}\n", cr_iters);
   fmt::print("croc cost: {:.3e}\n", cr_cost);
 
-  BOOST_TEST_CHECK(cr_converged);
+  REQUIRE(cr_converged);
 
   // convert to aligator problem
 
@@ -94,18 +92,16 @@ BOOST_AUTO_TEST_CASE(lqr) {
   const auto &xs = results.xs;
   const auto &us = results.us;
 
-  BOOST_TEST_CHECK(conv2);
+  REQUIRE(conv2);
 
   for (std::size_t i = 0; i <= nsteps; i++) {
     auto e = aligator::math::infty_norm(xs[i] - croc_xs[i]);
     fmt::print("errx[{:>2d}] = {:.3e}\n", i, e);
-    BOOST_CHECK_LE(e, 1e-6);
+    REQUIRE(e <= 1e-6);
   }
   for (std::size_t i = 0; i < nsteps; i++) {
     auto e = aligator::math::infty_norm(us[i] - croc_us[i]);
     fmt::print("erru[{:>2d}] = {:.3e}\n", i, e);
-    BOOST_CHECK_LE(e, 1e-6);
+    REQUIRE(e <= 1e-6);
   }
 }
-
-BOOST_AUTO_TEST_SUITE_END()

@@ -11,7 +11,9 @@
 #include <pinocchio/algorithm/joint-configuration.hpp>
 #include <pinocchio/algorithm/frames.hpp>
 #include <pinocchio/algorithm/compute-all-terms.hpp>
-#include <boost/test/unit_test.hpp>
+
+#include <cmath>
+#include <catch2/catch_test_macros.hpp>
 
 using namespace aligator;
 using context::SolverProxDDP;
@@ -133,7 +135,7 @@ auto makeStage(double t, double dt, pinocchio::Model const &model) {
 
 } // namespace
 
-BOOST_AUTO_TEST_CASE(test_simple_mpc) {
+TEST_CASE("test_simple_mpc", "[mpc]") {
 
   const auto model = SimpleModel();
   auto data = pinocchio::Data(model);
@@ -177,7 +179,7 @@ BOOST_AUTO_TEST_CASE(test_simple_mpc) {
   ddp.setup(problem);
 
   bool converged = ddp.run(problem);
-  BOOST_CHECK(converged);
+  REQUIRE(converged);
 
   for (auto t = 0.; t < 5.; t += dt) {
     const auto t0 = std::chrono::steady_clock::now();
@@ -196,13 +198,13 @@ BOOST_AUTO_TEST_CASE(test_simple_mpc) {
     problem.setInitState(x);
 
     bool converged = ddp.run(problem);
-    BOOST_CHECK(converged);
+    REQUIRE(converged);
     const auto [expected, support] =
         height(std::max(0., t - (nsteps - 1) * dt));
     const auto &actual = data.oMf[model.getFrameId("link")];
-    BOOST_CHECK((actual.inverse() * expected).isIdentity(2e-3));
-    BOOST_CHECK_SMALL(actual.translation()[2] - expected.translation()[2],
-                      2e-3);
+    REQUIRE((actual.inverse() * expected).isIdentity(2e-3));
+    REQUIRE(std::abs(actual.translation()[2] - expected.translation()[2]) <
+            2e-3);
 
     const auto tf = std::chrono::steady_clock::now();
     const auto time = std::chrono::duration<double, std::milli>(tf - t0);
