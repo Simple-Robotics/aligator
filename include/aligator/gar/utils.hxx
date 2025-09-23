@@ -38,7 +38,7 @@ void lqrCreateSparseMatrix(const LqrProblemTpl<Scalar> &problem,
   }
 
   for (size_t t = 0; t <= N; t++) {
-    auto model = knots[t].to_const_view();
+    const LqrKnotTpl<Scalar> &model = knots[t];
     const uint n = model.nx + model.nu + model.nc;
     // get block for current variables
     auto rhsblk = rhs.segment(idx, n);
@@ -126,7 +126,7 @@ std::array<Scalar, 3> lqrComputeKktError(
       fmt::print("d0 = {:.3e} \n", dNorm);
   }
   for (uint t = 0; t <= N; t++) {
-    auto knot = problem.stages[t].to_const_view();
+    const LqrKnotTpl<Scalar> &knot = problem.stages[t];
     auto _Str = knot.S.transpose();
 
     if (verbose)
@@ -217,7 +217,7 @@ bool lqrDenseMatrix(const LqrProblemTpl<Scalar> &problem, Scalar mudyn,
   }
 
   for (size_t t = 0; t <= N; t++) {
-    const auto model = knots[t].to_const_view();
+    const auto &model = knots[t];
     // get block for current variables
     const uint n = model.nx + model.nu + model.nc;
     auto block = mat.block(idx, idx, n, n);
