@@ -1,33 +1,10 @@
 /// @copyright Copyright (C) 2024-2025 INRIA
 #pragma once
 
+#include "aligator/math.hpp"
 #include "aligator/memory/allocator.hpp"
-#include <Eigen/Core>
 
 namespace aligator {
-
-/// This type class recognises whether
-/// @tparam Base Base template (CRTP) class
-/// @tparam Derived Derived class, does not need to derive from `Base<Derived>`
-/// for this type trait to evaluate to true.
-template <template <class> class Base, typename Derived> struct is_tpl_base_of {
-  static constexpr std::false_type f(const void *);
-  template <typename OtherDerived>
-  static constexpr std::true_type f(const Base<OtherDerived> *);
-  static constexpr bool value =
-      decltype(f(std::declval<std::remove_reference_t<Derived> *>()))::value;
-};
-
-template <template <class> class Base, typename Derived>
-inline constexpr bool is_tpl_base_of_v = is_tpl_base_of<Base, Derived>::value;
-
-template <typename T>
-struct is_eigen : std::bool_constant<is_tpl_base_of_v<Eigen::EigenBase, T>> {};
-
-template <typename T> constexpr bool is_eigen_v = is_eigen<T>::value;
-
-template <typename T>
-concept EigenMatrix = is_eigen_v<std::decay_t<T>>;
 
 /// A replacement for `Eigen::Matrix` but compatible with C++17 polymorphic
 /// allocators (through the aligator::polymorphic_allocator subclass which
