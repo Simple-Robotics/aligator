@@ -66,7 +66,6 @@ set(
   costs
   integrators
   lqr
-  managed-matrix
   problem
   manifolds
   solver-storage
