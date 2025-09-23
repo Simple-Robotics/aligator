@@ -15,8 +15,8 @@ endmacro()
 file(GLOB TEST_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
 message(STATUS "Test headers: ${TEST_HEADERS}")
 
-function(_add_test_prototype name prefix dependencies)
-  set(test_name "${PROJECT_NAME}-test-cpp-${prefix}${name}")
+function(add_aligator_test name dependencies)
+  set(test_name "${PROJECT_NAME}-test-cpp-${name}")
   set(test_file ${name}.cpp)
   message(STATUS "Adding cpp test: ${test_name} (${test_file})")
 
@@ -34,12 +34,10 @@ function(_add_test_prototype name prefix dependencies)
   ADD_TEST_CFLAGS(${test_name} "-DBOOST_TEST_DYN_LINK")
   ADD_TEST_CFLAGS(${test_name} "-DBOOST_TEST_MODULE=${MODULE_NAME}")
 
-  target_link_libraries(${test_name} PUBLIC ${dependencies})
-  target_link_libraries(${test_name} PRIVATE Boost::unit_test_framework)
-endfunction()
-
-function(add_aligator_test name)
-  _add_test_prototype(${name} "" ${PROJECT_NAME})
+  target_link_libraries(
+    ${test_name}
+    PRIVATE ${PROJECT_NAME} Boost::unit_test_framework ${dependencies}
+  )
 endfunction()
 
 set(
@@ -67,7 +65,7 @@ endif()
 
 if(NOT BUILD_STANDALONE_PYTHON_INTERFACE)
   foreach(test_name ${TEST_NAMES})
-    add_aligator_test(${test_name})
+    add_aligator_test(${test_name} "")
   endforeach()
   add_subdirectory(gar)
 
