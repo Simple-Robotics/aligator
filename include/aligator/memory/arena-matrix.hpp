@@ -34,7 +34,14 @@ public:
   using allocator_type = polymorphic_allocator;
   using Base::data;
 
-  explicit ArenaMatrix(const allocator_type &allocator = {})
+  ArenaMatrix()
+      : Base::Map(nullptr,
+                  RowsAtCompileTime == Eigen::Dynamic ? 0 : RowsAtCompileTime,
+                  ColsAtCompileTime == Eigen::Dynamic ? 0 : ColsAtCompileTime)
+      , m_allocator()
+      , m_alloc_size(0l) {}
+
+  explicit ArenaMatrix(const allocator_type &allocator)
       : Base::Map(nullptr,
                   RowsAtCompileTime == Eigen::Dynamic ? 0 : RowsAtCompileTime,
                   ColsAtCompileTime == Eigen::Dynamic ? 0 : ColsAtCompileTime)
@@ -79,6 +86,22 @@ public:
     other.m_alloc_size = 0;
   }
 
+  /// Extended move constructor.
+  ArenaMatrix(ArenaMatrix &&other, const allocator_type &alloc)
+      : ArenaMatrix(alloc) {
+    if (m_allocator == other.m_allocator) {
+      // do not reallocate
+      new (this) Base(other.data(), get_rows(other), get_cols(other));
+      m_alloc_size = other.m_alloc_size;
+    } else {
+      // allocate
+      this->resize(get_rows(other), get_cols(other));
+      Base::operator=(other);
+    }
+    other.m_data = nullptr;
+    other.m_alloc_size = 0;
+  }
+
   template <EigenMatrix D> ArenaMatrix &operator=(const D &other) {
     this->resize(get_rows(other), get_cols(other));
     Base::operator=(other);
@@ -100,17 +123,15 @@ public:
     if (this == &other)
       return *this;
 
-    Scalar *p;
     if (m_allocator == other.m_allocator) {
       this->deallocate();
-      p = other.data();
       m_alloc_size = other.m_alloc_size;
-      other.m_data = nullptr;
-      new (this) Base(p, get_rows(other), get_cols(other));
+      new (this) Base(other.data(), get_rows(other), get_cols(other));
     } else {
       this->resize(get_rows(other), get_cols(other));
       Base::operator=(other);
     }
+    other.m_data = nullptr;
     return *this;
   }
 
@@ -187,6 +208,12 @@ public:
   ArenaMatrix &setZero(Index rows, Index cols) {
     *this = MatrixType::Zero(rows, cols);
     return *this;
+  }
+
+  using Base::setIdentity;
+
+  ArenaMatrix &setIdentity(Index rows, Index cols) {
+    *this = MatrixType::Identity(rows, cols);
   }
 
 private:
