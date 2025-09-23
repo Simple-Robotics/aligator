@@ -2,6 +2,8 @@
 # Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #
 
+find_package(Catch2 3 REQUIRED)
+include(Catch)
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 
 macro(ADD_TEST_CFLAGS test_name flag)
@@ -40,6 +42,23 @@ function(add_aligator_test name dependencies)
   )
 endfunction()
 
+function(add_aligator_test2 test_name dependencies)
+  set(test_file ${test_name}.cpp)
+  set(test_name "${PROJECT_NAME}-test-cpp-${test_name}")
+  message(STATUS "Adding cpp test (Catch2): ${test_name} (${test_file})")
+
+  ADD_UNIT_TEST(${test_name} ${test_file} ${TEST_HEADERS})
+  set_target_properties(${test_name} PROPERTIES LINKER_LANGUAGE CXX)
+  set_standard_output_directory(${test_name})
+  target_include_directories(${test_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+  target_link_libraries(
+    ${test_name}
+    PRIVATE ${PROJECT_NAME} Catch2::Catch2WithMain ${dependencies}
+  )
+  catch_discover_tests(${test_name})
+endfunction()
+
 set(
   TEST_NAMES
   continuous
@@ -47,7 +66,6 @@ set(
   costs
   integrators
   lqr
-  arena-matrix
   managed-matrix
   problem
   manifolds
@@ -68,6 +86,7 @@ if(NOT BUILD_STANDALONE_PYTHON_INTERFACE)
     add_aligator_test(${test_name} "")
   endforeach()
   add_subdirectory(gar)
+  add_aligator_test2(arena-matrix "")
 
   if(BUILD_CROCODDYL_COMPAT)
     add_subdirectory(compat)
