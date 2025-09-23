@@ -87,9 +87,9 @@ bool ProximalRiccatiKernel<Scalar>::backwardImpl(
   return true;
 }
 template <typename Scalar>
-void ProximalRiccatiKernel<Scalar>::terminalSolve(
-    typename KnotType::const_view_t model, const Scalar mueq,
-    StageFactorType &d) {
+void ProximalRiccatiKernel<Scalar>::terminalSolve(const KnotType &model,
+                                                  const Scalar mueq,
+                                                  StageFactorType &d) {
   ALIGATOR_TRACY_ZONE_SCOPED;
   value_t &vc = d.vm;
   // fill cost-to-go matrix
@@ -164,9 +164,11 @@ void ProximalRiccatiKernel<Scalar>::computeInitial(
 }
 
 template <typename Scalar>
-void ProximalRiccatiKernel<Scalar>::stageKernelSolve(
-    typename KnotType::const_view_t model, StageFactorType &d, value_t &vn,
-    const Scalar mudyn, const Scalar mueq) {
+void ProximalRiccatiKernel<Scalar>::stageKernelSolve(const KnotType &model,
+                                                     StageFactorType &d,
+                                                     value_t &vn,
+                                                     const Scalar mudyn,
+                                                     const Scalar mueq) {
   ALIGATOR_TRACY_ZONE_SCOPED;
   // step 1. compute decomposition of the E matrix
   d.Efact.compute(model.E);
@@ -310,7 +312,7 @@ bool ProximalRiccatiKernel<Scalar>::forwardImpl(
   uint N = (uint)(datas.size() - 1);
   for (uint t = 0; t <= N; t++) {
     const StageFactorType &d = datas[t];
-    auto model = stages[t].to_const_view();
+    const KnotType &model = stages[t];
     assert(xs[t].size() == model.nx);
     assert(vs[t].size() == model.nc);
 

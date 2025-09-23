@@ -55,103 +55,6 @@ template <typename Scalar> struct LqrKnotTpl {
   MMat Gv;
   MVec gamma;
 
-  template <typename T, bool Cond>
-  using add_const_if_t = std::conditional_t<Cond, std::add_const_t<T>, T>;
-
-  template <bool IsConst> struct __view_base {
-    using mat_t = Eigen::Map<add_const_if_t<MatrixXs, IsConst>, Alignment>;
-    using vec_t = Eigen::Map<add_const_if_t<VectorXs, IsConst>, Alignment>;
-    uint nx;
-    uint nu;
-    uint nc;
-    uint nx2;
-    uint nth;
-
-    mat_t Q, S, R;
-    vec_t q, r;
-    mat_t A, B, E;
-    vec_t f;
-    mat_t C, D;
-    vec_t d;
-
-    mat_t Gth, Gx, Gu, Gv;
-    vec_t gamma;
-  };
-
-  using view_t = __view_base<false>;
-  using const_view_t = __view_base<true>;
-
-  /// \brief Convert knot to an aggregate of Eigen::Map.
-  ///
-  /// This is a convenience method for running computations.
-  view_t to_view() {
-    return view_t{
-        nx,
-        nu,
-        nc,
-        nx2,
-        nth,
-        //
-        Q,
-        S,
-        R,
-        q,
-        r,
-        //
-        A,
-        B,
-        E,
-        f,
-        //
-        C,
-        D,
-        d,
-        //
-        Gth,
-        Gx,
-        Gu,
-        Gv,
-        gamma,
-    };
-  }
-
-  /// \brief Convert knot to an aggregate of Eigen::Map to const.
-  const_view_t to_const_view() const {
-    return const_view_t{
-        nx,
-        nu,
-        nc,
-        nx2,
-        nth,
-        //
-        Q,
-        S,
-        R,
-        q,
-        r,
-        //
-        A,
-        B,
-        E,
-        f,
-        //
-        C,
-        D,
-        d,
-        //
-        Gth,
-        Gx,
-        Gu,
-        Gv,
-        gamma,
-    };
-  }
-
-  const_view_t to_view() const { return to_const_view(); }
-
-  operator view_t() { return to_view(); }
-  operator const_view_t() const { return to_const_view(); }
-
   LqrKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth,
              allocator_type alloc = {});
 
@@ -296,8 +199,7 @@ bool lqrKnotsSameDim(const LqrKnotTpl<Scalar> &lhs,
 }
 
 template <typename Scalar>
-std::ostream &operator<<(std::ostream &oss, const LqrKnotTpl<Scalar> &self_) {
-  auto self = self_.to_const_view();
+std::ostream &operator<<(std::ostream &oss, const LqrKnotTpl<Scalar> &self) {
   oss << "LqrKnot {";
   oss << fmt::format("\n  nx:  {:d}", self.nx) //
       << fmt::format("\n  nu:  {:d}", self.nu) //
