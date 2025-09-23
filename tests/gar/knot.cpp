@@ -1,5 +1,5 @@
 #include "aligator/gar/lqr-problem.hpp"
-#include <aligator/fmt-eigen.hpp>
+#include "aligator/fmt-eigen.hpp"
 
 #include <boost/test/unit_test.hpp>
 
@@ -42,14 +42,22 @@ BOOST_FIXTURE_TEST_CASE(move, knot_fixture) {
   BOOST_CHECK(knot_moved.Q.isApprox(Q));
   BOOST_CHECK(knot_moved.R.isApprox(R));
 
-  // copy ctor
-  knot_t knot_move2 = std::move(knot_moved);
+  knot_t knot_moved2{std::move(knot_moved), alloc};
+  BOOST_CHECK(knot_moved2.get_allocator() == alloc);
+  BOOST_CHECK(knot_moved2.Q.isApprox(Q));
+  BOOST_CHECK(knot_moved2.R.isApprox(R));
 }
 
 BOOST_FIXTURE_TEST_CASE(copy, knot_fixture) {
 
+  // use default allocator
   knot_t knot2{knot};
+  BOOST_CHECK(knot2.get_allocator() == aligator::polymorphic_allocator{});
   BOOST_CHECK_EQUAL(knot, knot2);
+
+  knot_t knot3{knot, alloc};
+  BOOST_CHECK(knot3.get_allocator() == alloc);
+  BOOST_CHECK_EQUAL(knot, knot3);
 }
 
 BOOST_FIXTURE_TEST_CASE(swap, knot_fixture) {
