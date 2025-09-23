@@ -70,13 +70,15 @@ template <typename Scalar> struct LqrKnotTpl {
   LqrKnotTpl(const LqrKnotTpl &other, allocator_type alloc = {});
   /// @brief Move constructor. Allocator will be moved from other. Other will be
   /// have @ref m_empty_after_move set to true.
-  LqrKnotTpl(LqrKnotTpl &&other);
+  LqrKnotTpl(LqrKnotTpl &&other) noexcept;
+  /// @brief Extended move constructor.
+  LqrKnotTpl(LqrKnotTpl &&other, const allocator_type &alloc);
   /// @brief Copy assignment. Current allocator will be reused if required.
   LqrKnotTpl &operator=(const LqrKnotTpl &other);
   /// @brief Move assignment. Other allocator will be stolen.
   LqrKnotTpl &operator=(LqrKnotTpl &&);
 
-  ~LqrKnotTpl();
+  ~LqrKnotTpl() = default;
 
   /// \brief Assign matrices (and dimensions) from another LqrKnotTpl.
   void assign(const LqrKnotTpl<Scalar> &other);

@@ -75,8 +75,6 @@ LqrKnotTpl<Scalar>::LqrKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth,
   gamma.setZero();
 }
 
-template <typename Scalar> LqrKnotTpl<Scalar>::~LqrKnotTpl() {}
-
 template <typename Scalar>
 void LqrKnotTpl<Scalar>::assign(const LqrKnotTpl &other) {
   this->nx = other.nx;
@@ -132,12 +130,12 @@ LqrKnotTpl<Scalar>::LqrKnotTpl(const LqrKnotTpl &other, allocator_type alloc)
     , _c(Gu)
     , _c(Gv)
     , _c(gamma)
-    , m_allocator(other.m_allocator) {}
+    , m_allocator(alloc) {}
 #undef _c
 
 #define _c(name) name(std::move(other.name))
 template <typename Scalar>
-LqrKnotTpl<Scalar>::LqrKnotTpl(LqrKnotTpl &&other)
+LqrKnotTpl<Scalar>::LqrKnotTpl(LqrKnotTpl &&other) noexcept
     : nx(other.nx)
     , nu(other.nu)
     , nc(other.nc)
@@ -161,6 +159,34 @@ LqrKnotTpl<Scalar>::LqrKnotTpl(LqrKnotTpl &&other)
     , _c(Gv)
     , _c(gamma)
     , m_allocator(other.m_allocator) {}
+#undef _c
+
+#define _c(name) name(std::move(other.name), alloc)
+template <typename Scalar>
+LqrKnotTpl<Scalar>::LqrKnotTpl(LqrKnotTpl &&other, const allocator_type &alloc)
+    : nx(other.nx)
+    , nu(other.nu)
+    , nc(other.nc)
+    , nx2(other.nx2)
+    , nth(other.nth)
+    , _c(Q)
+    , _c(S)
+    , _c(R)
+    , _c(q)
+    , _c(r)
+    , _c(A)
+    , _c(B)
+    , _c(E)
+    , _c(f)
+    , _c(C)
+    , _c(D)
+    , _c(d)
+    , _c(Gth)
+    , _c(Gx)
+    , _c(Gu)
+    , _c(Gv)
+    , _c(gamma)
+    , m_allocator(alloc) {}
 #undef _c
 
 template <typename Scalar>
