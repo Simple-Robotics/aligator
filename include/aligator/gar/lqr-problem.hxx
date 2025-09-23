@@ -265,7 +265,6 @@ template <typename Scalar>
 Scalar LqrProblemTpl<Scalar>::evaluate(
     const VectorOfVectors &xs, const VectorOfVectors &us,
     const std::optional<ConstVectorRef> &theta_) const {
-  using const_view_t = typename LqrKnotTpl<Scalar>::const_view_t;
 
   if ((int)xs.size() != horizon() + 1)
     return 0.;
@@ -278,7 +277,7 @@ Scalar LqrProblemTpl<Scalar>::evaluate(
   Scalar ret = 0.;
   const auto N = uint(horizon());
   for (uint i = 0; i <= N; i++) {
-    const_view_t knot = stages[i].to_const_view();
+    const KnotType &knot = stages[i];
     ret += 0.5 * xs[i].dot(knot.Q * xs[i]) + xs[i].dot(knot.q);
     if (i == N)
       break;
@@ -289,7 +288,7 @@ Scalar LqrProblemTpl<Scalar>::evaluate(
   if (isParameterized() && theta_.has_value()) {
     ConstVectorRef th = theta_.value();
     for (uint i = 0; i <= N; i++) {
-      const_view_t knot = stages[i].to_const_view();
+      const KnotType &knot = stages[i];
       ret += 0.5 * th.dot(knot.Gth * th);
       ret += th.dot(knot.Gx.transpose() * xs[i]);
       ret += th.dot(knot.gamma);
