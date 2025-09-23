@@ -1,6 +1,6 @@
 /// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
 /// @author Wilson Jallet
-#include <boost/test/unit_test.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include "aligator/context.hpp"
 #include "aligator/gar/blk-matrix.hpp"
@@ -17,7 +17,7 @@ using MatrixXs = math_types<Scalar>::MatrixXs;
 using MatrixRef = Eigen::Ref<MatrixXs>;
 using VectorXs = math_types<Scalar>::VectorXs;
 
-BOOST_AUTO_TEST_CASE(blk22) {
+TEST_CASE("blk22", "[gar]") {
   std::array<long, 2> dims = {4, 6};
   BlkMatrix<MatrixXs, 2, 2> blk(dims, dims);
   blk.setZero();
@@ -25,17 +25,17 @@ BOOST_AUTO_TEST_CASE(blk22) {
   blk(1, 0).setRandom();
 
   fmt::print("mat:\n{}\n", blk.matrix());
-  BOOST_CHECK_EQUAL(blk.rows(), 10);
-  BOOST_CHECK_EQUAL(blk.cols(), 10);
+  REQUIRE(blk.rows() == 10);
+  REQUIRE(blk.cols() == 10);
 
   BlkMatrix<MatrixRef, 1, 2> b12 = blk.topBlkRows<1>();
   fmt::print("b12:\n{}\n", b12.matrix());
 
-  BOOST_CHECK_EQUAL(b12.rows(), 4);
-  BOOST_CHECK_EQUAL(b12.cols(), 10);
+  REQUIRE(b12.rows() == 4);
+  REQUIRE(b12.cols() == 10);
 }
 
-BOOST_AUTO_TEST_CASE(dynamicblkvec) {
+TEST_CASE("dynamicblkvec", "[gar]") {
   std::vector<long> dims{2, 5, 2};
   BlkMatrix<VectorXs, -1, 1> vec(dims);
   vec.blockSegment(0).setRandom();
@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(dynamicblkvec) {
   fmt::print("vec:\n{}\n", vec.matrix());
 
   BlkMatrix<Eigen::Ref<VectorXs>, -1, 1> bvtop2 = vec.topBlkRows(2);
-  BOOST_CHECK_EQUAL(bvtop2.rows(), 7);
+  REQUIRE(bvtop2.rows() == 7);
 }
 
 struct BTAG_Fixture {
@@ -79,7 +79,7 @@ struct BTAG_Fixture {
 
     std::vector<long> dims(N + 1);
     std::fill_n(dims.begin(), N + 1, nx);
-    BOOST_CHECK(dims.size() == N + 1);
+    REQUIRE(dims.size() == N + 1);
     vec = BlkVec(dims);
     vec.matrix().setOnes();
 
@@ -92,10 +92,10 @@ struct BTAG_Fixture {
   }
 };
 
-BOOST_FIXTURE_TEST_CASE(block_tridiag_solve_up_looking, BTAG_Fixture) {
+TEST_CASE_METHOD(BTAG_Fixture, "block_tridiag_solve_up_looking", "[gar]") {
 
   bool ret = gar::symmetricBlockTridiagSolve(sub, diagonal, sup, vec, facs);
-  BOOST_CHECK(ret);
+  REQUIRE(ret);
 
   for (size_t i = 0; i <= N; i++) {
     fmt::print("rhs[{:d}] = {}\n", i, vec[i].transpose());
@@ -110,15 +110,15 @@ BOOST_FIXTURE_TEST_CASE(block_tridiag_solve_up_looking, BTAG_Fixture) {
     for (size_t i = 0; i <= N; i++) {
       fmt::print("rhs[{:d}] = {}\n", i, rhs[i].transpose());
     }
-    BOOST_CHECK(vec.matrix().isApprox(rhs.matrix(), 1e-12));
+    REQUIRE(vec.matrix().isApprox(rhs.matrix(), 1e-12));
   }
 }
 
-BOOST_FIXTURE_TEST_CASE(block_tridiag_solve_down_looking, BTAG_Fixture) {
+TEST_CASE_METHOD(BTAG_Fixture, "block_tridiag_solve_down_looking", "[gar]") {
 
   bool ret =
       gar::symmetricBlockTridiagSolveDownLooking(sub, diagonal, sup, vec, facs);
-  BOOST_CHECK(ret);
+  REQUIRE(ret);
 
   for (size_t i = 0; i <= N; i++) {
     fmt::print("rhs[{:d}] = {}\n", i, vec[i].transpose());
@@ -133,6 +133,6 @@ BOOST_FIXTURE_TEST_CASE(block_tridiag_solve_down_looking, BTAG_Fixture) {
     for (size_t i = 0; i <= N; i++) {
       fmt::print("rhs[{:d}] = {}\n", i, rhs[i].transpose());
     }
-    BOOST_CHECK(vec.matrix().isApprox(rhs.matrix(), 1e-12));
+    REQUIRE(vec.matrix().isApprox(rhs.matrix(), 1e-12));
   }
 }

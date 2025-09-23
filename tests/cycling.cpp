@@ -6,7 +6,7 @@
 #include "aligator/modelling/constraints/equality-constraint.hpp"
 #include "aligator/modelling/spaces/pinocchio-groups.hpp"
 #include "aligator/third-party/polymorphic_cxx14.h"
-#include <boost/test/unit_test.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 using namespace aligator;
 using context::Manifold;
@@ -80,7 +80,7 @@ struct MyFixture {
   }
 };
 
-BOOST_AUTO_TEST_CASE(test_cycling) {
+TEST_CASE("test_cycling", "[cycling]") {
   MyFixture f;
 
   auto nsteps = f.problem.numSteps();
@@ -94,13 +94,13 @@ BOOST_AUTO_TEST_CASE(test_cycling) {
 
   ddp.setup(f.problem);
   bool conv = ddp.run(f.problem);
-  BOOST_CHECK(conv);
+  REQUIRE(conv);
 
   for (size_t i = 0; i < 30; i++) {
     f.problem.replaceStageCircular(f.problem.stages_[0]);
     rotate_vec_left(f.problem_data);
     ddp.cycleProblem(f.problem, f.problem_data[nsteps - 1]);
     bool conv = ddp.run(f.problem);
-    BOOST_CHECK(conv);
+    REQUIRE(conv);
   }
 }

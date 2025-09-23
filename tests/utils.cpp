@@ -1,16 +1,14 @@
 #include "aligator/utils/newton-raphson.hpp"
 #include "aligator/core/vector-space.hpp"
-#include <aligator/fmt-eigen.hpp>
+#include "aligator/fmt-eigen.hpp"
 
-#include <boost/test/unit_test.hpp>
-
-BOOST_AUTO_TEST_SUITE(utils)
+#include <catch2/catch_test_macros.hpp>
 
 using namespace aligator;
 using Scalar = double;
 ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
-BOOST_AUTO_TEST_CASE(newton_raphson) {
+TEST_CASE("newton_raphson", "[utils]") {
   const long nx = 4;
   using NR_t = NewtonRaphson<Scalar>;
   auto fun = [](const ConstVectorRef &x, VectorRef out) {
@@ -44,8 +42,6 @@ BOOST_AUTO_TEST_CASE(newton_raphson) {
   fmt::print("Found answer: {}\n", xout.transpose());
   fmt::print("True answer: {}\n", xans.transpose());
 
-  BOOST_TEST_CHECK(conv);
-  BOOST_TEST_CHECK(xout.isApprox(xans, eps));
+  REQUIRE(conv);
+  REQUIRE(xout.isApprox(xans, eps));
 }
-
-BOOST_AUTO_TEST_SUITE_END()
