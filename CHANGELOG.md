@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 This release brings a major change to the ProxDDP solver, which no longer uses proximal iteration the co-state (the dynamics' Lagrange multiplies). This choice is made to increase the solver's overall performance.
+Aligator now requires C++20.
 
 ### Fixed
 
@@ -24,6 +25,7 @@ This release brings a major change to the ProxDDP solver, which no longer uses p
 - ProxDDP solver : throw when given invalid linesearch enum value
 - core/linesearches : move `LinesearchOptions` struct out of the `Linesearch` template class, add CTAD
 - Change all tests to use Catch2 instead of Boost.Test
+- The minimum required version of the C++ standard is C++20.
 
 ### Added
 
