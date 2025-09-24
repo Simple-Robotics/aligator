@@ -4,7 +4,6 @@
 
 find_package(Catch2 3 REQUIRED)
 include(Catch)
-find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 
 macro(ADD_TEST_CFLAGS test_name flag)
   set_property(
