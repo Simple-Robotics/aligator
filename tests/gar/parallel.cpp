@@ -67,7 +67,7 @@ TEST_CASE("parallel_manual", "[gar]") {
   const uint horizon = 16;
   const double mu = 1e-14;
 
-  problem_t problem = generate_problem(x0, horizon, nx, nu);
+  problem_t problem = generateLqProblem(x0, horizon, nx, nu);
 
   ProximalRiccatiSolver<double> solver_full_horz(problem);
   solver_full_horz.backward(mu, mu);
@@ -197,7 +197,7 @@ TEST_CASE("parallel_solver_class", "[gar]") {
 
   const double tol = 1e-10;
 
-  problem_t problem = generate_problem(x0, horizon, nx, nu);
+  problem_t problem = generateLqProblem(x0, horizon, nx, nu);
   const problem_t problemRef{problem};
   REQUIRE(problem.get_allocator() == problemRef.get_allocator());
   const double mu = 1e-9;
@@ -211,8 +211,8 @@ TEST_CASE("parallel_solver_class", "[gar]") {
   {
     refSolver.backward(mu, mu);
     refSolver.forward(xs_ref, us_ref, vs_ref, lbdas_ref);
-    KktError err_ref =
-        computeKktError(problemRef, xs_ref, us_ref, vs_ref, lbdas_ref, mu, mu);
+    KktError err_ref = computeKktError(problemRef, xs_ref, us_ref, vs_ref,
+                                       lbdas_ref, mueq, true);
     fmt::println("{}", err_ref);
     REQUIRE(err_ref.max <= tol);
   }
@@ -224,7 +224,7 @@ TEST_CASE("parallel_solver_class", "[gar]") {
   {
     parSolver.backward(mu, mu);
     parSolver.forward(xs, us, vs, lbdas);
-    KktError err = computeKktError(problem, xs, us, vs, lbdas, mu, mu);
+    KktError err = computeKktError(problem, xs, us, vs, lbdas, mueq);
     fmt::println("{}", err);
     REQUIRE(err.max <= tol);
   }
@@ -246,7 +246,7 @@ TEST_CASE("parallel_solver_class", "[gar]") {
     randomlyModifyProblem(problem);
     parSolver.backward(mu, mu);
     parSolver.forward(xs, us, vs, lbdas);
-    KktError e = computeKktError(problem, xs, us, vs, lbdas, mu, mu, false);
+    KktError e = computeKktError(problem, xs, us, vs, lbdas, mueq, false);
     fmt::println("{}", e);
     REQUIRE(e.max <= tol);
   }
