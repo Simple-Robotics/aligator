@@ -633,7 +633,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     //  Dynamic Programming Section B Backward). The backward pass
     // computes the gains, and the forward pass computes the new
     // control and state trajectories.
-    linear_solver_->backward(mu(), mu());
+    linear_solver_->backward(mu());
 
     linear_solver_->forward(workspace_.dxs, workspace_.dus, workspace_.dvs,
                             workspace_.dlams);
