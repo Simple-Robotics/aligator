@@ -39,7 +39,7 @@ template <uint NPROC> static void BM_parallel(benchmark::State &state) {
   ParallelRiccatiSolver<double> solver(problem, NPROC);
   auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
   for (auto _ : state) {
-    solver.backward(mu, mu);
+    solver.backward(mueq);
     solver.forward(xs, us, vs, lbdas);
   }
 }
