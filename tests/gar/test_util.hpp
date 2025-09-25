@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, 2023-2025 INRIA
 #pragma once
 
 #include "aligator/gar/lqr-problem.hpp"
@@ -37,15 +37,15 @@ computeKktError(const problem_t &problem, const VectorOfVectors &xs,
                 const VectorOfVectors &us, const VectorOfVectors &vs,
                 const VectorOfVectors &lbdas,
                 const std::optional<ConstVectorRef> &theta = std::nullopt,
-                const double mudyn = 0., const double mueq = 0.,
-                bool verbose = true);
+                const double mueq = 0., bool verbose = true);
 
-inline KktError
-computeKktError(const problem_t &problem, const VectorOfVectors &xs,
-                const VectorOfVectors &us, const VectorOfVectors &vs,
-                const VectorOfVectors &lbdas, const double mudyn,
-                const double mueq, bool verbose = true) {
-  return computeKktError(problem, xs, us, vs, lbdas, std::nullopt, mudyn, mueq,
+inline KktError computeKktError(const problem_t &problem,
+                                const VectorOfVectors &xs,
+                                const VectorOfVectors &us,
+                                const VectorOfVectors &vs,
+                                const VectorOfVectors &lbdas, const double mueq,
+                                bool verbose = true) {
+  return computeKktError(problem, xs, us, vs, lbdas, std::nullopt, mueq,
                          verbose);
 }
 
@@ -63,16 +63,16 @@ struct normal_unary_op {
 
 MatrixXs sampleWishartDistributedMatrix(uint n, uint p);
 
-knot_t generate_knot(uint nx, uint nu, uint nth, bool singular = false,
-                     const aligator::polymorphic_allocator &alloc = {});
+knot_t generateKnot(uint nx, uint nu, uint nth, bool singular = false,
+                    const aligator::polymorphic_allocator &alloc = {});
 
-inline knot_t generate_knot(uint nx, uint nu, uint nth,
-                            const aligator::polymorphic_allocator &alloc) {
-  return generate_knot(nx, nu, nth, false, alloc);
+inline knot_t generateKnot(uint nx, uint nu, uint nth,
+                           const aligator::polymorphic_allocator &alloc) {
+  return generateKnot(nx, nu, nth, false, alloc);
 }
 
-problem_t generate_problem(const ConstVectorRef &x0, uint horz, uint nx,
-                           uint nu, uint nth = 0);
+problem_t generateLqProblem(const ConstVectorRef &x0, uint horz, uint nx,
+                            uint nu, uint nth = 0);
 
 template <typename T>
 std::vector<T> mergeStdVectors(const std::vector<T> &v1,

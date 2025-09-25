@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, 2023-2025 INRIA
 #include "./test_util.hpp"
 #include "aligator/gar/utils.hpp"
 
@@ -10,8 +10,8 @@ MatrixXs sampleWishartDistributedMatrix(uint n, uint p) {
   return root * root.transpose();
 };
 
-knot_t generate_knot(uint nx, uint nu, uint nth, bool singular,
-                     const aligator::polymorphic_allocator &alloc) {
+knot_t generateKnot(uint nx, uint nu, uint nth, bool singular,
+                    const aligator::polymorphic_allocator &alloc) {
   uint wishartDof = nx + nu + 1;
   knot_t out(nx, nu, 0, nx, nth, alloc);
 
@@ -45,19 +45,19 @@ knot_t generate_knot(uint nx, uint nu, uint nth, bool singular,
   return out;
 }
 
-problem_t generate_problem(const ConstVectorRef &x0, uint horz, uint nx,
-                           uint nu, uint nth) {
+problem_t generateLqProblem(const ConstVectorRef &x0, uint horz, uint nx,
+                            uint nu, uint nth) {
   assert(x0.size() == nx);
   aligator::polymorphic_allocator alloc{};
 
   problem_t::KnotVector knots{alloc};
   knots.reserve(horz + 1);
 
-  auto knb = generate_knot(nx, nu, nth, true, alloc);
+  auto knb = generateKnot(nx, nu, nth, true, alloc);
   for (uint i = 0; i < horz; i++) {
     knots.push_back(knb);
   }
-  knots.push_back(generate_knot(nx, 0, nth, false, alloc));
+  knots.push_back(generateKnot(nx, 0, nth, false, alloc));
 
   problem_t prob(std::move(knots), nx);
   prob.g0 = -x0;
@@ -69,8 +69,8 @@ KktError computeKktError(const problem_t &problem, const VectorOfVectors &xs,
                          const VectorOfVectors &us, const VectorOfVectors &vs,
                          const VectorOfVectors &lbdas,
                          const std::optional<ConstVectorRef> &theta_,
-                         const double mudyn, const double mueq, bool verbose) {
-  auto r = aligator::gar::lqrComputeKktError(problem, xs, us, vs, lbdas, mudyn,
+                         const double mueq, bool verbose) {
+  auto r = aligator::gar::lqrComputeKktError(problem, xs, us, vs, lbdas, 0.0,
                                              mueq, theta_, verbose);
   return {r[0], r[1], r[2]};
 }
