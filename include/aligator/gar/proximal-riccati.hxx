@@ -1,8 +1,8 @@
 /// @copyright Copyright (C) 2023-2024 LAAS-CNRS, 2023-2025 INRIA
 #pragma once
 
-#include "./proximal-riccati.hpp"
-#include "./lqr-problem.hpp"
+#include "proximal-riccati.hpp"
+#include "lqr-problem.hpp"
 
 #include "aligator/utils/mpc-util.hpp"
 #include "aligator/tracy.hpp"
@@ -30,11 +30,10 @@ ProximalRiccatiSolver<Scalar>::ProximalRiccatiSolver(
 }
 
 template <typename Scalar>
-bool ProximalRiccatiSolver<Scalar>::backward(const Scalar mudyn,
-                                             const Scalar mueq) {
+bool ProximalRiccatiSolver<Scalar>::backward(const Scalar mueq) {
   ALIGATOR_NOMALLOC_SCOPED;
   ALIGATOR_TRACY_ZONE_NAMED(Zone1, true);
-  bool ret = Kernel::backwardImpl(problem_->stages, mudyn, mueq, datas);
+  bool ret = Kernel::backwardImpl(problem_->stages, mueq, datas);
 
   StageFactor<Scalar> &d0 = datas[0];
   value_t &vinit = d0.vm;
@@ -46,7 +45,7 @@ bool ProximalRiccatiSolver<Scalar>::backward(const Scalar mudyn,
     kkt0.mat(0, 0) = vinit.Vxx;
     kkt0.mat(1, 0) = problem_->G0;
     kkt0.mat(0, 1) = problem_->G0.transpose();
-    kkt0.mat(1, 1).diagonal().setConstant(-mudyn);
+    kkt0.mat(1, 1).setZero();
     kkt0.chol.compute(kkt0.mat.matrix());
 
     kkt0.ff.blockSegment(0) = -vinit.vx;
