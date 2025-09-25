@@ -11,6 +11,8 @@
 namespace aligator::gar {
 
 /// @brief A sparse solver for the linear-quadratic problem based on CHOLMOD.
+/// @warning This is in fact broken because CHOLMOD doesn't support semidefinite
+/// matrices.
 template <typename _Scalar> class CholmodLqSolver {
 public:
   using Scalar = _Scalar;
