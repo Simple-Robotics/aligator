@@ -15,6 +15,6 @@ template std::array<context::Scalar, 3> lqrComputeKktError<context::Scalar>(
     const std::optional<context::ConstVectorRef> &, bool);
 template auto
 lqrDenseMatrix<context::Scalar>(const LqrProblemTpl<context::Scalar> &,
-                                context::Scalar, context::Scalar);
+                                const context::Scalar);
 } // namespace gar
 } // namespace aligator

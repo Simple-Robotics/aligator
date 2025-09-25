@@ -14,15 +14,13 @@ knot_t generateKnot(uint nx, uint nu, uint nth, bool singular,
                     const aligator::polymorphic_allocator &alloc) {
   uint wishartDof = nx + nu + 1;
   knot_t out(nx, nu, 0, nx, nth, alloc);
-
   MatrixXs _qsr = sampleWishartDistributedMatrix(nx + nu, wishartDof);
 
-  auto &Q = out.Q;
-  Q = _qsr.topLeftCorner(nx, nx);
+  out.Q = _qsr.topLeftCorner(nx, nx);
   out.S = _qsr.topRightCorner(nx, nu);
   if (singular) {
     auto n = nx / 2;
-    Q.topLeftCorner(n, n).setZero();
+    out.Q.topLeftCorner(n, n).setZero();
   }
   out.R = _qsr.bottomRightCorner(nu, nu);
   out.q = VectorXs::NullaryExpr(nx, normal_unary_op{});
@@ -46,14 +44,14 @@ knot_t generateKnot(uint nx, uint nu, uint nth, bool singular,
 }
 
 problem_t generateLqProblem(const ConstVectorRef &x0, uint horz, uint nx,
-                            uint nu, uint nth) {
+                            uint nu, uint nth, bool singular,
+                            const aligator::polymorphic_allocator &alloc) {
   assert(x0.size() == nx);
-  aligator::polymorphic_allocator alloc{};
 
   problem_t::KnotVector knots{alloc};
   knots.reserve(horz + 1);
 
-  auto knb = generateKnot(nx, nu, nth, true, alloc);
+  auto knb = generateKnot(nx, nu, nth, singular, alloc);
   for (uint i = 0; i < horz; i++) {
     knots.push_back(knb);
   }
