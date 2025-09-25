@@ -42,7 +42,7 @@ public:
 
   explicit RiccatiSolverDense(const LqrProblemTpl<Scalar> &problem);
 
-  bool backward(const Scalar mudyn, const Scalar mueq);
+  bool backward(const Scalar mueq);
 
   bool forward(std::vector<VectorXs> &xs, std::vector<VectorXs> &us,
                std::vector<VectorXs> &vs, std::vector<VectorXs> &lbdas,

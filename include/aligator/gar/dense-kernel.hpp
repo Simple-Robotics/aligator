@@ -95,8 +95,7 @@ template <typename _Scalar> struct DenseKernel {
   }
 
   inline static void stageKernelSolve(const KnotType &knot, Data &d, value v,
-                                      const value *vn, Scalar mudyn,
-                                      Scalar mueq) {
+                                      const value *vn, Scalar mueq) {
     d.kktMat.setZero();
     d.kktMat(0, 0) = knot.R;
     d.kktMat(1, 0) = knot.D;
@@ -105,7 +104,7 @@ template <typename _Scalar> struct DenseKernel {
 
     d.kktMat(2, 0) = knot.B;
     d.kktMat(0, 2) = knot.B.transpose();
-    d.kktMat(2, 2).diagonal().setConstant(-mudyn);
+    // d.kktMat(2, 2).setZero();
     d.kktMat(2, 3) = knot.E;
     d.kktMat(3, 2) = knot.E.transpose();
     if (vn)

@@ -52,7 +52,7 @@ static void BM_stagedense(benchmark::State &state) {
   RiccatiSolverDense<double> solver(problem);
   auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
   for (auto _ : state) {
-    solver.backward(mu, mu);
+    solver.backward(mueq);
     solver.forward(xs, us, vs, lbdas);
   }
 }
