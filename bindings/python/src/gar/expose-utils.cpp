@@ -21,11 +21,11 @@ bp::dict lqr_sol_initialize_wrap(const lqr_t &problem) {
   return out;
 }
 
-bp::tuple lqr_create_sparse_wrap(const lqr_t &problem, const Scalar mudyn,
-                                 const Scalar mueq, bool update) {
+bp::tuple lqr_create_sparse_wrap(const lqr_t &problem, const Scalar mueq,
+                                 bool update) {
   Eigen::SparseMatrix<Scalar> mat;
   VectorXs rhs;
-  lqrCreateSparseMatrix(problem, mudyn, mueq, mat, rhs, update);
+  lqrCreateSparseMatrix(problem, mueq, mat, rhs, update);
   mat.makeCompressed();
   return bp::make_tuple(mat, rhs);
 }
@@ -41,7 +41,7 @@ void exposeGarUtils() {
       ("problem"_a, "mudyn", "mueq"));
 
   bp::def("lqrCreateSparseMatrix", lqr_create_sparse_wrap,
-          ("problem"_a, "mudyn", "mueq", "update"),
+          ("problem"_a, "mueq", "update"),
           "Create or update a sparse matrix from an LqrProblem.");
 
   bp::def("lqrInitializeSolution", lqr_sol_initialize_wrap, ("problem"_a));

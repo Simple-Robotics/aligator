@@ -42,7 +42,8 @@ TEST_CASE("helper_assignment_dense", "[gar]") {
   REQUIRE(densemat.isApprox(mat.toDense()));
 }
 
-problem_t short_problem(VectorXs x0, uint horz, uint nx, uint nu, uint nc) {
+problem_t short_problem(Eigen::Ref<const VectorXs> x0, uint horz, uint nx,
+                        uint nu, uint nc) {
 
   problem_t::KnotVector knots;
   knots.reserve(horz + 1);
@@ -77,10 +78,11 @@ TEST_CASE("create_sparse_problem", "[gar]") {
   uint horz = 1;
   VectorXs x0;
   x0.setRandom(nx);
+  const double mueq = 1e-6;
   problem_t problem = short_problem(x0, horz, nx, nu, nc);
   Eigen::SparseMatrix<double> kktMat;
   VectorXs kktRhs;
-  gar::lqrCreateSparseMatrix(problem, 1e-8, 1e-6, kktMat, kktRhs, false);
+  gar::lqrCreateSparseMatrix(problem, mueq, kktMat, kktRhs, false);
 
   auto test_equal = [&] {
     auto [kktDense, rhsDense] = gar::lqrDenseMatrix(problem, 1e-8, 1e-6);
@@ -100,27 +102,27 @@ TEST_CASE("create_sparse_problem", "[gar]") {
   problem.stages[0].Q = sampleWishartDistributedMatrix(nx, nx + 1);
   problem.stages[0].R = sampleWishartDistributedMatrix(nu, nu + 1);
   // update
-  gar::lqrCreateSparseMatrix(problem, 1e-8, 1e-6, kktMat, kktRhs, true);
+  gar::lqrCreateSparseMatrix(problem, mueq, kktMat, kktRhs, true);
 
   test_equal();
 }
 
 TEST_CASE("cholmod_short_horz", "[gar]") {
-  const double mu = 1e-10;
+  const double mueq = 1e-10;
   uint nx = 4, nu = 4;
   uint horz = 10;
   constexpr double TOL = 1e-11;
-  VectorXs x0;
-  x0.setRandom(nx);
+  VectorXs x0 = VectorXs::Random(nx);
   problem_t problem = generate_problem(x0, horz, nx, nu);
   gar::CholmodLqSolver<double> solver{problem, 1};
 
   auto [xs, us, vs, lbdas] = gar::lqrInitializeSolution(problem);
 
-  bool ret = solver.backward(mu, mu);
+  bool ret = solver.backward(mueq);
+  REQUIRE(ret);
   {
     // test here because backward(mudyn, mueq) sets right values of mu
-    auto [denseKkt, rhsDense] = gar::lqrDenseMatrix(problem, mu, mu);
+    auto [denseKkt, rhsDense] = gar::lqrDenseMatrix(problem, mueq, mueq);
     REQUIRE(denseKkt.isApprox(solver.kktMatrix.toDense()));
     REQUIRE(rhsDense.isApprox(solver.kktRhs));
   }
@@ -132,21 +134,20 @@ TEST_CASE("cholmod_short_horz", "[gar]") {
 
   REQUIRE(ret);
 
-  auto [dynErr, cstErr, dualErr] = gar::lqrComputeKktError(
-      problem, xs, us, vs, lbdas, mu, mu, std::nullopt, true);
+  auto [dynErr, cstErr, dualErr, maxErr] =
+      computeKktError(problem, xs, us, vs, lbdas, std::nullopt, mueq, true);
   fmt::print("KKT errors: d = {:.4e} / dual = {:.4e}\n", dynErr, dualErr);
-  REQUIRE(dynErr <= TOL);
-  REQUIRE(cstErr <= TOL);
-  REQUIRE(dualErr <= TOL);
+  REQUIRE(maxErr <= TOL);
 
   {
     gar::ProximalRiccatiSolver<double> solver2{problem};
-    solver2.backward(mu, mu);
+    ret = solver2.backward(mueq);
+    REQUIRE(ret);
     auto [xs2, us2, vs2, lbdas2] = gar::lqrInitializeSolution(problem);
     solver2.forward(xs2, us2, vs2, lbdas2);
 
-    auto [dynErr2, cstErr2, dualErr2] = gar::lqrComputeKktError(
-        problem, xs2, us2, vs2, lbdas2, mu, mu, std::nullopt, true);
+    auto [dynErr2, cstErr2, dualErr2, maxErr] = computeKktError(
+        problem, xs2, us2, vs2, lbdas2, std::nullopt, mueq, true);
     fmt::print("KKT errors: d = {:.4e} / dual = {:.4e}\n", dynErr2, dualErr2);
 
     for (uint i = 0; i <= horz; i++) {

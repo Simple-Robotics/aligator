@@ -44,8 +44,7 @@ void sparseAssignDiagonal(Eigen::Index i0, Eigen::Index i1, Scalar value,
 
 template <typename Scalar>
 void lqrCreateSparseMatrix(const LqrProblemTpl<Scalar> &problem,
-                           const Scalar mudyn, const Scalar mueq,
-                           Eigen::SparseMatrix<Scalar> &mat,
+                           const Scalar mueq, Eigen::SparseMatrix<Scalar> &mat,
                            Eigen::Matrix<Scalar, -1, 1> &rhs, bool update);
 
 template <typename Scalar>
@@ -169,9 +168,9 @@ auto lqrInitializeSolution(const LqrProblemTpl<Scalar> &problem) {
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 extern template void lqrCreateSparseMatrix<context::Scalar>(
-    const LqrProblemTpl<context::Scalar> &problem, const context::Scalar mudyn,
-    const context::Scalar mueq, Eigen::SparseMatrix<context::Scalar> &mat,
-    context::VectorXs &rhs, bool update);
+    const LqrProblemTpl<context::Scalar> &problem, const context::Scalar mueq,
+    Eigen::SparseMatrix<context::Scalar> &mat, context::VectorXs &rhs,
+    bool update);
 extern template std::array<context::Scalar, 3>
 lqrComputeKktError<context::Scalar>(
     const LqrProblemTpl<context::Scalar> &,
