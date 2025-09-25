@@ -62,8 +62,8 @@ std::array<Scalar, 3> lqrComputeKktError(
 /// with the given dual-regularization parameters @p mudyn and @p mueq.
 /// @returns Whether the matrices were successfully allocated.
 template <typename Scalar>
-bool lqrDenseMatrix(const LqrProblemTpl<Scalar> &problem, Scalar mudyn,
-                    Scalar mueq, typename math_types<Scalar>::MatrixXs &mat,
+bool lqrDenseMatrix(const LqrProblemTpl<Scalar> &problem, const Scalar mueq,
+                    typename math_types<Scalar>::MatrixXs &mat,
                     typename math_types<Scalar>::VectorXs &rhs);
 
 /// @brief Compute the number of rows in the problem matrix.
@@ -84,8 +84,7 @@ uint lqrNumRows(const LqrProblemTpl<Scalar> &problem) {
 
 /// @copybrief lqrDenseMatrix()
 template <typename Scalar>
-auto lqrDenseMatrix(const LqrProblemTpl<Scalar> &problem, Scalar mudyn,
-                    Scalar mueq) {
+auto lqrDenseMatrix(const LqrProblemTpl<Scalar> &problem, Scalar mueq) {
 
   decltype(auto) knots = problem.stages;
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
@@ -95,8 +94,10 @@ auto lqrDenseMatrix(const LqrProblemTpl<Scalar> &problem, Scalar mudyn,
   MatrixXs mat(nrows, nrows);
   VectorXs rhs(nrows);
 
-  if (!lqrDenseMatrix(problem, mudyn, mueq, mat, rhs)) {
-    fmt::print("{:s} WARNING! Problem was not initialized.", __FUNCTION__);
+  if (!lqrDenseMatrix(problem, mueq, mat, rhs)) {
+    ALIGATOR_WARNING("lqrDenseMatrix",
+                     "{:s} WARNING! Problem was not initialized.",
+                     __FUNCTION__);
   }
   return std::make_pair(mat, rhs);
 }
@@ -180,7 +181,7 @@ lqrComputeKktError<context::Scalar>(
     const std::optional<context::ConstVectorRef> &, bool);
 extern template auto
 lqrDenseMatrix<context::Scalar>(const LqrProblemTpl<context::Scalar> &,
-                                context::Scalar, context::Scalar);
+                                const context::Scalar mueq);
 #endif
 
 } // namespace aligator::gar

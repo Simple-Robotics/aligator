@@ -180,8 +180,8 @@ std::array<Scalar, 3> lqrComputeKktError(
 }
 
 template <typename Scalar>
-bool lqrDenseMatrix(const LqrProblemTpl<Scalar> &problem, Scalar mudyn,
-                    Scalar mueq, typename math_types<Scalar>::MatrixXs &mat,
+bool lqrDenseMatrix(const LqrProblemTpl<Scalar> &problem, const Scalar mueq,
+                    typename math_types<Scalar>::MatrixXs &mat,
                     typename math_types<Scalar>::VectorXs &rhs) {
   const auto &knots = problem.stages;
   const size_t N = size_t(problem.horizon());
@@ -200,7 +200,7 @@ bool lqrDenseMatrix(const LqrProblemTpl<Scalar> &problem, Scalar mudyn,
     const uint nx0 = knots[0].nx;
     mat.block(nc0, 0, nx0, nc0) = problem.G0.transpose();
     mat.block(0, nc0, nc0, nx0) = problem.G0;
-    mat.topLeftCorner(nc0, nc0).diagonal().setConstant(-mudyn);
+    mat.topLeftCorner(nc0, nc0).setZero();
 
     rhs.head(nc0) = problem.g0;
     idx += nc0;
@@ -239,7 +239,7 @@ bool lqrDenseMatrix(const LqrProblemTpl<Scalar> &problem, Scalar mudyn,
       auto row = mat.block(idx + n, idx, model.nx, ncols);
       row.leftCols(model.nx) = model.A;
       row.middleCols(model.nx, model.nu) = model.B;
-      row.middleCols(n, model.nx).diagonal().array() = -mudyn;
+      row.middleCols(n, model.nx).setZero();
       row.rightCols(model.nx) = model.E;
 
       rhs.segment(idx + n, model.nx2) = model.f;

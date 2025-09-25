@@ -72,7 +72,8 @@ inline knot_t generateKnot(uint nx, uint nu, uint nth,
 }
 
 problem_t generateLqProblem(const ConstVectorRef &x0, uint horz, uint nx,
-                            uint nu, uint nth = 0);
+                            uint nu, uint nth = 0, bool singular = true,
+                            const aligator::polymorphic_allocator &alloc = {});
 
 template <typename T>
 std::vector<T> mergeStdVectors(const std::vector<T> &v1,
