@@ -5,8 +5,7 @@ namespace aligator::gar {
 
 template <typename Scalar>
 void lqrCreateSparseMatrix(const LqrProblemTpl<Scalar> &problem,
-                           const Scalar mudyn, const Scalar mueq,
-                           Eigen::SparseMatrix<Scalar> &mat,
+                           const Scalar mueq, Eigen::SparseMatrix<Scalar> &mat,
                            Eigen::Matrix<Scalar, -1, 1> &rhs, bool update) {
   using Eigen::Index;
   const uint nrows = lqrNumRows(problem);
@@ -27,13 +26,6 @@ void lqrCreateSparseMatrix(const LqrProblemTpl<Scalar> &problem,
     helpers::sparseAssignDenseBlock(0, nc0, problem.G0, mat, update);
     helpers::sparseAssignDenseBlock(nc0, 0, problem.G0.transpose(), mat,
                                     update);
-    for (Index kk = 0; kk < nc0; kk++) {
-      if (update) {
-        mat.coeffRef(kk, kk) = -mudyn;
-      } else {
-        mat.insert(kk, kk) = -mudyn;
-      }
-    }
     idx += nc0;
   }
 
@@ -82,8 +74,6 @@ void lqrCreateSparseMatrix(const LqrProblemTpl<Scalar> &problem,
       const Index i3 = i2 + model.nx2;
       helpers::sparseAssignDenseBlock(i2, i3, model.E, mat, update);
       helpers::sparseAssignDenseBlock(i3, i2, model.E.transpose(), mat, update);
-
-      helpers::sparseAssignDiagonal(i2, i3, -mudyn, mat, update);
 
       idx += n + model.nx2;
     }
