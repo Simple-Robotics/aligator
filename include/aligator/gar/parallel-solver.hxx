@@ -109,15 +109,14 @@ void ParallelRiccatiSolver<Scalar>::assembleCondensedSystem(
 }
 
 template <typename Scalar>
-bool ParallelRiccatiSolver<Scalar>::backward(const Scalar mudyn,
-                                             const Scalar mueq) {
+bool ParallelRiccatiSolver<Scalar>::backward(const Scalar mueq) {
 
   ALIGATOR_NOMALLOC_SCOPED;
   ALIGATOR_TRACY_ZONE_SCOPED_N("parallel_backward");
   auto N = static_cast<uint>(problem_->horizon());
   for (uint i = 0; i < numThreads - 1; i++) {
     uint end = get_work(N, i, numThreads).end;
-    setupKnot(problem_->stages[end - 1], mudyn);
+    setupKnot(problem_->stages[end - 1]);
   }
   Eigen::setNbThreads(1);
   aligator::omp::set_default_options(numThreads, false);
@@ -134,12 +133,12 @@ bool ParallelRiccatiSolver<Scalar>::backward(const Scalar mudyn,
         make_span_from_indices(problem_->stages, beg, end);
     boost::span<StageFactor<Scalar>> dtview =
         make_span_from_indices(datas, beg, end);
-    Kernel::backwardImpl(stview, mudyn, mueq, dtview);
+    Kernel::backwardImpl(stview, mueq, dtview);
   }
 
   {
     Eigen::setNbThreads(0);
-    assembleCondensedSystem(mudyn);
+    assembleCondensedSystem(0.0);
     condensedKktSolution = condensedKktRhs;
     condensedFacs.diagonalFacs = condensedKktSystem.diagonal;
     condensedFacs.upFacs = condensedKktSystem.subdiagonal;
