@@ -19,8 +19,7 @@ static aligator::polymorphic_allocator alloc{&mbr};
 
 TEST_CASE("riccati_short_horz_pb", "[gar]") {
   // dual regularization parameters
-  const double mu = 1e-14;
-  const double mueq = mu;
+  const double mueq = 1e-14;
 
   uint nx = 2, nu = 2;
   VectorXs x0 = VectorXs::Ones(nx);
@@ -58,16 +57,16 @@ TEST_CASE("riccati_short_horz_pb", "[gar]") {
   fmt::print("Horizon: {:d}\n", prob.horizon());
 
   auto bwbeg = std::chrono::system_clock::now();
-  REQUIRE(solver.backward(mu, mueq));
+  REQUIRE(solver.backward(mueq));
   auto bwend = std::chrono::system_clock::now();
   auto t_bwd =
       std::chrono::duration_cast<std::chrono::microseconds>(bwend - bwbeg);
   fmt::print("Elapsed time (bwd): {:d}\n", t_bwd.count());
 
   auto [xs, us, vs, lbdas] = lqrInitializeSolution(prob);
-  REQUIRE(xs.size() == prob.horizon() + 1);
-  REQUIRE(vs.size() == prob.horizon() + 1);
-  REQUIRE(lbdas.size() == prob.horizon() + 1);
+  REQUIRE(xs.size() == size_t(prob.horizon()) + 1);
+  REQUIRE(vs.size() == size_t(prob.horizon()) + 1);
+  REQUIRE(lbdas.size() == size_t(prob.horizon()) + 1);
 
   auto fwbeg = std::chrono::system_clock::now();
   bool ret = solver.forward(xs, us, vs, lbdas);
@@ -100,8 +99,8 @@ TEST_CASE("riccati_one_knot_prob", "[gar]") {
   REQUIRE(xs.size() == 1);
   REQUIRE(us.size() == 0);
   REQUIRE(lbdas.size() == 1);
-  double mu = 1e-13;
-  solver.backward(mu, mu);
+  const double mueq = 1e-13;
+  solver.backward(mueq);
   solver.forward(xs, us, vs, lbdas);
 
   KktError err = computeKktError(problem, xs, us, vs, lbdas);
@@ -116,9 +115,9 @@ TEST_CASE("riccati_random_long_problem", "[gar]") {
   uint horz = 100;
   auto prob = generate_problem(x0, horz, nx, nu);
   ProximalRiccatiSolver<double> solver{prob};
-  const double mu = 1e-14;
+  const double mueq = 1e-14;
   auto bwbeg = std::chrono::system_clock::now();
-  solver.backward(mu, mu);
+  solver.backward(mueq);
   auto bwend = std::chrono::system_clock::now();
   auto t_bwd =
       std::chrono::duration_cast<std::chrono::microseconds>(bwend - bwbeg);
@@ -140,7 +139,7 @@ TEST_CASE("riccati_random_long_problem", "[gar]") {
   {
     RiccatiSolverDense<double> denseSolver(prob);
     auto bwbeg = std::chrono::system_clock::now();
-    denseSolver.backward(mu, mu);
+    denseSolver.backward(mueq);
     auto bwend = std::chrono::system_clock::now();
     auto t_bwd =
         std::chrono::duration_cast<std::chrono::microseconds>(bwend - bwbeg);
@@ -160,10 +159,10 @@ TEST_CASE("riccati_parametric", "[gar]") {
   uint horz = 100;
   uint nth = 1;
   auto problem = generate_problem(x0, horz, nx, nu, nth);
-  const double mu = 1e-12;
+  const double mueq = 1e-12;
   auto testfn = [&](auto &&solver) {
     auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
-    solver.backward(mu, mu);
+    solver.backward(mueq);
 
     VectorXs theta(nth);
     theta.setRandom();
