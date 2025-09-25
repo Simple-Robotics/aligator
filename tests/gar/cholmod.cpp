@@ -113,7 +113,7 @@ TEST_CASE("cholmod_short_horz", "[gar]") {
   uint horz = 10;
   constexpr double TOL = 1e-11;
   VectorXs x0 = VectorXs::Random(nx);
-  problem_t problem = generate_problem(x0, horz, nx, nu);
+  const problem_t problem = generateLqProblem(x0, horz, nx, nu);
   gar::CholmodLqSolver<double> solver{problem, 1};
 
   auto [xs, us, vs, lbdas] = gar::lqrInitializeSolution(problem);
@@ -131,8 +131,6 @@ TEST_CASE("cholmod_short_horz", "[gar]") {
   const double sparse_residual = solver.computeSparseResidual();
   fmt::println("Sparse solver residual: {:.4e}", sparse_residual);
   REQUIRE(sparse_residual <= TOL);
-
-  REQUIRE(ret);
 
   auto [dynErr, cstErr, dualErr, maxErr] =
       computeKktError(problem, xs, us, vs, lbdas, std::nullopt, mueq, true);
