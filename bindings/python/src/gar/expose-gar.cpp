@@ -115,7 +115,7 @@ void exposeGAR() {
 
   bp::class_<riccati_base_t, boost::noncopyable>("RiccatiSolverBase",
                                                  bp::no_init)
-      .def("backward", &riccati_base_t::backward, ("self"_a, "mu", "mueq"))
+      .def("backward", &riccati_base_t::backward, ("self"_a, "mueq"))
       .def("forward", &riccati_base_t::forward,
            ("self"_a, "xs", "us", "vs", "lbdas", "theta"_a = std::nullopt));
 
