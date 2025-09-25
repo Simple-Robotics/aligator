@@ -15,8 +15,8 @@ using namespace aligator::gar;
 constexpr double EPS = 1e-9;
 const uint num_threads = 6;
 
-std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem, uint t0,
-                                           double mu) {
+static std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem,
+                                                  uint t0) {
   assert(problem.isInitialized());
   uint N = (uint)problem.horizon();
   assert(t0 < N);
@@ -41,7 +41,6 @@ std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem, uint t0,
     p1_last.Gx = kn1_last.A.transpose();
     p1_last.Gu = kn1_last.B.transpose();
     p1_last.gamma = kn1_last.f;
-    p1_last.Gth.diagonal().setConstant(-mu);
     kn1_last.A.setZero();
     kn1_last.B.setZero();
     kn1_last.f.setZero();
@@ -65,12 +64,12 @@ TEST_CASE("parallel_manual", "[gar]") {
   VectorXs x0;
   x0.setRandom(nx);
   const uint horizon = 16;
-  const double mu = 1e-14;
+  const double mueq = 1e-14;
 
   problem_t problem = generateLqProblem(x0, horizon, nx, nu);
 
   ProximalRiccatiSolver<double> solver_full_horz(problem);
-  solver_full_horz.backward(mu, mu);
+  solver_full_horz.backward(mueq);
 
   auto solution_full_horz = lqrInitializeSolution(problem);
   auto &[xs, us, vs, lbdas] = solution_full_horz;
@@ -83,7 +82,7 @@ TEST_CASE("parallel_manual", "[gar]") {
   }
 
   uint t0 = horizon / 2;
-  auto prs = splitProblemInTwo(problem, t0, mu);
+  auto prs = splitProblemInTwo(problem, t0);
   auto &pr1 = prs[0];
   auto &pr2 = prs[1];
 
@@ -104,9 +103,9 @@ TEST_CASE("parallel_manual", "[gar]") {
 #pragma omp parallel sections num_threads(2)
   {
 #pragma omp section
-    subSolve1.backward(mu, mu);
+    subSolve1.backward(mueq);
 #pragma omp section
-    subSolve2.backward(mu, mu);
+    subSolve2.backward(mueq);
   }
   {
     ALIGATOR_NOMALLOC_END;
@@ -200,7 +199,7 @@ TEST_CASE("parallel_solver_class", "[gar]") {
   problem_t problem = generateLqProblem(x0, horizon, nx, nu);
   const problem_t problemRef{problem};
   REQUIRE(problem.get_allocator() == problemRef.get_allocator());
-  const double mu = 1e-9;
+  const double mueq = 1e-9;
 
   auto solutionRef = lqrInitializeSolution(problemRef);
   auto [xs_ref, us_ref, vs_ref, lbdas_ref] = solutionRef;
@@ -209,7 +208,7 @@ TEST_CASE("parallel_solver_class", "[gar]") {
   ProximalRiccatiSolver<double> refSolver{problemRef};
 
   {
-    refSolver.backward(mu, mu);
+    refSolver.backward(mueq);
     refSolver.forward(xs_ref, us_ref, vs_ref, lbdas_ref);
     KktError err_ref = computeKktError(problemRef, xs_ref, us_ref, vs_ref,
                                        lbdas_ref, mueq, true);
@@ -222,7 +221,7 @@ TEST_CASE("parallel_solver_class", "[gar]") {
   ParallelRiccatiSolver<double> parSolver(problem, num_threads);
 
   {
-    parSolver.backward(mu, mu);
+    parSolver.backward(mueq);
     parSolver.forward(xs, us, vs, lbdas);
     KktError err = computeKktError(problem, xs, us, vs, lbdas, mueq);
     fmt::println("{}", err);
@@ -244,7 +243,7 @@ TEST_CASE("parallel_solver_class", "[gar]") {
 
   for (size_t i = 0; i < 10; i++) {
     randomlyModifyProblem(problem);
-    parSolver.backward(mu, mu);
+    parSolver.backward(mueq);
     parSolver.forward(xs, us, vs, lbdas);
     KktError e = computeKktError(problem, xs, us, vs, lbdas, mueq, false);
     fmt::println("{}", e);

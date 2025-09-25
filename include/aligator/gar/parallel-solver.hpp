@@ -39,19 +39,18 @@ public:
 
   void allocateLeg(uint start, uint end, bool last_leg);
 
-  static void setupKnot(KnotType &knot, const Scalar mudyn) {
+  static void setupKnot(KnotType &knot) {
     ALIGATOR_TRACY_ZONE_SCOPED;
     ALIGATOR_NOMALLOC_SCOPED;
     knot.Gx = knot.A.transpose();
     knot.Gu = knot.B.transpose();
     knot.Gth.setZero();
-    knot.Gth.diagonal().setConstant(-mudyn);
     knot.gamma = knot.f;
   }
 
-  bool backward(const Scalar mudyn, const Scalar mueq);
+  bool backward(const Scalar mueq) override;
 
-  inline void collapseFeedback() {
+  inline void collapseFeedback() override {
     using RowMatrix = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
     StageFactor<Scalar> &d = datas[0];
     Eigen::Ref<RowMatrix> K = d.fb.blockRow(0);
@@ -79,13 +78,14 @@ public:
   /// @brief Create the sparse representation of the reduced KKT system.
   void assembleCondensedSystem(const Scalar mudyn);
 
-  bool forward(VectorOfVectors &xs, VectorOfVectors &us, VectorOfVectors &vs,
-               VectorOfVectors &lbdas,
-               const std::optional<ConstVectorRef> & = std::nullopt) const;
+  bool
+  forward(VectorOfVectors &xs, VectorOfVectors &us, VectorOfVectors &vs,
+          VectorOfVectors &lbdas,
+          const std::optional<ConstVectorRef> & = std::nullopt) const override;
 
-  void cycleAppend(const KnotType &knot);
-  VectorRef getFeedforward(size_t i) { return datas[i].ff.matrix(); }
-  RowMatrixRef getFeedback(size_t i) { return datas[i].fb.matrix(); }
+  void cycleAppend(const KnotType &knot) override;
+  VectorRef getFeedforward(size_t i) override { return datas[i].ff.matrix(); }
+  RowMatrixRef getFeedback(size_t i) override { return datas[i].fb.matrix(); }
 
   /// Number of parallel divisions in the problem: \f$J+1\f$ in the math.
   uint numThreads;
