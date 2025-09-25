@@ -34,11 +34,11 @@ void exposeGarUtils() {
 
   bp::def(
       "lqrDenseMatrix",
-      +[](const lqr_t &problem, Scalar mudyn, Scalar mueq) {
-        auto mat_rhs = lqrDenseMatrix(problem, mudyn, mueq);
-        return bp::make_tuple(std::get<0>(mat_rhs), std::get<1>(mat_rhs));
+      +[](const lqr_t &problem, const Scalar mueq) {
+        auto [mat, rhs] = lqrDenseMatrix(problem, mueq);
+        return bp::make_tuple(mat, rhs);
       },
-      ("problem"_a, "mudyn", "mueq"));
+      ("problem"_a, "mueq"));
 
   bp::def("lqrCreateSparseMatrix", lqr_create_sparse_wrap,
           ("problem"_a, "mueq", "update"),
