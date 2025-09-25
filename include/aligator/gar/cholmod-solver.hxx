@@ -16,7 +16,7 @@ CholmodLqSolver<Scalar>::CholmodLqSolver(const Problem &problem,
     , cholmod()
     , numRefinementSteps(numRefinementSteps)
     , problem_(&problem) {
-  lqrCreateSparseMatrix(problem, 1., 1., kktMatrix, kktRhs, false);
+  lqrCreateSparseMatrix(problem, 1., kktMatrix, kktRhs, false);
   assert(kktMatrix.cols() == kktRhs.rows());
   kktSol.resize(kktRhs.rows());
   kktResidual.resize(kktRhs.rows());
@@ -24,9 +24,9 @@ CholmodLqSolver<Scalar>::CholmodLqSolver(const Problem &problem,
 }
 
 template <typename Scalar>
-bool CholmodLqSolver<Scalar>::backward(const Scalar mudyn, const Scalar mueq) {
+bool CholmodLqSolver<Scalar>::backward(const Scalar mueq) {
   // update the sparse linear problem
-  lqrCreateSparseMatrix(*problem_, mudyn, mueq, kktMatrix, kktRhs, true);
+  lqrCreateSparseMatrix(*problem_, mueq, kktMatrix, kktRhs, true);
   cholmod.factorize(kktMatrix);
   return cholmod.info() == Eigen::Success;
 }
