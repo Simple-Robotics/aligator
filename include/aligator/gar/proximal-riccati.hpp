@@ -25,7 +25,7 @@ public:
   explicit ProximalRiccatiSolver(const LqrProblemTpl<Scalar> &problem);
 
   /// Backward sweep.
-  bool backward(const Scalar mudyn, const Scalar mueq);
+  bool backward(const Scalar mueq);
 
   bool forward(std::vector<VectorXs> &xs, std::vector<VectorXs> &us,
                std::vector<VectorXs> &vs, std::vector<VectorXs> &lbdas,
