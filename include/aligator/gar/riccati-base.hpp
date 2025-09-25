@@ -15,7 +15,7 @@ public:
   using LqrKnot = LqrKnotTpl<Scalar>;
   ALIGATOR_DYNAMIC_TYPEDEFS_WITH_ROW_TYPES(Scalar);
 
-  virtual bool backward(const Scalar mudyn, const Scalar mueq) = 0;
+  virtual bool backward(const Scalar mueq) = 0;
 
   virtual bool
   forward(std::vector<VectorXs> &xs, std::vector<VectorXs> &us,
