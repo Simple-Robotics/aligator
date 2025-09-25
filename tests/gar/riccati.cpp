@@ -93,7 +93,7 @@ TEST_CASE("riccati_one_knot_prob", "[gar]") {
   uint nu = 2;
   Eigen::VectorXd x0;
   x0.setZero(nx);
-  auto problem = generate_problem(x0, 0, nx, nu);
+  auto problem = generateLqProblem(x0, 0, nx, nu);
   ProximalRiccatiSolver<double> solver(problem);
   auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
   REQUIRE(xs.size() == 1);
@@ -113,7 +113,7 @@ TEST_CASE("riccati_random_long_problem", "[gar]") {
   Eigen::VectorXd x0;
   x0.setZero(nx);
   uint horz = 100;
-  auto prob = generate_problem(x0, horz, nx, nu);
+  auto prob = generateLqProblem(x0, horz, nx, nu);
   ProximalRiccatiSolver<double> solver{prob};
   const double mueq = 1e-14;
   auto bwbeg = std::chrono::system_clock::now();
@@ -158,7 +158,7 @@ TEST_CASE("riccati_parametric", "[gar]") {
   uint nu = 2;
   uint horz = 100;
   uint nth = 1;
-  auto problem = generate_problem(x0, horz, nx, nu, nth);
+  auto problem = generateLqProblem(x0, horz, nx, nu, nth);
   const double mueq = 1e-12;
   auto testfn = [&](auto &&solver) {
     auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
