@@ -55,6 +55,9 @@ template <typename Scalar> struct LqrKnotTpl {
   MMat Gv;
   MVec gamma;
 
+  LqrKnotTpl() = default;
+  explicit LqrKnotTpl(const allocator_type &alloc);
+
   LqrKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth,
              allocator_type alloc = {});
 
@@ -96,7 +99,6 @@ template <typename Scalar> struct LqrKnotTpl {
   allocator_type get_allocator() const { return m_allocator; }
 
 private:
-  explicit LqrKnotTpl(no_alloc_t, allocator_type alloc = {});
   allocator_type m_allocator;
 };
 

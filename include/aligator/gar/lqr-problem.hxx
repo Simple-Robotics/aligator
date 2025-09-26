@@ -6,7 +6,7 @@
 namespace aligator::gar {
 
 template <typename Scalar>
-LqrKnotTpl<Scalar>::LqrKnotTpl(no_alloc_t, allocator_type alloc)
+LqrKnotTpl<Scalar>::LqrKnotTpl(const allocator_type &alloc)
     : Q(alloc)
     , S(alloc)
     , R(alloc)
@@ -34,8 +34,7 @@ LqrKnotTpl<Scalar>::LqrKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth,
     , nc(nc)
     , nx2(nx2)
     , nth(nth)
-    , //
-    Q(nx, nx, alloc)
+    , Q(nx, nx, alloc)
     , S(nx, nu, alloc)
     , R(nu, nu, alloc)
     , q(nx, alloc)
