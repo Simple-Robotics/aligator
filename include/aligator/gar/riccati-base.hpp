@@ -2,6 +2,7 @@
 /// @author Wilson Jallet
 #pragma once
 
+#include "aligator/context.hpp"
 #include "aligator/math.hpp"
 #include "aligator/gar/fwd.hpp"
 #include <optional>
@@ -33,9 +34,8 @@ public:
   virtual ~RiccatiSolverBase() = default;
 };
 
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template class RiccatiSolverBase<context::Scalar>;
+#endif
 } // namespace gar
 } // namespace aligator
-
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "riccati-base.txx"
-#endif
