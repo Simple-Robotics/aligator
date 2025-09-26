@@ -77,12 +77,12 @@ template <typename _Scalar> struct StageFactor {
   ArenaMatrix<MatrixXs> Gxhat;
   ArenaMatrix<MatrixXs> Guhat;
 
-  BlkMatrix<VectorXs, 4, 1> ff;          //< feedforward gains
-  BlkMatrix<RowMatrixXs, 4, 1> fb;       //< feedback gains
-  BlkMatrix<RowMatrixXs, 4, 1> fth;      //< parameter feedback gains
-  BlkMatrix<MatrixXs, 2, 2> kktMat;      //< reduced KKT matrix buffer
-  Eigen::BunchKaufman<MatrixXs> kktChol; //< reduced KKT LDLT solver
-  Eigen::PartialPivLU<MatrixXs> Efact;   //< LU decomp. of E matrix
+  BlkMatrix<VectorXs, 4, 1> ff;        //< feedforward gains
+  BlkMatrix<RowMatrixXs, 4, 1> fb;     //< feedback gains
+  BlkMatrix<RowMatrixXs, 4, 1> fth;    //< parameter feedback gains
+  BlkMatrix<MatrixXs, 2, 2> kktMat;    //< reduced KKT matrix buffer
+  BunchKaufman<MatrixXs> kktChol;      //< reduced KKT LDLT solver
+  Eigen::PartialPivLU<MatrixXs> Efact; //< LU decomp. of E matrix
   ArenaMatrix<VectorXs> yff_pre;
   ArenaMatrix<MatrixXs> A_pre;
   ArenaMatrix<MatrixXs> Yth_pre;
@@ -106,7 +106,7 @@ template <typename Scalar> struct ProximalRiccatiKernel {
     BlkMatrix<MatrixXs, 2, 2> mat;
     BlkMatrix<VectorXs, 2, 1> ff;
     BlkMatrix<RowMatrixXs, 2, 1> fth;
-    Eigen::BunchKaufman<MatrixXs> chol{mat.rows()};
+    BunchKaufman<MatrixXs> chol{mat.rows()};
     kkt0_t(uint nx, uint nc, uint nth)
         : mat({nx, nc}, {nx, nc})
         , ff(mat.rowDims())

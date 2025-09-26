@@ -35,7 +35,7 @@ public:
     BlkMatrix<MatrixXs, 2, 2> mat;
     BlkMatrix<VectorXs, 2, 1> ff;
     BlkMatrix<MatrixXs, 2, 1> fth; // parametric rhs
-    Eigen::BunchKaufman<MatrixXs> ldl;
+    BunchKaufman<MatrixXs> ldl;
   } kkt0;
   VectorXs thGrad;
   MatrixXs thHess;

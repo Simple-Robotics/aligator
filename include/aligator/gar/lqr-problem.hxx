@@ -287,8 +287,6 @@ LqrProblemTpl<Scalar>::LqrProblemTpl(KnotVector &&knots, long nc0)
   assert(check_allocators());
 }
 
-template <typename Scalar> LqrProblemTpl<Scalar>::~LqrProblemTpl() {}
-
 template <typename Scalar>
 Scalar LqrProblemTpl<Scalar>::evaluate(
     const VectorOfVectors &xs, const VectorOfVectors &us,
