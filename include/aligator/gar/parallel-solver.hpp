@@ -106,6 +106,10 @@ public:
 protected:
   LqrProblemTpl<Scalar> *problem_;
 };
+
+template <typename Scalar>
+ParallelRiccatiSolver(LqrProblemTpl<Scalar> &, const uint)
+    -> ParallelRiccatiSolver<Scalar>;
 #endif
 
 } // namespace gar
