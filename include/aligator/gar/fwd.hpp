@@ -9,5 +9,7 @@ namespace gar {
 template <typename Scalar> struct LqrKnotTpl;
 template <typename Scalar> struct LqrProblemTpl;
 template <typename Scalar> class RiccatiSolverBase;
+template <typename Scalar> class ProximalRiccatiSolver;
+
 } // namespace gar
 } // namespace aligator
