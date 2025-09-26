@@ -31,15 +31,6 @@ bp::tuple lqr_create_sparse_wrap(const lqr_t &problem, const Scalar mueq,
 }
 
 void exposeGarUtils() {
-
-  bp::def(
-      "lqrDenseMatrix",
-      +[](const lqr_t &problem, const Scalar mueq) {
-        auto [mat, rhs] = lqrDenseMatrix(problem, mueq);
-        return bp::make_tuple(mat, rhs);
-      },
-      ("problem"_a, "mueq"));
-
   bp::def("lqrCreateSparseMatrix", lqr_create_sparse_wrap,
           ("problem"_a, "mueq", "update"),
           "Create or update a sparse matrix from an LqrProblem.");

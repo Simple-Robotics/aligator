@@ -11,6 +11,7 @@
 #include <Eigen/Cholesky>
 
 using namespace aligator::gar;
+using aligator::math::infty_norm;
 
 constexpr double EPS = 1e-9;
 const uint num_threads = 6;

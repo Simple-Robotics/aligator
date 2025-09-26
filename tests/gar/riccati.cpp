@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, 2023-2025 INRIA
 #define EIGEN_DEFAULT_IO_FORMAT Eigen::IOFormat(4, 0, ",", "\n", "[", "]")
 
 #include <catch2/catch_test_macros.hpp>
@@ -39,10 +39,8 @@ TEST_CASE("riccati_short_horz_pb", "[gar]") {
   };
   auto base_knot = init_knot();
   auto knot1 = base_knot;
-  {
-    knot1.Q.setIdentity();
-    knot1.q = -x1;
-  }
+  knot1.Q.setIdentity();
+  knot1.q = -x1;
 
   uint N = 8;
   problem_t::KnotVector knots(N + 1, base_knot);
@@ -50,10 +48,10 @@ TEST_CASE("riccati_short_horz_pb", "[gar]") {
   knots[4].D.setIdentity();
   knots[4].d.setConstant(0.1);
   knots[N] = std::move(knot1);
-  problem_t prob(knots, nx);
+  problem_t prob(std::move(knots), nx);
   prob.g0 = -x0;
   prob.G0.setIdentity();
-  ProximalRiccatiSolver<double> solver{prob};
+  ProximalRiccatiSolver solver{prob};
   fmt::print("Horizon: {:d}\n", prob.horizon());
 
   auto bwbeg = std::chrono::system_clock::now();
@@ -88,7 +86,7 @@ TEST_CASE("riccati_one_knot_prob", "[gar]") {
   Eigen::VectorXd x0;
   x0.setZero(nx);
   auto problem = generateLqProblem(x0, 0, nx, nu, 0, true, alloc);
-  ProximalRiccatiSolver<double> solver(problem);
+  ProximalRiccatiSolver solver(problem);
   auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
   REQUIRE(xs.size() == 1);
   REQUIRE(us.size() == 0);
@@ -108,14 +106,14 @@ TEST_CASE("riccati_random_long_problem", "[gar]") {
   x0.setZero(nx);
   uint horz = 100;
   const auto problem = generateLqProblem(x0, horz, nx, nu, 0, true, alloc);
-  ProximalRiccatiSolver<double> solver{problem};
+  ProximalRiccatiSolver solver{problem};
   const double mueq = 1e-14;
   auto bwbeg = std::chrono::system_clock::now();
   solver.backward(mueq);
   auto bwend = std::chrono::system_clock::now();
   auto t_bwd =
       std::chrono::duration_cast<std::chrono::microseconds>(bwend - bwbeg);
-  fmt::print("Elapsed time (bwd): {:d}\n", t_bwd.count());
+  fmt::println("Elapsed time (bwd): {:d}", t_bwd.count());
 
   auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
   auto fwbeg = std::chrono::system_clock::now();
@@ -123,7 +121,7 @@ TEST_CASE("riccati_random_long_problem", "[gar]") {
   auto fwend = std::chrono::system_clock::now();
   auto t_fwd =
       std::chrono::duration_cast<std::chrono::microseconds>(fwend - fwbeg);
-  fmt::print("Elapsed time (fwd): {:d}\n", t_fwd.count());
+  fmt::println("Elapsed time (fwd): {:d}", t_fwd.count());
 
   KktError err = computeKktError(problem, xs, us, vs, lbdas);
   fmt::println("{}", err);
@@ -132,7 +130,7 @@ TEST_CASE("riccati_random_long_problem", "[gar]") {
   CHECK(err.max <= TOL);
 
   SECTION("test dense solver") {
-    RiccatiSolverDense<double> denseSolver(problem);
+    RiccatiSolverDense denseSolver(problem);
     auto bwbeg = std::chrono::system_clock::now();
     denseSolver.backward(mueq);
     auto bwend = std::chrono::system_clock::now();
@@ -148,14 +146,14 @@ TEST_CASE("riccati_random_long_problem", "[gar]") {
 }
 
 TEST_CASE("riccati_parametric", "[gar]") {
-  fmt::println("=== PARAMETRIC PROBLEM =======");
   Eigen::Vector3d x0 = Eigen::Vector3d::NullaryExpr(normal_unary_op{});
   uint nx = uint(x0.rows());
   uint nu = 2;
   uint horz = 100;
   uint nth = 1;
-  auto problem = generateLqProblem(x0, horz, nx, nu, nth, true, alloc);
+  const auto problem = generateLqProblem(x0, horz, nx, nu, nth, true, alloc);
   const double mueq = 1e-12;
+
   auto testfn = [&](auto &&solver) {
     auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
     solver.backward(mueq);
@@ -172,7 +170,7 @@ TEST_CASE("riccati_parametric", "[gar]") {
     CHECK(err.max <= 1e-10);
   };
 
-  ProximalRiccatiSolver<double> solver(problem);
+  ProximalRiccatiSolver solver(problem);
   testfn(solver);
 
   using aligator::math::check_value;
@@ -189,7 +187,7 @@ TEST_CASE("riccati_parametric", "[gar]") {
   REQUIRE_FALSE(check_value(solver.datas[horz].vm.Vtt));
 
   SECTION("test dense") {
-    RiccatiSolverDense<double> denseSolver(problem);
+    RiccatiSolverDense denseSolver(problem);
     testfn(denseSolver);
   }
 }

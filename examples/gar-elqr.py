@@ -84,9 +84,8 @@ print("Is problem parameterized? {}".format(prob.isParameterized))
 ricsolve = gar.ProximalRiccatiSolver(prob)
 
 assert prob.horizon == T
-mu = 1e-5
-mueq = mu
-ricsolve.backward(mu, mueq)
+mueq = 1e-5
+ricsolve.backward(mueq)
 
 
 def inftyNorm(x):
@@ -94,7 +93,8 @@ def inftyNorm(x):
 
 
 def get_np_solution():
-    matrix, rhs = gar.lqrDenseMatrix(prob, mu, mueq)
+    matrix, rhs = gar.lqrCreateSparseMatrix(prob, mueq)
+    matrix = np.array(matrix)
     knots = prob.stages
     ldlt = eigenpy.LDLT(matrix)
     _sol_np = ldlt.solve(-rhs)
@@ -150,7 +150,7 @@ def checkAllErrors(sol: dict, knots):
         lbda = lbdas[t + 1]
         xn = xs[t + 1]
         knot = knots[t]
-        rdl = knot.E @ xn + knot.A @ x + knot.B @ u + knot.f - mu * lbda
+        rdl = knot.E @ xn + knot.A @ x + knot.B @ u + knot.f
         gu = knot.S.T @ x + knot.R @ u + knot.D.T @ v + knot.B.T @ lbda + knot.r
         if knot.nc > 0:
             gc = knot.C @ x + knot.D @ u + knot.d - mueq * v
@@ -218,7 +218,7 @@ print("Terminal knot:", knot1)
 
 print("Is problem parameterized? {}".format(prob.isParameterized))
 ricsolve = gar.ProximalRiccatiSolver(prob)
-ricsolve.backward(mu, mueq)
+ricsolve.backward(mueq)
 
 vm0: gar.value_data = ricsolve.datas[0].vm
 thGrad = ricsolve.thGrad
