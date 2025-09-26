@@ -223,7 +223,7 @@ bool SolverProxDDPTpl<Scalar>::computeMultipliers(
 
   const std::vector<VectorXs> &vs_prev = workspace_.prev_vs;
   std::vector<VectorXs> &vs_plus = workspace_.vs_plus;
-  std::vector<VectorXs> &vs_pdal = workspace_.vs_pdal;
+  // std::vector<VectorXs> &vs_pdal = workspace_.vs_pdal;
 
   std::vector<VectorXs> &Lvs = workspace_.Lvs;
   std::vector<VectorXs> &shifted_constraints = workspace_.shifted_constraints;
@@ -252,6 +252,7 @@ bool SolverProxDDPTpl<Scalar>::computeMultipliers(
     assert(lams[i + 1].size() == stage.ndx2());
 
     // 1. compute dynamics error
+    lams_plus[i + 1] = lams[i + 1] + dd.value_ / mu();
     workspace_.dyn_slacks[i + 1] = dd.value_;
     RET_FALSE_IF_NAN(lams_plus[i + 1]);
 

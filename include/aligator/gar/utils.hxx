@@ -87,7 +87,7 @@ std::array<Scalar, 3> lqrComputeKktError(
     boost::span<const typename math_types<Scalar>::VectorXs> us,
     boost::span<const typename math_types<Scalar>::VectorXs> vs,
     boost::span<const typename math_types<Scalar>::VectorXs> lbdas,
-    const Scalar mudyn, const Scalar mueq,
+    const Scalar, const Scalar mueq,
     const std::optional<typename math_types<Scalar>::ConstVectorRef> &theta_,
     bool verbose) {
   if (verbose)
@@ -109,7 +109,7 @@ std::array<Scalar, 3> lqrComputeKktError(
 
   // initial stage
   {
-    _dyn = problem.g0 + problem.G0 * xs[0] - mudyn * lbdas[0];
+    _dyn = problem.g0 + problem.G0 * xs[0];
     dNorm = math::infty_norm(_dyn);
     dynErr = std::max(dynErr, dNorm);
     if (verbose)
@@ -143,8 +143,7 @@ std::array<Scalar, 3> lqrComputeKktError(
     }
 
     if (t < N) {
-      _dyn = knot.A * xs[t] + knot.B * us[t] + knot.f + knot.E * xs[t + 1] -
-             mudyn * lbdas[t + 1];
+      _dyn = knot.A * xs[t] + knot.B * us[t] + knot.f + knot.E * xs[t + 1];
       _gx += knot.A.transpose() * lbdas[t + 1];
       _gu += knot.B.transpose() * lbdas[t + 1];
 
