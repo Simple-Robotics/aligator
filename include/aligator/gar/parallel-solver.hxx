@@ -232,7 +232,7 @@ void ParallelRiccatiSolver<Scalar>::cycleAppend(const KnotType &knot) {
   condensedKktSystem.diagonal.back().setZero(dim1, dim1);
   condensedFacs.diagonalFacs.back().setZero(dim1, dim1);
   condensedFacs.upFacs.back().setZero(dim1, dim1);
-  condensedFacs.ldlt.back() = Eigen::BunchKaufman<MatrixXs>(dim1);
+  condensedFacs.ldlt.back() = BunchKaufman<MatrixXs>(dim1);
 };
 
 template <typename Scalar>
