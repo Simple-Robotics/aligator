@@ -8,7 +8,6 @@
 
 #include "aligator/core/bunchkaufman.hpp"
 #include <Eigen/LU>
-#include <Eigen/Cholesky>
 
 #include <boost/core/make_span.hpp>
 
@@ -37,23 +36,23 @@ template <typename _Scalar> struct StageFactor {
   ALIGATOR_DYNAMIC_TYPEDEFS_WITH_ROW_TYPES(Scalar);
   using allocator_type = polymorphic_allocator;
 
-  struct value_t {
+  struct CostToGo {
     ArenaMatrix<MatrixXs> Pmat; //< Riccati matrix
     ArenaMatrix<VectorXs> pvec; //< Riccati bias
     ArenaMatrix<MatrixXs> Vxx;  //< "cost-to-go" matrix
     ArenaMatrix<VectorXs> vx;   //< "cost-to-go" gradient
-    ArenaMatrix<MatrixXs> Vxt;
-    ArenaMatrix<MatrixXs> Vtt;
-    ArenaMatrix<VectorXs> vt;
+    ArenaMatrix<MatrixXs> Vxt;  //<
+    ArenaMatrix<MatrixXs> Vtt;  //< parametric Hessian
+    ArenaMatrix<VectorXs> vt;   //< parametric vector
 
-    value_t(uint nx, uint nth)
-        : Pmat(nx, nx)
-        , pvec(nx)
-        , Vxx(nx, nx)
-        , vx(nx)
-        , Vxt(nx, nth)
-        , Vtt(nth, nth)
-        , vt(nth) {
+    CostToGo(uint nx, uint nth, const allocator_type &alloc = {})
+        : Pmat(nx, nx, alloc)
+        , pvec(nx, alloc)
+        , Vxx(nx, nx, alloc)
+        , vx(nx, alloc)
+        , Vxt(nx, nth, alloc)
+        , Vtt(nth, nth, alloc)
+        , vt(nth, alloc) {
       Vxt.setZero();
       Vtt.setZero();
       vt.setZero();
@@ -65,6 +64,7 @@ template <typename _Scalar> struct StageFactor {
 
   allocator_type get_allocator() const { return Qhat.get_allocator(); }
 
+  uint nx, nu, nc, nx2, nth;
   ArenaMatrix<MatrixXs> Qhat;
   ArenaMatrix<MatrixXs> Rhat;
   ArenaMatrix<MatrixXs> Shat;
@@ -83,15 +83,8 @@ template <typename _Scalar> struct StageFactor {
   BlkMatrix<MatrixXs, 2, 2> kktMat;    //< reduced KKT matrix buffer
   BunchKaufman<MatrixXs> kktChol;      //< reduced KKT LDLT solver
   Eigen::PartialPivLU<MatrixXs> Efact; //< LU decomp. of E matrix
-  ArenaMatrix<VectorXs> yff_pre;
-  ArenaMatrix<MatrixXs> A_pre;
-  ArenaMatrix<MatrixXs> Yth_pre;
-  ArenaMatrix<MatrixXs> Ptilde;   //< product Et.inv P * E.inv
-  ArenaMatrix<MatrixXs> Einv;     //< product P * E.inv
-  ArenaMatrix<MatrixXs> EinvP;    //< product P * E.inv
-  ArenaMatrix<MatrixXs> schurMat; //< Dual-space Schur matrix
-  Eigen::LLT<MatrixXs> schurChol; //< Cholesky decomposition of Schur matrix
-  value_t vm;                     //< cost-to-go parameters
+  ArenaMatrix<MatrixXs> Einv;          //< product P * E.inv
+  CostToGo vm;                         //< cost-to-go parameters
 };
 
 /// @brief Kernel for use in Riccati-like algorithms for the proximal LQ
@@ -100,7 +93,7 @@ template <typename Scalar> struct ProximalRiccatiKernel {
   ALIGATOR_DYNAMIC_TYPEDEFS_WITH_ROW_TYPES(Scalar);
   using KnotType = LqrKnotTpl<Scalar>;
   using StageFactorType = StageFactor<Scalar>;
-  using value_t = typename StageFactor<Scalar>::value_t;
+  using CostToGo = typename StageFactor<Scalar>::CostToGo;
 
   struct kkt0_t {
     BlkMatrix<MatrixXs, 2, 2> mat;
@@ -125,7 +118,7 @@ template <typename Scalar> struct ProximalRiccatiKernel {
                              const std::optional<ConstVectorRef> &theta_);
 
   static void stageKernelSolve(const KnotType &model, StageFactorType &d,
-                               value_t &vn, const Scalar mueq);
+                               CostToGo &vn, const Scalar mueq);
 
   /// Forward sweep.
   static bool
