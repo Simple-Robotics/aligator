@@ -44,6 +44,10 @@ protected:
   const LqrProblemTpl<Scalar> *problem_;
 };
 
+template <typename Scalar>
+ProximalRiccatiSolver(const LqrProblemTpl<Scalar> &)
+    -> ProximalRiccatiSolver<Scalar>;
+
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 extern template class ProximalRiccatiSolver<context::Scalar>;
 #endif
