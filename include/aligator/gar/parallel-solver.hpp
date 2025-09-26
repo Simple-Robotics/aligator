@@ -31,7 +31,6 @@ public:
   using Kernel = ProximalRiccatiKernel<Scalar>;
   using KnotType = LqrKnotTpl<Scalar>;
 
-  using BlkMat = BlkMatrix<MatrixXs, -1, -1>;
   using BlkVec = BlkMatrix<VectorXs, -1, 1>;
 
   explicit ParallelRiccatiSolver(LqrProblemTpl<Scalar> &problem,
