@@ -84,7 +84,7 @@ TEST_CASE("create_sparse_problem", "[gar]") {
   gar::lqrCreateSparseMatrix(problem, mueq, kktMat, kktRhs, false);
 
   auto test_equal = [&] {
-    auto [kktDense, rhsDense] = gar::lqrDenseMatrix(problem, mueq);
+    auto [kktDense, rhsDense] = lqrDenseMatrix(problem, mueq);
 
     REQUIRE(rhsDense.isApprox(kktRhs));
     REQUIRE(kktDense.isApprox(kktMat.toDense()));
