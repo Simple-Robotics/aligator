@@ -2,7 +2,7 @@
 #pragma once
 
 #include "lqr-problem.hpp"
-#include "aligator/third-party/boost/core/span.hpp"
+#include <boost/core/span.hpp>
 #include <Eigen/SparseCore>
 
 namespace aligator::gar {
