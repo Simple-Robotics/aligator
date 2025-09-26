@@ -18,7 +18,7 @@ public:
 
   using Kernel = ProximalRiccatiKernel<Scalar>;
   using StageFactorType = typename Kernel::StageFactorType;
-  using value_t = typename StageFactorType::value_t;
+  using value_t = typename StageFactorType::CostToGo;
   using kkt0_t = typename Kernel::kkt0_t;
   using KnotType = LqrKnotTpl<Scalar>;
 

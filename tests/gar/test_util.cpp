@@ -29,7 +29,7 @@ knot_t generateKnot(uint nx, uint nu, uint nth, bool singular,
   out.A = MatrixXs::NullaryExpr(nx, nx, normal_unary_op{});
   out.B.setRandom();
   out.E = MatrixXs::NullaryExpr(nx, nx, normal_unary_op{});
-  out.E *= 1000;
+  out.E *= 10;
   out.f = VectorXs::NullaryExpr(nx, normal_unary_op{100.});
 
   if (nth > 0) {
