@@ -74,7 +74,7 @@ public:
   struct condensed_system_factor {
     std::vector<MatrixXs> diagonalFacs; //< diagonal factors
     std::vector<MatrixXs> upFacs;       //< transposed U factors
-    std::vector<Eigen::BunchKaufman<MatrixXs>> ldlt;
+    std::vector<BunchKaufman<MatrixXs>> ldlt;
   };
 
   /// @brief Create the sparse representation of the reduced KKT system.

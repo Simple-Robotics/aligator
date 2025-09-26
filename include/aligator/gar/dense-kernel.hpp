@@ -25,7 +25,7 @@ template <typename _Scalar> struct DenseKernel {
     BlkRowMat41 fb;
     BlkRowMat41 ft;
     BlkVec4 ff;
-    Eigen::BunchKaufman<MatrixXs> ldl;
+    BunchKaufman<MatrixXs> ldl;
 
     Data(uint nx, uint nu, uint nc, uint nx2, uint nth)
         : kktMat({nu, nc, nx2, nx2}, {nu, nc, nx2, nx2})

@@ -38,7 +38,7 @@ RiccatiSolverDense<Scalar>::RiccatiSolverDense(
   std::array<long, 2> dims0 = {nx0, problem_->nc0()};
   kkt0 = {decltype(kkt0.mat)(dims0, dims0), decltype(kkt0.ff)(dims0, {1}),
           decltype(kkt0.fth)(dims0, {nth}),
-          Eigen::BunchKaufman<MatrixXs>(nx0 + problem_->nc0())};
+          BunchKaufman<MatrixXs>(nx0 + problem_->nc0())};
   thGrad.setZero(nth);
   thHess.setZero(nth, nth);
 }

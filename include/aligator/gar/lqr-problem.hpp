@@ -245,7 +245,7 @@ template <typename Scalar> struct LqrProblemTpl {
     return *this;
   }
 
-  ~LqrProblemTpl();
+  ~LqrProblemTpl() = default;
 
   void addParameterization(uint nth) {
     if (stages.empty())
