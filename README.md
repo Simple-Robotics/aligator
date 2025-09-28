@@ -109,7 +109,7 @@ To cite **Aligator** in your academic research, please use the following bibtex 
 
 ```bibtex
 @misc{aligatorweb,
-  author = {Jallet, Wilson and Bambade, Antoine and El Kazdadi, Sarah and Justin, Carpentier and Nicolas, Mansard},
+  author = {Jallet, Wilson and Bambade, Antoine and El Kazdadi, Sarah and Carpentier, Justin and Mansard, Nicolas},
   title = {aligator},
   url = {https://github.com/Simple-Robotics/aligator}
 }
