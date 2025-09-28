@@ -100,7 +100,7 @@ void getInitialGuesses(
 
   const std::size_t nsteps = croc_problem->get_T();
   const auto &x0 = croc_problem->get_x0();
-  const long nu = (long)croc_problem->get_nu_max();
+  const long nu = 7;
   VectorXd u0 = VectorXd::Zero(nu);
 
   xs_i.assign(nsteps + 1, x0);
