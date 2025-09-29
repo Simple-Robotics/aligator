@@ -150,11 +150,6 @@ cmake_dependent_option(
   OFF
 )
 option(BUILD_WITH_OPENMP_SUPPORT "Build the library with the OpenMP support" ON)
-option(
-  BUILD_WITH_CHOLMOD_SUPPORT
-  "Build with support for backends enabled by Cholmod"
-  OFF
-)
 option(BUILD_BENCHMARKS "Build benchmarks" ON)
 option(BUILD_EXAMPLES "Build examples" ON)
 cmake_dependent_option(
@@ -235,19 +230,6 @@ endif()
 if(BUILD_CROCODDYL_COMPAT)
   message(STATUS "Building with Crocoddyl support.")
   list(APPEND CFLAGS_DEPENDENCIES "-DALIGATOR_WITH_CROCODDYL_COMPAT")
-endif()
-
-if(BUILD_WITH_CHOLMOD_SUPPORT)
-  set(
-    CMAKE_MODULE_PATH
-    ${JRL_CMAKE_MODULES}/find-external/CHOLMOD
-    ${CMAKE_MODULE_PATH}
-  )
-  ADD_PROJECT_DEPENDENCY(CHOLMOD REQUIRED)
-  message(
-    STATUS
-    "Build with CHOLMOD support (LGPL). See CHOLMOD/Doc/License.txt for further details."
-  )
 endif()
 
 if(BUILD_PYTHON_INTERFACE)
@@ -371,11 +353,6 @@ function(create_library)
       PUBLIC pinocchio::pinocchio_default pinocchio::pinocchio_collision
     )
     target_compile_definitions(${PROJECT_NAME} PUBLIC ALIGATOR_WITH_PINOCCHIO)
-  endif()
-
-  if(BUILD_WITH_CHOLMOD_SUPPORT)
-    target_link_libraries(${PROJECT_NAME} PUBLIC CHOLMOD::CHOLMOD)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC ALIGATOR_WITH_CHOLMOD)
   endif()
 
   if(BUILD_WITH_OPENMP_SUPPORT)

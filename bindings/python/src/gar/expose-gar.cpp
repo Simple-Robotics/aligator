@@ -39,10 +39,6 @@ static void exposeBlockMatrices() {
       "StdArr4_long");
 }
 
-#ifdef ALIGATOR_WITH_CHOLMOD
-// fwd-declare exposeCholmodSolver()
-void exposeCholmodSolver();
-#endif
 // fwd-declare exposeParallelSolver()
 void exposeParallelSolver();
 // fwd-declare exposeDenseSolver()
@@ -120,10 +116,6 @@ void exposeGAR() {
            ("self"_a, "xs", "us", "vs", "lbdas", "theta"_a = std::nullopt));
 
   exposeGarUtils();
-
-#ifdef ALIGATOR_WITH_CHOLMOD
-  exposeCholmodSolver();
-#endif
   exposeDenseSolver();
   exposeParallelSolver();
   exposeProxRiccati();
