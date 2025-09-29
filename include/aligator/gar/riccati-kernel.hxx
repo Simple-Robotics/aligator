@@ -53,6 +53,62 @@ StageFactor<Scalar>::StageFactor(uint nx, uint nu, uint nc, uint nx2, uint nth,
   Einv.setZero();
 }
 
+#define _c(name) name(other.name, alloc)
+template <typename Scalar>
+StageFactor<Scalar>::StageFactor(const StageFactor &other,
+                                 const allocator_type &alloc)
+    : nx(other.nx)
+    , nu(other.nu)
+    , nc(other.nc)
+    , nx2(other.nx2)
+    , nth(other.nth)
+    , _c(Qhat)
+    , _c(Rhat)
+    , _c(Shat)
+    , _c(qhat)
+    , _c(rhat)
+    , _c(AtV)
+    , _c(BtV)
+    , _c(Gxhat)
+    , _c(Guhat)
+    , ff(other.ff)
+    , fb(other.fb)
+    , fth(other.fth)
+    , kktMat(other.kktMat)
+    , kktChol(other.kktChol)
+    , Efact(other.Efact)
+    , _c(Einv)
+    , _c(vm) {}
+#undef _c
+
+#define _c(name) name(std::move(other.name), alloc)
+template <typename Scalar>
+StageFactor<Scalar>::StageFactor(StageFactor &&other,
+                                 const allocator_type &alloc)
+    : nx(other.nx)
+    , nu(other.nu)
+    , nc(other.nc)
+    , nx2(other.nx2)
+    , nth(other.nth)
+    , _c(Qhat)
+    , _c(Rhat)
+    , _c(Shat)
+    , _c(qhat)
+    , _c(rhat)
+    , _c(AtV)
+    , _c(BtV)
+    , _c(Gxhat)
+    , _c(Guhat)
+    , ff(std::move(other.ff))
+    , fb(std::move(other.fb))
+    , fth(std::move(other.fth))
+    , kktMat(std::move(other.kktMat))
+    , kktChol(std::move(other.kktChol))
+    , Efact(std::move(other.Efact))
+    , _c(Einv)
+    , _c(vm) {}
+#undef _c
+
 template <typename Scalar>
 bool ProximalRiccatiKernel<Scalar>::backwardImpl(
     boost::span<const KnotType> stages, const Scalar mueq,
