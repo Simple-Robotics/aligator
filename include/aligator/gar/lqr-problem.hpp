@@ -5,7 +5,6 @@
 #include "aligator/math.hpp"
 #include "aligator/gar/fwd.hpp"
 #include "aligator/memory/arena-matrix.hpp"
-#include "aligator/tags.hpp"
 #include <fmt/format.h>
 
 #include <optional>
