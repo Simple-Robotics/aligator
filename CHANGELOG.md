@@ -31,6 +31,10 @@ This release brings a major change to the ProxDDP solver, which no longer uses p
 - testing: added a test_mpc.py script to test parallel and serial mpc implementations (https://github.com/Simple-Robotics/aligator/pull/331)
 - modelling : added wheeled inverted pendulum dynamics (https://github.com/Simple-Robotics/aligator/pull/326)
 
+### Removed
+
+- gar: remove CHOLDMOD backend (https://github.com/Simple-Robotics/aligator/pull/345)
+
 ## [0.15.0] - 2025-05-23
 
 ### Changed
