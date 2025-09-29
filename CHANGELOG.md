@@ -32,6 +32,10 @@ This release brings a major change to the ProxDDP solver, which no longer uses p
 - modelling : added wheeled inverted pendulum dynamics (https://github.com/Simple-Robotics/aligator/pull/326)
 - CMake option to `BUILD_STANDALONE_PYTHON_INTERFACE` (https://github.com/Simple-Robotics/aligator/pull/347)
 
+### Removed
+
+- gar: remove CHOLDMOD backend (https://github.com/Simple-Robotics/aligator/pull/345)
+
 ## [0.15.0] - 2025-05-23
 
 ### Changed
