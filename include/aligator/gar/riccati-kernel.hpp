@@ -34,14 +34,15 @@ inline boost::span<const T> make_span_from_indices(const std::vector<T, A> &vec,
 template <typename _Scalar> struct StageFactor {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS_WITH_ROW_TYPES(Scalar);
-  using allocator_type = polymorphic_allocator;
+  using allocator_type = ::aligator::polymorphic_allocator;
 
   struct CostToGo {
+    using allocator_type = ::aligator::polymorphic_allocator;
     ArenaMatrix<MatrixXs> Pmat; //< Riccati matrix
     ArenaMatrix<VectorXs> pvec; //< Riccati bias
     ArenaMatrix<MatrixXs> Vxx;  //< "cost-to-go" matrix
     ArenaMatrix<VectorXs> vx;   //< "cost-to-go" gradient
-    ArenaMatrix<MatrixXs> Vxt;  //<
+    ArenaMatrix<MatrixXs> Vxt;  //< cross-Hessian
     ArenaMatrix<MatrixXs> Vtt;  //< parametric Hessian
     ArenaMatrix<VectorXs> vt;   //< parametric vector
 
@@ -57,12 +58,42 @@ template <typename _Scalar> struct StageFactor {
       Vtt.setZero();
       vt.setZero();
     }
+
+    allocator_type get_allocator() const { return Pmat.get_allocator(); }
+
+    CostToGo(const CostToGo &other, const allocator_type &alloc = {})
+        : Pmat(other.Pmat, alloc)
+        , pvec(other.pvec, alloc)
+        , Vxx(other.Vxx, alloc)
+        , vx(other.vx, alloc)
+        , Vxt(other.Vxt, alloc)
+        , Vtt(other.Vtt, alloc)
+        , vt(other.vt, alloc) {}
+    CostToGo(CostToGo &&other) noexcept = default;
+    CostToGo(CostToGo &&other, const allocator_type &alloc)
+        : Pmat(std::move(other.Pmat), alloc)
+        , pvec(std::move(other.pvec), alloc)
+        , Vxx(std::move(other.Vxx), alloc)
+        , vx(std::move(other.vx), alloc)
+        , Vxt(std::move(other.Vxt), alloc)
+        , Vtt(std::move(other.Vtt), alloc)
+        , vt(std::move(other.vt), alloc) {}
+    CostToGo &operator=(const CostToGo &) = default;
+    CostToGo &operator=(CostToGo &&) = default;
   };
 
   StageFactor(uint nx, uint nu, uint nc, uint nx2, uint nth,
               const allocator_type &alloc = {});
 
   allocator_type get_allocator() const { return Qhat.get_allocator(); }
+
+  StageFactor(const StageFactor &other, const allocator_type &alloc = {});
+  StageFactor(StageFactor &&) noexcept = default;
+  StageFactor(StageFactor &&other, const allocator_type &alloc);
+
+  StageFactor &operator=(const StageFactor &) = default;
+  StageFactor &operator=(StageFactor &&) = default;
+  ~StageFactor() = default;
 
   uint nx, nu, nc, nx2, nth;
   ArenaMatrix<MatrixXs> Qhat;
@@ -72,18 +103,15 @@ template <typename _Scalar> struct StageFactor {
   ArenaMatrix<VectorXs> rhat;
   ArenaMatrix<RowMatrixXs> AtV;
   ArenaMatrix<RowMatrixXs> BtV;
-
-  // Parametric
   ArenaMatrix<MatrixXs> Gxhat;
   ArenaMatrix<MatrixXs> Guhat;
-
   BlkMatrix<VectorXs, 4, 1> ff;        //< feedforward gains
   BlkMatrix<RowMatrixXs, 4, 1> fb;     //< feedback gains
   BlkMatrix<RowMatrixXs, 4, 1> fth;    //< parameter feedback gains
   BlkMatrix<MatrixXs, 2, 2> kktMat;    //< reduced KKT matrix buffer
   BunchKaufman<MatrixXs> kktChol;      //< reduced KKT LDLT solver
   Eigen::PartialPivLU<MatrixXs> Efact; //< LU decomp. of E matrix
-  ArenaMatrix<MatrixXs> Einv;          //< product P * E.inv
+  ArenaMatrix<MatrixXs> Einv;          //< Inverse of E matrix
   CostToGo vm;                         //< cost-to-go parameters
 };
 

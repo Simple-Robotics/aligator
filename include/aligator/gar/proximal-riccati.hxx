@@ -13,9 +13,10 @@ template <typename Scalar>
 ProximalRiccatiSolver<Scalar>::ProximalRiccatiSolver(
     const LqrProblemTpl<Scalar> &problem)
     : Base()
+    , datas(problem.get_allocator())
     , kkt0(problem.stages[0].nx, problem.nc0(), problem.ntheta())
-    , thGrad(problem.ntheta())
-    , thHess(problem.ntheta(), problem.ntheta())
+    , thGrad(problem.ntheta(), problem.get_allocator())
+    , thHess(problem.ntheta(), problem.ntheta(), problem.get_allocator())
     , problem_(&problem) {
   ALIGATOR_TRACY_ZONE_SCOPED;
   auto N = uint(problem_->horizon());
@@ -36,7 +37,7 @@ bool ProximalRiccatiSolver<Scalar>::backward(const Scalar mueq) {
   bool ret = Kernel::backwardImpl(problem_->stages, mueq, datas);
 
   StageFactor<Scalar> &d0 = datas[0];
-  value_t &vinit = d0.vm;
+  CostToGo &vinit = d0.vm;
   vinit.Vxx = vinit.Pmat;
   vinit.vx = vinit.pvec;
   // initial stage
