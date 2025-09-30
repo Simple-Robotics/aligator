@@ -138,14 +138,14 @@ std::array<Scalar, 3> lqrComputeKktError(
     }
 
     if (t == 0) {
-      _gx += problem.G0.transpose() * lbdas[0];
+      _gx.noalias() += problem.G0.transpose() * lbdas[0];
     } else {
       auto Et = problem.stages[t - 1].E.transpose();
       _gx += Et * lbdas[t];
     }
 
     if (t < N) {
-      _dyn = knot.A * xs[t] + knot.B * us[t] + knot.f + knot.E * xs[t + 1];
+      _dyn = knot.A * xs[t] + knot.B * us[t] + knot.f - xs[t + 1];
       _gx += knot.A.transpose() * lbdas[t + 1];
       _gu += knot.B.transpose() * lbdas[t + 1];
 
