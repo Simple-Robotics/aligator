@@ -107,10 +107,8 @@ template <typename Scalar> struct LqrProblemTpl {
   using KnotType = LqrKnotTpl<Scalar>;
   using KnotVector = std::pmr::vector<KnotType>;
   using allocator_type = polymorphic_allocator;
-  using MVec = ArenaMatrix<VectorXs>;
-  using MMat = ArenaMatrix<MatrixXs>;
-  MMat G0;
-  MVec g0;
+  ArenaMatrix<MatrixXs> G0;
+  ArenaMatrix<VectorXs> g0;
   KnotVector stages;
 
   inline int horizon() const noexcept { return (int)stages.size() - 1; }
@@ -169,7 +167,7 @@ template <typename Scalar> struct LqrProblemTpl {
 
   inline uint ntheta() const { return stages[0].nth; }
 
-  inline bool isApprox(const LqrProblemTpl &other) {
+  [[nodiscard]] bool isApprox(const LqrProblemTpl &other) {
     if (horizon() != other.horizon() || !G0.isApprox(other.G0) ||
         !g0.isApprox(other.g0))
       return false;
@@ -181,8 +179,9 @@ template <typename Scalar> struct LqrProblemTpl {
   }
 
   /// Evaluate the quadratic objective.
-  Scalar evaluate(const VectorOfVectors &xs, const VectorOfVectors &us,
-                  const std::optional<ConstVectorRef> &theta_) const;
+  [[nodiscard]] Scalar
+  evaluate(const VectorOfVectors &xs, const VectorOfVectors &us,
+           const std::optional<ConstVectorRef> &theta_) const;
 
   allocator_type get_allocator() const { return G0.get_allocator(); }
 
@@ -195,8 +194,8 @@ private:
 };
 
 template <typename Scalar>
-bool lqrKnotsSameDim(const LqrKnotTpl<Scalar> &lhs,
-                     const LqrKnotTpl<Scalar> &rhs) {
+[[nodiscard]] bool lqrKnotsSameDim(const LqrKnotTpl<Scalar> &lhs,
+                                   const LqrKnotTpl<Scalar> &rhs) {
   return (lhs.nx == rhs.nx) && (lhs.nu == rhs.nu) && (lhs.nc == rhs.nc) &&
          (lhs.nx2 == rhs.nx2) && (lhs.nth == rhs.nth);
 }
