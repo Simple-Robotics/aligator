@@ -24,7 +24,7 @@ TEST_CASE("riccati_short_horz_pb", "[gar]") {
   uint nx = 2, nu = 2;
   VectorXs x0 = VectorXs::Ones(nx);
   VectorXs x1 = -VectorXs::Ones(nx);
-  auto init_knot = [&](uint nc = 0) {
+  const auto init_knot = [&](uint nc = 0) -> knot_t {
     knot_t knot(nx, nu, nc, alloc);
     knot.A << 0.1, 0., -0.1, 0.01;
     knot.B.setRandom();
@@ -161,9 +161,6 @@ TEST_CASE("riccati_parametric", "[gar]") {
     VectorXs theta(nth);
     theta.setRandom();
     solver.forward(xs, us, vs, lbdas, theta);
-    auto e = xs[0] - x0;
-    fmt::print("x0 = {}\n", x0.transpose());
-    fmt::print("e = {}\n", e.transpose());
 
     KktError err = computeKktError(problem, xs, us, vs, lbdas, theta);
     fmt::println("{}", err);

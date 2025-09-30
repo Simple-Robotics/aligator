@@ -26,12 +26,10 @@ public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS_WITH_ROW_TYPES(Scalar);
   using Base = RiccatiSolverBase<Scalar>;
-  std::vector<StageFactor<Scalar>> datas;
-
   using Kernel = ProximalRiccatiKernel<Scalar>;
   using KnotType = LqrKnotTpl<Scalar>;
-
   using BlkVec = BlkMatrix<VectorXs, -1, 1>;
+  using allocator_type = ::aligator::polymorphic_allocator;
 
   explicit ParallelRiccatiSolver(LqrProblemTpl<Scalar> &problem,
                                  const uint num_threads);
@@ -85,6 +83,10 @@ public:
   void cycleAppend(const KnotType &knot) override;
   VectorRef getFeedforward(size_t i) override { return datas[i].ff.matrix(); }
   RowMatrixRef getFeedback(size_t i) override { return datas[i].fb.matrix(); }
+
+  allocator_type get_allocator() const { return problem_->get_allocator(); }
+
+  std::pmr::vector<StageFactor<Scalar>> datas;
 
   /// Number of parallel divisions in the problem: \f$J+1\f$ in the math.
   uint numThreads;

@@ -38,8 +38,6 @@ bool ProximalRiccatiSolver<Scalar>::backward(const Scalar mueq) {
 
   StageFactor<Scalar> &d0 = datas[0];
   CostToGo &vinit = d0.vm;
-  vinit.Vxx = vinit.Pmat;
-  vinit.vx = vinit.pvec;
   // initial stage
   {
     ALIGATOR_TRACY_ZONE_NAMED_N(Zone2, "factor_initial", true);
