@@ -24,6 +24,7 @@ This release brings a major change to the ProxDDP solver, which no longer uses p
 - ProxDDP solver : throw when given invalid linesearch enum value
 - core/linesearches : move `LinesearchOptions` struct out of the `Linesearch` template class, add CTAD
 - Change all tests to use Catch2 instead of Boost.Test
+- The Riccati algorithms now run faster after the dual-regularisation on co-states and the QR for the implicit dynamics have been removed. The algos might be less numerically accurate.
 
 ### Added
 
