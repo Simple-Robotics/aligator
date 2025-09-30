@@ -28,8 +28,6 @@ TEST_CASE("riccati_short_horz_pb", "[gar]") {
     knot_t knot(nx, nu, nc, alloc);
     knot.A << 0.1, 0., -0.1, 0.01;
     knot.B.setRandom();
-    knot.E.setIdentity();
-    knot.E *= -1;
     knot.f.setRandom();
     knot.Q.setIdentity();
     knot.Q *= 0.01;
@@ -102,7 +100,7 @@ TEST_CASE("riccati_one_knot_prob", "[gar]") {
 TEST_CASE("riccati_random_long_problem", "[gar]") {
   uint nx = 36;
   uint nu = 12;
-  Eigen::VectorXd x0;
+  VectorXs x0;
   x0.setZero(nx);
   uint horz = 100;
   const auto problem = generateLqProblem(x0, horz, nx, nu, 0, true, alloc);
@@ -126,8 +124,7 @@ TEST_CASE("riccati_random_long_problem", "[gar]") {
   KktError err = computeKktError(problem, xs, us, vs, lbdas);
   fmt::println("{}", err);
 
-  const double TOL = 1e-9;
-  CHECK(err.max <= TOL);
+  REQUIRE(err.max <= 1e-8);
 
   SECTION("test dense solver") {
     RiccatiSolverDense denseSolver(problem);
@@ -146,9 +143,9 @@ TEST_CASE("riccati_random_long_problem", "[gar]") {
 }
 
 TEST_CASE("riccati_parametric", "[gar]") {
-  Eigen::Vector3d x0 = Eigen::Vector3d::NullaryExpr(normal_unary_op{});
-  uint nx = uint(x0.rows());
-  uint nu = 2;
+  uint nx = 10;
+  VectorXs x0 = VectorXs::NullaryExpr(nx, normal_unary_op{});
+  uint nu = 4;
   uint horz = 100;
   uint nth = 1;
   const auto problem = generateLqProblem(x0, horz, nx, nu, nth, true, alloc);

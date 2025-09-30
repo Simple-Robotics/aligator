@@ -51,7 +51,7 @@ static std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem,
   p2.addParameterization(nx_t0);
   {
     knot_t &p2_first = p2.stages[0];
-    p2_first.Gx = kn1_last.E.transpose();
+    p2_first.Gx.setIdentity() *= -1;
   }
 
   return {std::move(p1), std::move(p2)};
@@ -157,8 +157,8 @@ TEST_CASE("parallel_manual", "[gar]") {
     if (i < horizon)
       u_errs[i] = infty_norm(us[i] - us_merged[i]);
   }
-  fmt::print("errors between solves: x={:.3e}, u={:.3e}, λ={:.3e}\n",
-             infty_norm(x_errs), infty_norm(u_errs), infty_norm(l_errs));
+  fmt::println("errors between solves: x={:.3e}, u={:.3e}, λ={:.3e}",
+               infty_norm(x_errs), infty_norm(u_errs), infty_norm(l_errs));
 
   KktError err_merged =
       computeKktError(problem, xs_merged, us_merged, vs_merged, lbdas_merged);

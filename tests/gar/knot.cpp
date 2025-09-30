@@ -27,7 +27,6 @@ struct knot_fixture {
 
     knot.A.setZero();
     knot.B.setZero();
-    knot.E.setZero();
     knot.f.setZero();
   }
 };

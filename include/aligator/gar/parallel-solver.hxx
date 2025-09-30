@@ -64,9 +64,9 @@ template <typename Scalar>
 void ParallelRiccatiSolver<Scalar>::assembleCondensedSystem(
     const Scalar mudyn) {
   ALIGATOR_TRACY_ZONE_SCOPED;
-  std::vector<MatrixXs> &subdiagonal = condensedKktSystem.subdiagonal;
-  std::vector<MatrixXs> &diagonal = condensedKktSystem.diagonal;
-  std::vector<MatrixXs> &superdiagonal = condensedKktSystem.superdiagonal;
+  boost::span subdiagonal = condensedKktSystem.subdiagonal;
+  boost::span diagonal = condensedKktSystem.diagonal;
+  boost::span superdiagonal = condensedKktSystem.superdiagonal;
 
   const auto &stages = problem_->stages;
 
@@ -85,7 +85,7 @@ void ParallelRiccatiSolver<Scalar>::assembleCondensedSystem(
     diagonal[2 * ip1] = datas[i0].vm.Vtt;
 
     diagonal[2 * ip1 + 1] = datas[i1].vm.Vxx;
-    superdiagonal[2 * ip1] = stages[i1 - 1].E;
+    superdiagonal[2 * ip1].setIdentity() *= -1;
 
     if (ip1 + 1 < numThreads) {
       superdiagonal[2 * ip1 + 1] = datas[i1].vm.Vxt;

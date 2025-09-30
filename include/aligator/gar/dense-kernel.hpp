@@ -105,8 +105,8 @@ template <typename _Scalar> struct DenseKernel {
     d.kktMat(2, 0) = knot.B;
     d.kktMat(0, 2) = knot.B.transpose();
     // d.kktMat(2, 2).setZero();
-    d.kktMat(2, 3) = knot.E;
-    d.kktMat(3, 2) = knot.E.transpose();
+    d.kktMat(2, 3).setIdentity() *= -1;
+    d.kktMat(3, 2).setIdentity() *= -1;
     if (vn)
       d.kktMat(3, 3) = vn->Pxx;
 
