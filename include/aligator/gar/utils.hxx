@@ -74,8 +74,10 @@ void lqrCreateSparseMatrix(const LqrProblemTpl<Scalar> &problem,
       helpers::sparseAssignDenseBlock(i0, i2, model.B.transpose(), mat, update);
       // E
       const Index i3 = i2 + model.nx2;
-      helpers::sparseAssignDenseBlock(i2, i3, model.E, mat, update);
-      helpers::sparseAssignDenseBlock(i3, i2, model.E.transpose(), mat, update);
+      using DenseType = decltype(model.A);
+      auto Id = DenseType::Identity(model.nx2, model.nx2);
+      helpers::sparseAssignDenseBlock(i2, i3, Id, mat, update);
+      helpers::sparseAssignDenseBlock(i3, i2, Id, mat, update);
 
       idx += n + model.nx2;
     }
@@ -140,8 +142,7 @@ std::array<Scalar, 3> lqrComputeKktError(
     if (t == 0) {
       _gx.noalias() += problem.G0.transpose() * lbdas[0];
     } else {
-      auto Et = problem.stages[t - 1].E.transpose();
-      _gx += Et * lbdas[t];
+      _gx -= lbdas[t];
     }
 
     if (t < N) {

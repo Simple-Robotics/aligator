@@ -23,11 +23,15 @@ namespace gar {
 ///   + q^\top x + r^\top u
 /// \f\]
 /// and constraints
-/// \f\[
-///   Ex' + Ax + Bu + f = 0, \quad
-///   Cx + Du + d = 0.
+/// \f\[ \begin{aligned}
+///   x' &= Ax + Bu + f, \\
+///   0  &= Cx + Du + d. \end{aligned}
 /// \f\]
 ///
+/// When the parameter dimension nth is nonzero, this object also contains a
+/// parameterisation of the Lagrangian of a knot in the problem. This can be a
+/// linear term in the stage constraint, extra terms affine in \f$\theta\f$, and
+/// so on.
 template <typename Scalar> struct LqrKnotTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   static constexpr int Alignment = Eigen::AlignedMax;
@@ -41,7 +45,7 @@ template <typename Scalar> struct LqrKnotTpl {
 
   ArenaMatrix<MatrixXs> Q, S, R;
   ArenaMatrix<VectorXs> q, r;
-  ArenaMatrix<MatrixXs> A, B, E;
+  ArenaMatrix<MatrixXs> A, B;
   ArenaMatrix<VectorXs> f;
   ArenaMatrix<MatrixXs> C, D;
   ArenaMatrix<VectorXs> d;
@@ -216,7 +220,6 @@ std::ostream &operator<<(std::ostream &oss, const LqrKnotTpl<Scalar> &self) {
 
   oss << eigenPrintWithPreamble(self.A, "\n  A: ") //
       << eigenPrintWithPreamble(self.B, "\n  B: ") //
-      << eigenPrintWithPreamble(self.E, "\n  E: ") //
       << eigenPrintWithPreamble(self.f, "\n  f: ");
 
   oss << eigenPrintWithPreamble(self.C, "\n  C: ") //

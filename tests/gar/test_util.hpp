@@ -152,7 +152,7 @@ bool lqrDenseMatrix(const aligator::gar::LqrProblemTpl<Scalar> &problem,
       row.leftCols(model.nx) = model.A;
       row.middleCols(model.nx, model.nu) = model.B;
       row.middleCols(n, model.nx).setZero();
-      row.rightCols(model.nx) = model.E;
+      row.rightCols(model.nx).setIdentity() *= -1;
 
       rhs.segment(idx + n, model.nx2) = model.f;
 
