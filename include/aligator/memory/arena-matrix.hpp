@@ -62,7 +62,7 @@ public:
       , m_allocator(allocator)
       , m_alloc_size(size) {}
 
-  template <EigenMatrix D>
+  template <typename D, enable_if_eigen_t<D> * = nullptr>
   ArenaMatrix(const D &other, const allocator_type &alloc = {})
       : Base::Map(_allocate(other.size(), alloc), get_rows(other),
                   get_cols(other))
@@ -102,7 +102,8 @@ public:
     other.m_alloc_size = 0;
   }
 
-  template <EigenMatrix D> ArenaMatrix &operator=(const D &other) {
+  template <typename D, enable_if_eigen_t<D> * = nullptr>
+  ArenaMatrix &operator=(const D &other) {
     this->resize(get_rows(other), get_cols(other));
     Base::operator=(other);
     return *this;
