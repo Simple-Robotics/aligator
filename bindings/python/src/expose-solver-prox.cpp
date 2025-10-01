@@ -116,7 +116,7 @@ void exposeProxDDP() {
       .def(CopyableVisitor<Results>());
 
   using SolverType = SolverProxDDPTpl<Scalar>;
-  using ls_variant_t = SolverType::LinesearchVariant::variant_t;
+  using ls_variant_t = SolverType::LinesearchVariant::VariantType;
 
   auto cls =
       bp::class_<SolverType, boost::noncopyable>(
