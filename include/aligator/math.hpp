@@ -73,17 +73,17 @@ struct is_eigen : std::bool_constant<is_tpl_base_of_v<Eigen::EigenBase, T>> {};
 template <typename T> inline constexpr bool is_eigen_v = is_eigen<T>::value;
 
 template <typename T>
-concept EigenMatrix = is_eigen_v<std::decay_t<T>>;
+using enable_if_eigen_t = std::enable_if_t<is_eigen_v<std::decay_t<T>>>;
 
 template <typename T>
 inline constexpr bool is_eigen_dense_v = is_tpl_base_of_v<Eigen::DenseBase, T>;
 
+template <typename T, typename T2 = void>
+using enable_if_eigen_dense_t = std::enable_if_t<is_eigen_dense_v<T>, T2>;
+
 template <typename T>
 inline constexpr bool is_eigen_matrix_v =
     is_tpl_base_of_v<Eigen::MatrixBase, T>;
-
-template <typename T, typename T2 = void>
-using enable_if_eigen_dense = std::enable_if_t<is_eigen_dense_v<T>, T2>;
 
 #ifdef ALIGATOR_EIGEN_CHECK_MALLOC
 namespace internal {

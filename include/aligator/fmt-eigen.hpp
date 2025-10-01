@@ -10,12 +10,12 @@
 /// types.
 template <typename MatrixType>
 struct fmt::formatter<MatrixType,
-                      ::aligator::enable_if_eigen_dense<MatrixType, char>>
+                      ::aligator::enable_if_eigen_dense_t<MatrixType, char>>
     : fmt::ostream_formatter {};
 
 template <typename MatrixType>
 struct fmt::is_range<MatrixType,
-                     ::aligator::enable_if_eigen_dense<MatrixType, char>>
+                     ::aligator::enable_if_eigen_dense_t<MatrixType, char>>
     : std::false_type {};
 
 template <typename MatrixType>
