@@ -10,11 +10,13 @@ MatrixXs sampleWishartDistributedMatrix(uint n, uint p) {
   return root * root.transpose();
 };
 
-knot_t generateKnot(uint nx, uint nu, uint nth, bool singular,
+knot_t generateKnot(knot_gen_opts_t opts,
                     const aligator::polymorphic_allocator &alloc) {
+  auto [nx, nu, nc, nx2, nth, singular] = opts;
   uint wishartDof = nx + nu + 1;
-  knot_t out(nx, nu, 0, nx, nth, alloc);
+  knot_t out(nx, nu, nc, nx, nth, alloc);
   MatrixXs _qsr = sampleWishartDistributedMatrix(nx + nu, wishartDof);
+  _qsr /= std::max(nx, nu);
 
   out.Q = _qsr.topLeftCorner(nx, nx);
   out.S = _qsr.topRightCorner(nx, nu);
@@ -23,14 +25,17 @@ knot_t generateKnot(uint nx, uint nu, uint nth, bool singular,
     out.Q.topLeftCorner(n, n).setZero();
   }
   out.R = _qsr.bottomRightCorner(nu, nu);
-  out.q = VectorXs::NullaryExpr(nx, normal_unary_op{});
-  out.r = VectorXs::NullaryExpr(nu, normal_unary_op{});
+  out.q.setRandom();
+  out.r.setRandom();
 
-  out.A = MatrixXs::NullaryExpr(nx, nx, normal_unary_op{});
+  out.A.setRandom();
   out.B.setRandom();
-  out.E = MatrixXs::NullaryExpr(nx, nx, normal_unary_op{});
-  out.E *= 10;
-  out.f = VectorXs::NullaryExpr(nx, normal_unary_op{100.});
+  out.f = VectorXs::NullaryExpr(nx, normal_unary_op{});
+
+  if (nc > 0) {
+    out.C.setIdentity();
+    out.d.setRandom();
+  }
 
   if (nth > 0) {
     out.Gx = MatrixXs::NullaryExpr(nx, nth, normal_unary_op{});
@@ -51,11 +56,12 @@ problem_t generateLqProblem(const ConstVectorRef &x0, uint horz, uint nx,
   problem_t::KnotVector knots{alloc};
   knots.reserve(horz + 1);
 
-  auto knb = generateKnot(nx, nu, nth, singular, alloc);
+  // auto knb = generateKnot(nx, nu, nth, singular, alloc);
+  auto knb = generateKnot({nx, nu, nth, singular}, alloc);
   for (uint i = 0; i < horz; i++) {
     knots.push_back(knb);
   }
-  knots.push_back(generateKnot(nx, 0, nth, false, alloc));
+  knots.push_back(generateKnot({nx, 0, 0, nth, false}, alloc));
 
   problem_t prob(std::move(knots), nx);
   prob.g0 = -x0;

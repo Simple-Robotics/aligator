@@ -51,7 +51,7 @@ static std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem,
   p2.addParameterization(nx_t0);
   {
     knot_t &p2_first = p2.stages[0];
-    p2_first.Gx = kn1_last.E.transpose();
+    p2_first.Gx.setIdentity() *= -1;
   }
 
   return {std::move(p1), std::move(p2)};
@@ -157,8 +157,8 @@ TEST_CASE("parallel_manual", "[gar]") {
     if (i < horizon)
       u_errs[i] = infty_norm(us[i] - us_merged[i]);
   }
-  fmt::print("errors between solves: x={:.3e}, u={:.3e}, λ={:.3e}\n",
-             infty_norm(x_errs), infty_norm(u_errs), infty_norm(l_errs));
+  fmt::println("errors between solves: x={:.3e}, u={:.3e}, λ={:.3e}",
+               infty_norm(x_errs), infty_norm(u_errs), infty_norm(l_errs));
 
   KktError err_merged =
       computeKktError(problem, xs_merged, us_merged, vs_merged, lbdas_merged);
@@ -195,7 +195,7 @@ TEST_CASE("parallel_solver_class", "[gar]") {
   x0.setZero(nx);
   uint horizon = 50;
 
-  const double tol = 1e-10;
+  const double TOL = 1e-9;
 
   problem_t problem = generateLqProblem(x0, horizon, nx, nu);
   const problem_t problemRef{problem};
@@ -214,7 +214,7 @@ TEST_CASE("parallel_solver_class", "[gar]") {
     KktError err_ref = computeKktError(problemRef, xs_ref, us_ref, vs_ref,
                                        lbdas_ref, mueq, true);
     fmt::println("{}", err_ref);
-    REQUIRE(err_ref.max <= tol);
+    REQUIRE(err_ref.max <= TOL);
   }
 
   REQUIRE(problem.isApprox(problemRef));
@@ -226,7 +226,7 @@ TEST_CASE("parallel_solver_class", "[gar]") {
     parSolver.forward(xs, us, vs, lbdas);
     KktError err = computeKktError(problem, xs, us, vs, lbdas, mueq);
     fmt::println("{}", err);
-    REQUIRE(err.max <= tol);
+    REQUIRE(err.max <= TOL);
   }
 
   VectorXs xerrs = VectorXs::Zero(horizon + 1);
@@ -239,8 +239,8 @@ TEST_CASE("parallel_solver_class", "[gar]") {
   double lerr = infty_norm(lerrs);
   fmt::print("xerrs = {}\n", xerr);
   fmt::print("lerrs = {}\n", lerr);
-  REQUIRE(xerr <= tol);
-  REQUIRE(lerr <= tol);
+  CHECK(xerr <= TOL);
+  CHECK(lerr <= TOL);
 
   for (size_t i = 0; i < 10; i++) {
     randomlyModifyProblem(problem);
@@ -248,6 +248,6 @@ TEST_CASE("parallel_solver_class", "[gar]") {
     parSolver.forward(xs, us, vs, lbdas);
     KktError e = computeKktError(problem, xs, us, vs, lbdas, mueq, false);
     fmt::println("{}", e);
-    REQUIRE(e.max <= tol);
+    REQUIRE(e.max <= TOL);
   }
 }

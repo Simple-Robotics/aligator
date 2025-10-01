@@ -23,16 +23,18 @@ namespace gar {
 ///   + q^\top x + r^\top u
 /// \f\]
 /// and constraints
-/// \f\[
-///   Ex' + Ax + Bu + f = 0, \quad
-///   Cx + Du + d = 0.
+/// \f\[ \begin{aligned}
+///   x' &= Ax + Bu + f, \\
+///   0  &= Cx + Du + d. \end{aligned}
 /// \f\]
 ///
+/// When the parameter dimension nth is nonzero, this object also contains a
+/// parameterisation of the Lagrangian of a knot in the problem. This can be a
+/// linear term in the stage constraint, extra terms affine in \f$\theta\f$, and
+/// so on.
 template <typename Scalar> struct LqrKnotTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   static constexpr int Alignment = Eigen::AlignedMax;
-  using MVec = ArenaMatrix<VectorXs>;
-  using MMat = ArenaMatrix<MatrixXs>;
   using allocator_type = polymorphic_allocator;
 
   uint nx;
@@ -41,18 +43,18 @@ template <typename Scalar> struct LqrKnotTpl {
   uint nx2;
   uint nth;
 
-  MMat Q, S, R;
-  MVec q, r;
-  MMat A, B, E;
-  MVec f;
-  MMat C, D;
-  MVec d;
+  ArenaMatrix<MatrixXs> Q, S, R;
+  ArenaMatrix<VectorXs> q, r;
+  ArenaMatrix<MatrixXs> A, B;
+  ArenaMatrix<VectorXs> f;
+  ArenaMatrix<MatrixXs> C, D;
+  ArenaMatrix<VectorXs> d;
 
-  MMat Gth;
-  MMat Gx;
-  MMat Gu;
-  MMat Gv;
-  MVec gamma;
+  ArenaMatrix<MatrixXs> Gth;   //< \f$\theta^\top G_\theta\theta\f$ term
+  ArenaMatrix<MatrixXs> Gx;    //< \f$x^\top G_x \theta\f$ term in Lagrangian
+  ArenaMatrix<MatrixXs> Gu;    //< \f$u^\top G_x \theta\f$ term in Lagrangian
+  ArenaMatrix<MatrixXs> Gv;    //< \f$\nu^\top G_x \theta\f$ term in Lagrangian
+  ArenaMatrix<VectorXs> gamma; //< \f$\gamma^\top \theta\f$ term in Lagrangian
 
   LqrKnotTpl() = default;
   explicit LqrKnotTpl(const allocator_type &alloc);
@@ -218,7 +220,6 @@ std::ostream &operator<<(std::ostream &oss, const LqrKnotTpl<Scalar> &self) {
 
   oss << eigenPrintWithPreamble(self.A, "\n  A: ") //
       << eigenPrintWithPreamble(self.B, "\n  B: ") //
-      << eigenPrintWithPreamble(self.E, "\n  E: ") //
       << eigenPrintWithPreamble(self.f, "\n  f: ");
 
   oss << eigenPrintWithPreamble(self.C, "\n  C: ") //

@@ -67,7 +67,7 @@ if(NOT BUILD_STANDALONE_PYTHON_INTERFACE)
   endif()
 endif()
 
-# PYTHON TESTS
+# Python tests
 if(BUILD_PYTHON_INTERFACE)
   add_subdirectory(python)
 endif()

@@ -72,7 +72,6 @@ void exposeGAR() {
       //
       .def_readwrite("A", &knot_t::A)
       .def_readwrite("B", &knot_t::B)
-      .def_readwrite("E", &knot_t::E)
       .def_readwrite("f", &knot_t::f)
       //
       .def_readwrite("C", &knot_t::C)

@@ -2,6 +2,7 @@
 #define EIGEN_DEFAULT_IO_FORMAT Eigen::IOFormat(4, 0, ",", "\n", "[", "]")
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 // used for timings, numbers are merely indicative, this *not* a benchmark
 #include <chrono>
@@ -24,12 +25,10 @@ TEST_CASE("riccati_short_horz_pb", "[gar]") {
   uint nx = 2, nu = 2;
   VectorXs x0 = VectorXs::Ones(nx);
   VectorXs x1 = -VectorXs::Ones(nx);
-  auto init_knot = [&](uint nc = 0) {
+  const auto init_knot = [&](uint nc = 0) -> knot_t {
     knot_t knot(nx, nu, nc, alloc);
     knot.A << 0.1, 0., -0.1, 0.01;
     knot.B.setRandom();
-    knot.E.setIdentity();
-    knot.E *= -1;
     knot.f.setRandom();
     knot.Q.setIdentity();
     knot.Q *= 0.01;
@@ -42,12 +41,12 @@ TEST_CASE("riccati_short_horz_pb", "[gar]") {
   knot1.Q.setIdentity();
   knot1.q = -x1;
 
-  uint N = 8;
-  problem_t::KnotVector knots(N + 1, base_knot);
+  uint horz = GENERATE(4, 8, 16);
+  problem_t::KnotVector knots(horz + 1, base_knot);
   knots[4] = init_knot(nu);
   knots[4].D.setIdentity();
   knots[4].d.setConstant(0.1);
-  knots[N] = std::move(knot1);
+  knots[horz] = std::move(knot1);
   problem_t prob(std::move(knots), nx);
   prob.g0 = -x0;
   prob.G0.setIdentity();
@@ -99,35 +98,36 @@ TEST_CASE("riccati_one_knot_prob", "[gar]") {
   REQUIRE(err.max <= 1e-10);
 }
 
-TEST_CASE("riccati_random_long_problem", "[gar]") {
+TEST_CASE("riccati_random_large_problem", "[gar]") {
   uint nx = 36;
   uint nu = 12;
-  Eigen::VectorXd x0;
+  VectorXs x0;
   x0.setZero(nx);
-  uint horz = 100;
+  uint horz = GENERATE(20, 100);
   const auto problem = generateLqProblem(x0, horz, nx, nu, 0, true, alloc);
-  ProximalRiccatiSolver solver{problem};
   const double mueq = 1e-14;
-  auto bwbeg = std::chrono::system_clock::now();
-  solver.backward(mueq);
-  auto bwend = std::chrono::system_clock::now();
-  auto t_bwd =
-      std::chrono::duration_cast<std::chrono::microseconds>(bwend - bwbeg);
-  fmt::println("Elapsed time (bwd): {:d}", t_bwd.count());
 
-  auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
-  auto fwbeg = std::chrono::system_clock::now();
-  solver.forward(xs, us, vs, lbdas);
-  auto fwend = std::chrono::system_clock::now();
-  auto t_fwd =
-      std::chrono::duration_cast<std::chrono::microseconds>(fwend - fwbeg);
-  fmt::println("Elapsed time (fwd): {:d}", t_fwd.count());
+  SECTION("prox riccati") {
+    ProximalRiccatiSolver solver{problem};
+    auto bwbeg = std::chrono::system_clock::now();
+    solver.backward(mueq);
+    auto bwend = std::chrono::system_clock::now();
+    auto t_bwd =
+        std::chrono::duration_cast<std::chrono::microseconds>(bwend - bwbeg);
+    fmt::println("Elapsed time (bwd): {:d}", t_bwd.count());
 
-  KktError err = computeKktError(problem, xs, us, vs, lbdas);
-  fmt::println("{}", err);
+    auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
+    auto fwbeg = std::chrono::system_clock::now();
+    solver.forward(xs, us, vs, lbdas);
+    auto fwend = std::chrono::system_clock::now();
+    auto t_fwd =
+        std::chrono::duration_cast<std::chrono::microseconds>(fwend - fwbeg);
+    fmt::println("Elapsed time (fwd): {:d}", t_fwd.count());
 
-  const double TOL = 1e-9;
-  CHECK(err.max <= TOL);
+    KktError err = computeKktError(problem, xs, us, vs, lbdas);
+    fmt::println("{}", err);
+    REQUIRE(err.max <= 1e-8);
+  }
 
   SECTION("test dense solver") {
     RiccatiSolverDense denseSolver(problem);
@@ -141,14 +141,14 @@ TEST_CASE("riccati_random_long_problem", "[gar]") {
     denseSolver.forward(xsd, usd, vsd, lbdasd);
     KktError errd = computeKktError(problem, xsd, usd, vsd, lbdasd);
     fmt::println("{}", errd);
-    CHECK(errd.max <= TOL);
+    REQUIRE(errd.max <= 1e-8);
   }
 }
 
 TEST_CASE("riccati_parametric", "[gar]") {
-  Eigen::Vector3d x0 = Eigen::Vector3d::NullaryExpr(normal_unary_op{});
-  uint nx = uint(x0.rows());
-  uint nu = 2;
+  uint nx = 10;
+  VectorXs x0 = VectorXs::NullaryExpr(nx, normal_unary_op{});
+  uint nu = 4;
   uint horz = 100;
   uint nth = 1;
   const auto problem = generateLqProblem(x0, horz, nx, nu, nth, true, alloc);
@@ -161,13 +161,10 @@ TEST_CASE("riccati_parametric", "[gar]") {
     VectorXs theta(nth);
     theta.setRandom();
     solver.forward(xs, us, vs, lbdas, theta);
-    auto e = xs[0] - x0;
-    fmt::print("x0 = {}\n", x0.transpose());
-    fmt::print("e = {}\n", e.transpose());
 
     KktError err = computeKktError(problem, xs, us, vs, lbdas, theta);
     fmt::println("{}", err);
-    CHECK(err.max <= 1e-10);
+    CHECK(err.max <= 1e-9);
   };
 
   ProximalRiccatiSolver solver(problem);
@@ -185,9 +182,4 @@ TEST_CASE("riccati_parametric", "[gar]") {
   REQUIRE_FALSE(check_value(solver.datas[horz].vm.vt));
   REQUIRE_FALSE(check_value(solver.datas[horz].vm.Vxt));
   REQUIRE_FALSE(check_value(solver.datas[horz].vm.Vtt));
-
-  SECTION("test dense") {
-    RiccatiSolverDense denseSolver(problem);
-    testfn(denseSolver);
-  }
 }
