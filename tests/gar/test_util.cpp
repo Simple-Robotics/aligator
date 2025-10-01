@@ -12,15 +12,18 @@ MatrixXs sampleWishartDistributedMatrix(uint n, uint p) {
 
 knot_t generateKnot(knot_gen_opts_t opts,
                     const aligator::polymorphic_allocator &alloc) {
-  auto [nx, nu, nc, nx2, nth, singular] = opts;
+  auto nx = opts.nx;
+  auto nu = opts.nu;
+  auto nc = opts.nc;
+  auto nth = opts.nth;
   uint wishartDof = nx + nu + 1;
-  knot_t out(nx, nu, nc, nx, nth, alloc);
+  knot_t out(nx, nu, nc, opts.nx2, nth, alloc);
   MatrixXs _qsr = sampleWishartDistributedMatrix(nx + nu, wishartDof);
   _qsr /= std::max(nx, nu);
 
   out.Q = _qsr.topLeftCorner(nx, nx);
   out.S = _qsr.topRightCorner(nx, nu);
-  if (singular) {
+  if (opts.singular) {
     auto n = nx / 2;
     out.Q.topLeftCorner(n, n).setZero();
   }
@@ -57,7 +60,7 @@ problem_t generateLqProblem(const ConstVectorRef &x0, uint horz, uint nx,
   knots.reserve(horz + 1);
 
   // auto knb = generateKnot(nx, nu, nth, singular, alloc);
-  auto knb = generateKnot({nx, nu, nth, singular}, alloc);
+  auto knb = generateKnot({nx, nu, 0, nth, singular}, alloc);
   for (uint i = 0; i < horz; i++) {
     knots.push_back(knb);
   }
