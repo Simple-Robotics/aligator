@@ -131,7 +131,7 @@ private:
   Scalar target_dual_tol_;
   /// When this is true, dual tolerance will be set to
   /// SolverProxDDPTpl::target_tol_ when SolverProxDDPTpl::run() is called.
-  bool sync_dual_tol;
+  bool sync_dual_tol_;
 
 public:
   Scalar mu_init = 0.01; //< Initial AL parameter
@@ -184,6 +184,8 @@ public:
   size_t max_refinement_steps_ = 0;     //< Max KKT system refinement iters.
   Scalar refinement_threshold_ = 1e-13; //< Target tol. for the KKT system.
   size_t max_iters;                     //< Max number of Newton iterations.
+  std::size_t max_al_iters = 100;       //< Maximum number of ALM iterations.
+  uint rollout_max_iters;               //< Nonlinear rollout options
 
   Workspace workspace_;
   Results results_;
@@ -219,7 +221,7 @@ public:
   /// Manually set desired dual feasibility tolerance.
   void setDualTolerance(const Scalar tol) {
     target_dual_tol_ = tol;
-    sync_dual_tol = false;
+    sync_dual_tol_ = false;
   }
 
   /// @brief    Try a step of size \f$\alpha\f$.
