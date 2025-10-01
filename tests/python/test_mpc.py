@@ -56,7 +56,7 @@ x0 = np.concatenate((q0, np.zeros(nv)))
 u0 = np.zeros(nu)
 
 
-@pytest.skip("This is known to fail, and must be fixed.")
+@pytest.mark.skip("This is known to fail, and must be fixed.")
 def test_parallel_mpc():
     T = 50
 
