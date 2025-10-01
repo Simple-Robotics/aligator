@@ -80,7 +80,7 @@ if args.term_cstr:
     problem.addTerminalConstraint(term_fun, constraints.EqualityConstraintSet())
 
 # Instantiate a solver separately
-mu_init = 1e-1 if args.bounds else 1e-4
+mu_init = 2e-3 if args.bounds else 1e-7
 verbose = aligator.VerboseLevel.VERBOSE
 tol = 1e-8
 solver = aligator.SolverProxDDP(tol, mu_init, verbose=verbose)

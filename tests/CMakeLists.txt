@@ -61,11 +61,12 @@ endforeach()
 
 add_subdirectory(gar)
 
-# PYTHON TESTS
+# Python tests
 if(BUILD_PYTHON_INTERFACE)
   add_subdirectory(python)
 endif()
 
+# Crocoddyl tests
 if(BUILD_CROCODDYL_COMPAT)
   add_subdirectory(compat)
 endif()

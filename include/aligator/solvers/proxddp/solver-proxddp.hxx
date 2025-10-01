@@ -800,7 +800,6 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
 
     knot.A = dd.Jx_;
     knot.B = dd.Ju_;
-    knot.E = dd.Jy_;
     knot.f = dd.value_;
 
     knot.Q = cd.Lxx_;

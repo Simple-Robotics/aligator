@@ -3,11 +3,9 @@
 #pragma once
 
 #include "aligator/context.hpp"
-#include "aligator/gar/lqr-problem.hpp"
+#include "lqr-problem.hpp"
 #include "blk-matrix.hpp"
-
 #include "aligator/core/bunchkaufman.hpp"
-#include <Eigen/LU>
 
 #include <boost/core/make_span.hpp>
 
@@ -38,18 +36,14 @@ template <typename _Scalar> struct StageFactor {
 
   struct CostToGo {
     using allocator_type = ::aligator::polymorphic_allocator;
-    ArenaMatrix<MatrixXs> Pmat; //< Riccati matrix
-    ArenaMatrix<VectorXs> pvec; //< Riccati bias
-    ArenaMatrix<MatrixXs> Vxx;  //< "cost-to-go" matrix
-    ArenaMatrix<VectorXs> vx;   //< "cost-to-go" gradient
-    ArenaMatrix<MatrixXs> Vxt;  //< cross-Hessian
-    ArenaMatrix<MatrixXs> Vtt;  //< parametric Hessian
-    ArenaMatrix<VectorXs> vt;   //< parametric vector
+    ArenaMatrix<MatrixXs> Vxx; //< "cost-to-go" matrix
+    ArenaMatrix<VectorXs> vx;  //< "cost-to-go" gradient
+    ArenaMatrix<MatrixXs> Vxt; //< cross-Hessian
+    ArenaMatrix<MatrixXs> Vtt; //< parametric Hessian
+    ArenaMatrix<VectorXs> vt;  //< parametric vector
 
     CostToGo(uint nx, uint nth, const allocator_type &alloc = {})
-        : Pmat(nx, nx, alloc)
-        , pvec(nx, alloc)
-        , Vxx(nx, nx, alloc)
+        : Vxx(nx, nx, alloc)
         , vx(nx, alloc)
         , Vxt(nx, nth, alloc)
         , Vtt(nth, nth, alloc)
@@ -59,21 +53,17 @@ template <typename _Scalar> struct StageFactor {
       vt.setZero();
     }
 
-    allocator_type get_allocator() const { return Pmat.get_allocator(); }
+    allocator_type get_allocator() const { return Vxx.get_allocator(); }
 
     CostToGo(const CostToGo &other, const allocator_type &alloc = {})
-        : Pmat(other.Pmat, alloc)
-        , pvec(other.pvec, alloc)
-        , Vxx(other.Vxx, alloc)
+        : Vxx(other.Vxx, alloc)
         , vx(other.vx, alloc)
         , Vxt(other.Vxt, alloc)
         , Vtt(other.Vtt, alloc)
         , vt(other.vt, alloc) {}
     CostToGo(CostToGo &&other) noexcept = default;
     CostToGo(CostToGo &&other, const allocator_type &alloc)
-        : Pmat(std::move(other.Pmat), alloc)
-        , pvec(std::move(other.pvec), alloc)
-        , Vxx(std::move(other.Vxx), alloc)
+        : Vxx(std::move(other.Vxx), alloc)
         , vx(std::move(other.vx), alloc)
         , Vxt(std::move(other.Vxt), alloc)
         , Vtt(std::move(other.Vtt), alloc)
@@ -105,14 +95,12 @@ template <typename _Scalar> struct StageFactor {
   ArenaMatrix<RowMatrixXs> BtV;
   ArenaMatrix<MatrixXs> Gxhat;
   ArenaMatrix<MatrixXs> Guhat;
-  BlkMatrix<VectorXs, 4, 1> ff;        //< feedforward gains
-  BlkMatrix<RowMatrixXs, 4, 1> fb;     //< feedback gains
-  BlkMatrix<RowMatrixXs, 4, 1> fth;    //< parameter feedback gains
-  BlkMatrix<MatrixXs, 2, 2> kktMat;    //< reduced KKT matrix buffer
-  BunchKaufman<MatrixXs> kktChol;      //< reduced KKT LDLT solver
-  Eigen::PartialPivLU<MatrixXs> Efact; //< LU decomp. of E matrix
-  ArenaMatrix<MatrixXs> Einv;          //< Inverse of E matrix
-  CostToGo vm;                         //< cost-to-go parameters
+  BlkMatrix<VectorXs, 3, 1> ff;     //< feedforward gains
+  BlkMatrix<RowMatrixXs, 3, 1> fb;  //< feedback gains
+  BlkMatrix<RowMatrixXs, 3, 1> fth; //< parameter feedback gains
+  BlkMatrix<MatrixXs, 2, 2> kktMat; //< reduced KKT matrix buffer
+  BunchKaufman<MatrixXs> kktChol;   //< reduced KKT LDLT solver
+  CostToGo vm;                      //< cost-to-go parameters
 };
 
 /// @brief Kernel for use in Riccati-like algorithms for the proximal LQ
@@ -121,7 +109,7 @@ template <typename Scalar> struct ProximalRiccatiKernel {
   ALIGATOR_DYNAMIC_TYPEDEFS_WITH_ROW_TYPES(Scalar);
   using KnotType = LqrKnotTpl<Scalar>;
   using StageFactorType = StageFactor<Scalar>;
-  using CostToGo = typename StageFactor<Scalar>::CostToGo;
+  using CostToGo = typename StageFactorType::CostToGo;
 
   struct kkt0_t {
     BlkMatrix<MatrixXs, 2, 2> mat;

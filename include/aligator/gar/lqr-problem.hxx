@@ -14,7 +14,6 @@ LqrKnotTpl<Scalar>::LqrKnotTpl(const allocator_type &alloc)
     , r(alloc)
     , A(alloc)
     , B(alloc)
-    , E(alloc)
     , f(alloc)
     , C(alloc)
     , D(alloc)
@@ -41,7 +40,6 @@ LqrKnotTpl<Scalar>::LqrKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth,
     , r(nu, alloc)
     , A(nx2, nx, alloc)
     , B(nx2, nu, alloc)
-    , E(nx2, nx2, alloc)
     , f(nx2, alloc)
     , C(nc, nx, alloc)
     , D(nc, nu, alloc)
@@ -60,7 +58,6 @@ LqrKnotTpl<Scalar>::LqrKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth,
 
   A.setZero();
   B.setZero();
-  E.setZero();
   f.setZero();
 
   C.setZero();
@@ -90,7 +87,6 @@ void LqrKnotTpl<Scalar>::assign(const LqrKnotTpl &other) {
 
   this->A = other.A;
   this->B = other.B;
-  this->E = other.E;
   this->f = other.f;
 
   this->C = other.C;
@@ -119,7 +115,6 @@ LqrKnotTpl<Scalar>::LqrKnotTpl(const LqrKnotTpl &other, allocator_type alloc)
     , _c(r)
     , _c(A)
     , _c(B)
-    , _c(E)
     , _c(f)
     , _c(C)
     , _c(D)
@@ -147,7 +142,6 @@ LqrKnotTpl<Scalar>::LqrKnotTpl(LqrKnotTpl &&other) noexcept
     , _c(r)
     , _c(A)
     , _c(B)
-    , _c(E)
     , _c(f)
     , _c(C)
     , _c(D)
@@ -175,7 +169,6 @@ LqrKnotTpl<Scalar>::LqrKnotTpl(LqrKnotTpl &&other, const allocator_type &alloc)
     , _c(r)
     , _c(A)
     , _c(B)
-    , _c(E)
     , _c(f)
     , _c(C)
     , _c(D)
@@ -218,7 +211,6 @@ LqrKnotTpl<Scalar> &LqrKnotTpl<Scalar>::operator=(LqrKnotTpl &&other) {
 
     _c(A);
     _c(B);
-    _c(E);
     _c(f);
 
     _c(C);
@@ -257,7 +249,7 @@ bool LqrKnotTpl<Scalar>::isApprox(const LqrKnotTpl &other, Scalar prec) const {
     return false;
 
   if (!(A.isApprox(other.A, prec) && B.isApprox(other.B, prec) &&
-        E.isApprox(other.E, prec) && f.isApprox(other.f, prec)))
+        f.isApprox(other.f, prec)))
     return false;
 
   if (!(C.isApprox(other.C, prec) && D.isApprox(other.D, prec) &&

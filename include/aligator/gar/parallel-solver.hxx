@@ -64,9 +64,9 @@ template <typename Scalar>
 void ParallelRiccatiSolver<Scalar>::assembleCondensedSystem(
     const Scalar mudyn) {
   ALIGATOR_TRACY_ZONE_SCOPED;
-  std::vector<MatrixXs> &subdiagonal = condensedKktSystem.subdiagonal;
-  std::vector<MatrixXs> &diagonal = condensedKktSystem.diagonal;
-  std::vector<MatrixXs> &superdiagonal = condensedKktSystem.superdiagonal;
+  boost::span subdiagonal = condensedKktSystem.subdiagonal;
+  boost::span diagonal = condensedKktSystem.diagonal;
+  boost::span superdiagonal = condensedKktSystem.superdiagonal;
 
   const auto &stages = problem_->stages;
 
@@ -74,7 +74,7 @@ void ParallelRiccatiSolver<Scalar>::assembleCondensedSystem(
   diagonal[0].diagonal().setConstant(-mudyn);
   superdiagonal[0] = problem_->G0;
 
-  diagonal[1] = datas[0].vm.Pmat;
+  diagonal[1] = datas[0].vm.Vxx;
   superdiagonal[1] = datas[0].vm.Vxt;
 
   uint N = (uint)problem_->horizon();
@@ -84,8 +84,8 @@ void ParallelRiccatiSolver<Scalar>::assembleCondensedSystem(
     uint ip1 = i + 1;
     diagonal[2 * ip1] = datas[i0].vm.Vtt;
 
-    diagonal[2 * ip1 + 1] = datas[i1].vm.Pmat;
-    superdiagonal[2 * ip1] = stages[i1 - 1].E;
+    diagonal[2 * ip1 + 1] = datas[i1].vm.Vxx;
+    superdiagonal[2 * ip1].setIdentity() *= -1;
 
     if (ip1 + 1 < numThreads) {
       superdiagonal[2 * ip1 + 1] = datas[i1].vm.Vxt;
@@ -98,13 +98,13 @@ void ParallelRiccatiSolver<Scalar>::assembleCondensedSystem(
   }
 
   condensedKktRhs[0] = -problem_->g0;
-  condensedKktRhs[1] = -datas[0].vm.pvec;
+  condensedKktRhs[1] = -datas[0].vm.vx;
 
   for (uint i = 0; i < numThreads - 1; i++) {
     auto [i0, i1] = get_work(N, i, numThreads);
     uint ip1 = i + 1;
     condensedKktRhs[2 * ip1] = -datas[i0].vm.vt;
-    condensedKktRhs[2 * ip1 + 1] = -datas[i1].vm.pvec;
+    condensedKktRhs[2 * ip1 + 1] = -datas[i1].vm.vx;
   }
 }
 
