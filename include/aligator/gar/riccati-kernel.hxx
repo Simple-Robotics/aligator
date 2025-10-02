@@ -213,16 +213,18 @@ void ProximalRiccatiKernel<Scalar>::stageKernelSolve(const KnotType &model,
   polymorphic_allocator alloc = d.get_allocator();
   vn.Vxx = vn.Vxx.template selfadjointView<Eigen::Lower>();
   ArenaMatrix<VectorXs> vplus{vn.vx, alloc};
-  vplus += vn.Vxx * model.f;
+  vplus.noalias() += vn.Vxx * model.f;
 
   d.AtV.noalias() = model.A.transpose() * vn.Vxx;
   d.BtV.noalias() = model.B.transpose() * vn.Vxx;
 
-  d.Qhat.noalias() = model.Q + d.AtV * model.A;
-  d.Rhat.noalias() = model.R + d.BtV * model.B;
-  d.Shat.noalias() = model.S + d.AtV * model.B;
-  d.qhat.noalias() = model.q + model.A.transpose() * vplus;
-  d.rhat.noalias() = model.r + model.B.transpose() * vplus;
+  // clang-format off
+  d.Qhat = model.Q; d.Qhat.noalias() += d.AtV * model.A;
+  d.Rhat = model.R; d.Rhat.noalias() += d.BtV * model.B;
+  d.Shat = model.S; d.Shat.noalias() += d.AtV * model.B;
+  d.qhat = model.q; d.qhat.noalias() += model.A.transpose() * vplus;
+  d.rhat = model.r; d.rhat.noalias() += model.B.transpose() * vplus;
+  // clang-format on
 
   // factorize reduced KKT system
   d.kktMat(0, 0) = d.Rhat;
@@ -247,7 +249,7 @@ void ProximalRiccatiKernel<Scalar>::stageKernelSolve(const KnotType &model,
   // rhs (feedback)
   RowMatrixRef K = d.fb.blockRow(0);
   RowMatrixRef Z = d.fb.blockRow(1);
-  RowMatrixRef A = d.fb.blockRow(2); // closed-loop matrix
+  RowMatrixRef Aff = d.fb.blockRow(2); // closed-loop matrix
   K = -d.Shat.transpose();
   Z = -model.C;
 
@@ -258,25 +260,33 @@ void ProximalRiccatiKernel<Scalar>::stageKernelSolve(const KnotType &model,
   d.kktChol.solveInPlace(fbview.matrix());
 
   // set closed loop dynamics
-  yff.noalias() = model.f + model.B * kff;
-  A.noalias() = model.A + model.B * K;
+  // clang-format off
+  yff = model.f; yff.noalias() += model.B * kff;
+  Aff = model.A; Aff.noalias() += model.B * K;
+  // clang-format on
 
   CostToGo &vc = d.vm;
   Eigen::Transpose Ct = model.C.transpose();
-  vc.Vxx.noalias() = d.Qhat + d.Shat * K + Ct * Z;
-  vc.vx.noalias() = d.qhat + d.Shat * kff + Ct * zff;
+  vc.Vxx = d.Qhat;
+  vc.Vxx.noalias() += d.Shat * K;
+  vc.Vxx.noalias() += Ct * Z;
+  vc.vx = d.qhat;
+  vc.vx.noalias() += d.Shat * kff;
+  vc.vx.noalias() += Ct * zff;
   if (model.nth > 0) {
     ALIGATOR_TRACY_ZONE_SCOPED_N("stage_solve_parameter");
     RowMatrixRef Kth = d.fth.blockRow(0);
     RowMatrixRef Zth = d.fth.blockRow(1);
     RowMatrixRef Yth = d.fth.blockRow(2);
 
-    d.Gxhat.noalias() = model.Gx + model.A.transpose() * vn.Vxt;
-    d.Guhat.noalias() = model.Gu + model.B.transpose() * vn.Vxt;
+    d.Gxhat = model.Gx;
+    d.Gxhat.noalias() += model.A.transpose() * vn.Vxt;
+    d.Guhat = model.Gu;
+    d.Guhat.noalias() += model.B.transpose() * vn.Vxt;
 
     // set rhs of 2x2 block system and solve
     Kth = -d.Guhat;
-    Zth.setZero();
+    Zth = -model.Gv;
     BlkMatrix<RowMatrixRef, 2, 1> fthview = d.fth.template topBlkRows<2>();
     d.kktChol.solveInPlace(fthview.matrix());
 
@@ -291,7 +301,7 @@ void ProximalRiccatiKernel<Scalar>::stageKernelSolve(const KnotType &model,
     // vc.Vxt.noalias() = d.Gxhat + K.transpose() * d.Guhat;
     vc.Vxt = model.Gx;
     vc.Vxt.noalias() += K.transpose() * model.Gu;
-    vc.Vxt.noalias() += A.transpose() * vn.Vxt;
+    vc.Vxt.noalias() += Aff.transpose() * vn.Vxt;
 
     vc.Vtt = model.Gth + vn.Vtt;
     vc.Vtt.noalias() += model.Gu.transpose() * Kth;
@@ -306,6 +316,7 @@ bool ProximalRiccatiKernel<Scalar>::forwardImpl(
     boost::span<VectorXs> us, boost::span<VectorXs> vs,
     boost::span<VectorXs> lbdas, const std::optional<ConstVectorRef> &theta_) {
   ALIGATOR_TRACY_ZONE_SCOPED;
+  ALIGATOR_NOMALLOC_SCOPED;
 
   uint N = (uint)(datas.size() - 1);
   for (uint t = 0; t <= N; t++) {
@@ -318,12 +329,14 @@ bool ProximalRiccatiKernel<Scalar>::forwardImpl(
     ConstVectorRef kff = d.ff.blockSegment(0);
     if (model.nu > 0) {
       assert(us[t].size() == model.nu);
-      us[t].noalias() = kff + K * xs[t];
+      us[t] = kff;
+      us[t].noalias() += K * xs[t];
     }
 
     ConstRowMatrixRef Z = d.fb.blockRow(1); // multiplier feedback
     ConstVectorRef zff = d.ff.blockSegment(1);
-    vs[t].noalias() = zff + Z * xs[t];
+    vs[t] = zff;
+    vs[t].noalias() += Z * xs[t];
 
     if (model.nth > 0 && theta_.has_value()) {
       ConstVectorRef theta = *theta_;
@@ -342,7 +355,8 @@ bool ProximalRiccatiKernel<Scalar>::forwardImpl(
 
     ConstRowMatrixRef A = d.fb.blockRow(2);
     ConstVectorRef a = d.ff.blockSegment(2);
-    xs[t + 1].noalias() = a + A * xs[t];
+    xs[t + 1] = a;
+    xs[t + 1].noalias() += A * xs[t];
 
     if (model.nth > 0 && theta_.has_value()) {
       ConstVectorRef theta = *theta_;
@@ -351,7 +365,8 @@ bool ProximalRiccatiKernel<Scalar>::forwardImpl(
     }
 
     const CostToGo &vn = datas[t + 1].vm;
-    lbdas[t + 1].noalias() = vn.vx + vn.Vxx.transpose() * xs[t + 1];
+    lbdas[t + 1] = vn.vx;
+    lbdas[t + 1].noalias() += vn.Vxx.transpose() * xs[t + 1];
     if (model.nth > 0 && theta_.has_value()) {
       lbdas[t + 1].noalias() += vn.Vxt * (*theta_);
     }
