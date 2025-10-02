@@ -91,8 +91,8 @@ activation = { env = { ALIGATOR_OPENMP_SUPPORT = "ON" } }
 [feature.py312.dependencies]
 python = "3.12.*"
 
-[feature.py39.dependencies]
-python = "3.9.*"
+[feature.py310.dependencies]
+python = "3.10.*"
 
 # Use clang on GNU/Linux.
 # We must use scripts instead of env to setup CC and CXX
@@ -110,16 +110,16 @@ pinocchio = { features = ["pinocchio", "py312"], solve-group = "py312" }
 crocoddyl = { features = ["crocoddyl", "py312"], solve-group = "py312" }
 openmp = { features = ["openmp", "py312"], solve-group = "py312" }
 tracy = { features = ["tracy", "py312"], solve-group = "py312" }
-py39 = { features = ["py39"], solve-group = "py39" }
+py310 = { features = ["py310"], solve-group = "py310" }
 all = { features = [
   "pinocchio",
   "crocoddyl",
   "openmp",
   "py312",
 ], solve-group = "py312" }
-all-py39 = { features = [
+all-py310 = { features = [
   "pinocchio",
   "crocoddyl",
   "openmp",
-  "py39",
-], solve-group = "py39" }
+  "py310",
+], solve-group = "py310" }
