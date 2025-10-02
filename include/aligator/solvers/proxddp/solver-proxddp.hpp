@@ -281,11 +281,11 @@ public:
 
   const CallbackMap &getCallbacks() const { return callbacks_; }
 
-  bool removeCallback(const std::string &name) {
+  [[nodiscard]] bool removeCallback(const std::string &name) {
     return callbacks_.erase(name);
   }
 
-  auto getCallbackNames() const {
+  [[nodiscard]] auto getCallbackNames() const {
     std::vector<std::string> keys;
     for (const auto &item : callbacks_) {
       keys.push_back(item.first);
@@ -293,7 +293,7 @@ public:
     return keys;
   }
 
-  CallbackPtr getCallback(const std::string &name) const {
+  [[nodiscard]] CallbackPtr getCallback(const std::string &name) const {
     auto cb = callbacks_.find(name);
     if (cb != end(callbacks_)) {
       return cb->second;
