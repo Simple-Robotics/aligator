@@ -160,21 +160,17 @@ TEST_CASE("riccati_parametric", "[gar]") {
       generateLqProblem(rng, x0, horz, nx, nu, nth, 0, true, alloc);
   const double mueq = 1e-12;
 
-  auto testfn = [&](auto &&solver) {
-    auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
-    solver.backward(mueq);
-
-    VectorXs theta(nth);
-    theta.setRandom();
-    solver.forward(xs, us, vs, lbdas, theta);
-
-    KktError err = computeKktError(problem, xs, us, vs, lbdas, theta);
-    fmt::println("{}", err);
-    CHECK(err.max <= 1e-9);
-  };
-
   ProximalRiccatiSolver solver(problem);
-  testfn(solver);
+  auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
+  solver.backward(mueq);
+
+  VectorXs theta(nth);
+  theta.setRandom();
+  solver.forward(xs, us, vs, lbdas, theta);
+
+  KktError err = computeKktError(problem, xs, us, vs, lbdas, theta);
+  fmt::println("{}", err);
+  CHECK(err.max <= 1e-9);
 
   using aligator::math::check_value;
   REQUIRE_FALSE(check_value(solver.kkt0.chol.matrixLDLT()));
