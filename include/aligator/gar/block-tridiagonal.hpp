@@ -9,11 +9,11 @@
 namespace aligator {
 namespace gar {
 
-template <typename MatrixType>
+template <typename MatrixType, class A>
 typename MatrixType::PlainObject
-blockTridiagToDenseMatrix(const std::vector<MatrixType> &subdiagonal,
-                          const std::vector<MatrixType> &diagonal,
-                          const std::vector<MatrixType> &superdiagonal) {
+blockTridiagToDenseMatrix(const std::vector<MatrixType, A> &subdiagonal,
+                          const std::vector<MatrixType, A> &diagonal,
+                          const std::vector<MatrixType, A> &superdiagonal) {
   if (subdiagonal.size() != superdiagonal.size() ||
       diagonal.size() != superdiagonal.size() + 1) {
     ALIGATOR_DOMAIN_ERROR("Wrong lengths");
@@ -47,11 +47,11 @@ blockTridiagToDenseMatrix(const std::vector<MatrixType> &subdiagonal,
 
 /// @brief Evaluate c <- beta * c + A * b, where `A` is the block-tridiagonal
 /// matrix described by the first three inputs.
-template <typename MatrixType, typename InputType, typename OutType,
+template <typename MatrixType, class A, typename InputType, typename OutType,
           typename Scalar = typename MatrixType::Scalar>
-bool blockTridiagMatMul(const std::vector<MatrixType> &Asub,
-                        const std::vector<MatrixType> &Adiag,
-                        const std::vector<MatrixType> &Asuper,
+bool blockTridiagMatMul(const std::vector<MatrixType, A> &Asub,
+                        const std::vector<MatrixType, A> &Adiag,
+                        const std::vector<MatrixType, A> &Asuper,
                         const BlkMatrix<InputType, -1, 1> &b,
                         BlkMatrix<OutType, -1, 1> &c, const Scalar beta) {
   ALIGATOR_NOMALLOC_SCOPED;
@@ -77,12 +77,13 @@ bool blockTridiagMatMul(const std::vector<MatrixType> &Asub,
 /// @brief Solve a symmetric block-tridiagonal \f$Ax=b\f$ problem by in-place
 /// factorization. The subdiagonal will be used to store factorization
 /// coefficients.
-template <typename MatrixType, typename RhsType, typename DecType>
-bool symmetricBlockTridiagSolve(std::vector<MatrixType> &subdiagonal,
-                                std::vector<MatrixType> &diagonal,
-                                const std::vector<MatrixType> &superdiagonal,
+template <typename MatrixType, class A, class A2, typename RhsType,
+          typename DecType>
+bool symmetricBlockTridiagSolve(std::vector<MatrixType, A> &subdiagonal,
+                                std::vector<MatrixType, A> &diagonal,
+                                const std::vector<MatrixType, A> &superdiagonal,
                                 BlkMatrix<RhsType, -1, 1> &rhs,
-                                std::vector<DecType> &facs) {
+                                std::vector<DecType, A2> &facs) {
   ALIGATOR_TRACY_ZONE_SCOPED;
   ALIGATOR_NOMALLOC_SCOPED;
 
@@ -141,11 +142,13 @@ bool symmetricBlockTridiagSolve(std::vector<MatrixType> &subdiagonal,
 /// @param transposedUfacs - transposed U factors in the decomposition
 /// @param superdiagonal - superdiagonal of the original matrix
 /// @param diagonalFacs - diagonal factor decompositions
-template <typename MatrixType, typename RhsType, typename DecType>
-bool blockTridiagRefinementStep(const std::vector<MatrixType> &transposedUfacs,
-                                const std::vector<MatrixType> &superdiagonal,
-                                const std::vector<DecType> &diagonalFacs,
-                                BlkMatrix<RhsType, -1, 1> &rhs) {
+template <typename MatrixType, class A, class A2, typename RhsType,
+          typename DecType>
+bool blockTridiagRefinementStep(
+    const std::vector<MatrixType, A> &transposedUfacs,
+    const std::vector<MatrixType, A> &superdiagonal,
+    const std::vector<DecType, A2> &diagonalFacs,
+    BlkMatrix<RhsType, -1, 1> &rhs) {
   ALIGATOR_NOMALLOC_SCOPED;
   // size of problem
   const size_t N = superdiagonal.size();
@@ -180,11 +183,13 @@ bool blockTridiagRefinementStep(const std::vector<MatrixType> &transposedUfacs,
 
 /// @copybrief symmetricBlockTridiagSolve(). This version starts by looking down
 /// from the top-left corner of the matrix.
-template <typename MatrixType, typename RhsType, typename DecType>
+template <typename MatrixType, class A, class A2, typename RhsType,
+          typename DecType>
 bool symmetricBlockTridiagSolveDownLooking(
-    std::vector<MatrixType> &subdiagonal, std::vector<MatrixType> &diagonal,
-    std::vector<MatrixType> &superdiagonal, BlkMatrix<RhsType, -1, 1> &rhs,
-    std::vector<DecType> &facs) {
+    std::vector<MatrixType, A> &subdiagonal,
+    std::vector<MatrixType, A> &diagonal,
+    std::vector<MatrixType, A> &superdiagonal, BlkMatrix<RhsType, -1, 1> &rhs,
+    std::vector<DecType, A2> &facs) {
   ALIGATOR_TRACY_ZONE_SCOPED;
   ALIGATOR_NOMALLOC_SCOPED;
 

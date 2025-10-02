@@ -61,15 +61,14 @@ public:
   }
 
   struct condensed_system_t {
-    std::vector<MatrixXs> subdiagonal;
-    std::vector<MatrixXs> diagonal;
-    std::vector<MatrixXs> superdiagonal;
-  };
-
-  struct condensed_system_factor {
-    std::vector<MatrixXs> diagonalFacs; //< diagonal factors
-    std::vector<MatrixXs> upFacs;       //< transposed U factors
-    std::vector<BunchKaufman<MatrixXs>> ldlt;
+    using ArMat = ArenaMatrix<MatrixXs>;
+    std::pmr::vector<ArMat> subdiagonal;
+    std::pmr::vector<ArMat> diagonal;
+    std::pmr::vector<ArMat> superdiagonal;
+    // factors
+    std::pmr::vector<ArMat> diagonalFacs; //< diagonal factors
+    std::pmr::vector<ArMat> upFacs;       //< transposed U factors
+    std::pmr::vector<BunchKaufman<MatrixXs>> ldlt;
   };
 
   /// @brief Create the sparse representation of the reduced KKT system.
@@ -88,22 +87,21 @@ public:
 
   std::pmr::vector<StageFactor<Scalar>> datas;
 
-  /// Number of parallel divisions in the problem: \f$J+1\f$ in the math.
-  uint numThreads;
-
-  /// Hold the compressed representation of the condensed KKT system
+  /// Block-sparse condensed KKT system
   condensed_system_t condensedKktSystem;
-  /// Condensed KKT system factors.
-  condensed_system_factor condensedFacs;
   /// Contains the right-hand side and solution of the condensed KKT system.
   BlkVec condensedKktRhs, condensedKktSolution, condensedErr;
-
+  /// Tolerance on condensed KKT system
   Scalar condensedThreshold{1e-11};
+
+  /// Number of parallel divisions in the problem: \f$J+1\f$ in the math.
+  auto getNumThreads() const { return numThreads; }
 
   /// @brief Initialize the buffers for the block-tridiagonal system.
   void initializeTridiagSystem(const std::vector<long> &dims);
 
 protected:
+  uint numThreads;
   LqrProblemTpl<Scalar> *problem_;
 };
 
