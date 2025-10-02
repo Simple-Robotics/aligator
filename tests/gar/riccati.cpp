@@ -3,6 +3,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
+#include <catch2/catch_get_random_seed.hpp>
 
 // used for timings, numbers are merely indicative, this *not* a benchmark
 #include <chrono>
@@ -80,11 +81,12 @@ TEST_CASE("riccati_short_horz_pb", "[gar]") {
 }
 
 TEST_CASE("riccati_one_knot_prob", "[gar]") {
+  std::mt19937 rng{Catch::getSeed()};
   uint nx = 2;
   uint nu = 2;
   Eigen::VectorXd x0;
   x0.setZero(nx);
-  auto problem = generateLqProblem(x0, 0, nx, nu, 0, true, alloc);
+  auto problem = generateLqProblem(rng, x0, 0, nx, nu, 0, 0, true, alloc);
   ProximalRiccatiSolver solver(problem);
   auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
   REQUIRE(xs.size() == 1);
@@ -99,12 +101,14 @@ TEST_CASE("riccati_one_knot_prob", "[gar]") {
 }
 
 TEST_CASE("riccati_random_large_problem", "[gar]") {
+  std::mt19937 rng{Catch::getSeed()};
   uint nx = 36;
   uint nu = 12;
   VectorXs x0;
   x0.setZero(nx);
   uint horz = GENERATE(20, 100);
-  const auto problem = generateLqProblem(x0, horz, nx, nu, 0, true, alloc);
+  const auto problem =
+      generateLqProblem(rng, x0, horz, nx, nu, 0, 0, true, alloc);
   const double mueq = 1e-14;
 
   SECTION("prox riccati") {
@@ -146,12 +150,14 @@ TEST_CASE("riccati_random_large_problem", "[gar]") {
 }
 
 TEST_CASE("riccati_parametric", "[gar]") {
+  std::mt19937 rng{Catch::getSeed()};
   uint nx = 10;
-  VectorXs x0 = VectorXs::NullaryExpr(nx, normal_unary_op{});
+  VectorXs x0 = VectorXs::NullaryExpr(nx, normal_unary_op(rng));
   uint nu = 4;
   uint horz = 100;
   uint nth = 1;
-  const auto problem = generateLqProblem(x0, horz, nx, nu, nth, true, alloc);
+  const auto problem =
+      generateLqProblem(rng, x0, horz, nx, nu, nth, 0, true, alloc);
   const double mueq = 1e-12;
 
   auto testfn = [&](auto &&solver) {

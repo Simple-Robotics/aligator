@@ -17,12 +17,16 @@ using namespace aligator::gar;
 
 static constexpr uint nx = 36;
 static constexpr uint nu = 12;
+static constexpr uint nc = 32;
 static constexpr double mueq = 1e-11;
+static std::mt19937 rng;
+static normal_unary_op normal_op{rng};
 
 static void BM_serial(benchmark::State &state) {
   uint horz = (uint)state.range(0);
-  VectorXs x0 = VectorXs::NullaryExpr(nx, normal_unary_op{});
-  const LqrProblemTpl<double> problem = generateLqProblem(x0, horz, nx, nu);
+  VectorXs x0 = VectorXs::NullaryExpr(nx, normal_op);
+  const LqrProblemTpl<double> problem =
+      generateLqProblem(rng, x0, horz, nx, nu, 0, nc);
   ProximalRiccatiSolver<double> solver(problem);
   auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
   for (auto _ : state) {
@@ -34,8 +38,9 @@ static void BM_serial(benchmark::State &state) {
 #ifdef ALIGATOR_MULTITHREADING
 template <uint NPROC> static void BM_parallel(benchmark::State &state) {
   uint horz = (uint)state.range(0);
-  VectorXs x0 = VectorXs::NullaryExpr(nx, normal_unary_op{});
-  LqrProblemTpl<double> problem = generateLqProblem(x0, horz, nx, nu);
+  VectorXs x0 = VectorXs::NullaryExpr(nx, normal_op);
+  LqrProblemTpl<double> problem =
+      generateLqProblem(rng, x0, horz, nx, nu, 0, nc);
   ParallelRiccatiSolver<double> solver(problem, NPROC);
   auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
   for (auto _ : state) {
@@ -47,8 +52,9 @@ template <uint NPROC> static void BM_parallel(benchmark::State &state) {
 
 static void BM_stagedense(benchmark::State &state) {
   uint horz = (uint)state.range(0);
-  VectorXs x0 = VectorXs::NullaryExpr(nx, normal_unary_op{});
-  LqrProblemTpl<double> problem = generateLqProblem(x0, horz, nx, nu);
+  VectorXs x0 = VectorXs::NullaryExpr(nx, normal_op);
+  LqrProblemTpl<double> problem =
+      generateLqProblem(rng, x0, horz, nx, nu, 0, nc);
   RiccatiSolverDense<double> solver(problem);
   auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
   for (auto _ : state) {
