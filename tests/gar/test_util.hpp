@@ -31,19 +31,19 @@ template <> struct fmt::formatter<KktError> {
   }
 };
 
-KktError
+[[nodiscard]] KktError
 computeKktError(const problem_t &problem, const VectorOfVectors &xs,
                 const VectorOfVectors &us, const VectorOfVectors &vs,
                 const VectorOfVectors &lbdas,
                 const std::optional<ConstVectorRef> &theta = std::nullopt,
                 const double mueq = 0., bool verbose = true);
 
-inline KktError computeKktError(const problem_t &problem,
-                                const VectorOfVectors &xs,
-                                const VectorOfVectors &us,
-                                const VectorOfVectors &vs,
-                                const VectorOfVectors &lbdas, const double mueq,
-                                bool verbose = true) {
+[[nodiscard]]
+inline KktError
+computeKktError(const problem_t &problem, const VectorOfVectors &xs,
+                const VectorOfVectors &us, const VectorOfVectors &vs,
+                const VectorOfVectors &lbdas, const double mueq,
+                bool verbose = true) {
   return computeKktError(problem, xs, us, vs, lbdas, std::nullopt, mueq,
                          verbose);
 }

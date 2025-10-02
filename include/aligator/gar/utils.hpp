@@ -48,7 +48,7 @@ void lqrCreateSparseMatrix(const LqrProblemTpl<Scalar> &problem,
                            Eigen::Matrix<Scalar, -1, 1> &rhs, bool update);
 
 template <typename Scalar>
-std::array<Scalar, 3> lqrComputeKktError(
+[[nodiscard]] std::array<Scalar, 3> lqrComputeKktError(
     const LqrProblemTpl<Scalar> &problem,
     boost::span<const typename math_types<Scalar>::VectorXs> xs,
     boost::span<const typename math_types<Scalar>::VectorXs> us,
@@ -109,7 +109,7 @@ void lqrDenseSolutionToTraj(
 }
 
 template <typename Scalar>
-auto lqrInitializeSolution(const LqrProblemTpl<Scalar> &problem) {
+[[nodiscard]] auto lqrInitializeSolution(const LqrProblemTpl<Scalar> &problem) {
   using VectorXs = typename math_types<Scalar>::VectorXs;
   std::vector<VectorXs> xs;
   std::vector<VectorXs> us;
