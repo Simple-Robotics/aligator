@@ -3,6 +3,7 @@
 #define EIGEN_DEFAULT_IO_FORMAT Eigen::IOFormat(4, 0, ",", "\n", "[", "]")
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_get_random_seed.hpp>
 
 #include "./test_util.hpp"
 #include "aligator/gar/parallel-solver.hpp"
@@ -60,6 +61,7 @@ static std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem,
 /// Test the max-only formulation, where both legs are parameterized
 /// by the splitting variable (= costate at t0)
 TEST_CASE("parallel_manual", "[gar]") {
+  std::mt19937 rng{Catch::getSeed()};
   uint nx = 2;
   uint nu = 2;
   VectorXs x0;
@@ -67,7 +69,7 @@ TEST_CASE("parallel_manual", "[gar]") {
   const uint horizon = 16;
   const double mueq = 1e-14;
 
-  problem_t problem = generateLqProblem(x0, horizon, nx, nu);
+  problem_t problem = generateLqProblem(rng, x0, horizon, nx, nu);
 
   ProximalRiccatiSolver<double> solver_full_horz(problem);
   solver_full_horz.backward(mueq);
@@ -165,30 +167,22 @@ TEST_CASE("parallel_manual", "[gar]") {
   fmt::println("KKT error (merged) {}", err_merged);
 }
 
-auto sample_normal(Eigen::Index n) {
-  return VectorXs::NullaryExpr(n, normal_unary_op{});
-}
-
-auto sample_normal(Eigen::Index n, Eigen::Index m) {
-  return MatrixXs::NullaryExpr(n, m, normal_unary_op{});
-}
-
 /// Randomize some of the parameters of the problem. This simulates something
 /// like updating the LQ problem in SQP.
-void randomlyModifyProblem(problem_t &prob) {
+void randomlyModifyProblem(std::mt19937 rng, problem_t &prob) {
+  normal_unary_op normal_op{rng, 0.1};
   auto N = size_t(prob.horizon());
   std::vector<size_t> idx = {0, N / 3, N / 2, N / 2 + 1, N / 2 + 2, N};
   for (auto i : idx) {
     auto &kn = prob.stages.at(i);
-    kn.A = sample_normal(kn.nx, kn.nx);
-    kn.B.setRandom();
-    kn.q = sample_normal(kn.nx);
-    kn.R.setIdentity();
-    kn.S.setZero();
+    kn.A += MatrixXs::NullaryExpr(kn.nx, kn.nx, normal_op);
+    kn.B += MatrixXs::NullaryExpr(kn.nx, kn.nu, normal_op);
+    kn.q += VectorXs::NullaryExpr(kn.nx, normal_op);
   }
 }
 
 TEST_CASE("parallel_solver_class", "[gar]") {
+  std::mt19937 rng{Catch::getSeed()};
   uint nx = 32;
   uint nu = 12;
   VectorXs x0;
@@ -197,7 +191,7 @@ TEST_CASE("parallel_solver_class", "[gar]") {
 
   const double TOL = 1e-9;
 
-  problem_t problem = generateLqProblem(x0, horizon, nx, nu);
+  problem_t problem = generateLqProblem(rng, x0, horizon, nx, nu);
   const problem_t problemRef{problem};
   REQUIRE(problem.get_allocator() == problemRef.get_allocator());
   const double mueq = 1e-9;
@@ -243,7 +237,7 @@ TEST_CASE("parallel_solver_class", "[gar]") {
   CHECK(lerr <= TOL);
 
   for (size_t i = 0; i < 10; i++) {
-    randomlyModifyProblem(problem);
+    randomlyModifyProblem(rng, problem);
     parSolver.backward(mueq);
     parSolver.forward(xs, us, vs, lbdas);
     KktError e = computeKktError(problem, xs, us, vs, lbdas, mueq, false);

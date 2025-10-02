@@ -49,13 +49,14 @@ inline KktError computeKktError(const problem_t &problem,
 }
 
 struct normal_unary_op {
-  static std::mt19937 rng;
-  // underlying normal distribution
+  mutable std::mt19937 rng;
   mutable std::normal_distribution<double> gen;
 
-  normal_unary_op(double stddev = 1.0)
-      : gen(0.0, stddev) {}
-  static void set_seed(size_t sd) { rng.seed(sd); }
+  explicit normal_unary_op(std::mt19937 rng, double stddev = 1.0)
+      : rng(rng)
+      , gen(0.0, stddev) {}
+
+  void set_seed(size_t sd) { rng.seed(sd); }
 
   double operator()() const { return gen(rng); }
 };
@@ -71,11 +72,17 @@ struct knot_gen_opts_t {
   uint nx2 = nx;
 };
 
-knot_t generateKnot(knot_gen_opts_t opts,
+knot_t generateKnot(std::mt19937 rng, knot_gen_opts_t opts,
                     const aligator::polymorphic_allocator &alloc = {});
 
-problem_t generateLqProblem(const ConstVectorRef &x0, uint horz, uint nx,
-                            uint nu, uint nth = 0, bool singular = true,
+inline knot_t generateKnot(knot_gen_opts_t opts,
+                           const aligator::polymorphic_allocator &alloc = {}) {
+  return generateKnot(std::mt19937{}, opts, alloc);
+}
+
+problem_t generateLqProblem(std::mt19937 rng, const ConstVectorRef &x0,
+                            uint horz, uint nx, uint nu, uint nth = 0,
+                            uint nc = 0, bool singular = true,
                             const aligator::polymorphic_allocator &alloc = {});
 
 template <typename T>

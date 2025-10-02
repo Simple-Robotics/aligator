@@ -1,6 +1,7 @@
-/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, 2023-2025 INRIA
 /// @author Wilson Jallet
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_get_random_seed.hpp>
 
 #include "aligator/context.hpp"
 #include "aligator/gar/blk-matrix.hpp"
@@ -52,9 +53,11 @@ TEST_CASE("dynamicblkvec", "[gar]") {
 }
 
 struct BTAG_Fixture {
+  std::mt19937 rng{Catch::getSeed()};
+  normal_unary_op normal_op{rng};
   size_t N = 6;
   uint nx = 2;
-  MatrixXs B = MatrixXs::NullaryExpr(nx, nx, normal_unary_op{});
+  MatrixXs B = MatrixXs::NullaryExpr(nx, nx, normal_op);
 
   std::vector<MatrixXs> diagonal;
   std::vector<MatrixXs> sup;

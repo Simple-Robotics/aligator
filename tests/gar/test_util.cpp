@@ -2,16 +2,16 @@
 #include "./test_util.hpp"
 #include "aligator/gar/utils.hpp"
 
-std::mt19937 normal_unary_op::rng{42};
-
 /// Generate a Wishart-distributed matrix in @p n dimensions with @p p DoF
 MatrixXs sampleWishartDistributedMatrix(uint n, uint p) {
-  MatrixXs root = MatrixXs::NullaryExpr(n, p, normal_unary_op{});
+  std::mt19937 rng;
+  MatrixXs root = MatrixXs::NullaryExpr(n, p, normal_unary_op(rng));
   return root * root.transpose();
 };
 
-knot_t generateKnot(knot_gen_opts_t opts,
+knot_t generateKnot(std::mt19937 rng, knot_gen_opts_t opts,
                     const aligator::polymorphic_allocator &alloc) {
+  normal_unary_op normal_op{rng};
   auto nx = opts.nx;
   auto nu = opts.nu;
   auto nc = opts.nc;
@@ -33,7 +33,7 @@ knot_t generateKnot(knot_gen_opts_t opts,
 
   out.A.setRandom();
   out.B.setRandom();
-  out.f = VectorXs::NullaryExpr(nx, normal_unary_op{});
+  out.f = VectorXs::NullaryExpr(nx, normal_op);
 
   if (nc > 0) {
     out.C.setIdentity();
@@ -41,34 +41,34 @@ knot_t generateKnot(knot_gen_opts_t opts,
   }
 
   if (nth > 0) {
-    out.Gx = MatrixXs::NullaryExpr(nx, nth, normal_unary_op{});
-    out.Gu = MatrixXs::NullaryExpr(nu, nth, normal_unary_op{});
+    out.Gx = MatrixXs::NullaryExpr(nx, nth, normal_op);
+    out.Gu = MatrixXs::NullaryExpr(nu, nth, normal_op);
     out.Gth = sampleWishartDistributedMatrix(nth, nth + 2);
-    out.gamma = VectorXs::NullaryExpr(nth, normal_unary_op{});
+    out.gamma = VectorXs::NullaryExpr(nth, normal_op);
   }
 
   assert(out.get_allocator() == alloc);
   return out;
 }
 
-problem_t generateLqProblem(const ConstVectorRef &x0, uint horz, uint nx,
-                            uint nu, uint nth, bool singular,
+problem_t generateLqProblem(std::mt19937 rng, const ConstVectorRef &x0,
+                            uint horz, uint nx, uint nu, uint nth, uint nc,
+                            bool singular,
                             const aligator::polymorphic_allocator &alloc) {
   assert(x0.size() == nx);
 
   problem_t::KnotVector knots{alloc};
   knots.reserve(horz + 1);
 
-  // auto knb = generateKnot(nx, nu, nth, singular, alloc);
-  auto knb = generateKnot({nx, nu, 0, nth, singular}, alloc);
   for (uint i = 0; i < horz; i++) {
+    auto knb = generateKnot(rng, {nx, nu, nc, nth, singular}, alloc);
     knots.push_back(knb);
   }
-  knots.push_back(generateKnot({nx, 0, 0, nth, false}, alloc));
+  knots.push_back(generateKnot(rng, {nx, 0, nc, nth, false}, alloc));
 
   problem_t prob(std::move(knots), nx);
-  prob.g0 = -x0;
-  prob.G0.setIdentity();
+  prob.g0 = x0;
+  prob.G0.setIdentity() *= -1;
   return prob;
 }
 
