@@ -26,6 +26,10 @@ This release brings a major change to the ProxDDP solver, which no longer uses p
 - Change all tests to use Catch2 instead of Boost.Test
 - The Riccati algorithms now run faster after the dual-regularisation on co-states and the QR for the implicit dynamics have been removed. The algos might be less numerically accurate.
 
+#### Changes to dynamics
+
+- core/explicit-dynamics : no longer a child class of `DynamicsModel`
+
 ### Added
 
 - gar: add CTAD for the `ParallelRiccatiSolver` and `ProximalRiccatiSolver` classes
