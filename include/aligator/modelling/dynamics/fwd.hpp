@@ -17,11 +17,6 @@ template <typename Scalar> struct ContinuousDynamicsDataTpl;
 // fwd ODEAbstractTpl
 template <typename Scalar> struct ODEAbstractTpl;
 
-template <typename _Scalar>
-using ODEDataTpl ALIGATOR_DEPRECATED_MESSAGE(
-    "This struct has been merged with ContinousDynamicsDataTpl and has been "
-    "replaced by a typedef.") = ContinuousDynamicsDataTpl<_Scalar>;
-
 // fwd CentroidalFwdDynamicsTpl
 template <typename Scalar> struct CentroidalFwdDynamicsTpl;
 

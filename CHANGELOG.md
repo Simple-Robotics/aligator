@@ -35,6 +35,7 @@ This release brings a major change to the ProxDDP solver, which no longer uses p
 
 ### Removed
 
+- fwd.hpp : remove deprecated typedef `ODEDataTpl`
 - gar: remove CHOLDMOD backend (https://github.com/Simple-Robotics/aligator/pull/345)
 - gar: remove support for implicit dynamics in LQ solver interface
   - remove member `LqrKnotTpl::E`
