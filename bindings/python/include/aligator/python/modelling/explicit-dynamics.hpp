@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/python/fwd.hpp"
@@ -37,12 +37,11 @@ struct PyExplicitDynamics final
     ALIGATOR_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, boost::ref(data));
   }
 
-  shared_ptr<DynamicsData> createData() const {
-    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<DynamicsData>, ExplicitBase,
-                             createData, );
+  shared_ptr<Data> createData() const {
+    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<Data>, ExplicitBase, createData, );
   }
 
-  shared_ptr<DynamicsData> default_createData() const {
+  shared_ptr<Data> default_createData() const {
     return ExplicitBase::createData();
   }
 };
