@@ -147,7 +147,6 @@ class TestClass:
         stage_model = self.stage_model
         sd = stage_model.createData()
         stage_model.computeFirstOrderDerivatives(x0, u0, x1, sd)
-        stage_model.num_primal == ndx + nu
         stage_model.num_dual == ndx
 
     def test_rollout(self, nsteps):
