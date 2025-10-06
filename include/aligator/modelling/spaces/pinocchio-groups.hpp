@@ -19,23 +19,23 @@ using is_pinocchio_lie_group = std::is_base_of<pin::LieGroupBase<G>, G>;
 /// @brief  Wrap a Pinocchio Lie group into a ManifoldAbstractTpl object.
 ///
 template <typename _LieGroup>
-struct PinocchioLieGroup
-    : public ManifoldAbstractTpl<typename _LieGroup::Scalar> {
+struct PinocchioLieGroup : ManifoldAbstractTpl<typename _LieGroup::Scalar> {
 public:
   using LieGroup = _LieGroup;
   using Scalar = typename LieGroup::Scalar;
   using Base = ManifoldAbstractTpl<Scalar>;
+  using Base::ndx;
+  using Base::nx;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   static_assert(is_pinocchio_lie_group<LieGroup>::value,
                 "LieGroup template argument should be a subclass of "
                 "pinocchio::LieGroupBase.");
 
   LieGroup lg_;
-  PinocchioLieGroup() {}
-  PinocchioLieGroup(const LieGroup &lg)
-      : lg_(lg) {}
-  PinocchioLieGroup(LieGroup &&lg)
-      : lg_(std::move(lg)) {}
+  PinocchioLieGroup()
+      : Base(lg_.nq(), lg_.nv()) {}
+  PinocchioLieGroup(const LieGroup &lg) = default;
+  PinocchioLieGroup(LieGroup &&lg) = default;
   PinocchioLieGroup(const PinocchioLieGroup &lg) = default;
   PinocchioLieGroup(PinocchioLieGroup &&lg) = default;
 
@@ -43,10 +43,7 @@ public:
   PinocchioLieGroup(Args &&...args)
       : lg_(std::forward<Args>(args)...) {}
 
-  operator LieGroup() { return lg_; }
-
-  inline int nx() const { return lg_.nq(); }
-  inline int ndx() const { return lg_.nv(); }
+  operator LieGroup() const { return lg_; }
 
   bool isNormalized(const ConstVectorRef &x) const {
     if (x.size() < nx())

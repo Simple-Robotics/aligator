@@ -16,6 +16,8 @@ public:
 
   using Base = ManifoldAbstractTpl<Scalar>;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  using Base::ndx;
+  using Base::nx;
 
   const Base &getComponent(std::size_t i) const { return *m_components[i]; }
 
@@ -27,7 +29,20 @@ public:
             std::is_same_v<Concrete, xyz::polymorphic<Base>>,
         "Input type should either be derived from ManifoldAbstractTpl or be "
         "polymorphic<ManifoldAbstractTpl>.");
+    this->nx_ += _get_nx(c);
+    this->ndx_ += _get_ndx(c);
     m_components.emplace_back(c);
+  }
+
+  template <class Concrete> inline void addComponent(Concrete &&c) {
+    static_assert(
+        std::is_base_of_v<Base, Concrete> ||
+            std::is_same_v<Concrete, xyz::polymorphic<Base>>,
+        "Input type should either be derived from ManifoldAbstractTpl or be "
+        "polymorphic<ManifoldAbstractTpl>.");
+    this->nx_ += _get_nx(c);
+    this->ndx_ += _get_ndx(c);
+    m_components.emplace_back(std::move(c));
   }
 
   inline void addComponent(const CartesianProductTpl &other) {
@@ -36,43 +51,37 @@ public:
     }
   }
 
-  explicit CartesianProductTpl() = default;
+  explicit CartesianProductTpl()
+      : Base(0, 0)
+      , m_components() {}
   CartesianProductTpl(const CartesianProductTpl &) = default;
   CartesianProductTpl &operator=(const CartesianProductTpl &) = default;
   CartesianProductTpl(CartesianProductTpl &&) = default;
   CartesianProductTpl &operator=(CartesianProductTpl &&) = default;
 
   CartesianProductTpl(const std::vector<xyz::polymorphic<Base>> &components)
-      : m_components(components) {}
+      : Base(0, 0)
+      , m_components(components) {
+    this->_calc_dims();
+  }
 
   CartesianProductTpl(std::vector<xyz::polymorphic<Base>> &&components)
-      : m_components(std::move(components)) {}
+      : Base(0, 0)
+      , m_components(std::move(components)) {
+    this->_calc_dims();
+  }
 
   CartesianProductTpl(std::initializer_list<xyz::polymorphic<Base>> components)
-      : m_components(components) {}
+      : Base(0, 0)
+      , m_components(components) {
+    this->_calc_dims();
+  }
 
   CartesianProductTpl(const xyz::polymorphic<Base> &left,
                       const xyz::polymorphic<Base> &right)
-      : m_components{left, right} {}
+      : Base(left->nx() + right->nx(), left->ndx() + right->ndx())
+      , m_components{left, right} {}
 
-  inline int nx() const {
-    int r = 0;
-    for (std::size_t i = 0; i < numComponents(); i++) {
-      r += m_components[i]->nx();
-    }
-    return r;
-  }
-
-  inline int ndx() const {
-    int r = 0;
-    for (std::size_t i = 0; i < numComponents(); i++) {
-      r += m_components[i]->ndx();
-    }
-    return r;
-  }
-
-  void neutral_impl(VectorRef out) const;
-  void rand_impl(VectorRef out) const;
   bool isNormalized(const ConstVectorRef &x) const;
 
   template <class VectorType, class U = std::remove_const_t<VectorType>>
@@ -81,28 +90,52 @@ public:
   template <class VectorType, class U = std::remove_const_t<VectorType>>
   std::vector<U> split_vector_impl(VectorType &v) const;
 
-  std::vector<VectorRef> split(VectorRef x) const {
+  [[nodiscard]] std::vector<VectorRef> split(VectorRef x) const {
     return split_impl<VectorRef>(x);
   }
 
-  std::vector<ConstVectorRef> split(const ConstVectorRef &x) const {
+  [[nodiscard]] std::vector<ConstVectorRef>
+  split(const ConstVectorRef &x) const {
     return split_impl<const ConstVectorRef>(x);
   }
 
-  std::vector<VectorRef> split_vector(VectorRef v) const {
+  [[nodiscard]] std::vector<VectorRef> split_vector(VectorRef v) const {
     return split_vector_impl<VectorRef>(v);
   }
 
-  std::vector<ConstVectorRef> split_vector(const ConstVectorRef &v) const {
+  [[nodiscard]] std::vector<ConstVectorRef>
+  split_vector(const ConstVectorRef &v) const {
     return split_vector_impl<const ConstVectorRef>(v);
   }
 
-  VectorXs merge(const std::vector<VectorXs> &xs) const;
+  [[nodiscard]] VectorXs merge(const std::vector<VectorXs> &xs) const;
 
-  VectorXs merge_vector(const std::vector<VectorXs> &vs) const;
+  [[nodiscard]] VectorXs merge_vector(const std::vector<VectorXs> &vs) const;
 
 protected:
   std::vector<xyz::polymorphic<Base>> m_components;
+
+  void _calc_dims() {
+    this->nx_ = 0u;
+    this->ndx_ = 0u;
+    for (const auto &c : m_components) {
+      this->nx_ += c->nx();
+      this->ndx_ += c->ndx();
+    }
+  }
+
+  template <class Concrete> static int _get_nx(const Concrete &c) {
+    return c.nx();
+  }
+  template <class Concrete> static int _get_ndx(const Concrete &c) {
+    return c.ndx();
+  }
+  static int _get_nx(const xyz::polymorphic<Base> &c) { return c->nx(); }
+  static int _get_ndx(const xyz::polymorphic<Base> &c) { return c->ndx(); }
+
+  void neutral_impl(VectorRef out) const;
+
+  void rand_impl(VectorRef out) const;
 
   void integrate_impl(const ConstVectorRef &x, const ConstVectorRef &v,
                       VectorRef out) const;
