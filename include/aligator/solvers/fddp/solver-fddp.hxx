@@ -109,7 +109,7 @@ Scalar SolverFDDPTpl<Scalar>::forwardPass(const Problem &problem,
   ALIGATOR_NOMALLOC_BEGIN;
 
   traj_cost_ += cd_term.value_;
-  const auto &space = internal::problem_last_state_space_helper(problem);
+  const auto &space = problem.term_cost_->space;
   space->difference(results.xs[nsteps], xs_try[nsteps], workspace.dxs[nsteps]);
 
   prob_data.cost_ = traj_cost_;
