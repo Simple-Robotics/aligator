@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023 LAAS-CNRS, 2023-2025 INRIA
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/visitors.hpp"
 #include "aligator/python/modelling/explicit-dynamics.hpp"
@@ -14,8 +14,7 @@ using context::ExplicitDynamics;
 using context::ExplicitDynamicsData;
 using context::Scalar;
 using PolyManifold = xyz::polymorphic<context::Manifold>;
-PolymorphicMultiBaseVisitor<DynamicsModel, ExplicitDynamics>
-    exp_dynamics_visitor;
+static PolymorphicMultiBaseVisitor<ExplicitDynamics> exp_dynamics_visitor;
 
 // fwd declaration
 void exposeExplicitBase();
@@ -46,8 +45,7 @@ void exposeExplicitBase() {
 
   register_polymorphic_to_python<PolyExplicitDynamics>();
 
-  bp::class_<PyExplicitDynamics<>, bp::bases<DynamicsModel>,
-             boost::noncopyable>(
+  bp::class_<PyExplicitDynamics<>, boost::noncopyable>(
       "ExplicitDynamicsModel", "Base class for explicit dynamics.",
       bp::init<const PolyManifold &, const int>(
           "Constructor with state space and control dimension.",
@@ -57,22 +55,24 @@ void exposeExplicitBase() {
       .def("dForward", bp::pure_virtual(&ExplicitDynamics::dForward),
            ("self"_a, "x", "u", "data"),
            "Compute the derivatives of forward discrete dynamics.")
-      .def(exp_dynamics_visitor)
       .def(CreateDataPolymorphicPythonVisitor<ExplicitDynamics,
                                               PyExplicitDynamics<>>());
 
   bp::register_ptr_to_python<shared_ptr<ExplicitDynamicsData>>();
 
-  bp::class_<ExplicitDataWrapper, bp::bases<DynamicsData>, boost::noncopyable>(
+  bp::class_<ExplicitDataWrapper, boost::noncopyable>(
       "ExplicitDynamicsData", "Data struct for explicit dynamics models.",
-      bp::init<int, int, int, int>(("self"_a, "ndx1", "nu", "nx2", "ndx2")))
+      bp::no_init)
+      .def_readwrite("xnext", &ExplicitDataWrapper::xnext_)
+      .def_readwrite("dx", &ExplicitDataWrapper::dx_)
+      .def_readwrite("jac_buffer", &ExplicitDataWrapper::jac_buffer_)
       .add_property(
-          "xnext",
-          bp::make_getter(&ExplicitDynamicsData::xnext_ref,
-                          bp::return_value_policy<bp::return_by_value>()))
+          "Jx",
+          +[](ExplicitDataWrapper &d) -> context::MatrixRef { return d.Jx(); })
       .add_property(
-          "dx", bp::make_getter(&ExplicitDynamicsData::dx_ref,
-                                bp::return_value_policy<bp::return_by_value>()))
+          "Ju",
+          +[](ExplicitDataWrapper &d) -> context::MatrixRef { return d.Ju(); })
+      .def(bp::init<const ExplicitDynamics &>(("self"_a, "model")))
       .def(PrintableVisitor<ExplicitDynamicsData>());
 }
 

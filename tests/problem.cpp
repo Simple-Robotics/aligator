@@ -38,8 +38,8 @@ struct MyModel : ExplicitDynamicsModelTpl<double> {
 
   void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
                 ExplicitData &data) const {
-    space_next().Jintegrate(x, u, data.Jx_, 0);
-    space_next().Jintegrate(x, u, data.Ju_, 1);
+    space_next().Jintegrate(x, u, data.Jx(), 0);
+    space_next().Jintegrate(x, u, data.Ju(), 1);
   }
 };
 
@@ -123,8 +123,8 @@ TEST_CASE("test_problem", "[node]") {
 
   fmt::print("{}\n", stage);
 
-  auto stage_data = stage.createData();
-  stage.evaluate(x0, u0, x0, *stage_data);
+  shared_ptr stage_data = stage.createData();
+  stage.evaluate(x0, u0, *stage_data);
   REQUIRE(stage_data->cost_data->value_ == 0.);
 
   TrajOptDataTpl<double> prob_data(f.problem);
