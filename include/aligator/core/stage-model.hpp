@@ -101,8 +101,6 @@ public:
   /// Number of constraint objects.
   std::size_t numConstraints() const { return constraints_.size(); }
 
-  /// Number of primal optimization variables.
-  int numPrimal() const { return nu() + ndx2(); }
   /// Number of dual variables, i.e. Lagrange multipliers.
   int numDual() const { return ndx2() + nc(); }
 

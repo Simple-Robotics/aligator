@@ -102,7 +102,6 @@ TEST_CASE("test_problem", "[node]") {
   auto nu = f.nu;
   auto &space = f.space;
   const auto &stage = *f.problem.stages_[0];
-  REQUIRE(stage.numPrimal() == space.ndx() + nu);
   REQUIRE(stage.numDual() == space.ndx());
 
   auto *p_dyn = stage.getDynamics<MyModel>();
