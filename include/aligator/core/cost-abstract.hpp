@@ -3,7 +3,7 @@
 /// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
 #pragma once
 
-#include "aligator/fwd.hpp"
+#include "aligator/context.hpp"
 #include "aligator/core/manifold-base.hpp"
 #include "aligator/third-party/polymorphic_cxx14.h"
 
@@ -113,8 +113,8 @@ template <typename _Scalar> struct CostDataAbstractTpl {
   virtual ~CostDataAbstractTpl() = default;
 };
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/core/cost-abstract.txx"
+extern template struct CostAbstractTpl<context::Scalar>;
+extern template struct CostDataAbstractTpl<context::Scalar>;
 #endif
+} // namespace aligator
