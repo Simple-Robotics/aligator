@@ -1,5 +1,5 @@
-/// @copyright Copyright (C) 2024 LAAS-CNRS, INRIA
-#include "aligator/modelling/dynamics/integrator-explicit.hxx"
+/// @copyright Copyright (C) 2024 LAAS-CNRS, 2024-2025 INRIA
+#include "aligator/modelling/dynamics/integrator-explicit.hpp"
 
 namespace aligator {
 namespace dynamics {
