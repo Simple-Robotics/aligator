@@ -74,12 +74,14 @@ endfunction()
 
 make_bindings()
 
-install(
-  DIRECTORY ${PY_HEADER_DIR}
-  DESTINATION "include/${PROJECT_NAME}"
-  FILES_MATCHING
-  PATTERN "*.hpp"
-)
+if(NOT BUILD_STANDALONE_PYTHON_INTERFACE)
+  install(
+    DIRECTORY ${PY_HEADER_DIR}
+    DESTINATION "include/${PROJECT_NAME}"
+    FILES_MATCHING
+    PATTERN "*.hpp"
+  )
+endif()
 
 if(IS_ABSOLUTE ${PYTHON_SITELIB})
   set(ABSOLUTE_PYTHON_SITELIB ${PYTHON_SITELIB})

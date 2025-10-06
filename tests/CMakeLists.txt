@@ -65,17 +65,18 @@ if(CHECK_RUNTIME_MALLOC)
   list(APPEND TEST_NAMES nomalloc)
 endif()
 
-foreach(test_name ${TEST_NAMES})
-  add_aligator_test(${test_name})
-endforeach()
+if(NOT BUILD_STANDALONE_PYTHON_INTERFACE)
+  foreach(test_name ${TEST_NAMES})
+    add_aligator_test(${test_name})
+  endforeach()
+  add_subdirectory(gar)
 
-add_subdirectory(gar)
+  if(BUILD_CROCODDYL_COMPAT)
+    add_subdirectory(compat)
+  endif()
+endif()
 
 # PYTHON TESTS
 if(BUILD_PYTHON_INTERFACE)
   add_subdirectory(python)
-endif()
-
-if(BUILD_CROCODDYL_COMPAT)
-  add_subdirectory(compat)
 endif()
