@@ -15,12 +15,16 @@ public:
   /// Typedef for the tangent space, as a manifold.
   using TangentSpaceType = VectorSpaceTpl<Scalar, Eigen::Dynamic>;
 
+  ManifoldAbstractTpl(int nx, int ndx)
+      : nx_(nx)
+      , ndx_(ndx) {}
+
   virtual ~ManifoldAbstractTpl() = default;
 
   /// @brief    Get manifold representation dimension.
-  virtual int nx() const = 0;
+  inline int nx() const { return nx_; }
   /// @brief    Get manifold tangent space dimension.
-  virtual int ndx() const = 0;
+  inline int ndx() const { return ndx_; }
 
   /// @brief Get the neutral element \f$e \in M\f$ from the manifold (if this
   /// makes sense).
@@ -116,6 +120,9 @@ public:
   /// \}
 
 protected:
+  int nx_;
+  int ndx_;
+
   /// Perform the manifold integration operation.
   virtual void integrate_impl(const ConstVectorRef &x, const ConstVectorRef &v,
                               VectorRef out) const = 0;

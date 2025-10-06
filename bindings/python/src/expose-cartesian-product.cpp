@@ -38,7 +38,7 @@ void exposeCartesianProduct() {
           ("self"_a, "left", "right")))
       .def(
           "getComponent",
-          +[](CartesianProduct const &m, std::size_t i) -> const Manifold & {
+          +[](const CartesianProduct &m, std::size_t i) -> const Manifold & {
             if (i >= m.numComponents()) {
               PyErr_SetString(PyExc_IndexError, "Index out of bounds.");
               bp::throw_error_already_set();
@@ -47,8 +47,12 @@ void exposeCartesianProduct() {
           },
           bp::return_internal_reference<>(), ("self"_a, "i"),
           "Get the i-th component of the Cartesian product.")
-      .def("addComponent", &CartesianProduct::addComponent<PolymorphicManifold>,
-           ("self"_a, "c"), "Add a component to the Cartesian product.")
+      .def(
+          "addComponent",
+          +[](CartesianProduct &m, const PolymorphicManifold &c) {
+            m.addComponent(c);
+          },
+          ("self"_a, "c"), "Add a component to the Cartesian product.")
       .add_property("num_components", &CartesianProduct::numComponents,
                     "Get the number of components in the Cartesian product.")
       .def(
