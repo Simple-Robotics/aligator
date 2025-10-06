@@ -75,6 +75,11 @@ public:
   MatrixXs jac_buffer_;
   MatrixXs Jtmp_xnext;
 
+  // Vector-Hessian products
+  MatrixXs Hxx_;
+  MatrixXs Hxu_;
+  MatrixXs Huu_;
+
   auto Jx() { return jac_buffer_.leftCols(ndx1); }
   auto Jx() const { return jac_buffer_.leftCols(ndx1); }
   auto Ju() { return jac_buffer_.rightCols(nu); }
@@ -86,10 +91,16 @@ public:
       , ndx2(model.ndx2())
       , xnext_(model.nx2())
       , jac_buffer_(ndx2, ndx1 + nu)
-      , Jtmp_xnext(ndx2, ndx2) {
+      , Jtmp_xnext(ndx2, ndx2)
+      , Hxx_(ndx1, ndx1)
+      , Hxu_(ndx1, nu)
+      , Huu_(nu, nu) {
     xnext_ = model.space().neutral();
     jac_buffer_.setZero();
     Jtmp_xnext.setZero();
+    Hxx_.setZero();
+    Hxu_.setZero();
+    Huu_.setZero();
   }
 
   virtual ~ExplicitDynamicsDataTpl() = default;
