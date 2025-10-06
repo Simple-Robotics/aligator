@@ -184,3 +184,10 @@ struct fmt::formatter<aligator::StageModelTpl<Scalar>> {
     }
   }
 };
+
+namespace aligator {
+template <typename Scalar>
+std::ostream &operator<<(std::ostream &oss, const StageModelTpl<Scalar> &sm) {
+  return oss << fmt::format("{}", sm);
+}
+} // namespace aligator
