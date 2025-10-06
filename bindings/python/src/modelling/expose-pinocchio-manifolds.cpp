@@ -25,7 +25,7 @@ bp::class_<TangentBundleTpl<M>, bp::bases<Manifold>>
 exposeTangentBundle(const char *name, const char *docstring) {
   using OutType = TangentBundleTpl<M>;
   return bp::class_<OutType, bp::bases<Manifold>>(
-             name, docstring, bp::init<M>(("self"_a, "base")))
+             name, docstring, bp::init<const M &>(("self"_a, "base")))
       .add_property("base",
                     bp::make_function(&OutType::getBaseSpace,
                                       bp::return_internal_reference<>()),
