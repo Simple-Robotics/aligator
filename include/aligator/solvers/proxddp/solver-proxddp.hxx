@@ -17,7 +17,7 @@
 
 namespace aligator {
 
-// [1], realted to Appendix A, details on aug. Lagrangian method
+// [1], related to Appendix A, details on aug. Lagrangian method
 // interpretation as shifted-penalty method
 template <typename Scalar>
 void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
@@ -215,10 +215,7 @@ bool SolverProxDDPTpl<Scalar>::computeMultipliers(
   const TrajOptData &prob_data = workspace_.problem_data;
   const size_t nsteps = workspace_.nsteps;
 
-  // [1] Section B. Augmented Lagrangian methods eqn. 5a and 5b for x_plus
-  // and in subsection Primal-dual search x_k is prev_x. Then, more precisely
-  // eqn. 39 gives the formula for first-order multiplier estimates in the
-  // DDP setup
+  std::vector<VectorXs> &xs = workspace_.trial_xs;
   std::vector<VectorXs> &lams_plus = workspace_.lams_plus;
 
   const std::vector<VectorXs> &vs_prev = workspace_.prev_vs;
@@ -227,6 +224,8 @@ bool SolverProxDDPTpl<Scalar>::computeMultipliers(
 
   std::vector<VectorXs> &Lvs = workspace_.Lvs;
   std::vector<VectorXs> &shifted_constraints = workspace_.shifted_constraints;
+  std::vector<VectorXs> &stage_infeas = workspace_.stage_infeasibilities;
+  std::vector<VectorXs> &fs = workspace_.dyn_slacks;
 
   assert(Lvs.size() == vs_prev.size());
   assert(Lvs.size() == nsteps + 1);
@@ -234,9 +233,9 @@ bool SolverProxDDPTpl<Scalar>::computeMultipliers(
   // initial constraint
   {
     StageFunctionData &dd = *prob_data.init_data;
-    lams_plus[0] = lams[0] + dd.value_ / mu();
     /// TODO: generalize to the other types of initial constraint (non-equality)
-    workspace_.dyn_slacks[0] = dd.value_;
+    fs[0] = dd.value_;
+    lams_plus[0] = lams[0] + fs[0] / mu();
     RET_FALSE_IF_NAN(lams_plus[0]);
   }
   using ConstraintSetProd = ConstraintSetProductTpl<Scalar>;
@@ -245,15 +244,15 @@ bool SolverProxDDPTpl<Scalar>::computeMultipliers(
   for (size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
     const StageData &sd = *prob_data.stage_data[i];
-    const DynamicsData &dd = *sd.dynamics_data;
+    const ExplicitDynamicsDataTpl<Scalar> &dd = *sd.dynamics_data;
     const ConstraintStack &cstr_stack = stage.constraints_;
 
     assert(vs[i].size() == stage.nc());
     assert(lams[i + 1].size() == stage.ndx2());
 
     // 1. compute dynamics error
-    lams_plus[i + 1] = lams[i + 1] + dd.value_ / mu();
-    workspace_.dyn_slacks[i + 1] = dd.value_;
+    stage.xspace_next().difference(xs[i + 1], dd.xnext_, fs[i + 1]);
+    lams_plus[i + 1] = lams[i + 1] + fs[i + 1] / mu();
     RET_FALSE_IF_NAN(lams_plus[i + 1]);
 
     // 2. use product constraint operator
@@ -274,11 +273,14 @@ bool SolverProxDDPTpl<Scalar>::computeMultipliers(
     Lvs[i].noalias() -= mu() * vs[i];
     vs_plus[i] = mu_inv() * vs_plus[i];
     assert(Lvs[i].size() == stage.nc());
+
+    stage_infeas[i] = mu() * (vs_plus[i] - vs_prev[i]);
+    workspace_.stage_cstr_violations[long(i)] =
+        math::infty_norm(stage_infeas[i]);
     RET_FALSE_IF_NAN(Lvs[i]);
   }
 
   if (!problem.term_cstrs_.empty()) {
-    assert(problem.term_cstrs_.size() == prob_data.term_cstr_data.size());
     const ConstraintStack &cstr_stack = problem.term_cstrs_;
     const ConstraintSetProd &op = workspace_.cstr_product_sets[nsteps];
 
@@ -295,8 +297,14 @@ bool SolverProxDDPTpl<Scalar>::computeMultipliers(
     Lvs[nsteps].noalias() -= mu() * vs[nsteps];
     vs_plus[nsteps] = mu_inv() * vs_plus[nsteps];
     assert(Lvs[nsteps].size() == cstr_stack.totalDim());
+
+    stage_infeas[nsteps] = mu() * (vs_plus[nsteps] - vs_prev[nsteps]);
+    workspace_.stage_cstr_violations[long(nsteps)] =
+        math::infty_norm(stage_infeas[nsteps]);
     RET_FALSE_IF_NAN(Lvs[nsteps]);
   }
+  results_.prim_infeas = std::max(math::infty_norm(stage_infeas),
+                                  math::infty_norm(workspace_.dyn_slacks));
   return true;
 }
 
@@ -318,6 +326,7 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateGains() {
   VectorRef ff = results_.getFeedforward(N);
   MatrixRef fb = results_.getFeedback(N);
 
+  assert(ff.rows() == linear_solver_->getFeedforward(N).rows());
   ff = linear_solver_->getFeedforward(N).tail(ff.rows());
   fb = linear_solver_->getFeedback(N).bottomRows(fb.rows());
 }
@@ -382,12 +391,12 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
     dlams[t + 1].noalias() += Lfb * dxs[t];
     lams[t + 1] = results_.lams[t + 1] + dlams[t + 1];
 
-    stage.evaluate(xs[t], us[t], xs[t + 1], data);
+    stage.evaluate(xs[t], us[t], data);
 
     // rollout has zeroed out the residual
     dyn_slacks[t].setZero();
 
-    if (!stage.hasDynModel() || stage.dynamics_->isExplicit()) {
+    if (!stage.hasDynModel()) {
       // nothing to do
     } else {
       ALIGATOR_RUNTIME_ERROR(
@@ -584,7 +593,6 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     ALIGATOR_TRACY_ZONE_NAMED_N(FilterPairEval, "pair_eval_fun", true);
     std::pair<Scalar, Scalar> fpair;
     fpair.first = forwardPass(problem, a0);
-    computeInfeasibilities(problem);
     fpair.second = results_.prim_infeas;
     return fpair;
   };
@@ -614,7 +622,6 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     if (force_initial_condition_) {
       workspace_.Lxs[0].setZero();
     }
-    computeInfeasibilities(problem);
     computeCriterion();
 
     // exit if either the subproblem or overall problem converged
@@ -626,14 +633,8 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     computeProjectedJacobians(problem, mu_inv(), workspace_);
     this->initializeRegularization();
     this->updateLQSubproblem();
-    // TODO: supply a penalty weight matrix for constraints
 
-    // In the next two lines, the LQ subproblem is solved. This is
-    // another way to view the backward and forward passes of the
-    // Riccati recursion detailed in [1] (IV. Proximal Differential
-    //  Dynamic Programming Section B Backward). The backward pass
-    // computes the gains, and the forward pass computes the new
-    // control and state trajectories.
+    // Solve the LQ subproblem.
     linear_solver_->backward(mu());
 
     linear_solver_->forward(workspace_.dxs, workspace_.dus, workspace_.dvs,
@@ -659,7 +660,6 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     switch (sa_strategy_) {
     case StepAcceptanceStrategy::LINESEARCH_ARMIJO:
     case StepAcceptanceStrategy::LINESEARCH_NONMONOTONE:
-      assert(linesearch_.isValid());
       phi_new = linesearch_.run(merit_eval_fun, phi0, dphi0, alpha_opt);
       break;
     case StepAcceptanceStrategy::FILTER:
@@ -709,36 +709,6 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
   return false;
 }
 
-template <typename Scalar>
-void SolverProxDDPTpl<Scalar>::computeInfeasibilities(const Problem &problem) {
-  ALIGATOR_NOMALLOC_SCOPED;
-  ALIGATOR_TRACY_ZONE_SCOPED;
-  const size_t nsteps = workspace_.nsteps;
-
-  std::vector<VectorXs> &vs_plus = workspace_.vs_plus;
-  std::vector<VectorXs> &vs_prev = workspace_.prev_vs;
-  std::vector<VectorXs> &stage_infeas = workspace_.stage_infeasibilities;
-
-  // compute infeasibility of all stage constraints [1] eqn. 53
-  for (size_t i = 0; i < nsteps; i++) {
-    stage_infeas[i] = mu() * (vs_plus[i] - vs_prev[i]);
-
-    workspace_.stage_cstr_violations[long(i)] =
-        math::infty_norm(stage_infeas[i]);
-  }
-
-  // compute infeasibility of terminal constraints
-  if (!problem.term_cstrs_.empty()) {
-    stage_infeas[nsteps] = mu() * (vs_plus[nsteps] - vs_prev[nsteps]);
-
-    workspace_.stage_cstr_violations[long(nsteps)] =
-        math::infty_norm(stage_infeas[nsteps]);
-  }
-
-  results_.prim_infeas = std::max(math::infty_norm(stage_infeas),
-                                  math::infty_norm(workspace_.dyn_slacks));
-}
-
 template <typename Scalar> void SolverProxDDPTpl<Scalar>::computeCriterion() {
   ALIGATOR_NOMALLOC_SCOPED;
   ALIGATOR_TRACY_ZONE_SCOPED;
@@ -781,6 +751,7 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
   ALIGATOR_TRACY_ZONE_SCOPED;
   gar::LqrProblemTpl<Scalar> &prob = workspace_.lqr_problem;
   const TrajOptData &pd = workspace_.problem_data;
+  const auto &dyn_slacks = workspace_.dyn_slacks;
 
   using gar::LqrKnotTpl;
 
@@ -792,15 +763,15 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
     // taking the knot and not a view, since resizes might
     // happen here.
     LqrKnotTpl<Scalar> &knot = prob.stages[t];
-    const DynamicsData &dd = *sd.dynamics_data;
+    const ExplicitDynamicsDataTpl<Scalar> &dd = *sd.dynamics_data;
     const CostData &cd = *sd.cost_data;
     uint nx = knot.nx;
     uint nu = knot.nu;
     uint nc = knot.nc;
 
-    knot.A = dd.Jx_;
-    knot.B = dd.Ju_;
-    knot.f = dd.value_;
+    knot.A = dd.Jx();
+    knot.B = dd.Ju();
+    knot.f = dyn_slacks[t + 1];
 
     knot.Q = cd.Lxx_;
     knot.S = cd.Lxu_;
@@ -818,7 +789,6 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
       knot.R += dd.Huu_;
     }
 
-    // TODO: handle the bloody constraints
     assert(knot.nc == workspace_.cstr_proj_jacs[t].rows());
     knot.C.topRows(nc) = workspace_.cstr_proj_jacs[t].blockCol(0);
     knot.D.topRows(nc) = workspace_.cstr_proj_jacs[t].blockCol(1);
