@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/modelling/dynamics/integrator-explicit.hpp"
@@ -23,7 +23,6 @@ struct IntegratorRK2Tpl : ExplicitIntegratorAbstractTpl<_Scalar> {
   using BaseData = ExplicitDynamicsDataTpl<Scalar>;
   using Data = IntegratorRK2DataTpl<Scalar>;
   using ODEType = typename Base::ODEType;
-  using Base::space_next_;
 
   Scalar timestep_;
 
@@ -34,12 +33,9 @@ struct IntegratorRK2Tpl : ExplicitIntegratorAbstractTpl<_Scalar> {
   void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
                 BaseData &data) const;
 
-  shared_ptr<DynamicsDataTpl<Scalar>> createData() const {
-    return std::make_shared<Data>(this);
+  shared_ptr<BaseData> createData() const {
+    return std::make_shared<Data>(*this);
   }
-
-protected:
-  Scalar dt_2_ = 0.5 * timestep_;
 };
 
 template <typename Scalar>
@@ -52,11 +48,18 @@ struct IntegratorRK2DataTpl : ExplicitIntegratorDataTpl<Scalar> {
   VectorXs x1_;
   VectorXs dx1_;
 
+  explicit IntegratorRK2DataTpl(const IntegratorRK2Tpl<Scalar> &integrator)
+      : Base(integrator)
+      , x1_(integrator.space_next().neutral())
+      , dx1_(this->ndx1) {
+    continuous_data2 = integrator.ode_->createData();
+    dx1_.setZero();
+  }
 
   using Base::dx_;
   using Base::Jtmp_xnext;
-  using Base::Ju_;
-  using Base::Jx_;
+  using Base::Ju;
+  using Base::Jx;
   using Base::xnext_;
 };
 

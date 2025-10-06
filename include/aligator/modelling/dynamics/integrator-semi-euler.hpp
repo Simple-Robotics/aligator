@@ -21,6 +21,7 @@ struct IntegratorSemiImplEulerTpl : ExplicitIntegratorAbstractTpl<_Scalar> {
   using BaseData = ExplicitDynamicsDataTpl<Scalar>;
   using Data = IntegratorSemiImplDataTpl<Scalar>;
   using ODEType = ODEAbstractTpl<Scalar>;
+  using ODEData = ContinuousDynamicsDataTpl<Scalar>;
   using Base::space_next_;
 
   /// Integration time step \f$h\f$.
@@ -35,27 +36,30 @@ struct IntegratorSemiImplEulerTpl : ExplicitIntegratorAbstractTpl<_Scalar> {
   void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
                 BaseData &data) const;
 
-  shared_ptr<DynamicsDataTpl<Scalar>> createData() const {
-    return std::make_shared<Data>(this);
+  shared_ptr<BaseData> createData() const {
+    return std::make_shared<Data>(*this);
   }
 };
 
 template <typename Scalar>
 struct IntegratorSemiImplDataTpl : ExplicitIntegratorDataTpl<Scalar> {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  using Model = IntegratorSemiImplEulerTpl<Scalar>;
   using Base = ExplicitIntegratorDataTpl<Scalar>;
   using ODEData = ContinuousDynamicsDataTpl<Scalar>;
 
   MatrixXs Jtmp_xnext2;
   MatrixXs Jtmp_u;
 
-  explicit IntegratorSemiImplDataTpl(
-      const IntegratorSemiImplEulerTpl<Scalar> *integrator);
+  explicit IntegratorSemiImplDataTpl(const Model &integrator)
+      : Base(integrator)
+      , Jtmp_xnext2(integrator.ndx1(), integrator.ndx1())
+      , Jtmp_u(integrator.ndx1(), integrator.nu) {
+    Jtmp_xnext2.setZero();
+    Jtmp_u.setZero();
+  }
 
   using Base::dx_;
-  using Base::Jtmp_xnext;
-  using Base::Ju_;
-  using Base::Jx_;
   using Base::xnext_;
 };
 
