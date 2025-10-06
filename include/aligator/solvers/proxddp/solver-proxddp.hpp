@@ -41,7 +41,6 @@ public:
   using Workspace = WorkspaceTpl<Scalar>;
   using Results = ResultsTpl<Scalar>;
   using StageFunctionData = StageFunctionDataTpl<Scalar>;
-  using DynamicsData = DynamicsDataTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using StageModel = StageModelTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
@@ -262,11 +261,6 @@ public:
   /// minimization).
   bool innerLoop(const Problem &problem);
 
-  /// @brief    Compute the primal infeasibility measures.
-  /// @warning  This will alter the constraint values (by projecting on the
-  /// normal cone in-place).
-  ///           Compute anything which accesses these before!
-  void computeInfeasibilities(const Problem &problem);
   /// @brief Compute stationarity criterion (dual infeasibility).
   void computeCriterion();
 
@@ -309,9 +303,8 @@ public:
   }
   /// \}
 
-  /// Compute the merit function and stopping criterion dual terms:
-  /// first-order Lagrange multiplier estimates, shifted and
-  /// projected constraints.
+  /// Compute the multiplier estimates, along with the shifted, projected
+  /// constraint values.
   /// @return bool: whether the op succeeded.
   bool computeMultipliers(const Problem &problem,
                           const std::vector<VectorXs> &lams,

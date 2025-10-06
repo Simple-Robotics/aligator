@@ -170,8 +170,6 @@ void exposeProxDDP() {
                         "Linear solver for the semismooth Newton method.")
           .def_readwrite("filter", &SolverType::filter_,
                          "Pair filter used to accept a step.")
-          .def("computeInfeasibilities", &SolverType::computeInfeasibilities,
-               ("self"_a, "problem"), "Compute problem infeasibilities.")
           .add_property("num_threads", &SolverType::getNumThreads)
           .def("setNumThreads", &SolverType::setNumThreads,
                ("self"_a, "num_threads"))
