@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - gar: add CTAD for the `ParallelRiccatiSolver` and `ProximalRiccatiSolver` classes
 - testing: added a test_mpc.py script to test parallel and serial mpc implementations (https://github.com/Simple-Robotics/aligator/pull/331)
 - modelling : added wheeled inverted pendulum dynamics (https://github.com/Simple-Robotics/aligator/pull/326)
+- CMake option to `BUILD_STANDALONE_PYTHON_INTERFACE` (https://github.com/Simple-Robotics/aligator/pull/347)
 
 ## [0.15.0] - 2025-05-23
 
