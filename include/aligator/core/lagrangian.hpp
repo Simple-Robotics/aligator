@@ -3,6 +3,7 @@
 #include "aligator/core/traj-opt-problem.hpp"
 #include "aligator/core/traj-opt-data.hpp"
 #include "aligator/core/stage-data.hpp"
+#include "aligator/core/explicit-dynamics.hpp"
 #include "aligator/core/cost-abstract.hpp"
 #include "aligator/gar/blk-matrix.hpp"
 #include "aligator/tracy.hpp"
@@ -33,7 +34,7 @@ void LagrangianDerivatives<Scalar>::compute(const TrajOptProblem &problem,
                                             std::vector<VectorXs> &Lus) {
   using ConstraintStack = ConstraintStackTpl<Scalar>;
   using StageFunctionData = StageFunctionDataTpl<Scalar>;
-  using DynamicsData = DynamicsDataTpl<Scalar>;
+  using DynamicsData = ExplicitDynamicsDataTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
   using StageModel = StageModelTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
@@ -59,19 +60,19 @@ void LagrangianDerivatives<Scalar>::compute(const TrajOptProblem &problem,
     Lxs[i] += sd.cost_data->Lx_;
     Lus[i] = sd.cost_data->Lu_;
     if (has_lbdas) {
-      Lxs[i].noalias() += dd.Jx_.transpose() * lams[i + 1]; // [1] eqn. 24b/c
-      Lus[i].noalias() += dd.Ju_.transpose() * lams[i + 1]; // [1] eqn. 24a
+      Lxs[i].noalias() += dd.Jx().transpose() * lams[i + 1];
+      Lus[i].noalias() += dd.Ju().transpose() * lams[i + 1];
     }
 
     BlkView v_(vs[i], stack.dims());
     for (std::size_t j = 0; j < stack.size(); j++) {
       const StageFunctionData &cd = *sd.constraint_data[j];
-      Lxs[i].noalias() += cd.Jx_.transpose() * v_[j]; // [1] eqn. 24b/c
-      Lus[i].noalias() += cd.Ju_.transpose() * v_[j]; // [1] eqn. 24a
+      Lxs[i].noalias() += cd.Jx_.transpose() * v_[j];
+      Lus[i].noalias() += cd.Ju_.transpose() * v_[j];
     }
 
     if (has_lbdas) {
-      Lxs[i + 1].noalias() = dd.Jy_.transpose() * lams[i + 1]; // [1] eqn. 24b/d
+      Lxs[i + 1] = -lams[i + 1];
     } else {
       Lxs[i + 1].setZero();
     }
@@ -85,7 +86,7 @@ void LagrangianDerivatives<Scalar>::compute(const TrajOptProblem &problem,
     BlkView vN(vs[nsteps], stack.dims());
     for (std::size_t j = 0; j < stack.size(); j++) {
       const StageFunctionData &cd = *pd.term_cstr_data[j];
-      Lxs[nsteps].noalias() += cd.Jx_.transpose() * vN[j]; // [1] eqn. 24d
+      Lxs[nsteps].noalias() += cd.Jx_.transpose() * vN[j];
     }
   }
 }

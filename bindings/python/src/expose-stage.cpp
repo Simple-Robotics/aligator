@@ -83,11 +83,11 @@ void exposeStage() {
                     bp::make_getter(&StageModel::cost_,
                                     bp::return_internal_reference<>()),
                     "Stage cost.")
-      .def("evaluate", &StageModel::evaluate, ("self"_a, "x", "u", "y", "data"),
+      .def("evaluate", &StageModel::evaluate, ("self"_a, "x", "u", "data"),
            "Evaluate the stage cost, dynamics, constraints.")
       .def("computeFirstOrderDerivatives",
            &StageModel::computeFirstOrderDerivatives,
-           ("self"_a, "x", "u", "y", "data"),
+           ("self"_a, "x", "u", "data"),
            "Compute gradients of the stage cost and jacobians of the dynamics "
            "and "
            "constraints.")

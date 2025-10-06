@@ -54,11 +54,10 @@ struct ActionModelWrapperTpl : StageModelTpl<Scalar> {
   bool hasDynModel() const override { return false; }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                const ConstVectorRef &y, Data &data) const override;
+                Data &data) const override;
 
   void computeFirstOrderDerivatives(const ConstVectorRef &x,
                                     const ConstVectorRef &u,
-                                    const ConstVectorRef &y,
                                     Data &data) const override;
 
   /// Does nothing for this class.
