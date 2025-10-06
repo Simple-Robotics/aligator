@@ -59,9 +59,9 @@ struct ExplicitIntegratorDataTpl : ExplicitDynamicsDataTpl<_Scalar> {
   using Base::xnext_;
 };
 
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct ExplicitIntegratorAbstractTpl<context::Scalar>;
+extern template struct ExplicitIntegratorDataTpl<context::Scalar>;
+#endif
 } // namespace dynamics
 } // namespace aligator
-
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/modelling/dynamics/integrator-explicit.txx"
-#endif
