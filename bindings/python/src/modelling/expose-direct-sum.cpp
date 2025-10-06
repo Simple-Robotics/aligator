@@ -10,12 +10,10 @@ namespace python {
 
 using context::Scalar;
 using DirectSumExplicitDynamics = DirectSumExplicitDynamicsTpl<Scalar>;
-using context::DynamicsModel;
 using context::ExplicitDynamics;
 
 void exposeExplicitDynDirectSum() {
-  PolymorphicMultiBaseVisitor<ExplicitDynamics, DynamicsModel>
-      exp_dynamics_visitor;
+  PolymorphicMultiBaseVisitor<ExplicitDynamics> exp_dynamics_visitor;
 
   register_polymorphic_to_python<xyz::polymorphic<DirectSumExplicitDynamics>>();
   bp::class_<DirectSumExplicitDynamics, bp::bases<ExplicitDynamics>>(
