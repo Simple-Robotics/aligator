@@ -1,5 +1,6 @@
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022 LAAS-CNRS, 2022-2025 INRIA
 #include "aligator/python/fwd.hpp"
+#include "aligator/core/dynamics.hpp"
 #include "aligator/utils/rollout.hpp"
 
 namespace aligator {
@@ -25,21 +26,20 @@ void exposeUtils() {
       const context::VectorXs &, const context::VectorOfVectors &);
 
   bp::def<rollout_generic_t>(
-      "rollout_implicit", &aligator::rollout, bp::args("dyn_model", "x0", "us"),
+      "rollout_implicit", &aligator::rollout, ("dyn_model"_a, "x0", "us"),
       "Perform a dynamics rollout, for a dynamics model.");
 
   bp::def<rollout_explicit_t>(
-      "rollout", &aligator::rollout, bp::args("dyn_model", "x0", "us"),
+      "rollout", &aligator::rollout, ("dyn_model"_a, "x0", "us"),
       "Perform a rollout of a single explicit dynamics model.");
 
   bp::def<rollout_vec_generic_t>(
-      "rollout_implicit", &aligator::rollout,
-      bp::args("dyn_models", "x0", "us"),
+      "rollout_implicit", &aligator::rollout, ("dyn_models"_a, "x0", "us"),
       "Perform a dynamics rollout, for multiple discrete dynamics models.");
 
   bp::def<rollout_vec_explicit_t>(
-      "rollout", &aligator::rollout, bp::args("dyn_models", "x0", "us"),
-      "Perform a rollout of multiple explicit dynamics model.");
+      "rollout", &aligator::rollout, ("dyn_models"_a, "x0", "us"),
+      "Perform a rollout of multiple different dynamics models.");
 }
 
 } // namespace python

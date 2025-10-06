@@ -37,6 +37,7 @@ This release brings a major change to the ProxDDP solver, which no longer uses p
 - testing: added a test_mpc.py script to test parallel and serial mpc implementations (https://github.com/Simple-Robotics/aligator/pull/331)
 - modelling : added wheeled inverted pendulum dynamics (https://github.com/Simple-Robotics/aligator/pull/326)
 - CMake option to `BUILD_STANDALONE_PYTHON_INTERFACE` (https://github.com/Simple-Robotics/aligator/pull/347)
+- utils: add free function `forwardDynamics()` (replaces previous struct) in `aligator/utils/forward-dyn.hpp`
 
 ### Removed
 
