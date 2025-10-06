@@ -8,6 +8,8 @@ file(GLOB_RECURSE HEADERS ${INCLUDE_DIR}/*.hpp ${INCLUDE_DIR}/*.hxx)
 add_library(aligator_croc_compat SHARED ${HEADERS})
 add_library(aligator::croc_compat ALIAS aligator_croc_compat)
 
+set_target_properties(aligator_croc_compat PROPERTIES EXPORT_NAME croc_compat)
+
 if(ENABLE_TEMPLATE_INSTANTIATION)
   file(GLOB SOURCES_TEMPL ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
   list(APPEND HEADERS ${HEADERS_TEMPL})

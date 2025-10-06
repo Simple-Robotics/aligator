@@ -124,7 +124,6 @@ function(set_standard_output_directory target)
 endfunction()
 
 # --- OPTIONS ----------------------------------------
-option(BUILD_PYTHON_INTERFACE "Build the Python bindings" ON)
 option(
   BUILD_WITH_VERSION_SUFFIX
   "Build libraries with version appended to suffix"
@@ -409,17 +408,21 @@ function(create_library)
   endforeach()
 endfunction()
 
-create_library()
+if(BUILD_STANDALONE_PYTHON_INTERFACE)
+  ADD_PROJECT_DEPENDENCY(${PROJECT_NAME} REQUIRED CONFIG)
+else()
+  create_library()
 
-ADD_HEADER_GROUP(LIB_HEADERS)
-ADD_SOURCE_GROUP(LIB_SOURCES)
+  ADD_HEADER_GROUP(LIB_HEADERS)
+  ADD_SOURCE_GROUP(LIB_SOURCES)
 
-install(
-  TARGETS ${PROJECT_NAME}
-  EXPORT ${TARGETS_EXPORT_NAME}
-  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
+  install(
+    TARGETS ${PROJECT_NAME}
+    EXPORT ${TARGETS_EXPORT_NAME}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  )
+endif()
 
 if(DOWNLOAD_TRACY)
   install(
@@ -434,7 +437,7 @@ if(DOWNLOAD_TRACY)
   )
 endif()
 
-if(BUILD_CROCODDYL_COMPAT)
+if(BUILD_CROCODDYL_COMPAT AND NOT BUILD_STANDALONE_PYTHON_INTERFACE)
   ADD_PROJECT_DEPENDENCY(crocoddyl 3.0.1 REQUIRED)
   add_subdirectory(src/compat/crocoddyl)
 endif()
@@ -478,7 +481,11 @@ endif()
 
 # create an utility library to avoid recompiling crocoddyl talos arm problem
 # used in examples and benchmarks
-if(BUILD_CROCODDYL_COMPAT AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
+if(
+  NOT BUILD_STANDALONE_PYTHON_INTERFACE
+  AND BUILD_CROCODDYL_COMPAT
+  AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS)
+)
   add_library(
     croc_talos_arm_utils
     STATIC
@@ -500,7 +507,10 @@ if(BUILD_CROCODDYL_COMPAT AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
   set_standard_output_directory(croc_talos_arm_utils)
 endif()
 
-if(BUILD_BENCHMARKS OR BUILD_TESTING)
+if(
+  NOT BUILD_STANDALONE_PYTHON_INTERFACE
+  AND (BUILD_BENCHMARKS OR BUILD_TESTING)
+)
   add_library(
     gar_test_utils
     STATIC
@@ -510,7 +520,10 @@ if(BUILD_BENCHMARKS OR BUILD_TESTING)
   set_standard_output_directory(gar_test_utils)
 endif()
 
-if(BUILD_EXAMPLES OR BUILD_BENCHMARKS)
+if(
+  NOT BUILD_STANDALONE_PYTHON_INTERFACE
+  AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS)
+)
   add_library(
     talos_walk_utils
     STATIC
@@ -535,7 +548,7 @@ if(BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
-if(BUILD_BENCHMARKS)
+if(BUILD_BENCHMARKS AND NOT BUILD_STANDALONE_PYTHON_INTERFACE)
   find_package(benchmark REQUIRED)
   add_subdirectory(bench)
 endif()
