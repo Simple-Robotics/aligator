@@ -32,7 +32,7 @@ struct DirectSumExplicitDynamicsTpl : ExplicitDynamicsModelTpl<_Scalar> {
   void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
                 BaseData &data) const override;
 
-  shared_ptr<DynamicsDataTpl<Scalar>> createData() const override {
+  shared_ptr<BaseData> createData() const override {
     return std::make_shared<Data>(*this);
   }
 

@@ -64,7 +64,6 @@ void exposeExplicitBase() {
       "ExplicitDynamicsData", "Data struct for explicit dynamics models.",
       bp::no_init)
       .def_readwrite("xnext", &ExplicitDataWrapper::xnext_)
-      .def_readwrite("dx", &ExplicitDataWrapper::dx_)
       .def_readwrite("jac_buffer", &ExplicitDataWrapper::jac_buffer_)
       .add_property(
           "Jx",

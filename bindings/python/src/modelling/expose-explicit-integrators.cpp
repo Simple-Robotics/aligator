@@ -28,8 +28,7 @@ void exposeExplicitIntegrators() {
 
   using PyExplicitIntegrator = PyExplicitDynamics<ExplicitIntegratorAbstract>;
 
-  PolymorphicMultiBaseVisitor<ExplicitIntegratorAbstract, ExplicitDynamics,
-                              DynamicsModel>
+  PolymorphicMultiBaseVisitor<ExplicitIntegratorAbstract, ExplicitDynamics>
       conversions_visitor;
 
   register_polymorphic_to_python<polymorphic<ExplicitIntegratorAbstract>>();
@@ -51,7 +50,8 @@ void exposeExplicitIntegrators() {
       "ExplicitIntegratorData", "Data struct for explicit time integrators.",
       bp::no_init)
       .def_readwrite("continuous_data",
-                     &ExplicitIntegratorData::continuous_data);
+                     &ExplicitIntegratorData::continuous_data)
+      .def_readwrite("dx", &ExplicitIntegratorData::dx_);
 
   bp::class_<IntegratorEulerTpl<Scalar>, bp::bases<ExplicitIntegratorAbstract>>(
       "IntegratorEuler",

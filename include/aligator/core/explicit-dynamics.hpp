@@ -2,9 +2,9 @@
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
-#include "aligator/core/dynamics.hpp"
-
+#include "aligator/context.hpp"
 #include "aligator/core/manifold-base.hpp"
+#include "aligator/third-party/polymorphic_cxx14.h"
 
 #include <fmt/format.h>
 
@@ -71,8 +71,6 @@ public:
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   /// Next state.
   VectorXs xnext_;
-  /// Difference vector between current state `x` and xnext_.
-  VectorXs dx_;
   // Jacobians
   MatrixXs jac_buffer_;
   MatrixXs Jtmp_xnext;
@@ -87,11 +85,9 @@ public:
       , nu(model.nu)
       , ndx2(model.ndx2())
       , xnext_(model.nx2())
-      , dx_(ndx2)
       , jac_buffer_(ndx2, ndx1 + nu)
       , Jtmp_xnext(ndx2, ndx2) {
     xnext_ = model.space().neutral();
-    dx_.setZero();
     jac_buffer_.setZero();
     Jtmp_xnext.setZero();
   }
