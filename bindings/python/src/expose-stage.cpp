@@ -3,6 +3,7 @@
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/visitors.hpp"
 
+#include "aligator/core/explicit-dynamics.hpp"
 #include "aligator/core/stage-model.hpp"
 #include "aligator/core/stage-data.hpp"
 #include "aligator/core/cost-abstract.hpp"
@@ -34,7 +35,7 @@ void exposeStage() {
   using context::StageModel;
 
   using PolyCost = xyz::polymorphic<context::CostAbstract>;
-  using PolyDynamics = xyz::polymorphic<context::DynamicsModel>;
+  using PolyDynamics = xyz::polymorphic<context::ExplicitDynamics>;
   using PolyFunction = xyz::polymorphic<context::StageFunction>;
   using PolyCstrSet = xyz::polymorphic<ConstraintSet>;
   using PolyStage = xyz::polymorphic<StageModel>;
