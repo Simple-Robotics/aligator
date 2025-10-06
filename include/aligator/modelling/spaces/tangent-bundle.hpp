@@ -26,8 +26,12 @@ public:
 
   /// Constructor using base space constructor.
   template <typename... BaseCtorArgs>
-  TangentBundleTpl(BaseCtorArgs &&...args)
-      : ManifoldBase(Base(std::forward<BaseCtorArgs>(args)...)) {}
+  TangentBundleTpl(BaseCtorArgs... args)
+      : ManifoldBase(0, 0)
+      , base_(args...) {
+    this->nx_ = base_.nx() + base_.ndx();
+    this->ndx_ = 2 * base_.ndx();
+  }
 
   bool isNormalized(const ConstVectorRef &x) const {
     auto p = getBasePoint(x);
