@@ -56,8 +56,7 @@ auto directSum(xyz::polymorphic<ExplicitDynamicsModelTpl<Scalar>> const &m1,
   return DirectSumExplicitDynamicsTpl<Scalar>(m1, m2);
 }
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./explicit-dynamics-direct-sum.txx"
+extern template struct DirectSumExplicitDynamicsTpl<context::Scalar>;
 #endif
+} // namespace aligator

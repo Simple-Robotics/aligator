@@ -52,7 +52,6 @@ struct IntegratorRK2DataTpl : ExplicitIntegratorDataTpl<Scalar> {
   VectorXs x1_;
   VectorXs dx1_;
 
-  explicit IntegratorRK2DataTpl(const IntegratorRK2Tpl<Scalar> *integrator);
 
   using Base::dx_;
   using Base::Jtmp_xnext;
@@ -61,9 +60,9 @@ struct IntegratorRK2DataTpl : ExplicitIntegratorDataTpl<Scalar> {
   using Base::xnext_;
 };
 
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct IntegratorRK2Tpl<context::Scalar>;
+extern template struct IntegratorRK2DataTpl<context::Scalar>;
+#endif
 } // namespace dynamics
 } // namespace aligator
-
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/modelling/dynamics/integrator-rk2.txx"
-#endif
