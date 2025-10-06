@@ -32,9 +32,12 @@ public:
   LieGroup lg_;
 
   PinocchioLieGroup()
-      : Base(lg_.nq(), lg_.nv()) {}
+      : Base(0, 0) {
+    this->nx_ = lg_.nq();
+    this->ndx_ = lg_.nv();
+  }
   PinocchioLieGroup(const LieGroup &lg)
-      : Base(lg_.nq(), lg_.nv())
+      : Base(lg.nq(), lg.nv())
       , lg_(lg) {}
   PinocchioLieGroup(const PinocchioLieGroup &lg) = default;
   PinocchioLieGroup(PinocchioLieGroup &&lg) = default;
