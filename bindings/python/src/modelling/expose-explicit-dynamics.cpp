@@ -8,8 +8,6 @@
 namespace aligator {
 namespace python {
 
-using context::DynamicsData;
-using context::DynamicsModel;
 using context::ExplicitDynamics;
 using context::ExplicitDynamicsData;
 using context::Scalar;
