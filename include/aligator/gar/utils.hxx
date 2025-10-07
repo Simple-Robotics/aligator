@@ -91,7 +91,7 @@ std::array<Scalar, 3> lqrComputeKktError(
     boost::span<const typename math_types<Scalar>::VectorXs> us,
     boost::span<const typename math_types<Scalar>::VectorXs> vs,
     boost::span<const typename math_types<Scalar>::VectorXs> lbdas,
-    const Scalar, const Scalar mueq,
+    const Scalar mueq,
     const std::optional<typename math_types<Scalar>::ConstVectorRef> &theta_,
     bool verbose) {
   if (verbose)

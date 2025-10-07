@@ -11,7 +11,7 @@ template std::array<context::Scalar, 3> lqrComputeKktError<context::Scalar>(
     const LqrProblemTpl<context::Scalar> &,
     boost::span<const context::VectorXs>, boost::span<const context::VectorXs>,
     boost::span<const context::VectorXs>, boost::span<const context::VectorXs>,
-    const context::Scalar, const context::Scalar,
-    const std::optional<context::ConstVectorRef> &, bool);
+    const context::Scalar, const std::optional<context::ConstVectorRef> &,
+    bool);
 } // namespace gar
 } // namespace aligator

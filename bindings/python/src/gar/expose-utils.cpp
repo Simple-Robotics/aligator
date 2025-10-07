@@ -38,7 +38,7 @@ void exposeGarUtils() {
   bp::def("lqrInitializeSolution", lqr_sol_initialize_wrap, ("problem"_a));
 
   bp::def("lqrComputeKktError", lqrComputeKktError<Scalar>,
-          ("problem"_a, "xs", "us", "vs", "lbdas", "mudyn", "mueq", "theta",
+          ("problem"_a, "xs", "us", "vs", "lbdas", "mueq", "theta",
            "verbose"_a = false),
           "Compute the KKT residual of the LQR problem.");
 }

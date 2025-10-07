@@ -54,8 +54,9 @@ template <typename Scalar>
     boost::span<const typename math_types<Scalar>::VectorXs> us,
     boost::span<const typename math_types<Scalar>::VectorXs> vs,
     boost::span<const typename math_types<Scalar>::VectorXs> lbdas,
-    const Scalar mudyn, const Scalar mueq,
-    const std::optional<typename math_types<Scalar>::ConstVectorRef> &theta_,
+    const Scalar mueq,
+    const std::optional<typename math_types<Scalar>::ConstVectorRef> &theta =
+        std::nullopt,
     bool verbose = false);
 
 /// @brief Compute the number of rows in the problem matrix.
@@ -149,8 +150,8 @@ lqrComputeKktError<context::Scalar>(
     const LqrProblemTpl<context::Scalar> &,
     boost::span<const context::VectorXs>, boost::span<const context::VectorXs>,
     boost::span<const context::VectorXs>, boost::span<const context::VectorXs>,
-    const context::Scalar, const context::Scalar,
-    const std::optional<context::ConstVectorRef> &, bool);
+    const context::Scalar, const std::optional<context::ConstVectorRef> &,
+    bool);
 #endif
 
 } // namespace aligator::gar

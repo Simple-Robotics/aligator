@@ -77,7 +77,7 @@ KktError computeKktError(const problem_t &problem, const VectorOfVectors &xs,
                          const VectorOfVectors &lbdas,
                          const std::optional<ConstVectorRef> &theta_,
                          const double mueq, bool verbose) {
-  auto r = aligator::gar::lqrComputeKktError(problem, xs, us, vs, lbdas, 0.0,
-                                             mueq, theta_, verbose);
+  std::array r = aligator::gar::lqrComputeKktError(problem, xs, us, vs, lbdas,
+                                                   mueq, theta_, verbose);
   return {r[0], r[1], r[2]};
 }
