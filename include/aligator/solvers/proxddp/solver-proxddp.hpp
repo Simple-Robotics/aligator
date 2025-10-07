@@ -268,7 +268,9 @@ public:
   /// \{
 
   /// @brief    Add a callback to the solver instance.
-  void registerCallback(const std::string &name, CallbackPtr cb);
+  void registerCallback(const std::string &name, CallbackPtr cb) {
+    callbacks_.insert_or_assign(name, cb);
+  }
 
   /// @brief    Remove all callbacks from the instance.
   void clearCallbacks() noexcept { callbacks_.clear(); }
