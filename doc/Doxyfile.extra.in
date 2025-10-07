@@ -20,7 +20,7 @@ FULL_SIDEBAR            = NO
 ENABLE_PREPROCESSING    = YES
 MACRO_EXPANSION         = YES
 EXPAND_ONLY_PREDEF      = YES
-PREDEFINED              += EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+PREDEFINED              += EIGEN_MAKE_ALIGNED_OPERATOR_NEW ALIGATOR_MULTITHREADING
 
 FULL_PATH_NAMES         = YES
 EXCLUDE_SYMBOLS         = *::internal, internal::*, *::internal::*, boost::*, fmt::*, std::*

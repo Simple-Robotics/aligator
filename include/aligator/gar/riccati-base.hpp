@@ -27,6 +27,7 @@ public:
 
   /// For applicable solvers, updates the first feedback gain in-place to
   /// correspond to the first Riccati gain.
+  /// @sa aligator::gar::ParallelRiccatiSolver for a non-trivial implementation.
   virtual void collapseFeedback() {}
   virtual VectorRef getFeedforward(size_t) = 0;
   virtual RowMatrixRef getFeedback(size_t) = 0;
