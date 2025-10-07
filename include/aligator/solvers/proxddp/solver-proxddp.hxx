@@ -141,9 +141,7 @@ Scalar SolverProxDDPTpl<Scalar>::tryLinearStep(const Problem &problem,
   stage.xspace_next_->integrate(results_.xs[nsteps], dx_tmp.head(ndxN),
                                 workspace_.trial_xs[nsteps]);
   TrajOptData &prob_data = workspace_.problem_data;
-  prob_data.cost_ =
-      problem.evaluate(workspace_.trial_xs, workspace_.trial_us, prob_data);
-  return prob_data.cost_;
+  return problem.evaluate(workspace_.trial_xs, workspace_.trial_us, prob_data);
 }
 
 template <typename Scalar>
@@ -219,7 +217,6 @@ bool SolverProxDDPTpl<Scalar>::computeMultipliers(
 
   const std::vector<VectorXs> &vs_prev = workspace_.prev_vs;
   std::vector<VectorXs> &vs_plus = workspace_.vs_plus;
-  // std::vector<VectorXs> &vs_pdal = workspace_.vs_pdal;
 
   std::vector<VectorXs> &Lvs = workspace_.Lvs;
   std::vector<VectorXs> &shifted_constraints = workspace_.shifted_constraints;
@@ -356,7 +353,7 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
     // use lams[0] as a tmp var for alpha * dx0
     lams[0] = alpha * dxs[0];
     stage.xspace().integrate(results_.xs[0], lams[0], xs[0]);
-    lams[0] = results_.lams[0] + alpha * workspace_.dlams[0];
+    lams[0] = results_.lams[0] + alpha * dlams[0];
 
     ALIGATOR_RAISE_IF_NAN_NAME(xs[0], fmt::format("xs[{:d}]", 0));
   }
@@ -365,18 +362,15 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
     const StageModel &stage = *problem.stages_[t];
     StageData &data = *prob_data.stage_data[t];
 
-    const std::array<long, 4> _dims{stage.nu(), stage.nc(), stage.ndx2(),
-                                    stage.ndx2()};
-    BlkMatrix<ConstVectorRef, 4, 1> ff{
-        linear_solver_->getFeedforward(t), _dims, {1}};
-    BlkMatrix<ConstMatrixRef, 4, 1> fb{
-        linear_solver_->getFeedback(t), _dims, {stage.ndx1()}};
-    ConstVectorRef kff = ff[0];
-    ConstVectorRef zff = ff[1];
-    ConstVectorRef lff = ff[2];
+    const std::array<long, 3> dims = {stage.nu(), stage.nc(), stage.ndx2()};
+    BlkMatrix<ConstVectorRef, 3, 1> ff{
+        linear_solver_->getFeedforward(t), dims, {1}};
+    BlkMatrix<ConstMatrixRef, 3, 1> fb{
+        linear_solver_->getFeedback(t), dims, {stage.ndx1()}};
+    ConstVectorRef kff = ff.blockSegment(0);
+    ConstVectorRef zff = ff.blockSegment(1);
     ConstMatrixRef Kfb = fb.blockRow(0);
     ConstMatrixRef Zfb = fb.blockRow(1);
-    ConstMatrixRef Lfb = fb.blockRow(2);
 
     dus[t] = alpha * kff;
     dus[t].noalias() += Kfb * dxs[t];
@@ -386,16 +380,11 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
     dvs[t].noalias() += Zfb * dxs[t];
     vs[t] = results_.vs[t] + dvs[t];
 
-    dlams[t + 1] = alpha * lff;
-    dlams[t + 1].noalias() += Lfb * dxs[t];
-    lams[t + 1] = results_.lams[t + 1] + dlams[t + 1];
-
     stage.evaluate(xs[t], us[t], data);
-
-    // rollout has zeroed out the residual
-    dyn_slacks[t].setZero();
+    xs[t + 1] = data.dynamics_data->xnext_;
 
     stage.xspace_next().difference(results_.xs[t + 1], xs[t + 1], dxs[t + 1]);
+    lams[t + 1] = results_.lams[t + 1] + alpha * dlams[t + 1];
 
     ALIGATOR_RAISE_IF_NAN_NAME(xs[t + 1], fmt::format("xs[{:d}]", t + 1));
     ALIGATOR_RAISE_IF_NAN_NAME(us[t], fmt::format("us[{:d}]", t));
@@ -423,7 +412,7 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
         linear_solver_->getFeedforward(nsteps), _dims, {1}};
     BlkMatrix<ConstMatrixRef, 2, 1> fb{
         linear_solver_->getFeedback(nsteps), _dims, {ndx}};
-    ConstVectorRef zff = ff[1];
+    ConstVectorRef zff = ff.blockSegment(1);
     ConstMatrixRef Zfb = fb.blockRow(1);
 
     dvs[nsteps] = alpha * zff;
@@ -716,12 +705,16 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::computeCriterion() {
     Scalar rd = math::infty_norm(workspace_.dyn_slacks[i]);
     // path constraints
     Scalar rc = math::infty_norm(workspace_.Lvs[i]);
+    // if (rollout_type_ == RolloutType::NONLINEAR)
+    //   rx = 0.0;
 
     workspace_.stage_inner_crits[long(i)] = std::max({rx, ru, rd, rc});
     workspace_.state_dual_infeas[long(i)] = rx; // [1] eqn. 52
     workspace_.control_dual_infeas[long(i)] = ru;
   }
   Scalar rx = math::infty_norm(workspace_.Lxs[nsteps]);
+  // if (rollout_type_ == RolloutType::NONLINEAR)
+  //   rx = 0.0;
   Scalar rc = math::infty_norm(workspace_.Lvs[nsteps]);
   workspace_.state_dual_infeas[long(nsteps)] = rx; // [1] eqn. 52
   workspace_.stage_inner_crits[long(nsteps)] = std::max(rx, rc);
