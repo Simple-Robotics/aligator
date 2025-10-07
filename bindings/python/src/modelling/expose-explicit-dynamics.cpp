@@ -53,8 +53,17 @@ void exposeExplicitBase() {
       .def("dForward", bp::pure_virtual(&ExplicitDynamics::dForward),
            ("self"_a, "x", "u", "data"),
            "Compute the derivatives of forward discrete dynamics.")
+      .add_property("nx1", &ExplicitDynamics::nx1)
+      .add_property("ndx1", &ExplicitDynamics::ndx1)
+      .add_property("nx2", &ExplicitDynamics::nx2)
+      .add_property("ndx2", &ExplicitDynamics::ndx2)
+      .def_readonly("nu", &ExplicitDynamics::nu)
+      .def_readonly("space", &ExplicitDynamics::space_)
+      .def_readonly("space_next", &ExplicitDynamics::space_next_)
       .def(CreateDataPolymorphicPythonVisitor<ExplicitDynamics,
-                                              PyExplicitDynamics<>>());
+                                              PyExplicitDynamics<>>())
+      .def(exp_dynamics_visitor)
+      .enable_pickling_(true);
 
   bp::register_ptr_to_python<shared_ptr<ExplicitDynamicsData>>();
 
