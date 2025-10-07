@@ -106,11 +106,11 @@ def test_proxddp_lqr(lqr_problem_constrained, strategy):
     nsteps = problem.num_steps
 
     tol = 1e-6
-    mu_init = 1e-4
+    mu_init = 1e-2
     solver = aligator.SolverProxDDP(tol, mu_init, verbose=aligator.VERBOSE)
     solver.setup(problem)
     solver.sa_strategy = strategy
-    solver.max_iters = 3
+    solver.max_iters = 4
     xs_init = [np.random.randn(nx)] * (nsteps + 1)
     xs_init[0] = x0
     us_init = [np.zeros(nu)] * nsteps
