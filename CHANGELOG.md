@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This release brings a major change to the ProxDDP solver, which no longer uses proximal iteration the co-state (the dynamics' Lagrange multiplies). This choice is made to increase the solver's overall performance.
 
+Furthermore, on a temporary basis, implicit discrete dynamics **are no longer supported** in the API and solvers.
+
 ### Fixed
 
 - gar : fix missing move assignment operator in `LqrProblemTpl`
@@ -29,7 +31,9 @@ This release brings a major change to the ProxDDP solver, which no longer uses p
 
 #### Changes to dynamics
 
-- core/explicit-dynamics : no longer a child class of `DynamicsModel`
+- Remove explicit dynamics (incl. explicit integrators) from `DynamicsModel` class hierarchy
+- Make `ExplicitDynamicsModel` used everywhere in API (e.g. `StageModel` now takes/stores `polymorphic<ExplicitDynamicsModel>`)
+- Directly store state space repr dim and actual dim (`nx` and `ndx`) in `ManifoldAbstract` class
 
 ### Added
 
