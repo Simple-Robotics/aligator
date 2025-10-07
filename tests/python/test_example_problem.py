@@ -54,12 +54,12 @@ class TwistModelExplicit(aligator.dynamics.ExplicitDynamicsModel):
         Ju[:, :] = Jxnext_dv @ dv_du
 
     def createData(self):
-        return TwistData()
+        return TwistData(self)
 
 
 class TwistData(aligator.dynamics.ExplicitDynamicsData):
-    def __init__(self):
-        super().__init__(ndx, nu, nx, ndx)
+    def __init__(self, model):
+        super().__init__(model)
         self.good = True
 
 
@@ -118,20 +118,20 @@ class MyQuadCost(aligator.CostAbstract):
 class TestClass:
     dt = 0.1
     x0 = space.neutral()
-    dynmodel = TwistModelExplicit(dt)
+    dyn_model = TwistModelExplicit(dt)
     cost = MyQuadCost(W=np.eye(space.ndx), x_ref=x1)
-    stage_model = aligator.StageModel(cost, dynmodel)
+    stage_model = aligator.StageModel(cost, dyn_model)
     tol = 1e-5
     mu_init = 1e-2
-    solver = aligator.SolverProxDDP(tol, mu_init)
+    solver: aligator.SolverProxDDP = aligator.SolverProxDDP(tol, mu_init)
 
     def test_dyn(self, nsteps):
-        dyn_data = self.dynmodel.createData()
+        dyn_data = self.dyn_model.createData()
         assert isinstance(dyn_data, TwistData)
         dyn_data.Jx[:, :] = np.arange(ndx**2).reshape(ndx, ndx)
         dyn_data.Ju[:, :] = np.arange(ndx**2, ndx**2 + ndx * nu).reshape(ndx, nu)
-        self.dynmodel.evaluate(x0, u0, x1, dyn_data)
-        self.dynmodel.computeJacobians(x0, u0, x1, dyn_data)
+        self.dyn_model.forward(x0, u0, dyn_data)
+        self.dyn_model.dForward(x0, u0, dyn_data)
         print(self.stage_model.dynamics)
         assert isinstance(self.stage_model.dynamics, TwistModelExplicit)
 
@@ -146,14 +146,14 @@ class TestClass:
     def test_stage(self, nsteps):
         stage_model = self.stage_model
         sd = stage_model.createData()
-        stage_model.computeFirstOrderDerivatives(x0, u0, x1, sd)
+        stage_model.computeFirstOrderDerivatives(x0, u0, sd)
         stage_model.num_dual == ndx
 
     def test_rollout(self, nsteps):
-        us_i = [np.ones(self.dynmodel.nu) * 0.1 for _ in range(nsteps)]
-        xs_i = aligator.rollout(self.dynmodel, self.x0, us_i).tolist()
-        dd = self.dynmodel.createData()
-        self.dynmodel.forward(self.x0, us_i[0], dd)
+        us_i = [np.ones(self.dyn_model.nu) * 0.1 for _ in range(nsteps)]
+        xs_i = aligator.rollout(self.dyn_model, self.x0, us_i).tolist()
+        dd = self.dyn_model.createData()
+        self.dyn_model.forward(self.x0, us_i[0], dd)
         assert np.allclose(dd.xnext, xs_i[1])
 
     def test_shooting_problem(self, nsteps):
@@ -173,7 +173,7 @@ class TestClass:
         print("Clone stage data:", sd0)
 
         us_init = [u0] * nsteps
-        xs_out = aligator.rollout(self.dynmodel, x0, us_init).tolist()
+        xs_out = aligator.rollout(self.dyn_model, x0, us_init).tolist()
 
         assert len(problem_data.stage_data) == problem.num_steps
         assert problem.num_steps == nsteps
@@ -188,8 +188,8 @@ class TestClass:
         assert solver.bcl_params.dual_alpha == 1.0
         assert solver.bcl_params.dual_beta == 1.0
 
-        solver.multiplier_update_mode = aligator.MultiplierUpdateMode.NEWTON
         solver.setup(problem)
+        solver.rollout_type = aligator.ROLLOUT_LINEAR
         solver.run(problem, xs_out, us_init)
 
 
