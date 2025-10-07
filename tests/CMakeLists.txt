@@ -30,7 +30,7 @@ function(add_aligator_test2 test_name dependencies)
     ${test_name}
     PRIVATE ${PROJECT_NAME} Catch2::Catch2WithMain ${dependencies}
   )
-  catch_discover_tests(${test_name})
+  # catch_discover_tests(${test_name})
 endfunction()
 
 set(
