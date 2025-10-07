@@ -20,6 +20,8 @@ namespace gar {
 /// function with respect to both its initial state and last costate (linking to
 /// the next leg). The saddle-point is cast into a linear system which is solved
 /// by dense LDL factorization.
+/// This allows parallel resolution of a (long) linear subproblem on multiple
+/// CPU cores.
 template <typename _Scalar>
 class ParallelRiccatiSolver : public RiccatiSolverBase<_Scalar> {
 public:
