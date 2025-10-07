@@ -49,8 +49,8 @@ void ActionModelWrapperTpl<Scalar>::computeFirstOrderDerivatives(
 
   /* handle dynamics */
   DynDataWrap &dyn_data = *d.dynamics_data;
-  dyn_data.Jx_ = d.croc_action_data->Fx;
-  dyn_data.Ju_ = d.croc_action_data->Fu;
+  dyn_data.Jx() = d.croc_action_data->Fx;
+  dyn_data.Ju() = d.croc_action_data->Fu;
 }
 
 template <typename Scalar>

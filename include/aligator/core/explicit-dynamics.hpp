@@ -65,6 +65,24 @@ template <typename _Scalar> struct ExplicitDynamicsDataTpl {
 protected:
   int ndx1, nu, ndx2;
 
+  ExplicitDynamicsDataTpl(int ndx1, int nu, int nx2, int ndx2)
+      : ndx1(ndx1)
+      , nu(nu)
+      , ndx2(ndx2)
+      , xnext_(nx2)
+      , jac_buffer_(ndx2, ndx1 + nu)
+      , Jtmp_xnext(ndx2, ndx2)
+      , Hxx_(ndx1, ndx1)
+      , Hxu_(ndx1, nu)
+      , Huu_(nu, nu) {
+    xnext_.setZero();
+    jac_buffer_.setZero();
+    Jtmp_xnext.setZero();
+    Hxx_.setZero();
+    Hxu_.setZero();
+    Huu_.setZero();
+  }
+
 public:
   using Scalar = _Scalar;
   using Model = ExplicitDynamicsModelTpl<Scalar>;
@@ -85,22 +103,10 @@ public:
   auto Ju() { return jac_buffer_.rightCols(nu); }
   auto Ju() const { return jac_buffer_.rightCols(nu); }
 
-  ExplicitDynamicsDataTpl(const Model &model)
-      : ndx1(model.ndx1())
-      , nu(model.nu)
-      , ndx2(model.ndx2())
-      , xnext_(model.nx2())
-      , jac_buffer_(ndx2, ndx1 + nu)
-      , Jtmp_xnext(ndx2, ndx2)
-      , Hxx_(ndx1, ndx1)
-      , Hxu_(ndx1, nu)
-      , Huu_(nu, nu) {
+  explicit ExplicitDynamicsDataTpl(const Model &model)
+      : ExplicitDynamicsDataTpl(model.ndx1(), model.nu, model.nx2(),
+                                model.ndx2()) {
     xnext_ = model.space().neutral();
-    jac_buffer_.setZero();
-    Jtmp_xnext.setZero();
-    Hxx_.setZero();
-    Hxu_.setZero();
-    Huu_.setZero();
   }
 
   virtual ~ExplicitDynamicsDataTpl() = default;
