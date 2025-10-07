@@ -16,6 +16,7 @@ Furthermore, on a temporary basis, implicit discrete dynamics **are no longer su
 - gar : fix missing move assignment operator in `LqrProblemTpl`
 - Fix C++20 support. Fix `consteval` compilation errors related to fmt
 - Fix `aligator::gar::ParallelRiccatiSolver` missing from docs
+- Fix missing set of Pinocchio-support (cost, dynamics, etc) classes
 
 ### Changed
 
