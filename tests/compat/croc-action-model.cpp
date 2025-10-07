@@ -43,8 +43,8 @@ TEST_CASE("lqr") {
   pcroc::context::ActionModelWrapper act_wrapper(lqr_model);
   auto act_wrap_data = act_wrapper.createData();
 
-  act_wrapper.evaluate(x0, u0, x0, *act_wrap_data);
-  act_wrapper.computeFirstOrderDerivatives(x0, u0, x0, *act_wrap_data);
+  act_wrapper.evaluate(x0, u0, *act_wrap_data);
+  act_wrapper.computeFirstOrderDerivatives(x0, u0, *act_wrap_data);
 
   auto cd = *act_wrap_data->cost_data;
   fmt::print("act cost_data\n");
@@ -56,6 +56,4 @@ TEST_CASE("lqr") {
   REQUIRE(cd.Lu_.isApprox(lqr_data->Lu));
   REQUIRE(cd.Lxx_.isApprox(lqr_data->Lxx));
   REQUIRE(cd.Luu_.isApprox(lqr_data->Luu));
-
-  act_wrapper.evaluate(x0, u0, x1, *act_wrap_data);
 }

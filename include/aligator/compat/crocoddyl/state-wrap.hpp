@@ -25,7 +25,7 @@ public:
   shared_ptr<StateAbstract> croc_state;
 
   explicit StateWrapperTpl(const shared_ptr<StateAbstract> &state)
-      : Base(state->get_nx(), state->get_ndx())
+      : Base(int(state->get_nx()), int(state->get_ndx()))
       , croc_state(state) {}
 
   static crocoddyl::Jcomponent convert_to_firstsecond(int arg) {
