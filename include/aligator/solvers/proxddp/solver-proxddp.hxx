@@ -35,8 +35,8 @@ void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
     auto &jac = workspace.cstr_proj_jacs[i];
 
     for (size_t j = 0; j < sm.numConstraints(); j++) {
-      jac(j, 0) = sd.constraint_data[j]->Jx_;
-      jac(j, 1) = sd.constraint_data[j]->Ju_;
+      jac(j, 0) = sd.constraint_data[j]->Jx();
+      jac(j, 1) = sd.constraint_data[j]->Ju();
     }
 
     auto Px = jac.blockCol(0);
@@ -54,7 +54,7 @@ void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
     auto &jac = workspace.cstr_proj_jacs[N];
     const auto &cds = prob_data.term_cstr_data;
     for (size_t j = 0; j < cds.size(); j++) {
-      jac(j, 0) = cds[j]->Jx_;
+      jac(j, 0) = cds[j]->Jx();
     }
 
     auto Px = jac.blockCol(0);
@@ -97,8 +97,7 @@ void SolverProxDDPTpl<Scalar>::setNumThreads(const size_t num_threads) {
   num_threads_ = num_threads;
   omp::set_default_options(num_threads);
 }
-// [1] Section IV. Proximal Differential Dynamic Programming
-// C. Forward pass
+
 template <typename Scalar>
 Scalar SolverProxDDPTpl<Scalar>::tryLinearStep(const Problem &problem,
                                                const Scalar alpha) {
@@ -805,7 +804,7 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
   }
 
   const StageFunctionData &id = *pd.init_data;
-  prob.G0 = id.Jx_;
+  prob.G0 = id.Jx();
   prob.g0 = id.value_;
 
   LqrKnotTpl<Scalar> &model = prob.stages[0];

@@ -3,7 +3,7 @@
 /// @brief  Base definitions for ternary functions.
 #pragma once
 
-#include "aligator/fwd.hpp"
+#include "aligator/context.hpp"
 #include <ostream>
 
 namespace aligator {
@@ -92,6 +92,11 @@ template <typename _Scalar> struct StageFunctionDataTpl {
   /// Jacobian with respect to \f$u\f$.
   MatrixRef Ju_;
 
+  ConstMatrixRef Jx() const { return Jx_; }
+  ConstMatrixRef Ju() const { return Ju_; }
+  MatrixRef Jx() { return Jx_; }
+  MatrixRef Ju() { return Ju_; }
+
   /* Vector-Hessian product buffers */
 
   MatrixRef Hxx_;
@@ -108,8 +113,10 @@ template <typename T>
 std::ostream &operator<<(std::ostream &oss,
                          const StageFunctionDataTpl<T> &self);
 
-} // namespace aligator
+extern template struct StageFunctionTpl<context::Scalar>;
+extern template struct StageFunctionDataTpl<context::Scalar>;
+extern template std::ostream &
+operator<<(std::ostream &oss,
+           const StageFunctionDataTpl<context::Scalar> &self);
 
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/core/function-abstract.txx"
-#endif
+} // namespace aligator
