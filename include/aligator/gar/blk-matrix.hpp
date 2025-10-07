@@ -15,14 +15,15 @@ public:
   using MatrixType = _MatrixType;
   using PlainObject = typename MatrixType::PlainObject;
   using Scalar = typename MatrixType::Scalar;
+  using Index = Eigen::Index;
   enum { N = _N, M = _M, Options = PlainObject::Options };
   static constexpr bool IsVectorAtCompileTime =
       MatrixType::IsVectorAtCompileTime;
 
-  using row_dim_t = std::conditional_t<N != -1, std::array<long, size_t(N)>,
-                                       std::vector<long>>;
-  using col_dim_t = std::conditional_t<M != -1, std::array<long, size_t(M)>,
-                                       std::vector<long>>;
+  using row_dim_t = std::conditional_t<N != -1, std::array<Index, size_t(N)>,
+                                       std::vector<Index>>;
+  using col_dim_t = std::conditional_t<M != -1, std::array<Index, size_t(M)>,
+                                       std::vector<Index>>;
 
   static_assert(N != 0 && M != 0,
                 "The BlkMatrix template class only supports nonzero numbers of "
@@ -170,15 +171,15 @@ public:
   const col_dim_t &colDims() const { return m_colDims; }
   const col_dim_t &colIndices() const { return m_colIndices; }
 
-  long rows() const { return m_totalRows; }
-  long cols() const { return m_totalCols; }
+  Index rows() const { return m_totalRows; }
+  Index cols() const { return m_totalCols; }
 
   auto topBlkRows(size_t n) {
     using OutType = BlkMatrix<Eigen::Ref<MatrixType>, -1, M>;
-    std::vector<long> subRowDims;
+    std::vector<Index> subRowDims;
     subRowDims.resize(n);
     std::copy_n(m_rowDims.cbegin(), n, subRowDims.begin());
-    long ntr = std::accumulate(subRowDims.begin(), subRowDims.end(), 0);
+    Index ntr = std::accumulate(subRowDims.begin(), subRowDims.end(), 0);
     return OutType(m_data.topRows(ntr), subRowDims, m_colDims);
   }
 
@@ -187,9 +188,9 @@ public:
                   "Cannot take n block rows of matrix with <n block rows.");
     using RefType = Eigen::Ref<MatrixType>;
     using OutType = BlkMatrix<RefType, n, M>;
-    std::array<long, n> subRowDims;
+    std::array<Index, n> subRowDims;
     std::copy_n(m_rowDims.cbegin(), n, subRowDims.begin());
-    long ntr = std::accumulate(subRowDims.begin(), subRowDims.end(), 0);
+    Index ntr = std::accumulate(subRowDims.begin(), subRowDims.end(), 0);
     return OutType(m_data.topRows(ntr), subRowDims, m_colDims);
   }
 
@@ -203,8 +204,8 @@ protected:
   col_dim_t m_colDims;
   row_dim_t m_rowIndices;
   col_dim_t m_colIndices;
-  long m_totalRows;
-  long m_totalCols;
+  Index m_totalRows;
+  Index m_totalCols;
 
   void initialize() {
     for (size_t i = 0; i < m_rowDims.size(); i++) {

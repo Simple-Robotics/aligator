@@ -17,6 +17,7 @@ struct IntegratorEulerTpl : ExplicitIntegratorAbstractTpl<_Scalar> {
   using Base = ExplicitIntegratorAbstractTpl<Scalar>;
   using Data = ExplicitIntegratorDataTpl<Scalar>;
   using ODEType = ODEAbstractTpl<Scalar>;
+  using ODEData = ContinuousDynamicsDataTpl<Scalar>;
 
   /// Integration time step \f$h\f$.
   Scalar timestep_;

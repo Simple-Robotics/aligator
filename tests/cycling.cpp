@@ -17,8 +17,8 @@ using ManifoldPtr = xyz::polymorphic<Manifold>;
 /// @details  It maps \f$(x,u)\f$ to \f$ x + u \f$.
 struct MyModel : ExplicitDynamicsModelTpl<double> {
   using ExplicitData = ExplicitDynamicsDataTpl<double>;
-  explicit MyModel(ManifoldPtr space)
-      : ExplicitDynamicsModelTpl<double>(space, space->ndx()) {}
+  explicit MyModel(polymorphic<Manifold> space)
+      : ExplicitDynamicsModelTpl<double>(std::move(space), space->ndx()) {}
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                ExplicitData &data) const {
@@ -27,8 +27,8 @@ struct MyModel : ExplicitDynamicsModelTpl<double> {
 
   void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
                 ExplicitData &data) const {
-    space_next().Jintegrate(x, u, data.Jx_, 0);
-    space_next().Jintegrate(x, u, data.Ju_, 1);
+    space_next().Jintegrate(x, u, data.Jx(), 0);
+    space_next().Jintegrate(x, u, data.Ju(), 1);
   }
 };
 

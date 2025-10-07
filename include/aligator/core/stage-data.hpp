@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2024 LAAS-CNRS, 2024-2025 INRIA
 #pragma once
 
 #include "aligator/context.hpp"
@@ -12,14 +12,14 @@ template <typename _Scalar> struct StageDataTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   using StageModel = StageModelTpl<Scalar>;
-  using CostDataAbstract = CostDataAbstractTpl<Scalar>;
+  using CostData = CostDataAbstractTpl<Scalar>;
   using StageFunctionData = StageFunctionDataTpl<Scalar>;
-  using DynamicsData = DynamicsDataTpl<Scalar>;
+  using DynamicsData = ExplicitDynamicsDataTpl<Scalar>;
 
   /// Data structs for the functions involved in the constraints.
   std::vector<shared_ptr<StageFunctionData>> constraint_data;
   /// Data for the running costs.
-  shared_ptr<CostDataAbstract> cost_data;
+  shared_ptr<CostData> cost_data;
   // Data for the system dynamics.
   shared_ptr<DynamicsData> dynamics_data;
 
@@ -32,7 +32,13 @@ template <typename _Scalar> struct StageDataTpl {
   virtual ~StageDataTpl() = default;
 
   /// @brief Check data integrity.
-  virtual void checkData();
+  virtual void checkData() {
+    constexpr std::string_view msg = "StageData integrity check failed.";
+    if (cost_data == nullptr)
+      ALIGATOR_RUNTIME_ERROR("{} (cost_data cannot be nullptr)", msg);
+    if (dynamics_data == nullptr)
+      ALIGATOR_RUNTIME_ERROR("{} (dynamics_data cannot be nullptr)", msg);
+  }
 };
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 extern template struct StageDataTpl<context::Scalar>;

@@ -19,7 +19,7 @@ def test_abstract():
     print(ed)
 
 
-def _test_direct_sum(f, g):
+def direct_sum_test_impl(f, g):
     dm = dynamics.directSum(f, g)
     dd = dm.createData()
     print(dd)
@@ -66,7 +66,7 @@ def test_mb_direct_sum():
     B = np.random.randn(nx2, nu2)
     dm2 = dynamics.LinearDiscreteDynamics(A, B, np.random.randn(nx2))
 
-    _test_direct_sum(dm1, dm2)
+    direct_sum_test_impl(dm1, dm2)
 
 
 class TestLinear:
@@ -81,17 +81,13 @@ class TestLinear:
         space = self.ldd.space
 
         x0 = space.neutral()
-        x1 = space.rand()
         u0 = np.random.randn(self.nu)
         lddata = self.ldd.createData()
         print(lddata)
         self.ldd.forward(x0, u0, lddata)
-        self.ldd.evaluate(x0, u0, x1, lddata)
-
-        print("Data: {}".format(lddata.value))
 
     def test_direct_sum(self):
-        _test_direct_sum(self.ldd, self.ldd)
+        direct_sum_test_impl(self.ldd, self.ldd)
 
 
 if __name__ == "__main__":

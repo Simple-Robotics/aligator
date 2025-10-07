@@ -1,14 +1,12 @@
 /// @file
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/core/function-abstract.hpp"
-#include "aligator/core/dynamics.hpp"
 #include "aligator/core/constraint.hpp"
 
-#include <fmt/ostream.h>
-
 namespace aligator {
+using xyz::polymorphic;
 
 #define ALIGATOR_CHECK_DERIVED_CLASS(Base, Derived)                            \
   static_assert((std::is_base_of_v<Base, Derived>),                            \
@@ -27,13 +25,13 @@ public:
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
   using Manifold = ManifoldAbstractTpl<Scalar>;
-  using PolyManifold = xyz::polymorphic<Manifold>;
-  using Dynamics = DynamicsModelTpl<Scalar>;
-  using PolyDynamics = xyz::polymorphic<Dynamics>;
-  using PolyFunction = xyz::polymorphic<StageFunctionTpl<Scalar>>;
-  using PolyConstraintSet = xyz::polymorphic<ConstraintSetTpl<Scalar>>;
+  using PolyManifold = polymorphic<Manifold>;
+  using Dynamics = ExplicitDynamicsModelTpl<Scalar>;
+  using PolyDynamics = polymorphic<Dynamics>;
+  using PolyFunction = polymorphic<StageFunctionTpl<Scalar>>;
+  using PolyConstraintSet = polymorphic<ConstraintSetTpl<Scalar>>;
   using Cost = CostAbstractTpl<Scalar>;
-  using PolyCost = xyz::polymorphic<Cost>;
+  using PolyCost = polymorphic<Cost>;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   using StageConstraint = StageConstraintTpl<Scalar>;
@@ -103,8 +101,6 @@ public:
   /// Number of constraint objects.
   std::size_t numConstraints() const { return constraints_.size(); }
 
-  /// Number of primal optimization variables.
-  int numPrimal() const { return nu() + ndx2(); }
   /// Number of dual variables, i.e. Lagrange multipliers.
   int numDual() const { return ndx2() + nc(); }
 
@@ -123,12 +119,11 @@ public:
   /// @brief    Evaluate all the functions (cost, dynamics, constraints) at this
   /// node.
   virtual void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                        const ConstVectorRef &y, Data &data) const;
+                        Data &data) const;
 
   /// @brief    Compute the first-order derivatives of the StageModelTpl.
   virtual void computeFirstOrderDerivatives(const ConstVectorRef &x,
                                             const ConstVectorRef &u,
-                                            const ConstVectorRef &y,
                                             Data &data) const;
 
   /// @brief    Compute the second-order derivatives of the StageModelTpl.
@@ -152,11 +147,6 @@ void StageModelTpl<Scalar>::addConstraint(Cstr &&cstr) {
   constraints_.pushBack(std::forward<Cstr>(cstr));
 }
 
-template <typename Scalar>
-std::ostream &operator<<(std::ostream &oss,
-                         const StageModelTpl<Scalar> &stage) {
-  return oss << fmt::format("{}", stage);
-}
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 extern template struct StageModelTpl<context::Scalar>;
 #endif
@@ -194,3 +184,10 @@ struct fmt::formatter<aligator::StageModelTpl<Scalar>> {
     }
   }
 };
+
+namespace aligator {
+template <typename Scalar>
+std::ostream &operator<<(std::ostream &oss, const StageModelTpl<Scalar> &sm) {
+  return oss << fmt::format("{}", sm);
+}
+} // namespace aligator

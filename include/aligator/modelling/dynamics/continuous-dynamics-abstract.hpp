@@ -77,6 +77,11 @@ template <typename _Scalar> struct ContinuousDynamicsDataTpl {
   /// Time derivative \f$\dot{x} = f(x, u)\f$, output of ODE model
   VectorXs xdot_;
 
+  ConstMatrixRef Jx() const { return Jx_; }
+  ConstMatrixRef Ju() const { return Ju_; }
+  MatrixRef Jx() { return Jx_; }
+  MatrixRef Ju() { return Ju_; }
+
   ContinuousDynamicsDataTpl(const int ndx, const int nu);
 
   // marks this type as polymorphic; required for Boost.Python

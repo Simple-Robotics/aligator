@@ -1,3 +1,5 @@
+/// @file rollout.hpp
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/utils/forward-dyn.hpp"
@@ -24,8 +26,7 @@ typename math_types<Scalar>::VectorOfVectors rollout(
     shared_ptr<Data> data = dyn_models[i]->createData();
     const ManifoldAbstractTpl<Scalar> &space = dyn_models[i]->space();
     xout.push_back(space.neutral());
-    forwardDynamics<Scalar>::run(*dyn_models[i], xout[i], us[i], *data,
-                                 xout[i + 1]);
+    forwardDynamics(*dyn_models[i], xout[i], us[i], *data, xout[i + 1]);
   }
   return xout;
 }
@@ -46,7 +47,7 @@ rollout(const DynamicsModelTpl<Scalar> &dyn_model,
   for (std::size_t i = 0; i < N; i++) {
     const ManifoldAbstractTpl<Scalar> &space = dyn_model.space();
     xs.push_back(space.neutral());
-    forwardDynamics<Scalar>::run(dyn_model, xs[i], us[i], *data, xs[i + 1]);
+    forwardDynamics(dyn_model, xs[i], us[i], *data, xs[i + 1]);
   }
   return xs;
 }

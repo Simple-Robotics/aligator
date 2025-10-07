@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023 LAAS-CNRS, 2023-2025 INRIA
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/visitors.hpp"
 #include "aligator/python/modelling/explicit-dynamics.hpp"
@@ -8,14 +8,11 @@
 namespace aligator {
 namespace python {
 
-using context::DynamicsData;
-using context::DynamicsModel;
 using context::ExplicitDynamics;
 using context::ExplicitDynamicsData;
 using context::Scalar;
 using PolyManifold = xyz::polymorphic<context::Manifold>;
-PolymorphicMultiBaseVisitor<DynamicsModel, ExplicitDynamics>
-    exp_dynamics_visitor;
+static PolymorphicMultiBaseVisitor<ExplicitDynamics> exp_dynamics_visitor;
 
 // fwd declaration
 void exposeExplicitBase();
@@ -46,8 +43,7 @@ void exposeExplicitBase() {
 
   register_polymorphic_to_python<PolyExplicitDynamics>();
 
-  bp::class_<PyExplicitDynamics<>, bp::bases<DynamicsModel>,
-             boost::noncopyable>(
+  bp::class_<PyExplicitDynamics<>, boost::noncopyable>(
       "ExplicitDynamicsModel", "Base class for explicit dynamics.",
       bp::init<const PolyManifold &, const int>(
           "Constructor with state space and control dimension.",
@@ -57,22 +53,36 @@ void exposeExplicitBase() {
       .def("dForward", bp::pure_virtual(&ExplicitDynamics::dForward),
            ("self"_a, "x", "u", "data"),
            "Compute the derivatives of forward discrete dynamics.")
-      .def(exp_dynamics_visitor)
+      .add_property("nx1", &ExplicitDynamics::nx1)
+      .add_property("ndx1", &ExplicitDynamics::ndx1)
+      .add_property("nx2", &ExplicitDynamics::nx2)
+      .add_property("ndx2", &ExplicitDynamics::ndx2)
+      .def_readonly("nu", &ExplicitDynamics::nu)
+      .def_readonly("space", &ExplicitDynamics::space_)
+      .def_readonly("space_next", &ExplicitDynamics::space_next_)
       .def(CreateDataPolymorphicPythonVisitor<ExplicitDynamics,
-                                              PyExplicitDynamics<>>());
+                                              PyExplicitDynamics<>>())
+      .def(exp_dynamics_visitor)
+      .enable_pickling_(true);
 
   bp::register_ptr_to_python<shared_ptr<ExplicitDynamicsData>>();
 
-  bp::class_<ExplicitDataWrapper, bp::bases<DynamicsData>, boost::noncopyable>(
+  bp::class_<ExplicitDataWrapper, boost::noncopyable>(
       "ExplicitDynamicsData", "Data struct for explicit dynamics models.",
-      bp::init<int, int, int, int>(("self"_a, "ndx1", "nu", "nx2", "ndx2")))
+      bp::no_init)
+      .def_readwrite("xnext", &ExplicitDataWrapper::xnext_)
+      .def_readwrite("jac_buffer", &ExplicitDataWrapper::jac_buffer_)
       .add_property(
-          "xnext",
-          bp::make_getter(&ExplicitDynamicsData::xnext_ref,
-                          bp::return_value_policy<bp::return_by_value>()))
+          "Jx",
+          +[](ExplicitDynamicsData &self) -> context::MatrixRef {
+            return self.Jx();
+          })
       .add_property(
-          "dx", bp::make_getter(&ExplicitDynamicsData::dx_ref,
-                                bp::return_value_policy<bp::return_by_value>()))
+          "Ju",
+          +[](ExplicitDynamicsData &self) -> context::MatrixRef {
+            return self.Ju();
+          })
+      .def(bp::init<const ExplicitDynamics &>(("self"_a, "model")))
       .def(PrintableVisitor<ExplicitDynamicsData>());
 }
 

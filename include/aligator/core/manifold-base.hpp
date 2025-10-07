@@ -15,16 +15,20 @@ public:
   /// Typedef for the tangent space, as a manifold.
   using TangentSpaceType = VectorSpaceTpl<Scalar, Eigen::Dynamic>;
 
+  ManifoldAbstractTpl(int nx, int ndx)
+      : nx_(nx)
+      , ndx_(ndx) {}
+
   virtual ~ManifoldAbstractTpl() = default;
 
   /// @brief    Get manifold representation dimension.
-  virtual int nx() const = 0;
+  inline int nx() const { return nx_; }
   /// @brief    Get manifold tangent space dimension.
-  virtual int ndx() const = 0;
+  inline int ndx() const { return ndx_; }
 
   /// @brief Get the neutral element \f$e \in M\f$ from the manifold (if this
   /// makes sense).
-  VectorXs neutral() const {
+  [[nodiscard]] VectorXs neutral() const {
     VectorXs out(nx());
     neutral_impl(out);
     return out;
@@ -34,7 +38,7 @@ public:
   void neutral(VectorRef out) const { neutral_impl(out); }
 
   /// @brief Sample a random point \f$x \in M\f$ on the manifold.
-  VectorXs rand() const {
+  [[nodiscard]] VectorXs rand() const {
     VectorXs out(nx());
     rand_impl(out);
     return out;
@@ -87,7 +91,8 @@ public:
   /// @copybrief integrate()
   ///
   /// Out-of-place variant of integration operator.
-  VectorXs integrate(const ConstVectorRef &x, const ConstVectorRef &v) const {
+  [[nodiscard]] VectorXs integrate(const ConstVectorRef &x,
+                                   const ConstVectorRef &v) const {
     VectorXs out(nx());
     integrate_impl(x, v, out);
     return out;
@@ -96,16 +101,17 @@ public:
   /// @copybrief difference()
   ///
   /// Out-of-place version of diff operator.
-  VectorXs difference(const ConstVectorRef &x0,
-                      const ConstVectorRef &x1) const {
+  [[nodiscard]] VectorXs difference(const ConstVectorRef &x0,
+                                    const ConstVectorRef &x1) const {
     VectorXs out(ndx());
     difference_impl(x0, x1, out);
     return out;
   }
 
   /// @copybrief interpolate_impl()
-  VectorXs interpolate(const ConstVectorRef &x0, const ConstVectorRef &x1,
-                       const Scalar &u) const {
+  [[nodiscard]] VectorXs interpolate(const ConstVectorRef &x0,
+                                     const ConstVectorRef &x1,
+                                     const Scalar &u) const {
     VectorXs out(nx());
     interpolate_impl(x0, x1, u, out);
     return out;
@@ -114,6 +120,9 @@ public:
   /// \}
 
 protected:
+  int nx_;
+  int ndx_;
+
   /// Perform the manifold integration operation.
   virtual void integrate_impl(const ConstVectorRef &x, const ConstVectorRef &v,
                               VectorRef out) const = 0;

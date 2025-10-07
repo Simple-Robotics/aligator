@@ -85,19 +85,19 @@ Scalar SolverFDDPTpl<Scalar>::forwardPass(const Problem &problem,
     sm.uspace().integrate(results.us[i], workspace.dus[i], us_try[i]);
 
     ALIGATOR_NOMALLOC_END;
-    sm.evaluate(xs_try[i], us_try[i], xs_try[i + 1], sd);
+    sm.evaluate(xs_try[i], us_try[i], sd);
     ALIGATOR_NOMALLOC_BEGIN;
 
-    const ExplicitDynamicsData &dd = stage_get_dynamics_data(sd);
+    const ExplicitDynamicsData &dd = *sd.dynamics_data;
 
     workspace.dxs[i + 1] = (alpha - 1.) * fs[i + 1]; // use as tmp variable
-    sm.xspace_next_->integrate(dd.xnext_, workspace.dxs[i + 1], xs_try[i + 1]);
+    sm.xspace_next().integrate(dd.xnext_, workspace.dxs[i + 1], xs_try[i + 1]);
     const CostData &cd = *sd.cost_data;
 
     ALIGATOR_RAISE_IF_NAN_NAME(xs_try[i + 1], fmt::format("xs[{}]", i + 1));
     ALIGATOR_RAISE_IF_NAN_NAME(us_try[i], fmt::format("us[{}]", i));
 
-    sm.xspace_->difference(results.xs[i + 1], xs_try[i + 1],
+    sm.xspace().difference(results.xs[i + 1], xs_try[i + 1],
                            workspace.dxs[i + 1]);
 
     traj_cost_ += cd.value_;
@@ -109,7 +109,7 @@ Scalar SolverFDDPTpl<Scalar>::forwardPass(const Problem &problem,
   ALIGATOR_NOMALLOC_BEGIN;
 
   traj_cost_ += cd_term.value_;
-  const auto &space = internal::problem_last_state_space_helper(problem);
+  const auto &space = problem.term_cost_->space;
   space->difference(results.xs[nsteps], xs_try[nsteps], workspace.dxs[nsteps]);
 
   prob_data.cost_ = traj_cost_;
@@ -178,7 +178,7 @@ Scalar SolverFDDPTpl<Scalar>::computeInfeasibility(const Problem &problem) {
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModel &sm = *problem.stages_[i];
     const auto &sd = *pd.stage_data[i];
-    const ExplicitDynamicsData &dd = stage_get_dynamics_data(sd);
+    const ExplicitDynamicsData &dd = *sd.dynamics_data;
     sm.xspace_->difference(xs[i + 1], dd.xnext_, fs[i + 1]);
   }
   Scalar res = math::infty_norm(fs);
@@ -232,7 +232,7 @@ void SolverFDDPTpl<Scalar>::backwardPass(const Problem &problem,
     assert(qparam.grad_.size() == ndx1 + nu);
 
     const CostData &cd = *sd.cost_data;
-    const DynamicsDataTpl<Scalar> &dd = *sd.dynamics_data;
+    const ExplicitDynamicsData &dd = *sd.dynamics_data;
 
     /* Assemble Q-function */
     auto J_x_u = dd.jac_buffer_.leftCols(ndx1 + nu);
@@ -395,13 +395,6 @@ bool SolverFDDPTpl<Scalar>::run(const Problem &problem,
     logger.log();
   logger.finish(results_.conv);
   return results_.conv;
-}
-
-template <typename Scalar>
-auto SolverFDDPTpl<Scalar>::stage_get_dynamics_data(
-    const StageDataTpl<Scalar> &data) -> const ExplicitDynamicsData & {
-  const DynamicsDataTpl<Scalar> &dd = *data.dynamics_data;
-  return static_cast<const ExplicitDynamicsData &>(dd);
 }
 
 } // namespace aligator

@@ -20,6 +20,8 @@ namespace gar {
 /// function with respect to both its initial state and last costate (linking to
 /// the next leg). The saddle-point is cast into a linear system which is solved
 /// by dense LDL factorization.
+/// This allows parallel resolution of a (long) linear subproblem on multiple
+/// CPU cores.
 template <typename _Scalar>
 class ParallelRiccatiSolver : public RiccatiSolverBase<_Scalar> {
 public:
@@ -48,10 +50,9 @@ public:
   bool backward(const Scalar mueq) override;
 
   inline void collapseFeedback() override {
-    using RowMatrix = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
     StageFactor<Scalar> &d = datas[0];
-    Eigen::Ref<RowMatrix> K = d.fb.blockRow(0);
-    Eigen::Ref<RowMatrix> Kth = d.fth.blockRow(0);
+    RowMatrixRef K = d.fb.blockRow(0);
+    RowMatrixRef Kth = d.fth.blockRow(0);
 
     // condensedSystem.subdiagonal contains the 'U' factors in the
     // block-tridiag UDUt decomposition

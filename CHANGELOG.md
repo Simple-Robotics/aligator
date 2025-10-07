@@ -9,13 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This release brings a major change to the ProxDDP solver, which no longer uses proximal iteration the co-state (the dynamics' Lagrange multiplies). This choice is made to increase the solver's overall performance.
 
+Furthermore, on a temporary basis, implicit discrete dynamics **are no longer supported** in the API and solvers.
+
 ### Fixed
 
 - gar : fix missing move assignment operator in `LqrProblemTpl`
 - Fix C++20 support. Fix `consteval` compilation errors related to fmt
+- Fix `aligator::gar::ParallelRiccatiSolver` missing from docs
+- Fix missing set of Pinocchio-support (cost, dynamics, etc) classes
 
 ### Changed
 
+- core/manifold-base : mark some functions `[[nodiscard]]`
 - readme/cmake : update actually expected minimum version of eigenpy to 3.9
 - solvers : make proxddp algo's Results class copyable again (in C++ and Python) (https://github.com/Simple-Robotics/aligator/pull/322)
 - python/visitors : also set `__copy__` method on exposed class with `CopyableVisitor` (https://github.com/Simple-Robotics/aligator/pull/322)
@@ -26,15 +31,23 @@ This release brings a major change to the ProxDDP solver, which no longer uses p
 - Change all tests to use Catch2 instead of Boost.Test
 - The Riccati algorithms now run faster after the dual-regularisation on co-states and the QR for the implicit dynamics have been removed. The algos might be less numerically accurate.
 
+#### Changes to dynamics
+
+- Remove explicit dynamics (incl. explicit integrators) from `DynamicsModel` class hierarchy
+- Make `ExplicitDynamicsModel` used everywhere in API (e.g. `StageModel` now takes/stores `polymorphic<ExplicitDynamicsModel>`)
+- Directly store state space repr dim and actual dim (`nx` and `ndx`) in `ManifoldAbstract` class
+
 ### Added
 
 - gar: add CTAD for the `ParallelRiccatiSolver` and `ProximalRiccatiSolver` classes
 - testing: added a test_mpc.py script to test parallel and serial mpc implementations (https://github.com/Simple-Robotics/aligator/pull/331)
 - modelling : added wheeled inverted pendulum dynamics (https://github.com/Simple-Robotics/aligator/pull/326)
 - CMake option to `BUILD_STANDALONE_PYTHON_INTERFACE` (https://github.com/Simple-Robotics/aligator/pull/347)
+- utils: add free function `forwardDynamics()` (replaces previous struct) in `aligator/utils/forward-dyn.hpp`
 
 ### Removed
 
+- fwd.hpp : remove deprecated typedef `ODEDataTpl`
 - gar: remove CHOLDMOD backend (https://github.com/Simple-Robotics/aligator/pull/345)
 - gar: remove support for implicit dynamics in LQ solver interface
   - remove member `LqrKnotTpl::E`

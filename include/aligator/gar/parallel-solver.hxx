@@ -24,7 +24,7 @@ ParallelRiccatiSolver<Scalar>::ParallelRiccatiSolver(
   ALIGATOR_TRACY_ZONE_SCOPED;
   if (numThreads < 2) {
     ALIGATOR_RUNTIME_ERROR(
-        "({:s}) numThreads (={:d}) should be greater than or equal to 2.",
+        "({:s}) numThreads ({:d}) should be greater than or equal to 2.",
         __FUNCTION__, numThreads);
   }
 

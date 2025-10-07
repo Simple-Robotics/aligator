@@ -6,7 +6,7 @@ namespace aligator {
 
 /// @brief Tangent bundle of a base manifold M.
 template <class Base>
-struct TangentBundleTpl : public ManifoldAbstractTpl<typename Base::Scalar> {
+struct TangentBundleTpl : ManifoldAbstractTpl<typename Base::Scalar> {
 protected:
   Base base_;
 
@@ -15,19 +15,23 @@ public:
   using Scalar = typename Base::Scalar;
   static constexpr int Options = Base::Options;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
+  using ManifoldBase = ManifoldAbstractTpl<Scalar>;
+  using ManifoldBase::ndx;
+  using ManifoldBase::nx;
 
   /// Constructor using base space instance.
-  TangentBundleTpl(Base base)
-      : base_(base) {};
+  TangentBundleTpl(const Base &base)
+      : ManifoldBase(base.nx() + base.ndx(), 2 * base.ndx())
+      , base_(base) {}
+
   /// Constructor using base space constructor.
   template <typename... BaseCtorArgs>
   TangentBundleTpl(BaseCtorArgs... args)
-      : base_(Base(args...)) {}
-
-  /// Declare implementations
-
-  inline int nx() const { return base_.nx() + base_.ndx(); }
-  inline int ndx() const { return 2 * base_.ndx(); }
+      : ManifoldBase(0, 0)
+      , base_(args...) {
+    this->nx_ = base_.nx() + base_.ndx();
+    this->ndx_ = 2 * base_.ndx();
+  }
 
   bool isNormalized(const ConstVectorRef &x) const {
     auto p = getBasePoint(x);

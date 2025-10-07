@@ -3,6 +3,7 @@
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/visitors.hpp"
 
+#include "aligator/core/explicit-dynamics.hpp"
 #include "aligator/core/stage-model.hpp"
 #include "aligator/core/stage-data.hpp"
 #include "aligator/core/cost-abstract.hpp"
@@ -34,7 +35,7 @@ void exposeStage() {
   using context::StageModel;
 
   using PolyCost = xyz::polymorphic<context::CostAbstract>;
-  using PolyDynamics = xyz::polymorphic<context::DynamicsModel>;
+  using PolyDynamics = xyz::polymorphic<context::ExplicitDynamics>;
   using PolyFunction = xyz::polymorphic<context::StageFunction>;
   using PolyCstrSet = xyz::polymorphic<ConstraintSet>;
   using PolyStage = xyz::polymorphic<StageModel>;
@@ -83,11 +84,11 @@ void exposeStage() {
                     bp::make_getter(&StageModel::cost_,
                                     bp::return_internal_reference<>()),
                     "Stage cost.")
-      .def("evaluate", &StageModel::evaluate, ("self"_a, "x", "u", "y", "data"),
+      .def("evaluate", &StageModel::evaluate, ("self"_a, "x", "u", "data"),
            "Evaluate the stage cost, dynamics, constraints.")
       .def("computeFirstOrderDerivatives",
            &StageModel::computeFirstOrderDerivatives,
-           ("self"_a, "x", "u", "y", "data"),
+           ("self"_a, "x", "u", "data"),
            "Compute gradients of the stage cost and jacobians of the dynamics "
            "and "
            "constraints.")
@@ -97,8 +98,6 @@ void exposeStage() {
       .add_property("ndx1", &StageModel::ndx1)
       .add_property("ndx2", &StageModel::ndx2)
       .add_property("nu", &StageModel::nu, "Control space dimension.")
-      .add_property("num_primal", &StageModel::numPrimal,
-                    "Number of primal variables.")
       .add_property("num_dual", &StageModel::numDual,
                     "Number of dual variables.")
       .def(CreateDataPythonVisitor<StageModel>())

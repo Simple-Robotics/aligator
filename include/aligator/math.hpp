@@ -220,9 +220,11 @@ template <typename T> void setZero(std::vector<T> &mats) {
 }
 
 /// @brief Compute zi = xi + alpha * yi for all i
-template <typename A, typename B, typename OutType, typename Scalar>
-void vectorMultiplyAdd(const std::vector<A> &a, const std::vector<B> &b,
-                       std::vector<OutType> &c, const Scalar alpha) {
+template <typename TA, typename AA, typename TB, typename BA, typename OutType,
+          typename AOut, typename Scalar>
+void vectorMultiplyAdd(const std::vector<TA, AA> &a,
+                       const std::vector<TB, BA> &b,
+                       std::vector<OutType, AOut> &c, const Scalar alpha) {
   assert(a.size() == b.size());
   assert(a.size() == c.size());
   const std::size_t N = a.size();

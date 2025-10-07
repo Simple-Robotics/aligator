@@ -19,6 +19,9 @@ using namespace aligator::gar;
 static std::pmr::monotonic_buffer_resource mbr{1024 * 2048};
 static aligator::polymorphic_allocator alloc{&mbr};
 
+static_assert(
+    std::uses_allocator_v<problem_t, aligator::polymorphic_allocator>);
+
 TEST_CASE("riccati_short_horz_pb", "[gar]") {
   // dual regularization parameters
   const double mueq = 1e-14;

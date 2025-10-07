@@ -1,8 +1,11 @@
 /// @file
-/// @copyright Copyright (C) 2022 LAAS-CNRS, 2025 INRIA
+/// @copyright Copyright (C) 2022 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/core/stage-model.hpp"
+#include "aligator/core/stage-data.hpp"
+#include "aligator/core/explicit-dynamics.hpp"
+#include "aligator/core/cost-abstract.hpp"
 #include "aligator/core/vector-space.hpp"
 #include "aligator/tracy.hpp"
 
@@ -18,9 +21,9 @@ StageModelTpl<Scalar>::StageModelTpl(const PolyCost &cost,
     , dynamics_(dynamics) {
 
   if (cost->nu != dynamics->nu) {
-    ALIGATOR_RUNTIME_ERROR("Control dimensions cost.nu ({:d}) and dynamics.nu "
-                           "({:d}) are inconsistent.",
-                           cost->nu, dynamics->nu);
+    ALIGATOR_RUNTIME_ERROR(
+        "Inconsistent control dimension cost.nu ({:d}) and dynamics.nu ({:d}).",
+        cost->nu, dynamics->nu);
   }
 }
 
@@ -38,10 +41,9 @@ void StageModelTpl<Scalar>::addConstraint(const PolyFunction &func,
 template <typename Scalar>
 void StageModelTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                      const ConstVectorRef &u,
-                                     const ConstVectorRef &y,
                                      Data &data) const {
   ALIGATOR_TRACY_ZONE_SCOPED_N("StageModel::evaluate");
-  dynamics_->evaluate(x, u, y, *data.dynamics_data);
+  dynamics_->forward(x, u, *data.dynamics_data);
   for (std::size_t j = 0; j < numConstraints(); j++) {
     constraints_.funcs[j]->evaluate(x, u, *data.constraint_data[j]);
   }
@@ -50,10 +52,9 @@ void StageModelTpl<Scalar>::evaluate(const ConstVectorRef &x,
 
 template <typename Scalar>
 void StageModelTpl<Scalar>::computeFirstOrderDerivatives(
-    const ConstVectorRef &x, const ConstVectorRef &u, const ConstVectorRef &y,
-    Data &data) const {
+    const ConstVectorRef &x, const ConstVectorRef &u, Data &data) const {
   ALIGATOR_TRACY_ZONE_SCOPED_N("StageModel::computeFirstOrderDerivatives");
-  dynamics_->computeJacobians(x, u, y, *data.dynamics_data);
+  dynamics_->dForward(x, u, *data.dynamics_data);
   for (std::size_t j = 0; j < numConstraints(); j++) {
     constraints_.funcs[j]->computeJacobians(x, u, *data.constraint_data[j]);
   }
