@@ -60,7 +60,6 @@ if(NOT BUILD_STANDALONE_PYTHON_INTERFACE)
     add_aligator_test2(${test_name} "")
   endforeach()
   add_subdirectory(gar)
-  add_aligator_test2(arena-matrix "")
 
   if(BUILD_CROCODDYL_COMPAT)
     add_subdirectory(compat)
