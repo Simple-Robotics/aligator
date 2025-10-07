@@ -396,13 +396,6 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
     // rollout has zeroed out the residual
     dyn_slacks[t].setZero();
 
-    if (!stage.hasDynModel()) {
-      // nothing to do
-    } else {
-      ALIGATOR_RUNTIME_ERROR(
-          "Implicit dynamics are no longer supported (for now)");
-    }
-
     stage.xspace_next().difference(results_.xs[t + 1], xs[t + 1], dxs[t + 1]);
 
     ALIGATOR_RAISE_IF_NAN_NAME(xs[t + 1], fmt::format("xs[{:d}]", t + 1));
