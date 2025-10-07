@@ -1,7 +1,8 @@
 import numpy as np
 import aligator
-from aligator import dynamics, manifolds
 import pytest
+
+from aligator import dynamics, manifolds
 from utils import create_linear_ode, create_multibody_ode, infNorm
 
 EPSILON = 1e-5
