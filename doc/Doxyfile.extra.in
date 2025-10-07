@@ -2,6 +2,7 @@ INPUT                   = @PROJECT_SOURCE_DIR@/doc \
                           @PROJECT_SOURCE_DIR@/include \
                           @PROJECT_SOURCE_DIR@/bindings/python \
                           @PROJECT_SOURCE_DIR@/README.md
+EXCLUDE                 = @PROJECT_SOURCE_DIR@/doc/doxygen-awesome-css
 
 RECURSIVE               = YES
 
@@ -24,7 +25,7 @@ PREDEFINED              += ALIGATOR_WITH_PINOCCHIO \
                            ALIGATOR_MULTITHREADING
 
 FULL_PATH_NAMES         = YES
-EXCLUDE_SYMBOLS         = *::internal, internal::*, *::internal::*, boost::*, fmt::*, std::*
+EXCLUDE_SYMBOLS         = *::internal, *::detail, boost, fmt::*, std::*, xyz
 
 INCLUDE_PATH            = @PROJECT_SOURCE_DIR@/include
 
