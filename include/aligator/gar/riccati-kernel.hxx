@@ -366,7 +366,7 @@ bool ProximalRiccatiKernel<Scalar>::forwardImpl(
 
     const CostToGo &vn = datas[t + 1].vm;
     lbdas[t + 1] = vn.vx;
-    lbdas[t + 1].noalias() += vn.Vxx.transpose() * xs[t + 1];
+    lbdas[t + 1].noalias() += vn.Vxx * xs[t + 1];
     if (model.nth > 0 && theta_.has_value()) {
       lbdas[t + 1].noalias() += vn.Vxt * (*theta_);
     }
