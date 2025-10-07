@@ -48,10 +48,9 @@ public:
   bool backward(const Scalar mueq) override;
 
   inline void collapseFeedback() override {
-    using RowMatrix = Eigen::Matrix<Scalar, -1, -1, Eigen::RowMajor>;
     StageFactor<Scalar> &d = datas[0];
-    Eigen::Ref<RowMatrix> K = d.fb.blockRow(0);
-    Eigen::Ref<RowMatrix> Kth = d.fth.blockRow(0);
+    RowMatrixRef K = d.fb.blockRow(0);
+    RowMatrixRef Kth = d.fth.blockRow(0);
 
     // condensedSystem.subdiagonal contains the 'U' factors in the
     // block-tridiag UDUt decomposition
