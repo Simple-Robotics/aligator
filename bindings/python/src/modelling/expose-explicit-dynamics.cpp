@@ -74,10 +74,14 @@ void exposeExplicitBase() {
       .def_readwrite("jac_buffer", &ExplicitDataWrapper::jac_buffer_)
       .add_property(
           "Jx",
-          +[](ExplicitDataWrapper &d) -> context::MatrixRef { return d.Jx(); })
+          +[](ExplicitDynamicsData &self) -> context::MatrixRef {
+            return self.Jx();
+          })
       .add_property(
           "Ju",
-          +[](ExplicitDataWrapper &d) -> context::MatrixRef { return d.Ju(); })
+          +[](ExplicitDynamicsData &self) -> context::MatrixRef {
+            return self.Ju();
+          })
       .def(bp::init<const ExplicitDynamics &>(("self"_a, "model")))
       .def(PrintableVisitor<ExplicitDynamicsData>());
 }
