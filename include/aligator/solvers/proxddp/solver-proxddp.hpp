@@ -319,10 +319,6 @@ public:
   ALIGATOR_INLINE Scalar mu_inv() const { return 1. / mu_penal_; }
   ALIGATOR_INLINE Scalar mu_dyn() const { return 0.1 * mu_penal_; }
 
-  /// @brief Update primal-dual feedback gains (control, costate, path
-  /// multiplier)
-  inline void updateGains();
-
 protected:
   void updateTolsOnFailure() noexcept {
     const Scalar arg = std::min(mu_penal_, 0.99);

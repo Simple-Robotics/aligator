@@ -305,27 +305,6 @@ bool SolverProxDDPTpl<Scalar>::computeMultipliers(
 
 #undef RET_FALSE_IF_NAN
 
-template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateGains() {
-  ALIGATOR_TRACY_ZONE_SCOPED;
-  ALIGATOR_NOMALLOC_SCOPED;
-  using gar::StageFactor;
-  const size_t N = workspace_.nsteps;
-  linear_solver_->collapseFeedback(); // will alter feedback gains
-  for (size_t i = 0; i < N; i++) {
-    VectorRef ff = results_.getFeedforward(i);
-    MatrixRef fb = results_.getFeedback(i);
-
-    ff = linear_solver_->getFeedforward(i);
-    fb = linear_solver_->getFeedback(i);
-  }
-  VectorRef ff = results_.getFeedforward(N);
-  MatrixRef fb = results_.getFeedback(N);
-
-  assert(ff.rows() == linear_solver_->getFeedforward(N).rows());
-  ff = linear_solver_->getFeedforward(N).tail(ff.rows());
-  fb = linear_solver_->getFeedback(N).bottomRows(fb.rows());
-}
-
 // [1] Section IV. Proximal Differential Dynamic Programming
 // C. Forward pass
 template <typename Scalar>
@@ -618,7 +597,28 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
 
     linear_solver_->forward(workspace_.dxs, workspace_.dus, workspace_.dvs,
                             workspace_.dlams);
-    updateGains();
+    /// Update primal-dual feedback gains (control, costate, path
+    /// multiplier)
+    {
+      ALIGATOR_TRACY_ZONE_SCOPED;
+      ALIGATOR_NOMALLOC_SCOPED;
+      using gar::StageFactor;
+      const size_t N = workspace_.nsteps;
+      linear_solver_->collapseFeedback(); // will alter feedback gains
+      for (size_t i = 0; i < N; i++) {
+        VectorRef ff = results_.getFeedforward(i);
+        MatrixRef fb = results_.getFeedback(i);
+
+        ff = linear_solver_->getFeedforward(i);
+        fb = linear_solver_->getFeedback(i);
+      }
+      VectorRef ff = results_.getFeedforward(N);
+      MatrixRef fb = results_.getFeedback(N);
+
+      assert(ff.rows() == linear_solver_->getFeedforward(N).rows());
+      ff = linear_solver_->getFeedforward(N).tail(ff.rows());
+      fb = linear_solver_->getFeedback(N).bottomRows(fb.rows());
+    }
 
     if (force_initial_condition_) {
       workspace_.dxs[0].setZero();
