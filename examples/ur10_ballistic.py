@@ -8,7 +8,6 @@ import contextlib
 
 from pathlib import Path
 from typing import Tuple
-from pinocchio.visualize import MeshcatVisualizer
 from aligator.utils.plotting import (
     plot_controls_traj,
     plot_convergence,
@@ -123,6 +122,8 @@ def create_rcm(contact_type=pin.ContactType.CONTACT_6D):
 
 
 def configure_viz(target_pos):
+    from pinocchio.visualize import MeshcatVisualizer
+
     gobj = pin.GeometryObject(
         "objective", 0, pin.SE3(np.eye(3), target_pos), hppfcl.Sphere(0.04)
     )
@@ -282,10 +283,11 @@ problem = aligator.TrajOptProblem(x0, stages, term_cost)
 problem.addTerminalConstraint(*create_term_constraint(target_pos))
 problem.addTerminalConstraint(*get_velocity_limit_constraint())
 tol = 1e-4
-mu_init = 2e-1
+mu_init = 1e-2
 solver = aligator.SolverProxDDP(tol, mu_init, max_iters=300, verbose=aligator.VERBOSE)
 # solver.linear_solver_choice = aligator.LQ_SOLVER_PARALLEL
-# solver.rollout_type = aligator.ROLLOUT_LINEAR
+solver.rollout_type = aligator.ROLLOUT_LINEAR
+solver.reg_init = 1e-4
 his_cb = aligator.HistoryCallback(solver)
 solver.setNumThreads(4)
 solver.registerCallback("his", his_cb)
