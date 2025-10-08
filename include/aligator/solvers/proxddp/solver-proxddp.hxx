@@ -204,15 +204,14 @@ template <typename... VArgs> bool is_nan_any(const VArgs &...args) {
 
 template <typename Scalar>
 bool SolverProxDDPTpl<Scalar>::computeMultipliers(
-    const Problem &problem, const std::vector<VectorXs> &lams,
-    const std::vector<VectorXs> &vs) {
+    const Problem &problem, const std::vector<VectorXs> &xs,
+    const std::vector<VectorXs> &lams, const std::vector<VectorXs> &vs) {
   ALIGATOR_TRACY_ZONE_SCOPED;
   using BlkView = BlkMatrix<VectorRef, -1, 1>;
 
   const TrajOptData &prob_data = workspace_.problem_data;
   const size_t nsteps = workspace_.nsteps;
 
-  std::vector<VectorXs> &xs = workspace_.trial_xs;
   std::vector<VectorXs> &lams_plus = workspace_.lams_plus;
 
   const std::vector<VectorXs> &vs_prev = workspace_.prev_vs;
@@ -248,7 +247,7 @@ bool SolverProxDDPTpl<Scalar>::computeMultipliers(
 
     // 1. compute dynamics error
     stage.xspace_next().difference(xs[i + 1], dd.xnext_, fs[i + 1]);
-    lams_plus[i + 1] = lams[i + 1] + fs[i + 1] / mu();
+    lams_plus[i + 1] = lams[i + 1] + fs[i + 1] / mu_dyn();
     RET_FALSE_IF_NAN(lams_plus[i + 1]);
 
     // 2. use product constraint operator
@@ -345,7 +344,6 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
   std::vector<VectorXs> &dvs = workspace_.dvs;
   std::vector<VectorXs> &dlams = workspace_.dlams;
 
-  std::vector<VectorXs> &dyn_slacks = workspace_.dyn_slacks;
   TrajOptData &prob_data = workspace_.problem_data;
 
   {
@@ -555,11 +553,11 @@ Scalar SolverProxDDPTpl<Scalar>::forwardPass(const Problem &problem,
     tryNonlinearRollout(problem, alpha);
     break;
   }
-  if (!computeMultipliers(problem, workspace_.trial_lams, workspace_.trial_vs))
+  if (!computeMultipliers(problem, workspace_.trial_xs, workspace_.trial_lams,
+                          workspace_.trial_vs))
     ALIGATOR_RUNTIME_ERROR(
         "computeMultipliers() returned false. NaN or Inf detected.");
-  return ALFunction<Scalar>::evaluate(mu(), mu(), problem, workspace_.lams_plus,
-                                      workspace_.trial_vs, workspace_);
+  return ALFunction<Scalar>::evaluate(mu_dyn(), mu(), problem, workspace_);
 }
 
 template <typename Scalar>
@@ -581,9 +579,9 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
   size_t &iter = results_.num_iters;
   results_.traj_cost_ = problem.evaluate(results_.xs, results_.us,
                                          workspace_.problem_data, num_threads_);
-  computeMultipliers(problem, results_.lams, results_.vs);
-  results_.merit_value_ = ALFunction<Scalar>::evaluate(
-      mu(), mu(), problem, workspace_.lams_plus, results_.vs, workspace_);
+  computeMultipliers(problem, results_.xs, results_.lams, results_.vs);
+  results_.merit_value_ =
+      ALFunction<Scalar>::evaluate(mu_dyn(), mu(), problem, workspace_);
 
   for (; iter < max_iters; iter++) {
     ALIGATOR_TRACY_ZONE_NAMED_N(ZoneIteration, "inner_iteration", true);
@@ -626,8 +624,8 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
       workspace_.dxs[0].setZero();
       workspace_.dlams[0].setZero();
     }
-    Scalar dphi0 = ALFunction<Scalar>::directionalDerivative(
-        mu(), mu(), problem, results_.lams, results_.vs, workspace_);
+    const Scalar dphi0 = ALFunction<Scalar>::directionalDerivative(
+        mu_dyn(), mu(), problem, workspace_);
     ALIGATOR_RAISE_IF_NAN(dphi0);
 
     // check if we can early stop
@@ -705,16 +703,12 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::computeCriterion() {
     Scalar rd = math::infty_norm(workspace_.dyn_slacks[i]);
     // path constraints
     Scalar rc = math::infty_norm(workspace_.Lvs[i]);
-    // if (rollout_type_ == RolloutType::NONLINEAR)
-    //   rx = 0.0;
 
     workspace_.stage_inner_crits[long(i)] = std::max({rx, ru, rd, rc});
     workspace_.state_dual_infeas[long(i)] = rx; // [1] eqn. 52
     workspace_.control_dual_infeas[long(i)] = ru;
   }
   Scalar rx = math::infty_norm(workspace_.Lxs[nsteps]);
-  // if (rollout_type_ == RolloutType::NONLINEAR)
-  //   rx = 0.0;
   Scalar rc = math::infty_norm(workspace_.Lvs[nsteps]);
   workspace_.state_dual_infeas[long(nsteps)] = rx; // [1] eqn. 52
   workspace_.stage_inner_crits[long(nsteps)] = std::max(rx, rc);

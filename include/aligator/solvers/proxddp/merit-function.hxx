@@ -30,44 +30,42 @@ Scalar costDirectionalDerivative(const WorkspaceTpl<Scalar> &workspace,
 template <typename Scalar>
 Scalar ALFunction<Scalar>::evaluate(const Scalar mudyn, const Scalar mucstr,
                                     const TrajOptProblem &problem,
-                                    const std::vector<VectorXs> &lams,
-                                    const std::vector<VectorXs> & /*vs*/,
                                     Workspace &workspace) {
   ALIGATOR_TRACY_ZONE_SCOPED;
   TrajOptData &prob_data = workspace.problem_data;
+  auto &lams = workspace.lams_plus;
+  auto &vs = workspace.vs_plus;
   Scalar penalty_value = 0.;
   bool has_lbdas = !lams.empty();
-  const std::vector<VectorXs> &vs_plus = workspace.vs_plus;
 
-  auto weighted_norm = [](auto &v, Scalar m) -> Scalar {
+  auto weighted_norm = [](const auto &v, Scalar m) -> Scalar {
     return m * v.squaredNorm();
   };
 
   // initial constraint
   if (has_lbdas)
-    penalty_value = 0.5 * weighted_norm(lams[0], mudyn);
+    penalty_value = 0.5 * weighted_norm(lams[0], mucstr);
 
   // stage-per-stage
   const std::size_t nsteps = problem.numSteps();
   for (std::size_t i = 0; i < nsteps; i++) {
     if (has_lbdas)
       penalty_value += 0.5 * weighted_norm(lams[i + 1], mudyn);
-    penalty_value += 0.5 * weighted_norm(vs_plus[i], mucstr);
+    penalty_value += 0.5 * weighted_norm(vs[i], mucstr);
   }
 
   if (!problem.term_cstrs_.empty()) {
-    penalty_value += 0.5 * weighted_norm(vs_plus[nsteps], mucstr);
+    penalty_value += 0.5 * weighted_norm(vs[nsteps], mucstr);
   }
 
   return prob_data.cost_ + penalty_value;
 }
 
-// TODO: restore missing dual terms
 template <typename Scalar>
-Scalar ALFunction<Scalar>::directionalDerivative(
-    const Scalar mudyn, const Scalar mucstr, const TrajOptProblem &problem,
-    const std::vector<VectorXs> &lams, const std::vector<VectorXs> & /*vs*/,
-    Workspace &workspace) {
+Scalar ALFunction<Scalar>::directionalDerivative(const Scalar mudyn,
+                                                 const Scalar mucstr,
+                                                 const TrajOptProblem &problem,
+                                                 Workspace &workspace) {
   ALIGATOR_TRACY_ZONE_SCOPED;
   const std::size_t nsteps = workspace.nsteps;
 

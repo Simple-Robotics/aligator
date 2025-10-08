@@ -308,12 +308,16 @@ public:
   /// Compute the multiplier estimates, along with the shifted, projected
   /// constraint values.
   /// @return bool: whether the op succeeded.
+  /// @todo For now we take the state values to use to compute the dynamics'
+  /// defects.
   bool computeMultipliers(const Problem &problem,
+                          const std::vector<VectorXs> &xs,
                           const std::vector<VectorXs> &lams,
                           const std::vector<VectorXs> &vs);
 
   ALIGATOR_INLINE Scalar mu() const { return mu_penal_; }
   ALIGATOR_INLINE Scalar mu_inv() const { return 1. / mu_penal_; }
+  ALIGATOR_INLINE Scalar mu_dyn() const { return 0.1 * mu_penal_; }
 
   /// @brief Update primal-dual feedback gains (control, costate, path
   /// multiplier)
