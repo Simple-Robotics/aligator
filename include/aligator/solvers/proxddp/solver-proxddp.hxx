@@ -612,15 +612,15 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
       return true;
 
     computeProjectedJacobians(problem, mu_inv(), workspace_);
-    this->initializeRegularization();
-    this->updateLQSubproblem();
+    initializeRegularization();
+    updateLQSubproblem();
 
     // Solve the LQ subproblem.
     linear_solver_->backward(mu());
 
     linear_solver_->forward(workspace_.dxs, workspace_.dus, workspace_.dvs,
                             workspace_.dlams);
-    this->updateGains();
+    updateGains();
 
     if (force_initial_condition_) {
       workspace_.dxs[0].setZero();
