@@ -21,7 +21,6 @@ from aligator.utils.plotting import (
     plot_velocity_traj,
     plot_convergence,
 )
-from pinocchio.visualize import MeshcatVisualizer
 
 
 class Args(ArgsBase):
@@ -217,6 +216,8 @@ def make_plots(res: aligator.Results):
 
 if __name__ == "__main__":
     if args.display:
+        from pinocchio.visualize import MeshcatVisualizer
+
         vizer = MeshcatVisualizer(
             rmodel,
             collision_model=robot.collision_model,

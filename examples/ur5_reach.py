@@ -5,10 +5,9 @@ import pinocchio as pin
 import example_robot_data as erd
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+import coal
 
 from aligator import constraints, manifolds, dynamics  # noqa
-from pinocchio.visualize import MeshcatVisualizer
-import hppfcl
 
 from utils import ArgsBase, get_endpoint_traj
 
@@ -28,11 +27,8 @@ print(args)
 robot = erd.load("ur5")
 rmodel: pin.Model = robot.model
 rdata: pin.Data = robot.data
+visual_model: pin.GeometryModel = robot.visual_model
 space = manifolds.MultibodyPhaseSpace(rmodel)
-
-vizer = MeshcatVisualizer(rmodel, robot.collision_model, robot.visual_model, data=rdata)
-vizer.initViewer(open=args.display, loadModel=True)
-vizer.setBackgroundColor()
 
 fr_name = "universe"
 fr_id = rmodel.getFrameId(fr_name)
@@ -43,13 +39,13 @@ if args.collisions:
     obstacle_loc.translation[1] = 0.5
     obstacle_loc.translation[2] = 0.3
     geom_object = pin.GeometryObject(
-        "capsule", fr_id, joint_id, hppfcl.Capsule(0.05, 0.4), obstacle_loc
+        "capsule", fr_id, joint_id, coal.Capsule(0.05, 0.4), obstacle_loc
     )
 
     fr_id2 = rmodel.getFrameId("wrist_3_joint")
     joint_id2 = rmodel.frames[fr_id2].parentJoint
     geom_object2 = pin.GeometryObject(
-        "endeffector", fr_id2, joint_id2, hppfcl.Sphere(0.1), pin.SE3.Identity()
+        "endeffector", fr_id2, joint_id2, coal.Sphere(0.1), pin.SE3.Identity()
     )
 
     geometry = pin.GeometryModel()
@@ -57,7 +53,8 @@ if args.collisions:
     ig_frame2 = geometry.addGeometryObject(geom_object2)
     geometry.addCollisionPair(pin.CollisionPair(ig_frame, ig_frame2))
 
-    vizer.addGeometryObject(geom_object, [1.0, 1.0, 0.5, 1.0])
+    geom_object.meshColor[:] = [1.0, 1.0, 0.5, 1.0]
+    visual_model.addGeometryObject(geom_object)
 
 x0 = space.neutral()
 
@@ -66,8 +63,6 @@ nq = rmodel.nq
 nv = rmodel.nv
 nu = nv
 q0 = x0[:nq]
-
-vizer.display(q0)
 
 B_mat = np.eye(nu)
 
@@ -90,10 +85,23 @@ target_pos = np.array([0.15, 0.65, 0.5])
 target_place = pin.SE3.Identity()
 target_place.translation = target_pos
 target_object = pin.GeometryObject(
-    "target", fr_id, joint_id, hppfcl.Sphere(0.05), target_place
+    "target", fr_id, joint_id, coal.Sphere(0.05), target_place
 )
-vizer.addGeometryObject(target_object, [0.5, 0.5, 1.0, 1.0])
-print(target_pos)
+target_object.meshColor[:] = [0.5, 0.5, 1.0, 1.0]
+visual_model.addGeometryObject(target_object)
+visual_data = visual_model.createData()
+
+if args.display:
+    from candlewick import Visualizer, VisualizerConfig
+
+    vizer = Visualizer(
+        VisualizerConfig(1920, 1080),
+        rmodel,
+        visual_model,
+        data=rdata,
+        visual_data=visual_data,
+    )
+    vizer.display(q0)
 
 frame_fn = aligator.FrameTranslationResidual(ndx, nu, rmodel, target_pos, tool_id)
 v_ref = pin.Motion()
@@ -240,29 +248,25 @@ plt.show()
 
 if args.display:
     import time
-    import contextlib
 
     input("[Press enter]")
     num_repeat = 3
     cp = np.array([0.8, 0.8, 0.8])
     cps_ = [cp.copy() for _ in range(num_repeat)]
     cps_[1][1] = -0.4
-    ctx = (
-        vizer.create_video_ctx("examples/ur5_reach_ctrlbox.mp4", fps=1.0 / dt)
-        if args.record
-        else contextlib.nullcontext()
-    )
 
     qs = [x[:nq] for x in xs_opt]
     vs = [x[nq:] for x in xs_opt]
+    VID_FPS = 30
+    VID_DT = 1.0 / VID_FPS
 
     def callback(i: int):
         pin.forwardKinematics(rmodel, vizer.data, qs[i], vs[i])
         vizer.drawFrameVelocities(tool_id)
 
-    with ctx:
-        for i in range(num_repeat):
-            vizer.setCameraPosition(cps_[i])
-            vizer.play(qs, dt, callback)
-
-            time.sleep(0.5)
+    for i in range(num_repeat):
+        vizer.setCameraPosition(cps_[i])
+        for t in range(nsteps):
+            vizer.display(qs[t])
+            time.sleep(VID_DT)
+        # vizer.play(np.stack(qs), dt=VID_DT)
