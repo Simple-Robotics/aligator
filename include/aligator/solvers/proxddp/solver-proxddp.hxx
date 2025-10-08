@@ -76,7 +76,7 @@ SolverProxDDPTpl<Scalar>::SolverProxDDPTpl(const Scalar tol,
     : target_tol_(tol)
     , target_dual_tol_(tol)
     , sync_dual_tol_(true)
-    , mu_init(mu_init)
+    , mu_init_(mu_init)
     , verbose_(verbose)
     , hess_approx_(hess_approx)
     , sa_strategy_(sa_strategy)
@@ -440,11 +440,11 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
   if (!workspace_.isInitialized() || !results_.isInitialized()) {
     ALIGATOR_RUNTIME_ERROR("workspace and results were not allocated yet!");
   }
-  if (mu_init < bcl_params.mu_lower_bound) {
+  if (mu_init_ < bcl_params.mu_lower_bound) {
     ALIGATOR_WARNING("SolverProxDDP",
                      "Initial value of mu_init < mu_lower_bound ({:.3g})\n",
                      bcl_params.mu_lower_bound);
-    setAlmPenalty(mu_init);
+    setAlmPenalty(mu_init_);
   }
 
   detail::check_initial_guess_and_assign(problem, xs_init, us_init, results_.xs,
@@ -469,7 +469,7 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
   }
   logger.printHeadline();
 
-  setAlmPenalty(mu_init);
+  setAlmPenalty(mu_init_);
 
   workspace_.prev_xs = results_.xs;
   workspace_.prev_us = results_.us;
@@ -527,7 +527,7 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
       updateTolsOnFailure();
       if (math::scalar_close(mu_penal_, bcl_params.mu_lower_bound)) {
         // reset penalty to initial value
-        setAlmPenalty(mu_init);
+        setAlmPenalty(mu_init_);
       }
     }
 

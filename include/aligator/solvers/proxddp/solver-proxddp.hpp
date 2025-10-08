@@ -131,7 +131,7 @@ private:
   bool sync_dual_tol_;
 
 public:
-  Scalar mu_init; //< Initial AL parameter
+  Scalar mu_init_; //< Initial AL parameter
 
   /// @name Inertia-correcting heuristic
   /// @{
@@ -200,7 +200,7 @@ private:
   /// Dual proximal/ALM penalty parameter \f$\mu\f$
   /// This is the global parameter: scales may be applied for each stagewise
   /// constraint.
-  Scalar mu_penal_ = mu_init;
+  Scalar mu_penal_ = mu_init_;
 
 public:
   SolverProxDDPTpl(const Scalar tol = 1e-6, const Scalar mu_init = 0.01,

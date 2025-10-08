@@ -141,7 +141,7 @@ void exposeProxDDP() {
                          &SolverType::linear_solver_choice)
           .def_readwrite("multiplier_update_mode",
                          &SolverType::multiplier_update_mode)
-          .def_readwrite("mu_init", &SolverType::mu_init,
+          .def_readwrite("mu_init", &SolverType::mu_init_,
                          "Initial AL penalty parameter.")
           .add_property("mu", &SolverType::mu)
           //   .def_readwrite(
