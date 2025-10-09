@@ -44,6 +44,7 @@ def plot_convergence(
     res: Results = None,
     *,
     show_al_iters=False,
+    target_tol: float = None,
     legend_kwargs={},
 ):
     prim_infeas = cb.prim_infeas.tolist()
@@ -52,8 +53,9 @@ def plot_convergence(
         prim_infeas.append(res.primal_infeas)
         dual_infeas.append(res.dual_infeas)
     plot_pd_errs(ax, prim_infeas, dual_infeas)
+
     ax.grid(axis="y", which="major")
-    handles, labels = ax.get_legend_handles_labels()
+    _, labels = ax.get_legend_handles_labels()
     labels += [
         "Prim. err $p$",
         "Dual err $d$",
@@ -72,6 +74,9 @@ def plot_convergence(
             al_change_idx = itrange[:-1][al_change > 0]
 
             ax.vlines(al_change_idx, *ax.get_ylim(), colors="gray", lw=4.0, alpha=0.5)
+
+    if target_tol:
+        ax.axhline(target_tol, color="k", lw=1.2)
 
     ax.legend(labels=labels, **legend_kwargs)
     return labels
