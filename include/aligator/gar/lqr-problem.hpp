@@ -183,7 +183,7 @@ template <typename Scalar> struct LqrProblemTpl {
   /// Evaluate the quadratic objective.
   [[nodiscard]] Scalar
   evaluate(const VectorOfVectors &xs, const VectorOfVectors &us,
-           const std::optional<ConstVectorRef> &theta_) const;
+           const std::optional<ConstVectorRef> &theta) const;
 
   allocator_type get_allocator() const { return G0.get_allocator(); }
 
