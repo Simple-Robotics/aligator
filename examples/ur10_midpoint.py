@@ -72,7 +72,7 @@ problem = aligator.TrajOptProblem(x0, stages, term_cost)
 
 
 if __name__ == "__main__":
-    import hppfcl
+    import coal
     import matplotlib.pyplot as plt
     import seaborn as sns
 
@@ -80,7 +80,7 @@ if __name__ == "__main__":
 
     obj_placement = pin.SE3.Identity()
     obj_placement.translation = ee_pos_target
-    obj_geom = pin.GeometryObject("obj", 0, obj_placement, hppfcl.Sphere(0.05))
+    obj_geom = pin.GeometryObject("obj", 0, obj_placement, coal.Sphere(0.05))
     obj_geom.meshColor[:] = [255, 20, 83, 200]
     obj_geom.meshColor /= 255.0
     visual_model.addGeometryObject(obj_geom)

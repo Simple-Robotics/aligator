@@ -166,7 +166,7 @@ if args.display:
     import meshcat.geometry as mgeom
     import meshcat.transformations as mtransf
     import contextlib
-    import hppfcl
+    import coal
 
     def planehoz(vizer):
         p_height = table_height
@@ -192,7 +192,7 @@ if args.display:
         vizer.viewer["plane_y2"].set_object(plane_v, material)
         vizer.viewer["plane_y2"].set_transform(_M3)
 
-    sphere = hppfcl.Sphere(0.05)
+    sphere = coal.Sphere(0.05)
     sphereobj = pin.GeometryObject("objective", 0, pin.SE3.Identity(), sphere)
     sphereobj.placement.translation[:] = p_ref
 

@@ -1,7 +1,7 @@
 import aligator
 import pinocchio as pin
 import numpy as np
-import hppfcl
+import coal
 
 from aligator import manifolds, dynamics
 from pinocchio.visualize import MeshcatVisualizer
@@ -98,7 +98,7 @@ def main():
     vizer.setBackgroundColor("white")
 
     # display target as a transparent sphere
-    sphere = pin.GeometryObject("target", 0, pin.SE3.Identity(), hppfcl.Sphere(0.01))
+    sphere = pin.GeometryObject("target", 0, pin.SE3.Identity(), coal.Sphere(0.01))
     sphere.meshColor[:] = 217, 101, 38, 120
     sphere.meshColor /= 255.0
     vizer.addGeometryObject(sphere)

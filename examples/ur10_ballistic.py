@@ -2,7 +2,7 @@ import example_robot_data as erd
 import pinocchio as pin
 import numpy as np
 import aligator
-import hppfcl
+import coal
 import matplotlib.pyplot as plt
 import contextlib
 
@@ -125,7 +125,7 @@ def configure_viz(target_pos):
     from pinocchio.visualize import MeshcatVisualizer
 
     gobj = pin.GeometryObject(
-        "objective", 0, pin.SE3(np.eye(3), target_pos), hppfcl.Sphere(0.04)
+        "objective", 0, pin.SE3(np.eye(3), target_pos), coal.Sphere(0.04)
     )
     gobj.meshColor[:] = np.array([200, 100, 100, 200]) / 255.0
 

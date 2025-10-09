@@ -189,7 +189,7 @@ if args.plot:
     plt.show()
 
 if args.display:
-    import hppfcl
+    import coal
 
     numrep = args.num_replay
     cp = [2.0, 0.0, 0.8]
@@ -198,7 +198,7 @@ if args.display:
     vs = [x[nq:] for x in res.xs.tolist()]
 
     obj = pin.GeometryObject(
-        "objective", 0, hppfcl.Sphere(0.05), pin.SE3(np.eye(3), target_pos)
+        "objective", 0, coal.Sphere(0.05), pin.SE3(np.eye(3), target_pos)
     )
     color = [255, 20, 83, 255]
     obj.meshColor[:] = color
