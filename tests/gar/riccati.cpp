@@ -16,7 +16,7 @@
 #include <aligator/fmt-eigen.hpp>
 
 using namespace aligator::gar;
-static std::pmr::monotonic_buffer_resource mbr{1024 * 2048};
+static std::pmr::monotonic_buffer_resource mbr{10 * 1024 * 1048};
 static aligator::polymorphic_allocator alloc{&mbr};
 
 static_assert(
@@ -29,7 +29,7 @@ TEST_CASE("riccati_short_horz_pb", "[gar]") {
   uint nx = 2, nu = 2;
   VectorXs x0 = VectorXs::Ones(nx);
   VectorXs x1 = -VectorXs::Ones(nx);
-  const auto init_knot = [&](uint nc = 0) -> knot_t {
+  const auto init_knot = [&](uint nc) -> knot_t {
     knot_t knot(nx, nu, nc, alloc);
     knot.A << 0.1, 0., -0.1, 0.01;
     knot.B.setRandom();
@@ -40,7 +40,7 @@ TEST_CASE("riccati_short_horz_pb", "[gar]") {
     knot.R *= 0.1;
     return knot;
   };
-  auto base_knot = init_knot();
+  auto base_knot = init_knot(0u);
   auto knot1 = base_knot;
   knot1.Q.setIdentity();
   knot1.q = -x1;

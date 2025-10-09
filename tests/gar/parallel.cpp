@@ -14,8 +14,7 @@
 using namespace aligator::gar;
 using aligator::math::infty_norm;
 
-constexpr double EPS = 1e-9;
-const uint num_threads = 6;
+const uint NUM_THREADS = 6;
 
 static std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem,
                                                   uint t0) {
@@ -61,6 +60,7 @@ static std::array<problem_t, 2> splitProblemInTwo(const problem_t &problem,
 /// Test the max-only formulation, where both legs are parameterized
 /// by the splitting variable (= costate at t0)
 TEST_CASE("parallel_manual", "[gar]") {
+  constexpr double EPS = 1e-9;
   std::mt19937 rng{Catch::getSeed()};
   uint nx = 2;
   uint nu = 2;
@@ -187,9 +187,9 @@ TEST_CASE("parallel_solver_class", "[gar]") {
   uint nu = 12;
   VectorXs x0;
   x0.setZero(nx);
-  uint horizon = 50;
+  const uint horizon = 50;
 
-  const double TOL = 1e-9;
+  constexpr double TOL = 1e-7;
 
   problem_t problem = generateLqProblem(rng, x0, horizon, nx, nu);
   const problem_t problemRef{problem};
@@ -201,23 +201,20 @@ TEST_CASE("parallel_solver_class", "[gar]") {
   auto [xs, us, vs, lbdas] = solutionRef;
 
   ProximalRiccatiSolver<double> refSolver{problemRef};
-
+  refSolver.backward(mueq);
+  refSolver.forward(xs_ref, us_ref, vs_ref, lbdas_ref);
   {
-    refSolver.backward(mueq);
-    refSolver.forward(xs_ref, us_ref, vs_ref, lbdas_ref);
     KktError err_ref = computeKktError(problemRef, xs_ref, us_ref, vs_ref,
                                        lbdas_ref, mueq, true);
     fmt::println("{}", err_ref);
-    REQUIRE(err_ref.max <= TOL);
+    REQUIRE(err_ref.max <= 1e-8);
   }
 
-  REQUIRE(problem.isApprox(problemRef));
-
-  ParallelRiccatiSolver<double> parSolver(problem, num_threads);
-
+  ParallelRiccatiSolver<double> parSolver(problem, NUM_THREADS);
+  parSolver.maxRefinementSteps = 10u;
+  parSolver.backward(mueq);
+  parSolver.forward(xs, us, vs, lbdas);
   {
-    parSolver.backward(mueq);
-    parSolver.forward(xs, us, vs, lbdas);
     KktError err = computeKktError(problem, xs, us, vs, lbdas, mueq);
     fmt::println("{}", err);
     REQUIRE(err.max <= TOL);

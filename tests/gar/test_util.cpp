@@ -2,6 +2,15 @@
 #include "./test_util.hpp"
 #include "aligator/gar/utils.hpp"
 
+#include <Eigen/Dense>
+
+template <typename Mat>
+double
+compute_conditioning(const Eigen::SelfAdjointView<Mat, Eigen::Lower> &view) {
+  auto eigvals = view.eigenvalues();
+  return eigvals(0) / eigvals(eigvals.size() - 1);
+}
+
 /// Generate a Wishart-distributed matrix in @p n dimensions with @p p DoF
 MatrixXs sampleWishartDistributedMatrix(uint n, uint p) {
   std::mt19937 rng;
@@ -24,10 +33,11 @@ knot_t generateKnot(std::mt19937 rng, knot_gen_opts_t opts,
   out.Q = _qsr.topLeftCorner(nx, nx);
   out.S = _qsr.topRightCorner(nx, nu);
   if (opts.singular) {
-    auto n = nx / 2;
-    out.Q.topLeftCorner(n, n).setZero();
+    uint dof = uint(0.8 * (nx + nu));
+    out.Q = sampleWishartDistributedMatrix(nx, dof);
   }
   out.R = _qsr.bottomRightCorner(nu, nu);
+  out.R.diagonal().array() *= 1 + 1e-6;
   out.q.setRandom();
   out.r.setRandom();
 
