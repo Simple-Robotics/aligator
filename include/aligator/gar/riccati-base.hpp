@@ -23,6 +23,7 @@ public:
           std::vector<VectorXs> &vs, std::vector<VectorXs> &lbdas,
           const std::optional<ConstVectorRef> &theta_ = std::nullopt) const = 0;
 
+  /// Cycle the solver data, given the specs from a given new knot.
   virtual void cycleAppend(const LqrKnot &knot) = 0;
 
   /// For applicable solvers, updates the first feedback gain in-place to

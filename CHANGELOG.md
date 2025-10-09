@@ -22,6 +22,7 @@ Furthermore, on a temporary basis, implicit discrete dynamics **are no longer su
 
 ### Changed
 
+- gar : allow setting number of refinement iterations for condensed KKT solver
 - ProxDDP solver : change default rollout type to `RolloutType::LINEAR`/`ROLLOUT_LINEAR`
 - solvers/proxddp : make `Workspace` an allocator-aware class
 - core/manifold-base : mark some functions `[[nodiscard]]`

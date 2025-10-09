@@ -30,22 +30,11 @@ public:
   using Base = RiccatiSolverBase<Scalar>;
   using Kernel = ProximalRiccatiKernel<Scalar>;
   using KnotType = LqrKnotTpl<Scalar>;
-  using BlkVec = BlkMatrix<VectorXs, -1, 1>;
+  using BlkView = BlkMatrix<VectorRef, -1, 1>;
   using allocator_type = ::aligator::polymorphic_allocator;
 
   explicit ParallelRiccatiSolver(LqrProblemTpl<Scalar> &problem,
                                  const uint num_threads);
-
-  void allocateLeg(uint start, uint end, bool last_leg);
-
-  static void setupKnot(KnotType &knot) {
-    ALIGATOR_TRACY_ZONE_SCOPED;
-    ALIGATOR_NOMALLOC_SCOPED;
-    knot.Gx = knot.A.transpose();
-    knot.Gu = knot.B.transpose();
-    knot.Gth.setZero();
-    knot.gamma = knot.f;
-  }
 
   bool backward(const Scalar mueq) override;
 
@@ -61,7 +50,7 @@ public:
     K.noalias() -= Kth * Up1t;
   }
 
-  struct condensed_system_t {
+  struct CondensedKkt {
     using ArMat = ArenaMatrix<MatrixXs>;
     std::pmr::vector<ArMat> subdiagonal;
     std::pmr::vector<ArMat> diagonal;
@@ -69,7 +58,14 @@ public:
     // factors
     std::pmr::vector<ArMat> diagonalFacs; //< diagonal factors
     std::pmr::vector<ArMat> upFacs;       //< transposed U factors
-    std::pmr::vector<BunchKaufman<MatrixXs>> ldlt;
+    std::pmr::vector<BunchKaufman<ArMat>> ldlt;
+    explicit CondensedKkt(const allocator_type &alloc)
+        : subdiagonal{alloc}
+        , diagonal{alloc}
+        , superdiagonal{alloc}
+        , diagonalFacs{alloc}
+        , upFacs{alloc}
+        , ldlt{alloc} {}
   };
 
   /// @brief Create the sparse representation of the reduced KKT system.
@@ -89,21 +85,26 @@ public:
   std::pmr::vector<StageFactor<Scalar>> datas;
 
   /// Block-sparse condensed KKT system
-  condensed_system_t condensedKktSystem;
+  CondensedKkt condensedKktSystem;
   /// Contains the right-hand side and solution of the condensed KKT system.
-  BlkVec condensedKktRhs, condensedKktSolution, condensedErr;
+  ArenaMatrix<VectorXs> condensedKktRhs, condensedKktSolution, condensedErr;
   /// Tolerance on condensed KKT system
-  Scalar condensedThreshold{1e-11};
+  Scalar condensedThreshold = 1e-10;
+  /// Max number of refinement steps (condensed solver)
+  uint maxRefinementSteps = 5u;
 
   /// Number of parallel divisions in the problem: \f$J+1\f$ in the math.
-  auto getNumThreads() const { return numThreads; }
+  uint getNumThreads() const noexcept { return numThreads; }
 
   /// @brief Initialize the buffers for the block-tridiagonal system.
-  void initializeTridiagSystem(const std::vector<long> &dims);
+  void initializeTridiagSystem();
 
 protected:
   uint numThreads;
   LqrProblemTpl<Scalar> *problem_;
+  std::vector<long> rhsDims_;
+
+  void initialize();
 };
 
 template <typename Scalar>

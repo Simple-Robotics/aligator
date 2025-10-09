@@ -62,8 +62,7 @@ public:
   BlkMatrix(const Eigen::MatrixBase<Other> &data, const RowDimsType &rowDims,
             const ColDimsType &colDims)
       : m_data(data.derived())
-      , //
-      m_rowDims(rowDims)
+      , m_rowDims(rowDims)
       , m_colDims(colDims)
       , m_rowIndices(rowDims)
       , m_colIndices(colDims)
@@ -76,8 +75,7 @@ public:
   BlkMatrix(Eigen::MatrixBase<Other> &data, const RowDimsType &rowDims,
             const ColDimsType &colDims)
       : m_data(data.derived())
-      , //
-      m_rowDims(rowDims)
+      , m_rowDims(rowDims)
       , m_colDims(colDims)
       , m_rowIndices(rowDims)
       , m_colIndices(colDims)
@@ -215,6 +213,8 @@ protected:
   Index m_totalCols;
 
   void initialize() {
+    m_totalRows = 0;
+    m_totalCols = 0;
     for (size_t i = 0; i < m_rowDims.size(); i++) {
       m_rowIndices[i] = m_totalRows;
       m_totalRows += m_rowDims[i];
