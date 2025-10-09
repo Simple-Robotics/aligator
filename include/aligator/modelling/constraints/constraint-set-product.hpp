@@ -36,6 +36,7 @@ auto blockVectorGetRow(const Eigen::MatrixBase<Derived> &matrix,
 /// This class makes computing multipliers and Jacobian matrix projections more
 /// convenient.
 /// @warning This struct contains a non-owning vector of its component sets.
+/// @todo Switch to using our aligator::BlkMatrix template class.
 template <typename Scalar>
 struct ConstraintSetProductTpl : ConstraintSetTpl<Scalar> {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
