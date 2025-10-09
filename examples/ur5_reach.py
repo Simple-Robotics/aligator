@@ -94,8 +94,11 @@ visual_data = visual_model.createData()
 if args.display:
     from candlewick import Visualizer, VisualizerConfig
 
+    _config = VisualizerConfig()
+    _config.width = 1920
+    _config.height = 1080
     vizer = Visualizer(
-        VisualizerConfig(1920, 1080),
+        _config,
         rmodel,
         visual_model,
         data=rdata,

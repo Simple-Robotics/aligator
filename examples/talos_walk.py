@@ -289,12 +289,12 @@ mu_init = 1e-8
 max_iters = 200
 verbose = aligator.VerboseLevel.VERBOSE
 solver = aligator.SolverProxDDP(TOL, mu_init, verbose=verbose)
-# solver = aligator.SolverFDDP(TOL, verbose=verbose)
 solver.rollout_type = aligator.ROLLOUT_LINEAR
-# solver = aligator.SolverFDDP(TOL, verbose=verbose)
 solver.max_iters = max_iters
-solver.sa_strategy = aligator.SA_FILTER  # FILTER or LINESEARCH
-solver.filter.beta = 1e-5
+
+# Set step acceptance strategy. Options are: FILTER or LINESEARCH_ARMIJO, LINESEARCH_NONMONOTONE (default)
+solver.sa_strategy = aligator.SA_LINESEARCH_NONMONOTONE
+# solver.filter.beta = 1e-5
 solver.force_initial_condition = True
 solver.reg_min = 1e-6
 solver.linear_solver_choice = aligator.LQ_SOLVER_PARALLEL  # LQ_SOLVER_SERIAL

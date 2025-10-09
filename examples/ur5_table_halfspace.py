@@ -105,7 +105,7 @@ mu_init = 1e-1
 max_iters = 150
 verbose = aligator.VerboseLevel.VERBOSE
 solver = aligator.SolverProxDDP(tol, mu_init, max_iters=max_iters, verbose=verbose)
-solver.rollout_type = aligator.ROLLOUT_NONLINEAR
+solver.rollout_type = aligator.ROLLOUT_LINEAR
 solver.setNumThreads(4)
 cb = aligator.HistoryCallback(solver)
 solver.registerCallback("his", cb)
@@ -114,14 +114,14 @@ solver.setup(problem)
 
 u0 = compute_quasistatic(rmodel, rdata, x0, acc=np.zeros(nv))
 us_init = [u0] * nsteps
-xs_init = aligator.rollout(dyn_model, x0, us_init).tolist()
+xs_init = [x0] * (nsteps + 1)
 
 solver.run(problem, xs_init, us_init)
 
-rs = solver.results
+rs: aligator.Results = solver.results
 print(rs)
 xs_opt = np.array(rs.xs)
-ws = solver.workspace
+ws: aligator.Workspace = solver.workspace
 
 stage_datas = ws.problem_data.stage_data
 ineq_cstr_datas = []
@@ -132,8 +132,10 @@ for i in range(nsteps):
         icd: aligator.StageFunctionData = stage_datas[i].constraint_data[0]
         ineq_cstr_datas.append(icd)
         ineq_cstr_values.append(icd.value.copy())
-    dcd = stage_datas[i].dynamics_data
-    dyn_cstr_values.append(dcd.value.copy())
+    # new in aligator 0.16+
+    # query dynamics' errors from solver workspace
+    dyn_cstr_values.append(ws.dyn_slacks[i + 1])
+
 
 times = np.linspace(0.0, Tf, nsteps + 1)
 plt.subplot(131)
@@ -146,6 +148,7 @@ plt.plot(times[1:], np.array(dyn_cstr_values))
 plt.title("Dyn. constraints")
 plt.xlabel("Time")
 plt.subplot(133)
+plt.title("End-effector traj.")
 ee_traj = get_endpoint_traj(rmodel, rdata, xs_opt, frame_id)
 plt.plot(times, np.array(ee_traj), label=["x", "y", "z"])
 plt.hlines(table_height, *times[[0, -1]], colors="k")
@@ -155,7 +158,7 @@ plt.tight_layout()
 
 plt.figure()
 ax = plt.subplot(111)
-plot_convergence(cb, ax, rs)
+plot_convergence(cb, ax, rs, target_tol=tol)
 plt.tight_layout()
 plt.show()
 
