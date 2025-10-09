@@ -32,13 +32,14 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using KnotType = gar::LqrKnotTpl<Scalar>;
   using ConstraintSetProduct = ConstraintSetProductTpl<Scalar>;
   using BlkJacobianType = BlkMatrix<MatrixXs, -1, 2>; // jacobians
-  using LqrProblemType = gar::LqrProblemTpl<Scalar>;
 
   using Base::dyn_slacks;
   using Base::nsteps;
   using Base::problem_data;
 
-  LqrProblemType lqr_problem; //< Linear-quadratic subproblem
+  using allocator_type = ::aligator::polymorphic_allocator;
+
+  gar::LqrProblemTpl<Scalar> lqr_problem; //< Linear-quadratic subproblem
 
   /// @name Lagrangian Gradients
   /// @{
@@ -105,9 +106,10 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   /// Overall subproblem termination criterion.
   Scalar inner_criterion = 0.;
 
-  explicit WorkspaceTpl()
+  WorkspaceTpl()
       : Base() {}
-  explicit WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem);
+  explicit WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
+                        const allocator_type &alloc = {});
 
   WorkspaceTpl(const WorkspaceTpl &) = delete;
   WorkspaceTpl &operator=(const WorkspaceTpl &) = delete;
@@ -118,15 +120,12 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   void cycleAppend(const TrajOptProblemTpl<Scalar> &problem,
                    shared_ptr<StageDataTpl<Scalar>> data);
 
-  template <typename T>
-  friend std::ostream &operator<<(std::ostream &oss,
-                                  const WorkspaceTpl<T> &self);
-};
+  allocator_type get_allocator() const { return lqr_problem.get_allocator(); }
 
-template <typename Scalar>
-std::ostream &operator<<(std::ostream &oss, const WorkspaceTpl<Scalar> &self) {
-  return oss << fmt::format("{}", self);
-}
+  friend std::ostream &operator<<(std::ostream &oss, const WorkspaceTpl &self) {
+    return oss << fmt::format("{}", self);
+  }
+};
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 extern template struct WorkspaceTpl<context::Scalar>;

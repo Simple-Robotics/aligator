@@ -20,6 +20,7 @@ Furthermore, on a temporary basis, implicit discrete dynamics **are no longer su
 
 ### Changed
 
+- solvers/proxddp : make `Workspace` an allocator-aware class
 - core/manifold-base : mark some functions `[[nodiscard]]`
 - readme/cmake : update actually expected minimum version of eigenpy to 3.9
 - solvers : make proxddp algo's Results class copyable again (in C++ and Python) (https://github.com/Simple-Robotics/aligator/pull/322)

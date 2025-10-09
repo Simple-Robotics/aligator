@@ -4,15 +4,16 @@
 #pragma once
 
 #include "./workspace.hpp"
-#include "aligator/core/traj-opt-data.hpp"
 #include "aligator/gar/lqr-problem.hpp"
 #include "aligator/gar/utils.hpp"
 
 namespace aligator {
 
 template <typename Scalar>
-WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
+WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
+                                   const allocator_type &alloc)
     : Base(problem)
+    , lqr_problem(alloc)
     , stage_inner_crits(nsteps + 1)
     , stage_cstr_violations(nsteps + 1)
     , stage_infeasibilities(nsteps + 1)
@@ -40,8 +41,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
   active_constraints.resize(nsteps + 1);
   cstr_proj_jacs.resize(nsteps + 1);
 
-  polymorphic_allocator alloc{};
-  typename LqrProblemType::KnotVector knots{alloc};
+  auto &knots = lqr_problem.stages;
 
   for (size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
@@ -75,8 +75,8 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem)
 
   // initial condition
   long nc0 = (long)problem.init_constraint_->nr;
-  lqr_problem.~LqrProblemType();
-  new (&lqr_problem) LqrProblemType(knots, nc0);
+  lqr_problem.G0.resize(nc0, nc0);
+  lqr_problem.g0.resize(nc0);
   std::tie(dxs, dus, dvs, dlams) =
       gar::lqrInitializeSolution(lqr_problem); // lqr subproblem variables
   Lxs = dxs;
