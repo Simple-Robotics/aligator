@@ -68,8 +68,6 @@ void ParallelRiccatiSolver<Scalar>::assembleCondensedSystem(
   boost::span diagonal = condensedKktSystem.diagonal;
   boost::span superdiagonal = condensedKktSystem.superdiagonal;
 
-  const auto &stages = problem_->stages;
-
   diagonal[0].setZero();
   diagonal[0].diagonal().setConstant(-mudyn);
   superdiagonal[0] = problem_->G0;
