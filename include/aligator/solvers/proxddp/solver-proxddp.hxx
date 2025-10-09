@@ -153,8 +153,13 @@ void SolverProxDDPTpl<Scalar>::setup(const Problem &problem) {
     linesearch_.init(sa_strategy_, ls_params);
   }
 
+  aligator::polymorphic_allocator allocator{};
+
   results_ = Results(problem);
-  workspace_ = Workspace(problem);
+  workspace_ = Workspace(problem, allocator);
+  if (workspace_.get_allocator() != allocator) {
+    ALIGATOR_RUNTIME_ERROR("Solver workspace has wrong allocator.");
+  }
 
   switch (linear_solver_choice) {
   case LQSolverChoice::SERIAL: {

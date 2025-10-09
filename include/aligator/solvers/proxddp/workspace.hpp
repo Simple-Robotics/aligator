@@ -108,6 +108,9 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
 
   WorkspaceTpl()
       : Base() {}
+  explicit WorkspaceTpl(const allocator_type &alloc)
+      : Base()
+      , lqr_problem(alloc) {}
   explicit WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
                         const allocator_type &alloc = {});
 
