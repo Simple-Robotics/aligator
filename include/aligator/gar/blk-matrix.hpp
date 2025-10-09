@@ -8,9 +8,15 @@
 
 namespace aligator {
 
-/// @brief Block matrix class, with a fixed-size number of row and column
-/// blocks.
-template <typename _MatrixType, int _N, int _M = _N> class BlkMatrix {
+/// @brief Block matrix class, with a fixed or dynamic-size number of row and
+/// column blocks.
+/// @tparam Baseline matrix type; the user can use an Eigen::Ref type to create
+/// a blocked view to an existing matrix.
+/// @tparam N number of block rows.
+/// @tparam M number of block columns.
+template <typename _MatrixType, int N, int M = N> class BlkMatrix;
+
+template <typename _MatrixType, int _N, int _M> class BlkMatrix {
 public:
   using MatrixType = _MatrixType;
   using PlainObject = typename MatrixType::PlainObject;
@@ -20,10 +26,10 @@ public:
   static constexpr bool IsVectorAtCompileTime =
       MatrixType::IsVectorAtCompileTime;
 
-  using row_dim_t = std::conditional_t<N != -1, std::array<Index, size_t(N)>,
-                                       std::vector<Index>>;
-  using col_dim_t = std::conditional_t<M != -1, std::array<Index, size_t(M)>,
-                                       std::vector<Index>>;
+  using RowDimsType = std::conditional_t<N != -1, std::array<Index, size_t(N)>,
+                                         std::vector<Index>>;
+  using ColDimsType = std::conditional_t<M != -1, std::array<Index, size_t(M)>,
+                                         std::vector<Index>>;
 
   static_assert(N != 0 && M != 0,
                 "The BlkMatrix template class only supports nonzero numbers of "
@@ -41,7 +47,7 @@ public:
       , m_totalRows(0)
       , m_totalCols(0) {}
 
-  BlkMatrix(const row_dim_t &rowDims, const col_dim_t &colDims)
+  BlkMatrix(const RowDimsType &rowDims, const ColDimsType &colDims)
       : m_data()
       , m_rowDims(rowDims)
       , m_colDims(colDims)
@@ -53,8 +59,8 @@ public:
   }
 
   template <typename Other>
-  BlkMatrix(const Eigen::MatrixBase<Other> &data, const row_dim_t &rowDims,
-            const col_dim_t &colDims)
+  BlkMatrix(const Eigen::MatrixBase<Other> &data, const RowDimsType &rowDims,
+            const ColDimsType &colDims)
       : m_data(data.derived())
       , //
       m_rowDims(rowDims)
@@ -67,8 +73,8 @@ public:
   }
 
   template <typename Other>
-  BlkMatrix(Eigen::MatrixBase<Other> &data, const row_dim_t &rowDims,
-            const col_dim_t &colDims)
+  BlkMatrix(Eigen::MatrixBase<Other> &data, const RowDimsType &rowDims,
+            const ColDimsType &colDims)
       : m_data(data.derived())
       , //
       m_rowDims(rowDims)
@@ -82,19 +88,19 @@ public:
 
   /// Only-rows constructor (only for vectors)
   template <typename Other>
-  BlkMatrix(const Eigen::MatrixBase<Other> &data, const row_dim_t &dims)
+  BlkMatrix(const Eigen::MatrixBase<Other> &data, const RowDimsType &dims)
       : BlkMatrix(data, dims, {data.cols()}) {}
 
   /// Only-rows constructor (only for vectors)
   template <typename Other>
-  BlkMatrix(Eigen::MatrixBase<Other> &data, const row_dim_t &dims)
+  BlkMatrix(Eigen::MatrixBase<Other> &data, const RowDimsType &dims)
       : BlkMatrix(data, dims, {data.cols()}) {}
 
   operator Eigen::Ref<PlainObject>() { return m_data; }
   operator Eigen::Ref<const PlainObject>() const { return m_data; }
 
   /// Only-rows constructor (only for vectors)
-  explicit BlkMatrix(const row_dim_t &dims)
+  explicit BlkMatrix(const RowDimsType &dims)
       : BlkMatrix(dims, {1}) {
     static_assert(IsVectorAtCompileTime,
                   "Constructor only supported for vector types.");
@@ -152,7 +158,8 @@ public:
   }
 
   void setZero() { m_data.setZero(); }
-  static BlkMatrix Zero(const row_dim_t &rowDims, const col_dim_t &colDims) {
+  static BlkMatrix Zero(const RowDimsType &rowDims,
+                        const ColDimsType &colDims) {
 
     BlkMatrix out(rowDims, colDims);
     out.setZero();
@@ -166,10 +173,10 @@ public:
   MatrixType &matrix() { return m_data; }
   const MatrixType &matrix() const { return m_data; }
 
-  const row_dim_t &rowDims() const { return m_rowDims; }
-  const row_dim_t &rowIndices() const { return m_rowIndices; }
-  const col_dim_t &colDims() const { return m_colDims; }
-  const col_dim_t &colIndices() const { return m_colIndices; }
+  const RowDimsType &rowDims() const { return m_rowDims; }
+  const RowDimsType &rowIndices() const { return m_rowIndices; }
+  const ColDimsType &colDims() const { return m_colDims; }
+  const ColDimsType &colIndices() const { return m_colIndices; }
 
   Index rows() const { return m_totalRows; }
   Index cols() const { return m_totalCols; }
@@ -200,10 +207,10 @@ public:
 
 protected:
   MatrixType m_data;
-  row_dim_t m_rowDims;
-  col_dim_t m_colDims;
-  row_dim_t m_rowIndices;
-  col_dim_t m_colIndices;
+  RowDimsType m_rowDims;
+  ColDimsType m_colDims;
+  RowDimsType m_rowIndices;
+  ColDimsType m_colIndices;
   Index m_totalRows;
   Index m_totalCols;
 
@@ -218,6 +225,10 @@ protected:
     }
     m_data.resize(m_totalRows, m_totalCols);
   }
+
+  /// Check consistency between stored data and the stated block row/column
+  /// dimensions.
+  bool checkDimConsistency() const {}
 };
 
 } // namespace aligator
