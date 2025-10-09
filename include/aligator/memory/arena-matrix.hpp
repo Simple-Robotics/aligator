@@ -251,9 +251,10 @@ namespace Eigen {
 namespace internal {
 
 // lifted from the stan-dev/math library
-template <typename T> struct traits<aligator::ArenaMatrix<T>> {
-  using base = traits<Eigen::Map<T>>;
-  using Scalar = typename base::Scalar;
+template <typename T>
+struct traits<aligator::ArenaMatrix<T>> : traits<Eigen::Map<T>> {
+  using TraitsBase = traits<Eigen::Map<T>>;
+  using Scalar = typename TraitsBase::Scalar;
   using XprKind = typename Eigen::internal::traits<std::decay_t<T>>::XprKind;
   using StorageKind =
       typename Eigen::internal::traits<std::decay_t<T>>::StorageKind;
@@ -261,13 +262,6 @@ template <typename T> struct traits<aligator::ArenaMatrix<T>> {
       Eigen::internal::traits<std::decay_t<T>>::RowsAtCompileTime;
   static constexpr int ColsAtCompileTime =
       Eigen::internal::traits<std::decay_t<T>>::ColsAtCompileTime;
-  enum {
-    PlainObjectTypeInnerSize = base::PlainObjectTypeInnerSize,
-    InnerStrideAtCompileTime = base::InnerStrideAtCompileTime,
-    OuterStrideAtCompileTime = base::OuterStrideAtCompileTime,
-    Alignment = base::Alignment,
-    Flags = base::Flags
-  };
 };
 
 } // namespace internal
