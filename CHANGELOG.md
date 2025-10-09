@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This release brings a major change to the ProxDDP solver, which no longer uses proximal iteration the co-state (the dynamics' Lagrange multiplies). This choice is made to increase the solver's overall performance.
 
+The ProxDDP solver now defaults to using a linear rollout for the state-control trajectory update.
+
 Furthermore, on a temporary basis, implicit discrete dynamics **are no longer supported** in the API and solvers.
 
 ### Fixed
@@ -20,6 +22,7 @@ Furthermore, on a temporary basis, implicit discrete dynamics **are no longer su
 
 ### Changed
 
+- ProxDDP solver : change default rollout type to `RolloutType::LINEAR`/`ROLLOUT_LINEAR`
 - solvers/proxddp : make `Workspace` an allocator-aware class
 - core/manifold-base : mark some functions `[[nodiscard]]`
 - readme/cmake : update actually expected minimum version of eigenpy to 3.9

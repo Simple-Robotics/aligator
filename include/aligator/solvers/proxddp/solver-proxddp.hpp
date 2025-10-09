@@ -168,7 +168,7 @@ public:
   /// Weight of the dual variables in the primal-dual linesearch.
   Scalar dual_weight = 1.0;
   /// Type of rollout for the forward pass.
-  RolloutType rollout_type_ = RolloutType::NONLINEAR;
+  RolloutType rollout_type_ = RolloutType::LINEAR;
   /// Parameters for the BCL outer loop of the augmented Lagrangian algorithm.
   AlmParams bcl_params;
   /// Step acceptance mode.
