@@ -1,8 +1,8 @@
 /// @file
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
-#include "aligator/fwd.hpp"
+#include "aligator/context.hpp"
 
 namespace aligator {
 
@@ -105,8 +105,7 @@ std::ostream &operator<<(std::ostream &oss,
   return oss << "Results {" << self.printBase() << "\n}";
 }
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "results-base.txx"
+extern template struct ResultsBaseTpl<context::Scalar>;
 #endif
+} // namespace aligator

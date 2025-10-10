@@ -2,7 +2,7 @@
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
 #pragma once
 
-#include "aligator/fwd.hpp"
+#include "aligator/context.hpp"
 
 namespace aligator {
 
@@ -38,8 +38,9 @@ template <typename _Scalar> struct TrajOptDataTpl {
 template <typename Scalar>
 Scalar computeTrajectoryCost(const TrajOptDataTpl<Scalar> &problem_data);
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/core/traj-opt-data.txx"
+extern template struct TrajOptDataTpl<context::Scalar>;
+extern template context::Scalar computeTrajectoryCost<context::Scalar>(
+    const context::TrajOptData &problem_data);
 #endif
+} // namespace aligator

@@ -5,7 +5,7 @@
  */
 #pragma once
 
-#include "aligator/fwd.hpp"
+#include "aligator/context.hpp"
 
 #include <ostream>
 
@@ -159,8 +159,8 @@ protected:
   }
 };
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/solvers/value-function.txx"
+extern template struct ValueFunctionTpl<context::Scalar>;
+extern template struct QFunctionTpl<context::Scalar>;
 #endif
+} // namespace aligator

@@ -265,8 +265,7 @@ int problem_last_ndx_helper(const TrajOptProblemTpl<Scalar> &problem) {
 }
 } // namespace internal
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/core/traj-opt-problem.txx"
+extern template struct TrajOptProblemTpl<context::Scalar>;
 #endif
+} // namespace aligator
