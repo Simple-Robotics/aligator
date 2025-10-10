@@ -1,6 +1,7 @@
 #pragma once
 
-#include "./workspace.hpp"
+#include "workspace.hpp"
+#include "aligator/core/traj-opt-problem.hpp"
 
 namespace aligator {
 

@@ -1,11 +1,11 @@
 /// @file
 /// @brief Linear-quadratic regulator
 
+#include "aligator/core/traj-opt-problem.hpp"
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
 #include "aligator/solvers/fddp/solver-fddp.hpp"
 #include "aligator/utils/rollout.hpp"
 #include "aligator/modelling/costs/quad-costs.hpp"
-
 #include "aligator/modelling/linear-discrete-dynamics.hpp"
 
 #include <benchmark/benchmark.h>

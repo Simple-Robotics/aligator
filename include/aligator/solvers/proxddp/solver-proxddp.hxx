@@ -429,8 +429,8 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
     setAlmPenalty(mu_init_);
   }
 
-  detail::check_initial_guess_and_assign(problem, xs_init, us_init, results_.xs,
-                                         results_.us);
+  check_initial_guess_and_assign(problem, xs_init, us_init, results_.xs,
+                                 results_.us);
   const bool v_was_resized =
       !vs_init.empty() && !assign_no_resize(vs_init, results_.vs);
   const bool l_was_resized =

@@ -3,7 +3,8 @@
 /// @brief Implementation file, to be included when necessary.
 #pragma once
 
-#include "./workspace.hpp"
+#include "workspace.hpp"
+#include "aligator/core/traj-opt-problem.hpp"
 #include "aligator/gar/lqr-problem.hpp"
 #include "aligator/gar/utils.hpp"
 

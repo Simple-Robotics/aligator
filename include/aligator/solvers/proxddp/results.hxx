@@ -4,7 +4,7 @@
 #pragma once
 
 #include "results.hpp"
-#include "aligator/solvers/solver-util.hpp"
+#include "aligator/core/traj-opt-problem.hpp"
 #include "aligator/utils/mpc-util.hpp"
 
 namespace aligator {
