@@ -79,6 +79,9 @@ SolverProxDDPTpl<Scalar>::SolverProxDDPTpl(const Scalar tol,
     , hess_approx_(hess_approx)
     , sa_strategy_(sa_strategy)
     , max_iters(max_iters)
+    , allocator_()
+    , workspace_(allocator_)
+    , results_()
     , filter_(0.0, ls_params.alpha_min, ls_params.max_num_steps)
     , linesearch_()
     , target_dual_tol_(tol)
@@ -153,11 +156,9 @@ void SolverProxDDPTpl<Scalar>::setup(const Problem &problem) {
     linesearch_.init(sa_strategy_, ls_params);
   }
 
-  aligator::polymorphic_allocator allocator{};
-
   results_ = Results(problem);
-  workspace_ = Workspace(problem, allocator);
-  if (workspace_.get_allocator() != allocator) {
+  workspace_ = Workspace(problem, allocator_);
+  if (workspace_.get_allocator() != allocator_) {
     ALIGATOR_RUNTIME_ERROR("Solver workspace has wrong allocator.");
   }
 

@@ -161,23 +161,18 @@ public:
   /// Step acceptance mode.
   StepAcceptanceStrategy sa_strategy_;
 
-  /// Force the initial state @f$ x_0 @f$ to be fixed to the problem initial
-  /// condition.
-  bool force_initial_condition_ = true;
-
+  bool force_initial_condition_ = true; //< Force initial condition @f$ x_0 @f$.
   size_t max_refinement_steps_ = 0;     //< Max KKT system refinement iters.
   Scalar refinement_threshold_ = 1e-13; //< Target tol. for the KKT system.
   size_t max_iters;                     //< Max number of Newton iterations.
   size_t max_al_iters = 100;            //< Maximum number of ALM iterations.
 
-  Workspace workspace_;
-  Results results_;
-  /// LQR subproblem solver
-  LinearSolverPtr linear_solver_;
-  /// Filter linesearch
-  FilterTpl<Scalar> filter_;
-  /// Linesearch routine
-  LinesearchVariant linesearch_;
+  polymorphic_allocator allocator_; //< Main allocator
+  Workspace workspace_;             //< Solver workspace
+  Results results_;                 //< Solver results
+  LinearSolverPtr linear_solver_;   //< LQR subproblem solver
+  FilterTpl<Scalar> filter_;        //< Filter linesearch
+  LinesearchVariant linesearch_;    //< Linesearch routine
 
 protected:
   /// Solver desired dual feasibility (by default, same as
