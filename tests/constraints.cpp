@@ -3,9 +3,7 @@
 #include "aligator/modelling/constraints.hpp"
 #include "aligator/fmt-eigen.hpp"
 
-#include <boost/test/unit_test.hpp>
-
-BOOST_AUTO_TEST_SUITE(constraint)
+#include <catch2/catch_test_macros.hpp>
 
 using namespace aligator;
 using namespace aligator::context;
@@ -13,7 +11,7 @@ using namespace aligator::context;
 const int N = 20;
 VectorSpace space(N);
 
-BOOST_AUTO_TEST_CASE(test_equality) {
+TEST_CASE("test_equality", "[constraint]") {
   VectorXs x0 = space.neutral();
   VectorXs x1 = space.rand();
   VectorXs zout(N);
@@ -24,11 +22,11 @@ BOOST_AUTO_TEST_CASE(test_equality) {
 
   eq_set.setProxParameter(mu);
   double m = eq_set.computeMoreauEnvelope(x1, zout);
-  BOOST_TEST_CHECK(zout.isApprox(x1));
-  BOOST_TEST_CHECK(m == (0.5 / mu * zout.squaredNorm()));
+  REQUIRE(zout.isApprox(x1));
+  REQUIRE(m == (0.5 / mu * zout.squaredNorm()));
 }
 
-BOOST_AUTO_TEST_CASE(constraint_product_op) {
+TEST_CASE("constraint_product_op", "[constraint]") {
   EqualityConstraintTpl<double> eq_op;
   NegativeOrthantTpl<double> neg_op;
   long n1 = 2, n2 = 3;
@@ -45,7 +43,5 @@ BOOST_AUTO_TEST_CASE(constraint_product_op) {
 
   neg_op.normalConeProjection(zCopy.tail(n2), zCopy.tail(n2));
 
-  BOOST_CHECK(z.isApprox(zCopy));
+  REQUIRE(z.isApprox(zCopy));
 }
-
-BOOST_AUTO_TEST_SUITE_END()

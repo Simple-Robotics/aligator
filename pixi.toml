@@ -26,6 +26,7 @@ pytest = ">=8.3.5,<9"
 matplotlib-base = ">=3.9.4,<4"
 typed-argument-parser = ">=1.10.1,<2"
 meshcat-python = ">=0.3.2,<0.4"
+catch2 = ">=3.8.0,<4"
 
 [activation]
 scripts = ["development/pixi/activation.sh"]
@@ -47,7 +48,6 @@ configure = { cmd = [
   "-DBUILD_WITH_PINOCCHIO_SUPPORT=$ALIGATOR_PINOCCHIO_SUPPORT",
   "-DBUILD_CROCODDYL_COMPAT=$ALIGATOR_CROCODDYL_COMPAT",
   "-DBUILD_WITH_OPENMP_SUPPORT=$ALIGATOR_OPENMP_SUPPORT",
-  "-DBUILD_WITH_CHOLMOD_SUPPORT=$ALIGATOR_CHOLMOD_SUPPORT",
   "-DBUILD_BENCHMARKS=$ALIGATOR_BENCHMARKS",
   "-DBUILD_EXAMPLES=$ALIGATOR_EXAMPLES",
   "-DGENERATE_PYTHON_STUBS=$ALIGATOR_PYTHON_STUBS",
@@ -79,10 +79,6 @@ activation = { env = { ALIGATOR_PINOCCHIO_SUPPORT = "ON" } }
 dependencies = { crocoddyl = ">=3.0.1" }
 activation = { env = { ALIGATOR_CROCODDYL_COMPAT = "ON" } }
 
-[feature.cholmod]
-dependencies = { suitesparse = ">=5" }
-activation = { env = { ALIGATOR_CHOLMOD_SUPPORT = "ON" } }
-
 # Not supported by Windows (because of conda-forge issue)
 [feature.openmp]
 [feature.openmp.target.linux]
@@ -95,8 +91,8 @@ activation = { env = { ALIGATOR_OPENMP_SUPPORT = "ON" } }
 [feature.py312.dependencies]
 python = "3.12.*"
 
-[feature.py39.dependencies]
-python = "3.9.*"
+[feature.py310.dependencies]
+python = "3.10.*"
 
 # Use clang on GNU/Linux.
 # We must use scripts instead of env to setup CC and CXX
@@ -113,20 +109,17 @@ lint = { features = ["lint"], solve-group = "py312" }
 pinocchio = { features = ["pinocchio", "py312"], solve-group = "py312" }
 crocoddyl = { features = ["crocoddyl", "py312"], solve-group = "py312" }
 openmp = { features = ["openmp", "py312"], solve-group = "py312" }
-cholmod = { features = ["cholmod", "py312"], solve-group = "py312" }
 tracy = { features = ["tracy", "py312"], solve-group = "py312" }
-py39 = { features = ["py39"], solve-group = "py39" }
+py310 = { features = ["py310"], solve-group = "py310" }
 all = { features = [
   "pinocchio",
   "crocoddyl",
   "openmp",
-  "cholmod",
   "py312",
 ], solve-group = "py312" }
-all-py39 = { features = [
+all-py310 = { features = [
   "pinocchio",
   "crocoddyl",
   "openmp",
-  "cholmod",
-  "py39",
-], solve-group = "py39" }
+  "py310",
+], solve-group = "py310" }

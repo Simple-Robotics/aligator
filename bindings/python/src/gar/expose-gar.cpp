@@ -39,10 +39,6 @@ static void exposeBlockMatrices() {
       "StdArr4_long");
 }
 
-#ifdef ALIGATOR_WITH_CHOLMOD
-// fwd-declare exposeCholmodSolver()
-void exposeCholmodSolver();
-#endif
 // fwd-declare exposeParallelSolver()
 void exposeParallelSolver();
 // fwd-declare exposeDenseSolver()
@@ -76,7 +72,6 @@ void exposeGAR() {
       //
       .def_readwrite("A", &knot_t::A)
       .def_readwrite("B", &knot_t::B)
-      .def_readwrite("E", &knot_t::E)
       .def_readwrite("f", &knot_t::f)
       //
       .def_readwrite("C", &knot_t::C)
@@ -115,15 +110,11 @@ void exposeGAR() {
 
   bp::class_<riccati_base_t, boost::noncopyable>("RiccatiSolverBase",
                                                  bp::no_init)
-      .def("backward", &riccati_base_t::backward, ("self"_a, "mu", "mueq"))
+      .def("backward", &riccati_base_t::backward, ("self"_a, "mueq"))
       .def("forward", &riccati_base_t::forward,
            ("self"_a, "xs", "us", "vs", "lbdas", "theta"_a = std::nullopt));
 
   exposeGarUtils();
-
-#ifdef ALIGATOR_WITH_CHOLMOD
-  exposeCholmodSolver();
-#endif
   exposeDenseSolver();
   exposeParallelSolver();
   exposeProxRiccati();

@@ -1,22 +1,18 @@
 import aligator
 import pinocchio as pin
 import numpy as np
-import hppfcl
+import coal
 
 from aligator import manifolds, dynamics
-from pinocchio.visualize import MeshcatVisualizer
-from pinocchio.visualize.meshcat_visualizer import COLOR_PRESETS
+from utils import ArgsBase
 from utils.solo import rmodel, rdata, robot, q0, create_ground_contact_model
 
-COLOR_PRESETS["white"] = ([1, 1, 1], [1, 1, 1])
+
+class Args(ArgsBase):
+    pass
 
 
-vizer = MeshcatVisualizer(
-    rmodel,
-    collision_model=robot.collision_model,
-    visual_model=robot.visual_model,
-    data=rdata,
-)
+args = Args().parse_args()
 
 pin.framesForwardKinematics(rmodel, rdata, q0)
 
@@ -38,15 +34,23 @@ def define_dynamics():
 
 
 ode = define_dynamics()
-timestep = 0.01
+timestep = 0.02
 Tf = 4.0
 nsteps = int(Tf / timestep)
 
 dyn_model = dynamics.IntegratorSemiImplEuler(ode, timestep)
 
-u0 = np.zeros(nu)
 v0 = np.zeros(nv)
 x0 = np.concatenate([q0, v0])
+u0, _ = aligator.underactuatedConstrainedInverseDynamics(
+    rmodel,
+    rdata,
+    q0,
+    v0,
+    act_matrix,
+    ode.constraint_models,
+    [cm.createData() for cm in ode.constraint_models],
+)
 
 
 def create_target(i: int):
@@ -70,62 +74,74 @@ def update_target(sphere, x):
 
 
 # Define cost functions
-base_weight = 2.0
-w_xreg = np.diag([1e-3] * nv + [1e-3] * nv)
-w_xreg[range(3), range(3)] = base_weight
+print(nv)
+w_xreg = [0.1] * 3 + [0.01] * (nv - 3) + [1e-4] * nv
+w_xreg = np.diag(w_xreg)
+print(w_xreg)
 
-w_ureg = np.eye(nu) * 1e-3
-ureg_cost = aligator.QuadraticControlCost(space, u0, w_ureg * timestep)
+w_ureg = np.eye(nu) * 1e-4
+u_cost = aligator.QuadraticControlCost(space, u0, w_ureg * timestep)
 
 stages = []
 for i in range(nsteps):
     x_cost = aligator.QuadraticStateCost(space, nu, X_TARGETS[i], w_xreg * timestep)
     rcost = aligator.CostStack(space, nu)
     rcost.addCost(x_cost)
-    rcost.addCost(ureg_cost)
+    rcost.addCost(u_cost)
     stm = aligator.StageModel(rcost, dyn_model)
     stages.append(stm)
 
-w_xterm = np.diag([1e-3] * nv + [1e-3] * nv)
-w_xterm[range(3), range(3)] = base_weight
+w_xterm = 1.0 * np.eye(space.ndx)
 xreg_term = aligator.QuadraticStateCost(space, nu, X_TARGETS[nsteps], w_xterm)
 term_cost = xreg_term
 
 
 def main():
-    vizer.initViewer(loadModel=True, open=True)
-    vizer.display(q0)
-    vizer.setBackgroundColor("white")
+    if args.display:
+        from pinocchio.visualize import MeshcatVisualizer
+        from pinocchio.visualize.meshcat_visualizer import COLOR_PRESETS
 
-    # display target as a transparent sphere
-    sphere = pin.GeometryObject("target", 0, pin.SE3.Identity(), hppfcl.Sphere(0.01))
-    sphere.meshColor[:] = 217, 101, 38, 120
-    sphere.meshColor /= 255.0
-    vizer.addGeometryObject(sphere)
+        COLOR_PRESETS["white"] = ([1, 1, 1], [1, 1, 1])
+        sphere = pin.GeometryObject("target", 0, pin.SE3.Identity(), coal.Sphere(0.01))
+        sphere.meshColor[:] = 217, 101, 38, 120
+        sphere.meshColor /= 255.0
+        robot.visual_model.addGeometryObject(sphere)
+        vizer = MeshcatVisualizer(
+            rmodel,
+            collision_model=robot.collision_model,
+            visual_model=robot.visual_model,
+            data=rdata,
+        )
+        vizer.initViewer(loadModel=True, open=True)
+        vizer.display(q0)
+        vizer.setBackgroundColor("white")
 
-    xs_i = [x0] * (nsteps + 1)
     us_i = [u0] * nsteps
+    xs_i = [x0] * (nsteps + 1)
 
     problem = aligator.TrajOptProblem(x0, stages, term_cost)
 
     mu_init = 1e-2
-    solver = aligator.SolverProxDDP(1e-3, mu_init, verbose=aligator.VERBOSE)
-    solver.reg_init = 1e-8
+    tol = 1e-4
+    solver = aligator.SolverProxDDP(tol, mu_init, verbose=aligator.VERBOSE)
+    # solver.sa_strategy = aligator.SA_FILTER
     solver.setup(problem)
     flag = solver.run(problem, xs_i, us_i)
     print(flag)
 
     rs = solver.results
     qs_opt = [x[:nq] for x in rs.xs]
-    input("[display?]")
 
-    def callback(i: int):
-        update_target(sphere, X_TARGETS[i])
+    if args.display:
+        input("[display?]")
 
-    NR = 3
-    for _ in range(NR):
-        vizer.play(qs_opt, timestep, callback=callback)
-        input()
+        def callback(i: int):
+            update_target(sphere, X_TARGETS[i])
+
+        num_repeat = 3
+        for _ in range(num_repeat):
+            vizer.play(qs_opt, timestep, callback=callback)
+            input()
 
 
 if __name__ == "__main__":

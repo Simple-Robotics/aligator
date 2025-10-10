@@ -3,14 +3,11 @@
 #pragma once
 
 #include "aligator/context.hpp"
-#include "aligator/gar/lqr-problem.hpp"
+#include "lqr-problem.hpp"
 #include "blk-matrix.hpp"
-
 #include "aligator/core/bunchkaufman.hpp"
-#include <Eigen/LU>
-#include <Eigen/Cholesky>
 
-#include "aligator/third-party/boost/core/make_span.hpp"
+#include <boost/core/make_span.hpp>
 
 #include <optional>
 
@@ -35,59 +32,75 @@ inline boost::span<const T> make_span_from_indices(const std::vector<T, A> &vec,
 template <typename _Scalar> struct StageFactor {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS_WITH_ROW_TYPES(Scalar);
+  using allocator_type = ::aligator::polymorphic_allocator;
 
-  struct value_t {
-    MatrixXs Pmat; //< Riccati matrix
-    VectorXs pvec; //< Riccati bias
-    MatrixXs Vxx;  //< "cost-to-go" matrix
-    VectorXs vx;   //< "cost-to-go" gradient
-    MatrixXs Vxt;
-    MatrixXs Vtt;
-    VectorXs vt;
+  struct CostToGo {
+    using allocator_type = ::aligator::polymorphic_allocator;
+    ArenaMatrix<MatrixXs> Vxx; //< "cost-to-go" matrix
+    ArenaMatrix<VectorXs> vx;  //< "cost-to-go" gradient
+    ArenaMatrix<MatrixXs> Vxt; //< cross-Hessian
+    ArenaMatrix<MatrixXs> Vtt; //< parametric Hessian
+    ArenaMatrix<VectorXs> vt;  //< parametric vector
 
-    value_t(uint nx, uint nth)
-        : Pmat(nx, nx)
-        , pvec(nx)
-        , Vxx(nx, nx)
-        , vx(nx)
-        , Vxt(nx, nth)
-        , Vtt(nth, nth)
-        , vt(nth) {
+    CostToGo(uint nx, uint nth, const allocator_type &alloc = {})
+        : Vxx(nx, nx, alloc)
+        , vx(nx, alloc)
+        , Vxt(nx, nth, alloc)
+        , Vtt(nth, nth, alloc)
+        , vt(nth, alloc) {
       Vxt.setZero();
       Vtt.setZero();
       vt.setZero();
     }
+
+    allocator_type get_allocator() const { return Vxx.get_allocator(); }
+
+    CostToGo(const CostToGo &other, const allocator_type &alloc = {})
+        : Vxx(other.Vxx, alloc)
+        , vx(other.vx, alloc)
+        , Vxt(other.Vxt, alloc)
+        , Vtt(other.Vtt, alloc)
+        , vt(other.vt, alloc) {}
+    CostToGo(CostToGo &&other) noexcept = default;
+    CostToGo(CostToGo &&other, const allocator_type &alloc)
+        : Vxx(std::move(other.Vxx), alloc)
+        , vx(std::move(other.vx), alloc)
+        , Vxt(std::move(other.Vxt), alloc)
+        , Vtt(std::move(other.Vtt), alloc)
+        , vt(std::move(other.vt), alloc) {}
+    CostToGo &operator=(const CostToGo &) = default;
+    CostToGo &operator=(CostToGo &&) = default;
   };
 
-  StageFactor(uint nx, uint nu, uint nc, uint nx2, uint nth);
+  StageFactor(uint nx, uint nu, uint nc, uint nx2, uint nth,
+              const allocator_type &alloc = {});
 
-  MatrixXs Qhat;
-  MatrixXs Rhat;
-  MatrixXs Shat;
-  VectorXs qhat;
-  VectorXs rhat;
-  RowMatrixXs AtV;
-  RowMatrixXs BtV;
+  allocator_type get_allocator() const { return Qhat.get_allocator(); }
 
-  // Parametric
-  MatrixXs Gxhat;
-  MatrixXs Guhat;
+  StageFactor(const StageFactor &other, const allocator_type &alloc = {});
+  StageFactor(StageFactor &&) noexcept = default;
+  StageFactor(StageFactor &&other, const allocator_type &alloc);
 
-  BlkMatrix<VectorXs, 4, 1> ff;        //< feedforward gains
-  BlkMatrix<RowMatrixXs, 4, 1> fb;     //< feedback gains
-  BlkMatrix<RowMatrixXs, 4, 1> fth;    //< parameter feedback gains
-  BlkMatrix<MatrixXs, 2, 2> kktMat;    //< reduced KKT matrix buffer
-  BunchKaufman<MatrixXs> kktChol;      //< reduced KKT LDLT solver
-  Eigen::PartialPivLU<MatrixXs> Efact; //< LU decomp. of E matrix
-  VectorXs yff_pre;
-  MatrixXs A_pre;
-  MatrixXs Yth_pre;
-  MatrixXs Ptilde;                //< product Et.inv P * E.inv
-  MatrixXs Einv;                  //< product P * E.inv
-  MatrixXs EinvP;                 //< product P * E.inv
-  MatrixXs schurMat;              //< Dual-space Schur matrix
-  Eigen::LLT<MatrixXs> schurChol; //< Cholesky decomposition of Schur matrix
-  value_t vm;                     //< cost-to-go parameters
+  StageFactor &operator=(const StageFactor &) = default;
+  StageFactor &operator=(StageFactor &&) = default;
+  ~StageFactor() = default;
+
+  uint nx, nu, nc, nx2, nth;
+  ArenaMatrix<MatrixXs> Qhat;
+  ArenaMatrix<MatrixXs> Rhat;
+  ArenaMatrix<MatrixXs> Shat;
+  ArenaMatrix<VectorXs> qhat;
+  ArenaMatrix<VectorXs> rhat;
+  ArenaMatrix<RowMatrixXs> AtV;
+  ArenaMatrix<RowMatrixXs> BtV;
+  ArenaMatrix<MatrixXs> Gxhat;
+  ArenaMatrix<MatrixXs> Guhat;
+  BlkMatrix<VectorXs, 3, 1> ff;     //< feedforward gains
+  BlkMatrix<RowMatrixXs, 3, 1> fb;  //< feedback gains
+  BlkMatrix<RowMatrixXs, 3, 1> fth; //< parameter feedback gains
+  BlkMatrix<MatrixXs, 2, 2> kktMat; //< reduced KKT matrix buffer
+  BunchKaufman<MatrixXs> kktChol;   //< reduced KKT LDLT solver
+  CostToGo vm;                      //< cost-to-go parameters
 };
 
 /// @brief Kernel for use in Riccati-like algorithms for the proximal LQ
@@ -96,7 +109,7 @@ template <typename Scalar> struct ProximalRiccatiKernel {
   ALIGATOR_DYNAMIC_TYPEDEFS_WITH_ROW_TYPES(Scalar);
   using KnotType = LqrKnotTpl<Scalar>;
   using StageFactorType = StageFactor<Scalar>;
-  using value_t = typename StageFactor<Scalar>::value_t;
+  using CostToGo = typename StageFactorType::CostToGo;
 
   struct kkt0_t {
     BlkMatrix<MatrixXs, 2, 2> mat;
@@ -109,20 +122,19 @@ template <typename Scalar> struct ProximalRiccatiKernel {
         , fth(mat.rowDims(), {nth}) {}
   };
 
-  static void terminalSolve(typename KnotType::const_view_t model,
-                            const Scalar mueq, StageFactorType &d);
+  static void terminalSolve(const KnotType &model, const Scalar mueq,
+                            StageFactorType &d);
 
   static bool backwardImpl(boost::span<const KnotType> stages,
-                           const Scalar mudyn, const Scalar mueq,
+                           const Scalar mueq,
                            boost::span<StageFactorType> datas);
 
   /// Solve initial stage
   static void computeInitial(VectorRef x0, VectorRef lbd0, const kkt0_t &kkt0,
                              const std::optional<ConstVectorRef> &theta_);
 
-  static void stageKernelSolve(typename KnotType::const_view_t model,
-                               StageFactorType &d, value_t &vn,
-                               const Scalar mudyn, const Scalar mueq);
+  static void stageKernelSolve(const KnotType &model, StageFactorType &d,
+                               CostToGo &vn, const Scalar mueq);
 
   /// Forward sweep.
   static bool

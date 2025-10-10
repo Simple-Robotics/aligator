@@ -1,13 +1,13 @@
 /// @file
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/compat/crocoddyl/fwd.hpp"
 #include "aligator/compat/crocoddyl/state-wrap.hpp"
-#include "aligator/compat/crocoddyl/dynamics-wrap.hpp"
 
 #include "aligator/core/cost-abstract.hpp"
 #include "aligator/core/stage-model.hpp"
+#include "aligator/core/explicit-dynamics.hpp"
 #include "aligator/core/stage-data.hpp"
 #include <crocoddyl/core/action-base.hpp>
 
@@ -15,28 +15,37 @@ namespace aligator {
 namespace compat {
 namespace croc {
 template <typename Scalar>
-struct NoOpDynamics final : DynamicsModelTpl<Scalar> {
-  using Base = DynamicsModelTpl<Scalar>;
-  using DynData = DynamicsDataTpl<Scalar>;
+struct NoOpDynamics final : ExplicitDynamicsModelTpl<Scalar> {
+  using Base = ExplicitDynamicsModelTpl<Scalar>;
+  using DynData = ExplicitDynamicsDataTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  NoOpDynamics(xyz::polymorphic<Manifold> state, const int nu)
+  NoOpDynamics(const xyz::polymorphic<Manifold> &state, const int nu)
       : Base(state, nu) {}
 
-  void evaluate(const ConstVectorRef &, const ConstVectorRef &,
-                const ConstVectorRef &, DynData &) const override {}
+  void forward(const ConstVectorRef &, const ConstVectorRef &,
+               DynData &) const override {}
 
-  void computeJacobians(const ConstVectorRef &, const ConstVectorRef &,
-                        const ConstVectorRef &, DynData &) const override {}
+  void dForward(const ConstVectorRef &, const ConstVectorRef &,
+                DynData &) const override {}
 };
 
-/**
- * @brief Wraps a crocoddyl::ActionModelAbstract
- *
- * This data structure rewires an ActionModel into a StageModel object.
- */
 template <typename Scalar>
-struct ActionModelWrapperTpl : StageModelTpl<Scalar> {
+struct DynamicsDataWrapperTpl final : ExplicitDynamicsDataTpl<Scalar> {
+  using Base = ExplicitDynamicsDataTpl<Scalar>;
+  using CrocActionModel = crocoddyl::ActionModelAbstractTpl<Scalar>;
+  explicit DynamicsDataWrapperTpl(const CrocActionModel &action_model)
+      : Base((int)action_model.get_state()->get_ndx(),
+             (int)action_model.get_nu(),
+             (int)action_model.get_state()->get_nx(),
+             (int)action_model.get_state()->get_ndx()) {}
+};
+
+/// @brief Wraps a crocoddyl::ActionModelAbstract
+///
+/// This data structure rewires an ActionModel into a StageModel object.
+template <typename Scalar>
+struct ActionModelWrapperTpl final : StageModelTpl<Scalar> {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageModelTpl<Scalar>;
   using Data = StageDataTpl<Scalar>;
@@ -54,11 +63,10 @@ struct ActionModelWrapperTpl : StageModelTpl<Scalar> {
   bool hasDynModel() const override { return false; }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                const ConstVectorRef &y, Data &data) const override;
+                Data &data) const override;
 
   void computeFirstOrderDerivatives(const ConstVectorRef &x,
                                     const ConstVectorRef &u,
-                                    const ConstVectorRef &y,
                                     Data &data) const override;
 
   /// Does nothing for this class.
@@ -73,8 +81,7 @@ struct ActionModelWrapperTpl : StageModelTpl<Scalar> {
  * @brief A complicated child class to StageDataTpl which pipes Crocoddyl's data
  * to the right places.
  */
-template <typename Scalar>
-struct ActionDataWrapperTpl : public StageDataTpl<Scalar> {
+template <typename Scalar> struct ActionDataWrapperTpl : StageDataTpl<Scalar> {
   using Base = StageDataTpl<Scalar>;
   using CrocActionModel = crocoddyl::ActionModelAbstractTpl<Scalar>;
   using CrocActionData = crocoddyl::ActionDataAbstractTpl<Scalar>;
@@ -92,8 +99,9 @@ protected:
   friend ActionModelWrapperTpl<Scalar>;
 };
 
+extern template struct ActionModelWrapperTpl<context::Scalar>;
+extern template struct ActionDataWrapperTpl<context::Scalar>;
+
 } // namespace croc
 } // namespace compat
 } // namespace aligator
-
-#include "aligator/compat/crocoddyl/action-model-wrap.txx"

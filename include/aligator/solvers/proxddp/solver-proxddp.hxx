@@ -7,7 +7,7 @@
 #include "merit-function.hpp"
 #include "aligator/core/lagrangian.hpp"
 #include "aligator/threads.hpp"
-#include "aligator/utils/forward-dyn.hpp"
+#include "aligator/core/explicit-dynamics.hpp"
 
 #include "aligator/gar/proximal-riccati.hpp"
 #include "aligator/gar/parallel-solver.hpp"
@@ -17,7 +17,7 @@
 
 namespace aligator {
 
-// [1], realted to Appendix A, details on aug. Lagrangian method
+// [1], related to Appendix A, details on aug. Lagrangian method
 // interpretation as shifted-penalty method
 template <typename Scalar>
 void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
@@ -28,15 +28,15 @@ void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
   auto &sif = workspace.shifted_constraints;
 
   const TrajOptDataTpl<Scalar> &prob_data = workspace.problem_data;
-  const std::size_t N = workspace.nsteps;
-  for (std::size_t i = 0; i < N; i++) {
+  const size_t N = workspace.nsteps;
+  for (size_t i = 0; i < N; i++) {
     const StageModelTpl<Scalar> &sm = *problem.stages_[i];
     const StageDataTpl<Scalar> &sd = *prob_data.stage_data[i];
     auto &jac = workspace.cstr_proj_jacs[i];
 
-    for (std::size_t j = 0; j < sm.numConstraints(); j++) {
-      jac(j, 0) = sd.constraint_data[j]->Jx_;
-      jac(j, 1) = sd.constraint_data[j]->Ju_;
+    for (size_t j = 0; j < sm.numConstraints(); j++) {
+      jac(j, 0) = sd.constraint_data[j]->Jx();
+      jac(j, 1) = sd.constraint_data[j]->Ju();
     }
 
     auto Px = jac.blockCol(0);
@@ -53,8 +53,8 @@ void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
   if (!problem.term_cstrs_.empty()) {
     auto &jac = workspace.cstr_proj_jacs[N];
     const auto &cds = prob_data.term_cstr_data;
-    for (std::size_t j = 0; j < cds.size(); j++) {
-      jac(j, 0) = cds[j]->Jx_;
+    for (size_t j = 0; j < cds.size(); j++) {
+      jac(j, 0) = cds[j]->Jx();
     }
 
     auto Px = jac.blockCol(0);
@@ -69,26 +69,28 @@ void computeProjectedJacobians(const TrajOptProblemTpl<Scalar> &problem,
 template <typename Scalar>
 SolverProxDDPTpl<Scalar>::SolverProxDDPTpl(const Scalar tol,
                                            const Scalar mu_init,
-                                           const std::size_t max_iters,
+                                           const size_t max_iters,
                                            VerboseLevel verbose,
                                            StepAcceptanceStrategy sa_strategy,
                                            HessianApprox hess_approx)
     : target_tol_(tol)
-    , target_dual_tol_(tol)
-    , sync_dual_tol_(true)
-    , mu_init(mu_init)
+    , mu_init_(mu_init)
     , verbose_(verbose)
     , hess_approx_(hess_approx)
     , sa_strategy_(sa_strategy)
     , max_iters(max_iters)
-    , rollout_max_iters(1)
+    , allocator_()
+    , workspace_(allocator_)
+    , results_()
     , filter_(0.0, ls_params.alpha_min, ls_params.max_num_steps)
-    , linesearch_() {
+    , linesearch_()
+    , target_dual_tol_(tol)
+    , sync_dual_tol_(true) {
   ls_params.interp_type = LSInterpolation::CUBIC;
 }
 
 template <typename Scalar>
-void SolverProxDDPTpl<Scalar>::setNumThreads(const std::size_t num_threads) {
+void SolverProxDDPTpl<Scalar>::setNumThreads(const size_t num_threads) {
   if (linear_solver_) {
     ALIGATOR_WARNING(
         "SolverProxDDP",
@@ -98,14 +100,13 @@ void SolverProxDDPTpl<Scalar>::setNumThreads(const std::size_t num_threads) {
   num_threads_ = num_threads;
   omp::set_default_options(num_threads);
 }
-// [1] Section IV. Proximal Differential Dynamic Programming
-// C. Forward pass
+
 template <typename Scalar>
 Scalar SolverProxDDPTpl<Scalar>::tryLinearStep(const Problem &problem,
                                                const Scalar alpha) {
   ALIGATOR_TRACY_ZONE_SCOPED;
 
-  const std::size_t nsteps = workspace_.nsteps;
+  const size_t nsteps = workspace_.nsteps;
   assert(results_.xs.size() == nsteps + 1);
   assert(results_.us.size() == nsteps);
   assert(results_.lams.size() == nsteps + 1);
@@ -126,7 +127,7 @@ Scalar SolverProxDDPTpl<Scalar>::tryLinearStep(const Problem &problem,
   VectorXs dx_tmp(ndx_max);
   VectorXs du_tmp(nu_max);
 
-  for (std::size_t i = 0; i < nsteps; i++) {
+  for (size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
     const int ndx = stage.ndx1();
     const int nu = stage.nu();
@@ -143,9 +144,7 @@ Scalar SolverProxDDPTpl<Scalar>::tryLinearStep(const Problem &problem,
   stage.xspace_next_->integrate(results_.xs[nsteps], dx_tmp.head(ndxN),
                                 workspace_.trial_xs[nsteps]);
   TrajOptData &prob_data = workspace_.problem_data;
-  prob_data.cost_ =
-      problem.evaluate(workspace_.trial_xs, workspace_.trial_us, prob_data);
-  return prob_data.cost_;
+  return problem.evaluate(workspace_.trial_xs, workspace_.trial_us, prob_data);
 }
 
 template <typename Scalar>
@@ -158,7 +157,10 @@ void SolverProxDDPTpl<Scalar>::setup(const Problem &problem) {
   }
 
   results_ = Results(problem);
-  workspace_ = Workspace(problem);
+  workspace_ = Workspace(problem, allocator_);
+  if (workspace_.get_allocator() != allocator_) {
+    ALIGATOR_RUNTIME_ERROR("Solver workspace has wrong allocator.");
+  }
 
   switch (linear_solver_choice) {
   case LQSolverChoice::SERIAL: {
@@ -208,64 +210,51 @@ template <typename... VArgs> bool is_nan_any(const VArgs &...args) {
 
 template <typename Scalar>
 bool SolverProxDDPTpl<Scalar>::computeMultipliers(
-    const Problem &problem, const std::vector<VectorXs> &lams,
-    const std::vector<VectorXs> &vs) {
+    const Problem &problem, const std::vector<VectorXs> &xs,
+    const std::vector<VectorXs> &lams, const std::vector<VectorXs> &vs) {
   ALIGATOR_TRACY_ZONE_SCOPED;
   using BlkView = BlkMatrix<VectorRef, -1, 1>;
 
   const TrajOptData &prob_data = workspace_.problem_data;
-  const std::size_t nsteps = workspace_.nsteps;
+  const size_t nsteps = workspace_.nsteps;
 
-  // TODO: make clear with the naming prev_x, x_plus, x_pdal means ?
-  // [1] Section B. Augmented Lagrangian methods eqn. 5a and 5b for x_plus
-  // and in subsection Primal-dual search x_k is prev_x. Then, more precisely
-  // eqn. 39 gives the formula for first-order multiplier estimates in the
-  // DDP setup
-  const std::vector<VectorXs> &lams_prev = workspace_.prev_lams;
   std::vector<VectorXs> &lams_plus = workspace_.lams_plus;
-  std::vector<VectorXs> &lams_pdal = workspace_.lams_pdal;
 
   const std::vector<VectorXs> &vs_prev = workspace_.prev_vs;
   std::vector<VectorXs> &vs_plus = workspace_.vs_plus;
-  std::vector<VectorXs> &vs_pdal = workspace_.vs_pdal;
 
-  std::vector<VectorXs> &Lds = workspace_.Lds;
   std::vector<VectorXs> &Lvs = workspace_.Lvs;
   std::vector<VectorXs> &shifted_constraints = workspace_.shifted_constraints;
+  std::vector<VectorXs> &stage_infeas = workspace_.stage_infeasibilities;
+  std::vector<VectorXs> &fs = workspace_.dyn_slacks;
 
-  assert(Lds.size() == lams_prev.size());
-  assert(Lds.size() == nsteps + 1);
   assert(Lvs.size() == vs_prev.size());
   assert(Lvs.size() == nsteps + 1);
 
   // initial constraint
   {
     StageFunctionData &dd = *prob_data.init_data;
-    lams_plus[0] = lams_prev[0] + dd.value_ / mudyn();
-    lams_pdal[0] = 2 * lams_plus[0] - lams[0];
     /// TODO: generalize to the other types of initial constraint (non-equality)
-    workspace_.dyn_slacks[0] = dd.value_;
-    Lds[0] = mudyn() * (lams_plus[0] - lams[0]);
-    RET_FALSE_IF_NAN(Lds[0]);
+    fs[0] = dd.value_;
+    lams_plus[0] = lams[0] + fs[0] / mu();
+    RET_FALSE_IF_NAN(lams_plus[0]);
   }
   using ConstraintSetProd = ConstraintSetProductTpl<Scalar>;
 
   // loop over the stages
-  for (std::size_t i = 0; i < nsteps; i++) {
+  for (size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
     const StageData &sd = *prob_data.stage_data[i];
-    const DynamicsData &dd = *sd.dynamics_data;
+    const ExplicitDynamicsDataTpl<Scalar> &dd = *sd.dynamics_data;
     const ConstraintStack &cstr_stack = stage.constraints_;
 
     assert(vs[i].size() == stage.nc());
     assert(lams[i + 1].size() == stage.ndx2());
 
-    // 1. compute shifted dynamics error
-    workspace_.dyn_slacks[i + 1] = dd.value_;
-    lams_plus[i + 1] = lams_prev[i + 1] + dd.value_ / mudyn();
+    // 1. compute dynamics error
+    stage.xspace_next().difference(xs[i + 1], dd.xnext_, fs[i + 1]);
+    lams_plus[i + 1] = lams[i + 1] + fs[i + 1] / mu_dyn();
     RET_FALSE_IF_NAN(lams_plus[i + 1]);
-    lams_pdal[i + 1] = 2 * lams_plus[i + 1] - lams[i + 1];
-    Lds[i + 1] = mudyn() * (lams_plus[i + 1] - lams[i + 1]);
 
     // 2. use product constraint operator
     // to compute the new multiplier estimates
@@ -285,11 +274,14 @@ bool SolverProxDDPTpl<Scalar>::computeMultipliers(
     Lvs[i].noalias() -= mu() * vs[i];
     vs_plus[i] = mu_inv() * vs_plus[i];
     assert(Lvs[i].size() == stage.nc());
+
+    stage_infeas[i] = mu() * (vs_plus[i] - vs_prev[i]);
+    workspace_.stage_cstr_violations[long(i)] =
+        math::infty_norm(stage_infeas[i]);
     RET_FALSE_IF_NAN(Lvs[i]);
   }
 
   if (!problem.term_cstrs_.empty()) {
-    assert(problem.term_cstrs_.size() == prob_data.term_cstr_data.size());
     const ConstraintStack &cstr_stack = problem.term_cstrs_;
     const ConstraintSetProd &op = workspace_.cstr_product_sets[nsteps];
 
@@ -306,32 +298,18 @@ bool SolverProxDDPTpl<Scalar>::computeMultipliers(
     Lvs[nsteps].noalias() -= mu() * vs[nsteps];
     vs_plus[nsteps] = mu_inv() * vs_plus[nsteps];
     assert(Lvs[nsteps].size() == cstr_stack.totalDim());
+
+    stage_infeas[nsteps] = mu() * (vs_plus[nsteps] - vs_prev[nsteps]);
+    workspace_.stage_cstr_violations[long(nsteps)] =
+        math::infty_norm(stage_infeas[nsteps]);
     RET_FALSE_IF_NAN(Lvs[nsteps]);
   }
+  results_.prim_infeas = std::max(math::infty_norm(stage_infeas),
+                                  math::infty_norm(workspace_.dyn_slacks));
   return true;
 }
 
 #undef RET_FALSE_IF_NAN
-
-template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateGains() {
-  ALIGATOR_TRACY_ZONE_SCOPED;
-  ALIGATOR_NOMALLOC_SCOPED;
-  using gar::StageFactor;
-  const std::size_t N = workspace_.nsteps;
-  linear_solver_->collapseFeedback(); // will alter feedback gains
-  for (std::size_t i = 0; i < N; i++) {
-    VectorRef ff = results_.getFeedforward(i);
-    MatrixRef fb = results_.getFeedback(i);
-
-    ff = linear_solver_->getFeedforward(i);
-    fb = linear_solver_->getFeedback(i);
-  }
-  VectorRef ff = results_.getFeedforward(N);
-  MatrixRef fb = results_.getFeedback(N);
-
-  ff = linear_solver_->getFeedforward(N).tail(ff.rows());
-  fb = linear_solver_->getFeedback(N).bottomRows(fb.rows());
-}
 
 // [1] Section IV. Proximal Differential Dynamic Programming
 // C. Forward pass
@@ -339,10 +317,9 @@ template <typename Scalar>
 Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
                                                      const Scalar alpha) {
   ALIGATOR_TRACY_ZONE_SCOPED;
-  using ExplicitDynData = ExplicitDynamicsDataTpl<Scalar>;
   using gar::StageFactor;
 
-  const std::size_t nsteps = workspace_.nsteps;
+  const size_t nsteps = workspace_.nsteps;
   std::vector<VectorXs> &xs = workspace_.trial_xs;
   std::vector<VectorXs> &us = workspace_.trial_us;
   std::vector<VectorXs> &vs = workspace_.trial_vs;
@@ -352,8 +329,6 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
   std::vector<VectorXs> &dvs = workspace_.dvs;
   std::vector<VectorXs> &dlams = workspace_.dlams;
 
-  const std::vector<VectorXs> &lams_prev = workspace_.prev_lams;
-  std::vector<VectorXs> &dyn_slacks = workspace_.dyn_slacks;
   TrajOptData &prob_data = workspace_.problem_data;
 
   {
@@ -361,27 +336,24 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
     // use lams[0] as a tmp var for alpha * dx0
     lams[0] = alpha * dxs[0];
     stage.xspace().integrate(results_.xs[0], lams[0], xs[0]);
-    lams[0] = results_.lams[0] + alpha * workspace_.dlams[0];
+    lams[0] = results_.lams[0] + alpha * dlams[0];
 
     ALIGATOR_RAISE_IF_NAN_NAME(xs[0], fmt::format("xs[{:d}]", 0));
   }
 
-  for (std::size_t t = 0; t < nsteps; t++) {
+  for (size_t t = 0; t < nsteps; t++) {
     const StageModel &stage = *problem.stages_[t];
     StageData &data = *prob_data.stage_data[t];
 
-    const std::array<long, 4> _dims{stage.nu(), stage.nc(), stage.ndx2(),
-                                    stage.ndx2()};
-    BlkMatrix<ConstVectorRef, 4, 1> ff{
-        linear_solver_->getFeedforward(t), _dims, {1}};
-    BlkMatrix<ConstMatrixRef, 4, 1> fb{
-        linear_solver_->getFeedback(t), _dims, {stage.ndx1()}};
-    ConstVectorRef kff = ff[0];
-    ConstVectorRef zff = ff[1];
-    ConstVectorRef lff = ff[2];
+    const std::array<long, 3> dims = {stage.nu(), stage.nc(), stage.ndx2()};
+    BlkMatrix<ConstVectorRef, 3, 1> ff{
+        linear_solver_->getFeedforward(t), dims, {1}};
+    BlkMatrix<ConstMatrixRef, 3, 1> fb{
+        linear_solver_->getFeedback(t), dims, {stage.ndx1()}};
+    ConstVectorRef kff = ff.blockSegment(0);
+    ConstVectorRef zff = ff.blockSegment(1);
     ConstMatrixRef Kfb = fb.blockRow(0);
     ConstMatrixRef Zfb = fb.blockRow(1);
-    ConstMatrixRef Lfb = fb.blockRow(2);
 
     dus[t] = alpha * kff;
     dus[t].noalias() += Kfb * dxs[t];
@@ -391,28 +363,11 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
     dvs[t].noalias() += Zfb * dxs[t];
     vs[t] = results_.vs[t] + dvs[t];
 
-    dlams[t + 1] = alpha * lff;
-    dlams[t + 1].noalias() += Lfb * dxs[t];
-    lams[t + 1] = results_.lams[t + 1] + dlams[t + 1];
-
-    stage.evaluate(xs[t], us[t], xs[t + 1], data);
-
-    // compute desired multiple-shooting gap from the multipliers
-    dyn_slacks[t] = mudyn() * (lams_prev[t + 1] - lams[t + 1]);
-
-    DynamicsData &dd = *data.dynamics_data;
-
-    if (!stage.hasDynModel() || stage.dynamics_->isExplicit()) {
-      ExplicitDynData &exp_dd = static_cast<ExplicitDynData &>(dd);
-      stage.xspace_next().integrate(exp_dd.xnext_, dyn_slacks[t], xs[t + 1]);
-      // at xs[i+1], the dynamics gap = the slack dyn_slack[i].
-      exp_dd.value_ = -dyn_slacks[t];
-    } else {
-      forwardDynamics<Scalar>::run(*stage.dynamics_, xs[t], us[t], dd,
-                                   xs[t + 1], dyn_slacks[t], rollout_max_iters);
-    }
+    stage.evaluate(xs[t], us[t], data);
+    xs[t + 1] = data.dynamics_data->xnext_;
 
     stage.xspace_next().difference(results_.xs[t + 1], xs[t + 1], dxs[t + 1]);
+    lams[t + 1] = results_.lams[t + 1] + alpha * dlams[t + 1];
 
     ALIGATOR_RAISE_IF_NAN_NAME(xs[t + 1], fmt::format("xs[{:d}]", t + 1));
     ALIGATOR_RAISE_IF_NAN_NAME(us[t], fmt::format("us[{:d}]", t));
@@ -423,7 +378,7 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
   problem.term_cost_->evaluate(xs[nsteps], problem.unone_,
                                *prob_data.term_cost_data);
 
-  for (std::size_t k = 0; k < problem.term_cstrs_.size(); ++k) {
+  for (size_t k = 0; k < problem.term_cstrs_.size(); ++k) {
     const auto &func = problem.term_cstrs_.funcs[k];
     StageFunctionData &td = *prob_data.term_cstr_data[k];
     func->evaluate(xs[nsteps], problem.unone_, td);
@@ -440,7 +395,7 @@ Scalar SolverProxDDPTpl<Scalar>::tryNonlinearRollout(const Problem &problem,
         linear_solver_->getFeedforward(nsteps), _dims, {1}};
     BlkMatrix<ConstMatrixRef, 2, 1> fb{
         linear_solver_->getFeedback(nsteps), _dims, {ndx}};
-    ConstVectorRef zff = ff[1];
+    ConstVectorRef zff = ff.blockSegment(1);
     ConstMatrixRef Zfb = fb.blockRow(1);
 
     dvs[nsteps] = alpha * zff;
@@ -468,15 +423,15 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
   if (!workspace_.isInitialized() || !results_.isInitialized()) {
     ALIGATOR_RUNTIME_ERROR("workspace and results were not allocated yet!");
   }
-  if (mu_init < bcl_params.mu_lower_bound) {
+  if (mu_init_ < bcl_params.mu_lower_bound) {
     ALIGATOR_WARNING("SolverProxDDP",
                      "Initial value of mu_init < mu_lower_bound ({:.3g})\n",
                      bcl_params.mu_lower_bound);
-    setAlmPenalty(mu_init);
+    setAlmPenalty(mu_init_);
   }
 
-  detail::check_initial_guess_and_assign(problem, xs_init, us_init, results_.xs,
-                                         results_.us);
+  check_initial_guess_and_assign(problem, xs_init, us_init, results_.xs,
+                                 results_.us);
   const bool v_was_resized =
       !vs_init.empty() && !assign_no_resize(vs_init, results_.vs);
   const bool l_was_resized =
@@ -497,12 +452,11 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
   }
   logger.printHeadline();
 
-  setAlmPenalty(mu_init);
+  setAlmPenalty(mu_init_);
 
   workspace_.prev_xs = results_.xs;
   workspace_.prev_us = results_.us;
   workspace_.prev_vs = results_.vs;
-  workspace_.prev_lams = results_.lams;
 
   inner_tol_ = inner_tol0;
   prim_tol_ = prim_tol0;
@@ -515,7 +469,7 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
 
   results_.al_iter = 0;
   results_.num_iters = 0;
-  std::size_t &al_iter = results_.al_iter;
+  size_t &al_iter = results_.al_iter;
   while ((al_iter < max_al_iters) && (results_.num_iters < max_iters)) {
     if (!innerLoop(problem)) {
       al_iter++;
@@ -535,15 +489,12 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
       switch (multiplier_update_mode) {
       case MultiplierUpdateMode::NEWTON:
         workspace_.prev_vs = results_.vs;
-        workspace_.prev_lams = results_.lams;
         break;
       case MultiplierUpdateMode::PRIMAL:
         workspace_.prev_vs = workspace_.vs_plus;
-        workspace_.prev_lams = workspace_.lams_plus;
         break;
       case MultiplierUpdateMode::PRIMAL_DUAL:
         workspace_.prev_vs = workspace_.vs_pdal;
-        workspace_.prev_lams = workspace_.lams_pdal;
         break;
       default:
         break;
@@ -559,7 +510,7 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
       updateTolsOnFailure();
       if (math::scalar_close(mu_penal_, bcl_params.mu_lower_bound)) {
         // reset penalty to initial value
-        setAlmPenalty(mu_init);
+        setAlmPenalty(mu_init_);
       }
     }
 
@@ -587,12 +538,11 @@ Scalar SolverProxDDPTpl<Scalar>::forwardPass(const Problem &problem,
     tryNonlinearRollout(problem, alpha);
     break;
   }
-  if (!computeMultipliers(problem, workspace_.trial_lams, workspace_.trial_vs))
+  if (!computeMultipliers(problem, workspace_.trial_xs, workspace_.trial_lams,
+                          workspace_.trial_vs))
     ALIGATOR_RUNTIME_ERROR(
         "computeMultipliers() returned false. NaN or Inf detected.");
-  return PDALFunction<Scalar>::evaluate(mudyn(), mu(), problem,
-                                        workspace_.trial_lams,
-                                        workspace_.trial_vs, workspace_);
+  return ALFunction<Scalar>::evaluate(mu_dyn(), mu(), problem, workspace_);
 }
 
 template <typename Scalar>
@@ -607,17 +557,16 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     ALIGATOR_TRACY_ZONE_NAMED_N(FilterPairEval, "pair_eval_fun", true);
     std::pair<Scalar, Scalar> fpair;
     fpair.first = forwardPass(problem, a0);
-    computeInfeasibilities(problem);
     fpair.second = results_.prim_infeas;
     return fpair;
   };
 
-  std::size_t &iter = results_.num_iters;
+  size_t &iter = results_.num_iters;
   results_.traj_cost_ = problem.evaluate(results_.xs, results_.us,
                                          workspace_.problem_data, num_threads_);
-  computeMultipliers(problem, results_.lams, results_.vs);
-  results_.merit_value_ = PDALFunction<Scalar>::evaluate(
-      mudyn(), mu(), problem, results_.lams, results_.vs, workspace_);
+  computeMultipliers(problem, results_.xs, results_.lams, results_.vs);
+  results_.merit_value_ =
+      ALFunction<Scalar>::evaluate(mu_dyn(), mu(), problem, workspace_);
 
   for (; iter < max_iters; iter++) {
     ALIGATOR_TRACY_ZONE_NAMED_N(ZoneIteration, "inner_iteration", true);
@@ -636,9 +585,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
                                            workspace_.Lxs, workspace_.Lus);
     if (force_initial_condition_) {
       workspace_.Lxs[0].setZero();
-      workspace_.Lds[0].setZero();
     }
-    computeInfeasibilities(problem);
     computeCriterion();
 
     // exit if either the subproblem or overall problem converged
@@ -650,26 +597,41 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     computeProjectedJacobians(problem, mu_inv(), workspace_);
     initializeRegularization();
     updateLQSubproblem();
-    // TODO: supply a penalty weight matrix for constraints
 
-    // In the next two lines, the LQ subproblem is solved. This is
-    // another way to view the backward and forward passes of the
-    // Riccati recursion detailed in [1] IV. Proximal Differential
-    //  Dynamic Programming Section B Backward. The backward pass
-    // computes the gains, and the forward pass computes the new
-    // control and state trajectories.
-    linear_solver_->backward(mudyn(), mu());
+    // Solve the LQ subproblem.
+    linear_solver_->backward(mu());
 
     linear_solver_->forward(workspace_.dxs, workspace_.dus, workspace_.dvs,
                             workspace_.dlams);
-    updateGains();
+    /// Update primal-dual feedback gains (control, costate, path
+    /// multiplier)
+    {
+      ALIGATOR_TRACY_ZONE_SCOPED;
+      ALIGATOR_NOMALLOC_SCOPED;
+      using gar::StageFactor;
+      const size_t N = workspace_.nsteps;
+      linear_solver_->collapseFeedback(); // will alter feedback gains
+      for (size_t i = 0; i < N; i++) {
+        VectorRef ff = results_.getFeedforward(i);
+        MatrixRef fb = results_.getFeedback(i);
+
+        ff = linear_solver_->getFeedforward(i);
+        fb = linear_solver_->getFeedback(i);
+      }
+      VectorRef ff = results_.getFeedforward(N);
+      MatrixRef fb = results_.getFeedback(N);
+
+      assert(ff.rows() == linear_solver_->getFeedforward(N).rows());
+      ff = linear_solver_->getFeedforward(N).tail(ff.rows());
+      fb = linear_solver_->getFeedback(N).bottomRows(fb.rows());
+    }
 
     if (force_initial_condition_) {
       workspace_.dxs[0].setZero();
       workspace_.dlams[0].setZero();
     }
-    Scalar dphi0 = PDALFunction<Scalar>::directionalDerivative(
-        mudyn(), mu(), problem, results_.lams, results_.vs, workspace_);
+    const Scalar dphi0 = ALFunction<Scalar>::directionalDerivative(
+        mu_dyn(), mu(), problem, workspace_);
     ALIGATOR_RAISE_IF_NAN(dphi0);
 
     // check if we can early stop
@@ -683,7 +645,6 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
     switch (sa_strategy_) {
     case StepAcceptanceStrategy::LINESEARCH_ARMIJO:
     case StepAcceptanceStrategy::LINESEARCH_NONMONOTONE:
-      assert(linesearch_.isValid());
       phi_new = linesearch_.run(merit_eval_fun, phi0, dphi0, alpha_opt);
       break;
     case StepAcceptanceStrategy::FILTER:
@@ -725,7 +686,7 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
         return false;
       increaseRegularization();
     }
-    invokeCallbacks(workspace_, results_);
+    this->invokeCallbacks();
     logger.log();
 
     preg_last_ = preg_;
@@ -733,49 +694,20 @@ bool SolverProxDDPTpl<Scalar>::innerLoop(const Problem &problem) {
   return false;
 }
 
-template <typename Scalar>
-void SolverProxDDPTpl<Scalar>::computeInfeasibilities(const Problem &problem) {
-  ALIGATOR_NOMALLOC_SCOPED;
-  ALIGATOR_TRACY_ZONE_SCOPED;
-  const std::size_t nsteps = workspace_.nsteps;
-
-  std::vector<VectorXs> &vs_plus = workspace_.vs_plus;
-  std::vector<VectorXs> &vs_prev = workspace_.prev_vs;
-  std::vector<VectorXs> &stage_infeas = workspace_.stage_infeasibilities;
-
-  // compute infeasibility of all stage constraints [1] eqn. 53
-  for (std::size_t i = 0; i < nsteps; i++) {
-    stage_infeas[i] = vs_plus[i] - vs_prev[i];
-    stage_infeas[i] = mu() * stage_infeas[i];
-
-    workspace_.stage_cstr_violations[long(i)] =
-        math::infty_norm(stage_infeas[i]);
-  }
-
-  // compute infeasibility of terminal constraints
-  if (!problem.term_cstrs_.empty()) {
-    stage_infeas[nsteps] = vs_plus[nsteps] - vs_prev[nsteps];
-    stage_infeas[nsteps] = mu() * stage_infeas[nsteps];
-
-    workspace_.stage_cstr_violations[long(nsteps)] =
-        math::infty_norm(stage_infeas[nsteps]);
-  }
-
-  results_.prim_infeas = std::max(math::infty_norm(stage_infeas),
-                                  math::infty_norm(workspace_.dyn_slacks));
-}
-
 template <typename Scalar> void SolverProxDDPTpl<Scalar>::computeCriterion() {
   ALIGATOR_NOMALLOC_SCOPED;
   ALIGATOR_TRACY_ZONE_SCOPED;
-  const std::size_t nsteps = workspace_.nsteps;
+  const size_t nsteps = workspace_.nsteps;
 
   workspace_.stage_inner_crits.setZero();
 
-  for (std::size_t i = 0; i < nsteps; i++) {
+  for (size_t i = 0; i < nsteps; i++) {
+    // dual residual
     Scalar rx = math::infty_norm(workspace_.Lxs[i]);
     Scalar ru = math::infty_norm(workspace_.Lus[i]);
-    Scalar rd = math::infty_norm(workspace_.Lds[i]);
+    // dynamics residual
+    Scalar rd = math::infty_norm(workspace_.dyn_slacks[i]);
+    // path constraints
     Scalar rc = math::infty_norm(workspace_.Lvs[i]);
 
     workspace_.stage_inner_crits[long(i)] = std::max({rx, ru, rd, rc});
@@ -793,17 +725,12 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::computeCriterion() {
                math::infty_norm(workspace_.control_dual_infeas));
 }
 
-template <typename Scalar>
-void SolverProxDDPTpl<Scalar>::registerCallback(const std::string &name,
-                                                CallbackPtr cb) {
-  callbacks_.insert_or_assign(name, cb);
-}
-
 template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
   ALIGATOR_NOMALLOC_SCOPED;
   ALIGATOR_TRACY_ZONE_SCOPED;
   gar::LqrProblemTpl<Scalar> &prob = workspace_.lqr_problem;
   const TrajOptData &pd = workspace_.problem_data;
+  const auto &dyn_slacks = workspace_.dyn_slacks;
 
   using gar::LqrKnotTpl;
 
@@ -815,16 +742,15 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
     // taking the knot and not a view, since resizes might
     // happen here.
     LqrKnotTpl<Scalar> &knot = prob.stages[t];
-    const DynamicsData &dd = *sd.dynamics_data;
+    const ExplicitDynamicsDataTpl<Scalar> &dd = *sd.dynamics_data;
     const CostData &cd = *sd.cost_data;
     uint nx = knot.nx;
     uint nu = knot.nu;
     uint nc = knot.nc;
 
-    knot.A = dd.Jx_;
-    knot.B = dd.Ju_;
-    knot.E = dd.Jy_;
-    knot.f = workspace_.Lds[t + 1];
+    knot.A = dd.Jx();
+    knot.B = dd.Ju();
+    knot.f = dyn_slacks[t + 1];
 
     knot.Q = cd.Lxx_;
     knot.S = cd.Lxu_;
@@ -837,12 +763,11 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
 
     // dynamics hessians
     if (hess_approx_ == HessianApprox::EXACT) {
-      knot.Q.to_map() += dd.Hxx_;
-      knot.S.to_map() += dd.Hxu_;
-      knot.R.to_map() += dd.Huu_;
+      knot.Q += dd.Hxx_;
+      knot.S += dd.Hxu_;
+      knot.R += dd.Huu_;
     }
 
-    // TODO: handle the bloody constraints
     assert(knot.nc == workspace_.cstr_proj_jacs[t].rows());
     knot.C.topRows(nc) = workspace_.cstr_proj_jacs[t].blockCol(0);
     knot.D.topRows(nc) = workspace_.cstr_proj_jacs[t].blockCol(1);
@@ -862,15 +787,15 @@ template <typename Scalar> void SolverProxDDPTpl<Scalar>::updateLQSubproblem() {
     knot.C = workspace_.cstr_proj_jacs[N].blockCol(0);
     knot.d = workspace_.Lvs[N];
     // correct right-hand side
-    knot.q.to_map() += workspace_.cstr_lx_corr[N];
+    knot.q += workspace_.cstr_lx_corr[N];
   }
 
   const StageFunctionData &id = *pd.init_data;
-  prob.G0 = id.Jx_;
-  prob.g0 = workspace_.Lds[0];
+  prob.G0 = id.Jx();
+  prob.g0 = id.value_;
 
   LqrKnotTpl<Scalar> &model = prob.stages[0];
-  model.Q.to_map() += id.Hxx_;
+  model.Q += id.Hxx_;
 }
 
 } // namespace aligator

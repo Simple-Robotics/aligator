@@ -78,7 +78,6 @@ void exposeProxDDP() {
                     "Buffers for the LQ subproblem.")
       .def_readonly("Lxs", &Workspace::Lxs)
       .def_readonly("Lus", &Workspace::Lus)
-      .def_readonly("Lds", &Workspace::Lds)
       .def_readonly("Lvs", &Workspace::Lvs)
       .def_readonly("dxs", &Workspace::dxs)
       .def_readonly("dus", &Workspace::dus)
@@ -86,8 +85,6 @@ void exposeProxDDP() {
       .def_readonly("dlams", &Workspace::dlams)
       .def_readonly("trial_vs", &Workspace::trial_vs)
       .def_readonly("trial_lams", &Workspace::trial_lams)
-      .def_readonly("lams_plus", &Workspace::lams_plus)
-      .def_readonly("lams_pdal", &Workspace::lams_pdal)
       .def_readonly("vs_plus", &Workspace::vs_plus)
       .def_readonly("vs_pdal", &Workspace::vs_pdal)
       .def_readonly("shifted_constraints", &Workspace::shifted_constraints)
@@ -96,7 +93,6 @@ void exposeProxDDP() {
       .def_readonly("active_constraints", &Workspace::active_constraints)
       .def_readonly("prev_xs", &Workspace::prev_xs)
       .def_readonly("prev_us", &Workspace::prev_us)
-      .def_readonly("prev_lams", &Workspace::prev_lams)
       .def_readonly("prev_vs", &Workspace::prev_vs)
       .def_readonly("stage_infeasibilities", &Workspace::stage_infeasibilities)
       .def_readonly("state_dual_infeas", &Workspace::state_dual_infeas)
@@ -145,12 +141,13 @@ void exposeProxDDP() {
                          &SolverType::linear_solver_choice)
           .def_readwrite("multiplier_update_mode",
                          &SolverType::multiplier_update_mode)
-          .def_readwrite("mu_init", &SolverType::mu_init,
+          .def_readwrite("mu_init", &SolverType::mu_init_,
                          "Initial AL penalty parameter.")
           .add_property("mu", &SolverType::mu)
-          .def_readwrite(
-              "rollout_max_iters", &SolverType::rollout_max_iters,
-              "Maximum number of iterations when solving the forward dynamics.")
+          //   .def_readwrite(
+          //       "rollout_max_iters", &SolverType::rollout_max_iters,
+          //       "Maximum number of iterations when solving the forward
+          //       dynamics.")
           .def_readwrite("max_al_iters", &SolverType::max_al_iters,
                          "Maximum number of AL iterations.")
           .def_readwrite("ls_mode", &SolverType::ls_mode, "Linesearch mode.")
@@ -173,8 +170,6 @@ void exposeProxDDP() {
                         "Linear solver for the semismooth Newton method.")
           .def_readwrite("filter", &SolverType::filter_,
                          "Pair filter used to accept a step.")
-          .def("computeInfeasibilities", &SolverType::computeInfeasibilities,
-               ("self"_a, "problem"), "Compute problem infeasibilities.")
           .add_property("num_threads", &SolverType::getNumThreads)
           .def("setNumThreads", &SolverType::setNumThreads,
                ("self"_a, "num_threads"))
@@ -210,7 +205,6 @@ void exposeProxDDP() {
         ._c(dual_alpha)
         ._c(dual_beta)
         ._c(mu_update_factor)
-        ._c(dyn_al_scale)
         ._c(mu_lower_bound);
 #undef _c
   }

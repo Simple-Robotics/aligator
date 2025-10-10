@@ -4,8 +4,7 @@
 #include "aligator/context.hpp"
 #include "aligator/math.hpp"
 #include "aligator/gar/fwd.hpp"
-#include "aligator/memory/managed-matrix.hpp"
-#include "aligator/tags.hpp"
+#include "aligator/memory/arena-matrix.hpp"
 #include <fmt/format.h>
 
 #include <optional>
@@ -24,16 +23,18 @@ namespace gar {
 ///   + q^\top x + r^\top u
 /// \f\]
 /// and constraints
-/// \f\[
-///   Ex' + Ax + Bu + f = 0, \quad
-///   Cx + Du + d = 0.
+/// \f\[ \begin{aligned}
+///   x' &= Ax + Bu + f, \\
+///   0  &= Cx + Du + d. \end{aligned}
 /// \f\]
 ///
+/// When the parameter dimension nth is nonzero, this object also contains a
+/// parameterisation of the Lagrangian of a knot in the problem. This can be a
+/// linear term in the stage constraint, extra terms affine in \f$\theta\f$, and
+/// so on.
 template <typename Scalar> struct LqrKnotTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   static constexpr int Alignment = Eigen::AlignedMax;
-  using MVec = ManagedMatrix<Scalar, Eigen::Dynamic, 1>;
-  using MMat = ManagedMatrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
   using allocator_type = polymorphic_allocator;
 
   uint nx;
@@ -42,115 +43,21 @@ template <typename Scalar> struct LqrKnotTpl {
   uint nx2;
   uint nth;
 
-  MMat Q, S, R;
-  MVec q, r;
-  MMat A, B, E;
-  MVec f;
-  MMat C, D;
-  MVec d;
+  ArenaMatrix<MatrixXs> Q, S, R;
+  ArenaMatrix<VectorXs> q, r;
+  ArenaMatrix<MatrixXs> A, B;
+  ArenaMatrix<VectorXs> f;
+  ArenaMatrix<MatrixXs> C, D;
+  ArenaMatrix<VectorXs> d;
 
-  MMat Gth;
-  MMat Gx;
-  MMat Gu;
-  MMat Gv;
-  MVec gamma;
+  ArenaMatrix<MatrixXs> Gth;   //< \f$\theta^\top G_\theta\theta\f$ term
+  ArenaMatrix<MatrixXs> Gx;    //< \f$x^\top G_x \theta\f$ term in Lagrangian
+  ArenaMatrix<MatrixXs> Gu;    //< \f$u^\top G_x \theta\f$ term in Lagrangian
+  ArenaMatrix<MatrixXs> Gv;    //< \f$\nu^\top G_x \theta\f$ term in Lagrangian
+  ArenaMatrix<VectorXs> gamma; //< \f$\gamma^\top \theta\f$ term in Lagrangian
 
-  template <typename T, bool Cond>
-  using add_const_if_t = std::conditional_t<Cond, std::add_const_t<T>, T>;
-
-  template <bool IsConst> struct __view_base {
-    using mat_t = Eigen::Map<add_const_if_t<MatrixXs, IsConst>, Alignment>;
-    using vec_t = Eigen::Map<add_const_if_t<VectorXs, IsConst>, Alignment>;
-    uint nx;
-    uint nu;
-    uint nc;
-    uint nx2;
-    uint nth;
-
-    mat_t Q, S, R;
-    vec_t q, r;
-    mat_t A, B, E;
-    vec_t f;
-    mat_t C, D;
-    vec_t d;
-
-    mat_t Gth, Gx, Gu, Gv;
-    vec_t gamma;
-  };
-
-  using view_t = __view_base<false>;
-  using const_view_t = __view_base<true>;
-
-  /// \brief Convert knot to an aggregate of Eigen::Map.
-  ///
-  /// This is a convenience method for running computations.
-  view_t to_view() {
-    return view_t{
-        nx,
-        nu,
-        nc,
-        nx2,
-        nth,
-        //
-        Q.to_map(),
-        S.to_map(),
-        R.to_map(),
-        q.to_map(),
-        r.to_map(),
-        //
-        A.to_map(),
-        B.to_map(),
-        E.to_map(),
-        f.to_map(),
-        //
-        C.to_map(),
-        D.to_map(),
-        d.to_map(),
-        //
-        Gth.to_map(),
-        Gx.to_map(),
-        Gu.to_map(),
-        Gv.to_map(),
-        gamma.to_map(),
-    };
-  }
-
-  /// \brief Convert knot to an aggregate of Eigen::Map to const.
-  const_view_t to_const_view() const {
-    return const_view_t{
-        nx,
-        nu,
-        nc,
-        nx2,
-        nth,
-        //
-        Q.to_const_map(),
-        S.to_const_map(),
-        R.to_const_map(),
-        q.to_const_map(),
-        r.to_const_map(),
-        //
-        A.to_const_map(),
-        B.to_const_map(),
-        E.to_const_map(),
-        f.to_const_map(),
-        //
-        C.to_const_map(),
-        D.to_const_map(),
-        d.to_const_map(),
-        //
-        Gth.to_const_map(),
-        Gx.to_const_map(),
-        Gu.to_const_map(),
-        Gv.to_const_map(),
-        gamma.to_const_map(),
-    };
-  }
-
-  const_view_t to_view() const { return to_const_view(); }
-
-  operator view_t() { return to_view(); }
-  operator const_view_t() const { return to_const_view(); }
+  LqrKnotTpl() = default;
+  explicit LqrKnotTpl(const allocator_type &alloc);
 
   LqrKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth,
              allocator_type alloc = {});
@@ -167,13 +74,15 @@ template <typename Scalar> struct LqrKnotTpl {
   LqrKnotTpl(const LqrKnotTpl &other, allocator_type alloc = {});
   /// @brief Move constructor. Allocator will be moved from other. Other will be
   /// have @ref m_empty_after_move set to true.
-  LqrKnotTpl(LqrKnotTpl &&other);
+  LqrKnotTpl(LqrKnotTpl &&other) noexcept;
+  /// @brief Extended move constructor.
+  LqrKnotTpl(LqrKnotTpl &&other, const allocator_type &alloc);
   /// @brief Copy assignment. Current allocator will be reused if required.
   LqrKnotTpl &operator=(const LqrKnotTpl &other);
   /// @brief Move assignment. Other allocator will be stolen.
   LqrKnotTpl &operator=(LqrKnotTpl &&);
 
-  ~LqrKnotTpl();
+  ~LqrKnotTpl() = default;
 
   /// \brief Assign matrices (and dimensions) from another LqrKnotTpl.
   void assign(const LqrKnotTpl<Scalar> &other);
@@ -191,7 +100,6 @@ template <typename Scalar> struct LqrKnotTpl {
   allocator_type get_allocator() const { return m_allocator; }
 
 private:
-  explicit LqrKnotTpl(no_alloc_t, allocator_type alloc = {});
   allocator_type m_allocator;
 };
 
@@ -201,10 +109,8 @@ template <typename Scalar> struct LqrProblemTpl {
   using KnotType = LqrKnotTpl<Scalar>;
   using KnotVector = std::pmr::vector<KnotType>;
   using allocator_type = polymorphic_allocator;
-  using MVec = ManagedMatrix<Scalar, Eigen::Dynamic, 1>;
-  using MMat = ManagedMatrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
-  MMat G0;
-  MVec g0;
+  ArenaMatrix<MatrixXs> G0;
+  ArenaMatrix<VectorXs> g0;
   KnotVector stages;
 
   inline int horizon() const noexcept { return (int)stages.size() - 1; }
@@ -263,7 +169,7 @@ template <typename Scalar> struct LqrProblemTpl {
 
   inline uint ntheta() const { return stages[0].nth; }
 
-  inline bool isApprox(const LqrProblemTpl &other) {
+  [[nodiscard]] bool isApprox(const LqrProblemTpl &other) {
     if (horizon() != other.horizon() || !G0.isApprox(other.G0) ||
         !g0.isApprox(other.g0))
       return false;
@@ -275,8 +181,9 @@ template <typename Scalar> struct LqrProblemTpl {
   }
 
   /// Evaluate the quadratic objective.
-  Scalar evaluate(const VectorOfVectors &xs, const VectorOfVectors &us,
-                  const std::optional<ConstVectorRef> &theta_) const;
+  [[nodiscard]] Scalar
+  evaluate(const VectorOfVectors &xs, const VectorOfVectors &us,
+           const std::optional<ConstVectorRef> &theta) const;
 
   allocator_type get_allocator() const { return G0.get_allocator(); }
 
@@ -289,15 +196,14 @@ private:
 };
 
 template <typename Scalar>
-bool lqrKnotsSameDim(const LqrKnotTpl<Scalar> &lhs,
-                     const LqrKnotTpl<Scalar> &rhs) {
+[[nodiscard]] bool lqrKnotsSameDim(const LqrKnotTpl<Scalar> &lhs,
+                                   const LqrKnotTpl<Scalar> &rhs) {
   return (lhs.nx == rhs.nx) && (lhs.nu == rhs.nu) && (lhs.nc == rhs.nc) &&
          (lhs.nx2 == rhs.nx2) && (lhs.nth == rhs.nth);
 }
 
 template <typename Scalar>
-std::ostream &operator<<(std::ostream &oss, const LqrKnotTpl<Scalar> &self_) {
-  auto self = self_.to_const_view();
+std::ostream &operator<<(std::ostream &oss, const LqrKnotTpl<Scalar> &self) {
   oss << "LqrKnot {";
   oss << fmt::format("\n  nx:  {:d}", self.nx) //
       << fmt::format("\n  nu:  {:d}", self.nu) //
@@ -314,7 +220,6 @@ std::ostream &operator<<(std::ostream &oss, const LqrKnotTpl<Scalar> &self_) {
 
   oss << eigenPrintWithPreamble(self.A, "\n  A: ") //
       << eigenPrintWithPreamble(self.B, "\n  B: ") //
-      << eigenPrintWithPreamble(self.E, "\n  E: ") //
       << eigenPrintWithPreamble(self.f, "\n  f: ");
 
   oss << eigenPrintWithPreamble(self.C, "\n  C: ") //

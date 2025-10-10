@@ -1,5 +1,6 @@
 #pragma once
 
+#include "aligator/core/traj-opt-problem.hpp"
 #include "aligator/solvers/results-base.hpp"
 
 namespace aligator {

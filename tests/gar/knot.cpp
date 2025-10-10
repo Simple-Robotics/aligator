@@ -1,7 +1,7 @@
 #include "aligator/gar/lqr-problem.hpp"
-#include <aligator/fmt-eigen.hpp>
+#include "aligator/fmt-eigen.hpp"
 
-#include <boost/test/unit_test.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include "test_util.hpp"
 
@@ -12,6 +12,7 @@ char MEMORY_BUFFER[1'000'000];
 static std::pmr::monotonic_buffer_resource rs{MEMORY_BUFFER,
                                               sizeof(MEMORY_BUFFER)};
 static aligator::polymorphic_allocator alloc{&rs};
+static aligator::polymorphic_allocator default_alloc{};
 
 struct knot_fixture {
   uint nx = 2;
@@ -26,152 +27,200 @@ struct knot_fixture {
 
     knot.A.setZero();
     knot.B.setZero();
-    knot.E.setZero();
     knot.f.setZero();
   }
 };
 
-BOOST_FIXTURE_TEST_CASE(move, knot_fixture) {
+TEST_CASE_METHOD(knot_fixture, "move", "[knot]") {
 
-  MatrixXd Q = knot.Q.to_map();
-  MatrixXd R = knot.R.to_map();
+  MatrixXd Q = knot.Q;
+  MatrixXd R = knot.R;
 
-  knot_t knot_moved{std::move(knot)};
-  BOOST_CHECK_EQUAL(knot_moved.nx, nx);
-  BOOST_CHECK_EQUAL(knot_moved.nu, nu);
-  BOOST_CHECK(knot_moved.Q.isApprox(Q));
-  BOOST_CHECK(knot_moved.R.isApprox(R));
+  SECTION("move") {
+    knot_t knot_moved{std::move(knot)};
+    REQUIRE(knot_moved.nx == nx);
+    REQUIRE(knot_moved.nu == nu);
+    REQUIRE(knot_moved.Q.isApprox(Q));
+    REQUIRE(knot_moved.R.isApprox(R));
+  }
 
-  // copy ctor
-  knot_t knot_move2 = std::move(knot_moved);
+  SECTION("move extended") {
+    knot_t knot_moved2{std::move(knot), alloc};
+    REQUIRE(knot_moved2.get_allocator() == alloc);
+    REQUIRE(knot_moved2.Q.isApprox(Q));
+    REQUIRE(knot_moved2.R.isApprox(R));
+  }
 }
 
-BOOST_FIXTURE_TEST_CASE(copy, knot_fixture) {
+TEST_CASE_METHOD(knot_fixture, "copy", "[knot]") {
 
+  // use default allocator
   knot_t knot2{knot};
-  BOOST_CHECK_EQUAL(knot, knot2);
+  REQUIRE(knot2.get_allocator() == aligator::polymorphic_allocator{});
+  REQUIRE(knot2 == knot);
+
+  knot_t knot3{knot, alloc};
+  REQUIRE(knot3.get_allocator() == alloc);
+  REQUIRE(knot3 == knot);
 }
 
-BOOST_FIXTURE_TEST_CASE(swap, knot_fixture) {
+TEST_CASE_METHOD(knot_fixture, "swap", "[knot]") {
   using std::swap;
-  MatrixXs Q0 = knot.Q.to_const_map();
+  MatrixXs Q0 = knot.Q;
   knot_t knot2 = knot;
   knot2.Q.setIdentity();
 
-  fmt::println("knot.Q:\n{}", knot.Q.to_map());
-  fmt::println("knot2.Q:\n{}", knot2.Q.to_map());
+  fmt::println("knot.Q:\n{}", knot.Q);
+  fmt::println("knot2.Q:\n{}", knot2.Q);
 
   swap(knot, knot2);
-  BOOST_CHECK(knot2.Q.isApprox(Q0));
+  REQUIRE(knot2.Q.isApprox(Q0));
 
-  fmt::println("knot2.Q:\n{}", knot2.Q.to_map());
+  fmt::println("knot2.Q:\n{}", knot2.Q);
 }
 
-BOOST_FIXTURE_TEST_CASE(gen_knot, knot_fixture) {
-  knot_t knot2 = generate_knot(nx, nu, 0);
+TEST_CASE_METHOD(knot_fixture, "gen_knot", "[knot]") {
+  knot_t knot2 = generateKnot({nx, nu}, alloc);
   this->knot = std::move(knot2);
 }
 
-BOOST_AUTO_TEST_CASE(copy_assignment_diff_allocator) {
+TEST_CASE("copy_assignment_diff_allocator", "[knot]") {
   // test copying data from a different allocator
   knot_t knot{2, 2, 0, alloc};
-  BOOST_CHECK(knot.get_allocator() == alloc);
+  REQUIRE(knot.get_allocator() == alloc);
 
-  aligator::polymorphic_allocator default_alloc{};
   knot_t knot2{4, 2, 1, default_alloc};
   knot = knot2;
-  BOOST_CHECK(knot.get_allocator() == alloc);
-  BOOST_CHECK(knot.nx == 4);
-  BOOST_CHECK(knot.nu == 2);
-  BOOST_CHECK(knot.nc == 1);
+  REQUIRE(knot.get_allocator() == alloc);
+  REQUIRE(knot.nx == 4);
+  REQUIRE(knot.nu == 2);
+  REQUIRE(knot.nc == 1);
 
-  BOOST_CHECK(knot.q.rows() == 4);
-  BOOST_CHECK(knot.r.rows() == 2);
-  BOOST_CHECK(knot.d.rows() == 1);
+  REQUIRE(knot.q.rows() == 4);
+  REQUIRE(knot.r.rows() == 2);
+  REQUIRE(knot.d.rows() == 1);
 }
 
-BOOST_AUTO_TEST_CASE(move_assignment_diff_allocator) {
+TEST_CASE("move_assignment_diff_allocator", "[knot]") {
   // test copying data from a different allocator
   knot_t knot{2, 2, 0, alloc};
-  BOOST_CHECK(knot.get_allocator() == alloc);
+  REQUIRE(knot.get_allocator() == alloc);
 
-  aligator::polymorphic_allocator default_alloc{};
-  knot = generate_knot(2, 2, 0, default_alloc);
-  BOOST_CHECK(knot.get_allocator() == alloc);
+  SECTION("move assignment (same dims)") {
+    knot = generateKnot({2, 2, 1}, default_alloc);
+    REQUIRE(knot.get_allocator() == alloc);
+    REQUIRE(knot.nx == 2);
+    REQUIRE(knot.nu == 2);
+    REQUIRE(knot.nc == 1);
+  }
 
-  // different dimensions: force reallocation
-  knot = generate_knot(4, 1, 0, default_alloc);
-  BOOST_CHECK(knot.get_allocator() == alloc);
-  BOOST_CHECK(knot.nx == 4);
-  BOOST_CHECK(knot.nu == 1);
+  SECTION("move assignment (different dims, no realloc)") {
+    knot = generateKnot({4, 1, 0}, default_alloc);
+    REQUIRE(knot.get_allocator() == alloc);
+    REQUIRE(knot.nx == 4);
+    REQUIRE(knot.nu == 1);
+  }
+
+  SECTION("move assignment (larger dims, realloc)") {
+    knot = generateKnot({4, 2, 2}, default_alloc);
+    REQUIRE(knot.get_allocator() == alloc);
+    REQUIRE(knot.nx == 4);
+    REQUIRE(knot.nu == 2);
+    REQUIRE(knot.nc == 2);
+  }
 }
 
-BOOST_AUTO_TEST_SUITE(knot_vec)
-
-BOOST_AUTO_TEST_CASE(basic) {
+TEST_CASE("knot_vec_basic", "[knot_vec]") {
   uint nx = 4;
   uint nu = 2;
-  std::vector<knot_t> v;
+  std::pmr::vector<knot_t> v{alloc};
   v.reserve(10);
-  for (int i = 0; i < 10; i++) {
-    v.push_back(generate_knot(nx, nu, 0));
+  for (size_t i = 0; i < 10; i++) {
+    v.push_back(generateKnot({nx, nu}));
+    fmt::println("v [{:d}].q = {}", i, v[i].q.transpose());
   }
 
-  for (size_t i = 0; i < 10; i++) {
-    fmt::println("v [{:d}].q = {}", i, v[i].q.to_map().transpose());
+  SECTION("move ctor") {
+    std::pmr::vector<knot_t> vm{std::move(v)};
+    REQUIRE(vm.get_allocator() == alloc);
+    for (const auto &knot : vm)
+      REQUIRE(knot.get_allocator() == alloc);
   }
 
-  std::vector<knot_t> vm = std::move(v);
-  for (size_t i = 0; i < 10; i++) {
-    fmt::println("v2[{:d}].q = {}", i, vm[i].q.to_map().transpose());
+  SECTION("move assignment") {
+    std::pmr::vector<knot_t> vm = std::move(v);
+    REQUIRE(vm.get_allocator() == alloc);
+    for (size_t i = 0; i < 10; i++) {
+      fmt::println("v2[{:d}].q = {}", i, vm[i].q.transpose());
+    }
   }
 
-  std::vector<knot_t> vc{vm};
-  for (size_t i = 0; i < 10; i++) {
-    fmt::println("vc[{:d}].q = {}", i, vc[i].q.to_map().transpose());
-    BOOST_CHECK_EQUAL(vm[i], vc[i]);
+  SECTION("copy ctor") {
+    std::pmr::vector<knot_t> vc{v};
+    REQUIRE(vc.get_allocator() == default_alloc);
+    for (size_t i = 0; i < 10; i++) {
+      fmt::println("vc[{:d}].q = {}", i, vc[i].q.transpose());
+      REQUIRE(v[i] == vc[i]);
+    }
+  }
+
+  SECTION("copy ctor (extended)") {
+    std::pmr::vector<knot_t> vc{v, alloc};
+    REQUIRE(vc.get_allocator() == alloc);
+    for (size_t i = 0; i < 10; i++) {
+      fmt::println("vc[{:d}].q = {}", i, vc[i].q.transpose());
+      REQUIRE(v[i] == vc[i]);
+    }
   }
 }
 
-BOOST_AUTO_TEST_CASE(emplace) {
-  uint nx = 5;
-  uint nu = 2;
-  uint nc = 1;
+TEST_CASE("knot_vec_emplace", "[knot_vec]") {
+  const uint nx = 5;
+  const uint nu = 2;
+  const uint nc = 1;
   std::pmr::vector<knot_t> vpmr{alloc};
-  BOOST_CHECK(vpmr.get_allocator() == alloc);
-  BOOST_CHECK(vpmr.get_allocator().resource() == &rs);
+  REQUIRE(vpmr.get_allocator() == alloc);
 
   for (size_t i = 0; i < 20; i++) {
     auto &knot = vpmr.emplace_back(nx, nu, nc);
-    BOOST_CHECK_EQUAL(knot.nx, nx);
-    BOOST_CHECK_EQUAL(knot.nu, nu);
-    BOOST_CHECK_EQUAL(knot.nc, nc);
-    BOOST_CHECK_EQUAL(knot.nx2, nx);
-    BOOST_CHECK(knot.get_allocator() == alloc);
+    REQUIRE(knot.nx == nx);
+    REQUIRE(knot.nu == nu);
+    REQUIRE(knot.nc == nc);
+    REQUIRE(knot.nx2 == nx);
+    REQUIRE(knot.get_allocator() == alloc);
   }
 
-  BOOST_CHECK_EQUAL(vpmr.size(), 20);
+  REQUIRE(vpmr.size() == 20);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_CASE(problem) {
-  BOOST_TEST_MESSAGE("problem");
+TEST_CASE("problem", "[problem]") {
+  INFO("problem");
   uint nx = 4;
   uint nu = 2;
   std::pmr::vector<knot_t> v{alloc};
   v.reserve(10);
   for (int i = 0; i < 10; i++) {
-    v.push_back(generate_knot(nx, nu, 0));
+    v.push_back(generateKnot({nx, nu}));
   }
   problem_t prob{v, nx, alloc};
-  BOOST_CHECK(prob.get_allocator() == alloc);
-  BOOST_CHECK(prob.G0.cols() == prob.stages[0].nx);
+  REQUIRE(prob.get_allocator() == alloc);
+  REQUIRE(prob.G0.cols() == prob.stages[0].nx);
 
-  problem_t prob_move{std::move(prob)};
+  SECTION("move ctor") {
+    problem_t prob2{std::move(prob)};
+    REQUIRE(prob2.get_allocator() == alloc);
 
-  prob_move.addParameterization(1);
-  for (size_t i = 0; i < 10; i++) {
-    BOOST_CHECK_EQUAL(prob_move.stages[i].nth, 1);
+    prob2.addParameterization(1);
+    for (auto &stage : prob2.stages)
+      REQUIRE(stage.nth == 1);
+  }
+
+  SECTION("move ctor (extended)") {
+    problem_t prob2{std::move(prob), default_alloc};
+    REQUIRE(prob2.get_allocator() == default_alloc);
+
+    prob2.addParameterization(2);
+    for (auto &stage : prob2.stages)
+      REQUIRE(stage.nth == 2);
   }
 }

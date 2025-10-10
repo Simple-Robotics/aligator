@@ -6,7 +6,7 @@
 namespace aligator::gar {
 
 template <typename Scalar>
-LqrKnotTpl<Scalar>::LqrKnotTpl(no_alloc_t, allocator_type alloc)
+LqrKnotTpl<Scalar>::LqrKnotTpl(const allocator_type &alloc)
     : Q(alloc)
     , S(alloc)
     , R(alloc)
@@ -14,7 +14,6 @@ LqrKnotTpl<Scalar>::LqrKnotTpl(no_alloc_t, allocator_type alloc)
     , r(alloc)
     , A(alloc)
     , B(alloc)
-    , E(alloc)
     , f(alloc)
     , C(alloc)
     , D(alloc)
@@ -34,15 +33,13 @@ LqrKnotTpl<Scalar>::LqrKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth,
     , nc(nc)
     , nx2(nx2)
     , nth(nth)
-    , //
-    Q(nx, nx, alloc)
+    , Q(nx, nx, alloc)
     , S(nx, nu, alloc)
     , R(nu, nu, alloc)
     , q(nx, alloc)
     , r(nu, alloc)
     , A(nx2, nx, alloc)
     , B(nx2, nu, alloc)
-    , E(nx2, nx2, alloc)
     , f(nx2, alloc)
     , C(nc, nx, alloc)
     , D(nc, nu, alloc)
@@ -61,7 +58,6 @@ LqrKnotTpl<Scalar>::LqrKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth,
 
   A.setZero();
   B.setZero();
-  E.setZero();
   f.setZero();
 
   C.setZero();
@@ -74,8 +70,6 @@ LqrKnotTpl<Scalar>::LqrKnotTpl(uint nx, uint nu, uint nc, uint nx2, uint nth,
   Gv.setZero();
   gamma.setZero();
 }
-
-template <typename Scalar> LqrKnotTpl<Scalar>::~LqrKnotTpl() {}
 
 template <typename Scalar>
 void LqrKnotTpl<Scalar>::assign(const LqrKnotTpl &other) {
@@ -93,7 +87,6 @@ void LqrKnotTpl<Scalar>::assign(const LqrKnotTpl &other) {
 
   this->A = other.A;
   this->B = other.B;
-  this->E = other.E;
   this->f = other.f;
 
   this->C = other.C;
@@ -122,7 +115,6 @@ LqrKnotTpl<Scalar>::LqrKnotTpl(const LqrKnotTpl &other, allocator_type alloc)
     , _c(r)
     , _c(A)
     , _c(B)
-    , _c(E)
     , _c(f)
     , _c(C)
     , _c(D)
@@ -132,12 +124,12 @@ LqrKnotTpl<Scalar>::LqrKnotTpl(const LqrKnotTpl &other, allocator_type alloc)
     , _c(Gu)
     , _c(Gv)
     , _c(gamma)
-    , m_allocator(other.m_allocator) {}
+    , m_allocator(alloc) {}
 #undef _c
 
 #define _c(name) name(std::move(other.name))
 template <typename Scalar>
-LqrKnotTpl<Scalar>::LqrKnotTpl(LqrKnotTpl &&other)
+LqrKnotTpl<Scalar>::LqrKnotTpl(LqrKnotTpl &&other) noexcept
     : nx(other.nx)
     , nu(other.nu)
     , nc(other.nc)
@@ -150,7 +142,6 @@ LqrKnotTpl<Scalar>::LqrKnotTpl(LqrKnotTpl &&other)
     , _c(r)
     , _c(A)
     , _c(B)
-    , _c(E)
     , _c(f)
     , _c(C)
     , _c(D)
@@ -161,6 +152,33 @@ LqrKnotTpl<Scalar>::LqrKnotTpl(LqrKnotTpl &&other)
     , _c(Gv)
     , _c(gamma)
     , m_allocator(other.m_allocator) {}
+#undef _c
+
+#define _c(name) name(std::move(other.name), alloc)
+template <typename Scalar>
+LqrKnotTpl<Scalar>::LqrKnotTpl(LqrKnotTpl &&other, const allocator_type &alloc)
+    : nx(other.nx)
+    , nu(other.nu)
+    , nc(other.nc)
+    , nx2(other.nx2)
+    , nth(other.nth)
+    , _c(Q)
+    , _c(S)
+    , _c(R)
+    , _c(q)
+    , _c(r)
+    , _c(A)
+    , _c(B)
+    , _c(f)
+    , _c(C)
+    , _c(D)
+    , _c(d)
+    , _c(Gth)
+    , _c(Gx)
+    , _c(Gu)
+    , _c(Gv)
+    , _c(gamma)
+    , m_allocator(alloc) {}
 #undef _c
 
 template <typename Scalar>
@@ -193,7 +211,6 @@ LqrKnotTpl<Scalar> &LqrKnotTpl<Scalar>::operator=(LqrKnotTpl &&other) {
 
     _c(A);
     _c(B);
-    _c(E);
     _c(f);
 
     _c(C);
@@ -232,7 +249,7 @@ bool LqrKnotTpl<Scalar>::isApprox(const LqrKnotTpl &other, Scalar prec) const {
     return false;
 
   if (!(A.isApprox(other.A, prec) && B.isApprox(other.B, prec) &&
-        E.isApprox(other.E, prec) && f.isApprox(other.f, prec)))
+        f.isApprox(other.f, prec)))
     return false;
 
   if (!(C.isApprox(other.C, prec) && D.isApprox(other.D, prec) &&
@@ -265,7 +282,6 @@ template <typename Scalar>
 Scalar LqrProblemTpl<Scalar>::evaluate(
     const VectorOfVectors &xs, const VectorOfVectors &us,
     const std::optional<ConstVectorRef> &theta_) const {
-  using const_view_t = typename LqrKnotTpl<Scalar>::const_view_t;
 
   if ((int)xs.size() != horizon() + 1)
     return 0.;
@@ -278,7 +294,7 @@ Scalar LqrProblemTpl<Scalar>::evaluate(
   Scalar ret = 0.;
   const auto N = uint(horizon());
   for (uint i = 0; i <= N; i++) {
-    const_view_t knot = stages[i].to_const_view();
+    const KnotType &knot = stages[i];
     ret += 0.5 * xs[i].dot(knot.Q * xs[i]) + xs[i].dot(knot.q);
     if (i == N)
       break;
@@ -289,7 +305,7 @@ Scalar LqrProblemTpl<Scalar>::evaluate(
   if (isParameterized() && theta_.has_value()) {
     ConstVectorRef th = theta_.value();
     for (uint i = 0; i <= N; i++) {
-      const_view_t knot = stages[i].to_const_view();
+      const KnotType &knot = stages[i];
       ret += 0.5 * th.dot(knot.Gth * th);
       ret += th.dot(knot.Gx.transpose() * xs[i]);
       ret += th.dot(knot.gamma);

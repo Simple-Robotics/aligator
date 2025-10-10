@@ -1,9 +1,9 @@
 /// @file    workspace.hpp
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
-#include "aligator/fwd.hpp"
-#include "solver-util.hpp"
+#include "aligator/context.hpp"
+#include "aligator/core/traj-opt-problem.hpp"
 #include "aligator/core/traj-opt-data.hpp"
 #include "aligator/utils/mpc-util.hpp"
 
@@ -76,8 +76,7 @@ template <typename Scalar> void WorkspaceBaseTpl<Scalar>::cycleLeft() {
   rotate_vec_left(dyn_slacks, 1);
 }
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "workspace-base.txx"
+extern template struct WorkspaceBaseTpl<context::Scalar>;
 #endif
+} // namespace aligator

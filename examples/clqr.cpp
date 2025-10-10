@@ -63,11 +63,12 @@ int main() {
   double ctrlUpperBound = 0.3;
   auto stage = StageModel(cost, dyn_model);
   {
-    auto box = BoxConstraint(-ctrlUpperBound * VectorXs::Ones(nu),
-                             ctrlUpperBound * VectorXs::Ones(nu));
     auto u0 = VectorXs::Zero(nu);
-    auto func = ControlErrorResidualTpl<double>(nx, u0);
-    stage.addConstraint(func, box);
+    ControlErrorResidualTpl<double> func(nx, u0);
+    stage.addConstraint(func, BoxConstraint{
+                                  -ctrlUpperBound * VectorXs::Ones(nu),
+                                  ctrlUpperBound * VectorXs::Ones(nu),
+                              });
   }
 
   std::vector<xyz::polymorphic<StageModel>> stages(nsteps, stage);
@@ -85,7 +86,7 @@ int main() {
   solver.max_iters = 10;
   solver.verbose_ = VERBOSE;
   solver.linear_solver_choice = LQSolverChoice::PARALLEL;
-  solver.force_initial_condition_ = false;
+  solver.force_initial_condition_ = true;
   solver.rollout_type_ = RolloutType::LINEAR;
   solver.setNumThreads(4);
 

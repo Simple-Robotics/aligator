@@ -3,7 +3,6 @@
 #include "aligator/core/function-abstract.hpp"
 
 namespace aligator {
-///
 /// @brief   A simple function \f$f(u) = [u_{\min} - u; u - u_{\max}]\f$.
 ///
 /// @note This function was initially meant to be used along with
@@ -13,9 +12,10 @@ namespace aligator {
 /// deprecated. It might be removed in the future. Use BoxContraintTpl to
 /// implement control bounds. See related note.
 template <typename _Scalar>
-struct [[deprecated("ControlBoxFunction should not be used. Instead, just use "
-                    "the identity function and a BoxConstraintTpl.")]]
-ControlBoxFunctionTpl : StageFunctionTpl<_Scalar> {
+struct ALIGATOR_DEPRECATED_MESSAGE(
+    "ControlBoxFunction should not be used. Instead, just use "
+    "the identity function and a BoxConstraintTpl.") ControlBoxFunctionTpl
+    : StageFunctionTpl<_Scalar> {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageFunctionTpl<Scalar>;

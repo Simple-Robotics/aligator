@@ -32,20 +32,20 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   using KnotType = gar::LqrKnotTpl<Scalar>;
   using ConstraintSetProduct = ConstraintSetProductTpl<Scalar>;
   using BlkJacobianType = BlkMatrix<MatrixXs, -1, 2>; // jacobians
-  using LqrProblemType = gar::LqrProblemTpl<Scalar>;
 
   using Base::dyn_slacks;
   using Base::nsteps;
   using Base::problem_data;
 
-  LqrProblemType lqr_problem; //< Linear-quadratic subproblem
+  using allocator_type = ::aligator::polymorphic_allocator;
+
+  gar::LqrProblemTpl<Scalar> lqr_problem; //< Linear-quadratic subproblem
 
   /// @name Lagrangian Gradients
   /// @{
   std::vector<VectorXs> Lxs; //< State gradients
   std::vector<VectorXs> Lus; //< Control gradients
   std::vector<VectorXs> Lvs; //< Path multiplier gradients
-  std::vector<VectorXs> Lds; //< Costate gradients
   /// @}
 
   /// @name Trial primal-dual step
@@ -56,18 +56,21 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   std::vector<VectorXs> trial_lams;
   /// @}
 
-  /// @name Lagrange multipliers.
+  /// @name Path constraint AL multipliers.
   /// @{
+  // used for linesearch
   std::vector<VectorXs> lams_plus;
-  std::vector<VectorXs> lams_pdal;
   std::vector<VectorXs> vs_plus;
   std::vector<VectorXs> vs_pdal;
   /// @}
 
   /// Shifted constraints the projection operators should be applied to.
   std::vector<VectorXs> shifted_constraints;
+  /// @name Right-hand sides (with projection) for primal-dual system
+  /// @{
   std::vector<VectorXs> cstr_lx_corr;
   std::vector<VectorXs> cstr_lu_corr;
+  /// @}
   /// Projected path constraint Jacobians (used to symmetrize the LQ subproblem)
   std::vector<BlkJacobianType> cstr_proj_jacs;
   /// Masks for active constraint sets
@@ -88,7 +91,6 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   std::vector<VectorXs> prev_xs;
   std::vector<VectorXs> prev_us;
   std::vector<VectorXs> prev_vs;
-  std::vector<VectorXs> prev_lams;
   /// @}
 
   /// Subproblem termination criterion for each stage.
@@ -104,9 +106,13 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   /// Overall subproblem termination criterion.
   Scalar inner_criterion = 0.;
 
-  explicit WorkspaceTpl()
+  WorkspaceTpl()
       : Base() {}
-  explicit WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem);
+  explicit WorkspaceTpl(const allocator_type &alloc)
+      : Base()
+      , lqr_problem(alloc) {}
+  explicit WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
+                        const allocator_type &alloc = {});
 
   WorkspaceTpl(const WorkspaceTpl &) = delete;
   WorkspaceTpl &operator=(const WorkspaceTpl &) = delete;
@@ -117,16 +123,16 @@ template <typename Scalar> struct WorkspaceTpl : WorkspaceBaseTpl<Scalar> {
   void cycleAppend(const TrajOptProblemTpl<Scalar> &problem,
                    shared_ptr<StageDataTpl<Scalar>> data);
 
-  template <typename T>
-  friend std::ostream &operator<<(std::ostream &oss,
-                                  const WorkspaceTpl<T> &self);
+  allocator_type get_allocator() const { return lqr_problem.get_allocator(); }
+
+  friend std::ostream &operator<<(std::ostream &oss, const WorkspaceTpl &self) {
+    return oss << fmt::format("{}", self);
+  }
 };
 
-template <typename Scalar>
-std::ostream &operator<<(std::ostream &oss, const WorkspaceTpl<Scalar> &self) {
-  return oss << fmt::format("{}", self);
-}
-
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct WorkspaceTpl<context::Scalar>;
+#endif
 } // namespace aligator
 
 template <typename Scalar>
@@ -143,10 +149,6 @@ struct fmt::formatter<aligator::WorkspaceTpl<Scalar>> {
                           "\n  nsteps:       \t{:d}"
                           "\n  n_multipliers:\t{:d}"
                           "\n}}",
-                          ws.nsteps, ws.lams_plus.size());
+                          ws.nsteps, ws.dlams.size());
   }
 };
-
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./workspace.txx"
-#endif

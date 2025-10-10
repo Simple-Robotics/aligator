@@ -6,7 +6,6 @@ from utils.solo import (
     rdata,
     q0,
     create_ground_contact_model,
-    manage_lights,
     add_plane,
     FOOT_FRAME_IDS,
 )
@@ -14,14 +13,13 @@ from utils.solo import (
 import numpy as np
 import matplotlib.pyplot as plt
 
-from utils import ArgsBase, get_endpoint_traj, IMAGEIO_KWARGS
+from utils import ArgsBase, get_endpoint_traj
 from aligator import manifolds, dynamics, constraints
 from aligator.utils.plotting import (
     plot_controls_traj,
     plot_velocity_traj,
     plot_convergence,
 )
-from pinocchio.visualize import MeshcatVisualizer
 
 
 class Args(ArgsBase):
@@ -217,22 +215,23 @@ def make_plots(res: aligator.Results):
 
 if __name__ == "__main__":
     if args.display:
-        vizer = MeshcatVisualizer(
+        from candlewick import Visualizer, VisualizerConfig
+
+        _config = VisualizerConfig()
+        _config.width = 1920
+        _config.height = 1080
+
+        vizer = Visualizer(
+            _config,
             rmodel,
-            collision_model=robot.collision_model,
-            visual_model=robot.visual_model,
-            data=rdata,
+            robot.visual_model,
         )
-        vizer.initViewer(
-            open=args.zmq_url is None, loadModel=True, zmq_url=args.zmq_url
-        )
-        # custom_color = np.asarray((53, 144, 243)) / 255.0
-        # vizer.setBackgroundColor(col_bot=list(custom_color), col_top=(1, 1, 1, 1))
-        manage_lights(vizer)
         vizer.display(q0)
+        for fid in FOOT_FRAME_IDS.values():
+            vizer.addFrameViz(fid)
         cam_pos = np.array((0.9, -0.3, 0.4))
         cam_pos *= 0.9 / np.linalg.norm(cam_pos)
-        cam_tar = (0.0, 0.0, 0.3)
+        cam_tar = np.array((0.0, 0.0, 0.3))
         vizer.setCameraPosition(cam_pos)
         vizer.setCameraTarget(cam_tar)
 
@@ -245,26 +244,18 @@ if __name__ == "__main__":
     xs = np.stack(res.xs)
     qs = xs[:, :nq]
     vs = xs[:, nq:]
+    qs = list(qs)
 
-    # FPS = min(30, 1.0 / dt)
-    FPS = 1.0 / dt
+    FPS = min(30, 1.0 / dt)
+    viz_dt = 1.0 / FPS
 
     if args.display:
-        import contextlib
-
-        def callback(i: int):
-            pin.forwardKinematics(rmodel, rdata, qs[i], vs[i])
-            for fid in FOOT_FRAME_IDS.values():
-                vizer.drawFrameVelocities(fid)
+        import time
 
         input("[display]")
-        ctx = (
-            vizer.create_video_ctx("assets/solo_jump.mp4", fps=FPS, **IMAGEIO_KWARGS)
-            if args.record
-            else contextlib.nullcontext()
-        )
 
-        with ctx:
-            while True:
-                vizer.play(qs, dt, callback=callback)
-                input("[replay]")
+        while True:
+            for i in range(nsteps):
+                vizer.display(qs[i])
+                time.sleep(viz_dt)
+            input("[replay]")

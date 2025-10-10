@@ -21,33 +21,24 @@ bp::dict lqr_sol_initialize_wrap(const lqr_t &problem) {
   return out;
 }
 
-bp::tuple lqr_create_sparse_wrap(const lqr_t &problem, const Scalar mudyn,
-                                 const Scalar mueq, bool update) {
+bp::tuple lqr_create_sparse_wrap(const lqr_t &problem, const Scalar mueq,
+                                 bool update) {
   Eigen::SparseMatrix<Scalar> mat;
   VectorXs rhs;
-  lqrCreateSparseMatrix(problem, mudyn, mueq, mat, rhs, update);
+  lqrCreateSparseMatrix(problem, mueq, mat, rhs, update);
   mat.makeCompressed();
   return bp::make_tuple(mat, rhs);
 }
 
 void exposeGarUtils() {
-
-  bp::def(
-      "lqrDenseMatrix",
-      +[](const lqr_t &problem, Scalar mudyn, Scalar mueq) {
-        auto mat_rhs = lqrDenseMatrix(problem, mudyn, mueq);
-        return bp::make_tuple(std::get<0>(mat_rhs), std::get<1>(mat_rhs));
-      },
-      ("problem"_a, "mudyn", "mueq"));
-
   bp::def("lqrCreateSparseMatrix", lqr_create_sparse_wrap,
-          ("problem"_a, "mudyn", "mueq", "update"),
+          ("problem"_a, "mueq", "update"),
           "Create or update a sparse matrix from an LqrProblem.");
 
   bp::def("lqrInitializeSolution", lqr_sol_initialize_wrap, ("problem"_a));
 
   bp::def("lqrComputeKktError", lqrComputeKktError<Scalar>,
-          ("problem"_a, "xs", "us", "vs", "lbdas", "mudyn", "mueq", "theta",
+          ("problem"_a, "xs", "us", "vs", "lbdas", "mueq", "theta",
            "verbose"_a = false),
           "Compute the KKT residual of the LQR problem.");
 }

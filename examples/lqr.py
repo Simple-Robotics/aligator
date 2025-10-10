@@ -80,7 +80,7 @@ if args.term_cstr:
     problem.addTerminalConstraint(term_fun, constraints.EqualityConstraintSet())
 
 # Instantiate a solver separately
-mu_init = 1e-1 if args.bounds else 1e-4
+mu_init = 2e-3 if args.bounds else 1e-7
 verbose = aligator.VerboseLevel.VERBOSE
 tol = 1e-8
 solver = aligator.SolverProxDDP(tol, mu_init, verbose=verbose)
@@ -99,9 +99,11 @@ problem.evaluate(xs_i, us_i, prob_data)
 
 solver.setup(problem)
 solver.run(problem, xs_i, us_i)
-res = solver.results
-ws = solver.workspace
+res: aligator.Results = solver.results
+ws: aligator.Workspace = solver.workspace
 print(res)
+print(ws.state_dual_infeas.tolist())
+print(ws.control_dual_infeas.tolist())
 
 plt.subplot(121)
 fig1: plt.Figure = plt.gcf()

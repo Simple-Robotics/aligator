@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/python/fwd.hpp"
@@ -16,16 +16,16 @@ using context::DynamicsData;
 /// child virtual class (e.g. integrator classes).
 /// @tparam ExplicitBase The derived virtual class that is being exposed.
 /// @sa PyStageFunction
-template <class ExplicitBase = context::ExplicitDynamics>
+template <class Base = context::ExplicitDynamics>
 struct PyExplicitDynamics final
-    : ExplicitBase,
-      PolymorphicWrapper<PyExplicitDynamics<ExplicitBase>, ExplicitBase> {
+    : Base,
+      PolymorphicWrapper<PyExplicitDynamics<Base>, Base> {
   using Scalar = context::Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   // All functions in the interface take this type for output
   using Data = ExplicitDynamicsDataTpl<Scalar>;
 
-  using ExplicitBase::ExplicitBase;
+  using Base::Base;
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                Data &data) const {
@@ -37,14 +37,11 @@ struct PyExplicitDynamics final
     ALIGATOR_PYTHON_OVERRIDE_PURE(void, "dForward", x, u, boost::ref(data));
   }
 
-  shared_ptr<DynamicsData> createData() const {
-    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<DynamicsData>, ExplicitBase,
-                             createData, );
+  shared_ptr<Data> createData() const {
+    ALIGATOR_PYTHON_OVERRIDE(shared_ptr<Data>, Base, createData, );
   }
 
-  shared_ptr<DynamicsData> default_createData() const {
-    return ExplicitBase::createData();
-  }
+  shared_ptr<Data> default_createData() const { return Base::createData(); }
 };
 
 } // namespace python

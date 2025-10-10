@@ -22,7 +22,6 @@ ActionModelWrapperTpl<Scalar>::ActionModelWrapperTpl(
 template <typename Scalar>
 void ActionModelWrapperTpl<Scalar>::evaluate(const ConstVectorRef &x,
                                              const ConstVectorRef &u,
-                                             const ConstVectorRef &y,
                                              Data &data) const {
   ActionDataWrap &d = static_cast<ActionDataWrap &>(data);
   CrocActionModel &m = *action_model_;
@@ -32,13 +31,11 @@ void ActionModelWrapperTpl<Scalar>::evaluate(const ConstVectorRef &x,
   d.cost_data->value_ = d.croc_action_data->cost;
   DynDataWrap &dyn_data = *d.dynamics_data;
   dyn_data.xnext_ = d.croc_action_data->xnext;
-  this->xspace_next_->difference(y, dyn_data.xnext_, dyn_data.value_);
 }
 
 template <typename Scalar>
 void ActionModelWrapperTpl<Scalar>::computeFirstOrderDerivatives(
-    const ConstVectorRef &x, const ConstVectorRef &u, const ConstVectorRef &y,
-    Data &data) const {
+    const ConstVectorRef &x, const ConstVectorRef &u, Data &data) const {
   ActionDataWrap &d = static_cast<ActionDataWrap &>(data);
   CrocActionModel &m = *action_model_;
   m.calcDiff(d.croc_action_data, x, u);
@@ -52,9 +49,8 @@ void ActionModelWrapperTpl<Scalar>::computeFirstOrderDerivatives(
 
   /* handle dynamics */
   DynDataWrap &dyn_data = *d.dynamics_data;
-  dyn_data.Jx_ = d.croc_action_data->Fx;
-  dyn_data.Ju_ = d.croc_action_data->Fu;
-  this->xspace_next_->Jdifference(y, dyn_data.xnext_, dyn_data.Jy_, 0);
+  dyn_data.Jx() = d.croc_action_data->Fx;
+  dyn_data.Ju() = d.croc_action_data->Fu;
 }
 
 template <typename Scalar>

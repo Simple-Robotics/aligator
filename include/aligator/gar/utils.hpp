@@ -1,8 +1,8 @@
-/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, 2023-2025 INRIA
 #pragma once
 
 #include "lqr-problem.hpp"
-#include "aligator/third-party/boost/core/span.hpp"
+#include <boost/core/span.hpp>
 #include <Eigen/SparseCore>
 
 namespace aligator::gar {
@@ -44,28 +44,20 @@ void sparseAssignDiagonal(Eigen::Index i0, Eigen::Index i1, Scalar value,
 
 template <typename Scalar>
 void lqrCreateSparseMatrix(const LqrProblemTpl<Scalar> &problem,
-                           const Scalar mudyn, const Scalar mueq,
-                           Eigen::SparseMatrix<Scalar> &mat,
+                           const Scalar mueq, Eigen::SparseMatrix<Scalar> &mat,
                            Eigen::Matrix<Scalar, -1, 1> &rhs, bool update);
 
 template <typename Scalar>
-std::array<Scalar, 3> lqrComputeKktError(
+[[nodiscard]] std::array<Scalar, 3> lqrComputeKktError(
     const LqrProblemTpl<Scalar> &problem,
     boost::span<const typename math_types<Scalar>::VectorXs> xs,
     boost::span<const typename math_types<Scalar>::VectorXs> us,
     boost::span<const typename math_types<Scalar>::VectorXs> vs,
     boost::span<const typename math_types<Scalar>::VectorXs> lbdas,
-    const Scalar mudyn, const Scalar mueq,
-    const std::optional<typename math_types<Scalar>::ConstVectorRef> &theta_,
+    const Scalar mueq,
+    const std::optional<typename math_types<Scalar>::ConstVectorRef> &theta =
+        std::nullopt,
     bool verbose = false);
-
-/// @brief Fill in a KKT constraint matrix and vector for the given LQ problem
-/// with the given dual-regularization parameters @p mudyn and @p mueq.
-/// @returns Whether the matrices were successfully allocated.
-template <typename Scalar>
-bool lqrDenseMatrix(const LqrProblemTpl<Scalar> &problem, Scalar mudyn,
-                    Scalar mueq, typename math_types<Scalar>::MatrixXs &mat,
-                    typename math_types<Scalar>::VectorXs &rhs);
 
 /// @brief Compute the number of rows in the problem matrix.
 template <typename Scalar>
@@ -81,25 +73,6 @@ uint lqrNumRows(const LqrProblemTpl<Scalar> &problem) {
       nrows += model.nx;
   }
   return nrows;
-}
-
-/// @copybrief lqrDenseMatrix()
-template <typename Scalar>
-auto lqrDenseMatrix(const LqrProblemTpl<Scalar> &problem, Scalar mudyn,
-                    Scalar mueq) {
-
-  decltype(auto) knots = problem.stages;
-  using MatrixXs = typename math_types<Scalar>::MatrixXs;
-  using VectorXs = typename math_types<Scalar>::VectorXs;
-  const uint nrows = lqrNumRows(problem);
-
-  MatrixXs mat(nrows, nrows);
-  VectorXs rhs(nrows);
-
-  if (!lqrDenseMatrix(problem, mudyn, mueq, mat, rhs)) {
-    fmt::print("{:s} WARNING! Problem was not initialized.", __FUNCTION__);
-  }
-  return std::make_pair(mat, rhs);
 }
 
 /// @brief Convert dense RHS solution to its trajectory [x,u,v,lambda] solution.
@@ -137,7 +110,7 @@ void lqrDenseSolutionToTraj(
 }
 
 template <typename Scalar>
-auto lqrInitializeSolution(const LqrProblemTpl<Scalar> &problem) {
+[[nodiscard]] auto lqrInitializeSolution(const LqrProblemTpl<Scalar> &problem) {
   using VectorXs = typename math_types<Scalar>::VectorXs;
   std::vector<VectorXs> xs;
   std::vector<VectorXs> us;
@@ -169,19 +142,16 @@ auto lqrInitializeSolution(const LqrProblemTpl<Scalar> &problem) {
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 extern template void lqrCreateSparseMatrix<context::Scalar>(
-    const LqrProblemTpl<context::Scalar> &problem, const context::Scalar mudyn,
-    const context::Scalar mueq, Eigen::SparseMatrix<context::Scalar> &mat,
-    context::VectorXs &rhs, bool update);
+    const LqrProblemTpl<context::Scalar> &problem, const context::Scalar mueq,
+    Eigen::SparseMatrix<context::Scalar> &mat, context::VectorXs &rhs,
+    bool update);
 extern template std::array<context::Scalar, 3>
 lqrComputeKktError<context::Scalar>(
     const LqrProblemTpl<context::Scalar> &,
     boost::span<const context::VectorXs>, boost::span<const context::VectorXs>,
     boost::span<const context::VectorXs>, boost::span<const context::VectorXs>,
-    const context::Scalar, const context::Scalar,
-    const std::optional<context::ConstVectorRef> &, bool);
-extern template auto
-lqrDenseMatrix<context::Scalar>(const LqrProblemTpl<context::Scalar> &,
-                                context::Scalar, context::Scalar);
+    const context::Scalar, const std::optional<context::ConstVectorRef> &,
+    bool);
 #endif
 
 } // namespace aligator::gar

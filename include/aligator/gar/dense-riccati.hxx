@@ -44,8 +44,7 @@ RiccatiSolverDense<Scalar>::RiccatiSolverDense(
 }
 
 template <typename Scalar>
-bool RiccatiSolverDense<Scalar>::backward(const Scalar mudyn,
-                                          const Scalar mueq) {
+bool RiccatiSolverDense<Scalar>::backward(const Scalar mueq) {
   ALIGATOR_TRACY_ZONE_SCOPED;
   const auto &stages = problem_->stages;
 
@@ -58,8 +57,7 @@ bool RiccatiSolverDense<Scalar>::backward(const Scalar mudyn,
     typename Kernel::value vn{Pxx[i + 1], Pxt[i + 1], Ptt[i + 1], px[i + 1],
                               pt[i + 1]};
     Kernel::stageKernelSolve(stages[i], stage_factors[i],
-                             {Pxx[i], Pxt[i], Ptt[i], px[i], pt[i]}, &vn, mudyn,
-                             mueq);
+                             {Pxx[i], Pxt[i], Ptt[i], px[i], pt[i]}, &vn, mueq);
 
     if (i == 0)
       break;
@@ -67,13 +65,13 @@ bool RiccatiSolverDense<Scalar>::backward(const Scalar mudyn,
   }
 
   // initial stage
-  Eigen::Map G0 = problem_->G0.to_const_map();
-  Eigen::Map g0 = problem_->g0.to_const_map();
+  Eigen::Map G0 = problem_->G0;
+  Eigen::Map g0 = problem_->g0;
   kkt0.mat.setZero();
   kkt0.mat(0, 0) = Pxx[0];
   kkt0.mat(0, 1) = G0.transpose();
   kkt0.mat(1, 0) = G0;
-  kkt0.mat(1, 1).diagonal().array() = -mudyn;
+  kkt0.mat(1, 1).setZero();
   kkt0.ldl.compute(kkt0.mat.matrix());
 
   kkt0.ff[0] = -px[0];

@@ -6,7 +6,7 @@
 import pinocchio as pin
 import numpy as np
 import aligator
-import hppfcl as fcl
+import coal
 import matplotlib.pyplot as plt
 
 from pathlib import Path
@@ -42,7 +42,7 @@ def create_pendulum(N, sincos=False):
 
     parent_id = 0
     base_radius = 0.2
-    shape_base = fcl.Sphere(base_radius)
+    shape_base = coal.Sphere(base_radius)
     geom_base = pin.GeometryObject("base", 0, pin.SE3.Identity(), shape_base)
     geom_base.meshColor = np.array([1.0, 0.1, 0.1, 1.0])
     geom_model.addGeometryObject(geom_base)
@@ -66,13 +66,13 @@ def create_pendulum(N, sincos=False):
         model.appendBodyToJoint(joint_id, body_inertia, body_placement)
 
         geom1_name = "ball_" + str(k + 1)
-        shape1 = fcl.Sphere(body_radius)
+        shape1 = coal.Sphere(body_radius)
         geom1_obj = pin.GeometryObject(geom1_name, joint_id, body_placement, shape1)
         geom1_obj.meshColor = np.ones((4))
         geom_model.addGeometryObject(geom1_obj)
 
         geom2_name = "bar_" + str(k + 1)
-        shape2 = fcl.Cylinder(body_radius / 4.0, body_placement.translation[2])
+        shape2 = coal.Cylinder(body_radius / 4.0, body_placement.translation[2])
         shape2_placement = body_placement.copy()
         shape2_placement.translation[2] /= 2.0
 
@@ -230,7 +230,7 @@ plt.savefig(ASSET_DIR / "pendulum_controls{}.png".format(TAG))
 plt.savefig(ASSET_DIR / "pendulum_controls{}.pdf".format(TAG))
 
 if True:
-    from proxsuite_nlp.utils import plot_pd_errs
+    from aligator.utils.plotting import plot_pd_errs
 
     prim_errs = callback.prim_infeas
     dual_errs = callback.dual_infeas
@@ -269,10 +269,10 @@ def get_ctx(vizer):
 
 
 if args.display:
-    import hppfcl
+    import coal
 
     vis_model = geom_model.clone()
-    sp_obj = pin.GeometryObject("objective", 0, frame_place_target, hppfcl.Sphere(0.05))
+    sp_obj = pin.GeometryObject("objective", 0, frame_place_target, coal.Sphere(0.05))
     vis_model.addGeometryObject(sp_obj)
     vizer = MeshcatVisualizer(model, geom_model, geom_model)
     vizer.initViewer(open=args.display, loadModel=True)

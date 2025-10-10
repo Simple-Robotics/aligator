@@ -52,16 +52,38 @@
 
 namespace aligator {
 
-template <typename T>
-inline constexpr bool is_eigen_dense_type =
-    std::is_base_of_v<Eigen::DenseBase<T>, T>;
+/// This type class recognises whether
+/// @tparam Base Base template (CRTP) class
+/// @tparam Derived Derived class, does not need to derive from `Base<Derived>`
+/// for this type trait to evaluate to true.
+template <template <class> class Base, typename Derived> struct is_tpl_base_of {
+  static constexpr std::false_type f(const void *);
+  template <typename OtherDerived>
+  static constexpr std::true_type f(const Base<OtherDerived> *);
+  static constexpr bool value =
+      decltype(f(std::declval<std::remove_reference_t<Derived> *>()))::value;
+};
+
+template <template <class> class Base, typename Derived>
+inline constexpr bool is_tpl_base_of_v = is_tpl_base_of<Base, Derived>::value;
 
 template <typename T>
-inline constexpr bool is_eigen_matrix_type =
-    std::is_base_of_v<Eigen::MatrixBase<T>, T>;
+struct is_eigen : std::bool_constant<is_tpl_base_of_v<Eigen::EigenBase, T>> {};
+
+template <typename T> inline constexpr bool is_eigen_v = is_eigen<T>::value;
+
+template <typename T>
+using enable_if_eigen_t = std::enable_if_t<is_eigen_v<std::decay_t<T>>>;
+
+template <typename T>
+inline constexpr bool is_eigen_dense_v = is_tpl_base_of_v<Eigen::DenseBase, T>;
 
 template <typename T, typename T2 = void>
-using enable_if_eigen_dense = std::enable_if_t<is_eigen_dense_type<T>, T2>;
+using enable_if_eigen_dense_t = std::enable_if_t<is_eigen_dense_v<T>, T2>;
+
+template <typename T>
+inline constexpr bool is_eigen_matrix_v =
+    is_tpl_base_of_v<Eigen::MatrixBase, T>;
 
 #ifdef ALIGATOR_EIGEN_CHECK_MALLOC
 namespace internal {
@@ -198,9 +220,11 @@ template <typename T> void setZero(std::vector<T> &mats) {
 }
 
 /// @brief Compute zi = xi + alpha * yi for all i
-template <typename A, typename B, typename OutType, typename Scalar>
-void vectorMultiplyAdd(const std::vector<A> &a, const std::vector<B> &b,
-                       std::vector<OutType> &c, const Scalar alpha) {
+template <typename TA, typename AA, typename TB, typename BA, typename OutType,
+          typename AOut, typename Scalar>
+void vectorMultiplyAdd(const std::vector<TA, AA> &a,
+                       const std::vector<TB, BA> &b,
+                       std::vector<OutType, AOut> &c, const Scalar alpha) {
   assert(a.size() == b.size());
   assert(a.size() == c.size());
   const std::size_t N = a.size();

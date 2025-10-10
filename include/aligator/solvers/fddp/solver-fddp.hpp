@@ -36,7 +36,7 @@ template <typename Scalar> struct SolverFDDPTpl {
   using VParams = ValueFunctionTpl<Scalar>;
   using QParams = QFunctionTpl<Scalar>;
   using CostData = CostDataAbstractTpl<Scalar>;
-  using ExpModel = ExplicitDynamicsModelTpl<Scalar>;
+  using DynamicsModel = ExplicitDynamicsModelTpl<Scalar>;
   using ExplicitDynamicsData = ExplicitDynamicsDataTpl<Scalar>;
   using CallbackPtr = shared_ptr<CallbackBaseTpl<Scalar>>;
   using CallbackMap = boost::unordered_map<std::string, CallbackPtr>;
@@ -183,17 +183,14 @@ public:
   /// @brief    Remove all callbacks from the instance.
   void clearCallbacks() { callbacks_.clear(); }
 
-  void invokeCallbacks(Workspace &workspace, Results &results) {
+  void invokeCallbacks() {
     for (const auto &cb : callbacks_) {
-      cb.second->call(workspace, results);
+      cb.second->call(workspace_, results_);
     }
   }
 
   bool run(const Problem &problem, const std::vector<VectorXs> &xs_init = {},
            const std::vector<VectorXs> &us_init = {});
-
-  static const ExplicitDynamicsData &
-  stage_get_dynamics_data(const StageDataTpl<Scalar> &data);
 };
 
 } // namespace aligator

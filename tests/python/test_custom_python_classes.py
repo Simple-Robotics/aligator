@@ -84,7 +84,7 @@ def test_custom_controlbox():
     stage = aligator.StageModel(cost, dynamics)
     stage.addConstraint(fun, aligator.constraints.EqualityConstraintSet())
     data = stage.createData()
-    stage.evaluate(x0, u0, x0, data)
+    stage.evaluate(x0, u0, data)
 
     stages = [stage, stage, stage]
     prob = aligator.TrajOptProblem(x0, stages, cost)

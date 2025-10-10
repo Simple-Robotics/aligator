@@ -87,7 +87,8 @@ void exposeConstraintSets() {
 
   exposeSpecificConstraintSet<ConstraintSetProduct>(
       "ConstraintSetProduct", "Cartesian product of constraint sets.")
-      .def(bp::init<std::vector<PolySet>, std::vector<Eigen::Index>>(
+      .def(bp::init<const std::vector<PolySet> &,
+                    const std::vector<Eigen::Index> &>(
           ("self"_a, "components", "blockSizes")))
       .add_property("components",
                     bp::make_function(&ConstraintSetProduct::components,

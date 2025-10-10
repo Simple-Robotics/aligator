@@ -1,22 +1,20 @@
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022 LAAS-CNRS, 2022-2025 INRIA
 #include "aligator/compat/crocoddyl/action-model-wrap.hpp"
 #include "aligator/compat/crocoddyl/context.hpp"
 
 #include <crocoddyl/core/states/euclidean.hpp>
 #include <crocoddyl/core/actions/lqr.hpp>
 
-#include <boost/test/unit_test.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include <aligator/fmt-eigen.hpp>
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 
-BOOST_AUTO_TEST_SUITE(croc_action_model)
-
 using namespace aligator;
 namespace pcroc = aligator::compat::croc;
 
-BOOST_AUTO_TEST_CASE(lqr) {
+TEST_CASE("lqr") {
   using crocoddyl::ActionModelLQR;
   using pcroc::context::ActionDataWrapper;
   using pcroc::context::ActionModelWrapper;
@@ -45,21 +43,17 @@ BOOST_AUTO_TEST_CASE(lqr) {
   pcroc::context::ActionModelWrapper act_wrapper(lqr_model);
   auto act_wrap_data = act_wrapper.createData();
 
-  act_wrapper.evaluate(x0, u0, x0, *act_wrap_data);
-  act_wrapper.computeFirstOrderDerivatives(x0, u0, x0, *act_wrap_data);
+  act_wrapper.evaluate(x0, u0, *act_wrap_data);
+  act_wrapper.computeFirstOrderDerivatives(x0, u0, *act_wrap_data);
 
   auto cd = *act_wrap_data->cost_data;
   fmt::print("act cost_data\n");
   fmt::print("cost: {}\n", cd.value_);
   fmt::print("grad: {}\n", cd.grad_.transpose());
 
-  BOOST_TEST_CHECK(cd.value_ == lqr_data->cost);
-  BOOST_TEST_CHECK(cd.Lx_.isApprox(lqr_data->Lx));
-  BOOST_TEST_CHECK(cd.Lu_.isApprox(lqr_data->Lu));
-  BOOST_TEST_CHECK(cd.Lxx_.isApprox(lqr_data->Lxx));
-  BOOST_TEST_CHECK(cd.Luu_.isApprox(lqr_data->Luu));
-
-  act_wrapper.evaluate(x0, u0, x1, *act_wrap_data);
+  REQUIRE(cd.value_ == lqr_data->cost);
+  REQUIRE(cd.Lx_.isApprox(lqr_data->Lx));
+  REQUIRE(cd.Lu_.isApprox(lqr_data->Lu));
+  REQUIRE(cd.Lxx_.isApprox(lqr_data->Lxx));
+  REQUIRE(cd.Luu_.isApprox(lqr_data->Luu));
 }
-
-BOOST_AUTO_TEST_SUITE_END()

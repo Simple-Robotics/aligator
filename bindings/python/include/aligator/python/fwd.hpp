@@ -1,6 +1,5 @@
 #pragma once
 
-#include "aligator/fwd.hpp"
 #include "aligator/context.hpp"
 
 namespace boost {

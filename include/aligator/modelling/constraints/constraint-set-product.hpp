@@ -5,10 +5,12 @@
 #include "aligator/core/constraint-set.hpp"
 #include "aligator/third-party/polymorphic_cxx14.h"
 
+#include <boost/core/span.hpp>
+
 namespace aligator {
 template <typename Derived>
 auto blockMatrixGetRow(const Eigen::MatrixBase<Derived> &matrix,
-                       const std::vector<Eigen::Index> &rowBlockSizes,
+                       boost::span<const Eigen::Index> rowBlockSizes,
                        std::size_t rowIdx) {
   Eigen::Index startIdx = 0;
   for (std::size_t kk = 0; kk < rowIdx; kk++) {
@@ -20,7 +22,7 @@ auto blockMatrixGetRow(const Eigen::MatrixBase<Derived> &matrix,
 
 template <typename Derived>
 auto blockVectorGetRow(const Eigen::MatrixBase<Derived> &matrix,
-                       const std::vector<Eigen::Index> &blockSizes,
+                       boost::span<const Eigen::Index> blockSizes,
                        std::size_t blockIdx) {
   EIGEN_STATIC_ASSERT_VECTOR_ONLY(Derived);
   Eigen::Index startIdx = 0;
@@ -34,6 +36,7 @@ auto blockVectorGetRow(const Eigen::MatrixBase<Derived> &matrix,
 /// This class makes computing multipliers and Jacobian matrix projections more
 /// convenient.
 /// @warning This struct contains a non-owning vector of its component sets.
+/// @todo Switch to using our aligator::BlkMatrix template class.
 template <typename Scalar>
 struct ConstraintSetProductTpl : ConstraintSetTpl<Scalar> {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);

@@ -3,6 +3,40 @@ import numpy as np
 
 from aligator import HistoryCallback, Results
 
+_ROOT_10 = 10.0**0.5
+
+
+def plot_pd_errs(ax0, prim_errs, dual_errs):
+    import matplotlib.pyplot as plt
+
+    ax0: plt.Axes
+    prim_errs = np.asarray(prim_errs)
+    dual_errs = np.asarray(dual_errs)
+    ax0.plot(prim_errs, c="tab:blue")
+    ax0.set_xlabel("Iterations")
+    col2 = "tab:orange"
+    ax0.plot(dual_errs, c=col2)
+    ax0.spines["top"].set_visible(False)
+    ax0.spines["right"].set_color(col2)
+    ax0.yaxis.label.set_color(col2)
+    ax0.set_yscale("log")
+    ax0.legend(["Primal error $p$", "Dual error $d$"])
+    ax0.set_title("Solver primal-dual residuals")
+
+    # handle scaling
+    yhigh = ax0.get_ylim()[1]
+    if len(prim_errs) == 0 or len(dual_errs) == 0:
+        return
+    mach_eps = np.finfo(float).eps
+    dmask = dual_errs > 2 * mach_eps
+    pmask = prim_errs > 2 * mach_eps
+    ymin = np.finfo(float).max
+    if dmask.any():
+        ymin = np.min(dual_errs[dmask])
+    if pmask.any() and sum(prim_errs > 0) > 0:
+        ymin = min(np.min(prim_errs[pmask]), ymin)
+    ax0.set_ylim(ymin / _ROOT_10, yhigh)
+
 
 def plot_convergence(
     cb: HistoryCallback,
@@ -10,18 +44,18 @@ def plot_convergence(
     res: Results = None,
     *,
     show_al_iters=False,
+    target_tol: float = None,
     legend_kwargs={},
 ):
-    from proxsuite_nlp.utils import plot_pd_errs
-
     prim_infeas = cb.prim_infeas.tolist()
     dual_infeas = cb.dual_infeas.tolist()
     if res is not None:
         prim_infeas.append(res.primal_infeas)
         dual_infeas.append(res.dual_infeas)
     plot_pd_errs(ax, prim_infeas, dual_infeas)
+
     ax.grid(axis="y", which="major")
-    handles, labels = ax.get_legend_handles_labels()
+    _, labels = ax.get_legend_handles_labels()
     labels += [
         "Prim. err $p$",
         "Dual err $d$",
@@ -40,6 +74,9 @@ def plot_convergence(
             al_change_idx = itrange[:-1][al_change > 0]
 
             ax.vlines(al_change_idx, *ax.get_ylim(), colors="gray", lw=4.0, alpha=0.5)
+
+    if target_tol:
+        ax.axhline(target_tol, color="k", lw=1.2)
 
     ax.legend(labels=labels, **legend_kwargs)
     return labels

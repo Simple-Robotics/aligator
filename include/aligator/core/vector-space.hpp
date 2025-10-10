@@ -10,22 +10,23 @@ namespace aligator {
 
 /// @brief    Standard Euclidean vector space.
 template <typename _Scalar, int _Dim>
-struct VectorSpaceTpl : public ManifoldAbstractTpl<_Scalar> {
+struct VectorSpaceTpl : ManifoldAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
   static constexpr int Dim = _Dim;
   using Base = ManifoldAbstractTpl<Scalar>;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-
-  int dim_;
+  using Base::ndx;
+  using Base::nx;
 
   /// @brief    Default constructor where the dimension is supplied.
-  VectorSpaceTpl(const int dim)
-      : Base()
-      , dim_(dim) {
+  explicit VectorSpaceTpl(const int dim)
+      : Base(dim, dim) {
     static_assert(
         Dim == Eigen::Dynamic,
         "This constructor is only valid if the dimension is dynamic.");
   }
+
+  int dim() const { return this->nx_; }
 
   /// @brief    Default constructor without arguments.
   ///
@@ -33,18 +34,13 @@ struct VectorSpaceTpl : public ManifoldAbstractTpl<_Scalar> {
   /// compile time.
   template <int N = Dim,
             typename = typename std::enable_if_t<N != Eigen::Dynamic>>
-  VectorSpaceTpl()
-      : Base()
-      , dim_(Dim) {}
-
-  inline int nx() const { return dim_; }
-  inline int ndx() const { return dim_; }
+  explicit VectorSpaceTpl()
+      : Base(Dim, Dim) {}
 
   /// Build from VectorSpaceTpl of different dimension
   template <int OtherDim>
   VectorSpaceTpl(const VectorSpaceTpl<Scalar, OtherDim> &other)
-      : Base()
-      , dim_(other.dim_) {
+      : Base(other.nx_, other.nx_) {
     static_assert((Dim == OtherDim) || (Dim == Eigen::Dynamic));
   }
 

@@ -5,7 +5,7 @@ Inspired by: https://github.com/loco-3d/crocoddyl/blob/master/examples/quadrotor
 """
 
 import pinocchio as pin
-import hppfcl as fcl
+import coal
 import example_robot_data as erd
 
 import numpy as np
@@ -111,7 +111,7 @@ def main(args: Args):
 
     if args.obstacles:  # we add the obstacles to the geometric model
         cyl_radius = 0.22
-        cylinder = fcl.Cylinder(cyl_radius, 10.0)
+        cylinder = coal.Cylinder(cyl_radius, 10.0)
         center_column1 = np.array([-0.45, 1.2, 0.0])
         center_column2 = np.array([0.4, 2.4, 0.0])
 
@@ -133,7 +133,7 @@ def main(args: Args):
     if args.display:
         # 1st arg is the plane normal
         # 2nd arg is offset from origin
-        plane = fcl.Plane(np.array([0.0, 0.0, 1.0]), 0.0)
+        plane = coal.Plane(np.array([0.0, 0.0, 1.0]), 0.0)
         plane_obj = pin.GeometryObject("plane", 0, plane, pin.SE3.Identity())
         plane_obj.meshColor[:] = [1.0, 1.0, 0.95, 1.0]
         plane_obj.meshScale[:] = 2.0
@@ -145,16 +145,16 @@ def main(args: Args):
         objective_color = np.array([5, 104, 143, 200]) / 255.0
         if args.obstacles:
             sp1_obj = pin.GeometryObject(
-                "obj1", 0, fcl.Sphere(0.05), pin.SE3(ROT_NULL, x_tar3[:3])
+                "obj1", 0, coal.Sphere(0.05), pin.SE3(ROT_NULL, x_tar3[:3])
             )
             sp1_obj.meshColor[:] = objective_color
             robot.visual_model.addGeometryObject(sp1_obj)
         else:
             sp1_obj = pin.GeometryObject(
-                "obj1", 0, fcl.Sphere(0.05), pin.SE3(ROT_NULL, x_tar1[:3])
+                "obj1", 0, coal.Sphere(0.05), pin.SE3(ROT_NULL, x_tar1[:3])
             )
             sp2_obj = pin.GeometryObject(
-                "obj2", 0, fcl.Sphere(0.05), pin.SE3(ROT_NULL, x_tar2[:3])
+                "obj2", 0, coal.Sphere(0.05), pin.SE3(ROT_NULL, x_tar2[:3])
             )
             sp1_obj.meshColor[:] = objective_color
             sp2_obj.meshColor[:] = objective_color

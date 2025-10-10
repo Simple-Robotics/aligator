@@ -60,7 +60,7 @@ def compute_quasistatic(model: pin.Model, data: pin.Data, x0, acc):
 
 
 def create_cartpole(N):
-    import hppfcl as fcl
+    import coal
 
     model = pin.Model()
     geom_model = pin.GeometryModel()
@@ -87,7 +87,7 @@ def create_cartpole(N):
         joint_id, body_inertia, body_placement
     )  # We need to rotate the inertia as it is expressed in the LOCAL frame of the geometry
 
-    shape_cart = fcl.Cylinder(cart_radius, cart_length)
+    shape_cart = coal.Cylinder(cart_radius, cart_length)
 
     geom_cart = pin.GeometryObject(
         "shape_cart", joint_id, shape_cart, geometry_placement
@@ -111,13 +111,13 @@ def create_cartpole(N):
         model.appendBodyToJoint(joint_id, body_inertia, body_placement)
 
         geom1_name = "ball_" + str(k + 1)
-        shape1 = fcl.Sphere(body_radius)
+        shape1 = coal.Sphere(body_radius)
         geom1_obj = pin.GeometryObject(geom1_name, joint_id, shape1, body_placement)
         geom1_obj.meshColor = np.ones((4))
         geom_model.addGeometryObject(geom1_obj)
 
         geom2_name = "bar_" + str(k + 1)
-        shape2 = fcl.Cylinder(body_radius / 4.0, body_placement.translation[2])
+        shape2 = coal.Cylinder(body_radius / 4.0, body_placement.translation[2])
         shape2_placement = body_placement.copy()
         shape2_placement.translation[2] /= 2.0
 
@@ -146,7 +146,7 @@ def create_cartpole(N):
 
 
 def make_npendulum(N, ub=True, lengths=None):
-    import hppfcl as fcl
+    import coal
 
     model = pin.Model()
     geom_model = pin.GeometryModel()
@@ -154,7 +154,7 @@ def make_npendulum(N, ub=True, lengths=None):
     parent_id = 0
 
     base_radius = 0.08
-    shape_base = fcl.Sphere(base_radius)
+    shape_base = coal.Sphere(base_radius)
     geom_base = pin.GeometryObject("base", 0, shape_base, pin.SE3.Identity())
     geom_base.meshColor = np.array([1.0, 0.1, 0.1, 1.0])
     geom_model.addGeometryObject(geom_base)
@@ -179,13 +179,13 @@ def make_npendulum(N, ub=True, lengths=None):
         model.appendBodyToJoint(joint_id, body_inertia, body_placement)
 
         geom1_name = "ball_" + str(k + 1)
-        shape1 = fcl.Sphere(body_radius)
+        shape1 = coal.Sphere(body_radius)
         geom1_obj = pin.GeometryObject(geom1_name, joint_id, shape1, body_placement)
         geom1_obj.meshColor = np.ones((4))
         geom_model.addGeometryObject(geom1_obj)
 
         geom2_name = "bar_" + str(k + 1)
-        shape2 = fcl.Cylinder(body_radius / 4, body_placement.translation[2])
+        shape2 = coal.Cylinder(body_radius / 4, body_placement.translation[2])
         shape2_placement = body_placement.copy()
         shape2_placement.translation[2] /= 2.0
 

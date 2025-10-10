@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, 2023-2O25 INRIA
 #pragma once
 
 #include "riccati-base.hpp"
@@ -14,19 +14,18 @@ public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS_WITH_ROW_TYPES(Scalar);
   using Base = RiccatiSolverBase<Scalar>;
-  using StageFactorVec = std::vector<StageFactor<Scalar>>;
-  StageFactorVec datas;
+  using allocator_type = ::aligator::polymorphic_allocator;
 
   using Kernel = ProximalRiccatiKernel<Scalar>;
   using StageFactorType = typename Kernel::StageFactorType;
-  using value_t = typename StageFactorType::value_t;
+  using CostToGo = typename StageFactorType::CostToGo;
   using kkt0_t = typename Kernel::kkt0_t;
   using KnotType = LqrKnotTpl<Scalar>;
 
   explicit ProximalRiccatiSolver(const LqrProblemTpl<Scalar> &problem);
 
   /// Backward sweep.
-  bool backward(const Scalar mudyn, const Scalar mueq);
+  bool backward(const Scalar mueq);
 
   bool forward(std::vector<VectorXs> &xs, std::vector<VectorXs> &us,
                std::vector<VectorXs> &vs, std::vector<VectorXs> &lbdas,
@@ -36,9 +35,12 @@ public:
   VectorRef getFeedforward(size_t i) { return datas[i].ff.matrix(); }
   RowMatrixRef getFeedback(size_t i) { return datas[i].fb.matrix(); }
 
-  kkt0_t kkt0;     //< initial stage KKT system
-  VectorXs thGrad; //< optimal value gradient wrt parameter
-  MatrixXs thHess; //< optimal value Hessian wrt parameter
+  allocator_type get_allocator() const { return problem_->get_allocator(); }
+
+  std::pmr::vector<StageFactor<Scalar>> datas;
+  kkt0_t kkt0;                  //< initial stage KKT system
+  ArenaMatrix<VectorXs> thGrad; //< optimal value gradient wrt parameter
+  ArenaMatrix<MatrixXs> thHess; //< optimal value Hessian wrt parameter
 
 protected:
   const LqrProblemTpl<Scalar> *problem_;

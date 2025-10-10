@@ -6,7 +6,7 @@
 
 #include "blk-matrix.hpp"
 #include "lqr-problem.hpp"
-#include "aligator/third-party/boost/core/span.hpp"
+#include <boost/core/span.hpp>
 
 namespace aligator::gar {
 
@@ -14,7 +14,7 @@ namespace aligator::gar {
 template <typename _Scalar> struct DenseKernel {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS_WITH_ROW_TYPES(Scalar);
-  using const_view_t = typename LqrKnotTpl<Scalar>::const_view_t;
+  using KnotType = LqrKnotTpl<Scalar>;
 
   struct Data {
     using BlkMat44 = BlkMatrix<MatrixXs, 4, 4>;
@@ -53,7 +53,7 @@ template <typename _Scalar> struct DenseKernel {
     VectorRef pt;
   };
 
-  inline static void terminalSolve(const_view_t knot, Data &d, value v,
+  inline static void terminalSolve(const KnotType &knot, Data &d, value v,
                                    Scalar mueq) {
     d.kktMat.setZero();
 
@@ -94,9 +94,8 @@ template <typename _Scalar> struct DenseKernel {
     v.pt.noalias() += knot.Gv.transpose() * zff;
   }
 
-  inline static void stageKernelSolve(const_view_t knot, Data &d, value v,
-                                      const value *vn, Scalar mudyn,
-                                      Scalar mueq) {
+  inline static void stageKernelSolve(const KnotType &knot, Data &d, value v,
+                                      const value *vn, Scalar mueq) {
     d.kktMat.setZero();
     d.kktMat(0, 0) = knot.R;
     d.kktMat(1, 0) = knot.D;
@@ -105,9 +104,9 @@ template <typename _Scalar> struct DenseKernel {
 
     d.kktMat(2, 0) = knot.B;
     d.kktMat(0, 2) = knot.B.transpose();
-    d.kktMat(2, 2).diagonal().setConstant(-mudyn);
-    d.kktMat(2, 3) = knot.E;
-    d.kktMat(3, 2) = knot.E.transpose();
+    // d.kktMat(2, 2).setZero();
+    d.kktMat(2, 3).setIdentity() *= -1;
+    d.kktMat(3, 2).setIdentity() *= -1;
     if (vn)
       d.kktMat(3, 3) = vn->Pxx;
 
@@ -171,7 +170,7 @@ template <typename _Scalar> struct DenseKernel {
       v.pt.noalias() += vn->Pxt.transpose() * yff;
   }
 
-  static bool forwardStep(size_t i, bool isTerminal, const_view_t knot,
+  static bool forwardStep(size_t i, bool isTerminal, const KnotType &knot,
                           const Data &d, boost::span<VectorXs> xs,
                           boost::span<VectorXs> us, boost::span<VectorXs> vs,
                           boost::span<VectorXs> lbdas,

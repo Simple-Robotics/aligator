@@ -13,10 +13,8 @@ using lqr_t = LqrProblemTpl<context::Scalar>;
 
 void exposeProxRiccati() {
 
-  using value_t = prox_riccati_t::value_t;
+  using value_t = prox_riccati_t::CostToGo;
   bp::class_<value_t>("value_data", bp::no_init)
-      .def_readonly("Pmat", &value_t::Pmat)
-      .def_readonly("pvec", &value_t::pvec)
       .def_readonly("Vxx", &value_t::Vxx)
       .def_readonly("vx", &value_t::vx)
       .def_readonly("Vxt", &value_t::Vxt)

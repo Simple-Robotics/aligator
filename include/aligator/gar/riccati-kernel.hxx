@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, 2023-2025 INRIA
 #pragma once
 
 #include "riccati-kernel.hpp"
@@ -9,31 +9,28 @@ namespace aligator {
 namespace gar {
 
 template <typename Scalar>
-StageFactor<Scalar>::StageFactor(uint nx, uint nu, uint nc, uint nx2, uint nth)
-    : Qhat(nx, nx)
-    , Rhat(nu, nu)
-    , Shat(nx, nu)
-    , qhat(nx)
-    , rhat(nu)
-    , AtV(nx, nx2)
-    , BtV(nu, nx2)
-    , Gxhat(nx, nth)
-    , Guhat(nu, nth)
-    , ff({nu, nc, nx2, nx2}, {1})
-    , fb({nu, nc, nx2, nx2}, {nx})
-    , fth({nu, nc, nx2, nx2}, {nth})
+StageFactor<Scalar>::StageFactor(uint nx, uint nu, uint nc, uint nx2, uint nth,
+                                 const allocator_type &alloc)
+    : nx(nx)
+    , nu(nu)
+    , nc(nc)
+    , nx2(nx2)
+    , nth(nth)
+    , Qhat(nx, nx, alloc)
+    , Rhat(nu, nu, alloc)
+    , Shat(nx, nu, alloc)
+    , qhat(nx, alloc)
+    , rhat(nu, alloc)
+    , AtV(nx, nx2, alloc)
+    , BtV(nu, nx2, alloc)
+    , Gxhat(nx, nth, alloc)
+    , Guhat(nu, nth, alloc)
+    , ff({nu, nc, nx2}, {1})
+    , fb({nu, nc, nx2}, {nx})
+    , fth({nu, nc, nx2}, {nth})
     , kktMat({nu, nc}, {nu, nc})
     , kktChol(nu + nc)
-    , Efact(nx)
-    , yff_pre(nx2)
-    , A_pre(nx, nx)
-    , Yth_pre(nx2, nth)
-    , Ptilde(nx, nx)
-    , Einv(nx2, nx2)
-    , EinvP(nx2, nx2)
-    , schurMat(nx2, nx2)
-    , schurChol(nx2)
-    , vm(nx, nth) {
+    , vm(nx, nth, alloc) {
   Qhat.setZero();
   Rhat.setZero();
   Shat.setZero();
@@ -50,19 +47,63 @@ StageFactor<Scalar>::StageFactor(uint nx, uint nu, uint nc, uint nx2, uint nth)
   fb.setZero();
   fth.setZero();
   kktMat.setZero();
-
-  yff_pre.setZero();
-  A_pre.setZero();
-  Yth_pre.setZero();
-  Ptilde.setZero();
-  Einv.setZero();
-  EinvP.setZero();
-  schurMat.setZero();
 }
+
+#define _c(name) name(other.name, alloc)
+template <typename Scalar>
+StageFactor<Scalar>::StageFactor(const StageFactor &other,
+                                 const allocator_type &alloc)
+    : nx(other.nx)
+    , nu(other.nu)
+    , nc(other.nc)
+    , nx2(other.nx2)
+    , nth(other.nth)
+    , _c(Qhat)
+    , _c(Rhat)
+    , _c(Shat)
+    , _c(qhat)
+    , _c(rhat)
+    , _c(AtV)
+    , _c(BtV)
+    , _c(Gxhat)
+    , _c(Guhat)
+    , ff(other.ff)
+    , fb(other.fb)
+    , fth(other.fth)
+    , kktMat(other.kktMat)
+    , kktChol(other.kktChol)
+    , _c(vm) {}
+#undef _c
+
+#define _c(name) name(std::move(other.name), alloc)
+template <typename Scalar>
+StageFactor<Scalar>::StageFactor(StageFactor &&other,
+                                 const allocator_type &alloc)
+    : nx(other.nx)
+    , nu(other.nu)
+    , nc(other.nc)
+    , nx2(other.nx2)
+    , nth(other.nth)
+    , _c(Qhat)
+    , _c(Rhat)
+    , _c(Shat)
+    , _c(qhat)
+    , _c(rhat)
+    , _c(AtV)
+    , _c(BtV)
+    , _c(Gxhat)
+    , _c(Guhat)
+    , ff(std::move(other.ff))
+    , fb(std::move(other.fb))
+    , fth(std::move(other.fth))
+    , kktMat(std::move(other.kktMat))
+    , kktChol(std::move(other.kktChol))
+    , _c(vm) {}
+#undef _c
 
 template <typename Scalar>
 bool ProximalRiccatiKernel<Scalar>::backwardImpl(
-    boost::span<const KnotType> stages, const Scalar mudyn, const Scalar mueq,
+    boost::span<const KnotType> stages, const Scalar mueq,
     boost::span<StageFactorType> datas) {
   ALIGATOR_TRACY_ZONE_SCOPED;
   // terminal node
@@ -76,8 +117,8 @@ bool ProximalRiccatiKernel<Scalar>::backwardImpl(
 
   uint t = N - 1;
   while (true) {
-    value_t &vn = datas[t + 1].vm;
-    stageKernelSolve(stages[t], datas[t], vn, mudyn, mueq);
+    CostToGo &vn = datas[t + 1].vm;
+    stageKernelSolve(stages[t], datas[t], vn, mueq);
 
     if (t == 0)
       break;
@@ -87,11 +128,11 @@ bool ProximalRiccatiKernel<Scalar>::backwardImpl(
   return true;
 }
 template <typename Scalar>
-void ProximalRiccatiKernel<Scalar>::terminalSolve(
-    typename KnotType::const_view_t model, const Scalar mueq,
-    StageFactorType &d) {
+void ProximalRiccatiKernel<Scalar>::terminalSolve(const KnotType &model,
+                                                  const Scalar mueq,
+                                                  StageFactorType &d) {
   ALIGATOR_TRACY_ZONE_SCOPED;
-  value_t &vc = d.vm;
+  CostToGo &vc = d.vm;
   // fill cost-to-go matrix
   VectorRef kff = d.ff.blockSegment(0);
   VectorRef zff = d.ff.blockSegment(1);
@@ -131,12 +172,12 @@ void ProximalRiccatiKernel<Scalar>::terminalSolve(
     }
   }
 
-  vc.Pmat.noalias() = model.Q + Ct * Z;
-  vc.pvec.noalias() = model.q + Ct * zff;
+  vc.Vxx.noalias() = model.Q + Ct * Z;
+  vc.vx.noalias() = model.q + Ct * zff;
 
   if (model.nu > 0) {
-    vc.Pmat.noalias() += model.S * K;
-    vc.pvec.noalias() += model.S * kff;
+    vc.Vxx.noalias() += model.S * K;
+    vc.vx.noalias() += model.S * kff;
   }
 
   if (model.nth > 0) {
@@ -164,39 +205,26 @@ void ProximalRiccatiKernel<Scalar>::computeInitial(
 }
 
 template <typename Scalar>
-void ProximalRiccatiKernel<Scalar>::stageKernelSolve(
-    typename KnotType::const_view_t model, StageFactorType &d, value_t &vn,
-    const Scalar mudyn, const Scalar mueq) {
+void ProximalRiccatiKernel<Scalar>::stageKernelSolve(const KnotType &model,
+                                                     StageFactorType &d,
+                                                     CostToGo &vn,
+                                                     const Scalar mueq) {
   ALIGATOR_TRACY_ZONE_SCOPED;
-  // step 1. compute decomposition of the E matrix
-  d.Efact.compute(model.E);
-  d.EinvP.setIdentity();
-  d.Einv = d.Efact.solve(d.EinvP);
-  auto &ptilde = vn.vx; // just an alias
-  ptilde.noalias() = d.Einv.transpose() * vn.pvec;
-  ptilde *= -1;
-  d.EinvP.noalias() = d.Einv.transpose() * vn.Pmat;
-  d.Ptilde.noalias() = d.EinvP * d.Einv;
-  d.Ptilde = d.Ptilde.template selfadjointView<Eigen::Lower>();
-
-  d.schurMat.setIdentity();
-  d.schurMat.noalias() += mudyn * d.Ptilde;
-
-  d.schurChol.compute(d.schurMat);
-  vn.Vxx = d.Ptilde;
-  vn.vx.noalias() += d.Ptilde * model.f;
-  d.schurChol.solveInPlace(vn.vx);
-  d.schurChol.solveInPlace(vn.Vxx);
+  polymorphic_allocator alloc = d.get_allocator();
   vn.Vxx = vn.Vxx.template selfadjointView<Eigen::Lower>();
+  ArenaMatrix<VectorXs> vplus{vn.vx, alloc};
+  vplus.noalias() += vn.Vxx * model.f;
 
   d.AtV.noalias() = model.A.transpose() * vn.Vxx;
   d.BtV.noalias() = model.B.transpose() * vn.Vxx;
 
-  d.Qhat.noalias() = model.Q + d.AtV * model.A;
-  d.Rhat.noalias() = model.R + d.BtV * model.B;
-  d.Shat.noalias() = model.S + d.AtV * model.B;
-  d.qhat.noalias() = model.q + model.A.transpose() * vn.vx;
-  d.rhat.noalias() = model.r + model.B.transpose() * vn.vx;
+  // clang-format off
+  d.Qhat = model.Q; d.Qhat.noalias() += d.AtV * model.A;
+  d.Rhat = model.R; d.Rhat.noalias() += d.BtV * model.B;
+  d.Shat = model.S; d.Shat.noalias() += d.AtV * model.B;
+  d.qhat = model.q; d.qhat.noalias() += model.A.transpose() * vplus;
+  d.rhat = model.r; d.rhat.noalias() += model.B.transpose() * vplus;
+  // clang-format on
 
   // factorize reduced KKT system
   d.kktMat(0, 0) = d.Rhat;
@@ -206,84 +234,66 @@ void ProximalRiccatiKernel<Scalar>::stageKernelSolve(
   d.kktMat.matrix() =
       d.kktMat.matrix().template selfadjointView<Eigen::Lower>();
   d.kktChol.compute(d.kktMat.matrix());
+  if (d.kktChol.info() != Eigen::Success) {
+    ALIGATOR_RUNTIME_ERROR("Failed stage LDL factorization");
+  }
 
   VectorRef kff = d.ff.blockSegment(0);
   VectorRef zff = d.ff.blockSegment(1);
-  VectorRef lff = d.ff.blockSegment(2);
-  VectorRef yff = d.ff.blockSegment(3);
+  VectorRef yff = d.ff.blockSegment(2); // closed-loop bias
 
   // fill feedback system
   kff = -d.rhat;
   zff = -model.d;
 
+  // rhs (feedback)
   RowMatrixRef K = d.fb.blockRow(0);
   RowMatrixRef Z = d.fb.blockRow(1);
-  RowMatrixRef L = d.fb.blockRow(2);
-  RowMatrixRef A = d.fb.blockRow(3);
+  RowMatrixRef Aff = d.fb.blockRow(2); // closed-loop matrix
   K = -d.Shat.transpose();
   Z = -model.C;
+
+  // solve
   auto ffview = d.ff.template topBlkRows<2>();
   auto fbview = d.fb.template topBlkRows<2>();
   d.kktChol.solveInPlace(ffview.matrix());
   d.kktChol.solveInPlace(fbview.matrix());
 
   // set closed loop dynamics
-  lff.noalias() = vn.vx + d.BtV.transpose() * kff;
-  yff.noalias() = model.f + model.B * kff;
-  yff -= mudyn * lff;
-  d.yff_pre = yff;
-  yff.noalias() = d.Einv * d.yff_pre;
-  yff *= -1;
+  // clang-format off
+  yff = model.f; yff.noalias() += model.B * kff;
+  Aff = model.A; Aff.noalias() += model.B * K;
+  // clang-format on
 
-  L.noalias() = vn.Vxx * model.A;
-  L.noalias() += d.BtV.transpose() * K;
-
-  A.noalias() = model.A + model.B * K;
-  A -= mudyn * L;
-  d.A_pre = A;
-  A.noalias() = d.Einv * d.A_pre;
-  A *= -1;
-
-  value_t &vc = d.vm;
+  CostToGo &vc = d.vm;
   Eigen::Transpose Ct = model.C.transpose();
-  vc.Pmat.noalias() = d.Qhat + d.Shat * K + Ct * Z;
-  vc.pvec.noalias() = d.qhat + d.Shat * kff + Ct * zff;
-
-  RowMatrixRef Kth = d.fth.blockRow(0);
-  RowMatrixRef Zth = d.fth.blockRow(1);
-  RowMatrixRef Lth = d.fth.blockRow(2);
-  RowMatrixRef Yth = d.fth.blockRow(3);
+  vc.Vxx = d.Qhat;
+  vc.Vxx.noalias() += d.Shat * K;
+  vc.Vxx.noalias() += Ct * Z;
+  vc.vx = d.qhat;
+  vc.vx.noalias() += d.Shat * kff;
+  vc.vx.noalias() += Ct * zff;
   if (model.nth > 0) {
     ALIGATOR_TRACY_ZONE_SCOPED_N("stage_solve_parameter");
+    RowMatrixRef Kth = d.fth.blockRow(0);
+    RowMatrixRef Zth = d.fth.blockRow(1);
+    RowMatrixRef Yth = d.fth.blockRow(2);
 
-    // store Pxttilde = -Einv * Pxt
-    // this is like ptilde
-    Lth.noalias() = d.Einv.transpose() * vn.Vxt;
-    Lth *= -1;
-    auto &Pxttilde = Lth; // just an alias for clarity
-    // store Lambda.inv * Pxttilde
-    d.schurChol.solveInPlace(Lth);
-
-    // d.Gxhat.noalias() = model.Gx + model.A.transpose() * Pxttilde;
-    d.Guhat.noalias() = model.Gu + model.B.transpose() * Pxttilde;
+    d.Gxhat = model.Gx;
+    d.Gxhat.noalias() += model.A.transpose() * vn.Vxt;
+    d.Guhat = model.Gu;
+    d.Guhat.noalias() += model.B.transpose() * vn.Vxt;
 
     // set rhs of 2x2 block system and solve
     Kth = -d.Guhat;
-    Zth.setZero();
+    Zth = -model.Gv;
     BlkMatrix<RowMatrixRef, 2, 1> fthview = d.fth.template topBlkRows<2>();
     d.kktChol.solveInPlace(fthview.matrix());
 
-    // substitute into Xith, Ath gains
-    Lth.noalias() += d.BtV.transpose() * Kth;
-
     Yth.noalias() = model.B * Kth;
-    Yth -= mudyn * Lth;
-    d.Yth_pre = Yth;
-    Yth.noalias() = d.Einv * d.Yth_pre;
-    Yth *= -1;
 
     // update vt, Vxt, Vtt
-    vc.vt = vn.vt + model.gamma;
+    vc.vt = model.gamma + vn.vt;
     // vc.vt.noalias() += d.Guhat.transpose() * kff;
     vc.vt.noalias() += model.Gu.transpose() * kff;
     vc.vt.noalias() += vn.Vxt.transpose() * yff;
@@ -291,7 +301,7 @@ void ProximalRiccatiKernel<Scalar>::stageKernelSolve(
     // vc.Vxt.noalias() = d.Gxhat + K.transpose() * d.Guhat;
     vc.Vxt = model.Gx;
     vc.Vxt.noalias() += K.transpose() * model.Gu;
-    vc.Vxt.noalias() += A.transpose() * vn.Vxt;
+    vc.Vxt.noalias() += Aff.transpose() * vn.Vxt;
 
     vc.Vtt = model.Gth + vn.Vtt;
     vc.Vtt.noalias() += model.Gu.transpose() * Kth;
@@ -306,11 +316,12 @@ bool ProximalRiccatiKernel<Scalar>::forwardImpl(
     boost::span<VectorXs> us, boost::span<VectorXs> vs,
     boost::span<VectorXs> lbdas, const std::optional<ConstVectorRef> &theta_) {
   ALIGATOR_TRACY_ZONE_SCOPED;
+  ALIGATOR_NOMALLOC_SCOPED;
 
   uint N = (uint)(datas.size() - 1);
   for (uint t = 0; t <= N; t++) {
     const StageFactorType &d = datas[t];
-    auto model = stages[t].to_const_view();
+    const KnotType &model = stages[t];
     assert(xs[t].size() == model.nx);
     assert(vs[t].size() == model.nc);
 
@@ -318,12 +329,14 @@ bool ProximalRiccatiKernel<Scalar>::forwardImpl(
     ConstVectorRef kff = d.ff.blockSegment(0);
     if (model.nu > 0) {
       assert(us[t].size() == model.nu);
-      us[t].noalias() = kff + K * xs[t];
+      us[t] = kff;
+      us[t].noalias() += K * xs[t];
     }
 
     ConstRowMatrixRef Z = d.fb.blockRow(1); // multiplier feedback
     ConstVectorRef zff = d.ff.blockSegment(1);
-    vs[t].noalias() = zff + Z * xs[t];
+    vs[t] = zff;
+    vs[t].noalias() += Z * xs[t];
 
     if (model.nth > 0 && theta_.has_value()) {
       ConstVectorRef theta = *theta_;
@@ -340,21 +353,22 @@ bool ProximalRiccatiKernel<Scalar>::forwardImpl(
 
     assert(lbdas[t + 1].size() == model.f.size());
 
-    ConstRowMatrixRef Xi = d.fb.blockRow(2);
-    ConstVectorRef xi = d.ff.blockSegment(2);
-    lbdas[t + 1].noalias() = xi + Xi * xs[t];
-
-    ConstRowMatrixRef A = d.fb.blockRow(3);
-    ConstVectorRef a = d.ff.blockSegment(3);
-    xs[t + 1].noalias() = a + A * xs[t];
+    ConstRowMatrixRef A = d.fb.blockRow(2);
+    ConstVectorRef a = d.ff.blockSegment(2);
+    xs[t + 1] = a;
+    xs[t + 1].noalias() += A * xs[t];
 
     if (model.nth > 0 && theta_.has_value()) {
       ConstVectorRef theta = *theta_;
-      ConstRowMatrixRef Xith = d.fth.blockRow(2);
-      ConstRowMatrixRef Ath = d.fth.blockRow(3);
-
-      lbdas[t + 1].noalias() += Xith * theta;
+      ConstRowMatrixRef Ath = d.fth.blockRow(2);
       xs[t + 1].noalias() += Ath * theta;
+    }
+
+    const CostToGo &vn = datas[t + 1].vm;
+    lbdas[t + 1] = vn.vx;
+    lbdas[t + 1].noalias() += vn.Vxx * xs[t + 1];
+    if (model.nth > 0 && theta_.has_value()) {
+      lbdas[t + 1].noalias() += vn.Vxt * (*theta_);
     }
   }
   return true;

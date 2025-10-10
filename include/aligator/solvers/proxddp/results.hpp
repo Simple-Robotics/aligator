@@ -47,6 +47,9 @@ std::ostream &operator<<(std::ostream &oss, const ResultsTpl<Scalar> &self) {
   return oss << fmt::format("{}", self);
 }
 
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct ResultsTpl<context::Scalar>;
+#endif
 } // namespace aligator
 
 template <typename Scalar> struct fmt::formatter<aligator::ResultsTpl<Scalar>> {
@@ -61,7 +64,3 @@ template <typename Scalar> struct fmt::formatter<aligator::ResultsTpl<Scalar>> {
     return fmt::format_to(ctx.out(), "Results {{{}\n}}", s);
   }
 };
-
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./results.txx"
-#endif

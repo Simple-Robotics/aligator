@@ -42,9 +42,9 @@ def create_ground_contact_model(rmodel: pin.Model, Kp=(0.0, 0.0, 1000.0), Kd=Non
 
 
 def add_plane(robot, meshColor=(251, 127, 0, 255)):
-    import hppfcl as fcl
+    import coal
 
-    plane = fcl.Plane(np.array([0.0, 0.0, 1.0]), 0.0)
+    plane = coal.Plane(np.array([0.0, 0.0, 1.0]), 0.0)
     plane_obj = pin.GeometryObject("plane", 0, pin.SE3.Identity(), plane)
 
     plane_obj.meshColor = np.asarray(meshColor) / 255.0

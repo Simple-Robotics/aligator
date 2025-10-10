@@ -8,21 +8,28 @@
 
 namespace aligator {
 
-/// @brief Block matrix class, with a fixed-size number of row and column
-/// blocks.
-template <typename _MatrixType, int _N, int _M = _N> class BlkMatrix {
+/// @brief Block matrix class, with a fixed or dynamic-size number of row and
+/// column blocks.
+/// @tparam Baseline matrix type; the user can use an Eigen::Ref type to create
+/// a blocked view to an existing matrix.
+/// @tparam N number of block rows.
+/// @tparam M number of block columns.
+template <typename _MatrixType, int N, int M = N> class BlkMatrix;
+
+template <typename _MatrixType, int _N, int _M> class BlkMatrix {
 public:
   using MatrixType = _MatrixType;
   using PlainObject = typename MatrixType::PlainObject;
   using Scalar = typename MatrixType::Scalar;
+  using Index = Eigen::Index;
   enum { N = _N, M = _M, Options = PlainObject::Options };
   static constexpr bool IsVectorAtCompileTime =
       MatrixType::IsVectorAtCompileTime;
 
-  using row_dim_t = std::conditional_t<N != -1, std::array<long, size_t(N)>,
-                                       std::vector<long>>;
-  using col_dim_t = std::conditional_t<M != -1, std::array<long, size_t(M)>,
-                                       std::vector<long>>;
+  using RowDimsType = std::conditional_t<N != -1, std::array<Index, size_t(N)>,
+                                         std::vector<Index>>;
+  using ColDimsType = std::conditional_t<M != -1, std::array<Index, size_t(M)>,
+                                         std::vector<Index>>;
 
   static_assert(N != 0 && M != 0,
                 "The BlkMatrix template class only supports nonzero numbers of "
@@ -40,7 +47,7 @@ public:
       , m_totalRows(0)
       , m_totalCols(0) {}
 
-  BlkMatrix(const row_dim_t &rowDims, const col_dim_t &colDims)
+  BlkMatrix(const RowDimsType &rowDims, const ColDimsType &colDims)
       : m_data()
       , m_rowDims(rowDims)
       , m_colDims(colDims)
@@ -52,11 +59,10 @@ public:
   }
 
   template <typename Other>
-  BlkMatrix(const Eigen::MatrixBase<Other> &data, const row_dim_t &rowDims,
-            const col_dim_t &colDims)
+  BlkMatrix(const Eigen::MatrixBase<Other> &data, const RowDimsType &rowDims,
+            const ColDimsType &colDims)
       : m_data(data.derived())
-      , //
-      m_rowDims(rowDims)
+      , m_rowDims(rowDims)
       , m_colDims(colDims)
       , m_rowIndices(rowDims)
       , m_colIndices(colDims)
@@ -66,11 +72,10 @@ public:
   }
 
   template <typename Other>
-  BlkMatrix(Eigen::MatrixBase<Other> &data, const row_dim_t &rowDims,
-            const col_dim_t &colDims)
+  BlkMatrix(Eigen::MatrixBase<Other> &data, const RowDimsType &rowDims,
+            const ColDimsType &colDims)
       : m_data(data.derived())
-      , //
-      m_rowDims(rowDims)
+      , m_rowDims(rowDims)
       , m_colDims(colDims)
       , m_rowIndices(rowDims)
       , m_colIndices(colDims)
@@ -81,19 +86,19 @@ public:
 
   /// Only-rows constructor (only for vectors)
   template <typename Other>
-  BlkMatrix(const Eigen::MatrixBase<Other> &data, const row_dim_t &dims)
+  BlkMatrix(const Eigen::MatrixBase<Other> &data, const RowDimsType &dims)
       : BlkMatrix(data, dims, {data.cols()}) {}
 
   /// Only-rows constructor (only for vectors)
   template <typename Other>
-  BlkMatrix(Eigen::MatrixBase<Other> &data, const row_dim_t &dims)
+  BlkMatrix(Eigen::MatrixBase<Other> &data, const RowDimsType &dims)
       : BlkMatrix(data, dims, {data.cols()}) {}
 
   operator Eigen::Ref<PlainObject>() { return m_data; }
   operator Eigen::Ref<const PlainObject>() const { return m_data; }
 
   /// Only-rows constructor (only for vectors)
-  explicit BlkMatrix(const row_dim_t &dims)
+  explicit BlkMatrix(const RowDimsType &dims)
       : BlkMatrix(dims, {1}) {
     static_assert(IsVectorAtCompileTime,
                   "Constructor only supported for vector types.");
@@ -151,7 +156,8 @@ public:
   }
 
   void setZero() { m_data.setZero(); }
-  static BlkMatrix Zero(const row_dim_t &rowDims, const col_dim_t &colDims) {
+  static BlkMatrix Zero(const RowDimsType &rowDims,
+                        const ColDimsType &colDims) {
 
     BlkMatrix out(rowDims, colDims);
     out.setZero();
@@ -165,20 +171,20 @@ public:
   MatrixType &matrix() { return m_data; }
   const MatrixType &matrix() const { return m_data; }
 
-  const row_dim_t &rowDims() const { return m_rowDims; }
-  const row_dim_t &rowIndices() const { return m_rowIndices; }
-  const col_dim_t &colDims() const { return m_colDims; }
-  const col_dim_t &colIndices() const { return m_colIndices; }
+  const RowDimsType &rowDims() const { return m_rowDims; }
+  const RowDimsType &rowIndices() const { return m_rowIndices; }
+  const ColDimsType &colDims() const { return m_colDims; }
+  const ColDimsType &colIndices() const { return m_colIndices; }
 
-  long rows() const { return m_totalRows; }
-  long cols() const { return m_totalCols; }
+  Index rows() const { return m_totalRows; }
+  Index cols() const { return m_totalCols; }
 
   auto topBlkRows(size_t n) {
     using OutType = BlkMatrix<Eigen::Ref<MatrixType>, -1, M>;
-    std::vector<long> subRowDims;
+    std::vector<Index> subRowDims;
     subRowDims.resize(n);
     std::copy_n(m_rowDims.cbegin(), n, subRowDims.begin());
-    long ntr = std::accumulate(subRowDims.begin(), subRowDims.end(), 0);
+    Index ntr = std::accumulate(subRowDims.begin(), subRowDims.end(), 0);
     return OutType(m_data.topRows(ntr), subRowDims, m_colDims);
   }
 
@@ -187,9 +193,9 @@ public:
                   "Cannot take n block rows of matrix with <n block rows.");
     using RefType = Eigen::Ref<MatrixType>;
     using OutType = BlkMatrix<RefType, n, M>;
-    std::array<long, n> subRowDims;
+    std::array<Index, n> subRowDims;
     std::copy_n(m_rowDims.cbegin(), n, subRowDims.begin());
-    long ntr = std::accumulate(subRowDims.begin(), subRowDims.end(), 0);
+    Index ntr = std::accumulate(subRowDims.begin(), subRowDims.end(), 0);
     return OutType(m_data.topRows(ntr), subRowDims, m_colDims);
   }
 
@@ -199,14 +205,16 @@ public:
 
 protected:
   MatrixType m_data;
-  row_dim_t m_rowDims;
-  col_dim_t m_colDims;
-  row_dim_t m_rowIndices;
-  col_dim_t m_colIndices;
-  long m_totalRows;
-  long m_totalCols;
+  RowDimsType m_rowDims;
+  ColDimsType m_colDims;
+  RowDimsType m_rowIndices;
+  ColDimsType m_colIndices;
+  Index m_totalRows;
+  Index m_totalCols;
 
   void initialize() {
+    m_totalRows = 0;
+    m_totalCols = 0;
     for (size_t i = 0; i < m_rowDims.size(); i++) {
       m_rowIndices[i] = m_totalRows;
       m_totalRows += m_rowDims[i];

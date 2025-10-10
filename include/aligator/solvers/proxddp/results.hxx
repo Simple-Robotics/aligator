@@ -4,7 +4,7 @@
 #pragma once
 
 #include "results.hpp"
-#include "aligator/solvers/solver-util.hpp"
+#include "aligator/core/traj-opt-problem.hpp"
 #include "aligator/utils/mpc-util.hpp"
 
 namespace aligator {
@@ -21,10 +21,11 @@ ResultsTpl<Scalar>::ResultsTpl(const TrajOptProblemTpl<Scalar> &problem)
   gains_.resize(nsteps + 1);
   for (std::size_t i = 0; i < nsteps; i++) {
     const StageModelTpl<Scalar> &sm = *problem.stages_[i];
-    const int np = sm.numPrimal();
-    const int nd = sm.numDual();
+    const int nu = sm.nu();
+    const int nc = sm.nc();
+    const int ndx2 = sm.ndx2();
     const int ndx = sm.ndx1();
-    gains_[i].setZero(np + nd, ndx + 1);
+    gains_[i].setZero(nu + nc + ndx2, ndx + 1);
   }
 
   // terminal constraints
@@ -53,7 +54,7 @@ void ResultsTpl<Scalar>::cycleAppend(const TrajOptProblemTpl<Scalar> &problem,
 
   const std::size_t nsteps = problem.numSteps();
   const StageModelTpl<Scalar> &sm = *problem.stages_[nsteps - 1];
-  gains_[nsteps - 1].setZero(sm.numPrimal() + sm.numDual(), sm.ndx1() + 1);
+  gains_[nsteps - 1].setZero(sm.nu() + sm.nc() + sm.ndx2(), sm.ndx1() + 1);
   vs[nsteps - 1].setZero(sm.nc());
   lams[nsteps].setZero(sm.ndx2());
 

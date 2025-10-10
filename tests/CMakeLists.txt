@@ -2,7 +2,8 @@
 # Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #
 
-find_package(Boost REQUIRED COMPONENTS unit_test_framework)
+find_package(Catch2 3 REQUIRED)
+include(Catch)
 
 macro(ADD_TEST_CFLAGS test_name flag)
   set_property(
@@ -15,9 +16,9 @@ endmacro()
 file(GLOB TEST_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
 message(STATUS "Test headers: ${TEST_HEADERS}")
 
-function(_add_test_prototype name prefix dependencies)
-  set(test_name "${PROJECT_NAME}-test-cpp-${prefix}${name}")
-  set(test_file ${name}.cpp)
+function(add_aligator_test2 test_name dependencies)
+  set(test_file ${test_name}.cpp)
+  set(test_name "${PROJECT_NAME}-test-cpp-${test_name}")
   message(STATUS "Adding cpp test: ${test_name} (${test_file})")
 
   ADD_UNIT_TEST(${test_name} ${test_file} ${TEST_HEADERS})
@@ -25,32 +26,21 @@ function(_add_test_prototype name prefix dependencies)
   set_standard_output_directory(${test_name})
   target_include_directories(${test_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-  # define macros required by boost_test
-  # see: https://www.boost.org/doc/libs/1_78_0/libs/test/doc/html/boost_test/usage_variants.html
-  # define module name, replace '-' by '_'
-  set(MODULE_NAME "${name}Test")
-  string(REGEX REPLACE "-" "_" MODULE_NAME ${MODULE_NAME})
-
-  ADD_TEST_CFLAGS(${test_name} "-DBOOST_TEST_DYN_LINK")
-  ADD_TEST_CFLAGS(${test_name} "-DBOOST_TEST_MODULE=${MODULE_NAME}")
-
-  target_link_libraries(${test_name} PUBLIC ${dependencies})
-  target_link_libraries(${test_name} PRIVATE Boost::unit_test_framework)
-endfunction()
-
-function(add_aligator_test name)
-  _add_test_prototype(${name} "" ${PROJECT_NAME})
+  target_link_libraries(
+    ${test_name}
+    PRIVATE ${PROJECT_NAME} Catch2::Catch2WithMain ${dependencies}
+  )
+  # catch_discover_tests(${test_name})
 endfunction()
 
 set(
   TEST_NAMES
+  arena-matrix
   continuous
   constraints
   costs
-  eigen-map
   integrators
   lqr
-  managed-matrix
   problem
   manifolds
   solver-storage
@@ -67,7 +57,7 @@ endif()
 
 if(NOT BUILD_STANDALONE_PYTHON_INTERFACE)
   foreach(test_name ${TEST_NAMES})
-    add_aligator_test(${test_name})
+    add_aligator_test2(${test_name} "")
   endforeach()
   add_subdirectory(gar)
 
@@ -76,7 +66,7 @@ if(NOT BUILD_STANDALONE_PYTHON_INTERFACE)
   endif()
 endif()
 
-# PYTHON TESTS
+# Python tests
 if(BUILD_PYTHON_INTERFACE)
   add_subdirectory(python)
 endif()

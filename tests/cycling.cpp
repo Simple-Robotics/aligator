@@ -6,7 +6,7 @@
 #include "aligator/modelling/constraints/equality-constraint.hpp"
 #include "aligator/modelling/spaces/pinocchio-groups.hpp"
 #include "aligator/third-party/polymorphic_cxx14.h"
-#include <boost/test/unit_test.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 using namespace aligator;
 using context::Manifold;
@@ -17,8 +17,8 @@ using ManifoldPtr = xyz::polymorphic<Manifold>;
 /// @details  It maps \f$(x,u)\f$ to \f$ x + u \f$.
 struct MyModel : ExplicitDynamicsModelTpl<double> {
   using ExplicitData = ExplicitDynamicsDataTpl<double>;
-  explicit MyModel(ManifoldPtr space)
-      : ExplicitDynamicsModelTpl<double>(space, space->ndx()) {}
+  explicit MyModel(polymorphic<Manifold> space)
+      : ExplicitDynamicsModelTpl<double>(std::move(space), space->ndx()) {}
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                ExplicitData &data) const {
@@ -27,8 +27,8 @@ struct MyModel : ExplicitDynamicsModelTpl<double> {
 
   void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
                 ExplicitData &data) const {
-    space_next().Jintegrate(x, u, data.Jx_, 0);
-    space_next().Jintegrate(x, u, data.Ju_, 1);
+    space_next().Jintegrate(x, u, data.Jx(), 0);
+    space_next().Jintegrate(x, u, data.Ju(), 1);
   }
 };
 
@@ -80,7 +80,7 @@ struct MyFixture {
   }
 };
 
-BOOST_AUTO_TEST_CASE(test_cycling) {
+TEST_CASE("test_cycling", "[cycling]") {
   MyFixture f;
 
   auto nsteps = f.problem.numSteps();
@@ -94,13 +94,13 @@ BOOST_AUTO_TEST_CASE(test_cycling) {
 
   ddp.setup(f.problem);
   bool conv = ddp.run(f.problem);
-  BOOST_CHECK(conv);
+  REQUIRE(conv);
 
   for (size_t i = 0; i < 30; i++) {
     f.problem.replaceStageCircular(f.problem.stages_[0]);
     rotate_vec_left(f.problem_data);
     ddp.cycleProblem(f.problem, f.problem_data[nsteps - 1]);
     bool conv = ddp.run(f.problem);
-    BOOST_CHECK(conv);
+    REQUIRE(conv);
   }
 }

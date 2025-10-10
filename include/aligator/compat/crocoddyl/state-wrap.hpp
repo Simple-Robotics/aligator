@@ -12,21 +12,35 @@ namespace aligator::compat::croc {
 /// (aligator::ManifoldAbstractTpl).
 template <typename _Scalar>
 struct StateWrapperTpl : ManifoldAbstractTpl<_Scalar> {
+public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using TangentVectorType = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
+  using Base = ManifoldAbstractTpl<Scalar>;
+  using Base::ndx;
+  using Base::nx;
 
   using StateAbstract = crocoddyl::StateAbstractTpl<Scalar>;
 
   shared_ptr<StateAbstract> croc_state;
 
   explicit StateWrapperTpl(const shared_ptr<StateAbstract> &state)
-      : croc_state(state) {}
+      : Base(int(state->get_nx()), int(state->get_ndx()))
+      , croc_state(state) {}
 
-  int nx() const { return (int)croc_state->get_nx(); }
-  int ndx() const { return (int)croc_state->get_ndx(); }
+  static crocoddyl::Jcomponent convert_to_firstsecond(int arg) {
+    if (arg == 0) {
+      return crocoddyl::first;
+    } else if (arg == 1) {
+      return crocoddyl::second;
+    } else {
+      return crocoddyl::both;
+    }
+  }
 
+protected:
   void neutral_impl(VectorRef out) const { out = croc_state->zero(); }
+
   void rand_impl(VectorRef out) const { out = croc_state->rand(); }
 
   void integrate_impl(const ConstVectorRef &x, const ConstVectorRef &v,
@@ -53,16 +67,6 @@ struct StateWrapperTpl : ManifoldAbstractTpl<_Scalar> {
                                 const ConstVectorRef &v, MatrixRef Jout,
                                 int arg) const {
     croc_state->JintegrateTransport(x, v, Jout, convert_to_firstsecond(arg));
-  }
-
-  static crocoddyl::Jcomponent convert_to_firstsecond(int arg) {
-    if (arg == 0) {
-      return crocoddyl::first;
-    } else if (arg == 1) {
-      return crocoddyl::second;
-    } else {
-      return crocoddyl::both;
-    }
   }
 };
 

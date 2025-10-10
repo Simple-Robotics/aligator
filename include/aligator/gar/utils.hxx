@@ -1,12 +1,13 @@
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, 2023-2025 INRIA
 #pragma once
+
 #include "utils.hpp"
 
 namespace aligator::gar {
 
 template <typename Scalar>
 void lqrCreateSparseMatrix(const LqrProblemTpl<Scalar> &problem,
-                           const Scalar mudyn, const Scalar mueq,
-                           Eigen::SparseMatrix<Scalar> &mat,
+                           const Scalar mueq, Eigen::SparseMatrix<Scalar> &mat,
                            Eigen::Matrix<Scalar, -1, 1> &rhs, bool update) {
   using Eigen::Index;
   const uint nrows = lqrNumRows(problem);
@@ -23,23 +24,15 @@ void lqrCreateSparseMatrix(const LqrProblemTpl<Scalar> &problem,
   uint idx = 0;
   {
     uint nc0 = problem.nc0();
-    rhs.head(nc0) = problem.g0.to_const_map();
-    helpers::sparseAssignDenseBlock(0, nc0, problem.G0.to_const_map(), mat,
+    rhs.head(nc0) = problem.g0;
+    helpers::sparseAssignDenseBlock(0, nc0, problem.G0, mat, update);
+    helpers::sparseAssignDenseBlock(nc0, 0, problem.G0.transpose(), mat,
                                     update);
-    helpers::sparseAssignDenseBlock(
-        nc0, 0, problem.G0.to_const_map().transpose(), mat, update);
-    for (Index kk = 0; kk < nc0; kk++) {
-      if (update) {
-        mat.coeffRef(kk, kk) = -mudyn;
-      } else {
-        mat.insert(kk, kk) = -mudyn;
-      }
-    }
     idx += nc0;
   }
 
   for (size_t t = 0; t <= N; t++) {
-    auto model = knots[t].to_const_view();
+    const LqrKnotTpl<Scalar> &model = knots[t];
     const uint n = model.nx + model.nu + model.nc;
     // get block for current variables
     auto rhsblk = rhs.segment(idx, n);
@@ -81,10 +74,10 @@ void lqrCreateSparseMatrix(const LqrProblemTpl<Scalar> &problem,
       helpers::sparseAssignDenseBlock(i0, i2, model.B.transpose(), mat, update);
       // E
       const Index i3 = i2 + model.nx2;
-      helpers::sparseAssignDenseBlock(i2, i3, model.E, mat, update);
-      helpers::sparseAssignDenseBlock(i3, i2, model.E.transpose(), mat, update);
-
-      helpers::sparseAssignDiagonal(i2, i3, -mudyn, mat, update);
+      using DenseType = decltype(model.A);
+      auto Id = DenseType::Identity(model.nx2, model.nx2);
+      helpers::sparseAssignDenseBlock(i2, i3, Id, mat, update);
+      helpers::sparseAssignDenseBlock(i3, i2, Id, mat, update);
 
       idx += n + model.nx2;
     }
@@ -98,7 +91,7 @@ std::array<Scalar, 3> lqrComputeKktError(
     boost::span<const typename math_types<Scalar>::VectorXs> us,
     boost::span<const typename math_types<Scalar>::VectorXs> vs,
     boost::span<const typename math_types<Scalar>::VectorXs> lbdas,
-    const Scalar mudyn, const Scalar mueq,
+    const Scalar mueq,
     const std::optional<typename math_types<Scalar>::ConstVectorRef> &theta_,
     bool verbose) {
   if (verbose)
@@ -120,15 +113,14 @@ std::array<Scalar, 3> lqrComputeKktError(
 
   // initial stage
   {
-    _dyn = problem.g0.to_const_map() + problem.G0.to_const_map() * xs[0] -
-           mudyn * lbdas[0];
+    _dyn = problem.g0 + problem.G0 * xs[0];
     dNorm = math::infty_norm(_dyn);
     dynErr = std::max(dynErr, dNorm);
     if (verbose)
       fmt::print("d0 = {:.3e} \n", dNorm);
   }
   for (uint t = 0; t <= N; t++) {
-    auto knot = problem.stages[t].to_const_view();
+    const LqrKnotTpl<Scalar> &knot = problem.stages[t];
     auto _Str = knot.S.transpose();
 
     if (verbose)
@@ -148,15 +140,13 @@ std::array<Scalar, 3> lqrComputeKktError(
     }
 
     if (t == 0) {
-      _gx += problem.G0.to_const_map().transpose() * lbdas[0];
+      _gx.noalias() += problem.G0.transpose() * lbdas[0];
     } else {
-      auto Et = problem.stages[t - 1].E.to_const_map().transpose();
-      _gx += Et * lbdas[t];
+      _gx -= lbdas[t];
     }
 
     if (t < N) {
-      _dyn = knot.A * xs[t] + knot.B * us[t] + knot.f + knot.E * xs[t + 1] -
-             mudyn * lbdas[t + 1];
+      _dyn = knot.A * xs[t] + knot.B * us[t] + knot.f - xs[t + 1];
       _gx += knot.A.transpose() * lbdas[t + 1];
       _gu += knot.B.transpose() * lbdas[t + 1];
 
@@ -189,81 +179,6 @@ std::array<Scalar, 3> lqrComputeKktError(
   }
 
   return std::array{dynErr, cstErr, dualErr};
-}
-
-template <typename Scalar>
-bool lqrDenseMatrix(const LqrProblemTpl<Scalar> &problem, Scalar mudyn,
-                    Scalar mueq, typename math_types<Scalar>::MatrixXs &mat,
-                    typename math_types<Scalar>::VectorXs &rhs) {
-  const auto &knots = problem.stages;
-  const size_t N = size_t(problem.horizon());
-
-  if (!problem.isInitialized())
-    return false;
-
-  const uint nrows = lqrNumRows(problem);
-  mat.conservativeResize(nrows, nrows);
-  rhs.conservativeResize(nrows);
-  mat.setZero();
-
-  uint idx = 0;
-  {
-    const uint nc0 = problem.nc0();
-    const uint nx0 = knots[0].nx;
-    mat.block(nc0, 0, nx0, nc0) = problem.G0.to_const_map().transpose();
-    mat.block(0, nc0, nc0, nx0) = problem.G0.to_const_map();
-    mat.topLeftCorner(nc0, nc0).diagonal().setConstant(-mudyn);
-
-    rhs.head(nc0) = problem.g0.to_const_map();
-    idx += nc0;
-  }
-
-  for (size_t t = 0; t <= N; t++) {
-    const auto model = knots[t].to_const_view();
-    // get block for current variables
-    const uint n = model.nx + model.nu + model.nc;
-    auto block = mat.block(idx, idx, n, n);
-    auto rhsblk = rhs.segment(idx, n);
-    auto Q = block.topLeftCorner(model.nx, model.nx);
-    auto St = block.leftCols(model.nx).middleRows(model.nx, model.nu);
-    auto R = block.block(model.nx, model.nx, model.nu, model.nu);
-    auto C = block.bottomRows(model.nc).leftCols(model.nx);
-    auto D = block.bottomRows(model.nc).middleCols(model.nx, model.nu);
-    auto dual = block.bottomRightCorner(model.nc, model.nc).diagonal();
-    dual.array() = -mueq;
-
-    Q = model.Q;
-    St = model.S.transpose();
-    R = model.R;
-    C = model.C;
-    D = model.D;
-
-    block = block.template selfadjointView<Eigen::Lower>();
-
-    rhsblk.head(model.nx) = model.q;
-    rhsblk.segment(model.nx, model.nu) = model.r;
-    rhsblk.tail(model.nc) = model.d;
-
-    // fill in dynamics
-    // row contains [A; B; 0; -mu*I, E] -> nx + nu + nc + nx + nx2 cols
-    if (t != N) {
-      uint ncols = model.nx + model.nx2 + n;
-      auto row = mat.block(idx + n, idx, model.nx, ncols);
-      row.leftCols(model.nx) = model.A;
-      row.middleCols(model.nx, model.nu) = model.B;
-      row.middleCols(n, model.nx).diagonal().array() = -mudyn;
-      row.rightCols(model.nx) = model.E;
-
-      rhs.segment(idx + n, model.nx2) = model.f;
-
-      auto col = mat.transpose().block(idx + n, idx, model.nx, ncols);
-      col = row;
-
-      // shift by size of block + costate size (nx2)
-      idx += n + model.nx2;
-    }
-  }
-  return true;
 }
 
 } // namespace aligator::gar

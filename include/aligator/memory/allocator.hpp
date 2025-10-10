@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2024 INRIA
+/// @copyright Copyright (C) 2024-2025 INRIA
 #pragma once
 
 #include <Eigen/Core>
@@ -6,17 +6,16 @@
 
 namespace aligator {
 
-using byte_t = std::byte;
-
 /// @brief A convenience subclass of @ref std::pmr::polymorphic_allocator for
 /// bytes.
 /// @details This subclass adds templated @ref allocate() and @ref deallocate()
 /// methods which take the desired pointer alignment as argument. This extends
 /// the standard C++ allocator API for convenience use with allocating buffers
 /// in vectorized linear algbera.
-class polymorphic_allocator : public std::pmr::polymorphic_allocator<byte_t> {
+class polymorphic_allocator
+    : public std::pmr::polymorphic_allocator<std::byte> {
 public:
-  using base = std::pmr::polymorphic_allocator<byte_t>;
+  using base = std::pmr::polymorphic_allocator<std::byte>;
   polymorphic_allocator() noexcept
       : base{std::pmr::get_default_resource()} {}
 
@@ -28,7 +27,7 @@ public:
       : base{other} {}
 
   polymorphic_allocator(std::pmr::memory_resource *resource) noexcept
-      : std::pmr::polymorphic_allocator<byte_t>(resource) {}
+      : std::pmr::polymorphic_allocator<std::byte>(resource) {}
 
   template <typename T>
   [[nodiscard]] T *allocate(size_t n,

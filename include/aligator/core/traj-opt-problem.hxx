@@ -4,7 +4,6 @@
 #pragma once
 
 #include "aligator/core/traj-opt-problem.hpp"
-#include "aligator/solvers/solver-util.hpp"
 #include "aligator/utils/mpc-util.hpp"
 #include "aligator/tracy.hpp"
 
@@ -68,7 +67,7 @@ Scalar TrajOptProblemTpl<Scalar>::evaluate(
   Eigen::setNbThreads(1);
 #pragma omp parallel for num_threads(num_threads) schedule(auto)
   for (std::size_t i = 0; i < nsteps; i++) {
-    stages_[i]->evaluate(xs[i], us[i], xs[i + 1], *sds[i]);
+    stages_[i]->evaluate(xs[i], us[i], *sds[i]);
   }
   Eigen::setNbThreads(0);
 
@@ -104,7 +103,7 @@ void TrajOptProblemTpl<Scalar>::computeDerivatives(
   Eigen::setNbThreads(1);
 #pragma omp parallel for num_threads(num_threads) schedule(auto)
   for (std::size_t i = 0; i < nsteps; i++) {
-    stages_[i]->computeFirstOrderDerivatives(xs[i], us[i], xs[i + 1], *sds[i]);
+    stages_[i]->computeFirstOrderDerivatives(xs[i], us[i], *sds[i]);
     if (compute_second_order) {
       stages_[i]->computeSecondOrderDerivatives(xs[i], us[i], *sds[i]);
     }

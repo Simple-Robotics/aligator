@@ -14,16 +14,19 @@ namespace aligator {
  *  @details  This uses a pinocchio::ModelTpl object to define the manifold.
  */
 template <typename _Scalar>
-struct MultibodyConfiguration : public ManifoldAbstractTpl<_Scalar> {
+struct MultibodyConfiguration : ManifoldAbstractTpl<_Scalar> {
 public:
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Self = MultibodyConfiguration<Scalar>;
   using ModelType = pinocchio::ModelTpl<Scalar>;
   using Base = ManifoldAbstractTpl<Scalar>;
+  using Base::ndx;
+  using Base::nx;
 
   MultibodyConfiguration(const ModelType &model)
-      : model_(model) {};
+      : Base(model.nq, model.nv)
+      , model_(model) {};
   MultibodyConfiguration(const MultibodyConfiguration &) = default;
   MultibodyConfiguration &operator=(const MultibodyConfiguration &) = default;
   MultibodyConfiguration(MultibodyConfiguration &&) = default;
@@ -34,9 +37,6 @@ public:
   bool isNormalized(const ConstVectorRef &x) const {
     return pinocchio::isNormalized(model_, x);
   }
-
-  inline int nx() const { return model_.nq; }
-  inline int ndx() const { return model_.nv; }
 
 protected:
   ModelType model_;

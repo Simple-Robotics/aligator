@@ -32,7 +32,7 @@ struct DirectSumExplicitDynamicsTpl : ExplicitDynamicsModelTpl<_Scalar> {
   void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
                 BaseData &data) const override;
 
-  shared_ptr<DynamicsDataTpl<Scalar>> createData() const override {
+  shared_ptr<BaseData> createData() const override {
     return std::make_shared<Data>(*this);
   }
 
@@ -56,8 +56,7 @@ auto directSum(xyz::polymorphic<ExplicitDynamicsModelTpl<Scalar>> const &m1,
   return DirectSumExplicitDynamicsTpl<Scalar>(m1, m2);
 }
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./explicit-dynamics-direct-sum.txx"
+extern template struct DirectSumExplicitDynamicsTpl<context::Scalar>;
 #endif
+} // namespace aligator
