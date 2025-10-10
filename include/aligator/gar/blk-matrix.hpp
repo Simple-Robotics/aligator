@@ -225,10 +225,6 @@ protected:
     }
     m_data.resize(m_totalRows, m_totalCols);
   }
-
-  /// Check consistency between stored data and the stated block row/column
-  /// dimensions.
-  bool checkDimConsistency() const {}
 };
 
 } // namespace aligator
