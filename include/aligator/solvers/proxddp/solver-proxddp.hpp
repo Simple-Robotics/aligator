@@ -19,9 +19,6 @@
 #include <variant>
 
 namespace aligator {
-namespace gar {
-template <typename Scalar> class RiccatiSolverBase;
-} // namespace gar
 
 enum class LQSolverChoice { SERIAL, PARALLEL, STAGEDENSE };
 
@@ -99,18 +96,18 @@ public:
   };
 
   struct AlmParams {
-    /// Log-factor \f$\alpha_\eta\f$ for primal tolerance (failure)
+    /// \f$\alpha_\eta\f$ for primal tolerance (failure)
     Scalar prim_alpha = 0.1;
-    /// Log-factor \f$\beta_\eta\f$ for primal tolerance (success)
+    /// \f$\beta_\eta\f$ for primal tolerance (success)
     Scalar prim_beta = 0.9;
-    /// Log-factor \f$\alpha_\eta\f$ for dual tolerance (failure)
+    /// \f$\alpha_\eta\f$ for dual tolerance (failure)
     Scalar dual_alpha = 1.;
-    /// Log-factor \f$\beta_\eta\f$ for dual tolerance (success)
+    /// \f$\beta_\eta\f$ for dual tolerance (success)
     Scalar dual_beta = 1.;
-    /// Scale factor for the dual proximal penalty.
+    /// Scale factor for ALM parameter.
     Scalar mu_update_factor = 0.01;
     /// Lower bound on AL parameter
-    Scalar mu_lower_bound = 1e-8; //< Minimum possible penalty parameter.
+    Scalar mu_lower_bound = 1e-8;
   };
 
   /// Subproblem tolerance
@@ -121,16 +118,6 @@ public:
   /// will be the desired primal feasibility, where the dual feasibility
   /// tolerance is controlled by SolverProxDDPTpl::target_tol_dual.
   Scalar target_tol_;
-
-private:
-  /// Solver desired dual feasibility (by default, same as
-  /// SolverProxDDPTpl::target_tol_)
-  Scalar target_dual_tol_;
-  /// When this is true, dual tolerance will be set to
-  /// SolverProxDDPTpl::target_tol_ when SolverProxDDPTpl::run() is called.
-  bool sync_dual_tol_;
-
-public:
   Scalar mu_init_; //< Initial AL parameter
 
   /// @name Inertia-correcting heuristic
@@ -189,10 +176,16 @@ public:
   LinearSolverPtr linear_solver_;
   /// Filter linesearch
   FilterTpl<Scalar> filter_;
-  /// Linesearch function
+  /// Linesearch routine
   LinesearchVariant linesearch_;
 
-private:
+protected:
+  /// Solver desired dual feasibility (by default, same as
+  /// SolverProxDDPTpl::target_tol_)
+  Scalar target_dual_tol_;
+  /// When this is true, dual tolerance will be set to
+  /// SolverProxDDPTpl::target_tol_ when SolverProxDDPTpl::run() is called.
+  bool sync_dual_tol_;
   /// Callbacks
   CallbackMap callbacks_;
   /// Number of threads

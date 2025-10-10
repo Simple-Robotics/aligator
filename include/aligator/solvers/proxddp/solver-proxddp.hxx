@@ -74,15 +74,15 @@ SolverProxDDPTpl<Scalar>::SolverProxDDPTpl(const Scalar tol,
                                            StepAcceptanceStrategy sa_strategy,
                                            HessianApprox hess_approx)
     : target_tol_(tol)
-    , target_dual_tol_(tol)
-    , sync_dual_tol_(true)
     , mu_init_(mu_init)
     , verbose_(verbose)
     , hess_approx_(hess_approx)
     , sa_strategy_(sa_strategy)
     , max_iters(max_iters)
     , filter_(0.0, ls_params.alpha_min, ls_params.max_num_steps)
-    , linesearch_() {
+    , linesearch_()
+    , target_dual_tol_(tol)
+    , sync_dual_tol_(true) {
   ls_params.interp_type = LSInterpolation::CUBIC;
 }
 
