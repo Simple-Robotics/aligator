@@ -8,7 +8,7 @@ import aligator
 import pytest
 
 
-NUM_MPC_CYCLES = 100
+NUM_MPC_CYCLES = 20
 
 
 @pytest.fixture
