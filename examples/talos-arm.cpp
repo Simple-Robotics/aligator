@@ -9,18 +9,15 @@ using Eigen::VectorXd;
 
 using aligator::SolverProxDDPTpl;
 
-constexpr double TOL = 1e-4;
-constexpr std::size_t max_iters = 15;
-
-const std::size_t nsteps = 30;
-
 int main(int, char **) {
+  constexpr double TOL = 1e-4;
+  const std::size_t nsteps = 30;
 
   auto croc_problem = defineCrocoddylProblem(nsteps);
   auto problem = aligator::compat::croc::convertCrocoddylProblem(croc_problem);
 
   double mu_init = 0.001;
-  SolverProxDDPTpl<double> solver(TOL, mu_init, max_iters, aligator::VERBOSE);
+  SolverProxDDPTpl<double> solver(TOL, mu_init, 30ul, aligator::VERBOSE);
 
   std::vector<VectorXd> xs_i, us_i;
   getInitialGuesses(croc_problem, xs_i, us_i);
