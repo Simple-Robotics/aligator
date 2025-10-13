@@ -13,19 +13,28 @@ The ProxDDP solver now defaults to using a linear rollout for the state-control 
 
 Furthermore, on a temporary basis, implicit discrete dynamics **are no longer supported** in the API and solvers.
 
+One major new addition is the `ArenaMatrix` template class, which is a allocator-aware class which manages an Eigen matrix-like object and is compatible with Eigen operations. The design is inspired from [stan-dev/math](https://github.com/stan-dev/math)'s `arena_matrix` class.
+
 ### Fixed
 
 - gar : fix missing move assignment operator in `LqrProblemTpl`
 - Fix C++20 support. Fix `consteval` compilation errors related to fmt
 - Fix `aligator::gar::ParallelRiccatiSolver` missing from docs
 - Fix missing set of Pinocchio-support (cost, dynamics, etc) classes
+- solver-proxddp : fix return type of `LinesearchVariant::isValid()`
+- memory : added template class `ArenaMatrix` (https://github.com/Simple-Robotics/aligator/pull/348)
 
 ### Changed
 
 - gar : allow setting number of refinement iterations for condensed KKT solver
 - ProxDDP solver : change default rollout type to `RolloutType::LINEAR`/`ROLLOUT_LINEAR`
 - solvers/proxddp : make `Workspace` an allocator-aware class
-- core/manifold-base : mark some functions `[[nodiscard]]`
+- add `[[nodiscard]]` attribute to several functions in:
+  - core/manifold-base
+  - gar/lqr-problem
+  - gar/utils
+  - modelling/spaces/cartesian-product
+  - solvers/proxddp/solver-proxddp
 - readme/cmake : update actually expected minimum version of eigenpy to 3.9
 - solvers : make proxddp algo's Results class copyable again (in C++ and Python) (https://github.com/Simple-Robotics/aligator/pull/322)
 - python/visitors : also set `__copy__` method on exposed class with `CopyableVisitor` (https://github.com/Simple-Robotics/aligator/pull/322)
@@ -35,6 +44,10 @@ Furthermore, on a temporary basis, implicit discrete dynamics **are no longer su
 - core/linesearches : move `LinesearchOptions` struct out of the `Linesearch` template class, add CTAD
 - Change all tests to use Catch2 instead of Boost.Test
 - The Riccati algorithms now run faster after the dual-regularisation on co-states and the QR for the implicit dynamics have been removed. The algos might be less numerically accurate.
+  - the base interface and derived solvers no longer take the scalar argument `mudyn` (dual regularisation on the costate)
+- Several classes are now allocator-aware:
+  - the Riccati-based solvers in gar (`ProximalRiccatiSolver`, `ParallelRiccatiSolver`)
+  - `WorkspaceTpl` in `aligator/solvers/proxddp`
 
 #### Changes to dynamics
 
@@ -53,10 +66,15 @@ Furthermore, on a temporary basis, implicit discrete dynamics **are no longer su
 ### Removed
 
 - fwd.hpp : remove deprecated typedef `ODEDataTpl`
-- gar: remove CHOLDMOD backend (https://github.com/Simple-Robotics/aligator/pull/345)
+- gar: remove Cholmod backend ([#345](https://github.com/Simple-Robotics/aligator/pull/345))
+- cmake / pixi : remove Cholmod dependency ([#345](https://github.com/Simple-Robotics/aligator/pull/345))
 - gar: remove support for implicit dynamics in LQ solver interface
   - remove member `LqrKnotTpl::E`
   - simplify Riccati kernel algorithm
+- memory : removed template class `ManagedMatrix` (https://github.com/Simple-Robotics/aligator/pull/348)
+- removed several `.txx` template instantiation declaration files
+- third-party : remove headers related to `boost::span`: `boost/core/data.hpp`, `boost/core/make_span.hpp`, `boost/core/span.hpp`
+- removed header `aligator/tags.hpp`
 
 ## [0.15.0] - 2025-05-23
 
