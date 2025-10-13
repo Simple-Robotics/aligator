@@ -54,6 +54,7 @@ configure = { cmd = [
 ] }
 build = { cmd = "cmake --build build --target all", depends-on = ["configure"] }
 clean = { cmd = "rm -rf build" }
+doc = { cmd = "cmake --build build --target doc", depends-on = ["configure"]}
 test = { cmd = "ctest --test-dir build --output-on-failure", depends-on = [
   "build",
 ] }
@@ -102,6 +103,10 @@ platforms = ["linux-64"]
 activation = { scripts = ["development/pixi/activation_clang.sh"] }
 dependencies = { clangxx = "*" }
 
+[feature.doc.dependencies]
+doxygen = ">=1.13"
+graphviz = ">=12"
+
 [environments]
 default = { features = ["py312"], solve-group = "py312" }
 clang = { features = ["clang", "py312"] }
@@ -112,12 +117,14 @@ openmp = { features = ["openmp", "py312"], solve-group = "py312" }
 tracy = { features = ["tracy", "py312"], solve-group = "py312" }
 py310 = { features = ["py310"], solve-group = "py310" }
 all = { features = [
+  "doc",
   "pinocchio",
   "crocoddyl",
   "openmp",
   "py312",
 ], solve-group = "py312" }
 all-py310 = { features = [
+  "doc",
   "pinocchio",
   "crocoddyl",
   "openmp",
