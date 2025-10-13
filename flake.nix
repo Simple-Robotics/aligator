@@ -24,7 +24,7 @@
           };
           packages = {
             default = self'.packages.py-aligator;
-            aligator = pkgs.aligator.overrideAttrs {
+            aligator = pkgs.aligator.overrideAttrs (super: {
               src = lib.fileset.toSource {
                 root = ./.;
                 fileset = lib.fileset.unions [
@@ -40,7 +40,10 @@
                   ./tests
                 ];
               };
-            };
+              checkInputs = super.checkInputs ++ [
+                pkgs.catch2_3
+              ];
+            });
             py-aligator = pkgs.python3Packages.toPythonModule (self'.packages.aligator.overrideAttrs (super:{
               cmakeFlags = super.cmakeFlags ++ [
                 (lib.cmakeBool "BUILD_PYTHON_INTERFACE" true)
