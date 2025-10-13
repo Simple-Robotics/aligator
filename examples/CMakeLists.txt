@@ -23,8 +23,10 @@ endfunction()
 
 if(NOT BUILD_STANDALONE_PYTHON_INTERFACE)
   create_example(clqr.cpp)
-  create_example(talos-walk.cpp DEPENDENCIES talos_walk_utils)
-  create_example(se2-car.cpp)
+  if(BUILD_WITH_PINOCCHIO_SUPPORT)
+    create_example(talos-walk.cpp DEPENDENCIES talos_walk_utils)
+    create_example(se2-car.cpp)
+  endif()
 
   if(BUILD_CROCODDYL_COMPAT)
     ADD_PROJECT_PRIVATE_DEPENDENCY(example-robot-data 4.0.9 REQUIRED)
