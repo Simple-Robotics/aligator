@@ -36,8 +36,7 @@ jobs:
       - name: Build documentation
         shell: bash -l {0}
         run: |
-          pixi run configure
-          cmake --build build --config Release --target doc
+          pixi run doc
 
       - name: Upload to GitHub pages
         uses: actions/upload-pages-artifact@v3
