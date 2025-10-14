@@ -21,7 +21,7 @@ function(add_aligator_test2 test_name dependencies)
   set(test_name "${PROJECT_NAME}-test-cpp-${test_name}")
   message(STATUS "Adding cpp test: ${test_name} (${test_file})")
 
-  ADD_UNIT_TEST(${test_name} ${test_file} ${TEST_HEADERS})
+  add_unit_test(${test_name} ${test_file} ${TEST_HEADERS})
   set_target_properties(${test_name} PROPERTIES LINKER_LANGUAGE CXX)
   set_standard_output_directory(${test_name})
   target_include_directories(${test_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

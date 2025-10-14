@@ -36,7 +36,7 @@ foreach(pyfile ${PYTHON_TESTS})
       ${CMAKE_CURRENT_BINARY_DIR}/${pyfile}
   )
   message(STATUS "Adding Python test: ${test_name}")
-  ADD_PYTHON_UNIT_TEST(
+  add_python_unit_test(
     ${test_name}
     "tests/python/${pyfile}"
     "tests/python"
@@ -46,10 +46,10 @@ foreach(pyfile ${PYTHON_TESTS})
 endforeach()
 
 function(add_test_binding_lib test_name)
-  CREATE_CTEST_BUILD_TESTS_TARGET()
+  create_ctest_build_tests_target()
 
   set(target_name "${PROJECT_NAME}-${test_name}")
-  Python3_add_library(${target_name} MODULE "${test_name}.cpp")
+  python3_add_library(${target_name} MODULE "${test_name}.cpp")
   set_standard_output_directory(${target_name})
   target_link_libraries(${target_name} PUBLIC ${PYLIB_NAME})
   target_link_libraries(${target_name} PUBLIC eigenpy::eigenpy)

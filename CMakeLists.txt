@@ -67,7 +67,7 @@ if(POLICY CMP0167)
   set(CMAKE_POLICY_DEFAULT_CMP0167 NEW)
 endif()
 include(${JRL_CMAKE_MODULES}/base.cmake)
-COMPUTE_PROJECT_ARGS(PROJECT_ARGS LANGUAGES CXX)
+compute_project_args(PROJECT_ARGS LANGUAGES CXX)
 project(${PROJECT_NAME} ${PROJECT_ARGS})
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
@@ -95,7 +95,7 @@ elseif(UNIX)
 endif()
 include(CMakeDependentOption)
 
-APPLY_DEFAULT_APPLE_CONFIGURATION()
+apply_default_apple_configuration()
 
 if(WIN32)
   set(LINK copy_if_different)
@@ -189,33 +189,33 @@ endif()
 # ----------------------------------------------------
 # --- DEPENDENCIES -----------------------------------
 # ----------------------------------------------------
-ADD_PROJECT_DEPENDENCY(
+add_project_dependency(
   Eigen3
   3.3.7
   REQUIRED
   PKG_CONFIG_REQUIRES "eigen3 >= 3.3.7"
 )
-ADD_PROJECT_DEPENDENCY(
+add_project_dependency(
   fmt
   REQUIRED
   PKG_CONFIG_REQUIRES "fmt >= 10.0.0"
 )
 
 if(BUILD_WITH_OPENMP_SUPPORT)
-  ADD_PROJECT_DEPENDENCY(OpenMP REQUIRED)
+  add_project_dependency(OpenMP REQUIRED)
   add_compile_definitions(ALIGATOR_MULTITHREADING)
 endif()
 
 set(BOOST_REQUIRED_COMPONENTS filesystem)
-SET_BOOST_DEFAULT_OPTIONS()
-EXPORT_BOOST_DEFAULT_OPTIONS()
-ADD_PROJECT_DEPENDENCY(Boost REQUIRED COMPONENTS ${BOOST_REQUIRED_COMPONENTS})
+set_boost_default_options()
+export_boost_default_options()
+add_project_dependency(Boost REQUIRED COMPONENTS ${BOOST_REQUIRED_COMPONENTS})
 
 if(BUILD_WITH_PINOCCHIO_SUPPORT)
   message(STATUS "Building aligator with Pinocchio support.")
 
   set(PINOCCHIO_MINIMUM_VERSION "3.4.0")
-  ADD_PROJECT_DEPENDENCY(
+  add_project_dependency(
     pinocchio
     ${PINOCCHIO_MINIMUM_VERSION}
     REQUIRED
@@ -232,7 +232,7 @@ endif()
 
 if(BUILD_PYTHON_INTERFACE)
   set(PYTHON_COMPONENTS Interpreter Development NumPy)
-  ADD_PROJECT_DEPENDENCY(
+  add_project_dependency(
     eigenpy
     3.9.0
     REQUIRED
@@ -313,7 +313,7 @@ if(ALIGATOR_TRACY_ENABLE AND DOWNLOAD_TRACY)
   endif()
 elseif(ALIGATOR_TRACY_ENABLE)
   # assume it is installed somewhere
-  ADD_PROJECT_DEPENDENCY(Tracy)
+  add_project_dependency(Tracy)
   if(NOT ${tracy_FOUND})
     message(
       FATAL_ERROR
@@ -385,12 +385,12 @@ function(create_library)
 endfunction()
 
 if(BUILD_STANDALONE_PYTHON_INTERFACE)
-  ADD_PROJECT_DEPENDENCY(${PROJECT_NAME} REQUIRED CONFIG)
+  add_project_dependency(${PROJECT_NAME} REQUIRED CONFIG)
 else()
   create_library()
 
-  ADD_HEADER_GROUP(LIB_HEADERS)
-  ADD_SOURCE_GROUP(LIB_SOURCES)
+  add_header_group(LIB_HEADERS)
+  add_source_group(LIB_SOURCES)
 
   install(
     TARGETS ${PROJECT_NAME}
@@ -414,7 +414,7 @@ if(DOWNLOAD_TRACY)
 endif()
 
 if(BUILD_CROCODDYL_COMPAT AND NOT BUILD_STANDALONE_PYTHON_INTERFACE)
-  ADD_PROJECT_DEPENDENCY(crocoddyl 3.0.1 REQUIRED)
+  add_project_dependency(crocoddyl 3.0.1 REQUIRED)
   add_subdirectory(src/compat/crocoddyl)
 endif()
 
@@ -452,7 +452,7 @@ macro(create_ex_or_bench exfile exname)
 endmacro()
 
 if(BUILD_WITH_PINOCCHIO_SUPPORT AND (BUILD_EXAMPLES OR BUILD_BENCHMARKS))
-  ADD_PROJECT_PRIVATE_DEPENDENCY(example-robot-data 4.0.9 REQUIRED)
+  add_project_private_dependency(example-robot-data 4.0.9 REQUIRED)
 endif()
 
 # create an utility library to avoid recompiling crocoddyl talos arm problem
@@ -564,11 +564,11 @@ if(BUILD_WITH_OPENMP_SUPPORT)
 endif()
 if(BUILD_CROCODDYL_COMPAT)
   EXPORT_VARIABLE(ALIGATOR_WITH_CROCODDYL_COMPAT ON)
-  PKG_CONFIG_APPEND_LIBS(aligator_croc_compat)
+  pkg_config_append_libs(aligator_croc_compat)
 endif()
 
-PKG_CONFIG_APPEND_LIBS(${PROJECT_NAME})
-PKG_CONFIG_APPEND_BOOST_LIBS(${BOOST_REQUIRED_COMPONENTS})
-PKG_CONFIG_APPEND_CFLAGS("${CFLAGS_DEPENDENCIES}")
+pkg_config_append_libs(${PROJECT_NAME})
+pkg_config_append_boost_libs(${BOOST_REQUIRED_COMPONENTS})
+pkg_config_append_cflags("${CFLAGS_DEPENDENCIES}")
 
-SETUP_PROJECT_FINALIZE()
+setup_project_finalize()
