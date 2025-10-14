@@ -15,7 +15,7 @@ function(aligator_create_python_extension name)
   endforeach()
   set(_sources ${arg_UNPARSED_ARGUMENTS})
 
-  python3_add_library(${name} ${_parse_oneValueArgs} ${_sources})
+  Python3_add_library(${name} ${_parse_oneValueArgs} ${_sources})
   target_link_libraries(${name} PRIVATE eigenpy::eigenpy aligator::aligator)
   target_compile_definitions(${name} PRIVATE PYTHON_MODULE_NAME=${name})
 endfunction()

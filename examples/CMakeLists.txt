@@ -29,7 +29,7 @@ if(NOT BUILD_STANDALONE_PYTHON_INTERFACE)
   endif()
 
   if(BUILD_CROCODDYL_COMPAT)
-    add_project_private_dependency(example-robot-data 4.0.9 REQUIRED)
+    ADD_PROJECT_PRIVATE_DEPENDENCY(example-robot-data 4.0.9 REQUIRED)
     create_example(
       talos-arm.cpp
       DEPENDENCIES aligator::croc_compat croc_talos_arm_utils

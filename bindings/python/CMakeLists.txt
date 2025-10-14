@@ -29,7 +29,7 @@ if(BUILD_CROCODDYL_COMPAT)
 endif()
 
 function(make_bindings)
-  python3_add_library(
+  Python3_add_library(
     ${PYLIB_NAME}
     MODULE
     WITH_SOABI
@@ -43,7 +43,7 @@ function(make_bindings)
     PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_NAME}
   )
   if(UNIX)
-    get_relative_rpath(${${PYLIB_NAME}_INSTALL_DIR} PYLIB_INSTALL_RPATH)
+    GET_RELATIVE_RPATH(${${PYLIB_NAME}_INSTALL_DIR} PYLIB_INSTALL_RPATH)
     set_target_properties(
       ${PYLIB_NAME}
       PROPERTIES INSTALL_RPATH "${PYLIB_INSTALL_RPATH}"
@@ -90,12 +90,12 @@ else()
 endif()
 # --- GENERATE STUBS
 if(GENERATE_PYTHON_STUBS)
-  python_build_get_target(python_build_target_name)
-  load_stubgen()
+  PYTHON_BUILD_GET_TARGET(python_build_target_name)
+  LOAD_STUBGEN()
   # Set PYWRAP and PROJECT_NAME as stubs dependencies.
   # PROJECT_NAME is mandatory (even if it's a PYWRAP dependency)
   # to find PROJECT_NAME name DLL on windows.
-  generate_stubs(
+  GENERATE_STUBS(
     ${CMAKE_CURRENT_BINARY_DIR}
     ${PROJECT_NAME}
     ${ABSOLUTE_PYTHON_SITELIB}
@@ -108,9 +108,9 @@ set(${PYLIB_NAME}_PYFILES __init__.py)
 set(${PYLIB_NAME}_PYFILES_UTILS __init__.py plotting.py)
 
 foreach(pyfile ${${PYLIB_NAME}_PYFILES})
-  python_install_on_site(${PROJECT_NAME} ${pyfile})
+  PYTHON_INSTALL_ON_SITE(${PROJECT_NAME} ${pyfile})
 endforeach()
 
 foreach(pyfile ${${PYLIB_NAME}_PYFILES_UTILS})
-  python_install_on_site(${PROJECT_NAME}/utils ${pyfile})
+  PYTHON_INSTALL_ON_SITE(${PROJECT_NAME}/utils ${pyfile})
 endforeach()
