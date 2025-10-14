@@ -48,6 +48,7 @@ One major new addition is the `ArenaMatrix` template class, which is a allocator
 - Several classes are now allocator-aware:
   - the Riccati-based solvers in gar (`ProximalRiccatiSolver`, `ParallelRiccatiSolver`)
   - `WorkspaceTpl` in `aligator/solvers/proxddp`
+- cmake/pixi: update maximum version for fmt library to v12 included (https://github.com/Simple-Robotics/aligator/pull/355)
 
 #### Changes to dynamics
 
