@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0] - 2025-10-15
+
 This release brings a major change to the ProxDDP solver, which no longer uses proximal iteration the co-state (the dynamics' Lagrange multiplies). This choice is made to increase the solver's overall performance.
 
 The ProxDDP solver now defaults to using a linear rollout for the state-control trajectory update.
@@ -417,7 +419,8 @@ The following **API-BREAKING** changes come from PR [#229](https://github.com/Si
 
 * This is the first release of `aligator`. This library is a joint effort between INRIA and LAAS-CNRS, and will be maintained and expanded in the future. Please provide constructive feedback and contribute!
 
-[Unreleased]: https://github.com/Simple-Robotics/aligator/compare/v0.15.0...HEAD
+[Unreleased]: https://github.com/Simple-Robotics/aligator/compare/v0.16.0...HEAD
+[0.16.0]: https://github.com/Simple-Robotics/aligator/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/Simple-Robotics/aligator/compare/v0.14.1...v0.15.0
 [0.14.1]: https://github.com/Simple-Robotics/aligator/compare/v0.14.0...v0.14.1
 [0.14.0]: https://github.com/Simple-Robotics/aligator/compare/v0.13.0...v0.14.0
