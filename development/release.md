@@ -3,7 +3,7 @@
 To create a release with Pixi run the following commands on the **main** branch:
 
 ```bash
-aligator_VERSION=X.Y.Z pixi run release_new_version
+ALIGATOR_VERSION=X.Y.Z pixi run release_new_version
 git push origin
 git push origin vX.Y.Z
 ```
