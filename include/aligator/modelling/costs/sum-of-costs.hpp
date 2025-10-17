@@ -76,10 +76,32 @@ template <typename _Scalar> struct CostStackTpl : CostAbstractTpl<_Scalar> {
     return dynamic_cast<Derived *>(&*item.first);
   }
 
+  /// @copybrief getComponent()
   template <typename Derived>
   const Derived *getComponent(const CostKey &key) const {
     CostItem &item = components_.at(key);
     return dynamic_cast<const Derived *>(&*item.first);
+  }
+
+  /// @brief Get weight for a given component.
+  Scalar getWeight(const CostKey &key) const {
+    const CostItem &item = components_.at(key);
+    return item.second;
+  }
+
+  /// @brief Get weight for a given component.
+  /// @returns A mutable reference to the weight.
+  Scalar &getWeight(const CostKey &key) {
+    CostItem &item = components_.at(key);
+    return item.second;
+  }
+
+  /// @brief Set the weight for a given component.
+  /// @returns Reference to this.
+  CostStackTpl &setWeight(const CostKey &key, const Scalar value) {
+    CostItem &item = components_.at(key);
+    item.second = value;
+    return *this;
   }
 
   void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
