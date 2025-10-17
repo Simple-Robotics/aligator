@@ -56,11 +56,12 @@ def test_cost_stack():
 
     rcost_ref = cost_stack.getComponent(0)
     assert isinstance(rcost_ref, QuadraticCost)
-    rcost_ref.interp_u[:] = 0.1
 
     rcost_ref2 = cost_stack.getComponent(0)
     assert isinstance(rcost_ref2, QuadraticCost)
-    assert_allclose(rcost_ref2.interp_u, 0.1)
+
+    rcost_ref.interp_u[:] = 0.1
+    assert_allclose(rcost_ref2.interp_u, 0.1)  # works
 
     # second getter API
     rcost_ref3, w = cost_stack.components[0]
@@ -69,6 +70,7 @@ def test_cost_stack():
 
     cost_stack.setWeight(0, 2.0)
     assert cost_stack.components[0][1] == 2.0
+
     # check that rcost_ref3, using map getter API, was indeed a reference
     rcost_ref3.interp_x[:] = 0.42
     assert_allclose(rcost_ref.interp_x, 0.42)  # fails
