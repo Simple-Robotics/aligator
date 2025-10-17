@@ -5,15 +5,7 @@
 
 #include <eigenpy/std-pair.hpp>
 #include <eigenpy/variant.hpp>
-#if EIGENPY_VERSION_AT_LEAST(3, 9, 1)
-#define ALIGATOR_EIGENPY_HAS_MAP_SUPPORT 1
-#else
-#define ALIGATOR_EIGENPY_HAS_MAP_SUPPORT 0
-#endif
-
-#if ALIGATOR_EIGENPY_HAS_MAP_SUPPORT
 #include <eigenpy/std-map.hpp>
-#endif
 
 namespace aligator {
 namespace python {
@@ -43,13 +35,11 @@ void exposeCostStack() {
                     ("self"_a, "space", "nu", "components"_a = bp::list(),
                      "weights"_a = bp::list())))
             .def(bp::init<const PolyCost &>(("self"_a, "cost")))
-#if ALIGATOR_EIGENPY_HAS_MAP_SUPPORT
             .def(bp::init<PolyManifold, int, const CostMap &>(
                 ("self"_a, "components"),
                 "Construct the CostStack from a CostMap object."))
             .def_readonly("components", &CostStack::components_,
                           "Components of this cost stack.")
-#endif
             .def(
                 "getComponent",
                 +[](CostStack &self, const CostKey &key) -> PolyCost & {
@@ -78,9 +68,7 @@ void exposeCostStack() {
             .def("size", &CostStack::size, "Get the number of cost components.")
             .def(CopyableVisitor<CostStack>())
             .def(PolymorphicMultiBaseVisitor<CostAbstract>());
-#if ALIGATOR_EIGENPY_HAS_MAP_SUPPORT
     eigenpy::GenericMapVisitor<CostMap, true>::expose("CostMap");
-#endif
   }
 
   {
@@ -89,9 +77,7 @@ void exposeCostStack() {
         bp::class_<CostStackData, bp::bases<CostData>>(
             "CostStackData", "Data struct for CostStack.", bp::no_init)
             .def_readonly("sub_cost_data", &CostStackData::sub_cost_data);
-#if ALIGATOR_EIGENPY_HAS_MAP_SUPPORT
     eigenpy::GenericMapVisitor<CostStackData::DataMap, true>::expose("CostMap");
-#endif
   }
 }
 
