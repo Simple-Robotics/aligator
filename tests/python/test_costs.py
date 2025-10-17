@@ -69,6 +69,9 @@ def test_cost_stack():
 
     cost_stack.setWeight(0, 2.0)
     assert cost_stack.components[0][1] == 2.0
+    # check that rcost_ref3, using map getter API, was indeed a reference
+    rcost_ref3.interp_x[:] = 0.42
+    assert_allclose(rcost_ref.interp_x, 0.42)  # fails
 
     # test other API for cost,
     # building from dict
