@@ -2,8 +2,9 @@ from aligator import manifolds, QuadraticCost, CostStack
 import aligator
 import numpy as np
 import eigenpy
-
 import pytest
+
+from numpy.testing import assert_allclose
 from utils import cost_finite_grad
 
 FD_EPS = 1e-7
@@ -21,8 +22,8 @@ def test_cost_stack():
     nu = 2
     space = manifolds.VectorSpace(nx)
     cost_stack = CostStack(space, nu)
-    Q = np.random.randn(4, nx)
-    Q = Q.T @ Q / nx
+    Qr = np.random.randn(4, nx)
+    Q = Qr.T @ Qr / nx
     R = np.eye(nu)
     rcost = QuadraticCost(Q, R)
     assert isinstance(rcost.space, manifolds.VectorSpace)
@@ -44,20 +45,41 @@ def test_cost_stack():
         cost_stack.computeHessians(x0, u0, data2)
 
         assert data1.value == data2.value
-        assert np.allclose(data1.grad, data2.grad, atol=ATOL)
-        assert np.allclose(data1.hess, data2.hess, atol=ATOL)
+        assert_allclose(data1.grad, data2.grad, atol=ATOL)
+        assert_allclose(data1.hess, data2.hess, atol=ATOL)
 
-        assert np.allclose(data1.Lxx, Q, atol=ATOL)
-        assert np.allclose(data1.Luu, R, atol=ATOL)
+        assert_allclose(data1.Lxx, Q, atol=ATOL)
+        assert_allclose(data1.Luu, R, atol=ATOL)
+
+    with pytest.raises(KeyError, match="Key unk not found."):
+        cost_stack.getComponent("unk")
 
     rcost_ref = cost_stack.getComponent(0)
     assert isinstance(rcost_ref, QuadraticCost)
 
-    if eigenpy.__version__ >= "3.9.1":
-        # test other API for cost,
-        # building from dict
-        cost_stack = CostStack(space, nu, {"quad": (rcost, 1.0)})
-        assert cost_stack.size() == 1
+    rcost_ref2 = cost_stack.getComponent(0)
+    assert isinstance(rcost_ref2, QuadraticCost)
+
+    rcost_ref.interp_u[:] = 0.1
+    assert_allclose(rcost_ref2.interp_u, 0.1)  # works
+
+    # second getter API
+    rcost_ref3, w = cost_stack.components[0]
+    assert isinstance(rcost_ref3, QuadraticCost)
+    assert w == 1.0
+
+    cost_stack.setWeight(0, 2.0)
+    assert cost_stack.components[0][1] == 2.0
+
+    # check that rcost_ref3, using map getter API, was indeed a reference
+    with pytest.raises(AssertionError):
+        rcost_ref3.interp_x[:] = 0.42
+        assert_allclose(rcost_ref.interp_x, 0.42)  # fails
+
+    # test other API for cost,
+    # building from dict
+    cost_stack = CostStack(space, nu, {"quad": (rcost, 1.0)})
+    assert cost_stack.size == 1
 
 
 def test_composite_cost():
@@ -96,9 +118,8 @@ def test_composite_cost():
     print(data.value)
     print(data.grad)
     print(data.hess)
-    assert np.allclose(data.grad, ref_grad)
-    assert np.allclose(data.hess, ref_hess)
-    print("----")
+    assert_allclose(data.grad, ref_grad)
+    assert_allclose(data.hess, ref_hess)
 
     weights = np.ones(fun.nr)
     log_cost = aligator.LogResidualCost(space, fun, weights)
@@ -119,8 +140,7 @@ def test_composite_cost():
         cost.evaluate(x0, u0, data)
         cost.computeGradients(x0, u0, data)
         fgrad = cost_finite_grad(cost, space, x0, u0, FD_EPS)
-        assert np.allclose(fgrad, data.grad, atol=ATOL)
-    print("----")
+        assert_allclose(fgrad, data.grad, atol=ATOL)
 
 
 def test_log_barrier():
@@ -154,13 +174,12 @@ def test_log_barrier():
     print(data.grad)
     print(data.hess)
 
-    for i in range(100):
+    for _ in range(100):
         x0 = sample_gauss(space)
         cost.evaluate(x0, u0, data)
         cost.computeGradients(x0, u0, data)
         fgrad = cost_finite_grad(cost, space, x0, u0, FD_EPS)
-        assert np.allclose(fgrad, data.grad, atol=ATOL)
-    print("----")
+        assert_allclose(fgrad, data.grad, atol=ATOL)
 
 
 def test_quad_state():
@@ -275,9 +294,9 @@ def test_direct_sum():
     np.set_printoptions(precision=5, linewidth=250)
     print(data.Lx)
     print(d1.Lx, d2.Lx)
-    assert np.allclose(data.value, d1.value + d2.value)
-    assert np.allclose(data.Lx[:nv], d1.Lx)
-    assert np.allclose(data.Lx[nv:], d2.Lx)
+    assert_allclose(data.value, d1.value + d2.value)
+    assert_allclose(data.Lx[:nv], d1.Lx)
+    assert_allclose(data.Lx[nv:], d2.Lx)
 
 
 if __name__ == "__main__":

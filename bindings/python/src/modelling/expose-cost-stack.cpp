@@ -1,19 +1,12 @@
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/visitors.hpp"
 
+#include "aligator/overloads.hpp"
 #include "aligator/modelling/costs/sum-of-costs.hpp"
 
 #include <eigenpy/std-pair.hpp>
 #include <eigenpy/variant.hpp>
-#if EIGENPY_VERSION_AT_LEAST(3, 9, 1)
-#define ALIGATOR_EIGENPY_HAS_MAP_SUPPORT 1
-#else
-#define ALIGATOR_EIGENPY_HAS_MAP_SUPPORT 0
-#endif
-
-#if ALIGATOR_EIGENPY_HAS_MAP_SUPPORT
 #include <eigenpy/std-map.hpp>
-#endif
 
 namespace aligator {
 namespace python {
@@ -21,17 +14,32 @@ using context::CostAbstract;
 using context::CostData;
 using context::Manifold;
 using context::Scalar;
+using CostStack = CostStackTpl<Scalar>;
+using CostKey = CostStack::CostKey;
+
+void key_err_python_manager(const CostKey &key) {
+  char msg[100];
+  std::visit(
+      overloads{
+          [&](size_t k) { snprintf(msg, 100ul, "Key %zu not found.", k); },
+          [&](const std::string &k) {
+            snprintf(msg, 100ul, "Key %s not found.", k.data());
+          },
+      },
+      key);
+  PyErr_SetString(PyExc_KeyError, msg);
+  bp::throw_error_already_set();
+};
 
 void exposeCostStack() {
-  using CostStack = CostStackTpl<Scalar>;
   using CostStackData = CostStackDataTpl<Scalar>;
-  using CostKey = CostStack::CostKey;
   using PolyCost = CostStack::PolyCost;
   using PolyManifold = xyz::polymorphic<Manifold>;
   using CostItem = CostStack::CostItem;
   using CostMap = CostStack::CostMap;
   eigenpy::StdPairConverter<CostItem>::registration();
   eigenpy::VariantConverter<CostKey>::registration();
+  eigenpy::GenericMapVisitor<CostMap, true>::expose("CostMap");
 
   {
     bp::scope scope =
@@ -43,24 +51,29 @@ void exposeCostStack() {
                     ("self"_a, "space", "nu", "components"_a = bp::list(),
                      "weights"_a = bp::list())))
             .def(bp::init<const PolyCost &>(("self"_a, "cost")))
-#if ALIGATOR_EIGENPY_HAS_MAP_SUPPORT
             .def(bp::init<PolyManifold, int, const CostMap &>(
                 ("self"_a, "components"),
                 "Construct the CostStack from a CostMap object."))
             .def_readonly("components", &CostStack::components_,
                           "Components of this cost stack.")
-#endif
             .def(
                 "getComponent",
                 +[](CostStack &self, const CostKey &key) -> PolyCost & {
                   if (!self.components_.contains(key)) {
-                    PyErr_SetString(PyExc_KeyError, "Key not found.");
-                    bp::throw_error_already_set();
+                    key_err_python_manager(key);
                   }
-                  auto &c = self.components_.at(key);
+                  CostItem &c = self.components_.at(key);
                   return c.first;
                 },
                 ("self"_a, "key"), bp::return_internal_reference<>())
+            .def(
+                "getWeight",
+                +[](CostStack &self, const CostKey &key) {
+                  return self.getWeight(key);
+                },
+                ("self"_a, "key"))
+            .def("setWeight", &CostStack::setWeight, ("self"_a, "key", "value"),
+                 bp::return_internal_reference<>())
             .def(
                 "addCost",
                 +[](CostStack &self, const PolyCost &cost, const Scalar weight)
@@ -75,12 +88,10 @@ void exposeCostStack() {
                 },
                 bp::return_internal_reference<>(),
                 ("self"_a, "key", "cost", "weight"_a = 1.))
-            .def("size", &CostStack::size, "Get the number of cost components.")
+            .add_property("size", &CostStack::size,
+                          "Number of cost components.")
             .def(CopyableVisitor<CostStack>())
             .def(PolymorphicMultiBaseVisitor<CostAbstract>());
-#if ALIGATOR_EIGENPY_HAS_MAP_SUPPORT
-    eigenpy::GenericMapVisitor<CostMap, true>::expose("CostMap");
-#endif
   }
 
   {
@@ -89,9 +100,7 @@ void exposeCostStack() {
         bp::class_<CostStackData, bp::bases<CostData>>(
             "CostStackData", "Data struct for CostStack.", bp::no_init)
             .def_readonly("sub_cost_data", &CostStackData::sub_cost_data);
-#if ALIGATOR_EIGENPY_HAS_MAP_SUPPORT
     eigenpy::GenericMapVisitor<CostStackData::DataMap, true>::expose("CostMap");
-#endif
   }
 }
 

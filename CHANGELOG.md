@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- modelling/costs : add getter and setter for cost term weights
+
+### Changed
+
+- python: aligator now requires eigenpy version 3.10.3 at least
+- python: remove eigenpy version checks
+- python: improve `CostStack.getComponent()` error message
+- tests/python: more comprehensive test for `aligator.CostStack`
+
 ## [0.16.0] - 2025-10-15
 
 This release brings a major change to the ProxDDP solver, which no longer uses proximal iteration the co-state (the dynamics' Lagrange multiplies). This choice is made to increase the solver's overall performance.
