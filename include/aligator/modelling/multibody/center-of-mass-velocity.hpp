@@ -21,6 +21,7 @@ public:
   using Data = CenterOfMassVelocityDataTpl<Scalar>;
 
   Model pin_model_;
+  Vector3s v_ref_;
 
   CenterOfMassVelocityResidualTpl(const int ndx, const int nu,
                                   const Model &model, const Vector3s &frame_vel)
@@ -28,8 +29,11 @@ public:
       , pin_model_(model)
       , v_ref_(frame_vel) {}
 
-  const Vector3s &getReference() const { return v_ref_; }
-  void setReference(const Eigen::Ref<const Vector3s> &v_new) { v_ref_ = v_new; }
+  ALIGATOR_DEPRECATED const Vector3s &getReference() const { return v_ref_; }
+  ALIGATOR_DEPRECATED void
+  setReference(const Eigen::Ref<const Vector3s> &v_new) {
+    v_ref_ = v_new;
+  }
 
   void evaluate(const ConstVectorRef &x, BaseData &data) const;
 
@@ -38,9 +42,6 @@ public:
   shared_ptr<BaseData> createData() const {
     return std::make_shared<Data>(*this);
   }
-
-protected:
-  Vector3s v_ref_;
 };
 
 template <typename Scalar>
@@ -58,8 +59,8 @@ struct CenterOfMassVelocityDataTpl : StageFunctionDataTpl<Scalar> {
       const CenterOfMassVelocityResidualTpl<Scalar> &model);
 };
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./center-of-mass-velocity.txx"
+extern template struct CenterOfMassVelocityResidualTpl<context::Scalar>;
+extern template struct CenterOfMassVelocityDataTpl<context::Scalar>;
 #endif
+} // namespace aligator

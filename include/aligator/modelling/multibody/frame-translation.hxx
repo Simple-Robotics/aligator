@@ -35,7 +35,7 @@ void FrameTranslationResidualTpl<Scalar>::computeJacobians(
   pinocchio::computeJointJacobians(pin_model_, pdata);
   pinocchio::getFrameJacobian(pin_model_, pdata, pin_frame_id_,
                               pinocchio::LOCAL_WORLD_ALIGNED, d.fJf_);
-  d.Jx_.leftCols(pin_model_.nv) = d.fJf_.topRows(3);
+  d.Jx_.leftCols(pin_model_.nv) = d.fJf_.template topRows<3>();
 }
 
 template <typename Scalar>

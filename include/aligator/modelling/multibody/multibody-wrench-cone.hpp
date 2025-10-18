@@ -116,8 +116,8 @@ struct MultibodyWrenchConeDataTpl : StageFunctionDataTpl<Scalar> {
       const MultibodyWrenchConeResidualTpl<Scalar> *model);
 };
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/modelling/multibody/multibody-wrench-cone.txx"
+extern template struct MultibodyWrenchConeResidualTpl<context::Scalar>;
+extern template struct MultibodyWrenchConeDataTpl<context::Scalar>;
 #endif
+} // namespace aligator

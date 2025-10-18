@@ -27,14 +27,16 @@ public:
   using Data = FrameVelocityDataTpl<Scalar>;
 
   Model pin_model_;
+  Motion vref_;
+  pinocchio::ReferenceFrame type_;
 
   FrameVelocityResidualTpl(const int ndx, const int nu, const Model &model,
                            const Motion &velocity,
                            const pinocchio::FrameIndex id,
                            const pinocchio::ReferenceFrame type);
 
-  const Motion &getReference() const { return vref_; }
-  void setReference(const Motion &v_new) { vref_ = v_new; }
+  ALIGATOR_DEPRECATED const Motion &getReference() const { return vref_; }
+  ALIGATOR_DEPRECATED void setReference(const Motion &v_new) { vref_ = v_new; }
 
   void evaluate(const ConstVectorRef &x, BaseData &data) const;
   void computeJacobians(const ConstVectorRef &x, BaseData &data) const;
@@ -42,10 +44,6 @@ public:
   shared_ptr<BaseData> createData() const {
     return std::make_shared<Data>(*this);
   }
-
-protected:
-  Motion vref_;
-  pinocchio::ReferenceFrame type_;
 };
 
 template <typename Scalar>
@@ -60,8 +58,8 @@ struct FrameVelocityDataTpl : StageFunctionDataTpl<Scalar> {
   FrameVelocityDataTpl(const FrameVelocityResidualTpl<Scalar> &model);
 };
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/modelling/multibody/frame-velocity.txx"
+extern template struct FrameVelocityResidualTpl<context::Scalar>;
+extern template struct FrameVelocityDataTpl<context::Scalar>;
 #endif
+} // namespace aligator

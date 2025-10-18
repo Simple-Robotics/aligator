@@ -90,8 +90,8 @@ struct FrameCollisionDataTpl : StageFunctionDataTpl<Scalar> {
   FrameCollisionDataTpl(const FrameCollisionResidualTpl<Scalar> &model);
 };
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/modelling/multibody/frame-collision.txx"
+extern template struct FrameCollisionResidualTpl<context::Scalar>;
+extern template struct FrameCollisionDataTpl<context::Scalar>;
 #endif
+} // namespace aligator

@@ -61,8 +61,8 @@ struct DCMPositionDataTpl : StageFunctionDataTpl<Scalar> {
   DCMPositionDataTpl(const DCMPositionResidualTpl<Scalar> &model);
 };
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./dcm-position.txx"
+extern template struct DCMPositionResidualTpl<context::Scalar>;
+extern template struct DCMPositionDataTpl<context::Scalar>;
 #endif
+} // namespace aligator

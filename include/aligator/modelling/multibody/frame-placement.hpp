@@ -75,8 +75,8 @@ struct FramePlacementDataTpl : StageFunctionDataTpl<Scalar> {
   FramePlacementDataTpl(const FramePlacementResidualTpl<Scalar> &model);
 };
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/modelling/multibody/frame-placement.txx"
+extern template struct FramePlacementResidualTpl<context::Scalar>;
+extern template struct FramePlacementDataTpl<context::Scalar>;
 #endif
+} // namespace aligator

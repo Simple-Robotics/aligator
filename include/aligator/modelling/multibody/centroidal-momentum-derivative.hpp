@@ -67,8 +67,8 @@ struct CentroidalMomentumDerivativeDataTpl : StageFunctionDataTpl<Scalar> {
       const CentroidalMomentumDerivativeResidualTpl<Scalar> *model);
 };
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/modelling/multibody/centroidal-momentum-derivative.txx"
+extern template struct CentroidalMomentumDerivativeResidualTpl<context::Scalar>;
+extern template struct CentroidalMomentumDerivativeDataTpl<context::Scalar>;
 #endif
+} // namespace aligator

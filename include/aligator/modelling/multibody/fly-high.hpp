@@ -75,9 +75,8 @@ struct FlyHighResidualTpl<Scalar>::Data : StageFunctionDataTpl<Scalar> {
   Scalar ez;
 };
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/modelling/multibody/fly-high.txx"
 #endif
+extern template struct FlyHighResidualTpl<context::Scalar>;
 #endif
+} // namespace aligator
