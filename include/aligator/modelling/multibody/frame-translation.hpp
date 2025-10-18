@@ -1,7 +1,7 @@
 #pragma once
 
 #include "aligator/core/unary-function.hpp"
-#include "./fwd.hpp"
+#include "aligator/modelling/multibody/fwd.hpp"
 
 #include <pinocchio/multibody/model.hpp>
 #include <pinocchio/multibody/frame.hpp>

@@ -1,7 +1,7 @@
 /// @file
 /// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
 #ifdef ALIGATOR_WITH_PINOCCHIO
-#include "aligator/modelling/multibody/context.hpp"
+#include "aligator/modelling/multibody/fwd.hpp"
 
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/modelling/multibody-utils.hpp"

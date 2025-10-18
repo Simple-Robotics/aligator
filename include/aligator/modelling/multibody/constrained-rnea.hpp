@@ -1,7 +1,6 @@
 #pragma once
 
-#include "./fwd.hpp"
-#include "aligator/fwd.hpp"
+#include "aligator/modelling/multibody/fwd.hpp"
 
 #include <pinocchio/algorithm/compute-all-terms.hpp>
 #include <pinocchio/algorithm/contact-jacobian.hpp>
