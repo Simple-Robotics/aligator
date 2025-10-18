@@ -4,7 +4,7 @@
 #ifdef ALIGATOR_WITH_PINOCCHIO
 #include "aligator/modelling/dynamics/kinodynamics-fwd.hpp"
 #include "aligator/modelling/spaces/multibody.hpp"
-#include "aligator/modelling/multibody/context.hpp"
+#include "aligator/modelling/multibody/fwd.hpp"
 #include <pinocchio/multibody/model.hpp>
 
 namespace aligator {

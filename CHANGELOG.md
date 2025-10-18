@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - python: remove eigenpy version checks
 - python: improve `CostStack.getComponent()` error message
 - tests/python: more comprehensive test for `aligator.CostStack`
+- modelling/multibody : merge header `context.hpp` into `fwd.hpp`
+
+### Removed
+
+- modelling/multibody : remove txx files, remove `context.hpp`
 
 ## [0.16.0] - 2025-10-15
 

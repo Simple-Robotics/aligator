@@ -1,7 +1,7 @@
 #pragma once
 
+#include "aligator/modelling/multibody/fwd.hpp"
 #include "aligator/core/unary-function.hpp"
-#include "./fwd.hpp"
 
 #include <pinocchio/multibody/model.hpp>
 #include <pinocchio/multibody/frame.hpp>
@@ -75,8 +75,8 @@ struct FramePlacementDataTpl : StageFunctionDataTpl<Scalar> {
   FramePlacementDataTpl(const FramePlacementResidualTpl<Scalar> &model);
 };
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/modelling/multibody/frame-placement.txx"
+extern template struct FramePlacementResidualTpl<context::Scalar>;
+extern template struct FramePlacementDataTpl<context::Scalar>;
 #endif
+} // namespace aligator

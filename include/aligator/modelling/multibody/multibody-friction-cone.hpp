@@ -100,8 +100,8 @@ struct MultibodyFrictionConeDataTpl : StageFunctionDataTpl<Scalar> {
       const MultibodyFrictionConeResidualTpl<Scalar> *model);
 };
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/modelling/multibody/multibody-friction-cone.txx"
+extern template struct MultibodyFrictionConeResidualTpl<context::Scalar>;
+extern template struct MultibodyFrictionConeDataTpl<context::Scalar>;
 #endif
+} // namespace aligator

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "aligator/python/fwd.hpp"
-#include "aligator/modelling/multibody/context.hpp"
+#include "aligator/modelling/multibody/fwd.hpp"
 
 namespace aligator {
 namespace python {

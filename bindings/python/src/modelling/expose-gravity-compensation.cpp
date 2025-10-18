@@ -1,7 +1,7 @@
 /// @copyright Copyright (C) 2024 LAAS-CNRS, INRIA
 #ifdef ALIGATOR_WITH_PINOCCHIO
 #include "aligator/python/fwd.hpp"
-#include "aligator/modelling/multibody/context.hpp"
+#include "aligator/modelling/multibody/fwd.hpp"
 #include "aligator/modelling/multibody/gravity-compensation-residual.hpp"
 
 namespace aligator::python {

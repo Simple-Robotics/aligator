@@ -11,6 +11,8 @@
 
 #include "aligator/modelling/multibody/constrained-rnea.hpp"
 
+#include <eigenpy/deprecation-policy.hpp>
+
 namespace aligator {
 namespace python {
 using context::ConstMatrixRef;
@@ -19,6 +21,7 @@ using context::PinData;
 using context::PinModel;
 using context::StageFunction;
 using context::UnaryFunction;
+using eigenpy::deprecated_member;
 
 //
 // FORWARD DECLARATIONS
@@ -89,10 +92,14 @@ void exposeFrameFunctions() {
           ("self"_a, "ndx", "nu", "model", "v_ref", "id", "reference_frame")))
       .def(FrameAPIVisitor<FrameVelocity>())
       .def(unary_visitor)
+      .def_readonly("pin_model", &FrameVelocity::pin_model_)
+      .def_readwrite("vref", &FrameVelocity::vref_)
+      .def_readwrite("type", &FrameVelocity::type_)
       .def("getReference", &FrameVelocity::getReference, "self"_a,
-           bp::return_internal_reference<>(), "Get the target frame velocity.")
+           bp::return_internal_reference<>(),
+           deprecated_member<>("Get the target frame velocity."))
       .def("setReference", &FrameVelocity::setReference, ("self"_a, "v_new"),
-           "Set the target frame velocity.");
+           deprecated_member<>("Set the target frame velocity."));
 
   bp::register_ptr_to_python<shared_ptr<FrameVelocityData>>();
 

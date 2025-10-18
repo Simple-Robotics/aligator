@@ -1,7 +1,7 @@
 #pragma once
 
 #include "aligator/core/unary-function.hpp"
-#include "./fwd.hpp"
+#include "aligator/modelling/multibody/fwd.hpp"
 
 #include <pinocchio/multibody/model.hpp>
 #include <pinocchio/multibody/frame.hpp>
@@ -24,13 +24,17 @@ struct FrameTranslationResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
   using Data = FrameTranslationDataTpl<Scalar>;
 
   Model pin_model_;
+  Vector3s p_ref_;
 
   FrameTranslationResidualTpl(const int ndx, const int nu, const Model &model,
                               const Vector3s &frame_trans,
                               const pinocchio::FrameIndex frame_id);
 
-  const Vector3s &getReference() const { return p_ref_; }
-  void setReference(const Eigen::Ref<const Vector3s> &p_new) { p_ref_ = p_new; }
+  ALIGATOR_DEPRECATED const Vector3s &getReference() const { return p_ref_; }
+  ALIGATOR_DEPRECATED void
+  setReference(const Eigen::Ref<const Vector3s> &p_new) {
+    p_ref_ = p_new;
+  }
 
   void evaluate(const ConstVectorRef &x, BaseData &data) const;
 
@@ -39,9 +43,6 @@ struct FrameTranslationResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
   shared_ptr<BaseData> createData() const {
     return std::make_shared<Data>(*this);
   }
-
-protected:
-  Vector3s p_ref_;
 };
 
 template <typename Scalar>
@@ -59,8 +60,8 @@ struct FrameTranslationDataTpl : StageFunctionDataTpl<Scalar> {
   FrameTranslationDataTpl(const FrameTranslationResidualTpl<Scalar> &model);
 };
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/modelling/multibody/frame-translation.txx"
+extern template struct FrameTranslationResidualTpl<context::Scalar>;
+extern template struct FrameTranslationDataTpl<context::Scalar>;
 #endif
+} // namespace aligator

@@ -67,8 +67,8 @@ struct CenterOfMassTranslationDataTpl : StageFunctionDataTpl<Scalar> {
       const CenterOfMassTranslationResidualTpl<Scalar> *model);
 };
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./center-of-mass-translation.txx"
+extern template struct CenterOfMassTranslationResidualTpl<context::Scalar>;
+extern template struct CenterOfMassTranslationDataTpl<context::Scalar>;
 #endif
+} // namespace aligator

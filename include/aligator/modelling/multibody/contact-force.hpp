@@ -104,8 +104,8 @@ struct ContactForceDataTpl : StageFunctionDataTpl<Scalar> {
   ContactForceDataTpl(const ContactForceResidualTpl<Scalar> *model);
 };
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/modelling/multibody/contact-force.txx"
+extern template struct ContactForceResidualTpl<context::Scalar>;
+extern template struct ContactForceDataTpl<context::Scalar>;
 #endif
+} // namespace aligator
