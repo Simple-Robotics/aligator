@@ -22,7 +22,7 @@ public:
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using Base = StageFunctionTpl<Scalar>;
   using BaseData = typename Base::Data;
-  using Model = pinocchio::ModelTpl<Scalar>;
+  using PinModel = pinocchio::ModelTpl<Scalar>;
   using SE3 = pinocchio::SE3Tpl<Scalar>;
   using Data = MultibodyFrictionConeDataTpl<Scalar>;
   using RigidConstraintModelVector = PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(
@@ -31,7 +31,7 @@ public:
       PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(pinocchio::RigidConstraintData);
   using ProxSettings = pinocchio::ProximalSettingsTpl<Scalar>;
 
-  Model pin_model_;
+  PinModel pin_model_;
   MatrixXs actuation_matrix_;
   RigidConstraintModelVector constraint_models_;
   ProxSettings prox_settings_;
@@ -39,7 +39,7 @@ public:
   int contact_id_;
 
   MultibodyFrictionConeResidualTpl(
-      const int ndx, const Model &model, const MatrixXs &actuation,
+      const int ndx, const PinModel &model, const MatrixXs &actuation,
       const RigidConstraintModelVector &constraint_models,
       const ProxSettings &prox_settings, const std::string &contact_name,
       const double mu)
