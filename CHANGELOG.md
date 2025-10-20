@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- modelling/costs : add getter and setter for cost term weights
+- modelling/costs : add getter and setter for cost term weights (https://github.com/Simple-Robotics/aligator/pull/359)
 
 ### Changed
 
@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - python: aligator now requires eigenpy version 3.10.3 at least
 - python: remove eigenpy version checks
 - python: improve `CostStack.getComponent()` error message
-- tests/python: more comprehensive test for `aligator.CostStack`
+- tests/python: more comprehensive test for `aligator.CostStack` (https://github.com/Simple-Robotics/aligator/pull/359)
 - modelling/multibody : merge header `context.hpp` into `fwd.hpp`
 
 ### Removed
