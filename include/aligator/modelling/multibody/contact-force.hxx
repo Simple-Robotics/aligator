@@ -51,11 +51,12 @@ ContactForceDataTpl<Scalar>::ContactForceDataTpl(
     , tau_(model->pin_model_.nv) {
   tau_.setZero();
 
-  pinocchio::initConstraintDynamics(model->pin_model_, pin_data_,
-                                    model->constraint_models_);
   for (const auto &cm : model->constraint_models_) {
     constraint_datas_.emplace_back(cm);
   }
+  pinocchio::initConstraintDynamics(model->pin_model_, pin_data_,
+                                    model->constraint_models_,
+                                    constraint_datas_);
 }
 
 } // namespace aligator

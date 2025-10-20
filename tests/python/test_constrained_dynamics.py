@@ -180,7 +180,7 @@ def test_inv_dyn():
     )
 
     # test the resulting acceleration is zero
-    pin.initConstraintDynamics(model, data, [rcm])
+    pin.initConstraintDynamics(model, data, [rcm], [rcd])
     prox = pin.ProximalSettings(1e-12, 1e-10, 3)
     a0 = pin.constraintDynamics(model, data, q0, v0, tau0, [rcm], [rcd], prox)
     assert np.allclose(a0, 0.0)

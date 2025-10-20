@@ -76,13 +76,15 @@ MultibodyFrictionConeDataTpl<Scalar>::MultibodyFrictionConeDataTpl(
   temp_.setZero();
   dcone_df_.setZero();
 
-  pinocchio::initConstraintDynamics(model->pin_model_, pin_data_,
-                                    model->constraint_models_);
   for (auto cm = std::begin(model->constraint_models_);
        cm != std::end(model->constraint_models_); ++cm) {
     constraint_datas_.push_back(
         pinocchio::RigidConstraintDataTpl<Scalar, 0>(*cm));
   }
+
+  pinocchio::initConstraintDynamics(model->pin_model_, pin_data_,
+                                    model->constraint_models_,
+                                    constraint_datas_);
 }
 
 } // namespace aligator

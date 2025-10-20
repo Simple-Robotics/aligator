@@ -84,16 +84,17 @@ MultibodyConstraintFwdDataTpl<Scalar>::MultibodyConstraintFwdDataTpl(
 
   const pinocchio::ModelTpl<Scalar> &model = cont_dyn.space_.getModel();
   pin_data_ = PinDataType(model);
+
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-  pinocchio::initConstraintDynamics(model, pin_data_,
-                                    cont_dyn.constraint_models_);
 #pragma GCC diagnostic pop
   for (auto cm = std::begin(cont_dyn.constraint_models_);
        cm != std::end(cont_dyn.constraint_models_); ++cm) {
     constraint_datas_.emplace_back(*cm);
   }
   this->Jx_.topRightCorner(model.nv, model.nv).setIdentity();
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+  pinocchio::initConstraintDynamics(
+      model, pin_data_, cont_dyn.constraint_models_, constraint_datas_);
 }
 } // namespace dynamics
 } // namespace aligator
