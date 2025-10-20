@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <iostream>
 
-#include "aligator/memory/arena-matrix.hpp"
+#include "aligator/core/arena-matrix.hpp"
 
 using Scalar = double;
 using aligator::polymorphic_allocator;
