@@ -25,8 +25,8 @@ void HistoryCallbackTpl<Scalar>::call(const Workspace & /*workspace*/,
     al_index.push_back(r->al_iter);
   }
 
-  if (rtti_ == typeid(SolverProxDDPTpl<Scalar>)) {
-    auto *s = std::any_cast<SolverProxDDPTpl<Scalar> *>(solver_);
+  if (m_rtti == typeid(SolverProxDDPTpl<Scalar>)) {
+    auto *s = reinterpret_cast<const SolverProxDDPTpl<Scalar> *>(m_solver);
     prim_tols.push_back(s->prim_tol_);
     dual_tols.push_back(s->inner_tol_);
   }

@@ -6,7 +6,6 @@
 #include "aligator/solvers/results-base.hpp"
 
 #include <typeindex>
-#include <any>
 
 namespace aligator {
 
@@ -15,12 +14,12 @@ template <typename Scalar> struct HistoryCallbackTpl : CallbackBaseTpl<Scalar> {
   using Workspace = WorkspaceBaseTpl<Scalar>;
   using Results = ResultsBaseTpl<Scalar>;
   template <typename Solver>
-  HistoryCallbackTpl(Solver *solver, bool store_pd_vars = false,
+  HistoryCallbackTpl(const Solver *solver, bool store_pd_vars = false,
                      bool store_values = true)
       : store_primal_dual_vars_(store_pd_vars)
       , store_values_(store_values)
-      , rtti_(typeid(*solver))
-      , solver_(solver) {}
+      , m_rtti(typeid(*solver))
+      , m_solver(solver) {}
 
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
 
@@ -42,8 +41,8 @@ template <typename Scalar> struct HistoryCallbackTpl : CallbackBaseTpl<Scalar> {
   bool store_values_;
 
 private:
-  std::type_index rtti_;
-  std::any solver_;
+  std::type_index m_rtti;
+  const void *m_solver;
 };
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
