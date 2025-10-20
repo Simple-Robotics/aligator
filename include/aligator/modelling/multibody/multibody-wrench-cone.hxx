@@ -57,14 +57,20 @@ MultibodyWrenchConeDataTpl<Scalar>::MultibodyWrenchConeDataTpl(
   tau_.setZero();
   temp_.setZero();
 
-  for (auto cm = std::begin(model->constraint_models_);
-       cm != std::end(model->constraint_models_); ++cm) {
-    constraint_datas_.push_back(
-        pinocchio::RigidConstraintDataTpl<Scalar, 0>(*cm));
+  for (const auto &cm : model->constraint_models_) {
+    constraint_datas_.emplace_back(cm);
   }
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#ifdef ALIGATOR_PINOCCHIO_V4
   pinocchio::initConstraintDynamics(model->pin_model_, pin_data_,
                                     model->constraint_models_,
                                     constraint_datas_);
+#else
+  pinocchio::initConstraintDynamics(model->pin_model_, pin_data_,
+                                    model->constraint_models_);
+#endif
+#pragma GCC diagnostic pop
 }
 
 } // namespace aligator

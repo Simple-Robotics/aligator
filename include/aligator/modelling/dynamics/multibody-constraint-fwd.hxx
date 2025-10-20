@@ -79,22 +79,24 @@ MultibodyConstraintFwdDataTpl<Scalar>::MultibodyConstraintFwdDataTpl(
     , dtau_dx_(cont_dyn.ntau(), cont_dyn.ndx())
     , dtau_du_(cont_dyn.actuation_matrix_)
     , settings(cont_dyn.prox_settings_)
-    , pin_data_() {
+    , pin_data_(cont_dyn.pinModel()) {
   tau_.setZero();
 
-  const pinocchio::ModelTpl<Scalar> &model = cont_dyn.space_.getModel();
-  pin_data_ = PinDataType(model);
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic pop
-  for (auto cm = std::begin(cont_dyn.constraint_models_);
-       cm != std::end(cont_dyn.constraint_models_); ++cm) {
-    constraint_datas_.emplace_back(*cm);
+  const pinocchio::ModelTpl<Scalar> &model = cont_dyn.pinModel();
+  for (auto &cm : cont_dyn.constraint_models_) {
+    constraint_datas_.emplace_back(cm);
   }
-  this->Jx_.topRightCorner(model.nv, model.nv).setIdentity();
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#ifdef ALIGATOR_PINOCCHIO_V4
   pinocchio::initConstraintDynamics(
       model, pin_data_, cont_dyn.constraint_models_, constraint_datas_);
+#else
+  pinocchio::initConstraintDynamics(model, pin_data_,
+                                    cont_dyn.constraint_models_);
+#endif
+#pragma GCC diagnostic pop
+  this->Jx_.topRightCorner(model.nv, model.nv).setIdentity();
 }
 } // namespace dynamics
 } // namespace aligator

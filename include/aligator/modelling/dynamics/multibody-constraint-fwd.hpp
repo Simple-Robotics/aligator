@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
@@ -42,6 +42,10 @@ struct MultibodyConstraintFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
 
   const Manifold &space() const { return space_; }
   int ntau() const { return space_.getModel().nv; }
+
+  const pinocchio::ModelTpl<Scalar> &pinModel() const {
+    return space_.getModel();
+  }
 
   MultibodyConstraintFwdDynamicsTpl(
       const Manifold &state, const MatrixXs &actuation,

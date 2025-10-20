@@ -180,7 +180,10 @@ def test_inv_dyn():
     )
 
     # test the resulting acceleration is zero
-    pin.initConstraintDynamics(model, data, [rcm], [rcd])
+    if aligator.ALIGATOR_PINOCCHIO_V4:
+        pin.initConstraintDynamics(model, data, [rcm], [rcd])
+    else:
+        pin.initConstraintDynamics(model, data, [rcm])
     prox = pin.ProximalSettings(1e-12, 1e-10, 3)
     a0 = pin.constraintDynamics(model, data, q0, v0, tau0, [rcm], [rcd], prox)
     assert np.allclose(a0, 0.0)

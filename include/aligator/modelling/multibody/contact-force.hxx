@@ -51,12 +51,20 @@ ContactForceDataTpl<Scalar>::ContactForceDataTpl(
     , tau_(model->pin_model_.nv) {
   tau_.setZero();
 
-  for (const auto &cm : model->constraint_models_) {
+  for (auto &cm : model->constraint_models_) {
     constraint_datas_.emplace_back(cm);
   }
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#ifdef ALIGATOR_PINOCCHIO_V4
   pinocchio::initConstraintDynamics(model->pin_model_, pin_data_,
                                     model->constraint_models_,
                                     constraint_datas_);
+#else
+  pinocchio::initConstraintDynamics(model->pin_model_, pin_data_,
+                                    model->constraint_models_);
+#endif
+#pragma GCC diagnostic pop
 }
 
 } // namespace aligator
