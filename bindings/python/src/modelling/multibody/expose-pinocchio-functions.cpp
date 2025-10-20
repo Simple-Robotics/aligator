@@ -28,7 +28,6 @@ using eigenpy::deprecated_member;
 //
 
 void exposeFlyHigh();
-
 void exposeContactForce();
 void exposeCenterOfMassFunctions();
 void exposeFrameFunctions();
@@ -134,8 +133,8 @@ void exposeFrameFunctions() {
   bp::class_<FrameCollision, bp::bases<UnaryFunction>>(
       "FrameCollisionResidual", "Frame collision residual function.",
       bp::init<int, int, const PinModel &, const GeometryModel &,
-               pinocchio::PairIndex>(bp::args("self", "ndx", "nu", "model",
-                                              "geom_model", "frame_pair_id")))
+               pinocchio::PairIndex>(
+          ("self"_a, "ndx", "nu", "model", "geom_model", "frame_pair_id")))
       .def(FrameAPIVisitor<FrameCollision>())
       .def(unary_visitor);
 

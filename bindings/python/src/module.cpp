@@ -149,7 +149,12 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
   exposeAutodiff();
 
 #ifdef ALIGATOR_WITH_PINOCCHIO
-  exposePinocchioFeatures();
+  {
+    bp::import("pinocchio");
+    exposePinocchioSpaces();
+    exposePinocchioFunctions();
+    exposePinocchioDynamics();
+  }
 #endif
 
 #ifdef ALIGATOR_WITH_CROCODDYL_COMPAT
