@@ -8,23 +8,19 @@ namespace python {
 
 #ifdef ALIGATOR_WITH_PINOCCHIO
 
-void exposePinocchioSpaces();
-void exposePinocchioFunctions();
+//
+// Factor out the Pinocchio dynamics
+//
+
 void exposeFreeFwdDynamics();
 void exposeKinodynamics();
 void exposeConstrainedFwdDynamics();
 
-void exposePinocchioFeatures() {
-  bp::import("pinocchio");
-  exposePinocchioSpaces();
-  exposePinocchioFunctions();
-
-  {
-    bp::scope dyn = get_namespace("dynamics");
-    exposeFreeFwdDynamics();
-    exposeKinodynamics();
-    exposeConstrainedFwdDynamics();
-  }
+void exposePinocchioDynamics() {
+  bp::scope dyn = get_namespace("dynamics");
+  exposeFreeFwdDynamics();
+  exposeKinodynamics();
+  exposeConstrainedFwdDynamics();
 }
 
 #endif
