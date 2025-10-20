@@ -3,7 +3,6 @@
 #pragma once
 
 #include <string_view>
-#include <vector>
 #include <boost/unordered_map.hpp>
 
 namespace aligator {
@@ -31,7 +30,7 @@ static const LogColumn BASIC_KEYS[12] = {
 struct Logger {
   bool active = true;
 
-  explicit Logger() = default;
+  Logger() = default;
 
   void printHeadline();
   void log();
@@ -46,7 +45,6 @@ struct Logger {
 
 protected:
   // sizes and formats
-  std::vector<std::string_view> m_colNames;
   boost::unordered_map<std::string_view, std::pair<uint, std::string>>
       m_colSpecs;
   boost::unordered_map<std::string_view, std::string> m_currentLine;
