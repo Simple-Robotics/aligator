@@ -2,7 +2,7 @@
 #pragma once
 
 #include "aligator/math.hpp"
-#include "aligator/memory/allocator.hpp"
+#include "aligator/core/allocator.hpp"
 
 namespace aligator {
 

@@ -1,12 +1,11 @@
 /// @copyright Copyright (C) 2023-2024 LAAS-CNRS, 2023-2025 INRIA
 #pragma once
 
-#include "aligator/context.hpp"
-#include "aligator/math.hpp"
 #include "aligator/gar/fwd.hpp"
-#include "aligator/memory/arena-matrix.hpp"
-#include <fmt/format.h>
+#include "aligator/context.hpp"
+#include "aligator/core/arena-matrix.hpp"
 
+#include <fmt/format.h>
 #include <optional>
 
 namespace aligator {
