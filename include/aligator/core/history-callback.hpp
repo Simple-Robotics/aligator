@@ -46,8 +46,7 @@ private:
   std::any solver_;
 };
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./history-callback.txx"
+extern template struct HistoryCallbackTpl<context::Scalar>;
 #endif
+} // namespace aligator

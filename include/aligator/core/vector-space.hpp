@@ -73,7 +73,7 @@ protected:
                         MatrixRef Jout, int arg) const {
     switch (arg) {
     case 0:
-      Jout = -MatrixXs::Identity(ndx(), ndx());
+      Jout.setIdentity() *= -1;
       break;
     case 1:
       Jout.setIdentity();

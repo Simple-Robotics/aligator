@@ -1,5 +1,5 @@
 /// @file unary-function.hpp
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
 
 #include "aligator/core/function-abstract.hpp"
@@ -47,8 +47,7 @@ struct UnaryFunctionTpl : StageFunctionTpl<_Scalar> {
   using Base::computeJacobians;                                                \
   using Base::computeVectorHessianProducts
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "./unary-function.txx"
+extern template struct UnaryFunctionTpl<context::Scalar>;
 #endif
+} // namespace aligator
