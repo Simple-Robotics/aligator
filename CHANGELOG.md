@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- move headers `allocator.hpp` and `arena-matrix.hpp` to `aligator/core` dir (https://github.com/Simple-Robotics/aligator/pull/362)
 - python: aligator now requires eigenpy version 3.10.3 at least
 - python: remove eigenpy version checks
 - python: improve `CostStack.getComponent()` error message
