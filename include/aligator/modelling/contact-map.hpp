@@ -1,6 +1,6 @@
 #pragma once
 
-#include "aligator/fwd.hpp"
+#include "aligator/context.hpp"
 
 namespace aligator {
 
@@ -77,4 +77,7 @@ template <typename _Scalar> struct ContactMapTpl {
   std::size_t size_;
 };
 
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct ContactMapTpl<context::Scalar>;
+#endif
 } // namespace aligator
