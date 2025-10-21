@@ -67,10 +67,10 @@ void exposeUtils();
 void exposeFilter();
 
 #ifdef ALIGATOR_WITH_PINOCCHIO
-/// Expose features using the Pinocchio rigid dynamics library
-void exposePinocchioFeatures();
+void exposePinocchioSpaces();
+void exposePinocchioFunctions();
+void exposePinocchioDynamics();
 #endif
-
 } // namespace aligator::python
 
 #define ALIGATOR_PYTHON_OVERRIDE_IMPL(ret_type, pyname, ...)                   \

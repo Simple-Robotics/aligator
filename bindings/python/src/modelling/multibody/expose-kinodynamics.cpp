@@ -1,9 +1,8 @@
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022 LAAS-CNRS, 2022-2025 INRIA
 #include "aligator/python/fwd.hpp"
 
 #ifdef ALIGATOR_WITH_PINOCCHIO
 #include "aligator/modelling/dynamics/kinodynamics-fwd.hpp"
-#include "aligator/modelling/spaces/multibody.hpp"
 #include "aligator/modelling/multibody/fwd.hpp"
 #include <pinocchio/multibody/model.hpp>
 
@@ -12,6 +11,7 @@ namespace python {
 
 void exposeKinodynamics() {
   using namespace aligator::dynamics;
+  using context::PinModel;
   using context::Scalar;
   using context::StageFunction;
   using context::StageFunctionData;
@@ -24,20 +24,17 @@ void exposeKinodynamics() {
   using context::MultibodyPhaseSpace;
   using Vector3s = typename math_types<Scalar>::Vector3s;
 
-  using Model = pinocchio::ModelTpl<Scalar>;
-
   const PolymorphicMultiBaseVisitor<ODEAbstract, ContinuousDynamicsAbstract>
       ode_visitor;
 
   bp::class_<KinodynamicsFwdDynamics, bp::bases<ODEAbstract>>(
       "KinodynamicsFwdDynamics",
       "Centroidal forward dynamics + kinematics using Pinocchio.",
-      bp::init<const MultibodyPhaseSpace &, const Model &, const Vector3s &,
+      bp::init<const MultibodyPhaseSpace &, const PinModel &, const Vector3s &,
                const std::vector<bool> &,
                const std::vector<pinocchio::FrameIndex> &, const int>(
-          "Constructor.",
-          bp::args("self", "space", "model", "gravity", "contact_states",
-                   "contact_ids", "force_size")))
+          "Constructor.", ("self"_a, "space", "model", "gravity",
+                           "contact_states", "contact_ids", "force_size")))
       .def_readwrite("contact_states",
                      &KinodynamicsFwdDynamics::contact_states_)
       .def(ode_visitor);

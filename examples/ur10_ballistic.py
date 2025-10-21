@@ -166,8 +166,11 @@ assert u0.shape == (nu,)
 
 
 def testu0(u0):
-    pin.initConstraintDynamics(rmodel, rdata, [rcm])
     rcd = rcm.createData()
+    if aligator.ALIGATOR_PINOCCHIO_V4:
+        pin.initConstraintDynamics(rmodel, rdata, [rcm], [rcd])
+    else:
+        pin.initConstraintDynamics(rmodel, rdata, [rcm])
     tau = actuation_matrix @ u0
     acc = pin.constraintDynamics(rmodel, rdata, q0, v0, tau, [rcm], [rcd])
     print("plugging in u0, got acc={}".format(acc))

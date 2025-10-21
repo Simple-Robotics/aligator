@@ -12,6 +12,7 @@ file(
   src/*.cpp
   src/gar/*.cpp
   src/modelling/*.cpp
+  src/modelling/multibody/*.cpp
 )
 
 set(PY_HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/python)

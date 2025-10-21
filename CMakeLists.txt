@@ -218,6 +218,14 @@ if(BUILD_WITH_PINOCCHIO_SUPPORT)
     PKG_CONFIG_REQUIRES "pinocchio >= ${PINOCCHIO_MINIMUM_VERSION}"
   )
 
+  if(${pinocchio_VERSION} VERSION_GREATER_EQUAL 3.99.0)
+    set(ALIGATOR_PINOCCHIO_V4 True)
+    message(
+      STATUS
+      "Pinocchio 4 (${pinocchio_VERSION}) detected. Enabling support features."
+    )
+  endif()
+
   list(APPEND CFLAGS_DEPENDENCIES "-DALIGATOR_WITH_PINOCCHIO")
 endif()
 
@@ -347,6 +355,9 @@ function(create_library)
       PUBLIC pinocchio::pinocchio_default pinocchio::pinocchio_collision
     )
     target_compile_definitions(${PROJECT_NAME} PUBLIC ALIGATOR_WITH_PINOCCHIO)
+    if(${ALIGATOR_PINOCCHIO_V4})
+      target_compile_definitions(${PROJECT_NAME} PUBLIC ALIGATOR_PINOCCHIO_V4)
+    endif()
   endif()
 
   if(BUILD_WITH_OPENMP_SUPPORT)
