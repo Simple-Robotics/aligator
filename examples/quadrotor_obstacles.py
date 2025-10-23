@@ -321,21 +321,14 @@ def main(args: Args):
         vizer = None
 
     tol = 1e-4
-    if args.bounds:
-        mu_init = 1e1
-        if args.obstacles:
-            mu_init = 1.0
-    # elif args.obstacles:
-    #     mu_init = 1e-2
-    else:
-        mu_init = 1e-6
+    mu_init = 1e-3
     verbose = aligator.VerboseLevel.VERBOSE
     solver = aligator.SolverProxDDP(tol, mu_init, verbose=verbose)
     history_cb = aligator.HistoryCallback(solver)
     if args.fddp:
         solver = aligator.SolverFDDP(tol, verbose=verbose)
-    solver.max_iters = 400
-    solver.reg_min = 1e-5
+    solver.max_iters = 300
+    solver.reg_min = 1e-4
     solver.registerCallback("his", history_cb)
     solver.setup(problem)
     solver.run(problem, xs_init, us_init)
