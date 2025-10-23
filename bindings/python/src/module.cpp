@@ -1,6 +1,7 @@
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022 LAAS-CNRS, 2022-2025 INRIA
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/utils.hpp"
+#include "aligator/python/string-view-converter.hpp"
 
 #include "aligator/core/enums.hpp"
 #include "aligator/threads.hpp"
@@ -105,6 +106,10 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
 
   eigenpy::OptionalConverter<ConstVectorRef, std::optional>::registration();
   eigenpy::detail::NoneToPython<std::nullopt_t>::registration();
+
+  register_string_view_converter();
+  eigenpy::StdVectorPythonVisitor<std::vector<std::string_view>, true>::expose(
+      "StdVec_StringView");
 
   bp::import("warnings");
 
