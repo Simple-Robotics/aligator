@@ -50,7 +50,7 @@ void exposeContactForce() {
       .def(bp::init<int, PinModel, const context::MatrixXs &,
                     const RigidConstraintModelVector &,
                     const pinocchio::ProximalSettingsTpl<Scalar> &,
-                    const Eigen::VectorXd &, const std::string &>(bp::args(
+                    const Eigen::VectorXd &, std::string_view>(bp::args(
           "self", "ndx", "model", "actuation_matrix", "constraint_models",
           "prox_settings", "fref", "contact_name")))
       .def(func_visitor)
@@ -74,10 +74,10 @@ void exposeContactForce() {
       .def(bp::init<int, PinModel, const context::MatrixXs &,
                     const RigidConstraintModelVector &,
                     const pinocchio::ProximalSettingsTpl<Scalar> &,
-                    const std::string &, const double, const double,
-                    const double>(bp::args(
-          "self", "ndx", "model", "actuation_matrix", "constraint_models",
-          "prox_settings", "contact_name", "mu", "half_length", "half_width")))
+                    std::string_view, const double, const double, const double>(
+          bp::args("self", "ndx", "model", "actuation_matrix",
+                   "constraint_models", "prox_settings", "contact_name", "mu",
+                   "half_length", "half_width")))
       .def(func_visitor)
       .def_readwrite("constraint_models",
                      &MultibodyWrenchConeResidual::constraint_models_);
@@ -95,7 +95,7 @@ void exposeContactForce() {
       .def(bp::init<int, PinModel, const context::MatrixXs &,
                     const RigidConstraintModelVector &,
                     const pinocchio::ProximalSettingsTpl<Scalar> &,
-                    const std::string &, const double>(
+                    std::string_view, const double>(
           bp::args("self", "ndx", "model", "actuation_matrix",
                    "constraint_models", "prox_settings", "contact_name", "mu")))
       .def(func_visitor)

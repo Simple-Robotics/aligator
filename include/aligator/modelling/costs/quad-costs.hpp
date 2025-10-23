@@ -127,7 +127,7 @@ protected:
   bool has_cross_term_;
 
 private:
-  static void _check_dim_equal(long n, long m, const std::string &msg = "") {
+  static void _check_dim_equal(long n, long m, std::string_view msg = "") {
     if (n != m)
       ALIGATOR_RUNTIME_ERROR("Dimensions inconsistent: got {:d} and {:d}{}.\n",
                              n, m, msg);

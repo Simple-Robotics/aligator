@@ -44,8 +44,7 @@ public:
                           const MatrixXs &actuation,
                           const RigidConstraintModelVector &constraint_models,
                           const ProxSettings &prox_settings,
-                          const Vector3or6 &fref,
-                          const std::string &contact_name)
+                          const Vector3or6 &fref, std::string_view contact_name)
       : Base(ndx, (int)actuation.cols(), (int)fref.size())
       , pin_model_(model)
       , actuation_matrix_(actuation)

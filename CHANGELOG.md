@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support for Pinocchio 4 (https://github.com/Simple-Robotics/aligator/pull/361)
 - added a hash function `ExtendedStringHash` for string types (e.g. `std::string`) which supports transparent/heterogeneous lookup in compatible hash maps (e.g. `boost::unordered_map`) using types other than key type e.g. `std::string_view` (https://github.com/Simple-Robotics/aligator/pull/364)
 - added support in Python bindings for `std::string_view` (converting to and from Python's `str` built-in type) (https://github.com/Simple-Robotics/aligator/pull/364)
-- change solver classes and `ContactMapTpl` to take `std::string_view` where possible (https://github.com/Simple-Robotics/aligator/pull/364)
+- change several classes (including solvers and contact-related modelling) to take `std::string_view` where possible (https://github.com/Simple-Robotics/aligator/pull/364)
 
 ### Changed
 
