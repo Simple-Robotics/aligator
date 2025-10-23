@@ -460,6 +460,7 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
 
   inner_tol_ = inner_tol0;
   prim_tol_ = prim_tol0;
+  preg_last_ = 0.;
   updateTolsOnFailure();
 
   inner_tol_ = std::max(inner_tol_, target_dual_tol_);
