@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - modelling/costs : add getter and setter for cost term weights (https://github.com/Simple-Robotics/aligator/pull/359)
 - support for Pinocchio 4 (https://github.com/Simple-Robotics/aligator/pull/361)
+- added transparent hash op `ExtendedStringHash` (https://github.com/Simple-Robotics/aligator/pull/364)
 
 ### Changed
 
