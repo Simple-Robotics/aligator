@@ -41,7 +41,7 @@ public:
   MultibodyFrictionConeResidualTpl(
       const int ndx, const PinModel &model, const MatrixXs &actuation,
       const RigidConstraintModelVector &constraint_models,
-      const ProxSettings &prox_settings, const std::string &contact_name,
+      const ProxSettings &prox_settings, std::string_view contact_name,
       const double mu)
       : Base(ndx, (int)actuation.cols(), 2)
       , pin_model_(model)

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "aligator/fwd.hpp"
-#include <boost/any.hpp>
 
 namespace aligator {
 
@@ -12,9 +11,4 @@ template <typename Scalar> struct CallbackBaseTpl {
   virtual void call(const Workspace &, const Results &) = 0;
   virtual ~CallbackBaseTpl() = default;
 };
-
 } // namespace aligator
-
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/core/callback-base.txx"
-#endif

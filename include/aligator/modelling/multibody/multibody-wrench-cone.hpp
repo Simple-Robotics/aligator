@@ -46,7 +46,7 @@ public:
   MultibodyWrenchConeResidualTpl(
       const int ndx, const Model &model, const MatrixXs &actuation,
       const RigidConstraintModelVector &constraint_models,
-      const ProxSettings &prox_settings, const std::string &contact_name,
+      const ProxSettings &prox_settings, std::string_view contact_name,
       const double mu, const double half_length, const double half_width)
       : Base(ndx, (int)actuation.cols(), 17)
       , pin_model_(model)
