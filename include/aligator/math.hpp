@@ -129,7 +129,7 @@ template <typename _Scalar> struct math_types {
 /// by the length of that text.
 template <typename D>
 auto eigenPrintWithPreamble(const Eigen::EigenBase<D> &mat,
-                            const std::string &text,
+                            std::string_view text,
                             Eigen::IOFormat ft = EIGEN_DEFAULT_IO_FORMAT) {
   ft.matPrefix = text;
   ft.rowSpacer = "";
