@@ -1,6 +1,8 @@
 /// @file
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #pragma once
+
+#include "string-hash.hpp"
 
 #include <string_view>
 #include <boost/unordered_map.hpp>
@@ -44,10 +46,12 @@ struct Logger {
   void addEntry(std::string_view name, size_t val);
 
 protected:
-  // sizes and formats
-  boost::unordered_map<std::string_view, std::pair<uint, std::string>>
-      m_colSpecs;
-  boost::unordered_map<std::string_view, std::string> m_currentLine;
+  std::vector<std::string> m_columnNames; // in insertion order
+  boost::unordered_map<std::string_view, std::pair<uint, std::string>,
+                       ExtendedStringHash>
+      m_colSpecs; // column sizes and formats
+  boost::unordered_map<std::string_view, std::string, ExtendedStringHash>
+      m_currentLine; // iterate using order
 };
 
 } // namespace aligator
