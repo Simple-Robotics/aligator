@@ -13,6 +13,7 @@
 #include "results.hpp"
 
 #include "aligator/utils/logger.hpp"
+#include "aligator/utils/string-hash.hpp"
 #include "aligator/threads.hpp"
 
 #include <boost/unordered_map.hpp>
@@ -39,7 +40,8 @@ template <typename Scalar> struct SolverFDDPTpl {
   using DynamicsModel = ExplicitDynamicsModelTpl<Scalar>;
   using ExplicitDynamicsData = ExplicitDynamicsDataTpl<Scalar>;
   using CallbackPtr = shared_ptr<CallbackBaseTpl<Scalar>>;
-  using CallbackMap = boost::unordered_map<std::string, CallbackPtr>;
+  using CallbackMap = boost::unordered_map<std::string, CallbackPtr,
+                                           ExtendedStringHash, std::equal_to<>>;
 
   Scalar target_tol_;
 
@@ -159,12 +161,12 @@ public:
   inline Scalar computeCriterion(Workspace &workspace);
 
   /// @brief    Add a callback to the solver instance.
-  void registerCallback(const std::string &name, CallbackPtr cb) {
-    callbacks_[name] = cb;
+  void registerCallback(std::string_view name, CallbackPtr cb) {
+    callbacks_.insert_or_assign(name, cb);
   }
 
   const CallbackMap &getCallbacks() const { return callbacks_; }
-  void removeCallback(const std::string &name) { callbacks_.erase(name); }
+  void removeCallback(std::string_view name) { callbacks_.erase(name); }
   auto getCallbackNames() const {
     std::vector<std::string> keys;
     for (const auto &item : callbacks_) {
@@ -172,7 +174,7 @@ public:
     }
     return keys;
   }
-  CallbackPtr getCallback(const std::string &name) const {
+  CallbackPtr getCallback(std::string_view name) const {
     auto cb = callbacks_.find(name);
     if (cb != end(callbacks_)) {
       return cb->second;

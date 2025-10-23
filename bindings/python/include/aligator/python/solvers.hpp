@@ -14,7 +14,7 @@ bp::arg operator""_a(const char *argname, std::size_t);
 template <typename SolverType>
 struct SolverVisitor : bp::def_visitor<SolverVisitor<SolverType>> {
   using CallbackPtr = typename SolverType::CallbackPtr;
-  static auto getCallback(const SolverType &obj, const std::string &name)
+  static auto getCallback(const SolverType &obj, std::string_view name)
       -> CallbackPtr {
     const CallbackPtr &cb = obj.getCallback(name);
     if (!cb) {

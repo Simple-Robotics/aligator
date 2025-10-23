@@ -4,6 +4,7 @@
 #pragma once
 
 #include "aligator/overloads.hpp"
+#include "aligator/utils/string-hash.hpp"
 #include "aligator/core/linesearch-armijo.hpp"
 #include "aligator/core/linesearch-nonmonotone.hpp"
 #include "aligator/core/filter.hpp"
@@ -42,7 +43,12 @@ public:
   using StageModel = StageModelTpl<Scalar>;
   using StageData = StageDataTpl<Scalar>;
   using CallbackPtr = shared_ptr<CallbackBaseTpl<Scalar>>;
-  using CallbackMap = boost::unordered_map<std::string, CallbackPtr>;
+  // boost::unordered_map support heterogeneous lookup (whereas std:: doesn't
+  // until C++20). we just need to provide the right extended hash function and
+  // transparent comparison op
+  using hash2 = boost::hash<std::string>;
+  using CallbackMap = boost::unordered_map<std::string, CallbackPtr,
+                                           ExtendedStringHash, std::equal_to<>>;
   using ConstraintStack = ConstraintStackTpl<Scalar>;
   using CstrSet = ConstraintSetTpl<Scalar>;
   using TrajOptData = TrajOptDataTpl<Scalar>;
@@ -256,7 +262,7 @@ public:
   /// \{
 
   /// @brief    Add a callback to the solver instance.
-  void registerCallback(const std::string &name, CallbackPtr cb) {
+  void registerCallback(std::string_view name, CallbackPtr cb) {
     callbacks_.insert_or_assign(name, cb);
   }
 
@@ -265,19 +271,19 @@ public:
 
   const CallbackMap &getCallbacks() const { return callbacks_; }
 
-  [[nodiscard]] bool removeCallback(const std::string &name) {
+  [[nodiscard]] bool removeCallback(std::string_view name) {
     return callbacks_.erase(name);
   }
 
   [[nodiscard]] auto getCallbackNames() const {
-    std::vector<std::string> keys;
+    std::vector<std::string_view> keys;
     for (const auto &item : callbacks_) {
       keys.push_back(item.first);
     }
     return keys;
   }
 
-  [[nodiscard]] CallbackPtr getCallback(const std::string &name) const {
+  [[nodiscard]] CallbackPtr getCallback(std::string_view name) const {
     auto cb = callbacks_.find(name);
     if (cb != end(callbacks_)) {
       return cb->second;
