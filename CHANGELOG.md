@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- core : added [mimalloc](https://github.com/mimalloc/mimalloc) memory resource
+- core : added [mimalloc](https://github.com/mimalloc/mimalloc)-based memory resource (https://github.com/Simple-Robotics/aligator/pull/366)
 - modelling/costs : add getter and setter for cost term weights (https://github.com/Simple-Robotics/aligator/pull/359)
 - support for Pinocchio 4 (https://github.com/Simple-Robotics/aligator/pull/361)
 - added a hash function `ExtendedStringHash` for string types (e.g. `std::string`) which supports transparent/heterogeneous lookup in compatible hash maps (e.g. `boost::unordered_map`) using types other than key type e.g. `std::string_view` (https://github.com/Simple-Robotics/aligator/pull/364)
