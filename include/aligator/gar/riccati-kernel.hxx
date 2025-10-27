@@ -172,8 +172,10 @@ void ProximalRiccatiKernel<Scalar>::terminalSolve(const KnotType &model,
     }
   }
 
-  vc.Vxx.noalias() = model.Q + Ct * Z;
-  vc.vx.noalias() = model.q + Ct * zff;
+  vc.Vxx = model.Q;
+  vc.Vxx.noalias() += Ct * Z;
+  vc.vx = model.q;
+  vc.vx.noalias() += Ct * zff;
 
   if (model.nu > 0) {
     vc.Vxx.noalias() += model.S * K;
