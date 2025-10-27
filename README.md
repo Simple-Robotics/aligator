@@ -10,7 +10,7 @@
 
 It can be used for motion generation and planning, optimal estimation, deployment of model-predictive control on complex systems, and much more.
 
-Developing advanced, open-source, and versatile robotic software such as **Aligator** takes time and energy while requiring a lot of engineering support.
+Developing advanced, open-source, and versatile robotics software such as **aligator** takes time and energy while requiring a lot of engineering support.
 In recognition of our commitment, we would be grateful if you would quote our papers and software in your publications, software, and research articles.
 Please refer to the [Citation section](#citing-aligator) for further details.
 
@@ -104,9 +104,9 @@ The repo [aligator-bench](https://github.com/Simple-Robotics/aligator-bench) pro
 
 For developer info on benchmarking, see [doc/developers-guide.md](doc/developers-guide.md).
 
-## Citing Aligator
+## Citing aligator
 
-To cite **Aligator** in your academic research, please use the following bibtex entry:
+To cite **aligator** in your academic research, please use the following bibtex entry:
 
 ```bibtex
 @misc{aligatorweb,
@@ -137,7 +137,7 @@ Please also consider citing the reference paper for the ProxDDP algorithm:
 
 * [Antoine Bambade](https://bambade.github.io/) (Inria): mathematics and algorithms developer
 * [Justin Carpentier](https://jcarpent.github.io/) (Inria): project instructor
-* [Wilson Jallet](https://manifoldfr.github.io/) (LAAS-CNRS/Inria): main developer and manager of the project
+* [Wilson Jallet](https://manifoldfr.github.io/) (Inria): main developer and manager of the project
 * [Sarah Kazdadi](https://github.com/sarah-ek/): linear algebra czar
 * [Quentin Le Lidec](https://quentinll.github.io/) (Inria): feature developer
 * [Joris Vaillant](https://github.com/jorisv) (Inria): core developer
@@ -151,7 +151,7 @@ Please also consider citing the reference paper for the ProxDDP algorithm:
 
 ## Acknowledgments
 
-The development of **Aligator** is actively supported by the [Willow team](https://www.di.ens.fr/willow/) [@INRIA](http://www.inria.fr) and the [Gepetto team](http://projects.laas.fr/gepetto/) [@LAAS-CNRS](http://www.laas.fr).
+The development of **aligator** is actively supported by the [Willow team](https://www.di.ens.fr/willow/) [@INRIA](http://www.inria.fr) and the [Gepetto team](http://projects.laas.fr/gepetto/) [@LAAS-CNRS](http://www.laas.fr).
 
 ## Associated scientific and technical publications
 
