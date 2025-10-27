@@ -79,14 +79,18 @@ SolverProxDDPTpl<Scalar>::SolverProxDDPTpl(const Scalar tol,
     , hess_approx_(hess_approx)
     , sa_strategy_(sa_strategy)
     , max_iters(max_iters)
-    , allocator_()
-    , workspace_(allocator_)
+    , memory_resource_{}
+    , allocator_{&memory_resource_}
+    , workspace_{allocator_}
     , results_()
     , filter_(0.0, ls_params.alpha_min, ls_params.max_num_steps)
     , linesearch_()
-    , target_dual_tol_(tol)
-    , sync_dual_tol_(true) {
+    , target_dual_tol_{tol} {
   ls_params.interp_type = LSInterpolation::CUBIC;
+  // add logger columns
+  for (size_t j = 0; j < std::size(BASIC_KEYS); j++) {
+    logger.addColumn(BASIC_KEYS[j]);
+  }
 }
 
 template <typename Scalar>
@@ -447,9 +451,6 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
   }
 
   logger.active = (verbose_ > 0);
-  for (size_t j = 0; j < std::size(BASIC_KEYS); j++) {
-    logger.addColumn(BASIC_KEYS[j]);
-  }
   logger.printHeadline();
 
   setAlmPenalty(mu_init_);
