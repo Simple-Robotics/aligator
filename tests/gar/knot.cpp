@@ -1,5 +1,6 @@
 #include "aligator/gar/lqr-problem.hpp"
 #include "aligator/fmt-eigen.hpp"
+#include "aligator/core/mimalloc-resource.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -8,9 +9,7 @@
 using namespace aligator::gar;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
-char MEMORY_BUFFER[1'000'000];
-static std::pmr::monotonic_buffer_resource rs{MEMORY_BUFFER,
-                                              sizeof(MEMORY_BUFFER)};
+static aligator::mimalloc_resource rs;
 static aligator::polymorphic_allocator alloc{&rs};
 static aligator::polymorphic_allocator default_alloc{};
 
