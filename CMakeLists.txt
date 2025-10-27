@@ -196,6 +196,11 @@ ADD_PROJECT_DEPENDENCY(
   PKG_CONFIG_REQUIRES "eigen3 >= 3.3.7"
 )
 ADD_PROJECT_DEPENDENCY(fmt REQUIRED PKG_CONFIG_REQUIRES "fmt >= 10.0.0")
+ADD_PROJECT_DEPENDENCY(
+  mimalloc
+  REQUIRED
+  PKG_CONFIG_REQUIRES "mimalloc >= 2.1.0"
+)
 
 if(BUILD_WITH_OPENMP_SUPPORT)
   ADD_PROJECT_DEPENDENCY(OpenMP REQUIRED)
@@ -363,7 +368,7 @@ function(create_library)
   if(BUILD_WITH_OPENMP_SUPPORT)
     target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
   endif()
-  target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt)
+  target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt PRIVATE mimalloc)
   # set the install-tree include dirs used by dependent projects to consume this
   # target
   target_include_directories(

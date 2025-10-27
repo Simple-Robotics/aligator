@@ -27,6 +27,7 @@ matplotlib-base = ">=3.9.4,<4"
 typed-argument-parser = ">=1.10.1,<2"
 meshcat-python = ">=0.3.2,<0.4"
 catch2 = ">=3.8.0,<4"
+mimalloc = ">=3.1.5,<4"
 
 [activation]
 scripts = ["development/pixi/activation.sh"]

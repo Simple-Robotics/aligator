@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "aligator/core/arena-matrix.hpp"
+#include "aligator/core/mimalloc-resource.hpp"
 
 using Scalar = double;
 using aligator::polymorphic_allocator;
@@ -18,7 +19,7 @@ static_assert(!alloc_traits::propagate_on_container_copy_assignment());
 static_assert(!alloc_traits::propagate_on_container_move_assignment());
 static_assert(!alloc_traits::propagate_on_container_swap());
 
-std::pmr::monotonic_buffer_resource g_res{40000};
+aligator::mimalloc_resource g_res;
 polymorphic_allocator g_alloc{&g_res};
 
 TEST_CASE("managed_matrix_create_copy") {

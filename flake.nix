@@ -40,6 +40,9 @@
                   ./tests
                 ];
               };
+              buildInputs = (super.buildInputs or []) ++ [
+                pkgs.mimalloc
+              ];
               checkInputs = super.checkInputs ++ [
                 pkgs.catch2_3
               ];
