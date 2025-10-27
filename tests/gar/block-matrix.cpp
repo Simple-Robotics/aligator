@@ -6,6 +6,7 @@
 #include "aligator/context.hpp"
 #include "aligator/gar/blk-matrix.hpp"
 #include "aligator/gar/block-tridiagonal.hpp"
+#include "aligator/core/bunchkaufman.hpp"
 #include <Eigen/Cholesky>
 
 #include "test_util.hpp"
@@ -95,26 +96,17 @@ struct BTAG_Fixture {
   }
 };
 
+constexpr double prec = 1e-12;
+
 TEST_CASE_METHOD(BTAG_Fixture, "block_tridiag_solve_up_looking", "[gar]") {
 
   bool ret = gar::symmetricBlockTridiagSolve(sub, diagonal, sup, vec, facs);
   REQUIRE(ret);
 
-  for (size_t i = 0; i <= N; i++) {
-    fmt::print("rhs[{:d}] = {}\n", i, vec[i].transpose());
-  }
+  aligator::BunchKaufman<MatrixXs> ldlt(densemat);
+  ldlt.solveInPlace(rhs.matrix());
 
-  {
-    // alternative solve
-    Eigen::LDLT<MatrixXs> ldlt(densemat);
-    ldlt.solveInPlace(rhs.matrix());
-
-    fmt::print("Alternative solve:\n");
-    for (size_t i = 0; i <= N; i++) {
-      fmt::print("rhs[{:d}] = {}\n", i, rhs[i].transpose());
-    }
-    REQUIRE(vec.matrix().isApprox(rhs.matrix(), 1e-12));
-  }
+  REQUIRE(vec.isApprox(rhs, prec));
 }
 
 TEST_CASE_METHOD(BTAG_Fixture, "block_tridiag_solve_down_looking", "[gar]") {
@@ -123,19 +115,8 @@ TEST_CASE_METHOD(BTAG_Fixture, "block_tridiag_solve_down_looking", "[gar]") {
       gar::symmetricBlockTridiagSolveDownLooking(sub, diagonal, sup, vec, facs);
   REQUIRE(ret);
 
-  for (size_t i = 0; i <= N; i++) {
-    fmt::print("rhs[{:d}] = {}\n", i, vec[i].transpose());
-  }
+  aligator::BunchKaufman<MatrixXs> ldlt(densemat);
+  ldlt.solveInPlace(rhs.matrix());
 
-  {
-    // alternative solve
-    Eigen::LDLT<MatrixXs> ldlt(densemat);
-    ldlt.solveInPlace(rhs.matrix());
-
-    fmt::print("Alternative solve:\n");
-    for (size_t i = 0; i <= N; i++) {
-      fmt::print("rhs[{:d}] = {}\n", i, rhs[i].transpose());
-    }
-    REQUIRE(vec.matrix().isApprox(rhs.matrix(), 1e-12));
-  }
+  REQUIRE(vec.isApprox(rhs, prec));
 }

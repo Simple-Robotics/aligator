@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- gar/blk-matrix : added `BlkMatrix::isApprox()` (https://github.com/Simple-Robotics/aligator/pull/366)
 - core : added [mimalloc](https://github.com/mimalloc/mimalloc)-based memory resource (https://github.com/Simple-Robotics/aligator/pull/366)
 - modelling/costs : add getter and setter for cost term weights (https://github.com/Simple-Robotics/aligator/pull/359)
 - support for Pinocchio 4 (https://github.com/Simple-Robotics/aligator/pull/361)
@@ -18,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- tests/gar/block-matrix.cpp : test against BunchKaufman factorization
 - move headers `allocator.hpp` and `arena-matrix.hpp` to `aligator/core` dir (https://github.com/Simple-Robotics/aligator/pull/362)
 - python: aligator now requires eigenpy version 3.10.3 at least
 - python: remove eigenpy version checks

@@ -171,6 +171,20 @@ public:
   MatrixType &matrix() { return m_data; }
   const MatrixType &matrix() const { return m_data; }
 
+  template <typename D>
+  inline bool isApprox(
+      const Eigen::EigenBase<D> &other,
+      const Scalar prec = Eigen::NumTraits<Scalar>::dummy_precision()) const {
+    return matrix().isApprox(other, prec);
+  }
+
+  template <typename D, int N2, int M2>
+  inline bool isApprox(
+      const BlkMatrix<D, N2, M2> &other,
+      const Scalar prec = Eigen::NumTraits<Scalar>::dummy_precision()) const {
+    return matrix().isApprox(other.matrix(), prec);
+  }
+
   const RowDimsType &rowDims() const { return m_rowDims; }
   const RowDimsType &rowIndices() const { return m_rowIndices; }
   const ColDimsType &colDims() const { return m_colDims; }
@@ -179,6 +193,7 @@ public:
   Index rows() const { return m_totalRows; }
   Index cols() const { return m_totalCols; }
 
+  /// @brief Take the top \c n block rows of the block matrix.
   auto topBlkRows(size_t n) {
     using OutType = BlkMatrix<Eigen::Ref<MatrixType>, -1, M>;
     std::vector<Index> subRowDims;
@@ -188,6 +203,8 @@ public:
     return OutType(m_data.topRows(ntr), subRowDims, m_colDims);
   }
 
+  /// @copybrief topBlkRows().
+  /// This version returns a fixed-size block.
   template <size_t n> auto topBlkRows() {
     static_assert(n <= N,
                   "Cannot take n block rows of matrix with <n block rows.");
