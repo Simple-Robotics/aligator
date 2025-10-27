@@ -128,8 +128,8 @@ Scalar SolverProxDDPTpl<Scalar>::tryLinearStep(const Problem &problem,
     nu_max = std::max(nu_max, workspace_.dus[i].size());
   }
   ndx_max = std::max(ndx_max, workspace_.dxs.back().size());
-  VectorXs dx_tmp(ndx_max);
-  VectorXs du_tmp(nu_max);
+  ArenaMatrix<VectorXs> dx_tmp{ndx_max, allocator_};
+  ArenaMatrix<VectorXs> du_tmp{ndx_max, allocator_};
 
   for (size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
