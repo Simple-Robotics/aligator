@@ -47,7 +47,6 @@ public:
   // boost::unordered_map support heterogeneous lookup (whereas std:: doesn't
   // until C++20). we just need to provide the right extended hash function and
   // transparent comparison op
-  using hash2 = boost::hash<std::string>;
   using CallbackMap = boost::unordered_map<std::string, CallbackPtr,
                                            ExtendedStringHash, std::equal_to<>>;
   using ConstraintStack = ConstraintStackTpl<Scalar>;
