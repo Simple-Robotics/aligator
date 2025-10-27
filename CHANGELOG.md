@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- solver-proxddp : make new `mimalloc` memory resource the allocator resource for ProxDDP solver (https://github.com/Simple-Robotics/aligator/pull/367)
 - tests/gar/block-matrix.cpp : test against BunchKaufman factorization
 - move headers `allocator.hpp` and `arena-matrix.hpp` to `aligator/core` dir (https://github.com/Simple-Robotics/aligator/pull/362)
 - python: aligator now requires eigenpy version 3.10.3 at least
