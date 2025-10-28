@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023-2024 LAAS-CNRS, 2023-2025 INRIA
 /// @author Wilson Jallet
 #pragma once
 
@@ -22,7 +22,9 @@ public:
   using PlainObject = typename MatrixType::PlainObject;
   using Scalar = typename MatrixType::Scalar;
   using Index = Eigen::Index;
-  enum { N = _N, M = _M, Options = PlainObject::Options };
+  static constexpr int N = _N;
+  static constexpr int M = _M;
+  static constexpr int Options = PlainObject::Options;
   static constexpr bool IsVectorAtCompileTime =
       MatrixType::IsVectorAtCompileTime;
 

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "aligator/solvers/workspace-base.hpp"
-#include "aligator/gar/blk-matrix.hpp"
+#include "aligator/core/blk-matrix.hpp"
 #include "aligator/gar/lqr-problem.hpp"
 
 #include "aligator/modelling/constraints/constraint-set-product.hpp"

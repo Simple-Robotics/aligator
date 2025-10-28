@@ -7,7 +7,7 @@
 #include "aligator/modelling/constraints.hpp"
 #include <aligator/fmt-eigen.hpp>
 #include <iostream>
-#include <random>
+#include "../tests/test_util.hpp"
 
 using namespace aligator;
 
@@ -23,20 +23,15 @@ using context::StageModel;
 using context::TrajOptProblem;
 using context::VectorXs;
 
-static std::mt19937_64 urng{42};
-struct NormalGen {
-  double operator()() const { return norm(urng); }
-  mutable std::normal_distribution<double> norm;
-};
-
 int main() {
+  std::mt19937 rng{42};
   std::srand(42);
   const size_t nsteps = 100;
   const auto nx = 4;
   const auto nu = 2;
   const auto space = Space(nx);
 
-  NormalGen norm_gen;
+  normal_unary_op norm_gen{rng};
   MatrixXs A;
   // clang-format off
   A.setIdentity(nx, nx);

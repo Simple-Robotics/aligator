@@ -10,6 +10,7 @@
 #include "aligator/core/filter.hpp"
 #include "aligator/core/callback-base.hpp"
 #include "aligator/core/enums.hpp"
+#include "aligator/core/mimalloc-resource.hpp"
 #include "aligator/utils/logger.hpp"
 #include "aligator/gar/riccati-base.hpp"
 
@@ -46,7 +47,6 @@ public:
   // boost::unordered_map support heterogeneous lookup (whereas std:: doesn't
   // until C++20). we just need to provide the right extended hash function and
   // transparent comparison op
-  using hash2 = boost::hash<std::string>;
   using CallbackMap = boost::unordered_map<std::string, CallbackPtr,
                                            ExtendedStringHash, std::equal_to<>>;
   using ConstraintStack = ConstraintStackTpl<Scalar>;
@@ -76,7 +76,7 @@ public:
                  impl_);
     }
 
-    bool isValid() const { return impl_.index() > 0ul; }
+    [[nodiscard]] bool isValid() const { return impl_.index() > 0ul; }
 
     operator const VariantType &() const { return impl_; }
 
@@ -173,28 +173,13 @@ public:
   size_t max_iters;                     //< Max number of Newton iterations.
   size_t max_al_iters = 100;            //< Maximum number of ALM iterations.
 
-  polymorphic_allocator allocator_; //< Main allocator
-  Workspace workspace_;             //< Solver workspace
-  Results results_;                 //< Solver results
-  LinearSolverPtr linear_solver_;   //< LQR subproblem solver
-  FilterTpl<Scalar> filter_;        //< Filter linesearch
-  LinesearchVariant linesearch_;    //< Linesearch routine
-
-protected:
-  /// Solver desired dual feasibility (by default, same as
-  /// SolverProxDDPTpl::target_tol_)
-  Scalar target_dual_tol_;
-  /// When this is true, dual tolerance will be set to
-  /// SolverProxDDPTpl::target_tol_ when SolverProxDDPTpl::run() is called.
-  bool sync_dual_tol_;
-  /// Callbacks
-  CallbackMap callbacks_;
-  /// Number of threads
-  size_t num_threads_ = 1;
-  /// Dual proximal/ALM penalty parameter \f$\mu\f$
-  /// This is the global parameter: scales may be applied for each stagewise
-  /// constraint.
-  Scalar mu_penal_ = mu_init_;
+  mimalloc_resource memory_resource_; //< Memory resource
+  polymorphic_allocator allocator_;   //< Main allocator
+  Workspace workspace_;               //< Solver workspace
+  Results results_;                   //< Solver results
+  LinearSolverPtr linear_solver_;     //< LQR subproblem solver
+  FilterTpl<Scalar> filter_;          //< Filter linesearch
+  LinesearchVariant linesearch_;      //< Linesearch routine
 
 public:
   SolverProxDDPTpl(const Scalar tol = 1e-6, const Scalar mu_init = 0.01,
@@ -204,10 +189,10 @@ public:
                        StepAcceptanceStrategy::LINESEARCH_NONMONOTONE,
                    HessianApprox hess_approx = HessianApprox::GAUSS_NEWTON);
 
-  inline size_t getNumThreads() const { return num_threads_; }
+  [[nodiscard]] inline size_t getNumThreads() const { return num_threads_; }
   void setNumThreads(const size_t num_threads);
 
-  Scalar getDualTolerance() const { return target_dual_tol_; }
+  [[nodiscard]] Scalar getDualTolerance() const { return target_dual_tol_; }
   /// Manually set desired dual feasibility tolerance.
   void setDualTolerance(const Scalar tol) {
     target_dual_tol_ = tol;
@@ -309,11 +294,22 @@ public:
                           const std::vector<VectorXs> &lams,
                           const std::vector<VectorXs> &vs);
 
-  ALIGATOR_INLINE Scalar mu() const { return mu_penal_; }
-  ALIGATOR_INLINE Scalar mu_inv() const { return 1. / mu_penal_; }
-  ALIGATOR_INLINE Scalar mu_dyn() const { return 0.1 * mu_penal_; }
+  inline Scalar mu() const { return mu_penal_; }
+  inline Scalar mu_inv() const { return 1. / mu_penal_; }
+  /// Used in linesearch.
+  inline Scalar mu_dyn() const { return 0.1 * mu_penal_; }
 
 protected:
+  Scalar target_dual_tol_; //< Solver desired dual feasibility (default: same as
+                           // target_tol_)
+  bool sync_dual_tol_ = true; //< If true, dual tolerance will be set to
+                              // target_tol_ when run() is called.
+  CallbackMap callbacks_;     //< Solver callbacks
+  size_t num_threads_ = 1;    //< Number of threads
+  /// Dual proximal/ALM penalty parameter \f$\mu\f$. This is the global
+  /// parameter. There might be individual scaling for stagewise constraints.
+  Scalar mu_penal_ = mu_init_;
+
   void updateTolsOnFailure() noexcept {
     const Scalar arg = std::min(mu_penal_, 0.99);
     prim_tol_ = prim_tol0 * std::pow(arg, bcl_params.prim_alpha);
@@ -327,12 +323,13 @@ protected:
   }
 
   /// Set dual proximal/ALM penalty parameter.
-  ALIGATOR_INLINE void setAlmPenalty(Scalar new_mu) noexcept {
+  inline void setAlmPenalty(Scalar new_mu) noexcept {
     mu_penal_ = std::max(new_mu, bcl_params.mu_lower_bound);
   }
 
-  // See sec. 3.1 of the IPOPT paper [Wächter, Biegler 2006]
-  // called before first bwd pass attempt
+  /// Initialize primal regularization for the inner loop.
+  /// See sec. 3.1 of the IPOPT paper [Wächter, Biegler 2006]
+  /// This called before first bwd pass attempt
   inline void initializeRegularization() noexcept {
     if (preg_last_ == 0.) {
       // this is the 1st iteration

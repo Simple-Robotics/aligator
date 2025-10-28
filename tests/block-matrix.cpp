@@ -4,7 +4,7 @@
 #include <catch2/catch_get_random_seed.hpp>
 
 #include "aligator/context.hpp"
-#include "aligator/gar/blk-matrix.hpp"
+#include "aligator/core/blk-matrix.hpp"
 #include "aligator/gar/block-tridiagonal.hpp"
 #include "aligator/core/bunchkaufman.hpp"
 #include <Eigen/Cholesky>
@@ -13,11 +13,10 @@
 #include <aligator/fmt-eigen.hpp>
 
 using namespace aligator;
-using namespace aligator::context;
-
-using MatrixXs = math_types<Scalar>::MatrixXs;
-using MatrixRef = Eigen::Ref<MatrixXs>;
-using VectorXs = math_types<Scalar>::VectorXs;
+using context::MatrixRef;
+using context::MatrixXs;
+using context::VectorXs;
+using BlkVec = BlkMatrix<VectorXs, -1, 1>;
 
 TEST_CASE("blk22", "[gar]") {
   std::array<long, 2> dims = {4, 6};
@@ -63,7 +62,6 @@ struct BTAG_Fixture {
   std::vector<MatrixXs> diagonal;
   std::vector<MatrixXs> sup;
   std::vector<MatrixXs> sub;
-  using BlkVec = BlkMatrix<VectorXs, -1, 1>;
   BlkVec vec;
   MatrixXs densemat;
   BlkVec rhs;

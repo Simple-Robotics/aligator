@@ -83,7 +83,7 @@ problem = aligator.TrajOptProblem(x0, stages, term_cost)
 
 
 TOL = 1e-5
-mu_init = 1e-3
+mu_init = 1e-2
 max_iters = 200
 verbose = aligator.VerboseLevel.VERBOSE
 solver = aligator.SolverProxDDP(TOL, mu_init, verbose=verbose)

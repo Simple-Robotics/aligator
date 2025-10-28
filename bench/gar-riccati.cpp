@@ -4,6 +4,7 @@
 
 #include <benchmark/benchmark.h>
 
+#include "aligator/core/mimalloc-resource.hpp"
 #include "aligator/gar/proximal-riccati.hpp"
 #include "aligator/gar/parallel-solver.hpp"
 #include "aligator/gar/dense-riccati.hpp"
@@ -22,11 +23,24 @@ static constexpr double mueq = 1e-11;
 static std::mt19937 rng;
 static normal_unary_op normal_op{rng};
 
+static aligator::mimalloc_resource mim_resource;
+
+auto get_allocator(int64_t ID) -> aligator::polymorphic_allocator {
+  static std::pmr::memory_resource *RESOURCES[2] = {
+      std::pmr::get_default_resource(), &mim_resource};
+  assert(ID < 2);
+  return aligator::polymorphic_allocator{RESOURCES[ID]};
+}
+
+#define GET_PROBLEM(state)                                                     \
+  auto allocator = get_allocator(state.range(1));                              \
+  uint horz = (uint)state.range(0);                                            \
+  VectorXs x0 = VectorXs::NullaryExpr(nx, normal_op);                          \
+  LqrProblemTpl<double> problem =                                              \
+      generateLqProblem(rng, x0, horz, nx, nu, 0, nc, true, allocator)
+
 static void BM_serial(benchmark::State &state) {
-  uint horz = (uint)state.range(0);
-  VectorXs x0 = VectorXs::NullaryExpr(nx, normal_op);
-  const LqrProblemTpl<double> problem =
-      generateLqProblem(rng, x0, horz, nx, nu, 0, nc);
+  GET_PROBLEM(state);
   ProximalRiccatiSolver<double> solver(problem);
   auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
   for (auto _ : state) {
@@ -37,10 +51,7 @@ static void BM_serial(benchmark::State &state) {
 
 #ifdef ALIGATOR_MULTITHREADING
 template <uint NPROC> static void BM_parallel(benchmark::State &state) {
-  uint horz = (uint)state.range(0);
-  VectorXs x0 = VectorXs::NullaryExpr(nx, normal_op);
-  LqrProblemTpl<double> problem =
-      generateLqProblem(rng, x0, horz, nx, nu, 0, nc);
+  GET_PROBLEM(state);
   ParallelRiccatiSolver<double> solver(problem, NPROC);
   auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
   for (auto _ : state) {
@@ -51,10 +62,7 @@ template <uint NPROC> static void BM_parallel(benchmark::State &state) {
 #endif
 
 static void BM_stagedense(benchmark::State &state) {
-  uint horz = (uint)state.range(0);
-  VectorXs x0 = VectorXs::NullaryExpr(nx, normal_op);
-  LqrProblemTpl<double> problem =
-      generateLqProblem(rng, x0, horz, nx, nu, 0, nc);
+  GET_PROBLEM(state);
   RiccatiSolverDense<double> solver(problem);
   auto [xs, us, vs, lbdas] = lqrInitializeSolution(problem);
   for (auto _ : state) {
@@ -65,8 +73,10 @@ static void BM_stagedense(benchmark::State &state) {
 
 static void customArgs(benchmark::internal::Benchmark *b) {
   for (uint e = 4; e <= 10; e++) {
-    b->Arg(1 << e);
+    b->Args({1 << e, 0});
+    b->Args({1 << e, 1});
   }
+  b->ArgNames({"N", "alloc"});
   b->Unit(benchmark::kMillisecond);
   b->UseRealTime();
 }

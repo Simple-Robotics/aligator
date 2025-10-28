@@ -2,7 +2,7 @@
 /// @author Wilson Jallet
 #pragma once
 
-#include "aligator/gar/blk-matrix.hpp"
+#include "aligator/core/blk-matrix.hpp"
 #include "aligator/utils/exceptions.hpp"
 #include "aligator/tracy.hpp"
 

@@ -79,14 +79,18 @@ SolverProxDDPTpl<Scalar>::SolverProxDDPTpl(const Scalar tol,
     , hess_approx_(hess_approx)
     , sa_strategy_(sa_strategy)
     , max_iters(max_iters)
-    , allocator_()
-    , workspace_(allocator_)
+    , memory_resource_{}
+    , allocator_{&memory_resource_}
+    , workspace_{allocator_}
     , results_()
     , filter_(0.0, ls_params.alpha_min, ls_params.max_num_steps)
     , linesearch_()
-    , target_dual_tol_(tol)
-    , sync_dual_tol_(true) {
+    , target_dual_tol_{tol} {
   ls_params.interp_type = LSInterpolation::CUBIC;
+  // add logger columns
+  for (size_t j = 0; j < std::size(BASIC_KEYS); j++) {
+    logger.addColumn(BASIC_KEYS[j]);
+  }
 }
 
 template <typename Scalar>
@@ -124,8 +128,8 @@ Scalar SolverProxDDPTpl<Scalar>::tryLinearStep(const Problem &problem,
     nu_max = std::max(nu_max, workspace_.dus[i].size());
   }
   ndx_max = std::max(ndx_max, workspace_.dxs.back().size());
-  VectorXs dx_tmp(ndx_max);
-  VectorXs du_tmp(nu_max);
+  ArenaMatrix<VectorXs> dx_tmp{ndx_max, allocator_};
+  ArenaMatrix<VectorXs> du_tmp{ndx_max, allocator_};
 
   for (size_t i = 0; i < nsteps; i++) {
     const StageModel &stage = *problem.stages_[i];
@@ -447,9 +451,6 @@ bool SolverProxDDPTpl<Scalar>::run(const Problem &problem,
   }
 
   logger.active = (verbose_ > 0);
-  for (size_t j = 0; j < std::size(BASIC_KEYS); j++) {
-    logger.addColumn(BASIC_KEYS[j]);
-  }
   logger.printHeadline();
 
   setAlmPenalty(mu_init_);
