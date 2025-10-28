@@ -58,11 +58,6 @@ void exposeProblem() {
                     &TrajOptProblem::setInitState, "Initial state.")
       .add_property("init_constraint", &TrajOptProblem::init_constraint_,
                     "Get initial state constraint.")
-      .def<void (TrajOptProblem::*)(const context::StageConstraint &)>(
-          "addTerminalConstraint", &TrajOptProblem::addTerminalConstraint,
-          eigenpy::deprecated_member<>("This method is deprecated (because "
-                                       "StageConstraint has been deprecated)."),
-          ("self"_a, "constraint"), "Add a terminal constraint.")
       .def<void (TrajOptProblem::*)(const PolyFunction &, const PolySet &)>(
           "addTerminalConstraint", &TrajOptProblem::addTerminalConstraint,
           ("self"_a, "func", "set"), "Add a terminal constraint.")

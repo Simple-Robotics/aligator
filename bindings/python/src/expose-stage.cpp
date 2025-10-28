@@ -55,11 +55,6 @@ void exposeStage() {
       bp::no_init)
       .def(bp::init<const PolyCost &, const PolyDynamics &>(
           ("self"_a, "cost", "dynamics")))
-      .def<void (StageModel::*)(const context::StageConstraint &)>(
-          "addConstraint", &StageModel::addConstraint,
-          eigenpy::deprecated_member<>("This method has been deprecated since "
-                                       "StageConstraint is deprecated."),
-          ("self"_a, "constraint"), "Add an existing constraint to the stage.")
       .def<void (StageModel::*)(const PolyFunction &, const PolyCstrSet &)>(
           "addConstraint", &StageModel::addConstraint,
           ("self"_a, "func", "cstr_set"),

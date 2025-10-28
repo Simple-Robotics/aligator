@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - modelling/multibody : remove txx files, remove `context.hpp`
 - core : remove `callback-base.txx`, remove `constraint.txx`
-- core : remove deprecated class template `StageConstraintTpl`
+- core : remove deprecated class template `StageConstraintTpl`, and its Python bindings
 
 ## [0.16.0] - 2025-10-15
 
