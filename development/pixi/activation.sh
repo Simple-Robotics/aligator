@@ -22,15 +22,6 @@ then
   export LDFLAGS="-Wl,-rpath,$CONDA_PREFIX/lib -Wl,-rpath-link,$CONDA_PREFIX/lib -L$CONDA_PREFIX/lib"
 fi
 
-# Setup ccache
-export CMAKE_CXX_COMPILER_LAUNCHER=ccache
-
-# Create compile_commands.json for language server
-export CMAKE_EXPORT_COMPILE_COMMANDS=1
-
-# Activate color output with Ninja
-export CMAKE_COLOR_DIAGNOSTICS=1
-
 # Set default build value only if not previously set
 export ALIGATOR_BUILD_TYPE=${ALIGATOR_BUILD_TYPE:=Release}
 export ALIGATOR_PINOCCHIO_SUPPORT=${ALIGATOR_PINOCCHIO_SUPPORT:=OFF}

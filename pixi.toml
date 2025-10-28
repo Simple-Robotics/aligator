@@ -10,14 +10,22 @@ license-file = "LICENSE"
 [workspace.build-variants]
 python = ["3.10.*", "3.12.*"]
 
-[dependencies]
-# build deps
+[package]
+name = { workspace = true }
+version = { workspace = true }
+[package.build]
+backend = { name = "pixi-build-cmake", version = "*" }
+channels = [
+  "https://prefix.dev/conda-forge",
+]
+
+[package.build-dependencies]
+cmake = ">=3.22"
 ccache = ">=4.9.1"
-cmake = ">=3.10"
 cxx-compiler = ">=1.7.0"
-ninja = ">=1.11"
 pkg-config = ">=0.29.2"
-# host/run deps
+
+[package.host-dependencies]
 libboost-devel = ">=1.86.0,<2"
 libboost-python-devel = ">=1.86.0,<2"
 eigen = ">=3.4.0,<4"
@@ -94,6 +102,13 @@ release_new_version = { cmd = "VERSION=$ALIGATOR_VERSION cmake --build build_new
   "configure_new_version",
 ] }
 
+[activation.env]
+CMAKE_CXX_COMPILER_LAUNCHER = "ccache"
+CMAKE_EXPORT_COMPILE_COMMANDS = "ON"
+CMAKE_COLOR_DIAGNOSTICS = "ON"
+# Help ccache manage generated files and PCH (https://ccache.dev/manual/latest.html#_precompiled_headers)
+CCACHE_SLOPPINESS = "include_file_ctime,include_file_mtime,pch_defines,time_macros"
+
 # tracy-client is not built on osx-arm64
 [feature.tracy]
 [feature.tracy.target.linux-64]
@@ -125,7 +140,7 @@ activation = { env = { ALIGATOR_OPENMP_SUPPORT = "ON" } }
 # to avoid cxx-compiler to overwrite them.
 [feature.clang]
 platforms = ["linux-64"]
-activation = { scripts = ["development/pixi/activation_clang.sh"] }
+activation = { env = { CC = "clang", CXX = "clang++" } }
 dependencies = { clangxx = "*" }
 
 [feature.doc.dependencies]
