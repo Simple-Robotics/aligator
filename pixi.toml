@@ -6,17 +6,24 @@ description = "A primal-dual augmented Lagrangian-type solver for trajectory opt
 platforms = ["linux-64", "osx-64", "osx-arm64"]
 license = "BSD-2-Clause"
 license-file = "LICENSE"
+readme = "README.md"
+repository = "https://github.com/Simple-Robotics/aligator"
+preview = ["pixi-build"]
 
 [workspace.build-variants]
-python = ["3.10.*", "3.12.*"]
+python = ["3.10.*", "3.14.*"]
 
 [package]
 name = { workspace = true }
 version = { workspace = true }
+
 [package.build]
 backend = { name = "pixi-build-cmake", version = "*" }
-channels = [
-  "https://prefix.dev/conda-forge",
+
+[package.build.config]
+extra-args = [
+  "-DBUILD_TESTING=OFF",
+  "-DGENERATE_PYTHON_STUBS=ON",
 ]
 
 [package.build-dependencies]
@@ -29,8 +36,27 @@ pkg-config = ">=0.29.2"
 libboost-devel = ">=1.86.0,<2"
 libboost-python-devel = ">=1.86.0,<2"
 eigen = ">=3.4.0,<4"
-python = ">=3.9.22,<3.13"
-eigenpy = ">=3.10.3,<4"
+python = ">=3.9.22"
+eigenpy = "*"
+fmt = ">=11.1.4"
+benchmark = ">=1.9.4,<2"
+pytest = ">=8.3.5,<9"
+matplotlib-base = ">=3.9.4,<4"
+typed-argument-parser = ">=1.10.1,<2"
+meshcat-python = ">=0.3.2,<0.4"
+catch2 = ">=3.8.0,<4"
+mimalloc = ">=3.1.5,<4"
+
+[dependencies]
+cmake = ">=3.22"
+ccache = ">=4.9.1"
+cxx-compiler = ">=1.7.0"
+pkg-config = ">=0.29.2"
+libboost-devel = ">=1.86.0,<2"
+libboost-python-devel = ">=1.86.0,<2"
+eigen = ">=3.4.0,<4"
+python = ">=3.10.19"
+eigenpy = ">=3.12.0"
 fmt = ">=11.1.4"
 benchmark = ">=1.9.4,<2"
 pytest = ">=8.3.5,<9"
@@ -62,7 +88,7 @@ configure = { cmd = [
   "-DBUILD_WITH_OPENMP_SUPPORT=$ALIGATOR_OPENMP_SUPPORT",
   "-DBUILD_BENCHMARKS=$ALIGATOR_BENCHMARKS",
   "-DBUILD_EXAMPLES=$ALIGATOR_EXAMPLES",
-  "-DGENERATE_PYTHON_STUBS=$ALIGATOR_PYTHON_STUBS",
+  "-DGENERATE_PYTHON_STUBS=ON",
 ] }
 build = { cmd = "cmake --build build --target all", depends-on = ["configure"] }
 clean = { cmd = "rm -rf build" }
@@ -72,7 +98,7 @@ test = { cmd = "ctest --test-dir build --output-on-failure", depends-on = [
 ] }
 
 [feature.lint]
-dependencies = { pre-commit = ">=3.6.2" }
+dependencies = { pre-commit = ">=4.3.0" }
 tasks = { lint = { cmd = "pre-commit run --all" } }
 
 # Increment the version number with ALIGATOR_VERSION variable
@@ -80,13 +106,13 @@ tasks = { lint = { cmd = "pre-commit run --all" } }
 tomlkit = ">=0.13.2"
 
 [feature.new-version.tasks]
-configure_new_version = { cmd = [
+configure-new-version = { cmd = [
   "CXXFLAGS=$ALIGATOR_CXX_FLAGS",
   "cmake",
   "-G",
   "Ninja",
   "-B",
-  "build_new_version",
+  "build-new-version",
   "-S",
   ".",
   "-DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX",
@@ -98,8 +124,8 @@ configure_new_version = { cmd = [
   "-DBUILD_EXAMPLES=ON",
   "-DGENERATE_PYTHON_STUBS=ON",
 ] }
-release_new_version = { cmd = "VERSION=$ALIGATOR_VERSION cmake --build build_new_version --target release", depends-on = [
-  "configure_new_version",
+release-new-version = { cmd = "VERSION=$ALIGATOR_VERSION cmake --build build-new-version --target release", depends-on = [
+  "configure-new-version",
 ] }
 
 [activation.env]
@@ -119,7 +145,7 @@ dependencies = { tracy-client = ">=0.11.1" }
 activation = { env = { ALIGATOR_TRACY_ENABLE = "ON" } }
 
 [feature.pinocchio]
-dependencies = { pinocchio = ">=3.8.0,<4", example-robot-data = ">=4.4.0,<5" }
+dependencies = { pinocchio = ">=3.8.0", example-robot-data-loaders = ">=4" }
 activation = { env = { ALIGATOR_PINOCCHIO_SUPPORT = "ON" } }
 
 [feature.crocoddyl]
@@ -135,6 +161,12 @@ activation = { env = { ALIGATOR_OPENMP_SUPPORT = "ON" } }
 dependencies = { llvm-openmp = ">=19.1" }
 activation = { env = { ALIGATOR_OPENMP_SUPPORT = "ON" } }
 
+[feature.python-latest.dependencies]
+python = ">=3.14.0"
+
+[feature.python-oldest.dependencies]
+python = ">=3.14.0"
+
 # Use clang on GNU/Linux.
 # We must use scripts instead of env to setup CC and CXX
 # to avoid cxx-compiler to overwrite them.
@@ -148,22 +180,32 @@ doxygen = ">=1.13"
 graphviz = ">=12"
 
 [environments]
-default = { features = [] }
-clang = { features = ["clang"] }
-lint = { features = ["lint"] }
-pinocchio = { features = ["pinocchio"]}
-crocoddyl = { features = ["crocoddyl"]}
-openmp = { features = ["openmp"] }
-tracy = { features = ["tracy" ]  }
+default = { features = ["python-latest"], solve-group = "python-latest" }
+clang = { features = ["clang", "python-latest"] }
+lint = { features = ["lint"], solve-group = "python-latest" }
+pinocchio = { features = ["pinocchio", "python-latest"], solve-group = "python-latest" }
+crocoddyl = { features = ["crocoddyl", "python-latest"], solve-group = "python-latest" }
+openmp = { features = ["openmp", "python-latest"], solve-group = "python-latest" }
+tracy = { features = ["tracy", "python-latest"], solve-group = "python-latest" }
+python-oldest = { features = ["python-oldest"], solve-group = "python-oldest" }
 all = { features = [
   "doc",
   "pinocchio",
   "crocoddyl",
   "openmp",
-] }
+  "python-latest",
+], solve-group = "python-latest" }
+all-python-oldest = { features = [
+  "doc",
+  "pinocchio",
+  "crocoddyl",
+  "openmp",
+  "python-oldest",
+], solve-group = "python-oldest" }
 new-version = { features = [
   "new-version",
   "pinocchio",
   "crocoddyl",
   "openmp",
-] }
+  "python-latest",
+], solve-group = "python-latest" }
