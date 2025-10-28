@@ -4,7 +4,8 @@
 #include "aligator/modelling/state-error.hpp"
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
 
-#include "aligator/modelling/constraints.hpp"
+#include "aligator/modelling/constraints/box-constraint.hpp"
+#include "aligator/modelling/constraints/equality-constraint.hpp"
 #include <aligator/fmt-eigen.hpp>
 #include <iostream>
 #include "../tests/test_util.hpp"
