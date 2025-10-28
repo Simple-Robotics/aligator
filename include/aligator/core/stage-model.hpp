@@ -32,10 +32,6 @@ public:
   using PolyConstraintSet = polymorphic<ConstraintSetTpl<Scalar>>;
   using Cost = CostAbstractTpl<Scalar>;
   using PolyCost = polymorphic<Cost>;
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-  using StageConstraint = StageConstraintTpl<Scalar>;
-#pragma GCC diagnostic pop
   using Data = StageDataTpl<Scalar>;
 
   /// State space for the current state \f$x_k\f$.
@@ -105,12 +101,6 @@ public:
   int numDual() const { return ndx2() + nc(); }
 
   /// @brief    Add a constraint to the stage.
-  template <typename Cstr, typename = std::enable_if_t<std::is_same_v<
-                               std::decay_t<Cstr>, StageConstraint>>>
-  ALIGATOR_DEPRECATED void addConstraint(Cstr &&cstr);
-
-  /// @copybrief  addConstraint().
-  /// @details    Adds a constraint by allocating a new StageConstraintTpl.
   void addConstraint(const PolyFunction &func,
                      const PolyConstraintSet &cstr_set);
 
@@ -134,18 +124,6 @@ public:
   /// @brief    Create a StageData object.
   virtual shared_ptr<Data> createData() const;
 };
-
-template <typename Scalar>
-template <typename Cstr, typename>
-void StageModelTpl<Scalar>::addConstraint(Cstr &&cstr) {
-  const int c_nu = cstr.func->nu;
-  if (c_nu != this->nu()) {
-    ALIGATOR_RUNTIME_ERROR(
-        "Function has the wrong dimension for u: got {:d}, expected {:d}", c_nu,
-        this->nu());
-  }
-  constraints_.pushBack(std::forward<Cstr>(cstr));
-}
 
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
 extern template struct StageModelTpl<context::Scalar>;

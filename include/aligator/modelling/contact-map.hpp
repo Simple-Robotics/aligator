@@ -45,30 +45,33 @@ template <typename _Scalar> struct ContactMapTpl {
   }
 
   bool getContactState(std::string_view name) const {
-    auto id = std::find(contact_names_.begin(), contact_names_.end(), name);
-    if (id == contact_names_.end()) {
+    auto it = std::find(contact_names_.begin(), contact_names_.end(), name);
+    if (it == contact_names_.end()) {
       ALIGATOR_RUNTIME_ERROR("Contact name does not exist in this map!");
     }
 
-    return contact_states_[id - contact_names_.begin()];
+    const auto index = size_t(it - contact_names_.begin());
+    return contact_states_[index];
   }
 
   const Vector3s &getContactPose(std::string_view name) const {
-    auto id = std::find(contact_names_.begin(), contact_names_.end(), name);
-    if (id == contact_names_.end()) {
+    auto it = std::find(contact_names_.begin(), contact_names_.end(), name);
+    if (it == contact_names_.end()) {
       ALIGATOR_RUNTIME_ERROR("Contact name does not exist in this map!");
     }
 
-    return contact_poses_[id - contact_names_.begin()];
+    const auto index = size_t(it - contact_names_.begin());
+    return contact_poses_[index];
   }
 
   void setContactPose(std::string_view name, const Vector3s &ref) {
-    auto id = std::find(contact_names_.begin(), contact_names_.end(), name);
-    if (id == contact_names_.end()) {
+    auto it = std::find(contact_names_.begin(), contact_names_.end(), name);
+    if (it == contact_names_.end()) {
       ALIGATOR_RUNTIME_ERROR("Contact name does not exist in this map!");
     }
 
-    contact_poses_[id - contact_names_.begin()] = ref;
+    const auto index = size_t(it - contact_names_.begin());
+    contact_poses_[index] = ref;
   }
 
   std::vector<std::string> contact_names_;

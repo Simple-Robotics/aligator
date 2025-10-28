@@ -159,12 +159,6 @@ bool TrajOptProblemTpl<Scalar>::checkIntegrity() const {
 }
 
 template <typename Scalar>
-void TrajOptProblemTpl<Scalar>::addTerminalConstraint(
-    const StageConstraint &cstr) {
-  term_cstrs_.pushBack(cstr.func, cstr.set);
-}
-
-template <typename Scalar>
 inline std::size_t TrajOptProblemTpl<Scalar>::numSteps() const {
   return stages_.size();
 }

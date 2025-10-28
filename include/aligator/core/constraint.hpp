@@ -10,13 +10,6 @@
 
 namespace aligator {
 
-/// @brief Simple struct holding together a function and set, to describe a
-/// constraint.
-template <typename Scalar> struct ALIGATOR_DEPRECATED StageConstraintTpl {
-  xyz::polymorphic<StageFunctionTpl<Scalar>> func;
-  xyz::polymorphic<ConstraintSetTpl<Scalar>> set;
-};
-
 /// @brief Convenience class to manage a stack of constraints.
 template <typename Scalar> struct ConstraintStackTpl {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
@@ -95,8 +88,7 @@ template <typename Scalar> void ConstraintStackTpl<Scalar>::clear() {
   total_dim_ = 0;
 }
 
-} // namespace aligator
-
 #ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/core/constraint.txx"
+extern template struct ConstraintStackTpl<context::Scalar>;
 #endif
+} // namespace aligator

@@ -51,8 +51,8 @@ namespace aligator {
  * # Stage models
  * A stage model (StageModelTpl) describes a node in the discrete-time optimal
  * control problem: it consists in a running cost function, and a vector of
- * constraints (StageConstraintTpl), the first of which @b must describe
- * system dynamics (through a DynamicsModelTpl).
+ * constraints, the first of which @b must describe system dynamics (through a
+ * ExplicitDynamicsModelTpl).
  *
  * # Example
  *
@@ -113,10 +113,6 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   using CostAbstract = CostAbstractTpl<Scalar>;
   using ConstraintSet = ConstraintSetTpl<Scalar>;
   using StateErrorResidual = StateErrorResidualTpl<Scalar>;
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-  using StageConstraint = StageConstraintTpl<Scalar>;
-#pragma GCC diagnostic pop
   using InitializationStrategy =
       std::function<void(const Self &, std::vector<VectorXs> &)>;
 
@@ -185,12 +181,11 @@ template <typename _Scalar> struct TrajOptProblemTpl {
   }
 
   /// @brief Add a terminal constraint for the model.
-  ALIGATOR_DEPRECATED void addTerminalConstraint(const StageConstraint &cstr);
-  /// @copybrief addTerminalConstraint()
   void addTerminalConstraint(const xyz::polymorphic<StageFunction> &func,
                              const xyz::polymorphic<ConstraintSet> &set) {
     this->term_cstrs_.pushBack(func, set);
   }
+
   /// @brief Remove all terminal constraints.
   void removeTerminalConstraints() { term_cstrs_.clear(); }
 

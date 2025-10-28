@@ -110,9 +110,6 @@ template <typename Scalar> struct DynamicsModelTpl;
 // fwd DynamicsDataTpl
 template <typename Scalar> struct DynamicsDataTpl;
 
-// fwd StageConstraintTpl
-template <typename Scalar> struct StageConstraintTpl;
-
 // fwd ExplicitDynamicsModelTpl
 template <typename Scalar> struct ExplicitDynamicsModelTpl;
 

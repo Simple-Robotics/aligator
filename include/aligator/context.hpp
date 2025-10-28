@@ -17,7 +17,6 @@ using VectorSpace = VectorSpaceTpl<Scalar, Eigen::Dynamic>;
 using StageFunction = StageFunctionTpl<Scalar>;
 using UnaryFunction = UnaryFunctionTpl<Scalar>;
 using StageFunctionData = StageFunctionDataTpl<Scalar>;
-using StageConstraint ALIGATOR_DEPRECATED = StageConstraintTpl<Scalar>;
 
 using ConstraintSet = ConstraintSetTpl<Scalar>;
 
