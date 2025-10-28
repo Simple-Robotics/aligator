@@ -7,14 +7,17 @@ platforms = ["linux-64", "osx-64", "osx-arm64"]
 license = "BSD-2-Clause"
 license-file = "LICENSE"
 
-[build-dependencies]
+[workspace.build-variants]
+python = ["3.10.*", "3.12.*"]
+
+[dependencies]
+# build deps
 ccache = ">=4.9.1"
 cmake = ">=3.10"
 cxx-compiler = ">=1.7.0"
 ninja = ">=1.11"
 pkg-config = ">=0.29.2"
-
-[dependencies]
+# host/run deps
 libboost-devel = ">=1.86.0,<2"
 libboost-python-devel = ">=1.86.0,<2"
 eigen = ">=3.4.0,<4"
