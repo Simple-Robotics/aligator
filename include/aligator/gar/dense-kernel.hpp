@@ -3,9 +3,9 @@
 #pragma once
 
 #include "aligator/core/bunchkaufman.hpp"
-
-#include "blk-matrix.hpp"
+#include "aligator/core/blk-matrix.hpp"
 #include "lqr-problem.hpp"
+
 #include <boost/core/span.hpp>
 
 namespace aligator::gar {

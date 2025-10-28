@@ -5,7 +5,7 @@
 #include "aligator/core/stage-data.hpp"
 #include "aligator/core/explicit-dynamics.hpp"
 #include "aligator/core/cost-abstract.hpp"
-#include "aligator/gar/blk-matrix.hpp"
+#include "aligator/core/blk-matrix.hpp"
 #include "aligator/tracy.hpp"
 
 namespace aligator {

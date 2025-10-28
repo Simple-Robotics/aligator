@@ -2,13 +2,11 @@
 /// @author Wilson Jallet
 #pragma once
 
-#include "aligator/context.hpp"
-#include "lqr-problem.hpp"
-#include "blk-matrix.hpp"
 #include "aligator/core/bunchkaufman.hpp"
+#include "aligator/core/blk-matrix.hpp"
+#include "lqr-problem.hpp"
 
 #include <boost/core/make_span.hpp>
-
 #include <optional>
 
 namespace aligator {
