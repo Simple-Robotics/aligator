@@ -6,6 +6,9 @@ description = "A primal-dual augmented Lagrangian-type solver for trajectory opt
 platforms = ["linux-64", "osx-64", "osx-arm64"]
 license = "BSD-2-Clause"
 license-file = "LICENSE"
+readme = "README.md"
+repository = "https://github.com/Simple-Robotics/aligator"
+preview = ["pixi-build"]
 
 [workspace.build-variants]
 python = ["3.10.*", "3.12.*"]
@@ -104,7 +107,7 @@ dependencies = { tracy-client = ">=0.11.1" }
 activation = { env = { ALIGATOR_TRACY_ENABLE = "ON" } }
 
 [feature.pinocchio]
-dependencies = { pinocchio = ">=3.8.0,<4", example-robot-data = ">=4.4.0,<5" }
+dependencies = { pinocchio = ">=3.8.0", example-robot-data = ">=4.4.0" }
 activation = { env = { ALIGATOR_PINOCCHIO_SUPPORT = "ON" } }
 
 [feature.crocoddyl]
