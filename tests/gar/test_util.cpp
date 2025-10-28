@@ -1,5 +1,5 @@
 /// @copyright Copyright (C) 2023-2024 LAAS-CNRS, 2023-2025 INRIA
-#include "./test_util.hpp"
+#include "test_util.hpp"
 #include "aligator/gar/utils.hpp"
 
 #include <Eigen/Dense>
@@ -10,13 +10,6 @@ compute_conditioning(const Eigen::SelfAdjointView<Mat, Eigen::Lower> &view) {
   auto eigvals = view.eigenvalues();
   return eigvals(0) / eigvals(eigvals.size() - 1);
 }
-
-/// Generate a Wishart-distributed matrix in @p n dimensions with @p p DoF
-MatrixXs sampleWishartDistributedMatrix(uint n, uint p) {
-  std::mt19937 rng;
-  MatrixXs root = MatrixXs::NullaryExpr(n, p, normal_unary_op(rng));
-  return root * root.transpose();
-};
 
 knot_t generateKnot(std::mt19937 rng, knot_gen_opts_t opts,
                     const aligator::polymorphic_allocator &alloc) {

@@ -36,6 +36,7 @@ endfunction()
 set(
   TEST_NAMES
   arena-matrix
+  block-matrix
   continuous
   constraints
   costs

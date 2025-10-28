@@ -1,4 +1,4 @@
-set(TEST_NAMES riccati block-matrix knot)
+set(TEST_NAMES riccati knot)
 
 if(BUILD_WITH_OPENMP_SUPPORT)
   list(APPEND TEST_NAMES parallel)

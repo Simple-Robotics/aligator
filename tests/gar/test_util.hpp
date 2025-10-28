@@ -2,7 +2,7 @@
 #pragma once
 
 #include "aligator/gar/lqr-problem.hpp"
-#include <random>
+#include "../test_util.hpp"
 
 ALIGATOR_DYNAMIC_TYPEDEFS(double);
 using problem_t = aligator::gar::LqrProblemTpl<double>;
@@ -47,21 +47,6 @@ computeKktError(const problem_t &problem, const VectorOfVectors &xs,
   return computeKktError(problem, xs, us, vs, lbdas, std::nullopt, mueq,
                          verbose);
 }
-
-struct normal_unary_op {
-  mutable std::mt19937 rng;
-  mutable std::normal_distribution<double> gen;
-
-  explicit normal_unary_op(std::mt19937 rng, double stddev = 1.0)
-      : rng(rng)
-      , gen(0.0, stddev) {}
-
-  void set_seed(size_t sd) { rng.seed(sd); }
-
-  double operator()() const { return gen(rng); }
-};
-
-MatrixXs sampleWishartDistributedMatrix(uint n, uint p);
 
 struct knot_gen_opts_t {
   uint nx;
