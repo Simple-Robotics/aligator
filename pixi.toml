@@ -33,7 +33,7 @@ pkg-config = ">=0.29.2"
 libboost-devel = ">=1.86.0,<2"
 libboost-python-devel = ">=1.86.0,<2"
 eigen = ">=3.4.0,<4"
-python = ">=3.9.22,<3.13"
+python = ">=3.9.22"
 eigenpy = "*"
 fmt = ">=11.1.4"
 benchmark = ">=1.9.4,<2"
@@ -95,7 +95,7 @@ test = { cmd = "ctest --test-dir build --output-on-failure", depends-on = [
 ] }
 
 [feature.lint]
-dependencies = { pre-commit = ">=3.6.2" }
+dependencies = { pre-commit = ">=4.3.0" }
 tasks = { lint = { cmd = "pre-commit run --all" } }
 
 # Increment the version number with ALIGATOR_VERSION variable
@@ -142,7 +142,7 @@ dependencies = { tracy-client = ">=0.11.1" }
 activation = { env = { ALIGATOR_TRACY_ENABLE = "ON" } }
 
 [feature.pinocchio]
-dependencies = { pinocchio = ">=3.8.0", example-robot-data = ">=4.4.0" }
+dependencies = { pinocchio = ">=3.8.0", example-robot-data-loaders = ">=4" }
 activation = { env = { ALIGATOR_PINOCCHIO_SUPPORT = "ON" } }
 
 [feature.crocoddyl]
@@ -159,10 +159,10 @@ dependencies = { llvm-openmp = ">=19.1" }
 activation = { env = { ALIGATOR_OPENMP_SUPPORT = "ON" } }
 
 [feature.py-latest.dependencies]
-python = "3.14.*"
+python = ">=3.14.0"
 
 [feature.py-oldest.dependencies]
-python = "3.10.*"
+python = ">=3.14.0"
 
 # Use clang on GNU/Linux.
 # We must use scripts instead of env to setup CC and CXX
