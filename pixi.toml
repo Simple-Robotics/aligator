@@ -83,13 +83,13 @@ tasks = { lint = { cmd = "pre-commit run --all" } }
 tomlkit = ">=0.13.2"
 
 [feature.new-version.tasks]
-configure_new_version = { cmd = [
+configure-new-version = { cmd = [
   "CXXFLAGS=$ALIGATOR_CXX_FLAGS",
   "cmake",
   "-G",
   "Ninja",
   "-B",
-  "build_new_version",
+  "build-new-version",
   "-S",
   ".",
   "-DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX",
@@ -101,8 +101,8 @@ configure_new_version = { cmd = [
   "-DBUILD_EXAMPLES=ON",
   "-DGENERATE_PYTHON_STUBS=ON",
 ] }
-release_new_version = { cmd = "VERSION=$ALIGATOR_VERSION cmake --build build_new_version --target release", depends-on = [
-  "configure_new_version",
+release-new-version = { cmd = "VERSION=$ALIGATOR_VERSION cmake --build build-new-version --target release", depends-on = [
+  "configure-new-version",
 ] }
 
 [activation.env]
@@ -138,6 +138,12 @@ activation = { env = { ALIGATOR_OPENMP_SUPPORT = "ON" } }
 dependencies = { llvm-openmp = ">=19.1" }
 activation = { env = { ALIGATOR_OPENMP_SUPPORT = "ON" } }
 
+[feature.py312.dependencies]
+python = "3.12.*"
+
+[feature.py310.dependencies]
+python = "3.10.*"
+
 # Use clang on GNU/Linux.
 # We must use scripts instead of env to setup CC and CXX
 # to avoid cxx-compiler to overwrite them.
@@ -151,22 +157,32 @@ doxygen = ">=1.13"
 graphviz = ">=12"
 
 [environments]
-default = { features = [] }
-clang = { features = ["clang"] }
-lint = { features = ["lint"] }
-pinocchio = { features = ["pinocchio"]}
-crocoddyl = { features = ["crocoddyl"]}
-openmp = { features = ["openmp"] }
-tracy = { features = ["tracy" ]  }
+default = { features = ["py312"], solve-group = "py312" }
+clang = { features = ["clang", "py312"] }
+lint = { features = ["lint"], solve-group = "py312" }
+pinocchio = { features = ["pinocchio", "py312"], solve-group = "py312" }
+crocoddyl = { features = ["crocoddyl", "py312"], solve-group = "py312" }
+openmp = { features = ["openmp", "py312"], solve-group = "py312" }
+tracy = { features = ["tracy", "py312"], solve-group = "py312" }
+py310 = { features = ["py310"], solve-group = "py310" }
 all = { features = [
   "doc",
   "pinocchio",
   "crocoddyl",
   "openmp",
-] }
+  "py312",
+], solve-group = "py312" }
+all-py310 = { features = [
+  "doc",
+  "pinocchio",
+  "crocoddyl",
+  "openmp",
+  "py310",
+], solve-group = "py310" }
 new-version = { features = [
   "new-version",
   "pinocchio",
   "crocoddyl",
   "openmp",
-] }
+  "py312",
+], solve-group = "py312" }
