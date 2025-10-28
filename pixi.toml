@@ -1,4 +1,4 @@
-[project]
+[workspace]
 name = "aligator"
 version = "0.16.0"
 channels = ["conda-forge"]
@@ -117,12 +117,6 @@ activation = { env = { ALIGATOR_OPENMP_SUPPORT = "ON" } }
 dependencies = { llvm-openmp = ">=19.1" }
 activation = { env = { ALIGATOR_OPENMP_SUPPORT = "ON" } }
 
-[feature.py312.dependencies]
-python = "3.12.*"
-
-[feature.py310.dependencies]
-python = "3.10.*"
-
 # Use clang on GNU/Linux.
 # We must use scripts instead of env to setup CC and CXX
 # to avoid cxx-compiler to overwrite them.
@@ -136,32 +130,22 @@ doxygen = ">=1.13"
 graphviz = ">=12"
 
 [environments]
-default = { features = ["py312"], solve-group = "py312" }
-clang = { features = ["clang", "py312"] }
-lint = { features = ["lint"], solve-group = "py312" }
-pinocchio = { features = ["pinocchio", "py312"], solve-group = "py312" }
-crocoddyl = { features = ["crocoddyl", "py312"], solve-group = "py312" }
-openmp = { features = ["openmp", "py312"], solve-group = "py312" }
-tracy = { features = ["tracy", "py312"], solve-group = "py312" }
-py310 = { features = ["py310"], solve-group = "py310" }
+default = { features = [] }
+clang = { features = ["clang"] }
+lint = { features = ["lint"] }
+pinocchio = { features = ["pinocchio"]}
+crocoddyl = { features = ["crocoddyl"]}
+openmp = { features = ["openmp"] }
+tracy = { features = ["tracy" ]  }
 all = { features = [
   "doc",
   "pinocchio",
   "crocoddyl",
   "openmp",
-  "py312",
-], solve-group = "py312" }
-all-py310 = { features = [
-  "doc",
-  "pinocchio",
-  "crocoddyl",
-  "openmp",
-  "py310",
-], solve-group = "py310" }
+] }
 new-version = { features = [
   "new-version",
   "pinocchio",
   "crocoddyl",
   "openmp",
-  "py312",
-], solve-group = "py312" }
+] }
