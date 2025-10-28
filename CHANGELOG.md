@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- pixi: add pixi-build (preview support) (https://github.com/Simple-Robotics/aligator/pull/369)
 - gar/blk-matrix : added `BlkMatrix::isApprox()` (https://github.com/Simple-Robotics/aligator/pull/366)
 - core : added [mimalloc](https://github.com/mimalloc/mimalloc)-based memory resource (https://github.com/Simple-Robotics/aligator/pull/366)
 - modelling/costs : add getter and setter for cost term weights (https://github.com/Simple-Robotics/aligator/pull/359)
@@ -19,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- ci: display ccache statistics (https://github.com/Simple-Robotics/aligator/pull/369)
+- pixi: update environments (https://github.com/Simple-Robotics/aligator/pull/369)
 - move header `<aligator/gar/blk-matrix.hpp>` to `<aligator/core/blk-matrix>`
 - solver-proxddp : make new `mimalloc` memory resource the allocator resource for ProxDDP solver (https://github.com/Simple-Robotics/aligator/pull/367)
 - tests/gar/block-matrix.cpp : test against BunchKaufman factorization
