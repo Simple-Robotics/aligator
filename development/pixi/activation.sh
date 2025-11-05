@@ -20,16 +20,10 @@ then
   # On GNU/Linux, I don't know if these flags are mandatory with g++ but
   # it allow to use clang++ as compiler
   export LDFLAGS="-Wl,-rpath,$CONDA_PREFIX/lib -Wl,-rpath-link,$CONDA_PREFIX/lib -L$CONDA_PREFIX/lib"
+  export CCACHE_COMPILERTYPE=gcc
 fi
-
-# Setup ccache
-export CMAKE_CXX_COMPILER_LAUNCHER=ccache
-
-# Create compile_commands.json for language server
-export CMAKE_EXPORT_COMPILE_COMMANDS=1
-
-# Activate color output with Ninja
-export CMAKE_COLOR_DIAGNOSTICS=1
+# Without -isystem, some LSP can't find headers
+export ALIGATOR_CXX_FLAGS="$CXXFLAGS -isystem $CONDA_PREFIX/include"
 
 # Set default build value only if not previously set
 export ALIGATOR_BUILD_TYPE=${ALIGATOR_BUILD_TYPE:=Release}
