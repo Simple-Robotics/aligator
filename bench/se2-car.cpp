@@ -34,9 +34,10 @@ static void bench_parallel(benchmark::State &state) {
   }
 }
 
+constexpr auto timeUnit = benchmark::kMillisecond;
+
 static void CustomArgs(benchmark::internal::Benchmark *bench) {
-  constexpr auto unit = benchmark::kMillisecond;
-  bench->Unit(unit)->UseRealTime();
+  bench->Unit(timeUnit)->UseRealTime();
   bench->ArgNames({"nsteps"});
   for (long e = 2; e <= 10; e++) {
     bench->Args({20 * e});
@@ -44,25 +45,17 @@ static void CustomArgs(benchmark::internal::Benchmark *bench) {
 }
 
 static void ParallelArgs(benchmark::internal::Benchmark *bench) {
-  constexpr auto unit = benchmark::kMillisecond;
-  bench->Unit(unit)->UseRealTime();
+  bench->Unit(timeUnit)->UseRealTime();
   bench->ArgNames({"nsteps", "nthreads"});
-  for (long e = 1; e <= 4; e++) {
+  for (long e = 2; e <= 10; e++) {
     for (long nt = 1; nt <= 3; nt++)
-      bench->Args({10 * e, 2 * nt});
+      bench->Args({20 * e, 2 * nt});
   }
 }
 
 BENCHMARK(bench_serial)->Apply(CustomArgs);
+#ifdef ALIGATOR_MULTITHREADING
 BENCHMARK(bench_parallel)->Apply(ParallelArgs);
+#endif
 
 BENCHMARK_MAIN();
-// int main(int argc, char ** argv) {
-//   benchmark::Initialize(&argc, argv);
-//   if (benchmark::ReportUnrecognizedArguments(argc, argv)) {
-//     return 1;
-//   }
-//   benchmark::RunSpecifiedBenchmarks();
-//   benchmark::Shutdown();
-//   return 0;
-// }
