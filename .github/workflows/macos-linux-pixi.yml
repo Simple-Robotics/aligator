@@ -27,7 +27,7 @@ concurrency:
 
 jobs:
   aligator-pixi:
-    name: ${{ matrix.os }} - Env ${{ matrix.environment }} ${{ matrix.build_type }}
+    name: Standard ${{ matrix.os }} - Env ${{ matrix.environment }} ${{ matrix.build_type }}
     runs-on: ${{ matrix.os }}
     env:
       CCACHE_BASEDIR: "${GITHUB_WORKSPACE}"
