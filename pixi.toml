@@ -184,8 +184,8 @@ cmake = ">=3.22"
 python = "*"
 
 [feature.test-pixi-build.tasks]
-test-cmake = "cmake -S unittest/packaging/cmake -B build_test_pixi_build"
-test-python = "python -c 'import eigenpy'"
+test-cmake = "cmake -S tests/pixi_build -B build_test_pixi_build"
+test-python = "python -c 'import aligator'"
 test = { depends-on = ["test-cmake", "test-python"] }
 
 [feature.doc.dependencies]
