@@ -24,9 +24,6 @@ extra-args = [
 ]
 
 [package.build-dependencies]
-cmake = ">=3.22"
-ccache = ">=4.9.1"
-cxx-compiler = ">=1.7.0"
 pkg-config = ">=0.29.2"
 
 [package.host-dependencies]
@@ -85,7 +82,7 @@ configure = { cmd = [
   "-DBUILD_WITH_OPENMP_SUPPORT=$ALIGATOR_OPENMP_SUPPORT",
   "-DBUILD_BENCHMARKS=$ALIGATOR_BENCHMARKS",
   "-DBUILD_EXAMPLES=$ALIGATOR_EXAMPLES",
-  "-DGENERATE_PYTHON_STUBS=ON",
+  "-DGENERATE_PYTHON_STUBS=$ALIGATOR_PYTHON_STUBS",
 ] }
 build = { cmd = "cmake --build build --target all", depends-on = ["configure"] }
 clean = { cmd = "rm -rf build" }
