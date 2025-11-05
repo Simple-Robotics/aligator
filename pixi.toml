@@ -33,12 +33,7 @@ eigen = ">=3.4.0,<4"
 python = ">=3.9.22"
 eigenpy = "*"
 fmt = ">=11.1.4"
-benchmark = ">=1.9.4,<2"
-pytest = ">=8.3.5,<9"
-matplotlib-base = ">=3.9.4,<4"
 typed-argument-parser = ">=1.10.1,<2"
-meshcat-python = ">=0.3.2,<0.4"
-catch2 = ">=3.8.0,<4"
 mimalloc = ">=3.1.5,<4"
 
 [dependencies]
@@ -169,6 +164,16 @@ platforms = ["linux-64"]
 activation = { env = { CC = "clang", CXX = "clang++" } }
 dependencies = { clangxx = "*" }
 
+[feature.test-pixi-build.dependencies]
+aligator = { path = "." }
+cmake = ">=3.22"
+python = "*"
+
+[feature.test-pixi-build.tasks]
+test-cmake = "cmake -S unittest/packaging/cmake -B build_test_pixi_build"
+test-python = "python -c 'import eigenpy'"
+test = { depends-on = ["test-cmake", "test-python"] }
+
 [feature.doc.dependencies]
 doxygen = ">=1.13"
 graphviz = ">=12"
@@ -203,3 +208,4 @@ new-version = { features = [
   "openmp",
   "python-latest",
 ], solve-group = "python-latest" }
+test-pixi-build = { features = ["test-pixi-build"], no-default-feature = true }
