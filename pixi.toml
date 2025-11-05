@@ -21,6 +21,9 @@ backend = { name = "pixi-build-cmake", version = "*" }
 extra-args = [
   "-DBUILD_TESTING=OFF",
   "-DGENERATE_PYTHON_STUBS=ON",
+  "-DBUILD_WITH_PINOCCHIO_SUPPORT=ON",
+  "-DBUILD_CROCODDYL_COMPAT=ON",
+  "-DBUILD_WITH_OPENMP_SUPPORT=ON",
 ]
 
 [package.build-dependencies]
@@ -35,6 +38,15 @@ eigenpy = "*"
 fmt = ">=11.1.4"
 typed-argument-parser = ">=1.10.1,<2"
 mimalloc = ">=3.1.5,<4"
+pinocchio = ">=3.8.0"
+crocoddyl = ">=3.0.1"
+
+[package.target.linux.host-dependencies]
+libgomp = ">=14.2"
+
+[package.target.osx.host-dependencies]
+llvm-openmp = ">=19.1"
+
 
 [dependencies]
 cmake = ">=3.22"
