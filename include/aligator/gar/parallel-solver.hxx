@@ -36,13 +36,13 @@ ParallelRiccatiSolver<Scalar>::ParallelRiccatiSolver(
     , condensedKktRhs(problem.get_allocator())
     , condensedKktSolution(problem.get_allocator())
     , condensedErr(problem.get_allocator())
-    , numThreads(num_threads)
+    , numThreads_(num_threads)
     , problem_(&problem) {
   ALIGATOR_TRACY_ZONE_SCOPED;
-  if (numThreads < 2) {
+  if (numThreads_ < 2) {
     ALIGATOR_RUNTIME_ERROR(
         "({:s}) numThreads ({:d}) should be greater than or equal to 2.",
-        __FUNCTION__, numThreads);
+        __FUNCTION__, numThreads_);
   }
 
   this->initialize();
@@ -60,14 +60,14 @@ template <typename Scalar> void ParallelRiccatiSolver<Scalar>::initialize() {
   };
 
   const uint N = (uint)problem_->horizon();
-  for (uint i = 0; i < numThreads; i++) {
-    auto [i0, i1] = get_work(N, i, numThreads);
-    allocate_leg(i0, i1, i == (numThreads - 1));
+  for (uint i = 0; i < numThreads_; i++) {
+    auto [i0, i1] = get_work(N, i, numThreads_);
+    allocate_leg(i0, i1, i == (numThreads_ - 1));
   }
 
   rhsDims_ = {problem_->nc0(), problem_->stages[0].nx};
-  for (uint i = 0; i < numThreads - 1; i++) {
-    auto [i0, i1] = get_work(N, i, numThreads);
+  for (uint i = 0; i < numThreads_ - 1; i++) {
+    auto [i0, i1] = get_work(N, i, numThreads_);
     rhsDims_.push_back(problem_->stages[i0].nx);
     rhsDims_.push_back(problem_->stages[i1 - 1].nx);
   }
@@ -98,15 +98,15 @@ void ParallelRiccatiSolver<Scalar>::assembleCondensedSystem(
 
   uint N = (uint)problem_->horizon();
   // fill in for all legs
-  for (uint i = 0; i < numThreads - 1; i++) {
-    auto [i0, i1] = get_work(N, i, numThreads);
+  for (uint i = 0; i < numThreads_ - 1; i++) {
+    auto [i0, i1] = get_work(N, i, numThreads_);
     uint ip1 = i + 1;
     diagonal[2 * ip1] = datas[i0].vm.Vtt;
 
     diagonal[2 * ip1 + 1] = datas[i1].vm.Vxx;
     superdiagonal[2 * ip1].setIdentity() *= -1;
 
-    if (ip1 + 1 < numThreads) {
+    if (ip1 + 1 < numThreads_) {
       superdiagonal[2 * ip1 + 1] = datas[i1].vm.Vxt;
     }
   }
@@ -120,8 +120,8 @@ void ParallelRiccatiSolver<Scalar>::assembleCondensedSystem(
   rhs_view.blockSegment(0) = -problem_->g0;
   rhs_view.blockSegment(1) = -datas[0].vm.vx;
 
-  for (uint i = 0; i < numThreads - 1; i++) {
-    auto [i0, i1] = get_work(N, i, numThreads);
+  for (uint i = 0; i < numThreads_ - 1; i++) {
+    auto [i0, i1] = get_work(N, i, numThreads_);
     uint ip1 = i + 1;
     rhs_view.blockSegment(2 * ip1) = -datas[i0].vm.vt;
     rhs_view.blockSegment(2 * ip1 + 1) = -datas[i1].vm.vx;
@@ -141,13 +141,13 @@ bool ParallelRiccatiSolver<Scalar>::backward(const Scalar mueq) {
   };
 
   const uint N = static_cast<uint>(problem_->horizon());
-  for (uint i = 0; i < numThreads - 1; i++) {
-    uint end = get_work(N, i, numThreads).end;
+  for (uint i = 0; i < numThreads_ - 1; i++) {
+    uint end = get_work(N, i, numThreads_).end;
     configure_knot(problem_->stages[end - 1]);
   }
   Eigen::setNbThreads(1);
-  aligator::omp::set_default_options(numThreads, false);
-#pragma omp parallel num_threads(numThreads)
+  aligator::omp::set_default_options(numThreads_, false);
+#pragma omp parallel num_threads(numThreads_)
   {
     uint i = (uint)omp::get_thread_id();
 #ifdef __linux__
@@ -155,7 +155,7 @@ bool ParallelRiccatiSolver<Scalar>::backward(const Scalar mueq) {
     snprintf(thrdname, 16, "thread%d[c%d]", int(i), sched_getcpu());
     ALIGATOR_TRACY_SET_THREAD_NAME(thrdname);
 #endif
-    auto [beg, end] = get_work(N, i, numThreads);
+    auto [beg, end] = get_work(N, i, numThreads_);
     boost::span<const KnotType> stview =
         make_span_from_indices(problem_->stages, beg, end);
     boost::span<StageFactor<Scalar>> dtview =
@@ -213,25 +213,25 @@ bool ParallelRiccatiSolver<Scalar>::forward(
   ALIGATOR_TRACY_ZONE_SCOPED_N("parallel_forward");
   uint N = (uint)problem_->horizon();
   BlkView sol_view{condensedKktSolution, rhsDims_};
-  for (uint i = 0; i < numThreads; i++) {
-    uint i0 = get_work(N, i, numThreads).beg;
+  for (uint i = 0; i < numThreads_; i++) {
+    uint i0 = get_work(N, i, numThreads_).beg;
     lbdas[i0] = sol_view.blockSegment(2 * i);
     xs[i0] = sol_view.blockSegment(2 * i + 1);
   }
   Eigen::setNbThreads(1);
   const auto &stages = problem_->stages;
 
-#pragma omp parallel num_threads(numThreads)
+#pragma omp parallel num_threads(numThreads_)
   {
     uint i = (uint)omp::get_thread_id();
-    auto [beg, end] = get_work(N, i, numThreads);
+    auto [beg, end] = get_work(N, i, numThreads_);
     boost::span xsview = make_span_from_indices(xs, beg, end);
     boost::span usview = make_span_from_indices(us, beg, end);
     boost::span vsview = make_span_from_indices(vs, beg, end);
     boost::span lsview = make_span_from_indices(lbdas, beg, end);
     boost::span stview = make_span_from_indices(stages, beg, end);
     boost::span dsview = make_span_from_indices(datas, beg, end);
-    if (i < numThreads - 1) {
+    if (i < numThreads_ - 1) {
       Kernel::forwardImpl(stview, dsview, xsview, usview, vsview, lsview,
                           lbdas[end]);
     } else {
