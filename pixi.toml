@@ -53,6 +53,7 @@ llvm-openmp = ">=19.1"
 [dependencies]
 cmake = ">=3.22"
 ccache = ">=4.9.1"
+ninja = ">=1.0.0"
 cxx-compiler = ">=1.7.0"
 pkg-config = ">=0.29.2"
 libboost-devel = ">=1.86.0,<2"
@@ -92,6 +93,7 @@ configure = { cmd = [
   "-DBUILD_BENCHMARKS=$ALIGATOR_BENCHMARKS",
   "-DBUILD_EXAMPLES=$ALIGATOR_EXAMPLES",
   "-DGENERATE_PYTHON_STUBS=$ALIGATOR_PYTHON_STUBS",
+  "-DALIGATOR_TRACY_ENABLE=$ALIGATOR_TRACY_ENABLE",
 ] }
 build = { cmd = "cmake --build build --target all", depends-on = ["configure"] }
 clean = { cmd = "rm -rf build" }
@@ -141,10 +143,10 @@ CCACHE_SLOPPINESS = "include_file_ctime,include_file_mtime,pch_defines,time_macr
 # tracy-client is not built on osx-arm64
 [feature.tracy]
 [feature.tracy.target.linux-64]
-dependencies = { tracy-client = ">=0.11.1" }
+dependencies = { tracy-profiler-client = ">=0.11.1" }
 activation = { env = { ALIGATOR_TRACY_ENABLE = "ON" } }
 [feature.tracy.target.osx-64]
-dependencies = { tracy-client = ">=0.11.1" }
+dependencies = { tracy-profiler-client = ">=0.11.1" }
 activation = { env = { ALIGATOR_TRACY_ENABLE = "ON" } }
 
 [feature.pinocchio]

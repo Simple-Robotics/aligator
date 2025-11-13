@@ -287,50 +287,52 @@ list(
 )
 
 option(DOWNLOAD_TRACY "Use FetchContent to install Tracy." OFF)
-if(ALIGATOR_TRACY_ENABLE AND DOWNLOAD_TRACY)
-  # We use FetchContent_Populate because we need EXCLUDE_FROM_ALL to avoid
-  # installing Tracy with aligator. We can directly use EXCLUDE_FROM_ALL in
-  # FetchContent_Declare when CMake minimum version will be 3.28.
-  if(POLICY CMP0169)
-    cmake_policy(SET CMP0169 OLD)
-  endif()
-  FetchContent_Declare(
-    tracy
-    GIT_REPOSITORY https://github.com/Simple-Robotics/tracy.git
-    GIT_TAG patches
-    GIT_SHALLOW TRUE
-    GIT_PROGRESS TRUE
-  )
-  FetchContent_GetProperties(tracy)
-  if(NOT tracy_POPULATED)
-    FetchContent_Populate(tracy)
-    set(TRACY_STATIC ON CACHE INTERNAL "")
-    set(TRACY_ENABLE ${ALIGATOR_TRACY_ENABLE} CACHE INTERNAL "")
-    add_subdirectory(${tracy_SOURCE_DIR} ${tracy_BINARY_DIR} EXCLUDE_FROM_ALL)
-    # Extract the target include directories, set as system
-    get_target_property(
-      tracy_INCLUDE_DIR
-      TracyClient
-      INTERFACE_INCLUDE_DIRECTORIES
+if(ALIGATOR_TRACY_ENABLE)
+  if(DOWNLOAD_TRACY)
+    # We use FetchContent_Populate because we need EXCLUDE_FROM_ALL to avoid
+    # installing Tracy with aligator. We can directly use EXCLUDE_FROM_ALL in
+    # FetchContent_Declare when CMake minimum version will be 3.28.
+    if(POLICY CMP0169)
+      cmake_policy(SET CMP0169 OLD)
+    endif()
+    FetchContent_Declare(
+      tracy
+      GIT_REPOSITORY https://github.com/Simple-Robotics/tracy.git
+      GIT_TAG patches
+      GIT_SHALLOW TRUE
+      GIT_PROGRESS TRUE
     )
-    set_target_properties(
-      TracyClient
-      PROPERTIES
-        POSITION_INDEPENDENT_CODE True
-        INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${tracy_INCLUDE_DIR}"
-    )
-  endif()
-elseif(ALIGATOR_TRACY_ENABLE)
-  # assume it is installed somewhere
-  ADD_PROJECT_DEPENDENCY(Tracy)
-  if(NOT ${tracy_FOUND})
-    message(
-      FATAL_ERROR
-      "Aligator support for tracy is enabled, but tracy was not found on your system."
-      " Install it, or set the option DOWNLOAD_TRACY to ON so we can fetch it."
-    )
+    FetchContent_GetProperties(tracy)
+    if(NOT tracy_POPULATED)
+      FetchContent_Populate(tracy)
+      set(TRACY_STATIC ON CACHE INTERNAL "")
+      set(TRACY_ENABLE ${ALIGATOR_TRACY_ENABLE} CACHE INTERNAL "")
+      add_subdirectory(${tracy_SOURCE_DIR} ${tracy_BINARY_DIR} EXCLUDE_FROM_ALL)
+      # Extract the target include directories, set as system
+      get_target_property(
+        tracy_INCLUDE_DIR
+        TracyClient
+        INTERFACE_INCLUDE_DIRECTORIES
+      )
+      set_target_properties(
+        TracyClient
+        PROPERTIES
+          POSITION_INDEPENDENT_CODE True
+          INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${tracy_INCLUDE_DIR}"
+      )
+    endif()
   else()
-    message(STATUS "Tracy found on your system at ${Tracy_DIR}")
+    # assume it is installed somewhere
+    ADD_PROJECT_DEPENDENCY(Tracy)
+    if(NOT ${Tracy_FOUND})
+      message(
+        FATAL_ERROR
+        "Aligator support for tracy is enabled, but tracy was not found on your system."
+        " Install it, or set the option DOWNLOAD_TRACY to ON so we can fetch it."
+      )
+    else()
+      message(STATUS "Tracy found on your system at ${Tracy_DIR}")
+    endif()
   endif()
 endif()
 
@@ -368,11 +370,17 @@ function(create_library)
   if(BUILD_WITH_OPENMP_SUPPORT)
     target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
   endif()
+
+  if(ALIGATOR_TRACY_ENABLE)
+    target_link_libraries(${PROJECT_NAME} PUBLIC Tracy::TracyClient)
+  endif()
+
   target_link_libraries(
     ${PROJECT_NAME}
     PUBLIC Eigen3::Eigen fmt::fmt
     PRIVATE mimalloc
   )
+
   # set the install-tree include dirs used by dependent projects to consume this
   # target
   target_include_directories(
