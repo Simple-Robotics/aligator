@@ -94,6 +94,7 @@ configure = { cmd = [
   "-DBUILD_BENCHMARKS=$ALIGATOR_BENCHMARKS",
   "-DBUILD_EXAMPLES=$ALIGATOR_EXAMPLES",
   "-DGENERATE_PYTHON_STUBS=$ALIGATOR_PYTHON_STUBS",
+  "-DALIGATOR_TRACY_ENABLE=$ALIGATOR_TRACY_ENABLE",
 ] }
 build = { cmd = "cmake --build build --target all", depends-on = ["configure"] }
 clean = { cmd = "rm -rf build" }
@@ -128,6 +129,7 @@ configure-new-version = { cmd = [
   "-DBUILD_BENCHMARKS=ON",
   "-DBUILD_EXAMPLES=ON",
   "-DGENERATE_PYTHON_STUBS=ON",
+  "-DALIGATOR_TRACY_ENABLE=$ALIGATOR_TRACY_ENABLE",
 ] }
 release-new-version = { cmd = "VERSION=$ALIGATOR_VERSION cmake --build build-new-version --target release", depends-on = [
   "configure-new-version",
