@@ -94,13 +94,13 @@ public:
   uint maxRefinementSteps = 5u;
 
   /// Number of parallel divisions in the problem: \f$J+1\f$ in the math.
-  uint getNumThreads() const noexcept { return numThreads; }
+  uint getNumThreads() const noexcept { return numThreads_; }
 
   /// @brief Initialize the buffers for the block-tridiagonal system.
   void initializeTridiagSystem();
 
 protected:
-  uint numThreads;
+  uint numThreads_;
   LqrProblemTpl<Scalar> *problem_;
   std::vector<long> rhsDims_;
 

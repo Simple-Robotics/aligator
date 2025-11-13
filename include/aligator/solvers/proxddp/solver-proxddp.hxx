@@ -148,7 +148,8 @@ Scalar SolverProxDDPTpl<Scalar>::tryLinearStep(const Problem &problem,
   stage.xspace_next_->integrate(results_.xs[nsteps], dx_tmp.head(ndxN),
                                 workspace_.trial_xs[nsteps]);
   TrajOptData &prob_data = workspace_.problem_data;
-  return problem.evaluate(workspace_.trial_xs, workspace_.trial_us, prob_data);
+  return problem.evaluate(workspace_.trial_xs, workspace_.trial_us, prob_data,
+                          num_threads_);
 }
 
 template <typename Scalar>
