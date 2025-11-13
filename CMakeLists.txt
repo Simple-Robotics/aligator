@@ -370,11 +370,17 @@ function(create_library)
   if(BUILD_WITH_OPENMP_SUPPORT)
     target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
   endif()
+
+  if(ALIGATOR_TRACY_ENABLE)
+      target_link_libraries(${PROJECT_NAME} PUBLIC TracyClient)
+  endif()
+
   target_link_libraries(
     ${PROJECT_NAME}
     PUBLIC Eigen3::Eigen fmt::fmt
     PRIVATE mimalloc
   )
+
   # set the install-tree include dirs used by dependent projects to consume this
   # target
   target_include_directories(
