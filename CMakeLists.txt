@@ -373,7 +373,7 @@ function(create_library)
   endif()
 
   if(ALIGATOR_TRACY_ENABLE)
-    target_link_libraries(${PROJECT_NAME} PUBLIC TracyClient)
+    target_link_libraries(${PROJECT_NAME} PUBLIC Tracy::TracyClient)
   endif()
 
   target_link_libraries(
