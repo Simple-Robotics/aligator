@@ -145,10 +145,10 @@ CCACHE_SLOPPINESS = "include_file_ctime,include_file_mtime,pch_defines,time_macr
 # tracy-client is not built on osx-arm64
 [feature.tracy]
 [feature.tracy.target.linux-64]
-dependencies = { tracy-profiler = ">=0.11.1" }
+dependencies = { tracy-profiler-client = ">=0.11.1" }
 activation = { env = { ALIGATOR_TRACY_ENABLE = "ON" } }
 [feature.tracy.target.osx-64]
-dependencies = { tracy-profiler = ">=0.11.1" }
+dependencies = { tracy-profiler-client = ">=0.11.1" }
 activation = { env = { ALIGATOR_TRACY_ENABLE = "ON" } }
 
 [feature.pinocchio]
