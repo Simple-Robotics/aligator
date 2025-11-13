@@ -52,6 +52,89 @@ If you want to look at Eigen types such as vectors and matrices, you should look
 
 **TODO** Finish documenting this
 
+## Using parallel aligator & performance optimization
+### Inside your code
+Before calling the solver make sure to enable parallelization :
+``` python
+# valid in C++ or python
+solver.rollout_type = aligator.ROLLOUT_LINEAR
+solver.linear_solver_choice = aligator.LQ_SOLVER_PARALLEL
+solver.setNumThreads(<number of threads>)
+```
+
+### Bash setup for CPU core optimization
+Aligator uses OpenMP for parallelization which is setup using environment variables in your bash. The settings are local to your bash.
+
+#### Visualization
+Printing OpenMP parameters at launch:
+```bash
+export OMP_DISPLAY_ENV=VERBOSE 
+```
+Prints when a thread is launched and with which affinity (CPU thread(s) on where it will try to run):
+```bash
+export OMP_DISPLAY_AFFINITY=TRUE 
+```
+
+#### Core & thread assignation
+OpenMP operates with "**places**" that defines a CPU thread or core reserved for a thread. **Places** can be a CPU thread or an entire CPU core (composed of one or multiples threads).   
+
+##### Assigning places with CPU threads : 
+```bash
+export OMP_PLACES ="threads(n)" # Threads will run on the first nth CPU threads, with one thread per CPU thread.
+```
+or
+```bash
+export OMP_PLACES="{0},{1},{2}" # Threads will run on CPU threads 0, 1 ,2
+```
+##### Assigning places with CPU cores :
+ threads will run on the first nth CPU cores, with one thread per core, even if the core has multiple threads
+```bash
+export OMP_PLACES="cores(n)"
+```
+
+For more info on places see [here](https://www.ibm.com/docs/en/xl-fortran-linux/16.1.0?topic=openmp-omp-places).
+
+##### Using only performance cores
+Get your CPU model with 
+```bash
+lscpu | grep -i "Model Name"
+```
+Get CPU core info with:
+```bash
+lscpu -e
+
+# with an i7-13800H
+CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE    MAXMHZ   MINMHZ      MHZ
+  0    0      0    0 0:0:0:0          yes 5000.0000 400.0000  400.000
+  1    0      0    0 0:0:0:0          yes 5000.0000 400.0000  400.000
+  2    0      0    1 4:4:1:0          yes 5000.0000 400.0000  400.000
+  3    0      0    1 4:4:1:0          yes 5000.0000 400.0000  400.000
+  4    0      0    2 8:8:2:0          yes 5200.0000 400.0000  400.000
+  5    0      0    2 8:8:2:0          yes 5200.0000 400.0000 5176.303
+  6    0      0    3 12:12:3:0        yes 5200.0000 400.0000 1482.743
+  7    0      0    3 12:12:3:0        yes 5200.0000 400.0000  400.000
+  8    0      0    4 16:16:4:0        yes 5000.0000 400.0000 3485.561
+  9    0      0    4 16:16:4:0        yes 5000.0000 400.0000  721.684
+ 10    0      0    5 20:20:5:0        yes 5000.0000 400.0000 1641.311
+ 11    0      0    5 20:20:5:0        yes 5000.0000 400.0000  400.000
+ 12    0      0    6 24:24:6:0        yes 4000.0000 400.0000  400.000
+ 13    0      0    7 25:25:6:0        yes 4000.0000 400.0000 2949.734
+ 14    0      0    8 26:26:6:0        yes 4000.0000 400.0000 2554.695
+ 15    0      0    9 27:27:6:0        yes 4000.0000 400.0000 3588.623
+ 16    0      0   10 28:28:7:0        yes 4000.0000 400.0000  400.000
+ 17    0      0   11 29:29:7:0        yes 4000.0000 400.0000  400.000
+ 18    0      0   12 30:30:7:0        yes 4000.0000 400.0000  400.000
+ 19    0      0   13 31:31:7:0        yes 4000.0000 400.0000 3610.068
+```
+A little digging on on the internet tells is that this CPU has 6 performance cores and 8 efficiency cores for a total of 20 threads. We see higher frequencies in core 0 to 5: these are the performance cores. To use only performance cores on this CPU you would set:
+```bash
+export OMP_PLACES="cores(6)"
+# or
+export OMP_PLACES="threads(12)"
+```
+> [!IMPORTANT]
+> Put your PC in performance mode (usually found in the power settings).
+
 ## Profiling
 
 We use [google benchmark](https://github.com/google/benchmark/tree/v1.5.0) to define C++ benchmarks
