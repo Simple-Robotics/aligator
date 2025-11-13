@@ -210,9 +210,11 @@ template <typename _Scalar> struct TrajOptProblemTpl {
                           std::size_t num_threads = 1,
                           bool compute_second_order = true) const;
 
-  /// @brief Pop out the first StageModel and replace by the supplied one;
-  /// updates the supplied problem data (TrajOptDataTpl) object.
-  void replaceStageCircular(const xyz::polymorphic<StageModel> &model);
+  /// @brief Advance each stage model by one slot after inserting a new stage,
+  /// pop out the first model.
+  /// @returns The first StageModel.
+  xyz::polymorphic<StageModel>
+  replaceStageCircular(const xyz::polymorphic<StageModel> &model);
 
   bool checkIntegrity() const;
 
