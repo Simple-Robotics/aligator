@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- core : have `replaceStageCircular()` return ejected knot (https://github.com/Simple-Robotics/aligator/pull/376)
 - python : do not import utils.plotting automatically (https://github.com/Simple-Robotics/aligator/pull/369)
 - ci: display ccache statistics (https://github.com/Simple-Robotics/aligator/pull/369)
 - pixi: update environments (https://github.com/Simple-Robotics/aligator/pull/369)
