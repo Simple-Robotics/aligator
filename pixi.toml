@@ -53,6 +53,7 @@ llvm-openmp = ">=19.1"
 [dependencies]
 cmake = ">=3.22"
 ccache = ">=4.9.1"
+ninja = ">=1.0.0"
 cxx-compiler = ">=1.7.0"
 pkg-config = ">=0.29.2"
 libboost-devel = ">=1.86.0,<2"
@@ -85,6 +86,7 @@ configure = { cmd = [
   "-S",
   ".",
   "-DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX",
+  "-DCMAKE_PREFIX_PATH=$CONDA_PREFIX",
   "-DCMAKE_BUILD_TYPE=$ALIGATOR_BUILD_TYPE",
   "-DBUILD_WITH_PINOCCHIO_SUPPORT=$ALIGATOR_PINOCCHIO_SUPPORT",
   "-DBUILD_CROCODDYL_COMPAT=$ALIGATOR_CROCODDYL_COMPAT",
