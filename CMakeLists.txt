@@ -334,7 +334,6 @@ if(ALIGATOR_TRACY_ENABLE)
       message(STATUS "Tracy found on your system at ${Tracy_DIR}")
     endif()
   endif()
-  add_compile_definitions(TRACY_ENABLE)
 endif()
 
 # Create the main shared library.
