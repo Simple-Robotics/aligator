@@ -164,11 +164,13 @@ inline std::size_t TrajOptProblemTpl<Scalar>::numSteps() const {
 }
 
 template <typename Scalar>
-void TrajOptProblemTpl<Scalar>::replaceStageCircular(
-    const xyz::polymorphic<StageModel> &model) {
+auto TrajOptProblemTpl<Scalar>::replaceStageCircular(
+    const xyz::polymorphic<StageModel> &model) -> xyz::polymorphic<StageModel> {
   addStage(model);
   rotate_vec_left(stages_);
+  auto last = std::move(stages_.back());
   stages_.pop_back();
+  return last;
 }
 
 template <typename Scalar>
