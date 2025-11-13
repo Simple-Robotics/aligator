@@ -129,7 +129,6 @@ configure-new-version = { cmd = [
   "-DBUILD_BENCHMARKS=ON",
   "-DBUILD_EXAMPLES=ON",
   "-DGENERATE_PYTHON_STUBS=ON",
-  "-DALIGATOR_TRACY_ENABLE=OFF",
 ] }
 release-new-version = { cmd = "VERSION=$ALIGATOR_VERSION cmake --build build-new-version --target release", depends-on = [
   "configure-new-version",
