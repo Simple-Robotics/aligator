@@ -15,7 +15,8 @@ class="math inline">\(\ell\)</span> is the integral –running– cost,
 <span class="math inline">\(\ell_T\)</span> is the terminal cost, <span
 class="math inline">\(f_0\)</span> is the initial state value, <span
 class="math inline">\(f\)</span> is the robot dynamics and <span
-class="math inline">\(T\)</span>, the time interval, is fixed.</p>
+class="math inline">\(\mathbb{T}\)</span>, the time interval, is
+fixed.</p>
 <p>The decision variables are <span
 class="math inline">\(\underline{x},\underline{u}\)</span>, both of
 infinite dimension. We approximate this problem using a discrete version
@@ -404,11 +405,12 @@ the proposed forward pass produced the partial KKT step. <span
 class="math display">\[\Delta x_0 = \alpha f_0 = \alpha \Delta
 x_0^*\]</span> Now, assuming the <span class="math inline">\(\Delta x_t
 = \alpha \Delta x_t^*\)</span>, we have: <span
-class="math display">\[\begin{aligned}
+class="math display">\[\begin{align*}
   \forall t=0..T\!\!-\!\!1,\quad\quad\quad \Delta u_t &amp;= -\alpha k_t
 - K_t \alpha \Delta x_t^* = \alpha \Delta u_t^*\\
 \Delta x_{t+1} &amp;= F_x \alpha  \Delta x_t^* + F_u \alpha \Delta u_t +
-\alpha f_t = \alpha \Delta x_{t+1}\end{aligned}\]</span></p>
+\alpha f_t = \alpha \Delta x_{t+1}
+\end{align*}\]</span> <span class="math inline">\(\square\)</span></p>
 <h1 id="a-feasibility-prone-ocp-solver-using-ddp">A feasibility-prone
 OCP solver using DDP</h1>
 <p>So far we have detailed a method to solve a LQR program. Let’s now
@@ -607,11 +609,12 @@ class="math display">\[\Delta = \Delta_1 \alpha + \frac{1}{2} \Delta_2
 sum at each shooting node of the cost gradient times the change in <span
 class="math inline">\(x\)</span> and <span
 class="math inline">\(u\)</span>: <span
-class="math display">\[\label{eq:d1_nogaps}
-  \Delta_1 = \sum_{t=0}^T L_{xt}^T x_t + L_{ut}^T u_t\]</span> (to keep
-the sum simpler, we treat <span class="math inline">\(T\)</span>
-similarly to the other nodes, by introducing <span
-class="math inline">\(L_{uT} = 0\)</span>).</p>
+class="math display">\[\begin{equation}
+  \label{eq:d1_nogaps}
+  \Delta_1 = \sum_{t=0}^T L_{xt}^T x_t + L_{ut}^T u_t
+\end{equation}\]</span> (to keep the sum simpler, we treat <span
+class="math inline">\(T\)</span> similarly to the other nodes, by
+introducing <span class="math inline">\(L_{uT} = 0\)</span>).</p>
 <h3 id="linear-rollout">Linear rollout</h3>
 <p>The states and controls are obtained from a linear roll-out as: <span
 class="math display">\[x_{t+1} = F_{xt} x_t + F_{ut} u_t +
@@ -622,31 +625,34 @@ class="math display">\[x_{t+1} = (F_{xt} + F_{ut} K_t) x_t + F_{ut} k_t
 class="math inline">\(F_{t} = F_{xt} + F_{ut} K_t\)</span> and <span
 class="math inline">\(c_{t+1} = F_{ut} k_{t} + f_{t+1}\)</span> (with
 <span class="math inline">\(c_0 = f_0\)</span>). And finally: <span
-class="math display">\[\begin{aligned}
+class="math display">\[\begin{align}
   x_t &amp;= F_{t-1} ... F_0 c_0 + F_{t-1} ... F_1 c_1 + ... + F_{t-1}
 c_{t-1} + c_t \\
-  &amp;= \sum_{i=0}^t F_{t-1} ... F_i c_i
-\label{eq:lroll}\end{aligned}\]</span></p>
+  &amp;= \sum_{i=0}^t F_{t-1} ... F_i c_i \label{eq:lroll}
+\end{align}\]</span></p>
 <h3 id="first-order-model-delta_1">First-order model <span
 class="math inline">\(\Delta_1\)</span></h3>
 <p>Replacing <span class="math inline">\(u_t\)</span> by <span
 class="math inline">\(k_t + K_t x_t\)</span>, the first-order term is:
-<span class="math display">\[\label{eq:d1}
+<span class="math display">\[\begin{equation}
+  \label{eq:d1}
   \Delta_1 = \sum_{t=0}^T (L_{xt} + K_t^T L_{ut}) ^T x_t + \sum_{t=0}^T
-L_{ut}^T k_t\]</span> where we denote <span class="math inline">\(l_t =
-L_{xt} + K_t^T L_{ut}\)</span> to simplify the notation. Putting <a
+L_{ut}^T k_t
+\end{equation}\]</span> where we denote <span class="math inline">\(l_t
+= L_{xt} + K_t^T L_{ut}\)</span> to simplify the notation. Putting <a
 href="#eq:lroll" data-reference-type="eqref"
 data-reference="eq:lroll">[eq:lroll]</a> in <a href="#eq:d1"
 data-reference-type="eqref" data-reference="eq:d1">[eq:d1]</a>, we get:
-<span class="math display">\[\begin{aligned}
+<span class="math display">\[\begin{align}
   \Delta_1 &amp;= \sum_{t=0}^{T} l_t \sum_{i=0}^{t} F_{t-1} ... F_i c_i
 + L_{ut}^T k_t \\
   &amp; =  \sum_{i=0}^{T} c_i^T  \sum_{t=i}^{T} F_t^T ... F_T^T l_t +
-k_i^T L_{ui}\end{aligned}\]</span> Each term of the sum is composed of a
-product of <span class="math inline">\(f_i\)</span> and a product of
-<span class="math inline">\(k_i\)</span>, and can then be evaluated from
-the result of the backward pass. Let’s exhibit these 2 terms. The term
-in <span class="math inline">\(f_i\)</span> is: <span
+k_i^T L_{ui}
+\end{align}\]</span> Each term of the sum is composed of a product of
+<span class="math inline">\(f_i\)</span> and a product of <span
+class="math inline">\(k_i\)</span>, and can then be evaluated from the
+result of the backward pass. Let’s exhibit these 2 terms. The term in
+<span class="math inline">\(f_i\)</span> is: <span
 class="math display">\[\Delta_{ft} = F_i^T ... F_T^T l_i = L_{xi} +
 F_{xi}^T \Delta_{fi+1} + K_i^T (L_{ui} + F_{ui} \Delta_{fi+1})\]</span>
 The term in <span class="math inline">\(k_i\)</span> is: <span
@@ -678,12 +684,13 @@ expectation model should only depends on the gradient and hessians of
 the Value and Hamiltonian functions.</p>
 <p>In the case where we only consider one control <span
 class="math inline">\(u_0\)</span>, the expectation model is: <span
-class="math display">\[\begin{aligned}
+class="math display">\[\begin{align*}
   \Delta_1 &amp;= L_{x0}^T x_0 + L_{u0}^T u_0 + L_{x1}^T x1 \\
   &amp;= L_{0}^T f_0 + L_{u0} k_0 + L_{x1} F_{0} f_0  + L_{x1} F_{u0}
 k_0  + L_{x1} f_1 \\
   &amp;= (L_0 + F_0^T L_{x1})^T f_0 + (L_{u0} + F_{u0}^T L_{x1})^T k_0 +
-L_{x1} f_1\end{aligned}\]</span> We nearly recognize the gradients <span
+L_{x1} f_1
+\end{align*}\]</span> We nearly recognize the gradients <span
 class="math inline">\(V_{x0}, Q_{u0}, V_{x1}\)</span> respectively in
 factor of <span class="math inline">\(f_0,k_0,f_1\)</span>, but some
 terms are missing: <span class="math display">\[V_{x0} = L_0 + F_0^T
@@ -693,23 +700,24 @@ f_1)\]</span> <span class="math display">\[V_{x1} = L_{x1} + L_{xx1}
 f_1\]</span> Basically, the missing terms correspond to the
 re-linearization of the gradient at the <span
 class="math inline">\(f_t\)</span> points at the end of the intervals.
-Then, we get: <span class="math display">\[\begin{aligned}
+Then, we get: <span class="math display">\[\begin{align*}
   \Delta_1 &amp;= V_{x0}^T f_0 + Q_{u0}^T k_0 + V_{x1}^T f_1 - \left(
 f_0^T V_{xx0} f_0  + f_0^T F_0^T L_{xx1} f_1 + k_0^T F_{u0} L_{xx1} f_1
 + f_1^T V_{xx1} f_1\right) \\
   &amp;= V_{x0}^T f_0 + Q_{u0}^T k_0 + V_{x1}^T f_1 - \left( f_0^T
-V_{xx0} x_0 + f_1^T V_{xx1} x_1 \right)\end{aligned}\]</span></p>
-<p>The second-order term is: <span
-class="math display">\[\begin{aligned}
+V_{xx0} x_0 + f_1^T V_{xx1} x_1 \right)
+\end{align*}\]</span></p>
+<p>The second-order term is: <span class="math display">\[\begin{align*}
   \Delta_2 &amp;= f_0^T V_{xx0} f_0 + k_0^T Q_{uu0} k_0 + f_1^T V_{xx1}
 f_1 + 2(f_0^T F_0^T L_{xx1} f_1 + k_0^T F_{u0} L_{xx1} f_1) \\
   &amp;= f_0^T V_{xx0} f_0 + k_0^T Q_{uu0} k_0 + f_1^T V_{xx1} f_1 +
 2\big(f_1^T V_{xx1} (x_1-f_1) \big) \\
   &amp;= -f_0^T V_{xx0} f_0 + k_0^T Q_{uu0} k_0 - f_1^T V_{xx1} f_1 +
-2\big(f_0^T V_{xx0} x_0 + f_1^T V_{xx1} x_1 \big)\end{aligned}\]</span>
-We can recognize in the additional terms (the 2 last ones) the same
-terms as in <span class="math inline">\(\Delta_1\)</span>. Nicely, they
-will cancel out in the case we make a full step <span
+2\big(f_0^T V_{xx0} x_0 + f_1^T V_{xx1} x_1 \big)
+\end{align*}\]</span> We can recognize in the additional terms (the 2
+last ones) the same terms as in <span
+class="math inline">\(\Delta_1\)</span>. Nicely, they will cancel out in
+the case we make a full step <span
 class="math inline">\(\alpha=1\)</span>: <span
 class="math display">\[\Delta(\alpha) = \alpha(
 \Delta_1+\frac{\alpha}{2} \Delta_2)\]</span> <span
@@ -718,13 +726,13 @@ f_1
 - \frac{1}{2} f_0^T V_{xx0} f_0 + \frac{1}{2} k_0^T Q_{uu0}^T k_0 -
 \frac{1}{2} f_1^T V_{xx1} f_1\]</span></p>
 <p>But they do not cancel out in the general case: <span
-class="math display">\[\begin{aligned}
+class="math display">\[\begin{align*}
   \Delta(\alpha) = \alpha \Big( V_{x0}^T f_0 + Q_{u0}^T k_0 + V_{x1}^T
 f_1
 + \frac{\alpha}{2} ( - f_0^T V_{xx0} f_0 - f_1^T V_{xx1} f_1 + k_0^T
 Q_{uu0}^T k_0 ) \\
-+ (\alpha-1) ( f_0^T V_{xx0} x_0 + f_1^T V_{xx1} x_1 )
-\Big)\end{aligned}\]</span></p>
++ (\alpha-1) ( f_0^T V_{xx0} x_0 + f_1^T V_{xx1} x_1 ) \Big)
+\end{align*}\]</span></p>
 <h2 id="extending-to-t1-by-recurence">Extending to <span
 class="math inline">\(T&gt;1\)</span> by recurence</h2>
 <p>We can now work by recurence to extend the exact same shape to <span
@@ -762,11 +770,11 @@ class="math display">\[\Delta(\alpha) = \alpha \sum_{t=0}^T V_{xt}^T f_t
 <h2 id="line-search-algorithm">Line-search algorithm</h2>
 <p>First, let us note that if all the gaps <span
 class="math inline">\(f_t\)</span> are null, it is simply: <span
-class="math display">\[\begin{aligned}
+class="math display">\[\begin{align*}
   \Delta(\alpha) &amp;= \alpha \big( \sum Q_u^T k + \frac{\alpha}{2} k^T
 Q_{uu} k \big) \\
-  &amp;= \alpha(\frac{\alpha}{2} - 1) \sum  \ Q_u^T\ Q_{uu}^{-1} \
-Q_u\end{aligned}\]</span> This is always negative.</p>
+  &amp;= \alpha(\frac{\alpha}{2} - 1) \sum  \ Q_u^T\ Q_{uu}^{-1} \ Q_u
+\end{align*}\]</span> This is always negative.</p>
 <h3 id="merit-function-...-or-not">Merit function ... or not</h3>
 <p>However, <span class="math inline">\(\Delta\)</span> can be positive
 (i.e. corresponds to an increase of the cost function) when some gap

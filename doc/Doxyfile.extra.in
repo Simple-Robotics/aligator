@@ -32,7 +32,7 @@ INCLUDE_PATH            = @PROJECT_SOURCE_DIR@/include
 EXCLUDE_SYMLINKS        = YES
 
 EXAMPLE_PATH            = @PROJECT_SOURCE_DIR@/examples \
-                          @PROJECT_SOURCE_DIR@/doc/fddp
+                          @PROJECT_SOURCE_DIR@/doc
 
 EXTRA_PACKAGES          = {bm,stmaryrd}
 FORMULA_MACROFILE       = @PROJECT_SOURCE_DIR@/doc/macros.inc

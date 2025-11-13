@@ -40,7 +40,7 @@ We are interested to find an approximate solution to the following optimal contr
 $$\min_{\xtraj,\utraj} \int_0^\Treal \ell(x(t),u(t),t) dt + \ell_\Treal(x(\Treal))$$
 $$s.t. \quad x(0) = f_0$$
 $$\quad \forall t \in [0,\Treal], \quad \dot{x}(t) = f(x(t),u(t),t))$$
-where $\xtraj: t \rightarrow x(t)$ is the state trajectory, $\utraj: t \rightarrow u(t)$ is the control trajectory, $\ell$ is the integral --running-- cost, $\ell_T$ is the terminal cost, $f_0$ is the initial state value, $f$ is the robot dynamics and $T$, the time interval, is fixed.
+where $\xtraj: t \rightarrow x(t)$ is the state trajectory, $\utraj: t \rightarrow u(t)$ is the control trajectory, $\ell$ is the integral --running-- cost, $\ell_T$ is the terminal cost, $f_0$ is the initial state value, $f$ is the robot dynamics and $\Treal$, the time interval, is fixed.
 
 The decision variables are $\xtraj,\utraj$, both of infinite dimension.
 We approximate this problem using a discrete version of it, by following the so-called direct --discretize first, solve second -- approach.

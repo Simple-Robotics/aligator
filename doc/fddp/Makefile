@@ -101,7 +101,7 @@ bib:
 	$(GZIP) $< > $@
 
 html:
-	pandoc -f latex root.tex -o fddp.html --mathjax
+	pandoc -f latex root.tex -o ../fddp.html --mathjax
 
 # --->
 # --->
