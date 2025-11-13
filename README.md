@@ -96,13 +96,16 @@ cmake --build . -jNCPUS
 
 Users can refer to [examples](https://github.com/Simple-Robotics/aligator/tree/main/examples) in either language to see how to build a trajectory optimization problem, create a solver instance (with parameters), and solve their problem.
 
-For how to use **aligator** in CMake, including creation of a Python extension module in C++, please refer to the [developer's guide](doc/developers-guide.md).
+For how to use **aligator** in CMake, including creation of a Python extension module in C++, please refer to the [advanced user's guide](doc/advanced-user-guide.md).
+
+### Aligator parallel & CPU optimizations
+Please see the [advanced user's guide](doc/advanced-user-guide.md#using-parallel-aligator--performance-optimization)
 
 ## Benchmarking
 
 The repo [aligator-bench](https://github.com/Simple-Robotics/aligator-bench) provides a comparison of aligator against other solvers.
 
-For developer info on benchmarking, see [doc/developers-guide.md](doc/developers-guide.md).
+For developer info on benchmarking, see [doc/advanced-user-guide.md](doc/advanced-user-guide.md).
 
 ## Citing aligator
 
@@ -148,6 +151,7 @@ Please also consider citing the reference paper for the ProxDDP algorithm:
 * [Ewen Dantec](https://edantec.github.io/) (Inria): feature developer
 * [Antoine Bussy](https://github.com/antoine-bussy) (Aldebaran)
 * [Valentin Tordjman--Levavasseur](https://github.com/Tordjx) (Inria): feature developper
+* [Louise Manson](https://github.com/LouiseMsn) (Inria): readme additions
 
 ## Acknowledgments
 
