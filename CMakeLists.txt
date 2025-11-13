@@ -324,7 +324,7 @@ if(ALIGATOR_TRACY_ENABLE)
   else()
     # assume it is installed somewhere
     ADD_PROJECT_DEPENDENCY(Tracy)
-    if(NOT ${tracy_FOUND})
+    if(NOT ${Tracy_FOUND})
       message(
         FATAL_ERROR
         "Aligator support for tracy is enabled, but tracy was not found on your system."
