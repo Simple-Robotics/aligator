@@ -325,17 +325,17 @@ if(ALIGATOR_TRACY_ENABLE)
     # assume it is installed somewhere
     ADD_PROJECT_DEPENDENCY(Tracy)
     if(NOT ${tracy_FOUND})
-    message(
-      FATAL_ERROR
-      "Aligator support for tracy is enabled, but tracy was not found on your system."
-      " Install it, or set the option DOWNLOAD_TRACY to ON so we can fetch it."
+      message(
+        FATAL_ERROR
+        "Aligator support for tracy is enabled, but tracy was not found on your system."
+        " Install it, or set the option DOWNLOAD_TRACY to ON so we can fetch it."
       )
-      else()
+    else()
       message(STATUS "Tracy found on your system at ${Tracy_DIR}")
-      endif()
     endif()
-    add_compile_definitions(TRACY_ENABLE)
   endif()
+  add_compile_definitions(TRACY_ENABLE)
+endif()
 
 # Create the main shared library.
 function(create_library)
@@ -373,7 +373,7 @@ function(create_library)
   endif()
 
   if(ALIGATOR_TRACY_ENABLE)
-      target_link_libraries(${PROJECT_NAME} PUBLIC TracyClient)
+    target_link_libraries(${PROJECT_NAME} PUBLIC TracyClient)
   endif()
 
   target_link_libraries(
