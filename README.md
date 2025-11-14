@@ -96,13 +96,16 @@ cmake --build . -jNCPUS
 
 Users can refer to [examples](https://github.com/Simple-Robotics/aligator/tree/main/examples) in either language to see how to build a trajectory optimization problem, create a solver instance (with parameters), and solve their problem.
 
-For how to use **aligator** in CMake, including creation of a Python extension module in C++, please refer to the [developer's guide](doc/developers-guide.md).
+For how to use **aligator** in CMake, including creation of a Python extension module in C++, please refer to the [advanced user's guide](doc/advanced-user-guide.md).
+
+### Aligator parallel & CPU optimizations
+Please see the [advanced user's guide](doc/advanced-user-guide.md#using-parallel-aligator--performance-optimization)
 
 ## Benchmarking
 
 The repo [aligator-bench](https://github.com/Simple-Robotics/aligator-bench) provides a comparison of aligator against other solvers.
 
-For developer info on benchmarking, see [doc/developers-guide.md](doc/developers-guide.md).
+For developer info on benchmarking, see [doc/advanced-user-guide.md](doc/advanced-user-guide.md).
 
 ## Citing aligator
 
@@ -137,17 +140,18 @@ Please also consider citing the reference paper for the ProxDDP algorithm:
 
 * [Antoine Bambade](https://bambade.github.io/) (Inria): mathematics and algorithms developer
 * [Justin Carpentier](https://jcarpent.github.io/) (Inria): project instructor
-* [Wilson Jallet](https://manifoldfr.github.io/) (Inria): main developer and manager of the project
-* [Sarah Kazdadi](https://github.com/sarah-ek/): linear algebra czar
+* [Wilson Jallet](https://manifoldfr.github.io/) (Inria): project lead and principal developer
+* [Sarah Kazdadi](https://github.com/sarah-ek/) (Inria): linear algebra czar
 * [Quentin Le Lidec](https://quentinll.github.io/) (Inria): feature developer
 * [Joris Vaillant](https://github.com/jorisv) (Inria): core developer
 * [Nicolas Mansard](https://gepettoweb.laas.fr/index.php/Members/NicolasMansard) (LAAS-CNRS): project coordinator
 * [Guilhem Saurel](https://github.com/nim65s) (LAAS-CNRS): core maintainer
 * [Fabian Schramm](https://github.com/fabinsch) (Inria): core developer
-* [Ludovic De Matteïs](https://github.com/LudovicDeMatteis) (LAAS-CNRS/Inria): feature developer
+* [Ludovic De Matteïs](https://github.com/LudovicDeMatteis) (LAAS-CNRS): feature developer
 * [Ewen Dantec](https://edantec.github.io/) (Inria): feature developer
 * [Antoine Bussy](https://github.com/antoine-bussy) (Aldebaran)
-* [Valentin Tordjman--Levavasseur](https://github.com/Tordjx) (Inria): feature developper
+* [Valentin Tordjman--Levavasseur](https://github.com/Tordjx) (Inria): feature developer
+* [Louise Manson](https://github.com/LouiseMsn) (Inria): documentation
 
 ## Acknowledgments
 
