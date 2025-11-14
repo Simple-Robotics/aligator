@@ -10,7 +10,7 @@ When **aligator** is installed, the CMake configuration file (`aligatorConfig.cm
 Users can write an extension module in C++ for performance reasons when providing e.g. custom constraints, cost functions, dynamics, and so on.
 
 The CMake function is called as follows:
-```cmake
+```{.cmake}
 aligator_create_python_extension(<name> [WITH_SOABI] <sources...>)
 ```
 
@@ -50,35 +50,49 @@ If you want to look at Eigen types such as vectors and matrices, you should look
 
 ### Hybrid debugging with Visual Studio Code
 
-**TODO** Finish documenting this
+[TODO]
 
-## Using parallel aligator & performance optimization
+## Using **aligator**'s parallelization features
+
+The `SolverProxDDP` solver is able to leverage multicore CPU architectures.
+
 ### Inside your code
-Before calling the solver make sure to enable parallelization :
-``` python
-# valid in C++ or python
+
+Before calling the solver make sure to enable parallelization as follows:
+
+In Python:
+
+```python
 solver.rollout_type = aligator.ROLLOUT_LINEAR
 solver.linear_solver_choice = aligator.LQ_SOLVER_PARALLEL
-solver.setNumThreads(<number of threads>)
+solver.setNumThreads(num_threads)
 ```
 
-### Bash setup for CPU core optimization
-Aligator uses OpenMP for parallelization which is setup using environment variables in your bash. The settings are local to your bash.
+And in C++:
+```cpp
+std::size_t num_threads = 4ul;  // for example
+solver.rollout_type = aligator::RolloutType::LINEAR;
+solver.linear_solver_choice = aligator::LQSolverChoice::PARALLEL;
+solver.setNumThreads(num_threads);
+```
+
+### Shell setup for CPU core optimization
+**Aligator** uses OpenMP for parallelization which is setup using environment variables in your shell. The settings are local to your shell.
 
 #### Visualization
 Printing OpenMP parameters at launch:
 ```bash
 export OMP_DISPLAY_ENV=VERBOSE
 ```
-Prints when a thread is launched and with which affinity (CPU thread(s) on where it will try to run):
+Print when a thread is launched and with which affinity (CPU thread(s) on where it will try to run):
 ```bash
 export OMP_DISPLAY_AFFINITY=TRUE
 ```
 
-#### Core & thread assignation
-OpenMP operates with "**places**" that defines a CPU thread or core reserved for a thread. **Places** can be a CPU thread or an entire CPU core (composed of one or multiples threads).
+#### Core and thread assignment
+OpenMP operates with **places** which define a CPU thread or core reserved for a thread. **Places** can be a CPU thread or an entire CPU core (which can have one thread, or multiple with hyperthreading).
 
-##### Assigning places with CPU threads :
+##### Assigning places with CPU threads:
 ```bash
 export OMP_PLACES ="threads(n)" # Threads will run on the first nth CPU threads, with one thread per CPU thread.
 ```
@@ -86,15 +100,20 @@ or
 ```bash
 export OMP_PLACES="{0},{1},{2}" # Threads will run on CPU threads 0, 1 ,2
 ```
-##### Assigning places with CPU cores :
- threads will run on the first nth CPU cores, with one thread per core, even if the core has multiple threads
+##### Assigning places with CPU cores:
+
+Threads will run on the first nth CPU cores, with one thread per core, even if the core has multiple threads
 ```bash
 export OMP_PLACES="cores(n)"
 ```
 
 For more info on places see [here](https://www.ibm.com/docs/en/xl-fortran-linux/16.1.0?topic=openmp-omp-places).
 
-##### Using only performance cores
+##### Using only performance cores (Intel performance hybrid architectures)
+
+Some modern CPUs have a mix of performance (P) and efficiency (E) cores. The E-cores are often slower, hence we should
+have OpenMP schedule threads on P-cores only.
+
 Get your CPU model with
 ```bash
 lscpu | grep -i "Model Name"
