@@ -1,4 +1,4 @@
-# Developer's guide
+# Developer and advanced user guide
 
 When creating the CMake build, make sure to add the `-DCMAKE_EXPORT_COMPILE_COMMANDS=1` flag. See its documentation [here](https://cmake.org/cmake/help/latest/variable/CMAKE_EXPORT_COMPILE_COMMANDS.html).
 
