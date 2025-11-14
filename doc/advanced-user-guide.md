@@ -68,17 +68,17 @@ Aligator uses OpenMP for parallelization which is setup using environment variab
 #### Visualization
 Printing OpenMP parameters at launch:
 ```bash
-export OMP_DISPLAY_ENV=VERBOSE 
+export OMP_DISPLAY_ENV=VERBOSE
 ```
 Prints when a thread is launched and with which affinity (CPU thread(s) on where it will try to run):
 ```bash
-export OMP_DISPLAY_AFFINITY=TRUE 
+export OMP_DISPLAY_AFFINITY=TRUE
 ```
 
 #### Core & thread assignation
-OpenMP operates with "**places**" that defines a CPU thread or core reserved for a thread. **Places** can be a CPU thread or an entire CPU core (composed of one or multiples threads).   
+OpenMP operates with "**places**" that defines a CPU thread or core reserved for a thread. **Places** can be a CPU thread or an entire CPU core (composed of one or multiples threads).
 
-##### Assigning places with CPU threads : 
+##### Assigning places with CPU threads :
 ```bash
 export OMP_PLACES ="threads(n)" # Threads will run on the first nth CPU threads, with one thread per CPU thread.
 ```
@@ -95,7 +95,7 @@ export OMP_PLACES="cores(n)"
 For more info on places see [here](https://www.ibm.com/docs/en/xl-fortran-linux/16.1.0?topic=openmp-omp-places).
 
 ##### Using only performance cores
-Get your CPU model with 
+Get your CPU model with
 ```bash
 lscpu | grep -i "Model Name"
 ```
@@ -126,7 +126,7 @@ CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE    MAXMHZ   MINMHZ      MHZ
  18    0      0   12 30:30:7:0        yes 4000.0000 400.0000  400.000
  19    0      0   13 31:31:7:0        yes 4000.0000 400.0000 3610.068
 ```
-A little digging on on the internet tells is that this CPU has 6 performance cores and 8 efficiency cores for a total of 20 threads. We see higher frequencies in core 0 to 5: these are the performance cores. To use only performance cores on this CPU you would set:
+A little digging on the internet tells us that this CPU has 6 performance cores and 8 efficiency cores for a total of 20 threads. We see higher frequencies in core 0 to 5: these are the performance cores. To use only performance cores on this CPU you would set:
 ```bash
 export OMP_PLACES="cores(6)"
 # or
