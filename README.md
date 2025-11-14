@@ -140,18 +140,18 @@ Please also consider citing the reference paper for the ProxDDP algorithm:
 
 * [Antoine Bambade](https://bambade.github.io/) (Inria): mathematics and algorithms developer
 * [Justin Carpentier](https://jcarpent.github.io/) (Inria): project instructor
-* [Wilson Jallet](https://manifoldfr.github.io/) (Inria): main developer and manager of the project
-* [Sarah Kazdadi](https://github.com/sarah-ek/): linear algebra czar
+* [Wilson Jallet](https://manifoldfr.github.io/) (Inria): project lead and principal developer
+* [Sarah Kazdadi](https://github.com/sarah-ek/) (Inria): linear algebra czar
 * [Quentin Le Lidec](https://quentinll.github.io/) (Inria): feature developer
 * [Joris Vaillant](https://github.com/jorisv) (Inria): core developer
 * [Nicolas Mansard](https://gepettoweb.laas.fr/index.php/Members/NicolasMansard) (LAAS-CNRS): project coordinator
 * [Guilhem Saurel](https://github.com/nim65s) (LAAS-CNRS): core maintainer
 * [Fabian Schramm](https://github.com/fabinsch) (Inria): core developer
-* [Ludovic De Matteïs](https://github.com/LudovicDeMatteis) (LAAS-CNRS/Inria): feature developer
+* [Ludovic De Matteïs](https://github.com/LudovicDeMatteis) (LAAS-CNRS): feature developer
 * [Ewen Dantec](https://edantec.github.io/) (Inria): feature developer
 * [Antoine Bussy](https://github.com/antoine-bussy) (Aldebaran)
 * [Valentin Tordjman--Levavasseur](https://github.com/Tordjx) (Inria): feature developer
-* [Louise Manson](https://github.com/LouiseMsn) (Inria): readme additions
+* [Louise Manson](https://github.com/LouiseMsn) (Inria): documentation
 
 ## Acknowledgments
 
