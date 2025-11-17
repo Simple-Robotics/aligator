@@ -5,6 +5,7 @@
 #include "aligator/python/modelling/multibody-utils.hpp"
 
 #include "aligator/modelling/multibody/frame-placement.hpp"
+#include "aligator/modelling/multibody/frame-equality.hpp"
 #include "aligator/modelling/multibody/frame-velocity.hpp"
 #include "aligator/modelling/multibody/frame-translation.hpp"
 #include "aligator/modelling/multibody/frame-collision.hpp"
@@ -43,6 +44,9 @@ void exposeFrameFunctions() {
   using SE3 = pinocchio::SE3Tpl<Scalar>;
   using Motion = pinocchio::MotionTpl<Scalar>;
 
+  using FrameEquality = FrameEqualityResidualTpl<Scalar>;
+  using FrameEqualityData = FrameEqualityDataTpl<Scalar>;
+
   using FramePlacement = FramePlacementResidualTpl<Scalar>;
   using FramePlacementData = FramePlacementDataTpl<Scalar>;
 
@@ -61,6 +65,28 @@ void exposeFrameFunctions() {
     bp::register_ptr_to_python<shared_ptr<PinData>>();
 
   PolymorphicMultiBaseVisitor<UnaryFunction, StageFunction> unary_visitor;
+
+  bp::class_<FrameEquality, bp::bases<UnaryFunction>>(
+      "FrameEqualityResidual", "Frame placement residual function.",
+      bp::init<int, int, const PinModel &, const SE3 &, pinocchio::FrameIndex>(
+          ("self"_a, "ndx", "nu", "model", "p_ref", "id")))
+      .def(FrameAPIVisitor<FrameEquality>())
+      .def(unary_visitor)
+      .def("getReference", &FrameEquality::getReference, "self"_a,
+           bp::return_internal_reference<>(), "Get the target frame in SE3.")
+      .def("setReference", &FrameEquality::setReference, ("self"_a, "p_new"),
+           "Set the target frame in SE3.");
+
+  bp::register_ptr_to_python<shared_ptr<FrameEqualityData>>();
+
+  bp::class_<FrameEqualityData, bp::bases<context::StageFunctionData>>(
+      "FrameEqualityData", "Data struct for FrameEqualityResidual.",
+      bp::no_init)
+      .def_readonly("rMf", &FrameEqualityData::rMf_, "Frame placement error.")
+      .def_readonly("rJf", &FrameEqualityData::rJf_)
+      .def_readonly("fJf", &FrameEqualityData::fJf_)
+      .def_readonly("pin_data", &FrameEqualityData::pin_data_,
+                    "Pinocchio data struct.");
 
   bp::class_<FramePlacement, bp::bases<UnaryFunction>>(
       "FramePlacementResidual", "Frame placement residual function.",
