@@ -67,24 +67,28 @@ void exposeFrameFunctions() {
   PolymorphicMultiBaseVisitor<UnaryFunction, StageFunction> unary_visitor;
 
   bp::class_<FrameEquality, bp::bases<UnaryFunction>>(
-      "FrameEqualityResidual", "Frame placement residual function.",
-      bp::init<int, int, const PinModel &, const SE3 &, pinocchio::FrameIndex>(
-          ("self"_a, "ndx", "nu", "model", "p_ref", "id")))
-      .def(FrameAPIVisitor<FrameEquality>())
+      "FrameEqualityResidual", "Frame equality residual function.",
+      bp::init<int, int, const PinModel &, pinocchio::FrameIndex,
+               pinocchio::FrameIndex>(
+          ("self"_a, "ndx", "nu", "model", "frame_id1", "frame_id2")))
       .def(unary_visitor)
-      .def("getReference", &FrameEquality::getReference, "self"_a,
-           bp::return_internal_reference<>(), "Get the target frame in SE3.")
-      .def("setReference", &FrameEquality::setReference, ("self"_a, "p_new"),
-           "Set the target frame in SE3.");
+      .add_property("frame1_id", &FrameEquality::getFrame1Id,
+                    &FrameEquality::setFrame1Id,
+                    "Get the Pinocchio ID of frame1.")
+      .add_property("frame2_id", &FrameEquality::getFrame2Id,
+                    &FrameEquality::setFrame2Id,
+                    "Get the Pinocchio ID of frame2.");
 
   bp::register_ptr_to_python<shared_ptr<FrameEqualityData>>();
 
   bp::class_<FrameEqualityData, bp::bases<context::StageFunctionData>>(
       "FrameEqualityData", "Data struct for FrameEqualityResidual.",
       bp::no_init)
-      .def_readonly("rMf", &FrameEqualityData::rMf_, "Frame placement error.")
-      .def_readonly("rJf", &FrameEqualityData::rJf_)
-      .def_readonly("fJf", &FrameEqualityData::fJf_)
+      .def_readonly("f1Mf2", &FrameEqualityData::f1Mf2_,
+                    "Frame placement error.")
+      .def_readonly("f1Jlog6", &FrameEqualityData::f1Jlog6_)
+      .def_readonly("wJf1", &FrameEqualityData::wJf1_)
+      .def_readonly("wJf2", &FrameEqualityData::wJf2_)
       .def_readonly("pin_data", &FrameEqualityData::pin_data_,
                     "Pinocchio data struct.");
 

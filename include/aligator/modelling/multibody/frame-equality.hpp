@@ -13,7 +13,7 @@ namespace aligator {
 template <typename Scalar> struct FrameEqualityDataTpl;
 
 template <typename _Scalar>
-struct FrameEqualityResidualTpl : UnaryFunctionTpl<_Scalar>, frame_api {
+struct FrameEqualityResidualTpl : UnaryFunctionTpl<_Scalar> {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using Scalar = _Scalar;
@@ -28,20 +28,17 @@ public:
   Model pin_model_;
 
   FrameEqualityResidualTpl(const int ndx, const int nu, const Model &model,
-                           const SE3 &frame,
-                           const pinocchio::FrameIndex frame_id)
+                           const pinocchio::FrameIndex frame_id1,
+                           const pinocchio::FrameIndex frame_id2)
       : Base(ndx, nu, 6)
       , pin_model_(model)
-      , p_ref_(frame)
-      , p_ref_inverse_(frame.inverse()) {
-    pin_frame_id_ = frame_id;
-  }
+      , pin_frame_id1_(frame_id1)
+      , pin_frame_id2_(frame_id2) {}
 
-  const SE3 &getReference() const { return p_ref_; }
-  void setReference(const SE3 &p_new) {
-    p_ref_ = p_new;
-    p_ref_inverse_ = p_new.inverse();
-  }
+  pinocchio::FrameIndex getFrame1Id() const { return pin_frame_id1_; }
+  void setFrame1Id(const std::size_t id) { pin_frame_id1_ = id; }
+  pinocchio::FrameIndex getFrame2Id() const { return pin_frame_id2_; }
+  void setFrame2Id(const std::size_t id) { pin_frame_id2_ = id; }
 
   void evaluate(const ConstVectorRef &x, BaseData &data) const;
 
@@ -52,8 +49,8 @@ public:
   }
 
 protected:
-  SE3 p_ref_;
-  SE3 p_ref_inverse_;
+  pinocchio::FrameIndex pin_frame_id1_;
+  pinocchio::FrameIndex pin_frame_id2_;
 };
 
 template <typename Scalar>
@@ -66,11 +63,13 @@ struct FrameEqualityDataTpl : StageFunctionDataTpl<Scalar> {
   /// Pinocchio data object.
   PinData pin_data_;
   /// Equality error of the frame.
-  SE3 rMf_;
-  /// Jacobian of the error
-  typename math_types<Scalar>::Matrix6s rJf_;
-  /// Jacobian of the error, local frame
-  typename math_types<Scalar>::Matrix6Xs fJf_;
+  SE3 f1Mf2_;
+  /// Jacobian of the error (log6)
+  typename math_types<Scalar>::Matrix6s f1Jlog6_;
+  /// Jacobian of frame 1 expressed in WORLD
+  typename math_types<Scalar>::Matrix6Xs wJf1_;
+  /// Jacobian of frame 2 expressed in WORLD
+  typename math_types<Scalar>::Matrix6Xs wJf2_;
 
   FrameEqualityDataTpl(const FrameEqualityResidualTpl<Scalar> &model);
 };
