@@ -33,7 +33,7 @@ void FrameEqualityResidualTpl<Scalar>::computeJacobians(const ConstVectorRef &,
                               pinocchio::WORLD, d.wJf2_);
 
   d.Jx_.leftCols(pin_model_.nv) =
-      d.f1Jlog6_ * pdata.oMf[pin_frame_id1_].toActionMatrixInverse() *
+      d.f1Jlog6_ * pdata.oMf[pin_frame_id2_].toActionMatrixInverse() *
       (d.wJf2_ - d.wJf1_);
 }
 
