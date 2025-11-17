@@ -63,6 +63,41 @@ def test_frame_equality_finite_differences():
         assert np.allclose(two_frame_residual_data.Jx, finite_differences_data.Jx)
 
 
+def test_frame_equality_against_frame_placement():
+    fr_name1 = "universe"
+    fr_id1 = model.getFrameId(fr_name1)
+
+    fr_name2 = "rarm_effector_body"
+    fr_id2 = model.getFrameId(fr_name2)
+
+    space = manifolds.MultibodyConfiguration(model)
+
+    two_frame_residual = aligator.FrameEqualityResidual(
+        space.ndx, nu, model, fr_id1, fr_id2
+    )
+    two_frame_residual_data = two_frame_residual.createData()
+    assert fr_id1 == two_frame_residual.frame1_id
+    assert fr_id2 == two_frame_residual.frame2_id
+
+    frame_placement_residual = aligator.FramePlacementResidual(
+        space.ndx, nu, model, pin.SE3.Identity(), fr_id1
+    )
+    frame_placement_residual_data = frame_placement_residual.createData()
+
+    x = np.zeros(space.nx)
+    for _ in range(10):
+        x[3:] = space.rand()[3:]
+        u0 = np.zeros(nu)
+        two_frame_residual.evaluate(x, two_frame_residual_data)
+        two_frame_residual.computeJacobians(x, two_frame_residual_data)
+        frame_placement_residual.evaluate(x, u0, frame_placement_residual_data)
+        frame_placement_residual.computeJacobians(x, frame_placement_residual_data)
+        assert np.allclose(
+            two_frame_residual_data.value, frame_placement_residual_data.value
+        )
+        # assert np.allclose(two_frame_residual_data.Jx, frame_placement_residual_data.Jx)
+
+
 def test_frame_placement():
     fr_name1 = "larm_shoulder2_body"
     fr_id1 = model.getFrameId(fr_name1)
