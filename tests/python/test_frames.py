@@ -80,7 +80,7 @@ def test_frame_equality_against_frame_placement():
     assert fr_id2 == two_frame_residual.frame2_id
 
     frame_placement_residual = aligator.FramePlacementResidual(
-        space.ndx, nu, model, pin.SE3.Identity(), fr_id1
+        space.ndx, nu, model, pin.SE3.Identity(), fr_id2
     )
     frame_placement_residual_data = frame_placement_residual.createData()
 
@@ -91,11 +91,11 @@ def test_frame_equality_against_frame_placement():
         two_frame_residual.evaluate(x, two_frame_residual_data)
         two_frame_residual.computeJacobians(x, two_frame_residual_data)
         frame_placement_residual.evaluate(x, u0, frame_placement_residual_data)
-        frame_placement_residual.computeJacobians(x, frame_placement_residual_data)
+        frame_placement_residual.computeJacobians(x, u0, frame_placement_residual_data)
         assert np.allclose(
             two_frame_residual_data.value, frame_placement_residual_data.value
         )
-        # assert np.allclose(two_frame_residual_data.Jx, frame_placement_residual_data.Jx)
+        assert np.allclose(two_frame_residual_data.Jx, frame_placement_residual_data.Jx)
 
 
 def test_frame_placement():
