@@ -47,25 +47,29 @@ def test_frame_equality_finite_differences():
     assert fr_id1 == two_frame_residual.frame1_id
     assert fr_id2 == two_frame_residual.frame2_id
 
+    finite_differences = aligator.FiniteDifferenceHelper(
+        space, two_frame_residual, FD_EPS
+    )
+    finite_differences_data = finite_differences.createData()
+
     x = np.zeros(space.nx)
     for _ in range(10):
+        # Set a random reference pose
         reference_transform = pin.SE3.Random()
         two_frame_residual.setReference(reference_transform)
         assert reference_transform == two_frame_residual.getReference()
-        finite_differences = aligator.FiniteDifferenceHelper(
-            space, two_frame_residual, FD_EPS
+
+        # Take a random state
+        x[3:] = space.rand()[3:]
+        u0 = np.zeros(nu)
+
+        two_frame_residual.evaluate(x, two_frame_residual_data)
+        two_frame_residual.computeJacobians(x, two_frame_residual_data)
+        finite_differences.evaluate(x, u0, finite_differences_data)
+        finite_differences.computeJacobians(x, u0, finite_differences_data)
+        assert np.allclose(
+            two_frame_residual_data.Jx, finite_differences_data.Jx, atol=ATOL
         )
-        finite_differences_data = finite_differences.createData()
-        for _ in range(10):
-            x[3:] = space.rand()[3:]
-            u0 = np.zeros(nu)
-            two_frame_residual.evaluate(x, two_frame_residual_data)
-            two_frame_residual.computeJacobians(x, two_frame_residual_data)
-            finite_differences.evaluate(x, u0, finite_differences_data)
-            finite_differences.computeJacobians(x, u0, finite_differences_data)
-            assert np.allclose(
-                two_frame_residual_data.Jx, finite_differences_data.Jx, atol=ATOL
-            )
 
 
 def test_frame_equality_against_frame_placement():
