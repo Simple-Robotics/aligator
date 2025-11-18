@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - change several classes (including solvers and contact-related modelling) to take `std::string_view` where possible (https://github.com/Simple-Robotics/aligator/pull/364)
 - fixed missing `num_threads` passed to `problem.evaluate()` in `SolverProxDDP::tryLinearStep()` (https://github.com/Simple-Robotics/aligator/pull/373)
 - Fix pixi build and Tracy integration issues: add ninja dependency and update configs (https://github.com/Simple-Robotics/aligator/pull/375)
+- Added TwoFrameEquality residual to enforce relative pose equality between two Pinocchio frames (https://github.com/Simple-Robotics/aligator/pull/378)
 
 ### Changed
 
