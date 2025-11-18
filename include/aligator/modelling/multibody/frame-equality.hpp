@@ -45,7 +45,7 @@ public:
   FrameEqualityResidualTpl(const int ndx, const int nu, const Model &model,
                            const pinocchio::FrameIndex frame_id1,
                            const pinocchio::FrameIndex frame_id2,
-                           const SE3 f1Mf2_ref = SE3::Identity())
+                           const SE3 &f1Mf2_ref = SE3::Identity())
       : Base(ndx, nu, 6)
       , pin_model_(model)
       , pin_frame_id1_(frame_id1)
