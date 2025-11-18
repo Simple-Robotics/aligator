@@ -84,9 +84,8 @@ void exposeFrameFunctions() {
   bp::class_<FrameEqualityData, bp::bases<context::StageFunctionData>>(
       "FrameEqualityData", "Data struct for FrameEqualityResidual.",
       bp::no_init)
-      .def_readonly("f1Mf2", &FrameEqualityData::f1Mf2_,
-                    "Frame placement error.")
-      .def_readonly("f1Jlog6", &FrameEqualityData::f1Jlog6_)
+      .def_readonly("RMf2", &FrameEqualityData::RMf2_, "Frame placement error.")
+      .def_readonly("RJlog6f2", &FrameEqualityData::RJlog6f2_)
       .def_readonly("wJf1", &FrameEqualityData::wJf1_)
       .def_readonly("wJf2", &FrameEqualityData::wJf2_)
       .def_readonly("pin_data", &FrameEqualityData::pin_data_,

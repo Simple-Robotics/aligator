@@ -29,11 +29,14 @@ public:
 
   FrameEqualityResidualTpl(const int ndx, const int nu, const Model &model,
                            const pinocchio::FrameIndex frame_id1,
-                           const pinocchio::FrameIndex frame_id2)
+                           const pinocchio::FrameIndex frame_id2,
+                           const SE3 f1Mf2_ref = SE3::Identity())
       : Base(ndx, nu, 6)
       , pin_model_(model)
       , pin_frame_id1_(frame_id1)
-      , pin_frame_id2_(frame_id2) {}
+      , pin_frame_id2_(frame_id2)
+      , f1MR_ref_(f1Mf2_ref)
+      , f2MR_ref_(f1Mf2_ref.inverse()) {}
 
   pinocchio::FrameIndex getFrame1Id() const { return pin_frame_id1_; }
   void setFrame1Id(const std::size_t id) { pin_frame_id1_ = id; }
@@ -51,6 +54,8 @@ public:
 protected:
   pinocchio::FrameIndex pin_frame_id1_;
   pinocchio::FrameIndex pin_frame_id2_;
+  SE3 f1MR_ref_;
+  SE3 f2MR_ref_; // Inverse of f1MR_ref_, usefull for jacobian computation
 };
 
 template <typename Scalar>
@@ -62,10 +67,10 @@ struct FrameEqualityDataTpl : StageFunctionDataTpl<Scalar> {
 
   /// Pinocchio data object.
   PinData pin_data_;
-  /// Equality error of the frame.
-  SE3 f1Mf2_;
+  /// Equality error between the frames.
+  SE3 RMf2_;
   /// Jacobian of the error (log6)
-  typename math_types<Scalar>::Matrix6s f1Jlog6_;
+  typename math_types<Scalar>::Matrix6s RJlog6f2_;
   /// Jacobian of frame 1 expressed in WORLD
   typename math_types<Scalar>::Matrix6Xs wJf1_;
   /// Jacobian of frame 2 expressed in WORLD
