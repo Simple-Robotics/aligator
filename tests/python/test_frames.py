@@ -60,7 +60,9 @@ def test_frame_equality_finite_differences():
         two_frame_residual.computeJacobians(x, two_frame_residual_data)
         finite_differences.evaluate(x, u0, finite_differences_data)
         finite_differences.computeJacobians(x, u0, finite_differences_data)
-        assert np.allclose(two_frame_residual_data.Jx, finite_differences_data.Jx)
+        assert np.allclose(
+            two_frame_residual_data.Jx, finite_differences_data.Jx, atol=ATOL
+        )
 
 
 def test_frame_equality_against_frame_placement():
