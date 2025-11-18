@@ -12,6 +12,21 @@ namespace aligator {
 
 template <typename Scalar> struct FrameEqualityDataTpl;
 
+/**
+ * @brief Residual enforcing equality between two Pinocchio frames.
+ *
+ * Computes the 6D log error between frame `frame_id1` and frame `frame_id2`.
+ * The residual is:
+ *
+ *     r = log6( f1^{-1} * f1Mf2_ref * f2 )
+ *
+ * where:
+ *   - f1 and f2 are the world placements of the two frames,
+ *   - f1Mf2_ref is the desired relative transform (reference).
+ *
+ * All computations (residual and Jacobians) are expressed in an R frame
+ * attached to f1 (f1 -> f1Mf2_ref -> R -> error -> f2)
+ */
 template <typename _Scalar>
 struct FrameEqualityResidualTpl : UnaryFunctionTpl<_Scalar> {
 public:
