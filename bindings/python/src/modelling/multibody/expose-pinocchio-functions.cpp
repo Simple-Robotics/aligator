@@ -72,6 +72,11 @@ void exposeFrameFunctions() {
                pinocchio::FrameIndex>(
           ("self"_a, "ndx", "nu", "model", "frame_id1", "frame_id2")))
       .def(unary_visitor)
+      .def("getReference", &FrameEquality::getReference, "self"_a,
+           bp::return_internal_reference<>(),
+           "Get the target transform between frame1 and frame2.")
+      .def("setReference", &FrameEquality::setReference, ("self"_a, "p_new"),
+           "Set the target transform between frame1 and frame2.")
       .add_property("frame1_id", &FrameEquality::getFrame1Id,
                     &FrameEquality::setFrame1Id,
                     "Get the Pinocchio ID of frame1.")

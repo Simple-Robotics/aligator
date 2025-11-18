@@ -35,13 +35,16 @@ public:
       , pin_model_(model)
       , pin_frame_id1_(frame_id1)
       , pin_frame_id2_(frame_id2)
-      , f1MR_ref_(f1Mf2_ref)
-      , f2MR_ref_(f1Mf2_ref.inverse()) {}
+      , f1MR_ref_(f1Mf2_ref) {}
 
+  // Getters and setters
   pinocchio::FrameIndex getFrame1Id() const { return pin_frame_id1_; }
   void setFrame1Id(const std::size_t id) { pin_frame_id1_ = id; }
   pinocchio::FrameIndex getFrame2Id() const { return pin_frame_id2_; }
   void setFrame2Id(const std::size_t id) { pin_frame_id2_ = id; }
+
+  const SE3 &getReference() const { return f1MR_ref_; }
+  void setReference(const SE3 &f1Mf2_ref) { f1MR_ref_ = f1Mf2_ref; }
 
   void evaluate(const ConstVectorRef &x, BaseData &data) const;
 
@@ -55,7 +58,6 @@ protected:
   pinocchio::FrameIndex pin_frame_id1_;
   pinocchio::FrameIndex pin_frame_id2_;
   SE3 f1MR_ref_;
-  SE3 f2MR_ref_; // Inverse of f1MR_ref_, usefull for jacobian computation
 };
 
 template <typename Scalar>
