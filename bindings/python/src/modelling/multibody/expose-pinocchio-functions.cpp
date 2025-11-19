@@ -5,6 +5,7 @@
 #include "aligator/python/modelling/multibody-utils.hpp"
 
 #include "aligator/modelling/multibody/frame-placement.hpp"
+#include "aligator/modelling/multibody/frame-equality.hpp"
 #include "aligator/modelling/multibody/frame-velocity.hpp"
 #include "aligator/modelling/multibody/frame-translation.hpp"
 #include "aligator/modelling/multibody/frame-collision.hpp"
@@ -43,6 +44,9 @@ void exposeFrameFunctions() {
   using SE3 = pinocchio::SE3Tpl<Scalar>;
   using Motion = pinocchio::MotionTpl<Scalar>;
 
+  using FrameEquality = FrameEqualityResidualTpl<Scalar>;
+  using FrameEqualityData = FrameEqualityDataTpl<Scalar>;
+
   using FramePlacement = FramePlacementResidualTpl<Scalar>;
   using FramePlacementData = FramePlacementDataTpl<Scalar>;
 
@@ -61,6 +65,36 @@ void exposeFrameFunctions() {
     bp::register_ptr_to_python<shared_ptr<PinData>>();
 
   PolymorphicMultiBaseVisitor<UnaryFunction, StageFunction> unary_visitor;
+
+  bp::class_<FrameEquality, bp::bases<UnaryFunction>>(
+      "FrameEqualityResidual", "Frame equality residual function.",
+      bp::init<int, int, const PinModel &, pinocchio::FrameIndex,
+               pinocchio::FrameIndex>(
+          ("self"_a, "ndx", "nu", "model", "frame_id1", "frame_id2")))
+      .def(unary_visitor)
+      .def("getReference", &FrameEquality::getReference, "self"_a,
+           bp::return_internal_reference<>(),
+           "Get the target transform between frame1 and frame2.")
+      .def("setReference", &FrameEquality::setReference, ("self"_a, "p_new"),
+           "Set the target transform between frame1 and frame2.")
+      .add_property("frame1_id", &FrameEquality::getFrame1Id,
+                    &FrameEquality::setFrame1Id,
+                    "Get the Pinocchio ID of frame1.")
+      .add_property("frame2_id", &FrameEquality::getFrame2Id,
+                    &FrameEquality::setFrame2Id,
+                    "Get the Pinocchio ID of frame2.");
+
+  bp::register_ptr_to_python<shared_ptr<FrameEqualityData>>();
+
+  bp::class_<FrameEqualityData, bp::bases<context::StageFunctionData>>(
+      "FrameEqualityData", "Data struct for FrameEqualityResidual.",
+      bp::no_init)
+      .def_readonly("RMf2", &FrameEqualityData::RMf2_, "Frame placement error.")
+      .def_readonly("RJlog6f2", &FrameEqualityData::RJlog6f2_)
+      .def_readonly("wJf1", &FrameEqualityData::wJf1_)
+      .def_readonly("wJf2", &FrameEqualityData::wJf2_)
+      .def_readonly("pin_data", &FrameEqualityData::pin_data_,
+                    "Pinocchio data struct.");
 
   bp::class_<FramePlacement, bp::bases<UnaryFunction>>(
       "FramePlacementResidual", "Frame placement residual function.",
