@@ -13,21 +13,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - gar/blk-matrix : added `BlkMatrix::isApprox()` (https://github.com/Simple-Robotics/aligator/pull/366)
 - core : added [mimalloc](https://github.com/mimalloc/mimalloc)-based memory resource (https://github.com/Simple-Robotics/aligator/pull/366)
 - modelling/costs : add getter and setter for cost term weights (https://github.com/Simple-Robotics/aligator/pull/359)
-- support for Pinocchio 4 (https://github.com/Simple-Robotics/aligator/pull/361)
-- added a hash function `ExtendedStringHash` for string types (e.g. `std::string`) which supports transparent/heterogeneous lookup in compatible hash maps (e.g. `boost::unordered_map`) using types other than key type e.g. `std::string_view` (https://github.com/Simple-Robotics/aligator/pull/364)
-- added support in Python bindings for `std::string_view` (converting to and from Python's `str` built-in type) (https://github.com/Simple-Robotics/aligator/pull/364)
-- change several classes (including solvers and contact-related modelling) to take `std::string_view` where possible (https://github.com/Simple-Robotics/aligator/pull/364)
-- fixed missing `num_threads` passed to `problem.evaluate()` in `SolverProxDDP::tryLinearStep()` (https://github.com/Simple-Robotics/aligator/pull/373)
-- Fix pixi build and Tracy integration issues: add ninja dependency and update configs (https://github.com/Simple-Robotics/aligator/pull/375)
+- Support for Pinocchio 4 (https://github.com/Simple-Robotics/aligator/pull/361)
+- Added a hash function `ExtendedStringHash` for string types (e.g. `std::string`) which supports transparent/heterogeneous lookup in compatible hash maps (e.g. `boost::unordered_map`) using types other than key type e.g. `std::string_view` (https://github.com/Simple-Robotics/aligator/pull/364)
+- Added support in Python bindings for `std::string_view` (converting to and from Python's `str` built-in type) (https://github.com/Simple-Robotics/aligator/pull/364)
 - Added TwoFrameEquality residual to enforce relative pose equality between two Pinocchio frames (https://github.com/Simple-Robotics/aligator/pull/378)
 
 ### Changed
 
+- Change several classes (including solvers and contact-related modelling) to take `std::string_view` where possible (https://github.com/Simple-Robotics/aligator/pull/364)
 - core : have `replaceStageCircular()` return ejected knot (https://github.com/Simple-Robotics/aligator/pull/376)
 - python : do not import utils.plotting automatically (https://github.com/Simple-Robotics/aligator/pull/369)
 - ci: display ccache statistics (https://github.com/Simple-Robotics/aligator/pull/369)
 - pixi: update environments (https://github.com/Simple-Robotics/aligator/pull/369)
-- move header `<aligator/gar/blk-matrix.hpp>` to `<aligator/core/blk-matrix>`
+- Move header `<aligator/gar/blk-matrix.hpp>` to `<aligator/core/blk-matrix>`
 - solver-proxddp : make new `mimalloc` memory resource the allocator resource for ProxDDP solver (https://github.com/Simple-Robotics/aligator/pull/367)
 - tests/gar/block-matrix.cpp : test against BunchKaufman factorization
 - move headers `allocator.hpp` and `arena-matrix.hpp` to `aligator/core` dir (https://github.com/Simple-Robotics/aligator/pull/362)
@@ -36,6 +34,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - python: improve `CostStack.getComponent()` error message
 - tests/python: more comprehensive test for `aligator.CostStack` (https://github.com/Simple-Robotics/aligator/pull/359)
 - modelling/multibody : merge header `context.hpp` into `fwd.hpp`
+
+### Fixed
+
+- Fixed pixi build and Tracy integration issues: add ninja dependency and update configs (https://github.com/Simple-Robotics/aligator/pull/375)
+- Fixed `num_threads` arg missing in call to `problem.evaluate()` in `SolverProxDDP::tryLinearStep()` (https://github.com/Simple-Robotics/aligator/pull/373)
 
 ### Removed
 
