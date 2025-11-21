@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.0] - 2025-11-21
+
 ### Added
 
 - pixi: add pixi-build (preview support) (https://github.com/Simple-Robotics/aligator/pull/369)
@@ -458,7 +460,8 @@ The following **API-BREAKING** changes come from PR [#229](https://github.com/Si
 
 * This is the first release of `aligator`. This library is a joint effort between INRIA and LAAS-CNRS, and will be maintained and expanded in the future. Please provide constructive feedback and contribute!
 
-[Unreleased]: https://github.com/Simple-Robotics/aligator/compare/v0.16.0...HEAD
+[Unreleased]: https://github.com/Simple-Robotics/aligator/compare/v0.17.0...HEAD
+[0.17.0]: https://github.com/Simple-Robotics/aligator/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/Simple-Robotics/aligator/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/Simple-Robotics/aligator/compare/v0.14.1...v0.15.0
 [0.14.1]: https://github.com/Simple-Robotics/aligator/compare/v0.14.0...v0.14.1
