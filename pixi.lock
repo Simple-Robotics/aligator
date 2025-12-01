@@ -6237,7 +6237,7 @@ packages:
   timestamp: 1758743294412
 - conda: .
   name: aligator
-  version: 0.17.0
+  version: 0.17.1
   build: hbf21a9e_0
   subdir: linux-64
   depends:
@@ -6253,11 +6253,11 @@ packages:
   - fmt >=12.0.0,<12.1.0a0
   - libpinocchio >=3.8.0,<3.8.1.0a0
   input:
-    hash: fe9da1b58226b6970bf806ff3d20fa7eff42088c3a46955821a34ac083f07cee
+    hash: 705de249824028e74c3fed7b413de0032e1b3dbaed9cfe00743d68792f442f96
     globs: []
 - conda: .
   name: aligator
-  version: 0.17.0
+  version: 0.17.1
   build: hbf21a9e_0
   subdir: osx-64
   depends:
@@ -6271,11 +6271,11 @@ packages:
   - fmt >=12.0.0,<12.1.0a0
   - libpinocchio >=3.8.0,<3.8.1.0a0
   input:
-    hash: fe9da1b58226b6970bf806ff3d20fa7eff42088c3a46955821a34ac083f07cee
+    hash: 705de249824028e74c3fed7b413de0032e1b3dbaed9cfe00743d68792f442f96
     globs: []
 - conda: .
   name: aligator
-  version: 0.17.0
+  version: 0.17.1
   build: hbf21a9e_0
   subdir: osx-arm64
   depends:
@@ -6289,7 +6289,7 @@ packages:
   - fmt >=12.0.0,<12.1.0a0
   - libpinocchio >=3.8.0,<3.8.1.0a0
   input:
-    hash: fe9da1b58226b6970bf806ff3d20fa7eff42088c3a46955821a34ac083f07cee
+    hash: 705de249824028e74c3fed7b413de0032e1b3dbaed9cfe00743d68792f442f96
     globs: []
 - conda: https://conda.anaconda.org/conda-forge/linux-64/ampl-asl-1.0.0-h5888daf_2.conda
   sha256: c5c1057778bec78e07a4a8f122c3659767817fc0a9fa034724ff931ad90af57b
