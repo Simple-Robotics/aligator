@@ -38,7 +38,7 @@ void LogResidualCostTpl<Scalar>::evaluate(const ConstVectorRef &x,
   Data &d = static_cast<Data &>(data);
   residual_->evaluate(x, u, *d.residual_data);
   d.value_ =
-      barrier_weights_.dot(d.residual_data->value_.array().log().matrix());
+      -barrier_weights_.dot(d.residual_data->value_.array().log().matrix());
 }
 
 template <typename Scalar>
@@ -54,7 +54,7 @@ void LogResidualCostTpl<Scalar>::computeGradients(
   const int nrows = residual_->nr;
   for (int i = 0; i < nrows; i++) {
     auto g_i = J.row(i);
-    d.grad_.noalias() += barrier_weights_(i) * g_i / v(i);
+    d.grad_.noalias() += -barrier_weights_(i) * g_i / v(i);
   }
 }
 
@@ -72,7 +72,7 @@ void LogResidualCostTpl<Scalar>::computeHessians(const ConstVectorRef &,
   for (int i = 0; i < nrows; i++) {
     auto g_i = J.row(i); // row vector
     d.hess_.noalias() +=
-        barrier_weights_(i) * (g_i.transpose() * g_i) / (v(i) * v(i));
+        -barrier_weights_(i) * (g_i.transpose() * g_i) / (v(i) * v(i));
   }
 }
 } // namespace aligator
