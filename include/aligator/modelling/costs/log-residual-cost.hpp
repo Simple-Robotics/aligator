@@ -5,8 +5,20 @@
 #include "./composite-costs.hpp"
 
 namespace aligator {
-
-/// @brief  Log-barrier of an underlying cost function.
+/**
+ * @brief  Log-barrier of an underlying cost function.
+ *
+ * @details Defined as :
+ * \f[
+ *      c(x,u) = -w\ln(r(x,u))
+ * \f]
+ *
+ * where :
+ *    -\f(\ c(x,u) \f) is the resulting cost
+ *    -\f(\ r(x,u) \f) is the input function
+ *    -\f(\ w \f) is the input scale
+ *
+ */
 template <typename Scalar> struct LogResidualCostTpl : CostAbstractTpl<Scalar> {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
   using CostDataAbstract = CostDataAbstractTpl<Scalar>;
