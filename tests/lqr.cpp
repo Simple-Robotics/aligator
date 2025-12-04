@@ -70,5 +70,5 @@ TEST_CASE("lqr_proxddp") {
   REQUIRE(conv);
   REQUIRE(ddp.results_.num_iters == 1);
 
-  fmt::println("{}", ddp.results_);
+  fmt::print("{}\n", ddp.results_);
 }

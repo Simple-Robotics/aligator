@@ -69,13 +69,13 @@ TEST_CASE_METHOD(knot_fixture, "swap", "[knot]") {
   knot_t knot2 = knot;
   knot2.Q.setIdentity();
 
-  fmt::println("knot.Q:\n{}", knot.Q);
-  fmt::println("knot2.Q:\n{}", knot2.Q);
+  fmt::print("knot.Q:\n{}\n", knot.Q);
+  fmt::print("knot2.Q:\n{}\n", knot2.Q);
 
   swap(knot, knot2);
   REQUIRE(knot2.Q.isApprox(Q0));
 
-  fmt::println("knot2.Q:\n{}", knot2.Q);
+  fmt::print("knot2.Q:\n{}\n", knot2.Q);
 }
 
 TEST_CASE_METHOD(knot_fixture, "gen_knot", "[knot]") {
@@ -136,7 +136,7 @@ TEST_CASE("knot_vec_basic", "[knot_vec]") {
   v.reserve(10);
   for (size_t i = 0; i < 10; i++) {
     v.push_back(generateKnot({nx, nu}));
-    fmt::println("v [{:d}].q = {}", i, v[i].q.transpose());
+    fmt::print("v [{:d}].q = {}\n", i, v[i].q.transpose());
   }
 
   SECTION("move ctor") {
@@ -150,7 +150,7 @@ TEST_CASE("knot_vec_basic", "[knot_vec]") {
     std::pmr::vector<knot_t> vm = std::move(v);
     REQUIRE(vm.get_allocator() == alloc);
     for (size_t i = 0; i < 10; i++) {
-      fmt::println("v2[{:d}].q = {}", i, vm[i].q.transpose());
+      fmt::print("v2[{:d}].q = {}\n", i, vm[i].q.transpose());
     }
   }
 
@@ -158,7 +158,7 @@ TEST_CASE("knot_vec_basic", "[knot_vec]") {
     std::pmr::vector<knot_t> vc{v};
     REQUIRE(vc.get_allocator() == default_alloc);
     for (size_t i = 0; i < 10; i++) {
-      fmt::println("vc[{:d}].q = {}", i, vc[i].q.transpose());
+      fmt::print("vc[{:d}].q = {}\n", i, vc[i].q.transpose());
       REQUIRE(v[i] == vc[i]);
     }
   }
@@ -167,7 +167,7 @@ TEST_CASE("knot_vec_basic", "[knot_vec]") {
     std::pmr::vector<knot_t> vc{v, alloc};
     REQUIRE(vc.get_allocator() == alloc);
     for (size_t i = 0; i < 10; i++) {
-      fmt::println("vc[{:d}].q = {}", i, vc[i].q.transpose());
+      fmt::print("vc[{:d}].q = {}\n", i, vc[i].q.transpose());
       REQUIRE(v[i] == vc[i]);
     }
   }

@@ -14,9 +14,15 @@
   <depend>python3-numpy</depend>
   <depend>boost</depend>
   <depend>eigenpy</depend>
-  <depend>fmtlib</depend>
   <depend>pinocchio</depend>
   <depend>crocoddyl</depend>
+
+  <!-- Standard debian -->
+  <depend>fmt</depend>
+  <depend>libmimalloc</depend>
+  <depend>libbenchmark-dev</depend>
+  <depend>Catch2</depend>
+
 
   <buildtool_depend>cmake</buildtool_depend>
   <export>

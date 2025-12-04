@@ -80,7 +80,7 @@ TEST_CASE("parallel_manual", "[gar]") {
     bool ret = solver_full_horz.forward(xs, us, vs, lbdas);
     REQUIRE(ret);
     KktError err_full = computeKktError(problem, xs, us, vs, lbdas);
-    fmt::println("KKT error (full horz.): {}", err_full);
+    fmt::print("KKT error (full horz.): {}\n", err_full);
     REQUIRE(err_full.max <= EPS);
   }
 
@@ -159,12 +159,12 @@ TEST_CASE("parallel_manual", "[gar]") {
     if (i < horizon)
       u_errs[i] = infty_norm(us[i] - us_merged[i]);
   }
-  fmt::println("errors between solves: x={:.3e}, u={:.3e}, λ={:.3e}",
+  fmt::print("errors between solves: x={:.3e}, u={:.3e}, λ={:.3e}\n",
                infty_norm(x_errs), infty_norm(u_errs), infty_norm(l_errs));
 
   KktError err_merged =
       computeKktError(problem, xs_merged, us_merged, vs_merged, lbdas_merged);
-  fmt::println("KKT error (merged) {}", err_merged);
+  fmt::print("KKT error (merged) {}\n", err_merged);
 }
 
 /// Randomize some of the parameters of the problem. This simulates something
@@ -206,7 +206,7 @@ TEST_CASE("parallel_solver_class", "[gar]") {
   {
     KktError err_ref = computeKktError(problemRef, xs_ref, us_ref, vs_ref,
                                        lbdas_ref, mueq, true);
-    fmt::println("{}", err_ref);
+    fmt::print("{}\n", err_ref);
     REQUIRE(err_ref.max <= 1e-8);
   }
 
@@ -216,7 +216,7 @@ TEST_CASE("parallel_solver_class", "[gar]") {
   parSolver.forward(xs, us, vs, lbdas);
   {
     KktError err = computeKktError(problem, xs, us, vs, lbdas, mueq);
-    fmt::println("{}", err);
+    fmt::print("{}\n", err);
     REQUIRE(err.max <= TOL);
   }
 
@@ -238,7 +238,7 @@ TEST_CASE("parallel_solver_class", "[gar]") {
     parSolver.backward(mueq);
     parSolver.forward(xs, us, vs, lbdas);
     KktError e = computeKktError(problem, xs, us, vs, lbdas, mueq, false);
-    fmt::println("{}", e);
+    fmt::print("{}\n", e);
     REQUIRE(e.max <= TOL);
   }
 }

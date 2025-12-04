@@ -5,7 +5,12 @@
 #include "aligator/core/constraint-set.hpp"
 #include "aligator/third-party/polymorphic_cxx14.h"
 
+#include <boost/version.hpp>
+#if defined(BOOST_VERSION) && BOOST_VERSION >= 107600
 #include <boost/core/span.hpp>
+#else
+#include "aligator/compat/boost/core/span.hpp"
+#endif
 
 namespace aligator {
 template <typename Derived>
