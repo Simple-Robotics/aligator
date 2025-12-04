@@ -243,9 +243,9 @@ if(BUILD_PYTHON_INTERFACE)
   set(PYTHON_COMPONENTS Interpreter Development NumPy)
   ADD_PROJECT_DEPENDENCY(
     eigenpy
-    3.10.3
+    3.10.2
     REQUIRED
-    PKG_CONFIG_REQUIRES "eigenpy >= 3.10.3"
+    PKG_CONFIG_REQUIRES "eigenpy >= 3.10.2"
   )
   set(PYLIB_NAME "py${PROJECT_NAME}")
   set(${PYLIB_NAME}_INSTALL_DIR ${PYTHON_SITELIB}/${PROJECT_NAME})
