@@ -11,7 +11,7 @@
 template <typename MatrixType>
 struct fmt::formatter<MatrixType,
                       ::aligator::enable_if_eigen_dense_t<MatrixType, char>>
-    : fmt::ostream_formatter {};
+    : fmt::formatter<std::ostream, char> {};
 
 template <typename MatrixType>
 struct fmt::is_range<MatrixType,
@@ -20,4 +20,4 @@ struct fmt::is_range<MatrixType,
 
 template <typename MatrixType>
 struct fmt::formatter<Eigen::WithFormat<MatrixType>>
-    : public fmt::ostream_formatter {};
+    : public fmt::formatter<std::ostream, char> {};
