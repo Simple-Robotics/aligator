@@ -4,7 +4,12 @@ import pytest
 
 from aligator import manifolds
 
+HAS_PINOCCHIO = aligator.has_pinocchio_features()
 
+
+@pytest.mark.skipif(
+    not HAS_PINOCCHIO, reason="Aligator was compiled without Pinocchio."
+)
 def test_manifold_diff():
     space = manifolds.SE2()
     nu = 2
@@ -46,6 +51,9 @@ def test_manifold_diff():
     fun_lin.evaluate(x, data3)
 
 
+@pytest.mark.skipif(
+    not HAS_PINOCCHIO, reason="Aligator was compiled without Pinocchio."
+)
 def test_slicing():
     space = manifolds.R4()
     nr = 7

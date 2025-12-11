@@ -7,6 +7,8 @@ from utils import create_linear_ode, create_multibody_ode, infNorm
 
 EPSILON = 1e-5
 
+HAS_PINOCCHIO = aligator.has_pinocchio_features()
+
 
 def dynamics_finite_difference(
     dyn: aligator.dynamics.DynamicsModel,
@@ -88,9 +90,14 @@ def explicit_dynamics_finite_difference(
     return Jx_nd, Ju_nd
 
 
+ode_list = [create_linear_ode(4, 2)]
+if HAS_PINOCCHIO:
+    ode_list.append(create_multibody_ode())
+
+
 @pytest.mark.parametrize(
     "ode",
-    [create_linear_ode(4, 2), create_multibody_ode()],
+    ode_list,
 )
 @pytest.mark.parametrize(
     "integrator",
@@ -119,7 +126,12 @@ def test_explicit_integrator_combinations(ode, integrator):
             raise
 
 
-@pytest.mark.parametrize("dae", [create_linear_ode(4, 3), create_multibody_ode()])
+dae_list = [create_linear_ode(4, 3)]
+if HAS_PINOCCHIO:
+    dae_list.append(create_multibody_ode())
+
+
+@pytest.mark.parametrize("dae", dae_list)
 @pytest.mark.parametrize("integrator", [dynamics.IntegratorMidpoint])
 def test_implicit_integrator(
     dae: dynamics.ContinuousDynamicsAbstract, integrator: dynamics.IntegratorAbstract

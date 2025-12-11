@@ -45,6 +45,9 @@ class MyODEData(dynamics.ODEData):
         self.v0 = np.random.randn(3)
 
 
+@pytest.mark.skipif(
+    not HAS_PINOCCHIO, reason="Aligator was compiled without Pinocchio."
+)
 def test_abstract():
     """Test have the right types, etc."""
     space = manifolds.SO3()
@@ -62,6 +65,9 @@ def test_abstract():
     assert hasattr(ode_data, "xdot")
 
 
+@pytest.mark.skipif(
+    not HAS_PINOCCHIO, reason="Aligator was compiled without Pinocchio."
+)
 def test_custom_ode():
     ode = MyODE()
     itg = dynamics.IntegratorEuler(ode, 0.01)

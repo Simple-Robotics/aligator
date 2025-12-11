@@ -65,6 +65,8 @@ static void exposeContainers() {
   using context::Scalar;
   using context::VectorRef;
 
+  eigenpy::StdContainerFromPythonList<
+      std::vector<std::string>>::register_converter();
   StdVectorPythonVisitor<std::vector<long>, true>::expose("StdVec_long");
   eigenpy::exposeStdVectorEigenSpecificType<context::Vector3s>(
       "StdVec_Vector3s");

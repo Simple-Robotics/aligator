@@ -1,3 +1,4 @@
+#ifdef ALIGATOR_WITH_PINOCCHIO
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/utils.hpp"
 
@@ -121,3 +122,5 @@ void exposePinocchioSpaces() {
 }
 
 } // namespace aligator::python
+
+#endif // ifdef ALIGATOR_WITH_PINOCCHIO

@@ -2,6 +2,8 @@ import aligator
 import numpy as np
 import pytest
 
+HAS_PINOCCHIO = aligator.has_pinocchio_features()
+
 
 class CustomFunction(aligator.StageFunction):
     def __init__(self, space: aligator.manifolds.ManifoldAbstract, nu):
@@ -43,6 +45,9 @@ class TwistModelExplicit(aligator.dynamics.ExplicitDynamicsModel):
         Ju[:, :] = Jxnext_dv @ dv_du
 
 
+@pytest.mark.skipif(
+    not HAS_PINOCCHIO, reason="Aligator was compiled without Pinocchio."
+)
 def test_abstract():
     space = aligator.manifolds.SE2()
     ndx = space.ndx
@@ -53,6 +58,9 @@ def test_abstract():
     print(data)
 
 
+@pytest.mark.skipif(
+    not HAS_PINOCCHIO, reason="Aligator was compiled without Pinocchio."
+)
 def test_custom_controlbox():
     space = aligator.manifolds.SE2()
     ndx = space.ndx

@@ -264,20 +264,59 @@ file(
 
 if(ENABLE_TEMPLATE_INSTANTIATION)
   file(
-    GLOB_RECURSE LIB_TEMPLATE_SOURCES
+    GLOB LIB_TEMPLATE_SOURCES
     CONFIGURE_DEPENDS
     ${PROJECT_SOURCE_DIR}/src/core/*.cpp
     ${PROJECT_SOURCE_DIR}/src/gar/*.cpp
     ${PROJECT_SOURCE_DIR}/src/solvers/*.cpp
+    ${PROJECT_SOURCE_DIR}/src/solvers/fddp/*.cpp
+    ${PROJECT_SOURCE_DIR}/src/solvers/proxddp/*.cpp
+    ${PROJECT_SOURCE_DIR}/src/utils/*.cpp
     ${PROJECT_SOURCE_DIR}/src/modelling/*.cpp
+    ${PROJECT_SOURCE_DIR}/src/modelling/autodiff/*.cpp
+    ${PROJECT_SOURCE_DIR}/src/modelling/centroidal/*.cpp
+    ${PROJECT_SOURCE_DIR}/src/modelling/costs/*.cpp
   )
+  list(
+    APPEND
+    LIB_TEMPLATE_SOURCES
+    ${PROJECT_SOURCE_DIR}/src/modelling/dynamics/continuous-dynamics-abstract.cpp
+    ${PROJECT_SOURCE_DIR}/src/modelling/dynamics/integrator-abstract.cpp
+    ${PROJECT_SOURCE_DIR}/src/modelling/dynamics/integrator-euler.cpp
+    ${PROJECT_SOURCE_DIR}/src/modelling/dynamics/integrator-explicit.cpp
+    ${PROJECT_SOURCE_DIR}/src/modelling/dynamics/integrator-midpoint.cpp
+    ${PROJECT_SOURCE_DIR}/src/modelling/dynamics/integrator-rk2.cpp
+    ${PROJECT_SOURCE_DIR}/src/modelling/dynamics/integrator-semi-euler.cpp
+    ${PROJECT_SOURCE_DIR}/src/modelling/dynamics/linear-ode.cpp
+    ${PROJECT_SOURCE_DIR}/src/modelling/dynamics/ode-abstract.cpp
+  )
+  if(BUILD_WITH_PINOCCHIO_SUPPORT)
+    file(
+      GLOB_RECURSE LIB_WITH_PINOCCHIO_TEMPLATE_SOURCES
+      CONFIGURE_DEPENDS
+      ${PROJECT_SOURCE_DIR}/src/modelling/multibody/*.cpp
+      ${PROJECT_SOURCE_DIR}/src/modelling/dynamics/*.cpp
+    )
+    list(
+      APPEND
+      LIB_WITH_PINOCCHIO_TEMPLATE_SOURCES
+      ${PROJECT_SOURCE_DIR}/src/modelling/dynamics/kinodynamics-fwd.cpp
+      ${PROJECT_SOURCE_DIR}/src/modelling/dynamics/multibody-constraint-fwd.cpp
+      ${PROJECT_SOURCE_DIR}/src/modelling/dynamics/multibody-free-fwd.cpp
+    )
+  endif()
   file(
     GLOB_RECURSE LIB_TEMPLATE_DECLARATIONS
     CONFIGURE_DEPENDS
     ${PROJECT_SOURCE_DIR}/include/aligator/*.txx
   )
   list(APPEND LIB_HEADERS ${LIB_TEMPLATE_DECLARATIONS})
-  list(APPEND LIB_SOURCES ${LIB_TEMPLATE_SOURCES})
+  list(
+    APPEND
+    LIB_SOURCES
+    ${LIB_TEMPLATE_SOURCES}
+    ${LIB_WITH_PINOCCHIO_TEMPLATE_SOURCES}
+  )
 endif()
 
 list(

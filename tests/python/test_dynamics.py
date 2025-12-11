@@ -1,9 +1,12 @@
 import numpy as np
 
+import aligator
 from aligator import dynamics, manifolds
 
 import sys
 import pytest
+
+HAS_PINOCCHIO = aligator.has_pinocchio_features()
 
 
 def test_abstract():
@@ -54,6 +57,9 @@ def direct_sum_test_impl(f, g):
     assert np.allclose(dd2.Ju, dd.data2.Ju)
 
 
+@pytest.mark.skipif(
+    not HAS_PINOCCHIO, reason="Aligator was compiled without Pinocchio."
+)
 def test_mb_direct_sum():
     from utils import create_multibody_ode
 

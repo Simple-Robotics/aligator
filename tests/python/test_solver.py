@@ -7,10 +7,9 @@ import sys
 import numpy as np
 import aligator
 import pytest
-import example_robot_data as erd
 
 from aligator.dynamics import LinearDiscreteDynamics
-from aligator.manifolds import VectorSpace, MultibodyPhaseSpace
+from aligator.manifolds import VectorSpace
 
 
 @pytest.fixture
@@ -57,6 +56,9 @@ def test_fddp_lqr(lqr_problem):
     reason="Aligator was compiled without Pinocchio features.",
 )
 def test_no_node():
+    import example_robot_data as erd
+    from aligator.manifolds import MultibodyPhaseSpace
+
     robot = erd.load("ur5")
     rmodel = robot.model
     space = MultibodyPhaseSpace(rmodel)

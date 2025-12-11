@@ -1,5 +1,6 @@
 /// @file
 /// @copyright Copyright (C) 2022-2023 LAAS-CNRS, 2022-2025 INRIA
+#ifdef ALIGATOR_WITH_PINOCCHIO
 #include "aligator/python/fwd.hpp"
 
 #include "aligator/modelling/dynamics/context.hpp"
@@ -61,3 +62,5 @@ void exposeConstrainedFwdDynamics() {
 }
 } // namespace python
 } // namespace aligator
+
+#endif // ifdef ALIGATOR_WITH_PINOCCHIO
