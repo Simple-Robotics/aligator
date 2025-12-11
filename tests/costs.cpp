@@ -5,7 +5,10 @@
 #include "aligator/modelling/costs/sum-of-costs.hpp"
 
 #include "aligator/modelling/costs/quad-state-cost.hpp"
+
+#ifdef ALIGATOR_WITH_PINOCCHIO
 #include "aligator/modelling/spaces/pinocchio-groups.hpp"
+#endif
 
 using namespace aligator;
 using T = context::Scalar;
@@ -14,7 +17,9 @@ using context::MatrixXs;
 using context::VectorXs;
 using QuadraticResidualCost = QuadraticResidualCostTpl<T>;
 using StateError = StateErrorResidualTpl<T>;
+#ifdef ALIGATOR_WITH_PINOCCHIO
 using SE2 = SETpl<2, T>;
+#endif
 using context::VectorSpace;
 
 void fd_test(VectorXs x0, VectorXs u0, MatrixXs weights,
@@ -41,6 +46,7 @@ void fd_test(VectorXs x0, VectorXs u0, MatrixXs weights,
   REQUIRE(hess_ref.isApprox(data->hess_));
 }
 
+#ifdef ALIGATOR_WITH_PINOCCHIO
 TEST_CASE("quad_state_se2", "[costs]") {
   SE2 space;
 
@@ -71,6 +77,7 @@ TEST_CASE("quad_state_se2", "[costs]") {
   const StateError *fun_cast = qres.getResidual<StateError>();
   REQUIRE(fun_cast != nullptr);
 }
+#endif
 
 TEST_CASE("quad_state_highdim", "[costs]") {
   const Eigen::Index ndx = 56;
@@ -108,6 +115,7 @@ TEST_CASE("quad_state_highdim", "[costs]") {
   }
 }
 
+#ifdef ALIGATOR_WITH_PINOCCHIO
 TEST_CASE("cost_stack", "[costs]") {
   using CostStack = CostStackTpl<T>;
   SE2 space;
@@ -126,3 +134,4 @@ TEST_CASE("cost_stack", "[costs]") {
     REQUIRE(perr != nullptr);
   }
 }
+#endif

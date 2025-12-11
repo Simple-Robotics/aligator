@@ -2,7 +2,6 @@
 Test MPC (cycling OCP)
 """
 
-import pinocchio as pin
 import numpy as np
 import aligator
 import pytest
@@ -10,11 +9,18 @@ import pytest
 
 NUM_MPC_CYCLES = 20
 
+HAS_PINOCCHIO = aligator.has_pinocchio_features()
+pytestmark = pytest.mark.skipif(
+    not HAS_PINOCCHIO, reason="Aligator was compiled without Pinocchio."
+)
+
 
 @pytest.fixture
 def mpc_problem():
+    import pinocchio as pin
+
     rmodel = pin.buildSampleModelHumanoid()
-    rdata: pin.Data = rmodel.createData()
+    rdata = rmodel.createData()
     space = aligator.manifolds.MultibodyPhaseSpace(rmodel)
 
     dt = 1e-2  # Timestep

@@ -9,6 +9,7 @@ from utils import cost_finite_grad
 
 FD_EPS = 1e-7
 ATOL = 2 * FD_EPS**0.5
+HAS_PINOCCHIO = aligator.has_pinocchio_features()
 
 
 def sample_gauss(space):
@@ -182,6 +183,9 @@ def test_log_barrier():
         assert_allclose(fgrad, data.grad, atol=ATOL)
 
 
+@pytest.mark.skipif(
+    not HAS_PINOCCHIO, reason="Aligator was compiled without Pinocchio."
+)
 def test_quad_state():
     space = manifolds.SE2()
     ndx = space.ndx
@@ -254,6 +258,9 @@ def test_stack_error():
     print(e_info)
 
 
+@pytest.mark.skipif(
+    not HAS_PINOCCHIO, reason="Aligator was compiled without Pinocchio."
+)
 def test_direct_sum():
     import pinocchio as pin
 

@@ -37,7 +37,6 @@ set(
   TEST_NAMES
   arena-matrix
   block-matrix
-  continuous
   constraints
   costs
   integrators
@@ -49,7 +48,7 @@ set(
 )
 
 if(BUILD_WITH_PINOCCHIO_SUPPORT)
-  list(APPEND TEST_NAMES forces cycling mpc-cycle)
+  list(APPEND TEST_NAMES forces cycling mpc-cycle continuous)
 endif()
 
 if(CHECK_RUNTIME_MALLOC)
