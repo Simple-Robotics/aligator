@@ -18,6 +18,7 @@
 #include "results.hpp"
 
 #include <boost/unordered_map.hpp>
+#include <boost/version.hpp>
 #include <variant>
 
 namespace aligator {
@@ -248,7 +249,11 @@ public:
 
   /// @brief    Add a callback to the solver instance.
   void registerCallback(std::string_view name, CallbackPtr cb) {
+#if defined(BOOST_VERSION) && BOOST_VERSION >= 107500
     callbacks_.insert_or_assign(name, cb);
+#else
+    callbacks_.insert_or_assign(std::string(name), cb);
+#endif
   }
 
   /// @brief    Remove all callbacks from the instance.
@@ -257,7 +262,11 @@ public:
   const CallbackMap &getCallbacks() const { return callbacks_; }
 
   [[nodiscard]] bool removeCallback(std::string_view name) {
+#if defined(BOOST_VERSION) && BOOST_VERSION >= 107500
     return callbacks_.erase(name);
+#else
+    return callbacks_.erase(std::string(name));
+#endif
   }
 
   [[nodiscard]] auto getCallbackNames() const {
@@ -269,7 +278,11 @@ public:
   }
 
   [[nodiscard]] CallbackPtr getCallback(std::string_view name) const {
+#if defined(BOOST_VERSION) && BOOST_VERSION >= 107500
     auto cb = callbacks_.find(name);
+#else
+    auto cb = callbacks_.find(std::string(name));
+#endif
     if (cb != end(callbacks_)) {
       return cb->second;
     }
