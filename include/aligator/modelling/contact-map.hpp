@@ -8,7 +8,7 @@ namespace aligator {
 template <typename _Scalar> struct ContactMapTpl {
   using Scalar = _Scalar;
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  using PoseVec = StdVectorEigenAligned<Vector3s>;
+  using PoseVec = std::vector<Vector3s, Eigen::aligned_allocator<Vector3s>>;
 
   ContactMapTpl(const std::vector<std::string> &contact_names,
                 const std::vector<bool> &contact_states,

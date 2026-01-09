@@ -165,8 +165,10 @@ template <typename Scalar> struct ResultsTpl;
 template <typename Scalar> struct FilterTpl;
 
 /// @brief Typedef for vector with Eigen::aligned_allocator allocator type.
-/// @warning Only use this in specific interfaces, e.g. involving Eigen.
+/// @deprecated This is deprecated. Use the PINOCCHIO_ALIGNED_STD_VECTOR macro
+/// or underlying typedef when relevant, or write the full std::vector template.
 template <typename T>
-using StdVectorEigenAligned = std::vector<T, Eigen::aligned_allocator<T>>;
+using StdVectorEigenAligned ALIGATOR_DEPRECATED =
+    std::vector<T, Eigen::aligned_allocator<T>>;
 
 } // namespace aligator

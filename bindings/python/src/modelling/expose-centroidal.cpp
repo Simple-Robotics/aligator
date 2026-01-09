@@ -26,7 +26,7 @@ void exposeContactMap() {
   bp::class_<ContactMap>(
       "ContactMap", "Store contact state and pose for centroidal problem",
       bp::init<const std::vector<std::string> &, const std::vector<bool> &,
-               const StdVectorEigenAligned<context::Vector3s> &>(
+               const ContactMap::PoseVec &>(
           ("self"_a, "contact_names", "contact_states", "contact_poses")))
       .def("addContact", &ContactMap::addContact,
            ("self"_a, "name", "state", "pose"),
