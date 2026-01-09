@@ -76,7 +76,7 @@ cmake --build . -jNCPUS
 * (optional) [Pinocchio](https://github.com/stack-of-tasks/pinocchio) | [conda](https://anaconda.org/conda-forge/pinocchio)
 * (optional) [Crocoddyl](https://github.com/loco-3d/crocoddyl) | [conda](https://anaconda.org/conda-forge/crocoddyl)
 * (optional) [example-robot-data](https://github.com/Gepetto/example-robot-data) | [conda](https://anaconda.org/conda-forge/example-robot-data) (required for some examples and benchmarks)
-* (optional) [Catch2](https://github.com/catchorg/Catch2) | [conda](https://anaconda.org/conda-forge/catch2) for testing a C++17 compliant compiler
+* (optional) [Catch2](https://github.com/catchorg/Catch2) | [conda](https://anaconda.org/conda-forge/catch2) for testing
 
 #### Python dependencies
 
