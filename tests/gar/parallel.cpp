@@ -9,6 +9,7 @@
 #include "aligator/gar/parallel-solver.hpp"
 #include "aligator/gar/proximal-riccati.hpp"
 #include "aligator/gar/utils.hpp"
+#include "aligator/fmt.hpp"
 #include <Eigen/Cholesky>
 
 using namespace aligator::gar;
@@ -80,7 +81,7 @@ TEST_CASE("parallel_manual", "[gar]") {
     bool ret = solver_full_horz.forward(xs, us, vs, lbdas);
     REQUIRE(ret);
     KktError err_full = computeKktError(problem, xs, us, vs, lbdas);
-    fmt::print("KKT error (full horz.): {}\n", err_full);
+    fmt::println("KKT error (full horz.): {}", err_full);
     REQUIRE(err_full.max <= EPS);
   }
 
@@ -116,8 +117,8 @@ TEST_CASE("parallel_manual", "[gar]") {
     thGrad = subSolve1.thGrad + subSolve2.thGrad;
     hessChol.compute(thHess);
     thtopt = hessChol.solve(-thGrad);
-    fmt::print("Theta system err = {:.3e}\n",
-               infty_norm(thHess * thtopt + thGrad));
+    fmt::println("Theta system err = {:.3e}",
+                 infty_norm(thHess * thtopt + thGrad));
   }
   {
     subSolve1.forward(xs1, us1, vs1, lbdas1, thtopt);
@@ -159,12 +160,12 @@ TEST_CASE("parallel_manual", "[gar]") {
     if (i < horizon)
       u_errs[i] = infty_norm(us[i] - us_merged[i]);
   }
-  fmt::print("errors between solves: x={:.3e}, u={:.3e}, λ={:.3e}\n",
+  fmt::println("errors between solves: x={:.3e}, u={:.3e}, λ={:.3e}",
                infty_norm(x_errs), infty_norm(u_errs), infty_norm(l_errs));
 
   KktError err_merged =
       computeKktError(problem, xs_merged, us_merged, vs_merged, lbdas_merged);
-  fmt::print("KKT error (merged) {}\n", err_merged);
+  fmt::println("KKT error (merged) {}", err_merged);
 }
 
 /// Randomize some of the parameters of the problem. This simulates something
@@ -206,7 +207,7 @@ TEST_CASE("parallel_solver_class", "[gar]") {
   {
     KktError err_ref = computeKktError(problemRef, xs_ref, us_ref, vs_ref,
                                        lbdas_ref, mueq, true);
-    fmt::print("{}\n", err_ref);
+    fmt::println("{}", err_ref);
     REQUIRE(err_ref.max <= 1e-8);
   }
 
@@ -216,7 +217,7 @@ TEST_CASE("parallel_solver_class", "[gar]") {
   parSolver.forward(xs, us, vs, lbdas);
   {
     KktError err = computeKktError(problem, xs, us, vs, lbdas, mueq);
-    fmt::print("{}\n", err);
+    fmt::println("{}", err);
     REQUIRE(err.max <= TOL);
   }
 
@@ -228,8 +229,8 @@ TEST_CASE("parallel_solver_class", "[gar]") {
   }
   double xerr = infty_norm(xerrs);
   double lerr = infty_norm(lerrs);
-  fmt::print("xerrs = {}\n", xerr);
-  fmt::print("lerrs = {}\n", lerr);
+  fmt::println("xerrs = {}", xerr);
+  fmt::println("lerrs = {}", lerr);
   CHECK(xerr <= TOL);
   CHECK(lerr <= TOL);
 
@@ -238,7 +239,7 @@ TEST_CASE("parallel_solver_class", "[gar]") {
     parSolver.backward(mueq);
     parSolver.forward(xs, us, vs, lbdas);
     KktError e = computeKktError(problem, xs, us, vs, lbdas, mueq, false);
-    fmt::print("{}\n", e);
+    fmt::println("{}", e);
     REQUIRE(e.max <= TOL);
   }
 }
