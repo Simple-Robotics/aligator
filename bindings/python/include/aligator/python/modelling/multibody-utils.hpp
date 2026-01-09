@@ -7,6 +7,8 @@
 
 namespace aligator {
 namespace python {
+using RCMVector = PINOCCHIO_ALIGNED_STD_VECTOR(context::RCM);
+using RCDVector = PINOCCHIO_ALIGNED_STD_VECTOR(context::RCD);
 
 template <typename Class>
 struct FrameAPIVisitor : bp::def_visitor<FrameAPIVisitor<Class>> {

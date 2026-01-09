@@ -25,9 +25,9 @@ using RigidConstraintData =
     pinocchio::RigidConstraintDataTpl<context::Scalar, 0>;
 
 using RigidConstraintModelVector =
-    PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(RigidConstraintModel);
+    PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintModel);
 using RigidConstraintDataVector =
-    PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR(RigidConstraintData);
+    PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintData);
 
 const PolymorphicMultiBaseVisitor<StageFunction> func_visitor;
 

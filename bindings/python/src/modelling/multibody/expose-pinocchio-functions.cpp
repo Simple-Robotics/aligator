@@ -183,11 +183,12 @@ void exposeFrameFunctions() {
                     "Geometry data struct.");
 }
 
-auto underactuatedConstraintInvDyn_proxy(
-    const PinModel &model, PinData &data, const ConstVectorRef &q,
-    const ConstVectorRef &v, const ConstMatrixRef &actMatrix,
-    const StdVectorEigenAligned<context::RCM> &constraint_models,
-    StdVectorEigenAligned<context::RCD> &constraint_datas) {
+auto underactuatedConstraintInvDyn_proxy(const PinModel &model, PinData &data,
+                                         const ConstVectorRef &q,
+                                         const ConstVectorRef &v,
+                                         const ConstMatrixRef &actMatrix,
+                                         const RCMVector &constraint_models,
+                                         RCDVector &constraint_datas) {
   long nu = actMatrix.cols();
   int d = 0;
   for (size_t k = 0; k < constraint_models.size(); ++k) {

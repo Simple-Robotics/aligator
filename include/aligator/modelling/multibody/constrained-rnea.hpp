@@ -22,10 +22,10 @@ void underactuatedConstrainedInverseDynamics(
     const ModelTpl<Scalar, Options> &model, DataTpl<Scalar, Options> &data,
     const Eigen::MatrixBase<ConfigType> &q, Eigen::MatrixBase<VelType> const &v,
     const Eigen::MatrixBase<MatrixType> &actMatrix,
-    const StdVectorEigenAligned<RigidConstraintModelTpl<Scalar, Options>>
-        &constraint_models,
-    StdVectorEigenAligned<RigidConstraintDataTpl<Scalar, Options>>
-        &constraint_datas,
+    const pinocchio::container::aligned_vector<
+        RigidConstraintModelTpl<Scalar, Options>> &constraint_models,
+    pinocchio::container::aligned_vector<
+        RigidConstraintDataTpl<Scalar, Options>> &constraint_datas,
     const Eigen::MatrixBase<OutType> &res_) {
   namespace pin = pinocchio;
   using MatrixXs = Eigen::Matrix<Scalar, -1, -1>;
@@ -68,8 +68,8 @@ extern template void underactuatedConstrainedInverseDynamics<
     const Eigen::MatrixBase<context::ConstVectorRef> &,
     const Eigen::MatrixBase<context::ConstVectorRef> &,
     const Eigen::MatrixBase<context::ConstMatrixRef> &,
-    const StdVectorEigenAligned<context::RCM> &,
-    StdVectorEigenAligned<context::RCD> &,
+    const PINOCCHIO_ALIGNED_STD_VECTOR(context::RCM) &,
+    PINOCCHIO_ALIGNED_STD_VECTOR(context::RCD) &,
     const Eigen::MatrixBase<context::VectorRef> &);
 #endif
 } // namespace aligator

@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed the missing minus signs in the `LogResidualCost` (https://github.com/Simple-Robotics/aligator/pull/382)
 - Fix build without pinocchio dependency (https://github.com/Simple-Robotics/aligator/pull/384)
 
+### Changed
+
+- Change uses of future-deprecated macro `PINOCCHIO_STD_VECTOR_WITH_EIGEN_ALLOCATOR` to `PINOCCHIO_ALIGNED_STD_VECTOR` (https://github.com/Simple-Robotics/aligator/pull/386)
+
 ## [0.17.1] - 2025-12-01
 
 ## [0.17.0] - 2025-11-21
