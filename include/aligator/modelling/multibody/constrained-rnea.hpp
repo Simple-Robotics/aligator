@@ -16,6 +16,28 @@ using pinocchio::RigidConstraintDataTpl;
 using pinocchio::RigidConstraintModelTpl;
 } // namespace
 
+namespace details {
+template <typename Scalar, int Options>
+int computeRigidConstraintsTotalSize(
+    const pinocchio::container::aligned_vector<
+        RigidConstraintModelTpl<Scalar, Options>> &constraint_models,
+    [[maybe_unused]] const pinocchio::container::aligned_vector<
+        RigidConstraintDataTpl<Scalar, Options>> &constraint_datas) {
+
+  int d = 0;
+  for (size_t k = 0; k < constraint_models.size(); ++k) {
+    const int constraint_size =
+#ifdef ALIGATOR_PINOCCHIO_V4
+        constraint_models[k].residualSize(constraint_datas[k]);
+#else
+        static_cast<int>(constraint_models[k].size());
+#endif
+    d += constraint_size;
+  }
+  return d;
+}
+} // namespace details
+
 template <typename Scalar, typename ConfigType, typename VelType,
           typename MatrixType, typename OutType, int Options>
 void underactuatedConstrainedInverseDynamics(
@@ -34,17 +56,15 @@ void underactuatedConstrainedInverseDynamics(
 
   OutType &res = res_.const_cast_derived();
 
-  long nu = actMatrix.cols();
-  long nv = model.nv;
+  const long nu = actMatrix.cols();
+  const long nv = model.nv;
   assert(nv == actMatrix.rows() && "Actuation matrix dimension inconsistent.");
 
   pin::computeAllTerms(model, data, q, v);
   const auto &nle = data.nle;
 
-  int d = 0;
-  for (size_t k = 0; k < constraint_models.size(); ++k) {
-    d += (int)constraint_models[k].size();
-  }
+  const int d = details::computeRigidConstraintsTotalSize(constraint_models,
+                                                          constraint_datas);
 
   assert(res.size() == nu + d);
   MatrixXs work(nv, nu + d);
@@ -53,10 +73,9 @@ void underactuatedConstrainedInverseDynamics(
   auto JacT = work.rightCols(d);
   pin::getConstraintsJacobian(model, data, constraint_models, constraint_datas,
                               JacT.transpose());
-  JacT = -JacT;
+  JacT *= -1;
 
-  Eigen::ColPivHouseholderQR<MatrixXs> qr(work);
-
+  Eigen::ColPivHouseholderQR<Eigen::Ref<MatrixXs>> qr(work);
   res = qr.solve(nle);
 }
 
