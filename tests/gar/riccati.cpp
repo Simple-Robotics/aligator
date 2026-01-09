@@ -14,6 +14,7 @@
 
 #include "test_util.hpp"
 #include <aligator/fmt-eigen.hpp>
+#include <aligator/fmt.hpp>
 
 using namespace aligator::gar;
 static std::pmr::monotonic_buffer_resource mbr{10 * 1024 * 1048};
@@ -55,14 +56,14 @@ TEST_CASE("riccati_short_horz_pb", "[gar]") {
   prob.g0 = -x0;
   prob.G0.setIdentity();
   ProximalRiccatiSolver solver{prob};
-  fmt::print("Horizon: {:d}\n", prob.horizon());
+  fmt::println("Horizon: {:d}", prob.horizon());
 
   auto bwbeg = std::chrono::system_clock::now();
   CHECK(solver.backward(mueq));
   auto bwend = std::chrono::system_clock::now();
   auto t_bwd =
       std::chrono::duration_cast<std::chrono::microseconds>(bwend - bwbeg);
-  fmt::print("Elapsed time (bwd): {:d}\n", t_bwd.count());
+  fmt::println("Elapsed time (bwd): {:d}", t_bwd.count());
 
   auto [xs, us, vs, lbdas] = lqrInitializeSolution(prob);
   REQUIRE(xs.size() == size_t(prob.horizon()) + 1);
@@ -74,7 +75,7 @@ TEST_CASE("riccati_short_horz_pb", "[gar]") {
   auto fwend = std::chrono::system_clock::now();
   auto t_fwd =
       std::chrono::duration_cast<std::chrono::microseconds>(fwend - fwbeg);
-  fmt::print("Elapsed time (fwd): {:d}\n", t_fwd.count());
+  fmt::println("Elapsed time (fwd): {:d}", t_fwd.count());
 
   // check error
   KktError err = computeKktError(prob, xs, us, vs, lbdas);
@@ -144,7 +145,7 @@ TEST_CASE("riccati_random_large_problem", "[gar]") {
     auto bwend = std::chrono::system_clock::now();
     auto t_bwd =
         std::chrono::duration_cast<std::chrono::microseconds>(bwend - bwbeg);
-    fmt::print("Elapsed time (bwd, dense): {:d}\n", t_bwd.count());
+    fmt::println("Elapsed time (bwd, dense): {:d}", t_bwd.count());
     auto [xsd, usd, vsd, lbdasd] = lqrInitializeSolution(problem);
     denseSolver.forward(xsd, usd, vsd, lbdasd);
     KktError errd = computeKktError(problem, xsd, usd, vsd, lbdasd);

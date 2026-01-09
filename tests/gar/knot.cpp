@@ -1,6 +1,7 @@
 #include "aligator/gar/lqr-problem.hpp"
 #include "aligator/fmt-eigen.hpp"
 #include "aligator/core/mimalloc-resource.hpp"
+#include "aligator/fmt.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 

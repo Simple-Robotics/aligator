@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add Ubuntu 22.04 support with the `BUILD_WITH_UBUNTU_22_COMPATIBILITY` cmake option (https://github.com/Simple-Robotics/aligator/pull/383)
+
 ### Fixed
 
 - Fixed the missing minus signs in the `LogResidualCost` (https://github.com/Simple-Robotics/aligator/pull/382)
