@@ -134,6 +134,10 @@ option(
   "Template instantiation of the main library"
   ON
 )
+option(BUILD_WITH_UBUNTU_22_COMPATIBILITY
+  "Add Ubuntu 22.04 compatibility layer"
+  OFF
+)
 
 # --- OPTIONAL DEPENDENCIES -------------------------
 option(
@@ -196,11 +200,24 @@ ADD_PROJECT_DEPENDENCY(
   PKG_CONFIG_REQUIRES "eigen3 >= 3.3.7"
 )
 ADD_PROJECT_DEPENDENCY(fmt REQUIRED PKG_CONFIG_REQUIRES "fmt >= 10.0.0")
-ADD_PROJECT_DEPENDENCY(
-  mimalloc
-  REQUIRED
-  PKG_CONFIG_REQUIRES "mimalloc >= 2.1.0"
-)
+if(BUILD_WITH_UBUNTU_22_COMPATIBILITY)
+  set(
+    CMAKE_MODULE_PATH
+    ${JRL_CMAKE_MODULES}/find-external/mimalloc
+    ${CMAKE_MODULE_PATH}
+  )
+  ADD_PROJECT_DEPENDENCY(
+    mimalloc
+    REQUIRED
+    FIND_EXTERNAL
+  )
+else()
+  ADD_PROJECT_DEPENDENCY(
+    mimalloc
+    REQUIRED
+    PKG_CONFIG_REQUIRES "mimalloc >= 2.1.0"
+  )
+endif()
 
 if(BUILD_WITH_OPENMP_SUPPORT)
   ADD_PROJECT_DEPENDENCY(OpenMP REQUIRED)
