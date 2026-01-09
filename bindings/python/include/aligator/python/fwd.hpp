@@ -1,5 +1,5 @@
 #pragma once
-#include <pinocchio/fwd.hpp>
+
 #include "aligator/context.hpp"
 
 namespace boost {
