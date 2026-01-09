@@ -38,7 +38,8 @@ using TrajOptProblem = aligator::TrajOptProblemTpl<double>;
 
 enum Support { LEFT, RIGHT, DOUBLE };
 
-void makeTalosReduced(Model &model_complete, Model &model, Eigen::VectorXd &q0);
+void makeTalosReduced(Model &model_complete, Model &model,
+                      Eigen::Ref<Eigen::VectorXd> q0);
 
 TrajOptProblem defineLocomotionProblem(const std::size_t T_ss,
                                        const std::size_t T_ds);
