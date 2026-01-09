@@ -12,48 +12,36 @@ Distributed under the Boost Software License, Version 1.0.
 
 namespace boost {
 
-template<class I>
-inline constexpr span<I>
-make_span(I* f, std::size_t c) noexcept
-{
-    return span<I>(f, c);
+template <class I>
+inline constexpr span<I> make_span(I *f, std::size_t c) noexcept {
+  return span<I>(f, c);
 }
 
-template<class I>
-inline constexpr span<I>
-make_span(I* f, I* l) noexcept
-{
-    return span<I>(f, l);
+template <class I> inline constexpr span<I> make_span(I *f, I *l) noexcept {
+  return span<I>(f, l);
 }
 
-template<class T, std::size_t N>
-inline constexpr span<T, N>
-make_span(T(&a)[N]) noexcept
-{
-    return span<T, N>(a);
+template <class T, std::size_t N>
+inline constexpr span<T, N> make_span(T (&a)[N]) noexcept {
+  return span<T, N>(a);
 }
 
-template<class T, std::size_t N>
-inline constexpr span<T, N>
-make_span(std::array<T, N>& a) noexcept
-{
-    return span<T, N>(a);
+template <class T, std::size_t N>
+inline constexpr span<T, N> make_span(std::array<T, N> &a) noexcept {
+  return span<T, N>(a);
 }
 
-template<class T, std::size_t N>
+template <class T, std::size_t N>
 inline constexpr span<const T, N>
-make_span(const std::array<T, N>& a) noexcept
-{
-    return span<const T, N>(a);
+make_span(const std::array<T, N> &a) noexcept {
+  return span<const T, N>(a);
 }
 
-template<class R>
-inline span<typename detail::span_data<R>::type>
-make_span(R&& r)
-{
-    return span<typename detail::span_data<R>::type>(std::forward<R>(r));
+template <class R>
+inline span<typename detail::span_data<R>::type> make_span(R &&r) {
+  return span<typename detail::span_data<R>::type>(std::forward<R>(r));
 }
 
-} /* boost */
+} // namespace boost
 
 #endif

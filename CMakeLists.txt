@@ -134,7 +134,8 @@ option(
   "Template instantiation of the main library"
   ON
 )
-option(BUILD_WITH_UBUNTU_22_COMPATIBILITY
+option(
+  BUILD_WITH_UBUNTU_22_COMPATIBILITY
   "Add Ubuntu 22.04 compatibility layer"
   OFF
 )
@@ -206,11 +207,7 @@ if(BUILD_WITH_UBUNTU_22_COMPATIBILITY)
     ${JRL_CMAKE_MODULES}/find-external/mimalloc
     ${CMAKE_MODULE_PATH}
   )
-  ADD_PROJECT_DEPENDENCY(
-    mimalloc
-    REQUIRED
-    FIND_EXTERNAL
-  )
+  ADD_PROJECT_DEPENDENCY(mimalloc REQUIRED FIND_EXTERNAL)
 else()
   ADD_PROJECT_DEPENDENCY(
     mimalloc
