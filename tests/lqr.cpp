@@ -3,6 +3,7 @@
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
 
 #include <aligator/fmt-eigen.hpp>
+#include <aligator/fmt.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <random>
@@ -70,5 +71,5 @@ TEST_CASE("lqr_proxddp") {
   REQUIRE(conv);
   REQUIRE(ddp.results_.num_iters == 1);
 
-  fmt::print("{}\n", ddp.results_);
+  fmt::println("{}", ddp.results_);
 }
