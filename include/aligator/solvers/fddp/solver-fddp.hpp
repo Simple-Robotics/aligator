@@ -171,7 +171,7 @@ public:
   }
 
   const CallbackMap &getCallbacks() const { return callbacks_; }
-  
+
   void removeCallback(std::string_view name) {
 #if defined(BOOST_VERSION) && BOOST_VERSION >= 107500
     callbacks_.erase(name);

@@ -7,9 +7,7 @@ Distributed under the Boost Software License, Version 1.0.
 */
 #undef BOOST_CORE_DETAIL_ASSERT
 
-#if !defined(__clang__) && \
-    !defined(__INTEL_COMPILER) && \
-    defined(__GNUC__) && \
+#if !defined(__clang__) && !defined(__INTEL_COMPILER) && defined(__GNUC__) &&  \
     (__GNUC__ < 5)
 #define BOOST_CORE_DETAIL_ASSERT(expr) void(0)
 #else
