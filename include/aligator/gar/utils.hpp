@@ -2,12 +2,8 @@
 #pragma once
 
 #include "lqr-problem.hpp"
-#include <boost/version.hpp>
-#if defined(BOOST_VERSION) && BOOST_VERSION >= 107600
-#include <boost/core/span.hpp>
-#else
-#include "aligator/compat/boost/core/span.hpp"
-#endif
+#include "aligator/span.hpp"
+
 #include <Eigen/SparseCore>
 
 namespace aligator::gar {
