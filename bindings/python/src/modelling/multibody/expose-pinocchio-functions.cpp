@@ -204,8 +204,7 @@ auto underactuatedConstraintInvDyn_proxy(const PinModel &model, PinData &data,
   underactuatedConstrainedInverseDynamics(
       model, data, q, v, actMatrix, constraint_models, constraint_datas, out);
 
-  return bp::make_tuple((context::VectorXs)out.head(nu),
-                        (context::VectorXs)out.tail(d));
+  return bp::make_tuple(out.head(nu).eval(), out.tail(d).eval());
 }
 
 void exposePinocchioFunctions() {
