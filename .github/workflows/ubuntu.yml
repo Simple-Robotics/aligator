@@ -33,6 +33,11 @@ jobs:
       fail-fast: false
       matrix:
         container: ['ubuntu:22.04', 'ubuntu:24.04']
+        include:
+          - ubuntu_22_compatibility: FALSE
+          - container: 'ubuntu:22.04'
+            ubuntu_22_compatibility: TRUE
+
     env:
       CCACHE_BASEDIR: ${GITHUB_WORKSPACE}
       CCACHE_DIR: ${GITHUB_WORKSPACE}/.ccache
@@ -76,6 +81,7 @@ jobs:
                                    libfmt-dev \
                                    libmimalloc-dev \
                                    python3-numpy \
+                                   python3-pytest \
                                    robotpkg-example-robot-data \
                                    robotpkg-py${PYTHON3_VERSION}-example-robot-data \
                                    robotpkg-py${PYTHON3_VERSION}-eigenpy \
@@ -110,7 +116,7 @@ jobs:
             -DBUILD_EXAMPLES=ON \
             -DGENERATE_PYTHON_STUBS=ON \
             -DALIGATOR_TRACY_ENABLE=OFF \
-            -DBUILD_WITH_UBUNTU_22_COMPATIBILITY=ON
+            -DBUILD_WITH_UBUNTU_22_COMPATIBILITY=${{ ubuntu_22_compatibility }}
           ninja
           ctest
 
