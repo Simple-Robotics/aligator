@@ -16,7 +16,7 @@ int main() {
   solver.setup(problem);
   solver.run(problem);
 
-  fmt::print("{}\n", fmt::streamed(solver.results_));
+  fmt::print("{}\n", solver.results_);
 
   return 0;
 }

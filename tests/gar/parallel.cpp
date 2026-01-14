@@ -9,6 +9,7 @@
 #include "aligator/gar/parallel-solver.hpp"
 #include "aligator/gar/proximal-riccati.hpp"
 #include "aligator/gar/utils.hpp"
+#include "aligator/fmt.hpp"
 #include <Eigen/Cholesky>
 
 using namespace aligator::gar;
@@ -116,8 +117,8 @@ TEST_CASE("parallel_manual", "[gar]") {
     thGrad = subSolve1.thGrad + subSolve2.thGrad;
     hessChol.compute(thHess);
     thtopt = hessChol.solve(-thGrad);
-    fmt::print("Theta system err = {:.3e}\n",
-               infty_norm(thHess * thtopt + thGrad));
+    fmt::println("Theta system err = {:.3e}",
+                 infty_norm(thHess * thtopt + thGrad));
   }
   {
     subSolve1.forward(xs1, us1, vs1, lbdas1, thtopt);
@@ -228,8 +229,8 @@ TEST_CASE("parallel_solver_class", "[gar]") {
   }
   double xerr = infty_norm(xerrs);
   double lerr = infty_norm(lerrs);
-  fmt::print("xerrs = {}\n", xerr);
-  fmt::print("lerrs = {}\n", lerr);
+  fmt::println("xerrs = {}", xerr);
+  fmt::println("lerrs = {}", lerr);
   CHECK(xerr <= TOL);
   CHECK(lerr <= TOL);
 

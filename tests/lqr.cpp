@@ -3,6 +3,7 @@
 #include "aligator/solvers/proxddp/solver-proxddp.hpp"
 
 #include <aligator/fmt-eigen.hpp>
+#include <aligator/fmt.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <random>

@@ -4,9 +4,8 @@
 
 #include "aligator/core/bunchkaufman.hpp"
 #include "aligator/core/blk-matrix.hpp"
+#include "aligator/utils/span.hpp"
 #include "lqr-problem.hpp"
-
-#include <boost/core/span.hpp>
 
 namespace aligator::gar {
 

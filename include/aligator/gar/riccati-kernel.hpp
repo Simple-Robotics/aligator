@@ -4,9 +4,9 @@
 
 #include "aligator/core/bunchkaufman.hpp"
 #include "aligator/core/blk-matrix.hpp"
+#include "aligator/utils/make_span.hpp"
 #include "lqr-problem.hpp"
 
-#include <boost/core/make_span.hpp>
 #include <optional>
 
 namespace aligator {

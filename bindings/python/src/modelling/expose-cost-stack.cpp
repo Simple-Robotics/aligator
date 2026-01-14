@@ -59,7 +59,7 @@ void exposeCostStack() {
             .def(
                 "getComponent",
                 +[](CostStack &self, const CostKey &key) -> PolyCost & {
-                  if (!self.components_.contains(key)) {
+                  if (self.components_.find(key) == self.components_.end()) {
                     key_err_python_manager(key);
                   }
                   CostItem &c = self.components_.at(key);

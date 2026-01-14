@@ -1,0 +1,125 @@
+name: CI - Ubuntu
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'doc/**'
+      - 'scripts/**'
+      - '.gitlab-ci.yml'
+      - '.gitignore'
+      - '**.md'
+      - 'CITATION.cff'
+      - 'CITATIONS.bib'
+  pull_request:
+    paths-ignore:
+      - 'doc/'
+      - 'scripts/'
+      - '.gitlab-ci.yml'
+      - '.gitignore'
+      - '**.md'
+      - 'CITATION.cff'
+      - 'CITATIONS.bib'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
+    strategy:
+      fail-fast: false
+      matrix:
+        container: ['ubuntu:22.04', 'ubuntu:24.04']
+        include:
+          - ubuntu_22_compatibility: FALSE
+          - container: 'ubuntu:22.04'
+            ubuntu_22_compatibility: TRUE
+
+    env:
+      CCACHE_BASEDIR: ${GITHUB_WORKSPACE}
+      CCACHE_DIR: ${GITHUB_WORKSPACE}/.ccache
+      CCACHE_COMPRESS: true
+      CCACHE_COMPRESSLEVEL: 6
+
+    steps:
+      - name: Setup Container
+        run: |
+          apt-get -qq update
+          DEBIAN_FRONTEND="noninteractive" apt-get -qq install -y lsb-release gnupg2 cmake git python3
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Setup ccache
+        uses: actions/cache@v5
+        with:
+          path: .ccache
+          save-always: true
+          key: ccache-ubuntu-${{ matrix.container }}-${{ github.sha }}
+          restore-keys: ccache-ubuntu-${{ matrix.container }}-
+
+      - name: Register robotpkg
+        run: |
+          sh -c "echo \"deb [arch=amd64] http://robotpkg.openrobots.org/packages/debian/pub $(lsb_release -cs) robotpkg\" >> /etc/apt/sources.list "
+          apt-key adv --fetch-keys http://robotpkg.openrobots.org/packages/debian/robotpkg.key
+
+      - name: Set and install dependencies
+        run: |
+          export PYTHON3_VERSION=$(python3 -c "import sys; print(str(sys.version_info.major)+str(sys.version_info.minor))")
+          export APT_DEPENDENCIES="doxygen \
+                                   ninja-build \
+                                   ccache \
+                                   libomp-dev \
+                                   libomp5 \
+                                   libboost-all-dev \
+                                   libeigen3-dev \
+                                   libfmt-dev \
+                                   libmimalloc-dev \
+                                   python3-numpy \
+                                   python3-pytest \
+                                   robotpkg-example-robot-data \
+                                   robotpkg-py${PYTHON3_VERSION}-example-robot-data \
+                                   robotpkg-py${PYTHON3_VERSION}-eigenpy \
+                                   robotpkg-py${PYTHON3_VERSION}-pinocchio"
+          echo $APT_DEPENDENCIES
+
+          apt-get update -qq
+          DEBIAN_FRONTEND="noninteractive" apt-get install -qq ${APT_DEPENDENCIES}
+
+      - name: Clear ccache statistics
+        run: |
+          ccache -z
+
+      - name: Build and test
+        run: |
+          export PATH=$PATH:/opt/openrobots/bin
+          export PYTHON3_DOT_VERSION=$(python3 -c "import sys; print(str(sys.version_info.major)+'.'+str(sys.version_info.minor))")
+          export PYTHONPATH=${PYTHONPATH}:/opt/openrobots/lib/python$PYTHON3_DOT_VERSION/site-packages
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/openrobots/lib:/usr/local/lib:/usr/lib:/usr/lib/x86_64-linux-gnu
+          export CMAKE_PREFIX_PATH=/opt/openrobots/lib
+
+          mkdir build
+          cd build
+          cmake .. \
+            -GNinja \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DBUILD_WITH_PINOCCHIO_SUPPORT=ON \
+            -DBUILD_CROCODDYL_COMPAT=OFF \
+            -DBUILD_WITH_OPENMP_SUPPORT=ON \
+            -DBUILD_BENCHMARKS=OFF \
+            -DBUILD_EXAMPLES=ON \
+            -DGENERATE_PYTHON_STUBS=ON \
+            -DALIGATOR_TRACY_ENABLE=OFF \
+            -DBUILD_WITH_UBUNTU_22_COMPATIBILITY=${{ ubuntu_22_compatibility }}
+          ninja
+          ctest
+
+      - name: Display ccache statistics
+        run: |
+          ccache -sv
