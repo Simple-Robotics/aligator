@@ -4,7 +4,7 @@
 
 #include "aligator/core/bunchkaufman.hpp"
 #include "aligator/core/blk-matrix.hpp"
-#include "aligator/make_span.hpp"
+#include "aligator/utils/make_span.hpp"
 #include "lqr-problem.hpp"
 
 #include <optional>

@@ -4,7 +4,7 @@
 
 #include "aligator/core/constraint-set.hpp"
 #include "aligator/third-party/polymorphic_cxx14.h"
-#include "aligator/span.hpp"
+#include "aligator/utils/span.hpp"
 
 namespace aligator {
 template <typename Derived>

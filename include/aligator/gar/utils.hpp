@@ -2,7 +2,7 @@
 #pragma once
 
 #include "lqr-problem.hpp"
-#include "aligator/span.hpp"
+#include "aligator/utils/span.hpp"
 
 #include <Eigen/SparseCore>
 
