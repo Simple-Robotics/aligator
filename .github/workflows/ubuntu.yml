@@ -144,7 +144,7 @@ jobs:
             -DALIGATOR_TRACY_ENABLE=OFF \
             -DBUILD_WITH_UBUNTU_22_COMPATIBILITY=${{ matrix.ubuntu_22_compatibility }}
           ninja
-          ctest
+          ctest --output-on-failure
 
       - name: Display ccache statistics
         run: |
