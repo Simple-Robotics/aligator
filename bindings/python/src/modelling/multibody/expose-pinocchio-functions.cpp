@@ -1,6 +1,13 @@
 /// @file
 /// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
 #ifdef ALIGATOR_WITH_PINOCCHIO
+
+// Boost.Python 1.74 include manually mpl/vector/vector20.hpp
+// that prevent us to define mpl::list and mpl::vector with
+// the right size.
+// To avoid this issue this header should be included first.
+#include <pinocchio/fwd.hpp>
+
 #include "aligator/fwd.hpp"
 #include "aligator/python/modelling/multibody-utils.hpp"
 
