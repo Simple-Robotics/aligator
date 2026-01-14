@@ -116,7 +116,7 @@ jobs:
             -DBUILD_EXAMPLES=ON \
             -DGENERATE_PYTHON_STUBS=ON \
             -DALIGATOR_TRACY_ENABLE=OFF \
-            -DBUILD_WITH_UBUNTU_22_COMPATIBILITY=${{ ubuntu_22_compatibility }}
+            -DBUILD_WITH_UBUNTU_22_COMPATIBILITY=${{ matrix.ubuntu_22_compatibility }}
           ninja
           ctest
 
