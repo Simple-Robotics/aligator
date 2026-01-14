@@ -8,8 +8,8 @@ Distributed under the Boost Software License, Version 1.0.
 #ifndef BOOST_CORE_SPAN_HPP
 #define BOOST_CORE_SPAN_HPP
 
-#include "aligator/compat/boost/core/detail/assert.hpp"
-#include "aligator/compat/boost/core/data.hpp"
+#include "aligator/third-party/boost/core/detail/assert.hpp"
+#include "aligator/third-party/boost/core/data.hpp"
 
 #include <array>
 #include <iterator>

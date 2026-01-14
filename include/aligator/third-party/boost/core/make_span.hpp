@@ -8,7 +8,7 @@ Distributed under the Boost Software License, Version 1.0.
 #ifndef BOOST_CORE_MAKE_SPAN_HPP
 #define BOOST_CORE_MAKE_SPAN_HPP
 
-#include "aligator/compat/boost/core/span.hpp"
+#include "aligator/third-party/boost/core/span.hpp"
 
 namespace boost {
 

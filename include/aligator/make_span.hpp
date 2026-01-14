@@ -6,5 +6,5 @@
 #if defined(BOOST_VERSION) && BOOST_VERSION >= 107600
 #include <boost/core/make_span.hpp>
 #else
-#include "aligator/compat/boost/core/make_span.hpp"
+#include "aligator/third-party/boost/core/make_span.hpp"
 #endif

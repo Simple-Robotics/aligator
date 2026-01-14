@@ -343,7 +343,7 @@ if(BUILD_WITH_UBUNTU_22_COMPATIBILITY)
   file(
     GLOB_RECURSE LIB_BOOST_SPAN_HEADERS
     CONFIGURE_DEPENDS
-    ${PROJECT_SOURCE_DIR}/include/aligator/compat/boost/core/*.hpp
+    ${PROJECT_SOURCE_DIR}/include/aligator/third-party/boost/core/*.hpp
   )
   list(APPEND LIB_HEADERS ${LIB_BOOST_SPAN_HEADERS})
 endif()
