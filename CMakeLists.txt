@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
+# Copyright (C) 2022-2024 LAAS-CNRS, 2022-2026 INRIA
 #
 
 cmake_minimum_required(VERSION 3.22)
