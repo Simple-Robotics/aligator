@@ -59,7 +59,6 @@ jobs:
         uses: actions/cache@v5
         with:
           path: .ccache
-          save-always: true
           key: ccache-ubuntu-${{ matrix.container }}-${{ github.sha }}
           restore-keys: ccache-ubuntu-${{ matrix.container }}-
 
@@ -68,7 +67,8 @@ jobs:
           sh -c "echo \"deb [arch=amd64] http://robotpkg.openrobots.org/packages/debian/pub $(lsb_release -cs) robotpkg\" >> /etc/apt/sources.list "
           apt-key adv --fetch-keys http://robotpkg.openrobots.org/packages/debian/robotpkg.key
 
-      - name: Set and install dependencies
+      - name: Set and install dependencies [Ubuntu 22.04]
+        if: contains(matrix.container, '22.04')
         run: |
           export PYTHON3_VERSION=$(python3 -c "import sys; print(str(sys.version_info.major)+str(sys.version_info.minor))")
           export APT_DEPENDENCIES="doxygen \
@@ -82,6 +82,33 @@ jobs:
                                    libmimalloc-dev \
                                    python3-numpy \
                                    python3-pytest \
+                                   python3-matplotlib \
+                                   robotpkg-example-robot-data \
+                                   robotpkg-py${PYTHON3_VERSION}-example-robot-data \
+                                   robotpkg-py${PYTHON3_VERSION}-eigenpy \
+                                   robotpkg-py${PYTHON3_VERSION}-pinocchio"
+          echo $APT_DEPENDENCIES
+
+          apt-get update -qq
+          DEBIAN_FRONTEND="noninteractive" apt-get install -qq ${APT_DEPENDENCIES}
+
+      - name: Set and install dependencies [Ubuntu 24.04]
+        if: contains(matrix.container, '24.04')
+        run: |
+          export PYTHON3_VERSION=$(python3 -c "import sys; print(str(sys.version_info.major)+str(sys.version_info.minor))")
+          export APT_DEPENDENCIES="doxygen \
+                                   ninja-build \
+                                   ccache \
+                                   libomp-dev \
+                                   libomp5 \
+                                   libboost-all-dev \
+                                   libeigen3-dev \
+                                   libfmt-dev \
+                                   libmimalloc-dev \
+                                   catch2 \
+                                   python3-numpy \
+                                   python3-pytest \
+                                   python3-matplotlib \
                                    robotpkg-example-robot-data \
                                    robotpkg-py${PYTHON3_VERSION}-example-robot-data \
                                    robotpkg-py${PYTHON3_VERSION}-eigenpy \
@@ -116,10 +143,24 @@ jobs:
             -DBUILD_EXAMPLES=ON \
             -DGENERATE_PYTHON_STUBS=ON \
             -DALIGATOR_TRACY_ENABLE=OFF \
-            -DBUILD_WITH_UBUNTU_22_COMPATIBILITY=${{ ubuntu_22_compatibility }}
+            -DBUILD_WITH_UBUNTU_22_COMPATIBILITY=${{ matrix.ubuntu_22_compatibility }}
           ninja
-          ctest
+          ctest --output-on-failure
 
       - name: Display ccache statistics
         run: |
           ccache -sv
+
+  check:
+    name: check-ubuntu
+
+    needs:
+    - ubuntu
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Decide whether the needed jobs succeeded or failed
+      uses: re-actors/alls-green@release/v1
+      with:
+        jobs: ${{ toJSON(needs) }}
