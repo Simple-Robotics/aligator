@@ -1,6 +1,7 @@
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, 2022-2026 INRIA
 #pragma once
 
+#include "aligator/context.hpp"
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
 #include "aligator/core/vector-space.hpp"
 
@@ -63,11 +64,11 @@ template <typename _Scalar> struct LinearODETpl : ODEAbstractTpl<_Scalar> {
   }
 };
 
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct LinearODETpl<context::Scalar>;
+#endif
+
 } // namespace dynamics
 } // namespace aligator
 
 #include "aligator/modelling/dynamics/linear-ode.hxx"
-
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/modelling/dynamics/linear-ode.txx"
-#endif

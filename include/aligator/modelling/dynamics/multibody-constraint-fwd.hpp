@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2026 INRIA
 #pragma once
 
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
@@ -78,15 +78,15 @@ struct MultibodyConstraintFwdDataTpl : ContinuousDynamicsDataTpl<Scalar> {
   MatrixXs dtau_du_;
   RigidConstraintDataVector constraint_datas_;
   pinocchio::ProximalSettingsTpl<Scalar> settings;
-  /// shared_ptr to the underlying pinocchio::DataTpl object.
   PinDataType pin_data_;
-  MultibodyConstraintFwdDataTpl(
+  explicit MultibodyConstraintFwdDataTpl(
       const MultibodyConstraintFwdDynamicsTpl<Scalar> &cont_dyn);
 };
 
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct MultibodyConstraintFwdDynamicsTpl<context::Scalar>;
+extern template struct MultibodyConstraintFwdDataTpl<context::Scalar>;
+#endif
+
 } // namespace dynamics
 } // namespace aligator
-
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/modelling/dynamics/multibody-constraint-fwd.txx"
-#endif
