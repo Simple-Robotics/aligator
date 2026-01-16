@@ -1,6 +1,6 @@
 /// @file solver-proxddp.hxx
 /// @brief  Implementations for the trajectory optimization algorithm.
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2026 INRIA
 #pragma once
 
 #include "solver-proxddp.hpp"
@@ -199,6 +199,7 @@ void SolverProxDDPTpl<Scalar>::setup(const Problem &problem) {
 template <typename Scalar>
 void SolverProxDDPTpl<Scalar>::cycleProblem(const Problem &problem,
                                             const shared_ptr<StageData> &data) {
+  ALIGATOR_TRACY_ZONE_SCOPED;
   results_.cycleAppend(problem, problem.getInitState());
   const auto nsteps = workspace_.nsteps;
   workspace_.cycleAppend(problem, data);

@@ -244,6 +244,7 @@ bool ParallelRiccatiSolver<Scalar>::forward(
 
 template <typename Scalar>
 void ParallelRiccatiSolver<Scalar>::cycleAppend(const KnotType &) {
+  ALIGATOR_TRACY_ZONE_SCOPED;
   datas.clear();
   condensedKktSystem.subdiagonal.clear();
   condensedKktSystem.diagonal.clear();

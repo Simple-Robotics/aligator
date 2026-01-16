@@ -1,9 +1,11 @@
 /// @file
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2026 INRIA
 /// @brief Implementation file. Include when template definitions required.
 #pragma once
 
 #include "results.hpp"
+
+#include "aligator/tracy.hpp"
 #include "aligator/core/traj-opt-problem.hpp"
 #include "aligator/utils/mpc-util.hpp"
 
@@ -41,6 +43,7 @@ ResultsTpl<Scalar>::ResultsTpl(const TrajOptProblemTpl<Scalar> &problem)
 template <typename Scalar>
 void ResultsTpl<Scalar>::cycleAppend(const TrajOptProblemTpl<Scalar> &problem,
                                      const ConstVectorRef &x0) {
+  ALIGATOR_TRACY_ZONE_SCOPED;
   xs.front() = xs.back();
   us.front() = us.back();
 

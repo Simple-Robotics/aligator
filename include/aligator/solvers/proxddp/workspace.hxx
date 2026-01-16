@@ -1,9 +1,11 @@
 /// @file
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2026 INRIA
 /// @brief Implementation file, to be included when necessary.
 #pragma once
 
 #include "workspace.hpp"
+
+#include "aligator/tracy.hpp"
 #include "aligator/core/traj-opt-problem.hpp"
 #include "aligator/gar/lqr-problem.hpp"
 #include "aligator/gar/utils.hpp"
@@ -94,6 +96,7 @@ WorkspaceTpl<Scalar>::WorkspaceTpl(const TrajOptProblemTpl<Scalar> &problem,
 template <typename Scalar>
 void WorkspaceTpl<Scalar>::cycleAppend(const TrajOptProblemTpl<Scalar> &problem,
                                        shared_ptr<StageDataTpl<Scalar>> data) {
+  ALIGATOR_TRACY_ZONE_SCOPED;
   rotate_vec_left(problem_data.stage_data);
   problem_data.stage_data[nsteps - 1] = data;
 
