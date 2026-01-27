@@ -15,15 +15,13 @@ x1 = space.neutral()
 
 
 class TwistModelExplicit(aligator.dynamics.ExplicitDynamicsModel):
-    def __init__(self, dt: float, B: np.ndarray = None):
-        if B is None:
-            B = np.eye(nu)
-        self.B = B
+    def __init__(self, dt: float):
+        self.B = np.eye(nu)
         self.dt = dt
         super().__init__(space, nu)
 
     def __getinitargs__(self):
-        return (self.dt, self.B)
+        return (self.dt,)
 
     def forward(self, x, u, data: aligator.dynamics.ExplicitDynamicsData):
         assert data.good

@@ -1,12 +1,3 @@
-"""
-
-You can run this file using pytest:
-
-    pytest examples/se2_twist.py -s
-
-Or also as a module.
-"""
-
 import aligator
 import numpy as np
 
@@ -60,6 +51,7 @@ class TestClass:
         us_i = [np.ones(ep.dyn_model.nu) * 0.1 for _ in range(nsteps)]
         xs_i = aligator.rollout(ep.dyn_model, ep.x0, us_i).tolist()
         dd = ep.dyn_model.createData()
+        assert isinstance(dd, ep.TwistData)
         ep.dyn_model.forward(ep.x0, us_i[0], dd)
         assert np.allclose(dd.xnext, xs_i[1])
 
