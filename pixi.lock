@@ -5571,7 +5571,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/lz4-c-1.10.0-h5888daf_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/lzo-2.10-h280c20c_1002.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/metis-5.1.0-hd0bcaf9_1007.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/mimalloc-3.2.6-h54a6638_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/mimalloc-3.2.7-h54a6638_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/mumps-include-5.7.3-h82cca05_10.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/mumps-seq-5.7.3-h27a6a8b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ncurses-6.5-h2d0b736_3.conda
@@ -5678,7 +5678,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libzlib-1.3.1-hd23fc13_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-openmp-21.1.8-h472b3d1_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/metis-5.1.0-h3023b02_1007.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/mimalloc-3.2.6-h06076ce_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/mimalloc-3.2.7-h06076ce_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/mumps-include-5.8.1-hc797fd9_4.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/mumps-seq-5.8.1-h28c60b8_4.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/ncurses-6.5-h0622a9a_3.conda
@@ -5778,7 +5778,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libzlib-1.3.1-h8359307_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-openmp-21.1.8-h4a912ad_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/metis-5.1.0-h15f6cfe_1007.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/mimalloc-3.2.6-h784d473_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/mimalloc-3.2.7-h784d473_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/mumps-include-5.8.1-h2ca763e_4.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/mumps-seq-5.8.1-he6ca4b8_4.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/ncurses-6.5-h5e97a16_3.conda
@@ -6357,7 +6357,7 @@ packages:
   timestamp: 1758743294412
 - conda: .
   name: aligator
-  version: 0.17.1
+  version: 0.18.0
   build: h0dc7051_0
   subdir: osx-64
   variants:
@@ -6370,11 +6370,11 @@ packages:
   - python_abi 3.13.* *_cp313
   - eigenpy >=3.12.0,<3.12.1.0a0
   - fmt >=12.1.0,<12.2.0a0
-  - mimalloc >=3.2.6,<3.2.7.0a0
+  - mimalloc >=3.2.7,<3.2.8.0a0
   - libpinocchio >=3.8.0,<3.8.1.0a0
 - conda: .
   name: aligator
-  version: 0.17.1
+  version: 0.18.0
   build: h60d57d3_0
   subdir: osx-arm64
   variants:
@@ -6387,11 +6387,11 @@ packages:
   - libboost >=1.88.0,<1.89.0a0
   - python_abi 3.14.* *_cp314
   - fmt >=12.1.0,<12.2.0a0
-  - mimalloc >=3.2.6,<3.2.7.0a0
+  - mimalloc >=3.2.7,<3.2.8.0a0
   - libpinocchio >=3.8.0,<3.8.1.0a0
 - conda: .
   name: aligator
-  version: 0.17.1
+  version: 0.18.0
   build: hb0f4dca_0
   subdir: linux-64
   variants:
@@ -6406,7 +6406,7 @@ packages:
   - libboost >=1.88.0,<1.89.0a0
   - python_abi 3.14.* *_cp314
   - fmt >=12.1.0,<12.2.0a0
-  - mimalloc >=3.2.6,<3.2.7.0a0
+  - mimalloc >=3.2.7,<3.2.8.0a0
   - libpinocchio >=3.8.0,<3.8.1.0a0
 - conda: https://conda.anaconda.org/conda-forge/linux-64/ampl-asl-1.0.0-h5888daf_2.conda
   sha256: c5c1057778bec78e07a4a8f122c3659767817fc0a9fa034724ff931ad90af57b
@@ -12877,6 +12877,17 @@ packages:
   license_family: MIT
   size: 118386
   timestamp: 1767967130935
+- conda: https://conda.anaconda.org/conda-forge/linux-64/mimalloc-3.2.7-h54a6638_0.conda
+  sha256: ea4739f6dc84698d9a73c98ce4fc93a2fee7aa0d775488515d10ba96c91b2f0a
+  md5: 3d876b1af30e71fedad48e29f2361f62
+  depends:
+  - libstdcxx >=14
+  - libgcc >=14
+  - __glibc >=2.17,<3.0.a0
+  license: MIT
+  license_family: MIT
+  size: 117915
+  timestamp: 1768632786645
 - conda: https://conda.anaconda.org/conda-forge/osx-64/mimalloc-3.2.6-h06076ce_0.conda
   sha256: af6ac347759a4991b0edbdcd77cf1336d0ece384acc328870623963fd2c4c778
   md5: 7e6712f3d61758ac59c80413a4fd57cf
@@ -12887,6 +12898,16 @@ packages:
   license_family: MIT
   size: 104139
   timestamp: 1767967163977
+- conda: https://conda.anaconda.org/conda-forge/osx-64/mimalloc-3.2.7-h06076ce_0.conda
+  sha256: da884b10d259f81581d890c46dea739e5231429bd184f770a7ca10c1ed7b2639
+  md5: 2f380c64ecd530c8f5bbaa16a3b83536
+  depends:
+  - libcxx >=19
+  - __osx >=10.13
+  license: MIT
+  license_family: MIT
+  size: 104572
+  timestamp: 1768632853627
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/mimalloc-3.2.6-h784d473_0.conda
   sha256: 4089c0a24da0d0f8b75c8af9b998ddada75367bde41b740cf65721d4ee83ffbf
   md5: 75ffa13c58e9b0890d5f396fd9bff3fc
@@ -12897,6 +12918,16 @@ packages:
   license_family: MIT
   size: 97407
   timestamp: 1767967202592
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/mimalloc-3.2.7-h784d473_0.conda
+  sha256: 8eea72994141aded813e5ccad854344fc25ce91e6081c62598cd9c2811d18184
+  md5: d33b5513fe4d3d19eb3c058d8afda7f2
+  depends:
+  - __osx >=11.0
+  - libcxx >=19
+  license: MIT
+  license_family: MIT
+  size: 97440
+  timestamp: 1768632799723
 - conda: https://conda.anaconda.org/conda-forge/linux-64/mumps-include-5.7.3-h82cca05_10.conda
   sha256: c723d6e331444411db0a871958fc45621758595d12b4d6561fa20324535ce67a
   md5: d6c7d8811686ed912ed4317831dd8c44
