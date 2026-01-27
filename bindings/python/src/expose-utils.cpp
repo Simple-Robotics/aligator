@@ -10,20 +10,20 @@ void exposeUtils() {
   using ExplicitDynamics = ExplicitDynamicsModelTpl<context::Scalar>;
 
   using rollout_generic_t = context::VectorOfVectors (*)(
-      const DynamicsType &, const context::VectorXs &,
+      const DynamicsType &, const context::ConstVectorRef &,
       const context::VectorOfVectors &);
 
   using rollout_vec_generic_t = context::VectorOfVectors (*)(
       const std::vector<xyz::polymorphic<DynamicsType>> &,
-      const context::VectorXs &, const context::VectorOfVectors &);
+      const context::ConstVectorRef &, const context::VectorOfVectors &);
 
   using rollout_explicit_t = context::VectorOfVectors (*)(
-      const ExplicitDynamics &, const context::VectorXs &,
+      const ExplicitDynamics &, const context::ConstVectorRef &,
       const context::VectorOfVectors &);
 
   using rollout_vec_explicit_t = context::VectorOfVectors (*)(
       const std::vector<xyz::polymorphic<ExplicitDynamics>> &,
-      const context::VectorXs &, const context::VectorOfVectors &);
+      const context::ConstVectorRef &, const context::VectorOfVectors &);
 
   bp::def<rollout_generic_t>(
       "rollout_implicit", &aligator::rollout, ("dyn_model"_a, "x0", "us"),

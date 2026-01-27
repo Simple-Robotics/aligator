@@ -1,5 +1,5 @@
 /// @file rollout.hpp
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2026 INRIA
 #pragma once
 
 #include "aligator/utils/forward-dyn.hpp"
@@ -10,7 +10,7 @@ namespace aligator {
 template <typename Scalar>
 typename math_types<Scalar>::VectorOfVectors rollout(
     const std::vector<xyz::polymorphic<DynamicsModelTpl<Scalar>>> &dyn_models,
-    const typename math_types<Scalar>::VectorXs &x0,
+    const typename math_types<Scalar>::ConstVectorRef &x0,
     const typename math_types<Scalar>::VectorOfVectors &us,
     typename math_types<Scalar>::VectorOfVectors &xout) {
   using Data = DynamicsDataTpl<Scalar>;
@@ -35,7 +35,7 @@ typename math_types<Scalar>::VectorOfVectors rollout(
 template <typename Scalar>
 typename math_types<Scalar>::VectorOfVectors
 rollout(const DynamicsModelTpl<Scalar> &dyn_model,
-        const typename math_types<Scalar>::VectorXs &x0,
+        const typename math_types<Scalar>::ConstVectorRef &x0,
         const typename math_types<Scalar>::VectorOfVectors &us) {
   using VectorXs = typename math_types<Scalar>::VectorXs;
 
@@ -58,7 +58,7 @@ template <typename Scalar>
 void rollout(
     const std::vector<xyz::polymorphic<ExplicitDynamicsModelTpl<Scalar>>>
         &dyn_models,
-    const typename math_types<Scalar>::VectorXs &x0,
+    const typename math_types<Scalar>::ConstVectorRef &x0,
     const typename math_types<Scalar>::VectorOfVectors &us,
     typename math_types<Scalar>::VectorOfVectors &xout) {
   using DataType = ExplicitDynamicsDataTpl<Scalar>;
@@ -82,7 +82,7 @@ void rollout(
 /// @copybrief rollout() Rolls out a single ExplicitDynamicsModelTpl.
 template <typename Scalar>
 void rollout(const ExplicitDynamicsModelTpl<Scalar> &dyn_model,
-             const typename math_types<Scalar>::VectorXs &x0,
+             const typename math_types<Scalar>::ConstVectorRef &x0,
              const typename math_types<Scalar>::VectorOfVectors &us,
              typename math_types<Scalar>::VectorOfVectors &xout) {
   using DataType = ExplicitDynamicsDataTpl<Scalar>;
@@ -101,7 +101,8 @@ void rollout(const ExplicitDynamicsModelTpl<Scalar> &dyn_model,
 /// @copybrief rollout(). This variant allocates the output and returns it.
 template <template <typename> class C, typename Scalar>
 typename math_types<Scalar>::VectorOfVectors
-rollout(const C<Scalar> &dms, const typename math_types<Scalar>::VectorXs &x0,
+rollout(const C<Scalar> &dms,
+        const typename math_types<Scalar>::ConstVectorRef &x0,
         const typename math_types<Scalar>::VectorOfVectors &us) {
   const std::size_t N = us.size();
   typename math_types<Scalar>::VectorOfVectors xout;
@@ -114,7 +115,7 @@ rollout(const C<Scalar> &dms, const typename math_types<Scalar>::VectorXs &x0,
 template <template <typename> class C, typename Scalar>
 typename math_types<Scalar>::VectorOfVectors
 rollout(const std::vector<xyz::polymorphic<C<Scalar>>> &dms,
-        const typename math_types<Scalar>::VectorXs &x0,
+        const typename math_types<Scalar>::ConstVectorRef &x0,
         const typename math_types<Scalar>::VectorOfVectors &us) {
   const std::size_t N = us.size();
   typename math_types<Scalar>::VectorOfVectors xout;
