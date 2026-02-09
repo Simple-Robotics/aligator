@@ -194,6 +194,7 @@ def test_dynamics_finite_difference_helper_explicit():
     assert np.allclose(fd_data.Jx, Jx_nd, atol=atol)
     assert np.allclose(fd_data.Ju, Ju_nd, atol=atol)
 
+
 if __name__ == "__main__":
     import sys
 

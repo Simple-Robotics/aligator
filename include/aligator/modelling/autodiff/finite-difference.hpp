@@ -108,9 +108,9 @@ struct finite_difference_impl : finite_diff_traits<_Scalar, _BaseTpl> {
   static_assert(IsStage || IsExplicitDynamics,
                 "Unsupported finite_difference_impl base.");
 
-  template <typename U = Base,
-            std::enable_if_t<std::is_same_v<U, StageFunctionTpl<Scalar>>, int> =
-                0>
+  template <
+      typename U = Base,
+      std::enable_if_t<std::is_same_v<U, StageFunctionTpl<Scalar>>, int> = 0>
   finite_difference_impl(xyz::polymorphic<Manifold> space,
                          xyz::polymorphic<U> func, const Scalar fd_eps)
       : space_(space)
