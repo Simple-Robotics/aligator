@@ -3,9 +3,8 @@
 #pragma once
 
 #include "aligator/core/function-abstract.hpp"
-#include "aligator/core/dynamics.hpp"
+#include "aligator/core/explicit-dynamics.hpp"
 #include "aligator/core/manifold-base.hpp"
-#include <boost/mpl/bool.hpp>
 
 namespace aligator {
 namespace autodiff {
@@ -46,39 +45,39 @@ template <typename Scalar> struct finite_diff_traits<Scalar, StageFunctionTpl> {
   };
 };
 
-template <typename Scalar> struct finite_diff_traits<Scalar, DynamicsModelTpl> {
+template <typename Scalar>
+struct finite_diff_traits<Scalar, ExplicitDynamicsModelTpl> {
   ALIGATOR_DYNAMIC_TYPEDEFS(Scalar);
-  struct Data : DynamicsDataTpl<Scalar> {
-    using DD = DynamicsDataTpl<Scalar>;
-    using DD::ndx1;
-    using DD::ndx2;
-    using DD::nu;
-    shared_ptr<DD> data_0;
-    shared_ptr<DD> data_1;
-    VectorXs dx, du, dy;
-    VectorXs xp, up, yp;
+  struct Data : ExplicitDynamicsDataTpl<Scalar> {
+    using EDD = ExplicitDynamicsDataTpl<Scalar>;
+    using EDD::ndx1;
+    using EDD::ndx2;
+    using EDD::nu;
+    shared_ptr<EDD> data_0;
+    shared_ptr<EDD> data_1;
+    VectorXs dx, du;
+    VectorXs xp, up;
+    VectorXs dxnext;
 
     template <typename U>
     Data(U const &model)
-        : DD(*model.func_)
+        : EDD(*model.func_)
         , data_0(model.func_->createData())
         , data_1(model.func_->createData())
         , dx(ndx1)
         , du(nu)
-        , dy(ndx2)
         , xp(model.nx1)
         , up(model.nu)
-        , yp(model.nx2) {
+        , dxnext(ndx2) {
       dx.setZero();
       du.setZero();
-      dy.setZero();
+      dxnext.setZero();
     }
   };
 
   struct Args {
     ConstVectorRef x;
     ConstVectorRef u;
-    ConstVectorRef y;
   };
 };
 
@@ -101,11 +100,17 @@ struct finite_difference_impl : finite_diff_traits<_Scalar, _BaseTpl> {
   Scalar fd_eps;
   int nx1, nu, nx2;
 
-  static constexpr bool IsDynamics =
-      std::is_same_v<Base, DynamicsModelTpl<Scalar>>;
+  static constexpr bool IsStage =
+      std::is_same_v<Base, StageFunctionTpl<Scalar>>;
+  static constexpr bool IsExplicitDynamics =
+      std::is_same_v<Base, ExplicitDynamicsModelTpl<Scalar>>;
 
-  template <typename U = Base, class = std::enable_if_t<
-                                   std::is_same_v<U, StageFunctionTpl<Scalar>>>>
+  static_assert(IsStage || IsExplicitDynamics,
+                "Unsupported finite_difference_impl base.");
+
+  template <typename U = Base,
+            std::enable_if_t<std::is_same_v<U, StageFunctionTpl<Scalar>>, int> =
+                0>
   finite_difference_impl(xyz::polymorphic<Manifold> space,
                          xyz::polymorphic<U> func, const Scalar fd_eps)
       : space_(space)
@@ -114,17 +119,17 @@ struct finite_difference_impl : finite_diff_traits<_Scalar, _BaseTpl> {
       , nx1(space->nx())
       , nx2(space->nx()) {}
 
-  template <typename U = Base, class = std::enable_if_t<
-                                   std::is_same_v<U, DynamicsModelTpl<Scalar>>>>
+  template <typename U = Base,
+            std::enable_if_t<
+                std::is_same_v<U, ExplicitDynamicsModelTpl<Scalar>>, int> = 0>
   finite_difference_impl(xyz::polymorphic<Manifold> space,
-                         xyz::polymorphic<U> func, const Scalar fd_eps,
-                         boost::mpl::false_ = {})
+                         xyz::polymorphic<U> func, const Scalar fd_eps)
       : space_(space)
       , func_(func)
       , fd_eps(fd_eps)
       , nx1(space->nx())
       , nu(func->nu)
-      , nx2(space->nx()) {}
+      , nx2(func->space_next().nx()) {}
 
   /// @details The @p y parameter is provided as a pointer, since is can be
   /// null.
@@ -132,12 +137,13 @@ struct finite_difference_impl : finite_diff_traits<_Scalar, _BaseTpl> {
     Data &d = static_cast<Data &>(data);
     assert(d.data_0);
     assert(d.data_1);
-    if constexpr (IsDynamics) {
-      func_->evaluate(args.x, args.u, args.y, *d.data_0);
+    if constexpr (IsExplicitDynamics) {
+      func_->forward(args.x, args.u, *d.data_0);
+      d.xnext_ = d.data_0->xnext_;
     } else {
       func_->evaluate(args.x, args.u, *d.data_0);
+      d.value_ = d.data_0->value_;
     }
-    d.value_ = d.data_0->value_;
   }
 
   void computeJacobiansImpl(const Args &args, BaseData &data) const {
@@ -145,40 +151,50 @@ struct finite_difference_impl : finite_diff_traits<_Scalar, _BaseTpl> {
     assert(d.data_0);
     assert(d.data_1);
 
-    VectorXs &v0 = d.data_0->value_;
-    VectorXs &vp = d.data_1->value_;
+    auto output_ref = [](auto &data_ref) -> VectorXs & {
+      if constexpr (IsExplicitDynamics) {
+        return data_ref.xnext_;
+      } else {
+        return data_ref.value_;
+      }
+    };
 
-    for (int i = 0; i < func_->ndx1; i++) {
+    VectorXs &v0 = output_ref(*d.data_0);
+    VectorXs &vp = output_ref(*d.data_1);
+
+    const int ndx1 = [&]() {
+      if constexpr (IsExplicitDynamics) {
+        return func_->ndx1();
+      } else {
+        return func_->ndx1;
+      }
+    }();
+
+    for (int i = 0; i < ndx1; i++) {
       d.dx[i] = fd_eps;
       space_->integrate(args.x, d.dx, d.xp);
-      if constexpr (IsDynamics) {
-        func_->evaluate(d.xp, args.u, args.y, *d.data_1);
+      if constexpr (IsExplicitDynamics) {
+        func_->forward(d.xp, args.u, *d.data_1);
+        func_->space_next().difference(v0, vp, d.dxnext);
+        data.Jx().col(i) = d.dxnext / fd_eps;
       } else {
         func_->evaluate(d.xp, args.u, *d.data_1);
+        data.Jx_.col(i) = (vp - v0) / fd_eps;
       }
-      data.Jx_.col(i) = (vp - v0) / fd_eps;
       d.dx[i] = 0.;
-    }
-
-    if constexpr (IsDynamics) {
-      for (int i = 0; i < func_->ndx2; i++) {
-        d.dy[i] = fd_eps;
-        space_->integrate(args.y, d.dy, d.yp);
-        func_->evaluate(args.x, args.u, d.yp, *d.data_1);
-        data.Jy_.col(i) = (vp - v0) / fd_eps;
-        d.dy[i] = 0.;
-      }
     }
 
     for (int i = 0; i < func_->nu; i++) {
       d.du[i] = fd_eps;
       d.up = args.u + d.du;
-      if constexpr (IsDynamics) {
-        func_->evaluate(args.x, d.up, args.y, *d.data_1);
+      if constexpr (IsExplicitDynamics) {
+        func_->forward(args.x, d.up, *d.data_1);
+        func_->space_next().difference(v0, vp, d.dxnext);
+        data.Ju().col(i) = d.dxnext / fd_eps;
       } else {
         func_->evaluate(args.x, d.up, *d.data_1);
+        data.Ju_.col(i) = (vp - v0) / fd_eps;
       }
-      data.Ju_.col(i) = (vp - v0) / fd_eps;
       d.du[i] = 0.;
     }
   }
@@ -237,31 +253,32 @@ private:
 };
 
 template <typename _Scalar>
-struct DynamicsFiniteDifferenceHelper : DynamicsModelTpl<_Scalar> {
+struct DynamicsFiniteDifferenceHelper : ExplicitDynamicsModelTpl<_Scalar> {
   using Scalar = _Scalar;
 
-  using DynamicsModel = DynamicsModelTpl<Scalar>;
+  using DynamicsModel = ExplicitDynamicsModelTpl<Scalar>;
   using Manifold = ManifoldAbstractTpl<Scalar>;
-  using Impl = internal::finite_difference_impl<Scalar, DynamicsModelTpl>;
+  using Impl =
+      internal::finite_difference_impl<Scalar, ExplicitDynamicsModelTpl>;
   using Data = typename Impl::Data;
-  using BaseData = DynamicsDataTpl<Scalar>;
+  using BaseData = ExplicitDynamicsDataTpl<Scalar>;
 
   ALIGATOR_DYNAMIC_TYPEDEFS(_Scalar);
 
   DynamicsFiniteDifferenceHelper(xyz::polymorphic<Manifold> space,
                                  xyz::polymorphic<DynamicsModel> func,
                                  const Scalar fd_eps)
-      : DynamicsModel(space, func->nu, space)
+      : DynamicsModel(space, func->nu)
       , impl(space, func, fd_eps) {}
 
-  void evaluate(const ConstVectorRef &x, const ConstVectorRef &u,
-                const ConstVectorRef &xn, BaseData &data) const {
-    impl.evaluateImpl({x, u, xn}, data);
+  void forward(const ConstVectorRef &x, const ConstVectorRef &u,
+               BaseData &data) const {
+    impl.evaluateImpl({x, u}, data);
   }
 
-  void computeJacobians(const ConstVectorRef &x, const ConstVectorRef &u,
-                        const ConstVectorRef &xn, BaseData &data) const {
-    impl.computeJacobiansImpl({x, u, xn}, data);
+  void dForward(const ConstVectorRef &x, const ConstVectorRef &u,
+                BaseData &data) const {
+    impl.computeJacobiansImpl({x, u}, data);
   }
 
   shared_ptr<BaseData> createData() const { return impl.createDataImpl(); }
