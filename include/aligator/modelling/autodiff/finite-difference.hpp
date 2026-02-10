@@ -113,8 +113,8 @@ struct finite_difference_impl : finite_diff_traits<_Scalar, _BaseTpl> {
       std::enable_if_t<std::is_same_v<U, StageFunctionTpl<Scalar>>, int> = 0>
   finite_difference_impl(xyz::polymorphic<Manifold> space,
                          xyz::polymorphic<U> func, const Scalar fd_eps)
-      : space_(space)
-      , func_(func)
+      : space_(std::move(space))
+      , func_(std::move(func))
       , fd_eps(fd_eps)
       , nx1(space->nx())
       , nx2(space->nx()) {}
@@ -124,8 +124,8 @@ struct finite_difference_impl : finite_diff_traits<_Scalar, _BaseTpl> {
                 std::is_same_v<U, ExplicitDynamicsModelTpl<Scalar>>, int> = 0>
   finite_difference_impl(xyz::polymorphic<Manifold> space,
                          xyz::polymorphic<U> func, const Scalar fd_eps)
-      : space_(space)
-      , func_(func)
+      : space_(std::move(space))
+      , func_(std::move(func))
       , fd_eps(fd_eps)
       , nx1(space->nx())
       , nu(func->nu)
@@ -269,7 +269,7 @@ struct DynamicsFiniteDifferenceHelper : ExplicitDynamicsModelTpl<_Scalar> {
                                  xyz::polymorphic<DynamicsModel> func,
                                  const Scalar fd_eps)
       : DynamicsModel(space, func->nu)
-      , impl(space, func, fd_eps) {}
+      , impl(std::move(space), std::move(func), fd_eps) {}
 
   void forward(const ConstVectorRef &x, const ConstVectorRef &u,
                BaseData &data) const {
