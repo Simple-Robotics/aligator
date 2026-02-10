@@ -12,8 +12,9 @@
 #include <pinocchio/algorithm/frames.hpp>
 #include <pinocchio/algorithm/compute-all-terms.hpp>
 
-#include <cmath>
 #include <catch2/catch_test_macros.hpp>
+
+#include "test_util/pinocchio.hpp"
 
 using namespace aligator;
 using context::SolverProxDDP;
@@ -99,8 +100,7 @@ auto makeConstraint(pinocchio::Model const &model) {
   auto constraint = pinocchio::RigidConstraintModel(
       pinocchio::ContactType::CONTACT_6D, model, frame.parentJoint,
       frame.placement, pinocchio::LOCAL_WORLD_ALIGNED);
-  constraint.corrector.Kp << 0, 0, 100, 0, 0, 0;
-  constraint.corrector.Kd << 50, 50, 50, 50, 50, 50;
+  set_baumgarte_gains(constraint, 100, 50);
   constraint.name = "contact";
 
   return constraint;

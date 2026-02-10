@@ -1,14 +1,14 @@
-#include <Eigen/Core>
 #include <pinocchio/multibody/sample-models.hpp>
 #include <pinocchio/algorithm/kinematics.hpp>
 #include <pinocchio/algorithm/joint-configuration.hpp>
-#include "aligator/modelling/spaces/multibody.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 
 #include <aligator/modelling/multibody/contact-force.hpp>
 #include <aligator/modelling/multibody/multibody-wrench-cone.hpp>
 #include <aligator/modelling/multibody/multibody-friction-cone.hpp>
+
+#include "test_util/pinocchio.hpp"
 
 TEST_CASE("contact_forces_6d", "[forces]") {
   using namespace Eigen;
@@ -44,15 +44,12 @@ TEST_CASE("contact_forces_6d", "[forces]") {
 
   RigidConstraintModel ci_LF(CONTACT_6D, model, LF_id, LOCAL);
   ci_LF.joint1_placement.setRandom();
-  ci_LF.corrector.Kp.array() = 10;
-  ci_LF.corrector.Kd.array() = 10;
+  set_baumgarte_gains(ci_LF, 10.0);
   ci_LF.name = "LF_foot";
 
   RigidConstraintModel ci_RF(CONTACT_6D, model, RF_id, LOCAL);
   ci_RF.joint1_placement.setRandom();
-  ci_RF.corrector.Kp.array() = 10;
-  ci_RF.corrector.Kd.array() = 10;
-  ci_RF.name = "RF_foot";
+  set_baumgarte_gains(ci_RF, 10.0);
 
   constraint_models.push_back(ci_LF);
   constraint_data.push_back(RigidConstraintData(ci_LF));
@@ -158,14 +155,12 @@ TEST_CASE("contact_forces_3d", "[forces]") {
 
   RigidConstraintModel ci_LF(CONTACT_3D, model, LF_id, LOCAL);
   ci_LF.joint1_placement.setRandom();
-  ci_LF.corrector.Kp.array() = 10;
-  ci_LF.corrector.Kd.array() = 10;
+  set_baumgarte_gains(ci_LF, 10.);
   ci_LF.name = "LF_foot";
 
   RigidConstraintModel ci_RF(CONTACT_3D, model, RF_id, LOCAL);
   ci_RF.joint1_placement.setRandom();
-  ci_RF.corrector.Kp.array() = 10;
-  ci_RF.corrector.Kd.array() = 10;
+  set_baumgarte_gains(ci_RF, 10.);
   ci_RF.name = "RF_foot";
 
   constraint_models.push_back(ci_LF);
@@ -272,14 +267,12 @@ TEST_CASE("wrench_cone", "[forces]") {
 
   RigidConstraintModel ci_LF(CONTACT_6D, model, LF_id, LOCAL);
   ci_LF.joint1_placement.setRandom();
-  ci_LF.corrector.Kp.array() = 10;
-  ci_LF.corrector.Kd.array() = 10;
+  set_baumgarte_gains(ci_LF, 10.);
   ci_LF.name = "LF_foot";
 
   RigidConstraintModel ci_RF(CONTACT_6D, model, RF_id, LOCAL);
   ci_RF.joint1_placement.setRandom();
-  ci_RF.corrector.Kp.array() = 10;
-  ci_RF.corrector.Kd.array() = 10;
+  set_baumgarte_gains(ci_RF, 10.);
   ci_RF.name = "RF_foot";
 
   constraint_models.push_back(ci_LF);
@@ -384,14 +377,12 @@ TEST_CASE("friction_cone", "[forces]") {
 
   RigidConstraintModel ci_LF(CONTACT_3D, model, LF_id, LOCAL);
   ci_LF.joint1_placement.setRandom();
-  ci_LF.corrector.Kp.array() = 10;
-  ci_LF.corrector.Kd.array() = 10;
+  set_baumgarte_gains(ci_LF, 10.);
   ci_LF.name = "LF_foot";
 
   RigidConstraintModel ci_RF(CONTACT_3D, model, RF_id, LOCAL);
   ci_RF.joint1_placement.setRandom();
-  ci_RF.corrector.Kp.array() = 10;
-  ci_RF.corrector.Kd.array() = 10;
+  set_baumgarte_gains(ci_RF, 10.);
   ci_RF.name = "RF_foot";
 
   constraint_models.push_back(ci_LF);
