@@ -1,12 +1,11 @@
 /// @file
-/// @copyright Copyright (C) 2024 LAAS-CNRS, 2024-2025 INRIA
+/// @copyright Copyright (C) 2024 LAAS-CNRS, 2024-2026 INRIA
 #pragma once
 
-#include "./fwd.hpp"
+#include "fwd.hpp"
 #include "aligator/core/function-abstract.hpp"
-
-#include <Eigen/src/Core/util/Constants.h>
 #include "aligator/modelling/spaces/multibody.hpp"
+
 #include <pinocchio/algorithm/proximal.hpp>
 
 namespace aligator {
