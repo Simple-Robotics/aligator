@@ -1,3 +1,5 @@
+/// @file
+/// @copyright Copyright (C) 2024-2026 INRIA
 #include <pinocchio/multibody/sample-models.hpp>
 #include <pinocchio/algorithm/kinematics.hpp>
 #include <pinocchio/algorithm/joint-configuration.hpp>
@@ -50,11 +52,12 @@ TEST_CASE("contact_forces_6d", "[forces]") {
   RigidConstraintModel ci_RF(CONTACT_6D, model, RF_id, LOCAL);
   ci_RF.joint1_placement.setRandom();
   set_baumgarte_gains(ci_RF, 10.0);
+  ci_RF.name = "RF_foot";
 
   constraint_models.push_back(ci_LF);
-  constraint_data.push_back(RigidConstraintData(ci_LF));
+  constraint_data.emplace_back(ci_LF);
   constraint_models.push_back(ci_RF);
-  constraint_data.push_back(RigidConstraintData(ci_RF));
+  constraint_data.emplace_back(ci_RF);
 
   const double mu0 = 0.;
   ProximalSettings prox_settings(1e-12, mu0, 1);
@@ -164,9 +167,9 @@ TEST_CASE("contact_forces_3d", "[forces]") {
   ci_RF.name = "RF_foot";
 
   constraint_models.push_back(ci_LF);
-  constraint_data.push_back(RigidConstraintData(ci_LF));
+  constraint_data.emplace_back(ci_LF);
   constraint_models.push_back(ci_RF);
-  constraint_data.push_back(RigidConstraintData(ci_RF));
+  constraint_data.emplace_back(ci_RF);
 
   const double mu0 = 0.;
   ProximalSettings prox_settings(1e-12, mu0, 1);
@@ -276,9 +279,9 @@ TEST_CASE("wrench_cone", "[forces]") {
   ci_RF.name = "RF_foot";
 
   constraint_models.push_back(ci_LF);
-  constraint_data.push_back(RigidConstraintData(ci_LF));
+  constraint_data.emplace_back(ci_LF);
   // constraint_models.push_back(ci_RF);
-  // constraint_data.push_back(RigidConstraintData(ci_RF));
+  // constraint_data.emplace_back(ci_RF);
 
   const double mu0 = 0.;
   ProximalSettings prox_settings(1e-12, mu0, 1);
@@ -386,9 +389,9 @@ TEST_CASE("friction_cone", "[forces]") {
   ci_RF.name = "RF_foot";
 
   constraint_models.push_back(ci_LF);
-  constraint_data.push_back(RigidConstraintData(ci_LF));
+  constraint_data.emplace_back(ci_LF);
   // constraint_models.push_back(ci_RF);
-  // constraint_data.push_back(RigidConstraintData(ci_RF));
+  // constraint_data.emplace_back(ci_RF);
 
   const double mu0 = 0.;
   ProximalSettings prox_settings(1e-12, mu0, 1);
