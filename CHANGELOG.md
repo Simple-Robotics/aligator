@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Update finite difference helper to support explicit dynamics, replacing the obsolete implicit-only implementation. (https://github.com/Simple-Robotics/aligator/pull/392)
+- Tentative support building with the upcoming Pinocchio 4 (https://github.com/Simple-Robotics/aligator/pull/390)
 
 ## [0.18.0] - 2026-01-27
 
