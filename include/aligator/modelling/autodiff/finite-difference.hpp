@@ -111,9 +111,9 @@ struct finite_difference_impl : finite_diff_traits<_Scalar, _BaseTpl> {
   template <
       typename U = Base,
       std::enable_if_t<std::is_same_v<U, StageFunctionTpl<Scalar>>, int> = 0>
-  finite_difference_impl(xyz::polymorphic<Manifold> space,
+  finite_difference_impl(const xyz::polymorphic<Manifold> &space,
                          xyz::polymorphic<U> func, const Scalar fd_eps)
-      : space_(std::move(space))
+      : space_(space)
       , func_(std::move(func))
       , fd_eps(fd_eps)
       , nx1(space->nx())
@@ -122,10 +122,10 @@ struct finite_difference_impl : finite_diff_traits<_Scalar, _BaseTpl> {
   template <typename U = Base,
             std::enable_if_t<
                 std::is_same_v<U, ExplicitDynamicsModelTpl<Scalar>>, int> = 0>
-  finite_difference_impl(xyz::polymorphic<Manifold> space,
-                         xyz::polymorphic<U> func, const Scalar fd_eps)
-      : space_(std::move(space))
-      , func_(std::move(func))
+  finite_difference_impl(const xyz::polymorphic<Manifold> &space,
+                         const xyz::polymorphic<U> &func, const Scalar fd_eps)
+      : space_(space)
+      , func_(func)
       , fd_eps(fd_eps)
       , nx1(space->nx())
       , nu(func->nu)
