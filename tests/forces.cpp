@@ -1,6 +1,5 @@
 #include <Eigen/Core>
-#include <Eigen/src/Core/util/Constants.h>
-#include <pinocchio/parsers/sample-models.hpp>
+#include <pinocchio/multibody/sample-models.hpp>
 #include <pinocchio/algorithm/kinematics.hpp>
 #include <pinocchio/algorithm/joint-configuration.hpp>
 #include "aligator/modelling/spaces/multibody.hpp"
