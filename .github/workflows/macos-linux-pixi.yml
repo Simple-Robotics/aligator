@@ -93,7 +93,7 @@ jobs:
       env:
         CMAKE_BUILD_PARALLEL_LEVEL: 2
       with:
-        cache: true
+        cache: false # avoid symbol collision issues due to preinstalled project
         environments: test-pixi-build
 
     - name: Test package
