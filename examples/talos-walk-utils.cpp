@@ -9,7 +9,7 @@
 #include <pinocchio/algorithm/proximal.hpp>
 
 void makeTalosReduced(Model &model_complete, Model &model,
-                      Eigen::VectorXd &q0) {
+                      Eigen::Ref<Eigen::VectorXd> q0) {
   const std::string talos_path =
       EXAMPLE_ROBOT_DATA_MODEL_DIR "/talos_data/robots/talos_reduced.urdf";
   const std::string srdf_path =
@@ -57,16 +57,17 @@ void makeTalosReduced(Model &model_complete, Model &model,
   q0 = model.referenceConfigurations["half_sitting"];
 }
 
-void foot_traj(Eigen::Vector3d &translation_init, const int &t_ss,
-               const int &ts) {
-  double swing_apex = 0.05;
-  translation_init[2] += swing_apex * sin(ts * M_PI / (double)t_ss);
+void getFootTraj(std::size_t t_ss, std::size_t ts,
+                 Eigen::Ref<Eigen::Vector3d> translation_init) {
+  constexpr double swing_apex = 0.05;
+  translation_init[2] += swing_apex * std::sin(ts * M_PI / (double)t_ss);
 }
 
 IntegratorSemiImplEuler
-create_dynamics(MultibodyPhaseSpace &stage_space, Support &support,
-                MatrixXd &actuation_matrix, ProximalSettings &proximal_settings,
-                std::vector<pin::RigidConstraintModel> &constraint_models) {
+createDynamics(MultibodyPhaseSpace &stage_space, Support &support,
+               MatrixXd &actuation_matrix, ProximalSettings &proximal_settings,
+               PINOCCHIO_ALIGNED_STD_VECTOR(pin::RigidConstraintModel) &
+                   constraint_models) {
   pinocchio::context::RigidConstraintModelVector cms;
   switch (support) {
   case LEFT:
@@ -144,18 +145,25 @@ TrajOptProblem defineLocomotionProblem(const std::size_t T_ss,
   foot_joint_ids.push_back(rmodel.frames[foot_frame_ids[0]].parentJoint);
   foot_joint_ids.push_back(rmodel.frames[foot_frame_ids[1]].parentJoint);
 
-  std::vector<pin::RigidConstraintModel> constraint_models;
+  PINOCCHIO_ALIGNED_STD_VECTOR(pin::RigidConstraintModel) constraint_models;
 
   for (std::size_t i = 0; i < 2; i++) {
     pin::SE3 pl1 = rmodel.frames[foot_frame_ids[i]].placement;
     pin::SE3 pl2 = rdata.oMf[foot_frame_ids[i]];
-    pin::RigidConstraintModel constraint_model = pin::RigidConstraintModel(
+    pin::RigidConstraintModel constraint_model(
         pin::ContactType::CONTACT_6D, rmodel, foot_joint_ids[i], pl1, 0, pl2,
         pin::LOCAL_WORLD_ALIGNED);
-    constraint_model.corrector.Kp << 0, 0, 100, 0, 0, 0;
-    constraint_model.corrector.Kd << 50, 50, 50, 50, 50, 50;
+#ifdef ALIGATOR_PINOCCHIO_V4
+    auto &corrector = constraint_model.baumgarte_corrector_parameters();
+    corrector.Kp = 100;
+    corrector.Kd = 50;
+#else
+    auto &corrector = constraint_model.corrector;
+    corrector.Kp << 0, 0, 100, 0, 0, 0;
+    corrector.Kd << 50, 50, 50, 50, 50, 50;
+#endif
     constraint_model.name = foot_frame_name[i];
-    constraint_models.push_back(constraint_model);
+    constraint_models.push_back(std::move(constraint_model));
   }
 
   std::vector<Support> double_phase;
@@ -195,14 +203,14 @@ TrajOptProblem defineLocomotionProblem(const std::size_t T_ss,
     std::shared_ptr<FramePlacementResidual> frame_fn_LF;
     switch (ph) {
     case LEFT:
-      foot_traj(RF_placement.translation(), T_ss, ts);
+      getFootTraj(T_ss, ts, RF_placement.translation());
       frame_fn_RF = std::make_shared<FramePlacementResidual>(
           stage_space.ndx(), nu, rmodel, RF_placement, foot_frame_ids[1]);
       rcost.addCost("frame_fn_RF",
                     QuadraticResidualCost(stage_space, *frame_fn_RF, w_LFRF));
       break;
     case RIGHT:
-      foot_traj(LF_placement.translation(), T_ss, ts);
+      getFootTraj(T_ss, ts, LF_placement.translation());
       frame_fn_LF = std::make_shared<FramePlacementResidual>(
           stage_space.ndx(), nu, rmodel, LF_placement, foot_frame_ids[0]);
       rcost.addCost("frame_fn_LF",
@@ -213,8 +221,8 @@ TrajOptProblem defineLocomotionProblem(const std::size_t T_ss,
       break;
     }
     stage_models.push_back(
-        StageModel(rcost, create_dynamics(stage_space, ph, actuation_matrix,
-                                          prox_settings, constraint_models)));
+        StageModel(rcost, createDynamics(stage_space, ph, actuation_matrix,
+                                         prox_settings, constraint_models)));
   }
   auto ter_space = MultibodyPhaseSpace(rmodel);
   auto term_cost = CostStack(ter_space, nu);
