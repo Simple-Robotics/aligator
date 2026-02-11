@@ -11,7 +11,8 @@ void exposeAutodiff() {
   using namespace autodiff;
   using context::CostAbstract;
   using context::CostData;
-  using context::DynamicsModel;
+  using context::ExplicitDynamics;
+  using context::ExplicitDynamicsData;
   using context::Manifold;
   using context::Scalar;
   using context::StageFunction;
@@ -31,11 +32,12 @@ void exposeAutodiff() {
 
   {
     using DynFiniteDiffType = DynamicsFiniteDifferenceHelper<Scalar>;
-    bp::scope _ = bp::class_<DynFiniteDiffType, bp::bases<DynamicsModel>>(
+    bp::scope _ = bp::class_<DynFiniteDiffType, bp::bases<ExplicitDynamics>>(
         "DynamicsFiniteDifferenceHelper",
-        bp::init<xyz::polymorphic<Manifold>, xyz::polymorphic<DynamicsModel>,
+        bp::init<xyz::polymorphic<Manifold>, xyz::polymorphic<ExplicitDynamics>,
                  const Scalar>(bp::args("self", "space", "dyn", "eps")));
-    bp::class_<DynFiniteDiffType::Data>("Data", bp::no_init);
+    bp::class_<DynFiniteDiffType::Data, bp::bases<ExplicitDynamicsData>>(
+        "Data", bp::no_init);
   }
 
   {

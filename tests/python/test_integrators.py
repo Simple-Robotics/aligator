@@ -169,6 +169,32 @@ def exp_dyn_fd_check(dyn: dynamics.ExplicitDynamicsModel, x, u, eps: float):
     assert np.allclose(data.Ju, Ju_nd, atol=atol)
 
 
+def test_dynamics_finite_difference_helper_explicit():
+    nx = 4
+    nu = 2
+    A = np.eye(nx)
+    A[1, 0] = 0.2
+    B = np.zeros((nx, nu))
+    B[0, 0] = 1.0
+    B[2, 1] = -0.5
+    c = np.random.randn(nx)
+
+    dyn = dynamics.LinearDiscreteDynamics(A, B, c)
+    space = dyn.space
+    x = np.clip(space.rand(), -5, 5)
+    u = np.random.randn(nu)
+
+    fd_helper = aligator.DynamicsFiniteDifferenceHelper(space, dyn, EPSILON)
+    fd_data = fd_helper.createData()
+    fd_helper.forward(x, u, fd_data)
+    fd_helper.dForward(x, u, fd_data)
+
+    Jx_nd, Ju_nd = explicit_dynamics_finite_difference(dyn, x, u, eps=EPSILON)
+    atol = EPSILON**0.5
+    assert np.allclose(fd_data.Jx, Jx_nd, atol=atol)
+    assert np.allclose(fd_data.Ju, Ju_nd, atol=atol)
+
+
 if __name__ == "__main__":
     import sys
 
