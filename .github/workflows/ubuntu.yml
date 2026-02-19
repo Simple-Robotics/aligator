@@ -135,7 +135,7 @@ jobs:
           cmake .. \
             -GNinja \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             -DBUILD_WITH_PINOCCHIO_SUPPORT=ON \
             -DBUILD_CROCODDYL_COMPAT=OFF \
             -DBUILD_WITH_OPENMP_SUPPORT=ON \
