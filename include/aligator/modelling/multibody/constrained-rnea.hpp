@@ -28,7 +28,7 @@ int computeRigidConstraintsTotalSize(
   for (size_t k = 0; k < constraint_models.size(); ++k) {
     const int constraint_size =
 #ifdef ALIGATOR_PINOCCHIO_V4
-        constraint_models[k].residualSize(constraint_datas[k]);
+        constraint_models[k].residualSize();
 #else
         static_cast<int>(constraint_models[k].size());
 #endif
