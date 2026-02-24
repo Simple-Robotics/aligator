@@ -1,16 +1,15 @@
 #pragma once
 /// @file ode-abstract.hpp
 /// @brief Defines a class representing ODEs.
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2026 INRIA
 
 #include "aligator/modelling/dynamics/continuous-dynamics-abstract.hpp"
 
 namespace aligator {
 namespace dynamics {
-/** @brief   Base class for ODE dynamics \f$ \dot{x} = f(x, u) \f$.
- * @details  Formulated as a DAE (for ContinuousDynamicsAbstractTpl), this class
- * models \f[ f(x, u) - \dot{x}. \f]
- */
+/// @brief   Base class for ODE dynamics \f$ \dot{x} = f(x, u) \f$.
+/// @details  Formulated as a DAE (for ContinuousDynamicsAbstractTpl), this
+/// class models \f[ f(x, u) - \dot{x}. \f]
 template <typename _Scalar>
 struct ODEAbstractTpl : ContinuousDynamicsAbstractTpl<_Scalar> {
   using Scalar = _Scalar;
@@ -41,9 +40,9 @@ struct ODEAbstractTpl : ContinuousDynamicsAbstractTpl<_Scalar> {
                         const ConstVectorRef &xdot, Data &data) const override;
 };
 
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct ODEAbstractTpl<context::Scalar>;
+#endif
+
 } // namespace dynamics
 } // namespace aligator
-
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/modelling/dynamics/ode-abstract.txx"
-#endif

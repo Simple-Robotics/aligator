@@ -2,7 +2,7 @@
 
 #ifdef ALIGATOR_WITH_PINOCCHIO
 #include "aligator/modelling/dynamics/multibody-free-fwd.hpp"
-#include <pinocchio/parsers/sample-models.hpp>
+#include <pinocchio/multibody/sample-models.hpp>
 #endif
 
 #ifdef ALIGATOR_WITH_PINOCCHIO
