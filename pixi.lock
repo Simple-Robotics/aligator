@@ -6389,10 +6389,13 @@ packages:
   variants:
     target_platform: osx-64
   depends:
+  - libboost-devel >=1.86.0,<2
+  - eigen >=3.4.0,<4
   - libcxx >=22
-  - crocoddyl >=3.2.0,<3.2.1.0a0
-  - libboost-python >=1.88.0,<1.89.0a0
   - libboost >=1.88.0,<1.89.0a0
+  - libboost-python >=1.88.0,<1.89.0a0
+  - crocoddyl >=3.2.0,<3.2.1.0a0
+  - eigen-abi >=3.4.0.100,<3.4.0.101.0a0
   - python_abi 3.14.* *_cp314
   - eigenpy >=3.12.0,<3.12.1.0a0
   - fmt >=12.1.0,<12.2.0a0
@@ -6406,10 +6409,13 @@ packages:
   variants:
     target_platform: osx-arm64
   depends:
+  - libboost-devel >=1.86.0,<2
+  - eigen >=3.4.0,<4
   - libcxx >=22
-  - crocoddyl >=3.2.0,<3.2.1.0a0
-  - libboost-python >=1.88.0,<1.89.0a0
   - libboost >=1.88.0,<1.89.0a0
+  - libboost-python >=1.88.0,<1.89.0a0
+  - crocoddyl >=3.2.0,<3.2.1.0a0
+  - eigen-abi >=3.4.0.100,<3.4.0.101.0a0
   - python_abi 3.14.* *_cp314
   - eigenpy >=3.12.0,<3.12.1.0a0
   - fmt >=12.1.0,<12.2.0a0
@@ -6423,12 +6429,15 @@ packages:
   variants:
     target_platform: linux-64
   depends:
+  - libboost-devel >=1.86.0,<2
+  - eigen >=3.4.0,<4
   - _openmp_mutex >=4.5
   - libstdcxx >=15
   - libgcc >=15
-  - crocoddyl >=3.2.0,<3.2.1.0a0
-  - libboost-python >=1.88.0,<1.89.0a0
   - libboost >=1.88.0,<1.89.0a0
+  - libboost-python >=1.88.0,<1.89.0a0
+  - crocoddyl >=3.2.0,<3.2.1.0a0
+  - eigen-abi >=3.4.0.100,<3.4.0.101.0a0
   - python_abi 3.14.* *_cp314
   - eigenpy >=3.12.0,<3.12.1.0a0
   - fmt >=12.1.0,<12.2.0a0

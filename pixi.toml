@@ -35,6 +35,7 @@ pkg-config = ">=0.29.2"
 libboost-devel = ">=1.86.0,<2"
 libboost-python-devel = ">=1.86.0,<2"
 eigen = ">=3.4.0,<4"
+eigen-abi-devel = ">=3.4.0,<4"
 python = ">=3.9.22"
 eigenpy = "*"
 fmt = ">=11.1.4"
@@ -48,6 +49,10 @@ libgomp = ">=14.2"
 
 [package.target.osx.host-dependencies]
 llvm-openmp = ">=19.1"
+
+[package.run-dependencies]
+libboost-devel = ">=1.86.0,<2"
+eigen = ">=3.4.0,<4"
 
 
 [dependencies]
@@ -198,9 +203,18 @@ graphviz = ">=12"
 default = { features = ["python-latest"], solve-group = "python-latest" }
 clang = { features = ["clang", "python-latest"] }
 lint = { features = ["lint"], solve-group = "python-latest" }
-pinocchio = { features = ["pinocchio", "python-latest"], solve-group = "python-latest" }
-crocoddyl = { features = ["crocoddyl", "python-latest"], solve-group = "python-latest" }
-openmp = { features = ["openmp", "python-latest"], solve-group = "python-latest" }
+pinocchio = { features = [
+  "pinocchio",
+  "python-latest",
+], solve-group = "python-latest" }
+crocoddyl = { features = [
+  "crocoddyl",
+  "python-latest",
+], solve-group = "python-latest" }
+openmp = { features = [
+  "openmp",
+  "python-latest",
+], solve-group = "python-latest" }
 tracy = { features = ["tracy", "python-latest"], solve-group = "python-latest" }
 python-oldest = { features = ["python-oldest"], solve-group = "python-oldest" }
 all = { features = [
