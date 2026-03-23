@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Update finite difference helper to support explicit dynamics, replacing the obsolete implicit-only implementation. (https://github.com/Simple-Robotics/aligator/pull/392)
 - Fix `SolverProxDDP::tryLinearStep()` temporary control update buffer allocation to use `nu_max` instead of `ndx_max`. (https://github.com/Simple-Robotics/aligator/pull/397)
+- Tentative support building with the upcoming Pinocchio 4 (https://github.com/Simple-Robotics/aligator/pull/390)
 
 
 ## [0.18.0] - 2026-01-27

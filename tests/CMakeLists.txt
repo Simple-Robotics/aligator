@@ -54,7 +54,6 @@ set(
   lqr
   problem
   manifolds
-  solver-storage
   utils
 )
 
