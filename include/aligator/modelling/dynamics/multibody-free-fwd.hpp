@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2022 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2026 INRIA
 #pragma once
 
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
@@ -11,16 +11,14 @@ namespace aligator {
 namespace dynamics {
 template <typename Scalar> struct MultibodyFreeFwdDataTpl;
 
-/**
- * @brief   Free-space multibody forward dynamics, using Pinocchio.
- *
- * @details This is described in state-space \f$\mathcal{X} = T\mathcal{Q}\f$
- * (the phase space \f$x = (q,v)\f$) using the differential equation \f[ \dot{x}
- * = f(x, u) = \begin{bmatrix} v \\ a(q, v, \tau(u)) \end{bmatrix} \f] where
- * \f$\tau(u) = Bu\f$, \f$B\f$ is a given actuation matrix, and
- * \f$a(q,v,\tau)\f$ is the acceleration computed from the ABA algorithm.
- *
- */
+/// @brief   Free-space multibody forward dynamics, using Pinocchio.
+///
+/// @details This is described in state-space \f$\mathcal{X} = T\mathcal{Q}\f$
+/// (the phase space \f$x = (q,v)\f$) using the differential equation \f[
+/// \dot{x} = f(x, u) = \begin{bmatrix} v \\ a(q, v, \tau(u)) \end{bmatrix} \f]
+/// where
+/// \f$\tau(u) = Bu\f$, \f$B\f$ is a given actuation matrix, and
+/// \f$a(q,v,\tau)\f$ is the acceleration computed from the ABA algorithm.
 template <typename _Scalar>
 struct MultibodyFreeFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -81,10 +79,11 @@ struct MultibodyFreeFwdDataTpl : ContinuousDynamicsDataTpl<Scalar> {
   MultibodyFreeFwdDataTpl(const MultibodyFreeFwdDynamicsTpl<Scalar> *cont_dyn);
 };
 
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct MultibodyFreeFwdDynamicsTpl<context::Scalar>;
+extern template struct MultibodyFreeFwdDataTpl<context::Scalar>;
+#endif
+
 } // namespace dynamics
 } // namespace aligator
-
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/modelling/dynamics/multibody-free-fwd.txx"
-#endif
 #endif
