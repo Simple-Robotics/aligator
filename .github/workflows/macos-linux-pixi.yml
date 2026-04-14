@@ -43,19 +43,19 @@ jobs:
         build_type: [Release, Debug]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         submodules: recursive
 
-    - uses: actions/cache@v4
+    - uses: actions/cache@v5
       with:
         path: .ccache
         key: ccache-macos-linux-pixi-${{ matrix.os }}-${{ matrix.build_type }}-${{ github.sha }}
         restore-keys: ccache-macos-linux-pixi-${{ matrix.os }}-${{ matrix.build_type }}-
 
-    - uses: prefix-dev/setup-pixi@v0.9.3
+    - uses: prefix-dev/setup-pixi@v0.9.4
       with:
-        pixi-version: v0.63.0
+        pixi-version: v0.67.0
         cache: true
         environments: ${{ matrix.environment }}
 
