@@ -10,6 +10,9 @@ readme = "README.md"
 repository = "https://github.com/Simple-Robotics/aligator"
 preview = ["pixi-build"]
 
+[workspace.build-variants]
+pinocchio = ["3.9.*", "4.*"]
+
 [package]
 name = { workspace = true }
 version = { workspace = true }
@@ -22,7 +25,6 @@ extra-args = [
   "-DBUILD_TESTING=OFF",
   "-DGENERATE_PYTHON_STUBS=ON",
   "-DBUILD_WITH_PINOCCHIO_SUPPORT=ON",
-  "-DBUILD_CROCODDYL_COMPAT=ON",
   "-DBUILD_WITH_OPENMP_SUPPORT=ON",
   "-DBUILD_BENCHMARKS=OFF",
   "-DBUILD_EXAMPLES=OFF",
@@ -41,8 +43,7 @@ eigenpy = "*"
 fmt = ">=11.1.4"
 typed-argument-parser = ">=1.10.1,<2"
 mimalloc = ">=3.1.5,<4"
-pinocchio = ">=3.8.0"
-crocoddyl = ">=3.0.1"
+pinocchio = ">=3.9.0,<5"
 
 [package.target.linux.host-dependencies]
 libgomp = ">=14.2"
@@ -68,8 +69,8 @@ python = ">=3.10.19"
 eigenpy = ">=3.12.0"
 fmt = ">=11.1.4"
 benchmark = ">=1.9.4,<2"
-pytest = ">=8.3.5,<9"
-matplotlib-base = ">=3.9.4,<4"
+pytest = ">=9.0.3,<10"
+matplotlib-base = ">=3.10.8,<4"
 typed-argument-parser = ">=1.12.0,<2"
 meshcat-python = ">=0.3.2,<0.4"
 catch2 = ">=3.8.0,<4"
@@ -155,12 +156,13 @@ dependencies = { tracy-profiler-client = ">=0.11.1" }
 activation = { env = { ALIGATOR_TRACY_ENABLE = "ON" } }
 
 [feature.pinocchio]
-dependencies = { pinocchio = ">=3.8.0", example-robot-data-loaders = ">=4" }
+dependencies = { pinocchio = ">=3.9.0,<5", example-robot-data-loaders = ">=4" }
 activation = { env = { ALIGATOR_PINOCCHIO_SUPPORT = "ON" } }
 
 [feature.crocoddyl]
-dependencies = { crocoddyl = ">=3.0.1" }
-activation = { env = { ALIGATOR_CROCODDYL_COMPAT = "ON" } }
+dependencies = { crocoddyl = ">=3.2.0,<4", example-robot-data-loaders = ">=4" }
+activation = { env = { ALIGATOR_CROCODDYL_COMPAT = "ON", ALIGATOR_PINOCCHIO_SUPPORT = "ON" } }
+constraints = { pinocchio = ">=3.8.0" }
 
 # Not supported by Windows (because of conda-forge issue)
 [feature.openmp]
@@ -210,7 +212,7 @@ pinocchio = { features = [
 crocoddyl = { features = [
   "crocoddyl",
   "python-latest",
-], solve-group = "python-latest" }
+] }
 openmp = { features = [
   "openmp",
   "python-latest",
@@ -220,21 +222,24 @@ python-oldest = { features = ["python-oldest"], solve-group = "python-oldest" }
 all = { features = [
   "doc",
   "pinocchio",
-  "crocoddyl",
   "openmp",
   "python-latest",
 ], solve-group = "python-latest" }
+all-with-croco = { features = [
+  "doc",
+  "crocoddyl",
+  "openmp",
+  "python-latest",
+] }
 all-python-oldest = { features = [
   "doc",
   "pinocchio",
-  "crocoddyl",
   "openmp",
   "python-oldest",
 ], solve-group = "python-oldest" }
 new-version = { features = [
   "new-version",
   "pinocchio",
-  "crocoddyl",
   "openmp",
   "python-latest",
 ], solve-group = "python-latest" }
