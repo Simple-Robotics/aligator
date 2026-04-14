@@ -58,8 +58,8 @@ eigen = ">=3.4.0"
 
 [dependencies]
 cmake = ">=3.22"
-ccache = ">=4.9.1"
-ninja = ">=1.0.0"
+ccache = ">=4.13.3"
+ninja = ">=1.13.2"
 cxx-compiler = ">=1.7.0"
 pkg-config = ">=0.29.2"
 libboost-devel = ">=1.86.0,<2"
