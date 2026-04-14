@@ -7,11 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Support the new Pinocchio 4 release (https://github.com/Simple-Robotics/aligator/pull/390)
+
+### Changed
+- Deprecate `<aligator/modelling/dynamics/context.hpp>` (https://github.com/Simple-Robotics/aligator/pull/390)
+- pixi: require Pinocchio>=3.9.0 (https://github.com/Simple-Robotics/aligator/pull/390)
+- pixi: allow Eigen3>=5.0.0 (https://github.com/Simple-Robotics/aligator/pull/390)
+- CMake: require Eigen3 between 3.4.0 and major version 5 (https://github.com/Simple-Robotics/aligator/pull/390)
+
+### Removed
+- Remove test `solver-storage` (https://github.com/Simple-Robotics/aligator/pull/390)
+- Remove templated using-alias `StdVectorEigenAligned` (https://github.com/Simple-Robotics/aligator/pull/390)
+
 ### Fixed
 
 - Update finite difference helper to support explicit dynamics, replacing the obsolete implicit-only implementation. (https://github.com/Simple-Robotics/aligator/pull/392)
 - Fix `SolverProxDDP::tryLinearStep()` temporary control update buffer allocation to use `nu_max` instead of `ndx_max`. (https://github.com/Simple-Robotics/aligator/pull/397)
-- Tentative support building with the upcoming Pinocchio 4 (https://github.com/Simple-Robotics/aligator/pull/390)
 
 
 ## [0.18.0] - 2026-01-27
