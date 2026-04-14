@@ -1,6 +1,8 @@
 /// @file
 /// @author Sarah El-Kazdadi
-/// @copyright Copyright (C) 2023
+/// @copyright Copyright (C) 2023 Sarah El-Kazdadi,
+///                          2023-2024 LAAS-CNRS,
+///                          2023-2026 INRIA
 #pragma once
 
 #include "Eigen/Core"
@@ -570,14 +572,14 @@ struct BunchKaufman : SolverBase<BunchKaufman<MatrixType_, UpLo_>> {
     this->compute(matrix.derived());
   }
 
-  // EIGEN_DEVICE_FUNC inline EIGEN_CONSTEXPR Index rows() const EIGEN_NOEXCEPT
+  // EIGEN_DEVICE_FUNC inline EIGEN_CONSTEXPR Index rows() const noexcept
   // { return m_matrix.rows(); }
-  EIGEN_DEVICE_FUNC inline Index rows() const EIGEN_NOEXCEPT {
+  EIGEN_DEVICE_FUNC inline Index rows() const noexcept {
     return m_matrix.rows();
   }
-  // EIGEN_DEVICE_FUNC inline EIGEN_CONSTEXPR Index cols() const EIGEN_NOEXCEPT
+  // EIGEN_DEVICE_FUNC inline EIGEN_CONSTEXPR Index cols() const noexcept
   // { return m_matrix.cols(); }
-  EIGEN_DEVICE_FUNC inline Index cols() const EIGEN_NOEXCEPT {
+  EIGEN_DEVICE_FUNC inline Index cols() const noexcept {
     return m_matrix.cols();
   }
 
