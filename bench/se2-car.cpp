@@ -37,7 +37,7 @@ static void bench_parallel(benchmark::State &state) {
 constexpr auto timeUnit = benchmark::kMillisecond;
 constexpr auto maxThreads = 12l;
 
-static void CustomArgs(benchmark::internal::Benchmark *bench) {
+static void CustomArgs(benchmark::Benchmark *bench) {
   bench->Unit(timeUnit)->UseRealTime();
   bench->ArgNames({"nsteps"});
   for (long e = 2; e <= 10; e++) {
@@ -45,7 +45,7 @@ static void CustomArgs(benchmark::internal::Benchmark *bench) {
   }
 }
 
-static void ParallelArgs(benchmark::internal::Benchmark *bench) {
+static void ParallelArgs(benchmark::Benchmark *bench) {
   bench->Unit(timeUnit)->UseRealTime();
   bench->ArgNames({"nsteps", "nthreads"});
   for (long nt = 1; nt <= maxThreads / 2; nt++)

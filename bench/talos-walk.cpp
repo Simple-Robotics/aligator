@@ -87,11 +87,11 @@ static void BM_FDDP(benchmark::State &state) {
 
 constexpr auto unit = benchmark::kMillisecond;
 
-static void BaseArgs(benchmark::internal::Benchmark *bench) {
+static void BaseArgs(benchmark::Benchmark *bench) {
   bench->Complexity()->Unit(unit)->UseRealTime();
 }
 
-static void ArgsSerial(benchmark::internal::Benchmark *bench) {
+static void ArgsSerial(benchmark::Benchmark *bench) {
   bench->ArgNames({"T_ss", "nthreads"});
   std::vector<long> T_ss_vec = {60, 80, 100};
   for (auto t : T_ss_vec) {
@@ -99,7 +99,7 @@ static void ArgsSerial(benchmark::internal::Benchmark *bench) {
   }
 }
 
-static void ArgsParallel(benchmark::internal::Benchmark *bench) {
+static void ArgsParallel(benchmark::Benchmark *bench) {
   bench->ArgNames({"T_ss", "nthreads"});
   std::vector<long> nthreads = {2, 4, 6, 8};
   std::vector<long> T_ss_vec = {60, 80, 100};

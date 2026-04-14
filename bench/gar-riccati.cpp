@@ -71,7 +71,7 @@ static void BM_stagedense(benchmark::State &state) {
   }
 }
 
-static void customArgs(benchmark::internal::Benchmark *b) {
+static void customArgs(benchmark::Benchmark *b) {
   for (uint e = 4; e <= 10; e++) {
     b->Args({1 << e, 0});
     b->Args({1 << e, 1});

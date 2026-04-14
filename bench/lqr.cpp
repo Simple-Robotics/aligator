@@ -101,15 +101,15 @@ static void BM_lqr_fddp(benchmark::State &state) {
 }
 constexpr auto unit = benchmark::kMillisecond;
 
-static void BaseArgs(benchmark::internal::Benchmark *bench) {
+static void BaseArgs(benchmark::Benchmark *bench) {
   bench->Complexity()->Unit(unit)->UseRealTime();
 }
 
-static void ArgsSerial(benchmark::internal::Benchmark *bench) {
+static void ArgsSerial(benchmark::Benchmark *bench) {
   bench->ArgName("nsteps")->RangeMultiplier(2)->Range(1 << 3, 1 << 9);
 }
 
-static void ArgsParallel(benchmark::internal::Benchmark *bench) {
+static void ArgsParallel(benchmark::Benchmark *bench) {
   bench->ArgNames({"nsteps", "nthreads"});
   std::vector<long> nthreads = {2, 3, 4, 6};
   for (auto n : nthreads) {
