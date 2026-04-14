@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, 2022-2025 INRIA
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, 2022-2026 INRIA
 #ifdef ALIGATOR_WITH_PINOCCHIO
 
 // Boost.Python 1.74 include manually mpl/vector/vector20.hpp

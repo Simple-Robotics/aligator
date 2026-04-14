@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023 LAAS-CNRS, 2023-2026 INRIA
 #pragma once
 
 #include "aligator/python/fwd.hpp"
