@@ -1,28 +1,7 @@
 #pragma once
 
+#include "aligator/deprecated.hpp"
 #include "aligator/modelling/dynamics/fwd.hpp"
-#include "aligator/context.hpp"
 
-namespace aligator {
-namespace context {
-
-using ContinuousDynamicsAbstract =
-    dynamics::ContinuousDynamicsAbstractTpl<Scalar>;
-
-using ContinuousDynamicsData = dynamics::ContinuousDynamicsDataTpl<Scalar>;
-
-using ODEAbstract = dynamics::ODEAbstractTpl<Scalar>;
-
-using ODEData = dynamics::ContinuousDynamicsDataTpl<Scalar>;
-
-using IntegratorAbstract = dynamics::IntegratorAbstractTpl<Scalar>;
-
-using IntegratorData = dynamics::IntegratorDataTpl<Scalar>;
-
-using ExplicitIntegratorAbstract =
-    dynamics::ExplicitIntegratorAbstractTpl<Scalar>;
-
-using ExplicitIntegratorData = dynamics::ExplicitIntegratorDataTpl<Scalar>;
-
-} // namespace context
-} // namespace aligator
+ALIGATOR_DEPRECATED_HEADER(
+    "Directly include <aligator/modelling/dynamics/fwd.hpp> instead.")

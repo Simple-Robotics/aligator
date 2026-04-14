@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2026 INRIA
 #pragma once
 
 #include "aligator/modelling/dynamics/multibody-constraint-fwd.hpp"

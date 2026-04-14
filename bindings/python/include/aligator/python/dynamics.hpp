@@ -6,7 +6,7 @@
 
 #include "aligator/core/dynamics.hpp"
 
-#include "aligator/modelling/dynamics/context.hpp"
+#include "aligator/modelling/dynamics/fwd.hpp"
 #include "aligator/modelling/dynamics/integrator-abstract.hpp"
 
 namespace aligator {

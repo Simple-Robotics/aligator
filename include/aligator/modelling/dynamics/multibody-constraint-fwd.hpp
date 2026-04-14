@@ -7,15 +7,13 @@
 #include <pinocchio/multibody/data.hpp>
 
 #include <pinocchio/algorithm/proximal.hpp>
+#include <pinocchio/algorithm/contact-info.hpp>
 
 namespace aligator {
 namespace dynamics {
 template <typename Scalar> struct MultibodyConstraintFwdDataTpl;
 
-/**
- * @brief   Constraint multibody forward dynamics, using Pinocchio.
- *
- */
+/// @brief   Constraint multibody forward dynamics, using Pinocchio.
 template <typename _Scalar>
 struct MultibodyConstraintFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -27,12 +25,12 @@ struct MultibodyConstraintFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using Data = MultibodyConstraintFwdDataTpl<Scalar>;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-  using RigidConstraintModelVector =
-      PINOCCHIO_ALIGNED_STD_VECTOR(pinocchio::RigidConstraintModelTpl<Scalar>);
-  using RigidConstraintDataVector =
-      PINOCCHIO_ALIGNED_STD_VECTOR(pinocchio::RigidConstraintData);
+  using RigidConstraintModel = pinocchio::RigidConstraintModel;
+  using RigidConstraintData = pinocchio::RigidConstraintData;
+  using RigidConstraintModelVector = pinocchio::RigidConstraintModelVector;
+  using RigidConstraintDataVector = pinocchio::RigidConstraintDataVector;
 #pragma GCC diagnostic pop
-  using ProxSettings = pinocchio::ProximalSettingsTpl<Scalar>;
+  using ProxSettings = pinocchio::ProximalSettings;
   using Manifold = MultibodyPhaseSpace<Scalar>;
 
   Manifold space_;
@@ -68,16 +66,15 @@ struct MultibodyConstraintFwdDataTpl : ContinuousDynamicsDataTpl<Scalar> {
   using PinDataType = pinocchio::DataTpl<Scalar>;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-  using RigidConstraintData = pinocchio::RigidConstraintDataTpl<Scalar>;
+  using RigidConstraintData = pinocchio::RigidConstraintData;
 #pragma GCC diagnostic pop
-  using RigidConstraintDataVector =
-      PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintData);
+  using RigidConstraintDataVector = pinocchio::RigidConstraintDataVector;
 
   VectorXs tau_;
   MatrixXs dtau_dx_;
   MatrixXs dtau_du_;
   RigidConstraintDataVector constraint_datas_;
-  pinocchio::ProximalSettingsTpl<Scalar> settings;
+  pinocchio::ProximalSettings settings;
   PinDataType pin_data_;
   explicit MultibodyConstraintFwdDataTpl(
       const MultibodyConstraintFwdDynamicsTpl<Scalar> &cont_dyn);

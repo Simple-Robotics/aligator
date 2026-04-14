@@ -7,6 +7,7 @@
 #include "aligator/modelling/spaces/multibody.hpp"
 
 #include <pinocchio/algorithm/proximal.hpp>
+#include <pinocchio/algorithm/contact-info.hpp>
 
 namespace aligator {
 
@@ -25,9 +26,8 @@ public:
   using Model = pinocchio::ModelTpl<Scalar>;
   using SE3 = pinocchio::SE3Tpl<Scalar>;
   using Data = ContactForceDataTpl<Scalar>;
-  using RigidConstraintModel = pinocchio::RigidConstraintModelTpl<Scalar>;
-  using RigidConstraintModelVector =
-      PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintModel);
+  using RigidConstraintModel = pinocchio::RigidConstraintModel;
+  using RigidConstraintModelVector = pinocchio::RigidConstraintModelVector;
   using ProxSettings = pinocchio::ProximalSettingsTpl<Scalar>;
   using Vector3or6 = Eigen::Matrix<Scalar, -1, 1, Eigen::ColMajor, 6, 1>;
 
@@ -89,14 +89,13 @@ struct ContactForceDataTpl : StageFunctionDataTpl<Scalar> {
   using PinData = pinocchio::DataTpl<Scalar>;
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
-  using RigidConstraintData = pinocchio::RigidConstraintDataTpl<Scalar>;
+  using RigidConstraintData = pinocchio::RigidConstraintData;
 
   /// Pinocchio data object.
   PinData pin_data_;
   VectorXs tau_;
 
-  PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintData)
-  constraint_datas_;
+  pinocchio::RigidConstraintDataVector constraint_datas_;
   pinocchio::ProximalSettingsTpl<Scalar> settings;
 
   ContactForceDataTpl(const ContactForceResidualTpl<Scalar> *model);

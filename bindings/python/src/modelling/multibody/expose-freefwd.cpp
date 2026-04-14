@@ -7,7 +7,7 @@
 // To avoid this issue this header should be included first.
 #include <pinocchio/fwd.hpp>
 
-#include "aligator/modelling/dynamics/context.hpp"
+#include "aligator/modelling/dynamics/fwd.hpp"
 #include "aligator/modelling/multibody/fwd.hpp"
 #include "aligator/python/fwd.hpp"
 

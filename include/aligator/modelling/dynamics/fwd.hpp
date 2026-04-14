@@ -2,6 +2,7 @@
 #pragma once
 
 #include "aligator/deprecated.hpp"
+#include "aligator/context.hpp"
 
 namespace aligator {
 
@@ -55,4 +56,20 @@ template <typename Scalar> struct IntegratorRK2Tpl;
 
 } // namespace dynamics
 
+namespace context {
+using ContinuousDynamicsAbstract =
+    dynamics::ContinuousDynamicsAbstractTpl<Scalar>;
+using ContinuousDynamicsData = dynamics::ContinuousDynamicsDataTpl<Scalar>;
+
+using ODEAbstract = dynamics::ODEAbstractTpl<Scalar>;
+using ODEData = dynamics::ContinuousDynamicsDataTpl<Scalar>;
+
+using IntegratorAbstract = dynamics::IntegratorAbstractTpl<Scalar>;
+using IntegratorData = dynamics::IntegratorDataTpl<Scalar>;
+
+using ExplicitIntegratorAbstract =
+    dynamics::ExplicitIntegratorAbstractTpl<Scalar>;
+using ExplicitIntegratorData = dynamics::ExplicitIntegratorDataTpl<Scalar>;
+
+} // namespace context
 } // namespace aligator

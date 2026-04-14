@@ -68,7 +68,7 @@ createDynamics(MultibodyPhaseSpace &stage_space, Support &support,
                MatrixXd &actuation_matrix, ProximalSettings &proximal_settings,
                PINOCCHIO_ALIGNED_STD_VECTOR(pin::RigidConstraintModel) &
                    constraint_models) {
-  pinocchio::context::RigidConstraintModelVector cms;
+  aligator::context::RCMVector cms;
   switch (support) {
   case LEFT:
     cms.push_back(constraint_models[0]);

@@ -6,6 +6,7 @@
 #include <pinocchio/multibody/model.hpp>
 
 #include <pinocchio/algorithm/proximal.hpp>
+#include <pinocchio/algorithm/contact-info.hpp>
 
 namespace aligator {
 
@@ -26,10 +27,8 @@ public:
   using Model = pinocchio::ModelTpl<Scalar>;
   using SE3 = pinocchio::SE3Tpl<Scalar>;
   using Data = MultibodyWrenchConeDataTpl<Scalar>;
-  using RigidConstraintModelVector =
-      PINOCCHIO_ALIGNED_STD_VECTOR(pinocchio::RigidConstraintModel);
-  using RigidConstraintDataVector =
-      PINOCCHIO_ALIGNED_STD_VECTOR(pinocchio::RigidConstraintData);
+  using RigidConstraintModelVector = pinocchio::RigidConstraintModelVector;
+  using RigidConstraintDataVector = pinocchio::RigidConstraintDataVector;
   using ProxSettings = pinocchio::ProximalSettingsTpl<Scalar>;
 
   Model pin_model_;
@@ -101,8 +100,7 @@ struct MultibodyWrenchConeDataTpl : StageFunctionDataTpl<Scalar> {
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
   using Matrix6Xs = typename math_types<Scalar>::Matrix6Xs;
-  using RigidConstraintDataVector =
-      PINOCCHIO_ALIGNED_STD_VECTOR(pinocchio::RigidConstraintData);
+  using RigidConstraintDataVector = pinocchio::RigidConstraintDataVector;
 
   /// Pinocchio data object.
   PinData pin_data_;
