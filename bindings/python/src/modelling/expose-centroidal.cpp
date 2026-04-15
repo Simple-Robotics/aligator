@@ -26,9 +26,6 @@ using context::UnaryFunction;
 using ContactMap = ContactMapTpl<Scalar>;
 
 void exposeContactMap() {
-  using PoseVec = ContactMap::PoseVec;
-  eigenpy::enableEigenPySpecific<PoseVec::value_type>();
-  eigenpy::StdVectorPythonVisitor<PoseVec>::expose("PoseVec");
   bp::class_<ContactMap>(
       "ContactMap", "Store contact state and pose for centroidal problem",
       bp::init<const std::vector<std::string> &, const std::vector<bool> &,

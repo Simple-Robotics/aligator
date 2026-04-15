@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2022 LAAS-CNRS, 2022-2025 INRIA
+/// @copyright Copyright (C) 2022 LAAS-CNRS, 2022-2026 INRIA
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/utils.hpp"
 #include "aligator/python/string-view-converter.hpp"
@@ -59,26 +59,36 @@ static void exposeEnums() {
 #undef _c
 }
 
+template <typename MatType, bool NoProxy = false>
+void exposeStdVectorEigenStdAlloc(const char *name) {
+  using vector_type = std::vector<MatType>;
+  auto full_name = std::string("StdVec_").append(name);
+  eigenpy::StdVectorPythonVisitor<vector_type, NoProxy>::expose(
+      full_name.c_str(),
+      eigenpy::details::overload_base_get_item_for_std_vector<vector_type>());
+}
+
 static void exposeContainers() {
   using VecXBool = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
   using context::MatrixRef;
+  using context::MatrixXs;
   using context::Scalar;
+  using context::Vector3s;
   using context::VectorRef;
+  using context::VectorXs;
 
   eigenpy::StdContainerFromPythonList<
       std::vector<std::string>>::register_converter();
   StdVectorPythonVisitor<std::vector<long>, true>::expose("StdVec_long");
-  eigenpy::exposeStdVectorEigenSpecificType<context::Vector3s>(
-      "StdVec_Vector3s");
   StdVectorPythonVisitor<std::vector<bool>, true>::expose("StdVec_bool");
   StdVectorPythonVisitor<std::vector<int>, true>::expose("StdVec_int");
   StdVectorPythonVisitor<std::vector<Scalar>, true>::expose("StdVec_Scalar");
-  StdVectorPythonVisitor<context::VectorOfVectors, true>::expose(
-      "StdVec_Vector");
-  StdVectorPythonVisitor<std::vector<context::MatrixXs>, true>::expose(
-      "StdVec_Matrix");
-  StdVectorPythonVisitor<std::vector<VecXBool>, false>::expose(
-      "StdVec_VecBool");
+
+  // Eigen types
+  exposeStdVectorEigenStdAlloc<Vector3s>("Vector3s");
+  exposeStdVectorEigenStdAlloc<VectorXs>("Vector");
+  exposeStdVectorEigenStdAlloc<MatrixXs>("Matrix");
+  exposeStdVectorEigenStdAlloc<VecXBool>("VecBool");
   StdVectorPythonVisitor<std::vector<VectorRef>, true>::expose("StdVec_VecRef");
   StdVectorPythonVisitor<std::vector<MatrixRef>, true>::expose("StdVec_MatRef");
 }
