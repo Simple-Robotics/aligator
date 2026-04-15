@@ -6,6 +6,8 @@ import numpy as np
 import aligator
 import pytest
 
+from utils import set_baumgarte_params
+
 
 NUM_MPC_CYCLES = 20
 
@@ -53,8 +55,7 @@ def mpc_problem():
             pl2,
             pin.LOCAL,
         )
-        cm.corrector.Kp[:] = (0, 0, 0)
-        cm.corrector.Kd[:] = (0, 0, 0)
+        set_baumgarte_params(cm, 0.0, 0.0)
         constraint_models.append(cm)
         constraint_datas.append(cm.createData())
 

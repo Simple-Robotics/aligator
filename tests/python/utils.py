@@ -1,7 +1,11 @@
 import numpy as np
 import aligator
+import typing
 
 from aligator import manifolds, dynamics
+
+if typing.TYPE_CHECKING:
+    import pinocchio as pin
 
 
 def infNorm(x):
@@ -137,3 +141,19 @@ def function_finite_difference(
         ei[i] = 0.0
 
     return Jx_nd, Ju_nd
+
+
+def set_baumgarte_params(cm: "pin.RigidConstraintModel", Kp: float, Kd: float = None):
+    from aligator import ALIGATOR_PINOCCHIO_V4
+
+    if Kd is None:
+        Kd = Kp
+
+    if ALIGATOR_PINOCCHIO_V4:
+        corr = cm.m_baumgarte_parameters
+        corr.Kp = Kp
+        corr.Kd = Kd
+    else:
+        corr = cm.corrector
+        corr.Kp[:] = Kp
+        corr.Kd[:] = Kd
