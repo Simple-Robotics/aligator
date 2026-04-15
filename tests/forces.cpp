@@ -12,23 +12,31 @@
 
 #include "test_util/pinocchio.hpp"
 
+namespace pin = pinocchio;
+using namespace aligator;
+
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
+using pin::CONTACT_3D;
+using pin::CONTACT_6D;
+using pin::Data;
+using pin::LOCAL;
+using pin::Model;
+using ProximalSettings = pin::ProximalSettingsTpl<double>;
+using ContactForceData = aligator::ContactForceDataTpl<double>;
+using ContactForceResidual = aligator::ContactForceResidualTpl<double>;
+using StageFunctionData = aligator::StageFunctionDataTpl<double>;
+using Manifold = aligator::MultibodyPhaseSpace<double>;
+using Vector3or6 = Eigen::Matrix<double, -1, 1, Eigen::ColMajor, 6, 1>;
+
+using RigidConstraintModel = context::RCM;
+using RigidConstraintData = context::RCD;
+using RigidConstraintModelVector = context::RCMVector;
+using RigidConstraintDataVector = context::RCDVector;
+
 TEST_CASE("contact_forces_6d", "[forces]") {
-  using namespace Eigen;
-  using namespace pinocchio;
-  using namespace aligator;
-
-  using ContactForceData = aligator::ContactForceDataTpl<double>;
-  using ContactForceResidual = aligator::ContactForceResidualTpl<double>;
-  using StageFunctionData = aligator::StageFunctionDataTpl<double>;
-  using Manifold = aligator::MultibodyPhaseSpace<double>;
-  using Vector3or6 = Eigen::Matrix<double, -1, 1, Eigen::ColMajor, 6, 1>;
-  using RigidConstraintModelVector =
-      PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintModel);
-  using RigidConstraintDataVector =
-      PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintData);
-
   Model model;
-  buildModels::humanoidRandom(model, true);
+  pin::buildModels::humanoidRandom(model, true);
   Data data(model), data_fd(model);
 
   VectorXd q = randomConfiguration(model);
@@ -127,18 +135,9 @@ TEST_CASE("contact_forces_6d", "[forces]") {
 }
 
 TEST_CASE("contact_forces_3d", "[forces]") {
-  using namespace Eigen;
-  using namespace pinocchio;
-  using namespace aligator;
-
-  using ContactForceData = aligator::ContactForceDataTpl<double>;
-  using ContactForceResidual = aligator::ContactForceResidualTpl<double>;
-  using StageFunctionData = aligator::StageFunctionDataTpl<double>;
-  using Manifold = aligator::MultibodyPhaseSpace<double>;
-  using Vector3or6 = Eigen::Matrix<double, -1, 1, Eigen::ColMajor, 6, 1>;
 
   Model model;
-  buildModels::humanoidRandom(model, true);
+  pin::buildModels::humanoidRandom(model, true);
   Data data(model), data_fd(model);
 
   VectorXd q = randomConfiguration(model);
@@ -237,18 +236,13 @@ TEST_CASE("contact_forces_3d", "[forces]") {
 }
 
 TEST_CASE("wrench_cone", "[forces]") {
-  using namespace Eigen;
-  using namespace pinocchio;
-  using namespace aligator;
 
   using MultibodyWrenchConeData = aligator::MultibodyWrenchConeDataTpl<double>;
   using MultibodyWrenchConeResidual =
       aligator::MultibodyWrenchConeResidualTpl<double>;
-  using StageFunctionData = aligator::StageFunctionDataTpl<double>;
-  using Manifold = aligator::MultibodyPhaseSpace<double>;
 
   Model model;
-  buildModels::humanoidRandom(model, true);
+  pin::buildModels::humanoidRandom(model, true);
   Data data(model), data_fd(model);
 
   VectorXd q = randomConfiguration(model);
@@ -344,19 +338,13 @@ TEST_CASE("wrench_cone", "[forces]") {
 }
 
 TEST_CASE("friction_cone", "[forces]") {
-  using namespace Eigen;
-  using namespace pinocchio;
-  using namespace aligator;
-
   using MultibodyFrictionConeData =
       aligator::MultibodyFrictionConeDataTpl<double>;
   using MultibodyFrictionConeResidual =
       aligator::MultibodyFrictionConeResidualTpl<double>;
-  using StageFunctionData = aligator::StageFunctionDataTpl<double>;
-  using Manifold = aligator::MultibodyPhaseSpace<double>;
 
   Model model;
-  buildModels::humanoidRandom(model, true);
+  pin::buildModels::humanoidRandom(model, true);
   Data data(model), data_fd(model);
 
   VectorXd q = randomConfiguration(model);
