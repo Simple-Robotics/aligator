@@ -155,10 +155,15 @@ activation = { env = { ALIGATOR_TRACY_ENABLE = "ON" } }
 dependencies = { tracy-profiler-client = ">=0.11.1" }
 activation = { env = { ALIGATOR_TRACY_ENABLE = "ON" } }
 
-[feature.pinocchio]
-dependencies = { pinocchio = ">=3.9.0,<5", example-robot-data-loaders = ">=4" }
+[feature.pin39]
+dependencies = { pinocchio = ">=3.9.0,<4", example-robot-data-loaders = ">=4" }
 activation = { env = { ALIGATOR_PINOCCHIO_SUPPORT = "ON" } }
 
+[feature.pin4]
+dependencies = { pinocchio = ">=4.0.0,<5", example-robot-data-loaders = ">=4" }
+activation = { env = { ALIGATOR_PINOCCHIO_SUPPORT = "ON" } }
+
+# crocoddyl 3.2 requires pinocchio 3.8.x, so this feature is pinned to Pinocchio 3
 [feature.crocoddyl]
 dependencies = { crocoddyl = ">=3.2.0,<4", example-robot-data-loaders = ">=4" }
 activation = { env = { ALIGATOR_CROCODDYL_COMPAT = "ON", ALIGATOR_PINOCCHIO_SUPPORT = "ON" } }
@@ -205,8 +210,12 @@ graphviz = ">=12"
 default = { features = ["python-latest"], solve-group = "python-latest" }
 clang = { features = ["clang", "python-latest"] }
 lint = { features = ["lint"], no-default-feature = false}
-pinocchio = { features = [
-  "pinocchio",
+pin39 = { features = [
+  "pin39",
+  "python-latest",
+] }
+pin4 = { features = [
+  "pin4",
   "python-latest",
 ], solve-group = "python-latest" }
 crocoddyl = { features = [
@@ -221,25 +230,25 @@ tracy = { features = ["tracy", "python-latest"], solve-group = "python-latest" }
 python-oldest = { features = ["python-oldest"], solve-group = "python-oldest" }
 all = { features = [
   "doc",
-  "pinocchio",
+  "pin4",
   "openmp",
   "python-latest",
 ], solve-group = "python-latest" }
 all-with-croco = { features = [
   "doc",
-  "crocoddyl",
+  "crocoddyl",  # with pinocchio 3.8
   "openmp",
-  "python-latest",
+  "python-latest"
 ] }
 all-python-oldest = { features = [
   "doc",
-  "pinocchio",
+  "pin39",
   "openmp",
   "python-oldest",
 ], solve-group = "python-oldest" }
 new-version = { features = [
   "new-version",
-  "pinocchio",
+  "pin4",
   "openmp",
   "python-latest",
 ], solve-group = "python-latest" }
