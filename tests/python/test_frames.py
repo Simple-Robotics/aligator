@@ -299,13 +299,21 @@ def test_frame_collision():
     geometry = pin.buildSampleGeometryModelHumanoid(model)
     ig_frame = geometry.addGeometryObject(
         pin.GeometryObject(
-            "frame", fr_id1, joint_id, coal.Capsule(alpha, gamma), frame_SE3
+            "frame",
+            parent_joint=joint_id,
+            parent_frame=fr_id1,
+            placement=frame_SE3,
+            collision_geometry=coal.Capsule(alpha, gamma),
         )
     )
 
     ig_frame2 = geometry.addGeometryObject(
         pin.GeometryObject(
-            "frame2", fr_id2, joint_id2, coal.Capsule(beta, delta), frame_SE3_bis
+            "frame2",
+            parent_joint=joint_id2,
+            parent_frame=fr_id2,
+            placement=frame_SE3_bis,
+            collision_geometry=coal.Capsule(beta, delta),
         )
     )
     geometry.addCollisionPair(pin.CollisionPair(ig_frame, ig_frame2))
