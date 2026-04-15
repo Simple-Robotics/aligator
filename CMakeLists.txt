@@ -194,12 +194,7 @@ endif()
 # ----------------------------------------------------
 # --- DEPENDENCIES -----------------------------------
 # ----------------------------------------------------
-ADD_PROJECT_DEPENDENCY(
-  Eigen3
-  3.4.0...5
-  REQUIRED
-  PKG_CONFIG_REQUIRES "eigen3 >= 3.4.0"
-)
+ADD_PROJECT_DEPENDENCY(Eigen3 REQUIRED PKG_CONFIG_REQUIRES "Eigen3 >= 3.4.0")
 ADD_PROJECT_DEPENDENCY(fmt REQUIRED PKG_CONFIG_REQUIRES "fmt >= 10.0.0")
 if(BUILD_WITH_UBUNTU_22_COMPATIBILITY)
   set(
