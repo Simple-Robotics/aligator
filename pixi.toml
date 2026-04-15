@@ -204,7 +204,7 @@ graphviz = ">=12"
 [environments]
 default = { features = ["python-latest"], solve-group = "python-latest" }
 clang = { features = ["clang", "python-latest"] }
-lint = { features = ["lint"], solve-group = "python-latest" }
+lint = { features = ["lint"], no-default-feature = false}
 pinocchio = { features = [
   "pinocchio",
   "python-latest",
