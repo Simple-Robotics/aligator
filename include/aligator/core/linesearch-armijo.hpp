@@ -8,6 +8,7 @@
 #include "linesearch-base.hpp"
 
 #include <Eigen/QR>
+#include <cassert>
 
 namespace aligator {
 
