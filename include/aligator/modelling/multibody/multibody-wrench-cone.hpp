@@ -27,8 +27,12 @@ public:
   using Model = pinocchio::ModelTpl<Scalar>;
   using SE3 = pinocchio::SE3Tpl<Scalar>;
   using Data = MultibodyWrenchConeDataTpl<Scalar>;
-  using RigidConstraintModelVector = pinocchio::RigidConstraintModelVector;
-  using RigidConstraintDataVector = pinocchio::RigidConstraintDataVector;
+  using RigidConstraintModel = pinocchio::RigidConstraintModelTpl<Scalar>;
+  using RigidConstraintData = pinocchio::RigidConstraintDataTpl<Scalar>;
+  using RigidConstraintModelVector =
+      PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintModel);
+  using RigidConstraintDataVector =
+      PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintData);
   using ProxSettings = pinocchio::ProximalSettingsTpl<Scalar>;
 
   Model pin_model_;
@@ -100,7 +104,9 @@ struct MultibodyWrenchConeDataTpl : StageFunctionDataTpl<Scalar> {
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
   using Matrix6Xs = typename math_types<Scalar>::Matrix6Xs;
-  using RigidConstraintDataVector = pinocchio::RigidConstraintDataVector;
+  using RigidConstraintData = pinocchio::RigidConstraintDataTpl<Scalar>;
+  using RigidConstraintDataVector =
+      PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintData);
 
   /// Pinocchio data object.
   PinData pin_data_;

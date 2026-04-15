@@ -107,8 +107,8 @@ auto makeConstraint(pinocchio::Model const &model) {
 }
 
 auto makeDynamicsModel(double t, double dt, pinocchio::Model const &model) {
-  auto constraint_models = typename dynamics::MultibodyConstraintFwdDynamicsTpl<
-      double>::RigidConstraintModelVector();
+  dynamics::MultibodyConstraintFwdDynamicsTpl<
+      double>::RigidConstraintModelVector constraint_models;
   const auto [placement, support] = height(t);
 
   if (support)
@@ -117,8 +117,7 @@ auto makeDynamicsModel(double t, double dt, pinocchio::Model const &model) {
 
   const StageSpace stage_space(model);
   const pinocchio::ProximalSettings proximal_settings(1e-9, 1e-10, 10);
-  Eigen::MatrixXd actuation_matrix =
-      Eigen::MatrixXd::Zero(model.nv, model.nv).eval();
+  Eigen::MatrixXd actuation_matrix = Eigen::MatrixXd::Zero(model.nv, model.nv);
   actuation_matrix.bottomRows(model.nv).setIdentity();
 
   const dynamics::MultibodyConstraintFwdDynamicsTpl<double> ode(

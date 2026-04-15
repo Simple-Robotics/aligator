@@ -22,6 +22,10 @@ TEST_CASE("contact_forces_6d", "[forces]") {
   using StageFunctionData = aligator::StageFunctionDataTpl<double>;
   using Manifold = aligator::MultibodyPhaseSpace<double>;
   using Vector3or6 = Eigen::Matrix<double, -1, 1, Eigen::ColMajor, 6, 1>;
+  using RigidConstraintModelVector =
+      PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintModel);
+  using RigidConstraintDataVector =
+      PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintData);
 
   Model model;
   buildModels::humanoidRandom(model, true);
@@ -39,8 +43,8 @@ TEST_CASE("contact_forces_6d", "[forces]") {
   const Model::JointIndex RF_id = model.getJointId(RF);
 
   // Contact models and data
-  pinocchio::RigidConstraintModelVector constraint_models;
-  pinocchio::RigidConstraintDataVector constraint_data;
+  RigidConstraintModelVector constraint_models;
+  RigidConstraintDataVector constraint_data;
 
   RigidConstraintModel ci_LF(CONTACT_6D, model, LF_id, LOCAL);
   ci_LF.joint1_placement.setRandom();
@@ -149,8 +153,8 @@ TEST_CASE("contact_forces_3d", "[forces]") {
   const Model::JointIndex RF_id = model.getJointId(RF);
 
   // Contact models and data
-  pinocchio::RigidConstraintModelVector constraint_models;
-  pinocchio::RigidConstraintDataVector constraint_data;
+  RigidConstraintModelVector constraint_models;
+  RigidConstraintDataVector constraint_data;
 
   RigidConstraintModel ci_LF(CONTACT_3D, model, LF_id, LOCAL);
   ci_LF.joint1_placement.setRandom();
@@ -259,8 +263,8 @@ TEST_CASE("wrench_cone", "[forces]") {
   const Model::JointIndex RF_id = model.getJointId(RF);
 
   // Contact models and data
-  pinocchio::RigidConstraintModelVector constraint_models;
-  pinocchio::RigidConstraintDataVector constraint_data;
+  RigidConstraintModelVector constraint_models;
+  RigidConstraintDataVector constraint_data;
 
   RigidConstraintModel ci_LF(CONTACT_6D, model, LF_id, LOCAL);
   ci_LF.joint1_placement.setRandom();
@@ -367,8 +371,8 @@ TEST_CASE("friction_cone", "[forces]") {
   const Model::JointIndex RF_id = model.getJointId(RF);
 
   // Contact models and data
-  pinocchio::RigidConstraintModelVector constraint_models;
-  pinocchio::RigidConstraintDataVector constraint_data;
+  RigidConstraintModelVector constraint_models;
+  RigidConstraintDataVector constraint_data;
 
   RigidConstraintModel ci_LF(CONTACT_3D, model, LF_id, LOCAL);
   ci_LF.joint1_placement.setRandom();

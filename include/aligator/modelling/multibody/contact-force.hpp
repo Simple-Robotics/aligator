@@ -27,7 +27,8 @@ public:
   using SE3 = pinocchio::SE3Tpl<Scalar>;
   using Data = ContactForceDataTpl<Scalar>;
   using RigidConstraintModel = pinocchio::RigidConstraintModel;
-  using RigidConstraintModelVector = pinocchio::RigidConstraintModelVector;
+  using RigidConstraintModelVector =
+      PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintModel);
   using ProxSettings = pinocchio::ProximalSettingsTpl<Scalar>;
   using Vector3or6 = Eigen::Matrix<Scalar, -1, 1, Eigen::ColMajor, 6, 1>;
 
@@ -95,7 +96,7 @@ struct ContactForceDataTpl : StageFunctionDataTpl<Scalar> {
   PinData pin_data_;
   VectorXs tau_;
 
-  pinocchio::RigidConstraintDataVector constraint_datas_;
+  PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintData) constraint_datas_;
   pinocchio::ProximalSettingsTpl<Scalar> settings;
 
   ContactForceDataTpl(const ContactForceResidualTpl<Scalar> *model);

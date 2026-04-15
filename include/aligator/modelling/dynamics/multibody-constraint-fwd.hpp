@@ -27,8 +27,10 @@ struct MultibodyConstraintFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   using RigidConstraintModel = pinocchio::RigidConstraintModel;
   using RigidConstraintData = pinocchio::RigidConstraintData;
-  using RigidConstraintModelVector = pinocchio::RigidConstraintModelVector;
-  using RigidConstraintDataVector = pinocchio::RigidConstraintDataVector;
+  using RigidConstraintModelVector =
+      PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintModel);
+  using RigidConstraintDataVector =
+      PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintData);
 #pragma GCC diagnostic pop
   using ProxSettings = pinocchio::ProximalSettings;
   using Manifold = MultibodyPhaseSpace<Scalar>;
@@ -68,7 +70,8 @@ struct MultibodyConstraintFwdDataTpl : ContinuousDynamicsDataTpl<Scalar> {
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   using RigidConstraintData = pinocchio::RigidConstraintData;
 #pragma GCC diagnostic pop
-  using RigidConstraintDataVector = pinocchio::RigidConstraintDataVector;
+  using RigidConstraintDataVector =
+      PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintData);
 
   VectorXs tau_;
   MatrixXs dtau_dx_;
