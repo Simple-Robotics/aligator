@@ -15,7 +15,6 @@
 #include "aligator/deprecated.hpp"
 
 #include <memory>
-#include <cassert>
 
 #define ALIGATOR_RAISE_IF_NAN(value)                                           \
   if (::aligator::math::check_value(value))                                    \
