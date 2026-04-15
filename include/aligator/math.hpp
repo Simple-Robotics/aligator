@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Eigen/Core>
+#include <cassert>
 
 #define ALIGATOR_DYNAMIC_TYPEDEFS(Scalar)                                      \
   using VectorXs = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;                   \

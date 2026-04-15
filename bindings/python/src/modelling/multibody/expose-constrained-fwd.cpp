@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, 2022-2025 INRIA
+/// @copyright Copyright (C) 2022-2023 LAAS-CNRS, 2022-2026 INRIA
 #ifdef ALIGATOR_WITH_PINOCCHIO
 
 // Boost.Python 1.74 include manually mpl/vector/vector20.hpp
@@ -7,28 +7,21 @@
 // the right size.
 // To avoid this issue this header should be included first.
 #include <pinocchio/fwd.hpp>
+#include <pinocchio/algorithm/fwd.hpp>
 
 #include "aligator/python/fwd.hpp"
 
-#include "aligator/modelling/dynamics/context.hpp"
+#include "aligator/modelling/multibody/fwd.hpp"
+#include "aligator/modelling/dynamics/fwd.hpp"
 #include "aligator/modelling/dynamics/multibody-constraint-fwd.hpp"
-#include "aligator/python/fwd.hpp"
 
 namespace aligator {
 namespace python {
-namespace {
 
-using RigidConstraintModel =
-    pinocchio::RigidConstraintModelTpl<context::Scalar, 0>;
-using RigidConstraintData =
-    pinocchio::RigidConstraintDataTpl<context::Scalar, 0>;
-
-using RigidConstraintModelVector =
-    PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintModel);
-using RigidConstraintDataVector =
-    PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintData);
-
-} // namespace
+using context::RCD;
+using context::RCDVector;
+using context::RCM;
+using context::RCMVector;
 
 void exposeConstrainedFwdDynamics() {
   using namespace aligator::dynamics;
@@ -46,7 +39,7 @@ void exposeConstrainedFwdDynamics() {
       "MultibodyConstraintFwdDynamics",
       "Constraint forward dynamics using Pinocchio.",
       bp::init<const MultibodyPhaseSpace<Scalar> &, const context::MatrixXs &,
-               const RigidConstraintModelVector &,
+               const RCMVector &,
                const pinocchio::ProximalSettingsTpl<Scalar> &>(
           ("self"_a, "space", "actuation_matrix", "constraint_models",
            "prox_settings")))

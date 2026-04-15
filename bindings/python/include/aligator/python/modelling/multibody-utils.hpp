@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023 LAAS-CNRS, 2023-2026 INRIA
 #pragma once
 
 #include "aligator/python/fwd.hpp"
@@ -7,8 +7,8 @@
 
 namespace aligator {
 namespace python {
-using RCMVector = PINOCCHIO_ALIGNED_STD_VECTOR(context::RCM);
-using RCDVector = PINOCCHIO_ALIGNED_STD_VECTOR(context::RCD);
+using context::RCDVector;
+using context::RCMVector;
 
 template <typename Class>
 struct FrameAPIVisitor : bp::def_visitor<FrameAPIVisitor<Class>> {

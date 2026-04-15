@@ -5,8 +5,8 @@ import numpy as np
 import coal
 import aligator
 
-from aligator import manifolds, dynamics
-from utils import ode_finite_difference
+from aligator import manifolds, dynamics, ALIGATOR_PINOCCHIO_V4
+from utils import ode_finite_difference, set_baumgarte_params
 
 TOL = 1e-4
 
@@ -51,11 +51,10 @@ def createFourBarLinkages():
     base_joint_id = 0
     geom_obj0 = pin.GeometryObject(
         "link_A1",
-        base_joint_id,
-        shape_link_A,
-        pin.SE3(
-            pin.Quaternion.FromTwoVectors(pin.ZAxis, pin.XAxis).matrix(),
-            np.zeros(3),
+        parent_joint=base_joint_id,
+        collision_geometry=shape_link_A,
+        placement=pin.SE3(
+            pin.Quaternion.FromTwoVectors(pin.ZAxis, pin.XAxis).matrix(), np.zeros(3)
         ),
     )
     geom_obj0.meshColor = TRANS_COLOR
@@ -68,7 +67,10 @@ def createFourBarLinkages():
     )
     model.appendBodyToJoint(joint1_id, inertia_link_B, placement_center_link_B)
     geom_obj1 = pin.GeometryObject(
-        "link_B1", joint1_id, shape_link_B, placement_shape_B
+        "link_B1",
+        joint1_id,
+        collision_geometry=shape_link_B,
+        placement=placement_shape_B,
     )
     geom_obj1.meshColor = RED_COLOR
     collision_model.addGeometryObject(geom_obj1)
@@ -80,7 +82,10 @@ def createFourBarLinkages():
     )
     model.appendBodyToJoint(joint2_id, inertia_link_A, placement_center_link_A)
     geom_obj2 = pin.GeometryObject(
-        "link_A2", joint2_id, shape_link_A, placement_shape_A
+        "link_A2",
+        joint2_id,
+        collision_geometry=shape_link_A,
+        placement=placement_shape_A,
     )
     geom_obj2.meshColor = WHITE_COLOR
     collision_model.addGeometryObject(geom_obj2)
@@ -92,7 +97,10 @@ def createFourBarLinkages():
     )
     model.appendBodyToJoint(joint3_id, inertia_link_B, placement_center_link_B)
     geom_obj3 = pin.GeometryObject(
-        "link_B2", joint3_id, shape_link_B, placement_shape_B
+        "link_B2",
+        joint3_id,
+        collision_geometry=shape_link_B,
+        placement=placement_shape_B,
     )
     geom_obj3.meshColor = RED_COLOR
     collision_model.addGeometryObject(geom_obj3)
@@ -118,10 +126,13 @@ def createFourBarLinkages():
         constraint1_joint2_placement,
     )
     # model.jointPlacements[base_joint_id])
-    constraint_model.corrector.Kp[:] = 10.0
-    constraint_model.corrector.Kd[:] = 2.0 * np.sqrt(constraint_model.corrector.Kp)
+    set_baumgarte_params(constraint_model, Kp=10.0, Kd=2.0 * np.sqrt(10.0))
     constraint_data = constraint_model.createData()
-    constraint_dim = constraint_model.size()
+    constraint_dim = (
+        constraint_model.residualSize()
+        if ALIGATOR_PINOCCHIO_V4
+        else constraint_model.size()
+    )
 
     # First, do an inverse kinematics
     rho = 1e-10
@@ -131,7 +142,12 @@ def createFourBarLinkages():
 
     y = np.ones((constraint_dim))
     data.M = np.eye(model.nv) * rho
-    kkt_constraint = pin.ContactCholeskyDecomposition(model, [constraint_model])
+    if ALIGATOR_PINOCCHIO_V4:
+        kkt_constraint = pin.ConstraintCholeskyDecomposition(
+            model, data, [constraint_model], [constraint_data]
+        )
+    else:
+        kkt_constraint = pin.ContactCholeskyDecomposition(model, [constraint_model])
     eps = 1e-10
     N = 100
     for k in range(N):
@@ -180,11 +196,11 @@ def test_inv_dyn():
     )
 
     # test the resulting acceleration is zero
-    if aligator.ALIGATOR_PINOCCHIO_V4:
+    if ALIGATOR_PINOCCHIO_V4:
         pin.initConstraintDynamics(model, data, [rcm], [rcd])
     else:
         pin.initConstraintDynamics(model, data, [rcm])
-    prox = pin.ProximalSettings(1e-12, 1e-10, 3)
+    prox = pin.ProximalSettings(1e-12, 1e-10, 30)
     a0 = pin.constraintDynamics(model, data, q0, v0, tau0, [rcm], [rcd], prox)
     assert np.allclose(a0, 0.0)
 

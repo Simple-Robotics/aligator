@@ -1,5 +1,5 @@
 /// @file
-/// @copyright Copyright (C) 2023 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2023 LAAS-CNRS, 2023-2026 INRIA
 #ifdef ALIGATOR_WITH_PINOCCHIO
 
 // Boost.Python 1.74 include manually mpl/vector/vector20.hpp
@@ -25,15 +25,6 @@ using context::PinModel;
 using context::Scalar;
 using context::StageFunction;
 using context::StageFunctionData;
-using RigidConstraintModel =
-    pinocchio::RigidConstraintModelTpl<context::Scalar, 0>;
-using RigidConstraintData =
-    pinocchio::RigidConstraintDataTpl<context::Scalar, 0>;
-
-using RigidConstraintModelVector =
-    PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintModel);
-using RigidConstraintDataVector =
-    PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintData);
 
 const PolymorphicMultiBaseVisitor<StageFunction> func_visitor;
 
@@ -54,7 +45,7 @@ void exposeContactForce() {
       "is a given frame index.",
       bp::no_init)
       .def(bp::init<int, PinModel, const context::MatrixXs &,
-                    const RigidConstraintModelVector &,
+                    const context::RCMVector &,
                     const pinocchio::ProximalSettingsTpl<Scalar> &,
                     const Eigen::VectorXd &, std::string_view>(bp::args(
           "self", "ndx", "model", "actuation_matrix", "constraint_models",
@@ -78,7 +69,7 @@ void exposeContactForce() {
       "MultibodyWrenchConeResidual", "A residual function :math:`r(x) = Af` ",
       bp::no_init)
       .def(bp::init<int, PinModel, const context::MatrixXs &,
-                    const RigidConstraintModelVector &,
+                    const context::RCMVector &,
                     const pinocchio::ProximalSettingsTpl<Scalar> &,
                     std::string_view, const double, const double, const double>(
           bp::args("self", "ndx", "model", "actuation_matrix",
@@ -99,7 +90,7 @@ void exposeContactForce() {
       "MultibodyFrictionConeResidual", "A residual function :math:`r(x) = Af` ",
       bp::no_init)
       .def(bp::init<int, PinModel, const context::MatrixXs &,
-                    const RigidConstraintModelVector &,
+                    const context::RCMVector &,
                     const pinocchio::ProximalSettingsTpl<Scalar> &,
                     std::string_view, const double>(
           bp::args("self", "ndx", "model", "actuation_matrix",

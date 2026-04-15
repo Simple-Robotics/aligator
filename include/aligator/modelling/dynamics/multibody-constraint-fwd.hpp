@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2026 INRIA
 #pragma once
 
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
@@ -7,15 +7,13 @@
 #include <pinocchio/multibody/data.hpp>
 
 #include <pinocchio/algorithm/proximal.hpp>
+#include <pinocchio/algorithm/contact-info.hpp>
 
 namespace aligator {
 namespace dynamics {
 template <typename Scalar> struct MultibodyConstraintFwdDataTpl;
 
-/**
- * @brief   Constraint multibody forward dynamics, using Pinocchio.
- *
- */
+/// @brief   Constraint multibody forward dynamics, using Pinocchio.
 template <typename _Scalar>
 struct MultibodyConstraintFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -27,12 +25,14 @@ struct MultibodyConstraintFwdDynamicsTpl : ODEAbstractTpl<_Scalar> {
   using Data = MultibodyConstraintFwdDataTpl<Scalar>;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+  using RigidConstraintModel = pinocchio::RigidConstraintModel;
+  using RigidConstraintData = pinocchio::RigidConstraintData;
   using RigidConstraintModelVector =
-      PINOCCHIO_ALIGNED_STD_VECTOR(pinocchio::RigidConstraintModelTpl<Scalar>);
+      PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintModel);
   using RigidConstraintDataVector =
-      PINOCCHIO_ALIGNED_STD_VECTOR(pinocchio::RigidConstraintData);
+      PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintData);
 #pragma GCC diagnostic pop
-  using ProxSettings = pinocchio::ProximalSettingsTpl<Scalar>;
+  using ProxSettings = pinocchio::ProximalSettings;
   using Manifold = MultibodyPhaseSpace<Scalar>;
 
   Manifold space_;
@@ -68,7 +68,7 @@ struct MultibodyConstraintFwdDataTpl : ContinuousDynamicsDataTpl<Scalar> {
   using PinDataType = pinocchio::DataTpl<Scalar>;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-  using RigidConstraintData = pinocchio::RigidConstraintDataTpl<Scalar>;
+  using RigidConstraintData = pinocchio::RigidConstraintData;
 #pragma GCC diagnostic pop
   using RigidConstraintDataVector =
       PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintData);
@@ -77,16 +77,16 @@ struct MultibodyConstraintFwdDataTpl : ContinuousDynamicsDataTpl<Scalar> {
   MatrixXs dtau_dx_;
   MatrixXs dtau_du_;
   RigidConstraintDataVector constraint_datas_;
-  pinocchio::ProximalSettingsTpl<Scalar> settings;
-  /// shared_ptr to the underlying pinocchio::DataTpl object.
+  pinocchio::ProximalSettings settings;
   PinDataType pin_data_;
-  MultibodyConstraintFwdDataTpl(
+  explicit MultibodyConstraintFwdDataTpl(
       const MultibodyConstraintFwdDynamicsTpl<Scalar> &cont_dyn);
 };
 
+#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
+extern template struct MultibodyConstraintFwdDynamicsTpl<context::Scalar>;
+extern template struct MultibodyConstraintFwdDataTpl<context::Scalar>;
+#endif
+
 } // namespace dynamics
 } // namespace aligator
-
-#ifdef ALIGATOR_ENABLE_TEMPLATE_INSTANTIATION
-#include "aligator/modelling/dynamics/multibody-constraint-fwd.txx"
-#endif

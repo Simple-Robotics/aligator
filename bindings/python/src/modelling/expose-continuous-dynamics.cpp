@@ -1,10 +1,10 @@
 /// @file
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2026 INRIA
 #include "aligator/python/fwd.hpp"
 #include "aligator/python/visitors.hpp"
 #include "aligator/python/modelling/continuous.hpp"
 #include "aligator/modelling/dynamics/continuous-dynamics-abstract.hpp"
-#include "aligator/modelling/dynamics/context.hpp"
+#include "aligator/modelling/dynamics/fwd.hpp"
 
 namespace aligator {
 namespace python {

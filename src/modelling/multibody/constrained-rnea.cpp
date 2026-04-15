@@ -11,8 +11,7 @@ template void underactuatedConstrainedInverseDynamics<
     const Eigen::MatrixBase<context::ConstVectorRef> &,
     const Eigen::MatrixBase<context::ConstVectorRef> &,
     const Eigen::MatrixBase<context::ConstMatrixRef> &,
-    const PINOCCHIO_ALIGNED_STD_VECTOR(context::RCM) &,
-    PINOCCHIO_ALIGNED_STD_VECTOR(context::RCD) &,
+    const context::RCMVector &, PINOCCHIO_ALIGNED_STD_VECTOR(context::RCD) &,
     const Eigen::MatrixBase<context::VectorRef> &);
 
 } // namespace aligator

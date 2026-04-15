@@ -27,6 +27,4 @@ _process()
 if has_pinocchio_features():  # noqa: F405
     import pinocchio
 
-    ALIGATOR_PINOCCHIO_V4 = (
-        pinocchio.__version__ == "3.99.0" or pinocchio.PINOCCHIO_MAJOR_VERSION >= 4
-    )
+    ALIGATOR_PINOCCHIO_V4 = pinocchio.PINOCCHIO_MAJOR_VERSION >= 4

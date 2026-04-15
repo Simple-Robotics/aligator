@@ -1,4 +1,4 @@
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2026 INRIA
 #pragma once
 
 #include "aligator/context.hpp"
@@ -23,6 +23,8 @@ using PinData = pinocchio::DataTpl<Scalar, Options>;
 
 using RCM = pinocchio::RigidConstraintModelTpl<Scalar, Options>;
 using RCD = pinocchio::RigidConstraintDataTpl<Scalar, Options>;
+using RCMVector = PINOCCHIO_ALIGNED_STD_VECTOR(RCM);
+using RCDVector = PINOCCHIO_ALIGNED_STD_VECTOR(RCD);
 using MultibodyConfiguration = MultibodyConfiguration<Scalar>;
 using MultibodyPhaseSpace = MultibodyPhaseSpace<Scalar>;
 } // namespace context

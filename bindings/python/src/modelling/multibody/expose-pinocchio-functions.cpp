@@ -197,16 +197,14 @@ auto underactuatedConstraintInvDyn_proxy(const PinModel &model, PinData &data,
                                          const RCMVector &constraint_models,
                                          RCDVector &constraint_datas) {
   long nu = actMatrix.cols();
-  int d = 0;
-  for (size_t k = 0; k < constraint_models.size(); ++k) {
-    d += (int)constraint_models[k].size();
-  }
+  const int d = details::computeRigidConstraintsTotalSize(constraint_models,
+                                                          constraint_datas);
+
   context::VectorXs out(nu + d);
   underactuatedConstrainedInverseDynamics(
       model, data, q, v, actMatrix, constraint_models, constraint_datas, out);
 
-  return bp::make_tuple((context::VectorXs)out.head(nu),
-                        (context::VectorXs)out.tail(d));
+  return bp::make_tuple(out.head(nu).eval(), out.tail(d).eval());
 }
 
 void exposePinocchioFunctions() {

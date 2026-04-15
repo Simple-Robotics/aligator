@@ -1,13 +1,13 @@
 /// @file
-/// @copyright Copyright (C) 2024 LAAS-CNRS, 2024-2025 INRIA
+/// @copyright Copyright (C) 2024 LAAS-CNRS, 2024-2026 INRIA
 #pragma once
 
-#include "./fwd.hpp"
+#include "fwd.hpp"
 #include "aligator/core/function-abstract.hpp"
-
-#include <Eigen/src/Core/util/Constants.h>
 #include "aligator/modelling/spaces/multibody.hpp"
+
 #include <pinocchio/algorithm/proximal.hpp>
+#include <pinocchio/algorithm/contact-info.hpp>
 
 namespace aligator {
 
@@ -26,7 +26,7 @@ public:
   using Model = pinocchio::ModelTpl<Scalar>;
   using SE3 = pinocchio::SE3Tpl<Scalar>;
   using Data = ContactForceDataTpl<Scalar>;
-  using RigidConstraintModel = pinocchio::RigidConstraintModelTpl<Scalar>;
+  using RigidConstraintModel = pinocchio::RigidConstraintModel;
   using RigidConstraintModelVector =
       PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintModel);
   using ProxSettings = pinocchio::ProximalSettingsTpl<Scalar>;
@@ -90,14 +90,13 @@ struct ContactForceDataTpl : StageFunctionDataTpl<Scalar> {
   using PinData = pinocchio::DataTpl<Scalar>;
   using VectorXs = typename math_types<Scalar>::VectorXs;
   using MatrixXs = typename math_types<Scalar>::MatrixXs;
-  using RigidConstraintData = pinocchio::RigidConstraintDataTpl<Scalar>;
+  using RigidConstraintData = pinocchio::RigidConstraintData;
 
   /// Pinocchio data object.
   PinData pin_data_;
   VectorXs tau_;
 
-  PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintData)
-  constraint_datas_;
+  PINOCCHIO_ALIGNED_STD_VECTOR(RigidConstraintData) constraint_datas_;
   pinocchio::ProximalSettingsTpl<Scalar> settings;
 
   ContactForceDataTpl(const ContactForceResidualTpl<Scalar> *model);

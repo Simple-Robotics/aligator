@@ -1,10 +1,10 @@
 /// @file
-/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2025 INRIA
+/// @copyright Copyright (C) 2022-2024 LAAS-CNRS, 2022-2026 INRIA
 #pragma once
 
 #include "aligator/python/fwd.hpp"
 
-#include "aligator/modelling/dynamics/context.hpp"
+#include "aligator/modelling/dynamics/fwd.hpp"
 #include "aligator/modelling/dynamics/continuous-dynamics-abstract.hpp"
 #include "aligator/modelling/dynamics/ode-abstract.hpp"
 

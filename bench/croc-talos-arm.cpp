@@ -99,7 +99,7 @@ constexpr long nmax = 450;
 constexpr long ns = 50;
 constexpr auto unit = benchmark::kMillisecond;
 
-void CustomArgs(benchmark::internal::Benchmark *bench) {
+void CustomArgs(benchmark::Benchmark *bench) {
   bench->Arg(5)
       ->Arg(20)
       ->DenseRange(nmin, nmax, ns)

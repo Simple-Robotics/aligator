@@ -12,8 +12,9 @@
 #include <pinocchio/algorithm/frames.hpp>
 #include <pinocchio/algorithm/compute-all-terms.hpp>
 
-#include <cmath>
 #include <catch2/catch_test_macros.hpp>
+
+#include "test_util/pinocchio.hpp"
 
 using namespace aligator;
 using context::SolverProxDDP;
@@ -99,16 +100,15 @@ auto makeConstraint(pinocchio::Model const &model) {
   auto constraint = pinocchio::RigidConstraintModel(
       pinocchio::ContactType::CONTACT_6D, model, frame.parentJoint,
       frame.placement, pinocchio::LOCAL_WORLD_ALIGNED);
-  constraint.corrector.Kp << 0, 0, 100, 0, 0, 0;
-  constraint.corrector.Kd << 50, 50, 50, 50, 50, 50;
+  set_baumgarte_gains(constraint, 100, 50);
   constraint.name = "contact";
 
   return constraint;
 }
 
 auto makeDynamicsModel(double t, double dt, pinocchio::Model const &model) {
-  auto constraint_models = typename dynamics::MultibodyConstraintFwdDynamicsTpl<
-      double>::RigidConstraintModelVector();
+  dynamics::MultibodyConstraintFwdDynamicsTpl<
+      double>::RigidConstraintModelVector constraint_models;
   const auto [placement, support] = height(t);
 
   if (support)
@@ -117,8 +117,7 @@ auto makeDynamicsModel(double t, double dt, pinocchio::Model const &model) {
 
   const StageSpace stage_space(model);
   const pinocchio::ProximalSettings proximal_settings(1e-9, 1e-10, 10);
-  Eigen::MatrixXd actuation_matrix =
-      Eigen::MatrixXd::Zero(model.nv, model.nv).eval();
+  Eigen::MatrixXd actuation_matrix = Eigen::MatrixXd::Zero(model.nv, model.nv);
   actuation_matrix.bottomRows(model.nv).setIdentity();
 
   const dynamics::MultibodyConstraintFwdDynamicsTpl<double> ode(

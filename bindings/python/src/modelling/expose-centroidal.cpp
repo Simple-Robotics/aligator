@@ -13,6 +13,9 @@
 #include "aligator/modelling/centroidal/centroidal-wrapper.hpp"
 #include "aligator/modelling/contact-map.hpp"
 
+#include <eigenpy/eigenpy.hpp>
+#include <eigenpy/std-vector.hpp>
+
 namespace aligator {
 namespace python {
 
