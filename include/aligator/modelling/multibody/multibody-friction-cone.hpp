@@ -4,7 +4,6 @@
 #include "fwd.hpp"
 #include "aligator/core/function-abstract.hpp"
 #include "aligator/modelling/spaces/multibody.hpp"
-#include "pinocchio/constraints.hpp"
 
 #include <pinocchio/algorithm/proximal.hpp>
 #include <pinocchio/algorithm/contact-info.hpp>
