@@ -114,6 +114,9 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
       "StdVec_StringView");
 
   bp::import("warnings");
+#ifdef ALIGATOR_WITH_PINOCCHIO
+  bp::import("pinocchio");
+#endif
 
   bp::def(
       "has_pinocchio_features",
@@ -156,12 +159,9 @@ BOOST_PYTHON_MODULE(MODULE_NAME) {
   exposeAutodiff();
 
 #ifdef ALIGATOR_WITH_PINOCCHIO
-  {
-    bp::import("pinocchio");
-    exposePinocchioSpaces();
-    exposePinocchioFunctions();
-    exposePinocchioDynamics();
-  }
+  exposePinocchioSpaces();
+  exposePinocchioFunctions();
+  exposePinocchioDynamics();
 #endif
 
 #ifdef ALIGATOR_WITH_CROCODDYL_COMPAT
