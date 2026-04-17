@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-04-17
+
 ### Added
 - Support the new Pinocchio 4 release (https://github.com/Simple-Robotics/aligator/pull/390)
 - manifolds: add `PinocchioLieGroup::lieGroup()` getter, expose to Python
@@ -497,7 +499,8 @@ The following **API-BREAKING** changes come from PR [#229](https://github.com/Si
 
 * This is the first release of `aligator`. This library is a joint effort between INRIA and LAAS-CNRS, and will be maintained and expanded in the future. Please provide constructive feedback and contribute!
 
-[Unreleased]: https://github.com/Simple-Robotics/aligator/compare/v0.18.0...HEAD
+[Unreleased]: https://github.com/Simple-Robotics/aligator/compare/v0.19.0...HEAD
+[0.19.0]: https://github.com/Simple-Robotics/aligator/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/Simple-Robotics/aligator/compare/v0.17.1...v0.18.0
 [0.17.1]: https://github.com/Simple-Robotics/aligator/compare/v0.17.0...v0.17.1
 [0.17.0]: https://github.com/Simple-Robotics/aligator/compare/v0.16.0...v0.17.0
