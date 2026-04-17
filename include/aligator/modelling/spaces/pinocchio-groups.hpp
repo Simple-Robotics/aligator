@@ -14,15 +14,16 @@ namespace pin = pinocchio;
 /// Type trait. Indicates whether @tparam G is derived from
 /// pinocchio::LieGroupBase.
 template <typename G>
-inline constexpr bool is_pinocchio_lie_group =
-    std::is_base_of_v<pin::LieGroupBase<G>, G>;
+inline constexpr bool is_pinocchio_lie_group_v =
+    is_tpl_base_of_v<pin::LieGroupBase, G>;
 
 /// @brief  Wrap a Pinocchio Lie group into a ManifoldAbstractTpl object.
 ///
-template <typename G, std::enable_if_t<is_pinocchio_lie_group<G>> * = nullptr>
-struct PinocchioLieGroup : ManifoldAbstractTpl<typename G::Scalar> {
+template <typename LieGroup_>
+struct PinocchioLieGroup : ManifoldAbstractTpl<typename LieGroup_::Scalar> {
 public:
-  using LieGroup = G;
+  using LieGroup = LieGroup_;
+  static_assert(is_pinocchio_lie_group_v<LieGroup>);
   using Scalar = typename LieGroup::Scalar;
   using Base = ManifoldAbstractTpl<Scalar>;
   using Base::ndx;
@@ -51,6 +52,7 @@ public:
   }
 
   operator LieGroup() const { return lg_; }
+  LieGroup lieGroup() const { return lg_; }
 
   bool isNormalized(const ConstVectorRef &x) const {
     if (x.size() < nx())

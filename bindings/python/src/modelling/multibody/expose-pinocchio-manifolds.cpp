@@ -21,8 +21,10 @@ using PolyManifold = xyz::polymorphic<Manifold>;
 /// and no-arg default constructor.
 template <typename LieGroup>
 void exposeLieGroup(const char *name, const char *docstring) {
-  bp::class_<PinocchioLieGroup<LieGroup>, bp::bases<Manifold>>(
-      name, docstring, bp::init<>("self"_a))
+  using wrapper_t = PinocchioLieGroup<LieGroup>;
+  bp::class_<wrapper_t, bp::bases<Manifold>>(name, docstring,
+                                             bp::init<>("self"_a))
+      .add_property("lg", &wrapper_t::lieGroup)
       .def(PolymorphicVisitor<PolyManifold>())
       .enable_pickling_(true);
 }
