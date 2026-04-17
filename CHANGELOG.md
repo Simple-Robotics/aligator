@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Support the new Pinocchio 4 release (https://github.com/Simple-Robotics/aligator/pull/390)
+- manifolds: add `PinocchioLieGroup::lieGroup()` getter, expose to Python
 
 ### Changed
 - Deprecate `<aligator/modelling/dynamics/context.hpp>` (https://github.com/Simple-Robotics/aligator/pull/390)
