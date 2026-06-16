@@ -243,4 +243,5 @@ new-version = { features = [
   "openmp",
   "python-latest",
 ], solve-group = "python-latest" }
+all-pin39 = { features = ["doc", "pin39", "openmp", "python-latest"] }
 # test-pixi-build = { features = ["test-pixi-build"], no-default-feature = true }
