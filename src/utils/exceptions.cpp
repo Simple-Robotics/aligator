@@ -1,5 +1,6 @@
 #include "aligator/utils/exceptions.hpp"
 #include <fmt/color.h>
+#include <fmt/format.h>
 
 namespace aligator {
 namespace detail {

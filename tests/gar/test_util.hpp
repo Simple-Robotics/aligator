@@ -4,6 +4,8 @@
 #include "aligator/gar/lqr-problem.hpp"
 #include "../test_util.hpp"
 
+#include <fmt/format.h>
+
 ALIGATOR_DYNAMIC_TYPEDEFS(double);
 using problem_t = aligator::gar::LqrProblemTpl<double>;
 using knot_t = aligator::gar::LqrKnotTpl<double>;

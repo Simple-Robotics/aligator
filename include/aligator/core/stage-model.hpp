@@ -4,6 +4,7 @@
 
 #include "aligator/core/function-abstract.hpp"
 #include "aligator/core/constraint.hpp"
+#include <fmt/format.h>
 
 namespace aligator {
 using xyz::polymorphic;

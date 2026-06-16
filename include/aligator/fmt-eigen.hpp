@@ -7,6 +7,7 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <fmt/ranges.h>
+#include <fmt/format.h>
 
 /// Specialize fmt::formatter using the operator<< implementation for Eigen
 /// types.

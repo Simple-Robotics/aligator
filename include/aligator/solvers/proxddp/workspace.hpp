@@ -9,6 +9,8 @@
 
 #include "aligator/modelling/constraints/constraint-set-product.hpp"
 
+#include <fmt/format.h>
+
 namespace aligator {
 
 template <typename Scalar>

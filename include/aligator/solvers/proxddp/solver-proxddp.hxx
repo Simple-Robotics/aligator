@@ -15,6 +15,8 @@
 
 #include "aligator/tracy.hpp"
 
+#include <fmt/format.h>
+
 namespace aligator {
 
 // [1], related to Appendix A, details on aug. Lagrangian method

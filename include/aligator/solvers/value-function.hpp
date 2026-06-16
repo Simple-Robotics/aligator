@@ -8,6 +8,7 @@
 #include "aligator/context.hpp"
 
 #include <ostream>
+#include <fmt/format.h>
 
 namespace aligator {
 

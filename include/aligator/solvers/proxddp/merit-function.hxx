@@ -7,6 +7,8 @@
 #include "aligator/core/lagrangian.hpp"
 #include "aligator/tracy.hpp"
 
+#include <fmt/format.h>
+
 namespace aligator {
 
 template <typename Scalar>

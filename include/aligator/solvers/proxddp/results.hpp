@@ -4,6 +4,7 @@
 
 #include "aligator/solvers/results-base.hpp"
 #include <fmt/ostream.h>
+#include <fmt/format.h>
 
 namespace aligator {
 
