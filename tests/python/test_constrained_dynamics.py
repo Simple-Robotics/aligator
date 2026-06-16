@@ -152,6 +152,8 @@ def createFourBarLinkages():
     N = 100
     for k in range(N):
         pin.computeJointJacobians(model, data, q)
+        if ALIGATOR_PINOCCHIO_V4:
+            constraint_model.calc(model, data, constraint_data)
         kkt_constraint.compute(model, data, [constraint_model], [constraint_data], mu)
         constraint_value = constraint_data.c1Mc2.translation
 
