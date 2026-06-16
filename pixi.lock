@@ -229,8 +229,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/cycler-0.12.1-pyhcf101f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/decorator-5.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/docstring_parser-0.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-4.4.0-h87f4cd2_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-4.4.0-pyh5fb9ec7_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-5.0.0-h87f4cd2_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-5.0.0-pyh945b316_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/executing-2.2.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/font-ttf-dejavu-sans-mono-2.37-hab24e00_0.tar.bz2
@@ -288,8 +288,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/cycler-0.12.1-pyhcf101f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/decorator-5.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/docstring_parser-0.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-4.4.0-h87f4cd2_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-4.4.0-pyh5fb9ec7_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-5.0.0-h87f4cd2_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-5.0.0-pyh945b316_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/executing-2.2.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/font-ttf-dejavu-sans-mono-2.37-hab24e00_0.tar.bz2
@@ -518,8 +518,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/cycler-0.12.1-pyhcf101f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/decorator-5.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/docstring_parser-0.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-4.4.0-h87f4cd2_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-4.4.0-pyh5fb9ec7_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-5.0.0-h87f4cd2_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-5.0.0-pyh945b316_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/executing-2.2.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/font-ttf-dejavu-sans-mono-2.37-hab24e00_0.tar.bz2
@@ -843,11 +843,10 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libglx-1.7.0-ha4b6fd6_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libglx-devel-1.7.0-ha4b6fd6_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libgomp-15.2.0-he0feb66_19.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/libgz-cmake3-3.5.5-h54a6638_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/libgz-cmake4-4.2.0-h54a6638_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/libgz-math7-7.5.2-h54a6638_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/libgz-cmake-5.1.1-h54a6638_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/libgz-math-9.1.0-hed47212_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libgz-tools-2.0.3-h54a6638_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/libgz-utils2-2.2.1-h54a6638_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/libgz-utils-4.0.0-h3513b8a_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libhiredis-1.3.0-h5888daf_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libhwloc-2.12.1-default_hafda6a7_1003.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libiconv-1.18-h3b78370_2.conda
@@ -862,13 +861,13 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libopenblas-0.3.33-pthreads_h94d23a6_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libosqp-1.0.0-np2py312h1a77e3e_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libpciaccess-0.19-hb03c661_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/libpinocchio-3.9.0-h43f94a2_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/libpinocchio-4.0.0-h2844b27_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libpng-1.6.58-h421ea60_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libqdldl-0.1.8-h3f2d84a_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/librsvg-2.62.2-h4c96295_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libsanitizer-14.3.0-h8f1669f_19.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libscotch-7.0.4-h2fe6a88_5.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/libsdformat14-14.8.0-py314h67520d3_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/libsdformat-16.0.1-py314h1d9b72e_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libsodium-1.0.22-h280c20c_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libspral-2025.05.20-hfabd9d1_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libsqlite-3.53.1-h0c1763c_0.conda
@@ -905,8 +904,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pango-1.56.4-hda50119_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pcre2-10.47-haa7fec5_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pillow-12.2.0-py310h5a73078_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/pinocchio-3.9.0-hff52083_3.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/pinocchio-python-3.9.0-py310hc9533c4_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/pinocchio-4.0.0-h83d6740_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/pinocchio-python-4.0.0-py310h72bd3eb_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pixman-0.46.4-h54a6638_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pkg-config-0.29.2-h4bc722e_1009.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pthread-stubs-0.4-hb9d3cd8_1002.conda
@@ -919,6 +918,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/rhash-1.4.6-hb9d3cd8_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ruby-4.0.5-h95e6935_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/scipy-1.15.2-py310h1d65ade_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/spdlog-1.17.0-hab81395_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/tinyxml2-11.0.0-h3f2d84a_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/tk-8.6.13-noxft_h366c992_103.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/tornado-6.5.6-py310h7c4b9e2_0.conda
@@ -961,8 +961,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/cycler-0.12.1-pyhcf101f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/decorator-5.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/docstring_parser-0.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-4.4.0-h87f4cd2_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-4.4.0-pyh5fb9ec7_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-5.0.0-h87f4cd2_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-5.0.0-pyh945b316_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/executing-2.2.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/font-ttf-dejavu-sans-mono-2.37-hab24e00_0.tar.bz2
@@ -1017,8 +1017,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/cycler-0.12.1-pyhcf101f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/decorator-5.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/docstring_parser-0.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-4.4.0-h87f4cd2_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-4.4.0-pyh5fb9ec7_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-5.0.0-h87f4cd2_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-5.0.0-pyh945b316_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/executing-2.2.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/font-ttf-dejavu-sans-mono-2.37-hab24e00_0.tar.bz2
@@ -1155,11 +1155,10 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libgfortran-15.2.0-h7e5c614_19.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libgfortran5-15.2.0-hd16e46c_19.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libglib-2.88.1-hf28f236_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/libgz-cmake3-3.5.5-h53ec75d_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/libgz-cmake4-4.2.0-h53ec75d_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/libgz-math7-7.5.2-h5733d70_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/libgz-cmake-5.1.1-h2fb4741_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/libgz-math-9.1.0-h30b08cf_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libgz-tools-2.0.3-h53ec75d_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/libgz-utils2-2.2.1-h06076ce_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/libgz-utils-4.0.0-h64597c0_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libhiredis-1.3.0-h240833e_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libiconv-1.18-h57a12c2_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libintl-0.25.1-h3184127_1.conda
@@ -1171,12 +1170,12 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libnghttp2-1.68.1-h70048d4_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libopenblas-0.3.33-openmp_h9e49c7b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libosqp-1.0.0-np2py310hba42b91_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/libpinocchio-3.9.0-h7461b40_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/libpinocchio-4.0.0-ha6318f8_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libpng-1.6.58-he930e7c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libqdldl-0.1.8-h92383a6_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/librsvg-2.62.2-h7321050_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libscotch-7.0.11-int64_hdc26f42_3.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/libsdformat14-14.8.0-py314hc52fe87_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/libsdformat-16.0.1-py314h80bdb88_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libsigtool-0.1.3-hc0f2934_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libsodium-1.0.22-ha3d0635_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libsqlite-3.53.1-h8f8c405_0.conda
@@ -1205,8 +1204,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pango-1.56.4-hf280016_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pcre2-10.47-h13923f0_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pillow-12.2.0-py310h0c0a54c_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/pinocchio-3.9.0-h2ec42d9_3.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/pinocchio-python-3.9.0-py310h1862be4_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/pinocchio-4.0.0-hfc87174_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/pinocchio-python-4.0.0-py310h09f6039_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pixman-0.46.4-ha059160_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pkg-config-0.29.2-hf7e621a_1009.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pthread-stubs-0.4-h00291cd_1002.conda
@@ -1220,6 +1219,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/ruby-4.0.5-h8f51562_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/scipy-1.15.2-py310hef62574_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/sigtool-codesign-0.1.3-hc0f2934_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/spdlog-1.17.0-h30f01e4_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/tapi-1600.0.11.8-h8d8e812_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/tinyxml2-11.0.0-h92383a6_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/tk-8.6.13-h7142dee_3.conda
@@ -1244,8 +1244,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/cycler-0.12.1-pyhcf101f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/decorator-5.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/docstring_parser-0.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-4.4.0-h87f4cd2_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-4.4.0-pyh5fb9ec7_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-5.0.0-h87f4cd2_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-5.0.0-pyh945b316_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/executing-2.2.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/font-ttf-dejavu-sans-mono-2.37-hab24e00_0.tar.bz2
@@ -1382,11 +1382,10 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libgfortran-15.2.0-h07b0088_19.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libgfortran5-15.2.0-hdae7583_19.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libglib-2.88.1-ha08bb59_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libgz-cmake3-3.5.5-h248ca61_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libgz-cmake4-4.2.0-h248ca61_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libgz-math7-7.5.2-h248ca61_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libgz-cmake-5.1.1-h784d473_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libgz-math-9.1.0-h9326ef6_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libgz-tools-2.0.3-h82ceeb4_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libgz-utils2-2.2.1-h784d473_2.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libgz-utils-4.0.0-h2e468d0_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libhiredis-1.3.0-h286801f_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libiconv-1.18-h23cfdf5_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libintl-0.25.1-h493aca8_0.conda
@@ -1398,12 +1397,12 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libnghttp2-1.68.1-h8f3e76b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libopenblas-0.3.33-openmp_he657e61_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libosqp-1.0.0-np2py313hd6693e2_2.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libpinocchio-3.9.0-h38e3ed3_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libpinocchio-4.0.0-h9a60d09_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libpng-1.6.58-h132b30e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libqdldl-0.1.8-ha1acc90_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/librsvg-2.62.2-he8aa2a2_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libscotch-7.0.11-int64_hc5c7ca1_3.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libsdformat14-14.8.0-py314h23425eb_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libsdformat-16.0.1-py314hf95fc87_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libsigtool-0.1.3-h98dc951_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libsodium-1.0.22-h1a92334_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libsqlite-3.53.1-h1b79a29_0.conda
@@ -1432,8 +1431,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pango-1.56.4-hf80efc4_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pcre2-10.47-h30297fc_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pillow-12.2.0-py310hc037f36_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pinocchio-3.9.0-hb6292c7_3.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pinocchio-python-3.9.0-py310hffe0cd8_3.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pinocchio-4.0.0-hd747c48_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pinocchio-python-4.0.0-py310h6a781ba_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pixman-0.46.4-h81086ad_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pkg-config-0.29.2-hde07d2e_1009.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pthread-stubs-0.4-hd74edd7_1002.conda
@@ -1447,6 +1446,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/ruby-4.0.5-hbbfbfb4_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/scipy-1.15.2-py310h32ab4ed_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/sigtool-codesign-0.1.3-h98dc951_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/spdlog-1.17.0-ha0f8610_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/tapi-1600.0.11.8-h997e182_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/tinyxml2-11.0.0-ha1acc90_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/tk-8.6.13-h010d191_3.conda
@@ -1681,8 +1681,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/cycler-0.12.1-pyhcf101f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/decorator-5.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/docstring_parser-0.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-4.4.0-h87f4cd2_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-4.4.0-pyh5fb9ec7_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-5.0.0-h87f4cd2_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-5.0.0-pyh945b316_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/executing-2.2.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/font-ttf-dejavu-sans-mono-2.37-hab24e00_0.tar.bz2
@@ -1740,8 +1740,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/cycler-0.12.1-pyhcf101f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/decorator-5.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/docstring_parser-0.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-4.4.0-h87f4cd2_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-4.4.0-pyh5fb9ec7_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-5.0.0-h87f4cd2_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-5.0.0-pyh945b316_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/executing-2.2.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/font-ttf-dejavu-sans-mono-2.37-hab24e00_0.tar.bz2
@@ -1970,8 +1970,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/cycler-0.12.1-pyhcf101f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/decorator-5.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/docstring_parser-0.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-4.4.0-h87f4cd2_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-4.4.0-pyh5fb9ec7_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-5.0.0-h87f4cd2_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-5.0.0-pyh945b316_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/executing-2.2.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/font-ttf-dejavu-sans-mono-2.37-hab24e00_0.tar.bz2
@@ -2530,8 +2530,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/cycler-0.12.1-pyhcf101f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/decorator-5.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/docstring_parser-0.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-4.4.0-h87f4cd2_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-4.4.0-pyh5fb9ec7_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-5.0.0-h87f4cd2_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-5.0.0-pyh945b316_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/executing-2.2.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/fonttools-4.63.0-pyh7db6752_0.conda
@@ -2582,8 +2582,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/cycler-0.12.1-pyhcf101f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/decorator-5.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/docstring_parser-0.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-4.4.0-h87f4cd2_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-4.4.0-pyh5fb9ec7_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-5.0.0-h87f4cd2_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-5.0.0-pyh945b316_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/executing-2.2.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/fonttools-4.63.0-pyh7db6752_0.conda
@@ -2785,8 +2785,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/cycler-0.12.1-pyhcf101f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/decorator-5.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/docstring_parser-0.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-4.4.0-h87f4cd2_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-4.4.0-pyh5fb9ec7_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-5.0.0-h87f4cd2_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-5.0.0-pyh945b316_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/executing-2.2.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/fonttools-4.63.0-pyh7db6752_0.conda
@@ -4156,8 +4156,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/cycler-0.12.1-pyhcf101f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/decorator-5.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/docstring_parser-0.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-4.4.0-h87f4cd2_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-4.4.0-pyh5fb9ec7_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-5.0.0-h87f4cd2_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-5.0.0-pyh945b316_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/executing-2.2.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/fonttools-4.63.0-pyh7db6752_0.conda
@@ -4209,8 +4209,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/cycler-0.12.1-pyhcf101f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/decorator-5.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/docstring_parser-0.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-4.4.0-h87f4cd2_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-4.4.0-pyh5fb9ec7_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-5.0.0-h87f4cd2_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-5.0.0-pyh945b316_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/executing-2.2.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/fonttools-4.63.0-pyh7db6752_0.conda
@@ -4413,8 +4413,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/cycler-0.12.1-pyhcf101f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/decorator-5.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/docstring_parser-0.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-4.4.0-h87f4cd2_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-4.4.0-pyh5fb9ec7_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-5.0.0-h87f4cd2_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-5.0.0-pyh945b316_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/executing-2.2.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/fonttools-4.63.0-pyh7db6752_0.conda
@@ -5256,8 +5256,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/cycler-0.12.1-pyhcf101f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/decorator-5.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/docstring_parser-0.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-4.4.0-h87f4cd2_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-4.4.0-pyh5fb9ec7_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-5.0.0-h87f4cd2_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-5.0.0-pyh945b316_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/executing-2.2.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/fonttools-4.63.0-pyh7db6752_0.conda
@@ -5309,8 +5309,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/cycler-0.12.1-pyhcf101f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/decorator-5.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/docstring_parser-0.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-4.4.0-h87f4cd2_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-4.4.0-pyh5fb9ec7_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-5.0.0-h87f4cd2_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-5.0.0-pyh945b316_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/executing-2.2.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/fonttools-4.63.0-pyh7db6752_0.conda
@@ -5514,8 +5514,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/cycler-0.12.1-pyhcf101f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/decorator-5.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/docstring_parser-0.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-4.4.0-h87f4cd2_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-4.4.0-pyh5fb9ec7_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-5.0.0-h87f4cd2_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-5.0.0-pyh945b316_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/executing-2.2.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/fonttools-4.63.0-pyh7db6752_0.conda
@@ -5884,8 +5884,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/cycler-0.12.1-pyhcf101f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/decorator-5.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/docstring_parser-0.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-4.4.0-h87f4cd2_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-4.4.0-pyh5fb9ec7_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-5.0.0-h87f4cd2_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-5.0.0-pyh945b316_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/executing-2.2.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/fonttools-4.63.0-pyh7db6752_0.conda
@@ -5936,8 +5936,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/cycler-0.12.1-pyhcf101f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/decorator-5.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/docstring_parser-0.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-4.4.0-h87f4cd2_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-4.4.0-pyh5fb9ec7_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-5.0.0-h87f4cd2_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-5.0.0-pyh945b316_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/executing-2.2.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/fonttools-4.63.0-pyh7db6752_0.conda
@@ -6139,8 +6139,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/cycler-0.12.1-pyhcf101f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/decorator-5.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/docstring_parser-0.18.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-4.4.0-h87f4cd2_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-4.4.0-pyh5fb9ec7_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-5.0.0-h87f4cd2_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-5.0.0-pyh945b316_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.3.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/executing-2.2.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/fonttools-4.63.0-pyh7db6752_0.conda
@@ -9507,6 +9507,29 @@ packages:
   license_family: BSD
   size: 4575432
   timestamp: 1774948470928
+- conda: https://conda.anaconda.org/conda-forge/linux-64/libpinocchio-4.0.0-h2844b27_0.conda
+  sha256: e6ddc705731f6558468d460e8e1f4df0522f8b4f0dbf47c3e926753046c10dd6
+  md5: f4de7e5877a8b8e2b3ebd547b58cead3
+  depends:
+  - __glibc >=2.17,<3.0.a0
+  - _openmp_mutex >=4.5
+  - casadi >=3.7.2,<3.8.0a0
+  - console_bridge >=1.0.2,<1.1.0a0
+  - eigen-abi >=3.4.0.100,<3.4.0.101.0a0
+  - libboost >=1.88.0,<1.89.0a0
+  - libboost-devel
+  - libgcc >=14
+  - libgz-math >=9.1.0,<10.0a0
+  - libsdformat >=16.0.1,<17.0a0
+  - libstdcxx >=14
+  - qhull >=2020.2,<2020.3.0a0
+  - qhull-static
+  - urdfdom >=5.1.0,<5.2.0a0
+  - urdfdom_headers >=2.1.0,<3.0a0
+  license: BSD-2-Clause
+  license_family: BSD
+  size: 5226176
+  timestamp: 1776152899724
 - conda: https://conda.anaconda.org/conda-forge/linux-64/libpinocchio-4.0.0-hd3bca24_2.conda
   sha256: 108c4373c5f7e822b190258d4fdc92a179d538e5da434a3feb54cc6921539299
   md5: 7c5d87d67352adef63a3fdb624ba3840
@@ -10241,17 +10264,6 @@ packages:
   license_family: BSD
   size: 9740
   timestamp: 1774951569789
-- conda: https://conda.anaconda.org/conda-forge/linux-64/pinocchio-3.9.0-hff52083_3.conda
-  sha256: 2f32ef061bee89ac99ffd27543d62ecefd0fb516769eb5ab1662a93b8c9bdabe
-  md5: 0165b1d6d3c5b64fcc08b6ab1edfd0c4
-  depends:
-  - libpinocchio 3.9.0 h43f94a2_3
-  - pinocchio-python 3.9.0 py310hc9533c4_3
-  - python_abi 3.10.* *_cp310
-  license: BSD-2-Clause
-  license_family: BSD
-  size: 9756
-  timestamp: 1774951596802
 - conda: https://conda.anaconda.org/conda-forge/linux-64/pinocchio-4.0.0-h7d0a834_2.conda
   sha256: 66dca7f231d344668d60c99e0e6f890e8ffe8f9e7f2922d5f38f6443c0c50285
   md5: acd963931ed636df10278fc9c3500399
@@ -10263,27 +10275,17 @@ packages:
   license_family: BSD
   size: 11237
   timestamp: 1779096385891
-- conda: https://conda.anaconda.org/conda-forge/linux-64/pinocchio-python-3.9.0-py310hc9533c4_3.conda
-  sha256: 1bff6cfb11d27c67c62cac3d7fdd13b40c1f9c7b605f0a2cff8c4e843c272401
-  md5: 1574a8fbc3b926c041be6323be7afc82
+- conda: https://conda.anaconda.org/conda-forge/linux-64/pinocchio-4.0.0-h83d6740_0.conda
+  sha256: 86b55557c31ec166f001ec3db33a7abbcfcc47d52a2db6e65b0c2348562b3f84
+  md5: 9bf2287235e061c9fd31dcba9a989c80
   depends:
-  - __glibc >=2.17,<3.0.a0
-  - casadi >=3.7.2,<3.8.0a0
-  - eigen-abi >=3.4.0.100,<3.4.0.101.0a0
-  - eigenpy >=3.12.0,<3.12.1.0a0
-  - hpp-fcl >=3.0.2,<3.0.3.0a0
-  - libboost >=1.88.0,<1.89.0a0
-  - libboost-python >=1.88.0,<1.89.0a0
-  - libgcc >=14
-  - libpinocchio 3.9.0 h43f94a2_3
-  - libstdcxx >=14
-  - numpy >=1.21,<3
-  - python >=3.10,<3.11.0a0
+  - libpinocchio 4.0.0 h2844b27_0
+  - pinocchio-python 4.0.0 py310h72bd3eb_0
   - python_abi 3.10.* *_cp310
   license: BSD-2-Clause
   license_family: BSD
-  size: 10556256
-  timestamp: 1774951547169
+  size: 9898
+  timestamp: 1776156566259
 - conda: https://conda.anaconda.org/conda-forge/linux-64/pinocchio-python-3.9.0-py314h9d3bb99_3.conda
   sha256: d4e43276dbeb9f001fca20f75555e1d663803b41b6e1453dca64ca360cba7be3
   md5: 6ab23dabbdf5921347007aafdc6d44e0
@@ -10305,6 +10307,27 @@ packages:
   license_family: BSD
   size: 10523112
   timestamp: 1774951463072
+- conda: https://conda.anaconda.org/conda-forge/linux-64/pinocchio-python-4.0.0-py310h72bd3eb_0.conda
+  sha256: 732be771f07cb17d53ae0e7a6997c1941008086746785354c01ff89a01646d42
+  md5: 9233c0c6fb6b26284cd2dd80c75819df
+  depends:
+  - __glibc >=2.17,<3.0.a0
+  - casadi >=3.7.2,<3.8.0a0
+  - eigen-abi >=3.4.0.100,<3.4.0.101.0a0
+  - eigenpy >=3.12.0,<3.12.1.0a0
+  - hpp-fcl >=3.0.2,<3.0.3.0a0
+  - libboost >=1.88.0,<1.89.0a0
+  - libboost-python >=1.88.0,<1.89.0a0
+  - libgcc >=14
+  - libpinocchio 4.0.0 h2844b27_0
+  - libstdcxx >=14
+  - numpy >=1.21,<3
+  - python >=3.10,<3.11.0a0
+  - python_abi 3.10.* *_cp310
+  license: BSD-2-Clause
+  license_family: BSD
+  size: 12905161
+  timestamp: 1776156450111
 - conda: https://conda.anaconda.org/conda-forge/linux-64/pinocchio-python-4.0.0-py314h92653b4_2.conda
   sha256: 9ee3117d1327bccaea6a31c15cfc03edde207b4aaa2323bde7a0f24e5c1b5b39
   md5: 727df66a5037518a5599d4dd31d6e3ae
@@ -11200,27 +11223,28 @@ packages:
   license_family: MIT
   size: 23903
   timestamp: 1778609891474
-- conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-4.4.0-h87f4cd2_1.conda
-  sha256: 217dd0ed663328045f8ef8a3632981b26db5c8b40025906912619dfd590ced53
-  md5: e8ffdbd795a6e1b2fee80144501324ef
+- conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-5.0.0-h87f4cd2_1.conda
+  sha256: 0019d069b65308db405f9fb6d777f4e56a66dd4801ca3a0db7cc419578d6d40c
+  md5: 1b2aa3279c4705f49264cec2f1c50519
   depends:
   - __unix
   license: BSD-3-Clause
   license_family: BSD
-  size: 83828843
-  timestamp: 1761688398654
-- conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-4.4.0-pyh5fb9ec7_1.conda
-  sha256: 1dde8a2032278e384ce1f443a8b990e8c0982eb865c72c316cff28e109f419a8
-  md5: fca01825ea7da4ca7eef4ee9e125c26d
+  size: 102660804
+  timestamp: 1780925879414
+- conda: https://conda.anaconda.org/conda-forge/noarch/example-robot-data-loaders-5.0.0-pyh945b316_1.conda
+  sha256: dab4da8a4d10f251efd892d4a341094d10c3bfde6a7d7a9f6122b95c551773c8
+  md5: ae3c52f83c9abc8d9f07a7f151de3e37
   depends:
-  - example-robot-data 4.4.0 h87f4cd2_1
+  - coal-python
+  - example-robot-data 5.0.0 h87f4cd2_1
   - numpy
   - pinocchio-python
   - python >=3.10
   license: BSD-3-Clause
   license_family: BSD
-  size: 19396
-  timestamp: 1761688650427
+  size: 20138
+  timestamp: 1780926092359
 - conda: https://conda.anaconda.org/conda-forge/noarch/exceptiongroup-1.3.1-pyhd8ed1ab_0.conda
   sha256: ee6cf346d017d954255bbcbdb424cddea4d14e4ed7e9813e429db1d795d01144
   md5: 8e662bd460bda79b1ea39194e3c4c9ab
@@ -13654,6 +13678,29 @@ packages:
   license_family: BSD
   size: 4105692
   timestamp: 1779094041832
+- conda: https://conda.anaconda.org/conda-forge/osx-64/libpinocchio-4.0.0-ha6318f8_0.conda
+  sha256: 001589349d9ebf95c2ba16c9d9b8838e0badc5e16feb98f9dc4c00133bb54bfd
+  md5: fe6119db6d06cb942bc50015120dbaf5
+  depends:
+  - __osx >=11.0
+  - casadi >=3.7.2,<3.8.0a0
+  - console_bridge >=1.0.2,<1.1.0a0
+  - eigen-abi >=3.4.0.100,<3.4.0.101.0a0
+  - libboost >=1.88.0,<1.89.0a0
+  - libboost-devel
+  - libcxx >=19
+  - libgz-math >=9.1.0,<10.0a0
+  - libsdformat >=16.0.1,<17.0a0
+  - llvm-openmp >=19.1.7
+  - llvm-openmp >=22.1.3
+  - qhull >=2020.2,<2020.3.0a0
+  - qhull-static
+  - urdfdom >=5.1.0,<5.2.0a0
+  - urdfdom_headers >=2.1.0,<3.0a0
+  license: BSD-2-Clause
+  license_family: BSD
+  size: 4197584
+  timestamp: 1776153978565
 - conda: https://conda.anaconda.org/conda-forge/osx-64/libpng-1.6.58-he930e7c_0.conda
   sha256: a669b22978e546484d18d99a210801b1823360a266d7035c713d8d1facd035f7
   md5: 9744d43d5200f284260637304a069ddd
@@ -14157,17 +14204,6 @@ packages:
   license: HPND
   size: 1015315
   timestamp: 1775060319565
-- conda: https://conda.anaconda.org/conda-forge/osx-64/pinocchio-3.9.0-h2ec42d9_3.conda
-  sha256: 5b4cb0cf6837a74ad570ee0949937197237ee72b0339a2591e13097ac620e9cb
-  md5: 530975931936d5cb6b79bdd284910c2b
-  depends:
-  - libpinocchio 3.9.0 h7461b40_3
-  - pinocchio-python 3.9.0 py310h1862be4_3
-  - python_abi 3.10.* *_cp310
-  license: BSD-2-Clause
-  license_family: BSD
-  size: 9687
-  timestamp: 1774955208658
 - conda: https://conda.anaconda.org/conda-forge/osx-64/pinocchio-3.9.0-hee6578b_3.conda
   sha256: 488a1a08cb7dc43f34c06893b6118b6154e584d8ad517837bed2e7e63aa1e53c
   md5: d4544e7c5027bb8881a842c2a4dd712e
@@ -14190,26 +14226,17 @@ packages:
   license_family: BSD
   size: 11402
   timestamp: 1779098670269
-- conda: https://conda.anaconda.org/conda-forge/osx-64/pinocchio-python-3.9.0-py310h1862be4_3.conda
-  sha256: dd96383ed39039baaf158865818fefd601869fe1ab2ca8c4c5e7e290439434c4
-  md5: 3cf1a0837257865b90337799a0d4f533
+- conda: https://conda.anaconda.org/conda-forge/osx-64/pinocchio-4.0.0-hfc87174_0.conda
+  sha256: 75d634f5fe276253cae0befb099954fc2703ad45a1226c752daa0aa095162ed3
+  md5: 09938376993b497aaf8ae2a2c60a4b24
   depends:
-  - __osx >=11.0
-  - casadi >=3.7.2,<3.8.0a0
-  - eigen-abi >=3.4.0.100,<3.4.0.101.0a0
-  - eigenpy >=3.12.0,<3.12.1.0a0
-  - hpp-fcl >=3.0.2,<3.0.3.0a0
-  - libboost >=1.88.0,<1.89.0a0
-  - libboost-python >=1.88.0,<1.89.0a0
-  - libcxx >=19
-  - libpinocchio 3.9.0 h7461b40_3
-  - numpy >=1.21,<3
-  - python >=3.10,<3.11.0a0
+  - libpinocchio 4.0.0 ha6318f8_0
+  - pinocchio-python 4.0.0 py310h09f6039_0
   - python_abi 3.10.* *_cp310
   license: BSD-2-Clause
   license_family: BSD
-  size: 9068710
-  timestamp: 1774955118896
+  size: 9890
+  timestamp: 1776159132954
 - conda: https://conda.anaconda.org/conda-forge/osx-64/pinocchio-python-3.9.0-py314h8a6da7a_3.conda
   sha256: e7e35bb0724a09aeb9d20d64ff65b779b6d7a2711e95a197954bd1f777bd3718
   md5: 072d908c0afb5aa3a18d1648c641ad35
@@ -14230,6 +14257,26 @@ packages:
   license_family: BSD
   size: 9150077
   timestamp: 1774954443724
+- conda: https://conda.anaconda.org/conda-forge/osx-64/pinocchio-python-4.0.0-py310h09f6039_0.conda
+  sha256: 3ce338dec212d6bb34a16ce8ac008de0748dfac6af4003354d29d696f566d132
+  md5: 8dd2c6a8d24790bd0b6e9ca33738b45b
+  depends:
+  - __osx >=11.0
+  - casadi >=3.7.2,<3.8.0a0
+  - eigen-abi >=3.4.0.100,<3.4.0.101.0a0
+  - eigenpy >=3.12.0,<3.12.1.0a0
+  - hpp-fcl >=3.0.2,<3.0.3.0a0
+  - libboost >=1.88.0,<1.89.0a0
+  - libboost-python >=1.88.0,<1.89.0a0
+  - libcxx >=19
+  - libpinocchio 4.0.0 ha6318f8_0
+  - numpy >=1.21,<3
+  - python >=3.10,<3.11.0a0
+  - python_abi 3.10.* *_cp310
+  license: BSD-2-Clause
+  license_family: BSD
+  size: 10910125
+  timestamp: 1776159011131
 - conda: https://conda.anaconda.org/conda-forge/osx-64/pinocchio-python-4.0.0-py314hc279727_2.conda
   sha256: ecc19bc33a5c3e03a33509692f1b7dd31543eefd1835ec8ad7773a53b78155a4
   md5: 627e57b3448d2d15291a15d9f23f7df4
@@ -16472,6 +16519,29 @@ packages:
   license_family: BSD
   size: 3168457
   timestamp: 1774949092423
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/libpinocchio-4.0.0-h9a60d09_0.conda
+  sha256: 8b25a066df5166501a48ac04df7a5e72f7b7b94b0c3d4943bfa1212dd2407176
+  md5: adbb6e7cc52d0f4145136273261d1d55
+  depends:
+  - __osx >=11.0
+  - casadi >=3.7.2,<3.8.0a0
+  - console_bridge >=1.0.2,<1.1.0a0
+  - eigen-abi >=3.4.0.100,<3.4.0.101.0a0
+  - libboost >=1.88.0,<1.89.0a0
+  - libboost-devel
+  - libcxx >=19
+  - libgz-math >=9.1.0,<10.0a0
+  - libsdformat >=16.0.1,<17.0a0
+  - llvm-openmp >=19.1.7
+  - llvm-openmp >=22.1.3
+  - qhull >=2020.2,<2020.3.0a0
+  - qhull-static
+  - urdfdom >=5.1.0,<5.2.0a0
+  - urdfdom_headers >=2.1.0,<3.0a0
+  license: BSD-2-Clause
+  license_family: BSD
+  size: 3777911
+  timestamp: 1776153543178
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libpinocchio-4.0.0-he21e32d_2.conda
   sha256: 16855d6705b1999c21d04a190d9d8c8b80e90f8c3032a8d8de539daf0275655e
   md5: 924821249eb14fd29240f6b20d4a982a
@@ -17002,17 +17072,6 @@ packages:
   license: HPND
   size: 1006294
   timestamp: 1775060469004
-- conda: https://conda.anaconda.org/conda-forge/osx-arm64/pinocchio-3.9.0-hb6292c7_3.conda
-  sha256: 1a617dbf4bd79581870eb5900e832c8f191dac2004869a1cb6b00fdc81bcfeb6
-  md5: 9c403a71fc9a4fc8b16200e3e0253753
-  depends:
-  - libpinocchio 3.9.0 h38e3ed3_3
-  - pinocchio-python 3.9.0 py310hffe0cd8_3
-  - python_abi 3.10.* *_cp310
-  license: BSD-2-Clause
-  license_family: BSD
-  size: 9757
-  timestamp: 1774953561669
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pinocchio-3.9.0-he55896b_3.conda
   sha256: e788f80451a163b91fb900f15b3553549faf7637ad2128902197dd58c487695c
   md5: 565e675f6dd4ad2699bc8780fc4ab421
@@ -17035,27 +17094,17 @@ packages:
   license_family: BSD
   size: 11433
   timestamp: 1779099662190
-- conda: https://conda.anaconda.org/conda-forge/osx-arm64/pinocchio-python-3.9.0-py310hffe0cd8_3.conda
-  sha256: 6db0a4d5d40760866829ee00fe9fb7dbc13381b4ea6cdf18f48a6503b7145590
-  md5: 62d4a35e722b01e2d671a648fd5ab50c
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/pinocchio-4.0.0-hd747c48_0.conda
+  sha256: 4dbb73e022046af32ee1bc3c085848d81935d9b1066cfcb8dc1dce7182b351d4
+  md5: 7c6e6c7026e12a0e531b2f44a2f1e147
   depends:
-  - __osx >=11.0
-  - casadi >=3.7.2,<3.8.0a0
-  - eigen-abi >=3.4.0.100,<3.4.0.101.0a0
-  - eigenpy >=3.12.0,<3.12.1.0a0
-  - hpp-fcl >=3.0.2,<3.0.3.0a0
-  - libboost >=1.88.0,<1.89.0a0
-  - libboost-python >=1.88.0,<1.89.0a0
-  - libcxx >=19
-  - libpinocchio 3.9.0 h38e3ed3_3
-  - numpy >=1.21,<3
-  - python >=3.10,<3.11.0a0
-  - python >=3.10,<3.11.0a0 *_cpython
+  - libpinocchio 4.0.0 h9a60d09_0
+  - pinocchio-python 4.0.0 py310h6a781ba_0
   - python_abi 3.10.* *_cp310
   license: BSD-2-Clause
   license_family: BSD
-  size: 8863326
-  timestamp: 1774953461269
+  size: 9933
+  timestamp: 1776157466410
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pinocchio-python-3.9.0-py314h0c80980_3.conda
   sha256: 97eeaee4f5b692166fc605bf2b814994f0cb1a8dbda2ec52a99198faf88e81d1
   md5: 79ac3b60bf022fa5a70d91cc6b5f7c6b
@@ -17077,6 +17126,27 @@ packages:
   license_family: BSD
   size: 8935656
   timestamp: 1774953561668
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/pinocchio-python-4.0.0-py310h6a781ba_0.conda
+  sha256: 357a5ea5f48545676c29d0b098c4e383f2786eb2a06b15ebef32f720cd9cd3ff
+  md5: 9c27b30eb862e883292bef50de4f9785
+  depends:
+  - __osx >=11.0
+  - casadi >=3.7.2,<3.8.0a0
+  - eigen-abi >=3.4.0.100,<3.4.0.101.0a0
+  - eigenpy >=3.12.0,<3.12.1.0a0
+  - hpp-fcl >=3.0.2,<3.0.3.0a0
+  - libboost >=1.88.0,<1.89.0a0
+  - libboost-python >=1.88.0,<1.89.0a0
+  - libcxx >=19
+  - libpinocchio 4.0.0 h9a60d09_0
+  - numpy >=1.21,<3
+  - python >=3.10,<3.11.0a0
+  - python >=3.10,<3.11.0a0 *_cpython
+  - python_abi 3.10.* *_cp310
+  license: BSD-2-Clause
+  license_family: BSD
+  size: 10690207
+  timestamp: 1776157387567
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pinocchio-python-4.0.0-py314hec5027b_2.conda
   sha256: a9a0f03ab73f7f44191cfd3fbd869f0ed30db5a503c5de248f725e6300af8bc7
   md5: 831ab509c08a99d5b9c802f1a2428647

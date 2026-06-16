@@ -209,19 +209,10 @@ graphviz = ">=12"
 [environments]
 default = { features = ["python-latest"], solve-group = "python-latest" }
 clang = { features = ["clang", "python-latest"] }
-lint = { features = ["lint"], no-default-feature = false}
-pin39 = { features = [
-  "pin39",
-  "python-latest",
-] }
-pin4 = { features = [
-  "pin4",
-  "python-latest",
-], solve-group = "python-latest" }
-crocoddyl = { features = [
-  "crocoddyl",
-  "python-latest",
-] }
+lint = { features = ["lint"], no-default-feature = false }
+pin39 = { features = ["pin39", "python-latest"] }
+pin4 = { features = ["pin4", "python-latest"], solve-group = "python-latest" }
+crocoddyl = { features = ["crocoddyl", "python-latest"] }
 openmp = { features = [
   "openmp",
   "python-latest",
@@ -236,13 +227,13 @@ all = { features = [
 ], solve-group = "python-latest" }
 all-with-croco = { features = [
   "doc",
-  "crocoddyl",  # with pinocchio 3.8
+  "crocoddyl",     # with pinocchio 3.8
   "openmp",
-  "python-latest"
+  "python-latest",
 ] }
 all-python-oldest = { features = [
   "doc",
-  "pin39",
+  "pin4",
   "openmp",
   "python-oldest",
 ], solve-group = "python-oldest" }
