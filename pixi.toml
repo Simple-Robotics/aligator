@@ -156,7 +156,6 @@ dependencies = { tracy-profiler-client = ">=0.11.1" }
 activation = { env = { ALIGATOR_TRACY_ENABLE = "ON" } }
 
 [feature.pin39]
-#dependencies = { pinocchio = ">=3.9.0,<4", example-robot-data-loaders = ">=4" }
 dependencies = { pinocchio = ">=3.9.0,<4", example-robot-data-loaders = ">=4,<5.0" }
 
 activation = { env = { ALIGATOR_PINOCCHIO_SUPPORT = "ON" } }
