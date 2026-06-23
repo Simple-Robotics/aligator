@@ -228,7 +228,8 @@ all = { features = [
 ], solve-group = "python-latest" }
 all-with-croco = { features = [
   "doc",
-  "crocoddyl",     # with pinocchio 3.8
+  "crocoddyl",
+  "pin4",
   "openmp",
   "python-latest",
 ] }

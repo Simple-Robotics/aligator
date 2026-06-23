@@ -2350,6 +2350,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pango-1.56.4-hda50119_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pcre2-10.47-haa7fec5_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pillow-12.2.0-py314h8ec4b1a_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/pinocchio-4.0.0-h7d0a834_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pinocchio-python-4.0.0-py314h92653b4_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pixman-0.46.4-h54a6638_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pkg-config-0.29.2-h4bc722e_1009.conda
@@ -2652,6 +2653,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pango-1.56.4-hf280016_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pcre2-10.47-h13923f0_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pillow-12.2.0-py314hc904d5e_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/pinocchio-4.0.0-h218e2f2_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pinocchio-python-4.0.0-py314hc279727_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pixman-0.46.4-ha059160_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pkg-config-0.29.2-hf7e621a_1009.conda
@@ -2882,6 +2884,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pango-1.56.4-hf80efc4_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pcre2-10.47-h30297fc_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pillow-12.2.0-py314hab283cf_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pinocchio-4.0.0-h1725a08_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pinocchio-python-4.0.0-py314hec5027b_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pixman-0.46.4-h81086ad_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pkg-config-0.29.2-hde07d2e_1009.conda
@@ -11989,6 +11992,20 @@ packages:
     - libpinocchio >=3.9.0,<3.9.1.0a0
   size: 9740
   timestamp: 1774951569789
+- conda: https://conda.anaconda.org/conda-forge/linux-64/pinocchio-4.0.0-h7d0a834_2.conda
+  sha256: 66dca7f231d344668d60c99e0e6f890e8ffe8f9e7f2922d5f38f6443c0c50285
+  md5: acd963931ed636df10278fc9c3500399
+  depends:
+  - libpinocchio 4.0.0 hd3bca24_2
+  - pinocchio-python 4.0.0 py314h92653b4_2
+  - python_abi 3.14.* *_cp314
+  license: BSD-2-Clause
+  license_family: BSD
+  run_exports:
+    weak:
+    - libpinocchio >=4.0.0,<4.0.1.0a0
+  size: 11237
+  timestamp: 1779096385891
 - conda: https://conda.anaconda.org/conda-forge/linux-64/pinocchio-4.0.0-h7d0a834_3.conda
   sha256: d4fc7770f3ef8e0bb4f3ce1abebebbffbd02862440abf9216b1b2da5ed37077d
   md5: 7859201d4ba834596f060b206e2b8150
@@ -16732,6 +16749,20 @@ packages:
     - libpinocchio >=3.9.0,<3.9.1.0a0
   size: 9749
   timestamp: 1774954533674
+- conda: https://conda.anaconda.org/conda-forge/osx-64/pinocchio-4.0.0-h218e2f2_2.conda
+  sha256: fc558ade1cfda2728b3483bf25aef5377e43597d9a411db0e78b68e702d44f89
+  md5: 04534e81fae12e6a68a2474d8edb2f89
+  depends:
+  - libpinocchio 4.0.0 h45d972a_2
+  - pinocchio-python 4.0.0 py314hc279727_2
+  - python_abi 3.14.* *_cp314
+  license: BSD-2-Clause
+  license_family: BSD
+  run_exports:
+    weak:
+    - libpinocchio >=4.0.0,<4.0.1.0a0
+  size: 11402
+  timestamp: 1779098670269
 - conda: https://conda.anaconda.org/conda-forge/osx-64/pinocchio-4.0.0-h218e2f2_3.conda
   sha256: 26989c74000266b146345695436e09906cd5149e8ec98a7a8254f08943e50c3c
   md5: bd68672f58f38661c5b9ac26b5cb274c
@@ -20239,6 +20270,20 @@ packages:
     - libpinocchio >=3.9.0,<3.9.1.0a0
   size: 9843
   timestamp: 1774953774620
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/pinocchio-4.0.0-h1725a08_2.conda
+  sha256: 07df6fe9cc2684cbcda801ef97e452722b67d2ac8aead56a308f9eac427acabb
+  md5: cd896abe3f1197a64ff1fc4d913f1bce
+  depends:
+  - libpinocchio 4.0.0 he21e32d_2
+  - pinocchio-python 4.0.0 py314hec5027b_2
+  - python_abi 3.14.* *_cp314
+  license: BSD-2-Clause
+  license_family: BSD
+  run_exports:
+    weak:
+    - libpinocchio >=4.0.0,<4.0.1.0a0
+  size: 11433
+  timestamp: 1779099662190
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pinocchio-4.0.0-h1725a08_3.conda
   sha256: 7b4f63ffddd9c3227f93499c4f642dc61345c552aa1b365fa02784999a00a17e
   md5: 4d126b9f99730b245afbcacadd38af53
