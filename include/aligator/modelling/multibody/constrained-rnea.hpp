@@ -63,6 +63,14 @@ void underactuatedConstrainedInverseDynamics(
   pin::computeAllTerms(model, data, q, v);
   const auto &nle = data.nle;
 
+// pin4: getConstraintJacobian requires cdata to be up-to-date.
+// calc() must be called explicitly before jacobian()
+#ifdef ALIGATOR_PINOCCHIO_V4
+  for (std::size_t idx = 0; idx < constraint_models.size(); ++idx) {
+    constraint_models[idx].calc(model, data, constraint_datas[idx]);
+  }
+#endif
+
   const int d = details::computeRigidConstraintsTotalSize(constraint_models,
                                                           constraint_datas);
 

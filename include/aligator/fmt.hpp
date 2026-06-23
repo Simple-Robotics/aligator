@@ -3,6 +3,7 @@
 #pragma once
 
 #include <fmt/core.h>
+#include <fmt/format.h>
 
 #if FMT_VERSION < 100000
 

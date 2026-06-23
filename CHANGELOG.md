@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- multibody/tests: call `calc()` on constraint datas before any operation invoking `jacobian()`
+In Pinocchio 4.0, `jacobian()` no longer updates `cdata` internally and requires `calc()` to be called first.
+- include `<fmt/format.h>` where `fmt::format()`is used. Required since fmt 12.2.0
+
 ## [0.19.0] - 2026-04-17
 
 ### Added

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "aligator/context.hpp"
+#include <fmt/format.h>
 
 namespace aligator {
 

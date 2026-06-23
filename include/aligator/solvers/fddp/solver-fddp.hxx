@@ -7,6 +7,7 @@
 #include "aligator/core/stage-data.hpp"
 
 #include <fmt/ranges.h>
+#include <fmt/format.h>
 
 namespace aligator {
 

@@ -156,11 +156,12 @@ dependencies = { tracy-profiler-client = ">=0.11.1" }
 activation = { env = { ALIGATOR_TRACY_ENABLE = "ON" } }
 
 [feature.pin39]
-dependencies = { pinocchio = ">=3.9.0,<4", example-robot-data-loaders = ">=4" }
+dependencies = { pinocchio = ">=3.9.0,<4", example-robot-data-loaders = ">=4,<5.0" }
+
 activation = { env = { ALIGATOR_PINOCCHIO_SUPPORT = "ON" } }
 
 [feature.pin4]
-dependencies = { pinocchio = ">=4.0.0,<5", example-robot-data-loaders = ">=4" }
+dependencies = { pinocchio = ">=4.0.0,<5", example-robot-data-loaders = ">=5" }
 activation = { env = { ALIGATOR_PINOCCHIO_SUPPORT = "ON" } }
 
 # crocoddyl 3.2 requires pinocchio 3.8.x, so this feature is pinned to Pinocchio 3
@@ -209,19 +210,10 @@ graphviz = ">=12"
 [environments]
 default = { features = ["python-latest"], solve-group = "python-latest" }
 clang = { features = ["clang", "python-latest"] }
-lint = { features = ["lint"], no-default-feature = false}
-pin39 = { features = [
-  "pin39",
-  "python-latest",
-] }
-pin4 = { features = [
-  "pin4",
-  "python-latest",
-], solve-group = "python-latest" }
-crocoddyl = { features = [
-  "crocoddyl",
-  "python-latest",
-] }
+lint = { features = ["lint"], no-default-feature = false }
+pin39 = { features = ["pin39", "python-latest"] }
+pin4 = { features = ["pin4", "python-latest"], solve-group = "python-latest" }
+crocoddyl = { features = ["crocoddyl", "python-latest"] }
 openmp = { features = [
   "openmp",
   "python-latest",
@@ -236,13 +228,14 @@ all = { features = [
 ], solve-group = "python-latest" }
 all-with-croco = { features = [
   "doc",
-  "crocoddyl",  # with pinocchio 3.8
+  "crocoddyl",
+  "pin4",
   "openmp",
-  "python-latest"
+  "python-latest",
 ] }
 all-python-oldest = { features = [
   "doc",
-  "pin39",
+  "pin4",
   "openmp",
   "python-oldest",
 ], solve-group = "python-oldest" }
@@ -252,4 +245,5 @@ new-version = { features = [
   "openmp",
   "python-latest",
 ], solve-group = "python-latest" }
+all-pin39 = { features = ["doc", "pin39", "openmp", "python-latest"] }
 # test-pixi-build = { features = ["test-pixi-build"], no-default-feature = true }

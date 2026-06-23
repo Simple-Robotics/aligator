@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <string>
 #include <fmt/core.h>
+#include <fmt/format.h>
 
 #define ALIGATOR_RUNTIME_ERROR(...)                                            \
   throw ::aligator::RuntimeError(                                              \

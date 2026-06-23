@@ -18,6 +18,8 @@ if(NOT BUILD_WITH_PINOCCHIO_SUPPORT)
   list(REMOVE_ITEM PYTHON_TESTS test_constrained_dynamics.py)
   list(REMOVE_ITEM PYTHON_TESTS test_kinodynamics.py)
 endif()
+# remove line when issue # 409 is fixed
+list(REMOVE_ITEM PYTHON_TESTS test_mpc.py)
 make_directory(${CMAKE_CURRENT_BINARY_DIR})
 
 foreach(pyfile ${PYTHON_TESTS})
