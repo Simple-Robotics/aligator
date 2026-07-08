@@ -63,7 +63,7 @@ if(BUILD_WITH_PINOCCHIO_SUPPORT)
     TEST_NAMES
     forces
     cycling
-    #mpc-cycle -> Decomment when issue # 410 is fixed
+    mpc-cycle
     continuous
   )
 endif()
