@@ -164,11 +164,9 @@ activation = { env = { ALIGATOR_PINOCCHIO_SUPPORT = "ON" } }
 dependencies = { pinocchio = ">=4.0.0,<5", example-robot-data-loaders = ">=5" }
 activation = { env = { ALIGATOR_PINOCCHIO_SUPPORT = "ON" } }
 
-# crocoddyl 3.2 requires pinocchio 3.8.x, so this feature is pinned to Pinocchio 3
 [feature.crocoddyl]
-dependencies = { crocoddyl = ">=3.2.0,<4", example-robot-data-loaders = ">=4" }
+dependencies = { crocoddyl = ">=3.2.0", example-robot-data-loaders = ">=4" }
 activation = { env = { ALIGATOR_CROCODDYL_COMPAT = "ON", ALIGATOR_PINOCCHIO_SUPPORT = "ON" } }
-constraints = { pinocchio = ">=3.8.0" }
 
 # Not supported by Windows (because of conda-forge issue)
 [feature.openmp]
