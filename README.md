@@ -152,6 +152,7 @@ Please also consider citing the reference paper for the ProxDDP algorithm:
 * [Antoine Bussy](https://github.com/antoine-bussy) (Aldebaran)
 * [Valentin Tordjman--Levavasseur](https://github.com/Tordjx) (Inria): feature developer
 * [Louise Manson](https://github.com/LouiseMsn) (Inria): documentation
+* [Yann de Mont-Marin](https://github.com/ymontmarin) (Inria): Lie group formalism and associated features
 
 ## Acknowledgments
 
