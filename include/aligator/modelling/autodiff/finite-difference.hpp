@@ -117,6 +117,7 @@ struct finite_difference_impl : finite_diff_traits<_Scalar, _BaseTpl> {
       , func_(std::move(func))
       , fd_eps(fd_eps)
       , nx1(space->nx())
+      , nu(func_->nu)
       , nx2(space->nx()) {}
 
   template <typename U = Base,
