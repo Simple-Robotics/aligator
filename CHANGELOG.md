@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- autodiff: initialize `nu` in the `StageFunctionTpl` constructor of `finite_difference_impl` ([#NNN](https://github.com/Simple-Robotics/aligator/pull/NNN))
+- autodiff: initialize `nu` in the `StageFunctionTpl` constructor of `finite_difference_impl` ([#422](https://github.com/Simple-Robotics/aligator/pull/422))
 
 ## [0.19.1] - 2026-07-28
 
