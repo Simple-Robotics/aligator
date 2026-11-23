@@ -185,6 +185,7 @@ In addition to the core dev team, the following people have also been involved i
 * [Ewen Dantec](https://edantec.github.io/) (Inria): feature developer
 * [Antoine Bussy](https://github.com/antoine-bussy) (Aldebaran)
 * [Valentin Tordjman--Levavasseur](https://github.com/Tordjx) (Inria): feature developer
+* [Damien Nguyen](https://github.com/Takishima) open-source contributor
 
 If you have participated in the development of **Aligator**, please add your name and contribution to this list.
 
