@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- CMake: add support for eigenpy v4. ([#424](https://github.com/Simple-Robotics/aligator/pull/424))
+
 ### Fixed
 
 - autodiff: initialize `nu` in the `StageFunctionTpl` constructor of `finite_difference_impl` ([#422](https://github.com/Simple-Robotics/aligator/pull/422))
