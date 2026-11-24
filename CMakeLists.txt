@@ -249,7 +249,8 @@ if(BUILD_CROCODDYL_COMPAT)
 endif()
 
 if(BUILD_PYTHON_INTERFACE)
-  set(PYTHON_COMPONENTS Interpreter Development NumPy)
+  set(PYTHON_COMPONENTS Interpreter Development.Module NumPy)
+  FINDPYTHON(REQUIRED)
   ADD_PROJECT_DEPENDENCY(
     eigenpy
     3.10.2
